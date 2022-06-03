@@ -1,0 +1,97 @@
+{
+  "name": "@codingame/monaco-vscode-api",
+  "version": "1.67.7",
+  "private": false,
+  "description": "VSCode public API plugged on the monaco editor",
+  "keywords": [],
+  "author": {
+    "name": "CodinGame",
+    "url": "http://www.codingame.com"
+  },
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/CodinGame/monaco-vscode-api"
+  },
+  "type": "module",
+  "main": "dist/api.cjs",
+  "module": "dist/api.js",
+  "exports": {
+    ".": {
+      "default": "./dist/api.js"
+    },
+    "./amd": {
+      "default": "./dist/api.amd.js"
+    },
+    "./cjs": {
+      "default": "./dist/api.amd.js"
+    },
+    "./services": {
+      "types": "./dist/services.d.ts",
+      "default": "./dist/services.js"
+    },
+    "./services/cjs": {
+      "types": "./dist/services.d.ts",
+      "default": "./dist/services.cjs"
+    },
+    "./services/amd": {
+      "types": "./dist/services.d.ts",
+      "default": "./dist/services.amd.js"
+    }
+  },
+  "typesVersions": {
+    "*": {
+      "services": [
+        "./dist/services.d.ts"
+      ]
+    }
+  },
+  "files": [
+    "dist",
+    "README.md"
+  ],
+  "scripts": {
+    "build": "rm -rf dist/ && npm run lint && npm run compile && npm run generate-types",
+    "compile": "rollup --config rollup/rollup.config.ts --configPlugin 'typescript={tsconfig: `tsconfig.rollup.json`}'",
+    "preprepare": "./scripts/install-vscode",
+    "lint": "eslint --ext ts src",
+    "generate-types": "tsc --project tsconfig.types.json && rollup --config rollup/rollup.types.config.ts --configPlugin 'typescript={tsconfig: `tsconfig.rollup.json`}' && rm -rf ./dist/types"
+  },
+  "devDependencies": {
+    "@babel/core": "^7.18.2",
+    "@babel/plugin-proposal-class-properties": "^7.17.12",
+    "@babel/plugin-proposal-decorators": "^7.18.2",
+    "@babel/preset-env": "^7.18.2",
+    "@babel/preset-typescript": "^7.17.12",
+    "@codingame/eslint-config": "^1.1.2",
+    "@codingame/tsconfig": "^1.0.3",
+    "@rollup/plugin-node-resolve": "^13.3.0",
+    "@rollup/plugin-typescript": "^8.3.2",
+    "@types/babel__core": "^7.1.19",
+    "@types/vscode": "^1.67.0",
+    "@typescript-eslint/eslint-plugin": "^5.27.0",
+    "@typescript-eslint/parser": "^5.27.0",
+    "eslint": "^8.16.0",
+    "eslint-config-standard": "^17.0.0",
+    "eslint-plugin-import": "^2.26.0",
+    "eslint-plugin-n": "^15.2.0",
+    "eslint-plugin-promise": "^6.0.0",
+    "eslint-plugin-unused-imports": "^2.0.0",
+    "recast": "^0.21.1",
+    "rollup": "^2.75.3",
+    "rollup-plugin-cleanup": "^3.2.1",
+    "rollup-plugin-dts": "^4.2.2",
+    "typescript": "^4.7.2"
+  },
+  "dependencies": {
+    "monaco-editor": "^0.33.0"
+  },
+  "engines": {
+    "node": ">=16.0.0",
+    "npm": ">=7.10.0"
+  },
+  "volta": {
+    "node": "16.15.0",
+    "npm": "8.11.0"
+  }
+}

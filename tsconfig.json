@@ -1,0 +1,24 @@
+{
+	"extends": "@codingame/tsconfig",
+	"compilerOptions": {
+		"declaration": false,
+		"target": "es2020",
+		"module": "es2020",
+		"lib": [
+			"es2020",
+			"DOM"
+		],
+		"outDir": "dist",
+		"rootDir": "./",
+		"paths": {
+			"vs/*": [
+				"./vscode/vs/*"
+			]
+		}
+	},
+	"include": [
+		"./src/**/*",
+		"./vscode/**/*",
+		"./rollup/*.ts"
+	]
+}

@@ -1,0 +1,15 @@
+{
+  "env": {
+    "es6": true,
+    "browser": true
+  },
+  "globals": {
+    "Thenable": "readonly"
+  },
+  "extends": [
+    "@codingame"
+  ],
+  "ignorePatterns": "vscode/**/*",
+  "plugins": ["@typescript-eslint", "import", "unused-imports"]
+
+}
