@@ -1,6 +1,6 @@
 {
   "name": "@codingame/monaco-vscode-api",
-  "version": "1.67.7",
+  "version": "1.67.8",
   "private": false,
   "description": "VSCode public API plugged on the monaco editor",
   "keywords": [],
