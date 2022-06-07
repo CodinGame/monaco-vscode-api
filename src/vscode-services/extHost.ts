@@ -285,11 +285,7 @@ class MonacoExtHostDocuments implements Omit<ExtHostDocuments, ''>, vscode.Dispo
   }
 
   getDocumentData (resource: vscode.Uri): ExtHostDocumentData | undefined {
-    const model = monaco.editor.getModel(monaco.Uri.from(resource))
-    if (model == null) {
-      throw new Error(`Unable to retrieve document from URI '${resource}'`)
-    }
-    return createDocumentDataFromModel(model)
+    return this.documentsData.get(resource.toString())
   }
 
   get onDidAddDocument () { return this._onDidAddDocument.event }
