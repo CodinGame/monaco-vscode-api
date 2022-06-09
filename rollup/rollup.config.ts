@@ -11,6 +11,7 @@ import * as vm from 'vm'
 
 // Force usage of vscode code for these imports
 const IGNORE_MONACO = new Set(['vs/base/common/buffer:VSBuffer'])
+const REMOVE_NOT_STATIC_MEMBERS_OF_CLASSES = new Set(['ExtHostLanguageFeatures', 'MainThreadLanguageFeatures'])
 
 const PURE_ANNO = '#__PURE__'
 const PURE_FUNCTIONS = new Set([
@@ -90,7 +91,7 @@ export default rollup.defineConfig({
       noEmitOnError: true
     }),
     {
-      name: 'mark-pure',
+      name: 'transformations',
       transform (code, id) {
         if (id.startsWith(VSCODE_DIR)) {
           const ast = recast.parse(code, {
@@ -103,9 +104,25 @@ export default rollup.defineConfig({
               node.comments = [recast.types.builders.commentBlock(PURE_ANNO, true)]
             }
           }
+          function visitClassDeclaration (node: recast.types.namedTypes.ClassExpression | recast.types.namedTypes.ClassDeclaration) {
+            if (node.id != null && REMOVE_NOT_STATIC_MEMBERS_OF_CLASSES.has(node.id.name)) {
+              node.body.body = node.body.body.filter(member => {
+                if (member.type === 'ClassMethod' && !(member.static ?? false) && member.key.type === 'Identifier') {
+                  transformed = true
+                  return false
+                }
+                return true
+              })
+            }
+          }
           recast.visit(ast.program.body, {
+            visitClassExpression (path) {
+              visitClassDeclaration(path.node)
+              this.traverse(path)
+            },
             visitClassDeclaration (path) {
               addComment(path.node)
+              visitClassDeclaration(path.node)
               this.traverse(path)
             },
             visitNewExpression (path) {
