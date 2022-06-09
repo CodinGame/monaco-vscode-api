@@ -65,10 +65,12 @@ export default rollup.defineConfig({
         if (!importee.startsWith('vs/') && importer != null && importer.startsWith(VSCODE_DIR)) {
           importee = path.relative(VSCODE_DIR, path.resolve(path.dirname(importer), importee))
         }
-        if (!fs.existsSync(path.resolve(MONACO_EDITOR_DIR, `esm/${importee}.js`))) {
-          return resolve(importee, [VSCODE_DIR])
+        if (importee.startsWith('vs/')) {
+          if (!fs.existsSync(path.resolve(MONACO_EDITOR_DIR, `esm/${importee}.js`))) {
+            return resolve(importee, [VSCODE_DIR])
+          }
+          return importee
         }
-        return importee
       },
       load: (id) => {
         if (id.startsWith('vs/')) {
@@ -291,7 +293,6 @@ function importMonaco (importee: string) {
   }
 
   const monacoApiExports = new Map<string, string>()
-
   for (const exportKey in monacoExports) {
     for (const extractor of monacoApiExtractors) {
       const monacoApiExport = extractor.get(exportKey)
