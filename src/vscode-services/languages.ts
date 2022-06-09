@@ -46,8 +46,8 @@ const workspace: typeof vscode.languages = {
           return result
         }
         return {
-          // eslint-disable-next-line @typescript-eslint/no-explicit-any,dot-notation
-          suggestions: result[ISuggestResultDtoField.completions].map(d => MainThreadLanguageFeatures['_inflateSuggestDto'](result[ISuggestResultDtoField.defaultRanges], d)),
+          // eslint-disable-next-line @typescript-eslint/no-explicit-any
+          suggestions: <any>result[ISuggestResultDtoField.completions].map(d => MainThreadLanguageFeatures._inflateSuggestDto(result[ISuggestResultDtoField.defaultRanges], d)),
           incomplete: result[ISuggestResultDtoField.isIncomplete] || false,
           dispose: () => {
             if (typeof result.x === 'number') {
@@ -64,8 +64,7 @@ const workspace: typeof vscode.languages = {
             return suggestion
           }
 
-          // eslint-disable-next-line dot-notation
-          const newSuggestion = MainThreadLanguageFeatures['_inflateSuggestDto'](suggestion.range, result)
+          const newSuggestion = MainThreadLanguageFeatures._inflateSuggestDto(suggestion.range, result)
           return mixin(suggestion, newSuggestion, true)
         }
         : undefined
@@ -93,8 +92,8 @@ const workspace: typeof vscode.languages = {
           return undefined
         }
         return <monaco.languages.CodeActionList>{
-          // eslint-disable-next-line dot-notation
-          actions: MainThreadLanguageFeatures['_reviveCodeActionDto'](listDto.actions),
+
+          actions: MainThreadLanguageFeatures._reviveCodeActionDto(listDto.actions),
           dispose: () => {
             if (typeof listDto.cacheId === 'number') {
               adapter.releaseCodeActions(listDto.cacheId)
@@ -146,8 +145,7 @@ const workspace: typeof vscode.languages = {
 
     return monaco.languages.registerDefinitionProvider(documentSelector, {
       provideDefinition: (model, position, token): Promise<languages.LocationLink[]> => {
-        // eslint-disable-next-line dot-notation
-        return adapter.provideDefinition(model.uri, position, token).then(MainThreadLanguageFeatures['_reviveLocationLinkDto'])
+        return adapter.provideDefinition(model.uri, position, token).then(MainThreadLanguageFeatures._reviveLocationLinkDto)
       }
     })
   },
@@ -158,8 +156,7 @@ const workspace: typeof vscode.languages = {
     )
     return monaco.languages.registerImplementationProvider(documentSelector, {
       provideImplementation: (model, position, token): Promise<languages.LocationLink[]> => {
-        // eslint-disable-next-line dot-notation
-        return adapter.provideImplementation(model.uri, position, token).then(MainThreadLanguageFeatures['_reviveLocationLinkDto'])
+        return adapter.provideImplementation(model.uri, position, token).then(MainThreadLanguageFeatures._reviveLocationLinkDto)
       }
     })
   },
@@ -170,8 +167,7 @@ const workspace: typeof vscode.languages = {
     )
     return monaco.languages.registerTypeDefinitionProvider(documentSelector, {
       provideTypeDefinition: (model, position, token): Promise<languages.LocationLink[]> => {
-        // eslint-disable-next-line dot-notation
-        return adapter.provideTypeDefinition(model.uri, position, token).then(MainThreadLanguageFeatures['_reviveLocationLinkDto'])
+        return adapter.provideTypeDefinition(model.uri, position, token).then(MainThreadLanguageFeatures._reviveLocationLinkDto)
       }
     })
   },
@@ -182,8 +178,7 @@ const workspace: typeof vscode.languages = {
     )
     return monaco.languages.registerDeclarationProvider(documentSelector, {
       provideDeclaration: (model, position, token) => {
-        // eslint-disable-next-line dot-notation
-        return adapter.provideDeclaration(model.uri, position, token).then(MainThreadLanguageFeatures['_reviveLocationLinkDto'])
+        return adapter.provideDeclaration(model.uri, position, token).then(MainThreadLanguageFeatures._reviveLocationLinkDto)
       }
     })
   },
@@ -214,8 +209,7 @@ const workspace: typeof vscode.languages = {
       extHostDocuments,
       provider
     )
-    // eslint-disable-next-line dot-notation
-    const displayName = metadata?.label ?? adapters.ExtHostLanguageFeatures['_extLabel'](extensionDescription)
+    const displayName = metadata?.label ?? adapters.ExtHostLanguageFeatures._extLabel(extensionDescription)
     return monaco.languages.registerDocumentSymbolProvider(documentSelector, {
       displayName,
       provideDocumentSymbols: (model, token) => {
@@ -230,8 +224,7 @@ const workspace: typeof vscode.languages = {
     )
     return monaco.languages.registerReferenceProvider(documentSelector, {
       provideReferences: (model, position, context, token): Promise<languages.Location[]> => {
-        // eslint-disable-next-line dot-notation
-        return adapter.provideReferences(model.uri, position, context, token).then(MainThreadLanguageFeatures['_reviveLocationDto'])
+        return adapter.provideReferences(model.uri, position, context, token).then(MainThreadLanguageFeatures._reviveLocationDto)
       }
     })
   },
@@ -332,8 +325,8 @@ const workspace: typeof vscode.languages = {
             return undefined
           }
           return {
-            // eslint-disable-next-line dot-notation
-            links: dto.links.map(MainThreadLanguageFeatures['_reviveLinkDTO']),
+
+            links: dto.links.map(MainThreadLanguageFeatures._reviveLinkDTO),
             dispose: () => {
               if (typeof dto.cacheId === 'number') {
                 adapter.releaseLinks(dto.cacheId)
@@ -349,8 +342,7 @@ const workspace: typeof vscode.languages = {
               return link
             }
             return adapter.resolveLink(dto.cacheId, token).then(obj => {
-              // eslint-disable-next-line dot-notation
-              return obj != null ? MainThreadLanguageFeatures['_reviveLinkDTO'](obj) : undefined
+              return obj != null ? MainThreadLanguageFeatures._reviveLinkDTO(obj) : undefined
             })
           }
         : undefined
@@ -486,8 +478,7 @@ const workspace: typeof vscode.languages = {
     )
 
     return monaco.languages.registerInlayHintsProvider(documentSelector, {
-      // eslint-disable-next-line dot-notation
-      displayName: adapters.ExtHostLanguageFeatures['_extLabel'](extensionDescription),
+      displayName: adapters.ExtHostLanguageFeatures._extLabel(extensionDescription),
       provideInlayHints: async (model, range, token): Promise<languages.InlayHintList | undefined> => {
         const result = await adapter.provideInlayHints(model.uri, range, token)
         if (result == null) {
@@ -587,8 +578,8 @@ const workspace: typeof vscode.languages = {
               adapter.releaseSession(item._sessionId)
             }
           },
-          // eslint-disable-next-line dot-notation
-          roots: items.map(MainThreadLanguageFeatures['_reviveTypeHierarchyItemDto'])
+
+          roots: items.map(MainThreadLanguageFeatures._reviveTypeHierarchyItemDto)
         }
       },
 
@@ -597,16 +588,16 @@ const workspace: typeof vscode.languages = {
         if (supertypes == null) {
           return supertypes
         }
-        // eslint-disable-next-line dot-notation
-        return supertypes.map(MainThreadLanguageFeatures['_reviveTypeHierarchyItemDto'])
+
+        return supertypes.map(MainThreadLanguageFeatures._reviveTypeHierarchyItemDto)
       },
       provideSubtypes: async (item, token) => {
         const subtypes = await adapter.provideSubtypes(item._sessionId, item._itemId, token)
         if (subtypes == null) {
           return subtypes
         }
-        // eslint-disable-next-line dot-notation
-        return subtypes.map(MainThreadLanguageFeatures['_reviveTypeHierarchyItemDto'])
+
+        return subtypes.map(MainThreadLanguageFeatures._reviveTypeHierarchyItemDto)
       }
     }) ?? {
       dispose: () => {}
@@ -630,8 +621,8 @@ const workspace: typeof vscode.languages = {
               adapter.releaseSession(item._sessionId)
             }
           },
-          // eslint-disable-next-line dot-notation
-          roots: items.map(MainThreadLanguageFeatures['_reviveCallHierarchyItemDto'])
+
+          roots: items.map(MainThreadLanguageFeatures._reviveCallHierarchyItemDto)
         }
       },
 
@@ -641,8 +632,7 @@ const workspace: typeof vscode.languages = {
           return outgoing
         }
         outgoing.forEach(value => {
-          // eslint-disable-next-line dot-notation
-          value.to = MainThreadLanguageFeatures['_reviveCallHierarchyItemDto'](value.to)
+          value.to = MainThreadLanguageFeatures._reviveCallHierarchyItemDto(value.to)
         })
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
         return <any>outgoing
@@ -653,8 +643,7 @@ const workspace: typeof vscode.languages = {
           return incoming
         }
         incoming.forEach(value => {
-          // eslint-disable-next-line dot-notation
-          value.from = MainThreadLanguageFeatures['_reviveCallHierarchyItemDto'](value.from)
+          value.from = MainThreadLanguageFeatures._reviveCallHierarchyItemDto(value.from)
         })
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
         return <any>incoming
@@ -677,15 +666,15 @@ const workspace: typeof vscode.languages = {
           adapter.releaseWorkspaceSymbols(lastResultId)
         }
         lastResultId = result.cacheId
-        // eslint-disable-next-line dot-notation
-        return MainThreadLanguageFeatures['_reviveWorkspaceSymbolDto'](result.symbols)
+
+        return MainThreadLanguageFeatures._reviveWorkspaceSymbolDto(result.symbols)
       },
 
       resolveWorkspaceSymbol: provider.resolveWorkspaceSymbol != null
         ? async (item, token) => {
           const resolvedItem = await adapter.resolveWorkspaceSymbol(item, token)
-          // eslint-disable-next-line dot-notation
-          return resolvedItem != null ? MainThreadLanguageFeatures['_reviveWorkspaceSymbolDto'](resolvedItem) : undefined
+
+          return resolvedItem != null ? MainThreadLanguageFeatures._reviveWorkspaceSymbolDto(resolvedItem) : undefined
         }
         : undefined
     }) ?? {

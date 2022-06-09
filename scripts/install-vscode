@@ -47,6 +47,12 @@ export {
 	NavigateTypeAdapter
 };
 EOF
+
+# Mark some methods as public
+sed -i 's/private static/public static/g' ./vs/workbench/api/browser/mainThreadLanguageFeatures.ts
+sed -i 's/private static/public static/g' ./vs/workbench/api/common/extHostLanguageFeatures.ts
+
+
 # Remove useless files
 rm -rf `find . -name '*.test.ts' -o -name 'test' -o -name 'electron-browser'`
 rm -rf vs/code
