@@ -4,12 +4,17 @@ import * as commonDebug from 'vs/workbench/contrib/debug/common/debug'
 import * as files from 'vs/platform/files/common/files'
 import * as extensionHostProtocol from 'vs/workbench/services/extensions/common/extensionHostProtocol'
 import type * as vscode from 'vscode'
-import * as monaco from 'monaco-editor'
-import customEnv from './vscode-services/env'
-import customWindow from './vscode-services/window'
-import customWorkspace from './vscode-services/workspace'
-import customCommands from './vscode-services/commands'
+import * as cancellation from 'vs/base/common/cancellation'
+import * as event from 'vs/base/common/event'
+import * as languageConfiguration from 'vs/editor/common/languages/languageConfiguration'
+import * as model from 'vs/editor/common/model'
+import * as editorOptions from 'vs/editor/common/config/editorOptions'
+import * as uri from 'vs/base/common/uri'
 import customLanguages from './vscode-services/languages'
+import customCommands from './vscode-services/commands'
+import customWorkspace from './vscode-services/workspace'
+import customWindow from './vscode-services/window'
+import customEnv from './vscode-services/env'
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 const unsupported = <any>undefined
@@ -37,7 +42,7 @@ const api: typeof vscode = {
   CallHierarchyItem: extHostTypes.CallHierarchyItem,
   CallHierarchyOutgoingCall: extHostTypes.CallHierarchyOutgoingCall,
   CancellationError: errors.CancellationError,
-  CancellationTokenSource: monaco.CancellationTokenSource,
+  CancellationTokenSource: cancellation.CancellationTokenSource,
   CodeAction: extHostTypes.CodeAction,
   CodeActionKind: extHostTypes.CodeActionKind,
   CodeActionTriggerKind: extHostTypes.CodeActionTriggerKind,
@@ -78,7 +83,7 @@ const api: typeof vscode = {
   InlineValueText: extHostTypes.InlineValueText,
   InlineValueVariableLookup: extHostTypes.InlineValueVariableLookup,
   InlineValueEvaluatableExpression: extHostTypes.InlineValueEvaluatableExpression,
-  EventEmitter: monaco.Emitter,
+  EventEmitter: event.Emitter,
   ExtensionKind: extHostTypes.ExtensionKind,
   ExtensionMode: extHostTypes.ExtensionMode,
   FileChangeType: extHostTypes.FileChangeType,
@@ -90,10 +95,10 @@ const api: typeof vscode = {
   FoldingRangeKind: extHostTypes.FoldingRangeKind,
   FunctionBreakpoint: extHostTypes.FunctionBreakpoint,
   Hover: extHostTypes.Hover,
-  IndentAction: monaco.languages.IndentAction,
+  IndentAction: languageConfiguration.IndentAction,
   Location: extHostTypes.Location,
   MarkdownString: extHostTypes.MarkdownString,
-  OverviewRulerLane: monaco.editor.OverviewRulerLane,
+  OverviewRulerLane: model.OverviewRulerLane,
   ParameterInformation: extHostTypes.ParameterInformation,
   Position: extHostTypes.Position,
   ProcessExecution: extHostTypes.ProcessExecution,
@@ -131,7 +136,7 @@ const api: typeof vscode = {
   TerminalProfile: extHostTypes.TerminalProfile,
   TextDocumentSaveReason: extHostTypes.TextDocumentSaveReason,
   TextEdit: extHostTypes.TextEdit,
-  TextEditorCursorStyle: monaco.editor.TextEditorCursorStyle,
+  TextEditorCursorStyle: editorOptions.TextEditorCursorStyle,
   TextEditorLineNumbersStyle: extHostTypes.TextEditorLineNumbersStyle,
   TextEditorRevealType: extHostTypes.TextEditorRevealType,
   TextEditorSelectionChangeKind: extHostTypes.TextEditorSelectionChangeKind,
@@ -142,7 +147,7 @@ const api: typeof vscode = {
   TreeItemCollapsibleState: extHostTypes.TreeItemCollapsibleState,
   TypeHierarchyItem: extHostTypes.TypeHierarchyItem,
   UIKind: extensionHostProtocol.UIKind,
-  Uri: monaco.Uri,
+  Uri: uri.URI,
   ViewColumn: extHostTypes.ViewColumn,
   WorkspaceEdit: extHostTypes.WorkspaceEdit,
   InlayHint: extHostTypes.InlayHint,
