@@ -222,6 +222,9 @@ function customRequire<T extends Record<string, unknown>> (_path: string, rootPa
   try {
     vm.runInNewContext(transformedCode, {
       require: (_path: string) => {
+        if (_path === 'tslib') {
+          return require('tslib')
+        }
         if (_path.endsWith('.css') || _path.includes('!')) {
           return null
         }
@@ -234,9 +237,11 @@ function customRequire<T extends Record<string, unknown>> (_path: string, rootPa
       define: (path: string, value: Record<string, unknown>) => {
         Object.assign(exports, value)
       },
+      self: {},
       queueMicrotask: () => {},
       navigator: {
-        userAgent: ''
+        userAgent: '',
+        language: 'en'
       },
       window: {
         location: {
@@ -248,7 +253,7 @@ function customRequire<T extends Record<string, unknown>> (_path: string, rootPa
       exports
     })
   } catch (err) {
-    // ignore
+    throw new Error(`Unable to run ${resolvedPath} code`)
   }
 
   return exports
