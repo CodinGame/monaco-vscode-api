@@ -287,6 +287,12 @@ function importMonaco (importee: string) {
 
   let monacoExports = customRequire(monacoPath, [path.resolve(MONACO_EDITOR_DIR, 'esm')])!
   monacoExports = Object.fromEntries(Object.entries(monacoExports).filter(([key]) => {
+    const vscodeValue = vscodeExports[key]
+    if (vscodeValue == null) {
+      console.warn(`${importee}#${key} is exported from monaco but not from vscode`)
+      return true
+    }
+
     return !IGNORE_MONACO.has(`${importee}:${key}`)
   }))
 
