@@ -4,7 +4,7 @@ import * as recast from 'recast'
 import * as babel from '@babel/core'
 import * as monaco from 'monaco-editor'
 import typescript from '@rollup/plugin-typescript'
-import cleanup from 'rollup-plugin-cleanup'
+import cleanup from 'js-cleanup'
 import * as fs from 'fs'
 import * as path from 'path'
 import * as vm from 'vm'
@@ -169,8 +169,15 @@ export default rollup.defineConfig({
           return code
         }
       }
-    },
-    cleanup({ comments: new RegExp(PURE_ANNO) })
+    }, {
+      name: 'cleanup',
+      renderChunk (code) {
+        return cleanup(code, null, {
+          comments: 'none',
+          sourcemap: false
+        }).code
+      }
+    }
   ]
 })
 
