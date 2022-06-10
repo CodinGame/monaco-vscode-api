@@ -2,6 +2,7 @@ import { CancellationTokenSource } from 'vs/base/common/cancellation'
 import Severity from 'vs/base/common/severity'
 import { URI } from 'vs/base/common/uri'
 import type * as vscode from 'vscode'
+import { Event } from 'vs/base/common/event'
 import { Services } from '../services'
 import { unsupported } from '../tools'
 
@@ -77,25 +78,25 @@ const window: typeof vscode.window = {
   get visibleTextEditors () {
     return unsupported()
   },
-  onDidChangeActiveTextEditor: unsupported,
-  onDidChangeVisibleTextEditors: unsupported,
-  onDidChangeTextEditorSelection: unsupported,
-  onDidChangeTextEditorVisibleRanges: unsupported,
-  onDidChangeTextEditorOptions: unsupported,
-  onDidChangeTextEditorViewColumn: unsupported,
+  onDidChangeActiveTextEditor: Event.None,
+  onDidChangeVisibleTextEditors: Event.None,
+  onDidChangeTextEditorSelection: Event.None,
+  onDidChangeTextEditorVisibleRanges: Event.None,
+  onDidChangeTextEditorOptions: Event.None,
+  onDidChangeTextEditorViewColumn: Event.None,
   get terminals () {
     return unsupported()
   },
   get activeTerminal () {
     return unsupported()
   },
-  onDidChangeActiveTerminal: unsupported,
-  onDidOpenTerminal: unsupported,
-  onDidCloseTerminal: unsupported,
+  onDidChangeActiveTerminal: Event.None,
+  onDidOpenTerminal: Event.None,
+  onDidCloseTerminal: Event.None,
   get state () {
     return unsupported()
   },
-  onDidChangeWindowState: unsupported,
+  onDidChangeWindowState: Event.None,
   createQuickPick: unsupported,
   createInputBox: unsupported,
   registerUriHandler: unsupported,
@@ -105,10 +106,10 @@ const window: typeof vscode.window = {
   get activeColorTheme () {
     return unsupported()
   },
-  onDidChangeActiveColorTheme: unsupported,
+  onDidChangeActiveColorTheme: Event.None,
   registerFileDecorationProvider: unsupported,
   registerTerminalProfileProvider: unsupported,
-  onDidChangeTerminalState: unsupported,
+  onDidChangeTerminalState: Event.None,
   get tabGroups () {
     return unsupported()
   }
