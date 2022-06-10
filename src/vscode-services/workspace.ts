@@ -68,9 +68,12 @@ const workspace: typeof vscode.workspace = {
     await StandaloneServices.get(IBulkEditService).apply(resourceEdits)
     return true
   },
-  get getConfiguration (): typeof vscode.workspace.getConfiguration {
+  getConfiguration: (section, scope) => {
     const { workspace } = Services.get()
-    return workspace?.getConfiguration ?? (() => ({
+    if (workspace?.getConfiguration != null) {
+      return workspace.getConfiguration(section, scope)
+    }
+    return {
       get: <T>(section: string, defaultValue?: T): T | undefined => {
         return defaultValue
       },
@@ -79,7 +82,7 @@ const workspace: typeof vscode.workspace = {
       },
       inspect: unsupported,
       update: unsupported
-    }))
+    }
   },
   get onDidChangeConfiguration (): typeof vscode.workspace.onDidChangeConfiguration {
     const services = Services.get()
