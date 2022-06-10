@@ -10,13 +10,14 @@ import { mixin } from 'vs/base/common/objects'
 import { decodeSemanticTokensDto } from 'vs/editor/common/services/semanticTokensDto'
 import { revive } from 'vs/base/common/marshalling'
 import { CancellationError } from 'vs/base/common/errors'
+import { SnippetParser } from 'vs/editor/contrib/snippet/browser/snippetParser'
 import { extensionDescription, extHostApiDeprecationService, extHostCommands, extHostDiagnostics, extHostDocuments, extHostLogService } from './extHost'
 import { Services } from '../services'
 import { unsupported } from '../tools'
 
 const workspace: typeof vscode.languages = {
   match (selector, document): number {
-    return score(typeConvert.LanguageSelector.from(selector), document.uri, document.languageId, true, undefined)
+    return score(typeConvert.LanguageSelector.from(selector), document.uri, document.languageId, true, undefined, undefined)
   },
   createDiagnosticCollection (name?: string): vscode.DiagnosticCollection {
     return extHostDiagnostics.createDiagnosticCollection(extensionDescription.identifier, name)
@@ -92,7 +93,6 @@ const workspace: typeof vscode.languages = {
           return undefined
         }
         return <monaco.languages.CodeActionList>{
-
           actions: MainThreadLanguageFeatures._reviveCodeActionDto(listDto.actions),
           dispose: () => {
             if (typeof listDto.cacheId === 'number') {
@@ -325,7 +325,6 @@ const workspace: typeof vscode.languages = {
             return undefined
           }
           return {
-
             links: dto.links.map(MainThreadLanguageFeatures._reviveLinkDTO),
             dispose: () => {
               if (typeof dto.cacheId === 'number') {
@@ -559,6 +558,45 @@ const workspace: typeof vscode.languages = {
         return undefined
       }
     })
+  },
+  registerInlineCompletionItemProvider: (documentSelector: vscode.DocumentSelector, provider: vscode.InlineCompletionItemProvider) => {
+    const adapter = new adapters.InlineCompletionAdapter(extensionDescription, extHostDocuments, provider, extHostCommands.converter)
+
+    // FIXME remove those types and use official ones when monaco@0.34 is out
+    interface IdentifiableInlineCompletion extends monaco.languages.InlineCompletion {
+      idx: number
+    }
+    interface IdentifiableInlineCompletions extends monaco.languages.InlineCompletions<IdentifiableInlineCompletion> {
+      pid: number
+    }
+
+    const _provider: monaco.languages.InlineCompletionsProvider<IdentifiableInlineCompletions> = {
+      provideInlineCompletions: async (model, position, context, token): Promise<IdentifiableInlineCompletions | undefined> => {
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        const result = await adapter.provideInlineCompletions(model.uri, position, <any>context, token)
+        if (result == null) {
+          return undefined
+        }
+
+        return {
+          ...result,
+          items: result.items.map(({ insertText, ...item }) => ({
+            ...item,
+            text: typeof insertText === 'string' ? insertText : new SnippetParser().parse(insertText.snippet).toString()
+          }))
+        }
+      },
+      handleItemDidShow: async (completions: IdentifiableInlineCompletions, item: IdentifiableInlineCompletion) => {
+        if (adapter.supportsHandleDidShowCompletionItem) {
+          adapter.handleDidShowCompletionItem(completions.pid, item.idx)
+        }
+      },
+      freeInlineCompletions: function (completions: IdentifiableInlineCompletions): void {
+        adapter.disposeCompletions(completions.pid)
+      }
+    }
+
+    return monaco.languages.registerInlineCompletionsProvider(documentSelector, _provider)
   },
   registerTypeHierarchyProvider: (documentSelector: vscode.DocumentSelector, provider: vscode.TypeHierarchyProvider) => {
     const adapter = new adapters.TypeHierarchyAdapter(

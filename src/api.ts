@@ -178,7 +178,12 @@ const api: typeof vscode = {
   TabInputNotebook: extHostTypes.NotebookEditorTabInput,
   TabInputNotebookDiff: extHostTypes.NotebookDiffEditorTabInput,
   TabInputWebview: extHostTypes.WebviewEditorTabInput,
-  TabInputTerminal: extHostTypes.TerminalEditorTabInput
+  TabInputTerminal: extHostTypes.TerminalEditorTabInput,
+  InputBoxValidationSeverity: extHostTypes.InputBoxValidationSeverity,
+  InlineCompletionList: extHostTypes.InlineSuggestionList,
+  InlineCompletionTriggerKind: extHostTypes.InlineCompletionTriggerKind,
+  InlineCompletionItem: extHostTypes.InlineSuggestion,
+  NotebookEditorRevealType: extHostTypes.NotebookEditorRevealType
 }
 
 // There is no other way than reexporting each field, please don't forto update me

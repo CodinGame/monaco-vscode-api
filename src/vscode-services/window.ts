@@ -112,7 +112,14 @@ const window: typeof vscode.window = {
   onDidChangeTerminalState: Event.None,
   get tabGroups () {
     return unsupported()
-  }
+  },
+  showNotebookDocument: unsupported,
+  visibleNotebookEditors: [],
+  onDidChangeVisibleNotebookEditors: Event.None,
+  activeNotebookEditor: undefined,
+  onDidChangeActiveNotebookEditor: Event.None,
+  onDidChangeNotebookEditorSelection: Event.None,
+  onDidChangeNotebookEditorVisibleRanges: Event.None
 }
 
 export default window
