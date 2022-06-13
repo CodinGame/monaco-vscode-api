@@ -4,13 +4,15 @@ import * as recast from 'recast'
 import * as babel from '@babel/core'
 import * as monaco from 'monaco-editor'
 import typescript from '@rollup/plugin-typescript'
-import cleanup from 'rollup-plugin-cleanup'
+import cleanup from 'js-cleanup'
+import ts from 'typescript'
 import * as fs from 'fs'
 import * as path from 'path'
 import * as vm from 'vm'
 
 // Force usage of vscode code for these imports
 const IGNORE_MONACO = new Set(['vs/base/common/buffer:VSBuffer'])
+const REMOVE_NOT_STATIC_MEMBERS_OF_CLASSES = new Set(['ExtHostLanguageFeatures', 'MainThreadLanguageFeatures'])
 
 const PURE_ANNO = '#__PURE__'
 const PURE_FUNCTIONS = new Set([
@@ -64,10 +66,12 @@ export default rollup.defineConfig({
         if (!importee.startsWith('vs/') && importer != null && importer.startsWith(VSCODE_DIR)) {
           importee = path.relative(VSCODE_DIR, path.resolve(path.dirname(importer), importee))
         }
-        if (!fs.existsSync(path.resolve(MONACO_EDITOR_DIR, `esm/${importee}.js`))) {
-          return resolve(importee, [VSCODE_DIR])
+        if (importee.startsWith('vs/')) {
+          if (!fs.existsSync(path.resolve(MONACO_EDITOR_DIR, `esm/${importee}.js`))) {
+            return resolve(importee, [VSCODE_DIR])
+          }
+          return importee
         }
-        return importee
       },
       load: (id) => {
         if (id.startsWith('vs/')) {
@@ -87,10 +91,55 @@ export default rollup.defineConfig({
       }
     },
     typescript({
-      noEmitOnError: true
+      noEmitOnError: true,
+      transformers: {
+        before: [{
+          type: 'program',
+          factory: function factory (program) {
+            return function transformerFactory (context) {
+              return function transformer (sourceFile) {
+                if (sourceFile.fileName.endsWith('api.ts')) {
+                  let exportEqualsFound = false
+                  function visitor (node: ts.Node): ts.Node {
+                    // Transform `export = api` to `export { field1, field2, ... } = api` as the first syntax is not supported when generating ESM
+                    if (ts.isExportAssignment(node) && (node.isExportEquals ?? false)) {
+                      if (ts.isIdentifier(node.expression)) {
+                        const declaration = program.getTypeChecker().getSymbolAtLocation(node.expression)!.declarations![0]!
+                        if (ts.isVariableDeclaration(declaration) && declaration.initializer != null && ts.isObjectLiteralExpression(declaration.initializer)) {
+                          const propertyNames = declaration.initializer.properties.map(prop => (prop.name as ts.Identifier).text)
+                          exportEqualsFound = true
+                          return context.factory.createVariableStatement([
+                            context.factory.createModifier(ts.SyntaxKind.ExportKeyword)
+                          ], context.factory.createVariableDeclarationList([
+                            context.factory.createVariableDeclaration(
+                              context.factory.createObjectBindingPattern(
+                                propertyNames.map(name => context.factory.createBindingElement(undefined, undefined, context.factory.createIdentifier(name)))
+                              ),
+                              undefined,
+                              undefined,
+                              node.expression
+                            )
+                          ], ts.NodeFlags.Const))
+                        }
+                      }
+                    }
+                    return node
+                  }
+                  const transformed = ts.visitEachChild(sourceFile, visitor, context)
+                  if (!exportEqualsFound) {
+                    throw new Error('`export =` not found in api.ts')
+                  }
+                  return transformed
+                }
+                return sourceFile
+              }
+            }
+          }
+        }]
+      }
     }),
     {
-      name: 'mark-pure',
+      name: 'improve-vscode-treeshaking',
       transform (code, id) {
         if (id.startsWith(VSCODE_DIR)) {
           const ast = recast.parse(code, {
@@ -103,9 +152,25 @@ export default rollup.defineConfig({
               node.comments = [recast.types.builders.commentBlock(PURE_ANNO, true)]
             }
           }
+          function visitClassDeclaration (node: recast.types.namedTypes.ClassExpression | recast.types.namedTypes.ClassDeclaration) {
+            if (node.id != null && REMOVE_NOT_STATIC_MEMBERS_OF_CLASSES.has(node.id.name)) {
+              node.body.body = node.body.body.filter(member => {
+                if (member.type === 'ClassMethod' && !(member.static ?? false) && member.key.type === 'Identifier') {
+                  transformed = true
+                  return false
+                }
+                return true
+              })
+            }
+          }
           recast.visit(ast.program.body, {
+            visitClassExpression (path) {
+              visitClassDeclaration(path.node)
+              this.traverse(path)
+            },
             visitClassDeclaration (path) {
               addComment(path.node)
+              visitClassDeclaration(path.node)
               this.traverse(path)
             },
             visitNewExpression (path) {
@@ -150,8 +215,15 @@ export default rollup.defineConfig({
           return code
         }
       }
-    },
-    cleanup({ comments: new RegExp(PURE_ANNO) })
+    }, {
+      name: 'cleanup',
+      renderChunk (code) {
+        return cleanup(code, null, {
+          comments: 'none',
+          sourcemap: false
+        }).code
+      }
+    }
   ]
 })
 
@@ -196,6 +268,9 @@ function customRequire<T extends Record<string, unknown>> (_path: string, rootPa
   try {
     vm.runInNewContext(transformedCode, {
       require: (_path: string) => {
+        if (_path === 'tslib') {
+          return require('tslib')
+        }
         if (_path.endsWith('.css') || _path.includes('!')) {
           return null
         }
@@ -208,9 +283,11 @@ function customRequire<T extends Record<string, unknown>> (_path: string, rootPa
       define: (path: string, value: Record<string, unknown>) => {
         Object.assign(exports, value)
       },
+      self: {},
       queueMicrotask: () => {},
       navigator: {
-        userAgent: ''
+        userAgent: '',
+        language: 'en'
       },
       window: {
         location: {
@@ -222,7 +299,7 @@ function customRequire<T extends Record<string, unknown>> (_path: string, rootPa
       exports
     })
   } catch (err) {
-    // ignore
+    throw new Error(`Unable to run ${resolvedPath} code`)
   }
 
   return exports
@@ -256,6 +333,12 @@ function importMonaco (importee: string) {
 
   let monacoExports = customRequire(monacoPath, [path.resolve(MONACO_EDITOR_DIR, 'esm')])!
   monacoExports = Object.fromEntries(Object.entries(monacoExports).filter(([key]) => {
+    const vscodeValue = vscodeExports[key]
+    if (vscodeValue == null) {
+      console.warn(`${importee}#${key} is exported from monaco but not from vscode`)
+      return true
+    }
+
     return !IGNORE_MONACO.has(`${importee}:${key}`)
   }))
 
@@ -274,7 +357,6 @@ function importMonaco (importee: string) {
   }
 
   const monacoApiExports = new Map<string, string>()
-
   for (const exportKey in monacoExports) {
     for (const extractor of monacoApiExtractors) {
       const monacoApiExport = extractor.get(exportKey)
