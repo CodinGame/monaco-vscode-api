@@ -42,3 +42,26 @@ import * as vscode from 'vscode'
 const range = new new vscode.Range(...)
 vscode.languages.registerCompletionItemProvider(...)
 ```
+
+### History
+
+This project was mainly created to make the implementation of [monaco-languageclient](https://github.com/TypeFox/monaco-languageclient) more robust and maintenable.
+
+monaco-languageclient uses [vscode-languageclient](https://www.npmjs.com/package/vscode-languageclient) which was built to run inside a VSCode extension. VSCode extensions communicate with the editor via an [API](https://www.npmjs.com/package/@types/vscode) they can import into their code.
+
+[The VSCode api](https://code.visualstudio.com/api/references/vscode-api) exports:
+- Some functions to interact with the IDE ([language feature registrations](https://code.visualstudio.com/api/references/vscode-api#languages), [command execution](https://code.visualstudio.com/api/references/vscode-api#commands)...)
+- A lot of utility classes (Range, Position...)
+
+The first implementations of [monaco-languageclient](https://github.com/TypeFox/monaco-languageclient) were using a fake VSCode api implementation. The vscode-languageclient was hacked so the VSCode<->protocol object converters were mainly bypassed, so the fake VSCode api was receiving [Language Server Protocol](https://microsoft.github.io/language-server-protocol/specifications/lsp/3.17/specification/) objects. Then the objects were transformed using custom transformers into [Monaco](https://www.npmjs.com/package/monaco-editor) objects to communicate with the monaco api.
+
+This approach has some disadvantages:
+- There is a lot of code to transform LSP objects into Monaco objects
+- It's hard to follow the updates of VSCode and the language server protocol
+- It doesn't behave exactly the same as in VSCode
+
+With this library, it would be possible to plug vscode-languageclient directly on top of monaco, monaco-languageclient still helps to do so by:
+- Adding some tweaks to the VSCode LanguageClient (Removing unsupported features...)
+- Providing a default implementations of the required fallback services (`vscode/services`)
+- Providing some examples on how to build an app using it
+- Adding some tools (DisposableCollection)

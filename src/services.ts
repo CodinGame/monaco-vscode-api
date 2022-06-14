@@ -5,7 +5,6 @@ import type { TypeHierarchyProvider } from 'vs/workbench/contrib/typeHierarchy/c
 import type { IWorkspaceSymbolProvider } from 'vs/workbench/contrib/search/common/search'
 import type * as vscode from 'vscode'
 
-// Need to rename it because vscode already exports those name with different types
 export {
   EvaluatableExpressionProvider,
   CallHierarchyProvider,
