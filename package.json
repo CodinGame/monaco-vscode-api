@@ -1,6 +1,6 @@
 {
   "name": "@codingame/monaco-vscode-api",
-  "version": "1.68.1",
+  "version": "1.68.3",
   "private": false,
   "description": "VSCode public API plugged on the monaco editor",
   "keywords": [],
@@ -85,10 +85,6 @@
   },
   "dependencies": {
     "monaco-editor": "^0.33.0"
-  },
-  "engines": {
-    "node": ">=16.0.0",
-    "npm": ">=7.10.0"
   },
   "volta": {
     "node": "16.15.0",
