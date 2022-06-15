@@ -121,7 +121,9 @@ const workspace: typeof vscode.languages = {
       provider
     )
 
-    return monaco.languages.registerCodeLensProvider(documentSelector, {
+    const onDidChangeCodeLenses = provider.onDidChangeCodeLenses
+    const monacoProvider: monaco.languages.CodeLensProvider = {
+      onDidChange: onDidChangeCodeLenses != null ? listener => onDidChangeCodeLenses(() => listener(monacoProvider)) : undefined,
       provideCodeLenses: async (model, token): Promise<languages.CodeLensList | undefined> => {
         const listDto = await adapter.provideCodeLenses(model.uri, token)
         if (listDto == null) {
@@ -135,7 +137,8 @@ const workspace: typeof vscode.languages = {
       resolveCodeLens: (_model, codeLens, token): Promise<languages.CodeLens | undefined> => {
         return adapter.resolveCodeLens(codeLens, token)
       }
-    })
+    }
+    return monaco.languages.registerCodeLensProvider(documentSelector, monacoProvider)
   },
   registerDefinitionProvider (documentSelector, provider) {
     const adapter = new adapters.DefinitionAdapter(
@@ -413,6 +416,7 @@ const workspace: typeof vscode.languages = {
 
     return monaco.languages.registerDocumentSemanticTokensProvider(documentSelector, {
       getLegend: () => legend,
+      onDidChange: provider.onDidChangeSemanticTokens,
       provideDocumentSemanticTokens: async (model, lastResultId, token) => {
         const nLastResultId = lastResultId != null ? parseInt(lastResultId, 10) : 0
         const encodedDto = await adapter.provideDocumentSemanticTokens(model.uri, nLastResultId, token)
@@ -478,6 +482,7 @@ const workspace: typeof vscode.languages = {
 
     return monaco.languages.registerInlayHintsProvider(documentSelector, {
       displayName: adapters.ExtHostLanguageFeatures._extLabel(extensionDescription),
+      onDidChangeInlayHints: provider.onDidChangeInlayHints,
       provideInlayHints: async (model, range, token): Promise<languages.InlayHintList | undefined> => {
         const result = await adapter.provideInlayHints(model.uri, range, token)
         if (result == null) {
