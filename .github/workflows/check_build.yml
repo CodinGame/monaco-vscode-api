@@ -1,0 +1,22 @@
+name: Check build
+on:
+  push:
+    branches-ignore:
+      - main
+
+jobs:
+  check:
+    name: Check build
+    runs-on: ubuntu-latest
+
+    steps:
+    - name: Checkout
+      uses: actions/checkout@v2
+    - name: Setup Node.js
+      uses: actions/setup-node@v1
+      with:
+        node-version: 16.x
+    - name: Install dependencies
+      run: npm ci
+    - name: Build
+      run: npm run build
