@@ -7,7 +7,9 @@ rm -rf $output_directory
 build_directory=`mktemp -d`
 echo "Downloading vscode in $build_directory..."
 
-curl https://codeload.github.com/microsoft/vscode/tar.gz/refs/tags/1.68.0 | tar -xz -C $build_directory --strip-components=1 vscode-1.68.0
+version=`cat ./VERSION`
+
+curl https://codeload.github.com/microsoft/vscode/tar.gz/refs/tags/$version | tar -xz -C $build_directory --strip-components=1 vscode-$version
 cd $build_directory
 
 echo "Installing vscode dependencies..."
