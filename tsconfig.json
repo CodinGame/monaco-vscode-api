@@ -19,6 +19,7 @@
 	"include": [
 		"./src/**/*",
 		"./vscode/**/*",
-		"./rollup/*.ts"
+		"./rollup/*.ts",
+		"./release.ts"
 	]
 }
