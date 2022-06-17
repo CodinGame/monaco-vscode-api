@@ -1,13 +1,15 @@
 #!/bin/bash
 set -e
 
+version=$1
+
 output_directory="`pwd`/vscode"
 rm -rf $output_directory
 
 build_directory=`mktemp -d`
-echo "Downloading vscode in $build_directory..."
+echo "Downloading vscode $version in $build_directory..."
 
-curl https://codeload.github.com/microsoft/vscode/tar.gz/refs/tags/1.68.0 | tar -xz -C $build_directory --strip-components=1 vscode-1.68.0
+curl https://codeload.github.com/microsoft/vscode/tar.gz/refs/tags/$version | tar -xz -C $build_directory --strip-components=1 vscode-$version
 cd $build_directory
 
 echo "Installing vscode dependencies..."
