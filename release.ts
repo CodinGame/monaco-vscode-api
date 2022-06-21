@@ -43,7 +43,9 @@ const tagPattern = new RegExp(`^v?(${escapeRegExp(minorVscodeVersion)}\\.\\d+)$`
 async function getLastTag () {
   const tags = (await $`git tag -l --sort=-v:refname`).toString().split('\n').map(tag => tag.trim())
 
-  const lastTag = tags.find(tag => tagPattern.test(tag))
+  const matchingTags = tags.filter(tag => tagPattern.test(tag)).sort(semver.compare)
+  const lastTag = matchingTags[matchingTags.length - 1]
+
   return lastTag
 }
 
