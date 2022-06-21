@@ -111,7 +111,7 @@ async function generateReleaseNotes (repoInfos: RepositoryInfos, version: string
 async function releaseGithub (repoInfos: RepositoryInfos, version: string, releaseNotes: string) {
   const gitTag = `v${version}`
 
-  await $`git tag -a ${gitTag} HEAD`
+  await $`git tag -a ${gitTag} HEAD -m "chore(release): ${version} [skip ci]"`
   await $`git push --follow-tags origin HEAD:refs/heads/master`
 
   const octokit = new Octokit({
