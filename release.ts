@@ -17,6 +17,21 @@ if (NPM_TOKEN == null) {
   throw new Error('env.NPM_TOKEN must be set')
 }
 
+/**
+ * Comes from https://github.com/semantic-release/semantic-release/blob/9589a96239826abe9b07e8deffcc7d8aeb9c2e40/index.js#L45
+ */
+const COMMIT_NAME = 'release-bot'
+const COMMIT_EMAIL = 'release-bot@codingame.com'
+$.env = {
+  GIT_AUTHOR_NAME: COMMIT_NAME,
+  GIT_AUTHOR_EMAIL: COMMIT_EMAIL,
+  GIT_COMMITTER_NAME: COMMIT_NAME,
+  GIT_COMMITTER_EMAIL: COMMIT_EMAIL,
+  ...process.env,
+  GIT_ASKPASS: 'echo',
+  GIT_TERMINAL_PROMPT: '0'
+}
+
 function escapeRegExp (string: string) {
   return string.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')
 }
