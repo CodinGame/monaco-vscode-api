@@ -90,8 +90,8 @@ async function generateReleaseNotes (repoInfos: RepositoryInfos, version: string
   const tag = `v${version}`
 
   const newCommits = (lastTag != null
-    ? await $`git log --format=+++%s__%b__%h__%H ${await $`git rev-list -1 ${lastTag}`}..HEAD`
-    : await $`git log --format=+++%s__%b__%h__%H HEAD`)
+    ? await $`git log --format=+++%s__%b__%h__%H ${await $`git rev-list -1 ${lastTag}`}..HEAD --no-merges`
+    : await $`git log --format=+++%s__%b__%h__%H HEAD --no-merges`)
     .toString()
     .split('+++')
     .filter(commit => commit.trim() !== '')
