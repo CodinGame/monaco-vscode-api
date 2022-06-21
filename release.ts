@@ -142,4 +142,6 @@ async function run () {
   await publishNpm(nextVersion)
 }
 
-void run()
+run().catch(error => {
+  console.error(error)
+})
