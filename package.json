@@ -71,6 +71,7 @@
     "@babel/preset-typescript": "^7.17.12",
     "@codingame/eslint-config": "^1.1.2",
     "@codingame/tsconfig": "^1.0.5",
+    "@octokit/rest": "^18.12.0",
     "@rollup/plugin-node-resolve": "^13.3.0",
     "@rollup/plugin-typescript": "^8.3.2",
     "@types/babel__core": "^7.1.19",

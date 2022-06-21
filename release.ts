@@ -4,11 +4,17 @@
 
 import { $ } from 'zx'
 import semver from 'semver'
+import { Octokit } from '@octokit/rest'
 import fs from 'fs/promises'
 
-const { GIT_COMMITTER_NAME, GITHUB_TOKEN, NPM_TOKEN } = process.env
-if (GITHUB_TOKEN == null || GIT_COMMITTER_NAME == null || NPM_TOKEN == null) {
-  throw new Error('env.GITHUB_TOKEN, env.NPM_TOKEN & env.GIT_COMMITTER_EMAIL must be set')
+const githubToken = process.env.GH_TOKEN ?? process.env.GITHUB_TOKEN
+if (githubToken == null) {
+  throw new Error('env.GITHUB_TOKEN or env.GH_TOKEN must be set')
+}
+
+const { NPM_TOKEN } = process.env
+if (NPM_TOKEN == null) {
+  throw new Error('env.NPM_TOKEN must be set')
 }
 
 function escapeRegExp (string: string) {
@@ -30,26 +36,40 @@ async function getNextVersion (lastTag?: string) {
   return lastTag != null ? semver.inc(tagPattern.exec(lastTag)![1]!, 'patch')! : `${minorVscodeVersion}.0`
 }
 
-interface RepositoryInfos {
-  publicUrl: string
-  authedUrl: string
-  name: string
-}
-async function getRepoInformations (): Promise<RepositoryInfos> {
-  const gitAuth = `${GIT_COMMITTER_NAME}:${GITHUB_TOKEN}`
-  const originUrl = (await $`git config --get remote.origin.url`).toString().trim()
-  const [,, repoHost, repoName] = originUrl.replace(':', '/').replace(/\.git/, '').match(/.+(@|\/\/)([^/]+)\/(.+)$/)!
-  const publicUrl = `https://${repoHost}/${repoName}`
-  const authedUrl = `https://${gitAuth}@${repoHost}/${repoName}`
-
-  return {
-    publicUrl,
-    authedUrl,
-    name: repoName!
+function parseGithubUrl (repositoryUrl: string) {
+  const [match, auth, host, path] = /^(?!.+:\/\/)(?:(?<auth>.*)@)?(?<host>.*?):(?<path>.*)$/.exec(repositoryUrl) ?? []
+  try {
+    const [, owner, repo] = /^\/(?<owner>[^/]+)?\/?(?<repo>.+?)(?:\.git)?$/.exec(
+      new URL(match != null ? `ssh://${auth != null ? `${auth}@` : ''}${host}/${path}` : repositoryUrl).pathname
+    )!
+    return { owner, repo }
+  } catch {
+    return {}
   }
 }
 
-async function generateReleaseNodes (repoInfos: RepositoryInfos, version: string, lastTag?: string) {
+interface RepositoryInfos {
+  publicUrl: string
+  name: string
+  owner: string
+  repo: string
+}
+async function getRepoInformations (): Promise<RepositoryInfos> {
+  const originUrl = (await $`git config --get remote.origin.url`).toString().trim()
+  const [,, repoHost, repoName] = originUrl.replace(':', '/').replace(/\.git/, '').match(/.+(@|\/\/)([^/]+)\/(.+)$/)!
+  const publicUrl = `https://${repoHost}/${repoName}`
+
+  const { owner, repo } = parseGithubUrl(originUrl)
+
+  return {
+    publicUrl,
+    name: repoName!,
+    owner: owner!,
+    repo: repo!
+  }
+}
+
+async function generateReleaseNotes (repoInfos: RepositoryInfos, version: string, lastTag?: string) {
   const tag = `v${version}`
 
   const newCommits = (lastTag != null
@@ -74,14 +94,21 @@ async function generateReleaseNodes (repoInfos: RepositoryInfos, version: string
 }
 
 async function releaseGithub (repoInfos: RepositoryInfos, version: string, releaseNotes: string) {
-  const tag = `v${version}`
+  const gitTag = `v${version}`
 
-  const releaseData = JSON.stringify({
-    name: tag,
-    tag_name: tag,
+  await $`git tag -a ${gitTag} HEAD`
+  await $`git push --follow-tags origin HEAD:refs/heads/master`
+
+  const octokit = new Octokit({
+    auth: `token ${githubToken}`
+  })
+
+  await octokit.repos.createRelease({
+    owner: repoInfos.owner,
+    repo: repoInfos.repo,
+    tag_name: gitTag,
     body: releaseNotes
   })
-  await $`curl -u ${GIT_COMMITTER_NAME}:${GITHUB_TOKEN} -H "Accept: application/vnd.github.v3+json" https://api.github.com/repos/${repoInfos.name}/releases -d ${releaseData}`
 }
 
 async function publishNpm (version: string) {
@@ -94,7 +121,8 @@ async function run () {
   const repoInfos = await getRepoInformations()
   const lastTag = await getLastTag()
   const nextVersion = await getNextVersion(lastTag)
-  const releaseNotes = await generateReleaseNodes(repoInfos, nextVersion, lastTag)
+  const releaseNotes = await generateReleaseNotes(repoInfos, nextVersion, lastTag)
+
   await releaseGithub(repoInfos, nextVersion, releaseNotes)
   await publishNpm(nextVersion)
 }
