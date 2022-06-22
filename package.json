@@ -14,29 +14,15 @@
     "url": "https://github.com/CodinGame/monaco-vscode-api"
   },
   "type": "module",
-  "main": "dist/api.cjs",
+  "main": "dist/api.js",
   "module": "dist/api.js",
   "exports": {
     ".": {
       "default": "./dist/api.js"
     },
-    "./amd": {
-      "default": "./dist/api.amd.js"
-    },
-    "./cjs": {
-      "default": "./dist/api.amd.js"
-    },
     "./services": {
       "types": "./dist/services.d.ts",
       "default": "./dist/services.js"
-    },
-    "./services/cjs": {
-      "types": "./dist/services.d.ts",
-      "default": "./dist/services.cjs"
-    },
-    "./services/amd": {
-      "types": "./dist/services.d.ts",
-      "default": "./dist/services.amd.js"
     }
   },
   "typesVersions": {

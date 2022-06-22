@@ -53,7 +53,7 @@ class SimpleMessagePassingProtocol implements IMessagePassingProtocol {
 
 const imessagePassingProtocol = new SimpleMessagePassingProtocol()
 
-const rpcProtocol = new RPCProtocol(imessagePassingProtocol, null, null)
+const rpcProtocol = new RPCProtocol(imessagePassingProtocol)
 
 const extHostFileSystemInfo = new ExtHostFileSystemInfo()
 
