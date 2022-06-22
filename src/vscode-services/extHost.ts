@@ -53,7 +53,7 @@ class SimpleMessagePassingProtocol implements IMessagePassingProtocol {
 
 const imessagePassingProtocol = new SimpleMessagePassingProtocol()
 
-const rpcProtocol = new RPCProtocol(imessagePassingProtocol, null, null)
+const rpcProtocol = new RPCProtocol(imessagePassingProtocol)
 
 const extHostFileSystemInfo = new ExtHostFileSystemInfo()
 
@@ -151,6 +151,8 @@ const extHostApiDeprecationService: IExtHostApiDeprecationService = {
 }
 
 class MainThreadDiagnostics implements MainThreadDiagnosticsShape {
+  private readonly _activeOwners = new Set<string>()
+
   $changeMany (owner: string, entries: [monaco.UriComponents, IMarkerData[] | undefined][]): void {
     for (const entry of entries) {
       const [uri, markers] = entry
@@ -168,6 +170,7 @@ class MainThreadDiagnostics implements MainThreadDiagnosticsShape {
       }
       monaco.editor.setModelMarkers(monaco.editor.getModel(URI.revive(uri))!, owner, markers as monaco.editor.IMarkerData[])
     }
+    this._activeOwners.add(owner)
   }
 
   $clear (owner: string): void {
@@ -182,10 +185,13 @@ class MainThreadDiagnostics implements MainThreadDiagnosticsShape {
     for (const model of models) {
       monaco.editor.setModelMarkers(model, owner, [])
     }
+
+    this._activeOwners.delete(owner)
   }
 
   dispose (): void {
-    // Nothing to do
+    this._activeOwners.forEach(owner => this.$clear(owner))
+    this._activeOwners.clear()
   }
 }
 rpcProtocol.set(MainContext.MainThreadDiagnostics, new MainThreadDiagnostics())

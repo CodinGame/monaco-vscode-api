@@ -46,14 +46,6 @@ export default rollup.defineConfig({
     paths: {
       'monaco-editor': 'monaco-editor/esm/vs/editor/editor.api.js'
     }
-  }, {
-    format: 'commonjs',
-    dir: 'dist',
-    entryFileNames: chunk => `${chunk.name}.cjs`
-  }, {
-    format: 'amd',
-    dir: 'dist',
-    entryFileNames: chunk => `${chunk.name}.amd.js`
   }],
   input: {
     api: './src/api.ts',
