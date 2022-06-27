@@ -38,7 +38,7 @@
   ],
   "scripts": {
     "build": "rm -rf dist/ && npm run lint && npm run compile && npm run generate-types",
-    "compile": "rollup --config rollup/rollup.config.ts --configPlugin 'typescript={tsconfig: `tsconfig.rollup.json`}'",
+    "compile": "rollup --config rollup/rollup.config.ts --configPlugin 'typescript={tsconfig: `tsconfig.rollup.json`}' --vscode-version ${npm_package_config_vscode_version}",
     "preprepare": "./scripts/install-vscode",
     "lint": "eslint --ext ts src",
     "generate-types": "tsc --project tsconfig.types.json && rollup --config rollup/rollup.types.config.ts --configPlugin 'typescript={tsconfig: `tsconfig.rollup.json`}' && rm -rf ./dist/types",
@@ -59,6 +59,7 @@
     "@codingame/tsconfig": "^1.0.5",
     "@octokit/rest": "^18.12.0",
     "@rollup/plugin-node-resolve": "^13.3.0",
+    "@rollup/plugin-replace": "^4.0.0",
     "@rollup/plugin-typescript": "^8.3.2",
     "@types/babel__core": "^7.1.19",
     "@types/semver": "^7.3.10",

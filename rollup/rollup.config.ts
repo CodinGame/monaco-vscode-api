@@ -6,6 +6,7 @@ import * as monaco from 'monaco-editor'
 import typescript from '@rollup/plugin-typescript'
 import cleanup from 'js-cleanup'
 import ts from 'typescript'
+import replace from '@rollup/plugin-replace'
 import * as fs from 'fs'
 import * as path from 'path'
 import * as vm from 'vm'
@@ -30,194 +31,204 @@ const VSCODE_DIR = path.resolve(__dirname, '../vscode')
 const NODE_MODULES_DIR = path.resolve(__dirname, '../node_modules')
 const MONACO_EDITOR_DIR = path.resolve(NODE_MODULES_DIR, './monaco-editor')
 
-export default rollup.defineConfig({
-  cache: false,
-  treeshake: {
-    annotations: true,
-    preset: 'smallest'
-  },
-  external: (source) => {
-    return source.startsWith(MONACO_EDITOR_DIR)
-  },
-  output: [{
-    format: 'esm',
-    dir: 'dist',
-    entryFileNames: chunk => `${chunk.name}.js`,
-    paths: {
-      'monaco-editor': 'monaco-editor/esm/vs/editor/editor.api.js'
-    }
-  }],
-  input: {
-    api: './src/api.ts',
-    services: './src/services.ts'
-  },
-  plugins: [
-    {
-      name: 'resolve-vscode',
-      resolveId: async function (importee, importer) {
-        if (!importee.startsWith('vs/') && importer != null && importer.startsWith(VSCODE_DIR)) {
-          importee = path.relative(VSCODE_DIR, path.resolve(path.dirname(importer), importee))
-        }
-        if (importee.startsWith('vs/')) {
-          if (!fs.existsSync(path.resolve(MONACO_EDITOR_DIR, `esm/${importee}.js`))) {
-            return resolve(importee, [VSCODE_DIR])
+export default (args: Record<string, string>): rollup.RollupOptions => {
+  const vscodeVersion = args['vscode-version']
+  delete args['vscode-version']
+  if (vscodeVersion == null) {
+    throw new Error('Vscode version is mandatory')
+  }
+  return rollup.defineConfig({
+    cache: false,
+    treeshake: {
+      annotations: true,
+      preset: 'smallest'
+    },
+    external: (source) => {
+      return source.startsWith(MONACO_EDITOR_DIR)
+    },
+    output: [{
+      format: 'esm',
+      dir: 'dist',
+      entryFileNames: chunk => `${chunk.name}.js`,
+      paths: {
+        'monaco-editor': 'monaco-editor/esm/vs/editor/editor.api.js'
+      }
+    }],
+    input: {
+      api: './src/api.ts',
+      services: './src/services.ts'
+    },
+    plugins: [
+      {
+        name: 'resolve-vscode',
+        resolveId: async function (importee, importer) {
+          if (!importee.startsWith('vs/') && importer != null && importer.startsWith(VSCODE_DIR)) {
+            importee = path.relative(VSCODE_DIR, path.resolve(path.dirname(importer), importee))
           }
-          return importee
+          if (importee.startsWith('vs/')) {
+            if (!fs.existsSync(path.resolve(MONACO_EDITOR_DIR, `esm/${importee}.js`))) {
+              return resolve(importee, [VSCODE_DIR])
+            }
+            return importee
+          }
+        },
+        load: (id) => {
+          if (id.startsWith('vs/')) {
+            return importMonaco(id)
+          }
         }
       },
-      load: (id) => {
-        if (id.startsWith('vs/')) {
-          return importMonaco(id)
+      nodeResolve({
+        extensions: EXTENSIONS
+      }),
+      {
+        name: 'ignore-css',
+        load (id) {
+          if (id.endsWith('.css')) {
+            return 'export default undefined;'
+          }
         }
-      }
-    },
-    nodeResolve({
-      extensions: EXTENSIONS
-    }),
-    {
-      name: 'ignore-css',
-      load (id) {
-        if (id.endsWith('.css')) {
-          return 'export default undefined;'
-        }
-      }
-    },
-    typescript({
-      noEmitOnError: true,
-      transformers: {
-        before: [{
-          type: 'program',
-          factory: function factory (program) {
-            return function transformerFactory (context) {
-              return function transformer (sourceFile) {
-                if (sourceFile.fileName.endsWith('api.ts')) {
-                  let exportEqualsFound = false
-                  function visitor (node: ts.Node): ts.Node {
-                    // Transform `export = api` to `export { field1, field2, ... } = api` as the first syntax is not supported when generating ESM
-                    if (ts.isExportAssignment(node) && (node.isExportEquals ?? false)) {
-                      if (ts.isIdentifier(node.expression)) {
-                        const declaration = program.getTypeChecker().getSymbolAtLocation(node.expression)!.declarations![0]!
-                        if (ts.isVariableDeclaration(declaration) && declaration.initializer != null && ts.isObjectLiteralExpression(declaration.initializer)) {
-                          const propertyNames = declaration.initializer.properties.map(prop => (prop.name as ts.Identifier).text)
-                          exportEqualsFound = true
-                          return context.factory.createVariableStatement([
-                            context.factory.createModifier(ts.SyntaxKind.ExportKeyword)
-                          ], context.factory.createVariableDeclarationList([
-                            context.factory.createVariableDeclaration(
-                              context.factory.createObjectBindingPattern(
-                                propertyNames.map(name => context.factory.createBindingElement(undefined, undefined, context.factory.createIdentifier(name)))
-                              ),
-                              undefined,
-                              undefined,
-                              node.expression
-                            )
-                          ], ts.NodeFlags.Const))
+      },
+      typescript({
+        noEmitOnError: true,
+        transformers: {
+          before: [{
+            type: 'program',
+            factory: function factory (program) {
+              return function transformerFactory (context) {
+                return function transformer (sourceFile) {
+                  if (sourceFile.fileName.endsWith('api.ts')) {
+                    let exportEqualsFound = false
+                    function visitor (node: ts.Node): ts.Node {
+                      // Transform `export = api` to `export { field1, field2, ... } = api` as the first syntax is not supported when generating ESM
+                      if (ts.isExportAssignment(node) && (node.isExportEquals ?? false)) {
+                        if (ts.isIdentifier(node.expression)) {
+                          const declaration = program.getTypeChecker().getSymbolAtLocation(node.expression)!.declarations![0]!
+                          if (ts.isVariableDeclaration(declaration) && declaration.initializer != null && ts.isObjectLiteralExpression(declaration.initializer)) {
+                            const propertyNames = declaration.initializer.properties.map(prop => (prop.name as ts.Identifier).text)
+                            exportEqualsFound = true
+                            return context.factory.createVariableStatement([
+                              context.factory.createModifier(ts.SyntaxKind.ExportKeyword)
+                            ], context.factory.createVariableDeclarationList([
+                              context.factory.createVariableDeclaration(
+                                context.factory.createObjectBindingPattern(
+                                  propertyNames.map(name => context.factory.createBindingElement(undefined, undefined, context.factory.createIdentifier(name)))
+                                ),
+                                undefined,
+                                undefined,
+                                node.expression
+                              )
+                            ], ts.NodeFlags.Const))
+                          }
                         }
                       }
+                      return node
                     }
-                    return node
+                    const transformed = ts.visitEachChild(sourceFile, visitor, context)
+                    if (!exportEqualsFound) {
+                      throw new Error('`export =` not found in api.ts')
+                    }
+                    return transformed
                   }
-                  const transformed = ts.visitEachChild(sourceFile, visitor, context)
-                  if (!exportEqualsFound) {
-                    throw new Error('`export =` not found in api.ts')
-                  }
-                  return transformed
+                  return sourceFile
                 }
-                return sourceFile
               }
             }
-          }
-        }]
-      }
-    }),
-    {
-      name: 'improve-vscode-treeshaking',
-      transform (code, id) {
-        if (id.startsWith(VSCODE_DIR)) {
-          const ast = recast.parse(code, {
-            parser: require('recast/parsers/babylon')
-          })
-          let transformed: boolean = false
-          function addComment (node: recast.types.namedTypes.Expression) {
-            if (!(node.comments ?? []).some(comment => comment.value === PURE_ANNO)) {
-              transformed = true
-              node.comments = [recast.types.builders.commentBlock(PURE_ANNO, true)]
+          }]
+        }
+      }),
+      {
+        name: 'improve-vscode-treeshaking',
+        transform (code, id) {
+          if (id.startsWith(VSCODE_DIR)) {
+            const ast = recast.parse(code, {
+              parser: require('recast/parsers/babylon')
+            })
+            let transformed: boolean = false
+            function addComment (node: recast.types.namedTypes.Expression) {
+              if (!(node.comments ?? []).some(comment => comment.value === PURE_ANNO)) {
+                transformed = true
+                node.comments = [recast.types.builders.commentBlock(PURE_ANNO, true)]
+              }
             }
-          }
-          function visitClassDeclaration (node: recast.types.namedTypes.ClassExpression | recast.types.namedTypes.ClassDeclaration) {
-            if (node.id != null && REMOVE_NOT_STATIC_MEMBERS_OF_CLASSES.has(node.id.name)) {
-              node.body.body = node.body.body.filter(member => {
-                if (member.type === 'ClassMethod' && !(member.static ?? false) && member.key.type === 'Identifier') {
+            function visitClassDeclaration (node: recast.types.namedTypes.ClassExpression | recast.types.namedTypes.ClassDeclaration) {
+              if (node.id != null && REMOVE_NOT_STATIC_MEMBERS_OF_CLASSES.has(node.id.name)) {
+                node.body.body = node.body.body.filter(member => {
+                  if (member.type === 'ClassMethod' && !(member.static ?? false) && member.key.type === 'Identifier') {
+                    transformed = true
+                    return false
+                  }
+                  return true
+                })
+              }
+            }
+            recast.visit(ast.program.body, {
+              visitClassExpression (path) {
+                visitClassDeclaration(path.node)
+                this.traverse(path)
+              },
+              visitClassDeclaration (path) {
+                addComment(path.node)
+                visitClassDeclaration(path.node)
+                this.traverse(path)
+              },
+              visitNewExpression (path) {
+                const node = path.node
+                if (node.callee.type === 'Identifier') {
+                  addComment(node)
+                }
+                this.traverse(path)
+              },
+              visitCallExpression (path) {
+                const node = path.node
+                if (node.callee.type === 'Identifier' && node.callee.name === '__decorate') {
+                  // We don't use the vscode injection mecanism, so remove it to improve treeshaking
                   transformed = true
+                  path.replace(node.arguments[1])
                   return false
                 }
-                return true
-              })
-            }
-          }
-          recast.visit(ast.program.body, {
-            visitClassExpression (path) {
-              visitClassDeclaration(path.node)
-              this.traverse(path)
-            },
-            visitClassDeclaration (path) {
-              addComment(path.node)
-              visitClassDeclaration(path.node)
-              this.traverse(path)
-            },
-            visitNewExpression (path) {
-              const node = path.node
-              if (node.callee.type === 'Identifier') {
-                addComment(node)
-              }
-              this.traverse(path)
-            },
-            visitCallExpression (path) {
-              const node = path.node
-              if (node.callee.type === 'Identifier' && node.callee.name === '__decorate') {
-                // We don't use the vscode injection mecanism, so remove it to improve treeshaking
-                transformed = true
-                path.replace(node.arguments[1])
+                if (node.callee.type === 'MemberExpression') {
+                  if (node.callee.object.type === 'Identifier' && node.callee.property.type === 'Identifier') {
+                    const name = `${node.callee.object.name}.${node.callee.property.name}`
+                    if (PURE_FUNCTIONS.has(name) || PURE_FUNCTIONS.has(node.callee.property.name)) {
+                      addComment(node)
+                    }
+                  }
+                } else if (node.callee.type === 'Identifier' && PURE_FUNCTIONS.has(node.callee.name)) {
+                  addComment(node)
+                } else if (node.callee.type === 'FunctionExpression') {
+                  // Mark IIFE as pure, because typescript compile enums as IIFE
+                  addComment(node)
+                }
+                this.traverse(path)
+              },
+              visitThrowStatement () {
                 return false
               }
-              if (node.callee.type === 'MemberExpression') {
-                if (node.callee.object.type === 'Identifier' && node.callee.property.type === 'Identifier') {
-                  const name = `${node.callee.object.name}.${node.callee.property.name}`
-                  if (PURE_FUNCTIONS.has(name) || PURE_FUNCTIONS.has(node.callee.property.name)) {
-                    addComment(node)
-                  }
-                }
-              } else if (node.callee.type === 'Identifier' && PURE_FUNCTIONS.has(node.callee.name)) {
-                addComment(node)
-              } else if (node.callee.type === 'FunctionExpression') {
-                // Mark IIFE as pure, because typescript compile enums as IIFE
-                addComment(node)
-              }
-              this.traverse(path)
-            },
-            visitThrowStatement () {
-              return false
+            })
+            // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
+            if (transformed) {
+              code = recast.print(ast).code
+              code = code.replace(/\/\*#__PURE__\*\/\s+/g, '/*#__PURE__*/ ') // Remove space after PURE comment
             }
-          })
-          // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
-          if (transformed) {
-            code = recast.print(ast).code
-            code = code.replace(/\/\*#__PURE__\*\/\s+/g, '/*#__PURE__*/ ') // Remove space after PURE comment
+            return code
           }
-          return code
+        }
+      }, replace({
+        VSCODE_VERSION: JSON.stringify(vscodeVersion),
+        preventAssignment: true
+      }), {
+        name: 'cleanup',
+        renderChunk (code) {
+          return cleanup(code, null, {
+            comments: 'none',
+            sourcemap: false
+          }).code
         }
       }
-    }, {
-      name: 'cleanup',
-      renderChunk (code) {
-        return cleanup(code, null, {
-          comments: 'none',
-          sourcemap: false
-        }).code
-      }
-    }
-  ]
-})
+    ]
+  })
+}
 
 function resolve (_path: string, fromPaths: string[]) {
   for (const fromPath of fromPaths) {
