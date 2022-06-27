@@ -1,36 +1,84 @@
 import { ExtHostCommands } from 'vs/workbench/api/common/extHostCommands'
 import { IExtHostRpcService } from 'vs/workbench/api/common/extHostRpcService'
-import { ILogService, LogLevel } from 'vs/platform/log/common/log'
+import { ConsoleMainLogger, LogService } from 'vs/platform/log/common/log'
 import { MainThreadCommands } from 'vs/workbench/api/browser/mainThreadCommands'
 import { IExtHostContext } from 'vs/workbench/services/extensions/common/extHostCustomers'
-import { ExtensionHostKind, IExtensionService } from 'vs/workbench/services/extensions/common/extensions'
-import { StandaloneServices } from 'vs/editor/standalone/browser/standaloneServices'
-import { ICommandService } from 'vs/platform/commands/common/commands'
-import { Emitter, Event } from 'vs/base/common/event'
-import { ExtensionIdentifier, IExtensionDescription, TargetPlatform } from 'vs/platform/extensions/common/extensions'
+import { ExtensionHostKind, NullExtensionService } from 'vs/workbench/services/extensions/common/extensions'
+import { Event } from 'vs/base/common/event'
+import { ExtensionIdentifier, IExtensionDescription } from 'vs/platform/extensions/common/extensions'
 import { URI } from 'vs/base/common/uri'
-import { IExtHostApiDeprecationService } from 'vs/workbench/api/common/extHostApiDeprecationService'
-import { ExtHostContext, IMainContext, MainContext, MainThreadDiagnosticsShape, MainThreadDocumentsShape } from 'vs/workbench/api/common/extHost.protocol'
+import { ExtHostApiDeprecationService } from 'vs/workbench/api/common/extHostApiDeprecationService'
+import { ExtHostContext, IMainContext, MainContext } from 'vs/workbench/api/common/extHost.protocol'
 import { ExtHostDiagnostics } from 'vs/workbench/api/common/extHostDiagnostics'
 import { ExtHostFileSystemInfo } from 'vs/workbench/api/common/extHostFileSystemInfo'
 import * as monaco from 'monaco-editor'
-import { IMarkerData } from 'vs/platform/markers/common/markers'
 import { IMessagePassingProtocol } from 'vs/base/parts/ipc/common/ipc'
 import { RPCProtocol } from 'vs/workbench/services/extensions/common/rpcProtocol'
 import { BufferedEmitter } from 'vs/base/parts/ipc/common/ipc.net'
 import { VSBuffer } from 'vs/base/common/buffer'
 import { Proxied, ProxyIdentifier } from 'vs/workbench/services/extensions/common/proxyIdentifier'
-import { ExtHostDocumentData } from 'vs/workbench/api/common/extHostDocumentData'
-import { DisposableStore } from 'vs/base/common/lifecycle'
 import { ExtHostDocuments } from 'vs/workbench/api/common/extHostDocuments'
-import { TextDocumentChangeReason } from 'vs/workbench/api/common/extHostTypes'
-import * as typeConvert from 'vs/workbench/api/common/extHostTypeConverters'
-import * as vscode from 'vscode'
-import { noop, unsupported } from '../tools'
+import { createExtHostQuickOpen } from 'vs/workbench/api/common/extHostQuickOpen'
+import { IExtHostWorkspaceProvider } from 'vs/workbench/api/common/extHostWorkspace'
+import { MainThreadQuickOpen } from 'vs/workbench/api/browser/mainThreadQuickOpen'
+import { ExtHostMessageService } from 'vs/workbench/api/common/extHostMessageService'
+import { MainThreadMessageService } from 'vs/workbench/api/browser/mainThreadMessageService'
+import { ExtHostProgress } from 'vs/workbench/api/common/extHostProgress'
+import { MainThreadProgress } from 'vs/workbench/api/browser/mainThreadProgress'
+import { MainThreadDocumentContentProviders } from 'vs/workbench/api/browser/mainThreadDocumentContentProviders'
+import { ExtHostDocumentContentProvider } from 'vs/workbench/api/common/extHostDocumentContentProviders'
+import { ExtHostDocumentsAndEditors } from 'vs/workbench/api/common/extHostDocumentsAndEditors'
+import { ExtHostEditors } from 'vs/workbench/api/common/extHostTextEditors'
+import { MainThreadDocumentsAndEditors } from 'vs/workbench/api/browser/mainThreadDocumentsAndEditors'
+import { MainThreadDiagnostics } from 'vs/workbench/api/browser/mainThreadDiagnostics'
+import { MainThreadTelemetry } from 'vs/workbench/api/browser/mainThreadTelemetry'
+import { StandaloneServices } from 'vs/editor/standalone/browser/standaloneServices'
+import { ICommandService } from 'vs/platform/commands/common/commands'
+import { INotificationService } from 'vs/platform/notification/common/notification'
+import { IDialogService } from 'vs/platform/dialogs/common/dialogs'
+import { ITextModelService } from 'vs/editor/common/services/resolverService'
+import { IModelService } from 'vs/editor/common/services/model'
+import { ILanguageService } from 'vs/editor/common/languages/language'
+import { IQuickInputService } from 'vs/platform/quickinput/common/quickInput'
+import { IEditorWorkerService } from 'vs/editor/common/services/editorWorker'
+import { ICodeEditorService } from 'vs/editor/browser/services/codeEditorService'
+import { IMarkerService } from 'vs/platform/markers/common/markers'
+import { IClipboardService } from 'vs/platform/clipboard/common/clipboardService'
+import { IEditorService } from 'vs/workbench/services/editor/common/editorService'
+import { IUriIdentityService } from 'vs/platform/uriIdentity/common/uriIdentity'
+import { IPaneCompositePartService } from 'vs/workbench/services/panecomposite/browser/panecomposite'
+import { ITextFileService } from 'vs/workbench/services/textfile/common/textfiles'
+import { IFileService } from 'vs/platform/files/common/files'
+import { IEditorGroupsService } from 'vs/workbench/services/editor/common/editorGroupsService'
+import { IWorkbenchEnvironmentService } from 'vs/workbench/services/environment/common/environmentService'
+import { IWorkingCopyFileService } from 'vs/workbench/services/workingCopy/common/workingCopyFileService'
+import { IPathService } from 'vs/workbench/services/path/common/pathService'
+import { IProgressService } from 'vs/platform/progress/common/progress'
+import { ITelemetryService } from 'vs/platform/telemetry/common/telemetry'
+import { IProductService } from 'vs/platform/product/common/productService'
+import { ExtHostBulkEdits } from 'vs/workbench/api/common/extHostBulkEdits'
+import { MainThreadBulkEdits } from 'vs/workbench/api/browser/mainThreadBulkEdits'
+import { IBulkEditService } from 'vs/editor/browser/services/bulkEditService'
+import { ExtHostLanguages } from 'vs/workbench/api/common/extHostLanguages'
+import { MainThreadLanguages } from 'vs/workbench/api/browser/mainThreadLanguages'
+import { ILanguageStatusService } from 'vs/workbench/services/languageStatus/common/languageStatusService'
+import { URITransformerService } from 'vs/workbench/api/common/extHostUriTransformerService'
+import { ExtHostWindow } from 'vs/workbench/api/common/extHostWindow'
+import { MainThreadWindow } from 'vs/workbench/api/browser/mainThreadWindow'
+import { IOpenerService } from 'vs/platform/opener/common/opener'
+import { IHostService } from 'vs/workbench/services/host/browser/host'
+import './missing-services'
+import { MainThreadClipboard } from 'vs/workbench/api/browser/mainThreadClipboard'
+import { ExtHostClipboard } from 'vs/workbench/api/common/extHostClipboard'
+import { ExtHostTelemetry } from 'vs/workbench/api/common/extHostTelemetry'
+import { ExtHostLanguageFeatures } from 'vs/workbench/api/common/extHostLanguageFeatures'
+import { MainThreadLanguageFeatures } from 'vs/workbench/api/browser/mainThreadLanguageFeatures'
+import { ILanguageConfigurationService } from 'vs/editor/common/languages/languageConfigurationRegistry'
+import { ILanguageFeaturesService } from 'vs/editor/common/services/languageFeatures'
+import { IConfigurationService } from 'vs/platform/configuration/common/configuration'
 
-const extensionDescription: IExtensionDescription = {
+export const extension: IExtensionDescription = {
   identifier: new ExtensionIdentifier('monaco'),
-  targetPlatform: TargetPlatform.WEB,
   isBuiltin: true,
   isUserBuiltin: true,
   isUnderDevelopment: false,
@@ -39,7 +87,7 @@ const extensionDescription: IExtensionDescription = {
   publisher: 'microsoft',
   version: '1.0.0',
   engines: {
-    vscode: '1.67.2'
+    vscode: VSCODE_VERSION
   }
 }
 
@@ -51,278 +99,171 @@ class SimpleMessagePassingProtocol implements IMessagePassingProtocol {
   }
 }
 
-const imessagePassingProtocol = new SimpleMessagePassingProtocol()
-
-const rpcProtocol = new RPCProtocol(imessagePassingProtocol)
-
-const extHostFileSystemInfo = new ExtHostFileSystemInfo()
-
-const mainContext: IMainContext = {
-  getProxy: function <T> (identifier: ProxyIdentifier<T>): Proxied<T> {
-    return rpcProtocol.getProxy(identifier)
-  },
-  set: function <T, R extends T> (identifier: ProxyIdentifier<T>, instance: R): R {
-    return rpcProtocol.set(identifier, instance)
-  },
-  assertRegistered: function (identifiers: ProxyIdentifier<unknown>[]): void {
-    rpcProtocol.assertRegistered(identifiers)
-  },
-  drain: function (): Promise<void> {
-    return rpcProtocol.drain()
-  },
-  dispose: function (): void {
-    rpcProtocol.dispose()
-  }
-}
-
-const extHostRpcService: IExtHostRpcService = {
-  _serviceBrand: undefined,
-  getProxy: function <T> (identifier: ProxyIdentifier<T>): Proxied<T> {
-    return rpcProtocol.getProxy(identifier)
-  },
-  set: function <T, R extends T> (identifier: ProxyIdentifier<T>, instance: R): R {
-    return rpcProtocol.set(identifier, instance)
-  },
-  assertRegistered: function (identifiers: ProxyIdentifier<unknown>[]): void {
-    rpcProtocol.assertRegistered(identifiers)
-  },
-  drain: function (): Promise<void> {
-    return rpcProtocol.drain()
-  },
-  dispose: function (): void {
-    rpcProtocol.dispose()
-  }
-}
-
-const extHostContext: IExtHostContext = {
-  remoteAuthority: null,
-  extensionHostKind: ExtensionHostKind.LocalProcess,
-  getProxy: function <T> (identifier: ProxyIdentifier<T>): Proxied<T> {
-    return rpcProtocol.getProxy(identifier)
-  },
-  set: function <T, R extends T> (identifier: ProxyIdentifier<T>, instance: R): R {
-    return rpcProtocol.set(identifier, instance)
-  },
-  assertRegistered: function (identifiers: ProxyIdentifier<unknown>[]): void {
-    rpcProtocol.assertRegistered(identifiers)
-  },
-  drain: function (): Promise<void> {
-    return rpcProtocol.drain()
-  },
-  dispose: function (): void {
-    rpcProtocol.dispose()
-  }
-}
-
-const extHostLogService: ILogService = {
-  _serviceBrand: undefined,
-  onDidChangeLogLevel: Event.None,
-  getLevel: function (): LogLevel {
-    return LogLevel.Off
-  },
-  setLevel: noop,
-  trace: noop,
-  debug: noop,
-  info: noop,
-  warn: noop,
-  error: noop,
-  critical: noop,
-  flush: noop,
-  dispose: noop
-}
-
-const extensionService = <Pick<IExtensionService, 'activateByEvent'>>{
-  activateByEvent: async function (): Promise<void> {
-    // ignore
-  }
-} as IExtensionService
-
-const commandsService = StandaloneServices.get(ICommandService)
-
-rpcProtocol.set(MainContext.MainThreadCommands, new MainThreadCommands(extHostContext, commandsService, extensionService))
-const extHostCommands = new ExtHostCommands(extHostRpcService, extHostLogService)
-rpcProtocol.set(ExtHostContext.ExtHostCommands, extHostCommands)
-
-const extHostApiDeprecationService: IExtHostApiDeprecationService = {
-  _serviceBrand: undefined,
-  report: function (): void {
-    // ignore
-  }
-}
-
-class MainThreadDiagnostics implements MainThreadDiagnosticsShape {
-  private readonly _activeOwners = new Set<string>()
-
-  $changeMany (owner: string, entries: [monaco.UriComponents, IMarkerData[] | undefined][]): void {
-    for (const entry of entries) {
-      const [uri, markers] = entry
-      if (markers != null) {
-        for (const marker of markers) {
-          if (marker.relatedInformation != null) {
-            for (const relatedInformation of marker.relatedInformation) {
-              relatedInformation.resource = URI.revive(relatedInformation.resource)
-            }
-          }
-          if (marker.code != null && typeof marker.code !== 'string') {
-            marker.code.target = URI.revive(marker.code.target)
-          }
-        }
+class MonacoMainThreadDiagnostics extends MainThreadDiagnostics {
+  /**
+   * Required as `markerService.changeAll` is treeshaked out of monaco-editor 0.33
+   * FIXME: not required anymore with monaco-editor 0.34 (https://github.com/microsoft/monaco-editor/issues/3129)
+   */
+  override $clear (owner: string): void {
+    // eslint-disable-next-line dot-notation
+    if (this['_markerService'].changeAll == null) {
+      const markers = monaco.editor.getModelMarkers({
+        owner
+      })
+      const models = new Set<monaco.editor.ITextModel>()
+      for (const marker of markers) {
+        models.add(monaco.editor.getModel(marker.resource)!)
       }
-      monaco.editor.setModelMarkers(monaco.editor.getModel(URI.revive(uri))!, owner, markers as monaco.editor.IMarkerData[])
-    }
-    this._activeOwners.add(owner)
-  }
+      for (const model of models) {
+        monaco.editor.setModelMarkers(model, owner, [])
+      }
 
-  $clear (owner: string): void {
-    // FIXME can be improved (https://github.com/microsoft/monaco-editor/issues/3129)
-    const markers = monaco.editor.getModelMarkers({
-      owner
-    })
-    const models = new Set<monaco.editor.ITextModel>()
-    for (const marker of markers) {
-      models.add(monaco.editor.getModel(marker.resource)!)
+      // eslint-disable-next-line dot-notation
+      this['_activeOwners'].delete(owner)
+    } else {
+      super.$clear(owner)
     }
-    for (const model of models) {
-      monaco.editor.setModelMarkers(model, owner, [])
-    }
-
-    this._activeOwners.delete(owner)
-  }
-
-  dispose (): void {
-    this._activeOwners.forEach(owner => this.$clear(owner))
-    this._activeOwners.clear()
   }
 }
-rpcProtocol.set(MainContext.MainThreadDiagnostics, new MainThreadDiagnostics())
 
-const extHostDiagnostics = new ExtHostDiagnostics(mainContext, extHostLogService, extHostFileSystemInfo)
+function createExtHostServices () {
+  const commandsService = StandaloneServices.get(ICommandService)
+  const notificationService = StandaloneServices.get(INotificationService)
+  const dialogService = StandaloneServices.get(IDialogService)
+  const textModelService = StandaloneServices.get(ITextModelService)
+  const modelService = StandaloneServices.get(IModelService)
+  const languageService = StandaloneServices.get(ILanguageService)
+  const editorWorkerService = StandaloneServices.get(IEditorWorkerService)
+  const quickInputService = StandaloneServices.get(IQuickInputService)
+  const codeEditorService = StandaloneServices.get(ICodeEditorService)
+  const markerService = StandaloneServices.get(IMarkerService)
+  const clipboardService = StandaloneServices.get(IClipboardService)
+  const editorService = StandaloneServices.get(IEditorService)
+  const uriIdentityService = StandaloneServices.get(IUriIdentityService)
+  const paneCompositePartService = StandaloneServices.get(IPaneCompositePartService)
+  const textFileService = StandaloneServices.get(ITextFileService)
+  const fileService = StandaloneServices.get(IFileService)
+  const editorGroupsService = StandaloneServices.get(IEditorGroupsService)
+  const workbenchEnvironmentService = StandaloneServices.get(IWorkbenchEnvironmentService)
+  const workingCopyFileService = StandaloneServices.get(IWorkingCopyFileService)
+  const pathService = StandaloneServices.get(IPathService)
+  const progressService = StandaloneServices.get(IProgressService)
+  const telemetryService = StandaloneServices.get(ITelemetryService)
+  const productService = StandaloneServices.get(IProductService)
+  const bulkEditService = StandaloneServices.get(IBulkEditService)
+  const languageStatusService = StandaloneServices.get(ILanguageStatusService)
+  const openerService = StandaloneServices.get(IOpenerService)
+  const hostService = StandaloneServices.get(IHostService)
+  const languageConfigurationService = StandaloneServices.get(ILanguageConfigurationService)
+  const languageFeaturesService = StandaloneServices.get(ILanguageFeaturesService)
+  const configurationService = StandaloneServices.get(IConfigurationService)
 
-const unsupportedMainThreadDocumentsShape: MainThreadDocumentsShape = {
-  $tryCreateDocument: unsupported,
-  $tryOpenDocument: unsupported,
-  $trySaveDocument: unsupported,
-  dispose () { }
-}
+  const imessagePassingProtocol = new SimpleMessagePassingProtocol()
 
-function createDocumentDataFromModel (model: monaco.editor.ITextModel): ExtHostDocumentData {
-  return new ExtHostDocumentData(
-    unsupportedMainThreadDocumentsShape,
-    model.uri,
-    model.getLinesContent(),
-    model.getEOL(),
-    model.getVersionId(),
-    model.getLanguageId(),
-    false
+  const rpcProtocol = new RPCProtocol(imessagePassingProtocol)
+
+  const extHostFileSystemInfo = new ExtHostFileSystemInfo()
+
+  const mainContext: IMainContext & IExtHostRpcService & IExtHostContext = {
+    _serviceBrand: undefined,
+    remoteAuthority: null,
+    extensionHostKind: ExtensionHostKind.LocalProcess,
+    getProxy: function <T> (identifier: ProxyIdentifier<T>): Proxied<T> {
+      return rpcProtocol.getProxy(identifier)
+    },
+    set: function <T, R extends T> (identifier: ProxyIdentifier<T>, instance: R): R {
+      return rpcProtocol.set(identifier, instance)
+    },
+    assertRegistered: function (identifiers: ProxyIdentifier<unknown>[]): void {
+      rpcProtocol.assertRegistered(identifiers)
+    },
+    drain: function (): Promise<void> {
+      return rpcProtocol.drain()
+    }
+  }
+
+  const extHostLogService = new LogService(new ConsoleMainLogger())
+  const extensionService = new NullExtensionService()
+  const extHostApiDeprecationService = new ExtHostApiDeprecationService(mainContext, extHostLogService)
+  const extHostMessageService = new ExtHostMessageService(mainContext, extHostLogService)
+  const uriTransformerService = new URITransformerService(null)
+
+  // They must be defined BEFORE ExtHostCommands
+  rpcProtocol.set(MainContext.MainThreadWindow, new MainThreadWindow(mainContext, hostService, openerService))
+  rpcProtocol.set(MainContext.MainThreadCommands, new MainThreadCommands(mainContext, commandsService, extensionService))
+
+  const extHostCommands = rpcProtocol.set(ExtHostContext.ExtHostCommands, new ExtHostCommands(mainContext, extHostLogService))
+  const extHostDocumentsAndEditors = rpcProtocol.set(ExtHostContext.ExtHostDocumentsAndEditors, new ExtHostDocumentsAndEditors(mainContext, extHostLogService))
+  const extHostDocuments = rpcProtocol.set(ExtHostContext.ExtHostDocuments, new ExtHostDocuments(mainContext, extHostDocumentsAndEditors))
+  const extHostLanguages = rpcProtocol.set(ExtHostContext.ExtHostLanguages, new ExtHostLanguages(mainContext, extHostDocuments, extHostCommands.converter, uriTransformerService))
+  const extHostWindow = rpcProtocol.set(ExtHostContext.ExtHostWindow, new ExtHostWindow(mainContext))
+  const extHostQuickOpen = rpcProtocol.set(ExtHostContext.ExtHostQuickOpen, createExtHostQuickOpen(mainContext, <IExtHostWorkspaceProvider><unknown>null, extHostCommands))
+  const extHostDiagnostics = rpcProtocol.set(ExtHostContext.ExtHostDiagnostics, new ExtHostDiagnostics(mainContext, extHostLogService, extHostFileSystemInfo))
+  const extHostProgress = rpcProtocol.set(ExtHostContext.ExtHostProgress, new ExtHostProgress(rpcProtocol.getProxy(MainContext.MainThreadProgress)))
+  const extHostDocumentContentProviders = rpcProtocol.set(ExtHostContext.ExtHostDocumentContentProviders, new ExtHostDocumentContentProvider(mainContext, extHostDocumentsAndEditors, extHostLogService))
+  const extHostEditors = rpcProtocol.set(ExtHostContext.ExtHostEditors, new ExtHostEditors(mainContext, extHostDocumentsAndEditors))
+  const extHostClipboard = new ExtHostClipboard(mainContext)
+  const extHostLanguageFeatures = rpcProtocol.set(ExtHostContext.ExtHostLanguageFeatures, new ExtHostLanguageFeatures(rpcProtocol, uriTransformerService, extHostDocuments, extHostCommands, extHostDiagnostics, extHostLogService, extHostApiDeprecationService))
+
+  rpcProtocol.set(ExtHostContext.ExtHostTelemetry, new ExtHostTelemetry())
+  rpcProtocol.set(MainContext.MainThreadMessageService, new MainThreadMessageService(mainContext, notificationService, commandsService, dialogService))
+  rpcProtocol.set(MainContext.MainThreadDiagnostics, new MonacoMainThreadDiagnostics(mainContext, markerService, uriIdentityService))
+  rpcProtocol.set(MainContext.MainThreadQuickOpen, new MainThreadQuickOpen(mainContext, quickInputService))
+  rpcProtocol.set(MainContext.MainThreadTelemetry, new MainThreadTelemetry(mainContext, telemetryService, configurationService, workbenchEnvironmentService, productService))
+  rpcProtocol.set(MainContext.MainThreadProgress, new MainThreadProgress(mainContext, progressService, commandsService))
+  rpcProtocol.set(MainContext.MainThreadDocumentContentProviders, new MainThreadDocumentContentProviders(mainContext, textModelService, languageService, modelService, editorWorkerService))
+  rpcProtocol.set(MainContext.MainThreadBulkEdits, new MainThreadBulkEdits(mainContext, bulkEditService, extHostLogService))
+  rpcProtocol.set(MainContext.MainThreadLanguages, new MainThreadLanguages(mainContext, languageService, modelService, textModelService, languageStatusService))
+  rpcProtocol.set(MainContext.MainThreadClipboard, new MainThreadClipboard(mainContext, clipboardService))
+  rpcProtocol.set(MainContext.MainThreadLanguageFeatures, new MainThreadLanguageFeatures(mainContext, languageService, languageConfigurationService, languageFeaturesService))
+
+  // eslint-disable-next-line no-new
+  new MainThreadDocumentsAndEditors(
+    mainContext,
+    modelService,
+    textFileService,
+    editorService,
+    codeEditorService,
+    fileService,
+    textModelService,
+    editorGroupsService,
+    bulkEditService,
+    paneCompositePartService,
+    workbenchEnvironmentService,
+    workingCopyFileService,
+    uriIdentityService,
+    clipboardService,
+    pathService
   )
-}
 
-class MonacoExtHostDocuments implements Omit<ExtHostDocuments, ''>, vscode.Disposable {
-  protected readonly disposableStore = new DisposableStore()
-  private documentsData = new Map<string, ExtHostDocumentData>()
-  private documentDisposables = new Map<string, vscode.Disposable>()
-  private readonly _onDidAddDocument = new Emitter<vscode.TextDocument>()
-  private readonly _onDidRemoveDocument = new Emitter<vscode.TextDocument>()
-  private readonly _onDidChangeDocument = new Emitter<vscode.TextDocumentChangeEvent>()
+  const extHostBulkEdits = new ExtHostBulkEdits(mainContext, extHostDocumentsAndEditors)
 
-  constructor () {
-    for (const model of monaco.editor.getModels()) {
-      this.addModel(model)
-    }
-    this.disposableStore.add(monaco.editor.onDidCreateModel(model => this.addModel(model)))
-    this.disposableStore.add(monaco.editor.onWillDisposeModel(model => this.removeModel(model)))
-    this.disposableStore.add(monaco.editor.onDidChangeModelLanguage((event) => {
-      this.removeModel(event.model)
-      this.addModel(event.model)
-    }))
-  }
-
-  private addModel (model: monaco.editor.IModel): void {
-    const uri = model.uri.toString()
-    const documentData = this.setModel(uri, model)
-    this._onDidAddDocument.fire(documentData.document)
-    this.documentDisposables.set(uri, model.onDidChangeContent(event =>
-      this.onDidChangeContent(uri, event)
-    ))
-  }
-
-  private removeModel (model: monaco.editor.IModel): void {
-    const uri = model.uri.toString()
-    const documentData = this.documentsData.get(uri)
-    if (documentData != null) {
-      this.documentsData.delete(uri)
-      this._onDidRemoveDocument.fire(documentData.document)
-    }
-    const disposable = this.documentDisposables.get(uri)
-    if (disposable != null) {
-      disposable.dispose()
-      this.documentDisposables.delete(uri)
-    }
-  }
-
-  private onDidChangeContent (uri: string, event: monaco.editor.IModelContentChangedEvent) {
-    const textDocumentData = this.documentsData.get(uri)!
-    textDocumentData.onEvents(event)
-
-    this._onDidChangeDocument.fire({
-      document: textDocumentData.document,
-      contentChanges: event.changes.map(change => ({
-        range: typeConvert.Range.to(change.range),
-        rangeLength: change.rangeLength,
-        rangeOffset: change.rangeOffset,
-        text: change.text
-      })),
-      reason: event.isUndoing ? TextDocumentChangeReason.Undo : event.isRedoing ? TextDocumentChangeReason.Redo : undefined
-    })
-  }
-
-  private setModel (uri: string, model: monaco.editor.IModel): ExtHostDocumentData {
-    const documentData = createDocumentDataFromModel(model)
-    this.documentsData.set(uri, documentData)
-    return documentData
-  }
-
-  getDocument (resource: vscode.Uri): vscode.TextDocument {
-    const data = this.getDocumentData(resource)
-    if ((data?.document) == null) {
-      throw new Error(`Unable to retrieve document from URI '${resource}'`)
-    }
-    return data.document
-  }
-
-  getDocumentData (resource: vscode.Uri): ExtHostDocumentData | undefined {
-    return this.documentsData.get(resource.toString())
-  }
-
-  get onDidAddDocument () { return this._onDidAddDocument.event }
-  get onDidRemoveDocument () { return this._onDidRemoveDocument.event }
-  get onDidChangeDocument () { return this._onDidChangeDocument.event }
-  onDidSaveDocument = Event.None
-
-  public getAllDocumentData (): ExtHostDocumentData[] {
-    return Array.from(this.documentsData.values())
-  }
-
-  ensureDocumentData = unsupported
-  createDocumentData = unsupported
-  $acceptModelLanguageChanged = unsupported
-  $acceptModelSaved = unsupported
-  $acceptDirtyStateChanged = unsupported
-  $acceptModelChanged = unsupported
-  setWordDefinitionFor = unsupported
-
-  dispose () {
-    this.disposableStore.dispose()
+  return {
+    extHostLogService,
+    extHostApiDeprecationService,
+    extHostMessageService,
+    extHostDocumentsAndEditors,
+    extHostBulkEdits,
+    extHostDocuments,
+    extHostDocumentContentProviders,
+    extHostQuickOpen,
+    extHostProgress,
+    extHostDiagnostics,
+    extHostEditors,
+    extHostCommands,
+    extHostLanguages,
+    extHostWindow,
+    extHostClipboard,
+    extHostLanguageFeatures
   }
 }
 
-const extHostDocuments = new MonacoExtHostDocuments() as unknown as ExtHostDocuments
+type ExtHostServices = ReturnType<typeof createExtHostServices>
+let extHostServices: ExtHostServices | undefined
 
-export {
-  extHostCommands,
-  extHostDiagnostics,
-  extHostApiDeprecationService,
-  extHostLogService,
-  extensionDescription,
-  extHostDocuments
+export function getExtHostServices (): ExtHostServices {
+  if (extHostServices == null) {
+    extHostServices = createExtHostServices()
+  }
+  return extHostServices
 }

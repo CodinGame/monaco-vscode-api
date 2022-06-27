@@ -11,10 +11,6 @@ import * as fs from 'fs'
 import * as path from 'path'
 import * as vm from 'vm'
 
-// Force usage of vscode code for these imports
-const IGNORE_MONACO = new Set(['vs/base/common/buffer:VSBuffer'])
-const REMOVE_NOT_STATIC_MEMBERS_OF_CLASSES = new Set(['ExtHostLanguageFeatures', 'MainThreadLanguageFeatures'])
-
 const PURE_ANNO = '#__PURE__'
 const PURE_FUNCTIONS = new Set([
   '__param',
@@ -27,9 +23,11 @@ const PURE_FUNCTIONS = new Set([
 ])
 const EXTENSIONS = ['', '.ts', '.js']
 
+const SRC_DIR = path.resolve(__dirname, '../src')
 const VSCODE_DIR = path.resolve(__dirname, '../vscode')
 const NODE_MODULES_DIR = path.resolve(__dirname, '../node_modules')
 const MONACO_EDITOR_DIR = path.resolve(NODE_MODULES_DIR, './monaco-editor')
+const OVERRIDE_PATH = path.resolve(__dirname, '../src/override')
 
 export default (args: Record<string, string>): rollup.RollupOptions => {
   const vscodeVersion = args['vscode-version']
@@ -41,7 +39,10 @@ export default (args: Record<string, string>): rollup.RollupOptions => {
     cache: false,
     treeshake: {
       annotations: true,
-      preset: 'smallest'
+      preset: 'smallest',
+      moduleSideEffects (id) {
+        return id.startsWith(SRC_DIR)
+      }
     },
     external: (source) => {
       return source.startsWith(MONACO_EDITOR_DIR)
@@ -62,15 +63,26 @@ export default (args: Record<string, string>): rollup.RollupOptions => {
       {
         name: 'resolve-vscode',
         resolveId: async function (importee, importer) {
+          if (importee.startsWith('vscode/')) {
+            return resolve(path.relative('vscode', importee), [VSCODE_DIR])
+          }
           if (!importee.startsWith('vs/') && importer != null && importer.startsWith(VSCODE_DIR)) {
             importee = path.relative(VSCODE_DIR, path.resolve(path.dirname(importer), importee))
           }
+          const overridePath = path.resolve(OVERRIDE_PATH, `${importee}.js`)
+          if (fs.existsSync(overridePath)) {
+            return overridePath
+          }
           if (importee.startsWith('vs/')) {
-            if (!fs.existsSync(path.resolve(MONACO_EDITOR_DIR, `esm/${importee}.js`))) {
+            const monacoFileExists = fs.existsSync(path.resolve(MONACO_EDITOR_DIR, `esm/${importee}.js`))
+            if (!monacoFileExists) {
               return resolve(importee, [VSCODE_DIR])
             }
             return importee
           }
+        },
+        transform (code) {
+          return toggleEsmComments(code)
         },
         load: (id) => {
           if (id.startsWith('vs/')) {
@@ -151,27 +163,7 @@ export default (args: Record<string, string>): rollup.RollupOptions => {
                 node.comments = [recast.types.builders.commentBlock(PURE_ANNO, true)]
               }
             }
-            function visitClassDeclaration (node: recast.types.namedTypes.ClassExpression | recast.types.namedTypes.ClassDeclaration) {
-              if (node.id != null && REMOVE_NOT_STATIC_MEMBERS_OF_CLASSES.has(node.id.name)) {
-                node.body.body = node.body.body.filter(member => {
-                  if (member.type === 'ClassMethod' && !(member.static ?? false) && member.key.type === 'Identifier') {
-                    transformed = true
-                    return false
-                  }
-                  return true
-                })
-              }
-            }
             recast.visit(ast.program.body, {
-              visitClassExpression (path) {
-                visitClassDeclaration(path.node)
-                this.traverse(path)
-              },
-              visitClassDeclaration (path) {
-                addComment(path.node)
-                visitClassDeclaration(path.node)
-                this.traverse(path)
-              },
               visitNewExpression (path) {
                 const node = path.node
                 if (node.callee.type === 'Identifier') {
@@ -181,6 +173,11 @@ export default (args: Record<string, string>): rollup.RollupOptions => {
               },
               visitCallExpression (path) {
                 const node = path.node
+                if (node.callee.type === 'Identifier' && node.callee.name === 'registerSingleton') {
+                  // Remove calls to registerSingleton from vscode code, we just want to import things, not registering services
+                  transformed = true
+                  return null
+                }
                 if (node.callee.type === 'Identifier' && node.callee.name === '__decorate') {
                   // We don't use the vscode injection mecanism, so remove it to improve treeshaking
                   transformed = true
@@ -239,6 +236,47 @@ function resolve (_path: string, fromPaths: string[]) {
       }
     }
   }
+}
+
+// Comes from vscode (standalone.ts)
+function toggleEsmComments (fileContents: string): string {
+  const lines = fileContents.split(/\r\n|\r|\n/)
+  let mode = 0
+  for (let i = 0; i < lines.length; i++) {
+    const line = lines[i]!
+    if (mode === 0) {
+      if (/\/\/ ESM-comment-begin/.test(line)) {
+        mode = 1
+        continue
+      }
+      if (/\/\/ ESM-uncomment-begin/.test(line)) {
+        mode = 2
+        continue
+      }
+      continue
+    }
+
+    if (mode === 1) {
+      if (/\/\/ ESM-comment-end/.test(line)) {
+        mode = 0
+        continue
+      }
+      lines[i] = '// ' + line
+      continue
+    }
+
+    if (mode === 2) {
+      if (/\/\/ ESM-uncomment-end/.test(line)) {
+        mode = 0
+        continue
+      }
+      lines[i] = line.replace(/^(\s*)\/\/ ?/, function (_, indent) {
+        return indent
+      })
+    }
+  }
+
+  return lines.join('\n')
 }
 
 const cache = new Map<string, Record<string, unknown>>()
@@ -334,16 +372,12 @@ function importMonaco (importee: string) {
 
   const vscodeExports = customRequire(vscodePath, [VSCODE_DIR])!
 
-  let monacoExports = customRequire(monacoPath, [path.resolve(MONACO_EDITOR_DIR, 'esm')])!
-  monacoExports = Object.fromEntries(Object.entries(monacoExports).filter(([key]) => {
-    const vscodeValue = vscodeExports[key]
-    if (vscodeValue == null) {
-      console.warn(`${importee}#${key} is exported from monaco but not from vscode`)
-      return true
+  const monacoExports = customRequire(monacoPath, [path.resolve(MONACO_EDITOR_DIR, 'esm')])!
+  for (const monacoExport in monacoExports) {
+    if (!(monacoExport in vscodeExports)) {
+      console.warn(`${importee}#${monacoExport} is exported from monaco but not from vscode`)
     }
-
-    return !IGNORE_MONACO.has(`${importee}:${key}`)
-  }))
+  }
 
   const monacoExportKeys = new Set(Object.keys(monacoExports))
   const missingMonacoExport = Object.keys(vscodeExports).filter(e => !monacoExportKeys.has(e))
@@ -353,9 +387,9 @@ function importMonaco (importee: string) {
   // hack for marked (see ESM-uncomment-begin comments)
   if (importee === 'vs/base/common/marked/marked') {
     return (`
-    import { marked as _marked } from '${monacoImportPath}'
+import { marked as _marked } from '${monacoImportPath}'
 
-    export const marked = _marked.marked
+export const marked = _marked.marked
     `)
   }
 
