@@ -1,15 +1,15 @@
 #!/bin/bash
 set -e
 
-version=$1
+vscodeVersion=$(node -e "console.log(require('./node_modules/monaco-editor/package.json').vscode)")
 
 output_directory="`pwd`/vscode"
 rm -rf $output_directory
 
 build_directory=`mktemp -d`
-echo "Downloading vscode $version in $build_directory..."
+echo "Downloading vscode $vscodeVersion in $build_directory..."
 
-curl https://codeload.github.com/microsoft/vscode/tar.gz/refs/tags/$version | tar -xz -C $build_directory --strip-components=1 vscode-$version
+curl -L --max-redirs 5 https://github.com/Microsoft/vscode/tarball/$vscodeVersion | tar -xz -C $build_directory --strip-components=1 microsoft-vscode-${vscodeVersion:0:7}
 cd $build_directory
 
 echo "Installing vscode dependencies..."
