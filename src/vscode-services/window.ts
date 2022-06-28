@@ -4,22 +4,22 @@ import type * as vscode from 'vscode'
 import { Event } from 'vs/base/common/event'
 import * as extHostTypes from 'vs/workbench/api/common/extHostTypes'
 import workspace from './workspace'
-import { extension, getExtHostServices } from './extHost'
+import { DEFAULT_EXTENSION, getExtHostServices } from './extHost'
 import { Services } from '../services'
 import { unsupported } from '../tools'
 
 const window: typeof vscode.window = {
   showInformationMessage (message: string, ...rest: Array<vscode.MessageOptions | string | vscode.MessageItem>) {
     const { extHostMessageService } = getExtHostServices()
-    return extHostMessageService.showMessage(extension, Severity.Info, message, rest[0], <Array<string | vscode.MessageItem>>rest.slice(1))
+    return extHostMessageService.showMessage(Services.get().extension ?? DEFAULT_EXTENSION, Severity.Info, message, rest[0], <Array<string | vscode.MessageItem>>rest.slice(1))
   },
   showWarningMessage (message: string, ...rest: Array<vscode.MessageOptions | string | vscode.MessageItem>) {
     const { extHostMessageService } = getExtHostServices()
-    return extHostMessageService.showMessage(extension, Severity.Warning, message, rest[0], <Array<string | vscode.MessageItem>>rest.slice(1))
+    return extHostMessageService.showMessage(Services.get().extension ?? DEFAULT_EXTENSION, Severity.Warning, message, rest[0], <Array<string | vscode.MessageItem>>rest.slice(1))
   },
   showErrorMessage (message: string, ...rest: Array<vscode.MessageOptions | string | vscode.MessageItem>) {
     const { extHostMessageService } = getExtHostServices()
-    return extHostMessageService.showMessage(extension, Severity.Error, message, rest[0], <Array<string | vscode.MessageItem>>rest.slice(1))
+    return extHostMessageService.showMessage(Services.get().extension ?? DEFAULT_EXTENSION, Severity.Error, message, rest[0], <Array<string | vscode.MessageItem>>rest.slice(1))
   },
   createOutputChannel (name: string): vscode.OutputChannel {
     const { window } = Services.get()
@@ -38,11 +38,11 @@ const window: typeof vscode.window = {
   },
   withScmProgress<R> (task: (progress: vscode.Progress<number>) => Thenable<R>) {
     const { extHostProgress } = getExtHostServices()
-    return extHostProgress.withProgress(extension, { location: extHostTypes.ProgressLocation.SourceControl }, () => task({ report () { /* noop */ } }))
+    return extHostProgress.withProgress(Services.get().extension ?? DEFAULT_EXTENSION, { location: extHostTypes.ProgressLocation.SourceControl }, () => task({ report () { /* noop */ } }))
   },
   withProgress<R> (options: vscode.ProgressOptions, task: (progress: vscode.Progress<{ message?: string, worked?: number }>, token: vscode.CancellationToken) => Thenable<R>) {
     const { extHostProgress } = getExtHostServices()
-    return extHostProgress.withProgress(extension, options, task)
+    return extHostProgress.withProgress(Services.get().extension ?? DEFAULT_EXTENSION, options, task)
   },
   showTextDocument: async (documentOrUri: vscode.TextDocument | vscode.Uri, columnOrOptions?: vscode.ViewColumn | vscode.TextDocumentShowOptions, preserveFocus?: boolean) => {
     const { extHostEditors } = getExtHostServices()
@@ -54,7 +54,7 @@ const window: typeof vscode.window = {
   },
   createQuickPick<T extends vscode.QuickPickItem> (): vscode.QuickPick<T> {
     const { extHostQuickOpen } = getExtHostServices()
-    return extHostQuickOpen.createQuickPick(extension)
+    return extHostQuickOpen.createQuickPick(Services.get().extension ?? DEFAULT_EXTENSION)
   },
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   showQuickPick (items: any, options?: vscode.QuickPickOptions, token?: vscode.CancellationToken): any {
@@ -63,6 +63,7 @@ const window: typeof vscode.window = {
   },
   createInputBox (): vscode.InputBox {
     const { extHostQuickOpen } = getExtHostServices()
+    const extension = Services.get().extension ?? DEFAULT_EXTENSION
     return extHostQuickOpen.createInputBox(extension.identifier)
   },
   showInputBox (options?: vscode.InputBoxOptions, token?: vscode.CancellationToken) {

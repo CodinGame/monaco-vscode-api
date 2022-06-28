@@ -1,11 +1,12 @@
 import type * as vscode from 'vscode'
-import { extension, getExtHostServices } from './extHost'
+import { DEFAULT_EXTENSION, getExtHostServices } from './extHost'
+import { Services } from '../services'
 
 const commands: typeof vscode.commands = {
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   registerCommand (id: string, command: <T>(...args: any[]) => T | Thenable<T>, thisArgs?: any): vscode.Disposable {
     const { extHostCommands } = getExtHostServices()
-    return extHostCommands.registerCommand(true, id, command, thisArgs, undefined, extension)
+    return extHostCommands.registerCommand(true, id, command, thisArgs, undefined, Services.get().extension ?? DEFAULT_EXTENSION)
   },
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   registerTextEditorCommand (id: string, callback: (textEditor: vscode.TextEditor, edit: vscode.TextEditorEdit, ...args: any[]) => void, thisArg?: any): vscode.Disposable {
@@ -27,7 +28,7 @@ const commands: typeof vscode.commands = {
       }, (err) => {
         extHostLogService.warn('An error occurred while running command ' + id, err)
       })
-    }, undefined, undefined, extension)
+    }, undefined, undefined, Services.get().extension ?? DEFAULT_EXTENSION)
   },
   executeCommand<T> (id: string, ...args: any[]): Thenable<T> {
     const { extHostCommands } = getExtHostServices()

@@ -1,6 +1,7 @@
 import Severity from 'vs/base/common/severity'
 import type * as vscode from 'vscode'
 import type { IProgressService } from 'vs/platform/progress/common/progress'
+import { IExtensionDescription } from 'vs/platform/extensions/common/extensions'
 
 export {
   Severity
@@ -24,6 +25,7 @@ export interface Workspace {
 }
 
 export interface Services {
+  extension?: IExtensionDescription
   workspace?: Workspace
   window?: Window
 }

@@ -77,7 +77,7 @@ import { ILanguageConfigurationService } from 'vs/editor/common/languages/langua
 import { ILanguageFeaturesService } from 'vs/editor/common/services/languageFeatures'
 import { IConfigurationService } from 'vs/platform/configuration/common/configuration'
 
-export const extension: IExtensionDescription = {
+export const DEFAULT_EXTENSION: IExtensionDescription = {
   identifier: new ExtensionIdentifier('monaco'),
   isBuiltin: true,
   isUserBuiltin: true,
