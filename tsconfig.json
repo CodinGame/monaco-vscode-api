@@ -13,6 +13,9 @@
 		"paths": {
 			"vs/*": [
 				"./vscode/vs/*"
+			],
+			"vscode/*": [
+				"./vscode/*"
 			]
 		}
 	},
