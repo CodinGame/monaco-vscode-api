@@ -172,12 +172,6 @@ const languages: typeof vscode.languages = {
 
     return extHostLanguageFeatures.registerCompletionItemProvider(extension, checkSelector(selector), provider, triggerCharacters)
   },
-  registerInlineCompletionItemProvider (selector: vscode.DocumentSelector, provider: vscode.InlineCompletionItemProvider): vscode.Disposable {
-    const { extHostLanguageFeatures } = getExtHostServices()
-    const extension = Services.get().extension ?? DEFAULT_EXTENSION
-
-    return extHostLanguageFeatures.registerInlineCompletionsProvider(extension, checkSelector(selector), provider)
-  },
   registerDocumentLinkProvider (selector: vscode.DocumentSelector, provider: vscode.DocumentLinkProvider): vscode.Disposable {
     const { extHostLanguageFeatures } = getExtHostServices()
     const extension = Services.get().extension ?? DEFAULT_EXTENSION

@@ -21,7 +21,7 @@ import customEnv from './vscode-services/env'
 const unsupported = <any>undefined
 
 const api: typeof vscode = {
-  version: '1.67',
+  version: VSCODE_VERSION,
 
   tasks: unsupported,
   notebooks: unsupported,
@@ -179,12 +179,7 @@ const api: typeof vscode = {
   TabInputNotebook: unsupported,
   TabInputNotebookDiff: unsupported,
   TabInputWebview: unsupported,
-  TabInputTerminal: unsupported,
-  InputBoxValidationSeverity: unsupported,
-  InlineCompletionList: unsupported,
-  InlineCompletionTriggerKind: unsupported,
-  InlineCompletionItem: unsupported,
-  NotebookEditorRevealType: extHostTypes.NotebookEditorRevealType
+  TabInputTerminal: unsupported
 }
 
 // @ts-ignore the syntax will be transformed by a typescript transformer in the rollup config

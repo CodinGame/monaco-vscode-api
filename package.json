@@ -46,7 +46,7 @@
   },
   "config": {
     "vscode": {
-      "version": "1.68.0"
+      "version": "1.67.0"
     }
   },
   "devDependencies": {
@@ -63,7 +63,7 @@
     "@rollup/plugin-typescript": "^8.3.2",
     "@types/babel__core": "^7.1.19",
     "@types/semver": "^7.3.10",
-    "@types/vscode": "^1.68.0",
+    "@types/vscode": "~1.67.0",
     "@typescript-eslint/eslint-plugin": "^5.27.1",
     "@typescript-eslint/parser": "^5.27.1",
     "eslint": "^8.17.0",
