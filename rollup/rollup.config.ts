@@ -80,6 +80,7 @@ export default (args: Record<string, string>): rollup.RollupOptions => {
             }
             return importee
           }
+          return undefined
         },
         transform (code) {
           return toggleEsmComments(code)
@@ -88,6 +89,7 @@ export default (args: Record<string, string>): rollup.RollupOptions => {
           if (id.startsWith('vs/')) {
             return importMonaco(id)
           }
+          return undefined
         }
       },
       nodeResolve({
@@ -99,6 +101,7 @@ export default (args: Record<string, string>): rollup.RollupOptions => {
           if (id.endsWith('.css')) {
             return 'export default undefined;'
           }
+          return undefined
         }
       },
       typescript({
@@ -198,6 +201,7 @@ export default (args: Record<string, string>): rollup.RollupOptions => {
                   addComment(node)
                 }
                 this.traverse(path)
+                return undefined
               },
               visitThrowStatement () {
                 return false
@@ -210,6 +214,7 @@ export default (args: Record<string, string>): rollup.RollupOptions => {
             }
             return code
           }
+          return undefined
         }
       }, replace({
         VSCODE_VERSION: JSON.stringify(vscodeVersion),
@@ -236,6 +241,7 @@ function resolve (_path: string, fromPaths: string[]) {
       }
     }
   }
+  return undefined
 }
 
 // Comes from vscode (standalone.ts)

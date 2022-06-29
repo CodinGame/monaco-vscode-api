@@ -25,6 +25,7 @@ export default rollup.defineConfig({
         if (id.includes('vs/css!')) {
           return 'export default undefined;'
         }
+        return undefined
       }
     },
     {
@@ -49,6 +50,7 @@ export default rollup.defineConfig({
         if (importee.startsWith('vs/')) {
           return path.join(VSCODE_DIR, `${importee}.d.ts`)
         }
+        return undefined
       }
     },
     dts({
