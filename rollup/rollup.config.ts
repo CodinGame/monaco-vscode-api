@@ -7,6 +7,7 @@ import typescript from '@rollup/plugin-typescript'
 import cleanup from 'js-cleanup'
 import ts from 'typescript'
 import replace from '@rollup/plugin-replace'
+import styles from 'rollup-plugin-styles'
 import * as fs from 'fs'
 import * as path from 'path'
 import * as vm from 'vm'
@@ -45,7 +46,7 @@ export default (args: Record<string, string>): rollup.RollupOptions => {
       annotations: true,
       preset: 'smallest',
       moduleSideEffects (id) {
-        return id.startsWith(SRC_DIR)
+        return id.startsWith(SRC_DIR) || id.endsWith('.css')
       }
     },
     external: (source) => {
@@ -67,6 +68,9 @@ export default (args: Record<string, string>): rollup.RollupOptions => {
       {
         name: 'resolve-vscode',
         resolveId: async function (importee, importer) {
+          if (importee.startsWith('vs/css!')) {
+            return path.resolve(path.dirname(importer!), importee.slice('vs/css!'.length) + '.css')
+          }
           if (importee.startsWith('vscode/')) {
             return resolve(path.relative('vscode', importee), [VSCODE_DIR])
           }
@@ -89,25 +93,23 @@ export default (args: Record<string, string>): rollup.RollupOptions => {
         transform (code) {
           return toggleEsmComments(code)
         },
-        load: (id) => {
+        load (id) {
+          if (id.startsWith(VSCODE_DIR) && id.endsWith('.css')) {
+            const monacoCssPath = path.resolve(MONACO_EDITOR_DIR, 'esm', path.relative(VSCODE_DIR, id))
+            if (fs.existsSync(monacoCssPath)) {
+              return ''
+            }
+          }
           if (id.startsWith('vs/')) {
             return importMonaco(id)
           }
           return undefined
         }
       },
+      styles(),
       nodeResolve({
         extensions: EXTENSIONS
       }),
-      {
-        name: 'ignore-css',
-        load (id) {
-          if (id.endsWith('.css')) {
-            return 'export default undefined;'
-          }
-          return undefined
-        }
-      },
       typescript({
         noEmitOnError: true,
         transformers: {
