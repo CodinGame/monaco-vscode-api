@@ -19,6 +19,10 @@ const PURE_FUNCTIONS = new Set([
   'createDecorator',
   'localize',
   'register',
+  'Registry.as',
+  'registerWorkbenchContribution',
+  'Object.freeze',
+  'URI.parse',
   'CommandsRegistry.registerCommand' // It's not pure but we don't want the additional static vscode commands registered
 ])
 const EXTENSIONS = ['', '.ts', '.js']
