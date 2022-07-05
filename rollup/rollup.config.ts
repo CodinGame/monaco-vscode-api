@@ -34,6 +34,21 @@ const NODE_MODULES_DIR = path.resolve(__dirname, '../node_modules')
 const MONACO_EDITOR_DIR = path.resolve(NODE_MODULES_DIR, './monaco-editor')
 const OVERRIDE_PATH = path.resolve(__dirname, '../src/override')
 
+function getMemberExpressionPath (node: recast.types.namedTypes.MemberExpression | recast.types.namedTypes.Identifier): string | null {
+  if (node.type === 'MemberExpression') {
+    if (node.property.type === 'Identifier' && (node.object.type === 'Identifier' || node.object.type === 'MemberExpression')) {
+      const parentName = getMemberExpressionPath(node.object)
+      if (parentName == null) {
+        return null
+      }
+      return `${parentName}.${node.property.name}`
+    }
+  } else {
+    return node.name
+  }
+  return null
+}
+
 export default (args: Record<string, string>): rollup.RollupOptions => {
   const vscodeVersion = args['vscode-version']
   delete args['vscode-version']
@@ -187,16 +202,10 @@ export default (args: Record<string, string>): rollup.RollupOptions => {
                   transformed = true
                   return null
                 }
-                if (node.callee.type === 'Identifier' && node.callee.name === '__decorate') {
-                  // We don't use the vscode injection mecanism, so remove it to improve treeshaking
-                  transformed = true
-                  path.replace(node.arguments[1])
-                  return false
-                }
                 if (node.callee.type === 'MemberExpression') {
-                  if (node.callee.object.type === 'Identifier' && node.callee.property.type === 'Identifier') {
-                    const name = `${node.callee.object.name}.${node.callee.property.name}`
-                    if (PURE_FUNCTIONS.has(name) || PURE_FUNCTIONS.has(node.callee.property.name)) {
+                  if (node.callee.property.type === 'Identifier') {
+                    const name = getMemberExpressionPath(node.callee)
+                    if ((name != null && PURE_FUNCTIONS.has(name)) || PURE_FUNCTIONS.has(node.callee.property.name)) {
                       addComment(node)
                     }
                   }
