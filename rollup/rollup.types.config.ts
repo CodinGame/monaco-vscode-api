@@ -6,6 +6,11 @@ const VSCODE_DIR = path.join(__dirname, '../vscode')
 
 const interfaceOverride = new Map<string, string>()
 interfaceOverride.set('Event<T>', 'vscode.Event<T>')
+interfaceOverride.set('ICodeEditor', 'monaco.editor.ICodeEditor')
+interfaceOverride.set('URI', 'monaco.Uri')
+interfaceOverride.set('ITextModel', 'monaco.editor.ITextModel')
+interfaceOverride.set('vs/editor/common/config/editorOptions:IEditorOptions', 'monaco.editor.IEditorOptions')
+
   external: function isExternal (id) {
     if (id === 'vscode') {
       return true
