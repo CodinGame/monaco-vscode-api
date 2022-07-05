@@ -1,15 +1,15 @@
 #!/bin/bash
 set -e
 
-version=$1
+vscodeVersion=$(node -e "console.log(require('./node_modules/monaco-editor/package.json').vscode)")
 
 output_directory="`pwd`/vscode"
 rm -rf $output_directory
 
 build_directory=`mktemp -d`
-echo "Downloading vscode $version in $build_directory..."
+echo "Downloading vscode $vscodeVersion in $build_directory..."
 
-curl https://codeload.github.com/microsoft/vscode/tar.gz/refs/tags/$version | tar -xz -C $build_directory --strip-components=1 vscode-$version
+curl -L --max-redirs 5 https://github.com/Microsoft/vscode/tarball/$vscodeVersion | tar -xz -C $build_directory --strip-components=1 microsoft-vscode-${vscodeVersion:0:7}
 cd $build_directory
 
 echo "Installing vscode dependencies..."
@@ -17,44 +17,6 @@ yarn install --ignore-scripts
 
 echo "Patching vscode..."
 cd src
-# Export required class from vscode code
-cat <<EOF >> ./vs/workbench/api/common/extHostLanguageFeatures.ts
-
-export {
-	CompletionsAdapter,
-	CodeActionAdapter,
-	CodeLensAdapter,
-	DefinitionAdapter,
-	ImplementationAdapter,
-	TypeDefinitionAdapter,
-	DeclarationAdapter,
-	HoverAdapter,
-	DocumentHighlightAdapter,
-	DocumentSymbolAdapter,
-	ReferenceAdapter,
-	RenameAdapter,
-	DocumentFormattingAdapter,
-	RangeFormattingAdapter,
-	OnTypeFormattingAdapter,
-	SignatureHelpAdapter,
-	LinkProviderAdapter,
-	ColorProviderAdapter,
-	FoldingProviderAdapter,
-	SelectionRangeAdapter,
-	InlayHintsAdapter,
-	EvaluatableExpressionAdapter,
-	LinkedEditingRangeAdapter,
-	TypeHierarchyAdapter,
-	CallHierarchyAdapter,
-	NavigateTypeAdapter,
-	InlineCompletionAdapter
-};
-EOF
-
-# Mark some methods as public
-sed -i 's/private static/public static/g' ./vs/workbench/api/browser/mainThreadLanguageFeatures.ts
-sed -i 's/private static/public static/g' ./vs/workbench/api/common/extHostLanguageFeatures.ts
-
 
 # Remove useless files
 rm -rf `find . -name '*.test.ts' -o -name 'test' -o -name 'electron-browser'`

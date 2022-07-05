@@ -11,19 +11,40 @@ The VSCode api is composed of:
   - If it's some advanced features that don't make a lot of sense on Monaco (debug, tests...), it just throws an error when you try to use it.
 
 
-To implement by hands the optional features (type hierarchy, call hierarchy...), you can use the `Services` namespace from `vscode/services`:
+To implement by hands the optional features (file system, workspace folders, file...), you can use the `Services` namespace from `vscode/services`:
 ```typescript
 import { Services } from 'vscode/services'
 Services.install({
-   languages: {
-       registerTypeHierarchyProvider (documentSelector, provider) {
-           ...
-       }
-   }
+  workspace: {
+    workspaceFolders: ...,
+    createFileSystemWatcher (documentSelector, provider) {
+      ...
+    },
+    onDidSaveTextDocument
+  },
+  window: {
+    withProgress: ...
+  }
 })
 ```
 
+Also, monaco-editor use `standalone` versions or the vscode services, which are much simpler.
 
+You may want to provide your custom implementations of them, especially for: `textModelService`, `codeEditorService` and `notificationService`. To do so, you can provide them as the third parameter while creating your first editor.
+This library allows you to use a more convenient way using `StandaloneService.initialize`.
+Also, monaco-editor doesn't provide good type for them, so this library does it.
+
+Example:
+```
+import { StandaloneService, INotificationService } from 'vscode/services'
+
+class MyCustomNotificationService implements INotificationService { ... }
+StandaloneService.initialize({
+  get [INotificationService.toString()] () {
+    return new MyCustomNotificationService(...)
+  }
+})
+```
 
 ### Installation
 

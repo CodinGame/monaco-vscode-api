@@ -1,3 +1,4 @@
+import './polyfill'
 import * as extHostTypes from 'vs/workbench/api/common/extHostTypes'
 import * as errors from 'vs/base/common/errors'
 import * as commonDebug from 'vs/workbench/contrib/debug/common/debug'
@@ -20,7 +21,7 @@ import customEnv from './vscode-services/env'
 const unsupported = <any>undefined
 
 const api: typeof vscode = {
-  version: '1.67',
+  version: VSCODE_VERSION,
 
   tasks: unsupported,
   notebooks: unsupported,
@@ -50,7 +51,7 @@ const api: typeof vscode = {
   Color: extHostTypes.Color,
   ColorInformation: extHostTypes.ColorInformation,
   ColorPresentation: extHostTypes.ColorPresentation,
-  ColorThemeKind: extHostTypes.ColorThemeKind,
+  ColorThemeKind: unsupported,
   CommentMode: extHostTypes.CommentMode,
   CommentThreadCollapsibleState: extHostTypes.CommentThreadCollapsibleState,
   CompletionItem: extHostTypes.CompletionItem,
@@ -168,22 +169,17 @@ const api: typeof vscode = {
   TestMessage: extHostTypes.TestMessage,
   TestTag: extHostTypes.TestTag,
   TestRunProfileKind: extHostTypes.TestRunProfileKind,
-  DataTransfer: extHostTypes.DataTransfer,
-  DataTransferItem: extHostTypes.DataTransferItem,
+  DataTransfer: unsupported,
+  DataTransferItem: unsupported,
   LanguageStatusSeverity: extHostTypes.LanguageStatusSeverity,
   QuickPickItemKind: extHostTypes.QuickPickItemKind,
-  TabInputText: extHostTypes.TextTabInput,
-  TabInputTextDiff: extHostTypes.TextDiffTabInput,
-  TabInputCustom: extHostTypes.CustomEditorTabInput,
-  TabInputNotebook: extHostTypes.NotebookEditorTabInput,
-  TabInputNotebookDiff: extHostTypes.NotebookDiffEditorTabInput,
-  TabInputWebview: extHostTypes.WebviewEditorTabInput,
-  TabInputTerminal: extHostTypes.TerminalEditorTabInput,
-  InputBoxValidationSeverity: extHostTypes.InputBoxValidationSeverity,
-  InlineCompletionList: extHostTypes.InlineSuggestionList,
-  InlineCompletionTriggerKind: extHostTypes.InlineCompletionTriggerKind,
-  InlineCompletionItem: extHostTypes.InlineSuggestion,
-  NotebookEditorRevealType: extHostTypes.NotebookEditorRevealType
+  TabInputText: unsupported,
+  TabInputTextDiff: unsupported,
+  TabInputCustom: unsupported,
+  TabInputNotebook: unsupported,
+  TabInputNotebookDiff: unsupported,
+  TabInputWebview: unsupported,
+  TabInputTerminal: unsupported
 }
 
 // @ts-ignore the syntax will be transformed by a typescript transformer in the rollup config

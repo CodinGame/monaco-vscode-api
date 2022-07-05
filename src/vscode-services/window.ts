@@ -1,27 +1,30 @@
-import { CancellationTokenSource } from 'vs/base/common/cancellation'
 import Severity from 'vs/base/common/severity'
 import { URI } from 'vs/base/common/uri'
 import type * as vscode from 'vscode'
 import { Event } from 'vs/base/common/event'
+import * as extHostTypes from 'vs/workbench/api/common/extHostTypes'
+import workspace from './workspace'
+import { DEFAULT_EXTENSION, getExtHostServices } from './extHost'
 import { Services } from '../services'
 import { unsupported } from '../tools'
 
-function showMessage<T extends vscode.MessageOptions | string | vscode.MessageItem> (type: Severity, message: string, ...rest: T[]): Thenable<T | undefined> {
-  const { window } = Services.get()
-  if (window == null) {
-    return Promise.resolve(undefined)
-  }
-  return window.showMessage(type, message, ...rest)
-}
-
 const window: typeof vscode.window = {
-  showInformationMessage: showMessage.bind(undefined, Severity.Info),
-  showWarningMessage: showMessage.bind(undefined, Severity.Warning),
-  showErrorMessage: showMessage.bind(undefined, Severity.Error),
+  showInformationMessage (message: string, ...rest: Array<vscode.MessageOptions | string | vscode.MessageItem>) {
+    const { extHostMessageService } = getExtHostServices()
+    return extHostMessageService.showMessage(Services.get().extension ?? DEFAULT_EXTENSION, Severity.Info, message, rest[0], <Array<string | vscode.MessageItem>>rest.slice(1))
+  },
+  showWarningMessage (message: string, ...rest: Array<vscode.MessageOptions | string | vscode.MessageItem>) {
+    const { extHostMessageService } = getExtHostServices()
+    return extHostMessageService.showMessage(Services.get().extension ?? DEFAULT_EXTENSION, Severity.Warning, message, rest[0], <Array<string | vscode.MessageItem>>rest.slice(1))
+  },
+  showErrorMessage (message: string, ...rest: Array<vscode.MessageOptions | string | vscode.MessageItem>) {
+    const { extHostMessageService } = getExtHostServices()
+    return extHostMessageService.showMessage(Services.get().extension ?? DEFAULT_EXTENSION, Severity.Error, message, rest[0], <Array<string | vscode.MessageItem>>rest.slice(1))
+  },
   createOutputChannel (name: string): vscode.OutputChannel {
     const { window } = Services.get()
-    const createOutputChannel = (window != null) ? window.createOutputChannel : undefined
-    const channel: vscode.OutputChannel | undefined = (createOutputChannel != null) ? createOutputChannel.bind(window)(name) : undefined
+    const createOutputChannel = window?.createOutputChannel
+    const channel: vscode.OutputChannel | undefined = createOutputChannel?.call(window, name)
     return channel ?? {
       name,
       append: () => { },
@@ -33,57 +36,83 @@ const window: typeof vscode.window = {
       dispose: () => { }
     }
   },
-  withProgress: (options, task) => {
-    const { window } = Services.get()
-    if ((window != null) && (window.withProgress != null)) {
-      return window.withProgress(options, task)
-    }
-    return task({ report: () => { } }, new CancellationTokenSource().token)
+  withScmProgress<R> (task: (progress: vscode.Progress<number>) => Thenable<R>) {
+    const { extHostProgress } = getExtHostServices()
+    return extHostProgress.withProgress(Services.get().extension ?? DEFAULT_EXTENSION, { location: extHostTypes.ProgressLocation.SourceControl }, () => task({ report () { /* noop */ } }))
   },
-  showTextDocument: async (textDocumentOrUri: vscode.TextDocument | URI, columnOrOptions: vscode.ViewColumn | vscode.TextDocumentShowOptions | undefined, preserveFocus?: boolean) => {
-    const { window } = Services.get()
-    let options: vscode.TextDocumentShowOptions | undefined
-    if (typeof columnOrOptions === 'number') {
-      options = {
-        viewColumn: columnOrOptions,
-        preserveFocus
-      }
-    } else {
-      options = columnOrOptions
-    }
+  withProgress<R> (options: vscode.ProgressOptions, task: (progress: vscode.Progress<{ message?: string, worked?: number }>, token: vscode.CancellationToken) => Thenable<R>) {
+    const { extHostProgress } = getExtHostServices()
+    return extHostProgress.withProgress(Services.get().extension ?? DEFAULT_EXTENSION, options, task)
+  },
+  showTextDocument: async (documentOrUri: vscode.TextDocument | vscode.Uri, columnOrOptions?: vscode.ViewColumn | vscode.TextDocumentShowOptions, preserveFocus?: boolean) => {
+    const { extHostEditors } = getExtHostServices()
+    const document = await (URI.isUri(documentOrUri)
+      ? Promise.resolve(workspace.openTextDocument(documentOrUri))
+      : Promise.resolve(<vscode.TextDocument>documentOrUri))
 
-    if ((window != null) && (window.showTextDocument != null)) {
-      await window.showTextDocument(URI.isUri(textDocumentOrUri) ? textDocumentOrUri : textDocumentOrUri.uri, options)
-    }
-    // The language client doesn't use the return value of this method
-    return undefined as unknown as vscode.TextEditor
+    return extHostEditors.showTextDocument(document, columnOrOptions, preserveFocus)
+  },
+  createQuickPick<T extends vscode.QuickPickItem> (): vscode.QuickPick<T> {
+    const { extHostQuickOpen } = getExtHostServices()
+    return extHostQuickOpen.createQuickPick(Services.get().extension ?? DEFAULT_EXTENSION)
+  },
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  showQuickPick (items: any, options?: vscode.QuickPickOptions, token?: vscode.CancellationToken): any {
+    const { extHostQuickOpen } = getExtHostServices()
+    return extHostQuickOpen.showQuickPick(items, options, token)
+  },
+  createInputBox (): vscode.InputBox {
+    const { extHostQuickOpen } = getExtHostServices()
+    const extension = Services.get().extension ?? DEFAULT_EXTENSION
+    return extHostQuickOpen.createInputBox(extension.identifier)
+  },
+  showInputBox (options?: vscode.InputBoxOptions, token?: vscode.CancellationToken) {
+    const { extHostQuickOpen } = getExtHostServices()
+    return extHostQuickOpen.showInput(options, token)
   },
   createTextEditorDecorationType: unsupported,
-  showQuickPick: unsupported,
   showWorkspaceFolderPick: unsupported,
   showOpenDialog: unsupported,
   showSaveDialog: unsupported,
-  showInputBox: unsupported,
   createWebviewPanel: unsupported,
   setStatusBarMessage: unsupported,
-  withScmProgress: unsupported,
   createStatusBarItem: unsupported,
   createTerminal: unsupported,
   registerTreeDataProvider: unsupported,
   createTreeView: unsupported,
   registerWebviewPanelSerializer: unsupported,
   get activeTextEditor () {
-    return unsupported()
+    const { extHostEditors } = getExtHostServices()
+    return extHostEditors.getActiveTextEditor()
   },
   get visibleTextEditors () {
-    return unsupported()
+    const { extHostEditors } = getExtHostServices()
+    return extHostEditors.getVisibleTextEditors()
   },
-  onDidChangeActiveTextEditor: Event.None,
-  onDidChangeVisibleTextEditors: Event.None,
-  onDidChangeTextEditorSelection: Event.None,
-  onDidChangeTextEditorVisibleRanges: Event.None,
-  onDidChangeTextEditorOptions: Event.None,
-  onDidChangeTextEditorViewColumn: Event.None,
+  onDidChangeActiveTextEditor (listener, thisArg?, disposables?) {
+    const { extHostEditors } = getExtHostServices()
+    return extHostEditors.onDidChangeActiveTextEditor(listener, thisArg, disposables)
+  },
+  onDidChangeVisibleTextEditors (listener, thisArg, disposables) {
+    const { extHostEditors } = getExtHostServices()
+    return extHostEditors.onDidChangeVisibleTextEditors(listener, thisArg, disposables)
+  },
+  onDidChangeTextEditorSelection (listener, thisArgs, disposables) {
+    const { extHostEditors } = getExtHostServices()
+    return extHostEditors.onDidChangeTextEditorSelection(listener, thisArgs, disposables)
+  },
+  onDidChangeTextEditorVisibleRanges (listener, thisArgs, disposables) {
+    const { extHostEditors } = getExtHostServices()
+    return extHostEditors.onDidChangeTextEditorVisibleRanges(listener, thisArgs, disposables)
+  },
+  onDidChangeTextEditorOptions (listener, thisArgs, disposables) {
+    const { extHostEditors } = getExtHostServices()
+    return extHostEditors.onDidChangeTextEditorOptions(listener, thisArgs, disposables)
+  },
+  onDidChangeTextEditorViewColumn (listener, thisArg?, disposables?) {
+    const { extHostEditors } = getExtHostServices()
+    return extHostEditors.onDidChangeTextEditorViewColumn(listener, thisArg, disposables)
+  },
   get terminals () {
     return unsupported()
   },
@@ -97,8 +126,6 @@ const window: typeof vscode.window = {
     return unsupported()
   },
   onDidChangeWindowState: Event.None,
-  createQuickPick: unsupported,
-  createInputBox: unsupported,
   registerUriHandler: unsupported,
   registerWebviewViewProvider: unsupported,
   registerCustomEditorProvider: unsupported,
@@ -112,14 +139,7 @@ const window: typeof vscode.window = {
   onDidChangeTerminalState: Event.None,
   get tabGroups () {
     return unsupported()
-  },
-  showNotebookDocument: unsupported,
-  visibleNotebookEditors: [],
-  onDidChangeVisibleNotebookEditors: Event.None,
-  activeNotebookEditor: undefined,
-  onDidChangeActiveNotebookEditor: Event.None,
-  onDidChangeNotebookEditorSelection: Event.None,
-  onDidChangeNotebookEditorVisibleRanges: Event.None
+  }
 }
 
 export default window

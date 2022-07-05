@@ -1,7 +1,10 @@
 import { UIKind } from 'vs/workbench/services/extensions/common/extensionHostProtocol'
 import type * as vscode from 'vscode'
 import { Event } from 'vs/base/common/event'
-import { Services } from '../services'
+import { URI } from 'vs/base/common/uri'
+import { matchesScheme } from 'vs/platform/opener/common/opener'
+import { Schemas } from 'vs/base/common/network'
+import { getExtHostServices } from './extHost'
 import { unsupported } from '../tools'
 
 const env: typeof vscode.env = {
@@ -13,7 +16,8 @@ const env: typeof vscode.env = {
     return unsupported()
   },
   get clipboard () {
-    return unsupported()
+    const { extHostClipboard } = getExtHostServices()
+    return extHostClipboard.value
   },
   get machineId () {
     return unsupported()
@@ -24,14 +28,24 @@ const env: typeof vscode.env = {
   remoteName: undefined,
   shell: '',
   uiKind: UIKind.Web,
-  asExternalUri: unsupported,
-  openExternal: async (uri: vscode.Uri) => {
-    const { env } = Services.get()
+  async asExternalUri (uri: URI) {
+    const { extHostWindow } = getExtHostServices()
+    try {
+      return await extHostWindow.asExternalUri(uri, { allowTunneling: false })
+    } catch (err) {
+      if (matchesScheme(uri, Schemas.http) || matchesScheme(uri, Schemas.https)) {
+        return uri
+      }
 
-    if ((env != null) && (env.openExternal != null)) {
-      return env.openExternal(uri)
+      throw err
     }
-    return false
+  },
+  openExternal: async (uri: vscode.Uri, options?: { allowContributedOpeners?: boolean | string }) => {
+    const { extHostWindow } = getExtHostServices()
+    return extHostWindow.openUri(uri, {
+      allowTunneling: false,
+      allowContributedOpeners: options?.allowContributedOpeners
+    })
   },
   appHost: 'web',
   isNewAppInstall: false,

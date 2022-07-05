@@ -1,13 +1,9 @@
 import type * as vscode from 'vscode'
-import { WorkspaceEdit } from 'vs/workbench/api/common/extHostTypeConverters'
-import { reviveWorkspaceEditDto2 } from 'vs/workbench/api/browser/mainThreadBulkEdits'
-import { StandaloneServices } from 'vs/editor/standalone/browser/standaloneServices'
-import { IBulkEditService } from 'vs/editor/browser/services/bulkEditService'
 import { Event } from 'vs/base/common/event'
 import { URI } from 'vs/base/common/uri'
-import { extHostDocuments } from './extHost'
-import { Services } from '../services'
+import { getExtHostServices } from './extHost'
 import { unsupported } from '../tools'
+import { Services } from '../services'
 
 class EmptyFileSystem implements vscode.FileSystem {
   isWritableFileSystem (): boolean | undefined {
@@ -48,9 +44,9 @@ const workspace: typeof vscode.workspace = {
   fs: new EmptyFileSystem(),
   workspaceFile: undefined,
   createFileSystemWatcher (globPattern, ignoreCreateEvents, ignoreChangeEvents, ignoreDeleteEvents): vscode.FileSystemWatcher {
-    const services = Services.get()
-    if (services.workspace?.createFileSystemWatcher != null) {
-      return services.workspace.createFileSystemWatcher(globPattern, ignoreCreateEvents, ignoreChangeEvents, ignoreDeleteEvents)
+    const { workspace } = Services.get()
+    if (workspace?.createFileSystemWatcher != null) {
+      return workspace.createFileSystemWatcher(globPattern, ignoreCreateEvents, ignoreChangeEvents, ignoreDeleteEvents)
     }
     return {
       ignoreCreateEvents: ignoreCreateEvents ?? false,
@@ -63,10 +59,8 @@ const workspace: typeof vscode.workspace = {
     }
   },
   applyEdit: async (edit: vscode.WorkspaceEdit) => {
-    const test = WorkspaceEdit.from(edit)
-    const resourceEdits = reviveWorkspaceEditDto2(test)
-    await StandaloneServices.get(IBulkEditService).apply(resourceEdits)
-    return true
+    const { extHostBulkEdits } = getExtHostServices()
+    return extHostBulkEdits.applyWorkspaceEdit(edit)
   },
   getConfiguration: (section, scope) => {
     const { workspace } = Services.get()
@@ -85,22 +79,22 @@ const workspace: typeof vscode.workspace = {
     }
   },
   get onDidChangeConfiguration (): typeof vscode.workspace.onDidChangeConfiguration {
-    const services = Services.get()
-    return services.workspace?.onDidChangeConfiguration ?? Event.None
+    const { workspace } = Services.get()
+    return workspace?.onDidChangeConfiguration ?? Event.None
   },
   get rootPath () {
-    const services = Services.get()
-    return services.workspace?.rootPath
+    const { workspace } = Services.get()
+    return workspace?.rootPath
   },
   get workspaceFolders (): typeof vscode.workspace.workspaceFolders {
-    const services = Services.get()
-    if (services.workspace == null) {
+    const { workspace } = Services.get()
+    if (workspace == null) {
       return undefined
     }
-    if ('workspaceFolders' in services.workspace) {
-      return services.workspace.workspaceFolders
+    if ('workspaceFolders' in workspace) {
+      return workspace.workspaceFolders
     }
-    const rootPath = services.workspace.rootPath
+    const rootPath = workspace.rootPath
     if (rootPath == null) {
       return undefined
     }
@@ -117,28 +111,32 @@ const workspace: typeof vscode.workspace = {
     })
   },
   get onDidChangeWorkspaceFolders (): typeof vscode.workspace.onDidChangeWorkspaceFolders {
-    const services = Services.get()
-    return services.workspace?.onDidChangeWorkspaceFolders ?? Event.None
+    const { workspace } = Services.get()
+    return workspace?.onDidChangeWorkspaceFolders ?? Event.None
   },
   get textDocuments (): typeof vscode.workspace.textDocuments {
+    const { extHostDocuments } = getExtHostServices()
     return Array.from(extHostDocuments.getAllDocumentData().map(data => data.document))
   },
   get onDidOpenTextDocument (): typeof vscode.workspace.onDidOpenTextDocument {
+    const { extHostDocuments } = getExtHostServices()
     return extHostDocuments.onDidAddDocument
   },
   get onDidCloseTextDocument (): typeof vscode.workspace.onDidCloseTextDocument {
+    const { extHostDocuments } = getExtHostServices()
     return extHostDocuments.onDidRemoveDocument
   },
   get onDidChangeTextDocument (): typeof vscode.workspace.onDidChangeTextDocument {
+    const { extHostDocuments } = getExtHostServices()
     return extHostDocuments.onDidChangeDocument
   },
   get onWillSaveTextDocument (): typeof vscode.workspace.onWillSaveTextDocument {
-    const services = Services.get()
-    return services.workspace?.onWillSaveTextDocument ?? Event.None
+    const { workspace } = Services.get()
+    return workspace?.onWillSaveTextDocument ?? Event.None
   },
   get onDidSaveTextDocument (): typeof vscode.workspace.onDidSaveTextDocument {
-    const services = Services.get()
-    return services.workspace?.onDidSaveTextDocument ?? Event.None
+    const { workspace } = Services.get()
+    return workspace?.onDidSaveTextDocument ?? Event.None
   },
   get onWillCreateFiles (): vscode.Event<vscode.FileWillCreateEvent> {
     return Event.None
@@ -152,7 +150,6 @@ const workspace: typeof vscode.workspace = {
   get onDidDeleteFiles (): vscode.Event<vscode.FileDeleteEvent> {
     return Event.None
   },
-
   get onWillRenameFiles (): vscode.Event<vscode.FileWillRenameEvent> {
     return Event.None
   },
@@ -163,11 +160,41 @@ const workspace: typeof vscode.workspace = {
     return Event.None
   },
   asRelativePath: unsupported,
-  updateWorkspaceFolders: unsupported,
+  updateWorkspaceFolders (start: number, deleteCount: number | undefined | null, ...workspaceFoldersToAdd: { readonly uri: vscode.Uri, readonly name?: string }[]): boolean {
+    const { workspace } = Services.get()
+    if (workspace?.updateWorkspaceFolders != null) {
+      return workspace.updateWorkspaceFolders(start, deleteCount, ...workspaceFoldersToAdd)
+    }
+    return false
+  },
   findFiles: unsupported,
   saveAll: unsupported,
-  openTextDocument: unsupported,
-  registerTextDocumentContentProvider: unsupported,
+  openTextDocument (uriOrFileNameOrOptions?: vscode.Uri | string | { language?: string, content?: string }) {
+    const { extHostDocuments } = getExtHostServices()
+    let uriPromise: Thenable<URI>
+
+    const options = uriOrFileNameOrOptions as { language?: string, content?: string }
+    if (typeof uriOrFileNameOrOptions === 'string') {
+      uriPromise = Promise.resolve(URI.file(uriOrFileNameOrOptions))
+    } else if (URI.isUri(uriOrFileNameOrOptions)) {
+      uriPromise = Promise.resolve(uriOrFileNameOrOptions)
+      // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
+    } else if (options == null || typeof options === 'object') {
+      uriPromise = extHostDocuments.createDocumentData(options)
+    } else {
+      throw new Error('illegal argument - uriOrFileNameOrOptions')
+    }
+
+    return uriPromise.then(uri => {
+      return extHostDocuments.ensureDocumentData(uri).then(documentData => {
+        return documentData.document
+      })
+    })
+  },
+  registerTextDocumentContentProvider (scheme: string, provider: vscode.TextDocumentContentProvider) {
+    const { extHostDocumentContentProviders } = getExtHostServices()
+    return extHostDocumentContentProviders.registerTextDocumentContentProvider(scheme, provider)
+  },
   registerTaskProvider: unsupported,
   registerFileSystemProvider: unsupported,
   openNotebookDocument: unsupported,
