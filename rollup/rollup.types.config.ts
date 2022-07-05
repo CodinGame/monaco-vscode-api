@@ -11,6 +11,17 @@ interfaceOverride.set('URI', 'monaco.Uri')
 interfaceOverride.set('ITextModel', 'monaco.editor.ITextModel')
 interfaceOverride.set('vs/editor/common/config/editorOptions:IEditorOptions', 'monaco.editor.IEditorOptions')
 
+export default rollup.defineConfig([
+  './dist/types/src/services.d.ts',
+  './dist/types/src/service-override/messages.d.ts',
+  './dist/types/src/service-override/modelEditor.d.ts'
+].map((input): rollup.RollupOptions => ({
+  input,
+  output: {
+    format: 'esm',
+    dir: 'dist',
+    entryFileNames: chunk => `${chunk.name}.ts`
+  },
   external: function isExternal (id) {
     if (id === 'vscode') {
       return true
@@ -68,4 +79,4 @@ interfaceOverride.set('vs/editor/common/config/editorOptions:IEditorOptions', 'm
       respectExternal: true
     })
   ]
-})
+})))

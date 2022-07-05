@@ -77,7 +77,9 @@ export default (args: Record<string, string>): rollup.RollupOptions => {
     }],
     input: {
       api: './src/api.ts',
-      services: './src/services.ts'
+      services: './src/services.ts',
+      messages: './src/service-override/messages.ts',
+      modelEditor: './src/service-override/modelEditor.ts'
     },
     plugins: [
       {
