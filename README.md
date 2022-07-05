@@ -35,7 +35,7 @@ This library allows you to use a more convenient way using `StandaloneService.in
 Also, monaco-editor doesn't provide good type for them, so this library does it.
 
 Example:
-```
+```typescript
 import { StandaloneService, INotificationService } from 'vscode/services'
 
 class MyCustomNotificationService implements INotificationService { ... }
@@ -45,6 +45,27 @@ StandaloneService.initialize({
   }
 })
 ```
+
+Additionally, this library exposes 2 modules that include the vscode version of some services (with some glue to make it work with monaco):
+- Notification / Dialog: `vscode/service-override/messages`
+- Model / Editor: `vscode/service-override/modelEditor`
+
+Usage:
+```typescript
+import { StandaloneService } from 'vscode/services'
+import getModelEditorServiceOverride from 'vscode/service-override/modelEditor'
+import getMessageServiceOverride from 'vscode/service-override/messages'
+
+StandaloneServices.initialize({
+  ...getModelEditorServiceOverride((model, input, sideBySide) => {
+    // Open a new editor here and return it
+    // It will be called when for instance the user ctrl+click on an import
+  }),
+  ...getMessageServiceOverride(document.body)
+})
+```
+
+Note: using `vscode/service-override/modelEditor`, you'll be able to use the `vscode.workspace.registerTextDocumentContentProvider` api
 
 ### Installation
 
