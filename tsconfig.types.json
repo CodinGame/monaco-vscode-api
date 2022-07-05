@@ -43,10 +43,14 @@
 	"paths": {
 		"vs/*": [
 			"./vscode/vs/*"
+		],
+		"vscode/*": [
+			"./vscode/*"
 		]
 	},
 	"declaration": true,
-	"emitDeclarationOnly": true
+	"emitDeclarationOnly": true,
+	"skipLibCheck": true
   },
   "include": ["src/services.ts"]
 }
