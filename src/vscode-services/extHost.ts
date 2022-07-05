@@ -126,6 +126,17 @@ class MonacoMainThreadDiagnostics extends MainThreadDiagnostics {
   }
 }
 
+class MainThreadMessageServiceWithoutSource extends MainThreadMessageService {
+  override $showMessage: MainThreadMessageService['$showMessage'] = (severity, message, options, commands) => {
+    // Remove the source from the message so there is no "Extension Settings" button on notifications
+    const _options = {
+      ...options,
+      source: undefined
+    }
+    return super.$showMessage(severity, message, _options, commands)
+  }
+}
+
 function createExtHostServices () {
   const commandsService = StandaloneServices.get(ICommandService)
   const notificationService = StandaloneServices.get(INotificationService)
@@ -206,7 +217,7 @@ function createExtHostServices () {
   const extHostLanguageFeatures = rpcProtocol.set(ExtHostContext.ExtHostLanguageFeatures, new ExtHostLanguageFeatures(rpcProtocol, uriTransformerService, extHostDocuments, extHostCommands, extHostDiagnostics, extHostLogService, extHostApiDeprecationService))
 
   rpcProtocol.set(ExtHostContext.ExtHostTelemetry, new ExtHostTelemetry())
-  rpcProtocol.set(MainContext.MainThreadMessageService, new MainThreadMessageService(mainContext, notificationService, commandsService, dialogService))
+  rpcProtocol.set(MainContext.MainThreadMessageService, new MainThreadMessageServiceWithoutSource(mainContext, notificationService, commandsService, dialogService))
   rpcProtocol.set(MainContext.MainThreadDiagnostics, new MonacoMainThreadDiagnostics(mainContext, markerService, uriIdentityService))
   rpcProtocol.set(MainContext.MainThreadQuickOpen, new MainThreadQuickOpen(mainContext, quickInputService))
   rpcProtocol.set(MainContext.MainThreadTelemetry, new MainThreadTelemetry(mainContext, telemetryService, configurationService, workbenchEnvironmentService, productService))
