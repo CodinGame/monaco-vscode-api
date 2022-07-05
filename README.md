@@ -30,7 +30,7 @@ Services.install({
 
 Also, monaco-editor use `standalone` versions or the vscode services, which are much simpler.
 
-You may want to provide your custom implementations of them, especially for: `textModelService`, `codeEditorService` and `notificationService`. Do do so, you can give them as the third parameter while creating your first editor.
+You may want to provide your custom implementations of them, especially for: `textModelService`, `codeEditorService` and `notificationService`. To do so, you can provide them as the third parameter while creating your first editor.
 This library allows you to use a more convenient way using `StandaloneService.initialize`.
 Also, monaco-editor doesn't provide good type for them, so this library does it.
 
