@@ -1,26 +1,22 @@
 
 import { QuickInputController } from 'vs/base/parts/quickinput/browser/quickInput'
-// @ts-ignore
+// @ts-ignore Creating a d.ts is not worth it
 import { VSBuffer as MonacoVSBuffer } from 'monaco-editor/esm/vs/base/common/buffer.js'
 import { VSBuffer as VScodeVSBuffer } from 'vscode/vs/base/common/buffer.js'
+import { IQuickInput, IQuickPick } from 'vs/base/parts/quickinput/common/quickInput'
 
-const createQuickPick = QuickInputController.prototype.createQuickPick
-QuickInputController.prototype.createQuickPick = function () {
-  const quickPick = createQuickPick.call(this)
-  // @ts-ignore
-  quickPick.onDidTriggerButton = quickPick.onDidTriggerButtonEmitter.event
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  return quickPick as any
+function polyfillQuickInput<T extends IQuickInput> (fn: () => T): () => T {
+  return function (this: QuickInputController) {
+    const quickInput = fn.call(this)
+    // @ts-ignore Override of a readonly property
+    quickInput.onDidTriggerButton ??= quickInput.onDidTriggerButtonEmitter.event
+    return quickInput
+  }
 }
 
-const createInputBox = QuickInputController.prototype.createQuickPick
-QuickInputController.prototype.createInputBox = function () {
-  const inputBox = createInputBox.call(this)
-  // @ts-ignore
-  inputBox.onDidTriggerButton = inputBox.onDidTriggerButtonEmitter.event
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  return inputBox as any
-}
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+QuickInputController.prototype.createQuickPick = polyfillQuickInput<IQuickPick<any>>(QuickInputController.prototype.createQuickPick)
+QuickInputController.prototype.createInputBox = polyfillQuickInput(QuickInputController.prototype.createInputBox)
 
 // A lot of methods from VSBuffer are treeshaked out of monaco editor, we need to restore them here
 // Also we cannot just use the VSCode impl because:
