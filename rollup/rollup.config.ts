@@ -305,7 +305,7 @@ function toggleEsmComments (fileContents: string): string {
 }
 
 const cache = new Map<string, Record<string, unknown>>()
-function customRequire<T extends Record<string, unknown>> (_path: string, rootPaths: string[] = [], fromPath?: string): T | null {
+function customRequire<T extends Record<string, unknown>> (_path: string, rootPaths: string[] = [], fromPath?: string, transform?: (code: string) => string): T | null {
   const resolvedPath = resolve(_path, fromPath != null ? [...rootPaths, fromPath] : rootPaths)
   if (resolvedPath == null) {
     return null
@@ -314,7 +314,10 @@ function customRequire<T extends Record<string, unknown>> (_path: string, rootPa
     return cache.get(resolvedPath) as T
   }
 
-  const code = fs.readFileSync(resolvedPath).toString()
+  let code = fs.readFileSync(resolvedPath).toString()
+  if (transform != null) {
+    code = transform(code)
+  }
 
   const transformedCode = babel.transform(code.replace(/@\w+/g, '') /* Remove annotations */, {
     filename: resolvedPath,
@@ -340,7 +343,7 @@ function customRequire<T extends Record<string, unknown>> (_path: string, rootPa
         if (_path.endsWith('.css') || _path.includes('!')) {
           return null
         }
-        const result = customRequire(_path, rootPaths, path.dirname(resolvedPath))
+        const result = customRequire(_path, rootPaths, path.dirname(resolvedPath), transform)
         if (result == null) {
           throw new Error('Module not found: ' + _path + ' from ' + resolvedPath)
         }
@@ -395,7 +398,7 @@ function importMonaco (importee: string) {
   const monacoPath = path.resolve(MONACO_EDITOR_DIR, 'esm', importee)
   const vscodePath = path.resolve(VSCODE_DIR, importee)
 
-  const vscodeExports = customRequire(vscodePath, [VSCODE_DIR])!
+  const vscodeExports = customRequire(vscodePath, [VSCODE_DIR], undefined, toggleEsmComments)!
 
   const monacoExports = customRequire(monacoPath, [path.resolve(MONACO_EDITOR_DIR, 'esm')])!
   for (const monacoExport in monacoExports) {
