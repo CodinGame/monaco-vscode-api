@@ -1,5 +1,7 @@
 import { Emitter, Event } from 'vs/base/common/event'
+import { DomEmitter } from 'vs/base/browser/event'
 import { URI } from 'vs/base/common/uri'
+import { trackFocus } from 'vs/base/browser/dom'
 import { IProgress, IProgressCompositeOptions, IProgressDialogOptions, IProgressNotificationOptions, IProgressOptions, IProgressService, IProgressStep, IProgressWindowOptions } from 'vs/platform/progress/common/progress'
 import { ExtUri } from 'vs/base/common/resources'
 import { IEditorService } from 'vs/workbench/services/editor/common/editorService'
@@ -7,7 +9,7 @@ import { IPaneCompositePartService } from 'vs/workbench/services/panecomposite/b
 import { IUriIdentityService } from 'vs/platform/uriIdentity/common/uriIdentity'
 import { ITextFileEditorModelManager, ITextFileSaveEvent, ITextFileService } from 'vs/workbench/services/textfile/common/textfiles'
 import { IFileService } from 'vs/platform/files/common/files'
-import { GroupOrientation, IEditorGroupsService } from 'vs/workbench/services/editor/common/editorGroupsService'
+import { GroupOrientation, IEditorGroup, IEditorGroupsService } from 'vs/workbench/services/editor/common/editorGroupsService'
 import { IWorkbenchEnvironmentService } from 'vs/workbench/services/environment/common/environmentService'
 import { IWorkingCopyFileService } from 'vs/workbench/services/workingCopy/common/workingCopyFileService'
 import { IPathService } from 'vs/workbench/services/path/common/pathService'
@@ -20,8 +22,10 @@ import { IDisposable } from 'vs/workbench/workbench.web.main'
 import { LanguageFeatureRegistry } from 'vs/editor/common/languageFeatureRegistry'
 import { compare } from 'vs/base/common/strings'
 import { IHostService } from 'vs/workbench/services/host/browser/host'
-import { Services } from '../services'
+import { ILifecycleService, LifecyclePhase, StartupKind } from 'vs/workbench/services/lifecycle/common/lifecycle'
 import { unsupported } from '../tools'
+import { Services } from '../services'
+import { ILanguageDetectionService } from 'vs/workbench/services/languageDetection/common/languageDetectionWorkerService'
 
 registerSingleton(IEditorService, class EditorService implements IEditorService {
   readonly _serviceBrand = undefined
@@ -41,7 +45,7 @@ registerSingleton(IEditorService, class EditorService implements IEditorService 
   count = 0
   getEditors = () => []
   openEditor = unsupported
-  openEditors = async () => []
+  openEditors = unsupported
   replaceEditors = async () => {}
   isOpened = () => false
   isVisible = () => false
@@ -133,7 +137,7 @@ registerSingleton(IFileService, class FileService implements IFileService {
     return undefined
   }
 
-  activateProvider = unsupported
+  activateProvider = async () => {}
   canHandleResource = async () => false
   hasProvider = () => false
   hasCapability = () => false
@@ -164,6 +168,54 @@ registerSingleton(IFileService, class FileService implements IFileService {
   }
 })
 
+class EmptyEditorGroup implements IEditorGroup {
+  onDidModelChange = Event.None
+  onWillDispose = Event.None
+  onDidActiveEditorChange = Event.None
+  onWillCloseEditor = Event.None
+  onDidCloseEditor = Event.None
+  onWillMoveEditor = Event.None
+  onWillOpenEditor = Event.None
+  id = 0
+  index = 0
+  label = 'main'
+  ariaLabel = 'main'
+  activeEditorPane = undefined
+  activeEditor = null
+  previewEditor = null
+  count = 0
+  isEmpty = false
+  isLocked = false
+  stickyCount = 0
+  editors = []
+  get scopedContextKeyService () { return unsupported() }
+  getEditors = unsupported
+  findEditors = unsupported
+  getEditorByIndex = unsupported
+  getIndexOfEditor = unsupported
+  openEditor = unsupported
+  openEditors = unsupported
+  isPinned = unsupported
+  isSticky = unsupported
+  isActive = unsupported
+  contains = unsupported
+  moveEditor = unsupported
+  moveEditors = unsupported
+  copyEditor = unsupported
+  copyEditors = unsupported
+  closeEditor = unsupported
+  closeEditors = unsupported
+  closeAllEditors = unsupported
+  replaceEditors = unsupported
+  pinEditor = unsupported
+  stickEditor = unsupported
+  unstickEditor = unsupported
+  lock = unsupported
+  focus (): void {
+    // ignore
+  }
+}
+
 registerSingleton(IEditorGroupsService, class EditorGroupsService implements IEditorGroupsService {
   readonly _serviceBrand = undefined
   onDidChangeActiveGroup = Event.None
@@ -176,7 +228,7 @@ registerSingleton(IEditorGroupsService, class EditorGroupsService implements IEd
   onDidChangeGroupIndex = Event.None
   onDidChangeGroupLocked = Event.None
   get contentDimension () { return unsupported() }
-  get activeGroup () { return unsupported() }
+  activeGroup = new EmptyEditorGroup()
   get sideGroup () { return unsupported() }
   groups = []
   count = 0
@@ -324,9 +376,20 @@ registerSingleton(ILanguageStatusService, class LanguageStatusServiceImpl implem
   }
 })
 
+const focusTracker = trackFocus(window)
+const onVisibilityChange = new DomEmitter(window.document, 'visibilitychange')
+
+const onDidChangeFocus = Event.latch(Event.any(
+  Event.map(focusTracker.onDidFocus, () => document.hasFocus()),
+  Event.map(focusTracker.onDidBlur, () => document.hasFocus()),
+  Event.map(onVisibilityChange.event, () => document.hasFocus())
+))
+
 registerSingleton(IHostService, class HostService implements IHostService {
   _serviceBrand: undefined
-  onDidChangeFocus = Event.None
+
+  onDidChangeFocus = onDidChangeFocus
+
   get hasFocus (): boolean {
     return document.hasFocus()
   }
@@ -352,4 +415,32 @@ registerSingleton(IHostService, class HostService implements IHostService {
   restart = unsupported
   reload = unsupported
   close = unsupported
+})
+
+registerSingleton(ILifecycleService, class LifecycleService implements ILifecycleService {
+  _serviceBrand: undefined
+  startupKind = StartupKind.NewWindow
+  phase = LifecyclePhase.Ready
+
+  async when (): Promise<void> {
+    // ignore
+  }
+
+  onBeforeShutdown = Event.None
+  onShutdownVeto = Event.None
+  onBeforeShutdownError = Event.None
+  onWillShutdown = Event.None
+  onDidShutdown = Event.None
+  shutdown = unsupported
+})
+
+registerSingleton(ILanguageDetectionService, class LanguageDetectionService implements ILanguageDetectionService {
+  _serviceBrand: undefined
+  isEnabledForLanguage (): boolean {
+    return false
+  }
+
+  async detectLanguage (): Promise<string | undefined> {
+    return undefined
+  }
 })
