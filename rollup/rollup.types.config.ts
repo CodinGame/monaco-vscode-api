@@ -15,6 +15,9 @@ interfaceOverride.set('vs/editor/common/config/editorOptions:IEditorOptions', 'm
     if (id === 'vscode') {
       return true
     }
+    if (id === 'monaco-editor') {
+      return true
+    }
     return false
   },
   plugins: [
