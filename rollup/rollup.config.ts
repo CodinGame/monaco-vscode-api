@@ -208,6 +208,10 @@ export default (args: Record<string, string>): rollup.RollupOptions => {
                     if ((name != null && PURE_FUNCTIONS.has(name)) || PURE_FUNCTIONS.has(node.callee.property.name)) {
                       addComment(node)
                     }
+                    // Remove Registry.add calls
+                    if (name != null && name.endsWith('Registry.add')) {
+                      return null
+                    }
                   }
                 } else if (node.callee.type === 'Identifier' && PURE_FUNCTIONS.has(node.callee.name)) {
                   addComment(node)
