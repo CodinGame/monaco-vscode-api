@@ -7,6 +7,7 @@ import typescript from '@rollup/plugin-typescript'
 import cleanup from 'js-cleanup'
 import ts from 'typescript'
 import replace from '@rollup/plugin-replace'
+import styles from 'rollup-plugin-styles'
 import * as fs from 'fs'
 import * as path from 'path'
 import * as vm from 'vm'
@@ -19,6 +20,10 @@ const PURE_FUNCTIONS = new Set([
   'createDecorator',
   'localize',
   'register',
+  'Registry.as',
+  'registerWorkbenchContribution',
+  'Object.freeze',
+  'URI.parse',
   'CommandsRegistry.registerCommand' // It's not pure but we don't want the additional static vscode commands registered
 ])
 const EXTENSIONS = ['', '.ts', '.js']
@@ -28,6 +33,21 @@ const VSCODE_DIR = path.resolve(__dirname, '../vscode')
 const NODE_MODULES_DIR = path.resolve(__dirname, '../node_modules')
 const MONACO_EDITOR_DIR = path.resolve(NODE_MODULES_DIR, './monaco-editor')
 const OVERRIDE_PATH = path.resolve(__dirname, '../src/override')
+
+function getMemberExpressionPath (node: recast.types.namedTypes.MemberExpression | recast.types.namedTypes.Identifier): string | null {
+  if (node.type === 'MemberExpression') {
+    if (node.property.type === 'Identifier' && (node.object.type === 'Identifier' || node.object.type === 'MemberExpression')) {
+      const parentName = getMemberExpressionPath(node.object)
+      if (parentName == null) {
+        return null
+      }
+      return `${parentName}.${node.property.name}`
+    }
+  } else {
+    return node.name
+  }
+  return null
+}
 
 export default (args: Record<string, string>): rollup.RollupOptions => {
   const vscodeVersion = args['vscode-version']
@@ -41,7 +61,7 @@ export default (args: Record<string, string>): rollup.RollupOptions => {
       annotations: true,
       preset: 'smallest',
       moduleSideEffects (id) {
-        return id.startsWith(SRC_DIR)
+        return id.startsWith(SRC_DIR) || id.endsWith('.css')
       }
     },
     external: (source) => {
@@ -57,12 +77,17 @@ export default (args: Record<string, string>): rollup.RollupOptions => {
     }],
     input: {
       api: './src/api.ts',
-      services: './src/services.ts'
+      services: './src/services.ts',
+      messages: './src/service-override/messages.ts',
+      modelEditor: './src/service-override/modelEditor.ts'
     },
     plugins: [
       {
         name: 'resolve-vscode',
         resolveId: async function (importee, importer) {
+          if (importee.startsWith('vs/css!')) {
+            return path.resolve(path.dirname(importer!), importee.slice('vs/css!'.length) + '.css')
+          }
           if (importee.startsWith('vscode/')) {
             return resolve(path.relative('vscode', importee), [VSCODE_DIR])
           }
@@ -85,25 +110,23 @@ export default (args: Record<string, string>): rollup.RollupOptions => {
         transform (code) {
           return toggleEsmComments(code)
         },
-        load: (id) => {
+        load (id) {
+          if (id.startsWith(VSCODE_DIR) && id.endsWith('.css')) {
+            const monacoCssPath = path.resolve(MONACO_EDITOR_DIR, 'esm', path.relative(VSCODE_DIR, id))
+            if (fs.existsSync(monacoCssPath)) {
+              return ''
+            }
+          }
           if (id.startsWith('vs/')) {
             return importMonaco(id)
           }
           return undefined
         }
       },
+      styles(),
       nodeResolve({
         extensions: EXTENSIONS
       }),
-      {
-        name: 'ignore-css',
-        load (id) {
-          if (id.endsWith('.css')) {
-            return 'export default undefined;'
-          }
-          return undefined
-        }
-      },
       typescript({
         noEmitOnError: true,
         transformers: {
@@ -181,17 +204,15 @@ export default (args: Record<string, string>): rollup.RollupOptions => {
                   transformed = true
                   return null
                 }
-                if (node.callee.type === 'Identifier' && node.callee.name === '__decorate') {
-                  // We don't use the vscode injection mecanism, so remove it to improve treeshaking
-                  transformed = true
-                  path.replace(node.arguments[1])
-                  return false
-                }
                 if (node.callee.type === 'MemberExpression') {
-                  if (node.callee.object.type === 'Identifier' && node.callee.property.type === 'Identifier') {
-                    const name = `${node.callee.object.name}.${node.callee.property.name}`
-                    if (PURE_FUNCTIONS.has(name) || PURE_FUNCTIONS.has(node.callee.property.name)) {
+                  if (node.callee.property.type === 'Identifier') {
+                    const name = getMemberExpressionPath(node.callee)
+                    if ((name != null && PURE_FUNCTIONS.has(name)) || PURE_FUNCTIONS.has(node.callee.property.name)) {
                       addComment(node)
+                    }
+                    // Remove Registry.add calls
+                    if (name != null && name.endsWith('Registry.add')) {
+                      return null
                     }
                   }
                 } else if (node.callee.type === 'Identifier' && PURE_FUNCTIONS.has(node.callee.name)) {
@@ -286,7 +307,7 @@ function toggleEsmComments (fileContents: string): string {
 }
 
 const cache = new Map<string, Record<string, unknown>>()
-function customRequire<T extends Record<string, unknown>> (_path: string, rootPaths: string[] = [], fromPath?: string): T | null {
+function customRequire<T extends Record<string, unknown>> (_path: string, rootPaths: string[] = [], fromPath?: string, transform?: (code: string) => string): T | null {
   const resolvedPath = resolve(_path, fromPath != null ? [...rootPaths, fromPath] : rootPaths)
   if (resolvedPath == null) {
     return null
@@ -295,7 +316,10 @@ function customRequire<T extends Record<string, unknown>> (_path: string, rootPa
     return cache.get(resolvedPath) as T
   }
 
-  const code = fs.readFileSync(resolvedPath).toString()
+  let code = fs.readFileSync(resolvedPath).toString()
+  if (transform != null) {
+    code = transform(code)
+  }
 
   const transformedCode = babel.transform(code.replace(/@\w+/g, '') /* Remove annotations */, {
     filename: resolvedPath,
@@ -321,7 +345,7 @@ function customRequire<T extends Record<string, unknown>> (_path: string, rootPa
         if (_path.endsWith('.css') || _path.includes('!')) {
           return null
         }
-        const result = customRequire(_path, rootPaths, path.dirname(resolvedPath))
+        const result = customRequire(_path, rootPaths, path.dirname(resolvedPath), transform)
         if (result == null) {
           throw new Error('Module not found: ' + _path + ' from ' + resolvedPath)
         }
@@ -376,7 +400,7 @@ function importMonaco (importee: string) {
   const monacoPath = path.resolve(MONACO_EDITOR_DIR, 'esm', importee)
   const vscodePath = path.resolve(VSCODE_DIR, importee)
 
-  const vscodeExports = customRequire(vscodePath, [VSCODE_DIR])!
+  const vscodeExports = customRequire(vscodePath, [VSCODE_DIR], undefined, toggleEsmComments)!
 
   const monacoExports = customRequire(monacoPath, [path.resolve(MONACO_EDITOR_DIR, 'esm')])!
   for (const monacoExport in monacoExports) {
