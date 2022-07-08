@@ -17,6 +17,7 @@ import { ScrollType } from 'vs/editor/common/editorCommon'
 import { SyncDescriptor } from 'vs/platform/instantiation/common/descriptors'
 import { ITextModel } from 'vs/editor/common/model'
 import { IReference } from 'vs/base/common/lifecycle'
+import { URI } from 'vs/base/common/uri'
 import { IModelService } from '../services'
 import { unsupported } from '../tools'
 
@@ -101,10 +102,6 @@ class EditorService implements IEditorService {
       // The model doesn't exist, resolve it
       const modelRef = await this.textModelService.createModelReference(resource)
       model = modelRef.object.textEditorModel
-      // Dispose the ref when the model is disposed or we'll get a disposed model next time
-      model.onWillDispose(() => {
-        modelRef.dispose()
-      })
     } else {
       // If the model was already existing, try to find an associated editor
       const codeEditors = StandaloneServices.get(ICodeEditorService).listCodeEditors()
@@ -142,9 +139,28 @@ class EditorService implements IEditorService {
   revertAll = unsupported
 }
 
+/**
+ * Vscode manage models by using the EditorInput class
+ * The EditorInput class keeps a reference to the model, preventing it from being destroyed
+ * With monaco, we don't have this class, but the only way to retrieve a model is to use the createModelReference method which returns a ref
+ * We don't want the user to manipulate ref, so we just provide the model to them.
+ * The user may want to dispose the model when there is no more usage of it, but doing so doesn't dispose the ref
+ * This class just force dispose the refs when the model is disposed
+ */
+class CustomTextModelResolverService extends TextModelResolverService {
+  override async createModelReference (resource: URI) {
+    const ref = await super.createModelReference(resource)
+    // Dispose the ref when the model is disposed or we'll get a disposed model next time
+    ref.object.textEditorModel.onWillDispose(() => {
+      ref.dispose()
+    })
+    return ref
+  }
+}
+
 export default function getServiceOverride (openEditor: OpenEditor): IEditorOverrideServices {
   return {
-    [ITextModelService.toString()]: new SyncDescriptor(TextModelResolverService),
+    [ITextModelService.toString()]: new SyncDescriptor(CustomTextModelResolverService),
     [ICodeEditorService.toString()]: new SyncDescriptor(CodeEditorService),
     [IEditorService.toString()]: new SyncDescriptor(EditorService, [openEditor])
   }
