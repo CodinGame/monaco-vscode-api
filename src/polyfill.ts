@@ -13,8 +13,25 @@ import { getSingletonServiceDescriptors } from 'vs/platform/instantiation/common
 import { ILabelService } from 'vs/platform/label/common/label'
 import { Event } from 'vs/base/common/event'
 import { IQuickInput, IQuickPick } from 'vs/base/parts/quickinput/common/quickInput'
+// @ts-ignore Creating a d.ts is not worth it
+import { LanguageService as MonacoLanguageService } from 'monaco-editor/esm/vs/editor/common/services/languageService.js'
+import { LanguageService as VScodeLanguageService } from 'vscode/vs/editor/common/services/languageService.js'
+// @ts-ignore Creating a d.ts is not worth it
+import { NoOpNotification as MonacoNoOpNotification } from 'monaco-editor/esm/vs/platform/notification/common/notification.js'
+import { NoOpNotification as VScodeNoOpNotification } from 'vscode/vs/platform/notification/common/notification.js'
 
-(MonacoProgressBar as typeof VScodeProgressBar).prototype.hide = VScodeProgressBar.prototype.hide
+// @ts-ignore Override of a readonly property
+MonacoNoOpNotification.prototype.onDidClose ??= Event.None
+for (const key of Object.getOwnPropertyNames(VScodeNoOpNotification.prototype)) {
+  if (!Object.hasOwnProperty.call(MonacoNoOpNotification.prototype, key)) {
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    MonacoNoOpNotification.prototype[key] = (VScodeNoOpNotification.prototype as any)[key]
+  }
+}
+
+MonacoLanguageService.prototype.getRegisteredLanguageIds ??= VScodeLanguageService.prototype.getRegisteredLanguageIds;
+
+(MonacoProgressBar as typeof VScodeProgressBar).prototype.hide ??= VScodeProgressBar.prototype.hide
 
 // eslint-disable-next-line dot-notation
 ;(MonacoThemable as typeof VScodeThemable).prototype['getColor'] ??= VScodeThemable.prototype['getColor']
