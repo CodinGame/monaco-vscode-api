@@ -34,10 +34,7 @@ let services: Services | undefined
 export namespace Services {
   export type Provider = () => Services
   export const get: Provider = () => {
-    if (services == null) {
-      throw new Error('Services has not been installed')
-    }
-    return services
+    return services ?? {}
   }
   export function install (_services: Services): vscode.Disposable {
     if (services != null) {
