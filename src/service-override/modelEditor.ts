@@ -124,6 +124,8 @@ class EditorService implements IEditorService {
       applyTextEditorOptions(options, modelEditor, ScrollType.Immediate)
     }
 
+    modelEditor.focus()
+
     // Return a very simple editor pane, only the `getControl` method is used
     return new SimpleEditorPane(modelEditor)
   }
