@@ -125,7 +125,7 @@ class EditorService implements IEditorService {
       return undefined
     }
 
-    // Otherwise, let the user destroy the model, never destry the reference
+    // Otherwise, let the user destroy the model, never destroy the reference
 
     if (options != null) {
       // Apply selection
@@ -169,13 +169,13 @@ class CustomTextModelResolverService extends TextModelResolverService {
   }
 
   override async createModelReference (resource: URI): Promise<IReference<IResolvedTextEditorModel>> {
-    // If the model already exists, return an immortable reference to it
+    // If the model already exists, return an immortal reference to it
     const existingModel = this._modelService.getModel(resource)
     if (existingModel != null) {
       return new ImmortalReference(this._instantiationService.createInstance(TextResourceEditorModel, resource) as IResolvedTextEditorModel)
     }
 
-    // Otherwise, try to create a referene to the model
+    // Otherwise, try to create a reference to the model
     const ref = await super.createModelReference(resource)
     // Dispose the ref when the model is disposed or we'll get a disposed model next time
     ref.object.textEditorModel.onWillDispose(() => {
