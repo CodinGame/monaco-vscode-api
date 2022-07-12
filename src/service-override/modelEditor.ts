@@ -16,9 +16,14 @@ import { applyTextEditorOptions } from 'vs/workbench/common/editor/editorOptions
 import { ScrollType } from 'vs/editor/common/editorCommon'
 import { SyncDescriptor } from 'vs/platform/instantiation/common/descriptors'
 import { ITextModel } from 'vs/editor/common/model'
-import { IReference } from 'vs/base/common/lifecycle'
+import { ImmortalReference, IReference } from 'vs/base/common/lifecycle'
 import { URI } from 'vs/base/common/uri'
-import { IModelService } from '../services'
+import { IModelService } from 'vs/editor/common/services/model'
+import { IFileService } from 'vs/platform/files/common/files'
+import { IInstantiationService } from 'vs/platform/instantiation/common/instantiation'
+import { IUriIdentityService } from 'vs/platform/uriIdentity/common/uriIdentity'
+import { IUndoRedoService } from 'vs/platform/undoRedo/common/undoRedo'
+import { TextResourceEditorModel } from 'vs/workbench/common/editor/textResourceEditorModel'
 import { unsupported } from '../tools'
 
 type OpenEditor = (model: ITextModel, options: IEditorOptions | undefined, sideBySide?: boolean) => Promise<ICodeEditor | undefined>
@@ -150,7 +155,24 @@ class EditorService implements IEditorService {
  * This class just force dispose the refs when the model is disposed
  */
 class CustomTextModelResolverService extends TextModelResolverService {
-  override async createModelReference (resource: URI) {
+  constructor (
+    @IInstantiationService private _instantiationService: IInstantiationService,
+    @IFileService fileService: IFileService,
+    @IUndoRedoService undoRedoService: IUndoRedoService,
+    @IModelService private _modelService: IModelService,
+    @IUriIdentityService uriIdentityService: IUriIdentityService
+  ) {
+    super(_instantiationService, fileService, undoRedoService, _modelService, uriIdentityService)
+  }
+
+  override async createModelReference (resource: URI): Promise<IReference<IResolvedTextEditorModel>> {
+    // If the model already exists, return an immortable reference to it
+    const existingModel = this._modelService.getModel(resource)
+    if (existingModel != null) {
+      return new ImmortalReference(this._instantiationService.createInstance(TextResourceEditorModel, resource) as IResolvedTextEditorModel)
+    }
+
+    // Otherwise, try to create a referene to the model
     const ref = await super.createModelReference(resource)
     // Dispose the ref when the model is disposed or we'll get a disposed model next time
     ref.object.textEditorModel.onWillDispose(() => {
