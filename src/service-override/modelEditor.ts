@@ -106,6 +106,7 @@ class EditorService implements IEditorService {
     if (model == null) {
       // The model doesn't exist, resolve it
       const modelRef = await this.textModelService.createModelReference(resource)
+      newModelRef = modelRef
       model = modelRef.object.textEditorModel
     } else {
       // If the model was already existing, try to find an associated editor
@@ -123,6 +124,8 @@ class EditorService implements IEditorService {
       newModelRef?.dispose()
       return undefined
     }
+
+    // Otherwise, let the user destroy the model, never destry the reference
 
     if (options != null) {
       // Apply selection
