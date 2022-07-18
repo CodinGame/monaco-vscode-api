@@ -24,6 +24,11 @@ const PURE_FUNCTIONS = new Set([
   'registerWorkbenchContribution',
   'Object.freeze',
   'URI.parse',
+  'registerColor',
+  'transparent',
+  'darken',
+  'lighten',
+  'Color.fromHex',
   'CommandsRegistry.registerCommand' // It's not pure but we don't want the additional static vscode commands registered
 ])
 const EXTENSIONS = ['', '.ts', '.js']
