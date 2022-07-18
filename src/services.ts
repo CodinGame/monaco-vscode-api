@@ -2,6 +2,7 @@ import Severity from 'vs/base/common/severity'
 import type * as vscode from 'vscode'
 import type { IProgressService } from 'vs/platform/progress/common/progress'
 import { IExtensionDescription } from 'vs/platform/extensions/common/extensions'
+import { NotificationsFilter } from 'vs/platform/notification/common/notification'
 
 export {
   Severity
@@ -84,3 +85,7 @@ export { IPaneCompositePartService } from 'vs/workbench/services/panecomposite/b
 export { IPathService } from 'vs/workbench/services/path/common/pathService'
 export { ITextFileService } from 'vs/workbench/services/textfile/common/textfiles'
 export { IWorkingCopyFileService } from 'vs/workbench/services/workingCopy/common/workingCopyFileService'
+
+export {
+  NotificationsFilter
+}
