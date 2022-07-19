@@ -73,9 +73,11 @@ function toMonacoVSBuffer (value: unknown) {
 
 for (const key of Object.getOwnPropertyNames(VScodeVSBuffer)) {
   if (!Object.hasOwnProperty.call(MonacoVSBuffer, key)) {
-    MonacoVSBuffer[key] = function (...args: any[]) {
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      return toMonacoVSBuffer((VScodeVSBuffer as any)[key].call(MonacoVSBuffer, ...args.map(toVSCodeVSBuffer)))
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const method = (VScodeVSBuffer as any)[key];
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    (VScodeVSBuffer as any)[key] = MonacoVSBuffer[key] = function (...args: any[]) {
+      return toMonacoVSBuffer(method.call(MonacoVSBuffer, ...args.map(toVSCodeVSBuffer)))
     }
   }
 }
