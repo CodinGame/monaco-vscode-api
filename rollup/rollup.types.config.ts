@@ -14,7 +14,8 @@ interfaceOverride.set('vs/editor/common/config/editorOptions:IEditorOptions', 'm
 export default rollup.defineConfig([
   './dist/types/src/services.d.ts',
   './dist/types/src/service-override/messages.d.ts',
-  './dist/types/src/service-override/modelEditor.d.ts'
+  './dist/types/src/service-override/modelEditor.d.ts',
+  './dist/types/src/service-override/configuration.d.ts'
 ].map((input): rollup.RollupOptions => ({
   input,
   output: {
