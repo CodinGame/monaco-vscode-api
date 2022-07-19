@@ -1,7 +1,7 @@
 import type * as vscode from 'vscode'
 import { Event } from 'vs/base/common/event'
 import { URI } from 'vs/base/common/uri'
-import { getExtHostServices } from './extHost'
+import { DEFAULT_EXTENSION, getExtHostServices } from './extHost'
 import { unsupported } from '../tools'
 import { Services } from '../services'
 
@@ -63,24 +63,16 @@ const workspace: typeof vscode.workspace = {
     return extHostBulkEdits.applyWorkspaceEdit(edit)
   },
   getConfiguration: (section, scope) => {
-    const { workspace } = Services.get()
-    if (workspace?.getConfiguration != null) {
-      return workspace.getConfiguration(section, scope)
-    }
-    return {
-      get: <T>(section: string, defaultValue?: T): T | undefined => {
-        return defaultValue
-      },
-      has: () => {
-        return false
-      },
-      inspect: unsupported,
-      update: unsupported
-    }
+    const { extHostConfiguration } = getExtHostServices()
+
+    const configProvider = extHostConfiguration.getConfigProvider()
+    return configProvider.getConfiguration(section, scope, Services.get().extension ?? DEFAULT_EXTENSION)
   },
-  get onDidChangeConfiguration (): typeof vscode.workspace.onDidChangeConfiguration {
-    const { workspace } = Services.get()
-    return workspace?.onDidChangeConfiguration ?? Event.None
+  onDidChangeConfiguration (listener, thisArgs, disposables) {
+    const { extHostConfiguration } = getExtHostServices()
+
+    const configProvider = extHostConfiguration.getConfigProvider()
+    return configProvider.onDidChangeConfiguration(listener, thisArgs, disposables)
   },
   get rootPath () {
     const { workspace } = Services.get()
