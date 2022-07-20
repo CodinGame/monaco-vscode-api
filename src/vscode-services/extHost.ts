@@ -1,6 +1,6 @@
 import { ExtHostCommands } from 'vs/workbench/api/common/extHostCommands'
 import { IExtHostRpcService } from 'vs/workbench/api/common/extHostRpcService'
-import { ConsoleMainLogger, LogService } from 'vs/platform/log/common/log'
+import { ConsoleMainLogger, ILogService, LogLevel, LogService } from 'vs/platform/log/common/log'
 import { MainThreadCommands } from 'vs/workbench/api/browser/mainThreadCommands'
 import { IExtHostContext } from 'vs/workbench/services/extensions/common/extHostCustomers'
 import { ExtensionHostKind, NullExtensionService } from 'vs/workbench/services/extensions/common/extensions'
@@ -8,7 +8,7 @@ import { Event } from 'vs/base/common/event'
 import { ExtensionIdentifier, IExtensionDescription } from 'vs/platform/extensions/common/extensions'
 import { URI } from 'vs/base/common/uri'
 import { ExtHostApiDeprecationService } from 'vs/workbench/api/common/extHostApiDeprecationService'
-import { ExtHostContext, IMainContext, MainContext } from 'vs/workbench/api/common/extHost.protocol'
+import { ExtHostConfigurationShape, ExtHostContext, IConfigurationInitData, IMainContext, MainContext, MainThreadConfigurationShape } from 'vs/workbench/api/common/extHost.protocol'
 import { ExtHostDiagnostics } from 'vs/workbench/api/common/extHostDiagnostics'
 import { ExtHostFileSystemInfo } from 'vs/workbench/api/common/extHostFileSystemInfo'
 import * as monaco from 'monaco-editor'
@@ -19,7 +19,7 @@ import { VSBuffer } from 'vs/base/common/buffer'
 import { Proxied, ProxyIdentifier } from 'vs/workbench/services/extensions/common/proxyIdentifier'
 import { ExtHostDocuments } from 'vs/workbench/api/common/extHostDocuments'
 import { createExtHostQuickOpen } from 'vs/workbench/api/common/extHostQuickOpen'
-import { IExtHostWorkspaceProvider } from 'vs/workbench/api/common/extHostWorkspace'
+import { ExtHostWorkspace, IExtHostWorkspace, IExtHostWorkspaceProvider } from 'vs/workbench/api/common/extHostWorkspace'
 import { MainThreadQuickOpen } from 'vs/workbench/api/browser/mainThreadQuickOpen'
 import { ExtHostMessageService } from 'vs/workbench/api/common/extHostMessageService'
 import { MainThreadMessageService } from 'vs/workbench/api/browser/mainThreadMessageService'
@@ -75,7 +75,14 @@ import { ExtHostLanguageFeatures } from 'vs/workbench/api/common/extHostLanguage
 import { MainThreadLanguageFeatures } from 'vs/workbench/api/browser/mainThreadLanguageFeatures'
 import { ILanguageConfigurationService } from 'vs/editor/common/languages/languageConfigurationRegistry'
 import { ILanguageFeaturesService } from 'vs/editor/common/services/languageFeatures'
-import { IConfigurationService } from 'vs/platform/configuration/common/configuration'
+import { IConfigurationChange, IConfigurationService } from 'vs/platform/configuration/common/configuration'
+import { ExtHostConfigProvider } from 'vs/workbench/api/common/extHostConfiguration'
+import { IExtHostInitDataService } from 'vs/workbench/api/common/extHostInitDataService'
+import { MainThreadConfiguration } from 'vs/workbench/api/browser/mainThreadConfiguration'
+import { IWorkspaceContextService } from 'vs/platform/workspace/common/workspace'
+import { UIKind } from 'vs/workbench/services/extensions/common/extensionHostProtocol'
+import { unsupported } from '../tools'
+import { Services } from '../services'
 
 export const DEFAULT_EXTENSION: IExtensionDescription = {
   identifier: new ExtensionIdentifier('monaco'),
@@ -137,6 +144,41 @@ class MainThreadMessageServiceWithoutSource extends MainThreadMessageService {
   }
 }
 
+/**
+ * The vscode ExtHostConfiguration use a barrier and its getConfigProvider returns a promise, let's use a simpler version
+ */
+export class SyncExtHostConfiguration implements ExtHostConfigurationShape {
+  readonly _serviceBrand: undefined
+
+  private readonly _proxy: MainThreadConfigurationShape
+  private readonly _logService: ILogService
+  private readonly _extHostWorkspace: ExtHostWorkspace
+  private _actual: ExtHostConfigProvider | null
+
+  constructor (
+    @IExtHostRpcService extHostRpc: IExtHostRpcService,
+    @IExtHostWorkspace extHostWorkspace: IExtHostWorkspace,
+    @ILogService logService: ILogService
+  ) {
+    this._proxy = extHostRpc.getProxy(MainContext.MainThreadConfiguration)
+    this._extHostWorkspace = extHostWorkspace
+    this._logService = logService
+    this._actual = null
+  }
+
+  public getConfigProvider (): ExtHostConfigProvider {
+    return this._actual!
+  }
+
+  $initializeConfiguration (data: IConfigurationInitData): void {
+    this._actual = new ExtHostConfigProvider(this._proxy, this._extHostWorkspace, data, this._logService)
+  }
+
+  $acceptConfigurationChanged (data: IConfigurationInitData, change: IConfigurationChange): void {
+    this.getConfigProvider().$acceptConfigurationChanged(data, change)
+  }
+}
+
 function createExtHostServices () {
   const commandsService = StandaloneServices.get(ICommandService)
   const notificationService = StandaloneServices.get(INotificationService)
@@ -168,6 +210,7 @@ function createExtHostServices () {
   const languageConfigurationService = StandaloneServices.get(ILanguageConfigurationService)
   const languageFeaturesService = StandaloneServices.get(ILanguageFeaturesService)
   const configurationService = StandaloneServices.get(IConfigurationService)
+  const workspaceContextService = StandaloneServices.get(IWorkspaceContextService)
 
   const imessagePassingProtocol = new SimpleMessagePassingProtocol()
 
@@ -193,6 +236,27 @@ function createExtHostServices () {
     }
   }
 
+  const initData: IExtHostInitDataService = {
+    _serviceBrand: undefined,
+    version: '1.0.0',
+    parentPid: 0,
+    get environment () { return unsupported() },
+    resolvedExtensions: [],
+    hostExtensions: [],
+    extensions: [Services.get().extension ?? DEFAULT_EXTENSION],
+    get telemetryInfo () { return unsupported() },
+    logLevel: LogLevel.Trace,
+    get logsLocation () { return unsupported() },
+    get logFile () { return unsupported() },
+    autoStart: false,
+    remote: {
+      isRemote: false,
+      authority: undefined,
+      connectionData: null
+    },
+    uiKind: UIKind.Web
+  }
+
   const extHostLogService = new LogService(new ConsoleMainLogger())
   const extensionService = new NullExtensionService()
   const extHostApiDeprecationService = new ExtHostApiDeprecationService(mainContext, extHostLogService)
@@ -215,6 +279,8 @@ function createExtHostServices () {
   const extHostEditors = rpcProtocol.set(ExtHostContext.ExtHostEditors, new ExtHostEditors(mainContext, extHostDocumentsAndEditors))
   const extHostClipboard = new ExtHostClipboard(mainContext)
   const extHostLanguageFeatures = rpcProtocol.set(ExtHostContext.ExtHostLanguageFeatures, new ExtHostLanguageFeatures(rpcProtocol, uriTransformerService, extHostDocuments, extHostCommands, extHostDiagnostics, extHostLogService, extHostApiDeprecationService))
+  const extHostWorkspace = rpcProtocol.set(ExtHostContext.ExtHostWorkspace, new ExtHostWorkspace(mainContext, initData, extHostFileSystemInfo, extHostLogService))
+  const extHostConfiguration = rpcProtocol.set(ExtHostContext.ExtHostConfiguration, new SyncExtHostConfiguration(mainContext, extHostWorkspace, extHostLogService))
 
   rpcProtocol.set(ExtHostContext.ExtHostTelemetry, new ExtHostTelemetry())
   rpcProtocol.set(MainContext.MainThreadMessageService, new MainThreadMessageServiceWithoutSource(mainContext, notificationService, commandsService, dialogService))
@@ -227,6 +293,7 @@ function createExtHostServices () {
   rpcProtocol.set(MainContext.MainThreadLanguages, new MainThreadLanguages(mainContext, languageService, modelService, textModelService, languageStatusService))
   rpcProtocol.set(MainContext.MainThreadClipboard, new MainThreadClipboard(mainContext, clipboardService))
   rpcProtocol.set(MainContext.MainThreadLanguageFeatures, new MainThreadLanguageFeatures(mainContext, languageService, languageConfigurationService, languageFeaturesService))
+  rpcProtocol.set(MainContext.MainThreadConfiguration, new MainThreadConfiguration(mainContext, workspaceContextService, configurationService, workbenchEnvironmentService))
 
   // eslint-disable-next-line no-new
   new MainThreadDocumentsAndEditors(
@@ -265,7 +332,9 @@ function createExtHostServices () {
     extHostLanguages,
     extHostWindow,
     extHostClipboard,
-    extHostLanguageFeatures
+    extHostLanguageFeatures,
+    extHostWorkspace,
+    extHostConfiguration
   }
 }
 

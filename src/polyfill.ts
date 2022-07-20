@@ -19,6 +19,13 @@ import { LanguageService as VScodeLanguageService } from 'vscode/vs/editor/commo
 // @ts-ignore Creating a d.ts is not worth it
 import { NoOpNotification as MonacoNoOpNotification } from 'monaco-editor/esm/vs/platform/notification/common/notification.js'
 import { NoOpNotification as VScodeNoOpNotification } from 'vscode/vs/platform/notification/common/notification.js'
+import { Registry } from 'vs/platform/registry/common/platform'
+import { Extensions, IConfigurationRegistry } from 'vs/platform/configuration/common/configurationRegistry'
+
+const configurationRegistry = Registry.as<IConfigurationRegistry>(Extensions.Configuration)
+// @ts-ignore Override of a readonly property
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+configurationRegistry.onDidUpdateConfiguration ??= (configurationRegistry as any)._onDidUpdateConfiguration.event
 
 // @ts-ignore Override of a readonly property
 MonacoNoOpNotification.prototype.onDidClose ??= Event.None
@@ -73,9 +80,11 @@ function toMonacoVSBuffer (value: unknown) {
 
 for (const key of Object.getOwnPropertyNames(VScodeVSBuffer)) {
   if (!Object.hasOwnProperty.call(MonacoVSBuffer, key)) {
-    MonacoVSBuffer[key] = function (...args: any[]) {
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      return toMonacoVSBuffer((VScodeVSBuffer as any)[key].call(MonacoVSBuffer, ...args.map(toVSCodeVSBuffer)))
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const method = (VScodeVSBuffer as any)[key];
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    (VScodeVSBuffer as any)[key] = MonacoVSBuffer[key] = function (...args: any[]) {
+      return toMonacoVSBuffer(method.call(MonacoVSBuffer, ...args.map(toVSCodeVSBuffer)))
     }
   }
 }

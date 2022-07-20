@@ -20,7 +20,7 @@ import { unsupported } from '../tools'
 class LayoutService implements ILayoutService, Pick<IWorkbenchLayoutService, 'isVisible'> {
   declare readonly _serviceBrand: undefined
 
-  constructor (public container: HTMLElement, private _codeEditorService: ICodeEditorService) {
+  constructor (public container: HTMLElement, @ICodeEditorService private _codeEditorService: ICodeEditorService) {
     window.addEventListener('resize', () => this.layout())
     this.layout()
   }

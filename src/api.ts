@@ -14,7 +14,7 @@ import * as uri from 'vs/base/common/uri'
 import customLanguages from './vscode-services/languages'
 import customCommands from './vscode-services/commands'
 import customWorkspace from './vscode-services/workspace'
-import customWindow from './vscode-services/window'
+import customWindow, { TextTabInput } from './vscode-services/window'
 import customEnv from './vscode-services/env'
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -173,7 +173,7 @@ const api: typeof vscode = {
   DataTransferItem: unsupported,
   LanguageStatusSeverity: extHostTypes.LanguageStatusSeverity,
   QuickPickItemKind: extHostTypes.QuickPickItemKind,
-  TabInputText: unsupported,
+  TabInputText: TextTabInput,
   TabInputTextDiff: unsupported,
   TabInputCustom: unsupported,
   TabInputNotebook: unsupported,

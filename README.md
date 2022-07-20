@@ -46,22 +46,25 @@ StandaloneService.initialize({
 })
 ```
 
-Additionally, this library exposes 2 modules that include the vscode version of some services (with some glue to make it work with monaco):
+Additionally, this library exposes 3 modules that include the vscode version of some services (with some glue to make it work with monaco):
 - Notification / Dialog: `vscode/service-override/messages`
 - Model / Editor: `vscode/service-override/modelEditor`
+- Configuration: `vscode/service-override/configuration`
 
 Usage:
 ```typescript
 import { StandaloneService } from 'vscode/services'
 import getModelEditorServiceOverride from 'vscode/service-override/modelEditor'
 import getMessageServiceOverride from 'vscode/service-override/messages'
+import getConfigurationServiceOverride from 'vscode/service-override/configuration'
 
 StandaloneServices.initialize({
   ...getModelEditorServiceOverride((model, input, sideBySide) => {
     // Open a new editor here and return it
     // It will be called when for instance the user ctrl+click on an import
   }),
-  ...getMessageServiceOverride(document.body)
+  ...getMessageServiceOverride(document.body),
+  ...getConfigurationServiceOverride(readConfiguration, configurationChangeEvent)
 })
 ```
 

@@ -3,6 +3,7 @@ import type * as vscode from 'vscode'
 import type { IProgressService } from 'vs/platform/progress/common/progress'
 import { IExtensionDescription } from 'vs/platform/extensions/common/extensions'
 import { NotificationsFilter } from 'vs/platform/notification/common/notification'
+import { IConfigurationChangeEvent } from 'vs/platform/configuration/common/configuration'
 
 export {
   Severity
@@ -18,8 +19,6 @@ export interface Workspace {
   workspaceFolders?: typeof vscode.workspace.workspaceFolders
   updateWorkspaceFolders?: typeof vscode.workspace.updateWorkspaceFolders
   onDidChangeWorkspaceFolders?: typeof vscode.workspace.onDidChangeWorkspaceFolders
-  getConfiguration?: typeof vscode.workspace.getConfiguration
-  onDidChangeConfiguration?: vscode.Event<vscode.ConfigurationChangeEvent>
   onWillSaveTextDocument?: vscode.Event<vscode.TextDocumentWillSaveEvent>
   onDidSaveTextDocument?: vscode.Event<vscode.TextDocument>
   createFileSystemWatcher?: typeof vscode.workspace.createFileSystemWatcher
@@ -85,7 +84,9 @@ export { IPaneCompositePartService } from 'vs/workbench/services/panecomposite/b
 export { IPathService } from 'vs/workbench/services/path/common/pathService'
 export { ITextFileService } from 'vs/workbench/services/textfile/common/textfiles'
 export { IWorkingCopyFileService } from 'vs/workbench/services/workingCopy/common/workingCopyFileService'
+export { IConfigurationService } from 'vs/platform/configuration/common/configuration'
 
 export {
-  NotificationsFilter
+  NotificationsFilter,
+  IConfigurationChangeEvent
 }

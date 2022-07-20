@@ -3,10 +3,40 @@ import { URI } from 'vs/base/common/uri'
 import type * as vscode from 'vscode'
 import { Event } from 'vs/base/common/event'
 import * as extHostTypes from 'vs/workbench/api/common/extHostTypes'
+import { StandaloneServices } from 'vs/editor/standalone/browser/standaloneServices'
+import { IModelService } from 'vs/editor/common/services/model'
+import { DisposableStore } from 'vs/base/common/lifecycle'
+import { ITextModel } from 'vs/editor/common/model'
 import workspace from './workspace'
 import { DEFAULT_EXTENSION, getExtHostServices } from './extHost'
 import { Services } from '../services'
 import { unsupported } from '../tools'
+
+class TextTabInput {
+  constructor (readonly uri: URI) { }
+}
+
+function getTabFromModel (model: ITextModel, tabGroup: vscode.TabGroup): vscode.Tab {
+  return {
+    label: model.uri.fsPath,
+    group: tabGroup,
+    get isActive () { return model.isAttachedToEditor() },
+    isDirty: false,
+    isPinned: false,
+    isPreview: false,
+    input: new TextTabInput(model.uri)
+  }
+}
+
+const tabGroup: vscode.TabGroup = {
+  isActive: true,
+  activeTab: undefined,
+  viewColumn: extHostTypes.ViewColumn.One,
+  get tabs () {
+    const modelService = StandaloneServices.get(IModelService)
+    return modelService.getModels().map(model => getTabFromModel(model, tabGroup))
+  }
+}
 
 const window: typeof vscode.window = {
   showInformationMessage (message: string, ...rest: Array<vscode.MessageOptions | string | vscode.MessageItem>) {
@@ -137,9 +167,37 @@ const window: typeof vscode.window = {
   registerFileDecorationProvider: unsupported,
   registerTerminalProfileProvider: unsupported,
   onDidChangeTerminalState: Event.None,
-  get tabGroups () {
-    return unsupported()
+  tabGroups: {
+    get all () {
+      return [tabGroup]
+    },
+    activeTabGroup: tabGroup,
+    onDidChangeTabGroups: Event.None,
+    onDidChangeTabs (listener) {
+      const modelService = StandaloneServices.get(IModelService)
+      const store = new DisposableStore()
+      store.add(modelService.onModelAdded((model) => {
+        listener({
+          opened: [getTabFromModel(model, tabGroup)],
+          closed: [],
+          changed: []
+        })
+      }))
+      store.add(modelService.onModelRemoved((model) => {
+        listener({
+          opened: [],
+          closed: [getTabFromModel(model, tabGroup)],
+          changed: []
+        })
+      }))
+
+      return store
+    },
+    close: unsupported
   }
 }
 
 export default window
+export {
+  TextTabInput
+}
