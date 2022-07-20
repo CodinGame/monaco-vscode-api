@@ -84,7 +84,7 @@ Just import it as if you were in a vscode extension:
 ```typescript
 import * as vscode from 'vscode'
 
-const range = new new vscode.Range(...)
+const range = new vscode.Range(...)
 vscode.languages.registerCompletionItemProvider(...)
 ```
 
