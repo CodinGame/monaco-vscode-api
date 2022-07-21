@@ -28,6 +28,8 @@ Services.install({
 })
 ```
 
+## Monaco standalone services
+
 Also, monaco-editor use `standalone` versions or the vscode services, which are much simpler.
 
 You may want to provide your custom implementations of them, especially for: `textModelService`, `codeEditorService` and `notificationService`. To do so, you can provide them as the third parameter while creating your first editor.
@@ -64,12 +66,17 @@ StandaloneServices.initialize({
     // It will be called when for instance the user ctrl+click on an import
   }),
   ...getMessageServiceOverride(document.body),
-  ...getConfigurationServiceOverride(readConfiguration, configurationChangeEvent)
+  ...getConfigurationServiceOverride(() => userConfigurationJson, configurationChangeEvent)
 })
 ```
 
 Note: using `vscode/service-override/modelEditor`, you'll be able to use the `vscode.workspace.registerTextDocumentContentProvider` api
 
+### Troubleshoot
+
+`StandaloneServices.initialize` can only be called once (note that `monaco.editor.create` calls `StandaloneServices.initialize`).
+
+Also, a service that is used cannot be overriden anymore. So `StandaloneServices.initialize` should be called as soon as possible to prevent most of the issues.
 ### Installation
 
 ```bash
