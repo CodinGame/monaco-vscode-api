@@ -12,6 +12,8 @@ import { Schemas } from 'vs/base/common/network'
 import { ITextResourceConfigurationService } from 'vs/editor/common/services/textResourceConfiguration'
 import { TextResourceConfigurationService } from 'vs/editor/common/services/textResourceConfigurationService'
 import { SyncDescriptor } from 'vs/platform/instantiation/common/descriptors'
+import { IConfigurationRegistry, Extensions as ConfigurationExtensions } from 'vs/platform/configuration/common/configurationRegistry'
+import { Registry } from 'vs/platform/registry/common/platform'
 import { unsupported } from '../tools'
 
 function createConfigurationFileSystemProvider (settingsResource: URI, readConfiguration: () => string, onChange: Event<void>) {
@@ -68,6 +70,8 @@ function updateUserConfiguration (configurationJson: string): void {
   userConfigurationChangeEmitter.fire(undefined)
 }
 
+const configurationRegistry = Registry.as<IConfigurationRegistry>(ConfigurationExtensions.Configuration)
+
 export default function getServiceOverride (settingsResource: URI = URI.file('/userSettings.json')): IEditorOverrideServices {
   const logService = StandaloneServices.get(ILogService)
   const fileService = new FileService(logService)
@@ -82,4 +86,9 @@ export default function getServiceOverride (settingsResource: URI = URI.file('/u
     [IConfigurationService.toString()]: configurationService,
     [ITextResourceConfigurationService.toString()]: new SyncDescriptor(TextResourceConfigurationService)
   }
+}
+
+export {
+  updateUserConfiguration,
+  configurationRegistry
 }

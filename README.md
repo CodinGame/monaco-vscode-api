@@ -58,7 +58,7 @@ Usage:
 import { StandaloneService } from 'vscode/services'
 import getModelEditorServiceOverride from 'vscode/service-override/modelEditor'
 import getMessageServiceOverride from 'vscode/service-override/messages'
-import getConfigurationServiceOverride, { updateUserConfiguration } from 'vscode/service-override/configuration'
+import getConfigurationServiceOverride, { updateUserConfiguration, configurationRegistry } from 'vscode/service-override/configuration'
 
 StandaloneServices.initialize({
   ...getModelEditorServiceOverride((model, input, sideBySide) => {
@@ -68,6 +68,12 @@ StandaloneServices.initialize({
   ...getMessageServiceOverride(document.body),
   ...getConfigurationServiceOverride()
 })
+
+configurationRegistry.registerDefaultConfigurations([{
+  overrides: {
+    'editor.fontSize': 10
+  }
+}])
 
 updateUserConfiguration(`{
   "editor.fontSize": 12,
