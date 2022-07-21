@@ -21,6 +21,26 @@ import { NoOpNotification as MonacoNoOpNotification } from 'monaco-editor/esm/vs
 import { NoOpNotification as VScodeNoOpNotification } from 'vscode/vs/platform/notification/common/notification.js'
 import { Registry } from 'vs/platform/registry/common/platform'
 import { Extensions, IConfigurationRegistry } from 'vs/platform/configuration/common/configurationRegistry'
+import { StandaloneConfigurationService } from 'vs/editor/standalone/browser/standaloneServices'
+import { IConfigurationModel } from 'vs/platform/configuration/common/configuration'
+
+// Monaco build process treeshaking is very aggressive and everything that is not used in monaco is removed
+// Unfortunately, it makes some class not respect anymore the interface they are supposed to implement
+// In this file we are restoring some method that are treeshaked out of monaco-editor but that are needed in this library
+
+StandaloneConfigurationService.prototype.getConfigurationData ??= () => {
+  const emptyModel: IConfigurationModel = {
+    contents: {},
+    keys: [],
+    overrides: []
+  }
+  return {
+    defaults: emptyModel,
+    user: emptyModel,
+    workspace: emptyModel,
+    folders: []
+  }
+}
 
 const configurationRegistry = Registry.as<IConfigurationRegistry>(Extensions.Configuration)
 // @ts-ignore Override of a readonly property
