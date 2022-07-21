@@ -23,13 +23,20 @@ rm -rf `find . -name '*.test.ts' -o -name 'test' -o -name 'electron-browser'`
 rm -rf vs/code
 rm -rf vs/server
 
-# Change import syntax so it builds to ESM
-sed -i 's/import semver = require(\x27vs\/base\/common\/semver\/semver\x27);/import \* as semver from \x27vs\/base\/common\/semver\/semver\x27;/g' vs/workbench/contrib/extensions/browser/extensionEditor.ts
+os=$(uname)
+sed_cmd='s/import semver = require(\x27vs\/base\/common\/semver\/semver\x27);/import \* as semver from \x27vs\/base\/common\/semver\/semver\x27;/g' 
+sed_file="vs/workbench/contrib/extensions/browser/extensionEditor.ts"
+
+if [ "$os" == "Darwin" ]; then
+  sed -i '' "$sed_cmd" "$sed_file"
+else 
+  sed -i "$sed_cmd" "$sed_file"
+fi
 
 echo "Building vscode..."
 tsc --declaration --importHelpers --module es2020 --outDir "$output_directory/vs"
 # Copy files that are already built
-find ./vs \( -name '*.js' -o -name '*.d.ts' -o -name '*.css' \) -exec cp --parents \{\} "$output_directory/" \;
+find ./vs \( -name '*.js' -o -name '*.d.ts' -o -name '*.css' \) -exec rsync -R \{\} "$output_directory/" \;
 
 echo "Cleaning..."
 rm -rf $build_directory
