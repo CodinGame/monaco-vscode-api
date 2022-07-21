@@ -77,6 +77,29 @@ Note: using `vscode/service-override/modelEditor`, you'll be able to use the `vs
 `StandaloneServices.initialize` can only be called once (note that `monaco.editor.create` calls `StandaloneServices.initialize`).
 
 Also, a service that is used cannot be overriden anymore. So `StandaloneServices.initialize` should be called as soon as possible to prevent most of the issues.
+
+## Editor configuration
+
+The editors created using `monaco.editor.create` don't use the configuration from the configurationService.
+
+This library exposes functions to create editors binded on the configuration:
+
+before:
+```typescript
+import * as monaco from 'monaco-editor'
+monaco.editor.create(...)
+```
+
+after:
+```typescript
+import { createConfiguredEditor } from 'vscode/monaco'
+
+createConfiguredEditor(...)
+```
+
+`createConfiguredEditor` returns a subclass of what is returned by `monaco.editor.create`, the `updateOptions` method can still be used.
+The only difference is that is will use the `configurationService` as a default configuration
+
 ### Installation
 
 ```bash
