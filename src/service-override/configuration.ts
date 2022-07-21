@@ -9,6 +9,9 @@ import { FileChangeType, FileSystemProviderCapabilities, FileType, IFileChange, 
 import { FileService } from 'vs/platform/files/common/fileService'
 import { ILogService } from 'vs/platform/log/common/log'
 import { Schemas } from 'vs/base/common/network'
+import { ITextResourceConfigurationService } from 'vs/editor/common/services/textResourceConfiguration'
+import { TextResourceConfigurationService } from 'vs/editor/common/services/textResourceConfigurationService'
+import { SyncDescriptor } from 'vs/platform/instantiation/common/descriptors'
 import { unsupported } from '../tools'
 
 function createConfigurationFileSystemProvider (settingsResource: URI, readConfiguration: () => string, onChange: Event<void>) {
@@ -69,6 +72,7 @@ export default function getServiceOverride (readConfiguration: () => string, onC
   })
 
   return {
-    [IConfigurationService.toString()]: configurationService
+    [IConfigurationService.toString()]: configurationService,
+    [ITextResourceConfigurationService.toString()]: new SyncDescriptor(TextResourceConfigurationService)
   }
 }
