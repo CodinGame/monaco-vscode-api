@@ -21,6 +21,21 @@ import { NoOpNotification as MonacoNoOpNotification } from 'monaco-editor/esm/vs
 import { NoOpNotification as VScodeNoOpNotification } from 'vscode/vs/platform/notification/common/notification.js'
 import { Registry } from 'vs/platform/registry/common/platform'
 import { Extensions, IConfigurationRegistry } from 'vs/platform/configuration/common/configurationRegistry'
+import { StandaloneConfigurationService } from 'vs/editor/standalone/browser/standaloneServices'
+import { IConfigurationModel } from 'vs/platform/configuration/common/configuration'
+StandaloneConfigurationService.prototype.getConfigurationData ??= () => {
+  const emptyModel: IConfigurationModel = {
+    contents: {},
+    keys: [],
+    overrides: []
+  }
+  return {
+    defaults: emptyModel,
+    user: emptyModel,
+    workspace: emptyModel,
+    folders: []
+  }
+}
 
 const configurationRegistry = Registry.as<IConfigurationRegistry>(Extensions.Configuration)
 // @ts-ignore Override of a readonly property
