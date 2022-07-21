@@ -12,6 +12,8 @@ import { Schemas } from 'vs/base/common/network'
 import { ITextResourceConfigurationService } from 'vs/editor/common/services/textResourceConfiguration'
 import { TextResourceConfigurationService } from 'vs/editor/common/services/textResourceConfigurationService'
 import { SyncDescriptor } from 'vs/platform/instantiation/common/descriptors'
+import { IConfigurationRegistry, Extensions as ConfigurationExtensions } from 'vs/platform/configuration/common/configurationRegistry'
+import { Registry } from 'vs/platform/registry/common/platform'
 import { unsupported } from '../tools'
 
 function createConfigurationFileSystemProvider (settingsResource: URI, readConfiguration: () => string, onChange: Event<void>) {
@@ -61,10 +63,19 @@ function createConfigurationFileSystemProvider (settingsResource: URI, readConfi
   return provider
 }
 
-export default function getServiceOverride (readConfiguration: () => string, onChange: Event<void>, settingsResource: URI = URI.file('/userSettings.json')): IEditorOverrideServices {
+let userConfigurationJson: string = '{}'
+const userConfigurationChangeEmitter = new Emitter<void>()
+function updateUserConfiguration (configurationJson: string): void {
+  userConfigurationJson = configurationJson
+  userConfigurationChangeEmitter.fire(undefined)
+}
+
+const configurationRegistry = Registry.as<IConfigurationRegistry>(ConfigurationExtensions.Configuration)
+
+export default function getServiceOverride (settingsResource: URI = URI.file('/userSettings.json')): IEditorOverrideServices {
   const logService = StandaloneServices.get(ILogService)
   const fileService = new FileService(logService)
-  fileService.registerProvider(Schemas.file, createConfigurationFileSystemProvider(settingsResource, readConfiguration, onChange))
+  fileService.registerProvider(Schemas.file, createConfigurationFileSystemProvider(settingsResource, () => userConfigurationJson, userConfigurationChangeEmitter.event))
 
   const configurationService = new ConfigurationService(settingsResource, fileService)
   configurationService.initialize().catch(error => {
@@ -75,4 +86,9 @@ export default function getServiceOverride (readConfiguration: () => string, onC
     [IConfigurationService.toString()]: configurationService,
     [ITextResourceConfigurationService.toString()]: new SyncDescriptor(TextResourceConfigurationService)
   }
+}
+
+export {
+  updateUserConfiguration,
+  configurationRegistry
 }

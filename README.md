@@ -58,7 +58,7 @@ Usage:
 import { StandaloneService } from 'vscode/services'
 import getModelEditorServiceOverride from 'vscode/service-override/modelEditor'
 import getMessageServiceOverride from 'vscode/service-override/messages'
-import getConfigurationServiceOverride from 'vscode/service-override/configuration'
+import getConfigurationServiceOverride, { updateUserConfiguration, configurationRegistry } from 'vscode/service-override/configuration'
 
 StandaloneServices.initialize({
   ...getModelEditorServiceOverride((model, input, sideBySide) => {
@@ -66,8 +66,21 @@ StandaloneServices.initialize({
     // It will be called when for instance the user ctrl+click on an import
   }),
   ...getMessageServiceOverride(document.body),
-  ...getConfigurationServiceOverride(() => userConfigurationJson, configurationChangeEvent)
+  ...getConfigurationServiceOverride()
 })
+
+configurationRegistry.registerDefaultConfigurations([{
+  overrides: {
+    'editor.fontSize': 10
+  }
+}])
+
+updateUserConfiguration(`{
+  "editor.fontSize": 12,
+  "[java]": {
+    "editor.fontSize": 15,
+  }
+}`)
 ```
 
 Note: using `vscode/service-override/modelEditor`, you'll be able to use the `vscode.workspace.registerTextDocumentContentProvider` api
