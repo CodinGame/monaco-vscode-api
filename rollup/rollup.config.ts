@@ -85,7 +85,8 @@ export default (args: Record<string, string>): rollup.RollupOptions => {
       services: './src/services.ts',
       messages: './src/service-override/messages.ts',
       modelEditor: './src/service-override/modelEditor.ts',
-      configuration: './src/service-override/configuration.ts'
+      configuration: './src/service-override/configuration.ts',
+      monaco: './src/monaco'
     },
     plugins: [
       {
