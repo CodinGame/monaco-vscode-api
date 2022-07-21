@@ -49,12 +49,8 @@ configurationRegistry.onDidUpdateConfiguration ??= (configurationRegistry as any
 
 // @ts-ignore Override of a readonly property
 MonacoNoOpNotification.prototype.onDidClose ??= Event.None
-for (const key of Object.getOwnPropertyNames(VScodeNoOpNotification.prototype)) {
-  if (!Object.hasOwnProperty.call(MonacoNoOpNotification.prototype, key)) {
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    MonacoNoOpNotification.prototype[key] = (VScodeNoOpNotification.prototype as any)[key]
-  }
-}
+
+Object.defineProperties(MonacoNoOpNotification.prototype, Object.getOwnPropertyDescriptors(VScodeNoOpNotification.prototype))
 
 MonacoLanguageService.prototype.getRegisteredLanguageIds ??= VScodeLanguageService.prototype.getRegisteredLanguageIds;
 
