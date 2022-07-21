@@ -61,10 +61,17 @@ function createConfigurationFileSystemProvider (settingsResource: URI, readConfi
   return provider
 }
 
-export default function getServiceOverride (readConfiguration: () => string, onChange: Event<void>, settingsResource: URI = URI.file('/userSettings.json')): IEditorOverrideServices {
+let userConfigurationJson: string = '{}'
+const userConfigurationChangeEmitter = new Emitter<void>()
+function updateUserConfiguration (configurationJson: string): void {
+  userConfigurationJson = configurationJson
+  userConfigurationChangeEmitter.fire(undefined)
+}
+
+export default function getServiceOverride (settingsResource: URI = URI.file('/userSettings.json')): IEditorOverrideServices {
   const logService = StandaloneServices.get(ILogService)
   const fileService = new FileService(logService)
-  fileService.registerProvider(Schemas.file, createConfigurationFileSystemProvider(settingsResource, readConfiguration, onChange))
+  fileService.registerProvider(Schemas.file, createConfigurationFileSystemProvider(settingsResource, () => userConfigurationJson, userConfigurationChangeEmitter.event))
 
   const configurationService = new ConfigurationService(settingsResource, fileService)
   configurationService.initialize().catch(error => {
