@@ -3,7 +3,7 @@ import { IExtHostRpcService } from 'vs/workbench/api/common/extHostRpcService'
 import { ConsoleMainLogger, ILogService, LogLevel, LogService } from 'vs/platform/log/common/log'
 import { MainThreadCommands } from 'vs/workbench/api/browser/mainThreadCommands'
 import { IExtHostContext } from 'vs/workbench/services/extensions/common/extHostCustomers'
-import { ExtensionHostKind, NullExtensionService } from 'vs/workbench/services/extensions/common/extensions'
+import { ExtensionHostKind, IExtensionService } from 'vs/workbench/services/extensions/common/extensions'
 import { Event } from 'vs/base/common/event'
 import { ExtensionIdentifier, IExtensionDescription } from 'vs/platform/extensions/common/extensions'
 import { URI } from 'vs/base/common/uri'
@@ -211,6 +211,7 @@ function createExtHostServices () {
   const languageFeaturesService = StandaloneServices.get(ILanguageFeaturesService)
   const configurationService = StandaloneServices.get(IConfigurationService)
   const workspaceContextService = StandaloneServices.get(IWorkspaceContextService)
+  const extensionService = StandaloneServices.get(IExtensionService)
 
   const imessagePassingProtocol = new SimpleMessagePassingProtocol()
 
@@ -258,7 +259,6 @@ function createExtHostServices () {
   }
 
   const extHostLogService = new LogService(new ConsoleMainLogger())
-  const extensionService = new NullExtensionService()
   const extHostApiDeprecationService = new ExtHostApiDeprecationService(mainContext, extHostLogService)
   const extHostMessageService = new ExtHostMessageService(mainContext, extHostLogService)
   const uriTransformerService = new URITransformerService(null)

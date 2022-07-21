@@ -24,6 +24,7 @@ import { compare } from 'vs/base/common/strings'
 import { IHostService } from 'vs/workbench/services/host/browser/host'
 import { ILifecycleService, LifecyclePhase, StartupKind } from 'vs/workbench/services/lifecycle/common/lifecycle'
 import { ILanguageDetectionService } from 'vs/workbench/services/languageDetection/common/languageDetectionWorkerService'
+import { IExtensionService, NullExtensionService } from 'vs/workbench/services/extensions/common/extensions'
 import { unsupported } from '../tools'
 import { Services } from '../services'
 
@@ -444,3 +445,5 @@ registerSingleton(ILanguageDetectionService, class LanguageDetectionService impl
     return undefined
   }
 })
+
+registerSingleton(IExtensionService, NullExtensionService)
