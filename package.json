@@ -36,6 +36,18 @@
       "types": "./dist/configuration.d.ts",
       "default": "./dist/configuration.js"
     },
+    "./service-override/keybindings": {
+      "types": "./dist/keybindings.d.ts",
+      "default": "./dist/keybindings.js"
+    },
+    "./service-override/textmate": {
+      "types": "./dist/textmate.d.ts",
+      "default": "./dist/textmate.js"
+    },
+    "./service-override/theme": {
+      "types": "./dist/theme.d.ts",
+      "default": "./dist/theme.js"
+    },
     "./monaco": {
       "types": "./dist/monaco.d.ts",
       "default": "./dist/monaco.js"
@@ -54,6 +66,15 @@
       ],
       "service-override/configuration": [
         "./dist/configuration.d.ts"
+      ],
+      "service-override/keybindings": [
+        "./dist/keybindings.d.ts"
+      ],
+      "service-override/textmate": [
+        "./dist/textmate.d.ts"
+      ],
+      "service-override/theme": [
+        "./dist/theme.d.ts"
       ],
       "monaco": [
         "./dist/monaco.d.ts"
@@ -86,6 +107,7 @@
     "@codingame/eslint-config": "^1.1.5",
     "@codingame/tsconfig": "^1.1.0",
     "@octokit/rest": "^18.12.0",
+    "@rollup/plugin-dynamic-import-vars": "^1.4.3",
     "@rollup/plugin-node-resolve": "^13.3.0",
     "@rollup/plugin-replace": "^4.0.0",
     "@rollup/plugin-typescript": "^8.3.3",
@@ -102,7 +124,7 @@
     "eslint-plugin-unused-imports": "^2.0.0",
     "js-cleanup": "^1.2.0",
     "recast": "^0.21.1",
-    "rollup": "^2.75.7",
+    "rollup": "^2.77.0",
     "rollup-plugin-dts": "^4.2.2",
     "rollup-plugin-styles": "^4.0.0",
     "semver": "^7.3.7",

@@ -19,16 +19,23 @@ const PURE_FUNCTIONS = new Set([
   'createProxyIdentifier',
   'createDecorator',
   'localize',
-  'register',
+  // 'register', // or this._scopeRegistry.register(validGrammar); is removed
   'Registry.as',
   'registerWorkbenchContribution',
   'Object.freeze',
   'URI.parse',
+  'URI.from',
   'registerColor',
   'transparent',
   'darken',
   'lighten',
   'Color.fromHex',
+  'registerSchema',
+  'registerExtensionPoint',
+  'asBroswerUri',
+  'values',
+  'keys',
+  'toString',
   'CommandsRegistry.registerCommand' // It's not pure but we don't want the additional static vscode commands registered
 ])
 const EXTENSIONS = ['', '.ts', '.js']
@@ -54,13 +61,25 @@ function getMemberExpressionPath (node: recast.types.namedTypes.MemberExpression
   return null
 }
 
-export default (args: Record<string, string>): rollup.RollupOptions => {
+const input = {
+  api: './src/api.ts',
+  services: './src/services.ts',
+  messages: './src/service-override/messages.ts',
+  modelEditor: './src/service-override/modelEditor.ts',
+  configuration: './src/service-override/configuration.ts',
+  keybindings: './src/service-override/keybindings.ts',
+  textmate: './src/service-override/textmate.ts',
+  theme: './src/service-override/theme.ts',
+  monaco: './src/monaco'
+}
+
+export default (args: Record<string, string>): rollup.RollupOptions[] => {
   const vscodeVersion = args['vscode-version']
   delete args['vscode-version']
   if (vscodeVersion == null) {
     throw new Error('Vscode version is mandatory')
   }
-  return rollup.defineConfig({
+  return rollup.defineConfig([{
     cache: false,
     treeshake: {
       annotations: true,
@@ -70,24 +89,20 @@ export default (args: Record<string, string>): rollup.RollupOptions => {
       }
     },
     external: (source) => {
+      if (source.includes('semver')) return true
       return source.startsWith(MONACO_EDITOR_DIR)
     },
     output: [{
       format: 'esm',
       dir: 'dist',
-      entryFileNames: chunk => `${chunk.name}.js`,
+      entryFileNames: '[name].js',
+      chunkFileNames: '[name].js',
+      hoistTransitiveImports: false,
       paths: {
         'monaco-editor': 'monaco-editor/esm/vs/editor/editor.api.js'
       }
     }],
-    input: {
-      api: './src/api.ts',
-      services: './src/services.ts',
-      messages: './src/service-override/messages.ts',
-      modelEditor: './src/service-override/modelEditor.ts',
-      configuration: './src/service-override/configuration.ts',
-      monaco: './src/monaco'
-    },
+    input,
     plugins: [
       {
         name: 'resolve-vscode',
@@ -115,7 +130,7 @@ export default (args: Record<string, string>): rollup.RollupOptions => {
           return undefined
         },
         transform (code) {
-          return toggleEsmComments(code)
+          return toggleEsmComments(code).replaceAll("'vs/workbench/services/keybinding/browser/keyboardLayouts/layout.contribution.' + platform", "'./keyboardLayouts/_.contribution'")
         },
         load (id) {
           if (id.startsWith(VSCODE_DIR) && id.endsWith('.css')) {
@@ -247,17 +262,86 @@ export default (args: Record<string, string>): rollup.RollupOptions => {
       }, replace({
         VSCODE_VERSION: JSON.stringify(vscodeVersion),
         preventAssignment: true
-      }), {
-        name: 'cleanup',
-        renderChunk (code) {
-          return cleanup(code, null, {
-            comments: 'none',
-            sourcemap: false
-          }).code
-        }
-      }
+      })
     ]
-  })
+  }, {
+    // 2nd pass to improve treeshaking
+    cache: false,
+    treeshake: {
+      annotations: true,
+      preset: 'smallest',
+      propertyReadSideEffects: false,
+      moduleSideEffects (id) {
+        return id.startsWith(SRC_DIR) || id.endsWith('.css')
+      }
+    },
+    external: (source) => {
+      if (source.includes('semver')) return true
+      return source.startsWith(MONACO_EDITOR_DIR)
+    },
+    input: Object.values(input).map(f => `./dist/${path.basename(f, '.ts')}`),
+    output: [{
+      format: 'esm',
+      dir: 'dist',
+      entryFileNames: '[name].js',
+      chunkFileNames: '[name].js',
+      hoistTransitiveImports: false
+    }],
+    plugins: [{
+      name: 'improve-treeshaking',
+      transform (code) {
+        const ast = recast.parse(code, {
+          parser: require('recast/parsers/babylon')
+        })
+        let transformed: boolean = false
+        function addComment (node: recast.types.namedTypes.Expression) {
+          if (!(node.comments ?? []).some(comment => comment.value === PURE_ANNO)) {
+            transformed = true
+            node.comments = [recast.types.builders.commentBlock(PURE_ANNO, true)]
+          }
+        }
+        recast.visit(ast.program.body, {
+          visitCallExpression (path) {
+            const node = path.node
+            if (node.callee.type === 'MemberExpression') {
+              if (node.callee.property.type === 'Identifier') {
+                const name = getMemberExpressionPath(node.callee)
+                if ((name != null && PURE_FUNCTIONS.has(name)) || PURE_FUNCTIONS.has(node.callee.property.name)) {
+                  addComment(node)
+                }
+              }
+            } else if (node.callee.type === 'Identifier' && PURE_FUNCTIONS.has(node.callee.name)) {
+              addComment(node)
+            } else if (node.callee.type === 'FunctionExpression') {
+              // Mark IIFE as pure, because typescript compile enums as IIFE
+              addComment(node)
+            }
+            this.traverse(path)
+            return undefined
+          },
+          visitThrowStatement () {
+            return false
+          }
+        })
+        // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
+        if (transformed) {
+          code = recast.print(ast).code
+          code = code.replace(/\/\*#__PURE__\*\/\s+/g, '/*#__PURE__*/ ') // Remove space after PURE comment
+        }
+        return code
+      }
+    }, nodeResolve({
+      extensions: EXTENSIONS
+    }), {
+      name: 'cleanup',
+      renderChunk (code) {
+        return cleanup(code, null, {
+          comments: 'none',
+          sourcemap: false
+        }).code
+      }
+    }]
+  }])
 }
 
 function resolve (_path: string, fromPaths: string[]) {
@@ -372,7 +456,11 @@ function customRequire<T extends Record<string, unknown>> (_path: string, rootPa
           href: ''
         }
       },
-      document: {},
+      document: {
+        queryCommandSupported () {
+          return false
+        }
+      },
       setTimeout: () => {},
       exports
     })
