@@ -69,6 +69,7 @@ const input = {
   keybindings: './src/service-override/keybindings.ts',
   textmate: './src/service-override/textmate.ts',
   languageConfiguration: './src/service-override/languageConfiguration.ts',
+  theme: './src/service-override/theme.ts',
   monaco: './src/monaco'
 }
 

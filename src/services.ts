@@ -85,6 +85,7 @@ export { IPathService } from 'vs/workbench/services/path/common/pathService'
 export { ITextFileService } from 'vs/workbench/services/textfile/common/textfiles'
 export { IWorkingCopyFileService } from 'vs/workbench/services/workingCopy/common/workingCopyFileService'
 export { IConfigurationService } from 'vs/platform/configuration/common/configuration'
+export { IThemeService } from 'vs/platform/theme/common/themeService'
 
 export {
   NotificationsFilter,

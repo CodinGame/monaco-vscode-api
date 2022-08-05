@@ -5,7 +5,7 @@ import { VSBuffer as MonacoVSBuffer } from 'monaco-editor/esm/vs/base/common/buf
 import { VSBuffer as VScodeVSBuffer } from 'vscode/vs/base/common/buffer.js'
 // @ts-ignore Creating a d.ts is not worth it
 import { Themable as MonacoThemable } from 'monaco-editor/esm/vs/platform/theme/common/themeService.js'
-import { Themable as VScodeThemable } from 'vscode/vs/platform/theme/common/themeService.js'
+import { Extensions as ThemeExtensions, IThemingRegistry, Themable as VScodeThemable } from 'vscode/vs/platform/theme/common/themeService.js'
 // @ts-ignore Creating a d.ts is not worth it
 import { ProgressBar as MonacoProgressBar } from 'monaco-editor/esm/vs/base/browser/ui/progressbar/progressbar.js'
 import { ProgressBar as VScodeProgressBar } from 'vscode/vs/base/browser/ui/progressbar/progressbar.js'
@@ -20,7 +20,7 @@ import { LanguageService as VScodeLanguageService } from 'vscode/vs/editor/commo
 import { NoOpNotification as MonacoNoOpNotification } from 'monaco-editor/esm/vs/platform/notification/common/notification.js'
 import { NoOpNotification as VScodeNoOpNotification } from 'vscode/vs/platform/notification/common/notification.js'
 import { Registry } from 'vs/platform/registry/common/platform'
-import { Extensions, IConfigurationRegistry } from 'vs/platform/configuration/common/configurationRegistry'
+import { Extensions as ConfigurationExtensions, IConfigurationRegistry } from 'vs/platform/configuration/common/configurationRegistry'
 import { StandaloneConfigurationService } from 'vs/editor/standalone/browser/standaloneServices'
 import { IConfigurationModel } from 'vs/platform/configuration/common/configuration'
 // @ts-ignore Creating a d.ts is not worth it
@@ -51,7 +51,12 @@ StandaloneConfigurationService.prototype.getConfigurationData ??= () => {
   }
 }
 
-const configurationRegistry = Registry.as<IConfigurationRegistry>(Extensions.Configuration)
+const themeRegistry = Registry.as<IThemingRegistry>(ThemeExtensions.ThemingContribution)
+// @ts-ignore Override of a readonly property
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+themeRegistry.onThemingParticipantAdded ??= (themeRegistry as any).onThemingParticipantAddedEmitter.event
+
+const configurationRegistry = Registry.as<IConfigurationRegistry>(ConfigurationExtensions.Configuration)
 // @ts-ignore Override of a readonly property
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 configurationRegistry.onDidUpdateConfiguration ??= (configurationRegistry as any)._onDidUpdateConfiguration.event

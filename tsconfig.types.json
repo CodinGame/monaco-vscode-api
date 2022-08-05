@@ -61,5 +61,6 @@
 		"src/service-override/keybindings.ts",
 		"src/service-override/textmate.ts",
 		"src/service-override/languageConfiguration.ts",
+		"src/service-override/theme.ts",
 		"src/monaco.ts"]
 }
