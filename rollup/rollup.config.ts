@@ -372,7 +372,11 @@ function customRequire<T extends Record<string, unknown>> (_path: string, rootPa
           href: ''
         }
       },
-      document: {},
+      document: {
+        queryCommandSupported () {
+          return false
+        }
+      },
       setTimeout: () => {},
       exports
     })
