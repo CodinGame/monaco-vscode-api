@@ -36,6 +36,10 @@
       "types": "./dist/configuration.d.ts",
       "default": "./dist/configuration.js"
     },
+    "./service-override/keybindings": {
+      "types": "./dist/keybindings.d.ts",
+      "default": "./dist/keybindings.js"
+    },
     "./monaco": {
       "types": "./dist/monaco.d.ts",
       "default": "./dist/monaco.js"

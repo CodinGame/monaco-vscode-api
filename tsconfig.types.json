@@ -52,5 +52,12 @@
 	"emitDeclarationOnly": true,
 	"skipLibCheck": true
   },
-  "include": ["src/services.ts", "src/types.d.ts", "src/service-override/messages.ts", "src/service-override/modelEditor.ts", "src/service-override/configuration.ts", "src/monaco.ts"]
+  "include": [
+		"src/services.ts",
+		"src/types.d.ts",
+		"src/service-override/messages.ts",
+		"src/service-override/modelEditor.ts",
+		"src/service-override/configuration.ts",
+		"src/service-override/keybindings.ts",
+		"src/monaco.ts"]
 }

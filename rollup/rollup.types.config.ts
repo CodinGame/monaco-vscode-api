@@ -17,6 +17,7 @@ export default rollup.defineConfig([
   './dist/types/src/service-override/messages.d.ts',
   './dist/types/src/service-override/modelEditor.d.ts',
   './dist/types/src/service-override/configuration.d.ts',
+  './dist/types/src/service-override/keybindings.d.ts',
   './dist/types/src/monaco.d.ts'
 ].map((input): rollup.RollupOptions => ({
   input,
