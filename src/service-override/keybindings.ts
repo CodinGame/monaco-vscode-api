@@ -6,7 +6,7 @@ import { WorkbenchKeybindingService } from 'vs/workbench/services/keybinding/bro
 import { IEnvironmentService } from 'vs/platform/environment/common/environment'
 import { IKeybindingService, IUserFriendlyKeybinding } from 'vs/platform/keybinding/common/keybinding'
 import { VSBuffer } from 'vs/base/common/buffer'
-import { ExtensionMessageCollector, ExtensionPoint, ExtensionsRegistry } from 'vs/workbench/services/extensions/common/extensionsRegistry'
+import { ExtensionMessageCollector } from 'vs/workbench/services/extensions/common/extensionsRegistry'
 import { IExtensionDescription } from 'vs/platform/extensions/common/extensions'
 import { } from 'vs/workbench/services/actions/common/menusExtensionPoint'
 import { ILocalizedString } from 'vs/platform/action/common/action'
@@ -20,7 +20,7 @@ import { CommandsQuickAccessProvider } from 'vs/workbench/contrib/quickaccess/br
 import { DisposableStore } from 'vs/base/common/lifecycle'
 import { CancellationToken } from 'vs/base/common/cancellation'
 import getFileServiceOverride from './files'
-import { consoleExtensionMessageHandler } from './tools'
+import { consoleExtensionMessageHandler, getExtensionPoint } from './tools'
 import { DEFAULT_EXTENSION } from '../vscode-services/extHost'
 import { IFileService, Services } from '../services'
 import { createInjectedClass } from '../tools/injection'
@@ -98,8 +98,8 @@ interface IUserFriendlyCommand {
   icon?: string | { light: string, dark: string }
 }
 
-const keybindingsExtensionPoint: ExtensionPoint<ContributedKeyBinding | ContributedKeyBinding[]> = ExtensionsRegistry.getExtensionPoints().find(ep => ep.name === 'keybindings')!
-const commandsExtensionPoint: ExtensionPoint<IUserFriendlyCommand | IUserFriendlyCommand[]> = ExtensionsRegistry.getExtensionPoints().find(ep => ep.name === 'commands')!
+const keybindingsExtensionPoint = getExtensionPoint<ContributedKeyBinding | ContributedKeyBinding[]>('keybindings')
+const commandsExtensionPoint = getExtensionPoint<IUserFriendlyCommand | IUserFriendlyCommand[]>('commands')
 
 function setKeybindings (grammars: ContributedKeyBinding | ContributedKeyBinding[], extension: IExtensionDescription = Services.get().extension ?? DEFAULT_EXTENSION): void {
   keybindingsExtensionPoint.acceptUsers([{

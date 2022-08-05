@@ -2,7 +2,7 @@ import '../polyfill'
 import '../vscode-services/missing-services'
 import { StandaloneServices, IEditorOverrideServices } from 'vs/editor/standalone/browser/standaloneServices'
 import { ITextMateService } from 'vs/workbench/services/textMate/browser/textMate'
-import { ExtensionMessageCollector, ExtensionPoint, ExtensionsRegistry } from 'vs/workbench/services/extensions/common/extensionsRegistry'
+import { ExtensionMessageCollector } from 'vs/workbench/services/extensions/common/extensionsRegistry'
 import { ITMSyntaxExtensionPoint } from 'vs/workbench/services/textMate/common/TMGrammars'
 import { joinPath } from 'vs/base/common/resources'
 import { AbstractTextMateService } from 'vs/workbench/services/textMate/browser/abstractTextMateService'
@@ -10,7 +10,7 @@ import { IInstantiationService } from 'vs/platform/instantiation/common/instanti
 import { SyncDescriptor } from 'vs/platform/instantiation/common/descriptors'
 import { IExtensionDescription } from 'vs/platform/extensions/common/extensions'
 import getFileServiceOverride, { registerExtensionFile } from './files'
-import { consoleExtensionMessageHandler } from './tools'
+import { consoleExtensionMessageHandler, getExtensionPoint } from './tools'
 import { Services } from '../services'
 import { DEFAULT_EXTENSION } from '../vscode-services/extHost'
 import { createInjectedClass } from '../tools/injection'
@@ -28,7 +28,7 @@ class TextMateService extends createInjectedClass(AbstractTextMateService) {
   }
 }
 
-const extensionPoint: ExtensionPoint<ITMSyntaxExtensionPoint[]> = ExtensionsRegistry.getExtensionPoints().find(ep => ep.name === 'grammars')!
+const extensionPoint = getExtensionPoint<ITMSyntaxExtensionPoint[]>('grammars')
 
 export function setGrammars<T extends ITMSyntaxExtensionPoint> (grammars: T[], getContent: (grammar: T) => Promise<string>, extension: IExtensionDescription = Services.get().extension ?? DEFAULT_EXTENSION): void {
   extensionPoint.acceptUsers([{
