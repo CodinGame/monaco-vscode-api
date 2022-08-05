@@ -87,6 +87,8 @@ export default (args: Record<string, string>): rollup.RollupOptions[] => {
       }
     },
     external: (source) => {
+      // mark semver as external so it's ignored (the code that imports it will be treeshaked out)
+      if (source.includes('semver')) return true
       return source.startsWith(MONACO_EDITOR_DIR)
     },
     output: [{
