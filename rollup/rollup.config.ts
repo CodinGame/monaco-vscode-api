@@ -75,7 +75,8 @@ export default (args: Record<string, string>): rollup.RollupOptions => {
     output: [{
       format: 'esm',
       dir: 'dist',
-      entryFileNames: chunk => `${chunk.name}.js`,
+      entryFileNames: '[name].js',
+      chunkFileNames: '[name].js',
       paths: {
         'monaco-editor': 'monaco-editor/esm/vs/editor/editor.api.js'
       }
