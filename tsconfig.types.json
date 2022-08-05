@@ -62,5 +62,6 @@
 		"src/service-override/textmate.ts",
 		"src/service-override/languageConfiguration.ts",
 		"src/service-override/theme.ts",
+		"src/service-override/tokenClassification.ts",
 		"src/monaco.ts"]
 }

@@ -70,6 +70,7 @@ const input = {
   textmate: './src/service-override/textmate.ts',
   languageConfiguration: './src/service-override/languageConfiguration.ts',
   theme: './src/service-override/theme.ts',
+  tokenClassification: './src/service-override/tokenClassification.ts',
   monaco: './src/monaco'
 }
 

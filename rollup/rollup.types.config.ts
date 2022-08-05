@@ -21,6 +21,7 @@ export default rollup.defineConfig([
   './dist/types/src/service-override/textmate.d.ts',
   './dist/types/src/service-override/languageConfiguration.d.ts',
   './dist/types/src/service-override/theme.d.ts',
+  './dist/types/src/service-override/tokenClassification.d.ts',
   './dist/types/src/monaco.d.ts'
 ].map((input): rollup.RollupOptions => ({
   input,
