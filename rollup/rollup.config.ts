@@ -129,7 +129,7 @@ export default (args: Record<string, string>): rollup.RollupOptions[] => {
           return undefined
         },
         transform (code) {
-          return toggleEsmComments(code)
+          return toggleEsmComments(code).replaceAll("'vs/workbench/services/keybinding/browser/keyboardLayouts/layout.contribution.' + platform", "'./keyboardLayouts/_.contribution'")
         },
         load (id) {
           if (id.startsWith(VSCODE_DIR) && id.endsWith('.css')) {
