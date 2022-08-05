@@ -11,6 +11,10 @@ interfaceOverride.set('URI', 'monaco.Uri')
 interfaceOverride.set('ITextModel', 'monaco.editor.ITextModel')
 interfaceOverride.set('vs/editor/common/config/editorOptions:IEditorOptions', 'monaco.editor.IEditorOptions')
 interfaceOverride.set('IEditorOverrideServices', 'monaco.editor.IEditorOverrideServices')
+interfaceOverride.set('IStandaloneCodeEditor', 'monaco.editor.IStandaloneCodeEditor')
+interfaceOverride.set('IStandaloneDiffEditor', 'monaco.editor.IStandaloneDiffEditor')
+interfaceOverride.set('IStandaloneEditorConstructionOptions', 'monaco.editor.IStandaloneEditorConstructionOptions')
+interfaceOverride.set('IStandaloneDiffEditorConstructionOptions', 'monaco.editor.IStandaloneDiffEditorConstructionOptions')
 
 export default rollup.defineConfig([
   './dist/types/src/services.d.ts',
