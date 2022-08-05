@@ -19,7 +19,6 @@ const PURE_FUNCTIONS = new Set([
   'createProxyIdentifier',
   'createDecorator',
   'localize',
-  'register',
   'Registry.as',
   'registerWorkbenchContribution',
   'Object.freeze',
