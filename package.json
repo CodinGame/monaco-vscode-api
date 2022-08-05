@@ -44,6 +44,14 @@
       "types": "./dist/textmate.d.ts",
       "default": "./dist/textmate.js"
     },
+    "./service-override/languageConfiguration": {
+      "types": "./dist/languageConfiguration.d.ts",
+      "default": "./dist/languageConfiguration.js"
+    },
+    "./service-override/theme": {
+      "types": "./dist/theme.d.ts",
+      "default": "./dist/theme.js"
+    },
     "./monaco": {
       "types": "./dist/monaco.d.ts",
       "default": "./dist/monaco.js"
@@ -62,6 +70,18 @@
       ],
       "service-override/configuration": [
         "./dist/configuration.d.ts"
+      ],
+      "service-override/keybindings": [
+        "./dist/keybindings.d.ts"
+      ],
+      "service-override/textmate": [
+        "./dist/textmate.d.ts"
+      ],
+      "service-override/languageConfiguration": [
+        "./dist/languageConfiguration.d.ts"
+      ],
+      "service-override/theme": [
+        "./dist/theme.d.ts"
       ],
       "monaco": [
         "./dist/monaco.d.ts"
