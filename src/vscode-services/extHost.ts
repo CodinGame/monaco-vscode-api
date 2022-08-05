@@ -89,7 +89,7 @@ export const DEFAULT_EXTENSION: IExtensionDescription = {
   isBuiltin: true,
   isUserBuiltin: true,
   isUnderDevelopment: false,
-  extensionLocation: URI.file('extension'),
+  extensionLocation: URI.from({ scheme: 'extension', path: '/' }),
   name: 'monaco',
   publisher: 'microsoft',
   version: '1.0.0',

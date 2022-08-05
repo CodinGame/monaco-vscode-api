@@ -2,40 +2,56 @@ import '../polyfill'
 import '../vscode-services/missing-services'
 import { IEditorOverrideServices, StandaloneServices } from 'vs/editor/standalone/browser/standaloneServices'
 import { ConfigurationService } from 'vs/platform/configuration/common/configurationService'
-import { IConfigurationService } from 'vs/platform/configuration/common/configuration'
-import { URI } from 'vs/base/common/uri'
-import { Emitter } from 'vs/base/common/event'
-import { FileService } from 'vs/platform/files/common/fileService'
-import { ILogService } from 'vs/platform/log/common/log'
-import { Schemas } from 'vs/base/common/network'
+import { ConfigurationTarget, IConfigurationService, IConfigurationUpdateOverrides, isConfigurationOverrides, isConfigurationUpdateOverrides } from 'vs/platform/configuration/common/configuration'
 import { ITextResourceConfigurationService } from 'vs/editor/common/services/textResourceConfiguration'
 import { TextResourceConfigurationService } from 'vs/editor/common/services/textResourceConfigurationService'
 import { SyncDescriptor } from 'vs/platform/instantiation/common/descriptors'
 import { IConfigurationRegistry, Extensions as ConfigurationExtensions } from 'vs/platform/configuration/common/configurationRegistry'
 import { Registry } from 'vs/platform/registry/common/platform'
-import { createConfigurationFileSystemProvider } from './tools'
+import { IEnvironmentService } from 'vs/platform/environment/common/environment'
+import { VSBuffer } from 'vs/base/common/buffer'
+import { IFileService } from 'vs/platform/files/common/files'
+import { ILogService } from 'vs/platform/log/common/log'
+import { Configuration } from 'vs/platform/configuration/common/configurationModels'
+import getFileServiceOverride from './files'
 
-let userConfigurationJson: string = '{}'
-const userConfigurationChangeEmitter = new Emitter<void>()
 function updateUserConfiguration (configurationJson: string): void {
-  userConfigurationJson = configurationJson
-  userConfigurationChangeEmitter.fire(undefined)
+  const environmentService: IEnvironmentService = StandaloneServices.get(IEnvironmentService)
+  void StandaloneServices.get(IFileService).writeFile(environmentService.settingsResource, VSBuffer.fromString(configurationJson))
 }
 
 const configurationRegistry = Registry.as<IConfigurationRegistry>(ConfigurationExtensions.Configuration)
 
-export default function getServiceOverride (settingsResource: URI = URI.file('/userSettings.json')): IEditorOverrideServices {
-  const logService = StandaloneServices.get(ILogService)
-  const fileService = new FileService(logService)
-  fileService.registerProvider(Schemas.file, createConfigurationFileSystemProvider(settingsResource, () => userConfigurationJson, userConfigurationChangeEmitter.event))
+class InjectedConfigurationService extends ConfigurationService {
+  constructor (@IEnvironmentService environmentService: IEnvironmentService, @IFileService fileService: IFileService, @ILogService logService: ILogService) {
+    super(environmentService.settingsResource, fileService)
 
-  const configurationService = new ConfigurationService(settingsResource, fileService)
-  configurationService.initialize().catch(error => {
-    logService.error(error)
-  })
+    this.initialize().catch(error => {
+      logService.error(error)
+    })
+  }
 
+  // For some reasons, the default implementation just throw a not supported error
+  // Override it so editor.updateOptions still works
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  override updateValue (key: string, value: any, arg3?: any, arg4?: any): Promise<void> {
+    const overrides: IConfigurationUpdateOverrides | undefined = isConfigurationUpdateOverrides(arg3)
+      ? arg3
+      : isConfigurationOverrides(arg3) ? { resource: arg3.resource, overrideIdentifiers: arg3.overrideIdentifier != null ? [arg3.overrideIdentifier] : undefined } : undefined
+    const target: ConfigurationTarget | undefined = overrides != null ? arg4 : arg3
+
+    if (target === ConfigurationTarget.MEMORY) {
+      // eslint-disable-next-line dot-notation
+      return Promise.resolve((this['configuration'] as Configuration).updateValue(key, value, overrides))
+    }
+    return Promise.reject(new Error('not supported'))
+  }
+}
+
+export default function getServiceOverride (): IEditorOverrideServices {
   return {
-    [IConfigurationService.toString()]: configurationService,
+    ...getFileServiceOverride(),
+    [IConfigurationService.toString()]: new SyncDescriptor(InjectedConfigurationService),
     [ITextResourceConfigurationService.toString()]: new SyncDescriptor(TextResourceConfigurationService)
   }
 }
