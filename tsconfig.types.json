@@ -59,5 +59,6 @@
 		"src/service-override/modelEditor.ts",
 		"src/service-override/configuration.ts",
 		"src/service-override/keybindings.ts",
+		"src/service-override/textmate.ts",
 		"src/monaco.ts"]
 }

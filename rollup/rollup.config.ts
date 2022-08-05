@@ -61,6 +61,7 @@ const input = {
   modelEditor: './src/service-override/modelEditor.ts',
   configuration: './src/service-override/configuration.ts',
   keybindings: './src/service-override/keybindings.ts',
+  textmate: './src/service-override/textmate.ts',
   monaco: './src/monaco'
 }
 

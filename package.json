@@ -40,6 +40,10 @@
       "types": "./dist/keybindings.d.ts",
       "default": "./dist/keybindings.js"
     },
+    "./service-override/textmate": {
+      "types": "./dist/textmate.d.ts",
+      "default": "./dist/textmate.js"
+    },
     "./monaco": {
       "types": "./dist/monaco.d.ts",
       "default": "./dist/monaco.js"
@@ -116,6 +120,10 @@
   },
   "dependencies": {
     "monaco-editor": "^0.33.0"
+  },
+  "peerDependencies": {
+    "vscode-textmate": "^7.0.1",
+    "vscode-oniguruma": "^1.6.2"
   },
   "volta": {
     "node": "16.15.0",

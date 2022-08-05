@@ -18,6 +18,7 @@ export default rollup.defineConfig([
   './dist/types/src/service-override/modelEditor.d.ts',
   './dist/types/src/service-override/configuration.d.ts',
   './dist/types/src/service-override/keybindings.d.ts',
+  './dist/types/src/service-override/textmate.d.ts',
   './dist/types/src/monaco.d.ts'
 ].map((input): rollup.RollupOptions => ({
   input,
@@ -27,13 +28,7 @@ export default rollup.defineConfig([
     entryFileNames: chunk => `${chunk.name}.ts`
   },
   external: function isExternal (id) {
-    if (id === 'vscode') {
-      return true
-    }
-    if (id === 'monaco-editor') {
-      return true
-    }
-    return false
+    return ['vscode', 'monaco-editor', 'vscode-textmate'].includes(id)
   },
   plugins: [
     {
