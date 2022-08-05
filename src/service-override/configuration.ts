@@ -6,13 +6,14 @@ import { ConfigurationTarget, IConfigurationService, IConfigurationUpdateOverrid
 import { ITextResourceConfigurationService } from 'vs/editor/common/services/textResourceConfiguration'
 import { TextResourceConfigurationService } from 'vs/editor/common/services/textResourceConfigurationService'
 import { SyncDescriptor } from 'vs/platform/instantiation/common/descriptors'
-import { IConfigurationRegistry, Extensions as ConfigurationExtensions } from 'vs/platform/configuration/common/configurationRegistry'
+import { IConfigurationRegistry, Extensions as ConfigurationExtensions, ConfigurationScope, IConfigurationNode, IConfigurationDefaults } from 'vs/platform/configuration/common/configurationRegistry'
 import { Registry } from 'vs/platform/registry/common/platform'
 import { IEnvironmentService } from 'vs/platform/environment/common/environment'
 import { VSBuffer } from 'vs/base/common/buffer'
 import { IFileService } from 'vs/platform/files/common/files'
 import { ILogService } from 'vs/platform/log/common/log'
 import { Configuration } from 'vs/platform/configuration/common/configurationModels'
+import { IColorCustomizations, IThemeScopedColorCustomizations } from 'vs/workbench/services/themes/common/workbenchThemeService'
 import getFileServiceOverride from './files'
 
 function updateUserConfiguration (configurationJson: string): void {
@@ -58,5 +59,10 @@ export default function getServiceOverride (): IEditorOverrideServices {
 
 export {
   updateUserConfiguration,
-  configurationRegistry
+  configurationRegistry,
+  ConfigurationScope,
+  IThemeScopedColorCustomizations,
+  IColorCustomizations,
+  IConfigurationNode,
+  IConfigurationDefaults
 }

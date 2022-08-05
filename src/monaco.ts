@@ -8,6 +8,15 @@ import { isObject } from 'vs/base/common/types'
 import { deepClone, distinct } from 'vs/base/common/objects'
 import { CodeEditorWidget } from 'vs/editor/browser/widget/codeEditorWidget'
 import type { create as createEditor, createDiffEditor } from 'vs/editor/standalone/browser/standaloneEditor'
+import { errorHandler } from 'vs/base/common/errors'
+import { FoldingModel, setCollapseStateForMatchingLines } from 'vs/editor/contrib/folding/browser/foldingModel'
+import { FoldingController } from 'vs/editor/contrib/folding/browser/folding'
+import { DisposableStore } from 'vs/base/common/lifecycle'
+import { Registry } from 'vs/platform/registry/common/platform'
+import { IJSONContributionRegistry, Extensions as JsonExtensions } from 'vs/platform/jsonschemas/common/jsonContributionRegistry'
+import { CommandsRegistry } from 'vs/platform/commands/common/commands'
+import { IJSONSchema } from 'vs/base/common/jsonSchema'
+import { allSettings } from 'vs/platform/configuration/common/configurationRegistry'
 import { createInjectedClass } from './tools/injection'
 
 function computeConfiguration (configuration: IEditorConfiguration, isDiffEditor: boolean, overrides?: Readonly<IEditorOptions>): IEditorOptions {
@@ -100,4 +109,25 @@ export const createConfiguredEditor: typeof createEditor = (domElement, options,
 export const createConfiguredDiffEditor: typeof createDiffEditor = (domElement, options, override) => {
   const instantiationService = StandaloneServices.initialize(override ?? {})
   return instantiationService.createInstance(ConfiguredStandaloneDiffEditor, domElement, options)
+}
+
+const Extensions = {
+  ...JsonExtensions
+}
+
+export {
+  errorHandler,
+  DisposableStore,
+
+  FoldingController,
+  FoldingModel,
+  setCollapseStateForMatchingLines,
+
+  Registry,
+  CommandsRegistry,
+  Extensions,
+  IJSONContributionRegistry,
+  IJSONSchema,
+
+  allSettings
 }

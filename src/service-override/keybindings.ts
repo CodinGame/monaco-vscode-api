@@ -133,5 +133,6 @@ export {
   updateUserKeybindings,
   setKeybindings,
   setCommands,
+  ContributedKeyBinding,
   IUserFriendlyKeybinding
 }

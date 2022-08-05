@@ -4,6 +4,7 @@ import type { IProgressService } from 'vs/platform/progress/common/progress'
 import { IExtensionDescription } from 'vs/platform/extensions/common/extensions'
 import { NotificationsFilter } from 'vs/platform/notification/common/notification'
 import { IConfigurationChangeEvent } from 'vs/platform/configuration/common/configuration'
+import { ITextModelContentProvider } from 'vs/editor/common/services/resolverService'
 
 export {
   Severity
@@ -89,5 +90,6 @@ export { IThemeService } from 'vs/platform/theme/common/themeService'
 
 export {
   NotificationsFilter,
-  IConfigurationChangeEvent
+  IConfigurationChangeEvent,
+  ITextModelContentProvider
 }
