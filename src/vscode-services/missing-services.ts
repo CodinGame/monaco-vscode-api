@@ -25,10 +25,21 @@ import { IHostService } from 'vs/workbench/services/host/browser/host'
 import { ILifecycleService, LifecyclePhase, StartupKind } from 'vs/workbench/services/lifecycle/common/lifecycle'
 import { ILanguageDetectionService } from 'vs/workbench/services/languageDetection/common/languageDetectionWorkerService'
 import { IExtensionService, NullExtensionService } from 'vs/workbench/services/extensions/common/extensions'
+import { IKeyboardLayoutService } from 'vs/platform/keyboardLayout/common/keyboardLayout'
+import { MacLinuxFallbackKeyboardMapper } from 'vs/workbench/services/keybinding/common/macLinuxFallbackKeyboardMapper'
+import { OS } from 'vs/base/common/platform'
+import { IEnvironmentService } from 'vs/platform/environment/common/environment'
+import { IUserDataInitializationService } from 'vs/workbench/services/userData/browser/userDataInit'
+import { IBrowserWorkbenchEnvironmentService } from 'vs/workbench/services/environment/browser/environmentService'
+import { BrowserHostColorSchemeService } from 'vs/workbench/services/themes/browser/browserHostColorSchemeService'
+import { IHostColorSchemeService } from 'vs/workbench/services/themes/common/hostColorSchemeService'
+import { IPreferencesService } from 'vs/workbench/services/preferences/common/preferences'
+import { IContextKeyService } from 'vs/platform/contextkey/common/contextkey'
 import { StandaloneServices } from 'vs/editor/standalone/browser/standaloneServices'
 import { ICodeEditorService } from 'vs/editor/browser/services/codeEditorService'
-import { unsupported } from '../tools'
+import { ITextMateService } from 'vs/workbench/services/textMate/browser/textMate'
 import { Services } from '../services'
+import { unsupported } from '../tools'
 
 registerSingleton(IEditorService, class EditorService implements IEditorService {
   readonly _serviceBrand = undefined
@@ -452,3 +463,55 @@ registerSingleton(ILanguageDetectionService, class LanguageDetectionService impl
 })
 
 registerSingleton(IExtensionService, NullExtensionService)
+
+registerSingleton(IKeyboardLayoutService, class KeyboardLayoutService implements IKeyboardLayoutService {
+  _serviceBrand: undefined
+  onDidChangeKeyboardLayout = Event.None
+  getRawKeyboardMapping = () => null
+  getCurrentKeyboardLayout = () => null
+  getAllKeyboardLayouts = () => []
+  getKeyboardMapper = () => new MacLinuxFallbackKeyboardMapper(OS)
+  validateCurrentKeyboardMapping = () => {}
+})
+
+registerSingleton(IUserDataInitializationService, class NullUserDataInitializationService implements IUserDataInitializationService {
+  _serviceBrand: undefined
+  async requiresInitialization (): Promise<boolean> {
+    return false
+  }
+
+  async whenInitializationFinished (): Promise<void> {}
+  async initializeRequiredResources (): Promise<void> {}
+  async initializeInstalledExtensions (): Promise<void> {}
+  async initializeOtherResources (): Promise<void> {}
+})
+
+registerSingleton(IHostColorSchemeService, BrowserHostColorSchemeService)
+
+registerSingleton(IPreferencesService, class PreferencesService implements IPreferencesService {
+  _serviceBrand: undefined
+  get userSettingsResource () { return unsupported() }
+  workspaceSettingsResource = null
+  getFolderSettingsResource = unsupported
+  createPreferencesEditorModel = unsupported
+  resolveModel = unsupported
+  createSettings2EditorModel = unsupported
+  openRawDefaultSettings = unsupported
+  openSettings = unsupported
+  openUserSettings = unsupported
+  openRemoteSettings = unsupported
+  openWorkspaceSettings = unsupported
+  openFolderSettings = unsupported
+  openGlobalKeybindingSettings = unsupported
+  openDefaultKeybindingsFile = unsupported
+  getEditableSettingsURI = unsupported
+  createSplitJsonEditorInput = unsupported
+})
+
+class NullTextMateService implements ITextMateService {
+  _serviceBrand: undefined
+  onDidEncounterLanguage = Event.None
+  createGrammar = unsupported
+  startDebugMode = unsupported
+}
+registerSingleton(ITextMateService, NullTextMateService)
