@@ -109,7 +109,7 @@
   },
   "config": {
     "vscode": {
-      "version": "1.67.0"
+      "version": "1.69.0"
     }
   },
   "devDependencies": {
@@ -126,7 +126,7 @@
     "@rollup/plugin-typescript": "^8.3.4",
     "@types/babel__core": "^7.1.19",
     "@types/semver": "^7.3.10",
-    "@types/vscode": "~1.67.0",
+    "@types/vscode": "~1.69.1",
     "@typescript-eslint/eslint-plugin": "^5.32.0",
     "@typescript-eslint/parser": "^5.32.0",
     "eslint": "^8.21.0",
@@ -146,7 +146,7 @@
     "zx": "^7.0.8"
   },
   "dependencies": {
-    "monaco-editor": "^0.33.0"
+    "monaco-editor": "^0.34.0"
   },
   "peerDependencies": {
     "vscode-textmate": "^7.0.1",
