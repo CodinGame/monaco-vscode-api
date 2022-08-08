@@ -4,6 +4,7 @@ set -e
 vscodeVersion=$(node -e "console.log(require('./node_modules/monaco-editor/package.json').vscode)")
 
 output_directory="`pwd`/vscode"
+patch_file="`pwd`/scripts/vscode.patch"
 rm -rf $output_directory
 
 build_directory=`mktemp -d`
@@ -16,6 +17,7 @@ echo "Installing vscode dependencies..."
 yarn install --ignore-scripts
 
 echo "Patching vscode..."
+patch -p1 < $patch_file
 cd src
 
 # Remove useless files
