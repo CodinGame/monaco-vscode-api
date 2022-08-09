@@ -17,6 +17,7 @@ import { IJSONContributionRegistry, Extensions as JsonExtensions } from 'vs/plat
 import { CommandsRegistry } from 'vs/platform/commands/common/commands'
 import { IJSONSchema } from 'vs/base/common/jsonSchema'
 import { allSettings } from 'vs/platform/configuration/common/configurationRegistry'
+import { EditorOptionsUtil } from 'vs/editor/browser/config/editorConfiguration'
 import { createInjectedClass } from './tools/injection'
 
 function computeConfiguration (configuration: IEditorConfiguration, isDiffEditor: boolean, overrides?: Readonly<IEditorOptions>): IEditorOptions {
@@ -39,13 +40,13 @@ class ConfiguredStandaloneEditor extends createInjectedClass(StandaloneEditor) {
   // use createInjectedClass because StandaloneEditor has a lot of injected services and it would be a pain to inject them all here to be able to forward them
   // Also, the injected services may vary so relying on the annotations is more robust (and useful for @codingame/monaco-editor which removes a service from the list)
 
-  private optionsOverrides?: Readonly<IEditorOptions>
+  private optionsOverrides: Readonly<IEditorOptions> = {}
   private lastAppliedEditorOptions?: IEditorOptions
 
   constructor (
     domElement: HTMLElement,
     private isDiffEditor: boolean,
-    _options: Readonly<IStandaloneEditorConstructionOptions> | undefined,
+    _options: Readonly<IStandaloneEditorConstructionOptions> = {},
     @IInstantiationService instantiationService: IInstantiationService,
     @ITextResourceConfigurationService private textResourceConfigurationService: ITextResourceConfigurationService
   ) {
@@ -90,7 +91,11 @@ class ConfiguredStandaloneEditor extends createInjectedClass(StandaloneEditor) {
   }
 
   override updateOptions (newOptions: Readonly<IEditorOptions>): void {
-    this.optionsOverrides = newOptions
+    const didChange = EditorOptionsUtil.applyUpdate(this.optionsOverrides, newOptions)
+    if (!didChange) {
+      return
+    }
+
     this.updateEditorConfiguration()
   }
 }

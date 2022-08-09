@@ -1,3 +1,16 @@
+diff --git a/src/vs/editor/browser/config/editorConfiguration.ts b/src/vs/editor/browser/config/editorConfiguration.ts
+index e3f41e0d416..14885bf3197 100644
+--- a/src/vs/editor/browser/config/editorConfiguration.ts
++++ b/src/vs/editor/browser/config/editorConfiguration.ts
+@@ -259,7 +259,7 @@ export class ComputedEditorOptions implements IComputedEditorOptions {
+ 	}
+ }
+ 
+-class EditorOptionsUtil {
++export class EditorOptionsUtil {
+ 
+ 	public static validateOptions(options: IEditorOptions): ValidatedEditorOptions {
+ 		const result = new ValidatedEditorOptions();
 diff --git a/src/vs/workbench/contrib/mergeEditor/browser/utils.ts b/src/vs/workbench/contrib/mergeEditor/browser/utils.ts
 index 7e92f970387..51e2439a52b 100644
 --- a/src/vs/workbench/contrib/mergeEditor/browser/utils.ts
