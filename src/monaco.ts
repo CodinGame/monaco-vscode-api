@@ -23,11 +23,9 @@ import { createInjectedClass } from './tools/injection'
 function computeConfiguration (configuration: IEditorConfiguration, isDiffEditor: boolean, overrides?: Readonly<IEditorOptions>): IEditorOptions {
   const editorConfiguration: IEditorOptions = isObject(configuration.editor) ? deepClone(configuration.editor) : Object.create(null)
   if (isDiffEditor && isObject(configuration.diffEditor)) {
-    Object.assign(editorConfiguration, configuration.diffEditor)
+    Object.assign(editorConfiguration, deepClone(configuration.diffEditor))
   }
-  if (isObject(configuration.diffEditor)) {
-    Object.assign(editorConfiguration, overrides)
-  }
+  Object.assign(editorConfiguration, deepClone(overrides))
   return editorConfiguration
 }
 
@@ -50,11 +48,13 @@ class ConfiguredStandaloneEditor extends createInjectedClass(StandaloneEditor) {
     @IInstantiationService instantiationService: IInstantiationService,
     @ITextResourceConfigurationService private textResourceConfigurationService: ITextResourceConfigurationService
   ) {
-    const computedOptions = computeConfiguration(textResourceConfigurationService.getValue<IEditorConfiguration>(_options?.model?.uri), isDiffEditor, _options)
-    super(instantiationService, domElement, computedOptions)
+    // Remove Construction specific options
+    const { theme, autoDetectHighContrast, model, value, language, accessibilityHelpUrl, ariaContainerElement, ...options } = _options
+    const computedOptions = computeConfiguration(textResourceConfigurationService.getValue<IEditorConfiguration>(_options.model?.uri), isDiffEditor, options)
+    super(instantiationService, domElement, { ...computedOptions, theme, autoDetectHighContrast, model, value, language, accessibilityHelpUrl, ariaContainerElement })
     this.lastAppliedEditorOptions = computedOptions
 
-    this.optionsOverrides = _options
+    this.optionsOverrides = options
     this._register(textResourceConfigurationService.onDidChangeConfiguration(() => this.updateEditorConfiguration()))
     this._register(this.onDidChangeModelLanguage(() => this.updateEditorConfiguration()))
     this._register(this.onDidChangeModel(() => this.updateEditorConfiguration()))
