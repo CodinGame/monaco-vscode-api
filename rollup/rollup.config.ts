@@ -238,7 +238,12 @@ export default (args: Record<string, string>): rollup.RollupOptions[] => {
                     }
                     // Remove Registry.add calls
                     if (name != null && name.endsWith('Registry.add')) {
-                      return null
+                      const firstParam = node.arguments[0]!
+                      const firstParamName = firstParam.type === 'MemberExpression' ? getMemberExpressionPath(firstParam) : undefined
+                      const allowed = firstParamName != null && firstParamName.includes('ExtensionsRegistry')
+                      if (!allowed) {
+                        return null
+                      }
                     }
                     // Remove schemaRegistry.registerSchema calls
                     if (name != null && name.endsWith('registerSchema')) {
