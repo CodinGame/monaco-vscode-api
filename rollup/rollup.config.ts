@@ -35,6 +35,7 @@ const PURE_FUNCTIONS = new Set([
   'values',
   'keys',
   'toString',
+  'registerProxyConfigurations', // It's not pure, we just want to remove this call
   'CommandsRegistry.registerCommand' // It's not pure but we don't want the additional static vscode commands registered
 ])
 const EXTENSIONS = ['', '.ts', '.js']
