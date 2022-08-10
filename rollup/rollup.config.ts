@@ -208,17 +208,19 @@ export default (args: Record<string, string>): rollup.RollupOptions[] => {
               parser: require('recast/parsers/babylon')
             })
             let transformed: boolean = false
-            function addComment (node: recast.types.namedTypes.Expression) {
+            function addComment (node: recast.types.namedTypes.NewExpression | recast.types.namedTypes.CallExpression) {
               if (!(node.comments ?? []).some(comment => comment.value === PURE_ANNO)) {
                 transformed = true
                 node.comments = [recast.types.builders.commentBlock(PURE_ANNO, true)]
+                return recast.types.builders.parenthesizedExpression(node)
               }
+              return node
             }
             recast.visit(ast.program.body, {
               visitNewExpression (path) {
                 const node = path.node
                 if (node.callee.type === 'Identifier') {
-                  addComment(node)
+                  path.replace(addComment(node))
                 }
                 this.traverse(path)
               },
@@ -233,7 +235,7 @@ export default (args: Record<string, string>): rollup.RollupOptions[] => {
                   if (node.callee.property.type === 'Identifier') {
                     const name = getMemberExpressionPath(node.callee)
                     if ((name != null && PURE_FUNCTIONS.has(name)) || PURE_FUNCTIONS.has(node.callee.property.name)) {
-                      addComment(node)
+                      path.replace(addComment(node))
                     }
                     // Remove Registry.add calls
                     if (name != null && name.endsWith('Registry.add')) {
@@ -241,10 +243,10 @@ export default (args: Record<string, string>): rollup.RollupOptions[] => {
                     }
                   }
                 } else if (node.callee.type === 'Identifier' && PURE_FUNCTIONS.has(node.callee.name)) {
-                  addComment(node)
+                  path.replace(addComment(node))
                 } else if (node.callee.type === 'FunctionExpression') {
                   // Mark IIFE as pure, because typescript compile enums as IIFE
-                  addComment(node)
+                  path.replace(addComment(node))
                 }
                 this.traverse(path)
                 return undefined
@@ -297,11 +299,13 @@ export default (args: Record<string, string>): rollup.RollupOptions[] => {
           parser: require('recast/parsers/babylon')
         })
         let transformed: boolean = false
-        function addComment (node: recast.types.namedTypes.Expression) {
+        function addComment (node: recast.types.namedTypes.NewExpression | recast.types.namedTypes.CallExpression) {
           if (!(node.comments ?? []).some(comment => comment.value === PURE_ANNO)) {
             transformed = true
             node.comments = [recast.types.builders.commentBlock(PURE_ANNO, true)]
+            return recast.types.builders.parenthesizedExpression(node)
           }
+          return node
         }
         recast.visit(ast.program.body, {
           visitCallExpression (path) {
@@ -310,14 +314,14 @@ export default (args: Record<string, string>): rollup.RollupOptions[] => {
               if (node.callee.property.type === 'Identifier') {
                 const name = getMemberExpressionPath(node.callee)
                 if ((name != null && PURE_FUNCTIONS.has(name)) || PURE_FUNCTIONS.has(node.callee.property.name)) {
-                  addComment(node)
+                  path.replace(addComment(node))
                 }
               }
             } else if (node.callee.type === 'Identifier' && PURE_FUNCTIONS.has(node.callee.name)) {
-              addComment(node)
+              path.replace(addComment(node))
             } else if (node.callee.type === 'FunctionExpression') {
               // Mark IIFE as pure, because typescript compile enums as IIFE
-              addComment(node)
+              path.replace(addComment(node))
             }
             this.traverse(path)
             return undefined
