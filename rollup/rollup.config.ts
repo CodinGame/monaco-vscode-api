@@ -11,6 +11,7 @@ import styles from 'rollup-plugin-styles'
 import * as fs from 'fs'
 import * as path from 'path'
 import * as vm from 'vm'
+import pkg from '../package.json'
 
 const PURE_ANNO = '#__PURE__'
 const PURE_FUNCTIONS = new Set([
@@ -73,6 +74,16 @@ const input = {
   monaco: './src/monaco'
 }
 
+const externals = Object.keys({ ...pkg.dependencies, ...pkg.peerDependencies })
+const external: rollup.ExternalOption = (source) => {
+  // mark semver as external so it's ignored (the code that imports it will be treeshaked out)
+  if (source.includes('semver')) return true
+  if (source.startsWith(MONACO_EDITOR_DIR) || source.startsWith('monaco-editor/')) {
+    return true
+  }
+  return externals.some(external => source === external || source.startsWith(`${external}/`))
+}
+
 export default (args: Record<string, string>): rollup.RollupOptions[] => {
   const vscodeVersion = args['vscode-version']
   delete args['vscode-version']
@@ -88,11 +99,7 @@ export default (args: Record<string, string>): rollup.RollupOptions[] => {
         return id.startsWith(SRC_DIR) || id.endsWith('.css')
       }
     },
-    external: (source) => {
-      // mark semver as external so it's ignored (the code that imports it will be treeshaked out)
-      if (source.includes('semver')) return true
-      return source.startsWith(MONACO_EDITOR_DIR) || source.startsWith('monaco-editor/')
-    },
+    external,
     output: [{
       format: 'esm',
       dir: 'dist',
@@ -290,10 +297,7 @@ export default (args: Record<string, string>): rollup.RollupOptions[] => {
         return id.startsWith(SRC_DIR) || id.endsWith('.css')
       }
     },
-    external: (source) => {
-      if (source.includes('semver')) return true
-      return source.startsWith(MONACO_EDITOR_DIR)
-    },
+    external,
     input: Object.values(input).map(f => `./dist/${path.basename(f, '.ts')}`),
     output: [{
       format: 'esm',
