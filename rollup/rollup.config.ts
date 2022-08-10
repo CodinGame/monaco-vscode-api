@@ -29,7 +29,6 @@ const PURE_FUNCTIONS = new Set([
   'darken',
   'lighten',
   'Color.fromHex',
-  'registerSchema',
   'registerExtensionPoint',
   'asBroswerUri',
   'values',
@@ -240,6 +239,12 @@ export default (args: Record<string, string>): rollup.RollupOptions[] => {
                     // Remove Registry.add calls
                     if (name != null && name.endsWith('Registry.add')) {
                       return null
+                    }
+                    // Remove schemaRegistry.registerSchema calls
+                    if (name != null && name.endsWith('registerSchema')) {
+                      if (['/keybindingService', '/tokenClassificationRegistry'].every(file => id.includes(file))) {
+                        return null
+                      }
                     }
                   }
                 } else if (node.callee.type === 'Identifier' && PURE_FUNCTIONS.has(node.callee.name)) {
