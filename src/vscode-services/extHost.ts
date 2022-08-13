@@ -5,7 +5,7 @@ import { MainThreadCommands } from 'vs/workbench/api/browser/mainThreadCommands'
 import { IExtHostContext } from 'vs/workbench/services/extensions/common/extHostCustomers'
 import { ExtensionHostKind, IExtensionService } from 'vs/workbench/services/extensions/common/extensions'
 import { Event } from 'vs/base/common/event'
-import { ExtensionIdentifier, IExtensionDescription } from 'vs/platform/extensions/common/extensions'
+import { ExtensionIdentifier, IExtensionDescription, TargetPlatform } from 'vs/platform/extensions/common/extensions'
 import { URI } from 'vs/base/common/uri'
 import { ExtHostApiDeprecationService } from 'vs/workbench/api/common/extHostApiDeprecationService'
 import { ExtHostConfigurationShape, ExtHostContext, IConfigurationInitData, IMainContext, MainContext, MainThreadConfigurationShape } from 'vs/workbench/api/common/extHost.protocol'
@@ -81,6 +81,7 @@ import { IExtHostInitDataService } from 'vs/workbench/api/common/extHostInitData
 import { MainThreadConfiguration } from 'vs/workbench/api/browser/mainThreadConfiguration'
 import { IWorkspaceContextService } from 'vs/platform/workspace/common/workspace'
 import { UIKind } from 'vs/workbench/services/extensions/common/extensionHostProtocol'
+import { IInstantiationService } from 'vs/platform/instantiation/common/instantiation'
 import { unsupported } from '../tools'
 import { Services } from '../services'
 
@@ -95,7 +96,8 @@ export const DEFAULT_EXTENSION: IExtensionDescription = {
   version: '1.0.0',
   engines: {
     vscode: VSCODE_VERSION
-  }
+  },
+  targetPlatform: TargetPlatform.WEB
 }
 
 class SimpleMessagePassingProtocol implements IMessagePassingProtocol {
@@ -212,6 +214,7 @@ function createExtHostServices () {
   const configurationService = StandaloneServices.get(IConfigurationService)
   const workspaceContextService = StandaloneServices.get(IWorkspaceContextService)
   const extensionService = StandaloneServices.get(IExtensionService)
+  const instantiationService = StandaloneServices.get(IInstantiationService)
 
   const imessagePassingProtocol = new SimpleMessagePassingProtocol()
 
@@ -234,6 +237,9 @@ function createExtHostServices () {
     },
     drain: function (): Promise<void> {
       return rpcProtocol.drain()
+    },
+    dispose () {
+      rpcProtocol.dispose()
     }
   }
 
@@ -242,9 +248,12 @@ function createExtHostServices () {
     version: '1.0.0',
     parentPid: 0,
     get environment () { return unsupported() },
-    resolvedExtensions: [],
-    hostExtensions: [],
-    extensions: [Services.get().extension ?? DEFAULT_EXTENSION],
+    allExtensions: [Services.get().extension ?? DEFAULT_EXTENSION],
+    myExtensions: [(Services.get().extension ?? DEFAULT_EXTENSION).identifier],
+    consoleForward: {
+      includeStack: false,
+      logNative: false
+    },
     get telemetryInfo () { return unsupported() },
     logLevel: LogLevel.Trace,
     get logsLocation () { return unsupported() },
@@ -286,7 +295,7 @@ function createExtHostServices () {
   rpcProtocol.set(MainContext.MainThreadMessageService, new MainThreadMessageServiceWithoutSource(mainContext, notificationService, commandsService, dialogService))
   rpcProtocol.set(MainContext.MainThreadDiagnostics, new MonacoMainThreadDiagnostics(mainContext, markerService, uriIdentityService))
   rpcProtocol.set(MainContext.MainThreadQuickOpen, new MainThreadQuickOpen(mainContext, quickInputService))
-  rpcProtocol.set(MainContext.MainThreadTelemetry, new MainThreadTelemetry(mainContext, telemetryService, configurationService, workbenchEnvironmentService, productService))
+  rpcProtocol.set(MainContext.MainThreadTelemetry, new MainThreadTelemetry(mainContext, telemetryService, workbenchEnvironmentService, productService))
   rpcProtocol.set(MainContext.MainThreadProgress, new MainThreadProgress(mainContext, progressService, commandsService))
   rpcProtocol.set(MainContext.MainThreadDocumentContentProviders, new MainThreadDocumentContentProviders(mainContext, textModelService, languageService, modelService, editorWorkerService))
   rpcProtocol.set(MainContext.MainThreadBulkEdits, new MainThreadBulkEdits(mainContext, bulkEditService, extHostLogService))
@@ -305,13 +314,13 @@ function createExtHostServices () {
     fileService,
     textModelService,
     editorGroupsService,
-    bulkEditService,
     paneCompositePartService,
     workbenchEnvironmentService,
     workingCopyFileService,
     uriIdentityService,
     clipboardService,
-    pathService
+    pathService,
+    instantiationService
   )
 
   const extHostBulkEdits = new ExtHostBulkEdits(mainContext, extHostDocumentsAndEditors)

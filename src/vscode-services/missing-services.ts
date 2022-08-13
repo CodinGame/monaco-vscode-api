@@ -38,6 +38,11 @@ import { IContextKeyService } from 'vs/platform/contextkey/common/contextkey'
 import { StandaloneServices } from 'vs/editor/standalone/browser/standaloneServices'
 import { ICodeEditorService } from 'vs/editor/browser/services/codeEditorService'
 import { ITextMateService } from 'vs/workbench/services/textMate/browser/textMate'
+import { IUserDataProfile, IUserDataProfilesService } from 'vs/platform/userDataProfile/common/userDataProfile'
+import { IPolicyService } from 'vs/platform/policy/common/policy'
+import { IUserDataProfileService } from 'vs/workbench/services/userDataProfile/common/userDataProfile'
+import { UserDataProfileService } from 'vs/workbench/services/userDataProfile/common/userDataProfileService'
+import { ISnippetsService } from 'vs/workbench/contrib/snippets/browser/snippets'
 import { Services } from '../services'
 import { unsupported } from '../tools'
 
@@ -228,6 +233,9 @@ class EmptyEditorGroup implements IEditorGroup {
   focus (): void {
     // ignore
   }
+
+  isFirst = () => true
+  isLast = () => true
 }
 
 registerSingleton(IEditorGroupsService, class EditorGroupsService implements IEditorGroupsService {
@@ -275,8 +283,6 @@ registerSingleton(IEditorGroupsService, class EditorGroupsService implements IEd
 
 class WorkbenchEnvironmentService implements IBrowserWorkbenchEnvironmentService {
   readonly _serviceBrand = undefined
-  keybindingsResource = URI.file('/keybindings.json')
-  settingsResource = URI.file('/settings.json')
   get logFile () { return unsupported() }
   get extHostLogsPath () { return unsupported() }
   skipReleaseNotes = true
@@ -305,6 +311,8 @@ class WorkbenchEnvironmentService implements IBrowserWorkbenchEnvironmentService
   disableTelemetry = false
   get telemetryLogResource () { return unsupported() }
   get serviceMachineIdResource () { return unsupported() }
+  get stateResource () { return unsupported() }
+  get editSessionsLogResource () { return unsupported() }
 }
 registerSingleton(IWorkbenchEnvironmentService, WorkbenchEnvironmentService)
 registerSingleton(IEnvironmentService, WorkbenchEnvironmentService)
@@ -506,12 +514,54 @@ registerSingleton(IPreferencesService, class PreferencesService implements IPref
   openDefaultKeybindingsFile = unsupported
   getEditableSettingsURI = unsupported
   createSplitJsonEditorInput = unsupported
+  openApplicationSettings = unsupported
+  openLanguageSpecificSettings = unsupported
 })
 
-class NullTextMateService implements ITextMateService {
+registerSingleton(ITextMateService, class NullTextMateService implements ITextMateService {
   _serviceBrand: undefined
   onDidEncounterLanguage = Event.None
   createGrammar = unsupported
   startDebugMode = unsupported
+})
+
+const profile: IUserDataProfile = {
+  id: 'default',
+  isDefault: true,
+  name: 'default',
+  location: URI.file('settings.json'),
+  get globalStorageHome () { return unsupported() },
+  settingsResource: URI.file('/settings.json'),
+  keybindingsResource: URI.file('/keybindings.json'),
+  get tasksResource () { return unsupported() },
+  get snippetsHome () { return URI.file('/snippets') },
+  extensionsResource: undefined
 }
-registerSingleton(ITextMateService, NullTextMateService)
+
+registerSingleton(IUserDataProfilesService, class UserDataProfilesService implements IUserDataProfilesService {
+  _serviceBrand: undefined
+  get profilesHome () { return unsupported() }
+  defaultProfile = profile
+  onDidChangeProfiles = Event.None
+  profiles = [profile]
+  createProfile = unsupported
+  updateProfile = unsupported
+  setProfileForWorkspace = unsupported
+  getProfile = () => profile
+  removeProfile = unsupported
+})
+class InjectedUserDataProfileService extends UserDataProfileService {
+  constructor (@IUserDataProfilesService userDataProfilesService: IUserDataProfilesService) {
+    super(profile, userDataProfilesService)
+  }
+}
+registerSingleton(IUserDataProfileService, InjectedUserDataProfileService)
+
+registerSingleton(IPolicyService, class PolicyService implements IPolicyService {
+  _serviceBrand: undefined
+  onDidChange = Event.None
+  registerPolicyDefinitions = unsupported
+  getPolicyValue = () => undefined
+  serialize = () => undefined
+})
+

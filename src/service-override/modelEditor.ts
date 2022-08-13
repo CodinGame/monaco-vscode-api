@@ -147,6 +147,8 @@ class EditorService implements IEditorService {
   saveAll = unsupported
   revert = unsupported
   revertAll = unsupported
+  closeEditor = unsupported
+  closeEditors = unsupported
 }
 
 /**

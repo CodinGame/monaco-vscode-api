@@ -8,24 +8,30 @@ import { TextResourceConfigurationService } from 'vs/editor/common/services/text
 import { SyncDescriptor } from 'vs/platform/instantiation/common/descriptors'
 import { IConfigurationRegistry, Extensions as ConfigurationExtensions, ConfigurationScope, IConfigurationNode, IConfigurationDefaults } from 'vs/platform/configuration/common/configurationRegistry'
 import { Registry } from 'vs/platform/registry/common/platform'
-import { IEnvironmentService } from 'vs/platform/environment/common/environment'
 import { VSBuffer } from 'vs/base/common/buffer'
 import { IFileService } from 'vs/platform/files/common/files'
 import { ILogService } from 'vs/platform/log/common/log'
 import { Configuration } from 'vs/platform/configuration/common/configurationModels'
 import { IColorCustomizations, IThemeScopedColorCustomizations } from 'vs/workbench/services/themes/common/workbenchThemeService'
+import { IUserDataProfilesService } from 'vs/platform/userDataProfile/common/userDataProfile'
+import { IPolicyService } from 'vs/platform/policy/common/policy'
 import getFileServiceOverride from './files'
 
 function updateUserConfiguration (configurationJson: string): void {
-  const environmentService: IEnvironmentService = StandaloneServices.get(IEnvironmentService)
-  void StandaloneServices.get(IFileService).writeFile(environmentService.settingsResource, VSBuffer.fromString(configurationJson))
+  const userDataProfilesService: IUserDataProfilesService = StandaloneServices.get(IUserDataProfilesService)
+  void StandaloneServices.get(IFileService).writeFile(userDataProfilesService.defaultProfile.settingsResource, VSBuffer.fromString(configurationJson))
 }
 
 const configurationRegistry = Registry.as<IConfigurationRegistry>(ConfigurationExtensions.Configuration)
 
 class InjectedConfigurationService extends ConfigurationService {
-  constructor (@IEnvironmentService environmentService: IEnvironmentService, @IFileService fileService: IFileService, @ILogService logService: ILogService) {
-    super(environmentService.settingsResource, fileService)
+  constructor (
+    @IUserDataProfilesService userDataProfilesService: IUserDataProfilesService,
+    @IFileService fileService: IFileService,
+    @IPolicyService policyService: IPolicyService,
+    @ILogService logService: ILogService
+  ) {
+    super(userDataProfilesService.defaultProfile.settingsResource, fileService, policyService, logService)
 
     this.initialize().catch(error => {
       logService.error(error)
@@ -33,7 +39,7 @@ class InjectedConfigurationService extends ConfigurationService {
   }
 
   // For some reasons, the default implementation just throw a not supported error
-  // Override it so editor.updateOptions still works
+  // Override it so the theme service is able to save the theme in the configuration
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   override updateValue (key: string, value: any, arg3?: any, arg4?: any): Promise<void> {
     const overrides: IConfigurationUpdateOverrides | undefined = isConfigurationUpdateOverrides(arg3)

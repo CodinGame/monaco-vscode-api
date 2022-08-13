@@ -3,7 +3,6 @@ import '../vscode-services/missing-services'
 import { IEditorOverrideServices, StandaloneKeybindingService, StandaloneServices } from 'vs/editor/standalone/browser/standaloneServices'
 import { SyncDescriptor } from 'vs/platform/instantiation/common/descriptors'
 import { WorkbenchKeybindingService } from 'vs/workbench/services/keybinding/browser/keybindingService'
-import { IEnvironmentService } from 'vs/platform/environment/common/environment'
 import { IKeybindingService, IUserFriendlyKeybinding } from 'vs/platform/keybinding/common/keybinding'
 import { VSBuffer } from 'vs/base/common/buffer'
 import { ExtensionMessageCollector } from 'vs/workbench/services/extensions/common/extensionsRegistry'
@@ -19,6 +18,7 @@ import { StandaloneCommandsQuickAccessProvider } from 'vs/editor/standalone/brow
 import { CommandsQuickAccessProvider } from 'vs/workbench/contrib/quickaccess/browser/commandsQuickAccess'
 import { DisposableStore } from 'vs/base/common/lifecycle'
 import { CancellationToken } from 'vs/base/common/cancellation'
+import { IUserDataProfilesService } from 'vs/platform/userDataProfile/common/userDataProfile'
 import getFileServiceOverride from './files'
 import { consoleExtensionMessageHandler, getExtensionPoint } from './tools'
 import { DEFAULT_EXTENSION } from '../vscode-services/extHost'
@@ -118,8 +118,8 @@ function setCommands (keybindings: IUserFriendlyCommand | IUserFriendlyCommand[]
 }
 
 function updateUserKeybindings (keybindingsJson: string): void {
-  const environmentService: IEnvironmentService = StandaloneServices.get(IEnvironmentService)
-  void StandaloneServices.get(IFileService).writeFile(environmentService.keybindingsResource, VSBuffer.fromString(keybindingsJson))
+  const userDataProfilesService: IUserDataProfilesService = StandaloneServices.get(IUserDataProfilesService)
+  void StandaloneServices.get(IFileService).writeFile(userDataProfilesService.defaultProfile.keybindingsResource, VSBuffer.fromString(keybindingsJson))
 }
 
 export default function getServiceOverride (): IEditorOverrideServices {

@@ -2,7 +2,7 @@ import '../polyfill'
 import '../vscode-services/missing-services'
 import { IEditorOverrideServices, StandaloneServices } from 'vs/editor/standalone/browser/standaloneServices'
 import { IWorkbenchLayoutService } from 'vs/workbench/services/layout/browser/layoutService'
-import { ILayoutService } from 'vs/platform/layout/browser/layoutService'
+import { ILayoutOffsetInfo, ILayoutService } from 'vs/platform/layout/browser/layoutService'
 import { Emitter } from 'vs/base/common/event'
 import { ICodeEditorService } from 'vs/editor/browser/services/codeEditorService'
 import * as dom from 'vs/base/browser/dom'
@@ -15,6 +15,8 @@ class LayoutService implements ILayoutService, Pick<IWorkbenchLayoutService, 'is
     window.addEventListener('resize', () => this.layout())
     this.layout()
   }
+
+  readonly offset: ILayoutOffsetInfo = { top: 0, quickPickTop: 0 }
 
   isVisible (): boolean {
     return false

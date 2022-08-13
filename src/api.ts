@@ -174,12 +174,18 @@ const api: typeof vscode = {
   LanguageStatusSeverity: extHostTypes.LanguageStatusSeverity,
   QuickPickItemKind: extHostTypes.QuickPickItemKind,
   TabInputText: TextTabInput,
-  TabInputTextDiff: unsupported,
-  TabInputCustom: unsupported,
-  TabInputNotebook: unsupported,
-  TabInputNotebookDiff: unsupported,
-  TabInputWebview: unsupported,
-  TabInputTerminal: unsupported
+  TabInputTextDiff: extHostTypes.TextDiffTabInput,
+  TabInputCustom: extHostTypes.CustomEditorTabInput,
+  TabInputNotebook: extHostTypes.NotebookEditorTabInput,
+  TabInputNotebookDiff: extHostTypes.NotebookDiffEditorTabInput,
+  TabInputWebview: extHostTypes.WebviewEditorTabInput,
+  TabInputTerminal: extHostTypes.TerminalEditorTabInput,
+  InputBoxValidationSeverity: extHostTypes.InputBoxValidationSeverity,
+  InlineCompletionList: extHostTypes.InlineSuggestionList,
+  InlineCompletionTriggerKind: extHostTypes.InlineCompletionTriggerKind,
+  InlineCompletionItem: extHostTypes.InlineSuggestion,
+  DocumentDropEdit: extHostTypes.DocumentDropEdit,
+  NotebookEditorRevealType: extHostTypes.NotebookEditorRevealType
 }
 
 // @ts-ignore the syntax will be transformed by a typescript transformer in the rollup config
