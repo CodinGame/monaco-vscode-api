@@ -71,6 +71,7 @@ const input = {
   languageConfiguration: './src/service-override/languageConfiguration.ts',
   theme: './src/service-override/theme.ts',
   tokenClassification: './src/service-override/tokenClassification.ts',
+  snippets: './src/service-override/snippets.ts',
   languages: './src/service-override/languages.ts',
   monaco: './src/monaco'
 }

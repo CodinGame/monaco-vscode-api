@@ -293,7 +293,7 @@ class WorkbenchEnvironmentService implements IBrowserWorkbenchEnvironmentService
   get userRoamingDataHome () { return unsupported() }
   get keyboardLayoutResource () { return unsupported() }
   get argvResource () { return unsupported() }
-  get snippetsHome () { return unsupported() }
+  get snippetsHome () { return URI.file('/snippets') }
   get untitledWorkspacesHome () { return unsupported() }
   get globalStorageHome () { return unsupported() }
   get workspaceStorageHome () { return unsupported() }
@@ -565,3 +565,12 @@ registerSingleton(IPolicyService, class PolicyService implements IPolicyService 
   serialize = () => undefined
 })
 
+registerSingleton(ISnippetsService, class SnippetsService implements ISnippetsService {
+  _serviceBrand: undefined
+  getSnippetFiles = unsupported
+  isEnabled = unsupported
+  updateEnablement = unsupported
+  updateUsageTimestamp = unsupported
+  getSnippets = async () => []
+  getSnippetsSync = unsupported
+})

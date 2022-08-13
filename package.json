@@ -56,6 +56,10 @@
       "types": "./dist/tokenClassification.d.ts",
       "default": "./dist/tokenClassification.js"
     },
+    "./service-override/snippets": {
+      "types": "./dist/snippets.d.ts",
+      "default": "./dist/snippets.js"
+    },
     "./service-override/languages": {
       "types": "./dist/languages.d.ts",
       "default": "./dist/languages.js"
@@ -93,6 +97,9 @@
       ],
       "service-override/tokenClassification": [
         "./dist/tokenClassification.d.ts"
+      ],
+      "service-override/snippets": [
+        "./dist/snippets.d.ts"
       ],
       "service-override/languages": [
         "./dist/languages.d.ts"
