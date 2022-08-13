@@ -34,10 +34,9 @@ const PURE_FUNCTIONS = new Set([
   'asBroswerUri',
   'values',
   'keys',
-  'toString',
-  'registerProxyConfigurations', // It's not pure, we just want to remove this call
-  'CommandsRegistry.registerCommand' // It's not pure but we don't want the additional static vscode commands registered
+  'toString'
 ])
+
 const EXTENSIONS = ['', '.ts', '.js']
 
 const SRC_DIR = path.resolve(__dirname, '../src')
@@ -233,16 +232,27 @@ export default (args: Record<string, string>): rollup.RollupOptions[] => {
               },
               visitCallExpression (path) {
                 const node = path.node
-                if (node.callee.type === 'Identifier' && node.callee.name === 'registerSingleton') {
-                  // Remove calls to registerSingleton from vscode code, we just want to import things, not registering services
+                const name = node.callee.type === 'MemberExpression' || node.callee.type === 'Identifier' ? getMemberExpressionPath(node.callee) : null
+
+                if (name != null && new Set([
+                  'colorRegistry.onDidChangeSchema',
+                  'registerSingleton', // Remove calls to registerSingleton from vscode code, we just want to import things, not registering services
+                  'registerProxyConfigurations'
+                ]).has(name)) {
                   transformed = true
                   return null
                 }
+
                 if (node.callee.type === 'MemberExpression') {
                   if (node.callee.property.type === 'Identifier') {
-                    const name = getMemberExpressionPath(node.callee)
                     if ((name != null && PURE_FUNCTIONS.has(name)) || PURE_FUNCTIONS.has(node.callee.property.name)) {
                       path.replace(addComment(node))
+                    }
+
+                    if (name != null && name === 'CommandsRegistry.registerCommand') {
+                      if (!id.includes('/snippetCompletionProvider')) {
+                        path.replace(addComment(node))
+                      }
                     }
                     // Remove Registry.add calls
                     if (name != null && name.endsWith('Registry.add')) {
