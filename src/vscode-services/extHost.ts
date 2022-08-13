@@ -11,7 +11,6 @@ import { ExtHostApiDeprecationService } from 'vs/workbench/api/common/extHostApi
 import { ExtHostConfigurationShape, ExtHostContext, IConfigurationInitData, IMainContext, MainContext, MainThreadConfigurationShape } from 'vs/workbench/api/common/extHost.protocol'
 import { ExtHostDiagnostics } from 'vs/workbench/api/common/extHostDiagnostics'
 import { ExtHostFileSystemInfo } from 'vs/workbench/api/common/extHostFileSystemInfo'
-import * as monaco from 'monaco-editor'
 import { IMessagePassingProtocol } from 'vs/base/parts/ipc/common/ipc'
 import { RPCProtocol } from 'vs/workbench/services/extensions/common/rpcProtocol'
 import { BufferedEmitter } from 'vs/base/parts/ipc/common/ipc.net'
@@ -105,33 +104,6 @@ class SimpleMessagePassingProtocol implements IMessagePassingProtocol {
   readonly onMessage: Event<VSBuffer> = this._onMessage.event
   send (buffer: VSBuffer): void {
     this._onMessage.fire(buffer)
-  }
-}
-
-class MonacoMainThreadDiagnostics extends MainThreadDiagnostics {
-  /**
-   * Required as `markerService.changeAll` is treeshaked out of monaco-editor 0.33
-   * FIXME: not required anymore with monaco-editor 0.34 (https://github.com/microsoft/monaco-editor/issues/3129)
-   */
-  override $clear (owner: string): void {
-    // eslint-disable-next-line dot-notation
-    if (this['_markerService'].changeAll == null) {
-      const markers = monaco.editor.getModelMarkers({
-        owner
-      })
-      const models = new Set<monaco.editor.ITextModel>()
-      for (const marker of markers) {
-        models.add(monaco.editor.getModel(marker.resource)!)
-      }
-      for (const model of models) {
-        monaco.editor.setModelMarkers(model, owner, [])
-      }
-
-      // eslint-disable-next-line dot-notation
-      this['_activeOwners'].delete(owner)
-    } else {
-      super.$clear(owner)
-    }
   }
 }
 
@@ -293,7 +265,7 @@ function createExtHostServices () {
 
   rpcProtocol.set(ExtHostContext.ExtHostTelemetry, new ExtHostTelemetry())
   rpcProtocol.set(MainContext.MainThreadMessageService, new MainThreadMessageServiceWithoutSource(mainContext, notificationService, commandsService, dialogService))
-  rpcProtocol.set(MainContext.MainThreadDiagnostics, new MonacoMainThreadDiagnostics(mainContext, markerService, uriIdentityService))
+  rpcProtocol.set(MainContext.MainThreadDiagnostics, new MainThreadDiagnostics(mainContext, markerService, uriIdentityService))
   rpcProtocol.set(MainContext.MainThreadQuickOpen, new MainThreadQuickOpen(mainContext, quickInputService))
   rpcProtocol.set(MainContext.MainThreadTelemetry, new MainThreadTelemetry(mainContext, telemetryService, workbenchEnvironmentService, productService))
   rpcProtocol.set(MainContext.MainThreadProgress, new MainThreadProgress(mainContext, progressService, commandsService))
