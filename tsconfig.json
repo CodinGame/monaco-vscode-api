@@ -18,7 +18,8 @@
 			"vscode/*": [
 				"./vscode/*"
 			]
-		}
+		},
+		"preserveConstEnums": true
 	},
 	"include": [
 		"./src/**/*",
