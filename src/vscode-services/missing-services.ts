@@ -307,7 +307,7 @@ class WorkbenchEnvironmentService implements IBrowserWorkbenchEnvironmentService
   disableExtensions = false
   logsPath = ''
   verbose = false
-  isBuilt = false
+  isBuilt = true // Required to suppress warnings
   disableTelemetry = false
   get telemetryLogResource () { return unsupported() }
   get serviceMachineIdResource () { return unsupported() }
