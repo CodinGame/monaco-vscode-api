@@ -35,7 +35,7 @@ const languages: typeof vscode.languages = {
     return extHostLanguages.changeLanguage(document.uri, languageId)
   },
   match (selector: vscode.DocumentSelector, document: vscode.TextDocument): number {
-    return score(typeConverters.LanguageSelector.from(selector), document.uri, document.languageId, true, undefined)
+    return score(typeConverters.LanguageSelector.from(selector), document.uri, document.languageId, true, undefined, undefined)
   },
   registerCodeActionsProvider (selector: vscode.DocumentSelector, provider: vscode.CodeActionProvider, metadata?: vscode.CodeActionProviderMetadata): vscode.Disposable {
     const { extHostLanguageFeatures } = getExtHostServices()
@@ -225,6 +225,18 @@ const languages: typeof vscode.languages = {
     const extension = Services.get().extension ?? DEFAULT_EXTENSION
 
     return extHostLanguages.createLanguageStatusItem(extension, id, selector)
+  },
+  registerInlineCompletionItemProvider (selector: vscode.DocumentSelector, provider: vscode.InlineCompletionItemProvider): vscode.Disposable {
+    const { extHostLanguageFeatures } = getExtHostServices()
+    const extension = Services.get().extension ?? DEFAULT_EXTENSION
+
+    return extHostLanguageFeatures.registerInlineCompletionsProvider(extension, checkSelector(selector), provider)
+  },
+  registerDocumentDropEditProvider (selector: vscode.DocumentSelector, provider: vscode.DocumentDropEditProvider): vscode.Disposable {
+    const { extHostLanguageFeatures } = getExtHostServices()
+    const extension = Services.get().extension ?? DEFAULT_EXTENSION
+
+    return extHostLanguageFeatures.registerDocumentOnDropEditProvider(extension, selector, provider)
   }
 }
 

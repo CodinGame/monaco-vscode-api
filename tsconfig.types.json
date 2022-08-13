@@ -52,5 +52,18 @@
 	"emitDeclarationOnly": true,
 	"skipLibCheck": true
   },
-  "include": ["src/services.ts", "src/types.d.ts", "src/service-override/messages.ts", "src/service-override/modelEditor.ts", "src/service-override/configuration.ts", "src/monaco.ts"]
+  "include": [
+		"src/services.ts",
+		"src/types.d.ts",
+		"src/service-override/messages.ts",
+		"src/service-override/modelEditor.ts",
+		"src/service-override/configuration.ts",
+		"src/service-override/keybindings.ts",
+		"src/service-override/textmate.ts",
+		"src/service-override/languageConfiguration.ts",
+		"src/service-override/theme.ts",
+		"src/service-override/tokenClassification.ts",
+		"src/service-override/snippets.ts",
+		"src/service-override/languages.ts",
+		"src/monaco.ts"]
 }

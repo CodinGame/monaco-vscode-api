@@ -60,7 +60,7 @@ const window: typeof vscode.window = {
       append: () => { },
       appendLine: () => { },
       clear: unsupported,
-      show: () => {},
+      show: () => { },
       hide: unsupported,
       replace: unsupported,
       dispose: () => { }
@@ -68,9 +68,9 @@ const window: typeof vscode.window = {
   },
   withScmProgress<R> (task: (progress: vscode.Progress<number>) => Thenable<R>) {
     const { extHostProgress } = getExtHostServices()
-    return extHostProgress.withProgress(Services.get().extension ?? DEFAULT_EXTENSION, { location: extHostTypes.ProgressLocation.SourceControl }, () => task({ report () { /* noop */ } }))
+    return extHostProgress.withProgress(Services.get().extension ?? DEFAULT_EXTENSION, { location: extHostTypes.ProgressLocation.SourceControl }, () => task({ report () { } }))
   },
-  withProgress<R> (options: vscode.ProgressOptions, task: (progress: vscode.Progress<{ message?: string, worked?: number }>, token: vscode.CancellationToken) => Thenable<R>) {
+  withProgress<R> (options: vscode.ProgressOptions, task: (progress: vscode.Progress<{ message?: string, worked?: number} >, token: vscode.CancellationToken) => Thenable<R>) {
     const { extHostProgress } = getExtHostServices()
     return extHostProgress.withProgress(Services.get().extension ?? DEFAULT_EXTENSION, options, task)
   },
@@ -94,7 +94,7 @@ const window: typeof vscode.window = {
   createInputBox (): vscode.InputBox {
     const { extHostQuickOpen } = getExtHostServices()
     const extension = Services.get().extension ?? DEFAULT_EXTENSION
-    return extHostQuickOpen.createInputBox(extension.identifier)
+    return extHostQuickOpen.createInputBox(extension)
   },
   showInputBox (options?: vscode.InputBoxOptions, token?: vscode.CancellationToken) {
     const { extHostQuickOpen } = getExtHostServices()
@@ -194,7 +194,14 @@ const window: typeof vscode.window = {
       return store
     },
     close: unsupported
-  }
+  },
+  showNotebookDocument: unsupported,
+  visibleNotebookEditors: [],
+  onDidChangeVisibleNotebookEditors: Event.None,
+  activeNotebookEditor: undefined,
+  onDidChangeActiveNotebookEditor: Event.None,
+  onDidChangeNotebookEditorSelection: Event.None,
+  onDidChangeNotebookEditorVisibleRanges: Event.None
 }
 
 export default window

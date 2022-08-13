@@ -3,10 +3,11 @@
 	"compilerOptions": {
 		"declaration": false,
 		"experimentalDecorators": true,
+		"resolveJsonModule": true,
 		"target": "es2020",
 		"module": "es2020",
 		"lib": [
-			"es2020",
+			"es2021",
 			"DOM"
 		],
 		"outDir": "dist",
@@ -18,7 +19,8 @@
 			"vscode/*": [
 				"./vscode/*"
 			]
-		}
+		},
+		"preserveConstEnums": true
 	},
 	"include": [
 		"./src/**/*",

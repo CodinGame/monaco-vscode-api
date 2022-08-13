@@ -68,7 +68,7 @@ class EditorService implements IEditorService {
   onDidCloseEditor = Event.None
   activeEditorPane: undefined
   activeEditor: undefined
-  activeTextEditorControl = undefined
+  get activeTextEditorControl () { return StandaloneServices.get(ICodeEditorService).getFocusedCodeEditor() ?? undefined }
   activeTextEditorLanguageId = undefined
   visibleEditorPanes = []
   visibleEditors = []
@@ -147,6 +147,8 @@ class EditorService implements IEditorService {
   saveAll = unsupported
   revert = unsupported
   revertAll = unsupported
+  closeEditor = unsupported
+  closeEditors = unsupported
 }
 
 /**

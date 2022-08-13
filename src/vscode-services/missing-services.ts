@@ -24,8 +24,27 @@ import { compare } from 'vs/base/common/strings'
 import { IHostService } from 'vs/workbench/services/host/browser/host'
 import { ILifecycleService, LifecyclePhase, StartupKind } from 'vs/workbench/services/lifecycle/common/lifecycle'
 import { ILanguageDetectionService } from 'vs/workbench/services/languageDetection/common/languageDetectionWorkerService'
-import { unsupported } from '../tools'
+import { IExtensionService, NullExtensionService } from 'vs/workbench/services/extensions/common/extensions'
+import { IKeyboardLayoutService } from 'vs/platform/keyboardLayout/common/keyboardLayout'
+import { MacLinuxFallbackKeyboardMapper } from 'vs/workbench/services/keybinding/common/macLinuxFallbackKeyboardMapper'
+import { OS } from 'vs/base/common/platform'
+import { IEnvironmentService } from 'vs/platform/environment/common/environment'
+import { IUserDataInitializationService } from 'vs/workbench/services/userData/browser/userDataInit'
+import { IBrowserWorkbenchEnvironmentService } from 'vs/workbench/services/environment/browser/environmentService'
+import { BrowserHostColorSchemeService } from 'vs/workbench/services/themes/browser/browserHostColorSchemeService'
+import { IHostColorSchemeService } from 'vs/workbench/services/themes/common/hostColorSchemeService'
+import { IPreferencesService } from 'vs/workbench/services/preferences/common/preferences'
+import { IContextKeyService } from 'vs/platform/contextkey/common/contextkey'
+import { StandaloneServices } from 'vs/editor/standalone/browser/standaloneServices'
+import { ICodeEditorService } from 'vs/editor/browser/services/codeEditorService'
+import { ITextMateService } from 'vs/workbench/services/textMate/browser/textMate'
+import { IUserDataProfile, IUserDataProfilesService } from 'vs/platform/userDataProfile/common/userDataProfile'
+import { IPolicyService } from 'vs/platform/policy/common/policy'
+import { IUserDataProfileService } from 'vs/workbench/services/userDataProfile/common/userDataProfile'
+import { UserDataProfileService } from 'vs/workbench/services/userDataProfile/common/userDataProfileService'
+import { ISnippetsService } from 'vs/workbench/contrib/snippets/browser/snippets'
 import { Services } from '../services'
+import { unsupported } from '../tools'
 
 registerSingleton(IEditorService, class EditorService implements IEditorService {
   readonly _serviceBrand = undefined
@@ -36,7 +55,7 @@ registerSingleton(IEditorService, class EditorService implements IEditorService 
   onDidCloseEditor = Event.None
   activeEditorPane = undefined
   activeEditor = undefined
-  activeTextEditorControl = undefined
+  get activeTextEditorControl () { return StandaloneServices.get(ICodeEditorService).getFocusedCodeEditor() ?? undefined }
   activeTextEditorLanguageId = undefined
   visibleEditorPanes = []
   visibleEditors = []
@@ -188,7 +207,7 @@ class EmptyEditorGroup implements IEditorGroup {
   isLocked = false
   stickyCount = 0
   editors = []
-  get scopedContextKeyService () { return unsupported() }
+  get scopedContextKeyService () { return StandaloneServices.get(IContextKeyService) }
   getEditors = unsupported
   findEditors = unsupported
   getEditorByIndex = unsupported
@@ -214,6 +233,9 @@ class EmptyEditorGroup implements IEditorGroup {
   focus (): void {
     // ignore
   }
+
+  isFirst = () => true
+  isLast = () => true
 }
 
 registerSingleton(IEditorGroupsService, class EditorGroupsService implements IEditorGroupsService {
@@ -259,7 +281,7 @@ registerSingleton(IEditorGroupsService, class EditorGroupsService implements IEd
   enforcePartOptions = unsupported
 })
 
-registerSingleton(IWorkbenchEnvironmentService, class WorkbenchEnvironmentService implements IWorkbenchEnvironmentService {
+class WorkbenchEnvironmentService implements IBrowserWorkbenchEnvironmentService {
   readonly _serviceBrand = undefined
   get logFile () { return unsupported() }
   get extHostLogsPath () { return unsupported() }
@@ -269,11 +291,9 @@ registerSingleton(IWorkbenchEnvironmentService, class WorkbenchEnvironmentServic
   get webviewExternalEndpoint () { return unsupported() }
   debugRenderer = false
   get userRoamingDataHome () { return unsupported() }
-  get settingsResource () { return unsupported() }
-  get keybindingsResource () { return unsupported() }
   get keyboardLayoutResource () { return unsupported() }
   get argvResource () { return unsupported() }
-  get snippetsHome () { return unsupported() }
+  get snippetsHome () { return URI.file('/snippets') }
   get untitledWorkspacesHome () { return unsupported() }
   get globalStorageHome () { return unsupported() }
   get workspaceStorageHome () { return unsupported() }
@@ -287,11 +307,16 @@ registerSingleton(IWorkbenchEnvironmentService, class WorkbenchEnvironmentServic
   disableExtensions = false
   logsPath = ''
   verbose = false
-  isBuilt = false
+  isBuilt = true // Required to suppress warnings
   disableTelemetry = false
   get telemetryLogResource () { return unsupported() }
   get serviceMachineIdResource () { return unsupported() }
-})
+  get stateResource () { return unsupported() }
+  get editSessionsLogResource () { return unsupported() }
+}
+registerSingleton(IWorkbenchEnvironmentService, WorkbenchEnvironmentService)
+registerSingleton(IEnvironmentService, WorkbenchEnvironmentService)
+registerSingleton(IBrowserWorkbenchEnvironmentService, WorkbenchEnvironmentService)
 
 registerSingleton(IWorkingCopyFileService, class WorkingCopyFileService implements IWorkingCopyFileService {
   readonly _serviceBrand = undefined
@@ -443,4 +468,109 @@ registerSingleton(ILanguageDetectionService, class LanguageDetectionService impl
   async detectLanguage (): Promise<string | undefined> {
     return undefined
   }
+})
+
+registerSingleton(IExtensionService, NullExtensionService)
+
+registerSingleton(IKeyboardLayoutService, class KeyboardLayoutService implements IKeyboardLayoutService {
+  _serviceBrand: undefined
+  onDidChangeKeyboardLayout = Event.None
+  getRawKeyboardMapping = () => null
+  getCurrentKeyboardLayout = () => null
+  getAllKeyboardLayouts = () => []
+  getKeyboardMapper = () => new MacLinuxFallbackKeyboardMapper(OS)
+  validateCurrentKeyboardMapping = () => {}
+})
+
+registerSingleton(IUserDataInitializationService, class NullUserDataInitializationService implements IUserDataInitializationService {
+  _serviceBrand: undefined
+  async requiresInitialization (): Promise<boolean> {
+    return false
+  }
+
+  async whenInitializationFinished (): Promise<void> {}
+  async initializeRequiredResources (): Promise<void> {}
+  async initializeInstalledExtensions (): Promise<void> {}
+  async initializeOtherResources (): Promise<void> {}
+})
+
+registerSingleton(IHostColorSchemeService, BrowserHostColorSchemeService)
+
+registerSingleton(IPreferencesService, class PreferencesService implements IPreferencesService {
+  _serviceBrand: undefined
+  get userSettingsResource () { return unsupported() }
+  workspaceSettingsResource = null
+  getFolderSettingsResource = unsupported
+  createPreferencesEditorModel = unsupported
+  resolveModel = unsupported
+  createSettings2EditorModel = unsupported
+  openRawDefaultSettings = unsupported
+  openSettings = unsupported
+  openUserSettings = unsupported
+  openRemoteSettings = unsupported
+  openWorkspaceSettings = unsupported
+  openFolderSettings = unsupported
+  openGlobalKeybindingSettings = unsupported
+  openDefaultKeybindingsFile = unsupported
+  getEditableSettingsURI = unsupported
+  createSplitJsonEditorInput = unsupported
+  openApplicationSettings = unsupported
+  openLanguageSpecificSettings = unsupported
+})
+
+registerSingleton(ITextMateService, class NullTextMateService implements ITextMateService {
+  _serviceBrand: undefined
+  onDidEncounterLanguage = Event.None
+  createGrammar = unsupported
+  startDebugMode = unsupported
+})
+
+const profile: IUserDataProfile = {
+  id: 'default',
+  isDefault: true,
+  name: 'default',
+  location: URI.file('settings.json'),
+  get globalStorageHome () { return unsupported() },
+  settingsResource: URI.file('/settings.json'),
+  keybindingsResource: URI.file('/keybindings.json'),
+  get tasksResource () { return unsupported() },
+  get snippetsHome () { return URI.file('/snippets') },
+  extensionsResource: undefined
+}
+
+registerSingleton(IUserDataProfilesService, class UserDataProfilesService implements IUserDataProfilesService {
+  _serviceBrand: undefined
+  get profilesHome () { return unsupported() }
+  defaultProfile = profile
+  onDidChangeProfiles = Event.None
+  profiles = [profile]
+  createProfile = unsupported
+  updateProfile = unsupported
+  setProfileForWorkspace = unsupported
+  getProfile = () => profile
+  removeProfile = unsupported
+})
+class InjectedUserDataProfileService extends UserDataProfileService {
+  constructor (@IUserDataProfilesService userDataProfilesService: IUserDataProfilesService) {
+    super(profile, userDataProfilesService)
+  }
+}
+registerSingleton(IUserDataProfileService, InjectedUserDataProfileService)
+
+registerSingleton(IPolicyService, class PolicyService implements IPolicyService {
+  _serviceBrand: undefined
+  onDidChange = Event.None
+  registerPolicyDefinitions = unsupported
+  getPolicyValue = () => undefined
+  serialize = () => undefined
+})
+
+registerSingleton(ISnippetsService, class SnippetsService implements ISnippetsService {
+  _serviceBrand: undefined
+  getSnippetFiles = unsupported
+  isEnabled = unsupported
+  updateEnablement = unsupported
+  updateUsageTimestamp = unsupported
+  getSnippets = async () => []
+  getSnippetsSync = unsupported
 })

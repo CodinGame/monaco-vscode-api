@@ -2,93 +2,73 @@ import '../polyfill'
 import '../vscode-services/missing-services'
 import { IEditorOverrideServices, StandaloneServices } from 'vs/editor/standalone/browser/standaloneServices'
 import { ConfigurationService } from 'vs/platform/configuration/common/configurationService'
-import { IConfigurationService } from 'vs/platform/configuration/common/configuration'
-import { URI } from 'vs/base/common/uri'
-import { Emitter, Event } from 'vs/base/common/event'
-import { FileChangeType, FileSystemProviderCapabilities, FileType, IFileChange, IFileSystemProviderWithFileReadWriteCapability } from 'vs/platform/files/common/files'
-import { FileService } from 'vs/platform/files/common/fileService'
-import { ILogService } from 'vs/platform/log/common/log'
-import { Schemas } from 'vs/base/common/network'
+import { ConfigurationTarget, IConfigurationService, IConfigurationUpdateOverrides, isConfigurationOverrides, isConfigurationUpdateOverrides } from 'vs/platform/configuration/common/configuration'
 import { ITextResourceConfigurationService } from 'vs/editor/common/services/textResourceConfiguration'
 import { TextResourceConfigurationService } from 'vs/editor/common/services/textResourceConfigurationService'
 import { SyncDescriptor } from 'vs/platform/instantiation/common/descriptors'
-import { IConfigurationRegistry, Extensions as ConfigurationExtensions } from 'vs/platform/configuration/common/configurationRegistry'
+import { IConfigurationRegistry, Extensions as ConfigurationExtensions, ConfigurationScope, IConfigurationNode, IConfigurationDefaults } from 'vs/platform/configuration/common/configurationRegistry'
 import { Registry } from 'vs/platform/registry/common/platform'
-import { unsupported } from '../tools'
+import { VSBuffer } from 'vs/base/common/buffer'
+import { IFileService } from 'vs/platform/files/common/files'
+import { ILogService } from 'vs/platform/log/common/log'
+import { Configuration } from 'vs/platform/configuration/common/configurationModels'
+import { IColorCustomizations, IThemeScopedColorCustomizations } from 'vs/workbench/services/themes/common/workbenchThemeService'
+import { IUserDataProfilesService } from 'vs/platform/userDataProfile/common/userDataProfile'
+import { IPolicyService } from 'vs/platform/policy/common/policy'
+import getFileServiceOverride from './files'
 
-function createConfigurationFileSystemProvider (settingsResource: URI, readConfiguration: () => string, onChange: Event<void>) {
-  const onDidFilesChange = new Emitter<IFileChange[]>()
-  onChange(() => {
-    onDidFilesChange.fire([{
-      type: FileChangeType.UPDATED,
-      resource: settingsResource
-    }])
-  })
-
-  const textEncoder = new TextEncoder()
-
-  const provider: IFileSystemProviderWithFileReadWriteCapability = {
-    capabilities: FileSystemProviderCapabilities.FileReadWrite,
-    onDidChangeCapabilities: Event.None,
-    onDidChangeFile: onDidFilesChange.event,
-    watch: function () {
-      // Ignore, the file will always be watched
-      return {
-        dispose () { }
-      }
-    },
-    stat: async (resource) => {
-      if (resource.toString() !== settingsResource.toString()) {
-        unsupported()
-      }
-      return {
-        type: FileType.File,
-        mtime: 0,
-        ctime: 0,
-        size: textEncoder.encode(readConfiguration()).length
-      }
-    },
-    mkdir: unsupported,
-    readdir: unsupported,
-    delete: unsupported,
-    rename: unsupported,
-    writeFile: unsupported,
-    readFile: async (resource) => {
-      if (resource.toString() !== settingsResource.toString()) {
-        unsupported()
-      }
-      return textEncoder.encode(readConfiguration())
-    }
-  }
-  return provider
-}
-
-let userConfigurationJson: string = '{}'
-const userConfigurationChangeEmitter = new Emitter<void>()
 function updateUserConfiguration (configurationJson: string): void {
-  userConfigurationJson = configurationJson
-  userConfigurationChangeEmitter.fire(undefined)
+  const userDataProfilesService: IUserDataProfilesService = StandaloneServices.get(IUserDataProfilesService)
+  void StandaloneServices.get(IFileService).writeFile(userDataProfilesService.defaultProfile.settingsResource, VSBuffer.fromString(configurationJson))
 }
 
 const configurationRegistry = Registry.as<IConfigurationRegistry>(ConfigurationExtensions.Configuration)
 
-export default function getServiceOverride (settingsResource: URI = URI.file('/userSettings.json')): IEditorOverrideServices {
-  const logService = StandaloneServices.get(ILogService)
-  const fileService = new FileService(logService)
-  fileService.registerProvider(Schemas.file, createConfigurationFileSystemProvider(settingsResource, () => userConfigurationJson, userConfigurationChangeEmitter.event))
+class InjectedConfigurationService extends ConfigurationService {
+  constructor (
+    @IUserDataProfilesService userDataProfilesService: IUserDataProfilesService,
+    @IFileService fileService: IFileService,
+    @IPolicyService policyService: IPolicyService,
+    @ILogService logService: ILogService
+  ) {
+    super(userDataProfilesService.defaultProfile.settingsResource, fileService, policyService, logService)
 
-  const configurationService = new ConfigurationService(settingsResource, fileService)
-  configurationService.initialize().catch(error => {
-    logService.error(error)
-  })
+    this.initialize().catch(error => {
+      logService.error(error)
+    })
+  }
 
+  // For some reasons, the default implementation just throw a not supported error
+  // Override it so the theme service is able to save the theme in the configuration
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  override updateValue (key: string, value: any, arg3?: any, arg4?: any): Promise<void> {
+    const overrides: IConfigurationUpdateOverrides | undefined = isConfigurationUpdateOverrides(arg3)
+      ? arg3
+      : isConfigurationOverrides(arg3) ? { resource: arg3.resource, overrideIdentifiers: arg3.overrideIdentifier != null ? [arg3.overrideIdentifier] : undefined } : undefined
+    const target: ConfigurationTarget | undefined = overrides != null ? arg4 : arg3
+
+    if (target === ConfigurationTarget.MEMORY) {
+      // eslint-disable-next-line dot-notation
+      return Promise.resolve((this['configuration'] as Configuration).updateValue(key, value, overrides))
+    }
+    return Promise.reject(new Error('not supported'))
+  }
+}
+
+export default function getServiceOverride (): IEditorOverrideServices {
   return {
-    [IConfigurationService.toString()]: configurationService,
+    ...getFileServiceOverride(),
+    [IConfigurationService.toString()]: new SyncDescriptor(InjectedConfigurationService),
     [ITextResourceConfigurationService.toString()]: new SyncDescriptor(TextResourceConfigurationService)
   }
 }
 
 export {
   updateUserConfiguration,
-  configurationRegistry
+  configurationRegistry,
+  ConfigurationScope,
+  IThemeScopedColorCustomizations,
+  IColorCustomizations,
+  IConfigurationNode,
+  IConfigurationDefaults
 }

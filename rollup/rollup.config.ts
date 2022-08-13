@@ -11,6 +11,7 @@ import styles from 'rollup-plugin-styles'
 import * as fs from 'fs'
 import * as path from 'path'
 import * as vm from 'vm'
+import pkg from '../package.json'
 
 const PURE_ANNO = '#__PURE__'
 const PURE_FUNCTIONS = new Set([
@@ -19,18 +20,23 @@ const PURE_FUNCTIONS = new Set([
   'createProxyIdentifier',
   'createDecorator',
   'localize',
-  'register',
   'Registry.as',
   'registerWorkbenchContribution',
   'Object.freeze',
   'URI.parse',
+  'URI.from',
   'registerColor',
   'transparent',
   'darken',
   'lighten',
   'Color.fromHex',
-  'CommandsRegistry.registerCommand' // It's not pure but we don't want the additional static vscode commands registered
+  'registerExtensionPoint',
+  'asBroswerUri',
+  'values',
+  'keys',
+  'toString'
 ])
+
 const EXTENSIONS = ['', '.ts', '.js']
 
 const SRC_DIR = path.resolve(__dirname, '../src')
@@ -54,13 +60,39 @@ function getMemberExpressionPath (node: recast.types.namedTypes.MemberExpression
   return null
 }
 
-export default (args: Record<string, string>): rollup.RollupOptions => {
+const input = {
+  api: './src/api.ts',
+  services: './src/services.ts',
+  messages: './src/service-override/messages.ts',
+  modelEditor: './src/service-override/modelEditor.ts',
+  configuration: './src/service-override/configuration.ts',
+  keybindings: './src/service-override/keybindings.ts',
+  textmate: './src/service-override/textmate.ts',
+  languageConfiguration: './src/service-override/languageConfiguration.ts',
+  theme: './src/service-override/theme.ts',
+  tokenClassification: './src/service-override/tokenClassification.ts',
+  snippets: './src/service-override/snippets.ts',
+  languages: './src/service-override/languages.ts',
+  monaco: './src/monaco'
+}
+
+const externals = Object.keys({ ...pkg.dependencies, ...pkg.peerDependencies })
+const external: rollup.ExternalOption = (source) => {
+  // mark semver as external so it's ignored (the code that imports it will be treeshaked out)
+  if (source.includes('semver')) return true
+  if (source.startsWith(MONACO_EDITOR_DIR) || source.startsWith('monaco-editor/')) {
+    return true
+  }
+  return externals.some(external => source === external || source.startsWith(`${external}/`))
+}
+
+export default (args: Record<string, string>): rollup.RollupOptions[] => {
   const vscodeVersion = args['vscode-version']
   delete args['vscode-version']
   if (vscodeVersion == null) {
     throw new Error('Vscode version is mandatory')
   }
-  return rollup.defineConfig({
+  return rollup.defineConfig([{
     cache: false,
     treeshake: {
       annotations: true,
@@ -69,25 +101,18 @@ export default (args: Record<string, string>): rollup.RollupOptions => {
         return id.startsWith(SRC_DIR) || id.endsWith('.css')
       }
     },
-    external: (source) => {
-      return source.startsWith(MONACO_EDITOR_DIR)
-    },
+    external,
     output: [{
       format: 'esm',
       dir: 'dist',
-      entryFileNames: chunk => `${chunk.name}.js`,
+      entryFileNames: '[name].js',
+      chunkFileNames: '[name].js',
+      hoistTransitiveImports: false,
       paths: {
         'monaco-editor': 'monaco-editor/esm/vs/editor/editor.api.js'
       }
     }],
-    input: {
-      api: './src/api.ts',
-      services: './src/services.ts',
-      messages: './src/service-override/messages.ts',
-      modelEditor: './src/service-override/modelEditor.ts',
-      configuration: './src/service-override/configuration.ts',
-      monaco: './src/monaco'
-    },
+    input,
     plugins: [
       {
         name: 'resolve-vscode',
@@ -115,7 +140,7 @@ export default (args: Record<string, string>): rollup.RollupOptions => {
           return undefined
         },
         transform (code) {
-          return toggleEsmComments(code)
+          return toggleEsmComments(code).replaceAll("'vs/workbench/services/keybinding/browser/keyboardLayouts/layout.contribution.' + platform", "'./keyboardLayouts/_.contribution'")
         },
         load (id) {
           if (id.startsWith(VSCODE_DIR) && id.endsWith('.css')) {
@@ -170,6 +195,7 @@ export default (args: Record<string, string>): rollup.RollupOptions => {
                       return node
                     }
                     const transformed = ts.visitEachChild(sourceFile, visitor, context)
+                    // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
                     if (!exportEqualsFound) {
                       throw new Error('`export =` not found in api.ts')
                     }
@@ -190,43 +216,67 @@ export default (args: Record<string, string>): rollup.RollupOptions => {
               parser: require('recast/parsers/babylon')
             })
             let transformed: boolean = false
-            function addComment (node: recast.types.namedTypes.Expression) {
+            function addComment (node: recast.types.namedTypes.NewExpression | recast.types.namedTypes.CallExpression) {
               if (!(node.comments ?? []).some(comment => comment.value === PURE_ANNO)) {
                 transformed = true
                 node.comments = [recast.types.builders.commentBlock(PURE_ANNO, true)]
+                return recast.types.builders.parenthesizedExpression(node)
               }
+              return node
             }
             recast.visit(ast.program.body, {
               visitNewExpression (path) {
                 const node = path.node
                 if (node.callee.type === 'Identifier') {
-                  addComment(node)
+                  path.replace(addComment(node))
                 }
                 this.traverse(path)
               },
               visitCallExpression (path) {
                 const node = path.node
-                if (node.callee.type === 'Identifier' && node.callee.name === 'registerSingleton') {
-                  // Remove calls to registerSingleton from vscode code, we just want to import things, not registering services
+                const name = node.callee.type === 'MemberExpression' || node.callee.type === 'Identifier' ? getMemberExpressionPath(node.callee) : null
+
+                if (name != null && new Set([
+                  'colorRegistry.onDidChangeSchema',
+                  'registerSingleton', // Remove calls to registerSingleton from vscode code, we just want to import things, not registering services
+                  'registerProxyConfigurations'
+                ]).has(name)) {
                   transformed = true
                   return null
                 }
+
                 if (node.callee.type === 'MemberExpression') {
                   if (node.callee.property.type === 'Identifier') {
-                    const name = getMemberExpressionPath(node.callee)
                     if ((name != null && PURE_FUNCTIONS.has(name)) || PURE_FUNCTIONS.has(node.callee.property.name)) {
-                      addComment(node)
+                      path.replace(addComment(node))
+                    }
+
+                    if (name != null && name === 'CommandsRegistry.registerCommand') {
+                      if (!id.includes('/snippetCompletionProvider')) {
+                        path.replace(addComment(node))
+                      }
                     }
                     // Remove Registry.add calls
                     if (name != null && name.endsWith('Registry.add')) {
-                      return null
+                      const firstParam = node.arguments[0]!
+                      const firstParamName = firstParam.type === 'MemberExpression' ? getMemberExpressionPath(firstParam) : undefined
+                      const allowed = firstParamName != null && firstParamName.includes('ExtensionsRegistry')
+                      if (!allowed) {
+                        return null
+                      }
+                    }
+                    // Remove schemaRegistry.registerSchema calls
+                    if (name != null && name.endsWith('registerSchema')) {
+                      if (['/keybindingService', '/tokenClassificationRegistry'].every(file => id.includes(file))) {
+                        return null
+                      }
                     }
                   }
                 } else if (node.callee.type === 'Identifier' && PURE_FUNCTIONS.has(node.callee.name)) {
-                  addComment(node)
+                  path.replace(addComment(node))
                 } else if (node.callee.type === 'FunctionExpression') {
                   // Mark IIFE as pure, because typescript compile enums as IIFE
-                  addComment(node)
+                  path.replace(addComment(node))
                 }
                 this.traverse(path)
                 return undefined
@@ -247,17 +297,85 @@ export default (args: Record<string, string>): rollup.RollupOptions => {
       }, replace({
         VSCODE_VERSION: JSON.stringify(vscodeVersion),
         preventAssignment: true
-      }), {
-        name: 'cleanup',
-        renderChunk (code) {
-          return cleanup(code, null, {
-            comments: 'none',
-            sourcemap: false
-          }).code
-        }
-      }
+      })
     ]
-  })
+  }, {
+    // 2nd pass to improve treeshaking
+    cache: false,
+    treeshake: {
+      annotations: true,
+      preset: 'smallest',
+      propertyReadSideEffects: false,
+      moduleSideEffects (id) {
+        return id.startsWith(SRC_DIR) || id.endsWith('.css')
+      }
+    },
+    external,
+    input: Object.values(input).map(f => `./dist/${path.basename(f, '.ts')}`),
+    output: [{
+      format: 'esm',
+      dir: 'dist',
+      entryFileNames: '[name].js',
+      chunkFileNames: '[name].js',
+      hoistTransitiveImports: false
+    }],
+    plugins: [{
+      name: 'improve-treeshaking',
+      transform (code) {
+        const ast = recast.parse(code, {
+          parser: require('recast/parsers/babylon')
+        })
+        let transformed: boolean = false
+        function addComment (node: recast.types.namedTypes.NewExpression | recast.types.namedTypes.CallExpression) {
+          if (!(node.comments ?? []).some(comment => comment.value === PURE_ANNO)) {
+            transformed = true
+            node.comments = [recast.types.builders.commentBlock(PURE_ANNO, true)]
+            return recast.types.builders.parenthesizedExpression(node)
+          }
+          return node
+        }
+        recast.visit(ast.program.body, {
+          visitCallExpression (path) {
+            const node = path.node
+            if (node.callee.type === 'MemberExpression') {
+              if (node.callee.property.type === 'Identifier') {
+                const name = getMemberExpressionPath(node.callee)
+                if ((name != null && PURE_FUNCTIONS.has(name)) || PURE_FUNCTIONS.has(node.callee.property.name)) {
+                  path.replace(addComment(node))
+                }
+              }
+            } else if (node.callee.type === 'Identifier' && PURE_FUNCTIONS.has(node.callee.name)) {
+              path.replace(addComment(node))
+            } else if (node.callee.type === 'FunctionExpression') {
+              // Mark IIFE as pure, because typescript compile enums as IIFE
+              path.replace(addComment(node))
+            }
+            this.traverse(path)
+            return undefined
+          },
+          visitThrowStatement () {
+            return false
+          }
+        })
+        // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
+        if (transformed) {
+          code = recast.print(ast).code
+          code = code.replace(/\/\*#__PURE__\*\/\s+/g, '/*#__PURE__*/ ') // Remove space after PURE comment
+        }
+        return code
+      }
+    }, nodeResolve({
+      extensions: EXTENSIONS
+    }), {
+      name: 'cleanup',
+      renderChunk (code) {
+        return cleanup(code, null, {
+          comments: 'none',
+          sourcemap: false
+        }).code
+      }
+    }]
+  }])
 }
 
 function resolve (_path: string, fromPaths: string[]) {
@@ -372,7 +490,11 @@ function customRequire<T extends Record<string, unknown>> (_path: string, rootPa
           href: ''
         }
       },
-      document: {},
+      document: {
+        queryCommandSupported () {
+          return false
+        }
+      },
       setTimeout: () => {},
       exports
     })
