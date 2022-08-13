@@ -63,5 +63,6 @@
 		"src/service-override/languageConfiguration.ts",
 		"src/service-override/theme.ts",
 		"src/service-override/tokenClassification.ts",
+		"src/service-override/languages.ts",
 		"src/monaco.ts"]
 }
