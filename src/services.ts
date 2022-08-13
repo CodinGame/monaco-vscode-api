@@ -5,6 +5,7 @@ import { IExtensionDescription } from 'vs/platform/extensions/common/extensions'
 import { NotificationsFilter } from 'vs/platform/notification/common/notification'
 import { IConfigurationChangeEvent } from 'vs/platform/configuration/common/configuration'
 import { ITextModelContentProvider } from 'vs/editor/common/services/resolverService'
+import { IColorTheme } from 'vs/platform/theme/common/themeService'
 
 export {
   Severity
@@ -87,9 +88,12 @@ export { ITextFileService } from 'vs/workbench/services/textfile/common/textfile
 export { IWorkingCopyFileService } from 'vs/workbench/services/workingCopy/common/workingCopyFileService'
 export { IConfigurationService } from 'vs/platform/configuration/common/configuration'
 export { IThemeService } from 'vs/platform/theme/common/themeService'
+export { ISnippetsService } from 'vs/workbench/contrib/snippets/browser/snippets'
+export { IWorkspaceContextService } from 'vs/platform/workspace/common/workspace'
 
 export {
   NotificationsFilter,
   IConfigurationChangeEvent,
-  ITextModelContentProvider
+  ITextModelContentProvider,
+  IColorTheme
 }
