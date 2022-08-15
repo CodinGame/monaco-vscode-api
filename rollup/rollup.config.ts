@@ -265,12 +265,6 @@ export default (args: Record<string, string>): rollup.RollupOptions[] => {
                         return null
                       }
                     }
-                    // Remove schemaRegistry.registerSchema calls
-                    if (name != null && name.endsWith('registerSchema')) {
-                      if (['/keybindingService', '/tokenClassificationRegistry'].every(file => id.includes(file))) {
-                        return null
-                      }
-                    }
                   }
                 } else if (node.callee.type === 'Identifier' && PURE_FUNCTIONS.has(node.callee.name)) {
                   path.replace(addComment(node))
