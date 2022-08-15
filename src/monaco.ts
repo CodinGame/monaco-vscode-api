@@ -20,6 +20,7 @@ import { Extensions as ConfigurationExtensions } from 'vs/platform/configuration
 import { EditorOptionsUtil } from 'vs/editor/browser/config/editorConfiguration'
 import * as monaco from 'monaco-editor'
 import { Event } from 'vs/base/common/event'
+import { registerColor } from 'vs/platform/theme/common/colorRegistry'
 import { createInjectedClass } from './tools/injection'
 
 function computeConfiguration (configuration: IEditorConfiguration, isDiffEditor: boolean, overrides?: Readonly<IEditorOptions>): IEditorOptions {
@@ -156,4 +157,6 @@ export {
 
   getJsonSchemas,
   onDidChangeJsonSchema,
+
+  registerColor
 }
