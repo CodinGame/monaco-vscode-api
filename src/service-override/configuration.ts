@@ -15,6 +15,8 @@ import { Configuration } from 'vs/platform/configuration/common/configurationMod
 import { IColorCustomizations, IThemeScopedColorCustomizations } from 'vs/workbench/services/themes/common/workbenchThemeService'
 import { IUserDataProfilesService } from 'vs/platform/userDataProfile/common/userDataProfile'
 import { IPolicyService } from 'vs/platform/policy/common/policy'
+import { RegisterConfigurationSchemasContribution } from 'vs/workbench/services/configuration/browser/configurationService'
+import { IInstantiationService } from 'vs/platform/instantiation/common/instantiation'
 import getFileServiceOverride from './files'
 
 function updateUserConfiguration (configurationJson: string): void {
@@ -55,7 +57,12 @@ class InjectedConfigurationService extends ConfigurationService {
   }
 }
 
+function register () {
+  StandaloneServices.get(IInstantiationService).createInstance(RegisterConfigurationSchemasContribution)
+}
+
 export default function getServiceOverride (): IEditorOverrideServices {
+  setTimeout(register)
   return {
     ...getFileServiceOverride(),
     [IConfigurationService.toString()]: new SyncDescriptor(InjectedConfigurationService),

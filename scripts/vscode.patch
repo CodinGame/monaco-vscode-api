@@ -46,3 +46,16 @@ index a82ae60c449..143a208b867 100644
  		return await backend.createProcess(shellLaunchConfig, initialCwd, cols, rows, this._configHelper.config.unicodeVersion, env, options, shouldPersist);
  	}
  
+diff --git a/src/vs/workbench/services/configuration/browser/configurationService.ts b/src/vs/workbench/services/configuration/browser/configurationService.ts
+index a1245856684..55bb8224f51 100644
+--- a/src/vs/workbench/services/configuration/browser/configurationService.ts
++++ b/src/vs/workbench/services/configuration/browser/configurationService.ts
+@@ -1106,7 +1106,7 @@ export class WorkspaceService extends Disposable implements IWorkbenchConfigurat
+ 	}
+ }
+ 
+-class RegisterConfigurationSchemasContribution extends Disposable implements IWorkbenchContribution {
++export class RegisterConfigurationSchemasContribution extends Disposable implements IWorkbenchContribution {
+ 	constructor(
+ 		@IWorkspaceContextService private readonly workspaceContextService: IWorkspaceContextService,
+ 		@IWorkbenchEnvironmentService private readonly environmentService: IWorkbenchEnvironmentService,
