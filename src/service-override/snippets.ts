@@ -1,6 +1,6 @@
 import '../polyfill'
 import '../vscode-services/missing-services'
-import { IEditorOverrideServices } from 'vs/editor/standalone/browser/standaloneServices'
+import { IEditorOverrideServices, StandaloneServices } from 'vs/editor/standalone/browser/standaloneServices'
 import { SyncDescriptor } from 'vs/platform/instantiation/common/descriptors'
 import { ISnippetsService } from 'vs/workbench/contrib/snippets/browser/snippets'
 import { SnippetsService } from 'vs/workbench/contrib/snippets/browser/snippetsService'
@@ -31,7 +31,13 @@ function setSnippets (snippets: ISnippetsExtensionPoint[], getContent: (snippet:
   }
 }
 
+function initialize () {
+  // Force load the service
+  StandaloneServices.get(ISnippetsService)
+}
+
 export default function getServiceOverride (): IEditorOverrideServices {
+  setTimeout(initialize)
   return {
     ...getWorkspaceContextServiceOverride(),
     [ISnippetsService.toString()]: new SyncDescriptor(SnippetsService)
