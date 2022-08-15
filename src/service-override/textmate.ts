@@ -43,7 +43,6 @@ export function setGrammars<T extends ITMSyntaxExtensionPoint> (grammars: T[], g
 }
 
 function initialize () {
-  // LanguageConfigurationFileHandler
   // Force load the service
   StandaloneServices.get(ITextMateService)
 }
