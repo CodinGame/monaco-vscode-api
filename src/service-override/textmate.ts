@@ -28,9 +28,10 @@ class TextMateService extends createInjectedClass(AbstractTextMateService) {
   }
 }
 
-const extensionPoint = getExtensionPoint<ITMSyntaxExtensionPoint[]>('grammars')
+type PartialITMSyntaxExtensionPoint = Partial<ITMSyntaxExtensionPoint> & Pick<ITMSyntaxExtensionPoint, 'path' | 'scopeName'>
+const extensionPoint = getExtensionPoint<PartialITMSyntaxExtensionPoint[]>('grammars')
 
-export function setGrammars<T extends ITMSyntaxExtensionPoint> (grammars: T[], getContent: (grammar: T) => Promise<string>, extension: IExtensionDescription = Services.get().extension ?? DEFAULT_EXTENSION): void {
+export function setGrammars<T extends PartialITMSyntaxExtensionPoint> (grammars: T[], getContent: (grammar: T) => Promise<string>, extension: IExtensionDescription = Services.get().extension ?? DEFAULT_EXTENSION): void {
   extensionPoint.acceptUsers([{
     description: extension,
     value: grammars,
@@ -57,5 +58,5 @@ export default function getServiceOverride (getOnigLib: () => Promise<Response |
 
 export {
   ITextMateService,
-  ITMSyntaxExtensionPoint
+  PartialITMSyntaxExtensionPoint as ITMSyntaxExtensionPoint
 }
