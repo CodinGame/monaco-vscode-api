@@ -1,6 +1,6 @@
 import '../polyfill'
 import '../vscode-services/missing-services'
-import { StandaloneServices, IEditorOverrideServices } from 'vs/editor/standalone/browser/standaloneServices'
+import { IEditorOverrideServices } from 'vs/editor/standalone/browser/standaloneServices'
 import { ITextMateService } from 'vs/workbench/services/textMate/browser/textMate'
 import { ExtensionMessageCollector } from 'vs/workbench/services/extensions/common/extensionsRegistry'
 import { ITMSyntaxExtensionPoint } from 'vs/workbench/services/textMate/common/TMGrammars'
@@ -10,7 +10,7 @@ import { IInstantiationService } from 'vs/platform/instantiation/common/instanti
 import { SyncDescriptor } from 'vs/platform/instantiation/common/descriptors'
 import { IExtensionDescription } from 'vs/platform/extensions/common/extensions'
 import getFileServiceOverride, { registerExtensionFile } from './files'
-import { consoleExtensionMessageHandler, getExtensionPoint } from './tools'
+import { consoleExtensionMessageHandler, getExtensionPoint, onServicesInitialized } from './tools'
 import { Services } from '../services'
 import { DEFAULT_EXTENSION } from '../vscode-services/extHost'
 import { createInjectedClass } from '../tools/injection'
@@ -28,9 +28,10 @@ class TextMateService extends createInjectedClass(AbstractTextMateService) {
   }
 }
 
-const extensionPoint = getExtensionPoint<ITMSyntaxExtensionPoint[]>('grammars')
+type PartialITMSyntaxExtensionPoint = Partial<ITMSyntaxExtensionPoint> & Pick<ITMSyntaxExtensionPoint, 'path' | 'scopeName'>
+const extensionPoint = getExtensionPoint<PartialITMSyntaxExtensionPoint[]>('grammars')
 
-export function setGrammars<T extends ITMSyntaxExtensionPoint> (grammars: T[], getContent: (grammar: T) => Promise<string>, extension: IExtensionDescription = Services.get().extension ?? DEFAULT_EXTENSION): void {
+export function setGrammars<T extends PartialITMSyntaxExtensionPoint> (grammars: T[], getContent: (grammar: T) => Promise<string>, extension: IExtensionDescription = Services.get().extension ?? DEFAULT_EXTENSION): void {
   extensionPoint.acceptUsers([{
     description: extension,
     value: grammars,
@@ -42,14 +43,13 @@ export function setGrammars<T extends ITMSyntaxExtensionPoint> (grammars: T[], g
   }
 }
 
-function initialize () {
-  // LanguageConfigurationFileHandler
+function initialize (instantiationService: IInstantiationService) {
   // Force load the service
-  StandaloneServices.get(ITextMateService)
+  instantiationService.invokeFunction((accessor) => accessor.get(ITextMateService))
 }
 
 export default function getServiceOverride (getOnigLib: () => Promise<Response | ArrayBuffer>): IEditorOverrideServices {
-  setTimeout(initialize)
+  onServicesInitialized(initialize)
   return {
     ...getFileServiceOverride(),
     [ITextMateService.toString()]: new SyncDescriptor(TextMateService, [getOnigLib])
@@ -58,5 +58,5 @@ export default function getServiceOverride (getOnigLib: () => Promise<Response |
 
 export {
   ITextMateService,
-  ITMSyntaxExtensionPoint
+  PartialITMSyntaxExtensionPoint as ITMSyntaxExtensionPoint
 }

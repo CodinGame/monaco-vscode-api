@@ -1,10 +1,10 @@
 import '../polyfill'
 import '../vscode-services/missing-services'
-import { IEditorOverrideServices, StandaloneServices } from 'vs/editor/standalone/browser/standaloneServices'
+import { IEditorOverrideServices } from 'vs/editor/standalone/browser/standaloneServices'
 import { TokenClassificationExtensionPoints } from 'vs/workbench/services/themes/common/tokenClassificationExtensionPoint'
 import { ExtensionMessageCollector } from 'vs/workbench/services/extensions/common/extensionsRegistry'
 import { IExtensionDescription } from 'vs/platform/extensions/common/extensions'
-import { consoleExtensionMessageHandler, getExtensionPoint } from './tools'
+import { consoleExtensionMessageHandler, getExtensionPoint, onServicesInitialized } from './tools'
 import { IInstantiationService, Services } from '../services'
 import { DEFAULT_EXTENSION } from '../vscode-services/extHost'
 
@@ -53,12 +53,12 @@ function setTokenStyleDefaults (tokenStyleDefaults: ITokenStyleDefaultExtensionP
   }])
 }
 
-function register () {
-  StandaloneServices.get(IInstantiationService).createInstance(TokenClassificationExtensionPoints)
+function initialize (instantiationService: IInstantiationService) {
+  instantiationService.createInstance(TokenClassificationExtensionPoints)
 }
 
 export default function getServiceOverride (): IEditorOverrideServices {
-  setTimeout(register)
+  onServicesInitialized(initialize)
   return {}
 }
 

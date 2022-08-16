@@ -51,10 +51,11 @@ const DEFAULT_THEME_EXTENSION: IExtensionDescription = {
   targetPlatform: TargetPlatform.WEB
 }
 
-const extensionPoint: ExtensionPoint<IThemeExtensionPoint[]> = ExtensionsRegistry.getExtensionPoints().find(ep => ep.name === 'themes')!
+type PartialIThemeExtensionPoint = Partial<IThemeExtensionPoint> & Pick<IThemeExtensionPoint, 'id' | 'path'>
+const extensionPoint: ExtensionPoint<PartialIThemeExtensionPoint[]> = ExtensionsRegistry.getExtensionPoints().find(ep => ep.name === 'themes')!
 
-let defaultThemes: IThemeExtensionPoint[] = []
-let themes: IThemeExtensionPoint[] = []
+let defaultThemes: PartialIThemeExtensionPoint[] = []
+let themes: PartialIThemeExtensionPoint[] = []
 function updateThemes () {
   extensionPoint.acceptUsers([{
     description: DEFAULT_THEME_EXTENSION,
@@ -67,7 +68,7 @@ function updateThemes () {
   }])
 }
 
-export function setThemes<T extends IThemeExtensionPoint> (_themes: T[], getContent: (theme: T) => Promise<string>): void {
+export function setThemes<T extends PartialIThemeExtensionPoint> (_themes: T[], getContent: (theme: T) => Promise<string>): void {
   const extension = Services.get().extension ?? DEFAULT_EXTENSION
   themes = _themes
   for (const theme of _themes) {
@@ -76,7 +77,7 @@ export function setThemes<T extends IThemeExtensionPoint> (_themes: T[], getCont
   updateThemes()
 }
 
-export function setDefaultThemes<T extends IThemeExtensionPoint> (_themes: T[], getContent: (theme: T) => Promise<string>): void {
+export function setDefaultThemes<T extends PartialIThemeExtensionPoint> (_themes: T[], getContent: (theme: T) => Promise<string>): void {
   defaultThemes = _themes
   for (const theme of _themes) {
     registerExtensionFile(joinPath(DEFAULT_THEME_EXTENSION.extensionLocation, theme.path), () => getContent(theme))
@@ -92,5 +93,5 @@ export default function getServiceOverride (): IEditorOverrideServices {
 }
 
 export {
-  IThemeExtensionPoint
+  PartialIThemeExtensionPoint as IThemeExtensionPoint
 }

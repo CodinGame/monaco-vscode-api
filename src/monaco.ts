@@ -16,8 +16,11 @@ import { Registry } from 'vs/platform/registry/common/platform'
 import { IJSONContributionRegistry, Extensions as JsonExtensions } from 'vs/platform/jsonschemas/common/jsonContributionRegistry'
 import { CommandsRegistry } from 'vs/platform/commands/common/commands'
 import { IJSONSchema } from 'vs/base/common/jsonSchema'
-import { allSettings } from 'vs/platform/configuration/common/configurationRegistry'
+import { Extensions as ConfigurationExtensions } from 'vs/platform/configuration/common/configurationRegistry'
 import { EditorOptionsUtil } from 'vs/editor/browser/config/editorConfiguration'
+import * as monaco from 'monaco-editor'
+import { Event } from 'vs/base/common/event'
+import { registerColor } from 'vs/platform/theme/common/colorRegistry'
 import { createInjectedClass } from './tools/injection'
 
 function computeConfiguration (configuration: IEditorConfiguration, isDiffEditor: boolean, overrides?: Readonly<IEditorOptions>): IEditorOptions {
@@ -117,8 +120,26 @@ export const createConfiguredDiffEditor: typeof createDiffEditor = (domElement, 
 }
 
 const Extensions = {
-  ...JsonExtensions
+  ...JsonExtensions,
+  ...ConfigurationExtensions
 }
+
+const registry = Registry.as<IJSONContributionRegistry>(Extensions.JSONContribution)
+type FileMatch = Partial<Record<string, string[]>>
+function getJsonSchemas (fileMatchs: FileMatch = {}): monaco.languages.json.DiagnosticsOptions['schemas'] {
+  return Object.entries(registry.getSchemaContributions().schemas)
+    .filter(([uri]) => uri !== 'vscode://schemas/vscode-extensions') // remove it because for some reason it makes the json worker message fail
+    .map(([uri, schema]) => {
+      const path = monaco.Uri.parse(uri).path
+      const schemaName = path.slice(1) // Remove leading "/"
+      return {
+        uri,
+        schema,
+        fileMatch: schemaName != null ? fileMatchs[schemaName] : undefined
+      }
+    })
+}
+const onDidChangeJsonSchema: Event<string> = registry.onDidChangeSchema
 
 export {
   errorHandler,
@@ -134,5 +155,8 @@ export {
   IJSONContributionRegistry,
   IJSONSchema,
 
-  allSettings
+  getJsonSchemas,
+  onDidChangeJsonSchema,
+
+  registerColor
 }

@@ -1,28 +1,24 @@
 import '../polyfill'
 import '../vscode-services/missing-services'
-import { IEditorOverrideServices, StandaloneServices } from 'vs/editor/standalone/browser/standaloneServices'
+import { IEditorOverrideServices } from 'vs/editor/standalone/browser/standaloneServices'
 import { LanguageConfigurationFileHandler } from 'vs/workbench/contrib/codeEditor/browser/languageConfigurationExtensionPoint'
-import { URI } from 'vs/base/common/uri'
+import { joinPath } from 'vs/base/common/resources'
 import getFileServiceOverride, { registerExtensionFile } from './files'
+import { onServicesInitialized } from './tools'
 import { IInstantiationService, Services } from '../services'
 import { DEFAULT_EXTENSION } from '../vscode-services/extHost'
 
-function setLanguageConfiguration (resource: URI, getConfiguration: () => Promise<string>): void {
+function setLanguageConfiguration (path: string, getConfiguration: () => Promise<string>): void {
   const extension = Services.get().extension ?? DEFAULT_EXTENSION
-  if (resource.scheme !== extension.extensionLocation.scheme) {
-    throw new Error(`The provided resource url should have the ${extension.extensionLocation.scheme} scheme`)
-  }
-
-  registerExtensionFile(resource, getConfiguration)
+  registerExtensionFile(joinPath(extension.extensionLocation, path), getConfiguration)
 }
 
-function initialize () {
-  const instantiationService = StandaloneServices.get(IInstantiationService)
+function initialize (instantiationService: IInstantiationService) {
   instantiationService.createInstance(LanguageConfigurationFileHandler)
 }
 
 export default function getServiceOverride (): IEditorOverrideServices {
-  setTimeout(initialize)
+  onServicesInitialized(initialize)
   return {
     ...getFileServiceOverride()
   }

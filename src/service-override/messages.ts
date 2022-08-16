@@ -13,14 +13,14 @@ import { IDialogService } from 'vs/platform/dialogs/common/dialogs'
 import { SyncDescriptor } from 'vs/platform/instantiation/common/descriptors'
 import { ILayoutService } from 'vs/platform/layout/browser/layoutService'
 import getLayoutServiceOverride from './layout'
+import { onServicesInitialized } from './tools'
 import { unsupported } from '../tools'
 
-function register () {
+function initialize (instantiationService: IInstantiationService) {
   const container = StandaloneServices.get(ILayoutService).container
   container.classList.add('monaco-workbench')
 
-  const model = (StandaloneServices.get(INotificationService) as NotificationService).model
-  const instantiationService = StandaloneServices.get(IInstantiationService)
+  const model = (instantiationService.invokeFunction((accessor) => accessor.get(INotificationService)) as NotificationService).model
 
   const notificationsToasts = instantiationService.createInstance(NotificationsToasts, container, model)
   notificationsToasts.layout(dom.getClientArea(container))
@@ -40,11 +40,11 @@ function register () {
 
   registerNotificationCommands(notificationsCenter, notificationsToasts, model)
 
-  StandaloneServices.get(IInstantiationService).createInstance(DialogHandlerContribution)
+  instantiationService.createInstance(DialogHandlerContribution)
 }
 
 export default function getServiceOverride (container?: HTMLElement): IEditorOverrideServices {
-  setTimeout(() => register())
+  onServicesInitialized(initialize)
 
   return {
     [IDialogService.toString()]: new SyncDescriptor(DialogService),

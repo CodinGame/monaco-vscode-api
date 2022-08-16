@@ -7,11 +7,13 @@ import { SnippetsService } from 'vs/workbench/contrib/snippets/browser/snippetsS
 import { IExtensionDescription } from 'vs/platform/extensions/common/extensions'
 import { ExtensionMessageCollector } from 'vs/workbench/services/extensions/common/extensionsRegistry'
 import { joinPath } from 'vs/base/common/resources'
-import { consoleExtensionMessageHandler, getExtensionPoint } from './tools'
+import { IInstantiationService } from 'vs/platform/instantiation/common/instantiation'
+import { consoleExtensionMessageHandler, getExtensionPoint, onServicesInitialized } from './tools'
 import { registerExtensionFile } from './files'
 import getWorkspaceContextServiceOverride from './workspaceContext'
 import { DEFAULT_EXTENSION } from '../vscode-services/extHost'
 import { Services } from '../services'
+
 interface ISnippetsExtensionPoint {
   language: string
   path: string
@@ -31,7 +33,13 @@ function setSnippets (snippets: ISnippetsExtensionPoint[], getContent: (snippet:
   }
 }
 
+function initialize (instantiationService: IInstantiationService) {
+  // Force load the service
+  instantiationService.invokeFunction((accessor) => accessor.get(ISnippetsService))
+}
+
 export default function getServiceOverride (): IEditorOverrideServices {
+  onServicesInitialized(initialize)
   return {
     ...getWorkspaceContextServiceOverride(),
     [ISnippetsService.toString()]: new SyncDescriptor(SnippetsService)
