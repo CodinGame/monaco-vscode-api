@@ -140,7 +140,7 @@ vscode.languages.registerCompletionItemProvider(...)
 
 ### Demo
 
-There is a demo that showcases the service-override features. It allows to register contributions with the same syntaxes as in vscode.
+There is a demo that showcases the service-override features. It allows to register contributions with the same syntaxes as in VSCode.
 It includes:
 - Languages
 - Language configurations
@@ -153,7 +153,7 @@ It includes:
 - Token classification
 - Snippets (but not working in monaco 0.34)
 
-It also use the `getJsonSchemas` function to register them on the monaco json worker and have autocomplete/hover on settings and configuration.
+It also uses the `getJsonSchemas` function to register them on the monaco json worker and have autocomplete/hover on settings and keybindings.
 
 From CLI run:
 ```bash
