@@ -138,6 +138,30 @@ const range = new vscode.Range(...)
 vscode.languages.registerCompletionItemProvider(...)
 ```
 
+### Demo
+
+There is a demo that showcases the service-override features. It allows to register contributions with the same syntaxes as in vscode.
+It includes:
+- Languages
+- Language configurations
+- VSCode themes
+- Textmate grammars (requires vscode themes)
+- Notifications/Dialogs
+- Model/Editor services
+- Configuration service, with user configuration editor
+- Keybinding service, with user keybindings editor
+- Token classification
+- Snippets (but not working in monaco 0.34)
+
+It also use the `getJsonSchemas` function to register them on the monaco json worker and have autocomplete/hover on settings and configuration.
+
+From CLI run:
+```bash
+cd demo
+npm ci
+npm start
+```
+
 ### History
 
 This project was mainly created to make the implementation of [monaco-languageclient](https://github.com/TypeFox/monaco-languageclient) more robust and maintainable.
