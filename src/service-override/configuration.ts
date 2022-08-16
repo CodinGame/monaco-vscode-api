@@ -17,6 +17,7 @@ import { IUserDataProfilesService } from 'vs/platform/userDataProfile/common/use
 import { IPolicyService } from 'vs/platform/policy/common/policy'
 import { RegisterConfigurationSchemasContribution } from 'vs/workbench/services/configuration/browser/configurationService'
 import { IInstantiationService } from 'vs/platform/instantiation/common/instantiation'
+import getWorkspaceContextServiceOverride from './workspaceContext'
 import getFileServiceOverride from './files'
 
 function updateUserConfiguration (configurationJson: string): void {
@@ -65,6 +66,7 @@ export default function getServiceOverride (): IEditorOverrideServices {
   setTimeout(register)
   return {
     ...getFileServiceOverride(),
+    ...getWorkspaceContextServiceOverride(),
     [IConfigurationService.toString()]: new SyncDescriptor(InjectedConfigurationService),
     [ITextResourceConfigurationService.toString()]: new SyncDescriptor(TextResourceConfigurationService)
   }
