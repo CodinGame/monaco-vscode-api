@@ -47,6 +47,9 @@ import { WorkspaceFolder as VScodeWorkspaceFolder } from 'vscode/vs/platform/wor
 import { List as MonacoList } from 'monaco-editor/esm/vs/base/browser/ui/list/listWidget.js'
 import { List as VScodeList } from 'vscode/vs/base/browser/ui/list/listWidget.js'
 // @ts-ignore Creating a d.ts is not worth it
+import { Color as MonacoColor } from 'monaco-editor/esm/vs/base/common/color.js'
+import { Color as VScodeColor } from 'vscode/vs/base/common/color.js'
+// @ts-ignore Creating a d.ts is not worth it
 import { SnippetParser } from 'monaco-editor/esm/vs/editor/contrib/snippet/browser/snippetParser.js'
 
 // Monaco build process treeshaking is very aggressive and everything that is not used in monaco is removed
@@ -61,6 +64,7 @@ if (SnippetParser.prototype.text == null) {
   console.warn('Useless polyfill: SnippetParser')
 }
 
+Object.defineProperties(MonacoColor.prototype, Object.getOwnPropertyDescriptors(VScodeColor.prototype))
 Object.defineProperties(MonacoList.prototype, Object.getOwnPropertyDescriptors(VScodeList.prototype))
 Object.defineProperties(MonacoWorkspaceFolder.prototype, Object.getOwnPropertyDescriptors(VScodeWorkspaceFolder.prototype))
 Object.defineProperties(MonacoLanguagesRegistry.prototype, Object.getOwnPropertyDescriptors(VScodeLanguagesRegistry.prototype))
