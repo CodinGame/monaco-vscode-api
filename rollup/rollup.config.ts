@@ -291,7 +291,17 @@ export default (args: Record<string, string>): rollup.RollupOptions[] => {
       }, replace({
         VSCODE_VERSION: JSON.stringify(vscodeVersion),
         preventAssignment: true
-      })
+      }),
+      {
+        name: 'dynamic-import-polyfill',
+        renderDynamicImport (): { left: string, right: string } {
+          // dynamic imports of vscode-oniguruma and vscode-textmate aren't working without it on vite
+          return {
+            left: 'import(',
+            right: ').then(module => module.default ?? module)'
+          }
+        }
+      }
     ]
   }, {
     // 2nd pass to improve treeshaking
