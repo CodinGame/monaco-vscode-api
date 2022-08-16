@@ -19,6 +19,7 @@ import { RegisterConfigurationSchemasContribution } from 'vs/workbench/services/
 import { IInstantiationService } from 'vs/platform/instantiation/common/instantiation'
 import getWorkspaceContextServiceOverride from './workspaceContext'
 import getFileServiceOverride from './files'
+import { onServicesInitialized } from './tools'
 
 function updateUserConfiguration (configurationJson: string): void {
   const userDataProfilesService: IUserDataProfilesService = StandaloneServices.get(IUserDataProfilesService)
@@ -58,12 +59,12 @@ class InjectedConfigurationService extends ConfigurationService {
   }
 }
 
-function register () {
-  StandaloneServices.get(IInstantiationService).createInstance(RegisterConfigurationSchemasContribution)
+function initialize (instantiationService: IInstantiationService) {
+  instantiationService.createInstance(RegisterConfigurationSchemasContribution)
 }
 
 export default function getServiceOverride (): IEditorOverrideServices {
-  setTimeout(register)
+  onServicesInitialized(initialize)
   return {
     ...getFileServiceOverride(),
     ...getWorkspaceContextServiceOverride(),

@@ -4,6 +4,7 @@ import { IEditorOverrideServices, StandaloneServices } from 'vs/editor/standalon
 import { LanguageConfigurationFileHandler } from 'vs/workbench/contrib/codeEditor/browser/languageConfigurationExtensionPoint'
 import { URI } from 'vs/base/common/uri'
 import getFileServiceOverride, { registerExtensionFile } from './files'
+import { onServicesInitialized } from './tools'
 import { IInstantiationService, Services } from '../services'
 import { DEFAULT_EXTENSION } from '../vscode-services/extHost'
 
@@ -13,16 +14,12 @@ function setLanguageConfiguration (resource: URI, getConfiguration: () => Promis
     throw new Error(`The provided resource url should have the ${extension.extensionLocation.scheme} scheme`)
   }
 
-  registerExtensionFile(resource, getConfiguration)
-}
-
-function initialize () {
-  const instantiationService = StandaloneServices.get(IInstantiationService)
+function initialize (instantiationService: IInstantiationService) {
   instantiationService.createInstance(LanguageConfigurationFileHandler)
 }
 
 export default function getServiceOverride (): IEditorOverrideServices {
-  setTimeout(initialize)
+  onServicesInitialized(initialize)
   return {
     ...getFileServiceOverride()
   }
