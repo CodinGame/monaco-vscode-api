@@ -6,9 +6,14 @@ import { NotificationsFilter } from 'vs/platform/notification/common/notificatio
 import { IConfigurationChangeEvent } from 'vs/platform/configuration/common/configuration'
 import { ITextModelContentProvider } from 'vs/editor/common/services/resolverService'
 import { IColorTheme } from 'vs/platform/theme/common/themeService'
+inport { ContextKeyExprType } from `vs/platform/contextkey/common/contextkey`
 
 export {
   Severity
+}
+
+export {
+  ContextKeyExprType
 }
 
 export interface Window {
