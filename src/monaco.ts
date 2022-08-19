@@ -22,6 +22,9 @@ import * as monaco from 'monaco-editor'
 import { Event } from 'vs/base/common/event'
 import { registerColor } from 'vs/platform/theme/common/colorRegistry'
 import { createInjectedClass } from './tools/injection'
+// Hack so ContextKeyExprType is included in the bundle as it's used but rollup-plugin-dts is unable to detect it
+// https://github.com/Swatinem/rollup-plugin-dts/issues/220
+export { ContextKeyExprType } from 'vs/platform/contextkey/common/contextkey'
 
 function computeConfiguration (configuration: IEditorConfiguration, isDiffEditor: boolean, overrides?: Readonly<IEditorOptions>): IEditorOptions {
   const editorConfiguration: IEditorOptions = isObject(configuration.editor) ? deepClone(configuration.editor) : Object.create(null)
