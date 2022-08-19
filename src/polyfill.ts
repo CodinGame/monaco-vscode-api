@@ -64,19 +64,43 @@ if (SnippetParser.prototype.text == null) {
   console.warn('Useless polyfill: SnippetParser')
 }
 
-Object.defineProperties(MonacoColor.prototype, Object.getOwnPropertyDescriptors(VScodeColor.prototype))
-Object.defineProperties(MonacoList.prototype, Object.getOwnPropertyDescriptors(VScodeList.prototype))
-Object.defineProperties(MonacoWorkspaceFolder.prototype, Object.getOwnPropertyDescriptors(VScodeWorkspaceFolder.prototype))
-Object.defineProperties(MonacoLanguagesRegistry.prototype, Object.getOwnPropertyDescriptors(VScodeLanguagesRegistry.prototype))
-Object.defineProperties(MonacoErrorHandler.prototype, Object.getOwnPropertyDescriptors(VScodeErrorHandler.prototype))
-Object.defineProperties(MonacoRawContextKey.prototype, Object.getOwnPropertyDescriptors(VScodeRawContextKey.prototype))
-Object.defineProperties(MonacoConfiguration.prototype, Object.getOwnPropertyDescriptors(VScodeConfiguration.prototype))
-Object.defineProperties(MonacoTernarySearchTree.prototype, Object.getOwnPropertyDescriptors(VScodeTernarySearchTree.prototype))
-Object.defineProperties(MonacoStandaloneConfigurationService.prototype, Object.getOwnPropertyDescriptors(VScodeStandaloneConfigurationService.prototype))
-Object.defineProperties(MonacoLanguageService.prototype, Object.getOwnPropertyDescriptors(VScodeLanguageService.prototype))
-Object.defineProperties(MonacoNoOpNotification.prototype, Object.getOwnPropertyDescriptors(VScodeNoOpNotification.prototype))
-Object.defineProperties(MonacoThemable.prototype, Object.getOwnPropertyDescriptors(VScodeThemable.prototype))
-Object.defineProperties(MonacoProgressBar.prototype, Object.getOwnPropertyDescriptors(VScodeProgressBar.prototype))
+/**
+ * Assign all properties of b to A
+ */
+function polyfillPrototypeSimple<T> (a: Partial<T>, b: T) {
+  Object.defineProperties(a, Object.getOwnPropertyDescriptors(b))
+}
+
+/**
+ * Sometime, the simple prototype is not enough
+ * It can happens if the function are returning or taking as parameter instances of the said class
+ * In that case, we need to transform parameters to VSCode instances and result back to a monaco instance
+ */
+function polyfillPrototype<T> (a: Partial<T>, b: T, toA: (i: unknown) => unknown, toB: (i: unknown) => unknown) {
+  for (const key of Object.getOwnPropertyNames(b)) {
+    if (!Object.hasOwnProperty.call(a, key)) {
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      (a as any)[key] = function (...args: any[]) {
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        return toA((b as any)[key].call(this, ...args.map(toB)))
+      }
+    }
+  }
+}
+
+polyfillPrototypeSimple(MonacoColor.prototype, VScodeColor.prototype)
+polyfillPrototypeSimple(MonacoList.prototype, VScodeList.prototype)
+polyfillPrototypeSimple(MonacoWorkspaceFolder.prototype, VScodeWorkspaceFolder.prototype)
+polyfillPrototypeSimple(MonacoLanguagesRegistry.prototype, VScodeLanguagesRegistry.prototype)
+polyfillPrototypeSimple(MonacoErrorHandler.prototype, VScodeErrorHandler.prototype)
+polyfillPrototypeSimple(MonacoRawContextKey.prototype, VScodeRawContextKey.prototype)
+polyfillPrototypeSimple(MonacoConfiguration.prototype, VScodeConfiguration.prototype)
+polyfillPrototypeSimple(MonacoTernarySearchTree.prototype, VScodeTernarySearchTree.prototype)
+polyfillPrototypeSimple(MonacoStandaloneConfigurationService.prototype, VScodeStandaloneConfigurationService.prototype)
+polyfillPrototypeSimple(MonacoLanguageService.prototype, VScodeLanguageService.prototype)
+polyfillPrototypeSimple(MonacoNoOpNotification.prototype, VScodeNoOpNotification.prototype)
+polyfillPrototypeSimple(MonacoThemable.prototype, VScodeThemable.prototype)
+polyfillPrototypeSimple(MonacoProgressBar.prototype, VScodeProgressBar.prototype)
 
 const jsonContributionRegistry = Registry.as<IJSONContributionRegistry>(JsonExtensions.JSONContribution)
 jsonContributionRegistry.getSchemaContributions ??= () => ({
@@ -153,11 +177,5 @@ for (const key of Object.getOwnPropertyNames(VScodeVSBuffer)) {
     }
   }
 }
-for (const key of Object.getOwnPropertyNames(VScodeVSBuffer.prototype)) {
-  if (!Object.hasOwnProperty.call(MonacoVSBuffer.prototype, key)) {
-    MonacoVSBuffer.prototype[key] = function (...args: any[]) {
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      return toMonacoVSBuffer((VScodeVSBuffer.prototype as any)[key].call(this, ...args.map(toVSCodeVSBuffer)))
-    }
-  }
-}
+
+polyfillPrototype(MonacoVSBuffer.prototype, VScodeVSBuffer.prototype, toMonacoVSBuffer, toVSCodeVSBuffer)
