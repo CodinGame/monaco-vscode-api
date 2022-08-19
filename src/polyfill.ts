@@ -88,7 +88,6 @@ function polyfillPrototype<T> (a: Partial<T>, b: T, toA: (i: unknown) => unknown
   }
 }
 
-polyfillPrototypeSimple(MonacoColor.prototype, VScodeColor.prototype)
 polyfillPrototypeSimple(MonacoList.prototype, VScodeList.prototype)
 polyfillPrototypeSimple(MonacoWorkspaceFolder.prototype, VScodeWorkspaceFolder.prototype)
 polyfillPrototypeSimple(MonacoLanguagesRegistry.prototype, VScodeLanguagesRegistry.prototype)
@@ -179,3 +178,21 @@ for (const key of Object.getOwnPropertyNames(VScodeVSBuffer)) {
 }
 
 polyfillPrototype(MonacoVSBuffer.prototype, VScodeVSBuffer.prototype, toMonacoVSBuffer, toVSCodeVSBuffer)
+
+// Some methods of the Color class need to be restored, but they sometime return an instance of the Color class
+// We need the returned instance to be an instance of the monaco Color class (and not the VSCode one) because there is some `instanceof` in the monaco code
+// So we transform the returned VSCode Color instance to monaco Color instance in polyfilled methods
+function toMonacoColor (value: unknown) {
+  if (value instanceof VScodeColor) {
+    return new MonacoColor(value.rgba)
+  }
+  return value
+}
+function toVSCodeColor (value: unknown) {
+  if (value instanceof MonacoColor) {
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    return new VScodeColor((value as any).rgba)
+  }
+  return value
+}
+polyfillPrototype(MonacoColor.prototype, VScodeColor.prototype, toMonacoColor, toVSCodeColor)
