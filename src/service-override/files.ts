@@ -5,7 +5,6 @@ import { SyncDescriptor } from 'vs/platform/instantiation/common/descriptors'
 import { FileService } from 'vs/platform/files/common/fileService'
 import { ILogService } from 'vs/platform/log/common/log'
 import { InMemoryFileSystemProvider } from 'vs/platform/files/common/inMemoryFilesystemProvider'
-import { Schemas } from 'vs/base/common/network'
 import { AbstractExtensionResourceLoaderService, IExtensionResourceLoaderService } from 'vs/workbench/services/extensionResourceLoader/common/extensionResourceLoader'
 import { Event, IDisposable, URI } from 'vs/workbench/workbench.web.main'
 import { FileSystemProviderCapabilities, FileSystemProviderError, FileSystemProviderErrorCode, FileType, IFileSystemProviderWithFileReadWriteCapability, IStat } from 'vs/platform/files/common/files'
@@ -106,7 +105,7 @@ class MemoryFileService extends FileService {
   constructor (@ILogService logService: ILogService) {
     super(logService)
 
-    this.registerProvider(Schemas.file, new InMemoryFileSystemProvider())
+    this.registerProvider('user', new InMemoryFileSystemProvider())
 
     const extension = Services.get().extension ?? DEFAULT_EXTENSION
     this.registerProvider(extension.extensionLocation.scheme, extensionFileSystemProvider)

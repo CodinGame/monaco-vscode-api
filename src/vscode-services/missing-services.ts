@@ -293,7 +293,7 @@ class WorkbenchEnvironmentService implements IBrowserWorkbenchEnvironmentService
   get userRoamingDataHome () { return unsupported() }
   get keyboardLayoutResource () { return unsupported() }
   get argvResource () { return unsupported() }
-  get snippetsHome () { return URI.file('/snippets') }
+  get snippetsHome () { return URI.from({ scheme: 'user', path: '/snippets' }) }
   get untitledWorkspacesHome () { return unsupported() }
   get globalStorageHome () { return unsupported() }
   get workspaceStorageHome () { return unsupported() }
@@ -529,12 +529,12 @@ const profile: IUserDataProfile = {
   id: 'default',
   isDefault: true,
   name: 'default',
-  location: URI.file('settings.json'),
+  location: URI.from({ scheme: 'user', path: '/profile.json' }),
   get globalStorageHome () { return unsupported() },
-  settingsResource: URI.file('/settings.json'),
-  keybindingsResource: URI.file('/keybindings.json'),
+  settingsResource: URI.from({ scheme: 'user', path: '/settings.json' }),
+  keybindingsResource: URI.from({ scheme: 'user', path: '/keybindings.json' }),
   get tasksResource () { return unsupported() },
-  get snippetsHome () { return URI.file('/snippets') },
+  get snippetsHome () { return URI.from({ scheme: 'user', path: '/snippets' }) },
   extensionsResource: undefined
 }
 
