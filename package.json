@@ -85,6 +85,12 @@
       "service-override/messages": [
         "./dist/messages.d.ts"
       ],
+      "service-override/notifications": [
+        "./dist/notifications.d.ts"
+      ],
+      "service-override/dialogs": [
+        "./dist/dialogs.d.ts"
+      ],
       "service-override/modelEditor": [
         "./dist/modelEditor.d.ts"
       ],
