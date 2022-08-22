@@ -28,6 +28,14 @@
       "types": "./dist/messages.d.ts",
       "default": "./dist/messages.js"
     },
+    "./service-override/notifications": {
+      "types": "./dist/notifications.d.ts",
+      "default": "./dist/notifications.js"
+    },
+    "./service-override/dialogs": {
+      "types": "./dist/dialogs.d.ts",
+      "default": "./dist/dialogs.js"
+    },
     "./service-override/modelEditor": {
       "types": "./dist/modelEditor.d.ts",
       "default": "./dist/modelEditor.js"

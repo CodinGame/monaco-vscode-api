@@ -56,6 +56,8 @@
 		"src/services.ts",
 		"src/types.d.ts",
 		"src/service-override/messages.ts",
+		"src/service-override/notifications.ts",
+		"src/service-override/dialogs.ts",
 		"src/service-override/modelEditor.ts",
 		"src/service-override/configuration.ts",
 		"src/service-override/keybindings.ts",
@@ -65,5 +67,6 @@
 		"src/service-override/tokenClassification.ts",
 		"src/service-override/snippets.ts",
 		"src/service-override/languages.ts",
-		"src/monaco.ts"]
+		"src/monaco.ts"
+	]
 }

@@ -19,6 +19,8 @@ interfaceOverride.set('IStandaloneDiffEditorConstructionOptions', 'monaco.editor
 export default rollup.defineConfig([
   './dist/types/src/services.d.ts',
   './dist/types/src/service-override/messages.d.ts',
+  './dist/types/src/service-override/notifications.d.ts',
+  './dist/types/src/service-override/dialogs.d.ts',
   './dist/types/src/service-override/modelEditor.d.ts',
   './dist/types/src/service-override/configuration.d.ts',
   './dist/types/src/service-override/keybindings.d.ts',
