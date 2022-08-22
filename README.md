@@ -49,7 +49,8 @@ StandaloneService.initialize({
 ```
 
 Additionally, this library exposes 10 modules that include the vscode version of some services (with some glue to make it work with monaco):
-- Notification / Dialog: `vscode/service-override/messages`
+- Notifications: `vscode/service-override/notifications`
+- Dialogs: `vscode/service-override/dialogs`
 - Model / Editor: `vscode/service-override/modelEditor`
 - Configuration: `vscode/service-override/configuration`
 - Keybindings: `vscode/service-override/keybindings`
