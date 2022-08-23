@@ -9,12 +9,12 @@
   "devDependencies": {
     "@types/throttle-debounce": "^5.0.0",
     "typescript": "^4.7.4",
-    "vite": "^3.0.8"
+    "vite": "^3.0.9"
   },
   "dependencies": {
     "monaco-editor": "~0.34.0",
     "throttle-debounce": "^5.0.0",
-    "vscode": "npm:@codingame/monaco-vscode-api@~1.69.2",
+    "vscode": "npm:@codingame/monaco-vscode-api@~1.69.7",
     "vscode-oniguruma": "~1.6.2"
   },
   "volta": {
