@@ -40,6 +40,7 @@ const PURE_FUNCTIONS = new Set([
 const EXTENSIONS = ['', '.ts', '.js']
 
 const SRC_DIR = path.resolve(__dirname, '../src')
+const DIST_DIR = path.resolve(__dirname, '../dist')
 const VSCODE_DIR = path.resolve(__dirname, '../vscode')
 const NODE_MODULES_DIR = path.resolve(__dirname, '../node_modules')
 const MONACO_EDITOR_DIR = path.resolve(NODE_MODULES_DIR, './monaco-editor')
@@ -313,7 +314,7 @@ export default (args: Record<string, string>): rollup.RollupOptions[] => {
       preset: 'smallest',
       propertyReadSideEffects: false,
       moduleSideEffects (id) {
-        return id.startsWith(SRC_DIR) || id.endsWith('.css')
+        return id.startsWith(DIST_DIR) || id.endsWith('.css')
       }
     },
     external,
