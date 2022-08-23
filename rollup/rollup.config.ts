@@ -88,13 +88,13 @@ const external: rollup.ExternalOption = (source) => {
   return externals.some(external => source === external || source.startsWith(`${external}/`))
 }
 
-export default (args: Record<string, string>): rollup.RollupOptions[] => {
+export default (args: Record<string, string>): rollup.RollupOptions => {
   const vscodeVersion = args['vscode-version']
   delete args['vscode-version']
   if (vscodeVersion == null) {
     throw new Error('Vscode version is mandatory')
   }
-  return rollup.defineConfig([{
+  return rollup.defineConfig({
     cache: false,
     treeshake: {
       annotations: true,
@@ -303,85 +303,17 @@ export default (args: Record<string, string>): rollup.RollupOptions[] => {
             right: ').then(module => module.default ?? module)'
           }
         }
+      }, {
+        name: 'cleanup',
+        renderChunk (code) {
+          return cleanup(code, null, {
+            comments: 'none',
+            sourcemap: false
+          }).code
+        }
       }
     ]
-  }, {
-    // 2nd pass to improve treeshaking
-    cache: false,
-    treeshake: {
-      annotations: true,
-      preset: 'smallest',
-      propertyReadSideEffects: false,
-      moduleSideEffects (id) {
-        return id.startsWith(SRC_DIR) || id.endsWith('.css')
-      }
-    },
-    external,
-    input: Object.values(input).map(f => `./dist/${path.basename(f, '.ts')}`),
-    output: [{
-      format: 'esm',
-      dir: 'dist',
-      entryFileNames: '[name].js',
-      chunkFileNames: '[name].js',
-      hoistTransitiveImports: false
-    }],
-    plugins: [{
-      name: 'improve-treeshaking',
-      transform (code) {
-        const ast = recast.parse(code, {
-          parser: require('recast/parsers/babylon')
-        })
-        let transformed: boolean = false
-        function addComment (node: recast.types.namedTypes.NewExpression | recast.types.namedTypes.CallExpression) {
-          if (!(node.comments ?? []).some(comment => comment.value === PURE_ANNO)) {
-            transformed = true
-            node.comments = [recast.types.builders.commentBlock(PURE_ANNO, true)]
-            return recast.types.builders.parenthesizedExpression(node)
-          }
-          return node
-        }
-        recast.visit(ast.program.body, {
-          visitCallExpression (path) {
-            const node = path.node
-            if (node.callee.type === 'MemberExpression') {
-              if (node.callee.property.type === 'Identifier') {
-                const name = getMemberExpressionPath(node.callee)
-                if ((name != null && PURE_FUNCTIONS.has(name)) || PURE_FUNCTIONS.has(node.callee.property.name)) {
-                  path.replace(addComment(node))
-                }
-              }
-            } else if (node.callee.type === 'Identifier' && PURE_FUNCTIONS.has(node.callee.name)) {
-              path.replace(addComment(node))
-            } else if (node.callee.type === 'FunctionExpression') {
-              // Mark IIFE as pure, because typescript compile enums as IIFE
-              path.replace(addComment(node))
-            }
-            this.traverse(path)
-            return undefined
-          },
-          visitThrowStatement () {
-            return false
-          }
-        })
-        // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
-        if (transformed) {
-          code = recast.print(ast).code
-          code = code.replace(/\/\*#__PURE__\*\/\s+/g, '/*#__PURE__*/ ') // Remove space after PURE comment
-        }
-        return code
-      }
-    }, nodeResolve({
-      extensions: EXTENSIONS
-    }), {
-      name: 'cleanup',
-      renderChunk (code) {
-        return cleanup(code, null, {
-          comments: 'none',
-          sourcemap: false
-        }).code
-      }
-    }]
-  }])
+  })
 }
 
 function resolve (_path: string, fromPaths: string[]) {
