@@ -9,7 +9,8 @@ import 'monaco-editor/esm/vs/editor/standalone/browser/referenceSearch/standalon
 import onigFile from 'vscode-oniguruma/release/onig.wasm?url'
 import { StandaloneServices } from 'vscode/services'
 import getModelEditorServiceOverride from 'vscode/service-override/modelEditor'
-import getMessageServiceOverride from 'vscode/service-override/messages'
+import getNotificationServiceOverride from 'vscode/service-override/notifications'
+import getDialogsServiceOverride from 'vscode/service-override/dialogs'
 import getConfigurationServiceOverride from 'vscode/service-override/configuration'
 import getKeybindingsServiceOverride from 'vscode/service-override/keybindings'
 import getTextmateServiceOverride, { setGrammars } from 'vscode/service-override/textmate'
@@ -48,7 +49,8 @@ StandaloneServices.initialize({
 		console.log('trying to open a model', model, options)
 		return undefined
 	}),
-	...getMessageServiceOverride(),
+	...getNotificationServiceOverride(),
+	...getDialogsServiceOverride(),
 	...getConfigurationServiceOverride(),
 	...getKeybindingsServiceOverride(),
 	...getTextmateServiceOverride(async () => {
