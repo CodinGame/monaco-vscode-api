@@ -50,6 +50,9 @@ import { List as VScodeList } from 'vscode/vs/base/browser/ui/list/listWidget.js
 import { Color as MonacoColor } from 'monaco-editor/esm/vs/base/common/color.js'
 import { Color as VScodeColor } from 'vscode/vs/base/common/color.js'
 // @ts-ignore Creating a d.ts is not worth it
+import { LogService as MonacoLogService } from 'monaco-editor/esm/vs/platform/log/common/log.js'
+import { LogService as VScodeLogService } from 'vscode/vs/platform/log/common/log.js'
+// @ts-ignore Creating a d.ts is not worth it
 import { SnippetParser } from 'monaco-editor/esm/vs/editor/contrib/snippet/browser/snippetParser.js'
 
 // Monaco build process treeshaking is very aggressive and everything that is not used in monaco is removed
@@ -88,6 +91,7 @@ function polyfillPrototype<T> (a: Partial<T>, b: T, toA: (i: unknown) => unknown
   }
 }
 
+polyfillPrototypeSimple(MonacoLogService.prototype, VScodeLogService.prototype)
 polyfillPrototypeSimple(MonacoList.prototype, VScodeList.prototype)
 polyfillPrototypeSimple(MonacoWorkspaceFolder.prototype, VScodeWorkspaceFolder.prototype)
 polyfillPrototypeSimple(MonacoLanguagesRegistry.prototype, VScodeLanguagesRegistry.prototype)
