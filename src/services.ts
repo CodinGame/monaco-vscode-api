@@ -6,6 +6,7 @@ import { NotificationsFilter } from 'vs/platform/notification/common/notificatio
 import { IConfigurationChangeEvent } from 'vs/platform/configuration/common/configuration'
 import { ITextModelContentProvider } from 'vs/editor/common/services/resolverService'
 import { IColorTheme } from 'vs/platform/theme/common/themeService'
+import { StorageScope, StorageTarget } from 'vs/platform/storage/common/storage'
 // Hack so ContextKeyExprType is included in the bundle as it's used but rollup-plugin-dts is unable to detect it
 // https://github.com/Swatinem/rollup-plugin-dts/issues/220
 export { ContextKeyExprType } from 'vs/platform/contextkey/common/contextkey'
@@ -93,10 +94,13 @@ export { IConfigurationService } from 'vs/platform/configuration/common/configur
 export { IThemeService } from 'vs/platform/theme/common/themeService'
 export { ISnippetsService } from 'vs/workbench/contrib/snippets/browser/snippets'
 export { IWorkspaceContextService } from 'vs/platform/workspace/common/workspace'
+export { IStorageService } from 'vs/platform/storage/common/storage'
 
 export {
   NotificationsFilter,
   IConfigurationChangeEvent,
   ITextModelContentProvider,
-  IColorTheme
+  IColorTheme,
+  StorageScope,
+  StorageTarget
 }
