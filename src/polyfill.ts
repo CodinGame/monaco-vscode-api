@@ -47,8 +47,8 @@ import { WorkspaceFolder as VScodeWorkspaceFolder } from 'vscode/vs/platform/wor
 import { List as MonacoList } from 'monaco-editor/esm/vs/base/browser/ui/list/listWidget.js'
 import { List as VScodeList } from 'vscode/vs/base/browser/ui/list/listWidget.js'
 // @ts-ignore Creating a d.ts is not worth it
-import { Color as MonacoColor } from 'monaco-editor/esm/vs/base/common/color.js'
-import { Color as VScodeColor } from 'vscode/vs/base/common/color.js'
+import { Color as MonacoColor, RGBA as MonacoRGBA } from 'monaco-editor/esm/vs/base/common/color.js'
+import { Color as VScodeColor, RGBA as VScodeRGBA } from 'vscode/vs/base/common/color.js'
 // @ts-ignore Creating a d.ts is not worth it
 import { LogService as MonacoLogService } from 'monaco-editor/esm/vs/platform/log/common/log.js'
 import { LogService as VScodeLogService } from 'vscode/vs/platform/log/common/log.js'
@@ -188,14 +188,16 @@ polyfillPrototype(MonacoVSBuffer.prototype, VScodeVSBuffer.prototype, toMonacoVS
 // So we transform the returned VSCode Color instance to monaco Color instance in polyfilled methods
 function toMonacoColor (value: unknown) {
   if (value instanceof VScodeColor) {
-    return new MonacoColor(value.rgba)
+    const rgba = value.rgba
+    return new MonacoColor(new MonacoRGBA(rgba.r, rgba.g, rgba.g, rgba.a))
   }
   return value
 }
 function toVSCodeColor (value: unknown) {
   if (value instanceof MonacoColor) {
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    return new VScodeColor((value as any).rgba)
+    const rgba = (value as any).rgba
+    return new VScodeColor(new VScodeRGBA(rgba.r, rgba.g, rgba.g, rgba.a))
   }
   return value
 }
