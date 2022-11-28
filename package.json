@@ -174,7 +174,6 @@
     "zx": "^7.0.8"
   },
   "dependencies": {
-    "monaco-editor": "~0.34.1"
   },
   "peerDependencies": {
     "monaco-editor": "~0.34.0",
