@@ -5,6 +5,17 @@ on:
       - main
 
 jobs:
+  lint-commits:
+    name: Lint commits
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+        with:
+          # we actually need "github.event.pull_request.commits + 1" commit
+          fetch-depth: 0
+      - uses: actions/setup-node@v3
+      - run: npm ci
+      - run: npx commitlint --from HEAD~${{ github.event.pull_request.commits }} --to HEAD
   check:
     name: Check build
     runs-on: self-hosted

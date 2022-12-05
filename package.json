@@ -146,8 +146,11 @@
     "@babel/plugin-proposal-decorators": "^7.18.10",
     "@babel/preset-env": "^7.18.10",
     "@babel/preset-typescript": "^7.18.6",
+    "@codingame/commitlint-config-codingame": "^1.0.3",
     "@codingame/eslint-config": "^1.1.6",
+    "@codingame/semantic-release-config": "^1.0.3",
     "@codingame/tsconfig": "^1.1.0",
+    "@commitlint/cli": "^17.3.0",
     "@octokit/rest": "^19.0.4",
     "@rollup/plugin-node-resolve": "^13.3.0",
     "@rollup/plugin-replace": "^4.0.0",
@@ -173,12 +176,10 @@
     "typescript": "^4.7.4",
     "zx": "^7.0.8"
   },
-  "dependencies": {
-  },
   "peerDependencies": {
     "monaco-editor": "~0.34.0",
-    "vscode-textmate": "^7.0.1",
-    "vscode-oniguruma": "^1.6.2"
+    "vscode-oniguruma": "^1.6.2",
+    "vscode-textmate": "^7.0.1"
   },
   "volta": {
     "node": "16.15.0",
