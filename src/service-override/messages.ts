@@ -5,7 +5,7 @@ import getNotificationServiceOverride from './notifications'
 import getDialogServiceOverride from './dialogs'
 
 /**
- * @deprecated
+ * @deprecated use `getNotificationServiceOverride` and `getDialogServiceOverride` instead
  */
 export default function getServiceOverride (container?: HTMLElement): IEditorOverrideServices {
   return {
