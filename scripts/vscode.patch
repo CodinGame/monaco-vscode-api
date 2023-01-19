@@ -11,41 +11,6 @@ index e3f41e0d416..14885bf3197 100644
  
  	public static validateOptions(options: IEditorOptions): ValidatedEditorOptions {
  		const result = new ValidatedEditorOptions();
-diff --git a/src/vs/workbench/contrib/mergeEditor/browser/utils.ts b/src/vs/workbench/contrib/mergeEditor/browser/utils.ts
-index 7e92f970387..51e2439a52b 100644
---- a/src/vs/workbench/contrib/mergeEditor/browser/utils.ts
-+++ b/src/vs/workbench/contrib/mergeEditor/browser/utils.ts
-@@ -151,7 +151,7 @@ export function deepMerge<T extends {}>(source1: T, source2: Partial<T>): T {
- 	for (const key in source2) {
- 		const source2Value = source2[key];
- 		if (typeof result[key] === 'object' && source2Value && typeof source2Value === 'object') {
--			result[key] = deepMerge<any>(result[key], source2Value);
-+			result[key] = deepMerge<any>(result[key], source2Value!);
- 		} else {
- 			result[key] = source2Value as any;
- 		}
-diff --git a/src/vs/workbench/contrib/terminal/browser/terminalProcessManager.ts b/src/vs/workbench/contrib/terminal/browser/terminalProcessManager.ts
-index a82ae60c449..143a208b867 100644
---- a/src/vs/workbench/contrib/terminal/browser/terminalProcessManager.ts
-+++ b/src/vs/workbench/contrib/terminal/browser/terminalProcessManager.ts
-@@ -246,7 +246,7 @@ export class TerminalProcessManager extends Disposable implements ITerminalProce
- 
- 				// this is a copy of what the merged environment collection is on the remote side
- 				const env = await this._resolveEnvironment(backend, variableResolver, shellLaunchConfig);
--				const shouldPersist = ((this._configurationService.getValue(TaskSettingId.Reconnection) && shellLaunchConfig.reconnectionOwner) || !shellLaunchConfig.isFeatureTerminal) && this._configHelper.config.enablePersistentSessions && !shellLaunchConfig.isTransient;
-+				const shouldPersist = ((this._configurationService.getValue<boolean>(TaskSettingId.Reconnection) && shellLaunchConfig.reconnectionOwner !== undefined) || !shellLaunchConfig.isFeatureTerminal) && this._configHelper.config.enablePersistentSessions && !shellLaunchConfig.isTransient;
- 				if (shellLaunchConfig.attachPersistentProcess) {
- 					const result = await backend.attachToProcess(shellLaunchConfig.attachPersistentProcess.id);
- 					if (result) {
-@@ -460,7 +460,7 @@ export class TerminalProcessManager extends Disposable implements ITerminalProce
- 			windowsEnableConpty: this._configHelper.config.windowsEnableConpty && !isScreenReaderModeEnabled,
- 			environmentVariableCollections: this._extEnvironmentVariableCollection ? serializeEnvironmentVariableCollections(this._extEnvironmentVariableCollection.collections) : undefined
- 		};
--		const shouldPersist = ((this._configurationService.getValue(TaskSettingId.Reconnection) && shellLaunchConfig.reconnectionOwner) || !shellLaunchConfig.isFeatureTerminal) && this._configHelper.config.enablePersistentSessions && !shellLaunchConfig.isTransient;
-+		const shouldPersist = ((this._configurationService.getValue<boolean>(TaskSettingId.Reconnection) && shellLaunchConfig.reconnectionOwner !== undefined) || !shellLaunchConfig.isFeatureTerminal) && this._configHelper.config.enablePersistentSessions && !shellLaunchConfig.isTransient;
- 		return await backend.createProcess(shellLaunchConfig, initialCwd, cols, rows, this._configHelper.config.unicodeVersion, env, options, shouldPersist);
- 	}
- 
 diff --git a/src/vs/workbench/services/configuration/browser/configurationService.ts b/src/vs/workbench/services/configuration/browser/configurationService.ts
 index a1245856684..55bb8224f51 100644
 --- a/src/vs/workbench/services/configuration/browser/configurationService.ts
