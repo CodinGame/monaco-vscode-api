@@ -1,6 +1,9 @@
 import * as rollup from 'rollup'
 import dts from 'rollup-plugin-dts'
 import * as path from 'path'
+import { fileURLToPath } from 'url'
+
+const __dirname = path.dirname(fileURLToPath(import.meta.url))
 
 const VSCODE_DIR = path.join(__dirname, '../vscode')
 

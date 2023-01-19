@@ -8,10 +8,15 @@ import cleanup from 'js-cleanup'
 import ts from 'typescript'
 import replace from '@rollup/plugin-replace'
 import styles from 'rollup-plugin-styles'
+import * as tslib from 'tslib'
+import * as babylonParser from 'recast/parsers/babylon.js'
 import * as fs from 'fs'
 import * as path from 'path'
 import * as vm from 'vm'
-import pkg from '../package.json'
+import { fileURLToPath } from 'url'
+import pkg from '../package.json' assert { type: 'json' }
+
+const __dirname = path.dirname(fileURLToPath(import.meta.url))
 
 const PURE_ANNO = '#__PURE__'
 const PURE_FUNCTIONS = new Set([
@@ -216,7 +221,7 @@ export default (args: Record<string, string>): rollup.RollupOptions[] => {
         transform (code, id) {
           if (id.startsWith(VSCODE_DIR)) {
             const ast = recast.parse(code, {
-              parser: require('recast/parsers/babylon')
+              parser: babylonParser
             })
             let transformed: boolean = false
             function addComment (node: recast.types.namedTypes.NewExpression | recast.types.namedTypes.CallExpression) {
@@ -330,7 +335,7 @@ export default (args: Record<string, string>): rollup.RollupOptions[] => {
       name: 'improve-treeshaking',
       transform (code) {
         const ast = recast.parse(code, {
-          parser: require('recast/parsers/babylon')
+          parser: babylonParser
         })
         let transformed: boolean = false
         function addComment (node: recast.types.namedTypes.NewExpression | recast.types.namedTypes.CallExpression) {
@@ -472,7 +477,7 @@ function customRequire<T extends Record<string, unknown>> (_path: string, rootPa
     vm.runInNewContext(transformedCode, {
       require: (_path: string) => {
         if (_path === 'tslib') {
-          return require('tslib')
+          return tslib
         }
         if (_path.endsWith('.css') || _path.includes('!')) {
           return null

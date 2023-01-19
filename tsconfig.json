@@ -5,7 +5,7 @@
 		"experimentalDecorators": true,
 		"resolveJsonModule": true,
 		"target": "es2020",
-		"module": "es2020",
+		"module": "esnext",
 		"lib": [
 			"es2021",
 			"DOM"
