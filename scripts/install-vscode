@@ -26,7 +26,7 @@ rm -rf vs/code
 rm -rf vs/server
 
 echo "Building vscode..."
-tsc --declaration --importHelpers --module es2020 --preserveConstEnums --outDir "$output_directory/vs"
+npx tsc --declaration --importHelpers --module es2020 --preserveConstEnums --outDir "$output_directory/vs"
 # Copy files that are already built
 find ./vs \( -name '*.js' -o -name '*.d.ts' -o -name '*.css' \) -exec rsync -R \{\} "$output_directory/" \;
 
