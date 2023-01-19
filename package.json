@@ -180,6 +180,11 @@
     "vscode-textmate": "^7.0.1",
     "vscode-oniguruma": "^1.6.2"
   },
+  "overrides": {
+    "rollup-plugin-styles": {
+      "rollup": "3.10.0"
+    }
+  },
   "volta": {
     "node": "16.15.0",
     "npm": "8.11.0"
