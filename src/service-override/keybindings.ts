@@ -19,6 +19,8 @@ import { CommandsQuickAccessProvider } from 'vs/workbench/contrib/quickaccess/br
 import { DisposableStore } from 'vs/base/common/lifecycle'
 import { CancellationToken } from 'vs/base/common/cancellation'
 import { IUserDataProfilesService } from 'vs/platform/userDataProfile/common/userDataProfile'
+import { IKeyboardLayoutService } from 'vs/platform/keyboardLayout/common/keyboardLayout'
+import { BrowserKeyboardLayoutService } from 'vs/workbench/services/keybinding/browser/keyboardLayoutService'
 import getFileServiceOverride from './files'
 import { consoleExtensionMessageHandler, getExtensionPoint } from './tools'
 import { DEFAULT_EXTENSION } from '../vscode-services/extHost'
@@ -125,7 +127,8 @@ function updateUserKeybindings (keybindingsJson: string): void {
 export default function getServiceOverride (): IEditorOverrideServices {
   return {
     ...getFileServiceOverride(),
-    [IKeybindingService.toString()]: new SyncDescriptor(DelegateStandaloneKeybindingService)
+    [IKeybindingService.toString()]: new SyncDescriptor(DelegateStandaloneKeybindingService),
+    [IKeyboardLayoutService.toString()]: new SyncDescriptor(BrowserKeyboardLayoutService)
   }
 }
 

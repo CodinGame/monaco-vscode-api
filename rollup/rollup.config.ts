@@ -10,6 +10,7 @@ import replace from '@rollup/plugin-replace'
 import styles from 'rollup-plugin-styles'
 import * as tslib from 'tslib'
 import * as babylonParser from 'recast/parsers/babylon.js'
+import dynamicImportVars from '@rollup/plugin-dynamic-import-vars'
 import * as fs from 'fs'
 import * as path from 'path'
 import * as vm from 'vm'
@@ -50,6 +51,7 @@ const VSCODE_DIR = path.resolve(__dirname, '../vscode')
 const NODE_MODULES_DIR = path.resolve(__dirname, '../node_modules')
 const MONACO_EDITOR_DIR = path.resolve(NODE_MODULES_DIR, './monaco-editor')
 const OVERRIDE_PATH = path.resolve(__dirname, '../src/override')
+const KEYBOARD_LAYOUT_DIR = path.resolve(VSCODE_DIR, 'vs/workbench/services/keybinding/browser/keyboardLayouts')
 
 function getMemberExpressionPath (node: recast.types.namedTypes.MemberExpression | recast.types.namedTypes.Identifier): string | null {
   if (node.type === 'MemberExpression') {
@@ -106,7 +108,7 @@ export default (args: Record<string, string>): rollup.RollupOptions[] => {
       annotations: true,
       preset: 'smallest',
       moduleSideEffects (id) {
-        return id.startsWith(SRC_DIR) || id.endsWith('.css')
+        return id.startsWith(SRC_DIR) || id.endsWith('.css') || id.startsWith(KEYBOARD_LAYOUT_DIR)
       }
     },
     external,
@@ -148,7 +150,7 @@ export default (args: Record<string, string>): rollup.RollupOptions[] => {
           return undefined
         },
         transform (code) {
-          return toggleEsmComments(code).replaceAll("'vs/workbench/services/keybinding/browser/keyboardLayouts/layout.contribution.' + platform", "'./keyboardLayouts/_.contribution'")
+          return toggleEsmComments(code).replaceAll("'vs/workbench/services/keybinding/browser/keyboardLayouts/layout.contribution.' + platform", "'./keyboardLayouts/layout.contribution.' + platform + '.js'")
         },
         load (id) {
           if (id.startsWith(VSCODE_DIR) && id.endsWith('.css')) {
@@ -276,8 +278,8 @@ export default (args: Record<string, string>): rollup.RollupOptions[] => {
                   }
                 } else if (node.callee.type === 'Identifier' && PURE_FUNCTIONS.has(node.callee.name)) {
                   path.replace(addComment(node))
-                } else if (node.callee.type === 'FunctionExpression') {
-                  // Mark IIFE as pure, because typescript compile enums as IIFE
+                } else if (node.callee.type === 'FunctionExpression' && node.arguments.length === 1) {
+                  // Mark IIFE with single parameter as pure, because typescript compile enums as IIFE
                   path.replace(addComment(node))
                 }
                 this.traverse(path)
@@ -309,7 +311,8 @@ export default (args: Record<string, string>): rollup.RollupOptions[] => {
             right: ').then(module => module.default ?? module)'
           }
         }
-      }
+      },
+      dynamicImportVars()
     ]
   }, {
     // 2nd pass to improve treeshaking
@@ -358,8 +361,8 @@ export default (args: Record<string, string>): rollup.RollupOptions[] => {
               }
             } else if (node.callee.type === 'Identifier' && PURE_FUNCTIONS.has(node.callee.name)) {
               path.replace(addComment(node))
-            } else if (node.callee.type === 'FunctionExpression') {
-              // Mark IIFE as pure, because typescript compile enums as IIFE
+            } else if (node.callee.type === 'FunctionExpression' && node.arguments.length === 1) {
+              // Mark IIFE with single parameter as pure, because typescript compile enums as IIFE
               path.replace(addComment(node))
             }
             this.traverse(path)
