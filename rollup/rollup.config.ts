@@ -51,6 +51,7 @@ const VSCODE_DIR = path.resolve(__dirname, '../vscode')
 const NODE_MODULES_DIR = path.resolve(__dirname, '../node_modules')
 const MONACO_EDITOR_DIR = path.resolve(NODE_MODULES_DIR, './monaco-editor')
 const OVERRIDE_PATH = path.resolve(__dirname, '../src/override')
+const KEYBOARD_LAYOUT_DIR = path.resolve(VSCODE_DIR, 'vs/workbench/services/keybinding/browser/keyboardLayouts')
 
 function getMemberExpressionPath (node: recast.types.namedTypes.MemberExpression | recast.types.namedTypes.Identifier): string | null {
   if (node.type === 'MemberExpression') {
@@ -107,7 +108,7 @@ export default (args: Record<string, string>): rollup.RollupOptions[] => {
       annotations: true,
       preset: 'smallest',
       moduleSideEffects (id) {
-        return id.startsWith(SRC_DIR) || id.endsWith('.css')
+        return id.startsWith(SRC_DIR) || id.endsWith('.css') || id.startsWith(KEYBOARD_LAYOUT_DIR)
       }
     },
     external,
