@@ -291,9 +291,9 @@ class WorkbenchEnvironmentService implements IBrowserWorkbenchEnvironmentService
   get webviewExternalEndpoint () { return unsupported() }
   debugRenderer = false
   get userRoamingDataHome () { return unsupported() }
-  get keyboardLayoutResource () { return unsupported() }
+  keyboardLayoutResource = URI.from({ scheme: 'user', path: '/keyboardLayout.json' })
   get argvResource () { return unsupported() }
-  get snippetsHome () { return URI.from({ scheme: 'user', path: '/snippets' }) }
+  snippetsHome = URI.from({ scheme: 'user', path: '/snippets' })
   get untitledWorkspacesHome () { return unsupported() }
   get globalStorageHome () { return unsupported() }
   get workspaceStorageHome () { return unsupported() }
