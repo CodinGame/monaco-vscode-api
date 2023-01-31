@@ -10,6 +10,7 @@ import replace from '@rollup/plugin-replace'
 import styles from 'rollup-plugin-styles'
 import * as tslib from 'tslib'
 import * as babylonParser from 'recast/parsers/babylon.js'
+import dynamicImportVars from '@rollup/plugin-dynamic-import-vars'
 import * as fs from 'fs'
 import * as path from 'path'
 import * as vm from 'vm'
@@ -309,7 +310,8 @@ export default (args: Record<string, string>): rollup.RollupOptions[] => {
             right: ').then(module => module.default ?? module)'
           }
         }
-      }
+      },
+      dynamicImportVars()
     ]
   }, {
     // 2nd pass to improve treeshaking
