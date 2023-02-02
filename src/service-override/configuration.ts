@@ -21,9 +21,9 @@ import getWorkspaceContextServiceOverride from './workspaceContext'
 import getFileServiceOverride from './files'
 import { onServicesInitialized } from './tools'
 
-function updateUserConfiguration (configurationJson: string): void {
+async function updateUserConfiguration (configurationJson: string): Promise<void> {
   const userDataProfilesService: IUserDataProfilesService = StandaloneServices.get(IUserDataProfilesService)
-  void StandaloneServices.get(IFileService).writeFile(userDataProfilesService.defaultProfile.settingsResource, VSBuffer.fromString(configurationJson))
+  await StandaloneServices.get(IFileService).writeFile(userDataProfilesService.defaultProfile.settingsResource, VSBuffer.fromString(configurationJson))
 }
 
 const configurationRegistry = Registry.as<IConfigurationRegistry>(ConfigurationExtensions.Configuration)
