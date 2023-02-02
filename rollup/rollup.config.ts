@@ -278,9 +278,13 @@ export default (args: Record<string, string>): rollup.RollupOptions[] => {
                   }
                 } else if (node.callee.type === 'Identifier' && PURE_FUNCTIONS.has(node.callee.name)) {
                   path.replace(addComment(node))
-                } else if (node.callee.type === 'FunctionExpression' && node.arguments.length === 1) {
-                  // Mark IIFE with single parameter as pure, because typescript compile enums as IIFE
-                  path.replace(addComment(node))
+                } else if (node.callee.type === 'FunctionExpression') {
+                  const lastInstruction = node.callee.body.body[node.callee.body.body.length - 1]
+                  const lastInstructionIsReturn = lastInstruction?.type === 'ReturnStatement' && lastInstruction.argument != null
+                  if (node.arguments.length > 0 || lastInstructionIsReturn) {
+                    // heuristic: mark IIFE with parameters or with a return as pure, because typescript compile enums as IIFE
+                    path.replace(addComment(node))
+                  }
                 }
                 this.traverse(path)
                 return undefined
@@ -361,9 +365,13 @@ export default (args: Record<string, string>): rollup.RollupOptions[] => {
               }
             } else if (node.callee.type === 'Identifier' && PURE_FUNCTIONS.has(node.callee.name)) {
               path.replace(addComment(node))
-            } else if (node.callee.type === 'FunctionExpression' && node.arguments.length === 1) {
-              // Mark IIFE with single parameter as pure, because typescript compile enums as IIFE
-              path.replace(addComment(node))
+            } else if (node.callee.type === 'FunctionExpression') {
+              const lastInstruction = node.callee.body.body[node.callee.body.body.length - 1]
+              const lastInstructionIsReturn = lastInstruction?.type === 'ReturnStatement' && lastInstruction.argument != null
+              if (node.arguments.length > 0 || lastInstructionIsReturn) {
+                // heuristic: mark IIFE with parameters or with a return as pure, because typescript compile enums as IIFE
+                path.replace(addComment(node))
+              }
             }
             this.traverse(path)
             return undefined
