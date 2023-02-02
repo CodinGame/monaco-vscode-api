@@ -26,6 +26,11 @@ async function updateUserConfiguration (configurationJson: string): Promise<void
   await StandaloneServices.get(IFileService).writeFile(userDataProfilesService.defaultProfile.settingsResource, VSBuffer.fromString(configurationJson))
 }
 
+async function getUserConfiguration (): Promise<string> {
+  const userDataProfilesService: IUserDataProfilesService = StandaloneServices.get(IUserDataProfilesService)
+  return (await StandaloneServices.get(IFileService).readFile(userDataProfilesService.defaultProfile.settingsResource)).value.toString()
+}
+
 const configurationRegistry = Registry.as<IConfigurationRegistry>(ConfigurationExtensions.Configuration)
 
 class InjectedConfigurationService extends ConfigurationService {
@@ -75,6 +80,7 @@ export default function getServiceOverride (): IEditorOverrideServices {
 
 export {
   updateUserConfiguration,
+  getUserConfiguration,
   configurationRegistry,
   ConfigurationScope,
   IThemeScopedColorCustomizations,
