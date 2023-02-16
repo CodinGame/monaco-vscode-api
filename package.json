@@ -75,6 +75,10 @@
     "./monaco": {
       "types": "./dist/monaco.d.ts",
       "default": "./dist/monaco.js"
+    },
+    "./webpack-loader": {
+      "types": "./dist/webpack-loader.d.ts",
+      "default": "./dist/webpack-loader.cjs"
     }
   },
   "typesVersions": {
@@ -120,6 +124,9 @@
       ],
       "monaco": [
         "./dist/monaco.d.ts"
+      ],
+      "webpack-loader": [
+        "./dist/webpack-loader.d.ts"
       ]
     }
   },
@@ -128,8 +135,9 @@
     "README.md"
   ],
   "scripts": {
-    "build": "rm -rf dist/ && npm run lint && npm run compile && npm run generate-types",
+    "build": "rm -rf dist/ && npm run lint && npm run compile && npm run generate-types && npm run compile-webpack-loader",
     "compile": "rollup --config rollup/rollup.config.ts --configPlugin 'typescript={tsconfig: `tsconfig.rollup.json`}' --vscode-version ${npm_package_config_vscode_version}",
+    "compile-webpack-loader": "tsc --target es2020 -lib es2020 --module commonjs --skipLibCheck --moduleResolution node --declaration --outDir dist src/webpack-loader.ts && mv dist/webpack-loader.js dist/webpack-loader.cjs",
     "preprepare": "./scripts/install-vscode",
     "lint": "eslint --ext ts src",
     "generate-types": "tsc --project tsconfig.types.json && rollup --config rollup/rollup.types.config.ts --configPlugin 'typescript={tsconfig: `tsconfig.rollup.json`}' && rm -rf ./dist/types",
@@ -172,6 +180,7 @@
     "semver": "^7.3.8",
     "ts-node": "^10.9.1",
     "typescript": "^4.9.5",
+    "webpack": "^5.75.0",
     "zx": "^7.1.1"
   },
   "dependencies": {
