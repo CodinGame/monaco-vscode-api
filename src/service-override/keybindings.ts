@@ -119,9 +119,9 @@ function setCommands (keybindings: IUserFriendlyCommand | IUserFriendlyCommand[]
   }])
 }
 
-function updateUserKeybindings (keybindingsJson: string): void {
+async function updateUserKeybindings (keybindingsJson: string): Promise<void> {
   const userDataProfilesService: IUserDataProfilesService = StandaloneServices.get(IUserDataProfilesService)
-  void StandaloneServices.get(IFileService).writeFile(userDataProfilesService.defaultProfile.keybindingsResource, VSBuffer.fromString(keybindingsJson))
+  await StandaloneServices.get(IFileService).writeFile(userDataProfilesService.defaultProfile.keybindingsResource, VSBuffer.fromString(keybindingsJson))
 }
 
 export default function getServiceOverride (): IEditorOverrideServices {
