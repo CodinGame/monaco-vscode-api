@@ -91,6 +91,7 @@ class InjectedConfigurationService extends ConfigurationService {
 
 function initialize (instantiationService: IInstantiationService) {
   instantiationService.createInstance(RegisterConfigurationSchemasContribution)
+  void updateUserConfiguration('{}') // can't fail as it is a memory file service
 }
 
 export default function getServiceOverride (): IEditorOverrideServices {
