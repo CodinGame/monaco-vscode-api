@@ -33,15 +33,15 @@ Services.install({
 Also, monaco-editor use `standalone` versions or the vscode services, which are much simpler.
 
 You may want to provide your custom implementations of them, especially for: `textModelService`, `codeEditorService` and `notificationService`. To do so, you can provide them as the third parameter while creating your first editor.
-This library allows you to use a more convenient way using `StandaloneService.initialize`.
+This library allows you to use a more convenient way using `StandaloneServices.initialize`.
 Also, monaco-editor doesn't provide good type for them, so this library does it.
 
 Example:
 ```typescript
-import { StandaloneService, INotificationService } from 'vscode/services'
+import { StandaloneServices, INotificationService } from 'vscode/services'
 
 class MyCustomNotificationService implements INotificationService { ... }
-StandaloneService.initialize({
+StandaloneServices.initialize({
   get [INotificationService.toString()] () {
     return new MyCustomNotificationService(...)
   }
@@ -63,7 +63,7 @@ Additionally, this library exposes 10 modules that include the vscode version of
 
 Usage:
 ```typescript
-import { StandaloneService } from 'vscode/services'
+import { StandaloneServices } from 'vscode/services'
 import getModelEditorServiceOverride from 'vscode/service-override/modelEditor'
 import getMessageServiceOverride from 'vscode/service-override/messages'
 import getConfigurationServiceOverride, { updateUserConfiguration, configurationRegistry } from 'vscode/service-override/configuration'

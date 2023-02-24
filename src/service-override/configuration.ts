@@ -20,19 +20,29 @@ import { IInstantiationService } from 'vs/platform/instantiation/common/instanti
 import { setProperty } from 'vs/base/common/jsonEdit'
 import { createTextBuffer, TextModel } from 'vs/editor/common/model/textModel'
 import { URI } from 'vs/base/common/uri'
+import type * as vscode from 'vscode'
 import getWorkspaceContextServiceOverride from './workspaceContext'
 import getFileServiceOverride from './files'
 import { onServicesInitialized } from './tools'
 import { IModelService } from '../services'
 
 async function updateUserConfiguration (configurationJson: string): Promise<void> {
-  const userDataProfilesService: IUserDataProfilesService = StandaloneServices.get(IUserDataProfilesService)
+  const userDataProfilesService = StandaloneServices.get(IUserDataProfilesService)
   await StandaloneServices.get(IFileService).writeFile(userDataProfilesService.defaultProfile.settingsResource, VSBuffer.fromString(configurationJson))
 }
 
 async function getUserConfiguration (): Promise<string> {
-  const userDataProfilesService: IUserDataProfilesService = StandaloneServices.get(IUserDataProfilesService)
+  const userDataProfilesService = StandaloneServices.get(IUserDataProfilesService)
   return (await StandaloneServices.get(IFileService).readFile(userDataProfilesService.defaultProfile.settingsResource)).value.toString()
+}
+
+function onUserConfigurationChange (callback: () => void): vscode.Disposable {
+  const userDataProfilesService = StandaloneServices.get(IUserDataProfilesService)
+  return StandaloneServices.get(IFileService).onDidFilesChange(e => {
+    if (e.affects(userDataProfilesService.defaultProfile.settingsResource)) {
+      callback()
+    }
+  })
 }
 
 const configurationRegistry = Registry.as<IConfigurationRegistry>(ConfigurationExtensions.Configuration)
@@ -107,6 +117,7 @@ export default function getServiceOverride (): IEditorOverrideServices {
 export {
   updateUserConfiguration,
   getUserConfiguration,
+  onUserConfigurationChange,
   configurationRegistry,
   ConfigurationScope,
   IThemeScopedColorCustomizations,
