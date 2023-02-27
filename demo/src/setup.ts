@@ -17,7 +17,6 @@ import getTextmateServiceOverride, { setGrammars } from 'vscode/service-override
 import getThemeServiceOverride, { setDefaultThemes, IThemeExtensionPoint } from 'vscode/service-override/theme'
 import geTokenClassificationServiceOverride from 'vscode/service-override/tokenClassification'
 import getLanguageConfigurationServiceOverride, { setLanguageConfiguration } from 'vscode/service-override/languageConfiguration'
-import getSnippetConfigurationServiceOverride from 'vscode/service-override/snippets'
 import getLanguagesServiceOverride, { setLanguages } from 'vscode/service-override/languages'
 import EditorWorker from 'monaco-editor/esm/vs/editor/editor.worker?worker'
 import JsonWorker from 'monaco-editor/esm/vs/language/json/json.worker?worker'
@@ -60,7 +59,6 @@ StandaloneServices.initialize({
 	...getThemeServiceOverride(),
 	...geTokenClassificationServiceOverride(),
 	...getLanguageConfigurationServiceOverride(),
-	...getSnippetConfigurationServiceOverride(),
 	...getLanguagesServiceOverride()
 })
 
