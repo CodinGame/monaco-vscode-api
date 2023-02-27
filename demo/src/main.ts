@@ -11,7 +11,7 @@ import 'monaco-editor/esm/vs/editor/standalone/browser/quickAccess/standaloneCom
 import 'monaco-editor/esm/vs/editor/standalone/browser/referenceSearch/standaloneReferenceSearch'
 // json contribution should be imported/run AFTER the services are initialized (in setup.ts)
 import 'monaco-editor/esm/vs/language/json/monaco.contribution'
-import { updateUserConfiguration } from 'vscode/service-override/configuration'
+import { getUserConfiguration, onUserConfigurationChange, updateUserConfiguration } from 'vscode/service-override/configuration'
 import { updateUserKeybindings } from 'vscode/service-override/keybindings'
 import { createConfiguredEditor } from 'vscode/monaco'
 import { getJsonSchemas, onDidChangeJsonSchema } from 'vscode/monaco'
@@ -59,6 +59,12 @@ settingsModel.onDidChangeContent(debounce(1000, () => {
   updateUserConfiguration(settingsModel.getValue())
 }))
 updateUserConfiguration(settingsModel.getValue())
+onUserConfigurationChange(async () => {
+  const newConfiguration = await getUserConfiguration()
+  if (newConfiguration != settingsModel.getValue()) {
+    settingsModel.setValue(newConfiguration)
+  }
+})
 
 const keybidingsModel = monaco.editor.createModel(
 `[
