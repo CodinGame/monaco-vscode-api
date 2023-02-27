@@ -14,7 +14,7 @@
   "dependencies": {
     "monaco-editor": "~0.34.0",
     "throttle-debounce": "^5.0.0",
-    "vscode": "npm:@codingame/monaco-vscode-api@~1.69.7",
+    "vscode": "npm:@codingame/monaco-vscode-api@~1.69.21",
     "vscode-oniguruma": "~1.6.2"
   },
   "volta": {
