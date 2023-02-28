@@ -1,5 +1,10 @@
 {
-	"extends": "./tsconfig.json",
+	"extends": "./tsconfig.build.json",
+	"compilerOptions": {
+		"noEmit": false,
+		"outDir": "dist",
+		"rootDir": "./"
+	},
 	"include": [
 		"./rollup/*.ts"
 	]

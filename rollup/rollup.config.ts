@@ -49,12 +49,14 @@ const PURE_FUNCTIONS = new Set([
 
 const EXTENSIONS = ['', '.ts', '.js']
 
-const SRC_DIR = path.resolve(__dirname, '../src')
-const DIST_DIR = path.resolve(__dirname, '../dist')
-const VSCODE_DIR = path.resolve(__dirname, '../vscode')
-const NODE_MODULES_DIR = path.resolve(__dirname, '../node_modules')
+const BASE_DIR = path.resolve(__dirname, '..')
+const TSCONFIG = path.resolve(BASE_DIR, 'tsconfig.build.json')
+const SRC_DIR = path.resolve(BASE_DIR, 'src')
+const DIST_DIR = path.resolve(BASE_DIR, 'dist')
+const VSCODE_DIR = path.resolve(BASE_DIR, 'vscode')
+const NODE_MODULES_DIR = path.resolve(BASE_DIR, 'node_modules')
 const MONACO_EDITOR_DIR = path.resolve(NODE_MODULES_DIR, './monaco-editor')
-const OVERRIDE_PATH = path.resolve(__dirname, '../src/override')
+const OVERRIDE_PATH = path.resolve(BASE_DIR, 'src/override')
 const KEYBOARD_LAYOUT_DIR = path.resolve(VSCODE_DIR, 'vs/workbench/services/keybinding/browser/keyboardLayouts')
 
 function getMemberExpressionPath (node: recast.types.namedTypes.MemberExpression | recast.types.namedTypes.Identifier): string | null {
@@ -175,6 +177,7 @@ export default (args: Record<string, string>): rollup.RollupOptions[] => {
       }),
       typescript({
         noEmitOnError: true,
+        tsconfig: TSCONFIG,
         transformers: {
           before: [{
             type: 'program',

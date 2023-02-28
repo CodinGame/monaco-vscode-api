@@ -5,6 +5,15 @@ vscodeVersion=$(node -e "console.log(require('./node_modules/monaco-editor/packa
 
 output_directory="`pwd`/vscode"
 patch_file="`pwd`/scripts/vscode.patch"
+version_info=$output_directory/version.info
+
+if [[ -e $version_info && $(cat $version_info) == $vscodeVersion ]]; then
+    echo "vscode version $vscodeVersion is already installed. Aborting..."
+    exit 0
+else
+    echo "vscode version $vscodeVersion is not available. Installing..."
+fi
+
 rm -rf $output_directory
 
 build_directory=`mktemp -d`
@@ -24,6 +33,9 @@ cd src
 rm -rf `find . -name '*.test.ts' -o -name 'test' -o -name 'electron-browser'`
 rm -rf vs/code
 rm -rf vs/server
+
+mkdir $output_directory
+echo $vscodeVersion > $version_info
 
 echo "Building vscode..."
 npx tsc --declaration --importHelpers --module es2020 --preserveConstEnums --outDir "$output_directory/vs"

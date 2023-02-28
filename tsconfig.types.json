@@ -3,6 +3,7 @@
 	"module": "amd",
 	"moduleResolution": "node",
 	"target": "es2020",
+	"noEmit": false,
 	"outDir": "dist/types",
 	"rootDir": "./",
     "experimentalDecorators": true,

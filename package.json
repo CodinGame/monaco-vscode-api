@@ -135,13 +135,18 @@
     "README.md"
   ],
   "scripts": {
-    "build": "rm -rf dist/ && npm run lint && npm run compile && npm run generate-types && npm run compile-webpack-loader",
-    "compile": "rollup --config rollup/rollup.config.ts --configPlugin 'typescript={tsconfig: `tsconfig.rollup.json`}' --vscode-version ${npm_package_config_vscode_version}",
+    "build": "npm run clean:local && npm run compile:local && npm run lint && npm run generate-types && npm run compile-webpack-loader",
+    "compile": "npm run compile:local --workspaces",
+    "clean": "npm run clean:local --workspaces",
+    "clean:local": "rm -rf dist/",
+    "compile:local": "rollup --config rollup/rollup.config.ts --configPlugin 'typescript={tsconfig: `tsconfig.rollup.json`}' --vscode-version ${npm_package_config_vscode_version}",
     "compile-webpack-loader": "tsc --target es2020 -lib es2020 --module commonjs --skipLibCheck --moduleResolution node --declaration --outDir dist src/webpack-loader.ts && mv dist/webpack-loader.js dist/webpack-loader.cjs",
     "preprepare": "./scripts/install-vscode",
-    "lint": "eslint --ext ts src",
+    "lint": "eslint {**/src/**/*.ts,./rollup/*.ts,./release.ts}",
     "generate-types": "tsc --project tsconfig.types.json && rollup --config rollup/rollup.types.config.ts --configPlugin 'typescript={tsconfig: `tsconfig.rollup.json`}' && rm -rf ./dist/types",
-    "release": "node --loader ts-node/esm release.ts ${npm_package_config_vscode_version}"
+    "release": "node --loader ts-node/esm release.ts ${npm_package_config_vscode_version}",
+    "start": "vite",
+    "start:debug": "vite --debug --force"
   },
   "config": {
     "vscode": {
@@ -180,6 +185,7 @@
     "semver": "^7.3.8",
     "ts-node": "^10.9.1",
     "typescript": "^4.9.5",
+    "vite": "~4.1.4",
     "webpack": "^5.75.0",
     "zx": "^7.2.0"
   },
@@ -198,5 +204,9 @@
   "volta": {
     "node": "18.13.0",
     "npm": "9.4.1"
-  }
+  },
+  "workspaces": [
+    ".",
+    "demo"
+  ]
 }

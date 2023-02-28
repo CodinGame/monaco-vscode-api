@@ -1,8 +1,11 @@
+// this tsconfig is required for proper config of vscode+eslint
 {
 	"extends": "@codingame/tsconfig",
 	"compilerOptions": {
+		"noEmit": true,
 		"declaration": false,
 		"experimentalDecorators": true,
+		"moduleResolution": "node",
 		"resolveJsonModule": true,
 		"target": "es2020",
 		"module": "esnext",
@@ -10,7 +13,6 @@
 			"es2021",
 			"DOM"
 		],
-		"outDir": "dist",
 		"rootDir": "./",
 		"paths": {
 			"vs/*": [
@@ -23,8 +25,7 @@
 		"preserveConstEnums": true
 	},
 	"include": [
-		"./src/**/*",
-		"./vscode/**/*",
+		"**/src/**/*",
 		"./rollup/*.ts",
 		"./release.ts"
 	]

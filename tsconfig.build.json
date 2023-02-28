@@ -1,0 +1,15 @@
+// this tsconfig is used by @rollup/plugin-typescript
+{
+	"extends": "./tsconfig.json",
+	"compilerOptions": {
+		"noEmit": false,
+		"outDir": "dist",
+		"rootDir": "./"
+	},
+	"include": [
+		"./src/**/*",
+		"./vscode/**/*",
+		"./rollup/*.ts",
+		"./release.ts"
+	]
+}

@@ -13,16 +13,15 @@ import 'monaco-editor/esm/vs/editor/standalone/browser/referenceSearch/standalon
 import 'monaco-editor/esm/vs/language/json/monaco.contribution'
 import { getUserConfiguration, onUserConfigurationChange, updateUserConfiguration } from 'vscode/service-override/configuration'
 import { updateUserKeybindings } from 'vscode/service-override/keybindings'
-import { createConfiguredEditor } from 'vscode/monaco'
-import { getJsonSchemas, onDidChangeJsonSchema } from 'vscode/monaco'
+import { createConfiguredEditor, getJsonSchemas, onDidChangeJsonSchema } from 'vscode/monaco'
 import { debounce } from 'throttle-debounce'
 import * as vscode from 'vscode'
 
-vscode.window.showInformationMessage('Hello', {
+await vscode.window.showInformationMessage('Hello', {
   detail: 'Welcome to the monaco-vscode-api demo',
   modal: true
-}).then(() => {
-  vscode.window.showInformationMessage('Try to change the settings or the configuration, the changes will be applied to all 3 editors')
+}).then(async () => {
+  await vscode.window.showInformationMessage('Try to change the settings or the configuration, the changes will be applied to all 3 editors')
 })
 
 createConfiguredEditor(document.getElementById('editor')!, {
@@ -55,13 +54,13 @@ const settingsModel = monaco.editor.createModel(
 createConfiguredEditor(document.getElementById('settings-editor')!, {
   model: settingsModel
 })
-settingsModel.onDidChangeContent(debounce(1000, () => {
-  updateUserConfiguration(settingsModel.getValue())
+settingsModel.onDidChangeContent(debounce(1000, async () => {
+  await updateUserConfiguration(settingsModel.getValue())
 }))
-updateUserConfiguration(settingsModel.getValue())
+await updateUserConfiguration(settingsModel.getValue())
 onUserConfigurationChange(async () => {
   const newConfiguration = await getUserConfiguration()
-  if (newConfiguration != settingsModel.getValue()) {
+  if (newConfiguration !== settingsModel.getValue()) {
     settingsModel.setValue(newConfiguration)
   }
 })
@@ -82,10 +81,10 @@ const keybidingsModel = monaco.editor.createModel(
 createConfiguredEditor(document.getElementById('keybindings-editor')!, {
   model: keybidingsModel
 })
-keybidingsModel.onDidChangeContent(debounce(1000, () => {
-  updateUserKeybindings(keybidingsModel.getValue())
+keybidingsModel.onDidChangeContent(debounce(1000, async () => {
+  await updateUserKeybindings(keybidingsModel.getValue())
 }))
-updateUserKeybindings(keybidingsModel.getValue())
+await updateUserKeybindings(keybidingsModel.getValue())
 
 function updateDiagnosticsOptions () {
   monaco.languages.json.jsonDefaults.setDiagnosticsOptions({
