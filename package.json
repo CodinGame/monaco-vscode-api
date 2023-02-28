@@ -164,9 +164,9 @@
     "@types/babel__core": "^7.20.0",
     "@types/semver": "^7.3.13",
     "@types/vscode": "~1.69.1",
-    "@typescript-eslint/eslint-plugin": "^5.53.0",
-    "@typescript-eslint/parser": "^5.53.0",
-    "eslint": "^8.34.0",
+    "@typescript-eslint/eslint-plugin": "^5.54.0",
+    "@typescript-eslint/parser": "^5.54.0",
+    "eslint": "^8.35.0",
     "eslint-config-standard": "^17.0.0",
     "eslint-plugin-import": "^2.27.5",
     "eslint-plugin-n": "^15.6.1",
@@ -174,14 +174,14 @@
     "eslint-plugin-unused-imports": "^2.0.0",
     "js-cleanup": "^1.2.0",
     "recast": "^0.22.0",
-    "rollup": "^3.17.2",
+    "rollup": "^3.17.3",
     "rollup-plugin-dts": "^5.2.0",
     "rollup-plugin-styles": "^4.0.0",
     "semver": "^7.3.8",
     "ts-node": "^10.9.1",
     "typescript": "^4.9.5",
     "webpack": "^5.75.0",
-    "zx": "^7.1.1"
+    "zx": "^7.2.0"
   },
   "dependencies": {
   },
@@ -192,7 +192,7 @@
   },
   "overrides": {
     "rollup-plugin-styles": {
-      "rollup": "3.17.2"
+      "rollup": "3.17.3"
     }
   },
   "volta": {
