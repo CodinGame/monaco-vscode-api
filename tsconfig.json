@@ -15,6 +15,15 @@
 		],
 		"rootDir": "./",
 		"paths": {
+			"vscode/services": [
+				"./dist/services"
+			],
+			"vscode/service-override/*": [
+				"./dist/*"
+			],
+			"vscode/monaco": [
+				"./dist/monaco"
+			],
 			"vs/*": [
 				"./vscode/vs/*"
 			],
