@@ -40,7 +40,11 @@ const PURE_FUNCTIONS = new Set([
   'asBroswerUri',
   'values',
   'keys',
-  'toString'
+  'toString',
+  'ContextKeyExpr.and',
+  'ContextKeyNotExpr.create',
+  'ContextKeyDefinedExpr.create',
+  'ProductQualityContext.notEqualsTo'
 ])
 
 const EXTENSIONS = ['', '.ts', '.js']

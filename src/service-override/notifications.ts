@@ -7,7 +7,6 @@ import { NotificationService } from 'vs/workbench/services/notification/common/n
 import { INotificationService } from 'vs/platform/notification/common/notification'
 import * as dom from 'vs/base/browser/dom'
 import { registerNotificationCommands } from 'vs/workbench/browser/parts/notifications/notificationsCommands'
-import { DialogHandlerContribution } from 'vs/workbench/browser/parts/dialogs/dialog.web.contribution'
 import { SyncDescriptor } from 'vs/platform/instantiation/common/descriptors'
 import { NotificationsCenter } from 'vs/workbench/browser/parts/notifications/notificationsCenter'
 import { NotificationsAlerts } from 'vs/workbench/browser/parts/notifications/notificationsAlerts'
@@ -31,8 +30,6 @@ function initialize (instantiationService: IInstantiationService) {
   registerNotificationCommands(notificationsCenter, notificationsToasts, model)
 
   notificationsToasts.layout(dom.getClientArea(container))
-
-  instantiationService.createInstance(DialogHandlerContribution)
 }
 
 export default function getServiceOverride (container?: HTMLElement): IEditorOverrideServices {

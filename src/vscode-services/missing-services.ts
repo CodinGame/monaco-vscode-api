@@ -1,3 +1,4 @@
+import '../polyfill'
 import { Emitter, Event } from 'vs/base/common/event'
 import { DomEmitter } from 'vs/base/browser/event'
 import { URI } from 'vs/base/common/uri'
@@ -430,6 +431,8 @@ registerSingleton(IHostService, class HostService implements IHostService {
   openWindow = unsupported
 
   async toggleFullScreen (): Promise<void> {
+    // This is a false positive
+    // eslint-disable-next-line @typescript-eslint/strict-boolean-expressions
     if (document.fullscreenEnabled) {
       await document.body.requestFullscreen()
     } else {
