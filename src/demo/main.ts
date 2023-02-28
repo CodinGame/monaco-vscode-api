@@ -17,11 +17,13 @@ import { createConfiguredEditor, getJsonSchemas, onDidChangeJsonSchema } from 'v
 import { debounce } from 'throttle-debounce'
 import * as vscode from 'vscode'
 
-await vscode.window.showInformationMessage('Hello', {
+// eslint-disable-next-line @typescript-eslint/no-floating-promises
+vscode.window.showInformationMessage('Hello', {
   detail: 'Welcome to the monaco-vscode-api demo',
   modal: true
 }).then(async () => {
-  await vscode.window.showInformationMessage('Try to change the settings or the configuration, the changes will be applied to all 3 editors')
+  // eslint-disable-next-line @typescript-eslint/no-floating-promises
+  vscode.window.showInformationMessage('Try to change the settings or the configuration, the changes will be applied to all 3 editors')
 })
 
 createConfiguredEditor(document.getElementById('editor')!, {
