@@ -431,6 +431,8 @@ registerSingleton(IHostService, class HostService implements IHostService {
   openWindow = unsupported
 
   async toggleFullScreen (): Promise<void> {
+    // This is a false positive
+    // eslint-disable-next-line @typescript-eslint/strict-boolean-expressions
     if (document.fullscreenEnabled) {
       await document.body.requestFullscreen()
     } else {
