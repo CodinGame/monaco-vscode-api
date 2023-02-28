@@ -11,5 +11,8 @@
 		"./vscode/**/*",
 		"./rollup/*.ts",
 		"./release.ts"
+	],
+	"exclude": [
+		"./src/demo/**/*",
 	]
 }

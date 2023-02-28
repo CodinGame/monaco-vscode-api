@@ -27,6 +27,7 @@
 	"include": [
 		"**/src/**/*",
 		"./rollup/*.ts",
-		"./release.ts"
+		"./release.ts",
+		"*.ts"
 	]
 }
