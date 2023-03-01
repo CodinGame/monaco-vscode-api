@@ -526,6 +526,7 @@ function customRequire<T extends Record<string, unknown>> (_path: string, rootPa
       exports
     })
   } catch (err) {
+    console.error(err, (err as Error).stack)
     throw new Error(`Unable to run ${resolvedPath} code`)
   }
 
