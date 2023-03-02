@@ -10,8 +10,8 @@ The VSCode api is composed of:
   - If it's an important feature: we let the user implement it as they wish.
   - If it's some advanced features that don't make a lot of sense on Monaco (debug, tests...), it just throws an error when you try to use it.
 
-
 To implement by hands the optional features (file system, workspace folders, file...), you can use the `Services` namespace from `vscode/services`:
+
 ```typescript
 import { Services } from 'vscode/services'
 Services.install({
@@ -37,6 +37,7 @@ This library allows you to use a more convenient way using `StandaloneServices.i
 Also, monaco-editor doesn't provide good type for them, so this library does it.
 
 Example:
+
 ```typescript
 import { StandaloneServices, INotificationService } from 'vscode/services'
 
@@ -49,6 +50,7 @@ StandaloneServices.initialize({
 ```
 
 Additionally, this library exposes 10 modules that include the vscode version of some services (with some glue to make it work with monaco):
+
 - Notifications: `vscode/service-override/notifications`
 - Dialogs: `vscode/service-override/dialogs`
 - Model / Editor: `vscode/service-override/modelEditor`
@@ -62,6 +64,7 @@ Additionally, this library exposes 10 modules that include the vscode version of
 - Token classification: `vscode/service-override/tokenClassification`
 
 Usage:
+
 ```typescript
 import { StandaloneServices } from 'vscode/services'
 import getModelEditorServiceOverride from 'vscode/service-override/modelEditor'
@@ -106,12 +109,14 @@ The editors created using `monaco.editor.create` don't use the configuration fro
 This library exposes functions to create editors binded on the configuration:
 
 before:
+
 ```typescript
 import * as monaco from 'monaco-editor'
 monaco.editor.create(...)
 ```
 
 after:
+
 ```typescript
 import { createConfiguredEditor } from 'vscode/monaco'
 
@@ -143,6 +148,7 @@ vscode.languages.registerCompletionItemProvider(...)
 
 There is a demo that showcases the service-override features. It allows to register contributions with the same syntaxes as in VSCode.
 It includes:
+
 - Languages
 - Language configurations
 - VSCode themes
@@ -157,10 +163,13 @@ It includes:
 It also uses the `getJsonSchemas` function to register them on the monaco json worker and have autocomplete/hover on settings and keybindings.
 
 From CLI run:
+
 ```bash
 cd demo
 npm ci
-npm start
+npm run start
+# OR: for vite debug output
+npm run start:debug
 ```
 
 ### History
@@ -170,17 +179,20 @@ This project was mainly created to make the implementation of [monaco-languagecl
 monaco-languageclient uses [vscode-languageclient](https://www.npmjs.com/package/vscode-languageclient) which was built to run inside a VSCode extension. VSCode extensions communicate with the editor via an [API](https://www.npmjs.com/package/@types/vscode) they can import into their code.
 
 [The VSCode api](https://code.visualstudio.com/api/references/vscode-api) exports:
+
 - Some functions to interact with the IDE ([language feature registrations](https://code.visualstudio.com/api/references/vscode-api#languages), [command execution](https://code.visualstudio.com/api/references/vscode-api#commands)...)
 - A lot of utility classes (Range, Position...)
 
 The first implementations of [monaco-languageclient](https://github.com/TypeFox/monaco-languageclient) were using a fake VSCode api implementation. The vscode-languageclient was hacked so the VSCode<->protocol object converters were mainly bypassed, so the fake VSCode api was receiving [Language Server Protocol](https://microsoft.github.io/language-server-protocol/specifications/lsp/3.17/specification/) objects. Then the objects were transformed using custom transformers into [Monaco](https://www.npmjs.com/package/monaco-editor) objects to communicate with the monaco api.
 
 This approach has some disadvantages:
+
 - There is a lot of code to transform LSP objects into Monaco objects
 - It's hard to follow the updates of VSCode and the language server protocol
 - It doesn't behave exactly the same as in VSCode
 
 With this library, it would be possible to plug vscode-languageclient directly on top of monaco, monaco-languageclient still helps to do so by:
+
 - Adding some tweaks to the VSCode LanguageClient (Removing unsupported features...)
 - Providing a default implementations of the required fallback services (`vscode/services`)
 - Providing some examples on how to build an app using it

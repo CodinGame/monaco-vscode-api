@@ -24,98 +24,99 @@ import themes from './resources/themes/themes.json'
 
 // Workers
 interface WrappedWorker {
-	new(): Worker
+  new(): Worker
 }
 export type WorkerLoader = () => WrappedWorker | Promise<WrappedWorker>
 const workerLoaders: Partial<Record<string, WorkerLoader>> = {
-	editorWorkerService: () => EditorWorker,
-	json: () => JsonWorker
+  editorWorkerService: () => EditorWorker,
+  json: () => JsonWorker
 }
 window.MonacoEnvironment = {
-	getWorker: async function (moduleId, label) {
-		const workerFactory = workerLoaders[label]
-		if (workerFactory != null) {
-			const Worker = await workerFactory()
-			return new Worker()
-		}
-		throw new Error(`Unimplemented worker ${label} (${moduleId})`)
-	}
+  getWorker: async function (moduleId, label) {
+    const workerFactory = workerLoaders[label]
+    if (workerFactory != null) {
+      const Worker = await workerFactory()
+      return new Worker()
+    }
+    throw new Error(`Unimplemented worker ${label} (${moduleId})`)
+  }
 }
 
 // Override services
 StandaloneServices.initialize({
-	...getModelEditorServiceOverride(async (model, options) => {
-		console.log('trying to open a model', model, options)
-		return undefined
-	}),
-	...getNotificationServiceOverride(),
-	...getDialogsServiceOverride(),
-	...getConfigurationServiceOverride(),
-	...getKeybindingsServiceOverride(),
-	...getTextmateServiceOverride(async () => {
-		const response = await fetch(onigFile)
-		return await response.arrayBuffer()
-	}),
-	...getThemeServiceOverride(),
-	...geTokenClassificationServiceOverride(),
-	...getLanguageConfigurationServiceOverride(),
-	...getLanguagesServiceOverride()
+  ...getModelEditorServiceOverride(async (model, options) => {
+    // eslint-disable-next-line no-console
+    console.log('trying to open a model', model, options)
+    return undefined
+  }),
+  ...getNotificationServiceOverride(),
+  ...getDialogsServiceOverride(),
+  ...getConfigurationServiceOverride(),
+  ...getKeybindingsServiceOverride(),
+  ...getTextmateServiceOverride(async () => {
+    const response = await fetch(onigFile)
+    return await response.arrayBuffer()
+  }),
+  ...getThemeServiceOverride(),
+  ...geTokenClassificationServiceOverride(),
+  ...getLanguageConfigurationServiceOverride(),
+  ...getLanguagesServiceOverride()
 })
 
 const loader = {
-	'/themes/dark_plus.json': async () => (await import('./resources/themes/theme-defaults~dark_plus.json?raw')).default,
-	'/themes/light_plus.json': async () => (await import('./resources/themes/theme-defaults~light_plus.json?raw')).default,
-	'/themes/dark_vs.json': async () => (await import('./resources/themes/theme-defaults~dark_vs.json?raw')).default,
-	'/themes/light_vs.json': async () => (await import('./resources/themes/theme-defaults~light_vs.json?raw')).default,
-	'/themes/hc_black.json': async () => (await import('./resources/themes/theme-defaults~hc_black.json?raw')).default,
-	'/themes/hc_light.json': async () => (await import('./resources/themes/theme-defaults~hc_light.json?raw')).default
+  '/themes/dark_plus.json': async () => (await import('./resources/themes/theme-defaults~dark_plus.json?raw')).default,
+  '/themes/light_plus.json': async () => (await import('./resources/themes/theme-defaults~light_plus.json?raw')).default,
+  '/themes/dark_vs.json': async () => (await import('./resources/themes/theme-defaults~dark_vs.json?raw')).default,
+  '/themes/light_vs.json': async () => (await import('./resources/themes/theme-defaults~light_vs.json?raw')).default,
+  '/themes/hc_black.json': async () => (await import('./resources/themes/theme-defaults~hc_black.json?raw')).default,
+  '/themes/hc_light.json': async () => (await import('./resources/themes/theme-defaults~hc_light.json?raw')).default
 } as Partial<Record<string, () => Promise<string>>>
 setDefaultThemes(themes as IThemeExtensionPoint[], async (theme) => loader[theme.path.slice(1)]!())
 
 setLanguages([{
-	id: 'java',
-	extensions: [
-		'.java',
-		'.jav'
-	],
-	aliases: [
-		'Java',
-		'java'
-	],
-	configuration: `./java-configuration.json`
+  id: 'java',
+  extensions: [
+    '.java',
+    '.jav'
+  ],
+  aliases: [
+    'Java',
+    'java'
+  ],
+  configuration: './java-configuration.json'
 }, {
-	id: 'json',
-	aliases: [
-		'JSON',
-		'json'
-	],
-	extensions: [
-		'.json'
-	],
-	mimetypes: [
-		'application/json',
-		'application/manifest+json'
-	],
-	configuration: `./json-configuration.json`
+  id: 'json',
+  aliases: [
+    'JSON',
+    'json'
+  ],
+  extensions: [
+    '.json'
+  ],
+  mimetypes: [
+    'application/json',
+    'application/manifest+json'
+  ],
+  configuration: './json-configuration.json'
 }])
-setLanguageConfiguration(`/java-configuration.json`, async () => {
-	return (await import('./resources/java-language-configuration.json?raw')).default
+setLanguageConfiguration('/java-configuration.json', async () => {
+  return (await import('./resources/java-language-configuration.json?raw')).default
 })
-setLanguageConfiguration(`/json-configuration.json`, async () => {
-	return (await import('./resources/json-language-configuration.json?raw')).default
+setLanguageConfiguration('/json-configuration.json', async () => {
+  return (await import('./resources/json-language-configuration.json?raw')).default
 })
 setGrammars([{
-	language: 'java',
-	scopeName: 'source.java',
-	path: './java-grammar.json'
+  language: 'java',
+  scopeName: 'source.java',
+  path: './java-grammar.json'
 }, {
-	language: 'json',
-	scopeName: 'source.json',
-	path: './json-grammar.json'
+  language: 'json',
+  scopeName: 'source.json',
+  path: './json-grammar.json'
 }], async (grammar) => {
-	switch (grammar.language) {
-		case 'java': return (await import('./resources/java.tmLanguage.json?raw')).default
-		case 'json': return (await import('./resources/JSON.tmLanguage.json?raw')).default
-	}
-	throw new Error('grammar not found')
+  switch (grammar.language) {
+    case 'java': return (await import('./resources/java.tmLanguage.json?raw')).default
+    case 'json': return (await import('./resources/JSON.tmLanguage.json?raw')).default
+  }
+  throw new Error('grammar not found')
 })
