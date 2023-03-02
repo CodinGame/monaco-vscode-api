@@ -3,10 +3,7 @@
     "es6": true,
     "browser": true
   },
-  "parser": "@typescript-eslint/parser",
   "parserOptions": {
-    "ecmaVersion": 2020,
-    "sourceType": "module",
     "project": "./tsconfig.eslint.json"
 },
   "globals": {
@@ -19,10 +16,5 @@
   "ignorePatterns": [
     "vscode/**/*",
     "dist/**/*"
-  ],
-  "plugins": [
-    "@typescript-eslint",
-    "import",
-    "unused-imports"
   ]
 }
