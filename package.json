@@ -175,7 +175,7 @@
     "eslint-plugin-unused-imports": "^2.0.0",
     "js-cleanup": "^1.2.0",
     "recast": "^0.22.0",
-    "rollup": "^3.17.3",
+    "rollup": "^3.18.0",
     "rollup-plugin-dts": "^5.2.0",
     "rollup-plugin-styles": "^4.0.0",
     "semver": "^7.3.8",
@@ -193,7 +193,7 @@
   },
   "overrides": {
     "rollup-plugin-styles": {
-      "rollup": "3.17.3"
+      "rollup": "3.18.0"
     }
   },
   "volta": {
