@@ -15,10 +15,10 @@
     "vite": "~4.1.4"
   },
   "dependencies": {
-    "monaco-editor": "~0.34.1",
+    "monaco-editor": "0.36.1",
     "throttle-debounce": "~5.0.0",
     "vscode": "file:../",
-    "vscode-oniguruma": "~1.6.2"
+    "vscode-oniguruma": "~1.7.0"
   },
   "volta": {
     "node": "18.14.2",
