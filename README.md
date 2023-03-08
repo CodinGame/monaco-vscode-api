@@ -165,7 +165,7 @@ From CLI run:
 ```bash
 cd demo
 npm ci
-npm run start
+npm start
 # OR: for vite debug output
 npm run start:debug
 ```
