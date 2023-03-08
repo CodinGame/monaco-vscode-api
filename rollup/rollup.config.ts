@@ -77,7 +77,6 @@ function getMemberExpressionPath (node: recast.types.namedTypes.MemberExpression
 const input = {
   api: './src/api.ts',
   services: './src/services.ts',
-  messages: './src/service-override/messages.ts',
   notifications: './src/service-override/notifications.ts',
   dialogs: './src/service-override/dialogs.ts',
   modelEditor: './src/service-override/modelEditor.ts',

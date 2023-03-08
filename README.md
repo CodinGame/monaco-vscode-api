@@ -68,7 +68,6 @@ Usage:
 ```typescript
 import { StandaloneServices } from 'vscode/services'
 import getModelEditorServiceOverride from 'vscode/service-override/modelEditor'
-import getMessageServiceOverride from 'vscode/service-override/messages'
 import getConfigurationServiceOverride, { updateUserConfiguration, configurationRegistry } from 'vscode/service-override/configuration'
 
 StandaloneServices.initialize({
@@ -76,7 +75,6 @@ StandaloneServices.initialize({
     // Open a new editor here and return it
     // It will be called when for instance the user ctrl+click on an import
   }),
-  ...getMessageServiceOverride(document.body),
   ...getConfigurationServiceOverride()
 })
 
