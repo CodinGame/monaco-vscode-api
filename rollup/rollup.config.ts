@@ -527,10 +527,11 @@ function customRequire<T extends Record<string, unknown>> (_path: string, rootPa
         }
       },
       setTimeout: () => {},
+      UIEvent: Event,
       exports
     })
   } catch (err) {
-    throw new Error(`Unable to run ${resolvedPath} code`)
+    throw new Error(`Unable to run ${resolvedPath} code: ${(err as Error).message}`)
   }
 
   return exports
