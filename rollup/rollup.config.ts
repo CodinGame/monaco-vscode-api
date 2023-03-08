@@ -170,7 +170,9 @@ export default (args: Record<string, string>): rollup.RollupOptions[] => {
           return undefined
         }
       },
-      styles(),
+      styles({
+        minimize: true
+      }),
       nodeResolve({
         extensions: EXTENSIONS
       }),
