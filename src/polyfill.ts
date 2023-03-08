@@ -1,5 +1,5 @@
 
-import { QuickInputController } from 'vs/base/parts/quickinput/browser/quickInput'
+import { QuickInputController } from 'vs/platform/quickinput/browser/quickInput'
 // @ts-ignore Creating a d.ts is not worth it
 import { VSBuffer as MonacoVSBuffer } from 'monaco-editor/esm/vs/base/common/buffer.js'
 import { VSBuffer as VScodeVSBuffer } from 'vscode/vs/base/common/buffer.js'
@@ -12,8 +12,8 @@ import { ProgressBar as MonacoProgressBar } from 'monaco-editor/esm/vs/base/brow
 import { ProgressBar as VScodeProgressBar } from 'vscode/vs/base/browser/ui/progressbar/progressbar.js'
 import { getSingletonServiceDescriptors } from 'vs/platform/instantiation/common/extensions'
 import { ILabelService } from 'vs/platform/label/common/label'
-import { Event } from 'vs/base/common/event'
-import { IQuickInput, IQuickPick } from 'vs/base/parts/quickinput/common/quickInput'
+import { Emitter, Event } from 'vs/base/common/event'
+import { IQuickInput, IQuickPick } from 'vs/platform/quickinput/common/quickInput'
 // @ts-ignore Creating a d.ts is not worth it
 import { LanguageService as MonacoLanguageService } from 'monaco-editor/esm/vs/editor/common/services/languageService.js'
 import { LanguageService as VScodeLanguageService } from 'vscode/vs/editor/common/services/languageService.js'
@@ -26,8 +26,8 @@ import { Extensions as ConfigurationExtensions, IConfigurationRegistry } from 'v
 import { StandaloneConfigurationService as MonacoStandaloneConfigurationService } from 'monaco-editor/esm/vs/editor/standalone/browser/standaloneServices.js'
 import { StandaloneConfigurationService as VScodeStandaloneConfigurationService } from 'vscode/vs/editor/standalone/browser/standaloneServices.js'
 // @ts-ignore Creating a d.ts is not worth it
-import { TernarySearchTree as MonacoTernarySearchTree } from 'monaco-editor/esm/vs/base/common/map.js'
-import { TernarySearchTree as VScodeTernarySearchTree } from 'vscode/vs/base/common/map.js'
+import { TernarySearchTree as MonacoTernarySearchTree } from 'monaco-editor/esm/vs/base/common/ternarySearchTree.js'
+import { TernarySearchTree as VScodeTernarySearchTree } from 'vscode/vs/base/common/ternarySearchTree.js'
 // @ts-ignore Creating a d.ts is not worth it
 import { Configuration as MonacoConfiguration } from 'monaco-editor/esm/vs/platform/configuration/common/configurationModels.js'
 import { Configuration as VScodeConfiguration } from 'vscode/vs/platform/configuration/common/configurationModels.js'
@@ -50,10 +50,16 @@ import { List as VScodeList } from 'vscode/vs/base/browser/ui/list/listWidget.js
 import { Color as MonacoColor, RGBA as MonacoRGBA } from 'monaco-editor/esm/vs/base/common/color.js'
 import { Color as VScodeColor, RGBA as VScodeRGBA } from 'vscode/vs/base/common/color.js'
 // @ts-ignore Creating a d.ts is not worth it
-import { LogService as MonacoLogService } from 'monaco-editor/esm/vs/platform/log/common/log.js'
-import { LogService as VScodeLogService } from 'vscode/vs/platform/log/common/log.js'
+import { LogService as MonacoLogService } from 'monaco-editor/esm/vs/platform/log/common/logService.js'
+import { LogService as VScodeLogService } from 'vscode/vs/platform/log/common/logService.js'
 // @ts-ignore Creating a d.ts is not worth it
 import { SnippetParser } from 'monaco-editor/esm/vs/editor/contrib/snippet/browser/snippetParser.js'
+// @ts-ignore Creating a d.ts is not worth it
+import { DefaultConfiguration as MonacoDefaultConfiguration } from 'monaco-editor/esm/vs/platform/configuration/common/configurations.js'
+import { DefaultConfiguration as VScodeDefaultConfiguration } from 'vscode/vs/platform/configuration/common/configurations.js'
+// @ts-ignore Creating a d.ts is not worth it
+import { Keybinding as MonacoKeybinding, KeyCodeChord as MonacoKeyCodeChord } from 'monaco-editor/esm/vs/base/common/keybindings.js'
+import { Keybinding as VScodeKeybinding, KeyCodeChord as VScodeKeyCodeChord } from 'vscode/vs/base/common/keybindings.js'
 
 // Monaco build process treeshaking is very aggressive and everything that is not used in monaco is removed
 // Unfortunately, it makes some class not respect anymore the interface they are supposed to implement
@@ -104,6 +110,23 @@ polyfillPrototypeSimple(MonacoLanguageService.prototype, VScodeLanguageService.p
 polyfillPrototypeSimple(MonacoNoOpNotification.prototype, VScodeNoOpNotification.prototype)
 polyfillPrototypeSimple(MonacoThemable.prototype, VScodeThemable.prototype)
 polyfillPrototypeSimple(MonacoProgressBar.prototype, VScodeProgressBar.prototype)
+polyfillPrototypeSimple(MonacoDefaultConfiguration.prototype, VScodeDefaultConfiguration.prototype)
+polyfillPrototypeSimple(MonacoKeybinding.prototype, VScodeKeybinding.prototype)
+polyfillPrototypeSimple(MonacoKeyCodeChord.prototype, VScodeKeyCodeChord.prototype)
+
+Object.defineProperty(MonacoDefaultConfiguration.prototype, '_onDidChangeConfiguration', {
+  get () {
+    if (this.__onDidChangeConfiguration == null) {
+      this.__onDidChangeConfiguration = this._register(new Emitter())
+    }
+    return this.__onDidChangeConfiguration
+  }
+})
+Object.defineProperty(MonacoDefaultConfiguration.prototype, 'onDidChangeConfiguration', {
+  get () {
+    return this._onDidChangeConfiguration.event
+  }
+})
 
 const jsonContributionRegistry = Registry.as<IJSONContributionRegistry>(JsonExtensions.JSONContribution)
 jsonContributionRegistry.getSchemaContributions ??= () => ({

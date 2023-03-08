@@ -21,15 +21,16 @@ function initialize (instantiationService: IInstantiationService) {
   const model = (instantiationService.invokeFunction((accessor) => accessor.get(INotificationService)) as NotificationService).model
 
   // Instantiate Notification components
-  const notificationsCenter = instantiationService.createInstance(NotificationsCenter, container, model)
-  const notificationsToasts = instantiationService.createInstance(NotificationsToasts, container, model)
-  instantiationService.createInstance(NotificationsAlerts, model)
-  instantiationService.createInstance(NotificationsTelemetry)
+  setTimeout(() => {
+    const notificationsCenter = instantiationService.createInstance(NotificationsCenter, container, model)
+    const notificationsToasts = instantiationService.createInstance(NotificationsToasts, container, model)
+    instantiationService.createInstance(NotificationsAlerts, model)
+    instantiationService.createInstance(NotificationsTelemetry)
+    // Register Commands
+    registerNotificationCommands(notificationsCenter, notificationsToasts, model)
 
-  // Register Commands
-  registerNotificationCommands(notificationsCenter, notificationsToasts, model)
-
-  notificationsToasts.layout(dom.getClientArea(container))
+    notificationsToasts.layout(dom.getClientArea(container))
+  })
 }
 
 export default function getServiceOverride (container?: HTMLElement): IEditorOverrideServices {

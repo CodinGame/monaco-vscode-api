@@ -10,7 +10,9 @@ import getLayoutServiceOverride from './layout'
 import { onServicesInitialized } from './tools'
 
 function initialize (instantiationService: IInstantiationService) {
-  instantiationService.createInstance(DialogHandlerContribution)
+  setTimeout(() => {
+    instantiationService.createInstance(DialogHandlerContribution)
+  })
 }
 
 export default function getServiceOverride (container?: HTMLElement): IEditorOverrideServices {

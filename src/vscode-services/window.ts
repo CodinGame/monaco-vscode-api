@@ -7,6 +7,7 @@ import { StandaloneServices } from 'vs/editor/standalone/browser/standaloneServi
 import { IModelService } from 'vs/editor/common/services/model'
 import { DisposableStore } from 'vs/base/common/lifecycle'
 import { ITextModel } from 'vs/editor/common/model'
+import { LogLevel } from 'vs/platform/log/common/log'
 import workspace from './workspace'
 import { DEFAULT_EXTENSION, getExtHostServices } from './extHost'
 import { Services } from '../services'
@@ -51,10 +52,11 @@ const window: typeof vscode.window = {
     const { extHostMessageService } = getExtHostServices()
     return extHostMessageService.showMessage(Services.get().extension ?? DEFAULT_EXTENSION, Severity.Error, message, rest[0], <Array<string | vscode.MessageItem>>rest.slice(1))
   },
-  createOutputChannel (name: string): vscode.OutputChannel {
+  createOutputChannel (name: string, options: string | { log: true } | undefined): vscode.LogOutputChannel {
     const { window } = Services.get()
     const createOutputChannel = window?.createOutputChannel
-    const channel: vscode.OutputChannel | undefined = createOutputChannel?.call(window, name)
+    const channel: vscode.LogOutputChannel | undefined = createOutputChannel?.call(window, name, options)
+
     return channel ?? {
       name,
       append: () => { },
@@ -63,7 +65,14 @@ const window: typeof vscode.window = {
       show: () => { },
       hide: unsupported,
       replace: unsupported,
-      dispose: () => { }
+      dispose: () => { },
+      logLevel: LogLevel.Off,
+      onDidChangeLogLevel: Event.None,
+      trace: unsupported,
+      debug: unsupported,
+      info: unsupported,
+      warn: unsupported,
+      error: unsupported
     }
   },
   withScmProgress<R> (task: (progress: vscode.Progress<number>) => Thenable<R>) {
@@ -89,7 +98,8 @@ const window: typeof vscode.window = {
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   showQuickPick (items: any, options?: vscode.QuickPickOptions, token?: vscode.CancellationToken): any {
     const { extHostQuickOpen } = getExtHostServices()
-    return extHostQuickOpen.showQuickPick(items, options, token)
+    const extension = Services.get().extension ?? DEFAULT_EXTENSION
+    return extHostQuickOpen.showQuickPick(extension, items, options, token)
   },
   createInputBox (): vscode.InputBox {
     const { extHostQuickOpen } = getExtHostServices()

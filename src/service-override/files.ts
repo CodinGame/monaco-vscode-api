@@ -5,15 +5,16 @@ import { SyncDescriptor } from 'vs/platform/instantiation/common/descriptors'
 import { FileService } from 'vs/platform/files/common/fileService'
 import { ILogService } from 'vs/platform/log/common/log'
 import { InMemoryFileSystemProvider } from 'vs/platform/files/common/inMemoryFilesystemProvider'
-import { AbstractExtensionResourceLoaderService, IExtensionResourceLoaderService } from 'vs/workbench/services/extensionResourceLoader/common/extensionResourceLoader'
-import { Event, IDisposable, URI } from 'vs/workbench/workbench.web.main'
+import { AbstractExtensionResourceLoaderService, IExtensionResourceLoaderService } from 'vs/platform/extensionResourceLoader/common/extensionResourceLoader'
+import { Event, URI } from 'vs/workbench/workbench.web.main'
 import { FileSystemProviderCapabilities, FileSystemProviderError, FileSystemProviderErrorCode, FileType, IFileSystemProviderWithFileReadWriteCapability, IStat } from 'vs/platform/files/common/files'
-import { registerSingleton } from 'vs/platform/instantiation/common/extensions'
+import { InstantiationType, registerSingleton } from 'vs/platform/instantiation/common/extensions'
 import { IStorageService } from 'vs/platform/storage/common/storage'
 import { IConfigurationService } from 'vs/platform/configuration/common/configuration'
 import { IEnvironmentService } from 'vs/platform/environment/common/environment'
 import { IProductService } from 'vs/platform/product/common/productService'
 import { Disposable } from 'vs/workbench/api/common/extHostTypes'
+import { IDisposable } from 'vs/base/common/lifecycle'
 import { DEFAULT_EXTENSION } from '../vscode-services/extHost'
 import { unsupported } from '../tools'
 import { IFileService, Services } from '../services'
@@ -36,7 +37,7 @@ class SimpleExtensionResourceLoaderService extends AbstractExtensionResourceLoad
     return result.value.toString()
   }
 }
-registerSingleton(IExtensionResourceLoaderService, SimpleExtensionResourceLoaderService)
+registerSingleton(IExtensionResourceLoaderService, SimpleExtensionResourceLoaderService, InstantiationType.Eager)
 
 class File implements IStat {
   ctime: number
@@ -64,7 +65,7 @@ class ExtensionFileSystemProviderWithFileReadWriteCapability implements IFileSys
     if (file != null) {
       return file
     }
-    throw new FileSystemProviderError('file not found', FileSystemProviderErrorCode.FileNotFound)
+    throw FileSystemProviderError.create('file not found', FileSystemProviderErrorCode.FileNotFound)
   }
 
   async readFile (resource: URI): Promise<Uint8Array> {
@@ -73,7 +74,7 @@ class ExtensionFileSystemProviderWithFileReadWriteCapability implements IFileSys
       return encoder.encode(await file.getContent())
     }
 
-    throw new FileSystemProviderError('file not found', FileSystemProviderErrorCode.FileNotFound)
+    throw FileSystemProviderError.create('file not found', FileSystemProviderErrorCode.FileNotFound)
   }
 
   watch (): IDisposable {

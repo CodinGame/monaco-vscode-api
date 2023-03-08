@@ -15,11 +15,10 @@ import { IWorkbenchEnvironmentService } from 'vs/workbench/services/environment/
 import { IWorkingCopyFileService } from 'vs/workbench/services/workingCopy/common/workingCopyFileService'
 import { IPathService } from 'vs/workbench/services/path/common/pathService'
 import { Schemas } from 'vs/base/common/network'
-import { registerSingleton } from 'vs/platform/instantiation/common/extensions'
+import { InstantiationType, registerSingleton } from 'vs/platform/instantiation/common/extensions'
 import { IProductService } from 'vs/platform/product/common/productService'
 import { ILanguageStatus, ILanguageStatusService } from 'vs/workbench/services/languageStatus/common/languageStatusService'
 import { ITextModel } from 'vs/editor/common/model'
-import { IDisposable } from 'vs/workbench/workbench.web.main'
 import { LanguageFeatureRegistry } from 'vs/editor/common/languageFeatureRegistry'
 import { compare } from 'vs/base/common/strings'
 import { IHostService } from 'vs/workbench/services/host/browser/host'
@@ -27,7 +26,6 @@ import { ILifecycleService, LifecyclePhase, StartupKind } from 'vs/workbench/ser
 import { ILanguageDetectionService } from 'vs/workbench/services/languageDetection/common/languageDetectionWorkerService'
 import { IExtensionService, NullExtensionService } from 'vs/workbench/services/extensions/common/extensions'
 import { IKeyboardLayoutService } from 'vs/platform/keyboardLayout/common/keyboardLayout'
-import { MacLinuxFallbackKeyboardMapper } from 'vs/workbench/services/keybinding/common/macLinuxFallbackKeyboardMapper'
 import { OS } from 'vs/base/common/platform'
 import { IEnvironmentService } from 'vs/platform/environment/common/environment'
 import { IUserDataInitializationService } from 'vs/workbench/services/userData/browser/userDataInit'
@@ -38,14 +36,19 @@ import { IPreferencesService } from 'vs/workbench/services/preferences/common/pr
 import { IContextKeyService } from 'vs/platform/contextkey/common/contextkey'
 import { StandaloneServices } from 'vs/editor/standalone/browser/standaloneServices'
 import { ICodeEditorService } from 'vs/editor/browser/services/codeEditorService'
-import { ITextMateService } from 'vs/workbench/services/textMate/browser/textMate'
 import { IUserDataProfile, IUserDataProfilesService } from 'vs/platform/userDataProfile/common/userDataProfile'
 import { IPolicyService } from 'vs/platform/policy/common/policy'
 import { IUserDataProfileService } from 'vs/workbench/services/userDataProfile/common/userDataProfile'
 import { UserDataProfileService } from 'vs/workbench/services/userDataProfile/common/userDataProfileService'
 import { ISnippetsService } from 'vs/workbench/contrib/snippets/browser/snippets'
+import { ILoggerService, NullLoggerService } from 'vs/platform/log/common/log'
+import { IDisposable } from 'vs/base/common/lifecycle'
+import { FallbackKeyboardMapper } from 'vs/workbench/services/keybinding/common/fallbackKeyboardMapper'
+import { ITextMateTokenizationService } from 'vs/workbench/services/textMate/browser/textMateTokenizationFeature'
 import { Services } from '../services'
 import { unsupported } from '../tools'
+
+registerSingleton(ILoggerService, NullLoggerService, InstantiationType.Eager)
 
 registerSingleton(IEditorService, class EditorService implements IEditorService {
   readonly _serviceBrand = undefined
@@ -76,7 +79,7 @@ registerSingleton(IEditorService, class EditorService implements IEditorService 
   saveAll = async () => false
   revert = async () => false
   revertAll = async () => false
-})
+}, InstantiationType.Eager)
 
 registerSingleton(IPaneCompositePartService, class PaneCompositePartService implements IPaneCompositePartService {
   readonly _serviceBrand = undefined
@@ -92,7 +95,7 @@ registerSingleton(IPaneCompositePartService, class PaneCompositePartService impl
   hideActivePaneComposite = () => {}
   getLastActivePaneCompositeId = unsupported
   showActivity = unsupported
-})
+}, InstantiationType.Eager)
 
 registerSingleton(IUriIdentityService, class UriIdentityService implements IUriIdentityService {
   readonly _serviceBrand = undefined
@@ -100,7 +103,7 @@ registerSingleton(IUriIdentityService, class UriIdentityService implements IUriI
   asCanonicalUri (uri: URI) {
     return uri
   }
-})
+}, InstantiationType.Eager)
 
 const onDidSave = new Emitter<ITextFileSaveEvent>()
 class TextFileEditorModelManager implements ITextFileEditorModelManager {
@@ -145,7 +148,7 @@ registerSingleton(ITextFileService, class TextFileService implements ITextFileSe
   dispose () {
     // ignore
   }
-})
+}, InstantiationType.Eager)
 
 registerSingleton(IFileService, class FileService implements IFileService {
   readonly _serviceBrand = undefined
@@ -186,7 +189,7 @@ registerSingleton(IFileService, class FileService implements IFileService {
   dispose () {
     // ignore
   }
-})
+}, InstantiationType.Eager)
 
 class EmptyEditorGroup implements IEditorGroup {
   onDidModelChange = Event.None
@@ -280,9 +283,11 @@ registerSingleton(IEditorGroupsService, class EditorGroupsService implements IEd
   get partOptions () { return unsupported() }
   onDidChangeEditorPartOptions = Event.None
   enforcePartOptions = unsupported
-})
+}, InstantiationType.Eager)
 
 class WorkbenchEnvironmentService implements IBrowserWorkbenchEnvironmentService {
+  get windowLogsPath () { return unsupported() }
+  get extHostTelemetryLogFile () { return unsupported() }
   readonly _serviceBrand = undefined
   get logFile () { return unsupported() }
   get extHostLogsPath () { return unsupported() }
@@ -315,9 +320,9 @@ class WorkbenchEnvironmentService implements IBrowserWorkbenchEnvironmentService
   get stateResource () { return unsupported() }
   get editSessionsLogResource () { return unsupported() }
 }
-registerSingleton(IWorkbenchEnvironmentService, WorkbenchEnvironmentService)
-registerSingleton(IEnvironmentService, WorkbenchEnvironmentService)
-registerSingleton(IBrowserWorkbenchEnvironmentService, WorkbenchEnvironmentService)
+registerSingleton(IWorkbenchEnvironmentService, WorkbenchEnvironmentService, InstantiationType.Eager)
+registerSingleton(IEnvironmentService, WorkbenchEnvironmentService, InstantiationType.Eager)
+registerSingleton(IBrowserWorkbenchEnvironmentService, WorkbenchEnvironmentService, InstantiationType.Eager)
 
 registerSingleton(IWorkingCopyFileService, class WorkingCopyFileService implements IWorkingCopyFileService {
   readonly _serviceBrand = undefined
@@ -335,7 +340,7 @@ registerSingleton(IWorkingCopyFileService, class WorkingCopyFileService implemen
   delete = unsupported
   registerWorkingCopyProvider = unsupported
   getDirty = unsupported
-})
+}, InstantiationType.Eager)
 
 registerSingleton(IPathService, class PathService implements IPathService {
   readonly _serviceBrand = undefined
@@ -348,7 +353,7 @@ registerSingleton(IPathService, class PathService implements IPathService {
   userHome = unsupported
   hasValidBasename = unsupported
   resolvedUserHome = undefined
-})
+}, InstantiationType.Eager)
 
 registerSingleton(IProgressService, class ProgressService implements IProgressService {
   readonly _serviceBrand = undefined
@@ -359,7 +364,7 @@ registerSingleton(IProgressService, class ProgressService implements IProgressSe
     }
     return task({ report: () => { } })
   }
-})
+}, InstantiationType.Eager)
 
 registerSingleton(IProductService, class ProductService implements IProductService {
   readonly _serviceBrand = undefined
@@ -374,7 +379,7 @@ registerSingleton(IProductService, class ProductService implements IProductServi
   licenseName = 'MIT'
   licenseUrl = 'https://github.com/microsoft/vscode/blob/main/LICENSE.txt'
   serverApplicationName = 'code-server-oss'
-})
+}, InstantiationType.Eager)
 
 registerSingleton(ILanguageStatusService, class LanguageStatusServiceImpl implements ILanguageStatusService {
   declare _serviceBrand: undefined
@@ -400,7 +405,7 @@ registerSingleton(ILanguageStatusService, class LanguageStatusServiceImpl implem
       return res
     })
   }
-})
+}, InstantiationType.Eager)
 
 const focusTracker = trackFocus(window)
 const onVisibilityChange = new DomEmitter(window.document, 'visibilitychange')
@@ -443,7 +448,7 @@ registerSingleton(IHostService, class HostService implements IHostService {
   restart = unsupported
   reload = unsupported
   close = unsupported
-})
+}, InstantiationType.Eager)
 
 registerSingleton(ILifecycleService, class LifecycleService implements ILifecycleService {
   _serviceBrand: undefined
@@ -460,7 +465,7 @@ registerSingleton(ILifecycleService, class LifecycleService implements ILifecycl
   onWillShutdown = Event.None
   onDidShutdown = Event.None
   shutdown = unsupported
-})
+}, InstantiationType.Eager)
 
 registerSingleton(ILanguageDetectionService, class LanguageDetectionService implements ILanguageDetectionService {
   _serviceBrand: undefined
@@ -471,9 +476,9 @@ registerSingleton(ILanguageDetectionService, class LanguageDetectionService impl
   async detectLanguage (): Promise<string | undefined> {
     return undefined
   }
-})
+}, InstantiationType.Eager)
 
-registerSingleton(IExtensionService, NullExtensionService)
+registerSingleton(IExtensionService, NullExtensionService, InstantiationType.Eager)
 
 registerSingleton(IKeyboardLayoutService, class KeyboardLayoutService implements IKeyboardLayoutService {
   _serviceBrand: undefined
@@ -481,9 +486,9 @@ registerSingleton(IKeyboardLayoutService, class KeyboardLayoutService implements
   getRawKeyboardMapping = () => null
   getCurrentKeyboardLayout = () => null
   getAllKeyboardLayouts = () => []
-  getKeyboardMapper = () => new MacLinuxFallbackKeyboardMapper(OS)
+  getKeyboardMapper = () => new FallbackKeyboardMapper(false, OS)
   validateCurrentKeyboardMapping = () => {}
-})
+}, InstantiationType.Eager)
 
 registerSingleton(IUserDataInitializationService, class NullUserDataInitializationService implements IUserDataInitializationService {
   _serviceBrand: undefined
@@ -495,9 +500,9 @@ registerSingleton(IUserDataInitializationService, class NullUserDataInitializati
   async initializeRequiredResources (): Promise<void> {}
   async initializeInstalledExtensions (): Promise<void> {}
   async initializeOtherResources (): Promise<void> {}
-})
+}, InstantiationType.Eager)
 
-registerSingleton(IHostColorSchemeService, BrowserHostColorSchemeService)
+registerSingleton(IHostColorSchemeService, BrowserHostColorSchemeService, InstantiationType.Eager)
 
 registerSingleton(IPreferencesService, class PreferencesService implements IPreferencesService {
   _serviceBrand: undefined
@@ -519,14 +524,14 @@ registerSingleton(IPreferencesService, class PreferencesService implements IPref
   createSplitJsonEditorInput = unsupported
   openApplicationSettings = unsupported
   openLanguageSpecificSettings = unsupported
-})
+}, InstantiationType.Eager)
 
-registerSingleton(ITextMateService, class NullTextMateService implements ITextMateService {
+registerSingleton(ITextMateTokenizationService, class NullTextMateService implements ITextMateTokenizationService {
   _serviceBrand: undefined
   onDidEncounterLanguage = Event.None
   createGrammar = unsupported
   startDebugMode = unsupported
-})
+}, InstantiationType.Eager)
 
 const profile: IUserDataProfile = {
   id: 'default',
@@ -538,11 +543,18 @@ const profile: IUserDataProfile = {
   keybindingsResource: URI.from({ scheme: 'user', path: '/keybindings.json' }),
   get tasksResource () { return unsupported() },
   get snippetsHome () { return URI.from({ scheme: 'user', path: '/snippets' }) },
-  extensionsResource: undefined
+  get extensionsResource () { return unsupported() }
 }
 
 registerSingleton(IUserDataProfilesService, class UserDataProfilesService implements IUserDataProfilesService {
   _serviceBrand: undefined
+  onDidResetWorkspaces = Event.None
+  isEnabled = () => false
+  createNamedProfile = unsupported
+  createTransientProfile = unsupported
+  resetWorkspaces = unsupported
+  cleanUp = unsupported
+  cleanUpTransientProfiles = unsupported
   get profilesHome () { return unsupported() }
   defaultProfile = profile
   onDidChangeProfiles = Event.None
@@ -552,21 +564,22 @@ registerSingleton(IUserDataProfilesService, class UserDataProfilesService implem
   setProfileForWorkspace = unsupported
   getProfile = () => profile
   removeProfile = unsupported
-})
+}, InstantiationType.Eager)
 class InjectedUserDataProfileService extends UserDataProfileService {
   constructor (@IUserDataProfilesService userDataProfilesService: IUserDataProfilesService) {
     super(profile, userDataProfilesService)
   }
 }
-registerSingleton(IUserDataProfileService, InjectedUserDataProfileService)
+registerSingleton(IUserDataProfileService, InjectedUserDataProfileService, InstantiationType.Eager)
 
 registerSingleton(IPolicyService, class PolicyService implements IPolicyService {
   _serviceBrand: undefined
+  updatePolicyDefinitions = unsupported
   onDidChange = Event.None
   registerPolicyDefinitions = unsupported
   getPolicyValue = () => undefined
   serialize = () => undefined
-})
+}, InstantiationType.Eager)
 
 registerSingleton(ISnippetsService, class SnippetsService implements ISnippetsService {
   _serviceBrand: undefined
@@ -576,4 +589,4 @@ registerSingleton(ISnippetsService, class SnippetsService implements ISnippetsSe
   updateUsageTimestamp = unsupported
   getSnippets = async () => []
   getSnippetsSync = unsupported
-})
+}, InstantiationType.Eager)

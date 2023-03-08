@@ -1,6 +1,6 @@
 import { ExtHostCommands } from 'vs/workbench/api/common/extHostCommands'
 import { IExtHostRpcService } from 'vs/workbench/api/common/extHostRpcService'
-import { ConsoleMainLogger, ILogService, LogLevel, LogService } from 'vs/platform/log/common/log'
+import { ILoggerService, ILogService, LogLevel } from 'vs/platform/log/common/log'
 import { MainThreadCommands } from 'vs/workbench/api/browser/mainThreadCommands'
 import { IExtHostContext } from 'vs/workbench/services/extensions/common/extHostCustomers'
 import { ExtensionHostKind, IExtensionService } from 'vs/workbench/services/extensions/common/extensions'
@@ -79,8 +79,7 @@ import { ExtHostConfigProvider } from 'vs/workbench/api/common/extHostConfigurat
 import { IExtHostInitDataService } from 'vs/workbench/api/common/extHostInitDataService'
 import { MainThreadConfiguration } from 'vs/workbench/api/browser/mainThreadConfiguration'
 import { IWorkspaceContextService } from 'vs/platform/workspace/common/workspace'
-import { UIKind } from 'vs/workbench/services/extensions/common/extensionHostProtocol'
-import { IInstantiationService } from 'vs/platform/instantiation/common/instantiation'
+import { IEnvironment, UIKind } from 'vs/workbench/services/extensions/common/extensionHostProtocol'
 import { unsupported } from '../tools'
 import { Services } from '../services'
 
@@ -97,6 +96,44 @@ export const DEFAULT_EXTENSION: IExtensionDescription = {
     vscode: VSCODE_VERSION
   },
   targetPlatform: TargetPlatform.WEB
+}
+
+const environment: IEnvironment = {
+  isExtensionDevelopmentDebug: false,
+  appName: 'Monaco',
+  appHost: 'web',
+  // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
+  appLanguage: window.navigator.language ?? 'en-US',
+  extensionTelemetryLogResource: URI.from({ scheme: 'user', path: '/extensionTelemetryLogResource.log' }),
+  isExtensionTelemetryLoggingOnly: false,
+  get appUriScheme () { return unsupported() },
+  get globalStorageHome () { return unsupported() },
+  get workspaceStorageHome () { return unsupported() }
+}
+export const initData: IExtHostInitDataService = {
+  _serviceBrand: undefined,
+  version: '1.0.0',
+  parentPid: 0,
+  environment,
+  get allExtensions () { return [Services.get().extension ?? DEFAULT_EXTENSION] },
+  get myExtensions () { return [(Services.get().extension ?? DEFAULT_EXTENSION).identifier] },
+  consoleForward: {
+    includeStack: false,
+    logNative: false
+  },
+  get telemetryInfo () { return unsupported() },
+  logLevel: LogLevel.Trace,
+  get logsLocation () { return unsupported() },
+  get logFile () { return unsupported() },
+  autoStart: false,
+  remote: {
+    isRemote: false,
+    authority: undefined,
+    connectionData: null
+  },
+  uiKind: UIKind.Web,
+  loggers: [],
+  logName: 'browser'
 }
 
 class SimpleMessagePassingProtocol implements IMessagePassingProtocol {
@@ -186,7 +223,8 @@ function createExtHostServices () {
   const configurationService = StandaloneServices.get(IConfigurationService)
   const workspaceContextService = StandaloneServices.get(IWorkspaceContextService)
   const extensionService = StandaloneServices.get(IExtensionService)
-  const instantiationService = StandaloneServices.get(IInstantiationService)
+  const loggerService = StandaloneServices.get(ILoggerService)
+  const logService = StandaloneServices.get(ILogService)
 
   const imessagePassingProtocol = new SimpleMessagePassingProtocol()
 
@@ -215,65 +253,40 @@ function createExtHostServices () {
     }
   }
 
-  const initData: IExtHostInitDataService = {
-    _serviceBrand: undefined,
-    version: '1.0.0',
-    parentPid: 0,
-    get environment () { return unsupported() },
-    allExtensions: [Services.get().extension ?? DEFAULT_EXTENSION],
-    myExtensions: [(Services.get().extension ?? DEFAULT_EXTENSION).identifier],
-    consoleForward: {
-      includeStack: false,
-      logNative: false
-    },
-    get telemetryInfo () { return unsupported() },
-    logLevel: LogLevel.Trace,
-    get logsLocation () { return unsupported() },
-    get logFile () { return unsupported() },
-    autoStart: false,
-    remote: {
-      isRemote: false,
-      authority: undefined,
-      connectionData: null
-    },
-    uiKind: UIKind.Web
-  }
-
-  const extHostLogService = new LogService(new ConsoleMainLogger())
-  const extHostApiDeprecationService = new ExtHostApiDeprecationService(mainContext, extHostLogService)
-  const extHostMessageService = new ExtHostMessageService(mainContext, extHostLogService)
+  const extHostApiDeprecationService = new ExtHostApiDeprecationService(mainContext, logService)
+  const extHostMessageService = new ExtHostMessageService(mainContext, logService)
   const uriTransformerService = new URITransformerService(null)
 
   // They must be defined BEFORE ExtHostCommands
   rpcProtocol.set(MainContext.MainThreadWindow, new MainThreadWindow(mainContext, hostService, openerService))
   rpcProtocol.set(MainContext.MainThreadCommands, new MainThreadCommands(mainContext, commandsService, extensionService))
 
-  const extHostCommands = rpcProtocol.set(ExtHostContext.ExtHostCommands, new ExtHostCommands(mainContext, extHostLogService))
-  const extHostDocumentsAndEditors = rpcProtocol.set(ExtHostContext.ExtHostDocumentsAndEditors, new ExtHostDocumentsAndEditors(mainContext, extHostLogService))
+  const extHostTelemetry = rpcProtocol.set(ExtHostContext.ExtHostTelemetry, new ExtHostTelemetry(initData, loggerService))
+  const extHostCommands = rpcProtocol.set(ExtHostContext.ExtHostCommands, new ExtHostCommands(mainContext, logService, extHostTelemetry))
+  const extHostDocumentsAndEditors = rpcProtocol.set(ExtHostContext.ExtHostDocumentsAndEditors, new ExtHostDocumentsAndEditors(mainContext, logService))
   const extHostDocuments = rpcProtocol.set(ExtHostContext.ExtHostDocuments, new ExtHostDocuments(mainContext, extHostDocumentsAndEditors))
   const extHostLanguages = rpcProtocol.set(ExtHostContext.ExtHostLanguages, new ExtHostLanguages(mainContext, extHostDocuments, extHostCommands.converter, uriTransformerService))
   const extHostWindow = rpcProtocol.set(ExtHostContext.ExtHostWindow, new ExtHostWindow(mainContext))
   const extHostQuickOpen = rpcProtocol.set(ExtHostContext.ExtHostQuickOpen, createExtHostQuickOpen(mainContext, <IExtHostWorkspaceProvider><unknown>null, extHostCommands))
-  const extHostDiagnostics = rpcProtocol.set(ExtHostContext.ExtHostDiagnostics, new ExtHostDiagnostics(mainContext, extHostLogService, extHostFileSystemInfo))
+  const extHostDiagnostics = rpcProtocol.set(ExtHostContext.ExtHostDiagnostics, new ExtHostDiagnostics(mainContext, logService, extHostFileSystemInfo, extHostDocumentsAndEditors))
   const extHostProgress = rpcProtocol.set(ExtHostContext.ExtHostProgress, new ExtHostProgress(rpcProtocol.getProxy(MainContext.MainThreadProgress)))
-  const extHostDocumentContentProviders = rpcProtocol.set(ExtHostContext.ExtHostDocumentContentProviders, new ExtHostDocumentContentProvider(mainContext, extHostDocumentsAndEditors, extHostLogService))
+  const extHostDocumentContentProviders = rpcProtocol.set(ExtHostContext.ExtHostDocumentContentProviders, new ExtHostDocumentContentProvider(mainContext, extHostDocumentsAndEditors, logService))
   const extHostEditors = rpcProtocol.set(ExtHostContext.ExtHostEditors, new ExtHostEditors(mainContext, extHostDocumentsAndEditors))
   const extHostClipboard = new ExtHostClipboard(mainContext)
-  const extHostLanguageFeatures = rpcProtocol.set(ExtHostContext.ExtHostLanguageFeatures, new ExtHostLanguageFeatures(rpcProtocol, uriTransformerService, extHostDocuments, extHostCommands, extHostDiagnostics, extHostLogService, extHostApiDeprecationService))
-  const extHostWorkspace = rpcProtocol.set(ExtHostContext.ExtHostWorkspace, new ExtHostWorkspace(mainContext, initData, extHostFileSystemInfo, extHostLogService))
-  const extHostConfiguration = rpcProtocol.set(ExtHostContext.ExtHostConfiguration, new SyncExtHostConfiguration(mainContext, extHostWorkspace, extHostLogService))
+  const extHostLanguageFeatures = rpcProtocol.set(ExtHostContext.ExtHostLanguageFeatures, new ExtHostLanguageFeatures(rpcProtocol, uriTransformerService, extHostDocuments, extHostCommands, extHostDiagnostics, logService, extHostApiDeprecationService, extHostTelemetry))
+  const extHostWorkspace = rpcProtocol.set(ExtHostContext.ExtHostWorkspace, new ExtHostWorkspace(mainContext, initData, extHostFileSystemInfo, logService, uriTransformerService))
+  const extHostConfiguration = rpcProtocol.set(ExtHostContext.ExtHostConfiguration, new SyncExtHostConfiguration(mainContext, extHostWorkspace, logService))
 
-  rpcProtocol.set(ExtHostContext.ExtHostTelemetry, new ExtHostTelemetry())
   rpcProtocol.set(MainContext.MainThreadMessageService, new MainThreadMessageServiceWithoutSource(mainContext, notificationService, commandsService, dialogService))
   rpcProtocol.set(MainContext.MainThreadDiagnostics, new MainThreadDiagnostics(mainContext, markerService, uriIdentityService))
   rpcProtocol.set(MainContext.MainThreadQuickOpen, new MainThreadQuickOpen(mainContext, quickInputService))
-  rpcProtocol.set(MainContext.MainThreadTelemetry, new MainThreadTelemetry(mainContext, telemetryService, workbenchEnvironmentService, productService))
+  rpcProtocol.set(MainContext.MainThreadTelemetry, new MainThreadTelemetry(mainContext, telemetryService, configurationService, workbenchEnvironmentService, productService))
   rpcProtocol.set(MainContext.MainThreadProgress, new MainThreadProgress(mainContext, progressService, commandsService))
   rpcProtocol.set(MainContext.MainThreadDocumentContentProviders, new MainThreadDocumentContentProviders(mainContext, textModelService, languageService, modelService, editorWorkerService))
-  rpcProtocol.set(MainContext.MainThreadBulkEdits, new MainThreadBulkEdits(mainContext, bulkEditService, extHostLogService))
+  rpcProtocol.set(MainContext.MainThreadBulkEdits, new MainThreadBulkEdits(mainContext, bulkEditService, logService, uriIdentityService))
   rpcProtocol.set(MainContext.MainThreadLanguages, new MainThreadLanguages(mainContext, languageService, modelService, textModelService, languageStatusService))
   rpcProtocol.set(MainContext.MainThreadClipboard, new MainThreadClipboard(mainContext, clipboardService))
-  rpcProtocol.set(MainContext.MainThreadLanguageFeatures, new MainThreadLanguageFeatures(mainContext, languageService, languageConfigurationService, languageFeaturesService))
+  rpcProtocol.set(MainContext.MainThreadLanguageFeatures, new MainThreadLanguageFeatures(mainContext, languageService, languageConfigurationService, languageFeaturesService, uriIdentityService))
   rpcProtocol.set(MainContext.MainThreadConfiguration, new MainThreadConfiguration(mainContext, workspaceContextService, configurationService, workbenchEnvironmentService))
 
   // eslint-disable-next-line no-new
@@ -292,13 +305,13 @@ function createExtHostServices () {
     uriIdentityService,
     clipboardService,
     pathService,
-    instantiationService
+    configurationService
   )
 
   const extHostBulkEdits = new ExtHostBulkEdits(mainContext, extHostDocumentsAndEditors)
 
   return {
-    extHostLogService,
+    extHostLogService: logService,
     extHostApiDeprecationService,
     extHostMessageService,
     extHostDocumentsAndEditors,
@@ -315,7 +328,8 @@ function createExtHostServices () {
     extHostClipboard,
     extHostLanguageFeatures,
     extHostWorkspace,
-    extHostConfiguration
+    extHostConfiguration,
+    extHostTelemetry
   }
 }
 

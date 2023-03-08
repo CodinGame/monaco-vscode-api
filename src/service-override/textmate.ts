@@ -1,30 +1,29 @@
 import '../polyfill'
 import '../vscode-services/missing-services'
 import { IEditorOverrideServices } from 'vs/editor/standalone/browser/standaloneServices'
-import { ITextMateService } from 'vs/workbench/services/textMate/browser/textMate'
+import { ITextMateTokenizationService } from 'vs/workbench/services/textMate/browser/textMateTokenizationFeature'
 import { ExtensionMessageCollector } from 'vs/workbench/services/extensions/common/extensionsRegistry'
 import { ITMSyntaxExtensionPoint } from 'vs/workbench/services/textMate/common/TMGrammars'
 import { joinPath } from 'vs/base/common/resources'
-import { AbstractTextMateService } from 'vs/workbench/services/textMate/browser/abstractTextMateService'
 import { IInstantiationService } from 'vs/platform/instantiation/common/instantiation'
 import { SyncDescriptor } from 'vs/platform/instantiation/common/descriptors'
 import { IExtensionDescription } from 'vs/platform/extensions/common/extensions'
+import { TextMateTokenizationFeature } from 'vs/workbench/services/textMate/browser/textMateTokenizationFeatureImpl'
 import getFileServiceOverride, { registerExtensionFile } from './files'
 import { consoleExtensionMessageHandler, getExtensionPoint, onServicesInitialized } from './tools'
+import { createInjectedClass } from '../tools/injection'
 import { Services } from '../services'
 import { DEFAULT_EXTENSION } from '../vscode-services/extHost'
-import { createInjectedClass } from '../tools/injection'
 
-class TextMateService extends createInjectedClass(AbstractTextMateService) {
+class _TextMateTokenizationFeature extends createInjectedClass(TextMateTokenizationFeature) {
   constructor (
-    private loadVSCodeOnigurumWASM: () => Promise<Response | ArrayBuffer>,
+    loadVSCodeOnigurumaWASM: () => Promise<Response | ArrayBuffer>,
     @IInstantiationService instantiationService: IInstantiationService
   ) {
     super(instantiationService)
-  }
 
-  protected _loadVSCodeOnigurumWASM (): Promise<Response | ArrayBuffer> {
-    return this.loadVSCodeOnigurumWASM()
+    // eslint-disable-next-line dot-notation
+    this['_loadVSCodeOnigurumaWASM'] = loadVSCodeOnigurumaWASM
   }
 }
 
@@ -45,18 +44,18 @@ export function setGrammars<T extends PartialITMSyntaxExtensionPoint> (grammars:
 
 function initialize (instantiationService: IInstantiationService) {
   // Force load the service
-  instantiationService.invokeFunction((accessor) => accessor.get(ITextMateService))
+  instantiationService.invokeFunction((accessor) => accessor.get(ITextMateTokenizationService))
 }
 
 export default function getServiceOverride (getOnigLib: () => Promise<Response | ArrayBuffer>): IEditorOverrideServices {
   onServicesInitialized(initialize)
   return {
     ...getFileServiceOverride(),
-    [ITextMateService.toString()]: new SyncDescriptor(TextMateService, [getOnigLib])
+    [ITextMateTokenizationService.toString()]: new SyncDescriptor(_TextMateTokenizationFeature, [getOnigLib])
   }
 }
 
 export {
-  ITextMateService,
+  ITextMateTokenizationService,
   PartialITMSyntaxExtensionPoint as ITMSyntaxExtensionPoint
 }

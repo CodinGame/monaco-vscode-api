@@ -16,7 +16,7 @@ export {
 }
 
 export interface Window {
-  createOutputChannel?(name: string): vscode.OutputChannel
+  createOutputChannel?(name: string, options: string | { log: true } | undefined): vscode.LogOutputChannel
   withProgress?: IProgressService['withProgress']
 }
 
