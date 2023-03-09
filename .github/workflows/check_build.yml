@@ -7,6 +7,15 @@ on:
 jobs:
   check:
     name: Check build
+
+    permissions:
+      pages: write      # to deploy to Pages
+      id-token: write   # to verify the deployment originates from an appropriate source
+
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+
     runs-on: ubuntu-latest
 
     steps:
@@ -20,3 +29,11 @@ jobs:
       run: npm ci
     - name: Build
       run: npm run build
+    - name: Build demo
+      working-directory: ./demo
+      run: npm ci && npm run build
+    - name: lol
+      run: echo "${{ steps.deployment.outputs.page_url }}"
+    - name: Deploy docs to GitHub Pages
+      id: deployment
+      uses: actions/deploy-pages@v1

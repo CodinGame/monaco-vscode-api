@@ -5,5 +5,8 @@ export default defineConfig({
     fs: {
       allow: ['../'] // allow to load codicon.tss from monaco-editor in the parent folder
     }
+  },
+  build: {
+    minify: false
   }
 })
