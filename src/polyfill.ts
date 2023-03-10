@@ -60,6 +60,9 @@ import { DefaultConfiguration as VScodeDefaultConfiguration } from 'vscode/vs/pl
 // @ts-ignore Creating a d.ts is not worth it
 import { Keybinding as MonacoKeybinding, KeyCodeChord as MonacoKeyCodeChord } from 'monaco-editor/esm/vs/base/common/keybindings.js'
 import { Keybinding as VScodeKeybinding, KeyCodeChord as VScodeKeyCodeChord } from 'vscode/vs/base/common/keybindings.js'
+// @ts-ignore Creating a d.ts is not worth it
+import { DisposableMap as MonacoDisposableMap } from 'monaco-editor/esm/vs/base/common/lifecycle.js'
+import { DisposableMap as VScodeDisposableMap } from 'vscode/vs/base/common/lifecycle.js'
 
 // Monaco build process treeshaking is very aggressive and everything that is not used in monaco is removed
 // Unfortunately, it makes some class not respect anymore the interface they are supposed to implement
@@ -113,6 +116,7 @@ polyfillPrototypeSimple(MonacoProgressBar.prototype, VScodeProgressBar.prototype
 polyfillPrototypeSimple(MonacoDefaultConfiguration.prototype, VScodeDefaultConfiguration.prototype)
 polyfillPrototypeSimple(MonacoKeybinding.prototype, VScodeKeybinding.prototype)
 polyfillPrototypeSimple(MonacoKeyCodeChord.prototype, VScodeKeyCodeChord.prototype)
+polyfillPrototypeSimple(MonacoDisposableMap.prototype, VScodeDisposableMap.prototype)
 
 Object.defineProperty(MonacoDefaultConfiguration.prototype, '_onDidChangeConfiguration', {
   get () {
