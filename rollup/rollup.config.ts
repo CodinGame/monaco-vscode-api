@@ -569,15 +569,6 @@ function importMonaco (importee: string) {
 
   const monacoImportPath = path.relative(NODE_MODULES_DIR, path.resolve(MONACO_EDITOR_DIR, `esm/${importee}.js`))
 
-  // hack for marked (see ESM-uncomment-begin comments)
-  if (importee === 'vs/base/common/marked/marked') {
-    return (`
-import { marked as _marked } from '${monacoImportPath}'
-
-export const marked = _marked.marked
-    `)
-  }
-
   const monacoApiExports = new Map<string, string>()
   for (const exportKey in monacoExports) {
     for (const extractor of monacoApiExtractors) {
