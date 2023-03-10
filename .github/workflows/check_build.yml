@@ -20,3 +20,9 @@ jobs:
       run: npm ci
     - name: Build
       run: npm run build
+    - name: Install demo dependencies
+      working-directory: ./demo
+      run: npm ci
+    - name: Build demo
+      working-directory: ./demo
+      run: npm run build
