@@ -95,6 +95,7 @@ export { IThemeService } from 'vs/platform/theme/common/themeService'
 export { ISnippetsService } from 'vs/workbench/contrib/snippets/browser/snippets'
 export { IWorkspaceContextService } from 'vs/platform/workspace/common/workspace'
 export { IStorageService } from 'vs/platform/storage/common/storage'
+export { IAudioCueService } from 'vs/platform/audioCues/browser/audioCueService'
 
 export {
   NotificationsFilter,

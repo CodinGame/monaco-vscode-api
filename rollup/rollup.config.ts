@@ -90,10 +90,11 @@ const input = {
   tokenClassification: './src/service-override/tokenClassification.ts',
   snippets: './src/service-override/snippets.ts',
   languages: './src/service-override/languages.ts',
+  audioCue: './src/service-override/audioCue.ts',
   monaco: './src/monaco'
 }
 
-const externals = Object.keys({ ...pkg.dependencies, ...pkg.peerDependencies })
+const externals = Object.keys({ ...pkg.peerDependencies })
 const external: rollup.ExternalOption = (source) => {
   // mark semver as external so it's ignored (the code that imports it will be treeshaked out)
   if (source.includes('semver')) return true
@@ -329,10 +330,14 @@ export default (args: Record<string, string>): rollup.RollupOptions[] => {
           if (!id.endsWith('custom-require.js')) {
             return
           }
+          const sounds = fs.readdirSync(path.resolve(VSCODE_DIR, 'vs/platform/audioCues/browser/media/'))
           const code = `
+${sounds.map(sound => `import _${path.parse(sound).name} from 'vscode/vs/platform/audioCues/browser/media/${sound}'`).join('\n')}
+import _onigWasm from 'vscode-oniguruma/release/onig.wasm'
 
 const fileUrls = {
   'vscode-oniguruma/../onig.wasm': _onigWasm,
+${sounds.map(sound => `  'vs/platform/audioCues/browser/media/${sound}': _${path.parse(sound).name}`).join(',\n')}
 }
 
 export default {
@@ -342,7 +347,7 @@ export default {
           return code
         }
       },
-      externalAssets(['**/*.wasm']),
+      externalAssets(['**/*.mp3', '**/*.wasm']),
       {
         name: 'dynamic-import-polyfill',
         renderDynamicImport (): { left: string, right: string } {
@@ -427,7 +432,7 @@ export default {
     }, nodeResolve({
       extensions: EXTENSIONS
     }),
-    externalAssets(['**/*.wasm']),
+    externalAssets(['**/*.mp3', '**/*.wasm']),
     {
       name: 'cleanup',
       renderChunk (code) {
