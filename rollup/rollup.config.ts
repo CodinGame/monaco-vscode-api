@@ -115,7 +115,10 @@ export default (args: Record<string, string>): rollup.RollupOptions[] => {
       annotations: true,
       preset: 'smallest',
       moduleSideEffects (id) {
-        return id.startsWith(SRC_DIR) || id.endsWith('.css') || id.startsWith(KEYBOARD_LAYOUT_DIR)
+        return id.startsWith(SRC_DIR) ||
+          id.endsWith('.css') ||
+          id.startsWith(KEYBOARD_LAYOUT_DIR) ||
+          id.endsWith('.contribution.js')
       }
     },
     external,
