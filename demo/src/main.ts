@@ -87,7 +87,8 @@ const settingsModel = monaco.editor.createModel(
   "editor.foldingHighlight": false,
   "editor.semanticHighlighting.enabled": true,
   "editor.bracketPairColorization.enabled": false,
-  "editor.fontSize": 12
+  "editor.fontSize": 12,
+  "audioCues.lineHasError": "on"
 }`, 'json', monaco.Uri.file('/settings.json'))
 createConfiguredEditor(document.getElementById('settings-editor')!, {
   model: settingsModel

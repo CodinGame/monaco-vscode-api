@@ -6,7 +6,6 @@ import 'monaco-editor/esm/vs/editor/standalone/browser/quickAccess/standaloneGot
 import 'monaco-editor/esm/vs/editor/standalone/browser/quickAccess/standaloneGotoSymbolQuickAccess'
 import 'monaco-editor/esm/vs/editor/standalone/browser/quickAccess/standaloneCommandsQuickAccess'
 import 'monaco-editor/esm/vs/editor/standalone/browser/referenceSearch/standaloneReferenceSearch'
-import onigFile from 'vscode-oniguruma/release/onig.wasm?url'
 import { StandaloneServices } from 'vscode/services'
 import getModelEditorServiceOverride from 'vscode/service-override/modelEditor'
 import getNotificationServiceOverride from 'vscode/service-override/notifications'
@@ -18,6 +17,7 @@ import getThemeServiceOverride, { setDefaultThemes, IThemeExtensionPoint } from 
 import geTokenClassificationServiceOverride from 'vscode/service-override/tokenClassification'
 import getLanguageConfigurationServiceOverride, { setLanguageConfiguration } from 'vscode/service-override/languageConfiguration'
 import getLanguagesServiceOverride, { setLanguages } from 'vscode/service-override/languages'
+import getAudioCueServiceOverride from 'vscode/service-override/audioCue'
 import EditorWorker from 'monaco-editor/esm/vs/editor/editor.worker?worker'
 import JsonWorker from 'monaco-editor/esm/vs/language/json/json.worker?worker'
 import themes from './resources/themes/themes.json'
@@ -53,14 +53,12 @@ StandaloneServices.initialize({
   ...getDialogsServiceOverride(),
   ...getConfigurationServiceOverride(),
   ...getKeybindingsServiceOverride(),
-  ...getTextmateServiceOverride(async () => {
-    const response = await fetch(onigFile)
-    return await response.arrayBuffer()
-  }),
+  ...getTextmateServiceOverride(),
   ...getThemeServiceOverride(),
   ...geTokenClassificationServiceOverride(),
   ...getLanguageConfigurationServiceOverride(),
-  ...getLanguagesServiceOverride()
+  ...getLanguagesServiceOverride(),
+  ...getAudioCueServiceOverride()
 })
 
 const loader: Partial<Record<string, () => Promise<string>>> = {
