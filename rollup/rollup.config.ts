@@ -11,6 +11,8 @@ import styles from 'rollup-plugin-styles'
 import * as tslib from 'tslib'
 import * as babylonParser from 'recast/parsers/babylon.js'
 import dynamicImportVars from '@rollup/plugin-dynamic-import-vars'
+import inject from '@rollup/plugin-inject'
+import externalAssets from 'rollup-plugin-external-assets'
 import * as fs from 'fs'
 import * as path from 'path'
 import * as vm from 'vm'
@@ -308,6 +310,36 @@ export default (args: Record<string, string>): rollup.RollupOptions[] => {
         VSCODE_VERSION: JSON.stringify(vscodeVersion),
         preventAssignment: true
       }),
+      // Create a require instance with a toUrl method (like in vscode) to load static resources (mp3, wasm...)
+      inject({
+        require: path.resolve('src/custom-require.js')
+      }),
+      {
+        name: 'vscode-resource-loading-plugin',
+        resolveId (id) {
+          if (id.endsWith('custom-require.js')) {
+            return id
+          }
+          return undefined
+        },
+        load (id) {
+          if (!id.endsWith('custom-require.js')) {
+            return
+          }
+          const code = `
+
+const fileUrls = {
+  'vscode-oniguruma/../onig.wasm': _onigWasm,
+}
+
+export default {
+  toUrl: (id) => fileUrls[id]
+}
+`
+          return code
+        }
+      },
+      externalAssets(['**/*.wasm']),
       {
         name: 'dynamic-import-polyfill',
         renderDynamicImport (): { left: string, right: string } {
@@ -391,7 +423,9 @@ export default (args: Record<string, string>): rollup.RollupOptions[] => {
       }
     }, nodeResolve({
       extensions: EXTENSIONS
-    }), {
+    }),
+    externalAssets(['**/*.wasm']),
+    {
       name: 'cleanup',
       renderChunk (code) {
         return cleanup(code, null, {
