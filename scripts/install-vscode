@@ -1,25 +1,28 @@
 #!/bin/bash
 set -e
 
-vscodeVersion=$(node -e "console.log(require('./node_modules/monaco-editor/package.json').vscode)")
+vscodeRef=$(cat './node_modules/monaco-editor/package.json' | jq -r '.["vscodeRef"]')
 
 output_directory="`pwd`/vscode"
 patch_file="`pwd`/scripts/vscode.patch"
 version_info=$output_directory/version.info
 
-if [[ -e $version_info && $(cat $version_info) == $vscodeVersion ]]; then
-    echo "vscode version $vscodeVersion is already installed. Aborting..."
+if [[ -e $version_info && $(cat $version_info) == $vscodeRef ]]; then
+    echo "vscode version $vscodeRef is already installed. Aborting..."
     exit 0
 else
-    echo "vscode version $vscodeVersion is not available. Installing..."
+    echo "vscode version $vscodeRef is not available. Installing..."
 fi
 
 rm -rf $output_directory
 
 build_directory=`mktemp -d`
-echo "Downloading vscode $vscodeVersion in $build_directory..."
+echo "Downloading vscode $vscodeRef in $build_directory..."
 
-curl -L --max-redirs 5 https://github.com/Microsoft/vscode/tarball/$vscodeVersion | tar -xz -C $build_directory --strip-components=1 microsoft-vscode-${vscodeVersion:0:7}
+curl -L --max-redirs 5 https://github.com/Microsoft/vscode/tarball/$vscodeRef | tar -xz -C $build_directory --strip-components=1 microsoft-vscode-${vscodeRef:0:7}
+vscodeVersion=$(cat "$build_directory/package.json" | jq -r '.["version"]')
+cat <<< $(jq ".config.vscode.version = \"$vscodeVersion\"" package.json) > package.json
+
 cd $build_directory
 
 echo "Installing vscode dependencies..."
@@ -33,9 +36,10 @@ cd src
 rm -rf `find . -name '*.test.ts' -o -name 'test' -o -name 'electron-browser'`
 rm -rf vs/code
 rm -rf vs/server
+rm *.js
 
 mkdir -p $output_directory
-echo $vscodeVersion > $version_info
+echo $vscodeRef > $version_info
 
 echo "Building vscode..."
 npx tsc --declaration --importHelpers --module es2020 --preserveConstEnums --outDir "$output_directory/vs"

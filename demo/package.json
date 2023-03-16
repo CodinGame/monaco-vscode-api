@@ -6,8 +6,8 @@
   "scripts": {
     "clean": "tsc -b -c",
     "compile": "tsc",
-    "start": "vite",
-    "start:debug": "vite --debug --force"
+    "start": "vite --config vite.config.ts",
+    "start:debug": "vite --config vite.config.ts --debug --force"
   },
   "devDependencies": {
     "@types/throttle-debounce": "~5.0.0",
@@ -15,10 +15,9 @@
     "vite": "~4.1.4"
   },
   "dependencies": {
-    "monaco-editor": "~0.34.1",
     "throttle-debounce": "~5.0.0",
     "vscode": "file:../",
-    "vscode-oniguruma": "~1.6.2"
+    "vscode-oniguruma": "~1.7.0"
   },
   "volta": {
     "node": "18.14.2",

@@ -77,7 +77,6 @@ function getMemberExpressionPath (node: recast.types.namedTypes.MemberExpression
 const input = {
   api: './src/api.ts',
   services: './src/services.ts',
-  messages: './src/service-override/messages.ts',
   notifications: './src/service-override/notifications.ts',
   dialogs: './src/service-override/dialogs.ts',
   modelEditor: './src/service-override/modelEditor.ts',
@@ -159,19 +158,15 @@ export default (args: Record<string, string>): rollup.RollupOptions[] => {
           return toggleEsmComments(code).replaceAll("'vs/workbench/services/keybinding/browser/keyboardLayouts/layout.contribution.' + platform", "'./keyboardLayouts/layout.contribution.' + platform + '.js'")
         },
         load (id) {
-          if (id.startsWith(VSCODE_DIR) && id.endsWith('.css')) {
-            const monacoCssPath = path.resolve(MONACO_EDITOR_DIR, 'esm', path.relative(VSCODE_DIR, id))
-            if (fs.existsSync(monacoCssPath)) {
-              return ''
-            }
-          }
           if (id.startsWith('vs/')) {
             return importMonaco(id)
           }
           return undefined
         }
       },
-      styles(),
+      styles({
+        minimize: true
+      }),
       nodeResolve({
         extensions: EXTENSIONS
       }),
@@ -526,10 +521,11 @@ function customRequire<T extends Record<string, unknown>> (_path: string, rootPa
         }
       },
       setTimeout: () => {},
+      UIEvent: Event,
       exports
     })
   } catch (err) {
-    throw new Error(`Unable to run ${resolvedPath} code`)
+    throw new Error(`Unable to run ${resolvedPath} code: ${(err as Error).message}`)
   }
 
   return exports
@@ -572,15 +568,6 @@ function importMonaco (importee: string) {
   const missingMonacoExport = Object.keys(vscodeExports).filter(e => !monacoExportKeys.has(e))
 
   const monacoImportPath = path.relative(NODE_MODULES_DIR, path.resolve(MONACO_EDITOR_DIR, `esm/${importee}.js`))
-
-  // hack for marked (see ESM-uncomment-begin comments)
-  if (importee === 'vs/base/common/marked/marked') {
-    return (`
-import { marked as _marked } from '${monacoImportPath}'
-
-export const marked = _marked.marked
-    `)
-  }
 
   const monacoApiExports = new Map<string, string>()
   for (const exportKey in monacoExports) {

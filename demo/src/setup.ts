@@ -23,10 +23,10 @@ import JsonWorker from 'monaco-editor/esm/vs/language/json/json.worker?worker'
 import themes from './resources/themes/themes.json'
 
 // Workers
-interface WrappedWorker {
+interface WorkerConstructor {
   new(): Worker
 }
-export type WorkerLoader = () => WrappedWorker | Promise<WrappedWorker>
+export type WorkerLoader = () => WorkerConstructor | Promise<WorkerConstructor>
 const workerLoaders: Partial<Record<string, WorkerLoader>> = {
   editorWorkerService: () => EditorWorker,
   json: () => JsonWorker
@@ -63,14 +63,14 @@ StandaloneServices.initialize({
   ...getLanguagesServiceOverride()
 })
 
-const loader = {
+const loader: Partial<Record<string, () => Promise<string>>> = {
   '/themes/dark_plus.json': async () => (await import('./resources/themes/theme-defaults~dark_plus.json?raw')).default,
   '/themes/light_plus.json': async () => (await import('./resources/themes/theme-defaults~light_plus.json?raw')).default,
   '/themes/dark_vs.json': async () => (await import('./resources/themes/theme-defaults~dark_vs.json?raw')).default,
   '/themes/light_vs.json': async () => (await import('./resources/themes/theme-defaults~light_vs.json?raw')).default,
   '/themes/hc_black.json': async () => (await import('./resources/themes/theme-defaults~hc_black.json?raw')).default,
   '/themes/hc_light.json': async () => (await import('./resources/themes/theme-defaults~hc_light.json?raw')).default
-} as Partial<Record<string, () => Promise<string>>>
+}
 setDefaultThemes(themes as IThemeExtensionPoint[], async (theme) => loader[theme.path.slice(1)]!())
 
 setLanguages([{

@@ -24,10 +24,6 @@
       "types": "./dist/services.d.ts",
       "default": "./dist/services.js"
     },
-    "./service-override/messages": {
-      "types": "./dist/messages.d.ts",
-      "default": "./dist/messages.js"
-    },
     "./service-override/notifications": {
       "types": "./dist/notifications.d.ts",
       "default": "./dist/notifications.js"
@@ -86,9 +82,6 @@
       "services": [
         "./dist/services.d.ts"
       ],
-      "service-override/messages": [
-        "./dist/messages.d.ts"
-      ],
       "service-override/notifications": [
         "./dist/notifications.d.ts"
       ],
@@ -136,8 +129,8 @@
   ],
   "scripts": {
     "build": "npm run clean && npm run compile && npm run lint && npm run generate-types && npm run compile-webpack-loader",
-    "compile": "rollup --config rollup/rollup.config.ts --configPlugin 'typescript={tsconfig: `tsconfig.rollup.json`}' --vscode-version ${npm_package_config_vscode_version}",
-    "clean": "rm -rf dist/",    
+    "compile": "NODE_OPTIONS=--max_old_space_size=4096 rollup --config rollup/rollup.config.ts --configPlugin 'typescript={tsconfig: `tsconfig.rollup.json`}' --vscode-version ${npm_package_config_vscode_version}",
+    "clean": "rm -rf dist/",
     "compile-webpack-loader": "tsc --target es2020 -lib es2020 --module commonjs --skipLibCheck --moduleResolution node --declaration --outDir dist src/webpack-loader.ts && mv dist/webpack-loader.js dist/webpack-loader.cjs",
     "preprepare": "./scripts/install-vscode",
     "lint": "eslint {**/src/**/*.ts,./rollup/*.ts,./*.ts}",
@@ -146,7 +139,7 @@
   },
   "config": {
     "vscode": {
-      "version": "1.69.0"
+      "version": "1.76.0"
     }
   },
   "devDependencies": {
@@ -164,7 +157,7 @@
     "@rollup/plugin-typescript": "^11.0.0",
     "@types/babel__core": "^7.20.0",
     "@types/semver": "^7.3.13",
-    "@types/vscode": "~1.69.1",
+    "@types/vscode": "~1.76.0",
     "@typescript-eslint/eslint-plugin": "^5.54.0",
     "@typescript-eslint/parser": "^5.54.0",
     "eslint": "^8.35.0",
@@ -175,7 +168,7 @@
     "eslint-plugin-unused-imports": "^2.0.0",
     "js-cleanup": "^1.2.0",
     "recast": "^0.22.0",
-    "rollup": "^3.17.3",
+    "rollup": "^3.18.0",
     "rollup-plugin-dts": "^5.2.0",
     "rollup-plugin-styles": "^4.0.0",
     "semver": "^7.3.8",
@@ -184,16 +177,15 @@
     "webpack": "^5.75.0",
     "zx": "^7.2.0"
   },
-  "dependencies": {
-  },
+  "dependencies": {},
   "peerDependencies": {
-    "monaco-editor": "~0.34.0",
-    "vscode-oniguruma": "^1.6.2",
-    "vscode-textmate": "^7.0.1"
+    "monaco-editor": "~0.36.1",
+    "vscode-oniguruma": "^1.7.0",
+    "vscode-textmate": "^9.0.0"
   },
   "overrides": {
     "rollup-plugin-styles": {
-      "rollup": "3.17.3"
+      "rollup": "3.18.0"
     }
   },
   "volta": {

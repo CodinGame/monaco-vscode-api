@@ -17,6 +17,11 @@ import { createConfiguredEditor, getJsonSchemas, onDidChangeJsonSchema } from 'v
 import { debounce } from 'throttle-debounce'
 import * as vscode from 'vscode'
 
+monaco.languages.json.jsonDefaults.setModeConfiguration({
+  ...monaco.languages.json.jsonDefaults.modeConfiguration,
+  tokens: false // Disable monarch tokenizer as we use TextMate here
+})
+
 void vscode.window.showInformationMessage('Hello', {
   detail: 'Welcome to the monaco-vscode-api demo',
   modal: true

@@ -11,6 +11,8 @@ import * as languageConfiguration from 'vs/editor/common/languages/languageConfi
 import * as model from 'vs/editor/common/model'
 import * as editorOptions from 'vs/editor/common/config/editorOptions'
 import * as uri from 'vs/base/common/uri'
+import * as log from 'vs/platform/log/common/log'
+import * as telemetryUtils from 'vs/platform/telemetry/common/telemetryUtils'
 import customLanguages from './vscode-services/languages'
 import customCommands from './vscode-services/commands'
 import customWorkspace from './vscode-services/workspace'
@@ -88,7 +90,8 @@ const api: typeof vscode = {
   ExtensionKind: extHostTypes.ExtensionKind,
   ExtensionMode: extHostTypes.ExtensionMode,
   FileChangeType: extHostTypes.FileChangeType,
-  FileDecoration: extHostTypes.FileDecoration,
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  FileDecoration: <any>extHostTypes.FileDecoration,
   FileSystemError: extHostTypes.FileSystemError,
   FileType: files.FileType,
   FilePermission: files.FilePermission,
@@ -185,7 +188,14 @@ const api: typeof vscode = {
   InlineCompletionTriggerKind: extHostTypes.InlineCompletionTriggerKind,
   InlineCompletionItem: extHostTypes.InlineSuggestion,
   DocumentDropEdit: extHostTypes.DocumentDropEdit,
-  NotebookEditorRevealType: extHostTypes.NotebookEditorRevealType
+  NotebookEditorRevealType: extHostTypes.NotebookEditorRevealType,
+  SnippetTextEdit: extHostTypes.SnippetTextEdit,
+  NotebookEdit: extHostTypes.NotebookEdit,
+  LogLevel: log.LogLevel,
+  TerminalExitReason: extHostTypes.TerminalExitReason,
+  CommentThreadState: extHostTypes.CommentThreadState,
+  l10n: unsupported,
+  TelemetryTrustedValue: telemetryUtils.TelemetryTrustedValue
 }
 
 // @ts-ignore the syntax will be transformed by a typescript transformer in the rollup config

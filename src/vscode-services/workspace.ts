@@ -58,11 +58,11 @@ const workspace: typeof vscode.workspace = {
       dispose: () => { }
     }
   },
-  applyEdit: async (edit: vscode.WorkspaceEdit) => {
+  applyEdit: async (edit: vscode.WorkspaceEdit, metadata?: vscode.WorkspaceEditMetadata) => {
     const { extHostBulkEdits } = getExtHostServices()
     const extension = Services.get().extension ?? DEFAULT_EXTENSION
 
-    return extHostBulkEdits.applyWorkspaceEdit(edit, extension)
+    return extHostBulkEdits.applyWorkspaceEdit(edit, extension, metadata)
   },
   getConfiguration: (section, scope) => {
     const { extHostConfiguration } = getExtHostServices()

@@ -69,10 +69,17 @@ class InjectedConfigurationService extends ConfigurationService {
     @ILogService logService: ILogService
   ) {
     super(userDataProfilesService.defaultProfile.settingsResource, fileService, policyService, logService)
+  }
 
-    this.initialize().catch(error => {
-      logService.error(error)
-    })
+  override getValue (...args: any[]) {
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const value = super.getValue.apply(this, args as any)
+
+    // small hack to prevent BrowserKeyboardLayoutService from failing when instantiated early
+    if (args[0] === 'keyboard') {
+      return value ?? {}
+    }
+    return value
   }
 
   // For some reasons, the default implementation just throw a not supported error
@@ -99,9 +106,14 @@ class InjectedConfigurationService extends ConfigurationService {
   }
 }
 
-function initialize (instantiationService: IInstantiationService) {
+async function initialize (instantiationService: IInstantiationService) {
   instantiationService.createInstance(RegisterConfigurationSchemasContribution)
-  void updateUserConfiguration('{}') // can't fail as it is a memory file service
+  const configurationService = instantiationService.invokeFunction((accessor) => accessor.get(IConfigurationService)) as ConfigurationService
+
+  await Promise.all([
+    updateUserConfiguration('{}'),
+    configurationService.initialize()
+  ])
 }
 
 export default function getServiceOverride (): IEditorOverrideServices {
