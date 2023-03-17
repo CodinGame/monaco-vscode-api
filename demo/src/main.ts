@@ -17,6 +17,27 @@ import { createConfiguredEditor, getJsonSchemas, onDidChangeJsonSchema } from 'v
 import { debounce } from 'throttle-debounce'
 import * as vscode from 'vscode'
 
+vscode.languages.registerHoverProvider('java', {
+  async provideHover (document, position) {
+    return {
+      contents: [
+        '# Hello',
+        `This is a hover on ${document.uri.toString()} at position ${position.line}:${position.character}`
+      ]
+    }
+  }
+})
+
+vscode.languages.registerCompletionItemProvider('java', {
+  provideCompletionItems () {
+    return [{
+      label: 'Demo completion',
+      detail: 'This is a demo completion registered via the vscode api',
+      insertText: 'hello world'
+    }]
+  }
+})
+
 monaco.languages.json.jsonDefaults.setModeConfiguration({
   ...monaco.languages.json.jsonDefaults.modeConfiguration,
   tokens: false // Disable monarch tokenizer as we use TextMate here
@@ -29,24 +50,36 @@ void vscode.window.showInformationMessage('Hello', {
   void vscode.window.showInformationMessage('Try to change the settings or the configuration, the changes will be applied to all 3 editors')
 })
 
-createConfiguredEditor(document.getElementById('editor')!, {
-  language: 'java',
-  value:
-`// Your First Program
+const model = monaco.editor.createModel(
+  `// Your First Program
 
 class HelloWorld {
     public static void main(String[] args) {
-        System.out.println('Hello, World!'); 
+        System.out.println('Hello, World!');
     }
-}`
+}`,
+  'java',
+  monaco.Uri.file('HelloWorld.java')
+)
+
+createConfiguredEditor(document.getElementById('editor')!, {
+  model
 })
+
+const diagnostics = vscode.languages.createDiagnosticCollection('demo')
+diagnostics.set(model.uri, [{
+  range: new vscode.Range(2, 6, 2, 16),
+  severity: vscode.DiagnosticSeverity.Error,
+  message: 'This is not a real error, just a demo, don\'t worry',
+  source: 'Demo',
+  code: 42
+}])
 
 const settingsModel = monaco.editor.createModel(
 `{
   "workbench.colorTheme": "Default Dark+",
   "editor.autoClosingBrackets": "languageDefined",
   "editor.autoClosingQuotes": "languageDefined",
-  "editor.minimap.enabled": false,
   "editor.scrollBeyondLastLine": true,
   "editor.mouseWheelZoom": true,
   "editor.wordBasedSuggestions": false,
@@ -60,7 +93,10 @@ createConfiguredEditor(document.getElementById('settings-editor')!, {
   model: settingsModel
 })
 settingsModel.onDidChangeContent(debounce(1000, async () => {
-  await updateUserConfiguration(settingsModel.getValue())
+  const currentConfig = await getUserConfiguration()
+  if (currentConfig !== settingsModel.getValue()) {
+    await updateUserConfiguration(settingsModel.getValue())
+  }
 }))
 void updateUserConfiguration(settingsModel.getValue())
 onUserConfigurationChange(async () => {
@@ -104,3 +140,9 @@ function updateDiagnosticsOptions () {
 
 updateDiagnosticsOptions()
 onDidChangeJsonSchema(updateDiagnosticsOptions)
+
+setTimeout(() => {
+  vscode.workspace.onDidChangeConfiguration(() => {
+    void vscode.window.showInformationMessage('The configuration was changed')
+  })
+}, 1000)

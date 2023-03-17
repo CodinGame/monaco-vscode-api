@@ -144,6 +144,8 @@ vscode.languages.registerCompletionItemProvider(...)
 
 ### Demo
 
+Try it out on https://codingame.github.io/monaco-vscode-api/
+
 There is a demo that showcases the service-override features. It allows to register contributions with the same syntaxes as in VSCode.
 It includes:
 
