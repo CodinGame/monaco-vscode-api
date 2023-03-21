@@ -68,6 +68,10 @@
       "types": "./dist/languages.d.ts",
       "default": "./dist/languages.js"
     },
+    "./service-override/audioCue": {
+      "types": "./dist/audioCue.d.ts",
+      "default": "./dist/audioCue.js"
+    },
     "./monaco": {
       "types": "./dist/monaco.d.ts",
       "default": "./dist/monaco.js"
@@ -115,6 +119,9 @@
       "service-override/languages": [
         "./dist/languages.d.ts"
       ],
+      "service-override/audioCue": [
+        "./dist/audioCue.d.ts"
+      ],
       "monaco": [
         "./dist/monaco.d.ts"
       ],
@@ -152,6 +159,7 @@
     "@codingame/tsconfig": "^1.1.1",
     "@octokit/rest": "^19.0.7",
     "@rollup/plugin-dynamic-import-vars": "^2.0.3",
+    "@rollup/plugin-inject": "^5.0.3",
     "@rollup/plugin-node-resolve": "^15.0.1",
     "@rollup/plugin-replace": "^5.0.2",
     "@rollup/plugin-typescript": "^11.0.0",
@@ -170,6 +178,7 @@
     "recast": "^0.22.0",
     "rollup": "^3.18.0",
     "rollup-plugin-dts": "^5.2.0",
+    "rollup-plugin-external-assets": "^3.0.1",
     "rollup-plugin-styles": "^4.0.0",
     "semver": "^7.3.8",
     "ts-node": "^10.9.1",

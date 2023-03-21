@@ -7,16 +7,15 @@ import { ICodeEditorService } from 'vs/editor/browser/services/codeEditorService
 import { CodeEditorService } from 'vs/workbench/services/editor/browser/codeEditorService'
 import { IEditorService, isPreferredGroup, PreferredGroup, SIDE_GROUP } from 'vs/workbench/services/editor/common/editorService'
 import { IEditorControl, IEditorPane, IResourceDiffEditorInput, isEditorInput, isResourceEditorInput, ITextDiffEditorPane, IUntitledTextResourceEditorInput, IUntypedEditorInput } from 'vs/workbench/common/editor'
-import { Event } from 'vs/base/common/event'
+import { Emitter, Event } from 'vs/base/common/event'
 import { EditorInput } from 'vs/workbench/common/editor/editorInput'
 import { IEditorOptions, IResourceEditorInput, ITextResourceEditorInput } from 'vs/platform/editor/common/editor'
 import { DEFAULT_EDITOR_MAX_DIMENSIONS, DEFAULT_EDITOR_MIN_DIMENSIONS } from 'vs/workbench/browser/parts/editor/editor'
-import { ICodeEditor } from 'vs/editor/browser/editorBrowser'
 import { applyTextEditorOptions } from 'vs/workbench/common/editor/editorOptions'
-import { ScrollType } from 'vs/editor/common/editorCommon'
+import { IEditor, ScrollType } from 'vs/editor/common/editorCommon'
 import { SyncDescriptor } from 'vs/platform/instantiation/common/descriptors'
 import { ITextModel } from 'vs/editor/common/model'
-import { ImmortalReference, IReference } from 'vs/base/common/lifecycle'
+import { Disposable, ImmortalReference, IReference } from 'vs/base/common/lifecycle'
 import { URI } from 'vs/base/common/uri'
 import { IModelService } from 'vs/editor/common/services/model'
 import { IFileService } from 'vs/platform/files/common/files'
@@ -24,6 +23,7 @@ import { IInstantiationService } from 'vs/platform/instantiation/common/instanti
 import { IUriIdentityService } from 'vs/platform/uriIdentity/common/uriIdentity'
 import { IUndoRedoService } from 'vs/platform/undoRedo/common/undoRedo'
 import { TextResourceEditorModel } from 'vs/workbench/common/editor/textResourceEditorModel'
+import { ICodeEditor } from 'vs/editor/browser/editorBrowser'
 import { unsupported } from '../tools'
 
 type OpenEditor = (model: ITextModel, options: IEditorOptions | undefined, sideBySide?: boolean) => Promise<ICodeEditor | undefined>
@@ -55,20 +55,42 @@ class SimpleEditorPane implements IEditorPane {
   }
 }
 
-class EditorService implements IEditorService {
+class EditorService extends Disposable implements IEditorService {
+  public activeTextEditorControl: IEditor | undefined
+  private _onDidActiveEditorChange = this._register(new Emitter<void>())
+
   constructor (
     private _openEditor: OpenEditor,
     @ITextModelService private textModelService: ITextModelService
-  ) {}
+  ) {
+    super()
+
+    setTimeout(() => {
+      const codeEditorService = StandaloneServices.get(ICodeEditorService)
+      this.activeTextEditorControl = codeEditorService.getFocusedCodeEditor() ?? undefined
+      const handleCodeEditor = (editor: ICodeEditor) => {
+        const onEditorFocused = () => {
+          const newFocusedEditor = codeEditorService.getFocusedCodeEditor()
+          if (newFocusedEditor !== this.activeTextEditorControl) {
+            this.activeTextEditorControl = newFocusedEditor ?? undefined
+            this._onDidActiveEditorChange.fire()
+          }
+        }
+        editor.onDidFocusEditorText(onEditorFocused)
+        editor.onDidFocusEditorWidget(onEditorFocused)
+      }
+      this._register(codeEditorService.onCodeEditorAdd(handleCodeEditor))
+      codeEditorService.listCodeEditors().forEach(handleCodeEditor)
+    })
+  }
 
   readonly _serviceBrand: undefined
-  onDidActiveEditorChange = Event.None
+  onDidActiveEditorChange = this._onDidActiveEditorChange.event
   onDidVisibleEditorsChange = Event.None
   onDidEditorsChange = Event.None
   onDidCloseEditor = Event.None
   activeEditorPane: undefined
   activeEditor: undefined
-  get activeTextEditorControl () { return StandaloneServices.get(ICodeEditorService).getFocusedCodeEditor() ?? undefined }
   activeTextEditorLanguageId = undefined
   visibleEditorPanes = []
   visibleEditors = []

@@ -11,6 +11,8 @@ import styles from 'rollup-plugin-styles'
 import * as tslib from 'tslib'
 import * as babylonParser from 'recast/parsers/babylon.js'
 import dynamicImportVars from '@rollup/plugin-dynamic-import-vars'
+import inject from '@rollup/plugin-inject'
+import externalAssets from 'rollup-plugin-external-assets'
 import * as fs from 'fs'
 import * as path from 'path'
 import * as vm from 'vm'
@@ -88,10 +90,11 @@ const input = {
   tokenClassification: './src/service-override/tokenClassification.ts',
   snippets: './src/service-override/snippets.ts',
   languages: './src/service-override/languages.ts',
+  audioCue: './src/service-override/audioCue.ts',
   monaco: './src/monaco'
 }
 
-const externals = Object.keys({ ...pkg.dependencies, ...pkg.peerDependencies })
+const externals = Object.keys({ ...pkg.peerDependencies })
 const external: rollup.ExternalOption = (source) => {
   // mark semver as external so it's ignored (the code that imports it will be treeshaked out)
   if (source.includes('semver')) return true
@@ -113,7 +116,10 @@ export default (args: Record<string, string>): rollup.RollupOptions[] => {
       annotations: true,
       preset: 'smallest',
       moduleSideEffects (id) {
-        return id.startsWith(SRC_DIR) || id.endsWith('.css') || id.startsWith(KEYBOARD_LAYOUT_DIR)
+        return id.startsWith(SRC_DIR) ||
+          id.endsWith('.css') ||
+          id.startsWith(KEYBOARD_LAYOUT_DIR) ||
+          id.endsWith('.contribution.js')
       }
     },
     external,
@@ -308,6 +314,40 @@ export default (args: Record<string, string>): rollup.RollupOptions[] => {
         VSCODE_VERSION: JSON.stringify(vscodeVersion),
         preventAssignment: true
       }),
+      // Create a require instance with a toUrl method (like in vscode) to load static resources (mp3, wasm...)
+      inject({
+        require: path.resolve('src/custom-require.js')
+      }),
+      {
+        name: 'vscode-resource-loading-plugin',
+        resolveId (id) {
+          if (id.endsWith('custom-require.js')) {
+            return id
+          }
+          return undefined
+        },
+        load (id) {
+          if (!id.endsWith('custom-require.js')) {
+            return
+          }
+          const sounds = fs.readdirSync(path.resolve(VSCODE_DIR, 'vs/platform/audioCues/browser/media/'))
+          const code = `
+${sounds.map(sound => `import _${path.parse(sound).name} from 'vscode/vs/platform/audioCues/browser/media/${sound}'`).join('\n')}
+import _onigWasm from 'vscode-oniguruma/release/onig.wasm'
+
+const fileUrls = {
+  'vscode-oniguruma/../onig.wasm': _onigWasm,
+${sounds.map(sound => `  'vs/platform/audioCues/browser/media/${sound}': _${path.parse(sound).name}`).join(',\n')}
+}
+
+export default {
+  toUrl: (id) => fileUrls[id]
+}
+`
+          return code
+        }
+      },
+      externalAssets(['**/*.mp3', '**/*.wasm']),
       {
         name: 'dynamic-import-polyfill',
         renderDynamicImport (): { left: string, right: string } {
@@ -391,7 +431,9 @@ export default (args: Record<string, string>): rollup.RollupOptions[] => {
       }
     }, nodeResolve({
       extensions: EXTENSIONS
-    }), {
+    }),
+    externalAssets(['**/*.mp3', '**/*.wasm']),
+    {
       name: 'cleanup',
       renderChunk (code) {
         return cleanup(code, null, {

@@ -63,6 +63,10 @@ import { Keybinding as VScodeKeybinding, KeyCodeChord as VScodeKeyCodeChord } fr
 // @ts-ignore Creating a d.ts is not worth it
 import { DisposableMap as MonacoDisposableMap } from 'monaco-editor/esm/vs/base/common/lifecycle.js'
 import { DisposableMap as VScodeDisposableMap } from 'vscode/vs/base/common/lifecycle.js'
+// @ts-ignore Creating a d.ts is not worth it
+import { FileAccess as MonacoFileAccess } from 'monaco-editor/esm/vs/base/common/network.js'
+import { FileAccess as VScodeFileAccess } from 'vscode/vs/base/common/network.js'
+import { GhostTextController } from 'vs/editor/contrib/inlineCompletions/browser/ghostTextController'
 
 // Monaco build process treeshaking is very aggressive and everything that is not used in monaco is removed
 // Unfortunately, it makes some class not respect anymore the interface they are supposed to implement
@@ -117,6 +121,7 @@ polyfillPrototypeSimple(MonacoDefaultConfiguration.prototype, VScodeDefaultConfi
 polyfillPrototypeSimple(MonacoKeybinding.prototype, VScodeKeybinding.prototype)
 polyfillPrototypeSimple(MonacoKeyCodeChord.prototype, VScodeKeyCodeChord.prototype)
 polyfillPrototypeSimple(MonacoDisposableMap.prototype, VScodeDisposableMap.prototype)
+polyfillPrototypeSimple(MonacoFileAccess.constructor.prototype, VScodeFileAccess.constructor.prototype)
 
 Object.defineProperty(MonacoDefaultConfiguration.prototype, '_onDidChangeConfiguration', {
   get () {
@@ -161,6 +166,12 @@ configurationRegistry.notifyConfigurationSchemaUpdated ??= () => {
 
 // @ts-ignore Override of a readonly property
 MonacoNoOpNotification.prototype.onDidClose ??= Event.None
+
+Object.defineProperty(GhostTextController.prototype, 'onActiveModelDidChange', {
+  get () {
+    return this.activeModelDidChangeEmitter.event
+  }
+})
 
 function polyfillQuickInput<T extends IQuickInput> (fn: () => T): () => T {
   return function (this: QuickInputController) {

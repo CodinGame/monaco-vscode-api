@@ -11,21 +11,8 @@ import { IExtensionDescription } from 'vs/platform/extensions/common/extensions'
 import { TextMateTokenizationFeature } from 'vs/workbench/services/textMate/browser/textMateTokenizationFeatureImpl'
 import getFileServiceOverride, { registerExtensionFile } from './files'
 import { consoleExtensionMessageHandler, getExtensionPoint, onServicesInitialized } from './tools'
-import { createInjectedClass } from '../tools/injection'
 import { Services } from '../services'
 import { DEFAULT_EXTENSION } from '../vscode-services/extHost'
-
-class _TextMateTokenizationFeature extends createInjectedClass(TextMateTokenizationFeature) {
-  constructor (
-    loadVSCodeOnigurumaWASM: () => Promise<Response | ArrayBuffer>,
-    @IInstantiationService instantiationService: IInstantiationService
-  ) {
-    super(instantiationService)
-
-    // eslint-disable-next-line dot-notation
-    this['_loadVSCodeOnigurumaWASM'] = loadVSCodeOnigurumaWASM
-  }
-}
 
 type PartialITMSyntaxExtensionPoint = Partial<ITMSyntaxExtensionPoint> & Pick<ITMSyntaxExtensionPoint, 'path' | 'scopeName'>
 const extensionPoint = getExtensionPoint<PartialITMSyntaxExtensionPoint[]>('grammars')
@@ -47,11 +34,11 @@ function initialize (instantiationService: IInstantiationService) {
   instantiationService.invokeFunction((accessor) => accessor.get(ITextMateTokenizationService))
 }
 
-export default function getServiceOverride (getOnigLib: () => Promise<Response | ArrayBuffer>): IEditorOverrideServices {
+export default function getServiceOverride (): IEditorOverrideServices {
   onServicesInitialized(initialize)
   return {
     ...getFileServiceOverride(),
-    [ITextMateTokenizationService.toString()]: new SyncDescriptor(_TextMateTokenizationFeature, [getOnigLib])
+    [ITextMateTokenizationService.toString()]: new SyncDescriptor(TextMateTokenizationFeature)
   }
 }
 

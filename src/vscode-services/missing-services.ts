@@ -45,6 +45,7 @@ import { ILoggerService, NullLoggerService } from 'vs/platform/log/common/log'
 import { IDisposable } from 'vs/base/common/lifecycle'
 import { FallbackKeyboardMapper } from 'vs/workbench/services/keybinding/common/fallbackKeyboardMapper'
 import { ITextMateTokenizationService } from 'vs/workbench/services/textMate/browser/textMateTokenizationFeature'
+import { IDebugService, IDebugModel } from 'vs/workbench/contrib/debug/common/debug'
 import { Services } from '../services'
 import { unsupported } from '../tools'
 
@@ -589,4 +590,60 @@ registerSingleton(ISnippetsService, class SnippetsService implements ISnippetsSe
   updateUsageTimestamp = unsupported
   getSnippets = async () => []
   getSnippetsSync = unsupported
+}, InstantiationType.Eager)
+
+const debugModel: IDebugModel = {
+  getSession: () => undefined,
+  getSessions: () => [],
+  getBreakpoints: () => [],
+  areBreakpointsActivated: () => false,
+  getFunctionBreakpoints: () => [],
+  getDataBreakpoints: () => [],
+  getExceptionBreakpoints: () => [],
+  getExceptionBreakpointsForSession: () => [],
+  getInstructionBreakpoints: () => [],
+  getWatchExpressions: () => [],
+  onDidChangeBreakpoints: Event.None,
+  onDidChangeCallStack: Event.None,
+  onDidChangeWatchExpressions: Event.None,
+  fetchCallstack: unsupported,
+  getId: unsupported
+}
+registerSingleton(IDebugService, class DebugService implements IDebugService {
+  _serviceBrand: undefined
+  get state () { return unsupported() }
+  onDidChangeState = Event.None
+  onDidNewSession = Event.None
+  onWillNewSession = Event.None
+  onDidEndSession = Event.None
+  getConfigurationManager = unsupported
+  getAdapterManager = unsupported
+  focusStackFrame = unsupported
+  canSetBreakpointsIn = unsupported
+  addBreakpoints = unsupported
+  updateBreakpoints = unsupported
+  enableOrDisableBreakpoints = unsupported
+  setBreakpointsActivated = unsupported
+  removeBreakpoints = unsupported
+  addFunctionBreakpoint = unsupported
+  updateFunctionBreakpoint = unsupported
+  removeFunctionBreakpoints = unsupported
+  addDataBreakpoint = unsupported
+  removeDataBreakpoints = unsupported
+  addInstructionBreakpoint = unsupported
+  removeInstructionBreakpoints = unsupported
+  setExceptionBreakpointCondition = unsupported
+  setExceptionBreakpointsForSession = unsupported
+  sendAllBreakpoints = unsupported
+  addWatchExpression = unsupported
+  renameWatchExpression = unsupported
+  moveWatchExpression = unsupported
+  removeWatchExpressions = unsupported
+  startDebugging = unsupported
+  restartSession = unsupported
+  stopSession = unsupported
+  sourceIsNotAvailable = unsupported
+  getModel = () => debugModel
+  getViewModel = unsupported
+  runTo = unsupported
 }, InstantiationType.Eager)

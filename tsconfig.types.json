@@ -66,6 +66,7 @@
 		"src/service-override/tokenClassification.ts",
 		"src/service-override/snippets.ts",
 		"src/service-override/languages.ts",
+		"src/service-override/audioCue.ts",
 		"src/monaco.ts"
 	]
 }

@@ -9,7 +9,7 @@
     "start": "vite --config vite.config.ts",
     "start:debug": "vite --config vite.config.ts --debug --force",
     "build": "vite --config vite.config.ts build",
-    "build:github": "vite --config vite.config.ts build --base=/monaco-vscode-api && touch dist/.nojekyll"
+    "build:github": "vite --config vite.github-page.config.ts build && touch dist/.nojekyll"
   },
   "devDependencies": {
     "@types/throttle-debounce": "~5.0.0",
