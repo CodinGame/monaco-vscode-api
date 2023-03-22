@@ -4,6 +4,13 @@ on:
   push:
     branches: [main]
 
+permissions:
+  contents: write      # to be able to publish a GitHub release
+  issues: write        # to be able to comment on released issues
+  pull-requests: write # to be able to comment on released pull requests
+  pages: write         # to deploy to Pages
+  id-token: write      # to verify the deployment originates from an appropriate source
+
 jobs:
   release:
     name: Release
