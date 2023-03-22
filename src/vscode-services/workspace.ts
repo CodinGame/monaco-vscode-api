@@ -7,45 +7,16 @@ import { getExtHostServices } from './extHost'
 import { unsupported } from '../tools'
 import { Services } from '../services'
 
-class EmptyFileSystem implements vscode.FileSystem {
-  isWritableFileSystem (): boolean | undefined {
-    return false
-  }
-
-  stat = unsupported
-  readDirectory (): Thenable<[string, vscode.FileType][]> {
-    return Promise.resolve([])
-  }
-
-  createDirectory (): Thenable<void> {
-    return Promise.resolve()
-  }
-
-  readFile (): Thenable<Uint8Array> {
-    return Promise.resolve(new Uint8Array(0))
-  }
-
-  writeFile (): Thenable<void> {
-    return Promise.resolve()
-  }
-
-  delete (): Thenable<void> {
-    return Promise.resolve()
-  }
-
-  rename (): Thenable<void> {
-    return Promise.resolve()
-  }
-
-  copy (): Thenable<void> {
-    return Promise.resolve()
-  }
-}
-
 export default function create (getExtension: () => IExtensionDescription): typeof vscode.workspace {
   return {
-    fs: new EmptyFileSystem(),
-    workspaceFile: undefined,
+    get fs () {
+      const { extHostConsumerFileSystem } = getExtHostServices()
+      return extHostConsumerFileSystem.value
+    },
+    get workspaceFile () {
+      const { extHostWorkspace } = getExtHostServices()
+      return extHostWorkspace.workspaceFile
+    },
     createFileSystemWatcher (globPattern, ignoreCreateEvents, ignoreChangeEvents, ignoreDeleteEvents): vscode.FileSystemWatcher {
       const { workspace } = Services.get()
       if (workspace?.createFileSystemWatcher != null) {
