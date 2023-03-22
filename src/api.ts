@@ -20,6 +20,8 @@ import createCommandsApi from './vscode-services/commands'
 import createWorkspaceApi from './vscode-services/workspace'
 import createWindowApi, { TextTabInput } from './vscode-services/window'
 import createEnvApi from './vscode-services/env'
+import createDebugApi from './vscode-services/debug'
+import createExtensionsApi from './vscode-services/extensions'
 import { Services } from './services'
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -51,12 +53,12 @@ const api: typeof vscode = {
   tasks: unsupported,
   notebooks: unsupported,
   scm: unsupported,
-  debug: unsupported,
-  extensions: unsupported,
   comments: unsupported,
   authentication: unsupported,
   tests: unsupported,
 
+  extensions: createExtensionsApi(getDefaultExtension),
+  debug: createDebugApi(getDefaultExtension),
   env: createEnvApi(getDefaultExtension),
   commands: createCommandsApi(getDefaultExtension),
   window: createWindowApi(getDefaultExtension, _workspace),

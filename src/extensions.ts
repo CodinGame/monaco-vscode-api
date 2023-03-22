@@ -16,11 +16,15 @@ import createCommandsApi from './vscode-services/commands'
 import createWorkspaceApi from './vscode-services/workspace'
 import createWindowApi from './vscode-services/window'
 import createEnvApi from './vscode-services/env'
+import createDebugApi from './vscode-services/debug'
+import createExtensionsApi from './vscode-services/extensions'
 
 export function createApi (extension: IExtensionDescription): typeof vscode {
   const workspace = createWorkspaceApi(() => extension)
   return {
     ...api,
+    extensions: createExtensionsApi(() => extension),
+    debug: createDebugApi(() => extension),
     env: createEnvApi(() => extension),
     commands: createCommandsApi(() => extension),
     window: createWindowApi(() => extension, workspace),
