@@ -12,6 +12,7 @@ import { ConfigurationResolverService } from 'vs/workbench/services/configuratio
 import { IConfigurationResolverService } from 'vs/workbench/services/configurationResolver/common/configurationResolver'
 import { DebugToolBar } from 'vs/workbench/contrib/debug/browser/debugToolBar'
 import { DebugContentProvider } from 'vs/workbench/contrib/debug/common/debugContentProvider'
+import { IAction } from 'vs/base/common/actions'
 import getLayoutServiceOverride from './layout'
 import { onServicesInitialized } from './tools'
 import 'vs/workbench/contrib/debug/browser/debug.contribution'
@@ -21,6 +22,14 @@ function initialize (instantiationService: IInstantiationService) {
     instantiationService.createInstance(DebugToolBar)
     instantiationService.createInstance(DebugContentProvider)
   })
+}
+
+// remove "Open 'launch.json'" button
+// eslint-disable-next-line dot-notation
+const original = DebugService.prototype['showError']
+// eslint-disable-next-line dot-notation
+DebugService.prototype['showError'] = function (message: string, errorActions?: ReadonlyArray<IAction>) {
+  return original.call(this, message, errorActions, false)
 }
 
 export default function getServiceOverride (): IEditorOverrideServices {
