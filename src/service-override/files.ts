@@ -15,6 +15,8 @@ import { IEnvironmentService } from 'vs/platform/environment/common/environment'
 import { IProductService } from 'vs/platform/product/common/productService'
 import { Disposable } from 'vs/workbench/api/common/extHostTypes'
 import { IDisposable } from 'vs/base/common/lifecycle'
+import { ITextFileService } from 'vs/workbench/services/textfile/common/textfiles'
+import { BrowserTextFileService } from 'vs/workbench/services/textfile/browser/browserTextFileService'
 import { joinPath } from 'vs/base/common/resources'
 import { Event } from 'vs/base/common/event'
 import { unsupported } from '../tools'
@@ -119,6 +121,7 @@ export function registerExtensionFile (extensionLocation: URI, path: string, get
 export default function getServiceOverride (): IEditorOverrideServices {
   return {
     [IFileService.toString()]: new SyncDescriptor(MemoryFileService),
-    [IExtensionResourceLoaderService.toString()]: new SyncDescriptor(SimpleExtensionResourceLoaderService)
+    [IExtensionResourceLoaderService.toString()]: new SyncDescriptor(SimpleExtensionResourceLoaderService),
+    [ITextFileService.toString()]: new SyncDescriptor(BrowserTextFileService)
   }
 }
