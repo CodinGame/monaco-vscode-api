@@ -84,7 +84,12 @@ if (SnippetParser.prototype.text == null) {
  * Assign all properties of b to A
  */
 function polyfillPrototypeSimple<T> (a: Partial<T>, b: T) {
-  Object.defineProperties(a, Object.getOwnPropertyDescriptors(b))
+  const entries = Object.getOwnPropertyDescriptors(b)
+  if (Object.keys(Object.getOwnPropertyDescriptors(a)).length === Object.keys(entries).length) {
+    console.warn('useless polyfill on ', a)
+  }
+  delete entries.prototype
+  Object.defineProperties(a, entries)
 }
 
 /**
@@ -93,14 +98,19 @@ function polyfillPrototypeSimple<T> (a: Partial<T>, b: T) {
  * In that case, we need to transform parameters to VSCode instances and result back to a monaco instance
  */
 function polyfillPrototype<T> (a: Partial<T>, b: T, toA: (i: unknown) => unknown, toB: (i: unknown) => unknown) {
+  let useful = false
   for (const key of Object.getOwnPropertyNames(b)) {
     if (!Object.hasOwnProperty.call(a, key)) {
+      useful = true;
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
       (a as any)[key] = function (...args: any[]) {
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
         return toA((b as any)[key].call(this, ...args.map(toB)))
       }
     }
+  }
+  if (!useful) {
+    console.warn('useless polyfill on ', a)
   }
 }
 
