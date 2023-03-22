@@ -182,6 +182,7 @@
     "@types/vscode": "~1.76.0",
     "@typescript-eslint/eslint-plugin": "^5.54.0",
     "@typescript-eslint/parser": "^5.54.0",
+    "@vscode/iconv-lite-umd": "^0.7.0",
     "eslint": "^8.35.0",
     "eslint-config-standard": "^17.0.0",
     "eslint-plugin-import": "^2.27.5",
@@ -189,6 +190,7 @@
     "eslint-plugin-promise": "^6.1.1",
     "eslint-plugin-unused-imports": "^2.0.0",
     "js-cleanup": "^1.2.0",
+    "jschardet": "^3.0.0",
     "recast": "^0.22.0",
     "rollup": "^3.18.0",
     "rollup-plugin-dts": "^5.2.0",
@@ -200,7 +202,6 @@
     "webpack": "^5.75.0",
     "zx": "^7.2.0"
   },
-  "dependencies": {},
   "peerDependencies": {
     "monaco-editor": "~0.36.1",
     "vscode-oniguruma": "^1.7.0",

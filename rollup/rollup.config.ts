@@ -182,6 +182,12 @@ export default (args: Record<string, string>): rollup.RollupOptions[] => {
       {
         name: 'resolve-vscode',
         resolveId: async function (importee, importer) {
+          if (importee === '@vscode/iconv-lite-umd') {
+            return path.resolve(OVERRIDE_PATH, 'iconv.ts')
+          }
+          if (importee === 'jschardet') {
+            return path.resolve(OVERRIDE_PATH, 'jschardet.ts')
+          }
           if (importee.startsWith('vs/css!')) {
             return path.resolve(path.dirname(importer!), importee.slice('vs/css!'.length) + '.css')
           }
