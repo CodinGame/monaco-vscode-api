@@ -91,7 +91,8 @@ const settingsModel = monaco.editor.createModel(
   "editor.semanticHighlighting.enabled": true,
   "editor.bracketPairColorization.enabled": false,
   "editor.fontSize": 12,
-  "audioCues.lineHasError": "on"
+  "audioCues.lineHasError": "on",
+  "audioCues.onDebugBreak": "on"
 }`, 'json', monaco.Uri.file('/settings.json'))
 createConfiguredEditor(document.getElementById('settings-editor')!, {
   model: settingsModel
@@ -150,3 +151,11 @@ setTimeout(() => {
     void vscode.window.showInformationMessage('The configuration was changed')
   })
 }, 1000)
+
+document.querySelector('#run')!.addEventListener('click', () => {
+  void vscode.debug.startDebugging(undefined, {
+    name: 'Test',
+    request: 'attach',
+    type: 'javascript'
+  })
+})
