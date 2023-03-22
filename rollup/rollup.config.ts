@@ -29,25 +29,67 @@ const PURE_FUNCTIONS = new Set([
   'createDecorator',
   'localize',
   'Registry.as',
-  'registerWorkbenchContribution',
   'Object.freeze',
   'URI.parse',
   'URI.from',
-  'registerColor',
   'transparent',
   'darken',
   'lighten',
   'Color.fromHex',
-  'registerExtensionPoint',
   'asBroswerUri',
   'values',
   'keys',
   'toString',
   'ContextKeyExpr.and',
+  'ContextKeyExpr.or',
   'ContextKeyNotExpr.create',
   'ContextKeyDefinedExpr.create',
-  'ProductQualityContext.notEqualsTo'
+  'notEqualsTo',
+  'notEquals',
+  'toNegated',
+  'isEqualTo',
+  'SyncDescriptor',
+  'getProxy',
+  'map',
+  'asFileUri',
+  'registerIcon'
 ])
+
+// Function calls to remove when the result is not used
+const FUNCTIONS_TO_REMOVE = new Set([
+  'registerColor',
+  'colorRegistry.onDidChangeSchema',
+  'registerSingleton', // Remove calls to registerSingleton from vscode code, we just want to import things, not registering services
+  'registerProxyConfigurations',
+  'registerWorkbenchContribution',
+  'registerViewWelcomeContent',
+  'registerViewContainer',
+  'registerViews',
+  'registerEditorPane',
+  'registerExtensionPoint',
+  '_setExtensionHostProxy',
+  '_setAllMainProxyIdentifiers',
+  'registerDebugCommandPaletteItem',
+  'registerTouchBarEntry',
+  'registerDebugViewMenuItem'
+])
+
+const PURE_OR_TO_REMOVE_FUNCTIONS = new Set([
+  ...PURE_FUNCTIONS,
+  ...FUNCTIONS_TO_REMOVE
+])
+
+function isCallPure (functionName: string, args: recast.types.namedTypes.CallExpression['arguments']): boolean {
+  // Remove Registry.add calls
+  if (functionName.endsWith('Registry.add')) {
+    const firstParam = args[0]!
+    const firstParamName = firstParam.type === 'MemberExpression' ? getMemberExpressionPath(firstParam) : undefined
+    const allowed = firstParamName != null && firstParamName.includes('ExtensionsRegistry')
+    return !allowed
+  }
+
+  return PURE_OR_TO_REMOVE_FUNCTIONS.has(functionName)
+}
 
 const EXTENSIONS = ['', '.ts', '.js']
 
@@ -256,37 +298,13 @@ export default (args: Record<string, string>): rollup.RollupOptions[] => {
                 const node = path.node
                 const name = node.callee.type === 'MemberExpression' || node.callee.type === 'Identifier' ? getMemberExpressionPath(node.callee) : null
 
-                if (name != null && new Set([
-                  'colorRegistry.onDidChangeSchema',
-                  'registerSingleton', // Remove calls to registerSingleton from vscode code, we just want to import things, not registering services
-                  'registerProxyConfigurations'
-                ]).has(name)) {
-                  transformed = true
-                  return null
-                }
-
                 if (node.callee.type === 'MemberExpression') {
                   if (node.callee.property.type === 'Identifier') {
-                    if ((name != null && PURE_FUNCTIONS.has(name)) || PURE_FUNCTIONS.has(node.callee.property.name)) {
+                    if ((name != null && isCallPure(name, node.arguments)) || isCallPure(node.callee.property.name, node.arguments)) {
                       path.replace(addComment(node))
                     }
-
-                    if (name != null && name === 'CommandsRegistry.registerCommand') {
-                      if (!id.includes('/snippetCompletionProvider')) {
-                        path.replace(addComment(node))
-                      }
-                    }
-                    // Remove Registry.add calls
-                    if (name != null && name.endsWith('Registry.add')) {
-                      const firstParam = node.arguments[0]!
-                      const firstParamName = firstParam.type === 'MemberExpression' ? getMemberExpressionPath(firstParam) : undefined
-                      const allowed = firstParamName != null && firstParamName.includes('ExtensionsRegistry')
-                      if (!allowed) {
-                        return null
-                      }
-                    }
                   }
-                } else if (node.callee.type === 'Identifier' && PURE_FUNCTIONS.has(node.callee.name)) {
+                } else if (node.callee.type === 'Identifier' && isCallPure(node.callee.name, node.arguments)) {
                   path.replace(addComment(node))
                 } else if (node.callee.type === 'FunctionExpression') {
                   const lastInstruction = node.callee.body.body[node.callee.body.body.length - 1]
