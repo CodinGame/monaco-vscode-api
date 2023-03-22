@@ -51,15 +51,18 @@ void vscode.window.showInformationMessage('Hello', {
 })
 
 const model = monaco.editor.createModel(
-  `// Your First Program
+  `
+let variable = 1
+function inc () {
+  variable++
+}
 
-class HelloWorld {
-    public static void main(String[] args) {
-        System.out.println('Hello, World!');
-    }
+while (variable < 5000) {
+  inc()
+  console.log('Hello world', variable);
 }`,
-  'java',
-  monaco.Uri.file('HelloWorld.java')
+  undefined,
+  monaco.Uri.file('/tmp/test.js')
 )
 
 createConfiguredEditor(document.getElementById('editor')!, {
@@ -68,7 +71,7 @@ createConfiguredEditor(document.getElementById('editor')!, {
 
 const diagnostics = vscode.languages.createDiagnosticCollection('demo')
 diagnostics.set(model.uri, [{
-  range: new vscode.Range(2, 6, 2, 16),
+  range: new vscode.Range(2, 9, 2, 12),
   severity: vscode.DiagnosticSeverity.Error,
   message: 'This is not a real error, just a demo, don\'t worry',
   source: 'Demo',
