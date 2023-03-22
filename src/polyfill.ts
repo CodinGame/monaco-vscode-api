@@ -1,4 +1,3 @@
-
 import { QuickInputController } from 'vs/platform/quickinput/browser/quickInput'
 // @ts-ignore Creating a d.ts is not worth it
 import { VSBuffer as MonacoVSBuffer } from 'monaco-editor/esm/vs/base/common/buffer.js'
@@ -32,8 +31,8 @@ import { TernarySearchTree as VScodeTernarySearchTree } from 'vscode/vs/base/com
 import { Configuration as MonacoConfiguration } from 'monaco-editor/esm/vs/platform/configuration/common/configurationModels.js'
 import { Configuration as VScodeConfiguration } from 'vscode/vs/platform/configuration/common/configurationModels.js'
 // @ts-ignore Creating a d.ts is not worth it
-import { RawContextKey as MonacoRawContextKey } from 'monaco-editor/esm/vs/platform/contextkey/common/contextkey.js'
-import { RawContextKey as VScodeRawContextKey } from 'vscode/vs/platform/contextkey/common/contextkey.js'
+import { RawContextKey as MonacoRawContextKey, ContextKeyExpr as MonacoContextKeyExpr } from 'monaco-editor/esm/vs/platform/contextkey/common/contextkey.js'
+import { RawContextKey as VScodeRawContextKey, ContextKeyExpr as VScodeContextKeyExpr } from 'vscode/vs/platform/contextkey/common/contextkey.js'
 // @ts-ignore Creating a d.ts is not worth it
 import { ErrorHandler as MonacoErrorHandler } from 'monaco-editor/esm/vs/base/common/errors.js'
 import { ErrorHandler as VScodeErrorHandler } from 'vscode/vs/base/common/errors.js'
@@ -67,6 +66,45 @@ import { DisposableMap as VScodeDisposableMap } from 'vscode/vs/base/common/life
 import { FileAccess as MonacoFileAccess } from 'monaco-editor/esm/vs/base/common/network.js'
 import { FileAccess as VScodeFileAccess } from 'vscode/vs/base/common/network.js'
 import { GhostTextController } from 'vs/editor/contrib/inlineCompletions/browser/ghostTextController'
+// @ts-ignore Creating a d.ts is not worth it
+import { AsyncDataTree as MonacoAsyncDataTree } from 'monaco-editor/esm/vs/base/browser/ui/tree/asyncDataTree.js'
+import { AsyncDataTree as VScodeAsyncDataTree } from 'vscode/vs/base/browser/ui/tree/asyncDataTree.js'
+// @ts-ignore Creating a d.ts is not worth it
+import { AbstractTree as MonacoAbstractTree } from 'monaco-editor/esm/vs/base/browser/ui/tree/abstractTree.js'
+import { AbstractTree as VScodeAbstractTree } from 'vscode/vs/base/browser/ui/tree/abstractTree.js'
+// @ts-ignore Creating a d.ts is not worth it
+import { AbstractCodeEditorService as MonacoAbstractCodeEditorService } from 'monaco-editor/esm/vs/editor/browser/services/abstractCodeEditorService.js'
+import { AbstractCodeEditorService as VScodeAbstractCodeEditorService } from 'vscode/vs/editor/browser/services/abstractCodeEditorService.js'
+// @ts-ignore Creating a d.ts is not worth it
+import { CodeEditorWidget as MonacoCodeEditorWidget } from 'monaco-editor/esm/vs/editor/browser/widget/codeEditorWidget.js'
+import { CodeEditorWidget as VScodeCodeEditorWidget } from 'vscode/vs/editor/browser/widget/codeEditorWidget.js'
+// @ts-ignore Creating a d.ts is not worth it
+import { PieceTreeTextBufferBuilder as MonacoPieceTreeTextBufferBuilder } from 'monaco-editor/esm/vs/editor/common/model/pieceTreeTextBuffer/pieceTreeTextBufferBuilder.js'
+import { PieceTreeTextBufferBuilder as VScodePieceTreeTextBufferBuilder } from 'vscode/vs/editor/common/model/pieceTreeTextBuffer/pieceTreeTextBufferBuilder.js'
+// @ts-ignore Creating a d.ts is not worth it
+import { PieceTreeTextBuffer as MonacoPieceTreeTextBuffer } from 'monaco-editor/esm/vs/editor/common/model/pieceTreeTextBuffer/pieceTreeTextBuffer.js'
+import { PieceTreeTextBuffer as VScodePieceTreeTextBuffer } from 'vscode/vs/editor/common/model/pieceTreeTextBuffer/pieceTreeTextBuffer.js'
+// @ts-ignore Creating a d.ts is not worth it
+import { ModelService as MonacoModelService } from 'monaco-editor/esm/vs/editor/common/services/modelService.js'
+import { ModelService as VScodeModelService } from 'vscode/vs/editor/common/services/modelService.js'
+// @ts-ignore Creating a d.ts is not worth it
+import { AbstractContextKeyService as MonacoAbstractContextKeyService } from 'monaco-editor/esm/vs/platform/contextkey/browser/contextKeyService.js'
+import { AbstractContextKeyService as VScodeAbstractContextKeyService } from 'vscode/vs/platform/contextkey/browser/contextKeyService.js'
+// @ts-ignore Creating a d.ts is not worth it
+import { ListView as MonacoListView } from 'monaco-editor/esm/vs/base/browser/ui/list/listView.js'
+import { ListView as VScodeListView } from 'vscode/vs/base/browser/ui/list/listView.js'
+// @ts-ignore Creating a d.ts is not worth it
+import { CallbackIterable as MonacoCallbackIterable } from 'monaco-editor/esm/vs/base/common/arrays.js'
+import { CallbackIterable as VScodeCallbackIterable } from 'vscode/vs/base/common/arrays.js'
+// @ts-ignore Creating a d.ts is not worth it
+import { SelectActionViewItem as MonacoSelectActionViewItem } from 'monaco-editor/esm/vs/base/browser/ui/actionbar/actionViewItems'
+import { SelectActionViewItem as VScodeSelectActionViewItem } from 'vscode/vs/base/browser/ui/actionbar/actionViewItems'
+// @ts-ignore Creating a d.ts is not worth it
+import { QuickInputService as MonacoQuickInputService } from 'monaco-editor/esm/vs/platform/quickinput/browser/quickInputService'
+import { QuickInputService as VScodeQuickInputService } from 'vscode/vs/platform/quickinput/browser/quickInputService'
+// @ts-ignore Creating a d.ts is not worth it
+import { TextModel as MonacoTextModel } from 'monaco-editor/esm/vs/editor/common/model/textModel.js'
+import { ITextBuffer } from 'vs/editor/common/model'
 
 // Monaco build process treeshaking is very aggressive and everything that is not used in monaco is removed
 // Unfortunately, it makes some class not respect anymore the interface they are supposed to implement
@@ -120,6 +158,7 @@ polyfillPrototypeSimple(MonacoWorkspaceFolder.prototype, VScodeWorkspaceFolder.p
 polyfillPrototypeSimple(MonacoLanguagesRegistry.prototype, VScodeLanguagesRegistry.prototype)
 polyfillPrototypeSimple(MonacoErrorHandler.prototype, VScodeErrorHandler.prototype)
 polyfillPrototypeSimple(MonacoRawContextKey.prototype, VScodeRawContextKey.prototype)
+polyfillPrototypeSimple(MonacoContextKeyExpr, VScodeContextKeyExpr)
 polyfillPrototypeSimple(MonacoConfiguration.prototype, VScodeConfiguration.prototype)
 polyfillPrototypeSimple(MonacoTernarySearchTree.prototype, VScodeTernarySearchTree.prototype)
 polyfillPrototypeSimple(MonacoStandaloneConfigurationService.prototype, VScodeStandaloneConfigurationService.prototype)
@@ -132,6 +171,39 @@ polyfillPrototypeSimple(MonacoKeybinding.prototype, VScodeKeybinding.prototype)
 polyfillPrototypeSimple(MonacoKeyCodeChord.prototype, VScodeKeyCodeChord.prototype)
 polyfillPrototypeSimple(MonacoDisposableMap.prototype, VScodeDisposableMap.prototype)
 polyfillPrototypeSimple(MonacoFileAccess.constructor.prototype, VScodeFileAccess.constructor.prototype)
+polyfillPrototypeSimple(MonacoAsyncDataTree.prototype, VScodeAsyncDataTree.prototype)
+polyfillPrototypeSimple(MonacoAbstractTree.prototype, VScodeAbstractTree.prototype)
+polyfillPrototypeSimple(MonacoAbstractCodeEditorService.prototype, VScodeAbstractCodeEditorService.prototype)
+polyfillPrototypeSimple(MonacoCodeEditorWidget.prototype, VScodeCodeEditorWidget.prototype)
+polyfillPrototypeSimple(MonacoModelService.prototype, VScodeModelService.prototype)
+polyfillPrototypeSimple(MonacoPieceTreeTextBuffer.prototype, VScodePieceTreeTextBuffer.prototype)
+polyfillPrototypeSimple(MonacoAbstractContextKeyService.prototype, VScodeAbstractContextKeyService.prototype)
+polyfillPrototypeSimple(MonacoListView.prototype, VScodeListView.prototype)
+polyfillPrototypeSimple(MonacoCallbackIterable.prototype, VScodeCallbackIterable.prototype)
+polyfillPrototypeSimple(MonacoSelectActionViewItem.prototype, VScodeSelectActionViewItem.prototype)
+polyfillPrototypeSimple(MonacoQuickInputService.prototype, VScodeQuickInputService.prototype)
+
+MonacoTextModel.prototype.equalsTextBuffer = function (other: ITextBuffer): boolean {
+  this._assertNotDisposed()
+  return this._buffer.equals(other)
+}
+
+Object.defineProperty(MonacoListView.prototype, 'onDidChangeContentHeight', {
+  get () {
+    if (this.__onDidChangeContentHeight == null) {
+      this.__onDidChangeContentHeight = Event.latch(this._onDidChangeContentHeight.event, undefined, this.disposables)
+    }
+    return this.__onDidChangeContentHeight
+  }
+})
+Object.defineProperty(MonacoAbstractCodeEditorService.prototype, '_onDecorationTypeRegistered', {
+  get () {
+    if (this.__onDecorationTypeRegistered == null) {
+      this.__onDecorationTypeRegistered = this._register(new Emitter())
+    }
+    return this.__onDecorationTypeRegistered
+  }
+})
 
 Object.defineProperty(MonacoDefaultConfiguration.prototype, '_onDidChangeConfiguration', {
   get () {
@@ -146,6 +218,9 @@ Object.defineProperty(MonacoDefaultConfiguration.prototype, 'onDidChangeConfigur
     return this._onDidChangeConfiguration.event
   }
 })
+
+// To polyfill PieceTreeTextBufferFactory
+MonacoPieceTreeTextBufferBuilder.prototype.finish = VScodePieceTreeTextBufferBuilder.prototype.finish
 
 const jsonContributionRegistry = Registry.as<IJSONContributionRegistry>(JsonExtensions.JSONContribution)
 jsonContributionRegistry.getSchemaContributions ??= () => ({
@@ -198,6 +273,7 @@ QuickInputController.prototype.createInputBox = polyfillQuickInput(QuickInputCon
 
 const StandaloneUriLabelService = getSingletonServiceDescriptors().find(([id]) => id === ILabelService)![1].ctor
 StandaloneUriLabelService.prototype.onDidChangeFormatters ??= Event.None
+StandaloneUriLabelService.prototype.getWorkspaceLabel ??= () => ''
 
 // A lot of methods from VSBuffer are treeshaked out of monaco editor, we need to restore them here
 // Also we cannot just use the VSCode impl because:
