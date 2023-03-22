@@ -1,5 +1,4 @@
 import { IMessage } from 'vs/workbench/services/extensions/common/extensions'
-import { ExtensionPoint, ExtensionsRegistry } from 'vs/workbench/services/extensions/common/extensionsRegistry'
 import { StandaloneServices } from 'vs/editor/standalone/browser/standaloneServices'
 import { Emitter } from 'vs/base/common/event'
 import { IInstantiationService } from 'vs/platform/instantiation/common/instantiation'
@@ -14,10 +13,6 @@ export function consoleExtensionMessageHandler (msg: IMessage): void {
     // eslint-disable-next-line no-console
     console.log(msg)
   }
-}
-
-export function getExtensionPoint<T> (extensionPoint: string): ExtensionPoint<T> {
-  return ExtensionsRegistry.getExtensionPoints().find(ep => ep.name === extensionPoint) as ExtensionPoint<T>
 }
 
 const emitter = new Emitter<IInstantiationService>()

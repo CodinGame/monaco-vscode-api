@@ -6,7 +6,7 @@ import { FileService } from 'vs/platform/files/common/fileService'
 import { ILogService } from 'vs/platform/log/common/log'
 import { InMemoryFileSystemProvider } from 'vs/platform/files/common/inMemoryFilesystemProvider'
 import { AbstractExtensionResourceLoaderService, IExtensionResourceLoaderService } from 'vs/platform/extensionResourceLoader/common/extensionResourceLoader'
-import { Event, URI } from 'vs/workbench/workbench.web.main'
+import { URI } from 'vs/base/common/uri'
 import { FileSystemProviderCapabilities, FileSystemProviderError, FileSystemProviderErrorCode, FileType, IFileSystemProviderWithFileReadWriteCapability, IStat } from 'vs/platform/files/common/files'
 import { InstantiationType, registerSingleton } from 'vs/platform/instantiation/common/extensions'
 import { IStorageService } from 'vs/platform/storage/common/storage'
@@ -15,9 +15,10 @@ import { IEnvironmentService } from 'vs/platform/environment/common/environment'
 import { IProductService } from 'vs/platform/product/common/productService'
 import { Disposable } from 'vs/workbench/api/common/extHostTypes'
 import { IDisposable } from 'vs/base/common/lifecycle'
-import { DEFAULT_EXTENSION } from '../vscode-services/extHost'
+import { joinPath } from 'vs/base/common/resources'
+import { Event } from 'vs/base/common/event'
 import { unsupported } from '../tools'
-import { IFileService, Services } from '../services'
+import { IFileService } from '../services'
 
 class SimpleExtensionResourceLoaderService extends AbstractExtensionResourceLoaderService {
   // required for injection
@@ -107,14 +108,12 @@ class MemoryFileService extends FileService {
     super(logService)
 
     this.registerProvider('user', new InMemoryFileSystemProvider())
-
-    const extension = Services.get().extension ?? DEFAULT_EXTENSION
-    this.registerProvider(extension.extensionLocation.scheme, extensionFileSystemProvider)
+    this.registerProvider('extension', extensionFileSystemProvider)
   }
 }
 
-export function registerExtensionFile (resource: URI, getContent: () => Promise<string>): Disposable {
-  return extensionFileSystemProvider.registerFile(resource, getContent)
+export function registerExtensionFile (extensionLocation: URI, path: string, getContent: () => Promise<string>): Disposable {
+  return extensionFileSystemProvider.registerFile(joinPath(extensionLocation, path), getContent)
 }
 
 export default function getServiceOverride (): IEditorOverrideServices {

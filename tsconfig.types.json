@@ -55,6 +55,7 @@
   "include": [
 		"src/services.ts",
 		"src/types.d.ts",
+		"src/extensions.ts",
 		"src/service-override/notifications.ts",
 		"src/service-override/dialogs.ts",
 		"src/service-override/modelEditor.ts",

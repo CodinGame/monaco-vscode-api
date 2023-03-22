@@ -13,15 +13,38 @@ import * as editorOptions from 'vs/editor/common/config/editorOptions'
 import * as uri from 'vs/base/common/uri'
 import * as log from 'vs/platform/log/common/log'
 import * as telemetryUtils from 'vs/platform/telemetry/common/telemetryUtils'
-import customLanguages from './vscode-services/languages'
-import customCommands from './vscode-services/commands'
-import customWorkspace from './vscode-services/workspace'
-import customWindow, { TextTabInput } from './vscode-services/window'
-import customEnv from './vscode-services/env'
+import { ExtensionIdentifier, IExtensionDescription, TargetPlatform } from 'vs/platform/extensions/common/extensions'
+import { URI } from 'vs/base/common/uri'
+import createLanguagesApi from './vscode-services/languages'
+import createCommandsApi from './vscode-services/commands'
+import createWorkspaceApi from './vscode-services/workspace'
+import createWindowApi, { TextTabInput } from './vscode-services/window'
+import createEnvApi from './vscode-services/env'
+import { Services } from './services'
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 const unsupported = <any>undefined
 
+export const DEFAULT_EXTENSION: IExtensionDescription = {
+  identifier: new ExtensionIdentifier('monaco'),
+  isBuiltin: true,
+  isUserBuiltin: true,
+  isUnderDevelopment: false,
+  extensionLocation: URI.from({ scheme: 'extension', path: '/' }),
+  name: 'monaco',
+  publisher: 'microsoft',
+  version: '1.0.0',
+  engines: {
+    vscode: VSCODE_VERSION
+  },
+  targetPlatform: TargetPlatform.WEB
+}
+
+function getDefaultExtension () {
+  return Services.get().extension ?? DEFAULT_EXTENSION
+}
+
+const _workspace = createWorkspaceApi(getDefaultExtension)
 const api: typeof vscode = {
   version: VSCODE_VERSION,
 
@@ -34,11 +57,11 @@ const api: typeof vscode = {
   authentication: unsupported,
   tests: unsupported,
 
-  env: customEnv,
-  commands: customCommands,
-  window: customWindow,
-  workspace: customWorkspace,
-  languages: customLanguages,
+  env: createEnvApi(getDefaultExtension),
+  commands: createCommandsApi(getDefaultExtension),
+  window: createWindowApi(getDefaultExtension, _workspace),
+  workspace: _workspace,
+  languages: createLanguagesApi(getDefaultExtension),
 
   Breakpoint: extHostTypes.Breakpoint,
   CallHierarchyIncomingCall: extHostTypes.CallHierarchyIncomingCall,

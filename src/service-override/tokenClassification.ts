@@ -2,11 +2,8 @@ import '../polyfill'
 import '../vscode-services/missing-services'
 import { IEditorOverrideServices } from 'vs/editor/standalone/browser/standaloneServices'
 import { TokenClassificationExtensionPoints } from 'vs/workbench/services/themes/common/tokenClassificationExtensionPoint'
-import { ExtensionMessageCollector } from 'vs/workbench/services/extensions/common/extensionsRegistry'
-import { IExtensionDescription } from 'vs/platform/extensions/common/extensions'
-import { consoleExtensionMessageHandler, getExtensionPoint, onServicesInitialized } from './tools'
-import { IInstantiationService, Services } from '../services'
-import { DEFAULT_EXTENSION } from '../vscode-services/extHost'
+import { onServicesInitialized } from './tools'
+import { IInstantiationService } from '../services'
 
 // The interfaces are not exported
 interface ITokenTypeExtensionPoint {
@@ -25,34 +22,6 @@ interface ITokenStyleDefaultExtensionPoint {
   scopes: { [selector: string]: string[] }
 }
 
-const tokenTypeExtPoint = getExtensionPoint<ITokenTypeExtensionPoint[]>('semanticTokenTypes')
-const tokenModifierExtPoint = getExtensionPoint<ITokenModifierExtensionPoint[]>('semanticTokenModifiers')
-const tokenStyleDefaultsExtPoint = getExtensionPoint<ITokenStyleDefaultExtensionPoint[]>('semanticTokenScopes')
-
-function setTokenTypes (tokenTypes: ITokenTypeExtensionPoint[], extension: IExtensionDescription = Services.get().extension ?? DEFAULT_EXTENSION): void {
-  tokenTypeExtPoint.acceptUsers([{
-    description: extension,
-    value: tokenTypes,
-    collector: new ExtensionMessageCollector(consoleExtensionMessageHandler, extension, tokenTypeExtPoint.name)
-  }])
-}
-
-function setTokenModifiers (tokenModifiers: ITokenModifierExtensionPoint[], extension: IExtensionDescription = Services.get().extension ?? DEFAULT_EXTENSION): void {
-  tokenModifierExtPoint.acceptUsers([{
-    description: extension,
-    value: tokenModifiers,
-    collector: new ExtensionMessageCollector(consoleExtensionMessageHandler, extension, tokenModifierExtPoint.name)
-  }])
-}
-
-function setTokenStyleDefaults (tokenStyleDefaults: ITokenStyleDefaultExtensionPoint[], extension: IExtensionDescription = Services.get().extension ?? DEFAULT_EXTENSION): void {
-  tokenStyleDefaultsExtPoint.acceptUsers([{
-    description: extension,
-    value: tokenStyleDefaults,
-    collector: new ExtensionMessageCollector(consoleExtensionMessageHandler, extension, tokenModifierExtPoint.name)
-  }])
-}
-
 function initialize (instantiationService: IInstantiationService) {
   instantiationService.createInstance(TokenClassificationExtensionPoints)
 }
@@ -63,9 +32,6 @@ export default function getServiceOverride (): IEditorOverrideServices {
 }
 
 export {
-  setTokenTypes,
-  setTokenModifiers,
-  setTokenStyleDefaults,
   ITokenTypeExtensionPoint,
   ITokenModifierExtensionPoint,
   ITokenStyleDefaultExtensionPoint

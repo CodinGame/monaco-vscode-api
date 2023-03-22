@@ -24,6 +24,10 @@
       "types": "./dist/services.d.ts",
       "default": "./dist/services.js"
     },
+    "./extensions": {
+      "types": "./dist/extensions.d.ts",
+      "default": "./dist/extensions.js"
+    },
     "./service-override/notifications": {
       "types": "./dist/notifications.d.ts",
       "default": "./dist/notifications.js"
@@ -85,6 +89,9 @@
     "*": {
       "services": [
         "./dist/services.d.ts"
+      ],
+      "extensions": [
+        "./dist/extensions.d.ts"
       ],
       "service-override/notifications": [
         "./dist/notifications.d.ts"
