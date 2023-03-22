@@ -4,10 +4,6 @@ on:
   push:
     branches: [main]
 
-permissions:
-  pages: write      # to deploy to Pages
-  id-token: write   # to verify the deployment originates from an appropriate source
-
 jobs:
   release:
     name: Release
