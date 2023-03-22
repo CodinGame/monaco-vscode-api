@@ -237,7 +237,8 @@ export default (args: Record<string, string>): rollup.RollupOptions[] => {
             function addComment (node: recast.types.namedTypes.NewExpression | recast.types.namedTypes.CallExpression) {
               if (!(node.comments ?? []).some(comment => comment.value === PURE_ANNO)) {
                 transformed = true
-                node.comments = [recast.types.builders.commentBlock(PURE_ANNO, true)]
+                node.comments ??= []
+                node.comments.unshift(recast.types.builders.commentBlock(PURE_ANNO, true))
                 return recast.types.builders.parenthesizedExpression(node)
               }
               return node
@@ -390,7 +391,8 @@ export default {
         function addComment (node: recast.types.namedTypes.NewExpression | recast.types.namedTypes.CallExpression) {
           if (!(node.comments ?? []).some(comment => comment.value === PURE_ANNO)) {
             transformed = true
-            node.comments = [recast.types.builders.commentBlock(PURE_ANNO, true)]
+            node.comments ??= []
+            node.comments.unshift(recast.types.builders.commentBlock(PURE_ANNO, true))
             return recast.types.builders.parenthesizedExpression(node)
           }
           return node
