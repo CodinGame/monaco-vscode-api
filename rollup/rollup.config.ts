@@ -134,6 +134,7 @@ const input = {
   snippets: './src/service-override/snippets.ts',
   languages: './src/service-override/languages.ts',
   audioCue: './src/service-override/audioCue.ts',
+  debug: './src/service-override/debug.ts',
   monaco: './src/monaco'
 }
 

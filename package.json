@@ -76,6 +76,10 @@
       "types": "./dist/audioCue.d.ts",
       "default": "./dist/audioCue.js"
     },
+    "./service-override/debug": {
+      "types": "./dist/debug.d.ts",
+      "default": "./dist/debug.js"
+    },
     "./monaco": {
       "types": "./dist/monaco.d.ts",
       "default": "./dist/monaco.js"
@@ -128,6 +132,9 @@
       ],
       "service-override/audioCue": [
         "./dist/audioCue.d.ts"
+      ],
+      "service-override/debug": [
+        "./dist/debug.d.ts"
       ],
       "monaco": [
         "./dist/monaco.d.ts"

@@ -49,7 +49,7 @@ StandaloneServices.initialize({
 })
 ```
 
-Additionally, this library exposes 11 modules that include the vscode version of some services (with some glue to make it work with monaco):
+Additionally, this library exposes 12 modules that include the vscode version of some services (with some glue to make it work with monaco):
 
 - Notifications: `vscode/service-override/notifications`
 - Dialogs: `vscode/service-override/dialogs`
@@ -63,6 +63,7 @@ Additionally, this library exposes 11 modules that include the vscode version of
 - VSCode themes: `vscode/service-override/theme`
 - Token classification: `vscode/service-override/tokenClassification`
 - Audio cue: `vscode/service-override/audioCue`
+- Debug: `vscode/service-override/debug`
 
 Usage:
 
