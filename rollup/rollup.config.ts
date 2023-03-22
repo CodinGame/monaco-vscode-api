@@ -79,7 +79,33 @@ const PURE_OR_TO_REMOVE_FUNCTIONS = new Set([
   ...FUNCTIONS_TO_REMOVE
 ])
 
+const REMOVE_COMMANDS = new Set([
+  'debug.openView',
+  'DEBUG_START_COMMAND_ID',
+  'DEBUG_RUN_COMMAND_ID',
+  'SELECT_DEBUG_CONSOLE_ID',
+  'SELECT_AND_START_ID',
+  'debug.startFromConfig',
+  'FOCUS_REPL_ID',
+  'NEXT_DEBUG_CONSOLE_ID',
+  'PREV_DEBUG_CONSOLE_ID',
+  'debug.installAdditionalDebuggers',
+  'debug.openBreakpointToSide'
+])
+
 function isCallPure (functionName: string, args: recast.types.namedTypes.CallExpression['arguments']): boolean {
+  if (functionName === 'KeybindingsRegistry.registerCommandAndKeybindingRule') {
+    const firstParam = args[0]!
+    if (firstParam.type === 'ObjectExpression') {
+      for (const prop of firstParam.properties) {
+        if (prop.type === 'ObjectProperty' && prop.key.type === 'Identifier' && prop.key.name === 'id') {
+          const id = prop.value.type === 'StringLiteral' ? prop.value.value : (prop.value.type === 'Identifier' ? prop.value.name : null)
+          return id != null && REMOVE_COMMANDS.has(id)
+        }
+      }
+    }
+  }
+
   // Remove Registry.add calls
   if (functionName.endsWith('Registry.add')) {
     const firstParam = args[0]!
