@@ -14,7 +14,6 @@ import { DEFAULT_EDITOR_MAX_DIMENSIONS, DEFAULT_EDITOR_MIN_DIMENSIONS } from 'vs
 import { applyTextEditorOptions } from 'vs/workbench/common/editor/editorOptions'
 import { IEditor, ScrollType } from 'vs/editor/common/editorCommon'
 import { SyncDescriptor } from 'vs/platform/instantiation/common/descriptors'
-import { ITextModel } from 'vs/editor/common/model'
 import { Disposable, ImmortalReference, IReference } from 'vs/base/common/lifecycle'
 import { URI } from 'vs/base/common/uri'
 import { IModelService } from 'vs/editor/common/services/model'
@@ -26,7 +25,7 @@ import { TextResourceEditorModel } from 'vs/workbench/common/editor/textResource
 import { ICodeEditor } from 'vs/editor/browser/editorBrowser'
 import { unsupported } from '../tools'
 
-type OpenEditor = (model: ITextModel, options: IEditorOptions | undefined, sideBySide?: boolean) => Promise<ICodeEditor | undefined>
+type OpenEditor = (modelRef: IReference<IResolvedTextEditorModel>, options: IEditorOptions | undefined, sideBySide?: boolean) => Promise<ICodeEditor | undefined>
 
 class SimpleEditorPane implements IEditorPane {
   constructor (private editor?: ICodeEditor) {}
@@ -120,30 +119,21 @@ class EditorService extends Disposable implements IEditorService {
 
     let modelEditor: ICodeEditor | undefined
 
-    // Try to get the existing model
-    const modelService = StandaloneServices.get(IModelService)
-    let model = modelService.getModel(resource)
+    // The model doesn't exist, resolve it
+    const modelRef = await this.textModelService.createModelReference(resource)
 
-    let newModelRef: IReference<IResolvedTextEditorModel> | undefined
-    if (model == null) {
-      // The model doesn't exist, resolve it
-      const modelRef = await this.textModelService.createModelReference(resource)
-      newModelRef = modelRef
-      model = modelRef.object.textEditorModel
-    } else {
-      // If the model was already existing, try to find an associated editor
-      const codeEditors = StandaloneServices.get(ICodeEditorService).listCodeEditors()
-      modelEditor = codeEditors.find(editor => editor.getModel() === model)
-    }
+    // If the model was already existing, try to find an associated editor
+    const codeEditors = StandaloneServices.get(ICodeEditorService).listCodeEditors()
+    modelEditor = codeEditors.find(editor => editor.getModel() === modelRef.object.textEditorModel)
 
     // If there is no editor associated to the model, try to open a new one
     if (modelEditor == null) {
-      modelEditor = await this._openEditor(model, options, preferredGroup === SIDE_GROUP)
+      modelEditor = await this._openEditor(modelRef, options, preferredGroup === SIDE_GROUP)
     }
 
     if (modelEditor == null) {
       // Dispose the newly created model if `openEditor` wasn't able to open it
-      newModelRef?.dispose()
+      modelRef.dispose()
       return undefined
     }
 
@@ -219,5 +209,7 @@ export default function getServiceOverride (openEditor: OpenEditor): IEditorOver
 
 export {
   OpenEditor,
-  IEditorOptions
+  IEditorOptions,
+  IResolvedTextEditorModel,
+  IReference
 }

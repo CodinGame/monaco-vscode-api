@@ -7,7 +7,7 @@ import 'monaco-editor/esm/vs/editor/standalone/browser/quickAccess/standaloneGot
 import 'monaco-editor/esm/vs/editor/standalone/browser/quickAccess/standaloneCommandsQuickAccess'
 import 'monaco-editor/esm/vs/editor/standalone/browser/referenceSearch/standaloneReferenceSearch'
 import { Services, StandaloneServices } from 'vscode/services'
-import getModelEditorServiceOverride from 'vscode/service-override/modelEditor'
+import getModelEditorServiceOverride, { IReference, IResolvedTextEditorModel, OpenEditor } from 'vscode/service-override/modelEditor'
 import getNotificationServiceOverride from 'vscode/service-override/notifications'
 import getDialogsServiceOverride from 'vscode/service-override/dialogs'
 import getConfigurationServiceOverride from 'vscode/service-override/configuration'
@@ -57,13 +57,10 @@ Services.install({
 })
 
 let currentEditor: ({
-  model: monaco.editor.ITextModel
+  modelRef: IReference<IResolvedTextEditorModel>
   editor: monaco.editor.IStandaloneCodeEditor
 } & monaco.IDisposable) | null = null
-function openNewCodeEditor (model: monaco.editor.ITextModel) {
-  if (currentEditor != null && model === currentEditor.model) {
-    return currentEditor.editor
-  }
+const openNewCodeEditor: OpenEditor = async (modelRef) => {
   if (currentEditor != null) {
     currentEditor.dispose()
     currentEditor = null
@@ -88,7 +85,7 @@ function openNewCodeEditor (model: monaco.editor.ITextModel) {
     const editor = createConfiguredEditor(
       editorElem,
       {
-        model,
+        model: modelRef.object.textEditorModel,
         readOnly: true,
         automaticLayout: true
       }
@@ -97,13 +94,17 @@ function openNewCodeEditor (model: monaco.editor.ITextModel) {
     currentEditor = {
       dispose: () => {
         editor.dispose()
+        modelRef.dispose()
         document.body.removeChild(container)
         currentEditor = null
       },
-      model,
+      modelRef,
       editor
     }
 
+    editor.onDidBlurEditorText(() => {
+      currentEditor?.dispose()
+    })
     container.addEventListener('mousedown', (event) => {
       if (event.target !== container) {
         return
@@ -122,9 +123,7 @@ function openNewCodeEditor (model: monaco.editor.ITextModel) {
 
 // Override services
 StandaloneServices.initialize({
-  ...getModelEditorServiceOverride(async (model) => {
-    return openNewCodeEditor(model)
-  }),
+  ...getModelEditorServiceOverride(openNewCodeEditor),
   ...getNotificationServiceOverride(),
   ...getDialogsServiceOverride(),
   ...getConfigurationServiceOverride(),
