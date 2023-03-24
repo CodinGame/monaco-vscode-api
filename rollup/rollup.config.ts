@@ -114,6 +114,13 @@ function isCallPure (functionName: string, args: recast.types.namedTypes.CallExp
     return !allowed
   }
 
+  if (functionName.endsWith('registerAction2')) {
+    const firstParam = args[0]!
+    if (firstParam.type === 'ClassExpression' && firstParam.id?.name === 'AddConfigurationAction') {
+      return true
+    }
+  }
+
   return PURE_OR_TO_REMOVE_FUNCTIONS.has(functionName)
 }
 
