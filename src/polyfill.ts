@@ -21,6 +21,7 @@ import { NoOpNotification as MonacoNoOpNotification } from 'monaco-editor/esm/vs
 import { NoOpNotification as VScodeNoOpNotification } from 'vscode/vs/platform/notification/common/notification.js'
 import { Registry } from 'vs/platform/registry/common/platform'
 import { Extensions as ConfigurationExtensions, IConfigurationRegistry } from 'vs/platform/configuration/common/configurationRegistry'
+import { StandaloneServices } from 'vs/editor/standalone/browser/standaloneServices'
 // @ts-ignore Creating a d.ts is not worth it
 import { StandaloneConfigurationService as MonacoStandaloneConfigurationService } from 'monaco-editor/esm/vs/editor/standalone/browser/standaloneServices.js'
 import { StandaloneConfigurationService as VScodeStandaloneConfigurationService } from 'vscode/vs/editor/standalone/browser/standaloneServices.js'
@@ -41,7 +42,7 @@ import { LanguagesRegistry as MonacoLanguagesRegistry } from 'monaco-editor/esm/
 import { LanguagesRegistry as VScodeLanguagesRegistry } from 'vscode/vs/editor/common/services/languagesRegistry.js'
 // @ts-ignore Creating a d.ts is not worth it
 import { WorkspaceFolder as MonacoWorkspaceFolder } from 'monaco-editor/esm/vs/platform/workspace/common/workspace.js'
-import { WorkspaceFolder as VScodeWorkspaceFolder } from 'vscode/vs/platform/workspace/common/workspace.js'
+import { IWorkspaceContextService, WorkbenchState, WorkspaceFolder as VScodeWorkspaceFolder } from 'vscode/vs/platform/workspace/common/workspace.js'
 // @ts-ignore Creating a d.ts is not worth it
 import { List as MonacoList } from 'monaco-editor/esm/vs/base/browser/ui/list/listWidget.js'
 import { List as VScodeList } from 'vscode/vs/base/browser/ui/list/listWidget.js'
@@ -105,6 +106,7 @@ import { QuickInputService as VScodeQuickInputService } from 'vscode/vs/platform
 // @ts-ignore Creating a d.ts is not worth it
 import { TextModel as MonacoTextModel } from 'monaco-editor/esm/vs/editor/common/model/textModel.js'
 import { ITextBuffer } from 'vs/editor/common/model'
+import { onServicesInitialized } from './service-override/tools'
 
 // Monaco build process treeshaking is very aggressive and everything that is not used in monaco is removed
 // Unfortunately, it makes some class not respect anymore the interface they are supposed to implement
@@ -326,3 +328,17 @@ function toVSCodeColor (value: unknown) {
   return value
 }
 polyfillPrototype(MonacoColor.prototype, VScodeColor.prototype, toMonacoColor, toVSCodeColor)
+
+onServicesInitialized(() => {
+  // polyfill for StandaloneWorkspaceContextService
+  const workspaceContextService = StandaloneServices.get(IWorkspaceContextService)
+  workspaceContextService.getCompleteWorkspace ??= function (this: IWorkspaceContextService) {
+    return Promise.resolve(this.getWorkspace())
+  }.bind(workspaceContextService)
+
+  // @ts-ignore
+  workspaceContextService.onDidChangeWorkspaceFolders ??= Event.None
+  // @ts-ignore
+  workspaceContextService.onDidChangeWorkbenchState ??= Event.None
+  workspaceContextService.getWorkbenchState ??= () => WorkbenchState.EMPTY
+})

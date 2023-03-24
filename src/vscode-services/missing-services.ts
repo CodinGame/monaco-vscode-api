@@ -44,7 +44,7 @@ import { ILoggerService, NullLoggerService } from 'vs/platform/log/common/log'
 import { IDisposable } from 'vs/base/common/lifecycle'
 import { FallbackKeyboardMapper } from 'vs/workbench/services/keybinding/common/fallbackKeyboardMapper'
 import { ITextMateTokenizationService } from 'vs/workbench/services/textMate/browser/textMateTokenizationFeature'
-import { IDebugService, IDebugModel } from 'vs/workbench/contrib/debug/common/debug'
+import { IDebugService, IDebugModel, IViewModel, IAdapterManager } from 'vs/workbench/contrib/debug/common/debug'
 import { IWorkspaceTrustRequestService } from 'vs/platform/workspace/common/workspaceTrust'
 import { IActivityService } from 'vs/workbench/services/activity/common/activity'
 import { IExtensionHostDebugService } from 'vs/platform/debug/common/extensionHostDebug'
@@ -632,6 +632,42 @@ const debugModel: IDebugModel = {
   fetchCallstack: unsupported,
   getId: unsupported
 }
+
+class FakeViewModel implements IViewModel {
+  getId = unsupported
+  readonly focusedSession = undefined
+  readonly focusedThread = undefined
+  readonly focusedStackFrame = undefined
+  getSelectedExpression = unsupported
+  setSelectedExpression = unsupported
+  updateViews = unsupported
+  isMultiSessionView = unsupported
+  onDidFocusSession = Event.None
+  onDidFocusStackFrame = Event.None
+  onDidSelectExpression = Event.None
+  onDidEvaluateLazyExpression = Event.None
+  onWillUpdateViews = Event.None
+  evaluateLazyExpression = unsupported
+}
+
+class FakeAdapterManager implements IAdapterManager {
+  onDidRegisterDebugger = Event.None
+  hasEnabledDebuggers = () => false
+  getDebugAdapterDescriptor = unsupported
+  getDebuggerLabel = unsupported
+  someDebuggerInterestedInLanguage = () => false
+  getDebugger = () => undefined
+  activateDebuggers = unsupported
+  registerDebugAdapterFactory = () => new Disposable(() => {})
+  createDebugAdapter = unsupported
+  registerDebugAdapterDescriptorFactory = unsupported
+  unregisterDebugAdapterDescriptorFactory = unsupported
+  substituteVariables = unsupported
+  runInTerminal = unsupported
+  getEnabledDebugger = unsupported
+  guessDebugger = unsupported
+  onDidDebuggersExtPointRead = Event.None
+}
 registerSingleton(IDebugService, class DebugService implements IDebugService {
   _serviceBrand: undefined
   get state () { return unsupported() }
@@ -640,7 +676,7 @@ registerSingleton(IDebugService, class DebugService implements IDebugService {
   onWillNewSession = Event.None
   onDidEndSession = Event.None
   getConfigurationManager = unsupported
-  getAdapterManager = unsupported
+  getAdapterManager = () => new FakeAdapterManager()
   focusStackFrame = unsupported
   canSetBreakpointsIn = unsupported
   addBreakpoints = unsupported
@@ -667,7 +703,7 @@ registerSingleton(IDebugService, class DebugService implements IDebugService {
   stopSession = unsupported
   sourceIsNotAvailable = unsupported
   getModel = () => debugModel
-  getViewModel = unsupported
+  getViewModel = () => new FakeViewModel()
   runTo = unsupported
 }, InstantiationType.Eager)
 
