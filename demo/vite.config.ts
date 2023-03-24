@@ -8,5 +8,8 @@ export default defineConfig({
       allow: ['../'] // allow to load codicon.ttf from monaco-editor in the parent folder
     }
   },
+  resolve: {
+    dedupe: ['monaco-editor']
+  },
   assetsInclude: ['**/*.wasm']
 })
