@@ -28,6 +28,7 @@ async function createContainer () {
 
 async function prepareContainer (container: Docker.Container) {
   await container.start()
+  // eslint-disable-next-line no-console
   console.log('Installing node')
   const exec = await container.exec({
     Cmd: ['gu', 'install', 'nodejs'],
@@ -39,13 +40,16 @@ async function prepareContainer (container: Docker.Container) {
   })
   execStream.pipe(process.stdout)
   await new Promise(resolve => execStream.on('end', resolve))
+  // eslint-disable-next-line no-console
   console.log('Node installed')
 }
 
+// eslint-disable-next-line no-console
 console.log('Pulling image/starting container...')
 const containerPromise = createContainer()
 
 async function exitHandler () {
+  // eslint-disable-next-line no-console
   console.log('Exiting...')
   try {
     const container = await containerPromise
@@ -207,5 +211,6 @@ wss.on('connection', (ws) => {
 })
 
 server.listen(PORT, () => {
+  // eslint-disable-next-line no-console
   console.log(`Server started on port ${PORT} :)`)
 })

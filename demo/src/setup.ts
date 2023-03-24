@@ -384,6 +384,7 @@ debuggerVscodeApi.debug.registerDebugAdapterDescriptorFactory('javascript', {
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     adapter.onDidSendMessage((message: any) => {
       if (message.type === 'event' && message.event === 'output') {
+        // eslint-disable-next-line no-console
         console.log('OUTPUT', message.body.output)
       }
     })
