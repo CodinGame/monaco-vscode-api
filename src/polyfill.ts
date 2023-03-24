@@ -106,6 +106,7 @@ import { QuickInputService as VScodeQuickInputService } from 'vscode/vs/platform
 // @ts-ignore Creating a d.ts is not worth it
 import { TextModel as MonacoTextModel } from 'monaco-editor/esm/vs/editor/common/model/textModel.js'
 import { ITextBuffer } from 'vs/editor/common/model'
+import { AudioCue } from 'vs/platform/audioCues/browser/audioCueService'
 import { onServicesInitialized } from './service-override/tools'
 
 // Monaco build process treeshaking is very aggressive and everything that is not used in monaco is removed
@@ -328,6 +329,11 @@ function toVSCodeColor (value: unknown) {
   return value
 }
 polyfillPrototype(MonacoColor.prototype, VScodeColor.prototype, toMonacoColor, toVSCodeColor)
+Object.defineProperty(AudioCue, 'allAudioCues', {
+  get () {
+    return [...this._audioCues]
+  }
+})
 
 onServicesInitialized(() => {
   // polyfill for StandaloneWorkspaceContextService
