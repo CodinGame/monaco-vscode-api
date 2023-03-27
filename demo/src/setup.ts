@@ -200,13 +200,6 @@ const defaultThemesExtensions = {
         uiTheme: 'hc-light',
         path: './themes/hc_light.json'
       }
-    ],
-    iconThemes: [
-      {
-        id: 'vs-minimal',
-        label: '%minimalIconThemeLabel%',
-        path: './fileicons/vs_minimal-icon-theme.json'
-      }
     ]
   },
   repository: {
