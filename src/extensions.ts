@@ -8,6 +8,7 @@ import { URI } from 'vs/base/common/uri'
 import { IExtHostExtensionService } from 'vs/workbench/api/common/extHostExtensionService'
 import { StandaloneServices } from 'vs/editor/standalone/browser/standaloneServices'
 import { getExtensionId } from 'vs/platform/extensionManagement/common/extensionManagementUtil'
+import { IDisposable } from 'vs/base/common/lifecycle'
 import * as api from './api'
 import { consoleExtensionMessageHandler } from './service-override/tools'
 import { registerExtensionFile } from './service-override/files'
@@ -48,7 +49,31 @@ function handleExtensionPoint<T extends IExtensionContributions[keyof IExtension
   extensionPoint.acceptUsers(users)
 }
 
-interface RegisterExtensionResult {
+function deltaExtensions (toAdd: IExtensionDescription[], toRemove: IExtensionDescription[]) {
+  void StandaloneServices.get(IExtHostExtensionService).getExtensionRegistry().then(extensionRegistry => {
+    const affectedExtensions = (<IExtensionDescription[]>[]).concat(toAdd).concat(toRemove)
+    const affectedExtensionPoints: { [extPointName: string]: boolean } = Object.create(null)
+    for (const extensionDescription of affectedExtensions) {
+      for (const extPointName in extensionDescription.contributes) {
+        if (hasOwnProperty.call(extensionDescription.contributes, extPointName)) {
+          affectedExtensionPoints[extPointName] = true
+        }
+      }
+    }
+
+    extensionRegistry.deltaExtensions(toAdd, toRemove.map(ext => ext.identifier))
+    const availableExtensions = extensionRegistry.getAllExtensionDescriptions()
+
+    const extensionPoints = ExtensionsRegistry.getExtensionPoints()
+    for (const extensionPoint of extensionPoints) {
+      if (affectedExtensionPoints[extensionPoint.name] ?? false) {
+        handleExtensionPoint(extensionPoint, availableExtensions, consoleExtensionMessageHandler)
+      }
+    }
+  })
+}
+
+interface RegisterExtensionResult extends IDisposable {
   api: typeof vscode
   registerFile: (path: string, getContent: () => Promise<string>) => Disposable
 }
@@ -71,27 +96,20 @@ export function registerExtension (manifest: IExtensionManifest): RegisterExtens
   }
   const extensionDescription = toExtensionDescription(extension)
 
-  void StandaloneServices.get(IExtHostExtensionService).getExtensionRegistry().then(extensionRegistry => {
-    extensionRegistry.deltaExtensions([extensionDescription], [])
-
-    const availableExtensions = extensionRegistry.getAllExtensionDescriptions()
-
-    const extensionPoints = ExtensionsRegistry.getExtensionPoints()
-    for (const extensionPoint of extensionPoints) {
-      if (Object.hasOwnProperty.call(extensionDescription.contributes, extensionPoint.name)) {
-        handleExtensionPoint(extensionPoint, availableExtensions, consoleExtensionMessageHandler)
-      }
-    }
-  })
+  deltaExtensions([extensionDescription], [])
 
   return {
     api: createApi(extensionDescription),
     registerFile: (path: string, getContent: () => Promise<string>) => {
       return registerExtensionFile(location, path, getContent)
+    },
+    dispose () {
+      deltaExtensions([], [extensionDescription])
     }
   }
 }
 
 export {
-  IExtensionManifest
+  IExtensionManifest,
+  IExtensionContributions
 }
