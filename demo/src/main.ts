@@ -17,7 +17,7 @@ import { createConfiguredEditor, getJsonSchemas, onDidChangeJsonSchema } from 'v
 import { debounce } from 'throttle-debounce'
 import * as vscode from 'vscode'
 
-vscode.languages.registerHoverProvider('java', {
+vscode.languages.registerHoverProvider('javascript', {
   async provideHover (document, position) {
     return {
       contents: [
@@ -28,7 +28,7 @@ vscode.languages.registerHoverProvider('java', {
   }
 })
 
-vscode.languages.registerCompletionItemProvider('java', {
+vscode.languages.registerCompletionItemProvider('javascript', {
   provideCompletionItems () {
     return [{
       label: 'Demo completion',
