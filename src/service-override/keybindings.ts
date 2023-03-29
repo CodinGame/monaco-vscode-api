@@ -5,10 +5,7 @@ import { SyncDescriptor } from 'vs/platform/instantiation/common/descriptors'
 import { WorkbenchKeybindingService } from 'vs/workbench/services/keybinding/browser/keybindingService'
 import { IKeybindingService, IUserFriendlyKeybinding } from 'vs/platform/keybinding/common/keybinding'
 import { VSBuffer } from 'vs/base/common/buffer'
-import { ExtensionMessageCollector } from 'vs/workbench/services/extensions/common/extensionsRegistry'
-import { IExtensionDescription } from 'vs/platform/extensions/common/extensions'
 import { } from 'vs/workbench/services/actions/common/menusExtensionPoint'
-import { ILocalizedString } from 'vs/platform/action/common/action'
 import { KeybindingResolver } from 'vs/platform/keybinding/common/keybindingResolver'
 import { IInstantiationService } from 'vs/platform/instantiation/common/instantiation'
 import { AbstractKeybindingService } from 'vs/platform/keybinding/common/abstractKeybindingService'
@@ -23,9 +20,7 @@ import { BrowserKeyboardLayoutService } from 'vs/workbench/services/keybinding/b
 import { localize } from 'vs/nls'
 import getFileServiceOverride from './files'
 import getConfigurationServiceOverride, { configurationRegistry } from './configuration'
-import { consoleExtensionMessageHandler, getExtensionPoint } from './tools'
-import { DEFAULT_EXTENSION } from '../vscode-services/extHost'
-import { IFileService, Services } from '../services'
+import { IFileService } from '../services'
 import { createInjectedClass } from '../tools/injection'
 
 // This class use useful so editor.addAction and editor.addCommand still work
@@ -114,33 +109,6 @@ interface ContributedKeyBinding {
   linux?: string
   win?: string
 }
-interface IUserFriendlyCommand {
-  command: string
-  title: string | ILocalizedString
-  shortTitle?: string | ILocalizedString
-  enablement?: string
-  category?: string | ILocalizedString
-  icon?: string | { light: string, dark: string }
-}
-
-const keybindingsExtensionPoint = getExtensionPoint<ContributedKeyBinding | ContributedKeyBinding[]>('keybindings')
-const commandsExtensionPoint = getExtensionPoint<IUserFriendlyCommand | IUserFriendlyCommand[]>('commands')
-
-function setKeybindings (grammars: ContributedKeyBinding | ContributedKeyBinding[], extension: IExtensionDescription = Services.get().extension ?? DEFAULT_EXTENSION): void {
-  keybindingsExtensionPoint.acceptUsers([{
-    description: extension,
-    value: grammars,
-    collector: new ExtensionMessageCollector(consoleExtensionMessageHandler, extension, keybindingsExtensionPoint.name)
-  }])
-}
-
-function setCommands (keybindings: IUserFriendlyCommand | IUserFriendlyCommand[], extension: IExtensionDescription = Services.get().extension ?? DEFAULT_EXTENSION): void {
-  commandsExtensionPoint.acceptUsers([{
-    description: extension,
-    value: keybindings,
-    collector: new ExtensionMessageCollector(consoleExtensionMessageHandler, extension, keybindingsExtensionPoint.name)
-  }])
-}
 
 async function updateUserKeybindings (keybindingsJson: string): Promise<void> {
   const userDataProfilesService: IUserDataProfilesService = StandaloneServices.get(IUserDataProfilesService)
@@ -158,8 +126,6 @@ export default function getServiceOverride (): IEditorOverrideServices {
 
 export {
   updateUserKeybindings,
-  setKeybindings,
-  setCommands,
   ContributedKeyBinding,
   IUserFriendlyKeybinding
 }

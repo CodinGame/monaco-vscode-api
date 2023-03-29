@@ -17,7 +17,7 @@ import { createConfiguredEditor, getJsonSchemas, onDidChangeJsonSchema } from 'v
 import { debounce } from 'throttle-debounce'
 import * as vscode from 'vscode'
 
-vscode.languages.registerHoverProvider('java', {
+vscode.languages.registerHoverProvider('javascript', {
   async provideHover (document, position) {
     return {
       contents: [
@@ -28,7 +28,7 @@ vscode.languages.registerHoverProvider('java', {
   }
 })
 
-vscode.languages.registerCompletionItemProvider('java', {
+vscode.languages.registerCompletionItemProvider('javascript', {
   provideCompletionItems () {
     return [{
       label: 'Demo completion',
@@ -51,15 +51,18 @@ void vscode.window.showInformationMessage('Hello', {
 })
 
 const model = monaco.editor.createModel(
-  `// Your First Program
+  `
+let variable = 1
+function inc () {
+  variable++
+}
 
-class HelloWorld {
-    public static void main(String[] args) {
-        System.out.println('Hello, World!');
-    }
+while (variable < 5000) {
+  inc()
+  console.log('Hello world', variable);
 }`,
-  'java',
-  monaco.Uri.file('HelloWorld.java')
+  undefined,
+  monaco.Uri.file('/tmp/test.js')
 )
 
 createConfiguredEditor(document.getElementById('editor')!, {
@@ -68,7 +71,7 @@ createConfiguredEditor(document.getElementById('editor')!, {
 
 const diagnostics = vscode.languages.createDiagnosticCollection('demo')
 diagnostics.set(model.uri, [{
-  range: new vscode.Range(2, 6, 2, 16),
+  range: new vscode.Range(2, 9, 2, 12),
   severity: vscode.DiagnosticSeverity.Error,
   message: 'This is not a real error, just a demo, don\'t worry',
   source: 'Demo',
@@ -88,7 +91,8 @@ const settingsModel = monaco.editor.createModel(
   "editor.semanticHighlighting.enabled": true,
   "editor.bracketPairColorization.enabled": false,
   "editor.fontSize": 12,
-  "audioCues.lineHasError": "on"
+  "audioCues.lineHasError": "on",
+  "audioCues.onDebugBreak": "on"
 }`, 'json', monaco.Uri.file('/settings.json'))
 createConfiguredEditor(document.getElementById('settings-editor')!, {
   model: settingsModel
@@ -147,3 +151,11 @@ setTimeout(() => {
     void vscode.window.showInformationMessage('The configuration was changed')
   })
 }, 1000)
+
+document.querySelector('#run')!.addEventListener('click', () => {
+  void vscode.debug.startDebugging(undefined, {
+    name: 'Test',
+    request: 'attach',
+    type: 'javascript'
+  })
+})

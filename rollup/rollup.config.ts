@@ -29,25 +29,100 @@ const PURE_FUNCTIONS = new Set([
   'createDecorator',
   'localize',
   'Registry.as',
-  'registerWorkbenchContribution',
   'Object.freeze',
   'URI.parse',
   'URI.from',
-  'registerColor',
   'transparent',
   'darken',
   'lighten',
   'Color.fromHex',
-  'registerExtensionPoint',
   'asBroswerUri',
   'values',
   'keys',
   'toString',
   'ContextKeyExpr.and',
+  'ContextKeyExpr.or',
   'ContextKeyNotExpr.create',
   'ContextKeyDefinedExpr.create',
-  'ProductQualityContext.notEqualsTo'
+  'notEqualsTo',
+  'notEquals',
+  'toNegated',
+  'isEqualTo',
+  'SyncDescriptor',
+  'getProxy',
+  'map',
+  'asFileUri',
+  'registerIcon'
 ])
+
+// Function calls to remove when the result is not used
+const FUNCTIONS_TO_REMOVE = new Set([
+  'registerColor',
+  'colorRegistry.onDidChangeSchema',
+  'registerSingleton', // Remove calls to registerSingleton from vscode code, we just want to import things, not registering services
+  'registerProxyConfigurations',
+  'registerWorkbenchContribution',
+  'registerViewWelcomeContent',
+  'registerViewContainer',
+  'registerViews',
+  'registerEditorPane',
+  'registerExtensionPoint',
+  '_setExtensionHostProxy',
+  '_setAllMainProxyIdentifiers',
+  'registerDebugCommandPaletteItem',
+  'registerTouchBarEntry',
+  'registerDebugViewMenuItem'
+])
+
+const PURE_OR_TO_REMOVE_FUNCTIONS = new Set([
+  ...PURE_FUNCTIONS,
+  ...FUNCTIONS_TO_REMOVE
+])
+
+const REMOVE_COMMANDS = new Set([
+  'debug.openView',
+  'DEBUG_START_COMMAND_ID',
+  'DEBUG_RUN_COMMAND_ID',
+  'SELECT_DEBUG_CONSOLE_ID',
+  'SELECT_AND_START_ID',
+  'debug.startFromConfig',
+  'FOCUS_REPL_ID',
+  'NEXT_DEBUG_CONSOLE_ID',
+  'PREV_DEBUG_CONSOLE_ID',
+  'debug.installAdditionalDebuggers',
+  'debug.openBreakpointToSide'
+])
+
+function isCallPure (functionName: string, args: recast.types.namedTypes.CallExpression['arguments']): boolean {
+  if (functionName === 'KeybindingsRegistry.registerCommandAndKeybindingRule') {
+    const firstParam = args[0]!
+    if (firstParam.type === 'ObjectExpression') {
+      for (const prop of firstParam.properties) {
+        if (prop.type === 'ObjectProperty' && prop.key.type === 'Identifier' && prop.key.name === 'id') {
+          const id = prop.value.type === 'StringLiteral' ? prop.value.value : (prop.value.type === 'Identifier' ? prop.value.name : null)
+          return id != null && REMOVE_COMMANDS.has(id)
+        }
+      }
+    }
+  }
+
+  // Remove Registry.add calls
+  if (functionName.endsWith('Registry.add')) {
+    const firstParam = args[0]!
+    const firstParamName = firstParam.type === 'MemberExpression' ? getMemberExpressionPath(firstParam) : undefined
+    const allowed = firstParamName != null && firstParamName.includes('ExtensionsRegistry')
+    return !allowed
+  }
+
+  if (functionName.endsWith('registerAction2')) {
+    const firstParam = args[0]!
+    if (firstParam.type === 'ClassExpression' && firstParam.id?.name === 'AddConfigurationAction') {
+      return true
+    }
+  }
+
+  return PURE_OR_TO_REMOVE_FUNCTIONS.has(functionName)
+}
 
 const EXTENSIONS = ['', '.ts', '.js']
 
@@ -78,6 +153,7 @@ function getMemberExpressionPath (node: recast.types.namedTypes.MemberExpression
 
 const input = {
   api: './src/api.ts',
+  extensions: './src/extensions.ts',
   services: './src/services.ts',
   notifications: './src/service-override/notifications.ts',
   dialogs: './src/service-override/dialogs.ts',
@@ -91,6 +167,7 @@ const input = {
   snippets: './src/service-override/snippets.ts',
   languages: './src/service-override/languages.ts',
   audioCue: './src/service-override/audioCue.ts',
+  debug: './src/service-override/debug.ts',
   monaco: './src/monaco'
 }
 
@@ -138,6 +215,12 @@ export default (args: Record<string, string>): rollup.RollupOptions[] => {
       {
         name: 'resolve-vscode',
         resolveId: async function (importee, importer) {
+          if (importee === '@vscode/iconv-lite-umd') {
+            return path.resolve(OVERRIDE_PATH, 'iconv.ts')
+          }
+          if (importee === 'jschardet') {
+            return path.resolve(OVERRIDE_PATH, 'jschardet.ts')
+          }
           if (importee.startsWith('vs/css!')) {
             return path.resolve(path.dirname(importer!), importee.slice('vs/css!'.length) + '.css')
           }
@@ -230,14 +313,28 @@ export default (args: Record<string, string>): rollup.RollupOptions[] => {
         name: 'improve-vscode-treeshaking',
         transform (code, id) {
           if (id.startsWith(VSCODE_DIR)) {
-            const ast = recast.parse(code, {
+            // HACK: assign typescript decorator result to a decorated class field so rollup doesn't remove them
+            // before:
+            // __decorate([
+            //     memoize
+            // ], InlineBreakpointWidget.prototype, "getId", null);
+            //
+            // after:
+            // InlineBreakpointWidget.__decorator = __decorate([
+            //     memoize
+            // ], InlineBreakpointWidget.prototype, "getId", null);
+
+            const patchedCode = code.replace(/(^__decorate\(\[\n.*\n\], (.*).prototype)/gm, '$2.__decorator = $1')
+
+            const ast = recast.parse(patchedCode, {
               parser: babylonParser
             })
             let transformed: boolean = false
             function addComment (node: recast.types.namedTypes.NewExpression | recast.types.namedTypes.CallExpression) {
               if (!(node.comments ?? []).some(comment => comment.value === PURE_ANNO)) {
                 transformed = true
-                node.comments = [recast.types.builders.commentBlock(PURE_ANNO, true)]
+                node.comments ??= []
+                node.comments.unshift(recast.types.builders.commentBlock(PURE_ANNO, true))
                 return recast.types.builders.parenthesizedExpression(node)
               }
               return node
@@ -254,37 +351,13 @@ export default (args: Record<string, string>): rollup.RollupOptions[] => {
                 const node = path.node
                 const name = node.callee.type === 'MemberExpression' || node.callee.type === 'Identifier' ? getMemberExpressionPath(node.callee) : null
 
-                if (name != null && new Set([
-                  'colorRegistry.onDidChangeSchema',
-                  'registerSingleton', // Remove calls to registerSingleton from vscode code, we just want to import things, not registering services
-                  'registerProxyConfigurations'
-                ]).has(name)) {
-                  transformed = true
-                  return null
-                }
-
                 if (node.callee.type === 'MemberExpression') {
                   if (node.callee.property.type === 'Identifier') {
-                    if ((name != null && PURE_FUNCTIONS.has(name)) || PURE_FUNCTIONS.has(node.callee.property.name)) {
+                    if ((name != null && isCallPure(name, node.arguments)) || isCallPure(node.callee.property.name, node.arguments)) {
                       path.replace(addComment(node))
                     }
-
-                    if (name != null && name === 'CommandsRegistry.registerCommand') {
-                      if (!id.includes('/snippetCompletionProvider')) {
-                        path.replace(addComment(node))
-                      }
-                    }
-                    // Remove Registry.add calls
-                    if (name != null && name.endsWith('Registry.add')) {
-                      const firstParam = node.arguments[0]!
-                      const firstParamName = firstParam.type === 'MemberExpression' ? getMemberExpressionPath(firstParam) : undefined
-                      const allowed = firstParamName != null && firstParamName.includes('ExtensionsRegistry')
-                      if (!allowed) {
-                        return null
-                      }
-                    }
                   }
-                } else if (node.callee.type === 'Identifier' && PURE_FUNCTIONS.has(node.callee.name)) {
+                } else if (node.callee.type === 'Identifier' && isCallPure(node.callee.name, node.arguments)) {
                   path.replace(addComment(node))
                 } else if (node.callee.type === 'FunctionExpression') {
                   const lastInstruction = node.callee.body.body[node.callee.body.body.length - 1]
@@ -390,7 +463,8 @@ export default {
         function addComment (node: recast.types.namedTypes.NewExpression | recast.types.namedTypes.CallExpression) {
           if (!(node.comments ?? []).some(comment => comment.value === PURE_ANNO)) {
             transformed = true
-            node.comments = [recast.types.builders.commentBlock(PURE_ANNO, true)]
+            node.comments ??= []
+            node.comments.unshift(recast.types.builders.commentBlock(PURE_ANNO, true))
             return recast.types.builders.parenthesizedExpression(node)
           }
           return node

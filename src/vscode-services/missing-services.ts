@@ -14,7 +14,6 @@ import { GroupOrientation, IEditorGroup, IEditorGroupsService } from 'vs/workben
 import { IWorkbenchEnvironmentService } from 'vs/workbench/services/environment/common/environmentService'
 import { IWorkingCopyFileService } from 'vs/workbench/services/workingCopy/common/workingCopyFileService'
 import { IPathService } from 'vs/workbench/services/path/common/pathService'
-import { Schemas } from 'vs/base/common/network'
 import { InstantiationType, registerSingleton } from 'vs/platform/instantiation/common/extensions'
 import { IProductService } from 'vs/platform/product/common/productService'
 import { ILanguageStatus, ILanguageStatusService } from 'vs/workbench/services/languageStatus/common/languageStatusService'
@@ -45,7 +44,38 @@ import { ILoggerService, NullLoggerService } from 'vs/platform/log/common/log'
 import { IDisposable } from 'vs/base/common/lifecycle'
 import { FallbackKeyboardMapper } from 'vs/workbench/services/keybinding/common/fallbackKeyboardMapper'
 import { ITextMateTokenizationService } from 'vs/workbench/services/textMate/browser/textMateTokenizationFeature'
-import { IDebugService, IDebugModel } from 'vs/workbench/contrib/debug/common/debug'
+import { IDebugService, IDebugModel, IViewModel, IAdapterManager } from 'vs/workbench/contrib/debug/common/debug'
+import { IWorkspaceTrustRequestService } from 'vs/platform/workspace/common/workspaceTrust'
+import { IActivityService } from 'vs/workbench/services/activity/common/activity'
+import { IExtensionHostDebugService } from 'vs/platform/debug/common/extensionHostDebug'
+import { IViewDescriptorService, IViewsService } from 'vs/workbench/common/views'
+import { IHistoryService } from 'vs/workbench/services/history/common/history'
+import { ITaskService } from 'vs/workbench/contrib/tasks/common/taskService'
+import { IURITransformerService, URITransformerService } from 'vs/workbench/api/common/extHostUriTransformerService'
+import { IConfigurationResolverService } from 'vs/workbench/services/configurationResolver/common/configurationResolver'
+import { BrowserPathService } from 'vs/workbench/services/path/browser/pathService'
+import { IRemoteAgentService } from 'vs/workbench/services/remote/common/remoteAgentService'
+import { ISocketFactory } from 'vs/platform/remote/common/remoteAgentConnection'
+import { ICustomEndpointTelemetryService } from 'vs/platform/telemetry/common/telemetry'
+import { NullEndpointTelemetryService } from 'vs/platform/telemetry/common/telemetryUtils'
+import { SearchService } from 'vs/workbench/services/search/common/searchService'
+import { ISearchService } from 'vs/workbench/services/search/common/search'
+import { IRequestService } from 'vs/platform/request/common/request'
+import { IEditSessionIdentityService } from 'vs/platform/workspace/common/editSessions'
+import { IWorkspaceEditingService } from 'vs/workbench/services/workspaces/common/workspaceEditing'
+import { ITimerService } from 'vs/workbench/services/timer/browser/timerService'
+import { IExtensionsWorkbenchService } from 'vs/workbench/contrib/extensions/common/extensions'
+import { IWorkbenchExtensionEnablementService } from 'vs/workbench/services/extensionManagement/common/extensionManagement'
+import { ITunnelService } from 'vs/platform/tunnel/common/tunnel'
+import { IWorkingCopyBackupService } from 'vs/workbench/services/workingCopy/common/workingCopyBackup'
+import { IWorkingCopyService } from 'vs/workbench/services/workingCopy/common/workingCopyService'
+import { FilesConfigurationService, IFilesConfigurationService } from 'vs/workbench/services/filesConfiguration/common/filesConfigurationService'
+import { IUntitledTextEditorService } from 'vs/workbench/services/untitled/common/untitledTextEditorService'
+import { IFileDialogService } from 'vs/platform/dialogs/common/dialogs'
+import { IElevatedFileService } from 'vs/workbench/services/files/common/elevatedFileService'
+import { BrowserElevatedFileService } from 'vs/workbench/services/files/browser/elevatedFileService'
+import { IDecorationsService } from 'vs/workbench/services/decorations/common/decorations'
+import { Disposable } from 'vs/workbench/api/common/extHostTypes'
 import { Services } from '../services'
 import { unsupported } from '../tools'
 
@@ -86,7 +116,7 @@ registerSingleton(IPaneCompositePartService, class PaneCompositePartService impl
   readonly _serviceBrand = undefined
   onDidPaneCompositeOpen = Event.None
   onDidPaneCompositeClose = Event.None
-  openPaneComposite = unsupported
+  openPaneComposite = async () => undefined
   getActivePaneComposite = () => undefined
   getPaneComposite = () => undefined
   getPaneComposites = () => []
@@ -297,11 +327,11 @@ class WorkbenchEnvironmentService implements IBrowserWorkbenchEnvironmentService
   disableWorkspaceTrust = true
   get webviewExternalEndpoint () { return unsupported() }
   debugRenderer = false
-  get userRoamingDataHome () { return unsupported() }
+  userRoamingDataHome = URI.from({ scheme: 'user', path: '/userRoamingDataHome' })
   keyboardLayoutResource = URI.from({ scheme: 'user', path: '/keyboardLayout.json' })
   get argvResource () { return unsupported() }
   snippetsHome = URI.from({ scheme: 'user', path: '/snippets' })
-  get untitledWorkspacesHome () { return unsupported() }
+  untitledWorkspacesHome = URI.from({ scheme: 'user', path: '/untitledWorkspacesHome' })
   get globalStorageHome () { return unsupported() }
   get workspaceStorageHome () { return unsupported() }
   get localHistoryHome () { return unsupported() }
@@ -309,7 +339,11 @@ class WorkbenchEnvironmentService implements IBrowserWorkbenchEnvironmentService
   get userDataSyncHome () { return unsupported() }
   get userDataSyncLogResource () { return unsupported() }
   sync = undefined
-  get debugExtensionHost () { return unsupported() }
+  debugExtensionHost = {
+    port: null,
+    break: false
+  }
+
   isExtensionDevelopment = false
   disableExtensions = false
   logsPath = ''
@@ -343,18 +377,7 @@ registerSingleton(IWorkingCopyFileService, class WorkingCopyFileService implemen
   getDirty = unsupported
 }, InstantiationType.Eager)
 
-registerSingleton(IPathService, class PathService implements IPathService {
-  readonly _serviceBrand = undefined
-  get path () { return unsupported() }
-  defaultUriScheme = Schemas.file
-  async fileURI (path: string) {
-    return URI.file(path)
-  }
-
-  userHome = unsupported
-  hasValidBasename = unsupported
-  resolvedUserHome = undefined
-}, InstantiationType.Eager)
+registerSingleton(IPathService, BrowserPathService, InstantiationType.Eager)
 
 registerSingleton(IProgressService, class ProgressService implements IProgressService {
   readonly _serviceBrand = undefined
@@ -507,7 +530,7 @@ registerSingleton(IHostColorSchemeService, BrowserHostColorSchemeService, Instan
 
 registerSingleton(IPreferencesService, class PreferencesService implements IPreferencesService {
   _serviceBrand: undefined
-  get userSettingsResource () { return unsupported() }
+  userSettingsResource = profile.settingsResource
   workspaceSettingsResource = null
   getFolderSettingsResource = unsupported
   createPreferencesEditorModel = unsupported
@@ -609,6 +632,42 @@ const debugModel: IDebugModel = {
   fetchCallstack: unsupported,
   getId: unsupported
 }
+
+class FakeViewModel implements IViewModel {
+  getId = unsupported
+  readonly focusedSession = undefined
+  readonly focusedThread = undefined
+  readonly focusedStackFrame = undefined
+  getSelectedExpression = unsupported
+  setSelectedExpression = unsupported
+  updateViews = unsupported
+  isMultiSessionView = unsupported
+  onDidFocusSession = Event.None
+  onDidFocusStackFrame = Event.None
+  onDidSelectExpression = Event.None
+  onDidEvaluateLazyExpression = Event.None
+  onWillUpdateViews = Event.None
+  evaluateLazyExpression = unsupported
+}
+
+class FakeAdapterManager implements IAdapterManager {
+  onDidRegisterDebugger = Event.None
+  hasEnabledDebuggers = () => false
+  getDebugAdapterDescriptor = unsupported
+  getDebuggerLabel = unsupported
+  someDebuggerInterestedInLanguage = () => false
+  getDebugger = () => undefined
+  activateDebuggers = unsupported
+  registerDebugAdapterFactory = () => new Disposable(() => {})
+  createDebugAdapter = unsupported
+  registerDebugAdapterDescriptorFactory = unsupported
+  unregisterDebugAdapterDescriptorFactory = unsupported
+  substituteVariables = unsupported
+  runInTerminal = unsupported
+  getEnabledDebugger = unsupported
+  guessDebugger = unsupported
+  onDidDebuggersExtPointRead = Event.None
+}
 registerSingleton(IDebugService, class DebugService implements IDebugService {
   _serviceBrand: undefined
   get state () { return unsupported() }
@@ -617,7 +676,7 @@ registerSingleton(IDebugService, class DebugService implements IDebugService {
   onWillNewSession = Event.None
   onDidEndSession = Event.None
   getConfigurationManager = unsupported
-  getAdapterManager = unsupported
+  getAdapterManager = () => new FakeAdapterManager()
   focusStackFrame = unsupported
   canSetBreakpointsIn = unsupported
   addBreakpoints = unsupported
@@ -644,6 +703,336 @@ registerSingleton(IDebugService, class DebugService implements IDebugService {
   stopSession = unsupported
   sourceIsNotAvailable = unsupported
   getModel = () => debugModel
-  getViewModel = unsupported
+  getViewModel = () => new FakeViewModel()
   runTo = unsupported
+}, InstantiationType.Eager)
+
+registerSingleton(IWorkspaceTrustRequestService, class WorkspaceTrustRequestService implements IWorkspaceTrustRequestService {
+  _serviceBrand: undefined
+  onDidInitiateOpenFilesTrustRequest = Event.None
+  onDidInitiateWorkspaceTrustRequest = Event.None
+  onDidInitiateWorkspaceTrustRequestOnStartup = Event.None
+  completeOpenFilesTrustRequest = unsupported
+  requestOpenFilesTrust = unsupported
+  cancelWorkspaceTrustRequest = unsupported
+  completeWorkspaceTrustRequest = unsupported
+  requestWorkspaceTrust = async () => true
+  requestWorkspaceTrustOnStartup = () => null
+}, InstantiationType.Eager)
+
+registerSingleton(IActivityService, class ActivityService implements IActivityService {
+  _serviceBrand: undefined
+  showViewContainerActivity = unsupported
+  showViewActivity = unsupported
+  showAccountsActivity = unsupported
+  showGlobalActivity = unsupported
+}, InstantiationType.Eager)
+
+registerSingleton(IExtensionHostDebugService, class ExtensionHostDebugService implements IExtensionHostDebugService {
+  _serviceBrand: undefined
+  reload = unsupported
+  onReload = Event.None
+  close = unsupported
+  onClose = Event.None
+  attachSession = unsupported
+  onAttachSession = Event.None
+  terminateSession = unsupported
+  onTerminateSession = Event.None
+  openExtensionDevelopmentHostWindow = unsupported
+}, InstantiationType.Eager)
+
+registerSingleton(IViewsService, class ViewsService implements IViewsService {
+  _serviceBrand: undefined
+  onDidChangeViewContainerVisibility = Event.None
+  isViewContainerVisible = () => false
+  openViewContainer = unsupported
+  closeViewContainer = unsupported
+  getVisibleViewContainer = unsupported
+  getActiveViewPaneContainerWithId = () => null
+  onDidChangeViewVisibility = Event.None
+  isViewVisible = () => false
+  openView = async () => null
+  closeView = unsupported
+  getActiveViewWithId = () => null
+  getViewWithId = () => null
+  getViewProgressIndicator = () => undefined
+}, InstantiationType.Eager)
+
+registerSingleton(IViewDescriptorService, class ViewDescriptorService implements IViewDescriptorService {
+  _serviceBrand: undefined
+  viewContainers = []
+  onDidChangeViewContainers = Event.None
+  getDefaultViewContainer = () => undefined
+  getViewContainerById = () => null
+  isViewContainerRemovedPermanently = unsupported
+  getDefaultViewContainerLocation = () => null
+  getViewContainerLocation = () => null
+  getViewContainersByLocation = unsupported
+  getViewContainerModel = unsupported
+  onDidChangeContainerLocation = Event.None
+  moveViewContainerToLocation = unsupported
+  getViewContainerBadgeEnablementState = unsupported
+  setViewContainerBadgeEnablementState = unsupported
+  getViewDescriptorById = () => null
+  getViewContainerByViewId = () => null
+  getDefaultContainerById = () => null
+  getViewLocationById = () => null
+  onDidChangeContainer = Event.None
+  moveViewsToContainer = unsupported
+  onDidChangeLocation = Event.None
+  moveViewToLocation = () => null
+  reset = () => null
+}, InstantiationType.Eager)
+
+registerSingleton(IHistoryService, class HistoryService implements IHistoryService {
+  _serviceBrand: undefined
+  goForward = unsupported
+  goBack = unsupported
+  goPrevious = unsupported
+  goLast = unsupported
+  reopenLastClosedEditor = unsupported
+  getHistory = unsupported
+  removeFromHistory = unsupported
+  getLastActiveWorkspaceRoot = () => undefined
+  getLastActiveFile = () => undefined
+  openNextRecentlyUsedEditor = unsupported
+  openPreviouslyUsedEditor = unsupported
+  clear = unsupported
+  clearRecentlyOpened = unsupported
+}, InstantiationType.Eager)
+
+registerSingleton(ITaskService, class TaskService implements ITaskService {
+  _serviceBrand: undefined
+  onDidStateChange = Event.None
+  supportsMultipleTaskExecutions = false
+  configureAction = unsupported
+  run = unsupported
+  inTerminal = () => false
+  getActiveTasks = async () => []
+  getBusyTasks = unsupported
+  terminate = unsupported
+  tasks = unsupported
+  taskTypes = unsupported
+  getWorkspaceTasks = unsupported
+  getSavedTasks = unsupported
+  removeRecentlyUsedTask = unsupported
+  getTask = unsupported
+  tryResolveTask = unsupported
+  createSorter = unsupported
+  getTaskDescription = unsupported
+  customize = unsupported
+  openConfig = unsupported
+  registerTaskProvider = unsupported
+  registerTaskSystem = unsupported
+  onDidChangeTaskSystemInfo = Event.None
+  hasTaskSystemInfo = false
+  registerSupportedExecutions = unsupported
+  extensionCallbackTaskComplete = unsupported
+}, InstantiationType.Eager)
+
+registerSingleton(IURITransformerService, class InjectedURITransformerService extends URITransformerService {
+  constructor () {
+    super(null)
+  }
+}, InstantiationType.Eager)
+
+registerSingleton(IConfigurationResolverService, class ConfigurationResolverService implements IConfigurationResolverService {
+  _serviceBrand: undefined
+  resolveWithEnvironment = unsupported
+  resolveAsync = unsupported
+  resolveAnyAsync = unsupported
+  resolveAnyMap = unsupported
+  resolveWithInteractionReplace = unsupported
+  resolveWithInteraction = unsupported
+  contributeVariable = unsupported
+}, InstantiationType.Eager)
+
+class SocketFactory implements ISocketFactory {
+  connect = unsupported
+}
+registerSingleton(IRemoteAgentService, class RemoteAgentService implements IRemoteAgentService {
+  _serviceBrand: undefined
+  socketFactory = new SocketFactory()
+  getConnection = () => null
+  getEnvironment = async () => null
+  getRawEnvironment = async () => null
+  getExtensionHostExitInfo = async () => null
+  getRoundTripTime = async () => undefined
+  whenExtensionsReady = async () => undefined
+  scanExtensions = async () => []
+  scanSingleExtension = async () => null
+  getDiagnosticInfo = async () => undefined
+  updateTelemetryLevel = async () => undefined
+  logTelemetry = async () => undefined
+  flushTelemetry = async () => undefined
+}, InstantiationType.Eager)
+
+registerSingleton(ICustomEndpointTelemetryService, NullEndpointTelemetryService, InstantiationType.Eager)
+
+registerSingleton(ISearchService, SearchService, InstantiationType.Eager)
+
+registerSingleton(IRequestService, class RequestService implements IRequestService {
+  _serviceBrand: undefined
+  request = unsupported
+  resolveProxy = async () => undefined
+}, InstantiationType.Eager)
+
+registerSingleton(IEditSessionIdentityService, class EditSessionIdentityService implements IEditSessionIdentityService {
+  _serviceBrand: undefined
+  registerEditSessionIdentityProvider = unsupported
+  getEditSessionIdentifier = unsupported
+  provideEditSessionIdentityMatch = unsupported
+  addEditSessionIdentityCreateParticipant = unsupported
+  onWillCreateEditSessionIdentity = unsupported
+}, InstantiationType.Eager)
+
+registerSingleton(IWorkspaceEditingService, class WorkspaceEditingService implements IWorkspaceEditingService {
+  _serviceBrand: undefined
+  addFolders = unsupported
+  removeFolders = unsupported
+  updateFolders = unsupported
+  enterWorkspace = unsupported
+  createAndEnterWorkspace = unsupported
+  saveAndEnterWorkspace = unsupported
+  copyWorkspaceSettings = unsupported
+  pickNewWorkspacePath = unsupported
+}, InstantiationType.Eager)
+
+registerSingleton(ITimerService, class TimerService implements ITimerService {
+  _serviceBrand: undefined
+  whenReady = unsupported
+  get perfBaseline () { return unsupported() }
+  get startupMetrics () { return unsupported() }
+  setPerformanceMarks = () => {}
+  getPerformanceMarks = unsupported
+  getDuration = unsupported
+}, InstantiationType.Eager)
+
+registerSingleton(IExtensionsWorkbenchService, class ExtensionsWorkbenchService implements IExtensionsWorkbenchService {
+  _serviceBrand: undefined
+  onChange = Event.None
+  onReset = Event.None
+  preferPreReleases = false
+  local = []
+  installed = []
+  outdated = []
+  queryLocal = unsupported
+  queryGallery = unsupported
+  getExtensions = unsupported
+  canInstall = unsupported
+  install = unsupported
+  installInServer = unsupported
+  uninstall = unsupported
+  installVersion = unsupported
+  reinstall = unsupported
+  canSetLanguage = unsupported
+  setLanguage = unsupported
+  setEnablement = unsupported
+  pinExtension = unsupported
+  open = unsupported
+  checkForUpdates = unsupported
+  getExtensionStatus = unsupported
+  isExtensionIgnoredToSync = unsupported
+  toggleExtensionIgnoredToSync = unsupported
+}, InstantiationType.Eager)
+
+registerSingleton(IWorkbenchExtensionEnablementService, class WorkbenchExtensionEnablementService implements IWorkbenchExtensionEnablementService {
+  _serviceBrand: undefined
+  onEnablementChanged = Event.None
+  getEnablementState = unsupported
+  getEnablementStates = unsupported
+  getDependenciesEnablementStates = unsupported
+  canChangeEnablement = unsupported
+  canChangeWorkspaceEnablement = unsupported
+  isEnabled = unsupported
+  isEnabledEnablementState = unsupported
+  isDisabledGlobally = unsupported
+  setEnablement = unsupported
+  updateExtensionsEnablementsWhenWorkspaceTrustChanges = unsupported
+}, InstantiationType.Eager)
+
+registerSingleton(ITunnelService, class TunnelService implements ITunnelService {
+  _serviceBrand: undefined
+  tunnels = Promise.resolve([])
+  canChangePrivacy = false
+  privacyOptions = []
+  onTunnelOpened = Event.None
+  onTunnelClosed = Event.None
+  canElevate = false
+  hasTunnelProvider = false
+  onAddedTunnelProvider = Event.None
+  canTunnel = () => false
+  openTunnel = unsupported
+  getExistingTunnel = async () => undefined
+  setEnvironmentTunnel = unsupported
+  closeTunnel = unsupported
+  setTunnelProvider = unsupported
+  setTunnelFeatures = unsupported
+  isPortPrivileged = () => false
+}, InstantiationType.Eager)
+
+registerSingleton(IWorkingCopyBackupService, class WorkingCopyBackupService implements IWorkingCopyBackupService {
+  _serviceBrand: undefined
+  hasBackups = async () => false
+  hasBackupSync = () => false
+  getBackups = async () => []
+  resolve = async () => undefined
+  backup = unsupported
+  discardBackup = unsupported
+  discardBackups = unsupported
+}, InstantiationType.Eager)
+
+registerSingleton(IWorkingCopyService, class WorkingCopyService implements IWorkingCopyService {
+  _serviceBrand: undefined
+  onDidRegister = Event.None
+  onDidUnregister = Event.None
+  onDidChangeDirty = Event.None
+  onDidChangeContent = Event.None
+  onDidSave = Event.None
+  dirtyCount = 0
+  dirtyWorkingCopies = []
+  hasDirty = false
+  isDirty = () => false
+  workingCopies = []
+  registerWorkingCopy = () => new Disposable(() => {})
+  has = () => false
+  get = () => undefined
+  getAll = () => undefined
+}, InstantiationType.Eager)
+
+registerSingleton(IFilesConfigurationService, FilesConfigurationService, InstantiationType.Eager)
+
+registerSingleton(IUntitledTextEditorService, class UntitledTextEditorService implements IUntitledTextEditorService {
+  _serviceBrand: undefined
+  onDidChangeDirty = Event.None
+  onDidChangeEncoding = Event.None
+  onDidChangeLabel = Event.None
+  onWillDispose = Event.None
+  create = unsupported
+  get = () => undefined
+  getValue = () => undefined
+  resolve = unsupported
+}, InstantiationType.Eager)
+
+registerSingleton(IFileDialogService, class FileDialogService implements IFileDialogService {
+  _serviceBrand: undefined
+  defaultFilePath = unsupported
+  defaultFolderPath = unsupported
+  defaultWorkspacePath = unsupported
+  pickFileFolderAndOpen = unsupported
+  pickFileAndOpen = unsupported
+  pickFolderAndOpen = unsupported
+  pickWorkspaceAndOpen = unsupported
+  pickFileToSave = unsupported
+  showSaveDialog = unsupported
+  showSaveConfirm = unsupported
+  showOpenDialog = unsupported
+}, InstantiationType.Eager)
+
+registerSingleton(IElevatedFileService, BrowserElevatedFileService, InstantiationType.Eager)
+registerSingleton(IDecorationsService, class DecorationsService implements IDecorationsService {
+  _serviceBrand: undefined
+  onDidChangeDecorations = Event.None
+  registerDecorationsProvider = () => new Disposable(() => {})
+  getDecoration = unsupported
 }, InstantiationType.Eager)

@@ -55,6 +55,7 @@
   "include": [
 		"src/services.ts",
 		"src/types.d.ts",
+		"src/extensions.ts",
 		"src/service-override/notifications.ts",
 		"src/service-override/dialogs.ts",
 		"src/service-override/modelEditor.ts",
@@ -67,6 +68,7 @@
 		"src/service-override/snippets.ts",
 		"src/service-override/languages.ts",
 		"src/service-override/audioCue.ts",
+		"src/service-override/debug.ts",
 		"src/monaco.ts"
 	]
 }

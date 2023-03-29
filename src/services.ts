@@ -96,6 +96,7 @@ export { ISnippetsService } from 'vs/workbench/contrib/snippets/browser/snippets
 export { IWorkspaceContextService } from 'vs/platform/workspace/common/workspace'
 export { IStorageService } from 'vs/platform/storage/common/storage'
 export { IAudioCueService } from 'vs/platform/audioCues/browser/audioCueService'
+export { IDebugService } from 'vs/workbench/contrib/debug/common/debug'
 
 export {
   NotificationsFilter,

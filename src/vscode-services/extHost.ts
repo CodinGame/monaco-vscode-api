@@ -1,20 +1,16 @@
-import { ExtHostCommands } from 'vs/workbench/api/common/extHostCommands'
-import { IExtHostRpcService } from 'vs/workbench/api/common/extHostRpcService'
-import { ILoggerService, ILogService, LogLevel } from 'vs/platform/log/common/log'
+import { ExtHostCommands, IExtHostCommands } from 'vs/workbench/api/common/extHostCommands'
+import { ExtHostRpcService, IExtHostRpcService } from 'vs/workbench/api/common/extHostRpcService'
+import { ILogService, LogLevel } from 'vs/platform/log/common/log'
 import { MainThreadCommands } from 'vs/workbench/api/browser/mainThreadCommands'
 import { IExtHostContext } from 'vs/workbench/services/extensions/common/extHostCustomers'
 import { ExtensionHostKind, IExtensionService } from 'vs/workbench/services/extensions/common/extensions'
-import { Event } from 'vs/base/common/event'
-import { ExtensionIdentifier, IExtensionDescription, TargetPlatform } from 'vs/platform/extensions/common/extensions'
 import { URI } from 'vs/base/common/uri'
-import { ExtHostApiDeprecationService } from 'vs/workbench/api/common/extHostApiDeprecationService'
-import { ExtHostConfigurationShape, ExtHostContext, IConfigurationInitData, IMainContext, MainContext, MainThreadConfigurationShape } from 'vs/workbench/api/common/extHost.protocol'
+import { ExtHostApiDeprecationService, IExtHostApiDeprecationService } from 'vs/workbench/api/common/extHostApiDeprecationService'
+import {
+  ExtHostContext, IMainContext, MainContext
+} from 'vs/workbench/api/common/extHost.protocol'
 import { ExtHostDiagnostics } from 'vs/workbench/api/common/extHostDiagnostics'
-import { ExtHostFileSystemInfo } from 'vs/workbench/api/common/extHostFileSystemInfo'
-import { IMessagePassingProtocol } from 'vs/base/parts/ipc/common/ipc'
-import { RPCProtocol } from 'vs/workbench/services/extensions/common/rpcProtocol'
-import { BufferedEmitter } from 'vs/base/parts/ipc/common/ipc.net'
-import { VSBuffer } from 'vs/base/common/buffer'
+import { ExtHostFileSystemInfo, IExtHostFileSystemInfo } from 'vs/workbench/api/common/extHostFileSystemInfo'
 import { Proxied, ProxyIdentifier } from 'vs/workbench/services/extensions/common/proxyIdentifier'
 import { ExtHostDocuments } from 'vs/workbench/api/common/extHostDocuments'
 import { createExtHostQuickOpen } from 'vs/workbench/api/common/extHostQuickOpen'
@@ -26,7 +22,7 @@ import { ExtHostProgress } from 'vs/workbench/api/common/extHostProgress'
 import { MainThreadProgress } from 'vs/workbench/api/browser/mainThreadProgress'
 import { MainThreadDocumentContentProviders } from 'vs/workbench/api/browser/mainThreadDocumentContentProviders'
 import { ExtHostDocumentContentProvider } from 'vs/workbench/api/common/extHostDocumentContentProviders'
-import { ExtHostDocumentsAndEditors } from 'vs/workbench/api/common/extHostDocumentsAndEditors'
+import { ExtHostDocumentsAndEditors, IExtHostDocumentsAndEditors } from 'vs/workbench/api/common/extHostDocumentsAndEditors'
 import { ExtHostEditors } from 'vs/workbench/api/common/extHostTextEditors'
 import { MainThreadDocumentsAndEditors } from 'vs/workbench/api/browser/mainThreadDocumentsAndEditors'
 import { MainThreadDiagnostics } from 'vs/workbench/api/browser/mainThreadDiagnostics'
@@ -62,87 +58,60 @@ import { ExtHostLanguages } from 'vs/workbench/api/common/extHostLanguages'
 import { MainThreadLanguages } from 'vs/workbench/api/browser/mainThreadLanguages'
 import { ILanguageStatusService } from 'vs/workbench/services/languageStatus/common/languageStatusService'
 import { URITransformerService } from 'vs/workbench/api/common/extHostUriTransformerService'
-import { ExtHostWindow } from 'vs/workbench/api/common/extHostWindow'
+import { ExtHostWindow, IExtHostWindow } from 'vs/workbench/api/common/extHostWindow'
 import { MainThreadWindow } from 'vs/workbench/api/browser/mainThreadWindow'
 import { IOpenerService } from 'vs/platform/opener/common/opener'
 import { IHostService } from 'vs/workbench/services/host/browser/host'
 import './missing-services'
 import { MainThreadClipboard } from 'vs/workbench/api/browser/mainThreadClipboard'
 import { ExtHostClipboard } from 'vs/workbench/api/common/extHostClipboard'
-import { ExtHostTelemetry } from 'vs/workbench/api/common/extHostTelemetry'
+import { ExtHostTelemetry, IExtHostTelemetry } from 'vs/workbench/api/common/extHostTelemetry'
 import { ExtHostLanguageFeatures } from 'vs/workbench/api/common/extHostLanguageFeatures'
 import { MainThreadLanguageFeatures } from 'vs/workbench/api/browser/mainThreadLanguageFeatures'
 import { ILanguageConfigurationService } from 'vs/editor/common/languages/languageConfigurationRegistry'
 import { ILanguageFeaturesService } from 'vs/editor/common/services/languageFeatures'
-import { IConfigurationChange, IConfigurationService } from 'vs/platform/configuration/common/configuration'
-import { ExtHostConfigProvider } from 'vs/workbench/api/common/extHostConfiguration'
-import { IExtHostInitDataService } from 'vs/workbench/api/common/extHostInitDataService'
+import { IConfigurationService } from 'vs/platform/configuration/common/configuration'
+import { ExtHostConfigProvider, ExtHostConfiguration, IExtHostConfiguration } from 'vs/workbench/api/common/extHostConfiguration'
 import { MainThreadConfiguration } from 'vs/workbench/api/browser/mainThreadConfiguration'
 import { IWorkspaceContextService } from 'vs/platform/workspace/common/workspace'
+import { IExtHostDebugService, WorkerExtHostDebugService } from 'vs/workbench/api/common/extHostDebugService'
+import { ExtHostVariableResolverProviderService, IExtHostVariableResolverProvider } from 'vs/workbench/api/common/extHostVariableResolverService'
+import { AbstractExtHostExtensionService, IExtHostExtensionService, IHostUtils } from 'vs/workbench/api/common/extHostExtensionService'
+import { ExtensionStoragePaths, IExtensionStoragePaths } from 'vs/workbench/api/common/extHostStoragePaths'
+import { ExtHostTunnelService, IExtHostTunnelService } from 'vs/workbench/api/common/extHostTunnelService'
+import { ExtHostLocalizationService, IExtHostLocalizationService } from 'vs/workbench/api/common/extHostLocalizationService'
+import { ExtHostEditorTabs, IExtHostEditorTabs } from 'vs/workbench/api/common/extHostEditorTabs'
+import { MainThreadDebugService } from 'vs/workbench/api/browser/mainThreadDebugService'
+import { IDebugService } from 'vs/workbench/contrib/debug/common/debug'
+import { InstantiationType, registerSingleton } from 'vs/platform/instantiation/common/extensions'
+import { IMessagePassingProtocol } from 'vs/base/parts/ipc/common/ipc'
+import { BufferedEmitter } from 'vs/base/parts/ipc/common/ipc.net'
+import { VSBuffer } from 'vs/base/common/buffer'
+import { Event } from 'vs/base/common/event'
+import { RPCProtocol } from 'vs/workbench/services/extensions/common/rpcProtocol'
+import { ExtHostConsumerFileSystem, IExtHostConsumerFileSystem } from 'vs/workbench/api/common/extHostFileSystemConsumer'
+import { IExtHostInitDataService } from 'vs/workbench/api/common/extHostInitDataService'
 import { IEnvironment, UIKind } from 'vs/workbench/services/extensions/common/extensionHostProtocol'
+import { IExtHostTerminalService } from 'vs/workbench/api/common/extHostTerminalService'
+import { IExtHostDecorations, ExtHostDecorations } from 'vs/workbench/api/common/extHostDecorations'
+import { MainThreadConsole } from 'vs/workbench/api/browser/mainThreadConsole'
+import { ExtensionRuntime } from 'vs/workbench/api/common/extHostTypes'
+import { MainThreadWorkspace } from 'vs/workbench/api/browser/mainThreadWorkspace'
+import { ISearchService } from 'vs/workbench/services/search/common/search'
+import { ILabelService } from 'vs/platform/label/common/label'
+import { IWorkspaceTrustManagementService, IWorkspaceTrustRequestService } from 'vs/platform/workspace/common/workspaceTrust'
+import { IRequestService } from 'vs/platform/request/common/request'
+import { IEditSessionIdentityService } from 'vs/platform/workspace/common/editSessions'
+import { IWorkspaceEditingService } from 'vs/workbench/services/workspaces/common/workspaceEditing'
+import { MainThreadExtensionService } from 'vs/workbench/api/browser/mainThreadExtensionService'
+import { ITimerService } from 'vs/workbench/services/timer/browser/timerService'
+import { IExtensionsWorkbenchService } from 'vs/workbench/contrib/extensions/common/extensions'
+import { IWorkbenchExtensionEnablementService } from 'vs/workbench/services/extensionManagement/common/extensionManagement'
+import { ExtHostFileSystem } from 'vs/workbench/api/common/extHostFileSystem'
+import { MainThreadFileSystem } from 'vs/workbench/api/browser/mainThreadFileSystem'
+import { IExtensionRegistries } from 'vs/workbench/api/common/extHost.api.impl'
+import { IInstantiationService } from '../services'
 import { unsupported } from '../tools'
-import { Services } from '../services'
-
-export const DEFAULT_EXTENSION: IExtensionDescription = {
-  identifier: new ExtensionIdentifier('monaco'),
-  isBuiltin: true,
-  isUserBuiltin: true,
-  isUnderDevelopment: false,
-  extensionLocation: URI.from({ scheme: 'extension', path: '/' }),
-  name: 'monaco',
-  publisher: 'microsoft',
-  version: '1.0.0',
-  engines: {
-    vscode: VSCODE_VERSION
-  },
-  targetPlatform: TargetPlatform.WEB
-}
-
-const environment: IEnvironment = {
-  isExtensionDevelopmentDebug: false,
-  appName: 'Monaco',
-  appHost: 'web',
-  // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
-  appLanguage: window.navigator.language ?? 'en-US',
-  extensionTelemetryLogResource: URI.from({ scheme: 'user', path: '/extensionTelemetryLogResource.log' }),
-  isExtensionTelemetryLoggingOnly: false,
-  get appUriScheme () { return unsupported() },
-  get globalStorageHome () { return unsupported() },
-  get workspaceStorageHome () { return unsupported() }
-}
-export const initData: IExtHostInitDataService = {
-  _serviceBrand: undefined,
-  version: '1.0.0',
-  parentPid: 0,
-  environment,
-  get allExtensions () { return [Services.get().extension ?? DEFAULT_EXTENSION] },
-  get myExtensions () { return [(Services.get().extension ?? DEFAULT_EXTENSION).identifier] },
-  consoleForward: {
-    includeStack: false,
-    logNative: false
-  },
-  get telemetryInfo () { return unsupported() },
-  logLevel: LogLevel.Trace,
-  get logsLocation () { return unsupported() },
-  get logFile () { return unsupported() },
-  autoStart: false,
-  remote: {
-    isRemote: false,
-    authority: undefined,
-    connectionData: null
-  },
-  uiKind: UIKind.Web,
-  loggers: [],
-  logName: 'browser'
-}
-
-class SimpleMessagePassingProtocol implements IMessagePassingProtocol {
-  private readonly _onMessage = new BufferedEmitter<VSBuffer>()
-  readonly onMessage: Event<VSBuffer> = this._onMessage.event
-  send (buffer: VSBuffer): void {
-    this._onMessage.fire(buffer)
-  }
-}
 
 class MainThreadMessageServiceWithoutSource extends MainThreadMessageService {
   override $showMessage: MainThreadMessageService['$showMessage'] = (severity, message, options, commands) => {
@@ -158,40 +127,176 @@ class MainThreadMessageServiceWithoutSource extends MainThreadMessageService {
 /**
  * The vscode ExtHostConfiguration use a barrier and its getConfigProvider returns a promise, let's use a simpler version
  */
-export class SyncExtHostConfiguration implements ExtHostConfigurationShape {
-  readonly _serviceBrand: undefined
-
-  private readonly _proxy: MainThreadConfigurationShape
-  private readonly _logService: ILogService
-  private readonly _extHostWorkspace: ExtHostWorkspace
-  private _actual: ExtHostConfigProvider | null
-
+export class SyncExtHostConfiguration extends ExtHostConfiguration {
   constructor (
     @IExtHostRpcService extHostRpc: IExtHostRpcService,
     @IExtHostWorkspace extHostWorkspace: IExtHostWorkspace,
     @ILogService logService: ILogService
   ) {
-    this._proxy = extHostRpc.getProxy(MainContext.MainThreadConfiguration)
-    this._extHostWorkspace = extHostWorkspace
-    this._logService = logService
-    this._actual = null
+    super(extHostRpc, extHostWorkspace, logService)
   }
 
-  public getConfigProvider (): ExtHostConfigProvider {
-    return this._actual!
-  }
-
-  $initializeConfiguration (data: IConfigurationInitData): void {
-    this._actual = new ExtHostConfigProvider(this._proxy, this._extHostWorkspace, data, this._logService)
-  }
-
-  $acceptConfigurationChanged (data: IConfigurationInitData, change: IConfigurationChange): void {
-    this.getConfigProvider().$acceptConfigurationChanged(data, change)
+  public getConfigProviderSync (): ExtHostConfigProvider {
+    // eslint-disable-next-line dot-notation
+    return this['_actual']
   }
 }
 
+class SimpleMessagePassingProtocol implements IMessagePassingProtocol {
+  private readonly _onMessage = new BufferedEmitter<VSBuffer>()
+  readonly onMessage: Event<VSBuffer> = this._onMessage.event
+  send (buffer: VSBuffer): void {
+    this._onMessage.fire(buffer)
+  }
+}
+
+const imessagePassingProtocol = new SimpleMessagePassingProtocol()
+const rpcProtocol = new RPCProtocol(imessagePassingProtocol)
+
+class InjectedExtHostRpcService extends ExtHostRpcService {
+  constructor () {
+    super(rpcProtocol)
+  }
+}
+
+const environment: IEnvironment = {
+  isExtensionDevelopmentDebug: false,
+  appName: 'Monaco',
+  appHost: 'web',
+  // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
+  appLanguage: window.navigator.language ?? 'en-US',
+  extensionTelemetryLogResource: URI.from({ scheme: 'user', path: '/extensionTelemetryLogResource.log' }),
+  isExtensionTelemetryLoggingOnly: false,
+  get appUriScheme () { return unsupported() },
+  get globalStorageHome () { return unsupported() },
+  get workspaceStorageHome () { return unsupported() }
+}
+
+registerSingleton(IExtHostInitDataService, class ExtHostInitDataService implements IExtHostInitDataService {
+  _serviceBrand: undefined
+  version = '1.0.0'
+  parentPid = 0
+  environment = environment
+  allExtensions = []
+  myExtensions = []
+  consoleForward = {
+    includeStack: false,
+    logNative: false
+  }
+
+  get telemetryInfo () { return unsupported() }
+  logLevel = LogLevel.Trace
+  get logsLocation () { return unsupported() }
+  get logFile () { return unsupported() }
+  autoStart = true
+  remote = {
+    isRemote: false,
+    authority: undefined,
+    connectionData: null
+  }
+
+  uiKind = UIKind.Web
+  loggers = []
+  logName = 'browser'
+}, InstantiationType.Eager)
+
+registerSingleton(IHostUtils, class HostUtils implements IHostUtils {
+  declare readonly _serviceBrand: undefined
+  public readonly pid = undefined
+  exit (): void {
+    window.close()
+  }
+
+  async exists (): Promise<boolean> {
+    return true
+  }
+
+  async realpath (path: string): Promise<string> {
+    return path
+  }
+}, InstantiationType.Eager)
+registerSingleton(IExtHostRpcService, InjectedExtHostRpcService, InstantiationType.Eager)
+registerSingleton(IExtHostFileSystemInfo, ExtHostFileSystemInfo, InstantiationType.Eager)
+registerSingleton(IExtHostConsumerFileSystem, ExtHostConsumerFileSystem, InstantiationType.Eager)
+registerSingleton(IExtensionStoragePaths, ExtensionStoragePaths, InstantiationType.Eager)
+registerSingleton(IExtHostLocalizationService, ExtHostLocalizationService, InstantiationType.Delayed)
+registerSingleton(IExtHostDocumentsAndEditors, ExtHostDocumentsAndEditors, InstantiationType.Eager)
+class ExtHostExtensionService extends AbstractExtHostExtensionService {
+  extensionRuntime = ExtensionRuntime.Webworker
+  _getEntryPoint = unsupported
+  _loadCommonJSModule = unsupported
+  $setRemoteEnvironment = unsupported
+  override async _beforeAlmostReadyToRunExtensions () {}
+
+  public getExtensionRegistries (): IExtensionRegistries {
+    return { mine: this._myRegistry, all: this._globalRegistry }
+  }
+}
+registerSingleton(IExtHostExtensionService, ExtHostExtensionService, InstantiationType.Eager)
+registerSingleton(IExtHostConfiguration, SyncExtHostConfiguration, InstantiationType.Eager)
+registerSingleton(IExtHostTunnelService, ExtHostTunnelService, InstantiationType.Eager)
+registerSingleton(IExtHostFileSystemInfo, ExtHostFileSystemInfo, InstantiationType.Eager)
+registerSingleton(IExtHostTelemetry, ExtHostTelemetry, InstantiationType.Eager)
+registerSingleton(IExtHostCommands, ExtHostCommands, InstantiationType.Eager)
+registerSingleton(IExtHostDocumentsAndEditors, ExtHostDocumentsAndEditors, InstantiationType.Eager)
+registerSingleton(IExtHostWindow, ExtHostWindow, InstantiationType.Eager)
+registerSingleton(IExtHostWorkspace, ExtHostWorkspace, InstantiationType.Eager)
+registerSingleton(IExtHostEditorTabs, ExtHostEditorTabs, InstantiationType.Eager)
+registerSingleton(IExtHostApiDeprecationService, ExtHostApiDeprecationService, InstantiationType.Eager)
+registerSingleton(IExtHostDecorations, ExtHostDecorations, InstantiationType.Eager)
+registerSingleton(IExtHostDebugService, WorkerExtHostDebugService, InstantiationType.Eager)
+registerSingleton(IExtHostVariableResolverProvider, ExtHostVariableResolverProviderService, InstantiationType.Eager)
+registerSingleton(IExtHostTerminalService, class ExtHostTerminalService implements IExtHostTerminalService {
+  _serviceBrand: undefined
+  activeTerminal = undefined
+  terminals = []
+  onDidCloseTerminal = Event.None
+  onDidOpenTerminal = Event.None
+  onDidChangeActiveTerminal = Event.None
+  onDidChangeTerminalDimensions = Event.None
+  onDidChangeTerminalState = Event.None
+  onDidWriteTerminalData = Event.None
+  onDidChangeShell = Event.None
+  createTerminal = unsupported
+  createTerminalFromOptions = unsupported
+  createExtensionTerminal = unsupported
+  attachPtyToTerminal = unsupported
+  getDefaultShell = unsupported
+  getDefaultShellArgs = unsupported
+  registerLinkProvider = unsupported
+  registerProfileProvider = unsupported
+  registerTerminalQuickFixProvider = unsupported
+  getEnvironmentVariableCollection = unsupported
+  $acceptTerminalClosed = unsupported
+  $acceptTerminalOpened = unsupported
+  $acceptActiveTerminalChanged = unsupported
+  $acceptTerminalProcessId = unsupported
+  $acceptTerminalProcessData = unsupported
+  $acceptTerminalTitleChange = unsupported
+  $acceptTerminalDimensions = unsupported
+  $acceptTerminalMaximumDimensions = unsupported
+  $acceptTerminalInteraction = unsupported
+  $startExtensionTerminal = unsupported
+  $acceptProcessAckDataEvent = unsupported
+  $acceptProcessInput = unsupported
+  $acceptProcessResize = unsupported
+  $acceptProcessShutdown = unsupported
+  $acceptProcessRequestInitialCwd = unsupported
+  $acceptProcessRequestCwd = unsupported
+  $acceptProcessRequestLatency = unsupported
+  $provideLinks = unsupported
+  $activateLink = unsupported
+  $initEnvironmentVariableCollections = unsupported
+  $acceptDefaultProfile = unsupported
+  $createContributedProfileTerminal = unsupported
+  $provideTerminalQuickFixes = unsupported
+  dispose = unsupported
+}, InstantiationType.Eager)
+
 function createExtHostServices () {
-  const commandsService = StandaloneServices.get(ICommandService)
+  const instantiationService = StandaloneServices.get(IInstantiationService)
+  const labelService = StandaloneServices.get(ILabelService)
+  const commandService = StandaloneServices.get(ICommandService)
   const notificationService = StandaloneServices.get(INotificationService)
   const dialogService = StandaloneServices.get(IDialogService)
   const textModelService = StandaloneServices.get(ITextModelService)
@@ -223,17 +328,21 @@ function createExtHostServices () {
   const configurationService = StandaloneServices.get(IConfigurationService)
   const workspaceContextService = StandaloneServices.get(IWorkspaceContextService)
   const extensionService = StandaloneServices.get(IExtensionService)
-  const loggerService = StandaloneServices.get(ILoggerService)
   const logService = StandaloneServices.get(ILogService)
+  const rpcProtocol = StandaloneServices.get(IExtHostRpcService)
+  const debugService = StandaloneServices.get(IDebugService)
+  const searchService = StandaloneServices.get(ISearchService)
+  const workspaceTrustRequestService = StandaloneServices.get(IWorkspaceTrustRequestService)
+  const workspaceTrustManagementService = StandaloneServices.get(IWorkspaceTrustManagementService)
+  const requestService = StandaloneServices.get(IRequestService)
+  const editSessionIdentityService = StandaloneServices.get(IEditSessionIdentityService)
+  const workspaceEditingService = StandaloneServices.get(IWorkspaceEditingService)
+  const timerService = StandaloneServices.get(ITimerService)
+  const extensionsWorkbenchService = StandaloneServices.get(IExtensionsWorkbenchService)
+  const workbenchExtensionEnablementService = StandaloneServices.get(IWorkbenchExtensionEnablementService)
+  const extHostConsumerFileSystem = StandaloneServices.get(IExtHostConsumerFileSystem)
 
-  const imessagePassingProtocol = new SimpleMessagePassingProtocol()
-
-  const rpcProtocol = new RPCProtocol(imessagePassingProtocol)
-
-  const extHostFileSystemInfo = new ExtHostFileSystemInfo()
-
-  const mainContext: IMainContext & IExtHostRpcService & IExtHostContext = {
-    _serviceBrand: undefined,
+  const mainContext: IMainContext & IExtHostContext = {
     remoteAuthority: null,
     extensionHostKind: ExtensionHostKind.LocalProcess,
     getProxy: function <T> (identifier: ProxyIdentifier<T>): Proxied<T> {
@@ -253,44 +362,56 @@ function createExtHostServices () {
     }
   }
 
-  const extHostApiDeprecationService = new ExtHostApiDeprecationService(mainContext, logService)
-  const extHostMessageService = new ExtHostMessageService(mainContext, logService)
+  const extHostApiDeprecationService = StandaloneServices.get(IExtHostApiDeprecationService)
+  const extHostMessageService = new ExtHostMessageService(rpcProtocol, logService)
   const uriTransformerService = new URITransformerService(null)
 
   // They must be defined BEFORE ExtHostCommands
   rpcProtocol.set(MainContext.MainThreadWindow, new MainThreadWindow(mainContext, hostService, openerService))
-  rpcProtocol.set(MainContext.MainThreadCommands, new MainThreadCommands(mainContext, commandsService, extensionService))
+  rpcProtocol.set(MainContext.MainThreadCommands, new MainThreadCommands(mainContext, commandService, extensionService))
 
-  const extHostTelemetry = rpcProtocol.set(ExtHostContext.ExtHostTelemetry, new ExtHostTelemetry(initData, loggerService))
-  const extHostCommands = rpcProtocol.set(ExtHostContext.ExtHostCommands, new ExtHostCommands(mainContext, logService, extHostTelemetry))
-  const extHostDocumentsAndEditors = rpcProtocol.set(ExtHostContext.ExtHostDocumentsAndEditors, new ExtHostDocumentsAndEditors(mainContext, logService))
+  const extHostFileSystemInfo = rpcProtocol.set(ExtHostContext.ExtHostFileSystemInfo, StandaloneServices.get(IExtHostFileSystemInfo))
+  rpcProtocol.set(ExtHostContext.ExtHostTunnelService, StandaloneServices.get(IExtHostTunnelService))
+  const extHostTelemetry = rpcProtocol.set(ExtHostContext.ExtHostTelemetry, StandaloneServices.get(IExtHostTelemetry))
+  const extHostCommands = rpcProtocol.set(ExtHostContext.ExtHostCommands, StandaloneServices.get(IExtHostCommands))
+  const extHostDocumentsAndEditors = rpcProtocol.set(ExtHostContext.ExtHostDocumentsAndEditors, StandaloneServices.get(IExtHostDocumentsAndEditors))
+
+  const extHostQuickOpen = rpcProtocol.set(ExtHostContext.ExtHostQuickOpen, createExtHostQuickOpen(mainContext, <IExtHostWorkspaceProvider><unknown>null, extHostCommands))
   const extHostDocuments = rpcProtocol.set(ExtHostContext.ExtHostDocuments, new ExtHostDocuments(mainContext, extHostDocumentsAndEditors))
   const extHostLanguages = rpcProtocol.set(ExtHostContext.ExtHostLanguages, new ExtHostLanguages(mainContext, extHostDocuments, extHostCommands.converter, uriTransformerService))
-  const extHostWindow = rpcProtocol.set(ExtHostContext.ExtHostWindow, new ExtHostWindow(mainContext))
-  const extHostQuickOpen = rpcProtocol.set(ExtHostContext.ExtHostQuickOpen, createExtHostQuickOpen(mainContext, <IExtHostWorkspaceProvider><unknown>null, extHostCommands))
   const extHostDiagnostics = rpcProtocol.set(ExtHostContext.ExtHostDiagnostics, new ExtHostDiagnostics(mainContext, logService, extHostFileSystemInfo, extHostDocumentsAndEditors))
   const extHostProgress = rpcProtocol.set(ExtHostContext.ExtHostProgress, new ExtHostProgress(rpcProtocol.getProxy(MainContext.MainThreadProgress)))
   const extHostDocumentContentProviders = rpcProtocol.set(ExtHostContext.ExtHostDocumentContentProviders, new ExtHostDocumentContentProvider(mainContext, extHostDocumentsAndEditors, logService))
   const extHostEditors = rpcProtocol.set(ExtHostContext.ExtHostEditors, new ExtHostEditors(mainContext, extHostDocumentsAndEditors))
-  const extHostClipboard = new ExtHostClipboard(mainContext)
   const extHostLanguageFeatures = rpcProtocol.set(ExtHostContext.ExtHostLanguageFeatures, new ExtHostLanguageFeatures(rpcProtocol, uriTransformerService, extHostDocuments, extHostCommands, extHostDiagnostics, logService, extHostApiDeprecationService, extHostTelemetry))
-  const extHostWorkspace = rpcProtocol.set(ExtHostContext.ExtHostWorkspace, new ExtHostWorkspace(mainContext, initData, extHostFileSystemInfo, logService, uriTransformerService))
-  const extHostConfiguration = rpcProtocol.set(ExtHostContext.ExtHostConfiguration, new SyncExtHostConfiguration(mainContext, extHostWorkspace, logService))
+  const extHostClipboard = new ExtHostClipboard(mainContext)
 
-  rpcProtocol.set(MainContext.MainThreadMessageService, new MainThreadMessageServiceWithoutSource(mainContext, notificationService, commandsService, dialogService))
+  const extHostDebugService: IExtHostDebugService = rpcProtocol.set(ExtHostContext.ExtHostDebugService, StandaloneServices.get(IExtHostDebugService))
+  const extHostWindow = rpcProtocol.set(ExtHostContext.ExtHostWindow, StandaloneServices.get(IExtHostWindow))
+  const extHostWorkspace = rpcProtocol.set(ExtHostContext.ExtHostWorkspace, StandaloneServices.get(IExtHostWorkspace))
+  const extHostConfiguration = rpcProtocol.set(ExtHostContext.ExtHostConfiguration, StandaloneServices.get(IExtHostConfiguration)) as SyncExtHostConfiguration
+  const extHostExtensionService = rpcProtocol.set(ExtHostContext.ExtHostExtensionService, StandaloneServices.get(IExtHostExtensionService)) as ExtHostExtensionService
+
+  const extHostFileSystem = rpcProtocol.set(ExtHostContext.ExtHostFileSystem, new ExtHostFileSystem(rpcProtocol, extHostLanguageFeatures))
+
+  rpcProtocol.set(MainContext.MainThreadMessageService, new MainThreadMessageServiceWithoutSource(mainContext, notificationService, commandService, dialogService))
   rpcProtocol.set(MainContext.MainThreadDiagnostics, new MainThreadDiagnostics(mainContext, markerService, uriIdentityService))
   rpcProtocol.set(MainContext.MainThreadQuickOpen, new MainThreadQuickOpen(mainContext, quickInputService))
   rpcProtocol.set(MainContext.MainThreadTelemetry, new MainThreadTelemetry(mainContext, telemetryService, configurationService, workbenchEnvironmentService, productService))
-  rpcProtocol.set(MainContext.MainThreadProgress, new MainThreadProgress(mainContext, progressService, commandsService))
+  rpcProtocol.set(MainContext.MainThreadProgress, new MainThreadProgress(mainContext, progressService, commandService))
   rpcProtocol.set(MainContext.MainThreadDocumentContentProviders, new MainThreadDocumentContentProviders(mainContext, textModelService, languageService, modelService, editorWorkerService))
   rpcProtocol.set(MainContext.MainThreadBulkEdits, new MainThreadBulkEdits(mainContext, bulkEditService, logService, uriIdentityService))
   rpcProtocol.set(MainContext.MainThreadLanguages, new MainThreadLanguages(mainContext, languageService, modelService, textModelService, languageStatusService))
   rpcProtocol.set(MainContext.MainThreadClipboard, new MainThreadClipboard(mainContext, clipboardService))
   rpcProtocol.set(MainContext.MainThreadLanguageFeatures, new MainThreadLanguageFeatures(mainContext, languageService, languageConfigurationService, languageFeaturesService, uriIdentityService))
   rpcProtocol.set(MainContext.MainThreadConfiguration, new MainThreadConfiguration(mainContext, workspaceContextService, configurationService, workbenchEnvironmentService))
+  rpcProtocol.set(MainContext.MainThreadDebugService, new MainThreadDebugService(mainContext, debugService))
+  rpcProtocol.set(MainContext.MainThreadConsole, new MainThreadConsole(mainContext, workbenchEnvironmentService, logService))
+  rpcProtocol.set(MainContext.MainThreadWorkspace, new MainThreadWorkspace(mainContext, searchService, workspaceContextService, editSessionIdentityService, editorService, workspaceEditingService, notificationService, requestService, instantiationService, labelService, workbenchEnvironmentService, fileService, workspaceTrustManagementService, workspaceTrustRequestService))
+  rpcProtocol.set(MainContext.MainThreadExtensionService, new MainThreadExtensionService(mainContext, extensionService, notificationService, extensionsWorkbenchService, hostService, workbenchExtensionEnablementService, timerService, commandService, workbenchEnvironmentService))
+  rpcProtocol.set(MainContext.MainThreadFileSystem, new MainThreadFileSystem(mainContext, fileService, workspaceContextService, logService, configurationService))
 
-  // eslint-disable-next-line no-new
-  new MainThreadDocumentsAndEditors(
+  void new MainThreadDocumentsAndEditors(
     mainContext,
     modelService,
     textFileService,
@@ -308,7 +429,9 @@ function createExtHostServices () {
     configurationService
   )
 
-  const extHostBulkEdits = new ExtHostBulkEdits(mainContext, extHostDocumentsAndEditors)
+  const extHostBulkEdits = new ExtHostBulkEdits(rpcProtocol, extHostDocumentsAndEditors)
+
+  void extHostExtensionService.initialize()
 
   return {
     extHostLogService: logService,
@@ -329,7 +452,11 @@ function createExtHostServices () {
     extHostLanguageFeatures,
     extHostWorkspace,
     extHostConfiguration,
-    extHostTelemetry
+    extHostTelemetry,
+    extHostDebugService,
+    extHostFileSystem,
+    extHostConsumerFileSystem,
+    extHostExtensionService
   }
 }
 

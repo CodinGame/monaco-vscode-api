@@ -3,20 +3,22 @@ import '../vscode-services/missing-services'
 import { IEditorOverrideServices, StandaloneServices } from 'vs/editor/standalone/browser/standaloneServices'
 import { IWorkbenchLayoutService } from 'vs/workbench/services/layout/browser/layoutService'
 import { ILayoutOffsetInfo, ILayoutService } from 'vs/platform/layout/browser/layoutService'
-import { Emitter } from 'vs/base/common/event'
+import { Emitter, Event } from 'vs/base/common/event'
 import { ICodeEditorService } from 'vs/editor/browser/services/codeEditorService'
 import * as dom from 'vs/base/browser/dom'
 import { SyncDescriptor } from 'vs/platform/instantiation/common/descriptors'
 import { IInstantiationService } from 'vs/platform/instantiation/common/instantiation'
 import { onServicesInitialized } from './tools'
 
-class LayoutService implements ILayoutService, Pick<IWorkbenchLayoutService, 'isVisible'> {
+class LayoutService implements ILayoutService, Pick<IWorkbenchLayoutService, 'isVisible' | 'onDidChangePartVisibility'> {
   declare readonly _serviceBrand: undefined
 
   constructor (public container: HTMLElement) {
     window.addEventListener('resize', () => this.layout())
     this.layout()
   }
+
+  onDidChangePartVisibility = Event.None
 
   readonly offset: ILayoutOffsetInfo = { top: 0, quickPickTop: 0 }
 

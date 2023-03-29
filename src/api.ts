@@ -13,32 +13,57 @@ import * as editorOptions from 'vs/editor/common/config/editorOptions'
 import * as uri from 'vs/base/common/uri'
 import * as log from 'vs/platform/log/common/log'
 import * as telemetryUtils from 'vs/platform/telemetry/common/telemetryUtils'
-import customLanguages from './vscode-services/languages'
-import customCommands from './vscode-services/commands'
-import customWorkspace from './vscode-services/workspace'
-import customWindow, { TextTabInput } from './vscode-services/window'
-import customEnv from './vscode-services/env'
+import { ExtensionIdentifier, IExtensionDescription, TargetPlatform } from 'vs/platform/extensions/common/extensions'
+import { URI } from 'vs/base/common/uri'
+import createLanguagesApi from './vscode-services/languages'
+import createCommandsApi from './vscode-services/commands'
+import createWorkspaceApi from './vscode-services/workspace'
+import createWindowApi, { TextTabInput } from './vscode-services/window'
+import createEnvApi from './vscode-services/env'
+import createDebugApi from './vscode-services/debug'
+import createExtensionsApi from './vscode-services/extensions'
+import { Services } from './services'
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 const unsupported = <any>undefined
 
+export const DEFAULT_EXTENSION: IExtensionDescription = {
+  identifier: new ExtensionIdentifier('monaco'),
+  isBuiltin: true,
+  isUserBuiltin: true,
+  isUnderDevelopment: false,
+  extensionLocation: URI.from({ scheme: 'extension', path: '/' }),
+  name: 'monaco',
+  publisher: 'microsoft',
+  version: '1.0.0',
+  engines: {
+    vscode: VSCODE_VERSION
+  },
+  targetPlatform: TargetPlatform.WEB
+}
+
+function getDefaultExtension () {
+  return Services.get().extension ?? DEFAULT_EXTENSION
+}
+
+const _workspace = createWorkspaceApi(getDefaultExtension)
 const api: typeof vscode = {
   version: VSCODE_VERSION,
 
   tasks: unsupported,
   notebooks: unsupported,
   scm: unsupported,
-  debug: unsupported,
-  extensions: unsupported,
   comments: unsupported,
   authentication: unsupported,
   tests: unsupported,
 
-  env: customEnv,
-  commands: customCommands,
-  window: customWindow,
-  workspace: customWorkspace,
-  languages: customLanguages,
+  extensions: createExtensionsApi(getDefaultExtension),
+  debug: createDebugApi(getDefaultExtension),
+  env: createEnvApi(getDefaultExtension),
+  commands: createCommandsApi(getDefaultExtension),
+  window: createWindowApi(getDefaultExtension, _workspace),
+  workspace: _workspace,
+  languages: createLanguagesApi(getDefaultExtension),
 
   Breakpoint: extHostTypes.Breakpoint,
   CallHierarchyIncomingCall: extHostTypes.CallHierarchyIncomingCall,
@@ -124,20 +149,19 @@ const api: typeof vscode = {
   SignatureInformation: extHostTypes.SignatureInformation,
   SnippetString: extHostTypes.SnippetString,
   SourceBreakpoint: extHostTypes.SourceBreakpoint,
-  StatusBarAlignment: extHostTypes.StatusBarAlignment,
+  StatusBarAlignment: unsupported,
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   SymbolInformation: <any>extHostTypes.SymbolInformation,
   SymbolKind: extHostTypes.SymbolKind,
   SymbolTag: extHostTypes.SymbolTag,
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  Task: <any>extHostTypes.Task,
-  TaskGroup: extHostTypes.TaskGroup,
-  TaskPanelKind: extHostTypes.TaskPanelKind,
-  TaskRevealKind: extHostTypes.TaskRevealKind,
-  TaskScope: extHostTypes.TaskScope,
-  TerminalLink: extHostTypes.TerminalLink,
-  TerminalLocation: extHostTypes.TerminalLocation,
-  TerminalProfile: extHostTypes.TerminalProfile,
+  Task: unsupported,
+  TaskGroup: unsupported,
+  TaskPanelKind: unsupported,
+  TaskRevealKind: unsupported,
+  TaskScope: unsupported,
+  TerminalLink: unsupported,
+  TerminalLocation: unsupported,
+  TerminalProfile: unsupported,
   TextDocumentSaveReason: extHostTypes.TextDocumentSaveReason,
   TextEdit: extHostTypes.TextEdit,
   TextEditorCursorStyle: editorOptions.TextEditorCursorStyle,
@@ -157,15 +181,15 @@ const api: typeof vscode = {
   InlayHint: extHostTypes.InlayHint,
   InlayHintLabelPart: extHostTypes.InlayHintLabelPart,
   InlayHintKind: extHostTypes.InlayHintKind,
-  NotebookRange: extHostTypes.NotebookRange,
-  NotebookCellKind: extHostTypes.NotebookCellKind,
-  NotebookCellData: extHostTypes.NotebookCellData,
-  NotebookData: extHostTypes.NotebookData,
-  NotebookCellStatusBarAlignment: extHostTypes.NotebookCellStatusBarAlignment,
-  NotebookCellOutput: extHostTypes.NotebookCellOutput,
-  NotebookCellOutputItem: extHostTypes.NotebookCellOutputItem,
-  NotebookCellStatusBarItem: extHostTypes.NotebookCellStatusBarItem,
-  NotebookControllerAffinity: extHostTypes.NotebookControllerAffinity,
+  NotebookRange: unsupported,
+  NotebookCellKind: unsupported,
+  NotebookCellData: unsupported,
+  NotebookData: unsupported,
+  NotebookCellStatusBarAlignment: unsupported,
+  NotebookCellOutput: unsupported,
+  NotebookCellOutputItem: unsupported,
+  NotebookCellStatusBarItem: unsupported,
+  NotebookControllerAffinity: unsupported,
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   LinkedEditingRanges: <any>extHostTypes.LinkedEditingRanges,
   TestRunRequest: extHostTypes.TestRunRequest,
@@ -188,12 +212,12 @@ const api: typeof vscode = {
   InlineCompletionTriggerKind: extHostTypes.InlineCompletionTriggerKind,
   InlineCompletionItem: extHostTypes.InlineSuggestion,
   DocumentDropEdit: extHostTypes.DocumentDropEdit,
-  NotebookEditorRevealType: extHostTypes.NotebookEditorRevealType,
+  NotebookEditorRevealType: unsupported,
   SnippetTextEdit: extHostTypes.SnippetTextEdit,
-  NotebookEdit: extHostTypes.NotebookEdit,
+  NotebookEdit: unsupported,
   LogLevel: log.LogLevel,
-  TerminalExitReason: extHostTypes.TerminalExitReason,
-  CommentThreadState: extHostTypes.CommentThreadState,
+  TerminalExitReason: unsupported,
+  CommentThreadState: unsupported,
   l10n: unsupported,
   TelemetryTrustedValue: telemetryUtils.TelemetryTrustedValue
 }
