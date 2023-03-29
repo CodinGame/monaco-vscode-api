@@ -313,7 +313,20 @@ export default (args: Record<string, string>): rollup.RollupOptions[] => {
         name: 'improve-vscode-treeshaking',
         transform (code, id) {
           if (id.startsWith(VSCODE_DIR)) {
-            const ast = recast.parse(code, {
+            // HACK: assign typescript decorator result to a decorated class field so rollup doesn't remove them
+            // before:
+            // __decorate([
+            //     memoize
+            // ], InlineBreakpointWidget.prototype, "getId", null);
+            //
+            // after:
+            // InlineBreakpointWidget.__decorator = __decorate([
+            //     memoize
+            // ], InlineBreakpointWidget.prototype, "getId", null);
+
+            const patchedCode = code.replace(/(^__decorate\(\[\n.*\n\], (.*).prototype)/gm, '$2.__decorator = $1')
+
+            const ast = recast.parse(patchedCode, {
               parser: babylonParser
             })
             let transformed: boolean = false
