@@ -7,11 +7,16 @@ import * as fs from 'fs'
 import * as stream from 'stream'
 
 const docker = new Docker()
+const image = 'ghcr.io/graalvm/graalvm-ce:21.2.0'
 
 async function createContainer () {
+  const stream = await docker.pull(image)
+  await new Promise<void>((resolve, reject) => {
+    docker.modem.followProgress(stream, err => err == null ? resolve() : reject(err))
+  })
   const container = await docker.createContainer({
     name: 'graalvm-debugger',
-    Image: 'ghcr.io/graalvm/graalvm-ce:21.2.0',
+    Image: image,
     Entrypoint: ['sleep', 'infinity'],
     HostConfig: {
       NetworkMode: 'host',
