@@ -98,11 +98,11 @@ import { ListView as VScodeListView } from 'vscode/vs/base/browser/ui/list/listV
 import { CallbackIterable as MonacoCallbackIterable } from 'monaco-editor/esm/vs/base/common/arrays.js'
 import { CallbackIterable as VScodeCallbackIterable } from 'vscode/vs/base/common/arrays.js'
 // @ts-ignore Creating a d.ts is not worth it
-import { SelectActionViewItem as MonacoSelectActionViewItem } from 'monaco-editor/esm/vs/base/browser/ui/actionbar/actionViewItems'
-import { SelectActionViewItem as VScodeSelectActionViewItem } from 'vscode/vs/base/browser/ui/actionbar/actionViewItems'
+import { SelectActionViewItem as MonacoSelectActionViewItem } from 'monaco-editor/esm/vs/base/browser/ui/actionbar/actionViewItems.js'
+import { SelectActionViewItem as VScodeSelectActionViewItem } from 'vscode/vs/base/browser/ui/actionbar/actionViewItems.js'
 // @ts-ignore Creating a d.ts is not worth it
-import { QuickInputService as MonacoQuickInputService } from 'monaco-editor/esm/vs/platform/quickinput/browser/quickInputService'
-import { QuickInputService as VScodeQuickInputService } from 'vscode/vs/platform/quickinput/browser/quickInputService'
+import { QuickInputService as MonacoQuickInputService } from 'monaco-editor/esm/vs/platform/quickinput/browser/quickInputService.js'
+import { QuickInputService as VScodeQuickInputService } from 'vscode/vs/platform/quickinput/browser/quickInputService.js'
 // @ts-ignore Creating a d.ts is not worth it
 import { TextModel as MonacoTextModel } from 'monaco-editor/esm/vs/editor/common/model/textModel.js'
 import { ITextBuffer } from 'vs/editor/common/model'
