@@ -105,6 +105,9 @@ import { QuickInputService as MonacoQuickInputService } from 'monaco-editor/esm/
 import { QuickInputService as VScodeQuickInputService } from 'vscode/vs/platform/quickinput/browser/quickInputService.js'
 // @ts-ignore Creating a d.ts is not worth it
 import { TextModel as MonacoTextModel } from 'monaco-editor/esm/vs/editor/common/model/textModel.js'
+// @ts-ignore Creating a d.ts is not worth it
+import { Extensions as KeybindingsExtensions } from 'monaco-editor/esm/vs/platform/keybinding/common/keybindingsRegistry.js'
+import { KeybindingsRegistryImpl as VScodeKeybindingsRegistryImpl } from 'vscode/vs/platform/keybinding/common/keybindingsRegistry.js'
 import { ITextBuffer } from 'vs/editor/common/model'
 import { AudioCue } from 'vs/platform/audioCues/browser/audioCueService'
 import { onServicesInitialized } from './service-override/tools'
@@ -185,6 +188,8 @@ polyfillPrototypeSimple(MonacoListView.prototype, VScodeListView.prototype)
 polyfillPrototypeSimple(MonacoCallbackIterable.prototype, VScodeCallbackIterable.prototype)
 polyfillPrototypeSimple(MonacoSelectActionViewItem.prototype, VScodeSelectActionViewItem.prototype)
 polyfillPrototypeSimple(MonacoQuickInputService.prototype, VScodeQuickInputService.prototype)
+const keydinbingsRegistry = Registry.as<IConfigurationRegistry>(KeybindingsExtensions.EditorModes)
+polyfillPrototypeSimple(keydinbingsRegistry.constructor.prototype, VScodeKeybindingsRegistryImpl.prototype)
 
 MonacoTextModel.prototype.equalsTextBuffer = function (other: ITextBuffer): boolean {
   this._assertNotDisposed()

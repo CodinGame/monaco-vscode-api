@@ -24,6 +24,19 @@ index 8f4a1384e58..5607a27dd0c 100644
  
  		try {
  			await playAudio(url, this.getVolumeInPercent() / 100);
+diff --git a/src/vs/platform/keybinding/common/keybindingsRegistry.ts b/src/vs/platform/keybinding/common/keybindingsRegistry.ts
+index 9d56a6c8826..d6fb0f1ab0a 100644
+--- a/src/vs/platform/keybinding/common/keybindingsRegistry.ts
++++ b/src/vs/platform/keybinding/common/keybindingsRegistry.ts
+@@ -76,7 +76,7 @@ export interface IKeybindingsRegistry {
+ 	getDefaultKeybindings(): IKeybindingItem[];
+ }
+ 
+-class KeybindingsRegistryImpl implements IKeybindingsRegistry {
++export class KeybindingsRegistryImpl implements IKeybindingsRegistry {
+ 
+ 	private _coreKeybindings: LinkedList<IKeybindingItem>;
+ 	private _extensionKeybindings: IKeybindingItem[];
 diff --git a/src/vs/workbench/services/configuration/browser/configurationService.ts b/src/vs/workbench/services/configuration/browser/configurationService.ts
 index 4d68798fc9a..722c5f53b75 100644
 --- a/src/vs/workbench/services/configuration/browser/configurationService.ts
