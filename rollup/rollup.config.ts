@@ -390,7 +390,7 @@ export default (args: Record<string, string>): rollup.RollupOptions[] => {
       }),
       // Create a require instance with a toUrl method (like in vscode) to load static resources (mp3, wasm...)
       inject({
-        require: path.resolve('src/custom-require.js')
+        require: path.resolve('src/assets')
       }),
       globImport({
         format: 'default',
@@ -398,35 +398,6 @@ export default (args: Record<string, string>): rollup.RollupOptions[] => {
           return path.relative(VSCODE_DIR, id).replace(/[/.]/g, '_')
         }
       }),
-      {
-        name: 'vscode-resource-loading-plugin',
-        resolveId (id) {
-          if (id.endsWith('custom-require.js')) {
-            return id
-          }
-          return undefined
-        },
-        load (id) {
-          if (!id.endsWith('custom-require.js')) {
-            return
-          }
-          const sounds = fs.readdirSync(path.resolve(VSCODE_DIR, 'vs/platform/audioCues/browser/media/'))
-          const code = `
-${sounds.map(sound => `import _${path.parse(sound).name} from 'vscode/vs/platform/audioCues/browser/media/${sound}'`).join('\n')}
-import _onigWasm from 'vscode-oniguruma/release/onig.wasm'
-
-const fileUrls = {
-  'vscode-oniguruma/../onig.wasm': _onigWasm,
-${sounds.map(sound => `  'vs/platform/audioCues/browser/media/${sound}': _${path.parse(sound).name}`).join(',\n')}
-}
-
-export default {
-  toUrl: (id) => fileUrls[id]
-}
-`
-          return code
-        }
-      },
       externalAssets(['**/*.mp3', '**/*.wasm']),
       {
         name: 'dynamic-import-polyfill',
