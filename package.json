@@ -195,6 +195,7 @@
     "rollup": "^3.20.2",
     "rollup-plugin-dts": "^5.3.0",
     "rollup-plugin-external-assets": "^3.0.1",
+    "rollup-plugin-glob-import": "^0.5.0",
     "rollup-plugin-styles": "^4.0.0",
     "semver": "^7.3.8",
     "ts-node": "^10.9.1",

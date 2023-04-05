@@ -13,6 +13,7 @@ import * as babylonParser from 'recast/parsers/babylon.js'
 import dynamicImportVars from '@rollup/plugin-dynamic-import-vars'
 import inject from '@rollup/plugin-inject'
 import externalAssets from 'rollup-plugin-external-assets'
+import globImport from 'rollup-plugin-glob-import'
 import * as fs from 'fs'
 import * as path from 'path'
 import * as vm from 'vm'
@@ -390,6 +391,12 @@ export default (args: Record<string, string>): rollup.RollupOptions[] => {
       // Create a require instance with a toUrl method (like in vscode) to load static resources (mp3, wasm...)
       inject({
         require: path.resolve('src/custom-require.js')
+      }),
+      globImport({
+        format: 'default',
+        rename (name, id) {
+          return path.relative(VSCODE_DIR, id).replace(/[/.]/g, '_')
+        }
       }),
       {
         name: 'vscode-resource-loading-plugin',
