@@ -36,7 +36,7 @@ const PURE_FUNCTIONS = new Set([
   'darken',
   'lighten',
   'Color.fromHex',
-  'asBroswerUri',
+  'asBrowserUri',
   'values',
   'keys',
   'toString',
