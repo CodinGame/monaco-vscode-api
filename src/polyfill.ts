@@ -231,6 +231,7 @@ Object.defineProperty(MonacoDefaultConfiguration.prototype, 'onDidChangeConfigur
 MonacoPieceTreeTextBufferBuilder.prototype.finish = VScodePieceTreeTextBufferBuilder.prototype.finish
 
 const jsonContributionRegistry = Registry.as<IJSONContributionRegistry>(JsonExtensions.JSONContribution)
+// eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
 jsonContributionRegistry.getSchemaContributions ??= () => ({
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   schemas: (jsonContributionRegistry as any).schemasById
@@ -252,6 +253,7 @@ configurationRegistry.onDidUpdateConfiguration ??= (configurationRegistry as any
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 configurationRegistry.onDidSchemaChange ??= (configurationRegistry as any)._onDidSchemaChange.event
 
+// eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
 configurationRegistry.notifyConfigurationSchemaUpdated ??= () => {
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   (configurationRegistry as any)._onDidSchemaChange.fire()
@@ -343,6 +345,7 @@ Object.defineProperty(AudioCue, 'allAudioCues', {
 onServicesInitialized(() => {
   // polyfill for StandaloneWorkspaceContextService
   const workspaceContextService = StandaloneServices.get(IWorkspaceContextService)
+  // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
   workspaceContextService.getCompleteWorkspace ??= function (this: IWorkspaceContextService) {
     return Promise.resolve(this.getWorkspace())
   }.bind(workspaceContextService)
@@ -351,5 +354,6 @@ onServicesInitialized(() => {
   workspaceContextService.onDidChangeWorkspaceFolders ??= Event.None
   // @ts-ignore
   workspaceContextService.onDidChangeWorkbenchState ??= Event.None
+  // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
   workspaceContextService.getWorkbenchState ??= () => WorkbenchState.EMPTY
 })
