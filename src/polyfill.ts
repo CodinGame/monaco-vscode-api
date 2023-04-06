@@ -116,14 +116,6 @@ import { onServicesInitialized } from './service-override/tools'
 // Unfortunately, it makes some class not respect anymore the interface they are supposed to implement
 // In this file we are restoring some method that are treeshaked out of monaco-editor but that are needed in this library
 
-if (SnippetParser.prototype.text == null) {
-  SnippetParser.prototype.text = function (value: string) {
-    return this.parse(value).toString()
-  }
-} else {
-  console.warn('Useless polyfill: SnippetParser')
-}
-
 /**
  * Assign all properties of b to A
  */
