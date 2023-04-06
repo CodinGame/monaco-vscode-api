@@ -13,6 +13,7 @@ import * as babylonParser from 'recast/parsers/babylon.js'
 import dynamicImportVars from '@rollup/plugin-dynamic-import-vars'
 import inject from '@rollup/plugin-inject'
 import externalAssets from 'rollup-plugin-external-assets'
+import globImport from 'rollup-plugin-glob-import'
 import * as fs from 'fs'
 import * as path from 'path'
 import * as vm from 'vm'
@@ -36,7 +37,7 @@ const PURE_FUNCTIONS = new Set([
   'darken',
   'lighten',
   'Color.fromHex',
-  'asBroswerUri',
+  'asBrowserUri',
   'values',
   'keys',
   'toString',
@@ -201,6 +202,7 @@ export default (args: Record<string, string>): rollup.RollupOptions[] => {
     },
     external,
     output: [{
+      assetFileNames: 'assets/[name][extname]',
       format: 'esm',
       dir: 'dist',
       entryFileNames: '[name].js',
@@ -389,37 +391,14 @@ export default (args: Record<string, string>): rollup.RollupOptions[] => {
       }),
       // Create a require instance with a toUrl method (like in vscode) to load static resources (mp3, wasm...)
       inject({
-        require: path.resolve('src/custom-require.js')
+        require: path.resolve('src/assets')
       }),
-      {
-        name: 'vscode-resource-loading-plugin',
-        resolveId (id) {
-          if (id.endsWith('custom-require.js')) {
-            return id
-          }
-          return undefined
-        },
-        load (id) {
-          if (!id.endsWith('custom-require.js')) {
-            return
-          }
-          const sounds = fs.readdirSync(path.resolve(VSCODE_DIR, 'vs/platform/audioCues/browser/media/'))
-          const code = `
-${sounds.map(sound => `import _${path.parse(sound).name} from 'vscode/vs/platform/audioCues/browser/media/${sound}'`).join('\n')}
-import _onigWasm from 'vscode-oniguruma/release/onig.wasm'
-
-const fileUrls = {
-  'vscode-oniguruma/../onig.wasm': _onigWasm,
-${sounds.map(sound => `  'vs/platform/audioCues/browser/media/${sound}': _${path.parse(sound).name}`).join(',\n')}
-}
-
-export default {
-  toUrl: (id) => fileUrls[id]
-}
-`
-          return code
+      globImport({
+        format: 'default',
+        rename (name, id) {
+          return path.relative(VSCODE_DIR, id).replace(/[/.]/g, '_')
         }
-      },
+      }),
       externalAssets(['**/*.mp3', '**/*.wasm']),
       {
         name: 'dynamic-import-polyfill',
@@ -447,6 +426,7 @@ export default {
     external,
     input: Object.values(input).map(f => `./dist/${path.basename(f, '.ts')}`),
     output: [{
+      assetFileNames: 'assets/[name][extname]',
       format: 'esm',
       dir: 'dist',
       entryFileNames: '[name].js',

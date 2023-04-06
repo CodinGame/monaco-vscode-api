@@ -18,6 +18,9 @@
 			],
 			"vscode/*": [
 				"./vscode/*"
+			],
+			"monaco-editor/esm/*": [
+				"./vscode/*"
 			]
 		},
 		"preserveConstEnums": true
