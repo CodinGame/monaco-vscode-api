@@ -58,7 +58,6 @@ const PURE_FUNCTIONS = new Set([
 
 // Function calls to remove when the result is not used
 const FUNCTIONS_TO_REMOVE = new Set([
-  'registerColor',
   'colorRegistry.onDidChangeSchema',
   'registerSingleton', // Remove calls to registerSingleton from vscode code, we just want to import things, not registering services
   'registerProxyConfigurations',
@@ -94,6 +93,12 @@ const REMOVE_COMMANDS = new Set([
   'debug.openBreakpointToSide'
 ])
 
+const KEEP_COLORS = new Set([
+  'notifications.background',
+  'notification.foreground',
+  'notificationToast.border'
+])
+
 function isCallPure (functionName: string, args: recast.types.namedTypes.CallExpression['arguments']): boolean {
   if (functionName === 'KeybindingsRegistry.registerCommandAndKeybindingRule') {
     const firstParam = args[0]!
@@ -119,6 +124,15 @@ function isCallPure (functionName: string, args: recast.types.namedTypes.CallExp
     const firstParam = args[0]!
     if (firstParam.type === 'ClassExpression' && firstParam.id?.name === 'AddConfigurationAction') {
       return true
+    }
+  }
+
+  if (functionName.endsWith('registerColor')) {
+    const firstParam = args[0]!
+    if (firstParam.type === 'StringLiteral') {
+      if (KEEP_COLORS.has(firstParam.value)) {
+        return false
+      }
     }
   }
 

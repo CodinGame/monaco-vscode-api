@@ -8,7 +8,7 @@ The VSCode api is composed of:
 - Some features that are supported by Monaco (Language feature registrations...) which are just forwarded to it (with some transformations)
 - Some features that are not supported by Monaco, and in such case:
   - If it's an important feature: we let the user implement it as they wish.
-  - If it's some advanced features that don't make a lot of sense on Monaco (debug, tests...), it just throws an error when you try to use it.
+  - If it's some advanced features that don't make a lot of sense on Monaco (scm, tests...), it just throws an error when you try to use it.
 
 To implement by hands the optional features (file system, workspace folders, file...), you can use the `Services` namespace from `vscode/services`:
 
@@ -161,6 +161,7 @@ It includes:
 - Keybinding service, with user keybindings editor
 - Token classification
 - Snippets (but not working in monaco 0.34)
+- Debuggers
 
 It also uses the `getJsonSchemas` function to register them on the monaco json worker and have autocomplete/hover on settings and keybindings.
 
@@ -172,6 +173,11 @@ npm ci
 npm start
 # OR: for vite debug output
 npm run start:debug
+```
+
+For the debug feature, also run:
+```bash
+npm run start:debugServer
 ```
 
 ### History
