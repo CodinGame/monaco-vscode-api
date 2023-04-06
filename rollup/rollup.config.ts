@@ -202,6 +202,7 @@ export default (args: Record<string, string>): rollup.RollupOptions[] => {
     },
     external,
     output: [{
+      assetFileNames: 'assets/[name][extname]',
       format: 'esm',
       dir: 'dist',
       entryFileNames: '[name].js',
@@ -425,6 +426,7 @@ export default (args: Record<string, string>): rollup.RollupOptions[] => {
     external,
     input: Object.values(input).map(f => `./dist/${path.basename(f, '.ts')}`),
     output: [{
+      assetFileNames: 'assets/[name][extname]',
       format: 'esm',
       dir: 'dist',
       entryFileNames: '[name].js',
