@@ -12,7 +12,7 @@ import type { create as createEditor, createDiffEditor } from 'vs/editor/standal
 import { errorHandler } from 'vs/base/common/errors'
 import { FoldingModel, setCollapseStateForMatchingLines } from 'vs/editor/contrib/folding/browser/foldingModel'
 import { FoldingController } from 'vs/editor/contrib/folding/browser/folding'
-import { DisposableStore } from 'vs/base/common/lifecycle'
+import { DisposableStore, IReference } from 'vs/base/common/lifecycle'
 import { Registry } from 'vs/platform/registry/common/platform'
 import { IJSONContributionRegistry, Extensions as JsonExtensions } from 'vs/platform/jsonschemas/common/jsonContributionRegistry'
 import { CommandsRegistry } from 'vs/platform/commands/common/commands'
@@ -20,8 +20,13 @@ import { IJSONSchema } from 'vs/base/common/jsonSchema'
 import { Extensions as ConfigurationExtensions } from 'vs/platform/configuration/common/configurationRegistry'
 import { EditorOptionsUtil } from 'vs/editor/browser/config/editorConfiguration'
 import * as monaco from 'monaco-editor'
-import { Event } from 'vs/base/common/event'
 import { registerColor } from 'vs/platform/theme/common/colorRegistry'
+import { URI } from 'vs/base/common/uri'
+import { ITextModelService } from 'vs/editor/common/services/resolverService'
+import { IFileDeleteOptions, IFileService } from 'vs/platform/files/common/files'
+import { VSBuffer } from 'vs/base/common/buffer'
+import { IUserDataProfilesService } from 'vs/platform/userDataProfile/common/userDataProfile'
+import { ITextFileEditorModel } from './service-override/modelEditor'
 import { createInjectedClass } from './tools/injection'
 // Hack so ContextKeyExprType is included in the bundle as it's used but rollup-plugin-dts is unable to detect it
 // https://github.com/Swatinem/rollup-plugin-dts/issues/220
@@ -111,6 +116,21 @@ class ConfiguredStandaloneDiffEditor extends StandaloneDiffEditor {
   protected override _createInnerEditor (instantiationService: IInstantiationService, container: HTMLElement, options: Readonly<IEditorOptions>): CodeEditorWidget {
     return instantiationService.createInstance(ConfiguredStandaloneEditor, container, true, options)
   }
+}
+
+export async function writeFile (uri: URI, content: string): Promise<void> {
+  await StandaloneServices.get(IFileService).writeFile(uri, VSBuffer.fromString(content))
+}
+
+export async function deleteFile (uri: URI, options?: Partial<IFileDeleteOptions>): Promise<void> {
+  await StandaloneServices.get(IFileService).del(uri, options)
+}
+
+export async function createModelReference (resource: URI, content?: string): Promise<IReference<ITextFileEditorModel>> {
+  if (content != null) {
+    await writeFile(resource, content)
+  }
+  return (await StandaloneServices.get(ITextModelService).createModelReference(resource)) as IReference<ITextFileEditorModel>
 }
 
 export const createConfiguredEditor: typeof createEditor = (domElement, options, override) => {
