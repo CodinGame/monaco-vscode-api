@@ -298,9 +298,9 @@ Object.defineProperty(AudioCue, 'allAudioCues', {
   }
 })
 
-onServicesInitialized(() => {
+registerServiceInitializeParticipant(async (accessor) => {
   // polyfill for StandaloneWorkspaceContextService
-  const workspaceContextService: PartialMutable<IWorkspaceContextService> = StandaloneServices.get(IWorkspaceContextService)
+  const workspaceContextService: PartialMutable<IWorkspaceContextService> = accessor.get(IWorkspaceContextService)
   workspaceContextService.getCompleteWorkspace ??= function (this: Partial<IWorkspaceContextService>) {
     return Promise.resolve(this.getWorkspace!())
   }.bind(workspaceContextService)

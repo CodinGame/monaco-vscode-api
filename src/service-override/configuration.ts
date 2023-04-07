@@ -71,16 +71,6 @@ class InjectedConfigurationService extends ConfigurationService {
     super(userDataProfilesService.defaultProfile.settingsResource, fileService, policyService, logService)
   }
 
-  override getValue (...args: any[]) {
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    const value = super.getValue.apply(this, args as any)
-
-    // small hack to prevent BrowserKeyboardLayoutService from failing when instantiated early
-    if (args[0] === 'keyboard') {
-      return value ?? {}
-    }
-    return value
-  }
 
   // For some reasons, the default implementation just throw a not supported error
   // Override it so the theme service is able to save the theme in the configuration

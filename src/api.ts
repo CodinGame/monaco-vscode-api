@@ -13,8 +13,6 @@ import * as editorOptions from 'vs/editor/common/config/editorOptions'
 import * as uri from 'vs/base/common/uri'
 import * as log from 'vs/platform/log/common/log'
 import * as telemetryUtils from 'vs/platform/telemetry/common/telemetryUtils'
-import { ExtensionIdentifier, IExtensionDescription, TargetPlatform } from 'vs/platform/extensions/common/extensions'
-import { URI } from 'vs/base/common/uri'
 import createLanguagesApi from './vscode-services/languages'
 import createCommandsApi from './vscode-services/commands'
 import createWorkspaceApi from './vscode-services/workspace'
@@ -22,29 +20,10 @@ import createWindowApi, { TextTabInput } from './vscode-services/window'
 import createEnvApi from './vscode-services/env'
 import createDebugApi from './vscode-services/debug'
 import createExtensionsApi from './vscode-services/extensions'
-import { Services } from './services'
+import { getDefaultExtension } from './extensions'
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 const unsupported = <any>undefined
-
-export const DEFAULT_EXTENSION: IExtensionDescription = {
-  identifier: new ExtensionIdentifier('monaco'),
-  isBuiltin: true,
-  isUserBuiltin: true,
-  isUnderDevelopment: false,
-  extensionLocation: URI.from({ scheme: 'extension', path: '/' }),
-  name: 'monaco',
-  publisher: 'microsoft',
-  version: '1.0.0',
-  engines: {
-    vscode: VSCODE_VERSION
-  },
-  targetPlatform: TargetPlatform.WEB
-}
-
-function getDefaultExtension () {
-  return Services.get().extension ?? DEFAULT_EXTENSION
-}
 
 const _workspace = createWorkspaceApi(getDefaultExtension)
 const api: typeof vscode = {

@@ -5,7 +5,6 @@ import { SyncDescriptor } from 'vs/platform/instantiation/common/descriptors'
 import { WorkbenchKeybindingService } from 'vs/workbench/services/keybinding/browser/keybindingService'
 import { IKeybindingService, IUserFriendlyKeybinding } from 'vs/platform/keybinding/common/keybinding'
 import { VSBuffer } from 'vs/base/common/buffer'
-import { } from 'vs/workbench/services/actions/common/menusExtensionPoint'
 import { KeybindingResolver } from 'vs/platform/keybinding/common/keybindingResolver'
 import { IInstantiationService } from 'vs/platform/instantiation/common/instantiation'
 import { AbstractKeybindingService } from 'vs/platform/keybinding/common/abstractKeybindingService'
@@ -18,8 +17,8 @@ import { IUserDataProfilesService } from 'vs/platform/userDataProfile/common/use
 import { IKeyboardLayoutService } from 'vs/platform/keyboardLayout/common/keyboardLayout'
 import { BrowserKeyboardLayoutService } from 'vs/workbench/services/keybinding/browser/keyboardLayoutService'
 import { localize } from 'vs/nls'
+import { IConfigurationRegistry, Extensions as ConfigurationExtensions } from 'vs/platform/configuration/common/configurationRegistry'
 import getFileServiceOverride from './files'
-import getConfigurationServiceOverride, { configurationRegistry } from './configuration'
 import { IFileService } from '../services'
 import { createInjectedClass } from '../tools/injection'
 
@@ -77,6 +76,7 @@ if (provider != null) {
 }
 
 // required for CommandsQuickAccessProvider
+const configurationRegistry = Registry.as<IConfigurationRegistry>(ConfigurationExtensions.Configuration)
 configurationRegistry.registerConfiguration({
   properties: {
     'workbench.commandPalette.history': {
@@ -98,18 +98,6 @@ configurationRegistry.registerConfiguration({
   }
 })
 
-// The interfaces are not exported
-interface ContributedKeyBinding {
-  command: string
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  args?: any
-  key: string
-  when?: string
-  mac?: string
-  linux?: string
-  win?: string
-}
-
 async function updateUserKeybindings (keybindingsJson: string): Promise<void> {
   const userDataProfilesService: IUserDataProfilesService = StandaloneServices.get(IUserDataProfilesService)
   await StandaloneServices.get(IFileService).writeFile(userDataProfilesService.defaultProfile.keybindingsResource, VSBuffer.fromString(keybindingsJson))
@@ -118,14 +106,12 @@ async function updateUserKeybindings (keybindingsJson: string): Promise<void> {
 export default function getServiceOverride (): IEditorOverrideServices {
   return {
     ...getFileServiceOverride(),
-    ...getConfigurationServiceOverride(),
     [IKeybindingService.toString()]: new SyncDescriptor(DelegateStandaloneKeybindingService),
-    [IKeyboardLayoutService.toString()]: new SyncDescriptor(BrowserKeyboardLayoutService)
+    [IKeyboardLayoutService.toString()]: new SyncDescriptor(BrowserKeyboardLayoutService, undefined, true)
   }
 }
 
 export {
   updateUserKeybindings,
-  ContributedKeyBinding,
   IUserFriendlyKeybinding
 }
