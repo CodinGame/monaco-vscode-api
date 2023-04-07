@@ -152,22 +152,10 @@ const defaultThemesExtensions = {
         path: './themes/dark_plus.json'
       },
       {
-        id: 'Default Dark+ Experimental',
-        label: '%darkPlusExperimentalColorThemeLabel%',
-        uiTheme: 'vs-dark',
-        path: './themes/dark_plus_experimental.json'
-      },
-      {
         id: 'Default Light+',
         label: '%lightPlusColorThemeLabel%',
         uiTheme: 'vs',
         path: './themes/light_plus.json'
-      },
-      {
-        id: 'Default Light+ Experimental',
-        label: '%lightPlusExperimentalColorThemeLabel%',
-        uiTheme: 'vs',
-        path: './themes/light_plus_experimental.json'
       },
       {
         id: 'Visual Studio Dark',
