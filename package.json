@@ -154,7 +154,7 @@
     "clean": "rm -rf dist/",
     "compile-webpack-loader": "tsc --target es2020 -lib es2020 --module commonjs --skipLibCheck --moduleResolution node --declaration --outDir dist src/webpack-loader.ts && mv dist/webpack-loader.js dist/webpack-loader.cjs",
     "preprepare": "./scripts/install-vscode",
-    "lint": "eslint {**/src/**/*.ts,./rollup/*.ts,./*.ts}",
+    "lint": "eslint {/src/**/*.ts,./rollup/*.ts,./*.ts}",
     "generate-types": "tsc --project tsconfig.types.json && rollup --config rollup/rollup.types.config.ts --configPlugin 'typescript={tsconfig: `tsconfig.rollup.json`}' && rm -rf ./dist/types",
     "release": "node --loader ts-node/esm release.ts ${npm_package_config_vscode_version}"
   },
