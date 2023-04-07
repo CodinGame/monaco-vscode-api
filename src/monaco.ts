@@ -130,7 +130,15 @@ const Extensions = {
 
 const registry = Registry.as<IJSONContributionRegistry>(Extensions.JSONContribution)
 type FileMatch = Partial<Record<string, string[]>>
-function getJsonSchemas (fileMatchs: FileMatch = {}): monaco.languages.json.DiagnosticsOptions['schemas'] {
+function getDefaultFileMatch (): FileMatch {
+  const userDataProfilesService = StandaloneServices.get(IUserDataProfilesService)
+  const profile = userDataProfilesService.defaultProfile
+  return {
+    keybindings: [profile.keybindingsResource.toString(true)],
+    'settings/user': [profile.settingsResource.toString(true)]
+  }
+}
+function getJsonSchemas (fileMatchs: FileMatch = getDefaultFileMatch()): monaco.languages.json.DiagnosticsOptions['schemas'] {
   return Object.entries(registry.getSchemaContributions().schemas)
     .filter(([uri]) => uri !== 'vscode://schemas/vscode-extensions') // remove it because for some reason it makes the json worker message fail
     .map(([uri, schema]) => {
@@ -143,7 +151,18 @@ function getJsonSchemas (fileMatchs: FileMatch = {}): monaco.languages.json.Diag
       }
     })
 }
-const onDidChangeJsonSchema: Event<string> = registry.onDidChangeSchema
+
+function synchronizeJsonSchemas (): monaco.IDisposable {
+  function updateDiagnosticsOptions () {
+    monaco.languages.json.jsonDefaults.setDiagnosticsOptions({
+      ...monaco.languages.json.jsonDefaults.diagnosticsOptions,
+      schemas: getJsonSchemas()
+    })
+  }
+
+  updateDiagnosticsOptions()
+  return registry.onDidChangeSchema(updateDiagnosticsOptions)
+}
 
 export {
   errorHandler,
@@ -159,8 +178,7 @@ export {
   IJSONContributionRegistry,
   IJSONSchema,
 
-  getJsonSchemas,
-  onDidChangeJsonSchema,
+  synchronizeJsonSchemas,
 
   registerColor
 }
