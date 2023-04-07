@@ -40,6 +40,10 @@
       "types": "./dist/modelEditor.d.ts",
       "default": "./dist/modelEditor.js"
     },
+    "./service-override/files": {
+      "types": "./dist/files.d.ts",
+      "default": "./dist/files.js"
+    },
     "./service-override/configuration": {
       "types": "./dist/configuration.d.ts",
       "default": "./dist/configuration.js"
@@ -105,6 +109,9 @@
       ],
       "service-override/modelEditor": [
         "./dist/modelEditor.d.ts"
+      ],
+      "service-override/files": [
+        "./dist/files.d.ts"
       ],
       "service-override/configuration": [
         "./dist/configuration.d.ts"

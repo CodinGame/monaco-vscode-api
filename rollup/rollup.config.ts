@@ -173,6 +173,7 @@ const input = {
   notifications: './src/service-override/notifications.ts',
   dialogs: './src/service-override/dialogs.ts',
   modelEditor: './src/service-override/modelEditor.ts',
+  files: './src/service-override/files.ts',
   configuration: './src/service-override/configuration.ts',
   keybindings: './src/service-override/keybindings.ts',
   textmate: './src/service-override/textmate.ts',

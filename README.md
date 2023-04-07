@@ -64,6 +64,7 @@ Additionally, this library exposes 12 modules that include the vscode version of
 - Token classification: `vscode/service-override/tokenClassification`
 - Audio cue: `vscode/service-override/audioCue`
 - Debug: `vscode/service-override/debug`
+- Files: `vscode/service-override/files`
 
 Usage:
 
