@@ -15,13 +15,6 @@ To implement by hands the optional features (file system, workspace folders, fil
 ```typescript
 import { Services } from 'vscode/services'
 Services.install({
-  workspace: {
-    workspaceFolders: ...,
-    createFileSystemWatcher (documentSelector, provider) {
-      ...
-    },
-    onDidSaveTextDocument
-  },
   window: {
     withProgress: ...
   }
@@ -39,17 +32,17 @@ Also, monaco-editor doesn't provide good type for them, so this library does it.
 Example:
 
 ```typescript
-import { StandaloneServices, INotificationService } from 'vscode/services'
+import { StandaloneServices, INotificationService, initialize } from 'vscode/services'
 
 class MyCustomNotificationService implements INotificationService { ... }
-StandaloneServices.initialize({
+await initialize({
   get [INotificationService.toString()] () {
     return new MyCustomNotificationService(...)
   }
 })
 ```
 
-Additionally, this library exposes 12 modules that include the vscode version of some services (with some glue to make it work with monaco):
+Additionally, this library exposes 13 modules that include the vscode version of some services (with some glue to make it work with monaco):
 
 - Notifications: `vscode/service-override/notifications`
 - Dialogs: `vscode/service-override/dialogs`
@@ -65,28 +58,22 @@ Additionally, this library exposes 12 modules that include the vscode version of
 - Audio cue: `vscode/service-override/audioCue`
 - Debug: `vscode/service-override/debug`
 - Files: `vscode/service-override/files`
-- preferences: `vscode/service-override/preferences`
+- Preferences: `vscode/service-override/preferences`
 
 Usage:
 
 ```typescript
-import { StandaloneServices } from 'vscode/services'
+import { initialize } from 'vscode/services'
 import getModelEditorServiceOverride from 'vscode/service-override/modelEditor'
 import getConfigurationServiceOverride, { updateUserConfiguration, configurationRegistry } from 'vscode/service-override/configuration'
 
-StandaloneServices.initialize({
+await initialize({
   ...getModelEditorServiceOverride((model, input, sideBySide) => {
     // Open a new editor here and return it
     // It will be called when for instance the user ctrl+click on an import
   }),
-  ...getConfigurationServiceOverride()
+  ...getConfigurationServiceOverride(monaco.Uri.file('/tmp/'))
 })
-
-configurationRegistry.registerDefaultConfigurations([{
-  overrides: {
-    'editor.fontSize': 10
-  }
-}])
 
 updateUserConfiguration(`{
   "editor.fontSize": 12,
@@ -114,19 +101,42 @@ before:
 
 ```typescript
 import * as monaco from 'monaco-editor'
-monaco.editor.create(...)
+const model = monaco.editor.createModel(...)
+const editor = monaco.editor.create({ model, ... })
+
+...
+
+model.dispose()
+editor.dispose()
+
 ```
 
 after:
 
 ```typescript
-import { createConfiguredEditor } from 'vscode/monaco'
+import { createConfiguredEditor, createModelReference } from 'vscode/monaco'
 
-createConfiguredEditor(...)
+const modelRef = await createModelReference(...)
+
+const editor = createConfiguredEditor({ model: modelRef.object.textEditorModel })
+
+...
+
+await modelRef.object.save()
+
+...
+
+modelRef.dispose()
+editor.dispose()
+
+
 ```
 
 `createConfiguredEditor` returns a subclass of what is returned by `monaco.editor.create`, the `updateOptions` method can still be used.
 The only difference is that is will use the `configurationService` as a default configuration
+
+`createModelReference` return a reference to a model. The value is fetched from the memory filesystem (which is written if you provide the second argument).
+The reference can then be disposed, the model will only be disposed if there is no remaining references.
 
 ### Installation
 
@@ -141,9 +151,27 @@ Just import it as if you were in a vscode extension:
 
 ```typescript
 import * as vscode from 'vscode'
+import { initialize } from 'vscode/extensions'
+
+await initialize()
 
 const range = new vscode.Range(...)
 vscode.languages.registerCompletionItemProvider(...)
+```
+
+The api will use the manifest of a default vscode extension, which can be overriden by providing it to the `initialize` function.
+
+You can also register a new extension from its manifest:
+```typescript
+import { registerExtension, initialize as initializeVscodeExtensions } from 'vscode/extensions'
+
+await initialize()
+
+const { registerFile: registerExtensionFile, api: vscodeApi } = registerExtension(defaultThemesExtensions)
+
+registerExtensionFile('/file.json', async () => fileContent)
+vscodeApi.languages.registerCompletionItemProvider(...)
+
 ```
 
 ### Demo
@@ -165,7 +193,7 @@ It includes:
 - Snippets (but not working in monaco 0.34)
 - Debuggers
 
-It also uses the `getJsonSchemas` function to register them on the monaco json worker and have autocomplete/hover on settings and keybindings.
+It also uses the `synchronizeJsonSchemas` function to register them on the monaco json worker and have autocomplete/hover on settings and keybindings.
 
 From CLI run:
 

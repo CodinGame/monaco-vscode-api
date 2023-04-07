@@ -172,6 +172,9 @@ function getJsonSchemas (fileMatchs: FileMatch = getDefaultFileMatch()): monaco.
     })
 }
 
+/**
+ * Synchronize registered json schema on the monaco json worker
+ */
 function synchronizeJsonSchemas (): monaco.IDisposable {
   function updateDiagnosticsOptions () {
     monaco.languages.json.jsonDefaults.setDiagnosticsOptions({
