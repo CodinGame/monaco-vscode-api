@@ -56,17 +56,9 @@
       "types": "./dist/textmate.d.ts",
       "default": "./dist/textmate.js"
     },
-    "./service-override/languageConfiguration": {
-      "types": "./dist/languageConfiguration.d.ts",
-      "default": "./dist/languageConfiguration.js"
-    },
     "./service-override/theme": {
       "types": "./dist/theme.d.ts",
       "default": "./dist/theme.js"
-    },
-    "./service-override/tokenClassification": {
-      "types": "./dist/tokenClassification.d.ts",
-      "default": "./dist/tokenClassification.js"
     },
     "./service-override/snippets": {
       "types": "./dist/snippets.d.ts",
@@ -126,14 +118,8 @@
       "service-override/textmate": [
         "./dist/textmate.d.ts"
       ],
-      "service-override/languageConfiguration": [
-        "./dist/languageConfiguration.d.ts"
-      ],
       "service-override/theme": [
         "./dist/theme.d.ts"
-      ],
-      "service-override/tokenClassification": [
-        "./dist/tokenClassification.d.ts"
       ],
       "service-override/snippets": [
         "./dist/snippets.d.ts"

@@ -42,19 +42,17 @@ await initialize({
 })
 ```
 
-Additionally, this library exposes 13 modules that include the vscode version of some services (with some glue to make it work with monaco):
+Additionally, this library exposes 11 modules that include the vscode version of some services (with some glue to make it work with monaco):
 
 - Notifications: `vscode/service-override/notifications`
 - Dialogs: `vscode/service-override/dialogs`
 - Model / Editor: `vscode/service-override/modelEditor`
 - Configuration: `vscode/service-override/configuration`
 - Keybindings: `vscode/service-override/keybindings`
-- Language configuration: `vscode/service-override/languageConfiguration`
 - Languages: `vscode/service-override/languages`
 - Textmate: `vscode/service-override/textmate`
 - Snippets: `vscode/service-override/snippets`
 - VSCode themes: `vscode/service-override/theme`
-- Token classification: `vscode/service-override/tokenClassification`
 - Audio cue: `vscode/service-override/audioCue`
 - Debug: `vscode/service-override/debug`
 - Files: `vscode/service-override/files`
