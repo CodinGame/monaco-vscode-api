@@ -25,7 +25,6 @@ const __dirname = path.dirname(fileURLToPath(import.meta.url))
 const PURE_ANNO = '#__PURE__'
 const PURE_FUNCTIONS = new Set([
   '__param',
-  '__decorate',
   'createProxyIdentifier',
   'createDecorator',
   'localize',
@@ -61,7 +60,6 @@ const FUNCTIONS_TO_REMOVE = new Set([
   'colorRegistry.onDidChangeSchema',
   'registerSingleton', // Remove calls to registerSingleton from vscode code, we just want to import things, not registering services
   'registerProxyConfigurations',
-  'registerWorkbenchContribution',
   'registerViewWelcomeContent',
   'registerViewContainer',
   'registerViews',
@@ -71,7 +69,9 @@ const FUNCTIONS_TO_REMOVE = new Set([
   '_setAllMainProxyIdentifiers',
   'registerDebugCommandPaletteItem',
   'registerTouchBarEntry',
-  'registerDebugViewMenuItem'
+  'registerDebugViewMenuItem',
+  'registerEditorSerializer',
+  'UndoCommand.addImplementation'
 ])
 
 const PURE_OR_TO_REMOVE_FUNCTIONS = new Set([
@@ -99,7 +99,26 @@ const KEEP_COLORS = new Set([
   'notificationToast.border'
 ])
 
-function isCallPure (functionName: string, args: recast.types.namedTypes.CallExpression['arguments']): boolean {
+const ALLOWED_WORKBENCH_CONTRIBUTIONS = new Set([
+  'AudioCueLineFeatureContribution',
+  'AudioCueLineDebuggerContribution',
+  'RegisterConfigurationSchemasContribution',
+  'EditorAutoSave',
+  'DebugToolBar',
+  'DebugContentProvider',
+  'DialogHandlerContribution'
+])
+
+function isCallPure (functionName: string, node: recast.types.namedTypes.CallExpression): boolean {
+  const args = node.arguments
+  if (functionName === '__decorate') {
+    const code = recast.print(node).code
+    if (code.includes('extHostNamedCustomer') || code.includes('extHostCustomer')) {
+      return false
+    }
+    return true
+  }
+
   if (functionName === 'KeybindingsRegistry.registerCommandAndKeybindingRule') {
     const firstParam = args[0]!
     if (firstParam.type === 'ObjectExpression') {
@@ -116,8 +135,10 @@ function isCallPure (functionName: string, args: recast.types.namedTypes.CallExp
   if (functionName.endsWith('Registry.add')) {
     const firstParam = args[0]!
     const firstParamName = firstParam.type === 'MemberExpression' ? getMemberExpressionPath(firstParam) : undefined
-    const allowed = firstParamName != null && firstParamName.includes('ExtensionsRegistry')
-    return !allowed
+    if (firstParamName != null) {
+      const allowed = firstParamName.includes('ExtensionsRegistry') || firstParamName.includes('EditorFactory') || firstParamName.includes('Workbench')
+      return !allowed
+    }
   }
 
   if (functionName.endsWith('registerAction2')) {
@@ -134,6 +155,24 @@ function isCallPure (functionName: string, args: recast.types.namedTypes.CallExp
         return false
       }
     }
+  }
+  if (functionName === 'registerConfiguration') {
+    const firstParam = args[0]!
+    if (firstParam.type === 'ObjectExpression') {
+      const idProperty = firstParam.properties.find((prop): prop is recast.types.namedTypes.ObjectProperty => prop.type === 'ObjectProperty' && prop.key.type === 'StringLiteral' && prop.key.value === 'id')
+      const idPropertyValue = idProperty != null && idProperty.value.type === 'StringLiteral' ? idProperty.value.value : undefined
+      if (idPropertyValue != null && ['explorer'].includes(idPropertyValue)) {
+        return true
+      }
+    }
+  }
+
+  if (functionName === 'registerWorkbenchContribution') {
+    const firstParam = args[0]!
+    if (firstParam.type === 'Identifier' && ALLOWED_WORKBENCH_CONTRIBUTIONS.has(firstParam.name)) {
+      return false
+    }
+    return true
   }
 
   return PURE_OR_TO_REMOVE_FUNCTIONS.has(functionName)
@@ -212,7 +251,9 @@ export default (args: Record<string, string>): rollup.RollupOptions[] => {
         return id.startsWith(SRC_DIR) ||
           id.endsWith('.css') ||
           id.startsWith(KEYBOARD_LAYOUT_DIR) ||
-          id.endsWith('.contribution.js')
+          id.endsWith('.contribution.js') ||
+          id.endsWith('/configurationExtensionPoint.js') ||
+          id.includes('vs/workbench/api/browser/')
       }
     },
     external,
@@ -370,11 +411,11 @@ export default (args: Record<string, string>): rollup.RollupOptions[] => {
 
                 if (node.callee.type === 'MemberExpression') {
                   if (node.callee.property.type === 'Identifier') {
-                    if ((name != null && isCallPure(name, node.arguments)) || isCallPure(node.callee.property.name, node.arguments)) {
+                    if ((name != null && isCallPure(name, node)) || isCallPure(node.callee.property.name, node)) {
                       path.replace(addComment(node))
                     }
                   }
-                } else if (node.callee.type === 'Identifier' && isCallPure(node.callee.name, node.arguments)) {
+                } else if (node.callee.type === 'Identifier' && isCallPure(node.callee.name, node)) {
                   path.replace(addComment(node))
                 } else if (node.callee.type === 'FunctionExpression') {
                   const lastInstruction = node.callee.body.body[node.callee.body.body.length - 1]
