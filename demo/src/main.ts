@@ -12,6 +12,7 @@ import 'monaco-editor/esm/vs/editor/standalone/browser/referenceSearch/standalon
 // json contribution should be imported/run AFTER the services are initialized (in setup.ts)
 import 'monaco-editor/esm/vs/language/json/monaco.contribution'
 import { createConfiguredEditor, synchronizeJsonSchemas, createModelReference } from 'vscode/monaco'
+import { SimpleTextFileSystemProvider, registerFileSystemOverlay } from 'vscode/service-override/files'
 import * as vscode from 'vscode'
 
 vscode.languages.registerHoverProvider('javascript', {
@@ -41,6 +42,36 @@ monaco.languages.json.jsonDefaults.setModeConfiguration({
 })
 
 synchronizeJsonSchemas()
+
+const otherModelUri = vscode.Uri.file('/tmp/test2.js')
+vscode.languages.registerDefinitionProvider('javascript', {
+  provideDefinition (document, position) {
+    const wordRange = document.getWordRangeAtPosition(position)
+    if (wordRange != null && document.getText(wordRange) === 'anotherfile') {
+      return {
+        range: wordRange,
+        uri: otherModelUri
+      }
+    }
+    return []
+  }
+})
+
+class FakeFileSystem extends SimpleTextFileSystemProvider {
+  private files: Record<string, string> = {
+    [otherModelUri.toString(true)]: 'This is another file'
+  }
+
+  protected async getFileContent (resource: monaco.Uri): Promise<string | undefined> {
+    return this.files[resource.toString(true)]
+  }
+
+  protected async setFileContent (resource: monaco.Uri, content: string): Promise<void> {
+    this.files[resource.toString(true)] = content
+  }
+}
+
+registerFileSystemOverlay(new FakeFileSystem())
 
 void vscode.window.showInformationMessage('Hello', {
   detail: 'Welcome to the monaco-vscode-api demo',
