@@ -16,28 +16,31 @@ import { LanguageService as VScodeLanguageService } from 'vscode/vs/editor/commo
 import { NoOpNotification as MonacoNoOpNotification } from 'monaco-editor/esm/vs/platform/notification/common/notification.js'
 import { NoOpNotification as VScodeNoOpNotification } from 'vscode/vs/platform/notification/common/notification.js'
 import { Registry } from 'vs/platform/registry/common/platform'
-import { Extensions as ConfigurationExtensions, IConfigurationRegistry } from 'vs/platform/configuration/common/configurationRegistry'
-import { StandaloneServices } from 'vs/editor/standalone/browser/standaloneServices'
+import { ConfigurationRegistry, Extensions as ConfigurationExtensions, IConfigurationRegistry } from 'vs/platform/configuration/common/configurationRegistry'
 import { StandaloneConfigurationService as MonacoStandaloneConfigurationService } from 'monaco-editor/esm/vs/editor/standalone/browser/standaloneServices.js'
 import { StandaloneConfigurationService as VScodeStandaloneConfigurationService } from 'vscode/vs/editor/standalone/browser/standaloneServices.js'
 import { TernarySearchTree as MonacoTernarySearchTree } from 'monaco-editor/esm/vs/base/common/ternarySearchTree.js'
 import { TernarySearchTree as VScodeTernarySearchTree } from 'vscode/vs/base/common/ternarySearchTree.js'
-import { Configuration as MonacoConfiguration } from 'monaco-editor/esm/vs/platform/configuration/common/configurationModels.js'
-import { Configuration as VScodeConfiguration } from 'vscode/vs/platform/configuration/common/configurationModels.js'
+import { Configuration as MonacoConfiguration, ConfigurationModel as MonacoConfigurationModel, ConfigurationModelParser as MonacoConfigurationModelParser } from 'monaco-editor/esm/vs/platform/configuration/common/configurationModels.js'
+import { Configuration as VScodeConfiguration, ConfigurationModel as VScodeConfigurationModel, ConfigurationModelParser as VScodeConfigurationModelParser } from 'vscode/vs/platform/configuration/common/configurationModels.js'
 import { RawContextKey as MonacoRawContextKey, ContextKeyExpr as MonacoContextKeyExpr } from 'monaco-editor/esm/vs/platform/contextkey/common/contextkey.js'
 import { RawContextKey as VScodeRawContextKey, ContextKeyExpr as VScodeContextKeyExpr } from 'vscode/vs/platform/contextkey/common/contextkey.js'
 import { ErrorHandler as MonacoErrorHandler } from 'monaco-editor/esm/vs/base/common/errors.js'
 import { ErrorHandler as VScodeErrorHandler } from 'vscode/vs/base/common/errors.js'
 import { LanguagesRegistry as MonacoLanguagesRegistry } from 'monaco-editor/esm/vs/editor/common/services/languagesRegistry.js'
 import { LanguagesRegistry as VScodeLanguagesRegistry } from 'vscode/vs/editor/common/services/languagesRegistry.js'
-import { WorkspaceFolder as MonacoWorkspaceFolder } from 'monaco-editor/esm/vs/platform/workspace/common/workspace.js'
-import { IWorkspaceContextService, WorkbenchState, WorkspaceFolder as VScodeWorkspaceFolder } from 'vscode/vs/platform/workspace/common/workspace.js'
+import { WorkspaceFolder as MonacoWorkspaceFolder, Workspace as MonacoWorkspace } from 'monaco-editor/esm/vs/platform/workspace/common/workspace.js'
+import { IWorkspaceContextService, WorkbenchState, WorkspaceFolder as VScodeWorkspaceFolder, Workspace as VScodeWorkspace } from 'vscode/vs/platform/workspace/common/workspace.js'
 import { List as MonacoList } from 'monaco-editor/esm/vs/base/browser/ui/list/listWidget.js'
 import { List as VScodeList } from 'vscode/vs/base/browser/ui/list/listWidget.js'
 import { Color as MonacoColor, RGBA as MonacoRGBA } from 'monaco-editor/esm/vs/base/common/color.js'
 import { Color as VScodeColor, RGBA as VScodeRGBA } from 'vscode/vs/base/common/color.js'
 import { LogService as MonacoLogService } from 'monaco-editor/esm/vs/platform/log/common/logService.js'
 import { LogService as VScodeLogService } from 'vscode/vs/platform/log/common/logService.js'
+import { ConsoleLogger as MonacoConsoleLogger, MultiplexLogger as MonacoMultiplexLogger } from 'monaco-editor/esm/vs/platform/log/common/log'
+import { ConsoleLogger as VScodeConsoleLogger, MultiplexLogger as VScodeMultiplexLogger } from 'vscode/vs/platform/log/common/log'
+import { ExtUri as MonacoExtUri } from 'monaco-editor/esm/vs/base/common/resources.js'
+import { ExtUri as VScodeExtUri } from 'vscode/vs/base/common/resources.js'
 import { DefaultConfiguration as MonacoDefaultConfiguration } from 'monaco-editor/esm/vs/platform/configuration/common/configurations.js'
 import { DefaultConfiguration as VScodeDefaultConfiguration } from 'vscode/vs/platform/configuration/common/configurations.js'
 import { Keybinding as MonacoKeybinding, KeyCodeChord as MonacoKeyCodeChord } from 'monaco-editor/esm/vs/base/common/keybindings.js'
@@ -72,11 +75,11 @@ import { SelectActionViewItem as VScodeSelectActionViewItem } from 'vscode/vs/ba
 import { QuickInputService as MonacoQuickInputService } from 'monaco-editor/esm/vs/platform/quickinput/browser/quickInputService.js'
 import { QuickInputService as VScodeQuickInputService } from 'vscode/vs/platform/quickinput/browser/quickInputService.js'
 import { TextModel as MonacoTextModel } from 'monaco-editor/esm/vs/editor/common/model/textModel.js'
-import { Extensions as KeybindingsExtensions } from 'monaco-editor/esm/vs/platform/keybinding/common/keybindingsRegistry.js'
+import { Extensions as KeybindingsExtensions, IKeybindingsRegistry } from 'monaco-editor/esm/vs/platform/keybinding/common/keybindingsRegistry.js'
 import { KeybindingsRegistryImpl as VScodeKeybindingsRegistryImpl } from 'vscode/vs/platform/keybinding/common/keybindingsRegistry.js'
 import { ITextBuffer } from 'vs/editor/common/model'
 import { AudioCue } from 'vs/platform/audioCues/browser/audioCueService'
-import { onServicesInitialized } from './service-override/tools'
+import { registerServiceInitializeParticipant } from './services'
 
 type PartialMutable<T> = Partial<{
   -readonly [key in keyof T]: T[key]
@@ -91,11 +94,12 @@ type PartialMutable<T> = Partial<{
  */
 function polyfillPrototypeSimple<T> (a: Partial<T>, b: T) {
   const entries = Object.getOwnPropertyDescriptors(b)
-  if (Object.keys(Object.getOwnPropertyDescriptors(a)).length === Object.keys(entries).length) {
+  const destEntries = Object.getOwnPropertyDescriptors(a)
+  if (Object.keys(destEntries).length === Object.keys(entries).length) {
     console.warn('useless polyfill on ', a)
   }
   delete entries.prototype
-  Object.defineProperties(a, entries)
+  Object.defineProperties(a, Object.fromEntries(Object.entries(entries).filter(([key]) => !(key in destEntries))))
 }
 
 /**
@@ -120,7 +124,11 @@ function polyfillPrototype<T> (a: Partial<T>, b: T, toA: (i: unknown) => unknown
   }
 }
 
+polyfillPrototypeSimple(MonacoConfigurationModel.prototype, VScodeConfigurationModel.prototype)
 polyfillPrototypeSimple(MonacoLogService.prototype, VScodeLogService.prototype)
+polyfillPrototypeSimple(MonacoConsoleLogger.prototype, VScodeConsoleLogger.prototype)
+polyfillPrototypeSimple(MonacoMultiplexLogger.prototype, VScodeMultiplexLogger.prototype)
+polyfillPrototypeSimple(MonacoExtUri.prototype, VScodeExtUri.prototype)
 polyfillPrototypeSimple(MonacoList.prototype, VScodeList.prototype)
 polyfillPrototypeSimple(MonacoWorkspaceFolder.prototype, VScodeWorkspaceFolder.prototype)
 polyfillPrototypeSimple(MonacoLanguagesRegistry.prototype, VScodeLanguagesRegistry.prototype)
@@ -150,8 +158,10 @@ polyfillPrototypeSimple(MonacoListView.prototype, VScodeListView.prototype)
 polyfillPrototypeSimple(MonacoCallbackIterable.prototype, VScodeCallbackIterable.prototype)
 polyfillPrototypeSimple(MonacoSelectActionViewItem.prototype, VScodeSelectActionViewItem.prototype)
 polyfillPrototypeSimple(MonacoQuickInputService.prototype, VScodeQuickInputService.prototype)
-const keydinbingsRegistry = Registry.as<IConfigurationRegistry>(KeybindingsExtensions.EditorModes)
+const keydinbingsRegistry = Registry.as<IKeybindingsRegistry>(KeybindingsExtensions.EditorModes)
 polyfillPrototypeSimple(keydinbingsRegistry.constructor.prototype, VScodeKeybindingsRegistryImpl.prototype)
+polyfillPrototypeSimple(MonacoWorkspace.prototype, VScodeWorkspace.prototype)
+polyfillPrototypeSimple(MonacoConfigurationModelParser.prototype, VScodeConfigurationModelParser.prototype)
 
 MonacoTextModel.prototype.equalsTextBuffer = function (this: MonacoTextModel, other: ITextBuffer): boolean {
   this['_assertNotDisposed']()
@@ -210,12 +220,14 @@ configurationRegistry.onDidUpdateConfiguration ??= (configurationRegistry as any
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 configurationRegistry.onDidSchemaChange ??= (configurationRegistry as any)._onDidSchemaChange.event
 
-configurationRegistry.notifyConfigurationSchemaUpdated ??= () => {
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  (configurationRegistry as any)._onDidSchemaChange.fire()
+configurationRegistry.notifyConfigurationSchemaUpdated ??= function (this: ConfigurationRegistry) {
+  this['_onDidSchemaChange'].fire()
+}
+configurationRegistry.getConfigurationDefaultsOverrides ??= function (this: ConfigurationRegistry) {
+  return this['configurationDefaultsOverrides']
 }
 
-(MonacoNoOpNotification.prototype as PartialMutable<MonacoNoOpNotification>).onDidClose ??= Event.None
+;(MonacoNoOpNotification.prototype as PartialMutable<MonacoNoOpNotification>).onDidClose ??= Event.None
 
 Object.defineProperty(GhostTextController.prototype, 'onActiveModelDidChange', {
   get () {

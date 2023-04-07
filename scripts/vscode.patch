@@ -37,6 +37,19 @@ index 9d56a6c8826..d6fb0f1ab0a 100644
  
  	private _coreKeybindings: LinkedList<IKeybindingItem>;
  	private _extensionKeybindings: IKeybindingItem[];
+diff --git a/src/vs/platform/configuration/common/configurationRegistry.ts b/src/vs/platform/configuration/common/configurationRegistry.ts
+index ed8e56d50c5..b005065759d 100644
+--- a/src/vs/platform/configuration/common/configurationRegistry.ts
++++ b/src/vs/platform/configuration/common/configurationRegistry.ts
+@@ -262,7 +262,7 @@ export const configurationDefaultsSchemaId = 'vscode://schemas/settings/configur
+ 
+ const contributionRegistry = Registry.as<IJSONContributionRegistry>(JSONExtensions.JSONContribution);
+ 
+-class ConfigurationRegistry implements IConfigurationRegistry {
++export class ConfigurationRegistry implements IConfigurationRegistry {
+ 
+ 	private readonly configurationDefaultsOverrides: Map<string, IConfigurationDefaultOverride>;
+ 	private readonly defaultLanguageConfigurationOverridesNode: IConfigurationNode;
 diff --git a/src/vs/workbench/services/configuration/browser/configurationService.ts b/src/vs/workbench/services/configuration/browser/configurationService.ts
 index 4d68798fc9a..722c5f53b75 100644
 --- a/src/vs/workbench/services/configuration/browser/configurationService.ts
