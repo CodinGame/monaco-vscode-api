@@ -36,6 +36,7 @@ export default rollup.defineConfig([
   './dist/types/src/service-override/languages.d.ts',
   './dist/types/src/service-override/audioCue.d.ts',
   './dist/types/src/service-override/debug.d.ts',
+  './dist/types/src/service-override/preferences.d.ts',
   './dist/types/src/monaco.d.ts'
 ].map((input): rollup.RollupOptions => ({
   input,

@@ -73,6 +73,7 @@
 		"src/service-override/languages.ts",
 		"src/service-override/audioCue.ts",
 		"src/service-override/debug.ts",
+		"src/service-override/preferences.ts",
 		"src/monaco.ts"
 	]
 }

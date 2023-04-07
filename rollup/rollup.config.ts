@@ -223,6 +223,7 @@ const input = {
   languages: './src/service-override/languages.ts',
   audioCue: './src/service-override/audioCue.ts',
   debug: './src/service-override/debug.ts',
+  preferences: './src/service-override/preferences.ts',
   monaco: './src/monaco'
 }
 

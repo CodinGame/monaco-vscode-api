@@ -84,6 +84,10 @@
       "types": "./dist/debug.d.ts",
       "default": "./dist/debug.js"
     },
+    "./service-override/preferences": {
+      "types": "./dist/preferences.d.ts",
+      "default": "./dist/preferences.js"
+    },
     "./monaco": {
       "types": "./dist/monaco.d.ts",
       "default": "./dist/monaco.js"
@@ -142,6 +146,9 @@
       ],
       "service-override/debug": [
         "./dist/debug.d.ts"
+      ],
+      "service-override/preferences": [
+        "./dist/preferences.d.ts"
       ],
       "monaco": [
         "./dist/monaco.d.ts"
