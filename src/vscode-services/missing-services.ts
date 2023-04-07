@@ -1,18 +1,17 @@
 import '../polyfill'
-import { Emitter, Event } from 'vs/base/common/event'
+import { Event } from 'vs/base/common/event'
 import { DomEmitter } from 'vs/base/browser/event'
 import { URI } from 'vs/base/common/uri'
 import { trackFocus } from 'vs/base/browser/dom'
 import { IProgress, IProgressCompositeOptions, IProgressDialogOptions, IProgressNotificationOptions, IProgressOptions, IProgressService, IProgressStep, IProgressWindowOptions } from 'vs/platform/progress/common/progress'
-import { ExtUri } from 'vs/base/common/resources'
 import { IEditorService } from 'vs/workbench/services/editor/common/editorService'
 import { IPaneCompositePartService } from 'vs/workbench/services/panecomposite/browser/panecomposite'
 import { IUriIdentityService } from 'vs/platform/uriIdentity/common/uriIdentity'
-import { ITextFileEditorModelManager, ITextFileSaveEvent, ITextFileService } from 'vs/workbench/services/textfile/common/textfiles'
+import { ITextFileService } from 'vs/workbench/services/textfile/common/textfiles'
 import { IFileService } from 'vs/platform/files/common/files'
 import { GroupOrientation, IEditorGroup, IEditorGroupsService } from 'vs/workbench/services/editor/common/editorGroupsService'
 import { IWorkbenchEnvironmentService } from 'vs/workbench/services/environment/common/environmentService'
-import { IWorkingCopyFileService } from 'vs/workbench/services/workingCopy/common/workingCopyFileService'
+import { IWorkingCopyFileService, WorkingCopyFileService } from 'vs/workbench/services/workingCopy/common/workingCopyFileService'
 import { IPathService } from 'vs/workbench/services/path/common/pathService'
 import { InstantiationType, registerSingleton } from 'vs/platform/instantiation/common/extensions'
 import { IProductService } from 'vs/platform/product/common/productService'
@@ -21,7 +20,7 @@ import { ITextModel } from 'vs/editor/common/model'
 import { LanguageFeatureRegistry } from 'vs/editor/common/languageFeatureRegistry'
 import { compare } from 'vs/base/common/strings'
 import { IHostService } from 'vs/workbench/services/host/browser/host'
-import { ILifecycleService, LifecyclePhase, StartupKind } from 'vs/workbench/services/lifecycle/common/lifecycle'
+import { ILifecycleService } from 'vs/workbench/services/lifecycle/common/lifecycle'
 import { ILanguageDetectionService } from 'vs/workbench/services/languageDetection/common/languageDetectionWorkerService'
 import { IExtensionService, NullExtensionService } from 'vs/workbench/services/extensions/common/extensions'
 import { IKeyboardLayoutService } from 'vs/platform/keyboardLayout/common/keyboardLayout'
@@ -68,7 +67,7 @@ import { IExtensionsWorkbenchService } from 'vs/workbench/contrib/extensions/com
 import { IWorkbenchExtensionEnablementService } from 'vs/workbench/services/extensionManagement/common/extensionManagement'
 import { ITunnelService } from 'vs/platform/tunnel/common/tunnel'
 import { IWorkingCopyBackupService } from 'vs/workbench/services/workingCopy/common/workingCopyBackup'
-import { IWorkingCopyService } from 'vs/workbench/services/workingCopy/common/workingCopyService'
+import { IWorkingCopyService, WorkingCopyService } from 'vs/workbench/services/workingCopy/common/workingCopyService'
 import { FilesConfigurationService, IFilesConfigurationService } from 'vs/workbench/services/filesConfiguration/common/filesConfigurationService'
 import { IUntitledTextEditorService } from 'vs/workbench/services/untitled/common/untitledTextEditorService'
 import { IFileDialogService } from 'vs/platform/dialogs/common/dialogs'
@@ -76,8 +75,19 @@ import { IElevatedFileService } from 'vs/workbench/services/files/common/elevate
 import { BrowserElevatedFileService } from 'vs/workbench/services/files/browser/elevatedFileService'
 import { IDecorationsService } from 'vs/workbench/services/decorations/common/decorations'
 import { Disposable } from 'vs/workbench/api/common/extHostTypes'
-import { Services } from '../services'
+import { RequestService } from 'vs/platform/request/browser/requestService'
+import { InMemoryWorkingCopyBackupService } from 'vs/workbench/services/workingCopy/common/workingCopyBackupService'
+import { BrowserTextFileService } from 'vs/workbench/services/textfile/browser/browserTextFileService'
+import { DecorationsService } from 'vs/workbench/services/decorations/browser/decorationsService'
+import { UriIdentityService } from 'vs/platform/uriIdentity/common/uriIdentityService'
+import { IJSONEditingService } from 'vs/workbench/services/configuration/common/jsonEditing'
+import { JSONEditingService } from 'vs/workbench/services/configuration/common/jsonEditingService'
+import { IWorkspacesService } from 'vs/platform/workspaces/common/workspaces'
+import { ITextEditorService } from 'vs/workbench/services/textfile/common/textEditorService'
+import { IEditorResolverService } from 'vs/workbench/services/editor/common/editorResolverService'
+import { AbstractLifecycleService } from 'vs/workbench/services/lifecycle/common/lifecycleService'
 import { unsupported } from '../tools'
+import { Services } from '../services'
 
 registerSingleton(ILoggerService, NullLoggerService, InstantiationType.Eager)
 
@@ -128,58 +138,9 @@ registerSingleton(IPaneCompositePartService, class PaneCompositePartService impl
   showActivity = unsupported
 }, InstantiationType.Eager)
 
-registerSingleton(IUriIdentityService, class UriIdentityService implements IUriIdentityService {
-  readonly _serviceBrand = undefined
-  extUri = new ExtUri(() => false)
-  asCanonicalUri (uri: URI) {
-    return uri
-  }
-}, InstantiationType.Eager)
+registerSingleton(IUriIdentityService, UriIdentityService, InstantiationType.Delayed)
 
-const onDidSave = new Emitter<ITextFileSaveEvent>()
-class TextFileEditorModelManager implements ITextFileEditorModelManager {
-  onDidCreate = Event.None
-  onDidResolve = Event.None
-  onDidChangeDirty = Event.None
-  onDidChangeReadonly = Event.None
-  onDidRemove = Event.None
-  onDidChangeOrphaned = Event.None
-  onDidChangeEncoding = Event.None
-  onDidSaveError = Event.None
-  onDidSave = onDidSave.event
-  onDidRevert = Event.None
-  models = []
-  saveErrorHandler = {
-    onSaveError: unsupported
-  }
-
-  get = () => undefined
-  resolve = unsupported
-  addSaveParticipant = unsupported
-  runSaveParticipants = unsupported
-  canDispose (): true {
-    return true
-  }
-}
-registerSingleton(ITextFileService, class TextFileService implements ITextFileService {
-  readonly _serviceBrand = undefined
-  files = new TextFileEditorModelManager()
-  get untitled () { return unsupported() }
-  get encoding () { return unsupported() }
-  isDirty = () => false
-  save = unsupported
-  saveAs = unsupported
-  revert = unsupported
-  read = unsupported
-  readStream = unsupported
-  write = unsupported
-  create = unsupported
-  getEncodedReadable = unsupported
-  getDecodedStream = unsupported
-  dispose () {
-    // ignore
-  }
-}, InstantiationType.Eager)
+registerSingleton(ITextFileService, BrowserTextFileService, InstantiationType.Eager)
 
 registerSingleton(IFileService, class FileService implements IFileService {
   readonly _serviceBrand = undefined
@@ -335,7 +296,7 @@ class WorkbenchEnvironmentService implements IBrowserWorkbenchEnvironmentService
   get globalStorageHome () { return unsupported() }
   get workspaceStorageHome () { return unsupported() }
   get localHistoryHome () { return unsupported() }
-  get cacheHome () { return unsupported() }
+  cacheHome = URI.from({ scheme: 'cache', path: '/' })
   get userDataSyncHome () { return unsupported() }
   get userDataSyncLogResource () { return unsupported() }
   sync = undefined
@@ -358,26 +319,8 @@ class WorkbenchEnvironmentService implements IBrowserWorkbenchEnvironmentService
 registerSingleton(IWorkbenchEnvironmentService, WorkbenchEnvironmentService, InstantiationType.Eager)
 registerSingleton(IEnvironmentService, WorkbenchEnvironmentService, InstantiationType.Eager)
 registerSingleton(IBrowserWorkbenchEnvironmentService, WorkbenchEnvironmentService, InstantiationType.Eager)
-
-registerSingleton(IWorkingCopyFileService, class WorkingCopyFileService implements IWorkingCopyFileService {
-  readonly _serviceBrand = undefined
-  onWillRunWorkingCopyFileOperation = Event.None
-  onDidFailWorkingCopyFileOperation = Event.None
-  onDidRunWorkingCopyFileOperation = Event.None
-  addFileOperationParticipant = unsupported
-  hasSaveParticipants = false
-  addSaveParticipant = unsupported
-  runSaveParticipants = unsupported
-  create = unsupported
-  createFolder = unsupported
-  move = unsupported
-  copy = unsupported
-  delete = unsupported
-  registerWorkingCopyProvider = unsupported
-  getDirty = unsupported
-}, InstantiationType.Eager)
-
-registerSingleton(IPathService, BrowserPathService, InstantiationType.Eager)
+registerSingleton(IWorkingCopyFileService, WorkingCopyFileService, InstantiationType.Eager)
+registerSingleton(IPathService, BrowserPathService, InstantiationType.Delayed)
 
 registerSingleton(IProgressService, class ProgressService implements IProgressService {
   readonly _serviceBrand = undefined
@@ -388,7 +331,7 @@ registerSingleton(IProgressService, class ProgressService implements IProgressSe
     }
     return task({ report: () => { } })
   }
-}, InstantiationType.Eager)
+}, InstantiationType.Delayed)
 
 registerSingleton(IProductService, class ProductService implements IProductService {
   readonly _serviceBrand = undefined
@@ -474,20 +417,7 @@ registerSingleton(IHostService, class HostService implements IHostService {
   close = unsupported
 }, InstantiationType.Eager)
 
-registerSingleton(ILifecycleService, class LifecycleService implements ILifecycleService {
-  _serviceBrand: undefined
-  startupKind = StartupKind.NewWindow
-  phase = LifecyclePhase.Ready
-
-  async when (): Promise<void> {
-    // ignore
-  }
-
-  onBeforeShutdown = Event.None
-  onShutdownVeto = Event.None
-  onBeforeShutdownError = Event.None
-  onWillShutdown = Event.None
-  onDidShutdown = Event.None
+registerSingleton(ILifecycleService, class LifecycleService extends AbstractLifecycleService {
   shutdown = unsupported
 }, InstantiationType.Eager)
 
@@ -512,7 +442,7 @@ registerSingleton(IKeyboardLayoutService, class KeyboardLayoutService implements
   getAllKeyboardLayouts = () => []
   getKeyboardMapper = () => new FallbackKeyboardMapper(false, OS)
   validateCurrentKeyboardMapping = () => {}
-}, InstantiationType.Eager)
+}, InstantiationType.Delayed)
 
 registerSingleton(IUserDataInitializationService, class NullUserDataInitializationService implements IUserDataInitializationService {
   _serviceBrand: undefined
@@ -565,8 +495,8 @@ const profile: IUserDataProfile = {
   get globalStorageHome () { return unsupported() },
   settingsResource: URI.from({ scheme: 'user', path: '/settings.json' }),
   keybindingsResource: URI.from({ scheme: 'user', path: '/keybindings.json' }),
-  get tasksResource () { return unsupported() },
-  get snippetsHome () { return URI.from({ scheme: 'user', path: '/snippets' }) },
+  tasksResource: URI.from({ scheme: 'user', path: '/tasks.json' }),
+  snippetsHome: URI.from({ scheme: 'user', path: '/snippets' }),
   get extensionsResource () { return unsupported() }
 }
 
@@ -706,6 +636,8 @@ registerSingleton(IDebugService, class DebugService implements IDebugService {
   getViewModel = () => new FakeViewModel()
   runTo = unsupported
 }, InstantiationType.Eager)
+
+registerSingleton(IRequestService, RequestService, InstantiationType.Eager)
 
 registerSingleton(IWorkspaceTrustRequestService, class WorkspaceTrustRequestService implements IWorkspaceTrustRequestService {
   _serviceBrand: undefined
@@ -871,12 +803,6 @@ registerSingleton(ICustomEndpointTelemetryService, NullEndpointTelemetryService,
 
 registerSingleton(ISearchService, SearchService, InstantiationType.Eager)
 
-registerSingleton(IRequestService, class RequestService implements IRequestService {
-  _serviceBrand: undefined
-  request = unsupported
-  resolveProxy = async () => undefined
-}, InstantiationType.Eager)
-
 registerSingleton(IEditSessionIdentityService, class EditSessionIdentityService implements IEditSessionIdentityService {
   _serviceBrand: undefined
   registerEditSessionIdentityProvider = unsupported
@@ -971,35 +897,6 @@ registerSingleton(ITunnelService, class TunnelService implements ITunnelService 
   isPortPrivileged = () => false
 }, InstantiationType.Eager)
 
-registerSingleton(IWorkingCopyBackupService, class WorkingCopyBackupService implements IWorkingCopyBackupService {
-  _serviceBrand: undefined
-  hasBackups = async () => false
-  hasBackupSync = () => false
-  getBackups = async () => []
-  resolve = async () => undefined
-  backup = unsupported
-  discardBackup = unsupported
-  discardBackups = unsupported
-}, InstantiationType.Eager)
-
-registerSingleton(IWorkingCopyService, class WorkingCopyService implements IWorkingCopyService {
-  _serviceBrand: undefined
-  onDidRegister = Event.None
-  onDidUnregister = Event.None
-  onDidChangeDirty = Event.None
-  onDidChangeContent = Event.None
-  onDidSave = Event.None
-  dirtyCount = 0
-  dirtyWorkingCopies = []
-  hasDirty = false
-  isDirty = () => false
-  workingCopies = []
-  registerWorkingCopy = () => new Disposable(() => {})
-  has = () => false
-  get = () => undefined
-  getAll = () => undefined
-}, InstantiationType.Eager)
-
 registerSingleton(IFilesConfigurationService, FilesConfigurationService, InstantiationType.Eager)
 
 registerSingleton(IUntitledTextEditorService, class UntitledTextEditorService implements IUntitledTextEditorService {
@@ -1014,6 +911,10 @@ registerSingleton(IUntitledTextEditorService, class UntitledTextEditorService im
   resolve = unsupported
 }, InstantiationType.Eager)
 
+registerSingleton(IWorkingCopyBackupService, InMemoryWorkingCopyBackupService, InstantiationType.Eager)
+registerSingleton(IWorkingCopyService, WorkingCopyService, InstantiationType.Eager)
+registerSingleton(IDecorationsService, DecorationsService, InstantiationType.Eager)
+registerSingleton(IElevatedFileService, BrowserElevatedFileService, InstantiationType.Eager)
 registerSingleton(IFileDialogService, class FileDialogService implements IFileDialogService {
   _serviceBrand: undefined
   defaultFilePath = unsupported
@@ -1029,10 +930,41 @@ registerSingleton(IFileDialogService, class FileDialogService implements IFileDi
   showOpenDialog = unsupported
 }, InstantiationType.Eager)
 
-registerSingleton(IElevatedFileService, BrowserElevatedFileService, InstantiationType.Eager)
-registerSingleton(IDecorationsService, class DecorationsService implements IDecorationsService {
+registerSingleton(IJSONEditingService, JSONEditingService, InstantiationType.Delayed)
+
+registerSingleton(IWorkspacesService, class WorkspacesService implements IWorkspacesService {
   _serviceBrand: undefined
-  onDidChangeDecorations = Event.None
-  registerDecorationsProvider = () => new Disposable(() => {})
-  getDecoration = unsupported
+  enterWorkspace = unsupported
+  createUntitledWorkspace = unsupported
+  deleteUntitledWorkspace = unsupported
+  getWorkspaceIdentifier = unsupported
+  onDidChangeRecentlyOpened = Event.None
+  addRecentlyOpened = unsupported
+  removeRecentlyOpened = unsupported
+  clearRecentlyOpened = unsupported
+  getRecentlyOpened = unsupported
+  getDirtyWorkspaces = unsupported
+}, InstantiationType.Delayed)
+
+registerSingleton(ITextEditorService, class TextEditorService implements ITextEditorService {
+  _serviceBrand: undefined
+  createTextEditor = unsupported
+  resolveTextEditor = unsupported
+}, InstantiationType.Eager)
+
+registerSingleton(IEditorResolverService, class EditorResolverService implements IEditorResolverService {
+  _serviceBrand: undefined
+  getAssociationsForResource = unsupported
+  updateUserAssociations = unsupported
+  onDidChangeEditorRegistrations = Event.None
+  bufferChangeEvents = unsupported
+  registerEditor () {
+    // do nothing
+    return {
+      dispose: () => {}
+    }
+  }
+
+  resolveEditor = unsupported
+  getEditors = unsupported
 }, InstantiationType.Eager)
