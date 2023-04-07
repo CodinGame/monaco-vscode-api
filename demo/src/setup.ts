@@ -349,7 +349,7 @@ debuggerVscodeApi.debug.registerDebugAdapterDescriptorFactory('javascript', {
     websocket.send(JSON.stringify({
       main: '/tmp/test.js',
       files: {
-        '/tmp/test.js': monaco.editor.getModel(monaco.Uri.file('/tmp/test.js'))!.getValue()
+        '/tmp/test.js': new TextDecoder().decode(await vscode.workspace.fs.readFile(vscode.Uri.file('/tmp/test.js')))
       }
     }))
 
