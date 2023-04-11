@@ -368,9 +368,18 @@ type ExtHostServices = ReturnType<typeof createExtHostServices>
 let extHostServices: ExtHostServices | undefined
 let configProvider: ExtHostConfigProvider | undefined
 
-export async function initialize (): Promise<void> {
+let initializePromise: Promise<void> | undefined
+
+async function _initialize (): Promise<void> {
   extHostServices = createExtHostServices()
   configProvider = await extHostServices.extHostConfiguration.getConfigProvider()
+}
+
+export async function initialize (): Promise<void> {
+  if (initializePromise == null) {
+    initializePromise = _initialize()
+  }
+  await initializePromise
 }
 
 export function getExtHostServices (): ExtHostServices {
