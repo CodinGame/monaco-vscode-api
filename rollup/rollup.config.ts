@@ -480,7 +480,7 @@ export default (args: Record<string, string>): rollup.RollupOptions[] => {
       }
     },
     external,
-    input: Object.values(input).map(f => `./dist/${path.basename(f, '.ts')}`),
+    input: Object.keys(input).map(f => `./dist/${f.replace(/\.[^/.]+$/, '')}`),
     output: [{
       minifyInternalExports: false,
       assetFileNames: 'assets/[name][extname]',
