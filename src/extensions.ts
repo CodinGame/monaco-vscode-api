@@ -115,6 +115,7 @@ function deltaExtensions (toAdd: IExtensionDescription[], toRemove: IExtensionDe
 interface RegisterExtensionResult extends IDisposable {
   api: typeof vscode
   registerFile: (path: string, getContent: () => Promise<string>) => IDisposable
+  dispose (): void
 }
 export function registerExtension (manifest: IExtensionManifest): RegisterExtensionResult {
   const uuid = generateUuid()
