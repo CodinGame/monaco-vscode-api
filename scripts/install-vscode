@@ -4,6 +4,7 @@ set -e
 vscodeRef=$(cat './node_modules/monaco-editor/package.json' | jq -r '.["vscodeRef"]')
 
 output_directory="`pwd`/vscode"
+extension_output_directory="`pwd`/vscode-default-extensions"
 patch_file="`pwd`/scripts/vscode.patch"
 version_info=$output_directory/version.info
 
@@ -30,6 +31,11 @@ yarn install --ignore-scripts
 
 echo "Patching vscode..."
 patch -p1 < $patch_file
+
+# copy default extensions
+rm -rf $extension_output_directory
+cp -R extensions "$extension_output_directory"
+
 cd src
 
 # Remove useless files

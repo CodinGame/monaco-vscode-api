@@ -84,6 +84,9 @@
       "types": "./dist/monaco.d.ts",
       "default": "./dist/monaco.js"
     },
+    "./default-extensions/*": {
+      "default": "./dist/default-extensions/*.js"
+    },
     "./webpack-loader": {
       "types": "./dist/webpack-loader.d.ts",
       "default": "./dist/webpack-loader.cjs"
