@@ -153,7 +153,7 @@
   ],
   "scripts": {
     "build": "npm run lint && npm run clean && npm run compile && npm run generate-types && npm run compile-webpack-loader",
-    "compile": "NODE_OPTIONS=--max_old_space_size=4096 rollup --config rollup/rollup.config.ts --configPlugin 'typescript={tsconfig: `tsconfig.rollup.json`}' --vscode-version ${npm_package_config_vscode_version}",
+    "compile": "NODE_OPTIONS=--max_old_space_size=8192 rollup --config rollup/rollup.config.ts --configPlugin 'typescript={tsconfig: `tsconfig.rollup.json`}' --vscode-version ${npm_package_config_vscode_version}",
     "clean": "rm -rf dist/",
     "compile-webpack-loader": "tsc --target es2020 -lib es2020 --module commonjs --skipLibCheck --moduleResolution node --declaration --outDir dist src/webpack-loader.ts && mv dist/webpack-loader.js dist/webpack-loader.cjs",
     "preprepare": "./scripts/install-vscode",
