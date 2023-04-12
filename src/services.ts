@@ -1,8 +1,6 @@
 import './polyfill'
 import './vscode-services/extHost'
 import Severity from 'vs/base/common/severity'
-import type * as vscode from 'vscode'
-import type { IProgressService } from 'vs/platform/progress/common/progress'
 import { NotificationsFilter } from 'vs/platform/notification/common/notification'
 import { IConfigurationChangeEvent } from 'vs/platform/configuration/common/configuration'
 import { ITextModelContentProvider } from 'vs/editor/common/services/resolverService'
@@ -18,41 +16,6 @@ import { Emitter } from 'vs/base/common/event'
 // Hack so ContextKeyExprType is included in the bundle as it's used but rollup-plugin-dts is unable to detect it
 // https://github.com/Swatinem/rollup-plugin-dts/issues/220
 export { ContextKeyExprType } from 'vs/platform/contextkey/common/contextkey'
-
-export {
-  Severity
-}
-
-export interface Window {
-  createOutputChannel?(name: string, options: string | { log: true } | undefined): vscode.LogOutputChannel
-  withProgress?: IProgressService['withProgress']
-}
-
-export interface Services {
-  window?: Window
-}
-
-let services: Services | undefined
-export namespace Services {
-  export type Provider = () => Services
-  export const get: Provider = () => {
-    return services ?? {}
-  }
-  export function install (_services: Services): vscode.Disposable {
-    if (services != null) {
-      console.warn('Services have been overridden')
-    }
-    services = _services
-
-    return {
-      dispose: () => {
-        if (services === _services) {
-          services = undefined
-        }
-      }
-    }
-  }
-}
 
 interface ServiceInitializeParticipant {
   (accessor: ServicesAccessor): Promise<void>
@@ -148,5 +111,6 @@ export {
   ITextModelContentProvider,
   IColorTheme,
   StorageScope,
-  StorageTarget
+  StorageTarget,
+  Severity
 }
