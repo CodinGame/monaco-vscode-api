@@ -3,7 +3,6 @@ import { Event } from 'vs/base/common/event'
 import { DomEmitter } from 'vs/base/browser/event'
 import { URI } from 'vs/base/common/uri'
 import { trackFocus } from 'vs/base/browser/dom'
-import { IProgress, IProgressCompositeOptions, IProgressDialogOptions, IProgressNotificationOptions, IProgressOptions, IProgressService, IProgressStep, IProgressWindowOptions } from 'vs/platform/progress/common/progress'
 import { IEditorService } from 'vs/workbench/services/editor/common/editorService'
 import { IPaneCompositePartService } from 'vs/workbench/services/panecomposite/browser/panecomposite'
 import { IUriIdentityService } from 'vs/platform/uriIdentity/common/uriIdentity'
@@ -89,7 +88,6 @@ import { AbstractLifecycleService } from 'vs/workbench/services/lifecycle/common
 import { IOutputService } from 'vs/workbench/services/output/common/output'
 import { OutputService } from 'vs/workbench/contrib/output/browser/outputServices'
 import { IOutputChannelModelService, OutputChannelModelService } from 'vs/workbench/contrib/output/common/outputChannelModelService'
-import { Services } from '../services'
 import { unsupported } from '../tools'
 
 class NullLoggerService extends AbstractLoggerService {
@@ -333,17 +331,6 @@ registerSingleton(IEnvironmentService, WorkbenchEnvironmentService, Instantiatio
 registerSingleton(IBrowserWorkbenchEnvironmentService, WorkbenchEnvironmentService, InstantiationType.Eager)
 registerSingleton(IWorkingCopyFileService, WorkingCopyFileService, InstantiationType.Eager)
 registerSingleton(IPathService, BrowserPathService, InstantiationType.Delayed)
-
-registerSingleton(IProgressService, class ProgressService implements IProgressService {
-  readonly _serviceBrand = undefined
-  withProgress<R> (options: IProgressOptions | IProgressDialogOptions | IProgressNotificationOptions | IProgressWindowOptions | IProgressCompositeOptions, task: (progress: IProgress<IProgressStep>) => Promise<R>, onDidCancel?: ((choice?: number | undefined) => void) | undefined): Promise<R> {
-    const { window } = Services.get()
-    if (window?.withProgress != null) {
-      return window.withProgress(options, task, onDidCancel)
-    }
-    return task({ report: () => { } })
-  }
-}, InstantiationType.Delayed)
 
 registerSingleton(IProductService, class ProductService implements IProductService {
   readonly _serviceBrand = undefined
