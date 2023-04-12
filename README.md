@@ -169,7 +169,36 @@ const { registerFile: registerExtensionFile, api: vscodeApi } = registerExtensio
 
 registerExtensionFile('/file.json', async () => fileContent)
 vscodeApi.languages.registerCompletionItemProvider(...)
+```
 
+### Default vscode extensions
+
+VSCode use a bunch of default extensions. Most of them are used to load the default languages and grammars (see https://github.com/microsoft/vscode/tree/main/extensions).
+
+This library bundles most of them and allows to import the ones you want:
+```typescript
+import 'vscode/default-extensions/javascript'
+import 'vscode/default-extensions/json'
+...
+```
+
+### Loading vsix file
+
+VSCode extension are bundled as vsix files.
+This library exposes a rollup plugin (vite-compatible) that allows to load a vsix file.
+
+- rollup/vite config:
+```typescript
+import vsixPlugin from 'vscode/rollup-vsix-plugin'
+...
+plugins: [
+  ...,
+  vsixPlugin()
+]
+```
+- code:
+```typescript
+import './extension.vsix'
 ```
 
 ### Demo
