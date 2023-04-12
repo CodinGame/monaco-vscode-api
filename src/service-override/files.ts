@@ -7,7 +7,7 @@ import { ILogService } from 'vs/platform/log/common/log'
 import { InMemoryFileSystemProvider } from 'vs/platform/files/common/inMemoryFilesystemProvider'
 import { AbstractExtensionResourceLoaderService, IExtensionResourceLoaderService } from 'vs/platform/extensionResourceLoader/common/extensionResourceLoader'
 import { URI } from 'vs/base/common/uri'
-import { createFileSystemProviderError, FileChangeType, FileSystemProviderCapabilities, FileSystemProviderError, FileSystemProviderErrorCode, FileType, IFileChange, IFileDeleteOptions, IFileOverwriteOptions, IFileSystemProviderWithFileReadWriteCapability, IFileWriteOptions, IStat, IWatchOptions } from 'vs/platform/files/common/files'
+import { createFileSystemProviderError, FileChangeType, FileSystemProviderCapabilities, FileSystemProviderError, FileSystemProviderErrorCode, FileType, IFileChange, IFileDeleteOptions, IFileOverwriteOptions, IFileService, IFileSystemProviderWithFileReadWriteCapability, IFileWriteOptions, IStat, IWatchOptions } from 'vs/platform/files/common/files'
 import { InstantiationType, registerSingleton } from 'vs/platform/instantiation/common/extensions'
 import { IStorageService } from 'vs/platform/storage/common/storage'
 import { IConfigurationService } from 'vs/platform/configuration/common/configuration'
@@ -19,7 +19,6 @@ import { BrowserTextFileService } from 'vs/workbench/services/textfile/browser/b
 import { joinPath } from 'vs/base/common/resources'
 import { Emitter, Event } from 'vs/base/common/event'
 import 'vs/workbench/contrib/files/browser/files.contribution'
-import { IFileService } from '../services'
 
 class SimpleExtensionResourceLoaderService extends AbstractExtensionResourceLoaderService {
   // required for injection

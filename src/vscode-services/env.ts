@@ -6,8 +6,8 @@ import { Schemas } from 'vs/base/common/network'
 import { ExtHostTelemetryLogger } from 'vs/workbench/api/common/extHostTelemetry'
 import { IExtHostInitDataService } from 'vs/workbench/api/common/extHostInitDataService'
 import { IExtensionDescription } from 'vs/platform/extensions/common/extensions'
+import { StandaloneServices } from 'vs/editor/standalone/browser/standaloneServices'
 import { getExtHostServices } from './extHost'
-import { StandaloneServices } from '../services'
 import { unsupported } from '../tools'
 
 export default function create (getExtension: () => IExtensionDescription): typeof vscode.env {
