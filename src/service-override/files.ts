@@ -297,6 +297,7 @@ class MemoryFileService extends FileService {
     this.registerProvider('user', userMemoryFileSystem)
     this.registerProvider('extension', extensionFileSystemProvider)
     this.registerProvider('cache', new InMemoryFileSystemProvider())
+    this.registerProvider('logs', new InMemoryFileSystemProvider())
     this.registerProvider('file', fileSystemProvider)
   }
 }

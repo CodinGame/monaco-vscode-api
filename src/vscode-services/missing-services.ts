@@ -86,6 +86,9 @@ import { IWorkspacesService } from 'vs/platform/workspaces/common/workspaces'
 import { ITextEditorService } from 'vs/workbench/services/textfile/common/textEditorService'
 import { IEditorResolverService } from 'vs/workbench/services/editor/common/editorResolverService'
 import { AbstractLifecycleService } from 'vs/workbench/services/lifecycle/common/lifecycleService'
+import { IOutputService } from 'vs/workbench/services/output/common/output'
+import { OutputService } from 'vs/workbench/contrib/output/browser/outputServices'
+import { IOutputChannelModelService, OutputChannelModelService } from 'vs/workbench/contrib/output/common/outputChannelModelService'
 import { Services } from '../services'
 import { unsupported } from '../tools'
 
@@ -286,8 +289,8 @@ registerSingleton(IEditorGroupsService, class EditorGroupsService implements IEd
 }, InstantiationType.Eager)
 
 class WorkbenchEnvironmentService implements IBrowserWorkbenchEnvironmentService {
-  get logsHome () { return unsupported() }
-  get windowLogsPath () { return unsupported() }
+  logsHome = URI.from({ scheme: 'logs', path: '/' })
+  windowLogsPath = URI.from({ scheme: 'logs', path: '/window.log' })
   get extHostTelemetryLogFile () { return unsupported() }
   readonly _serviceBrand = undefined
   get logFile () { return unsupported() }
@@ -979,3 +982,6 @@ registerSingleton(IEditorResolverService, class EditorResolverService implements
   resolveEditor = unsupported
   getEditors = unsupported
 }, InstantiationType.Eager)
+
+registerSingleton(IOutputService, OutputService, InstantiationType.Delayed)
+registerSingleton(IOutputChannelModelService, OutputChannelModelService, InstantiationType.Delayed)
