@@ -167,7 +167,7 @@ function getJsonSchemas (fileMatchs: FileMatch = getDefaultFileMatch()): monaco.
       return {
         uri,
         schema,
-        fileMatch: schemaName != null ? fileMatchs[schemaName] : undefined
+        fileMatch: fileMatchs[schemaName]
       }
     })
 }
