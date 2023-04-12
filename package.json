@@ -90,6 +90,10 @@
     "./webpack-loader": {
       "types": "./dist/webpack-loader.d.ts",
       "default": "./dist/webpack-loader.cjs"
+    },
+    "./rollup-vsix-plugin": {
+      "types": "./dist/rollup-vsix-plugin.d.ts",
+      "default": "./dist/rollup-vsix-plugin.js"
     }
   },
   "typesVersions": {
@@ -144,6 +148,9 @@
       ],
       "webpack-loader": [
         "./dist/webpack-loader.d.ts"
+      ],
+      "rollup-vsix-plugin": [
+        "./dist/vsix-rollup-plugin.d.ts"
       ]
     }
   },
@@ -152,10 +159,11 @@
     "README.md"
   ],
   "scripts": {
-    "build": "npm run lint && npm run clean && npm run compile && npm run generate-types && npm run compile-webpack-loader",
+    "build": "npm run lint && npm run clean && npm run compile && npm run generate-types && npm run compile-webpack-loader && npm run compile-rollup-vsix-plugin",
     "compile": "NODE_OPTIONS=--max_old_space_size=8192 rollup --config rollup/rollup.config.ts --configPlugin 'typescript={tsconfig: `tsconfig.rollup.json`}' --vscode-version ${npm_package_config_vscode_version}",
     "clean": "rm -rf dist/",
     "compile-webpack-loader": "tsc --target es2020 -lib es2020 --module commonjs --skipLibCheck --moduleResolution node --declaration --outDir dist src/webpack-loader.ts && mv dist/webpack-loader.js dist/webpack-loader.cjs",
+    "compile-rollup-vsix-plugin": "tsc --target es2020 -lib es2020 --module esnext --skipLibCheck --moduleResolution node --declaration --outDir dist src/rollup-vsix-plugin.ts",
     "preprepare": "./scripts/install-vscode",
     "lint": "eslint {/src/**/*.ts,./rollup/*.ts,./*.ts}",
     "generate-types": "tsc --project tsconfig.types.json && rollup --config rollup/rollup.types.config.ts --configPlugin 'typescript={tsconfig: `tsconfig.rollup.json`}' && rm -rf ./dist/types",
@@ -183,6 +191,7 @@
     "@types/babel__core": "^7.20.0",
     "@types/semver": "^7.3.13",
     "@types/vscode": "~1.77.0",
+    "@types/yauzl": "^2.10.0",
     "@typescript-eslint/eslint-plugin": "^5.57.1",
     "@typescript-eslint/parser": "^5.57.1",
     "@vscode/iconv-lite-umd": "^0.7.0",
@@ -209,7 +218,8 @@
   "peerDependencies": {
     "monaco-editor": "~0.37.1",
     "vscode-oniguruma": "^1.7.0",
-    "vscode-textmate": "^9.0.0"
+    "vscode-textmate": "^9.0.0",
+    "yauzl": "^2.10.0"
   },
   "overrides": {
     "typescript": "5.0.3",
@@ -220,5 +230,8 @@
   "volta": {
     "node": "18.14.2",
     "npm": "9.5.1"
+  },
+  "dependencies": {
+    "@types/node": "^18.15.11"
   }
 }

@@ -19,7 +19,7 @@ import createWindowApi from './vscode-services/window'
 import createEnvApi from './vscode-services/env'
 import createDebugApi from './vscode-services/debug'
 import createExtensionsApi from './vscode-services/extensions'
-import { initialize as initializeExtHostServices } from './vscode-services/extHost'
+import { initialize as initializeExtHostServices, onExtHostInitialized } from './vscode-services/extHost'
 
 export function consoleExtensionMessageHandler (msg: IMessage): void {
   if (msg.type === Severity.Error) {
@@ -151,5 +151,6 @@ export function registerExtension (manifest: IExtensionManifest): RegisterExtens
 
 export {
   IExtensionManifest,
-  IExtensionContributions
+  IExtensionContributions,
+  onExtHostInitialized
 }
