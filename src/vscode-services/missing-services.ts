@@ -88,6 +88,9 @@ import { AbstractLifecycleService } from 'vs/workbench/services/lifecycle/common
 import { IOutputService } from 'vs/workbench/services/output/common/output'
 import { OutputService } from 'vs/workbench/contrib/output/browser/outputServices'
 import { IOutputChannelModelService, OutputChannelModelService } from 'vs/workbench/contrib/output/common/outputChannelModelService'
+import { AbstractExtensionResourceLoaderService, IExtensionResourceLoaderService } from 'vs/platform/extensionResourceLoader/common/extensionResourceLoader'
+import { IStorageService } from 'vs/platform/storage/common/storage'
+import { IConfigurationService } from 'vs/platform/configuration/common/configuration'
 import { unsupported } from '../tools'
 
 class NullLoggerService extends AbstractLoggerService {
@@ -972,3 +975,22 @@ registerSingleton(IEditorResolverService, class EditorResolverService implements
 
 registerSingleton(IOutputService, OutputService, InstantiationType.Delayed)
 registerSingleton(IOutputChannelModelService, OutputChannelModelService, InstantiationType.Delayed)
+class SimpleExtensionResourceLoaderService extends AbstractExtensionResourceLoaderService {
+  // required for injection
+  // eslint-disable-next-line @typescript-eslint/no-useless-constructor
+  constructor (
+    @IFileService fileService: IFileService,
+    @IStorageService storageService: IStorageService,
+    @IProductService productService: IProductService,
+    @IEnvironmentService environmentService: IEnvironmentService,
+    @IConfigurationService configurationService: IConfigurationService
+  ) {
+    super(fileService, storageService, productService, environmentService, configurationService)
+  }
+
+  async readExtensionResource (uri: URI): Promise<string> {
+    const result = await this._fileService.readFile(uri)
+    return result.value.toString()
+  }
+}
+registerSingleton(IExtensionResourceLoaderService, SimpleExtensionResourceLoaderService, InstantiationType.Eager)

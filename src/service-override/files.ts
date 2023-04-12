@@ -5,40 +5,14 @@ import { SyncDescriptor } from 'vs/platform/instantiation/common/descriptors'
 import { FileService } from 'vs/platform/files/common/fileService'
 import { ILogService } from 'vs/platform/log/common/log'
 import { InMemoryFileSystemProvider } from 'vs/platform/files/common/inMemoryFilesystemProvider'
-import { AbstractExtensionResourceLoaderService, IExtensionResourceLoaderService } from 'vs/platform/extensionResourceLoader/common/extensionResourceLoader'
 import { URI } from 'vs/base/common/uri'
 import { createFileSystemProviderError, FileChangeType, FileSystemProviderCapabilities, FileSystemProviderError, FileSystemProviderErrorCode, FileType, IFileChange, IFileDeleteOptions, IFileOverwriteOptions, IFileService, IFileSystemProviderWithFileReadWriteCapability, IFileWriteOptions, IStat, IWatchOptions } from 'vs/platform/files/common/files'
-import { InstantiationType, registerSingleton } from 'vs/platform/instantiation/common/extensions'
-import { IStorageService } from 'vs/platform/storage/common/storage'
-import { IConfigurationService } from 'vs/platform/configuration/common/configuration'
-import { IEnvironmentService } from 'vs/platform/environment/common/environment'
-import { IProductService } from 'vs/platform/product/common/productService'
 import { DisposableStore, IDisposable, Disposable } from 'vs/base/common/lifecycle'
 import { ITextFileService } from 'vs/workbench/services/textfile/common/textfiles'
 import { BrowserTextFileService } from 'vs/workbench/services/textfile/browser/browserTextFileService'
 import { joinPath } from 'vs/base/common/resources'
 import { Emitter, Event } from 'vs/base/common/event'
 import 'vs/workbench/contrib/files/browser/files.contribution'
-
-class SimpleExtensionResourceLoaderService extends AbstractExtensionResourceLoaderService {
-  // required for injection
-  // eslint-disable-next-line @typescript-eslint/no-useless-constructor
-  constructor (
-    @IFileService fileService: IFileService,
-    @IStorageService storageService: IStorageService,
-    @IProductService productService: IProductService,
-    @IEnvironmentService environmentService: IEnvironmentService,
-    @IConfigurationService configurationService: IConfigurationService
-  ) {
-    super(fileService, storageService, productService, environmentService, configurationService)
-  }
-
-  async readExtensionResource (uri: URI): Promise<string> {
-    const result = await this._fileService.readFile(uri)
-    return result.value.toString()
-  }
-}
-registerSingleton(IExtensionResourceLoaderService, SimpleExtensionResourceLoaderService, InstantiationType.Eager)
 
 class File implements IStat {
   ctime: number
@@ -305,7 +279,6 @@ class MemoryFileService extends FileService {
 export default function getServiceOverride (): IEditorOverrideServices {
   return {
     [IFileService.toString()]: new SyncDescriptor(MemoryFileService),
-    [IExtensionResourceLoaderService.toString()]: new SyncDescriptor(SimpleExtensionResourceLoaderService),
     [ITextFileService.toString()]: new SyncDescriptor(BrowserTextFileService)
   }
 }
