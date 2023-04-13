@@ -13,6 +13,7 @@ import { ILifecycleService, LifecyclePhase } from 'vs/workbench/services/lifecyc
 import { IInstantiationService, ServicesAccessor } from 'vs/platform/instantiation/common/instantiation'
 import { RunOnceScheduler, runWhenIdle } from 'vs/base/common/async'
 import { Emitter } from 'vs/base/common/event'
+import getLayoutServiceOverride from './service-override/layout'
 // Hack so ContextKeyExprType is included in the bundle as it's used but rollup-plugin-dts is unable to detect it
 // https://github.com/Swatinem/rollup-plugin-dts/issues/220
 export { ContextKeyExprType } from 'vs/platform/contextkey/common/contextkey'
@@ -26,7 +27,10 @@ export function registerServiceInitializeParticipant (participant: ServiceInitia
 }
 
 async function initServices (overrides: IEditorOverrideServices): Promise<IInstantiationService> {
-  const instantiationService = StandaloneServices.initialize(overrides)
+  const instantiationService = StandaloneServices.initialize({
+    ...getLayoutServiceOverride(), // Always override layout service to break cyclic dependency with ICodeEditorService
+    ...overrides
+  })
 
   await instantiationService.invokeFunction(async accessor => {
     const lifecycleService = accessor.get(ILifecycleService)
