@@ -7,19 +7,8 @@ The VSCode api is composed of:
 - A lot of classes and tools, which are exported the same way as in VSCode.
 - Some features that are supported by Monaco (Language feature registrations...) which are just forwarded to it (with some transformations)
 - Some features that are not supported by Monaco, and in such case:
-  - If it's an important feature: we let the user implement it as they wish.
+  - If it's an important feature: it requires to use the corresponding service override.
   - If it's some advanced features that don't make a lot of sense on Monaco (scm, tests...), it just throws an error when you try to use it.
-
-To implement by hands the optional features (file system, workspace folders, file...), you can use the `Services` namespace from `vscode/services`:
-
-```typescript
-import { Services } from 'vscode/services'
-Services.install({
-  window: {
-    withProgress: ...
-  }
-})
-```
 
 ## Monaco standalone services
 
@@ -251,6 +240,5 @@ This approach has some disadvantages:
 With this library, it would be possible to plug vscode-languageclient directly on top of monaco, monaco-languageclient still helps to do so by:
 
 - Adding some tweaks to the VSCode LanguageClient (Removing unsupported features...)
-- Providing a default implementations of the required fallback services (`vscode/services`)
 - Providing some examples on how to build an app using it
 - Adding some tools (DisposableCollection)
