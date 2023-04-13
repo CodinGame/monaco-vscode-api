@@ -37,7 +37,7 @@ import { Color as MonacoColor, RGBA as MonacoRGBA } from 'monaco-editor/esm/vs/b
 import { Color as VScodeColor, RGBA as VScodeRGBA } from 'vscode/vs/base/common/color.js'
 import { LogService as MonacoLogService } from 'monaco-editor/esm/vs/platform/log/common/logService.js'
 import { LogService as VScodeLogService } from 'vscode/vs/platform/log/common/logService.js'
-import { ConsoleLogger as MonacoConsoleLogger, MultiplexLogger as MonacoMultiplexLogger } from 'monaco-editor/esm/vs/platform/log/common/log'
+import { ConsoleLogger as MonacoConsoleLogger, MultiplexLogger as MonacoMultiplexLogger } from 'monaco-editor/esm/vs/platform/log/common/log.js'
 import { ConsoleLogger as VScodeConsoleLogger, MultiplexLogger as VScodeMultiplexLogger } from 'vscode/vs/platform/log/common/log'
 import { ExtUri as MonacoExtUri } from 'monaco-editor/esm/vs/base/common/resources.js'
 import { ExtUri as VScodeExtUri } from 'vscode/vs/base/common/resources.js'
