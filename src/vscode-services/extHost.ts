@@ -40,7 +40,7 @@ import { InstantiationType, registerSingleton } from 'vs/platform/instantiation/
 import { IMessagePassingProtocol } from 'vs/base/parts/ipc/common/ipc'
 import { BufferedEmitter } from 'vs/base/parts/ipc/common/ipc.net'
 import { VSBuffer } from 'vs/base/common/buffer'
-import { Event } from 'vs/base/common/event'
+import { Emitter, Event } from 'vs/base/common/event'
 import { RPCProtocol } from 'vs/workbench/services/extensions/common/rpcProtocol'
 import { ExtHostConsumerFileSystem, IExtHostConsumerFileSystem } from 'vs/workbench/api/common/extHostFileSystemConsumer'
 import { IExtHostInitDataService } from 'vs/workbench/api/common/extHostInitDataService'
@@ -368,9 +368,22 @@ type ExtHostServices = ReturnType<typeof createExtHostServices>
 let extHostServices: ExtHostServices | undefined
 let configProvider: ExtHostConfigProvider | undefined
 
-export async function initialize (): Promise<void> {
+let initializePromise: Promise<void> | undefined
+
+const extHostInitializedEmitter = new Emitter<void>()
+export const onExtHostInitialized: Event<void> = extHostInitializedEmitter.event
+
+async function _initialize (): Promise<void> {
   extHostServices = createExtHostServices()
   configProvider = await extHostServices.extHostConfiguration.getConfigProvider()
+  extHostInitializedEmitter.fire()
+}
+
+export async function initialize (): Promise<void> {
+  if (initializePromise == null) {
+    initializePromise = _initialize()
+  }
+  await initializePromise
 }
 
 export function getExtHostServices (): ExtHostServices {

@@ -25,8 +25,7 @@ Services.install({
 
 Also, monaco-editor use `standalone` versions or the vscode services, which are much simpler.
 
-You may want to provide your custom implementations of them, especially for: `textModelService`, `codeEditorService` and `notificationService`. To do so, you can provide them as the third parameter while creating your first editor.
-This library allows you to use a more convenient way using `StandaloneServices.initialize`.
+You may want to provide your custom implementations of them. To do so, you can use the `initialize` method from `vscode/services`.
 Also, monaco-editor doesn't provide good type for them, so this library does it.
 
 Example:
@@ -81,19 +80,15 @@ updateUserConfiguration(`{
 }`)
 ```
 
-Note: using `vscode/service-override/modelEditor`, you'll be able to use the `vscode.workspace.registerTextDocumentContentProvider` api
-
 ### Troubleshoot
 
-`StandaloneServices.initialize` can only be called once (note that `monaco.editor.create` calls `StandaloneServices.initialize`).
-
-Also, a service that is used cannot be overriden anymore. So `StandaloneServices.initialize` should be called as soon as possible to prevent most of the issues.
+`initialize` can only be called once ( and it should be called BEFORE creating your first editor).
 
 ## Editor configuration
 
 The editors created using `monaco.editor.create` don't use the configuration from the configurationService.
 
-This library exposes functions to create editors binded on the configuration:
+This library exposes functions to create editors binded on the configuration service:
 
 before:
 
@@ -145,7 +140,7 @@ npm install -D @types/vscode
 
 ### Usage
 
-Just import it as if you were in a vscode extension:
+You can just import it as if you were in a vscode extension:
 
 ```typescript
 import * as vscode from 'vscode'
@@ -169,7 +164,36 @@ const { registerFile: registerExtensionFile, api: vscodeApi } = registerExtensio
 
 registerExtensionFile('/file.json', async () => fileContent)
 vscodeApi.languages.registerCompletionItemProvider(...)
+```
 
+### Default vscode extensions
+
+VSCode uses a bunch of default extensions. Most of them are used to load the default languages and grammars (see https://github.com/microsoft/vscode/tree/main/extensions).
+
+This library bundles most of them and allows to import the ones you want:
+```typescript
+import 'vscode/default-extensions/javascript'
+import 'vscode/default-extensions/json'
+...
+```
+
+### Loading vsix file
+
+VSCode extension are bundled as vsix files.
+This library exposes a rollup plugin (vite-compatible) that allows to load a vsix file. The code is not used, only the declarative part in the manifest.
+
+- rollup/vite config:
+```typescript
+import vsixPlugin from 'vscode/rollup-vsix-plugin'
+...
+plugins: [
+  ...,
+  vsixPlugin()
+]
+```
+- code:
+```typescript
+import './extension.vsix'
 ```
 
 ### Demo
@@ -180,15 +204,12 @@ There is a demo that showcases the service-override features. It allows to regis
 It includes:
 
 - Languages
-- Language configurations
 - VSCode themes
 - Textmate grammars (requires vscode themes)
 - Notifications/Dialogs
 - Model/Editor services
 - Configuration service, with user configuration editor
 - Keybinding service, with user keybindings editor
-- Token classification
-- Snippets (but not working in monaco 0.34)
 - Debuggers
 
 It also uses the `synchronizeJsonSchemas` function to register them on the monaco json worker and have autocomplete/hover on settings and keybindings.

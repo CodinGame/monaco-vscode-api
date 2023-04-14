@@ -10,6 +10,9 @@ import { StandaloneServices } from 'vs/editor/standalone/browser/standaloneServi
 import { getExtensionId } from 'vs/platform/extensionManagement/common/extensionManagementUtil'
 import { IDisposable } from 'vs/base/common/lifecycle'
 import Severity from 'vs/base/common/severity'
+import { localize } from 'vs/nls'
+import { Registry } from 'vs/platform/registry/common/platform'
+import { ConfigurationScope, IConfigurationRegistry, Extensions as ConfigurationExtensions } from 'vs/platform/configuration/common/configurationRegistry'
 import * as api from './api'
 import { registerExtensionFile } from './service-override/files'
 import createLanguagesApi from './vscode-services/languages'
@@ -19,7 +22,7 @@ import createWindowApi from './vscode-services/window'
 import createEnvApi from './vscode-services/env'
 import createDebugApi from './vscode-services/debug'
 import createExtensionsApi from './vscode-services/extensions'
-import { initialize as initializeExtHostServices } from './vscode-services/extHost'
+import { initialize as initializeExtHostServices, onExtHostInitialized } from './vscode-services/extHost'
 
 export function consoleExtensionMessageHandler (msg: IMessage): void {
   if (msg.type === Severity.Error) {
@@ -31,6 +34,19 @@ export function consoleExtensionMessageHandler (msg: IMessage): void {
     console.log(msg)
   }
 }
+
+// Required or it crashed on extensions with activationEvents
+const configurationRegistry = Registry.as<IConfigurationRegistry>(ConfigurationExtensions.Configuration)
+configurationRegistry.registerConfiguration({
+  properties: {
+    'search.useIgnoreFiles': {
+      type: 'boolean',
+      markdownDescription: localize('useIgnoreFiles', 'Controls whether to use `.gitignore` and `.ignore` files when searching for files.'),
+      default: true,
+      scope: ConfigurationScope.RESOURCE
+    }
+  }
+})
 
 let DEFAULT_EXTENSION: IExtensionDescription = {
   identifier: new ExtensionIdentifier('monaco'),
@@ -115,6 +131,7 @@ function deltaExtensions (toAdd: IExtensionDescription[], toRemove: IExtensionDe
 interface RegisterExtensionResult extends IDisposable {
   api: typeof vscode
   registerFile: (path: string, getContent: () => Promise<string>) => IDisposable
+  dispose (): void
 }
 export function registerExtension (manifest: IExtensionManifest): RegisterExtensionResult {
   const uuid = generateUuid()
@@ -150,5 +167,6 @@ export function registerExtension (manifest: IExtensionManifest): RegisterExtens
 
 export {
   IExtensionManifest,
-  IExtensionContributions
+  IExtensionContributions,
+  onExtHostInitialized
 }

@@ -220,13 +220,7 @@ const configurationRegistry = Registry.as<PartialMutable<IConfigurationRegistry>
 configurationRegistry.onDidUpdateConfiguration ??= (configurationRegistry as any)._onDidUpdateConfiguration.event
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 configurationRegistry.onDidSchemaChange ??= (configurationRegistry as any)._onDidSchemaChange.event
-
-configurationRegistry.notifyConfigurationSchemaUpdated ??= function (this: ConfigurationRegistry) {
-  this['_onDidSchemaChange'].fire()
-}
-configurationRegistry.getConfigurationDefaultsOverrides ??= function (this: ConfigurationRegistry) {
-  return this['configurationDefaultsOverrides']
-}
+polyfillPrototypeSimple(configurationRegistry.constructor.prototype, ConfigurationRegistry.prototype)
 
 ;(MonacoNoOpNotification.prototype as PartialMutable<MonacoNoOpNotification>).onDidClose ??= Event.None
 
