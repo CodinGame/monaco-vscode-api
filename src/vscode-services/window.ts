@@ -7,11 +7,9 @@ import { StandaloneServices } from 'vs/editor/standalone/browser/standaloneServi
 import { IModelService } from 'vs/editor/common/services/model'
 import { DisposableStore } from 'vs/base/common/lifecycle'
 import { ITextModel } from 'vs/editor/common/model'
-import { LogLevel } from 'vs/platform/log/common/log'
 import { IExtensionDescription } from 'vs/platform/extensions/common/extensions'
 import { getExtHostServices } from './extHost'
 import { unsupported } from '../tools'
-import { Services } from '../services'
 
 class TextTabInput {
   constructor (readonly uri: URI) { }
@@ -53,28 +51,10 @@ export default function create (getExtension: () => IExtensionDescription, works
       const { extHostMessageService } = getExtHostServices()
       return extHostMessageService.showMessage(getExtension(), Severity.Error, message, rest[0], <Array<string | vscode.MessageItem>>rest.slice(1))
     },
-    createOutputChannel (name: string, options: string | { log: true } | undefined): vscode.LogOutputChannel {
-      const { window } = Services.get()
-      const createOutputChannel = window?.createOutputChannel
-      const channel: vscode.LogOutputChannel | undefined = createOutputChannel?.call(window, name, options)
-
-      return channel ?? {
-        name,
-        append: () => { },
-        appendLine: () => { },
-        clear: unsupported,
-        show: () => { },
-        hide: unsupported,
-        replace: unsupported,
-        dispose: () => { },
-        logLevel: LogLevel.Off,
-        onDidChangeLogLevel: Event.None,
-        trace: unsupported,
-        debug: unsupported,
-        info: unsupported,
-        warn: unsupported,
-        error: unsupported
-      }
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    createOutputChannel (name: string, options: string | { log: true } | undefined): any {
+      const { extHostOutputService } = getExtHostServices()
+      return extHostOutputService.createOutputChannel(name, options, getExtension())
     },
     withScmProgress<R> (task: (progress: vscode.Progress<number>) => Thenable<R>) {
       const { extHostProgress } = getExtHostServices()

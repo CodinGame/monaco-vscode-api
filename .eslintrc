@@ -13,6 +13,20 @@
   "extends": [
     "@codingame"
   ],
+  "rules": {
+    "import/extensions": [
+      "error",
+      "never",
+      {
+        "js": "always",
+        "mp3": "always",
+        "contribution": "always", // Hack for vscode .contribution.js files
+        "protocol": "always", // Hack for vscode .protocol.js files,
+        "net": "always", // Hack for vscode .net.js files,
+        "impl": "always" // Hack for vscode .impl.js files
+      }
+    ]
+  },
   "ignorePatterns": [
     "vscode/**/*",
     "dist/**/*"

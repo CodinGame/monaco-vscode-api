@@ -3,7 +3,6 @@ import { Event } from 'vs/base/common/event'
 import { DomEmitter } from 'vs/base/browser/event'
 import { URI } from 'vs/base/common/uri'
 import { trackFocus } from 'vs/base/browser/dom'
-import { IProgress, IProgressCompositeOptions, IProgressDialogOptions, IProgressNotificationOptions, IProgressOptions, IProgressService, IProgressStep, IProgressWindowOptions } from 'vs/platform/progress/common/progress'
 import { IEditorService } from 'vs/workbench/services/editor/common/editorService'
 import { IPaneCompositePartService } from 'vs/workbench/services/panecomposite/browser/panecomposite'
 import { IUriIdentityService } from 'vs/platform/uriIdentity/common/uriIdentity'
@@ -86,7 +85,12 @@ import { IWorkspacesService } from 'vs/platform/workspaces/common/workspaces'
 import { ITextEditorService } from 'vs/workbench/services/textfile/common/textEditorService'
 import { IEditorResolverService } from 'vs/workbench/services/editor/common/editorResolverService'
 import { AbstractLifecycleService } from 'vs/workbench/services/lifecycle/common/lifecycleService'
-import { Services } from '../services'
+import { IOutputService } from 'vs/workbench/services/output/common/output'
+import { OutputService } from 'vs/workbench/contrib/output/browser/outputServices'
+import { IOutputChannelModelService, OutputChannelModelService } from 'vs/workbench/contrib/output/common/outputChannelModelService'
+import { AbstractExtensionResourceLoaderService, IExtensionResourceLoaderService } from 'vs/platform/extensionResourceLoader/common/extensionResourceLoader'
+import { IStorageService } from 'vs/platform/storage/common/storage'
+import { IConfigurationService } from 'vs/platform/configuration/common/configuration'
 import { unsupported } from '../tools'
 
 class NullLoggerService extends AbstractLoggerService {
@@ -286,8 +290,8 @@ registerSingleton(IEditorGroupsService, class EditorGroupsService implements IEd
 }, InstantiationType.Eager)
 
 class WorkbenchEnvironmentService implements IBrowserWorkbenchEnvironmentService {
-  get logsHome () { return unsupported() }
-  get windowLogsPath () { return unsupported() }
+  logsHome = URI.from({ scheme: 'logs', path: '/' })
+  windowLogsPath = URI.from({ scheme: 'logs', path: '/window.log' })
   get extHostTelemetryLogFile () { return unsupported() }
   readonly _serviceBrand = undefined
   get logFile () { return unsupported() }
@@ -330,17 +334,6 @@ registerSingleton(IEnvironmentService, WorkbenchEnvironmentService, Instantiatio
 registerSingleton(IBrowserWorkbenchEnvironmentService, WorkbenchEnvironmentService, InstantiationType.Eager)
 registerSingleton(IWorkingCopyFileService, WorkingCopyFileService, InstantiationType.Eager)
 registerSingleton(IPathService, BrowserPathService, InstantiationType.Delayed)
-
-registerSingleton(IProgressService, class ProgressService implements IProgressService {
-  readonly _serviceBrand = undefined
-  withProgress<R> (options: IProgressOptions | IProgressDialogOptions | IProgressNotificationOptions | IProgressWindowOptions | IProgressCompositeOptions, task: (progress: IProgress<IProgressStep>) => Promise<R>, onDidCancel?: ((choice?: number | undefined) => void) | undefined): Promise<R> {
-    const { window } = Services.get()
-    if (window?.withProgress != null) {
-      return window.withProgress(options, task, onDidCancel)
-    }
-    return task({ report: () => { } })
-  }
-}, InstantiationType.Delayed)
 
 registerSingleton(IProductService, class ProductService implements IProductService {
   readonly _serviceBrand = undefined
@@ -979,3 +972,25 @@ registerSingleton(IEditorResolverService, class EditorResolverService implements
   resolveEditor = unsupported
   getEditors = unsupported
 }, InstantiationType.Eager)
+
+registerSingleton(IOutputService, OutputService, InstantiationType.Delayed)
+registerSingleton(IOutputChannelModelService, OutputChannelModelService, InstantiationType.Delayed)
+class SimpleExtensionResourceLoaderService extends AbstractExtensionResourceLoaderService {
+  // required for injection
+  // eslint-disable-next-line @typescript-eslint/no-useless-constructor
+  constructor (
+    @IFileService fileService: IFileService,
+    @IStorageService storageService: IStorageService,
+    @IProductService productService: IProductService,
+    @IEnvironmentService environmentService: IEnvironmentService,
+    @IConfigurationService configurationService: IConfigurationService
+  ) {
+    super(fileService, storageService, productService, environmentService, configurationService)
+  }
+
+  async readExtensionResource (uri: URI): Promise<string> {
+    const result = await this._fileService.readFile(uri)
+    return result.value.toString()
+  }
+}
+registerSingleton(IExtensionResourceLoaderService, SimpleExtensionResourceLoaderService, InstantiationType.Eager)

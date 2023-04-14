@@ -139,7 +139,7 @@ function isCallPure (functionName: string, node: recast.types.namedTypes.CallExp
     const firstParam = args[0]!
     const firstParamName = firstParam.type === 'MemberExpression' ? getMemberExpressionPath(firstParam) : undefined
     if (firstParamName != null) {
-      const allowed = firstParamName.includes('ExtensionsRegistry') || firstParamName.includes('EditorFactory') || firstParamName.includes('Workbench')
+      const allowed = firstParamName.includes('ExtensionsRegistry') || firstParamName.includes('EditorFactory') || firstParamName.includes('Workbench') || firstParamName.includes('OutputChannels')
       return !allowed
     }
   }

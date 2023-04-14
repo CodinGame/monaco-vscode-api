@@ -41,6 +41,7 @@ class LayoutService implements ILayoutService, Pick<IWorkbenchLayoutService, 'is
   }
 
   focus (): void {
+    // Break cyclic dependency but getting it only when needed
     StandaloneServices.get(ICodeEditorService).getFocusedCodeEditor()?.focus()
   }
 }

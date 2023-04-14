@@ -8,8 +8,8 @@ import { IWorkbenchContribution, IWorkbenchContributionsRegistry, Extensions as 
 import { Registry } from 'vs/platform/registry/common/platform'
 import { LifecyclePhase } from 'vs/workbench/services/lifecycle/common/lifecycle'
 import { IInstantiationService } from 'vs/platform/instantiation/common/instantiation'
+import { ILanguageService } from 'vs/editor/common/languages/language'
 import getFileServiceOverride from './files'
-import { ILanguageService } from '../services'
 
 export class ExtensionPoints implements IWorkbenchContribution {
   constructor (

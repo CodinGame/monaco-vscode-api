@@ -18,8 +18,8 @@ import { IKeyboardLayoutService } from 'vs/platform/keyboardLayout/common/keyboa
 import { BrowserKeyboardLayoutService } from 'vs/workbench/services/keybinding/browser/keyboardLayoutService'
 import { localize } from 'vs/nls'
 import { IConfigurationRegistry, Extensions as ConfigurationExtensions } from 'vs/platform/configuration/common/configurationRegistry'
+import { IFileService } from 'vs/platform/files/common/files'
 import getFileServiceOverride from './files'
-import { IFileService } from '../services'
 import { createInjectedClass } from '../tools/injection'
 
 // This class use useful so editor.addAction and editor.addCommand still work

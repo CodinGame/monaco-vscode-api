@@ -37,7 +37,7 @@ import { Color as MonacoColor, RGBA as MonacoRGBA } from 'monaco-editor/esm/vs/b
 import { Color as VScodeColor, RGBA as VScodeRGBA } from 'vscode/vs/base/common/color.js'
 import { LogService as MonacoLogService } from 'monaco-editor/esm/vs/platform/log/common/logService.js'
 import { LogService as VScodeLogService } from 'vscode/vs/platform/log/common/logService.js'
-import { ConsoleLogger as MonacoConsoleLogger, MultiplexLogger as MonacoMultiplexLogger } from 'monaco-editor/esm/vs/platform/log/common/log'
+import { ConsoleLogger as MonacoConsoleLogger, MultiplexLogger as MonacoMultiplexLogger } from 'monaco-editor/esm/vs/platform/log/common/log.js'
 import { ConsoleLogger as VScodeConsoleLogger, MultiplexLogger as VScodeMultiplexLogger } from 'vscode/vs/platform/log/common/log'
 import { ExtUri as MonacoExtUri } from 'monaco-editor/esm/vs/base/common/resources.js'
 import { ExtUri as VScodeExtUri } from 'vscode/vs/base/common/resources.js'
@@ -45,6 +45,7 @@ import { DefaultConfiguration as MonacoDefaultConfiguration } from 'monaco-edito
 import { DefaultConfiguration as VScodeDefaultConfiguration } from 'vscode/vs/platform/configuration/common/configurations.js'
 import { Keybinding as MonacoKeybinding, KeyCodeChord as MonacoKeyCodeChord } from 'monaco-editor/esm/vs/base/common/keybindings.js'
 import { Keybinding as VScodeKeybinding, KeyCodeChord as VScodeKeyCodeChord } from 'vscode/vs/base/common/keybindings.js'
+import { Disposable } from 'vs/base/common/lifecycle.js'
 import { DisposableMap as MonacoDisposableMap } from 'monaco-editor/esm/vs/base/common/lifecycle.js'
 import { DisposableMap as VScodeDisposableMap } from 'vscode/vs/base/common/lifecycle.js'
 import { FileAccess as MonacoFileAccess } from 'monaco-editor/esm/vs/base/common/network.js'
@@ -80,6 +81,8 @@ import { KeybindingsRegistryImpl as VScodeKeybindingsRegistryImpl } from 'vscode
 import { ITextBuffer } from 'vs/editor/common/model'
 import { AudioCue } from 'vs/platform/audioCues/browser/audioCueService'
 import { ITelemetryService } from 'vs/platform/telemetry/common/telemetry'
+import { ITextResourceConfigurationService } from 'vs/editor/common/services/textResourceConfiguration'
+import { ITextModelService } from 'vs/editor/common/services/resolverService'
 import { registerServiceInitializeParticipant } from './services'
 
 type PartialMutable<T> = Partial<{
@@ -322,4 +325,10 @@ registerServiceInitializeParticipant(async (accessor) => {
   telemetryService.publicLog2 ??= () => {}
   telemetryService.publicLogError ??= () => {}
   telemetryService.publicLogError2 ??= () => {}
+
+  const textResourceConfigurationService: PartialMutable<ITextResourceConfigurationService> = accessor.get(ITextResourceConfigurationService)
+  textResourceConfigurationService.onDidChangeConfiguration ??= Event.None
+
+  const textModelService: PartialMutable<ITextModelService> = accessor.get(ITextModelService)
+  textModelService.registerTextModelContentProvider ??= () => Disposable.None
 })

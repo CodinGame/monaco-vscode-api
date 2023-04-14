@@ -55,6 +55,7 @@ import { ExtHostDocumentSaveParticipant } from 'vs/workbench/api/common/extHostD
 import { ExtHostFileSystemEventService } from 'vs/workbench/api/common/extHostFileSystemEventService'
 import { MainThreadMessageService } from 'vs/workbench/api/browser/mainThreadMessageService'
 import { ExtHostApiCommands } from 'vs/workbench/api/common/extHostApiCommands'
+import { ExtHostOutputService, IExtHostOutputService } from 'vs/workbench/api/common/extHostOutput'
 import 'vs/workbench/api/browser/mainThreadCommands'
 import 'vs/workbench/api/browser/mainThreadWindow'
 import 'vs/workbench/api/browser/mainThreadDiagnostics'
@@ -74,6 +75,7 @@ import 'vs/workbench/api/browser/mainThreadExtensionService'
 import 'vs/workbench/api/browser/mainThreadFileSystem'
 import 'vs/workbench/api/browser/mainThreadFileSystemEventService'
 import 'vs/workbench/api/browser/mainThreadDocumentsAndEditors'
+import 'vs/workbench/api/browser/mainThreadOutputService'
 import * as errors from 'vs/base/common/errors'
 import { unsupported } from '../tools'
 
@@ -132,9 +134,9 @@ registerSingleton(IExtHostInitDataService, class ExtHostInitDataService implemen
   }
 
   get telemetryInfo () { return unsupported() }
-  logLevel = LogLevel.Trace
-  get logsLocation () { return unsupported() }
-  get logFile () { return unsupported() }
+  logLevel = LogLevel.Off
+  logsLocation = URI.from({ scheme: 'logs', path: '/' })
+  logFile = URI.from({ scheme: 'logs', path: '/logs.log' })
   autoStart = true
   remote = {
     isRemote: false,
@@ -194,6 +196,7 @@ registerSingleton(IExtHostApiDeprecationService, ExtHostApiDeprecationService, I
 registerSingleton(IExtHostDecorations, ExtHostDecorations, InstantiationType.Eager)
 registerSingleton(IExtHostDebugService, WorkerExtHostDebugService, InstantiationType.Eager)
 registerSingleton(IExtHostVariableResolverProvider, ExtHostVariableResolverProviderService, InstantiationType.Eager)
+registerSingleton(IExtHostOutputService, ExtHostOutputService, InstantiationType.Delayed)
 registerSingleton(IExtHostTerminalService, class ExtHostTerminalService implements IExtHostTerminalService {
   _serviceBrand: undefined
   activeTerminal = undefined
@@ -296,6 +299,7 @@ function createExtHostServices () {
   const extHostWorkspace = rpcProtocol.set(ExtHostContext.ExtHostWorkspace, StandaloneServices.get(IExtHostWorkspace))
   const extHostConfiguration = rpcProtocol.set(ExtHostContext.ExtHostConfiguration, StandaloneServices.get(IExtHostConfiguration))
   const extHostExtensionService = rpcProtocol.set(ExtHostContext.ExtHostExtensionService, StandaloneServices.get(IExtHostExtensionService)) as ExtHostExtensionService
+  const extHostOutputService = rpcProtocol.set(ExtHostContext.ExtHostOutputService, StandaloneServices.get(IExtHostOutputService))
   const extHostFileSystem = rpcProtocol.set(ExtHostContext.ExtHostFileSystem, new ExtHostFileSystem(rpcProtocol, extHostLanguageFeatures))
   const extHostDocumentSaveParticipant = rpcProtocol.set(ExtHostContext.ExtHostDocumentSaveParticipant, new ExtHostDocumentSaveParticipant(logService, extHostDocuments, rpcProtocol.getProxy(MainContext.MainThreadBulkEdits)))
   const extHostFileSystemEvent = rpcProtocol.set(ExtHostContext.ExtHostFileSystemEventService, new ExtHostFileSystemEventService(rpcProtocol, logService, extHostDocumentsAndEditors))
@@ -360,7 +364,8 @@ function createExtHostServices () {
     extHostConsumerFileSystem,
     extHostExtensionService,
     extHostDocumentSaveParticipant,
-    extHostFileSystemEvent
+    extHostFileSystemEvent,
+    extHostOutputService
   }
 }
 
