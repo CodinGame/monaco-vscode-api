@@ -1,11 +1,9 @@
 import type * as vscode from 'vscode'
-import { Event } from 'vs/base/common/event'
 import { URI } from 'vs/base/common/uri'
 import { combinedDisposable } from 'vs/base/common/lifecycle'
 import { IExtensionDescription } from 'vs/platform/extensions/common/extensions'
-import { getExtHostServices } from './extHost'
+import { getConfigProvider, getExtHostServices } from './extHost'
 import { unsupported } from '../tools'
-import { Services } from '../services'
 
 export default function create (getExtension: () => IExtensionDescription): typeof vscode.workspace {
   return {
@@ -17,20 +15,9 @@ export default function create (getExtension: () => IExtensionDescription): type
       const { extHostWorkspace } = getExtHostServices()
       return extHostWorkspace.workspaceFile
     },
-    createFileSystemWatcher (globPattern, ignoreCreateEvents, ignoreChangeEvents, ignoreDeleteEvents): vscode.FileSystemWatcher {
-      const { workspace } = Services.get()
-      if (workspace?.createFileSystemWatcher != null) {
-        return workspace.createFileSystemWatcher(globPattern, ignoreCreateEvents, ignoreChangeEvents, ignoreDeleteEvents)
-      }
-      return {
-        ignoreCreateEvents: ignoreCreateEvents ?? false,
-        ignoreChangeEvents: ignoreChangeEvents ?? false,
-        ignoreDeleteEvents: ignoreDeleteEvents ?? false,
-        onDidCreate: Event.None,
-        onDidChange: Event.None,
-        onDidDelete: Event.None,
-        dispose: () => { }
-      }
+    createFileSystemWatcher (pattern, ignoreCreate, ignoreChange, ignoreDelete): vscode.FileSystemWatcher {
+      const { extHostFileSystemEvent, extHostWorkspace } = getExtHostServices()
+      return extHostFileSystemEvent.createFileSystemWatcher(extHostWorkspace, getExtension(), pattern, ignoreCreate, ignoreChange, ignoreDelete)
     },
     applyEdit: async (edit: vscode.WorkspaceEdit, metadata?: vscode.WorkspaceEditMetadata) => {
       const { extHostBulkEdits } = getExtHostServices()
@@ -38,52 +25,34 @@ export default function create (getExtension: () => IExtensionDescription): type
       return extHostBulkEdits.applyWorkspaceEdit(edit, getExtension(), metadata)
     },
     getConfiguration: (section, scope) => {
-      const { extHostConfiguration } = getExtHostServices()
+      const configProvider = getConfigProvider()
 
-      const configProvider = extHostConfiguration.getConfigProviderSync()
       return configProvider.getConfiguration(section, scope, getExtension())
     },
     onDidChangeConfiguration (listener, thisArgs, disposables) {
-      const { extHostConfiguration } = getExtHostServices()
+      const configProvider = getConfigProvider()
 
-      const configProvider = extHostConfiguration.getConfigProviderSync()
       return configProvider.onDidChangeConfiguration(listener, thisArgs, disposables)
     },
     get rootPath () {
-      const { workspace } = Services.get()
-      return workspace?.rootPath
+      const { extHostWorkspace } = getExtHostServices()
+
+      return extHostWorkspace.getPath()
     },
     get workspaceFolders (): typeof vscode.workspace.workspaceFolders {
-      const { workspace } = Services.get()
-      if (workspace == null) {
-        return undefined
-      }
-      if ('workspaceFolders' in workspace) {
-        return workspace.workspaceFolders
-      }
-      const rootPath = workspace.rootPath
-      if (rootPath == null) {
-        return undefined
-      }
-      const uri = URI.file(rootPath)
-      return [{
-        uri,
-        index: 0,
-        name: uri.toString()
-      }]
+      const { extHostWorkspace } = getExtHostServices()
+
+      return extHostWorkspace.getWorkspaceFolders()
     },
-    getWorkspaceFolder (uri: vscode.Uri) {
-      return this.workspaceFolders?.find(folder => {
-        return uri.path.startsWith(folder.uri.path)
-      })
+    getWorkspaceFolder (resource: vscode.Uri) {
+      const { extHostWorkspace } = getExtHostServices()
+
+      return extHostWorkspace.getWorkspaceFolder(resource)
     },
-    get onDidChangeWorkspaceFolders (): typeof vscode.workspace.onDidChangeWorkspaceFolders {
-      const { workspace } = Services.get()
-      return workspace?.onDidChangeWorkspaceFolders ?? Event.None
-    },
-    get textDocuments (): typeof vscode.workspace.textDocuments {
-      const { extHostDocuments } = getExtHostServices()
-      return Array.from(extHostDocuments.getAllDocumentData().map(data => data.document))
+    onDidChangeWorkspaceFolders: function (listener, thisArgs?, disposables?) {
+      const { extHostWorkspace } = getExtHostServices()
+
+      return extHostWorkspace.onDidChangeWorkspace(listener, thisArgs, disposables)
     },
     get onDidOpenTextDocument (): typeof vscode.workspace.onDidOpenTextDocument {
       const { extHostDocuments } = getExtHostServices()
@@ -97,45 +66,54 @@ export default function create (getExtension: () => IExtensionDescription): type
       const { extHostDocuments } = getExtHostServices()
       return extHostDocuments.onDidChangeDocument
     },
-    get onWillSaveTextDocument (): typeof vscode.workspace.onWillSaveTextDocument {
-      const { workspace } = Services.get()
-      return workspace?.onWillSaveTextDocument ?? Event.None
+    onDidSaveTextDocument: (listener, thisArgs?, disposables?) => {
+      const { extHostDocuments } = getExtHostServices()
+      return extHostDocuments.onDidSaveDocument(listener, thisArgs, disposables)
     },
-    get onDidSaveTextDocument (): typeof vscode.workspace.onDidSaveTextDocument {
-      const { workspace } = Services.get()
-      return workspace?.onDidSaveTextDocument ?? Event.None
+    onWillSaveTextDocument: (listener, thisArgs?, disposables?) => {
+      const { extHostDocumentSaveParticipant } = getExtHostServices()
+      return extHostDocumentSaveParticipant.getOnWillSaveTextDocumentEvent(getExtension())(listener, thisArgs, disposables)
     },
-    get onWillCreateFiles (): vscode.Event<vscode.FileWillCreateEvent> {
-      return Event.None
+    onDidCreateFiles: (listener, thisArg, disposables) => {
+      const { extHostFileSystemEvent } = getExtHostServices()
+      return extHostFileSystemEvent.onDidCreateFile(listener, thisArg, disposables)
     },
-    get onDidCreateFiles (): vscode.Event<vscode.FileCreateEvent> {
-      return Event.None
+    onDidDeleteFiles: (listener, thisArg, disposables) => {
+      const { extHostFileSystemEvent } = getExtHostServices()
+      return extHostFileSystemEvent.onDidDeleteFile(listener, thisArg, disposables)
     },
-    get onWillDeleteFiles (): vscode.Event<vscode.FileWillDeleteEvent> {
-      return Event.None
+    onDidRenameFiles: (listener, thisArg, disposables) => {
+      const { extHostFileSystemEvent } = getExtHostServices()
+      return extHostFileSystemEvent.onDidRenameFile(listener, thisArg, disposables)
     },
-    get onDidDeleteFiles (): vscode.Event<vscode.FileDeleteEvent> {
-      return Event.None
+    onWillCreateFiles: (listener: (e: vscode.FileWillCreateEvent) => unknown, thisArg?: unknown, disposables?: vscode.Disposable[]) => {
+      const { extHostFileSystemEvent } = getExtHostServices()
+      return extHostFileSystemEvent.getOnWillCreateFileEvent(getExtension())(listener, thisArg, disposables)
     },
-    get onWillRenameFiles (): vscode.Event<vscode.FileWillRenameEvent> {
-      return Event.None
+    onWillDeleteFiles: (listener: (e: vscode.FileWillDeleteEvent) => unknown, thisArg?: unknown, disposables?: vscode.Disposable[]) => {
+      const { extHostFileSystemEvent } = getExtHostServices()
+      return extHostFileSystemEvent.getOnWillDeleteFileEvent(getExtension())(listener, thisArg, disposables)
     },
-    get onDidRenameFiles (): vscode.Event<vscode.FileRenameEvent> {
-      return Event.None
+    onWillRenameFiles: (listener: (e: vscode.FileWillRenameEvent) => unknown, thisArg?: unknown, disposables?: vscode.Disposable[]) => {
+      const { extHostFileSystemEvent } = getExtHostServices()
+      return extHostFileSystemEvent.getOnWillRenameFileEvent(getExtension())(listener, thisArg, disposables)
     },
-    get onDidGrantWorkspaceTrust (): vscode.Event<void> {
-      return Event.None
+    onDidGrantWorkspaceTrust: (listener, thisArgs?, disposables?) => {
+      const { extHostWorkspace } = getExtHostServices()
+      return extHostWorkspace.onDidGrantWorkspaceTrust(listener, thisArgs, disposables)
     },
-    asRelativePath: unsupported,
-    updateWorkspaceFolders (start: number, deleteCount: number | undefined | null, ...workspaceFoldersToAdd: { readonly uri: vscode.Uri, readonly name?: string }[]): boolean {
-      const { workspace } = Services.get()
-      if (workspace?.updateWorkspaceFolders != null) {
-        return workspace.updateWorkspaceFolders(start, deleteCount, ...workspaceFoldersToAdd)
-      }
-      return false
+    asRelativePath: (pathOrUri, includeWorkspace?) => {
+      const { extHostWorkspace } = getExtHostServices()
+      return extHostWorkspace.getRelativePath(pathOrUri, includeWorkspace)
     },
-    findFiles: unsupported,
-    saveAll: unsupported,
+    findFiles: (include, exclude, maxResults?, token?) => {
+      const { extHostWorkspace } = getExtHostServices()
+      return extHostWorkspace.findFiles(include, exclude, maxResults, getExtension().identifier, token)
+    },
+    saveAll: (includeUntitled?) => {
+      const { extHostWorkspace } = getExtHostServices()
+      return extHostWorkspace.saveAll(includeUntitled)
+    },
     openTextDocument (uriOrFileNameOrOptions?: vscode.Uri | string | { language?: string, content?: string }) {
       const { extHostDocuments } = getExtHostServices()
       let uriPromise: Thenable<URI>
@@ -158,6 +136,14 @@ export default function create (getExtension: () => IExtensionDescription): type
         })
       })
     },
+    get textDocuments (): typeof vscode.workspace.textDocuments {
+      const { extHostDocuments } = getExtHostServices()
+      return Array.from(extHostDocuments.getAllDocumentData().map(data => data.document))
+    },
+    updateWorkspaceFolders (index, deleteCount, ...workspaceFoldersToAdd): boolean {
+      const { extHostWorkspace } = getExtHostServices()
+      return extHostWorkspace.updateWorkspaceFolders(getExtension(), index, deleteCount ?? 0, ...workspaceFoldersToAdd)
+    },
     registerTextDocumentContentProvider (scheme: string, provider: vscode.TextDocumentContentProvider) {
       const { extHostDocumentContentProviders } = getExtHostServices()
       return extHostDocumentContentProviders.registerTextDocumentContentProvider(scheme, provider)
@@ -177,8 +163,14 @@ export default function create (getExtension: () => IExtensionDescription): type
     notebookDocuments: [],
     onDidOpenNotebookDocument: unsupported,
     onDidCloseNotebookDocument: unsupported,
-    isTrusted: true,
-    name: undefined,
+    get isTrusted () {
+      const { extHostWorkspace } = getExtHostServices()
+      return extHostWorkspace.trusted
+    },
+    get name () {
+      const { extHostWorkspace } = getExtHostServices()
+      return extHostWorkspace.name
+    },
     onDidChangeNotebookDocument: unsupported,
     onDidSaveNotebookDocument: unsupported
   }

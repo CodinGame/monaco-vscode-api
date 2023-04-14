@@ -1,30 +1,40 @@
 import '../polyfill'
 import '../vscode-services/missing-services'
 import { IEditorOverrideServices, StandaloneServices } from 'vs/editor/standalone/browser/standaloneServices'
-import { ConfigurationService } from 'vs/platform/configuration/common/configurationService'
-import { ConfigurationTarget, IConfigurationService, IConfigurationUpdateOverrides, isConfigurationOverrides, isConfigurationUpdateOverrides } from 'vs/platform/configuration/common/configuration'
+import { WorkspaceService } from 'vs/workbench/services/configuration/browser/configurationService'
+import { IConfigurationService } from 'vs/platform/configuration/common/configuration'
 import { ITextResourceConfigurationService } from 'vs/editor/common/services/textResourceConfiguration'
 import { TextResourceConfigurationService } from 'vs/editor/common/services/textResourceConfigurationService'
 import { SyncDescriptor } from 'vs/platform/instantiation/common/descriptors'
-import { IConfigurationRegistry, Extensions as ConfigurationExtensions, ConfigurationScope, IConfigurationNode, IConfigurationDefaults, keyFromOverrideIdentifiers } from 'vs/platform/configuration/common/configurationRegistry'
+import { IConfigurationRegistry, Extensions as ConfigurationExtensions, ConfigurationScope, IConfigurationNode, IConfigurationDefaults } from 'vs/platform/configuration/common/configurationRegistry'
 import { Registry } from 'vs/platform/registry/common/platform'
 import { VSBuffer } from 'vs/base/common/buffer'
 import { IFileService } from 'vs/platform/files/common/files'
 import { ILogService } from 'vs/platform/log/common/log'
-import { Configuration } from 'vs/platform/configuration/common/configurationModels'
 import { IColorCustomizations, IThemeScopedColorCustomizations } from 'vs/workbench/services/themes/common/workbenchThemeService'
 import { IUserDataProfilesService } from 'vs/platform/userDataProfile/common/userDataProfile'
 import { IPolicyService } from 'vs/platform/policy/common/policy'
-import { RegisterConfigurationSchemasContribution } from 'vs/workbench/services/configuration/browser/configurationService'
 import { IInstantiationService } from 'vs/platform/instantiation/common/instantiation'
-import { setProperty } from 'vs/base/common/jsonEdit'
-import { createTextBuffer, TextModel } from 'vs/editor/common/model/textModel'
-import { URI } from 'vs/base/common/uri'
 import type * as vscode from 'vscode'
-import getWorkspaceContextServiceOverride from './workspaceContext'
+import { IUserDataProfileService } from 'vs/workbench/services/userDataProfile/common/userDataProfile'
+import { IRemoteAgentService } from 'vs/workbench/services/remote/common/remoteAgentService'
+import { IUriIdentityService } from 'vs/platform/uriIdentity/common/uriIdentity'
+import { ConfigurationCache } from 'vs/workbench/services/configuration/common/configurationCache'
+import { Schemas } from 'vs/base/common/network'
+import { IWorkbenchEnvironmentService } from 'vs/workbench/services/environment/common/environmentService'
+import { IAnyWorkspaceIdentifier, ISingleFolderWorkspaceIdentifier, IWorkspaceContextService } from 'vs/platform/workspace/common/workspace'
+import { LabelService } from 'vs/workbench/services/label/common/labelService'
+import { ILabelService } from 'vs/platform/label/common/label'
+import { generateUuid } from 'vs/base/common/uuid'
+import { IWorkspacesService, IWorkspaceFolderCreationData } from 'vs/platform/workspaces/common/workspaces'
+import { BrowserWorkspacesService } from 'vs/workbench/services/workspaces/browser/workspacesService'
+import { IWorkspaceEditingService } from 'vs/workbench/services/workspaces/common/workspaceEditing'
+import { AbstractWorkspaceEditingService } from 'vs/workbench/services/workspaces/browser/abstractWorkspaceEditingService'
+import { URI } from 'vs/base/common/uri'
+import 'vs/workbench/api/common/configurationExtensionPoint'
 import getFileServiceOverride from './files'
-import { onServicesInitialized } from './tools'
-import { IModelService } from '../services'
+import { memoizedConstructor } from '../tools'
+import { registerServiceInitializeParticipant } from '../services'
 
 async function updateUserConfiguration (configurationJson: string): Promise<void> {
   const userDataProfilesService = StandaloneServices.get(IUserDataProfilesService)
@@ -47,82 +57,51 @@ function onUserConfigurationChange (callback: () => void): vscode.Disposable {
 
 const configurationRegistry = Registry.as<IConfigurationRegistry>(ConfigurationExtensions.Configuration)
 
-function updateJsonValue (jsonValue: string, jsonPath: string[], value: unknown, configFileUrl: URI) {
-  const creationOptions = StandaloneServices.get(IModelService).getCreationOptions('json', configFileUrl, true)
-  const { textBuffer, disposable: bufferDisposable } = createTextBuffer(jsonValue, creationOptions.defaultEOL)
-  try {
-    const options = TextModel.resolveOptions(textBuffer, creationOptions)
-    const edits = setProperty(jsonValue, jsonPath, value, options)
-    return edits.reduce((config, edit) => {
-      return `${config.slice(0, edit.offset)}${edit.content}${config.slice(edit.offset + edit.length)}`
-    }, jsonValue)
-  } finally {
-    bufferDisposable.dispose()
-  }
-}
-
-class InjectedConfigurationService extends ConfigurationService {
+class InjectedConfigurationService extends WorkspaceService {
   constructor (
-    @IUserDataProfilesService private userDataProfilesService: IUserDataProfilesService,
+    @IWorkbenchEnvironmentService workbenchEnvironmentService: IWorkbenchEnvironmentService,
+    @IUserDataProfileService userDataProfileService: IUserDataProfileService,
+    @IUserDataProfilesService userDataProfilesService: IUserDataProfilesService,
     @IFileService fileService: IFileService,
-    @IPolicyService policyService: IPolicyService,
-    @ILogService logService: ILogService
+    @IRemoteAgentService remoteAgentService: IRemoteAgentService,
+    @IUriIdentityService uriIdentityService: IUriIdentityService,
+    @ILogService logService: ILogService,
+    @IPolicyService policyService: IPolicyService
   ) {
-    super(userDataProfilesService.defaultProfile.settingsResource, fileService, policyService, logService)
-  }
-
-  override getValue (...args: any[]) {
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    const value = super.getValue.apply(this, args as any)
-
-    // small hack to prevent BrowserKeyboardLayoutService from failing when instantiated early
-    if (args[0] === 'keyboard') {
-      return value ?? {}
-    }
-    return value
-  }
-
-  // For some reasons, the default implementation just throw a not supported error
-  // Override it so the theme service is able to save the theme in the configuration
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  override async updateValue (key: string, value: any, arg3?: any, arg4?: any): Promise<void> {
-    const overrides: IConfigurationUpdateOverrides | undefined = isConfigurationUpdateOverrides(arg3)
-      ? arg3
-      : isConfigurationOverrides(arg3) ? { resource: arg3.resource, overrideIdentifiers: arg3.overrideIdentifier != null ? [arg3.overrideIdentifier] : undefined } : undefined
-    const target: ConfigurationTarget = (overrides != null ? arg4 : arg3) ?? ConfigurationTarget.USER
-
-    if (target === ConfigurationTarget.MEMORY) {
-      // eslint-disable-next-line dot-notation
-      return (this['configuration'] as Configuration).updateValue(key, value, overrides)
-    }
-    if (target === ConfigurationTarget.USER) {
-      const userConfiguration = await getUserConfiguration()
-      const jsonPath = overrides?.overrideIdentifiers != null && overrides.overrideIdentifiers.length > 0 ? [keyFromOverrideIdentifiers(overrides.overrideIdentifiers), key] : [key]
-      const newConfiguration = updateJsonValue(userConfiguration, jsonPath, value, this.userDataProfilesService.defaultProfile.settingsResource)
-      await updateUserConfiguration(newConfiguration)
-      return
-    }
-    return Promise.reject(new Error('not supported'))
+    const configurationCache = new ConfigurationCache([Schemas.file, Schemas.vscodeUserData, Schemas.tmp], workbenchEnvironmentService, fileService)
+    super({ configurationCache }, workbenchEnvironmentService, userDataProfileService, userDataProfilesService, fileService, remoteAgentService, uriIdentityService, logService, policyService)
   }
 }
 
-async function initialize (instantiationService: IInstantiationService) {
-  instantiationService.createInstance(RegisterConfigurationSchemasContribution)
-  const configurationService = instantiationService.invokeFunction((accessor) => accessor.get(IConfigurationService)) as ConfigurationService
-
-  await Promise.all([
-    updateUserConfiguration('{}'),
-    configurationService.initialize()
-  ])
+class MonacoWorkspaceEditingService extends AbstractWorkspaceEditingService {
+  async enterWorkspace (): Promise<void> {
+    // do nothing
+  }
 }
 
-export default function getServiceOverride (): IEditorOverrideServices {
-  onServicesInitialized(initialize)
+let _defaultWorkspaceUri = URI.file('/workspace')
+registerServiceInitializeParticipant(async (accessor) => {
+  const workspaceService = accessor.get(IWorkspaceContextService) as WorkspaceService
+  workspaceService.acquireInstantiationService(accessor.get(IInstantiationService))
+  await workspaceService.initialize(<ISingleFolderWorkspaceIdentifier>{
+    id: generateUuid(),
+    uri: _defaultWorkspaceUri
+  })
+})
+
+const MemoizedInjectedConfigurationService = memoizedConstructor(InjectedConfigurationService)
+
+export default function getServiceOverride (defaultWorkspaceUri: URI): IEditorOverrideServices {
+  _defaultWorkspaceUri = defaultWorkspaceUri
+
   return {
     ...getFileServiceOverride(),
-    ...getWorkspaceContextServiceOverride(),
-    [IConfigurationService.toString()]: new SyncDescriptor(InjectedConfigurationService),
-    [ITextResourceConfigurationService.toString()]: new SyncDescriptor(TextResourceConfigurationService)
+    [ILabelService.toString()]: new SyncDescriptor(LabelService, undefined, true),
+    [IConfigurationService.toString()]: new SyncDescriptor(MemoizedInjectedConfigurationService),
+    [IWorkspaceContextService.toString()]: new SyncDescriptor(MemoizedInjectedConfigurationService),
+    [ITextResourceConfigurationService.toString()]: new SyncDescriptor(TextResourceConfigurationService),
+    [IWorkspaceEditingService.toString()]: new SyncDescriptor(MonacoWorkspaceEditingService),
+    [IWorkspacesService.toString()]: new SyncDescriptor(BrowserWorkspacesService, undefined, true)
   }
 }
 
@@ -135,5 +114,7 @@ export {
   IThemeScopedColorCustomizations,
   IColorCustomizations,
   IConfigurationNode,
-  IConfigurationDefaults
+  IConfigurationDefaults,
+  IAnyWorkspaceIdentifier,
+  IWorkspaceFolderCreationData
 }

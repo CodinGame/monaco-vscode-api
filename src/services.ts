@@ -1,12 +1,20 @@
+import './polyfill'
+import './vscode-services/extHost'
 import Severity from 'vs/base/common/severity'
 import type * as vscode from 'vscode'
 import type { IProgressService } from 'vs/platform/progress/common/progress'
-import { IExtensionDescription } from 'vs/platform/extensions/common/extensions'
 import { NotificationsFilter } from 'vs/platform/notification/common/notification'
 import { IConfigurationChangeEvent } from 'vs/platform/configuration/common/configuration'
 import { ITextModelContentProvider } from 'vs/editor/common/services/resolverService'
 import { IColorTheme } from 'vs/platform/theme/common/themeService'
 import { StorageScope, StorageTarget } from 'vs/platform/storage/common/storage'
+import { Registry } from 'vs/platform/registry/common/platform'
+import { IWorkbenchContributionsRegistry, Extensions as WorkbenchExtensions } from 'vs/workbench/common/contributions'
+import { IEditorOverrideServices, StandaloneServices } from 'vs/editor/standalone/browser/standaloneServices'
+import { ILifecycleService, LifecyclePhase } from 'vs/workbench/services/lifecycle/common/lifecycle'
+import { IInstantiationService, ServicesAccessor } from 'vs/platform/instantiation/common/instantiation'
+import { RunOnceScheduler, runWhenIdle } from 'vs/base/common/async'
+import { Emitter } from 'vs/base/common/event'
 // Hack so ContextKeyExprType is included in the bundle as it's used but rollup-plugin-dts is unable to detect it
 // https://github.com/Swatinem/rollup-plugin-dts/issues/220
 export { ContextKeyExprType } from 'vs/platform/contextkey/common/contextkey'
@@ -20,19 +28,7 @@ export interface Window {
   withProgress?: IProgressService['withProgress']
 }
 
-export interface Workspace {
-  rootPath?: string
-  workspaceFolders?: typeof vscode.workspace.workspaceFolders
-  updateWorkspaceFolders?: typeof vscode.workspace.updateWorkspaceFolders
-  onDidChangeWorkspaceFolders?: typeof vscode.workspace.onDidChangeWorkspaceFolders
-  onWillSaveTextDocument?: vscode.Event<vscode.TextDocumentWillSaveEvent>
-  onDidSaveTextDocument?: vscode.Event<vscode.TextDocument>
-  createFileSystemWatcher?: typeof vscode.workspace.createFileSystemWatcher
-}
-
 export interface Services {
-  extension?: IExtensionDescription
-  workspace?: Workspace
   window?: Window
 }
 
@@ -56,6 +52,54 @@ export namespace Services {
       }
     }
   }
+}
+
+interface ServiceInitializeParticipant {
+  (accessor: ServicesAccessor): Promise<void>
+}
+const serviceInitializeParticipants: ServiceInitializeParticipant[] = []
+export function registerServiceInitializeParticipant (participant: ServiceInitializeParticipant): void {
+  serviceInitializeParticipants.push(participant)
+}
+
+async function initServices (overrides: IEditorOverrideServices): Promise<IInstantiationService> {
+  const instantiationService = StandaloneServices.initialize(overrides)
+
+  await instantiationService.invokeFunction(async accessor => {
+    const lifecycleService = accessor.get(ILifecycleService)
+
+    await Promise.all(serviceInitializeParticipants.map(participant => participant(accessor)))
+
+    // Signal to lifecycle that services are set
+    lifecycleService.phase = LifecyclePhase.Ready
+  })
+
+  return instantiationService
+}
+
+const renderWorkbenchEmitter = new Emitter<ServicesAccessor>()
+export const onRenderWorkbench = renderWorkbenchEmitter.event
+
+export async function initialize (overrides: IEditorOverrideServices): Promise<void> {
+  const instantiationService = await initServices(overrides)
+
+  instantiationService.invokeFunction(accessor => {
+    const lifecycleService = accessor.get(ILifecycleService)
+
+    Registry.as<IWorkbenchContributionsRegistry>(WorkbenchExtensions.Workbench).start(accessor)
+
+    renderWorkbenchEmitter.fire(accessor)
+
+    lifecycleService.phase = LifecyclePhase.Restored
+
+    // Set lifecycle phase to `Eventually` after a short delay and when idle (min 2.5sec, max 5sec)
+    const eventuallyPhaseScheduler = new RunOnceScheduler(() => {
+      runWhenIdle(() => {
+        lifecycleService.phase = LifecyclePhase.Eventually
+      }, 2500)
+    }, 2500)
+    eventuallyPhaseScheduler.schedule()
+  })
 }
 
 // Export all services as monaco doesn't export them

@@ -6,13 +6,13 @@ import 'monaco-editor/esm/vs/editor/standalone/browser/quickAccess/standaloneGot
 import 'monaco-editor/esm/vs/editor/standalone/browser/quickAccess/standaloneGotoSymbolQuickAccess'
 import 'monaco-editor/esm/vs/editor/standalone/browser/quickAccess/standaloneCommandsQuickAccess'
 import 'monaco-editor/esm/vs/editor/standalone/browser/referenceSearch/standaloneReferenceSearch'
-import { Services, StandaloneServices } from 'vscode/services'
+import { initialize as initializeMonacoService } from 'vscode/services'
+import { registerExtension, initialize as initializeVscodeExtensions } from 'vscode/extensions'
 import getModelEditorServiceOverride, { IReference, IResolvedTextEditorModel, OpenEditor } from 'vscode/service-override/modelEditor'
 import getNotificationServiceOverride from 'vscode/service-override/notifications'
 import getDialogsServiceOverride from 'vscode/service-override/dialogs'
 import getConfigurationServiceOverride from 'vscode/service-override/configuration'
 import getKeybindingsServiceOverride from 'vscode/service-override/keybindings'
-import { registerExtension } from 'vscode/extensions'
 import getTextmateServiceOverride from 'vscode/service-override/textmate'
 import getThemeServiceOverride from 'vscode/service-override/theme'
 import geTokenClassificationServiceOverride from 'vscode/service-override/tokenClassification'
@@ -20,11 +20,12 @@ import getLanguageConfigurationServiceOverride from 'vscode/service-override/lan
 import getLanguagesServiceOverride from 'vscode/service-override/languages'
 import getAudioCueServiceOverride from 'vscode/service-override/audioCue'
 import getDebugServiceOverride from 'vscode/service-override/debug'
+import getPreferencesServiceOverride from 'vscode/service-override/preferences'
 import EditorWorker from 'monaco-editor/esm/vs/editor/editor.worker?worker'
 import JsonWorker from 'monaco-editor/esm/vs/language/json/json.worker?worker'
 import * as monaco from 'monaco-editor/esm/vs/editor/editor.api'
 import { createConfiguredEditor } from 'vscode/monaco'
-import type * as vscode from 'vscode'
+import * as vscode from 'vscode'
 
 // Workers
 interface WorkerConstructor {
@@ -45,16 +46,6 @@ window.MonacoEnvironment = {
     throw new Error(`Unimplemented worker ${label} (${moduleId})`)
   }
 }
-
-Services.install({
-  workspace: {
-    workspaceFolders: [{
-      index: 0,
-      name: 'toto',
-      uri: monaco.Uri.file('/')
-    }]
-  }
-})
 
 let currentEditor: ({
   modelRef: IReference<IResolvedTextEditorModel>
@@ -122,11 +113,11 @@ const openNewCodeEditor: OpenEditor = async (modelRef) => {
 }
 
 // Override services
-StandaloneServices.initialize({
+await initializeMonacoService({
   ...getModelEditorServiceOverride(openNewCodeEditor),
   ...getNotificationServiceOverride(),
   ...getDialogsServiceOverride(),
-  ...getConfigurationServiceOverride(),
+  ...getConfigurationServiceOverride(monaco.Uri.file('/')),
   ...getKeybindingsServiceOverride(),
   ...getTextmateServiceOverride(),
   ...getThemeServiceOverride(),
@@ -134,8 +125,10 @@ StandaloneServices.initialize({
   ...getLanguageConfigurationServiceOverride(),
   ...getLanguagesServiceOverride(),
   ...getAudioCueServiceOverride(),
-  ...getDebugServiceOverride()
+  ...getDebugServiceOverride(),
+  ...getPreferencesServiceOverride()
 })
+await initializeVscodeExtensions()
 
 const defaultThemesExtensions = {
   name: 'theme-defaults',
@@ -159,22 +152,10 @@ const defaultThemesExtensions = {
         path: './themes/dark_plus.json'
       },
       {
-        id: 'Default Dark+ Experimental',
-        label: '%darkPlusExperimentalColorThemeLabel%',
-        uiTheme: 'vs-dark',
-        path: './themes/dark_plus_experimental.json'
-      },
-      {
         id: 'Default Light+',
         label: '%lightPlusColorThemeLabel%',
         uiTheme: 'vs',
         path: './themes/light_plus.json'
-      },
-      {
-        id: 'Default Light+ Experimental',
-        label: '%lightPlusExperimentalColorThemeLabel%',
-        uiTheme: 'vs',
-        path: './themes/light_plus_experimental.json'
       },
       {
         id: 'Visual Studio Dark',
@@ -368,7 +349,7 @@ debuggerVscodeApi.debug.registerDebugAdapterDescriptorFactory('javascript', {
     websocket.send(JSON.stringify({
       main: '/tmp/test.js',
       files: {
-        '/tmp/test.js': monaco.editor.getModel(monaco.Uri.file('/tmp/test.js'))!.getValue()
+        '/tmp/test.js': new TextDecoder().decode(await vscode.workspace.fs.readFile(vscode.Uri.file('/tmp/test.js')))
       }
     }))
 

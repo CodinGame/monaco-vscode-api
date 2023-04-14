@@ -11,10 +11,8 @@ import 'monaco-editor/esm/vs/editor/standalone/browser/quickAccess/standaloneCom
 import 'monaco-editor/esm/vs/editor/standalone/browser/referenceSearch/standaloneReferenceSearch'
 // json contribution should be imported/run AFTER the services are initialized (in setup.ts)
 import 'monaco-editor/esm/vs/language/json/monaco.contribution'
-import { getUserConfiguration, onUserConfigurationChange, updateUserConfiguration } from 'vscode/service-override/configuration'
-import { updateUserKeybindings } from 'vscode/service-override/keybindings'
-import { createConfiguredEditor, getJsonSchemas, onDidChangeJsonSchema } from 'vscode/monaco'
-import { debounce } from 'throttle-debounce'
+import { createConfiguredEditor, synchronizeJsonSchemas, createModelReference } from 'vscode/monaco'
+import { SimpleTextFileSystemProvider, registerFileSystemOverlay } from 'vscode/service-override/files'
 import * as vscode from 'vscode'
 
 vscode.languages.registerHoverProvider('javascript', {
@@ -43,6 +41,38 @@ monaco.languages.json.jsonDefaults.setModeConfiguration({
   tokens: false // Disable monarch tokenizer as we use TextMate here
 })
 
+synchronizeJsonSchemas()
+
+const otherModelUri = vscode.Uri.file('/tmp/test2.js')
+vscode.languages.registerDefinitionProvider('javascript', {
+  provideDefinition (document, position) {
+    const wordRange = document.getWordRangeAtPosition(position)
+    if (wordRange != null && document.getText(wordRange) === 'anotherfile') {
+      return {
+        range: wordRange,
+        uri: otherModelUri
+      }
+    }
+    return []
+  }
+})
+
+class FakeFileSystem extends SimpleTextFileSystemProvider {
+  private files: Record<string, string> = {
+    [otherModelUri.toString(true)]: 'This is another file'
+  }
+
+  protected async getFileContent (resource: monaco.Uri): Promise<string | undefined> {
+    return this.files[resource.toString(true)]
+  }
+
+  protected async setFileContent (resource: monaco.Uri, content: string): Promise<void> {
+    this.files[resource.toString(true)] = content
+  }
+}
+
+registerFileSystemOverlay(new FakeFileSystem())
+
 void vscode.window.showInformationMessage('Hello', {
   detail: 'Welcome to the monaco-vscode-api demo',
   modal: true
@@ -50,8 +80,8 @@ void vscode.window.showInformationMessage('Hello', {
   void vscode.window.showInformationMessage('Try to change the settings or the configuration, the changes will be applied to all 3 editors')
 })
 
-const model = monaco.editor.createModel(
-  `
+async function createEditors () {
+  const modelRef = await createModelReference(monaco.Uri.file('/tmp/test.js'), `// import anotherfile
 let variable = 1
 function inc () {
   variable++
@@ -60,26 +90,22 @@ function inc () {
 while (variable < 5000) {
   inc()
   console.log('Hello world', variable);
-}`,
-  undefined,
-  monaco.Uri.file('/tmp/test.js')
-)
+}`)
 
-createConfiguredEditor(document.getElementById('editor')!, {
-  model
-})
+  createConfiguredEditor(document.getElementById('editor')!, {
+    model: modelRef.object.textEditorModel
+  })
 
-const diagnostics = vscode.languages.createDiagnosticCollection('demo')
-diagnostics.set(model.uri, [{
-  range: new vscode.Range(2, 9, 2, 12),
-  severity: vscode.DiagnosticSeverity.Error,
-  message: 'This is not a real error, just a demo, don\'t worry',
-  source: 'Demo',
-  code: 42
-}])
+  const diagnostics = vscode.languages.createDiagnosticCollection('demo')
+  diagnostics.set(modelRef.object.textEditorModel!.uri, [{
+    range: new vscode.Range(2, 9, 2, 12),
+    severity: vscode.DiagnosticSeverity.Error,
+    message: 'This is not a real error, just a demo, don\'t worry',
+    source: 'Demo',
+    code: 42
+  }])
 
-const settingsModel = monaco.editor.createModel(
-`{
+  const settingsModelReference = await createModelReference(monaco.Uri.from({ scheme: 'user', path: '/settings.json' }), `{
   "workbench.colorTheme": "Default Dark+",
   "editor.autoClosingBrackets": "languageDefined",
   "editor.autoClosingQuotes": "languageDefined",
@@ -92,27 +118,15 @@ const settingsModel = monaco.editor.createModel(
   "editor.bracketPairColorization.enabled": false,
   "editor.fontSize": 12,
   "audioCues.lineHasError": "on",
-  "audioCues.onDebugBreak": "on"
-}`, 'json', monaco.Uri.file('/settings.json'))
-createConfiguredEditor(document.getElementById('settings-editor')!, {
-  model: settingsModel
-})
-settingsModel.onDidChangeContent(debounce(1000, async () => {
-  const currentConfig = await getUserConfiguration()
-  if (currentConfig !== settingsModel.getValue()) {
-    await updateUserConfiguration(settingsModel.getValue())
-  }
-}))
-void updateUserConfiguration(settingsModel.getValue())
-onUserConfigurationChange(async () => {
-  const newConfiguration = await getUserConfiguration()
-  if (newConfiguration !== settingsModel.getValue()) {
-    settingsModel.setValue(newConfiguration)
-  }
-})
+  "audioCues.onDebugBreak": "on",
+  "files.autoSave": "afterDelay",
+  "files.autoSaveDelay": 1000
+}`)
+  createConfiguredEditor(document.getElementById('settings-editor')!, {
+    model: settingsModelReference.object.textEditorModel
+  })
 
-const keybidingsModel = monaco.editor.createModel(
-`[
+  const keybindingsModelReference = await createModelReference(monaco.Uri.from({ scheme: 'user', path: '/keybindings.json' }), `[
   {
     "key": "ctrl+p",
     "command": "editor.action.quickCommand",
@@ -123,29 +137,13 @@ const keybidingsModel = monaco.editor.createModel(
     "command": "editor.action.deleteLines",
     "when": "editorTextFocus"
   }
-]`, 'json', monaco.Uri.file('/keybindings.json'))
-createConfiguredEditor(document.getElementById('keybindings-editor')!, {
-  model: keybidingsModel
-})
-keybidingsModel.onDidChangeContent(debounce(1000, async () => {
-  await updateUserKeybindings(keybidingsModel.getValue())
-}))
-void updateUserKeybindings(keybidingsModel.getValue())
-
-function updateDiagnosticsOptions () {
-  monaco.languages.json.jsonDefaults.setDiagnosticsOptions({
-    comments: 'ignore',
-    validate: true,
-    schemas: getJsonSchemas({
-      keybindings: ['file:///keybindings.json'],
-      'settings/user': ['file:///settings.json']
-    })
+]`)
+  createConfiguredEditor(document.getElementById('keybindings-editor')!, {
+    model: keybindingsModelReference.object.textEditorModel
   })
 }
 
-updateDiagnosticsOptions()
-onDidChangeJsonSchema(updateDiagnosticsOptions)
-
+void createEditors()
 setTimeout(() => {
   vscode.workspace.onDidChangeConfiguration(() => {
     void vscode.window.showInformationMessage('The configuration was changed')

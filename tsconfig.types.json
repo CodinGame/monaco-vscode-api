@@ -62,6 +62,7 @@
 		"src/service-override/notifications.ts",
 		"src/service-override/dialogs.ts",
 		"src/service-override/modelEditor.ts",
+		"src/service-override/files.ts",
 		"src/service-override/configuration.ts",
 		"src/service-override/keybindings.ts",
 		"src/service-override/textmate.ts",
@@ -72,6 +73,7 @@
 		"src/service-override/languages.ts",
 		"src/service-override/audioCue.ts",
 		"src/service-override/debug.ts",
+		"src/service-override/preferences.ts",
 		"src/monaco.ts"
 	]
 }

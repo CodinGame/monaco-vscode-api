@@ -14,15 +14,11 @@ import { DEFAULT_EDITOR_MAX_DIMENSIONS, DEFAULT_EDITOR_MIN_DIMENSIONS } from 'vs
 import { applyTextEditorOptions } from 'vs/workbench/common/editor/editorOptions'
 import { IEditor, ScrollType } from 'vs/editor/common/editorCommon'
 import { SyncDescriptor } from 'vs/platform/instantiation/common/descriptors'
-import { Disposable, ImmortalReference, IReference } from 'vs/base/common/lifecycle'
-import { URI } from 'vs/base/common/uri'
-import { IModelService } from 'vs/editor/common/services/model'
-import { IFileService } from 'vs/platform/files/common/files'
-import { IInstantiationService } from 'vs/platform/instantiation/common/instantiation'
-import { IUriIdentityService } from 'vs/platform/uriIdentity/common/uriIdentity'
-import { IUndoRedoService } from 'vs/platform/undoRedo/common/undoRedo'
-import { TextResourceEditorModel } from 'vs/workbench/common/editor/textResourceEditorModel'
+import { Disposable, IReference } from 'vs/base/common/lifecycle'
 import { ICodeEditor } from 'vs/editor/browser/editorBrowser'
+import { ITextFileEditorModel } from 'vs/workbench/services/textfile/common/textfiles'
+import { ITextEditorService, TextEditorService } from 'vs/workbench/services/textfile/common/textEditorService'
+import 'vs/workbench/browser/parts/editor/editor.contribution'
 import { unsupported } from '../tools'
 
 type OpenEditor = (modelRef: IReference<IResolvedTextEditorModel>, options: IEditorOptions | undefined, sideBySide?: boolean) => Promise<ICodeEditor | undefined>
@@ -163,47 +159,12 @@ class EditorService extends Disposable implements IEditorService {
   closeEditors = unsupported
 }
 
-/**
- * Vscode manage models by using the EditorInput class
- * The EditorInput class keeps a reference to the model, preventing it from being destroyed
- * With monaco, we don't have this class, but the only way to retrieve a model is to use the createModelReference method which returns a ref
- * We don't want the user to manipulate ref, so we just provide the model to them.
- * The user may want to dispose the model when there is no more usage of it, but doing so doesn't dispose the ref
- * This class just force dispose the refs when the model is disposed
- */
-class CustomTextModelResolverService extends TextModelResolverService {
-  constructor (
-    @IInstantiationService private _instantiationService: IInstantiationService,
-    @IFileService fileService: IFileService,
-    @IUndoRedoService undoRedoService: IUndoRedoService,
-    @IModelService private _modelService: IModelService,
-    @IUriIdentityService uriIdentityService: IUriIdentityService
-  ) {
-    super(_instantiationService, fileService, undoRedoService, _modelService, uriIdentityService)
-  }
-
-  override async createModelReference (resource: URI): Promise<IReference<IResolvedTextEditorModel>> {
-    // If the model already exists, return an immortal reference to it
-    const existingModel = this._modelService.getModel(resource)
-    if (existingModel != null) {
-      return new ImmortalReference(this._instantiationService.createInstance(TextResourceEditorModel, resource) as IResolvedTextEditorModel)
-    }
-
-    // Otherwise, try to create a reference to the model
-    const ref = await super.createModelReference(resource)
-    // Dispose the ref when the model is disposed or we'll get a disposed model next time
-    ref.object.textEditorModel.onWillDispose(() => {
-      ref.dispose()
-    })
-    return ref
-  }
-}
-
 export default function getServiceOverride (openEditor: OpenEditor): IEditorOverrideServices {
   return {
-    [ITextModelService.toString()]: new SyncDescriptor(CustomTextModelResolverService),
-    [ICodeEditorService.toString()]: new SyncDescriptor(CodeEditorService),
-    [IEditorService.toString()]: new SyncDescriptor(EditorService, [openEditor])
+    [ITextModelService.toString()]: new SyncDescriptor(TextModelResolverService, undefined, true),
+    [ICodeEditorService.toString()]: new SyncDescriptor(CodeEditorService, undefined, true),
+    [IEditorService.toString()]: new SyncDescriptor(EditorService, [openEditor]),
+    [ITextEditorService.toString()]: new SyncDescriptor(TextEditorService)
   }
 }
 
@@ -211,5 +172,6 @@ export {
   OpenEditor,
   IEditorOptions,
   IResolvedTextEditorModel,
+  ITextFileEditorModel,
   IReference
 }

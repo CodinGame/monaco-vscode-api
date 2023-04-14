@@ -1,18 +1,16 @@
 import './polyfill'
-import './vscode-services/extHost'
 import type * as vscode from 'vscode'
-import { ExtensionType, IExtension, IExtensionContributions, IExtensionDescription, IExtensionManifest, TargetPlatform } from 'vs/platform/extensions/common/extensions'
+import { ExtensionIdentifier, ExtensionType, IExtension, IExtensionContributions, IExtensionDescription, IExtensionManifest, TargetPlatform } from 'vs/platform/extensions/common/extensions'
 import { ExtensionMessageCollector, ExtensionPoint, ExtensionsRegistry, IExtensionPointUser } from 'vs/workbench/services/extensions/common/extensionsRegistry'
 import { IMessage, toExtensionDescription } from 'vs/workbench/services/extensions/common/extensions'
-import { Disposable } from 'vs/workbench/api/common/extHostTypes'
 import { generateUuid } from 'vs/base/common/uuid'
 import { URI } from 'vs/base/common/uri'
 import { IExtHostExtensionService } from 'vs/workbench/api/common/extHostExtensionService'
 import { StandaloneServices } from 'vs/editor/standalone/browser/standaloneServices'
 import { getExtensionId } from 'vs/platform/extensionManagement/common/extensionManagementUtil'
 import { IDisposable } from 'vs/base/common/lifecycle'
+import Severity from 'vs/base/common/severity'
 import * as api from './api'
-import { consoleExtensionMessageHandler } from './service-override/tools'
 import { registerExtensionFile } from './service-override/files'
 import createLanguagesApi from './vscode-services/languages'
 import createCommandsApi from './vscode-services/commands'
@@ -21,6 +19,45 @@ import createWindowApi from './vscode-services/window'
 import createEnvApi from './vscode-services/env'
 import createDebugApi from './vscode-services/debug'
 import createExtensionsApi from './vscode-services/extensions'
+import { initialize as initializeExtHostServices } from './vscode-services/extHost'
+
+export function consoleExtensionMessageHandler (msg: IMessage): void {
+  if (msg.type === Severity.Error) {
+    console.error(msg)
+  } else if (msg.type === Severity.Warning) {
+    console.warn(msg)
+  } else {
+    // eslint-disable-next-line no-console
+    console.log(msg)
+  }
+}
+
+let DEFAULT_EXTENSION: IExtensionDescription = {
+  identifier: new ExtensionIdentifier('monaco'),
+  isBuiltin: true,
+  isUserBuiltin: true,
+  isUnderDevelopment: false,
+  extensionLocation: URI.from({ scheme: 'extension', path: '/' }),
+  name: 'monaco',
+  publisher: 'microsoft',
+  version: '1.0.0',
+  engines: {
+    vscode: VSCODE_VERSION
+  },
+  targetPlatform: TargetPlatform.WEB
+}
+
+export function getDefaultExtension (): IExtensionDescription {
+  return DEFAULT_EXTENSION
+}
+
+export async function initialize (extension?: IExtensionDescription): Promise<void> {
+  if (extension != null) {
+    DEFAULT_EXTENSION = extension
+  }
+
+  await initializeExtHostServices()
+}
 
 export function createApi (extension: IExtensionDescription): typeof vscode {
   const workspace = createWorkspaceApi(() => extension)
@@ -77,7 +114,7 @@ function deltaExtensions (toAdd: IExtensionDescription[], toRemove: IExtensionDe
 
 interface RegisterExtensionResult extends IDisposable {
   api: typeof vscode
-  registerFile: (path: string, getContent: () => Promise<string>) => Disposable
+  registerFile: (path: string, getContent: () => Promise<string>) => IDisposable
 }
 export function registerExtension (manifest: IExtensionManifest): RegisterExtensionResult {
   const uuid = generateUuid()

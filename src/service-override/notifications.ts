@@ -13,12 +13,12 @@ import { NotificationsAlerts } from 'vs/workbench/browser/parts/notifications/no
 import { NotificationsTelemetry } from 'vs/workbench/browser/parts/notifications/notificationsTelemetry'
 import { ILayoutService } from 'vs/platform/layout/browser/layoutService'
 import getLayoutServiceOverride from './layout'
-import { onServicesInitialized } from './tools'
+import { onRenderWorkbench } from '../services'
 
-function initialize (instantiationService: IInstantiationService) {
-  const container = instantiationService.invokeFunction((accessor) => accessor.get(ILayoutService)).container
-
-  const model = (instantiationService.invokeFunction((accessor) => accessor.get(INotificationService)) as NotificationService).model
+onRenderWorkbench(async (accessor) => {
+  const container = accessor.get(ILayoutService).container
+  const model = (accessor.get(INotificationService) as NotificationService).model
+  const instantiationService = accessor.get(IInstantiationService)
 
   // Instantiate Notification components
   setTimeout(() => {
@@ -31,13 +31,11 @@ function initialize (instantiationService: IInstantiationService) {
 
     notificationsToasts.layout(dom.getClientArea(container))
   })
-}
+})
 
 export default function getServiceOverride (container?: HTMLElement): IEditorOverrideServices {
-  onServicesInitialized(initialize)
-
   return {
-    [INotificationService.toString()]: new SyncDescriptor(NotificationService),
+    [INotificationService.toString()]: new SyncDescriptor(NotificationService, undefined, true),
     ...getLayoutServiceOverride(container)
   }
 }

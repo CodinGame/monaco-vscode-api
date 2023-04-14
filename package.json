@@ -40,6 +40,10 @@
       "types": "./dist/modelEditor.d.ts",
       "default": "./dist/modelEditor.js"
     },
+    "./service-override/files": {
+      "types": "./dist/files.d.ts",
+      "default": "./dist/files.js"
+    },
     "./service-override/configuration": {
       "types": "./dist/configuration.d.ts",
       "default": "./dist/configuration.js"
@@ -80,6 +84,10 @@
       "types": "./dist/debug.d.ts",
       "default": "./dist/debug.js"
     },
+    "./service-override/preferences": {
+      "types": "./dist/preferences.d.ts",
+      "default": "./dist/preferences.js"
+    },
     "./monaco": {
       "types": "./dist/monaco.d.ts",
       "default": "./dist/monaco.js"
@@ -105,6 +113,9 @@
       ],
       "service-override/modelEditor": [
         "./dist/modelEditor.d.ts"
+      ],
+      "service-override/files": [
+        "./dist/files.d.ts"
       ],
       "service-override/configuration": [
         "./dist/configuration.d.ts"
@@ -136,6 +147,9 @@
       "service-override/debug": [
         "./dist/debug.d.ts"
       ],
+      "service-override/preferences": [
+        "./dist/preferences.d.ts"
+      ],
       "monaco": [
         "./dist/monaco.d.ts"
       ],
@@ -154,7 +168,7 @@
     "clean": "rm -rf dist/",
     "compile-webpack-loader": "tsc --target es2020 -lib es2020 --module commonjs --skipLibCheck --moduleResolution node --declaration --outDir dist src/webpack-loader.ts && mv dist/webpack-loader.js dist/webpack-loader.cjs",
     "preprepare": "./scripts/install-vscode",
-    "lint": "eslint {**/src/**/*.ts,./rollup/*.ts,./*.ts}",
+    "lint": "eslint {/src/**/*.ts,./rollup/*.ts,./*.ts}",
     "generate-types": "tsc --project tsconfig.types.json && rollup --config rollup/rollup.types.config.ts --configPlugin 'typescript={tsconfig: `tsconfig.rollup.json`}' && rm -rf ./dist/types",
     "release": "node --loader ts-node/esm release.ts ${npm_package_config_vscode_version}"
   },

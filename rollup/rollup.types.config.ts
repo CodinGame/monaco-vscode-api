@@ -25,6 +25,7 @@ export default rollup.defineConfig([
   './dist/types/src/service-override/notifications.d.ts',
   './dist/types/src/service-override/dialogs.d.ts',
   './dist/types/src/service-override/modelEditor.d.ts',
+  './dist/types/src/service-override/files.d.ts',
   './dist/types/src/service-override/configuration.d.ts',
   './dist/types/src/service-override/keybindings.d.ts',
   './dist/types/src/service-override/textmate.d.ts',
@@ -35,6 +36,7 @@ export default rollup.defineConfig([
   './dist/types/src/service-override/languages.d.ts',
   './dist/types/src/service-override/audioCue.d.ts',
   './dist/types/src/service-override/debug.d.ts',
+  './dist/types/src/service-override/preferences.d.ts',
   './dist/types/src/monaco.d.ts'
 ].map((input): rollup.RollupOptions => ({
   input,
