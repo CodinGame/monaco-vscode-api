@@ -79,6 +79,7 @@ import { Extensions as KeybindingsExtensions, IKeybindingsRegistry } from 'monac
 import { KeybindingsRegistryImpl as VScodeKeybindingsRegistryImpl } from 'vscode/vs/platform/keybinding/common/keybindingsRegistry.js'
 import { ITextBuffer } from 'vs/editor/common/model'
 import { AudioCue } from 'vs/platform/audioCues/browser/audioCueService'
+import { ITelemetryService } from 'vs/platform/telemetry/common/telemetry'
 import { registerServiceInitializeParticipant } from './services'
 
 type PartialMutable<T> = Partial<{
@@ -320,4 +321,11 @@ registerServiceInitializeParticipant(async (accessor) => {
   workspaceContextService.onDidChangeWorkspaceFolders ??= Event.None
   workspaceContextService.onDidChangeWorkbenchState ??= Event.None
   workspaceContextService.getWorkbenchState ??= () => WorkbenchState.EMPTY
+
+  // polyfill for StandaloneTelemetryService
+  const telemetryService: PartialMutable<ITelemetryService> = accessor.get(ITelemetryService)
+  telemetryService.publicLog ??= () => {}
+  telemetryService.publicLog2 ??= () => {}
+  telemetryService.publicLogError ??= () => {}
+  telemetryService.publicLogError2 ??= () => {}
 })

@@ -39,7 +39,7 @@ import { IPolicyService } from 'vs/platform/policy/common/policy'
 import { IUserDataProfileService } from 'vs/workbench/services/userDataProfile/common/userDataProfile'
 import { UserDataProfileService } from 'vs/workbench/services/userDataProfile/common/userDataProfileService'
 import { ISnippetsService } from 'vs/workbench/contrib/snippets/browser/snippets'
-import { ILoggerService, NullLoggerService } from 'vs/platform/log/common/log'
+import { AbstractLoggerService, ILogger, ILoggerService, LogLevel, NullLogger } from 'vs/platform/log/common/log'
 import { IDisposable } from 'vs/base/common/lifecycle'
 import { FallbackKeyboardMapper } from 'vs/workbench/services/keybinding/common/fallbackKeyboardMapper'
 import { ITextMateTokenizationService } from 'vs/workbench/services/textMate/browser/textMateTokenizationFeature'
@@ -86,9 +86,16 @@ import { IWorkspacesService } from 'vs/platform/workspaces/common/workspaces'
 import { ITextEditorService } from 'vs/workbench/services/textfile/common/textEditorService'
 import { IEditorResolverService } from 'vs/workbench/services/editor/common/editorResolverService'
 import { AbstractLifecycleService } from 'vs/workbench/services/lifecycle/common/lifecycleService'
-import { unsupported } from '../tools'
 import { Services } from '../services'
+import { unsupported } from '../tools'
 
+class NullLoggerService extends AbstractLoggerService {
+  constructor () {
+    super(LogLevel.Info, URI.file('logs.log'))
+  }
+
+  protected doCreateLogger (): ILogger { return new NullLogger() }
+}
 registerSingleton(ILoggerService, NullLoggerService, InstantiationType.Eager)
 
 registerSingleton(IEditorService, class EditorService implements IEditorService {
@@ -236,6 +243,7 @@ class EmptyEditorGroup implements IEditorGroup {
 
 registerSingleton(IEditorGroupsService, class EditorGroupsService implements IEditorGroupsService {
   readonly _serviceBrand = undefined
+  getLayout = unsupported
   onDidChangeActiveGroup = Event.None
   onDidAddGroup = Event.None
   onDidRemoveGroup = Event.None
@@ -278,6 +286,7 @@ registerSingleton(IEditorGroupsService, class EditorGroupsService implements IEd
 }, InstantiationType.Eager)
 
 class WorkbenchEnvironmentService implements IBrowserWorkbenchEnvironmentService {
+  get logsHome () { return unsupported() }
   get windowLogsPath () { return unsupported() }
   get extHostTelemetryLogFile () { return unsupported() }
   readonly _serviceBrand = undefined
@@ -497,7 +506,8 @@ const profile: IUserDataProfile = {
   keybindingsResource: URI.from({ scheme: 'user', path: '/keybindings.json' }),
   tasksResource: URI.from({ scheme: 'user', path: '/tasks.json' }),
   snippetsHome: URI.from({ scheme: 'user', path: '/snippets' }),
-  get extensionsResource () { return unsupported() }
+  get extensionsResource () { return unsupported() },
+  cacheHome: URI.from({ scheme: 'cache', path: '/' })
 }
 
 registerSingleton(IUserDataProfilesService, class UserDataProfilesService implements IUserDataProfilesService {
@@ -835,6 +845,7 @@ registerSingleton(ITimerService, class TimerService implements ITimerService {
 }, InstantiationType.Eager)
 
 registerSingleton(IExtensionsWorkbenchService, class ExtensionsWorkbenchService implements IExtensionsWorkbenchService {
+  whenInitialized = Promise.resolve()
   _serviceBrand: undefined
   onChange = Event.None
   onReset = Event.None

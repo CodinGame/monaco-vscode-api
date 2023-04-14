@@ -15,8 +15,6 @@ import getConfigurationServiceOverride from 'vscode/service-override/configurati
 import getKeybindingsServiceOverride from 'vscode/service-override/keybindings'
 import getTextmateServiceOverride from 'vscode/service-override/textmate'
 import getThemeServiceOverride from 'vscode/service-override/theme'
-import geTokenClassificationServiceOverride from 'vscode/service-override/tokenClassification'
-import getLanguageConfigurationServiceOverride from 'vscode/service-override/languageConfiguration'
 import getLanguagesServiceOverride from 'vscode/service-override/languages'
 import getAudioCueServiceOverride from 'vscode/service-override/audioCue'
 import getDebugServiceOverride from 'vscode/service-override/debug'
@@ -121,8 +119,6 @@ await initializeMonacoService({
   ...getKeybindingsServiceOverride(),
   ...getTextmateServiceOverride(),
   ...getThemeServiceOverride(),
-  ...geTokenClassificationServiceOverride(),
-  ...getLanguageConfigurationServiceOverride(),
   ...getLanguagesServiceOverride(),
   ...getAudioCueServiceOverride(),
   ...getDebugServiceOverride(),

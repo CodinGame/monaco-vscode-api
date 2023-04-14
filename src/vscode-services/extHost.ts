@@ -3,7 +3,7 @@ import { ExtHostCommands, IExtHostCommands } from 'vs/workbench/api/common/extHo
 import { ExtHostRpcService, IExtHostRpcService } from 'vs/workbench/api/common/extHostRpcService'
 import { ILogService, LogLevel } from 'vs/platform/log/common/log'
 import { ExtHostCustomersRegistry, IExtHostContext } from 'vs/workbench/services/extensions/common/extHostCustomers'
-import { ExtensionHostKind } from 'vs/workbench/services/extensions/common/extensions'
+import { ExtensionHostKind } from 'vs/workbench/services/extensions/common/extensionHostKind'
 import { URI } from 'vs/base/common/uri'
 import { ExtHostApiDeprecationService, IExtHostApiDeprecationService } from 'vs/workbench/api/common/extHostApiDeprecationService'
 import {
@@ -145,6 +145,7 @@ registerSingleton(IExtHostInitDataService, class ExtHostInitDataService implemen
   uiKind = UIKind.Web
   loggers = []
   logName = 'browser'
+  activationEvents = {}
 }, InstantiationType.Eager)
 
 registerSingleton(IHostUtils, class HostUtils implements IHostUtils {
