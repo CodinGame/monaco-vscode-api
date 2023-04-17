@@ -1,7 +1,6 @@
 import './polyfill'
 import './vscode-services/extHost'
 import Severity from 'vs/base/common/severity'
-import { NotificationsFilter } from 'vs/platform/notification/common/notification'
 import { IConfigurationChangeEvent } from 'vs/platform/configuration/common/configuration'
 import { ITextModelContentProvider } from 'vs/editor/common/services/resolverService'
 import { IColorTheme } from 'vs/platform/theme/common/themeService'
@@ -13,6 +12,7 @@ import { ILifecycleService, LifecyclePhase } from 'vs/workbench/services/lifecyc
 import { IInstantiationService, ServicesAccessor } from 'vs/platform/instantiation/common/instantiation'
 import { RunOnceScheduler, runWhenIdle } from 'vs/base/common/async'
 import { Emitter } from 'vs/base/common/event'
+import { IAction } from 'vs/base/common/actions'
 import getLayoutServiceOverride from './service-override/layout'
 // Hack so ContextKeyExprType is included in the bundle as it's used but rollup-plugin-dts is unable to detect it
 // https://github.com/Swatinem/rollup-plugin-dts/issues/220
@@ -109,8 +109,59 @@ export { IStorageService } from 'vs/platform/storage/common/storage'
 export { IAudioCueService } from 'vs/platform/audioCues/browser/audioCueService'
 export { IDebugService } from 'vs/workbench/contrib/debug/common/debug'
 
+// Export all Notification service parts
 export {
   NotificationsFilter,
+  NotificationMessage,
+  NotificationPriority,
+  INotificationProperties,
+  NeverShowAgainScope,
+  INeverShowAgainOptions,
+  INotification,
+  INotificationActions,
+  INotificationProgress,
+  INotificationProgressProperties,
+  INotificationHandle,
+  IPromptChoice,
+  IPromptChoiceWithMenu,
+  IPromptOptions,
+  IStatusMessageOptions,
+  NoOpNotification,
+  NoOpProgress
+} from 'vs/platform/notification/common/notification'
+
+// Export all Dialog service parts
+export {
+  IDialogArgs,
+  DialogType,
+  IDialogResult,
+  IDialogHandler,
+  IConfirmDialogArgs,
+  IInputDialogArgs,
+  IPromptDialogArgs,
+  IBaseDialogOptions,
+  ICheckbox,
+  ICheckboxResult,
+  ICustomDialogOptions,
+  ICustomDialogMarkdown,
+  IConfirmation,
+  IConfirmationResult,
+  IInput,
+  IInputResult,
+  IInputElement,
+  IPrompt,
+  IPromptResult,
+  IPromptBaseButton,
+  IPromptButton,
+  IPromptCancelButton,
+  IPromptResultWithCancel,
+  IPromptWithCustomCancel,
+  IPromptWithDefaultCancel
+} from 'vs/platform/dialogs/common/dialogs'
+export { IMarkdownString, MarkdownStringTrustedOptions } from 'vs/base/common/htmlContent'
+
+export {
+  IAction,
   IConfigurationChangeEvent,
   ITextModelContentProvider,
   IColorTheme,
