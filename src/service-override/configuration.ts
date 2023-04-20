@@ -83,6 +83,12 @@ let _defaultWorkspaceUri = URI.file('/workspace')
 registerServiceInitializeParticipant(async (accessor) => {
   const workspaceService = accessor.get(IWorkspaceContextService) as WorkspaceService
   workspaceService.acquireInstantiationService(accessor.get(IInstantiationService))
+  try {
+    // Create the directory in the memory filesystem to prevent a warn log
+    await accessor.get(IFileService).createFolder(_defaultWorkspaceUri)
+  } catch (err) {
+    // ignore
+  }
   await workspaceService.initialize(<ISingleFolderWorkspaceIdentifier>{
     id: generateUuid(),
     uri: _defaultWorkspaceUri
