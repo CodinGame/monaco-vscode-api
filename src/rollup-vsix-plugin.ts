@@ -96,7 +96,8 @@ export default function plugin (options: Options = defaultOptions): Plugin {
       const files = await readVsix(id)
       const manifest = JSON.parse(files['package.json']!.toString('utf8'))
 
-      const usedFiles = ['package.json', ...extractPathsFromExtensionManifest(manifest.contributes)]
+      const usedFiles = ['package.json', 'package.nls.json', ...extractPathsFromExtensionManifest(manifest.contributes)]
+      const nlsExists = files['package.nls.json'] != null
 
       const vsixFile: Record<string, Buffer> = usedFiles.reduce((acc, usedFile) => {
         const filePath = files[path.relative('/', path.resolve('/', usedFile))]
@@ -112,9 +113,10 @@ export default function plugin (options: Options = defaultOptions): Plugin {
 
       return `
 import manifest from 'vsix:${id}:package.json'
+${nlsExists ? `import nls from 'vsix:${id}:package.nls.json'` : ''}
 import { registerExtension, onExtHostInitialized } from 'vscode/extensions'
 onExtHostInitialized(() => {
-  const { registerFile } = registerExtension(manifest)
+  const { registerFile } = registerExtension(manifest${nlsExists ? ', nls' : ''})
 ${Object.keys(vsixFile).map((filePath) => (`
   registerFile('${filePath}', async () => (await import('vsix:${id}:${filePath}.raw')).default)`))}
 })

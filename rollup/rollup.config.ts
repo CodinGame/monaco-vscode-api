@@ -370,15 +370,18 @@ export default (args: Record<string, string>): rollup.RollupOptions[] => {
           // load extension directory as a module that loads the extension
           if (path.dirname(id) === DEFAULT_EXTENSIONS_PATH) {
             const manifestPath = path.resolve(id, 'package.json')
+            const manifestNlsPath = path.resolve(id, 'package.nls.json')
             const manifest = JSON.parse((await fsPromise.readFile(manifestPath)).toString('utf8'))
+            const nlsExists = fs.existsSync(manifestNlsPath)
             try {
               const filePaths = extractPathsFromExtensionManifest(manifest.contributes)
               return `
 import manifest from '${manifestPath}'
+${nlsExists ? `import nls from '${manifestNlsPath}'` : ''}
 import { registerExtension } from '../src/extensions'
 import { onExtHostInitialized } from '../src/vscode-services/extHost'
 onExtHostInitialized(() => {
-  const { registerFile } = registerExtension(manifest)
+  const { registerFile } = registerExtension(manifest${nlsExists ? ', nls' : ''})
 ${filePaths.map(filePath => (`
   registerFile('${filePath}', async () => await import('${path.resolve(id, filePath)}'))`))}
 })
@@ -392,8 +395,9 @@ ${filePaths.map(filePath => (`
         },
         transform (code, id) {
           if (path.dirname(id).startsWith(DEFAULT_EXTENSIONS_PATH + '/')) {
-            if (path.basename(id) === 'package.json') {
-              // Load extension package.json as a json
+            const basename = path.basename(id)
+            if (['package.json', 'package.nls.json'].includes(basename)) {
+              // Load extension package.json and package.nls.json as a json
               const parsed = parse(code)
               return {
                 code: dataToEsm(parsed, {
