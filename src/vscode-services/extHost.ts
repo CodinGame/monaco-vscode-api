@@ -2,7 +2,7 @@ import './missing-services'
 import { ExtHostCommands, IExtHostCommands } from 'vs/workbench/api/common/extHostCommands'
 import { ExtHostRpcService, IExtHostRpcService } from 'vs/workbench/api/common/extHostRpcService'
 import { ILogService, LogLevel } from 'vs/platform/log/common/log'
-import { ExtHostCustomersRegistry, IExtHostContext } from 'vs/workbench/services/extensions/common/extHostCustomers'
+import { ExtHostCustomersRegistry, IInternalExtHostContext } from 'vs/workbench/services/extensions/common/extHostCustomers'
 import { ExtensionHostKind } from 'vs/workbench/services/extensions/common/extensionHostKind'
 import { URI } from 'vs/base/common/uri'
 import { ExtHostApiDeprecationService, IExtHostApiDeprecationService } from 'vs/workbench/api/common/extHostApiDeprecationService'
@@ -173,7 +173,7 @@ registerSingleton(IExtHostLocalizationService, ExtHostLocalizationService, Insta
 registerSingleton(IExtHostDocumentsAndEditors, ExtHostDocumentsAndEditors, InstantiationType.Eager)
 class ExtHostExtensionService extends AbstractExtHostExtensionService {
   extensionRuntime = ExtensionRuntime.Webworker
-  _getEntryPoint = unsupported
+  _getEntryPoint = () => undefined
   _loadCommonJSModule = unsupported
   $setRemoteEnvironment = unsupported
   override async _beforeAlmostReadyToRunExtensions () {}
@@ -244,9 +244,27 @@ registerSingleton(IExtHostTerminalService, class ExtHostTerminalService implemen
   dispose = unsupported
 }, InstantiationType.Eager)
 
-export const mainContext: IMainContext & IExtHostContext = {
+const mainContext: IMainContext & IInternalExtHostContext = {
   remoteAuthority: null,
   extensionHostKind: ExtensionHostKind.LocalProcess,
+  internalExtensionService: {
+    _activateById (): Promise<void> {
+      // Do nothing
+      return Promise.resolve()
+    },
+    _onWillActivateExtension (): void {
+      // Do nothing
+    },
+    _onDidActivateExtension (): void {
+      // Do nothing
+    },
+    _onDidActivateExtensionError (): void {
+      // Do nothing
+    },
+    _onExtensionRuntimeError (): void {
+      // Do nothing
+    }
+  },
   getProxy: function <T> (identifier: ProxyIdentifier<T>): Proxied<T> {
     return rpcProtocol.getProxy(identifier)
   },
@@ -261,7 +279,9 @@ export const mainContext: IMainContext & IExtHostContext = {
   },
   dispose () {
     rpcProtocol.dispose()
-  }
+  },
+  _setExtensionHostProxy () {},
+  _setAllMainProxyIdentifiers () {}
 }
 
 function createExtHostServices () {
