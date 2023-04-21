@@ -263,7 +263,7 @@ const USE_DEFAULT_EXTENSIONS = new Set([
   'theme-solarized-light',
   'theme-tomorrow-night-blue',
   'typescript-basics',
-  'typescript-language-feature',
+  'typescript-language-features',
   'vb',
   'xml',
   'yaml'

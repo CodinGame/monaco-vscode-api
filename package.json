@@ -150,7 +150,7 @@
         "./dist/webpack-loader.d.ts"
       ],
       "rollup-vsix-plugin": [
-        "./dist/vsix-rollup-plugin.d.ts"
+        "./dist/rollup-vsix-plugin.d.ts"
       ]
     }
   },
