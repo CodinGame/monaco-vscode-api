@@ -98,10 +98,16 @@ export default function plugin (options: Options = defaultOptions): Plugin {
 
       const usedFiles = ['package.json', ...extractPathsFromExtensionManifest(manifest.contributes)]
 
-      const vsixFile: Record<string, Buffer> = usedFiles.reduce((acc, usedFile) => ({
-        ...acc,
-        [usedFile]: files[path.relative('/', path.resolve('/', usedFile))]!
-      }), {} as Record<string, Buffer>)
+      const vsixFile: Record<string, Buffer> = usedFiles.reduce((acc, usedFile) => {
+        const filePath = files[path.relative('/', path.resolve('/', usedFile))]
+        if (filePath == null) {
+          return acc
+        }
+        return ({
+          ...acc,
+          [usedFile]: filePath
+        })
+      }, {} as Record<string, Buffer>)
       vsixFiles[id] = vsixFile
 
       return `
