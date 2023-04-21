@@ -284,7 +284,7 @@ const mainContext: IMainContext & IInternalExtHostContext = {
   _setAllMainProxyIdentifiers () {}
 }
 
-function createExtHostServices () {
+async function createExtHostServices () {
   // services
   const rpcProtocol = StandaloneServices.get(IExtHostRpcService)
   const instantiationService = StandaloneServices.get(IInstantiationService)
@@ -357,7 +357,7 @@ function createExtHostServices () {
     }
   }
 
-  void extHostExtensionService.initialize()
+  await extHostExtensionService.initialize()
 
   return {
     extHostLogService: logService,
@@ -389,7 +389,7 @@ function createExtHostServices () {
   }
 }
 
-type ExtHostServices = ReturnType<typeof createExtHostServices>
+type ExtHostServices = Awaited<ReturnType<typeof createExtHostServices>>
 let extHostServices: ExtHostServices | undefined
 let configProvider: ExtHostConfigProvider | undefined
 
@@ -399,7 +399,7 @@ const extHostInitializedEmitter = new Emitter<void>()
 export const onExtHostInitialized: Event<void> = extHostInitializedEmitter.event
 
 async function _initialize (): Promise<void> {
-  extHostServices = createExtHostServices()
+  extHostServices = await createExtHostServices()
   configProvider = await extHostServices.extHostConfiguration.getConfigProvider()
   extHostInitializedEmitter.fire()
 }
