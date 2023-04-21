@@ -28,8 +28,8 @@ import { JSONValidationExtensionPoint } from 'vs/workbench/api/common/jsonValida
 import { IWorkbenchContribution, IWorkbenchContributionsRegistry, Extensions as WorkbenchExtensions } from 'vs/workbench/common/contributions'
 import { ColorExtensionPoint } from 'vs/workbench/services/themes/common/colorExtensionPoint'
 import { LifecyclePhase } from 'vs/workbench/services/lifecycle/common/lifecycle'
+import { ITextFileEditorModel } from 'vs/workbench/services/textfile/common/textfiles'
 import { createInjectedClass } from './tools/injection'
-import { ITextFileEditorModel } from './service-override/modelEditor'
 import { JsonSchema, registerJsonSchema, synchronizeJsonSchemas } from './json'
 
 class ExtensionPoints implements IWorkbenchContribution {
@@ -176,5 +176,8 @@ export {
   registerJsonSchema,
   synchronizeJsonSchemas,
 
-  registerColor
+  registerColor,
+
+  IReference,
+  ITextFileEditorModel
 }
