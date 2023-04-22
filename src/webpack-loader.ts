@@ -1,7 +1,8 @@
 import type { RawLoaderDefinitionFunction } from 'webpack'
+import { sep as s } from 'path'
 
 const monacoPolyfillLoader: RawLoaderDefinitionFunction = function (source) {
-  if (this.resourcePath.endsWith('monaco-editor/esm/vs/editor/contrib/suggest/browser/suggest.js')) {
+  if (this.resourcePath.endsWith(`monaco-editor${s}esm${s}vs${s}editor${s}contrib${s}suggest${s}browser${s}suggest.js`)) {
     return `${source.toString()}
 export function setSnippetSuggestSupport(support) {
   const old = _snippetSuggestSupport;

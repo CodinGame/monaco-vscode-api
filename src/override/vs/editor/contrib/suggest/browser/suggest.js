@@ -14,7 +14,7 @@ It's treeshaked out of monaco editor and needs to be reintroduced.
 If you're using webpack, you can add a loader that will polyfill it:
 \`\`\`
 {
-  test: /node_modules\\/monaco-editor\\//,
+  test: /node_modules[\\/]monaco-editor/,
   loader: 'vscode/webpack-loader'
 }
 \`\`\`
