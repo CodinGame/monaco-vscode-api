@@ -7,7 +7,7 @@ import { fileURLToPath } from 'url'
 const __dirname = path.dirname(fileURLToPath(import.meta.url))
 const EXTENSIONS = ['', '.ts', '.js']
 const BASE_DIR = path.resolve(__dirname, '..')
-const TSCONFIG = path.resolve(BASE_DIR, 'tsconfig.json')
+const TSCONFIG = path.resolve(BASE_DIR, 'tsconfig.rollup.json')
 
 const config: rollup.RollupOptions = {
   cache: false,
@@ -20,10 +20,11 @@ const config: rollup.RollupOptions = {
     dir: 'dist',
     entryFileNames: '[name].js'
   }],
-  input: 'src/rollup-vsix-plugin.ts',
+  input: ['src/rollup-vsix-plugin.ts', 'src/rollup-extension-directory-plugin.ts'],
   plugins: [
     nodeResolve({
-      extensions: EXTENSIONS
+      extensions: EXTENSIONS,
+      modulePaths: ['vscode/']
     }),
     typescript({
       noEmitOnError: true,

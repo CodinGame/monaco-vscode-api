@@ -14,14 +14,11 @@ import dynamicImportVars from '@rollup/plugin-dynamic-import-vars'
 import inject from '@rollup/plugin-inject'
 import externalAssets from 'rollup-plugin-external-assets'
 import globImport from 'rollup-plugin-glob-import'
-import { dataToEsm } from '@rollup/pluginutils'
-import * as fsPromise from 'fs/promises'
 import * as fs from 'fs'
 import * as path from 'path'
 import * as vm from 'vm'
 import { fileURLToPath } from 'url'
-import { extractPathsFromExtensionManifest } from '../src/extension-tools'
-import { parse } from '../vscode/vs/base/common/json.js'
+import extensionDirectoryPlugin from '../dist/rollup-extension-directory-plugin.js'
 import pkg from '../package.json' assert { type: 'json' }
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url))
@@ -187,7 +184,7 @@ function isCallPure (functionName: string, node: recast.types.namedTypes.CallExp
 const EXTENSIONS = ['', '.ts', '.js']
 
 const BASE_DIR = path.resolve(__dirname, '..')
-const TSCONFIG = path.resolve(BASE_DIR, 'tsconfig.json')
+const TSCONFIG = path.resolve(BASE_DIR, 'tsconfig.rollup.json')
 const SRC_DIR = path.resolve(BASE_DIR, 'src')
 const DIST_DIR = path.resolve(BASE_DIR, 'dist')
 const VSCODE_DIR = path.resolve(BASE_DIR, 'vscode')
@@ -347,65 +344,9 @@ export default (args: Record<string, string>): rollup.RollupOptions[] => {
     }],
     input,
     plugins: [
-      {
-        name: 'default-extensions-loader',
-        resolveId (source) {
-          if (source.startsWith(DEFAULT_EXTENSIONS_PATH)) {
-            return source
-          }
-          return undefined
-        },
-        async load (id) {
-          // load extension directory as a module that loads the extension
-          if (path.dirname(id) === DEFAULT_EXTENSIONS_PATH) {
-            const manifestPath = path.resolve(id, 'package.json')
-            const manifestNlsPath = path.resolve(id, 'package.nls.json')
-            const manifest = JSON.parse((await fsPromise.readFile(manifestPath)).toString('utf8'))
-            const nlsExists = fs.existsSync(manifestNlsPath)
-            try {
-              const filePaths = extractPathsFromExtensionManifest(manifest)
-              return `
-import manifest from '${manifestPath}'
-${nlsExists ? `import nls from '${manifestNlsPath}'` : ''}
-import { registerExtension } from '../src/extensions'
-import { onExtHostInitialized } from '../src/vscode-services/extHost'
-onExtHostInitialized(() => {
-  const { registerFile } = registerExtension(manifest${nlsExists ? ', nls' : ''})
-${filePaths.map(filePath => (`
-  registerFile('${filePath}', async () => await import('${path.resolve(id, filePath)}'))`))}
-})
-            `
-            } catch (err) {
-              console.error(err, (err as Error).stack)
-              throw err
-            }
-          }
-          return undefined
-        },
-        transform (code, id) {
-          if (path.dirname(id).startsWith(DEFAULT_EXTENSIONS_PATH + '/')) {
-            const basename = path.basename(id)
-            if (['package.json', 'package.nls.json'].includes(basename)) {
-              // Load extension package.json and package.nls.json as a json
-              const parsed = parse(code)
-              return {
-                code: dataToEsm(parsed, {
-                  compact: true,
-                  namedExports: false,
-                  preferConst: false
-                })
-              }
-            } else {
-              // transform extension files to strings
-              return {
-                code: `export default ${JSON.stringify(code)};`,
-                map: { mappings: '' }
-              }
-            }
-          }
-          return code
-        }
-      },
+      extensionDirectoryPlugin({
+        include: `${DEFAULT_EXTENSIONS_PATH}/**/*`
+      }),
       {
         name: 'resolve-vscode',
         resolveId: async function (importee, importer) {

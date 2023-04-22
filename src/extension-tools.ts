@@ -5,6 +5,8 @@ import { IConfigurationNode } from 'vs/platform/configuration/common/configurati
 import { IDebuggerContribution } from 'vs/workbench/contrib/debug/common/debug'
 import { IRawLanguageExtensionPoint } from 'vs/workbench/services/language/common/languageService'
 import { IThemeExtensionPoint } from 'vs/workbench/services/themes/common/workbenchThemeService'
+import { ParseError, parse } from 'vs/base/common/json.js'
+import { getParseErrorMessage } from 'vs/base/common/jsonErrorMessages'
 
 type IUserFriendlyIcon = string | { light: string, dark: string }
 interface IUserFriendlyCommand {
@@ -101,4 +103,13 @@ function extractPathsFromExtensionManifestContribute (contribute: RealContribute
 
 export function extractPathsFromExtensionManifest (manifest: IExtensionManifest): string[] {
   return manifest.contributes != null ? extractPathsFromExtensionManifestContribute(manifest.contributes as RealContribute) : []
+}
+
+export function parseJson<T> (path: string, text: string): T {
+  const errors: ParseError[] = []
+  const result = parse(text, errors)
+  if (errors.length > 0) {
+    throw new Error(`Failed to parse ${path}:\n${errors.map(error => `    ${getParseErrorMessage(error.error)}`).join('\n')}`)
+  }
+  return result
 }

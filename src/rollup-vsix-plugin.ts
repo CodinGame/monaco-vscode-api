@@ -1,10 +1,11 @@
 import { createFilter, FilterPattern, dataToEsm } from '@rollup/pluginutils'
 import { Plugin } from 'rollup'
 import * as yauzl from 'yauzl'
+import { IExtensionManifest } from 'vs/platform/extensions/common/extensions'
+import { localizeManifest } from 'vs/platform/extensionManagement/common/extensionNls.js'
 import { Readable } from 'stream'
 import * as path from 'path'
-import { extractPathsFromExtensionManifest } from './extension-tools'
-import { parse } from '../vscode/vs/base/common/json.js'
+import { extractPathsFromExtensionManifest, parseJson } from './extension-tools'
 
 interface Options {
   include?: FilterPattern
@@ -76,7 +77,12 @@ export default function plugin (options: Options = defaultOptions): Plugin {
       }
       const match = /vsix:(.*):(.*)\.vsjson/.exec(id)
       if (match != null) {
-        const parsed = parse(vsixFiles[match[1]!]![match[2]!]!.toString('utf8'))
+        const file = match[2]!
+        const vsixFile = vsixFiles[match[1]!]!
+        let parsed = parseJson<IExtensionManifest>(id, vsixFile[file]!.toString('utf8'))
+        if (file === 'package.json' && 'package.nls.json' in vsixFile) {
+          parsed = localizeManifest(parsed, parseJson(id, vsixFile['package.nls.json']!.toString()))
+        }
         return {
           code: dataToEsm(parsed, {
             compact: true,
@@ -89,7 +95,7 @@ export default function plugin (options: Options = defaultOptions): Plugin {
       if (!filter(id)) return null
 
       const files = await readVsix(id)
-      const manifest = parse(files['package.json']!.toString('utf8'))
+      const manifest = parseJson<IExtensionManifest>(id, files['package.json']!.toString('utf8'))
       function getVsixPath (file: string) {
         return path.relative('/', path.resolve('/', file))
       }
@@ -97,7 +103,6 @@ export default function plugin (options: Options = defaultOptions): Plugin {
       const usedFiles = extractPathsFromExtensionManifest(manifest).filter(file => getVsixPath(file) in files)
 
       const allFiles = ['package.json', 'package.nls.json', ...usedFiles]
-      const nlsExists = files['package.nls.json'] != null
 
       const vsixFile: Record<string, Buffer> = allFiles.reduce((acc, usedFile) => {
         return ({
@@ -109,10 +114,9 @@ export default function plugin (options: Options = defaultOptions): Plugin {
 
       return `
 import manifest from 'vsix:${id}:package.json.vsjson'
-${nlsExists ? `import nls from 'vsix:${id}:package.nls.json.vsjson'` : ''}
 import { registerExtension, onExtHostInitialized } from 'vscode/extensions'
 onExtHostInitialized(() => {
-  const { registerFile } = registerExtension(manifest${nlsExists ? ', nls' : ''})
+  const { registerFile } = registerExtension(manifest)
 ${usedFiles.map((filePath) => (`
   registerFile('${filePath}', async () => (await import('vsix:${id}:${filePath}.raw')).default)`))}
 })
