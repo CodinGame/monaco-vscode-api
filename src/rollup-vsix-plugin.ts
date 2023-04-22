@@ -69,12 +69,12 @@ export default function plugin (options: Options = defaultOptions): Plugin {
       return undefined
     },
     async load (id) {
-      const rawMatch = /vsix:(.*):(.*).raw/.exec(id)
+      const rawMatch = /vsix:(.*):(.*)\.raw/.exec(id)
       if (rawMatch != null) {
         const content = vsixFiles[rawMatch[1]!]![rawMatch[2]!]!.toString('utf8')
         return `export default ${JSON.stringify(content)};`
       }
-      const match = /vsix:(.*):(.*)/.exec(id)
+      const match = /vsix:(.*):(.*)\.vsjson/.exec(id)
       if (match != null) {
         const parsed = parse(vsixFiles[match[1]!]![match[2]!]!.toString('utf8'))
         return {
@@ -108,8 +108,8 @@ export default function plugin (options: Options = defaultOptions): Plugin {
       vsixFiles[id] = vsixFile
 
       return `
-import manifest from 'vsix:${id}:package.json'
-${nlsExists ? `import nls from 'vsix:${id}:package.nls.json'` : ''}
+import manifest from 'vsix:${id}:package.json.vsjson'
+${nlsExists ? `import nls from 'vsix:${id}:package.nls.json.vsjson'` : ''}
 import { registerExtension, onExtHostInitialized } from 'vscode/extensions'
 onExtHostInitialized(() => {
   const { registerFile } = registerExtension(manifest${nlsExists ? ', nls' : ''})
