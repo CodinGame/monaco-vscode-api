@@ -75,7 +75,9 @@ const FUNCTIONS_TO_REMOVE = new Set([
   'registerTouchBarEntry',
   'registerDebugViewMenuItem',
   'registerEditorSerializer',
-  'UndoCommand.addImplementation'
+  'UndoCommand.addImplementation',
+  'submenusExtensionPoint.setHandler',
+  'menusExtensionPoint.setHandler'
 ])
 
 const PURE_OR_TO_REMOVE_FUNCTIONS = new Set([
