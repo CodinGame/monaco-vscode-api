@@ -20,7 +20,7 @@ import * as fs from 'fs'
 import * as path from 'path'
 import * as vm from 'vm'
 import { fileURLToPath } from 'url'
-import { parse } from '../vscode/vs/base/common/json'
+import { parse } from '../vscode/vs/base/common/json.js'
 import pkg from '../package.json' assert { type: 'json' }
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url))
