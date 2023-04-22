@@ -614,7 +614,7 @@ ${filePaths.map(filePath => (`
       }
     },
     external,
-    input: Object.keys(input).map(f => `./dist/${f.replace(/\.[^/.]+$/, '')}`),
+    input: Object.fromEntries(Object.keys(input).map(f => [f, `./dist/${f}`])),
     output: [{
       minifyInternalExports: false,
       assetFileNames: 'assets/[name][extname]',
