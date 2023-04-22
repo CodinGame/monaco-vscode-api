@@ -1,9 +1,10 @@
 import { createFilter, FilterPattern, dataToEsm } from '@rollup/pluginutils'
 import { Plugin } from 'rollup'
 import yauzl from 'yauzl'
+import { parse } from 'vscode/vs/base/common/json.js'
 import { Readable } from 'stream'
 import * as path from 'path'
-import { parse } from '../vscode/vs/base/common/json.js'
+import { extractPathsFromExtensionManifest } from './extension-tools'
 
 interface Options {
   include?: FilterPattern
@@ -46,20 +47,6 @@ async function readVsix (file: string): Promise<Record<string, Buffer>> {
       })
     })
   })
-}
-
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
-function extractPathsFromExtensionManifest (manifest: any): string[] {
-  const paths: string[] = []
-  for (const [key, value] of Object.entries(manifest)) {
-    if (typeof value === 'string' && (key === 'path' || value.startsWith('./'))) {
-      paths.push(value)
-    }
-    if (value != null && typeof value === 'object') {
-      paths.push(...extractPathsFromExtensionManifest(value))
-    }
-  }
-  return paths
 }
 
 const defaultOptions: Options = {

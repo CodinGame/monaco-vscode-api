@@ -20,6 +20,7 @@ import * as fs from 'fs'
 import * as path from 'path'
 import * as vm from 'vm'
 import { fileURLToPath } from 'url'
+import { extractPathsFromExtensionManifest } from '../src/extension-tools'
 import { parse } from '../vscode/vs/base/common/json.js'
 import pkg from '../package.json' assert { type: 'json' }
 
@@ -307,20 +308,6 @@ const external: rollup.ExternalOption = (source) => {
     return true
   }
   return externals.some(external => source === external || source.startsWith(`${external}/`))
-}
-
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
-function extractPathsFromExtensionManifest (manifest: any): string[] {
-  const paths: string[] = []
-  for (const [key, value] of Object.entries(manifest)) {
-    if (typeof value === 'string' && (key === 'path' || value.startsWith('./'))) {
-      paths.push(value)
-    }
-    if (value != null && typeof value === 'object') {
-      paths.push(...extractPathsFromExtensionManifest(value))
-    }
-  }
-  return paths
 }
 
 export default (args: Record<string, string>): rollup.RollupOptions[] => {
