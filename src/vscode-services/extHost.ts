@@ -76,6 +76,7 @@ import 'vs/workbench/api/browser/mainThreadFileSystem'
 import 'vs/workbench/api/browser/mainThreadFileSystemEventService'
 import 'vs/workbench/api/browser/mainThreadDocumentsAndEditors'
 import 'vs/workbench/api/browser/mainThreadOutputService'
+import 'vs/workbench/api/browser/mainThreadSaveParticipant'
 import * as errors from 'vs/base/common/errors'
 import { unsupported } from '../tools'
 
