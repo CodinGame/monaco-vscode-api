@@ -1,10 +1,10 @@
 import { createFilter, FilterPattern, dataToEsm } from '@rollup/pluginutils'
 import { Plugin } from 'rollup'
 import yauzl from 'yauzl'
-import { parse } from 'vscode/vs/base/common/json.js'
 import { Readable } from 'stream'
 import * as path from 'path'
 import { extractPathsFromExtensionManifest } from './extension-tools'
+import { parse } from '../vscode/vs/base/common/json.js'
 
 interface Options {
   include?: FilterPattern
@@ -94,7 +94,7 @@ export default function plugin (options: Options = defaultOptions): Plugin {
         return path.relative('/', path.resolve('/', file))
       }
 
-      const usedFiles = extractPathsFromExtensionManifest(manifest.contributes).filter(file => getVsixPath(file) in files)
+      const usedFiles = extractPathsFromExtensionManifest(manifest).filter(file => getVsixPath(file) in files)
 
       const allFiles = ['package.json', 'package.nls.json', ...usedFiles]
       const nlsExists = files['package.nls.json'] != null

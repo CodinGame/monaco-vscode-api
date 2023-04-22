@@ -361,7 +361,7 @@ export default (args: Record<string, string>): rollup.RollupOptions[] => {
             const manifest = JSON.parse((await fsPromise.readFile(manifestPath)).toString('utf8'))
             const nlsExists = fs.existsSync(manifestNlsPath)
             try {
-              const filePaths = extractPathsFromExtensionManifest(manifest.contributes)
+              const filePaths = extractPathsFromExtensionManifest(manifest)
               return `
 import manifest from '${manifestPath}'
 ${nlsExists ? `import nls from '${manifestNlsPath}'` : ''}
