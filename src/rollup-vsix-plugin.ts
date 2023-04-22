@@ -1,8 +1,9 @@
-import { createFilter, FilterPattern } from '@rollup/pluginutils'
+import { createFilter, FilterPattern, dataToEsm } from '@rollup/pluginutils'
 import { Plugin } from 'rollup'
-import * as yauzl from 'yauzl'
+import yauzl from 'yauzl'
 import { Readable } from 'stream'
 import * as path from 'path'
+import { parse } from '../vscode/vs/base/common/json.js'
 
 interface Options {
   include?: FilterPattern
@@ -88,25 +89,33 @@ export default function plugin (options: Options = defaultOptions): Plugin {
       }
       const match = /vsix:(.*):(.*)/.exec(id)
       if (match != null) {
-        return vsixFiles[match[1]!]![match[2]!]!.toString('utf8')
+        const parsed = parse(vsixFiles[match[1]!]![match[2]!]!.toString('utf8'))
+        return {
+          code: dataToEsm(parsed, {
+            compact: true,
+            namedExports: false,
+            preferConst: false
+          })
+        }
       }
 
       if (!filter(id)) return null
 
       const files = await readVsix(id)
-      const manifest = JSON.parse(files['package.json']!.toString('utf8'))
+      const manifest = parse(files['package.json']!.toString('utf8'))
+      function getVsixPath (file: string) {
+        return path.relative('/', path.resolve('/', file))
+      }
 
-      const usedFiles = ['package.json', 'package.nls.json', ...extractPathsFromExtensionManifest(manifest.contributes)]
+      const usedFiles = extractPathsFromExtensionManifest(manifest.contributes).filter(file => getVsixPath(file) in files)
+
+      const allFiles = ['package.json', 'package.nls.json', ...usedFiles]
       const nlsExists = files['package.nls.json'] != null
 
-      const vsixFile: Record<string, Buffer> = usedFiles.reduce((acc, usedFile) => {
-        const filePath = files[path.relative('/', path.resolve('/', usedFile))]
-        if (filePath == null) {
-          return acc
-        }
+      const vsixFile: Record<string, Buffer> = allFiles.reduce((acc, usedFile) => {
         return ({
           ...acc,
-          [usedFile]: filePath
+          [usedFile]: files[getVsixPath(usedFile)]!
         })
       }, {} as Record<string, Buffer>)
       vsixFiles[id] = vsixFile
@@ -117,7 +126,7 @@ ${nlsExists ? `import nls from 'vsix:${id}:package.nls.json'` : ''}
 import { registerExtension, onExtHostInitialized } from 'vscode/extensions'
 onExtHostInitialized(() => {
   const { registerFile } = registerExtension(manifest${nlsExists ? ', nls' : ''})
-${Object.keys(vsixFile).map((filePath) => (`
+${usedFiles.map((filePath) => (`
   registerFile('${filePath}', async () => (await import('vsix:${id}:${filePath}.raw')).default)`))}
 })
 `
