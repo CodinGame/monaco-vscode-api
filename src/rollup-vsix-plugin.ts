@@ -102,7 +102,7 @@ export default function plugin (options: Options = defaultOptions): Plugin {
 
       const usedFiles = extractPathsFromExtensionManifest(manifest).filter(file => getVsixPath(file) in files)
 
-      const allFiles = ['package.json', 'package.nls.json', ...usedFiles]
+      const allFiles = ['package.json', 'package.nls.json', ...usedFiles].filter(file => getVsixPath(file) in files)
 
       const vsixFile: Record<string, Buffer> = allFiles.reduce((acc, usedFile) => {
         return ({
