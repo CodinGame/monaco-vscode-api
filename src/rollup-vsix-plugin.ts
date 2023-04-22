@@ -1,6 +1,6 @@
 import { createFilter, FilterPattern, dataToEsm } from '@rollup/pluginutils'
 import { Plugin } from 'rollup'
-import yauzl from 'yauzl'
+import * as yauzl from 'yauzl'
 import { Readable } from 'stream'
 import * as path from 'path'
 import { extractPathsFromExtensionManifest } from './extension-tools'
