@@ -2,7 +2,7 @@ import './missing-services'
 import { ExtHostCommands, IExtHostCommands } from 'vs/workbench/api/common/extHostCommands'
 import { ExtHostRpcService, IExtHostRpcService } from 'vs/workbench/api/common/extHostRpcService'
 import { ILogService, LogLevel } from 'vs/platform/log/common/log'
-import { ExtHostCustomersRegistry, IExtHostContext } from 'vs/workbench/services/extensions/common/extHostCustomers'
+import { ExtHostCustomersRegistry, IInternalExtHostContext } from 'vs/workbench/services/extensions/common/extHostCustomers'
 import { ExtensionHostKind } from 'vs/workbench/services/extensions/common/extensionHostKind'
 import { URI } from 'vs/base/common/uri'
 import { ExtHostApiDeprecationService, IExtHostApiDeprecationService } from 'vs/workbench/api/common/extHostApiDeprecationService'
@@ -76,6 +76,7 @@ import 'vs/workbench/api/browser/mainThreadFileSystem'
 import 'vs/workbench/api/browser/mainThreadFileSystemEventService'
 import 'vs/workbench/api/browser/mainThreadDocumentsAndEditors'
 import 'vs/workbench/api/browser/mainThreadOutputService'
+import 'vs/workbench/api/browser/mainThreadSaveParticipant'
 import * as errors from 'vs/base/common/errors'
 import { unsupported } from '../tools'
 
@@ -173,7 +174,7 @@ registerSingleton(IExtHostLocalizationService, ExtHostLocalizationService, Insta
 registerSingleton(IExtHostDocumentsAndEditors, ExtHostDocumentsAndEditors, InstantiationType.Eager)
 class ExtHostExtensionService extends AbstractExtHostExtensionService {
   extensionRuntime = ExtensionRuntime.Webworker
-  _getEntryPoint = unsupported
+  _getEntryPoint = () => undefined
   _loadCommonJSModule = unsupported
   $setRemoteEnvironment = unsupported
   override async _beforeAlmostReadyToRunExtensions () {}
@@ -244,9 +245,27 @@ registerSingleton(IExtHostTerminalService, class ExtHostTerminalService implemen
   dispose = unsupported
 }, InstantiationType.Eager)
 
-export const mainContext: IMainContext & IExtHostContext = {
+const mainContext: IMainContext & IInternalExtHostContext = {
   remoteAuthority: null,
   extensionHostKind: ExtensionHostKind.LocalProcess,
+  internalExtensionService: {
+    _activateById (): Promise<void> {
+      // Do nothing
+      return Promise.resolve()
+    },
+    _onWillActivateExtension (): void {
+      // Do nothing
+    },
+    _onDidActivateExtension (): void {
+      // Do nothing
+    },
+    _onDidActivateExtensionError (): void {
+      // Do nothing
+    },
+    _onExtensionRuntimeError (): void {
+      // Do nothing
+    }
+  },
   getProxy: function <T> (identifier: ProxyIdentifier<T>): Proxied<T> {
     return rpcProtocol.getProxy(identifier)
   },
@@ -261,10 +280,12 @@ export const mainContext: IMainContext & IExtHostContext = {
   },
   dispose () {
     rpcProtocol.dispose()
-  }
+  },
+  _setExtensionHostProxy () {},
+  _setAllMainProxyIdentifiers () {}
 }
 
-function createExtHostServices () {
+async function createExtHostServices () {
   // services
   const rpcProtocol = StandaloneServices.get(IExtHostRpcService)
   const instantiationService = StandaloneServices.get(IInstantiationService)
@@ -337,7 +358,7 @@ function createExtHostServices () {
     }
   }
 
-  void extHostExtensionService.initialize()
+  await extHostExtensionService.initialize()
 
   return {
     extHostLogService: logService,
@@ -369,7 +390,7 @@ function createExtHostServices () {
   }
 }
 
-type ExtHostServices = ReturnType<typeof createExtHostServices>
+type ExtHostServices = Awaited<ReturnType<typeof createExtHostServices>>
 let extHostServices: ExtHostServices | undefined
 let configProvider: ExtHostConfigProvider | undefined
 
@@ -379,7 +400,7 @@ const extHostInitializedEmitter = new Emitter<void>()
 export const onExtHostInitialized: Event<void> = extHostInitializedEmitter.event
 
 async function _initialize (): Promise<void> {
-  extHostServices = createExtHostServices()
+  extHostServices = await createExtHostServices()
   configProvider = await extHostServices.extHostConfiguration.getConfigProvider()
   extHostInitializedEmitter.fire()
 }

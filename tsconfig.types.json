@@ -72,6 +72,8 @@
 		"src/service-override/audioCue.ts",
 		"src/service-override/debug.ts",
 		"src/service-override/preferences.ts",
-		"src/monaco.ts"
+		"src/monaco.ts",
+		"src/rollup-vsix-plugin.ts",
+		"src/rollup-extension-directory-plugin.ts"
 	]
 }

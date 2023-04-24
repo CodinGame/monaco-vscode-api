@@ -16,7 +16,6 @@ import { IEditor, ScrollType } from 'vs/editor/common/editorCommon'
 import { SyncDescriptor } from 'vs/platform/instantiation/common/descriptors'
 import { Disposable, IReference } from 'vs/base/common/lifecycle'
 import { ICodeEditor } from 'vs/editor/browser/editorBrowser'
-import { ITextFileEditorModel } from 'vs/workbench/services/textfile/common/textfiles'
 import { ITextEditorService, TextEditorService } from 'vs/workbench/services/textfile/common/textEditorService'
 import 'vs/workbench/browser/parts/editor/editor.contribution'
 import { unsupported } from '../tools'
@@ -172,6 +171,5 @@ export {
   OpenEditor,
   IEditorOptions,
   IResolvedTextEditorModel,
-  ITextFileEditorModel,
   IReference
 }

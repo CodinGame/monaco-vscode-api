@@ -19,18 +19,28 @@ import { CommandsRegistry } from 'vs/platform/commands/common/commands'
 import { IJSONSchema } from 'vs/base/common/jsonSchema'
 import { Extensions as ConfigurationExtensions } from 'vs/platform/configuration/common/configurationRegistry'
 import { EditorOptionsUtil } from 'vs/editor/browser/config/editorConfiguration'
-import * as monaco from 'monaco-editor'
 import { registerColor } from 'vs/platform/theme/common/colorRegistry'
 import { URI } from 'vs/base/common/uri'
 import { ITextModelService } from 'vs/editor/common/services/resolverService'
 import { IFileDeleteOptions, IFileService } from 'vs/platform/files/common/files'
 import { VSBuffer } from 'vs/base/common/buffer'
-import { IUserDataProfilesService } from 'vs/platform/userDataProfile/common/userDataProfile'
-import { ITextFileEditorModel } from './service-override/modelEditor'
+import { JSONValidationExtensionPoint } from 'vs/workbench/api/common/jsonValidationExtensionPoint'
+import { IWorkbenchContribution, IWorkbenchContributionsRegistry, Extensions as WorkbenchExtensions } from 'vs/workbench/common/contributions'
+import { ColorExtensionPoint } from 'vs/workbench/services/themes/common/colorExtensionPoint'
+import { LifecyclePhase } from 'vs/workbench/services/lifecycle/common/lifecycle'
+import { ITextFileEditorModel } from 'vs/workbench/services/textfile/common/textfiles'
 import { createInjectedClass } from './tools/injection'
-// Hack so ContextKeyExprType is included in the bundle as it's used but rollup-plugin-dts is unable to detect it
-// https://github.com/Swatinem/rollup-plugin-dts/issues/220
-export { ContextKeyExprType } from 'vs/platform/contextkey/common/contextkey'
+import { JsonSchema, registerJsonSchema, synchronizeJsonSchemas } from './json'
+
+class ExtensionPoints implements IWorkbenchContribution {
+  constructor (
+    @IInstantiationService private readonly instantiationService: IInstantiationService
+  ) {
+    this.instantiationService.createInstance(JSONValidationExtensionPoint)
+    this.instantiationService.createInstance(ColorExtensionPoint)
+  }
+}
+Registry.as<IWorkbenchContributionsRegistry>(WorkbenchExtensions.Workbench).registerWorkbenchContribution(ExtensionPoints, LifecyclePhase.Starting)
 
 function computeConfiguration (configuration: IEditorConfiguration, isDiffEditor: boolean, overrides?: Readonly<IEditorOptions>): IEditorOptions {
   const editorConfiguration: IEditorOptions = isObject(configuration.editor) ? deepClone(configuration.editor) : Object.create(null)
@@ -148,45 +158,6 @@ const Extensions = {
   ...ConfigurationExtensions
 }
 
-const registry = Registry.as<IJSONContributionRegistry>(Extensions.JSONContribution)
-type FileMatch = Partial<Record<string, string[]>>
-function getDefaultFileMatch (): FileMatch {
-  const userDataProfilesService = StandaloneServices.get(IUserDataProfilesService)
-  const profile = userDataProfilesService.defaultProfile
-  return {
-    keybindings: [profile.keybindingsResource.toString(true)],
-    'settings/user': [profile.settingsResource.toString(true)]
-  }
-}
-function getJsonSchemas (fileMatchs: FileMatch = getDefaultFileMatch()): monaco.languages.json.DiagnosticsOptions['schemas'] {
-  return Object.entries(registry.getSchemaContributions().schemas)
-    .filter(([uri]) => uri !== 'vscode://schemas/vscode-extensions') // remove it because for some reason it makes the json worker message fail
-    .map(([uri, schema]) => {
-      const path = monaco.Uri.parse(uri).path
-      const schemaName = path.slice(1) // Remove leading "/"
-      return {
-        uri,
-        schema,
-        fileMatch: fileMatchs[schemaName]
-      }
-    })
-}
-
-/**
- * Synchronize registered json schema on the monaco json worker
- */
-function synchronizeJsonSchemas (): monaco.IDisposable {
-  function updateDiagnosticsOptions () {
-    monaco.languages.json.jsonDefaults.setDiagnosticsOptions({
-      ...monaco.languages.json.jsonDefaults.diagnosticsOptions,
-      schemas: getJsonSchemas()
-    })
-  }
-
-  updateDiagnosticsOptions()
-  return registry.onDidChangeSchema(updateDiagnosticsOptions)
-}
-
 export {
   errorHandler,
   DisposableStore,
@@ -201,7 +172,12 @@ export {
   IJSONContributionRegistry,
   IJSONSchema,
 
+  JsonSchema,
+  registerJsonSchema,
   synchronizeJsonSchemas,
 
-  registerColor
+  registerColor,
+
+  IReference,
+  ITextFileEditorModel
 }

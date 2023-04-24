@@ -83,6 +83,8 @@ import { AudioCue } from 'vs/platform/audioCues/browser/audioCueService'
 import { ITelemetryService } from 'vs/platform/telemetry/common/telemetry'
 import { ITextResourceConfigurationService } from 'vs/editor/common/services/textResourceConfiguration'
 import { ITextModelService } from 'vs/editor/common/services/resolverService'
+import { IColorRegistry, Extensions as ColorExtensions } from 'vs/platform/theme/common/colorRegistry'
+import { IJSONSchema } from 'vs/base/common/jsonSchema'
 import { registerServiceInitializeParticipant } from './services'
 
 type PartialMutable<T> = Partial<{
@@ -224,6 +226,11 @@ configurationRegistry.onDidUpdateConfiguration ??= (configurationRegistry as any
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 configurationRegistry.onDidSchemaChange ??= (configurationRegistry as any)._onDidSchemaChange.event
 polyfillPrototypeSimple(configurationRegistry.constructor.prototype, ConfigurationRegistry.prototype)
+
+const colorRegistry = Registry.as<PartialMutable<IColorRegistry>>(ColorExtensions.ColorContribution)
+colorRegistry.getColorReferenceSchema = function (this: { colorReferenceSchema: IJSONSchema }) {
+  return this.colorReferenceSchema
+}
 
 ;(MonacoNoOpNotification.prototype as PartialMutable<MonacoNoOpNotification>).onDidClose ??= Event.None
 

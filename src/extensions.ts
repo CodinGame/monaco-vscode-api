@@ -13,6 +13,7 @@ import Severity from 'vs/base/common/severity'
 import { localize } from 'vs/nls'
 import { Registry } from 'vs/platform/registry/common/platform'
 import { ConfigurationScope, IConfigurationRegistry, Extensions as ConfigurationExtensions } from 'vs/platform/configuration/common/configurationRegistry'
+import { ITranslations, localizeManifest } from 'vs/platform/extensionManagement/common/extensionNls'
 import * as api from './api'
 import { registerExtensionFile } from './service-override/files'
 import createLanguagesApi from './vscode-services/languages'
@@ -133,16 +134,19 @@ interface RegisterExtensionResult extends IDisposable {
   registerFile: (path: string, getContent: () => Promise<string>) => IDisposable
   dispose (): void
 }
-export function registerExtension (manifest: IExtensionManifest): RegisterExtensionResult {
+
+export function registerExtension (manifest: IExtensionManifest, defaultNLS?: ITranslations): RegisterExtensionResult {
   const uuid = generateUuid()
   const location = URI.from({ scheme: 'extension', path: `/${uuid}` })
 
+  const localizedManifest = defaultNLS != null ? localizeManifest(manifest, defaultNLS) : manifest
+
   const extension: IExtension = {
-    manifest,
+    manifest: localizedManifest,
     type: ExtensionType.User,
     isBuiltin: false,
     identifier: {
-      id: getExtensionId(manifest.publisher, manifest.name),
+      id: getExtensionId(localizedManifest.publisher, localizedManifest.name),
       uuid
     },
     location,
@@ -167,6 +171,7 @@ export function registerExtension (manifest: IExtensionManifest): RegisterExtens
 
 export {
   IExtensionManifest,
+  ITranslations,
   IExtensionContributions,
   onExtHostInitialized
 }

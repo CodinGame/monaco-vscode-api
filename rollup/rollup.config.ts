@@ -14,13 +14,11 @@ import dynamicImportVars from '@rollup/plugin-dynamic-import-vars'
 import inject from '@rollup/plugin-inject'
 import externalAssets from 'rollup-plugin-external-assets'
 import globImport from 'rollup-plugin-glob-import'
-import { dataToEsm } from '@rollup/pluginutils'
-import * as fsPromise from 'fs/promises'
 import * as fs from 'fs'
 import * as path from 'path'
 import * as vm from 'vm'
 import { fileURLToPath } from 'url'
-import { parse } from '../vscode/vs/base/common/json'
+import extensionDirectoryPlugin from '../dist/rollup-extension-directory-plugin.js'
 import pkg from '../package.json' assert { type: 'json' }
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url))
@@ -74,7 +72,9 @@ const FUNCTIONS_TO_REMOVE = new Set([
   'registerTouchBarEntry',
   'registerDebugViewMenuItem',
   'registerEditorSerializer',
-  'UndoCommand.addImplementation'
+  'UndoCommand.addImplementation',
+  'submenusExtensionPoint.setHandler',
+  'menusExtensionPoint.setHandler'
 ])
 
 const PURE_OR_TO_REMOVE_FUNCTIONS = new Set([
@@ -184,7 +184,7 @@ function isCallPure (functionName: string, node: recast.types.namedTypes.CallExp
 const EXTENSIONS = ['', '.ts', '.js']
 
 const BASE_DIR = path.resolve(__dirname, '..')
-const TSCONFIG = path.resolve(BASE_DIR, 'tsconfig.json')
+const TSCONFIG = path.resolve(BASE_DIR, 'tsconfig.rollup.json')
 const SRC_DIR = path.resolve(BASE_DIR, 'src')
 const DIST_DIR = path.resolve(BASE_DIR, 'dist')
 const VSCODE_DIR = path.resolve(BASE_DIR, 'vscode')
@@ -263,7 +263,7 @@ const USE_DEFAULT_EXTENSIONS = new Set([
   'theme-solarized-light',
   'theme-tomorrow-night-blue',
   'typescript-basics',
-  'typescript-language-feature',
+  'typescript-language-features',
   'vb',
   'xml',
   'yaml'
@@ -309,20 +309,6 @@ const external: rollup.ExternalOption = (source) => {
   return externals.some(external => source === external || source.startsWith(`${external}/`))
 }
 
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
-function extractPathsFromExtensionManifest (manifest: any): string[] {
-  const paths: string[] = []
-  for (const [key, value] of Object.entries(manifest)) {
-    if (typeof value === 'string' && (key === 'path' || value.startsWith('./'))) {
-      paths.push(value)
-    }
-    if (value != null && typeof value === 'object') {
-      paths.push(...extractPathsFromExtensionManifest(value))
-    }
-  }
-  return paths
-}
-
 export default (args: Record<string, string>): rollup.RollupOptions[] => {
   const vscodeVersion = args['vscode-version']
   delete args['vscode-version']
@@ -358,61 +344,9 @@ export default (args: Record<string, string>): rollup.RollupOptions[] => {
     }],
     input,
     plugins: [
-      {
-        name: 'default-extensions-loader',
-        resolveId (source) {
-          if (source.startsWith(DEFAULT_EXTENSIONS_PATH)) {
-            return source
-          }
-          return undefined
-        },
-        async load (id) {
-          // load extension directory as a module that loads the extension
-          if (path.dirname(id) === DEFAULT_EXTENSIONS_PATH) {
-            const manifestPath = path.resolve(id, 'package.json')
-            const manifest = JSON.parse((await fsPromise.readFile(manifestPath)).toString('utf8'))
-            try {
-              const filePaths = extractPathsFromExtensionManifest(manifest.contributes)
-              return `
-import manifest from '${manifestPath}'
-import { registerExtension } from '../src/extensions'
-import { onExtHostInitialized } from '../src/vscode-services/extHost'
-onExtHostInitialized(() => {
-  const { registerFile } = registerExtension(manifest)
-${filePaths.map(filePath => (`
-  registerFile('${filePath}', async () => await import('${path.resolve(id, filePath)}'))`))}
-})
-            `
-            } catch (err) {
-              console.error(err, (err as Error).stack)
-              throw err
-            }
-          }
-          return undefined
-        },
-        transform (code, id) {
-          if (path.dirname(id).startsWith(DEFAULT_EXTENSIONS_PATH + '/')) {
-            if (path.basename(id) === 'package.json') {
-              // Load extension package.json as a json
-              const parsed = parse(code)
-              return {
-                code: dataToEsm(parsed, {
-                  compact: true,
-                  namedExports: false,
-                  preferConst: false
-                })
-              }
-            } else {
-              // transform extension files to strings
-              return {
-                code: `export default ${JSON.stringify(code)};`,
-                map: { mappings: '' }
-              }
-            }
-          }
-          return code
-        }
-      },
+      extensionDirectoryPlugin({
+        include: `${DEFAULT_EXTENSIONS_PATH}/**/*`
+      }),
       {
         name: 'resolve-vscode',
         resolveId: async function (importee, importer) {
@@ -623,7 +557,7 @@ ${filePaths.map(filePath => (`
       }
     },
     external,
-    input: Object.keys(input).map(f => `./dist/${f.replace(/\.[^/.]+$/, '')}`),
+    input: Object.fromEntries(Object.keys(input).map(f => [f, `./dist/${f}`])),
     output: [{
       minifyInternalExports: false,
       assetFileNames: 'assets/[name][extname]',

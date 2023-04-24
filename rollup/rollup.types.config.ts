@@ -35,7 +35,9 @@ export default rollup.defineConfig([
   './dist/types/src/service-override/audioCue.d.ts',
   './dist/types/src/service-override/debug.d.ts',
   './dist/types/src/service-override/preferences.d.ts',
-  './dist/types/src/monaco.d.ts'
+  './dist/types/src/monaco.d.ts',
+  './dist/types/src/rollup-vsix-plugin.d.ts',
+  './dist/types/src/rollup-extension-directory-plugin.d.ts'
 ].map((input): rollup.RollupOptions => ({
   input,
   output: {
@@ -44,7 +46,7 @@ export default rollup.defineConfig([
     entryFileNames: chunk => `${chunk.name}.ts`
   },
   external: function isExternal (id) {
-    return ['vscode', 'monaco-editor', 'vscode-textmate'].includes(id)
+    return ['vscode', 'monaco-editor', 'vscode-textmate', 'rollup', '@rollup/pluginutils'].includes(id)
   },
   plugins: [
     {

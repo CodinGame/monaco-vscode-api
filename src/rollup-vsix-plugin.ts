@@ -1,8 +1,11 @@
-import { createFilter, FilterPattern } from '@rollup/pluginutils'
+import { createFilter, FilterPattern, dataToEsm } from '@rollup/pluginutils'
 import { Plugin } from 'rollup'
 import * as yauzl from 'yauzl'
+import { IExtensionManifest } from 'vs/platform/extensions/common/extensions'
+import { localizeManifest } from 'vs/platform/extensionManagement/common/extensionNls.js'
 import { Readable } from 'stream'
 import * as path from 'path'
+import { extractPathsFromExtensionManifest, parseJson } from './extension-tools'
 
 interface Options {
   include?: FilterPattern
@@ -47,20 +50,6 @@ async function readVsix (file: string): Promise<Record<string, Buffer>> {
   })
 }
 
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
-function extractPathsFromExtensionManifest (manifest: any): string[] {
-  const paths: string[] = []
-  for (const [key, value] of Object.entries(manifest)) {
-    if (typeof value === 'string' && (key === 'path' || value.startsWith('./'))) {
-      paths.push(value)
-    }
-    if (value != null && typeof value === 'object') {
-      paths.push(...extractPathsFromExtensionManifest(value))
-    }
-  }
-  return paths
-}
-
 const defaultOptions: Options = {
   include: '**/*.vsix'
 }
@@ -81,35 +70,54 @@ export default function plugin (options: Options = defaultOptions): Plugin {
       return undefined
     },
     async load (id) {
-      const rawMatch = /vsix:(.*):(.*).raw/.exec(id)
+      const rawMatch = /vsix:(.*):(.*)\.raw/.exec(id)
       if (rawMatch != null) {
         const content = vsixFiles[rawMatch[1]!]![rawMatch[2]!]!.toString('utf8')
         return `export default ${JSON.stringify(content)};`
       }
-      const match = /vsix:(.*):(.*)/.exec(id)
+      const match = /vsix:(.*):(.*)\.vsjson/.exec(id)
       if (match != null) {
-        return vsixFiles[match[1]!]![match[2]!]!.toString('utf8')
+        const file = match[2]!
+        const vsixFile = vsixFiles[match[1]!]!
+        let parsed = parseJson<IExtensionManifest>(id, vsixFile[file]!.toString('utf8'))
+        if (file === 'package.json' && 'package.nls.json' in vsixFile) {
+          parsed = localizeManifest(parsed, parseJson(id, vsixFile['package.nls.json']!.toString()))
+        }
+        return {
+          code: dataToEsm(parsed, {
+            compact: true,
+            namedExports: false,
+            preferConst: false
+          })
+        }
       }
 
       if (!filter(id)) return null
 
       const files = await readVsix(id)
-      const manifest = JSON.parse(files['package.json']!.toString('utf8'))
+      const manifest = parseJson<IExtensionManifest>(id, files['package.json']!.toString('utf8'))
+      function getVsixPath (file: string) {
+        return path.relative('/', path.resolve('/', file))
+      }
 
-      const usedFiles = ['package.json', ...extractPathsFromExtensionManifest(manifest.contributes)]
+      const usedFiles = extractPathsFromExtensionManifest(manifest).filter(file => getVsixPath(file) in files)
 
-      const vsixFile: Record<string, Buffer> = usedFiles.reduce((acc, usedFile) => ({
-        ...acc,
-        [usedFile]: files[path.relative('/', path.resolve('/', usedFile))]!
-      }), {} as Record<string, Buffer>)
+      const allFiles = ['package.json', 'package.nls.json', ...usedFiles].filter(file => getVsixPath(file) in files)
+
+      const vsixFile: Record<string, Buffer> = allFiles.reduce((acc, usedFile) => {
+        return ({
+          ...acc,
+          [usedFile]: files[getVsixPath(usedFile)]!
+        })
+      }, {} as Record<string, Buffer>)
       vsixFiles[id] = vsixFile
 
       return `
-import manifest from 'vsix:${id}:package.json'
+import manifest from 'vsix:${id}:package.json.vsjson'
 import { registerExtension, onExtHostInitialized } from 'vscode/extensions'
 onExtHostInitialized(() => {
   const { registerFile } = registerExtension(manifest)
-${Object.keys(vsixFile).map((filePath) => (`
+${usedFiles.map((filePath) => (`
   registerFile('${filePath}', async () => (await import('vsix:${id}:${filePath}.raw')).default)`))}
 })
 `
