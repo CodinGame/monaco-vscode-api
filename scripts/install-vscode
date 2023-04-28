@@ -58,6 +58,27 @@ cd ..
 rm -rf $extension_output_directory
 cp -R extensions "$extension_output_directory"
 
+# transform to relative imports, replace ESM comments and vs/css! imports
+cat << EOF | node -
+	require('./build/lib/standalone').createESMSourcesAndResources2({
+		srcFolder: './src',
+		outFolder: './src',
+		outResourcesFolder: './resources',
+		ignores: [
+			'inlineEntryPoint:0.ts',
+			'inlineEntryPoint:1.ts',
+			'vs/loader.js',
+			'vs/base/worker/workerMain.ts',
+		],
+		renames: {
+			'vs/nls.mock.ts': 'vs/nls.ts'
+		}
+	});
+EOF
+cd resources
+cp --parents $(find -name \*.js) ../src/
+cd ..
+
 cd src
 
 # Remove useless files
