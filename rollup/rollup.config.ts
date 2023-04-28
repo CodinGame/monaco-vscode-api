@@ -7,7 +7,6 @@ import ts from 'typescript'
 import replace from '@rollup/plugin-replace'
 import * as babylonParser from 'recast/parsers/babylon.js'
 import dynamicImportVars from '@rollup/plugin-dynamic-import-vars'
-import inject from '@rollup/plugin-inject'
 import externalAssets from 'rollup-plugin-external-assets'
 import globImport from 'rollup-plugin-glob-import'
 import * as fs from 'fs'
@@ -511,10 +510,6 @@ export default (args: Record<string, string>): rollup.RollupOptions[] => {
       }, replace({
         VSCODE_VERSION: JSON.stringify(vscodeVersion),
         preventAssignment: true
-      }),
-      // Create a require instance with a toUrl method (like in vscode) to load static resources (mp3, wasm...)
-      inject({
-        require: path.resolve('src/assets')
       }),
       globImport({
         format: 'default',
