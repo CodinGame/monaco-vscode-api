@@ -18,6 +18,7 @@
       "error",
       "never",
       {
+        "css": "always",
         "js": "always",
         "mp3": "always",
         "contribution": "always", // Hack for vscode .contribution.js files
