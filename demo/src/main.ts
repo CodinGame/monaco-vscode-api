@@ -14,6 +14,9 @@ import 'monaco-editor/esm/vs/language/json/monaco.contribution'
 import { createConfiguredEditor, synchronizeJsonSchemas, createModelReference } from 'vscode/monaco'
 import { SimpleTextFileSystemProvider, registerFileSystemOverlay } from 'vscode/service-override/files'
 import * as vscode from 'vscode'
+import { ILogService, LogLevel, StandaloneServices } from 'vscode/services'
+
+StandaloneServices.get(ILogService).setLevel(LogLevel.Off)
 
 vscode.languages.registerHoverProvider('javascript', {
   async provideHover (document, position) {
