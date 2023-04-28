@@ -1,13 +1,15 @@
 import '../vscode-services/missing-services'
 import { IEditorOverrideServices, StandaloneServices } from 'vs/editor/standalone/browser/standaloneServices'
-import { IWorkbenchLayoutService } from 'vs/workbench/services/layout/browser/layoutService'
+import { IWorkbenchLayoutService, Parts, Position } from 'vs/workbench/services/layout/browser/layoutService'
 import { ILayoutOffsetInfo, ILayoutService } from 'vs/platform/layout/browser/layoutService'
 import { Emitter, Event } from 'vs/base/common/event'
 import { ICodeEditorService } from 'vs/editor/browser/services/codeEditorService'
 import * as dom from 'vs/base/browser/dom'
 import { SyncDescriptor } from 'vs/platform/instantiation/common/descriptors'
+import { Part } from 'vs/workbench/browser/part'
+import { isAncestorUsingFlowTo } from 'vs/base/browser/dom'
 
-class LayoutService implements ILayoutService, Pick<IWorkbenchLayoutService, 'isVisible' | 'onDidChangePartVisibility'> {
+class LayoutService implements ILayoutService, Pick<IWorkbenchLayoutService, 'isVisible' | 'onDidChangePartVisibility' | 'isRestored' | 'registerPart' | 'getSideBarPosition' | 'setPartHidden' | 'hasFocus'> {
   declare readonly _serviceBrand: undefined
 
   constructor (public container: HTMLElement) {
@@ -15,12 +17,57 @@ class LayoutService implements ILayoutService, Pick<IWorkbenchLayoutService, 'is
     this.layout()
   }
 
+  private readonly parts = new Map<string, Part>()
+  hasFocus (part: Parts): boolean {
+    const activeElement = document.activeElement
+    if (activeElement == null) {
+      return false
+    }
+
+    const container = this.getContainer(part)
+
+    return !(container == null) && isAncestorUsingFlowTo(activeElement, container)
+  }
+
+  getContainer (part: Parts): HTMLElement | undefined {
+    if (this.parts.get(part) == null) {
+      return undefined
+    }
+
+    return this.getPart(part).getContainer()
+  }
+
+  protected getPart (key: Parts): Part {
+    const part = this.parts.get(key)
+    if (part == null) {
+      throw new Error(`Unknown part ${key}`)
+    }
+
+    return part
+  }
+
+  setPartHidden (): void {
+    // ignore
+  }
+
+  getSideBarPosition (): Position {
+    return Position.LEFT
+  }
+
+  registerPart (part: Part): void {
+    this.parts.set(part.getId(), part)
+  }
+
+  isRestored (): boolean {
+    return true
+  }
+
   onDidChangePartVisibility = Event.None
 
   readonly offset: ILayoutOffsetInfo = { top: 0, quickPickTop: 0 }
 
   isVisible (): boolean {
-    return false
+    return true
   }
 
   private readonly _onDidLayout = new Emitter<dom.IDimension>()
