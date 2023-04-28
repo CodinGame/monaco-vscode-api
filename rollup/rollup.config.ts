@@ -3,6 +3,7 @@ import * as rollup from 'rollup'
 import * as recast from 'recast'
 import typescript from '@rollup/plugin-typescript'
 import cleanup from 'js-cleanup'
+import commonjs from '@rollup/plugin-commonjs'
 import ts from 'typescript'
 import replace from '@rollup/plugin-replace'
 import * as babylonParser from 'recast/parsers/babylon.js'
@@ -339,6 +340,7 @@ export default (args: Record<string, string>): rollup.RollupOptions[] => {
     }],
     input,
     plugins: [
+      commonjs(),
       extensionDirectoryPlugin({
         include: `${DEFAULT_EXTENSIONS_PATH}/**/*`
       }),
