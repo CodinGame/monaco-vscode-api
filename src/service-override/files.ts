@@ -85,8 +85,9 @@ abstract class SimpleTextFileSystemProvider implements IFileSystemProviderWithFi
     // Do nothing
   }
 
-  readdir (): Promise<[string, FileType][]> {
-    throw createFileSystemProviderError('Not allowed', FileSystemProviderErrorCode.NoPermissions)
+  async readdir (directory: URI): Promise<[string, FileType][]> {
+    console.debug('Not implemented: readdir', directory)
+    return []
   }
 
   delete (): Promise<void> {
@@ -169,6 +170,9 @@ class ExtensionFileSystemProviderWithFileReadWriteCapability implements IFileSys
 }
 const extensionFileSystemProvider = new ExtensionFileSystemProviderWithFileReadWriteCapability()
 
+function isFullfiled<T> (result: PromiseSettledResult<T>): result is PromiseFulfilledResult<T> {
+  return result.status === 'fulfilled'
+}
 class OverlayFileSystemProvider implements IFileSystemProviderWithFileReadWriteCapability {
   private others: IFileSystemProviderWithFileReadWriteCapability[] = []
   constructor (private _default: IFileSystemProviderWithFileReadWriteCapability) {}
@@ -185,9 +189,11 @@ class OverlayFileSystemProvider implements IFileSystemProviderWithFileReadWriteC
         const index = this.others.indexOf(delegate)
         if (index >= 0) {
           this.others.splice(index, 1)
+          this._onDidChangeOverlays.fire()
         }
       }
     })
+    this._onDidChangeOverlays.fire()
     return disposableStore
   }
 
@@ -199,6 +205,9 @@ class OverlayFileSystemProvider implements IFileSystemProviderWithFileReadWriteC
 
   _onDidChangeFile = new Emitter<readonly IFileChange[]>()
   onDidChangeFile = Event.any(this._default.onDidChangeFile, this._onDidChangeFile.event)
+
+  _onDidChangeOverlays = new Emitter<void>()
+  onDidChangeOverlays = this._onDidChangeOverlays.event
 
   capabilities = FileSystemProviderCapabilities.FileReadWrite | FileSystemProviderCapabilities.PathCaseSensitive
 
@@ -219,11 +228,14 @@ class OverlayFileSystemProvider implements IFileSystemProviderWithFileReadWriteC
   }
 
   private async writeToDelegates (caller: (delegate: IFileSystemProviderWithFileReadWriteCapability) => Promise<void>) {
-    await Promise.all(this.delegates.map(async delegate => {
+    const results = await Promise.allSettled(this.delegates.map(async delegate => {
       if ((delegate.capabilities & FileSystemProviderCapabilities.Readonly) === 0) {
         await caller(delegate)
       }
     }))
+    if (!results.some(result => result.status === 'fulfilled')) {
+      throw (results[0] as PromiseRejectedResult).reason
+    }
   }
 
   async stat (resource: URI): Promise<IStat> {
@@ -235,7 +247,11 @@ class OverlayFileSystemProvider implements IFileSystemProviderWithFileReadWriteC
   }
 
   async readdir (resource: URI): Promise<[string, FileType][]> {
-    return this.readFromDelegates(delegate => delegate.readdir(resource))
+    const results = await Promise.allSettled(this.delegates.map(delegate => delegate.readdir(resource)))
+    if (!results.some(result => result.status === 'fulfilled')) {
+      throw (results[0] as PromiseRejectedResult).reason
+    }
+    return Object.entries(Object.fromEntries(results.filter(isFullfiled).map(result => result.value).flat()))
   }
 
   watch (resource: URI, opts: IWatchOptions): IDisposable {
@@ -275,7 +291,11 @@ class MemoryFileService extends FileService {
     this.registerProvider('extension', extensionFileSystemProvider)
     this.registerProvider('cache', new InMemoryFileSystemProvider())
     this.registerProvider('logs', new InMemoryFileSystemProvider())
-    this.registerProvider('file', fileSystemProvider)
+    let fileSystemProviderDisposable = this.registerProvider('file', fileSystemProvider)
+    fileSystemProvider.onDidChangeOverlays(() => {
+      fileSystemProviderDisposable.dispose()
+      fileSystemProviderDisposable = this.registerProvider('file', fileSystemProvider)
+    })
   }
 }
 
