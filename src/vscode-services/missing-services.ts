@@ -38,14 +38,14 @@ import { IUserDataProfileService } from 'vs/workbench/services/userDataProfile/c
 import { UserDataProfileService } from 'vs/workbench/services/userDataProfile/common/userDataProfileService'
 import { ISnippetsService } from 'vs/workbench/contrib/snippets/browser/snippets'
 import { AbstractLoggerService, ILogger, ILoggerService, LogLevel, NullLogger } from 'vs/platform/log/common/log'
-import { IDisposable } from 'vs/base/common/lifecycle'
+import { IDisposable, Disposable } from 'vs/base/common/lifecycle'
 import { FallbackKeyboardMapper } from 'vs/workbench/services/keybinding/common/fallbackKeyboardMapper'
 import { ITextMateTokenizationService } from 'vs/workbench/services/textMate/browser/textMateTokenizationFeature'
 import { IDebugService, IDebugModel, IViewModel, IAdapterManager } from 'vs/workbench/contrib/debug/common/debug'
 import { IWorkspaceTrustRequestService } from 'vs/platform/workspace/common/workspaceTrust'
 import { IActivityService } from 'vs/workbench/services/activity/common/activity'
 import { IExtensionHostDebugService } from 'vs/platform/debug/common/extensionHostDebug'
-import { IViewDescriptorService, IViewsService } from 'vs/workbench/common/views'
+import { IViewContainerModel, IViewDescriptorService, IViewsService } from 'vs/workbench/common/views'
 import { IHistoryService } from 'vs/workbench/services/history/common/history'
 import { ITaskService } from 'vs/workbench/contrib/tasks/common/taskService'
 import { IURITransformerService, URITransformerService } from 'vs/workbench/api/common/extHostUriTransformerService'
@@ -72,7 +72,6 @@ import { IFileDialogService } from 'vs/platform/dialogs/common/dialogs'
 import { IElevatedFileService } from 'vs/workbench/services/files/common/elevatedFileService'
 import { BrowserElevatedFileService } from 'vs/workbench/services/files/browser/elevatedFileService'
 import { IDecorationsService } from 'vs/workbench/services/decorations/common/decorations'
-import { Disposable } from 'vs/workbench/api/common/extHostTypes'
 import { RequestService } from 'vs/platform/request/browser/requestService'
 import { InMemoryWorkingCopyBackupService } from 'vs/workbench/services/workingCopy/common/workingCopyBackupService'
 import { BrowserTextFileService } from 'vs/workbench/services/textfile/browser/browserTextFileService'
@@ -90,6 +89,8 @@ import { IOutputChannelModelService, OutputChannelModelService } from 'vs/workbe
 import { AbstractExtensionResourceLoaderService, IExtensionResourceLoaderService } from 'vs/platform/extensionResourceLoader/common/extensionResourceLoader'
 import { IStorageService } from 'vs/platform/storage/common/storage'
 import { IConfigurationService } from 'vs/platform/configuration/common/configuration'
+import { IHoverService } from 'vs/workbench/services/hover/browser/hover'
+import { IExplorerService } from 'vs/workbench/contrib/files/browser/files'
 import { unsupported } from '../tools'
 
 class NullLoggerService extends AbstractLoggerService {
@@ -145,7 +146,7 @@ registerSingleton(IPaneCompositePartService, class PaneCompositePartService impl
   getProgressIndicator = () => undefined
   hideActivePaneComposite = () => {}
   getLastActivePaneCompositeId = unsupported
-  showActivity = unsupported
+  showActivity = () => Disposable.None
 }, InstantiationType.Eager)
 
 registerSingleton(IUriIdentityService, UriIdentityService, InstantiationType.Delayed)
@@ -590,7 +591,7 @@ class FakeAdapterManager implements IAdapterManager {
   someDebuggerInterestedInLanguage = () => false
   getDebugger = () => undefined
   activateDebuggers = unsupported
-  registerDebugAdapterFactory = () => new Disposable(() => {})
+  registerDebugAdapterFactory = () => Disposable.None
   createDebugAdapter = unsupported
   registerDebugAdapterDescriptorFactory = unsupported
   unregisterDebugAdapterDescriptorFactory = unsupported
@@ -656,10 +657,10 @@ registerSingleton(IWorkspaceTrustRequestService, class WorkspaceTrustRequestServ
 
 registerSingleton(IActivityService, class ActivityService implements IActivityService {
   _serviceBrand: undefined
-  showViewContainerActivity = unsupported
-  showViewActivity = unsupported
-  showAccountsActivity = unsupported
-  showGlobalActivity = unsupported
+  showViewContainerActivity = () => Disposable.None
+  showViewActivity = () => Disposable.None
+  showAccountsActivity = () => Disposable.None
+  showGlobalActivity = () => Disposable.None
 }, InstantiationType.Eager)
 
 registerSingleton(IExtensionHostDebugService, class ExtensionHostDebugService implements IExtensionHostDebugService {
@@ -702,7 +703,11 @@ registerSingleton(IViewDescriptorService, class ViewDescriptorService implements
   getDefaultViewContainerLocation = () => null
   getViewContainerLocation = () => null
   getViewContainersByLocation = unsupported
-  getViewContainerModel = unsupported
+  getViewContainerModel = () => ({
+    onDidChangeAllViewDescriptors: Event.None,
+    visibleViewDescriptors: []
+  } as Pick<IViewContainerModel, 'onDidChangeAllViewDescriptors' | 'visibleViewDescriptors'> as IViewContainerModel)
+
   onDidChangeContainerLocation = Event.None
   moveViewContainerToLocation = unsupported
   getViewContainerBadgeEnablementState = unsupported
@@ -969,7 +974,7 @@ registerSingleton(IEditorResolverService, class EditorResolverService implements
   }
 
   resolveEditor = unsupported
-  getEditors = unsupported
+  getEditors = () => ([])
 }, InstantiationType.Eager)
 
 registerSingleton(IOutputService, OutputService, InstantiationType.Delayed)
@@ -993,3 +998,29 @@ class SimpleExtensionResourceLoaderService extends AbstractExtensionResourceLoad
   }
 }
 registerSingleton(IExtensionResourceLoaderService, SimpleExtensionResourceLoaderService, InstantiationType.Eager)
+
+registerSingleton(IHoverService, class HoverService implements IHoverService {
+  _serviceBrand: undefined
+  showHover = unsupported
+  hideHover = unsupported
+}, InstantiationType.Eager)
+
+registerSingleton(IExplorerService, class ExplorerService implements IExplorerService {
+  _serviceBrand: undefined
+  roots = []
+  get sortOrderConfiguration () { return unsupported() }
+  getContext = unsupported
+  hasViewFocus = unsupported
+  setEditable = unsupported
+  getEditable = unsupported
+  getEditableData = unsupported
+  isEditable = unsupported
+  findClosest = unsupported
+  findClosestRoot = unsupported
+  refresh = unsupported
+  setToCopy = unsupported
+  isCut = unsupported
+  applyBulkEdit = unsupported
+  select = unsupported
+  registerView = unsupported
+}, InstantiationType.Delayed)
