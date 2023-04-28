@@ -278,6 +278,7 @@ const USE_DEFAULT_EXTENSIONS = new Set([
   'theme-solarized-dark',
   'theme-solarized-light',
   'theme-tomorrow-night-blue',
+  'vs-seti',
   'typescript-basics',
   'typescript-language-features',
   'vb',
