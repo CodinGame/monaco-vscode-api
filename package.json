@@ -29,56 +29,56 @@
       "default": "./dist/extensions.js"
     },
     "./service-override/notifications": {
-      "types": "./dist/notifications.d.ts",
-      "default": "./dist/notifications.js"
+      "types": "./dist/service-override/notifications.d.ts",
+      "default": "./dist/service-override/notifications.js"
     },
     "./service-override/dialogs": {
-      "types": "./dist/dialogs.d.ts",
-      "default": "./dist/dialogs.js"
+      "types": "./dist/service-override/dialogs.d.ts",
+      "default": "./dist/service-override/dialogs.js"
     },
     "./service-override/modelEditor": {
-      "types": "./dist/modelEditor.d.ts",
-      "default": "./dist/modelEditor.js"
+      "types": "./dist/service-override/modelEditor.d.ts",
+      "default": "./dist/service-override/modelEditor.js"
     },
     "./service-override/files": {
-      "types": "./dist/files.d.ts",
-      "default": "./dist/files.js"
+      "types": "./dist/service-override/files.d.ts",
+      "default": "./dist/service-override/files.js"
     },
     "./service-override/configuration": {
-      "types": "./dist/configuration.d.ts",
-      "default": "./dist/configuration.js"
+      "types": "./dist/service-override/configuration.d.ts",
+      "default": "./dist/service-override/configuration.js"
     },
     "./service-override/keybindings": {
-      "types": "./dist/keybindings.d.ts",
-      "default": "./dist/keybindings.js"
+      "types": "./dist/service-override/keybindings.d.ts",
+      "default": "./dist/service-override/keybindings.js"
     },
     "./service-override/textmate": {
-      "types": "./dist/textmate.d.ts",
-      "default": "./dist/textmate.js"
+      "types": "./dist/service-override/textmate.d.ts",
+      "default": "./dist/service-override/textmate.js"
     },
     "./service-override/theme": {
-      "types": "./dist/theme.d.ts",
-      "default": "./dist/theme.js"
+      "types": "./dist/service-override/theme.d.ts",
+      "default": "./dist/service-override/theme.js"
     },
     "./service-override/snippets": {
-      "types": "./dist/snippets.d.ts",
-      "default": "./dist/snippets.js"
+      "types": "./dist/service-override/snippets.d.ts",
+      "default": "./dist/service-override/snippets.js"
     },
     "./service-override/languages": {
-      "types": "./dist/languages.d.ts",
-      "default": "./dist/languages.js"
+      "types": "./dist/service-override/languages.d.ts",
+      "default": "./dist/service-override/languages.js"
     },
     "./service-override/audioCue": {
-      "types": "./dist/audioCue.d.ts",
-      "default": "./dist/audioCue.js"
+      "types": "./dist/service-override/audioCue.d.ts",
+      "default": "./dist/service-override/audioCue.js"
     },
     "./service-override/debug": {
-      "types": "./dist/debug.d.ts",
-      "default": "./dist/debug.js"
+      "types": "./dist/service-override/debug.d.ts",
+      "default": "./dist/service-override/debug.js"
     },
     "./service-override/preferences": {
-      "types": "./dist/preferences.d.ts",
-      "default": "./dist/preferences.js"
+      "types": "./dist/service-override/preferences.d.ts",
+      "default": "./dist/service-override/preferences.js"
     },
     "./monaco": {
       "types": "./dist/monaco.d.ts",
@@ -109,43 +109,43 @@
         "./dist/extensions.d.ts"
       ],
       "service-override/notifications": [
-        "./dist/notifications.d.ts"
+        "./dist/service-override/notifications.d.ts"
       ],
       "service-override/dialogs": [
-        "./dist/dialogs.d.ts"
+        "./dist/service-override/dialogs.d.ts"
       ],
       "service-override/modelEditor": [
-        "./dist/modelEditor.d.ts"
+        "./dist/service-override/modelEditor.d.ts"
       ],
       "service-override/files": [
-        "./dist/files.d.ts"
+        "./dist/service-override/files.d.ts"
       ],
       "service-override/configuration": [
-        "./dist/configuration.d.ts"
+        "./dist/service-override/configuration.d.ts"
       ],
       "service-override/keybindings": [
-        "./dist/keybindings.d.ts"
+        "./dist/service-override/keybindings.d.ts"
       ],
       "service-override/textmate": [
-        "./dist/textmate.d.ts"
+        "./dist/service-override/textmate.d.ts"
       ],
       "service-override/theme": [
-        "./dist/theme.d.ts"
+        "./dist/service-override/theme.d.ts"
       ],
       "service-override/snippets": [
-        "./dist/snippets.d.ts"
+        "./dist/service-override/snippets.d.ts"
       ],
       "service-override/languages": [
-        "./dist/languages.d.ts"
+        "./dist/service-override/languages.d.ts"
       ],
       "service-override/audioCue": [
-        "./dist/audioCue.d.ts"
+        "./dist/service-override/audioCue.d.ts"
       ],
       "service-override/debug": [
-        "./dist/debug.d.ts"
+        "./dist/service-override/debug.d.ts"
       ],
       "service-override/preferences": [
-        "./dist/preferences.d.ts"
+        "./dist/service-override/preferences.d.ts"
       ],
       "monaco": [
         "./dist/monaco.d.ts"
