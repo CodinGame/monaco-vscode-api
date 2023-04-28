@@ -11,6 +11,7 @@ import { ITextFileService } from 'vs/workbench/services/textfile/common/textfile
 import { BrowserTextFileService } from 'vs/workbench/services/textfile/browser/browserTextFileService'
 import { joinPath } from 'vs/base/common/resources'
 import { Emitter, Event } from 'vs/base/common/event'
+import { HTMLFileSystemProvider } from 'vs/platform/files/browser/htmlFileSystemProvider'
 import 'vs/workbench/contrib/files/browser/files.contribution'
 
 class File implements IStat {
@@ -295,6 +296,7 @@ export function registerFileSystemOverlay (provider: IFileSystemProviderWithFile
 export {
   IFileSystemProviderWithFileReadWriteCapability,
   FileSystemProviderCapabilities,
+  FileType,
   IStat,
   IWatchOptions,
   IFileWriteOptions,
@@ -302,6 +304,7 @@ export {
   IFileOverwriteOptions,
   FileSystemProviderError,
   SimpleTextFileSystemProvider,
+  HTMLFileSystemProvider,
   FileSystemProviderErrorCode,
   IFileChange,
   FileChangeType
