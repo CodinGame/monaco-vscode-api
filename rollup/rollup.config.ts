@@ -329,6 +329,8 @@ export default (args: Record<string, string>): rollup.RollupOptions[] => {
     },
     external,
     output: [{
+      preserveModules: true,
+      preserveModulesRoot: 'src',
       minifyInternalExports: false,
       assetFileNames: 'assets/[name][extname]',
       format: 'esm',
@@ -548,6 +550,8 @@ export default (args: Record<string, string>): rollup.RollupOptions[] => {
     external,
     input: Object.fromEntries(Object.keys(input).map(f => [f, `./dist/${f}`])),
     output: [{
+      preserveModules: true,
+      preserveModulesRoot: 'dist',
       minifyInternalExports: false,
       assetFileNames: 'assets/[name][extname]',
       format: 'esm',
