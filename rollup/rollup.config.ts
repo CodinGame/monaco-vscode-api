@@ -5,7 +5,6 @@ import typescript from '@rollup/plugin-typescript'
 import cleanup from 'js-cleanup'
 import ts from 'typescript'
 import replace from '@rollup/plugin-replace'
-import styles from 'rollup-plugin-styles'
 import * as babylonParser from 'recast/parsers/babylon.js'
 import dynamicImportVars from '@rollup/plugin-dynamic-import-vars'
 import inject from '@rollup/plugin-inject'
@@ -382,9 +381,6 @@ export default (args: Record<string, string>): rollup.RollupOptions[] => {
           return code.replaceAll("'./keyboardLayouts/layout.contribution.' + platform", "'./keyboardLayouts/layout.contribution.' + platform + '.js'")
         }
       },
-      styles({
-        minimize: true
-      }),
       nodeResolve({
         extensions: EXTENSIONS
       }),
@@ -526,7 +522,7 @@ export default (args: Record<string, string>): rollup.RollupOptions[] => {
           return path.relative(VSCODE_DIR, id).replace(/[/.]/g, '_')
         }
       }),
-      externalAssets(['**/*.mp3', '**/*.wasm']),
+      externalAssets(['**/*.mp3', '**/*.wasm', '**/*.css']),
       {
         name: 'dynamic-import-polyfill',
         renderDynamicImport (): { left: string, right: string } {
@@ -614,7 +610,7 @@ export default (args: Record<string, string>): rollup.RollupOptions[] => {
     }, nodeResolve({
       extensions: EXTENSIONS
     }),
-    externalAssets(['**/*.mp3', '**/*.wasm']),
+    externalAssets(['**/*.mp3', '**/*.wasm', '**/*.css']),
     {
       name: 'cleanup',
       renderChunk (code) {
