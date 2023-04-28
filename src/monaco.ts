@@ -17,7 +17,7 @@ import { IJSONContributionRegistry, Extensions as JsonExtensions } from 'vs/plat
 import { CommandsRegistry } from 'vs/platform/commands/common/commands'
 import { IJSONSchema } from 'vs/base/common/jsonSchema'
 import { Extensions as ConfigurationExtensions } from 'vs/platform/configuration/common/configurationRegistry'
-import { EditorOptionsUtil } from 'vs/editor/browser/config/editorConfiguration'
+import { EditorOptionsUtil } from 'vscode/vs/editor/browser/config/editorConfiguration'
 import { registerColor } from 'vs/platform/theme/common/colorRegistry'
 import { URI } from 'vs/base/common/uri'
 import { ITextModelService } from 'vs/editor/common/services/resolverService'
