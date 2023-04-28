@@ -13,6 +13,8 @@ import { localize } from 'vs/nls'
 import { Registry } from 'vs/platform/registry/common/platform'
 import { ConfigurationScope, IConfigurationRegistry, Extensions as ConfigurationExtensions } from 'vs/platform/configuration/common/configurationRegistry'
 import { ITranslations, localizeManifest } from 'vs/platform/extensionManagement/common/extensionNls'
+import { joinPath } from 'vs/base/common/resources'
+import { FileAccess } from 'monaco-editor/esm/vs/base/common/network.js'
 import * as api from './api'
 import { registerExtensionFile } from './service-override/files'
 import createLanguagesApi from './vscode-services/languages'
@@ -130,8 +132,27 @@ function deltaExtensions (toAdd: IExtensionDescription[], toRemove: IExtensionDe
 
 interface RegisterExtensionResult extends IDisposable {
   api: typeof vscode
-  registerFile: (path: string, getContent: () => Promise<string>) => IDisposable
+  registerFile: (path: string, getContent: () => Promise<Uint8Array | string>) => IDisposable
+  registerSyncFile: (path: string, content: Uint8Array | string) => IDisposable
   dispose (): void
+}
+
+const extensionFileBlobUrls = new Map<string, string>()
+function registerExtensionFileBlob (extensionLocation: URI, filePath: string, content: string | Uint8Array, mimeType?: string) {
+  const blob = new Blob([content instanceof Uint8Array ? content : new TextEncoder().encode(content)], {
+    type: mimeType
+  })
+  extensionFileBlobUrls.set(joinPath(extensionLocation, filePath).toString(), URL.createObjectURL(blob))
+}
+const original = FileAccess.uriToBrowserUri
+FileAccess.uriToBrowserUri = function (uri: URI) {
+  if (uri.scheme === 'extension') {
+    const extensionFile = extensionFileBlobUrls.get(uri.toString())
+    if (extensionFile != null) {
+      return URI.parse(extensionFile)
+    }
+  }
+  return original.call(this, uri)
 }
 
 export function registerExtension (manifest: IExtensionManifest, defaultNLS?: ITranslations): RegisterExtensionResult {
@@ -159,8 +180,13 @@ export function registerExtension (manifest: IExtensionManifest, defaultNLS?: IT
 
   return {
     api: createApi(extensionDescription),
-    registerFile: (path: string, getContent: () => Promise<string>) => {
+    registerFile: (path: string, getContent: () => Promise<string | Uint8Array>) => {
       return registerExtensionFile(location, path, getContent)
+    },
+    registerSyncFile: (path: string, content: string | Uint8Array, mimeType?: string) => {
+      registerExtensionFileBlob(location, path, content, mimeType)
+
+      return registerExtensionFile(location, path, async () => content)
     },
     dispose () {
       deltaExtensions([], [extensionDescription])

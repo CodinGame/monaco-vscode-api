@@ -7,6 +7,12 @@ import { IRawLanguageExtensionPoint } from 'vs/workbench/services/language/commo
 import { IThemeExtensionPoint } from 'vs/workbench/services/themes/common/workbenchThemeService'
 import { ParseError, parse } from 'vs/base/common/json.js'
 import { getParseErrorMessage } from 'vs/base/common/jsonErrorMessages'
+import * as path from 'path'
+
+export interface ExtensionResource {
+  path: string
+  sync: boolean // Does this resource need to be loaded synchronously to have a blob url
+}
 
 type IUserFriendlyIcon = string | { light: string, dark: string }
 interface IUserFriendlyCommand {
@@ -52,57 +58,87 @@ interface RealContribute {
   productIconThemes?: IThemeExtensionPoint[]
 }
 
-function extractCommandPaths (command: IUserFriendlyCommand | IUserFriendlyCommand[]): string[] {
+function extractCommandResources (command: IUserFriendlyCommand | IUserFriendlyCommand[]): ExtensionResource[] {
   if (Array.isArray(command)) {
-    return command.flatMap(extractCommandPaths)
+    return command.flatMap(extractCommandResources)
   }
   if (command.icon != null) {
     if (typeof command.icon === 'object') {
-      return [command.icon.light, command.icon.dark]
+      return [{ path: command.icon.light, sync: false }, { path: command.icon.dark, sync: false }]
     } else {
-      return [command.icon]
+      return [{ path: command.icon, sync: false }]
     }
   }
   return []
 }
 
-function extractGrammarPaths (grammar: ITMSyntaxExtensionPoint): string[] {
-  return [grammar.path]
+function extractGrammarResources (grammar: ITMSyntaxExtensionPoint): ExtensionResource[] {
+  return [{ path: grammar.path, sync: false }]
 }
 
-function extractLanguagePaths (language: Partial<IRawLanguageExtensionPoint>): string[] {
-  const paths: string[] = []
+function extractLanguageResources (language: Partial<IRawLanguageExtensionPoint>): ExtensionResource[] {
+  const paths: ExtensionResource[] = []
   if (language.icon != null) {
-    paths.push(language.icon.dark, language.icon.light)
+    paths.push({ path: language.icon.dark, sync: false }, { path: language.icon.light, sync: false })
   }
   if (language.configuration != null) {
-    paths.push(language.configuration)
+    paths.push({ path: language.configuration, sync: false })
   }
   return paths
 }
 
-function extractSnippetsPaths (snippet: ISnippetsExtensionPoint): string[] {
-  return [snippet.path]
+function extractSnippetsResources (snippet: ISnippetsExtensionPoint): ExtensionResource[] {
+  return [{ path: snippet.path, sync: false }]
 }
 
-function extractThemePaths (theme: IThemeExtensionPoint): string[] {
-  return [theme.path]
+interface IconDefinition {
+  iconPath?: string
 }
 
-function extractPathsFromExtensionManifestContribute (contribute: RealContribute): string[] {
-  const paths: string[] = []
-  if (contribute.commands != null) paths.push(...extractCommandPaths(contribute.commands))
-  if (contribute.grammars != null) paths.push(...contribute.grammars.flatMap(extractGrammarPaths))
-  if (contribute.languages != null) paths.push(...contribute.languages.flatMap(extractLanguagePaths))
-  if (contribute.snippets != null) paths.push(...contribute.snippets.flatMap(extractSnippetsPaths))
-  if (contribute.themes != null) paths.push(...contribute.themes.flatMap(extractThemePaths))
-  if (contribute.iconThemes != null) paths.push(...contribute.iconThemes.flatMap(extractThemePaths))
-  if (contribute.productIconThemes != null) paths.push(...contribute.productIconThemes.flatMap(extractThemePaths))
+interface FontDefinition {
+  src: { path: string, format: string }[]
+}
+
+interface IconThemeDocument {
+  iconDefinitions?: { [key: string]: IconDefinition }
+  fonts?: FontDefinition[]
+}
+
+async function extractThemeResources (theme: IThemeExtensionPoint, getFileContent: (path: string) => Promise<Buffer>): Promise<ExtensionResource[]> {
+  const themeContent = await getFileContent(theme.path)
+  const themeDocument = parseJson<IconThemeDocument>(theme.path, themeContent.toString('utf8'))
+  const paths: ExtensionResource[] = [{ path: theme.path, sync: false }]
+  if (themeDocument.fonts != null) {
+    for (const font of themeDocument.fonts) {
+      for (const src of font.src) {
+        paths.push({ path: path.join(path.dirname(theme.path), src.path), sync: true })
+      }
+    }
+  }
+  if (themeDocument.iconDefinitions != null) {
+    for (const iconDefinition of Object.values(themeDocument.iconDefinitions)) {
+      if (iconDefinition.iconPath != null) {
+        paths.push({ path: path.join(path.dirname(theme.path), iconDefinition.iconPath), sync: true })
+      }
+    }
+  }
+  return paths
+}
+
+async function extractResourcesFromExtensionManifestContribute (contribute: RealContribute, getFileContent: (path: string) => Promise<Buffer>): Promise<ExtensionResource[]> {
+  const paths: ExtensionResource[] = []
+  if (contribute.commands != null) paths.push(...extractCommandResources(contribute.commands))
+  if (contribute.grammars != null) paths.push(...contribute.grammars.flatMap(extractGrammarResources))
+  if (contribute.languages != null) paths.push(...contribute.languages.flatMap(extractLanguageResources))
+  if (contribute.snippets != null) paths.push(...contribute.snippets.flatMap(extractSnippetsResources))
+  if (contribute.themes != null) paths.push(...((await Promise.all(contribute.themes.map(theme => extractThemeResources(theme, getFileContent), getFileContent))).flat()))
+  if (contribute.iconThemes != null) paths.push(...((await Promise.all(contribute.iconThemes.map(theme => extractThemeResources(theme, getFileContent), getFileContent))).flat()))
+  if (contribute.productIconThemes != null) paths.push(...((await Promise.all(contribute.productIconThemes.map(theme => extractThemeResources(theme, getFileContent), getFileContent))).flat()))
   return Array.from(new Set(paths))
 }
 
-export function extractPathsFromExtensionManifest (manifest: IExtensionManifest): string[] {
-  return manifest.contributes != null ? extractPathsFromExtensionManifestContribute(manifest.contributes as RealContribute) : []
+export async function extractResourcesFromExtensionManifest (manifest: IExtensionManifest, getFileContent: (path: string) => Promise<Buffer>): Promise<ExtensionResource[]> {
+  return manifest.contributes != null ? await extractResourcesFromExtensionManifestContribute(manifest.contributes as RealContribute, getFileContent) : []
 }
 
 export function parseJson<T> (path: string, text: string): T {
@@ -112,4 +148,12 @@ export function parseJson<T> (path: string, text: string): T {
     throw new Error(`Failed to parse ${path}:\n${errors.map(error => `    ${getParseErrorMessage(error.error)}`).join('\n')}`)
   }
   return result
+}
+
+export function compressResource (path: string, content: string): string {
+  try {
+    return JSON.stringify(parseJson(path, content))
+  } catch (e) {
+    return content
+  }
 }

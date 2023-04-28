@@ -19,7 +19,7 @@ class File implements IStat {
   mtime: number
   size: number
   type: FileType
-  constructor (public getContent: () => Promise<string>) {
+  constructor (public getContent: () => Promise<string | Uint8Array>) {
     this.ctime = Date.now()
     this.mtime = Date.now()
     this.size = 0
@@ -119,7 +119,12 @@ class ExtensionFileSystemProviderWithFileReadWriteCapability implements IFileSys
   async readFile (resource: URI): Promise<Uint8Array> {
     const file = this.files.get(resource.toString())
     if (file != null) {
-      return encoder.encode(await file.getContent())
+      const data = await file.getContent()
+      if (data instanceof Uint8Array) {
+        return data
+      } else {
+        return encoder.encode(data)
+      }
     }
 
     throw FileSystemProviderError.create('file not found', FileSystemProviderErrorCode.FileNotFound)
@@ -130,7 +135,7 @@ class ExtensionFileSystemProviderWithFileReadWriteCapability implements IFileSys
     return Disposable.None
   }
 
-  public registerFile (resource: URI, getContent: () => Promise<string>): IDisposable {
+  public registerFile (resource: URI, getContent: () => Promise<string | Uint8Array>): IDisposable {
     this.files.set(resource.toString(), new File(getContent))
     return {
       dispose: () => {
@@ -285,7 +290,7 @@ export default function getServiceOverride (): IEditorOverrideServices {
   }
 }
 
-export function registerExtensionFile (extensionLocation: URI, path: string, getContent: () => Promise<string>): IDisposable {
+export function registerExtensionFile (extensionLocation: URI, path: string, getContent: () => Promise<string | Uint8Array>): IDisposable {
   return extensionFileSystemProvider.registerFile(joinPath(extensionLocation, path), getContent)
 }
 

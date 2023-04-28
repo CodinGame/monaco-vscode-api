@@ -364,7 +364,8 @@ export default (args: Record<string, string>): rollup.RollupOptions[] => {
     plugins: [
       commonjs(),
       extensionDirectoryPlugin({
-        include: `${DEFAULT_EXTENSIONS_PATH}/**/*`
+        include: `${DEFAULT_EXTENSIONS_PATH}/**/*`,
+        isDefaultExtension: true
       }),
       {
         name: 'resolve-vscode',
