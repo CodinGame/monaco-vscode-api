@@ -171,11 +171,7 @@ const extensionFileSystemProvider = new ExtensionFileSystemProviderWithFileReadW
 
 class OverlayFileSystemProvider implements IFileSystemProviderWithFileReadWriteCapability {
   private others: IFileSystemProviderWithFileReadWriteCapability[] = []
-  constructor (private _default: IFileSystemProviderWithFileReadWriteCapability) {
-    _default.onDidChangeFile((e) => {
-      this._onDidChangeFile.fire(e)
-    })
-  }
+  constructor (private _default: IFileSystemProviderWithFileReadWriteCapability) {}
 
   public register (delegate: IFileSystemProviderWithFileReadWriteCapability) {
     this.others.push(delegate)
