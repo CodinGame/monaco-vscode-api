@@ -46,18 +46,12 @@ export default rollup.defineConfig([
     entryFileNames: chunk => `${chunk.name}.ts`
   },
   external: function isExternal (id) {
+    if (id.endsWith('.css')) {
+      return true
+    }
     return ['vscode', 'monaco-editor', 'vscode-textmate', 'rollup', '@rollup/pluginutils'].includes(id)
   },
   plugins: [
-    {
-      name: 'ignore-css',
-      load (id) {
-        if (id.includes('vs/css!')) {
-          return 'export default undefined;'
-        }
-        return undefined
-      }
-    },
     {
       name: 'change-unsupported-syntax',
       transform (code) {

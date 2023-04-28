@@ -1,14 +1,11 @@
 import nodeResolve from '@rollup/plugin-node-resolve'
 import * as rollup from 'rollup'
 import * as recast from 'recast'
-import * as babel from '@babel/core'
-import * as monaco from 'monaco-editor'
 import typescript from '@rollup/plugin-typescript'
 import cleanup from 'js-cleanup'
 import ts from 'typescript'
 import replace from '@rollup/plugin-replace'
 import styles from 'rollup-plugin-styles'
-import * as tslib from 'tslib'
 import * as babylonParser from 'recast/parsers/babylon.js'
 import dynamicImportVars from '@rollup/plugin-dynamic-import-vars'
 import inject from '@rollup/plugin-inject'
@@ -16,7 +13,6 @@ import externalAssets from 'rollup-plugin-external-assets'
 import globImport from 'rollup-plugin-glob-import'
 import * as fs from 'fs'
 import * as path from 'path'
-import * as vm from 'vm'
 import { fileURLToPath } from 'url'
 import extensionDirectoryPlugin from '../dist/rollup-extension-directory-plugin.js'
 import pkg from '../package.json' assert { type: 'json' }
@@ -190,6 +186,7 @@ const DIST_DIR = path.resolve(BASE_DIR, 'dist')
 const VSCODE_DIR = path.resolve(BASE_DIR, 'vscode')
 const NODE_MODULES_DIR = path.resolve(BASE_DIR, 'node_modules')
 const MONACO_EDITOR_DIR = path.resolve(NODE_MODULES_DIR, './monaco-editor')
+const MONACO_EDITOR_ESM_DIR = path.resolve(MONACO_EDITOR_DIR, './esm')
 const OVERRIDE_PATH = path.resolve(BASE_DIR, 'src/override')
 const DEFAULT_EXTENSIONS_PATH = path.resolve(BASE_DIR, 'vscode-default-extensions')
 const KEYBOARD_LAYOUT_DIR = path.resolve(VSCODE_DIR, 'vs/workbench/services/keybinding/browser/keyboardLayouts')
@@ -356,36 +353,33 @@ export default (args: Record<string, string>): rollup.RollupOptions[] => {
           if (importee === 'jschardet') {
             return path.resolve(OVERRIDE_PATH, 'jschardet.ts')
           }
-          if (importee.startsWith('vs/css!')) {
-            return path.resolve(path.dirname(importer!), importee.slice('vs/css!'.length) + '.css')
+          if (importer != null && importee.startsWith('.')) {
+            // console.log(importee, importer, path.resolve(path.dirname(importer), importee))
+            importee = path.resolve(path.dirname(importer), importee)
           }
           if (importee.startsWith('vscode/')) {
             return resolve(path.relative('vscode', importee), [VSCODE_DIR])
           }
-          if (!importee.startsWith('vs/') && importer != null && importer.startsWith(VSCODE_DIR)) {
-            importee = path.relative(VSCODE_DIR, path.resolve(path.dirname(importer), importee))
+          let vscodeImportPath = importee
+          if (importee.startsWith(VSCODE_DIR)) {
+            vscodeImportPath = path.relative(VSCODE_DIR, importee)
           }
-          const overridePath = path.resolve(OVERRIDE_PATH, `${importee}.js`)
-          if (fs.existsSync(overridePath)) {
+          const overridePath = resolve(vscodeImportPath, [OVERRIDE_PATH])
+          if (overridePath != null) {
             return overridePath
           }
-          if (importee.startsWith('vs/')) {
-            const monacoFileExists = fs.existsSync(path.resolve(MONACO_EDITOR_DIR, `esm/${importee}.js`))
-            if (!monacoFileExists) {
-              return resolve(importee, [VSCODE_DIR])
+
+          if (vscodeImportPath.startsWith('vs/')) {
+            if (resolve(vscodeImportPath, [MONACO_EDITOR_ESM_DIR]) != null) {
+              // File exists on monaco, import from monaco esm
+              return path.relative(NODE_MODULES_DIR, path.resolve(MONACO_EDITOR_ESM_DIR, vscodeImportPath)) + '.js'
             }
-            return importee
+            return resolve(vscodeImportPath, [VSCODE_DIR])
           }
           return undefined
         },
         transform (code) {
-          return toggleEsmComments(code).replaceAll("'vs/workbench/services/keybinding/browser/keyboardLayouts/layout.contribution.' + platform", "'./keyboardLayouts/layout.contribution.' + platform + '.js'")
-        },
-        load (id) {
-          if (id.startsWith('vs/')) {
-            return importMonaco(id)
-          }
-          return undefined
+          return code.replaceAll("'./keyboardLayouts/layout.contribution.' + platform", "'./keyboardLayouts/layout.contribution.' + platform + '.js'")
         }
       },
       styles({
@@ -643,189 +637,4 @@ function resolve (_path: string, fromPaths: string[]) {
     }
   }
   return undefined
-}
-
-// Comes from vscode (standalone.ts)
-function toggleEsmComments (fileContents: string): string {
-  const lines = fileContents.split(/\r\n|\r|\n/)
-  let mode = 0
-  for (let i = 0; i < lines.length; i++) {
-    const line = lines[i]!
-    if (mode === 0) {
-      if (/\/\/ ESM-comment-begin/.test(line)) {
-        mode = 1
-        continue
-      }
-      if (/\/\/ ESM-uncomment-begin/.test(line)) {
-        mode = 2
-        continue
-      }
-      continue
-    }
-
-    if (mode === 1) {
-      if (/\/\/ ESM-comment-end/.test(line)) {
-        mode = 0
-        continue
-      }
-      lines[i] = '// ' + line
-      continue
-    }
-
-    if (mode === 2) {
-      if (/\/\/ ESM-uncomment-end/.test(line)) {
-        mode = 0
-        continue
-      }
-      lines[i] = line.replace(/^(\s*)\/\/ ?/, function (_, indent) {
-        return indent
-      })
-    }
-  }
-
-  return lines.join('\n')
-}
-
-const cache = new Map<string, Record<string, unknown>>()
-function customRequire<T extends Record<string, unknown>> (_path: string, rootPaths: string[] = [], fromPath?: string, transform?: (code: string) => string): T | null {
-  const resolvedPath = resolve(_path, fromPath != null ? [...rootPaths, fromPath] : rootPaths)
-  if (resolvedPath == null) {
-    return null
-  }
-  if (cache.has(resolvedPath)) {
-    return cache.get(resolvedPath) as T
-  }
-
-  let code = fs.readFileSync(resolvedPath).toString()
-  if (transform != null) {
-    code = transform(code)
-  }
-
-  const transformedCode = babel.transform(code.replace(/@\w+/g, '') /* Remove annotations */, {
-    filename: resolvedPath,
-    presets: [
-      ['@babel/preset-env', {
-        targets: {
-          node: 'current'
-        }
-      }],
-      () => ({ plugins: [['@babel/plugin-proposal-class-properties', { loose: true }]] }),
-      ['@babel/preset-typescript', { allowDeclareFields: true }]
-    ]
-  })?.code!
-
-  const exports: T = {} as T
-  cache.set(resolvedPath, exports)
-  try {
-    vm.runInNewContext(transformedCode, {
-      require: (_path: string) => {
-        if (_path === 'tslib') {
-          return tslib
-        }
-        if (_path.endsWith('.css') || _path.includes('!')) {
-          return null
-        }
-        const result = customRequire(_path, rootPaths, path.dirname(resolvedPath), transform)
-        if (result == null) {
-          throw new Error('Module not found: ' + _path + ' from ' + resolvedPath)
-        }
-        return result
-      },
-      define: (path: string, value: Record<string, unknown>) => {
-        Object.assign(exports, value)
-      },
-      self: {},
-      queueMicrotask: () => {},
-      navigator: {
-        userAgent: '',
-        language: 'en'
-      },
-      window: {
-        location: {
-          href: ''
-        }
-      },
-      document: {
-        queryCommandSupported () {
-          return false
-        }
-      },
-      setTimeout: () => {},
-      UIEvent: Event,
-      exports
-    })
-  } catch (err) {
-    throw new Error(`Unable to run ${resolvedPath} code: ${(err as Error).message}`)
-  }
-
-  return exports
-}
-
-const monacoApi = customRequire(path.resolve(MONACO_EDITOR_DIR, 'esm/vs/editor/editor.api'), [__dirname]) as typeof monaco
-interface Extractor {
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  get (exportKey: string): any
-  expr (exportKey: string): string
-}
-const monacoApiExtractors: Extractor[] = [{
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  get: (exportKey) => (monacoApi as any)[exportKey],
-  expr: (exportKey) => `monaco.${exportKey}`
-}, {
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  get: (exportKey) => (monacoApi.languages as any)[exportKey],
-  expr: (exportKey) => `monaco.languages.${exportKey}`
-}, {
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  get: (exportKey) => (monacoApi.editor as any)[exportKey],
-  expr: (exportKey) => `monaco.editor.${exportKey}`
-}]
-
-function importMonaco (importee: string) {
-  const monacoPath = path.resolve(MONACO_EDITOR_DIR, 'esm', importee)
-  const vscodePath = path.resolve(VSCODE_DIR, importee)
-
-  const vscodeExports = customRequire(vscodePath, [VSCODE_DIR], undefined, toggleEsmComments)!
-
-  const monacoExports = customRequire(monacoPath, [path.resolve(MONACO_EDITOR_DIR, 'esm')])!
-  for (const monacoExport in monacoExports) {
-    if (!(monacoExport in vscodeExports)) {
-      console.warn(`${importee}#${monacoExport} is exported from monaco but not from vscode`)
-    }
-  }
-
-  const monacoExportKeys = new Set(Object.keys(monacoExports))
-  const missingMonacoExport = Object.keys(vscodeExports).filter(e => !monacoExportKeys.has(e))
-
-  const monacoImportPath = path.relative(NODE_MODULES_DIR, path.resolve(MONACO_EDITOR_DIR, `esm/${importee}.js`))
-
-  const monacoApiExports = new Map<string, string>()
-  for (const exportKey in monacoExports) {
-    for (const extractor of monacoApiExtractors) {
-      const monacoApiExport = extractor.get(exportKey)
-      if (monacoApiExport != null && monacoApiExport === monacoExports[exportKey]) {
-        monacoApiExports.set(exportKey, extractor.expr(exportKey))
-        monacoExportKeys.delete(exportKey)
-        break
-      }
-    }
-  }
-
-  const lines: string[] = []
-
-  if (monacoApiExports.size > 0) {
-    lines.push('import * as monaco from \'monaco-editor\'')
-    for (const [name, ref] of monacoApiExports.entries()) {
-      lines.push(`export const ${name} = ${ref}`)
-    }
-  }
-
-  if (monacoExportKeys.size > 0) {
-    lines.push(`export { ${Array.from(monacoExportKeys).join(', ')} } from '${monacoImportPath}'`)
-  }
-  if (missingMonacoExport.length > 0) {
-    lines.push(`export { ${missingMonacoExport.join(', ')} } from '${vscodePath}'`)
-  }
-
-  return lines.join('\n')
 }
