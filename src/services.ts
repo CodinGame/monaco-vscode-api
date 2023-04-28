@@ -107,6 +107,8 @@ export { IWorkspaceContextService } from 'vs/platform/workspace/common/workspace
 export { IStorageService } from 'vs/platform/storage/common/storage'
 export { IAudioCueService } from 'vs/platform/audioCues/browser/audioCueService'
 export { IDebugService } from 'vs/workbench/contrib/debug/common/debug'
+export { ILoggerService, LogLevel } from 'vs/platform/log/common/log'
+export { ILogService } from 'vs/platform/log/common/log'
 
 // Export all Notification service parts
 export {
