@@ -156,17 +156,23 @@
   },
   "files": [
     "dist",
+    "monaco-treemending.js",
+    "monaco-editor-treemending.patch",
     "README.md"
   ],
   "scripts": {
-    "build": "npm run clean && npm run generate-types && npm run lint && npm run compile-rollup-plugins && npm run compile",
+    "build": "npm run clean && npm run generate-types && npm run lint && npm run compile-rollup-plugins && npm run compile-treemending-script && npm run compile",
     "compile": "NODE_OPTIONS=--max_old_space_size=8192 rollup --config rollup/rollup.config.ts --configPlugin 'typescript={tsconfig: `tsconfig.rollup-config.json`}' --vscode-version ${npm_package_config_vscode_version}",
     "clean": "rm -rf dist/",
+    "compile-treemending-script": "rollup --config rollup/rollup.treemending-script.config.ts --configPlugin 'typescript={tsconfig: `tsconfig.rollup-config-treemending-script.json`, include: [`./rollup/rollup.treemending-script.config.ts`]}'",
     "compile-rollup-plugins": "rollup --config rollup/rollup.rollup-plugins.config.ts --configPlugin 'typescript={tsconfig: `tsconfig.rollup-config-plugins.json`, include: [`./rollup/rollup.rollup-plugins.config.ts`]}'",
-    "preprepare": "./scripts/install-vscode",
+    "preprepare": "./scripts/install-vscode && node --loader ts-node/esm src/monaco-treemending.ts",
     "lint": "eslint {/src/**/*.ts,./rollup/*.ts,./*.ts}",
     "generate-types": "tsc --project tsconfig.types.json && rollup --config rollup/rollup.types.config.ts --configPlugin 'typescript={tsconfig: `tsconfig.rollup-config-types.json`}' && rm -rf ./dist/types",
     "release": "node --loader ts-node/esm release.ts ${npm_package_config_vscode_version}"
+  },
+  "bin": {
+    "monaco-treemending": "./monaco-treemending.js"
   },
   "config": {
     "vscode": {
@@ -182,18 +188,21 @@
     "@codingame/eslint-config": "^1.1.6",
     "@codingame/tsconfig": "^1.1.1",
     "@octokit/rest": "^19.0.7",
+    "@rollup/plugin-commonjs": "^24.1.0",
     "@rollup/plugin-dynamic-import-vars": "^2.0.3",
-    "@rollup/plugin-inject": "^5.0.3",
+    "@rollup/plugin-json": "^6.0.0",
     "@rollup/plugin-node-resolve": "^15.0.2",
     "@rollup/plugin-replace": "^5.0.2",
     "@rollup/plugin-typescript": "^11.1.0",
-    "@types/babel__core": "^7.20.0",
+    "@types/diff": "^5.0.3",
+    "@types/node": "^18.16.2",
     "@types/semver": "^7.3.13",
     "@types/vscode": "~1.77.0",
     "@types/yauzl": "^2.10.0",
     "@typescript-eslint/eslint-plugin": "^5.57.1",
     "@typescript-eslint/parser": "^5.57.1",
     "@vscode/iconv-lite-umd": "^0.7.0",
+    "diff": "^5.1.0",
     "eslint": "^8.37.0",
     "eslint-config-standard": "^17.0.0",
     "eslint-plugin-import": "^2.27.5",
@@ -228,8 +237,5 @@
   "volta": {
     "node": "18.14.2",
     "npm": "9.5.1"
-  },
-  "dependencies": {
-    "@types/node": "^18.15.11"
   }
 }
