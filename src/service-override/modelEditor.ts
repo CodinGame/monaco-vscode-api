@@ -138,7 +138,9 @@ class EditorService extends Disposable implements IEditorService {
       applyTextEditorOptions(options, modelEditor, ScrollType.Immediate)
     }
 
-    modelEditor.focus()
+    if (!(options?.preserveFocus ?? false)) {
+      modelEditor.focus()
+    }
 
     // Return a very simple editor pane, only the `getControl` method is used
     return new SimpleEditorPane(modelEditor)
