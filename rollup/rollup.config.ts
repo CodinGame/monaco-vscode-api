@@ -38,6 +38,7 @@ const PURE_FUNCTIONS = new Set([
   'toString',
   'ContextKeyExpr.and',
   'ContextKeyExpr.or',
+  'ContextKeyExpr.equals',
   'ContextKeyNotExpr.create',
   'ContextKeyDefinedExpr.create',
   'notEqualsTo',
@@ -47,6 +48,7 @@ const PURE_FUNCTIONS = new Set([
   'SyncDescriptor',
   'getProxy',
   'map',
+  'some',
   'asFileUri',
   'registerIcon'
 ])
