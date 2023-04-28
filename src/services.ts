@@ -1,4 +1,3 @@
-import './polyfill'
 import './vscode-services/extHost'
 import Severity from 'vs/base/common/severity'
 import { IConfigurationChangeEvent } from 'vs/platform/configuration/common/configuration'

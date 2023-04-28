@@ -1,4 +1,3 @@
-import '../polyfill'
 import '../vscode-services/missing-services'
 import { IEditorOverrideServices } from 'vs/editor/standalone/browser/standaloneServices'
 import { ITextMateTokenizationService } from 'vs/workbench/services/textMate/browser/textMateTokenizationFeature'

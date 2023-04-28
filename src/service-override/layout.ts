@@ -1,4 +1,3 @@
-import '../polyfill'
 import '../vscode-services/missing-services'
 import { IEditorOverrideServices, StandaloneServices } from 'vs/editor/standalone/browser/standaloneServices'
 import { IWorkbenchLayoutService } from 'vs/workbench/services/layout/browser/layoutService'

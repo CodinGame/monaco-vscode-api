@@ -1,4 +1,3 @@
-import '../polyfill'
 import '../vscode-services/missing-services'
 import { IEditorOverrideServices, StandaloneServices } from 'vs/editor/standalone/browser/standaloneServices'
 import { IResolvedTextEditorModel, ITextModelService } from 'vs/editor/common/services/resolverService'

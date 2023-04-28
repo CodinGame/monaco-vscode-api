@@ -1,4 +1,3 @@
-import './polyfill'
 import { StandaloneServices } from 'vs/editor/standalone/browser/standaloneServices'
 import { ITextResourceConfigurationService } from 'vs/editor/common/services/textResourceConfiguration'
 import { IInstantiationService } from 'vs/platform/instantiation/common/instantiation'

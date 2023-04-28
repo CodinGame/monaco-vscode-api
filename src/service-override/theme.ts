@@ -1,4 +1,3 @@
-import '../polyfill'
 import '../vscode-services/missing-services'
 import { WorkbenchThemeService } from 'vs/workbench/services/themes/browser/workbenchThemeService'
 import { IThemeExtensionPoint } from 'vs/workbench/services/themes/common/workbenchThemeService'

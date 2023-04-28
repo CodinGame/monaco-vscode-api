@@ -1,4 +1,3 @@
-import './polyfill'
 import * as extHostTypes from 'vs/workbench/api/common/extHostTypes'
 import * as errors from 'vs/base/common/errors'
 import * as commonDebug from 'vs/workbench/contrib/debug/common/debug'

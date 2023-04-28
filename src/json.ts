@@ -1,4 +1,3 @@
-import './polyfill'
 import { StandaloneServices } from 'vs/editor/standalone/browser/standaloneServices'
 import { Registry } from 'vs/platform/registry/common/platform'
 import * as monaco from 'monaco-editor'

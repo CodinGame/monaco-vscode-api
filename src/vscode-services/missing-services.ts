@@ -1,4 +1,3 @@
-import '../polyfill'
 import { Event } from 'vs/base/common/event'
 import { DomEmitter } from 'vs/base/browser/event'
 import { URI } from 'vs/base/common/uri'
