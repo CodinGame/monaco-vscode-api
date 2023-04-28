@@ -80,6 +80,10 @@
       "types": "./dist/service-override/preferences.d.ts",
       "default": "./dist/service-override/preferences.js"
     },
+    "./service-override/views": {
+      "types": "./dist/service-override/views.d.ts",
+      "default": "./dist/service-override/views.js"
+    },
     "./monaco": {
       "types": "./dist/monaco.d.ts",
       "default": "./dist/monaco.js"
@@ -142,6 +146,9 @@
       ],
       "service-override/preferences": [
         "./dist/service-override/preferences.d.ts"
+      ],
+      "service-override/views": [
+        "./dist/service-override/views.d.ts"
       ],
       "monaco": [
         "./dist/monaco.d.ts"
