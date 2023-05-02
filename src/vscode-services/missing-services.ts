@@ -91,6 +91,12 @@ import { IStorageService } from 'vs/platform/storage/common/storage'
 import { IConfigurationService } from 'vs/platform/configuration/common/configuration'
 import { IHoverService } from 'vs/workbench/services/hover/browser/hover'
 import { IExplorerService } from 'vs/workbench/contrib/files/browser/files'
+import { ExtensionStorageService, IExtensionStorageService } from 'vs/platform/extensionManagement/common/extensionStorage'
+import { ILanguagePackItem, ILanguagePackService } from 'vs/platform/languagePacks/common/languagePacks'
+import { TreeViewsDnDService } from 'vs/editor/common/services/treeViewsDnd'
+import { ITreeViewsDnDService } from 'vs/editor/common/services/treeViewsDndService'
+import { TreeviewsService } from 'vs/workbench/services/views/common/treeViewsService'
+import { ITreeViewsService } from 'vs/workbench/services/views/browser/treeViewsService'
 import { unsupported } from '../tools'
 
 class NullLoggerService extends AbstractLoggerService {
@@ -1024,3 +1030,23 @@ registerSingleton(IExplorerService, class ExplorerService implements IExplorerSe
   select = unsupported
   registerView = unsupported
 }, InstantiationType.Delayed)
+
+registerSingleton(IExtensionStorageService, ExtensionStorageService, InstantiationType.Delayed)
+
+registerSingleton(ILanguagePackService, class LanguagePackService implements ILanguagePackService {
+  _serviceBrand: undefined
+  async getAvailableLanguages (): Promise<ILanguagePackItem[]> {
+    return []
+  }
+
+  async getInstalledLanguages (): Promise<ILanguagePackItem[]> {
+    return []
+  }
+
+  async getBuiltInExtensionTranslationsUri (): Promise<URI | undefined> {
+    return undefined
+  }
+}, InstantiationType.Delayed)
+
+registerSingleton(ITreeViewsDnDService, TreeViewsDnDService, InstantiationType.Delayed)
+registerSingleton(ITreeViewsService, TreeviewsService, InstantiationType.Delayed)
