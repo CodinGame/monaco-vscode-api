@@ -12,6 +12,7 @@ import * as editorOptions from 'vs/editor/common/config/editorOptions'
 import * as uri from 'vs/base/common/uri'
 import * as log from 'vs/platform/log/common/log'
 import * as telemetryUtils from 'vs/platform/telemetry/common/telemetryUtils'
+import createL10nApi from './vscode-services/l10n'
 import createLanguagesApi from './vscode-services/languages'
 import createCommandsApi from './vscode-services/commands'
 import createWorkspaceApi from './vscode-services/workspace'
@@ -42,6 +43,7 @@ const api: typeof vscode = {
   window: createWindowApi(getDefaultExtension, _workspace),
   workspace: _workspace,
   languages: createLanguagesApi(getDefaultExtension),
+  l10n: createL10nApi(getDefaultExtension),
 
   Breakpoint: extHostTypes.Breakpoint,
   CallHierarchyIncomingCall: extHostTypes.CallHierarchyIncomingCall,
@@ -196,7 +198,6 @@ const api: typeof vscode = {
   LogLevel: log.LogLevel,
   TerminalExitReason: unsupported,
   CommentThreadState: unsupported,
-  l10n: unsupported,
   TelemetryTrustedValue: telemetryUtils.TelemetryTrustedValue
 }
 
