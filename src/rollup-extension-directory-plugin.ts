@@ -1,5 +1,5 @@
 import { createFilter, FilterPattern, dataToEsm } from '@rollup/pluginutils'
-import { Plugin } from 'rollup'
+import { InputPluginOption, Plugin } from 'rollup'
 import { IExtensionManifest } from 'vs/platform/extensions/common/extensions'
 import { localizeManifest } from 'vs/platform/extensionManagement/common/extensionNls.js'
 import { isBinaryFileSync } from 'isbinaryfile'
@@ -7,14 +7,16 @@ import { lookup as lookupMimeType } from 'mime-types'
 import * as path from 'path'
 import * as fsPromise from 'fs/promises'
 import * as fs from 'fs'
-import { compressResource, extractResourcesFromExtensionManifest, parseJson } from './extension-tools'
+import { buildExtensionCode, compressResource, extractResourcesFromExtensionManifest, parseJson } from './extension-tools'
 interface Options {
   include?: FilterPattern
   exclude?: FilterPattern
   isDefaultExtension?: boolean
+  withCode?: (extensionPath: string) => boolean
+  rollupPlugins: InputPluginOption[]
 }
 
-export default function plugin ({ include, exclude, isDefaultExtension = false }: Options): Plugin {
+export default function plugin ({ include, exclude, isDefaultExtension = false, withCode = () => true, rollupPlugins }: Options): Plugin {
   const filter = createFilter(include, exclude)
 
   return {
@@ -51,7 +53,15 @@ export default function plugin ({ include, exclude, isDefaultExtension = false }
 
       const extensionResourceMatch = /^(.*)\.extensionResource$/.exec(id)
       if (extensionResourceMatch != null) {
-        const content = await fsPromise.readFile(extensionResourceMatch[1]!)
+        const resourcePath = extensionResourceMatch[1]!
+        if (resourcePath.endsWith('.js')) {
+          const code = await buildExtensionCode(resourcePath, rollupPlugins)
+          return {
+            code: `export default ${JSON.stringify(code)};`,
+            map: { mappings: '' }
+          }
+        }
+        const content = await fsPromise.readFile(resourcePath)
         if (isBinaryFileSync(content)) {
           return {
             code: `export default Uint8Array.from(window.atob(${JSON.stringify(content.toString('base64'))}), v => v.charCodeAt(0));`,
@@ -84,11 +94,13 @@ ${syncPaths.map((resourcePath, index) => (`
 import resource_${index} from '${path.resolve(id, resourcePath)}.extensionResource'`)).join('\n')}
 
 onExtHostInitialized(() => {
-  const { registerFile, registerSyncFile } = registerExtension(manifest)
+  const { registerFile, registerSyncFile, runCode } = registerExtension(manifest)
 ${asyncPaths.map(resourcePath => (`
   registerFile('${resourcePath}', async () => await import('${path.resolve(id, resourcePath)}.extensionResource'))`)).join('\n')}
 ${syncPaths.map((resourcePath, index) => (`
   registerSyncFile('${resourcePath}', resource_${index}, '${lookupMimeType(resourcePath)}')`)).join('\n')}
+
+  ${withCode(id) ? '  runCode()' : ''}
 })
         `
         } catch (err) {

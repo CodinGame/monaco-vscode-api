@@ -1,5 +1,5 @@
 import { createFilter, FilterPattern, dataToEsm } from '@rollup/pluginutils'
-import { Plugin } from 'rollup'
+import { InputPluginOption, Plugin } from 'rollup'
 import * as yauzl from 'yauzl'
 import { IExtensionManifest } from 'vs/platform/extensions/common/extensions'
 import { localizeManifest } from 'vs/platform/extensionManagement/common/extensionNls.js'
@@ -7,11 +7,13 @@ import { isBinaryFileSync } from 'isbinaryfile'
 import { lookup as lookupMimeType } from 'mime-types'
 import { Readable } from 'stream'
 import * as path from 'path'
-import { compressResource, extractResourcesFromExtensionManifest, parseJson } from './extension-tools'
+import { buildExtensionCode, compressResource, extractResourcesFromExtensionManifest, parseJson } from './extension-tools'
 
 interface Options {
   include?: FilterPattern
   exclude?: FilterPattern
+  withCode?: (extensionPath: string) => boolean
+  rollupPlugins: InputPluginOption[]
 }
 
 function read (stream: Readable): Promise<Buffer> {
@@ -52,12 +54,17 @@ async function readVsix (file: string): Promise<Record<string, Buffer>> {
   })
 }
 
-const defaultOptions: Options = {
-  include: '**/*.vsix'
+function getVsixPath (file: string) {
+  return path.relative('/', path.resolve('/', file))
 }
 
-export default function plugin (options: Options = defaultOptions): Plugin {
-  const filter = createFilter(options.include, options.exclude)
+export default function plugin ({
+  include = '**/*.vsix',
+  exclude,
+  rollupPlugins,
+  withCode = () => true
+}: Options): Plugin {
+  const filter = createFilter(include, exclude)
   const vsixFiles: Record<string, Record<string, Buffer>> = {}
 
   return {
@@ -74,7 +81,18 @@ export default function plugin (options: Options = defaultOptions): Plugin {
     async load (id) {
       const rawMatch = /^vsix:(.*):(.*)\.raw$/.exec(id)
       if (rawMatch != null) {
-        const content = vsixFiles[rawMatch[1]!]![rawMatch[2]!]!
+        const vsixFile = vsixFiles[rawMatch[1]!]!
+        const resourcePath = rawMatch[2]!
+        if (resourcePath.endsWith('.js')) {
+          const code = await buildExtensionCode(resourcePath, rollupPlugins, async (resourcePath) => {
+            return vsixFile[getVsixPath(resourcePath)]?.toString('utf-8') ?? 'export default ""'
+          })
+          return {
+            code: `export default ${JSON.stringify(code)};`,
+            map: { mappings: '' }
+          }
+        }
+        const content = vsixFile[resourcePath]!
         if (isBinaryFileSync(content)) {
           return {
             code: `export default Uint8Array.from(window.atob(${JSON.stringify(content.toString('base64'))}), v => v.charCodeAt(0));`,
@@ -108,17 +126,12 @@ export default function plugin (options: Options = defaultOptions): Plugin {
 
       const files = await readVsix(id)
       const manifest = parseJson<IExtensionManifest>(id, files['package.json']!.toString('utf8'))
-      function getVsixPath (file: string) {
-        return path.relative('/', path.resolve('/', file))
-      }
 
       const extensionResources = (await extractResourcesFromExtensionManifest(manifest, async path => {
         return files[getVsixPath(path)]!
       })).filter(resource => getVsixPath(resource.path) in files)
 
-      const allFiles = ['package.json', 'package.nls.json', ...extensionResources.map(r => r.path)].filter(file => getVsixPath(file) in files)
-
-      const vsixFile: Record<string, Buffer> = allFiles.reduce((acc, usedFile) => {
+      const vsixFile: Record<string, Buffer> = Object.keys(files).reduce((acc, usedFile) => {
         return ({
           ...acc,
           [usedFile]: files[getVsixPath(usedFile)]!
@@ -132,14 +145,16 @@ export default function plugin (options: Options = defaultOptions): Plugin {
 import manifest from 'vsix:${id}:package.json.vsjson'
 import { registerExtension, onExtHostInitialized } from 'vscode/extensions'
 ${syncPaths.map((resourcePath, index) => (`
-import resource_${index} from '${path.resolve(id, resourcePath)}.extensionResource'`)).join('\n')}
+import resource_${index} from 'vsix:${id}:${resourcePath}.raw'`)).join('\n')}
 
 onExtHostInitialized(() => {
-  const { registerFile, registerSyncFile } = registerExtension(manifest)
+  const { registerFile, registerSyncFile, runCode } = registerExtension(manifest)
 ${asyncPaths.map((filePath) => (`
   registerFile('${filePath}', async () => (await import('vsix:${id}:${filePath}.raw')).default)`)).join('\n')}
 ${syncPaths.map((resourcePath, index) => (`
   registerSyncFile('${resourcePath}', resource_${index}, '${lookupMimeType(resourcePath)}')`)).join('\n')}
+
+${withCode(id) ? '  runCode()' : ''}
 })
 `
     }

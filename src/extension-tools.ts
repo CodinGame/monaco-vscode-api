@@ -7,6 +7,8 @@ import { IRawLanguageExtensionPoint } from 'vs/workbench/services/language/commo
 import { IThemeExtensionPoint } from 'vs/workbench/services/themes/common/workbenchThemeService'
 import { ParseError, parse } from 'vs/base/common/json.js'
 import { getParseErrorMessage } from 'vs/base/common/jsonErrorMessages'
+import { InputPluginOption, rollup } from 'rollup'
+import { addExtension } from '@rollup/pluginutils'
 import * as path from 'path'
 
 export interface ExtensionResource {
@@ -126,19 +128,30 @@ async function extractThemeResources (theme: IThemeExtensionPoint, getFileConten
 }
 
 async function extractResourcesFromExtensionManifestContribute (contribute: RealContribute, getFileContent: (path: string) => Promise<Buffer>): Promise<ExtensionResource[]> {
-  const paths: ExtensionResource[] = []
-  if (contribute.commands != null) paths.push(...extractCommandResources(contribute.commands))
-  if (contribute.grammars != null) paths.push(...contribute.grammars.flatMap(extractGrammarResources))
-  if (contribute.languages != null) paths.push(...contribute.languages.flatMap(extractLanguageResources))
-  if (contribute.snippets != null) paths.push(...contribute.snippets.flatMap(extractSnippetsResources))
-  if (contribute.themes != null) paths.push(...((await Promise.all(contribute.themes.map(theme => extractThemeResources(theme, getFileContent), getFileContent))).flat()))
-  if (contribute.iconThemes != null) paths.push(...((await Promise.all(contribute.iconThemes.map(theme => extractThemeResources(theme, getFileContent), getFileContent))).flat()))
-  if (contribute.productIconThemes != null) paths.push(...((await Promise.all(contribute.productIconThemes.map(theme => extractThemeResources(theme, getFileContent), getFileContent))).flat()))
-  return Array.from(new Set(paths))
+  const resources: ExtensionResource[] = []
+  if (contribute.commands != null) resources.push(...extractCommandResources(contribute.commands))
+  if (contribute.grammars != null) resources.push(...contribute.grammars.flatMap(extractGrammarResources))
+  if (contribute.languages != null) resources.push(...contribute.languages.flatMap(extractLanguageResources))
+  if (contribute.snippets != null) resources.push(...contribute.snippets.flatMap(extractSnippetsResources))
+  if (contribute.themes != null) resources.push(...((await Promise.all(contribute.themes.map(theme => extractThemeResources(theme, getFileContent), getFileContent))).flat()))
+  if (contribute.iconThemes != null) resources.push(...((await Promise.all(contribute.iconThemes.map(theme => extractThemeResources(theme, getFileContent), getFileContent))).flat()))
+  if (contribute.productIconThemes != null) resources.push(...((await Promise.all(contribute.productIconThemes.map(theme => extractThemeResources(theme, getFileContent), getFileContent))).flat()))
+  return resources.filter((resource, index, list) => !resource.path.startsWith('$(') && !list.slice(0, index).some(o => o.path === resource.path))
 }
 
 export async function extractResourcesFromExtensionManifest (manifest: IExtensionManifest, getFileContent: (path: string) => Promise<Buffer>): Promise<ExtensionResource[]> {
-  return manifest.contributes != null ? await extractResourcesFromExtensionManifestContribute(manifest.contributes as RealContribute, getFileContent) : []
+  const resources: ExtensionResource[] = []
+
+  if (manifest.contributes != null) {
+    resources.push(...await extractResourcesFromExtensionManifestContribute(manifest.contributes as RealContribute, getFileContent))
+  }
+  if (manifest.browser != null) {
+    resources.push({
+      path: addExtension(manifest.browser, '.js'),
+      sync: false
+    })
+  }
+  return resources
 }
 
 export function parseJson<T> (path: string, text: string): T {
@@ -148,6 +161,29 @@ export function parseJson<T> (path: string, text: string): T {
     throw new Error(`Failed to parse ${path}:\n${errors.map(error => `    ${getParseErrorMessage(error.error)}`).join('\n')}`)
   }
   return result
+}
+
+export async function buildExtensionCode (path: string, rollupPlugins: InputPluginOption[], getFileContent?: (path: string) => Promise<string>): Promise<string> {
+  const build = await rollup({
+    input: path,
+    external: ['vscode'],
+    plugins: [
+      ...(getFileContent != null
+        ? [<InputPluginOption>{
+          name: 'loader',
+          resolveId (source) {
+            return source
+          },
+          load (id) {
+            return getFileContent(id.replace(/\?.*$/, ''))
+          }
+        }]
+        : []),
+      ...rollupPlugins
+    ]
+  })
+  const { output } = await build.generate({ format: 'cjs' })
+  return output[0].code
 }
 
 export function compressResource (path: string, content: string): string {
