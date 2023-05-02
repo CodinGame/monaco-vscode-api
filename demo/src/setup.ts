@@ -28,6 +28,7 @@ import * as monaco from 'monaco-editor/esm/vs/editor/editor.api'
 import { createConfiguredEditor } from 'vscode/monaco'
 import 'vscode/default-extensions/theme-defaults'
 import 'vscode/default-extensions/javascript'
+import 'vscode/default-extensions/typescript-basics'
 import 'vscode/default-extensions/json'
 import 'vscode/default-extensions/theme-seti'
 import 'vscode/default-extensions/references-view'
@@ -60,7 +61,8 @@ export type WorkerLoader = () => WorkerConstructor | Promise<WorkerConstructor>
 const workerLoaders: Partial<Record<string, WorkerLoader>> = {
   editorWorkerService: () => EditorWorker,
   json: () => JsonWorker,
-  javascript: () => TypescriptWorker
+  javascript: () => TypescriptWorker,
+  typescript: () => TypescriptWorker
 }
 window.MonacoEnvironment = {
   getWorker: async function (moduleId, label) {
