@@ -106,6 +106,8 @@ export { IAudioCueService } from 'vs/platform/audioCues/browser/audioCueService'
 export { IDebugService } from 'vs/workbench/contrib/debug/common/debug'
 export { ILoggerService, LogLevel } from 'vs/platform/log/common/log'
 export { ILogService } from 'vs/platform/log/common/log'
+export { IViewsService } from 'vs/workbench/common/views'
+export { ILayoutService } from 'vs/platform/layout/browser/layoutService'
 
 // Export all Notification service parts
 export {
