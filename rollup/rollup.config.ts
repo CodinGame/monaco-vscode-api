@@ -151,6 +151,12 @@ function isCallPure (file: string, functionName: string, node: recast.types.name
     }
   }
 
+  if (functionName === 'CommandsRegistry.registerCommand') {
+    if (file.includes('fileActions.contribution') || file.includes('workspaceCommands')) {
+      return true
+    }
+  }
+
   // Remove Registry.add calls
   if (functionName.endsWith('Registry.add')) {
     const firstParam = args[0]!
@@ -237,7 +243,8 @@ function isCallPure (file: string, functionName: string, node: recast.types.name
       'SAVE_FILE_COMMAND_ID',
       'SAVE_FILE_AS_COMMAND_ID',
       'SAVE_ALL_COMMAND_ID',
-      'openToSideCommand'
+      'openToSideCommand',
+      'workbench.action.quickOpen'
     ].some(text => secondParamCode.includes(text))) {
       return true
     }
