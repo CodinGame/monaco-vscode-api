@@ -162,7 +162,8 @@ while (variable < 5000) {
   "audioCues.lineHasError": "on",
   "audioCues.onDebugBreak": "on",
   "files.autoSave": "afterDelay",
-  "files.autoSaveDelay": 1000
+  "files.autoSaveDelay": 1000,
+  "debug.toolBarLocation": "docked"
 }`)
   createConfiguredEditor(document.getElementById('settings-editor')!, {
     model: settingsModelReference.object.textEditorModel
