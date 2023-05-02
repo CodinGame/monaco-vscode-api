@@ -66,12 +66,22 @@ class FakeFileSystem extends SimpleTextFileSystemProvider {
     [otherModelUri.toString(true)]: 'This is another file'
   }
 
-  protected async getFileContent (resource: monaco.Uri): Promise<string | undefined> {
+  protected override async getFileContent (resource: monaco.Uri): Promise<string | undefined> {
     return this.files[resource.toString(true)]
   }
 
-  protected async setFileContent (resource: monaco.Uri, content: string): Promise<void> {
+  protected override async setFileContent (resource: monaco.Uri, content: string): Promise<void> {
     this.files[resource.toString(true)] = content
+  }
+
+  override async delete (): Promise<void> {
+  }
+
+  override async readdir (directory: monaco.Uri): Promise<[string, FileType][]> {
+    if (directory.path === '/tmp') {
+      return [['test2.js', FileType.File]]
+    }
+    return []
   }
 }
 
