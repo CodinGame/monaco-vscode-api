@@ -22,7 +22,7 @@ import { IUriIdentityService } from 'vs/platform/uriIdentity/common/uriIdentity'
 import { ConfigurationCache } from 'vs/workbench/services/configuration/common/configurationCache'
 import { Schemas } from 'vs/base/common/network'
 import { IWorkbenchEnvironmentService } from 'vs/workbench/services/environment/common/environmentService'
-import { IAnyWorkspaceIdentifier, ISingleFolderWorkspaceIdentifier, IWorkspaceContextService } from 'vs/platform/workspace/common/workspace'
+import { IAnyWorkspaceIdentifier, IWorkspaceContextService, IWorkspaceIdentifier } from 'vs/platform/workspace/common/workspace'
 import { LabelService } from 'vs/workbench/services/label/common/labelService'
 import { ILabelService } from 'vs/platform/label/common/label'
 import { generateUuid } from 'vs/base/common/uuid'
@@ -33,7 +33,7 @@ import { AbstractWorkspaceEditingService } from 'vs/workbench/services/workspace
 import { URI } from 'vs/base/common/uri'
 import 'vs/workbench/api/common/configurationExtensionPoint'
 import getFileServiceOverride from './files'
-import { memoizedConstructor } from '../tools'
+import { memoizedConstructor, unsupported } from '../tools'
 import { registerServiceInitializeParticipant } from '../services'
 
 async function updateUserConfiguration (configurationJson: string): Promise<void> {
@@ -74,24 +74,33 @@ class InjectedConfigurationService extends WorkspaceService {
 }
 
 class MonacoWorkspaceEditingService extends AbstractWorkspaceEditingService {
-  async enterWorkspace (): Promise<void> {
-    // do nothing
-  }
+  enterWorkspace = unsupported
 }
 
 let _defaultWorkspaceUri = URI.file('/workspace')
 registerServiceInitializeParticipant(async (accessor) => {
   const workspaceService = accessor.get(IWorkspaceContextService) as WorkspaceService
   workspaceService.acquireInstantiationService(accessor.get(IInstantiationService))
+
+  const configPath = _defaultWorkspaceUri.with({ path: '/workspace.code-workspace' })
   try {
+    const fileService = accessor.get(IFileService)
     // Create the directory in the memory filesystem to prevent a warn log
-    await accessor.get(IFileService).createFolder(_defaultWorkspaceUri)
+    await fileService.createFolder(_defaultWorkspaceUri)
+    await fileService.writeFile(configPath, VSBuffer.fromString(JSON.stringify({
+      folders: [
+        {
+          path: _defaultWorkspaceUri.path
+        }
+      ]
+    })))
   } catch (err) {
     // ignore
   }
-  await workspaceService.initialize(<ISingleFolderWorkspaceIdentifier>{
+
+  await workspaceService.initialize(<IWorkspaceIdentifier>{
     id: generateUuid(),
-    uri: _defaultWorkspaceUri
+    configPath
   })
 })
 
