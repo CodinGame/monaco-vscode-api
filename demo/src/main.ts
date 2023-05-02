@@ -19,6 +19,33 @@ import { ILogService, LogLevel, StandaloneServices } from 'vscode/services'
 
 StandaloneServices.get(ILogService).setLevel(LogLevel.Off)
 
+vscode.languages.registerCallHierarchyProvider('javascript', {
+  prepareCallHierarchy: function (): vscode.ProviderResult<vscode.CallHierarchyItem | vscode.CallHierarchyItem[]> {
+    return {
+      name: 'Fake call hierarchy',
+      kind: vscode.SymbolKind.Class,
+      uri: vscode.Uri.file('/tmp/test.js'),
+      range: new vscode.Range(0, 0, 0, 10),
+      selectionRange: new vscode.Range(0, 0, 0, 10)
+    }
+  },
+  provideCallHierarchyIncomingCalls: function (): vscode.ProviderResult<vscode.CallHierarchyIncomingCall[]> {
+    return [{
+      from: {
+        name: 'Fake incomming call',
+        kind: vscode.SymbolKind.Class,
+        uri: vscode.Uri.file('/tmp/test.js'),
+        range: new vscode.Range(0, 0, 0, 10),
+        selectionRange: new vscode.Range(0, 0, 0, 10)
+      },
+      fromRanges: [new vscode.Range(2, 0, 2, 10)]
+    }]
+  },
+  provideCallHierarchyOutgoingCalls: function (): vscode.ProviderResult<vscode.CallHierarchyOutgoingCall[]> {
+    return []
+  }
+})
+
 vscode.languages.registerHoverProvider('javascript', {
   async provideHover (document, position) {
     return {
