@@ -32,6 +32,25 @@ import 'vscode/default-extensions/json'
 import 'vscode/default-extensions/theme-seti'
 import 'vscode/default-extensions/references-view'
 import * as vscode from 'vscode'
+import iconUrl from './Visual_Studio_Code_1.35_icon.svg?url'
+
+registerCustomView({
+  id: 'custom-view',
+  name: 'Custom demo view',
+  renderBody: function (container: HTMLElement): monaco.IDisposable {
+    container.style.display = 'flex'
+    container.style.alignItems = 'center'
+    container.style.justifyContent = 'center'
+    container.innerHTML = 'This is a custom view<br />You can render anything you want here'
+
+    return {
+      dispose () {
+      }
+    }
+  },
+  location: ViewContainerLocation.Panel,
+  icon: new URL(iconUrl, window.location.href).toString()
+})
 
 // Workers
 interface WorkerConstructor {
@@ -151,7 +170,8 @@ const debuggerExtension = {
   contributes: {
     debuggers: [{
       type: 'javascript',
-      label: 'Test'
+      label: 'Test',
+      languages: ['javascript']
     }],
     breakpoints: [{
       language: 'javascript'
