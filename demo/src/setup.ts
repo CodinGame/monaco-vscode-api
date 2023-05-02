@@ -95,7 +95,7 @@ const openNewCodeEditor: OpenEditor = async (modelRef) => {
       editor
     }
 
-    editor.onDidBlurEditorText(() => {
+    editor.onDidBlurEditorWidget(() => {
       currentEditor?.dispose()
     })
     container.addEventListener('mousedown', (event) => {
