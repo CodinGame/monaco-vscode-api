@@ -17,6 +17,7 @@ import getTextmateServiceOverride from 'vscode/service-override/textmate'
 import getThemeServiceOverride from 'vscode/service-override/theme'
 import getLanguagesServiceOverride from 'vscode/service-override/languages'
 import getAudioCueServiceOverride from 'vscode/service-override/audioCue'
+import getViewsServiceOverride, { createSidebarPart, createActivitybarPar, createPanelPart, registerCustomView, ViewContainerLocation } from 'vscode/service-override/views'
 import getDebugServiceOverride from 'vscode/service-override/debug'
 import getPreferencesServiceOverride from 'vscode/service-override/preferences'
 import getSnippetServiceOverride from 'vscode/service-override/snippets'
@@ -27,6 +28,8 @@ import { createConfiguredEditor } from 'vscode/monaco'
 import 'vscode/default-extensions/theme-defaults'
 import 'vscode/default-extensions/javascript'
 import 'vscode/default-extensions/json'
+import 'vscode/default-extensions/theme-seti'
+import 'vscode/default-extensions/references-view'
 import * as vscode from 'vscode'
 
 // Workers
@@ -127,9 +130,14 @@ await initializeMonacoService({
   ...getAudioCueServiceOverride(),
   ...getDebugServiceOverride(),
   ...getPreferencesServiceOverride(),
+  ...getViewsServiceOverride(),
   ...getSnippetServiceOverride()
 })
 await initializeVscodeExtensions()
+
+createSidebarPart(document.querySelector<HTMLDivElement>('#sidebar')!)
+createActivitybarPar(document.querySelector<HTMLDivElement>('#activityBar')!)
+createPanelPart(document.querySelector<HTMLDivElement>('#panel')!)
 
 const debuggerExtension = {
   name: 'debugger',

@@ -110,6 +110,7 @@ while (variable < 5000) {
 
   const settingsModelReference = await createModelReference(monaco.Uri.from({ scheme: 'user', path: '/settings.json' }), `{
   "workbench.colorTheme": "Default Dark+",
+  "workbench.iconTheme": "vs-seti",
   "editor.autoClosingBrackets": "languageDefined",
   "editor.autoClosingQuotes": "languageDefined",
   "editor.scrollBeyondLastLine": true,
