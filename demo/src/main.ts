@@ -13,7 +13,7 @@ import 'monaco-editor/esm/vs/editor/standalone/browser/referenceSearch/standalon
 import 'monaco-editor/esm/vs/language/json/monaco.contribution.js'
 import 'monaco-editor/esm/vs/language/typescript/monaco.contribution.js'
 import { createConfiguredEditor, synchronizeJsonSchemas, createModelReference } from 'vscode/monaco'
-import { SimpleTextFileSystemProvider, registerFileSystemOverlay } from 'vscode/service-override/files'
+import { SimpleTextFileSystemProvider, registerFileSystemOverlay, FileType, HTMLFileSystemProvider } from 'vscode/service-override/files'
 import * as vscode from 'vscode'
 import { ILogService, LogLevel, StandaloneServices } from 'vscode/services'
 
@@ -164,6 +164,18 @@ setTimeout(() => {
     void vscode.window.showInformationMessage('The configuration was changed')
   })
 }, 1000)
+
+document.querySelector('#filesystem')!.addEventListener('click', async () => {
+  const dirHandle = await window.showDirectoryPicker()
+
+  const htmlFileSystemProvider = new HTMLFileSystemProvider(undefined, 'unused', StandaloneServices.get(ILogService))
+  await htmlFileSystemProvider.registerDirectoryHandle(dirHandle)
+  registerFileSystemOverlay(htmlFileSystemProvider)
+
+  vscode.workspace.updateWorkspaceFolders(0, 0, {
+    uri: vscode.Uri.file(dirHandle.name)
+  })
+})
 
 document.querySelector('#run')!.addEventListener('click', () => {
   void vscode.debug.startDebugging(undefined, {

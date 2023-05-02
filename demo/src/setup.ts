@@ -122,7 +122,7 @@ await initializeMonacoService({
   ...getModelEditorServiceOverride(openNewCodeEditor),
   ...getNotificationServiceOverride(),
   ...getDialogsServiceOverride(),
-  ...getConfigurationServiceOverride(monaco.Uri.file('/')),
+  ...getConfigurationServiceOverride(monaco.Uri.file('/tmp')),
   ...getKeybindingsServiceOverride(),
   ...getTextmateServiceOverride(),
   ...getThemeServiceOverride(),
