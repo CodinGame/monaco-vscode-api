@@ -10,6 +10,7 @@ import * as babylonParser from 'recast/parsers/babylon.js'
 import dynamicImportVars from '@rollup/plugin-dynamic-import-vars'
 import externalAssets from 'rollup-plugin-external-assets'
 import globImport from 'rollup-plugin-glob-import'
+import terser from '@rollup/plugin-terser'
 import * as fs from 'fs'
 import * as path from 'path'
 import { fileURLToPath } from 'url'
@@ -470,7 +471,11 @@ export default (args: Record<string, string>): rollup.RollupOptions[] => {
       commonjs(),
       extensionDirectoryPlugin({
         include: `${DEFAULT_EXTENSIONS_PATH}/**/*`,
-        isDefaultExtension: true
+        isDefaultExtension: true,
+        rollupPlugins: [
+          commonjs(),
+          terser()
+        ]
       }),
       {
         name: 'resolve-vscode',
