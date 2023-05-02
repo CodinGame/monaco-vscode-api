@@ -361,6 +361,7 @@ const USE_DEFAULT_EXTENSIONS = new Set([
   'python',
   'r',
   'razor',
+  'references-view',
   'ruby',
   'rust',
   'scss',
