@@ -8,8 +8,6 @@ import { URI } from 'vs/base/common/uri'
 import { FileChangeType, FileSystemProviderCapabilities, FileType } from 'vscode/vs/platform/files/common/files'
 import { createFileSystemProviderError, FileSystemProviderError, FileSystemProviderErrorCode, IFileChange, IFileDeleteOptions, IFileOverwriteOptions, IFileService, IFileSystemProviderWithFileReadWriteCapability, IFileWriteOptions, IStat, IWatchOptions } from 'vs/platform/files/common/files'
 import { DisposableStore, IDisposable, Disposable } from 'vs/base/common/lifecycle'
-import { ITextFileService } from 'vs/workbench/services/textfile/common/textfiles'
-import { BrowserTextFileService } from 'vs/workbench/services/textfile/browser/browserTextFileService'
 import { joinPath } from 'vs/base/common/resources'
 import { Emitter, Event } from 'vs/base/common/event'
 import { HTMLFileSystemProvider } from 'vs/platform/files/browser/htmlFileSystemProvider'
@@ -302,8 +300,7 @@ class MemoryFileService extends FileService {
 
 export default function getServiceOverride (): IEditorOverrideServices {
   return {
-    [IFileService.toString()]: new SyncDescriptor(MemoryFileService),
-    [ITextFileService.toString()]: new SyncDescriptor(BrowserTextFileService)
+    [IFileService.toString()]: new SyncDescriptor(MemoryFileService)
   }
 }
 
