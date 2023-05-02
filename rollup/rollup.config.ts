@@ -381,7 +381,6 @@ const USE_DEFAULT_EXTENSIONS = new Set([
   'theme-tomorrow-night-blue',
   'vs-seti',
   'typescript-basics',
-  'typescript-language-features',
   'vb',
   'xml',
   'yaml'
