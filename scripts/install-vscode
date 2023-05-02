@@ -30,6 +30,7 @@ cd $build_directory
 
 echo "Installing vscode dependencies..."
 yarn install --ignore-scripts
+yarn postinstall || true
 
 echo "Patching vscode..."
 patch -p1 < $patch_file
@@ -54,7 +55,8 @@ diff -urN -x '*.map' a b > "$editor_patch_file" || true
 cd ..
 # end treemending patch
 
-# copy default extensions
+# build and copy default extensions
+yarn compile-web
 rm -rf $extension_output_directory
 cp -R extensions "$extension_output_directory"
 
