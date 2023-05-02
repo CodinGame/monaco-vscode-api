@@ -91,16 +91,33 @@ export default function create (getExtension: () => IExtensionDescription, works
       const { extHostQuickOpen } = getExtHostServices()
       return extHostQuickOpen.showInput(options, token)
     },
-    createTextEditorDecorationType: unsupported,
-    showWorkspaceFolderPick: unsupported,
+    createTextEditorDecorationType (options: vscode.DecorationRenderOptions): vscode.TextEditorDecorationType {
+      const { extHostEditors } = getExtHostServices()
+      const extension = getExtension()
+      return extHostEditors.createTextEditorDecorationType(extension, options)
+    },
+    showWorkspaceFolderPick (options?: vscode.WorkspaceFolderPickOptions) {
+      const { extHostQuickOpen } = getExtHostServices()
+      return extHostQuickOpen.showWorkspaceFolderPick(options)
+    },
     showOpenDialog: unsupported,
     showSaveDialog: unsupported,
     createWebviewPanel: unsupported,
     setStatusBarMessage: unsupported,
     createStatusBarItem: unsupported,
     createTerminal: unsupported,
-    registerTreeDataProvider: unsupported,
-    createTreeView: unsupported,
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    registerTreeDataProvider (viewId: string, treeDataProvider: vscode.TreeDataProvider<any>): vscode.Disposable {
+      const { extHostTreeViews } = getExtHostServices()
+      const extension = getExtension()
+      return extHostTreeViews.registerTreeDataProvider(viewId, treeDataProvider, extension)
+    },
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    createTreeView (viewId: string, options: { treeDataProvider: vscode.TreeDataProvider<any> }): vscode.TreeView<any> {
+      const { extHostTreeViews } = getExtHostServices()
+      const extension = getExtension()
+      return extHostTreeViews.createTreeView(viewId, options, extension)
+    },
     registerWebviewPanelSerializer: unsupported,
     get activeTextEditor () {
       const { extHostEditors } = getExtHostServices()
@@ -146,7 +163,10 @@ export default function create (getExtension: () => IExtensionDescription, works
     get state () {
       return unsupported()
     },
-    onDidChangeWindowState: Event.None,
+    onDidChangeWindowState (listener, thisArg?, disposables?) {
+      const { extHostWindow } = getExtHostServices()
+      return extHostWindow.onDidChangeWindowState(listener, thisArg, disposables)
+    },
     registerUriHandler: unsupported,
     registerWebviewViewProvider: unsupported,
     registerCustomEditorProvider: unsupported,
