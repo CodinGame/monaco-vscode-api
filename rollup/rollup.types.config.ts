@@ -28,30 +28,31 @@ interfaceOverride.set('IStandaloneDiffEditor', 'monaco.editor.IStandaloneDiffEdi
 interfaceOverride.set('IStandaloneEditorConstructionOptions', 'monaco.editor.IStandaloneEditorConstructionOptions')
 interfaceOverride.set('IStandaloneDiffEditorConstructionOptions', 'monaco.editor.IStandaloneDiffEditorConstructionOptions')
 
-export default rollup.defineConfig([
-  './dist/types/src/services.d.ts',
-  './dist/types/src/extensions.d.ts',
-  './dist/types/src/service-override/notifications.d.ts',
-  './dist/types/src/service-override/dialogs.d.ts',
-  './dist/types/src/service-override/modelEditor.d.ts',
-  './dist/types/src/service-override/files.d.ts',
-  './dist/types/src/service-override/configuration.d.ts',
-  './dist/types/src/service-override/keybindings.d.ts',
-  './dist/types/src/service-override/textmate.d.ts',
-  './dist/types/src/service-override/theme.d.ts',
-  './dist/types/src/service-override/snippets.d.ts',
-  './dist/types/src/service-override/languages.d.ts',
-  './dist/types/src/service-override/audioCue.d.ts',
-  './dist/types/src/service-override/debug.d.ts',
-  './dist/types/src/service-override/preferences.d.ts',
-  './dist/types/src/service-override/views.d.ts',
-  './dist/types/src/monaco.d.ts',
-  './dist/types/src/rollup-vsix-plugin.d.ts',
-  './dist/types/src/rollup-extension-directory-plugin.d.ts'
-].map((input): rollup.RollupOptions => ({
-  input: {
-    [path.relative(path.resolve(DIST_DIR, 'types/src'), path.resolve(__dirname, '..', input)).slice(0, -3)]: input
-  },
+export default rollup.defineConfig({
+  input: Object.fromEntries([
+    './dist/types/src/services.d.ts',
+    './dist/types/src/extensions.d.ts',
+    './dist/types/src/service-override/notifications.d.ts',
+    './dist/types/src/service-override/dialogs.d.ts',
+    './dist/types/src/service-override/modelEditor.d.ts',
+    './dist/types/src/service-override/files.d.ts',
+    './dist/types/src/service-override/configuration.d.ts',
+    './dist/types/src/service-override/keybindings.d.ts',
+    './dist/types/src/service-override/textmate.d.ts',
+    './dist/types/src/service-override/theme.d.ts',
+    './dist/types/src/service-override/snippets.d.ts',
+    './dist/types/src/service-override/languages.d.ts',
+    './dist/types/src/service-override/audioCue.d.ts',
+    './dist/types/src/service-override/debug.d.ts',
+    './dist/types/src/service-override/preferences.d.ts',
+    './dist/types/src/service-override/views.d.ts',
+    './dist/types/src/monaco.d.ts',
+    './dist/types/src/rollup-vsix-plugin.d.ts',
+    './dist/types/src/rollup-extension-directory-plugin.d.ts'
+  ].map(input => ([
+    path.relative(path.resolve(DIST_DIR, 'types/src'), path.resolve(__dirname, '..', input)).slice(0, -3),
+    input
+  ]))),
   output: {
     format: 'esm',
     dir: 'dist',
@@ -117,4 +118,4 @@ export default rollup.defineConfig([
       respectExternal: true
     })
   ]
-})))
+})
