@@ -10,6 +10,32 @@ The VSCode api is composed of:
   - If it's an important feature: it requires to use the corresponding service override.
   - If it's some advanced features that don't make a lot of sense on Monaco (scm, tests...), it just throws an error when you try to use it.
 
+## Installation
+
+```bash
+npm install vscode@npm:@codingame/monaco-vscode-api
+npm install -D @types/vscode
+```
+
+⚠️ And add in your package.json ⚠️:
+```json
+{
+  "scripts": {
+    "postinstall": "monaco-treemending",
+  }
+}
+```
+
+### Why?
+
+Monaco-editor is a library that is constructed using code from vscode and goes through an intense treeshaking process.
+
+However, due to the inclusion of additional code from VSCode in this library that utilizes internal modules bundled in monaco, this treeshaking is a problem here.
+
+To **tree-mend** (to **un**treeshake it) monaco-editor, this library provide a script that will apply a patch on the local installation of monaco-editor, restoring all the code that was treeshaken during the monaco-editor build process
+
+# Usage
+
 ## Monaco standalone services
 
 Also, monaco-editor use `standalone` versions or the vscode services, which are much simpler.
@@ -30,7 +56,7 @@ await initialize({
 })
 ```
 
-Additionally, this library exposes 11 modules that include the vscode version of some services (with some glue to make it work with monaco):
+Additionally, this library exposes 13 modules that include the vscode version of some services (with some glue to make it work with monaco):
 
 - Notifications: `vscode/service-override/notifications`
 - Dialogs: `vscode/service-override/dialogs`
@@ -120,14 +146,7 @@ The only difference is that is will use the `configurationService` as a default 
 `createModelReference` return a reference to a model. The value is fetched from the memory filesystem (which is written if you provide the second argument).
 The reference can then be disposed, the model will only be disposed if there is no remaining references.
 
-### Installation
-
-```bash
-npm install vscode@npm:@codingame/monaco-vscode-api
-npm install -D @types/vscode
-```
-
-### Usage
+## VSCode api usage
 
 You can just import it as if you were in a vscode extension:
 

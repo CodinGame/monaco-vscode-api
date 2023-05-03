@@ -3,9 +3,11 @@ set -e
 
 vscodeRef=$(cat './node_modules/monaco-editor/package.json' | jq -r '.["vscodeRef"]')
 
+monaco_esm_directory="`pwd`/node_modules/monaco-editor/esm"
 output_directory="`pwd`/vscode"
 extension_output_directory="`pwd`/vscode-default-extensions"
 patch_file="`pwd`/scripts/vscode.patch"
+editor_patch_file="`pwd`/monaco-editor-treemending.patch"
 version_info=$output_directory/version.info
 
 if [[ -e $version_info && $(cat $version_info) == $vscodeRef ]]; then
@@ -32,9 +34,50 @@ yarn install --ignore-scripts
 echo "Patching vscode..."
 patch -p1 < $patch_file
 
+# build editor without treeshaking to generate the treemending patch
+echo "Installing build dependencies"
+which node
+cd build
+yarn install --ignore-engines
+cd ..
+
+mkdir -p editor-patch
+cp -R $monaco_esm_directory editor-patch/a
+cp -R $monaco_esm_directory editor-patch/b
+## Change shake level from ClassMembers to Files
+sed -i 's/shakeLevel: 2/shakeLevel: 0/g' build/gulpfile.editor.js
+npx gulp editor-distro
+cd out-monaco-editor-core/esm/
+cp --parents $(find -name \*.js) ../../editor-patch/b
+cd ../../editor-patch
+diff -urN -x '*.map' a b > "$editor_patch_file" || true 
+cd ..
+# end treemending patch
+
 # copy default extensions
 rm -rf $extension_output_directory
 cp -R extensions "$extension_output_directory"
+
+# transform to relative imports, replace ESM comments and vs/css! imports
+cat << EOF | node -
+	require('./build/lib/standalone').createESMSourcesAndResources2({
+		srcFolder: './src',
+		outFolder: './src',
+		outResourcesFolder: './resources',
+		ignores: [
+			'inlineEntryPoint:0.ts',
+			'inlineEntryPoint:1.ts',
+			'vs/loader.js',
+			'vs/base/worker/workerMain.ts',
+		],
+		renames: {
+			'vs/nls.mock.ts': 'vs/nls.ts'
+		}
+	});
+EOF
+cd resources
+cp --parents $(find -name \*.js) ../src/
+cd ..
 
 cd src
 

@@ -6,6 +6,7 @@ import { fileURLToPath } from 'url'
 const __dirname = path.dirname(fileURLToPath(import.meta.url))
 
 const VSCODE_DIR = path.join(__dirname, '../vscode')
+const DIST_DIR = path.join(__dirname, '../dist')
 
 const interfaceOverride = new Map<string, string>()
 interfaceOverride.set('Event<T>', 'vscode.Event<T>')
@@ -39,25 +40,21 @@ export default rollup.defineConfig([
   './dist/types/src/rollup-vsix-plugin.d.ts',
   './dist/types/src/rollup-extension-directory-plugin.d.ts'
 ].map((input): rollup.RollupOptions => ({
-  input,
+  input: {
+    [path.relative(path.resolve(DIST_DIR, 'types/src'), path.resolve(__dirname, '..', input)).slice(0, -3)]: input
+  },
   output: {
     format: 'esm',
     dir: 'dist',
     entryFileNames: chunk => `${chunk.name}.ts`
   },
   external: function isExternal (id) {
+    if (id.endsWith('.css')) {
+      return true
+    }
     return ['vscode', 'monaco-editor', 'vscode-textmate', 'rollup', '@rollup/pluginutils'].includes(id)
   },
   plugins: [
-    {
-      name: 'ignore-css',
-      load (id) {
-        if (id.includes('vs/css!')) {
-          return 'export default undefined;'
-        }
-        return undefined
-      }
-    },
     {
       name: 'change-unsupported-syntax',
       transform (code) {

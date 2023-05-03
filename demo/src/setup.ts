@@ -19,6 +19,7 @@ import getLanguagesServiceOverride from 'vscode/service-override/languages'
 import getAudioCueServiceOverride from 'vscode/service-override/audioCue'
 import getDebugServiceOverride from 'vscode/service-override/debug'
 import getPreferencesServiceOverride from 'vscode/service-override/preferences'
+import getSnippetServiceOverride from 'vscode/service-override/snippets'
 import EditorWorker from 'monaco-editor/esm/vs/editor/editor.worker?worker'
 import JsonWorker from 'monaco-editor/esm/vs/language/json/json.worker?worker'
 import * as monaco from 'monaco-editor/esm/vs/editor/editor.api'
@@ -125,7 +126,8 @@ await initializeMonacoService({
   ...getLanguagesServiceOverride(),
   ...getAudioCueServiceOverride(),
   ...getDebugServiceOverride(),
-  ...getPreferencesServiceOverride()
+  ...getPreferencesServiceOverride(),
+  ...getSnippetServiceOverride()
 })
 await initializeVscodeExtensions()
 

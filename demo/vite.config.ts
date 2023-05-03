@@ -4,6 +4,18 @@ export default defineConfig({
   build: {
     target: 'esnext'
   },
+  // This is require because vscode is a local dependency
+  // and vite doesn't want to optimize it and the number of modules makes chrome hang
+  optimizeDeps: {
+    include: [
+      'vscode', 'vscode/extensions', 'vscode/services', 'vscode/monaco', 'vscode/service-override/modelEditor',
+      'vscode/service-override/notifications', 'vscode/service-override/dialogs', 'vscode/service-override/configuration',
+      'vscode/service-override/keybindings', 'vscode/service-override/textmate', 'vscode/service-override/theme', 'vscode/service-override/languages',
+      'vscode/service-override/audioCue', 'vscode/service-override/debug',
+      'vscode/service-override/preferences', 'vscode/service-override/snippets', 'vscode/service-override/files',
+      'vscode/default-extensions/theme-defaults', 'vscode/default-extensions/javascript', 'vscode/default-extensions/json'
+    ]
+  },
   server: {
     port: 5173,
     fs: {
