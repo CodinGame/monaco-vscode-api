@@ -175,7 +175,7 @@
     "compile-rollup-plugins": "rollup --config rollup/rollup.rollup-plugins.config.ts --configPlugin 'typescript={tsconfig: `tsconfig.rollup-config-plugins.json`, include: [`./rollup/rollup.rollup-plugins.config.ts`]}'",
     "preprepare": "./scripts/install-vscode && node --loader ts-node/esm src/monaco-treemending.ts",
     "lint": "eslint {/src/**/*.ts,./rollup/*.ts,./*.ts}",
-    "generate-types": "tsc --project tsconfig.types.json && rollup --config rollup/rollup.types.config.ts --configPlugin 'typescript={tsconfig: `tsconfig.rollup-config-types.json`}' && rm -rf ./dist/types",
+    "generate-types": "./scripts/generate-types",
     "release": "node --loader ts-node/esm release.ts ${npm_package_config_vscode_version}",
     "reset:repo": "git clean -f -X -d"
   },
