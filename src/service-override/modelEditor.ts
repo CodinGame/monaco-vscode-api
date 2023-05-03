@@ -151,8 +151,8 @@ class EditorService extends Disposable implements IEditorService {
   isOpened = () => false
   isVisible = () => false
   findEditors = () => []
-  save = async () => true
-  saveAll = async () => true
+  save = async () => ({ success: true, editors: [] })
+  saveAll = async () => ({ success: true, editors: [] })
   revert = unsupported
   revertAll = unsupported
   closeEditor = unsupported

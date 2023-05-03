@@ -133,8 +133,8 @@ registerSingleton(IEditorService, class EditorService implements IEditorService 
   closeEditor = async () => {}
   closeEditors = async () => {}
   findEditors = () => []
-  save = async () => false
-  saveAll = async () => false
+  save = async () => ({ success: false, editors: [] })
+  saveAll = async () => ({ success: false, editors: [] })
   revert = async () => false
   revertAll = async () => false
 }, InstantiationType.Eager)
@@ -586,6 +586,7 @@ class FakeViewModel implements IViewModel {
   onDidSelectExpression = Event.None
   onDidEvaluateLazyExpression = Event.None
   onWillUpdateViews = Event.None
+  onDidFocusThread = Event.None
   evaluateLazyExpression = unsupported
 }
 
