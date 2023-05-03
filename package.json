@@ -229,6 +229,7 @@
     "rollup-plugin-external-assets": "^3.0.1",
     "rollup-plugin-glob-import": "^0.5.0",
     "semver": "^7.5.0",
+    "ts-morph": "^18.0.0",
     "ts-node": "^10.9.1",
     "typescript": "5.0.4",
     "zx": "^7.2.2"

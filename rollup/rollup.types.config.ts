@@ -1,9 +1,17 @@
 import * as rollup from 'rollup'
 import dts from 'rollup-plugin-dts'
+import * as tsMorph from 'ts-morph'
 import * as path from 'path'
 import { fileURLToPath } from 'url'
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url))
+
+const project = new tsMorph.Project({
+  tsConfigFilePath: path.resolve(__dirname, '../tsconfig.types.json'),
+  manipulationSettings: {
+    quoteKind: tsMorph.QuoteKind.Single
+  }
+})
 
 const VSCODE_DIR = path.join(__dirname, '../vscode')
 const DIST_DIR = path.join(__dirname, '../dist')
@@ -66,6 +74,19 @@ export default rollup.defineConfig([
     },
     {
       name: 'replace-interfaces',
+      load (id) {
+        const [sourceFile] = project.addSourceFilesAtPaths(id)
+
+        sourceFile!.addImportDeclaration({
+          moduleSpecifier: 'monaco-editor',
+          namespaceImport: 'monaco'
+        })
+        sourceFile!.addImportDeclaration({
+          moduleSpecifier: 'vscode',
+          namespaceImport: 'vscode'
+        })
+        return sourceFile!.getFullText()
+      },
       transform (code, id) {
         interfaceOverride.forEach((value, key) => {
           const [, path, name] = /(?:(.*):)?(.*)/.exec(key)!
@@ -74,7 +95,7 @@ export default rollup.defineConfig([
           }
         })
 
-        return `import * as monaco from 'monaco-editor'\nimport * as vscode from 'vscode'\n${code}`
+        return code
       }
     },
     {
