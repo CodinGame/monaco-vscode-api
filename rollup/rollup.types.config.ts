@@ -97,6 +97,14 @@ export default rollup.defineConfig({
         })
 
         return code
+      },
+      renderChunk (code, chunk) {
+        const chunkParentPath = path.resolve(DIST_DIR, path.dirname(chunk.fileName))
+        if (code.includes('DebugProtocol')) {
+          const importPath = path.relative(chunkParentPath, path.resolve(DIST_DIR, 'debugProtocol.d.ts'))
+          return `/// <reference path="./${importPath}" />\n\n${code}`
+        }
+        return undefined
       }
     },
     {
