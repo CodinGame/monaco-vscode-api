@@ -47,7 +47,9 @@ export default rollup.defineConfig([
   output: {
     format: 'esm',
     dir: 'dist',
-    entryFileNames: chunk => `${chunk.name}.ts`
+    entryFileNames: chunk => `${chunk.name}.ts`,
+    chunkFileNames: chunk => `${chunk.name}.ts`,
+    assetFileNames: chunk => `${chunk.name}.ts`
   },
   external: function isExternal (id) {
     if (id.endsWith('.css')) {
