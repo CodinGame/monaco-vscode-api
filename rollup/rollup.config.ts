@@ -50,7 +50,8 @@ const PURE_FUNCTIONS = new Set([
   'map',
   'some',
   'asFileUri',
-  'registerIcon'
+  'has',
+  'negate'
 ])
 
 // Function calls to remove when the result is not used
@@ -71,7 +72,8 @@ const FUNCTIONS_TO_REMOVE = new Set([
   'registerEditorSerializer',
   'UndoCommand.addImplementation',
   'submenusExtensionPoint.setHandler',
-  'menusExtensionPoint.setHandler'
+  'menusExtensionPoint.setHandler',
+  'registerIcon'
 ])
 
 const PURE_OR_TO_REMOVE_FUNCTIONS = new Set([
@@ -109,7 +111,7 @@ const ALLOWED_WORKBENCH_CONTRIBUTIONS = new Set([
   'DialogHandlerContribution'
 ])
 
-function isCallPure (functionName: string, node: recast.types.namedTypes.CallExpression): boolean {
+function isCallPure (file: string, functionName: string, node: recast.types.namedTypes.CallExpression): boolean {
   const args = node.arguments
   if (functionName === '__decorate') {
     const code = recast.print(node).code
@@ -142,6 +144,10 @@ function isCallPure (functionName: string, node: recast.types.namedTypes.CallExp
   }
 
   if (functionName.endsWith('registerAction2')) {
+    if (file.includes('layoutActions') || file.includes('editor.contribution') || file.includes('fileActions.contribution') || file.includes('windowActions') || file.includes('workspaceActions')) {
+      return true
+    }
+
     const firstParam = args[0]!
     if (firstParam.type === 'ClassExpression' && firstParam.id?.name === 'AddConfigurationAction') {
       return true
@@ -173,6 +179,18 @@ function isCallPure (functionName: string, node: recast.types.namedTypes.CallExp
       return false
     }
     return true
+  }
+
+  if (functionName === 'MenuRegistry.appendMenuItems') {
+    if (file.includes('layoutActions')) {
+      return true
+    }
+  }
+
+  if (functionName === 'MenuRegistry.appendMenuItem') {
+    if (file.includes('editor.contribution')) {
+      return true
+    }
   }
 
   return PURE_OR_TO_REMOVE_FUNCTIONS.has(functionName)
@@ -483,11 +501,11 @@ export default (args: Record<string, string>): rollup.RollupOptions[] => {
 
                 if (node.callee.type === 'MemberExpression') {
                   if (node.callee.property.type === 'Identifier') {
-                    if ((name != null && isCallPure(name, node)) || isCallPure(node.callee.property.name, node)) {
+                    if ((name != null && isCallPure(id, name, node)) || isCallPure(id, node.callee.property.name, node)) {
                       path.replace(addComment(node))
                     }
                   }
-                } else if (node.callee.type === 'Identifier' && isCallPure(node.callee.name, node)) {
+                } else if (node.callee.type === 'Identifier' && isCallPure(id, node.callee.name, node)) {
                   path.replace(addComment(node))
                 } else if (node.callee.type === 'FunctionExpression') {
                   const lastInstruction = node.callee.body.body[node.callee.body.body.length - 1]
