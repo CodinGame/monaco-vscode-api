@@ -158,6 +158,7 @@
     "dist",
     "monaco-treemending.js",
     "monaco-editor-treemending.patch",
+    "monaco-editor-hashes.txt",
     "README.md"
   ],
   "scripts": {
@@ -170,7 +171,8 @@
     "lint": "eslint {/src/**/*.ts,./rollup/*.ts,./*.ts}",
     "generate-types": "tsc --project tsconfig.types.json && rollup --config rollup/rollup.types.config.ts --configPlugin 'typescript={tsconfig: `tsconfig.rollup-config-types.json`}' && rm -rf ./dist/types",
     "release": "node --loader ts-node/esm release.ts ${npm_package_config_vscode_version}",
-    "reset:repo": "git clean -f -X -d"
+    "reset:repo": "git clean -f -X -d",
+    "gen:hash:module": "node --loader ts-node/esm src/monaco-calc-hashes.ts node_modules/monaco-editor/esm monaco-editor-hashes-module.txt"
   },
   "bin": {
     "monaco-treemending": "./monaco-treemending.js"
