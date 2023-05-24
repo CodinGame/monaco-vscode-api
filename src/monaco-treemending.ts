@@ -5,9 +5,22 @@ import { createRequire } from 'node:module'
 const require = createRequire(import.meta.url)
 
 async function run () {
+  const ownPackageJson = JSON.parse((await fs.readFile(require.resolve('../package.json'))).toString('utf-8'))
+  const expectedMonacoVersion = ownPackageJson.peerDependencies['monaco-editor']
+
   const patchContent = await fs.readFile(require.resolve('../monaco-editor-treemending.patch'))
 
-  const monacoDirectory = path.resolve(path.dirname(require.resolve('monaco-editor/monaco.d.ts', { paths: [process.cwd()] })), 'esm')
+  const monacoDirectory = path.dirname(require.resolve('monaco-editor/monaco.d.ts', { paths: [process.cwd()] }))
+  const monacoEsmDirectory = path.resolve(monacoDirectory, 'esm')
+  const monacoPackageJsonFile = path.resolve(monacoDirectory, 'package.json')
+
+  const monacoPackageJson = JSON.parse((await fs.readFile(monacoPackageJsonFile)).toString('utf-8'))
+  const monacoVersion = monacoPackageJson.version
+
+  if (expectedMonacoVersion !== monacoVersion) {
+    console.error(`Wrong monaco-editor version: expecting ${expectedMonacoVersion}, got ${monacoVersion}`)
+    process.exit(1)
+  }
 
   function getMonacoFile (diff: ParsedDiff) {
     return path.resolve(monacoDirectory, diff.oldFileName!.slice('a/'.length))
