@@ -447,6 +447,10 @@ export default (args: Record<string, string>): rollup.RollupOptions[] => {
       annotations: true,
       preset: 'smallest',
       moduleSideEffects (id) {
+        if (id.endsWith('vs/workbench/browser/media/style.css')) {
+          // Remove global vscode css rules
+          return false
+        }
         return id.startsWith(SRC_DIR) ||
           id.endsWith('.css') ||
           id.startsWith(KEYBOARD_LAYOUT_DIR) ||
