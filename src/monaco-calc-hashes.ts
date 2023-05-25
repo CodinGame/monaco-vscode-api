@@ -27,28 +27,32 @@ const walk = async (basePath: string, dirPath: string) => {
 export const calcModuleHash = async (basePath: string, writeOutput: boolean, outputFile?: string): Promise<string> => {
   const res = await walk(basePath, basePath)
   const joined = res.join(os.EOL)
+  const joinedHash = createHash('sha3-256').update(joined).digest('hex')
   if (writeOutput && outputFile != null) {
-    await writeFile(outputFile, joined)
+    await writeFile(outputFile, joinedHash)
   }
   return joined
 }
 
 // work as script
-const dirIn = process.argv[2]
-const outputFileIn = process.argv[3]
+const script = process.argv[2]
+if (script === '--script') {
+  const dirIn = process.argv[3]
+  const outputFileIn = process.argv[4]
 
-if (dirIn != null && outputFileIn != null) {
-  const dir = resolve(normalize(dirIn))
-  const outputFile = resolve(normalize(outputFileIn))
+  if (dirIn != null && outputFileIn != null) {
+    const dir = resolve(normalize(dirIn))
+    const outputFile = resolve(normalize(outputFileIn))
 
-  const run = async () => {
-    await calcModuleHash(dir, true, outputFile)
+    const run = async () => {
+      await calcModuleHash(dir, true, outputFile)
+    }
+
+    run().then(() => {
+      // eslint-disable-next-line no-console
+      console.info('Monaco-editor hashes were successfully created here: ' + outputFile)
+    }, err => {
+      console.error(err)
+    })
   }
-
-  run().then(() => {
-    // eslint-disable-next-line no-console
-    console.info('Monaco-editor hashes were successfully created here: ' + outputFile)
-  }, err => {
-    console.error(err)
-  })
 }

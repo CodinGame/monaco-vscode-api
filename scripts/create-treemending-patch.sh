@@ -32,6 +32,6 @@ diff -urN -x '*.map' a b > "$editor_patch_file" || true
 cd ..
 
 cd $dir_base
-node --loader ts-node/esm $dir_base/src/monaco-calc-hashes.ts $build_directory/editor-patch/b $dir_base/monaco-editor-hashes.txt
+node --loader ts-node/esm $dir_base/src/monaco-calc-hashes.ts --script $build_directory/editor-patch/b $dir_base/monaco-editor-treemending.sha256
 
 echo "Completed treemending process"

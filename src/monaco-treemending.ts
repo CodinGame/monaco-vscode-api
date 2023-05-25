@@ -7,7 +7,7 @@ const require = createRequire(import.meta.url)
 
 async function run () {
   const patchContent = await fs.readFile(require.resolve('../monaco-editor-treemending.patch'))
-  const refMonacoHashes = (await fs.readFile(require.resolve('../monaco-editor-hashes.txt'))).toString()
+  const refMonacoHashes = (await fs.readFile(require.resolve('../monaco-editor-treemending.sha256'))).toString()
 
   const monacoDirectory = path.resolve(path.dirname(require.resolve('monaco-editor/monaco.d.ts', { paths: [process.cwd()] })), 'esm')
   const monacoHashes = await calcModuleHash(monacoDirectory, false)

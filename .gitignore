@@ -2,5 +2,4 @@ node_modules/
 vscode/
 vscode-default-extensions/
 dist/
-monaco-editor-treemending.patch
-monaco-editor-hashes.txt
+monaco-editor-treemending.*
