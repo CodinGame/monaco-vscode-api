@@ -172,6 +172,7 @@ export default function create (getExtension: () => IExtensionDescription): type
       return extHostWorkspace.name
     },
     onDidChangeNotebookDocument: unsupported,
-    onDidSaveNotebookDocument: unsupported
+    onDidSaveNotebookDocument: unsupported,
+    onWillSaveNotebookDocument: unsupported
   }
 }

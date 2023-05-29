@@ -182,7 +182,7 @@ function isCallPure (file: string, functionName: string, node: recast.types.name
 
     const firstParam = args[0]!
 
-    const className = firstParam.type === 'Identifier' ? firstParam.name : firstParam.type === 'ClassExpression' ? firstParam.id?.name : undefined
+    const className = firstParam.type === 'Identifier' ? firstParam.name : firstParam.type === 'ClassExpression' ? firstParam.id?.name as string : undefined
     if (className != null && ['OpenDisassemblyViewAction', 'AddConfigurationAction', 'ToggleDisassemblyViewSourceCodeAction'].includes(className)) {
       return true
     }
