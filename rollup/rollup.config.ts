@@ -611,6 +611,15 @@ export default (args: Record<string, string>): rollup.RollupOptions[] => {
               return node
             }
             recast.visit(ast.program.body, {
+              visitExportNamedDeclaration (path) {
+                if (path.node.specifiers != null && path.node.specifiers.some(specifier => specifier.exported.name === 'LayoutPriority')) {
+                  // For some reasons, this re-export is not used but rollup is not able to treeshake it
+                  // It's an issue because it's a const enum imported from monaco (so it doesn't exist in the js code)
+                  path.node.specifiers = path.node.specifiers.filter(specifier => specifier.exported.name !== 'LayoutPriority')
+                  transformed = true
+                }
+                this.traverse(path)
+              },
               visitNewExpression (path) {
                 const node = path.node
                 if (node.callee.type === 'Identifier') {
