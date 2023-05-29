@@ -1,5 +1,5 @@
 import type * as vscode from 'vscode'
-import { ExtensionIdentifier, ExtensionType, IExtension, IExtensionContributions, IExtensionDescription, IExtensionManifest, TargetPlatform } from 'vs/platform/extensions/common/extensions'
+import { ExtensionType, IExtension, IExtensionContributions, IExtensionDescription, IExtensionManifest, TargetPlatform } from 'vs/platform/extensions/common/extensions'
 import { ExtensionMessageCollector, ExtensionPoint, ExtensionsRegistry, IExtensionPointUser } from 'vs/workbench/services/extensions/common/extensionsRegistry'
 import { IMessage, toExtensionDescription } from 'vs/workbench/services/extensions/common/extensions'
 import { generateUuid } from 'vs/base/common/uuid'
@@ -32,6 +32,7 @@ import createDebugApi from './vscode-services/debug'
 import createExtensionsApi from './vscode-services/extensions'
 import { initialize as initializeExtHostServices, onExtHostInitialized, getExtHostServices } from './vscode-services/extHost'
 import { unsupported } from './tools'
+import { setDefaultExtension } from './default-extension'
 
 export function consoleExtensionMessageHandler (msg: IMessage): void {
   if (msg.type === Severity.Error) {
@@ -57,28 +58,9 @@ configurationRegistry.registerConfiguration({
   }
 })
 
-let DEFAULT_EXTENSION: IExtensionDescription = {
-  identifier: new ExtensionIdentifier('monaco'),
-  isBuiltin: true,
-  isUserBuiltin: true,
-  isUnderDevelopment: false,
-  extensionLocation: URI.from({ scheme: 'extension', path: '/' }),
-  name: 'monaco',
-  publisher: 'microsoft',
-  version: '1.0.0',
-  engines: {
-    vscode: VSCODE_VERSION
-  },
-  targetPlatform: TargetPlatform.WEB
-}
-
-export function getDefaultExtension (): IExtensionDescription {
-  return DEFAULT_EXTENSION
-}
-
 export async function initialize (extension?: IExtensionDescription): Promise<void> {
   if (extension != null) {
-    DEFAULT_EXTENSION = extension
+    setDefaultExtension(extension)
   }
 
   await initializeExtHostServices()

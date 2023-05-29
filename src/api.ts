@@ -20,7 +20,7 @@ import createWindowApi, { TextTabInput } from './vscode-services/window'
 import createEnvApi from './vscode-services/env'
 import createDebugApi from './vscode-services/debug'
 import createExtensionsApi from './vscode-services/extensions'
-import { getDefaultExtension } from './extensions'
+import { getDefaultExtension } from './default-extension'
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 const unsupported = <any>undefined
