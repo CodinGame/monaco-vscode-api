@@ -223,7 +223,7 @@
     "zx": "^7.2.1"
   },
   "peerDependencies": {
-    "monaco-editor": "~0.37.1",
+    "monaco-editor": "0.37.1",
     "vscode-oniguruma": "^1.7.0",
     "vscode-textmate": "^9.0.0",
     "yauzl": "^2.10.0"

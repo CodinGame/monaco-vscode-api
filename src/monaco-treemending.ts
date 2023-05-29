@@ -5,12 +5,32 @@ import { createRequire } from 'node:module'
 const require = createRequire(import.meta.url)
 
 async function run () {
+  const ownPackageJson = JSON.parse((await fs.readFile(require.resolve('../package.json'))).toString('utf-8'))
+  const expectedMonacoVersion = ownPackageJson.peerDependencies['monaco-editor']
+
   const patchContent = await fs.readFile(require.resolve('../monaco-editor-treemending.patch'))
 
-  const monacoDirectory = path.resolve(path.dirname(require.resolve('monaco-editor/monaco.d.ts', { paths: [process.cwd()] })), 'esm')
+  const monacoDirectory = path.dirname(require.resolve('monaco-editor/monaco.d.ts', { paths: [process.cwd()] }))
+  const monacoEsmDirectory = path.resolve(monacoDirectory, 'esm')
+  const monacoPackageJsonFile = path.resolve(monacoDirectory, 'package.json')
+
+  const monacoPackageJson = JSON.parse((await fs.readFile(monacoPackageJsonFile)).toString('utf-8'))
+  const monacoVersion = monacoPackageJson.version
+
+  if (expectedMonacoVersion !== monacoVersion) {
+    console.error(`Wrong monaco-editor version: expecting ${expectedMonacoVersion}, got ${monacoVersion}`)
+    process.exit(1)
+  }
+
+  const alreadyPatched: boolean = monacoPackageJson.treemended ?? false
+  if (alreadyPatched) {
+    // eslint-disable-next-line no-console
+    console.info('Monaco-editor has already been tree-mended, ignoring')
+    process.exit(0)
+  }
 
   function getMonacoFile (diff: ParsedDiff) {
-    return path.resolve(monacoDirectory, diff.oldFileName!.slice('a/'.length))
+    return path.resolve(monacoEsmDirectory, diff.oldFileName!.slice('a/'.length))
   }
 
   await new Promise<void>((resolve, reject) => {
@@ -46,11 +66,19 @@ async function run () {
       }
     })
   })
-}
 
-run().then(() => {
+  // Mark monaco as treemended
+  await fs.writeFile(monacoPackageJsonFile, JSON.stringify({
+    ...monacoPackageJson,
+    treemended: true
+  }, null, 2))
+
   // eslint-disable-next-line no-console
   console.info('Monaco-editor was tree-mended')
-}, err => {
+  process.exit(0)
+}
+
+run().catch(err => {
   console.error(err)
+  process.exit(1)
 })
