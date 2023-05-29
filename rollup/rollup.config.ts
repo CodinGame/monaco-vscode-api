@@ -429,6 +429,7 @@ const externals = Object.keys({ ...pkg.peerDependencies })
 const external: rollup.ExternalOption = (source) => {
   // mark semver as external so it's ignored (the code that imports it will be treeshaked out)
   if (source.includes('semver')) return true
+  if (source.includes('tas-client-umd')) return true
   if (source.startsWith(MONACO_EDITOR_DIR) || source.startsWith('monaco-editor/')) {
     return true
   }
