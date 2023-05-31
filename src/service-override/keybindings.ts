@@ -12,10 +12,9 @@ import { CancellationToken } from 'vs/base/common/cancellation'
 import { IUserDataProfilesService } from 'vs/platform/userDataProfile/common/userDataProfile'
 import { IKeyboardLayoutService } from 'vs/platform/keyboardLayout/common/keyboardLayout'
 import { BrowserKeyboardLayoutService } from 'vs/workbench/services/keybinding/browser/keyboardLayoutService'
-import { localize } from 'vs/nls'
-import { IConfigurationRegistry, Extensions as ConfigurationExtensions } from 'vs/platform/configuration/common/configurationRegistry'
 import { IFileService } from 'vs/platform/files/common/files'
 import getFileServiceOverride from './files'
+import 'vs/workbench/browser/workbench.contribution'
 
 // Replace StandaloneCommandsQuickAccessProvider by vscode CommandsQuickAccessProvider so the extension commands are displayed in the picker
 const quickAccessRegistry = Registry.as<QuickAccessRegistry>(Extensions.Quickaccess)
@@ -33,29 +32,6 @@ if (provider != null) {
     }
   }
 }
-
-// required for CommandsQuickAccessProvider
-const configurationRegistry = Registry.as<IConfigurationRegistry>(ConfigurationExtensions.Configuration)
-configurationRegistry.registerConfiguration({
-  properties: {
-    'workbench.commandPalette.history': {
-      type: 'number',
-      description: localize('commandHistory', 'Controls the number of recently used commands to keep in history for the command palette. Set to 0 to disable command history.'),
-      default: 50,
-      minimum: 0
-    },
-    'workbench.commandPalette.preserveInput': {
-      type: 'boolean',
-      description: localize('preserveInput', 'Controls whether the last typed input to the command palette should be restored when opening it the next time.'),
-      default: false
-    },
-    'workbench.commandPalette.experimental.suggestCommands': {
-      type: 'boolean',
-      description: localize('suggestCommands', 'Controls whether the command palette should have a list of commonly used commands.'),
-      default: false
-    }
-  }
-})
 
 async function updateUserKeybindings (keybindingsJson: string): Promise<void> {
   const userDataProfilesService: IUserDataProfilesService = StandaloneServices.get(IUserDataProfilesService)
