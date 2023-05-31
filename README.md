@@ -190,7 +190,7 @@ import 'vscode/default-extensions/json'
 ### Loading vsix file
 
 VSCode extension are bundled as vsix files.
-This library exposes a rollup plugin (vite-compatible) that allows to load a vsix file. The code is not used, only the declarative part in the manifest.
+This library exposes a rollup plugin (vite-compatible) that allows to load a vsix file.
 
 - rollup/vite config:
 ```typescript
