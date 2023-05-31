@@ -583,7 +583,7 @@ export default (args: Record<string, string>): rollup.RollupOptions[] => {
       {
         name: 'improve-vscode-treeshaking',
         transform (code, id) {
-          if (id.startsWith(VSCODE_DIR)) {
+          if (id.startsWith(VSCODE_DIR) && id.endsWith('.js')) {
             // HACK: assign typescript decorator result to a decorated class field so rollup doesn't remove them
             // before:
             // __decorate([
