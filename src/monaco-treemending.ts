@@ -1,6 +1,7 @@
 import { applyPatches, ParsedDiff } from 'diff'
 import * as fs from 'fs/promises'
 import * as path from 'path'
+import * as os from 'os'
 import { createRequire } from 'node:module'
 const require = createRequire(import.meta.url)
 
@@ -29,8 +30,18 @@ async function run () {
     process.exit(0)
   }
 
+  // pnpm WA: copy files to a temp directory and patch files there. When finished copy back
+  let workingDir = monacoEsmDirectory
+  let tmpDir: string
+  const havePnpm = monacoEsmDirectory.includes('.pnpm')
+  if (havePnpm) {
+    tmpDir = await fs.mkdtemp(path.join(os.tmpdir(), 'esm-'))
+    workingDir = path.resolve(tmpDir, 'esm')
+    await fs.cp(monacoEsmDirectory, workingDir, { recursive: true })
+  }
+
   function getMonacoFile (diff: ParsedDiff) {
-    return path.resolve(monacoEsmDirectory, diff.oldFileName!.slice('a/'.length))
+    return path.resolve(workingDir, diff.oldFileName!.slice('a/'.length))
   }
 
   await new Promise<void>((resolve, reject) => {
@@ -66,6 +77,11 @@ async function run () {
       }
     })
   })
+
+  // in case of pnpm copy the temp esm back
+  if (havePnpm) {
+    await fs.cp(tmpDir!, monacoDirectory, { recursive: true, force: true })
+  }
 
   // Mark monaco as treemended
   await fs.writeFile(monacoPackageJsonFile, JSON.stringify({
