@@ -58,29 +58,14 @@ const PURE_FUNCTIONS = new Set([
 
 // Function calls to remove when the result is not used
 const FUNCTIONS_TO_REMOVE = new Set([
-  'colorRegistry.onDidChangeSchema',
   'registerSingleton', // Remove calls to registerSingleton from vscode code, we just want to import things, not registering services
   'registerProxyConfigurations',
   'registerViewWelcomeContent',
-  'registerEditorPane',
   'registerExtensionPoint',
   '_setExtensionHostProxy',
   '_setAllMainProxyIdentifiers',
   'registerTouchBarEntry',
   'registerEditorSerializer',
-  'registerIcon',
-  'createOpenEditorsViewDescriptor',
-  'registerActiveEditorMoveCopyCommand',
-  'registerEditorGroupsLayoutCommands',
-  'registerDiffEditorCommands',
-  'registerOpenEditorAtIndexCommands',
-  'registerCloseEditorCommands',
-  'registerOtherEditorCommands',
-  'registerSplitEditorInGroupCommands',
-  'registerFocusSideEditorsCommands',
-  'registerFocusEditorGroupAtIndexCommands',
-  'registerSplitEditorCommands',
-  'registerFocusEditorGroupWihoutWrapCommands',
 
   'appendSaveConflictEditorTitleAction',
   'appendToCommandPalette',
@@ -95,20 +80,12 @@ const PURE_OR_TO_REMOVE_FUNCTIONS = new Set([
 ])
 
 const REMOVE_COMMANDS = new Set([
-  'debug.openView',
   'DEBUG_START_COMMAND_ID',
   'DEBUG_RUN_COMMAND_ID',
   'SELECT_DEBUG_CONSOLE_ID',
   'SELECT_AND_START_ID',
   'debug.startFromConfig',
   'debug.installAdditionalDebuggers',
-  'SAVE_FILE_COMMAND_ID',
-  'SAVE_FILE_WITHOUT_FORMATTING_COMMAND_ID',
-  'SAVE_FILE_AS_COMMAND_ID',
-  'SAVE_ALL_COMMAND_ID',
-  'SAVE_ALL_IN_GROUP_COMMAND_ID',
-  'SAVE_FILES_COMMAND_ID',
-  'REVERT_FILE_COMMAND_ID',
   'REMOVE_ROOT_FOLDER_COMMAND_ID'
 ])
 
@@ -123,6 +100,7 @@ const ALLOWED_WORKBENCH_CONTRIBUTIONS = new Set([
   'AudioCueLineDebuggerContribution',
   'RegisterConfigurationSchemasContribution',
   'EditorAutoSave',
+  'EditorStatus',
   'DebugToolBar',
   'DebugContentProvider',
   'DialogHandlerContribution',
@@ -171,13 +149,14 @@ function isCallPure (file: string, functionName: string, node: recast.types.name
         firstParamName.includes('ViewContainersRegistry') ||
         firstParamName.includes('Viewlets') ||
         firstParamName.includes('Panels') ||
-        firstParamName.includes('Auxiliary')
+        firstParamName.includes('Auxiliary') ||
+        firstParamName.includes('EditorPane')
       return !allowed
     }
   }
 
   if (functionName.endsWith('registerAction2')) {
-    if (file.includes('layoutActions') || file.includes('editor.contribution') || file.includes('fileActions.contribution') || file.includes('windowActions') || file.includes('workspaceActions')) {
+    if (file.includes('layoutActions') || file.includes('fileActions.contribution') || file.includes('windowActions') || file.includes('workspaceActions')) {
       return true
     }
 
@@ -202,51 +181,12 @@ function isCallPure (file: string, functionName: string, node: recast.types.name
     }
   }
   if (functionName === 'MenuRegistry.appendMenuItem') {
-    if (file.includes('editor.contribution')) {
-      return true
-    }
-
     const firstParamCode = recast.print(args[0]!).code
-
-    if ([
-      'MenuId.OpenEditorsContext'
-    ].some(text => firstParamCode.includes(text))) {
-      return true
-    }
-    if (firstParamCode.startsWith('MenuId.Menubar')) {
-      return true
-    }
-
-    const secondParamCode = recast.print(args[1]!).code
-    if ([
-      'REOPEN_WITH_COMMAND_ID',
-      'SAVE_ALL_IN_GROUP_COMMAND_ID',
-      'COMPARE_WITH_SAVED_COMMAND_ID',
-      'COMPARE_RESOURCE_COMMAND_ID',
-      'compareResourceCommand',
-      'selectForCompareCommand',
-      'COMPARE_SELECTED_COMMAND_ID',
-      'compareSelectedCommand',
-      'CLOSE_EDITOR_COMMAND_ID',
-      'CLOSE_OTHER_EDITORS_IN_GROUP_COMMAND_ID',
-      'CLOSE_SAVED_EDITORS_COMMAND_ID',
-      'CLOSE_EDITORS_IN_GROUP_COMMAND_ID',
-      'openToSideCommand',
-      'OPEN_WITH_EXPLORER_COMMAND_ID',
-      'compareResourceCommand',
-      'selectForCompareCommand',
-      'compareSelectedCommand',
-      '5b_importexport',
-      '3_compare',
-      '2_workspace',
-      '3_workspace',
-      'MOVE_FILE_TO_TRASH_ID',
-      'SAVE_FILE_COMMAND_ID',
-      'SAVE_FILE_AS_COMMAND_ID',
-      'SAVE_ALL_COMMAND_ID',
-      'openToSideCommand',
-      'workbench.action.quickOpen'
-    ].some(text => secondParamCode.includes(text))) {
+    if (
+      firstParamCode.startsWith('MenuId.MenubarDebugMenu') ||
+      firstParamCode.startsWith('MenuId.MenubarFileMenu') ||
+      firstParamCode.startsWith('MenuId.TouchBarContext')
+    ) {
       return true
     }
   }
@@ -461,7 +401,9 @@ export default (args: Record<string, string>): rollup.RollupOptions[] => {
           id.includes('vs/workbench/api/browser/') ||
           id.endsWith('/fileCommands.js') ||
           id.endsWith('/explorerViewlet.js') ||
-          id.endsWith('/listCommands.js')
+          id.endsWith('/listCommands.js') ||
+          id.endsWith('/quickAccessActions.js') ||
+          id.endsWith('/gotoLineQuickAccess.js')
       }
     },
     external,
@@ -500,7 +442,6 @@ export default (args: Record<string, string>): rollup.RollupOptions[] => {
             return path.resolve(OVERRIDE_PATH, 'jschardet.ts')
           }
           if (importer != null && importee.startsWith('.')) {
-            // console.log(importee, importer, path.resolve(path.dirname(importer), importee))
             importee = path.resolve(path.dirname(importer), importee)
           }
           if (importee.startsWith('vscode/')) {
