@@ -2,7 +2,7 @@ import '../vscode-services/missing-services'
 import { IEditorOverrideServices, StandaloneServices } from 'vs/editor/standalone/browser/standaloneServices'
 import { IWorkbenchLayoutService, Parts, Position } from 'vs/workbench/services/layout/browser/layoutService'
 import { ILayoutOffsetInfo, ILayoutService } from 'vs/platform/layout/browser/layoutService'
-import { Emitter } from 'vs/base/common/event'
+import { Emitter, Event } from 'vs/base/common/event'
 import { ICodeEditorService } from 'vs/editor/browser/services/codeEditorService'
 import * as dom from 'vs/base/browser/dom'
 import { SyncDescriptor } from 'vs/platform/instantiation/common/descriptors'
@@ -11,7 +11,7 @@ import { isAncestorUsingFlowTo } from 'vs/base/browser/dom'
 import { IPaneCompositePartService } from 'vs/workbench/services/panecomposite/browser/panecomposite'
 import { ViewContainerLocation } from 'vs/workbench/common/views'
 
-class LayoutService implements ILayoutService, Pick<IWorkbenchLayoutService, 'isVisible' | 'onDidChangePartVisibility' | 'isRestored' | 'registerPart' | 'getSideBarPosition' | 'setPartHidden' | 'hasFocus' | 'getPanelPosition' | 'isPanelMaximized'> {
+export class LayoutService implements ILayoutService, Pick<IWorkbenchLayoutService, 'isVisible' | 'onDidChangePartVisibility' | 'isRestored' | 'registerPart' | 'getSideBarPosition' | 'setPartHidden' | 'hasFocus' | 'getPanelPosition' | 'isPanelMaximized' | 'getMaximumEditorDimensions' | 'onDidChangeFullscreen'> {
   declare readonly _serviceBrand: undefined
 
   constructor (
@@ -20,6 +20,12 @@ class LayoutService implements ILayoutService, Pick<IWorkbenchLayoutService, 'is
   ) {
     window.addEventListener('resize', () => this.layout())
     this.layout()
+  }
+
+  onDidChangeFullscreen = Event.None
+
+  getMaximumEditorDimensions (): dom.Dimension {
+    return new dom.Dimension(Infinity, Infinity)
   }
 
   isPanelMaximized (): boolean {
