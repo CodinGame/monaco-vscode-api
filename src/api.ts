@@ -129,7 +129,7 @@ const api: typeof vscode = {
   SignatureInformation: extHostTypes.SignatureInformation,
   SnippetString: extHostTypes.SnippetString,
   SourceBreakpoint: extHostTypes.SourceBreakpoint,
-  StatusBarAlignment: unsupported,
+  StatusBarAlignment: extHostTypes.StatusBarAlignment,
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   SymbolInformation: <any>extHostTypes.SymbolInformation,
   SymbolKind: extHostTypes.SymbolKind,
