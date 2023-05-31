@@ -11,6 +11,7 @@ import dynamicImportVars from '@rollup/plugin-dynamic-import-vars'
 import externalAssets from 'rollup-plugin-external-assets'
 import globImport from 'rollup-plugin-glob-import'
 import terser from '@rollup/plugin-terser'
+import styles from 'rollup-plugin-styles'
 import * as fs from 'fs'
 import * as path from 'path'
 import { fileURLToPath } from 'url'
@@ -673,7 +674,11 @@ export default (args: Record<string, string>): rollup.RollupOptions[] => {
           return path.relative(VSCODE_DIR, id).replace(/[/.]/g, '_')
         }
       }),
-      externalAssets(['**/*.mp3', '**/*.wasm', '**/*.css']),
+      externalAssets(['**/*.mp3', '**/*.wasm']),
+      styles({
+        mode: 'inject',
+        minimize: true
+      }),
       {
         name: 'dynamic-import-polyfill',
         renderDynamicImport (): { left: string, right: string } {
@@ -763,7 +768,7 @@ export default (args: Record<string, string>): rollup.RollupOptions[] => {
     }, nodeResolve({
       extensions: EXTENSIONS
     }),
-    externalAssets(['**/*.mp3', '**/*.wasm', '**/*.css']),
+    externalAssets(['**/*.mp3', '**/*.wasm']),
     {
       name: 'cleanup',
       renderChunk (code) {
