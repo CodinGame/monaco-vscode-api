@@ -59,6 +59,7 @@ import { ExtHostOutputService, IExtHostOutputService } from 'vs/workbench/api/co
 import { ExtHostTreeViews } from 'vs/workbench/api/common/extHostTreeViews'
 import { ExtHostStorage } from 'vs/workbench/api/common/extHostStorage'
 import { ITelemetryService } from 'vs/platform/telemetry/common/telemetry'
+import { ExtHostStatusBar } from 'vs/workbench/api/common/extHostStatusBar'
 import 'vs/workbench/api/browser/mainThreadLocalization'
 import 'vs/workbench/api/browser/mainThreadCommands'
 import 'vs/workbench/api/browser/mainThreadWindow'
@@ -83,6 +84,7 @@ import 'vs/workbench/api/browser/mainThreadOutputService'
 import 'vs/workbench/api/browser/mainThreadSaveParticipant'
 import 'vs/workbench/api/browser/mainThreadTreeViews'
 import 'vs/workbench/api/browser/mainThreadStorage'
+import 'vs/workbench/api/browser/mainThreadStatusBar'
 import * as errors from 'vs/base/common/errors'
 import { Barrier } from 'vs/base/common/async'
 import { unsupported } from '../tools'
@@ -351,6 +353,7 @@ async function createExtHostServices () {
   const extHostBulkEdits = new ExtHostBulkEdits(rpcProtocol, extHostDocumentsAndEditors)
   const extHostClipboard = new ExtHostClipboard(mainContext)
   const extHostMessageService = new ExtHostMessageService(rpcProtocol, logService)
+  const extHostStatusBar = new ExtHostStatusBar(rpcProtocol, extHostCommands.converter)
 
   // Register API-ish commands
   ExtHostApiCommands.register(extHostCommands)
@@ -412,7 +415,8 @@ async function createExtHostServices () {
     extHostOutputService,
     extHostTreeViews,
     extHostStorage,
-    extHostLocalization
+    extHostLocalization,
+    extHostStatusBar
   }
 }
 
