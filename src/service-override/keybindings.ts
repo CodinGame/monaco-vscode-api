@@ -1,12 +1,9 @@
 import '../vscode-services/missing-services'
-import { IEditorOverrideServices, StandaloneKeybindingService, StandaloneServices } from 'vs/editor/standalone/browser/standaloneServices'
+import { IEditorOverrideServices, StandaloneServices } from 'vs/editor/standalone/browser/standaloneServices'
 import { SyncDescriptor } from 'vs/platform/instantiation/common/descriptors'
 import { WorkbenchKeybindingService } from 'vs/workbench/services/keybinding/browser/keybindingService'
 import { IKeybindingService, IUserFriendlyKeybinding } from 'vs/platform/keybinding/common/keybinding'
 import { VSBuffer } from 'vs/base/common/buffer'
-import { KeybindingResolver } from 'vs/platform/keybinding/common/keybindingResolver'
-import { IInstantiationService } from 'vs/platform/instantiation/common/instantiation'
-import { AbstractKeybindingService } from 'vs/platform/keybinding/common/abstractKeybindingService'
 import { Registry } from 'vs/platform/registry/common/platform'
 import { Extensions, QuickAccessRegistry } from 'vs/platform/quickinput/common/quickAccess'
 import { StandaloneCommandsQuickAccessProvider } from 'vs/editor/standalone/browser/quickAccess/standaloneCommandsQuickAccess'
@@ -19,43 +16,6 @@ import { localize } from 'vs/nls'
 import { IConfigurationRegistry, Extensions as ConfigurationExtensions } from 'vs/platform/configuration/common/configurationRegistry'
 import { IFileService } from 'vs/platform/files/common/files'
 import getFileServiceOverride from './files'
-import { createInjectedClass } from '../tools/injection'
-
-// This class use useful so editor.addAction and editor.addCommand still work
-// Monaco do an `instanceof` on the KeybindingService so we need it to extends `StandaloneKeybindingService`
-class DelegateStandaloneKeybindingService extends createInjectedClass(StandaloneKeybindingService) {
-  private _cachedOverridenResolver: KeybindingResolver | null
-
-  private delegate: AbstractKeybindingService
-
-  constructor (@IInstantiationService instantiationService: IInstantiationService) {
-    super(instantiationService)
-    this.delegate = instantiationService.createInstance(WorkbenchKeybindingService)
-    this._cachedOverridenResolver = null
-
-    this.onDidUpdateKeybindings(() => {
-      this._cachedOverridenResolver = null
-    })
-    this.delegate.onDidUpdateKeybindings(() => {
-      this._cachedOverridenResolver = null
-    })
-  }
-
-  protected override _getResolver (): KeybindingResolver {
-    // Create a new resolver that uses the keybindings from WorkbenchKeybindingService, overriden by _dynamicKeybindings from StandaloneKeybindingService
-    if (this._cachedOverridenResolver == null) {
-      // eslint-disable-next-line dot-notation
-      const overrides = this['_toNormalizedKeybindingItems'](this['_dynamicKeybindings'], false)
-      this._cachedOverridenResolver = new KeybindingResolver(
-        // eslint-disable-next-line dot-notation
-        [...this.delegate['_getResolver']().getKeybindings()],
-        overrides
-        , (str) => this._log(str)
-      )
-    }
-    return this._cachedOverridenResolver
-  }
-}
 
 // Replace StandaloneCommandsQuickAccessProvider by vscode CommandsQuickAccessProvider so the extension commands are displayed in the picker
 const quickAccessRegistry = Registry.as<QuickAccessRegistry>(Extensions.Quickaccess)
@@ -105,7 +65,7 @@ async function updateUserKeybindings (keybindingsJson: string): Promise<void> {
 export default function getServiceOverride (): IEditorOverrideServices {
   return {
     ...getFileServiceOverride(),
-    [IKeybindingService.toString()]: new SyncDescriptor(DelegateStandaloneKeybindingService),
+    [IKeybindingService.toString()]: new SyncDescriptor(WorkbenchKeybindingService),
     [IKeyboardLayoutService.toString()]: new SyncDescriptor(BrowserKeyboardLayoutService, undefined, true)
   }
 }
