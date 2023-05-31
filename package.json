@@ -36,9 +36,13 @@
       "types": "./dist/service-override/dialogs.d.ts",
       "default": "./dist/service-override/dialogs.js"
     },
-    "./service-override/modelEditor": {
-      "types": "./dist/service-override/modelEditor.d.ts",
-      "default": "./dist/service-override/modelEditor.js"
+    "./service-override/model": {
+      "types": "./dist/service-override/model.d.ts",
+      "default": "./dist/service-override/model.js"
+    },
+    "./service-override/editor": {
+      "types": "./dist/service-override/editor.d.ts",
+      "default": "./dist/service-override/editor.js"
     },
     "./service-override/files": {
       "types": "./dist/service-override/files.d.ts",
@@ -114,8 +118,11 @@
       "service-override/dialogs": [
         "./dist/service-override/dialogs.d.ts"
       ],
-      "service-override/modelEditor": [
-        "./dist/service-override/modelEditor.d.ts"
+      "service-override/model": [
+        "./dist/service-override/model.d.ts"
+      ],
+      "service-override/editor": [
+        "./dist/service-override/editor.d.ts"
       ],
       "service-override/files": [
         "./dist/service-override/files.d.ts"

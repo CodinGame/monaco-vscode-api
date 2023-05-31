@@ -1,7 +1,6 @@
 import '../vscode-services/missing-services'
 import { IEditorOverrideServices, StandaloneServices } from 'vs/editor/standalone/browser/standaloneServices'
 import { IResolvedTextEditorModel, ITextModelService } from 'vs/editor/common/services/resolverService'
-import { TextModelResolverService } from 'vs/workbench/services/textmodelResolver/common/textModelResolverService'
 import { ICodeEditorService } from 'vs/editor/browser/services/codeEditorService'
 import { CodeEditorService } from 'vs/workbench/services/editor/browser/codeEditorService'
 import { IEditorService, isPreferredGroup, PreferredGroup, SIDE_GROUP } from 'vs/workbench/services/editor/common/editorService'
@@ -161,7 +160,6 @@ class EditorService extends Disposable implements IEditorService {
 
 export default function getServiceOverride (openEditor: OpenEditor): IEditorOverrideServices {
   return {
-    [ITextModelService.toString()]: new SyncDescriptor(TextModelResolverService, undefined, true),
     [ICodeEditorService.toString()]: new SyncDescriptor(CodeEditorService, undefined, true),
     [IEditorService.toString()]: new SyncDescriptor(EditorService, [openEditor]),
     [ITextEditorService.toString()]: new SyncDescriptor(TextEditorService)

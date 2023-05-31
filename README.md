@@ -56,11 +56,12 @@ await initialize({
 })
 ```
 
-Additionally, this library exposes 14 modules that include the vscode version of some services (with some glue to make it work with monaco):
+Additionally, this library exposes 15 modules that include the vscode version of some services (with some glue to make it work with monaco):
 
 - Notifications: `vscode/service-override/notifications`
 - Dialogs: `vscode/service-override/dialogs`
-- Model / Editor: `vscode/service-override/modelEditor`
+- Model: `vscode/service-override/model`
+- Editor: `vscode/service-override/editor`
 - Configuration: `vscode/service-override/configuration`
 - Keybindings: `vscode/service-override/keybindings`
 - Languages: `vscode/service-override/languages`
@@ -77,7 +78,7 @@ Usage:
 
 ```typescript
 import { initialize } from 'vscode/services'
-import getModelEditorServiceOverride from 'vscode/service-override/modelEditor'
+import getEditorServiceOverride from 'vscode/service-override/editor'
 import getConfigurationServiceOverride, { updateUserConfiguration, configurationRegistry } from 'vscode/service-override/configuration'
 
 await initialize({
