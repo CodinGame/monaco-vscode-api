@@ -11,6 +11,7 @@ import { DisposableStore, IDisposable, Disposable } from 'vs/base/common/lifecyc
 import { joinPath } from 'vs/base/common/resources'
 import { Emitter, Event } from 'vs/base/common/event'
 import { HTMLFileSystemProvider } from 'vs/platform/files/browser/htmlFileSystemProvider'
+import * as monaco from 'monaco-editor'
 import 'vs/workbench/contrib/files/browser/files.contribution'
 
 class File implements IStat {
@@ -84,8 +85,7 @@ abstract class SimpleTextFileSystemProvider implements IFileSystemProviderWithFi
     // Do nothing
   }
 
-  async readdir (directory: URI): Promise<[string, FileType][]> {
-    console.debug('Not implemented: readdir', directory)
+  async readdir (_directory: monaco.Uri): Promise<[string, FileType][]> {
     return []
   }
 
@@ -98,6 +98,20 @@ abstract class SimpleTextFileSystemProvider implements IFileSystemProviderWithFi
   }
 
   onDidWatchError = Event.None
+}
+
+class TypescriptWorkerFileSystemProvider extends SimpleTextFileSystemProvider {
+  protected async getFileContent (resource: URI): Promise<string | undefined> {
+    const typescript = monaco.languages.typescript
+    // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
+    if (typescript == null) {
+      return undefined
+    }
+    const path = resource.path.slice(1)
+    return typescript.typescriptDefaults.getExtraLibs()[path]?.content ?? typescript.javascriptDefaults.getExtraLibs()[path]?.content
+  }
+
+  protected async setFileContent (): Promise<void> {}
 }
 
 class ExtensionFileSystemProviderWithFileReadWriteCapability implements IFileSystemProviderWithFileReadWriteCapability {
@@ -311,6 +325,8 @@ export function registerExtensionFile (extensionLocation: URI, path: string, get
 export function registerFileSystemOverlay (provider: IFileSystemProviderWithFileReadWriteCapability): IDisposable {
   return fileSystemProvider.register(provider)
 }
+
+registerFileSystemOverlay(new TypescriptWorkerFileSystemProvider())
 
 export {
   IFileSystemProviderWithFileReadWriteCapability,
