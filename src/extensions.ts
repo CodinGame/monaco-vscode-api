@@ -9,9 +9,6 @@ import { StandaloneServices } from 'vs/editor/standalone/browser/standaloneServi
 import { getExtensionId } from 'vs/platform/extensionManagement/common/extensionManagementUtil'
 import { IDisposable } from 'vs/base/common/lifecycle'
 import Severity from 'vs/base/common/severity'
-import { localize } from 'vs/nls'
-import { Registry } from 'vs/platform/registry/common/platform'
-import { ConfigurationScope, IConfigurationRegistry, Extensions as ConfigurationExtensions } from 'vs/platform/configuration/common/configurationRegistry'
 import { ITranslations, localizeManifest } from 'vs/platform/extensionManagement/common/extensionNls'
 import { joinPath, originalFSPath } from 'vs/base/common/resources'
 import { FileAccess } from 'monaco-editor/esm/vs/base/common/network.js'
@@ -33,6 +30,7 @@ import createExtensionsApi from './vscode-services/extensions'
 import { initialize as initializeExtHostServices, onExtHostInitialized, getExtHostServices } from './vscode-services/extHost'
 import { unsupported } from './tools'
 import { setDefaultExtension } from './default-extension'
+import 'vs/workbench/contrib/search/browser/search.contribution'
 
 export function consoleExtensionMessageHandler (msg: IMessage): void {
   if (msg.type === Severity.Error) {
@@ -44,19 +42,6 @@ export function consoleExtensionMessageHandler (msg: IMessage): void {
     console.log(msg)
   }
 }
-
-// Required or it crashed on extensions with activationEvents
-const configurationRegistry = Registry.as<IConfigurationRegistry>(ConfigurationExtensions.Configuration)
-configurationRegistry.registerConfiguration({
-  properties: {
-    'search.useIgnoreFiles': {
-      type: 'boolean',
-      markdownDescription: localize('useIgnoreFiles', 'Controls whether to use `.gitignore` and `.ignore` files when searching for files.'),
-      default: true,
-      scope: ConfigurationScope.RESOURCE
-    }
-  }
-})
 
 export async function initialize (extension?: IExtensionDescription): Promise<void> {
   if (extension != null) {
