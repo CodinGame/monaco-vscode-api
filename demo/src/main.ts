@@ -8,6 +8,9 @@ import { createConfiguredEditor, synchronizeJsonSchemas, createModelReference } 
 import { SimpleTextFileSystemProvider, registerFileSystemOverlay, FileType, HTMLFileSystemProvider } from 'vscode/service-override/files'
 import * as vscode from 'vscode'
 import { ILogService, LogLevel, StandaloneServices } from 'vscode/services'
+import typescriptGlobal from '../node_modules/@types/node/globals.d.ts?raw'
+import typescriptConsole from '../node_modules/@types/node/console.d.ts?raw'
+import typescriptProcess from '../node_modules/@types/node/process.d.ts?raw'
 
 StandaloneServices.get(ILogService).setLevel(LogLevel.Off)
 
@@ -58,6 +61,24 @@ vscode.languages.registerCompletionItemProvider('javascript', {
     }]
   }
 })
+
+const compilerOptions: Parameters<typeof monaco.languages.typescript.typescriptDefaults.setCompilerOptions>[0] = {
+  target: monaco.languages.typescript.ScriptTarget.ES2016,
+  allowNonTsExtensions: true,
+  moduleResolution: monaco.languages.typescript.ModuleResolutionKind.NodeJs,
+  module: monaco.languages.typescript.ModuleKind.CommonJS,
+  noEmit: true,
+  lib: ['es2020']
+}
+
+monaco.languages.typescript.typescriptDefaults.setCompilerOptions(compilerOptions)
+monaco.languages.typescript.typescriptDefaults.addExtraLib(typescriptGlobal, 'node/globals.d.ts')
+monaco.languages.typescript.typescriptDefaults.addExtraLib(typescriptConsole, 'node/console.d.ts')
+monaco.languages.typescript.typescriptDefaults.addExtraLib(typescriptProcess, 'node/process.d.ts')
+monaco.languages.typescript.javascriptDefaults.setCompilerOptions(compilerOptions)
+monaco.languages.typescript.javascriptDefaults.addExtraLib(typescriptGlobal, 'node/globals.d.ts')
+monaco.languages.typescript.javascriptDefaults.addExtraLib(typescriptConsole, 'node/console.d.ts')
+monaco.languages.typescript.javascriptDefaults.addExtraLib(typescriptProcess, 'node/process.d.ts')
 
 monaco.languages.json.jsonDefaults.setModeConfiguration({
   ...monaco.languages.json.jsonDefaults.modeConfiguration,

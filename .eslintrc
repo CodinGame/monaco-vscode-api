@@ -26,7 +26,8 @@
         "protocol": "always", // Hack for vscode .protocol.js files
         "net": "always", // Hack for vscode .net.js files
         "impl": "always", // Hack for vscode .impl.js files
-        "worker": "always"
+        "worker": "always",
+        "ts": "always"
       }
     ]
   },
