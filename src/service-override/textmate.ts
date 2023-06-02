@@ -13,7 +13,8 @@ import getFileServiceOverride from './files'
 import { registerServiceInitializeParticipant } from '../services'
 import { registerAssets } from '../assets'
 registerAssets({
-  'vscode-oniguruma/../onig.wasm': _onigWasm
+  'vscode-oniguruma/../onig.wasm': _onigWasm, // Path used inside service
+  'vs/../../node_modules/vscode-oniguruma/release/onig.wasm': _onigWasm // Path used inside worker
 })
 
 registerServiceInitializeParticipant(async (accessor) => {

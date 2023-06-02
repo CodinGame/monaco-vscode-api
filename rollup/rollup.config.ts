@@ -354,7 +354,8 @@ const input = {
   'service-override/debug': './src/service-override/debug.ts',
   'service-override/preferences': './src/service-override/preferences.ts',
   'service-override/views': './src/service-override/views.ts',
-  'service-override/quickaccess': './src/service-override/quickaccess.ts'
+  'service-override/quickaccess': './src/service-override/quickaccess.ts',
+  'workers/textMate.worker': './src/workers/textMate.worker.ts',
   monaco: './src/monaco.ts',
   ...Object.fromEntries(
     fs.readdirSync(DEFAULT_EXTENSIONS_PATH, { withFileTypes: true })
