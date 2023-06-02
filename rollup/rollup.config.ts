@@ -41,6 +41,7 @@ const PURE_FUNCTIONS = new Set([
   'ContextKeyExpr.and',
   'ContextKeyExpr.or',
   'ContextKeyExpr.equals',
+  'ContextKeyExpr.regex',
   'ContextKeyNotExpr.create',
   'ContextKeyDefinedExpr.create',
   'notEqualsTo',
@@ -71,7 +72,10 @@ const FUNCTIONS_TO_REMOVE = new Set([
   'appendToCommandPalette',
   // For ActivityBar, remove unused actions/items
   'fillExtraContextMenuActions',
-  'createGlobalActivityActionBar'
+  'createGlobalActivityActionBar',
+
+  'searchWidgetContributions',
+  'replaceContributions'
 ])
 
 const PURE_OR_TO_REMOVE_FUNCTIONS = new Set([
@@ -131,7 +135,7 @@ function isCallPure (file: string, functionName: string, node: recast.types.name
   }
 
   if (functionName === 'CommandsRegistry.registerCommand') {
-    if (file.includes('fileActions.contribution') || file.includes('workspaceCommands')) {
+    if (file.includes('fileActions.contribution') || file.includes('workspaceCommands') || file.includes('search.contribution')) {
       return true
     }
   }
@@ -227,7 +231,15 @@ function isCallPure (file: string, functionName: string, node: recast.types.name
     return false
   }
 
+  if (functionName === 'registerViewContainer') {
+    if (file.includes('search.contribution')) {
+      return true
+    }
+  }
   if (functionName === 'registerViews') {
+    if (file.includes('search.contribution')) {
+      return true
+    }
     const firstParamCode = recast.print(args[0]!).code
     if (firstParamCode.includes('WelcomeView.ID')) {
       return true
