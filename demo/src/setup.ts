@@ -24,6 +24,7 @@ import getSnippetServiceOverride from 'vscode/service-override/snippets'
 import EditorWorker from 'monaco-editor/esm/vs/editor/editor.worker?worker'
 import JsonWorker from 'monaco-editor/esm/vs/language/json/json.worker?worker'
 import TypescriptWorker from 'monaco-editor/esm/vs/language/typescript/ts.worker?worker'
+import TextMateWorker from 'vscode/workers/textMate.worker?worker'
 import * as monaco from 'monaco-editor/esm/vs/editor/editor.api'
 import { createConfiguredEditor } from 'vscode/monaco'
 import 'vscode/default-extensions/theme-defaults'
@@ -60,6 +61,7 @@ interface WorkerConstructor {
 export type WorkerLoader = () => WorkerConstructor | Promise<WorkerConstructor>
 const workerLoaders: Partial<Record<string, WorkerLoader>> = {
   editorWorkerService: () => EditorWorker,
+  textMateWorker: () => TextMateWorker,
   json: () => JsonWorker,
   javascript: () => TypescriptWorker,
   typescript: () => TypescriptWorker

@@ -155,7 +155,8 @@ while (variable < 5000) {
   "audioCues.onDebugBreak": "on",
   "files.autoSave": "afterDelay",
   "files.autoSaveDelay": 1000,
-  "debug.toolBarLocation": "docked"
+  "debug.toolBarLocation": "docked",
+  "editor.experimental.asyncTokenization": true
 }`)
   createConfiguredEditor(document.getElementById('settings-editor')!, {
     model: settingsModelReference.object.textEditorModel
