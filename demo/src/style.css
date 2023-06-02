@@ -18,11 +18,16 @@ body {
   color: var(--vscode-editorWidget-foreground);
 }
 
+#editors {
+  width: 900px;
+  height: 600px;
+  border: 1px solid var(--vscode-editorWidget-border);
+}
+
 #panel {
   display: flex;
   flex: none;
   border: 1px solid var(--vscode-editorWidget-border);
-  margin-right: 20px;
   height: 400px;
 }
 

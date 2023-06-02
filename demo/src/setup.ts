@@ -1,6 +1,6 @@
-import 'monaco-editor/esm/vs/editor/editor.all'
-import 'monaco-editor/esm/vs/editor/standalone/browser/accessibilityHelp/accessibilityHelp'
-import 'monaco-editor/esm/vs/editor/standalone/browser/iPadShowKeyboard/iPadShowKeyboard'
+import 'monaco-editor/esm/vs/editor/editor.all.js'
+import 'monaco-editor/esm/vs/editor/standalone/browser/accessibilityHelp/accessibilityHelp.js'
+import 'monaco-editor/esm/vs/editor/standalone/browser/iPadShowKeyboard/iPadShowKeyboard.js'
 import { initialize as initializeMonacoService } from 'vscode/services'
 import { registerExtension, initialize as initializeVscodeExtensions } from 'vscode/extensions'
 import getModelServiceOverride from 'vscode/service-override/model'
@@ -12,15 +12,16 @@ import getTextmateServiceOverride from 'vscode/service-override/textmate'
 import getThemeServiceOverride from 'vscode/service-override/theme'
 import getLanguagesServiceOverride from 'vscode/service-override/languages'
 import getAudioCueServiceOverride from 'vscode/service-override/audioCue'
-import getViewsServiceOverride, { createSidebarPart, createActivitybarPar, createPanelPart, registerCustomView, ViewContainerLocation } from 'vscode/service-override/views'
+import getViewsServiceOverride, { renderSidebarPart, renderActivitybarPar, renderEditorPart, renderPanelPart, renderStatusBarPart, registerCustomView, ViewContainerLocation, IResolvedTextEditorModel, IReference, OpenEditor } from 'vscode/service-override/views'
 import getDebugServiceOverride from 'vscode/service-override/debug'
 import getPreferencesServiceOverride from 'vscode/service-override/preferences'
 import getSnippetServiceOverride from 'vscode/service-override/snippets'
-import EditorWorker from 'monaco-editor/esm/vs/editor/editor.worker?worker'
-import JsonWorker from 'monaco-editor/esm/vs/language/json/json.worker?worker'
-import TypescriptWorker from 'monaco-editor/esm/vs/language/typescript/ts.worker?worker'
+import getQuickAccessServiceOverride from 'vscode/service-override/quickaccess'
+import EditorWorker from 'monaco-editor/esm/vs/editor/editor.worker.js?worker'
+import JsonWorker from 'monaco-editor/esm/vs/language/json/json.worker.js?worker'
+import TypescriptWorker from 'monaco-editor/esm/vs/language/typescript/ts.worker.js?worker'
 import TextMateWorker from 'vscode/workers/textMate.worker?worker'
-import * as monaco from 'monaco-editor/esm/vs/editor/editor.api'
+import * as monaco from 'monaco-editor/esm/vs/editor/editor.api.js'
 import { createConfiguredEditor } from 'vscode/monaco'
 import 'vscode/default-extensions/theme-defaults'
 import 'vscode/default-extensions/javascript'
@@ -139,7 +140,7 @@ const openNewCodeEditor: OpenEditor = async (modelRef) => {
 
 // Override services
 await initializeMonacoService({
-  ...getModelEditorServiceOverride(openNewCodeEditor),
+  ...getModelServiceOverride(),
   ...getNotificationServiceOverride(),
   ...getDialogsServiceOverride(),
   ...getConfigurationServiceOverride(monaco.Uri.file('/tmp')),
@@ -150,14 +151,17 @@ await initializeMonacoService({
   ...getAudioCueServiceOverride(),
   ...getDebugServiceOverride(),
   ...getPreferencesServiceOverride(),
-  ...getViewsServiceOverride(),
-  ...getSnippetServiceOverride()
+  ...getViewsServiceOverride(openNewCodeEditor),
+  ...getSnippetServiceOverride(),
+  ...getQuickAccessServiceOverride()
 })
 await initializeVscodeExtensions()
 
-createSidebarPart(document.querySelector<HTMLDivElement>('#sidebar')!)
-createActivitybarPar(document.querySelector<HTMLDivElement>('#activityBar')!)
-createPanelPart(document.querySelector<HTMLDivElement>('#panel')!)
+renderSidebarPart(document.querySelector<HTMLDivElement>('#sidebar')!)
+renderActivitybarPar(document.querySelector<HTMLDivElement>('#activityBar')!)
+renderPanelPart(document.querySelector<HTMLDivElement>('#panel')!)
+renderEditorPart(document.querySelector<HTMLDivElement>('#editors')!)
+renderStatusBarPart(document.querySelector<HTMLDivElement>('#statusBar')!)
 
 const debuggerExtension = {
   name: 'debugger',

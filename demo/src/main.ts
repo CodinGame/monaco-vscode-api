@@ -146,8 +146,9 @@ while (variable < 5000) {
   console.log('Hello world', variable);
 }`)
 
-  createConfiguredEditor(document.getElementById('editor')!, {
-    model: modelRef.object.textEditorModel
+  const mainDocument = await vscode.workspace.openTextDocument(modelRef.object.textEditorModel!.uri)
+  await vscode.window.showTextDocument(mainDocument, {
+    preview: false
   })
 
   const diagnostics = vscode.languages.createDiagnosticCollection('demo')
