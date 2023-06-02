@@ -406,7 +406,8 @@ export default (args: Record<string, string>): rollup.RollupOptions[] => {
           id.endsWith('/explorerViewlet.js') ||
           id.endsWith('/listCommands.js') ||
           id.endsWith('/quickAccessActions.js') ||
-          id.endsWith('/gotoLineQuickAccess.js')
+          id.endsWith('/gotoLineQuickAccess.js') ||
+          id.endsWith('/workbenchReferenceSearch.js')
       }
     },
     external,

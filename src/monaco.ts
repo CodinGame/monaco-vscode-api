@@ -42,6 +42,7 @@ import { KeybindingResolver } from 'vs/platform/keybinding/common/keybindingReso
 import { WorkbenchKeybindingService } from 'vs/workbench/services/keybinding/browser/keybindingService'
 import { JsonSchema, registerJsonSchema, synchronizeJsonSchemas } from './json'
 import { createInjectedClass } from './tools/injection'
+import 'vs/workbench/contrib/codeEditor/browser/workbenchReferenceSearch'
 
 class ExtensionPoints implements IWorkbenchContribution {
   constructor (
