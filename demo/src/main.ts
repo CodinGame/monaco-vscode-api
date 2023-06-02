@@ -185,11 +185,6 @@ while (variable < 5000) {
 
   const keybindingsModelReference = await createModelReference(monaco.Uri.from({ scheme: 'user', path: '/keybindings.json' }), `[
   {
-    "key": "ctrl+p",
-    "command": "editor.action.quickCommand",
-    "when": "editorTextFocus"
-  },
-  {
     "key": "ctrl+d",
     "command": "editor.action.deleteLines",
     "when": "editorTextFocus"
