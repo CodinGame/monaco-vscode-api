@@ -73,6 +73,7 @@ Additionally, this library exposes 15 modules that include the vscode version of
 - Files: `vscode/service-override/files`
 - Preferences: `vscode/service-override/preferences`
 - Views: `vscode/service-override/views`
+- QuickAccess: `vscode/service-override/quickaccess`
 
 Usage:
 

@@ -47,6 +47,7 @@ export default rollup.defineConfig({
     './dist/types/src/service-override/debug.d.ts',
     './dist/types/src/service-override/preferences.d.ts',
     './dist/types/src/service-override/views.d.ts',
+    './dist/types/src/service-override/quickaccess.d.ts',
     './dist/types/src/monaco.d.ts',
     './dist/types/src/rollup-vsix-plugin.d.ts',
     './dist/types/src/rollup-extension-directory-plugin.d.ts'

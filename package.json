@@ -88,6 +88,10 @@
       "types": "./dist/service-override/views.d.ts",
       "default": "./dist/service-override/views.js"
     },
+    "./service-override/quickaccess": {
+      "types": "./dist/service-override/quickaccess.d.ts",
+      "default": "./dist/service-override/quickaccess.js"
+    },
     "./monaco": {
       "types": "./dist/monaco.d.ts",
       "default": "./dist/monaco.js"
@@ -156,6 +160,9 @@
       ],
       "service-override/views": [
         "./dist/service-override/views.d.ts"
+      ],
+      "service-override/quickaccess": [
+        "./dist/service-override/quickaccess.d.ts"
       ],
       "monaco": [
         "./dist/monaco.d.ts"
