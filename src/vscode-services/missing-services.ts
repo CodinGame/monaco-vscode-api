@@ -55,8 +55,7 @@ import { IRemoteAgentService } from 'vs/workbench/services/remote/common/remoteA
 import { ISocketFactory } from 'vs/platform/remote/common/remoteAgentConnection'
 import { ICustomEndpointTelemetryService } from 'vs/platform/telemetry/common/telemetry'
 import { NullEndpointTelemetryService } from 'vs/platform/telemetry/common/telemetryUtils'
-import { SearchService } from 'vs/workbench/services/search/common/searchService'
-import { ISearchService } from 'vs/workbench/services/search/common/search'
+import { ISearchComplete, ISearchService } from 'vs/workbench/services/search/common/search'
 import { IRequestService } from 'vs/platform/request/common/request'
 import { IEditSessionIdentityService } from 'vs/platform/workspace/common/editSessions'
 import { IWorkspaceEditingService } from 'vs/workbench/services/workspaces/common/workspaceEditing'
@@ -104,6 +103,7 @@ import { IOutlineService } from 'vs/workbench/services/outline/browser/outline'
 import { IUpdateService, State } from 'vs/platform/update/common/update'
 import { IStatusbarService } from 'vs/workbench/services/statusbar/browser/statusbar'
 import { IExtensionGalleryService } from 'vs/platform/extensionManagement/common/extensionManagement'
+import { IModelService } from 'vs/editor/common/services/model'
 import { unsupported } from '../tools'
 
 class NullLoggerService extends AbstractLoggerService {
@@ -744,7 +744,7 @@ registerSingleton(IHistoryService, class HistoryService implements IHistoryServi
   goPrevious = unsupported
   goLast = unsupported
   reopenLastClosedEditor = unsupported
-  getHistory = unsupported
+  getHistory = () => []
   removeFromHistory = unsupported
   getLastActiveWorkspaceRoot = () => undefined
   getLastActiveFile = () => undefined
@@ -822,7 +822,32 @@ registerSingleton(IRemoteAgentService, class RemoteAgentService implements IRemo
 
 registerSingleton(ICustomEndpointTelemetryService, NullEndpointTelemetryService, InstantiationType.Eager)
 
-registerSingleton(ISearchService, SearchService, InstantiationType.Eager)
+class MonacoSearchService implements ISearchService {
+  _serviceBrand: undefined
+  constructor (@IModelService private modelService: IModelService) {}
+
+  async textSearch (): Promise<ISearchComplete> {
+    return {
+      results: [],
+      messages: []
+    }
+  }
+
+  async fileSearch (): Promise<ISearchComplete> {
+    return {
+      results: this.modelService.getModels().map(model => ({
+        resource: model.uri
+      })),
+      messages: []
+    }
+  }
+
+  async clearCache (): Promise<void> {
+  }
+
+  registerSearchResultProvider = unsupported
+}
+registerSingleton(ISearchService, MonacoSearchService, InstantiationType.Eager)
 
 registerSingleton(IEditSessionIdentityService, class EditSessionIdentityService implements IEditSessionIdentityService {
   _serviceBrand: undefined
