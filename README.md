@@ -72,7 +72,7 @@ Additionally, this library exposes 15 modules that include the vscode version of
 - Debug: `vscode/service-override/debug`
 - Files: `vscode/service-override/files`
 - Preferences: `vscode/service-override/preferences`
-- Views: `vscode/service-override/views`
+- Views: `vscode/service-override/views` (Is exclusive with `editor`, do not use both at the same time)
 - QuickAccess: `vscode/service-override/quickaccess`
 
 Usage:

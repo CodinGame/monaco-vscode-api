@@ -13,7 +13,7 @@ import { Event } from 'vs/base/common/event'
 import { IPaneComposite } from 'vs/workbench/common/panecomposite'
 import { IPaneCompositePart, IPaneCompositeSelectorPart } from 'vs/workbench/browser/parts/paneCompositePart'
 import { ActivitybarPart } from 'vs/workbench/browser/parts/activitybar/activitybarPart'
-import { IDisposable } from 'vs/base/common/lifecycle'
+import { IDisposable, IReference } from 'vs/base/common/lifecycle'
 import { IProgressIndicator } from 'vs/platform/progress/common/progress'
 import { IHoverService } from 'vs/workbench/services/hover/browser/hover'
 import { HoverService } from 'vs/workbench/services/hover/browser/hoverService'
@@ -28,7 +28,7 @@ import { Registry } from 'vs/platform/registry/common/platform'
 import { ViewPaneContainer } from 'vs/workbench/browser/parts/views/viewPaneContainer'
 import { URI } from 'vs/base/common/uri'
 import { Part } from 'vs/workbench/browser/part'
-import getLayoutServiceOverride from './layout'
+import { EditorPart } from 'vs/workbench/browser/parts/editor/editorPart'
 import 'vs/workbench/contrib/files/browser/fileCommands'
 import 'vs/workbench/contrib/files/browser/fileActions.contribution'
 import 'vs/workbench/contrib/callHierarchy/browser/callHierarchy.contribution'
@@ -36,6 +36,41 @@ import 'vs/workbench/contrib/typeHierarchy/browser/typeHierarchy.contribution'
 import 'vs/workbench/browser/actions/listCommands'
 import 'vscode/vs/workbench/browser/parts/views/media/views.css'
 import 'vs/workbench/api/browser/viewsExtensionPoint'
+import 'vs/workbench/browser/parts/editor/editor.contribution'
+import 'vs/workbench/browser/workbench.contribution'
+import { IEditorGroupsService } from 'vs/workbench/services/editor/common/editorGroupsService'
+import { IEditorDropService } from 'vs/workbench/services/editor/browser/editorDropService'
+import { EditorService } from 'vs/workbench/services/editor/browser/editorService'
+import { IEditorDropTargetDelegate } from 'vs/workbench/browser/parts/editor/editorDropTarget'
+import { IEditorService, PreferredGroup } from 'vs/workbench/services/editor/common/editorService'
+import { IEditorResolverService } from 'vs/workbench/services/editor/common/editorResolverService'
+import { EditorResolverService } from 'vs/workbench/services/editor/browser/editorResolverService'
+import { BreadcrumbsService, IBreadcrumbsService } from 'vs/workbench/browser/parts/editor/breadcrumbs'
+import { IContextViewService } from 'vs/platform/contextview/browser/contextView'
+import { ContextViewService } from 'vs/platform/contextview/browser/contextViewService'
+import { ICodeEditorService } from 'vs/editor/browser/services/codeEditorService'
+import { EditorInput } from 'vs/workbench/common/editor/editorInput'
+import { IEditorPane, IResourceDiffEditorInput, ITextDiffEditorPane, IUntitledTextResourceEditorInput, IUntypedEditorInput } from 'vs/workbench/common/editor'
+import { IEditorOptions, IResourceEditorInput, ITextResourceEditorInput } from 'vs/platform/editor/common/editor'
+import { ITextModelService, IResolvedTextEditorModel } from 'vs/editor/common/services/resolverService'
+import { IFileService } from 'vs/platform/files/common/files'
+import { IConfigurationService } from 'vs/platform/configuration/common/configuration'
+import { IWorkspaceContextService } from 'vs/platform/workspace/common/workspace'
+import { IUriIdentityService } from 'vs/platform/uriIdentity/common/uriIdentity'
+import { IWorkspaceTrustRequestService } from 'vs/platform/workspace/common/workspaceTrust'
+import { IHostService } from 'vs/workbench/services/host/browser/host'
+import { ITextEditorService, TextEditorService } from 'vs/workbench/services/textfile/common/textEditorService'
+import { CodeEditorService } from 'vs/workbench/services/editor/browser/codeEditorService'
+import { IUntitledTextEditorService, UntitledTextEditorService } from 'vs/workbench/services/untitled/common/untitledTextEditorService'
+import { StatusbarPart } from 'vs/workbench/browser/parts/statusbar/statusbarPart'
+import { IStatusbarService } from 'vs/workbench/services/statusbar/browser/statusbar'
+import { InteractiveSessionService } from 'vs/workbench/contrib/interactiveSession/common/interactiveSessionServiceImpl'
+import { ISemanticSimilarityService, SemanticSimilarityService } from 'vs/workbench/services/semanticSimilarity/common/semanticSimilarityService'
+import { IInteractiveSessionService } from 'vs/workbench/contrib/interactiveSession/common/interactiveSessionService'
+import { IHistoryService } from 'vs/workbench/services/history/common/history'
+import { HistoryService } from 'vs/workbench/services/history/browser/historyService'
+import getLayoutServiceOverride from './layout'
+import { OpenEditor, wrapOpenEditor } from './tools/editor'
 
 const paneCompositeParts = new Map<ViewContainerLocation, IPaneCompositePart>()
 const paneCompositeSelectorParts = new Map<ViewContainerLocation, IPaneCompositeSelectorPart>()
@@ -122,7 +157,7 @@ function renderPart (part: Part, container: HTMLElement, classNames: string[]): 
   }
 }
 
-function createActivitybarPar (container: HTMLElement): ActivitybarPart {
+function renderActivitybarPar (container: HTMLElement): IDisposable {
   const activitybarPart = StandaloneServices.get(IInstantiationService).createInstance(ActivitybarPart, paneCompositeParts.get(ViewContainerLocation.Sidebar)!)
   paneCompositeSelectorParts.set(ViewContainerLocation.Sidebar, activitybarPart)
 
@@ -132,7 +167,7 @@ function createActivitybarPar (container: HTMLElement): ActivitybarPart {
   return activitybarPart
 }
 
-function createSidebarPart (container: HTMLElement): SidebarPart {
+function renderSidebarPart (container: HTMLElement): IDisposable {
   const sidebarPart = StandaloneServices.get(IInstantiationService).createInstance(SidebarPart)
   paneCompositeParts.set(ViewContainerLocation.Sidebar, sidebarPart)
 
@@ -146,7 +181,7 @@ function createSidebarPart (container: HTMLElement): SidebarPart {
   return sidebarPart
 }
 
-function createPanelPart (container: HTMLElement): PanelPart {
+function renderPanelPart (container: HTMLElement): PanelPart {
   const panelPart = StandaloneServices.get(IInstantiationService).createInstance(PanelPart)
   paneCompositeSelectorParts.set(ViewContainerLocation.Panel, panelPart)
   paneCompositeParts.set(ViewContainerLocation.Panel, panelPart)
@@ -159,6 +194,18 @@ function createPanelPart (container: HTMLElement): PanelPart {
   }
 
   return panelPart
+}
+
+function renderEditorPart (container: HTMLElement): IDisposable {
+  const editorPart = StandaloneServices.get(IEditorGroupsService) as EditorPart
+
+  return renderPart(editorPart, container, ['part', 'editor'])
+}
+
+function renderStatusBarPart (container: HTMLElement): IDisposable {
+  const statusBarPart = StandaloneServices.get(IStatusbarService) as StatusbarPart
+
+  return renderPart(statusBarPart, container, ['part', 'statusbar'])
 }
 
 interface CustomViewOption {
@@ -216,7 +263,72 @@ function registerCustomView (options: CustomViewOption): IDisposable {
   }
 }
 
-export default function getServiceOverride (): IEditorOverrideServices {
+class EditorDropService implements IEditorDropService {
+  declare readonly _serviceBrand: undefined
+
+  constructor (@IEditorGroupsService private readonly editorPart: EditorPart) { }
+
+  createEditorDropTarget (container: HTMLElement, delegate: IEditorDropTargetDelegate): IDisposable {
+    return this.editorPart.createEditorDropTarget(container, delegate)
+  }
+}
+
+class CustomEditorService extends EditorService {
+  constructor (
+    _openEditorFallback: OpenEditor | undefined,
+    @IEditorGroupsService private _editorGroupService: IEditorGroupsService,
+    @IInstantiationService instantiationService: IInstantiationService,
+    @IFileService fileService: IFileService,
+    @IConfigurationService configurationService: IConfigurationService,
+    @IWorkspaceContextService contextService: IWorkspaceContextService,
+    @IUriIdentityService uriIdentityService: IUriIdentityService,
+    @IEditorResolverService editorResolverService: IEditorResolverService,
+    @IWorkspaceTrustRequestService workspaceTrustRequestService: IWorkspaceTrustRequestService,
+    @IHostService hostService: IHostService,
+    @ITextEditorService textEditorService: ITextEditorService,
+    @ITextModelService textModelService: ITextModelService
+  ) {
+    super(
+      _editorGroupService,
+      instantiationService,
+      fileService,
+      configurationService,
+      contextService,
+      uriIdentityService,
+      editorResolverService,
+      workspaceTrustRequestService,
+      hostService,
+      textEditorService
+    )
+
+    this.openEditor = wrapOpenEditor(textModelService, this.openEditor.bind(this), _openEditorFallback)
+  }
+
+  override get activeTextEditorControl () {
+    // By default, only the editor inside the EditorPart can be "active" here, hack it so the active editor is now the focused editor if it exists
+    // It is required for the editor.addAction to be able to add an entry in the editor action menu
+    return super.activeTextEditorControl ?? StandaloneServices.get(ICodeEditorService).getFocusedCodeEditor() ?? undefined
+  }
+
+  // Override openEditor to fallback on user function is the EditorPart is not visible
+  override openEditor(editor: EditorInput, options?: IEditorOptions, group?: PreferredGroup): Promise<IEditorPane | undefined>
+  override openEditor(editor: IUntypedEditorInput, group?: PreferredGroup): Promise<IEditorPane | undefined>
+  override openEditor(editor: IResourceEditorInput, group?: PreferredGroup): Promise<IEditorPane | undefined>
+  override openEditor(editor: ITextResourceEditorInput | IUntitledTextResourceEditorInput, group?: PreferredGroup): Promise<IEditorPane | undefined>
+  override openEditor(editor: IResourceDiffEditorInput, group?: PreferredGroup): Promise<ITextDiffEditorPane | undefined>
+  override openEditor(editor: EditorInput | IUntypedEditorInput, optionsOrPreferredGroup?: IEditorOptions | PreferredGroup, preferredGroup?: PreferredGroup): Promise<IEditorPane | undefined>
+  override async openEditor (editor: EditorInput | IUntypedEditorInput, optionsOrPreferredGroup?: IEditorOptions | PreferredGroup, preferredGroup?: PreferredGroup): Promise<IEditorPane | undefined> {
+    // Do not try to open the file if the editor part is not displayed, let the fallback happen
+    const editorPart = this._editorGroupService as EditorPart
+    if (!(editorPart.getContainer()?.isConnected ?? false)) {
+      return undefined
+    }
+
+    return super.openEditor(editor, optionsOrPreferredGroup, preferredGroup)
+  }
+}
+
+export default function getServiceOverride (openEditorFallback?: OpenEditor): IEditorOverrideServices {
   return {
     ...getLayoutServiceOverride(),
     [IViewsService.toString()]: new SyncDescriptor(ViewsService),
@@ -225,7 +337,21 @@ export default function getServiceOverride (): IEditorOverrideServices {
     [IPaneCompositePartService.toString()]: new SyncDescriptor(PaneCompositePartService),
     [IHoverService.toString()]: new SyncDescriptor(HoverService),
     [IExplorerService.toString()]: new SyncDescriptor(ExplorerService),
-    [IBulkEditService.toString()]: new SyncDescriptor(BulkEditService)
+    [IBulkEditService.toString()]: new SyncDescriptor(BulkEditService),
+
+    [ICodeEditorService.toString()]: new SyncDescriptor(CodeEditorService),
+    [ITextEditorService.toString()]: new SyncDescriptor(TextEditorService),
+    [IEditorGroupsService.toString()]: new SyncDescriptor(EditorPart),
+    [IStatusbarService.toString()]: new SyncDescriptor(StatusbarPart),
+    [IEditorDropService.toString()]: new SyncDescriptor(EditorDropService),
+    [IEditorService.toString()]: new SyncDescriptor(CustomEditorService, [openEditorFallback]),
+    [IEditorResolverService.toString()]: new SyncDescriptor(EditorResolverService),
+    [IBreadcrumbsService.toString()]: new SyncDescriptor(BreadcrumbsService),
+    [IContextViewService.toString()]: new SyncDescriptor(ContextViewService),
+    [IUntitledTextEditorService.toString()]: new SyncDescriptor(UntitledTextEditorService),
+    [ISemanticSimilarityService.toString()]: new SyncDescriptor(SemanticSimilarityService),
+    [IInteractiveSessionService.toString()]: new SyncDescriptor(InteractiveSessionService),
+    [IHistoryService.toString()]: new SyncDescriptor(HistoryService)
   }
 }
 
@@ -233,7 +359,14 @@ export {
   ViewContainerLocation,
   CustomViewOption,
   registerCustomView,
-  createSidebarPart,
-  createActivitybarPar,
-  createPanelPart
+  renderSidebarPart,
+  renderActivitybarPar,
+  renderPanelPart,
+  renderEditorPart,
+  renderStatusBarPart,
+
+  OpenEditor,
+  IEditorOptions,
+  IResolvedTextEditorModel,
+  IReference
 }
