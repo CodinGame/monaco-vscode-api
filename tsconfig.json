@@ -22,7 +22,8 @@
 			"monaco-editor/esm/*": [
 				"./vscode/*"
 			]
-		}
+		},
+		"preserveConstEnums": true
 	},
 	"include": [
 		"./src/**/*",

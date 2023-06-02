@@ -29,14 +29,15 @@ cat <<< $(jq ".config.vscode.version = \"$vscodeVersion\"" package.json) > packa
 cd $build_directory
 
 echo "Installing vscode dependencies..."
+yarn config set ignore-engines
 yarn install --ignore-scripts
+yarn postinstall || true
 
 echo "Patching vscode..."
 patch -p1 < $patch_file
 
 # build editor without treeshaking to generate the treemending patch
 echo "Installing build dependencies"
-which node
 cd build
 yarn install --ignore-engines
 cd ..
@@ -50,11 +51,12 @@ npx gulp editor-distro
 cd out-monaco-editor-core/esm/
 cp --parents $(find -name \*.js) ../../editor-patch/b
 cd ../../editor-patch
-diff -urN -x '*.map' a b > "$editor_patch_file" || true 
+diff -urN -x '*.map' a b > "$editor_patch_file" || true
 cd ..
 # end treemending patch
 
-# copy default extensions
+# build and copy default extensions
+yarn compile-web || true
 rm -rf $extension_output_directory
 cp -R extensions "$extension_output_directory"
 

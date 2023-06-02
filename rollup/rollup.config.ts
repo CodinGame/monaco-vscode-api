@@ -10,6 +10,7 @@ import * as babylonParser from 'recast/parsers/babylon.js'
 import dynamicImportVars from '@rollup/plugin-dynamic-import-vars'
 import externalAssets from 'rollup-plugin-external-assets'
 import globImport from 'rollup-plugin-glob-import'
+import terser from '@rollup/plugin-terser'
 import * as fs from 'fs'
 import * as path from 'path'
 import { fileURLToPath } from 'url'
@@ -60,20 +61,31 @@ const FUNCTIONS_TO_REMOVE = new Set([
   'registerSingleton', // Remove calls to registerSingleton from vscode code, we just want to import things, not registering services
   'registerProxyConfigurations',
   'registerViewWelcomeContent',
-  'registerViewContainer',
-  'registerViews',
   'registerEditorPane',
   'registerExtensionPoint',
   '_setExtensionHostProxy',
   '_setAllMainProxyIdentifiers',
-  'registerDebugCommandPaletteItem',
   'registerTouchBarEntry',
-  'registerDebugViewMenuItem',
   'registerEditorSerializer',
-  'UndoCommand.addImplementation',
-  'submenusExtensionPoint.setHandler',
-  'menusExtensionPoint.setHandler',
-  'registerIcon'
+  'registerIcon',
+  'createOpenEditorsViewDescriptor',
+  'registerActiveEditorMoveCopyCommand',
+  'registerEditorGroupsLayoutCommands',
+  'registerDiffEditorCommands',
+  'registerOpenEditorAtIndexCommands',
+  'registerCloseEditorCommands',
+  'registerOtherEditorCommands',
+  'registerSplitEditorInGroupCommands',
+  'registerFocusSideEditorsCommands',
+  'registerFocusEditorGroupAtIndexCommands',
+  'registerSplitEditorCommands',
+  'registerFocusEditorGroupWihoutWrapCommands',
+
+  'appendSaveConflictEditorTitleAction',
+  'appendToCommandPalette',
+  // For ActivityBar, remove unused actions/items
+  'fillExtraContextMenuActions',
+  'createGlobalActivityActionBar'
 ])
 
 const PURE_OR_TO_REMOVE_FUNCTIONS = new Set([
@@ -88,11 +100,15 @@ const REMOVE_COMMANDS = new Set([
   'SELECT_DEBUG_CONSOLE_ID',
   'SELECT_AND_START_ID',
   'debug.startFromConfig',
-  'FOCUS_REPL_ID',
-  'NEXT_DEBUG_CONSOLE_ID',
-  'PREV_DEBUG_CONSOLE_ID',
   'debug.installAdditionalDebuggers',
-  'debug.openBreakpointToSide'
+  'SAVE_FILE_COMMAND_ID',
+  'SAVE_FILE_WITHOUT_FORMATTING_COMMAND_ID',
+  'SAVE_FILE_AS_COMMAND_ID',
+  'SAVE_ALL_COMMAND_ID',
+  'SAVE_ALL_IN_GROUP_COMMAND_ID',
+  'SAVE_FILES_COMMAND_ID',
+  'REVERT_FILE_COMMAND_ID',
+  'REMOVE_ROOT_FOLDER_COMMAND_ID'
 ])
 
 const KEEP_COLORS = new Set([
@@ -108,7 +124,9 @@ const ALLOWED_WORKBENCH_CONTRIBUTIONS = new Set([
   'EditorAutoSave',
   'DebugToolBar',
   'DebugContentProvider',
-  'DialogHandlerContribution'
+  'DialogHandlerContribution',
+  'ExplorerViewletViewsContribution',
+  'ViewsExtensionHandler'
 ])
 
 function isCallPure (file: string, functionName: string, node: recast.types.namedTypes.CallExpression): boolean {
@@ -133,12 +151,26 @@ function isCallPure (file: string, functionName: string, node: recast.types.name
     }
   }
 
+  if (functionName === 'CommandsRegistry.registerCommand') {
+    if (file.includes('fileActions.contribution') || file.includes('workspaceCommands')) {
+      return true
+    }
+  }
+
   // Remove Registry.add calls
   if (functionName.endsWith('Registry.add')) {
     const firstParam = args[0]!
     const firstParamName = firstParam.type === 'MemberExpression' ? getMemberExpressionPath(firstParam) : undefined
     if (firstParamName != null) {
-      const allowed = firstParamName.includes('ExtensionsRegistry') || firstParamName.includes('EditorFactory') || firstParamName.includes('Workbench') || firstParamName.includes('OutputChannels')
+      const allowed = firstParamName.includes('ExtensionsRegistry') ||
+        firstParamName.includes('EditorFactory') ||
+        firstParamName.includes('Workbench') ||
+        firstParamName.includes('OutputChannels') ||
+        firstParamName.includes('ViewsRegistry') ||
+        firstParamName.includes('ViewContainersRegistry') ||
+        firstParamName.includes('Viewlets') ||
+        firstParamName.includes('Panels') ||
+        firstParamName.includes('Auxiliary')
       return !allowed
     }
   }
@@ -149,7 +181,71 @@ function isCallPure (file: string, functionName: string, node: recast.types.name
     }
 
     const firstParam = args[0]!
-    if (firstParam.type === 'ClassExpression' && firstParam.id?.name === 'AddConfigurationAction') {
+
+    const className = firstParam.type === 'Identifier' ? firstParam.name : firstParam.type === 'ClassExpression' ? firstParam.id?.name : undefined
+    if (className != null && ['OpenDisassemblyViewAction', 'AddConfigurationAction', 'ToggleDisassemblyViewSourceCodeAction'].includes(className)) {
+      return true
+    }
+    const firstParamCode = recast.print(firstParam).code
+    if (firstParamCode.includes('DEBUG_CONFIGURE_COMMAND_ID') ||
+      firstParamCode.includes('workbench.action.closePanel') ||
+      firstParamCode.includes('workbench.action.toggleMaximizedPanel') ||
+      firstParamCode.includes('OpenEditorsView')) {
+      return true
+    }
+  }
+
+  if (functionName === 'MenuRegistry.appendMenuItems') {
+    if (file.includes('layoutActions')) {
+      return true
+    }
+  }
+  if (functionName === 'MenuRegistry.appendMenuItem') {
+    if (file.includes('editor.contribution')) {
+      return true
+    }
+
+    const firstParamCode = recast.print(args[0]!).code
+
+    if ([
+      'MenuId.OpenEditorsContext'
+    ].some(text => firstParamCode.includes(text))) {
+      return true
+    }
+    if (firstParamCode.startsWith('MenuId.Menubar')) {
+      return true
+    }
+
+    const secondParamCode = recast.print(args[1]!).code
+    if ([
+      'REOPEN_WITH_COMMAND_ID',
+      'SAVE_ALL_IN_GROUP_COMMAND_ID',
+      'COMPARE_WITH_SAVED_COMMAND_ID',
+      'COMPARE_RESOURCE_COMMAND_ID',
+      'compareResourceCommand',
+      'selectForCompareCommand',
+      'COMPARE_SELECTED_COMMAND_ID',
+      'compareSelectedCommand',
+      'CLOSE_EDITOR_COMMAND_ID',
+      'CLOSE_OTHER_EDITORS_IN_GROUP_COMMAND_ID',
+      'CLOSE_SAVED_EDITORS_COMMAND_ID',
+      'CLOSE_EDITORS_IN_GROUP_COMMAND_ID',
+      'openToSideCommand',
+      'OPEN_WITH_EXPLORER_COMMAND_ID',
+      'compareResourceCommand',
+      'selectForCompareCommand',
+      'compareSelectedCommand',
+      '5b_importexport',
+      '3_compare',
+      '2_workspace',
+      '3_workspace',
+      'MOVE_FILE_TO_TRASH_ID',
+      'SAVE_FILE_COMMAND_ID',
+      'SAVE_FILE_AS_COMMAND_ID',
+      'SAVE_ALL_COMMAND_ID',
+      'openToSideCommand',
+      'workbench.action.quickOpen'
+    ].some(text => secondParamCode.includes(text))) {
       return true
     }
   }
@@ -162,16 +258,6 @@ function isCallPure (file: string, functionName: string, node: recast.types.name
       }
     }
   }
-  if (functionName === 'registerConfiguration') {
-    const firstParam = args[0]!
-    if (firstParam.type === 'ObjectExpression') {
-      const idProperty = firstParam.properties.find((prop): prop is recast.types.namedTypes.ObjectProperty => prop.type === 'ObjectProperty' && prop.key.type === 'StringLiteral' && prop.key.value === 'id')
-      const idPropertyValue = idProperty != null && idProperty.value.type === 'StringLiteral' ? idProperty.value.value : undefined
-      if (idPropertyValue != null && ['explorer'].includes(idPropertyValue)) {
-        return true
-      }
-    }
-  }
 
   if (functionName === 'registerWorkbenchContribution') {
     const firstParam = args[0]!
@@ -181,14 +267,36 @@ function isCallPure (file: string, functionName: string, node: recast.types.name
     return true
   }
 
-  if (functionName === 'MenuRegistry.appendMenuItems') {
+  if (functionName === 'MenuRegistry.appendMenuItem') {
+    if (file.includes('debugViewlet')) {
+      // Remove DEBUG_START_COMMAND_ID and SELECT_AND_START_ID
+      return true
+    }
     if (file.includes('layoutActions')) {
       return true
     }
+    return false
   }
 
-  if (functionName === 'MenuRegistry.appendMenuItem') {
-    if (file.includes('editor.contribution')) {
+  if (functionName === 'registerDebugCommandPaletteItem') {
+    const firstParamCode = recast.print(args[0]!).code
+    if (['RESTART_SESSION_ID', 'DISCONNECT_ID', 'DISCONNECT_AND_SUSPEND_ID', 'DEBUG_START_COMMAND_ID', 'DEBUG_RUN_COMMAND_ID'].includes(firstParamCode)) {
+      return true
+    }
+    return false
+  }
+
+  if (functionName === 'registerViews') {
+    const firstParamCode = recast.print(args[0]!).code
+    if (firstParamCode.includes('WelcomeView.ID')) {
+      return true
+    }
+    return false
+  }
+
+  if (functionName === 'viewDescriptorsToRegister.push') {
+    const firstParamName = args[0]!.type === 'Identifier' ? getMemberExpressionPath(args[0]) : null
+    if (firstParamName === 'openEditorsViewDescriptor') {
       return true
     }
   }
@@ -260,6 +368,7 @@ const USE_DEFAULT_EXTENSIONS = new Set([
   'python',
   'r',
   'razor',
+  'references-view',
   'ruby',
   'rust',
   'scss',
@@ -278,8 +387,8 @@ const USE_DEFAULT_EXTENSIONS = new Set([
   'theme-solarized-dark',
   'theme-solarized-light',
   'theme-tomorrow-night-blue',
+  'vs-seti',
   'typescript-basics',
-  'typescript-language-features',
   'vb',
   'xml',
   'yaml'
@@ -302,6 +411,7 @@ const input = {
   'service-override/audioCue': './src/service-override/audioCue.ts',
   'service-override/debug': './src/service-override/debug.ts',
   'service-override/preferences': './src/service-override/preferences.ts',
+  'service-override/views': './src/service-override/views.ts',
   monaco: './src/monaco.ts',
   ...Object.fromEntries(
     fs.readdirSync(DEFAULT_EXTENSIONS_PATH, { withFileTypes: true })
@@ -337,12 +447,19 @@ export default (args: Record<string, string>): rollup.RollupOptions[] => {
       annotations: true,
       preset: 'smallest',
       moduleSideEffects (id) {
+        if (id.endsWith('vs/workbench/browser/media/style.css')) {
+          // Remove global vscode css rules
+          return false
+        }
         return id.startsWith(SRC_DIR) ||
           id.endsWith('.css') ||
           id.startsWith(KEYBOARD_LAYOUT_DIR) ||
           id.endsWith('.contribution.js') ||
-          id.endsWith('/configurationExtensionPoint.js') ||
-          id.includes('vs/workbench/api/browser/')
+          id.endsWith('ExtensionPoint.js') ||
+          id.includes('vs/workbench/api/browser/') ||
+          id.endsWith('/fileCommands.js') ||
+          id.endsWith('/explorerViewlet.js') ||
+          id.endsWith('/listCommands.js')
       }
     },
     external,
@@ -364,7 +481,12 @@ export default (args: Record<string, string>): rollup.RollupOptions[] => {
     plugins: [
       commonjs(),
       extensionDirectoryPlugin({
-        include: `${DEFAULT_EXTENSIONS_PATH}/**/*`
+        include: `${DEFAULT_EXTENSIONS_PATH}/**/*`,
+        isDefaultExtension: true,
+        rollupPlugins: [
+          commonjs(),
+          terser()
+        ]
       }),
       {
         name: 'resolve-vscode',

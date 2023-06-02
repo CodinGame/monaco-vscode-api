@@ -56,6 +56,10 @@ import { ExtHostFileSystemEventService } from 'vs/workbench/api/common/extHostFi
 import { MainThreadMessageService } from 'vs/workbench/api/browser/mainThreadMessageService'
 import { ExtHostApiCommands } from 'vs/workbench/api/common/extHostApiCommands'
 import { ExtHostOutputService, IExtHostOutputService } from 'vs/workbench/api/common/extHostOutput'
+import { ExtHostTreeViews } from 'vs/workbench/api/common/extHostTreeViews'
+import { ExtHostStorage } from 'vs/workbench/api/common/extHostStorage'
+import { ITelemetryService } from 'vs/platform/telemetry/common/telemetry'
+import 'vs/workbench/api/browser/mainThreadLocalization'
 import 'vs/workbench/api/browser/mainThreadCommands'
 import 'vs/workbench/api/browser/mainThreadWindow'
 import 'vs/workbench/api/browser/mainThreadDiagnostics'
@@ -77,6 +81,8 @@ import 'vs/workbench/api/browser/mainThreadFileSystemEventService'
 import 'vs/workbench/api/browser/mainThreadDocumentsAndEditors'
 import 'vs/workbench/api/browser/mainThreadOutputService'
 import 'vs/workbench/api/browser/mainThreadSaveParticipant'
+import 'vs/workbench/api/browser/mainThreadTreeViews'
+import 'vs/workbench/api/browser/mainThreadStorage'
 import * as errors from 'vs/base/common/errors'
 import { unsupported } from '../tools'
 
@@ -122,7 +128,12 @@ const environment: IEnvironment = {
   get workspaceStorageHome () { return unsupported() }
 }
 
-registerSingleton(IExtHostInitDataService, class ExtHostInitDataService implements IExtHostInitDataService {
+class ExtHostInitDataService implements IExtHostInitDataService {
+  constructor (
+    @ITelemetryService private _telemetryService: ITelemetryService
+  ) {
+  }
+
   _serviceBrand: undefined
   version = '1.0.0'
   parentPid = 0
@@ -134,7 +145,10 @@ registerSingleton(IExtHostInitDataService, class ExtHostInitDataService implemen
     logNative: false
   }
 
-  get telemetryInfo () { return unsupported() }
+  get telemetryInfo () {
+    return this._telemetryService
+  }
+
   logLevel = LogLevel.Off
   logsLocation = URI.from({ scheme: 'logs', path: '/' })
   logFile = URI.from({ scheme: 'logs', path: '/logs.log' })
@@ -149,7 +163,8 @@ registerSingleton(IExtHostInitDataService, class ExtHostInitDataService implemen
   loggers = []
   logName = 'browser'
   activationEvents = {}
-}, InstantiationType.Eager)
+}
+registerSingleton(IExtHostInitDataService, ExtHostInitDataService, InstantiationType.Eager)
 
 registerSingleton(IHostUtils, class HostUtils implements IHostUtils {
   declare readonly _serviceBrand: undefined
@@ -244,6 +259,7 @@ registerSingleton(IExtHostTerminalService, class ExtHostTerminalService implemen
   $provideTerminalQuickFixes = unsupported
   dispose = unsupported
 }, InstantiationType.Eager)
+registerSingleton(IExtHostLocalizationService, ExtHostLocalizationService, InstantiationType.Delayed)
 
 const mainContext: IMainContext & IInternalExtHostContext = {
   remoteAuthority: null,
@@ -296,6 +312,7 @@ async function createExtHostServices () {
   const extHostFileSystemInfo = StandaloneServices.get(IExtHostFileSystemInfo)
   const extHostTunnelService = StandaloneServices.get(IExtHostTunnelService)
   const extHostTelemetry = StandaloneServices.get(IExtHostTelemetry)
+  const extHostInitData = StandaloneServices.get(IExtHostInitDataService)
 
   // register addressable instances
   rpcProtocol.set(ExtHostContext.ExtHostFileSystemInfo, extHostFileSystemInfo)
@@ -305,6 +322,7 @@ async function createExtHostServices () {
   // automatically create and register addressable instances
   const extHostCommands = rpcProtocol.set(ExtHostContext.ExtHostCommands, StandaloneServices.get(IExtHostCommands))
   const extHostDocumentsAndEditors = rpcProtocol.set(ExtHostContext.ExtHostDocumentsAndEditors, StandaloneServices.get(IExtHostDocumentsAndEditors))
+  const extHostLocalization = rpcProtocol.set(ExtHostContext.ExtHostLocalization, StandaloneServices.get(IExtHostLocalizationService))
 
   // manually create and register addressable instances
   const extHostQuickOpen = rpcProtocol.set(ExtHostContext.ExtHostQuickOpen, createExtHostQuickOpen(mainContext, <IExtHostWorkspaceProvider><unknown>null, extHostCommands))
@@ -324,6 +342,9 @@ async function createExtHostServices () {
   const extHostFileSystem = rpcProtocol.set(ExtHostContext.ExtHostFileSystem, new ExtHostFileSystem(rpcProtocol, extHostLanguageFeatures))
   const extHostDocumentSaveParticipant = rpcProtocol.set(ExtHostContext.ExtHostDocumentSaveParticipant, new ExtHostDocumentSaveParticipant(logService, extHostDocuments, rpcProtocol.getProxy(MainContext.MainThreadBulkEdits)))
   const extHostFileSystemEvent = rpcProtocol.set(ExtHostContext.ExtHostFileSystemEventService, new ExtHostFileSystemEventService(rpcProtocol, logService, extHostDocumentsAndEditors))
+  const extHostTreeViews = rpcProtocol.set(ExtHostContext.ExtHostTreeViews, new ExtHostTreeViews(rpcProtocol.getProxy(MainContext.MainThreadTreeViews), extHostCommands, logService))
+
+  const extHostStorage = new ExtHostStorage(rpcProtocol, logService)
 
   // Other instances
   const extHostBulkEdits = new ExtHostBulkEdits(rpcProtocol, extHostDocumentsAndEditors)
@@ -361,6 +382,7 @@ async function createExtHostServices () {
   await extHostExtensionService.initialize()
 
   return {
+    extHostInitData,
     extHostLogService: logService,
     extHostApiDeprecationService,
     extHostMessageService,
@@ -386,7 +408,10 @@ async function createExtHostServices () {
     extHostExtensionService,
     extHostDocumentSaveParticipant,
     extHostFileSystemEvent,
-    extHostOutputService
+    extHostOutputService,
+    extHostTreeViews,
+    extHostStorage,
+    extHostLocalization
   }
 }
 

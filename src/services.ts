@@ -3,7 +3,7 @@ import Severity from 'vs/base/common/severity'
 import { IConfigurationChangeEvent } from 'vs/platform/configuration/common/configuration'
 import { ITextModelContentProvider } from 'vs/editor/common/services/resolverService'
 import { IColorTheme } from 'vs/platform/theme/common/themeService'
-import { StorageScope, StorageTarget } from 'vs/platform/storage/common/storage'
+import { StorageScope, StorageTarget } from 'vscode/vs/platform/storage/common/storage'
 import { Registry } from 'vs/platform/registry/common/platform'
 import { IWorkbenchContributionsRegistry, Extensions as WorkbenchExtensions } from 'vs/workbench/common/contributions'
 import { IEditorOverrideServices, StandaloneServices } from 'vs/editor/standalone/browser/standaloneServices'
@@ -13,9 +13,6 @@ import { RunOnceScheduler, runWhenIdle } from 'vs/base/common/async'
 import { Emitter } from 'vs/base/common/event'
 import { IAction } from 'vs/base/common/actions'
 import getLayoutServiceOverride from './service-override/layout'
-// Hack so ContextKeyExprType is included in the bundle as it's used but rollup-plugin-dts is unable to detect it
-// https://github.com/Swatinem/rollup-plugin-dts/issues/220
-export { ContextKeyExprType } from 'vs/platform/contextkey/common/contextkey'
 
 interface ServiceInitializeParticipant {
   (accessor: ServicesAccessor): Promise<void>
@@ -109,6 +106,8 @@ export { IAudioCueService } from 'vs/platform/audioCues/browser/audioCueService'
 export { IDebugService } from 'vs/workbench/contrib/debug/common/debug'
 export { ILoggerService, LogLevel } from 'vs/platform/log/common/log'
 export { ILogService } from 'vs/platform/log/common/log'
+export { IViewsService } from 'vs/workbench/common/views'
+export { ILayoutService } from 'vs/platform/layout/browser/layoutService'
 
 // Export all Notification service parts
 export {

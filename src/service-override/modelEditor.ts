@@ -138,7 +138,9 @@ class EditorService extends Disposable implements IEditorService {
       applyTextEditorOptions(options, modelEditor, ScrollType.Immediate)
     }
 
-    modelEditor.focus()
+    if (!(options?.preserveFocus ?? false)) {
+      modelEditor.focus()
+    }
 
     // Return a very simple editor pane, only the `getControl` method is used
     return new SimpleEditorPane(modelEditor)
@@ -149,8 +151,8 @@ class EditorService extends Disposable implements IEditorService {
   isOpened = () => false
   isVisible = () => false
   findEditors = () => []
-  save = async () => true
-  saveAll = async () => true
+  save = async () => ({ success: true, editors: [] })
+  saveAll = async () => ({ success: true, editors: [] })
   revert = unsupported
   revertAll = unsupported
   closeEditor = unsupported

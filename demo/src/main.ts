@@ -1,22 +1,50 @@
 import './style.css'
-import * as monaco from 'monaco-editor/esm/vs/editor/editor.api'
+import * as monaco from 'monaco-editor/esm/vs/editor/editor.api.js'
 import './setup'
-import 'monaco-editor/esm/vs/editor/editor.all'
-import 'monaco-editor/esm/vs/editor/standalone/browser/accessibilityHelp/accessibilityHelp'
-import 'monaco-editor/esm/vs/editor/standalone/browser/iPadShowKeyboard/iPadShowKeyboard'
-import 'monaco-editor/esm/vs/editor/standalone/browser/quickAccess/standaloneHelpQuickAccess'
-import 'monaco-editor/esm/vs/editor/standalone/browser/quickAccess/standaloneGotoLineQuickAccess'
-import 'monaco-editor/esm/vs/editor/standalone/browser/quickAccess/standaloneGotoSymbolQuickAccess'
-import 'monaco-editor/esm/vs/editor/standalone/browser/quickAccess/standaloneCommandsQuickAccess'
-import 'monaco-editor/esm/vs/editor/standalone/browser/referenceSearch/standaloneReferenceSearch'
+import 'monaco-editor/esm/vs/editor/editor.all.js'
+import 'monaco-editor/esm/vs/editor/standalone/browser/accessibilityHelp/accessibilityHelp.js'
+import 'monaco-editor/esm/vs/editor/standalone/browser/iPadShowKeyboard/iPadShowKeyboard.js'
+import 'monaco-editor/esm/vs/editor/standalone/browser/quickAccess/standaloneHelpQuickAccess.js'
+import 'monaco-editor/esm/vs/editor/standalone/browser/quickAccess/standaloneGotoLineQuickAccess.js'
+import 'monaco-editor/esm/vs/editor/standalone/browser/quickAccess/standaloneGotoSymbolQuickAccess.js'
+import 'monaco-editor/esm/vs/editor/standalone/browser/quickAccess/standaloneCommandsQuickAccess.js'
+import 'monaco-editor/esm/vs/editor/standalone/browser/referenceSearch/standaloneReferenceSearch.js'
 // json contribution should be imported/run AFTER the services are initialized (in setup.ts)
-import 'monaco-editor/esm/vs/language/json/monaco.contribution'
+import 'monaco-editor/esm/vs/language/json/monaco.contribution.js'
+import 'monaco-editor/esm/vs/language/typescript/monaco.contribution.js'
 import { createConfiguredEditor, synchronizeJsonSchemas, createModelReference } from 'vscode/monaco'
-import { SimpleTextFileSystemProvider, registerFileSystemOverlay } from 'vscode/service-override/files'
+import { SimpleTextFileSystemProvider, registerFileSystemOverlay, FileType, HTMLFileSystemProvider } from 'vscode/service-override/files'
 import * as vscode from 'vscode'
 import { ILogService, LogLevel, StandaloneServices } from 'vscode/services'
 
 StandaloneServices.get(ILogService).setLevel(LogLevel.Off)
+
+vscode.languages.registerCallHierarchyProvider('javascript', {
+  prepareCallHierarchy: function (): vscode.ProviderResult<vscode.CallHierarchyItem | vscode.CallHierarchyItem[]> {
+    return {
+      name: 'Fake call hierarchy',
+      kind: vscode.SymbolKind.Class,
+      uri: vscode.Uri.file('/tmp/test.js'),
+      range: new vscode.Range(0, 0, 0, 10),
+      selectionRange: new vscode.Range(0, 0, 0, 10)
+    }
+  },
+  provideCallHierarchyIncomingCalls: function (): vscode.ProviderResult<vscode.CallHierarchyIncomingCall[]> {
+    return [{
+      from: {
+        name: 'Fake incomming call',
+        kind: vscode.SymbolKind.Class,
+        uri: vscode.Uri.file('/tmp/test.js'),
+        range: new vscode.Range(0, 0, 0, 10),
+        selectionRange: new vscode.Range(0, 0, 0, 10)
+      },
+      fromRanges: [new vscode.Range(2, 0, 2, 10)]
+    }]
+  },
+  provideCallHierarchyOutgoingCalls: function (): vscode.ProviderResult<vscode.CallHierarchyOutgoingCall[]> {
+    return []
+  }
+})
 
 vscode.languages.registerHoverProvider('javascript', {
   async provideHover (document, position) {
@@ -65,12 +93,22 @@ class FakeFileSystem extends SimpleTextFileSystemProvider {
     [otherModelUri.toString(true)]: 'This is another file'
   }
 
-  protected async getFileContent (resource: monaco.Uri): Promise<string | undefined> {
+  protected override async getFileContent (resource: monaco.Uri): Promise<string | undefined> {
     return this.files[resource.toString(true)]
   }
 
-  protected async setFileContent (resource: monaco.Uri, content: string): Promise<void> {
+  protected override async setFileContent (resource: monaco.Uri, content: string): Promise<void> {
     this.files[resource.toString(true)] = content
+  }
+
+  override async delete (): Promise<void> {
+  }
+
+  override async readdir (directory: monaco.Uri): Promise<[string, FileType][]> {
+    if (directory.path === '/tmp') {
+      return [['test2.js', FileType.File]]
+    }
+    return []
   }
 }
 
@@ -110,6 +148,7 @@ while (variable < 5000) {
 
   const settingsModelReference = await createModelReference(monaco.Uri.from({ scheme: 'user', path: '/settings.json' }), `{
   "workbench.colorTheme": "Default Dark+",
+  "workbench.iconTheme": "vs-seti",
   "editor.autoClosingBrackets": "languageDefined",
   "editor.autoClosingQuotes": "languageDefined",
   "editor.scrollBeyondLastLine": true,
@@ -123,7 +162,8 @@ while (variable < 5000) {
   "audioCues.lineHasError": "on",
   "audioCues.onDebugBreak": "on",
   "files.autoSave": "afterDelay",
-  "files.autoSaveDelay": 1000
+  "files.autoSaveDelay": 1000,
+  "debug.toolBarLocation": "docked"
 }`)
   createConfiguredEditor(document.getElementById('settings-editor')!, {
     model: settingsModelReference.object.textEditorModel
@@ -152,6 +192,18 @@ setTimeout(() => {
     void vscode.window.showInformationMessage('The configuration was changed')
   })
 }, 1000)
+
+document.querySelector('#filesystem')!.addEventListener('click', async () => {
+  const dirHandle = await window.showDirectoryPicker()
+
+  const htmlFileSystemProvider = new HTMLFileSystemProvider(undefined, 'unused', StandaloneServices.get(ILogService))
+  await htmlFileSystemProvider.registerDirectoryHandle(dirHandle)
+  registerFileSystemOverlay(htmlFileSystemProvider)
+
+  vscode.workspace.updateWorkspaceFolders(0, 0, {
+    uri: vscode.Uri.file(dirHandle.name)
+  })
+})
 
 document.querySelector('#run')!.addEventListener('click', () => {
   void vscode.debug.startDebugging(undefined, {

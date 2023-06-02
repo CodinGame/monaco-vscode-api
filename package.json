@@ -80,6 +80,10 @@
       "types": "./dist/service-override/preferences.d.ts",
       "default": "./dist/service-override/preferences.js"
     },
+    "./service-override/views": {
+      "types": "./dist/service-override/views.d.ts",
+      "default": "./dist/service-override/views.js"
+    },
     "./monaco": {
       "types": "./dist/monaco.d.ts",
       "default": "./dist/monaco.js"
@@ -143,6 +147,9 @@
       "service-override/preferences": [
         "./dist/service-override/preferences.d.ts"
       ],
+      "service-override/views": [
+        "./dist/service-override/views.d.ts"
+      ],
       "monaco": [
         "./dist/monaco.d.ts"
       ],
@@ -168,7 +175,7 @@
     "compile-rollup-plugins": "rollup --config rollup/rollup.rollup-plugins.config.ts --configPlugin 'typescript={tsconfig: `tsconfig.rollup-config-plugins.json`, include: [`./rollup/rollup.rollup-plugins.config.ts`]}'",
     "preprepare": "./scripts/install-vscode && node --loader ts-node/esm src/monaco-treemending.ts",
     "lint": "eslint {/src/**/*.ts,./rollup/*.ts,./*.ts}",
-    "generate-types": "tsc --project tsconfig.types.json && rollup --config rollup/rollup.types.config.ts --configPlugin 'typescript={tsconfig: `tsconfig.rollup-config-types.json`}' && rm -rf ./dist/types",
+    "generate-types": "./scripts/generate-types",
     "release": "node --loader ts-node/esm release.ts ${npm_package_config_vscode_version}",
     "reset:repo": "git clean -f -X -d"
   },
@@ -177,15 +184,15 @@
   },
   "config": {
     "vscode": {
-      "version": "1.78.0"
+      "version": "1.79.0"
     }
   },
   "devDependencies": {
-    "@babel/core": "^7.21.4",
+    "@babel/core": "^7.21.8",
     "@babel/plugin-proposal-class-properties": "^7.18.6",
     "@babel/plugin-proposal-decorators": "^7.21.0",
-    "@babel/preset-env": "^7.21.4",
-    "@babel/preset-typescript": "^7.21.4",
+    "@babel/preset-env": "^7.21.5",
+    "@babel/preset-typescript": "^7.21.5",
     "@codingame/eslint-config": "^1.1.6",
     "@codingame/tsconfig": "^1.1.1",
     "@octokit/rest": "^19.0.7",
@@ -194,42 +201,47 @@
     "@rollup/plugin-json": "^6.0.0",
     "@rollup/plugin-node-resolve": "^15.0.2",
     "@rollup/plugin-replace": "^5.0.2",
+    "@rollup/plugin-terser": "^0.4.1",
     "@rollup/plugin-typescript": "^11.1.0",
     "@types/diff": "^5.0.3",
-    "@types/node": "^18.16.2",
+    "@types/mime-types": "^2.1.1",
+    "@types/node": "^18.16.3",
     "@types/semver": "^7.3.13",
     "@types/vscode": "~1.77.0",
     "@types/yauzl": "^2.10.0",
-    "@typescript-eslint/eslint-plugin": "^5.57.1",
-    "@typescript-eslint/parser": "^5.57.1",
+    "@typescript-eslint/eslint-plugin": "^5.59.2",
+    "@typescript-eslint/parser": "^5.59.2",
     "@vscode/iconv-lite-umd": "^0.7.0",
     "diff": "^5.1.0",
-    "eslint": "^8.37.0",
+    "eslint": "^8.39.0",
     "eslint-config-standard": "^17.0.0",
     "eslint-plugin-import": "^2.27.5",
     "eslint-plugin-n": "^15.7.0",
     "eslint-plugin-promise": "^6.1.1",
     "eslint-plugin-unused-imports": "^2.0.0",
+    "isbinaryfile": "^5.0.0",
     "js-cleanup": "^1.2.0",
     "jschardet": "^3.0.0",
+    "mime-types": "^2.1.35",
     "recast": "^0.22.0",
-    "rollup": "^3.20.2",
+    "rollup": "^3.21.3",
     "rollup-plugin-dts": "^5.3.0",
     "rollup-plugin-external-assets": "^3.0.1",
     "rollup-plugin-glob-import": "^0.5.0",
-    "semver": "^7.3.8",
+    "semver": "^7.5.0",
+    "ts-morph": "^18.0.0",
     "ts-node": "^10.9.1",
-    "typescript": "5.0.3",
-    "zx": "^7.2.1"
+    "typescript": "5.0.4",
+    "zx": "^7.2.2"
   },
   "peerDependencies": {
-    "monaco-editor": "0.37.1",
+    "monaco-editor": "0.38.0",
     "vscode-oniguruma": "^1.7.0",
     "vscode-textmate": "^9.0.0",
     "yauzl": "^2.10.0"
   },
   "overrides": {
-    "typescript": "5.0.3",
+    "typescript": "5.0.4",
     "rollup-plugin-styles": {
       "rollup": "3.20.2"
     }

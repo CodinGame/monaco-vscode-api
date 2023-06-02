@@ -5,12 +5,12 @@ import { FileService } from 'vs/platform/files/common/fileService'
 import { ILogService } from 'vs/platform/log/common/log'
 import { InMemoryFileSystemProvider } from 'vs/platform/files/common/inMemoryFilesystemProvider'
 import { URI } from 'vs/base/common/uri'
-import { createFileSystemProviderError, FileChangeType, FileSystemProviderCapabilities, FileSystemProviderError, FileSystemProviderErrorCode, FileType, IFileChange, IFileDeleteOptions, IFileOverwriteOptions, IFileService, IFileSystemProviderWithFileReadWriteCapability, IFileWriteOptions, IStat, IWatchOptions } from 'vs/platform/files/common/files'
+import { FileChangeType, FileSystemProviderCapabilities, FileType } from 'vscode/vs/platform/files/common/files'
+import { createFileSystemProviderError, FileSystemProviderError, FileSystemProviderErrorCode, IFileChange, IFileDeleteOptions, IFileOverwriteOptions, IFileService, IFileSystemProviderWithFileReadWriteCapability, IFileWriteOptions, IStat, IWatchOptions } from 'vs/platform/files/common/files'
 import { DisposableStore, IDisposable, Disposable } from 'vs/base/common/lifecycle'
-import { ITextFileService } from 'vs/workbench/services/textfile/common/textfiles'
-import { BrowserTextFileService } from 'vs/workbench/services/textfile/browser/browserTextFileService'
 import { joinPath } from 'vs/base/common/resources'
 import { Emitter, Event } from 'vs/base/common/event'
+import { HTMLFileSystemProvider } from 'vs/platform/files/browser/htmlFileSystemProvider'
 import 'vs/workbench/contrib/files/browser/files.contribution'
 
 class File implements IStat {
@@ -18,7 +18,7 @@ class File implements IStat {
   mtime: number
   size: number
   type: FileType
-  constructor (public getContent: () => Promise<string>) {
+  constructor (public getContent: () => Promise<string | Uint8Array>) {
     this.ctime = Date.now()
     this.mtime = Date.now()
     this.size = 0
@@ -84,8 +84,9 @@ abstract class SimpleTextFileSystemProvider implements IFileSystemProviderWithFi
     // Do nothing
   }
 
-  readdir (): Promise<[string, FileType][]> {
-    throw createFileSystemProviderError('Not allowed', FileSystemProviderErrorCode.NoPermissions)
+  async readdir (directory: URI): Promise<[string, FileType][]> {
+    console.debug('Not implemented: readdir', directory)
+    return []
   }
 
   delete (): Promise<void> {
@@ -118,7 +119,12 @@ class ExtensionFileSystemProviderWithFileReadWriteCapability implements IFileSys
   async readFile (resource: URI): Promise<Uint8Array> {
     const file = this.files.get(resource.toString())
     if (file != null) {
-      return encoder.encode(await file.getContent())
+      const data = await file.getContent()
+      if (data instanceof Uint8Array) {
+        return data
+      } else {
+        return encoder.encode(data)
+      }
     }
 
     throw FileSystemProviderError.create('file not found', FileSystemProviderErrorCode.FileNotFound)
@@ -129,7 +135,7 @@ class ExtensionFileSystemProviderWithFileReadWriteCapability implements IFileSys
     return Disposable.None
   }
 
-  public registerFile (resource: URI, getContent: () => Promise<string>): IDisposable {
+  public registerFile (resource: URI, getContent: () => Promise<string | Uint8Array>): IDisposable {
     this.files.set(resource.toString(), new File(getContent))
     return {
       dispose: () => {
@@ -163,13 +169,12 @@ class ExtensionFileSystemProviderWithFileReadWriteCapability implements IFileSys
 }
 const extensionFileSystemProvider = new ExtensionFileSystemProviderWithFileReadWriteCapability()
 
+function isFullfiled<T> (result: PromiseSettledResult<T>): result is PromiseFulfilledResult<T> {
+  return result.status === 'fulfilled'
+}
 class OverlayFileSystemProvider implements IFileSystemProviderWithFileReadWriteCapability {
   private others: IFileSystemProviderWithFileReadWriteCapability[] = []
-  constructor (private _default: IFileSystemProviderWithFileReadWriteCapability) {
-    _default.onDidChangeFile((e) => {
-      this._onDidChangeFile.fire(e)
-    })
-  }
+  constructor (private _default: IFileSystemProviderWithFileReadWriteCapability) {}
 
   public register (delegate: IFileSystemProviderWithFileReadWriteCapability) {
     this.others.push(delegate)
@@ -183,9 +188,11 @@ class OverlayFileSystemProvider implements IFileSystemProviderWithFileReadWriteC
         const index = this.others.indexOf(delegate)
         if (index >= 0) {
           this.others.splice(index, 1)
+          this._onDidChangeOverlays.fire()
         }
       }
     })
+    this._onDidChangeOverlays.fire()
     return disposableStore
   }
 
@@ -197,6 +204,9 @@ class OverlayFileSystemProvider implements IFileSystemProviderWithFileReadWriteC
 
   _onDidChangeFile = new Emitter<readonly IFileChange[]>()
   onDidChangeFile = Event.any(this._default.onDidChangeFile, this._onDidChangeFile.event)
+
+  _onDidChangeOverlays = new Emitter<void>()
+  onDidChangeOverlays = this._onDidChangeOverlays.event
 
   capabilities = FileSystemProviderCapabilities.FileReadWrite | FileSystemProviderCapabilities.PathCaseSensitive
 
@@ -217,11 +227,14 @@ class OverlayFileSystemProvider implements IFileSystemProviderWithFileReadWriteC
   }
 
   private async writeToDelegates (caller: (delegate: IFileSystemProviderWithFileReadWriteCapability) => Promise<void>) {
-    await Promise.all(this.delegates.map(async delegate => {
+    const results = await Promise.allSettled(this.delegates.map(async delegate => {
       if ((delegate.capabilities & FileSystemProviderCapabilities.Readonly) === 0) {
         await caller(delegate)
       }
     }))
+    if (!results.some(result => result.status === 'fulfilled')) {
+      throw (results[0] as PromiseRejectedResult).reason
+    }
   }
 
   async stat (resource: URI): Promise<IStat> {
@@ -233,7 +246,11 @@ class OverlayFileSystemProvider implements IFileSystemProviderWithFileReadWriteC
   }
 
   async readdir (resource: URI): Promise<[string, FileType][]> {
-    return this.readFromDelegates(delegate => delegate.readdir(resource))
+    const results = await Promise.allSettled(this.delegates.map(delegate => delegate.readdir(resource)))
+    if (!results.some(result => result.status === 'fulfilled')) {
+      throw (results[0] as PromiseRejectedResult).reason
+    }
+    return Object.entries(Object.fromEntries(results.filter(isFullfiled).map(result => result.value).flat()))
   }
 
   watch (resource: URI, opts: IWatchOptions): IDisposable {
@@ -273,18 +290,21 @@ class MemoryFileService extends FileService {
     this.registerProvider('extension', extensionFileSystemProvider)
     this.registerProvider('cache', new InMemoryFileSystemProvider())
     this.registerProvider('logs', new InMemoryFileSystemProvider())
-    this.registerProvider('file', fileSystemProvider)
+    let fileSystemProviderDisposable = this.registerProvider('file', fileSystemProvider)
+    fileSystemProvider.onDidChangeOverlays(() => {
+      fileSystemProviderDisposable.dispose()
+      fileSystemProviderDisposable = this.registerProvider('file', fileSystemProvider)
+    })
   }
 }
 
 export default function getServiceOverride (): IEditorOverrideServices {
   return {
-    [IFileService.toString()]: new SyncDescriptor(MemoryFileService),
-    [ITextFileService.toString()]: new SyncDescriptor(BrowserTextFileService)
+    [IFileService.toString()]: new SyncDescriptor(MemoryFileService)
   }
 }
 
-export function registerExtensionFile (extensionLocation: URI, path: string, getContent: () => Promise<string>): IDisposable {
+export function registerExtensionFile (extensionLocation: URI, path: string, getContent: () => Promise<string | Uint8Array>): IDisposable {
   return extensionFileSystemProvider.registerFile(joinPath(extensionLocation, path), getContent)
 }
 
@@ -295,6 +315,7 @@ export function registerFileSystemOverlay (provider: IFileSystemProviderWithFile
 export {
   IFileSystemProviderWithFileReadWriteCapability,
   FileSystemProviderCapabilities,
+  FileType,
   IStat,
   IWatchOptions,
   IFileWriteOptions,
@@ -302,6 +323,7 @@ export {
   IFileOverwriteOptions,
   FileSystemProviderError,
   SimpleTextFileSystemProvider,
+  HTMLFileSystemProvider,
   FileSystemProviderErrorCode,
   IFileChange,
   FileChangeType

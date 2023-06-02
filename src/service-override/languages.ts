@@ -1,7 +1,7 @@
 import '../vscode-services/missing-services'
 import { IEditorOverrideServices } from 'vs/editor/standalone/browser/standaloneServices'
 import { SyncDescriptor } from 'vs/platform/instantiation/common/descriptors'
-import { IRawLanguageExtensionPoint, WorkbenchLanguageService } from 'vs/workbench/services/language/common/languageService'
+import { WorkbenchLanguageService } from 'vs/workbench/services/language/common/languageService'
 import { LanguageConfigurationFileHandler } from 'vs/workbench/contrib/codeEditor/browser/languageConfigurationExtensionPoint'
 import { IWorkbenchContribution, IWorkbenchContributionsRegistry, Extensions as WorkbenchExtensions } from 'vs/workbench/common/contributions'
 import { Registry } from 'vs/platform/registry/common/platform'
@@ -25,8 +25,4 @@ export default function getServiceOverride (): IEditorOverrideServices {
     ...getFileServiceOverride(),
     [ILanguageService.toString()]: new SyncDescriptor(WorkbenchLanguageService)
   }
-}
-
-export {
-  IRawLanguageExtensionPoint
 }

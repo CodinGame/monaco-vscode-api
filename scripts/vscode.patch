@@ -72,10 +72,10 @@ index 4fe7e01e806..b20241f24e3 100644
  
  const ttPolicy = window.trustedTypes?.createPolicy('defaultWorkerFactory', { createScriptURL: value => value });
 diff --git a/src/vs/base/common/network.ts b/src/vs/base/common/network.ts
-index 4a69ab566b2..c08b39971ce 100644
+index 096790cc3d7..49037970f46 100644
 --- a/src/vs/base/common/network.ts
 +++ b/src/vs/base/common/network.ts
-@@ -201,7 +201,7 @@ class FileAccessImpl {
+@@ -202,7 +202,7 @@ class FileAccessImpl {
  	 * **Note:** use `dom.ts#asCSSUrl` whenever the URL is to be used in CSS context.
  	 */
  	asBrowserUri(resourcePath: AppResourcePath | ''): URI {
@@ -84,7 +84,7 @@ index 4a69ab566b2..c08b39971ce 100644
  		return this.uriToBrowserUri(uri);
  	}
  
-@@ -248,7 +248,7 @@ class FileAccessImpl {
+@@ -249,7 +249,7 @@ class FileAccessImpl {
  	 * is responsible for loading.
  	 */
  	asFileUri(resourcePath: AppResourcePath | ''): URI {
@@ -135,10 +135,10 @@ index aff4d0734de..ea43e4a2fcc 100644
 +// };
 +// ESM-uncomment-end
 diff --git a/src/vs/editor/browser/config/editorConfiguration.ts b/src/vs/editor/browser/config/editorConfiguration.ts
-index 7e99e40ce47..c2cb91604c4 100644
+index fc197da1d57..a4d9573979f 100644
 --- a/src/vs/editor/browser/config/editorConfiguration.ts
 +++ b/src/vs/editor/browser/config/editorConfiguration.ts
-@@ -259,7 +259,7 @@ export class ComputedEditorOptions implements IComputedEditorOptions {
+@@ -269,7 +269,7 @@ export class ComputedEditorOptions implements IComputedEditorOptions {
  	}
  }
  

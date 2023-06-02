@@ -1,6 +1,8 @@
 import nodeResolve from '@rollup/plugin-node-resolve'
 import * as rollup from 'rollup'
 import typescript from '@rollup/plugin-typescript'
+import commonjs from '@rollup/plugin-commonjs'
+import json from '@rollup/plugin-json'
 import * as path from 'path'
 import { fileURLToPath } from 'url'
 
@@ -11,24 +13,32 @@ const TSCONFIG = path.resolve(BASE_DIR, 'tsconfig.rollup.json')
 
 const config: rollup.RollupOptions = {
   cache: false,
-  treeshake: {
-    preset: 'smallest'
-  },
   external: ['@rollup/pluginutils', 'path', 'yauzl'],
   output: [{
     format: 'esm',
     dir: 'dist',
     entryFileNames: '[name].js'
   }],
-  input: ['src/rollup-vsix-plugin.ts', 'src/rollup-extension-directory-plugin.ts'],
+  input: [
+    'src/rollup-vsix-plugin.ts',
+    'src/rollup-extension-directory-plugin.ts'
+  ],
   plugins: [
+    commonjs(),
     nodeResolve({
       extensions: EXTENSIONS,
-      modulePaths: ['vscode/']
+      modulePaths: ['vscode/'],
+      browser: false,
+      preferBuiltins: true
     }),
     typescript({
       noEmitOnError: true,
       tsconfig: TSCONFIG
+    }),
+    json({
+      compact: true,
+      namedExports: false,
+      preferConst: false
     })
   ]
 }

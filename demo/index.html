@@ -4,12 +4,24 @@
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>monaco-vscode-api demo</title>
+    <link rel="icon" href="/favicon.ico" type="image/x-icon">
   </head>
   <body>
     <div id="app">
-      <h1>Editor</h1>
-      <div id="editor" class="editor"></div>
-      <button id="run">Run with debugger</button>
+      <div style="display: flex">
+        <div style="display: flex; flex: none; border: 1px solid var(--vscode-editorWidget-border); margin-right: 20px">
+          <div id="activityBar"></div>
+          <div id="sidebar" style="width: 500px"></div>
+        </div>
+        <div style="flex: 1">
+          <h1>Editor</h1>
+          <div id="editor" class="editor"></div>
+          <button id="run">Run with debugger</button>
+          <button id="filesystem">Attach filesystem</button>
+        </div>
+      </div>
+      <div id="panel" style="display: flex; flex: none; border: 1px solid var(--vscode-editorWidget-border); margin-right: 20px; height: 400px"></div>
+
       <h1>Settings</h1>
       <div id="settings-editor" class="editor"></div>
       <h1>Keybindings</h1>

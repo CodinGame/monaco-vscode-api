@@ -1,0 +1,14 @@
+#!/bin/bash
+set -e
+
+# extract d.ts files using typescript
+tsc --project tsconfig.types.json
+
+# bundle them with rollup
+rollup --config rollup/rollup.types.config.ts --configPlugin 'typescript={tsconfig: `tsconfig.rollup-config-types.json`}'
+
+# remove temporary files
+rm -rf ./dist/types
+
+# copy vscode required namespaces
+cp vscode/vs/workbench/contrib/debug/common/debugProtocol.d.ts dist/

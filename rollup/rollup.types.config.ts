@@ -1,9 +1,17 @@
 import * as rollup from 'rollup'
 import dts from 'rollup-plugin-dts'
+import * as tsMorph from 'ts-morph'
 import * as path from 'path'
 import { fileURLToPath } from 'url'
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url))
+
+const project = new tsMorph.Project({
+  tsConfigFilePath: path.resolve(__dirname, '../tsconfig.types.json'),
+  manipulationSettings: {
+    quoteKind: tsMorph.QuoteKind.Single
+  }
+})
 
 const VSCODE_DIR = path.join(__dirname, '../vscode')
 const DIST_DIR = path.join(__dirname, '../dist')
@@ -20,33 +28,37 @@ interfaceOverride.set('IStandaloneDiffEditor', 'monaco.editor.IStandaloneDiffEdi
 interfaceOverride.set('IStandaloneEditorConstructionOptions', 'monaco.editor.IStandaloneEditorConstructionOptions')
 interfaceOverride.set('IStandaloneDiffEditorConstructionOptions', 'monaco.editor.IStandaloneDiffEditorConstructionOptions')
 
-export default rollup.defineConfig([
-  './dist/types/src/services.d.ts',
-  './dist/types/src/extensions.d.ts',
-  './dist/types/src/service-override/notifications.d.ts',
-  './dist/types/src/service-override/dialogs.d.ts',
-  './dist/types/src/service-override/modelEditor.d.ts',
-  './dist/types/src/service-override/files.d.ts',
-  './dist/types/src/service-override/configuration.d.ts',
-  './dist/types/src/service-override/keybindings.d.ts',
-  './dist/types/src/service-override/textmate.d.ts',
-  './dist/types/src/service-override/theme.d.ts',
-  './dist/types/src/service-override/snippets.d.ts',
-  './dist/types/src/service-override/languages.d.ts',
-  './dist/types/src/service-override/audioCue.d.ts',
-  './dist/types/src/service-override/debug.d.ts',
-  './dist/types/src/service-override/preferences.d.ts',
-  './dist/types/src/monaco.d.ts',
-  './dist/types/src/rollup-vsix-plugin.d.ts',
-  './dist/types/src/rollup-extension-directory-plugin.d.ts'
-].map((input): rollup.RollupOptions => ({
-  input: {
-    [path.relative(path.resolve(DIST_DIR, 'types/src'), path.resolve(__dirname, '..', input)).slice(0, -3)]: input
-  },
+export default rollup.defineConfig({
+  input: Object.fromEntries([
+    './dist/types/src/services.d.ts',
+    './dist/types/src/extensions.d.ts',
+    './dist/types/src/service-override/notifications.d.ts',
+    './dist/types/src/service-override/dialogs.d.ts',
+    './dist/types/src/service-override/modelEditor.d.ts',
+    './dist/types/src/service-override/files.d.ts',
+    './dist/types/src/service-override/configuration.d.ts',
+    './dist/types/src/service-override/keybindings.d.ts',
+    './dist/types/src/service-override/textmate.d.ts',
+    './dist/types/src/service-override/theme.d.ts',
+    './dist/types/src/service-override/snippets.d.ts',
+    './dist/types/src/service-override/languages.d.ts',
+    './dist/types/src/service-override/audioCue.d.ts',
+    './dist/types/src/service-override/debug.d.ts',
+    './dist/types/src/service-override/preferences.d.ts',
+    './dist/types/src/service-override/views.d.ts',
+    './dist/types/src/monaco.d.ts',
+    './dist/types/src/rollup-vsix-plugin.d.ts',
+    './dist/types/src/rollup-extension-directory-plugin.d.ts'
+  ].map(input => ([
+    path.relative(path.resolve(DIST_DIR, 'types/src'), path.resolve(__dirname, '..', input)).slice(0, -3),
+    input
+  ]))),
   output: {
     format: 'esm',
     dir: 'dist',
-    entryFileNames: chunk => `${chunk.name}.ts`
+    entryFileNames: chunk => `${chunk.name}.ts`,
+    chunkFileNames: chunk => `${chunk.name}.ts`,
+    assetFileNames: chunk => `${chunk.name}.ts`
   },
   external: function isExternal (id) {
     if (id.endsWith('.css')) {
@@ -63,6 +75,19 @@ export default rollup.defineConfig([
     },
     {
       name: 'replace-interfaces',
+      load (id) {
+        const [sourceFile] = project.addSourceFilesAtPaths(id)
+
+        sourceFile!.addImportDeclaration({
+          moduleSpecifier: 'monaco-editor',
+          namespaceImport: 'monaco'
+        })
+        sourceFile!.addImportDeclaration({
+          moduleSpecifier: 'vscode',
+          namespaceImport: 'vscode'
+        })
+        return sourceFile!.getFullText()
+      },
       transform (code, id) {
         interfaceOverride.forEach((value, key) => {
           const [, path, name] = /(?:(.*):)?(.*)/.exec(key)!
@@ -71,7 +96,15 @@ export default rollup.defineConfig([
           }
         })
 
-        return `import * as monaco from 'monaco-editor'\nimport * as vscode from 'vscode'\n${code}`
+        return code
+      },
+      renderChunk (code, chunk) {
+        const chunkParentPath = path.resolve(DIST_DIR, path.dirname(chunk.fileName))
+        if (code.includes('DebugProtocol')) {
+          const importPath = path.relative(chunkParentPath, path.resolve(DIST_DIR, 'debugProtocol.d.ts'))
+          return `/// <reference path="./${importPath}" />\n\n${code}`
+        }
+        return undefined
       }
     },
     {
@@ -93,4 +126,4 @@ export default rollup.defineConfig([
       respectExternal: true
     })
   ]
-})))
+})

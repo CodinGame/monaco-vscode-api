@@ -17,17 +17,41 @@ import getTextmateServiceOverride from 'vscode/service-override/textmate'
 import getThemeServiceOverride from 'vscode/service-override/theme'
 import getLanguagesServiceOverride from 'vscode/service-override/languages'
 import getAudioCueServiceOverride from 'vscode/service-override/audioCue'
+import getViewsServiceOverride, { createSidebarPart, createActivitybarPar, createPanelPart, registerCustomView, ViewContainerLocation } from 'vscode/service-override/views'
 import getDebugServiceOverride from 'vscode/service-override/debug'
 import getPreferencesServiceOverride from 'vscode/service-override/preferences'
 import getSnippetServiceOverride from 'vscode/service-override/snippets'
 import EditorWorker from 'monaco-editor/esm/vs/editor/editor.worker?worker'
 import JsonWorker from 'monaco-editor/esm/vs/language/json/json.worker?worker'
+import TypescriptWorker from 'monaco-editor/esm/vs/language/typescript/ts.worker?worker'
 import * as monaco from 'monaco-editor/esm/vs/editor/editor.api'
 import { createConfiguredEditor } from 'vscode/monaco'
 import 'vscode/default-extensions/theme-defaults'
 import 'vscode/default-extensions/javascript'
+import 'vscode/default-extensions/typescript-basics'
 import 'vscode/default-extensions/json'
+import 'vscode/default-extensions/theme-seti'
+import 'vscode/default-extensions/references-view'
 import * as vscode from 'vscode'
+import iconUrl from './Visual_Studio_Code_1.35_icon.svg?url'
+
+registerCustomView({
+  id: 'custom-view',
+  name: 'Custom demo view',
+  renderBody: function (container: HTMLElement): monaco.IDisposable {
+    container.style.display = 'flex'
+    container.style.alignItems = 'center'
+    container.style.justifyContent = 'center'
+    container.innerHTML = 'This is a custom view<br />You can render anything you want here'
+
+    return {
+      dispose () {
+      }
+    }
+  },
+  location: ViewContainerLocation.Panel,
+  icon: new URL(iconUrl, window.location.href).toString()
+})
 
 // Workers
 interface WorkerConstructor {
@@ -36,7 +60,9 @@ interface WorkerConstructor {
 export type WorkerLoader = () => WorkerConstructor | Promise<WorkerConstructor>
 const workerLoaders: Partial<Record<string, WorkerLoader>> = {
   editorWorkerService: () => EditorWorker,
-  json: () => JsonWorker
+  json: () => JsonWorker,
+  javascript: () => TypescriptWorker,
+  typescript: () => TypescriptWorker
 }
 window.MonacoEnvironment = {
   getWorker: async function (moduleId, label) {
@@ -95,7 +121,7 @@ const openNewCodeEditor: OpenEditor = async (modelRef) => {
       editor
     }
 
-    editor.onDidBlurEditorText(() => {
+    editor.onDidBlurEditorWidget(() => {
       currentEditor?.dispose()
     })
     container.addEventListener('mousedown', (event) => {
@@ -119,7 +145,7 @@ await initializeMonacoService({
   ...getModelEditorServiceOverride(openNewCodeEditor),
   ...getNotificationServiceOverride(),
   ...getDialogsServiceOverride(),
-  ...getConfigurationServiceOverride(monaco.Uri.file('/')),
+  ...getConfigurationServiceOverride(monaco.Uri.file('/tmp')),
   ...getKeybindingsServiceOverride(),
   ...getTextmateServiceOverride(),
   ...getThemeServiceOverride(),
@@ -127,9 +153,14 @@ await initializeMonacoService({
   ...getAudioCueServiceOverride(),
   ...getDebugServiceOverride(),
   ...getPreferencesServiceOverride(),
+  ...getViewsServiceOverride(),
   ...getSnippetServiceOverride()
 })
 await initializeVscodeExtensions()
+
+createSidebarPart(document.querySelector<HTMLDivElement>('#sidebar')!)
+createActivitybarPar(document.querySelector<HTMLDivElement>('#activityBar')!)
+createPanelPart(document.querySelector<HTMLDivElement>('#panel')!)
 
 const debuggerExtension = {
   name: 'debugger',
@@ -141,7 +172,8 @@ const debuggerExtension = {
   contributes: {
     debuggers: [{
       type: 'javascript',
-      label: 'Test'
+      label: 'Test',
+      languages: ['javascript']
     }],
     breakpoints: [{
       language: 'javascript'
