@@ -109,7 +109,8 @@ const ALLOWED_WORKBENCH_CONTRIBUTIONS = new Set([
   'DebugContentProvider',
   'DialogHandlerContribution',
   'ExplorerViewletViewsContribution',
-  'ViewsExtensionHandler'
+  'ViewsExtensionHandler',
+  'OutputContribution'
 ])
 
 function isCallPure (file: string, functionName: string, node: recast.types.namedTypes.CallExpression): boolean {
@@ -367,7 +368,9 @@ const input = {
   'service-override/preferences': './src/service-override/preferences.ts',
   'service-override/views': './src/service-override/views.ts',
   'service-override/quickaccess': './src/service-override/quickaccess.ts',
+  'service-override/output': './src/service-override/output.ts',
   'workers/textMate.worker': './src/workers/textMate.worker.ts',
+  'workers/outputLinkComputer.worker': './src/workers/outputLinkComputer.worker.ts',
   monaco: './src/monaco.ts',
   ...Object.fromEntries(
     fs.readdirSync(DEFAULT_EXTENSIONS_PATH, { withFileTypes: true })

@@ -92,9 +92,17 @@
       "types": "./dist/service-override/quickaccess.d.ts",
       "default": "./dist/service-override/quickaccess.js"
     },
+    "./service-override/output": {
+      "types": "./dist/service-override/output.d.ts",
+      "default": "./dist/service-override/output.js"
+    },
     "./workers/textMate.worker": {
       "types": "./dist/workers/textMate.worker.d.ts",
       "default": "./dist/workers/textMate.worker.js"
+    },
+    "./workers/outputLinkComputer.worker": {
+      "types": "./dist/workers/outputLinkComputer.worker.d.ts",
+      "default": "./dist/workers/outputLinkComputer.worker.js"
     },
     "./monaco": {
       "types": "./dist/monaco.d.ts",
@@ -168,8 +176,14 @@
       "service-override/quickaccess": [
         "./dist/service-override/quickaccess.d.ts"
       ],
+      "service-override/output": [
+        "./dist/service-override/output.d.ts"
+      ],
       "workers/textMate.worker": [
         "./dist/workers/textMate.worker.d.ts"
+      ],
+      "workers/outputLinkComputer.worker": [
+        "./dist/workers/outputLinkComputer.worker.d.ts"
       ],
       "monaco": [
         "./dist/monaco.d.ts"
