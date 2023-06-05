@@ -4,6 +4,9 @@ export default defineConfig({
   build: {
     target: 'esnext'
   },
+  worker: {
+    format: 'es'
+  },
   // This is require because vscode is a local dependency
   // and vite doesn't want to optimize it and the number of modules makes chrome hang
   optimizeDeps: {
