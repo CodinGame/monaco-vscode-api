@@ -12,6 +12,14 @@ import typescriptGlobal from '../node_modules/@types/node/globals.d.ts?raw'
 import typescriptConsole from '../node_modules/@types/node/console.d.ts?raw'
 import typescriptProcess from '../node_modules/@types/node/process.d.ts?raw'
 
+const fakeOutputChannel = vscode.window.createOutputChannel('Fake output')
+const anotherFakeOutputChannel = vscode.window.createOutputChannel('Your code', 'javascript')
+
+fakeOutputChannel.append('Here\'s some fake output\n')
+setInterval(() => {
+  fakeOutputChannel.append('Hello world\n')
+}, 1000)
+
 StandaloneServices.get(ILogService).setLevel(LogLevel.Off)
 
 vscode.languages.registerCallHierarchyProvider('javascript', {
@@ -149,6 +157,13 @@ while (variable < 5000) {
   const mainDocument = await vscode.workspace.openTextDocument(modelRef.object.textEditorModel!.uri)
   await vscode.window.showTextDocument(mainDocument, {
     preview: false
+  })
+
+  anotherFakeOutputChannel.replace(mainDocument.getText())
+  vscode.workspace.onDidChangeTextDocument((e) => {
+    if (e.document === mainDocument) {
+      anotherFakeOutputChannel.replace(e.document.getText())
+    }
   })
 
   const diagnostics = vscode.languages.createDiagnosticCollection('demo')

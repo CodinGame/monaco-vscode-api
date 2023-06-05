@@ -17,10 +17,12 @@ import getDebugServiceOverride from 'vscode/service-override/debug'
 import getPreferencesServiceOverride from 'vscode/service-override/preferences'
 import getSnippetServiceOverride from 'vscode/service-override/snippets'
 import getQuickAccessServiceOverride from 'vscode/service-override/quickaccess'
+import getOutputServiceOverride from 'vscode/service-override/output'
 import EditorWorker from 'monaco-editor/esm/vs/editor/editor.worker.js?worker'
 import JsonWorker from 'monaco-editor/esm/vs/language/json/json.worker.js?worker'
 import TypescriptWorker from 'monaco-editor/esm/vs/language/typescript/ts.worker.js?worker'
 import TextMateWorker from 'vscode/workers/textMate.worker?worker'
+import OutputLinkComputerWorker from 'vscode/workers/outputLinkComputer.worker?worker'
 import * as monaco from 'monaco-editor/esm/vs/editor/editor.api.js'
 import { createConfiguredEditor } from 'vscode/monaco'
 import 'vscode/default-extensions/theme-defaults'
@@ -60,7 +62,8 @@ const workerLoaders: Partial<Record<string, WorkerLoader>> = {
   textMateWorker: () => TextMateWorker,
   json: () => JsonWorker,
   javascript: () => TypescriptWorker,
-  typescript: () => TypescriptWorker
+  typescript: () => TypescriptWorker,
+  outputLinkComputer: () => OutputLinkComputerWorker
 }
 window.MonacoEnvironment = {
   getWorker: async function (moduleId, label) {
@@ -153,7 +156,8 @@ await initializeMonacoService({
   ...getPreferencesServiceOverride(),
   ...getViewsServiceOverride(openNewCodeEditor),
   ...getSnippetServiceOverride(),
-  ...getQuickAccessServiceOverride()
+  ...getQuickAccessServiceOverride(),
+  ...getOutputServiceOverride()
 })
 await initializeVscodeExtensions()
 
