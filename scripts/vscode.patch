@@ -147,6 +147,29 @@ index fc197da1d57..a4d9573979f 100644
  
  	public static validateOptions(options: IEditorOptions): ValidatedEditorOptions {
  		const result = new ValidatedEditorOptions();
+diff --git a/src/vs/workbench/api/common/extHostTerminalService.ts b/src/vs/workbench/api/common/extHostTerminalService.ts
+index c7031319846..c8d3538c6d7 100644
+--- a/src/vs/workbench/api/common/extHostTerminalService.ts
++++ b/src/vs/workbench/api/common/extHostTerminalService.ts
+@@ -811,16 +811,9 @@ export abstract class BaseExtHostTerminalService extends Disposable implements I
+ 	}
+ 
+ 	private _getTerminalObjectIndexById<T extends ExtHostTerminal>(array: T[], id: ExtHostTerminalIdentifier): number | null {
+-		let index: number | null = null;
+-		array.some((item, i) => {
+-			const thisId = item._id;
+-			if (thisId === id) {
+-				index = i;
+-				return true;
+-			}
+-			return false;
++		return array.findIndex(item => {
++			return item._id === id;
+ 		});
+-		return index;
+ 	}
+ 
+ 	public getEnvironmentVariableCollection(extension: IExtensionDescription): vscode.EnvironmentVariableCollection {
 diff --git a/src/vs/workbench/browser/parts/views/viewPaneContainer.ts b/src/vs/workbench/browser/parts/views/viewPaneContainer.ts
 index 1111dabcbcd..08aa5052ee6 100644
 --- a/src/vs/workbench/browser/parts/views/viewPaneContainer.ts
