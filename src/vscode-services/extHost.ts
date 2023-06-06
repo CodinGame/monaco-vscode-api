@@ -60,6 +60,8 @@ import { ExtHostTreeViews } from 'vs/workbench/api/common/extHostTreeViews'
 import { ExtHostStorage } from 'vs/workbench/api/common/extHostStorage'
 import { ITelemetryService } from 'vs/platform/telemetry/common/telemetry'
 import { ExtHostStatusBar } from 'vs/workbench/api/common/extHostStatusBar'
+import { ExtHostTheming } from 'vs/workbench/api/common/extHostTheming'
+import { ExtHostTerminalService } from 'vs/workbench/api/node/extHostTerminalService'
 import 'vs/workbench/api/browser/mainThreadLocalization'
 import 'vs/workbench/api/browser/mainThreadCommands'
 import 'vs/workbench/api/browser/mainThreadWindow'
@@ -85,6 +87,9 @@ import 'vs/workbench/api/browser/mainThreadSaveParticipant'
 import 'vs/workbench/api/browser/mainThreadTreeViews'
 import 'vs/workbench/api/browser/mainThreadStorage'
 import 'vs/workbench/api/browser/mainThreadStatusBar'
+import 'vs/workbench/api/browser/mainThreadTheming'
+import 'vs/workbench/api/browser/mainThreadTerminalService'
+import 'vs/workbench/api/browser/mainThreadEditorTabs'
 import * as errors from 'vs/base/common/errors'
 import { Barrier } from 'vs/base/common/async'
 import { unsupported } from '../tools'
@@ -216,52 +221,7 @@ registerSingleton(IExtHostDecorations, ExtHostDecorations, InstantiationType.Eag
 registerSingleton(IExtHostDebugService, WorkerExtHostDebugService, InstantiationType.Eager)
 registerSingleton(IExtHostVariableResolverProvider, ExtHostVariableResolverProviderService, InstantiationType.Eager)
 registerSingleton(IExtHostOutputService, ExtHostOutputService, InstantiationType.Delayed)
-registerSingleton(IExtHostTerminalService, class ExtHostTerminalService implements IExtHostTerminalService {
-  _serviceBrand: undefined
-  activeTerminal = undefined
-  terminals = []
-  onDidCloseTerminal = Event.None
-  onDidOpenTerminal = Event.None
-  onDidChangeActiveTerminal = Event.None
-  onDidChangeTerminalDimensions = Event.None
-  onDidChangeTerminalState = Event.None
-  onDidWriteTerminalData = Event.None
-  onDidChangeShell = Event.None
-  createTerminal = unsupported
-  createTerminalFromOptions = unsupported
-  createExtensionTerminal = unsupported
-  attachPtyToTerminal = unsupported
-  getDefaultShell = unsupported
-  getDefaultShellArgs = unsupported
-  registerLinkProvider = unsupported
-  registerProfileProvider = unsupported
-  registerTerminalQuickFixProvider = unsupported
-  getEnvironmentVariableCollection = unsupported
-  $acceptTerminalClosed = unsupported
-  $acceptTerminalOpened = unsupported
-  $acceptActiveTerminalChanged = unsupported
-  $acceptTerminalProcessId = unsupported
-  $acceptTerminalProcessData = unsupported
-  $acceptTerminalTitleChange = unsupported
-  $acceptTerminalDimensions = unsupported
-  $acceptTerminalMaximumDimensions = unsupported
-  $acceptTerminalInteraction = unsupported
-  $startExtensionTerminal = unsupported
-  $acceptProcessAckDataEvent = unsupported
-  $acceptProcessInput = unsupported
-  $acceptProcessResize = unsupported
-  $acceptProcessShutdown = unsupported
-  $acceptProcessRequestInitialCwd = unsupported
-  $acceptProcessRequestCwd = unsupported
-  $acceptProcessRequestLatency = unsupported
-  $provideLinks = unsupported
-  $activateLink = unsupported
-  $initEnvironmentVariableCollections = unsupported
-  $acceptDefaultProfile = unsupported
-  $createContributedProfileTerminal = unsupported
-  $provideTerminalQuickFixes = unsupported
-  dispose = unsupported
-}, InstantiationType.Eager)
+registerSingleton(IExtHostTerminalService, ExtHostTerminalService, InstantiationType.Eager)
 registerSingleton(IExtHostLocalizationService, ExtHostLocalizationService, InstantiationType.Delayed)
 
 const mainContext: IMainContext & IInternalExtHostContext = {
@@ -316,16 +276,21 @@ async function createExtHostServices () {
   const extHostTunnelService = StandaloneServices.get(IExtHostTunnelService)
   const extHostTelemetry = StandaloneServices.get(IExtHostTelemetry)
   const extHostInitData = StandaloneServices.get(IExtHostInitDataService)
+  const extHostEditorTabs = StandaloneServices.get(IExtHostEditorTabs)
 
   // register addressable instances
   rpcProtocol.set(ExtHostContext.ExtHostFileSystemInfo, extHostFileSystemInfo)
   rpcProtocol.set(ExtHostContext.ExtHostTunnelService, extHostTunnelService)
   rpcProtocol.set(ExtHostContext.ExtHostTelemetry, extHostTelemetry)
+  rpcProtocol.set(ExtHostContext.ExtHostEditorTabs, extHostEditorTabs)
 
   // automatically create and register addressable instances
+  const extHostDecorations = rpcProtocol.set(ExtHostContext.ExtHostDecorations, StandaloneServices.get(IExtHostDecorations))
   const extHostCommands = rpcProtocol.set(ExtHostContext.ExtHostCommands, StandaloneServices.get(IExtHostCommands))
   const extHostDocumentsAndEditors = rpcProtocol.set(ExtHostContext.ExtHostDocumentsAndEditors, StandaloneServices.get(IExtHostDocumentsAndEditors))
   const extHostLocalization = rpcProtocol.set(ExtHostContext.ExtHostLocalization, StandaloneServices.get(IExtHostLocalizationService))
+  const extHostTerminalService = rpcProtocol.set(ExtHostContext.ExtHostTerminalService, StandaloneServices.get(IExtHostTerminalService))
+  const extHostTheming = rpcProtocol.set(ExtHostContext.ExtHostTheming, new ExtHostTheming(rpcProtocol))
 
   // manually create and register addressable instances
   const extHostQuickOpen = rpcProtocol.set(ExtHostContext.ExtHostQuickOpen, createExtHostQuickOpen(mainContext, <IExtHostWorkspaceProvider><unknown>null, extHostCommands))
@@ -416,7 +381,11 @@ async function createExtHostServices () {
     extHostTreeViews,
     extHostStorage,
     extHostLocalization,
-    extHostStatusBar
+    extHostStatusBar,
+    extHostTerminalService,
+    extHostEditorTabs,
+    extHostDecorations,
+    extHostTheming
   }
 }
 

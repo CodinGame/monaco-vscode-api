@@ -139,9 +139,9 @@ const api: typeof vscode = {
   TaskPanelKind: unsupported,
   TaskRevealKind: unsupported,
   TaskScope: unsupported,
-  TerminalLink: unsupported,
-  TerminalLocation: unsupported,
-  TerminalProfile: unsupported,
+  TerminalLink: extHostTypes.TerminalLink,
+  TerminalLocation: extHostTypes.TerminalLocation,
+  TerminalProfile: extHostTypes.TerminalProfile,
   TextDocumentSaveReason: extHostTypes.TextDocumentSaveReason,
   TextEdit: extHostTypes.TextEdit,
   TextEditorCursorStyle: editorOptions.TextEditorCursorStyle,
@@ -196,7 +196,7 @@ const api: typeof vscode = {
   SnippetTextEdit: extHostTypes.SnippetTextEdit,
   NotebookEdit: unsupported,
   LogLevel: log.LogLevel,
-  TerminalExitReason: unsupported,
+  TerminalExitReason: extHostTypes.TerminalExitReason,
   CommentThreadState: unsupported,
   TelemetryTrustedValue: telemetryUtils.TelemetryTrustedValue
 }

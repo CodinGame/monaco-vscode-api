@@ -8,7 +8,6 @@ import { IExtHostInitDataService } from 'vs/workbench/api/common/extHostInitData
 import { IExtensionDescription } from 'vs/platform/extensions/common/extensions'
 import { StandaloneServices } from 'vs/editor/standalone/browser/standaloneServices'
 import { getExtHostServices } from './extHost'
-import { unsupported } from '../tools'
 
 export default function create (getExtension: () => IExtensionDescription): typeof vscode.env {
   return {
@@ -25,7 +24,10 @@ export default function create (getExtension: () => IExtensionDescription): type
       return extHostClipboard.value
     },
     remoteName: undefined,
-    get shell () { return unsupported() },
+    get shell () {
+      const { extHostTerminalService } = getExtHostServices()
+      return extHostTerminalService.getDefaultShell(false)
+    },
     get uiKind () {
       return StandaloneServices.get(IExtHostInitDataService).uiKind
     },

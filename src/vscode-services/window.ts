@@ -5,7 +5,6 @@ import { Event } from 'vs/base/common/event'
 import * as extHostTypes from 'vs/workbench/api/common/extHostTypes'
 import { StandaloneServices } from 'vs/editor/standalone/browser/standaloneServices'
 import { IModelService } from 'vs/editor/common/services/model'
-import { DisposableStore } from 'vs/base/common/lifecycle'
 import { ITextModel } from 'vs/editor/common/model'
 import { IExtensionDescription } from 'vs/platform/extensions/common/extensions'
 import { getExtHostServices } from './extHost'
@@ -126,7 +125,16 @@ export default function create (getExtension: () => IExtensionDescription, works
 
       return extHostStatusBar.setStatusBarMessage(text, timeoutOrThenable)
     },
-    createTerminal: unsupported,
+    createTerminal (nameOrOptions?: vscode.TerminalOptions | vscode.ExtensionTerminalOptions | string, shellPath?: string, shellArgs?: readonly string[] | string): vscode.Terminal {
+      const { extHostTerminalService } = getExtHostServices()
+      if (typeof nameOrOptions === 'object') {
+        if ('pty' in nameOrOptions) {
+          return extHostTerminalService.createExtensionTerminal(nameOrOptions)
+        }
+        return extHostTerminalService.createTerminalFromOptions(nameOrOptions)
+      }
+      return extHostTerminalService.createTerminal(nameOrOptions, shellPath, shellArgs)
+    },
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     registerTreeDataProvider (viewId: string, treeDataProvider: vscode.TreeDataProvider<any>): vscode.Disposable {
       const { extHostTreeViews } = getExtHostServices()
@@ -172,17 +180,29 @@ export default function create (getExtension: () => IExtensionDescription, works
       const { extHostEditors } = getExtHostServices()
       return extHostEditors.onDidChangeTextEditorViewColumn(listener, thisArg, disposables)
     },
-    get terminals () {
-      return unsupported()
-    },
     get activeTerminal () {
-      return unsupported()
+      const { extHostTerminalService } = getExtHostServices()
+      return extHostTerminalService.activeTerminal
     },
-    onDidChangeActiveTerminal: Event.None,
-    onDidOpenTerminal: Event.None,
-    onDidCloseTerminal: Event.None,
+    get terminals () {
+      const { extHostTerminalService } = getExtHostServices()
+      return extHostTerminalService.terminals
+    },
+    onDidChangeActiveTerminal (listener, thisArg?, disposables?) {
+      const { extHostTerminalService } = getExtHostServices()
+      return extHostTerminalService.onDidChangeActiveTerminal(listener, thisArg, disposables)
+    },
+    onDidCloseTerminal (listener, thisArg?, disposables?) {
+      const { extHostTerminalService } = getExtHostServices()
+      return extHostTerminalService.onDidCloseTerminal(listener, thisArg, disposables)
+    },
+    onDidOpenTerminal (listener, thisArg?, disposables?) {
+      const { extHostTerminalService } = getExtHostServices()
+      return extHostTerminalService.onDidOpenTerminal(listener, thisArg, disposables)
+    },
     get state () {
-      return unsupported()
+      const { extHostWindow } = getExtHostServices()
+      return extHostWindow.state
     },
     onDidChangeWindowState (listener, thisArg?, disposables?) {
       const { extHostWindow } = getExtHostServices()
@@ -191,41 +211,35 @@ export default function create (getExtension: () => IExtensionDescription, works
     registerUriHandler: unsupported,
     registerWebviewViewProvider: unsupported,
     registerCustomEditorProvider: unsupported,
-    registerTerminalLinkProvider: unsupported,
-    get activeColorTheme () {
-      return unsupported()
+    registerTerminalLinkProvider (provider: vscode.TerminalLinkProvider): vscode.Disposable {
+      const { extHostTerminalService } = getExtHostServices()
+      return extHostTerminalService.registerLinkProvider(provider)
     },
-    onDidChangeActiveColorTheme: Event.None,
-    registerFileDecorationProvider: unsupported,
-    registerTerminalProfileProvider: unsupported,
-    onDidChangeTerminalState: Event.None,
-    tabGroups: {
-      get all () {
-        return [tabGroup]
-      },
-      activeTabGroup: tabGroup,
-      onDidChangeTabGroups: Event.None,
-      onDidChangeTabs (listener) {
-        const modelService = StandaloneServices.get(IModelService)
-        const store = new DisposableStore()
-        store.add(modelService.onModelAdded((model) => {
-          listener({
-            opened: [getTabFromModel(model, tabGroup)],
-            closed: [],
-            changed: []
-          })
-        }))
-        store.add(modelService.onModelRemoved((model) => {
-          listener({
-            opened: [],
-            closed: [getTabFromModel(model, tabGroup)],
-            changed: []
-          })
-        }))
-
-        return store
-      },
-      close: unsupported
+    get activeColorTheme (): vscode.ColorTheme {
+      const { extHostTheming } = getExtHostServices()
+      return extHostTheming.activeColorTheme
+    },
+    onDidChangeActiveColorTheme (listener, thisArg?, disposables?) {
+      const { extHostTheming } = getExtHostServices()
+      return extHostTheming.onDidChangeActiveColorTheme(listener, thisArg, disposables)
+    },
+    registerFileDecorationProvider (provider: vscode.FileDecorationProvider) {
+      const { extHostDecorations } = getExtHostServices()
+      const extension = getExtension()
+      return extHostDecorations.registerFileDecorationProvider(provider, extension)
+    },
+    registerTerminalProfileProvider (id: string, provider: vscode.TerminalProfileProvider): vscode.Disposable {
+      const { extHostTerminalService } = getExtHostServices()
+      const extension = getExtension()
+      return extHostTerminalService.registerProfileProvider(extension, id, provider)
+    },
+    onDidChangeTerminalState (listener, thisArg?, disposables?) {
+      const { extHostTerminalService } = getExtHostServices()
+      return extHostTerminalService.onDidChangeTerminalState(listener, thisArg, disposables)
+    },
+    get tabGroups (): vscode.TabGroups {
+      const { extHostEditorTabs } = getExtHostServices()
+      return extHostEditorTabs.tabGroups
     },
     showNotebookDocument: unsupported,
     visibleNotebookEditors: [],
