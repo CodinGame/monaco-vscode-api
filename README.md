@@ -26,6 +26,11 @@ npm install -D @types/vscode
 }
 ```
 
+If you use Vite, add in your vite.config.js:
+```js
+assetsInclude: ['node_modules/vscode-oniguruma/**/*.wasm']
+```
+
 ### Why?
 
 Monaco-editor is a library that is constructed using code from vscode and goes through an intense treeshaking process.
