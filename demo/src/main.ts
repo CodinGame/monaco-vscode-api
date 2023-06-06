@@ -1,14 +1,6 @@
 import './style.css'
 import * as monaco from 'monaco-editor/esm/vs/editor/editor.api.js'
 import './setup'
-import 'monaco-editor/esm/vs/editor/editor.all.js'
-import 'monaco-editor/esm/vs/editor/standalone/browser/accessibilityHelp/accessibilityHelp.js'
-import 'monaco-editor/esm/vs/editor/standalone/browser/iPadShowKeyboard/iPadShowKeyboard.js'
-import 'monaco-editor/esm/vs/editor/standalone/browser/quickAccess/standaloneHelpQuickAccess.js'
-import 'monaco-editor/esm/vs/editor/standalone/browser/quickAccess/standaloneGotoLineQuickAccess.js'
-import 'monaco-editor/esm/vs/editor/standalone/browser/quickAccess/standaloneGotoSymbolQuickAccess.js'
-import 'monaco-editor/esm/vs/editor/standalone/browser/quickAccess/standaloneCommandsQuickAccess.js'
-import 'monaco-editor/esm/vs/editor/standalone/browser/referenceSearch/standaloneReferenceSearch.js'
 // json contribution should be imported/run AFTER the services are initialized (in setup.ts)
 import 'monaco-editor/esm/vs/language/json/monaco.contribution.js'
 import 'monaco-editor/esm/vs/language/typescript/monaco.contribution.js'
@@ -16,6 +8,9 @@ import { createConfiguredEditor, synchronizeJsonSchemas, createModelReference } 
 import { SimpleTextFileSystemProvider, registerFileSystemOverlay, FileType, HTMLFileSystemProvider } from 'vscode/service-override/files'
 import * as vscode from 'vscode'
 import { ILogService, LogLevel, StandaloneServices } from 'vscode/services'
+import typescriptGlobal from '../node_modules/@types/node/globals.d.ts?raw'
+import typescriptConsole from '../node_modules/@types/node/console.d.ts?raw'
+import typescriptProcess from '../node_modules/@types/node/process.d.ts?raw'
 
 StandaloneServices.get(ILogService).setLevel(LogLevel.Off)
 
@@ -66,6 +61,24 @@ vscode.languages.registerCompletionItemProvider('javascript', {
     }]
   }
 })
+
+const compilerOptions: Parameters<typeof monaco.languages.typescript.typescriptDefaults.setCompilerOptions>[0] = {
+  target: monaco.languages.typescript.ScriptTarget.ES2016,
+  allowNonTsExtensions: true,
+  moduleResolution: monaco.languages.typescript.ModuleResolutionKind.NodeJs,
+  module: monaco.languages.typescript.ModuleKind.CommonJS,
+  noEmit: true,
+  lib: ['es2020']
+}
+
+monaco.languages.typescript.typescriptDefaults.setCompilerOptions(compilerOptions)
+monaco.languages.typescript.typescriptDefaults.addExtraLib(typescriptGlobal, 'node/globals.d.ts')
+monaco.languages.typescript.typescriptDefaults.addExtraLib(typescriptConsole, 'node/console.d.ts')
+monaco.languages.typescript.typescriptDefaults.addExtraLib(typescriptProcess, 'node/process.d.ts')
+monaco.languages.typescript.javascriptDefaults.setCompilerOptions(compilerOptions)
+monaco.languages.typescript.javascriptDefaults.addExtraLib(typescriptGlobal, 'node/globals.d.ts')
+monaco.languages.typescript.javascriptDefaults.addExtraLib(typescriptConsole, 'node/console.d.ts')
+monaco.languages.typescript.javascriptDefaults.addExtraLib(typescriptProcess, 'node/process.d.ts')
 
 monaco.languages.json.jsonDefaults.setModeConfiguration({
   ...monaco.languages.json.jsonDefaults.modeConfiguration,
@@ -133,8 +146,9 @@ while (variable < 5000) {
   console.log('Hello world', variable);
 }`)
 
-  createConfiguredEditor(document.getElementById('editor')!, {
-    model: modelRef.object.textEditorModel
+  const mainDocument = await vscode.workspace.openTextDocument(modelRef.object.textEditorModel!.uri)
+  await vscode.window.showTextDocument(mainDocument, {
+    preview: false
   })
 
   const diagnostics = vscode.languages.createDiagnosticCollection('demo')
@@ -163,18 +177,14 @@ while (variable < 5000) {
   "audioCues.onDebugBreak": "on",
   "files.autoSave": "afterDelay",
   "files.autoSaveDelay": 1000,
-  "debug.toolBarLocation": "docked"
+  "debug.toolBarLocation": "docked",
+  "editor.experimental.asyncTokenization": true
 }`)
   createConfiguredEditor(document.getElementById('settings-editor')!, {
     model: settingsModelReference.object.textEditorModel
   })
 
   const keybindingsModelReference = await createModelReference(monaco.Uri.from({ scheme: 'user', path: '/keybindings.json' }), `[
-  {
-    "key": "ctrl+p",
-    "command": "editor.action.quickCommand",
-    "when": "editorTextFocus"
-  },
   {
     "key": "ctrl+d",
     "command": "editor.action.deleteLines",

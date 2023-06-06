@@ -34,7 +34,8 @@ export default rollup.defineConfig({
     './dist/types/src/extensions.d.ts',
     './dist/types/src/service-override/notifications.d.ts',
     './dist/types/src/service-override/dialogs.d.ts',
-    './dist/types/src/service-override/modelEditor.d.ts',
+    './dist/types/src/service-override/model.d.ts',
+    './dist/types/src/service-override/editor.d.ts',
     './dist/types/src/service-override/files.d.ts',
     './dist/types/src/service-override/configuration.d.ts',
     './dist/types/src/service-override/keybindings.d.ts',
@@ -46,6 +47,8 @@ export default rollup.defineConfig({
     './dist/types/src/service-override/debug.d.ts',
     './dist/types/src/service-override/preferences.d.ts',
     './dist/types/src/service-override/views.d.ts',
+    './dist/types/src/service-override/quickaccess.d.ts',
+    './dist/types/src/workers/textMate.worker.d.ts',
     './dist/types/src/monaco.d.ts',
     './dist/types/src/rollup-vsix-plugin.d.ts',
     './dist/types/src/rollup-extension-directory-plugin.d.ts'
@@ -64,7 +67,7 @@ export default rollup.defineConfig({
     if (id.endsWith('.css')) {
       return true
     }
-    return ['vscode', 'monaco-editor', 'vscode-textmate', 'rollup', '@rollup/pluginutils'].includes(id)
+    return ['vscode', 'monaco-editor', 'vscode-textmate', 'rollup', '@rollup/pluginutils', 'xterm', 'tas-client-umd', 'xterm-addon-canvas', 'xterm-addon-search', 'xterm-addon-unicode11', 'xterm-addon-webgl', 'xterm-addon-serialize'].includes(id)
   },
   plugins: [
     {

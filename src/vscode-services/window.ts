@@ -103,8 +103,29 @@ export default function create (getExtension: () => IExtensionDescription, works
     showOpenDialog: unsupported,
     showSaveDialog: unsupported,
     createWebviewPanel: unsupported,
-    setStatusBarMessage: unsupported,
-    createStatusBarItem: unsupported,
+    createStatusBarItem (alignmentOrId?: vscode.StatusBarAlignment | string, priorityOrAlignment?: number | vscode.StatusBarAlignment, priorityArg?: number): vscode.StatusBarItem {
+      const { extHostStatusBar } = getExtHostServices()
+      const extension = getExtension()
+      let id: string | undefined
+      let alignment: number | undefined
+      let priority: number | undefined
+
+      if (typeof alignmentOrId === 'string') {
+        id = alignmentOrId
+        alignment = priorityOrAlignment
+        priority = priorityArg
+      } else {
+        alignment = alignmentOrId
+        priority = priorityOrAlignment
+      }
+
+      return extHostStatusBar.createStatusBarEntry(extension, id, alignment, priority)
+    },
+    setStatusBarMessage (text: string, timeoutOrThenable?: number | Thenable<unknown>): vscode.Disposable {
+      const { extHostStatusBar } = getExtHostServices()
+
+      return extHostStatusBar.setStatusBarMessage(text, timeoutOrThenable)
+    },
     createTerminal: unsupported,
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     registerTreeDataProvider (viewId: string, treeDataProvider: vscode.TreeDataProvider<any>): vscode.Disposable {

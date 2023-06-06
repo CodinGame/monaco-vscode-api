@@ -20,7 +20,7 @@ import createWindowApi, { TextTabInput } from './vscode-services/window'
 import createEnvApi from './vscode-services/env'
 import createDebugApi from './vscode-services/debug'
 import createExtensionsApi from './vscode-services/extensions'
-import { getDefaultExtension } from './extensions'
+import { getDefaultExtension } from './default-extension'
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 const unsupported = <any>undefined
@@ -129,7 +129,7 @@ const api: typeof vscode = {
   SignatureInformation: extHostTypes.SignatureInformation,
   SnippetString: extHostTypes.SnippetString,
   SourceBreakpoint: extHostTypes.SourceBreakpoint,
-  StatusBarAlignment: unsupported,
+  StatusBarAlignment: extHostTypes.StatusBarAlignment,
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   SymbolInformation: <any>extHostTypes.SymbolInformation,
   SymbolKind: extHostTypes.SymbolKind,

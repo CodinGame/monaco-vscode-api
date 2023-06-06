@@ -1,8 +1,9 @@
 import '../vscode-services/missing-services'
-import { IEditorOverrideServices } from 'vs/editor/standalone/browser/standaloneServices'
+import { IEditorOverrideServices, StandaloneServices } from 'vs/editor/standalone/browser/standaloneServices'
 import { SyncDescriptor } from 'vs/platform/instantiation/common/descriptors'
 import { ISnippetsService } from 'vs/workbench/contrib/snippets/browser/snippets'
 import { SnippetsService } from 'vs/workbench/contrib/snippets/browser/snippetsService'
+import { ILifecycleService, LifecyclePhase } from 'vs/workbench/services/lifecycle/common/lifecycle'
 import getFileServiceOverride from './files'
 import { registerServiceInitializeParticipant } from '../services'
 
@@ -12,8 +13,10 @@ interface ISnippetsExtensionPoint {
 }
 
 registerServiceInitializeParticipant(async (accessor) => {
-  // Force load the service
-  accessor.get(ISnippetsService)
+  void accessor.get(ILifecycleService).when(LifecyclePhase.Ready).then(() => {
+    // Force load the service
+    StandaloneServices.get(ISnippetsService)
+  })
 })
 
 export default function getServiceOverride (): IEditorOverrideServices {

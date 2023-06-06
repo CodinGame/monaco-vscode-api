@@ -40,7 +40,7 @@ import { InstantiationType, registerSingleton } from 'vs/platform/instantiation/
 import { IMessagePassingProtocol } from 'vs/base/parts/ipc/common/ipc'
 import { BufferedEmitter } from 'vs/base/parts/ipc/common/ipc.net'
 import { VSBuffer } from 'vs/base/common/buffer'
-import { Emitter, Event } from 'vs/base/common/event'
+import { Event } from 'vs/base/common/event'
 import { RPCProtocol } from 'vs/workbench/services/extensions/common/rpcProtocol'
 import { ExtHostConsumerFileSystem, IExtHostConsumerFileSystem } from 'vs/workbench/api/common/extHostFileSystemConsumer'
 import { IExtHostInitDataService } from 'vs/workbench/api/common/extHostInitDataService'
@@ -59,6 +59,7 @@ import { ExtHostOutputService, IExtHostOutputService } from 'vs/workbench/api/co
 import { ExtHostTreeViews } from 'vs/workbench/api/common/extHostTreeViews'
 import { ExtHostStorage } from 'vs/workbench/api/common/extHostStorage'
 import { ITelemetryService } from 'vs/platform/telemetry/common/telemetry'
+import { ExtHostStatusBar } from 'vs/workbench/api/common/extHostStatusBar'
 import 'vs/workbench/api/browser/mainThreadLocalization'
 import 'vs/workbench/api/browser/mainThreadCommands'
 import 'vs/workbench/api/browser/mainThreadWindow'
@@ -83,7 +84,9 @@ import 'vs/workbench/api/browser/mainThreadOutputService'
 import 'vs/workbench/api/browser/mainThreadSaveParticipant'
 import 'vs/workbench/api/browser/mainThreadTreeViews'
 import 'vs/workbench/api/browser/mainThreadStorage'
+import 'vs/workbench/api/browser/mainThreadStatusBar'
 import * as errors from 'vs/base/common/errors'
+import { Barrier } from 'vs/base/common/async'
 import { unsupported } from '../tools'
 
 const original = MainThreadMessageService.prototype.$showMessage
@@ -350,6 +353,7 @@ async function createExtHostServices () {
   const extHostBulkEdits = new ExtHostBulkEdits(rpcProtocol, extHostDocumentsAndEditors)
   const extHostClipboard = new ExtHostClipboard(mainContext)
   const extHostMessageService = new ExtHostMessageService(rpcProtocol, logService)
+  const extHostStatusBar = new ExtHostStatusBar(rpcProtocol, extHostCommands.converter)
 
   // Register API-ish commands
   ExtHostApiCommands.register(extHostCommands)
@@ -411,7 +415,8 @@ async function createExtHostServices () {
     extHostOutputService,
     extHostTreeViews,
     extHostStorage,
-    extHostLocalization
+    extHostLocalization,
+    extHostStatusBar
   }
 }
 
@@ -421,13 +426,15 @@ let configProvider: ExtHostConfigProvider | undefined
 
 let initializePromise: Promise<void> | undefined
 
-const extHostInitializedEmitter = new Emitter<void>()
-export const onExtHostInitialized: Event<void> = extHostInitializedEmitter.event
+const extHostInitializedBarrier = new Barrier()
+export function onExtHostInitialized (fct: () => void): void {
+  void extHostInitializedBarrier.wait().then(fct)
+}
 
 async function _initialize (): Promise<void> {
   extHostServices = await createExtHostServices()
   configProvider = await extHostServices.extHostConfiguration.getConfigProvider()
-  extHostInitializedEmitter.fire()
+  extHostInitializedBarrier.open()
 }
 
 export async function initialize (): Promise<void> {

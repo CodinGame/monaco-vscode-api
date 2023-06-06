@@ -56,11 +56,12 @@ await initialize({
 })
 ```
 
-Additionally, this library exposes 14 modules that include the vscode version of some services (with some glue to make it work with monaco):
+Additionally, this library exposes 15 modules that include the vscode version of some services (with some glue to make it work with monaco):
 
 - Notifications: `vscode/service-override/notifications`
 - Dialogs: `vscode/service-override/dialogs`
-- Model / Editor: `vscode/service-override/modelEditor`
+- Model: `vscode/service-override/model`
+- Editor: `vscode/service-override/editor`
 - Configuration: `vscode/service-override/configuration`
 - Keybindings: `vscode/service-override/keybindings`
 - Languages: `vscode/service-override/languages`
@@ -71,13 +72,14 @@ Additionally, this library exposes 14 modules that include the vscode version of
 - Debug: `vscode/service-override/debug`
 - Files: `vscode/service-override/files`
 - Preferences: `vscode/service-override/preferences`
-- Views: `vscode/service-override/views`
+- Views: `vscode/service-override/views` (Is exclusive with `editor`, do not use both at the same time)
+- QuickAccess: `vscode/service-override/quickaccess`
 
 Usage:
 
 ```typescript
 import { initialize } from 'vscode/services'
-import getModelEditorServiceOverride from 'vscode/service-override/modelEditor'
+import getEditorServiceOverride from 'vscode/service-override/editor'
 import getConfigurationServiceOverride, { updateUserConfiguration, configurationRegistry } from 'vscode/service-override/configuration'
 
 await initialize({
@@ -189,7 +191,7 @@ import 'vscode/default-extensions/json'
 ### Loading vsix file
 
 VSCode extension are bundled as vsix files.
-This library exposes a rollup plugin (vite-compatible) that allows to load a vsix file. The code is not used, only the declarative part in the manifest.
+This library exposes a rollup plugin (vite-compatible) that allows to load a vsix file.
 
 - rollup/vite config:
 ```typescript

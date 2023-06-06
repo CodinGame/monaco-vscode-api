@@ -11,6 +11,7 @@ import dynamicImportVars from '@rollup/plugin-dynamic-import-vars'
 import externalAssets from 'rollup-plugin-external-assets'
 import globImport from 'rollup-plugin-glob-import'
 import terser from '@rollup/plugin-terser'
+import styles from 'rollup-plugin-styles'
 import * as fs from 'fs'
 import * as path from 'path'
 import { fileURLToPath } from 'url'
@@ -40,6 +41,7 @@ const PURE_FUNCTIONS = new Set([
   'ContextKeyExpr.and',
   'ContextKeyExpr.or',
   'ContextKeyExpr.equals',
+  'ContextKeyExpr.regex',
   'ContextKeyNotExpr.create',
   'ContextKeyDefinedExpr.create',
   'notEqualsTo',
@@ -57,35 +59,23 @@ const PURE_FUNCTIONS = new Set([
 
 // Function calls to remove when the result is not used
 const FUNCTIONS_TO_REMOVE = new Set([
-  'colorRegistry.onDidChangeSchema',
   'registerSingleton', // Remove calls to registerSingleton from vscode code, we just want to import things, not registering services
   'registerProxyConfigurations',
   'registerViewWelcomeContent',
-  'registerEditorPane',
   'registerExtensionPoint',
   '_setExtensionHostProxy',
   '_setAllMainProxyIdentifiers',
   'registerTouchBarEntry',
   'registerEditorSerializer',
-  'registerIcon',
-  'createOpenEditorsViewDescriptor',
-  'registerActiveEditorMoveCopyCommand',
-  'registerEditorGroupsLayoutCommands',
-  'registerDiffEditorCommands',
-  'registerOpenEditorAtIndexCommands',
-  'registerCloseEditorCommands',
-  'registerOtherEditorCommands',
-  'registerSplitEditorInGroupCommands',
-  'registerFocusSideEditorsCommands',
-  'registerFocusEditorGroupAtIndexCommands',
-  'registerSplitEditorCommands',
-  'registerFocusEditorGroupWihoutWrapCommands',
 
   'appendSaveConflictEditorTitleAction',
   'appendToCommandPalette',
   // For ActivityBar, remove unused actions/items
   'fillExtraContextMenuActions',
-  'createGlobalActivityActionBar'
+  'createGlobalActivityActionBar',
+
+  'searchWidgetContributions',
+  'replaceContributions'
 ])
 
 const PURE_OR_TO_REMOVE_FUNCTIONS = new Set([
@@ -94,20 +84,12 @@ const PURE_OR_TO_REMOVE_FUNCTIONS = new Set([
 ])
 
 const REMOVE_COMMANDS = new Set([
-  'debug.openView',
   'DEBUG_START_COMMAND_ID',
   'DEBUG_RUN_COMMAND_ID',
   'SELECT_DEBUG_CONSOLE_ID',
   'SELECT_AND_START_ID',
   'debug.startFromConfig',
   'debug.installAdditionalDebuggers',
-  'SAVE_FILE_COMMAND_ID',
-  'SAVE_FILE_WITHOUT_FORMATTING_COMMAND_ID',
-  'SAVE_FILE_AS_COMMAND_ID',
-  'SAVE_ALL_COMMAND_ID',
-  'SAVE_ALL_IN_GROUP_COMMAND_ID',
-  'SAVE_FILES_COMMAND_ID',
-  'REVERT_FILE_COMMAND_ID',
   'REMOVE_ROOT_FOLDER_COMMAND_ID'
 ])
 
@@ -122,6 +104,7 @@ const ALLOWED_WORKBENCH_CONTRIBUTIONS = new Set([
   'AudioCueLineDebuggerContribution',
   'RegisterConfigurationSchemasContribution',
   'EditorAutoSave',
+  'EditorStatus',
   'DebugToolBar',
   'DebugContentProvider',
   'DialogHandlerContribution',
@@ -152,7 +135,7 @@ function isCallPure (file: string, functionName: string, node: recast.types.name
   }
 
   if (functionName === 'CommandsRegistry.registerCommand') {
-    if (file.includes('fileActions.contribution') || file.includes('workspaceCommands')) {
+    if (file.includes('fileActions.contribution') || file.includes('workspaceCommands') || file.includes('search.contribution')) {
       return true
     }
   }
@@ -170,19 +153,20 @@ function isCallPure (file: string, functionName: string, node: recast.types.name
         firstParamName.includes('ViewContainersRegistry') ||
         firstParamName.includes('Viewlets') ||
         firstParamName.includes('Panels') ||
-        firstParamName.includes('Auxiliary')
+        firstParamName.includes('Auxiliary') ||
+        firstParamName.includes('EditorPane')
       return !allowed
     }
   }
 
   if (functionName.endsWith('registerAction2')) {
-    if (file.includes('layoutActions') || file.includes('editor.contribution') || file.includes('fileActions.contribution') || file.includes('windowActions') || file.includes('workspaceActions')) {
+    if (file.includes('layoutActions') || file.includes('fileActions.contribution') || file.includes('windowActions') || file.includes('workspaceActions')) {
       return true
     }
 
     const firstParam = args[0]!
 
-    const className = firstParam.type === 'Identifier' ? firstParam.name : firstParam.type === 'ClassExpression' ? firstParam.id?.name : undefined
+    const className = firstParam.type === 'Identifier' ? firstParam.name : firstParam.type === 'ClassExpression' ? firstParam.id?.name as string : undefined
     if (className != null && ['OpenDisassemblyViewAction', 'AddConfigurationAction', 'ToggleDisassemblyViewSourceCodeAction'].includes(className)) {
       return true
     }
@@ -201,51 +185,12 @@ function isCallPure (file: string, functionName: string, node: recast.types.name
     }
   }
   if (functionName === 'MenuRegistry.appendMenuItem') {
-    if (file.includes('editor.contribution')) {
-      return true
-    }
-
     const firstParamCode = recast.print(args[0]!).code
-
-    if ([
-      'MenuId.OpenEditorsContext'
-    ].some(text => firstParamCode.includes(text))) {
-      return true
-    }
-    if (firstParamCode.startsWith('MenuId.Menubar')) {
-      return true
-    }
-
-    const secondParamCode = recast.print(args[1]!).code
-    if ([
-      'REOPEN_WITH_COMMAND_ID',
-      'SAVE_ALL_IN_GROUP_COMMAND_ID',
-      'COMPARE_WITH_SAVED_COMMAND_ID',
-      'COMPARE_RESOURCE_COMMAND_ID',
-      'compareResourceCommand',
-      'selectForCompareCommand',
-      'COMPARE_SELECTED_COMMAND_ID',
-      'compareSelectedCommand',
-      'CLOSE_EDITOR_COMMAND_ID',
-      'CLOSE_OTHER_EDITORS_IN_GROUP_COMMAND_ID',
-      'CLOSE_SAVED_EDITORS_COMMAND_ID',
-      'CLOSE_EDITORS_IN_GROUP_COMMAND_ID',
-      'openToSideCommand',
-      'OPEN_WITH_EXPLORER_COMMAND_ID',
-      'compareResourceCommand',
-      'selectForCompareCommand',
-      'compareSelectedCommand',
-      '5b_importexport',
-      '3_compare',
-      '2_workspace',
-      '3_workspace',
-      'MOVE_FILE_TO_TRASH_ID',
-      'SAVE_FILE_COMMAND_ID',
-      'SAVE_FILE_AS_COMMAND_ID',
-      'SAVE_ALL_COMMAND_ID',
-      'openToSideCommand',
-      'workbench.action.quickOpen'
-    ].some(text => secondParamCode.includes(text))) {
+    if (
+      firstParamCode.startsWith('MenuId.MenubarDebugMenu') ||
+      firstParamCode.startsWith('MenuId.MenubarFileMenu') ||
+      firstParamCode.startsWith('MenuId.TouchBarContext')
+    ) {
       return true
     }
   }
@@ -286,7 +231,15 @@ function isCallPure (file: string, functionName: string, node: recast.types.name
     return false
   }
 
+  if (functionName === 'registerViewContainer') {
+    if (file.includes('search.contribution')) {
+      return true
+    }
+  }
   if (functionName === 'registerViews') {
+    if (file.includes('search.contribution')) {
+      return true
+    }
     const firstParamCode = recast.print(args[0]!).code
     if (firstParamCode.includes('WelcomeView.ID')) {
       return true
@@ -400,7 +353,8 @@ const input = {
   services: './src/services.ts',
   'service-override/notifications': './src/service-override/notifications.ts',
   'service-override/dialogs': './src/service-override/dialogs.ts',
-  'service-override/modelEditor': './src/service-override/modelEditor.ts',
+  'service-override/model': './src/service-override/model.ts',
+  'service-override/editor': './src/service-override/editor.ts',
   'service-override/files': './src/service-override/files.ts',
   'service-override/configuration': './src/service-override/configuration.ts',
   'service-override/keybindings': './src/service-override/keybindings.ts',
@@ -412,6 +366,8 @@ const input = {
   'service-override/debug': './src/service-override/debug.ts',
   'service-override/preferences': './src/service-override/preferences.ts',
   'service-override/views': './src/service-override/views.ts',
+  'service-override/quickaccess': './src/service-override/quickaccess.ts',
+  'workers/textMate.worker': './src/workers/textMate.worker.ts',
   monaco: './src/monaco.ts',
   ...Object.fromEntries(
     fs.readdirSync(DEFAULT_EXTENSIONS_PATH, { withFileTypes: true })
@@ -429,6 +385,7 @@ const externals = Object.keys({ ...pkg.peerDependencies })
 const external: rollup.ExternalOption = (source) => {
   // mark semver as external so it's ignored (the code that imports it will be treeshaked out)
   if (source.includes('semver')) return true
+  if (source.includes('tas-client-umd')) return true
   if (source.startsWith(MONACO_EDITOR_DIR) || source.startsWith('monaco-editor/')) {
     return true
   }
@@ -459,7 +416,10 @@ export default (args: Record<string, string>): rollup.RollupOptions[] => {
           id.includes('vs/workbench/api/browser/') ||
           id.endsWith('/fileCommands.js') ||
           id.endsWith('/explorerViewlet.js') ||
-          id.endsWith('/listCommands.js')
+          id.endsWith('/listCommands.js') ||
+          id.endsWith('/quickAccessActions.js') ||
+          id.endsWith('/gotoLineQuickAccess.js') ||
+          id.endsWith('/workbenchReferenceSearch.js')
       }
     },
     external,
@@ -498,7 +458,6 @@ export default (args: Record<string, string>): rollup.RollupOptions[] => {
             return path.resolve(OVERRIDE_PATH, 'jschardet.ts')
           }
           if (importer != null && importee.startsWith('.')) {
-            // console.log(importee, importer, path.resolve(path.dirname(importer), importee))
             importee = path.resolve(path.dirname(importer), importee)
           }
           if (importee.startsWith('vscode/')) {
@@ -582,7 +541,7 @@ export default (args: Record<string, string>): rollup.RollupOptions[] => {
       {
         name: 'improve-vscode-treeshaking',
         transform (code, id) {
-          if (id.startsWith(VSCODE_DIR)) {
+          if (id.startsWith(VSCODE_DIR) && id.endsWith('.js')) {
             // HACK: assign typescript decorator result to a decorated class field so rollup doesn't remove them
             // before:
             // __decorate([
@@ -610,6 +569,15 @@ export default (args: Record<string, string>): rollup.RollupOptions[] => {
               return node
             }
             recast.visit(ast.program.body, {
+              visitExportNamedDeclaration (path) {
+                if (path.node.specifiers != null && path.node.specifiers.some(specifier => specifier.exported.name === 'LayoutPriority')) {
+                  // For some reasons, this re-export is not used but rollup is not able to treeshake it
+                  // It's an issue because it's a const enum imported from monaco (so it doesn't exist in the js code)
+                  path.node.specifiers = path.node.specifiers.filter(specifier => specifier.exported.name !== 'LayoutPriority')
+                  transformed = true
+                }
+                this.traverse(path)
+              },
               visitNewExpression (path) {
                 const node = path.node
                 if (node.callee.type === 'Identifier') {
@@ -663,7 +631,11 @@ export default (args: Record<string, string>): rollup.RollupOptions[] => {
           return path.relative(VSCODE_DIR, id).replace(/[/.]/g, '_')
         }
       }),
-      externalAssets(['**/*.mp3', '**/*.wasm', '**/*.css']),
+      externalAssets(['**/*.mp3', '**/*.wasm']),
+      styles({
+        mode: 'inject',
+        minimize: true
+      }),
       {
         name: 'dynamic-import-polyfill',
         renderDynamicImport (): { left: string, right: string } {
@@ -753,7 +725,7 @@ export default (args: Record<string, string>): rollup.RollupOptions[] => {
     }, nodeResolve({
       extensions: EXTENSIONS
     }),
-    externalAssets(['**/*.mp3', '**/*.wasm', '**/*.css']),
+    externalAssets(['**/*.mp3', '**/*.wasm']),
     {
       name: 'cleanup',
       renderChunk (code) {

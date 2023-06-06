@@ -1,5 +1,5 @@
 import type * as vscode from 'vscode'
-import { ExtensionIdentifier, ExtensionType, IExtension, IExtensionContributions, IExtensionDescription, IExtensionManifest, TargetPlatform } from 'vs/platform/extensions/common/extensions'
+import { ExtensionType, IExtension, IExtensionContributions, IExtensionDescription, IExtensionManifest, TargetPlatform } from 'vs/platform/extensions/common/extensions'
 import { ExtensionMessageCollector, ExtensionPoint, ExtensionsRegistry, IExtensionPointUser } from 'vs/workbench/services/extensions/common/extensionsRegistry'
 import { IMessage, toExtensionDescription } from 'vs/workbench/services/extensions/common/extensions'
 import { generateUuid } from 'vs/base/common/uuid'
@@ -9,9 +9,6 @@ import { StandaloneServices } from 'vs/editor/standalone/browser/standaloneServi
 import { getExtensionId } from 'vs/platform/extensionManagement/common/extensionManagementUtil'
 import { IDisposable } from 'vs/base/common/lifecycle'
 import Severity from 'vs/base/common/severity'
-import { localize } from 'vs/nls'
-import { Registry } from 'vs/platform/registry/common/platform'
-import { ConfigurationScope, IConfigurationRegistry, Extensions as ConfigurationExtensions } from 'vs/platform/configuration/common/configurationRegistry'
 import { ITranslations, localizeManifest } from 'vs/platform/extensionManagement/common/extensionNls'
 import { joinPath, originalFSPath } from 'vs/base/common/resources'
 import { FileAccess } from 'monaco-editor/esm/vs/base/common/network.js'
@@ -32,6 +29,8 @@ import createDebugApi from './vscode-services/debug'
 import createExtensionsApi from './vscode-services/extensions'
 import { initialize as initializeExtHostServices, onExtHostInitialized, getExtHostServices } from './vscode-services/extHost'
 import { unsupported } from './tools'
+import { setDefaultExtension } from './default-extension'
+import 'vs/workbench/contrib/search/browser/search.contribution'
 
 export function consoleExtensionMessageHandler (msg: IMessage): void {
   if (msg.type === Severity.Error) {
@@ -44,41 +43,9 @@ export function consoleExtensionMessageHandler (msg: IMessage): void {
   }
 }
 
-// Required or it crashed on extensions with activationEvents
-const configurationRegistry = Registry.as<IConfigurationRegistry>(ConfigurationExtensions.Configuration)
-configurationRegistry.registerConfiguration({
-  properties: {
-    'search.useIgnoreFiles': {
-      type: 'boolean',
-      markdownDescription: localize('useIgnoreFiles', 'Controls whether to use `.gitignore` and `.ignore` files when searching for files.'),
-      default: true,
-      scope: ConfigurationScope.RESOURCE
-    }
-  }
-})
-
-let DEFAULT_EXTENSION: IExtensionDescription = {
-  identifier: new ExtensionIdentifier('monaco'),
-  isBuiltin: true,
-  isUserBuiltin: true,
-  isUnderDevelopment: false,
-  extensionLocation: URI.from({ scheme: 'extension', path: '/' }),
-  name: 'monaco',
-  publisher: 'microsoft',
-  version: '1.0.0',
-  engines: {
-    vscode: VSCODE_VERSION
-  },
-  targetPlatform: TargetPlatform.WEB
-}
-
-export function getDefaultExtension (): IExtensionDescription {
-  return DEFAULT_EXTENSION
-}
-
 export async function initialize (extension?: IExtensionDescription): Promise<void> {
   if (extension != null) {
-    DEFAULT_EXTENSION = extension
+    setDefaultExtension(extension)
   }
 
   await initializeExtHostServices()

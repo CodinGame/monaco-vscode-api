@@ -21,10 +21,13 @@
         "css": "always",
         "js": "always",
         "mp3": "always",
+        "json": "always",
         "contribution": "always", // Hack for vscode .contribution.js files
-        "protocol": "always", // Hack for vscode .protocol.js files,
-        "net": "always", // Hack for vscode .net.js files,
-        "impl": "always" // Hack for vscode .impl.js files
+        "protocol": "always", // Hack for vscode .protocol.js files
+        "net": "always", // Hack for vscode .net.js files
+        "impl": "always", // Hack for vscode .impl.js files
+        "worker": "always",
+        "ts": "always"
       }
     ]
   },

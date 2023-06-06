@@ -61,7 +61,8 @@
 		"src/extensions.ts",
 		"src/service-override/notifications.ts",
 		"src/service-override/dialogs.ts",
-		"src/service-override/modelEditor.ts",
+		"src/service-override/model.ts",
+		"src/service-override/editor.ts",
 		"src/service-override/files.ts",
 		"src/service-override/configuration.ts",
 		"src/service-override/keybindings.ts",
@@ -73,6 +74,8 @@
 		"src/service-override/debug.ts",
 		"src/service-override/preferences.ts",
 		"src/service-override/views.ts",
+		"src/service-override/quickaccess.ts",
+		"src/workers/textMate.worker.ts",
 		"src/monaco.ts",
 		"src/rollup-vsix-plugin.ts",
 		"src/rollup-extension-directory-plugin.ts"

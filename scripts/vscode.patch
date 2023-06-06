@@ -160,3 +160,19 @@ index 1111dabcbcd..08aa5052ee6 100644
  	}
  
  	isVisible(): boolean {
+diff --git a/src/vs/workbench/services/textMate/browser/worker/textMate.worker.ts b/src/vs/workbench/services/textMate/browser/worker/textMate.worker.ts
+index 67484e6ef40..636b27931eb 100644
+--- a/src/vs/workbench/services/textMate/browser/worker/textMate.worker.ts
++++ b/src/vs/workbench/services/textMate/browser/worker/textMate.worker.ts
+@@ -56,9 +56,8 @@ export class TextMateTokenizationWorker {
+ 	}
+ 
+ 	private async _loadTMGrammarFactory(grammarDefinitions: IValidGrammarDefinition[]): Promise<TMGrammarFactory> {
+-		const uri = this.createData.textmateMainUri;
+-		const vscodeTextmate = await import(uri);
+-		const vscodeOniguruma = await import(this.createData.onigurumaMainUri);
++		const vscodeTextmate = await import('vscode-textmate');
++		const vscodeOniguruma = await import('vscode-oniguruma');
+ 		const response = await fetch(this.createData.onigurumaWASMUri);
+ 
+ 		// Using the response directly only works if the server sets the MIME type 'application/wasm'.
