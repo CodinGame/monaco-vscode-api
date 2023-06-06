@@ -193,7 +193,8 @@ while (variable < 5000) {
   "files.autoSave": "afterDelay",
   "files.autoSaveDelay": 1000,
   "debug.toolBarLocation": "docked",
-  "editor.experimental.asyncTokenization": true
+  "editor.experimental.asyncTokenization": true,
+  "terminal.integrated.tabs.title": "\${sequence}"
 }`)
   createConfiguredEditor(document.getElementById('settings-editor')!, {
     model: settingsModelReference.object.textEditorModel
