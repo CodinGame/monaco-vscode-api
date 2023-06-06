@@ -42,7 +42,7 @@ import { IDisposable, Disposable } from 'vs/base/common/lifecycle'
 import { FallbackKeyboardMapper } from 'vs/workbench/services/keybinding/common/fallbackKeyboardMapper'
 import { ITextMateTokenizationService } from 'vs/workbench/services/textMate/browser/textMateTokenizationFeature'
 import { IDebugService, IDebugModel, IViewModel, IAdapterManager } from 'vs/workbench/contrib/debug/common/debug'
-import { IWorkspaceTrustRequestService } from 'vs/platform/workspace/common/workspaceTrust'
+import { IWorkspaceTrustRequestService, WorkspaceTrustUriResponse } from 'vs/platform/workspace/common/workspaceTrust'
 import { IActivityService } from 'vs/workbench/services/activity/common/activity'
 import { IExtensionHostDebugService } from 'vs/platform/debug/common/extensionHostDebug'
 import { IViewContainerModel, IViewDescriptorService, IViewsService } from 'vs/workbench/common/views'
@@ -102,8 +102,15 @@ import { IInteractiveSessionService } from 'vs/workbench/contrib/interactiveSess
 import { IOutlineService } from 'vs/workbench/services/outline/browser/outline'
 import { IUpdateService, State } from 'vs/platform/update/common/update'
 import { IStatusbarService } from 'vs/workbench/services/statusbar/browser/statusbar'
-import { IExtensionGalleryService } from 'vs/platform/extensionManagement/common/extensionManagement'
+import { IExtensionGalleryService, IExtensionManagementService } from 'vs/platform/extensionManagement/common/extensionManagement'
 import { IModelService } from 'vs/editor/common/services/model'
+import { ITerminalEditorService, ITerminalGroupService, ITerminalInstance, ITerminalInstanceService, ITerminalService, TerminalConnectionState } from 'vs/workbench/contrib/terminal/browser/terminal'
+import { ITerminalProfileResolverService, ITerminalProfileService } from 'vs/workbench/contrib/terminal/common/terminal'
+import { TerminalLocation } from 'vs/platform/terminal/common/terminal'
+import { ITerminalContributionService } from 'vs/workbench/contrib/terminal/common/terminalExtensionPoints'
+import { ITerminalLinkProviderService } from 'vs/workbench/contrib/terminalContrib/links/browser/links'
+import { IEnvironmentVariableService } from 'vs/workbench/contrib/terminal/common/environmentVariable'
+import { ITerminalQuickFixService } from 'vs/workbench/contrib/terminalContrib/quickFix/browser/quickFix'
 import { unsupported } from '../tools'
 
 class NullLoggerService extends AbstractLoggerService {
@@ -662,7 +669,7 @@ registerSingleton(IWorkspaceTrustRequestService, class WorkspaceTrustRequestServ
   onDidInitiateWorkspaceTrustRequest = Event.None
   onDidInitiateWorkspaceTrustRequestOnStartup = Event.None
   completeOpenFilesTrustRequest = unsupported
-  requestOpenFilesTrust = unsupported
+  requestOpenFilesTrust = async () => WorkspaceTrustUriResponse.Open
   cancelWorkspaceTrustRequest = unsupported
   completeWorkspaceTrustRequest = unsupported
   requestWorkspaceTrust = async () => true
@@ -1165,3 +1172,230 @@ registerSingleton(IExtensionGalleryService, class ExtensionGalleryService implem
   getCoreTranslation = unsupported
   getExtensionsControlManifest = unsupported
 }, InstantiationType.Eager)
+
+registerSingleton(ITerminalService, class TerminalService implements ITerminalService {
+  _serviceBrand: undefined
+  instances = []
+  get configHelper () {
+    return unsupported()
+  }
+
+  isProcessSupportRegistered = false
+  connectionState = TerminalConnectionState.Connected
+  defaultLocation = TerminalLocation.Panel
+  onDidChangeActiveGroup = Event.None
+  onDidDisposeGroup = Event.None
+  onDidCreateInstance = Event.None
+  onDidReceiveProcessId = Event.None
+  onDidChangeInstanceDimensions = Event.None
+  onDidMaximumDimensionsChange = Event.None
+  onDidRequestStartExtensionTerminal = Event.None
+  onDidChangeInstanceTitle = Event.None
+  onDidChangeInstanceIcon = Event.None
+  onDidChangeInstanceColor = Event.None
+  onDidChangeInstancePrimaryStatus = Event.None
+  onDidInputInstanceData = Event.None
+  onDidRegisterProcessSupport = Event.None
+  onDidChangeConnectionState = Event.None
+  createTerminal = unsupported
+  getInstanceFromId = unsupported
+  getInstanceFromIndex = unsupported
+  getReconnectedTerminals = unsupported
+  getActiveOrCreateInstance = unsupported
+  moveToEditor = unsupported
+  moveToTerminalView = unsupported
+  getPrimaryBackend = unsupported
+  refreshActiveGroup = unsupported
+  registerProcessSupport = () => {}
+  showProfileQuickPick = unsupported
+  setContainers = unsupported
+  requestStartExtensionTerminal = unsupported
+  isAttachedToTerminal = unsupported
+  getEditableData = unsupported
+  setEditable = unsupported
+  isEditable = unsupported
+  safeDisposeTerminal = unsupported
+  getDefaultInstanceHost = unsupported
+  getInstanceHost = unsupported
+  resolveLocation = unsupported
+  setNativeDelegate = unsupported
+  toggleEscapeSequenceLogging = unsupported
+  getEditingTerminal = unsupported
+  setEditingTerminal = unsupported
+  activeInstance = undefined
+  onDidDisposeInstance = Event.None
+  onDidFocusInstance = Event.None
+  onDidChangeActiveInstance = Event.None
+  onDidChangeInstances = Event.None
+  onDidChangeInstanceCapability = Event.None
+  setActiveInstance = unsupported
+  focusActiveInstance = unsupported
+  getInstanceFromResource = unsupported
+}, InstantiationType.Delayed)
+registerSingleton(ITerminalEditorService, class TerminalEditorService implements ITerminalEditorService {
+  _serviceBrand: undefined
+  instances = []
+  openEditor = unsupported
+  detachActiveEditorInstance = unsupported
+  detachInstance = unsupported
+  splitInstance = unsupported
+  revealActiveEditor = unsupported
+  resolveResource = unsupported
+  reviveInput = unsupported
+  getInputFromResource = unsupported
+  activeInstance = undefined
+  onDidDisposeInstance = Event.None
+  onDidFocusInstance = Event.None
+  onDidChangeActiveInstance = Event.None
+  onDidChangeInstances = Event.None
+  onDidChangeInstanceCapability = Event.None
+  setActiveInstance = unsupported
+  focusActiveInstance = unsupported
+  getInstanceFromResource = unsupported
+}, InstantiationType.Delayed)
+
+registerSingleton(ITerminalGroupService, class TerminalGroupService implements ITerminalGroupService {
+  _serviceBrand: undefined
+  instances = []
+  groups = []
+  activeGroup = undefined
+  activeGroupIndex = 0
+  onDidChangeActiveGroup = Event.None
+  onDidDisposeGroup = Event.None
+  onDidChangeGroups = Event.None
+  onDidShow = Event.None
+  onDidChangePanelOrientation = Event.None
+  createGroup = unsupported
+  getGroupForInstance = unsupported
+  moveGroup = unsupported
+  moveGroupToEnd = unsupported
+  moveInstance = unsupported
+  unsplitInstance = unsupported
+  joinInstances = unsupported
+  instanceIsSplit = unsupported
+  getGroupLabels = unsupported
+  setActiveGroupByIndex = unsupported
+  setActiveGroupToNext = unsupported
+  setActiveGroupToPrevious = unsupported
+  setActiveInstanceByIndex = unsupported
+  setContainer = unsupported
+  showPanel = unsupported
+  hidePanel = unsupported
+  focusTabs = unsupported
+  focusHover = unsupported
+  showTabs = unsupported
+  updateVisibility = unsupported
+  activeInstance: ITerminalInstance | undefined
+  onDidDisposeInstance = Event.None
+  onDidFocusInstance = Event.None
+  onDidChangeActiveInstance = Event.None
+  onDidChangeInstances = Event.None
+  onDidChangeInstanceCapability = Event.None
+  setActiveInstance = unsupported
+  focusActiveInstance = unsupported
+  getInstanceFromResource = unsupported
+}, InstantiationType.Delayed)
+registerSingleton(ITerminalInstanceService, class TerminalInstanceService implements ITerminalInstanceService {
+  _serviceBrand: undefined
+  onDidCreateInstance = Event.None
+  convertProfileToShellLaunchConfig = unsupported
+  createInstance = unsupported
+  getBackend = unsupported
+  didRegisterBackend = unsupported
+}, InstantiationType.Delayed)
+registerSingleton(ITerminalProfileService, class TerminalProfileService implements ITerminalProfileService {
+  _serviceBrand: undefined
+  availableProfiles = []
+  contributedProfiles = []
+  profilesReady = Promise.resolve()
+  getPlatformKey = unsupported
+  refreshAvailableProfiles = unsupported
+  getDefaultProfileName = () => undefined
+  getDefaultProfile = () => undefined
+  onDidChangeAvailableProfiles = Event.None
+  getContributedDefaultProfile = unsupported
+  registerContributedProfile = unsupported
+  getContributedProfileProvider = unsupported
+  registerTerminalProfileProvider = unsupported
+}, InstantiationType.Delayed)
+
+registerSingleton(ITerminalLinkProviderService, class TerminalLinkProviderService implements ITerminalLinkProviderService {
+  _serviceBrand: undefined
+  linkProviders = new Set([])
+  onDidAddLinkProvider = Event.None
+  onDidRemoveLinkProvider = Event.None
+  registerLinkProvider = unsupported
+}, InstantiationType.Delayed)
+
+registerSingleton(ITerminalContributionService, class TerminalContributionService implements ITerminalContributionService {
+  _serviceBrand: undefined
+  terminalProfiles = []
+}, InstantiationType.Delayed)
+
+registerSingleton(ITerminalProfileResolverService, class TerminalProfileResolverService implements ITerminalProfileResolverService {
+  _serviceBrand: undefined
+  defaultProfileName: string | undefined
+  resolveIcon = unsupported
+  resolveShellLaunchConfig = unsupported
+  getDefaultProfile = async () => ({
+    profileName: 'bash',
+    path: '/bin/bash',
+    isDefault: true
+  })
+
+  getDefaultShell = unsupported
+  getDefaultShellArgs = unsupported
+  getDefaultIcon = unsupported
+  getEnvironment = unsupported
+  createProfileFromShellAndShellArgs = unsupported
+}, InstantiationType.Delayed)
+
+registerSingleton(IEnvironmentVariableService, class EnvironmentVariableService implements IEnvironmentVariableService {
+  _serviceBrand: undefined
+  collections = new Map()
+  get mergedCollection () {
+    return unsupported()
+  }
+
+  onDidChangeCollections = Event.None
+  set = unsupported
+  delete = unsupported
+}, InstantiationType.Delayed)
+
+registerSingleton(ITerminalQuickFixService, class TerminalQuickFixService implements ITerminalQuickFixService {
+  _serviceBrand: undefined
+  onDidRegisterProvider = Event.None
+  onDidRegisterCommandSelector = Event.None
+  onDidUnregisterProvider = Event.None
+  extensionQuickFixes = Promise.resolve([])
+  providers = new Map()
+  registerQuickFixProvider = unsupported
+  registerCommandSelector = unsupported
+}, InstantiationType.Delayed)
+
+registerSingleton(IExtensionManagementService, class ExtensionManagementService implements IExtensionManagementService {
+  _serviceBrand: undefined
+  onInstallExtension = Event.None
+  onDidInstallExtensions = Event.None
+  onUninstallExtension = Event.None
+  onDidUninstallExtension = Event.None
+  onDidUpdateExtensionMetadata = Event.None
+  zip = unsupported
+  unzip = unsupported
+  getManifest = unsupported
+  install = unsupported
+  canInstall = unsupported
+  installFromGallery = unsupported
+  installFromLocation = unsupported
+  installExtensionsFromProfile = unsupported
+  uninstall = unsupported
+  reinstallFromGallery = unsupported
+  getInstalled = async () => []
+  getExtensionsControlManifest = unsupported
+  copyExtensions = unsupported
+  updateMetadata = unsupported
+  download = unsupported
+  registerParticipant = unsupported
+  getTargetPlatform = unsupported
+  cleanUp = unsupported
+}, InstantiationType.Delayed)
