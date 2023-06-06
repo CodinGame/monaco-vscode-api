@@ -110,7 +110,8 @@ const ALLOWED_WORKBENCH_CONTRIBUTIONS = new Set([
   'DialogHandlerContribution',
   'ExplorerViewletViewsContribution',
   'ViewsExtensionHandler',
-  'OutputContribution'
+  'OutputContribution',
+  'TerminalMainContribution'
 ])
 
 function isCallPure (file: string, functionName: string, node: recast.types.namedTypes.CallExpression): boolean {
@@ -155,7 +156,8 @@ function isCallPure (file: string, functionName: string, node: recast.types.name
         firstParamName.includes('Viewlets') ||
         firstParamName.includes('Panels') ||
         firstParamName.includes('Auxiliary') ||
-        firstParamName.includes('EditorPane')
+        firstParamName.includes('EditorPane') ||
+        firstParamName.includes('TerminalExtensions')
       return !allowed
     }
   }
@@ -369,6 +371,7 @@ const input = {
   'service-override/views': './src/service-override/views.ts',
   'service-override/quickaccess': './src/service-override/quickaccess.ts',
   'service-override/output': './src/service-override/output.ts',
+  'service-override/terminal': './src/service-override/terminal.ts',
   'workers/textMate.worker': './src/workers/textMate.worker.ts',
   'workers/outputLinkComputer.worker': './src/workers/outputLinkComputer.worker.ts',
   monaco: './src/monaco.ts',

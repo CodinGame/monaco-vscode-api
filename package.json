@@ -96,6 +96,10 @@
       "types": "./dist/service-override/output.d.ts",
       "default": "./dist/service-override/output.js"
     },
+    "./service-override/terminal": {
+      "types": "./dist/service-override/terminal.d.ts",
+      "default": "./dist/service-override/terminal.js"
+    },
     "./workers/textMate.worker": {
       "types": "./dist/workers/textMate.worker.d.ts",
       "default": "./dist/workers/textMate.worker.js"
@@ -178,6 +182,9 @@
       ],
       "service-override/output": [
         "./dist/service-override/output.d.ts"
+      ],
+      "service-override/terminal": [
+        "./dist/service-override/terminal.d.ts"
       ],
       "workers/textMate.worker": [
         "./dist/workers/textMate.worker.d.ts"
@@ -274,7 +281,13 @@
     "monaco-editor": "0.38.0",
     "vscode-oniguruma": "^1.7.0",
     "vscode-textmate": "^9.0.0",
-    "yauzl": "^2.10.0"
+    "yauzl": "^2.10.0",
+    "xterm": "^5.1.0",
+    "xterm-addon-canvas": "^0.3.0",
+    "xterm-addon-search": "^0.11.0",
+    "xterm-addon-serialize": "^0.9.0",
+    "xterm-addon-unicode11": "^0.5.0",
+    "xterm-addon-webgl": "^0.14.0"
   },
   "overrides": {
     "typescript": "5.0.4",

@@ -76,6 +76,7 @@
 		"src/service-override/views.ts",
 		"src/service-override/quickaccess.ts",
 		"src/service-override/output.ts",
+		"src/service-override/terminal.ts",
 		"src/workers/textMate.worker.ts",
 		"src/workers/outputLinkComputer.worker.ts",
 		"src/monaco.ts",
