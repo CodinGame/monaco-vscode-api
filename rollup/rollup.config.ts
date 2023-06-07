@@ -109,7 +109,9 @@ const ALLOWED_WORKBENCH_CONTRIBUTIONS = new Set([
   'ExplorerViewletViewsContribution',
   'ViewsExtensionHandler',
   'OutputContribution',
-  'TerminalMainContribution'
+  'TerminalMainContribution',
+  'PreferencesActionsContribution',
+  'PreferencesContribution'
 ])
 
 function isCallPure (file: string, functionName: string, node: recast.types.namedTypes.CallExpression): boolean {
@@ -175,7 +177,10 @@ function isCallPure (file: string, functionName: string, node: recast.types.name
     if (firstParamCode.includes('DEBUG_CONFIGURE_COMMAND_ID') ||
       firstParamCode.includes('workbench.action.closePanel') ||
       firstParamCode.includes('workbench.action.toggleMaximizedPanel') ||
-      firstParamCode.includes('OpenEditorsView')) {
+      firstParamCode.includes('OpenEditorsView') ||
+      firstParamCode.includes('openWorkspaceSettings') ||
+      firstParamCode.includes('openRemoteSettings') ||
+      firstParamCode.includes('openApplicationSettings')) {
       return true
     }
   }

@@ -111,6 +111,10 @@ import { ITerminalContributionService } from 'vs/workbench/contrib/terminal/comm
 import { ITerminalLinkProviderService } from 'vs/workbench/contrib/terminalContrib/links/browser/links'
 import { IEnvironmentVariableService } from 'vs/workbench/contrib/terminal/common/environmentVariable'
 import { ITerminalQuickFixService } from 'vs/workbench/contrib/terminalContrib/quickFix/browser/quickFix'
+import { IPreferencesSearchService } from 'vs/workbench/contrib/preferences/common/preferences'
+import { AccountStatus, IUserDataSyncWorkbenchService } from 'vs/workbench/services/userDataSync/common/userDataSync'
+import { IUserDataSyncEnablementService } from 'vs/platform/userDataSync/common/userDataSync'
+import { IKeybindingEditingService } from 'vs/workbench/services/keybinding/common/keybindingEditing'
 import { unsupported } from '../tools'
 
 class NullLoggerService extends AbstractLoggerService {
@@ -1398,4 +1402,49 @@ registerSingleton(IExtensionManagementService, class ExtensionManagementService 
   registerParticipant = unsupported
   getTargetPlatform = unsupported
   cleanUp = unsupported
+}, InstantiationType.Delayed)
+
+registerSingleton(IUserDataSyncWorkbenchService, class UserDataSyncWorkbenchService implements IUserDataSyncWorkbenchService {
+  _serviceBrand: undefined
+  enabled = false
+  authenticationProviders = []
+  all = []
+  current = undefined
+  accountStatus = AccountStatus.Uninitialized
+  onDidChangeAccountStatus = Event.None
+  turnOn = unsupported
+  turnoff = unsupported
+  signIn = unsupported
+  resetSyncedData = unsupported
+  showSyncActivity = unsupported
+  syncNow = unsupported
+  synchroniseUserDataSyncStoreType = unsupported
+  showConflicts = unsupported
+  accept = unsupported
+}, InstantiationType.Delayed)
+
+registerSingleton(IUserDataSyncEnablementService, class UserDataSyncEnablementService implements IUserDataSyncEnablementService {
+  _serviceBrand: undefined
+  onDidChangeEnablement = Event.None
+  isEnabled = () => false
+  canToggleEnablement = () => false
+  setEnablement = unsupported
+  onDidChangeResourceEnablement = Event.None
+  isResourceEnabled = () => false
+  setResourceEnablement = unsupported
+  getResourceSyncStateVersion = () => undefined
+}, InstantiationType.Delayed)
+
+registerSingleton(IKeybindingEditingService, class KeybindingEditingService implements IKeybindingEditingService {
+  _serviceBrand: undefined
+  addKeybinding = unsupported
+  editKeybinding = unsupported
+  removeKeybinding = unsupported
+  resetKeybinding = unsupported
+}, InstantiationType.Delayed)
+
+registerSingleton(IPreferencesSearchService, class PreferencesSearchService implements IPreferencesSearchService {
+  _serviceBrand: undefined
+  getLocalSearchProvider = unsupported
+  getRemoteSearchProvider = unsupported
 }, InstantiationType.Delayed)

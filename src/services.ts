@@ -108,6 +108,9 @@ export { ILoggerService, LogLevel } from 'vs/platform/log/common/log'
 export { ILogService } from 'vs/platform/log/common/log'
 export { IViewsService } from 'vs/workbench/common/views'
 export { ILayoutService } from 'vs/platform/layout/browser/layoutService'
+export { IPreferencesService } from 'vs/workbench/services/preferences/common/preferences'
+export { IPreferencesSearchService } from 'vs/workbench/contrib/preferences/common/preferences'
+export { IKeybindingEditingService } from 'vs/workbench/services/keybinding/common/keybindingEditing'
 
 // Export all Notification service parts
 export {
