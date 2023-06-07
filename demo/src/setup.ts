@@ -1,7 +1,7 @@
 import 'monaco-editor/esm/vs/editor/editor.all.js'
 import 'monaco-editor/esm/vs/editor/standalone/browser/accessibilityHelp/accessibilityHelp.js'
 import 'monaco-editor/esm/vs/editor/standalone/browser/iPadShowKeyboard/iPadShowKeyboard.js'
-import { initialize as initializeMonacoService } from 'vscode/services'
+import { IDialogService, initialize as initializeMonacoService } from 'vscode/services'
 import { registerExtension, initialize as initializeVscodeExtensions } from 'vscode/extensions'
 import getModelServiceOverride from 'vscode/service-override/model'
 import getNotificationServiceOverride from 'vscode/service-override/notifications'
@@ -51,7 +51,27 @@ registerCustomView({
     }
   },
   location: ViewContainerLocation.Panel,
-  icon: new URL(iconUrl, window.location.href).toString()
+  icon: new URL(iconUrl, window.location.href).toString(),
+  actions: [{
+    id: 'custom-action',
+    title: 'Custom action',
+    render (element) {
+      const button = document.createElement('button')
+      button.innerText = 'Ugly button'
+      button.style.height = '30px'
+      button.onclick = () => {
+        alert('What did you expect?')
+      }
+      element.append(button)
+    }
+  }, {
+    id: 'custom-action2',
+    title: 'Custom action2',
+    icon: 'dialogInfo',
+    async run (accessor) {
+      accessor.get(IDialogService).info('This is a custom view action button')
+    }
+  }]
 })
 
 // Workers
