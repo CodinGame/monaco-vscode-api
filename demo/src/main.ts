@@ -7,7 +7,7 @@ import 'monaco-editor/esm/vs/language/typescript/monaco.contribution.js'
 import { createConfiguredEditor, synchronizeJsonSchemas, createModelReference } from 'vscode/monaco'
 import { SimpleTextFileSystemProvider, registerFileSystemOverlay, FileType, HTMLFileSystemProvider } from 'vscode/service-override/files'
 import * as vscode from 'vscode'
-import { ILogService, LogLevel, StandaloneServices } from 'vscode/services'
+import { ILogService, LogLevel, StandaloneServices, IPreferencesService } from 'vscode/services'
 import typescriptGlobal from '../node_modules/@types/node/globals.d.ts?raw'
 import typescriptConsole from '../node_modules/@types/node/console.d.ts?raw'
 import typescriptProcess from '../node_modules/@types/node/process.d.ts?raw'
@@ -237,4 +237,14 @@ document.querySelector('#run')!.addEventListener('click', () => {
     request: 'attach',
     type: 'javascript'
   })
+})
+
+document.querySelector('#settingsui')!.addEventListener('click', async () => {
+  await StandaloneServices.get(IPreferencesService).openUserSettings()
+  window.scrollTo({ top: 0, behavior: 'smooth' })
+})
+
+document.querySelector('#keybindingsui')!.addEventListener('click', async () => {
+  await StandaloneServices.get(IPreferencesService).openGlobalKeybindingSettings(false)
+  window.scrollTo({ top: 0, behavior: 'smooth' })
 })
