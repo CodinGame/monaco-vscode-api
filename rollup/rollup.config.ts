@@ -68,8 +68,6 @@ const FUNCTIONS_TO_REMOVE = new Set([
   'registerTouchBarEntry',
   'registerEditorSerializer',
 
-  'appendSaveConflictEditorTitleAction',
-  'appendToCommandPalette',
   // For ActivityBar, remove unused actions/items
   'fillExtraContextMenuActions',
   'createGlobalActivityActionBar',
@@ -170,7 +168,7 @@ function isCallPure (file: string, functionName: string, node: recast.types.name
     const firstParam = args[0]!
 
     const className = firstParam.type === 'Identifier' ? firstParam.name : firstParam.type === 'ClassExpression' ? firstParam.id?.name as string : undefined
-    if (className != null && ['OpenDisassemblyViewAction', 'AddConfigurationAction', 'ToggleDisassemblyViewSourceCodeAction'].includes(className)) {
+    if (className != null && ['AddConfigurationAction'].includes(className)) {
       return true
     }
     const firstParamCode = recast.print(firstParam).code
