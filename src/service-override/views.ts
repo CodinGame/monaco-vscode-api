@@ -3,7 +3,7 @@ import { IEditorOverrideServices, StandaloneServices } from 'vs/editor/standalon
 import { SyncDescriptor } from 'vs/platform/instantiation/common/descriptors'
 import { IViewContainersRegistry, IViewDescriptor, IViewDescriptorService, IViewsRegistry, IViewsService, ViewContainerLocation, Extensions as ViewExtensions } from 'vs/workbench/common/views'
 import { ViewsService } from 'vs/workbench/browser/parts/views/viewsService'
-import { IInstantiationService } from 'vs/platform/instantiation/common/instantiation'
+import { IInstantiationService, ServicesAccessor } from 'vs/platform/instantiation/common/instantiation'
 import { SidebarPart } from 'vs/workbench/browser/parts/sidebar/sidebarPart'
 import { ViewDescriptorService } from 'vs/workbench/services/views/browser/viewDescriptorService'
 import { IActivityService, IBadge } from 'vs/workbench/services/activity/common/activity'
@@ -13,7 +13,7 @@ import { Event } from 'vs/base/common/event'
 import { IPaneComposite } from 'vs/workbench/common/panecomposite'
 import { IPaneCompositePart, IPaneCompositeSelectorPart } from 'vs/workbench/browser/parts/paneCompositePart'
 import { ActivitybarPart } from 'vs/workbench/browser/parts/activitybar/activitybarPart'
-import { IDisposable, IReference } from 'vs/base/common/lifecycle'
+import { DisposableStore, IDisposable, IReference } from 'vs/base/common/lifecycle'
 import { IProgressIndicator } from 'vs/platform/progress/common/progress'
 import { IHoverService } from 'vs/workbench/services/hover/browser/hover'
 import { HoverService } from 'vs/workbench/services/hover/browser/hoverService'
@@ -38,6 +38,7 @@ import 'vscode/vs/workbench/browser/parts/views/media/views.css'
 import 'vs/workbench/api/browser/viewsExtensionPoint'
 import 'vs/workbench/browser/parts/editor/editor.contribution'
 import 'vs/workbench/browser/workbench.contribution'
+import { Codicon } from 'vs/base/common/codicons'
 import { IEditorGroupsService } from 'vs/workbench/services/editor/common/editorGroupsService'
 import { IEditorDropService } from 'vs/workbench/services/editor/browser/editorDropService'
 import { EditorService } from 'vs/workbench/services/editor/browser/editorService'
@@ -69,8 +70,14 @@ import { ISemanticSimilarityService, SemanticSimilarityService } from 'vs/workbe
 import { IInteractiveSessionService } from 'vs/workbench/contrib/interactiveSession/common/interactiveSessionService'
 import { IHistoryService } from 'vs/workbench/services/history/common/history'
 import { HistoryService } from 'vs/workbench/services/history/browser/historyService'
-import getLayoutServiceOverride from './layout'
+import { Action2, MenuId, registerAction2 } from 'vs/platform/actions/common/actions'
+import { Categories } from 'vs/platform/action/common/actionCommonCategories'
+import { ContextKeyExpr } from 'vs/platform/contextkey/common/contextkey'
+import { IDropdownMenuActionViewItemOptions } from 'vs/base/browser/ui/dropdown/dropdownActionViewItem'
+import { IAction } from 'vs/base/common/actions'
+import { BaseActionViewItem } from 'vs/base/browser/ui/actionbar/actionViewItems'
 import { OpenEditor, wrapOpenEditor } from './tools/editor'
+import getLayoutServiceOverride from './layout'
 
 const paneCompositeParts = new Map<ViewContainerLocation, IPaneCompositePart>()
 const paneCompositeSelectorParts = new Map<ViewContainerLocation, IPaneCompositeSelectorPart>()
@@ -215,6 +222,15 @@ interface CustomViewOption {
   location: ViewContainerLocation
   icon?: string
   canMoveView?: boolean
+  actions?: {
+    id: string
+    title: string
+    tooltip?: string
+    order?: number
+    run? (accessor: ServicesAccessor): Promise<void>
+    icon?: keyof typeof Codicon
+    render?(container: HTMLElement): void
+  }[]
 }
 
 function registerCustomView (options: CustomViewOption): IDisposable {
@@ -244,6 +260,17 @@ function registerCustomView (options: CustomViewOption): IDisposable {
         this._register(options.renderBody(this.content))
       }
 
+      public override getActionViewItem (action: IAction, actionOptions?: IDropdownMenuActionViewItemOptions) {
+        const customAction = (options.actions ?? []).find(customAction => customAction.id === action.id)
+        if (customAction?.render != null) {
+          return new class extends BaseActionViewItem {
+            constructor () { super(null, action) }
+            override render = customAction!.render!
+          }()
+        }
+        return super.getActionViewItem(action, actionOptions)
+      }
+
       protected override layoutBody (height: number, width: number): void {
         this.content!.style.height = `${height}px`
         this.content!.style.width = `${width}px`
@@ -255,12 +282,39 @@ function registerCustomView (options: CustomViewOption): IDisposable {
 
   Registry.as<IViewsRegistry>(ViewExtensions.ViewsRegistry).registerViews(views, VIEW_CONTAINER)
 
-  return {
+  const disposableCollection = new DisposableStore()
+  disposableCollection.add({
     dispose () {
       Registry.as<IViewsRegistry>(ViewExtensions.ViewsRegistry).deregisterViews(views, VIEW_CONTAINER)
       Registry.as<IViewContainersRegistry>(ViewExtensions.ViewContainersRegistry).deregisterViewContainer(VIEW_CONTAINER)
     }
+  })
+
+  for (const action of options.actions ?? []) {
+    disposableCollection.add(registerAction2(class extends Action2 {
+      constructor () {
+        super({
+          id: action.id,
+          title: { value: action.title, original: action.title },
+          category: Categories.View,
+          menu: [{
+            id: MenuId.ViewTitle,
+            when: ContextKeyExpr.equals('view', options.id),
+            group: 'navigation',
+            order: action.order
+          }, {
+            id: MenuId.CommandPalette
+          }],
+          tooltip: action.tooltip,
+          icon: action.icon != null ? Codicon[action.icon] : undefined
+        })
+      }
+
+      run = action.run ?? (async () => {})
+    }))
   }
+
+  return disposableCollection
 }
 
 class EditorDropService implements IEditorDropService {
