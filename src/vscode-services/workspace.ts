@@ -2,6 +2,7 @@ import type * as vscode from 'vscode'
 import { URI } from 'vs/base/common/uri'
 import { combinedDisposable } from 'vs/base/common/lifecycle'
 import { IExtensionDescription } from 'vs/platform/extensions/common/extensions'
+import { Event } from 'vs/base/common/event'
 import { getConfigProvider, getExtHostServices } from './extHost'
 import { unsupported } from '../tools'
 
@@ -161,8 +162,8 @@ export default function create (getExtension: () => IExtensionDescription): type
     openNotebookDocument: unsupported,
     registerNotebookSerializer: unsupported,
     notebookDocuments: [],
-    onDidOpenNotebookDocument: unsupported,
-    onDidCloseNotebookDocument: unsupported,
+    onDidOpenNotebookDocument: Event.None,
+    onDidCloseNotebookDocument: Event.None,
     get isTrusted () {
       const { extHostWorkspace } = getExtHostServices()
       return extHostWorkspace.trusted
@@ -171,8 +172,8 @@ export default function create (getExtension: () => IExtensionDescription): type
       const { extHostWorkspace } = getExtHostServices()
       return extHostWorkspace.name
     },
-    onDidChangeNotebookDocument: unsupported,
-    onDidSaveNotebookDocument: unsupported,
-    onWillSaveNotebookDocument: unsupported
+    onDidChangeNotebookDocument: Event.None,
+    onDidSaveNotebookDocument: Event.None,
+    onWillSaveNotebookDocument: Event.None
   }
 }
