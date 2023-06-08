@@ -188,7 +188,7 @@ function renderSidebarPart (container: HTMLElement): IDisposable {
   return sidebarPart
 }
 
-function renderPanelPart (container: HTMLElement): PanelPart {
+function renderPanelPart (container: HTMLElement): IDisposable {
   const panelPart = StandaloneServices.get(IInstantiationService).createInstance(PanelPart)
   paneCompositeSelectorParts.set(ViewContainerLocation.Panel, panelPart)
   paneCompositeParts.set(ViewContainerLocation.Panel, panelPart)
