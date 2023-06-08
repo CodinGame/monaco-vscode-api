@@ -39,6 +39,7 @@ import iconUrl from './Visual_Studio_Code_1.35_icon.svg?url'
 registerCustomView({
   id: 'custom-view',
   name: 'Custom demo view',
+  order: 0,
   renderBody: function (container: HTMLElement): monaco.IDisposable {
     container.style.display = 'flex'
     container.style.alignItems = 'center'
@@ -69,7 +70,7 @@ registerCustomView({
     title: 'Custom action2',
     icon: 'dialogInfo',
     async run (accessor) {
-      accessor.get(IDialogService).info('This is a custom view action button')
+      void accessor.get(IDialogService).info('This is a custom view action button')
     }
   }]
 })

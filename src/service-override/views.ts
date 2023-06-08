@@ -218,6 +218,7 @@ function renderStatusBarPart (container: HTMLElement): IDisposable {
 interface CustomViewOption {
   id: string
   name: string
+  order?: number
   renderBody (container: HTMLElement): IDisposable
   location: ViewContainerLocation
   icon?: string
@@ -239,6 +240,7 @@ function registerCustomView (options: CustomViewOption): IDisposable {
   const VIEW_CONTAINER = Registry.as<IViewContainersRegistry>(ViewExtensions.ViewContainersRegistry).registerViewContainer({
     id: options.id,
     title: options.name,
+    order: options.order,
     ctorDescriptor: new SyncDescriptor(ViewPaneContainer, [options.id, { mergeViewWithContainerWhenSingleView: true }]),
     hideIfEmpty: true,
     icon: iconUrl
