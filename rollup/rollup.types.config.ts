@@ -48,6 +48,7 @@ export default rollup.defineConfig({
     './dist/types/src/service-override/preferences.d.ts',
     './dist/types/src/service-override/views.d.ts',
     './dist/types/src/service-override/quickaccess.d.ts',
+    './dist/types/src/service-override/search.d.ts',
     './dist/types/src/service-override/output.d.ts',
     './dist/types/src/service-override/terminal.d.ts',
     './dist/types/src/workers/textMate.worker.d.ts',

@@ -70,10 +70,7 @@ const FUNCTIONS_TO_REMOVE = new Set([
 
   // For ActivityBar, remove unused actions/items
   'fillExtraContextMenuActions',
-  'createGlobalActivityActionBar',
-
-  'searchWidgetContributions',
-  'replaceContributions'
+  'createGlobalActivityActionBar'
 ])
 
 const PURE_OR_TO_REMOVE_FUNCTIONS = new Set([
@@ -111,7 +108,10 @@ const ALLOWED_WORKBENCH_CONTRIBUTIONS = new Set([
   'OutputContribution',
   'TerminalMainContribution',
   'PreferencesActionsContribution',
-  'PreferencesContribution'
+  'PreferencesContribution',
+  'ReplacePreviewContentProvider',
+  'SearchEditorContribution',
+  'SearchEditorWorkingCopyEditorHandler'
 ])
 
 function isCallPure (file: string, functionName: string, node: recast.types.namedTypes.CallExpression): boolean {
@@ -137,7 +137,7 @@ function isCallPure (file: string, functionName: string, node: recast.types.name
   }
 
   if (functionName === 'CommandsRegistry.registerCommand') {
-    if (file.includes('fileActions.contribution') || file.includes('workspaceCommands') || file.includes('search.contribution')) {
+    if (file.includes('fileActions.contribution') || file.includes('workspaceCommands')) {
       return true
     }
   }
@@ -237,15 +237,7 @@ function isCallPure (file: string, functionName: string, node: recast.types.name
     return false
   }
 
-  if (functionName === 'registerViewContainer') {
-    if (file.includes('search.contribution')) {
-      return true
-    }
-  }
   if (functionName === 'registerViews') {
-    if (file.includes('search.contribution')) {
-      return true
-    }
     const firstParamCode = recast.print(args[0]!).code
     if (firstParamCode.includes('WelcomeView.ID')) {
       return true
@@ -375,6 +367,7 @@ const input = {
   'service-override/quickaccess': './src/service-override/quickaccess.ts',
   'service-override/output': './src/service-override/output.ts',
   'service-override/terminal': './src/service-override/terminal.ts',
+  'service-override/search': './src/service-override/search.ts',
   'workers/textMate.worker': './src/workers/textMate.worker.ts',
   'workers/outputLinkComputer.worker': './src/workers/outputLinkComputer.worker.ts',
   monaco: './src/monaco.ts',

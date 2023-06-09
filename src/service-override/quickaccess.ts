@@ -15,7 +15,6 @@ import 'vs/workbench/contrib/codeEditor/browser/quickaccess/gotoLineQuickAccess'
 import 'vs/workbench/contrib/codeEditor/browser/quickaccess/gotoSymbolQuickAccess'
 import 'vs/workbench/browser/actions/quickAccessActions'
 import 'vs/workbench/contrib/quickaccess/browser/quickAccess.contribution'
-import 'vs/workbench/contrib/search/browser/search.contribution'
 
 // Remote "Configur Keybinding" from command menu
 // eslint-disable-next-line dot-notation
