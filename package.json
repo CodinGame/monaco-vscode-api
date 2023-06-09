@@ -16,6 +16,7 @@
   "type": "module",
   "main": "dist/api.js",
   "module": "dist/api.js",
+  "enabledApiProposals": ["fileSearchProvider", "textSearchProvider"],
   "exports": {
     ".": {
       "default": "./dist/api.js"

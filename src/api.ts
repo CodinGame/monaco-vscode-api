@@ -1,3 +1,4 @@
+/// <reference path="./types.d.ts" />
 import * as extHostTypes from 'vs/workbench/api/common/extHostTypes'
 import * as errors from 'vs/base/common/errors'
 import * as commonDebug from 'vs/workbench/contrib/debug/common/debug'
@@ -12,6 +13,7 @@ import * as editorOptions from 'vs/editor/common/config/editorOptions'
 import * as uri from 'vs/base/common/uri'
 import * as log from 'vs/platform/log/common/log'
 import * as telemetryUtils from 'vs/platform/telemetry/common/telemetryUtils'
+import * as searchExtHostTypes from 'vs/workbench/services/search/common/searchExtTypes'
 import createL10nApi from './vscode-services/l10n'
 import createLanguagesApi from './vscode-services/languages'
 import createCommandsApi from './vscode-services/commands'
@@ -198,7 +200,8 @@ const api: typeof vscode = {
   LogLevel: log.LogLevel,
   TerminalExitReason: extHostTypes.TerminalExitReason,
   CommentThreadState: unsupported,
-  TelemetryTrustedValue: telemetryUtils.TelemetryTrustedValue
+  TelemetryTrustedValue: telemetryUtils.TelemetryTrustedValue,
+  TextSearchCompleteMessageType: searchExtHostTypes.TextSearchCompleteMessageType
 }
 
 // @ts-ignore the syntax will be transformed by a typescript transformer in the rollup config

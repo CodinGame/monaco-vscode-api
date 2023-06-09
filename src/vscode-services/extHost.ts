@@ -62,6 +62,7 @@ import { ITelemetryService } from 'vs/platform/telemetry/common/telemetry'
 import { ExtHostStatusBar } from 'vs/workbench/api/common/extHostStatusBar'
 import { ExtHostTheming } from 'vs/workbench/api/common/extHostTheming'
 import { ExtHostTerminalService } from 'vs/workbench/api/node/extHostTerminalService'
+import { ExtHostSearch, IExtHostSearch } from 'vs/workbench/api/common/extHostSearch'
 import 'vs/workbench/api/browser/mainThreadLocalization'
 import 'vs/workbench/api/browser/mainThreadCommands'
 import 'vs/workbench/api/browser/mainThreadWindow'
@@ -90,6 +91,7 @@ import 'vs/workbench/api/browser/mainThreadStatusBar'
 import 'vs/workbench/api/browser/mainThreadTheming'
 import 'vs/workbench/api/browser/mainThreadTerminalService'
 import 'vs/workbench/api/browser/mainThreadEditorTabs'
+import 'vs/workbench/api/browser/mainThreadSearch'
 import * as errors from 'vs/base/common/errors'
 import { Barrier } from 'vs/base/common/async'
 import { unsupported } from '../tools'
@@ -223,6 +225,7 @@ registerSingleton(IExtHostVariableResolverProvider, ExtHostVariableResolverProvi
 registerSingleton(IExtHostOutputService, ExtHostOutputService, InstantiationType.Delayed)
 registerSingleton(IExtHostTerminalService, ExtHostTerminalService, InstantiationType.Eager)
 registerSingleton(IExtHostLocalizationService, ExtHostLocalizationService, InstantiationType.Delayed)
+registerSingleton(IExtHostSearch, ExtHostSearch, InstantiationType.Eager)
 
 const mainContext: IMainContext & IInternalExtHostContext = {
   remoteAuthority: null,
@@ -290,7 +293,7 @@ async function createExtHostServices () {
   const extHostDocumentsAndEditors = rpcProtocol.set(ExtHostContext.ExtHostDocumentsAndEditors, StandaloneServices.get(IExtHostDocumentsAndEditors))
   const extHostLocalization = rpcProtocol.set(ExtHostContext.ExtHostLocalization, StandaloneServices.get(IExtHostLocalizationService))
   const extHostTerminalService = rpcProtocol.set(ExtHostContext.ExtHostTerminalService, StandaloneServices.get(IExtHostTerminalService))
-  const extHostTheming = rpcProtocol.set(ExtHostContext.ExtHostTheming, new ExtHostTheming(rpcProtocol))
+  const extHostSearch = rpcProtocol.set(ExtHostContext.ExtHostSearch, StandaloneServices.get(IExtHostSearch))
 
   // manually create and register addressable instances
   const extHostQuickOpen = rpcProtocol.set(ExtHostContext.ExtHostQuickOpen, createExtHostQuickOpen(mainContext, <IExtHostWorkspaceProvider><unknown>null, extHostCommands))
@@ -311,6 +314,7 @@ async function createExtHostServices () {
   const extHostDocumentSaveParticipant = rpcProtocol.set(ExtHostContext.ExtHostDocumentSaveParticipant, new ExtHostDocumentSaveParticipant(logService, extHostDocuments, rpcProtocol.getProxy(MainContext.MainThreadBulkEdits)))
   const extHostFileSystemEvent = rpcProtocol.set(ExtHostContext.ExtHostFileSystemEventService, new ExtHostFileSystemEventService(rpcProtocol, logService, extHostDocumentsAndEditors))
   const extHostTreeViews = rpcProtocol.set(ExtHostContext.ExtHostTreeViews, new ExtHostTreeViews(rpcProtocol.getProxy(MainContext.MainThreadTreeViews), extHostCommands, logService))
+  const extHostTheming = rpcProtocol.set(ExtHostContext.ExtHostTheming, new ExtHostTheming(rpcProtocol))
 
   const extHostStorage = new ExtHostStorage(rpcProtocol, logService)
 
@@ -385,7 +389,8 @@ async function createExtHostServices () {
     extHostTerminalService,
     extHostEditorTabs,
     extHostDecorations,
-    extHostTheming
+    extHostTheming,
+    extHostSearch
   }
 }
 
