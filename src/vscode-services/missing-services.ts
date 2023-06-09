@@ -115,6 +115,13 @@ import { IPreferencesSearchService } from 'vs/workbench/contrib/preferences/comm
 import { AccountStatus, IUserDataSyncWorkbenchService } from 'vs/workbench/services/userDataSync/common/userDataSync'
 import { IUserDataSyncEnablementService } from 'vs/platform/userDataSync/common/userDataSync'
 import { IKeybindingEditingService } from 'vs/workbench/services/keybinding/common/keybindingEditing'
+import { INotebookService } from 'vs/workbench/contrib/notebook/common/notebookService'
+import { ISearchHistoryService } from 'vs/workbench/contrib/search/common/searchHistoryService'
+import { IReplaceService } from 'vs/workbench/contrib/search/browser/replace'
+import { ISearchWorkbenchService } from 'vs/workbench/contrib/search/browser/searchModel'
+import { INotebookEditorService } from 'vs/workbench/contrib/notebook/browser/services/notebookEditorService'
+import { INotebookEditorModelResolverService } from 'vs/workbench/contrib/notebook/common/notebookEditorModelResolverService'
+import { IWorkingCopyEditorService, WorkingCopyEditorService } from 'vs/workbench/services/workingCopy/common/workingCopyEditorService'
 import { unsupported } from '../tools'
 
 class NullLoggerService extends AbstractLoggerService {
@@ -1448,3 +1455,81 @@ registerSingleton(IPreferencesSearchService, class PreferencesSearchService impl
   getLocalSearchProvider = unsupported
   getRemoteSearchProvider = unsupported
 }, InstantiationType.Delayed)
+
+registerSingleton(INotebookService, class NotebookService implements INotebookService {
+  _serviceBrand: undefined
+  canResolve = async () => false
+  onAddViewType = Event.None
+  onWillRemoveViewType = Event.None
+  onDidChangeOutputRenderers = Event.None
+  onWillAddNotebookDocument = Event.None
+  onDidAddNotebookDocument = Event.None
+  onWillRemoveNotebookDocument = Event.None
+  onDidRemoveNotebookDocument = Event.None
+  registerNotebookSerializer = unsupported
+  withNotebookDataProvider = unsupported
+  getOutputMimeTypeInfo = unsupported
+  getViewTypeProvider = () => undefined
+  getRendererInfo = () => undefined
+  getRenderers = () => []
+  getStaticPreloads = unsupported
+  updateMimePreferredRenderer = unsupported
+  saveMimeDisplayOrder = unsupported
+  createNotebookTextModel = unsupported
+  getNotebookTextModel = () => undefined
+  getNotebookTextModels = unsupported
+  listNotebookDocuments = () => []
+  registerContributedNotebookType = unsupported
+  getContributedNotebookType = unsupported
+  getContributedNotebookTypes = () => []
+  getNotebookProviderResourceRoots = () => []
+  setToCopy = unsupported
+  getToCopy = unsupported
+  clearEditorCache = unsupported
+}, InstantiationType.Delayed)
+
+registerSingleton(IReplaceService, class ReplaceService implements IReplaceService {
+  _serviceBrand: undefined
+  replace = unsupported
+  openReplacePreview = unsupported
+  updateReplacePreview = unsupported
+}, InstantiationType.Delayed)
+
+registerSingleton(ISearchHistoryService, class SearchHistoryService implements ISearchHistoryService {
+  _serviceBrand: undefined
+  onDidClearHistory = Event.None
+  clearHistory = unsupported
+  load = unsupported
+  save = unsupported
+}, InstantiationType.Delayed)
+
+registerSingleton(INotebookEditorService, class NotebookEditorService implements INotebookEditorService {
+  _serviceBrand: undefined
+  retrieveWidget = unsupported
+  retrieveExistingWidgetFromURI = () => undefined
+  retrieveAllExistingWidgets = () => []
+  onDidAddNotebookEditor = Event.None
+  onDidRemoveNotebookEditor = Event.None
+  addNotebookEditor = unsupported
+  removeNotebookEditor = unsupported
+  getNotebookEditor = () => undefined
+  listNotebookEditors = () => []
+}, InstantiationType.Delayed)
+
+registerSingleton(ISearchWorkbenchService, class SearchWorkbenchService implements ISearchWorkbenchService {
+  _serviceBrand: undefined
+  get searchModel () {
+    return unsupported()
+  }
+}, InstantiationType.Delayed)
+
+registerSingleton(INotebookEditorModelResolverService, class NotebookEditorModelResolverService implements INotebookEditorModelResolverService {
+  _serviceBrand: undefined
+  onDidSaveNotebook = Event.None
+  onDidChangeDirty = Event.None
+  onWillFailWithConflict = Event.None
+  isDirty = unsupported
+  resolve = unsupported
+}, InstantiationType.Delayed)
+
+registerSingleton(IWorkingCopyEditorService, WorkingCopyEditorService, InstantiationType.Delayed)
