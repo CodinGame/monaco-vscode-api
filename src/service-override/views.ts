@@ -99,23 +99,23 @@ class PaneCompositePartService implements IPaneCompositePartService {
   }
 
   getPaneComposites (viewContainerLocation: ViewContainerLocation) {
-    return this.getPartByLocation(viewContainerLocation)!.getPaneComposites()
+    return this.getPartByLocation(viewContainerLocation)?.getPaneComposites() ?? []
   }
 
   getPinnedPaneCompositeIds (viewContainerLocation: ViewContainerLocation): string[] {
-    return this.getSelectorPartByLocation(viewContainerLocation)!.getPinnedPaneCompositeIds()
+    return this.getSelectorPartByLocation(viewContainerLocation)?.getPinnedPaneCompositeIds() ?? []
   }
 
   getVisiblePaneCompositeIds (viewContainerLocation: ViewContainerLocation): string[] {
-    return this.getSelectorPartByLocation(viewContainerLocation)!.getVisiblePaneCompositeIds()
+    return this.getSelectorPartByLocation(viewContainerLocation)?.getVisiblePaneCompositeIds() ?? []
   }
 
   getProgressIndicator (id: string, viewContainerLocation: ViewContainerLocation): IProgressIndicator | undefined {
-    return this.getPartByLocation(viewContainerLocation)!.getProgressIndicator(id)
+    return this.getPartByLocation(viewContainerLocation)?.getProgressIndicator(id)
   }
 
   hideActivePaneComposite (viewContainerLocation: ViewContainerLocation): void {
-    this.getPartByLocation(viewContainerLocation)!.hideActivePaneComposite()
+    this.getPartByLocation(viewContainerLocation)?.hideActivePaneComposite()
   }
 
   getLastActivePaneCompositeId (viewContainerLocation: ViewContainerLocation): string {
