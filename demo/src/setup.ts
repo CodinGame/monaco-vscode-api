@@ -16,6 +16,8 @@ import getSnippetServiceOverride from 'vscode/service-override/snippets'
 import getQuickAccessServiceOverride from 'vscode/service-override/quickaccess'
 import getOutputServiceOverride from 'vscode/service-override/output'
 import getTerminalServiceOverride from 'vscode/service-override/terminal'
+import getSearchAccessServiceOverride from 'vscode/service-override/search'
+import getMarkersAccessServiceOverride from 'vscode/service-override/markers'
 import EditorWorker from 'monaco-editor/esm/vs/editor/editor.worker.js?worker'
 import JsonWorker from 'monaco-editor/esm/vs/language/json/json.worker.js?worker'
 import TypescriptWorker from 'monaco-editor/esm/vs/language/typescript/ts.worker.js?worker'
@@ -66,7 +68,9 @@ await initializeMonacoService({
   ...getSnippetServiceOverride(),
   ...getQuickAccessServiceOverride(),
   ...getOutputServiceOverride(),
-  ...getTerminalServiceOverride(new TerminalBackend())
+  ...getTerminalServiceOverride(new TerminalBackend()),
+  ...getSearchAccessServiceOverride(),
+  ...getMarkersAccessServiceOverride()
 })
 StandaloneServices.get(ILogService).setLevel(LogLevel.Off)
 
