@@ -61,7 +61,7 @@ await initialize({
 })
 ```
 
-Additionally, this library exposes 19 modules that include the vscode version of some services (with some glue to make it work with monaco):
+Additionally, this library exposes 20 modules that include the vscode version of some services (with some glue to make it work with monaco):
 
 - Notifications: `vscode/service-override/notifications`
 - Dialogs: `vscode/service-override/dialogs`
@@ -82,6 +82,7 @@ Additionally, this library exposes 19 modules that include the vscode version of
 - Output: `vscode/service-override/output`
 - Terminal: `vscode/service-override/terminal`
 - Search: `vscode/service-override/search`
+- Markers: `vscode/service-override/markers`
 
 Usage:
 

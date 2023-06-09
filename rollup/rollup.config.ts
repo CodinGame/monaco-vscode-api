@@ -111,7 +111,9 @@ const ALLOWED_WORKBENCH_CONTRIBUTIONS = new Set([
   'PreferencesContribution',
   'ReplacePreviewContentProvider',
   'SearchEditorContribution',
-  'SearchEditorWorkingCopyEditorHandler'
+  'SearchEditorWorkingCopyEditorHandler',
+  'ActivityUpdater',
+  'MarkersStatusBarContributions'
 ])
 
 function isCallPure (file: string, functionName: string, node: recast.types.namedTypes.CallExpression): boolean {
@@ -368,6 +370,7 @@ const input = {
   'service-override/output': './src/service-override/output.ts',
   'service-override/terminal': './src/service-override/terminal.ts',
   'service-override/search': './src/service-override/search.ts',
+  'service-override/markers': './src/service-override/markers.ts',
   'workers/textMate.worker': './src/workers/textMate.worker.ts',
   'workers/outputLinkComputer.worker': './src/workers/outputLinkComputer.worker.ts',
   monaco: './src/monaco.ts',
