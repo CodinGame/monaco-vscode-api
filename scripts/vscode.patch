@@ -57,22 +57,21 @@ index 775a1be5996..ce8435bd920 100644
  				if (!/(^\.\/)|(^\.\.\/)/.test(relativePath)) {
  					relativePath = './' + relativePath;
 diff --git a/src/vs/base/browser/defaultWorkerFactory.ts b/src/vs/base/browser/defaultWorkerFactory.ts
-index 4fe7e01e806..b20241f24e3 100644
+index 9cab3604196..b27fc0eb96d 100644
 --- a/src/vs/base/browser/defaultWorkerFactory.ts
 +++ b/src/vs/base/browser/defaultWorkerFactory.ts
-@@ -2,8 +2,9 @@
-  *  Copyright (c) Microsoft Corporation. All rights reserved.
-  *  Licensed under the MIT License. See License.txt in the project root for license information.
+@@ -4,7 +4,9 @@
   *--------------------------------------------------------------------------------------------*/
--
+ 
+ import { createTrustedTypesPolicy } from 'vs/base/browser/trustedTypes';
 +// ESM-comment-begin
  import { COI } from 'vs/base/common/network';
 +// ESM-comment-end
  import { IWorker, IWorkerCallback, IWorkerFactory, logOnceWebWorkerWarning } from 'vs/base/common/worker/simpleWorker';
  
- const ttPolicy = window.trustedTypes?.createPolicy('defaultWorkerFactory', { createScriptURL: value => value });
+ const ttPolicy = createTrustedTypesPolicy('defaultWorkerFactory', { createScriptURL: value => value });
 diff --git a/src/vs/base/common/network.ts b/src/vs/base/common/network.ts
-index 096790cc3d7..49037970f46 100644
+index ab7e3a18dc5..7fc528ab54b 100644
 --- a/src/vs/base/common/network.ts
 +++ b/src/vs/base/common/network.ts
 @@ -202,7 +202,7 @@ class FileAccessImpl {
@@ -147,11 +146,24 @@ index fc197da1d57..a4d9573979f 100644
  
  	public static validateOptions(options: IEditorOptions): ValidatedEditorOptions {
  		const result = new ValidatedEditorOptions();
+diff --git a/src/vs/workbench/api/browser/statusBarExtensionPoint.ts b/src/vs/workbench/api/browser/statusBarExtensionPoint.ts
+index 55e5013c812..1e7d271a466 100644
+--- a/src/vs/workbench/api/browser/statusBarExtensionPoint.ts
++++ b/src/vs/workbench/api/browser/statusBarExtensionPoint.ts
+@@ -49,7 +49,7 @@ export interface IExtensionStatusBarItemService {
+ }
+ 
+ 
+-class ExtensionStatusBarItemService implements IExtensionStatusBarItemService {
++export class ExtensionStatusBarItemService implements IExtensionStatusBarItemService {
+ 
+ 	declare readonly _serviceBrand: undefined;
+ 
 diff --git a/src/vs/workbench/api/common/extHostTerminalService.ts b/src/vs/workbench/api/common/extHostTerminalService.ts
-index c7031319846..c8d3538c6d7 100644
+index 6dabdb4f4df..ba5dda754dd 100644
 --- a/src/vs/workbench/api/common/extHostTerminalService.ts
 +++ b/src/vs/workbench/api/common/extHostTerminalService.ts
-@@ -811,16 +811,9 @@ export abstract class BaseExtHostTerminalService extends Disposable implements I
+@@ -812,16 +812,9 @@ export abstract class BaseExtHostTerminalService extends Disposable implements I
  	}
  
  	private _getTerminalObjectIndexById<T extends ExtHostTerminal>(array: T[], id: ExtHostTerminalIdentifier): number | null {
@@ -169,9 +181,9 @@ index c7031319846..c8d3538c6d7 100644
 -		return index;
  	}
  
- 	public getEnvironmentVariableCollection(extension: IExtensionDescription): vscode.EnvironmentVariableCollection {
+ 	public getEnvironmentVariableCollection(extension: IExtensionDescription): IEnvironmentVariableCollection {
 diff --git a/src/vs/workbench/browser/parts/views/viewPaneContainer.ts b/src/vs/workbench/browser/parts/views/viewPaneContainer.ts
-index 1111dabcbcd..08aa5052ee6 100644
+index ff766b9acb8..599bab9dd59 100644
 --- a/src/vs/workbench/browser/parts/views/viewPaneContainer.ts
 +++ b/src/vs/workbench/browser/parts/views/viewPaneContainer.ts
 @@ -672,7 +672,7 @@ export class ViewPaneContainer extends Component implements IViewPaneContainer {

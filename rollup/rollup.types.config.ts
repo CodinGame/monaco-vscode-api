@@ -72,7 +72,11 @@ export default rollup.defineConfig({
     if (id.endsWith('.css')) {
       return true
     }
-    return ['vscode', 'monaco-editor', 'vscode-textmate', 'rollup', '@rollup/pluginutils', 'xterm', 'tas-client-umd', 'xterm-addon-canvas', 'xterm-addon-search', 'xterm-addon-unicode11', 'xterm-addon-webgl', 'xterm-addon-serialize'].includes(id)
+    return [
+      'vscode', 'monaco-editor', 'vscode-textmate', 'rollup', '@rollup/pluginutils',
+      'xterm', 'tas-client-umd', 'xterm-addon-canvas', 'xterm-addon-search', 'xterm-addon-unicode11',
+      'xterm-addon-webgl', 'xterm-addon-serialize', 'xterm-addon-image'
+    ].includes(id)
   },
   plugins: [
     {

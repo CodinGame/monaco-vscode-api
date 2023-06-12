@@ -202,7 +202,8 @@ export default function create (getExtension: () => IExtensionDescription, works
     },
     get state () {
       const { extHostWindow } = getExtHostServices()
-      return extHostWindow.state
+      const extension = getExtension()
+      return extHostWindow.getState(extension)
     },
     onDidChangeWindowState (listener, thisArg?, disposables?) {
       const { extHostWindow } = getExtHostServices()

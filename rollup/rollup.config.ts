@@ -172,7 +172,7 @@ function isCallPure (file: string, functionName: string, node: recast.types.name
     const firstParam = args[0]!
 
     const className = firstParam.type === 'Identifier' ? firstParam.name : firstParam.type === 'ClassExpression' ? firstParam.id?.name as string : undefined
-    if (className != null && ['AddConfigurationAction'].includes(className)) {
+    if (className != null && ['AddConfigurationAction', 'AskInInteractiveAction'].includes(className)) {
       return true
     }
     const firstParamCode = recast.print(firstParam).code

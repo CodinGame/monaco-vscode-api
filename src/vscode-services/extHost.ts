@@ -94,6 +94,7 @@ import 'vs/workbench/api/browser/mainThreadEditorTabs'
 import 'vs/workbench/api/browser/mainThreadSearch'
 import * as errors from 'vs/base/common/errors'
 import { Barrier } from 'vs/base/common/async'
+import { IExtHostManagedSockets } from 'vs/workbench/api/common/extHostManagedSockets'
 import { unsupported } from '../tools'
 
 const original = MainThreadMessageService.prototype.$showMessage
@@ -145,6 +146,7 @@ class ExtHostInitDataService implements IExtHostInitDataService {
   }
 
   _serviceBrand: undefined
+  quality = undefined
   version = '1.0.0'
   parentPid = 0
   environment = environment
@@ -226,6 +228,17 @@ registerSingleton(IExtHostOutputService, ExtHostOutputService, InstantiationType
 registerSingleton(IExtHostTerminalService, ExtHostTerminalService, InstantiationType.Eager)
 registerSingleton(IExtHostLocalizationService, ExtHostLocalizationService, InstantiationType.Delayed)
 registerSingleton(IExtHostSearch, ExtHostSearch, InstantiationType.Eager)
+registerSingleton(IExtHostManagedSockets, class ExtHostManagedSockets implements IExtHostManagedSockets {
+  _serviceBrand: undefined
+  setFactory = () => {
+    // ignore
+  }
+
+  $openRemoteSocket = unsupported
+  $remoteSocketWrite = unsupported
+  $remoteSocketEnd = unsupported
+  $remoteSocketDrain = unsupported
+}, InstantiationType.Eager)
 
 const mainContext: IMainContext & IInternalExtHostContext = {
   remoteAuthority: null,
@@ -315,6 +328,7 @@ async function createExtHostServices () {
   const extHostFileSystemEvent = rpcProtocol.set(ExtHostContext.ExtHostFileSystemEventService, new ExtHostFileSystemEventService(rpcProtocol, logService, extHostDocumentsAndEditors))
   const extHostTreeViews = rpcProtocol.set(ExtHostContext.ExtHostTreeViews, new ExtHostTreeViews(rpcProtocol.getProxy(MainContext.MainThreadTreeViews), extHostCommands, logService))
   const extHostTheming = rpcProtocol.set(ExtHostContext.ExtHostTheming, new ExtHostTheming(rpcProtocol))
+  const extHostStatusBar = rpcProtocol.set(ExtHostContext.ExtHostStatusBar, new ExtHostStatusBar(rpcProtocol, extHostCommands.converter))
 
   const extHostStorage = new ExtHostStorage(rpcProtocol, logService)
 
@@ -322,7 +336,6 @@ async function createExtHostServices () {
   const extHostBulkEdits = new ExtHostBulkEdits(rpcProtocol, extHostDocumentsAndEditors)
   const extHostClipboard = new ExtHostClipboard(mainContext)
   const extHostMessageService = new ExtHostMessageService(rpcProtocol, logService)
-  const extHostStatusBar = new ExtHostStatusBar(rpcProtocol, extHostCommands.converter)
 
   // Register API-ish commands
   ExtHostApiCommands.register(extHostCommands)

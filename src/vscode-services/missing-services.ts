@@ -8,7 +8,6 @@ import { IUriIdentityService } from 'vs/platform/uriIdentity/common/uriIdentity'
 import { ITextFileService } from 'vs/workbench/services/textfile/common/textfiles'
 import { IFileService } from 'vs/platform/files/common/files'
 import { GroupOrientation, IEditorGroup, IEditorGroupsService } from 'vs/workbench/services/editor/common/editorGroupsService'
-import { IWorkbenchEnvironmentService } from 'vs/workbench/services/environment/common/environmentService'
 import { IWorkingCopyFileService, WorkingCopyFileService } from 'vs/workbench/services/workingCopy/common/workingCopyFileService'
 import { IPathService } from 'vs/workbench/services/path/common/pathService'
 import { InstantiationType, registerSingleton } from 'vs/platform/instantiation/common/extensions'
@@ -52,7 +51,6 @@ import { IURITransformerService, URITransformerService } from 'vs/workbench/api/
 import { IConfigurationResolverService } from 'vs/workbench/services/configurationResolver/common/configurationResolver'
 import { BrowserPathService } from 'vs/workbench/services/path/browser/pathService'
 import { IRemoteAgentService } from 'vs/workbench/services/remote/common/remoteAgentService'
-import { ISocketFactory } from 'vs/platform/remote/common/remoteAgentConnection'
 import { ICustomEndpointTelemetryService } from 'vs/platform/telemetry/common/telemetry'
 import { NullEndpointTelemetryService } from 'vs/platform/telemetry/common/telemetryUtils'
 import { ISearchComplete, ISearchService } from 'vs/workbench/services/search/common/search'
@@ -98,7 +96,6 @@ import { TreeviewsService } from 'vs/workbench/services/views/common/treeViewsSe
 import { ITreeViewsService } from 'vs/workbench/services/views/browser/treeViewsService'
 import { IBreadcrumbsService } from 'vs/workbench/browser/parts/editor/breadcrumbs'
 import { ISemanticSimilarityService } from 'vs/workbench/services/semanticSimilarity/common/semanticSimilarityService'
-import { IInteractiveSessionService } from 'vs/workbench/contrib/interactiveSession/common/interactiveSessionService'
 import { IOutlineService } from 'vs/workbench/services/outline/browser/outline'
 import { IUpdateService, State } from 'vs/platform/update/common/update'
 import { IStatusbarService } from 'vs/workbench/services/statusbar/browser/statusbar'
@@ -122,6 +119,12 @@ import { ISearchWorkbenchService } from 'vs/workbench/contrib/search/browser/sea
 import { INotebookEditorService } from 'vs/workbench/contrib/notebook/browser/services/notebookEditorService'
 import { INotebookEditorModelResolverService } from 'vs/workbench/contrib/notebook/common/notebookEditorModelResolverService'
 import { IWorkingCopyEditorService, WorkingCopyEditorService } from 'vs/workbench/services/workingCopy/common/workingCopyEditorService'
+import { IUserActivityService, UserActivityService } from 'vs/workbench/services/userActivity/common/userActivityService'
+import { CanonicalUriService } from 'vs/workbench/services/workspaces/common/canonicalUriService'
+import { ICanonicalUriService } from 'vs/platform/workspace/common/canonicalUri'
+import { ExtensionStatusBarItemService, IExtensionStatusBarItemService } from 'vs/workbench/api/browser/statusBarExtensionPoint'
+import { IWorkbenchAssignmentService } from 'vs/workbench/services/assignment/common/assignmentService'
+import { IChatService } from 'vs/workbench/contrib/chat/common/chatService'
 import { unsupported } from '../tools'
 
 class NullLoggerService extends AbstractLoggerService {
@@ -321,6 +324,7 @@ registerSingleton(IEditorGroupsService, class EditorGroupsService implements IEd
 }, InstantiationType.Eager)
 
 class WorkbenchEnvironmentService implements IBrowserWorkbenchEnvironmentService {
+  expectsResolverExtension = false
   logsHome = URI.from({ scheme: 'logs', path: '/' })
   windowLogsPath = URI.from({ scheme: 'logs', path: '/window.log' })
   get extHostTelemetryLogFile () { return unsupported() }
@@ -360,7 +364,7 @@ class WorkbenchEnvironmentService implements IBrowserWorkbenchEnvironmentService
   get stateResource () { return unsupported() }
   get editSessionsLogResource () { return unsupported() }
 }
-registerSingleton(IWorkbenchEnvironmentService, WorkbenchEnvironmentService, InstantiationType.Eager)
+registerSingleton(IBrowserWorkbenchEnvironmentService, WorkbenchEnvironmentService, InstantiationType.Eager)
 registerSingleton(IEnvironmentService, WorkbenchEnvironmentService, InstantiationType.Eager)
 registerSingleton(IBrowserWorkbenchEnvironmentService, WorkbenchEnvironmentService, InstantiationType.Eager)
 registerSingleton(IWorkingCopyFileService, WorkingCopyFileService, InstantiationType.Eager)
@@ -818,12 +822,8 @@ registerSingleton(IConfigurationResolverService, class ConfigurationResolverServ
   contributeVariable = unsupported
 }, InstantiationType.Eager)
 
-class SocketFactory implements ISocketFactory {
-  connect = unsupported
-}
 registerSingleton(IRemoteAgentService, class RemoteAgentService implements IRemoteAgentService {
   _serviceBrand: undefined
-  socketFactory = new SocketFactory()
   getConnection = () => null
   getEnvironment = async () => null
   getRawEnvironment = async () => null
@@ -966,6 +966,7 @@ registerSingleton(IFilesConfigurationService, FilesConfigurationService, Instant
 
 registerSingleton(IUntitledTextEditorService, class UntitledTextEditorService implements IUntitledTextEditorService {
   _serviceBrand: undefined
+  isUntitledWithAssociatedResource = () => false
   onDidChangeDirty = Event.None
   onDidChangeEncoding = Event.None
   onDidChangeLabel = Event.None
@@ -1115,24 +1116,6 @@ registerSingleton(ISemanticSimilarityService, class SemanticSimilarityService im
   registerSemanticSimilarityProvider = unsupported
 }, InstantiationType.Delayed)
 
-registerSingleton(IInteractiveSessionService, class InteractiveSessionService implements IInteractiveSessionService {
-  _serviceBrand: undefined
-  registerProvider = unsupported
-  getProviderInfos = unsupported
-  startSession = unsupported
-  retrieveSession = unsupported
-  sendRequest = unsupported
-  cancelCurrentRequestForSession = unsupported
-  getSlashCommands = unsupported
-  clearSession = unsupported
-  addInteractiveRequest = unsupported
-  addCompleteRequest = unsupported
-  sendInteractiveRequestToProvider = unsupported
-  getHistory = unsupported
-  onDidPerformUserAction = Event.None
-  notifyUserAction = unsupported
-}, InstantiationType.Delayed)
-
 registerSingleton(IOutlineService, class OutlineService implements IOutlineService {
   _serviceBrand: undefined
   onDidChange = Event.None
@@ -1191,6 +1174,7 @@ registerSingleton(ITerminalService, class TerminalService implements ITerminalSe
     return unsupported()
   }
 
+  revealActiveTerminal = unsupported
   isProcessSupportRegistered = false
   connectionState = TerminalConnectionState.Connected
   defaultLocation = TerminalLocation.Panel
@@ -1533,3 +1517,34 @@ registerSingleton(INotebookEditorModelResolverService, class NotebookEditorModel
 }, InstantiationType.Delayed)
 
 registerSingleton(IWorkingCopyEditorService, WorkingCopyEditorService, InstantiationType.Delayed)
+registerSingleton(IUserActivityService, UserActivityService, InstantiationType.Delayed)
+registerSingleton(ICanonicalUriService, CanonicalUriService, InstantiationType.Delayed)
+registerSingleton(IExtensionStatusBarItemService, ExtensionStatusBarItemService, InstantiationType.Delayed)
+registerSingleton(IWorkbenchAssignmentService, class WorkbenchAssignmentService implements IWorkbenchAssignmentService {
+  _serviceBrand: undefined
+  getCurrentExperiments = async () => []
+  getTreatment = async () => undefined
+}, InstantiationType.Delayed)
+
+registerSingleton(IChatService, class ChatService implements IChatService {
+  _serviceBrand: undefined
+  registerProvider = unsupported
+  registerSlashCommandProvider = unsupported
+  getProviderInfos = () => []
+  startSession = unsupported
+  getSession = () => undefined
+  getOrRestoreSession = () => undefined
+  loadSessionFromContent = () => undefined
+  sendRequest = unsupported
+  removeRequest = unsupported
+  cancelCurrentRequestForSession = unsupported
+  getSlashCommands = unsupported
+  clearSession = unsupported
+  addRequest = unsupported
+  addCompleteRequest = unsupported
+  sendRequestToProvider = unsupported
+  getHistory = () => []
+  removeHistoryEntry = unsupported
+  onDidPerformUserAction = Event.None
+  notifyUserAction = unsupported
+}, InstantiationType.Delayed)

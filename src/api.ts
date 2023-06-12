@@ -101,7 +101,8 @@ const api: typeof vscode = {
   FileDecoration: <any>extHostTypes.FileDecoration,
   FileSystemError: extHostTypes.FileSystemError,
   FileType: files.FileType,
-  FilePermission: files.FilePermission,
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  FilePermission: <any>files.FilePermission,
   FoldingRange: extHostTypes.FoldingRange,
   FoldingRangeKind: extHostTypes.FoldingRangeKind,
   FunctionBreakpoint: extHostTypes.FunctionBreakpoint,
