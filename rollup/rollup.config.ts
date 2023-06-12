@@ -165,16 +165,22 @@ function isCallPure (file: string, functionName: string, node: recast.types.name
   }
 
   if (functionName.endsWith('registerAction2')) {
+    const firstParam = args[0]!
+
+    const className = firstParam.type === 'Identifier' ? firstParam.name : firstParam.type === 'ClassExpression' ? firstParam.id?.name as string : undefined
+    if (className != null) {
+      if (['AddConfigurationAction', 'AskInInteractiveAction'].includes(className)) {
+        return true
+      }
+      if (['ToggleTabsVisibilityAction'].includes(className)) {
+        return false
+      }
+    }
+
     if (file.includes('layoutActions') || file.includes('fileActions.contribution') || file.includes('windowActions') || file.includes('workspaceActions')) {
       return true
     }
 
-    const firstParam = args[0]!
-
-    const className = firstParam.type === 'Identifier' ? firstParam.name : firstParam.type === 'ClassExpression' ? firstParam.id?.name as string : undefined
-    if (className != null && ['AddConfigurationAction', 'AskInInteractiveAction'].includes(className)) {
-      return true
-    }
     const firstParamCode = recast.print(firstParam).code
     if (firstParamCode.includes('DEBUG_CONFIGURE_COMMAND_ID') ||
       firstParamCode.includes('workbench.action.closePanel') ||
