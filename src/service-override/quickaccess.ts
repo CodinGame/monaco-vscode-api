@@ -1,5 +1,4 @@
 import '../vscode-services/missing-services'
-import { CommandsQuickAccessProvider } from 'vs/workbench/contrib/quickaccess/browser/commandsQuickAccess'
 import { SyncDescriptor } from 'vs/platform/instantiation/common/descriptors'
 import { IInputBox, IInputOptions, IPickOptions, IQuickInputButton, IQuickInputService, IQuickNavigateConfiguration, IQuickPick, IQuickPickItem, QuickPickInput } from 'vs/platform/quickinput/common/quickInput'
 import { CancellationToken } from 'vs/base/common/cancellation'
@@ -15,17 +14,6 @@ import 'vs/workbench/contrib/codeEditor/browser/quickaccess/gotoLineQuickAccess'
 import 'vs/workbench/contrib/codeEditor/browser/quickaccess/gotoSymbolQuickAccess'
 import 'vs/workbench/browser/actions/quickAccessActions'
 import 'vs/workbench/contrib/quickaccess/browser/quickAccess.contribution'
-
-// Remote "Configur Keybinding" from command menu
-// eslint-disable-next-line dot-notation
-const originalGetCommandPicks = CommandsQuickAccessProvider.prototype['getCommandPicks']
-// eslint-disable-next-line dot-notation
-CommandsQuickAccessProvider.prototype['getCommandPicks'] = async function (token) {
-  return (await originalGetCommandPicks.call(this, token)).map(pick => {
-    pick.buttons = []
-    return pick
-  })
-}
 
 class DelegateQuickInputService implements IQuickInputService {
   declare readonly _serviceBrand: undefined
