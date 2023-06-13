@@ -8,7 +8,6 @@ import { IUriIdentityService } from 'vs/platform/uriIdentity/common/uriIdentity'
 import { ITextFileService } from 'vs/workbench/services/textfile/common/textfiles'
 import { IFileService } from 'vs/platform/files/common/files'
 import { GroupOrientation, IEditorGroup, IEditorGroupsService } from 'vs/workbench/services/editor/common/editorGroupsService'
-import { IWorkbenchEnvironmentService } from 'vs/workbench/services/environment/common/environmentService'
 import { IWorkingCopyFileService, WorkingCopyFileService } from 'vs/workbench/services/workingCopy/common/workingCopyFileService'
 import { IPathService } from 'vs/workbench/services/path/common/pathService'
 import { InstantiationType, registerSingleton } from 'vs/platform/instantiation/common/extensions'
@@ -42,7 +41,7 @@ import { IDisposable, Disposable } from 'vs/base/common/lifecycle'
 import { FallbackKeyboardMapper } from 'vs/workbench/services/keybinding/common/fallbackKeyboardMapper'
 import { ITextMateTokenizationService } from 'vs/workbench/services/textMate/browser/textMateTokenizationFeature'
 import { IDebugService, IDebugModel, IViewModel, IAdapterManager } from 'vs/workbench/contrib/debug/common/debug'
-import { IWorkspaceTrustRequestService } from 'vs/platform/workspace/common/workspaceTrust'
+import { IWorkspaceTrustRequestService, WorkspaceTrustUriResponse } from 'vs/platform/workspace/common/workspaceTrust'
 import { IActivityService } from 'vs/workbench/services/activity/common/activity'
 import { IExtensionHostDebugService } from 'vs/platform/debug/common/extensionHostDebug'
 import { IViewContainerModel, IViewDescriptorService, IViewsService } from 'vs/workbench/common/views'
@@ -52,7 +51,6 @@ import { IURITransformerService, URITransformerService } from 'vs/workbench/api/
 import { IConfigurationResolverService } from 'vs/workbench/services/configurationResolver/common/configurationResolver'
 import { BrowserPathService } from 'vs/workbench/services/path/browser/pathService'
 import { IRemoteAgentService } from 'vs/workbench/services/remote/common/remoteAgentService'
-import { ISocketFactory } from 'vs/platform/remote/common/remoteAgentConnection'
 import { ICustomEndpointTelemetryService } from 'vs/platform/telemetry/common/telemetry'
 import { NullEndpointTelemetryService } from 'vs/platform/telemetry/common/telemetryUtils'
 import { ISearchComplete, ISearchService } from 'vs/workbench/services/search/common/search'
@@ -98,12 +96,35 @@ import { TreeviewsService } from 'vs/workbench/services/views/common/treeViewsSe
 import { ITreeViewsService } from 'vs/workbench/services/views/browser/treeViewsService'
 import { IBreadcrumbsService } from 'vs/workbench/browser/parts/editor/breadcrumbs'
 import { ISemanticSimilarityService } from 'vs/workbench/services/semanticSimilarity/common/semanticSimilarityService'
-import { IInteractiveSessionService } from 'vs/workbench/contrib/interactiveSession/common/interactiveSessionService'
 import { IOutlineService } from 'vs/workbench/services/outline/browser/outline'
 import { IUpdateService, State } from 'vs/platform/update/common/update'
 import { IStatusbarService } from 'vs/workbench/services/statusbar/browser/statusbar'
-import { IExtensionGalleryService } from 'vs/platform/extensionManagement/common/extensionManagement'
+import { IExtensionGalleryService, IExtensionManagementService } from 'vs/platform/extensionManagement/common/extensionManagement'
 import { IModelService } from 'vs/editor/common/services/model'
+import { ITerminalEditorService, ITerminalGroupService, ITerminalInstance, ITerminalInstanceService, ITerminalService, TerminalConnectionState } from 'vs/workbench/contrib/terminal/browser/terminal'
+import { ITerminalProfileResolverService, ITerminalProfileService } from 'vs/workbench/contrib/terminal/common/terminal'
+import { TerminalLocation } from 'vs/platform/terminal/common/terminal'
+import { ITerminalContributionService } from 'vs/workbench/contrib/terminal/common/terminalExtensionPoints'
+import { ITerminalLinkProviderService } from 'vs/workbench/contrib/terminalContrib/links/browser/links'
+import { IEnvironmentVariableService } from 'vs/workbench/contrib/terminal/common/environmentVariable'
+import { ITerminalQuickFixService } from 'vs/workbench/contrib/terminalContrib/quickFix/browser/quickFix'
+import { IPreferencesSearchService } from 'vs/workbench/contrib/preferences/common/preferences'
+import { AccountStatus, IUserDataSyncWorkbenchService } from 'vs/workbench/services/userDataSync/common/userDataSync'
+import { IUserDataSyncEnablementService } from 'vs/platform/userDataSync/common/userDataSync'
+import { IKeybindingEditingService } from 'vs/workbench/services/keybinding/common/keybindingEditing'
+import { INotebookService } from 'vs/workbench/contrib/notebook/common/notebookService'
+import { ISearchHistoryService } from 'vs/workbench/contrib/search/common/searchHistoryService'
+import { IReplaceService } from 'vs/workbench/contrib/search/browser/replace'
+import { ISearchWorkbenchService } from 'vs/workbench/contrib/search/browser/searchModel'
+import { INotebookEditorService } from 'vs/workbench/contrib/notebook/browser/services/notebookEditorService'
+import { INotebookEditorModelResolverService } from 'vs/workbench/contrib/notebook/common/notebookEditorModelResolverService'
+import { IWorkingCopyEditorService, WorkingCopyEditorService } from 'vs/workbench/services/workingCopy/common/workingCopyEditorService'
+import { IUserActivityService, UserActivityService } from 'vs/workbench/services/userActivity/common/userActivityService'
+import { CanonicalUriService } from 'vs/workbench/services/workspaces/common/canonicalUriService'
+import { ICanonicalUriService } from 'vs/platform/workspace/common/canonicalUri'
+import { ExtensionStatusBarItemService, IExtensionStatusBarItemService } from 'vs/workbench/api/browser/statusBarExtensionPoint'
+import { IWorkbenchAssignmentService } from 'vs/workbench/services/assignment/common/assignmentService'
+import { IChatService } from 'vs/workbench/contrib/chat/common/chatService'
 import { unsupported } from '../tools'
 
 class NullLoggerService extends AbstractLoggerService {
@@ -303,6 +324,7 @@ registerSingleton(IEditorGroupsService, class EditorGroupsService implements IEd
 }, InstantiationType.Eager)
 
 class WorkbenchEnvironmentService implements IBrowserWorkbenchEnvironmentService {
+  expectsResolverExtension = false
   logsHome = URI.from({ scheme: 'logs', path: '/' })
   windowLogsPath = URI.from({ scheme: 'logs', path: '/window.log' })
   get extHostTelemetryLogFile () { return unsupported() }
@@ -342,7 +364,7 @@ class WorkbenchEnvironmentService implements IBrowserWorkbenchEnvironmentService
   get stateResource () { return unsupported() }
   get editSessionsLogResource () { return unsupported() }
 }
-registerSingleton(IWorkbenchEnvironmentService, WorkbenchEnvironmentService, InstantiationType.Eager)
+registerSingleton(IBrowserWorkbenchEnvironmentService, WorkbenchEnvironmentService, InstantiationType.Eager)
 registerSingleton(IEnvironmentService, WorkbenchEnvironmentService, InstantiationType.Eager)
 registerSingleton(IBrowserWorkbenchEnvironmentService, WorkbenchEnvironmentService, InstantiationType.Eager)
 registerSingleton(IWorkingCopyFileService, WorkingCopyFileService, InstantiationType.Eager)
@@ -662,7 +684,7 @@ registerSingleton(IWorkspaceTrustRequestService, class WorkspaceTrustRequestServ
   onDidInitiateWorkspaceTrustRequest = Event.None
   onDidInitiateWorkspaceTrustRequestOnStartup = Event.None
   completeOpenFilesTrustRequest = unsupported
-  requestOpenFilesTrust = unsupported
+  requestOpenFilesTrust = async () => WorkspaceTrustUriResponse.Open
   cancelWorkspaceTrustRequest = unsupported
   completeWorkspaceTrustRequest = unsupported
   requestWorkspaceTrust = async () => true
@@ -800,12 +822,8 @@ registerSingleton(IConfigurationResolverService, class ConfigurationResolverServ
   contributeVariable = unsupported
 }, InstantiationType.Eager)
 
-class SocketFactory implements ISocketFactory {
-  connect = unsupported
-}
 registerSingleton(IRemoteAgentService, class RemoteAgentService implements IRemoteAgentService {
   _serviceBrand: undefined
-  socketFactory = new SocketFactory()
   getConnection = () => null
   getEnvironment = async () => null
   getRawEnvironment = async () => null
@@ -948,6 +966,7 @@ registerSingleton(IFilesConfigurationService, FilesConfigurationService, Instant
 
 registerSingleton(IUntitledTextEditorService, class UntitledTextEditorService implements IUntitledTextEditorService {
   _serviceBrand: undefined
+  isUntitledWithAssociatedResource = () => false
   onDidChangeDirty = Event.None
   onDidChangeEncoding = Event.None
   onDidChangeLabel = Event.None
@@ -1097,24 +1116,6 @@ registerSingleton(ISemanticSimilarityService, class SemanticSimilarityService im
   registerSemanticSimilarityProvider = unsupported
 }, InstantiationType.Delayed)
 
-registerSingleton(IInteractiveSessionService, class InteractiveSessionService implements IInteractiveSessionService {
-  _serviceBrand: undefined
-  registerProvider = unsupported
-  getProviderInfos = unsupported
-  startSession = unsupported
-  retrieveSession = unsupported
-  sendRequest = unsupported
-  cancelCurrentRequestForSession = unsupported
-  getSlashCommands = unsupported
-  clearSession = unsupported
-  addInteractiveRequest = unsupported
-  addCompleteRequest = unsupported
-  sendInteractiveRequestToProvider = unsupported
-  getHistory = unsupported
-  onDidPerformUserAction = Event.None
-  notifyUserAction = unsupported
-}, InstantiationType.Delayed)
-
 registerSingleton(IOutlineService, class OutlineService implements IOutlineService {
   _serviceBrand: undefined
   onDidChange = Event.None
@@ -1165,3 +1166,385 @@ registerSingleton(IExtensionGalleryService, class ExtensionGalleryService implem
   getCoreTranslation = unsupported
   getExtensionsControlManifest = unsupported
 }, InstantiationType.Eager)
+
+registerSingleton(ITerminalService, class TerminalService implements ITerminalService {
+  _serviceBrand: undefined
+  instances = []
+  get configHelper () {
+    return unsupported()
+  }
+
+  revealActiveTerminal = unsupported
+  isProcessSupportRegistered = false
+  connectionState = TerminalConnectionState.Connected
+  defaultLocation = TerminalLocation.Panel
+  onDidChangeActiveGroup = Event.None
+  onDidDisposeGroup = Event.None
+  onDidCreateInstance = Event.None
+  onDidReceiveProcessId = Event.None
+  onDidChangeInstanceDimensions = Event.None
+  onDidMaximumDimensionsChange = Event.None
+  onDidRequestStartExtensionTerminal = Event.None
+  onDidChangeInstanceTitle = Event.None
+  onDidChangeInstanceIcon = Event.None
+  onDidChangeInstanceColor = Event.None
+  onDidChangeInstancePrimaryStatus = Event.None
+  onDidInputInstanceData = Event.None
+  onDidRegisterProcessSupport = Event.None
+  onDidChangeConnectionState = Event.None
+  createTerminal = unsupported
+  getInstanceFromId = unsupported
+  getInstanceFromIndex = unsupported
+  getReconnectedTerminals = unsupported
+  getActiveOrCreateInstance = unsupported
+  moveToEditor = unsupported
+  moveToTerminalView = unsupported
+  getPrimaryBackend = unsupported
+  refreshActiveGroup = unsupported
+  registerProcessSupport = () => {}
+  showProfileQuickPick = unsupported
+  setContainers = unsupported
+  requestStartExtensionTerminal = unsupported
+  isAttachedToTerminal = unsupported
+  getEditableData = unsupported
+  setEditable = unsupported
+  isEditable = unsupported
+  safeDisposeTerminal = unsupported
+  getDefaultInstanceHost = unsupported
+  getInstanceHost = unsupported
+  resolveLocation = unsupported
+  setNativeDelegate = unsupported
+  toggleEscapeSequenceLogging = unsupported
+  getEditingTerminal = unsupported
+  setEditingTerminal = unsupported
+  activeInstance = undefined
+  onDidDisposeInstance = Event.None
+  onDidFocusInstance = Event.None
+  onDidChangeActiveInstance = Event.None
+  onDidChangeInstances = Event.None
+  onDidChangeInstanceCapability = Event.None
+  setActiveInstance = unsupported
+  focusActiveInstance = unsupported
+  getInstanceFromResource = unsupported
+}, InstantiationType.Delayed)
+registerSingleton(ITerminalEditorService, class TerminalEditorService implements ITerminalEditorService {
+  _serviceBrand: undefined
+  instances = []
+  openEditor = unsupported
+  detachActiveEditorInstance = unsupported
+  detachInstance = unsupported
+  splitInstance = unsupported
+  revealActiveEditor = unsupported
+  resolveResource = unsupported
+  reviveInput = unsupported
+  getInputFromResource = unsupported
+  activeInstance = undefined
+  onDidDisposeInstance = Event.None
+  onDidFocusInstance = Event.None
+  onDidChangeActiveInstance = Event.None
+  onDidChangeInstances = Event.None
+  onDidChangeInstanceCapability = Event.None
+  setActiveInstance = unsupported
+  focusActiveInstance = unsupported
+  getInstanceFromResource = unsupported
+}, InstantiationType.Delayed)
+
+registerSingleton(ITerminalGroupService, class TerminalGroupService implements ITerminalGroupService {
+  _serviceBrand: undefined
+  instances = []
+  groups = []
+  activeGroup = undefined
+  activeGroupIndex = 0
+  onDidChangeActiveGroup = Event.None
+  onDidDisposeGroup = Event.None
+  onDidChangeGroups = Event.None
+  onDidShow = Event.None
+  onDidChangePanelOrientation = Event.None
+  createGroup = unsupported
+  getGroupForInstance = unsupported
+  moveGroup = unsupported
+  moveGroupToEnd = unsupported
+  moveInstance = unsupported
+  unsplitInstance = unsupported
+  joinInstances = unsupported
+  instanceIsSplit = unsupported
+  getGroupLabels = unsupported
+  setActiveGroupByIndex = unsupported
+  setActiveGroupToNext = unsupported
+  setActiveGroupToPrevious = unsupported
+  setActiveInstanceByIndex = unsupported
+  setContainer = unsupported
+  showPanel = unsupported
+  hidePanel = unsupported
+  focusTabs = unsupported
+  focusHover = unsupported
+  showTabs = unsupported
+  updateVisibility = unsupported
+  activeInstance: ITerminalInstance | undefined
+  onDidDisposeInstance = Event.None
+  onDidFocusInstance = Event.None
+  onDidChangeActiveInstance = Event.None
+  onDidChangeInstances = Event.None
+  onDidChangeInstanceCapability = Event.None
+  setActiveInstance = unsupported
+  focusActiveInstance = unsupported
+  getInstanceFromResource = unsupported
+}, InstantiationType.Delayed)
+registerSingleton(ITerminalInstanceService, class TerminalInstanceService implements ITerminalInstanceService {
+  _serviceBrand: undefined
+  onDidCreateInstance = Event.None
+  convertProfileToShellLaunchConfig = unsupported
+  createInstance = unsupported
+  getBackend = unsupported
+  didRegisterBackend = unsupported
+}, InstantiationType.Delayed)
+registerSingleton(ITerminalProfileService, class TerminalProfileService implements ITerminalProfileService {
+  _serviceBrand: undefined
+  availableProfiles = []
+  contributedProfiles = []
+  profilesReady = Promise.resolve()
+  getPlatformKey = unsupported
+  refreshAvailableProfiles = unsupported
+  getDefaultProfileName = () => undefined
+  getDefaultProfile = () => undefined
+  onDidChangeAvailableProfiles = Event.None
+  getContributedDefaultProfile = unsupported
+  registerContributedProfile = unsupported
+  getContributedProfileProvider = unsupported
+  registerTerminalProfileProvider = unsupported
+}, InstantiationType.Delayed)
+
+registerSingleton(ITerminalLinkProviderService, class TerminalLinkProviderService implements ITerminalLinkProviderService {
+  _serviceBrand: undefined
+  linkProviders = new Set([])
+  onDidAddLinkProvider = Event.None
+  onDidRemoveLinkProvider = Event.None
+  registerLinkProvider = unsupported
+}, InstantiationType.Delayed)
+
+registerSingleton(ITerminalContributionService, class TerminalContributionService implements ITerminalContributionService {
+  _serviceBrand: undefined
+  terminalProfiles = []
+}, InstantiationType.Delayed)
+
+registerSingleton(ITerminalProfileResolverService, class TerminalProfileResolverService implements ITerminalProfileResolverService {
+  _serviceBrand: undefined
+  defaultProfileName: string | undefined
+  resolveIcon = unsupported
+  resolveShellLaunchConfig = unsupported
+  getDefaultProfile = async () => ({
+    profileName: 'bash',
+    path: '/bin/bash',
+    isDefault: true
+  })
+
+  getDefaultShell = unsupported
+  getDefaultShellArgs = unsupported
+  getDefaultIcon = unsupported
+  getEnvironment = unsupported
+  createProfileFromShellAndShellArgs = unsupported
+}, InstantiationType.Delayed)
+
+registerSingleton(IEnvironmentVariableService, class EnvironmentVariableService implements IEnvironmentVariableService {
+  _serviceBrand: undefined
+  collections = new Map()
+  get mergedCollection () {
+    return unsupported()
+  }
+
+  onDidChangeCollections = Event.None
+  set = unsupported
+  delete = unsupported
+}, InstantiationType.Delayed)
+
+registerSingleton(ITerminalQuickFixService, class TerminalQuickFixService implements ITerminalQuickFixService {
+  _serviceBrand: undefined
+  onDidRegisterProvider = Event.None
+  onDidRegisterCommandSelector = Event.None
+  onDidUnregisterProvider = Event.None
+  extensionQuickFixes = Promise.resolve([])
+  providers = new Map()
+  registerQuickFixProvider = unsupported
+  registerCommandSelector = unsupported
+}, InstantiationType.Delayed)
+
+registerSingleton(IExtensionManagementService, class ExtensionManagementService implements IExtensionManagementService {
+  _serviceBrand: undefined
+  onInstallExtension = Event.None
+  onDidInstallExtensions = Event.None
+  onUninstallExtension = Event.None
+  onDidUninstallExtension = Event.None
+  onDidUpdateExtensionMetadata = Event.None
+  zip = unsupported
+  unzip = unsupported
+  getManifest = unsupported
+  install = unsupported
+  canInstall = unsupported
+  installFromGallery = unsupported
+  installFromLocation = unsupported
+  installExtensionsFromProfile = unsupported
+  uninstall = unsupported
+  reinstallFromGallery = unsupported
+  getInstalled = async () => []
+  getExtensionsControlManifest = unsupported
+  copyExtensions = unsupported
+  updateMetadata = unsupported
+  download = unsupported
+  registerParticipant = unsupported
+  getTargetPlatform = unsupported
+  cleanUp = unsupported
+}, InstantiationType.Delayed)
+
+registerSingleton(IUserDataSyncWorkbenchService, class UserDataSyncWorkbenchService implements IUserDataSyncWorkbenchService {
+  _serviceBrand: undefined
+  enabled = false
+  authenticationProviders = []
+  all = []
+  current = undefined
+  accountStatus = AccountStatus.Uninitialized
+  onDidChangeAccountStatus = Event.None
+  turnOn = unsupported
+  turnoff = unsupported
+  signIn = unsupported
+  resetSyncedData = unsupported
+  showSyncActivity = unsupported
+  syncNow = unsupported
+  synchroniseUserDataSyncStoreType = unsupported
+  showConflicts = unsupported
+  accept = unsupported
+}, InstantiationType.Delayed)
+
+registerSingleton(IUserDataSyncEnablementService, class UserDataSyncEnablementService implements IUserDataSyncEnablementService {
+  _serviceBrand: undefined
+  onDidChangeEnablement = Event.None
+  isEnabled = () => false
+  canToggleEnablement = () => false
+  setEnablement = unsupported
+  onDidChangeResourceEnablement = Event.None
+  isResourceEnabled = () => false
+  setResourceEnablement = unsupported
+  getResourceSyncStateVersion = () => undefined
+}, InstantiationType.Delayed)
+
+registerSingleton(IKeybindingEditingService, class KeybindingEditingService implements IKeybindingEditingService {
+  _serviceBrand: undefined
+  addKeybinding = unsupported
+  editKeybinding = unsupported
+  removeKeybinding = unsupported
+  resetKeybinding = unsupported
+}, InstantiationType.Delayed)
+
+registerSingleton(IPreferencesSearchService, class PreferencesSearchService implements IPreferencesSearchService {
+  _serviceBrand: undefined
+  getLocalSearchProvider = unsupported
+  getRemoteSearchProvider = unsupported
+}, InstantiationType.Delayed)
+
+registerSingleton(INotebookService, class NotebookService implements INotebookService {
+  _serviceBrand: undefined
+  canResolve = async () => false
+  onAddViewType = Event.None
+  onWillRemoveViewType = Event.None
+  onDidChangeOutputRenderers = Event.None
+  onWillAddNotebookDocument = Event.None
+  onDidAddNotebookDocument = Event.None
+  onWillRemoveNotebookDocument = Event.None
+  onDidRemoveNotebookDocument = Event.None
+  registerNotebookSerializer = unsupported
+  withNotebookDataProvider = unsupported
+  getOutputMimeTypeInfo = unsupported
+  getViewTypeProvider = () => undefined
+  getRendererInfo = () => undefined
+  getRenderers = () => []
+  getStaticPreloads = unsupported
+  updateMimePreferredRenderer = unsupported
+  saveMimeDisplayOrder = unsupported
+  createNotebookTextModel = unsupported
+  getNotebookTextModel = () => undefined
+  getNotebookTextModels = unsupported
+  listNotebookDocuments = () => []
+  registerContributedNotebookType = unsupported
+  getContributedNotebookType = unsupported
+  getContributedNotebookTypes = () => []
+  getNotebookProviderResourceRoots = () => []
+  setToCopy = unsupported
+  getToCopy = unsupported
+  clearEditorCache = unsupported
+}, InstantiationType.Delayed)
+
+registerSingleton(IReplaceService, class ReplaceService implements IReplaceService {
+  _serviceBrand: undefined
+  replace = unsupported
+  openReplacePreview = unsupported
+  updateReplacePreview = unsupported
+}, InstantiationType.Delayed)
+
+registerSingleton(ISearchHistoryService, class SearchHistoryService implements ISearchHistoryService {
+  _serviceBrand: undefined
+  onDidClearHistory = Event.None
+  clearHistory = unsupported
+  load = unsupported
+  save = unsupported
+}, InstantiationType.Delayed)
+
+registerSingleton(INotebookEditorService, class NotebookEditorService implements INotebookEditorService {
+  _serviceBrand: undefined
+  retrieveWidget = unsupported
+  retrieveExistingWidgetFromURI = () => undefined
+  retrieveAllExistingWidgets = () => []
+  onDidAddNotebookEditor = Event.None
+  onDidRemoveNotebookEditor = Event.None
+  addNotebookEditor = unsupported
+  removeNotebookEditor = unsupported
+  getNotebookEditor = () => undefined
+  listNotebookEditors = () => []
+}, InstantiationType.Delayed)
+
+registerSingleton(ISearchWorkbenchService, class SearchWorkbenchService implements ISearchWorkbenchService {
+  _serviceBrand: undefined
+  get searchModel () {
+    return unsupported()
+  }
+}, InstantiationType.Delayed)
+
+registerSingleton(INotebookEditorModelResolverService, class NotebookEditorModelResolverService implements INotebookEditorModelResolverService {
+  _serviceBrand: undefined
+  onDidSaveNotebook = Event.None
+  onDidChangeDirty = Event.None
+  onWillFailWithConflict = Event.None
+  isDirty = unsupported
+  resolve = unsupported
+}, InstantiationType.Delayed)
+
+registerSingleton(IWorkingCopyEditorService, WorkingCopyEditorService, InstantiationType.Delayed)
+registerSingleton(IUserActivityService, UserActivityService, InstantiationType.Delayed)
+registerSingleton(ICanonicalUriService, CanonicalUriService, InstantiationType.Delayed)
+registerSingleton(IExtensionStatusBarItemService, ExtensionStatusBarItemService, InstantiationType.Delayed)
+registerSingleton(IWorkbenchAssignmentService, class WorkbenchAssignmentService implements IWorkbenchAssignmentService {
+  _serviceBrand: undefined
+  getCurrentExperiments = async () => []
+  getTreatment = async () => undefined
+}, InstantiationType.Delayed)
+
+registerSingleton(IChatService, class ChatService implements IChatService {
+  _serviceBrand: undefined
+  registerProvider = unsupported
+  registerSlashCommandProvider = unsupported
+  getProviderInfos = () => []
+  startSession = unsupported
+  getSession = () => undefined
+  getOrRestoreSession = () => undefined
+  loadSessionFromContent = () => undefined
+  sendRequest = unsupported
+  removeRequest = unsupported
+  cancelCurrentRequestForSession = unsupported
+  getSlashCommands = unsupported
+  clearSession = unsupported
+  addRequest = unsupported
+  addCompleteRequest = unsupported
+  sendRequestToProvider = unsupported
+  getHistory = () => []
+  removeHistoryEntry = unsupported
+  onDidPerformUserAction = Event.None
+  notifyUserAction = unsupported
+}, InstantiationType.Delayed)

@@ -1,3 +1,4 @@
+/// <reference path="./types.d.ts" />
 import * as extHostTypes from 'vs/workbench/api/common/extHostTypes'
 import * as errors from 'vs/base/common/errors'
 import * as commonDebug from 'vs/workbench/contrib/debug/common/debug'
@@ -12,6 +13,7 @@ import * as editorOptions from 'vs/editor/common/config/editorOptions'
 import * as uri from 'vs/base/common/uri'
 import * as log from 'vs/platform/log/common/log'
 import * as telemetryUtils from 'vs/platform/telemetry/common/telemetryUtils'
+import * as searchExtHostTypes from 'vs/workbench/services/search/common/searchExtTypes'
 import createL10nApi from './vscode-services/l10n'
 import createLanguagesApi from './vscode-services/languages'
 import createCommandsApi from './vscode-services/commands'
@@ -99,7 +101,8 @@ const api: typeof vscode = {
   FileDecoration: <any>extHostTypes.FileDecoration,
   FileSystemError: extHostTypes.FileSystemError,
   FileType: files.FileType,
-  FilePermission: files.FilePermission,
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  FilePermission: <any>files.FilePermission,
   FoldingRange: extHostTypes.FoldingRange,
   FoldingRangeKind: extHostTypes.FoldingRangeKind,
   FunctionBreakpoint: extHostTypes.FunctionBreakpoint,
@@ -139,9 +142,9 @@ const api: typeof vscode = {
   TaskPanelKind: unsupported,
   TaskRevealKind: unsupported,
   TaskScope: unsupported,
-  TerminalLink: unsupported,
-  TerminalLocation: unsupported,
-  TerminalProfile: unsupported,
+  TerminalLink: extHostTypes.TerminalLink,
+  TerminalLocation: extHostTypes.TerminalLocation,
+  TerminalProfile: extHostTypes.TerminalProfile,
   TextDocumentSaveReason: extHostTypes.TextDocumentSaveReason,
   TextEdit: extHostTypes.TextEdit,
   TextEditorCursorStyle: editorOptions.TextEditorCursorStyle,
@@ -196,9 +199,10 @@ const api: typeof vscode = {
   SnippetTextEdit: extHostTypes.SnippetTextEdit,
   NotebookEdit: unsupported,
   LogLevel: log.LogLevel,
-  TerminalExitReason: unsupported,
+  TerminalExitReason: extHostTypes.TerminalExitReason,
   CommentThreadState: unsupported,
-  TelemetryTrustedValue: telemetryUtils.TelemetryTrustedValue
+  TelemetryTrustedValue: telemetryUtils.TelemetryTrustedValue,
+  TextSearchCompleteMessageType: searchExtHostTypes.TextSearchCompleteMessageType
 }
 
 // @ts-ignore the syntax will be transformed by a typescript transformer in the rollup config

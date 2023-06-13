@@ -1,141 +1,30 @@
 import './style.css'
+import 'monaco-editor/esm/vs/editor/editor.all.js'
 import * as monaco from 'monaco-editor/esm/vs/editor/editor.api.js'
+import 'monaco-editor/esm/vs/editor/standalone/browser/accessibilityHelp/accessibilityHelp.js'
+import 'monaco-editor/esm/vs/editor/standalone/browser/iPadShowKeyboard/iPadShowKeyboard.js'
 import './setup'
-// json contribution should be imported/run AFTER the services are initialized (in setup.ts)
-import 'monaco-editor/esm/vs/language/json/monaco.contribution.js'
-import 'monaco-editor/esm/vs/language/typescript/monaco.contribution.js'
-import { createConfiguredEditor, synchronizeJsonSchemas, createModelReference } from 'vscode/monaco'
-import { SimpleTextFileSystemProvider, registerFileSystemOverlay, FileType, HTMLFileSystemProvider } from 'vscode/service-override/files'
+import { createConfiguredEditor, createModelReference } from 'vscode/monaco'
+import { registerFileSystemOverlay, HTMLFileSystemProvider } from 'vscode/service-override/files'
 import * as vscode from 'vscode'
-import { ILogService, LogLevel, StandaloneServices } from 'vscode/services'
-import typescriptGlobal from '../node_modules/@types/node/globals.d.ts?raw'
-import typescriptConsole from '../node_modules/@types/node/console.d.ts?raw'
-import typescriptProcess from '../node_modules/@types/node/process.d.ts?raw'
+import { ILogService, StandaloneServices, IPreferencesService } from 'vscode/services'
+import './features/customView'
+import './features/debugger'
+import './features/search'
+import { anotherFakeOutputChannel } from './features/output'
+import './features/filesystem'
+import './features/intellisense'
+import './features/notifications'
+import './features/terminal'
 
-StandaloneServices.get(ILogService).setLevel(LogLevel.Off)
+import 'vscode/default-extensions/theme-defaults'
+import 'vscode/default-extensions/javascript'
+import 'vscode/default-extensions/typescript-basics'
+import 'vscode/default-extensions/json'
+import 'vscode/default-extensions/theme-seti'
+import 'vscode/default-extensions/references-view'
 
-vscode.languages.registerCallHierarchyProvider('javascript', {
-  prepareCallHierarchy: function (): vscode.ProviderResult<vscode.CallHierarchyItem | vscode.CallHierarchyItem[]> {
-    return {
-      name: 'Fake call hierarchy',
-      kind: vscode.SymbolKind.Class,
-      uri: vscode.Uri.file('/tmp/test.js'),
-      range: new vscode.Range(0, 0, 0, 10),
-      selectionRange: new vscode.Range(0, 0, 0, 10)
-    }
-  },
-  provideCallHierarchyIncomingCalls: function (): vscode.ProviderResult<vscode.CallHierarchyIncomingCall[]> {
-    return [{
-      from: {
-        name: 'Fake incomming call',
-        kind: vscode.SymbolKind.Class,
-        uri: vscode.Uri.file('/tmp/test.js'),
-        range: new vscode.Range(0, 0, 0, 10),
-        selectionRange: new vscode.Range(0, 0, 0, 10)
-      },
-      fromRanges: [new vscode.Range(2, 0, 2, 10)]
-    }]
-  },
-  provideCallHierarchyOutgoingCalls: function (): vscode.ProviderResult<vscode.CallHierarchyOutgoingCall[]> {
-    return []
-  }
-})
-
-vscode.languages.registerHoverProvider('javascript', {
-  async provideHover (document, position) {
-    return {
-      contents: [
-        '# Hello',
-        `This is a hover on ${document.uri.toString()} at position ${position.line}:${position.character}`
-      ]
-    }
-  }
-})
-
-vscode.languages.registerCompletionItemProvider('javascript', {
-  provideCompletionItems () {
-    return [{
-      label: 'Demo completion',
-      detail: 'This is a demo completion registered via the vscode api',
-      insertText: 'hello world'
-    }]
-  }
-})
-
-const compilerOptions: Parameters<typeof monaco.languages.typescript.typescriptDefaults.setCompilerOptions>[0] = {
-  target: monaco.languages.typescript.ScriptTarget.ES2016,
-  allowNonTsExtensions: true,
-  moduleResolution: monaco.languages.typescript.ModuleResolutionKind.NodeJs,
-  module: monaco.languages.typescript.ModuleKind.CommonJS,
-  noEmit: true,
-  lib: ['es2020']
-}
-
-monaco.languages.typescript.typescriptDefaults.setCompilerOptions(compilerOptions)
-monaco.languages.typescript.typescriptDefaults.addExtraLib(typescriptGlobal, 'node/globals.d.ts')
-monaco.languages.typescript.typescriptDefaults.addExtraLib(typescriptConsole, 'node/console.d.ts')
-monaco.languages.typescript.typescriptDefaults.addExtraLib(typescriptProcess, 'node/process.d.ts')
-monaco.languages.typescript.javascriptDefaults.setCompilerOptions(compilerOptions)
-monaco.languages.typescript.javascriptDefaults.addExtraLib(typescriptGlobal, 'node/globals.d.ts')
-monaco.languages.typescript.javascriptDefaults.addExtraLib(typescriptConsole, 'node/console.d.ts')
-monaco.languages.typescript.javascriptDefaults.addExtraLib(typescriptProcess, 'node/process.d.ts')
-
-monaco.languages.json.jsonDefaults.setModeConfiguration({
-  ...monaco.languages.json.jsonDefaults.modeConfiguration,
-  tokens: false // Disable monarch tokenizer as we use TextMate here
-})
-
-synchronizeJsonSchemas()
-
-const otherModelUri = vscode.Uri.file('/tmp/test2.js')
-vscode.languages.registerDefinitionProvider('javascript', {
-  provideDefinition (document, position) {
-    const wordRange = document.getWordRangeAtPosition(position)
-    if (wordRange != null && document.getText(wordRange) === 'anotherfile') {
-      return {
-        range: wordRange,
-        uri: otherModelUri
-      }
-    }
-    return []
-  }
-})
-
-class FakeFileSystem extends SimpleTextFileSystemProvider {
-  private files: Record<string, string> = {
-    [otherModelUri.toString(true)]: 'This is another file'
-  }
-
-  protected override async getFileContent (resource: monaco.Uri): Promise<string | undefined> {
-    return this.files[resource.toString(true)]
-  }
-
-  protected override async setFileContent (resource: monaco.Uri, content: string): Promise<void> {
-    this.files[resource.toString(true)] = content
-  }
-
-  override async delete (): Promise<void> {
-  }
-
-  override async readdir (directory: monaco.Uri): Promise<[string, FileType][]> {
-    if (directory.path === '/tmp') {
-      return [['test2.js', FileType.File]]
-    }
-    return []
-  }
-}
-
-registerFileSystemOverlay(new FakeFileSystem())
-
-void vscode.window.showInformationMessage('Hello', {
-  detail: 'Welcome to the monaco-vscode-api demo',
-  modal: true
-}).then(() => {
-  void vscode.window.showInformationMessage('Try to change the settings or the configuration, the changes will be applied to all 3 editors')
-})
-
-async function createEditors () {
-  const modelRef = await createModelReference(monaco.Uri.file('/tmp/test.js'), `// import anotherfile
+const modelRef = await createModelReference(monaco.Uri.file('/tmp/test.js'), `// import anotherfile
 let variable = 1
 function inc () {
   variable++
@@ -146,21 +35,28 @@ while (variable < 5000) {
   console.log('Hello world', variable);
 }`)
 
-  const mainDocument = await vscode.workspace.openTextDocument(modelRef.object.textEditorModel!.uri)
-  await vscode.window.showTextDocument(mainDocument, {
-    preview: false
-  })
+const mainDocument = await vscode.workspace.openTextDocument(modelRef.object.textEditorModel!.uri)
+await vscode.window.showTextDocument(mainDocument, {
+  preview: false
+})
 
-  const diagnostics = vscode.languages.createDiagnosticCollection('demo')
-  diagnostics.set(modelRef.object.textEditorModel!.uri, [{
-    range: new vscode.Range(2, 9, 2, 12),
-    severity: vscode.DiagnosticSeverity.Error,
-    message: 'This is not a real error, just a demo, don\'t worry',
-    source: 'Demo',
-    code: 42
-  }])
+anotherFakeOutputChannel.replace(mainDocument.getText())
+vscode.workspace.onDidChangeTextDocument((e) => {
+  if (e.document === mainDocument) {
+    anotherFakeOutputChannel.replace(e.document.getText())
+  }
+})
 
-  const settingsModelReference = await createModelReference(monaco.Uri.from({ scheme: 'user', path: '/settings.json' }), `{
+const diagnostics = vscode.languages.createDiagnosticCollection('demo')
+diagnostics.set(modelRef.object.textEditorModel!.uri, [{
+  range: new vscode.Range(2, 9, 2, 12),
+  severity: vscode.DiagnosticSeverity.Error,
+  message: 'This is not a real error, just a demo, don\'t worry',
+  source: 'Demo',
+  code: 42
+}])
+
+const settingsModelReference = await createModelReference(monaco.Uri.from({ scheme: 'user', path: '/settings.json' }), `{
   "workbench.colorTheme": "Default Dark+",
   "workbench.iconTheme": "vs-seti",
   "editor.autoClosingBrackets": "languageDefined",
@@ -178,30 +74,25 @@ while (variable < 5000) {
   "files.autoSave": "afterDelay",
   "files.autoSaveDelay": 1000,
   "debug.toolBarLocation": "docked",
-  "editor.experimental.asyncTokenization": true
+  "editor.experimental.asyncTokenization": true,
+  "terminal.integrated.tabs.title": "\${sequence}"
 }`)
-  createConfiguredEditor(document.getElementById('settings-editor')!, {
-    model: settingsModelReference.object.textEditorModel
-  })
+createConfiguredEditor(document.getElementById('settings-editor')!, {
+  model: settingsModelReference.object.textEditorModel,
+  automaticLayout: true
+})
 
-  const keybindingsModelReference = await createModelReference(monaco.Uri.from({ scheme: 'user', path: '/keybindings.json' }), `[
-  {
-    "key": "ctrl+d",
-    "command": "editor.action.deleteLines",
-    "when": "editorTextFocus"
-  }
-]`)
-  createConfiguredEditor(document.getElementById('keybindings-editor')!, {
-    model: keybindingsModelReference.object.textEditorModel
-  })
+const keybindingsModelReference = await createModelReference(monaco.Uri.from({ scheme: 'user', path: '/keybindings.json' }), `[
+{
+  "key": "ctrl+d",
+  "command": "editor.action.deleteLines",
+  "when": "editorTextFocus"
 }
-
-void createEditors()
-setTimeout(() => {
-  vscode.workspace.onDidChangeConfiguration(() => {
-    void vscode.window.showInformationMessage('The configuration was changed')
-  })
-}, 1000)
+]`)
+createConfiguredEditor(document.getElementById('keybindings-editor')!, {
+  model: keybindingsModelReference.object.textEditorModel,
+  automaticLayout: true
+})
 
 document.querySelector('#filesystem')!.addEventListener('click', async () => {
   const dirHandle = await window.showDirectoryPicker()
@@ -221,4 +112,14 @@ document.querySelector('#run')!.addEventListener('click', () => {
     request: 'attach',
     type: 'javascript'
   })
+})
+
+document.querySelector('#settingsui')!.addEventListener('click', async () => {
+  await StandaloneServices.get(IPreferencesService).openUserSettings()
+  window.scrollTo({ top: 0, behavior: 'smooth' })
+})
+
+document.querySelector('#keybindingsui')!.addEventListener('click', async () => {
+  await StandaloneServices.get(IPreferencesService).openGlobalKeybindingSettings(false)
+  window.scrollTo({ top: 0, behavior: 'smooth' })
 })

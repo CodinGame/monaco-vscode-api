@@ -1,7 +1,11 @@
+/// <reference path="../../vscode.proposed.fileSearchProvider.d.ts" />
+/// <reference path="../../vscode.proposed.textSearchProvider.d.ts" />
 import type * as vscode from 'vscode'
 import { URI } from 'vs/base/common/uri'
 import { combinedDisposable } from 'vs/base/common/lifecycle'
 import { IExtensionDescription } from 'vs/platform/extensions/common/extensions'
+import { Event } from 'vs/base/common/event'
+import { checkProposedApiEnabled } from 'vs/workbench/services/extensions/common/extensions'
 import { getConfigProvider, getExtHostServices } from './extHost'
 import { unsupported } from '../tools'
 
@@ -10,6 +14,18 @@ export default function create (getExtension: () => IExtensionDescription): type
     get fs () {
       const { extHostConsumerFileSystem } = getExtHostServices()
       return extHostConsumerFileSystem.value
+    },
+    registerFileSearchProvider: (scheme: string, provider: vscode.FileSearchProvider) => {
+      const { extHostSearch } = getExtHostServices()
+      const extension = getExtension()
+      checkProposedApiEnabled(extension, 'fileSearchProvider')
+      return extHostSearch.registerFileSearchProvider(scheme, provider)
+    },
+    registerTextSearchProvider: (scheme: string, provider: vscode.TextSearchProvider) => {
+      const { extHostSearch } = getExtHostServices()
+      const extension = getExtension()
+      checkProposedApiEnabled(extension, 'textSearchProvider')
+      return extHostSearch.registerTextSearchProvider(scheme, provider)
     },
     get workspaceFile () {
       const { extHostWorkspace } = getExtHostServices()
@@ -161,8 +177,8 @@ export default function create (getExtension: () => IExtensionDescription): type
     openNotebookDocument: unsupported,
     registerNotebookSerializer: unsupported,
     notebookDocuments: [],
-    onDidOpenNotebookDocument: unsupported,
-    onDidCloseNotebookDocument: unsupported,
+    onDidOpenNotebookDocument: Event.None,
+    onDidCloseNotebookDocument: Event.None,
     get isTrusted () {
       const { extHostWorkspace } = getExtHostServices()
       return extHostWorkspace.trusted
@@ -171,8 +187,8 @@ export default function create (getExtension: () => IExtensionDescription): type
       const { extHostWorkspace } = getExtHostServices()
       return extHostWorkspace.name
     },
-    onDidChangeNotebookDocument: unsupported,
-    onDidSaveNotebookDocument: unsupported,
-    onWillSaveNotebookDocument: unsupported
+    onDidChangeNotebookDocument: Event.None,
+    onDidSaveNotebookDocument: Event.None,
+    onWillSaveNotebookDocument: Event.None
   }
 }

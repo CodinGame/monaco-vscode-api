@@ -1,4 +1,3 @@
-
 let assetUrls: Record<string, string> = {}
 export function registerAssets (assets: Record<string, string>): void {
   assetUrls = {

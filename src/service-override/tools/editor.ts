@@ -59,7 +59,7 @@ export function wrapOpenEditor (textModelService: ITextModelService, defaultBeha
 
     const resource = isResourceEditorInput(editor) || isEditorInput(editor) ? editor.resource : undefined
 
-    if (resource == null) {
+    if (resource == null || !textModelService.canHandleResource(resource)) {
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
       return defaultBehavior(editor as any, optionsOrPreferredGroup as any, preferredGroup)
     }

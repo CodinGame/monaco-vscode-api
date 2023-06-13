@@ -48,7 +48,12 @@ export default rollup.defineConfig({
     './dist/types/src/service-override/preferences.d.ts',
     './dist/types/src/service-override/views.d.ts',
     './dist/types/src/service-override/quickaccess.d.ts',
+    './dist/types/src/service-override/output.d.ts',
+    './dist/types/src/service-override/terminal.d.ts',
+    './dist/types/src/service-override/search.d.ts',
+    './dist/types/src/service-override/markers.d.ts',
     './dist/types/src/workers/textMate.worker.d.ts',
+    './dist/types/src/workers/outputLinkComputer.worker.d.ts',
     './dist/types/src/monaco.d.ts',
     './dist/types/src/rollup-vsix-plugin.d.ts',
     './dist/types/src/rollup-extension-directory-plugin.d.ts'
@@ -67,7 +72,11 @@ export default rollup.defineConfig({
     if (id.endsWith('.css')) {
       return true
     }
-    return ['vscode', 'monaco-editor', 'vscode-textmate', 'rollup', '@rollup/pluginutils', 'xterm', 'tas-client-umd', 'xterm-addon-canvas', 'xterm-addon-search', 'xterm-addon-unicode11', 'xterm-addon-webgl', 'xterm-addon-serialize'].includes(id)
+    return [
+      'vscode', 'monaco-editor', 'vscode-textmate', 'rollup', '@rollup/pluginutils',
+      'xterm', 'tas-client-umd', 'xterm-addon-canvas', 'xterm-addon-search', 'xterm-addon-unicode11',
+      'xterm-addon-webgl', 'xterm-addon-serialize', 'xterm-addon-image'
+    ].includes(id)
   },
   plugins: [
     {

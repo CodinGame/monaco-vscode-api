@@ -32,6 +32,7 @@ import { IWorkspaceEditingService } from 'vs/workbench/services/workspaces/commo
 import { AbstractWorkspaceEditingService } from 'vs/workbench/services/workspaces/browser/abstractWorkspaceEditingService'
 import { URI } from 'vs/base/common/uri'
 import 'vs/workbench/api/common/configurationExtensionPoint'
+import { IBrowserWorkbenchEnvironmentService } from 'vs/workbench/services/environment/browser/environmentService'
 import getFileServiceOverride from './files'
 import { memoizedConstructor, unsupported } from '../tools'
 import { registerServiceInitializeParticipant } from '../services'
@@ -59,7 +60,7 @@ const configurationRegistry = Registry.as<IConfigurationRegistry>(ConfigurationE
 
 class InjectedConfigurationService extends WorkspaceService {
   constructor (
-    @IWorkbenchEnvironmentService workbenchEnvironmentService: IWorkbenchEnvironmentService,
+    @IWorkbenchEnvironmentService workbenchEnvironmentService: IBrowserWorkbenchEnvironmentService,
     @IUserDataProfileService userDataProfileService: IUserDataProfileService,
     @IUserDataProfilesService userDataProfilesService: IUserDataProfilesService,
     @IFileService fileService: IFileService,

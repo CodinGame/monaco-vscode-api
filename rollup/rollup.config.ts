@@ -68,14 +68,9 @@ const FUNCTIONS_TO_REMOVE = new Set([
   'registerTouchBarEntry',
   'registerEditorSerializer',
 
-  'appendSaveConflictEditorTitleAction',
-  'appendToCommandPalette',
   // For ActivityBar, remove unused actions/items
   'fillExtraContextMenuActions',
-  'createGlobalActivityActionBar',
-
-  'searchWidgetContributions',
-  'replaceContributions'
+  'createGlobalActivityActionBar'
 ])
 
 const PURE_OR_TO_REMOVE_FUNCTIONS = new Set([
@@ -109,7 +104,16 @@ const ALLOWED_WORKBENCH_CONTRIBUTIONS = new Set([
   'DebugContentProvider',
   'DialogHandlerContribution',
   'ExplorerViewletViewsContribution',
-  'ViewsExtensionHandler'
+  'ViewsExtensionHandler',
+  'OutputContribution',
+  'TerminalMainContribution',
+  'PreferencesActionsContribution',
+  'PreferencesContribution',
+  'ReplacePreviewContentProvider',
+  'SearchEditorContribution',
+  'SearchEditorWorkingCopyEditorHandler',
+  'ActivityUpdater',
+  'MarkersStatusBarContributions'
 ])
 
 function isCallPure (file: string, functionName: string, node: recast.types.namedTypes.CallExpression): boolean {
@@ -135,7 +139,7 @@ function isCallPure (file: string, functionName: string, node: recast.types.name
   }
 
   if (functionName === 'CommandsRegistry.registerCommand') {
-    if (file.includes('fileActions.contribution') || file.includes('workspaceCommands') || file.includes('search.contribution')) {
+    if (file.includes('fileActions.contribution') || file.includes('workspaceCommands')) {
       return true
     }
   }
@@ -154,27 +158,37 @@ function isCallPure (file: string, functionName: string, node: recast.types.name
         firstParamName.includes('Viewlets') ||
         firstParamName.includes('Panels') ||
         firstParamName.includes('Auxiliary') ||
-        firstParamName.includes('EditorPane')
+        firstParamName.includes('EditorPane') ||
+        firstParamName.includes('TerminalExtensions')
       return !allowed
     }
   }
 
   if (functionName.endsWith('registerAction2')) {
+    const firstParam = args[0]!
+
+    const className = firstParam.type === 'Identifier' ? firstParam.name : firstParam.type === 'ClassExpression' ? firstParam.id?.name as string : undefined
+    if (className != null) {
+      if (['AddConfigurationAction', 'AskInInteractiveAction'].includes(className)) {
+        return true
+      }
+      if (['ToggleTabsVisibilityAction'].includes(className)) {
+        return false
+      }
+    }
+
     if (file.includes('layoutActions') || file.includes('fileActions.contribution') || file.includes('windowActions') || file.includes('workspaceActions')) {
       return true
     }
 
-    const firstParam = args[0]!
-
-    const className = firstParam.type === 'Identifier' ? firstParam.name : firstParam.type === 'ClassExpression' ? firstParam.id?.name as string : undefined
-    if (className != null && ['OpenDisassemblyViewAction', 'AddConfigurationAction', 'ToggleDisassemblyViewSourceCodeAction'].includes(className)) {
-      return true
-    }
     const firstParamCode = recast.print(firstParam).code
     if (firstParamCode.includes('DEBUG_CONFIGURE_COMMAND_ID') ||
       firstParamCode.includes('workbench.action.closePanel') ||
       firstParamCode.includes('workbench.action.toggleMaximizedPanel') ||
-      firstParamCode.includes('OpenEditorsView')) {
+      firstParamCode.includes('OpenEditorsView') ||
+      firstParamCode.includes('openWorkspaceSettings') ||
+      firstParamCode.includes('openRemoteSettings') ||
+      firstParamCode.includes('openApplicationSettings')) {
       return true
     }
   }
@@ -231,15 +245,7 @@ function isCallPure (file: string, functionName: string, node: recast.types.name
     return false
   }
 
-  if (functionName === 'registerViewContainer') {
-    if (file.includes('search.contribution')) {
-      return true
-    }
-  }
   if (functionName === 'registerViews') {
-    if (file.includes('search.contribution')) {
-      return true
-    }
     const firstParamCode = recast.print(args[0]!).code
     if (firstParamCode.includes('WelcomeView.ID')) {
       return true
@@ -367,7 +373,12 @@ const input = {
   'service-override/preferences': './src/service-override/preferences.ts',
   'service-override/views': './src/service-override/views.ts',
   'service-override/quickaccess': './src/service-override/quickaccess.ts',
+  'service-override/output': './src/service-override/output.ts',
+  'service-override/terminal': './src/service-override/terminal.ts',
+  'service-override/search': './src/service-override/search.ts',
+  'service-override/markers': './src/service-override/markers.ts',
   'workers/textMate.worker': './src/workers/textMate.worker.ts',
+  'workers/outputLinkComputer.worker': './src/workers/outputLinkComputer.worker.ts',
   monaco: './src/monaco.ts',
   ...Object.fromEntries(
     fs.readdirSync(DEFAULT_EXTENSIONS_PATH, { withFileTypes: true })

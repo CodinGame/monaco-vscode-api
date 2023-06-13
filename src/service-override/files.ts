@@ -85,7 +85,7 @@ abstract class SimpleTextFileSystemProvider implements IFileSystemProviderWithFi
     // Do nothing
   }
 
-  async readdir (_directory: monaco.Uri): Promise<[string, FileType][]> {
+  async readdir (): Promise<[string, FileType][]> {
     return []
   }
 
