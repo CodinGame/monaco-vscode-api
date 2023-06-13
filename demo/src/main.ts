@@ -78,7 +78,8 @@ const settingsModelReference = await createModelReference(monaco.Uri.from({ sche
   "terminal.integrated.tabs.title": "\${sequence}"
 }`)
 createConfiguredEditor(document.getElementById('settings-editor')!, {
-  model: settingsModelReference.object.textEditorModel
+  model: settingsModelReference.object.textEditorModel,
+  automaticLayout: true
 })
 
 const keybindingsModelReference = await createModelReference(monaco.Uri.from({ scheme: 'user', path: '/keybindings.json' }), `[
@@ -89,7 +90,8 @@ const keybindingsModelReference = await createModelReference(monaco.Uri.from({ s
 }
 ]`)
 createConfiguredEditor(document.getElementById('keybindings-editor')!, {
-  model: keybindingsModelReference.object.textEditorModel
+  model: keybindingsModelReference.object.textEditorModel,
+  automaticLayout: true
 })
 
 document.querySelector('#filesystem')!.addEventListener('click', async () => {
