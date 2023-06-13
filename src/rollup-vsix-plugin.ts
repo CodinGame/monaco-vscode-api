@@ -92,7 +92,7 @@ export default function plugin ({
             map: { mappings: '' }
           }
         }
-        const content = vsixFile[resourcePath]!
+        const content = vsixFile[getVsixPath(resourcePath)]!
         if (isBinaryFileSync(content)) {
           return {
             code: `export default Uint8Array.from(window.atob(${JSON.stringify(content.toString('base64'))}), v => v.charCodeAt(0));`,
