@@ -9,6 +9,7 @@ import { ParseError, parse } from 'vs/base/common/json.js'
 import { getParseErrorMessage } from 'vs/base/common/jsonErrorMessages'
 import { InputPluginOption, rollup } from 'rollup'
 import { addExtension } from '@rollup/pluginutils'
+import { IUserFriendlyViewsContainerDescriptor } from 'vs/workbench/api/browser/viewsExtensionPoint'
 import * as path from 'path'
 
 export interface ExtensionResource {
@@ -58,6 +59,7 @@ interface RealContribute {
   themes?: IThemeExtensionPoint[]
   iconThemes?: IThemeExtensionPoint[]
   productIconThemes?: IThemeExtensionPoint[]
+  viewsContainers?: { [loc: string]: IUserFriendlyViewsContainerDescriptor[] }
 }
 
 function extractCommandResources (command: IUserFriendlyCommand | IUserFriendlyCommand[]): ExtensionResource[] {
@@ -81,10 +83,10 @@ function extractGrammarResources (grammar: ITMSyntaxExtensionPoint): ExtensionRe
 function extractLanguageResources (language: Partial<IRawLanguageExtensionPoint>): ExtensionResource[] {
   const paths: ExtensionResource[] = []
   if (language.icon != null) {
-    paths.push({ path: language.icon.dark, sync: false }, { path: language.icon.light, sync: false })
+    paths.push({ path: language.icon.dark, sync: true }, { path: language.icon.light, sync: true })
   }
   if (language.configuration != null) {
-    paths.push({ path: language.configuration, sync: false })
+    paths.push({ path: language.configuration, sync: true })
   }
   return paths
 }
@@ -127,6 +129,20 @@ async function extractThemeResources (theme: IThemeExtensionPoint, getFileConten
   return paths
 }
 
+function extractJsonValidationResources (jsonValidation: IJSONValidationExtensionPoint): ExtensionResource[] {
+  return [{
+    path: jsonValidation.url,
+    sync: true
+  }]
+}
+
+function extractViewsContainerResources (viewContainers: { [loc: string]: IUserFriendlyViewsContainerDescriptor[] }): ExtensionResource[] {
+  return Object.values(viewContainers).flatMap(containers => containers.map(container => ({
+    path: container.icon,
+    sync: true
+  })))
+}
+
 async function extractResourcesFromExtensionManifestContribute (contribute: RealContribute, getFileContent: (path: string) => Promise<Buffer>): Promise<ExtensionResource[]> {
   const resources: ExtensionResource[] = []
   if (contribute.commands != null) resources.push(...extractCommandResources(contribute.commands))
@@ -136,6 +152,8 @@ async function extractResourcesFromExtensionManifestContribute (contribute: Real
   if (contribute.themes != null) resources.push(...((await Promise.all(contribute.themes.map(theme => extractThemeResources(theme, getFileContent), getFileContent))).flat()))
   if (contribute.iconThemes != null) resources.push(...((await Promise.all(contribute.iconThemes.map(theme => extractThemeResources(theme, getFileContent), getFileContent))).flat()))
   if (contribute.productIconThemes != null) resources.push(...((await Promise.all(contribute.productIconThemes.map(theme => extractThemeResources(theme, getFileContent), getFileContent))).flat()))
+  if (contribute.jsonValidation != null) resources.push(...contribute.jsonValidation.flatMap(extractJsonValidationResources))
+  if (contribute.viewsContainers != null) resources.push(...extractViewsContainerResources(contribute.viewsContainers))
   return resources.filter((resource, index, list) => !resource.path.startsWith('$(') && !list.slice(0, index).some(o => o.path === resource.path))
 }
 
