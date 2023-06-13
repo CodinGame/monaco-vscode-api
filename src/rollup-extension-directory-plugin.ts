@@ -13,10 +13,18 @@ interface Options {
   exclude?: FilterPattern
   isDefaultExtension?: boolean
   withCode?: (extensionPath: string) => boolean
-  rollupPlugins: InputPluginOption[]
+  rollupPlugins?: InputPluginOption[]
+  transformManifest?: (manifest: IExtensionManifest) => IExtensionManifest
 }
 
-export default function plugin ({ include, exclude, isDefaultExtension = false, withCode = () => true, rollupPlugins }: Options): Plugin {
+export default function plugin ({
+  include,
+  exclude,
+  isDefaultExtension = false,
+  withCode = () => true,
+  rollupPlugins = [],
+  transformManifest = manifest => manifest
+}: Options): Plugin {
   const filter = createFilter(include, exclude)
 
   return {
@@ -43,7 +51,7 @@ export default function plugin ({ include, exclude, isDefaultExtension = false, 
           parsed = localizeManifest(parsed, parseJson(id, (await fsPromise.readFile(nlsFile)).toString()))
         }
         return {
-          code: dataToEsm(parsed, {
+          code: dataToEsm(transformManifest(parsed), {
             compact: true,
             namedExports: false,
             preferConst: false
@@ -80,7 +88,7 @@ export default function plugin ({ include, exclude, isDefaultExtension = false, 
       if (stat.isDirectory()) {
         // Load the extension directory as a module importing the required files and registering the extension
         const manifestPath = path.resolve(id, 'package.json')
-        const manifest = JSON.parse((await fsPromise.readFile(manifestPath)).toString('utf8'))
+        const manifest = transformManifest(parseJson<IExtensionManifest>(id, (await fsPromise.readFile(manifestPath)).toString('utf8')))
         try {
           const extensionResources = await extractResourcesFromExtensionManifest(manifest, async (resourcePath) => {
             return (await fsPromise.readFile(path.join(id, resourcePath)))

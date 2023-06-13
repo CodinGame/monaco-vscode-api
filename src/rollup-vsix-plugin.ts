@@ -13,7 +13,8 @@ interface Options {
   include?: FilterPattern
   exclude?: FilterPattern
   withCode?: (extensionPath: string) => boolean
-  rollupPlugins: InputPluginOption[]
+  rollupPlugins?: InputPluginOption[]
+  transformManifest?: (manifest: IExtensionManifest) => IExtensionManifest
 }
 
 function read (stream: Readable): Promise<Buffer> {
@@ -61,8 +62,9 @@ function getVsixPath (file: string) {
 export default function plugin ({
   include = '**/*.vsix',
   exclude,
-  rollupPlugins,
-  withCode = () => true
+  rollupPlugins = [],
+  withCode = () => true,
+  transformManifest = manifest => manifest
 }: Options): Plugin {
   const filter = createFilter(include, exclude)
   const vsixFiles: Record<string, Record<string, Buffer>> = {}
@@ -110,11 +112,13 @@ export default function plugin ({
         const file = match[2]!
         const vsixFile = vsixFiles[match[1]!]!
         let parsed = parseJson<IExtensionManifest>(id, vsixFile[file]!.toString('utf8'))
-        if (file === 'package.json' && 'package.nls.json' in vsixFile) {
-          parsed = localizeManifest(parsed, parseJson(id, vsixFile['package.nls.json']!.toString()))
+        if (file === 'package.json') {
+          if ('package.nls.json' in vsixFile) {
+            parsed = localizeManifest(parsed, parseJson(id, vsixFile['package.nls.json']!.toString()))
+          }
         }
         return {
-          code: dataToEsm(parsed, {
+          code: dataToEsm(transformManifest(parsed), {
             compact: true,
             namedExports: false,
             preferConst: false
@@ -125,7 +129,7 @@ export default function plugin ({
       if (!filter(id)) return null
 
       const files = await readVsix(id)
-      const manifest = parseJson<IExtensionManifest>(id, files['package.json']!.toString('utf8'))
+      const manifest = transformManifest(parseJson<IExtensionManifest>(id, files['package.json']!.toString('utf8')))
 
       const extensionResources = (await extractResourcesFromExtensionManifest(manifest, async path => {
         return files[getVsixPath(path)]!
