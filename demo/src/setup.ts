@@ -48,6 +48,9 @@ window.MonacoEnvironment = {
       return new Worker()
     }
     throw new Error(`Unimplemented worker ${label} (${moduleId})`)
+  },
+  createTrustedTypesPolicy () {
+    return undefined
   }
 }
 
