@@ -331,6 +331,7 @@ const USE_DEFAULT_EXTENSIONS = new Set([
   'ruby',
   'rust',
   'scss',
+  'search-result',
   'shaderlab',
   'shellscript',
   'sql',

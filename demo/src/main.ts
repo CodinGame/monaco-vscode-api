@@ -23,6 +23,7 @@ import 'vscode/default-extensions/typescript-basics'
 import 'vscode/default-extensions/json'
 import 'vscode/default-extensions/theme-seti'
 import 'vscode/default-extensions/references-view'
+import 'vscode/default-extensions/search-result'
 
 const modelRef = await createModelReference(monaco.Uri.file('/tmp/test.js'), `// import anotherfile
 let variable = 1
