@@ -279,6 +279,7 @@ class EmptyEditorGroup implements IEditorGroup {
   isLast = () => true
 }
 
+const fakeActiveGroup = new EmptyEditorGroup()
 registerSingleton(IEditorGroupsService, class EditorGroupsService implements IEditorGroupsService {
   readonly _serviceBrand = undefined
   getLayout = unsupported
@@ -292,9 +293,9 @@ registerSingleton(IEditorGroupsService, class EditorGroupsService implements IEd
   onDidChangeGroupIndex = Event.None
   onDidChangeGroupLocked = Event.None
   get contentDimension () { return unsupported() }
-  activeGroup = new EmptyEditorGroup()
+  activeGroup = fakeActiveGroup
   get sideGroup () { return unsupported() }
-  groups = []
+  groups = [fakeActiveGroup]
   count = 0
   orientation = GroupOrientation.HORIZONTAL
   isReady = false
