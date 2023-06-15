@@ -12,6 +12,7 @@ import externalAssets from 'rollup-plugin-external-assets'
 import globImport from 'rollup-plugin-glob-import'
 import terser from '@rollup/plugin-terser'
 import styles from 'rollup-plugin-styles'
+import inject from '@rollup/plugin-inject'
 import * as fs from 'fs'
 import * as path from 'path'
 import { fileURLToPath } from 'url'
@@ -452,6 +453,10 @@ export default (args: Record<string, string>): rollup.RollupOptions[] => {
     }],
     input,
     plugins: [
+      inject({
+        fetch: path.resolve('src/custom-fetch.ts'),
+        include: [/extHostExtensionService/]
+      }),
       commonjs(),
       extensionDirectoryPlugin({
         include: `${DEFAULT_EXTENSIONS_PATH}/**/*`,

@@ -258,6 +258,7 @@
     "@octokit/rest": "^19.0.11",
     "@rollup/plugin-commonjs": "^25.0.1",
     "@rollup/plugin-dynamic-import-vars": "^2.0.3",
+    "@rollup/plugin-inject": "^5.0.3",
     "@rollup/plugin-json": "^6.0.0",
     "@rollup/plugin-node-resolve": "^15.1.0",
     "@rollup/plugin-replace": "^5.0.2",
@@ -301,11 +302,11 @@
     "vscode-textmate": "^9.0.0",
     "xterm": "5.2.1",
     "xterm-addon-canvas": "0.4.0",
+    "xterm-addon-image": "0.4.1",
     "xterm-addon-search": "0.12.0",
     "xterm-addon-serialize": "0.10.0",
     "xterm-addon-unicode11": "0.5.0",
     "xterm-addon-webgl": "0.15.0",
-    "xterm-addon-image": "0.4.1",
     "yauzl": "^2.10.0"
   },
   "overrides": {
