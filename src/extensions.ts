@@ -31,6 +31,7 @@ import { initialize as initializeExtHostServices, onExtHostInitialized, getExtHo
 import { unsupported } from './tools'
 import { setDefaultExtension } from './default-extension'
 import 'vs/workbench/contrib/search/browser/search.contribution'
+import createApi from './createApi'
 
 export function consoleExtensionMessageHandler (msg: IMessage): void {
   if (msg.type === Severity.Error) {
@@ -49,21 +50,6 @@ export async function initialize (extension?: IExtensionDescription): Promise<vo
   }
 
   await initializeExtHostServices()
-}
-
-export function createApi (extension: IExtensionDescription): typeof vscode {
-  const workspace = createWorkspaceApi(() => extension)
-  return {
-    ...api,
-    extensions: createExtensionsApi(() => extension),
-    debug: createDebugApi(() => extension),
-    env: createEnvApi(() => extension),
-    commands: createCommandsApi(() => extension),
-    window: createWindowApi(() => extension, workspace),
-    workspace: createWorkspaceApi(() => extension),
-    languages: createLanguagesApi(() => extension),
-    l10n: createL10nApi(() => extension)
-  }
 }
 
 const hasOwnProperty = Object.hasOwnProperty
