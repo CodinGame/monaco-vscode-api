@@ -93,7 +93,6 @@ function deltaExtensions (toAdd: IExtensionDescription[], toRemove: IExtensionDe
 
 interface RegisterExtensionResult extends IDisposable {
   api: typeof vscode
-  runCode(): Promise<void>
   registerFile: (path: string, getContent: () => Promise<Uint8Array | string>) => IDisposable
   registerSyncFile: (path: string, content: Uint8Array | string) => IDisposable
   dispose (): void
@@ -115,64 +114,6 @@ FileAccess.uriToBrowserUri = function (uri: URI) {
     }
   }
   return original.call(this, uri)
-}
-
-async function createExtensionContext (extensionDescription: IExtensionDescription): Promise<vscode.ExtensionContext> {
-  const { extHostStorage, extHostInitData } = getExtHostServices()
-
-  const globalState = new ExtensionGlobalMemento(extensionDescription, extHostStorage)
-  const workspaceState = new ExtensionMemento(extensionDescription.identifier.value, false, extHostStorage)
-
-  await Promise.all([
-    globalState.whenReady,
-    workspaceState.whenReady
-  ])
-
-  return {
-    globalState,
-    workspaceState,
-    get secrets () { return unsupported() },
-    subscriptions: [],
-    get extensionUri () { return extensionDescription.extensionLocation },
-    get extensionPath () { return extensionDescription.extensionLocation.fsPath },
-    asAbsolutePath (relativePath: string) { return path.join(extensionDescription.extensionLocation.fsPath, relativePath) },
-    get storagePath () { return unsupported() },
-    get globalStoragePath () { return unsupported() },
-    get logPath () { return path.join(extHostInitData.logsLocation.fsPath, extensionDescription.identifier.value) },
-    get logUri () { return URI.joinPath(extHostInitData.logsLocation, extensionDescription.identifier.value) },
-    get storageUri () { return unsupported() },
-    get globalStorageUri () { return unsupported() },
-    extensionMode: ExtensionMode.Production,
-    extension: {
-      activate: unsupported,
-      id: extensionDescription.identifier.value,
-      extensionUri: extensionDescription.extensionLocation,
-      extensionPath: path.normalize(originalFSPath(extensionDescription.extensionLocation)),
-      isActive: true,
-      packageJSON: extensionDescription,
-      extensionKind: ExtensionKind.UI,
-      exports: null
-    },
-    get environmentVariableCollection () { return unsupported() }
-  }
-}
-
-export function runExtensionCode (api: typeof vscode, code: string): IExtensionModule {
-  // eslint-disable-next-line no-new-func
-  const initFn = new Function('module', 'exports', 'require', code)
-
-  const _exports = {}
-  const _module = { exports: _exports }
-  const _require = (request: string) => {
-    if (request === 'vscode') {
-      return api
-    }
-    throw new Error(`Cannot load module '${request}'`)
-  }
-
-  initFn(_module, _exports, _require)
-  const module: IExtensionModule = (_module.exports !== _exports ? _module.exports : _exports)
-  return module
 }
 
 export function registerExtension (manifest: IExtensionManifest, defaultNLS?: ITranslations): RegisterExtensionResult {
@@ -202,19 +143,6 @@ export function registerExtension (manifest: IExtensionManifest, defaultNLS?: IT
 
   return {
     api,
-    async runCode () {
-      if (extension.manifest.browser == null) {
-        return
-      }
-      let module = joinPath(location, extension.manifest.browser)
-      module = module.with({ path: ensureSuffix(module.path, '.js') })
-      const content = (await StandaloneServices.get(IFileService).readFile(module)).value.toString()
-      const extensionModule = runExtensionCode(api, content)
-
-      const context = await createExtensionContext(extensionDescription)
-
-      await extensionModule.activate?.(context)
-    },
     registerFile: (path: string, getContent: () => Promise<string | Uint8Array>) => {
       return registerExtensionFile(location, path, getContent)
     },
@@ -227,10 +155,6 @@ export function registerExtension (manifest: IExtensionManifest, defaultNLS?: IT
       deltaExtensions([], [extensionDescription])
     }
   }
-}
-
-function ensureSuffix (path: string, suffix: string): string {
-  return path.endsWith(suffix) ? path : path + suffix
 }
 
 export {

@@ -12,7 +12,6 @@ import { buildExtensionCode, compressResource, extractResourcesFromExtensionMani
 interface Options {
   include?: FilterPattern
   exclude?: FilterPattern
-  withCode?: (extensionPath: string) => boolean
   rollupPlugins?: InputPluginOption[]
   transformManifest?: (manifest: IExtensionManifest) => IExtensionManifest
 }
@@ -63,7 +62,6 @@ export default function plugin ({
   include = '**/*.vsix',
   exclude,
   rollupPlugins = [],
-  withCode = () => true,
   transformManifest = manifest => manifest
 }: Options): Plugin {
   const filter = createFilter(include, exclude)
@@ -152,13 +150,11 @@ ${syncPaths.map((resourcePath, index) => (`
 import resource_${index} from 'vsix:${id}:${resourcePath}.raw'`)).join('\n')}
 
 onExtHostInitialized(() => {
-  const { registerFile, registerSyncFile, runCode } = registerExtension(manifest)
+  const { registerFile, registerSyncFile } = registerExtension(manifest)
 ${asyncPaths.map((filePath) => (`
   registerFile('${filePath}', async () => (await import('vsix:${id}:${filePath}.raw')).default)`)).join('\n')}
 ${syncPaths.map((resourcePath, index) => (`
   registerSyncFile('${resourcePath}', resource_${index}, '${lookupMimeType(resourcePath)}')`)).join('\n')}
-
-${withCode(id) ? '  runCode()' : ''}
 })
 `
     }

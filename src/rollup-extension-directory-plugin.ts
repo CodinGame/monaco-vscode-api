@@ -12,7 +12,6 @@ interface Options {
   include?: FilterPattern
   exclude?: FilterPattern
   isDefaultExtension?: boolean
-  withCode?: (extensionPath: string) => boolean
   rollupPlugins?: InputPluginOption[]
   transformManifest?: (manifest: IExtensionManifest) => IExtensionManifest
 }
@@ -21,7 +20,6 @@ export default function plugin ({
   include,
   exclude,
   isDefaultExtension = false,
-  withCode = () => true,
   rollupPlugins = [],
   transformManifest = manifest => manifest
 }: Options): Plugin {
@@ -102,13 +100,11 @@ ${syncPaths.map((resourcePath, index) => (`
 import resource_${index} from '${path.resolve(id, resourcePath)}.extensionResource'`)).join('\n')}
 
 onExtHostInitialized(() => {
-  const { registerFile, registerSyncFile, runCode } = registerExtension(manifest)
+  const { registerFile, registerSyncFile } = registerExtension(manifest)
 ${asyncPaths.map(resourcePath => (`
   registerFile('${resourcePath}', async () => await import('${path.resolve(id, resourcePath)}.extensionResource'))`)).join('\n')}
 ${syncPaths.map((resourcePath, index) => (`
   registerSyncFile('${resourcePath}', resource_${index}, '${lookupMimeType(resourcePath)}')`)).join('\n')}
-
-  ${withCode(id) ? '  runCode()' : ''}
 })
         `
         } catch (err) {
