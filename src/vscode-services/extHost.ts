@@ -342,8 +342,7 @@ async function createExtHostServices () {
 
   // Named customers
   const namedCustomers = ExtHostCustomersRegistry.getNamedCustomers()
-  for (let i = 0, len = namedCustomers.length; i < len; i++) {
-    const [id, ctor] = namedCustomers[i]!
+  for (const [id, ctor] of namedCustomers) {
     try {
       const instance = instantiationService.createInstance(ctor, mainContext)
       rpcProtocol.set(id, instance)
