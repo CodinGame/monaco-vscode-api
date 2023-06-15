@@ -1,4 +1,5 @@
-import './missing-services'
+// eslint-disable-next-line import/order
+import { SimpleExtensionService } from './missing-services'
 import { ExtHostCommands, IExtHostCommands } from 'vs/workbench/api/common/extHostCommands'
 import { ExtHostRpcService, IExtHostRpcService } from 'vs/workbench/api/common/extHostRpcService'
 import { ILogService, LogLevel } from 'vs/platform/log/common/log'
@@ -9,6 +10,7 @@ import { ExtHostApiDeprecationService, IExtHostApiDeprecationService } from 'vs/
 import {
   ExtHostContext, IMainContext, MainContext
 } from 'vs/workbench/api/common/extHost.protocol'
+import { IExtensionRegistries } from 'vs/workbench/api/common/extHost.api.impl'
 import { ExtHostDiagnostics } from 'vs/workbench/api/common/extHostDiagnostics'
 import { ExtHostFileSystemInfo, IExtHostFileSystemInfo } from 'vs/workbench/api/common/extHostFileSystemInfo'
 import { Proxied, ProxyIdentifier } from 'vs/workbench/services/extensions/common/proxyIdentifier'
@@ -31,7 +33,7 @@ import { ExtHostLanguageFeatures } from 'vs/workbench/api/common/extHostLanguage
 import { ExtHostConfigProvider, ExtHostConfiguration, IExtHostConfiguration } from 'vs/workbench/api/common/extHostConfiguration'
 import { IExtHostDebugService, WorkerExtHostDebugService } from 'vs/workbench/api/common/extHostDebugService'
 import { ExtHostVariableResolverProviderService, IExtHostVariableResolverProvider } from 'vs/workbench/api/common/extHostVariableResolverService'
-import { AbstractExtHostExtensionService, IExtHostExtensionService, IHostUtils } from 'vs/workbench/api/common/extHostExtensionService'
+import { IExtHostExtensionService, IHostUtils } from 'vs/workbench/api/common/extHostExtensionService'
 import { ExtensionStoragePaths, IExtensionStoragePaths } from 'vs/workbench/api/common/extHostStoragePaths'
 import { ExtHostTunnelService, IExtHostTunnelService } from 'vs/workbench/api/common/extHostTunnelService'
 import { ExtHostLocalizationService, IExtHostLocalizationService } from 'vs/workbench/api/common/extHostLocalizationService'
@@ -47,9 +49,7 @@ import { IExtHostInitDataService } from 'vs/workbench/api/common/extHostInitData
 import { IEnvironment, UIKind } from 'vs/workbench/services/extensions/common/extensionHostProtocol'
 import { IExtHostTerminalService } from 'vs/workbench/api/common/extHostTerminalService'
 import { IExtHostDecorations, ExtHostDecorations } from 'vs/workbench/api/common/extHostDecorations'
-import { ExtensionRuntime } from 'vs/workbench/api/common/extHostTypes'
 import { ExtHostFileSystem } from 'vs/workbench/api/common/extHostFileSystem'
-import { IExtensionRegistries } from 'vs/workbench/api/common/extHost.api.impl'
 import { IInstantiationService } from 'vs/platform/instantiation/common/instantiation'
 import { ExtHostDocumentSaveParticipant } from 'vs/workbench/api/common/extHostDocumentSaveParticipant'
 import { ExtHostFileSystemEventService } from 'vs/workbench/api/common/extHostFileSystemEventService'
@@ -63,6 +63,7 @@ import { ExtHostStatusBar } from 'vs/workbench/api/common/extHostStatusBar'
 import { ExtHostTheming } from 'vs/workbench/api/common/extHostTheming'
 import { ExtHostTerminalService } from 'vs/workbench/api/node/extHostTerminalService'
 import { ExtHostSearch, IExtHostSearch } from 'vs/workbench/api/common/extHostSearch'
+import { ExtHostExtensionService } from 'vs/workbench/api/worker/extHostExtensionService'
 import 'vs/workbench/api/browser/mainThreadLocalization'
 import 'vs/workbench/api/browser/mainThreadCommands'
 import 'vs/workbench/api/browser/mainThreadWindow'
@@ -95,6 +96,8 @@ import 'vs/workbench/api/browser/mainThreadSearch'
 import * as errors from 'vs/base/common/errors'
 import { Barrier } from 'vs/base/common/async'
 import { IExtHostManagedSockets } from 'vs/workbench/api/common/extHostManagedSockets'
+import { IExtensionHostProxy } from 'vs/workbench/services/extensions/common/extensionHostProxy'
+import { IExtensionService } from 'vs/workbench/services/extensions/common/extensions'
 import { unsupported } from '../tools'
 
 const original = MainThreadMessageService.prototype.$showMessage
@@ -199,18 +202,12 @@ registerSingleton(IExtHostConsumerFileSystem, ExtHostConsumerFileSystem, Instant
 registerSingleton(IExtensionStoragePaths, ExtensionStoragePaths, InstantiationType.Eager)
 registerSingleton(IExtHostLocalizationService, ExtHostLocalizationService, InstantiationType.Delayed)
 registerSingleton(IExtHostDocumentsAndEditors, ExtHostDocumentsAndEditors, InstantiationType.Eager)
-class ExtHostExtensionService extends AbstractExtHostExtensionService {
-  extensionRuntime = ExtensionRuntime.Webworker
-  _getEntryPoint = () => undefined
-  _loadCommonJSModule = unsupported
-  $setRemoteEnvironment = unsupported
-  override async _beforeAlmostReadyToRunExtensions () {}
-
+class _ExtHostExtensionService extends ExtHostExtensionService {
   public getExtensionRegistries (): IExtensionRegistries {
     return { mine: this._myRegistry, all: this._globalRegistry }
   }
 }
-registerSingleton(IExtHostExtensionService, ExtHostExtensionService, InstantiationType.Eager)
+registerSingleton(IExtHostExtensionService, _ExtHostExtensionService, InstantiationType.Eager)
 registerSingleton(IExtHostConfiguration, ExtHostConfiguration, InstantiationType.Eager)
 registerSingleton(IExtHostTunnelService, ExtHostTunnelService, InstantiationType.Eager)
 registerSingleton(IExtHostFileSystemInfo, ExtHostFileSystemInfo, InstantiationType.Eager)
@@ -276,7 +273,9 @@ const mainContext: IMainContext & IInternalExtHostContext = {
   dispose () {
     rpcProtocol.dispose()
   },
-  _setExtensionHostProxy () {},
+  _setExtensionHostProxy (proxy: IExtensionHostProxy) {
+    (StandaloneServices.get(IExtensionService) as SimpleExtensionService).setExtensionHostProxy(proxy)
+  },
   _setAllMainProxyIdentifiers () {}
 }
 
@@ -321,7 +320,7 @@ async function createExtHostServices () {
   const extHostWindow = rpcProtocol.set(ExtHostContext.ExtHostWindow, StandaloneServices.get(IExtHostWindow))
   const extHostWorkspace = rpcProtocol.set(ExtHostContext.ExtHostWorkspace, StandaloneServices.get(IExtHostWorkspace))
   const extHostConfiguration = rpcProtocol.set(ExtHostContext.ExtHostConfiguration, StandaloneServices.get(IExtHostConfiguration))
-  const extHostExtensionService = rpcProtocol.set(ExtHostContext.ExtHostExtensionService, StandaloneServices.get(IExtHostExtensionService)) as ExtHostExtensionService
+  const extHostExtensionService = rpcProtocol.set(ExtHostContext.ExtHostExtensionService, StandaloneServices.get(IExtHostExtensionService)) as _ExtHostExtensionService
   const extHostOutputService = rpcProtocol.set(ExtHostContext.ExtHostOutputService, StandaloneServices.get(IExtHostOutputService))
   const extHostFileSystem = rpcProtocol.set(ExtHostContext.ExtHostFileSystem, new ExtHostFileSystem(rpcProtocol, extHostLanguageFeatures))
   const extHostDocumentSaveParticipant = rpcProtocol.set(ExtHostContext.ExtHostDocumentSaveParticipant, new ExtHostDocumentSaveParticipant(logService, extHostDocuments, rpcProtocol.getProxy(MainContext.MainThreadBulkEdits)))

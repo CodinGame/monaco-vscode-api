@@ -19,7 +19,7 @@ import { compare } from 'vs/base/common/strings'
 import { IHostService } from 'vs/workbench/services/host/browser/host'
 import { ILifecycleService } from 'vs/workbench/services/lifecycle/common/lifecycle'
 import { ILanguageDetectionService } from 'vs/workbench/services/languageDetection/common/languageDetectionWorkerService'
-import { IExtensionService, NullExtensionService } from 'vs/workbench/services/extensions/common/extensions'
+import { ActivationKind, IExtensionService, NullExtensionService } from 'vs/workbench/services/extensions/common/extensions'
 import { IKeyboardLayoutService } from 'vs/platform/keyboardLayout/common/keyboardLayout'
 import { OS } from 'vs/base/common/platform'
 import { IEnvironmentService } from 'vs/platform/environment/common/environment'
@@ -126,6 +126,8 @@ import { ExtensionStatusBarItemService, IExtensionStatusBarItemService } from 'v
 import { IWorkbenchAssignmentService } from 'vs/workbench/services/assignment/common/assignmentService'
 import { IChatService } from 'vs/workbench/contrib/chat/common/chatService'
 import { IEmbedderTerminalService } from 'vs/workbench/services/terminal/common/embedderTerminalService'
+import { IExtensionHostProxy } from 'vs/workbench/services/extensions/common/extensionHostProxy'
+import { IExtensionDescriptionDelta } from 'vs/workbench/services/extensions/common/extensionHostProtocol'
 import { unsupported } from '../tools'
 
 class NullLoggerService extends AbstractLoggerService {
@@ -471,7 +473,23 @@ registerSingleton(ILanguageDetectionService, class LanguageDetectionService impl
   }
 }, InstantiationType.Eager)
 
-registerSingleton(IExtensionService, NullExtensionService, InstantiationType.Eager)
+export class SimpleExtensionService extends NullExtensionService implements IExtensionService {
+  private extensionHostProxy: IExtensionHostProxy | undefined
+
+  override async activateByEvent (activationEvent: string, activationKind: ActivationKind | undefined = ActivationKind.Normal): Promise<void> {
+    await this.extensionHostProxy!.activateByEvent(activationEvent, activationKind)
+  }
+
+  public setExtensionHostProxy (_extensionHostProxy: IExtensionHostProxy): void {
+    this.extensionHostProxy = _extensionHostProxy
+  }
+
+  public async deltaExtensions (extensionsDelta: IExtensionDescriptionDelta): Promise<void> {
+    await this.extensionHostProxy!.deltaExtensions(extensionsDelta)
+  }
+}
+
+registerSingleton(IExtensionService, SimpleExtensionService, InstantiationType.Eager)
 
 registerSingleton(IKeyboardLayoutService, class KeyboardLayoutService implements IKeyboardLayoutService {
   _serviceBrand: undefined

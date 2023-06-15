@@ -1,7 +1,7 @@
 import type * as vscode from 'vscode'
 import { ExtensionType, IExtension, IExtensionContributions, IExtensionDescription, IExtensionManifest, TargetPlatform } from 'vs/platform/extensions/common/extensions'
 import { ExtensionMessageCollector, ExtensionPoint, ExtensionsRegistry, IExtensionPointUser } from 'vs/workbench/services/extensions/common/extensionsRegistry'
-import { IMessage, toExtensionDescription } from 'vs/workbench/services/extensions/common/extensions'
+import { IExtensionService, IMessage, toExtensionDescription } from 'vs/workbench/services/extensions/common/extensions'
 import { generateUuid } from 'vs/base/common/uuid'
 import { URI } from 'vs/base/common/uri'
 import { IExtHostExtensionService } from 'vs/workbench/api/common/extHostExtensionService'
@@ -10,27 +10,14 @@ import { getExtensionId } from 'vs/platform/extensionManagement/common/extension
 import { IDisposable } from 'vs/base/common/lifecycle'
 import Severity from 'vs/base/common/severity'
 import { ITranslations, localizeManifest } from 'vs/platform/extensionManagement/common/extensionNls'
-import { joinPath, originalFSPath } from 'vs/base/common/resources'
+import { joinPath } from 'vs/base/common/resources'
 import { FileAccess } from 'monaco-editor/esm/vs/base/common/network.js'
-import { ExtensionKind, ExtensionMode } from 'vs/workbench/api/common/extHostTypes'
-import { ExtensionGlobalMemento, ExtensionMemento } from 'vs/workbench/api/common/extHostMemento'
-import { IExtensionModule } from 'vs/workbench/api/common/extHostExtensionActivator'
-import * as path from 'vs/base/common/path'
-import { IFileService } from 'vs/platform/files/common/files'
-import * as api from './api'
+import { ImplicitActivationEvents } from 'vs/platform/extensionManagement/common/implicitActivationEvents'
+import { IExtensionDescriptionDelta } from 'vs/workbench/services/extensions/common/extensionHostProtocol'
 import { registerExtensionFile } from './service-override/files'
-import createL10nApi from './vscode-services/l10n'
-import createLanguagesApi from './vscode-services/languages'
-import createCommandsApi from './vscode-services/commands'
-import createWorkspaceApi from './vscode-services/workspace'
-import createWindowApi from './vscode-services/window'
-import createEnvApi from './vscode-services/env'
-import createDebugApi from './vscode-services/debug'
-import createExtensionsApi from './vscode-services/extensions'
-import { initialize as initializeExtHostServices, onExtHostInitialized, getExtHostServices } from './vscode-services/extHost'
-import { unsupported } from './tools'
+import { initialize as initializeExtHostServices, onExtHostInitialized } from './vscode-services/extHost'
 import { setDefaultExtension } from './default-extension'
-import 'vs/workbench/contrib/search/browser/search.contribution'
+import { SimpleExtensionService } from './vscode-services/missing-services'
 import createApi from './createApi'
 
 export function consoleExtensionMessageHandler (msg: IMessage): void {
@@ -67,28 +54,36 @@ function handleExtensionPoint<T extends IExtensionContributions[keyof IExtension
   extensionPoint.acceptUsers(users)
 }
 
-function deltaExtensions (toAdd: IExtensionDescription[], toRemove: IExtensionDescription[]) {
-  void StandaloneServices.get(IExtHostExtensionService).getExtensionRegistry().then(extensionRegistry => {
-    const affectedExtensions = (<IExtensionDescription[]>[]).concat(toAdd).concat(toRemove)
-    const affectedExtensionPoints: { [extPointName: string]: boolean } = Object.create(null)
-    for (const extensionDescription of affectedExtensions) {
-      for (const extPointName in extensionDescription.contributes) {
-        if (hasOwnProperty.call(extensionDescription.contributes, extPointName)) {
-          affectedExtensionPoints[extPointName] = true
-        }
+async function deltaExtensions (toAdd: IExtensionDescription[], toRemove: IExtensionDescription[]) {
+  const affectedExtensions = (<IExtensionDescription[]>[]).concat(toAdd).concat(toRemove)
+  const affectedExtensionPoints: { [extPointName: string]: boolean } = Object.create(null)
+  for (const extensionDescription of affectedExtensions) {
+    for (const extPointName in extensionDescription.contributes) {
+      if (hasOwnProperty.call(extensionDescription.contributes, extPointName)) {
+        affectedExtensionPoints[extPointName] = true
       }
     }
+  }
 
-    extensionRegistry.deltaExtensions(toAdd, toRemove.map(ext => ext.identifier))
-    const availableExtensions = extensionRegistry.getAllExtensionDescriptions()
+  const addActivationEvents = ImplicitActivationEvents.createActivationEventsMap(toAdd)
+  const delta: IExtensionDescriptionDelta = {
+    toRemove: toRemove.map(ext => ext.identifier),
+    toAdd,
+    addActivationEvents,
+    myToRemove: toRemove.map(ext => ext.identifier),
+    myToAdd: toAdd.map(ext => ext.identifier)
+  }
 
-    const extensionPoints = ExtensionsRegistry.getExtensionPoints()
-    for (const extensionPoint of extensionPoints) {
-      if (affectedExtensionPoints[extensionPoint.name] ?? false) {
-        handleExtensionPoint(extensionPoint, availableExtensions, consoleExtensionMessageHandler)
-      }
+  await (StandaloneServices.get(IExtensionService) as SimpleExtensionService).deltaExtensions(delta)
+
+  const availableExtensions = (await StandaloneServices.get(IExtHostExtensionService).getExtensionRegistry()).getAllExtensionDescriptions()
+
+  const extensionPoints = ExtensionsRegistry.getExtensionPoints()
+  for (const extensionPoint of extensionPoints) {
+    if (affectedExtensionPoints[extensionPoint.name] ?? false) {
+      handleExtensionPoint(extensionPoint, availableExtensions, consoleExtensionMessageHandler)
     }
-  })
+  }
 }
 
 interface RegisterExtensionResult extends IDisposable {
@@ -137,7 +132,7 @@ export function registerExtension (manifest: IExtensionManifest, defaultNLS?: IT
   }
   const extensionDescription = toExtensionDescription(extension)
 
-  deltaExtensions([extensionDescription], [])
+  void deltaExtensions([extensionDescription], [])
 
   const api = createApi(extensionDescription)
 
@@ -152,7 +147,7 @@ export function registerExtension (manifest: IExtensionManifest, defaultNLS?: IT
       return registerExtensionFile(location, path, async () => content)
     },
     dispose () {
-      deltaExtensions([], [extensionDescription])
+      void deltaExtensions([], [extensionDescription])
     }
   }
 }

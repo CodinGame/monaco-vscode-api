@@ -64,8 +64,6 @@ const FUNCTIONS_TO_REMOVE = new Set([
   'registerProxyConfigurations',
   'registerViewWelcomeContent',
   'registerExtensionPoint',
-  '_setExtensionHostProxy',
-  '_setAllMainProxyIdentifiers',
   'registerTouchBarEntry',
   'registerEditorSerializer',
 
