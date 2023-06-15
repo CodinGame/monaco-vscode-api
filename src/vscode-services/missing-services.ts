@@ -125,6 +125,7 @@ import { ICanonicalUriService } from 'vs/platform/workspace/common/canonicalUri'
 import { ExtensionStatusBarItemService, IExtensionStatusBarItemService } from 'vs/workbench/api/browser/statusBarExtensionPoint'
 import { IWorkbenchAssignmentService } from 'vs/workbench/services/assignment/common/assignmentService'
 import { IChatService } from 'vs/workbench/contrib/chat/common/chatService'
+import { IEmbedderTerminalService } from 'vs/workbench/services/terminal/common/embedderTerminalService'
 import { unsupported } from '../tools'
 
 class NullLoggerService extends AbstractLoggerService {
@@ -1548,4 +1549,10 @@ registerSingleton(IChatService, class ChatService implements IChatService {
   removeHistoryEntry = unsupported
   onDidPerformUserAction = Event.None
   notifyUserAction = unsupported
+}, InstantiationType.Delayed)
+
+registerSingleton(IEmbedderTerminalService, class EmbedderTerminalService implements IEmbedderTerminalService {
+  _serviceBrand: undefined
+  onDidCreateTerminal = Event.None
+  createTerminal = unsupported
 }, InstantiationType.Delayed)
