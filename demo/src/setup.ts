@@ -75,7 +75,7 @@ await initializeMonacoService({
   ...getSearchAccessServiceOverride(),
   ...getMarkersAccessServiceOverride()
 })
-StandaloneServices.get(ILogService).setLevel(LogLevel.Off)
+StandaloneServices.get(ILogService).setLevel(LogLevel.Error)
 
 await initializeVscodeExtensions()
 
