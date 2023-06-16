@@ -4,6 +4,7 @@ import * as monaco from 'monaco-editor'
 import { IUserDataProfilesService } from 'vs/platform/userDataProfile/common/userDataProfile'
 import { IJSONContributionRegistry, Extensions as JsonExtensions } from 'vs/platform/jsonschemas/common/jsonContributionRegistry'
 import { Emitter, Event } from 'vs/base/common/event'
+import { FileAccess } from 'vs/base/common/network'
 import * as vscode from './api'
 
 type Unpacked<T> = T extends (infer U)[] ? U : T
@@ -37,7 +38,7 @@ function getExtensionSchemaAssociations (): JsonSchema[] {
           if (Array.isArray(fileMatch) && typeof url === 'string') {
             let uri: string = url
             if (uri[0] === '.' && uri[1] === '/') {
-              uri = monaco.Uri.joinPath(extension.extensionUri, uri).toString()
+              uri = FileAccess.uriToBrowserUri(monaco.Uri.joinPath(extension.extensionUri, uri)).toString()
             }
             fileMatch = fileMatch.map(fm => {
               if (fm[0] === '%') {
@@ -89,6 +90,7 @@ function synchronizeJsonSchemas (): monaco.IDisposable {
   function updateDiagnosticsOptions () {
     monaco.languages.json.jsonDefaults.setDiagnosticsOptions({
       ...monaco.languages.json.jsonDefaults.diagnosticsOptions,
+      enableSchemaRequest: true,
       schemas: [
         ...getJsonSchemas(),
         ...getDefaultSchemaAssociations(),

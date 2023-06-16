@@ -18,7 +18,7 @@ export default defineConfig({
       'vscode/service-override/preferences', 'vscode/service-override/snippets', 'vscode/service-override/files', 'vscode/service-override/output',
       'vscode/service-override/terminal', 'vscode/service-override/search', 'vscode/service-override/markers',
       'vscode/default-extensions/theme-defaults', 'vscode/default-extensions/javascript', 'vscode/default-extensions/json', 'vscode/default-extensions/theme-seti',
-      'vscode/default-extensions/references-view', 'vscode/default-extensions/typescript-basics'
+      'vscode/default-extensions/references-view', 'vscode/default-extensions/typescript-basics', 'vscode/default-extensions/search-result'
     ]
   },
   server: {

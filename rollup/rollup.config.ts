@@ -12,6 +12,7 @@ import externalAssets from 'rollup-plugin-external-assets'
 import globImport from 'rollup-plugin-glob-import'
 import terser from '@rollup/plugin-terser'
 import styles from 'rollup-plugin-styles'
+import inject from '@rollup/plugin-inject'
 import * as fs from 'fs'
 import * as path from 'path'
 import { fileURLToPath } from 'url'
@@ -63,8 +64,6 @@ const FUNCTIONS_TO_REMOVE = new Set([
   'registerProxyConfigurations',
   'registerViewWelcomeContent',
   'registerExtensionPoint',
-  '_setExtensionHostProxy',
-  '_setAllMainProxyIdentifiers',
   'registerTouchBarEntry',
   'registerEditorSerializer',
 
@@ -124,6 +123,13 @@ function isCallPure (file: string, functionName: string, node: recast.types.name
       return false
     }
     return true
+  }
+
+  if (functionName === 'createInstance') {
+    const firstParam = args[0]!
+    if (firstParam.type === 'Identifier' && firstParam.name === 'ExtHostConsoleForwarder') {
+      return true
+    }
   }
 
   if (functionName === 'KeybindingsRegistry.registerCommandAndKeybindingRule') {
@@ -331,6 +337,7 @@ const USE_DEFAULT_EXTENSIONS = new Set([
   'ruby',
   'rust',
   'scss',
+  'search-result',
   'shaderlab',
   'shellscript',
   'sql',
@@ -430,7 +437,8 @@ export default (args: Record<string, string>): rollup.RollupOptions[] => {
           id.endsWith('/listCommands.js') ||
           id.endsWith('/quickAccessActions.js') ||
           id.endsWith('/gotoLineQuickAccess.js') ||
-          id.endsWith('/workbenchReferenceSearch.js')
+          id.endsWith('/workbenchReferenceSearch.js') ||
+          id.includes('/searchActions')
       }
     },
     external,
@@ -450,6 +458,10 @@ export default (args: Record<string, string>): rollup.RollupOptions[] => {
     }],
     input,
     plugins: [
+      inject({
+        fetch: path.resolve('src/custom-fetch.ts'),
+        include: [/extHostExtensionService/]
+      }),
       commonjs(),
       extensionDirectoryPlugin({
         include: `${DEFAULT_EXTENSIONS_PATH}/**/*`,

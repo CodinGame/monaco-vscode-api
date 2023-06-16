@@ -48,6 +48,9 @@ window.MonacoEnvironment = {
       return new Worker()
     }
     throw new Error(`Unimplemented worker ${label} (${moduleId})`)
+  },
+  createTrustedTypesPolicy () {
+    return undefined
   }
 }
 
@@ -72,7 +75,7 @@ await initializeMonacoService({
   ...getSearchAccessServiceOverride(),
   ...getMarkersAccessServiceOverride()
 })
-StandaloneServices.get(ILogService).setLevel(LogLevel.Off)
+StandaloneServices.get(ILogService).setLevel(LogLevel.Error)
 
 await initializeVscodeExtensions()
 

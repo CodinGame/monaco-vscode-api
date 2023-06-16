@@ -147,10 +147,10 @@ index fc197da1d57..a4d9573979f 100644
  	public static validateOptions(options: IEditorOptions): ValidatedEditorOptions {
  		const result = new ValidatedEditorOptions();
 diff --git a/src/vs/workbench/api/browser/statusBarExtensionPoint.ts b/src/vs/workbench/api/browser/statusBarExtensionPoint.ts
-index 2ba47f8425e..8a004d610a4 100644
+index 55e5013c812..1e7d271a466 100644
 --- a/src/vs/workbench/api/browser/statusBarExtensionPoint.ts
 +++ b/src/vs/workbench/api/browser/statusBarExtensionPoint.ts
-@@ -51,7 +51,7 @@ export interface IExtensionStatusBarItemService {
+@@ -49,7 +49,7 @@ export interface IExtensionStatusBarItemService {
  }
  
  
@@ -160,10 +160,10 @@ index 2ba47f8425e..8a004d610a4 100644
  	declare readonly _serviceBrand: undefined;
  
 diff --git a/src/vs/workbench/api/common/extHostTerminalService.ts b/src/vs/workbench/api/common/extHostTerminalService.ts
-index 07f2364ffed..04b61d8b808 100644
+index 6dabdb4f4df..e48cd4f2828 100644
 --- a/src/vs/workbench/api/common/extHostTerminalService.ts
 +++ b/src/vs/workbench/api/common/extHostTerminalService.ts
-@@ -816,15 +816,12 @@ export abstract class BaseExtHostTerminalService extends Disposable implements I
+@@ -812,15 +812,12 @@ export abstract class BaseExtHostTerminalService extends Disposable implements I
  	}
  
  	private _getTerminalObjectIndexById<T extends ExtHostTerminal>(array: T[], id: ExtHostTerminalIdentifier): number | null {
@@ -184,6 +184,19 @@ index 07f2364ffed..04b61d8b808 100644
  		return index;
  	}
  
+diff --git a/src/vs/workbench/browser/parts/compositeBar.ts b/src/vs/workbench/browser/parts/compositeBar.ts
+index 36694129764..2920195c027 100644
+--- a/src/vs/workbench/browser/parts/compositeBar.ts
++++ b/src/vs/workbench/browser/parts/compositeBar.ts
+@@ -504,7 +504,7 @@ export class CompositeBar extends Widget implements ICompositeBar {
+ 				// Compute sizes only if visible. Otherwise the size measurment would be computed wrongly.
+ 				const currentItemsLength = compositeSwitcherBar.viewItems.length;
+ 				compositeSwitcherBar.push(items.map(composite => composite.activityAction));
+-				items.map((composite, index) => this.compositeSizeInBar.set(composite.id, this.options.orientation === ActionsOrientation.VERTICAL
++				items.forEach((composite, index) => this.compositeSizeInBar.set(composite.id, this.options.orientation === ActionsOrientation.VERTICAL
+ 					? compositeSwitcherBar.getHeight(currentItemsLength + index)
+ 					: compositeSwitcherBar.getWidth(currentItemsLength + index)
+ 				));
 diff --git a/src/vs/workbench/browser/parts/views/viewPaneContainer.ts b/src/vs/workbench/browser/parts/views/viewPaneContainer.ts
 index ff766b9acb8..599bab9dd59 100644
 --- a/src/vs/workbench/browser/parts/views/viewPaneContainer.ts
