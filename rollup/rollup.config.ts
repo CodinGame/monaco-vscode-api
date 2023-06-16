@@ -125,6 +125,13 @@ function isCallPure (file: string, functionName: string, node: recast.types.name
     return true
   }
 
+  if (functionName === 'createInstance') {
+    const firstParam = args[0]!
+    if (firstParam.type === 'Identifier' && firstParam.name === 'ExtHostConsoleForwarder') {
+      return true
+    }
+  }
+
   if (functionName === 'KeybindingsRegistry.registerCommandAndKeybindingRule') {
     const firstParam = args[0]!
     if (firstParam.type === 'ObjectExpression') {
