@@ -130,10 +130,13 @@ async function extractThemeResources (theme: IThemeExtensionPoint, getFileConten
 }
 
 function extractJsonValidationResources (jsonValidation: IJSONValidationExtensionPoint): ExtensionResource[] {
-  return [{
-    path: jsonValidation.url,
-    sync: true
-  }]
+  if (jsonValidation.url.startsWith('./')) {
+    return [{
+      path: jsonValidation.url,
+      sync: true
+    }]
+  }
+  return []
 }
 
 function extractViewsContainerResources (viewContainers: { [loc: string]: IUserFriendlyViewsContainerDescriptor[] }): ExtensionResource[] {
