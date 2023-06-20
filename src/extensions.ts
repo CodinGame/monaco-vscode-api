@@ -113,7 +113,7 @@ FileAccess.uriToBrowserUri = function (uri: URI) {
 
 export function registerExtension (manifest: IExtensionManifest, defaultNLS?: ITranslations): RegisterExtensionResult {
   const uuid = generateUuid()
-  const location = URI.from({ scheme: 'extension', path: `/${uuid}` })
+  const location = URI.from({ scheme: 'extension', authority: uuid, path: '/' })
 
   const localizedManifest = defaultNLS != null ? localizeManifest(manifest, defaultNLS) : manifest
 
