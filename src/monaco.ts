@@ -83,9 +83,9 @@ class ConfiguredStandaloneEditor extends createInjectedClass(StandaloneEditor) {
     @ITextResourceConfigurationService private textResourceConfigurationService: ITextResourceConfigurationService
   ) {
     // Remove Construction specific options
-    const { theme, autoDetectHighContrast, model, value, language, accessibilityHelpUrl, ariaContainerElement, ...options } = _options
+    const { theme, autoDetectHighContrast, model, value, language, accessibilityHelpUrl, ariaContainerElement, overflowWidgetsDomNode, dimension, ...options } = _options
     const computedOptions = computeConfiguration(textResourceConfigurationService.getValue<IEditorConfiguration>(_options.model?.uri), isDiffEditor, options)
-    super(instantiationService, domElement, { ...computedOptions, theme, autoDetectHighContrast, model, value, language, accessibilityHelpUrl, ariaContainerElement })
+    super(instantiationService, domElement, { ...computedOptions, overflowWidgetsDomNode, dimension, theme, autoDetectHighContrast, model, value, language, accessibilityHelpUrl, ariaContainerElement })
     this.lastAppliedEditorOptions = computedOptions
 
     this.optionsOverrides = options
