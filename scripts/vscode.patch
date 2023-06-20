@@ -1,3 +1,15 @@
+diff --git a/.eslintrc.json b/.eslintrc.json
+index 7e6b386b804..4457e204d51 100644
+--- a/.eslintrc.json
++++ b/.eslintrc.json
+@@ -253,6 +253,7 @@
+ 							"v8-inspect-profiler",
+ 							"vscode-regexpp",
+ 							"vscode-textmate",
++							"vscode-oniguruma",
+ 							"worker_threads",
+ 							"xterm",
+ 							"xterm-addon-canvas",
 diff --git a/build/lib/standalone.js b/build/lib/standalone.js
 index 38be1131300..52c3b2b0a82 100644
 --- a/build/lib/standalone.js
@@ -258,18 +270,25 @@ index 88cc5df03cf..07926124b30 100644
  
  	private async replaceContent(model: ITextModel, token: CancellationToken): Promise<void> {
 diff --git a/src/vs/workbench/services/textMate/browser/worker/textMate.worker.ts b/src/vs/workbench/services/textMate/browser/worker/textMate.worker.ts
-index 67484e6ef40..636b27931eb 100644
+index 67484e6ef40..ef7cd478655 100644
 --- a/src/vs/workbench/services/textMate/browser/worker/textMate.worker.ts
 +++ b/src/vs/workbench/services/textMate/browser/worker/textMate.worker.ts
-@@ -56,9 +56,8 @@ export class TextMateTokenizationWorker {
+@@ -12,6 +12,8 @@ import { ICreateGrammarResult, TMGrammarFactory } from 'vs/workbench/services/te
+ import { IValidEmbeddedLanguagesMap, IValidGrammarDefinition, IValidTokenTypeMap } from 'vs/workbench/services/textMate/common/TMScopeRegistry';
+ import { IOnigLib, IRawTheme } from 'vscode-textmate';
+ import { TextMateWorkerModel } from './textMateWorkerModel';
++import * as vscodeTextmate from 'vscode-textmate';
++import * as vscodeOniguruma from 'vscode-oniguruma';
+ 
+ export interface ICreateData {
+ 	grammarDefinitions: IValidGrammarDefinitionDTO[];
+@@ -56,9 +58,6 @@ export class TextMateTokenizationWorker {
  	}
  
  	private async _loadTMGrammarFactory(grammarDefinitions: IValidGrammarDefinition[]): Promise<TMGrammarFactory> {
 -		const uri = this.createData.textmateMainUri;
 -		const vscodeTextmate = await import(uri);
 -		const vscodeOniguruma = await import(this.createData.onigurumaMainUri);
-+		const vscodeTextmate = await import('vscode-textmate');
-+		const vscodeOniguruma = await import('vscode-oniguruma');
  		const response = await fetch(this.createData.onigurumaWASMUri);
  
  		// Using the response directly only works if the server sets the MIME type 'application/wasm'.

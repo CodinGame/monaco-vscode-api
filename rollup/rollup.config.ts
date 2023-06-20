@@ -325,6 +325,7 @@ const USE_DEFAULT_EXTENSIONS = new Set([
   'lua',
   'make',
   'markdown-basics',
+  'npm',
   'objective-c',
   'perl',
   'php',
