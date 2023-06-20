@@ -5,7 +5,7 @@ import { FileService } from 'vs/platform/files/common/fileService'
 import { ILogService } from 'vs/platform/log/common/log'
 import { InMemoryFileSystemProvider } from 'vs/platform/files/common/inMemoryFilesystemProvider'
 import { URI } from 'vs/base/common/uri'
-import { FileChangeType, FileSystemProviderCapabilities, FileType } from 'vscode/vs/platform/files/common/files'
+import { FileChangeType, FilePermission, FileSystemProviderCapabilities, FileType } from 'vscode/vs/platform/files/common/files'
 import { createFileSystemProviderError, FileSystemProviderError, FileSystemProviderErrorCode, IFileChange, IFileDeleteOptions, IFileOverwriteOptions, IFileService, IFileSystemProviderWithFileReadWriteCapability, IFileWriteOptions, IStat, IWatchOptions } from 'vs/platform/files/common/files'
 import { DisposableStore, IDisposable, Disposable } from 'vs/base/common/lifecycle'
 import { joinPath } from 'vs/base/common/resources'
@@ -342,5 +342,6 @@ export {
   HTMLFileSystemProvider,
   FileSystemProviderErrorCode,
   IFileChange,
-  FileChangeType
+  FileChangeType,
+  FilePermission
 }
