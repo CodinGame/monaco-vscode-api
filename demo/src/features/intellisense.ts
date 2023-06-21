@@ -2,11 +2,13 @@ import * as vscode from 'vscode'
 import 'monaco-editor/esm/vs/language/json/monaco.contribution.js'
 import 'monaco-editor/esm/vs/language/typescript/monaco.contribution.js'
 import * as monaco from 'monaco-editor/esm/vs/editor/editor.api.js'
-import { synchronizeJsonSchemas } from 'vscode/monaco'
+import { registerTypescriptWorkerFileProvider, synchronizeJsonSchemas } from 'vscode/monaco'
 import { onExtHostInitialized } from 'vscode/extensions'
 import typescriptGlobal from '../../node_modules/@types/node/globals.d.ts?raw'
 import typescriptConsole from '../../node_modules/@types/node/console.d.ts?raw'
 import typescriptProcess from '../../node_modules/@types/node/process.d.ts?raw'
+
+registerTypescriptWorkerFileProvider()
 
 await new Promise<void>(resolve => onExtHostInitialized(resolve))
 

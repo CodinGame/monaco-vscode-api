@@ -223,7 +223,7 @@ class OverlayFileSystemProvider implements IFileSystemProviderWithFileReadWriteC
       }
       try {
         const stats = await provider.stat(resource)
-        if (((stats.permissions ?? 0) | FilePermission.Readonly) > 0) {
+        if (((stats.permissions ?? 0) & FilePermission.Readonly) > 0) {
           continue
         }
       } catch (err) {

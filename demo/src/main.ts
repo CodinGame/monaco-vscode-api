@@ -36,7 +36,10 @@ while (variable < 5000) {
   console.log('Hello world', variable);
 }`)
 
-const mainDocument = await vscode.workspace.openTextDocument(modelRef.object.textEditorModel!.uri)
+const [mainDocument] = await Promise.all([
+  vscode.workspace.openTextDocument(modelRef.object.textEditorModel!.uri),
+  vscode.workspace.openTextDocument(monaco.Uri.file('/tmp/test2.js')) // open the file so vscode sees it's locked
+])
 await vscode.window.showTextDocument(mainDocument, {
   preview: false
 })
@@ -100,7 +103,7 @@ document.querySelector('#filesystem')!.addEventListener('click', async () => {
 
   const htmlFileSystemProvider = new HTMLFileSystemProvider(undefined, 'unused', StandaloneServices.get(ILogService))
   await htmlFileSystemProvider.registerDirectoryHandle(dirHandle)
-  registerFileSystemOverlay(htmlFileSystemProvider)
+  registerFileSystemOverlay(1, htmlFileSystemProvider)
 
   vscode.workspace.updateWorkspaceFolders(0, 0, {
     uri: vscode.Uri.file(dirHandle.name)
