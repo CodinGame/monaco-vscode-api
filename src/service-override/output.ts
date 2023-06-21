@@ -9,7 +9,7 @@ import 'vs/workbench/contrib/output/browser/output.contribution'
 
 class _FileLoggerService extends FileLoggerService {
   constructor (@IFileService fileService: IFileService) {
-    super(LogLevel.Info, URI.file('logs.log'), fileService)
+    super(LogLevel.Info, URI.from({ scheme: 'logs', path: '/' }), fileService)
   }
 }
 
