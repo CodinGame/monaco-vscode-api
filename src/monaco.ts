@@ -43,6 +43,7 @@ import { WorkbenchKeybindingService } from 'vs/workbench/services/keybinding/bro
 import { JsonSchema, registerJsonSchema, synchronizeJsonSchemas } from './json'
 import { createInjectedClass } from './tools/injection'
 import 'vs/workbench/contrib/codeEditor/browser/workbenchReferenceSearch'
+import { registerTypescriptWorkerFileProvider } from './typescript'
 
 class ExtensionPoints implements IWorkbenchContribution {
   constructor (
@@ -242,6 +243,8 @@ export {
   JsonSchema,
   registerJsonSchema,
   synchronizeJsonSchemas,
+
+  registerTypescriptWorkerFileProvider,
 
   registerColor,
 

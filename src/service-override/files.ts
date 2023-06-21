@@ -1,5 +1,5 @@
 import '../vscode-services/missing-services'
-import { IEditorOverrideServices } from 'vs/editor/standalone/browser/standaloneServices'
+import { IEditorOverrideServices, StandaloneServices } from 'vs/editor/standalone/browser/standaloneServices'
 import { SyncDescriptor } from 'vs/platform/instantiation/common/descriptors'
 import { FileService } from 'vs/platform/files/common/fileService'
 import { ILogService } from 'vs/platform/log/common/log'
@@ -8,126 +8,106 @@ import { URI } from 'vs/base/common/uri'
 import { FileChangeType, FilePermission, FileSystemProviderCapabilities, FileType } from 'vscode/vs/platform/files/common/files'
 import { createFileSystemProviderError, FileSystemProviderError, FileSystemProviderErrorCode, IFileChange, IFileDeleteOptions, IFileOverwriteOptions, IFileService, IFileSystemProviderWithFileReadWriteCapability, IFileWriteOptions, IStat, IWatchOptions } from 'vs/platform/files/common/files'
 import { DisposableStore, IDisposable, Disposable } from 'vs/base/common/lifecycle'
-import { joinPath } from 'vs/base/common/resources'
+import { extUri, joinPath } from 'vs/base/common/resources'
 import { Emitter, Event } from 'vs/base/common/event'
 import { HTMLFileSystemProvider } from 'vs/platform/files/browser/htmlFileSystemProvider'
-import * as monaco from 'monaco-editor'
+import * as path from 'vs/base/common/path'
 import 'vs/workbench/contrib/files/browser/files.contribution'
 
-class File implements IStat {
+class StaticFile implements IStat {
   ctime: number
   mtime: number
   size: number
   type: FileType
-  constructor (public getContent: () => Promise<string | Uint8Array>) {
+  constructor (public getContent: () => Promise<string | Uint8Array>, public setContent?: (content: string) => Promise<void>) {
     this.ctime = Date.now()
     this.mtime = Date.now()
     this.size = 0
     this.type = FileType.File
   }
 }
+
 const encoder = new TextEncoder()
 const decoder = new TextDecoder()
+class RegisteredFileSystemProvider extends Disposable implements IFileSystemProviderWithFileReadWriteCapability {
+  private files: Map<string, StaticFile>
+  capabilities: number
+  constructor (private readonly: boolean) {
+    super()
+    this.files = new Map<string, StaticFile>()
+    this.capabilities = FileSystemProviderCapabilities.FileReadWrite | FileSystemProviderCapabilities.PathCaseSensitive
+    if (readonly) {
+      this.capabilities |= FileSystemProviderCapabilities.Readonly
+    }
+  }
 
-abstract class SimpleTextFileSystemProvider implements IFileSystemProviderWithFileReadWriteCapability {
   onDidChangeCapabilities = Event.None
-  capabilities = FileSystemProviderCapabilities.FileReadWrite | FileSystemProviderCapabilities.PathCaseSensitive
+  _onDidChangeFile = new Emitter<readonly IFileChange[]>()
+  onDidChangeFile = this._onDidChangeFile.event
 
-  protected abstract getFileContent (resource: URI): Promise<string | undefined>
-
-  protected abstract setFileContent (resource: URI, content: string, opts: IFileWriteOptions): Promise<void>
-
-  onDidChangeFile: Event<readonly IFileChange[]> = Event.None
-
-  async readFile (resource: URI): Promise<Uint8Array> {
-    try {
-      const content = await this.getFileContent(resource)
-      if (content != null) {
-        return encoder.encode(content)
+  public registerFile (resource: URI, getContent: () => Promise<string | Uint8Array>, setContent?: (content: string) => Promise<void>): IDisposable {
+    this.files.set(resource.toString(), new StaticFile(getContent, setContent))
+    this._onDidChangeFile.fire([{
+      resource,
+      type: FileChangeType.ADDED
+    }])
+    return {
+      dispose: () => {
+        this.files.delete(resource.toString())
+        this._onDidChangeFile.fire([{
+          resource,
+          type: FileChangeType.DELETED
+        }])
       }
-    } catch (err) {
-      throw createFileSystemProviderError(err as Error, FileSystemProviderErrorCode.Unknown)
     }
-    throw createFileSystemProviderError('file not found', FileSystemProviderErrorCode.FileNotFound)
-  }
-
-  async writeFile (resource: URI, content: Uint8Array, opts: IFileWriteOptions): Promise<void> {
-    try {
-      await this.setFileContent(resource, decoder.decode(content), opts)
-    } catch (err) {
-      throw createFileSystemProviderError(err as Error, FileSystemProviderErrorCode.Unknown)
-    }
-  }
-
-  watch (): IDisposable {
-    // ignore, fires for all changes...
-    return Disposable.None
   }
 
   async stat (resource: URI): Promise<IStat> {
-    try {
-      const content = await this.getFileContent(resource)
-      if (content != null) {
+    const resourceUri = resource.toString()
+
+    const file = this.files.get(resourceUri)
+    if (file != null) {
+      return {
+        ctime: Date.now(),
+        mtime: Date.now(),
+        size: 0,
+        type: FileType.File,
+        permissions: file.setContent == null || this.readonly ? FilePermission.Readonly : undefined
+      }
+    }
+    const handledUris = Array.from(this.files.keys())
+    for (const handledUri of handledUris) {
+      if (handledUri.startsWith(resourceUri + '/')) {
         return {
-          type: FileType.File,
-          size: encoder.encode(content).length,
           ctime: Date.now(),
-          mtime: Date.now()
+          mtime: Date.now(),
+          size: 0,
+          type: FileType.Directory
         }
       }
-    } catch (err) {
-      throw createFileSystemProviderError(err as Error, FileSystemProviderErrorCode.Unknown)
     }
+
     throw createFileSystemProviderError('file not found', FileSystemProviderErrorCode.FileNotFound)
   }
 
-  async mkdir (): Promise<void> {
-    // Do nothing
-  }
+  public async readdir (resource: URI): Promise<[string, FileType][]> {
+    const includedPaths = Array.from(this.files.keys())
+      .map(uri => path.relative(resource.path, URI.parse(uri).path))
+      .filter(path => !path.startsWith('..'))
 
-  async readdir (): Promise<[string, FileType][]> {
-    return []
-  }
+    const files = includedPaths.filter(path => !path.includes('/'))
+    const directories = includedPaths.filter(path => path.includes('/')).map(path => path.slice(0, path.indexOf('/')))
 
-  delete (): Promise<void> {
-    throw createFileSystemProviderError('Not allowed', FileSystemProviderErrorCode.NoPermissions)
-  }
-
-  rename (): Promise<void> {
-    throw createFileSystemProviderError('Not allowed', FileSystemProviderErrorCode.NoPermissions)
-  }
-
-  onDidWatchError = Event.None
-}
-
-class TypescriptWorkerFileSystemProvider extends SimpleTextFileSystemProvider {
-  protected async getFileContent (resource: URI): Promise<string | undefined> {
-    const typescript = monaco.languages.typescript
-    // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
-    if (typescript == null) {
-      return undefined
-    }
-    const path = resource.path.slice(1)
-    return typescript.typescriptDefaults.getExtraLibs()[path]?.content ?? typescript.javascriptDefaults.getExtraLibs()[path]?.content
-  }
-
-  protected async setFileContent (): Promise<void> {}
-}
-
-class ExtensionFileSystemProviderWithFileReadWriteCapability implements IFileSystemProviderWithFileReadWriteCapability {
-  capabilities = FileSystemProviderCapabilities.FileReadWrite | FileSystemProviderCapabilities.PathCaseSensitive | FileSystemProviderCapabilities.Readonly
-
-  private files: Map<string, File>
-  constructor () {
-    this.files = new Map<string, File>()
-  }
-
-  async stat (resource: URI): Promise<IStat> {
-    const file = this.files.get(resource.toString())
-    if (file != null) {
-      return file
-    }
-    throw FileSystemProviderError.create('file not found', FileSystemProviderErrorCode.FileNotFound)
+    return <[string, FileType][]>[
+      ...files.map(path => [
+        path,
+        FileType.File
+      ]),
+      ...directories.map(path => [
+        path,
+        FileType.Directory
+      ])
+    ]
   }
 
   async readFile (resource: URI): Promise<Uint8Array> {
@@ -145,63 +125,56 @@ class ExtensionFileSystemProviderWithFileReadWriteCapability implements IFileSys
   }
 
   watch (): IDisposable {
-    // ignore, fires for all changes...
     return Disposable.None
   }
 
-  public registerFile (resource: URI, getContent: () => Promise<string | Uint8Array>): IDisposable {
-    this.files.set(resource.toString(), new File(getContent))
-    return {
-      dispose: () => {
-        this.files.delete(resource.toString())
-      }
+  async writeFile (resource: URI, content: Uint8Array): Promise<void> {
+    const file = this.files.get(resource.toString())
+    if (file?.setContent != null) {
+      await file.setContent(decoder.decode(content))
+      this._onDidChangeFile.fire([{
+        resource,
+        type: FileChangeType.UPDATED
+      }])
+      return
     }
-  }
-
-  onDidChangeFile = Event.None
-  onDidChangeCapabilities = Event.None
-
-  async writeFile () {
     throw createFileSystemProviderError('Not allowed', FileSystemProviderErrorCode.NoPermissions)
   }
 
-  async mkdir () {
+  async mkdir (): Promise<never> {
     throw createFileSystemProviderError('Not allowed', FileSystemProviderErrorCode.NoPermissions)
   }
 
-  readdir (): Promise<[string, FileType][]> {
+  async delete (): Promise<never> {
     throw createFileSystemProviderError('Not allowed', FileSystemProviderErrorCode.NoPermissions)
   }
 
-  async delete () {
-    throw createFileSystemProviderError('Not allowed', FileSystemProviderErrorCode.NoPermissions)
-  }
-
-  async rename () {
+  async rename (): Promise<never> {
     throw createFileSystemProviderError('Not allowed', FileSystemProviderErrorCode.NoPermissions)
   }
 }
-const extensionFileSystemProvider = new ExtensionFileSystemProviderWithFileReadWriteCapability()
 
 function isFullfiled<T> (result: PromiseSettledResult<T>): result is PromiseFulfilledResult<T> {
   return result.status === 'fulfilled'
 }
-class OverlayFileSystemProvider implements IFileSystemProviderWithFileReadWriteCapability {
-  private others: IFileSystemProviderWithFileReadWriteCapability[] = []
-  constructor (private _default: IFileSystemProviderWithFileReadWriteCapability) {}
 
-  public register (delegate: IFileSystemProviderWithFileReadWriteCapability) {
-    this.others.push(delegate)
+class OverlayFileSystemProvider implements IFileSystemProviderWithFileReadWriteCapability {
+  private providers: { priority: number, provider: IFileSystemProviderWithFileReadWriteCapability }[] = []
+
+  public register (priority: number, provider: IFileSystemProviderWithFileReadWriteCapability): IDisposable {
+    const item = { priority, provider }
+    this.providers.push(item)
+    this.providers.sort((a, b) => b.priority - a.priority)
 
     const disposableStore = new DisposableStore()
-    disposableStore.add(delegate.onDidChangeFile(e => {
+    disposableStore.add(provider.onDidChangeFile(e => {
       this._onDidChangeFile.fire(e)
     }))
     disposableStore.add({
       dispose: () => {
-        const index = this.others.indexOf(delegate)
+        const index = this.providers.indexOf(item)
         if (index >= 0) {
-          this.others.splice(index, 1)
+          this.providers.splice(index, 1)
           this._onDidChangeOverlays.fire()
         }
       }
@@ -211,13 +184,12 @@ class OverlayFileSystemProvider implements IFileSystemProviderWithFileReadWriteC
   }
 
   get delegates (): IFileSystemProviderWithFileReadWriteCapability[] {
-    return [this._default, ...this.others]
+    return this.providers.map(({ provider }) => provider)
   }
 
-  onDidChangeCapabilities = Event.any(...this.delegates.map(delegate => delegate.onDidChangeCapabilities))
-
+  onDidChangeCapabilities = Event.None
   _onDidChangeFile = new Emitter<readonly IFileChange[]>()
-  onDidChangeFile = Event.any(this._default.onDidChangeFile, this._onDidChangeFile.event)
+  onDidChangeFile = this._onDidChangeFile.event
 
   _onDidChangeOverlays = new Emitter<void>()
   onDidChangeOverlays = this._onDidChangeOverlays.event
@@ -231,7 +203,11 @@ class OverlayFileSystemProvider implements IFileSystemProviderWithFileReadWriteC
         return await caller(delegate)
       } catch (err) {
         firstError ??= err
-        if (err instanceof FileSystemProviderError && err.code === FileSystemProviderErrorCode.FileNotFound) {
+        if (err instanceof FileSystemProviderError && [
+          FileSystemProviderErrorCode.NoPermissions,
+          FileSystemProviderErrorCode.FileNotFound,
+          FileSystemProviderErrorCode.Unavailable
+        ].includes(err.code)) {
           continue
         }
         throw err
@@ -240,19 +216,45 @@ class OverlayFileSystemProvider implements IFileSystemProviderWithFileReadWriteC
     throw firstError
   }
 
-  private async writeToDelegates (caller: (delegate: IFileSystemProviderWithFileReadWriteCapability) => Promise<void>) {
-    const results = await Promise.allSettled(this.delegates.map(async delegate => {
-      if ((delegate.capabilities & FileSystemProviderCapabilities.Readonly) === 0) {
-        await caller(delegate)
+  private async writeToDelegates (resource: URI, caller: (delegate: IFileSystemProviderWithFileReadWriteCapability) => Promise<void>): Promise<void> {
+    for (const provider of this.delegates) {
+      if ((provider.capabilities & FileSystemProviderCapabilities.Readonly) > 0) {
+        continue
       }
-    }))
-    if (!results.some(result => result.status === 'fulfilled')) {
-      throw (results[0] as PromiseRejectedResult).reason
+      try {
+        const stats = await provider.stat(resource)
+        if (((stats.permissions ?? 0) | FilePermission.Readonly) > 0) {
+          continue
+        }
+      } catch (err) {
+        // ignore
+      }
+      try {
+        return await caller(provider)
+      } catch (err) {
+        if (err instanceof FileSystemProviderError && [
+          FileSystemProviderErrorCode.NoPermissions,
+          FileSystemProviderErrorCode.FileNotFound,
+          FileSystemProviderErrorCode.Unavailable
+        ].includes(err.code)) {
+          continue
+        }
+        throw err
+      }
     }
+    throw createFileSystemProviderError('Not allowed', FileSystemProviderErrorCode.NoPermissions)
   }
 
   async stat (resource: URI): Promise<IStat> {
-    return this.readFromDelegates(delegate => delegate.stat(resource))
+    return this.readFromDelegates(async delegate => {
+      const result = await delegate.stat(resource)
+
+      const readOnly = (delegate.capabilities & FileSystemProviderCapabilities.Readonly) > 0
+      return {
+        ...result,
+        permissions: result.permissions ?? (readOnly ? FilePermission.Readonly : undefined)
+      }
+    })
   }
 
   async readFile (resource: URI): Promise<Uint8Array> {
@@ -261,7 +263,7 @@ class OverlayFileSystemProvider implements IFileSystemProviderWithFileReadWriteC
 
   async readdir (resource: URI): Promise<[string, FileType][]> {
     const results = await Promise.allSettled(this.delegates.map(delegate => delegate.readdir(resource)))
-    if (!results.some(result => result.status === 'fulfilled')) {
+    if (!results.some(isFullfiled)) {
       throw (results[0] as PromiseRejectedResult).reason
     }
     return Object.entries(Object.fromEntries(results.filter(isFullfiled).map(result => result.value).flat()))
@@ -276,24 +278,38 @@ class OverlayFileSystemProvider implements IFileSystemProviderWithFileReadWriteC
   }
 
   async writeFile (resource: URI, content: Uint8Array, opts: IFileWriteOptions): Promise<void> {
-    await this.writeToDelegates(delegate => delegate.writeFile(resource, content, opts))
+    await this.writeToDelegates(resource, delegate => delegate.writeFile(resource, content, opts))
   }
 
   async mkdir (resource: URI): Promise<void> {
-    await this.writeToDelegates(delegate => delegate.mkdir(resource))
+    await this.writeToDelegates(resource, delegate => delegate.mkdir(resource))
   }
 
   async delete (resource: URI, opts: IFileDeleteOptions): Promise<void> {
-    await this.writeToDelegates(delegate => delegate.delete(resource, opts))
+    await this.writeToDelegates(resource, delegate => delegate.delete(resource, opts))
   }
 
   async rename (from: URI, to: URI, opts: IFileOverwriteOptions): Promise<void> {
-    await this.writeToDelegates(delegate => delegate.rename(from, to, opts))
+    await this.writeToDelegates(from, delegate => delegate.rename(from, to, opts))
   }
 }
 
-const fileSystemProvider = new OverlayFileSystemProvider(new InMemoryFileSystemProvider())
+class MkdirpOnWriteInMemoryFileSystemProvider extends InMemoryFileSystemProvider {
+  override async writeFile (resource: URI, content: Uint8Array, opts: IFileWriteOptions): Promise<void> {
+    // when using overlay providers, the fileservice won't be able to detect that the parent directory doesn't exist
+    // if another provider has this directory. So it won't create the parent directories on this memory file system.
+    // So let's do it ourself
+    // eslint-disable-next-line dot-notation
+    await (StandaloneServices.get(IFileService) as FileService)['mkdirp'](this, extUri.dirname(resource))
 
+    return super.writeFile(resource, content, opts)
+  }
+}
+
+const fileSystemProvider = new OverlayFileSystemProvider()
+fileSystemProvider.register(0, new MkdirpOnWriteInMemoryFileSystemProvider())
+
+const extensionFileSystemProvider = new RegisteredFileSystemProvider(true)
 class MemoryFileService extends FileService {
   constructor (@ILogService logService: ILogService) {
     super(logService)
@@ -322,11 +338,20 @@ export function registerExtensionFile (extensionLocation: URI, path: string, get
   return extensionFileSystemProvider.registerFile(joinPath(extensionLocation, path), getContent)
 }
 
-export function registerFileSystemOverlay (provider: IFileSystemProviderWithFileReadWriteCapability): IDisposable {
-  return fileSystemProvider.register(provider)
+/**
+ * Register a file system overlay
+ *
+ * By default, a memory filesystem is used to read and write file
+ *
+ * This method allows to register another fileSystemProvider in front OR behind the default memory one.
+ *
+ * The default one is registered as priority: 0, so:
+ * - any provider registered with a positive priority will be in front of the default one
+ * - any provider registered with a negative priority will be behind the default one
+ */
+export function registerFileSystemOverlay (priority: number, provider: IFileSystemProviderWithFileReadWriteCapability): IDisposable {
+  return fileSystemProvider.register(priority, provider)
 }
-
-registerFileSystemOverlay(new TypescriptWorkerFileSystemProvider())
 
 export {
   IFileSystemProviderWithFileReadWriteCapability,
@@ -338,10 +363,11 @@ export {
   IFileDeleteOptions,
   IFileOverwriteOptions,
   FileSystemProviderError,
-  SimpleTextFileSystemProvider,
-  HTMLFileSystemProvider,
   FileSystemProviderErrorCode,
   IFileChange,
   FileChangeType,
-  FilePermission
+  FilePermission,
+  HTMLFileSystemProvider,
+  InMemoryFileSystemProvider,
+  RegisteredFileSystemProvider
 }
