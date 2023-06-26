@@ -31,6 +31,8 @@ import 'vs/workbench/contrib/files/browser/fileCommands'
 import 'vs/workbench/contrib/files/browser/fileActions.contribution'
 import 'vs/workbench/contrib/callHierarchy/browser/callHierarchy.contribution'
 import 'vs/workbench/contrib/typeHierarchy/browser/typeHierarchy.contribution'
+import 'vs/workbench/contrib/codeEditor/browser/outline/documentSymbolsOutline'
+import 'vs/workbench/contrib/outline/browser/outline.contribution'
 import 'vs/workbench/browser/actions/listCommands'
 import 'vscode/vs/workbench/browser/parts/views/media/views.css'
 import 'vs/workbench/api/browser/viewsExtensionPoint'
@@ -72,8 +74,10 @@ import { ContextKeyExpr } from 'vs/platform/contextkey/common/contextkey'
 import { IDropdownMenuActionViewItemOptions } from 'vs/base/browser/ui/dropdown/dropdownActionViewItem'
 import { IAction } from 'vs/base/common/actions'
 import { BaseActionViewItem } from 'vs/base/browser/ui/actionbar/actionViewItems'
-import { OpenEditor, wrapOpenEditor } from './tools/editor'
+import { IOutlineService } from 'vs/workbench/services/outline/browser/outline'
+import { OutlineService } from 'vs/workbench/services/outline/browser/outlineService'
 import getLayoutServiceOverride from './layout'
+import { OpenEditor, wrapOpenEditor } from './tools/editor'
 import getBulkEditServiceOverride from './bulkEdit'
 
 const paneCompositeParts = new Map<ViewContainerLocation, IPaneCompositePart>()
@@ -403,7 +407,8 @@ export default function getServiceOverride (openEditorFallback?: OpenEditor): IE
     [IContextViewService.toString()]: new SyncDescriptor(ContextViewService),
     [IUntitledTextEditorService.toString()]: new SyncDescriptor(UntitledTextEditorService),
     [ISemanticSimilarityService.toString()]: new SyncDescriptor(SemanticSimilarityService),
-    [IHistoryService.toString()]: new SyncDescriptor(HistoryService)
+    [IHistoryService.toString()]: new SyncDescriptor(HistoryService),
+    [IOutlineService.toString()]: new SyncDescriptor(OutlineService)
   }
 }
 

@@ -269,6 +269,19 @@ index 88cc5df03cf..07926124b30 100644
  	}
  
  	private async replaceContent(model: ITextModel, token: CancellationToken): Promise<void> {
+diff --git a/src/vs/workbench/services/outline/browser/outlineService.ts b/src/vs/workbench/services/outline/browser/outlineService.ts
+index f4707432371..7c5cdde39cc 100644
+--- a/src/vs/workbench/services/outline/browser/outlineService.ts
++++ b/src/vs/workbench/services/outline/browser/outlineService.ts
+@@ -11,7 +11,7 @@ import { IEditorPane } from 'vs/workbench/common/editor';
+ import { IOutline, IOutlineCreator, IOutlineService, OutlineTarget } from 'vs/workbench/services/outline/browser/outline';
+ import { Event, Emitter } from 'vs/base/common/event';
+ 
+-class OutlineService implements IOutlineService {
++export class OutlineService implements IOutlineService {
+ 
+ 	declare _serviceBrand: undefined;
+ 
 diff --git a/src/vs/workbench/services/textMate/browser/worker/textMate.worker.ts b/src/vs/workbench/services/textMate/browser/worker/textMate.worker.ts
 index 67484e6ef40..ef7cd478655 100644
 --- a/src/vs/workbench/services/textMate/browser/worker/textMate.worker.ts

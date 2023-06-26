@@ -112,7 +112,8 @@ const ALLOWED_WORKBENCH_CONTRIBUTIONS = new Set([
   'SearchEditorContribution',
   'SearchEditorWorkingCopyEditorHandler',
   'ActivityUpdater',
-  'MarkersStatusBarContributions'
+  'MarkersStatusBarContributions',
+  'DocumentSymbolsOutlineCreator'
 ])
 
 function isCallPure (file: string, functionName: string, node: recast.types.namedTypes.CallExpression): boolean {
@@ -440,7 +441,8 @@ export default (args: Record<string, string>): rollup.RollupOptions[] => {
           id.endsWith('/quickAccessActions.js') ||
           id.endsWith('/gotoLineQuickAccess.js') ||
           id.endsWith('/workbenchReferenceSearch.js') ||
-          id.includes('/searchActions')
+          id.includes('/searchActions') ||
+          id.endsWith('documentSymbolsOutline.js')
       }
     },
     external,
