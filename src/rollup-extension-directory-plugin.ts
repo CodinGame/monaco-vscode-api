@@ -7,11 +7,12 @@ import { lookup as lookupMimeType } from 'mime-types'
 import * as path from 'path'
 import * as fsPromise from 'fs/promises'
 import * as fs from 'fs'
+import * as url from 'url'
 import { buildExtensionCode, compressResource, extractResourcesFromExtensionManifest, parseJson } from './extension-tools'
+
 interface Options {
   include?: FilterPattern
   exclude?: FilterPattern
-  isDefaultExtension?: boolean
   rollupPlugins?: InputPluginOption[]
   transformManifest?: (manifest: IExtensionManifest) => IExtensionManifest
 }
@@ -19,7 +20,6 @@ interface Options {
 export default function plugin ({
   include,
   exclude,
-  isDefaultExtension = false,
   rollupPlugins = [],
   transformManifest = manifest => manifest
 }: Options): Plugin {
@@ -95,7 +95,7 @@ export default function plugin ({
           const asyncPaths = extensionResources.filter(resource => !resource.sync).map(r => r.path)
           return `
 import manifest from '${manifestPath}'
-import { registerExtension, onExtHostInitialized } from '${isDefaultExtension ? '../src/extensions' : 'vscode/extensions'}'
+import { registerExtension, onExtHostInitialized } from '${url.fileURLToPath(new URL('../extensions.js', import.meta.url))}'
 ${syncPaths.map((resourcePath, index) => (`
 import resource_${index} from '${path.resolve(id, resourcePath)}.extensionResource'`)).join('\n')}
 
