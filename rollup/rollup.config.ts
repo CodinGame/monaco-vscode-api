@@ -299,69 +299,6 @@ function getMemberExpressionPath (node: recast.types.namedTypes.MemberExpression
   return null
 }
 
-const USE_DEFAULT_EXTENSIONS = new Set([
-  'bat',
-  'clojure',
-  'coffeescript',
-  'cpp',
-  'csharp',
-  'css',
-  'dart',
-  'diff',
-  'docker',
-  'fsharp',
-  'go',
-  'groovy',
-  'handlebars',
-  'hlsl',
-  'html',
-  'ini',
-  'java',
-  'javascript',
-  'json',
-  'julia',
-  'latex',
-  'less',
-  'log',
-  'lua',
-  'make',
-  'markdown-basics',
-  'npm',
-  'objective-c',
-  'perl',
-  'php',
-  'powershell',
-  'pug',
-  'python',
-  'r',
-  'razor',
-  'references-view',
-  'ruby',
-  'rust',
-  'scss',
-  'search-result',
-  'shaderlab',
-  'shellscript',
-  'sql',
-  'swift',
-  'theme-abyss',
-  'theme-defaults',
-  'theme-kimbie-dark',
-  'theme-monokai-dimmed',
-  'theme-monokai',
-  'theme-quietlight',
-  'theme-red',
-  'theme-seti',
-  'theme-solarized-dark',
-  'theme-solarized-light',
-  'theme-tomorrow-night-blue',
-  'vs-seti',
-  'typescript-basics',
-  'vb',
-  'xml',
-  'yaml'
-])
-
 const input = {
   api: './src/api.ts',
   extensions: './src/extensions.ts',
@@ -392,7 +329,6 @@ const input = {
   monaco: './src/monaco.ts',
   ...Object.fromEntries(
     fs.readdirSync(DEFAULT_EXTENSIONS_PATH, { withFileTypes: true })
-      .filter(f => USE_DEFAULT_EXTENSIONS.has(f.name))
       .filter(f => f.isDirectory() && fs.existsSync(path.resolve(DEFAULT_EXTENSIONS_PATH, f.name, 'package.json')))
       .map(f => f.name)
       .map(name => [
