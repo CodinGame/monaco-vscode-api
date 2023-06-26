@@ -407,7 +407,24 @@ export default (args: Record<string, string>): rollup.RollupOptions[] => {
         include: `${DEFAULT_EXTENSIONS_PATH}/**/*`,
         rollupPlugins: [
           terser()
-        ]
+        ],
+        transformManifest (manifest) {
+          if (manifest.name === 'configuration-editing') {
+            return {
+              ...manifest,
+              contributes: {
+                ...manifest.contributes,
+                jsonValidation: manifest.contributes!.jsonValidation!.map(validation => {
+                  return {
+                    fileMatch: (validation.fileMatch as string).replaceAll('%APP_SETTINGS_HOME%', 'user:'),
+                    url: validation.url
+                  }
+                })
+              }
+            }
+          }
+          return manifest
+        }
       }),
       {
         name: 'resolve-vscode',
