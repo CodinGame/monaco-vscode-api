@@ -66,28 +66,24 @@ export function wrapOpenEditor (textModelService: ITextModelService, defaultBeha
 
     let modelEditor: ICodeEditor | undefined
 
-    // The model doesn't exist, resolve it
-    const modelRef = await textModelService.createModelReference(resource)
-
     // If the model is already existing, try to find an associated editor
     const codeEditors = StandaloneServices.get(ICodeEditorService).listCodeEditors()
-    modelEditor = codeEditors.find(editor => editor instanceof StandaloneEditor && editor.getModel() === modelRef.object.textEditorModel)
+    modelEditor = codeEditors.find(editor => editor instanceof StandaloneEditor && editor.getModel() != null && editor.getModel()!.uri.toString() === resource.toString())
 
     if (modelEditor == null) {
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
       const defaultBehaviorResult = await defaultBehavior(editor as any, optionsOrPreferredGroup as any, preferredGroup)
       if (defaultBehaviorResult != null) {
-        modelRef.dispose()
         return defaultBehaviorResult
       }
 
+      const modelRef = await textModelService.createModelReference(resource)
       modelEditor = await fallbackBahavior?.(modelRef, options, preferredGroup === SIDE_GROUP)
-    }
-
-    if (modelEditor == null) {
-      // Dispose the newly created model if `openEditor` wasn't able to open it
-      modelRef.dispose()
-      return undefined
+      if (modelEditor == null) {
+        // Dispose the newly created model if `openEditor` wasn't able to open it
+        modelRef.dispose()
+        return undefined
+      }
     }
 
     // Otherwise, let the user destroy the model, never destroy the reference
