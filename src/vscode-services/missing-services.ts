@@ -370,7 +370,6 @@ class WorkbenchEnvironmentService implements IBrowserWorkbenchEnvironmentService
 }
 registerSingleton(IBrowserWorkbenchEnvironmentService, WorkbenchEnvironmentService, InstantiationType.Eager)
 registerSingleton(IEnvironmentService, WorkbenchEnvironmentService, InstantiationType.Eager)
-registerSingleton(IBrowserWorkbenchEnvironmentService, WorkbenchEnvironmentService, InstantiationType.Eager)
 registerSingleton(IWorkingCopyFileService, WorkingCopyFileService, InstantiationType.Eager)
 registerSingleton(IPathService, BrowserPathService, InstantiationType.Delayed)
 
