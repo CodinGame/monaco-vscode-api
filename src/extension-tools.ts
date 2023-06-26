@@ -10,7 +10,9 @@ import { getParseErrorMessage } from 'vs/base/common/jsonErrorMessages'
 import { InputPluginOption, rollup } from 'rollup'
 import { addExtension } from '@rollup/pluginutils'
 import { IUserFriendlyViewsContainerDescriptor } from 'vs/workbench/api/browser/viewsExtensionPoint'
+import inject from '@rollup/plugin-inject'
 import * as path from 'path'
+import * as url from 'url'
 
 export interface ExtensionResource {
   path: string
@@ -167,11 +169,30 @@ export async function extractResourcesFromExtensionManifest (manifest: IExtensio
     resources.push(...await extractResourcesFromExtensionManifestContribute(manifest.contributes as RealContribute, getFileContent))
   }
   if (manifest.browser != null) {
+    const jsPath = addExtension(manifest.browser, '.js')
     resources.push({
-      path: addExtension(manifest.browser, '.js'),
+      path: jsPath,
       sync: false
     })
+    resources.push(...(await extractResources(jsPath, getFileContent)))
   }
+  return resources
+}
+
+async function extractResources (resourcePath: string, getFileContent: (path: string) => Promise<Buffer>): Promise<ExtensionResource[]> {
+  const resources: ExtensionResource[] = []
+  const content = (await getFileContent(resourcePath)).toString('utf-8')
+
+  if (resourcePath.endsWith('.js')) {
+    for (const match of content.matchAll(/Uri\.joinPath\(context\.extensionUri, '([^']+)'\)/g)) {
+      resources.push({
+        path: match[1]!,
+        sync: false
+      })
+      resources.push(...(await extractResources(match[1]!, getFileContent)))
+    }
+  }
+
   return resources
 }
 
@@ -184,9 +205,9 @@ export function parseJson<T> (path: string, text: string): T {
   return result
 }
 
-export async function buildExtensionCode (path: string, rollupPlugins: InputPluginOption[], getFileContent?: (path: string) => Promise<string>): Promise<string> {
+export async function buildExtensionCode (extPath: string, rollupPlugins: InputPluginOption[], getFileContent?: (path: string) => Promise<string>): Promise<string> {
   const build = await rollup({
-    input: path,
+    input: extPath,
     external: ['vscode'],
     plugins: [
       ...(getFileContent != null
@@ -200,6 +221,9 @@ export async function buildExtensionCode (path: string, rollupPlugins: InputPlug
           }
         }]
         : []),
+      inject({
+        Worker: url.fileURLToPath(new URL('./extensionWorker.js', import.meta.url))
+      }),
       ...rollupPlugins
     ]
   })
