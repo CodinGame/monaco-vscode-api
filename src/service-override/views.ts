@@ -38,6 +38,9 @@ import 'vscode/vs/workbench/browser/parts/views/media/views.css'
 import 'vs/workbench/api/browser/viewsExtensionPoint'
 import 'vs/workbench/browser/parts/editor/editor.contribution'
 import 'vs/workbench/browser/workbench.contribution'
+import 'vs/workbench/contrib/customEditor/browser/customEditor.contribution'
+import 'vs/workbench/contrib/webviewPanel/browser/webviewPanel.contribution'
+import 'vs/workbench/contrib/externalUriOpener/common/externalUriOpener.contribution'
 import { Codicon } from 'vs/base/common/codicons'
 import { IEditorGroupsService } from 'vs/workbench/services/editor/common/editorGroupsService'
 import { IEditorDropService } from 'vs/workbench/services/editor/browser/editorDropService'
@@ -76,9 +79,15 @@ import { IAction } from 'vs/base/common/actions'
 import { BaseActionViewItem } from 'vs/base/browser/ui/actionbar/actionViewItems'
 import { IOutlineService } from 'vs/workbench/services/outline/browser/outline'
 import { OutlineService } from 'vs/workbench/services/outline/browser/outlineService'
-import getLayoutServiceOverride from './layout'
+import { ICustomEditorService } from 'vs/workbench/contrib/customEditor/common/customEditor'
+import { CustomEditorService } from 'vs/workbench/contrib/customEditor/browser/customEditors'
+import { WebviewService } from 'vs/workbench/contrib/webview/browser/webviewService'
+import { IWebviewWorkbenchService, WebviewEditorService } from 'vs/workbench/contrib/webviewPanel/browser/webviewWorkbenchService'
+import { IWebviewService } from 'vs/workbench/contrib/webview/browser/webview'
+import { IWebviewViewService, WebviewViewService } from 'vs/workbench/contrib/webviewView/browser/webviewViewService'
 import { OpenEditor, wrapOpenEditor } from './tools/editor'
 import getBulkEditServiceOverride from './bulkEdit'
+import getLayoutServiceOverride from './layout'
 
 const paneCompositeParts = new Map<ViewContainerLocation, IPaneCompositePart>()
 const paneCompositeSelectorParts = new Map<ViewContainerLocation, IPaneCompositeSelectorPart>()
@@ -330,7 +339,7 @@ class EditorDropService implements IEditorDropService {
   }
 }
 
-class CustomEditorService extends EditorService {
+class MonacoEditorService extends EditorService {
   constructor (
     _openEditorFallback: OpenEditor | undefined,
     @IEditorGroupsService private _editorGroupService: IEditorGroupsService,
@@ -401,14 +410,18 @@ export default function getServiceOverride (openEditorFallback?: OpenEditor): IE
     [IEditorGroupsService.toString()]: new SyncDescriptor(EditorPart),
     [IStatusbarService.toString()]: new SyncDescriptor(StatusbarPart),
     [IEditorDropService.toString()]: new SyncDescriptor(EditorDropService),
-    [IEditorService.toString()]: new SyncDescriptor(CustomEditorService, [openEditorFallback]),
+    [IEditorService.toString()]: new SyncDescriptor(MonacoEditorService, [openEditorFallback]),
     [IEditorResolverService.toString()]: new SyncDescriptor(EditorResolverService),
     [IBreadcrumbsService.toString()]: new SyncDescriptor(BreadcrumbsService),
     [IContextViewService.toString()]: new SyncDescriptor(ContextViewService),
     [IUntitledTextEditorService.toString()]: new SyncDescriptor(UntitledTextEditorService),
     [ISemanticSimilarityService.toString()]: new SyncDescriptor(SemanticSimilarityService),
     [IHistoryService.toString()]: new SyncDescriptor(HistoryService),
-    [IOutlineService.toString()]: new SyncDescriptor(OutlineService)
+    [IOutlineService.toString()]: new SyncDescriptor(OutlineService),
+    [ICustomEditorService.toString()]: new SyncDescriptor(CustomEditorService),
+    [IWebviewService.toString()]: new SyncDescriptor(WebviewService),
+    [IWebviewViewService.toString()]: new SyncDescriptor(WebviewViewService),
+    [IWebviewWorkbenchService.toString()]: new SyncDescriptor(WebviewEditorService)
   }
 }
 

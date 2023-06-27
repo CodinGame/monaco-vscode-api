@@ -128,6 +128,13 @@ import { IChatService } from 'vs/workbench/contrib/chat/common/chatService'
 import { IEmbedderTerminalService } from 'vs/workbench/services/terminal/common/embedderTerminalService'
 import { IExtensionHostProxy } from 'vs/workbench/services/extensions/common/extensionHostProxy'
 import { IExtensionDescriptionDelta } from 'vs/workbench/services/extensions/common/extensionHostProtocol'
+import { ICustomEditorService } from 'vs/workbench/contrib/customEditor/common/customEditor'
+import { IWebviewWorkbenchService } from 'vs/workbench/contrib/webviewPanel/browser/webviewWorkbenchService'
+import { IWebview, IWebviewService } from 'vs/workbench/contrib/webview/browser/webview'
+import { IWebviewViewService } from 'vs/workbench/contrib/webviewView/browser/webviewViewService'
+import { IEditorDropService } from 'vs/workbench/services/editor/browser/editorDropService'
+import { IRemoteAuthorityResolverService } from 'vs/platform/remote/common/remoteAuthorityResolver'
+import { ExternalUriOpenerService, IExternalUriOpenerService } from 'vs/workbench/contrib/externalUriOpener/common/externalUriOpenerService'
 import { unsupported } from '../tools'
 
 class NullLoggerService extends AbstractLoggerService {
@@ -338,7 +345,7 @@ class WorkbenchEnvironmentService implements IBrowserWorkbenchEnvironmentService
   skipReleaseNotes = true
   skipWelcome = true
   disableWorkspaceTrust = true
-  get webviewExternalEndpoint () { return unsupported() }
+  webviewExternalEndpoint = 'https://{{uuid}}.vscode-cdn.net/insider/ef65ac1ba57f57f2a3961bfe94aa20481caca4c6/out/vs/workbench/contrib/webview/browser/pre/'
   debugRenderer = false
   userRoamingDataHome = URI.from({ scheme: 'user', path: '/userRoamingDataHome' })
   keyboardLayoutResource = URI.from({ scheme: 'user', path: '/keyboardLayout.json' })
@@ -1573,3 +1580,68 @@ registerSingleton(IEmbedderTerminalService, class EmbedderTerminalService implem
   onDidCreateTerminal = Event.None
   createTerminal = unsupported
 }, InstantiationType.Delayed)
+
+registerSingleton(ICustomEditorService, class CustomEditorService implements ICustomEditorService {
+  _serviceBrand: undefined
+  get models () {
+    return unsupported()
+  }
+
+  getCustomEditor = unsupported
+  getAllCustomEditors = unsupported
+  getContributedCustomEditors = unsupported
+  getUserConfiguredCustomEditors = unsupported
+  registerCustomEditorCapabilities = unsupported
+  getCustomEditorCapabilities = unsupported
+}, InstantiationType.Delayed)
+
+registerSingleton(IWebviewService, class WebviewService implements IWebviewService {
+  _serviceBrand: undefined
+  activeWebview: IWebview | undefined
+  webviews = []
+  onDidChangeActiveWebview = Event.None
+  createWebviewElement = unsupported
+  createWebviewOverlay = unsupported
+}, InstantiationType.Delayed)
+
+registerSingleton(IWebviewViewService, class WebviewService implements IWebviewViewService {
+  _serviceBrand: undefined
+  onNewResolverRegistered = Event.None
+  register = unsupported
+  resolve = unsupported
+}, InstantiationType.Delayed)
+
+registerSingleton(IWebviewWorkbenchService, class WebviewWorkbenchService implements IWebviewWorkbenchService {
+  _serviceBrand: undefined
+  get iconManager () {
+    return unsupported()
+  }
+
+  onDidChangeActiveWebviewEditor = Event.None
+  openWebview = unsupported
+  openRevivedWebview = unsupported
+  revealWebview = unsupported
+  registerResolver = unsupported
+  shouldPersist = unsupported
+  resolveWebview = unsupported
+}, InstantiationType.Delayed)
+
+registerSingleton(IEditorDropService, class EditorDropService implements IEditorDropService {
+  _serviceBrand: undefined
+  createEditorDropTarget = unsupported
+}, InstantiationType.Delayed)
+
+registerSingleton(IRemoteAuthorityResolverService, class RemoteAuthorityResolverService implements IRemoteAuthorityResolverService {
+  _serviceBrand: undefined
+  onDidChangeConnectionData = Event.None
+  resolveAuthority = unsupported
+  getConnectionData = unsupported
+  getCanonicalURI = unsupported
+  _clearResolvedAuthority = unsupported
+  _setResolvedAuthority = unsupported
+  _setResolvedAuthorityError = unsupported
+  _setAuthorityConnectionToken = unsupported
+  _setCanonicalURIProvider = unsupported
+}, InstantiationType.Delayed)
+
+registerSingleton(IExternalUriOpenerService, ExternalUriOpenerService, InstantiationType.Delayed)

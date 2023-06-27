@@ -113,7 +113,9 @@ const ALLOWED_WORKBENCH_CONTRIBUTIONS = new Set([
   'SearchEditorWorkingCopyEditorHandler',
   'ActivityUpdater',
   'MarkersStatusBarContributions',
-  'DocumentSymbolsOutlineCreator'
+  'DocumentSymbolsOutlineCreator',
+  'ComplexCustomWorkingCopyEditorHandler',
+  'WebviewPanelContribution'
 ])
 
 function isCallPure (file: string, functionName: string, node: recast.types.namedTypes.CallExpression): boolean {
@@ -369,7 +371,7 @@ export default (args: Record<string, string>): rollup.RollupOptions[] => {
           id.endsWith('.css') ||
           id.startsWith(KEYBOARD_LAYOUT_DIR) ||
           id.endsWith('.contribution.js') ||
-          id.endsWith('ExtensionPoint.js') ||
+          id.endsWith('xtensionPoint.js') ||
           id.includes('vs/workbench/api/browser/') ||
           id.endsWith('/fileCommands.js') ||
           id.endsWith('/explorerViewlet.js') ||
