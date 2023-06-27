@@ -40,7 +40,6 @@ import { ICodeEditorService } from 'vs/editor/browser/services/codeEditorService
 import { IKeybindingService } from 'vs/platform/keybinding/common/keybinding'
 import { KeybindingResolver } from 'vs/platform/keybinding/common/keybindingResolver'
 import { WorkbenchKeybindingService } from 'vs/workbench/services/keybinding/browser/keybindingService'
-import { JsonSchema, registerJsonSchema, synchronizeJsonSchemas } from './json'
 import { createInjectedClass } from './tools/injection'
 import 'vs/workbench/contrib/codeEditor/browser/workbenchReferenceSearch'
 
@@ -238,10 +237,6 @@ export {
   Extensions,
   IJSONContributionRegistry,
   IJSONSchema,
-
-  JsonSchema,
-  registerJsonSchema,
-  synchronizeJsonSchemas,
 
   registerColor,
 
