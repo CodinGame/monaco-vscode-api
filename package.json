@@ -18,7 +18,10 @@
   "module": "dist/api.js",
   "enabledApiProposals": [
     "fileSearchProvider",
-    "textSearchProvider"
+    "textSearchProvider",
+    "extensionsAny",
+    "documentPaste",
+    "externalUriOpener"
   ],
   "exports": {
     ".": {
