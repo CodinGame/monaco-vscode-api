@@ -47,7 +47,7 @@ cp -R $monaco_esm_directory editor-patch/a
 cp -R $monaco_esm_directory editor-patch/b
 ## Change shake level from ClassMembers to Files
 sed -i 's/shakeLevel: 2/shakeLevel: 0/g' build/gulpfile.editor.js
-npx gulp editor-distro
+yarn gulp editor-distro
 cd out-monaco-editor-core/esm/
 cp --parents $(find -name \*.js) ../../editor-patch/b
 cd ../../editor-patch
@@ -57,6 +57,7 @@ cd ..
 
 # build and copy default extensions
 yarn compile-web || true
+yarn gulp compile-extension-media
 rm -rf $extension_output_directory
 cp -R extensions "$extension_output_directory"
 
