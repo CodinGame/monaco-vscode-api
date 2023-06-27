@@ -11,6 +11,8 @@ import { InputPluginOption, rollup } from 'rollup'
 import { addExtension } from '@rollup/pluginutils'
 import { IUserFriendlyViewsContainerDescriptor } from 'vs/workbench/api/browser/viewsExtensionPoint'
 import inject from '@rollup/plugin-inject'
+// @ts-ignore
+import parseCssUrl from 'css-url-parser'
 import * as path from 'path'
 import * as url from 'url'
 
@@ -62,6 +64,8 @@ interface RealContribute {
   iconThemes?: IThemeExtensionPoint[]
   productIconThemes?: IThemeExtensionPoint[]
   viewsContainers?: { [loc: string]: IUserFriendlyViewsContainerDescriptor[] }
+  'markdown.previewStyles'?: string[]
+  'markdown.previewScripts'?: string[]
 }
 
 function extractCommandResources (command: IUserFriendlyCommand | IUserFriendlyCommand[]): ExtensionResource[] {
@@ -70,9 +74,9 @@ function extractCommandResources (command: IUserFriendlyCommand | IUserFriendlyC
   }
   if (command.icon != null) {
     if (typeof command.icon === 'object') {
-      return [{ path: command.icon.light, sync: false }, { path: command.icon.dark, sync: false }]
+      return [{ path: command.icon.light, sync: true }, { path: command.icon.dark, sync: true }]
     } else {
-      return [{ path: command.icon, sync: false }]
+      return [{ path: command.icon, sync: true }]
     }
   }
   return []
@@ -159,6 +163,18 @@ async function extractResourcesFromExtensionManifestContribute (contribute: Real
   if (contribute.productIconThemes != null) resources.push(...((await Promise.all(contribute.productIconThemes.map(theme => extractThemeResources(theme, getFileContent), getFileContent))).flat()))
   if (contribute.jsonValidation != null) resources.push(...contribute.jsonValidation.flatMap(extractJsonValidationResources))
   if (contribute.viewsContainers != null) resources.push(...extractViewsContainerResources(contribute.viewsContainers))
+  if (contribute['markdown.previewStyles'] != null) {
+    resources.push(...(await Promise.all(contribute['markdown.previewStyles'].map(async path => [
+      { path, sync: false },
+      ...(await extractResources(path, getFileContent))
+    ]))).flat())
+  }
+  if (contribute['markdown.previewScripts'] != null) {
+    resources.push(...(await Promise.all(contribute['markdown.previewScripts'].map(async path => [
+      { path, sync: false },
+      ...(await extractResources(path, getFileContent))
+    ]))).flat())
+  }
   return resources.filter((resource, index, list) => !resource.path.startsWith('$(') && !list.slice(0, index).some(o => o.path === resource.path))
 }
 
@@ -190,6 +206,46 @@ async function extractResources (resourcePath: string, getFileContent: (path: st
         sync: false
       })
       resources.push(...(await extractResources(match[1]!, getFileContent)))
+    }
+
+    for (const match of content.matchAll(/this.extensionResource\('media', '(.*)'\)/g)) {
+      resources.push({
+        path: `./media/${match[1]}`,
+        sync: false
+      })
+      resources.push(...(await extractResources(`./media/${match[1]}`, getFileContent)))
+    }
+
+    for (const match of content.matchAll(/this\._extensionResourcePath\(resourceProvider, '(.*)'\)/g)) {
+      resources.push({
+        path: `./media/${match[1]}`,
+        sync: false
+      })
+      resources.push(...(await extractResources(`./media/${match[1]}`, getFileContent)))
+    }
+
+    for (const match of content.matchAll(/this\.extensionResourceUrl\('media', '(.*)'\)/g)) {
+      resources.push({
+        path: `./media/${match[1]}`,
+        sync: false
+      })
+      resources.push(...(await extractResources(`./media/${match[1]}`, getFileContent)))
+    }
+  }
+  if (resourcePath.endsWith('.css')) {
+    const urls = parseCssUrl(content)
+    for (const url of urls) {
+      const assetPath = './' + path.join(path.dirname(resourcePath), url)
+      try {
+        await getFileContent(assetPath)
+        resources.push({
+          path: assetPath,
+          sync: false
+        })
+      } catch (err) {
+        // ignore, the file doesn't exist
+        // It happens for the markdown-math extension without consequences
+      }
     }
   }
 

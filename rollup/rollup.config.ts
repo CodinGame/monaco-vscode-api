@@ -14,6 +14,7 @@ import terser from '@rollup/plugin-terser'
 import styles from 'rollup-plugin-styles'
 import inject from '@rollup/plugin-inject'
 import * as fs from 'fs'
+import * as fsPromise from 'fs/promises'
 import * as path from 'path'
 import { fileURLToPath } from 'url'
 import extensionDirectoryPlugin from '../dist/rollup-extension-directory-plugin.js'
@@ -426,6 +427,15 @@ export default (args: Record<string, string>): rollup.RollupOptions[] => {
             }
           }
           return manifest
+        },
+        async getAdditionalResources (manifest, directory) {
+          if (manifest.name === 'typescript-language-features') {
+            const files = (await fsPromise.readdir(path.resolve(directory, 'dist/browser/typescript'), {
+              withFileTypes: true
+            })).filter(f => f.isFile()).map(f => f.name)
+            return files.map(file => path.join('./dist/browser/typescript', file))
+          }
+          return []
         }
       }),
       {

@@ -15,13 +15,15 @@ interface Options {
   exclude?: FilterPattern
   rollupPlugins?: InputPluginOption[]
   transformManifest?: (manifest: IExtensionManifest) => IExtensionManifest
+  getAdditionalResources?: (manifest: IExtensionManifest, directory: string) => Promise<string[]>
 }
 
 export default function plugin ({
   include,
   exclude,
   rollupPlugins = [],
-  transformManifest = manifest => manifest
+  transformManifest = manifest => manifest,
+  getAdditionalResources = () => Promise.resolve([])
 }: Options): Plugin {
   const filter = createFilter(include, exclude)
 
@@ -92,7 +94,10 @@ export default function plugin ({
             return (await fsPromise.readFile(path.join(id, resourcePath)))
           })
           const syncPaths = extensionResources.filter(resource => resource.sync).map(r => r.path)
-          const asyncPaths = extensionResources.filter(resource => !resource.sync).map(r => r.path)
+          const asyncPaths = Array.from(new Set([
+            ...extensionResources.filter(resource => !resource.sync).map(r => r.path),
+            ...await getAdditionalResources(manifest, id)
+          ]))
           return `
 import manifest from '${manifestPath}'
 import { registerExtension, onExtHostInitialized } from '${url.fileURLToPath(new URL('../extensions.js', import.meta.url))}'

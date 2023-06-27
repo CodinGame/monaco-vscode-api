@@ -14,6 +14,7 @@ interface Options {
   exclude?: FilterPattern
   rollupPlugins?: InputPluginOption[]
   transformManifest?: (manifest: IExtensionManifest) => IExtensionManifest
+  getAdditionalResources?: (manifest: IExtensionManifest) => Promise<string[]>
 }
 
 function read (stream: Readable): Promise<Buffer> {
@@ -62,7 +63,8 @@ export default function plugin ({
   include = '**/*.vsix',
   exclude,
   rollupPlugins = [],
-  transformManifest = manifest => manifest
+  transformManifest = manifest => manifest,
+  getAdditionalResources = () => Promise.resolve([])
 }: Options): Plugin {
   const filter = createFilter(include, exclude)
   const vsixFiles: Record<string, Record<string, Buffer>> = {}
@@ -142,7 +144,10 @@ export default function plugin ({
       vsixFiles[id] = vsixFile
 
       const syncPaths = extensionResources.filter(resource => resource.sync).map(r => r.path)
-      const asyncPaths = extensionResources.filter(resource => !resource.sync).map(r => r.path)
+      const asyncPaths = Array.from(new Set([
+        ...extensionResources.filter(resource => !resource.sync).map(r => r.path),
+        ...await getAdditionalResources(manifest)
+      ].map(getVsixPath)))
       return `
 import manifest from 'vsix:${id}:package.json.vsjson'
 import { registerExtension, onExtHostInitialized } from 'vscode/extensions'
