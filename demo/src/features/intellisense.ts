@@ -1,12 +1,10 @@
 import * as vscode from 'vscode'
-import 'monaco-editor/esm/vs/language/json/monaco.contribution.js'
-import 'monaco-editor/esm/vs/language/typescript/monaco.contribution.js'
-import * as monaco from 'monaco-editor/esm/vs/editor/editor.api.js'
-import { synchronizeJsonSchemas } from 'vscode/monaco'
 import { onExtHostInitialized } from 'vscode/extensions'
-import typescriptGlobal from '../../node_modules/@types/node/globals.d.ts?raw'
-import typescriptConsole from '../../node_modules/@types/node/console.d.ts?raw'
-import typescriptProcess from '../../node_modules/@types/node/process.d.ts?raw'
+import 'vscode/default-extensions/json-language-features'
+import 'vscode/default-extensions/typescript-language-features'
+import 'vscode/default-extensions/html-language-features'
+import 'vscode/default-extensions/css-language-features'
+import 'vscode/default-extensions/markdown-language-features'
 
 await new Promise<void>(resolve => onExtHostInitialized(resolve))
 
@@ -58,38 +56,13 @@ vscode.languages.registerCompletionItemProvider('javascript', {
   }
 })
 
-const compilerOptions: Parameters<typeof monaco.languages.typescript.typescriptDefaults.setCompilerOptions>[0] = {
-  target: monaco.languages.typescript.ScriptTarget.ES2016,
-  allowNonTsExtensions: true,
-  moduleResolution: monaco.languages.typescript.ModuleResolutionKind.NodeJs,
-  module: monaco.languages.typescript.ModuleKind.CommonJS,
-  noEmit: true,
-  lib: ['es2020']
-}
-
-monaco.languages.typescript.typescriptDefaults.setCompilerOptions(compilerOptions)
-monaco.languages.typescript.typescriptDefaults.addExtraLib(typescriptGlobal, 'node/globals.d.ts')
-monaco.languages.typescript.typescriptDefaults.addExtraLib(typescriptConsole, 'node/console.d.ts')
-monaco.languages.typescript.typescriptDefaults.addExtraLib(typescriptProcess, 'node/process.d.ts')
-monaco.languages.typescript.javascriptDefaults.setCompilerOptions(compilerOptions)
-monaco.languages.typescript.javascriptDefaults.addExtraLib(typescriptGlobal, 'node/globals.d.ts')
-monaco.languages.typescript.javascriptDefaults.addExtraLib(typescriptConsole, 'node/console.d.ts')
-monaco.languages.typescript.javascriptDefaults.addExtraLib(typescriptProcess, 'node/process.d.ts')
-
-monaco.languages.json.jsonDefaults.setModeConfiguration({
-  ...monaco.languages.json.jsonDefaults.modeConfiguration,
-  tokens: false // Disable monarch tokenizer as we use TextMate here
-})
-
-synchronizeJsonSchemas()
-
 vscode.languages.registerDefinitionProvider('javascript', {
   provideDefinition (document, position) {
     const wordRange = document.getWordRangeAtPosition(position)
     if (wordRange != null && document.getText(wordRange) === 'anotherfile') {
       return {
         range: wordRange,
-        uri: vscode.Uri.file('/tmp/test2.js')
+        uri: vscode.Uri.file('/tmp/test_readonly.js')
       }
     }
     return []

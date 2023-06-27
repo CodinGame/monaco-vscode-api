@@ -21,9 +21,17 @@ import 'vscode/default-extensions/theme-defaults'
 import 'vscode/default-extensions/javascript'
 import 'vscode/default-extensions/typescript-basics'
 import 'vscode/default-extensions/json'
+import 'vscode/default-extensions/html'
+import 'vscode/default-extensions/css'
+
 import 'vscode/default-extensions/theme-seti'
 import 'vscode/default-extensions/references-view'
 import 'vscode/default-extensions/search-result'
+import 'vscode/default-extensions/configuration-editing'
+import 'vscode/default-extensions/markdown-math'
+import 'vscode/default-extensions/npm'
+import 'vscode/default-extensions/media-preview'
+import 'vscode/default-extensions/markdown-basics'
 
 const modelRef = await createModelReference(monaco.Uri.file('/tmp/test.js'), `// import anotherfile
 let variable = 1
@@ -36,7 +44,10 @@ while (variable < 5000) {
   console.log('Hello world', variable);
 }`)
 
-const mainDocument = await vscode.workspace.openTextDocument(modelRef.object.textEditorModel!.uri)
+const [mainDocument] = await Promise.all([
+  vscode.workspace.openTextDocument(modelRef.object.textEditorModel!.uri),
+  vscode.workspace.openTextDocument(monaco.Uri.file('/tmp/test_readonly.js')) // open the file so vscode sees it's locked
+])
 await vscode.window.showTextDocument(mainDocument, {
   preview: false
 })
@@ -76,7 +87,8 @@ const settingsModelReference = await createModelReference(monaco.Uri.from({ sche
   "files.autoSaveDelay": 1000,
   "debug.toolBarLocation": "docked",
   "editor.experimental.asyncTokenization": true,
-  "terminal.integrated.tabs.title": "\${sequence}"
+  "terminal.integrated.tabs.title": "\${sequence}",
+  "typescript.tsserver.log": "normal"
 }`)
 createConfiguredEditor(document.getElementById('settings-editor')!, {
   model: settingsModelReference.object.textEditorModel,
@@ -84,11 +96,11 @@ createConfiguredEditor(document.getElementById('settings-editor')!, {
 })
 
 const keybindingsModelReference = await createModelReference(monaco.Uri.from({ scheme: 'user', path: '/keybindings.json' }), `[
-{
-  "key": "ctrl+d",
-  "command": "editor.action.deleteLines",
-  "when": "editorTextFocus"
-}
+  {
+    "key": "ctrl+d",
+    "command": "editor.action.deleteLines",
+    "when": "editorTextFocus"
+  }
 ]`)
 createConfiguredEditor(document.getElementById('keybindings-editor')!, {
   model: keybindingsModelReference.object.textEditorModel,
@@ -100,7 +112,7 @@ document.querySelector('#filesystem')!.addEventListener('click', async () => {
 
   const htmlFileSystemProvider = new HTMLFileSystemProvider(undefined, 'unused', StandaloneServices.get(ILogService))
   await htmlFileSystemProvider.registerDirectoryHandle(dirHandle)
-  registerFileSystemOverlay(htmlFileSystemProvider)
+  registerFileSystemOverlay(1, htmlFileSystemProvider)
 
   vscode.workspace.updateWorkspaceFolders(0, 0, {
     uri: vscode.Uri.file(dirHandle.name)
