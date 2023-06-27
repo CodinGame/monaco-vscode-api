@@ -1,3 +1,5 @@
+/// <reference path="../../vscode.proposed.externalUriOpener.d.ts" />
+
 import Severity from 'vs/base/common/severity'
 import { URI } from 'vs/base/common/uri'
 import type * as vscode from 'vscode'
@@ -7,6 +9,7 @@ import { StandaloneServices } from 'vs/editor/standalone/browser/standaloneServi
 import { IModelService } from 'vs/editor/common/services/model'
 import { ITextModel } from 'vs/editor/common/model'
 import { IExtensionDescription } from 'vs/platform/extensions/common/extensions'
+import { checkProposedApiEnabled } from 'vs/workbench/services/extensions/common/extensions'
 import { getExtHostServices } from './extHost'
 import { unsupported } from '../tools'
 
@@ -99,9 +102,20 @@ export default function create (getExtension: () => IExtensionDescription, works
       const { extHostQuickOpen } = getExtHostServices()
       return extHostQuickOpen.showWorkspaceFolderPick(options)
     },
-    showOpenDialog: unsupported,
-    showSaveDialog: unsupported,
-    createWebviewPanel: unsupported,
+    showOpenDialog (options) {
+      const extension = getExtension()
+      const { extHostDialogs } = getExtHostServices()
+      return extHostDialogs.showOpenDialog(extension, options)
+    },
+    showSaveDialog (options) {
+      const { extHostDialogs } = getExtHostServices()
+      return extHostDialogs.showSaveDialog(options)
+    },
+    createWebviewPanel (viewType: string, title: string, showOptions: vscode.ViewColumn | { viewColumn: vscode.ViewColumn, preserveFocus?: boolean }, options?: vscode.WebviewPanelOptions & vscode.WebviewOptions): vscode.WebviewPanel {
+      const extension = getExtension()
+      const { extHostWebviewPanels } = getExtHostServices()
+      return extHostWebviewPanels.createWebviewPanel(extension, viewType, title, showOptions, options)
+    },
     createStatusBarItem (alignmentOrId?: vscode.StatusBarAlignment | string, priorityOrAlignment?: number | vscode.StatusBarAlignment, priorityArg?: number): vscode.StatusBarItem {
       const { extHostStatusBar } = getExtHostServices()
       const extension = getExtension()
@@ -147,7 +161,11 @@ export default function create (getExtension: () => IExtensionDescription, works
       const extension = getExtension()
       return extHostTreeViews.createTreeView(viewId, options, extension)
     },
-    registerWebviewPanelSerializer: unsupported,
+    registerWebviewPanelSerializer: (viewType: string, serializer: vscode.WebviewPanelSerializer) => {
+      const extension = getExtension()
+      const { extHostWebviewPanels } = getExtHostServices()
+      return extHostWebviewPanels.registerWebviewPanelSerializer(extension, viewType, serializer)
+    },
     get activeTextEditor () {
       const { extHostEditors } = getExtHostServices()
       return extHostEditors.getActiveTextEditor()
@@ -210,8 +228,20 @@ export default function create (getExtension: () => IExtensionDescription, works
       return extHostWindow.onDidChangeWindowState(listener, thisArg, disposables)
     },
     registerUriHandler: unsupported,
-    registerWebviewViewProvider: unsupported,
-    registerCustomEditorProvider: unsupported,
+    registerWebviewViewProvider (viewId: string, provider: vscode.WebviewViewProvider, options?: {
+      webviewOptions?: {
+        retainContextWhenHidden?: boolean
+      }
+    }) {
+      const extension = getExtension()
+      const { extHostWebviewViews } = getExtHostServices()
+      return extHostWebviewViews.registerWebviewViewProvider(extension, viewId, provider, options?.webviewOptions)
+    },
+    registerCustomEditorProvider: (viewType: string, provider: vscode.CustomTextEditorProvider | vscode.CustomReadonlyEditorProvider, options: { webviewOptions?: vscode.WebviewPanelOptions, supportsMultipleEditorsPerDocument?: boolean } = {}) => {
+      const extension = getExtension()
+      const { extHostCustomEditors } = getExtHostServices()
+      return extHostCustomEditors.registerCustomEditorProvider(extension, viewType, provider, options)
+    },
     registerTerminalLinkProvider (provider: vscode.TerminalLinkProvider): vscode.Disposable {
       const { extHostTerminalService } = getExtHostServices()
       return extHostTerminalService.registerLinkProvider(provider)
@@ -243,6 +273,12 @@ export default function create (getExtension: () => IExtensionDescription, works
       return extHostEditorTabs.tabGroups
     },
     showNotebookDocument: unsupported,
+    registerExternalUriOpener (id: string, opener: vscode.ExternalUriOpener, metadata: vscode.ExternalUriOpenerMetadata) {
+      const extension = getExtension()
+      const { extHostUriOpeners } = getExtHostServices()
+      checkProposedApiEnabled(extension, 'externalUriOpener')
+      return extHostUriOpeners.registerExternalUriOpener(extension.identifier, id, opener, metadata)
+    },
     visibleNotebookEditors: [],
     onDidChangeVisibleNotebookEditors: Event.None,
     activeNotebookEditor: undefined,

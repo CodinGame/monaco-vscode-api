@@ -57,13 +57,19 @@ import { MainThreadMessageService } from 'vs/workbench/api/browser/mainThreadMes
 import { ExtHostApiCommands } from 'vs/workbench/api/common/extHostApiCommands'
 import { ExtHostOutputService, IExtHostOutputService } from 'vs/workbench/api/common/extHostOutput'
 import { ExtHostTreeViews } from 'vs/workbench/api/common/extHostTreeViews'
-import { ExtHostStorage } from 'vs/workbench/api/common/extHostStorage'
+import { ExtHostStorage, IExtHostStorage } from 'vs/workbench/api/common/extHostStorage'
 import { ITelemetryService } from 'vs/platform/telemetry/common/telemetry'
 import { ExtHostStatusBar } from 'vs/workbench/api/common/extHostStatusBar'
 import { ExtHostTheming } from 'vs/workbench/api/common/extHostTheming'
 import { ExtHostTerminalService } from 'vs/workbench/api/node/extHostTerminalService'
 import { ExtHostSearch, IExtHostSearch } from 'vs/workbench/api/common/extHostSearch'
 import { ExtHostExtensionService } from 'vs/workbench/api/worker/extHostExtensionService'
+import { ExtHostDialogs } from 'vs/workbench/api/common/extHostDialogs'
+import { ExtHostWebviews } from 'vs/workbench/api/common/extHostWebview'
+import { ExtHostCustomEditors } from 'vs/workbench/api/common/extHostCustomEditors'
+import { ExtHostWebviewPanels } from 'vs/workbench/api/common/extHostWebviewPanels'
+import { ExtHostWebviewViews } from 'vs/workbench/api/common/extHostWebviewView'
+import { ExtHostUriOpeners } from 'vs/workbench/api/common/extHostUriOpener'
 import 'vs/workbench/api/browser/mainThreadLocalization'
 import 'vs/workbench/api/browser/mainThreadCommands'
 import 'vs/workbench/api/browser/mainThreadWindow'
@@ -94,6 +100,9 @@ import 'vs/workbench/api/browser/mainThreadTerminalService'
 import 'vs/workbench/api/browser/mainThreadEditorTabs'
 import 'vs/workbench/api/browser/mainThreadSearch'
 import 'vs/workbench/api/browser/mainThreadDecorations'
+import 'vs/workbench/api/browser/mainThreadWebviewManager'
+import 'vs/workbench/api/browser/mainThreadDialogs'
+import 'vs/workbench/api/browser/mainThreadUriOpeners'
 import * as errors from 'vs/base/common/errors'
 import { Barrier } from 'vs/base/common/async'
 import { IExtHostManagedSockets } from 'vs/workbench/api/common/extHostManagedSockets'
@@ -226,6 +235,15 @@ registerSingleton(IExtHostOutputService, ExtHostOutputService, InstantiationType
 registerSingleton(IExtHostTerminalService, ExtHostTerminalService, InstantiationType.Eager)
 registerSingleton(IExtHostLocalizationService, ExtHostLocalizationService, InstantiationType.Delayed)
 registerSingleton(IExtHostSearch, ExtHostSearch, InstantiationType.Eager)
+class _ExtHostStorage extends ExtHostStorage {
+  constructor (
+    @IExtHostRpcService extHostRpc: IExtHostRpcService, // annotation is missing on the original class
+    @ILogService _logService: ILogService
+  ) {
+    super(extHostRpc, _logService)
+  }
+}
+registerSingleton(IExtHostStorage, _ExtHostStorage, InstantiationType.Eager)
 registerSingleton(IExtHostManagedSockets, class ExtHostManagedSockets implements IExtHostManagedSockets {
   _serviceBrand: undefined
   setFactory = () => {
@@ -293,12 +311,15 @@ async function createExtHostServices () {
   const extHostTelemetry = StandaloneServices.get(IExtHostTelemetry)
   const extHostInitData = StandaloneServices.get(IExtHostInitDataService)
   const extHostEditorTabs = StandaloneServices.get(IExtHostEditorTabs)
+  const extensionStoragePaths = StandaloneServices.get(IExtensionStoragePaths)
+  const extHostStorage = StandaloneServices.get(IExtHostStorage)
 
   // register addressable instances
   rpcProtocol.set(ExtHostContext.ExtHostFileSystemInfo, extHostFileSystemInfo)
   rpcProtocol.set(ExtHostContext.ExtHostTunnelService, extHostTunnelService)
   rpcProtocol.set(ExtHostContext.ExtHostTelemetry, extHostTelemetry)
   rpcProtocol.set(ExtHostContext.ExtHostEditorTabs, extHostEditorTabs)
+  rpcProtocol.set(ExtHostContext.ExtHostStorage, extHostStorage)
 
   // automatically create and register addressable instances
   const extHostDecorations = rpcProtocol.set(ExtHostContext.ExtHostDecorations, StandaloneServices.get(IExtHostDecorations))
@@ -329,13 +350,17 @@ async function createExtHostServices () {
   const extHostTreeViews = rpcProtocol.set(ExtHostContext.ExtHostTreeViews, new ExtHostTreeViews(rpcProtocol.getProxy(MainContext.MainThreadTreeViews), extHostCommands, logService))
   const extHostTheming = rpcProtocol.set(ExtHostContext.ExtHostTheming, new ExtHostTheming(rpcProtocol))
   const extHostStatusBar = rpcProtocol.set(ExtHostContext.ExtHostStatusBar, new ExtHostStatusBar(rpcProtocol, extHostCommands.converter))
-
-  const extHostStorage = new ExtHostStorage(rpcProtocol, logService)
+  const extHostWebviews = rpcProtocol.set(ExtHostContext.ExtHostWebviews, new ExtHostWebviews(rpcProtocol, extHostInitData.remote, extHostWorkspace, logService, extHostApiDeprecationService))
+  const extHostWebviewPanels = rpcProtocol.set(ExtHostContext.ExtHostWebviewPanels, new ExtHostWebviewPanels(rpcProtocol, extHostWebviews, extHostWorkspace))
+  const extHostCustomEditors = rpcProtocol.set(ExtHostContext.ExtHostCustomEditors, new ExtHostCustomEditors(rpcProtocol, extHostDocuments, extensionStoragePaths, extHostWebviews, extHostWebviewPanels))
+  const extHostWebviewViews = rpcProtocol.set(ExtHostContext.ExtHostWebviewViews, new ExtHostWebviewViews(rpcProtocol, extHostWebviews))
+  const extHostUriOpeners = rpcProtocol.set(ExtHostContext.ExtHostUriOpeners, new ExtHostUriOpeners(rpcProtocol))
 
   // Other instances
   const extHostBulkEdits = new ExtHostBulkEdits(rpcProtocol, extHostDocumentsAndEditors)
   const extHostClipboard = new ExtHostClipboard(mainContext)
   const extHostMessageService = new ExtHostMessageService(rpcProtocol, logService)
+  const extHostDialogs = new ExtHostDialogs(rpcProtocol)
 
   // Register API-ish commands
   ExtHostApiCommands.register(extHostCommands)
@@ -402,7 +427,13 @@ async function createExtHostServices () {
     extHostEditorTabs,
     extHostDecorations,
     extHostTheming,
-    extHostSearch
+    extHostSearch,
+    extHostDialogs,
+    extHostWebviews,
+    extHostWebviewPanels,
+    extHostCustomEditors,
+    extHostWebviewViews,
+    extHostUriOpeners
   }
 }
 

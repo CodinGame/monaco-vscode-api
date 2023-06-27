@@ -60,7 +60,7 @@ const api: typeof vscode = {
   Color: extHostTypes.Color,
   ColorInformation: extHostTypes.ColorInformation,
   ColorPresentation: extHostTypes.ColorPresentation,
-  ColorThemeKind: unsupported,
+  ColorThemeKind: extHostTypes.ColorThemeKind,
   CommentMode: extHostTypes.CommentMode,
   CommentThreadCollapsibleState: extHostTypes.CommentThreadCollapsibleState,
   CompletionItem: extHostTypes.CompletionItem,
@@ -179,8 +179,8 @@ const api: typeof vscode = {
   TestMessage: extHostTypes.TestMessage,
   TestTag: extHostTypes.TestTag,
   TestRunProfileKind: extHostTypes.TestRunProfileKind,
-  DataTransfer: unsupported,
-  DataTransferItem: unsupported,
+  DataTransfer: extHostTypes.DataTransfer,
+  DataTransferItem: extHostTypes.DataTransferItem,
   LanguageStatusSeverity: extHostTypes.LanguageStatusSeverity,
   QuickPickItemKind: extHostTypes.QuickPickItemKind,
   TabInputText: TextTabInput,
@@ -202,7 +202,9 @@ const api: typeof vscode = {
   TerminalExitReason: extHostTypes.TerminalExitReason,
   CommentThreadState: unsupported,
   TelemetryTrustedValue: telemetryUtils.TelemetryTrustedValue,
-  TextSearchCompleteMessageType: searchExtHostTypes.TextSearchCompleteMessageType
+  TextSearchCompleteMessageType: searchExtHostTypes.TextSearchCompleteMessageType,
+  DocumentPasteEdit: extHostTypes.DocumentPasteEdit,
+  ExternalUriOpenerPriority: extHostTypes.ExternalUriOpenerPriority
 }
 
 // @ts-ignore the syntax will be transformed by a typescript transformer in the rollup config

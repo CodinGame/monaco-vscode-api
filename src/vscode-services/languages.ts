@@ -1,7 +1,9 @@
+/// <reference path="../../vscode.proposed.documentPaste.d.ts" />
 import type * as vscode from 'vscode'
 import { score } from 'vs/editor/common/languageSelector'
 import * as typeConverters from 'vs/workbench/api/common/extHostTypeConverters'
 import { IExtensionDescription } from 'vs/platform/extensions/common/extensions'
+import { checkProposedApiEnabled } from 'vs/workbench/services/extensions/common/extensions'
 import { getExtHostServices } from './extHost'
 
 function checkSelector (selector: vscode.DocumentSelector) {
@@ -44,6 +46,13 @@ export default function create (getExtension: () => IExtensionDescription): type
       const extension = getExtension()
 
       return extHostLanguageFeatures.registerCodeActionProvider(extension, checkSelector(selector), provider, metadata)
+    },
+    registerDocumentPasteEditProvider (selector: vscode.DocumentSelector, provider: vscode.DocumentPasteEditProvider, metadata: vscode.DocumentPasteProviderMetadata): vscode.Disposable {
+      const { extHostLanguageFeatures } = getExtHostServices()
+      const extension = getExtension()
+
+      checkProposedApiEnabled(extension, 'documentPaste')
+      return extHostLanguageFeatures.registerDocumentPasteEditProvider(extension, checkSelector(selector), provider, metadata)
     },
     registerCodeLensProvider (selector: vscode.DocumentSelector, provider: vscode.CodeLensProvider): vscode.Disposable {
       const { extHostLanguageFeatures } = getExtHostServices()
