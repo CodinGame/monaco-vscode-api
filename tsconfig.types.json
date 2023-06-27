@@ -1,6 +1,6 @@
 {
   "compilerOptions": {
-	"module": "amd",
+	"module": "es2020",
 	"moduleResolution": "node",
 	"target": "es2020",
 	"outDir": "dist/types",
