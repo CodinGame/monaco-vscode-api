@@ -2,7 +2,6 @@ import type * as vscode from 'vscode'
 import { ExtensionType, IExtension, IExtensionContributions, IExtensionDescription, IExtensionManifest, TargetPlatform } from 'vs/platform/extensions/common/extensions'
 import { ExtensionMessageCollector, ExtensionPoint, ExtensionsRegistry, IExtensionPointUser } from 'vs/workbench/services/extensions/common/extensionsRegistry'
 import { IExtensionService, IMessage, toExtensionDescription } from 'vs/workbench/services/extensions/common/extensions'
-import { generateUuid } from 'vs/base/common/uuid'
 import { URI } from 'vs/base/common/uri'
 import { IExtHostExtensionService } from 'vs/workbench/api/common/extHostExtensionService'
 import { StandaloneServices } from 'vs/editor/standalone/browser/standaloneServices'
@@ -112,19 +111,16 @@ FileAccess.uriToBrowserUri = function (uri: URI) {
 }
 
 export function registerExtension (manifest: IExtensionManifest, defaultNLS?: ITranslations): RegisterExtensionResult {
-  const uuid = generateUuid()
-  const location = URI.from({ scheme: 'extension', authority: uuid, path: '/' })
-
   const localizedManifest = defaultNLS != null ? localizeManifest(manifest, defaultNLS) : manifest
+
+  const id = getExtensionId(localizedManifest.publisher, localizedManifest.name)
+  const location = URI.from({ scheme: 'extension', authority: id, path: '/' })
 
   const extension: IExtension = {
     manifest: localizedManifest,
     type: ExtensionType.User,
     isBuiltin: false,
-    identifier: {
-      id: getExtensionId(localizedManifest.publisher, localizedManifest.name),
-      uuid
-    },
+    identifier: { id },
     location,
     targetPlatform: TargetPlatform.WEB,
     isValid: true,
