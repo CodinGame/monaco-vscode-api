@@ -4,7 +4,10 @@ async function getRealUrl (url: string): Promise<string> {
   if (url.startsWith('extension:')) {
     const { workspace, Uri }: typeof vscode = require('vscode')
     const value = await workspace.fs.readFile(Uri.parse(url))
-    const blob = new Blob([value])
+    const source = new TextDecoder().decode(value)
+    const sourceURL = `${url}#vscode-extension-worker`
+    const fullSource = `${source}\n//# sourceURL=${sourceURL}`
+    const blob = new Blob([fullSource])
     return URL.createObjectURL(blob)
   }
   return url
