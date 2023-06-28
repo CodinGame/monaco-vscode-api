@@ -17,7 +17,8 @@ const config: rollup.RollupOptions = {
   output: [{
     format: 'esm',
     dir: 'dist',
-    entryFileNames: '[name].js'
+    entryFileNames: '[name].js',
+    chunkFileNames: '[name].js'
   }],
   input: [
     'src/rollup-vsix-plugin.ts',
