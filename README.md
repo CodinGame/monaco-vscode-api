@@ -37,7 +37,7 @@ Monaco-editor is a library that is constructed using code from vscode and goes t
 
 However, due to the inclusion of additional code from VSCode in this library that utilizes internal modules bundled in monaco, this treeshaking is a problem here.
 
-To **tree-mend** (to **un**treeshake it) monaco-editor, this library provide a script that will apply a patch on the local installation of monaco-editor, restoring all the code that was treeshaken during the monaco-editor build process
+To **tree-mend** (to **un**treeshake it) monaco-editor, this library provides a script that will apply a patch on the local installation of monaco-editor, restoring all the code that was treeshaken during the monaco-editor build process
 
 # Usage
 
@@ -176,7 +176,7 @@ The api will use the manifest of a default vscode extension, which can be overri
 
 You can also register a new extension from its manifest:
 ```typescript
-import { registerExtension, initialize as initializeVscodeExtensions } from 'vscode/extensions'
+import { registerExtension, initialize } from 'vscode/extensions'
 
 await initialize()
 
