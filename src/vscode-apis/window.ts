@@ -10,7 +10,7 @@ import { IModelService } from 'vs/editor/common/services/model'
 import { ITextModel } from 'vs/editor/common/model'
 import { IExtensionDescription } from 'vs/platform/extensions/common/extensions'
 import { checkProposedApiEnabled } from 'vs/workbench/services/extensions/common/extensions'
-import { getExtHostServices } from './extHost'
+import { getExtHostServices } from '../ext-host/extHost'
 import { unsupported } from '../tools'
 
 class TextTabInput {

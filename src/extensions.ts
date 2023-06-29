@@ -14,9 +14,9 @@ import { FileAccess } from 'monaco-editor/esm/vs/base/common/network.js'
 import { ImplicitActivationEvents } from 'vs/platform/extensionManagement/common/implicitActivationEvents'
 import { IExtensionDescriptionDelta } from 'vs/workbench/services/extensions/common/extensionHostProtocol'
 import { registerExtensionFile } from './service-override/files'
-import { initialize as initializeExtHostServices, onExtHostInitialized } from './vscode-services/extHost'
+import { initialize as initializeExtHostServices, onExtHostInitialized } from './vscode-apis/extHost'
 import { setDefaultExtension } from './default-extension'
-import { SimpleExtensionService } from './vscode-services/missing-services'
+import { SimpleExtensionService } from './missing-services'
 import createApi from './createApi'
 
 export function consoleExtensionMessageHandler (msg: IMessage): void {

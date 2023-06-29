@@ -1,5 +1,3 @@
-// eslint-disable-next-line import/order
-import { SimpleExtensionService } from './missing-services'
 import { ExtHostCommands, IExtHostCommands } from 'vs/workbench/api/common/extHostCommands'
 import { ExtHostRpcService, IExtHostRpcService } from 'vs/workbench/api/common/extHostRpcService'
 import { ILogService, LogLevel } from 'vs/platform/log/common/log'
@@ -108,6 +106,7 @@ import { Barrier } from 'vs/base/common/async'
 import { IExtHostManagedSockets } from 'vs/workbench/api/common/extHostManagedSockets'
 import { IExtensionHostProxy } from 'vs/workbench/services/extensions/common/extensionHostProxy'
 import { IExtensionService } from 'vs/workbench/services/extensions/common/extensions'
+import { SimpleExtensionService } from '../missing-services'
 import { unsupported } from '../tools'
 
 const original = MainThreadMessageService.prototype.$showMessage

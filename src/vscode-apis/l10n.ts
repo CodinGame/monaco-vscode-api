@@ -1,6 +1,6 @@
 import type * as vscode from 'vscode'
 import { IExtensionDescription } from 'vs/platform/extensions/common/extensions'
-import { getExtHostServices } from './extHost'
+import { getExtHostServices } from '../ext-host/extHost'
 
 export default function create (getExtension: () => IExtensionDescription): typeof vscode.l10n {
   return {

@@ -1,4 +1,4 @@
-import '../vscode-services/missing-services'
+import '../missing-services'
 import { IEditorOverrideServices, StandaloneServices } from 'vs/editor/standalone/browser/standaloneServices'
 import { IResolvedTextEditorModel, ITextModelService } from 'vs/editor/common/services/resolverService'
 import { ICodeEditorService } from 'vs/editor/browser/services/codeEditorService'

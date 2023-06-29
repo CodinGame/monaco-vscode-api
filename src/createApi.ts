@@ -1,14 +1,14 @@
 import type * as vscode from 'vscode'
 import { IExtensionDescription } from 'vs/platform/extensions/common/extensions'
 import * as api from './api'
-import createL10nApi from './vscode-services/l10n'
-import createLanguagesApi from './vscode-services/languages'
-import createCommandsApi from './vscode-services/commands'
-import createWorkspaceApi from './vscode-services/workspace'
-import createWindowApi from './vscode-services/window'
-import createEnvApi from './vscode-services/env'
-import createDebugApi from './vscode-services/debug'
-import createExtensionsApi from './vscode-services/extensions'
+import createL10nApi from './vscode-apis/l10n'
+import createLanguagesApi from './vscode-apis/languages'
+import createCommandsApi from './vscode-apis/commands'
+import createWorkspaceApi from './vscode-apis/workspace'
+import createWindowApi from './vscode-apis/window'
+import createEnvApi from './vscode-apis/env'
+import createDebugApi from './vscode-apis/debug'
+import createExtensionsApi from './vscode-apis/extensions'
 
 export default function createApi (extension: IExtensionDescription): typeof vscode {
   const workspace = createWorkspaceApi(() => extension)

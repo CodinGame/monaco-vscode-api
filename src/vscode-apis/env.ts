@@ -7,7 +7,7 @@ import { ExtHostTelemetryLogger } from 'vs/workbench/api/common/extHostTelemetry
 import { IExtHostInitDataService } from 'vs/workbench/api/common/extHostInitDataService'
 import { IExtensionDescription } from 'vs/platform/extensions/common/extensions'
 import { StandaloneServices } from 'vs/editor/standalone/browser/standaloneServices'
-import { getExtHostServices } from './extHost'
+import { getExtHostServices } from '../ext-host/extHost'
 
 export default function create (getExtension: () => IExtensionDescription): typeof vscode.env {
   return {

@@ -135,7 +135,7 @@ import { IWebviewViewService } from 'vs/workbench/contrib/webviewView/browser/we
 import { IEditorDropService } from 'vs/workbench/services/editor/browser/editorDropService'
 import { IRemoteAuthorityResolverService } from 'vs/platform/remote/common/remoteAuthorityResolver'
 import { ExternalUriOpenerService, IExternalUriOpenerService } from 'vs/workbench/contrib/externalUriOpener/common/externalUriOpenerService'
-import { unsupported } from '../tools'
+import { unsupported } from './tools'
 
 class NullLoggerService extends AbstractLoggerService {
   constructor () {

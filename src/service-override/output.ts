@@ -1,4 +1,4 @@
-import '../vscode-services/missing-services'
+import '../missing-services'
 import { IEditorOverrideServices } from 'vs/editor/standalone/browser/standaloneServices'
 import { SyncDescriptor } from 'vs/platform/instantiation/common/descriptors'
 import { URI } from 'vs/base/common/uri'

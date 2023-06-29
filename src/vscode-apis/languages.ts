@@ -4,7 +4,7 @@ import { score } from 'vs/editor/common/languageSelector'
 import * as typeConverters from 'vs/workbench/api/common/extHostTypeConverters'
 import { IExtensionDescription } from 'vs/platform/extensions/common/extensions'
 import { checkProposedApiEnabled } from 'vs/workbench/services/extensions/common/extensions'
-import { getExtHostServices } from './extHost'
+import { getExtHostServices } from '../ext-host/extHost'
 
 function checkSelector (selector: vscode.DocumentSelector) {
   return selector

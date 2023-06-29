@@ -6,7 +6,7 @@ import { combinedDisposable } from 'vs/base/common/lifecycle'
 import { IExtensionDescription } from 'vs/platform/extensions/common/extensions'
 import { Event } from 'vs/base/common/event'
 import { checkProposedApiEnabled } from 'vs/workbench/services/extensions/common/extensions'
-import { getConfigProvider, getExtHostServices } from './extHost'
+import { getConfigProvider, getExtHostServices } from '../ext-host/extHost'
 import { unsupported } from '../tools'
 
 export default function create (getExtension: () => IExtensionDescription): typeof vscode.workspace {

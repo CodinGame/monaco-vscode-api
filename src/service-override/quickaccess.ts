@@ -1,4 +1,4 @@
-import '../vscode-services/missing-services'
+import '../missing-services'
 import { SyncDescriptor } from 'vs/platform/instantiation/common/descriptors'
 import { IInputBox, IInputOptions, IPickOptions, IQuickInputButton, IQuickInputService, IQuickNavigateConfiguration, IQuickPick, IQuickPickItem, QuickPickInput } from 'vs/platform/quickinput/common/quickInput'
 import { CancellationToken } from 'vs/base/common/cancellation'

@@ -1,4 +1,4 @@
-import '../vscode-services/missing-services'
+import '../missing-services'
 import { IEditorOverrideServices, StandaloneServices } from 'vs/editor/standalone/browser/standaloneServices'
 import { WorkspaceService } from 'vs/workbench/services/configuration/browser/configurationService'
 import { IConfigurationService } from 'vs/platform/configuration/common/configuration'
