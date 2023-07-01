@@ -35,97 +35,13 @@
       "types": "./dist/extensions.d.ts",
       "default": "./dist/extensions.js"
     },
-    "./service-override/notifications": {
-      "types": "./dist/service-override/notifications.d.ts",
-      "default": "./dist/service-override/notifications.js"
+    "./service-override/*": {
+      "types": "./dist/service-override/*.d.ts",
+      "default": "./dist/service-override/*.js"
     },
-    "./service-override/bulkEdit": {
-      "types": "./dist/service-override/bulkEdit.d.ts",
-      "default": "./dist/service-override/bulkEdit.js"
-    },
-    "./service-override/dialogs": {
-      "types": "./dist/service-override/dialogs.d.ts",
-      "default": "./dist/service-override/dialogs.js"
-    },
-    "./service-override/model": {
-      "types": "./dist/service-override/model.d.ts",
-      "default": "./dist/service-override/model.js"
-    },
-    "./service-override/editor": {
-      "types": "./dist/service-override/editor.d.ts",
-      "default": "./dist/service-override/editor.js"
-    },
-    "./service-override/files": {
-      "types": "./dist/service-override/files.d.ts",
-      "default": "./dist/service-override/files.js"
-    },
-    "./service-override/configuration": {
-      "types": "./dist/service-override/configuration.d.ts",
-      "default": "./dist/service-override/configuration.js"
-    },
-    "./service-override/keybindings": {
-      "types": "./dist/service-override/keybindings.d.ts",
-      "default": "./dist/service-override/keybindings.js"
-    },
-    "./service-override/textmate": {
-      "types": "./dist/service-override/textmate.d.ts",
-      "default": "./dist/service-override/textmate.js"
-    },
-    "./service-override/theme": {
-      "types": "./dist/service-override/theme.d.ts",
-      "default": "./dist/service-override/theme.js"
-    },
-    "./service-override/snippets": {
-      "types": "./dist/service-override/snippets.d.ts",
-      "default": "./dist/service-override/snippets.js"
-    },
-    "./service-override/languages": {
-      "types": "./dist/service-override/languages.d.ts",
-      "default": "./dist/service-override/languages.js"
-    },
-    "./service-override/audioCue": {
-      "types": "./dist/service-override/audioCue.d.ts",
-      "default": "./dist/service-override/audioCue.js"
-    },
-    "./service-override/debug": {
-      "types": "./dist/service-override/debug.d.ts",
-      "default": "./dist/service-override/debug.js"
-    },
-    "./service-override/preferences": {
-      "types": "./dist/service-override/preferences.d.ts",
-      "default": "./dist/service-override/preferences.js"
-    },
-    "./service-override/views": {
-      "types": "./dist/service-override/views.d.ts",
-      "default": "./dist/service-override/views.js"
-    },
-    "./service-override/quickaccess": {
-      "types": "./dist/service-override/quickaccess.d.ts",
-      "default": "./dist/service-override/quickaccess.js"
-    },
-    "./service-override/output": {
-      "types": "./dist/service-override/output.d.ts",
-      "default": "./dist/service-override/output.js"
-    },
-    "./service-override/terminal": {
-      "types": "./dist/service-override/terminal.d.ts",
-      "default": "./dist/service-override/terminal.js"
-    },
-    "./service-override/search": {
-      "types": "./dist/service-override/search.d.ts",
-      "default": "./dist/service-override/search.js"
-    },
-    "./service-override/markers": {
-      "types": "./dist/service-override/markers.d.ts",
-      "default": "./dist/service-override/markers.js"
-    },
-    "./workers/textMate.worker": {
-      "types": "./dist/workers/textMate.worker.d.ts",
-      "default": "./dist/workers/textMate.worker.js"
-    },
-    "./workers/outputLinkComputer.worker": {
-      "types": "./dist/workers/outputLinkComputer.worker.d.ts",
-      "default": "./dist/workers/outputLinkComputer.worker.js"
+    "./workers/*": {
+      "types": "./dist/workers/*.d.ts",
+      "default": "./dist/workers/*.js"
     },
     "./monaco": {
       "types": "./dist/monaco.d.ts",
@@ -213,12 +129,6 @@
       ],
       "service-override/markers": [
         "./dist/service-override/markers.d.ts"
-      ],
-      "workers/textMate.worker": [
-        "./dist/workers/textMate.worker.d.ts"
-      ],
-      "workers/outputLinkComputer.worker": [
-        "./dist/workers/outputLinkComputer.worker.d.ts"
       ],
       "monaco": [
         "./dist/monaco.d.ts"

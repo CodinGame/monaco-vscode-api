@@ -306,27 +306,15 @@ const input = {
   api: './src/api.ts',
   extensions: './src/extensions.ts',
   services: './src/services.ts',
-  'service-override/notifications': './src/service-override/notifications.ts',
-  'service-override/bulkEdit': './src/service-override/bulkEdit.ts',
-  'service-override/dialogs': './src/service-override/dialogs.ts',
-  'service-override/model': './src/service-override/model.ts',
-  'service-override/editor': './src/service-override/editor.ts',
-  'service-override/files': './src/service-override/files.ts',
-  'service-override/configuration': './src/service-override/configuration.ts',
-  'service-override/keybindings': './src/service-override/keybindings.ts',
-  'service-override/textmate': './src/service-override/textmate.ts',
-  'service-override/theme': './src/service-override/theme.ts',
-  'service-override/snippets': './src/service-override/snippets.ts',
-  'service-override/languages': './src/service-override/languages.ts',
-  'service-override/audioCue': './src/service-override/audioCue.ts',
-  'service-override/debug': './src/service-override/debug.ts',
-  'service-override/preferences': './src/service-override/preferences.ts',
-  'service-override/views': './src/service-override/views.ts',
-  'service-override/quickaccess': './src/service-override/quickaccess.ts',
-  'service-override/output': './src/service-override/output.ts',
-  'service-override/terminal': './src/service-override/terminal.ts',
-  'service-override/search': './src/service-override/search.ts',
-  'service-override/markers': './src/service-override/markers.ts',
+  ...Object.fromEntries(
+    fs.readdirSync(path.resolve(SRC_DIR, 'service-override'), { withFileTypes: true })
+      .filter(f => f.isFile())
+      .map(f => f.name)
+      .map(name => [
+        `service-override/${path.basename(name, '.ts')}`,
+        `./src/service-override/${name}`
+      ])
+  ),
   'workers/textMate.worker': './src/workers/textMate.worker.ts',
   'workers/outputLinkComputer.worker': './src/workers/outputLinkComputer.worker.ts',
   monaco: './src/monaco.ts',

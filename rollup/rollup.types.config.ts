@@ -53,8 +53,6 @@ export default rollup.defineConfig({
     './dist/types/src/service-override/terminal.d.ts',
     './dist/types/src/service-override/search.d.ts',
     './dist/types/src/service-override/markers.d.ts',
-    './dist/types/src/workers/textMate.worker.d.ts',
-    './dist/types/src/workers/outputLinkComputer.worker.d.ts',
     './dist/types/src/monaco.d.ts',
     './dist/types/src/rollup-vsix-plugin.d.ts',
     './dist/types/src/rollup-extension-directory-plugin.d.ts'
