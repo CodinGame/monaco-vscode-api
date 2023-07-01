@@ -4,20 +4,18 @@ import { URI } from 'vs/base/common/uri'
 import { matchesScheme } from 'vs/platform/opener/common/opener'
 import { Schemas } from 'vs/base/common/network'
 import { ExtHostTelemetryLogger } from 'vs/workbench/api/common/extHostTelemetry'
-import { IExtHostInitDataService } from 'vs/workbench/api/common/extHostInitDataService'
 import { IExtensionDescription } from 'vs/platform/extensions/common/extensions'
-import { StandaloneServices } from 'vs/editor/standalone/browser/standaloneServices'
 import { getExtHostServices } from '../extHost'
 
 export default function create (getExtension: () => IExtensionDescription): typeof vscode.env {
   return {
-    get machineId () { return StandaloneServices.get(IExtHostInitDataService).telemetryInfo.machineId },
-    get sessionId () { return StandaloneServices.get(IExtHostInitDataService).telemetryInfo.sessionId },
-    get language () { return StandaloneServices.get(IExtHostInitDataService).environment.appLanguage },
-    get appName () { return StandaloneServices.get(IExtHostInitDataService).environment.appName },
-    get appRoot () { return StandaloneServices.get(IExtHostInitDataService).environment.appRoot?.fsPath ?? '' },
-    get appHost () { return StandaloneServices.get(IExtHostInitDataService).environment.appHost },
-    get uriScheme () { return StandaloneServices.get(IExtHostInitDataService).environment.appUriScheme },
+    get machineId () { return getExtHostServices().extHostInitData.telemetryInfo.machineId },
+    get sessionId () { return getExtHostServices().extHostInitData.telemetryInfo.sessionId },
+    get language () { return getExtHostServices().extHostInitData.environment.appLanguage },
+    get appName () { return getExtHostServices().extHostInitData.environment.appName },
+    get appRoot () { return getExtHostServices().extHostInitData.environment.appRoot?.fsPath ?? '' },
+    get appHost () { return getExtHostServices().extHostInitData.environment.appHost },
+    get uriScheme () { return getExtHostServices().extHostInitData.environment.appUriScheme },
 
     get clipboard () {
       const { extHostClipboard } = getExtHostServices()
@@ -29,7 +27,7 @@ export default function create (getExtension: () => IExtensionDescription): type
       return extHostTerminalService.getDefaultShell(false)
     },
     get uiKind () {
-      return StandaloneServices.get(IExtHostInitDataService).uiKind
+      return getExtHostServices().extHostInitData.uiKind
     },
     async asExternalUri (uri: URI) {
       const { extHostWindow } = getExtHostServices()

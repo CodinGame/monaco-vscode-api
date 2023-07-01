@@ -3,7 +3,6 @@ import { ExtensionType, IExtension, IExtensionContributions, IExtensionDescripti
 import { ExtensionMessageCollector, ExtensionPoint, ExtensionsRegistry, IExtensionPointUser } from 'vs/workbench/services/extensions/common/extensionsRegistry'
 import { IExtensionService, IMessage, toExtensionDescription } from 'vs/workbench/services/extensions/common/extensions'
 import { URI } from 'vs/base/common/uri'
-import { IExtHostExtensionService } from 'vs/workbench/api/common/extHostExtensionService'
 import { StandaloneServices } from 'vs/editor/standalone/browser/standaloneServices'
 import { getExtensionId } from 'vs/platform/extensionManagement/common/extensionManagementUtil'
 import { IDisposable } from 'vs/base/common/lifecycle'
@@ -14,7 +13,7 @@ import { FileAccess } from 'monaco-editor/esm/vs/base/common/network.js'
 import { ImplicitActivationEvents } from 'vs/platform/extensionManagement/common/implicitActivationEvents'
 import { IExtensionDescriptionDelta } from 'vs/workbench/services/extensions/common/extensionHostProtocol'
 import { registerExtensionFile } from './service-override/files'
-import { initialize as initializeExtHostServices, onExtHostInitialized } from './vscode-apis/extHost'
+import { getExtHostServices, initialize as initializeExtHostServices, onExtHostInitialized } from './extHost'
 import { setDefaultExtension } from './default-extension'
 import { SimpleExtensionService } from './missing-services'
 import createApi from './createApi'
@@ -75,7 +74,7 @@ async function deltaExtensions (toAdd: IExtensionDescription[], toRemove: IExten
 
   await (StandaloneServices.get(IExtensionService) as SimpleExtensionService).deltaExtensions(delta)
 
-  const availableExtensions = (await StandaloneServices.get(IExtHostExtensionService).getExtensionRegistry()).getAllExtensionDescriptions()
+  const availableExtensions = (await getExtHostServices().extHostExtensionService.getExtensionRegistry()).getAllExtensionDescriptions()
 
   const extensionPoints = ExtensionsRegistry.getExtensionPoints()
   for (const extensionPoint of extensionPoints) {
