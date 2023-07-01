@@ -47,7 +47,6 @@ import { IExtensionHostDebugService } from 'vs/platform/debug/common/extensionHo
 import { IViewContainerModel, IViewDescriptorService, IViewsService } from 'vs/workbench/common/views'
 import { IHistoryService } from 'vs/workbench/services/history/common/history'
 import { ITaskService } from 'vs/workbench/contrib/tasks/common/taskService'
-import { IURITransformerService, URITransformerService } from 'vs/workbench/api/common/extHostUriTransformerService'
 import { IConfigurationResolverService } from 'vs/workbench/services/configurationResolver/common/configurationResolver'
 import { BrowserPathService } from 'vs/workbench/services/path/browser/pathService'
 import { IRemoteAgentService } from 'vs/workbench/services/remote/common/remoteAgentService'
@@ -829,12 +828,6 @@ registerSingleton(ITaskService, class TaskService implements ITaskService {
   hasTaskSystemInfo = false
   registerSupportedExecutions = unsupported
   extensionCallbackTaskComplete = unsupported
-}, InstantiationType.Eager)
-
-registerSingleton(IURITransformerService, class InjectedURITransformerService extends URITransformerService {
-  constructor () {
-    super(null)
-  }
 }, InstantiationType.Eager)
 
 registerSingleton(IConfigurationResolverService, class ConfigurationResolverService implements IConfigurationResolverService {
