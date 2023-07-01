@@ -35,7 +35,8 @@ export default defineConfig({
       'vscode/default-extensions/typescript-language-features', 'vscode/default-extensions/markdown-language-features',
       'vscode/default-extensions/json-language-features', 'vscode/default-extensions/css-language-features',
       'vscode/default-extensions/npm', 'vscode/default-extensions/css', 'vscode/default-extensions/markdown-basics', 'vscode/default-extensions/html',
-      'vscode/default-extensions/html-language-features', 'vscode/default-extensions/configuration-editing', 'vscode/default-extensions/media-preview', 'vscode/default-extensions/markdown-math'
+      'vscode/default-extensions/html-language-features', 'vscode/default-extensions/configuration-editing', 'vscode/default-extensions/media-preview', 'vscode/default-extensions/markdown-math',
+      'vscode/ext-hosts/all'
     ]
   },
   server: {

@@ -26,6 +26,7 @@ import OutputLinkComputerWorker from 'vscode/workers/outputLinkComputer.worker?w
 import * as monaco from 'monaco-editor/esm/vs/editor/editor.api.js'
 import { TerminalBackend } from './features/terminal'
 import { openNewCodeEditor } from './features/editor'
+import 'vscode/ext-hosts/all'
 
 // Workers
 interface WorkerConstructor {
