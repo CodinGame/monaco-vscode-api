@@ -315,6 +315,15 @@ const input = {
         `./src/service-override/${name}`
       ])
   ),
+  ...Object.fromEntries(
+    fs.readdirSync(path.resolve(SRC_DIR, 'ext-hosts'), { withFileTypes: true })
+      .filter(f => f.isFile())
+      .map(f => f.name)
+      .map(name => [
+        `ext-hosts/${path.basename(name, '.ts')}`,
+        `./src/ext-hosts/${name}`
+      ])
+  ),
   'workers/textMate.worker': './src/workers/textMate.worker.ts',
   'workers/outputLinkComputer.worker': './src/workers/outputLinkComputer.worker.ts',
   monaco: './src/monaco.ts',

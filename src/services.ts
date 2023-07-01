@@ -1,4 +1,4 @@
-import './vscode-apis/extHost'
+import './extHost'
 import Severity from 'vs/base/common/severity'
 import { IConfigurationChangeEvent } from 'vs/platform/configuration/common/configuration'
 import { ITextModelContentProvider } from 'vs/editor/common/services/resolverService'

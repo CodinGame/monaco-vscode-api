@@ -5,7 +5,7 @@ import { Extension } from 'vs/workbench/api/common/extHostExtensionService'
 import { checkProposedApiEnabled, isProposedApiEnabled } from 'vs/workbench/services/extensions/common/extensions'
 import { ExtensionKind } from 'vs/workbench/api/common/extHostTypes'
 import { Event } from 'vs/base/common/event'
-import { getExtHostServices } from '../ext-host/extHost'
+import { getExtHostServices } from '../extHost'
 
 export default function create (getExtension: () => IExtensionDescription): typeof vscode.extensions {
   return {

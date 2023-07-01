@@ -39,6 +39,10 @@
       "types": "./dist/service-override/*.d.ts",
       "default": "./dist/service-override/*.js"
     },
+    "./ext-hosts/*": {
+      "types": "./dist/ext-hosts/*.d.ts",
+      "default": "./dist/ext-hosts/*.js"
+    },
     "./workers/*": {
       "types": "./dist/workers/*.d.ts",
       "default": "./dist/workers/*.js"
@@ -188,6 +192,7 @@
     "@types/mime-types": "^2.1.1",
     "@types/node": "^18.16.3",
     "@types/semver": "^7.5.0",
+    "@types/toposort": "^2.0.3",
     "@types/vscode": "~1.79.0",
     "@types/yauzl": "^2.10.0",
     "@typescript-eslint/eslint-plugin": "^5.59.9",
@@ -237,5 +242,8 @@
   "volta": {
     "node": "18.14.2",
     "npm": "9.5.1"
+  },
+  "dependencies": {
+    "toposort": "^2.0.2"
   }
 }

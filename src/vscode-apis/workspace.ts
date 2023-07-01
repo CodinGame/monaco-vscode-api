@@ -6,7 +6,7 @@ import { combinedDisposable } from 'vs/base/common/lifecycle'
 import { IExtensionDescription } from 'vs/platform/extensions/common/extensions'
 import { Event } from 'vs/base/common/event'
 import { checkProposedApiEnabled } from 'vs/workbench/services/extensions/common/extensions'
-import { getConfigProvider, getExtHostServices } from '../ext-host/extHost'
+import { getConfigProvider, getExtHostServices } from '../extHost'
 import { unsupported } from '../tools'
 
 export default function create (getExtension: () => IExtensionDescription): typeof vscode.workspace {
@@ -161,8 +161,8 @@ export default function create (getExtension: () => IExtensionDescription): type
       return extHostWorkspace.updateWorkspaceFolders(getExtension(), index, deleteCount ?? 0, ...workspaceFoldersToAdd)
     },
     registerTextDocumentContentProvider (scheme: string, provider: vscode.TextDocumentContentProvider) {
-      const { extHostDocumentContentProviders } = getExtHostServices()
-      return extHostDocumentContentProviders.registerTextDocumentContentProvider(scheme, provider)
+      const { extHostDocumentContentProvider } = getExtHostServices()
+      return extHostDocumentContentProvider.registerTextDocumentContentProvider(scheme, provider)
     },
     registerTaskProvider: unsupported,
     registerFileSystemProvider (scheme, provider, options) {
