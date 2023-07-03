@@ -12,7 +12,7 @@ import { extUri, joinPath } from 'vs/base/common/resources'
 import { Emitter, Event } from 'vs/base/common/event'
 import { HTMLFileSystemProvider } from 'vs/platform/files/browser/htmlFileSystemProvider'
 import * as path from 'vs/base/common/path'
-import 'vs/workbench/contrib/files/browser/files.contribution'
+import 'vs/workbench/contrib/files/browser/files.contribution.js?include=registerConfiguration'
 
 abstract class RegisteredFile {
   private ctime: number
