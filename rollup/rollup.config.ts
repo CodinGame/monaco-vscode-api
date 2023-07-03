@@ -289,7 +289,12 @@ function isCallPure (file: string, functionName: string, node: recast.types.name
   return PURE_OR_TO_REMOVE_FUNCTIONS.has(functionName)
 }
 
-function transformVSCodeCode (id: string, code: string) {
+interface TreeShakeOptions {
+  include: string[]
+  exclude: string[]
+}
+
+function transformVSCodeCode (id: string, code: string, options: TreeShakeOptions) {
   // HACK: assign typescript decorator result to a decorated class field so rollup doesn't remove them
   // before:
   // __decorate([
@@ -301,7 +306,7 @@ function transformVSCodeCode (id: string, code: string) {
   //     memoize
   // ], InlineBreakpointWidget.prototype, "getId", null);
 
-  const patchedCode = code.replace(/(^__decorate\(\[\n.*\n\], (.*).prototype)/gm, '$2.__decorator = $1')
+  let patchedCode = code.replace(/(^__decorate\(\[\n.*\n\], (.*).prototype)/gm, '$2.__decorator = $1')
 
   const ast = recast.parse(patchedCode, {
     parser: babylonParser
@@ -339,11 +344,15 @@ function transformVSCodeCode (id: string, code: string) {
 
       if (node.callee.type === 'MemberExpression') {
         if (node.callee.property.type === 'Identifier') {
-          if ((name != null && isCallPure(id, name, node)) || isCallPure(id, node.callee.property.name, node)) {
+          const names: string[] = [node.callee.property.name]
+          if (name != null) {
+            names.unshift(name)
+          }
+          if (options.include.length > 0 ? !names.some(name => options.include.includes(name)) : (names.some(name => isCallPure(id, name, node) || options.exclude.includes(name)))) {
             path.replace(addComment(node))
           }
         }
-      } else if (node.callee.type === 'Identifier' && isCallPure(id, node.callee.name, node)) {
+      } else if (node.callee.type === 'Identifier' && (options.include.length > 0 ? !options.include.includes(node.callee.name) : (isCallPure(id, node.callee.name, node) || options.exclude.includes(node.callee.name)))) {
         path.replace(addComment(node))
       } else if (node.callee.type === 'FunctionExpression') {
         const lastInstruction = node.callee.body.body[node.callee.body.body.length - 1]
@@ -362,10 +371,10 @@ function transformVSCodeCode (id: string, code: string) {
   })
   // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
   if (transformed) {
-    code = recast.print(ast).code
-    code = code.replace(/\/\*#__PURE__\*\/\s+/g, '/*#__PURE__*/ ') // Remove space after PURE comment
+    patchedCode = recast.print(ast).code
+    patchedCode = patchedCode.replace(/\/\*#__PURE__\*\/\s+/g, '/*#__PURE__*/ ') // Remove space after PURE comment
   }
-  return code
+  return patchedCode
 }
 
 function resolveVscode (importee: string, importer?: string) {
@@ -459,24 +468,25 @@ export default (args: Record<string, string>): rollup.RollupOptions[] => {
       annotations: true,
       preset: 'smallest',
       moduleSideEffects (id) {
-        if (id.endsWith('vs/workbench/browser/media/style.css')) {
+        const path = new URL(id, 'file:/').pathname
+        if (path.endsWith('vs/workbench/browser/media/style.css')) {
           // Remove global vscode css rules
           return false
         }
-        return id.startsWith(SRC_DIR) ||
-          id.endsWith('.css') ||
-          id.startsWith(KEYBOARD_LAYOUT_DIR) ||
-          id.endsWith('.contribution.js') ||
-          id.endsWith('xtensionPoint.js') ||
-          id.includes('vs/workbench/api/browser/') ||
-          id.endsWith('/fileCommands.js') ||
-          id.endsWith('/explorerViewlet.js') ||
-          id.endsWith('/listCommands.js') ||
-          id.endsWith('/quickAccessActions.js') ||
-          id.endsWith('/gotoLineQuickAccess.js') ||
-          id.endsWith('/workbenchReferenceSearch.js') ||
-          id.includes('/searchActions') ||
-          id.endsWith('documentSymbolsOutline.js')
+        return path.startsWith(SRC_DIR) ||
+          path.endsWith('.css') ||
+          path.startsWith(KEYBOARD_LAYOUT_DIR) ||
+          path.endsWith('.contribution.js') ||
+          path.endsWith('xtensionPoint.js') ||
+          path.includes('vs/workbench/api/browser/') ||
+          path.endsWith('/fileCommands.js') ||
+          path.endsWith('/explorerViewlet.js') ||
+          path.endsWith('/listCommands.js') ||
+          path.endsWith('/quickAccessActions.js') ||
+          path.endsWith('/gotoLineQuickAccess.js') ||
+          path.endsWith('/workbenchReferenceSearch.js') ||
+          path.includes('/searchActions') ||
+          path.endsWith('documentSymbolsOutline.js')
       }
     },
     external,
@@ -535,19 +545,34 @@ export default (args: Record<string, string>): rollup.RollupOptions[] => {
       }),
       {
         name: 'resolve-vscode',
-        resolveId: (importee, importer) => {
-          return resolveVscode(importee, importer)
+        resolveId: (importeeUrl, importer) => {
+          const result = /^(.*?)(\?.*)?$/.exec(importeeUrl)!
+          const importee = result[1]!
+          const search = result[2] ?? ''
+
+          const resolved = resolveVscode(importee, importer)
+
+          if (resolved != null) {
+            return `${resolved}${search}`
+          }
+          return undefined
         },
         async load (id) {
           if (!id.startsWith(VSCODE_DIR)) {
             return undefined
           }
-          if (!id.endsWith('.js')) {
+          const [, path, query] = /^(.*?)(\?.*?)?$/.exec(id)!
+          if (!path!.endsWith('.js')) {
             return undefined
           }
 
-          const content = (await fsPromise.readFile(id)).toString('utf-8')
-          return transformVSCodeCode(id, content)
+          const searchParams = new URLSearchParams(query)
+          const options: TreeShakeOptions = {
+            include: searchParams.getAll('include'),
+            exclude: searchParams.getAll('exclude')
+          }
+          const content = (await fsPromise.readFile(path!)).toString('utf-8')
+          return transformVSCodeCode(path!, content, options)
         },
         transform (code) {
           return code.replaceAll("'./keyboardLayouts/layout.contribution.' + platform", "'./keyboardLayouts/layout.contribution.' + platform + '.js'")

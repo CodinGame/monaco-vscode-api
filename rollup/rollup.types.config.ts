@@ -71,6 +71,9 @@ export default rollup.defineConfig({
     if (id.endsWith('.css')) {
       return true
     }
+    if (id.includes('.contribution')) {
+      return true
+    }
     return [
       'vscode', 'monaco-editor', 'vscode-textmate', 'rollup', '@rollup/pluginutils',
       'xterm', 'tas-client-umd', 'xterm-addon-canvas', 'xterm-addon-search', 'xterm-addon-unicode11',
@@ -87,7 +90,8 @@ export default rollup.defineConfig({
     {
       name: 'replace-interfaces',
       load (id) {
-        const [sourceFile] = project.addSourceFilesAtPaths(id)
+        const path = new URL(id, 'file:/').pathname
+        const [sourceFile] = project.addSourceFilesAtPaths(path)
 
         sourceFile!.addImportDeclaration({
           moduleSpecifier: 'monaco-editor',
