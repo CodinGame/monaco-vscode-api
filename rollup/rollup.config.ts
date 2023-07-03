@@ -103,6 +103,35 @@ const REMOVE_WORKBENCH_CONTRIBUTIONS = new Set([
   'DebugStatusContribution'
 ])
 
+const EXTENSIONS = ['', '.ts', '.js']
+
+const BASE_DIR = path.resolve(__dirname, '..')
+const TSCONFIG = path.resolve(BASE_DIR, 'tsconfig.rollup.json')
+const SRC_DIR = path.resolve(BASE_DIR, 'src')
+const DIST_DIR = path.resolve(BASE_DIR, 'dist')
+const VSCODE_DIR = path.resolve(BASE_DIR, 'vscode')
+const NODE_MODULES_DIR = path.resolve(BASE_DIR, 'node_modules')
+const MONACO_EDITOR_DIR = path.resolve(NODE_MODULES_DIR, './monaco-editor')
+const MONACO_EDITOR_ESM_DIR = path.resolve(MONACO_EDITOR_DIR, './esm')
+const OVERRIDE_PATH = path.resolve(BASE_DIR, 'src/override')
+const DEFAULT_EXTENSIONS_PATH = path.resolve(BASE_DIR, 'vscode-default-extensions')
+const KEYBOARD_LAYOUT_DIR = path.resolve(VSCODE_DIR, 'vs/workbench/services/keybinding/browser/keyboardLayouts')
+
+function getMemberExpressionPath (node: recast.types.namedTypes.MemberExpression | recast.types.namedTypes.Identifier): string | null {
+  if (node.type === 'MemberExpression') {
+    if (node.property.type === 'Identifier' && (node.object.type === 'Identifier' || node.object.type === 'MemberExpression')) {
+      const parentName = getMemberExpressionPath(node.object)
+      if (parentName == null) {
+        return null
+      }
+      return `${parentName}.${node.property.name}`
+    }
+  } else {
+    return node.name
+  }
+  return null
+}
+
 function isCallPure (file: string, functionName: string, node: recast.types.namedTypes.CallExpression): boolean {
   const args = node.arguments
   if (functionName === '__decorate') {
@@ -260,33 +289,115 @@ function isCallPure (file: string, functionName: string, node: recast.types.name
   return PURE_OR_TO_REMOVE_FUNCTIONS.has(functionName)
 }
 
-const EXTENSIONS = ['', '.ts', '.js']
+function transformVSCodeCode (id: string, code: string) {
+  // HACK: assign typescript decorator result to a decorated class field so rollup doesn't remove them
+  // before:
+  // __decorate([
+  //     memoize
+  // ], InlineBreakpointWidget.prototype, "getId", null);
+  //
+  // after:
+  // InlineBreakpointWidget.__decorator = __decorate([
+  //     memoize
+  // ], InlineBreakpointWidget.prototype, "getId", null);
 
-const BASE_DIR = path.resolve(__dirname, '..')
-const TSCONFIG = path.resolve(BASE_DIR, 'tsconfig.rollup.json')
-const SRC_DIR = path.resolve(BASE_DIR, 'src')
-const DIST_DIR = path.resolve(BASE_DIR, 'dist')
-const VSCODE_DIR = path.resolve(BASE_DIR, 'vscode')
-const NODE_MODULES_DIR = path.resolve(BASE_DIR, 'node_modules')
-const MONACO_EDITOR_DIR = path.resolve(NODE_MODULES_DIR, './monaco-editor')
-const MONACO_EDITOR_ESM_DIR = path.resolve(MONACO_EDITOR_DIR, './esm')
-const OVERRIDE_PATH = path.resolve(BASE_DIR, 'src/override')
-const DEFAULT_EXTENSIONS_PATH = path.resolve(BASE_DIR, 'vscode-default-extensions')
-const KEYBOARD_LAYOUT_DIR = path.resolve(VSCODE_DIR, 'vs/workbench/services/keybinding/browser/keyboardLayouts')
+  const patchedCode = code.replace(/(^__decorate\(\[\n.*\n\], (.*).prototype)/gm, '$2.__decorator = $1')
 
-function getMemberExpressionPath (node: recast.types.namedTypes.MemberExpression | recast.types.namedTypes.Identifier): string | null {
-  if (node.type === 'MemberExpression') {
-    if (node.property.type === 'Identifier' && (node.object.type === 'Identifier' || node.object.type === 'MemberExpression')) {
-      const parentName = getMemberExpressionPath(node.object)
-      if (parentName == null) {
-        return null
-      }
-      return `${parentName}.${node.property.name}`
+  const ast = recast.parse(patchedCode, {
+    parser: babylonParser
+  })
+  let transformed: boolean = false
+  function addComment (node: recast.types.namedTypes.NewExpression | recast.types.namedTypes.CallExpression) {
+    if (!(node.comments ?? []).some(comment => comment.value === PURE_ANNO)) {
+      transformed = true
+      node.comments ??= []
+      node.comments.unshift(recast.types.builders.commentBlock(PURE_ANNO, true))
+      return recast.types.builders.parenthesizedExpression(node)
     }
-  } else {
-    return node.name
+    return node
   }
-  return null
+  recast.visit(ast.program.body, {
+    visitExportNamedDeclaration (path) {
+      if (path.node.specifiers != null && path.node.specifiers.some(specifier => specifier.exported.name === 'LayoutPriority')) {
+        // For some reasons, this re-export is not used but rollup is not able to treeshake it
+        // It's an issue because it's a const enum imported from monaco (so it doesn't exist in the js code)
+        path.node.specifiers = path.node.specifiers.filter(specifier => specifier.exported.name !== 'LayoutPriority')
+        transformed = true
+      }
+      this.traverse(path)
+    },
+    visitNewExpression (path) {
+      const node = path.node
+      if (node.callee.type === 'Identifier') {
+        path.replace(addComment(node))
+      }
+      this.traverse(path)
+    },
+    visitCallExpression (path) {
+      const node = path.node
+      const name = node.callee.type === 'MemberExpression' || node.callee.type === 'Identifier' ? getMemberExpressionPath(node.callee) : null
+
+      if (node.callee.type === 'MemberExpression') {
+        if (node.callee.property.type === 'Identifier') {
+          if ((name != null && isCallPure(id, name, node)) || isCallPure(id, node.callee.property.name, node)) {
+            path.replace(addComment(node))
+          }
+        }
+      } else if (node.callee.type === 'Identifier' && isCallPure(id, node.callee.name, node)) {
+        path.replace(addComment(node))
+      } else if (node.callee.type === 'FunctionExpression') {
+        const lastInstruction = node.callee.body.body[node.callee.body.body.length - 1]
+        const lastInstructionIsReturn = lastInstruction?.type === 'ReturnStatement' && lastInstruction.argument != null
+        if (node.arguments.length > 0 || lastInstructionIsReturn) {
+          // heuristic: mark IIFE with parameters or with a return as pure, because typescript compile enums as IIFE
+          path.replace(addComment(node))
+        }
+      }
+      this.traverse(path)
+      return undefined
+    },
+    visitThrowStatement () {
+      return false
+    }
+  })
+  // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
+  if (transformed) {
+    code = recast.print(ast).code
+    code = code.replace(/\/\*#__PURE__\*\/\s+/g, '/*#__PURE__*/ ') // Remove space after PURE comment
+  }
+  return code
+}
+
+function resolveVscode (importee: string, importer?: string) {
+  if (importee === '@vscode/iconv-lite-umd') {
+    return path.resolve(OVERRIDE_PATH, 'iconv.ts')
+  }
+  if (importee === 'jschardet') {
+    return path.resolve(OVERRIDE_PATH, 'jschardet.ts')
+  }
+  if (importer != null && importee.startsWith('.')) {
+    importee = path.resolve(path.dirname(importer), importee)
+  }
+  if (importee.startsWith('vscode/')) {
+    return resolve(path.relative('vscode', importee), [VSCODE_DIR])
+  }
+  let vscodeImportPath = importee
+  if (importee.startsWith(VSCODE_DIR)) {
+    vscodeImportPath = path.relative(VSCODE_DIR, importee)
+  }
+  const overridePath = resolve(vscodeImportPath, [OVERRIDE_PATH])
+  if (overridePath != null) {
+    return overridePath
+  }
+
+  if (vscodeImportPath.startsWith('vs/')) {
+    if (resolve(vscodeImportPath, [MONACO_EDITOR_ESM_DIR]) != null) {
+      // File exists on monaco, import from monaco esm
+      return path.relative(NODE_MODULES_DIR, path.resolve(MONACO_EDITOR_ESM_DIR, vscodeImportPath)) + '.js'
+    }
+    return resolve(vscodeImportPath, [VSCODE_DIR])
+  }
+  return undefined
 }
 
 const input = {
@@ -424,36 +535,19 @@ export default (args: Record<string, string>): rollup.RollupOptions[] => {
       }),
       {
         name: 'resolve-vscode',
-        resolveId: async function (importee, importer) {
-          if (importee === '@vscode/iconv-lite-umd') {
-            return path.resolve(OVERRIDE_PATH, 'iconv.ts')
+        resolveId: (importee, importer) => {
+          return resolveVscode(importee, importer)
+        },
+        async load (id) {
+          if (!id.startsWith(VSCODE_DIR)) {
+            return undefined
           }
-          if (importee === 'jschardet') {
-            return path.resolve(OVERRIDE_PATH, 'jschardet.ts')
-          }
-          if (importer != null && importee.startsWith('.')) {
-            importee = path.resolve(path.dirname(importer), importee)
-          }
-          if (importee.startsWith('vscode/')) {
-            return resolve(path.relative('vscode', importee), [VSCODE_DIR])
-          }
-          let vscodeImportPath = importee
-          if (importee.startsWith(VSCODE_DIR)) {
-            vscodeImportPath = path.relative(VSCODE_DIR, importee)
-          }
-          const overridePath = resolve(vscodeImportPath, [OVERRIDE_PATH])
-          if (overridePath != null) {
-            return overridePath
+          if (!id.endsWith('.js')) {
+            return undefined
           }
 
-          if (vscodeImportPath.startsWith('vs/')) {
-            if (resolve(vscodeImportPath, [MONACO_EDITOR_ESM_DIR]) != null) {
-              // File exists on monaco, import from monaco esm
-              return path.relative(NODE_MODULES_DIR, path.resolve(MONACO_EDITOR_ESM_DIR, vscodeImportPath)) + '.js'
-            }
-            return resolve(vscodeImportPath, [VSCODE_DIR])
-          }
-          return undefined
+          const content = (await fsPromise.readFile(id)).toString('utf-8')
+          return transformVSCodeCode(id, content)
         },
         transform (code) {
           return code.replaceAll("'./keyboardLayouts/layout.contribution.' + platform", "'./keyboardLayouts/layout.contribution.' + platform + '.js'")
@@ -511,91 +605,7 @@ export default (args: Record<string, string>): rollup.RollupOptions[] => {
             }
           }]
         }
-      }),
-      {
-        name: 'improve-vscode-treeshaking',
-        transform (code, id) {
-          if (id.startsWith(VSCODE_DIR) && id.endsWith('.js')) {
-            // HACK: assign typescript decorator result to a decorated class field so rollup doesn't remove them
-            // before:
-            // __decorate([
-            //     memoize
-            // ], InlineBreakpointWidget.prototype, "getId", null);
-            //
-            // after:
-            // InlineBreakpointWidget.__decorator = __decorate([
-            //     memoize
-            // ], InlineBreakpointWidget.prototype, "getId", null);
-
-            const patchedCode = code.replace(/(^__decorate\(\[\n.*\n\], (.*).prototype)/gm, '$2.__decorator = $1')
-
-            const ast = recast.parse(patchedCode, {
-              parser: babylonParser
-            })
-            let transformed: boolean = false
-            function addComment (node: recast.types.namedTypes.NewExpression | recast.types.namedTypes.CallExpression) {
-              if (!(node.comments ?? []).some(comment => comment.value === PURE_ANNO)) {
-                transformed = true
-                node.comments ??= []
-                node.comments.unshift(recast.types.builders.commentBlock(PURE_ANNO, true))
-                return recast.types.builders.parenthesizedExpression(node)
-              }
-              return node
-            }
-            recast.visit(ast.program.body, {
-              visitExportNamedDeclaration (path) {
-                if (path.node.specifiers != null && path.node.specifiers.some(specifier => specifier.exported.name === 'LayoutPriority')) {
-                  // For some reasons, this re-export is not used but rollup is not able to treeshake it
-                  // It's an issue because it's a const enum imported from monaco (so it doesn't exist in the js code)
-                  path.node.specifiers = path.node.specifiers.filter(specifier => specifier.exported.name !== 'LayoutPriority')
-                  transformed = true
-                }
-                this.traverse(path)
-              },
-              visitNewExpression (path) {
-                const node = path.node
-                if (node.callee.type === 'Identifier') {
-                  path.replace(addComment(node))
-                }
-                this.traverse(path)
-              },
-              visitCallExpression (path) {
-                const node = path.node
-                const name = node.callee.type === 'MemberExpression' || node.callee.type === 'Identifier' ? getMemberExpressionPath(node.callee) : null
-
-                if (node.callee.type === 'MemberExpression') {
-                  if (node.callee.property.type === 'Identifier') {
-                    if ((name != null && isCallPure(id, name, node)) || isCallPure(id, node.callee.property.name, node)) {
-                      path.replace(addComment(node))
-                    }
-                  }
-                } else if (node.callee.type === 'Identifier' && isCallPure(id, node.callee.name, node)) {
-                  path.replace(addComment(node))
-                } else if (node.callee.type === 'FunctionExpression') {
-                  const lastInstruction = node.callee.body.body[node.callee.body.body.length - 1]
-                  const lastInstructionIsReturn = lastInstruction?.type === 'ReturnStatement' && lastInstruction.argument != null
-                  if (node.arguments.length > 0 || lastInstructionIsReturn) {
-                    // heuristic: mark IIFE with parameters or with a return as pure, because typescript compile enums as IIFE
-                    path.replace(addComment(node))
-                  }
-                }
-                this.traverse(path)
-                return undefined
-              },
-              visitThrowStatement () {
-                return false
-              }
-            })
-            // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
-            if (transformed) {
-              code = recast.print(ast).code
-              code = code.replace(/\/\*#__PURE__\*\/\s+/g, '/*#__PURE__*/ ') // Remove space after PURE comment
-            }
-            return code
-          }
-          return undefined
-        }
-      }, replace({
+      }), replace({
         VSCODE_VERSION: JSON.stringify(vscodeVersion),
         preventAssignment: true
       }),
