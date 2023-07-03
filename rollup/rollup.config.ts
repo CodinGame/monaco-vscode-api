@@ -94,29 +94,13 @@ const KEEP_COLORS = new Set([
   'notificationToast.border'
 ])
 
-const ALLOWED_WORKBENCH_CONTRIBUTIONS = new Set([
-  'AudioCueLineFeatureContribution',
-  'AudioCueLineDebuggerContribution',
-  'RegisterConfigurationSchemasContribution',
-  'EditorAutoSave',
-  'EditorStatus',
-  'DebugToolBar',
-  'DebugContentProvider',
-  'DialogHandlerContribution',
-  'ExplorerViewletViewsContribution',
-  'ViewsExtensionHandler',
-  'OutputContribution',
-  'TerminalMainContribution',
-  'PreferencesActionsContribution',
-  'PreferencesContribution',
-  'ReplacePreviewContentProvider',
-  'SearchEditorContribution',
-  'SearchEditorWorkingCopyEditorHandler',
-  'ActivityUpdater',
-  'MarkersStatusBarContributions',
-  'DocumentSymbolsOutlineCreator',
-  'ComplexCustomWorkingCopyEditorHandler',
-  'WebviewPanelContribution'
+const REMOVE_WORKBENCH_CONTRIBUTIONS = new Set([
+  'DebugTitleContribution',
+  'ResetConfigurationDefaultsOverridesCache',
+  'ConfigurationMigrationWorkbenchContribution',
+  'RegisterSearchViewContribution',
+  'RemoteTerminalBackendContribution',
+  'DebugStatusContribution'
 ])
 
 function isCallPure (file: string, functionName: string, node: recast.types.namedTypes.CallExpression): boolean {
@@ -230,7 +214,10 @@ function isCallPure (file: string, functionName: string, node: recast.types.name
 
   if (functionName === 'registerWorkbenchContribution') {
     const firstParam = args[0]!
-    if (firstParam.type === 'Identifier' && ALLOWED_WORKBENCH_CONTRIBUTIONS.has(firstParam.name)) {
+    if (firstParam.type === 'Identifier') {
+      if (REMOVE_WORKBENCH_CONTRIBUTIONS.has(firstParam.name)) {
+        return true
+      }
       return false
     }
     return true
