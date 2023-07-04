@@ -1614,7 +1614,7 @@ registerSingleton(IWebviewWorkbenchService, class WebviewWorkbenchService implem
   openWebview = unsupported
   openRevivedWebview = unsupported
   revealWebview = unsupported
-  registerResolver = unsupported
+  registerResolver = () => Disposable.None
   shouldPersist = unsupported
   resolveWebview = unsupported
 }, InstantiationType.Delayed)
