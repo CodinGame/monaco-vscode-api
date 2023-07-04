@@ -1,0 +1,7 @@
+{
+  "name": "monaco-vscode-api",
+  "build": {
+    "context": ".",
+    "dockerfile": "./Dockerfile"
+  }
+}

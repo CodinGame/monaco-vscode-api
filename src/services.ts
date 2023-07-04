@@ -88,7 +88,48 @@ export { IProductService } from 'vs/platform/product/common/productService'
 export { IQuickInputService } from 'vs/platform/quickinput/common/quickInput'
 export { ITelemetryService } from 'vs/platform/telemetry/common/telemetry'
 export { IUriIdentityService } from 'vs/platform/uriIdentity/common/uriIdentity'
-export { IEditorGroupsService } from 'vs/workbench/services/editor/common/editorGroupsService'
+export {
+  IEditorGroupsService,
+  GroupDirection,
+  GroupOrientation,
+  GroupLocation,
+  IFindGroupScope,
+  GroupsArrangement,
+  GroupLayoutArgument,
+  EditorGroupLayout,
+  IAddGroupOptions,
+  MergeGroupMode,
+  IMergeGroupOptions,
+  ICloseEditorOptions,
+  ICloseEditorsFilter,
+  ICloseAllEditorsOptions,
+  IEditorReplacement,
+  GroupsOrder,
+  IEditorSideGroup,
+  IEditorGroup
+} from 'vs/workbench/services/editor/common/editorGroupsService'
+export {
+  IEditorPane,
+  GroupIdentifier,
+  EditorInputWithOptions,
+  CloseDirection,
+  IEditorPartOptions,
+  IEditorPartOptionsChangeEvent,
+  EditorsOrder,
+  IVisibleEditorPane,
+  IEditorCloseEvent,
+  IUntypedEditorInput,
+  IEditorWillMoveEvent,
+  IEditorWillOpenEvent,
+  IMatchEditorOptions,
+  IActiveEditorChangeEvent,
+  IFindEditorOptions,
+  IEditorControl
+} from 'vs/workbench/common/editor'
+export { IDimension } from 'vs/editor/common/core/dimension'
+export { IEditorOptions, ITextEditorOptions, IResourceEditorInput } from 'vs/platform/editor/common/editor'
+export { EditorInput } from 'vs/workbench/common/editor/editorInput'
+export { IGroupModelChangeEvent } from 'vs/workbench/common/editor/editorGroupModel'
 export { IEditorService } from 'vs/workbench/services/editor/common/editorService'
 export { IWorkbenchEnvironmentService } from 'vs/workbench/services/environment/common/environmentService'
 export { IHostService } from 'vs/workbench/services/host/browser/host'
@@ -98,6 +139,7 @@ export { IPathService } from 'vs/workbench/services/path/common/pathService'
 export { ITextFileService } from 'vs/workbench/services/textfile/common/textfiles'
 export { IWorkingCopyFileService } from 'vs/workbench/services/workingCopy/common/workingCopyFileService'
 export { IConfigurationService } from 'vs/platform/configuration/common/configuration'
+export { IContextKeyService } from 'vs/platform/contextkey/common/contextkey'
 export { IThemeService } from 'vs/platform/theme/common/themeService'
 export { ISnippetsService } from 'vs/workbench/contrib/snippets/browser/snippets'
 export { IWorkspaceContextService } from 'vs/platform/workspace/common/workspace'
@@ -111,6 +153,8 @@ export { ILayoutService } from 'vs/platform/layout/browser/layoutService'
 export { IPreferencesService } from 'vs/workbench/services/preferences/common/preferences'
 export { IPreferencesSearchService } from 'vs/workbench/contrib/preferences/common/preferences'
 export { IKeybindingEditingService } from 'vs/workbench/services/keybinding/common/keybindingEditing'
+export { IOutputService } from 'vs/workbench/services/output/common/output'
+export { IHistoryService, GoFilter, GoScope } from 'vs/workbench/services/history/common/history'
 
 // Export all Notification service parts
 export {
