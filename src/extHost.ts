@@ -84,7 +84,7 @@ import 'vs/workbench/api/browser/mainThreadLogService'
 
 const serviceCollection = new ServiceCollection()
 export function registerExtHostSingleton<T, Services extends BrandedService[]>(id: ServiceIdentifier<T>, ctor: new (...services: Services) => T, supportsDelayedInstantiation: InstantiationType): void
-export function registerExtHostSingleton<T, Services extends BrandedService[]>(id: ServiceIdentifier<T>, descriptor: SyncDescriptor<unknown>): void
+export function registerExtHostSingleton<T>(id: ServiceIdentifier<T>, descriptor: SyncDescriptor<unknown>): void
 export function registerExtHostSingleton<T, Services extends BrandedService[]> (id: ServiceIdentifier<T>, ctorOrDescriptor: { new(...services: Services): T } | SyncDescriptor<unknown>, supportsDelayedInstantiation?: boolean | InstantiationType): void {
   if (!(ctorOrDescriptor instanceof SyncDescriptor)) {
     ctorOrDescriptor = new SyncDescriptor<T>(ctorOrDescriptor as new (...args: any[]) => T, [], Boolean(supportsDelayedInstantiation))
