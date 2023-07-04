@@ -7,7 +7,6 @@ import { lookup as lookupMimeType } from 'mime-types'
 import * as path from 'path'
 import * as fsPromise from 'fs/promises'
 import * as fs from 'fs'
-import * as url from 'url'
 import { buildExtensionCode, compressResource, extractResourcesFromExtensionManifest, parseJson } from './extension-tools'
 
 interface Options {
@@ -100,7 +99,7 @@ export default function plugin ({
           ]))
           return `
 import manifest from '${manifestPath}'
-import { registerExtension, onExtHostInitialized } from '${url.fileURLToPath(new URL('../extensions.js', import.meta.url))}'
+import { registerExtension, onExtHostInitialized } from 'vscode/extensions'
 ${syncPaths.map((resourcePath, index) => (`
 import resource_${index} from '${path.resolve(id, resourcePath)}.extensionResource'`)).join('\n')}
 
