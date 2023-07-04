@@ -367,6 +367,60 @@ function transformVSCodeCode (id: string, code: string, options: TreeShakeOption
     },
     visitThrowStatement () {
       return false
+    },
+    visitClassDeclaration (path) {
+      /**
+       * The whole point of this method is to transform to static field declarations
+       * ```
+       * class Toto {
+       * }
+       * Toto.FIELD = 'tata'
+       * ```
+       * become
+       * ```
+       * class Toto {
+       *   static FIELD = 'tata'
+       * }
+       * ```
+       * So rollup will know it's a static field without side effects
+       * As per version 3.26, it the class extends an external class (from monaco), rollup will infer the field has a side effect
+       * It is mainly designed for `OnAutoForwardedAction` with has a static field and pull a lot of unused code
+       * => https://rollupjs.org/repl/?version=3.26.0&shareable=JTdCJTIyZXhhbXBsZSUyMiUzQW51bGwlMkMlMjJtb2R1bGVzJTIyJTNBJTVCJTdCJTIybmFtZSUyMiUzQSUyMm1haW4uanMlMjIlMkMlMjJjb2RlJTIyJTNBJTIyJTVDbmNsYXNzJTIwVG90byUyMGV4dGVuZHMlMjBEaXNwb3NhYmxlJTIwJTdCJTVDbiU3RCU1Q25Ub3RvLkZJRUxEJTIwJTNEJTIwJ3RhdGEnJTVDbiUyMiUyQyUyMmlzRW50cnklMjIlM0F0cnVlJTdEJTVEJTJDJTIyb3B0aW9ucyUyMiUzQSU3QiUyMm91dHB1dCUyMiUzQSU3QiUyMmZvcm1hdCUyMiUzQSUyMmVzJTIyJTdEJTJDJTIydHJlZXNoYWtlJTIyJTNBJTIyc21hbGxlc3QlMjIlN0QlN0Q=
+       */
+      if (!(path.node.id?.type === 'Identifier')) {
+        this.traverse(path)
+        return
+      }
+      let statemementListPath = path.parentPath
+      while (statemementListPath != null && !Array.isArray(statemementListPath.value)) {
+        statemementListPath = statemementListPath.parentPath
+      }
+      const parentIndex = statemementListPath.value.indexOf(path.node)
+      for (let i = parentIndex + 1; i < path.parentPath.value.length; ++i) {
+        const node: recast.types.namedTypes.Node = path.parentPath.value[i]
+        function isExpressionStatement (node: recast.types.namedTypes.Node): node is recast.types.namedTypes.ExpressionStatement {
+          return node.type === 'ExpressionStatement'
+        }
+        function isLiteral (node: recast.types.namedTypes.Node): node is recast.types.namedTypes.NumericLiteral | recast.types.namedTypes.Literal | recast.types.namedTypes.BooleanLiteral | recast.types.namedTypes.DecimalLiteral {
+          return ['NumericLiteral', 'Literal', 'StringLiteral', 'BooleanLiteral', 'DecimalLiteral'].includes(node.type)
+        }
+        if (isExpressionStatement(node) &&
+          node.expression.type === 'AssignmentExpression' &&
+          node.expression.left.type === 'MemberExpression' &&
+          node.expression.left.object.type === 'Identifier' &&
+          node.expression.left.object.name === path.node.id.name &&
+          node.expression.left.property.type === 'Identifier' &&
+          isLiteral(node.expression.right)
+        ) {
+          const fieldName = node.expression.left.property.name
+          path.node.body.body.push(recast.types.builders.classProperty(recast.types.builders.identifier(fieldName), node.expression.right, null, true))
+          path.parentPath.value.splice(i--, 1)
+          transformed = true
+        } else {
+          break
+        }
+      }
+      this.traverse(path)
     }
   })
   // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
