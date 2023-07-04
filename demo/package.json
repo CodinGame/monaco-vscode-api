@@ -19,7 +19,7 @@
     "@types/wicg-file-system-access": "^2020.9.6",
     "@types/ws": "^8.5.5",
     "ts-node": "^10.9.1",
-    "typescript": "~5.1.3",
+    "typescript": "~5.1.6",
     "vite": "~4.3.9"
   },
   "enabledApiProposals": [
@@ -36,11 +36,11 @@
     "ws": "^8.13.0",
     "xterm": "5.2.1",
     "xterm-addon-canvas": "0.4.0",
+    "xterm-addon-image": "0.4.1",
     "xterm-addon-search": "0.12.0",
     "xterm-addon-serialize": "0.10.0",
     "xterm-addon-unicode11": "0.5.0",
-    "xterm-addon-webgl": "0.15.0",
-    "xterm-addon-image": "0.4.1"
+    "xterm-addon-webgl": "0.15.0"
   },
   "volta": {
     "node": "18.14.2",
