@@ -88,6 +88,7 @@ export { IProductService } from 'vs/platform/product/common/productService'
 export { IQuickInputService } from 'vs/platform/quickinput/common/quickInput'
 export { ITelemetryService } from 'vs/platform/telemetry/common/telemetry'
 export { IUriIdentityService } from 'vs/platform/uriIdentity/common/uriIdentity'
+export { IBreadcrumbsService } from 'vs/workbench/browser/parts/editor/breadcrumbs'
 export {
   IEditorGroupsService,
   GroupDirection,
