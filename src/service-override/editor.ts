@@ -4,7 +4,8 @@ import { IResolvedTextEditorModel, ITextModelService } from 'vs/editor/common/se
 import { ICodeEditorService } from 'vs/editor/browser/services/codeEditorService'
 import { CodeEditorService } from 'vs/workbench/services/editor/browser/codeEditorService'
 import { IEditorService, IEditorsChangeEvent, IOpenEditorsOptions, IRevertAllEditorsOptions, ISaveAllEditorsOptions, ISaveEditorsOptions, ISaveEditorsResult, IUntypedEditorReplacement, PreferredGroup } from 'vs/workbench/services/editor/common/editorService'
-import { EditorInputWithOptions, EditorsOrder, GroupIdentifier, IEditorCloseEvent, IEditorIdentifier, IEditorPane, IFindEditorOptions, IResourceDiffEditorInput, IRevertOptions, ITextDiffEditorPane, IUntitledTextResourceEditorInput, IUntypedEditorInput, IVisibleEditorPane } from 'vs/workbench/common/editor'
+import { EditorExtensions, EditorInputWithOptions, EditorsOrder, GroupIdentifier, IEditorCloseEvent, IEditorIdentifier, IFindEditorOptions, IRevertOptions, IVisibleEditorPane } from 'vs/workbench/common/editor'
+import type { IEditorFactoryRegistry, IEditorPane, IFileEditorInput, IResourceDiffEditorInput, ITextDiffEditorPane, IUntitledTextResourceEditorInput, IUntypedEditorInput } from 'vs/workbench/common/editor'
 import { Emitter, Event } from 'vs/base/common/event'
 import { EditorInput } from 'vs/workbench/common/editor/editorInput'
 import { IEditorOptions, IResourceEditorInput, IResourceEditorInputIdentifier, ITextResourceEditorInput } from 'vs/platform/editor/common/editor'
@@ -15,6 +16,8 @@ import { ICodeEditor, IDiffEditor } from 'vs/editor/browser/editorBrowser'
 import { ITextEditorService, TextEditorService } from 'vs/workbench/services/textfile/common/textEditorService'
 import { ICloseEditorOptions, IEditorGroup, IEditorReplacement } from 'vs/workbench/services/editor/common/editorGroupsService'
 import { URI } from 'vs/base/common/uri'
+import { Registry } from 'vs/platform/registry/common/platform'
+import { FILE_EDITOR_INPUT_ID } from 'vs/workbench/contrib/files/common/files'
 import { OpenEditor, wrapOpenEditor } from './tools/editor'
 import { unsupported } from '../tools'
 import 'vs/workbench/browser/parts/editor/editor.contribution'
@@ -89,6 +92,16 @@ class SimpleEditorService extends Disposable implements IEditorService {
   closeEditor: (editor: IEditorIdentifier, options?: ICloseEditorOptions) => Promise<void> = unsupported
   closeEditors: (editors: readonly IEditorIdentifier[], options?: ICloseEditorOptions) => Promise<void> = unsupported
 }
+
+/**
+ * Register a fake file editor factory
+ * The code check that there is a registered factory even if it's not used
+ */
+Registry.as<IEditorFactoryRegistry>(EditorExtensions.EditorFactory).registerFileEditorFactory({
+  typeId: FILE_EDITOR_INPUT_ID,
+  createFileEditor: unsupported,
+  isFileEditor: (obj): obj is IFileEditorInput => false
+})
 
 export default function getServiceOverride (openEditor: OpenEditor): IEditorOverrideServices {
   return {
