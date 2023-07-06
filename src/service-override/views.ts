@@ -350,10 +350,15 @@ class EditorDropService implements IEditorDropService {
   }
 }
 
+function isEditorPartVisible (): boolean {
+  const editorPart = StandaloneServices.get(IEditorGroupsService) as EditorPart
+  return editorPart.getContainer()?.isConnected ?? false
+}
+
 class MonacoEditorService extends EditorService {
   constructor (
     _openEditorFallback: OpenEditor | undefined,
-    @IEditorGroupsService private _editorGroupService: IEditorGroupsService,
+    @IEditorGroupsService _editorGroupService: IEditorGroupsService,
     @IInstantiationService instantiationService: IInstantiationService,
     @IFileService fileService: IFileService,
     @IConfigurationService configurationService: IConfigurationService,
@@ -396,8 +401,7 @@ class MonacoEditorService extends EditorService {
   override openEditor(editor: EditorInput | IUntypedEditorInput, optionsOrPreferredGroup?: IEditorOptions | PreferredGroup, preferredGroup?: PreferredGroup): Promise<IEditorPane | undefined>
   override async openEditor (editor: EditorInput | IUntypedEditorInput, optionsOrPreferredGroup?: IEditorOptions | PreferredGroup, preferredGroup?: PreferredGroup): Promise<IEditorPane | undefined> {
     // Do not try to open the file if the editor part is not displayed, let the fallback happen
-    const editorPart = this._editorGroupService as EditorPart
-    if (!(editorPart.getContainer()?.isConnected ?? false)) {
+    if (!isEditorPartVisible()) {
       return undefined
     }
 
@@ -445,6 +449,7 @@ export {
   renderPanelPart,
   renderEditorPart,
   renderStatusBarPart,
+  isEditorPartVisible,
 
   OpenEditor,
   IEditorOptions,

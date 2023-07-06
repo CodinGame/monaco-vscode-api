@@ -9,7 +9,7 @@ import getTextmateServiceOverride from 'vscode/service-override/textmate'
 import getThemeServiceOverride from 'vscode/service-override/theme'
 import getLanguagesServiceOverride from 'vscode/service-override/languages'
 import getAudioCueServiceOverride from 'vscode/service-override/audioCue'
-import getViewsServiceOverride, { renderSidebarPart, renderActivitybarPar, renderEditorPart, renderPanelPart, renderStatusBarPart } from 'vscode/service-override/views'
+import getViewsServiceOverride, { isEditorPartVisible, renderSidebarPart, renderActivitybarPar, renderEditorPart, renderPanelPart, renderStatusBarPart } from 'vscode/service-override/views'
 import getDebugServiceOverride from 'vscode/service-override/debug'
 import getPreferencesServiceOverride from 'vscode/service-override/preferences'
 import getSnippetServiceOverride from 'vscode/service-override/snippets'
@@ -70,7 +70,9 @@ await initializeMonacoService({
   ...getPreferencesServiceOverride(),
   ...getViewsServiceOverride(openNewCodeEditor),
   ...getSnippetServiceOverride(),
-  ...getQuickAccessServiceOverride(),
+  ...getQuickAccessServiceOverride({
+    isKeybindingConfigurationVisible: isEditorPartVisible
+  }),
   ...getOutputServiceOverride(),
   ...getTerminalServiceOverride(new TerminalBackend()),
   ...getSearchAccessServiceOverride(),
