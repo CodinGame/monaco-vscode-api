@@ -3,16 +3,18 @@ import { IEditorOverrideServices, StandaloneServices } from 'vs/editor/standalon
 import { IResolvedTextEditorModel, ITextModelService } from 'vs/editor/common/services/resolverService'
 import { ICodeEditorService } from 'vs/editor/browser/services/codeEditorService'
 import { CodeEditorService } from 'vs/workbench/services/editor/browser/codeEditorService'
-import { IEditorService, PreferredGroup } from 'vs/workbench/services/editor/common/editorService'
-import { IEditorPane, IResourceDiffEditorInput, ITextDiffEditorPane, IUntitledTextResourceEditorInput, IUntypedEditorInput } from 'vs/workbench/common/editor'
+import { IEditorService, IRevertAllEditorsOptions, ISaveAllEditorsOptions, ISaveEditorsOptions, ISaveEditorsResult, PreferredGroup, SIDE_GROUP_TYPE } from 'vs/workbench/services/editor/common/editorService'
+import { EditorsOrder, IEditorIdentifier, IEditorPane, IFindEditorOptions, IResourceDiffEditorInput, IRevertOptions, ITextDiffEditorPane, IUntitledTextResourceEditorInput, IUntypedEditorInput } from 'vs/workbench/common/editor'
 import { Emitter, Event } from 'vs/base/common/event'
 import { EditorInput } from 'vs/workbench/common/editor/editorInput'
-import { IEditorOptions, IResourceEditorInput, ITextResourceEditorInput } from 'vs/platform/editor/common/editor'
+import { IEditorOptions, IResourceEditorInput, IResourceEditorInputIdentifier, ITextResourceEditorInput } from 'vs/platform/editor/common/editor'
 import { IEditor } from 'vs/editor/common/editorCommon'
 import { SyncDescriptor } from 'vs/platform/instantiation/common/descriptors'
 import { Disposable, IReference } from 'vs/base/common/lifecycle'
 import { ICodeEditor } from 'vs/editor/browser/editorBrowser'
 import { ITextEditorService, TextEditorService } from 'vs/workbench/services/textfile/common/textEditorService'
+import { ICloseEditorOptions } from 'vs/workbench/services/editor/common/editorGroupsService'
+import { URI } from 'vs/base/common/uri'
 import { OpenEditor, wrapOpenEditor } from './tools/editor'
 import { unsupported } from '../tools'
 import 'vs/workbench/browser/parts/editor/editor.contribution'
@@ -61,7 +63,8 @@ class EditorService extends Disposable implements IEditorService {
   visibleTextEditorControls = []
   editors = []
   count = 0
-  getEditors = () => []
+  getEditors: (order: EditorsOrder, options?: { excludeSticky?: boolean
+}) => readonly IEditorIdentifier[] = () => []
 
   openEditor(editor: EditorInput, options?: IEditorOptions, group?: PreferredGroup): Promise<IEditorPane | undefined>
   openEditor(editor: IUntypedEditorInput, group?: PreferredGroup): Promise<IEditorPane | undefined>
@@ -69,21 +72,23 @@ class EditorService extends Disposable implements IEditorService {
   openEditor(editor: ITextResourceEditorInput | IUntitledTextResourceEditorInput, group?: PreferredGroup): Promise<IEditorPane | undefined>
   openEditor(editor: IResourceDiffEditorInput, group?: PreferredGroup): Promise<ITextDiffEditorPane | undefined>
   openEditor(editor: EditorInput | IUntypedEditorInput, optionsOrPreferredGroup?: IEditorOptions | PreferredGroup, preferredGroup?: PreferredGroup): Promise<IEditorPane | undefined>
-  async openEditor () {
+  async openEditor (): Promise<IEditorPane | undefined> {
     return undefined
   }
 
   openEditors = unsupported
   replaceEditors = unsupported
-  isOpened = () => false
-  isVisible = () => false
-  findEditors = () => []
-  save = async () => ({ success: true, editors: [] })
-  saveAll = async () => ({ success: true, editors: [] })
-  revert = unsupported
-  revertAll = unsupported
-  closeEditor = unsupported
-  closeEditors = unsupported
+  isOpened: (editor: IResourceEditorInputIdentifier) => boolean = () => false
+  isVisible: (editor: EditorInput) => boolean = () => false
+  findEditors(resource: URI, options?: IFindEditorOptions): readonly IEditorIdentifier[]
+  findEditors(editor: IResourceEditorInputIdentifier, options?: IFindEditorOptions): readonly IEditorIdentifier[]
+  findEditors (): readonly IEditorIdentifier[] { return [] }
+  save: (editors: IEditorIdentifier | IEditorIdentifier[], options?: ISaveEditorsOptions) => Promise<ISaveEditorsResult> = async () => ({ success: true, editors: [] })
+  saveAll: (options?: ISaveAllEditorsOptions) => Promise<ISaveEditorsResult> = async () => ({ success: true, editors: [] })
+  revert: (editors: IEditorIdentifier | IEditorIdentifier[], options?: IRevertOptions) => Promise<boolean> = unsupported
+  revertAll: (options?: IRevertAllEditorsOptions) => Promise<boolean> = unsupported
+  closeEditor: (editor: IEditorIdentifier, options?: ICloseEditorOptions) => Promise<void> = unsupported
+  closeEditors: (editors: readonly IEditorIdentifier[], options?: ICloseEditorOptions) => Promise<void> = unsupported
 }
 
 export default function getServiceOverride (openEditor: OpenEditor): IEditorOverrideServices {
@@ -98,5 +103,6 @@ export {
   OpenEditor,
   IEditorOptions,
   IResolvedTextEditorModel,
-  IReference
+  IReference,
+  EditorService as SimpleEditorService
 }
