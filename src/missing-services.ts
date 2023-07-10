@@ -383,6 +383,7 @@ registerSingleton(IProductService, class ProductService implements IProductServi
   readonly _serviceBrand = undefined
 
   version = VSCODE_VERSION
+  commit = VSCODE_REF
   nameShort = 'Code - OSS Dev'
   nameLong = 'Code - OSS Dev'
   applicationName = 'code-oss'

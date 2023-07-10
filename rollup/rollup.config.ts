@@ -510,6 +510,8 @@ const external: rollup.ExternalOption = (source) => {
 export default (args: Record<string, string>): rollup.RollupOptions[] => {
   const vscodeVersion = args['vscode-version']
   delete args['vscode-version']
+  const vscodeRef = args['vscode-ref']
+  delete args['vscode-ref']
   if (vscodeVersion == null) {
     throw new Error('Vscode version is mandatory')
   }
@@ -651,6 +653,7 @@ export default (args: Record<string, string>): rollup.RollupOptions[] => {
         }
       }), replace({
         VSCODE_VERSION: JSON.stringify(vscodeVersion),
+        VSCODE_REF: JSON.stringify(vscodeRef),
         preventAssignment: true
       }),
       globImport({

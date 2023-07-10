@@ -8,7 +8,8 @@
 },
   "globals": {
     "Thenable": "readonly",
-    "VSCODE_VERSION": "readonly"
+    "VSCODE_VERSION": "readonly",
+    "VSCODE_REF": "readonly"
   },
   "extends": [
     "@codingame"

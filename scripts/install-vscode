@@ -2,6 +2,7 @@
 set -e
 
 vscodeRef=$(cat './node_modules/monaco-editor/package.json' | jq -r '.["vscodeRef"]')
+cat <<< $(jq ".config.vscode.ref = \"$vscodeRef\"" package.json) > package.json
 
 monaco_esm_directory="`pwd`/node_modules/monaco-editor/esm"
 output_directory="`pwd`/vscode"
