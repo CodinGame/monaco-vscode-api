@@ -84,6 +84,32 @@ async function deltaExtensions (toAdd: IExtensionDescription[], toRemove: IExten
   }
 }
 
+let deltaExtensionPromise = Promise.resolve()
+function deltaExtensionsSequential (toAdd: IExtensionDescription[], toRemove: IExtensionDescription[]) {
+  async function call () {
+    await deltaExtensions(toAdd, toRemove)
+  }
+  deltaExtensionPromise = deltaExtensionPromise.then(call, call)
+}
+
+let toAdd: IExtensionDescription[] = []
+let toRemove: IExtensionDescription[] = []
+let deltaExtensionTimeout: number | undefined
+
+function deltaExtensionsDebounced (_toAdd: IExtensionDescription[], _toRemove: IExtensionDescription[]) {
+  toAdd.push(..._toAdd)
+  toRemove.push(..._toRemove)
+  if (deltaExtensionTimeout != null) {
+    window.clearTimeout(deltaExtensionTimeout)
+  }
+  deltaExtensionTimeout = window.setTimeout(() => {
+    deltaExtensionTimeout = undefined
+    deltaExtensionsSequential(toAdd, toRemove)
+    toAdd = []
+    toRemove = []
+  }, 0)
+}
+
 interface RegisterExtensionResult extends IDisposable {
   api: typeof vscode
   registerFile: (path: string, getContent: () => Promise<Uint8Array | string>) => IDisposable
@@ -127,7 +153,7 @@ export function registerExtension (manifest: IExtensionManifest, defaultNLS?: IT
   }
   const extensionDescription = toExtensionDescription(extension)
 
-  void deltaExtensions([extensionDescription], [])
+  void deltaExtensionsDebounced([extensionDescription], [])
 
   const api = createApi(extensionDescription)
 
@@ -142,7 +168,7 @@ export function registerExtension (manifest: IExtensionManifest, defaultNLS?: IT
       return registerExtensionFile(location, path, async () => content)
     },
     dispose () {
-      void deltaExtensions([], [extensionDescription])
+      void deltaExtensionsDebounced([], [extensionDescription])
     }
   }
 }
