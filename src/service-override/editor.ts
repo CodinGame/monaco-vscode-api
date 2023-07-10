@@ -3,16 +3,18 @@ import { IEditorOverrideServices, StandaloneServices } from 'vs/editor/standalon
 import { IResolvedTextEditorModel, ITextModelService } from 'vs/editor/common/services/resolverService'
 import { ICodeEditorService } from 'vs/editor/browser/services/codeEditorService'
 import { CodeEditorService } from 'vs/workbench/services/editor/browser/codeEditorService'
-import { IEditorService, PreferredGroup } from 'vs/workbench/services/editor/common/editorService'
-import { IEditorPane, IResourceDiffEditorInput, ITextDiffEditorPane, IUntitledTextResourceEditorInput, IUntypedEditorInput } from 'vs/workbench/common/editor'
+import { IEditorService, IEditorsChangeEvent, IOpenEditorsOptions, IRevertAllEditorsOptions, ISaveAllEditorsOptions, ISaveEditorsOptions, ISaveEditorsResult, IUntypedEditorReplacement, PreferredGroup } from 'vs/workbench/services/editor/common/editorService'
+import { EditorInputWithOptions, EditorsOrder, GroupIdentifier, IEditorCloseEvent, IEditorIdentifier, IEditorPane, IFindEditorOptions, IResourceDiffEditorInput, IRevertOptions, ITextDiffEditorPane, IUntitledTextResourceEditorInput, IUntypedEditorInput, IVisibleEditorPane } from 'vs/workbench/common/editor'
 import { Emitter, Event } from 'vs/base/common/event'
 import { EditorInput } from 'vs/workbench/common/editor/editorInput'
-import { IEditorOptions, IResourceEditorInput, ITextResourceEditorInput } from 'vs/platform/editor/common/editor'
+import { IEditorOptions, IResourceEditorInput, IResourceEditorInputIdentifier, ITextResourceEditorInput } from 'vs/platform/editor/common/editor'
 import { IEditor } from 'vs/editor/common/editorCommon'
 import { SyncDescriptor } from 'vs/platform/instantiation/common/descriptors'
 import { Disposable, IReference } from 'vs/base/common/lifecycle'
-import { ICodeEditor } from 'vs/editor/browser/editorBrowser'
+import { ICodeEditor, IDiffEditor } from 'vs/editor/browser/editorBrowser'
 import { ITextEditorService, TextEditorService } from 'vs/workbench/services/textfile/common/textEditorService'
+import { ICloseEditorOptions, IEditorGroup, IEditorReplacement } from 'vs/workbench/services/editor/common/editorGroupsService'
+import { URI } from 'vs/base/common/uri'
 import { OpenEditor, wrapOpenEditor } from './tools/editor'
 import { unsupported } from '../tools'
 import 'vs/workbench/browser/parts/editor/editor.contribution'
@@ -49,19 +51,19 @@ class EditorService extends Disposable implements IEditorService {
   }
 
   readonly _serviceBrand: undefined
-  onDidActiveEditorChange = this._onDidActiveEditorChange.event
-  onDidVisibleEditorsChange = Event.None
-  onDidEditorsChange = Event.None
-  onDidCloseEditor = Event.None
-  activeEditorPane: undefined
-  activeEditor: undefined
-  activeTextEditorLanguageId = undefined
-  visibleEditorPanes = []
-  visibleEditors = []
-  visibleTextEditorControls = []
-  editors = []
-  count = 0
-  getEditors = () => []
+  onDidActiveEditorChange: Event<void> = this._onDidActiveEditorChange.event
+  onDidVisibleEditorsChange: Event<void> = Event.None
+  onDidEditorsChange: Event<IEditorsChangeEvent> = Event.None
+  onDidCloseEditor: Event<IEditorCloseEvent> = Event.None
+  activeEditorPane: IVisibleEditorPane | undefined
+  activeEditor: EditorInput | undefined
+  activeTextEditorLanguageId: string | undefined
+  visibleEditorPanes: IVisibleEditorPane[] = []
+  visibleEditors: EditorInput[] = []
+  visibleTextEditorControls: Array<ICodeEditor | IDiffEditor> = []
+  editors: EditorInput[] = []
+  count: number = 0
+  getEditors: (order: EditorsOrder, options?: { excludeSticky?: boolean }) => readonly IEditorIdentifier[] = () => []
 
   openEditor(editor: EditorInput, options?: IEditorOptions, group?: PreferredGroup): Promise<IEditorPane | undefined>
   openEditor(editor: IUntypedEditorInput, group?: PreferredGroup): Promise<IEditorPane | undefined>
@@ -69,21 +71,23 @@ class EditorService extends Disposable implements IEditorService {
   openEditor(editor: ITextResourceEditorInput | IUntitledTextResourceEditorInput, group?: PreferredGroup): Promise<IEditorPane | undefined>
   openEditor(editor: IResourceDiffEditorInput, group?: PreferredGroup): Promise<ITextDiffEditorPane | undefined>
   openEditor(editor: EditorInput | IUntypedEditorInput, optionsOrPreferredGroup?: IEditorOptions | PreferredGroup, preferredGroup?: PreferredGroup): Promise<IEditorPane | undefined>
-  async openEditor () {
+  async openEditor (_editor: EditorInput | IUntypedEditorInput, _optionsOrPreferredGroup?: IEditorOptions | PreferredGroup, _preferredGroup?: PreferredGroup): Promise<IEditorPane | undefined> {
     return undefined
   }
 
-  openEditors = unsupported
-  replaceEditors = unsupported
-  isOpened = () => false
-  isVisible = () => false
-  findEditors = () => []
-  save = async () => ({ success: true, editors: [] })
-  saveAll = async () => ({ success: true, editors: [] })
-  revert = unsupported
-  revertAll = unsupported
-  closeEditor = unsupported
-  closeEditors = unsupported
+  openEditors: (editors: Array<EditorInputWithOptions | IUntypedEditorInput>, preferredGroup?: PreferredGroup, options?: IOpenEditorsOptions) => Promise<IEditorPane[]> = unsupported
+  replaceEditors: (replacements: Array<IEditorReplacement | IUntypedEditorReplacement>, group: IEditorGroup | GroupIdentifier) => Promise<void> = unsupported
+  isOpened: (editor: IResourceEditorInputIdentifier) => boolean = () => false
+  isVisible: (editor: EditorInput) => boolean = () => false
+  findEditors(resource: URI, options?: IFindEditorOptions): readonly IEditorIdentifier[]
+  findEditors(editor: IResourceEditorInputIdentifier, options?: IFindEditorOptions): readonly IEditorIdentifier[]
+  findEditors (): readonly IEditorIdentifier[] { return [] }
+  save: (editors: IEditorIdentifier | IEditorIdentifier[], options?: ISaveEditorsOptions) => Promise<ISaveEditorsResult> = async () => ({ success: true, editors: [] })
+  saveAll: (options?: ISaveAllEditorsOptions) => Promise<ISaveEditorsResult> = async () => ({ success: true, editors: [] })
+  revert: (editors: IEditorIdentifier | IEditorIdentifier[], options?: IRevertOptions) => Promise<boolean> = unsupported
+  revertAll: (options?: IRevertAllEditorsOptions) => Promise<boolean> = unsupported
+  closeEditor: (editor: IEditorIdentifier, options?: ICloseEditorOptions) => Promise<void> = unsupported
+  closeEditors: (editors: readonly IEditorIdentifier[], options?: ICloseEditorOptions) => Promise<void> = unsupported
 }
 
 export default function getServiceOverride (openEditor: OpenEditor): IEditorOverrideServices {
