@@ -135,12 +135,7 @@ export default function plugin ({
         return files[getVsixPath(path)]!
       })).filter(resource => getVsixPath(resource.path) in files)
 
-      const vsixFile: Record<string, Buffer> = Object.keys(files).reduce((acc, usedFile) => {
-        return ({
-          ...acc,
-          [usedFile]: files[getVsixPath(usedFile)]!
-        })
-      }, {} as Record<string, Buffer>)
+      const vsixFile = Object.fromEntries(Object.entries(files).map(([key, value]) => [getVsixPath(key), value]))
       vsixFiles[id] = vsixFile
 
       const syncPaths = extensionResources.filter(resource => resource.sync).map(r => r.path)
