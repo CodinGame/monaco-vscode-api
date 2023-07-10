@@ -1,8 +1,8 @@
 diff --git a/.eslintrc.json b/.eslintrc.json
-index 7e6b386b804..4457e204d51 100644
+index c28784041b4..994f4f11177 100644
 --- a/.eslintrc.json
 +++ b/.eslintrc.json
-@@ -253,6 +253,7 @@
+@@ -255,6 +255,7 @@
  							"v8-inspect-profiler",
  							"vscode-regexpp",
  							"vscode-textmate",
@@ -69,7 +69,7 @@ index 775a1be5996..ce8435bd920 100644
  				if (!/(^\.\/)|(^\.\.\/)/.test(relativePath)) {
  					relativePath = './' + relativePath;
 diff --git a/extensions/typescript-language-features/web/webServer.ts b/extensions/typescript-language-features/web/webServer.ts
-index 0363202f334..2fe5124bad7 100644
+index 6580a84995c..47b77cd6cf5 100644
 --- a/extensions/typescript-language-features/web/webServer.ts
 +++ b/extensions/typescript-language-features/web/webServer.ts
 @@ -44,7 +44,7 @@ function fromResource(extensionUri: URI, uri: URI) {
@@ -79,9 +79,9 @@ index 0363202f334..2fe5124bad7 100644
 -	return `/${uri.scheme}/${uri.authority}${uri.path}`;
 +	return `/${uri.scheme}/${uri.authority || 'ts-nul-authority'}${uri.path}`;
  }
+ 
  function updateWatch(event: 'create' | 'change' | 'delete', uri: URI, extensionUri: URI) {
- 	const kind = event === 'create' ? ts.FileWatcherEventKind.Created
-@@ -415,7 +415,7 @@ function createServerHost(extensionUri: URI, logger: ts.server.Logger, apiClient
+@@ -429,7 +429,7 @@ function createServerHost(extensionUri: URI, logger: ts.server.Logger, apiClient
  			return URI.from({
  				scheme: extensionUri.scheme,
  				authority: extensionUri.authority,
@@ -105,10 +105,10 @@ index 9cab3604196..b27fc0eb96d 100644
  
  const ttPolicy = createTrustedTypesPolicy('defaultWorkerFactory', { createScriptURL: value => value });
 diff --git a/src/vs/base/common/network.ts b/src/vs/base/common/network.ts
-index ab7e3a18dc5..7fc528ab54b 100644
+index b00899c50db..70c1e10c819 100644
 --- a/src/vs/base/common/network.ts
 +++ b/src/vs/base/common/network.ts
-@@ -202,7 +202,7 @@ class FileAccessImpl {
+@@ -203,7 +203,7 @@ class FileAccessImpl {
  	 * **Note:** use `dom.ts#asCSSUrl` whenever the URL is to be used in CSS context.
  	 */
  	asBrowserUri(resourcePath: AppResourcePath | ''): URI {
@@ -117,7 +117,7 @@ index ab7e3a18dc5..7fc528ab54b 100644
  		return this.uriToBrowserUri(uri);
  	}
  
-@@ -249,7 +249,7 @@ class FileAccessImpl {
+@@ -250,7 +250,7 @@ class FileAccessImpl {
  	 * is responsible for loading.
  	 */
  	asFileUri(resourcePath: AppResourcePath | ''): URI {
@@ -181,10 +181,10 @@ index fc197da1d57..a4d9573979f 100644
  	public static validateOptions(options: IEditorOptions): ValidatedEditorOptions {
  		const result = new ValidatedEditorOptions();
 diff --git a/src/vs/workbench/api/browser/statusBarExtensionPoint.ts b/src/vs/workbench/api/browser/statusBarExtensionPoint.ts
-index 55e5013c812..1e7d271a466 100644
+index cd2e439f8f6..fcdc9a28ce2 100644
 --- a/src/vs/workbench/api/browser/statusBarExtensionPoint.ts
 +++ b/src/vs/workbench/api/browser/statusBarExtensionPoint.ts
-@@ -49,7 +49,7 @@ export interface IExtensionStatusBarItemService {
+@@ -56,7 +56,7 @@ export interface IExtensionStatusBarItemService {
  }
  
  
@@ -192,31 +192,6 @@ index 55e5013c812..1e7d271a466 100644
 +export class ExtensionStatusBarItemService implements IExtensionStatusBarItemService {
  
  	declare readonly _serviceBrand: undefined;
- 
-diff --git a/src/vs/workbench/api/common/extHostTerminalService.ts b/src/vs/workbench/api/common/extHostTerminalService.ts
-index 6dabdb4f4df..e48cd4f2828 100644
---- a/src/vs/workbench/api/common/extHostTerminalService.ts
-+++ b/src/vs/workbench/api/common/extHostTerminalService.ts
-@@ -812,15 +812,12 @@ export abstract class BaseExtHostTerminalService extends Disposable implements I
- 	}
- 
- 	private _getTerminalObjectIndexById<T extends ExtHostTerminal>(array: T[], id: ExtHostTerminalIdentifier): number | null {
--		let index: number | null = null;
--		array.some((item, i) => {
--			const thisId = item._id;
--			if (thisId === id) {
--				index = i;
--				return true;
--			}
--			return false;
-+		const index = array.findIndex(item => {
-+			return item._id === id;
- 		});
-+		if (index === -1) {
-+			return null;
-+		}
- 		return index;
- 	}
  
 diff --git a/src/vs/workbench/browser/parts/compositeBar.ts b/src/vs/workbench/browser/parts/compositeBar.ts
 index 36694129764..2920195c027 100644
@@ -244,53 +219,6 @@ index ff766b9acb8..599bab9dd59 100644
  	}
  
  	isVisible(): boolean {
-diff --git a/src/vs/workbench/contrib/output/common/outputChannelModel.ts b/src/vs/workbench/contrib/output/common/outputChannelModel.ts
-index 88cc5df03cf..07926124b30 100644
---- a/src/vs/workbench/contrib/output/common/outputChannelModel.ts
-+++ b/src/vs/workbench/contrib/output/common/outputChannelModel.ts
-@@ -22,6 +22,7 @@ import { VSBuffer } from 'vs/base/common/buffer';
- import { ILogger, ILoggerService, ILogService } from 'vs/platform/log/common/log';
- import { CancellationToken, CancellationTokenSource } from 'vs/base/common/cancellation';
- import { OutputChannelUpdateMode } from 'vs/workbench/services/output/common/output';
-+import { isCancellationError } from 'vs/base/common/errors';
- 
- export interface IOutputChannelModel extends IDisposable {
- 	readonly onDispose: Event<void>;
-@@ -61,7 +62,11 @@ class OutputFileListener extends Disposable {
- 
- 	private poll(): void {
- 		const loop = () => this.doWatch().then(() => this.poll());
--		this.syncDelayer.trigger(loop);
-+		this.syncDelayer.trigger(loop).catch(error => {
-+			if (!isCancellationError(error)) {
-+				throw error;
-+			}
-+		});
- 	}
- 
- 	private async doWatch(): Promise<void> {
-@@ -206,7 +211,7 @@ export class FileOutputChannelModel extends Disposable implements IOutputChannel
- 		this.doUpdateModel(model, [EditOperation.delete(model.getFullModelRange())], VSBuffer.fromString(''));
- 	}
- 
--	private async appendContent(model: ITextModel, immediate: boolean, token: CancellationToken): Promise<void> {
-+	private appendContent(model: ITextModel, immediate: boolean, token: CancellationToken): void {
- 		this.appendThrottler.trigger(async () => {
- 			/* Abort if operation is cancelled */
- 			if (token.isCancellationRequested) {
-@@ -234,7 +239,11 @@ export class FileOutputChannelModel extends Disposable implements IOutputChannel
- 			const lastLineMaxColumn = model.getLineMaxColumn(lastLine);
- 			const edits = [EditOperation.insert(new Position(lastLine, lastLineMaxColumn), contentToAppend.toString())];
- 			this.doUpdateModel(model, edits, contentToAppend);
--		}, immediate ? 0 : undefined);
-+		}, immediate ? 0 : undefined).catch(error => {
-+			if (!isCancellationError(error)) {
-+				throw error;
-+			}
-+		});
- 	}
- 
- 	private async replaceContent(model: ITextModel, token: CancellationToken): Promise<void> {
 diff --git a/src/vs/workbench/services/outline/browser/outlineService.ts b/src/vs/workbench/services/outline/browser/outlineService.ts
 index f4707432371..7c5cdde39cc 100644
 --- a/src/vs/workbench/services/outline/browser/outlineService.ts
@@ -305,7 +233,7 @@ index f4707432371..7c5cdde39cc 100644
  	declare _serviceBrand: undefined;
  
 diff --git a/src/vs/workbench/services/textMate/browser/worker/textMate.worker.ts b/src/vs/workbench/services/textMate/browser/worker/textMate.worker.ts
-index 67484e6ef40..ef7cd478655 100644
+index 67307a7d49d..7e656dea8bd 100644
 --- a/src/vs/workbench/services/textMate/browser/worker/textMate.worker.ts
 +++ b/src/vs/workbench/services/textMate/browser/worker/textMate.worker.ts
 @@ -12,6 +12,8 @@ import { ICreateGrammarResult, TMGrammarFactory } from 'vs/workbench/services/te
@@ -317,7 +245,7 @@ index 67484e6ef40..ef7cd478655 100644
  
  export interface ICreateData {
  	grammarDefinitions: IValidGrammarDefinitionDTO[];
-@@ -56,9 +58,6 @@ export class TextMateTokenizationWorker {
+@@ -58,9 +60,6 @@ export class TextMateTokenizationWorker {
  	}
  
  	private async _loadTMGrammarFactory(grammarDefinitions: IValidGrammarDefinition[]): Promise<TMGrammarFactory> {

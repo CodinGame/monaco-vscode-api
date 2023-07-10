@@ -204,7 +204,8 @@ const api: typeof vscode = {
   TelemetryTrustedValue: telemetryUtils.TelemetryTrustedValue,
   TextSearchCompleteMessageType: searchExtHostTypes.TextSearchCompleteMessageType,
   DocumentPasteEdit: extHostTypes.DocumentPasteEdit,
-  ExternalUriOpenerPriority: extHostTypes.ExternalUriOpenerPriority
+  ExternalUriOpenerPriority: extHostTypes.ExternalUriOpenerPriority,
+  TreeItemCheckboxState: extHostTypes.TreeItemCheckboxState
 }
 
 // @ts-ignore the syntax will be transformed by a typescript transformer in the rollup config

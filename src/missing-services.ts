@@ -102,7 +102,7 @@ import { IExtensionGalleryService, IExtensionManagementService } from 'vs/platfo
 import { IModelService } from 'vs/editor/common/services/model'
 import { ITerminalEditorService, ITerminalGroupService, ITerminalInstance, ITerminalInstanceService, ITerminalService, TerminalConnectionState } from 'vs/workbench/contrib/terminal/browser/terminal'
 import { ITerminalProfileResolverService, ITerminalProfileService } from 'vs/workbench/contrib/terminal/common/terminal'
-import { TerminalLocation } from 'vs/platform/terminal/common/terminal'
+import { ITerminalLogService, TerminalLocation } from 'vs/platform/terminal/common/terminal'
 import { ITerminalContributionService } from 'vs/workbench/contrib/terminal/common/terminalExtensionPoints'
 import { ITerminalLinkProviderService } from 'vs/workbench/contrib/terminalContrib/links/browser/links'
 import { IEnvironmentVariableService } from 'vs/workbench/contrib/terminal/common/environmentVariable'
@@ -1001,6 +1001,7 @@ registerSingleton(IWorkingCopyService, WorkingCopyService, InstantiationType.Eag
 registerSingleton(IDecorationsService, DecorationsService, InstantiationType.Eager)
 registerSingleton(IElevatedFileService, BrowserElevatedFileService, InstantiationType.Eager)
 registerSingleton(IFileDialogService, class FileDialogService implements IFileDialogService {
+  preferredHome = unsupported
   _serviceBrand: undefined
   defaultFilePath = unsupported
   defaultFolderPath = unsupported
@@ -1188,6 +1189,12 @@ registerSingleton(IExtensionGalleryService, class ExtensionGalleryService implem
 
 registerSingleton(ITerminalService, class TerminalService implements ITerminalService {
   _serviceBrand: undefined
+
+  detachedXterms = []
+  whenConnected = Promise.reject(new Error('unsupported'))
+  restoredGroupCount = 0
+  createDetachedXterm = unsupported
+
   instances = []
   get configHelper () {
     return unsupported()
@@ -1311,6 +1318,7 @@ registerSingleton(ITerminalGroupService, class TerminalGroupService implements I
 }, InstantiationType.Delayed)
 registerSingleton(ITerminalInstanceService, class TerminalInstanceService implements ITerminalInstanceService {
   _serviceBrand: undefined
+  getRegisteredBackends = () => [].values()
   onDidCreateInstance = Event.None
   convertProfileToShellLaunchConfig = unsupported
   createInstance = unsupported
@@ -1331,6 +1339,21 @@ registerSingleton(ITerminalProfileService, class TerminalProfileService implemen
   registerContributedProfile = unsupported
   getContributedProfileProvider = unsupported
   registerTerminalProfileProvider = unsupported
+}, InstantiationType.Delayed)
+
+registerSingleton(ITerminalLogService, class TerminalLogService implements ITerminalLogService {
+  _logBrand: undefined
+  _serviceBrand: undefined
+  onDidChangeLogLevel = Event.None
+  getLevel = unsupported
+  setLevel = unsupported
+  trace = unsupported
+  debug = unsupported
+  info = unsupported
+  warn = unsupported
+  error = unsupported
+  flush = unsupported
+  dispose = unsupported
 }, InstantiationType.Delayed)
 
 registerSingleton(ITerminalLinkProviderService, class TerminalLinkProviderService implements ITerminalLinkProviderService {
@@ -1389,6 +1412,7 @@ registerSingleton(ITerminalQuickFixService, class TerminalQuickFixService implem
 
 registerSingleton(IExtensionManagementService, class ExtensionManagementService implements IExtensionManagementService {
   _serviceBrand: undefined
+  installGalleryExtensions = unsupported
   onInstallExtension = Event.None
   onDidInstallExtensions = Event.None
   onUninstallExtension = Event.None
@@ -1547,6 +1571,8 @@ registerSingleton(IWorkbenchAssignmentService, class WorkbenchAssignmentService 
 
 registerSingleton(IChatService, class ChatService implements IChatService {
   _serviceBrand: undefined
+  transferredSessionId = undefined
+  transferChatSession = unsupported
   registerProvider = unsupported
   registerSlashCommandProvider = unsupported
   getProviderInfos = () => []
