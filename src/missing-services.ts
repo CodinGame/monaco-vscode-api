@@ -1149,7 +1149,12 @@ registerSingleton(ITerminalService, class TerminalService implements ITerminalSe
   _serviceBrand: undefined
 
   detachedXterms = []
-  whenConnected = Promise.reject(new Error('unsupported'))
+  get whenConnected () {
+    return (async () => {
+      unsupported()
+    })()
+  }
+
   restoredGroupCount = 0
   createDetachedXterm = unsupported
 
