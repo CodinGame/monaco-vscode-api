@@ -71,68 +71,8 @@
       "extensions": [
         "./dist/extensions.d.ts"
       ],
-      "service-override/notifications": [
-        "./dist/service-override/notifications.d.ts"
-      ],
-      "service-override/bulkEdit": [
-        "./dist/service-override/bulkEdit.d.ts"
-      ],
-      "service-override/dialogs": [
-        "./dist/service-override/dialogs.d.ts"
-      ],
-      "service-override/model": [
-        "./dist/service-override/model.d.ts"
-      ],
-      "service-override/editor": [
-        "./dist/service-override/editor.d.ts"
-      ],
-      "service-override/files": [
-        "./dist/service-override/files.d.ts"
-      ],
-      "service-override/configuration": [
-        "./dist/service-override/configuration.d.ts"
-      ],
-      "service-override/keybindings": [
-        "./dist/service-override/keybindings.d.ts"
-      ],
-      "service-override/textmate": [
-        "./dist/service-override/textmate.d.ts"
-      ],
-      "service-override/theme": [
-        "./dist/service-override/theme.d.ts"
-      ],
-      "service-override/snippets": [
-        "./dist/service-override/snippets.d.ts"
-      ],
-      "service-override/languages": [
-        "./dist/service-override/languages.d.ts"
-      ],
-      "service-override/audioCue": [
-        "./dist/service-override/audioCue.d.ts"
-      ],
-      "service-override/debug": [
-        "./dist/service-override/debug.d.ts"
-      ],
-      "service-override/preferences": [
-        "./dist/service-override/preferences.d.ts"
-      ],
-      "service-override/views": [
-        "./dist/service-override/views.d.ts"
-      ],
-      "service-override/quickaccess": [
-        "./dist/service-override/quickaccess.d.ts"
-      ],
-      "service-override/output": [
-        "./dist/service-override/output.d.ts"
-      ],
-      "service-override/terminal": [
-        "./dist/service-override/terminal.d.ts"
-      ],
-      "service-override/search": [
-        "./dist/service-override/search.d.ts"
-      ],
-      "service-override/markers": [
-        "./dist/service-override/markers.d.ts"
+      "service-override/*": [
+        "./dist/service-override/*.d.ts"
       ],
       "monaco": [
         "./dist/monaco.d.ts"
