@@ -85,7 +85,8 @@ const REMOVE_COMMANDS = new Set([
   'SELECT_AND_START_ID',
   'debug.startFromConfig',
   'debug.installAdditionalDebuggers',
-  'REMOVE_ROOT_FOLDER_COMMAND_ID'
+  'REMOVE_ROOT_FOLDER_COMMAND_ID',
+  'debug.openView'
 ])
 
 const KEEP_COLORS = new Set([
