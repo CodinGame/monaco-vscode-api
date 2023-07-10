@@ -19,7 +19,7 @@ import { OpenEditor, wrapOpenEditor } from './tools/editor'
 import { unsupported } from '../tools'
 import 'vs/workbench/browser/parts/editor/editor.contribution'
 
-class EditorService extends Disposable implements IEditorService {
+class SimpleEditorService extends Disposable implements IEditorService {
   public activeTextEditorControl: IEditor | undefined
   private _onDidActiveEditorChange = this._register(new Emitter<void>())
 
@@ -93,7 +93,7 @@ class EditorService extends Disposable implements IEditorService {
 export default function getServiceOverride (openEditor: OpenEditor): IEditorOverrideServices {
   return {
     [ICodeEditorService.toString()]: new SyncDescriptor(CodeEditorService, undefined, true),
-    [IEditorService.toString()]: new SyncDescriptor(EditorService, [openEditor]),
+    [IEditorService.toString()]: new SyncDescriptor(SimpleEditorService, [openEditor]),
     [ITextEditorService.toString()]: new SyncDescriptor(TextEditorService)
   }
 }
@@ -102,5 +102,6 @@ export {
   OpenEditor,
   IEditorOptions,
   IResolvedTextEditorModel,
-  IReference
+  IReference,
+  SimpleEditorService
 }
