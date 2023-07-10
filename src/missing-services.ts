@@ -24,7 +24,6 @@ import { IKeyboardLayoutService } from 'vs/platform/keyboardLayout/common/keyboa
 import { OS } from 'vs/base/common/platform'
 import { IEnvironmentService } from 'vs/platform/environment/common/environment'
 import { IUserDataInitializationService } from 'vs/workbench/services/userData/browser/userDataInit'
-import { IBrowserWorkbenchEnvironmentService } from 'vs/workbench/services/environment/browser/environmentService'
 import { BrowserHostColorSchemeService } from 'vs/workbench/services/themes/browser/browserHostColorSchemeService'
 import { IHostColorSchemeService } from 'vs/workbench/services/themes/common/hostColorSchemeService'
 import { IPreferencesService } from 'vs/workbench/services/preferences/common/preferences'
@@ -333,49 +332,6 @@ registerSingleton(IEditorGroupsService, class EditorGroupsService implements IEd
   enforcePartOptions = unsupported
 }, InstantiationType.Eager)
 
-class WorkbenchEnvironmentService implements IBrowserWorkbenchEnvironmentService {
-  expectsResolverExtension = false
-  logsHome = URI.from({ scheme: 'logs', path: '/' })
-  windowLogsPath = URI.from({ scheme: 'logs', path: '/window.log' })
-  get extHostTelemetryLogFile () { return unsupported() }
-  readonly _serviceBrand = undefined
-  get logFile () { return unsupported() }
-  get extHostLogsPath () { return unsupported() }
-  skipReleaseNotes = true
-  skipWelcome = true
-  disableWorkspaceTrust = true
-  webviewExternalEndpoint = 'https://{{uuid}}.vscode-cdn.net/insider/ef65ac1ba57f57f2a3961bfe94aa20481caca4c6/out/vs/workbench/contrib/webview/browser/pre/'
-  debugRenderer = false
-  userRoamingDataHome = URI.from({ scheme: 'user', path: '/userRoamingDataHome' })
-  keyboardLayoutResource = URI.from({ scheme: 'user', path: '/keyboardLayout.json' })
-  get argvResource () { return unsupported() }
-  snippetsHome = URI.from({ scheme: 'user', path: '/snippets' })
-  untitledWorkspacesHome = URI.from({ scheme: 'user', path: '/untitledWorkspacesHome' })
-  get globalStorageHome () { return unsupported() }
-  get workspaceStorageHome () { return unsupported() }
-  get localHistoryHome () { return unsupported() }
-  cacheHome = URI.from({ scheme: 'cache', path: '/' })
-  get userDataSyncHome () { return unsupported() }
-  get userDataSyncLogResource () { return unsupported() }
-  sync = undefined
-  debugExtensionHost = {
-    port: null,
-    break: false
-  }
-
-  isExtensionDevelopment = false
-  disableExtensions = false
-  logsPath = ''
-  verbose = false
-  isBuilt = true // Required to suppress warnings
-  disableTelemetry = false
-  get telemetryLogResource () { return unsupported() }
-  get serviceMachineIdResource () { return unsupported() }
-  get stateResource () { return unsupported() }
-  get editSessionsLogResource () { return unsupported() }
-}
-registerSingleton(IBrowserWorkbenchEnvironmentService, WorkbenchEnvironmentService, InstantiationType.Eager)
-registerSingleton(IEnvironmentService, WorkbenchEnvironmentService, InstantiationType.Eager)
 registerSingleton(IWorkingCopyFileService, WorkingCopyFileService, InstantiationType.Eager)
 registerSingleton(IPathService, BrowserPathService, InstantiationType.Delayed)
 
