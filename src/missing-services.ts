@@ -133,6 +133,7 @@ import { IWebviewViewService } from 'vs/workbench/contrib/webviewView/browser/we
 import { IEditorDropService } from 'vs/workbench/services/editor/browser/editorDropService'
 import { IRemoteAuthorityResolverService } from 'vs/platform/remote/common/remoteAuthorityResolver'
 import { ExternalUriOpenerService, IExternalUriOpenerService } from 'vs/workbench/contrib/externalUriOpener/common/externalUriOpenerService'
+import { IAccessibleViewService } from 'vs/workbench/contrib/accessibility/browser/accessibleView'
 import { unsupported } from './tools'
 
 class NullLoggerService extends AbstractLoggerService {
@@ -1621,3 +1622,9 @@ registerSingleton(IRemoteAuthorityResolverService, class RemoteAuthorityResolver
 }, InstantiationType.Delayed)
 
 registerSingleton(IExternalUriOpenerService, ExternalUriOpenerService, InstantiationType.Delayed)
+
+registerSingleton(IAccessibleViewService, class AccessibleViewService implements IAccessibleViewService {
+  _serviceBrand: undefined
+  show = unsupported
+  registerProvider = unsupported
+}, InstantiationType.Delayed)
