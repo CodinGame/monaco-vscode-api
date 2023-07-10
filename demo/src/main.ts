@@ -1,7 +1,6 @@
 import './style.css'
 import 'monaco-editor/esm/vs/editor/editor.all.js'
 import * as monaco from 'monaco-editor/esm/vs/editor/editor.api.js'
-import 'monaco-editor/esm/vs/editor/standalone/browser/accessibilityHelp/accessibilityHelp.js'
 import 'monaco-editor/esm/vs/editor/standalone/browser/iPadShowKeyboard/iPadShowKeyboard.js'
 import './setup'
 import { createConfiguredEditor, createModelReference } from 'vscode/monaco'

@@ -18,6 +18,7 @@ import getOutputServiceOverride from 'vscode/service-override/output'
 import getTerminalServiceOverride from 'vscode/service-override/terminal'
 import getSearchAccessServiceOverride from 'vscode/service-override/search'
 import getMarkersAccessServiceOverride from 'vscode/service-override/markers'
+import getAccessibilityAccessServiceOverride from 'vscode/service-override/accessibility'
 import EditorWorker from 'monaco-editor/esm/vs/editor/editor.worker.js?worker'
 import JsonWorker from 'monaco-editor/esm/vs/language/json/json.worker.js?worker'
 import TypescriptWorker from 'monaco-editor/esm/vs/language/typescript/ts.worker.js?worker'
@@ -77,7 +78,8 @@ await initializeMonacoService({
   ...getOutputServiceOverride(),
   ...getTerminalServiceOverride(new TerminalBackend()),
   ...getSearchAccessServiceOverride(),
-  ...getMarkersAccessServiceOverride()
+  ...getMarkersAccessServiceOverride(),
+  ...getAccessibilityAccessServiceOverride()
 })
 StandaloneServices.get(ILogService).setLevel(LogLevel.Off)
 

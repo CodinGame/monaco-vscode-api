@@ -29,7 +29,7 @@ export default defineConfig({
       'vscode/service-override/keybindings', 'vscode/service-override/textmate', 'vscode/service-override/theme', 'vscode/service-override/languages',
       'vscode/service-override/audioCue', 'vscode/service-override/views', 'vscode/service-override/quickaccess', 'vscode/service-override/debug',
       'vscode/service-override/preferences', 'vscode/service-override/snippets', 'vscode/service-override/files', 'vscode/service-override/output',
-      'vscode/service-override/terminal', 'vscode/service-override/search', 'vscode/service-override/markers',
+      'vscode/service-override/terminal', 'vscode/service-override/search', 'vscode/service-override/markers', 'vscode/service-override/accessibility',
       'vscode/default-extensions/theme-defaults', 'vscode/default-extensions/javascript', 'vscode/default-extensions/json', 'vscode/default-extensions/theme-seti',
       'vscode/default-extensions/references-view', 'vscode/default-extensions/typescript-basics', 'vscode/default-extensions/search-result',
       'vscode/default-extensions/typescript-language-features', 'vscode/default-extensions/markdown-language-features',
