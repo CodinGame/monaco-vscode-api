@@ -102,16 +102,19 @@ class ConfiguredStandaloneEditor extends createInjectedClass(StandaloneEditor) {
     this._register(textResourceConfigurationService.onDidChangeConfiguration(() => this.updateEditorConfiguration()))
     this._register(this.onDidChangeModelLanguage(() => this.updateEditorConfiguration()))
     this._register(this.onDidChangeModel(() => this.updateEditorConfiguration()))
+    this.updateEditorConfiguration()
   }
 
   /**
    * This method is widely inspired from vs/workbench/browser/parts/editor/textEditor
    */
   private updateEditorConfiguration (): void {
-    const resource = this.getModel()?.uri
-    if (resource == null) {
+    // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
+    if (!this.hasModel() || this.textResourceConfigurationService == null) {
+      // textResourceConfigurationService can be null if this method is called by the constructor of StandaloneEditor
       return
     }
+    const resource = this.getModel()!.uri
     const configuration = this.textResourceConfigurationService.getValue<IEditorConfiguration | undefined>(resource)
     if (configuration == null) {
       return
@@ -135,6 +138,9 @@ class ConfiguredStandaloneEditor extends createInjectedClass(StandaloneEditor) {
   }
 
   override updateOptions (newOptions: Readonly<IEditorOptions>): void {
+    // it can be null if this method is called by the constructor of StandaloneEditor
+    // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
+    this.optionsOverrides ??= {}
     const didChange = EditorOptionsUtil.applyUpdate(this.optionsOverrides, newOptions)
     if (!didChange) {
       return
