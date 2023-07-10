@@ -16,6 +16,7 @@
 body {
   background-color: var(--vscode-editorWidget-background);
   color: var(--vscode-editorWidget-foreground);
+  margin: 0;
 }
 
 #editors {
