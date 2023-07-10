@@ -41,8 +41,19 @@ import { IKeybindingService } from 'vs/platform/keybinding/common/keybinding'
 import { KeybindingResolver } from 'vs/platform/keybinding/common/keybindingResolver'
 import { WorkbenchKeybindingService } from 'vs/workbench/services/keybinding/browser/keybindingService'
 import { createInjectedClass } from './tools/injection'
+// Selectively comes from vs/workbench/contrib/codeEditor/browser/codeEditor.contribution.ts
 import 'vs/workbench/contrib/codeEditor/browser/workbenchReferenceSearch'
-
+import 'vs/workbench/contrib/codeEditor/browser/menuPreventer'
+import 'vs/workbench/contrib/codeEditor/browser/diffEditorHelper'
+import 'vs/workbench/contrib/codeEditor/browser/largeFileOptimizations'
+import 'vs/workbench/contrib/codeEditor/browser/inspectEditorTokens/inspectEditorTokens'
+import 'vs/workbench/contrib/codeEditor/browser/saveParticipants'
+import 'vs/workbench/contrib/codeEditor/browser/toggleMinimap'
+import 'vs/workbench/contrib/codeEditor/browser/toggleMultiCursorModifier'
+import 'vs/workbench/contrib/codeEditor/browser/toggleRenderControlCharacter'
+import 'vs/workbench/contrib/codeEditor/browser/toggleWordWrap'
+import 'vs/workbench/contrib/codeEditor/browser/toggleRenderWhitespace'
+import 'vs/workbench/contrib/codeEditor/browser/editorLineNumberMenu'
 class ExtensionPoints implements IWorkbenchContribution {
   constructor (
     @IInstantiationService private readonly instantiationService: IInstantiationService

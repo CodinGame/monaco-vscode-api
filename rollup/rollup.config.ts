@@ -540,7 +540,7 @@ export default (args: Record<string, string>): rollup.RollupOptions[] => {
           path.endsWith('/workbenchReferenceSearch.js') ||
           path.includes('/searchActions') ||
           path.endsWith('documentSymbolsOutline.js') ||
-          path.endsWith('vs/workbench/contrib/codeEditor/browser/accessibility/accessibility.js')
+          path.includes('vs/workbench/contrib/codeEditor/browser/')
       }
     },
     external,
