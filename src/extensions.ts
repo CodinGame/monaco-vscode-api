@@ -11,9 +11,9 @@ import { ITranslations, localizeManifest } from 'vs/platform/extensionManagement
 import { joinPath } from 'vs/base/common/resources'
 import { FileAccess } from 'monaco-editor/esm/vs/base/common/network.js'
 import { ImplicitActivationEvents } from 'vs/platform/extensionManagement/common/implicitActivationEvents'
-import { IExtensionDescriptionDelta } from 'vs/workbench/services/extensions/common/extensionHostProtocol'
+import { IActivationEventsReader, LockableExtensionDescriptionRegistry } from 'vs/workbench/services/extensions/common/extensionDescriptionRegistry'
 import { registerExtensionFile } from './service-override/files'
-import { getExtHostServices, initialize as initializeExtHostServices, onExtHostInitialized } from './extHost'
+import { initialize as initializeExtHostServices, onExtHostInitialized } from './extHost'
 import { setDefaultExtension } from './default-extension'
 import { SimpleExtensionService } from './missing-services'
 import createApi from './createApi'
@@ -52,30 +52,25 @@ function handleExtensionPoint<T extends IExtensionContributions[keyof IExtension
   extensionPoint.acceptUsers(users)
 }
 
-async function deltaExtensions (toAdd: IExtensionDescription[], toRemove: IExtensionDescription[]) {
-  const affectedExtensions = (<IExtensionDescription[]>[]).concat(toAdd).concat(toRemove)
+class ImplicitActivationAwareReader implements IActivationEventsReader {
+  public readActivationEvents (extensionDescription: IExtensionDescription): string[] {
+    return ImplicitActivationEvents.readActivationEvents(extensionDescription)
+  }
+}
+const registry = new LockableExtensionDescriptionRegistry(new ImplicitActivationAwareReader())
+function doHandleExtensionPoints (affectedExtensions: IExtensionDescription[]): void {
   const affectedExtensionPoints: { [extPointName: string]: boolean } = Object.create(null)
   for (const extensionDescription of affectedExtensions) {
-    for (const extPointName in extensionDescription.contributes) {
-      if (hasOwnProperty.call(extensionDescription.contributes, extPointName)) {
-        affectedExtensionPoints[extPointName] = true
+    if (extensionDescription.contributes != null) {
+      for (const extPointName in extensionDescription.contributes) {
+        if (hasOwnProperty.call(extensionDescription.contributes, extPointName)) {
+          affectedExtensionPoints[extPointName] = true
+        }
       }
     }
   }
 
-  const addActivationEvents = ImplicitActivationEvents.createActivationEventsMap(toAdd)
-  const delta: IExtensionDescriptionDelta = {
-    toRemove: toRemove.map(ext => ext.identifier),
-    toAdd,
-    addActivationEvents,
-    myToRemove: toRemove.map(ext => ext.identifier),
-    myToAdd: toAdd.map(ext => ext.identifier)
-  }
-
-  await (StandaloneServices.get(IExtensionService) as SimpleExtensionService).deltaExtensions(delta)
-
-  const availableExtensions = (await getExtHostServices().extHostExtensionService.getExtensionRegistry()).getAllExtensionDescriptions()
-
+  const availableExtensions = registry.getAllExtensionDescriptions()
   const extensionPoints = ExtensionsRegistry.getExtensionPoints()
   for (const extensionPoint of extensionPoints) {
     if (affectedExtensionPoints[extensionPoint.name] ?? false) {
@@ -84,12 +79,26 @@ async function deltaExtensions (toAdd: IExtensionDescription[], toRemove: IExten
   }
 }
 
-let deltaExtensionPromise = Promise.resolve()
-function deltaExtensionsSequential (toAdd: IExtensionDescription[], toRemove: IExtensionDescription[]) {
-  async function call () {
-    await deltaExtensions(toAdd, toRemove)
+async function updateExtensionsOnExtHosts (toAdd: IExtensionDescription[], toRemove: IExtensionDescription[]) {
+  await (StandaloneServices.get(IExtensionService) as SimpleExtensionService).deltaExtensions({
+    toRemove: toRemove.map(ext => ext.identifier),
+    toAdd,
+    addActivationEvents: ImplicitActivationEvents.createActivationEventsMap(toAdd),
+    myToRemove: toRemove.map(ext => ext.identifier),
+    myToAdd: toAdd.map(ext => ext.identifier)
+  })
+}
+
+async function deltaExtensions (toAdd: IExtensionDescription[], toRemove: IExtensionDescription[]) {
+  const lock = await registry.acquireLock('handleDeltaExtensions')
+  try {
+    registry.deltaExtensions(lock, toAdd, toRemove.map(e => e.identifier))
+    doHandleExtensionPoints((<IExtensionDescription[]>[]).concat(toAdd).concat(toRemove))
+
+    await updateExtensionsOnExtHosts(toAdd, toRemove)
+  } finally {
+    lock.dispose()
   }
-  deltaExtensionPromise = deltaExtensionPromise.then(call, call)
 }
 
 let toAdd: IExtensionDescription[] = []
@@ -101,10 +110,11 @@ function deltaExtensionsDebounced (_toAdd: IExtensionDescription[], _toRemove: I
   toRemove.push(..._toRemove)
   if (deltaExtensionTimeout != null) {
     window.clearTimeout(deltaExtensionTimeout)
+    deltaExtensionTimeout = undefined
   }
   deltaExtensionTimeout = window.setTimeout(() => {
     deltaExtensionTimeout = undefined
-    deltaExtensionsSequential(toAdd, toRemove)
+    void deltaExtensions(toAdd, toRemove)
     toAdd = []
     toRemove = []
   }, 0)
