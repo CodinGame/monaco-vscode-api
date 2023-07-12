@@ -19,8 +19,6 @@ import { IHoverService } from 'vs/workbench/services/hover/browser/hover'
 import { HoverService } from 'vs/workbench/services/hover/browser/hoverService'
 import { ExplorerService } from 'vs/workbench/contrib/files/browser/explorerService'
 import { IExplorerService } from 'vs/workbench/contrib/files/browser/files'
-import { IBulkEditService } from 'vs/editor/browser/services/bulkEditService'
-import { BulkEditService } from 'vs/workbench/contrib/bulkEdit/browser/bulkEditService'
 import { PanelPart } from 'vs/workbench/browser/parts/panel/panelPart'
 import { append, $ } from 'vs/base/browser/dom'
 import { ViewPane } from 'vs/workbench/browser/parts/views/viewPane'
@@ -76,6 +74,7 @@ import { IAction } from 'vs/base/common/actions'
 import { BaseActionViewItem } from 'vs/base/browser/ui/actionbar/actionViewItems'
 import { OpenEditor, wrapOpenEditor } from './tools/editor'
 import getLayoutServiceOverride from './layout'
+import getBulkEditServiceOverride from './bulkEdit'
 
 const paneCompositeParts = new Map<ViewContainerLocation, IPaneCompositePart>()
 const paneCompositeSelectorParts = new Map<ViewContainerLocation, IPaneCompositeSelectorPart>()
@@ -385,13 +384,13 @@ class CustomEditorService extends EditorService {
 export default function getServiceOverride (openEditorFallback?: OpenEditor): IEditorOverrideServices {
   return {
     ...getLayoutServiceOverride(),
+    ...getBulkEditServiceOverride(),
     [IViewsService.toString()]: new SyncDescriptor(ViewsService),
     [IViewDescriptorService.toString()]: new SyncDescriptor(ViewDescriptorService),
     [IActivityService.toString()]: new SyncDescriptor(ActivityService),
     [IPaneCompositePartService.toString()]: new SyncDescriptor(PaneCompositePartService),
     [IHoverService.toString()]: new SyncDescriptor(HoverService),
     [IExplorerService.toString()]: new SyncDescriptor(ExplorerService),
-    [IBulkEditService.toString()]: new SyncDescriptor(BulkEditService),
 
     [ICodeEditorService.toString()]: new SyncDescriptor(CodeEditorService),
     [ITextEditorService.toString()]: new SyncDescriptor(TextEditorService),
