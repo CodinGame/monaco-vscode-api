@@ -128,11 +128,19 @@ interface RegisterExtensionResult extends IDisposable {
 }
 
 const extensionFileBlobUrls = new Map<string, string>()
-function registerExtensionFileBlob (extensionLocation: URI, filePath: string, content: string | Uint8Array, mimeType?: string) {
+function registerExtensionFileBlob (extensionLocation: URI, filePath: string, content: string | Uint8Array, mimeType?: string): IDisposable {
   const blob = new Blob([content instanceof Uint8Array ? content : new TextEncoder().encode(content)], {
     type: mimeType
   })
-  extensionFileBlobUrls.set(joinPath(extensionLocation, filePath).toString(), URL.createObjectURL(blob))
+  const path = joinPath(extensionLocation, filePath).toString()
+  const url = URL.createObjectURL(blob)
+  extensionFileBlobUrls.set(path, url)
+  return {
+    dispose () {
+      extensionFileBlobUrls.delete(path)
+      URL.revokeObjectURL(url)
+    }
+  }
 }
 const original = FileAccess.uriToBrowserUri
 FileAccess.uriToBrowserUri = function (uri: URI) {
@@ -167,18 +175,26 @@ export function registerExtension (manifest: IExtensionManifest, defaultNLS?: IT
 
   const api = createApi(extensionDescription)
 
+  const disposables = new DisposableStore()
+
   return {
     api,
     registerFile: (path: string, getContent: () => Promise<string | Uint8Array>) => {
-      return registerExtensionFile(location, path, getContent)
+      const disposable = registerExtensionFile(location, path, getContent)
+      disposables.add(disposable)
+      return disposable
     },
     registerSyncFile: (path: string, content: string | Uint8Array, mimeType?: string) => {
-      registerExtensionFileBlob(location, path, content, mimeType)
-
-      return registerExtensionFile(location, path, async () => content)
+      const fileDisposable = new DisposableStore()
+      fileDisposable.add(registerExtensionFileBlob(location, path, content, mimeType))
+      fileDisposable.add(registerExtensionFile(location, path, async () => content))
+      disposables.add(fileDisposable)
+      return fileDisposable
     },
     dispose () {
-      void deltaExtensionsDebounced([], [extensionDescription])
+      void deltaExtensions([], [extension]).then(() => {
+        disposables.dispose()
+      })
     }
   }
 }
