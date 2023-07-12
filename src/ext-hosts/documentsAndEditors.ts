@@ -17,12 +17,12 @@ registerExtHostSingleton(IExtHostDocumentsAndEditors, ExtHostDocumentsAndEditors
 
 registerExtHostProvider('documentsAndEditors', {
   dependencies: [],
-  provide: (accessor, mainContext, { extHostLogService }) => {
+  provide: (accessor, { extHostLogService }) => {
     const rpcProtocol = accessor.get(IExtHostRpcService)
     const extHostDocumentsAndEditors = rpcProtocol.set(ExtHostContext.ExtHostDocumentsAndEditors, accessor.get(IExtHostDocumentsAndEditors))
-    const extHostDocuments = rpcProtocol.set(ExtHostContext.ExtHostDocuments, new ExtHostDocuments(mainContext, extHostDocumentsAndEditors))
-    const extHostEditors = rpcProtocol.set(ExtHostContext.ExtHostEditors, new ExtHostEditors(mainContext, extHostDocumentsAndEditors))
-    const extHostDocumentContentProvider = rpcProtocol.set(ExtHostContext.ExtHostDocumentContentProviders, new ExtHostDocumentContentProvider(mainContext, extHostDocumentsAndEditors, extHostLogService!))
+    const extHostDocuments = rpcProtocol.set(ExtHostContext.ExtHostDocuments, new ExtHostDocuments(rpcProtocol, extHostDocumentsAndEditors))
+    const extHostEditors = rpcProtocol.set(ExtHostContext.ExtHostEditors, new ExtHostEditors(rpcProtocol, extHostDocumentsAndEditors))
+    const extHostDocumentContentProvider = rpcProtocol.set(ExtHostContext.ExtHostDocumentContentProviders, new ExtHostDocumentContentProvider(rpcProtocol, extHostDocumentsAndEditors, extHostLogService!))
     const extHostBulkEdits = new ExtHostBulkEdits(rpcProtocol, extHostDocumentsAndEditors)
     const extHostDocumentSaveParticipant = rpcProtocol.set(ExtHostContext.ExtHostDocumentSaveParticipant, new ExtHostDocumentSaveParticipant(extHostLogService!, extHostDocuments, rpcProtocol.getProxy(MainContext.MainThreadBulkEdits)))
 

@@ -7,11 +7,11 @@ import 'vs/workbench/api/browser/mainThreadLanguages'
 
 registerExtHostProvider('languages', {
   dependencies: ['documentsAndEditors', 'commands'],
-  provide: (accessor, mainContext, { extHostDocuments, extHostCommands }) => {
+  provide: (accessor, { extHostDocuments, extHostCommands }) => {
     const uriTransformerService = accessor.get(IURITransformerService)
     const rpcProtocol = accessor.get(IExtHostRpcService)
 
-    const extHostLanguages = rpcProtocol.set(ExtHostContext.ExtHostLanguages, new ExtHostLanguages(mainContext, extHostDocuments!, extHostCommands?.converter!, uriTransformerService))
+    const extHostLanguages = rpcProtocol.set(ExtHostContext.ExtHostLanguages, new ExtHostLanguages(rpcProtocol, extHostDocuments!, extHostCommands?.converter!, uriTransformerService))
 
     return {
       extHostLanguages

@@ -19,7 +19,7 @@ registerExtHostSingleton(IExtHostCommands, ExtHostCommands, InstantiationType.Ea
 
 registerExtHostProvider('messages', {
   dependencies: [],
-  provide: (accessor, mainContext, { extHostLogService }) => {
+  provide: (accessor, { extHostLogService }) => {
     const rpcProtocol = accessor.get(IExtHostRpcService)
 
     const extHostMessageService = new ExtHostMessageService(rpcProtocol, extHostLogService!)

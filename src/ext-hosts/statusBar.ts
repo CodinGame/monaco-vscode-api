@@ -6,7 +6,7 @@ import 'vs/workbench/api/browser/mainThreadStatusBar'
 
 registerExtHostProvider('statusBar', {
   dependencies: ['commands'],
-  provide: (accessor, _, { extHostCommands }) => {
+  provide: (accessor, { extHostCommands }) => {
     const rpcProtocol = accessor.get(IExtHostRpcService)
 
     const extHostStatusBar = rpcProtocol.set(ExtHostContext.ExtHostStatusBar, new ExtHostStatusBar(rpcProtocol, extHostCommands?.converter!))

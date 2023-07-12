@@ -7,10 +7,10 @@ import 'vs/workbench/api/browser/mainThreadQuickOpen'
 
 registerExtHostProvider('quickopen', {
   dependencies: ['commands'],
-  provide: (accessor, mainContext, { extHostCommands }) => {
+  provide: (accessor, { extHostCommands }) => {
     const rpcProtocol = accessor.get(IExtHostRpcService)
 
-    const extHostQuickOpen = rpcProtocol.set(ExtHostContext.ExtHostQuickOpen, createExtHostQuickOpen(mainContext, <IExtHostWorkspaceProvider><unknown>null, extHostCommands!))
+    const extHostQuickOpen = rpcProtocol.set(ExtHostContext.ExtHostQuickOpen, createExtHostQuickOpen(rpcProtocol, <IExtHostWorkspaceProvider><unknown>null, extHostCommands!))
 
     return {
       extHostQuickOpen

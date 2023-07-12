@@ -12,7 +12,7 @@ import 'vs/workbench/api/browser/mainThreadTreeViews'
 
 registerExtHostProvider('views', {
   dependencies: ['commands', 'documentsAndEditors', 'workspace'],
-  provide: (accessor, _, { extHostApiDeprecationService, extHostLogService, extHostCommands, extHostInitData, extHostDocuments, extHostWorkspace }) => {
+  provide: (accessor, { extHostApiDeprecationService, extHostLogService, extHostCommands, extHostInitData, extHostDocuments, extHostWorkspace }) => {
     const rpcProtocol = accessor.get(IExtHostRpcService)
     const extensionStoragePaths = accessor.get(IExtensionStoragePaths)
 

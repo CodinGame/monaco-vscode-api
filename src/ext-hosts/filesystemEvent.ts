@@ -10,7 +10,7 @@ registerExtHostSingleton(IExtHostConsumerFileSystem, ExtHostConsumerFileSystem, 
 
 registerExtHostProvider('filesystemEvent', {
   dependencies: ['documentsAndEditors'],
-  provide: (accessor, mainContext, { extHostLogService, extHostDocumentsAndEditors }) => {
+  provide: (accessor, { extHostLogService, extHostDocumentsAndEditors }) => {
     const rpcProtocol = accessor.get(IExtHostRpcService)
 
     const extHostFileSystemEvent = rpcProtocol.set(ExtHostContext.ExtHostFileSystemEventService, new ExtHostFileSystemEventService(rpcProtocol, extHostLogService!, extHostDocumentsAndEditors!))

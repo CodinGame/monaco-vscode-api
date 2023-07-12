@@ -334,7 +334,7 @@ function createExtHostServices (accessor: ServicesAccessor): Partial<ExtHostServ
   )
 
   for (const extHostProvider of sortedProviders) {
-    Object.assign(extHostServices, extHostProvider.provide(accessor, mainContext, extHostServices))
+    Object.assign(extHostServices, extHostProvider.provide(accessor, extHostServices))
   }
 
   return extHostServices

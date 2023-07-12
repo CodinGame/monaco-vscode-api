@@ -12,7 +12,7 @@ registerExtHostSingleton(IExtHostFileSystemInfo, ExtHostFileSystemInfo, Instanti
 
 registerExtHostProvider('filesystem', {
   dependencies: ['languages'],
-  provide: (accessor, mainContext, { extHostLanguageFeatures }) => {
+  provide: (accessor, { extHostLanguageFeatures }) => {
     const rpcProtocol = accessor.get(IExtHostRpcService)
 
     const extHostConsumerFileSystem = accessor.get(IExtHostConsumerFileSystem)
