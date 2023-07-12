@@ -1,4 +1,9 @@
 /// <reference path="./types.d.ts" />
+/// <reference path="../vscode.proposed.extensionsAny.d.ts" />
+/// <reference path="../vscode.proposed.documentPaste.d.ts" />
+/// <reference path="../vscode.proposed.externalUriOpener.d.ts" />
+/// <reference path="../vscode.proposed.fileSearchProvider.d.ts" />
+/// <reference path="../vscode.proposed.textSearchProvider.d.ts" />
 import * as extHostTypes from 'vs/workbench/api/common/extHostTypes'
 import * as errors from 'vs/base/common/errors'
 import * as commonDebug from 'vs/workbench/contrib/debug/common/debug'
@@ -14,20 +19,34 @@ import * as uri from 'vs/base/common/uri'
 import * as log from 'vs/platform/log/common/log'
 import * as telemetryUtils from 'vs/platform/telemetry/common/telemetryUtils'
 import * as searchExtHostTypes from 'vs/workbench/services/search/common/searchExtTypes'
-import createL10nApi from './vscode-apis/l10n'
-import createLanguagesApi from './vscode-apis/languages'
-import createCommandsApi from './vscode-apis/commands'
-import createWorkspaceApi from './vscode-apis/workspace'
-import createWindowApi, { TextTabInput } from './vscode-apis/window'
-import createEnvApi from './vscode-apis/env'
-import createDebugApi from './vscode-apis/debug'
-import createExtensionsApi from './vscode-apis/extensions'
-import { getDefaultExtension } from './default-extension'
+import { URI } from 'vs/base/common/uri'
+import { ExtHostExtensionService } from 'vs/workbench/api/worker/extHostExtensionService'
+import { getExtHostExtensionService } from './extHost'
+
+let defaultApi: typeof vscode | undefined
+
+getExtHostExtensionService().then((extHostExtensionService) => {
+  // The uri doesn't exist, so vscode will fallback on nullExtensionDescription
+  // eslint-disable-next-line dot-notation
+  defaultApi = (extHostExtensionService as ExtHostExtensionService)['_fakeModules'].getModule('vscode', URI.from({ scheme: 'extension', authority: 'default', path: '/package.json' }))
+}, console.error)
+
+export function setDefaultApi (api: typeof vscode): void {
+  defaultApi = api
+}
+
+function createProxy<T extends keyof typeof vscode> (key: T): typeof vscode[T] {
+  return new Proxy({}, {
+    get (target, p) {
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      return (defaultApi![key] as any)[p]
+    }
+  }) as typeof vscode[T]
+}
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 const unsupported = <any>undefined
 
-const _workspace = createWorkspaceApi(getDefaultExtension)
 const api: typeof vscode = {
   version: VSCODE_VERSION,
 
@@ -38,14 +57,14 @@ const api: typeof vscode = {
   authentication: unsupported,
   tests: unsupported,
 
-  extensions: createExtensionsApi(getDefaultExtension),
-  debug: createDebugApi(getDefaultExtension),
-  env: createEnvApi(getDefaultExtension),
-  commands: createCommandsApi(getDefaultExtension),
-  window: createWindowApi(getDefaultExtension, _workspace),
-  workspace: _workspace,
-  languages: createLanguagesApi(getDefaultExtension),
-  l10n: createL10nApi(getDefaultExtension),
+  extensions: createProxy('extensions'),
+  debug: createProxy('debug'),
+  env: createProxy('env'),
+  commands: createProxy('commands'),
+  window: createProxy('window'),
+  workspace: createProxy('workspace'),
+  languages: createProxy('languages'),
+  l10n: createProxy('l10n'),
 
   Breakpoint: extHostTypes.Breakpoint,
   CallHierarchyIncomingCall: extHostTypes.CallHierarchyIncomingCall,
@@ -183,7 +202,7 @@ const api: typeof vscode = {
   DataTransferItem: extHostTypes.DataTransferItem,
   LanguageStatusSeverity: extHostTypes.LanguageStatusSeverity,
   QuickPickItemKind: extHostTypes.QuickPickItemKind,
-  TabInputText: TextTabInput,
+  TabInputText: extHostTypes.TextTabInput,
   TabInputTextDiff: extHostTypes.TextDiffTabInput,
   TabInputCustom: extHostTypes.CustomEditorTabInput,
   TabInputNotebook: extHostTypes.NotebookEditorTabInput,

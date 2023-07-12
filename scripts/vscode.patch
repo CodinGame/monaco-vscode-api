@@ -219,6 +219,28 @@ index ff766b9acb8..599bab9dd59 100644
  	}
  
  	isVisible(): boolean {
+diff --git a/src/vs/workbench/services/extensions/common/abstractExtensionService.ts b/src/vs/workbench/services/extensions/common/abstractExtensionService.ts
+index c529886ca92..4ba9948a6f5 100644
+--- a/src/vs/workbench/services/extensions/common/abstractExtensionService.ts
++++ b/src/vs/workbench/services/extensions/common/abstractExtensionService.ts
+@@ -192,7 +192,7 @@ export abstract class AbstractExtensionService extends Disposable implements IEx
+ 
+ 	//#region deltaExtensions
+ 
+-	private async _handleDeltaExtensions(item: DeltaExtensionsQueueItem): Promise<void> {
++	protected async _handleDeltaExtensions(item: DeltaExtensionsQueueItem): Promise<void> {
+ 		this._deltaExtensionsQueue.push(item);
+ 		if (this._inHandleDeltaExtensions) {
+ 			// Let the current item finish, the new one will be picked up
+@@ -1156,7 +1156,7 @@ export interface IExtensionHostFactory {
+ 	createExtensionHost(runningLocations: ExtensionRunningLocationTracker, runningLocation: ExtensionRunningLocation, isInitialStart: boolean): IExtensionHost | null;
+ }
+ 
+-class DeltaExtensionsQueueItem {
++export class DeltaExtensionsQueueItem {
+ 	constructor(
+ 		public readonly toAdd: IExtension[],
+ 		public readonly toRemove: string[] | IExtension[]
 diff --git a/src/vs/workbench/services/outline/browser/outlineService.ts b/src/vs/workbench/services/outline/browser/outlineService.ts
 index f4707432371..7c5cdde39cc 100644
 --- a/src/vs/workbench/services/outline/browser/outlineService.ts

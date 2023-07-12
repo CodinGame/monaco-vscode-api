@@ -19,7 +19,7 @@ import { compare } from 'vs/base/common/strings'
 import { IHostService } from 'vs/workbench/services/host/browser/host'
 import { ILifecycleService } from 'vs/workbench/services/lifecycle/common/lifecycle'
 import { ILanguageDetectionService } from 'vs/workbench/services/languageDetection/common/languageDetectionWorkerService'
-import { ActivationKind, IExtensionService, NullExtensionService } from 'vs/workbench/services/extensions/common/extensions'
+import { IExtensionService, NullExtensionService } from 'vs/workbench/services/extensions/common/extensions'
 import { IKeyboardLayoutService } from 'vs/platform/keyboardLayout/common/keyboardLayout'
 import { OS } from 'vs/base/common/platform'
 import { IEnvironmentService } from 'vs/platform/environment/common/environment'
@@ -40,7 +40,7 @@ import { IDisposable, Disposable } from 'vs/base/common/lifecycle'
 import { FallbackKeyboardMapper } from 'vs/workbench/services/keybinding/common/fallbackKeyboardMapper'
 import { ITextMateTokenizationService } from 'vs/workbench/services/textMate/browser/textMateTokenizationFeature'
 import { IDebugService, IDebugModel, IViewModel, IAdapterManager } from 'vs/workbench/contrib/debug/common/debug'
-import { IWorkspaceTrustRequestService, WorkspaceTrustUriResponse } from 'vs/platform/workspace/common/workspaceTrust'
+import { IWorkspaceTrustEnablementService, IWorkspaceTrustRequestService, WorkspaceTrustUriResponse } from 'vs/platform/workspace/common/workspaceTrust'
 import { IActivityService } from 'vs/workbench/services/activity/common/activity'
 import { IExtensionHostDebugService } from 'vs/platform/debug/common/extensionHostDebug'
 import { IViewContainerModel, IViewDescriptorService, IViewsService } from 'vs/workbench/common/views'
@@ -57,7 +57,7 @@ import { IEditSessionIdentityService } from 'vs/platform/workspace/common/editSe
 import { IWorkspaceEditingService } from 'vs/workbench/services/workspaces/common/workspaceEditing'
 import { ITimerService } from 'vs/workbench/services/timer/browser/timerService'
 import { IExtensionsWorkbenchService } from 'vs/workbench/contrib/extensions/common/extensions'
-import { IWorkbenchExtensionEnablementService } from 'vs/workbench/services/extensionManagement/common/extensionManagement'
+import { EnablementState, IWorkbenchExtensionEnablementService, IWorkbenchExtensionManagementService } from 'vs/workbench/services/extensionManagement/common/extensionManagement'
 import { ITunnelService } from 'vs/platform/tunnel/common/tunnel'
 import { IWorkingCopyBackupService } from 'vs/workbench/services/workingCopy/common/workingCopyBackup'
 import { IWorkingCopyService, WorkingCopyService } from 'vs/workbench/services/workingCopy/common/workingCopyService'
@@ -124,8 +124,6 @@ import { ExtensionStatusBarItemService, IExtensionStatusBarItemService } from 'v
 import { IWorkbenchAssignmentService } from 'vs/workbench/services/assignment/common/assignmentService'
 import { IChatService } from 'vs/workbench/contrib/chat/common/chatService'
 import { IEmbedderTerminalService } from 'vs/workbench/services/terminal/common/embedderTerminalService'
-import { IExtensionHostProxy } from 'vs/workbench/services/extensions/common/extensionHostProxy'
-import { IExtensionDescriptionDelta } from 'vs/workbench/services/extensions/common/extensionHostProtocol'
 import { ICustomEditorService } from 'vs/workbench/contrib/customEditor/common/customEditor'
 import { IWebviewWorkbenchService } from 'vs/workbench/contrib/webviewPanel/browser/webviewWorkbenchService'
 import { IWebview, IWebviewService } from 'vs/workbench/contrib/webview/browser/webview'
@@ -134,6 +132,9 @@ import { IEditorDropService } from 'vs/workbench/services/editor/browser/editorD
 import { IRemoteAuthorityResolverService } from 'vs/platform/remote/common/remoteAuthorityResolver'
 import { ExternalUriOpenerService, IExternalUriOpenerService } from 'vs/workbench/contrib/externalUriOpener/common/externalUriOpenerService'
 import { IAccessibleViewService } from 'vs/workbench/contrib/accessibility/browser/accessibleView'
+import { IExtension, IRelaxedExtensionDescription } from 'vs/platform/extensions/common/extensions'
+import { IExtensionManifestPropertiesService } from 'vs/workbench/services/extensions/common/extensionManifestPropertiesService'
+import { IRemoteExtensionsScannerService } from 'vs/platform/remote/common/remoteExtensionsScanner'
 import { unsupported } from './tools'
 
 class NullLoggerService extends AbstractLoggerService {
@@ -436,23 +437,7 @@ registerSingleton(ILanguageDetectionService, class LanguageDetectionService impl
   }
 }, InstantiationType.Eager)
 
-export class SimpleExtensionService extends NullExtensionService implements IExtensionService {
-  private extensionHostProxy: IExtensionHostProxy | undefined
-
-  override async activateByEvent (activationEvent: string, activationKind: ActivationKind | undefined = ActivationKind.Normal): Promise<void> {
-    await this.extensionHostProxy!.activateByEvent(activationEvent, activationKind)
-  }
-
-  public setExtensionHostProxy (_extensionHostProxy: IExtensionHostProxy): void {
-    this.extensionHostProxy = _extensionHostProxy
-  }
-
-  public async deltaExtensions (extensionsDelta: IExtensionDescriptionDelta): Promise<void> {
-    await this.extensionHostProxy!.deltaExtensions(extensionsDelta)
-  }
-}
-
-registerSingleton(IExtensionService, SimpleExtensionService, InstantiationType.Eager)
+registerSingleton(IExtensionService, NullExtensionService, InstantiationType.Eager)
 
 registerSingleton(IKeyboardLayoutService, class KeyboardLayoutService implements IKeyboardLayoutService {
   _serviceBrand: undefined
@@ -512,12 +497,12 @@ const profile: IUserDataProfile = {
   isDefault: true,
   name: 'default',
   location: URI.from({ scheme: 'user', path: '/profile.json' }),
-  get globalStorageHome () { return unsupported() },
+  globalStorageHome: URI.from({ scheme: 'user', path: '/globalStorage' }),
   settingsResource: URI.from({ scheme: 'user', path: '/settings.json' }),
   keybindingsResource: URI.from({ scheme: 'user', path: '/keybindings.json' }),
   tasksResource: URI.from({ scheme: 'user', path: '/tasks.json' }),
   snippetsHome: URI.from({ scheme: 'user', path: '/snippets' }),
-  get extensionsResource () { return unsupported() },
+  extensionsResource: URI.from({ scheme: 'user', path: '/extensions.json' }),
   cacheHome: URI.from({ scheme: 'cache', path: '/' })
 }
 
@@ -907,14 +892,14 @@ registerSingleton(IExtensionsWorkbenchService, class ExtensionsWorkbenchService 
 registerSingleton(IWorkbenchExtensionEnablementService, class WorkbenchExtensionEnablementService implements IWorkbenchExtensionEnablementService {
   _serviceBrand: undefined
   onEnablementChanged = Event.None
-  getEnablementState = unsupported
-  getEnablementStates = unsupported
-  getDependenciesEnablementStates = unsupported
-  canChangeEnablement = unsupported
-  canChangeWorkspaceEnablement = unsupported
-  isEnabled = unsupported
-  isEnabledEnablementState = unsupported
-  isDisabledGlobally = unsupported
+  getEnablementState = () => EnablementState.EnabledGlobally
+  getEnablementStates = (extensions: IExtension[]) => extensions.map(() => EnablementState.EnabledGlobally)
+  getDependenciesEnablementStates = () => []
+  canChangeEnablement = () => false
+  canChangeWorkspaceEnablement = () => false
+  isEnabled = () => true
+  isEnabledEnablementState = () => true
+  isDisabledGlobally = () => false
   setEnablement = unsupported
   updateExtensionsEnablementsWhenWorkspaceTrustChanges = unsupported
 }, InstantiationType.Eager)
@@ -1632,4 +1617,71 @@ registerSingleton(IAccessibleViewService, class AccessibleViewService implements
   _serviceBrand: undefined
   show = unsupported
   registerProvider = unsupported
+}, InstantiationType.Delayed)
+
+registerSingleton(IWorkbenchExtensionManagementService, class WorkbenchExtensionManagementService implements IWorkbenchExtensionManagementService {
+  _serviceBrand: undefined
+  onInstallExtension = Event.None
+  onDidInstallExtensions = Event.None
+  onUninstallExtension = Event.None
+  onDidUninstallExtension = Event.None
+  onDidChangeProfile = Event.None
+  installVSIX = unsupported
+  installFromLocation = unsupported
+  updateFromGallery = unsupported
+  onDidUpdateExtensionMetadata = Event.None
+  zip = unsupported
+  unzip = unsupported
+  getManifest = unsupported
+  install = unsupported
+  canInstall = unsupported
+  installFromGallery = unsupported
+  installGalleryExtensions = unsupported
+  installExtensionsFromProfile = unsupported
+  uninstall = unsupported
+  reinstallFromGallery = unsupported
+  getInstalled = unsupported
+  getExtensionsControlManifest = unsupported
+  copyExtensions = unsupported
+  updateMetadata = unsupported
+  download = unsupported
+  registerParticipant = unsupported
+  getTargetPlatform = unsupported
+  cleanUp = unsupported
+}, InstantiationType.Delayed)
+
+registerSingleton(IExtensionManifestPropertiesService, class ExtensionManifestPropertiesService implements IExtensionManifestPropertiesService {
+  _serviceBrand: undefined
+  prefersExecuteOnUI = unsupported
+  prefersExecuteOnWorkspace = unsupported
+  prefersExecuteOnWeb = unsupported
+  canExecuteOnUI = unsupported
+  canExecuteOnWorkspace = unsupported
+  canExecuteOnWeb = unsupported
+  getExtensionKind = unsupported
+  getUserConfiguredExtensionKind = unsupported
+  getExtensionUntrustedWorkspaceSupportType = unsupported
+  getExtensionVirtualWorkspaceSupportType = unsupported
+}, InstantiationType.Delayed)
+
+registerSingleton(IWorkspaceTrustEnablementService, class WorkspaceTrustEnablementService implements IWorkspaceTrustEnablementService {
+  _serviceBrand: undefined
+  isWorkspaceTrustEnabled (): boolean {
+    return false
+  }
+}, InstantiationType.Delayed)
+
+registerSingleton(IRemoteExtensionsScannerService, class RemoteExtensionsScannerService implements IRemoteExtensionsScannerService {
+  _serviceBrand: undefined
+  whenExtensionsReady (): Promise<void> {
+    throw new Error('Method not implemented.')
+  }
+
+  async scanExtensions (): Promise<Readonly<IRelaxedExtensionDescription>[]> {
+    return []
+  }
+
+  async scanSingleExtension (): Promise<Readonly<IRelaxedExtensionDescription> | null> {
+    return null
+  }
 }, InstantiationType.Delayed)

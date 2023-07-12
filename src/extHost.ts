@@ -1,7 +1,5 @@
-import type { IExtensionRegistries } from 'vs/workbench/api/common/extHost.api.impl'
 import type { ExtHostDiagnostics } from 'vs/workbench/api/common/extHostDiagnostics'
 import type { IExtHostFileSystemInfo } from 'vs/workbench/api/common/extHostFileSystemInfo'
-import type { Proxied, ProxyIdentifier } from 'vs/workbench/services/extensions/common/proxyIdentifier'
 import type { ExtHostDocuments } from 'vs/workbench/api/common/extHostDocuments'
 import type { ExtHostDocumentContentProvider } from 'vs/workbench/api/common/extHostDocumentContentProviders'
 import type { IExtHostDocumentsAndEditors } from 'vs/workbench/api/common/extHostDocumentsAndEditors'
@@ -18,7 +16,6 @@ import type { ExtHostFileSystemEventService } from 'vs/workbench/api/common/extH
 import type { IExtHostOutputService } from 'vs/workbench/api/common/extHostOutput'
 import type { ExtHostTreeViews } from 'vs/workbench/api/common/extHostTreeViews'
 import type { IExtHostCommands } from 'vs/workbench/api/common/extHostCommands'
-import type { IExtensionHostProxy } from 'vs/workbench/services/extensions/common/extensionHostProxy'
 import type { ExtHostStatusBar } from 'vs/workbench/api/common/extHostStatusBar'
 import type { IExtHostSearch } from 'vs/workbench/api/common/extHostSearch'
 import type { ExtHostDialogs } from 'vs/workbench/api/common/extHostDialogs'
@@ -38,35 +35,25 @@ import type { ExtHostQuickOpen } from 'vs/workbench/api/common/extHostQuickOpen'
 import type { IExtHostWorkspace } from 'vs/workbench/api/common/extHostWorkspace'
 import type { ExtHostProgress } from 'vs/workbench/api/common/extHostProgress'
 import { ExtHostExtensionService } from 'vs/workbench/api/worker/extHostExtensionService'
-import { ExtHostConfigProvider, IExtHostConfiguration } from 'vs/workbench/api/common/extHostConfiguration'
+import { IExtHostConfiguration } from 'vs/workbench/api/common/extHostConfiguration'
 import { IExtHostManagedSockets } from 'vs/workbench/api/common/extHostManagedSockets'
 import { BrandedService, IInstantiationService, ServiceIdentifier, ServicesAccessor } from 'vs/platform/instantiation/common/instantiation'
 import { IExtHostInitDataService } from 'vs/workbench/api/common/extHostInitDataService'
-import { IEnvironment, UIKind } from 'vs/workbench/services/extensions/common/extensionHostProtocol'
+import { IExtensionHostInitData, UIKind } from 'vs/workbench/services/extensions/common/extensionHostProtocol'
 import { ExtHostVariableResolverProviderService, IExtHostVariableResolverProvider } from 'vs/workbench/api/common/extHostVariableResolverService'
 import { IExtHostExtensionService, IHostUtils } from 'vs/workbench/api/common/extHostExtensionService'
 import { ExtensionStoragePaths, IExtensionStoragePaths } from 'vs/workbench/api/common/extHostStoragePaths'
 import { ExtHostTunnelService, IExtHostTunnelService } from 'vs/workbench/api/common/extHostTunnelService'
 import { ExtHostMessageService } from 'vs/workbench/api/common/extHostMessageService'
 import { ExtHostRpcService, IExtHostRpcService } from 'vs/workbench/api/common/extHostRpcService'
-import { ILogService, ILoggerService, LogLevel } from 'vs/platform/log/common/log'
-import { ExtHostCustomersRegistry, IInternalExtHostContext } from 'vs/workbench/services/extensions/common/extHostCustomers'
-import { ExtensionHostKind } from 'vs/workbench/services/extensions/common/extensionHostKind'
+import { ILogService, ILoggerService } from 'vs/platform/log/common/log'
 import { ExtHostApiDeprecationService, IExtHostApiDeprecationService } from 'vs/workbench/api/common/extHostApiDeprecationService'
-import { StandaloneServices } from 'vs/editor/standalone/browser/standaloneServices'
-import { ITelemetryService } from 'vs/platform/telemetry/common/telemetry'
-import {
-  ExtHostContext, IMainContext
-} from 'vs/workbench/api/common/extHost.protocol'
-import { URI } from 'vs/base/common/uri'
+import { ExtHostContext } from 'vs/workbench/api/common/extHost.protocol'
 import { IMessagePassingProtocol } from 'vs/base/parts/ipc/common/ipc'
 import { BufferedEmitter } from 'vs/base/parts/ipc/common/ipc.net'
 import { VSBuffer } from 'vs/base/common/buffer'
-import type { Event } from 'vs/base/common/event'
 import { RPCProtocol } from 'vs/workbench/services/extensions/common/rpcProtocol'
-import * as errors from 'vs/base/common/errors'
-import { Barrier } from 'vs/base/common/async'
-import { IExtensionService } from 'vs/workbench/services/extensions/common/extensions'
+import { DeferredPromise } from 'vs/base/common/async'
 import type { IExtHostDecorations } from 'vs/workbench/api/common/extHostDecorations'
 import * as toposort from 'toposort'
 import { ServiceCollection } from 'vs/platform/instantiation/common/serviceCollection'
@@ -76,8 +63,17 @@ import { ExtHostLogService } from 'vs/workbench/api/common/extHostLogService'
 import { InstantiationType } from 'vs/platform/instantiation/common/extensions'
 import { ExtHostLoggerService } from 'vs/workbench/api/common/extHostLoggerService'
 import { IURITransformerService, URITransformerService } from 'vs/workbench/api/common/extHostUriTransformerService'
+import { StandaloneServices } from 'vs/editor/standalone/browser/standaloneServices'
+import { IProductService } from 'vs/platform/product/common/productService'
+import { IWorkspaceContextService, WorkbenchState } from 'vs/platform/workspace/common/workspace'
+import { IWorkbenchEnvironmentService } from 'vs/workbench/services/environment/common/environmentService'
+import { ILabelService } from 'vs/platform/label/common/label'
+import { IUserDataProfilesService } from 'vs/platform/userDataProfile/common/userDataProfile'
+import { ITelemetryService } from 'vs/platform/telemetry/common/telemetry'
+import { joinPath } from 'vs/base/common/resources'
+import { isLoggingOnly } from 'vs/platform/telemetry/common/telemetryUtils'
+import * as platform from 'vs/base/common/platform'
 import { unsupported } from './tools'
-import { SimpleExtensionService } from './missing-services'
 import 'vs/workbench/api/browser/mainThreadConsole'
 import 'vs/workbench/api/browser/mainThreadExtensionService'
 import 'vs/workbench/api/browser/mainThreadLogService'
@@ -93,101 +89,35 @@ export function registerExtHostSingleton<T, Services extends BrandedService[]> (
   serviceCollection.set(id, ctorOrDescriptor)
 }
 
-serviceCollection.set(IURITransformerService, new URITransformerService(null))
 export const extHostInstantiationService = new InstantiationService(serviceCollection, false)
-serviceCollection.set(IInstantiationService, extHostInstantiationService)
 
-class SimpleMessagePassingProtocol implements IMessagePassingProtocol {
-  private readonly _onMessage = new BufferedEmitter<VSBuffer>()
-  readonly onMessage: Event<VSBuffer> = this._onMessage.event
-  send (buffer: VSBuffer): void {
-    setTimeout(() => {
-      this._onMessage.fire(buffer)
-    })
+function createMessagePassingProtocolPair (): [IMessagePassingProtocol, IMessagePassingProtocol] {
+  const emitterA = new BufferedEmitter<VSBuffer>()
+  const emitterB = new BufferedEmitter<VSBuffer>()
+
+  class SimpleMessagePassingProtocol implements IMessagePassingProtocol {
+    constructor (
+      private readonly emitterIn: BufferedEmitter<VSBuffer>,
+      private readonly emitterOut: BufferedEmitter<VSBuffer>
+    ) {}
+
+    send (buffer: VSBuffer): void {
+      this.emitterOut.fire(buffer)
+    }
+
+    onMessage = this.emitterIn.event
   }
+
+  return [new SimpleMessagePassingProtocol(emitterA, emitterB), new SimpleMessagePassingProtocol(emitterB, emitterA)]
 }
 
-const imessagePassingProtocol = new SimpleMessagePassingProtocol()
-const rpcProtocol = new RPCProtocol(imessagePassingProtocol)
-
-const environment: IEnvironment = {
-  isExtensionDevelopmentDebug: false,
-  appName: 'Monaco',
-  appHost: 'web',
-  // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
-  appLanguage: window.navigator.language ?? 'en-US',
-  extensionTelemetryLogResource: URI.from({ scheme: 'user', path: '/extensionTelemetryLogResource.log' }),
-  isExtensionTelemetryLoggingOnly: false,
-  get appUriScheme () { return unsupported() },
-  get globalStorageHome () { return unsupported() },
-  get workspaceStorageHome () { return unsupported() }
-}
+const [mainThreadMessagePassingProtocol, extHostMessagePassingProtocol] = createMessagePassingProtocolPair()
 
 registerExtHostSingleton(ILogService, new SyncDescriptor(ExtHostLogService, [true], true))
 registerExtHostSingleton(ILoggerService, ExtHostLoggerService, InstantiationType.Delayed)
 
-class ExtHostInitDataService implements IExtHostInitDataService {
-  constructor (
-    private _telemetryService: ITelemetryService
-  ) {
-  }
-
-  _serviceBrand: undefined
-  quality = undefined
-  version = '1.0.0'
-  parentPid = 0
-  environment = environment
-  allExtensions = []
-  myExtensions = []
-  consoleForward = {
-    includeStack: false,
-    logNative: false
-  }
-
-  get telemetryInfo () {
-    return this._telemetryService
-  }
-
-  logLevel = LogLevel.Off
-  logsLocation = URI.from({ scheme: 'logs', path: '/' })
-  logFile = URI.from({ scheme: 'logs', path: '/logs.log' })
-  autoStart = true
-  remote = {
-    isRemote: false,
-    authority: undefined,
-    connectionData: null
-  }
-
-  uiKind = UIKind.Web
-  loggers = []
-  logName = 'browser'
-  activationEvents = {}
-}
-
-registerExtHostSingleton(IHostUtils, class HostUtils implements IHostUtils {
-  declare readonly _serviceBrand: undefined
-  public readonly pid = undefined
-  exit (): void {
-    window.close()
-  }
-
-  async exists (): Promise<boolean> {
-    return true
-  }
-
-  async realpath (path: string): Promise<string> {
-    return path
-  }
-}, InstantiationType.Delayed)
-
-registerExtHostSingleton(IExtHostRpcService, new SyncDescriptor(ExtHostRpcService, [rpcProtocol], true))
 registerExtHostSingleton(IExtensionStoragePaths, ExtensionStoragePaths, InstantiationType.Delayed)
-class _ExtHostExtensionService extends ExtHostExtensionService {
-  public getExtensionRegistries (): IExtensionRegistries {
-    return { mine: this._myRegistry, all: this._globalRegistry }
-  }
-}
-registerExtHostSingleton(IExtHostExtensionService, _ExtHostExtensionService, InstantiationType.Delayed)
+registerExtHostSingleton(IExtHostExtensionService, ExtHostExtensionService, InstantiationType.Delayed)
 registerExtHostSingleton(IExtHostTunnelService, ExtHostTunnelService, InstantiationType.Delayed)
 registerExtHostSingleton(IExtHostApiDeprecationService, ExtHostApiDeprecationService, InstantiationType.Delayed)
 registerExtHostSingleton(IExtHostVariableResolverProvider, ExtHostVariableResolverProviderService, InstantiationType.Delayed)
@@ -203,50 +133,8 @@ registerExtHostSingleton(IExtHostManagedSockets, class ExtHostManagedSockets imp
   $remoteSocketDrain = unsupported
 }, InstantiationType.Delayed)
 
-const mainContext: IMainContext & IInternalExtHostContext = {
-  remoteAuthority: null,
-  extensionHostKind: ExtensionHostKind.LocalProcess,
-  internalExtensionService: {
-    _activateById (): Promise<void> {
-      // Do nothing
-      return Promise.resolve()
-    },
-    _onWillActivateExtension (): void {
-      // Do nothing
-    },
-    _onDidActivateExtension (): void {
-      // Do nothing
-    },
-    _onDidActivateExtensionError (): void {
-      // Do nothing
-    },
-    _onExtensionRuntimeError (): void {
-      // Do nothing
-    }
-  },
-  getProxy: function <T> (identifier: ProxyIdentifier<T>): Proxied<T> {
-    return rpcProtocol.getProxy(identifier)
-  },
-  set: function <T, R extends T> (identifier: ProxyIdentifier<T>, instance: R): R {
-    return rpcProtocol.set(identifier, instance)
-  },
-  assertRegistered: function (identifiers: ProxyIdentifier<unknown>[]): void {
-    rpcProtocol.assertRegistered(identifiers)
-  },
-  drain: function (): Promise<void> {
-    return rpcProtocol.drain()
-  },
-  dispose () {
-    rpcProtocol.dispose()
-  },
-  _setExtensionHostProxy (proxy: IExtensionHostProxy) {
-    (StandaloneServices.get(IExtensionService) as SimpleExtensionService).setExtensionHostProxy(proxy)
-  },
-  _setAllMainProxyIdentifiers () {}
-}
-
 type ExtHostProvider = {
-  provide: (accessor: ServicesAccessor, mainContext: IMainContext & IInternalExtHostContext, services: Partial<ExtHostServices>) => Partial<ExtHostServices>
+  provide: (accessor: ServicesAccessor, services: Partial<ExtHostServices>) => Partial<ExtHostServices>
   dependencies?: string[]
 }
 const extHostProviders: Map<string, ExtHostProvider> = new Map()
@@ -254,7 +142,7 @@ export function registerExtHostProvider (name: string, provider: ExtHostProvider
   extHostProviders.set(name, provider)
 }
 
-interface ExtHostServices {
+export interface ExtHostServices {
   extHostInitData: IExtHostInitDataService
   extHostLogService: ILogService
   extHostApiDeprecationService: IExtHostApiDeprecationService
@@ -278,7 +166,7 @@ interface ExtHostServices {
   extHostDebugService: IExtHostDebugService
   extHostFileSystem: ExtHostFileSystem
   extHostConsumerFileSystem: IExtHostConsumerFileSystem
-  extHostExtensionService: _ExtHostExtensionService
+  extHostExtensionService: IExtHostExtensionService
   extHostDocumentSaveParticipant: ExtHostDocumentSaveParticipant
   extHostFileSystemEvent: ExtHostFileSystemEventService
   extHostOutputService: IExtHostOutputService
@@ -300,9 +188,7 @@ interface ExtHostServices {
   extHostFileSystemInfo: IExtHostFileSystemInfo
 }
 
-function createExtHostServices (accessor: ServicesAccessor): Partial<ExtHostServices> {
-  registerExtHostSingleton(IExtHostInitDataService, new SyncDescriptor(ExtHostInitDataService, [StandaloneServices.get(ITelemetryService)], true))
-
+export function createExtHostServices (accessor: ServicesAccessor): Partial<ExtHostServices> {
   // services
   const rpcProtocol = accessor.get(IExtHostRpcService)
   const logService = accessor.get(ILogService)
@@ -312,7 +198,7 @@ function createExtHostServices (accessor: ServicesAccessor): Partial<ExtHostServ
 
   rpcProtocol.set(ExtHostContext.ExtHostTunnelService, extHostTunnelService)
 
-  const extHostExtensionService = rpcProtocol.set(ExtHostContext.ExtHostExtensionService, accessor.get(IExtHostExtensionService)) as _ExtHostExtensionService
+  const extHostExtensionService = rpcProtocol.set(ExtHostContext.ExtHostExtensionService, accessor.get(IExtHostExtensionService))
 
   const extHostServices: Partial<ExtHostServices> = {
     extHostInitData,
@@ -340,59 +226,115 @@ function createExtHostServices (accessor: ServicesAccessor): Partial<ExtHostServ
   return extHostServices
 }
 
-function runExtHostCustomers (accessor: ServicesAccessor) {
-  const instantiationService = accessor.get(IInstantiationService)
+async function createExtHostInitData (accessor: ServicesAccessor): Promise<IExtensionHostInitData> {
+  const contextService = accessor.get(IWorkspaceContextService)
+  const environmentService = accessor.get(IWorkbenchEnvironmentService)
+  const productService = accessor.get(IProductService)
+  const labelService = accessor.get(ILabelService)
+  const userDataProfilesService = accessor.get(IUserDataProfilesService)
+  const telemetryService = accessor.get(ITelemetryService)
   const logService = accessor.get(ILogService)
-  // Named customers
-  const namedCustomers = ExtHostCustomersRegistry.getNamedCustomers()
-  for (const [id, ctor] of namedCustomers) {
-    try {
-      const instance = instantiationService.createInstance(ctor, mainContext)
-      rpcProtocol.set(id, instance)
-    } catch (err) {
-      logService.error(`Cannot instantiate named customer: '${id.sid}'`)
-      logService.error(err as Error)
-      errors.onUnexpectedError(err)
-    }
-  }
+  const loggerService = accessor.get(ILoggerService)
 
-  // Customers
-  const customers = ExtHostCustomersRegistry.getCustomers()
-  for (const ctor of customers) {
-    try {
-      instantiationService.createInstance(ctor, mainContext)
-    } catch (err) {
-      logService.error(err as Error)
-      errors.onUnexpectedError(err)
-    }
+  const extensionHostLogsLocation = joinPath(environmentService.extHostLogsPath, 'local')
+
+  const workspace = contextService.getWorkspace()
+  return {
+    commit: productService.commit,
+    version: productService.version,
+    quality: productService.quality,
+    parentPid: 0,
+    environment: {
+      isExtensionDevelopmentDebug: environmentService.debugRenderer,
+      appName: productService.nameLong,
+      appHost: productService.embedderIdentifier ?? (platform.isWeb ? 'web' : 'desktop'),
+      appUriScheme: productService.urlProtocol,
+      appLanguage: platform.language,
+      extensionTelemetryLogResource: environmentService.extHostTelemetryLogFile,
+      isExtensionTelemetryLoggingOnly: isLoggingOnly(productService, environmentService),
+      extensionDevelopmentLocationURI: environmentService.extensionDevelopmentLocationURI,
+      extensionTestsLocationURI: environmentService.extensionTestsLocationURI,
+      globalStorageHome: userDataProfilesService.defaultProfile.globalStorageHome,
+      workspaceStorageHome: environmentService.workspaceStorageHome,
+      extensionLogLevel: environmentService.extensionLogLevel
+    },
+    workspace: contextService.getWorkbenchState() === WorkbenchState.EMPTY
+      ? undefined
+      : {
+          configuration: workspace.configuration ?? undefined,
+          id: workspace.id,
+          name: labelService.getWorkspaceLabel(workspace),
+          transient: workspace.transient
+        },
+    consoleForward: {
+      includeStack: false,
+      logNative: environmentService.debugRenderer
+    },
+    allExtensions: [],
+    activationEvents: {},
+    myExtensions: [],
+    telemetryInfo: {
+      sessionId: telemetryService.sessionId,
+      machineId: telemetryService.machineId,
+      firstSessionDate: telemetryService.firstSessionDate,
+      msftInternal: telemetryService.msftInternal
+    },
+    logLevel: logService.getLevel(),
+    loggers: [...loggerService.getRegisteredLoggers()],
+    logsLocation: extensionHostLogsLocation,
+    autoStart: true,
+    remote: {
+      authority: environmentService.remoteAuthority,
+      connectionData: null,
+      isRemote: false
+    },
+    uiKind: UIKind.Web
   }
 }
 
-let extHostServices: ExtHostServices | undefined
-let configProvider: ExtHostConfigProvider | undefined
+const extHostExtensionServicePromise = new DeferredPromise<IExtHostExtensionService>()
 
-const extHostInitializedBarrier = new Barrier()
+const hostUtil = new class implements IHostUtils {
+  declare readonly _serviceBrand: undefined
+  public readonly pid = undefined
+  exit (_code?: number | undefined): void {
+    window.close()
+  }
+
+  async exists (_path: string): Promise<boolean> {
+    return true
+  }
+
+  async realpath (path: string): Promise<string> {
+    return path
+  }
+}()
+
+async function initExtHost (accessor: ServicesAccessor, initData: IExtensionHostInitData) {
+  const rpcProtocol = new RPCProtocol(mainThreadMessagePassingProtocol)
+
+  serviceCollection.set(IExtHostInitDataService, { _serviceBrand: undefined, ...initData })
+  serviceCollection.set(IExtHostRpcService, new ExtHostRpcService(rpcProtocol))
+  serviceCollection.set(IURITransformerService, new URITransformerService(null))
+  serviceCollection.set(IHostUtils, hostUtil)
+
+  const extensionService = accessor.get(IExtHostExtensionService)
+  await extensionService.initialize()
+
+  void extHostExtensionServicePromise.complete(extensionService)
+}
+
 export function onExtHostInitialized (fct: () => void): void {
-  void extHostInitializedBarrier.wait().then(fct)
+  void extHostExtensionServicePromise.p.then(fct)
+}
+
+export function getExtHostExtensionService (): Promise<IExtHostExtensionService> {
+  return extHostExtensionServicePromise.p
 }
 
 async function _initialize (): Promise<void> {
-  const partialExtHostServices = extHostInstantiationService.invokeFunction(createExtHostServices)
-  StandaloneServices.get(IInstantiationService).invokeFunction(runExtHostCustomers)
-  configProvider = await partialExtHostServices.extHostConfiguration?.getConfigProvider()
-
-  await partialExtHostServices.extHostExtensionService!.initialize()
-
-  extHostServices = new Proxy(partialExtHostServices, {
-    get (target, p) {
-      const v = target[p as keyof ExtHostServices]
-      if (v == null) {
-        StandaloneServices.get(ILogService).warn(`ExtHost ${p as string} not registered`)
-      }
-      return v
-    }
-  }) as ExtHostServices
-  extHostInitializedBarrier.open()
+  const initData = await StandaloneServices.get(IInstantiationService).invokeFunction(createExtHostInitData)
+  await extHostInstantiationService.invokeFunction(initExtHost, initData)
 }
 
 let initializePromise: Promise<void> | undefined
@@ -403,16 +345,6 @@ export async function initialize (): Promise<void> {
   await initializePromise
 }
 
-export function getExtHostServices (): ExtHostServices {
-  if (extHostServices == null) {
-    throw new Error('Extension api not initialized')
-  }
-  return extHostServices
-}
-
-export function getConfigProvider (): ExtHostConfigProvider {
-  if (configProvider == null) {
-    throw new Error('Config provider not available')
-  }
-  return configProvider
+export {
+  extHostMessagePassingProtocol
 }

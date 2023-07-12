@@ -14,6 +14,7 @@ import { Emitter } from 'vs/base/common/event'
 import { IAction } from 'vs/base/common/actions'
 import getLayoutServiceOverride from './service-override/layout'
 import getEnvironmentServiceOverride from './service-override/environment'
+import getExtensionsServiceOverride from './service-override/extensions'
 
 interface ServiceInitializeParticipant {
   (accessor: ServicesAccessor): Promise<void>
@@ -27,6 +28,7 @@ async function initServices (overrides: IEditorOverrideServices): Promise<IInsta
   const instantiationService = StandaloneServices.initialize({
     ...getLayoutServiceOverride(), // Always override layout service to break cyclic dependency with ICodeEditorService
     ...getEnvironmentServiceOverride(),
+    ...getExtensionsServiceOverride(),
     ...overrides
   })
 
