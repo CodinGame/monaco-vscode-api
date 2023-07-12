@@ -153,7 +153,7 @@ FileAccess.uriToBrowserUri = function (uri: URI) {
   return original.call(this, uri)
 }
 
-export function registerExtension (manifest: IExtensionManifest, defaultNLS?: ITranslations): RegisterExtensionResult {
+export function registerExtension (manifest: IExtensionManifest, defaultNLS?: ITranslations, builtin: boolean = manifest.publisher === 'vscode'): RegisterExtensionResult {
   const localizedManifest = defaultNLS != null ? localizeManifest(manifest, defaultNLS) : manifest
 
   const id = getExtensionId(localizedManifest.publisher, localizedManifest.name)
@@ -161,8 +161,8 @@ export function registerExtension (manifest: IExtensionManifest, defaultNLS?: IT
 
   const extension: IExtension = {
     manifest: localizedManifest,
-    type: ExtensionType.User,
-    isBuiltin: false,
+    type: builtin ? ExtensionType.System : ExtensionType.User,
+    isBuiltin: builtin,
     identifier: { id },
     location,
     targetPlatform: TargetPlatform.WEB,
