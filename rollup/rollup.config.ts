@@ -70,7 +70,9 @@ const FUNCTIONS_TO_REMOVE = new Set([
 
   // For ActivityBar, remove unused actions/items
   'fillExtraContextMenuActions',
-  'createGlobalActivityActionBar'
+  'createGlobalActivityActionBar',
+  'assertRegistered', // because we implement only partially the api and vscode assert the all extHosts are registered
+  'updateEnabledApiProposals' // do not check for extension proposal api declaration
 ])
 
 const PURE_OR_TO_REMOVE_FUNCTIONS = new Set([
