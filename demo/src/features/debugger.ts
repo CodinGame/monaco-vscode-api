@@ -22,8 +22,9 @@ const debuggerExtension = {
   }
 }
 
-const { api: debuggerVscodeApi } = registerExtension(debuggerExtension)
+const { getApi } = registerExtension(debuggerExtension)
 
+const debuggerVscodeApi = await getApi()
 class WebsocketDebugAdapter implements vscode.DebugAdapter {
   constructor (private websocket: WebSocket) {
     websocket.onmessage = (message) => {
