@@ -33,6 +33,7 @@ export default rollup.defineConfig({
     './dist/types/src/services.d.ts',
     './dist/types/src/extensions.d.ts',
     './dist/types/src/service-override/notifications.d.ts',
+    './dist/types/src/service-override/bulkEdit.d.ts',
     './dist/types/src/service-override/dialogs.d.ts',
     './dist/types/src/service-override/model.d.ts',
     './dist/types/src/service-override/editor.d.ts',

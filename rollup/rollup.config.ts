@@ -366,6 +366,7 @@ const input = {
   extensions: './src/extensions.ts',
   services: './src/services.ts',
   'service-override/notifications': './src/service-override/notifications.ts',
+  'service-override/bulkEdit': './src/service-override/bulkEdit.ts',
   'service-override/dialogs': './src/service-override/dialogs.ts',
   'service-override/model': './src/service-override/model.ts',
   'service-override/editor': './src/service-override/editor.ts',

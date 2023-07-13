@@ -36,6 +36,10 @@
       "types": "./dist/service-override/notifications.d.ts",
       "default": "./dist/service-override/notifications.js"
     },
+    "./service-override/bulkEdit": {
+      "types": "./dist/service-override/bulkEdit.d.ts",
+      "default": "./dist/service-override/bulkEdit.js"
+    },
     "./service-override/dialogs": {
       "types": "./dist/service-override/dialogs.d.ts",
       "default": "./dist/service-override/dialogs.js"
@@ -146,6 +150,9 @@
       ],
       "service-override/notifications": [
         "./dist/service-override/notifications.d.ts"
+      ],
+      "service-override/bulkEdit": [
+        "./dist/service-override/bulkEdit.d.ts"
       ],
       "service-override/dialogs": [
         "./dist/service-override/dialogs.d.ts"
