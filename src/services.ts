@@ -132,6 +132,7 @@ export { IEditorOptions, ITextEditorOptions, IResourceEditorInput } from 'vs/pla
 export { EditorInput } from 'vs/workbench/common/editor/editorInput'
 export { IGroupModelChangeEvent } from 'vs/workbench/common/editor/editorGroupModel'
 export { IEditorService } from 'vs/workbench/services/editor/common/editorService'
+export { IEditorResolverService } from 'vs/workbench/services/editor/common/editorResolverService'
 export { IWorkbenchEnvironmentService } from 'vs/workbench/services/environment/common/environmentService'
 export { IHostService } from 'vs/workbench/services/host/browser/host'
 export { ILanguageStatusService } from 'vs/workbench/services/languageStatus/common/languageStatusService'
