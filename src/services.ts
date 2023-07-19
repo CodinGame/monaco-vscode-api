@@ -65,6 +65,8 @@ export async function initialize (overrides: IEditorOverrideServices): Promise<v
   })
 }
 
+export { SyncDescriptor } from 'vs/platform/instantiation/common/descriptors'
+
 // Export all services as monaco doesn't export them
 export { StandaloneServices } from 'vs/editor/standalone/browser/standaloneServices'
 
@@ -151,7 +153,7 @@ export { IAudioCueService } from 'vs/platform/audioCues/browser/audioCueService'
 export { IDebugService } from 'vs/workbench/contrib/debug/common/debug'
 export { ILoggerService, LogLevel } from 'vs/platform/log/common/log'
 export { ILogService } from 'vs/platform/log/common/log'
-export { IViewsService } from 'vs/workbench/common/views'
+export { IViewsService, IViewDescriptorService } from 'vs/workbench/common/views'
 export { ILayoutService } from 'vs/platform/layout/browser/layoutService'
 export { IPreferencesService } from 'vs/workbench/services/preferences/common/preferences'
 export { IPreferencesSearchService } from 'vs/workbench/contrib/preferences/common/preferences'
@@ -209,6 +211,10 @@ export {
   IPromptWithDefaultCancel
 } from 'vs/platform/dialogs/common/dialogs'
 export { IMarkdownString, MarkdownStringTrustedOptions } from 'vs/base/common/htmlContent'
+export { IActivityService, IBadge } from 'vs/workbench/services/activity/common/activity'
+export { IHoverService } from 'vs/workbench/services/hover/browser/hover'
+export { IExplorerService } from 'vs/workbench/contrib/files/browser/files'
+export { IStatusbarService } from 'vs/workbench/services/statusbar/browser/statusbar'
 
 export {
   IAction,
