@@ -20,8 +20,6 @@ import getSearchAccessServiceOverride from 'vscode/service-override/search'
 import getMarkersAccessServiceOverride from 'vscode/service-override/markers'
 import getAccessibilityAccessServiceOverride from 'vscode/service-override/accessibility'
 import EditorWorker from 'monaco-editor/esm/vs/editor/editor.worker.js?worker'
-import JsonWorker from 'monaco-editor/esm/vs/language/json/json.worker.js?worker'
-import TypescriptWorker from 'monaco-editor/esm/vs/language/typescript/ts.worker.js?worker'
 import TextMateWorker from 'vscode/workers/textMate.worker?worker'
 import OutputLinkComputerWorker from 'vscode/workers/outputLinkComputer.worker?worker'
 import * as monaco from 'monaco-editor/esm/vs/editor/editor.api.js'
@@ -29,29 +27,19 @@ import { TerminalBackend } from './features/terminal'
 import { openNewCodeEditor } from './features/editor'
 
 // Workers
-interface WorkerConstructor {
-  new(): Worker
-}
-export type WorkerLoader = () => WorkerConstructor | Promise<WorkerConstructor>
+export type WorkerLoader = () => Worker
 const workerLoaders: Partial<Record<string, WorkerLoader>> = {
-  editorWorkerService: () => EditorWorker,
-  textMateWorker: () => TextMateWorker,
-  json: () => JsonWorker,
-  javascript: () => TypescriptWorker,
-  typescript: () => TypescriptWorker,
-  outputLinkComputer: () => OutputLinkComputerWorker
+  editorWorkerService: () => new EditorWorker(),
+  textMateWorker: () => new TextMateWorker(),
+  outputLinkComputer: () => new OutputLinkComputerWorker()
 }
 window.MonacoEnvironment = {
-  getWorker: async function (moduleId, label) {
+  getWorker: function (moduleId, label) {
     const workerFactory = workerLoaders[label]
     if (workerFactory != null) {
-      const Worker = await workerFactory()
-      return new Worker()
+      return workerFactory()
     }
     throw new Error(`Unimplemented worker ${label} (${moduleId})`)
-  },
-  createTrustedTypesPolicy () {
-    return undefined
   }
 }
 
