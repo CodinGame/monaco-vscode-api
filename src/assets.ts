@@ -1,5 +1,5 @@
-let assetUrls: Record<string, string> = {}
-export function registerAssets (assets: Record<string, string>): void {
+let assetUrls: Record<string, string | (() => string)> = {}
+export function registerAssets (assets: Record<string, string | (() => string)>): void {
   assetUrls = {
     ...assetUrls,
     ...assets
@@ -7,7 +7,10 @@ export function registerAssets (assets: Record<string, string>): void {
 }
 
 function toUrl (name: string): string | undefined {
-  const url = assetUrls[name] ?? assetUrls[name.replace(/[/.]/g, '_')]
+  let url = assetUrls[name] ?? assetUrls[name.replace(/[/.]/g, '_')]
+  if (typeof url === 'function') {
+    url = url()
+  }
   return new URL(url!, window.location.href).toString()
 }
 
