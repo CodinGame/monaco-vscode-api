@@ -60,7 +60,6 @@
 		"src/types.d.ts",
 		"src/extensions.ts",
 		"src/service-override/*.ts",
-		"src/ext-hosts/*.ts",
 		"src/monaco.ts",
 		"src/rollup-vsix-plugin.ts",
 		"src/rollup-extension-directory-plugin.ts"

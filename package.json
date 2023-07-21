@@ -39,10 +39,6 @@
       "types": "./dist/service-override/*.d.ts",
       "default": "./dist/service-override/*.js"
     },
-    "./ext-hosts/*": {
-      "types": "./dist/ext-hosts/*.d.ts",
-      "default": "./dist/ext-hosts/*.js"
-    },
     "./workers/*": {
       "types": "./dist/workers/*.d.ts",
       "default": "./dist/workers/*.js"
