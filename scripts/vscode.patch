@@ -345,10 +345,27 @@ index ee87ff55b64..eeda9b949fb 100644
  	terminate(reason: string): void {
  		this._extensionService.terminate(reason);
  	}
+ 
++	getExtHostExtensionService(): IExtHostExtensionService {
++		return this._extensionService;
++	}
++
+ 	private static _transform(initData: IExtensionHostInitData, rpcProtocol: RPCProtocol): IExtensionHostInitData {
+ 		initData.allExtensions.forEach((ext) => {
+ 			(<Mutable<IRelaxedExtensionDescription>>ext).extensionLocation = URI.revive(rpcProtocol.transformIncomingURIs(ext.extensionLocation));
 diff --git a/src/vs/workbench/api/worker/extHostExtensionService.ts b/src/vs/workbench/api/worker/extHostExtensionService.ts
 index b83a462131d..5555f431ba0 100644
 --- a/src/vs/workbench/api/worker/extHostExtensionService.ts
 +++ b/src/vs/workbench/api/worker/extHostExtensionService.ts
+@@ -3,7 +3,7 @@
+  *  Licensed under the MIT License. See License.txt in the project root for license information.
+  *--------------------------------------------------------------------------------------------*/
+ 
+-import { createApiFactoryAndRegisterActors } from 'vs/workbench/api/common/extHost.api.impl';
++import { IExtensionApiFactory, createApiFactoryAndRegisterActors } from 'vs/workbench/api/common/extHost.api.impl';
+ import { ExtensionActivationTimesBuilder } from 'vs/workbench/api/common/extHostExtensionActivator';
+ import { AbstractExtHostExtensionService } from 'vs/workbench/api/common/extHostExtensionService';
+ import { URI } from 'vs/base/common/uri';
 @@ -12,6 +12,7 @@ import { IExtensionDescription } from 'vs/platform/extensions/common/extensions'
  import { ExtensionRuntime } from 'vs/workbench/api/common/extHostTypes';
  import { timeout } from 'vs/base/common/async';
@@ -372,6 +389,13 @@ index b83a462131d..5555f431ba0 100644
 +		}
  
  		// initialize API and register actors
+-		const apiFactory = this._instaService.invokeFunction(createApiFactoryAndRegisterActors);
+-		this._fakeModules = this._instaService.createInstance(WorkerRequireInterceptor, apiFactory, { mine: this._myRegistry, all: this._globalRegistry });
++		this._apiFactory = this._instaService.invokeFunction(createApiFactoryAndRegisterActors);
++		this._fakeModules = this._instaService.createInstance(WorkerRequireInterceptor, this._apiFactory, { mine: this._myRegistry, all: this._globalRegistry });
+ 		await this._fakeModules.install();
+ 		performance.mark('code/extHost/didInitAPI');
+ 
 diff --git a/src/vs/workbench/api/worker/extensionHostWorker.ts b/src/vs/workbench/api/worker/extensionHostWorker.ts
 index 998b53a64ce..6c7308dc6b9 100644
 --- a/src/vs/workbench/api/worker/extensionHostWorker.ts
@@ -628,10 +652,71 @@ index ff766b9acb8..599bab9dd59 100644
  	}
  
  	isVisible(): boolean {
+diff --git a/src/vs/workbench/services/extensions/browser/extensionService.ts b/src/vs/workbench/services/extensions/browser/extensionService.ts
+index d8652bf5ac0..d0cf61f0983 100644
+--- a/src/vs/workbench/services/extensions/browser/extensionService.ts
++++ b/src/vs/workbench/services/extensions/browser/extensionService.ts
+@@ -210,16 +210,16 @@ export class ExtensionService extends AbstractExtensionService implements IExten
+ 	}
+ }
+ 
+-class BrowserExtensionHostFactory implements IExtensionHostFactory {
++export class BrowserExtensionHostFactory implements IExtensionHostFactory {
+ 
+ 	constructor(
+ 		private readonly _extensionsProposedApi: ExtensionsProposedApi,
+ 		private readonly _scanWebExtensions: () => Promise<IExtensionDescription[]>,
+ 		private readonly _getExtensions: () => Promise<IExtensionDescription[]>,
+-		@IInstantiationService private readonly _instantiationService: IInstantiationService,
+-		@IRemoteAgentService private readonly _remoteAgentService: IRemoteAgentService,
+-		@IRemoteAuthorityResolverService private readonly _remoteAuthorityResolverService: IRemoteAuthorityResolverService,
+-		@IWorkbenchExtensionEnablementService private readonly _extensionEnablementService: IWorkbenchExtensionEnablementService,
++		@IInstantiationService protected readonly _instantiationService: IInstantiationService,
++		@IRemoteAgentService protected readonly _remoteAgentService: IRemoteAgentService,
++		@IRemoteAuthorityResolverService protected readonly _remoteAuthorityResolverService: IRemoteAuthorityResolverService,
++		@IWorkbenchExtensionEnablementService protected readonly _extensionEnablementService: IWorkbenchExtensionEnablementService,
+ 	) { }
+ 
+ 	createExtensionHost(runningLocations: ExtensionRunningLocationTracker, runningLocation: ExtensionRunningLocation, isInitialStart: boolean): IExtensionHost | null {
+@@ -245,7 +245,7 @@ class BrowserExtensionHostFactory implements IExtensionHostFactory {
+ 		}
+ 	}
+ 
+-	private _createLocalExtensionHostDataProvider(runningLocations: ExtensionRunningLocationTracker, desiredRunningLocation: ExtensionRunningLocation, isInitialStart: boolean): IWebWorkerExtensionHostDataProvider {
++	protected _createLocalExtensionHostDataProvider(runningLocations: ExtensionRunningLocationTracker, desiredRunningLocation: ExtensionRunningLocation, isInitialStart: boolean): IWebWorkerExtensionHostDataProvider {
+ 		return {
+ 			getInitData: async (): Promise<IWebWorkerExtensionHostInitData> => {
+ 				if (isInitialStart) {
+diff --git a/src/vs/workbench/services/extensions/browser/webWorkerExtensionHost.ts b/src/vs/workbench/services/extensions/browser/webWorkerExtensionHost.ts
+index ad66755797e..f2e7a0abff8 100644
+--- a/src/vs/workbench/services/extensions/browser/webWorkerExtensionHost.ts
++++ b/src/vs/workbench/services/extensions/browser/webWorkerExtensionHost.ts
+@@ -111,8 +111,6 @@ export class WebWorkerExtensionHost extends Disposable implements IExtensionHost
+ 				res.searchParams.set('salt', stableOriginUUID);
+ 				return res.toString();
+ 			}
+-
+-			console.warn(`The web worker extension host is started in a same-origin iframe!`);
+ 		}
+ 
+ 		const relativeExtensionHostIframeSrc = FileAccess.asBrowserUri(iframeModulePath);
 diff --git a/src/vs/workbench/services/extensions/common/abstractExtensionService.ts b/src/vs/workbench/services/extensions/common/abstractExtensionService.ts
-index c529886ca92..4ba9948a6f5 100644
+index c529886ca92..2311e7a0fb5 100644
 --- a/src/vs/workbench/services/extensions/common/abstractExtensionService.ts
 +++ b/src/vs/workbench/services/extensions/common/abstractExtensionService.ts
+@@ -87,9 +87,9 @@ export abstract class AbstractExtensionService extends Disposable implements IEx
+ 	private _resolveAuthorityAttempt: number = 0;
+ 
+ 	constructor(
+-		private readonly _extensionsProposedApi: ExtensionsProposedApi,
+-		private readonly _extensionHostFactory: IExtensionHostFactory,
+-		private readonly _extensionHostKindPicker: IExtensionHostKindPicker,
++		protected readonly _extensionsProposedApi: ExtensionsProposedApi,
++		protected readonly _extensionHostFactory: IExtensionHostFactory,
++		protected readonly _extensionHostKindPicker: IExtensionHostKindPicker,
+ 		@IInstantiationService protected readonly _instantiationService: IInstantiationService,
+ 		@INotificationService protected readonly _notificationService: INotificationService,
+ 		@IWorkbenchEnvironmentService protected readonly _environmentService: IWorkbenchEnvironmentService,
 @@ -192,7 +192,7 @@ export abstract class AbstractExtensionService extends Disposable implements IEx
  
  	//#region deltaExtensions
