@@ -663,6 +663,37 @@ index f4707432371..7c5cdde39cc 100644
  
  	declare _serviceBrand: undefined;
  
+diff --git a/src/vs/workbench/services/textMate/browser/textMateTokenizationFeatureImpl.ts b/src/vs/workbench/services/textMate/browser/textMateTokenizationFeatureImpl.ts
+index ca939e5f2f2..cf7d1a629c9 100644
+--- a/src/vs/workbench/services/textMate/browser/textMateTokenizationFeatureImpl.ts
++++ b/src/vs/workbench/services/textMate/browser/textMateTokenizationFeatureImpl.ts
+@@ -37,6 +37,8 @@ import { ITMSyntaxExtensionPoint, grammarsExtPoint } from 'vs/workbench/services
+ import { IValidEmbeddedLanguagesMap, IValidGrammarDefinition, IValidTokenTypeMap } from 'vs/workbench/services/textMate/common/TMScopeRegistry';
+ import { ITextMateThemingRule, IWorkbenchColorTheme, IWorkbenchThemeService } from 'vs/workbench/services/themes/common/workbenchThemeService';
+ import type { IGrammar, IOnigLib, IRawTheme } from 'vscode-textmate';
++import * as vscodeTextmate from 'vscode-textmate';
++import * as vscodeOniguruma from 'vscode-oniguruma';
+ 
+ export class TextMateTokenizationFeature extends Disposable implements ITextMateTokenizationService {
+ 	private static reportTokenizationTimeCounter = 0;
+@@ -238,7 +240,7 @@ export class TextMateTokenizationFeature extends Disposable implements ITextMate
+ 			return this._grammarFactory;
+ 		}
+ 
+-		const [vscodeTextmate, vscodeOniguruma] = await Promise.all([import('vscode-textmate'), this._getVSCodeOniguruma()]);
++		const vscodeOniguruma = await this._getVSCodeOniguruma();
+ 		const onigLib: Promise<IOnigLib> = Promise.resolve({
+ 			createOnigScanner: (sources: string[]) => vscodeOniguruma.createOnigScanner(sources),
+ 			createOnigString: (str: string) => vscodeOniguruma.createOnigString(str)
+@@ -348,7 +350,7 @@ export class TextMateTokenizationFeature extends Disposable implements ITextMate
+ 	private _getVSCodeOniguruma(): Promise<typeof import('vscode-oniguruma')> {
+ 		if (!this._vscodeOniguruma) {
+ 			this._vscodeOniguruma = (async () => {
+-				const [vscodeOniguruma, wasm] = await Promise.all([import('vscode-oniguruma'), this._loadVSCodeOnigurumaWASM()]);
++				const wasm = await this._loadVSCodeOnigurumaWASM();
+ 				await vscodeOniguruma.loadWASM({
+ 					data: wasm,
+ 					print: (str: string) => {
 diff --git a/src/vs/workbench/services/textMate/browser/worker/textMate.worker.ts b/src/vs/workbench/services/textMate/browser/worker/textMate.worker.ts
 index 67307a7d49d..7e656dea8bd 100644
 --- a/src/vs/workbench/services/textMate/browser/worker/textMate.worker.ts
