@@ -22,8 +22,7 @@ const config: rollup.RollupOptions = {
   }],
   input: [
     'src/rollup-vsix-plugin.ts',
-    'src/rollup-extension-directory-plugin.ts',
-    'src/workers/extensionWorker.ts'
+    'src/rollup-extension-directory-plugin.ts'
   ],
   plugins: [
     commonjs(),

@@ -551,10 +551,6 @@ export default (args: Record<string, string>): rollup.RollupOptions[] => {
     }],
     input,
     plugins: [
-      inject({
-        fetch: path.resolve('src/custom-fetch.ts'),
-        include: [/extHostExtensionService/]
-      }),
       commonjs(),
       {
         name: 'resolve-vscode',
