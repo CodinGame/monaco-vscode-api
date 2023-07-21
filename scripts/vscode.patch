@@ -193,6 +193,97 @@ index cd2e439f8f6..fcdc9a28ce2 100644
  
  	declare readonly _serviceBrand: undefined;
  
+diff --git a/src/vs/workbench/api/common/extHostExtensionService.ts b/src/vs/workbench/api/common/extHostExtensionService.ts
+index 7bdc7111a4f..1f04682bd88 100644
+--- a/src/vs/workbench/api/common/extHostExtensionService.ts
++++ b/src/vs/workbench/api/common/extHostExtensionService.ts
+@@ -42,7 +42,7 @@ import { Schemas } from 'vs/base/common/network';
+ import { IResolveAuthorityResult } from 'vs/workbench/services/extensions/common/extensionHostProxy';
+ import { IExtHostLocalizationService } from 'vs/workbench/api/common/extHostLocalizationService';
+ import { StopWatch } from 'vs/base/common/stopwatch';
+-import { setTimeout0 } from 'vs/base/common/platform';
++import { isWebWorker, setTimeout0 } from 'vs/base/common/platform';
+ import { IExtHostManagedSockets } from 'vs/workbench/api/common/extHostManagedSockets';
+ import { Dto } from 'vs/workbench/services/extensions/common/proxyIdentifier';
+ 
+@@ -248,9 +248,11 @@ export abstract class AbstractExtHostExtensionService extends Disposable impleme
+ 		this._extHostTerminalService.dispose();
+ 		this._activator.dispose();
+ 
+-		errors.setUnexpectedErrorHandler((err) => {
+-			this._logService.error(err);
+-		});
++		if (isWebWorker) {
++			errors.setUnexpectedErrorHandler((err) => {
++				this._logService.error(err);
++			});
++		}
+ 
+ 		// Invalidate all proxies
+ 		this._extHostContext.dispose();
+diff --git a/src/vs/workbench/api/common/extensionHostMain.ts b/src/vs/workbench/api/common/extensionHostMain.ts
+index ee87ff55b64..eeda9b949fb 100644
+--- a/src/vs/workbench/api/common/extensionHostMain.ts
++++ b/src/vs/workbench/api/common/extensionHostMain.ts
+@@ -23,6 +23,7 @@ import { IURITransformerService, URITransformerService } from 'vs/workbench/api/
+ import { IExtHostExtensionService, IHostUtils } from 'vs/workbench/api/common/extHostExtensionService';
+ import { IExtHostTelemetry } from 'vs/workbench/api/common/extHostTelemetry';
+ import { Mutable } from 'vs/base/common/types';
++import { isWebWorker } from 'vs/base/common/platform';
+ 
+ export interface IExitFn {
+ 	(code?: number): any;
+@@ -162,7 +163,9 @@ export class ExtensionHostMain {
+ 
+ 		const instaService: IInstantiationService = new InstantiationService(services, true);
+ 
+-		instaService.invokeFunction(ErrorHandler.installEarlyHandler);
++		if (isWebWorker) {
++			instaService.invokeFunction(ErrorHandler.installEarlyHandler);
++		}
+ 
+ 		// ugly self - inject
+ 		this._logService = instaService.invokeFunction(accessor => accessor.get(ILogService));
+@@ -181,8 +184,10 @@ export class ExtensionHostMain {
+ 		this._extensionService = instaService.invokeFunction(accessor => accessor.get(IExtHostExtensionService));
+ 		this._extensionService.initialize();
+ 
+-		// install error handler that is extension-aware
+-		instaService.invokeFunction(ErrorHandler.installFullHandler);
++		if (isWebWorker) {
++			// install error handler that is extension-aware
++			instaService.invokeFunction(ErrorHandler.installFullHandler);
++		}
+ 	}
+ 
+ 	async asBrowserUri(uri: URI): Promise<URI> {
+diff --git a/src/vs/workbench/api/worker/extHostExtensionService.ts b/src/vs/workbench/api/worker/extHostExtensionService.ts
+index b83a462131d..5555f431ba0 100644
+--- a/src/vs/workbench/api/worker/extHostExtensionService.ts
++++ b/src/vs/workbench/api/worker/extHostExtensionService.ts
+@@ -12,6 +12,7 @@ import { IExtensionDescription } from 'vs/platform/extensions/common/extensions'
+ import { ExtensionRuntime } from 'vs/workbench/api/common/extHostTypes';
+ import { timeout } from 'vs/base/common/async';
+ import { ExtHostConsoleForwarder } from 'vs/workbench/api/worker/extHostConsoleForwarder';
++import { isWebWorker } from 'vs/base/common/platform';
+ 
+ class WorkerRequireInterceptor extends RequireInterceptor {
+ 
+@@ -37,14 +38,17 @@ export class ExtHostExtensionService extends AbstractExtHostExtensionService {
+ 	readonly extensionRuntime = ExtensionRuntime.Webworker;
+ 
+ 	private _fakeModules?: WorkerRequireInterceptor;
++	protected _apiFactory?: IExtensionApiFactory;
+ 
+ 	protected async _beforeAlmostReadyToRunExtensions(): Promise<void> {
+-		// make sure console.log calls make it to the render
+-		this._instaService.createInstance(ExtHostConsoleForwarder);
++		if (isWebWorker) {
++			// make sure console.log calls make it to the render
++			this._instaService.createInstance(ExtHostConsoleForwarder);
++		}
+ 
+ 		// initialize API and register actors
 diff --git a/src/vs/workbench/browser/parts/compositeBar.ts b/src/vs/workbench/browser/parts/compositeBar.ts
 index 36694129764..2920195c027 100644
 --- a/src/vs/workbench/browser/parts/compositeBar.ts
