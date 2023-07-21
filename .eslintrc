@@ -28,7 +28,8 @@
         "net": "always", // Hack for vscode .net.js files
         "impl": "always", // Hack for vscode .impl.js files
         "worker": "always",
-        "ts": "always"
+        "ts": "always",
+        "services": "always"
       }
     ],
     "@typescript-eslint/no-unused-vars": [
