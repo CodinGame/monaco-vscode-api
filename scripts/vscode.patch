@@ -105,10 +105,27 @@ index 9cab3604196..b27fc0eb96d 100644
  
  const ttPolicy = createTrustedTypesPolicy('defaultWorkerFactory', { createScriptURL: value => value });
 diff --git a/src/vs/base/common/network.ts b/src/vs/base/common/network.ts
-index b00899c50db..70c1e10c819 100644
+index b00899c50db..93e9daad96b 100644
 --- a/src/vs/base/common/network.ts
 +++ b/src/vs/base/common/network.ts
-@@ -203,7 +203,7 @@ class FileAccessImpl {
+@@ -4,6 +4,8 @@
+  *--------------------------------------------------------------------------------------------*/
+ 
+ import * as errors from 'vs/base/common/errors';
++import { IDisposable, toDisposable } from 'vs/base/common/lifecycle';
++import { ResourceMap } from 'vs/base/common/map';
+ import * as platform from 'vs/base/common/platform';
+ import { URI } from 'vs/base/common/uri';
+ 
+@@ -195,6 +197,7 @@ export const nodeModulesAsarUnpackedPath: AppResourcePath = 'vs/../../node_modul
+ class FileAccessImpl {
+ 
+ 	private static readonly FALLBACK_AUTHORITY = 'vscode-app';
++	private staticBrowserUris = new ResourceMap<URI>();
+ 
+ 	/**
+ 	 * Returns a URI to use in contexts where the browser is responsible
+@@ -203,7 +206,7 @@ class FileAccessImpl {
  	 * **Note:** use `dom.ts#asCSSUrl` whenever the URL is to be used in CSS context.
  	 */
  	asBrowserUri(resourcePath: AppResourcePath | ''): URI {
@@ -117,7 +134,16 @@ index b00899c50db..70c1e10c819 100644
  		return this.uriToBrowserUri(uri);
  	}
  
-@@ -250,7 +250,7 @@ class FileAccessImpl {
+@@ -242,7 +245,7 @@ class FileAccessImpl {
+ 			});
+ 		}
+ 
+-		return uri;
++		return this.staticBrowserUris.get(uri) ?? uri;
+ 	}
+ 
+ 	/**
+@@ -250,7 +253,7 @@ class FileAccessImpl {
  	 * is responsible for loading.
  	 */
  	asFileUri(resourcePath: AppResourcePath | ''): URI {
@@ -126,6 +152,26 @@ index b00899c50db..70c1e10c819 100644
  		return this.uriToFileUri(uri);
  	}
  
+@@ -282,6 +285,19 @@ class FileAccessImpl {
+ 
+ 		return URI.parse(moduleIdToUrl.toUrl(uriOrModule));
+ 	}
++
++	registerStaticBrowserUri(uri: URI, browserUri: URI): IDisposable {
++		this.staticBrowserUris.set(uri, browserUri);
++		return toDisposable(() => {
++			if (this.staticBrowserUris.get(uri) === browserUri) {
++				this.staticBrowserUris.delete(uri);
++			}
++		});
++	}
++
++	getRegisteredBrowserUris(): IterableIterator<URI> {
++		return this.staticBrowserUris.keys();
++	}
+ }
+ 
+ export const FileAccess = new FileAccessImpl();
 diff --git a/src/vs/base/common/performance.js b/src/vs/base/common/performance.js
 index aff4d0734de..ea43e4a2fcc 100644
 --- a/src/vs/base/common/performance.js
@@ -180,6 +226,24 @@ index fc197da1d57..a4d9573979f 100644
  
  	public static validateOptions(options: IEditorOptions): ValidatedEditorOptions {
  		const result = new ValidatedEditorOptions();
+diff --git a/src/vs/workbench/api/browser/mainThreadExtensionService.ts b/src/vs/workbench/api/browser/mainThreadExtensionService.ts
+index cbddc0c233b..931ce877ff6 100644
+--- a/src/vs/workbench/api/browser/mainThreadExtensionService.ts
++++ b/src/vs/workbench/api/browser/mainThreadExtensionService.ts
+@@ -193,6 +193,13 @@ export class MainThreadExtensionService implements MainThreadExtensionServiceSha
+ 	async $asBrowserUri(uri: UriComponents): Promise<UriComponents> {
+ 		return FileAccess.uriToBrowserUri(URI.revive(uri));
+ 	}
++
++	async $getAllStaticBrowserUris(): Promise<[UriComponents, UriComponents][]> {
++		return Array.from(FileAccess.getRegisteredBrowserUris(), uri => [
++			uri,
++			FileAccess.uriToBrowserUri(uri)
++		]);
++	}
+ }
+ 
+ class ExtensionHostProxy implements IExtensionHostProxy {
 diff --git a/src/vs/workbench/api/browser/statusBarExtensionPoint.ts b/src/vs/workbench/api/browser/statusBarExtensionPoint.ts
 index cd2e439f8f6..fcdc9a28ce2 100644
 --- a/src/vs/workbench/api/browser/statusBarExtensionPoint.ts
@@ -193,6 +257,18 @@ index cd2e439f8f6..fcdc9a28ce2 100644
  
  	declare readonly _serviceBrand: undefined;
  
+diff --git a/src/vs/workbench/api/common/extHost.protocol.ts b/src/vs/workbench/api/common/extHost.protocol.ts
+index eea591fd26c..d1e9894f77c 100644
+--- a/src/vs/workbench/api/common/extHost.protocol.ts
++++ b/src/vs/workbench/api/common/extHost.protocol.ts
+@@ -1297,6 +1297,7 @@ export interface MainThreadExtensionServiceShape extends IDisposable {
+ 	$onExtensionRuntimeError(extensionId: ExtensionIdentifier, error: SerializedError): void;
+ 	$setPerformanceMarks(marks: performance.PerformanceMark[]): Promise<void>;
+ 	$asBrowserUri(uri: UriComponents): Promise<UriComponents>;
++	$getAllStaticBrowserUris(): Promise<[UriComponents, UriComponents][]>;
+ }
+ 
+ export interface SCMProviderFeatures {
 diff --git a/src/vs/workbench/api/common/extHostExtensionService.ts b/src/vs/workbench/api/common/extHostExtensionService.ts
 index 7bdc7111a4f..1f04682bd88 100644
 --- a/src/vs/workbench/api/common/extHostExtensionService.ts
@@ -257,6 +333,18 @@ index ee87ff55b64..eeda9b949fb 100644
  	}
  
  	async asBrowserUri(uri: URI): Promise<URI> {
+@@ -190,10 +195,19 @@ export class ExtensionHostMain {
+ 		return URI.revive(await mainThreadExtensionsProxy.$asBrowserUri(uri));
+ 	}
+ 
++	async getAllStaticBrowserUris(): Promise<[URI, URI][]> {
++		const mainThreadExtensionsProxy = this._rpcProtocol.getProxy(MainContext.MainThreadExtensionService);
++		return (await mainThreadExtensionsProxy.$getAllStaticBrowserUris()).map(([from, to]) => [URI.revive(from), URI.revive(to)]);
++	}
++
+ 	terminate(reason: string): void {
+ 		this._extensionService.terminate(reason);
+ 	}
 diff --git a/src/vs/workbench/api/worker/extHostExtensionService.ts b/src/vs/workbench/api/worker/extHostExtensionService.ts
 index b83a462131d..5555f431ba0 100644
 --- a/src/vs/workbench/api/worker/extHostExtensionService.ts
@@ -284,6 +372,236 @@ index b83a462131d..5555f431ba0 100644
 +		}
  
  		// initialize API and register actors
+diff --git a/src/vs/workbench/api/worker/extensionHostWorker.ts b/src/vs/workbench/api/worker/extensionHostWorker.ts
+index 998b53a64ce..6c7308dc6b9 100644
+--- a/src/vs/workbench/api/worker/extensionHostWorker.ts
++++ b/src/vs/workbench/api/worker/extensionHostWorker.ts
+@@ -15,7 +15,6 @@ import * as performance from 'vs/base/common/performance';
+ 
+ import 'vs/workbench/api/common/extHost.common.services';
+ import 'vs/workbench/api/worker/extHost.worker.services';
+-import { FileAccess } from 'vs/base/common/network';
+ import { URI } from 'vs/base/common/uri';
+ 
+ //#region --- Define, capture, and override some globals
+@@ -89,66 +88,155 @@ self.addEventListener = () => console.trace(`'addEventListener' has been blocked
+ (<any>self)['webkitResolveLocalFileSystemSyncURL'] = undefined;
+ (<any>self)['webkitResolveLocalFileSystemURL'] = undefined;
+ 
+-if ((<any>self).Worker) {
+-
+-	// make sure new Worker(...) always uses blob: (to maintain current origin)
+-	const _Worker = (<any>self).Worker;
+-	Worker = <any>function (stringUrl: string | URL, options?: WorkerOptions) {
+-		if (/^file:/i.test(stringUrl.toString())) {
+-			stringUrl = FileAccess.uriToBrowserUri(URI.parse(stringUrl.toString())).toString(true);
+-		} else if (/^vscode-remote:/i.test(stringUrl.toString())) {
+-			// Supporting transformation of vscode-remote URIs requires an async call to the main thread,
+-			// but we cannot do this call from within the embedded Worker, and the only way out would be
+-			// to use templating instead of a function in the web api (`resourceUriProvider`)
+-			throw new Error(`Creating workers from remote extensions is currently not supported.`);
+-		}
++function patchWorker(asBrowserUri: (uri: URI) => Promise<URI>, getAllStaticBrowserUris: () => Promise<[URI, URI][]>) {
++	if ((<any>self).Worker) {
++
++		// make sure new Worker(...) always uses blob: (to maintain current origin)
++		const _Worker = (<any>self).Worker;
++		Worker = <any>function (stringUrl: string | URL, options?: WorkerOptions) {
++			if (/^vscode-remote:/i.test(stringUrl.toString())) {
++				// Supporting transformation of vscode-remote URIs requires an async call to the main thread,
++				// but we cannot do this call from within the embedded Worker, and the only way out would be
++				// to use templating instead of a function in the web api (`resourceUriProvider`)
++				throw new Error(`Creating workers from remote extensions is currently not supported.`);
++			}
+ 
+-		// IMPORTANT: bootstrapFn is stringified and injected as worker blob-url. Because of that it CANNOT
+-		// have dependencies on other functions or variables. Only constant values are supported. Due to
+-		// that logic of FileAccess.asBrowserUri had to be copied, see `asWorkerBrowserUrl` (below).
+-		const bootstrapFnSource = (function bootstrapFn(workerUrl: string) {
+-			function asWorkerBrowserUrl(url: string | URL | TrustedScriptURL): any {
+-				if (typeof url === 'string' || url instanceof URL) {
+-					return String(url).replace(/^file:\/\//i, 'vscode-file://vscode-app');
+-				}
+-				return url;
++			async function getWorkerUri(workerUri: URI): Promise<string> {
++				const [browserUrl, staticBrowserUrls] = await Promise.all([
++					asBrowserUri(workerUri).then(uri => uri.toString(true)),
++					getAllStaticBrowserUris().then(bindings => Object.fromEntries(bindings.map(([from, to]) => [from.toString(true), to.toString(true)])))
++				]);
++
++				// IMPORTANT: bootstrapFn is stringified and injected as worker blob-url. Because of that it CANNOT
++				// have dependencies on other functions or variables. Only constant values are supported. Due to
++				// that logic of FileAccess.asBrowserUri had to be copied, see `asWorkerBrowserUrl` (below).
++				const bootstrapFnSource = (function bootstrapFn(workerUrl: string, staticBrowserUrls: Record<string, string>) {
++					function asWorkerBrowserUrl(url: string | URL | TrustedScriptURL): any {
++						if (typeof url === 'string' || url instanceof URL) {
++							url = String(url).replace(/^file:\/\//i, 'vscode-file://vscode-app');
++							return staticBrowserUrls[url] ?? url;
++						}
++						return url;
++					}
++
++					const nativeFetch = fetch.bind(self);
++					self.fetch = function (input, init) {
++						if (input instanceof Request) {
++							// Request object - massage not supported
++							return nativeFetch(input, init);
++						}
++						return nativeFetch(asWorkerBrowserUrl(input), init);
++					};
++					self.XMLHttpRequest = class extends XMLHttpRequest {
++						override open(method: string, url: string | URL, async?: boolean, username?: string | null, password?: string | null): void {
++							return super.open(method, asWorkerBrowserUrl(url), async ?? true, username, password);
++						}
++					};
++					const nativeImportScripts = importScripts.bind(self);
++					self.importScripts = (...urls: string[]) => {
++						nativeImportScripts(...urls.map(asWorkerBrowserUrl));
++					};
++
++
++					nativeImportScripts(workerUrl);
++				}).toString();
++
++				const js = `(${bootstrapFnSource}('${browserUrl}', ${JSON.stringify(staticBrowserUrls)}))`;
++
++				const blob = new Blob([js], { type: 'application/javascript' });
++				return URL.createObjectURL(blob);
+ 			}
+ 
+-			const nativeFetch = fetch.bind(self);
+-			self.fetch = function (input, init) {
+-				if (input instanceof Request) {
+-					// Request object - massage not supported
+-					return nativeFetch(input, init);
++			options = options || {};
++			options.name = options.name || path.basename(stringUrl.toString());
++			class ExtensionWorker implements Worker {
++				private workerPromise: Promise<Worker>;
++				constructor(scriptURL: string | URL, options?: WorkerOptions) {
++					this.workerPromise = getWorkerUri(URI.parse(scriptURL instanceof URL ? scriptURL.toString() : scriptURL)).then(url => {
++						return new _Worker(url, options);
++					});
+ 				}
+-				return nativeFetch(asWorkerBrowserUrl(input), init);
+-			};
+-			self.XMLHttpRequest = class extends XMLHttpRequest {
+-				override open(method: string, url: string | URL, async?: boolean, username?: string | null, password?: string | null): void {
+-					return super.open(method, asWorkerBrowserUrl(url), async ?? true, username, password);
++
++				private _onmessage: Worker['onmessage'] = null;
++				set onmessage(cb: Worker['onmessage']) {
++					this._onmessage = cb;
++					this.workerPromise.then(worker => {
++						worker.onmessage = cb;
++					}, console.error);
+ 				}
+-			};
+-			const nativeImportScripts = importScripts.bind(self);
+-			self.importScripts = (...urls: string[]) => {
+-				nativeImportScripts(...urls.map(asWorkerBrowserUrl));
+-			};
+-
+-			nativeImportScripts(workerUrl);
+-		}).toString();
+-
+-		const js = `(${bootstrapFnSource}('${stringUrl}'))`;
+-		options = options || {};
+-		options.name = options.name || path.basename(stringUrl.toString());
+-		const blob = new Blob([js], { type: 'application/javascript' });
+-		const blobUrl = URL.createObjectURL(blob);
+-		return new _Worker(blobUrl, options);
+-	};
+ 
+-} else {
+-	(<any>self).Worker = class extends NestedWorker {
+-		constructor(stringOrUrl: string | URL, options?: WorkerOptions) {
+-			super(nativePostMessage, stringOrUrl, { name: path.basename(stringOrUrl.toString()), ...options });
+-		}
+-	};
++				get onmessage(): Worker['onmessage'] {
++					return this._onmessage;
++				}
++
++				private _onmessageerror: Worker['onmessageerror'] = null;
++				set onmessageerror(cb: Worker['onmessageerror']) {
++					this._onmessageerror = cb;
++					this.workerPromise.then(worker => {
++						worker.onmessageerror = cb;
++					}, console.error);
++				}
++
++				get onmessageerror(): Worker['onmessageerror'] {
++					return this._onmessageerror;
++				}
++
++				private _onerror: Worker['onerror'] = null;
++				set onerror(cb: Worker['onerror']) {
++					this._onerror = cb;
++					this.workerPromise.then(worker => {
++						worker.onerror = cb;
++					}, console.error);
++				}
++
++				get onerror(): Worker['onerror'] {
++					return this._onerror;
++				}
++
++				// eslint-disable-next-line @typescript-eslint/no-explicit-any
++				postMessage(message: unknown, options?: any): void {
++					this.workerPromise.then(worker => {
++						worker.postMessage(message, options);
++					}, console.error);
++				}
++
++				terminate(): void {
++					this.workerPromise.then(worker => {
++						worker.terminate();
++					}, console.error);
++				}
++
++				// eslint-disable-next-line @typescript-eslint/no-explicit-any
++				addEventListener(type: any, listener: any, options?: any): void {
++					this.workerPromise.then(worker => {
++						worker.addEventListener(type, listener, options);
++					}, console.error);
++				}
++
++				// eslint-disable-next-line @typescript-eslint/no-explicit-any
++				removeEventListener(type: any, listener: any, options?: any): void {
++					this.workerPromise.then(worker => {
++						worker.removeEventListener(type, listener, options);
++					}, console.error);
++				}
++
++				dispatchEvent(event: Event): boolean {
++					this.workerPromise.then(worker => {
++						worker.dispatchEvent(event);
++					}, console.error);
++					return false;
++				}
++			}
++			return new ExtensionWorker(stringUrl, options);
++		};
++
++	} else {
++		(<any>self).Worker = class extends NestedWorker {
++			constructor(stringOrUrl: string | URL, options?: WorkerOptions) {
++				super(nativePostMessage, stringOrUrl, { name: path.basename(stringOrUrl.toString()), ...options });
++			}
++		};
++	}
+ }
+ 
+ //#endregion ---
+@@ -261,6 +349,7 @@ export function create(): { onmessage: (message: any) => void } {
+ 				);
+ 
+ 				patchFetching(uri => extHostMain.asBrowserUri(uri));
++				patchWorker(uri => extHostMain.asBrowserUri(uri), () => extHostMain.getAllStaticBrowserUris());
+ 
+ 				onTerminate = (reason: string) => extHostMain.terminate(reason);
+ 			});
 diff --git a/src/vs/workbench/browser/parts/compositeBar.ts b/src/vs/workbench/browser/parts/compositeBar.ts
 index 36694129764..2920195c027 100644
 --- a/src/vs/workbench/browser/parts/compositeBar.ts
