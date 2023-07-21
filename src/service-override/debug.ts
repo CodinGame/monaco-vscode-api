@@ -23,7 +23,7 @@ export default function getServiceOverride (): IEditorOverrideServices {
   return {
     ...getLayoutServiceOverride(),
     [ILanguageFeaturesService.toString()]: new SyncDescriptor(LanguageFeaturesService), // To restore inlineValuesProvider
-    [IDebugService.toString()]: new SyncDescriptor(DebugService),
+    [IDebugService.toString()]: new SyncDescriptor(DebugService, [], true),
     [IConfigurationResolverService.toString()]: new SyncDescriptor(ConfigurationResolverService)
   }
 }
