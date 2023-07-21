@@ -13,6 +13,7 @@ import { Emitter, Event } from 'vs/base/common/event'
 import { HTMLFileSystemProvider } from 'vs/platform/files/browser/htmlFileSystemProvider'
 import * as path from 'vs/base/common/path'
 import 'vs/workbench/contrib/files/browser/files.contribution.js?include=registerConfiguration'
+import { Schemas } from 'vs/base/common/network'
 
 abstract class RegisteredFile {
   private ctime: number
@@ -417,6 +418,8 @@ class MemoryFileService extends FileService {
     this.registerProvider('extension', extensionFileSystemProvider)
     this.registerProvider('cache', new InMemoryFileSystemProvider())
     this.registerProvider('logs', new InMemoryFileSystemProvider())
+    this.registerProvider(Schemas.vscodeUserData, new InMemoryFileSystemProvider())
+    this.registerProvider(Schemas.tmp, new InMemoryFileSystemProvider())
     let fileSystemProviderDisposable = this.registerProvider('file', fileSystemProvider)
     fileSystemProvider.onDidChangeOverlays(() => {
       fileSystemProviderDisposable.dispose()
