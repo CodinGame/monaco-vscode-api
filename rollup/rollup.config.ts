@@ -551,6 +551,18 @@ export default (args: Record<string, string>): rollup.RollupOptions[] => {
     }],
     input,
     plugins: [
+      {
+        name: 'string',
+        transform (code, id) {
+          if (id.endsWith('.html')) {
+            return {
+              code: `export default ${JSON.stringify(code)};`,
+              map: { mappings: '' }
+            }
+          }
+          return undefined
+        }
+      },
       commonjs(),
       {
         name: 'resolve-vscode',
