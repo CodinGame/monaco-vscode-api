@@ -102,7 +102,8 @@ const REMOVE_WORKBENCH_CONTRIBUTIONS = new Set([
   'ConfigurationMigrationWorkbenchContribution',
   'RegisterSearchViewContribution',
   'RemoteTerminalBackendContribution',
-  'DebugStatusContribution'
+  'DebugStatusContribution',
+  'ExtensionPoints'
 ])
 
 const EXTENSIONS = ['', '.ts', '.js']
@@ -157,7 +158,7 @@ function isCallPure (file: string, functionName: string, node: recast.types.name
   }
 
   if (functionName === 'CommandsRegistry.registerCommand') {
-    if (file.includes('fileActions.contribution') || file.includes('workspaceCommands')) {
+    if (file.includes('fileActions.contribution') || file.includes('workspaceCommands') || file.includes('mainThreadCLICommands')) {
       return true
     }
   }
@@ -177,7 +178,8 @@ function isCallPure (file: string, functionName: string, node: recast.types.name
         firstParamName.includes('Panels') ||
         firstParamName.includes('Auxiliary') ||
         firstParamName.includes('EditorPane') ||
-        firstParamName.includes('TerminalExtensions')
+        firstParamName.includes('TerminalExtensions') ||
+        firstParamName.includes('ConfigurationMigration')
       return !allowed
     }
   }
@@ -531,7 +533,9 @@ export default (args: Record<string, string>): rollup.RollupOptions[] => {
           path.endsWith('/workbenchReferenceSearch.js') ||
           path.includes('/searchActions') ||
           path.endsWith('documentSymbolsOutline.js') ||
-          path.includes('vs/workbench/contrib/codeEditor/browser/')
+          path.includes('vs/workbench/contrib/codeEditor/browser/') ||
+          path.includes('extHost.common.services') ||
+          path.includes('extHost.worker.services')
       }
     },
     external,
