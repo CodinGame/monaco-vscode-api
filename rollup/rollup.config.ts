@@ -61,7 +61,6 @@ const PURE_FUNCTIONS = new Set([
 
 // Function calls to remove when the result is not used
 const FUNCTIONS_TO_REMOVE = new Set([
-  'registerSingleton', // Remove calls to registerSingleton from vscode code, we just want to import things, not registering services
   'registerProxyConfigurations',
   'registerViewWelcomeContent',
   'registerExtensionPoint',
@@ -280,6 +279,13 @@ function isCallPure (file: string, functionName: string, node: recast.types.name
     if (firstParamName === 'openEditorsViewDescriptor') {
       return true
     }
+  }
+
+  if (functionName === 'registerSingleton') {
+    if (file.includes('vs/workbench/api/')) {
+      return false
+    }
+    return true
   }
 
   return PURE_OR_TO_REMOVE_FUNCTIONS.has(functionName)
