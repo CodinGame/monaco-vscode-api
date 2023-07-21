@@ -784,7 +784,7 @@ export default (args: Record<string, string>): rollup.RollupOptions[] => {
         resolveId (importee) {
           if (importee === 'vscode/extensions') {
             return {
-              id: path.resolve(DIST_DIR, 'extensions.js'),
+              id: '../extensions.js',
               external: true
             }
           }
