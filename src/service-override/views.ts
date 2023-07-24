@@ -420,5 +420,12 @@ export {
   OpenEditor,
   IEditorOptions,
   IResolvedTextEditorModel,
-  IReference
+  IReference,
+
+  HoverService,
+  ActivityService,
+  StatusbarPart,
+  SidebarPart,
+  ActivitybarPart,
+  PanelPart
 }
