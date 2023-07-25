@@ -19,12 +19,15 @@ import getTerminalServiceOverride from 'vscode/service-override/terminal'
 import getSearchAccessServiceOverride from 'vscode/service-override/search'
 import getMarkersAccessServiceOverride from 'vscode/service-override/markers'
 import getAccessibilityAccessServiceOverride from 'vscode/service-override/accessibility'
+import getExtensionServiceOverride from 'vscode/service-override/extensions'
 import EditorWorker from 'monaco-editor/esm/vs/editor/editor.worker.js?worker'
 import TextMateWorker from 'vscode/workers/textMate.worker?worker'
 import OutputLinkComputerWorker from 'vscode/workers/outputLinkComputer.worker?worker'
+import ExtensionHostWorker from 'vscode/workers/extensionHost.worker?worker'
 import * as monaco from 'monaco-editor/esm/vs/editor/editor.api.js'
 import { TerminalBackend } from './features/terminal'
 import { openNewCodeEditor } from './features/editor'
+import { toWorkerConfig } from './tools/workers'
 
 // Workers
 export type WorkerLoader = () => Worker
@@ -45,6 +48,7 @@ window.MonacoEnvironment = {
 
 // Override services
 await initializeMonacoService({
+  ...getExtensionServiceOverride(toWorkerConfig(ExtensionHostWorker)),
   ...getModelServiceOverride(),
   ...getNotificationServiceOverride(),
   ...getDialogsServiceOverride(),
