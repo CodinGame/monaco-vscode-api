@@ -69,7 +69,7 @@ index 775a1be5996..ce8435bd920 100644
  				if (!/(^\.\/)|(^\.\.\/)/.test(relativePath)) {
  					relativePath = './' + relativePath;
 diff --git a/extensions/typescript-language-features/web/webServer.ts b/extensions/typescript-language-features/web/webServer.ts
-index 6580a84995c..47b77cd6cf5 100644
+index 6580a84995c..d02af900b4b 100644
 --- a/extensions/typescript-language-features/web/webServer.ts
 +++ b/extensions/typescript-language-features/web/webServer.ts
 @@ -44,7 +44,7 @@ function fromResource(extensionUri: URI, uri: URI) {
@@ -81,6 +81,15 @@ index 6580a84995c..47b77cd6cf5 100644
  }
  
  function updateWatch(event: 'create' | 'change' | 'delete', uri: URI, extensionUri: URI) {
+@@ -187,7 +187,7 @@ function createServerHost(extensionUri: URI, logger: ts.server.Logger, apiClient
+ 
+ 			const scriptPath = combinePaths(packageRoot, browser);
+ 			try {
+-				const { default: module } = await import(/* webpackIgnore: true */scriptPath);
++				const { default: module } = await import(/* webpackIgnore: true */ '' + scriptPath + '');
+ 				return { module, error: undefined };
+ 			} catch (e) {
+ 				return { module: undefined, error: e };
 @@ -429,7 +429,7 @@ function createServerHost(extensionUri: URI, logger: ts.server.Logger, apiClient
  			return URI.from({
  				scheme: extensionUri.scheme,
@@ -298,18 +307,24 @@ index 7bdc7111a4f..1f04682bd88 100644
  		// Invalidate all proxies
  		this._extHostContext.dispose();
 diff --git a/src/vs/workbench/api/common/extensionHostMain.ts b/src/vs/workbench/api/common/extensionHostMain.ts
-index ee87ff55b64..eeda9b949fb 100644
+index ee87ff55b64..d8573e6f0c5 100644
 --- a/src/vs/workbench/api/common/extensionHostMain.ts
 +++ b/src/vs/workbench/api/common/extensionHostMain.ts
-@@ -23,6 +23,7 @@ import { IURITransformerService, URITransformerService } from 'vs/workbench/api/
+@@ -23,6 +23,9 @@ import { IURITransformerService, URITransformerService } from 'vs/workbench/api/
  import { IExtHostExtensionService, IHostUtils } from 'vs/workbench/api/common/extHostExtensionService';
  import { IExtHostTelemetry } from 'vs/workbench/api/common/extHostTelemetry';
  import { Mutable } from 'vs/base/common/types';
 +import { isWebWorker } from 'vs/base/common/platform';
++import { ExtHostLogService } from 'vs/workbench/api/common/extHostLogService';
++import { SyncDescriptor } from 'vs/platform/instantiation/common/descriptors';
  
  export interface IExitFn {
  	(code?: number): any;
-@@ -162,7 +163,9 @@ export class ExtensionHostMain {
+@@ -159,10 +162,13 @@ export class ExtensionHostMain {
+ 		services.set(IExtHostRpcService, new ExtHostRpcService(this._rpcProtocol));
+ 		services.set(IURITransformerService, new URITransformerService(uriTransformer));
+ 		services.set(IHostUtils, hostUtils);
++		services.set(ILogService, new SyncDescriptor(ExtHostLogService, [true], true));
  
  		const instaService: IInstantiationService = new InstantiationService(services, true);
  
@@ -320,7 +335,7 @@ index ee87ff55b64..eeda9b949fb 100644
  
  		// ugly self - inject
  		this._logService = instaService.invokeFunction(accessor => accessor.get(ILogService));
-@@ -181,8 +184,10 @@ export class ExtensionHostMain {
+@@ -181,8 +187,10 @@ export class ExtensionHostMain {
  		this._extensionService = instaService.invokeFunction(accessor => accessor.get(IExtHostExtensionService));
  		this._extensionService.initialize();
  
@@ -333,7 +348,7 @@ index ee87ff55b64..eeda9b949fb 100644
  	}
  
  	async asBrowserUri(uri: URI): Promise<URI> {
-@@ -190,10 +195,19 @@ export class ExtensionHostMain {
+@@ -190,10 +198,19 @@ export class ExtensionHostMain {
  		return URI.revive(await mainThreadExtensionsProxy.$asBrowserUri(uri));
  	}
  
@@ -353,6 +368,29 @@ index ee87ff55b64..eeda9b949fb 100644
  	private static _transform(initData: IExtensionHostInitData, rpcProtocol: RPCProtocol): IExtensionHostInitData {
  		initData.allExtensions.forEach((ext) => {
  			(<Mutable<IRelaxedExtensionDescription>>ext).extensionLocation = URI.revive(rpcProtocol.transformIncomingURIs(ext.extensionLocation));
+diff --git a/src/vs/workbench/api/worker/extHost.worker.services.ts b/src/vs/workbench/api/worker/extHost.worker.services.ts
+index 20ec7e138a6..e284ed6752b 100644
+--- a/src/vs/workbench/api/worker/extHost.worker.services.ts
++++ b/src/vs/workbench/api/worker/extHost.worker.services.ts
+@@ -3,11 +3,8 @@
+  *  Licensed under the MIT License. See License.txt in the project root for license information.
+  *--------------------------------------------------------------------------------------------*/
+ 
+-import { SyncDescriptor } from 'vs/platform/instantiation/common/descriptors';
+ import { InstantiationType, registerSingleton } from 'vs/platform/instantiation/common/extensions';
+-import { ILogService } from 'vs/platform/log/common/log';
+ import { IExtHostExtensionService } from 'vs/workbench/api/common/extHostExtensionService';
+-import { ExtHostLogService } from 'vs/workbench/api/common/extHostLogService';
+ import { ExtensionStoragePaths, IExtensionStoragePaths } from 'vs/workbench/api/common/extHostStoragePaths';
+ import { ExtHostExtensionService } from 'vs/workbench/api/worker/extHostExtensionService';
+ 
+@@ -17,6 +14,5 @@ import { ExtHostExtensionService } from 'vs/workbench/api/worker/extHostExtensio
+ // ###                                                                   ###
+ // #########################################################################
+ 
+-registerSingleton(ILogService, new SyncDescriptor(ExtHostLogService, [true], true));
+ registerSingleton(IExtHostExtensionService, ExtHostExtensionService, InstantiationType.Eager);
+ registerSingleton(IExtensionStoragePaths, ExtensionStoragePaths, InstantiationType.Eager);
 diff --git a/src/vs/workbench/api/worker/extHostExtensionService.ts b/src/vs/workbench/api/worker/extHostExtensionService.ts
 index b83a462131d..5555f431ba0 100644
 --- a/src/vs/workbench/api/worker/extHostExtensionService.ts
@@ -652,6 +690,76 @@ index ff766b9acb8..599bab9dd59 100644
  	}
  
  	isVisible(): boolean {
+diff --git a/src/vs/workbench/contrib/webview/browser/pre/service-worker.js b/src/vs/workbench/contrib/webview/browser/pre/service-worker.js
+index a6e9943b866..c470a1c9ed5 100644
+--- a/src/vs/workbench/contrib/webview/browser/pre/service-worker.js
++++ b/src/vs/workbench/contrib/webview/browser/pre/service-worker.js
+@@ -452,7 +452,6 @@ async function getOuterIframeClient(webviewId) {
+ 	const allClients = await sw.clients.matchAll({ includeUncontrolled: true });
+ 	return allClients.filter(client => {
+ 		const clientUrl = new URL(client.url);
+-		const hasExpectedPathName = (clientUrl.pathname === `${rootPath}/` || clientUrl.pathname === `${rootPath}/index.html` || clientUrl.pathname === `${rootPath}/index-no-csp.html`);
+-		return hasExpectedPathName && clientUrl.searchParams.get('id') === webviewId;
++		return clientUrl.searchParams.get('id') === webviewId;
+ 	});
+ }
+diff --git a/src/vs/workbench/contrib/webview/browser/webviewElement.ts b/src/vs/workbench/contrib/webview/browser/webviewElement.ts
+index 535da4b66c8..91a9bca8a36 100644
+--- a/src/vs/workbench/contrib/webview/browser/webviewElement.ts
++++ b/src/vs/workbench/contrib/webview/browser/webviewElement.ts
+@@ -11,7 +11,7 @@ import { streamToBuffer, VSBufferReadableStream } from 'vs/base/common/buffer';
+ import { CancellationTokenSource } from 'vs/base/common/cancellation';
+ import { Emitter, Event } from 'vs/base/common/event';
+ import { Disposable, IDisposable, toDisposable } from 'vs/base/common/lifecycle';
+-import { COI } from 'vs/base/common/network';
++import { COI, FileAccess } from 'vs/base/common/network';
+ import { URI } from 'vs/base/common/uri';
+ import { generateUuid } from 'vs/base/common/uuid';
+ import { localize } from 'vs/nls';
+@@ -185,11 +185,6 @@ export class WebviewElement extends Disposable implements IWebview, WebviewFindD
+ 				return;
+ 			}
+ 
+-			if (e.origin !== this._webviewContentOrigin(this._encodedWebviewOrigin)) {
+-				console.log(`Skipped renderer receiving message due to mismatched origins: ${e.origin} ${this._webviewContentOrigin}`);
+-				return;
+-			}
+-
+ 			if (e.data.channel === 'webview-ready') {
+ 				if (this._messagePort) {
+ 					return;
+@@ -476,6 +471,9 @@ export class WebviewElement extends Disposable implements IWebview, WebviewFindD
+ 			params.purpose = options.purpose;
+ 		}
+ 
++		params.serviceWorkerUri = FileAccess.asBrowserUri('vs/workbench/contrib/webview/browser/pre/service-worker.js').toString(true);
++		params.fakeHtmlUri = FileAccess.asBrowserUri('vs/workbench/contrib/webview/browser/pre/fake.html').toString(true);
++
+ 		COI.addSearchParam(params, true, true);
+ 
+ 		const queryString = new URLSearchParams(params).toString();
+@@ -483,7 +481,8 @@ export class WebviewElement extends Disposable implements IWebview, WebviewFindD
+ 		// Workaround for https://bugzilla.mozilla.org/show_bug.cgi?id=1754872
+ 		const fileName = isFirefox ? 'index-no-csp.html' : 'index.html';
+ 
+-		this.element!.setAttribute('src', `${this.webviewContentEndpoint(encodedWebviewOrigin)}/${fileName}?${queryString}`);
++		const relativeIframeSrc = FileAccess.asBrowserUri(`vs/workbench/contrib/webview/browser/pre/${fileName}`);
++		this.element!.setAttribute('src', `${relativeIframeSrc.toString(true)}?${queryString}`);
+ 	}
+ 
+ 	public mountTo(element: HTMLElement) {
+@@ -537,11 +536,6 @@ export class WebviewElement extends Disposable implements IWebview, WebviewFindD
+ 		return endpoint;
+ 	}
+ 
+-	private _webviewContentOrigin(encodedWebviewOrigin: string): string {
+-		const uri = URI.parse(this.webviewContentEndpoint(encodedWebviewOrigin));
+-		return uri.scheme + '://' + uri.authority.toLowerCase();
+-	}
+-
+ 	private doPostMessage(channel: string, data?: any, transferable: Transferable[] = []): boolean {
+ 		if (this.element && this._messagePort) {
+ 			this._messagePort.postMessage({ channel, args: data }, transferable);
 diff --git a/src/vs/workbench/services/extensions/browser/extensionService.ts b/src/vs/workbench/services/extensions/browser/extensionService.ts
 index d8652bf5ac0..d0cf61f0983 100644
 --- a/src/vs/workbench/services/extensions/browser/extensionService.ts
@@ -688,9 +796,18 @@ index d8652bf5ac0..d0cf61f0983 100644
  			getInitData: async (): Promise<IWebWorkerExtensionHostInitData> => {
  				if (isInitialStart) {
 diff --git a/src/vs/workbench/services/extensions/browser/webWorkerExtensionHost.ts b/src/vs/workbench/services/extensions/browser/webWorkerExtensionHost.ts
-index ad66755797e..f2e7a0abff8 100644
+index ad66755797e..b708a040708 100644
 --- a/src/vs/workbench/services/extensions/browser/webWorkerExtensionHost.ts
 +++ b/src/vs/workbench/services/extensions/browser/webWorkerExtensionHost.ts
+@@ -76,7 +76,7 @@ export class WebWorkerExtensionHost extends Disposable implements IExtensionHost
+ 		this._extensionHostLogsLocation = joinPath(this._environmentService.extHostLogsPath, 'webWorker');
+ 	}
+ 
+-	private async _getWebWorkerExtensionHostIframeSrc(): Promise<string> {
++	protected async _getWebWorkerExtensionHostIframeSrc(): Promise<string> {
+ 		const suffixSearchParams = new URLSearchParams();
+ 		if (this._environmentService.debugExtensionHost && this._environmentService.debugRenderer) {
+ 			suffixSearchParams.set('debugged', '1');
 @@ -111,8 +111,6 @@ export class WebWorkerExtensionHost extends Disposable implements IExtensionHost
  				res.searchParams.set('salt', stableOriginUUID);
  				return res.toString();
@@ -735,6 +852,33 @@ index c529886ca92..2311e7a0fb5 100644
  	constructor(
  		public readonly toAdd: IExtension[],
  		public readonly toRemove: string[] | IExtension[]
+diff --git a/src/vs/workbench/services/extensions/worker/webWorkerExtensionHostIframe.html b/src/vs/workbench/services/extensions/worker/webWorkerExtensionHostIframe.html
+index 576bad14363..f1c51c00469 100644
+--- a/src/vs/workbench/services/extensions/worker/webWorkerExtensionHostIframe.html
++++ b/src/vs/workbench/services/extensions/worker/webWorkerExtensionHostIframe.html
+@@ -15,6 +15,7 @@
+ 	const name = searchParams.get('debugged') ? 'DebugWorkerExtensionHost' : 'WorkerExtensionHost';
+ 	const parentOrigin = searchParams.get('parentOrigin') || window.origin;
+ 	const salt = searchParams.get('salt');
++	const vscodeExtHostWorkerSrc = searchParams.get('vscodeExtHostWorkerSrc');
+ 
+ 	(async function() {
+ 		const hostnameValidationMarker = 'v--';
+@@ -66,13 +67,12 @@
+ 
+ 	function start() {
+ 		try {
+-			let workerUrl = '../../../../base/worker/workerMain.js';
++			let workerUrl = vscodeExtHostWorkerSrc
+ 			if(globalThis.crossOriginIsolated) {
+ 				workerUrl += '?vscode-coi=2'; // COEP
+ 			}
+ 
+ 			const worker = new Worker(workerUrl, { name });
+-			worker.postMessage('vs/workbench/api/worker/extensionHostWorker');
+ 			const nestedWorkers = new Map();
+ 
+ 			worker.onmessage = (event) => {
 diff --git a/src/vs/workbench/services/outline/browser/outlineService.ts b/src/vs/workbench/services/outline/browser/outlineService.ts
 index f4707432371..7c5cdde39cc 100644
 --- a/src/vs/workbench/services/outline/browser/outlineService.ts
