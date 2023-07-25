@@ -23,7 +23,8 @@
 				"./vscode/*"
 			]
 		},
-		"preserveConstEnums": true
+		"preserveConstEnums": true,
+		"types": ["monaco-editor", "node"]
 	},
 	"include": [
 		"./src/**/*",

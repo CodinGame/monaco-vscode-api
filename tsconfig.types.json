@@ -53,7 +53,8 @@
 	},
 	"declaration": true,
 	"emitDeclarationOnly": true,
-	"skipLibCheck": true
+	"skipLibCheck": true,
+	"types": ["monaco-editor", "node"]
   },
   "include": [
 		"src/services.ts",
