@@ -1,7 +1,5 @@
-import { onExtHostInitialized, registerExtension } from 'vscode/extensions'
+import { ExtensionHostKind, registerExtension } from 'vscode/extensions'
 import type * as vscode from 'vscode'
-
-await new Promise<void>(resolve => onExtHostInitialized(resolve))
 
 const debuggerExtension = {
   name: 'debugger',
@@ -56,7 +54,7 @@ debuggerVscodeApi.debug.registerDebugAdapterDescriptorFactory('javascript', {
     websocket.send(JSON.stringify({
       main: '/tmp/test.js',
       files: {
-        '/tmp/test.js': new TextDecoder().decode(await vscode.workspace.fs.readFile(vscode.Uri.file('/tmp/test.js')))
+        '/tmp/test.js': new TextDecoder().decode(await debuggerVscodeApi.workspace.fs.readFile(debuggerVscodeApi.Uri.file('/tmp/test.js')))
       }
     }))
 

@@ -1,9 +1,7 @@
 /// <reference path="../../vscode.proposed.fileSearchProvider.d.ts" />
 /// <reference path="../../vscode.proposed.textSearchProvider.d.ts" />
-import { onExtHostInitialized, registerExtension } from 'vscode/extensions'
+import { ExtensionHostKind, registerExtension } from 'vscode/extensions'
 import * as monaco from 'monaco-editor/esm/vs/editor/editor.api.js'
-
-await new Promise<void>(resolve => onExtHostInitialized(resolve))
 
 const { getApi } = registerExtension({
   name: 'searchProvider',
@@ -13,7 +11,7 @@ const { getApi } = registerExtension({
     vscode: '*'
   },
   enabledApiProposals: ['fileSearchProvider', 'textSearchProvider']
-})
+}, ExtensionHostKind.LocalProcess)
 
 const api = await getApi()
 
