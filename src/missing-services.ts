@@ -162,6 +162,7 @@ import { IChatContributionService } from 'vs/workbench/contrib/chat/common/chatC
 import { ITestProfileService } from 'vs/workbench/contrib/testing/common/testProfileService'
 import { IEncryptionService } from 'vs/platform/encryption/common/encryptionService'
 import { ITestResultService } from 'vs/workbench/contrib/testing/common/testResultService'
+import { IDiagnosticsService, NullDiagnosticsService } from 'vs/platform/diagnostics/common/diagnostics'
 import { unsupported } from './tools'
 
 class NullLoggerService extends AbstractLoggerService {
@@ -2066,3 +2067,5 @@ registerSingleton(IUserDataInitializationService, class UserDataInitializationSe
   initializeInstalledExtensions = async () => {}
   initializeOtherResources = async () => {}
 }, InstantiationType.Delayed)
+
+registerSingleton(IDiagnosticsService, NullDiagnosticsService, InstantiationType.Delayed)
