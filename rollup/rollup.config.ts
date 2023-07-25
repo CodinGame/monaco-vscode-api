@@ -486,7 +486,8 @@ const input = {
       ])
   ),
   'workers/textMate.worker': './src/workers/textMate.worker.ts',
-  'workers/outputLinkComputer.worker': './src/workers/outputLinkComputer.worker.ts'
+  'workers/outputLinkComputer.worker': './src/workers/outputLinkComputer.worker.ts',
+  'workers/extensionHost.worker': './src/workers/extensionHost.worker.ts'
 }
 
 const externals = Object.keys({ ...pkg.peerDependencies })
