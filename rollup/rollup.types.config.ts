@@ -45,6 +45,7 @@ export default rollup.defineConfig({
     input
   ]))),
   output: {
+    preserveModules: true,
     format: 'esm',
     dir: 'dist',
     entryFileNames: chunk => `${chunk.name}.ts`,
