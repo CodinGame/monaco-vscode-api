@@ -57,7 +57,7 @@ import { IEditSessionIdentityService } from 'vs/platform/workspace/common/editSe
 import { IWorkspaceEditingService } from 'vs/workbench/services/workspaces/common/workspaceEditing'
 import { ITimerService } from 'vs/workbench/services/timer/browser/timerService'
 import { IExtensionsWorkbenchService } from 'vs/workbench/contrib/extensions/common/extensions'
-import { EnablementState, IWebExtensionsScannerService, IWorkbenchExtensionEnablementService, IWorkbenchExtensionManagementService } from 'vs/workbench/services/extensionManagement/common/extensionManagement'
+import { EnablementState, IWorkbenchExtensionEnablementService, IWorkbenchExtensionManagementService } from 'vs/workbench/services/extensionManagement/common/extensionManagement'
 import { ITunnelService } from 'vs/platform/tunnel/common/tunnel'
 import { IWorkingCopyBackupService } from 'vs/workbench/services/workingCopy/common/workingCopyBackup'
 import { IWorkingCopyService, WorkingCopyService } from 'vs/workbench/services/workingCopy/common/workingCopyService'
@@ -2056,20 +2056,6 @@ registerSingleton(ITestResultService, class TestResultService implements ITestRe
   push = unsupported
   getResult = () => undefined
   getStateById = () => undefined
-}, InstantiationType.Delayed)
-
-registerSingleton(IWebExtensionsScannerService, class WebExtensionsScannerService implements IWebExtensionsScannerService {
-  _serviceBrand: undefined
-  scanSystemExtensions = async () => []
-  scanUserExtensions = async () => []
-  scanExtensionsUnderDevelopment = async () => []
-  scanExistingExtension = unsupported
-  addExtension = unsupported
-  addExtensionFromGallery = unsupported
-  removeExtension = unsupported
-  copyExtensions = unsupported
-  updateMetadata = unsupported
-  scanExtensionManifest = unsupported
 }, InstantiationType.Delayed)
 
 registerSingleton(IUserDataInitializationService, class UserDataInitializationService implements IUserDataInitializationService {
