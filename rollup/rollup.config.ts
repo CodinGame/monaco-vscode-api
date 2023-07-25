@@ -560,7 +560,8 @@ export default (args: Record<string, string>): rollup.RollupOptions[] => {
     plugins: [
       importMetaAssets({
         include: ['**/*.ts', '**/*.js'],
-        exclude: ['**/service-override/textmate.ts']
+        // assets are externals and this plugin is not able to ignore external assets
+        exclude: ['**/service-override/textmate.ts', '**/service-override/languageDetectionWorker.ts']
       }),
       commonjs(),
       {
