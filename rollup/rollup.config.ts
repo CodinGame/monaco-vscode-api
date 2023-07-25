@@ -483,9 +483,15 @@ const input = {
         `./src/service-override/${name}`
       ])
   ),
-  'workers/textMate.worker': './src/workers/textMate.worker.ts',
-  'workers/outputLinkComputer.worker': './src/workers/outputLinkComputer.worker.ts',
-  'workers/extensionHost.worker': './src/workers/extensionHost.worker.ts'
+  ...Object.fromEntries(
+    fs.readdirSync(path.resolve(SRC_DIR, 'workers'), { withFileTypes: true })
+      .filter(f => f.isFile())
+      .map(f => f.name)
+      .map(name => [
+        `workers/${path.basename(name, '.ts')}`,
+        `./src/workers/${name}`
+      ])
+  )
 }
 
 const externals = Object.keys({ ...pkg.peerDependencies })
