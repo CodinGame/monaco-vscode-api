@@ -1,16 +1,15 @@
 import { defineConfig } from 'vite'
+import * as fs from 'fs'
 
 export default defineConfig({
   build: {
     target: 'esnext'
   },
-  worker: {
-    format: 'es'
-  },
   plugins: [
     {
       // For the *-language-features extensions which use SharedArrayBuffer
       name: 'configure-response-headers',
+      apply: 'serve',
       configureServer: server => {
         server.middlewares.use((_req, res, next) => {
           res.setHeader('Cross-Origin-Embedder-Policy', 'require-corp')
@@ -18,14 +17,24 @@ export default defineConfig({
           next()
         })
       }
+    },
+    {
+      // prevent vite from trying to inject code into an extension file du to an `import()` in that file
+      name: 'hack-prevent-transform-javascript',
+      apply: 'serve',
+      load (source) {
+        if (source.includes('tsserver.web.js')) {
+          return `eval(${JSON.stringify(fs.readFileSync(source).toString('utf-8'))})`
+        }
+      }
     }
   ],
-  // This is require because vscode is a local dependency
-  // and vite doesn't want to optimize it and the number of modules makes chrome hang
   optimizeDeps: {
+    // This is require because vscode is a local dependency
+    // and vite doesn't want to optimize it and the number of modules makes chrome hang
     include: [
       'vscode', 'vscode/extensions', 'vscode/services', 'vscode/monaco', 'vscode/service-override/model', 'vscode/service-override/editor',
-      'vscode/service-override/notifications', 'vscode/service-override/bulkEdit', 'vscode/service-override/dialogs', 'vscode/service-override/configuration',
+      'vscode/service-override/extensions', 'vscode/service-override/notifications', 'vscode/service-override/bulkEdit', 'vscode/service-override/dialogs', 'vscode/service-override/configuration',
       'vscode/service-override/keybindings', 'vscode/service-override/textmate', 'vscode/service-override/theme', 'vscode/service-override/languages',
       'vscode/service-override/audioCue', 'vscode/service-override/views', 'vscode/service-override/quickaccess', 'vscode/service-override/debug',
       'vscode/service-override/preferences', 'vscode/service-override/snippets', 'vscode/service-override/files', 'vscode/service-override/output',
@@ -36,8 +45,24 @@ export default defineConfig({
       'vscode/default-extensions/json-language-features', 'vscode/default-extensions/css-language-features',
       'vscode/default-extensions/npm', 'vscode/default-extensions/css', 'vscode/default-extensions/markdown-basics', 'vscode/default-extensions/html',
       'vscode/default-extensions/html-language-features', 'vscode/default-extensions/configuration-editing', 'vscode/default-extensions/media-preview', 'vscode/default-extensions/markdown-math',
-      'vscode/ext-hosts/all'
-    ]
+      'vscode/workers/extensionHost.worker'
+    ],
+    esbuildOptions: {
+      plugins: [{
+        name: 'import.meta.url',
+        setup ({ onLoad }) {
+          // Help vite that bundles/move files in dev mode without touching `import.meta.url` which breaks asset urls
+          onLoad({ filter: /.*\.js/, namespace: 'file' }, args => {
+            let code = fs.readFileSync(args.path, 'utf8')
+            code = code.replace(
+              /\bimport\.meta\.url\b/g,
+              `new URL('/@fs${args.path}', window.location.origin)`
+            )
+            return { contents: code }
+          })
+        }
+      }]
+    }
   },
   server: {
     port: 5173,
@@ -47,6 +72,5 @@ export default defineConfig({
   },
   resolve: {
     dedupe: ['monaco-editor']
-  },
-  assetsInclude: ['**/*.wasm']
+  }
 })
