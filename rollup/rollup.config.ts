@@ -17,7 +17,6 @@ import * as fs from 'fs'
 import * as fsPromise from 'fs/promises'
 import * as path from 'path'
 import { fileURLToPath } from 'url'
-import extensionDirectoryPlugin from '../dist/rollup-extension-directory-plugin.js'
 import pkg from '../package.json' assert { type: 'json' }
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url))
@@ -117,7 +116,6 @@ const NODE_MODULES_DIR = path.resolve(BASE_DIR, 'node_modules')
 const MONACO_EDITOR_DIR = path.resolve(NODE_MODULES_DIR, './monaco-editor')
 const MONACO_EDITOR_ESM_DIR = path.resolve(MONACO_EDITOR_DIR, './esm')
 const OVERRIDE_PATH = path.resolve(BASE_DIR, 'src/override')
-const DEFAULT_EXTENSIONS_PATH = path.resolve(BASE_DIR, 'vscode-default-extensions')
 const KEYBOARD_LAYOUT_DIR = path.resolve(VSCODE_DIR, 'vs/workbench/services/keybinding/browser/keyboardLayouts')
 
 function getMemberExpressionPath (node: recast.types.namedTypes.MemberExpression | recast.types.namedTypes.Identifier): string | null {
@@ -770,87 +768,6 @@ export default (args: Record<string, string>): rollup.RollupOptions[] => {
         }).code
       }
     }]
-  }, {
-    input: {
-      ...Object.fromEntries(
-        fs.readdirSync(DEFAULT_EXTENSIONS_PATH, { withFileTypes: true })
-          .filter(f => f.isDirectory() && fs.existsSync(path.resolve(DEFAULT_EXTENSIONS_PATH, f.name, 'package.json')))
-          .map(f => f.name)
-          .map(name => [
-            `default-extensions/${name}`,
-            path.resolve(DEFAULT_EXTENSIONS_PATH, name)
-          ])
-      )
-    },
-    external,
-    output: [{
-      preserveModules: true,
-      preserveModulesRoot: 'src',
-      minifyInternalExports: false,
-      assetFileNames: 'assets/[name][extname]',
-      format: 'esm',
-      dir: 'dist',
-      entryFileNames: '[name].js',
-      chunkFileNames: '[name].js',
-      hoistTransitiveImports: false
-    }],
-    plugins: [
-      {
-        name: 'resolve',
-        resolveId (importee) {
-          if (importee === 'vscode/extensions') {
-            return {
-              id: '../extensions.js',
-              external: true
-            }
-          }
-          return undefined
-        }
-      },
-      nodeResolve({
-        extensions: EXTENSIONS
-      }),
-      {
-        name: 'dynamic-import-polyfill',
-        renderDynamicImport (): { left: string, right: string } {
-          return {
-            left: 'import(',
-            right: ').then(module => module.default ?? module)'
-          }
-        }
-      },
-      extensionDirectoryPlugin({
-        include: `${DEFAULT_EXTENSIONS_PATH}/**/*`,
-        rollupPlugins: [
-          terser()
-        ],
-        transformManifest (manifest) {
-          if (manifest.name === 'configuration-editing') {
-            return {
-              ...manifest,
-              contributes: {
-                ...manifest.contributes,
-                jsonValidation: manifest.contributes!.jsonValidation!.map(validation => {
-                  return {
-                    fileMatch: (validation.fileMatch as string).replaceAll('%APP_SETTINGS_HOME%', 'user:'),
-                    url: validation.url
-                  }
-                })
-              }
-            }
-          }
-          return manifest
-        },
-        async getAdditionalResources (manifest, directory) {
-          if (manifest.name === 'typescript-language-features') {
-            const files = (await fsPromise.readdir(path.resolve(directory, 'dist/browser/typescript'), {
-              withFileTypes: true
-            })).filter(f => f.isFile()).map(f => f.name)
-            return files.map(file => path.join('./dist/browser/typescript', file))
-          }
-          return []
-        }
-      })]
   }])
 }
 
