@@ -27,14 +27,14 @@ import ExtensionHostWorker from 'vscode/workers/extensionHost.worker?worker'
 import * as monaco from 'monaco-editor/esm/vs/editor/editor.api.js'
 import { TerminalBackend } from './features/terminal'
 import { openNewCodeEditor } from './features/editor'
-import { toWorkerConfig } from './tools/workers'
+import { toCrossOriginWorker, toWorkerConfig } from './tools/workers'
 
 // Workers
 export type WorkerLoader = () => Worker
 const workerLoaders: Partial<Record<string, WorkerLoader>> = {
-  editorWorkerService: () => new EditorWorker(),
-  textMateWorker: () => new TextMateWorker(),
-  outputLinkComputer: () => new OutputLinkComputerWorker()
+  editorWorkerService: () => new (toCrossOriginWorker(EditorWorker))(),
+  textMateWorker: () => new (toCrossOriginWorker(TextMateWorker))(),
+  outputLinkComputer: () => new (toCrossOriginWorker(OutputLinkComputerWorker))()
 }
 window.MonacoEnvironment = {
   getWorker: function (moduleId, label) {

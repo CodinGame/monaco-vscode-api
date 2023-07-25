@@ -1,6 +1,8 @@
 import { defineConfig } from 'vite'
 import * as fs from 'fs'
 
+const cdnDomain = 'http://127.0.0.2:5173'
+
 export default defineConfig({
   build: {
     target: 'esnext'
@@ -14,6 +16,7 @@ export default defineConfig({
         server.middlewares.use((_req, res, next) => {
           res.setHeader('Cross-Origin-Embedder-Policy', 'require-corp')
           res.setHeader('Cross-Origin-Opener-Policy', 'same-origin')
+          res.setHeader('Cross-Origin-Resource-Policy', 'cross-origin')
           next()
         })
       }
@@ -56,7 +59,7 @@ export default defineConfig({
             let code = fs.readFileSync(args.path, 'utf8')
             code = code.replace(
               /\bimport\.meta\.url\b/g,
-              `new URL('/@fs${args.path}', window.location.origin)`
+              `new URL('${cdnDomain}/@fs${args.path}', window.location.origin)`
             )
             return { contents: code }
           })
@@ -66,6 +69,8 @@ export default defineConfig({
   },
   server: {
     port: 5173,
+    origin: cdnDomain,
+    host: '0.0.0.0',
     fs: {
       allow: ['../'] // allow to load codicon.ttf from monaco-editor in the parent folder
     }
