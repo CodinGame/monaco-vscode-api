@@ -26,11 +26,6 @@ npm install -D @types/vscode
 }
 ```
 
-If you use Vite, add in your vite.config.js:
-```js
-assetsInclude: ['node_modules/vscode-oniguruma/**/*.wasm']
-```
-
 ### Why?
 
 Monaco-editor is a library that is constructed using code from vscode and goes through an intense treeshaking process.
@@ -38,6 +33,58 @@ Monaco-editor is a library that is constructed using code from vscode and goes t
 However, due to the inclusion of additional code from VSCode in this library that utilizes internal modules bundled in monaco, this treeshaking is a problem here.
 
 To **tree-mend** (to **un**treeshake it) monaco-editor, this library provides a script that will apply a patch on the local installation of monaco-editor, restoring all the code that was treeshaken during the monaco-editor build process
+
+## Troubleshooting
+
+### If you use Vite
+
+This library uses a lot the `new URL('asset.extension', import.meta.url)` syntax which [is supported by vite](https://vitejs.dev/guide/assets.html#new-url-url-import-meta-url)
+
+While it works great in `build` mode (because rollup is used), there is some issues in `watch`` mode:
+- import.meta.url is not replaced while creating bundles, it is an issue when the syntax is used inside a dependency
+- vite is still trying to inject/transform javascript assets files, breaking the code by injecting ESM imports in commonjs files
+
+There are workarounds for both:
+
+- We can help vite by replacing `import.meta.url` by the original module path:
+```typescript
+{
+  ...
+  optimizeDeps: {
+    esbuildOptions: {
+      plugins: [{
+        name: 'import.meta.url',
+        setup ({ onLoad }) {
+          // Help vite that bundles/move files in dev mode without touching `import.meta.url` which breaks asset urls
+          onLoad({ filter: /.*\.js/, namespace: 'file' }, args => {
+            let code = fs.readFileSync(args.path, 'utf8')
+            code = code.replace(
+              /\bimport\.meta\.url\b/g,
+              `new URL('/@fs${args.path}', window.location.origin)`
+            )
+            return { contents: code }
+          })
+        }
+      }]
+    }
+  }
+}
+```
+- we can serialize and eval the code to prevent vite from touching it:
+```typescript
+{
+  plugins: [{
+    // prevent vite from trying to inject code into an extension file du to an `import()` in that file
+    name: 'hack-prevent-transform-javascript',
+    apply: 'serve',
+    load (source) {
+      if (source.includes('tsserver.web.js')) {
+        return `eval(${JSON.stringify(fs.readFileSync(source).toString('utf-8'))})`
+      }
+    }
+  }]
+}
+```
 
 # Usage
 
@@ -180,10 +227,12 @@ import { registerExtension, initialize } from 'vscode/extensions'
 
 await initialize()
 
-const { registerFile: registerExtensionFile, api: vscodeApi } = registerExtension(defaultThemesExtensions)
+const { registerFile: registerExtensionFile, getApi } = registerExtension(defaultThemesExtensions)
 
 registerExtensionFile('/file.json', async () => fileContent)
-vscodeApi.languages.registerCompletionItemProvider(...)
+
+getApi().then(vscodeApi => vscodeApi.languages.registerCompletionItemProvider(...))
+
 ```
 
 ### Default vscode extensions
