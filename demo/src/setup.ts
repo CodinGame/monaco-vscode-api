@@ -19,11 +19,13 @@ import getTerminalServiceOverride from 'vscode/service-override/terminal'
 import getSearchAccessServiceOverride from 'vscode/service-override/search'
 import getMarkersAccessServiceOverride from 'vscode/service-override/markers'
 import getAccessibilityAccessServiceOverride from 'vscode/service-override/accessibility'
+import getLanguageDetectionWorkerServiceOverride from 'vscode/service-override/languageDetectionWorker'
 import getExtensionServiceOverride from 'vscode/service-override/extensions'
 import EditorWorker from 'monaco-editor/esm/vs/editor/editor.worker.js?worker'
 import TextMateWorker from 'vscode/workers/textMate.worker?worker'
 import OutputLinkComputerWorker from 'vscode/workers/outputLinkComputer.worker?worker'
 import ExtensionHostWorker from 'vscode/workers/extensionHost.worker?worker'
+import LanguageDetectionWorker from 'vscode/workers/languageDetection.worker?worker'
 import * as monaco from 'monaco-editor/esm/vs/editor/editor.api.js'
 import { TerminalBackend } from './features/terminal'
 import { openNewCodeEditor } from './features/editor'
@@ -34,7 +36,8 @@ export type WorkerLoader = () => Worker
 const workerLoaders: Partial<Record<string, WorkerLoader>> = {
   editorWorkerService: () => new (toCrossOriginWorker(EditorWorker))(),
   textMateWorker: () => new (toCrossOriginWorker(TextMateWorker))(),
-  outputLinkComputer: () => new (toCrossOriginWorker(OutputLinkComputerWorker))()
+  outputLinkComputer: () => new (toCrossOriginWorker(OutputLinkComputerWorker))(),
+  languageDetectionWorkerService: () => new (toCrossOriginWorker(LanguageDetectionWorker))()
 }
 window.MonacoEnvironment = {
   getWorker: function (moduleId, label) {
@@ -70,7 +73,8 @@ await initializeMonacoService({
   ...getTerminalServiceOverride(new TerminalBackend()),
   ...getSearchAccessServiceOverride(),
   ...getMarkersAccessServiceOverride(),
-  ...getAccessibilityAccessServiceOverride()
+  ...getAccessibilityAccessServiceOverride(),
+  ...getLanguageDetectionWorkerServiceOverride()
 })
 StandaloneServices.get(ILogService).setLevel(LogLevel.Off)
 

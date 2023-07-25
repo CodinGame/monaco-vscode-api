@@ -43,13 +43,14 @@ export default defineConfig({
       'vscode/service-override/audioCue', 'vscode/service-override/views', 'vscode/service-override/quickaccess', 'vscode/service-override/debug',
       'vscode/service-override/preferences', 'vscode/service-override/snippets', 'vscode/service-override/files', 'vscode/service-override/output',
       'vscode/service-override/terminal', 'vscode/service-override/search', 'vscode/service-override/markers', 'vscode/service-override/accessibility',
+      'vscode/service-override/languageDetectionWorker',
       'vscode/default-extensions/theme-defaults', 'vscode/default-extensions/javascript', 'vscode/default-extensions/json', 'vscode/default-extensions/theme-seti',
       'vscode/default-extensions/references-view', 'vscode/default-extensions/typescript-basics', 'vscode/default-extensions/search-result',
       'vscode/default-extensions/typescript-language-features', 'vscode/default-extensions/markdown-language-features',
       'vscode/default-extensions/json-language-features', 'vscode/default-extensions/css-language-features',
       'vscode/default-extensions/npm', 'vscode/default-extensions/css', 'vscode/default-extensions/markdown-basics', 'vscode/default-extensions/html',
       'vscode/default-extensions/html-language-features', 'vscode/default-extensions/configuration-editing', 'vscode/default-extensions/media-preview', 'vscode/default-extensions/markdown-math',
-      'vscode/workers/extensionHost.worker'
+      'vscode/workers/extensionHost.worker', 'vscode/workers/languageDetection.worker'
     ],
     esbuildOptions: {
       plugins: [{
