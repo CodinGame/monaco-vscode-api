@@ -190,6 +190,10 @@ async function extractResources (resourcePath: string, getFileContent: (path: st
   const content = (await getFileContent(resourcePath)).toString('utf-8')
 
   if (resourcePath.endsWith('.js')) {
+    for (const match of content.matchAll(/\/\/# sourceMappingURL=(.*)$/g)) {
+      resources.push({ path: path.join(path.dirname(resourcePath), match[1]!) })
+    }
+
     for (const match of content.matchAll(/Uri\.joinPath\(context\.extensionUri, '([^']+)'\)/g)) {
       resources.push({ path: match[1]! })
       resources.push(...(await extractResources(match[1]!, getFileContent)))
