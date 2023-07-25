@@ -8,11 +8,9 @@ import ts from 'typescript'
 import replace from '@rollup/plugin-replace'
 import * as babylonParser from 'recast/parsers/babylon.js'
 import dynamicImportVars from '@rollup/plugin-dynamic-import-vars'
-import externalAssets from 'rollup-plugin-external-assets'
-import globImport from 'rollup-plugin-glob-import'
-import terser from '@rollup/plugin-terser'
 import styles from 'rollup-plugin-styles'
-import inject from '@rollup/plugin-inject'
+import { importMetaAssets } from '@web/rollup-plugin-import-meta-assets'
+import glob from 'fast-glob'
 import * as fs from 'fs'
 import * as fsPromise from 'fs/promises'
 import * as path from 'path'
@@ -554,18 +552,10 @@ export default (args: Record<string, string>): rollup.RollupOptions[] => {
     }],
     input,
     plugins: [
-      {
-        name: 'string',
-        transform (code, id) {
-          if (id.endsWith('.html')) {
-            return {
-              code: `export default ${JSON.stringify(code)};`,
-              map: { mappings: '' }
-            }
-          }
-          return undefined
-        }
-      },
+      importMetaAssets({
+        include: ['**/*.ts', '**/*.js'],
+        exclude: ['**/service-override/textmate.ts']
+      }),
       commonjs(),
       {
         name: 'resolve-vscode',
@@ -659,13 +649,39 @@ export default (args: Record<string, string>): rollup.RollupOptions[] => {
         VSCODE_REF: JSON.stringify(vscodeRef),
         preventAssignment: true
       }),
-      globImport({
-        format: 'default',
-        rename (name, id) {
-          return path.relative(VSCODE_DIR, id).replace(/[/.]/g, '_')
+      (() => {
+        const realPaths = new Map<string, string>()
+        return <rollup.Plugin>{
+          name: 'vscode-asset-glob-meta-url',
+          async resolveId (importee) {
+            if (!importee.includes('*')) {
+              return null
+            }
+
+            const fakePath = path.resolve(VSCODE_DIR, importee.replace(/\*/, 'all'))
+            realPaths.set(fakePath, importee)
+            return fakePath
+          },
+          async load (id) {
+            const realPath = realPaths.get(id)
+            if (realPath == null) {
+              return undefined
+            }
+            const files = await glob(realPath, { cwd: VSCODE_DIR })
+
+            const fileRefs = await Promise.all(files.map(async file => {
+              const filePath = path.resolve(VSCODE_DIR, file)
+              const ref = this.emitFile({
+                type: 'asset',
+                name: path.basename(file),
+                source: await fsPromise.readFile(filePath)
+              })
+              return { file, ref }
+            }))
+            return `export default {${fileRefs.map(({ file, ref }) => `\n  '${file}': import.meta.ROLLUP_FILE_URL_${ref}`).join(',')}\n}`
+          }
         }
-      }),
-      externalAssets(['**/*.mp3', '**/*.wasm']),
+      })(),
       styles({
         mode: 'inject',
         minimize: true
@@ -759,7 +775,6 @@ export default (args: Record<string, string>): rollup.RollupOptions[] => {
     }, nodeResolve({
       extensions: EXTENSIONS
     }),
-    externalAssets(['**/*.mp3', '**/*.wasm']),
     {
       name: 'cleanup',
       renderChunk (code) {

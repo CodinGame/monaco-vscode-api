@@ -8,10 +8,11 @@ import { IWorkbenchContribution, IWorkbenchContributionsRegistry, Extensions as 
 import { Registry } from 'vs/platform/registry/common/platform'
 import { ILifecycleService, LifecyclePhase } from 'vs/workbench/services/lifecycle/common/lifecycle'
 import { IInstantiationService } from 'vs/platform/instantiation/common/instantiation'
-import _onigWasm from 'vscode-oniguruma/release/onig.wasm'
 import getFileServiceOverride from './files'
 import { registerServiceInitializeParticipant } from '../services'
 import { registerAssets } from '../assets'
+
+const _onigWasm = new URL('../../node_modules/vscode-oniguruma/release/onig.wasm', import.meta.url).href
 registerAssets({
   'vscode-oniguruma/../onig.wasm': _onigWasm, // Path used inside service
   'vs/../../node_modules/vscode-oniguruma/release/onig.wasm': _onigWasm // Path used inside worker

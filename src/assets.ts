@@ -7,7 +7,7 @@ export function registerAssets (assets: Record<string, string | (() => string)>)
 }
 
 function toUrl (name: string): string | undefined {
-  let url = assetUrls[name] ?? assetUrls[name.replace(/[/.]/g, '_')]
+  let url = assetUrls[name]
   if (typeof url === 'function') {
     url = url()
   }
