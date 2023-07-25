@@ -92,6 +92,8 @@ import { ILifecycleService, LifecyclePhase } from 'vs/workbench/services/lifecyc
 import { OpenEditor, wrapOpenEditor } from './tools/editor'
 import getBulkEditServiceOverride from './bulkEdit'
 import getLayoutServiceOverride from './layout'
+import { changeUrlDomain } from './tools/url'
+import { registerAssets } from '../assets'
 
 const paneCompositeParts = new Map<ViewContainerLocation, IPaneCompositePart>()
 const paneCompositeSelectorParts = new Map<ViewContainerLocation, IPaneCompositeSelectorPart>()
@@ -409,7 +411,18 @@ class MonacoEditorService extends EditorService {
   }
 }
 
-export default function getServiceOverride (openEditorFallback?: OpenEditor): IEditorOverrideServices {
+let webviewIframeAlternateDomains: string | undefined
+registerAssets({
+  'vs/workbench/contrib/webview/browser/pre/service-worker.js': () => changeUrlDomain(new URL('../../vscode/vs/workbench/contrib/webview/browser/pre/service-worker.js', import.meta.url).href, webviewIframeAlternateDomains),
+  'vs/workbench/contrib/webview/browser/pre/index.html': () => changeUrlDomain(new URL('../assets/webview/index.html', import.meta.url).href, webviewIframeAlternateDomains),
+  'vs/workbench/contrib/webview/browser/pre/index-no-csp.html': () => changeUrlDomain(new URL('../assets/webview/index-no-csp.html', import.meta.url).href, webviewIframeAlternateDomains),
+  'vs/workbench/contrib/webview/browser/pre/fake.html': () => changeUrlDomain(new URL('../../vscode/vs/workbench/contrib/webview/browser/pre/fake.html', import.meta.url).href, webviewIframeAlternateDomains)
+})
+
+export default function getServiceOverride (openEditorFallback?: OpenEditor, _webviewIframeAlternateDomains?: string): IEditorOverrideServices {
+  if (_webviewIframeAlternateDomains != null) {
+    webviewIframeAlternateDomains = _webviewIframeAlternateDomains
+  }
   return {
     ...getLayoutServiceOverride(),
     ...getBulkEditServiceOverride(),
