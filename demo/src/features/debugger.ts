@@ -1,5 +1,5 @@
 import { onExtHostInitialized, registerExtension } from 'vscode/extensions'
-import * as vscode from 'vscode'
+import type * as vscode from 'vscode'
 
 await new Promise<void>(resolve => onExtHostInitialized(resolve))
 
@@ -22,7 +22,7 @@ const debuggerExtension = {
   }
 }
 
-const { getApi } = registerExtension(debuggerExtension)
+const { getApi } = registerExtension(debuggerExtension, ExtensionHostKind.LocalProcess)
 
 const debuggerVscodeApi = await getApi()
 class WebsocketDebugAdapter implements vscode.DebugAdapter {
