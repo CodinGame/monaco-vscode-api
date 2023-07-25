@@ -19,17 +19,8 @@ import * as uri from 'vs/base/common/uri'
 import * as log from 'vs/platform/log/common/log'
 import * as telemetryUtils from 'vs/platform/telemetry/common/telemetryUtils'
 import * as searchExtHostTypes from 'vs/workbench/services/search/common/searchExtTypes'
-import { URI } from 'vs/base/common/uri'
-import { ExtHostExtensionService } from 'vs/workbench/api/worker/extHostExtensionService'
-import { getExtHostExtensionService } from './extHost'
 
 let defaultApi: typeof vscode | undefined
-
-getExtHostExtensionService().then((extHostExtensionService) => {
-  // The uri doesn't exist, so vscode will fallback on nullExtensionDescription
-  // eslint-disable-next-line dot-notation
-  defaultApi = (extHostExtensionService as ExtHostExtensionService)['_fakeModules'].getModule('vscode', URI.from({ scheme: 'extension', authority: 'default', path: '/package.json' }))
-}, console.error)
 
 export function setDefaultApi (api: typeof vscode): void {
   defaultApi = api
@@ -38,8 +29,11 @@ export function setDefaultApi (api: typeof vscode): void {
 function createProxy<T extends keyof typeof vscode> (key: T): typeof vscode[T] {
   return new Proxy({}, {
     get (target, p) {
+      if (defaultApi == null) {
+        throw new Error('Default api is not ready yet, do not forget to call `initialize` from \'vscode/extensions\'')
+      }
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      return (defaultApi![key] as any)[p]
+      return (defaultApi[key] as any)[p]
     }
   }) as typeof vscode[T]
 }
