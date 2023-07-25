@@ -7,18 +7,15 @@ import { IRawLanguageExtensionPoint } from 'vs/workbench/services/language/commo
 import { IThemeExtensionPoint } from 'vs/workbench/services/themes/common/workbenchThemeService'
 import { ParseError, parse } from 'vs/base/common/json.js'
 import { getParseErrorMessage } from 'vs/base/common/jsonErrorMessages'
-import { InputPluginOption, rollup } from 'rollup'
 import { addExtension } from '@rollup/pluginutils'
 import { IUserFriendlyViewsContainerDescriptor } from 'vs/workbench/api/browser/viewsExtensionPoint'
-import inject from '@rollup/plugin-inject'
 // @ts-ignore
 import parseCssUrl from 'css-url-parser'
 import * as path from 'path'
-import * as url from 'url'
 
 export interface ExtensionResource {
   path: string
-  sync: boolean // Does this resource need to be loaded synchronously to have a blob url
+  mimeType?: string
 }
 
 type IUserFriendlyIcon = string | { light: string, dark: string }
@@ -74,31 +71,31 @@ function extractCommandResources (command: IUserFriendlyCommand | IUserFriendlyC
   }
   if (command.icon != null) {
     if (typeof command.icon === 'object') {
-      return [{ path: command.icon.light, sync: true }, { path: command.icon.dark, sync: true }]
+      return [{ path: command.icon.light }, { path: command.icon.dark }]
     } else {
-      return [{ path: command.icon, sync: true }]
+      return [{ path: command.icon }]
     }
   }
   return []
 }
 
 function extractGrammarResources (grammar: ITMSyntaxExtensionPoint): ExtensionResource[] {
-  return [{ path: grammar.path, sync: false }]
+  return [{ path: grammar.path }]
 }
 
 function extractLanguageResources (language: Partial<IRawLanguageExtensionPoint>): ExtensionResource[] {
-  const paths: ExtensionResource[] = []
+  const resources: ExtensionResource[] = []
   if (language.icon != null) {
-    paths.push({ path: language.icon.dark, sync: true }, { path: language.icon.light, sync: true })
+    resources.push({ path: language.icon.dark }, { path: language.icon.light })
   }
   if (language.configuration != null) {
-    paths.push({ path: language.configuration, sync: true })
+    resources.push({ path: language.configuration, mimeType: 'application/json' })
   }
-  return paths
+  return resources
 }
 
 function extractSnippetsResources (snippet: ISnippetsExtensionPoint): ExtensionResource[] {
-  return [{ path: snippet.path, sync: false }]
+  return [{ path: snippet.path, mimeType: 'application/json' }]
 }
 
 interface IconDefinition {
@@ -117,18 +114,18 @@ interface IconThemeDocument {
 async function extractThemeResources (theme: IThemeExtensionPoint, getFileContent: (path: string) => Promise<Buffer>): Promise<ExtensionResource[]> {
   const themeContent = await getFileContent(theme.path)
   const themeDocument = parseJson<IconThemeDocument>(theme.path, themeContent.toString('utf8'))
-  const paths: ExtensionResource[] = [{ path: theme.path, sync: false }]
+  const paths: ExtensionResource[] = [{ path: theme.path, mimeType: 'application/json' }]
   if (themeDocument.fonts != null) {
     for (const font of themeDocument.fonts) {
       for (const src of font.src) {
-        paths.push({ path: path.join(path.dirname(theme.path), src.path), sync: true })
+        paths.push({ path: path.join(path.dirname(theme.path), src.path) })
       }
     }
   }
   if (themeDocument.iconDefinitions != null) {
     for (const iconDefinition of Object.values(themeDocument.iconDefinitions)) {
       if (iconDefinition.iconPath != null) {
-        paths.push({ path: path.join(path.dirname(theme.path), iconDefinition.iconPath), sync: true })
+        paths.push({ path: path.join(path.dirname(theme.path), iconDefinition.iconPath) })
       }
     }
   }
@@ -137,19 +134,13 @@ async function extractThemeResources (theme: IThemeExtensionPoint, getFileConten
 
 function extractJsonValidationResources (jsonValidation: IJSONValidationExtensionPoint): ExtensionResource[] {
   if (jsonValidation.url.startsWith('./')) {
-    return [{
-      path: jsonValidation.url,
-      sync: true
-    }]
+    return [{ path: jsonValidation.url }]
   }
   return []
 }
 
 function extractViewsContainerResources (viewContainers: { [loc: string]: IUserFriendlyViewsContainerDescriptor[] }): ExtensionResource[] {
-  return Object.values(viewContainers).flatMap(containers => containers.map(container => ({
-    path: container.icon,
-    sync: true
-  })))
+  return Object.values(viewContainers).flatMap(containers => containers.map(container => ({ path: container.icon })))
 }
 
 async function extractResourcesFromExtensionManifestContribute (contribute: RealContribute, getFileContent: (path: string) => Promise<Buffer>): Promise<ExtensionResource[]> {
@@ -165,17 +156,17 @@ async function extractResourcesFromExtensionManifestContribute (contribute: Real
   if (contribute.viewsContainers != null) resources.push(...extractViewsContainerResources(contribute.viewsContainers))
   if (contribute['markdown.previewStyles'] != null) {
     resources.push(...(await Promise.all(contribute['markdown.previewStyles'].map(async path => [
-      { path, sync: false },
+      { path, mimeType: 'text/css' },
       ...(await extractResources(path, getFileContent))
     ]))).flat())
   }
   if (contribute['markdown.previewScripts'] != null) {
     resources.push(...(await Promise.all(contribute['markdown.previewScripts'].map(async path => [
-      { path, sync: false },
+      { path, mimeType: 'text/javascript' },
       ...(await extractResources(path, getFileContent))
     ]))).flat())
   }
-  return resources.filter((resource, index, list) => !resource.path.startsWith('$(') && !list.slice(0, index).some(o => o.path === resource.path))
+  return resources.filter((resource, index, list) => !resource.path.startsWith('$(') && !list.slice(0, index).some(o => o === resource))
 }
 
 export async function extractResourcesFromExtensionManifest (manifest: IExtensionManifest, getFileContent: (path: string) => Promise<Buffer>): Promise<ExtensionResource[]> {
@@ -186,13 +177,12 @@ export async function extractResourcesFromExtensionManifest (manifest: IExtensio
   }
   if (manifest.browser != null) {
     const jsPath = addExtension(manifest.browser, '.js')
-    resources.push({
-      path: jsPath,
-      sync: false
-    })
+    resources.push({ path: jsPath, mimeType: 'text/javascript' })
     resources.push(...(await extractResources(jsPath, getFileContent)))
   }
-  return resources
+
+  // remove duplicates
+  return Object.values(Object.fromEntries(resources.map(r => [r.path, r])))
 }
 
 async function extractResources (resourcePath: string, getFileContent: (path: string) => Promise<Buffer>): Promise<ExtensionResource[]> {
@@ -201,34 +191,22 @@ async function extractResources (resourcePath: string, getFileContent: (path: st
 
   if (resourcePath.endsWith('.js')) {
     for (const match of content.matchAll(/Uri\.joinPath\(context\.extensionUri, '([^']+)'\)/g)) {
-      resources.push({
-        path: match[1]!,
-        sync: false
-      })
+      resources.push({ path: match[1]! })
       resources.push(...(await extractResources(match[1]!, getFileContent)))
     }
 
     for (const match of content.matchAll(/this.extensionResource\('media', '(.*)'\)/g)) {
-      resources.push({
-        path: `./media/${match[1]}`,
-        sync: false
-      })
+      resources.push({ path: `./media/${match[1]}` })
       resources.push(...(await extractResources(`./media/${match[1]}`, getFileContent)))
     }
 
     for (const match of content.matchAll(/this\._extensionResourcePath\(resourceProvider, '(.*)'\)/g)) {
-      resources.push({
-        path: `./media/${match[1]}`,
-        sync: false
-      })
+      resources.push({ path: `./media/${match[1]}` })
       resources.push(...(await extractResources(`./media/${match[1]}`, getFileContent)))
     }
 
     for (const match of content.matchAll(/this\.extensionResourceUrl\('media', '(.*)'\)/g)) {
-      resources.push({
-        path: `./media/${match[1]}`,
-        sync: false
-      })
+      resources.push({ path: `./media/${match[1]}` })
       resources.push(...(await extractResources(`./media/${match[1]}`, getFileContent)))
     }
   }
@@ -238,10 +216,7 @@ async function extractResources (resourcePath: string, getFileContent: (path: st
       const assetPath = './' + path.join(path.dirname(resourcePath), url)
       try {
         await getFileContent(assetPath)
-        resources.push({
-          path: assetPath,
-          sync: false
-        })
+        resources.push({ path: assetPath })
       } catch (err) {
         // ignore, the file doesn't exist
         // It happens for the markdown-math extension without consequences
@@ -259,38 +234,4 @@ export function parseJson<T> (path: string, text: string): T {
     throw new Error(`Failed to parse ${path}:\n${errors.map(error => `    ${getParseErrorMessage(error.error)}`).join('\n')}`)
   }
   return result
-}
-
-export async function buildExtensionCode (extPath: string, rollupPlugins: InputPluginOption[], getFileContent?: (path: string) => Promise<string>): Promise<string> {
-  const build = await rollup({
-    input: extPath,
-    external: ['vscode'],
-    plugins: [
-      ...(getFileContent != null
-        ? [<InputPluginOption>{
-          name: 'loader',
-          resolveId (source) {
-            return source
-          },
-          load (id) {
-            return getFileContent(id.replace(/\?.*$/, ''))
-          }
-        }]
-        : []),
-      inject({
-        Worker: url.fileURLToPath(new URL('./extensionWorker.js', import.meta.url))
-      }),
-      ...rollupPlugins
-    ]
-  })
-  const { output } = await build.generate({ format: 'cjs' })
-  return output[0].code
-}
-
-export function compressResource (path: string, content: string): string {
-  try {
-    return JSON.stringify(parseJson(path, content))
-  } catch (e) {
-    return content
-  }
 }
