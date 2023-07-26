@@ -3,8 +3,8 @@ import ansiColors from 'ansi-colors'
 import * as vscode from 'vscode'
 
 export class TerminalBackend extends SimpleTerminalBackend {
-  getDefaultSystemShell = async (): Promise<string> => 'fake'
-  createProcess = async (): Promise<ITerminalChildProcess> => {
+  override getDefaultSystemShell = async (): Promise<string> => 'fake'
+  override createProcess = async (): Promise<ITerminalChildProcess> => {
     const dataEmitter = new vscode.EventEmitter<string>()
     const propertyEmitter = new vscode.EventEmitter<{
       type: string
@@ -23,13 +23,13 @@ export class TerminalBackend extends SimpleTerminalBackend {
         return undefined
       }
 
-      onDidChangeProperty = propertyEmitter.event
+      override onDidChangeProperty = propertyEmitter.event
 
-      shutdown (immediate: boolean): void {
+      override shutdown (immediate: boolean): void {
         console.log('shutdown', immediate)
       }
 
-      input (data: string): void {
+      override input (data: string): void {
         for (const c of data) {
           if (c.charCodeAt(0) === 13) {
             dataEmitter.fire(`\r\n${ansiColors.green('$')} `)
@@ -48,6 +48,9 @@ export class TerminalBackend extends SimpleTerminalBackend {
 
       resize (cols: number, rows: number): void {
         console.log('resize', cols, rows)
+      }
+
+      override clearBuffer (): void | Promise<void> {
       }
     }
     return new FakeTerminalProcess(1, 1, '/tmp', dataEmitter.event)

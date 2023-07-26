@@ -690,6 +690,36 @@ index ff766b9acb8..599bab9dd59 100644
  	}
  
  	isVisible(): boolean {
+diff --git a/src/vs/workbench/contrib/terminal/browser/terminalService.ts b/src/vs/workbench/contrib/terminal/browser/terminalService.ts
+index 34b62b8fb2b..66d4b7bb70f 100644
+--- a/src/vs/workbench/contrib/terminal/browser/terminalService.ts
++++ b/src/vs/workbench/contrib/terminal/browser/terminalService.ts
+@@ -19,7 +19,7 @@ import { IContextKey, IContextKeyService } from 'vs/platform/contextkey/common/c
+ import { IDialogService } from 'vs/platform/dialogs/common/dialogs';
+ import { IInstantiationService } from 'vs/platform/instantiation/common/instantiation';
+ import { INotificationService } from 'vs/platform/notification/common/notification';
+-import { ICreateContributedTerminalProfileOptions, IPtyHostAttachTarget, IRawTerminalInstanceLayoutInfo, IRawTerminalTabLayoutInfo, IShellLaunchConfig, ITerminalBackend, ITerminalLaunchError, ITerminalLogService, ITerminalsLayoutInfo, ITerminalsLayoutInfoById, TerminalExitReason, TerminalLocation, TerminalLocationString, TitleEventSource } from 'vs/platform/terminal/common/terminal';
++import { ICreateContributedTerminalProfileOptions, IPtyHostAttachTarget, IRawTerminalInstanceLayoutInfo, IRawTerminalTabLayoutInfo, IShellLaunchConfig, ITerminalBackend, ITerminalBackendRegistry, ITerminalLaunchError, ITerminalLogService, ITerminalsLayoutInfo, ITerminalsLayoutInfoById, TerminalExitReason, TerminalExtensions, TerminalLocation, TerminalLocationString, TitleEventSource } from 'vs/platform/terminal/common/terminal';
+ import { formatMessageForTerminal } from 'vs/platform/terminal/common/terminalStrings';
+ import { iconForeground } from 'vs/platform/theme/common/colorRegistry';
+ import { getIconRegistry } from 'vs/platform/theme/common/iconRegistry';
+@@ -52,6 +52,7 @@ import { IKeybindingService } from 'vs/platform/keybinding/common/keybinding';
+ import { TerminalCapabilityStore } from 'vs/platform/terminal/common/capabilities/terminalCapabilityStore';
+ import { ITimerService } from 'vs/workbench/services/timer/browser/timerService';
+ import { mark } from 'vs/base/common/performance';
++import { Registry } from 'vs/platform/registry/common/platform';
+ 
+ export class TerminalService implements ITerminalService {
+ 	declare _serviceBrand: undefined;
+@@ -213,7 +214,7 @@ export class TerminalService implements ITerminalService {
+ 		this._handleInstanceContextKeys();
+ 		this._terminalShellTypeContextKey = TerminalContextKeys.shellType.bindTo(this._contextKeyService);
+ 		this._processSupportContextKey = TerminalContextKeys.processSupported.bindTo(this._contextKeyService);
+-		this._processSupportContextKey.set(!isWeb || this._remoteAgentService.getConnection() !== null);
++		this._processSupportContextKey.set(!isWeb || this._remoteAgentService.getConnection() !== null || Registry.as<ITerminalBackendRegistry>(TerminalExtensions.Backend).getTerminalBackend() !== undefined);
+ 		this._terminalHasBeenCreated = TerminalContextKeys.terminalHasBeenCreated.bindTo(this._contextKeyService);
+ 		this._terminalCountContextKey = TerminalContextKeys.count.bindTo(this._contextKeyService);
+ 		this._terminalEditorActive = TerminalContextKeys.terminalEditorActive.bindTo(this._contextKeyService);
 diff --git a/src/vs/workbench/contrib/webview/browser/pre/service-worker.js b/src/vs/workbench/contrib/webview/browser/pre/service-worker.js
 index a6e9943b866..c470a1c9ed5 100644
 --- a/src/vs/workbench/contrib/webview/browser/pre/service-worker.js
