@@ -41,6 +41,7 @@ import 'vs/workbench/browser/workbench.contribution'
 import 'vs/workbench/contrib/customEditor/browser/customEditor.contribution'
 import 'vs/workbench/contrib/webviewPanel/browser/webviewPanel.contribution'
 import 'vs/workbench/contrib/externalUriOpener/common/externalUriOpener.contribution'
+import 'vs/workbench/contrib/languageStatus/browser/languageStatus.contribution'
 import 'vs/workbench/contrib/languageDetection/browser/languageDetection.contribution'
 // import to 2 times with filter to not duplicate the import from files.ts
 import 'vs/workbench/contrib/files/browser/files.contribution.js?include=registerConfiguration'

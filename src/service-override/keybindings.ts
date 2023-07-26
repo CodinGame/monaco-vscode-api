@@ -12,6 +12,7 @@ import { ICommandService } from 'vs/platform/commands/common/commands'
 import { CommandService } from 'vs/workbench/services/commands/common/commandService'
 import getFileServiceOverride from './files'
 import 'vs/workbench/browser/workbench.contribution'
+import 'vs/workbench/contrib/keybindings/browser/keybindings.contribution'
 
 async function updateUserKeybindings (keybindingsJson: string): Promise<void> {
   const userDataProfilesService: IUserDataProfilesService = StandaloneServices.get(IUserDataProfilesService)

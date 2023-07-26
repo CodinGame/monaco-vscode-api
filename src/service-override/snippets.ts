@@ -6,6 +6,7 @@ import { SnippetsService } from 'vs/workbench/contrib/snippets/browser/snippetsS
 import { ILifecycleService, LifecyclePhase } from 'vs/workbench/services/lifecycle/common/lifecycle'
 import getFileServiceOverride from './files'
 import { registerServiceInitializeParticipant } from '../services'
+import 'vs/workbench/contrib/snippets/browser/snippets.contribution'
 
 interface ISnippetsExtensionPoint {
   language: string
