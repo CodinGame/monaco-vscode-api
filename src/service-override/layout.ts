@@ -10,6 +10,8 @@ import { Part } from 'vs/workbench/browser/part'
 import { isAncestorUsingFlowTo } from 'vs/base/browser/dom'
 import { IPaneCompositePartService } from 'vs/workbench/services/panecomposite/browser/panecomposite'
 import { ViewContainerLocation } from 'vs/workbench/common/views'
+import { isChrome, isFirefox, isLinux, isSafari, isWindows } from 'vs/base/common/platform'
+import { coalesce } from 'vs/base/common/arrays'
 
 export class LayoutService implements ILayoutService, Pick<IWorkbenchLayoutService, 'isVisible' | 'onDidChangePartVisibility' | 'isRestored' | 'registerPart' | 'getSideBarPosition' | 'setPartHidden' | 'hasFocus' | 'getPanelPosition' | 'isPanelMaximized' | 'getMaximumEditorDimensions' | 'onDidChangeFullscreen'> {
   declare readonly _serviceBrand: undefined
@@ -151,7 +153,18 @@ export class LayoutService implements ILayoutService, Pick<IWorkbenchLayoutServi
 }
 
 export default function getServiceOverride (container: HTMLElement = document.body): IEditorOverrideServices {
-  container.classList.add('monaco-workbench')
+  const platformClass = isWindows ? 'windows' : isLinux ? 'linux' : 'mac'
+  const workbenchClasses = coalesce([
+    'monaco-workbench',
+    platformClass,
+    'web',
+    isChrome ? 'chromium' : isFirefox ? 'firefox' : isSafari ? 'safari' : undefined
+  ])
+
+  container.classList.add(...workbenchClasses)
+  document.body.classList.add(platformClass)
+  document.body.classList.add('web')
+
   return {
     [ILayoutService.toString()]: new SyncDescriptor(LayoutService, [container]),
     [IWorkbenchLayoutService.toString()]: new SyncDescriptor(LayoutService, [container])
