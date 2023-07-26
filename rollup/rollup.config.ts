@@ -696,7 +696,7 @@ export default (args: Record<string, string>): rollup.RollupOptions[] => {
               })
               return { file, ref }
             }))
-            return `export default {${fileRefs.map(({ file, ref }) => `\n  '${file}': import.meta.ROLLUP_FILE_URL_${ref}`).join(',')}\n}`
+            return `export default {${fileRefs.map(({ file, ref }) => `\n  '${file}': new URL(import.meta.ROLLUP_FILE_URL_${ref}, import.meta.url).href`).join(',')}\n}`
           }
         }
       })(),
