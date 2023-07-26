@@ -7,8 +7,8 @@ import { Registry } from 'vs/platform/registry/common/platform'
 import { IWorkbenchContributionsRegistry, Extensions as WorkbenchExtensions } from 'vs/workbench/common/contributions'
 import { IEditorOverrideServices, StandaloneServices } from 'vs/editor/standalone/browser/standaloneServices'
 import { ILifecycleService, LifecyclePhase } from 'vs/workbench/services/lifecycle/common/lifecycle'
-import { IInstantiationService, ServicesAccessor } from 'vs/platform/instantiation/common/instantiation'
-import { RunOnceScheduler, runWhenIdle } from 'vs/base/common/async'
+import { IInstantiationService, ServiceIdentifier, ServicesAccessor } from 'vs/platform/instantiation/common/instantiation'
+import { Barrier, RunOnceScheduler, runWhenIdle } from 'vs/base/common/async'
 import { Emitter } from 'vs/base/common/event'
 import { IAction } from 'vs/base/common/actions'
 import getLayoutServiceOverride from './service-override/layout'
@@ -46,8 +46,17 @@ async function initServices (overrides: IEditorOverrideServices): Promise<IInsta
 const renderWorkbenchEmitter = new Emitter<ServicesAccessor>()
 export const onRenderWorkbench = renderWorkbenchEmitter.event
 
+const serviceInitializedBarrier = new Barrier()
+
+export async function getService<T> (identifier: ServiceIdentifier<T>): Promise<T> {
+  await serviceInitializedBarrier.wait()
+  return StandaloneServices.get(identifier)
+}
+
 export async function initialize (overrides: IEditorOverrideServices): Promise<void> {
   const instantiationService = await initServices(overrides)
+
+  serviceInitializedBarrier.open()
 
   instantiationService.invokeFunction(accessor => {
     const lifecycleService = accessor.get(ILifecycleService)

@@ -2,7 +2,6 @@ import type * as vscode from 'vscode'
 import { ExtensionType, IExtension, IExtensionContributions, IExtensionManifest, TargetPlatform } from 'vs/platform/extensions/common/extensions'
 import { IExtensionService } from 'vs/workbench/services/extensions/common/extensions'
 import { URI } from 'vs/base/common/uri'
-import { StandaloneServices } from 'vs/editor/standalone/browser/standaloneServices'
 import { getExtensionId } from 'vs/platform/extensionManagement/common/extensionManagementUtil'
 import { DisposableStore, IDisposable } from 'vs/base/common/lifecycle'
 import { ITranslations, localizeManifest } from 'vs/platform/extensionManagement/common/extensionNls'
@@ -13,6 +12,7 @@ import { ExtensionHostKind } from 'vs/workbench/services/extensions/common/exten
 import { IExtensionWithExtHostKind, SimpleExtensionService, getLocalExtHostExtensionService } from './service-override/extensions'
 import { registerExtensionFile } from './service-override/files'
 import { setDefaultApi } from './api'
+import { getService } from './services'
 
 const defaultApiInitializeBarrier = new Barrier()
 export async function initialize (): Promise<void> {
@@ -60,7 +60,7 @@ async function deltaExtensions (toAdd: IExtensionWithExtHostKind[], toRemove: IE
   _toRemove.push(...toRemove)
 
   if (lastPromise == null) {
-    const extensionService = StandaloneServices.get(IExtensionService) as SimpleExtensionService
+    const extensionService = await getService(IExtensionService) as SimpleExtensionService
     lastPromise = new Promise(resolve => setTimeout(resolve)).then(async () => {
       await extensionService.deltaExtensions(_toAdd, _toRemove)
       _toAdd = []
