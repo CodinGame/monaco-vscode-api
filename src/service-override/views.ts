@@ -90,6 +90,7 @@ import { IWebviewWorkbenchService, WebviewEditorService } from 'vs/workbench/con
 import { IWebviewService } from 'vs/workbench/contrib/webview/browser/webview'
 import { IWebviewViewService, WebviewViewService } from 'vs/workbench/contrib/webviewView/browser/webviewViewService'
 import { ILifecycleService, LifecyclePhase } from 'vs/workbench/services/lifecycle/common/lifecycle'
+import { Parts, Position, positionToString } from 'vs/workbench/services/layout/browser/layoutService'
 import { OpenEditor, wrapOpenEditor } from './tools/editor'
 import getBulkEditServiceOverride from './bulkEdit'
 import getLayoutServiceOverride from './layout'
@@ -152,12 +153,23 @@ class PaneCompositePartService implements IPaneCompositePartService {
   }
 }
 
-function renderPart (part: Part, container: HTMLElement, classNames: string[]): IDisposable {
-  const panelEl = document.createElement('div')
-  container.append(panelEl)
-  panelEl.classList.add(...classNames)
-  panelEl.oncontextmenu = () => false
-  part.create(panelEl)
+function createPart (id: string, role: string, classes: string[]): HTMLElement {
+  const part = document.createElement(role === 'status' ? 'footer' /* Use footer element for status bar #98376 */ : 'div')
+  part.classList.add('part', ...classes)
+  part.id = id
+  part.setAttribute('role', role)
+  if (role === 'status') {
+    part.setAttribute('aria-live', 'off')
+  }
+
+  return part
+}
+
+function renderPart (id: string, role: string, classes: string[], part: Part, container: HTMLElement): IDisposable {
+  const partContainer = createPart(id, role, classes)
+  container.append(partContainer)
+  partContainer.oncontextmenu = () => false
+  part.create(partContainer)
   function layout () {
     part.layout(
       Math.max(part.minimumWidth, Math.min(part.maximumWidth, container.offsetWidth)),
@@ -186,7 +198,7 @@ function renderActivitybarPar (container: HTMLElement): IDisposable {
   paneCompositeSelectorParts.set(ViewContainerLocation.Sidebar, activitybarPart)
 
   // eslint-disable-next-line dot-notation
-  activitybarPart['_register'](renderPart(activitybarPart, container, ['part', 'activitybar', 'left']))
+  activitybarPart['_register'](renderPart(Parts.ACTIVITYBAR_PART, 'none', ['activitybar', 'left'], activitybarPart, container))
 
   return activitybarPart
 }
@@ -196,7 +208,7 @@ function renderSidebarPart (container: HTMLElement): IDisposable {
   paneCompositeParts.set(ViewContainerLocation.Sidebar, sidebarPart)
 
   // eslint-disable-next-line dot-notation
-  sidebarPart['_register'](renderPart(sidebarPart, container, ['part', 'sidebar', 'left']))
+  sidebarPart['_register'](renderPart(Parts.SIDEBAR_PART, 'none', ['sidebar', 'left'], sidebarPart, container))
 
   if (sidebarPart.getPaneComposites().length > 0) {
     void sidebarPart.openPaneComposite(sidebarPart.getPaneComposites()[0]!.id)
@@ -211,7 +223,7 @@ function renderPanelPart (container: HTMLElement): IDisposable {
   paneCompositeParts.set(ViewContainerLocation.Panel, panelPart)
 
   // eslint-disable-next-line dot-notation
-  panelPart['_register'](renderPart(panelPart, container, ['part', 'panel', 'basepanel']))
+  panelPart['_register'](renderPart(Parts.PANEL_PART, 'none', ['panel', 'basepanel', positionToString(Position.LEFT)], panelPart, container))
 
   if (panelPart.getPaneComposites().length > 0) {
     void panelPart.openPaneComposite(panelPart.getPaneComposites()[0]!.id)
@@ -223,13 +235,13 @@ function renderPanelPart (container: HTMLElement): IDisposable {
 function renderEditorPart (container: HTMLElement): IDisposable {
   const editorPart = StandaloneServices.get(IEditorGroupsService) as EditorPart
 
-  return renderPart(editorPart, container, ['part', 'editor'])
+  return renderPart(Parts.EDITOR_PART, 'main', ['editor'], editorPart, container)
 }
 
 function renderStatusBarPart (container: HTMLElement): IDisposable {
   const statusBarPart = StandaloneServices.get(IStatusbarService) as StatusbarPart
 
-  return renderPart(statusBarPart, container, ['part', 'statusbar'])
+  return renderPart(Parts.STATUSBAR_PART, 'status', ['statusbar'], statusBarPart, container)
 }
 
 interface CustomViewOption {
@@ -453,6 +465,9 @@ export default function getServiceOverride (openEditorFallback?: OpenEditor, _we
     [IWebviewWorkbenchService.toString()]: new SyncDescriptor(WebviewEditorService)
   }
 }
+
+// TODO: register Panel
+// TODO render whole
 
 export {
   ViewContainerLocation,
