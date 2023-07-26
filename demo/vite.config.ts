@@ -1,5 +1,6 @@
 import { defineConfig } from 'vite'
 import * as fs from 'fs'
+import url from 'url'
 
 const cdnDomain = 'http://127.0.0.2:5173'
 
@@ -55,13 +56,25 @@ export default defineConfig({
         name: 'import.meta.url',
         setup ({ onLoad }) {
           // Help vite that bundles/move files in dev mode without touching `import.meta.url` which breaks asset urls
-          onLoad({ filter: /.*\.js/, namespace: 'file' }, args => {
-            let code = fs.readFileSync(args.path, 'utf8')
-            code = code.replace(
-              /\bimport\.meta\.url\b/g,
-              `new URL('${cdnDomain}/@fs${args.path}', window.location.origin)`
-            )
-            return { contents: code }
+          onLoad({ filter: /.*\.js/, namespace: 'file' }, async args => {
+            const code = fs.readFileSync(args.path, 'utf8')
+
+            const assetImportMetaUrlRE = /\bnew\s+URL\s*\(\s*('[^']+'|"[^"]+"|`[^`]+`)\s*,\s*import\.meta\.url\s*(?:,\s*)?\)/g
+            let i = 0
+            let newCode = ''
+            for (let match = assetImportMetaUrlRE.exec(code); match != null; match = assetImportMetaUrlRE.exec(code)) {
+              newCode += code.slice(i, match.index)
+
+              const path = match[1].slice(1, -1)
+              const resolved = await import.meta.resolve!(path, url.pathToFileURL(args.path))
+
+              newCode += `new URL(${JSON.stringify(url.fileURLToPath(resolved))}, import.meta.url)`
+
+              i = assetImportMetaUrlRE.lastIndex
+            }
+            newCode += code.slice(i)
+
+            return { contents: newCode }
           })
         }
       }]

@@ -7,7 +7,7 @@
     "postinstall": "monaco-treemending",
     "clean": "tsc -b -c",
     "compile": "tsc",
-    "start": "vite --config vite.config.ts",
+    "start": "NODE_OPTIONS=--experimental-import-meta-resolve vite --config vite.config.ts",
     "start:debug": "vite --config vite.config.ts --debug --force",
     "build": "vite --config vite.config.ts build",
     "build:github": "vite --config vite.github-page.config.ts build && touch dist/.nojekyll",
