@@ -6,8 +6,9 @@ import './setup'
 import { createConfiguredEditor, createModelReference } from 'vscode/monaco'
 import { registerFileSystemOverlay, HTMLFileSystemProvider } from 'vscode/service-override/files'
 import * as vscode from 'vscode'
-import { ILogService, StandaloneServices, IPreferencesService } from 'vscode/services'
-import './features/customView'
+import { ILogService, StandaloneServices, IPreferencesService, IEditorService, IDialogService } from 'vscode/services'
+import { ConfirmResult } from 'vscode/service-override/views'
+import { CustomEditorInput } from './features/customView'
 import './features/debugger'
 import './features/search'
 import { anotherFakeOutputChannel } from './features/output'
@@ -134,4 +135,33 @@ document.querySelector('#settingsui')!.addEventListener('click', async () => {
 document.querySelector('#keybindingsui')!.addEventListener('click', async () => {
   await StandaloneServices.get(IPreferencesService).openGlobalKeybindingSettings(false)
   window.scrollTo({ top: 0, behavior: 'smooth' })
+})
+
+document.querySelector('#customEditorPanel')!.addEventListener('click', async () => {
+  const input = new CustomEditorInput({
+    async confirm () {
+      const { confirmed } = await StandaloneServices.get(IDialogService).confirm({
+        message: 'Are you sure you want to close this INCREDIBLE editor pane?'
+      })
+      return confirmed ? ConfirmResult.DONT_SAVE : ConfirmResult.CANCEL
+    },
+    showConfirm () {
+      return true
+    }
+  })
+  let toggle = false
+  const interval = window.setInterval(() => {
+    const title = toggle ? 'Awesome editor pane' : 'Incredible editor pane'
+    input.setTitle(title)
+    input.setName(title)
+    input.setDescription(title)
+    toggle = !toggle
+  }, 1000)
+  input.onWillDispose(() => {
+    window.clearInterval(interval)
+  })
+
+  await StandaloneServices.get(IEditorService).openEditor(input, {
+    pinned: true
+  })
 })

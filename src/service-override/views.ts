@@ -20,7 +20,7 @@ import { HoverService } from 'vs/workbench/services/hover/browser/hoverService'
 import { ExplorerService } from 'vs/workbench/contrib/files/browser/explorerService'
 import { IExplorerService } from 'vs/workbench/contrib/files/browser/files'
 import { PanelPart } from 'vs/workbench/browser/parts/panel/panelPart'
-import { append, $ } from 'vs/base/browser/dom'
+import { append, $, Dimension } from 'vs/base/browser/dom'
 import { ViewPane } from 'vs/workbench/browser/parts/views/viewPane'
 import { Registry } from 'vs/platform/registry/common/platform'
 import { ViewPaneContainer } from 'vs/workbench/browser/parts/views/viewPaneContainer'
@@ -57,8 +57,8 @@ import { BreadcrumbsService, IBreadcrumbsService } from 'vs/workbench/browser/pa
 import { IContextViewService } from 'vs/platform/contextview/browser/contextView'
 import { ContextViewService } from 'vs/platform/contextview/browser/contextViewService'
 import { ICodeEditorService } from 'vs/editor/browser/services/codeEditorService'
-import { EditorInput } from 'vs/workbench/common/editor/editorInput'
-import { IEditorPane, IResourceDiffEditorInput, ITextDiffEditorPane, IUntitledTextResourceEditorInput, IUntypedEditorInput } from 'vs/workbench/common/editor'
+import { EditorInput, IEditorCloseHandler } from 'vs/workbench/common/editor/editorInput'
+import { EditorExtensions, IEditorPane, IResourceDiffEditorInput, ITextDiffEditorPane, IUntitledTextResourceEditorInput, IUntypedEditorInput, Verbosity } from 'vs/workbench/common/editor'
 import { IEditorOptions, IResourceEditorInput, ITextResourceEditorInput } from 'vs/platform/editor/common/editor'
 import { ITextModelService, IResolvedTextEditorModel } from 'vs/editor/common/services/resolverService'
 import { IFileService } from 'vs/platform/files/common/files'
@@ -91,6 +91,12 @@ import { IWebviewService } from 'vs/workbench/contrib/webview/browser/webview'
 import { IWebviewViewService, WebviewViewService } from 'vs/workbench/contrib/webviewView/browser/webviewViewService'
 import { ILifecycleService, LifecyclePhase } from 'vs/workbench/services/lifecycle/common/lifecycle'
 import { Parts, Position, positionToString } from 'vs/workbench/services/layout/browser/layoutService'
+import { EditorPaneDescriptor, IEditorPaneRegistry } from 'vs/workbench/browser/editor'
+import { EditorPane } from 'vs/workbench/browser/parts/editor/editorPane'
+import { ITelemetryService } from 'vs/platform/telemetry/common/telemetry'
+import { IStorageService } from 'vs/platform/storage/common/storage'
+import { IThemeService } from 'vs/platform/theme/common/themeService'
+import { ConfirmResult } from 'vs/platform/dialogs/common/dialogs'
 import { OpenEditor, wrapOpenEditor } from './tools/editor'
 import getBulkEditServiceOverride from './bulkEdit'
 import getLayoutServiceOverride from './layout'
@@ -244,8 +250,137 @@ function renderStatusBarPart (container: HTMLElement): IDisposable {
   return renderPart(Parts.STATUSBAR_PART, 'status', ['statusbar'], statusBarPart, container)
 }
 
+type Label = string | {
+  short: string
+  medium: string
+  long: string
+}
+interface EditorPanelOption {
+  readonly id: string
+  name: string
+  renderBody (container: HTMLElement): IDisposable
+}
+
+interface SimpleEditorInput extends EditorInput {
+  setName (name: Label): void
+  setTitle (title: Label): void
+  setDescription (description: Label): void
+  setDirty (dirty: boolean): void
+}
+
+function registerEditorPane (options: EditorPanelOption): { disposable: IDisposable, CustomEditorInput: new (closeHandler?: IEditorCloseHandler) => SimpleEditorInput } {
+  class CustomEditorPane extends EditorPane {
+    private content?: HTMLElement
+    constructor (
+      @ITelemetryService telemetryService: ITelemetryService,
+      @IThemeService themeService: IThemeService,
+      @IStorageService storageService: IStorageService
+    ) {
+      super(options.id, telemetryService, themeService, storageService)
+    }
+
+    protected override createEditor (parent: HTMLElement): void {
+      this.content = $('.editor-pane-content')
+      this.content.style.display = 'flex'
+      this.content.style.alignItems = 'stretch'
+      append(parent, this.content)
+      this._register(options.renderBody(this.content))
+    }
+
+    override layout (dimension: Dimension): void {
+      this.content!.style.height = `${dimension.height}px`
+      this.content!.style.width = `${dimension.width}px`
+    }
+  }
+
+  class CustomEditorInput extends EditorInput implements SimpleEditorInput {
+    static readonly ID: string = `workbench.editors.${options.id}Input`
+
+    private name: string = options.name
+    private title: Label = options.name
+    private description: Label = options.name
+    private dirty: boolean = false
+
+    constructor (public override readonly closeHandler?: IEditorCloseHandler) {
+      super()
+    }
+
+    override get typeId (): string {
+      return CustomEditorInput.ID
+    }
+
+    override get resource (): URI | undefined {
+      return undefined
+    }
+
+    public setName (name: string) {
+      this.name = name
+      this._onDidChangeLabel.fire()
+    }
+
+    public setTitle (title: string) {
+      this.title = title
+      this._onDidChangeLabel.fire()
+    }
+
+    public setDescription (description: string) {
+      this.description = description
+      this._onDidChangeLabel.fire()
+    }
+
+    private getLabelValue (label: Label, verbosity?: Verbosity) {
+      if (typeof label === 'string') {
+        return label
+      }
+      switch (verbosity) {
+        case Verbosity.SHORT:
+          return label.short
+        case Verbosity.LONG:
+          return label.long
+        case Verbosity.MEDIUM:
+        default:
+          return label.medium
+      }
+    }
+
+    override getName (): string {
+      return this.name
+    }
+
+    override getTitle (verbosity?: Verbosity) {
+      return this.getLabelValue(this.title, verbosity)
+    }
+
+    override getDescription (verbosity?: Verbosity): string {
+      return this.getLabelValue(this.description, verbosity)
+    }
+
+    override isDirty () {
+      return this.dirty
+    }
+
+    public setDirty (dirty: boolean) {
+      this.dirty = dirty
+      this._onDidChangeDirty.fire()
+    }
+  }
+
+  const disposable = Registry.as<IEditorPaneRegistry>(EditorExtensions.EditorPane).registerEditorPane(
+    EditorPaneDescriptor.create(
+      CustomEditorPane,
+      options.id,
+      options.name
+    ),
+    [new SyncDescriptor(CustomEditorInput)])
+
+  return {
+    disposable,
+    CustomEditorInput
+  }
+}
+
 interface CustomViewOption {
-  id: string
+  readonly id: string
   name: string
   order?: number
   renderBody (container: HTMLElement): IDisposable
@@ -466,13 +601,14 @@ export default function getServiceOverride (openEditorFallback?: OpenEditor, _we
   }
 }
 
-// TODO: register Panel
-// TODO render whole
-
 export {
   ViewContainerLocation,
   CustomViewOption,
   registerCustomView,
+  EditorPanelOption,
+  IEditorCloseHandler,
+  ConfirmResult,
+  registerEditorPane,
   renderSidebarPart,
   renderActivitybarPar,
   renderPanelPart,
