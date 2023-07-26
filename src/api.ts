@@ -43,14 +43,12 @@ const unsupported = <any>undefined
 
 const api: typeof vscode = {
   version: VSCODE_VERSION,
-
-  tasks: unsupported,
-  notebooks: unsupported,
-  scm: unsupported,
-  comments: unsupported,
-  authentication: unsupported,
-  tests: unsupported,
-
+  tasks: createProxy('tasks'),
+  notebooks: createProxy('notebooks'),
+  scm: createProxy('scm'),
+  comments: createProxy('comments'),
+  authentication: createProxy('authentication'),
+  tests: createProxy('tests'),
   extensions: createProxy('extensions'),
   debug: createProxy('debug'),
   env: createProxy('env'),
