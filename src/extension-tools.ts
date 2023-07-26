@@ -11,6 +11,7 @@ import { addExtension } from '@rollup/pluginutils'
 import { IUserFriendlyViewsContainerDescriptor } from 'vs/workbench/api/browser/viewsExtensionPoint'
 // @ts-ignore
 import parseCssUrl from 'css-url-parser'
+import * as mime from 'mime-types'
 import * as path from 'path'
 
 export interface ExtensionResource {
@@ -170,7 +171,7 @@ async function extractResourcesFromExtensionManifestContribute (contribute: Real
 }
 
 export async function extractResourcesFromExtensionManifest (manifest: IExtensionManifest, getFileContent: (path: string) => Promise<Buffer>): Promise<ExtensionResource[]> {
-  const resources: ExtensionResource[] = []
+  let resources: ExtensionResource[] = []
 
   if (manifest.contributes != null) {
     resources.push(...await extractResourcesFromExtensionManifestContribute(manifest.contributes as RealContribute, getFileContent))
@@ -180,6 +181,19 @@ export async function extractResourcesFromExtensionManifest (manifest: IExtensio
     resources.push({ path: jsPath, mimeType: 'text/javascript' })
     resources.push(...(await extractResources(jsPath, getFileContent)))
   }
+
+  resources = resources.map(r => {
+    if (r.mimeType == null) {
+      const detectedType = mime.lookup(r.path)
+      if (detectedType !== false) {
+        return {
+          ...r,
+          mimeType: detectedType
+        }
+      }
+    }
+    return r
+  })
 
   // remove duplicates
   return Object.values(Object.fromEntries(resources.map(r => [r.path, r])))
