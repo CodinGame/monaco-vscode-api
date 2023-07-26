@@ -592,6 +592,16 @@ export default (args: Record<string, string>): rollup.RollupOptions[] => {
           return code.replaceAll("'./keyboardLayouts/layout.contribution.' + platform", "'./keyboardLayouts/layout.contribution.' + platform + '.js'")
         }
       },
+      {
+        name: 'resolve-asset-url',
+        resolveFileUrl (options) {
+          let relativePath = options.relativePath
+          if (!relativePath.startsWith('.')) {
+            relativePath = `./${options.relativePath}`
+          }
+          return `'${relativePath}'`
+        }
+      },
       nodeResolve({
         extensions: EXTENSIONS
       }),

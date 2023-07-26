@@ -43,6 +43,16 @@ export default rollup.defineConfig(defaultExtensions.map(name => (<rollup.Rollup
         return undefined
       }
     },
+    {
+      name: 'resolve-asset-url',
+      resolveFileUrl (options) {
+        let relativePath = options.relativePath
+        if (!relativePath.startsWith('.')) {
+          relativePath = `./${options.relativePath}`
+        }
+        return `'${relativePath}'`
+      }
+    },
     nodeResolve({
       extensions: EXTENSIONS
     }),
