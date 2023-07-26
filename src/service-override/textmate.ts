@@ -12,7 +12,7 @@ import getFileServiceOverride from './files'
 import { registerServiceInitializeParticipant } from '../services'
 import { registerAssets } from '../assets'
 
-const _onigWasm = new URL('../../node_modules/vscode-oniguruma/release/onig.wasm', import.meta.url).href
+const _onigWasm = new URL('vscode-oniguruma/release/onig.wasm', import.meta.url).href
 registerAssets({
   'vscode-oniguruma/../onig.wasm': _onigWasm, // Path used inside service
   'vs/../../node_modules/vscode-oniguruma/release/onig.wasm': _onigWasm // Path used inside worker
