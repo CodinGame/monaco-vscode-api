@@ -1,4 +1,4 @@
-import '../vscode-services/missing-services'
+import '../missing-services'
 import { IEditorOverrideServices } from 'vs/editor/standalone/browser/standaloneServices'
 import 'vs/workbench/browser/parts/dialogs/dialog.web.contribution'
 import { DialogService } from 'vs/workbench/services/dialogs/common/dialogService'

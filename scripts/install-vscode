@@ -2,6 +2,7 @@
 set -e
 
 vscodeRef=$(cat './node_modules/monaco-editor/package.json' | jq -r '.["vscodeRef"]')
+cat <<< $(jq ".config.vscode.ref = \"$vscodeRef\"" package.json) > package.json
 
 monaco_esm_directory="`pwd`/node_modules/monaco-editor/esm"
 output_directory="`pwd`/vscode"
@@ -47,7 +48,7 @@ cp -R $monaco_esm_directory editor-patch/a
 cp -R $monaco_esm_directory editor-patch/b
 ## Change shake level from ClassMembers to Files
 sed -i 's/shakeLevel: 2/shakeLevel: 0/g' build/gulpfile.editor.js
-npx gulp editor-distro
+yarn gulp editor-distro
 cd out-monaco-editor-core/esm/
 cp --parents $(find -name \*.js) ../../editor-patch/b
 cd ../../editor-patch
@@ -57,6 +58,7 @@ cd ..
 
 # build and copy default extensions
 yarn compile-web || true
+yarn gulp compile-extension-media
 rm -rf $extension_output_directory
 cp -R extensions "$extension_output_directory"
 
@@ -95,7 +97,7 @@ echo $vscodeRef > $version_info
 echo "Building vscode..."
 npx tsc --declaration --importHelpers --module es2020 --preserveConstEnums --outDir "$output_directory/vs"
 # Copy files that are already built
-find ./vs \( -name '*.js' -o -name '*.d.ts' -o -name '*.css' -o -name '*.mp3' -o -name '*.svg' \) -exec rsync -R \{\} "$output_directory/" \;
+find ./vs \( -name '*.js' -o -name '*.d.ts' -o -name '*.css' -o -name '*.mp3' -o -name '*.svg' -o -name '*.html' \) -exec rsync -R \{\} "$output_directory/" \;
 
 echo "Cleaning..."
 rm -rf $build_directory

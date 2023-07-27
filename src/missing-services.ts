@@ -19,12 +19,11 @@ import { compare } from 'vs/base/common/strings'
 import { IHostService } from 'vs/workbench/services/host/browser/host'
 import { ILifecycleService } from 'vs/workbench/services/lifecycle/common/lifecycle'
 import { ILanguageDetectionService } from 'vs/workbench/services/languageDetection/common/languageDetectionWorkerService'
-import { ActivationKind, IExtensionService, NullExtensionService } from 'vs/workbench/services/extensions/common/extensions'
+import { IExtensionService, NullExtensionService } from 'vs/workbench/services/extensions/common/extensions'
 import { IKeyboardLayoutService } from 'vs/platform/keyboardLayout/common/keyboardLayout'
 import { OS } from 'vs/base/common/platform'
 import { IEnvironmentService } from 'vs/platform/environment/common/environment'
 import { IUserDataInitializationService } from 'vs/workbench/services/userData/browser/userDataInit'
-import { IBrowserWorkbenchEnvironmentService } from 'vs/workbench/services/environment/browser/environmentService'
 import { BrowserHostColorSchemeService } from 'vs/workbench/services/themes/browser/browserHostColorSchemeService'
 import { IHostColorSchemeService } from 'vs/workbench/services/themes/common/hostColorSchemeService'
 import { IPreferencesService } from 'vs/workbench/services/preferences/common/preferences'
@@ -33,21 +32,20 @@ import { StandaloneServices } from 'vs/editor/standalone/browser/standaloneServi
 import { ICodeEditorService } from 'vs/editor/browser/services/codeEditorService'
 import { IUserDataProfile, IUserDataProfilesService } from 'vs/platform/userDataProfile/common/userDataProfile'
 import { IPolicyService } from 'vs/platform/policy/common/policy'
-import { IUserDataProfileService } from 'vs/workbench/services/userDataProfile/common/userDataProfile'
+import { IUserDataProfileImportExportService, IUserDataProfileService } from 'vs/workbench/services/userDataProfile/common/userDataProfile'
 import { UserDataProfileService } from 'vs/workbench/services/userDataProfile/common/userDataProfileService'
 import { ISnippetsService } from 'vs/workbench/contrib/snippets/browser/snippets'
 import { AbstractLoggerService, ILogger, ILoggerService, LogLevel, NullLogger } from 'vs/platform/log/common/log'
-import { IDisposable, Disposable } from 'vs/base/common/lifecycle'
+import { IDisposable, Disposable, DisposableStore } from 'vs/base/common/lifecycle'
 import { FallbackKeyboardMapper } from 'vs/workbench/services/keybinding/common/fallbackKeyboardMapper'
 import { ITextMateTokenizationService } from 'vs/workbench/services/textMate/browser/textMateTokenizationFeature'
 import { IDebugService, IDebugModel, IViewModel, IAdapterManager } from 'vs/workbench/contrib/debug/common/debug'
-import { IWorkspaceTrustRequestService, WorkspaceTrustUriResponse } from 'vs/platform/workspace/common/workspaceTrust'
+import { IWorkspaceTrustEnablementService, IWorkspaceTrustRequestService, WorkspaceTrustUriResponse } from 'vs/platform/workspace/common/workspaceTrust'
 import { IActivityService } from 'vs/workbench/services/activity/common/activity'
 import { IExtensionHostDebugService } from 'vs/platform/debug/common/extensionHostDebug'
 import { IViewContainerModel, IViewDescriptorService, IViewsService } from 'vs/workbench/common/views'
 import { IHistoryService } from 'vs/workbench/services/history/common/history'
 import { ITaskService } from 'vs/workbench/contrib/tasks/common/taskService'
-import { IURITransformerService, URITransformerService } from 'vs/workbench/api/common/extHostUriTransformerService'
 import { IConfigurationResolverService } from 'vs/workbench/services/configurationResolver/common/configurationResolver'
 import { BrowserPathService } from 'vs/workbench/services/path/browser/pathService'
 import { IRemoteAgentService } from 'vs/workbench/services/remote/common/remoteAgentService'
@@ -59,7 +57,7 @@ import { IEditSessionIdentityService } from 'vs/platform/workspace/common/editSe
 import { IWorkspaceEditingService } from 'vs/workbench/services/workspaces/common/workspaceEditing'
 import { ITimerService } from 'vs/workbench/services/timer/browser/timerService'
 import { IExtensionsWorkbenchService } from 'vs/workbench/contrib/extensions/common/extensions'
-import { IWorkbenchExtensionEnablementService } from 'vs/workbench/services/extensionManagement/common/extensionManagement'
+import { EnablementState, IWorkbenchExtensionEnablementService, IWorkbenchExtensionManagementService } from 'vs/workbench/services/extensionManagement/common/extensionManagement'
 import { ITunnelService } from 'vs/platform/tunnel/common/tunnel'
 import { IWorkingCopyBackupService } from 'vs/workbench/services/workingCopy/common/workingCopyBackup'
 import { IWorkingCopyService, WorkingCopyService } from 'vs/workbench/services/workingCopy/common/workingCopyService'
@@ -103,7 +101,7 @@ import { IExtensionGalleryService, IExtensionManagementService } from 'vs/platfo
 import { IModelService } from 'vs/editor/common/services/model'
 import { ITerminalEditorService, ITerminalGroupService, ITerminalInstance, ITerminalInstanceService, ITerminalService, TerminalConnectionState } from 'vs/workbench/contrib/terminal/browser/terminal'
 import { ITerminalProfileResolverService, ITerminalProfileService } from 'vs/workbench/contrib/terminal/common/terminal'
-import { TerminalLocation } from 'vs/platform/terminal/common/terminal'
+import { ITerminalLogService, TerminalLocation } from 'vs/platform/terminal/common/terminal'
 import { ITerminalContributionService } from 'vs/workbench/contrib/terminal/common/terminalExtensionPoints'
 import { ITerminalLinkProviderService } from 'vs/workbench/contrib/terminalContrib/links/browser/links'
 import { IEnvironmentVariableService } from 'vs/workbench/contrib/terminal/common/environmentVariable'
@@ -126,9 +124,45 @@ import { ExtensionStatusBarItemService, IExtensionStatusBarItemService } from 'v
 import { IWorkbenchAssignmentService } from 'vs/workbench/services/assignment/common/assignmentService'
 import { IChatService } from 'vs/workbench/contrib/chat/common/chatService'
 import { IEmbedderTerminalService } from 'vs/workbench/services/terminal/common/embedderTerminalService'
-import { IExtensionHostProxy } from 'vs/workbench/services/extensions/common/extensionHostProxy'
-import { IExtensionDescriptionDelta } from 'vs/workbench/services/extensions/common/extensionHostProtocol'
-import { unsupported } from '../tools'
+import { ICustomEditorService } from 'vs/workbench/contrib/customEditor/common/customEditor'
+import { IWebviewWorkbenchService } from 'vs/workbench/contrib/webviewPanel/browser/webviewWorkbenchService'
+import { IWebview, IWebviewService } from 'vs/workbench/contrib/webview/browser/webview'
+import { IWebviewViewService } from 'vs/workbench/contrib/webviewView/browser/webviewViewService'
+import { IEditorDropService } from 'vs/workbench/services/editor/browser/editorDropService'
+import { IRemoteAuthorityResolverService } from 'vs/platform/remote/common/remoteAuthorityResolver'
+import { ExternalUriOpenerService, IExternalUriOpenerService } from 'vs/workbench/contrib/externalUriOpener/common/externalUriOpenerService'
+import { IAccessibleViewService } from 'vs/workbench/contrib/accessibility/browser/accessibleView'
+import { IExtension, IRelaxedExtensionDescription } from 'vs/platform/extensions/common/extensions'
+import { IExtensionManifestPropertiesService } from 'vs/workbench/services/extensions/common/extensionManifestPropertiesService'
+import { IRemoteExtensionsScannerService } from 'vs/platform/remote/common/remoteExtensionsScanner'
+import { BrowserURLService } from 'vs/workbench/services/url/browser/urlService'
+import { IURLService } from 'vs/platform/url/common/url'
+import { ICredentialsService } from 'vs/platform/credentials/common/credentials'
+import { IRemoteSocketFactoryService } from 'vs/platform/remote/common/remoteSocketFactoryService'
+import { IQuickDiffService } from 'vs/workbench/contrib/scm/common/quickDiff'
+import { ISCMService, ISCMViewService } from 'vs/workbench/contrib/scm/common/scm'
+import { IDownloadService } from 'vs/platform/download/common/download'
+import { IExtensionUrlHandler } from 'vs/workbench/services/extensions/browser/extensionUrlHandler'
+import { ICommentService } from 'vs/workbench/contrib/comments/browser/commentService'
+import { INotebookCellStatusBarService } from 'vs/workbench/contrib/notebook/common/notebookCellStatusBarService'
+import { INotebookKernelService } from 'vs/workbench/contrib/notebook/common/notebookKernelService'
+import { INotebookRendererMessagingService } from 'vs/workbench/contrib/notebook/common/notebookRendererMessagingService'
+import { IInteractiveDocumentService } from 'vs/workbench/contrib/interactive/browser/interactiveDocumentService'
+import { IInlineChatService } from 'vs/workbench/contrib/inlineChat/common/inlineChat'
+import { IChatWidgetService } from 'vs/workbench/contrib/chat/browser/chat'
+import { IRemoteExplorerService } from 'vs/workbench/services/remote/common/remoteExplorerService'
+import { IAuthenticationService } from 'vs/workbench/services/authentication/common/authentication'
+import { ITimelineService } from 'vs/workbench/contrib/timeline/common/timeline'
+import { ITestService } from 'vs/workbench/contrib/testing/common/testService'
+import { ISecretStorageService } from 'vs/platform/secrets/common/secrets'
+import { IShareService } from 'vs/workbench/contrib/share/common/share'
+import { IWorkbenchIssueService } from 'vs/workbench/services/issue/common/issue'
+import { INotebookExecutionStateService } from 'vs/workbench/contrib/notebook/common/notebookExecutionStateService'
+import { IChatContributionService } from 'vs/workbench/contrib/chat/common/chatContributionService'
+import { ITestProfileService } from 'vs/workbench/contrib/testing/common/testProfileService'
+import { IEncryptionService } from 'vs/platform/encryption/common/encryptionService'
+import { ITestResultService } from 'vs/workbench/contrib/testing/common/testResultService'
+import { unsupported } from './tools'
 
 class NullLoggerService extends AbstractLoggerService {
   constructor () {
@@ -327,50 +361,6 @@ registerSingleton(IEditorGroupsService, class EditorGroupsService implements IEd
   enforcePartOptions = unsupported
 }, InstantiationType.Eager)
 
-class WorkbenchEnvironmentService implements IBrowserWorkbenchEnvironmentService {
-  expectsResolverExtension = false
-  logsHome = URI.from({ scheme: 'logs', path: '/' })
-  windowLogsPath = URI.from({ scheme: 'logs', path: '/window.log' })
-  get extHostTelemetryLogFile () { return unsupported() }
-  readonly _serviceBrand = undefined
-  get logFile () { return unsupported() }
-  get extHostLogsPath () { return unsupported() }
-  skipReleaseNotes = true
-  skipWelcome = true
-  disableWorkspaceTrust = true
-  get webviewExternalEndpoint () { return unsupported() }
-  debugRenderer = false
-  userRoamingDataHome = URI.from({ scheme: 'user', path: '/userRoamingDataHome' })
-  keyboardLayoutResource = URI.from({ scheme: 'user', path: '/keyboardLayout.json' })
-  get argvResource () { return unsupported() }
-  snippetsHome = URI.from({ scheme: 'user', path: '/snippets' })
-  untitledWorkspacesHome = URI.from({ scheme: 'user', path: '/untitledWorkspacesHome' })
-  get globalStorageHome () { return unsupported() }
-  get workspaceStorageHome () { return unsupported() }
-  get localHistoryHome () { return unsupported() }
-  cacheHome = URI.from({ scheme: 'cache', path: '/' })
-  get userDataSyncHome () { return unsupported() }
-  get userDataSyncLogResource () { return unsupported() }
-  sync = undefined
-  debugExtensionHost = {
-    port: null,
-    break: false
-  }
-
-  isExtensionDevelopment = false
-  disableExtensions = false
-  logsPath = ''
-  verbose = false
-  isBuilt = true // Required to suppress warnings
-  disableTelemetry = false
-  get telemetryLogResource () { return unsupported() }
-  get serviceMachineIdResource () { return unsupported() }
-  get stateResource () { return unsupported() }
-  get editSessionsLogResource () { return unsupported() }
-}
-registerSingleton(IBrowserWorkbenchEnvironmentService, WorkbenchEnvironmentService, InstantiationType.Eager)
-registerSingleton(IEnvironmentService, WorkbenchEnvironmentService, InstantiationType.Eager)
-registerSingleton(IBrowserWorkbenchEnvironmentService, WorkbenchEnvironmentService, InstantiationType.Eager)
 registerSingleton(IWorkingCopyFileService, WorkingCopyFileService, InstantiationType.Eager)
 registerSingleton(IPathService, BrowserPathService, InstantiationType.Delayed)
 
@@ -378,6 +368,7 @@ registerSingleton(IProductService, class ProductService implements IProductServi
   readonly _serviceBrand = undefined
 
   version = VSCODE_VERSION
+  commit = VSCODE_REF
   nameShort = 'Code - OSS Dev'
   nameLong = 'Code - OSS Dev'
   applicationName = 'code-oss'
@@ -473,23 +464,7 @@ registerSingleton(ILanguageDetectionService, class LanguageDetectionService impl
   }
 }, InstantiationType.Eager)
 
-export class SimpleExtensionService extends NullExtensionService implements IExtensionService {
-  private extensionHostProxy: IExtensionHostProxy | undefined
-
-  override async activateByEvent (activationEvent: string, activationKind: ActivationKind | undefined = ActivationKind.Normal): Promise<void> {
-    await this.extensionHostProxy!.activateByEvent(activationEvent, activationKind)
-  }
-
-  public setExtensionHostProxy (_extensionHostProxy: IExtensionHostProxy): void {
-    this.extensionHostProxy = _extensionHostProxy
-  }
-
-  public async deltaExtensions (extensionsDelta: IExtensionDescriptionDelta): Promise<void> {
-    await this.extensionHostProxy!.deltaExtensions(extensionsDelta)
-  }
-}
-
-registerSingleton(IExtensionService, SimpleExtensionService, InstantiationType.Eager)
+registerSingleton(IExtensionService, NullExtensionService, InstantiationType.Eager)
 
 registerSingleton(IKeyboardLayoutService, class KeyboardLayoutService implements IKeyboardLayoutService {
   _serviceBrand: undefined
@@ -549,12 +524,12 @@ const profile: IUserDataProfile = {
   isDefault: true,
   name: 'default',
   location: URI.from({ scheme: 'user', path: '/profile.json' }),
-  get globalStorageHome () { return unsupported() },
+  globalStorageHome: URI.from({ scheme: 'user', path: '/globalStorage' }),
   settingsResource: URI.from({ scheme: 'user', path: '/settings.json' }),
   keybindingsResource: URI.from({ scheme: 'user', path: '/keybindings.json' }),
   tasksResource: URI.from({ scheme: 'user', path: '/tasks.json' }),
   snippetsHome: URI.from({ scheme: 'user', path: '/snippets' }),
-  get extensionsResource () { return unsupported() },
+  extensionsResource: URI.from({ scheme: 'user', path: '/extensions.json' }),
   cacheHome: URI.from({ scheme: 'cache', path: '/' })
 }
 
@@ -818,17 +793,11 @@ registerSingleton(ITaskService, class TaskService implements ITaskService {
   customize = unsupported
   openConfig = unsupported
   registerTaskProvider = unsupported
-  registerTaskSystem = unsupported
+  registerTaskSystem = () => {}
   onDidChangeTaskSystemInfo = Event.None
   hasTaskSystemInfo = false
-  registerSupportedExecutions = unsupported
+  registerSupportedExecutions = () => {}
   extensionCallbackTaskComplete = unsupported
-}, InstantiationType.Eager)
-
-registerSingleton(IURITransformerService, class InjectedURITransformerService extends URITransformerService {
-  constructor () {
-    super(null)
-  }
 }, InstantiationType.Eager)
 
 registerSingleton(IConfigurationResolverService, class ConfigurationResolverService implements IConfigurationResolverService {
@@ -892,7 +861,7 @@ registerSingleton(IEditSessionIdentityService, class EditSessionIdentityService 
   registerEditSessionIdentityProvider = unsupported
   getEditSessionIdentifier = unsupported
   provideEditSessionIdentityMatch = unsupported
-  addEditSessionIdentityCreateParticipant = unsupported
+  addEditSessionIdentityCreateParticipant = () => new DisposableStore()
   onWillCreateEditSessionIdentity = unsupported
 }, InstantiationType.Eager)
 
@@ -950,14 +919,14 @@ registerSingleton(IExtensionsWorkbenchService, class ExtensionsWorkbenchService 
 registerSingleton(IWorkbenchExtensionEnablementService, class WorkbenchExtensionEnablementService implements IWorkbenchExtensionEnablementService {
   _serviceBrand: undefined
   onEnablementChanged = Event.None
-  getEnablementState = unsupported
-  getEnablementStates = unsupported
-  getDependenciesEnablementStates = unsupported
-  canChangeEnablement = unsupported
-  canChangeWorkspaceEnablement = unsupported
-  isEnabled = unsupported
-  isEnabledEnablementState = unsupported
-  isDisabledGlobally = unsupported
+  getEnablementState = () => EnablementState.EnabledGlobally
+  getEnablementStates = (extensions: IExtension[]) => extensions.map(() => EnablementState.EnabledGlobally)
+  getDependenciesEnablementStates = () => []
+  canChangeEnablement = () => false
+  canChangeWorkspaceEnablement = () => false
+  isEnabled = () => true
+  isEnabledEnablementState = () => true
+  isDisabledGlobally = () => false
   setEnablement = unsupported
   updateExtensionsEnablementsWhenWorkspaceTrustChanges = unsupported
 }, InstantiationType.Eager)
@@ -1002,6 +971,7 @@ registerSingleton(IWorkingCopyService, WorkingCopyService, InstantiationType.Eag
 registerSingleton(IDecorationsService, DecorationsService, InstantiationType.Eager)
 registerSingleton(IElevatedFileService, BrowserElevatedFileService, InstantiationType.Eager)
 registerSingleton(IFileDialogService, class FileDialogService implements IFileDialogService {
+  preferredHome = unsupported
   _serviceBrand: undefined
   defaultFilePath = unsupported
   defaultFolderPath = unsupported
@@ -1189,6 +1159,17 @@ registerSingleton(IExtensionGalleryService, class ExtensionGalleryService implem
 
 registerSingleton(ITerminalService, class TerminalService implements ITerminalService {
   _serviceBrand: undefined
+
+  detachedXterms = []
+  get whenConnected () {
+    return (async () => {
+      unsupported()
+    })()
+  }
+
+  restoredGroupCount = 0
+  createDetachedXterm = unsupported
+
   instances = []
   get configHelper () {
     return unsupported()
@@ -1312,6 +1293,7 @@ registerSingleton(ITerminalGroupService, class TerminalGroupService implements I
 }, InstantiationType.Delayed)
 registerSingleton(ITerminalInstanceService, class TerminalInstanceService implements ITerminalInstanceService {
   _serviceBrand: undefined
+  getRegisteredBackends = () => [].values()
   onDidCreateInstance = Event.None
   convertProfileToShellLaunchConfig = unsupported
   createInstance = unsupported
@@ -1332,6 +1314,21 @@ registerSingleton(ITerminalProfileService, class TerminalProfileService implemen
   registerContributedProfile = unsupported
   getContributedProfileProvider = unsupported
   registerTerminalProfileProvider = unsupported
+}, InstantiationType.Delayed)
+
+registerSingleton(ITerminalLogService, class TerminalLogService implements ITerminalLogService {
+  _logBrand: undefined
+  _serviceBrand: undefined
+  onDidChangeLogLevel = Event.None
+  getLevel = unsupported
+  setLevel = unsupported
+  trace = unsupported
+  debug = unsupported
+  info = unsupported
+  warn = unsupported
+  error = unsupported
+  flush = unsupported
+  dispose = unsupported
 }, InstantiationType.Delayed)
 
 registerSingleton(ITerminalLinkProviderService, class TerminalLinkProviderService implements ITerminalLinkProviderService {
@@ -1390,6 +1387,7 @@ registerSingleton(ITerminalQuickFixService, class TerminalQuickFixService implem
 
 registerSingleton(IExtensionManagementService, class ExtensionManagementService implements IExtensionManagementService {
   _serviceBrand: undefined
+  installGalleryExtensions = unsupported
   onInstallExtension = Event.None
   onDidInstallExtensions = Event.None
   onUninstallExtension = Event.None
@@ -1548,6 +1546,8 @@ registerSingleton(IWorkbenchAssignmentService, class WorkbenchAssignmentService 
 
 registerSingleton(IChatService, class ChatService implements IChatService {
   _serviceBrand: undefined
+  transferredSessionId = undefined
+  transferChatSession = unsupported
   registerProvider = unsupported
   registerSlashCommandProvider = unsupported
   getProviderInfos = () => []
@@ -1573,4 +1573,496 @@ registerSingleton(IEmbedderTerminalService, class EmbedderTerminalService implem
   _serviceBrand: undefined
   onDidCreateTerminal = Event.None
   createTerminal = unsupported
+}, InstantiationType.Delayed)
+
+registerSingleton(ICustomEditorService, class CustomEditorService implements ICustomEditorService {
+  _serviceBrand: undefined
+  get models () {
+    return unsupported()
+  }
+
+  getCustomEditor = unsupported
+  getAllCustomEditors = unsupported
+  getContributedCustomEditors = unsupported
+  getUserConfiguredCustomEditors = unsupported
+  registerCustomEditorCapabilities = unsupported
+  getCustomEditorCapabilities = unsupported
+}, InstantiationType.Delayed)
+
+registerSingleton(IWebviewService, class WebviewService implements IWebviewService {
+  _serviceBrand: undefined
+  activeWebview: IWebview | undefined
+  webviews = []
+  onDidChangeActiveWebview = Event.None
+  createWebviewElement = unsupported
+  createWebviewOverlay = unsupported
+}, InstantiationType.Delayed)
+
+registerSingleton(IWebviewViewService, class WebviewService implements IWebviewViewService {
+  _serviceBrand: undefined
+  onNewResolverRegistered = Event.None
+  register = unsupported
+  resolve = unsupported
+}, InstantiationType.Delayed)
+
+registerSingleton(IWebviewWorkbenchService, class WebviewWorkbenchService implements IWebviewWorkbenchService {
+  _serviceBrand: undefined
+  get iconManager () {
+    return unsupported()
+  }
+
+  onDidChangeActiveWebviewEditor = Event.None
+  openWebview = unsupported
+  openRevivedWebview = unsupported
+  revealWebview = unsupported
+  registerResolver = () => Disposable.None
+  shouldPersist = unsupported
+  resolveWebview = unsupported
+}, InstantiationType.Delayed)
+
+registerSingleton(IEditorDropService, class EditorDropService implements IEditorDropService {
+  _serviceBrand: undefined
+  createEditorDropTarget = unsupported
+}, InstantiationType.Delayed)
+
+registerSingleton(IRemoteAuthorityResolverService, class RemoteAuthorityResolverService implements IRemoteAuthorityResolverService {
+  _serviceBrand: undefined
+  onDidChangeConnectionData = Event.None
+  resolveAuthority = unsupported
+  getConnectionData = unsupported
+  getCanonicalURI = unsupported
+  _clearResolvedAuthority = unsupported
+  _setResolvedAuthority = unsupported
+  _setResolvedAuthorityError = unsupported
+  _setAuthorityConnectionToken = unsupported
+  _setCanonicalURIProvider = unsupported
+}, InstantiationType.Delayed)
+
+registerSingleton(IExternalUriOpenerService, ExternalUriOpenerService, InstantiationType.Delayed)
+
+registerSingleton(IAccessibleViewService, class AccessibleViewService implements IAccessibleViewService {
+  _serviceBrand: undefined
+  show = unsupported
+  registerProvider = unsupported
+}, InstantiationType.Delayed)
+
+registerSingleton(IWorkbenchExtensionManagementService, class WorkbenchExtensionManagementService implements IWorkbenchExtensionManagementService {
+  _serviceBrand: undefined
+  onInstallExtension = Event.None
+  onDidInstallExtensions = Event.None
+  onUninstallExtension = Event.None
+  onDidUninstallExtension = Event.None
+  onDidChangeProfile = Event.None
+  installVSIX = unsupported
+  installFromLocation = unsupported
+  updateFromGallery = unsupported
+  onDidUpdateExtensionMetadata = Event.None
+  zip = unsupported
+  unzip = unsupported
+  getManifest = unsupported
+  install = unsupported
+  canInstall = unsupported
+  installFromGallery = unsupported
+  installGalleryExtensions = unsupported
+  installExtensionsFromProfile = unsupported
+  uninstall = unsupported
+  reinstallFromGallery = unsupported
+  getInstalled = unsupported
+  getExtensionsControlManifest = unsupported
+  copyExtensions = unsupported
+  updateMetadata = unsupported
+  download = unsupported
+  registerParticipant = unsupported
+  getTargetPlatform = unsupported
+  cleanUp = unsupported
+}, InstantiationType.Delayed)
+
+registerSingleton(IExtensionManifestPropertiesService, class ExtensionManifestPropertiesService implements IExtensionManifestPropertiesService {
+  _serviceBrand: undefined
+  prefersExecuteOnUI = unsupported
+  prefersExecuteOnWorkspace = unsupported
+  prefersExecuteOnWeb = unsupported
+  canExecuteOnUI = unsupported
+  canExecuteOnWorkspace = unsupported
+  canExecuteOnWeb = unsupported
+  getExtensionKind = unsupported
+  getUserConfiguredExtensionKind = unsupported
+  getExtensionUntrustedWorkspaceSupportType = unsupported
+  getExtensionVirtualWorkspaceSupportType = unsupported
+}, InstantiationType.Delayed)
+
+registerSingleton(IWorkspaceTrustEnablementService, class WorkspaceTrustEnablementService implements IWorkspaceTrustEnablementService {
+  _serviceBrand: undefined
+  isWorkspaceTrustEnabled (): boolean {
+    return false
+  }
+}, InstantiationType.Delayed)
+
+registerSingleton(IRemoteExtensionsScannerService, class RemoteExtensionsScannerService implements IRemoteExtensionsScannerService {
+  _serviceBrand: undefined
+  whenExtensionsReady (): Promise<void> {
+    throw new Error('Method not implemented.')
+  }
+
+  async scanExtensions (): Promise<Readonly<IRelaxedExtensionDescription>[]> {
+    return []
+  }
+
+  async scanSingleExtension (): Promise<Readonly<IRelaxedExtensionDescription> | null> {
+    return null
+  }
+}, InstantiationType.Delayed)
+
+registerSingleton(IURLService, BrowserURLService, InstantiationType.Delayed)
+
+registerSingleton(ICredentialsService, class CredentialsService implements ICredentialsService {
+  _serviceBrand: undefined
+  onDidChangePassword = Event.None
+  getSecretStoragePrefix = async () => 'code-oss'
+  getPassword = unsupported
+  setPassword = unsupported
+  deletePassword = unsupported
+  findPassword = unsupported
+  findCredentials = unsupported
+}, InstantiationType.Delayed)
+
+registerSingleton(IRemoteSocketFactoryService, class RemoteSocketFactoryService implements IRemoteSocketFactoryService {
+  _serviceBrand: undefined
+  register = unsupported
+  connect = unsupported
+}, InstantiationType.Delayed)
+
+registerSingleton(IQuickDiffService, class QuickDiffService implements IQuickDiffService {
+  _serviceBrand: undefined
+  onDidChangeQuickDiffProviders = Event.None
+  addQuickDiffProvider = unsupported
+  getQuickDiffs = unsupported
+}, InstantiationType.Delayed)
+
+registerSingleton(ISCMService, class SCMService implements ISCMService {
+  _serviceBrand: undefined
+  onDidAddRepository = Event.None
+  onDidRemoveRepository = Event.None
+  repositories = []
+  repositoryCount = 0
+  registerSCMProvider = unsupported
+  getRepository = unsupported
+}, InstantiationType.Delayed)
+
+registerSingleton(IDownloadService, class DownloadService implements IDownloadService {
+  _serviceBrand: undefined
+  download = unsupported
+}, InstantiationType.Delayed)
+
+registerSingleton(IExtensionUrlHandler, class ExtensionUrlHandler implements IExtensionUrlHandler {
+  _serviceBrand: undefined
+  registerExtensionHandler = unsupported
+  unregisterExtensionHandler = unsupported
+}, InstantiationType.Delayed)
+
+registerSingleton(ICommentService, class CommentService implements ICommentService {
+  _serviceBrand: undefined
+  onDidSetResourceCommentInfos = Event.None
+  onDidSetAllCommentThreads = Event.None
+  onDidUpdateCommentThreads = Event.None
+  onDidUpdateNotebookCommentThreads = Event.None
+  onDidChangeActiveCommentThread = Event.None
+  onDidChangeCurrentCommentThread = Event.None
+  onDidUpdateCommentingRanges = Event.None
+  onDidChangeActiveCommentingRange = Event.None
+  onDidSetDataProvider = Event.None
+  onDidDeleteDataProvider = Event.None
+  onDidChangeCommentingEnabled = Event.None
+  isCommentingEnabled = false
+  setDocumentComments = unsupported
+  setWorkspaceComments = unsupported
+  removeWorkspaceComments = unsupported
+  registerCommentController = unsupported
+  unregisterCommentController = () => {}
+  getCommentController = unsupported
+  createCommentThreadTemplate = unsupported
+  updateCommentThreadTemplate = unsupported
+  getCommentMenus = unsupported
+  updateComments = unsupported
+  updateNotebookComments = unsupported
+  disposeCommentThread = unsupported
+  getDocumentComments = unsupported
+  getNotebookComments = unsupported
+  updateCommentingRanges = unsupported
+  hasReactionHandler = unsupported
+  toggleReaction = unsupported
+  setActiveCommentThread = unsupported
+  setCurrentCommentThread = unsupported
+  enableCommenting = unsupported
+}, InstantiationType.Delayed)
+
+registerSingleton(INotebookCellStatusBarService, class NotebookCellStatusBarService implements INotebookCellStatusBarService {
+  _serviceBrand: undefined
+  onDidChangeProviders = Event.None
+  onDidChangeItems = Event.None
+  registerCellStatusBarItemProvider = unsupported
+  getStatusBarItemsForCell = unsupported
+}, InstantiationType.Delayed)
+
+registerSingleton(INotebookKernelService, class NotebookKernelService implements INotebookKernelService {
+  _serviceBrand: undefined
+  onDidAddKernel = Event.None
+  onDidRemoveKernel = Event.None
+  onDidChangeSelectedNotebooks = Event.None
+  onDidChangeNotebookAffinity = Event.None
+  registerKernel = unsupported
+  getMatchingKernel = unsupported
+  getSelectedOrSuggestedKernel = unsupported
+  selectKernelForNotebook = unsupported
+  preselectKernelForNotebook = unsupported
+  updateKernelNotebookAffinity = unsupported
+  onDidChangeKernelDetectionTasks = Event.None
+  registerNotebookKernelDetectionTask = unsupported
+  getKernelDetectionTasks = unsupported
+  onDidChangeSourceActions = Event.None
+  getSourceActions = unsupported
+  getRunningSourceActions = unsupported
+  registerKernelSourceActionProvider = unsupported
+  getKernelSourceActions2 = unsupported
+}, InstantiationType.Delayed)
+
+registerSingleton(INotebookRendererMessagingService, class NotebookRendererMessagingService implements INotebookRendererMessagingService {
+  _serviceBrand: undefined
+  onShouldPostMessage = Event.None
+  prepare = unsupported
+  getScoped = unsupported
+  receiveMessage = unsupported
+}, InstantiationType.Delayed)
+
+registerSingleton(IInteractiveDocumentService, class InteractiveDocumentService implements IInteractiveDocumentService {
+  _serviceBrand: undefined
+  onWillAddInteractiveDocument = Event.None
+  onWillRemoveInteractiveDocument = Event.None
+  willCreateInteractiveDocument = unsupported
+  willRemoveInteractiveDocument = unsupported
+}, InstantiationType.Delayed)
+
+registerSingleton(IInlineChatService, class InlineChatService implements IInlineChatService {
+  _serviceBrand: undefined
+  addProvider = unsupported
+  getAllProvider = () => []
+}, InstantiationType.Delayed)
+
+registerSingleton(IChatWidgetService, class ChatWidgetService implements IChatWidgetService {
+  _serviceBrand: undefined
+  lastFocusedWidget = undefined
+  revealViewForProvider = unsupported
+  getWidgetByInputUri = unsupported
+}, InstantiationType.Delayed)
+
+registerSingleton(IRemoteExplorerService, class RemoteExplorerService implements IRemoteExplorerService {
+  _serviceBrand: undefined
+  onDidChangeTargetType = Event.None
+  targetType = []
+  get tunnelModel () {
+    return unsupported()
+  }
+
+  onDidChangeEditable = Event.None
+  setEditable = unsupported
+  getEditableData = unsupported
+  forward = unsupported
+  close = unsupported
+  setTunnelInformation = unsupported
+  setCandidateFilter = unsupported
+  onFoundNewCandidates = unsupported
+  restore = unsupported
+  enablePortsFeatures = unsupported
+  onEnabledPortsFeatures = Event.None
+  portsFeaturesEnabled = false
+  namedProcesses = new Map()
+}, InstantiationType.Delayed)
+
+registerSingleton(IAuthenticationService, class AuthenticationService implements IAuthenticationService {
+  _serviceBrand: undefined
+  isAuthenticationProviderRegistered = () => false
+  getProviderIds = () => []
+  registerAuthenticationProvider = unsupported
+  unregisterAuthenticationProvider = unsupported
+  isAccessAllowed = () => false
+  updateAllowedExtension = unsupported
+  updateSessionPreference = unsupported
+  getSessionPreference = () => undefined
+  removeSessionPreference = unsupported
+  showGetSessionPrompt = unsupported
+  selectSession = unsupported
+  requestSessionAccess = unsupported
+  completeSessionAccessRequest = unsupported
+  requestNewSession = unsupported
+  sessionsUpdate = unsupported
+  onDidRegisterAuthenticationProvider = Event.None
+  onDidUnregisterAuthenticationProvider = Event.None
+  onDidChangeSessions = Event.None
+  declaredProviders = []
+  onDidChangeDeclaredProviders = Event.None
+  getSessions = async () => []
+  getLabel = unsupported
+  supportsMultipleAccounts = () => false
+  createSession = unsupported
+  removeSession = unsupported
+  manageTrustedExtensionsForAccount = unsupported
+  removeAccountSessions = unsupported
+}, InstantiationType.Delayed)
+
+registerSingleton(ITimelineService, class TimelineService implements ITimelineService {
+  _serviceBrand: undefined
+  onDidChangeProviders = Event.None
+  onDidChangeTimeline = Event.None
+  onDidChangeUri = Event.None
+  registerTimelineProvider = unsupported
+  unregisterTimelineProvider = unsupported
+  getSources = () => []
+  getTimeline = unsupported
+  setUri = unsupported
+}, InstantiationType.Delayed)
+
+registerSingleton(ITestService, class TestService implements ITestService {
+  _serviceBrand: undefined
+  onDidCancelTestRun = Event.None
+  get excluded () {
+    return unsupported()
+  }
+
+  get collection () {
+    return unsupported()
+  }
+
+  onWillProcessDiff = Event.None
+  onDidProcessDiff = Event.None
+  get showInlineOutput () {
+    return unsupported()
+  }
+
+  registerTestController = unsupported
+  getTestController = () => undefined
+  refreshTests = unsupported
+  cancelRefreshTests = unsupported
+  startContinuousRun = unsupported
+  runTests = unsupported
+  runResolvedTests = unsupported
+  syncTests = unsupported
+  cancelTestRun = unsupported
+  publishDiff = unsupported
+}, InstantiationType.Delayed)
+
+registerSingleton(ISecretStorageService, class SecretStorageService implements ISecretStorageService {
+  _serviceBrand: undefined
+  onDidChangeSecret = Event.None
+  type: 'in-memory' = 'in-memory'
+  get = async () => undefined
+  set = unsupported
+  delete = unsupported
+}, InstantiationType.Delayed)
+
+registerSingleton(IShareService, class ShareService implements IShareService {
+  _serviceBrand: undefined
+  registerShareProvider = unsupported
+  getShareActions = () => []
+  provideShare = async () => undefined
+}, InstantiationType.Delayed)
+
+registerSingleton(IUserDataProfileImportExportService, class UserDataProfileImportExportService implements IUserDataProfileImportExportService {
+  _serviceBrand: undefined
+  registerProfileContentHandler = unsupported
+  unregisterProfileContentHandler = unsupported
+  exportProfile = unsupported
+  importProfile = unsupported
+  showProfileContents = unsupported
+  createFromCurrentProfile = unsupported
+  createTroubleshootProfile = unsupported
+  setProfile = unsupported
+}, InstantiationType.Delayed)
+
+registerSingleton(IWorkbenchIssueService, class WorkbenchIssueService implements IWorkbenchIssueService {
+  _serviceBrand: undefined
+  openReporter = unsupported
+  openProcessExplorer = unsupported
+  registerIssueUriRequestHandler = unsupported
+}, InstantiationType.Delayed)
+
+registerSingleton(ISCMViewService, class SCMViewService implements ISCMViewService {
+  _serviceBrand: undefined
+  get menus () {
+    return unsupported()
+  }
+
+  repositories = []
+  onDidChangeRepositories = Event.None
+  visibleRepositories = []
+  onDidChangeVisibleRepositories = Event.None
+  isVisible = () => false
+  toggleVisibility = unsupported
+  toggleSortKey = unsupported
+  focusedRepository = undefined
+  onDidFocusRepository = Event.None
+  focus = unsupported
+}, InstantiationType.Delayed)
+
+registerSingleton(INotebookExecutionStateService, class NotebookExecutionStateService implements INotebookExecutionStateService {
+  _serviceBrand: undefined
+  onDidChangeExecution = Event.None
+  onDidChangeLastRunFailState = Event.None
+  forceCancelNotebookExecutions = unsupported
+  getCellExecutionsForNotebook = unsupported
+  getCellExecutionsByHandleForNotebook = unsupported
+  getCellExecution = unsupported
+  createCellExecution = unsupported
+  getExecution = unsupported
+  createExecution = unsupported
+  getLastFailedCellForNotebook = unsupported
+}, InstantiationType.Delayed)
+
+registerSingleton(IChatContributionService, class ChatContributionService implements IChatContributionService {
+  _serviceBrand: undefined
+  registeredProviders = []
+  getViewIdForProvider = unsupported
+}, InstantiationType.Delayed)
+
+registerSingleton(ITestProfileService, class TestProfileService implements ITestProfileService {
+  _serviceBrand: undefined
+  onDidChange = Event.None
+  addProfile = unsupported
+  updateProfile = unsupported
+  removeProfile = unsupported
+  capabilitiesForTest = unsupported
+  configure = unsupported
+  all = () => []
+  getGroupDefaultProfiles = () => []
+  setGroupDefaultProfiles = unsupported
+  getControllerProfiles = () => []
+}, InstantiationType.Delayed)
+
+registerSingleton(IEncryptionService, class EncryptionService implements IEncryptionService {
+  setUsePlainTextEncryption = unsupported
+  getKeyStorageProvider = unsupported
+  _serviceBrand: undefined
+  encrypt = unsupported
+  decrypt = unsupported
+  isEncryptionAvailable = unsupported
+}, InstantiationType.Delayed)
+
+registerSingleton(ITestResultService, class TestResultService implements ITestResultService {
+  _serviceBrand: undefined
+  onResultsChanged = Event.None
+  onTestChanged = Event.None
+  results = []
+  clear = unsupported
+  createLiveResult = unsupported
+  push = unsupported
+  getResult = () => undefined
+  getStateById = () => undefined
+}, InstantiationType.Delayed)
+
+registerSingleton(IUserDataInitializationService, class UserDataInitializationService implements IUserDataInitializationService {
+  _serviceBrand: undefined
+  requiresInitialization = async () => false
+  whenInitializationFinished = async () => {}
+  initializeRequiredResources = async () => {}
+  initializeInstalledExtensions = async () => {}
+  initializeOtherResources = async () => {}
 }, InstantiationType.Delayed)

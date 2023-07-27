@@ -1,4 +1,4 @@
-import '../vscode-services/missing-services'
+import '../missing-services'
 import { IEditorOverrideServices } from 'vs/editor/standalone/browser/standaloneServices'
 import { SyncDescriptor } from 'vs/platform/instantiation/common/descriptors'
 import { URI } from 'vs/base/common/uri'
@@ -9,7 +9,7 @@ import 'vs/workbench/contrib/output/browser/output.contribution'
 
 class _FileLoggerService extends FileLoggerService {
   constructor (@IFileService fileService: IFileService) {
-    super(LogLevel.Info, URI.file('logs.log'), fileService)
+    super(LogLevel.Info, URI.from({ scheme: 'logs', path: '/' }), fileService)
   }
 }
 

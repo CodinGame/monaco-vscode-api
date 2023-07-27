@@ -1,160 +1,136 @@
 import type * as vscode from 'vscode'
-import { ExtensionType, IExtension, IExtensionContributions, IExtensionDescription, IExtensionManifest, TargetPlatform } from 'vs/platform/extensions/common/extensions'
-import { ExtensionMessageCollector, ExtensionPoint, ExtensionsRegistry, IExtensionPointUser } from 'vs/workbench/services/extensions/common/extensionsRegistry'
-import { IExtensionService, IMessage, toExtensionDescription } from 'vs/workbench/services/extensions/common/extensions'
-import { generateUuid } from 'vs/base/common/uuid'
+import { ExtensionType, IExtension, IExtensionContributions, IExtensionManifest, TargetPlatform } from 'vs/platform/extensions/common/extensions'
+import { IExtensionService } from 'vs/workbench/services/extensions/common/extensions'
 import { URI } from 'vs/base/common/uri'
-import { IExtHostExtensionService } from 'vs/workbench/api/common/extHostExtensionService'
-import { StandaloneServices } from 'vs/editor/standalone/browser/standaloneServices'
 import { getExtensionId } from 'vs/platform/extensionManagement/common/extensionManagementUtil'
-import { IDisposable } from 'vs/base/common/lifecycle'
-import Severity from 'vs/base/common/severity'
+import { DisposableStore, IDisposable } from 'vs/base/common/lifecycle'
 import { ITranslations, localizeManifest } from 'vs/platform/extensionManagement/common/extensionNls'
 import { joinPath } from 'vs/base/common/resources'
 import { FileAccess } from 'monaco-editor/esm/vs/base/common/network.js'
-import { ImplicitActivationEvents } from 'vs/platform/extensionManagement/common/implicitActivationEvents'
-import { IExtensionDescriptionDelta } from 'vs/workbench/services/extensions/common/extensionHostProtocol'
+import { Barrier } from 'vs/base/common/async'
+import { ExtensionHostKind } from 'vs/workbench/services/extensions/common/extensionHostKind'
+import { IExtensionWithExtHostKind, SimpleExtensionService, getLocalExtHostExtensionService } from './service-override/extensions'
 import { registerExtensionFile } from './service-override/files'
-import { initialize as initializeExtHostServices, onExtHostInitialized } from './vscode-services/extHost'
-import { setDefaultExtension } from './default-extension'
-import { SimpleExtensionService } from './vscode-services/missing-services'
-import createApi from './createApi'
+import { setDefaultApi } from './api'
+import { getService } from './services'
 
-export function consoleExtensionMessageHandler (msg: IMessage): void {
-  if (msg.type === Severity.Error) {
-    console.error(msg)
-  } else if (msg.type === Severity.Warning) {
-    console.warn(msg)
-  } else {
-    // eslint-disable-next-line no-console
-    console.log(msg)
-  }
+const defaultApiInitializeBarrier = new Barrier()
+export async function initialize (): Promise<void> {
+  await getLocalExtHostExtensionService().then(async (extHostExtensionService) => {
+    setDefaultApi(await extHostExtensionService.getApi())
+    defaultApiInitializeBarrier.open()
+  })
 }
 
-export async function initialize (extension?: IExtensionDescription): Promise<void> {
-  if (extension != null) {
-    setDefaultExtension(extension)
-  }
-
-  await initializeExtHostServices()
+interface RegisterExtensionResult {
+  id: string
+  registerFileUrl: (path: string, url: string) => IDisposable
+  dispose (): Promise<void>
 }
 
-const hasOwnProperty = Object.hasOwnProperty
-function handleExtensionPoint<T extends IExtensionContributions[keyof IExtensionContributions]> (extensionPoint: ExtensionPoint<T>, availableExtensions: IExtensionDescription[], messageHandler: (msg: IMessage) => void): void {
-  const users: IExtensionPointUser<T>[] = []
-  for (const desc of availableExtensions) {
-    if ((desc.contributes != null) && hasOwnProperty.call(desc.contributes, extensionPoint.name)) {
-      users.push({
-        description: desc,
-        value: desc.contributes[extensionPoint.name as keyof typeof desc.contributes] as T,
-        collector: new ExtensionMessageCollector(messageHandler, desc, extensionPoint.name)
-      })
+interface RegisterLocalProcessExtensionResult extends RegisterExtensionResult {
+  getApi (): Promise<typeof vscode>
+  setAsDefaultApi (): Promise<void>
+}
+
+function registerExtensionFileUrl (extensionLocation: URI, filePath: string, url: string, mimeType?: string): IDisposable {
+  const fileDisposable = new DisposableStore()
+  fileDisposable.add(FileAccess.registerStaticBrowserUri(joinPath(extensionLocation, filePath), URI.parse(url)))
+  fileDisposable.add(registerExtensionFile(extensionLocation, filePath, async () => {
+    const response = await fetch(url, {
+      headers: mimeType != null
+        ? {
+            Accept: mimeType
+          }
+        : {}
+    })
+    if (response.status !== 200) {
+      throw new Error(response.statusText)
+    }
+    return new Uint8Array(await response.arrayBuffer())
+  }))
+  return fileDisposable
+}
+
+let _toAdd: IExtension[] = []
+let _toRemove: IExtension[] = []
+let lastPromise: Promise<void> | undefined
+async function deltaExtensions (toAdd: IExtensionWithExtHostKind[], toRemove: IExtension[]) {
+  _toAdd.push(...toAdd)
+  _toRemove.push(...toRemove)
+
+  if (lastPromise == null) {
+    const extensionService = await getService(IExtensionService) as SimpleExtensionService
+    lastPromise = new Promise(resolve => setTimeout(resolve)).then(async () => {
+      await extensionService.deltaExtensions(_toAdd, _toRemove)
+      _toAdd = []
+      _toRemove = []
+      lastPromise = undefined
+    })
+  }
+  await lastPromise
+}
+
+export function registerExtension (manifest: IExtensionManifest, extHostKind: ExtensionHostKind.LocalProcess, defaultNLS?: ITranslations, builtin?: boolean): RegisterLocalProcessExtensionResult
+export function registerExtension (manifest: IExtensionManifest, extHostKind?: ExtensionHostKind, defaultNLS?: ITranslations, builtin?: boolean): RegisterExtensionResult
+export function registerExtension (manifest: IExtensionManifest, extHostKind?: ExtensionHostKind, defaultNLS?: ITranslations, builtin: boolean = manifest.publisher === 'vscode'): RegisterExtensionResult {
+  const disposableStore = new DisposableStore()
+  const localizedManifest = defaultNLS != null ? localizeManifest(manifest, defaultNLS) : manifest
+
+  const id = getExtensionId(localizedManifest.publisher, localizedManifest.name)
+  const location = URI.from({ scheme: 'extension', authority: id, path: '/' })
+
+  const extension: IExtensionWithExtHostKind = {
+    manifest: localizedManifest,
+    type: builtin ? ExtensionType.System : ExtensionType.User,
+    isBuiltin: builtin,
+    identifier: { id },
+    location,
+    targetPlatform: TargetPlatform.WEB,
+    isValid: true,
+    validations: [],
+    extHostKind
+  }
+
+  const addExtensionPromise = deltaExtensions([extension], [])
+
+  const api: RegisterExtensionResult = {
+    id: extension.identifier.id,
+    registerFileUrl: (path: string, url: string, mimeType?: string) => {
+      return registerExtensionFileUrl(extension.location, path, url, mimeType)
+    },
+    async dispose () {
+      await deltaExtensions([], [extension])
+      disposableStore.dispose()
     }
   }
-  extensionPoint.acceptUsers(users)
-}
 
-async function deltaExtensions (toAdd: IExtensionDescription[], toRemove: IExtensionDescription[]) {
-  const affectedExtensions = (<IExtensionDescription[]>[]).concat(toAdd).concat(toRemove)
-  const affectedExtensionPoints: { [extPointName: string]: boolean } = Object.create(null)
-  for (const extensionDescription of affectedExtensions) {
-    for (const extPointName in extensionDescription.contributes) {
-      if (hasOwnProperty.call(extensionDescription.contributes, extPointName)) {
-        affectedExtensionPoints[extPointName] = true
+  if (extHostKind === ExtensionHostKind.LocalProcess) {
+    async function getApi () {
+      await addExtensionPromise
+      return (await getLocalExtHostExtensionService()).getApi(id)
+    }
+
+    return <RegisterLocalProcessExtensionResult>{
+      ...api,
+      getApi,
+      async setAsDefaultApi () {
+        setDefaultApi(await getApi())
       }
     }
   }
 
-  const addActivationEvents = ImplicitActivationEvents.createActivationEventsMap(toAdd)
-  const delta: IExtensionDescriptionDelta = {
-    toRemove: toRemove.map(ext => ext.identifier),
-    toAdd,
-    addActivationEvents,
-    myToRemove: toRemove.map(ext => ext.identifier),
-    myToAdd: toAdd.map(ext => ext.identifier)
-  }
-
-  await (StandaloneServices.get(IExtensionService) as SimpleExtensionService).deltaExtensions(delta)
-
-  const availableExtensions = (await StandaloneServices.get(IExtHostExtensionService).getExtensionRegistry()).getAllExtensionDescriptions()
-
-  const extensionPoints = ExtensionsRegistry.getExtensionPoints()
-  for (const extensionPoint of extensionPoints) {
-    if (affectedExtensionPoints[extensionPoint.name] ?? false) {
-      handleExtensionPoint(extensionPoint, availableExtensions, consoleExtensionMessageHandler)
-    }
-  }
+  return api
 }
 
-interface RegisterExtensionResult extends IDisposable {
-  api: typeof vscode
-  registerFile: (path: string, getContent: () => Promise<Uint8Array | string>) => IDisposable
-  registerSyncFile: (path: string, content: Uint8Array | string) => IDisposable
-  dispose (): void
-}
-
-const extensionFileBlobUrls = new Map<string, string>()
-function registerExtensionFileBlob (extensionLocation: URI, filePath: string, content: string | Uint8Array, mimeType?: string) {
-  const blob = new Blob([content instanceof Uint8Array ? content : new TextEncoder().encode(content)], {
-    type: mimeType
-  })
-  extensionFileBlobUrls.set(joinPath(extensionLocation, filePath).toString(), URL.createObjectURL(blob))
-}
-const original = FileAccess.uriToBrowserUri
-FileAccess.uriToBrowserUri = function (uri: URI) {
-  if (uri.scheme === 'extension') {
-    const extensionFile = extensionFileBlobUrls.get(uri.toString())
-    if (extensionFile != null) {
-      return URI.parse(extensionFile)
-    }
-  }
-  return original.call(this, uri)
-}
-
-export function registerExtension (manifest: IExtensionManifest, defaultNLS?: ITranslations): RegisterExtensionResult {
-  const uuid = generateUuid()
-  const location = URI.from({ scheme: 'extension', authority: uuid, path: '/' })
-
-  const localizedManifest = defaultNLS != null ? localizeManifest(manifest, defaultNLS) : manifest
-
-  const extension: IExtension = {
-    manifest: localizedManifest,
-    type: ExtensionType.User,
-    isBuiltin: false,
-    identifier: {
-      id: getExtensionId(localizedManifest.publisher, localizedManifest.name),
-      uuid
-    },
-    location,
-    targetPlatform: TargetPlatform.WEB,
-    isValid: true,
-    validations: []
-  }
-  const extensionDescription = toExtensionDescription(extension)
-
-  void deltaExtensions([extensionDescription], [])
-
-  const api = createApi(extensionDescription)
-
-  return {
-    api,
-    registerFile: (path: string, getContent: () => Promise<string | Uint8Array>) => {
-      return registerExtensionFile(location, path, getContent)
-    },
-    registerSyncFile: (path: string, content: string | Uint8Array, mimeType?: string) => {
-      registerExtensionFileBlob(location, path, content, mimeType)
-
-      return registerExtensionFile(location, path, async () => content)
-    },
-    dispose () {
-      void deltaExtensions([], [extensionDescription])
-    }
-  }
+function onExtHostInitialized (fct: () => void): void {
+  void defaultApiInitializeBarrier.wait().then(fct)
 }
 
 export {
   IExtensionManifest,
   ITranslations,
   IExtensionContributions,
-  onExtHostInitialized
+  onExtHostInitialized,
+  ExtensionHostKind
 }

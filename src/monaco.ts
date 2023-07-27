@@ -40,10 +40,20 @@ import { ICodeEditorService } from 'vs/editor/browser/services/codeEditorService
 import { IKeybindingService } from 'vs/platform/keybinding/common/keybinding'
 import { KeybindingResolver } from 'vs/platform/keybinding/common/keybindingResolver'
 import { WorkbenchKeybindingService } from 'vs/workbench/services/keybinding/browser/keybindingService'
-import { JsonSchema, registerJsonSchema, synchronizeJsonSchemas } from './json'
 import { createInjectedClass } from './tools/injection'
+// Selectively comes from vs/workbench/contrib/codeEditor/browser/codeEditor.contribution.ts
 import 'vs/workbench/contrib/codeEditor/browser/workbenchReferenceSearch'
-
+import 'vs/workbench/contrib/codeEditor/browser/menuPreventer'
+import 'vs/workbench/contrib/codeEditor/browser/diffEditorHelper'
+import 'vs/workbench/contrib/codeEditor/browser/largeFileOptimizations'
+import 'vs/workbench/contrib/codeEditor/browser/inspectEditorTokens/inspectEditorTokens'
+import 'vs/workbench/contrib/codeEditor/browser/saveParticipants'
+import 'vs/workbench/contrib/codeEditor/browser/toggleMinimap'
+import 'vs/workbench/contrib/codeEditor/browser/toggleMultiCursorModifier'
+import 'vs/workbench/contrib/codeEditor/browser/toggleRenderControlCharacter'
+import 'vs/workbench/contrib/codeEditor/browser/toggleWordWrap'
+import 'vs/workbench/contrib/codeEditor/browser/toggleRenderWhitespace'
+import 'vs/workbench/contrib/codeEditor/browser/editorLineNumberMenu'
 class ExtensionPoints implements IWorkbenchContribution {
   constructor (
     @IInstantiationService private readonly instantiationService: IInstantiationService
@@ -92,16 +102,19 @@ class ConfiguredStandaloneEditor extends createInjectedClass(StandaloneEditor) {
     this._register(textResourceConfigurationService.onDidChangeConfiguration(() => this.updateEditorConfiguration()))
     this._register(this.onDidChangeModelLanguage(() => this.updateEditorConfiguration()))
     this._register(this.onDidChangeModel(() => this.updateEditorConfiguration()))
+    this.updateEditorConfiguration()
   }
 
   /**
    * This method is widely inspired from vs/workbench/browser/parts/editor/textEditor
    */
   private updateEditorConfiguration (): void {
-    const resource = this.getModel()?.uri
-    if (resource == null) {
+    // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
+    if (!this.hasModel() || this.textResourceConfigurationService == null) {
+      // textResourceConfigurationService can be null if this method is called by the constructor of StandaloneEditor
       return
     }
+    const resource = this.getModel()!.uri
     const configuration = this.textResourceConfigurationService.getValue<IEditorConfiguration | undefined>(resource)
     if (configuration == null) {
       return
@@ -125,6 +138,9 @@ class ConfiguredStandaloneEditor extends createInjectedClass(StandaloneEditor) {
   }
 
   override updateOptions (newOptions: Readonly<IEditorOptions>): void {
+    // it can be null if this method is called by the constructor of StandaloneEditor
+    // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
+    this.optionsOverrides ??= {}
     const didChange = EditorOptionsUtil.applyUpdate(this.optionsOverrides, newOptions)
     if (!didChange) {
       return
@@ -238,10 +254,6 @@ export {
   Extensions,
   IJSONContributionRegistry,
   IJSONSchema,
-
-  JsonSchema,
-  registerJsonSchema,
-  synchronizeJsonSchemas,
 
   registerColor,
 

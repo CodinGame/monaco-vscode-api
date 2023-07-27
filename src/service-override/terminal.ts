@@ -1,7 +1,8 @@
-import '../vscode-services/missing-services'
+import '../missing-services'
 import { IEditorOverrideServices } from 'vs/editor/standalone/browser/standaloneServices'
 import { SyncDescriptor } from 'vs/platform/instantiation/common/descriptors'
-import { ITerminalBackend, ITerminalBackendRegistry, ITerminalProfileResolverService, ITerminalProfileService, TerminalExtensions } from 'vs/workbench/contrib/terminal/common/terminal'
+import { IProcessReadyEvent, ITerminalBackend, ITerminalBackendRegistry, ITerminalChildProcess, ITerminalLaunchError, ITerminalProfile, ITerminalsLayoutInfo, TerminalExtensions, ITerminalLogService } from 'vs/platform/terminal/common/terminal'
+import { ITerminalProfileResolverService, ITerminalProfileService } from 'vs/workbench/contrib/terminal/common/terminal'
 import { ITerminalEditorService, ITerminalGroupService, ITerminalInstanceService, ITerminalService } from 'vs/workbench/contrib/terminal/browser/terminal'
 import { TerminalService } from 'vs/workbench/contrib/terminal/browser/terminalService'
 import { TerminalEditorService } from 'vs/workbench/contrib/terminal/browser/terminalEditorService'
@@ -15,15 +16,31 @@ import { ElectronTerminalProfileResolverService } from 'vs/workbench/contrib/ter
 import { EnvironmentVariableService } from 'vs/workbench/contrib/terminal/common/environmentVariableService'
 import { IEnvironmentVariableService } from 'vs/workbench/contrib/terminal/common/environmentVariable'
 import { ITerminalQuickFixService } from 'vs/workbench/contrib/terminalContrib/quickFix/browser/quickFix'
+import { TerminalLogService } from 'vs/platform/terminal/common/terminalLogService'
 import { TerminalQuickFixService } from 'vs/workbench/contrib/terminalContrib/quickFix/browser/terminalQuickFixService'
 import { Emitter, Event } from 'vs/base/common/event'
 import { Registry } from 'vs/platform/registry/common/platform'
-import { IProcessReadyEvent, ITerminalChildProcess, ITerminalLaunchError, ITerminalProfile, ITerminalsLayoutInfo } from 'vs/platform/terminal/common/terminal'
 import { IProcessEnvironment } from 'vs/base/common/platform'
+import { PerformanceMark } from 'vs/base/common/performance'
+import { DeferredPromise } from 'vs/base/common/async'
 import { unsupported } from '../tools'
 import 'vs/workbench/contrib/terminal/browser/terminal.contribution'
+import 'vs/workbench/contrib/terminalContrib/accessibility/browser/terminal.accessibility.contribution'
 
 abstract class SimpleTerminalBackend implements ITerminalBackend {
+  isResponsive = true
+
+  private readonly _whenConnected = new DeferredPromise<void>()
+  get whenConnected (): Promise<void> { return this._whenConnected.p }
+  setConnected (): void {
+    void this._whenConnected.complete()
+  }
+
+  async getPerformanceMarks (): Promise<PerformanceMark[]> {
+    return []
+  }
+
+  restartPtyHost = unsupported
   remoteAuthority = undefined
   onPtyHostUnresponsive = Event.None
   onPtyHostResponsive = Event.None
@@ -60,10 +77,13 @@ abstract class SimpleTerminalProcess implements ITerminalChildProcess {
     setTimeout(() => {
       this.onReady.fire({
         cwd,
-        pid
+        pid,
+        windowsPty: undefined
       })
     })
   }
+
+  abstract clearBuffer(): void | Promise<void>
 
   abstract start(): Promise<ITerminalLaunchError | { injectedArgs: string[] } | undefined>
 
@@ -107,6 +127,7 @@ export default function getServiceOverride (backend: ITerminalBackend): IEditorO
   Registry.as<ITerminalBackendRegistry>(TerminalExtensions.Backend).registerTerminalBackend(backend)
   return {
     [ITerminalService.toString()]: new SyncDescriptor(TerminalService),
+    [ITerminalLogService.toString()]: new SyncDescriptor(TerminalLogService),
     [ITerminalEditorService.toString()]: new SyncDescriptor(TerminalEditorService),
     [ITerminalGroupService.toString()]: new SyncDescriptor(TerminalGroupService),
     [ITerminalInstanceService.toString()]: new SyncDescriptor(TerminalInstanceService),

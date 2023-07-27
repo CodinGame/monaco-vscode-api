@@ -9,7 +9,7 @@ import getTextmateServiceOverride from 'vscode/service-override/textmate'
 import getThemeServiceOverride from 'vscode/service-override/theme'
 import getLanguagesServiceOverride from 'vscode/service-override/languages'
 import getAudioCueServiceOverride from 'vscode/service-override/audioCue'
-import getViewsServiceOverride, { renderSidebarPart, renderActivitybarPar, renderEditorPart, renderPanelPart, renderStatusBarPart } from 'vscode/service-override/views'
+import getViewsServiceOverride, { isEditorPartVisible, renderSidebarPart, renderActivitybarPar, renderEditorPart, renderPanelPart, renderStatusBarPart } from 'vscode/service-override/views'
 import getDebugServiceOverride from 'vscode/service-override/debug'
 import getPreferencesServiceOverride from 'vscode/service-override/preferences'
 import getSnippetServiceOverride from 'vscode/service-override/snippets'
@@ -18,44 +18,37 @@ import getOutputServiceOverride from 'vscode/service-override/output'
 import getTerminalServiceOverride from 'vscode/service-override/terminal'
 import getSearchAccessServiceOverride from 'vscode/service-override/search'
 import getMarkersAccessServiceOverride from 'vscode/service-override/markers'
+import getAccessibilityAccessServiceOverride from 'vscode/service-override/accessibility'
+import getExtensionServiceOverride from 'vscode/service-override/extensions'
 import EditorWorker from 'monaco-editor/esm/vs/editor/editor.worker.js?worker'
-import JsonWorker from 'monaco-editor/esm/vs/language/json/json.worker.js?worker'
-import TypescriptWorker from 'monaco-editor/esm/vs/language/typescript/ts.worker.js?worker'
 import TextMateWorker from 'vscode/workers/textMate.worker?worker'
 import OutputLinkComputerWorker from 'vscode/workers/outputLinkComputer.worker?worker'
+import ExtensionHostWorker from 'vscode/workers/extensionHost.worker?worker'
 import * as monaco from 'monaco-editor/esm/vs/editor/editor.api.js'
 import { TerminalBackend } from './features/terminal'
 import { openNewCodeEditor } from './features/editor'
+import { toCrossOriginWorker, toWorkerConfig } from './tools/workers'
 
 // Workers
-interface WorkerConstructor {
-  new(): Worker
-}
-export type WorkerLoader = () => WorkerConstructor | Promise<WorkerConstructor>
+export type WorkerLoader = () => Worker
 const workerLoaders: Partial<Record<string, WorkerLoader>> = {
-  editorWorkerService: () => EditorWorker,
-  textMateWorker: () => TextMateWorker,
-  json: () => JsonWorker,
-  javascript: () => TypescriptWorker,
-  typescript: () => TypescriptWorker,
-  outputLinkComputer: () => OutputLinkComputerWorker
+  editorWorkerService: () => new (toCrossOriginWorker(EditorWorker))(),
+  textMateWorker: () => new (toCrossOriginWorker(TextMateWorker))(),
+  outputLinkComputer: () => new (toCrossOriginWorker(OutputLinkComputerWorker))()
 }
 window.MonacoEnvironment = {
-  getWorker: async function (moduleId, label) {
+  getWorker: function (moduleId, label) {
     const workerFactory = workerLoaders[label]
     if (workerFactory != null) {
-      const Worker = await workerFactory()
-      return new Worker()
+      return workerFactory()
     }
     throw new Error(`Unimplemented worker ${label} (${moduleId})`)
-  },
-  createTrustedTypesPolicy () {
-    return undefined
   }
 }
 
 // Override services
 await initializeMonacoService({
+  ...getExtensionServiceOverride(toWorkerConfig(ExtensionHostWorker)),
   ...getModelServiceOverride(),
   ...getNotificationServiceOverride(),
   ...getDialogsServiceOverride(),
@@ -69,13 +62,17 @@ await initializeMonacoService({
   ...getPreferencesServiceOverride(),
   ...getViewsServiceOverride(openNewCodeEditor),
   ...getSnippetServiceOverride(),
-  ...getQuickAccessServiceOverride(),
+  ...getQuickAccessServiceOverride({
+    isKeybindingConfigurationVisible: isEditorPartVisible,
+    shouldUseGlobalPicker: isEditorPartVisible
+  }),
   ...getOutputServiceOverride(),
   ...getTerminalServiceOverride(new TerminalBackend()),
   ...getSearchAccessServiceOverride(),
-  ...getMarkersAccessServiceOverride()
+  ...getMarkersAccessServiceOverride(),
+  ...getAccessibilityAccessServiceOverride()
 })
-StandaloneServices.get(ILogService).setLevel(LogLevel.Error)
+StandaloneServices.get(ILogService).setLevel(LogLevel.Off)
 
 await initializeVscodeExtensions()
 

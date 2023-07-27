@@ -1,4 +1,4 @@
-import '../vscode-services/missing-services'
+import '../missing-services'
 import { SyncDescriptor } from 'vs/platform/instantiation/common/descriptors'
 import { IInputBox, IInputOptions, IPickOptions, IQuickInputButton, IQuickInputService, IQuickNavigateConfiguration, IQuickPick, IQuickPickItem, QuickPickInput } from 'vs/platform/quickinput/common/quickInput'
 import { CancellationToken } from 'vs/base/common/cancellation'
@@ -10,10 +10,32 @@ import { IQuickAccessController } from 'vs/platform/quickinput/common/quickAcces
 import { QuickInputService } from 'vs/workbench/services/quickinput/browser/quickInputService'
 import { ICodeEditorService } from 'vs/editor/browser/services/codeEditorService'
 import { StandaloneCodeEditor } from 'vs/editor/standalone/browser/standaloneCodeEditor'
+import { CommandsQuickAccessProvider } from 'vs/workbench/contrib/quickaccess/browser/commandsQuickAccess'
 import 'vs/workbench/contrib/codeEditor/browser/quickaccess/gotoLineQuickAccess'
 import 'vs/workbench/contrib/codeEditor/browser/quickaccess/gotoSymbolQuickAccess'
 import 'vs/workbench/browser/actions/quickAccessActions'
 import 'vs/workbench/contrib/quickaccess/browser/quickAccess.contribution'
+
+let isKeybindingConfigurationVisible = () => {
+  return true
+}
+let shouldUseGlobalPicker = () => {
+  return true
+}
+
+// eslint-disable-next-line dot-notation
+const original = CommandsQuickAccessProvider.prototype['getCommandPicks']
+// eslint-disable-next-line dot-notation
+CommandsQuickAccessProvider.prototype['getCommandPicks'] = async function (this: CommandsQuickAccessProvider, token: CancellationToken) {
+  let result = await original.call(this, token)
+  if (!isKeybindingConfigurationVisible()) {
+    result = result.map(picks => ({
+      ...picks,
+      buttons: picks.buttons?.filter(button => button.tooltip !== 'Configure Keybinding')
+    }))
+  }
+  return result
+}
 
 class DelegateQuickInputService implements IQuickInputService {
   declare readonly _serviceBrand: undefined
@@ -28,7 +50,7 @@ class DelegateQuickInputService implements IQuickInputService {
 
   private get activeService (): IQuickInputService {
     const activeCodeEditor = StandaloneServices.get(ICodeEditorService).getFocusedCodeEditor()
-    if (!(activeCodeEditor instanceof StandaloneCodeEditor)) {
+    if (!(activeCodeEditor instanceof StandaloneCodeEditor) && shouldUseGlobalPicker()) {
       return this.workbenchQuickInputService
     }
 
@@ -84,7 +106,21 @@ class DelegateQuickInputService implements IQuickInputService {
   }
 }
 
-export default function getServiceOverride (): IEditorOverrideServices {
+interface QuickAccessProps {
+  isKeybindingConfigurationVisible?: () => boolean
+  shouldUseGlobalPicker?: () => boolean
+}
+
+export default function getServiceOverride ({
+  isKeybindingConfigurationVisible: _isKeybindingConfigurationVisible,
+  shouldUseGlobalPicker: _shouldUseGlobalPicker
+}: QuickAccessProps = {}): IEditorOverrideServices {
+  if (_isKeybindingConfigurationVisible != null) {
+    isKeybindingConfigurationVisible = _isKeybindingConfigurationVisible
+  }
+  if (_shouldUseGlobalPicker != null) {
+    shouldUseGlobalPicker = _shouldUseGlobalPicker
+  }
   return {
     [IQuickInputService.toString()]: new SyncDescriptor(DelegateQuickInputService)
   }

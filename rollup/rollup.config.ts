@@ -8,15 +8,13 @@ import ts from 'typescript'
 import replace from '@rollup/plugin-replace'
 import * as babylonParser from 'recast/parsers/babylon.js'
 import dynamicImportVars from '@rollup/plugin-dynamic-import-vars'
-import externalAssets from 'rollup-plugin-external-assets'
-import globImport from 'rollup-plugin-glob-import'
-import terser from '@rollup/plugin-terser'
 import styles from 'rollup-plugin-styles'
-import inject from '@rollup/plugin-inject'
+import { importMetaAssets } from '@web/rollup-plugin-import-meta-assets'
+import glob from 'fast-glob'
 import * as fs from 'fs'
+import * as fsPromise from 'fs/promises'
 import * as path from 'path'
 import { fileURLToPath } from 'url'
-import extensionDirectoryPlugin from '../dist/rollup-extension-directory-plugin.js'
 import pkg from '../package.json' assert { type: 'json' }
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url))
@@ -60,7 +58,6 @@ const PURE_FUNCTIONS = new Set([
 
 // Function calls to remove when the result is not used
 const FUNCTIONS_TO_REMOVE = new Set([
-  'registerSingleton', // Remove calls to registerSingleton from vscode code, we just want to import things, not registering services
   'registerProxyConfigurations',
   'registerViewWelcomeContent',
   'registerExtensionPoint',
@@ -69,7 +66,9 @@ const FUNCTIONS_TO_REMOVE = new Set([
 
   // For ActivityBar, remove unused actions/items
   'fillExtraContextMenuActions',
-  'createGlobalActivityActionBar'
+  'createGlobalActivityActionBar',
+  'assertRegistered', // because we implement only partially the api and vscode assert the all extHosts are registered
+  'updateEnabledApiProposals' // do not check for extension proposal api declaration
 ])
 
 const PURE_OR_TO_REMOVE_FUNCTIONS = new Set([
@@ -84,7 +83,8 @@ const REMOVE_COMMANDS = new Set([
   'SELECT_AND_START_ID',
   'debug.startFromConfig',
   'debug.installAdditionalDebuggers',
-  'REMOVE_ROOT_FOLDER_COMMAND_ID'
+  'REMOVE_ROOT_FOLDER_COMMAND_ID',
+  'debug.openView'
 ])
 
 const KEEP_COLORS = new Set([
@@ -93,27 +93,43 @@ const KEEP_COLORS = new Set([
   'notificationToast.border'
 ])
 
-const ALLOWED_WORKBENCH_CONTRIBUTIONS = new Set([
-  'AudioCueLineFeatureContribution',
-  'AudioCueLineDebuggerContribution',
-  'RegisterConfigurationSchemasContribution',
-  'EditorAutoSave',
-  'EditorStatus',
-  'DebugToolBar',
-  'DebugContentProvider',
-  'DialogHandlerContribution',
-  'ExplorerViewletViewsContribution',
-  'ViewsExtensionHandler',
-  'OutputContribution',
-  'TerminalMainContribution',
-  'PreferencesActionsContribution',
-  'PreferencesContribution',
-  'ReplacePreviewContentProvider',
-  'SearchEditorContribution',
-  'SearchEditorWorkingCopyEditorHandler',
-  'ActivityUpdater',
-  'MarkersStatusBarContributions'
+const REMOVE_WORKBENCH_CONTRIBUTIONS = new Set([
+  'DebugTitleContribution',
+  'ResetConfigurationDefaultsOverridesCache',
+  'ConfigurationMigrationWorkbenchContribution',
+  'RegisterSearchViewContribution',
+  'RemoteTerminalBackendContribution',
+  'DebugStatusContribution',
+  'ExtensionPoints'
 ])
+
+const EXTENSIONS = ['', '.ts', '.js']
+
+const BASE_DIR = path.resolve(__dirname, '..')
+const TSCONFIG = path.resolve(BASE_DIR, 'tsconfig.rollup.json')
+const SRC_DIR = path.resolve(BASE_DIR, 'src')
+const DIST_DIR = path.resolve(BASE_DIR, 'dist')
+const VSCODE_DIR = path.resolve(BASE_DIR, 'vscode')
+const NODE_MODULES_DIR = path.resolve(BASE_DIR, 'node_modules')
+const MONACO_EDITOR_DIR = path.resolve(NODE_MODULES_DIR, './monaco-editor')
+const MONACO_EDITOR_ESM_DIR = path.resolve(MONACO_EDITOR_DIR, './esm')
+const OVERRIDE_PATH = path.resolve(BASE_DIR, 'src/override')
+const KEYBOARD_LAYOUT_DIR = path.resolve(VSCODE_DIR, 'vs/workbench/services/keybinding/browser/keyboardLayouts')
+
+function getMemberExpressionPath (node: recast.types.namedTypes.MemberExpression | recast.types.namedTypes.Identifier): string | null {
+  if (node.type === 'MemberExpression') {
+    if (node.property.type === 'Identifier' && (node.object.type === 'Identifier' || node.object.type === 'MemberExpression')) {
+      const parentName = getMemberExpressionPath(node.object)
+      if (parentName == null) {
+        return null
+      }
+      return `${parentName}.${node.property.name}`
+    }
+  } else {
+    return node.name
+  }
+  return null
+}
 
 function isCallPure (file: string, functionName: string, node: recast.types.namedTypes.CallExpression): boolean {
   const args = node.arguments
@@ -123,13 +139,6 @@ function isCallPure (file: string, functionName: string, node: recast.types.name
       return false
     }
     return true
-  }
-
-  if (functionName === 'createInstance') {
-    const firstParam = args[0]!
-    if (firstParam.type === 'Identifier' && firstParam.name === 'ExtHostConsoleForwarder') {
-      return true
-    }
   }
 
   if (functionName === 'KeybindingsRegistry.registerCommandAndKeybindingRule') {
@@ -145,7 +154,7 @@ function isCallPure (file: string, functionName: string, node: recast.types.name
   }
 
   if (functionName === 'CommandsRegistry.registerCommand') {
-    if (file.includes('fileActions.contribution') || file.includes('workspaceCommands')) {
+    if (file.includes('fileActions.contribution') || file.includes('workspaceCommands') || file.includes('mainThreadCLICommands')) {
       return true
     }
   }
@@ -165,7 +174,8 @@ function isCallPure (file: string, functionName: string, node: recast.types.name
         firstParamName.includes('Panels') ||
         firstParamName.includes('Auxiliary') ||
         firstParamName.includes('EditorPane') ||
-        firstParamName.includes('TerminalExtensions')
+        firstParamName.includes('TerminalExtensions') ||
+        firstParamName.includes('ConfigurationMigration')
       return !allowed
     }
   }
@@ -226,7 +236,10 @@ function isCallPure (file: string, functionName: string, node: recast.types.name
 
   if (functionName === 'registerWorkbenchContribution') {
     const firstParam = args[0]!
-    if (firstParam.type === 'Identifier' && ALLOWED_WORKBENCH_CONTRIBUTIONS.has(firstParam.name)) {
+    if (firstParam.type === 'Identifier') {
+      if (REMOVE_WORKBENCH_CONTRIBUTIONS.has(firstParam.name)) {
+        return true
+      }
       return false
     }
     return true
@@ -266,145 +279,217 @@ function isCallPure (file: string, functionName: string, node: recast.types.name
     }
   }
 
+  if (functionName === 'registerSingleton') {
+    if (file.includes('vs/workbench/api/')) {
+      return false
+    }
+    return true
+  }
+
   return PURE_OR_TO_REMOVE_FUNCTIONS.has(functionName)
 }
 
-const EXTENSIONS = ['', '.ts', '.js']
-
-const BASE_DIR = path.resolve(__dirname, '..')
-const TSCONFIG = path.resolve(BASE_DIR, 'tsconfig.rollup.json')
-const SRC_DIR = path.resolve(BASE_DIR, 'src')
-const DIST_DIR = path.resolve(BASE_DIR, 'dist')
-const VSCODE_DIR = path.resolve(BASE_DIR, 'vscode')
-const NODE_MODULES_DIR = path.resolve(BASE_DIR, 'node_modules')
-const MONACO_EDITOR_DIR = path.resolve(NODE_MODULES_DIR, './monaco-editor')
-const MONACO_EDITOR_ESM_DIR = path.resolve(MONACO_EDITOR_DIR, './esm')
-const OVERRIDE_PATH = path.resolve(BASE_DIR, 'src/override')
-const DEFAULT_EXTENSIONS_PATH = path.resolve(BASE_DIR, 'vscode-default-extensions')
-const KEYBOARD_LAYOUT_DIR = path.resolve(VSCODE_DIR, 'vs/workbench/services/keybinding/browser/keyboardLayouts')
-
-function getMemberExpressionPath (node: recast.types.namedTypes.MemberExpression | recast.types.namedTypes.Identifier): string | null {
-  if (node.type === 'MemberExpression') {
-    if (node.property.type === 'Identifier' && (node.object.type === 'Identifier' || node.object.type === 'MemberExpression')) {
-      const parentName = getMemberExpressionPath(node.object)
-      if (parentName == null) {
-        return null
-      }
-      return `${parentName}.${node.property.name}`
-    }
-  } else {
-    return node.name
-  }
-  return null
+interface TreeShakeOptions {
+  include: string[]
+  exclude: string[]
 }
 
-const USE_DEFAULT_EXTENSIONS = new Set([
-  'bat',
-  'clojure',
-  'coffeescript',
-  'cpp',
-  'csharp',
-  'css',
-  'dart',
-  'diff',
-  'docker',
-  'fsharp',
-  'go',
-  'groovy',
-  'handlebars',
-  'hlsl',
-  'html',
-  'ini',
-  'java',
-  'javascript',
-  'json',
-  'julia',
-  'latex',
-  'less',
-  'log',
-  'lua',
-  'make',
-  'markdown-basics',
-  'npm',
-  'objective-c',
-  'perl',
-  'php',
-  'powershell',
-  'pug',
-  'python',
-  'r',
-  'razor',
-  'references-view',
-  'ruby',
-  'rust',
-  'scss',
-  'search-result',
-  'shaderlab',
-  'shellscript',
-  'sql',
-  'swift',
-  'theme-abyss',
-  'theme-defaults',
-  'theme-kimbie-dark',
-  'theme-monokai-dimmed',
-  'theme-monokai',
-  'theme-quietlight',
-  'theme-red',
-  'theme-seti',
-  'theme-solarized-dark',
-  'theme-solarized-light',
-  'theme-tomorrow-night-blue',
-  'vs-seti',
-  'typescript-basics',
-  'vb',
-  'xml',
-  'yaml'
-])
+function transformVSCodeCode (id: string, code: string, options: TreeShakeOptions) {
+  // HACK: assign typescript decorator result to a decorated class field so rollup doesn't remove them
+  // before:
+  // __decorate([
+  //     memoize
+  // ], InlineBreakpointWidget.prototype, "getId", null);
+  //
+  // after:
+  // InlineBreakpointWidget.__decorator = __decorate([
+  //     memoize
+  // ], InlineBreakpointWidget.prototype, "getId", null);
+
+  let patchedCode = code.replace(/(^__decorate\(\[\n.*\n\], (.*).prototype)/gm, '$2.__decorator = $1')
+
+  const ast = recast.parse(patchedCode, {
+    parser: babylonParser
+  })
+  let transformed: boolean = false
+  function addComment (node: recast.types.namedTypes.NewExpression | recast.types.namedTypes.CallExpression) {
+    if (!(node.comments ?? []).some(comment => comment.value === PURE_ANNO)) {
+      transformed = true
+      node.comments ??= []
+      node.comments.unshift(recast.types.builders.commentBlock(PURE_ANNO, true))
+      return recast.types.builders.parenthesizedExpression(node)
+    }
+    return node
+  }
+  recast.visit(ast.program.body, {
+    visitExportNamedDeclaration (path) {
+      if (path.node.specifiers != null && path.node.specifiers.some(specifier => specifier.exported.name === 'LayoutPriority')) {
+        // For some reasons, this re-export is not used but rollup is not able to treeshake it
+        // It's an issue because it's a const enum imported from monaco (so it doesn't exist in the js code)
+        path.node.specifiers = path.node.specifiers.filter(specifier => specifier.exported.name !== 'LayoutPriority')
+        transformed = true
+      }
+      this.traverse(path)
+    },
+    visitNewExpression (path) {
+      const node = path.node
+      if (node.callee.type === 'Identifier') {
+        path.replace(addComment(node))
+      }
+      this.traverse(path)
+    },
+    visitCallExpression (path) {
+      const node = path.node
+      const name = node.callee.type === 'MemberExpression' || node.callee.type === 'Identifier' ? getMemberExpressionPath(node.callee) : null
+
+      if (node.callee.type === 'MemberExpression') {
+        if (node.callee.property.type === 'Identifier') {
+          const names: string[] = [node.callee.property.name]
+          if (name != null) {
+            names.unshift(name)
+          }
+          if (options.include.length > 0 ? !names.some(name => options.include.includes(name)) : (names.some(name => isCallPure(id, name, node) || options.exclude.includes(name)))) {
+            path.replace(addComment(node))
+          }
+        }
+      } else if (node.callee.type === 'Identifier' && (options.include.length > 0 ? !options.include.includes(node.callee.name) : (isCallPure(id, node.callee.name, node) || options.exclude.includes(node.callee.name)))) {
+        path.replace(addComment(node))
+      } else if (node.callee.type === 'FunctionExpression') {
+        const lastInstruction = node.callee.body.body[node.callee.body.body.length - 1]
+        const lastInstructionIsReturn = lastInstruction?.type === 'ReturnStatement' && lastInstruction.argument != null
+        if (node.arguments.length > 0 || lastInstructionIsReturn) {
+          // heuristic: mark IIFE with parameters or with a return as pure, because typescript compile enums as IIFE
+          path.replace(addComment(node))
+        }
+      }
+      this.traverse(path)
+      return undefined
+    },
+    visitThrowStatement () {
+      return false
+    },
+    visitClassDeclaration (path) {
+      /**
+       * The whole point of this method is to transform to static field declarations
+       * ```
+       * class Toto {
+       * }
+       * Toto.FIELD = 'tata'
+       * ```
+       * become
+       * ```
+       * class Toto {
+       *   static FIELD = 'tata'
+       * }
+       * ```
+       * So rollup will know it's a static field without side effects
+       * As per version 3.26, it the class extends an external class (from monaco), rollup will infer the field has a side effect
+       * It is mainly designed for `OnAutoForwardedAction` with has a static field and pull a lot of unused code
+       * => https://rollupjs.org/repl/?version=3.26.0&shareable=JTdCJTIyZXhhbXBsZSUyMiUzQW51bGwlMkMlMjJtb2R1bGVzJTIyJTNBJTVCJTdCJTIybmFtZSUyMiUzQSUyMm1haW4uanMlMjIlMkMlMjJjb2RlJTIyJTNBJTIyJTVDbmNsYXNzJTIwVG90byUyMGV4dGVuZHMlMjBEaXNwb3NhYmxlJTIwJTdCJTVDbiU3RCU1Q25Ub3RvLkZJRUxEJTIwJTNEJTIwJ3RhdGEnJTVDbiUyMiUyQyUyMmlzRW50cnklMjIlM0F0cnVlJTdEJTVEJTJDJTIyb3B0aW9ucyUyMiUzQSU3QiUyMm91dHB1dCUyMiUzQSU3QiUyMmZvcm1hdCUyMiUzQSUyMmVzJTIyJTdEJTJDJTIydHJlZXNoYWtlJTIyJTNBJTIyc21hbGxlc3QlMjIlN0QlN0Q=
+       */
+      if (!(path.node.id?.type === 'Identifier')) {
+        this.traverse(path)
+        return
+      }
+      let statemementListPath = path.parentPath
+      while (statemementListPath != null && !Array.isArray(statemementListPath.value)) {
+        statemementListPath = statemementListPath.parentPath
+      }
+      const parentIndex = statemementListPath.value.indexOf(path.node)
+      for (let i = parentIndex + 1; i < path.parentPath.value.length; ++i) {
+        const node: recast.types.namedTypes.Node = path.parentPath.value[i]
+        function isExpressionStatement (node: recast.types.namedTypes.Node): node is recast.types.namedTypes.ExpressionStatement {
+          return node.type === 'ExpressionStatement'
+        }
+        function isLiteral (node: recast.types.namedTypes.Node): node is recast.types.namedTypes.NumericLiteral | recast.types.namedTypes.Literal | recast.types.namedTypes.BooleanLiteral | recast.types.namedTypes.DecimalLiteral {
+          return ['NumericLiteral', 'Literal', 'StringLiteral', 'BooleanLiteral', 'DecimalLiteral'].includes(node.type)
+        }
+        if (isExpressionStatement(node) &&
+          node.expression.type === 'AssignmentExpression' &&
+          node.expression.left.type === 'MemberExpression' &&
+          node.expression.left.object.type === 'Identifier' &&
+          node.expression.left.object.name === path.node.id.name &&
+          node.expression.left.property.type === 'Identifier' &&
+          isLiteral(node.expression.right)
+        ) {
+          const fieldName = node.expression.left.property.name
+          path.node.body.body.push(recast.types.builders.classProperty(recast.types.builders.identifier(fieldName), node.expression.right, null, true))
+          path.parentPath.value.splice(i--, 1)
+          transformed = true
+        } else {
+          break
+        }
+      }
+      this.traverse(path)
+    }
+  })
+  // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
+  if (transformed) {
+    patchedCode = recast.print(ast).code
+    patchedCode = patchedCode.replace(/\/\*#__PURE__\*\/\s+/g, '/*#__PURE__*/ ') // Remove space after PURE comment
+  }
+  return patchedCode
+}
+
+function resolveVscode (importee: string, importer?: string) {
+  if (importee === '@vscode/iconv-lite-umd') {
+    return path.resolve(OVERRIDE_PATH, 'iconv.ts')
+  }
+  if (importee === 'jschardet') {
+    return path.resolve(OVERRIDE_PATH, 'jschardet.ts')
+  }
+  if (importer != null && importee.startsWith('.')) {
+    importee = path.resolve(path.dirname(importer), importee)
+  }
+
+  // import weak so that AbstractTextEditor is not imported just to do an instanceof on it
+  if (importer != null && importer.includes('vs/workbench/api/browser/mainThreadDocumentsAndEditors') && importee.includes('browser/parts/editor/textEditor')) {
+    importee = importee.replace('textEditor', 'textEditor.weak')
+  }
+
+  if (importee.startsWith('vscode/')) {
+    return resolve(path.relative('vscode', importee), [VSCODE_DIR])
+  }
+  let vscodeImportPath = importee
+  if (importee.startsWith(VSCODE_DIR)) {
+    vscodeImportPath = path.relative(VSCODE_DIR, importee)
+  }
+  const overridePath = resolve(vscodeImportPath, [OVERRIDE_PATH])
+  if (overridePath != null) {
+    return overridePath
+  }
+
+  if (vscodeImportPath.startsWith('vs/')) {
+    if (resolve(vscodeImportPath, [MONACO_EDITOR_ESM_DIR]) != null) {
+      // File exists on monaco, import from monaco esm
+      return path.relative(NODE_MODULES_DIR, path.resolve(MONACO_EDITOR_ESM_DIR, vscodeImportPath)) + '.js'
+    }
+    return resolve(vscodeImportPath, [VSCODE_DIR])
+  }
+  return undefined
+}
 
 const input = {
   api: './src/api.ts',
   extensions: './src/extensions.ts',
   services: './src/services.ts',
-  'service-override/notifications': './src/service-override/notifications.ts',
-  'service-override/bulkEdit': './src/service-override/bulkEdit.ts',
-  'service-override/dialogs': './src/service-override/dialogs.ts',
-  'service-override/model': './src/service-override/model.ts',
-  'service-override/editor': './src/service-override/editor.ts',
-  'service-override/files': './src/service-override/files.ts',
-  'service-override/configuration': './src/service-override/configuration.ts',
-  'service-override/keybindings': './src/service-override/keybindings.ts',
-  'service-override/textmate': './src/service-override/textmate.ts',
-  'service-override/theme': './src/service-override/theme.ts',
-  'service-override/snippets': './src/service-override/snippets.ts',
-  'service-override/languages': './src/service-override/languages.ts',
-  'service-override/audioCue': './src/service-override/audioCue.ts',
-  'service-override/debug': './src/service-override/debug.ts',
-  'service-override/preferences': './src/service-override/preferences.ts',
-  'service-override/views': './src/service-override/views.ts',
-  'service-override/quickaccess': './src/service-override/quickaccess.ts',
-  'service-override/output': './src/service-override/output.ts',
-  'service-override/terminal': './src/service-override/terminal.ts',
-  'service-override/search': './src/service-override/search.ts',
-  'service-override/markers': './src/service-override/markers.ts',
-  'workers/textMate.worker': './src/workers/textMate.worker.ts',
-  'workers/outputLinkComputer.worker': './src/workers/outputLinkComputer.worker.ts',
   monaco: './src/monaco.ts',
   ...Object.fromEntries(
-    fs.readdirSync(DEFAULT_EXTENSIONS_PATH, { withFileTypes: true })
-      .filter(f => USE_DEFAULT_EXTENSIONS.has(f.name))
-      .filter(f => f.isDirectory() && fs.existsSync(path.resolve(DEFAULT_EXTENSIONS_PATH, f.name, 'package.json')))
+    fs.readdirSync(path.resolve(SRC_DIR, 'service-override'), { withFileTypes: true })
+      .filter(f => f.isFile())
       .map(f => f.name)
       .map(name => [
-        `default-extensions/${name}`,
-        path.resolve(DEFAULT_EXTENSIONS_PATH, name)
+        `service-override/${path.basename(name, '.ts')}`,
+        `./src/service-override/${name}`
       ])
-  )
+  ),
+  'workers/textMate.worker': './src/workers/textMate.worker.ts',
+  'workers/outputLinkComputer.worker': './src/workers/outputLinkComputer.worker.ts',
+  'workers/extensionHost.worker': './src/workers/extensionHost.worker.ts'
 }
 
 const externals = Object.keys({ ...pkg.peerDependencies })
 const external: rollup.ExternalOption = (source) => {
-  // mark semver as external so it's ignored (the code that imports it will be treeshaked out)
-  if (source.includes('semver')) return true
   if (source.includes('tas-client-umd')) return true
   if (source.startsWith(MONACO_EDITOR_DIR) || source.startsWith('monaco-editor/')) {
     return true
@@ -415,6 +500,8 @@ const external: rollup.ExternalOption = (source) => {
 export default (args: Record<string, string>): rollup.RollupOptions[] => {
   const vscodeVersion = args['vscode-version']
   delete args['vscode-version']
+  const vscodeRef = args['vscode-ref']
+  delete args['vscode-ref']
   if (vscodeVersion == null) {
     throw new Error('Vscode version is mandatory')
   }
@@ -424,23 +511,28 @@ export default (args: Record<string, string>): rollup.RollupOptions[] => {
       annotations: true,
       preset: 'smallest',
       moduleSideEffects (id) {
-        if (id.endsWith('vs/workbench/browser/media/style.css')) {
+        const path = new URL(id, 'file:/').pathname
+        if (path.endsWith('vs/workbench/browser/media/style.css')) {
           // Remove global vscode css rules
           return false
         }
-        return id.startsWith(SRC_DIR) ||
-          id.endsWith('.css') ||
-          id.startsWith(KEYBOARD_LAYOUT_DIR) ||
-          id.endsWith('.contribution.js') ||
-          id.endsWith('ExtensionPoint.js') ||
-          id.includes('vs/workbench/api/browser/') ||
-          id.endsWith('/fileCommands.js') ||
-          id.endsWith('/explorerViewlet.js') ||
-          id.endsWith('/listCommands.js') ||
-          id.endsWith('/quickAccessActions.js') ||
-          id.endsWith('/gotoLineQuickAccess.js') ||
-          id.endsWith('/workbenchReferenceSearch.js') ||
-          id.includes('/searchActions')
+        return path.startsWith(SRC_DIR) ||
+          path.endsWith('.css') ||
+          path.startsWith(KEYBOARD_LAYOUT_DIR) ||
+          path.endsWith('.contribution.js') ||
+          path.endsWith('xtensionPoint.js') ||
+          path.includes('vs/workbench/api/browser/') ||
+          path.endsWith('/fileCommands.js') ||
+          path.endsWith('/explorerViewlet.js') ||
+          path.endsWith('/listCommands.js') ||
+          path.endsWith('/quickAccessActions.js') ||
+          path.endsWith('/gotoLineQuickAccess.js') ||
+          path.endsWith('/workbenchReferenceSearch.js') ||
+          path.includes('/searchActions') ||
+          path.endsWith('documentSymbolsOutline.js') ||
+          path.includes('vs/workbench/contrib/codeEditor/browser/') ||
+          path.includes('extHost.common.services') ||
+          path.includes('extHost.worker.services')
       }
     },
     external,
@@ -460,54 +552,54 @@ export default (args: Record<string, string>): rollup.RollupOptions[] => {
     }],
     input,
     plugins: [
-      inject({
-        fetch: path.resolve('src/custom-fetch.ts'),
-        include: [/extHostExtensionService/]
+      importMetaAssets({
+        include: ['**/*.ts', '**/*.js'],
+        exclude: ['**/service-override/textmate.ts']
       }),
       commonjs(),
-      extensionDirectoryPlugin({
-        include: `${DEFAULT_EXTENSIONS_PATH}/**/*`,
-        isDefaultExtension: true,
-        rollupPlugins: [
-          commonjs(),
-          terser()
-        ]
-      }),
       {
         name: 'resolve-vscode',
-        resolveId: async function (importee, importer) {
-          if (importee === '@vscode/iconv-lite-umd') {
-            return path.resolve(OVERRIDE_PATH, 'iconv.ts')
-          }
-          if (importee === 'jschardet') {
-            return path.resolve(OVERRIDE_PATH, 'jschardet.ts')
-          }
-          if (importer != null && importee.startsWith('.')) {
-            importee = path.resolve(path.dirname(importer), importee)
-          }
-          if (importee.startsWith('vscode/')) {
-            return resolve(path.relative('vscode', importee), [VSCODE_DIR])
-          }
-          let vscodeImportPath = importee
-          if (importee.startsWith(VSCODE_DIR)) {
-            vscodeImportPath = path.relative(VSCODE_DIR, importee)
-          }
-          const overridePath = resolve(vscodeImportPath, [OVERRIDE_PATH])
-          if (overridePath != null) {
-            return overridePath
-          }
+        resolveId: (importeeUrl, importer) => {
+          const result = /^(.*?)(\?.*)?$/.exec(importeeUrl)!
+          const importee = result[1]!
+          const search = result[2] ?? ''
 
-          if (vscodeImportPath.startsWith('vs/')) {
-            if (resolve(vscodeImportPath, [MONACO_EDITOR_ESM_DIR]) != null) {
-              // File exists on monaco, import from monaco esm
-              return path.relative(NODE_MODULES_DIR, path.resolve(MONACO_EDITOR_ESM_DIR, vscodeImportPath)) + '.js'
-            }
-            return resolve(vscodeImportPath, [VSCODE_DIR])
+          const resolved = resolveVscode(importee, importer)
+
+          if (resolved != null) {
+            return `${resolved}${search}`
           }
           return undefined
         },
+        async load (id) {
+          if (!id.startsWith(VSCODE_DIR)) {
+            return undefined
+          }
+          const [, path, query] = /^(.*?)(\?.*?)?$/.exec(id)!
+          if (!path!.endsWith('.js')) {
+            return undefined
+          }
+
+          const searchParams = new URLSearchParams(query)
+          const options: TreeShakeOptions = {
+            include: searchParams.getAll('include'),
+            exclude: searchParams.getAll('exclude')
+          }
+          const content = (await fsPromise.readFile(path!)).toString('utf-8')
+          return transformVSCodeCode(path!, content, options)
+        },
         transform (code) {
           return code.replaceAll("'./keyboardLayouts/layout.contribution.' + platform", "'./keyboardLayouts/layout.contribution.' + platform + '.js'")
+        }
+      },
+      {
+        name: 'resolve-asset-url',
+        resolveFileUrl (options) {
+          let relativePath = options.relativePath
+          if (!relativePath.startsWith('.')) {
+            relativePath = `./${options.relativePath}`
+          }
+          return `'${relativePath}'`
         }
       },
       nodeResolve({
@@ -562,101 +654,44 @@ export default (args: Record<string, string>): rollup.RollupOptions[] => {
             }
           }]
         }
-      }),
-      {
-        name: 'improve-vscode-treeshaking',
-        transform (code, id) {
-          if (id.startsWith(VSCODE_DIR) && id.endsWith('.js')) {
-            // HACK: assign typescript decorator result to a decorated class field so rollup doesn't remove them
-            // before:
-            // __decorate([
-            //     memoize
-            // ], InlineBreakpointWidget.prototype, "getId", null);
-            //
-            // after:
-            // InlineBreakpointWidget.__decorator = __decorate([
-            //     memoize
-            // ], InlineBreakpointWidget.prototype, "getId", null);
-
-            const patchedCode = code.replace(/(^__decorate\(\[\n.*\n\], (.*).prototype)/gm, '$2.__decorator = $1')
-
-            const ast = recast.parse(patchedCode, {
-              parser: babylonParser
-            })
-            let transformed: boolean = false
-            function addComment (node: recast.types.namedTypes.NewExpression | recast.types.namedTypes.CallExpression) {
-              if (!(node.comments ?? []).some(comment => comment.value === PURE_ANNO)) {
-                transformed = true
-                node.comments ??= []
-                node.comments.unshift(recast.types.builders.commentBlock(PURE_ANNO, true))
-                return recast.types.builders.parenthesizedExpression(node)
-              }
-              return node
-            }
-            recast.visit(ast.program.body, {
-              visitExportNamedDeclaration (path) {
-                if (path.node.specifiers != null && path.node.specifiers.some(specifier => specifier.exported.name === 'LayoutPriority')) {
-                  // For some reasons, this re-export is not used but rollup is not able to treeshake it
-                  // It's an issue because it's a const enum imported from monaco (so it doesn't exist in the js code)
-                  path.node.specifiers = path.node.specifiers.filter(specifier => specifier.exported.name !== 'LayoutPriority')
-                  transformed = true
-                }
-                this.traverse(path)
-              },
-              visitNewExpression (path) {
-                const node = path.node
-                if (node.callee.type === 'Identifier') {
-                  path.replace(addComment(node))
-                }
-                this.traverse(path)
-              },
-              visitCallExpression (path) {
-                const node = path.node
-                const name = node.callee.type === 'MemberExpression' || node.callee.type === 'Identifier' ? getMemberExpressionPath(node.callee) : null
-
-                if (node.callee.type === 'MemberExpression') {
-                  if (node.callee.property.type === 'Identifier') {
-                    if ((name != null && isCallPure(id, name, node)) || isCallPure(id, node.callee.property.name, node)) {
-                      path.replace(addComment(node))
-                    }
-                  }
-                } else if (node.callee.type === 'Identifier' && isCallPure(id, node.callee.name, node)) {
-                  path.replace(addComment(node))
-                } else if (node.callee.type === 'FunctionExpression') {
-                  const lastInstruction = node.callee.body.body[node.callee.body.body.length - 1]
-                  const lastInstructionIsReturn = lastInstruction?.type === 'ReturnStatement' && lastInstruction.argument != null
-                  if (node.arguments.length > 0 || lastInstructionIsReturn) {
-                    // heuristic: mark IIFE with parameters or with a return as pure, because typescript compile enums as IIFE
-                    path.replace(addComment(node))
-                  }
-                }
-                this.traverse(path)
-                return undefined
-              },
-              visitThrowStatement () {
-                return false
-              }
-            })
-            // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
-            if (transformed) {
-              code = recast.print(ast).code
-              code = code.replace(/\/\*#__PURE__\*\/\s+/g, '/*#__PURE__*/ ') // Remove space after PURE comment
-            }
-            return code
-          }
-          return undefined
-        }
-      }, replace({
+      }), replace({
         VSCODE_VERSION: JSON.stringify(vscodeVersion),
+        VSCODE_REF: JSON.stringify(vscodeRef),
         preventAssignment: true
       }),
-      globImport({
-        format: 'default',
-        rename (name, id) {
-          return path.relative(VSCODE_DIR, id).replace(/[/.]/g, '_')
+      (() => {
+        const realPaths = new Map<string, string>()
+        return <rollup.Plugin>{
+          name: 'vscode-asset-glob-meta-url',
+          async resolveId (importee) {
+            if (!importee.includes('*')) {
+              return null
+            }
+
+            const fakePath = path.resolve(VSCODE_DIR, importee.replace(/\*/, 'all'))
+            realPaths.set(fakePath, importee)
+            return fakePath
+          },
+          async load (id) {
+            const realPath = realPaths.get(id)
+            if (realPath == null) {
+              return undefined
+            }
+            const files = await glob(realPath, { cwd: VSCODE_DIR })
+
+            const fileRefs = await Promise.all(files.map(async file => {
+              const filePath = path.resolve(VSCODE_DIR, file)
+              const ref = this.emitFile({
+                type: 'asset',
+                name: path.basename(file),
+                source: await fsPromise.readFile(filePath)
+              })
+              return { file, ref }
+            }))
+            return `export default {${fileRefs.map(({ file, ref }) => `\n  '${file}': import.meta.ROLLUP_FILE_URL_${ref}`).join(',')}\n}`
+          }
         }
-      }),
-      externalAssets(['**/*.mp3', '**/*.wasm']),
+      })(),
       styles({
         mode: 'inject',
         minimize: true
@@ -750,7 +785,6 @@ export default (args: Record<string, string>): rollup.RollupOptions[] => {
     }, nodeResolve({
       extensions: EXTENSIONS
     }),
-    externalAssets(['**/*.mp3', '**/*.wasm']),
     {
       name: 'cleanup',
       renderChunk (code) {

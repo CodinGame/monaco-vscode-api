@@ -1,27 +1,24 @@
 import { createFilter, FilterPattern, dataToEsm } from '@rollup/pluginutils'
-import { InputPluginOption, Plugin } from 'rollup'
+import { Plugin } from 'rollup'
 import { IExtensionManifest } from 'vs/platform/extensions/common/extensions'
 import { localizeManifest } from 'vs/platform/extensionManagement/common/extensionNls.js'
-import { isBinaryFileSync } from 'isbinaryfile'
-import { lookup as lookupMimeType } from 'mime-types'
 import * as path from 'path'
 import * as fsPromise from 'fs/promises'
 import * as fs from 'fs'
-import { buildExtensionCode, compressResource, extractResourcesFromExtensionManifest, parseJson } from './extension-tools'
+import { ExtensionResource, extractResourcesFromExtensionManifest, parseJson } from './extension-tools'
+
 interface Options {
   include?: FilterPattern
   exclude?: FilterPattern
-  isDefaultExtension?: boolean
-  rollupPlugins?: InputPluginOption[]
   transformManifest?: (manifest: IExtensionManifest) => IExtensionManifest
+  getAdditionalResources?: (manifest: IExtensionManifest, directory: string) => Promise<ExtensionResource[]>
 }
 
 export default function plugin ({
   include,
   exclude,
-  isDefaultExtension = false,
-  rollupPlugins = [],
-  transformManifest = manifest => manifest
+  transformManifest = manifest => manifest,
+  getAdditionalResources = () => Promise.resolve([])
 }: Options): Plugin {
   const filter = createFilter(include, exclude)
 
@@ -57,30 +54,6 @@ export default function plugin ({
         }
       }
 
-      const extensionResourceMatch = /^(.*)\.extensionResource$/.exec(id)
-      if (extensionResourceMatch != null) {
-        const resourcePath = extensionResourceMatch[1]!
-        if (resourcePath.endsWith('.js')) {
-          const code = await buildExtensionCode(resourcePath, rollupPlugins)
-          return {
-            code: `export default ${JSON.stringify(code)};`,
-            map: { mappings: '' }
-          }
-        }
-        const content = await fsPromise.readFile(resourcePath)
-        if (isBinaryFileSync(content)) {
-          return {
-            code: `export default Uint8Array.from(window.atob(${JSON.stringify(content.toString('base64'))}), v => v.charCodeAt(0));`,
-            map: { mappings: '' }
-          }
-        } else {
-          return {
-            code: `export default ${JSON.stringify(compressResource(id, content.toString('utf-8')))};`,
-            map: { mappings: '' }
-          }
-        }
-      }
-
       // load extension directory as a module that loads the extension
       const stat = await fsPromise.stat(id)
       if (stat.isDirectory()) {
@@ -91,21 +64,18 @@ export default function plugin ({
           const extensionResources = await extractResourcesFromExtensionManifest(manifest, async (resourcePath) => {
             return (await fsPromise.readFile(path.join(id, resourcePath)))
           })
-          const syncPaths = extensionResources.filter(resource => resource.sync).map(r => r.path)
-          const asyncPaths = extensionResources.filter(resource => !resource.sync).map(r => r.path)
+          const resources = Array.from(new Set([
+            ...extensionResources,
+            ...await getAdditionalResources(manifest, id)
+          ]))
+
           return `
 import manifest from '${manifestPath}'
-import { registerExtension, onExtHostInitialized } from '${isDefaultExtension ? '../src/extensions' : 'vscode/extensions'}'
-${syncPaths.map((resourcePath, index) => (`
-import resource_${index} from '${path.resolve(id, resourcePath)}.extensionResource'`)).join('\n')}
+import { registerExtension } from 'vscode/extensions'
 
-onExtHostInitialized(() => {
-  const { registerFile, registerSyncFile } = registerExtension(manifest)
-${asyncPaths.map(resourcePath => (`
-  registerFile('${resourcePath}', async () => await import('${path.resolve(id, resourcePath)}.extensionResource'))`)).join('\n')}
-${syncPaths.map((resourcePath, index) => (`
-  registerSyncFile('${resourcePath}', resource_${index}, '${lookupMimeType(resourcePath)}')`)).join('\n')}
-})
+const { registerFileUrl } = registerExtension(manifest)
+${resources.map(resource => (`
+registerFileUrl('${resource.path}', new URL('${path.resolve(id, resource.path)}', import.meta.url).toString()${resource.mimeType != null ? `, '${resource.mimeType}'` : ''})`)).join('\n')}
         `
         } catch (err) {
           console.error(err, (err as Error).stack)

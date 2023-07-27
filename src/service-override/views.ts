@@ -1,4 +1,4 @@
-import '../vscode-services/missing-services'
+import '../missing-services'
 import { IEditorOverrideServices, StandaloneServices } from 'vs/editor/standalone/browser/standaloneServices'
 import { SyncDescriptor } from 'vs/platform/instantiation/common/descriptors'
 import { IViewContainersRegistry, IViewDescriptor, IViewDescriptorService, IViewsRegistry, IViewsService, ViewContainerLocation, Extensions as ViewExtensions } from 'vs/workbench/common/views'
@@ -31,11 +31,19 @@ import 'vs/workbench/contrib/files/browser/fileCommands'
 import 'vs/workbench/contrib/files/browser/fileActions.contribution'
 import 'vs/workbench/contrib/callHierarchy/browser/callHierarchy.contribution'
 import 'vs/workbench/contrib/typeHierarchy/browser/typeHierarchy.contribution'
+import 'vs/workbench/contrib/codeEditor/browser/outline/documentSymbolsOutline'
+import 'vs/workbench/contrib/outline/browser/outline.contribution'
 import 'vs/workbench/browser/actions/listCommands'
 import 'vscode/vs/workbench/browser/parts/views/media/views.css'
 import 'vs/workbench/api/browser/viewsExtensionPoint'
 import 'vs/workbench/browser/parts/editor/editor.contribution'
 import 'vs/workbench/browser/workbench.contribution'
+import 'vs/workbench/contrib/customEditor/browser/customEditor.contribution'
+import 'vs/workbench/contrib/webviewPanel/browser/webviewPanel.contribution'
+import 'vs/workbench/contrib/externalUriOpener/common/externalUriOpener.contribution'
+// import to 2 times with filter to not duplicate the import from files.ts
+import 'vs/workbench/contrib/files/browser/files.contribution.js?include=registerConfiguration'
+import 'vs/workbench/contrib/files/browser/files.contribution.js?exclude=registerConfiguration'
 import { Codicon } from 'vs/base/common/codicons'
 import { IEditorGroupsService } from 'vs/workbench/services/editor/common/editorGroupsService'
 import { IEditorDropService } from 'vs/workbench/services/editor/browser/editorDropService'
@@ -72,9 +80,20 @@ import { ContextKeyExpr } from 'vs/platform/contextkey/common/contextkey'
 import { IDropdownMenuActionViewItemOptions } from 'vs/base/browser/ui/dropdown/dropdownActionViewItem'
 import { IAction } from 'vs/base/common/actions'
 import { BaseActionViewItem } from 'vs/base/browser/ui/actionbar/actionViewItems'
+import { IOutlineService } from 'vs/workbench/services/outline/browser/outline'
+import { OutlineService } from 'vs/workbench/services/outline/browser/outlineService'
+import { ICustomEditorService } from 'vs/workbench/contrib/customEditor/common/customEditor'
+import { CustomEditorService } from 'vs/workbench/contrib/customEditor/browser/customEditors'
+import { WebviewService } from 'vs/workbench/contrib/webview/browser/webviewService'
+import { IWebviewWorkbenchService, WebviewEditorService } from 'vs/workbench/contrib/webviewPanel/browser/webviewWorkbenchService'
+import { IWebviewService } from 'vs/workbench/contrib/webview/browser/webview'
+import { IWebviewViewService, WebviewViewService } from 'vs/workbench/contrib/webviewView/browser/webviewViewService'
+import { ILifecycleService, LifecyclePhase } from 'vs/workbench/services/lifecycle/common/lifecycle'
 import { OpenEditor, wrapOpenEditor } from './tools/editor'
-import getLayoutServiceOverride from './layout'
 import getBulkEditServiceOverride from './bulkEdit'
+import getLayoutServiceOverride from './layout'
+import { changeUrlDomain } from './tools/url'
+import { registerAssets } from '../assets'
 
 const paneCompositeParts = new Map<ViewContainerLocation, IPaneCompositePart>()
 const paneCompositeSelectorParts = new Map<ViewContainerLocation, IPaneCompositeSelectorPart>()
@@ -220,6 +239,7 @@ interface CustomViewOption {
   location: ViewContainerLocation
   icon?: string
   canMoveView?: boolean
+  default?: boolean
   actions?: {
     id: string
     title: string
@@ -281,6 +301,12 @@ function registerCustomView (options: CustomViewOption): IDisposable {
 
   Registry.as<IViewsRegistry>(ViewExtensions.ViewsRegistry).registerViews(views, VIEW_CONTAINER)
 
+  if (options.default ?? false) {
+    void StandaloneServices.get(ILifecycleService).when(LifecyclePhase.Eventually).then(() => {
+      void StandaloneServices.get(IViewsService).openViewContainer(options.id)
+    })
+  }
+
   const disposableCollection = new DisposableStore()
   disposableCollection.add({
     dispose () {
@@ -326,10 +352,15 @@ class EditorDropService implements IEditorDropService {
   }
 }
 
-class CustomEditorService extends EditorService {
+function isEditorPartVisible (): boolean {
+  const editorPart = StandaloneServices.get(IEditorGroupsService) as EditorPart
+  return editorPart.getContainer()?.isConnected ?? false
+}
+
+class MonacoEditorService extends EditorService {
   constructor (
     _openEditorFallback: OpenEditor | undefined,
-    @IEditorGroupsService private _editorGroupService: IEditorGroupsService,
+    @IEditorGroupsService _editorGroupService: IEditorGroupsService,
     @IInstantiationService instantiationService: IInstantiationService,
     @IFileService fileService: IFileService,
     @IConfigurationService configurationService: IConfigurationService,
@@ -372,8 +403,7 @@ class CustomEditorService extends EditorService {
   override openEditor(editor: EditorInput | IUntypedEditorInput, optionsOrPreferredGroup?: IEditorOptions | PreferredGroup, preferredGroup?: PreferredGroup): Promise<IEditorPane | undefined>
   override async openEditor (editor: EditorInput | IUntypedEditorInput, optionsOrPreferredGroup?: IEditorOptions | PreferredGroup, preferredGroup?: PreferredGroup): Promise<IEditorPane | undefined> {
     // Do not try to open the file if the editor part is not displayed, let the fallback happen
-    const editorPart = this._editorGroupService as EditorPart
-    if (!(editorPart.getContainer()?.isConnected ?? false)) {
+    if (!isEditorPartVisible()) {
       return undefined
     }
 
@@ -381,7 +411,18 @@ class CustomEditorService extends EditorService {
   }
 }
 
-export default function getServiceOverride (openEditorFallback?: OpenEditor): IEditorOverrideServices {
+let webviewIframeAlternateDomains: string | undefined
+registerAssets({
+  'vs/workbench/contrib/webview/browser/pre/service-worker.js': () => changeUrlDomain(new URL('../../vscode/vs/workbench/contrib/webview/browser/pre/service-worker.js', import.meta.url).href, webviewIframeAlternateDomains),
+  'vs/workbench/contrib/webview/browser/pre/index.html': () => changeUrlDomain(new URL('../assets/webview/index.html', import.meta.url).href, webviewIframeAlternateDomains),
+  'vs/workbench/contrib/webview/browser/pre/index-no-csp.html': () => changeUrlDomain(new URL('../assets/webview/index-no-csp.html', import.meta.url).href, webviewIframeAlternateDomains),
+  'vs/workbench/contrib/webview/browser/pre/fake.html': () => changeUrlDomain(new URL('../../vscode/vs/workbench/contrib/webview/browser/pre/fake.html', import.meta.url).href, webviewIframeAlternateDomains)
+})
+
+export default function getServiceOverride (openEditorFallback?: OpenEditor, _webviewIframeAlternateDomains?: string): IEditorOverrideServices {
+  if (_webviewIframeAlternateDomains != null) {
+    webviewIframeAlternateDomains = _webviewIframeAlternateDomains
+  }
   return {
     ...getLayoutServiceOverride(),
     ...getBulkEditServiceOverride(),
@@ -397,13 +438,18 @@ export default function getServiceOverride (openEditorFallback?: OpenEditor): IE
     [IEditorGroupsService.toString()]: new SyncDescriptor(EditorPart),
     [IStatusbarService.toString()]: new SyncDescriptor(StatusbarPart),
     [IEditorDropService.toString()]: new SyncDescriptor(EditorDropService),
-    [IEditorService.toString()]: new SyncDescriptor(CustomEditorService, [openEditorFallback]),
+    [IEditorService.toString()]: new SyncDescriptor(MonacoEditorService, [openEditorFallback]),
     [IEditorResolverService.toString()]: new SyncDescriptor(EditorResolverService),
     [IBreadcrumbsService.toString()]: new SyncDescriptor(BreadcrumbsService),
     [IContextViewService.toString()]: new SyncDescriptor(ContextViewService),
     [IUntitledTextEditorService.toString()]: new SyncDescriptor(UntitledTextEditorService),
     [ISemanticSimilarityService.toString()]: new SyncDescriptor(SemanticSimilarityService),
-    [IHistoryService.toString()]: new SyncDescriptor(HistoryService)
+    [IHistoryService.toString()]: new SyncDescriptor(HistoryService),
+    [IOutlineService.toString()]: new SyncDescriptor(OutlineService),
+    [ICustomEditorService.toString()]: new SyncDescriptor(CustomEditorService),
+    [IWebviewService.toString()]: new SyncDescriptor(WebviewService),
+    [IWebviewViewService.toString()]: new SyncDescriptor(WebviewViewService),
+    [IWebviewWorkbenchService.toString()]: new SyncDescriptor(WebviewEditorService)
   }
 }
 
@@ -416,6 +462,7 @@ export {
   renderPanelPart,
   renderEditorPart,
   renderStatusBarPart,
+  isEditorPartVisible,
 
   OpenEditor,
   IEditorOptions,

@@ -1,4 +1,9 @@
 /// <reference path="./types.d.ts" />
+/// <reference path="../vscode.proposed.extensionsAny.d.ts" />
+/// <reference path="../vscode.proposed.documentPaste.d.ts" />
+/// <reference path="../vscode.proposed.externalUriOpener.d.ts" />
+/// <reference path="../vscode.proposed.fileSearchProvider.d.ts" />
+/// <reference path="../vscode.proposed.textSearchProvider.d.ts" />
 import * as extHostTypes from 'vs/workbench/api/common/extHostTypes'
 import * as errors from 'vs/base/common/errors'
 import * as commonDebug from 'vs/workbench/contrib/debug/common/debug'
@@ -14,20 +19,28 @@ import * as uri from 'vs/base/common/uri'
 import * as log from 'vs/platform/log/common/log'
 import * as telemetryUtils from 'vs/platform/telemetry/common/telemetryUtils'
 import * as searchExtHostTypes from 'vs/workbench/services/search/common/searchExtTypes'
-import createL10nApi from './vscode-services/l10n'
-import createLanguagesApi from './vscode-services/languages'
-import createCommandsApi from './vscode-services/commands'
-import createWorkspaceApi from './vscode-services/workspace'
-import createWindowApi, { TextTabInput } from './vscode-services/window'
-import createEnvApi from './vscode-services/env'
-import createDebugApi from './vscode-services/debug'
-import createExtensionsApi from './vscode-services/extensions'
-import { getDefaultExtension } from './default-extension'
+
+let defaultApi: typeof vscode | undefined
+
+export function setDefaultApi (api: typeof vscode): void {
+  defaultApi = api
+}
+
+function createProxy<T extends keyof typeof vscode> (key: T): typeof vscode[T] {
+  return new Proxy({}, {
+    get (target, p) {
+      if (defaultApi == null) {
+        throw new Error('Default api is not ready yet, do not forget to call `initialize` from \'vscode/extensions\'')
+      }
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      return (defaultApi[key] as any)[p]
+    }
+  }) as typeof vscode[T]
+}
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 const unsupported = <any>undefined
 
-const _workspace = createWorkspaceApi(getDefaultExtension)
 const api: typeof vscode = {
   version: VSCODE_VERSION,
 
@@ -38,14 +51,14 @@ const api: typeof vscode = {
   authentication: unsupported,
   tests: unsupported,
 
-  extensions: createExtensionsApi(getDefaultExtension),
-  debug: createDebugApi(getDefaultExtension),
-  env: createEnvApi(getDefaultExtension),
-  commands: createCommandsApi(getDefaultExtension),
-  window: createWindowApi(getDefaultExtension, _workspace),
-  workspace: _workspace,
-  languages: createLanguagesApi(getDefaultExtension),
-  l10n: createL10nApi(getDefaultExtension),
+  extensions: createProxy('extensions'),
+  debug: createProxy('debug'),
+  env: createProxy('env'),
+  commands: createProxy('commands'),
+  window: createProxy('window'),
+  workspace: createProxy('workspace'),
+  languages: createProxy('languages'),
+  l10n: createProxy('l10n'),
 
   Breakpoint: extHostTypes.Breakpoint,
   CallHierarchyIncomingCall: extHostTypes.CallHierarchyIncomingCall,
@@ -60,7 +73,7 @@ const api: typeof vscode = {
   Color: extHostTypes.Color,
   ColorInformation: extHostTypes.ColorInformation,
   ColorPresentation: extHostTypes.ColorPresentation,
-  ColorThemeKind: unsupported,
+  ColorThemeKind: extHostTypes.ColorThemeKind,
   CommentMode: extHostTypes.CommentMode,
   CommentThreadCollapsibleState: extHostTypes.CommentThreadCollapsibleState,
   CompletionItem: extHostTypes.CompletionItem,
@@ -179,11 +192,11 @@ const api: typeof vscode = {
   TestMessage: extHostTypes.TestMessage,
   TestTag: extHostTypes.TestTag,
   TestRunProfileKind: extHostTypes.TestRunProfileKind,
-  DataTransfer: unsupported,
-  DataTransferItem: unsupported,
+  DataTransfer: extHostTypes.DataTransfer,
+  DataTransferItem: extHostTypes.DataTransferItem,
   LanguageStatusSeverity: extHostTypes.LanguageStatusSeverity,
   QuickPickItemKind: extHostTypes.QuickPickItemKind,
-  TabInputText: TextTabInput,
+  TabInputText: extHostTypes.TextTabInput,
   TabInputTextDiff: extHostTypes.TextDiffTabInput,
   TabInputCustom: extHostTypes.CustomEditorTabInput,
   TabInputNotebook: extHostTypes.NotebookEditorTabInput,
@@ -202,7 +215,10 @@ const api: typeof vscode = {
   TerminalExitReason: extHostTypes.TerminalExitReason,
   CommentThreadState: unsupported,
   TelemetryTrustedValue: telemetryUtils.TelemetryTrustedValue,
-  TextSearchCompleteMessageType: searchExtHostTypes.TextSearchCompleteMessageType
+  TextSearchCompleteMessageType: searchExtHostTypes.TextSearchCompleteMessageType,
+  DocumentPasteEdit: extHostTypes.DocumentPasteEdit,
+  ExternalUriOpenerPriority: extHostTypes.ExternalUriOpenerPriority,
+  TreeItemCheckboxState: extHostTypes.TreeItemCheckboxState
 }
 
 // @ts-ignore the syntax will be transformed by a typescript transformer in the rollup config

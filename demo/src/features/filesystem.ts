@@ -1,29 +1,58 @@
-import { SimpleTextFileSystemProvider, registerFileSystemOverlay, FileType, HTMLFileSystemProvider } from 'vscode/service-override/files'
+import { RegisteredFileSystemProvider, registerFileSystemOverlay, RegisteredReadOnlyFile, RegisteredMemoryFile } from 'vscode/service-override/files'
 import * as vscode from 'vscode'
-import * as monaco from 'monaco-editor/esm/vs/editor/editor.api.js'
 
-class FakeFileSystem extends SimpleTextFileSystemProvider {
-  private files: Record<string, string> = {
-    [vscode.Uri.file('/tmp/test2.js').toString(true)]: 'This is another file'
+const fileSystemProvider = new RegisteredFileSystemProvider(false)
+fileSystemProvider.registerFile(new RegisteredReadOnlyFile(vscode.Uri.file('/tmp/test_readonly.js'), async () => 'This is a readonly static file'))
+
+fileSystemProvider.registerFile(new RegisteredMemoryFile(vscode.Uri.file('/tmp/jsconfig.json'), `{
+  "compilerOptions": {
+    "target": "es2020",
+    "module": "esnext",
+    "lib": [
+      "es2021",
+      "DOM"
+    ]
   }
+}`
+))
 
-  protected override async getFileContent (resource: monaco.Uri): Promise<string | undefined> {
-    return this.files[resource.toString(true)]
-  }
+fileSystemProvider.registerFile(new RegisteredMemoryFile(vscode.Uri.file('/tmp/index.html'), `
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <title>monaco-vscode-api demo</title>
+    <link rel="stylesheet" href="test.css">
+  </head>
+  <body>
+    <style type="text/css">
+      h1 {
+        color: DeepSkyBlue;
+      }
+    </style>
 
-  protected override async setFileContent (resource: monaco.Uri, content: string): Promise<void> {
-    this.files[resource.toString(true)] = content
-  }
+    <h1>Hello, world!</h1>
+  </body>
+</html>`
+))
 
-  override async delete (): Promise<void> {
-  }
+fileSystemProvider.registerFile(new RegisteredMemoryFile(vscode.Uri.file('/tmp/test.md'), `
+***Hello World***
 
-  override async readdir (directory: monaco.Uri): Promise<[string, FileType][]> {
-    if (directory.path === '/tmp') {
-      return [['test2.js', FileType.File]]
-    }
-    return []
-  }
-}
+Math block:
+$$
+\\displaystyle
+\\left( \\sum_{k=1}^n a_k b_k \\right)^2
+\\leq
+\\left( \\sum_{k=1}^n a_k^2 \\right)
+\\left( \\sum_{k=1}^n b_k^2 \\right)
+$$`
+))
 
-registerFileSystemOverlay(new FakeFileSystem())
+fileSystemProvider.registerFile(new RegisteredMemoryFile(vscode.Uri.file('/tmp/test.css'), `
+h1 {
+  color: DeepSkyBlue;
+}`
+))
+
+registerFileSystemOverlay(1, fileSystemProvider)

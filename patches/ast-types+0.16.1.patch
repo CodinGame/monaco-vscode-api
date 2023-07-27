@@ -1,0 +1,14 @@
+diff --git a/node_modules/ast-types/lib/def/flow.js b/node_modules/ast-types/lib/def/flow.js
+index 52235f0..b4f58bd 100644
+--- a/node_modules/ast-types/lib/def/flow.js
++++ b/node_modules/ast-types/lib/def/flow.js
+@@ -213,6 +213,9 @@ function default_1(fork) {
+         .field("default", or(def("FlowType"), null), defaults["null"]);
+     def("ClassProperty")
+         .field("variance", LegacyVariance, defaults["null"]);
++    def('PropertyDefinition')
++        .bases('ClassProperty')
++        .build();
+     def("ClassImplements")
+         .bases("Node")
+         .build("id")

@@ -1,4 +1,4 @@
-import '../vscode-services/missing-services'
+import '../missing-services'
 import { NotificationsToasts } from 'vs/workbench/browser/parts/notifications/notificationsToasts'
 import { IEditorOverrideServices } from 'vs/editor/standalone/browser/standaloneServices'
 import { IInstantiationService } from 'vs/platform/instantiation/common/instantiation'

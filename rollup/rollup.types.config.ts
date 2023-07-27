@@ -3,6 +3,7 @@ import dts from 'rollup-plugin-dts'
 import * as tsMorph from 'ts-morph'
 import * as path from 'path'
 import { fileURLToPath } from 'url'
+import * as fs from 'fs'
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url))
 
@@ -32,29 +33,10 @@ export default rollup.defineConfig({
   input: Object.fromEntries([
     './dist/types/src/services.d.ts',
     './dist/types/src/extensions.d.ts',
-    './dist/types/src/service-override/notifications.d.ts',
-    './dist/types/src/service-override/bulkEdit.d.ts',
-    './dist/types/src/service-override/dialogs.d.ts',
-    './dist/types/src/service-override/model.d.ts',
-    './dist/types/src/service-override/editor.d.ts',
-    './dist/types/src/service-override/files.d.ts',
-    './dist/types/src/service-override/configuration.d.ts',
-    './dist/types/src/service-override/keybindings.d.ts',
-    './dist/types/src/service-override/textmate.d.ts',
-    './dist/types/src/service-override/theme.d.ts',
-    './dist/types/src/service-override/snippets.d.ts',
-    './dist/types/src/service-override/languages.d.ts',
-    './dist/types/src/service-override/audioCue.d.ts',
-    './dist/types/src/service-override/debug.d.ts',
-    './dist/types/src/service-override/preferences.d.ts',
-    './dist/types/src/service-override/views.d.ts',
-    './dist/types/src/service-override/quickaccess.d.ts',
-    './dist/types/src/service-override/output.d.ts',
-    './dist/types/src/service-override/terminal.d.ts',
-    './dist/types/src/service-override/search.d.ts',
-    './dist/types/src/service-override/markers.d.ts',
-    './dist/types/src/workers/textMate.worker.d.ts',
-    './dist/types/src/workers/outputLinkComputer.worker.d.ts',
+    ...fs.readdirSync(path.resolve(DIST_DIR, 'types/src/service-override'), { withFileTypes: true })
+      .filter(f => f.isFile())
+      .map(f => f.name)
+      .map(name => `./dist/types/src/service-override/${name}`),
     './dist/types/src/monaco.d.ts',
     './dist/types/src/rollup-vsix-plugin.d.ts',
     './dist/types/src/rollup-extension-directory-plugin.d.ts'
@@ -63,6 +45,7 @@ export default rollup.defineConfig({
     input
   ]))),
   output: {
+    preserveModules: true,
     format: 'esm',
     dir: 'dist',
     entryFileNames: chunk => `${chunk.name}.ts`,
@@ -71,6 +54,9 @@ export default rollup.defineConfig({
   },
   external: function isExternal (id) {
     if (id.endsWith('.css')) {
+      return true
+    }
+    if (id.includes('.contribution')) {
       return true
     }
     return [
@@ -89,7 +75,8 @@ export default rollup.defineConfig({
     {
       name: 'replace-interfaces',
       load (id) {
-        const [sourceFile] = project.addSourceFilesAtPaths(id)
+        const path = new URL(id, 'file:/').pathname
+        const [sourceFile] = project.addSourceFilesAtPaths(path)
 
         sourceFile!.addImportDeclaration({
           moduleSpecifier: 'monaco-editor',

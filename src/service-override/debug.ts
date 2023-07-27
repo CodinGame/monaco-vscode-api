@@ -1,4 +1,4 @@
-import '../vscode-services/missing-services'
+import '../missing-services'
 import { IEditorOverrideServices } from 'vs/editor/standalone/browser/standaloneServices'
 import { SyncDescriptor } from 'vs/platform/instantiation/common/descriptors'
 import { IDebugService } from 'vs/workbench/contrib/debug/common/debug'
@@ -23,7 +23,7 @@ export default function getServiceOverride (): IEditorOverrideServices {
   return {
     ...getLayoutServiceOverride(),
     [ILanguageFeaturesService.toString()]: new SyncDescriptor(LanguageFeaturesService), // To restore inlineValuesProvider
-    [IDebugService.toString()]: new SyncDescriptor(DebugService),
+    [IDebugService.toString()]: new SyncDescriptor(DebugService, [], true),
     [IConfigurationResolverService.toString()]: new SyncDescriptor(ConfigurationResolverService)
   }
 }

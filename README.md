@@ -26,18 +26,77 @@ npm install -D @types/vscode
 }
 ```
 
-If you use Vite, add in your vite.config.js:
-```js
-assetsInclude: ['node_modules/vscode-oniguruma/**/*.wasm']
-```
-
 ### Why?
 
 Monaco-editor is a library that is constructed using code from vscode and goes through an intense treeshaking process.
 
 However, due to the inclusion of additional code from VSCode in this library that utilizes internal modules bundled in monaco, this treeshaking is a problem here.
 
-To **tree-mend** (to **un**treeshake it) monaco-editor, this library provide a script that will apply a patch on the local installation of monaco-editor, restoring all the code that was treeshaken during the monaco-editor build process
+To **tree-mend** (to **un**treeshake it) monaco-editor, this library provides a script that will apply a patch on the local installation of monaco-editor, restoring all the code that was treeshaken during the monaco-editor build process
+
+## Troubleshooting
+
+### If you use Vite
+
+This library uses a lot the `new URL('asset.extension', import.meta.url)` syntax which [is supported by vite](https://vitejs.dev/guide/assets.html#new-url-url-import-meta-url)
+
+While it works great in `build` mode (because rollup is used), there is some issues in `watch`` mode:
+- import.meta.url is not replaced while creating bundles, it is an issue when the syntax is used inside a dependency
+- vite is still trying to inject/transform javascript assets files, breaking the code by injecting ESM imports in commonjs files
+
+There are workarounds for both:
+
+- We can help vite by replacing `import.meta.url` by the original module path (you need the --experimental-import-meta-resolve note option):
+```typescript
+{
+  ...
+  optimizeDeps: {
+    esbuildOptions: {
+      plugins: [{
+        name: 'import.meta.url',
+        setup ({ onLoad }) {
+          // Help vite that bundles/move files in dev mode without touching `import.meta.url` which breaks asset urls
+          onLoad({ filter: /.*\.js/, namespace: 'file' }, async args => {
+            const code = fs.readFileSync(args.path, 'utf8')
+
+            const assetImportMetaUrlRE = /\bnew\s+URL\s*\(\s*('[^']+'|"[^"]+"|`[^`]+`)\s*,\s*import\.meta\.url\s*(?:,\s*)?\)/g
+            let i = 0
+            let newCode = ''
+            for (let match = assetImportMetaUrlRE.exec(code); match != null; match = assetImportMetaUrlRE.exec(code)) {
+              newCode += code.slice(i, match.index)
+
+              const path = match[1].slice(1, -1)
+              const resolved = await import.meta.resolve!(path, url.pathToFileURL(args.path))
+
+              newCode += `new URL(${JSON.stringify(url.fileURLToPath(resolved))}, import.meta.url)`
+
+              i = assetImportMetaUrlRE.lastIndex
+            }
+            newCode += code.slice(i)
+
+            return { contents: newCode }
+          })
+        }
+      }]
+    }
+  }
+}
+```
+- we can serialize and eval the code to prevent vite from touching it:
+```typescript
+{
+  plugins: [{
+    // prevent vite from trying to inject code into an extension file du to an `import()` in that file
+    name: 'hack-prevent-transform-javascript',
+    apply: 'serve',
+    load (source) {
+      if (source.includes('tsserver.web.js')) {
+        return `eval(${JSON.stringify(fs.readFileSync(source).toString('utf-8'))})`
+      }
+    }
+  }]
+}
+```
 
 # Usage
 
@@ -61,8 +120,9 @@ await initialize({
 })
 ```
 
-Additionally, this library exposes 20 modules that include the vscode version of some services (with some glue to make it work with monaco):
+Additionally, this library exposes 21 modules that include the vscode version of some services (with some glue to make it work with monaco):
 
+- Extensions (included by default): `vscode/service-override/extensions`
 - Notifications: `vscode/service-override/notifications`
 - Dialogs: `vscode/service-override/dialogs`
 - Model: `vscode/service-override/model`
@@ -176,14 +236,16 @@ The api will use the manifest of a default vscode extension, which can be overri
 
 You can also register a new extension from its manifest:
 ```typescript
-import { registerExtension, initialize as initializeVscodeExtensions } from 'vscode/extensions'
+import { registerExtension, initialize } from 'vscode/extensions'
 
 await initialize()
 
-const { registerFile: registerExtensionFile, api: vscodeApi } = registerExtension(defaultThemesExtensions)
+const { registerFile: registerExtensionFile, getApi } = registerExtension(defaultThemesExtensions)
 
 registerExtensionFile('/file.json', async () => fileContent)
-vscodeApi.languages.registerCompletionItemProvider(...)
+
+getApi().then(vscodeApi => vscodeApi.languages.registerCompletionItemProvider(...))
+
 ```
 
 ### Default vscode extensions

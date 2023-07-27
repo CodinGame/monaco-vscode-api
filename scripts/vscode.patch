@@ -1,8 +1,8 @@
 diff --git a/.eslintrc.json b/.eslintrc.json
-index 7e6b386b804..4457e204d51 100644
+index c28784041b4..994f4f11177 100644
 --- a/.eslintrc.json
 +++ b/.eslintrc.json
-@@ -253,6 +253,7 @@
+@@ -255,6 +255,7 @@
  							"v8-inspect-profiler",
  							"vscode-regexpp",
  							"vscode-textmate",
@@ -68,6 +68,37 @@ index 775a1be5996..ce8435bd920 100644
  				relativePath = relativePath.replace(/\\/g, '/');
  				if (!/(^\.\/)|(^\.\.\/)/.test(relativePath)) {
  					relativePath = './' + relativePath;
+diff --git a/extensions/typescript-language-features/web/webServer.ts b/extensions/typescript-language-features/web/webServer.ts
+index 6580a84995c..d02af900b4b 100644
+--- a/extensions/typescript-language-features/web/webServer.ts
++++ b/extensions/typescript-language-features/web/webServer.ts
+@@ -44,7 +44,7 @@ function fromResource(extensionUri: URI, uri: URI) {
+ 		&& uri.path.endsWith('.d.ts')) {
+ 		return uri.path;
+ 	}
+-	return `/${uri.scheme}/${uri.authority}${uri.path}`;
++	return `/${uri.scheme}/${uri.authority || 'ts-nul-authority'}${uri.path}`;
+ }
+ 
+ function updateWatch(event: 'create' | 'change' | 'delete', uri: URI, extensionUri: URI) {
+@@ -187,7 +187,7 @@ function createServerHost(extensionUri: URI, logger: ts.server.Logger, apiClient
+ 
+ 			const scriptPath = combinePaths(packageRoot, browser);
+ 			try {
+-				const { default: module } = await import(/* webpackIgnore: true */scriptPath);
++				const { default: module } = await import(/* webpackIgnore: true */ '' + scriptPath + '');
+ 				return { module, error: undefined };
+ 			} catch (e) {
+ 				return { module: undefined, error: e };
+@@ -429,7 +429,7 @@ function createServerHost(extensionUri: URI, logger: ts.server.Logger, apiClient
+ 			return URI.from({
+ 				scheme: extensionUri.scheme,
+ 				authority: extensionUri.authority,
+-				path: extensionUri.path + '/dist/browser/typescript/' + filepath.slice(1)
++				path: extensionUri.path.replace(/\/$/, '') + '/dist/browser/typescript/' + filepath.slice(1)
+ 			});
+ 		}
+ 
 diff --git a/src/vs/base/browser/defaultWorkerFactory.ts b/src/vs/base/browser/defaultWorkerFactory.ts
 index 9cab3604196..b27fc0eb96d 100644
 --- a/src/vs/base/browser/defaultWorkerFactory.ts
@@ -83,10 +114,27 @@ index 9cab3604196..b27fc0eb96d 100644
  
  const ttPolicy = createTrustedTypesPolicy('defaultWorkerFactory', { createScriptURL: value => value });
 diff --git a/src/vs/base/common/network.ts b/src/vs/base/common/network.ts
-index ab7e3a18dc5..7fc528ab54b 100644
+index b00899c50db..93e9daad96b 100644
 --- a/src/vs/base/common/network.ts
 +++ b/src/vs/base/common/network.ts
-@@ -202,7 +202,7 @@ class FileAccessImpl {
+@@ -4,6 +4,8 @@
+  *--------------------------------------------------------------------------------------------*/
+ 
+ import * as errors from 'vs/base/common/errors';
++import { IDisposable, toDisposable } from 'vs/base/common/lifecycle';
++import { ResourceMap } from 'vs/base/common/map';
+ import * as platform from 'vs/base/common/platform';
+ import { URI } from 'vs/base/common/uri';
+ 
+@@ -195,6 +197,7 @@ export const nodeModulesAsarUnpackedPath: AppResourcePath = 'vs/../../node_modul
+ class FileAccessImpl {
+ 
+ 	private static readonly FALLBACK_AUTHORITY = 'vscode-app';
++	private staticBrowserUris = new ResourceMap<URI>();
+ 
+ 	/**
+ 	 * Returns a URI to use in contexts where the browser is responsible
+@@ -203,7 +206,7 @@ class FileAccessImpl {
  	 * **Note:** use `dom.ts#asCSSUrl` whenever the URL is to be used in CSS context.
  	 */
  	asBrowserUri(resourcePath: AppResourcePath | ''): URI {
@@ -95,7 +143,16 @@ index ab7e3a18dc5..7fc528ab54b 100644
  		return this.uriToBrowserUri(uri);
  	}
  
-@@ -249,7 +249,7 @@ class FileAccessImpl {
+@@ -242,7 +245,7 @@ class FileAccessImpl {
+ 			});
+ 		}
+ 
+-		return uri;
++		return this.staticBrowserUris.get(uri) ?? uri;
+ 	}
+ 
+ 	/**
+@@ -250,7 +253,7 @@ class FileAccessImpl {
  	 * is responsible for loading.
  	 */
  	asFileUri(resourcePath: AppResourcePath | ''): URI {
@@ -104,6 +161,26 @@ index ab7e3a18dc5..7fc528ab54b 100644
  		return this.uriToFileUri(uri);
  	}
  
+@@ -282,6 +285,19 @@ class FileAccessImpl {
+ 
+ 		return URI.parse(moduleIdToUrl.toUrl(uriOrModule));
+ 	}
++
++	registerStaticBrowserUri(uri: URI, browserUri: URI): IDisposable {
++		this.staticBrowserUris.set(uri, browserUri);
++		return toDisposable(() => {
++			if (this.staticBrowserUris.get(uri) === browserUri) {
++				this.staticBrowserUris.delete(uri);
++			}
++		});
++	}
++
++	getRegisteredBrowserUris(): IterableIterator<URI> {
++		return this.staticBrowserUris.keys();
++	}
+ }
+ 
+ export const FileAccess = new FileAccessImpl();
 diff --git a/src/vs/base/common/performance.js b/src/vs/base/common/performance.js
 index aff4d0734de..ea43e4a2fcc 100644
 --- a/src/vs/base/common/performance.js
@@ -158,11 +235,29 @@ index fc197da1d57..a4d9573979f 100644
  
  	public static validateOptions(options: IEditorOptions): ValidatedEditorOptions {
  		const result = new ValidatedEditorOptions();
+diff --git a/src/vs/workbench/api/browser/mainThreadExtensionService.ts b/src/vs/workbench/api/browser/mainThreadExtensionService.ts
+index cbddc0c233b..931ce877ff6 100644
+--- a/src/vs/workbench/api/browser/mainThreadExtensionService.ts
++++ b/src/vs/workbench/api/browser/mainThreadExtensionService.ts
+@@ -193,6 +193,13 @@ export class MainThreadExtensionService implements MainThreadExtensionServiceSha
+ 	async $asBrowserUri(uri: UriComponents): Promise<UriComponents> {
+ 		return FileAccess.uriToBrowserUri(URI.revive(uri));
+ 	}
++
++	async $getAllStaticBrowserUris(): Promise<[UriComponents, UriComponents][]> {
++		return Array.from(FileAccess.getRegisteredBrowserUris(), uri => [
++			uri,
++			FileAccess.uriToBrowserUri(uri)
++		]);
++	}
+ }
+ 
+ class ExtensionHostProxy implements IExtensionHostProxy {
 diff --git a/src/vs/workbench/api/browser/statusBarExtensionPoint.ts b/src/vs/workbench/api/browser/statusBarExtensionPoint.ts
-index 55e5013c812..1e7d271a466 100644
+index cd2e439f8f6..fcdc9a28ce2 100644
 --- a/src/vs/workbench/api/browser/statusBarExtensionPoint.ts
 +++ b/src/vs/workbench/api/browser/statusBarExtensionPoint.ts
-@@ -49,7 +49,7 @@ export interface IExtensionStatusBarItemService {
+@@ -56,7 +56,7 @@ export interface IExtensionStatusBarItemService {
  }
  
  
@@ -171,31 +266,404 @@ index 55e5013c812..1e7d271a466 100644
  
  	declare readonly _serviceBrand: undefined;
  
-diff --git a/src/vs/workbench/api/common/extHostTerminalService.ts b/src/vs/workbench/api/common/extHostTerminalService.ts
-index 6dabdb4f4df..e48cd4f2828 100644
---- a/src/vs/workbench/api/common/extHostTerminalService.ts
-+++ b/src/vs/workbench/api/common/extHostTerminalService.ts
-@@ -812,15 +812,12 @@ export abstract class BaseExtHostTerminalService extends Disposable implements I
- 	}
+diff --git a/src/vs/workbench/api/common/extHost.protocol.ts b/src/vs/workbench/api/common/extHost.protocol.ts
+index eea591fd26c..d1e9894f77c 100644
+--- a/src/vs/workbench/api/common/extHost.protocol.ts
++++ b/src/vs/workbench/api/common/extHost.protocol.ts
+@@ -1297,6 +1297,7 @@ export interface MainThreadExtensionServiceShape extends IDisposable {
+ 	$onExtensionRuntimeError(extensionId: ExtensionIdentifier, error: SerializedError): void;
+ 	$setPerformanceMarks(marks: performance.PerformanceMark[]): Promise<void>;
+ 	$asBrowserUri(uri: UriComponents): Promise<UriComponents>;
++	$getAllStaticBrowserUris(): Promise<[UriComponents, UriComponents][]>;
+ }
  
- 	private _getTerminalObjectIndexById<T extends ExtHostTerminal>(array: T[], id: ExtHostTerminalIdentifier): number | null {
--		let index: number | null = null;
--		array.some((item, i) => {
--			const thisId = item._id;
--			if (thisId === id) {
--				index = i;
--				return true;
--			}
--			return false;
-+		const index = array.findIndex(item => {
-+			return item._id === id;
- 		});
-+		if (index === -1) {
-+			return null;
+ export interface SCMProviderFeatures {
+diff --git a/src/vs/workbench/api/common/extHostExtensionService.ts b/src/vs/workbench/api/common/extHostExtensionService.ts
+index 7bdc7111a4f..1f04682bd88 100644
+--- a/src/vs/workbench/api/common/extHostExtensionService.ts
++++ b/src/vs/workbench/api/common/extHostExtensionService.ts
+@@ -42,7 +42,7 @@ import { Schemas } from 'vs/base/common/network';
+ import { IResolveAuthorityResult } from 'vs/workbench/services/extensions/common/extensionHostProxy';
+ import { IExtHostLocalizationService } from 'vs/workbench/api/common/extHostLocalizationService';
+ import { StopWatch } from 'vs/base/common/stopwatch';
+-import { setTimeout0 } from 'vs/base/common/platform';
++import { isWebWorker, setTimeout0 } from 'vs/base/common/platform';
+ import { IExtHostManagedSockets } from 'vs/workbench/api/common/extHostManagedSockets';
+ import { Dto } from 'vs/workbench/services/extensions/common/proxyIdentifier';
+ 
+@@ -248,9 +248,11 @@ export abstract class AbstractExtHostExtensionService extends Disposable impleme
+ 		this._extHostTerminalService.dispose();
+ 		this._activator.dispose();
+ 
+-		errors.setUnexpectedErrorHandler((err) => {
+-			this._logService.error(err);
+-		});
++		if (isWebWorker) {
++			errors.setUnexpectedErrorHandler((err) => {
++				this._logService.error(err);
++			});
 +		}
- 		return index;
+ 
+ 		// Invalidate all proxies
+ 		this._extHostContext.dispose();
+diff --git a/src/vs/workbench/api/common/extensionHostMain.ts b/src/vs/workbench/api/common/extensionHostMain.ts
+index ee87ff55b64..d8573e6f0c5 100644
+--- a/src/vs/workbench/api/common/extensionHostMain.ts
++++ b/src/vs/workbench/api/common/extensionHostMain.ts
+@@ -23,6 +23,9 @@ import { IURITransformerService, URITransformerService } from 'vs/workbench/api/
+ import { IExtHostExtensionService, IHostUtils } from 'vs/workbench/api/common/extHostExtensionService';
+ import { IExtHostTelemetry } from 'vs/workbench/api/common/extHostTelemetry';
+ import { Mutable } from 'vs/base/common/types';
++import { isWebWorker } from 'vs/base/common/platform';
++import { ExtHostLogService } from 'vs/workbench/api/common/extHostLogService';
++import { SyncDescriptor } from 'vs/platform/instantiation/common/descriptors';
+ 
+ export interface IExitFn {
+ 	(code?: number): any;
+@@ -159,10 +162,13 @@ export class ExtensionHostMain {
+ 		services.set(IExtHostRpcService, new ExtHostRpcService(this._rpcProtocol));
+ 		services.set(IURITransformerService, new URITransformerService(uriTransformer));
+ 		services.set(IHostUtils, hostUtils);
++		services.set(ILogService, new SyncDescriptor(ExtHostLogService, [true], true));
+ 
+ 		const instaService: IInstantiationService = new InstantiationService(services, true);
+ 
+-		instaService.invokeFunction(ErrorHandler.installEarlyHandler);
++		if (isWebWorker) {
++			instaService.invokeFunction(ErrorHandler.installEarlyHandler);
++		}
+ 
+ 		// ugly self - inject
+ 		this._logService = instaService.invokeFunction(accessor => accessor.get(ILogService));
+@@ -181,8 +187,10 @@ export class ExtensionHostMain {
+ 		this._extensionService = instaService.invokeFunction(accessor => accessor.get(IExtHostExtensionService));
+ 		this._extensionService.initialize();
+ 
+-		// install error handler that is extension-aware
+-		instaService.invokeFunction(ErrorHandler.installFullHandler);
++		if (isWebWorker) {
++			// install error handler that is extension-aware
++			instaService.invokeFunction(ErrorHandler.installFullHandler);
++		}
  	}
  
+ 	async asBrowserUri(uri: URI): Promise<URI> {
+@@ -190,10 +198,19 @@ export class ExtensionHostMain {
+ 		return URI.revive(await mainThreadExtensionsProxy.$asBrowserUri(uri));
+ 	}
+ 
++	async getAllStaticBrowserUris(): Promise<[URI, URI][]> {
++		const mainThreadExtensionsProxy = this._rpcProtocol.getProxy(MainContext.MainThreadExtensionService);
++		return (await mainThreadExtensionsProxy.$getAllStaticBrowserUris()).map(([from, to]) => [URI.revive(from), URI.revive(to)]);
++	}
++
+ 	terminate(reason: string): void {
+ 		this._extensionService.terminate(reason);
+ 	}
+ 
++	getExtHostExtensionService(): IExtHostExtensionService {
++		return this._extensionService;
++	}
++
+ 	private static _transform(initData: IExtensionHostInitData, rpcProtocol: RPCProtocol): IExtensionHostInitData {
+ 		initData.allExtensions.forEach((ext) => {
+ 			(<Mutable<IRelaxedExtensionDescription>>ext).extensionLocation = URI.revive(rpcProtocol.transformIncomingURIs(ext.extensionLocation));
+diff --git a/src/vs/workbench/api/worker/extHost.worker.services.ts b/src/vs/workbench/api/worker/extHost.worker.services.ts
+index 20ec7e138a6..e284ed6752b 100644
+--- a/src/vs/workbench/api/worker/extHost.worker.services.ts
++++ b/src/vs/workbench/api/worker/extHost.worker.services.ts
+@@ -3,11 +3,8 @@
+  *  Licensed under the MIT License. See License.txt in the project root for license information.
+  *--------------------------------------------------------------------------------------------*/
+ 
+-import { SyncDescriptor } from 'vs/platform/instantiation/common/descriptors';
+ import { InstantiationType, registerSingleton } from 'vs/platform/instantiation/common/extensions';
+-import { ILogService } from 'vs/platform/log/common/log';
+ import { IExtHostExtensionService } from 'vs/workbench/api/common/extHostExtensionService';
+-import { ExtHostLogService } from 'vs/workbench/api/common/extHostLogService';
+ import { ExtensionStoragePaths, IExtensionStoragePaths } from 'vs/workbench/api/common/extHostStoragePaths';
+ import { ExtHostExtensionService } from 'vs/workbench/api/worker/extHostExtensionService';
+ 
+@@ -17,6 +14,5 @@ import { ExtHostExtensionService } from 'vs/workbench/api/worker/extHostExtensio
+ // ###                                                                   ###
+ // #########################################################################
+ 
+-registerSingleton(ILogService, new SyncDescriptor(ExtHostLogService, [true], true));
+ registerSingleton(IExtHostExtensionService, ExtHostExtensionService, InstantiationType.Eager);
+ registerSingleton(IExtensionStoragePaths, ExtensionStoragePaths, InstantiationType.Eager);
+diff --git a/src/vs/workbench/api/worker/extHostExtensionService.ts b/src/vs/workbench/api/worker/extHostExtensionService.ts
+index b83a462131d..5555f431ba0 100644
+--- a/src/vs/workbench/api/worker/extHostExtensionService.ts
++++ b/src/vs/workbench/api/worker/extHostExtensionService.ts
+@@ -3,7 +3,7 @@
+  *  Licensed under the MIT License. See License.txt in the project root for license information.
+  *--------------------------------------------------------------------------------------------*/
+ 
+-import { createApiFactoryAndRegisterActors } from 'vs/workbench/api/common/extHost.api.impl';
++import { IExtensionApiFactory, createApiFactoryAndRegisterActors } from 'vs/workbench/api/common/extHost.api.impl';
+ import { ExtensionActivationTimesBuilder } from 'vs/workbench/api/common/extHostExtensionActivator';
+ import { AbstractExtHostExtensionService } from 'vs/workbench/api/common/extHostExtensionService';
+ import { URI } from 'vs/base/common/uri';
+@@ -12,6 +12,7 @@ import { IExtensionDescription } from 'vs/platform/extensions/common/extensions'
+ import { ExtensionRuntime } from 'vs/workbench/api/common/extHostTypes';
+ import { timeout } from 'vs/base/common/async';
+ import { ExtHostConsoleForwarder } from 'vs/workbench/api/worker/extHostConsoleForwarder';
++import { isWebWorker } from 'vs/base/common/platform';
+ 
+ class WorkerRequireInterceptor extends RequireInterceptor {
+ 
+@@ -37,14 +38,17 @@ export class ExtHostExtensionService extends AbstractExtHostExtensionService {
+ 	readonly extensionRuntime = ExtensionRuntime.Webworker;
+ 
+ 	private _fakeModules?: WorkerRequireInterceptor;
++	protected _apiFactory?: IExtensionApiFactory;
+ 
+ 	protected async _beforeAlmostReadyToRunExtensions(): Promise<void> {
+-		// make sure console.log calls make it to the render
+-		this._instaService.createInstance(ExtHostConsoleForwarder);
++		if (isWebWorker) {
++			// make sure console.log calls make it to the render
++			this._instaService.createInstance(ExtHostConsoleForwarder);
++		}
+ 
+ 		// initialize API and register actors
+-		const apiFactory = this._instaService.invokeFunction(createApiFactoryAndRegisterActors);
+-		this._fakeModules = this._instaService.createInstance(WorkerRequireInterceptor, apiFactory, { mine: this._myRegistry, all: this._globalRegistry });
++		this._apiFactory = this._instaService.invokeFunction(createApiFactoryAndRegisterActors);
++		this._fakeModules = this._instaService.createInstance(WorkerRequireInterceptor, this._apiFactory, { mine: this._myRegistry, all: this._globalRegistry });
+ 		await this._fakeModules.install();
+ 		performance.mark('code/extHost/didInitAPI');
+ 
+diff --git a/src/vs/workbench/api/worker/extensionHostWorker.ts b/src/vs/workbench/api/worker/extensionHostWorker.ts
+index 998b53a64ce..6c7308dc6b9 100644
+--- a/src/vs/workbench/api/worker/extensionHostWorker.ts
++++ b/src/vs/workbench/api/worker/extensionHostWorker.ts
+@@ -15,7 +15,6 @@ import * as performance from 'vs/base/common/performance';
+ 
+ import 'vs/workbench/api/common/extHost.common.services';
+ import 'vs/workbench/api/worker/extHost.worker.services';
+-import { FileAccess } from 'vs/base/common/network';
+ import { URI } from 'vs/base/common/uri';
+ 
+ //#region --- Define, capture, and override some globals
+@@ -89,66 +88,155 @@ self.addEventListener = () => console.trace(`'addEventListener' has been blocked
+ (<any>self)['webkitResolveLocalFileSystemSyncURL'] = undefined;
+ (<any>self)['webkitResolveLocalFileSystemURL'] = undefined;
+ 
+-if ((<any>self).Worker) {
+-
+-	// make sure new Worker(...) always uses blob: (to maintain current origin)
+-	const _Worker = (<any>self).Worker;
+-	Worker = <any>function (stringUrl: string | URL, options?: WorkerOptions) {
+-		if (/^file:/i.test(stringUrl.toString())) {
+-			stringUrl = FileAccess.uriToBrowserUri(URI.parse(stringUrl.toString())).toString(true);
+-		} else if (/^vscode-remote:/i.test(stringUrl.toString())) {
+-			// Supporting transformation of vscode-remote URIs requires an async call to the main thread,
+-			// but we cannot do this call from within the embedded Worker, and the only way out would be
+-			// to use templating instead of a function in the web api (`resourceUriProvider`)
+-			throw new Error(`Creating workers from remote extensions is currently not supported.`);
+-		}
++function patchWorker(asBrowserUri: (uri: URI) => Promise<URI>, getAllStaticBrowserUris: () => Promise<[URI, URI][]>) {
++	if ((<any>self).Worker) {
++
++		// make sure new Worker(...) always uses blob: (to maintain current origin)
++		const _Worker = (<any>self).Worker;
++		Worker = <any>function (stringUrl: string | URL, options?: WorkerOptions) {
++			if (/^vscode-remote:/i.test(stringUrl.toString())) {
++				// Supporting transformation of vscode-remote URIs requires an async call to the main thread,
++				// but we cannot do this call from within the embedded Worker, and the only way out would be
++				// to use templating instead of a function in the web api (`resourceUriProvider`)
++				throw new Error(`Creating workers from remote extensions is currently not supported.`);
++			}
+ 
+-		// IMPORTANT: bootstrapFn is stringified and injected as worker blob-url. Because of that it CANNOT
+-		// have dependencies on other functions or variables. Only constant values are supported. Due to
+-		// that logic of FileAccess.asBrowserUri had to be copied, see `asWorkerBrowserUrl` (below).
+-		const bootstrapFnSource = (function bootstrapFn(workerUrl: string) {
+-			function asWorkerBrowserUrl(url: string | URL | TrustedScriptURL): any {
+-				if (typeof url === 'string' || url instanceof URL) {
+-					return String(url).replace(/^file:\/\//i, 'vscode-file://vscode-app');
+-				}
+-				return url;
++			async function getWorkerUri(workerUri: URI): Promise<string> {
++				const [browserUrl, staticBrowserUrls] = await Promise.all([
++					asBrowserUri(workerUri).then(uri => uri.toString(true)),
++					getAllStaticBrowserUris().then(bindings => Object.fromEntries(bindings.map(([from, to]) => [from.toString(true), to.toString(true)])))
++				]);
++
++				// IMPORTANT: bootstrapFn is stringified and injected as worker blob-url. Because of that it CANNOT
++				// have dependencies on other functions or variables. Only constant values are supported. Due to
++				// that logic of FileAccess.asBrowserUri had to be copied, see `asWorkerBrowserUrl` (below).
++				const bootstrapFnSource = (function bootstrapFn(workerUrl: string, staticBrowserUrls: Record<string, string>) {
++					function asWorkerBrowserUrl(url: string | URL | TrustedScriptURL): any {
++						if (typeof url === 'string' || url instanceof URL) {
++							url = String(url).replace(/^file:\/\//i, 'vscode-file://vscode-app');
++							return staticBrowserUrls[url] ?? url;
++						}
++						return url;
++					}
++
++					const nativeFetch = fetch.bind(self);
++					self.fetch = function (input, init) {
++						if (input instanceof Request) {
++							// Request object - massage not supported
++							return nativeFetch(input, init);
++						}
++						return nativeFetch(asWorkerBrowserUrl(input), init);
++					};
++					self.XMLHttpRequest = class extends XMLHttpRequest {
++						override open(method: string, url: string | URL, async?: boolean, username?: string | null, password?: string | null): void {
++							return super.open(method, asWorkerBrowserUrl(url), async ?? true, username, password);
++						}
++					};
++					const nativeImportScripts = importScripts.bind(self);
++					self.importScripts = (...urls: string[]) => {
++						nativeImportScripts(...urls.map(asWorkerBrowserUrl));
++					};
++
++
++					nativeImportScripts(workerUrl);
++				}).toString();
++
++				const js = `(${bootstrapFnSource}('${browserUrl}', ${JSON.stringify(staticBrowserUrls)}))`;
++
++				const blob = new Blob([js], { type: 'application/javascript' });
++				return URL.createObjectURL(blob);
+ 			}
+ 
+-			const nativeFetch = fetch.bind(self);
+-			self.fetch = function (input, init) {
+-				if (input instanceof Request) {
+-					// Request object - massage not supported
+-					return nativeFetch(input, init);
++			options = options || {};
++			options.name = options.name || path.basename(stringUrl.toString());
++			class ExtensionWorker implements Worker {
++				private workerPromise: Promise<Worker>;
++				constructor(scriptURL: string | URL, options?: WorkerOptions) {
++					this.workerPromise = getWorkerUri(URI.parse(scriptURL instanceof URL ? scriptURL.toString() : scriptURL)).then(url => {
++						return new _Worker(url, options);
++					});
+ 				}
+-				return nativeFetch(asWorkerBrowserUrl(input), init);
+-			};
+-			self.XMLHttpRequest = class extends XMLHttpRequest {
+-				override open(method: string, url: string | URL, async?: boolean, username?: string | null, password?: string | null): void {
+-					return super.open(method, asWorkerBrowserUrl(url), async ?? true, username, password);
++
++				private _onmessage: Worker['onmessage'] = null;
++				set onmessage(cb: Worker['onmessage']) {
++					this._onmessage = cb;
++					this.workerPromise.then(worker => {
++						worker.onmessage = cb;
++					}, console.error);
+ 				}
+-			};
+-			const nativeImportScripts = importScripts.bind(self);
+-			self.importScripts = (...urls: string[]) => {
+-				nativeImportScripts(...urls.map(asWorkerBrowserUrl));
+-			};
+-
+-			nativeImportScripts(workerUrl);
+-		}).toString();
+-
+-		const js = `(${bootstrapFnSource}('${stringUrl}'))`;
+-		options = options || {};
+-		options.name = options.name || path.basename(stringUrl.toString());
+-		const blob = new Blob([js], { type: 'application/javascript' });
+-		const blobUrl = URL.createObjectURL(blob);
+-		return new _Worker(blobUrl, options);
+-	};
+ 
+-} else {
+-	(<any>self).Worker = class extends NestedWorker {
+-		constructor(stringOrUrl: string | URL, options?: WorkerOptions) {
+-			super(nativePostMessage, stringOrUrl, { name: path.basename(stringOrUrl.toString()), ...options });
+-		}
+-	};
++				get onmessage(): Worker['onmessage'] {
++					return this._onmessage;
++				}
++
++				private _onmessageerror: Worker['onmessageerror'] = null;
++				set onmessageerror(cb: Worker['onmessageerror']) {
++					this._onmessageerror = cb;
++					this.workerPromise.then(worker => {
++						worker.onmessageerror = cb;
++					}, console.error);
++				}
++
++				get onmessageerror(): Worker['onmessageerror'] {
++					return this._onmessageerror;
++				}
++
++				private _onerror: Worker['onerror'] = null;
++				set onerror(cb: Worker['onerror']) {
++					this._onerror = cb;
++					this.workerPromise.then(worker => {
++						worker.onerror = cb;
++					}, console.error);
++				}
++
++				get onerror(): Worker['onerror'] {
++					return this._onerror;
++				}
++
++				// eslint-disable-next-line @typescript-eslint/no-explicit-any
++				postMessage(message: unknown, options?: any): void {
++					this.workerPromise.then(worker => {
++						worker.postMessage(message, options);
++					}, console.error);
++				}
++
++				terminate(): void {
++					this.workerPromise.then(worker => {
++						worker.terminate();
++					}, console.error);
++				}
++
++				// eslint-disable-next-line @typescript-eslint/no-explicit-any
++				addEventListener(type: any, listener: any, options?: any): void {
++					this.workerPromise.then(worker => {
++						worker.addEventListener(type, listener, options);
++					}, console.error);
++				}
++
++				// eslint-disable-next-line @typescript-eslint/no-explicit-any
++				removeEventListener(type: any, listener: any, options?: any): void {
++					this.workerPromise.then(worker => {
++						worker.removeEventListener(type, listener, options);
++					}, console.error);
++				}
++
++				dispatchEvent(event: Event): boolean {
++					this.workerPromise.then(worker => {
++						worker.dispatchEvent(event);
++					}, console.error);
++					return false;
++				}
++			}
++			return new ExtensionWorker(stringUrl, options);
++		};
++
++	} else {
++		(<any>self).Worker = class extends NestedWorker {
++			constructor(stringOrUrl: string | URL, options?: WorkerOptions) {
++				super(nativePostMessage, stringOrUrl, { name: path.basename(stringOrUrl.toString()), ...options });
++			}
++		};
++	}
+ }
+ 
+ //#endregion ---
+@@ -261,6 +349,7 @@ export function create(): { onmessage: (message: any) => void } {
+ 				);
+ 
+ 				patchFetching(uri => extHostMain.asBrowserUri(uri));
++				patchWorker(uri => extHostMain.asBrowserUri(uri), () => extHostMain.getAllStaticBrowserUris());
+ 
+ 				onTerminate = (reason: string) => extHostMain.terminate(reason);
+ 			});
 diff --git a/src/vs/workbench/browser/parts/compositeBar.ts b/src/vs/workbench/browser/parts/compositeBar.ts
 index 36694129764..2920195c027 100644
 --- a/src/vs/workbench/browser/parts/compositeBar.ts
@@ -222,55 +690,241 @@ index ff766b9acb8..599bab9dd59 100644
  	}
  
  	isVisible(): boolean {
-diff --git a/src/vs/workbench/contrib/output/common/outputChannelModel.ts b/src/vs/workbench/contrib/output/common/outputChannelModel.ts
-index 88cc5df03cf..07926124b30 100644
---- a/src/vs/workbench/contrib/output/common/outputChannelModel.ts
-+++ b/src/vs/workbench/contrib/output/common/outputChannelModel.ts
-@@ -22,6 +22,7 @@ import { VSBuffer } from 'vs/base/common/buffer';
- import { ILogger, ILoggerService, ILogService } from 'vs/platform/log/common/log';
- import { CancellationToken, CancellationTokenSource } from 'vs/base/common/cancellation';
- import { OutputChannelUpdateMode } from 'vs/workbench/services/output/common/output';
-+import { isCancellationError } from 'vs/base/common/errors';
+diff --git a/src/vs/workbench/contrib/webview/browser/pre/service-worker.js b/src/vs/workbench/contrib/webview/browser/pre/service-worker.js
+index a6e9943b866..c470a1c9ed5 100644
+--- a/src/vs/workbench/contrib/webview/browser/pre/service-worker.js
++++ b/src/vs/workbench/contrib/webview/browser/pre/service-worker.js
+@@ -452,7 +452,6 @@ async function getOuterIframeClient(webviewId) {
+ 	const allClients = await sw.clients.matchAll({ includeUncontrolled: true });
+ 	return allClients.filter(client => {
+ 		const clientUrl = new URL(client.url);
+-		const hasExpectedPathName = (clientUrl.pathname === `${rootPath}/` || clientUrl.pathname === `${rootPath}/index.html` || clientUrl.pathname === `${rootPath}/index-no-csp.html`);
+-		return hasExpectedPathName && clientUrl.searchParams.get('id') === webviewId;
++		return clientUrl.searchParams.get('id') === webviewId;
+ 	});
+ }
+diff --git a/src/vs/workbench/contrib/webview/browser/webviewElement.ts b/src/vs/workbench/contrib/webview/browser/webviewElement.ts
+index 535da4b66c8..91a9bca8a36 100644
+--- a/src/vs/workbench/contrib/webview/browser/webviewElement.ts
++++ b/src/vs/workbench/contrib/webview/browser/webviewElement.ts
+@@ -11,7 +11,7 @@ import { streamToBuffer, VSBufferReadableStream } from 'vs/base/common/buffer';
+ import { CancellationTokenSource } from 'vs/base/common/cancellation';
+ import { Emitter, Event } from 'vs/base/common/event';
+ import { Disposable, IDisposable, toDisposable } from 'vs/base/common/lifecycle';
+-import { COI } from 'vs/base/common/network';
++import { COI, FileAccess } from 'vs/base/common/network';
+ import { URI } from 'vs/base/common/uri';
+ import { generateUuid } from 'vs/base/common/uuid';
+ import { localize } from 'vs/nls';
+@@ -185,11 +185,6 @@ export class WebviewElement extends Disposable implements IWebview, WebviewFindD
+ 				return;
+ 			}
  
- export interface IOutputChannelModel extends IDisposable {
- 	readonly onDispose: Event<void>;
-@@ -61,7 +62,11 @@ class OutputFileListener extends Disposable {
+-			if (e.origin !== this._webviewContentOrigin(this._encodedWebviewOrigin)) {
+-				console.log(`Skipped renderer receiving message due to mismatched origins: ${e.origin} ${this._webviewContentOrigin}`);
+-				return;
+-			}
+-
+ 			if (e.data.channel === 'webview-ready') {
+ 				if (this._messagePort) {
+ 					return;
+@@ -476,6 +471,9 @@ export class WebviewElement extends Disposable implements IWebview, WebviewFindD
+ 			params.purpose = options.purpose;
+ 		}
  
- 	private poll(): void {
- 		const loop = () => this.doWatch().then(() => this.poll());
--		this.syncDelayer.trigger(loop);
-+		this.syncDelayer.trigger(loop).catch(error => {
-+			if (!isCancellationError(error)) {
-+				throw error;
-+			}
-+		});
++		params.serviceWorkerUri = FileAccess.asBrowserUri('vs/workbench/contrib/webview/browser/pre/service-worker.js').toString(true);
++		params.fakeHtmlUri = FileAccess.asBrowserUri('vs/workbench/contrib/webview/browser/pre/fake.html').toString(true);
++
+ 		COI.addSearchParam(params, true, true);
+ 
+ 		const queryString = new URLSearchParams(params).toString();
+@@ -483,7 +481,8 @@ export class WebviewElement extends Disposable implements IWebview, WebviewFindD
+ 		// Workaround for https://bugzilla.mozilla.org/show_bug.cgi?id=1754872
+ 		const fileName = isFirefox ? 'index-no-csp.html' : 'index.html';
+ 
+-		this.element!.setAttribute('src', `${this.webviewContentEndpoint(encodedWebviewOrigin)}/${fileName}?${queryString}`);
++		const relativeIframeSrc = FileAccess.asBrowserUri(`vs/workbench/contrib/webview/browser/pre/${fileName}`);
++		this.element!.setAttribute('src', `${relativeIframeSrc.toString(true)}?${queryString}`);
  	}
  
- 	private async doWatch(): Promise<void> {
-@@ -206,7 +211,7 @@ export class FileOutputChannelModel extends Disposable implements IOutputChannel
- 		this.doUpdateModel(model, [EditOperation.delete(model.getFullModelRange())], VSBuffer.fromString(''));
+ 	public mountTo(element: HTMLElement) {
+@@ -537,11 +536,6 @@ export class WebviewElement extends Disposable implements IWebview, WebviewFindD
+ 		return endpoint;
  	}
  
--	private async appendContent(model: ITextModel, immediate: boolean, token: CancellationToken): Promise<void> {
-+	private appendContent(model: ITextModel, immediate: boolean, token: CancellationToken): void {
- 		this.appendThrottler.trigger(async () => {
- 			/* Abort if operation is cancelled */
- 			if (token.isCancellationRequested) {
-@@ -234,7 +239,11 @@ export class FileOutputChannelModel extends Disposable implements IOutputChannel
- 			const lastLineMaxColumn = model.getLineMaxColumn(lastLine);
- 			const edits = [EditOperation.insert(new Position(lastLine, lastLineMaxColumn), contentToAppend.toString())];
- 			this.doUpdateModel(model, edits, contentToAppend);
--		}, immediate ? 0 : undefined);
-+		}, immediate ? 0 : undefined).catch(error => {
-+			if (!isCancellationError(error)) {
-+				throw error;
-+			}
-+		});
+-	private _webviewContentOrigin(encodedWebviewOrigin: string): string {
+-		const uri = URI.parse(this.webviewContentEndpoint(encodedWebviewOrigin));
+-		return uri.scheme + '://' + uri.authority.toLowerCase();
+-	}
+-
+ 	private doPostMessage(channel: string, data?: any, transferable: Transferable[] = []): boolean {
+ 		if (this.element && this._messagePort) {
+ 			this._messagePort.postMessage({ channel, args: data }, transferable);
+diff --git a/src/vs/workbench/services/extensions/browser/extensionService.ts b/src/vs/workbench/services/extensions/browser/extensionService.ts
+index d8652bf5ac0..d0cf61f0983 100644
+--- a/src/vs/workbench/services/extensions/browser/extensionService.ts
++++ b/src/vs/workbench/services/extensions/browser/extensionService.ts
+@@ -210,16 +210,16 @@ export class ExtensionService extends AbstractExtensionService implements IExten
+ 	}
+ }
+ 
+-class BrowserExtensionHostFactory implements IExtensionHostFactory {
++export class BrowserExtensionHostFactory implements IExtensionHostFactory {
+ 
+ 	constructor(
+ 		private readonly _extensionsProposedApi: ExtensionsProposedApi,
+ 		private readonly _scanWebExtensions: () => Promise<IExtensionDescription[]>,
+ 		private readonly _getExtensions: () => Promise<IExtensionDescription[]>,
+-		@IInstantiationService private readonly _instantiationService: IInstantiationService,
+-		@IRemoteAgentService private readonly _remoteAgentService: IRemoteAgentService,
+-		@IRemoteAuthorityResolverService private readonly _remoteAuthorityResolverService: IRemoteAuthorityResolverService,
+-		@IWorkbenchExtensionEnablementService private readonly _extensionEnablementService: IWorkbenchExtensionEnablementService,
++		@IInstantiationService protected readonly _instantiationService: IInstantiationService,
++		@IRemoteAgentService protected readonly _remoteAgentService: IRemoteAgentService,
++		@IRemoteAuthorityResolverService protected readonly _remoteAuthorityResolverService: IRemoteAuthorityResolverService,
++		@IWorkbenchExtensionEnablementService protected readonly _extensionEnablementService: IWorkbenchExtensionEnablementService,
+ 	) { }
+ 
+ 	createExtensionHost(runningLocations: ExtensionRunningLocationTracker, runningLocation: ExtensionRunningLocation, isInitialStart: boolean): IExtensionHost | null {
+@@ -245,7 +245,7 @@ class BrowserExtensionHostFactory implements IExtensionHostFactory {
+ 		}
  	}
  
- 	private async replaceContent(model: ITextModel, token: CancellationToken): Promise<void> {
+-	private _createLocalExtensionHostDataProvider(runningLocations: ExtensionRunningLocationTracker, desiredRunningLocation: ExtensionRunningLocation, isInitialStart: boolean): IWebWorkerExtensionHostDataProvider {
++	protected _createLocalExtensionHostDataProvider(runningLocations: ExtensionRunningLocationTracker, desiredRunningLocation: ExtensionRunningLocation, isInitialStart: boolean): IWebWorkerExtensionHostDataProvider {
+ 		return {
+ 			getInitData: async (): Promise<IWebWorkerExtensionHostInitData> => {
+ 				if (isInitialStart) {
+diff --git a/src/vs/workbench/services/extensions/browser/webWorkerExtensionHost.ts b/src/vs/workbench/services/extensions/browser/webWorkerExtensionHost.ts
+index ad66755797e..b708a040708 100644
+--- a/src/vs/workbench/services/extensions/browser/webWorkerExtensionHost.ts
++++ b/src/vs/workbench/services/extensions/browser/webWorkerExtensionHost.ts
+@@ -76,7 +76,7 @@ export class WebWorkerExtensionHost extends Disposable implements IExtensionHost
+ 		this._extensionHostLogsLocation = joinPath(this._environmentService.extHostLogsPath, 'webWorker');
+ 	}
+ 
+-	private async _getWebWorkerExtensionHostIframeSrc(): Promise<string> {
++	protected async _getWebWorkerExtensionHostIframeSrc(): Promise<string> {
+ 		const suffixSearchParams = new URLSearchParams();
+ 		if (this._environmentService.debugExtensionHost && this._environmentService.debugRenderer) {
+ 			suffixSearchParams.set('debugged', '1');
+@@ -111,8 +111,6 @@ export class WebWorkerExtensionHost extends Disposable implements IExtensionHost
+ 				res.searchParams.set('salt', stableOriginUUID);
+ 				return res.toString();
+ 			}
+-
+-			console.warn(`The web worker extension host is started in a same-origin iframe!`);
+ 		}
+ 
+ 		const relativeExtensionHostIframeSrc = FileAccess.asBrowserUri(iframeModulePath);
+diff --git a/src/vs/workbench/services/extensions/common/abstractExtensionService.ts b/src/vs/workbench/services/extensions/common/abstractExtensionService.ts
+index c529886ca92..2311e7a0fb5 100644
+--- a/src/vs/workbench/services/extensions/common/abstractExtensionService.ts
++++ b/src/vs/workbench/services/extensions/common/abstractExtensionService.ts
+@@ -87,9 +87,9 @@ export abstract class AbstractExtensionService extends Disposable implements IEx
+ 	private _resolveAuthorityAttempt: number = 0;
+ 
+ 	constructor(
+-		private readonly _extensionsProposedApi: ExtensionsProposedApi,
+-		private readonly _extensionHostFactory: IExtensionHostFactory,
+-		private readonly _extensionHostKindPicker: IExtensionHostKindPicker,
++		protected readonly _extensionsProposedApi: ExtensionsProposedApi,
++		protected readonly _extensionHostFactory: IExtensionHostFactory,
++		protected readonly _extensionHostKindPicker: IExtensionHostKindPicker,
+ 		@IInstantiationService protected readonly _instantiationService: IInstantiationService,
+ 		@INotificationService protected readonly _notificationService: INotificationService,
+ 		@IWorkbenchEnvironmentService protected readonly _environmentService: IWorkbenchEnvironmentService,
+@@ -192,7 +192,7 @@ export abstract class AbstractExtensionService extends Disposable implements IEx
+ 
+ 	//#region deltaExtensions
+ 
+-	private async _handleDeltaExtensions(item: DeltaExtensionsQueueItem): Promise<void> {
++	protected async _handleDeltaExtensions(item: DeltaExtensionsQueueItem): Promise<void> {
+ 		this._deltaExtensionsQueue.push(item);
+ 		if (this._inHandleDeltaExtensions) {
+ 			// Let the current item finish, the new one will be picked up
+@@ -1156,7 +1156,7 @@ export interface IExtensionHostFactory {
+ 	createExtensionHost(runningLocations: ExtensionRunningLocationTracker, runningLocation: ExtensionRunningLocation, isInitialStart: boolean): IExtensionHost | null;
+ }
+ 
+-class DeltaExtensionsQueueItem {
++export class DeltaExtensionsQueueItem {
+ 	constructor(
+ 		public readonly toAdd: IExtension[],
+ 		public readonly toRemove: string[] | IExtension[]
+diff --git a/src/vs/workbench/services/extensions/worker/webWorkerExtensionHostIframe.html b/src/vs/workbench/services/extensions/worker/webWorkerExtensionHostIframe.html
+index 576bad14363..f1c51c00469 100644
+--- a/src/vs/workbench/services/extensions/worker/webWorkerExtensionHostIframe.html
++++ b/src/vs/workbench/services/extensions/worker/webWorkerExtensionHostIframe.html
+@@ -15,6 +15,7 @@
+ 	const name = searchParams.get('debugged') ? 'DebugWorkerExtensionHost' : 'WorkerExtensionHost';
+ 	const parentOrigin = searchParams.get('parentOrigin') || window.origin;
+ 	const salt = searchParams.get('salt');
++	const vscodeExtHostWorkerSrc = searchParams.get('vscodeExtHostWorkerSrc');
+ 
+ 	(async function() {
+ 		const hostnameValidationMarker = 'v--';
+@@ -66,13 +67,12 @@
+ 
+ 	function start() {
+ 		try {
+-			let workerUrl = '../../../../base/worker/workerMain.js';
++			let workerUrl = vscodeExtHostWorkerSrc
+ 			if(globalThis.crossOriginIsolated) {
+ 				workerUrl += '?vscode-coi=2'; // COEP
+ 			}
+ 
+ 			const worker = new Worker(workerUrl, { name });
+-			worker.postMessage('vs/workbench/api/worker/extensionHostWorker');
+ 			const nestedWorkers = new Map();
+ 
+ 			worker.onmessage = (event) => {
+diff --git a/src/vs/workbench/services/outline/browser/outlineService.ts b/src/vs/workbench/services/outline/browser/outlineService.ts
+index f4707432371..7c5cdde39cc 100644
+--- a/src/vs/workbench/services/outline/browser/outlineService.ts
++++ b/src/vs/workbench/services/outline/browser/outlineService.ts
+@@ -11,7 +11,7 @@ import { IEditorPane } from 'vs/workbench/common/editor';
+ import { IOutline, IOutlineCreator, IOutlineService, OutlineTarget } from 'vs/workbench/services/outline/browser/outline';
+ import { Event, Emitter } from 'vs/base/common/event';
+ 
+-class OutlineService implements IOutlineService {
++export class OutlineService implements IOutlineService {
+ 
+ 	declare _serviceBrand: undefined;
+ 
+diff --git a/src/vs/workbench/services/textMate/browser/textMateTokenizationFeatureImpl.ts b/src/vs/workbench/services/textMate/browser/textMateTokenizationFeatureImpl.ts
+index ca939e5f2f2..cf7d1a629c9 100644
+--- a/src/vs/workbench/services/textMate/browser/textMateTokenizationFeatureImpl.ts
++++ b/src/vs/workbench/services/textMate/browser/textMateTokenizationFeatureImpl.ts
+@@ -37,6 +37,8 @@ import { ITMSyntaxExtensionPoint, grammarsExtPoint } from 'vs/workbench/services
+ import { IValidEmbeddedLanguagesMap, IValidGrammarDefinition, IValidTokenTypeMap } from 'vs/workbench/services/textMate/common/TMScopeRegistry';
+ import { ITextMateThemingRule, IWorkbenchColorTheme, IWorkbenchThemeService } from 'vs/workbench/services/themes/common/workbenchThemeService';
+ import type { IGrammar, IOnigLib, IRawTheme } from 'vscode-textmate';
++import * as vscodeTextmate from 'vscode-textmate';
++import * as vscodeOniguruma from 'vscode-oniguruma';
+ 
+ export class TextMateTokenizationFeature extends Disposable implements ITextMateTokenizationService {
+ 	private static reportTokenizationTimeCounter = 0;
+@@ -238,7 +240,7 @@ export class TextMateTokenizationFeature extends Disposable implements ITextMate
+ 			return this._grammarFactory;
+ 		}
+ 
+-		const [vscodeTextmate, vscodeOniguruma] = await Promise.all([import('vscode-textmate'), this._getVSCodeOniguruma()]);
++		const vscodeOniguruma = await this._getVSCodeOniguruma();
+ 		const onigLib: Promise<IOnigLib> = Promise.resolve({
+ 			createOnigScanner: (sources: string[]) => vscodeOniguruma.createOnigScanner(sources),
+ 			createOnigString: (str: string) => vscodeOniguruma.createOnigString(str)
+@@ -348,7 +350,7 @@ export class TextMateTokenizationFeature extends Disposable implements ITextMate
+ 	private _getVSCodeOniguruma(): Promise<typeof import('vscode-oniguruma')> {
+ 		if (!this._vscodeOniguruma) {
+ 			this._vscodeOniguruma = (async () => {
+-				const [vscodeOniguruma, wasm] = await Promise.all([import('vscode-oniguruma'), this._loadVSCodeOnigurumaWASM()]);
++				const wasm = await this._loadVSCodeOnigurumaWASM();
+ 				await vscodeOniguruma.loadWASM({
+ 					data: wasm,
+ 					print: (str: string) => {
 diff --git a/src/vs/workbench/services/textMate/browser/worker/textMate.worker.ts b/src/vs/workbench/services/textMate/browser/worker/textMate.worker.ts
-index 67484e6ef40..ef7cd478655 100644
+index 67307a7d49d..7e656dea8bd 100644
 --- a/src/vs/workbench/services/textMate/browser/worker/textMate.worker.ts
 +++ b/src/vs/workbench/services/textMate/browser/worker/textMate.worker.ts
 @@ -12,6 +12,8 @@ import { ICreateGrammarResult, TMGrammarFactory } from 'vs/workbench/services/te
@@ -282,7 +936,7 @@ index 67484e6ef40..ef7cd478655 100644
  
  export interface ICreateData {
  	grammarDefinitions: IValidGrammarDefinitionDTO[];
-@@ -56,9 +58,6 @@ export class TextMateTokenizationWorker {
+@@ -58,9 +60,6 @@ export class TextMateTokenizationWorker {
  	}
  
  	private async _loadTMGrammarFactory(grammarDefinitions: IValidGrammarDefinition[]): Promise<TMGrammarFactory> {

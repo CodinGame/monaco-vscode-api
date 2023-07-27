@@ -18,7 +18,10 @@
   "module": "dist/api.js",
   "enabledApiProposals": [
     "fileSearchProvider",
-    "textSearchProvider"
+    "textSearchProvider",
+    "extensionsAny",
+    "documentPaste",
+    "externalUriOpener"
   ],
   "exports": {
     ".": {
@@ -32,97 +35,13 @@
       "types": "./dist/extensions.d.ts",
       "default": "./dist/extensions.js"
     },
-    "./service-override/notifications": {
-      "types": "./dist/service-override/notifications.d.ts",
-      "default": "./dist/service-override/notifications.js"
+    "./service-override/*": {
+      "types": "./dist/service-override/*.d.ts",
+      "default": "./dist/service-override/*.js"
     },
-    "./service-override/bulkEdit": {
-      "types": "./dist/service-override/bulkEdit.d.ts",
-      "default": "./dist/service-override/bulkEdit.js"
-    },
-    "./service-override/dialogs": {
-      "types": "./dist/service-override/dialogs.d.ts",
-      "default": "./dist/service-override/dialogs.js"
-    },
-    "./service-override/model": {
-      "types": "./dist/service-override/model.d.ts",
-      "default": "./dist/service-override/model.js"
-    },
-    "./service-override/editor": {
-      "types": "./dist/service-override/editor.d.ts",
-      "default": "./dist/service-override/editor.js"
-    },
-    "./service-override/files": {
-      "types": "./dist/service-override/files.d.ts",
-      "default": "./dist/service-override/files.js"
-    },
-    "./service-override/configuration": {
-      "types": "./dist/service-override/configuration.d.ts",
-      "default": "./dist/service-override/configuration.js"
-    },
-    "./service-override/keybindings": {
-      "types": "./dist/service-override/keybindings.d.ts",
-      "default": "./dist/service-override/keybindings.js"
-    },
-    "./service-override/textmate": {
-      "types": "./dist/service-override/textmate.d.ts",
-      "default": "./dist/service-override/textmate.js"
-    },
-    "./service-override/theme": {
-      "types": "./dist/service-override/theme.d.ts",
-      "default": "./dist/service-override/theme.js"
-    },
-    "./service-override/snippets": {
-      "types": "./dist/service-override/snippets.d.ts",
-      "default": "./dist/service-override/snippets.js"
-    },
-    "./service-override/languages": {
-      "types": "./dist/service-override/languages.d.ts",
-      "default": "./dist/service-override/languages.js"
-    },
-    "./service-override/audioCue": {
-      "types": "./dist/service-override/audioCue.d.ts",
-      "default": "./dist/service-override/audioCue.js"
-    },
-    "./service-override/debug": {
-      "types": "./dist/service-override/debug.d.ts",
-      "default": "./dist/service-override/debug.js"
-    },
-    "./service-override/preferences": {
-      "types": "./dist/service-override/preferences.d.ts",
-      "default": "./dist/service-override/preferences.js"
-    },
-    "./service-override/views": {
-      "types": "./dist/service-override/views.d.ts",
-      "default": "./dist/service-override/views.js"
-    },
-    "./service-override/quickaccess": {
-      "types": "./dist/service-override/quickaccess.d.ts",
-      "default": "./dist/service-override/quickaccess.js"
-    },
-    "./service-override/output": {
-      "types": "./dist/service-override/output.d.ts",
-      "default": "./dist/service-override/output.js"
-    },
-    "./service-override/terminal": {
-      "types": "./dist/service-override/terminal.d.ts",
-      "default": "./dist/service-override/terminal.js"
-    },
-    "./service-override/search": {
-      "types": "./dist/service-override/search.d.ts",
-      "default": "./dist/service-override/search.js"
-    },
-    "./service-override/markers": {
-      "types": "./dist/service-override/markers.d.ts",
-      "default": "./dist/service-override/markers.js"
-    },
-    "./workers/textMate.worker": {
-      "types": "./dist/workers/textMate.worker.d.ts",
-      "default": "./dist/workers/textMate.worker.js"
-    },
-    "./workers/outputLinkComputer.worker": {
-      "types": "./dist/workers/outputLinkComputer.worker.d.ts",
-      "default": "./dist/workers/outputLinkComputer.worker.js"
+    "./workers/*": {
+      "types": "./dist/workers/*.d.ts",
+      "default": "./dist/workers/*.js"
     },
     "./monaco": {
       "types": "./dist/monaco.d.ts",
@@ -148,74 +67,8 @@
       "extensions": [
         "./dist/extensions.d.ts"
       ],
-      "service-override/notifications": [
-        "./dist/service-override/notifications.d.ts"
-      ],
-      "service-override/bulkEdit": [
-        "./dist/service-override/bulkEdit.d.ts"
-      ],
-      "service-override/dialogs": [
-        "./dist/service-override/dialogs.d.ts"
-      ],
-      "service-override/model": [
-        "./dist/service-override/model.d.ts"
-      ],
-      "service-override/editor": [
-        "./dist/service-override/editor.d.ts"
-      ],
-      "service-override/files": [
-        "./dist/service-override/files.d.ts"
-      ],
-      "service-override/configuration": [
-        "./dist/service-override/configuration.d.ts"
-      ],
-      "service-override/keybindings": [
-        "./dist/service-override/keybindings.d.ts"
-      ],
-      "service-override/textmate": [
-        "./dist/service-override/textmate.d.ts"
-      ],
-      "service-override/theme": [
-        "./dist/service-override/theme.d.ts"
-      ],
-      "service-override/snippets": [
-        "./dist/service-override/snippets.d.ts"
-      ],
-      "service-override/languages": [
-        "./dist/service-override/languages.d.ts"
-      ],
-      "service-override/audioCue": [
-        "./dist/service-override/audioCue.d.ts"
-      ],
-      "service-override/debug": [
-        "./dist/service-override/debug.d.ts"
-      ],
-      "service-override/preferences": [
-        "./dist/service-override/preferences.d.ts"
-      ],
-      "service-override/views": [
-        "./dist/service-override/views.d.ts"
-      ],
-      "service-override/quickaccess": [
-        "./dist/service-override/quickaccess.d.ts"
-      ],
-      "service-override/output": [
-        "./dist/service-override/output.d.ts"
-      ],
-      "service-override/terminal": [
-        "./dist/service-override/terminal.d.ts"
-      ],
-      "service-override/search": [
-        "./dist/service-override/search.d.ts"
-      ],
-      "service-override/markers": [
-        "./dist/service-override/markers.d.ts"
-      ],
-      "workers/textMate.worker": [
-        "./dist/workers/textMate.worker.d.ts"
-      ],
-      "workers/outputLinkComputer.worker": [
-        "./dist/workers/outputLinkComputer.worker.d.ts"
+      "service-override/*": [
+        "./dist/service-override/*.d.ts"
       ],
       "monaco": [
         "./dist/monaco.d.ts"
@@ -235,12 +88,13 @@
     "README.md"
   ],
   "scripts": {
-    "build": "npm run clean && npm run generate-types && npm run lint && npm run compile-rollup-plugins && npm run compile-treemending-script && npm run compile",
-    "compile": "NODE_OPTIONS=--max_old_space_size=8192 rollup --config rollup/rollup.config.ts --configPlugin 'typescript={tsconfig: `tsconfig.rollup-config.json`}' --vscode-version ${npm_package_config_vscode_version}",
+    "build": "npm run clean && npm run generate-types && npm run lint && npm run compile-rollup-plugins && npm run compile-treemending-script && npm run compile && npm run compile-default-extensions",
+    "compile": "NODE_OPTIONS=--max_old_space_size=8192 rollup --config rollup/rollup.config.ts --configPlugin 'typescript={tsconfig: `tsconfig.rollup-config.json`}' --vscode-version ${npm_package_config_vscode_version} --vscode-ref ${npm_package_config_vscode_ref}",
+    "compile-default-extensions": "NODE_OPTIONS=--max_old_space_size=8192 rollup --config rollup/rollup.default-extensions.ts --configPlugin 'typescript={tsconfig: `tsconfig.rollup-config-default-extensions.json`}'",
     "clean": "rm -rf dist/",
     "compile-treemending-script": "rollup --config rollup/rollup.treemending-script.config.ts --configPlugin 'typescript={tsconfig: `tsconfig.rollup-config-treemending-script.json`, include: [`./rollup/rollup.treemending-script.config.ts`]}'",
     "compile-rollup-plugins": "rollup --config rollup/rollup.rollup-plugins.config.ts --configPlugin 'typescript={tsconfig: `tsconfig.rollup-config-plugins.json`, include: [`./rollup/rollup.rollup-plugins.config.ts`]}'",
-    "preprepare": "./scripts/install-vscode && node --loader ts-node/esm src/monaco-treemending.ts",
+    "preprepare": "./scripts/install-vscode && node --loader ts-node/esm src/monaco-treemending.ts && patch-package",
     "lint": "eslint {/src/**/*.ts,./rollup/*.ts,./*.ts}",
     "generate-types": "./scripts/generate-types",
     "release": "node --loader ts-node/esm release.ts ${npm_package_config_vscode_version}",
@@ -251,60 +105,62 @@
   },
   "config": {
     "vscode": {
-      "version": "1.79.0"
+      "version": "1.80.0",
+      "ref": "660393deaaa6d1996740ff4880f1bad43768c814"
     }
   },
   "devDependencies": {
-    "@babel/core": "^7.22.5",
+    "@babel/core": "^7.22.9",
     "@babel/plugin-proposal-class-properties": "^7.18.6",
-    "@babel/plugin-proposal-decorators": "^7.22.5",
-    "@babel/preset-env": "^7.22.5",
+    "@babel/plugin-proposal-decorators": "^7.22.7",
+    "@babel/preset-env": "^7.22.9",
     "@babel/preset-typescript": "^7.22.5",
     "@codingame/eslint-config": "^1.1.9",
     "@codingame/tsconfig": "^1.1.1",
-    "@octokit/rest": "^19.0.11",
-    "@rollup/plugin-commonjs": "^25.0.1",
-    "@rollup/plugin-dynamic-import-vars": "^2.0.3",
+    "@octokit/rest": "^20.0.1",
+    "@rollup/plugin-commonjs": "^25.0.3",
+    "@rollup/plugin-dynamic-import-vars": "^2.0.4",
     "@rollup/plugin-inject": "^5.0.3",
     "@rollup/plugin-json": "^6.0.0",
     "@rollup/plugin-node-resolve": "^15.1.0",
     "@rollup/plugin-replace": "^5.0.2",
-    "@rollup/plugin-terser": "^0.4.3",
-    "@rollup/plugin-typescript": "^11.1.1",
+    "@rollup/plugin-typescript": "^11.1.2",
     "@types/diff": "^5.0.3",
     "@types/mime-types": "^2.1.1",
     "@types/node": "^18.16.3",
     "@types/semver": "^7.5.0",
-    "@types/vscode": "~1.79.0",
+    "@types/toposort": "^2.0.3",
+    "@types/vscode": "~1.80.0",
     "@types/yauzl": "^2.10.0",
-    "@typescript-eslint/eslint-plugin": "^5.59.9",
-    "@typescript-eslint/parser": "^5.59.9",
+    "@typescript-eslint/eslint-plugin": "^5.61.0",
+    "@typescript-eslint/parser": "^5.61.0",
     "@vscode/iconv-lite-umd": "^0.7.0",
+    "@web/rollup-plugin-import-meta-assets": "^2.0.0",
+    "css-url-parser": "^1.1.3",
     "diff": "^5.1.0",
-    "eslint": "^8.42.0",
+    "eslint": "^8.45.0",
     "eslint-config-standard": "^17.1.0",
     "eslint-plugin-import": "^2.27.5",
-    "eslint-plugin-n": "^16.0.0",
+    "eslint-plugin-n": "^16.0.1",
     "eslint-plugin-promise": "^6.1.1",
     "eslint-plugin-unused-imports": "^2.0.0",
-    "isbinaryfile": "^5.0.0",
+    "fast-glob": "^3.3.1",
     "js-cleanup": "^1.2.0",
     "jschardet": "^3.0.0",
     "mime-types": "^2.1.35",
-    "recast": "^0.23.2",
-    "rollup": "^3.25.1",
+    "patch-package": "^7.0.2",
+    "recast": "^0.23.3",
+    "rollup": "^3.26.3",
     "rollup-plugin-dts": "^5.3.0",
-    "rollup-plugin-external-assets": "^3.0.1",
-    "rollup-plugin-glob-import": "^0.5.0",
     "rollup-plugin-styles": "^4.0.0",
-    "semver": "^7.5.1",
-    "ts-morph": "^18.0.0",
+    "semver": "^7.5.4",
+    "ts-morph": "^19.0.0",
     "ts-node": "^10.9.1",
-    "typescript": "5.1.3",
-    "zx": "^7.2.2"
+    "typescript": "5.1.6",
+    "zx": "^7.2.3"
   },
   "peerDependencies": {
-    "monaco-editor": "0.39.0",
+    "monaco-editor": "0.40.0",
     "vscode-oniguruma": "^1.7.0",
     "vscode-textmate": "^9.0.0",
     "xterm": "5.2.1",
@@ -317,11 +173,15 @@
     "yauzl": "^2.10.0"
   },
   "overrides": {
-    "typescript": "5.1.3",
-    "rollup": "^3.25.1"
+    "typescript": "5.1.6",
+    "rollup": "^3.26.3",
+    "recast": "^0.23.3"
   },
   "volta": {
     "node": "18.14.2",
     "npm": "9.5.1"
+  },
+  "dependencies": {
+    "toposort": "^2.0.2"
   }
 }

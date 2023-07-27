@@ -13,11 +13,12 @@ const TSCONFIG = path.resolve(BASE_DIR, 'tsconfig.rollup.json')
 
 const config: rollup.RollupOptions = {
   cache: false,
-  external: ['@rollup/pluginutils', 'path', 'yauzl'],
+  external: ['@rollup/pluginutils', 'path', 'yauzl', 'fsevents'],
   output: [{
     format: 'esm',
     dir: 'dist',
-    entryFileNames: '[name].js'
+    entryFileNames: '[name].js',
+    chunkFileNames: '[name].js'
   }],
   input: [
     'src/rollup-vsix-plugin.ts',
