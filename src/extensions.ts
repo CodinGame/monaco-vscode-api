@@ -31,6 +31,7 @@ interface RegisterExtensionResult {
 interface RegisterLocalProcessExtensionResult extends RegisterExtensionResult {
   getApi (): Promise<typeof vscode>
   setAsDefaultApi (): Promise<void>
+  registerFileGetter: (path: string, getter: () => Promise<Uint8Array>) => IDisposable
 }
 
 function registerExtensionFileUrl (extensionLocation: URI, filePath: string, url: string, mimeType?: string): IDisposable {
@@ -116,6 +117,9 @@ export function registerExtension (manifest: IExtensionManifest, extHostKind?: E
       getApi,
       async setAsDefaultApi () {
         setDefaultApi(await getApi())
+      },
+      registerFileGetter (path, getter) {
+        return registerExtensionFile(extension.location, path, getter)
       }
     }
   }
