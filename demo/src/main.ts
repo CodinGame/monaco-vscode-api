@@ -6,8 +6,9 @@ import './setup'
 import { createConfiguredEditor, createModelReference } from 'vscode/monaco'
 import { registerFileSystemOverlay, HTMLFileSystemProvider } from 'vscode/service-override/files'
 import * as vscode from 'vscode'
-import { ILogService, StandaloneServices, IPreferencesService } from 'vscode/services'
-import './features/customView'
+import { ILogService, StandaloneServices, IPreferencesService, IEditorService, IDialogService } from 'vscode/services'
+import { ConfirmResult } from 'vscode/service-override/views'
+import { CustomEditorInput } from './features/customView'
 import './features/debugger'
 import './features/search'
 import { anotherFakeOutputChannel } from './features/output'
@@ -16,13 +17,40 @@ import './features/intellisense'
 import './features/notifications'
 import './features/terminal'
 
-import 'vscode/default-extensions/theme-defaults'
-import 'vscode/default-extensions/javascript'
-import 'vscode/default-extensions/typescript-basics'
-import 'vscode/default-extensions/json'
-import 'vscode/default-extensions/html'
+import 'vscode/default-extensions/clojure'
+import 'vscode/default-extensions/coffeescript'
+import 'vscode/default-extensions/cpp'
+import 'vscode/default-extensions/csharp'
 import 'vscode/default-extensions/css'
+import 'vscode/default-extensions/diff'
+import 'vscode/default-extensions/fsharp'
+import 'vscode/default-extensions/go'
+import 'vscode/default-extensions/groovy'
+import 'vscode/default-extensions/html'
+import 'vscode/default-extensions/java'
+import 'vscode/default-extensions/javascript'
+import 'vscode/default-extensions/json'
+import 'vscode/default-extensions/julia'
+import 'vscode/default-extensions/lua'
+import 'vscode/default-extensions/markdown-basics'
+import 'vscode/default-extensions/objective-c'
+import 'vscode/default-extensions/perl'
+import 'vscode/default-extensions/php'
+import 'vscode/default-extensions/powershell'
+import 'vscode/default-extensions/python'
+import 'vscode/default-extensions/r'
+import 'vscode/default-extensions/ruby'
+import 'vscode/default-extensions/rust'
+import 'vscode/default-extensions/scss'
+import 'vscode/default-extensions/shellscript'
+import 'vscode/default-extensions/sql'
+import 'vscode/default-extensions/swift'
+import 'vscode/default-extensions/typescript-basics'
+import 'vscode/default-extensions/vb'
+import 'vscode/default-extensions/xml'
+import 'vscode/default-extensions/yaml'
 
+import 'vscode/default-extensions/theme-defaults'
 import 'vscode/default-extensions/theme-seti'
 import 'vscode/default-extensions/references-view'
 import 'vscode/default-extensions/search-result'
@@ -30,7 +58,6 @@ import 'vscode/default-extensions/configuration-editing'
 import 'vscode/default-extensions/markdown-math'
 import 'vscode/default-extensions/npm'
 import 'vscode/default-extensions/media-preview'
-import 'vscode/default-extensions/markdown-basics'
 
 const modelRef = await createModelReference(monaco.Uri.file('/tmp/test.js'), `// import anotherfile
 let variable = 1
@@ -134,4 +161,33 @@ document.querySelector('#settingsui')!.addEventListener('click', async () => {
 document.querySelector('#keybindingsui')!.addEventListener('click', async () => {
   await StandaloneServices.get(IPreferencesService).openGlobalKeybindingSettings(false)
   window.scrollTo({ top: 0, behavior: 'smooth' })
+})
+
+document.querySelector('#customEditorPanel')!.addEventListener('click', async () => {
+  const input = new CustomEditorInput({
+    async confirm () {
+      const { confirmed } = await StandaloneServices.get(IDialogService).confirm({
+        message: 'Are you sure you want to close this INCREDIBLE editor pane?'
+      })
+      return confirmed ? ConfirmResult.DONT_SAVE : ConfirmResult.CANCEL
+    },
+    showConfirm () {
+      return true
+    }
+  })
+  let toggle = false
+  const interval = window.setInterval(() => {
+    const title = toggle ? 'Awesome editor pane' : 'Incredible editor pane'
+    input.setTitle(title)
+    input.setName(title)
+    input.setDescription(title)
+    toggle = !toggle
+  }, 1000)
+  input.onWillDispose(() => {
+    window.clearInterval(interval)
+  })
+
+  await StandaloneServices.get(IEditorService).openEditor(input, {
+    pinned: true
+  })
 })

@@ -22,7 +22,7 @@ body {
 #editors {
   position: relative;
   min-width: 0;
-  height: 600px;
+  height: 55vh;
   border: 1px solid var(--vscode-editorWidget-border);
 }
 
@@ -30,10 +30,10 @@ body {
   display: flex;
   flex: none;
   border: 1px solid var(--vscode-editorWidget-border);
-  height: 400px;
+  height: 30vh;
 }
 
 .editor {
   width: 100%;
-  height: 600px;
+  height: 55vh;
 }

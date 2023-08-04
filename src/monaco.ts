@@ -54,6 +54,13 @@ import 'vs/workbench/contrib/codeEditor/browser/toggleRenderControlCharacter'
 import 'vs/workbench/contrib/codeEditor/browser/toggleWordWrap'
 import 'vs/workbench/contrib/codeEditor/browser/toggleRenderWhitespace'
 import 'vs/workbench/contrib/codeEditor/browser/editorLineNumberMenu'
+
+import 'vs/workbench/contrib/format/browser/format.contribution'
+import 'vs/workbench/contrib/folding/browser/folding.contribution'
+import 'vs/workbench/contrib/inlayHints/browser/inlayHintsAccessibilty'
+import 'vs/workbench/contrib/codeActions/browser/codeActions.contribution'
+import 'vs/workbench/contrib/list/browser/list.contribution'
+
 class ExtensionPoints implements IWorkbenchContribution {
   constructor (
     @IInstantiationService private readonly instantiationService: IInstantiationService

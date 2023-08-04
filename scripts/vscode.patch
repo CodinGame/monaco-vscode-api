@@ -690,6 +690,36 @@ index ff766b9acb8..599bab9dd59 100644
  	}
  
  	isVisible(): boolean {
+diff --git a/src/vs/workbench/contrib/terminal/browser/terminalService.ts b/src/vs/workbench/contrib/terminal/browser/terminalService.ts
+index 34b62b8fb2b..66d4b7bb70f 100644
+--- a/src/vs/workbench/contrib/terminal/browser/terminalService.ts
++++ b/src/vs/workbench/contrib/terminal/browser/terminalService.ts
+@@ -19,7 +19,7 @@ import { IContextKey, IContextKeyService } from 'vs/platform/contextkey/common/c
+ import { IDialogService } from 'vs/platform/dialogs/common/dialogs';
+ import { IInstantiationService } from 'vs/platform/instantiation/common/instantiation';
+ import { INotificationService } from 'vs/platform/notification/common/notification';
+-import { ICreateContributedTerminalProfileOptions, IPtyHostAttachTarget, IRawTerminalInstanceLayoutInfo, IRawTerminalTabLayoutInfo, IShellLaunchConfig, ITerminalBackend, ITerminalLaunchError, ITerminalLogService, ITerminalsLayoutInfo, ITerminalsLayoutInfoById, TerminalExitReason, TerminalLocation, TerminalLocationString, TitleEventSource } from 'vs/platform/terminal/common/terminal';
++import { ICreateContributedTerminalProfileOptions, IPtyHostAttachTarget, IRawTerminalInstanceLayoutInfo, IRawTerminalTabLayoutInfo, IShellLaunchConfig, ITerminalBackend, ITerminalBackendRegistry, ITerminalLaunchError, ITerminalLogService, ITerminalsLayoutInfo, ITerminalsLayoutInfoById, TerminalExitReason, TerminalExtensions, TerminalLocation, TerminalLocationString, TitleEventSource } from 'vs/platform/terminal/common/terminal';
+ import { formatMessageForTerminal } from 'vs/platform/terminal/common/terminalStrings';
+ import { iconForeground } from 'vs/platform/theme/common/colorRegistry';
+ import { getIconRegistry } from 'vs/platform/theme/common/iconRegistry';
+@@ -52,6 +52,7 @@ import { IKeybindingService } from 'vs/platform/keybinding/common/keybinding';
+ import { TerminalCapabilityStore } from 'vs/platform/terminal/common/capabilities/terminalCapabilityStore';
+ import { ITimerService } from 'vs/workbench/services/timer/browser/timerService';
+ import { mark } from 'vs/base/common/performance';
++import { Registry } from 'vs/platform/registry/common/platform';
+ 
+ export class TerminalService implements ITerminalService {
+ 	declare _serviceBrand: undefined;
+@@ -213,7 +214,7 @@ export class TerminalService implements ITerminalService {
+ 		this._handleInstanceContextKeys();
+ 		this._terminalShellTypeContextKey = TerminalContextKeys.shellType.bindTo(this._contextKeyService);
+ 		this._processSupportContextKey = TerminalContextKeys.processSupported.bindTo(this._contextKeyService);
+-		this._processSupportContextKey.set(!isWeb || this._remoteAgentService.getConnection() !== null);
++		this._processSupportContextKey.set(!isWeb || this._remoteAgentService.getConnection() !== null || Registry.as<ITerminalBackendRegistry>(TerminalExtensions.Backend).getTerminalBackend() !== undefined);
+ 		this._terminalHasBeenCreated = TerminalContextKeys.terminalHasBeenCreated.bindTo(this._contextKeyService);
+ 		this._terminalCountContextKey = TerminalContextKeys.count.bindTo(this._contextKeyService);
+ 		this._terminalEditorActive = TerminalContextKeys.terminalEditorActive.bindTo(this._contextKeyService);
 diff --git a/src/vs/workbench/contrib/webview/browser/pre/service-worker.js b/src/vs/workbench/contrib/webview/browser/pre/service-worker.js
 index a6e9943b866..c470a1c9ed5 100644
 --- a/src/vs/workbench/contrib/webview/browser/pre/service-worker.js
@@ -879,6 +909,109 @@ index 576bad14363..f1c51c00469 100644
  			const nestedWorkers = new Map();
  
  			worker.onmessage = (event) => {
+diff --git a/src/vs/workbench/services/languageDetection/browser/languageDetectionSimpleWorker.ts b/src/vs/workbench/services/languageDetection/browser/languageDetectionSimpleWorker.ts
+index e8c8239b35f..9017a971ee5 100644
+--- a/src/vs/workbench/services/languageDetection/browser/languageDetectionSimpleWorker.ts
++++ b/src/vs/workbench/services/languageDetection/browser/languageDetectionSimpleWorker.ts
+@@ -3,14 +3,12 @@
+  *  Licensed under the MIT License. See License.txt in the project root for license information.
+  *--------------------------------------------------------------------------------------------*/
+ 
+-import type { ModelOperations, ModelResult } from '@vscode/vscode-languagedetection';
++import { ModelOperations, ModelResult } from '@vscode/vscode-languagedetection';
+ import { StopWatch } from 'vs/base/common/stopwatch';
+ import { IRequestHandler } from 'vs/base/common/worker/simpleWorker';
+ import { EditorSimpleWorker } from 'vs/editor/common/services/editorSimpleWorker';
+ import { IEditorWorkerHost } from 'vs/editor/common/services/editorWorkerHost';
+ 
+-type RegexpModel = { detect: (inp: string, langBiases: Record<string, number>, supportedLangs?: string[]) => string | undefined };
+-
+ /**
+  * Called on the worker side
+  * @internal
+@@ -28,9 +26,6 @@ export class LanguageDetectionSimpleWorker extends EditorSimpleWorker {
+ 	private static readonly positiveConfidenceCorrectionBucket2 = 0.025;
+ 	private static readonly negativeConfidenceCorrection = 0.5;
+ 
+-	private _regexpModel: RegexpModel | undefined;
+-	private _regexpLoadFailed: boolean = false;
+-
+ 	private _modelOperations: ModelOperations | undefined;
+ 	private _loadFailed: boolean = false;
+ 
+@@ -63,19 +58,8 @@ export class LanguageDetectionSimpleWorker extends EditorSimpleWorker {
+ 			return undefined;
+ 		};
+ 
+-		const historicalResolver = async () => this.runRegexpModel(documentTextSample, langBiases ?? {}, supportedLangs);
+-
+-		if (preferHistory) {
+-			const history = await historicalResolver();
+-			if (history) { return history; }
+-			const neural = await neuralResolver();
+-			if (neural) { return neural; }
+-		} else {
+-			const neural = await neuralResolver();
+-			if (neural) { return neural; }
+-			const history = await historicalResolver();
+-			if (history) { return history; }
+-		}
++		const neural = await neuralResolver();
++		if (neural) { return neural; }
+ 
+ 		return undefined;
+ 	}
+@@ -94,50 +78,11 @@ export class LanguageDetectionSimpleWorker extends EditorSimpleWorker {
+ 		return content;
+ 	}
+ 
+-	private async getRegexpModel(): Promise<RegexpModel | undefined> {
+-		if (this._regexpLoadFailed) {
+-			return;
+-		}
+-		if (this._regexpModel) {
+-			return this._regexpModel;
+-		}
+-		const uri: string = await this._host.fhr('getRegexpModelUri', []);
+-		try {
+-			this._regexpModel = await import(uri) as RegexpModel;
+-			return this._regexpModel;
+-		} catch (e) {
+-			this._regexpLoadFailed = true;
+-			// console.warn('error loading language detection model', e);
+-			return;
+-		}
+-	}
+-
+-	private async runRegexpModel(content: string, langBiases: Record<string, number>, supportedLangs?: string[]): Promise<string | undefined> {
+-		const regexpModel = await this.getRegexpModel();
+-		if (!regexpModel) { return; }
+-
+-		if (supportedLangs?.length) {
+-			// When using supportedLangs, normally computed biases are too extreme. Just use a "bitmask" of sorts.
+-			for (const lang of Object.keys(langBiases)) {
+-				if (supportedLangs.includes(lang)) {
+-					langBiases[lang] = 1;
+-				} else {
+-					langBiases[lang] = 0;
+-				}
+-			}
+-		}
+-
+-		const detected = regexpModel.detect(content, langBiases, supportedLangs);
+-		return detected;
+-	}
+-
+ 	private async getModelOperations(): Promise<ModelOperations> {
+ 		if (this._modelOperations) {
+ 			return this._modelOperations;
+ 		}
+ 
+-		const uri: string = await this._host.fhr('getIndexJsUri', []);
+-		const { ModelOperations } = await import(uri) as typeof import('@vscode/vscode-languagedetection');
+ 		this._modelOperations = new ModelOperations({
+ 			modelJsonLoaderFunc: async () => {
+ 				const response = await fetch(await this._host.fhr('getModelJsonUri', []));
 diff --git a/src/vs/workbench/services/outline/browser/outlineService.ts b/src/vs/workbench/services/outline/browser/outlineService.ts
 index f4707432371..7c5cdde39cc 100644
 --- a/src/vs/workbench/services/outline/browser/outlineService.ts

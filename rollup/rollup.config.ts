@@ -483,9 +483,15 @@ const input = {
         `./src/service-override/${name}`
       ])
   ),
-  'workers/textMate.worker': './src/workers/textMate.worker.ts',
-  'workers/outputLinkComputer.worker': './src/workers/outputLinkComputer.worker.ts',
-  'workers/extensionHost.worker': './src/workers/extensionHost.worker.ts'
+  ...Object.fromEntries(
+    fs.readdirSync(path.resolve(SRC_DIR, 'workers'), { withFileTypes: true })
+      .filter(f => f.isFile())
+      .map(f => f.name)
+      .map(name => [
+        `workers/${path.basename(name, '.ts')}`,
+        `./src/workers/${name}`
+      ])
+  )
 }
 
 const externals = Object.keys({ ...pkg.peerDependencies })
@@ -532,7 +538,8 @@ export default (args: Record<string, string>): rollup.RollupOptions[] => {
           path.endsWith('documentSymbolsOutline.js') ||
           path.includes('vs/workbench/contrib/codeEditor/browser/') ||
           path.includes('extHost.common.services') ||
-          path.includes('extHost.worker.services')
+          path.includes('extHost.worker.services') ||
+          path.includes('inlayHintsAccessibilty')
       }
     },
     external,
@@ -554,7 +561,8 @@ export default (args: Record<string, string>): rollup.RollupOptions[] => {
     plugins: [
       importMetaAssets({
         include: ['**/*.ts', '**/*.js'],
-        exclude: ['**/service-override/textmate.ts']
+        // assets are externals and this plugin is not able to ignore external assets
+        exclude: ['**/service-override/textmate.ts', '**/service-override/languageDetectionWorker.ts']
       }),
       commonjs(),
       {
@@ -688,7 +696,7 @@ export default (args: Record<string, string>): rollup.RollupOptions[] => {
               })
               return { file, ref }
             }))
-            return `export default {${fileRefs.map(({ file, ref }) => `\n  '${file}': import.meta.ROLLUP_FILE_URL_${ref}`).join(',')}\n}`
+            return `export default {${fileRefs.map(({ file, ref }) => `\n  '${file}': new URL(import.meta.ROLLUP_FILE_URL_${ref}, import.meta.url).href`).join(',')}\n}`
           }
         }
       })(),
