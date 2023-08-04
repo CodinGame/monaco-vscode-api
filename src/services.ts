@@ -14,6 +14,7 @@ import { IAction } from 'vs/base/common/actions'
 import getLayoutServiceOverride from './service-override/layout'
 import getEnvironmentServiceOverride from './service-override/environment'
 import getExtensionsServiceOverride from './service-override/extensions'
+import getFileServiceOverride from './service-override/files'
 
 interface ServiceInitializeParticipant {
   (accessor: ServicesAccessor): Promise<void>
@@ -28,6 +29,7 @@ async function initServices (overrides: IEditorOverrideServices): Promise<IInsta
     ...getLayoutServiceOverride(), // Always override layout service to break cyclic dependency with ICodeEditorService
     ...getEnvironmentServiceOverride(),
     ...getExtensionsServiceOverride(),
+    ...getFileServiceOverride(),
     ...overrides
   })
 
