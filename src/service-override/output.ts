@@ -8,13 +8,13 @@ import { FileLoggerService } from 'vs/platform/log/common/fileLog'
 import 'vs/workbench/contrib/output/browser/output.contribution'
 
 class _FileLoggerService extends FileLoggerService {
-  constructor (@IFileService fileService: IFileService) {
-    super(LogLevel.Info, URI.from({ scheme: 'logs', path: '/' }), fileService)
+  constructor (logLevel: LogLevel, @IFileService fileService: IFileService) {
+    super(logLevel, URI.from({ scheme: 'logs', path: '/' }), fileService)
   }
 }
 
-export default function getServiceOverride (): IEditorOverrideServices {
+export default function getServiceOverride (logLevel: LogLevel = LogLevel.Info): IEditorOverrideServices {
   return {
-    [ILoggerService.toString()]: new SyncDescriptor(_FileLoggerService)
+    [ILoggerService.toString()]: new SyncDescriptor(_FileLoggerService, [logLevel])
   }
 }
