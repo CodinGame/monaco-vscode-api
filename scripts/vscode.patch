@@ -1058,33 +1058,6 @@ index c529886ca92..2311e7a0fb5 100644
  	constructor(
  		public readonly toAdd: IExtension[],
  		public readonly toRemove: string[] | IExtension[]
-diff --git a/src/vs/workbench/services/extensions/worker/webWorkerExtensionHostIframe.html b/src/vs/workbench/services/extensions/worker/webWorkerExtensionHostIframe.html
-index 576bad14363..f1c51c00469 100644
---- a/src/vs/workbench/services/extensions/worker/webWorkerExtensionHostIframe.html
-+++ b/src/vs/workbench/services/extensions/worker/webWorkerExtensionHostIframe.html
-@@ -15,6 +15,7 @@
- 	const name = searchParams.get('debugged') ? 'DebugWorkerExtensionHost' : 'WorkerExtensionHost';
- 	const parentOrigin = searchParams.get('parentOrigin') || window.origin;
- 	const salt = searchParams.get('salt');
-+	const vscodeExtHostWorkerSrc = searchParams.get('vscodeExtHostWorkerSrc');
- 
- 	(async function() {
- 		const hostnameValidationMarker = 'v--';
-@@ -66,13 +67,12 @@
- 
- 	function start() {
- 		try {
--			let workerUrl = '../../../../base/worker/workerMain.js';
-+			let workerUrl = vscodeExtHostWorkerSrc
- 			if(globalThis.crossOriginIsolated) {
- 				workerUrl += '?vscode-coi=2'; // COEP
- 			}
- 
- 			const worker = new Worker(workerUrl, { name });
--			worker.postMessage('vs/workbench/api/worker/extensionHostWorker');
- 			const nestedWorkers = new Map();
- 
- 			worker.onmessage = (event) => {
 diff --git a/src/vs/workbench/services/languageDetection/browser/languageDetectionSimpleWorker.ts b/src/vs/workbench/services/languageDetection/browser/languageDetectionSimpleWorker.ts
 index e8c8239b35f..9017a971ee5 100644
 --- a/src/vs/workbench/services/languageDetection/browser/languageDetectionSimpleWorker.ts
