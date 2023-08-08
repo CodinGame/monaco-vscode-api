@@ -359,10 +359,10 @@ index ec414fd9269..ebda0de7819 100644
  
  export interface SCMProviderFeatures {
 diff --git a/src/vs/workbench/api/common/extHostExtensionService.ts b/src/vs/workbench/api/common/extHostExtensionService.ts
-index 0c35ea254f3..bfd9f4083c2 100644
+index 0c35ea254f3..3a913226546 100644
 --- a/src/vs/workbench/api/common/extHostExtensionService.ts
 +++ b/src/vs/workbench/api/common/extHostExtensionService.ts
-@@ -42,7 +42,7 @@ import { Schemas } from 'vs/base/common/network';
+@@ -44,7 +44,7 @@ import { Schemas } from 'vs/base/common/network';
  import { IResolveAuthorityResult } from 'vs/workbench/services/extensions/common/extensionHostProxy';
  import { IExtHostLocalizationService } from 'vs/workbench/api/common/extHostLocalizationService';
  import { StopWatch } from 'vs/base/common/stopwatch';
@@ -371,7 +371,7 @@ index 0c35ea254f3..bfd9f4083c2 100644
  import { IExtHostManagedSockets } from 'vs/workbench/api/common/extHostManagedSockets';
  import { Dto } from 'vs/workbench/services/extensions/common/proxyIdentifier';
  
-@@ -248,9 +248,11 @@ export abstract class AbstractExtHostExtensionService extends Disposable impleme
+@@ -250,9 +250,11 @@ export abstract class AbstractExtHostExtensionService extends Disposable impleme
  		this._extHostTerminalService.dispose();
  		this._activator.dispose();
  
@@ -387,24 +387,35 @@ index 0c35ea254f3..bfd9f4083c2 100644
  		// Invalidate all proxies
  		this._extHostContext.dispose();
 diff --git a/src/vs/workbench/api/common/extensionHostMain.ts b/src/vs/workbench/api/common/extensionHostMain.ts
-index a06c4e93d8f..97b8c87f525 100644
+index a06c4e93d8f..18c66beee89 100644
 --- a/src/vs/workbench/api/common/extensionHostMain.ts
 +++ b/src/vs/workbench/api/common/extensionHostMain.ts
-@@ -23,6 +23,9 @@ import { IURITransformerService, URITransformerService } from 'vs/workbench/api/
+@@ -12,7 +12,7 @@ import { MainContext, MainThreadConsoleShape } from 'vs/workbench/api/common/ext
+ import { IExtensionHostInitData } from 'vs/workbench/services/extensions/common/extensionHostProtocol';
+ import { RPCProtocol } from 'vs/workbench/services/extensions/common/rpcProtocol';
+ import { ExtensionIdentifier, IExtensionDescription, IRelaxedExtensionDescription } from 'vs/platform/extensions/common/extensions';
+-import { ILogService } from 'vs/platform/log/common/log';
++import { ILogService, ILoggerService } from 'vs/platform/log/common/log';
+ import { getSingletonServiceDescriptors } from 'vs/platform/instantiation/common/extensions';
+ import { ServiceCollection } from 'vs/platform/instantiation/common/serviceCollection';
+ import { IExtHostInitDataService } from 'vs/workbench/api/common/extHostInitDataService';
+@@ -23,6 +23,10 @@ import { IURITransformerService, URITransformerService } from 'vs/workbench/api/
  import { IExtHostExtensionService, IHostUtils } from 'vs/workbench/api/common/extHostExtensionService';
  import { IExtHostTelemetry } from 'vs/workbench/api/common/extHostTelemetry';
  import { Mutable } from 'vs/base/common/types';
 +import { isWebWorker } from 'vs/base/common/platform';
 +import { ExtHostLogService } from 'vs/workbench/api/common/extHostLogService';
 +import { SyncDescriptor } from 'vs/platform/instantiation/common/descriptors';
++import { ExtHostLoggerService } from 'vs/workbench/api/common/extHostLoggerService';
  
  export interface IExitFn {
  	(code?: number): any;
-@@ -158,10 +161,13 @@ export class ExtensionHostMain {
+@@ -158,10 +162,14 @@ export class ExtensionHostMain {
  		services.set(IExtHostRpcService, new ExtHostRpcService(this._rpcProtocol));
  		services.set(IURITransformerService, new URITransformerService(uriTransformer));
  		services.set(IHostUtils, hostUtils);
 +		services.set(ILogService, new SyncDescriptor(ExtHostLogService, [true], true));
++		services.set(ILoggerService, new SyncDescriptor(ExtHostLoggerService, [], true));
  
  		const instaService: IInstantiationService = new InstantiationService(services, true);
  
@@ -415,7 +426,7 @@ index a06c4e93d8f..97b8c87f525 100644
  
  		// ugly self - inject
  		this._logService = instaService.invokeFunction(accessor => accessor.get(ILogService));
-@@ -180,8 +186,10 @@ export class ExtensionHostMain {
+@@ -180,8 +188,10 @@ export class ExtensionHostMain {
  		this._extensionService = instaService.invokeFunction(accessor => accessor.get(IExtHostExtensionService));
  		this._extensionService.initialize();
  
@@ -428,7 +439,7 @@ index a06c4e93d8f..97b8c87f525 100644
  	}
  
  	async asBrowserUri(uri: URI): Promise<URI> {
-@@ -189,10 +197,19 @@ export class ExtensionHostMain {
+@@ -189,10 +199,19 @@ export class ExtensionHostMain {
  		return URI.revive(await mainThreadExtensionsProxy.$asBrowserUri(uri));
  	}
  
