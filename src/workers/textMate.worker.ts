@@ -1,6 +1,5 @@
 import { IWorkerContext } from 'vs/editor/common/services/editorSimpleWorker'
-import { ICreateData, TextMateTokenizationWorker } from 'vs/workbench/services/textMate/browser/worker/textMate.worker'
-import { TextMateWorkerHost } from 'vs/workbench/services/textMate/browser/workerHost/textMateWorkerHost'
+import { ICreateData, ITextMateWorkerHost, TextMateTokenizationWorker } from 'vs/workbench/services/textMate/browser/backgroundTokenization/worker/textMateTokenizationWorker.worker'
 import { initialize } from 'vs/editor/editor.worker'
 
-initialize((ctx: IWorkerContext<TextMateWorkerHost>, createData: ICreateData) => new TextMateTokenizationWorker(ctx, createData))
+initialize((ctx: IWorkerContext<ITextMateWorkerHost>, createData: ICreateData) => new TextMateTokenizationWorker(ctx, createData))

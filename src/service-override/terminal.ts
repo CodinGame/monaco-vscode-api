@@ -1,7 +1,7 @@
 import '../missing-services'
 import { IEditorOverrideServices } from 'vs/editor/standalone/browser/standaloneServices'
 import { SyncDescriptor } from 'vs/platform/instantiation/common/descriptors'
-import { IProcessReadyEvent, ITerminalBackend, ITerminalBackendRegistry, ITerminalChildProcess, ITerminalLaunchError, ITerminalProfile, ITerminalsLayoutInfo, TerminalExtensions, ITerminalLogService } from 'vs/platform/terminal/common/terminal'
+import { IProcessReadyEvent, ITerminalBackend, ITerminalBackendRegistry, ITerminalChildProcess, ITerminalLaunchError, ITerminalProfile, ITerminalsLayoutInfo, TerminalExtensions, ITerminalLogService, IPtyHostLatencyMeasurement } from 'vs/platform/terminal/common/terminal'
 import { ITerminalProfileResolverService, ITerminalProfileService } from 'vs/workbench/contrib/terminal/common/terminal'
 import { ITerminalEditorService, ITerminalGroupService, ITerminalInstanceService, ITerminalService } from 'vs/workbench/contrib/terminal/browser/terminal'
 import { TerminalService } from 'vs/workbench/contrib/terminal/browser/terminalService'
@@ -28,11 +28,12 @@ import 'vs/workbench/contrib/terminal/browser/terminal.contribution'
 import 'vs/workbench/contrib/terminalContrib/accessibility/browser/terminal.accessibility.contribution'
 
 abstract class SimpleTerminalBackend implements ITerminalBackend {
+  getLatency = async (): Promise<IPtyHostLatencyMeasurement[]> => []
   isResponsive = true
 
   private readonly _whenConnected = new DeferredPromise<void>()
-  get whenConnected (): Promise<void> { return this._whenConnected.p }
-  setConnected (): void {
+  get whenReady (): Promise<void> { return this._whenConnected.p }
+  setReady (): void {
     void this._whenConnected.complete()
   }
 

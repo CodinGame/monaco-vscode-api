@@ -97,7 +97,7 @@ import { ISemanticSimilarityService } from 'vs/workbench/services/semanticSimila
 import { IOutlineService } from 'vs/workbench/services/outline/browser/outline'
 import { IUpdateService, State } from 'vs/platform/update/common/update'
 import { IStatusbarService } from 'vs/workbench/services/statusbar/browser/statusbar'
-import { IExtensionGalleryService, IExtensionManagementService } from 'vs/platform/extensionManagement/common/extensionManagement'
+import { IExtensionGalleryService, IExtensionManagementService, ILocalExtension } from 'vs/platform/extensionManagement/common/extensionManagement'
 import { IModelService } from 'vs/editor/common/services/model'
 import { ITerminalEditorService, ITerminalGroupService, ITerminalInstance, ITerminalInstanceService, ITerminalService, TerminalConnectionState } from 'vs/workbench/contrib/terminal/browser/terminal'
 import { ITerminalProfileResolverService, ITerminalProfileService } from 'vs/workbench/contrib/terminal/common/terminal'
@@ -417,6 +417,8 @@ const onDidChangeFocus = Event.latch(Event.any(
 ))
 
 registerSingleton(IHostService, class HostService implements IHostService {
+  withExpectedShutdown = unsupported
+
   _serviceBrand: undefined
 
   onDidChangeFocus = onDidChangeFocus
@@ -518,6 +520,7 @@ registerSingleton(ITextMateTokenizationService, class NullTextMateService implem
   onDidEncounterLanguage = Event.None
   createGrammar = unsupported
   startDebugMode = unsupported
+  createTokenizer = unsupported
 }, InstantiationType.Eager)
 
 const profile: IUserDataProfile = {
@@ -889,6 +892,7 @@ registerSingleton(ITimerService, class TimerService implements ITimerService {
 }, InstantiationType.Eager)
 
 registerSingleton(IExtensionsWorkbenchService, class ExtensionsWorkbenchService implements IExtensionsWorkbenchService {
+  toggleApplyExtensionToAllProfiles = unsupported
   whenInitialized = Promise.resolve()
   _serviceBrand: undefined
   onChange = Event.None
@@ -1049,6 +1053,7 @@ class SimpleExtensionResourceLoaderService extends AbstractExtensionResourceLoad
 registerSingleton(IExtensionResourceLoaderService, SimpleExtensionResourceLoaderService, InstantiationType.Eager)
 
 registerSingleton(IHoverService, class HoverService implements IHoverService {
+  showAndFocusLastHover = unsupported
   _serviceBrand: undefined
   showHover = unsupported
   hideHover = unsupported
@@ -1159,6 +1164,7 @@ registerSingleton(IExtensionGalleryService, class ExtensionGalleryService implem
 }, InstantiationType.Eager)
 
 registerSingleton(ITerminalService, class TerminalService implements ITerminalService {
+  onDidChangeSelection = Event.None
   _serviceBrand: undefined
 
   detachedXterms = []
@@ -1387,6 +1393,7 @@ registerSingleton(ITerminalQuickFixService, class TerminalQuickFixService implem
 }, InstantiationType.Delayed)
 
 registerSingleton(IExtensionManagementService, class ExtensionManagementService implements IExtensionManagementService {
+  toggleAppliationScope = async (extension: ILocalExtension) => extension
   _serviceBrand: undefined
   installGalleryExtensions = unsupported
   onInstallExtension = Event.None
@@ -1547,6 +1554,9 @@ registerSingleton(IWorkbenchAssignmentService, class WorkbenchAssignmentService 
 
 registerSingleton(IChatService, class ChatService implements IChatService {
   _serviceBrand: undefined
+  transferredSessionData = undefined
+  onDidSubmitSlashCommand = Event.None
+  getSessionId = () => undefined
   transferredSessionId = undefined
   transferChatSession = unsupported
   registerProvider = unsupported
@@ -1642,12 +1652,16 @@ registerSingleton(IRemoteAuthorityResolverService, class RemoteAuthorityResolver
 registerSingleton(IExternalUriOpenerService, ExternalUriOpenerService, InstantiationType.Delayed)
 
 registerSingleton(IAccessibleViewService, class AccessibleViewService implements IAccessibleViewService {
+  next = unsupported
+  previous = unsupported
+  getOpenAriaHint = unsupported
   _serviceBrand: undefined
   show = unsupported
   registerProvider = unsupported
 }, InstantiationType.Delayed)
 
 registerSingleton(IWorkbenchExtensionManagementService, class WorkbenchExtensionManagementService implements IWorkbenchExtensionManagementService {
+  toggleAppliationScope = async (extension: ILocalExtension) => extension
   _serviceBrand: undefined
   onInstallExtension = Event.None
   onDidInstallExtensions = Event.None
@@ -1851,6 +1865,7 @@ registerSingleton(IInlineChatService, class InlineChatService implements IInline
 
 registerSingleton(IChatWidgetService, class ChatWidgetService implements IChatWidgetService {
   _serviceBrand: undefined
+  getWidgetBySessionId = () => undefined
   lastFocusedWidget = undefined
   revealViewForProvider = unsupported
   getWidgetByInputUri = unsupported
@@ -1969,6 +1984,8 @@ registerSingleton(IShareService, class ShareService implements IShareService {
 
 registerSingleton(IUserDataProfileImportExportService, class UserDataProfileImportExportService implements IUserDataProfileImportExportService {
   _serviceBrand: undefined
+  createProfile = unsupported
+  editProfile = unsupported
   registerProfileContentHandler = unsupported
   unregisterProfileContentHandler = unsupported
   exportProfile = unsupported
