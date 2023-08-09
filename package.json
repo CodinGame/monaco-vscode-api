@@ -1,6 +1,6 @@
 {
   "name": "@codingame/monaco-vscode-api",
-  "version": "0.0.0-semantic-release",
+  "version": "1.81.0-next.0",
   "private": false,
   "description": "VSCode public API plugged on the monaco editor",
   "keywords": [],
@@ -129,7 +129,6 @@
     "@types/mime-types": "^2.1.1",
     "@types/node": "^18.16.3",
     "@types/semver": "^7.5.0",
-    "@types/toposort": "^2.0.3",
     "@types/vscode": "~1.81.0",
     "@types/yauzl": "^2.10.0",
     "@typescript-eslint/eslint-plugin": "^5.61.0",
@@ -160,6 +159,7 @@
     "zx": "^7.2.3"
   },
   "peerDependencies": {
+    "@vscode/vscode-languagedetection": "^1.0.22",
     "monaco-editor": "0.41.0",
     "vscode-oniguruma": "^1.7.0",
     "vscode-textmate": "^9.0.0",
@@ -170,8 +170,7 @@
     "xterm-addon-serialize": "0.10.0",
     "xterm-addon-unicode11": "0.5.0",
     "xterm-addon-webgl": "0.15.0",
-    "yauzl": "^2.10.0",
-    "@vscode/vscode-languagedetection": "^1.0.22"
+    "yauzl": "^2.10.0"
   },
   "overrides": {
     "typescript": "5.1.6",
@@ -181,8 +180,5 @@
   "volta": {
     "node": "18.14.2",
     "npm": "9.5.1"
-  },
-  "dependencies": {
-    "toposort": "^2.0.2"
   }
 }
