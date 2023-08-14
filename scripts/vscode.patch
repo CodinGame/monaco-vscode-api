@@ -543,7 +543,7 @@ index b83a462131d..5555f431ba0 100644
  		performance.mark('code/extHost/didInitAPI');
  
 diff --git a/src/vs/workbench/api/worker/extensionHostWorker.ts b/src/vs/workbench/api/worker/extensionHostWorker.ts
-index 6e6f8845da5..74ecefe68f1 100644
+index 6e6f8845da5..89cab1e16da 100644
 --- a/src/vs/workbench/api/worker/extensionHostWorker.ts
 +++ b/src/vs/workbench/api/worker/extensionHostWorker.ts
 @@ -15,7 +15,6 @@ import * as performance from 'vs/base/common/performance';
@@ -554,7 +554,16 @@ index 6e6f8845da5..74ecefe68f1 100644
  import { URI } from 'vs/base/common/uri';
  
  //#region --- Define, capture, and override some globals
-@@ -89,66 +88,155 @@ self.addEventListener = () => console.trace(`'addEventListener' has been blocked
+@@ -47,7 +46,7 @@ function shouldTransformUri(uri: string): boolean {
+ 	// In principle, we could convert any URI, but we have concerns
+ 	// that parsing https URIs might end up decoding escape characters
+ 	// and result in an unintended transformation
+-	return /^(file|vscode-remote):/i.test(uri);
++	return /^(file|extension|vscode-remote):/i.test(uri);
+ }
+ 
+ const nativeFetch = fetch.bind(self);
+@@ -89,66 +88,167 @@ self.addEventListener = () => console.trace(`'addEventListener' has been blocked
  (<any>self)['webkitResolveLocalFileSystemSyncURL'] = undefined;
  (<any>self)['webkitResolveLocalFileSystemURL'] = undefined;
  
@@ -620,8 +629,20 @@ index 6e6f8845da5..74ecefe68f1 100644
 +						return nativeFetch(asWorkerBrowserUrl(input), init);
 +					};
 +					self.XMLHttpRequest = class extends XMLHttpRequest {
++						private notFound = false;
 +						override open(method: string, url: string | URL, async?: boolean, username?: string | null, password?: string | null): void {
-+							return super.open(method, asWorkerBrowserUrl(url), async ?? true, username, password);
++							const transformedUrl = asWorkerBrowserUrl(url);
++							this.notFound = transformedUrl.startsWith('extension:');
++							return super.open(method, transformedUrl, async ?? true, username, password);
++						}
++						override send(body?: Document | XMLHttpRequestBodyInit | null | undefined): void {
++							if (this.notFound) {
++								return;
++							}
++							super.send(body);
++						}
++						override get status() {
++							return this.notFound ? 404 : super.status;
 +						}
 +					};
 +					const nativeImportScripts = importScripts.bind(self);
@@ -764,7 +785,7 @@ index 6e6f8845da5..74ecefe68f1 100644
  }
  
  //#endregion ---
-@@ -255,6 +343,7 @@ export function create(): { onmessage: (message: any) => void } {
+@@ -255,6 +355,7 @@ export function create(): { onmessage: (message: any) => void } {
  				);
  
  				patchFetching(uri => extHostMain.asBrowserUri(uri));
