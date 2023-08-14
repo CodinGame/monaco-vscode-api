@@ -19,9 +19,17 @@ import getFileServiceOverride from './service-override/files'
 interface ServiceInitializeParticipant {
   (accessor: ServicesAccessor): Promise<void>
 }
+const serviceInitializePreParticipants: ServiceInitializeParticipant[] = []
 const serviceInitializeParticipants: ServiceInitializeParticipant[] = []
+const serviceInitializePostParticipants: ServiceInitializeParticipant[] = []
+export function registerServiceInitializePreParticipant (participant: ServiceInitializeParticipant): void {
+  serviceInitializePreParticipants.push(participant)
+}
 export function registerServiceInitializeParticipant (participant: ServiceInitializeParticipant): void {
   serviceInitializeParticipants.push(participant)
+}
+export function registerServiceInitializePostParticipant (participant: ServiceInitializeParticipant): void {
+  serviceInitializePostParticipants.push(participant)
 }
 
 async function initServices (overrides: IEditorOverrideServices): Promise<IInstantiationService> {
@@ -34,12 +42,20 @@ async function initServices (overrides: IEditorOverrideServices): Promise<IInsta
   })
 
   await instantiationService.invokeFunction(async accessor => {
+    await Promise.all(serviceInitializePreParticipants.map(participant => participant(accessor)))
+  })
+
+  await instantiationService.invokeFunction(async accessor => {
     const lifecycleService = accessor.get(ILifecycleService)
 
     await Promise.all(serviceInitializeParticipants.map(participant => participant(accessor)))
 
     // Signal to lifecycle that services are set
     lifecycleService.phase = LifecyclePhase.Ready
+  })
+
+  await instantiationService.invokeFunction(async accessor => {
+    await Promise.all(serviceInitializePostParticipants.map(participant => participant(accessor)))
   })
 
   return instantiationService
