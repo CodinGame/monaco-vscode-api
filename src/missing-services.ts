@@ -163,6 +163,8 @@ import { ITestProfileService } from 'vs/workbench/contrib/testing/common/testPro
 import { IEncryptionService } from 'vs/platform/encryption/common/encryptionService'
 import { ITestResultService } from 'vs/workbench/contrib/testing/common/testResultService'
 import { IDiagnosticsService, NullDiagnosticsService } from 'vs/platform/diagnostics/common/diagnostics'
+import { INotebookSearchService } from 'vs/workbench/contrib/search/browser/notebookSearch'
+import { ResourceSet } from 'vs/base/common/map'
 import { unsupported } from './tools'
 
 class NullLoggerService extends AbstractLoggerService {
@@ -2086,3 +2088,16 @@ registerSingleton(IUserDataInitializationService, class UserDataInitializationSe
 }, InstantiationType.Delayed)
 
 registerSingleton(IDiagnosticsService, NullDiagnosticsService, InstantiationType.Delayed)
+
+registerSingleton(INotebookSearchService, class NotebookSearchService implements INotebookSearchService {
+  _serviceBrand: undefined
+  async notebookSearch () {
+    return {
+      completeData: {
+        messages: [],
+        results: []
+      },
+      scannedFiles: new ResourceSet()
+    }
+  }
+}, InstantiationType.Delayed)
