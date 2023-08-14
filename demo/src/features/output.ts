@@ -1,8 +1,17 @@
-import * as vscode from 'vscode'
-import { onExtHostInitialized } from 'vscode/extensions'
+import { ExtensionHostKind, onExtHostInitialized, registerExtension } from 'vscode/extensions'
 
 await new Promise<void>(resolve => onExtHostInitialized(resolve))
 
+const { getApi } = registerExtension({
+  name: 'outputDemo',
+  publisher: 'codingame',
+  version: '1.0.0',
+  engines: {
+    vscode: '*'
+  }
+}, ExtensionHostKind.LocalProcess)
+
+const vscode = await getApi()
 const fakeOutputChannel = vscode.window.createOutputChannel('Fake output')
 const anotherFakeOutputChannel = vscode.window.createOutputChannel('Your code', 'javascript')
 

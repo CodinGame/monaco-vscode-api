@@ -78,7 +78,7 @@ await vscode.window.showTextDocument(mainDocument, {
 
 anotherFakeOutputChannel.replace(mainDocument.getText())
 vscode.workspace.onDidChangeTextDocument((e) => {
-  if (e.document === mainDocument) {
+  if (e.document === mainDocument && e.contentChanges.length > 0) {
     anotherFakeOutputChannel.replace(e.document.getText())
   }
 })
