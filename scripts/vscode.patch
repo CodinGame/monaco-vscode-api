@@ -235,6 +235,23 @@ index fc197da1d57..a4d9573979f 100644
  
  	public static validateOptions(options: IEditorOptions): ValidatedEditorOptions {
  		const result = new ValidatedEditorOptions();
+diff --git a/src/vs/editor/editor.main.ts b/src/vs/editor/editor.main.ts
+index 23d547570e9..31dfb4fd8d4 100644
+--- a/src/vs/editor/editor.main.ts
++++ b/src/vs/editor/editor.main.ts
+@@ -5,12 +5,5 @@
+ 
+ import 'vs/editor/editor.all';
+ import 'vs/editor/standalone/browser/iPadShowKeyboard/iPadShowKeyboard';
+-import 'vs/editor/standalone/browser/inspectTokens/inspectTokens';
+-import 'vs/editor/standalone/browser/quickAccess/standaloneHelpQuickAccess';
+-import 'vs/editor/standalone/browser/quickAccess/standaloneGotoLineQuickAccess';
+-import 'vs/editor/standalone/browser/quickAccess/standaloneGotoSymbolQuickAccess';
+-import 'vs/editor/standalone/browser/quickAccess/standaloneCommandsQuickAccess';
+-import 'vs/editor/standalone/browser/referenceSearch/standaloneReferenceSearch';
+-import 'vs/editor/standalone/browser/toggleHighContrast/toggleHighContrast';
+ 
+ export * from 'vs/editor/editor.api';
 diff --git a/src/vs/platform/assignment/common/assignmentService.ts b/src/vs/platform/assignment/common/assignmentService.ts
 index 67e34826627..7c5287d6a32 100644
 --- a/src/vs/platform/assignment/common/assignmentService.ts
