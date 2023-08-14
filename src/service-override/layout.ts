@@ -166,7 +166,7 @@ export default function getServiceOverride (container: HTMLElement = document.bo
   document.body.classList.add('web')
 
   return {
-    [ILayoutService.toString()]: new SyncDescriptor(LayoutService, [container]),
-    [IWorkbenchLayoutService.toString()]: new SyncDescriptor(LayoutService, [container])
+    [ILayoutService.toString()]: new SyncDescriptor(LayoutService, [container], true),
+    [IWorkbenchLayoutService.toString()]: new SyncDescriptor(LayoutService, [container], true)
   }
 }

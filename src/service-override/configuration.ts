@@ -113,10 +113,10 @@ export default function getServiceOverride (defaultWorkspaceUri: URI): IEditorOv
   return {
     ...getFileServiceOverride(),
     [ILabelService.toString()]: new SyncDescriptor(LabelService, undefined, true),
-    [IConfigurationService.toString()]: new SyncDescriptor(MemoizedInjectedConfigurationService),
-    [IWorkspaceContextService.toString()]: new SyncDescriptor(MemoizedInjectedConfigurationService),
-    [ITextResourceConfigurationService.toString()]: new SyncDescriptor(TextResourceConfigurationService),
-    [IWorkspaceEditingService.toString()]: new SyncDescriptor(MonacoWorkspaceEditingService),
+    [IConfigurationService.toString()]: new SyncDescriptor(MemoizedInjectedConfigurationService, [], true),
+    [IWorkspaceContextService.toString()]: new SyncDescriptor(MemoizedInjectedConfigurationService, [], true),
+    [ITextResourceConfigurationService.toString()]: new SyncDescriptor(TextResourceConfigurationService, [], true),
+    [IWorkspaceEditingService.toString()]: new SyncDescriptor(MonacoWorkspaceEditingService, [], true),
     [IWorkspacesService.toString()]: new SyncDescriptor(BrowserWorkspacesService, undefined, true)
   }
 }

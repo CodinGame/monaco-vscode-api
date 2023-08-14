@@ -22,8 +22,8 @@ DebugService.prototype['showError'] = function (message: string, errorActions?: 
 export default function getServiceOverride (): IEditorOverrideServices {
   return {
     ...getLayoutServiceOverride(),
-    [ILanguageFeaturesService.toString()]: new SyncDescriptor(LanguageFeaturesService), // To restore inlineValuesProvider
+    [ILanguageFeaturesService.toString()]: new SyncDescriptor(LanguageFeaturesService, [], true), // To restore inlineValuesProvider
     [IDebugService.toString()]: new SyncDescriptor(DebugService, [], true),
-    [IConfigurationResolverService.toString()]: new SyncDescriptor(ConfigurationResolverService)
+    [IConfigurationResolverService.toString()]: new SyncDescriptor(ConfigurationResolverService, [], true)
   }
 }

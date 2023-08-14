@@ -37,7 +37,7 @@ Registry.as<IWorkbenchContributionsRegistry>(WorkbenchExtensions.Workbench).regi
 export default function getServiceOverride (): IEditorOverrideServices {
   return {
     ...getFileServiceOverride(),
-    [ITextMateTokenizationService.toString()]: new SyncDescriptor(TextMateTokenizationFeature)
+    [ITextMateTokenizationService.toString()]: new SyncDescriptor(TextMateTokenizationFeature, [], false)
   }
 }
 

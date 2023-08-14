@@ -23,6 +23,6 @@ Registry.as<IWorkbenchContributionsRegistry>(WorkbenchExtensions.Workbench).regi
 export default function getServiceOverride (): IEditorOverrideServices {
   return {
     ...getFileServiceOverride(),
-    [ILanguageService.toString()]: new SyncDescriptor(WorkbenchLanguageService)
+    [ILanguageService.toString()]: new SyncDescriptor(WorkbenchLanguageService, [], false)
   }
 }

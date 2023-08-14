@@ -119,7 +119,7 @@ class ExternalStorageService extends AbstractStorageService {
 
 export default function getStorageServiceOverride (provider: IStorageProvider): IEditorOverrideServices {
   return {
-    [IStorageService.toString()]: new SyncDescriptor(ExternalStorageService, [provider])
+    [IStorageService.toString()]: new SyncDescriptor(ExternalStorageService, [provider], true)
   }
 }
 

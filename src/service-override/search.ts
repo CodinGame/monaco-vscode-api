@@ -12,9 +12,9 @@ import 'vs/workbench/contrib/searchEditor/browser/searchEditor.contribution'
 
 export default function getServiceOverride (): IEditorOverrideServices {
   return {
-    [ISearchService.toString()]: new SyncDescriptor(SearchService),
-    [ISearchWorkbenchService.toString()]: new SyncDescriptor(SearchWorkbenchService),
-    [ISearchHistoryService.toString()]: new SyncDescriptor(SearchHistoryService),
-    [IReplaceService.toString()]: new SyncDescriptor(ReplaceService)
+    [ISearchService.toString()]: new SyncDescriptor(SearchService, [], true),
+    [ISearchWorkbenchService.toString()]: new SyncDescriptor(SearchWorkbenchService, [], true),
+    [ISearchHistoryService.toString()]: new SyncDescriptor(SearchHistoryService, [], true),
+    [IReplaceService.toString()]: new SyncDescriptor(ReplaceService, [], true)
   }
 }

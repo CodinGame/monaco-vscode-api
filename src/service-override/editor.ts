@@ -106,8 +106,8 @@ Registry.as<IEditorFactoryRegistry>(EditorExtensions.EditorFactory).registerFile
 export default function getServiceOverride (openEditor: OpenEditor): IEditorOverrideServices {
   return {
     [ICodeEditorService.toString()]: new SyncDescriptor(CodeEditorService, undefined, true),
-    [IEditorService.toString()]: new SyncDescriptor(SimpleEditorService, [openEditor]),
-    [ITextEditorService.toString()]: new SyncDescriptor(TextEditorService)
+    [IEditorService.toString()]: new SyncDescriptor(SimpleEditorService, [openEditor], true),
+    [ITextEditorService.toString()]: new SyncDescriptor(TextEditorService, [], false)
   }
 }
 

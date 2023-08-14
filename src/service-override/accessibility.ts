@@ -7,6 +7,6 @@ import 'vs/workbench/contrib/codeEditor/browser/accessibility/accessibility'
 
 export default function getServiceOverride (): IEditorOverrideServices {
   return {
-    [IAccessibleViewService.toString()]: new SyncDescriptor(AccessibleViewService, [])
+    [IAccessibleViewService.toString()]: new SyncDescriptor(AccessibleViewService, [], true)
   }
 }

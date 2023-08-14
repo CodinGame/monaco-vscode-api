@@ -6,6 +6,6 @@ import { BulkEditService } from 'vs/workbench/contrib/bulkEdit/browser/bulkEditS
 
 export default function getServiceOverride (): IEditorOverrideServices {
   return {
-    [IBulkEditService.toString()]: new SyncDescriptor(BulkEditService)
+    [IBulkEditService.toString()]: new SyncDescriptor(BulkEditService, [], true)
   }
 }

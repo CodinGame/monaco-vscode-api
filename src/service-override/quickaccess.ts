@@ -122,6 +122,6 @@ export default function getServiceOverride ({
     shouldUseGlobalPicker = _shouldUseGlobalPicker
   }
   return {
-    [IQuickInputService.toString()]: new SyncDescriptor(DelegateQuickInputService)
+    [IQuickInputService.toString()]: new SyncDescriptor(DelegateQuickInputService, [], true)
   }
 }

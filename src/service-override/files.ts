@@ -430,7 +430,7 @@ class MemoryFileService extends FileService {
 
 export default function getServiceOverride (): IEditorOverrideServices {
   return {
-    [IFileService.toString()]: new SyncDescriptor(MemoryFileService)
+    [IFileService.toString()]: new SyncDescriptor(MemoryFileService, [], true)
   }
 }
 

@@ -12,6 +12,6 @@ registerAssets({
 
 export default function getServiceOverride (): IEditorOverrideServices {
   return {
-    [ILanguageDetectionService.toString()]: new SyncDescriptor(LanguageDetectionService)
+    [ILanguageDetectionService.toString()]: new SyncDescriptor(LanguageDetectionService, [], false)
   }
 }
