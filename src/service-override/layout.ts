@@ -58,7 +58,7 @@ export class LayoutService implements ILayoutService, Pick<IWorkbenchLayoutServi
     return this.getPart(part).getContainer()
   }
 
-  protected getPart (key: Parts): Part {
+  public getPart (key: Parts): Part {
     const part = this.parts.get(key)
     if (part == null) {
       throw new Error(`Unknown part ${key}`)

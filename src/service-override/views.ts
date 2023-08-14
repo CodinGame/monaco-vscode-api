@@ -6,15 +6,12 @@ import { ViewsService } from 'vs/workbench/browser/parts/views/viewsService'
 import { IInstantiationService, ServicesAccessor } from 'vs/platform/instantiation/common/instantiation'
 import { SidebarPart } from 'vs/workbench/browser/parts/sidebar/sidebarPart'
 import { ViewDescriptorService } from 'vs/workbench/services/views/browser/viewDescriptorService'
-import { IActivityService, IBadge } from 'vs/workbench/services/activity/common/activity'
+import { IActivityService } from 'vs/workbench/services/activity/common/activity'
 import { ActivityService } from 'vs/workbench/services/activity/browser/activityService'
 import { IPaneCompositePartService } from 'vs/workbench/services/panecomposite/browser/panecomposite'
-import { Event } from 'vs/base/common/event'
-import { IPaneComposite } from 'vs/workbench/common/panecomposite'
-import { IPaneCompositePart, IPaneCompositeSelectorPart } from 'vs/workbench/browser/parts/paneCompositePart'
+import { PaneCompositeParts } from 'vs/workbench/browser/parts/paneCompositePart'
 import { ActivitybarPart } from 'vs/workbench/browser/parts/activitybar/activitybarPart'
 import { DisposableStore, IDisposable, IReference } from 'vs/base/common/lifecycle'
-import { IProgressIndicator } from 'vs/platform/progress/common/progress'
 import { IHoverService } from 'vs/workbench/services/hover/browser/hover'
 import { HoverService } from 'vs/workbench/services/hover/browser/hoverService'
 import { ExplorerService } from 'vs/workbench/contrib/files/browser/explorerService'
@@ -98,67 +95,13 @@ import { ITelemetryService } from 'vs/platform/telemetry/common/telemetry'
 import { IStorageService } from 'vs/platform/storage/common/storage'
 import { IThemeService } from 'vs/platform/theme/common/themeService'
 import { ConfirmResult } from 'vs/platform/dialogs/common/dialogs'
+import { ILayoutService } from 'vs/platform/layout/browser/layoutService'
 import { OpenEditor, wrapOpenEditor } from './tools/editor'
 import getBulkEditServiceOverride from './bulkEdit'
-import getLayoutServiceOverride from './layout'
+import getLayoutServiceOverride, { LayoutService } from './layout'
 import { changeUrlDomain } from './tools/url'
 import { registerAssets } from '../assets'
-
-const paneCompositeParts = new Map<ViewContainerLocation, IPaneCompositePart>()
-const paneCompositeSelectorParts = new Map<ViewContainerLocation, IPaneCompositeSelectorPart>()
-
-class PaneCompositePartService implements IPaneCompositePartService {
-  _serviceBrand: undefined
-  onDidPaneCompositeOpen = Event.None
-  onDidPaneCompositeClose = Event.None
-  async openPaneComposite (id: string | undefined, viewContainerLocation: ViewContainerLocation, focus?: boolean): Promise<IPaneComposite | undefined> {
-    return this.getPartByLocation(viewContainerLocation)?.openPaneComposite(id, focus)
-  }
-
-  getActivePaneComposite (viewContainerLocation: ViewContainerLocation) {
-    return this.getPartByLocation(viewContainerLocation)?.getActivePaneComposite()
-  }
-
-  getPaneComposite (id: string, viewContainerLocation: ViewContainerLocation) {
-    return this.getPartByLocation(viewContainerLocation)?.getPaneComposite(id)
-  }
-
-  getPaneComposites (viewContainerLocation: ViewContainerLocation) {
-    return this.getPartByLocation(viewContainerLocation)?.getPaneComposites() ?? []
-  }
-
-  getPinnedPaneCompositeIds (viewContainerLocation: ViewContainerLocation): string[] {
-    return this.getSelectorPartByLocation(viewContainerLocation)?.getPinnedPaneCompositeIds() ?? []
-  }
-
-  getVisiblePaneCompositeIds (viewContainerLocation: ViewContainerLocation): string[] {
-    return this.getSelectorPartByLocation(viewContainerLocation)?.getVisiblePaneCompositeIds() ?? []
-  }
-
-  getProgressIndicator (id: string, viewContainerLocation: ViewContainerLocation): IProgressIndicator | undefined {
-    return this.getPartByLocation(viewContainerLocation)?.getProgressIndicator(id)
-  }
-
-  hideActivePaneComposite (viewContainerLocation: ViewContainerLocation): void {
-    this.getPartByLocation(viewContainerLocation)?.hideActivePaneComposite()
-  }
-
-  getLastActivePaneCompositeId (viewContainerLocation: ViewContainerLocation): string {
-    return this.getPartByLocation(viewContainerLocation)!.getLastActivePaneCompositeId()
-  }
-
-  showActivity (id: string, viewContainerLocation: ViewContainerLocation, badge: IBadge, clazz?: string, priority?: number): IDisposable {
-    return this.getSelectorPartByLocation(viewContainerLocation)!.showActivity(id, badge, clazz, priority)
-  }
-
-  private getPartByLocation (viewContainerLocation: ViewContainerLocation): IPaneCompositePart | undefined {
-    return paneCompositeParts.get(viewContainerLocation)
-  }
-
-  private getSelectorPartByLocation (viewContainerLocation: ViewContainerLocation): IPaneCompositeSelectorPart | undefined {
-    return paneCompositeSelectorParts.get(viewContainerLocation)
-  }
-}
+import { registerServiceInitializePostParticipant } from '../services'
 
 function createPart (id: string, role: string, classes: string[]): HTMLElement {
   const part = document.createElement(role === 'status' ? 'footer' /* Use footer element for status bar #98376 */ : 'div')
@@ -172,17 +115,22 @@ function createPart (id: string, role: string, classes: string[]): HTMLElement {
   return part
 }
 
-function renderPart (id: string, role: string, classes: string[], part: Part, container: HTMLElement): IDisposable {
-  const partContainer = createPart(id, role, classes)
-  container.append(partContainer)
+function layoutPart (part: Part) {
+  const parent = part.getContainer()?.parentNode
+  if (parent == null) {
+    return
+  }
+  part.layout(
+    Math.max(part.minimumWidth, Math.min(part.maximumWidth, (parent as HTMLElement).offsetWidth)),
+    Math.max(part.minimumHeight, Math.min(part.maximumHeight, (parent as HTMLElement).offsetHeight)),
+    0, 0
+  )
+}
+
+function renderPart (partContainer: HTMLElement, part: Part): void {
   partContainer.oncontextmenu = () => false
-  part.create(partContainer)
   function layout () {
-    part.layout(
-      Math.max(part.minimumWidth, Math.min(part.maximumWidth, container.offsetWidth)),
-      Math.max(part.minimumHeight, Math.min(part.maximumHeight, container.offsetHeight)),
-      0, 0
-    )
+    layoutPart(part)
   }
   part.onDidVisibilityChange((visible) => {
     if (visible) {
@@ -190,7 +138,15 @@ function renderPart (id: string, role: string, classes: string[], part: Part, co
     }
   })
   layout()
-  const observer = new ResizeObserver(layout)
+}
+
+function getPart (part: Parts): Part {
+  return (StandaloneServices.get(ILayoutService) as LayoutService).getPart(part)
+}
+
+function attachPart (part: Part, container: HTMLElement) {
+  container.append(part.getContainer()!)
+  const observer = new ResizeObserver(() => layoutPart(part))
   observer.observe(container)
 
   return {
@@ -201,54 +157,27 @@ function renderPart (id: string, role: string, classes: string[], part: Part, co
 }
 
 function renderActivitybarPar (container: HTMLElement): IDisposable {
-  const activitybarPart = StandaloneServices.get(IInstantiationService).createInstance(ActivitybarPart, paneCompositeParts.get(ViewContainerLocation.Sidebar)!)
-  paneCompositeSelectorParts.set(ViewContainerLocation.Sidebar, activitybarPart)
-
-  // eslint-disable-next-line dot-notation
-  activitybarPart['_register'](renderPart(Parts.ACTIVITYBAR_PART, 'none', ['activitybar', 'left'], activitybarPart, container))
-
-  return activitybarPart
+  return attachPart(getPart(Parts.ACTIVITYBAR_PART), container)
 }
 
 function renderSidebarPart (container: HTMLElement): IDisposable {
-  const sidebarPart = StandaloneServices.get(IInstantiationService).createInstance(SidebarPart)
-  paneCompositeParts.set(ViewContainerLocation.Sidebar, sidebarPart)
-
-  // eslint-disable-next-line dot-notation
-  sidebarPart['_register'](renderPart(Parts.SIDEBAR_PART, 'none', ['sidebar', 'left'], sidebarPart, container))
-
-  if (sidebarPart.getPaneComposites().length > 0) {
-    void sidebarPart.openPaneComposite(sidebarPart.getPaneComposites()[0]!.id)
-  }
-
-  return sidebarPart
+  return attachPart(getPart(Parts.SIDEBAR_PART), container)
 }
 
 function renderPanelPart (container: HTMLElement): IDisposable {
-  const panelPart = StandaloneServices.get(IInstantiationService).createInstance(PanelPart)
-  paneCompositeSelectorParts.set(ViewContainerLocation.Panel, panelPart)
-  paneCompositeParts.set(ViewContainerLocation.Panel, panelPart)
+  return attachPart(getPart(Parts.PANEL_PART), container)
+}
 
-  // eslint-disable-next-line dot-notation
-  panelPart['_register'](renderPart(Parts.PANEL_PART, 'none', ['panel', 'basepanel', positionToString(Position.LEFT)], panelPart, container))
-
-  if (panelPart.getPaneComposites().length > 0) {
-    void panelPart.openPaneComposite(panelPart.getPaneComposites()[0]!.id)
-  }
-
-  return panelPart
+function renderAuxiliaryPart (container: HTMLElement): IDisposable {
+  return attachPart(getPart(Parts.AUXILIARYBAR_PART), container)
 }
 
 function renderEditorPart (container: HTMLElement): IDisposable {
-  const editorPart = StandaloneServices.get(IEditorGroupsService) as EditorPart
-
-  return renderPart(Parts.EDITOR_PART, 'main', ['editor'], editorPart, container)
+  return attachPart(getPart(Parts.EDITOR_PART), container)
 }
 
 function renderStatusBarPart (container: HTMLElement): IDisposable {
-  const statusBarPart = StandaloneServices.get(IStatusbarService) as StatusbarPart
-
-  return renderPart(Parts.STATUSBAR_PART, 'status', ['statusbar'], statusBarPart, container)
+  return attachPart(getPart(Parts.STATUSBAR_PART), container)
 }
 
 type Label = string | {
@@ -568,6 +497,44 @@ registerAssets({
   'vs/workbench/contrib/webview/browser/pre/fake.html': () => changeUrlDomain(new URL('../../vscode/vs/workbench/contrib/webview/browser/pre/fake.html', import.meta.url).href, webviewIframeAlternateDomains)
 })
 
+registerServiceInitializePostParticipant(async (accessor) => {
+  const paneCompositePartService = accessor.get(IPaneCompositePartService)
+  const viewDescriptorService = accessor.get(IViewDescriptorService)
+
+  // force service instantiation
+  accessor.get(IStatusbarService)
+  paneCompositePartService.getPaneComposites(ViewContainerLocation.Panel)
+
+  const layoutService = accessor.get(ILayoutService) as LayoutService
+
+  const invisibleContainer = document.createElement('div')
+  invisibleContainer.style.display = 'none'
+  document.body.append(invisibleContainer)
+
+  // Create Parts
+  for (const { id, role, classes, options } of [
+    { id: Parts.ACTIVITYBAR_PART, role: 'none', classes: ['activitybar', 'left'] },
+    { id: Parts.SIDEBAR_PART, role: 'none', classes: ['sidebar', 'left'] },
+    { id: Parts.EDITOR_PART, role: 'main', classes: ['editor'], options: { restorePreviousState: false } },
+    { id: Parts.PANEL_PART, role: 'none', classes: ['panel', 'basepanel', positionToString(Position.BOTTOM)] },
+    { id: Parts.AUXILIARYBAR_PART, role: 'none', classes: ['auxiliarybar', 'basepanel', 'right'] },
+    { id: Parts.STATUSBAR_PART, role: 'status', classes: ['statusbar'] }
+  ]) {
+    const partContainer = createPart(id, role, classes)
+
+    const part = layoutService.getPart(id)
+    part.create(partContainer, options)
+    renderPart(partContainer, part)
+
+    // We need the container to be attached for some views to work (like xterm)
+    invisibleContainer.append(partContainer)
+  }
+
+  await paneCompositePartService.openPaneComposite(viewDescriptorService.getDefaultViewContainer(ViewContainerLocation.Sidebar)?.id, ViewContainerLocation.Sidebar)
+  await paneCompositePartService.openPaneComposite(viewDescriptorService.getDefaultViewContainer(ViewContainerLocation.Panel)?.id, ViewContainerLocation.Panel)
+  await paneCompositePartService.openPaneComposite(viewDescriptorService.getDefaultViewContainer(ViewContainerLocation.AuxiliaryBar)?.id, ViewContainerLocation.AuxiliaryBar)
+})
+
 export default function getServiceOverride (openEditorFallback?: OpenEditor, _webviewIframeAlternateDomains?: string): IEditorOverrideServices {
   if (_webviewIframeAlternateDomains != null) {
     webviewIframeAlternateDomains = _webviewIframeAlternateDomains
@@ -612,6 +579,7 @@ export {
   registerEditorPane,
   renderSidebarPart,
   renderActivitybarPar,
+  renderAuxiliaryPart,
   renderPanelPart,
   renderEditorPart,
   renderStatusBarPart,
