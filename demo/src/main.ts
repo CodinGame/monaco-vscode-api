@@ -1,11 +1,11 @@
 import './style.css'
 import * as monaco from 'monaco-editor'
-import './setup'
 import { createConfiguredEditor, createModelReference } from 'vscode/monaco'
 import { registerFileSystemOverlay, HTMLFileSystemProvider } from 'vscode/service-override/files'
 import * as vscode from 'vscode'
 import { ILogService, StandaloneServices, IPreferencesService, IEditorService, IDialogService } from 'vscode/services'
 import { ConfirmResult } from 'vscode/service-override/views'
+import { clearStorage } from './setup'
 import { CustomEditorInput } from './features/customView'
 import './features/debugger'
 import './features/search'
@@ -188,4 +188,8 @@ document.querySelector('#customEditorPanel')!.addEventListener('click', async ()
   await StandaloneServices.get(IEditorService).openEditor(input, {
     pinned: true
   })
+})
+
+document.querySelector('#clearStorage')!.addEventListener('click', async () => {
+  clearStorage()
 })
