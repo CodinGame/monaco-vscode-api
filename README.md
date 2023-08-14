@@ -296,8 +296,6 @@ It includes:
 - Keybinding service, with user keybindings editor
 - Debuggers
 
-It also uses the `synchronizeJsonSchemas` function to register them on the monaco json worker and have autocomplete/hover on settings and keybindings.
-
 From CLI run:
 
 ```bash
