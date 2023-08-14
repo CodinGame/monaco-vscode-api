@@ -16,9 +16,9 @@ import getSnippetServiceOverride from 'vscode/service-override/snippets'
 import getQuickAccessServiceOverride from 'vscode/service-override/quickaccess'
 import getOutputServiceOverride from 'vscode/service-override/output'
 import getTerminalServiceOverride from 'vscode/service-override/terminal'
-import getSearchAccessServiceOverride from 'vscode/service-override/search'
-import getMarkersAccessServiceOverride from 'vscode/service-override/markers'
-import getAccessibilityAccessServiceOverride from 'vscode/service-override/accessibility'
+import getSearchServiceOverride from 'vscode/service-override/search'
+import getMarkersServiceOverride from 'vscode/service-override/markers'
+import getAccessibilityServiceOverride from 'vscode/service-override/accessibility'
 import getLanguageDetectionWorkerServiceOverride from 'vscode/service-override/languageDetectionWorker'
 import getStorageServiceOverride, { IStorageItemsChangeEvent, StorageScope } from 'vscode/service-override/storage'
 import getExtensionServiceOverride from 'vscode/service-override/extensions'
@@ -74,9 +74,9 @@ await initializeMonacoService({
   }),
   ...getOutputServiceOverride(),
   ...getTerminalServiceOverride(new TerminalBackend()),
-  ...getSearchAccessServiceOverride(),
-  ...getMarkersAccessServiceOverride(),
-  ...getAccessibilityAccessServiceOverride(),
+  ...getSearchServiceOverride(),
+  ...getMarkersServiceOverride(),
+  ...getAccessibilityServiceOverride(),
   ...getLanguageDetectionWorkerServiceOverride(),
   ...getStorageServiceOverride({
     read (scope) {
