@@ -15,6 +15,7 @@ import getLayoutServiceOverride from './service-override/layout'
 import getEnvironmentServiceOverride from './service-override/environment'
 import getExtensionsServiceOverride from './service-override/extensions'
 import getFileServiceOverride from './service-override/files'
+import getQuickAccessOverride from './service-override/quickaccess'
 
 interface ServiceInitializeParticipant {
   (accessor: ServicesAccessor): Promise<void>
@@ -38,6 +39,7 @@ async function initServices (overrides: IEditorOverrideServices): Promise<IInsta
     ...getEnvironmentServiceOverride(),
     ...getExtensionsServiceOverride(),
     ...getFileServiceOverride(),
+    ...getQuickAccessOverride(),
     ...overrides
   })
 

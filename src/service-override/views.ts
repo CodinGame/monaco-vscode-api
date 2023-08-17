@@ -99,6 +99,7 @@ import { ILayoutService } from 'vs/platform/layout/browser/layoutService'
 import { OpenEditor, wrapOpenEditor } from './tools/editor'
 import getBulkEditServiceOverride from './bulkEdit'
 import getLayoutServiceOverride, { LayoutService } from './layout'
+import getQuickAccessOverride from './quickaccess'
 import { changeUrlDomain } from './tools/url'
 import { registerAssets } from '../assets'
 import { registerServiceInitializePostParticipant } from '../services'
@@ -542,6 +543,10 @@ export default function getServiceOverride (openEditorFallback?: OpenEditor, _we
   return {
     ...getLayoutServiceOverride(),
     ...getBulkEditServiceOverride(),
+    ...getQuickAccessOverride({
+      isKeybindingConfigurationVisible: isEditorPartVisible,
+      shouldUseGlobalPicker: isEditorPartVisible
+    }),
     [IViewsService.toString()]: new SyncDescriptor(ViewsService, [], false),
     [IViewDescriptorService.toString()]: new SyncDescriptor(ViewDescriptorService, [], true),
     [IActivityService.toString()]: new SyncDescriptor(ActivityService, [], true),
