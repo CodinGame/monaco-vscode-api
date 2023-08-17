@@ -127,17 +127,17 @@ abstract class SimpleTerminalProcess implements ITerminalChildProcess {
 export default function getServiceOverride (backend: ITerminalBackend): IEditorOverrideServices {
   Registry.as<ITerminalBackendRegistry>(TerminalExtensions.Backend).registerTerminalBackend(backend)
   return {
-    [ITerminalService.toString()]: new SyncDescriptor(TerminalService),
-    [ITerminalLogService.toString()]: new SyncDescriptor(TerminalLogService),
-    [ITerminalEditorService.toString()]: new SyncDescriptor(TerminalEditorService),
-    [ITerminalGroupService.toString()]: new SyncDescriptor(TerminalGroupService),
-    [ITerminalInstanceService.toString()]: new SyncDescriptor(TerminalInstanceService),
-    [ITerminalProfileService.toString()]: new SyncDescriptor(TerminalProfileService),
-    [ITerminalContributionService.toString()]: new SyncDescriptor(TerminalContributionService),
-    [ITerminalLinkProviderService.toString()]: new SyncDescriptor(TerminalLinkProviderService),
-    [ITerminalProfileResolverService.toString()]: new SyncDescriptor(ElectronTerminalProfileResolverService),
-    [IEnvironmentVariableService.toString()]: new SyncDescriptor(EnvironmentVariableService),
-    [ITerminalQuickFixService.toString()]: new SyncDescriptor(TerminalQuickFixService)
+    [ITerminalService.toString()]: new SyncDescriptor(TerminalService, [], true),
+    [ITerminalLogService.toString()]: new SyncDescriptor(TerminalLogService, [], true),
+    [ITerminalEditorService.toString()]: new SyncDescriptor(TerminalEditorService, [], true),
+    [ITerminalGroupService.toString()]: new SyncDescriptor(TerminalGroupService, [], true),
+    [ITerminalInstanceService.toString()]: new SyncDescriptor(TerminalInstanceService, [], true),
+    [ITerminalProfileService.toString()]: new SyncDescriptor(TerminalProfileService, [], true),
+    [ITerminalContributionService.toString()]: new SyncDescriptor(TerminalContributionService, [], true),
+    [ITerminalLinkProviderService.toString()]: new SyncDescriptor(TerminalLinkProviderService, [], true),
+    [ITerminalProfileResolverService.toString()]: new SyncDescriptor(ElectronTerminalProfileResolverService, [], true),
+    [IEnvironmentVariableService.toString()]: new SyncDescriptor(EnvironmentVariableService, [], true),
+    [ITerminalQuickFixService.toString()]: new SyncDescriptor(TerminalQuickFixService, [], true)
   }
 }
 

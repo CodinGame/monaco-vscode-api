@@ -14,7 +14,7 @@ class InjectedBrowserWorkbenchEnvironmentService extends BrowserWorkbenchEnviron
 
 export default function getServiceOverride (): IEditorOverrideServices {
   return {
-    [IEnvironmentService.toString()]: new SyncDescriptor(InjectedBrowserWorkbenchEnvironmentService, []),
-    [IBrowserWorkbenchEnvironmentService.toString()]: new SyncDescriptor(InjectedBrowserWorkbenchEnvironmentService, [])
+    [IEnvironmentService.toString()]: new SyncDescriptor(InjectedBrowserWorkbenchEnvironmentService, [], true),
+    [IBrowserWorkbenchEnvironmentService.toString()]: new SyncDescriptor(InjectedBrowserWorkbenchEnvironmentService, [], true)
   }
 }

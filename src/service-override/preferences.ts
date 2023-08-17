@@ -10,8 +10,8 @@ import 'vs/workbench/contrib/preferences/browser/preferences.contribution'
 
 export default function getServiceOverride (): IEditorOverrideServices {
   return {
-    [IPreferencesService.toString()]: new SyncDescriptor(PreferencesService),
-    [IPreferencesSearchService.toString()]: new SyncDescriptor(PreferencesSearchService),
-    [IKeybindingEditingService.toString()]: new SyncDescriptor(KeybindingsEditingService)
+    [IPreferencesService.toString()]: new SyncDescriptor(PreferencesService, [], true),
+    [IPreferencesSearchService.toString()]: new SyncDescriptor(PreferencesSearchService, [], true),
+    [IKeybindingEditingService.toString()]: new SyncDescriptor(KeybindingsEditingService, [], true)
   }
 }

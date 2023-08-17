@@ -23,7 +23,13 @@ export default rollup.defineConfig(defaultExtensions.map(name => (<rollup.Rollup
   input: path.resolve(DEFAULT_EXTENSIONS_PATH, name),
   output: [{
     minifyInternalExports: false,
-    assetFileNames: `default-extensions/${name}/[name][extname]`,
+    assetFileNames: chunkInfo => {
+      if (chunkInfo.name != null && chunkInfo.name.endsWith('d.ts')) {
+        // append .txt at the end of d.ts files: those file are required by the typescript extension and are just expected to be loaded as simple text
+        return `default-extensions/${name}/[name][extname].txt`
+      }
+      return `default-extensions/${name}/[name][extname]`
+    },
     format: 'esm',
     dir: 'dist',
     entryFileNames: `default-extensions/${name}.js`,

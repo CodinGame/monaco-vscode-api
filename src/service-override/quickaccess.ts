@@ -17,10 +17,10 @@ import 'vs/workbench/browser/actions/quickAccessActions'
 import 'vs/workbench/contrib/quickaccess/browser/quickAccess.contribution'
 
 let isKeybindingConfigurationVisible = () => {
-  return true
+  return false
 }
 let shouldUseGlobalPicker = () => {
-  return true
+  return false
 }
 
 // eslint-disable-next-line dot-notation
@@ -122,6 +122,6 @@ export default function getServiceOverride ({
     shouldUseGlobalPicker = _shouldUseGlobalPicker
   }
   return {
-    [IQuickInputService.toString()]: new SyncDescriptor(DelegateQuickInputService)
+    [IQuickInputService.toString()]: new SyncDescriptor(DelegateQuickInputService, [], true)
   }
 }

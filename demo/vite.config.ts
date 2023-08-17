@@ -42,7 +42,7 @@ export default defineConfig({
       'vscode/service-override/keybindings', 'vscode/service-override/textmate', 'vscode/service-override/theme', 'vscode/service-override/languages',
       'vscode/service-override/audioCue', 'vscode/service-override/views', 'vscode/service-override/quickaccess', 'vscode/service-override/debug',
       'vscode/service-override/preferences', 'vscode/service-override/snippets', 'vscode/service-override/files', 'vscode/service-override/output',
-      'vscode/service-override/terminal', 'vscode/service-override/search', 'vscode/service-override/markers', 'vscode/service-override/accessibility',
+      'vscode/service-override/terminal', 'vscode/service-override/search', 'vscode/service-override/markers', 'vscode/service-override/accessibility', 'vscode/service-override/storage',
       'vscode/service-override/languageDetectionWorker', 'vscode/default-extensions/clojure', 'vscode/default-extensions/coffeescript', 'vscode/default-extensions/cpp',
       'vscode/default-extensions/csharp', 'vscode/default-extensions/css', 'vscode/default-extensions/diff', 'vscode/default-extensions/fsharp', 'vscode/default-extensions/go',
       'vscode/default-extensions/groovy', 'vscode/default-extensions/html', 'vscode/default-extensions/java', 'vscode/default-extensions/javascript',

@@ -23,7 +23,7 @@ registerServiceInitializeParticipant(async (accessor) => {
 export default function getServiceOverride (): IEditorOverrideServices {
   return {
     ...getFileServiceOverride(),
-    [ISnippetsService.toString()]: new SyncDescriptor(SnippetsService)
+    [ISnippetsService.toString()]: new SyncDescriptor(SnippetsService, [], true)
   }
 }
 

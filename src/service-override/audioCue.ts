@@ -11,6 +11,6 @@ registerAssets(audioAssets)
 
 export default function getServiceOverride (): IEditorOverrideServices {
   return {
-    [IAudioCueService.toString()]: new SyncDescriptor(AudioCueService)
+    [IAudioCueService.toString()]: new SyncDescriptor(AudioCueService, [], true)
   }
 }

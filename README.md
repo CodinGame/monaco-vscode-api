@@ -120,9 +120,10 @@ await initialize({
 })
 ```
 
-Additionally, this library exposes 22 modules that include the vscode version of some services (with some glue to make it work with monaco):
+Additionally, this library exposes 23 modules that include the vscode version of some services (with some glue to make it work with monaco):
 
 - Extensions (included by default): `vscode/service-override/extensions`
+- Files (included by default): `vscode/service-override/files`
 - Notifications: `vscode/service-override/notifications`
 - Dialogs: `vscode/service-override/dialogs`
 - Model: `vscode/service-override/model`
@@ -135,7 +136,6 @@ Additionally, this library exposes 22 modules that include the vscode version of
 - VSCode themes: `vscode/service-override/theme`
 - Audio cue: `vscode/service-override/audioCue`
 - Debug: `vscode/service-override/debug`
-- Files: `vscode/service-override/files`
 - Preferences: `vscode/service-override/preferences`
 - Views: `vscode/service-override/views` (Is exclusive with `editor`, do not use both at the same time)
 - QuickAccess: `vscode/service-override/quickaccess`
@@ -144,6 +144,7 @@ Additionally, this library exposes 22 modules that include the vscode version of
 - Search: `vscode/service-override/search`
 - Markers: `vscode/service-override/markers`
 - Language detection worker: `vscode/service-override/languageDetectionWorker`
+- Storage: `vscode/service-override/storage`
 
 Usage:
 
@@ -294,8 +295,6 @@ It includes:
 - Configuration service, with user configuration editor
 - Keybinding service, with user keybindings editor
 - Debuggers
-
-It also uses the `synchronizeJsonSchemas` function to register them on the monaco json worker and have autocomplete/hover on settings and keybindings.
 
 From CLI run:
 

@@ -16,10 +16,11 @@ import getSnippetServiceOverride from 'vscode/service-override/snippets'
 import getQuickAccessServiceOverride from 'vscode/service-override/quickaccess'
 import getOutputServiceOverride from 'vscode/service-override/output'
 import getTerminalServiceOverride from 'vscode/service-override/terminal'
-import getSearchAccessServiceOverride from 'vscode/service-override/search'
-import getMarkersAccessServiceOverride from 'vscode/service-override/markers'
-import getAccessibilityAccessServiceOverride from 'vscode/service-override/accessibility'
+import getSearchServiceOverride from 'vscode/service-override/search'
+import getMarkersServiceOverride from 'vscode/service-override/markers'
+import getAccessibilityServiceOverride from 'vscode/service-override/accessibility'
 import getLanguageDetectionWorkerServiceOverride from 'vscode/service-override/languageDetectionWorker'
+import getStorageServiceOverride, { IStorageItemsChangeEvent, StorageScope } from 'vscode/service-override/storage'
 import getExtensionServiceOverride from 'vscode/service-override/extensions'
 import EditorWorker from 'monaco-editor/esm/vs/editor/editor.worker.js?worker'
 import TextMateWorker from 'vscode/workers/textMate.worker?worker'
@@ -49,6 +50,8 @@ window.MonacoEnvironment = {
   }
 }
 
+const onStorageChange = new monaco.Emitter<IStorageItemsChangeEvent>()
+
 // Override services
 await initializeMonacoService({
   ...getExtensionServiceOverride(toWorkerConfig(ExtensionHostWorker)),
@@ -71,12 +74,32 @@ await initializeMonacoService({
   }),
   ...getOutputServiceOverride(),
   ...getTerminalServiceOverride(new TerminalBackend()),
-  ...getSearchAccessServiceOverride(),
-  ...getMarkersAccessServiceOverride(),
-  ...getAccessibilityAccessServiceOverride(),
-  ...getLanguageDetectionWorkerServiceOverride()
+  ...getSearchServiceOverride(),
+  ...getMarkersServiceOverride(),
+  ...getAccessibilityServiceOverride(),
+  ...getLanguageDetectionWorkerServiceOverride(),
+  ...getStorageServiceOverride({
+    read (scope) {
+      return new Map(Object.entries(JSON.parse(localStorage.getItem(`storage-${scope}`) ?? '{}')))
+    },
+    async write (scope, data) {
+      localStorage.setItem(`storage-${scope}`, JSON.stringify(Object.fromEntries(data.entries())))
+    },
+    onDidChange: onStorageChange.event
+  })
 })
 StandaloneServices.get(ILogService).setLevel(LogLevel.Off)
+
+export function clearStorage (): void {
+  const allKeys = new Set([StorageScope.APPLICATION, StorageScope.PROFILE, StorageScope.WORKSPACE].flatMap(scope => Object.keys(JSON.parse(localStorage.getItem(`storage-${scope}`) ?? '{}'))))
+  localStorage.removeItem(`storage-${StorageScope.APPLICATION}`)
+  localStorage.removeItem(`storage-${StorageScope.PROFILE}`)
+  localStorage.removeItem(`storage-${StorageScope.WORKSPACE}`)
+  onStorageChange.fire({
+    deleted: allKeys,
+    changed: new Map()
+  })
+}
 
 await initializeVscodeExtensions()
 

@@ -35,7 +35,7 @@ import 'vs/workbench/api/common/configurationExtensionPoint'
 import { IBrowserWorkbenchEnvironmentService } from 'vs/workbench/services/environment/browser/environmentService'
 import getFileServiceOverride from './files'
 import { memoizedConstructor, unsupported } from '../tools'
-import { registerServiceInitializeParticipant } from '../services'
+import { registerServiceInitializePreParticipant } from '../services'
 
 async function updateUserConfiguration (configurationJson: string): Promise<void> {
   const userDataProfilesService = StandaloneServices.get(IUserDataProfilesService)
@@ -79,7 +79,7 @@ class MonacoWorkspaceEditingService extends AbstractWorkspaceEditingService {
 }
 
 let _defaultWorkspaceUri = URI.file('/workspace')
-registerServiceInitializeParticipant(async (accessor) => {
+registerServiceInitializePreParticipant(async (accessor) => {
   const workspaceService = accessor.get(IWorkspaceContextService) as WorkspaceService
   workspaceService.acquireInstantiationService(accessor.get(IInstantiationService))
 
@@ -113,10 +113,10 @@ export default function getServiceOverride (defaultWorkspaceUri: URI): IEditorOv
   return {
     ...getFileServiceOverride(),
     [ILabelService.toString()]: new SyncDescriptor(LabelService, undefined, true),
-    [IConfigurationService.toString()]: new SyncDescriptor(MemoizedInjectedConfigurationService),
-    [IWorkspaceContextService.toString()]: new SyncDescriptor(MemoizedInjectedConfigurationService),
-    [ITextResourceConfigurationService.toString()]: new SyncDescriptor(TextResourceConfigurationService),
-    [IWorkspaceEditingService.toString()]: new SyncDescriptor(MonacoWorkspaceEditingService),
+    [IConfigurationService.toString()]: new SyncDescriptor(MemoizedInjectedConfigurationService, [], true),
+    [IWorkspaceContextService.toString()]: new SyncDescriptor(MemoizedInjectedConfigurationService, [], true),
+    [ITextResourceConfigurationService.toString()]: new SyncDescriptor(TextResourceConfigurationService, [], true),
+    [IWorkspaceEditingService.toString()]: new SyncDescriptor(MonacoWorkspaceEditingService, [], true),
     [IWorkspacesService.toString()]: new SyncDescriptor(BrowserWorkspacesService, undefined, true)
   }
 }

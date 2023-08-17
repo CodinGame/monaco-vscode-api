@@ -33,7 +33,7 @@ type PartialIThemeExtensionPoint = Partial<IThemeExtensionPoint> & Pick<IThemeEx
 export default function getServiceOverride (): IEditorOverrideServices {
   return {
     ...getFileServiceOverride(),
-    [IThemeService.toString()]: new SyncDescriptor(StandaloneWorkbenchThemeService)
+    [IThemeService.toString()]: new SyncDescriptor(StandaloneWorkbenchThemeService, [], false)
   }
 }
 

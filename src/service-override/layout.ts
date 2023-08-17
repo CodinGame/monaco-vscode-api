@@ -58,7 +58,7 @@ export class LayoutService implements ILayoutService, Pick<IWorkbenchLayoutServi
     return this.getPart(part).getContainer()
   }
 
-  protected getPart (key: Parts): Part {
+  public getPart (key: Parts): Part {
     const part = this.parts.get(key)
     if (part == null) {
       throw new Error(`Unknown part ${key}`)
@@ -166,7 +166,7 @@ export default function getServiceOverride (container: HTMLElement = document.bo
   document.body.classList.add('web')
 
   return {
-    [ILayoutService.toString()]: new SyncDescriptor(LayoutService, [container]),
-    [IWorkbenchLayoutService.toString()]: new SyncDescriptor(LayoutService, [container])
+    [ILayoutService.toString()]: new SyncDescriptor(LayoutService, [container], true),
+    [IWorkbenchLayoutService.toString()]: new SyncDescriptor(LayoutService, [container], true)
   }
 }

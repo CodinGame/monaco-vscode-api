@@ -22,9 +22,9 @@ async function updateUserKeybindings (keybindingsJson: string): Promise<void> {
 export default function getServiceOverride (): IEditorOverrideServices {
   return {
     ...getFileServiceOverride(),
-    [IKeybindingService.toString()]: new SyncDescriptor(WorkbenchKeybindingService),
+    [IKeybindingService.toString()]: new SyncDescriptor(WorkbenchKeybindingService, [], false),
     [IKeyboardLayoutService.toString()]: new SyncDescriptor(BrowserKeyboardLayoutService, undefined, true),
-    [ICommandService.toString()]: new SyncDescriptor(CommandService)
+    [ICommandService.toString()]: new SyncDescriptor(CommandService, [], true)
   }
 }
 

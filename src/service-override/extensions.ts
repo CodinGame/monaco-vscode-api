@@ -480,8 +480,8 @@ export default function getServiceOverride (workerConfig?: WorkerConfig, _iframe
 
   return {
     ...getOutputServiceOverride(),
-    [IExtensionService.toString()]: new SyncDescriptor(SimpleExtensionService, [_workerConfig]),
-    [IExtensionManifestPropertiesService.toString()]: new SyncDescriptor(ExtensionManifestPropertiesService)
+    [IExtensionService.toString()]: new SyncDescriptor(SimpleExtensionService, [_workerConfig], false),
+    [IExtensionManifestPropertiesService.toString()]: new SyncDescriptor(ExtensionManifestPropertiesService, [], true)
   }
 }
 

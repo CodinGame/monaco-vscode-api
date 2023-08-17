@@ -1,13 +1,11 @@
 import './style.css'
-import 'monaco-editor/esm/vs/editor/editor.all.js'
-import * as monaco from 'monaco-editor/esm/vs/editor/editor.api.js'
-import 'monaco-editor/esm/vs/editor/standalone/browser/iPadShowKeyboard/iPadShowKeyboard.js'
-import './setup'
+import * as monaco from 'monaco-editor'
 import { createConfiguredEditor, createModelReference } from 'vscode/monaco'
 import { registerFileSystemOverlay, HTMLFileSystemProvider } from 'vscode/service-override/files'
 import * as vscode from 'vscode'
 import { ILogService, StandaloneServices, IPreferencesService, IEditorService, IDialogService } from 'vscode/services'
 import { ConfirmResult } from 'vscode/service-override/views'
+import { clearStorage } from './setup'
 import { CustomEditorInput } from './features/customView'
 import './features/debugger'
 import './features/search'
@@ -80,7 +78,7 @@ await vscode.window.showTextDocument(mainDocument, {
 
 anotherFakeOutputChannel.replace(mainDocument.getText())
 vscode.workspace.onDidChangeTextDocument((e) => {
-  if (e.document === mainDocument) {
+  if (e.document === mainDocument && e.contentChanges.length > 0) {
     anotherFakeOutputChannel.replace(e.document.getText())
   }
 })
@@ -190,4 +188,8 @@ document.querySelector('#customEditorPanel')!.addEventListener('click', async ()
   await StandaloneServices.get(IEditorService).openEditor(input, {
     pinned: true
   })
+})
+
+document.querySelector('#clearStorage')!.addEventListener('click', async () => {
+  clearStorage()
 })

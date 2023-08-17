@@ -6,6 +6,7 @@ import { SyncDescriptor } from 'vs/platform/instantiation/common/descriptors'
 import { AbstractStorageService, IStorageService, StorageScope as VSStorageScope } from 'vs/platform/storage/common/storage'
 import { IUserDataProfile } from 'vs/platform/userDataProfile/common/userDataProfile'
 import { IAnyWorkspaceIdentifier } from 'vs/platform/workspace/common/workspace'
+import { registerServiceInitializePreParticipant } from '../services'
 
 export enum StorageScope {
   APPLICATION = VSStorageScope.APPLICATION,
@@ -71,7 +72,9 @@ class ExternalStorageService extends AbstractStorageService {
   private readonly workspaceStorage = this._register(new ExternalStorage(StorageScope.WORKSPACE, this.provider))
 
   constructor (protected readonly provider: IStorageProvider) {
-    super()
+    super({
+      flushInterval: 5000
+    })
 
     this._register(this.workspaceStorage.onDidChangeStorage(key => this.emitDidChangeValue(VSStorageScope.WORKSPACE, key)))
     this._register(this.profileStorage.onDidChangeStorage(key => this.emitDidChangeValue(VSStorageScope.PROFILE, key)))
@@ -117,9 +120,13 @@ class ExternalStorageService extends AbstractStorageService {
   }
 }
 
+registerServiceInitializePreParticipant(async (accessor) => {
+  await (accessor.get(IStorageService) as ExternalStorageService).initialize()
+})
+
 export default function getStorageServiceOverride (provider: IStorageProvider): IEditorOverrideServices {
   return {
-    [IStorageService.toString()]: new SyncDescriptor(ExternalStorageService, [provider])
+    [IStorageService.toString()]: new SyncDescriptor(ExternalStorageService, [provider], true)
   }
 }
 

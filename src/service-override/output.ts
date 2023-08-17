@@ -15,6 +15,6 @@ class _FileLoggerService extends FileLoggerService {
 
 export default function getServiceOverride (logLevel: LogLevel = LogLevel.Info): IEditorOverrideServices {
   return {
-    [ILoggerService.toString()]: new SyncDescriptor(_FileLoggerService, [logLevel])
+    [ILoggerService.toString()]: new SyncDescriptor(_FileLoggerService, [logLevel], true)
   }
 }
