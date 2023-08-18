@@ -63,7 +63,7 @@ class SimpleEditorService extends Disposable implements IEditorService {
   activeTextEditorLanguageId: string | undefined
   visibleEditorPanes: IVisibleEditorPane[] = []
   visibleEditors: EditorInput[] = []
-  visibleTextEditorControls: Array<ICodeEditor | IDiffEditor> = []
+  visibleTextEditorControls: Array<IEditor | IDiffEditor> = []
   editors: EditorInput[] = []
   count: number = 0
   getEditors: (order: EditorsOrder, options?: { excludeSticky?: boolean }) => readonly IEditorIdentifier[] = () => []
