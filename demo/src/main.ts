@@ -191,7 +191,7 @@ document.querySelector('#customEditorPanel')!.addEventListener('click', async ()
 })
 
 document.querySelector('#clearStorage')!.addEventListener('click', async () => {
-  clearStorage()
+  await clearStorage()
 })
 
 document.querySelector('#togglePanel')!.addEventListener('click', async () => {
