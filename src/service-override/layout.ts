@@ -1,6 +1,6 @@
 import '../missing-services'
 import { IEditorOverrideServices, StandaloneServices } from 'vs/editor/standalone/browser/standaloneServices'
-import { IWorkbenchLayoutService, Parts, Position } from 'vs/workbench/services/layout/browser/layoutService'
+import { IWorkbenchLayoutService, PanelAlignment, Parts, Position } from 'vs/workbench/services/layout/browser/layoutService'
 import { ILayoutOffsetInfo, ILayoutService } from 'vs/platform/layout/browser/layoutService'
 import { Emitter, Event } from 'vs/base/common/event'
 import { ICodeEditorService } from 'vs/editor/browser/services/codeEditorService'
@@ -12,19 +12,127 @@ import { IPaneCompositePartService } from 'vs/workbench/services/panecomposite/b
 import { ViewContainerLocation } from 'vs/workbench/common/views'
 import { isChrome, isFirefox, isLinux, isSafari, isWindows } from 'vs/base/common/platform'
 import { coalesce } from 'vs/base/common/arrays'
+import { ActivitybarPart } from 'vs/workbench/browser/parts/activitybar/activitybarPart'
+import { IEditorGroupsService } from 'vs/workbench/services/editor/common/editorGroupsService'
+import { IStatusbarService } from 'vs/workbench/services/statusbar/browser/statusbar'
+import { ServicesAccessor } from 'vs/platform/instantiation/common/instantiation'
+import { onRenderWorkbench } from '../lifecycle'
 
-export class LayoutService implements ILayoutService, Pick<IWorkbenchLayoutService, 'isVisible' | 'onDidChangePartVisibility' | 'isRestored' | 'registerPart' | 'getSideBarPosition' | 'setPartHidden' | 'hasFocus' | 'getPanelPosition' | 'isPanelMaximized' | 'getMaximumEditorDimensions' | 'onDidChangeFullscreen'> {
+export class LayoutService implements ILayoutService, IWorkbenchLayoutService {
   declare readonly _serviceBrand: undefined
 
+  private paneCompositeService!: IPaneCompositePartService
+  private editorGroupService!: IEditorGroupsService
+  private statusBarService!: IStatusbarService
+
   constructor (
-    public container: HTMLElement,
-    @IPaneCompositePartService private paneCompositeService: IPaneCompositePartService
+    public container: HTMLElement
   ) {
     window.addEventListener('resize', () => this.layout())
     this.layout()
   }
 
   onDidChangeFullscreen = Event.None
+  onDidChangeZenMode = Event.None
+  onDidChangeWindowMaximized = Event.None
+  onDidChangeCenteredLayout = Event.None
+  onDidChangePanelPosition = Event.None
+  onDidChangePanelAlignment = Event.None
+  onDidChangeNotificationsVisibility = Event.None
+  openedDefaultEditors = false
+  whenRestored = Promise.resolve()
+
+  public init (accessor: ServicesAccessor): void {
+    this.editorGroupService = accessor.get(IEditorGroupsService)
+    this.paneCompositeService = accessor.get(IPaneCompositePartService)
+    this.statusBarService = accessor.get(IStatusbarService)
+  }
+
+  focusPart (part: Parts): void {
+    switch (part) {
+      case Parts.EDITOR_PART:
+        this.editorGroupService.activeGroup.focus()
+        break
+      case Parts.PANEL_PART: {
+        const activePanel = this.paneCompositeService.getActivePaneComposite(ViewContainerLocation.Panel)
+        activePanel?.focus()
+        break
+      }
+      case Parts.SIDEBAR_PART: {
+        const activeViewlet = this.paneCompositeService.getActivePaneComposite(ViewContainerLocation.Sidebar)
+        activeViewlet?.focus()
+        break
+      }
+      case Parts.ACTIVITYBAR_PART:
+        (this.getPart(Parts.ACTIVITYBAR_PART) as ActivitybarPart).focus()
+        break
+      case Parts.STATUSBAR_PART:
+        this.statusBarService.focus()
+        break
+      default: {
+        // Title Bar & Banner simply pass focus to container
+        const container = this.getContainer(part)
+        container?.focus()
+      }
+    }
+  }
+
+  getDimension (part: Parts): dom.Dimension | undefined {
+    return this.getPart(part).dimension
+  }
+
+  toggleMaximizedPanel (): void {
+  }
+
+  hasWindowBorder (): boolean {
+    return false
+  }
+
+  getWindowBorderWidth (): number {
+    return 0
+  }
+
+  getWindowBorderRadius (): string | undefined {
+    return undefined
+  }
+
+  toggleMenuBar (): void {
+  }
+
+  setPanelPosition (): void {
+    // not supported
+  }
+
+  getPanelAlignment (): PanelAlignment {
+    return 'left'
+  }
+
+  setPanelAlignment (): void {
+  }
+
+  toggleZenMode (): void {
+  }
+
+  isEditorLayoutCentered (): boolean {
+    return false
+  }
+
+  centerEditorLayout (): void {
+  }
+
+  resizePart (): void {
+  }
+
+  isWindowMaximized (): boolean {
+    return false
+  }
+
+  updateWindowMaximizedState (): void {
+  }
+
+  getVisibleNeighborPart (): Parts | undefined {
+    return undefined
+  }
 
   getMaximumEditorDimensions (): dom.Dimension {
     return new dom.Dimension(Infinity, Infinity)
@@ -151,6 +259,13 @@ export class LayoutService implements ILayoutService, Pick<IWorkbenchLayoutServi
     StandaloneServices.get(ICodeEditorService).getFocusedCodeEditor()?.focus()
   }
 }
+
+onRenderWorkbench((accessor) => {
+  const layoutService = accessor.get(ILayoutService)
+  if (layoutService instanceof LayoutService) {
+    layoutService.init(accessor)
+  }
+})
 
 export default function getServiceOverride (container: HTMLElement = document.body): IEditorOverrideServices {
   const platformClass = isWindows ? 'windows' : isLinux ? 'linux' : 'mac'
