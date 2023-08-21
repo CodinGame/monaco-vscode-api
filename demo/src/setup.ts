@@ -9,7 +9,13 @@ import getTextmateServiceOverride from 'vscode/service-override/textmate'
 import getThemeServiceOverride from 'vscode/service-override/theme'
 import getLanguagesServiceOverride from 'vscode/service-override/languages'
 import getAudioCueServiceOverride from 'vscode/service-override/audioCue'
-import getViewsServiceOverride, { isEditorPartVisible, renderSidebarPart, renderActivitybarPar, renderEditorPart, renderPanelPart, renderStatusBarPart } from 'vscode/service-override/views'
+import getViewsServiceOverride, {
+  isEditorPartVisible,
+  Parts,
+  onPartVisibilityChange,
+  isPartVisibile,
+  attachPart
+} from 'vscode/service-override/views'
 import getDebugServiceOverride from 'vscode/service-override/debug'
 import getPreferencesServiceOverride from 'vscode/service-override/preferences'
 import getSnippetServiceOverride from 'vscode/service-override/snippets'
@@ -103,8 +109,22 @@ export function clearStorage (): void {
 
 await initializeVscodeExtensions()
 
-renderSidebarPart(document.querySelector<HTMLDivElement>('#sidebar')!)
-renderActivitybarPar(document.querySelector<HTMLDivElement>('#activityBar')!)
-renderPanelPart(document.querySelector<HTMLDivElement>('#panel')!)
-renderEditorPart(document.querySelector<HTMLDivElement>('#editors')!)
-renderStatusBarPart(document.querySelector<HTMLDivElement>('#statusBar')!)
+for (const { part, element } of [
+  { part: Parts.SIDEBAR_PART, element: '#sidebar' },
+  { part: Parts.ACTIVITYBAR_PART, element: '#activityBar' },
+  { part: Parts.PANEL_PART, element: '#panel' },
+  { part: Parts.EDITOR_PART, element: '#editors' },
+  { part: Parts.STATUSBAR_PART, element: '#statusBar' },
+  { part: Parts.AUXILIARYBAR_PART, element: '#auxiliaryBar' }
+]) {
+  const el = document.querySelector<HTMLDivElement>(element)!
+  attachPart(part, el)
+
+  if (!isPartVisibile(part)) {
+    el.style.display = 'none'
+  }
+
+  onPartVisibilityChange(part, visible => {
+    el.style.display = visible ? 'block' : 'none'
+  })
+}

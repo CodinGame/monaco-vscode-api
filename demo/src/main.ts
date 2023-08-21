@@ -4,7 +4,7 @@ import { createConfiguredEditor, createModelReference } from 'vscode/monaco'
 import { registerFileSystemOverlay, HTMLFileSystemProvider } from 'vscode/service-override/files'
 import * as vscode from 'vscode'
 import { ILogService, StandaloneServices, IPreferencesService, IEditorService, IDialogService } from 'vscode/services'
-import { ConfirmResult } from 'vscode/service-override/views'
+import { ConfirmResult, Parts, isPartVisibile, setPartVisibility } from 'vscode/service-override/views'
 import { clearStorage } from './setup'
 import { CustomEditorInput } from './features/customView'
 import './features/debugger'
@@ -192,4 +192,12 @@ document.querySelector('#customEditorPanel')!.addEventListener('click', async ()
 
 document.querySelector('#clearStorage')!.addEventListener('click', async () => {
   clearStorage()
+})
+
+document.querySelector('#togglePanel')!.addEventListener('click', async () => {
+  setPartVisibility(Parts.PANEL_PART, !isPartVisibile(Parts.PANEL_PART))
+})
+
+document.querySelector('#toggleAuxiliary')!.addEventListener('click', async () => {
+  setPartVisibility(Parts.AUXILIARYBAR_PART, !isPartVisibile(Parts.AUXILIARYBAR_PART))
 })
