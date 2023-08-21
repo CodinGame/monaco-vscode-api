@@ -12,7 +12,7 @@ import { NotificationsAlerts } from 'vs/workbench/browser/parts/notifications/no
 import { NotificationsTelemetry } from 'vs/workbench/browser/parts/notifications/notificationsTelemetry'
 import { ILayoutService } from 'vs/platform/layout/browser/layoutService'
 import getLayoutServiceOverride from './layout'
-import { onRenderWorkbench } from '../services'
+import { onRenderWorkbench } from '../lifecycle'
 
 onRenderWorkbench(async (accessor) => {
   const container = accessor.get(ILayoutService).container

@@ -9,7 +9,7 @@ import { Registry } from 'vs/platform/registry/common/platform'
 import { ILifecycleService, LifecyclePhase } from 'vs/workbench/services/lifecycle/common/lifecycle'
 import { IInstantiationService } from 'vs/platform/instantiation/common/instantiation'
 import getFileServiceOverride from './files'
-import { registerServiceInitializeParticipant } from '../services'
+import { registerServiceInitializeParticipant } from '../lifecycle'
 import { registerAssets } from '../assets'
 
 const _onigWasm = new URL('vscode-oniguruma/release/onig.wasm', import.meta.url).href

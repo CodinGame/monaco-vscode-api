@@ -5,7 +5,7 @@ import { ISnippetsService } from 'vs/workbench/contrib/snippets/browser/snippets
 import { SnippetsService } from 'vs/workbench/contrib/snippets/browser/snippetsService'
 import { ILifecycleService, LifecyclePhase } from 'vs/workbench/services/lifecycle/common/lifecycle'
 import getFileServiceOverride from './files'
-import { registerServiceInitializeParticipant } from '../services'
+import { registerServiceInitializeParticipant } from '../lifecycle'
 import 'vs/workbench/contrib/snippets/browser/snippets.contribution'
 
 interface ISnippetsExtensionPoint {

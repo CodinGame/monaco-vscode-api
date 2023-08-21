@@ -35,7 +35,7 @@ import 'vs/workbench/api/common/configurationExtensionPoint'
 import { IBrowserWorkbenchEnvironmentService } from 'vs/workbench/services/environment/browser/environmentService'
 import getFileServiceOverride from './files'
 import { memoizedConstructor, unsupported } from '../tools'
-import { registerServiceInitializePreParticipant } from '../services'
+import { registerServiceInitializePreParticipant } from '../lifecycle'
 
 async function updateUserConfiguration (configurationJson: string): Promise<void> {
   const userDataProfilesService = StandaloneServices.get(IUserDataProfilesService)
