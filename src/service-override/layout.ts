@@ -9,7 +9,7 @@ import { SyncDescriptor } from 'vs/platform/instantiation/common/descriptors'
 import { Part } from 'vs/workbench/browser/part'
 import { isAncestorUsingFlowTo } from 'vs/base/browser/dom'
 import { IPaneCompositePartService } from 'vs/workbench/services/panecomposite/browser/panecomposite'
-import { ViewContainerLocation } from 'vs/workbench/common/views'
+import { IViewDescriptorService, ViewContainerLocation } from 'vs/workbench/common/views'
 import { isChrome, isFirefox, isLinux, isSafari, isWindows } from 'vs/base/common/platform'
 import { coalesce } from 'vs/base/common/arrays'
 import { ActivitybarPart } from 'vs/workbench/browser/parts/activitybar/activitybarPart'
@@ -24,6 +24,7 @@ export class LayoutService implements ILayoutService, IWorkbenchLayoutService {
   private paneCompositeService!: IPaneCompositePartService
   private editorGroupService!: IEditorGroupsService
   private statusBarService!: IStatusbarService
+  private viewDescriptorService!: IViewDescriptorService
 
   constructor (
     public container: HTMLElement
@@ -46,6 +47,7 @@ export class LayoutService implements ILayoutService, IWorkbenchLayoutService {
     this.editorGroupService = accessor.get(IEditorGroupsService)
     this.paneCompositeService = accessor.get(IPaneCompositePartService)
     this.statusBarService = accessor.get(IStatusbarService)
+    this.viewDescriptorService = accessor.get(IViewDescriptorService)
   }
 
   focusPart (part: Parts): void {
@@ -177,6 +179,20 @@ export class LayoutService implements ILayoutService, IWorkbenchLayoutService {
 
   private hiddenParts = new Set<Parts>()
 
+  private hasViews (id: string): boolean {
+    const viewContainer = this.viewDescriptorService.getViewContainerById(id)
+    if (viewContainer == null) {
+      return false
+    }
+
+    const viewContainerModel = this.viewDescriptorService.getViewContainerModel(viewContainer)
+    if (viewContainerModel == null) {
+      return false
+    }
+
+    return viewContainerModel.activeViewDescriptors.length >= 1
+  }
+
   setPartHidden (hidden: boolean, part: Exclude<Parts, Parts.STATUSBAR_PART | Parts.TITLEBAR_PART>): void {
     if (hidden) {
       this.hiddenParts.add(part)
@@ -192,13 +208,23 @@ export class LayoutService implements ILayoutService, IWorkbenchLayoutService {
     })[part]
 
     if (location != null) {
-      // This code comes from the vscode implementation of IWorkbenchLayoutService
       const paneComposite = this.paneCompositeService.getActivePaneComposite(location)
-      if (paneComposite != null) {
-        if (hidden) {
-          // vscode doesn't hide a pane composite if it's the last one from the part
-          // because at this moment, in vscode, the part is hidden
-          this.paneCompositeService.hideActivePaneComposite(location)
+      if (paneComposite != null && hidden) {
+        this.paneCompositeService.hideActivePaneComposite(location)
+      } else if (paneComposite == null && !hidden) {
+        // If panel part becomes visible, show last active panel or default panel
+        let panelToOpen: string | undefined = this.paneCompositeService.getLastActivePaneCompositeId(location)
+
+        // verify that the panel we try to open has views before we default to it
+        // otherwise fall back to any view that has views still refs #111463
+        if (panelToOpen == null || !this.hasViews(panelToOpen)) {
+          panelToOpen = this.viewDescriptorService
+            .getViewContainersByLocation(ViewContainerLocation.Panel)
+            .find(viewContainer => this.hasViews(viewContainer.id))?.id
+        }
+
+        if (panelToOpen != null) {
+          void this.paneCompositeService.openPaneComposite(panelToOpen, ViewContainerLocation.Panel, true)
         }
       }
 
@@ -209,12 +235,6 @@ export class LayoutService implements ILayoutService, IWorkbenchLayoutService {
         (this.paneCompositeService as any).getPartByLocation(location).setVisible(!hidden)
       }
     }
-
-    // vscode hide parts when they are empty, but we don't have any way to make it visible back
-    // so let's make it visible again right away
-    setTimeout(() => {
-      this.setPartHidden(false, part)
-    })
   }
 
   isVisible (part: Parts): boolean {
