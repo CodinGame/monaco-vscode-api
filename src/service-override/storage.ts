@@ -6,7 +6,11 @@ import { SyncDescriptor } from 'vs/platform/instantiation/common/descriptors'
 import { AbstractStorageService, IStorageService, StorageScope as VSStorageScope } from 'vs/platform/storage/common/storage'
 import { IUserDataProfile } from 'vs/platform/userDataProfile/common/userDataProfile'
 import { IAnyWorkspaceIdentifier } from 'vs/platform/workspace/common/workspace'
-import { registerServiceInitializePreParticipant } from '../services'
+import { BrowserStorageService } from 'vs/workbench/services/storage/browser/storageService'
+import { ILogService } from 'vs/platform/log/common/log'
+import { IUserDataProfileService } from 'vs/workbench/services/userDataProfile/common/userDataProfile'
+import { generateUuid } from 'vs/base/common/uuid'
+import { registerServiceInitializePreParticipant } from '../lifecycle'
 
 export enum StorageScope {
   APPLICATION = VSStorageScope.APPLICATION,
@@ -124,12 +128,31 @@ registerServiceInitializePreParticipant(async (accessor) => {
   await (accessor.get(IStorageService) as ExternalStorageService).initialize()
 })
 
-export default function getStorageServiceOverride (provider: IStorageProvider): IEditorOverrideServices {
-  return {
-    [IStorageService.toString()]: new SyncDescriptor(ExternalStorageService, [provider], true)
+class InjectedBrowserStorageService extends BrowserStorageService {
+  constructor (
+    @IUserDataProfileService userDataProfileService: IUserDataProfileService,
+    @ILogService logService: ILogService
+  ) {
+    super({
+      id: generateUuid()
+    }, userDataProfileService, logService)
+  }
+}
+
+export default function getStorageServiceOverride (provider?: IStorageProvider): IEditorOverrideServices {
+  if (provider != null) {
+    return {
+      [IStorageService.toString()]: new SyncDescriptor(ExternalStorageService, [provider], true)
+    }
+  } else {
+    return {
+      [IStorageService.toString()]: new SyncDescriptor(InjectedBrowserStorageService, [], true)
+    }
   }
 }
 
 export {
-  IStorageItemsChangeEvent
+  IStorageItemsChangeEvent,
+  ExternalStorageService,
+  InjectedBrowserStorageService
 }

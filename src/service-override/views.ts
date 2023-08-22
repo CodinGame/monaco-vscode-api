@@ -88,7 +88,7 @@ import { IWebviewWorkbenchService, WebviewEditorService } from 'vs/workbench/con
 import { IWebviewService } from 'vs/workbench/contrib/webview/browser/webview'
 import { IWebviewViewService, WebviewViewService } from 'vs/workbench/contrib/webviewView/browser/webviewViewService'
 import { ILifecycleService, LifecyclePhase } from 'vs/workbench/services/lifecycle/common/lifecycle'
-import { Parts, Position, positionToString } from 'vs/workbench/services/layout/browser/layoutService'
+import { IWorkbenchLayoutService, Parts, Position, positionToString } from 'vs/workbench/services/layout/browser/layoutService'
 import { EditorPaneDescriptor, IEditorPaneRegistry } from 'vs/workbench/browser/editor'
 import { EditorPane } from 'vs/workbench/browser/parts/editor/editorPane'
 import { ITelemetryService } from 'vs/platform/telemetry/common/telemetry'
@@ -102,7 +102,7 @@ import getLayoutServiceOverride, { LayoutService } from './layout'
 import getQuickAccessOverride from './quickaccess'
 import { changeUrlDomain } from './tools/url'
 import { registerAssets } from '../assets'
-import { registerServiceInitializePostParticipant } from '../services'
+import { registerServiceInitializePostParticipant } from '../lifecycle'
 
 function createPart (id: string, role: string, classes: string[]): HTMLElement {
   const part = document.createElement(role === 'status' ? 'footer' /* Use footer element for status bar #98376 */ : 'div')
@@ -145,7 +145,7 @@ function getPart (part: Parts): Part {
   return (StandaloneServices.get(ILayoutService) as LayoutService).getPart(part)
 }
 
-function attachPart (part: Part, container: HTMLElement) {
+function _attachPart (part: Part, container: HTMLElement) {
   container.append(part.getContainer()!)
   const observer = new ResizeObserver(() => layoutPart(part))
   observer.observe(container)
@@ -157,28 +157,44 @@ function attachPart (part: Part, container: HTMLElement) {
   }
 }
 
+function attachPart (part: Parts, container: HTMLElement): IDisposable {
+  return _attachPart(getPart(part), container)
+}
+
+function onPartVisibilityChange (part: Parts, listener: (visible: boolean) => void): IDisposable {
+  return getPart(part).onDidVisibilityChange(listener)
+}
+
+function isPartVisibile (part: Parts): boolean {
+  return StandaloneServices.get(IWorkbenchLayoutService).isVisible(part)
+}
+
+function setPartVisibility (part: Exclude<Parts, Parts.STATUSBAR_PART | Parts.TITLEBAR_PART>, visible: boolean): void {
+  StandaloneServices.get(IWorkbenchLayoutService).setPartHidden(!visible, part)
+}
+
 function renderActivitybarPar (container: HTMLElement): IDisposable {
-  return attachPart(getPart(Parts.ACTIVITYBAR_PART), container)
+  return attachPart(Parts.ACTIVITYBAR_PART, container)
 }
 
 function renderSidebarPart (container: HTMLElement): IDisposable {
-  return attachPart(getPart(Parts.SIDEBAR_PART), container)
+  return attachPart(Parts.SIDEBAR_PART, container)
 }
 
 function renderPanelPart (container: HTMLElement): IDisposable {
-  return attachPart(getPart(Parts.PANEL_PART), container)
+  return attachPart(Parts.PANEL_PART, container)
 }
 
 function renderAuxiliaryPart (container: HTMLElement): IDisposable {
-  return attachPart(getPart(Parts.AUXILIARYBAR_PART), container)
+  return attachPart(Parts.AUXILIARYBAR_PART, container)
 }
 
 function renderEditorPart (container: HTMLElement): IDisposable {
-  return attachPart(getPart(Parts.EDITOR_PART), container)
+  return attachPart(Parts.EDITOR_PART, container)
 }
 
 function renderStatusBarPart (container: HTMLElement): IDisposable {
-  return attachPart(getPart(Parts.STATUSBAR_PART), container)
+  return attachPart(Parts.STATUSBAR_PART, container)
 }
 
 type Label = string | {
@@ -582,6 +598,8 @@ export {
   IEditorCloseHandler,
   ConfirmResult,
   registerEditorPane,
+
+  renderPart,
   renderSidebarPart,
   renderActivitybarPar,
   renderAuxiliaryPart,
@@ -589,6 +607,10 @@ export {
   renderEditorPart,
   renderStatusBarPart,
   isEditorPartVisible,
+  attachPart,
+  onPartVisibilityChange,
+  isPartVisibile,
+  setPartVisibility,
 
   OpenEditor,
   IEditorOptions,
@@ -600,5 +622,6 @@ export {
   StatusbarPart,
   SidebarPart,
   ActivitybarPart,
-  PanelPart
+  PanelPart,
+  Parts
 }

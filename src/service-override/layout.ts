@@ -1,6 +1,6 @@
 import '../missing-services'
 import { IEditorOverrideServices, StandaloneServices } from 'vs/editor/standalone/browser/standaloneServices'
-import { IWorkbenchLayoutService, Parts, Position } from 'vs/workbench/services/layout/browser/layoutService'
+import { IWorkbenchLayoutService, PanelAlignment, Parts, Position } from 'vs/workbench/services/layout/browser/layoutService'
 import { ILayoutOffsetInfo, ILayoutService } from 'vs/platform/layout/browser/layoutService'
 import { Emitter, Event } from 'vs/base/common/event'
 import { ICodeEditorService } from 'vs/editor/browser/services/codeEditorService'
@@ -9,22 +9,132 @@ import { SyncDescriptor } from 'vs/platform/instantiation/common/descriptors'
 import { Part } from 'vs/workbench/browser/part'
 import { isAncestorUsingFlowTo } from 'vs/base/browser/dom'
 import { IPaneCompositePartService } from 'vs/workbench/services/panecomposite/browser/panecomposite'
-import { ViewContainerLocation } from 'vs/workbench/common/views'
+import { IViewDescriptorService, ViewContainerLocation } from 'vs/workbench/common/views'
 import { isChrome, isFirefox, isLinux, isSafari, isWindows } from 'vs/base/common/platform'
 import { coalesce } from 'vs/base/common/arrays'
+import { ActivitybarPart } from 'vs/workbench/browser/parts/activitybar/activitybarPart'
+import { IEditorGroupsService } from 'vs/workbench/services/editor/common/editorGroupsService'
+import { IStatusbarService } from 'vs/workbench/services/statusbar/browser/statusbar'
+import { ServicesAccessor } from 'vs/platform/instantiation/common/instantiation'
+import { onRenderWorkbench } from '../lifecycle'
 
-export class LayoutService implements ILayoutService, Pick<IWorkbenchLayoutService, 'isVisible' | 'onDidChangePartVisibility' | 'isRestored' | 'registerPart' | 'getSideBarPosition' | 'setPartHidden' | 'hasFocus' | 'getPanelPosition' | 'isPanelMaximized' | 'getMaximumEditorDimensions' | 'onDidChangeFullscreen'> {
+export class LayoutService implements ILayoutService, IWorkbenchLayoutService {
   declare readonly _serviceBrand: undefined
 
+  private paneCompositeService!: IPaneCompositePartService
+  private editorGroupService!: IEditorGroupsService
+  private statusBarService!: IStatusbarService
+  private viewDescriptorService!: IViewDescriptorService
+
   constructor (
-    public container: HTMLElement,
-    @IPaneCompositePartService private paneCompositeService: IPaneCompositePartService
+    public container: HTMLElement
   ) {
     window.addEventListener('resize', () => this.layout())
     this.layout()
   }
 
   onDidChangeFullscreen = Event.None
+  onDidChangeZenMode = Event.None
+  onDidChangeWindowMaximized = Event.None
+  onDidChangeCenteredLayout = Event.None
+  onDidChangePanelPosition = Event.None
+  onDidChangePanelAlignment = Event.None
+  onDidChangeNotificationsVisibility = Event.None
+  openedDefaultEditors = false
+  whenRestored = Promise.resolve()
+
+  public init (accessor: ServicesAccessor): void {
+    this.editorGroupService = accessor.get(IEditorGroupsService)
+    this.paneCompositeService = accessor.get(IPaneCompositePartService)
+    this.statusBarService = accessor.get(IStatusbarService)
+    this.viewDescriptorService = accessor.get(IViewDescriptorService)
+  }
+
+  focusPart (part: Parts): void {
+    switch (part) {
+      case Parts.EDITOR_PART:
+        this.editorGroupService.activeGroup.focus()
+        break
+      case Parts.PANEL_PART: {
+        const activePanel = this.paneCompositeService.getActivePaneComposite(ViewContainerLocation.Panel)
+        activePanel?.focus()
+        break
+      }
+      case Parts.SIDEBAR_PART: {
+        const activeViewlet = this.paneCompositeService.getActivePaneComposite(ViewContainerLocation.Sidebar)
+        activeViewlet?.focus()
+        break
+      }
+      case Parts.ACTIVITYBAR_PART:
+        (this.getPart(Parts.ACTIVITYBAR_PART) as ActivitybarPart).focus()
+        break
+      case Parts.STATUSBAR_PART:
+        this.statusBarService.focus()
+        break
+      default: {
+        // Title Bar & Banner simply pass focus to container
+        const container = this.getContainer(part)
+        container?.focus()
+      }
+    }
+  }
+
+  getDimension (part: Parts): dom.Dimension | undefined {
+    return this.getPart(part).dimension
+  }
+
+  toggleMaximizedPanel (): void {
+  }
+
+  hasWindowBorder (): boolean {
+    return false
+  }
+
+  getWindowBorderWidth (): number {
+    return 0
+  }
+
+  getWindowBorderRadius (): string | undefined {
+    return undefined
+  }
+
+  toggleMenuBar (): void {
+  }
+
+  setPanelPosition (): void {
+    // not supported
+  }
+
+  getPanelAlignment (): PanelAlignment {
+    return 'left'
+  }
+
+  setPanelAlignment (): void {
+  }
+
+  toggleZenMode (): void {
+  }
+
+  isEditorLayoutCentered (): boolean {
+    return false
+  }
+
+  centerEditorLayout (): void {
+  }
+
+  resizePart (): void {
+  }
+
+  isWindowMaximized (): boolean {
+    return false
+  }
+
+  updateWindowMaximizedState (): void {
+  }
+
+  getVisibleNeighborPart (): Parts | undefined {
+    return undefined
+  }
 
   getMaximumEditorDimensions (): dom.Dimension {
     return new dom.Dimension(Infinity, Infinity)
@@ -69,6 +179,20 @@ export class LayoutService implements ILayoutService, Pick<IWorkbenchLayoutServi
 
   private hiddenParts = new Set<Parts>()
 
+  private hasViews (id: string): boolean {
+    const viewContainer = this.viewDescriptorService.getViewContainerById(id)
+    if (viewContainer == null) {
+      return false
+    }
+
+    const viewContainerModel = this.viewDescriptorService.getViewContainerModel(viewContainer)
+    if (viewContainerModel == null) {
+      return false
+    }
+
+    return viewContainerModel.activeViewDescriptors.length >= 1
+  }
+
   setPartHidden (hidden: boolean, part: Exclude<Parts, Parts.STATUSBAR_PART | Parts.TITLEBAR_PART>): void {
     if (hidden) {
       this.hiddenParts.add(part)
@@ -84,13 +208,23 @@ export class LayoutService implements ILayoutService, Pick<IWorkbenchLayoutServi
     })[part]
 
     if (location != null) {
-      // This code comes from the vscode implementation of IWorkbenchLayoutService
       const paneComposite = this.paneCompositeService.getActivePaneComposite(location)
-      if (paneComposite != null) {
-        if (hidden) {
-          // vscode doesn't hide a pane composite if it's the last one from the part
-          // because at this moment, in vscode, the part is hidden
-          this.paneCompositeService.hideActivePaneComposite(location)
+      if (paneComposite != null && hidden) {
+        this.paneCompositeService.hideActivePaneComposite(location)
+      } else if (paneComposite == null && !hidden) {
+        // If panel part becomes visible, show last active panel or default panel
+        let panelToOpen: string | undefined = this.paneCompositeService.getLastActivePaneCompositeId(location)
+
+        // verify that the panel we try to open has views before we default to it
+        // otherwise fall back to any view that has views still refs #111463
+        if (panelToOpen == null || !this.hasViews(panelToOpen)) {
+          panelToOpen = this.viewDescriptorService
+            .getViewContainersByLocation(ViewContainerLocation.Panel)
+            .find(viewContainer => this.hasViews(viewContainer.id))?.id
+        }
+
+        if (panelToOpen != null) {
+          void this.paneCompositeService.openPaneComposite(panelToOpen, ViewContainerLocation.Panel, true)
         }
       }
 
@@ -101,12 +235,6 @@ export class LayoutService implements ILayoutService, Pick<IWorkbenchLayoutServi
         (this.paneCompositeService as any).getPartByLocation(location).setVisible(!hidden)
       }
     }
-
-    // vscode hide parts when they are empty, but we don't have any way to make it visible back
-    // so let's make it visible again right away
-    setTimeout(() => {
-      this.setPartHidden(false, part)
-    })
   }
 
   isVisible (part: Parts): boolean {
@@ -151,6 +279,13 @@ export class LayoutService implements ILayoutService, Pick<IWorkbenchLayoutServi
     StandaloneServices.get(ICodeEditorService).getFocusedCodeEditor()?.focus()
   }
 }
+
+onRenderWorkbench((accessor) => {
+  const layoutService = accessor.get(ILayoutService)
+  if (layoutService instanceof LayoutService) {
+    layoutService.init(accessor)
+  }
+})
 
 export default function getServiceOverride (container: HTMLElement = document.body): IEditorOverrideServices {
   const platformClass = isWindows ? 'windows' : isLinux ? 'linux' : 'mac'

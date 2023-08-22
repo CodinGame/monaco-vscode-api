@@ -3,37 +3,17 @@ import { IConfigurationChangeEvent } from 'vs/platform/configuration/common/conf
 import { ITextModelContentProvider } from 'vs/editor/common/services/resolverService'
 import { IColorTheme } from 'vs/platform/theme/common/themeService'
 import { StorageScope, StorageTarget } from 'vscode/vs/platform/storage/common/storage'
-import { Registry } from 'vs/platform/registry/common/platform'
-import { IWorkbenchContributionsRegistry, Extensions as WorkbenchExtensions } from 'vs/workbench/common/contributions'
 import { IEditorOverrideServices, StandaloneServices } from 'vs/editor/standalone/browser/standaloneServices'
-import { ILifecycleService, LifecyclePhase } from 'vs/workbench/services/lifecycle/common/lifecycle'
-import { IInstantiationService, ServiceIdentifier, ServicesAccessor } from 'vs/platform/instantiation/common/instantiation'
-import { Barrier, RunOnceScheduler, runWhenIdle } from 'vs/base/common/async'
-import { Emitter } from 'vs/base/common/event'
+import { ServiceIdentifier } from 'vs/platform/instantiation/common/instantiation'
 import { IAction } from 'vs/base/common/actions'
 import getLayoutServiceOverride from './service-override/layout'
 import getEnvironmentServiceOverride from './service-override/environment'
 import getExtensionsServiceOverride from './service-override/extensions'
 import getFileServiceOverride from './service-override/files'
 import getQuickAccessOverride from './service-override/quickaccess'
+import { serviceInitializedBarrier, startup } from './lifecycle'
 
-interface ServiceInitializeParticipant {
-  (accessor: ServicesAccessor): Promise<void>
-}
-const serviceInitializePreParticipants: ServiceInitializeParticipant[] = []
-const serviceInitializeParticipants: ServiceInitializeParticipant[] = []
-const serviceInitializePostParticipants: ServiceInitializeParticipant[] = []
-export function registerServiceInitializePreParticipant (participant: ServiceInitializeParticipant): void {
-  serviceInitializePreParticipants.push(participant)
-}
-export function registerServiceInitializeParticipant (participant: ServiceInitializeParticipant): void {
-  serviceInitializeParticipants.push(participant)
-}
-export function registerServiceInitializePostParticipant (participant: ServiceInitializeParticipant): void {
-  serviceInitializePostParticipants.push(participant)
-}
-
-async function initServices (overrides: IEditorOverrideServices): Promise<IInstantiationService> {
+export async function initialize (overrides: IEditorOverrideServices): Promise<void> {
   const instantiationService = StandaloneServices.initialize({
     ...getLayoutServiceOverride(), // Always override layout service to break cyclic dependency with ICodeEditorService
     ...getEnvironmentServiceOverride(),
@@ -43,58 +23,12 @@ async function initServices (overrides: IEditorOverrideServices): Promise<IInsta
     ...overrides
   })
 
-  await instantiationService.invokeFunction(async accessor => {
-    await Promise.all(serviceInitializePreParticipants.map(participant => participant(accessor)))
-  })
-
-  await instantiationService.invokeFunction(async accessor => {
-    const lifecycleService = accessor.get(ILifecycleService)
-
-    await Promise.all(serviceInitializeParticipants.map(participant => participant(accessor)))
-
-    // Signal to lifecycle that services are set
-    lifecycleService.phase = LifecyclePhase.Ready
-  })
-
-  await instantiationService.invokeFunction(async accessor => {
-    await Promise.all(serviceInitializePostParticipants.map(participant => participant(accessor)))
-  })
-
-  return instantiationService
+  await startup(instantiationService)
 }
-
-const renderWorkbenchEmitter = new Emitter<ServicesAccessor>()
-export const onRenderWorkbench = renderWorkbenchEmitter.event
-
-const serviceInitializedBarrier = new Barrier()
 
 export async function getService<T> (identifier: ServiceIdentifier<T>): Promise<T> {
   await serviceInitializedBarrier.wait()
   return StandaloneServices.get(identifier)
-}
-
-export async function initialize (overrides: IEditorOverrideServices): Promise<void> {
-  const instantiationService = await initServices(overrides)
-
-  serviceInitializedBarrier.open()
-
-  instantiationService.invokeFunction(accessor => {
-    const lifecycleService = accessor.get(ILifecycleService)
-
-    Registry.as<IWorkbenchContributionsRegistry>(WorkbenchExtensions.Workbench).start(accessor)
-
-    renderWorkbenchEmitter.fire(accessor)
-
-    lifecycleService.phase = LifecyclePhase.Restored
-
-    // Set lifecycle phase to `Eventually` after a short delay and when idle (min 2.5sec, max 5sec)
-    const eventuallyPhaseScheduler = new RunOnceScheduler(() => {
-      runWhenIdle(() => {
-        lifecycleService.phase = LifecyclePhase.Eventually
-      }, 2500)
-    }, 2500)
-    eventuallyPhaseScheduler.schedule()
-  })
 }
 
 export { SyncDescriptor } from 'vs/platform/instantiation/common/descriptors'

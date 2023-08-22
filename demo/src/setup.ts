@@ -1,4 +1,4 @@
-import { ILogService, LogLevel, StandaloneServices, initialize as initializeMonacoService } from 'vscode/services'
+import { ILogService, IStorageService, LogLevel, StandaloneServices, getService, initialize as initializeMonacoService } from 'vscode/services'
 import { initialize as initializeVscodeExtensions } from 'vscode/extensions'
 import getModelServiceOverride from 'vscode/service-override/model'
 import getNotificationServiceOverride from 'vscode/service-override/notifications'
@@ -9,7 +9,13 @@ import getTextmateServiceOverride from 'vscode/service-override/textmate'
 import getThemeServiceOverride from 'vscode/service-override/theme'
 import getLanguagesServiceOverride from 'vscode/service-override/languages'
 import getAudioCueServiceOverride from 'vscode/service-override/audioCue'
-import getViewsServiceOverride, { isEditorPartVisible, renderSidebarPart, renderActivitybarPar, renderEditorPart, renderPanelPart, renderStatusBarPart } from 'vscode/service-override/views'
+import getViewsServiceOverride, {
+  isEditorPartVisible,
+  Parts,
+  onPartVisibilityChange,
+  isPartVisibile,
+  attachPart
+} from 'vscode/service-override/views'
 import getDebugServiceOverride from 'vscode/service-override/debug'
 import getPreferencesServiceOverride from 'vscode/service-override/preferences'
 import getSnippetServiceOverride from 'vscode/service-override/snippets'
@@ -20,7 +26,7 @@ import getSearchServiceOverride from 'vscode/service-override/search'
 import getMarkersServiceOverride from 'vscode/service-override/markers'
 import getAccessibilityServiceOverride from 'vscode/service-override/accessibility'
 import getLanguageDetectionWorkerServiceOverride from 'vscode/service-override/languageDetectionWorker'
-import getStorageServiceOverride, { IStorageItemsChangeEvent, StorageScope } from 'vscode/service-override/storage'
+import getStorageServiceOverride, { BrowserStorageService } from 'vscode/service-override/storage'
 import getExtensionServiceOverride from 'vscode/service-override/extensions'
 import EditorWorker from 'monaco-editor/esm/vs/editor/editor.worker.js?worker'
 import TextMateWorker from 'vscode/workers/textMate.worker?worker'
@@ -50,8 +56,6 @@ window.MonacoEnvironment = {
   }
 }
 
-const onStorageChange = new monaco.Emitter<IStorageItemsChangeEvent>()
-
 // Override services
 await initializeMonacoService({
   ...getExtensionServiceOverride(toWorkerConfig(ExtensionHostWorker)),
@@ -78,33 +82,32 @@ await initializeMonacoService({
   ...getMarkersServiceOverride(),
   ...getAccessibilityServiceOverride(),
   ...getLanguageDetectionWorkerServiceOverride(),
-  ...getStorageServiceOverride({
-    read (scope) {
-      return new Map(Object.entries(JSON.parse(localStorage.getItem(`storage-${scope}`) ?? '{}')))
-    },
-    async write (scope, data) {
-      localStorage.setItem(`storage-${scope}`, JSON.stringify(Object.fromEntries(data.entries())))
-    },
-    onDidChange: onStorageChange.event
-  })
+  ...getStorageServiceOverride()
 })
 StandaloneServices.get(ILogService).setLevel(LogLevel.Off)
 
-export function clearStorage (): void {
-  const allKeys = new Set([StorageScope.APPLICATION, StorageScope.PROFILE, StorageScope.WORKSPACE].flatMap(scope => Object.keys(JSON.parse(localStorage.getItem(`storage-${scope}`) ?? '{}'))))
-  localStorage.removeItem(`storage-${StorageScope.APPLICATION}`)
-  localStorage.removeItem(`storage-${StorageScope.PROFILE}`)
-  localStorage.removeItem(`storage-${StorageScope.WORKSPACE}`)
-  onStorageChange.fire({
-    deleted: allKeys,
-    changed: new Map()
-  })
+export async function clearStorage (): Promise<void> {
+  await (await getService(IStorageService) as BrowserStorageService).clear()
 }
 
 await initializeVscodeExtensions()
 
-renderSidebarPart(document.querySelector<HTMLDivElement>('#sidebar')!)
-renderActivitybarPar(document.querySelector<HTMLDivElement>('#activityBar')!)
-renderPanelPart(document.querySelector<HTMLDivElement>('#panel')!)
-renderEditorPart(document.querySelector<HTMLDivElement>('#editors')!)
-renderStatusBarPart(document.querySelector<HTMLDivElement>('#statusBar')!)
+for (const { part, element } of [
+  { part: Parts.SIDEBAR_PART, element: '#sidebar' },
+  { part: Parts.ACTIVITYBAR_PART, element: '#activityBar' },
+  { part: Parts.PANEL_PART, element: '#panel' },
+  { part: Parts.EDITOR_PART, element: '#editors' },
+  { part: Parts.STATUSBAR_PART, element: '#statusBar' },
+  { part: Parts.AUXILIARYBAR_PART, element: '#auxiliaryBar' }
+]) {
+  const el = document.querySelector<HTMLDivElement>(element)!
+  attachPart(part, el)
+
+  if (!isPartVisibile(part)) {
+    el.style.display = 'none'
+  }
+
+  onPartVisibilityChange(part, visible => {
+    el.style.display = visible ? 'block' : 'none'
+  })
+}
