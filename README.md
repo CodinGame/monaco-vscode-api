@@ -123,25 +123,29 @@ await initialize({
 Additionally, this library exposes 23 modules that include the vscode version of some services (with some glue to make it work with monaco):
 
 - **Extensions** (included by default): `vscode/service-override/extensions`
-  - Support for VSCode extensions.
+  - Support for VSCode extensions. A worker configuration can be past to it:
+    - Then, everything runs in one worker, where extensions run in an iframe, with all the implications (can be created by the bundler directly). The worker script is expected to be hosted on a separate domain.
 - **Files** (included by default): `vscode/service-override/files`
-  - It adds the memory filesystem for `file://` files, but also adds the support for lazy loaded extension files, separate memory user files (e.g. config, keybindings), cache, logs, etc.
+  - It adds the memory filesystem for `file://` files, but also adds the support for lazy loaded extension files. It adds separate memory user files (e.g. config, keybindings), cache files and log files.
 - **QuickAccess** (included by default): `vscode/service-override/quickaccess`
-  - Enables the quickaccess menu in the editor
+  - Enables the quickaccess menu in the editor (press F1)
 - **Notifications**: `vscode/service-override/notifications`
-  - This services enables vscode notifications (in the bottom right corner)
+  - This services enables vscode notifications you usually find in the bottom right corner.
 - **Dialogs**: `vscode/service-override/dialogs`
-  - Enable vscode modal dialogs. They allow users to select an action to perform which are exposed to the vscode API. Additionally, this can be used by the language client to ask questions to the user?
+  - Enable vscode modal dialogs. It allows users to select actions to perform and exposed them the vscode API. Additionally, this service can be used by the language client to delegate questions to the user.
 - **Model**: `vscode/service-override/model`
-  - This service creates and takes care of model references (e.g. create model if unknown, count references and destroy model when not used anymore)
+  - This service creates and takes care of model references. For example:
+    - Create model if content is unknown
+    - Count references
+    - Destroy models when they are no lonbger used
 - **Editor**: `vscode/service-override/editor`
-  - Enable editor support. This is usually not needed when working without LSP. Without enabling the editor service, it will only be able to resolve the currently open model, so only internal file links will work.
+  - Enable editor support. This is usually needed when working with the language server protocol. Without enabling the editor service, it will only be able to resolve the currently open model (only internal file links will work).
 - **Views**: `vscode/service-override/views`
-  - Enable full views support. Is exclusive with `editor`, do not use both at the same time.
+  - Enable full views support. Is exclusive with the `editor` service. Do not use both services at the same time.
 - **Configuration**: `vscode/service-override/configuration`
   - Allows to change the configuration of not only the editors, but every part of vscode. The language client for instance uses it to send the requested configuration to the server. The default configuration service already allows to change the configuration. This service overrides makes it rely on a user configuration file (with json schema, overridable by language including all vscode features).
 - **Keybindings**: `vscode/service-override/keybindings`
-  - Enables platform specific keybindings and make it rely on a user definded keybindings configuration (if available)
+  - Enables platform specific keybindings and make it rely on a user definded keybindings configuration (if available).
 - **Languages**: `vscode/service-override/languages`
   - Enable language support. It's like the standalone service with 2 differences:
     - It handle the language extension point (getting languages from vscode extensions)
