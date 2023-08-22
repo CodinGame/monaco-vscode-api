@@ -154,5 +154,5 @@ export default function getStorageServiceOverride (provider?: IStorageProvider):
 export {
   IStorageItemsChangeEvent,
   ExternalStorageService,
-  InjectedBrowserStorageService
+  InjectedBrowserStorageService as BrowserStorageService
 }
