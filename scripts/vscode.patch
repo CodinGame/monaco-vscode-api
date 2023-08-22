@@ -69,7 +69,7 @@ index 775a1be5996..ce8435bd920 100644
  				if (!/(^\.\/)|(^\.\.\/)/.test(relativePath)) {
  					relativePath = './' + relativePath;
 diff --git a/extensions/typescript-language-features/web/webServer.ts b/extensions/typescript-language-features/web/webServer.ts
-index 1688a93fcc0..fec4cd1baa1 100644
+index 1688a93fcc0..fb57c8db79e 100644
 --- a/extensions/typescript-language-features/web/webServer.ts
 +++ b/extensions/typescript-language-features/web/webServer.ts
 @@ -44,7 +44,7 @@ function fromResource(extensionUri: URI, uri: URI) {
@@ -86,7 +86,7 @@ index 1688a93fcc0..fec4cd1baa1 100644
  			const scriptPath = combinePaths(packageRoot, browser);
  			try {
 -				const { default: module } = await import(/* webpackIgnore: true */scriptPath);
-+				const { default: module } = await import(/* webpackIgnore: true */ '' + scriptPath + '');
++				const { default: module } = await new Function('url', 'return importExt(url)')(scriptPath);
  				return { module, error: undefined };
  			} catch (e) {
  				return { module: undefined, error: e };
@@ -543,7 +543,7 @@ index b83a462131d..5555f431ba0 100644
  		performance.mark('code/extHost/didInitAPI');
  
 diff --git a/src/vs/workbench/api/worker/extensionHostWorker.ts b/src/vs/workbench/api/worker/extensionHostWorker.ts
-index 6e6f8845da5..89cab1e16da 100644
+index 6e6f8845da5..48462781c2a 100644
 --- a/src/vs/workbench/api/worker/extensionHostWorker.ts
 +++ b/src/vs/workbench/api/worker/extensionHostWorker.ts
 @@ -15,7 +15,6 @@ import * as performance from 'vs/base/common/performance';
@@ -554,7 +554,15 @@ index 6e6f8845da5..89cab1e16da 100644
  import { URI } from 'vs/base/common/uri';
  
  //#region --- Define, capture, and override some globals
-@@ -47,7 +46,7 @@ function shouldTransformUri(uri: string): boolean {
+@@ -35,6 +34,7 @@ declare namespace self {
+ 	let importScripts: any;
+ 	let fetch: _Fetch;
+ 	let XMLHttpRequest: any;
++	let importExt: any;
+ }
+ 
+ const nativeClose = self.close.bind(self);
+@@ -47,7 +47,7 @@ function shouldTransformUri(uri: string): boolean {
  	// In principle, we could convert any URI, but we have concerns
  	// that parsing https URIs might end up decoding escape characters
  	// and result in an unintended transformation
@@ -563,7 +571,7 @@ index 6e6f8845da5..89cab1e16da 100644
  }
  
  const nativeFetch = fetch.bind(self);
-@@ -89,66 +88,167 @@ self.addEventListener = () => console.trace(`'addEventListener' has been blocked
+@@ -89,66 +89,171 @@ self.addEventListener = () => console.trace(`'addEventListener' has been blocked
  (<any>self)['webkitResolveLocalFileSystemSyncURL'] = undefined;
  (<any>self)['webkitResolveLocalFileSystemURL'] = undefined;
  
@@ -650,6 +658,10 @@ index 6e6f8845da5..89cab1e16da 100644
 +						nativeImportScripts(...urls.map(asWorkerBrowserUrl));
 +					};
 +
++					self.importExt = (url: string) => {
++						// prevent bundler from trying to transform dynamic import
++						return new Function('url', 'return import(url)')(asWorkerBrowserUrl(url));
++					};
 +
 +					nativeImportScripts(workerUrl);
 +				}).toString();
@@ -785,7 +797,7 @@ index 6e6f8845da5..89cab1e16da 100644
  }
  
  //#endregion ---
-@@ -255,6 +355,7 @@ export function create(): { onmessage: (message: any) => void } {
+@@ -255,6 +360,7 @@ export function create(): { onmessage: (message: any) => void } {
  				);
  
  				patchFetching(uri => extHostMain.asBrowserUri(uri));
