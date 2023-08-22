@@ -122,55 +122,61 @@ await initialize({
 
 Additionally, this library exposes 23 modules that include the vscode version of some services (with some glue to make it work with monaco):
 
-- Extensions (included by default): `vscode/service-override/extensions`
-  - Support for VSCode extensions
-- Files (included by default): `vscode/service-override/files`
-  - File system support
-- QuickAccess (included by default): `vscode/service-override/quickaccess`
+- **Extensions** (included by default): `vscode/service-override/extensions`
+  - Support for VSCode extensions.
+- **Files** (included by default): `vscode/service-override/files`
+  - It adds the memory filesystem for `file://` files, but also adds the support for lazy loaded extension files, separate memory user files (e.g. config, keybindings), cache, logs, etc.
+- **QuickAccess** (included by default): `vscode/service-override/quickaccess`
   - Enables the quickaccess menu in the editor
-- Notifications: `vscode/service-override/notifications`
-  - Enables sending and reciving notifications
-- Dialogs: `vscode/service-override/dialogs`
-  - ?
-- Model: `vscode/service-override/model`
-  - Handle text models
-- Editor: `vscode/service-override/editor`
-  - Enable editor support. TODO: Why is not enabled by default?
-- Views: `vscode/service-override/views`
+- **Notifications**: `vscode/service-override/notifications`
+  - This services enables vscode notifications (in the bottom right corner)
+- **Dialogs**: `vscode/service-override/dialogs`
+  - Enable vscode modal dialogs. They allow users to select an action to perform which are exposed to the vscode API. Additionally, this can be used by the language client to ask questions to the user?
+- **Model**: `vscode/service-override/model`
+  - This service creates and takes care of model references (e.g. create model if unknown, count references and destroy model when not used anymore)
+- **Editor**: `vscode/service-override/editor`
+  - Enable editor support. This is usually not needed when working without LSP. Without enabling the editor service, it will only be able to resolve the currently open model, so only internal file links will work.
+- **Views**: `vscode/service-override/views`
   - Enable full views support. Is exclusive with `editor`, do not use both at the same time.
-- Configuration: `vscode/service-override/configuration`
-  - Alllows to change the configuration of the editor during runtime 
-- Keybindings: `vscode/service-override/keybindings`
-  - Enables platform specific keybindings
-- Languages: `vscode/service-override/languages`
-  - Enable language support.
-- Textmate: `vscode/service-override/textmate`
-  - Allows to use textmate grammars. Depends on theme service.
-- Snippets: `vscode/service-override/snippets`
-  - ?
-- VSCode themes: `vscode/service-override/theme`
+- **Configuration**: `vscode/service-override/configuration`
+  - Allows to change the configuration of not only the editors, but every part of vscode. The language client for instance uses it to send the requested configuration to the server. The default configuration service already allows to change the configuration. This service overrides makes it rely on a user configuration file (with json schema, overridable by language including all vscode features).
+- **Keybindings**: `vscode/service-override/keybindings`
+  - Enables platform specific keybindings and make it rely on a user definded keybindings configuration (if available)
+- **Languages**: `vscode/service-override/languages`
+  - Enable language support. It's like the standalone service with 2 differences:
+    - It handle the language extension point (getting languages from vscode extensions)
+    - It triggers the `onLanguage:${language}` event (to load vscode extension listening to those events)
+- **Textmate**: `vscode/service-override/textmate`
+  - Allows to use textmate grammars. Depends on *themes* service. vscode extensions use textmate grammars exclusively for highlighting. Once this is enabled monarch grammars can no longer be loaded by monaco-editor.
+- **Themes**: `vscode/service-override/theme`
   - Allows to use VSCode themes.
-- Audio cue: `vscode/service-override/audioCue`
+- **Snippets**: `vscode/service-override/snippets`
+  - Add snippet extension point (register vscode extension snippets)
+- **Audio cue**: `vscode/service-override/audioCue`
   - If enabled the editor may provides audible hints
-- Debug: `vscode/service-override/debug`
+- **Debug**: `vscode/service-override/debug`
   - Activate debugging support
-- Preferences: `vscode/service-override/preferences`
+- **Preferences**: `vscode/service-override/preferences`
   - Allow to read and write preferences
-- Output: `vscode/service-override/output`
-  - Output panel support
-- Terminal: `vscode/service-override/terminal`
-  - Terminal panel support
-- Search: `vscode/service-override/search`
-  - search panel support
-- Markers: `vscode/service-override/markers`
-- Language detection worker: `vscode/service-override/languageDetectionWorker`
-  - ?
-- Storage: `vscode/service-override/storage`
-  - Define your own storage
+- **Output**: `vscode/service-override/output`
+  - Output panel support. *Hint*: It only makes sense to enable it when *Views* service is used.
+- **Terminal**: `vscode/service-override/terminal`
+  - Terminal panel support. *Hint*: It only makes sense to enable it when *Views* service is used.
+- **Search**: `vscode/service-override/search`
+  - search panel support. *Hint*: It only makes sense to enable it when *Views* service is used.
+- **Markers**: `vscode/service-override/markers`
+  - It adds the problems panel tab. *Hint*: It only makes sense to enable it when *Views* service is used.
+- **Language detection worker**: `vscode/service-override/languageDetectionWorker`
+  - When opening an untitled model or a file without extension or if vscode is unable to guess the language simply by the file extension or by reading the first line. Then it will use tensorflow in a worker to try to guess the most probable language (here we are only able to rely on the open source model).
+- **Storage**: `vscode/service-override/storage`
+  - Define your own storage or use the default BrowserStorageService. The storage service is used in many places either as a cache or as a user preference store. For instance:
+    - Current loaded theme is stored in there to be loaded faster on start.
+    - Every panel/view positions are stored in there.
 
 Usage:
 
 ```typescript
+import * as vscode from 'vscode'
 import { initialize } from 'vscode/services'
 import getEditorServiceOverride from 'vscode/service-override/editor'
 import getConfigurationServiceOverride, { updateUserConfiguration, configurationRegistry } from 'vscode/service-override/configuration'
@@ -180,7 +186,7 @@ await initialize({
     // Open a new editor here and return it
     // It will be called when for instance the user ctrl+click on an import
   }),
-  ...getConfigurationServiceOverride(monaco.Uri.file('/tmp/'))
+  ...getConfigurationServiceOverride(vscode.Uri.file('/tmp/'))
 })
 
 updateUserConfiguration(`{
