@@ -128,16 +128,16 @@ Additionally, this library exposes 23 modules that include the vscode version of
 - **Files** (included by default): `vscode/service-override/files`
   - It adds the memory filesystem for `file://` files, but also adds the support for lazy loaded extension files. It adds separate memory user files (e.g. config, keybindings), cache files and log files.
 - **QuickAccess** (included by default): `vscode/service-override/quickaccess`
-  - Enables the quickaccess menu in the editor (press F1)
+  - Enables the quickaccess menu in the editor (press F1 or ctrl+shift+p)
 - **Notifications**: `vscode/service-override/notifications`
   - This services enables vscode notifications you usually find in the bottom right corner.
 - **Dialogs**: `vscode/service-override/dialogs`
-  - Enable vscode modal dialogs. It allows users to select actions to perform and exposed them the vscode API. Additionally, this service can be used by the language client to delegate questions to the user.
+  - Enable vscode modal dialogs. It allows users to select an action to do. Those actions are exposed to the vscode API. Additionally, this service can be used by the language client to delegate questions to the user.
 - **Model**: `vscode/service-override/model`
   - This service creates and takes care of model references. For example:
     - Create model if content is unknown
     - Count references
-    - Destroy models when they are no lonbger used
+    - Destroy models when they are no longer used
 - **Editor**: `vscode/service-override/editor`
   - Enable editor support. This is usually needed when working with the language server protocol. Without enabling the editor service, it will only be able to resolve the currently open model (only internal file links will work).
 - **Views**: `vscode/service-override/views`
