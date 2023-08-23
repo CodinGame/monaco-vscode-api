@@ -11,7 +11,7 @@ import type { create as createEditor, createDiffEditor } from 'vs/editor/standal
 import { errorHandler } from 'vs/base/common/errors'
 import { FoldingModel, setCollapseStateForMatchingLines } from 'vs/editor/contrib/folding/browser/foldingModel'
 import { FoldingController } from 'vs/editor/contrib/folding/browser/folding'
-import { DisposableStore, IReference } from 'vs/base/common/lifecycle'
+import { DisposableStore, IDisposable, IReference } from 'vs/base/common/lifecycle'
 import { Registry } from 'vs/platform/registry/common/platform'
 import { IJSONContributionRegistry, Extensions as JsonExtensions } from 'vs/platform/jsonschemas/common/jsonContributionRegistry'
 import { CommandsRegistry, ICommandService } from 'vs/platform/commands/common/commands'
@@ -39,7 +39,7 @@ import { ILogService } from 'vs/platform/log/common/log'
 import { ICodeEditorService } from 'vs/editor/browser/services/codeEditorService'
 import { IKeybindingService } from 'vs/platform/keybinding/common/keybinding'
 import { KeybindingResolver } from 'vs/platform/keybinding/common/keybindingResolver'
-import { WorkbenchKeybindingService } from 'vs/workbench/services/keybinding/browser/keybindingService'
+import { ResolvedKeybindingItem } from 'vs/platform/keybinding/common/resolvedKeybindingItem'
 import { createInjectedClass } from './tools/injection'
 // Selectively comes from vs/workbench/contrib/codeEditor/browser/codeEditor.contribution.ts
 import 'vs/workbench/contrib/codeEditor/browser/workbenchReferenceSearch'
@@ -178,13 +178,21 @@ export async function createModelReference (resource: URI, content?: string): Pr
   return (await StandaloneServices.get(ITextModelService).createModelReference(resource)) as IReference<ITextFileEditorModel>
 }
 
+export interface DynamicKeybindingService extends IKeybindingService {
+  registerKeybindingProvider (provider: () => ResolvedKeybindingItem[]): IDisposable
+  _getResolver(): KeybindingResolver
+}
+
+function isDynamicKeybindingService (keybindingService: IKeybindingService) {
+  // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
+  return (keybindingService as DynamicKeybindingService).registerKeybindingProvider != null
+}
+
 // This class use useful so editor.addAction and editor.addCommand still work
 // Monaco do an `instanceof` on the KeybindingService so we need it to extends `StandaloneKeybindingService`
 class DelegateStandaloneKeybindingService extends StandaloneKeybindingService {
-  private _cachedOverridenResolver: KeybindingResolver | null
-
   constructor (
-    private delegate: WorkbenchKeybindingService,
+    private delegate: DynamicKeybindingService,
     @IContextKeyService contextKeyService: IContextKeyService,
     @ICommandService commandService: ICommandService,
     @ITelemetryService telemetryService: ITelemetryService,
@@ -193,29 +201,12 @@ class DelegateStandaloneKeybindingService extends StandaloneKeybindingService {
     @ICodeEditorService codeEditorService: ICodeEditorService
   ) {
     super(contextKeyService, commandService, telemetryService, notificationService, logService, codeEditorService)
-    this._cachedOverridenResolver = null
 
-    this.onDidUpdateKeybindings(() => {
-      this._cachedOverridenResolver = null
-    })
-    this.delegate.onDidUpdateKeybindings(() => {
-      this._cachedOverridenResolver = null
-    })
+    this._register(delegate.registerKeybindingProvider(() => this.getUserKeybindingItems()))
   }
 
   protected override _getResolver (): KeybindingResolver {
-    // Create a new resolver that uses the keybindings from WorkbenchKeybindingService, overriden by _dynamicKeybindings from StandaloneKeybindingService
-    if (this._cachedOverridenResolver == null) {
-      // eslint-disable-next-line dot-notation
-      const overrides = this['_toNormalizedKeybindingItems'](this['_dynamicKeybindings'], false)
-      this._cachedOverridenResolver = new KeybindingResolver(
-        // eslint-disable-next-line dot-notation
-        [...this.delegate['_getResolver']().getKeybindings()],
-        overrides
-        , (str) => this._log(str)
-      )
-    }
-    return this._cachedOverridenResolver
+    return this.delegate._getResolver()
   }
 }
 
@@ -225,7 +216,7 @@ function getStandaloneEditorInstantiationService () {
     const serviceCollection = new ServiceCollection()
     serviceCollection.set(IQuickInputService, new SyncDescriptor(StandaloneQuickInputService, undefined, true))
     const keybindingService = StandaloneServices.get(IKeybindingService)
-    if (keybindingService instanceof WorkbenchKeybindingService) {
+    if (!(keybindingService instanceof StandaloneKeybindingService) && isDynamicKeybindingService(keybindingService)) {
       serviceCollection.set(IKeybindingService, new SyncDescriptor(DelegateStandaloneKeybindingService, [keybindingService], true))
     }
     standaloneEditorInstantiationService = StandaloneServices.get(IInstantiationService).createChild(serviceCollection)
