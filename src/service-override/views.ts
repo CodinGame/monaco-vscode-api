@@ -447,9 +447,24 @@ class EditorDropService implements IEditorDropService {
   }
 }
 
+function isElementVisible (el: HTMLElement) {
+  if (!el.isConnected) {
+    return false
+  }
+  // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
+  if (el.checkVisibility != null) {
+    // not defined in Safari
+    return el.checkVisibility({
+      checkOpacity: true,
+      checkVisibilityCSS: true
+    })
+  }
+  return el.offsetHeight > 0 && el.offsetWidth > 0
+}
+
 function isEditorPartVisible (): boolean {
-  const editorPart = StandaloneServices.get(IEditorGroupsService) as EditorPart
-  return editorPart.getContainer()?.isConnected ?? false
+  const container = (StandaloneServices.get(IEditorGroupsService) as EditorPart).getContainer()
+  return container != null && isElementVisible(container)
 }
 
 class MonacoEditorService extends EditorService {
