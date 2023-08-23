@@ -96,6 +96,7 @@ import { IStorageService } from 'vs/platform/storage/common/storage'
 import { IThemeService } from 'vs/platform/theme/common/themeService'
 import { ConfirmResult } from 'vs/platform/dialogs/common/dialogs'
 import { ILayoutService } from 'vs/platform/layout/browser/layoutService'
+import { StandaloneCodeEditor } from 'vs/editor/standalone/browser/standaloneCodeEditor'
 import { OpenEditor, wrapOpenEditor } from './tools/editor'
 import getBulkEditServiceOverride from './bulkEdit'
 import getLayoutServiceOverride, { LayoutService } from './layout'
@@ -501,7 +502,12 @@ class MonacoEditorService extends EditorService {
   override get activeTextEditorControl () {
     // By default, only the editor inside the EditorPart can be "active" here, hack it so the active editor is now the focused editor if it exists
     // It is required for the editor.addAction to be able to add an entry in the editor action menu
-    return super.activeTextEditorControl ?? StandaloneServices.get(ICodeEditorService).getFocusedCodeEditor() ?? undefined
+    const focusedCodeEditor = StandaloneServices.get(ICodeEditorService).getFocusedCodeEditor()
+    if (focusedCodeEditor != null && focusedCodeEditor instanceof StandaloneCodeEditor) {
+      return focusedCodeEditor
+    }
+
+    return super.activeTextEditorControl
   }
 
   // Override openEditor to fallback on user function is the EditorPart is not visible
