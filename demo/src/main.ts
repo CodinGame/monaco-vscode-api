@@ -3,7 +3,7 @@ import * as monaco from 'monaco-editor'
 import { createConfiguredEditor, createModelReference } from 'vscode/monaco'
 import { registerFileSystemOverlay, HTMLFileSystemProvider } from 'vscode/service-override/files'
 import * as vscode from 'vscode'
-import { ILogService, StandaloneServices, IPreferencesService, IEditorService, IDialogService } from 'vscode/services'
+import { ILogService, StandaloneServices, IPreferencesService, IEditorService, IDialogService, getService } from 'vscode/services'
 import { ConfirmResult, Parts, isPartVisibile, setPartVisibility } from 'vscode/service-override/views'
 import { clearStorage } from './setup'
 import { CustomEditorInput } from './features/customView'
@@ -114,9 +114,21 @@ const settingsModelReference = await createModelReference(monaco.Uri.from({ sche
   "terminal.integrated.tabs.title": "\${sequence}",
   "typescript.tsserver.log": "normal"
 }`)
-createConfiguredEditor(document.getElementById('settings-editor')!, {
+const settingEditor = createConfiguredEditor(document.getElementById('settings-editor')!, {
   model: settingsModelReference.object.textEditorModel,
   automaticLayout: true
+})
+
+settingEditor.addAction({
+  id: 'custom-action',
+  async run () {
+    void (await getService(IDialogService)).info('Custom action executed!')
+  },
+  label: 'Custom action visible in the command palette',
+  keybindings: [
+    monaco.KeyMod.CtrlCmd | monaco.KeyCode.KeyK
+  ],
+  contextMenuGroupId: 'custom'
 })
 
 const keybindingsModelReference = await createModelReference(monaco.Uri.from({ scheme: 'user', path: '/keybindings.json' }), `[
