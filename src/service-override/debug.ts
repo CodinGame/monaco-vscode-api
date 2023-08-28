@@ -3,7 +3,7 @@ import { IEditorOverrideServices } from 'vs/editor/standalone/browser/standalone
 import { SyncDescriptor } from 'vs/platform/instantiation/common/descriptors'
 import { IDebugService } from 'vs/workbench/contrib/debug/common/debug'
 import { DebugService } from 'vs/workbench/contrib/debug/browser/debugService'
-import { LanguageFeaturesService } from 'vscode/vs/editor/common/services/languageFeaturesService'
+import { LanguageFeaturesService } from 'vscode/src/vs/editor/common/services/languageFeaturesService'
 import { ILanguageFeaturesService } from 'vs/editor/common/services/languageFeatures'
 import { ConfigurationResolverService } from 'vs/workbench/services/configurationResolver/browser/configurationResolverService'
 import { IConfigurationResolverService } from 'vs/workbench/services/configurationResolver/common/configurationResolver'

@@ -28,7 +28,7 @@ const config: rollup.RollupOptions = {
     commonjs(),
     nodeResolve({
       extensions: EXTENSIONS,
-      modulePaths: ['vscode/'],
+      modulePaths: ['vscode/src/'],
       browser: false,
       preferBuiltins: true
     }),

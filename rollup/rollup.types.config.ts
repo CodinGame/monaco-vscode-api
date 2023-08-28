@@ -15,6 +15,7 @@ const project = new tsMorph.Project({
 })
 
 const VSCODE_DIR = path.join(__dirname, '../vscode')
+const VSCODE_SRC_DIR = path.join(VSCODE_DIR, 'src')
 const DIST_DIR = path.join(__dirname, '../dist')
 
 const interfaceOverride = new Map<string, string>()
@@ -114,11 +115,11 @@ export default rollup.defineConfig({
         if (importee.startsWith('vscode/')) {
           return path.resolve(VSCODE_DIR, path.relative('vscode', `${importee}.d.ts`))
         }
-        if (!importee.startsWith('vs/') && importer != null && importer.startsWith(VSCODE_DIR)) {
-          importee = path.relative(VSCODE_DIR, path.resolve(path.dirname(importer), importee))
+        if (!importee.startsWith('vs/') && importer != null && importer.startsWith(VSCODE_SRC_DIR)) {
+          importee = path.relative(VSCODE_SRC_DIR, path.resolve(path.dirname(importer), importee))
         }
         if (importee.startsWith('vs/')) {
-          return path.join(VSCODE_DIR, `${importee}.d.ts`)
+          return path.join(VSCODE_SRC_DIR, `${importee}.d.ts`)
         }
         return undefined
       }

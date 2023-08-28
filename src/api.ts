@@ -1,24 +1,21 @@
 /// <reference path="./types.d.ts" />
-/// <reference path="../vscode.proposed.extensionsAny.d.ts" />
-/// <reference path="../vscode.proposed.documentPaste.d.ts" />
-/// <reference path="../vscode.proposed.externalUriOpener.d.ts" />
-/// <reference path="../vscode.proposed.fileSearchProvider.d.ts" />
-/// <reference path="../vscode.proposed.textSearchProvider.d.ts" />
 import * as extHostTypes from 'vs/workbench/api/common/extHostTypes'
 import * as errors from 'vs/base/common/errors'
-import * as commonDebug from 'vs/workbench/contrib/debug/common/debug'
 import * as files from 'vs/platform/files/common/files'
-import * as extensionHostProtocol from 'vs/workbench/services/extensions/common/extensionHostProtocol'
 import type * as vscode from 'vscode'
-import * as cancellation from 'vs/base/common/cancellation'
-import * as event from 'vs/base/common/event'
 import * as languageConfiguration from 'vs/editor/common/languages/languageConfiguration'
+import * as cancellation from 'vs/base/common/cancellation'
+import * as extHostProtocol from 'vs/workbench/api/common/extHost.protocol'
+import * as debugTypes from 'vs/workbench/contrib/debug/common/debug'
+import * as event from 'vs/base/common/event'
 import * as model from 'vs/editor/common/model'
+import * as extensionHostProtocol from 'vs/workbench/services/extensions/common/extensionHostProtocol'
+import * as searchExtTypes from 'vs/workbench/services/search/common/searchExtTypes'
+import * as telemetryUtils from 'vs/platform/telemetry/common/telemetryUtils'
+import * as log from 'vs/platform/log/common/log'
+import * as editSessions from 'vs/platform/workspace/common/editSessions'
 import * as editorOptions from 'vs/editor/common/config/editorOptions'
 import * as uri from 'vs/base/common/uri'
-import * as log from 'vs/platform/log/common/log'
-import * as telemetryUtils from 'vs/platform/telemetry/common/telemetryUtils'
-import * as searchExtHostTypes from 'vs/workbench/services/search/common/searchExtTypes'
 
 let defaultApi: typeof vscode | undefined
 
@@ -38,9 +35,6 @@ function createProxy<T extends keyof typeof vscode> (key: T): typeof vscode[T] {
   }) as typeof vscode[T]
 }
 
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
-const unsupported = <any>undefined
-
 const api: typeof vscode = {
   version: VSCODE_VERSION,
   tasks: createProxy('tasks'),
@@ -57,13 +51,22 @@ const api: typeof vscode = {
   workspace: createProxy('workspace'),
   languages: createProxy('languages'),
   l10n: createProxy('l10n'),
+  interactive: createProxy('interactive'),
+  ai: createProxy('ai'),
+  chat: createProxy('chat'),
 
+  // types
   Breakpoint: extHostTypes.Breakpoint,
+  TerminalOutputAnchor: extHostTypes.TerminalOutputAnchor,
+  ChatMessage: extHostTypes.ChatMessage,
+  ChatMessageRole: extHostTypes.ChatMessageRole,
+  ChatVariableLevel: extHostTypes.ChatVariableLevel,
   CallHierarchyIncomingCall: extHostTypes.CallHierarchyIncomingCall,
   CallHierarchyItem: extHostTypes.CallHierarchyItem,
   CallHierarchyOutgoingCall: extHostTypes.CallHierarchyOutgoingCall,
   CancellationError: errors.CancellationError,
   CancellationTokenSource: cancellation.CancellationTokenSource,
+  CandidatePortSource: extHostProtocol.CandidatePortSource,
   CodeAction: extHostTypes.CodeAction,
   CodeActionKind: extHostTypes.CodeActionKind,
   CodeActionTriggerKind: extHostTypes.CodeActionTriggerKind,
@@ -73,7 +76,9 @@ const api: typeof vscode = {
   ColorPresentation: extHostTypes.ColorPresentation,
   ColorThemeKind: extHostTypes.ColorThemeKind,
   CommentMode: extHostTypes.CommentMode,
+  CommentState: extHostTypes.CommentState,
   CommentThreadCollapsibleState: extHostTypes.CommentThreadCollapsibleState,
+  CommentThreadState: extHostTypes.CommentThreadState,
   CompletionItem: extHostTypes.CompletionItem,
   CompletionItemKind: extHostTypes.CompletionItemKind,
   CompletionItemTag: extHostTypes.CompletionItemTag,
@@ -86,7 +91,7 @@ const api: typeof vscode = {
   DebugAdapterInlineImplementation: extHostTypes.DebugAdapterInlineImplementation,
   DebugAdapterNamedPipeServer: extHostTypes.DebugAdapterNamedPipeServer,
   DebugAdapterServer: extHostTypes.DebugAdapterServer,
-  DebugConfigurationProviderTriggerKind: commonDebug.DebugConfigurationProviderTriggerKind,
+  DebugConfigurationProviderTriggerKind: debugTypes.DebugConfigurationProviderTriggerKind,
   DebugConsoleMode: extHostTypes.DebugConsoleMode,
   DecorationRangeBehavior: extHostTypes.DecorationRangeBehavior,
   Diagnostic: extHostTypes.Diagnostic,
@@ -104,12 +109,15 @@ const api: typeof vscode = {
   InlineValueText: extHostTypes.InlineValueText,
   InlineValueVariableLookup: extHostTypes.InlineValueVariableLookup,
   InlineValueEvaluatableExpression: extHostTypes.InlineValueEvaluatableExpression,
+  InlineCompletionTriggerKind: extHostTypes.InlineCompletionTriggerKind,
   EventEmitter: event.Emitter,
   ExtensionKind: extHostTypes.ExtensionKind,
   ExtensionMode: extHostTypes.ExtensionMode,
+  ExternalUriOpenerPriority: extHostTypes.ExternalUriOpenerPriority,
   FileChangeType: extHostTypes.FileChangeType,
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   FileDecoration: <any>extHostTypes.FileDecoration,
+  FileDecoration2: extHostTypes.FileDecoration,
   FileSystemError: extHostTypes.FileSystemError,
   FileType: files.FileType,
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -117,12 +125,16 @@ const api: typeof vscode = {
   FoldingRange: extHostTypes.FoldingRange,
   FoldingRangeKind: extHostTypes.FoldingRangeKind,
   FunctionBreakpoint: extHostTypes.FunctionBreakpoint,
+  InlineCompletionItem: extHostTypes.InlineSuggestion,
+  InlineCompletionList: extHostTypes.InlineSuggestionList,
   Hover: extHostTypes.Hover,
   IndentAction: languageConfiguration.IndentAction,
   Location: extHostTypes.Location,
   MarkdownString: extHostTypes.MarkdownString,
   OverviewRulerLane: model.OverviewRulerLane,
   ParameterInformation: extHostTypes.ParameterInformation,
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  PortAutoForwardAction: <any>extHostTypes.PortAutoForwardAction,
   Position: extHostTypes.Position,
   ProcessExecution: extHostTypes.ProcessExecution,
   ProgressLocation: extHostTypes.ProgressLocation,
@@ -143,21 +155,27 @@ const api: typeof vscode = {
   SignatureInformation: extHostTypes.SignatureInformation,
   SnippetString: extHostTypes.SnippetString,
   SourceBreakpoint: extHostTypes.SourceBreakpoint,
+  StandardTokenType: extHostTypes.StandardTokenType,
   StatusBarAlignment: extHostTypes.StatusBarAlignment,
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   SymbolInformation: <any>extHostTypes.SymbolInformation,
   SymbolKind: extHostTypes.SymbolKind,
   SymbolTag: extHostTypes.SymbolTag,
-  Task: unsupported,
-  TaskGroup: unsupported,
-  TaskPanelKind: unsupported,
-  TaskRevealKind: unsupported,
-  TaskScope: unsupported,
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  Task: <any>extHostTypes.Task,
+  TaskGroup: extHostTypes.TaskGroup,
+  TaskPanelKind: extHostTypes.TaskPanelKind,
+  TaskRevealKind: extHostTypes.TaskRevealKind,
+  TaskScope: extHostTypes.TaskScope,
   TerminalLink: extHostTypes.TerminalLink,
+  TerminalQuickFixExecuteTerminalCommand: extHostTypes.TerminalQuickFixCommand,
+  TerminalQuickFixOpener: extHostTypes.TerminalQuickFixOpener,
   TerminalLocation: extHostTypes.TerminalLocation,
   TerminalProfile: extHostTypes.TerminalProfile,
+  TerminalExitReason: extHostTypes.TerminalExitReason,
   TextDocumentSaveReason: extHostTypes.TextDocumentSaveReason,
   TextEdit: extHostTypes.TextEdit,
+  SnippetTextEdit: extHostTypes.SnippetTextEdit,
   TextEditorCursorStyle: editorOptions.TextEditorCursorStyle,
   TextEditorLineNumbersStyle: extHostTypes.TextEditorLineNumbersStyle,
   TextEditorRevealType: extHostTypes.TextEditorRevealType,
@@ -166,57 +184,84 @@ const api: typeof vscode = {
   ThemeColor: extHostTypes.ThemeColor,
   ThemeIcon: extHostTypes.ThemeIcon,
   TreeItem: extHostTypes.TreeItem,
+  TreeItemCheckboxState: extHostTypes.TreeItemCheckboxState,
   TreeItemCollapsibleState: extHostTypes.TreeItemCollapsibleState,
   TypeHierarchyItem: extHostTypes.TypeHierarchyItem,
   UIKind: extensionHostProtocol.UIKind,
   Uri: uri.URI,
   ViewColumn: extHostTypes.ViewColumn,
   WorkspaceEdit: extHostTypes.WorkspaceEdit,
+  // proposed api types
+  DocumentDropEdit: extHostTypes.DocumentDropEdit,
+  DocumentPasteEdit: extHostTypes.DocumentPasteEdit,
   InlayHint: extHostTypes.InlayHint,
   InlayHintLabelPart: extHostTypes.InlayHintLabelPart,
   InlayHintKind: extHostTypes.InlayHintKind,
-  NotebookRange: unsupported,
-  NotebookCellKind: unsupported,
-  NotebookCellData: unsupported,
-  NotebookData: unsupported,
-  NotebookCellStatusBarAlignment: unsupported,
-  NotebookCellOutput: unsupported,
-  NotebookCellOutputItem: unsupported,
-  NotebookCellStatusBarItem: unsupported,
-  NotebookControllerAffinity: unsupported,
+  RemoteAuthorityResolverError: extHostTypes.RemoteAuthorityResolverError,
+  ResolvedAuthority: extHostTypes.ResolvedAuthority,
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  ManagedResolvedAuthority: <any>extHostTypes.ManagedResolvedAuthority,
+  SourceControlInputBoxValidationType: extHostTypes.SourceControlInputBoxValidationType,
+  ExtensionRuntime: extHostTypes.ExtensionRuntime,
+  TimelineItem: extHostTypes.TimelineItem,
+  NotebookRange: extHostTypes.NotebookRange,
+  NotebookCellKind: extHostTypes.NotebookCellKind,
+  NotebookCellExecutionState: extHostTypes.NotebookCellExecutionState,
+  NotebookCellData: extHostTypes.NotebookCellData,
+  NotebookData: extHostTypes.NotebookData,
+  NotebookRendererScript: extHostTypes.NotebookRendererScript,
+  NotebookCellStatusBarAlignment: extHostTypes.NotebookCellStatusBarAlignment,
+  NotebookEditorRevealType: extHostTypes.NotebookEditorRevealType,
+  NotebookCellOutput: extHostTypes.NotebookCellOutput,
+  NotebookCellOutputItem: extHostTypes.NotebookCellOutputItem,
+  NotebookCellStatusBarItem: extHostTypes.NotebookCellStatusBarItem,
+  NotebookControllerAffinity: extHostTypes.NotebookControllerAffinity,
+  NotebookControllerAffinity2: extHostTypes.NotebookControllerAffinity2,
+  NotebookEdit: extHostTypes.NotebookEdit,
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  NotebookKernelSourceAction: <any>extHostTypes.NotebookKernelSourceAction,
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  PortAttributes: <any>extHostTypes.PortAttributes,
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   LinkedEditingRanges: <any>extHostTypes.LinkedEditingRanges,
+  TestResultState: extHostTypes.TestResultState,
   TestRunRequest: extHostTypes.TestRunRequest,
   TestMessage: extHostTypes.TestMessage,
+  TestMessage2: extHostTypes.TestMessage,
   TestTag: extHostTypes.TestTag,
   TestRunProfileKind: extHostTypes.TestRunProfileKind,
+  TextSearchCompleteMessageType: searchExtTypes.TextSearchCompleteMessageType,
   DataTransfer: extHostTypes.DataTransfer,
   DataTransferItem: extHostTypes.DataTransferItem,
+  CoveredCount: extHostTypes.CoveredCount,
+  FileCoverage: extHostTypes.FileCoverage,
+  StatementCoverage: extHostTypes.StatementCoverage,
+  BranchCoverage: extHostTypes.BranchCoverage,
+  FunctionCoverage: extHostTypes.FunctionCoverage,
   LanguageStatusSeverity: extHostTypes.LanguageStatusSeverity,
   QuickPickItemKind: extHostTypes.QuickPickItemKind,
+  InputBoxValidationSeverity: extHostTypes.InputBoxValidationSeverity,
   TabInputText: extHostTypes.TextTabInput,
   TabInputTextDiff: extHostTypes.TextDiffTabInput,
+  TabInputTextMerge: extHostTypes.TextMergeTabInput,
   TabInputCustom: extHostTypes.CustomEditorTabInput,
   TabInputNotebook: extHostTypes.NotebookEditorTabInput,
   TabInputNotebookDiff: extHostTypes.NotebookDiffEditorTabInput,
   TabInputWebview: extHostTypes.WebviewEditorTabInput,
   TabInputTerminal: extHostTypes.TerminalEditorTabInput,
-  InputBoxValidationSeverity: extHostTypes.InputBoxValidationSeverity,
-  InlineCompletionList: extHostTypes.InlineSuggestionList,
-  InlineCompletionTriggerKind: extHostTypes.InlineCompletionTriggerKind,
-  InlineCompletionItem: extHostTypes.InlineSuggestion,
-  DocumentDropEdit: extHostTypes.DocumentDropEdit,
-  NotebookEditorRevealType: unsupported,
-  SnippetTextEdit: extHostTypes.SnippetTextEdit,
-  NotebookEdit: unsupported,
-  LogLevel: log.LogLevel,
-  TerminalExitReason: extHostTypes.TerminalExitReason,
-  CommentThreadState: unsupported,
+  TabInputInteractiveWindow: extHostTypes.InteractiveWindowInput,
   TelemetryTrustedValue: telemetryUtils.TelemetryTrustedValue,
-  TextSearchCompleteMessageType: searchExtHostTypes.TextSearchCompleteMessageType,
-  DocumentPasteEdit: extHostTypes.DocumentPasteEdit,
-  ExternalUriOpenerPriority: extHostTypes.ExternalUriOpenerPriority,
-  TreeItemCheckboxState: extHostTypes.TreeItemCheckboxState
+  LogLevel: log.LogLevel,
+  EditSessionIdentityMatch: editSessions.EditSessionIdentityMatch,
+  InteractiveSessionVoteDirection: extHostTypes.InteractiveSessionVoteDirection,
+  InteractiveSessionCopyKind: extHostTypes.InteractiveSessionCopyKind,
+  InteractiveEditorResponseFeedbackKind: extHostTypes.InteractiveEditorResponseFeedbackKind,
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  StackFrameFocus: <any>extHostTypes.StackFrameFocus,
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  ThreadFocus: <any>extHostTypes.ThreadFocus,
+  NotebookCodeActionKind: extHostTypes.NotebookCodeActionKind,
+  RelatedInformationType: extHostTypes.RelatedInformationType
 }
 
 // @ts-ignore the syntax will be transformed by a typescript transformer in the rollup config
