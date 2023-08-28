@@ -75,7 +75,6 @@ cat << EOF | node -
 			'vs/base/worker/workerMain.ts',
 		],
 		renames: {
-			'vs/nls.mock.ts': 'vs/nls.ts'
 		}
 	});
 EOF
@@ -88,16 +87,14 @@ cd src
 # Remove useless files
 rm -rf `find . -name '*.test.ts' -o -name 'test' -o -name 'electron-browser'`
 rm -rf vs/code
-rm -rf vs/server
-rm *.js
 
 mkdir -p $output_directory
 echo $vscodeRef > $version_info
 
 echo "Building vscode..."
-npx tsc --declaration --importHelpers --module es2020 --preserveConstEnums --outDir "$output_directory/vs"
+npx tsc --declaration --importHelpers --module es2020 --preserveConstEnums --outDir "$output_directory"
 # Copy files that are already built
-find ./vs \( -name '*.js' -o -name '*.d.ts' -o -name '*.css' -o -name '*.mp3' -o -name '*.svg' -o -name '*.html' \) -exec rsync -R \{\} "$output_directory/" \;
+find ./ \( -name '*.js' -o -name '*.d.ts' -o -name '*.css' -o -name '*.mp3' -o -name '*.svg' -o -name '*.html' \) -exec rsync -R \{\} "$output_directory/src" \;
 
 echo "Cleaning..."
 rm -rf $build_directory
