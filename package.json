@@ -16,13 +16,6 @@
   "type": "module",
   "main": "dist/api.js",
   "module": "dist/api.js",
-  "enabledApiProposals": [
-    "fileSearchProvider",
-    "textSearchProvider",
-    "extensionsAny",
-    "documentPaste",
-    "externalUriOpener"
-  ],
   "exports": {
     ".": {
       "default": "./dist/api.js"
