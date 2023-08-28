@@ -11,4 +11,4 @@ rollup --config rollup/rollup.types.config.ts --configPlugin 'typescript={tsconf
 rm -rf ./dist/types
 
 # copy vscode required namespaces
-cp vscode/vs/workbench/contrib/debug/common/debugProtocol.d.ts dist/
+cp vscode/src/vs/workbench/contrib/debug/common/debugProtocol.d.ts dist/

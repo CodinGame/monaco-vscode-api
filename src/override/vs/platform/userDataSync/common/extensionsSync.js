@@ -1,4 +1,4 @@
-export * from 'vscode/vs/platform/userDataSync/common/extensionsSync'
+export * from 'vscode/src/vs/platform/userDataSync/common/extensionsSync'
 
 export class ExtensionsSynchroniser {}
 

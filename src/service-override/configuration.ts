@@ -5,7 +5,7 @@ import { IConfigurationService } from 'vs/platform/configuration/common/configur
 import { ITextResourceConfigurationService } from 'vs/editor/common/services/textResourceConfiguration'
 import { TextResourceConfigurationService } from 'vs/editor/common/services/textResourceConfigurationService'
 import { SyncDescriptor } from 'vs/platform/instantiation/common/descriptors'
-import { ConfigurationScope } from 'vscode/vs/platform/configuration/common/configurationRegistry'
+import { ConfigurationScope } from 'vscode/src/vs/platform/configuration/common/configurationRegistry'
 import { IConfigurationRegistry, Extensions as ConfigurationExtensions, IConfigurationNode, IConfigurationDefaults } from 'vs/platform/configuration/common/configurationRegistry'
 import { Registry } from 'vs/platform/registry/common/platform'
 import { VSBuffer } from 'vs/base/common/buffer'

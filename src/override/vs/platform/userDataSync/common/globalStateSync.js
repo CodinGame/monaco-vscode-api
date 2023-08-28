@@ -1,4 +1,4 @@
-export * from 'vscode/vs/platform/userDataSync/common/globalStateSync'
+export * from 'vscode/src/vs/platform/userDataSync/common/globalStateSync'
 
 export class GlobalStateSynchroniser {}
 

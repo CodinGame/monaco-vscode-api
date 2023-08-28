@@ -110,11 +110,12 @@ const TSCONFIG = path.resolve(BASE_DIR, 'tsconfig.rollup.json')
 const SRC_DIR = path.resolve(BASE_DIR, 'src')
 const DIST_DIR = path.resolve(BASE_DIR, 'dist')
 const VSCODE_DIR = path.resolve(BASE_DIR, 'vscode')
+const VSCODE_SRC_DIR = path.resolve(VSCODE_DIR, 'src')
 const NODE_MODULES_DIR = path.resolve(BASE_DIR, 'node_modules')
 const MONACO_EDITOR_DIR = path.resolve(NODE_MODULES_DIR, './monaco-editor')
 const MONACO_EDITOR_ESM_DIR = path.resolve(MONACO_EDITOR_DIR, './esm')
 const OVERRIDE_PATH = path.resolve(BASE_DIR, 'src/override')
-const KEYBOARD_LAYOUT_DIR = path.resolve(VSCODE_DIR, 'vs/workbench/services/keybinding/browser/keyboardLayouts')
+const KEYBOARD_LAYOUT_DIR = path.resolve(VSCODE_SRC_DIR, 'vs/workbench/services/keybinding/browser/keyboardLayouts')
 
 function getMemberExpressionPath (node: recast.types.namedTypes.MemberExpression | recast.types.namedTypes.Identifier): string | null {
   if (node.type === 'MemberExpression') {
@@ -451,8 +452,8 @@ function resolveVscode (importee: string, importer?: string) {
     return resolve(path.relative('vscode', importee), [VSCODE_DIR])
   }
   let vscodeImportPath = importee
-  if (importee.startsWith(VSCODE_DIR)) {
-    vscodeImportPath = path.relative(VSCODE_DIR, importee)
+  if (importee.startsWith(VSCODE_SRC_DIR)) {
+    vscodeImportPath = path.relative(VSCODE_SRC_DIR, importee)
   }
   const overridePath = resolve(vscodeImportPath, [OVERRIDE_PATH])
   if (overridePath != null) {
@@ -464,7 +465,7 @@ function resolveVscode (importee: string, importer?: string) {
       // File exists on monaco, import from monaco esm
       return path.relative(NODE_MODULES_DIR, path.resolve(MONACO_EDITOR_ESM_DIR, vscodeImportPath)) + '.js'
     }
-    return resolve(vscodeImportPath, [VSCODE_DIR])
+    return resolve(vscodeImportPath, [VSCODE_SRC_DIR])
   }
   return undefined
 }
@@ -580,7 +581,7 @@ export default (args: Record<string, string>): rollup.RollupOptions[] => {
           return undefined
         },
         async load (id) {
-          if (!id.startsWith(VSCODE_DIR)) {
+          if (!id.startsWith(VSCODE_SRC_DIR)) {
             return undefined
           }
           const [, path, query] = /^(.*?)(\?.*?)?$/.exec(id)!
@@ -676,7 +677,7 @@ export default (args: Record<string, string>): rollup.RollupOptions[] => {
               return null
             }
 
-            const fakePath = path.resolve(VSCODE_DIR, importee.replace(/\*/, 'all'))
+            const fakePath = path.resolve(VSCODE_SRC_DIR, importee.replace(/\*/, 'all'))
             realPaths.set(fakePath, importee)
             return fakePath
           },
@@ -685,10 +686,10 @@ export default (args: Record<string, string>): rollup.RollupOptions[] => {
             if (realPath == null) {
               return undefined
             }
-            const files = await glob(realPath, { cwd: VSCODE_DIR })
+            const files = await glob(realPath, { cwd: VSCODE_SRC_DIR })
 
             const fileRefs = await Promise.all(files.map(async file => {
-              const filePath = path.resolve(VSCODE_DIR, file)
+              const filePath = path.resolve(VSCODE_SRC_DIR, file)
               const ref = this.emitFile({
                 type: 'asset',
                 name: path.basename(file),

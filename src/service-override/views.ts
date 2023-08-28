@@ -31,7 +31,7 @@ import 'vs/workbench/contrib/typeHierarchy/browser/typeHierarchy.contribution'
 import 'vs/workbench/contrib/codeEditor/browser/outline/documentSymbolsOutline'
 import 'vs/workbench/contrib/outline/browser/outline.contribution'
 import 'vs/workbench/browser/actions/listCommands'
-import 'vscode/vs/workbench/browser/parts/views/media/views.css'
+import 'vscode/src/vs/workbench/browser/parts/views/media/views.css'
 import 'vs/workbench/api/browser/viewsExtensionPoint'
 import 'vs/workbench/browser/parts/editor/editor.contribution'
 import 'vs/workbench/browser/workbench.contribution'
@@ -557,10 +557,10 @@ class MonacoEditorPart extends MonacoDelegateEditorGroupsService<EditorPart> imp
 
 let webviewIframeAlternateDomains: string | undefined
 registerAssets({
-  'vs/workbench/contrib/webview/browser/pre/service-worker.js': () => changeUrlDomain(new URL('../../vscode/vs/workbench/contrib/webview/browser/pre/service-worker.js', import.meta.url).href, webviewIframeAlternateDomains),
+  'vs/workbench/contrib/webview/browser/pre/service-worker.js': () => changeUrlDomain(new URL('../../vscode/src/vs/workbench/contrib/webview/browser/pre/service-worker.js', import.meta.url).href, webviewIframeAlternateDomains),
   'vs/workbench/contrib/webview/browser/pre/index.html': () => changeUrlDomain(new URL('../assets/webview/index.html', import.meta.url).href, webviewIframeAlternateDomains),
   'vs/workbench/contrib/webview/browser/pre/index-no-csp.html': () => changeUrlDomain(new URL('../assets/webview/index-no-csp.html', import.meta.url).href, webviewIframeAlternateDomains),
-  'vs/workbench/contrib/webview/browser/pre/fake.html': () => changeUrlDomain(new URL('../../vscode/vs/workbench/contrib/webview/browser/pre/fake.html', import.meta.url).href, webviewIframeAlternateDomains)
+  'vs/workbench/contrib/webview/browser/pre/fake.html': () => changeUrlDomain(new URL('../../vscode/src/vs/workbench/contrib/webview/browser/pre/fake.html', import.meta.url).href, webviewIframeAlternateDomains)
 })
 
 registerServiceInitializePostParticipant(async (accessor) => {
