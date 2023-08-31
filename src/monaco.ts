@@ -15,6 +15,8 @@ import { DisposableStore, IDisposable, IReference } from 'vs/base/common/lifecyc
 import { Registry } from 'vs/platform/registry/common/platform'
 import { IJSONContributionRegistry, Extensions as JsonExtensions } from 'vs/platform/jsonschemas/common/jsonContributionRegistry'
 import { CommandsRegistry, ICommandService } from 'vs/platform/commands/common/commands'
+import { MenuRegistry, MenuId } from 'vs/platform/actions/common/actions'
+import { KeybindingsRegistry } from 'vs/platform/keybinding/common/keybindingsRegistry'
 import { IJSONSchema } from 'vs/base/common/jsonSchema'
 import { Extensions as ConfigurationExtensions } from 'vs/platform/configuration/common/configurationRegistry'
 import { EditorOptionsUtil } from 'vscode/vs/editor/browser/config/editorConfiguration'
@@ -32,7 +34,7 @@ import { ServiceCollection } from 'vs/platform/instantiation/common/serviceColle
 import { IQuickInputService } from 'vs/platform/quickinput/common/quickInput'
 import { StandaloneQuickInputService } from 'vs/editor/standalone/browser/quickInput/standaloneQuickInputService'
 import { SyncDescriptor } from 'vs/platform/instantiation/common/descriptors'
-import { IContextKeyService } from 'vs/platform/contextkey/common/contextkey'
+import { IContextKeyService, ContextKeyExpr, RawContextKey } from 'vs/platform/contextkey/common/contextkey'
 import { ITelemetryService } from 'vs/platform/telemetry/common/telemetry'
 import { INotificationService } from 'vs/platform/notification/common/notification'
 import { ILogService } from 'vs/platform/log/common/log'
@@ -252,6 +254,14 @@ export {
   Extensions,
   IJSONContributionRegistry,
   IJSONSchema,
+
+  MenuRegistry,
+  MenuId,
+
+  KeybindingsRegistry,
+
+  ContextKeyExpr,
+  RawContextKey,
 
   registerColor,
 
