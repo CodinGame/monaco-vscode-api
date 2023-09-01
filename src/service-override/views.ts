@@ -46,9 +46,8 @@ import 'vs/workbench/contrib/files/browser/files.contribution.js?exclude=registe
 import { Codicon } from 'vs/base/common/codicons'
 import { IEditorGroupsService } from 'vs/workbench/services/editor/common/editorGroupsService'
 import { IEditorDropService } from 'vs/workbench/services/editor/browser/editorDropService'
-import { EditorService } from 'vs/workbench/services/editor/browser/editorService'
 import { IEditorDropTargetDelegate } from 'vs/workbench/browser/parts/editor/editorDropTarget'
-import { IEditorService, PreferredGroup } from 'vs/workbench/services/editor/common/editorService'
+import { IEditorService } from 'vs/workbench/services/editor/common/editorService'
 import { IEditorResolverService } from 'vs/workbench/services/editor/common/editorResolverService'
 import { EditorResolverService } from 'vs/workbench/services/editor/browser/editorResolverService'
 import { BreadcrumbsService, IBreadcrumbsService } from 'vs/workbench/browser/parts/editor/breadcrumbs'
@@ -56,15 +55,9 @@ import { IContextViewService } from 'vs/platform/contextview/browser/contextView
 import { ContextViewService } from 'vs/platform/contextview/browser/contextViewService'
 import { ICodeEditorService } from 'vs/editor/browser/services/codeEditorService'
 import { EditorInput, IEditorCloseHandler } from 'vs/workbench/common/editor/editorInput'
-import { EditorExtensions, IEditorPane, IResourceDiffEditorInput, ITextDiffEditorPane, IUntitledTextResourceEditorInput, IUntypedEditorInput, Verbosity } from 'vs/workbench/common/editor'
-import { IEditorOptions, IResourceEditorInput, ITextResourceEditorInput } from 'vs/platform/editor/common/editor'
-import { ITextModelService, IResolvedTextEditorModel } from 'vs/editor/common/services/resolverService'
-import { IFileService } from 'vs/platform/files/common/files'
-import { IConfigurationService } from 'vs/platform/configuration/common/configuration'
-import { IWorkspaceContextService } from 'vs/platform/workspace/common/workspace'
-import { IUriIdentityService } from 'vs/platform/uriIdentity/common/uriIdentity'
-import { IWorkspaceTrustRequestService } from 'vs/platform/workspace/common/workspaceTrust'
-import { IHostService } from 'vs/workbench/services/host/browser/host'
+import { EditorExtensions, Verbosity } from 'vs/workbench/common/editor'
+import { IEditorOptions } from 'vs/platform/editor/common/editor'
+import { IResolvedTextEditorModel } from 'vs/editor/common/services/resolverService'
 import { ITextEditorService, TextEditorService } from 'vs/workbench/services/textfile/common/textEditorService'
 import { CodeEditorService } from 'vs/workbench/services/editor/browser/codeEditorService'
 import { IUntitledTextEditorService, UntitledTextEditorService } from 'vs/workbench/services/untitled/common/untitledTextEditorService'
@@ -96,8 +89,7 @@ import { IStorageService } from 'vs/platform/storage/common/storage'
 import { IThemeService } from 'vs/platform/theme/common/themeService'
 import { ConfirmResult } from 'vs/platform/dialogs/common/dialogs'
 import { ILayoutService } from 'vs/platform/layout/browser/layoutService'
-import { StandaloneCodeEditor } from 'vs/editor/standalone/browser/standaloneCodeEditor'
-import { OpenEditor, wrapOpenEditor } from './tools/editor'
+import { MonacoDelegateEditorGroupsService, MonacoEditorService, OpenEditor } from './tools/editor'
 import getBulkEditServiceOverride from './bulkEdit'
 import getLayoutServiceOverride, { LayoutService } from './layout'
 import getQuickAccessOverride from './quickaccess'
@@ -468,62 +460,98 @@ function isEditorPartVisible (): boolean {
   return container != null && isElementVisible(container)
 }
 
-class MonacoEditorService extends EditorService {
-  constructor (
-    _openEditorFallback: OpenEditor | undefined,
-    @IEditorGroupsService _editorGroupService: IEditorGroupsService,
-    @IInstantiationService instantiationService: IInstantiationService,
-    @IFileService fileService: IFileService,
-    @IConfigurationService configurationService: IConfigurationService,
-    @IWorkspaceContextService contextService: IWorkspaceContextService,
-    @IUriIdentityService uriIdentityService: IUriIdentityService,
-    @IEditorResolverService editorResolverService: IEditorResolverService,
-    @IWorkspaceTrustRequestService workspaceTrustRequestService: IWorkspaceTrustRequestService,
-    @IHostService hostService: IHostService,
-    @ITextEditorService textEditorService: ITextEditorService,
-    @ITextModelService textModelService: ITextModelService
-  ) {
+type PublicInterface<T> = Pick<T, keyof T>
+
+class MonacoEditorPart extends MonacoDelegateEditorGroupsService<EditorPart> implements Omit<PublicInterface<EditorPart>, keyof IEditorGroupsService> {
+  constructor (@IInstantiationService instantiationService: IInstantiationService) {
     super(
-      _editorGroupService,
-      instantiationService,
-      fileService,
-      configurationService,
-      contextService,
-      uriIdentityService,
-      editorResolverService,
-      workspaceTrustRequestService,
-      hostService,
-      textEditorService
+      instantiationService.createInstance(EditorPart),
+      instantiationService
     )
-
-    this.openEditor = wrapOpenEditor(textModelService, this.openEditor.bind(this), _openEditorFallback)
   }
 
-  override get activeTextEditorControl () {
-    // By default, only the editor inside the EditorPart can be "active" here, hack it so the active editor is now the focused editor if it exists
-    // It is required for the editor.addAction to be able to add an entry in the editor action menu
-    const focusedCodeEditor = StandaloneServices.get(ICodeEditorService).getFocusedCodeEditor()
-    if (focusedCodeEditor != null && focusedCodeEditor instanceof StandaloneCodeEditor) {
-      return focusedCodeEditor
-    }
+  onDidChangeSizeConstraints = this.delegate.onDidChangeSizeConstraints
 
-    return super.activeTextEditorControl
+  restoreGroup: EditorPart['restoreGroup'] = (...args) => {
+    return this.delegate.restoreGroup(...args)
   }
 
-  // Override openEditor to fallback on user function is the EditorPart is not visible
-  override openEditor(editor: EditorInput, options?: IEditorOptions, group?: PreferredGroup): Promise<IEditorPane | undefined>
-  override openEditor(editor: IUntypedEditorInput, group?: PreferredGroup): Promise<IEditorPane | undefined>
-  override openEditor(editor: IResourceEditorInput, group?: PreferredGroup): Promise<IEditorPane | undefined>
-  override openEditor(editor: ITextResourceEditorInput | IUntitledTextResourceEditorInput, group?: PreferredGroup): Promise<IEditorPane | undefined>
-  override openEditor(editor: IResourceDiffEditorInput, group?: PreferredGroup): Promise<ITextDiffEditorPane | undefined>
-  override openEditor(editor: EditorInput | IUntypedEditorInput, optionsOrPreferredGroup?: IEditorOptions | PreferredGroup, preferredGroup?: PreferredGroup): Promise<IEditorPane | undefined>
-  override async openEditor (editor: EditorInput | IUntypedEditorInput, optionsOrPreferredGroup?: IEditorOptions | PreferredGroup, preferredGroup?: PreferredGroup): Promise<IEditorPane | undefined> {
-    // Do not try to open the file if the editor part is not displayed, let the fallback happen
-    if (!isEditorPartVisible()) {
-      return undefined
-    }
+  isGroupMaximized: EditorPart['isGroupMaximized'] = (...args) => {
+    return this.delegate.isGroupMaximized(...args)
+  }
 
-    return super.openEditor(editor, optionsOrPreferredGroup, preferredGroup)
+  createEditorDropTarget: EditorPart['createEditorDropTarget'] = (...args) => {
+    return this.delegate.createEditorDropTarget(...args)
+  }
+
+  get minimumWidth (): number {
+    return this.delegate.minimumWidth
+  }
+
+  get maximumWidth (): number {
+    return this.delegate.maximumWidth
+  }
+
+  get minimumHeight (): number {
+    return this.delegate.minimumHeight
+  }
+
+  get maximumHeight (): number {
+    return this.delegate.maximumHeight
+  }
+
+  get snap (): boolean {
+    return this.delegate.snap
+  }
+
+  get onDidChange () {
+    return this.delegate.onDidChange
+  }
+
+  get priority () {
+    return this.delegate.priority
+  }
+
+  updateStyles: EditorPart['updateStyles'] = (...args) => {
+    return this.delegate.updateStyles(...args)
+  }
+
+  setBoundarySashes: EditorPart['setBoundarySashes'] = (...args) => {
+    return this.delegate.setBoundarySashes(...args)
+  }
+
+  layout: EditorPart['layout'] = (...args) => {
+    return this.delegate.layout(...args)
+  }
+
+  toJSON: EditorPart['toJSON'] = (...args) => {
+    return this.delegate.toJSON(...args)
+  }
+
+  get dimension () {
+    return this.delegate.dimension
+  }
+
+  onDidVisibilityChange = this.delegate.onDidVisibilityChange
+
+  create: EditorPart['create'] = (...args) => {
+    return this.delegate.create(...args)
+  }
+
+  getContainer: EditorPart['getContainer'] = (...args) => {
+    return this.delegate.getContainer(...args)
+  }
+
+  setVisible: EditorPart['setVisible'] = (...args) => {
+    return this.delegate.setVisible(...args)
+  }
+
+  getId: EditorPart['getId'] = (...args) => {
+    return this.delegate.getId(...args)
+  }
+
+  get element () {
+    return this.delegate.element
   }
 }
 
@@ -593,10 +621,10 @@ export default function getServiceOverride (openEditorFallback?: OpenEditor, _we
 
     [ICodeEditorService.toString()]: new SyncDescriptor(CodeEditorService, [], true),
     [ITextEditorService.toString()]: new SyncDescriptor(TextEditorService, [], false),
-    [IEditorGroupsService.toString()]: new SyncDescriptor(EditorPart, [], false),
+    [IEditorGroupsService.toString()]: new SyncDescriptor(MonacoEditorPart, [], false),
     [IStatusbarService.toString()]: new SyncDescriptor(StatusbarPart, [], false),
     [IEditorDropService.toString()]: new SyncDescriptor(EditorDropService, [], true),
-    [IEditorService.toString()]: new SyncDescriptor(MonacoEditorService, [openEditorFallback], false),
+    [IEditorService.toString()]: new SyncDescriptor(MonacoEditorService, [openEditorFallback, isEditorPartVisible], false),
     [IEditorResolverService.toString()]: new SyncDescriptor(EditorResolverService, [], false),
     [IBreadcrumbsService.toString()]: new SyncDescriptor(BreadcrumbsService, [], true),
     [IContextViewService.toString()]: new SyncDescriptor(ContextViewService, [], true),
