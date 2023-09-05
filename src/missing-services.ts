@@ -165,6 +165,7 @@ import { ITestResultService } from 'vs/workbench/contrib/testing/common/testResu
 import { IDiagnosticsService, NullDiagnosticsService } from 'vs/platform/diagnostics/common/diagnostics'
 import { INotebookSearchService } from 'vs/workbench/contrib/search/browser/notebookSearch'
 import { ResourceSet } from 'vs/base/common/map'
+import { IEditorGroupView } from 'vs/workbench/browser/parts/editor/editor'
 import { unsupported } from './tools'
 
 class NullLoggerService extends AbstractLoggerService {
@@ -268,7 +269,32 @@ registerSingleton(IFileService, class FileService implements IFileService {
   }
 }, InstantiationType.Eager)
 
-class EmptyEditorGroup implements IEditorGroup {
+class EmptyEditorGroup implements IEditorGroup, IEditorGroupView {
+  onDidFocus = Event.None
+  onDidOpenEditorFail = Event.None
+  whenRestored = Promise.resolve()
+  get titleHeight () {
+    return unsupported()
+  }
+
+  disposed = false
+  setActive = unsupported
+  notifyIndexChanged = unsupported
+  relayout = unsupported
+  dispose = unsupported
+  toJSON = unsupported
+  preferredWidth?: number | undefined
+  preferredHeight?: number | undefined
+  get element () {
+    return unsupported()
+  }
+
+  minimumWidth = 0
+  maximumWidth = Number.POSITIVE_INFINITY
+  minimumHeight = 0
+  maximumHeight = Number.POSITIVE_INFINITY
+  onDidChange = Event.None
+  layout = unsupported
   onDidModelChange = Event.None
   onWillDispose = Event.None
   onDidActiveEditorChange = Event.None
@@ -288,17 +314,17 @@ class EmptyEditorGroup implements IEditorGroup {
   isLocked = false
   stickyCount = 0
   editors = []
-  get scopedContextKeyService () { return StandaloneServices.get(IContextKeyService) }
-  getEditors = unsupported
-  findEditors = unsupported
-  getEditorByIndex = unsupported
+  get scopedContextKeyService (): IContextKeyService { return StandaloneServices.get(IContextKeyService) }
+  getEditors = () => []
+  findEditors = () => []
+  getEditorByIndex = () => undefined
   getIndexOfEditor = unsupported
   openEditor = unsupported
   openEditors = unsupported
-  isPinned = unsupported
-  isSticky = unsupported
-  isActive = unsupported
-  contains = unsupported
+  isPinned = () => false
+  isSticky = () => false
+  isActive = () => false
+  contains = () => false
   moveEditor = unsupported
   moveEditors = unsupported
   copyEditor = unsupported
@@ -315,12 +341,12 @@ class EmptyEditorGroup implements IEditorGroup {
     // ignore
   }
 
-  isFirst = () => true
-  isLast = () => true
+  isFirst = unsupported
+  isLast = unsupported
 }
 
 const fakeActiveGroup = new EmptyEditorGroup()
-registerSingleton(IEditorGroupsService, class EditorGroupsService implements IEditorGroupsService {
+export class EmptyEditorGroupsService implements IEditorGroupsService {
   readonly _serviceBrand = undefined
   getLayout = unsupported
   onDidChangeActiveGroup = Event.None
@@ -332,9 +358,9 @@ registerSingleton(IEditorGroupsService, class EditorGroupsService implements IEd
   onDidScroll = Event.None
   onDidChangeGroupIndex = Event.None
   onDidChangeGroupLocked = Event.None
-  get contentDimension () { return unsupported() }
+  get contentDimension (): never { return unsupported() }
   activeGroup = fakeActiveGroup
-  get sideGroup () { return unsupported() }
+  get sideGroup (): never { return unsupported() }
   groups = [fakeActiveGroup]
   count = 0
   orientation = GroupOrientation.HORIZONTAL
@@ -342,27 +368,29 @@ registerSingleton(IEditorGroupsService, class EditorGroupsService implements IEd
   whenReady = Promise.resolve()
   whenRestored = Promise.resolve()
   hasRestorableState = false
-  getGroups = () => []
-  getGroup = () => undefined
+  getGroups = (): never[] => []
+  getGroup = (): undefined => undefined
   activateGroup = unsupported
   getSize = unsupported
   setSize = unsupported
   arrangeGroups = unsupported
   applyLayout = unsupported
   centerLayout = unsupported
-  isLayoutCentered = () => false
+  isLayoutCentered = (): boolean => false
   setGroupOrientation = unsupported
-  findGroup = () => undefined
+  findGroup = (): undefined => undefined
   addGroup = unsupported
   removeGroup = unsupported
   moveGroup = unsupported
   mergeGroup = unsupported
   mergeAllGroups = unsupported
   copyGroup = unsupported
-  get partOptions () { return unsupported() }
+  partOptions = {}
   onDidChangeEditorPartOptions = Event.None
   enforcePartOptions = unsupported
-}, InstantiationType.Eager)
+}
+
+registerSingleton(IEditorGroupsService, EmptyEditorGroupsService, InstantiationType.Eager)
 
 registerSingleton(IWorkingCopyFileService, WorkingCopyFileService, InstantiationType.Eager)
 registerSingleton(IPathService, BrowserPathService, InstantiationType.Delayed)
@@ -1137,8 +1165,12 @@ registerSingleton(IUpdateService, class UpdateService implements IUpdateService 
 registerSingleton(IStatusbarService, class StatusbarService implements IStatusbarService {
   _serviceBrand: undefined
   onDidChangeEntryVisibility = Event.None
-  addEntry = unsupported
-  isEntryVisible = unsupported
+  addEntry = () => ({
+    dispose: () => {},
+    update: () => {}
+  })
+
+  isEntryVisible = () => false
   updateEntryVisibility = unsupported
   focus = unsupported
   focusNextEntry = unsupported
