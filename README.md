@@ -328,20 +328,61 @@ It includes:
 - Keybinding service, with user keybindings editor
 - Debuggers
 
-From CLI run:
+### Demo Installation
+
+1. Clone repo and CD into demo directory.
 
 ```bash
-cd demo
-npm ci
-npm start
-# OR: for vite debug output
-npm run start:debug
+git clone https://github.com/CodinGame/monaco-vscode-api
+cd .\monaco-vscode-api\demo
 ```
 
-For the debug feature, also run:
+2. Install dependencies (Should probably just add these to package.json).
+
 ```bash
+npm install vscode@npm:@codingame/monaco-vscode-api --legacy-peer-deps
+npm install vscode-textmate --legacy-peer-deps
+npm install @vscode/vscode-languagedetection --legacy-peer-deps
+npm install -D @types/vscode --legacy-peer-deps
+```
+
+3. In the default demo/package.json the start script tries to set enviornemnt variables but is unable to. We can use the cross-env module to set the enviornment variables.
+
+```bash
+npm install cross-env --legacy-peer-deps
+```
+
+4. Modify demo\package.json start script to use cross-env.
+
+```Typescript
+"scripts": {
+    "postinstall": "monaco-treemending",
+    "clean": "tsc -b -c",
+    "compile": "tsc",
+    // Add cross-env to the beginning of "start: "
+    "start": "cross-env NODE_OPTIONS=--experimental-import-meta-resolve vite --config vite.config.ts",
+    "start:debug": "vite --config vite.config.ts --debug --force",
+    "build": "vite --config vite.config.ts build",
+    "build:github": "vite --config vite.github-page.config.ts build && touch dist/.nojekyll",
+    "start:debugServer": "node --loader ts-node/esm src/debugServer.ts"
+  },
+```
+
+5. Run clean install to grab the rest of the dependencies.
+
+```bash
+npm ci --legacy-peer-deps
+```
+
+6. Start server!
+
+```bash
+npm run start
+
+# If you want the debugger to work
 npm run start:debugServer
 ```
+
 
 ### History
 
