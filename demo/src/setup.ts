@@ -28,6 +28,9 @@ import getAccessibilityServiceOverride from 'vscode/service-override/accessibili
 import getLanguageDetectionWorkerServiceOverride from 'vscode/service-override/languageDetectionWorker'
 import getStorageServiceOverride, { BrowserStorageService } from 'vscode/service-override/storage'
 import getExtensionServiceOverride from 'vscode/service-override/extensions'
+import getRemoteAgentServiceOverride from 'vscode/service-override/remoteAgent'
+import getEnvironmentServiceOverride from 'vscode/service-override/environment'
+import getLifecycleServiceOverride from 'vscode/service-override/lifecycle'
 import EditorWorker from 'monaco-editor/esm/vs/editor/editor.worker.js?worker'
 import TextMateWorker from 'vscode/workers/textMate.worker?worker'
 import OutputLinkComputerWorker from 'vscode/workers/outputLinkComputer.worker?worker'
@@ -56,13 +59,20 @@ window.MonacoEnvironment = {
   }
 }
 
+const params = new URL(document.location.href).searchParams
+const remoteAuthority = params.get('remoteAuthority') ?? undefined
+const connectionToken = params.get('connectionToken') ?? undefined
+const remotePath = remoteAuthority != null ? params.get('remotePath') ?? undefined : undefined
+
 // Override services
 await initializeMonacoService({
   ...getExtensionServiceOverride(toWorkerConfig(ExtensionHostWorker)),
   ...getModelServiceOverride(),
   ...getNotificationServiceOverride(),
   ...getDialogsServiceOverride(),
-  ...getConfigurationServiceOverride(monaco.Uri.file('/tmp')),
+  ...getConfigurationServiceOverride(remotePath == null
+    ? monaco.Uri.file('/tmp')
+    : { id: 'remote-workspace', uri: monaco.Uri.from({ scheme: 'vscode-remote', path: remotePath, authority: remoteAuthority }) }),
   ...getKeybindingsServiceOverride(),
   ...getTextmateServiceOverride(),
   ...getThemeServiceOverride(),
@@ -82,7 +92,12 @@ await initializeMonacoService({
   ...getMarkersServiceOverride(),
   ...getAccessibilityServiceOverride(),
   ...getLanguageDetectionWorkerServiceOverride(),
-  ...getStorageServiceOverride()
+  ...getStorageServiceOverride(),
+  ...getRemoteAgentServiceOverride(connectionToken),
+  ...getLifecycleServiceOverride(),
+  ...getEnvironmentServiceOverride({
+    remoteAuthority
+  })
 })
 StandaloneServices.get(ILogService).setLevel(LogLevel.Off)
 

@@ -190,6 +190,16 @@ Additionally, this library exposes 23 modules that include the vscode version of
   - Define your own storage or use the default BrowserStorageService. The storage service is used in many places either as a cache or as a user preference store. For instance:
     - Current loaded theme is stored in there to be loaded faster on start.
     - Every panel/view positions are stored in there.
+- **LifeCycle**: `vscode/service-override/lifecycle`
+  - Allow other services to veto a page reload (for instance when not all open files are saved)
+- **Remote agent**: `vscode/service-override/remoteAgent`
+  - Connect to a remote vscode agent and have access to:
+    - The remote filesystem
+    - The remote file search
+    - Running terminals
+    - Running vscode extensions (not web-compatible)
+    - and probably more?
+  This library exports a `vscode-ext-host-server` bin to start the remote agent
 
 Usage:
 
@@ -356,6 +366,17 @@ For the debug feature, also run:
 ```bash
 npm run start:debugServer
 ```
+
+#### Remote agent
+
+To connect to a remote agent, run:
+```bash
+npm run start:extHostServer
+```
+
+Then go to http://localhost:5173/?remoteAuthority=localhost:8000
+
+You can also go to http://localhost:5173/?remoteAuthority=localhost:8000&remotePath=/any/path/on/your/machine to open a directory on your machine as the current workspace
 
 ### History
 
