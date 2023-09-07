@@ -124,8 +124,10 @@ abstract class SimpleTerminalProcess implements ITerminalChildProcess {
   }
 }
 
-export default function getServiceOverride (backend: ITerminalBackend): IEditorOverrideServices {
-  Registry.as<ITerminalBackendRegistry>(TerminalExtensions.Backend).registerTerminalBackend(backend)
+export default function getServiceOverride (backend?: ITerminalBackend): IEditorOverrideServices {
+  if (backend != null) {
+    Registry.as<ITerminalBackendRegistry>(TerminalExtensions.Backend).registerTerminalBackend(backend)
+  }
   return {
     [ITerminalService.toString()]: new SyncDescriptor(TerminalService, [], true),
     [ITerminalLogService.toString()]: new SyncDescriptor(TerminalLogService, [], true),
