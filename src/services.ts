@@ -47,7 +47,7 @@ export { ILanguageFeaturesService } from 'vs/editor/common/services/languageFeat
 export { IModelService } from 'vs/editor/common/services/model'
 export { ITextModelService } from 'vs/editor/common/services/resolverService'
 export { IClipboardService } from 'vs/platform/clipboard/common/clipboardService'
-export { IDialogService } from 'vs/platform/dialogs/common/dialogs'
+export { IDialogService, IFileDialogService } from 'vs/platform/dialogs/common/dialogs'
 export { IFileService } from 'vs/platform/files/common/files'
 export { IInstantiationService } from 'vs/platform/instantiation/common/instantiation'
 export { IMarkerService } from 'vs/platform/markers/common/markers'
@@ -126,6 +126,9 @@ export { IPreferencesSearchService } from 'vs/workbench/contrib/preferences/comm
 export { IKeybindingEditingService } from 'vs/workbench/services/keybinding/common/keybindingEditing'
 export { IOutputService } from 'vs/workbench/services/output/common/output'
 export { IHistoryService, GoFilter, GoScope } from 'vs/workbench/services/history/common/history'
+export { IRemoteAgentService } from 'vs/workbench/services/remote/common/remoteAgentService'
+export { IRemoteAuthorityResolverService } from 'vs/platform/remote/common/remoteAuthorityResolver'
+export { IRemoteSocketFactoryService } from 'vs/platform/remote/common/remoteSocketFactoryService'
 
 // Export all Notification service parts
 export {
