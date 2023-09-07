@@ -168,6 +168,7 @@ import { IAiRelatedInformationService } from 'vs/workbench/services/aiRelatedInf
 import { IAiEmbeddingVectorService } from 'vs/workbench/services/aiEmbeddingVector/common/aiEmbeddingVectorService'
 import { ResourceSet } from 'vs/base/common/map'
 import { IEditorGroupView } from 'vs/workbench/browser/parts/editor/editor'
+import { IMessage, ISignService } from 'vs/platform/sign/common/sign'
 import { BrowserHostService } from 'vs/workbench/services/host/browser/browserHostService'
 import { unsupported } from './tools'
 
@@ -2140,4 +2141,25 @@ registerSingleton(IAiEmbeddingVectorService, class AiEmbeddingVectorService impl
   isEnabled = () => false
   getEmbeddingVector = unsupported
   registerAiEmbeddingVectorProvider = unsupported
+}, InstantiationType.Delayed)
+
+registerSingleton(ISignService, class SignService implements ISignService {
+  _serviceBrand: undefined
+  private static _nextId = 1
+
+  async createNewMessage (value: string): Promise<IMessage> {
+    const id = String(SignService._nextId++)
+    return {
+      id,
+      data: value
+    }
+  }
+
+  async validate (): Promise<boolean> {
+    return true
+  }
+
+  async sign (value: string): Promise<string> {
+    return value
+  }
 }, InstantiationType.Delayed)
