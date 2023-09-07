@@ -5,16 +5,21 @@ import { BrowserWorkbenchEnvironmentService, IBrowserWorkbenchEnvironmentService
 import { URI } from 'vs/base/common/uri'
 import { IEnvironmentService } from 'vs/platform/environment/common/environment'
 import { IProductService } from 'vs/platform/product/common/productService'
+import { IWorkbenchConstructionOptions } from 'vs/workbench/browser/web.api'
 
 class InjectedBrowserWorkbenchEnvironmentService extends BrowserWorkbenchEnvironmentService implements IBrowserWorkbenchEnvironmentService {
-  constructor (@IProductService productService: IProductService) {
-    super('default', URI.from({ scheme: 'logs', path: '/' }), {}, productService)
+  constructor (options: IWorkbenchConstructionOptions, @IProductService productService: IProductService) {
+    super('default', URI.from({ scheme: 'logs', path: '/' }), options, productService)
   }
 }
 
-export default function getServiceOverride (): IEditorOverrideServices {
+export default function getServiceOverride (options: IWorkbenchConstructionOptions = {}): IEditorOverrideServices {
   return {
     [IEnvironmentService.toString()]: new SyncDescriptor(InjectedBrowserWorkbenchEnvironmentService, [], true),
-    [IBrowserWorkbenchEnvironmentService.toString()]: new SyncDescriptor(InjectedBrowserWorkbenchEnvironmentService, [], true)
+    [IBrowserWorkbenchEnvironmentService.toString()]: new SyncDescriptor(InjectedBrowserWorkbenchEnvironmentService, [options], true)
   }
+}
+
+export {
+  IWorkbenchConstructionOptions
 }
