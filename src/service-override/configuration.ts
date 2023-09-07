@@ -22,7 +22,7 @@ import { IUriIdentityService } from 'vs/platform/uriIdentity/common/uriIdentity'
 import { ConfigurationCache } from 'vs/workbench/services/configuration/common/configurationCache'
 import { Schemas } from 'vs/base/common/network'
 import { IWorkbenchEnvironmentService } from 'vs/workbench/services/environment/common/environmentService'
-import { IAnyWorkspaceIdentifier, IWorkspaceContextService, IWorkspaceIdentifier } from 'vs/platform/workspace/common/workspace'
+import { IAnyWorkspaceIdentifier, IEmptyWorkspaceIdentifier, ISingleFolderWorkspaceIdentifier, IWorkspaceContextService, IWorkspaceIdentifier } from 'vs/platform/workspace/common/workspace'
 import { LabelService } from 'vs/workbench/services/label/common/labelService'
 import { ILabelService } from 'vs/platform/label/common/label'
 import { generateUuid } from 'vs/base/common/uuid'
@@ -78,37 +78,41 @@ class MonacoWorkspaceEditingService extends AbstractWorkspaceEditingService {
   enterWorkspace = unsupported
 }
 
-let _defaultWorkspaceUri = URI.file('/workspace')
+let _defaultWorkspace: URI | IAnyWorkspaceIdentifier = URI.file('/workspace')
 registerServiceInitializePreParticipant(async (accessor) => {
   const workspaceService = accessor.get(IWorkspaceContextService) as WorkspaceService
   workspaceService.acquireInstantiationService(accessor.get(IInstantiationService))
 
-  const configPath = _defaultWorkspaceUri.with({ path: '/workspace.code-workspace' })
-  try {
-    const fileService = accessor.get(IFileService)
-    // Create the directory in the memory filesystem to prevent a warn log
-    await fileService.createFolder(_defaultWorkspaceUri)
-    await fileService.writeFile(configPath, VSBuffer.fromString(JSON.stringify({
-      folders: [
-        {
-          path: _defaultWorkspaceUri.path
-        }
-      ]
-    })))
-  } catch (err) {
-    // ignore
-  }
+  if (URI.isUri(_defaultWorkspace)) {
+    const configPath = _defaultWorkspace.with({ path: '/workspace.code-workspace' })
+    try {
+      const fileService = accessor.get(IFileService)
+      // Create the directory in the memory filesystem to prevent a warn log
+      await fileService.createFolder(_defaultWorkspace)
+      await fileService.writeFile(configPath, VSBuffer.fromString(JSON.stringify({
+        folders: [
+          {
+            path: _defaultWorkspace.path
+          }
+        ]
+      })))
+    } catch (err) {
+      // ignore
+    }
 
-  await workspaceService.initialize(<IWorkspaceIdentifier>{
-    id: generateUuid(),
-    configPath
-  })
+    await workspaceService.initialize(<IWorkspaceIdentifier>{
+      id: generateUuid(),
+      configPath
+    })
+  } else {
+    await workspaceService.initialize(_defaultWorkspace)
+  }
 })
 
 const MemoizedInjectedConfigurationService = memoizedConstructor(InjectedConfigurationService)
 
-export default function getServiceOverride (defaultWorkspaceUri: URI): IEditorOverrideServices {
-  _defaultWorkspaceUri = defaultWorkspaceUri
+export default function getServiceOverride (defaultWorkspace: URI | IAnyWorkspaceIdentifier): IEditorOverrideServices {
+  _defaultWorkspace = defaultWorkspace
 
   return {
     ...getFileServiceOverride(),
@@ -132,5 +136,8 @@ export {
   IConfigurationNode,
   IConfigurationDefaults,
   IAnyWorkspaceIdentifier,
+  IWorkspaceIdentifier,
+  ISingleFolderWorkspaceIdentifier,
+  IEmptyWorkspaceIdentifier,
   IWorkspaceFolderCreationData
 }
