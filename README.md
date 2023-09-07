@@ -329,7 +329,11 @@ It includes:
 - Debuggers
 
 ### Demo Instructions
+
+⚠️ Make sure to open the project in a Dev Container[^1] ⚠️
+
 First we need to install and build the dependencies the demo will use.
+
 ```bash
 # This will take some time, trust the process
 npm install 
@@ -388,3 +392,6 @@ With this library, it would be possible to plug vscode-languageclient directly o
 - Adding some tweaks to the VSCode LanguageClient (Removing unsupported features...)
 - Providing some examples on how to build an app using it
 - Adding some tools (DisposableCollection)
+
+
+[^1]: https://code.visualstudio.com/docs/devcontainers/containers
