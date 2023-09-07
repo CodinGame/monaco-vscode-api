@@ -164,6 +164,7 @@ import { IDiagnosticsService, NullDiagnosticsService } from 'vs/platform/diagnos
 import { INotebookSearchService } from 'vs/workbench/contrib/search/browser/notebookSearch'
 import { ResourceSet } from 'vs/base/common/map'
 import { IEditorGroupView } from 'vs/workbench/browser/parts/editor/editor'
+import { IMessage, ISignService } from 'vs/platform/sign/common/sign'
 import { BrowserHostService } from 'vs/workbench/services/host/browser/browserHostService'
 import { unsupported } from './tools'
 
@@ -2087,5 +2088,26 @@ registerSingleton(INotebookSearchService, class NotebookSearchService implements
       },
       scannedFiles: new ResourceSet()
     }
+  }
+}, InstantiationType.Delayed)
+
+registerSingleton(ISignService, class SignService implements ISignService {
+  _serviceBrand: undefined
+  private static _nextId = 1
+
+  async createNewMessage (value: string): Promise<IMessage> {
+    const id = String(SignService._nextId++)
+    return {
+      id,
+      data: value
+    }
+  }
+
+  async validate (): Promise<boolean> {
+    return true
+  }
+
+  async sign (value: string): Promise<string> {
+    return value
   }
 }, InstantiationType.Delayed)
