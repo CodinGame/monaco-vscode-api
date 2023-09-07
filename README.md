@@ -331,7 +331,7 @@ It includes:
 ### Demo Instructions
 First we need to install and build the dependencies the demo will use.
 ```bash
-# It will look like nothing is happening, trust the process
+# This will take some time, trust the process
 npm install 
 npm run build
 ```
