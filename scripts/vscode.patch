@@ -127,7 +127,7 @@ index 4f42810f0bd..58b0747c812 100644
  
  const ttPolicy = createTrustedTypesPolicy('defaultWorkerFactory', { createScriptURL: value => value });
 diff --git a/src/vs/base/common/network.ts b/src/vs/base/common/network.ts
-index b00899c50db..93e9daad96b 100644
+index b00899c50db..825c7a073bf 100644
 --- a/src/vs/base/common/network.ts
 +++ b/src/vs/base/common/network.ts
 @@ -4,6 +4,8 @@
@@ -152,7 +152,7 @@ index b00899c50db..93e9daad96b 100644
  	 */
  	asBrowserUri(resourcePath: AppResourcePath | ''): URI {
 -		const uri = this.toUri(resourcePath, require);
-+		const uri = this.toUri(resourcePath, (window as any).monacoRequire);
++		const uri = this.toUri(resourcePath, (globalThis as any).monacoRequire);
  		return this.uriToBrowserUri(uri);
  	}
  
@@ -170,7 +170,7 @@ index b00899c50db..93e9daad96b 100644
  	 */
  	asFileUri(resourcePath: AppResourcePath | ''): URI {
 -		const uri = this.toUri(resourcePath, require);
-+		const uri = this.toUri(resourcePath, (window as any).monacoRequire);
++		const uri = this.toUri(resourcePath, (globalThis as any).monacoRequire);
  		return this.uriToFileUri(uri);
  	}
  
