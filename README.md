@@ -18,6 +18,7 @@ npm install -D @types/vscode
 ```
 
 ⚠️ And add in your package.json ⚠️:
+
 ```json
 {
   "scripts": {
@@ -41,12 +42,14 @@ To **tree-mend** (to **un**treeshake it) monaco-editor, this library provides a 
 This library uses a lot the `new URL('asset.extension', import.meta.url)` syntax which [is supported by vite](https://vitejs.dev/guide/assets.html#new-url-url-import-meta-url)
 
 While it works great in `build` mode (because rollup is used), there is some issues in `watch`` mode:
-- import.meta.url is not replaced while creating bundles, it is an issue when the syntax is used inside a dependency
-- vite is still trying to inject/transform javascript assets files, breaking the code by injecting ESM imports in commonjs files
+
+- Import.meta.url is not replaced while creating bundles, it is an issue when the syntax is used inside a dependency
+- Vite is still trying to inject/transform javascript assets files, breaking the code by injecting ESM imports in commonjs files
 
 There are workarounds for both:
 
 - We can help vite by replacing `import.meta.url` by the original module path (you need the --experimental-import-meta-resolve note option):
+
 ```typescript
 {
   ...
@@ -82,7 +85,9 @@ There are workarounds for both:
   }
 }
 ```
-- we can serialize and eval the code to prevent vite from touching it:
+
+- We can serialize and eval the code to prevent vite from touching it:
+
 ```typescript
 {
   plugins: [{
@@ -98,9 +103,9 @@ There are workarounds for both:
 }
 ```
 
-# Usage
+## Usage
 
-## Monaco standalone services
+### Monaco standalone services
 
 Also, monaco-editor use `standalone` versions or the vscode services, which are much simpler.
 
@@ -269,6 +274,7 @@ vscode.languages.registerCompletionItemProvider(...)
 The api will use the manifest of a default vscode extension, which can be overriden by providing it to the `initialize` function.
 
 You can also register a new extension from its manifest:
+
 ```typescript
 import { registerExtension, initialize } from 'vscode/extensions'
 
@@ -284,9 +290,10 @@ getApi().then(vscodeApi => vscodeApi.languages.registerCompletionItemProvider(..
 
 ### Default vscode extensions
 
-VSCode uses a bunch of default extensions. Most of them are used to load the default languages and grammars (see https://github.com/microsoft/vscode/tree/main/extensions).
+VSCode uses a bunch of default extensions. Most of them are used to load the default languages and grammars (see [https://github.com/microsoft/vscode/tree/main/extensions](https://github.com/microsoft/vscode/tree/main/extensions)).
 
 This library bundles most of them and allows to import the ones you want:
+
 ```typescript
 import 'vscode/default-extensions/javascript'
 import 'vscode/default-extensions/json'
@@ -299,6 +306,7 @@ VSCode extension are bundled as vsix files.
 This library exposes a rollup plugin (vite-compatible) that allows to load a vsix file.
 
 - rollup/vite config:
+
 ```typescript
 import vsixPlugin from 'vscode/rollup-vsix-plugin'
 ...
@@ -307,14 +315,16 @@ plugins: [
   vsixPlugin()
 ]
 ```
+
 - code:
+
 ```typescript
 import './extension.vsix'
 ```
 
 ## Demo
 
-Try it out on https://codingame.github.io/monaco-vscode-api/
+Try it out on [https://codingame.github.io/monaco-vscode-api/](https://codingame.github.io/monaco-vscode-api/)
 
 There is a demo that showcases the service-override features. It allows to register contributions with the same syntaxes as in VSCode.
 It includes:
@@ -340,7 +350,8 @@ npm install
 npm run build
 ```
 
-Now we can setup and  run the demo
+Now we can setup and run the demo
+
 ```bash
 cd demo
 npm ci
@@ -350,20 +361,25 @@ npm run start:debug
 ```
 
 For the debug feature, also run:
+
 ```bash
 npm run start:debugServer
 ```
 
 ### Troubleshooting Demo Errors
+
 ---
 ### Error
-```
+
+```bash
 npm ERR! code 127
 npm ERR! path /workspaces/monaco-vscode-api
 npm ERR! command failed
 npm ERR! command sh -c ./scripts/install-vscode && node --loader ts-node/esm src/monaco-treemending.ts && patch-package
 ```
+
 ### Fix
+
 By default, git will change the line endings to whatever environment the repo was cloned into. If you are getting this error, you need to change the line endings in ./scripts from CRLF to LF. Optionally, you can set ```git config --global core.autocrlf input```
 
 ---
@@ -393,5 +409,4 @@ With this library, it would be possible to plug vscode-languageclient directly o
 - Providing some examples on how to build an app using it
 - Adding some tools (DisposableCollection)
 
-
-[^1]: https://code.visualstudio.com/docs/devcontainers/containers
+[^1]: [https://code.visualstudio.com/docs/devcontainers/containers](https://code.visualstudio.com/docs/devcontainers/containers)
