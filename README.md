@@ -360,7 +360,7 @@ npm ERR! command failed
 npm ERR! command sh -c ./scripts/install-vscode && node --loader ts-node/esm src/monaco-treemending.ts && patch-package
 ```
 ### Fix
-By default, git will change the line endings to whatever environnement the repo was cloned into. If you are getting this error, you need to change the line endings in ./scripts from CRLF to LF. Optionally, you can set ```git config --global core.autocrlf input```
+By default, git will change the line endings to whatever environment the repo was cloned into. If you are getting this error, you need to change the line endings in ./scripts from CRLF to LF. Optionally, you can set ```git config --global core.autocrlf input```
 
 ---
 
