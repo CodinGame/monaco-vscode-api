@@ -11,7 +11,8 @@
     "start:debug": "vite --config vite.config.ts --debug --force",
     "build": "vite --config vite.config.ts build",
     "build:github": "vite --config vite.github-page.config.ts build && touch dist/.nojekyll",
-    "start:debugServer": "node --loader ts-node/esm src/debugServer.ts"
+    "start:debugServer": "node --loader ts-node/esm src/debugServer.ts",
+    "start:extHostServer": "vscode-ext-host-server --without-connection-token"
   },
   "devDependencies": {
     "@types/dockerode": "^3.3.19",
