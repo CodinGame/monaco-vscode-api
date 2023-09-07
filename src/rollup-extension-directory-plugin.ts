@@ -69,13 +69,25 @@ export default function plugin ({
             ...await getAdditionalResources(manifest, id)
           ]))
 
+          function generateFileRegistrationInstruction (filePath: string, importPath: string, mimeType?: string) {
+            return `registerFileUrl('${filePath}', new URL('${importPath}', import.meta.url).toString()${mimeType != null ? `, '${mimeType}'` : ''})`
+          }
+
           return `
 import manifest from '${manifestPath}'
 import { registerExtension } from 'vscode/extensions'
 
 const { registerFileUrl } = registerExtension(manifest)
-${resources.map(resource => (`
-registerFileUrl('${resource.path}', new URL('${path.resolve(id, resource.path)}', import.meta.url).toString()${resource.mimeType != null ? `, '${resource.mimeType}'` : ''})`)).join('\n')}
+${resources.map(resource => {
+  const lines: string[] = [
+    generateFileRegistrationInstruction(resource.path, path.resolve(id, resource.realPath ?? resource.path), resource.mimeType)
+  ]
+  if (resource.realPath != null && resource.realPath !== resource.path) {
+    lines.push(generateFileRegistrationInstruction(resource.realPath, path.resolve(id, resource.realPath), resource.mimeType))
+  }
+
+  return lines.join('\n')
+}).join('\n')}
         `
         } catch (err) {
           console.error(err, (err as Error).stack)
