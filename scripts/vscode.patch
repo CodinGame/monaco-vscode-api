@@ -1765,3 +1765,28 @@ index ad67fb4f422..fadf86cece5 100644
  
  	// ensure to limit buffer for guessing due to https://github.com/aadsm/jschardet/issues/53
  	const limitedBuffer = buffer.slice(0, AUTO_ENCODING_GUESS_MAX_BYTES);
+diff --git a/src/vs/workbench/services/workspaces/browser/abstractWorkspaceEditingService.ts b/src/vs/workbench/services/workspaces/browser/abstractWorkspaceEditingService.ts
+index 4653e395be9..1eccfce4bf4 100644
+--- a/src/vs/workbench/services/workspaces/browser/abstractWorkspaceEditingService.ts
++++ b/src/vs/workbench/services/workspaces/browser/abstractWorkspaceEditingService.ts
+@@ -14,7 +14,7 @@ import { ConfigurationScope, IConfigurationRegistry, Extensions as Configuration
+ import { Registry } from 'vs/platform/registry/common/platform';
+ import { ICommandService } from 'vs/platform/commands/common/commands';
+ import { distinct, firstOrDefault } from 'vs/base/common/arrays';
+-import { basename, isEqual, isEqualAuthority, joinPath, removeTrailingPathSeparator } from 'vs/base/common/resources';
++import { basename, isEqual, joinPath, removeTrailingPathSeparator } from 'vs/base/common/resources';
+ import { INotificationService, Severity } from 'vs/platform/notification/common/notification';
+ import { IFileService } from 'vs/platform/files/common/files';
+ import { IWorkbenchEnvironmentService } from 'vs/workbench/services/environment/common/environmentService';
+@@ -169,11 +169,6 @@ export abstract class AbstractWorkspaceEditingService implements IWorkspaceEditi
+ 
+ 	private async doAddFolders(foldersToAdd: IWorkspaceFolderCreationData[], index?: number, donotNotifyError: boolean = false): Promise<void> {
+ 		const state = this.contextService.getWorkbenchState();
+-		const remoteAuthority = this.environmentService.remoteAuthority;
+-		if (remoteAuthority) {
+-			// https://github.com/microsoft/vscode/issues/94191
+-			foldersToAdd = foldersToAdd.filter(folder => folder.uri.scheme !== Schemas.file && (folder.uri.scheme !== Schemas.vscodeRemote || isEqualAuthority(folder.uri.authority, remoteAuthority)));
+-		}
+ 
+ 		// If we are in no-workspace or single-folder workspace, adding folders has to
+ 		// enter a workspace.
