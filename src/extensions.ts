@@ -6,9 +6,10 @@ import { getExtensionId } from 'vs/platform/extensionManagement/common/extension
 import { DisposableStore, IDisposable } from 'vs/base/common/lifecycle'
 import { ITranslations, localizeManifest } from 'vs/platform/extensionManagement/common/extensionNls'
 import { joinPath } from 'vs/base/common/resources'
-import { FileAccess } from 'monaco-editor/esm/vs/base/common/network.js'
+import { FileAccess, Schemas } from 'vs/base/common/network'
 import { Barrier } from 'vs/base/common/async'
 import { ExtensionHostKind } from 'vs/workbench/services/extensions/common/extensionHostKind'
+import { IWorkbenchEnvironmentService } from 'vs/workbench/services/environment/common/environmentService'
 import { IExtensionWithExtHostKind, SimpleExtensionService, getLocalExtHostExtensionService } from './service-override/extensions'
 import { registerExtensionFile } from './service-override/files'
 import { setDefaultApi } from './api'
@@ -22,13 +23,29 @@ export async function initialize (): Promise<void> {
   })
 }
 
+interface RegisterExtensionParams {
+  defaultNLS?: ITranslations
+  builtin?: boolean
+  path?: string
+}
+
+interface RegisterRemoteExtensionParams extends RegisterExtensionParams {
+  path: string
+}
+
 interface RegisterExtensionResult {
   id: string
-  registerFileUrl: (path: string, url: string) => IDisposable
   dispose (): Promise<void>
 }
 
-interface RegisterLocalProcessExtensionResult extends RegisterExtensionResult {
+interface RegisterRemoteExtensionResult extends RegisterExtensionResult {
+}
+
+interface RegisterLocalExtensionResult extends RegisterExtensionResult {
+  registerFileUrl: (path: string, url: string) => IDisposable
+}
+
+interface RegisterLocalProcessExtensionResult extends RegisterLocalExtensionResult {
   getApi (): Promise<typeof vscode>
   setAsDefaultApi (): Promise<void>
 }
@@ -71,37 +88,58 @@ async function deltaExtensions (toAdd: IExtensionWithExtHostKind[], toRemove: IE
   await lastPromise
 }
 
-export function registerExtension (manifest: IExtensionManifest, extHostKind: ExtensionHostKind.LocalProcess, defaultNLS?: ITranslations, builtin?: boolean): RegisterLocalProcessExtensionResult
-export function registerExtension (manifest: IExtensionManifest, extHostKind?: ExtensionHostKind, defaultNLS?: ITranslations, builtin?: boolean): RegisterExtensionResult
-export function registerExtension (manifest: IExtensionManifest, extHostKind?: ExtensionHostKind, defaultNLS?: ITranslations, builtin: boolean = manifest.publisher === 'vscode'): RegisterExtensionResult {
+export function registerExtension (manifest: IExtensionManifest, extHostKind: ExtensionHostKind.LocalProcess, params: RegisterExtensionParams): RegisterLocalProcessExtensionResult
+export function registerExtension (manifest: IExtensionManifest, extHostKind: ExtensionHostKind.LocalWebWorker, params: RegisterExtensionParams): RegisterLocalExtensionResult
+export function registerExtension (manifest: IExtensionManifest, extHostKind: ExtensionHostKind.Remote, params: RegisterRemoteExtensionParams): RegisterRemoteExtensionResult
+export function registerExtension (manifest: IExtensionManifest, extHostKind?: ExtensionHostKind, params?: RegisterExtensionParams): RegisterExtensionResult
+export function registerExtension (manifest: IExtensionManifest, extHostKind?: ExtensionHostKind, { defaultNLS, builtin = manifest.publisher === 'vscode', path = '/' }: RegisterExtensionParams = {}): RegisterExtensionResult {
   const disposableStore = new DisposableStore()
   const localizedManifest = defaultNLS != null ? localizeManifest(manifest, defaultNLS) : manifest
 
   const id = getExtensionId(localizedManifest.publisher, localizedManifest.name)
-  const location = URI.from({ scheme: 'extension', authority: id, path: '/' })
 
-  const extension: IExtensionWithExtHostKind = {
+  let extension: IExtensionWithExtHostKind = {
     manifest: localizedManifest,
     type: builtin ? ExtensionType.System : ExtensionType.User,
     isBuiltin: builtin,
     identifier: { id },
-    location,
+    location: URI.from({ scheme: 'extension', authority: id, path }),
     targetPlatform: TargetPlatform.WEB,
     isValid: true,
     validations: [],
     extHostKind
   }
 
-  const addExtensionPromise = deltaExtensions([extension], [])
+  const addExtensionPromise = (async () => {
+    if (extHostKind === ExtensionHostKind.Remote) {
+      const remoteAuthority = (await getService(IWorkbenchEnvironmentService)).remoteAuthority
+      extension = {
+        ...extension,
+        location: URI.from({ scheme: Schemas.vscodeRemote, authority: remoteAuthority, path })
+      }
+    }
 
-  const api: RegisterExtensionResult = {
-    id: extension.identifier.id,
-    registerFileUrl: (path: string, url: string, mimeType?: string) => {
-      return registerExtensionFileUrl(extension.location, path, url, mimeType)
-    },
+    await deltaExtensions([extension], [])
+
+    return extension
+  })()
+
+  let api: RegisterExtensionResult = {
+    id,
     async dispose () {
+      const extension = await addExtensionPromise
       await deltaExtensions([], [extension])
       disposableStore.dispose()
+    }
+  }
+
+  if (extHostKind !== ExtensionHostKind.Remote) {
+    function registerFileUrl (path: string, url: string, mimeType?: string) {
+      return registerExtensionFileUrl(extension.location, path, url, mimeType)
+    }
+    api = <RegisterLocalExtensionResult>{
+      ...api,
+      registerFileUrl
     }
   }
 
@@ -111,7 +149,7 @@ export function registerExtension (manifest: IExtensionManifest, extHostKind?: E
       return (await getLocalExtHostExtensionService()).getApi(id)
     }
 
-    return <RegisterLocalProcessExtensionResult>{
+    api = <RegisterLocalProcessExtensionResult>{
       ...api,
       getApi,
       async setAsDefaultApi () {
