@@ -98,8 +98,6 @@ const REMOVE_WORKBENCH_CONTRIBUTIONS = new Set([
   'ResetConfigurationDefaultsOverridesCache',
   'ConfigurationMigrationWorkbenchContribution',
   'RegisterSearchViewContribution',
-  'RemoteTerminalBackendContribution',
-  'DebugStatusContribution',
   'ExtensionPoints'
 ])
 
