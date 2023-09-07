@@ -11,10 +11,11 @@ function toUrl (name: string): string | undefined {
   if (typeof url === 'function') {
     url = url()
   }
-  return new URL(url!, window.location.href).toString()
+  // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
+  return new URL(url ?? '', globalThis.location?.href ?? import.meta.url).toString()
 }
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
-(window as any).monacoRequire = {
+(globalThis as any).monacoRequire = {
   toUrl
 }
