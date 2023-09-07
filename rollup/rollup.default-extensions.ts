@@ -76,7 +76,7 @@ export default rollup.defineConfig(defaultExtensions.map(name => (<rollup.Rollup
       include: `${DEFAULT_EXTENSIONS_PATH}/**/*`,
       transformManifest (manifest) {
         if (manifest.name === 'configuration-editing') {
-          return {
+          manifest = {
             ...manifest,
             contributes: {
               ...manifest.contributes,
@@ -89,7 +89,10 @@ export default rollup.defineConfig(defaultExtensions.map(name => (<rollup.Rollup
             }
           }
         }
-        return manifest
+        return {
+          ...manifest,
+          main: undefined
+        }
       },
       async getAdditionalResources (manifest, directory) {
         if (manifest.name === 'typescript-language-features') {
