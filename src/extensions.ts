@@ -77,8 +77,8 @@ async function deltaExtensions (toAdd: IExtensionWithExtHostKind[], toRemove: IE
   _toRemove.push(...toRemove)
 
   if (lastPromise == null) {
-    const extensionService = await getService(IExtensionService) as SimpleExtensionService
     lastPromise = new Promise(resolve => setTimeout(resolve)).then(async () => {
+      const extensionService = await getService(IExtensionService) as SimpleExtensionService
       await extensionService.deltaExtensions(_toAdd, _toRemove)
       _toAdd = []
       _toRemove = []
