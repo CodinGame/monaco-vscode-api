@@ -86,6 +86,9 @@ export default defineConfig({
       allow: ['../'] // allow to load codicon.ttf from monaco-editor in the parent folder
     }
   },
+  define: {
+    rootDirectory: JSON.stringify(__dirname)
+  },
   resolve: {
     dedupe: ['monaco-editor']
   }

@@ -14,6 +14,7 @@ import './features/filesystem'
 import './features/intellisense'
 import './features/notifications'
 import './features/terminal'
+import './features/remoteExtension'
 
 import 'vscode/default-extensions/clojure'
 import 'vscode/default-extensions/coffeescript'

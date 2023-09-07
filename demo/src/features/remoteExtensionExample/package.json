@@ -1,0 +1,10 @@
+{
+    "name": "remote_extension_example",
+    "publisher": "codingame",
+    "version": "1.0.0",
+    "activationEvents": ["*"],
+    "engines": {
+      "vscode": "*"
+    },
+    "main": "./main.js"
+  }
