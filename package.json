@@ -156,7 +156,9 @@
     "ts-morph": "^19.0.0",
     "ts-node": "^10.9.1",
     "typescript": "5.1.6",
-    "zx": "^7.2.3"
+    "zx": "^7.2.3",
+    "xterm-headless": "^5.2.1",
+    "graceful-fs": "^4.2.11"
   },
   "peerDependencies": {
     "@vscode/vscode-languagedetection": "^1.0.22",
@@ -170,7 +172,20 @@
     "xterm-addon-serialize": "0.10.0",
     "xterm-addon-unicode11": "0.5.0",
     "xterm-addon-webgl": "0.15.0",
-    "yauzl": "^2.10.0"
+    "yauzl": "^2.10.0",
+    "@microsoft/1ds-core-js": "^3.2.13",
+    "@microsoft/1ds-post-js": "^3.2.13",
+    "@parcel/watcher": "^2.3.0",
+    "@vscode/proxy-agent": "^0.17.2",
+    "@vscode/ripgrep": "^1.15.5",
+    "@vscode/spdlog": "^0.13.11",
+    "@vscode/windows-process-tree": "^0.5.0",
+    "cookie": "^0.5.0",
+    "kerberos": "^2.0.2",
+    "keytar": "^7.9.0",
+    "node-pty": "^1.0.0",
+    "vscode-regexpp": "^3.1.0",
+    "yazl": "^2.5.1"
   },
   "overrides": {
     "typescript": "5.1.6",
