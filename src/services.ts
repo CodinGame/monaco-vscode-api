@@ -129,6 +129,7 @@ export { IHistoryService, GoFilter, GoScope } from 'vs/workbench/services/histor
 export { IRemoteAgentService } from 'vs/workbench/services/remote/common/remoteAgentService'
 export { IRemoteAuthorityResolverService } from 'vs/platform/remote/common/remoteAuthorityResolver'
 export { IRemoteSocketFactoryService } from 'vs/platform/remote/common/remoteSocketFactoryService'
+export { ITerminalService, ITerminalInstanceService } from 'vs/workbench/contrib/terminal/browser/terminal'
 
 // Export all Notification service parts
 export {
