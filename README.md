@@ -340,7 +340,7 @@ It includes:
 
 ### Demo Instructions
 
-⚠️ Make sure to open the project in a Dev Container[^1] ⚠️
+⚠️ Make sure to open the project in a Dev Container[^1] or connect to the container first BEFORE running any commands⚠️
 
 First we need to install and build the dependencies the demo will use.
 
