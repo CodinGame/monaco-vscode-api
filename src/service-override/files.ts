@@ -5,7 +5,7 @@ import { FileService } from 'vs/platform/files/common/fileService'
 import { ILogService } from 'vs/platform/log/common/log'
 import { InMemoryFileSystemProvider } from 'vs/platform/files/common/inMemoryFilesystemProvider'
 import { URI } from 'vs/base/common/uri'
-import { FileChangeType, FilePermission, FileSystemProviderCapabilities, FileType } from 'vscode/src/vs/platform/files/common/files'
+import { FileChangeType, FilePermission, FileSystemProviderCapabilities, FileType, IFileSystemProvider } from 'vscode/src/vs/platform/files/common/files'
 import { createFileSystemProviderError, FileSystemProviderError, FileSystemProviderErrorCode, IFileChange, IFileDeleteOptions, IFileOverwriteOptions, IFileService, IFileSystemProviderWithFileReadWriteCapability, IFileWriteOptions, IStat, IWatchOptions } from 'vs/platform/files/common/files'
 import { DisposableStore, IDisposable, Disposable, toDisposable } from 'vs/base/common/lifecycle'
 import { extUri, joinPath } from 'vs/base/common/resources'
@@ -404,6 +404,57 @@ class MkdirpOnWriteInMemoryFileSystemProvider extends InMemoryFileSystemProvider
   }
 }
 
+class DelegateFileSystemProvider implements IFileSystemProvider {
+  constructor (private options: {
+    delegate: IFileSystemProvider
+    toDelegate: (uri: URI) => URI
+    fromDeletate: (uri: URI) => URI
+  }) {}
+
+  get capabilities (): FileSystemProviderCapabilities { return this.options.delegate.capabilities }
+  onDidChangeCapabilities = this.options.delegate.onDidChangeCapabilities
+  onDidChangeFile = Event.map(this.options.delegate.onDidChangeFile, changes => changes.map(change => ({
+    type: change.type,
+    resource: this.options.fromDeletate(change.resource)
+  })))
+
+  readFile = this.options.delegate.readFile != null
+    ? (resource: URI): Promise<Uint8Array> => {
+        return this.options.delegate.readFile!(this.options.toDelegate(resource))
+      }
+    : undefined
+
+  writeFile = this.options.delegate.writeFile != null
+    ? (resource: URI, content: Uint8Array, opts: IFileWriteOptions): Promise<void> => {
+        return this.options.delegate.writeFile!(this.options.toDelegate(resource), content, opts)
+      }
+    : undefined
+
+  watch (resource: URI, opts: IWatchOptions): IDisposable {
+    return this.options.delegate.watch(this.options.toDelegate(resource), opts)
+  }
+
+  stat (resource: URI): Promise<IStat> {
+    return this.options.delegate.stat(this.options.toDelegate(resource))
+  }
+
+  mkdir (resource: URI): Promise<void> {
+    return this.options.delegate.mkdir(this.options.toDelegate(resource))
+  }
+
+  readdir (resource: URI): Promise<[string, FileType][]> {
+    return this.options.delegate.readdir(this.options.toDelegate(resource))
+  }
+
+  delete (resource: URI, opts: IFileDeleteOptions): Promise<void> {
+    return this.options.delegate.delete(this.options.toDelegate(resource), opts)
+  }
+
+  rename (from: URI, to: URI, opts: IFileOverwriteOptions): Promise<void> {
+    return this.options.delegate.rename(this.options.toDelegate(from), this.options.toDelegate(to), opts)
+  }
+}
+
 const fileSystemProvider = new OverlayFileSystemProvider()
 fileSystemProvider.register(0, new MkdirpOnWriteInMemoryFileSystemProvider())
 
@@ -472,5 +523,6 @@ export {
   RegisteredFileSystemProvider,
   RegisteredFile,
   RegisteredReadOnlyFile,
-  RegisteredMemoryFile
+  RegisteredMemoryFile,
+  DelegateFileSystemProvider
 }
