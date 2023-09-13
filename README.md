@@ -98,6 +98,20 @@ There are workarounds for both:
 }
 ```
 
+### If using Angular and getting `Not allowed to load local resource:` errors
+
+*The short version*: set up and use a custom webpack config file and add this under `module`:
+```typescript
+parser: {
+  javascript: {
+    url: true,
+  },
+},
+```
+
+See [this issue](https://github.com/CodinGame/monaco-vscode-api/issues/186) or this [StackOverflow answer](https://stackoverflow.com/a/75252098) for more details, and [this discussion](https://github.com/angular/angular-cli/issues/24617) for more context.
+
+
 # Usage
 
 ## Monaco standalone services
