@@ -1,4 +1,4 @@
-import { Event } from 'vs/base/common/event'
+import { Event, IDynamicListEventMultiplexer } from 'vs/base/common/event'
 import { DomEmitter } from 'vs/base/browser/event'
 import { URI } from 'vs/base/common/uri'
 import { trackFocus } from 'vs/base/browser/dom'
@@ -51,7 +51,7 @@ import { BrowserPathService } from 'vs/workbench/services/path/browser/pathServi
 import { IRemoteAgentService } from 'vs/workbench/services/remote/common/remoteAgentService'
 import { ICustomEndpointTelemetryService } from 'vs/platform/telemetry/common/telemetry'
 import { NullEndpointTelemetryService } from 'vs/platform/telemetry/common/telemetryUtils'
-import { ISearchComplete, ISearchService } from 'vs/workbench/services/search/common/search'
+import { IFileMatch, ISearchComplete, ISearchProgressItem, ISearchService, ITextQuery } from 'vs/workbench/services/search/common/search'
 import { IRequestService } from 'vs/platform/request/common/request'
 import { IEditSessionIdentityService } from 'vs/platform/workspace/common/editSessions'
 import { IWorkspaceEditingService } from 'vs/workbench/services/workspaces/common/workspaceEditing'
@@ -93,13 +93,12 @@ import { ITreeViewsDnDService } from 'vs/editor/common/services/treeViewsDndServ
 import { TreeviewsService } from 'vs/workbench/services/views/common/treeViewsService'
 import { ITreeViewsService } from 'vs/workbench/services/views/browser/treeViewsService'
 import { IBreadcrumbsService } from 'vs/workbench/browser/parts/editor/breadcrumbs'
-import { ISemanticSimilarityService } from 'vs/workbench/services/semanticSimilarity/common/semanticSimilarityService'
 import { IOutlineService } from 'vs/workbench/services/outline/browser/outline'
 import { IUpdateService, State } from 'vs/platform/update/common/update'
 import { IStatusbarService } from 'vs/workbench/services/statusbar/browser/statusbar'
 import { IExtensionGalleryService, IExtensionManagementService, ILocalExtension } from 'vs/platform/extensionManagement/common/extensionManagement'
 import { IModelService } from 'vs/editor/common/services/model'
-import { ITerminalEditorService, ITerminalGroupService, ITerminalInstance, ITerminalInstanceService, ITerminalService, TerminalConnectionState } from 'vs/workbench/contrib/terminal/browser/terminal'
+import { IDetachedTerminalInstance, IDetachedXTermOptions, ITerminalEditorService, ITerminalGroupService, ITerminalInstance, ITerminalInstanceService, ITerminalService, TerminalConnectionState } from 'vs/workbench/contrib/terminal/browser/terminal'
 import { ITerminalProfileResolverService, ITerminalProfileService } from 'vs/workbench/contrib/terminal/common/terminal'
 import { ITerminalLogService, TerminalLocation } from 'vs/platform/terminal/common/terminal'
 import { ITerminalContributionService } from 'vs/workbench/contrib/terminal/common/terminalExtensionPoints'
@@ -113,7 +112,7 @@ import { IKeybindingEditingService } from 'vs/workbench/services/keybinding/comm
 import { INotebookService } from 'vs/workbench/contrib/notebook/common/notebookService'
 import { ISearchHistoryService } from 'vs/workbench/contrib/search/common/searchHistoryService'
 import { IReplaceService } from 'vs/workbench/contrib/search/browser/replace'
-import { ISearchWorkbenchService } from 'vs/workbench/contrib/search/browser/searchModel'
+import { ISearchViewModelWorkbenchService } from 'vs/workbench/contrib/search/browser/searchModel'
 import { INotebookEditorService } from 'vs/workbench/contrib/notebook/browser/services/notebookEditorService'
 import { INotebookEditorModelResolverService } from 'vs/workbench/contrib/notebook/common/notebookEditorModelResolverService'
 import { IWorkingCopyEditorService, WorkingCopyEditorService } from 'vs/workbench/services/workingCopy/common/workingCopyEditorService'
@@ -163,10 +162,12 @@ import { ITestProfileService } from 'vs/workbench/contrib/testing/common/testPro
 import { IEncryptionService } from 'vs/platform/encryption/common/encryptionService'
 import { ITestResultService } from 'vs/workbench/contrib/testing/common/testResultService'
 import { IDiagnosticsService, NullDiagnosticsService } from 'vs/platform/diagnostics/common/diagnostics'
-import { INotebookSearchService } from 'vs/workbench/contrib/search/browser/notebookSearch'
+import { INotebookSearchService } from 'vs/workbench/contrib/search/common/notebookSearch'
 import { ResourceSet } from 'vs/base/common/map'
 import { IEditorGroupView } from 'vs/workbench/browser/parts/editor/editor'
 import { unsupported } from './tools'
+import { CancellationToken } from 'vs/base/common/cancellation'
+import { TerminalCapability, ITerminalCapabilityImplMap } from 'vs/platform/terminal/common/capabilities/capabilities'
 
 class NullLoggerService extends AbstractLoggerService {
   constructor () {
@@ -742,6 +743,8 @@ registerSingleton(IExtensionHostDebugService, class ExtensionHostDebugService im
 }, InstantiationType.Eager)
 
 registerSingleton(IViewsService, class ViewsService implements IViewsService {
+  getFocusedViewName = unsupported
+  onDidChangeFocusedView = Event.None
   _serviceBrand: undefined
   onDidChangeViewContainerVisibility = Event.None
   isViewContainerVisible = () => false
@@ -866,6 +869,9 @@ registerSingleton(ICustomEndpointTelemetryService, NullEndpointTelemetryService,
 class MonacoSearchService implements ISearchService {
   _serviceBrand: undefined
   constructor (@IModelService private modelService: IModelService) {}
+  textSearchSplitSyncAsync(query: ITextQuery, token?: CancellationToken | undefined, onProgress?: ((result: ISearchProgressItem) => void) | undefined, notebookFilesToIgnore?: ResourceSet | undefined, asyncNotebookFilesToIgnore?: Promise<ResourceSet> | undefined): { syncResults: ISearchComplete; asyncResults: Promise<ISearchComplete> } {
+    throw new Error('Method not implemented.')
+  }
 
   async textSearch (): Promise<ISearchComplete> {
     return {
@@ -1135,13 +1141,6 @@ registerSingleton(IBreadcrumbsService, class BreadcrumbsService implements IBrea
   getWidget = () => undefined
 }, InstantiationType.Eager)
 
-registerSingleton(ISemanticSimilarityService, class SemanticSimilarityService implements ISemanticSimilarityService {
-  _serviceBrand: undefined
-  isEnabled = () => false
-  getSimilarityScore = unsupported
-  registerSemanticSimilarityProvider = unsupported
-}, InstantiationType.Delayed)
-
 registerSingleton(IOutlineService, class OutlineService implements IOutlineService {
   _serviceBrand: undefined
   onDidChange = Event.None
@@ -1198,6 +1197,16 @@ registerSingleton(IExtensionGalleryService, class ExtensionGalleryService implem
 }, InstantiationType.Eager)
 
 registerSingleton(ITerminalService, class TerminalService implements ITerminalService {
+  onInstanceEvent<T>(getEvent: (instance: ITerminalInstance) => Event<T>): IDynamicListEventMultiplexer<T> {
+    throw new Error('Method not implemented.')
+  }
+  onInstanceCapabilityEvent<T extends TerminalCapability, K>(capabilityId: T, getEvent: (capability: ITerminalCapabilityImplMap[T]) => Event<K>): IDynamicListEventMultiplexer<{ instance: ITerminalInstance; data: K }> {
+    throw new Error('Method not implemented.')
+  }
+  createDetachedTerminal(options: IDetachedXTermOptions): Promise<IDetachedTerminalInstance> {
+    return Promise.reject(unsupported)
+  }
+
   onDidChangeSelection = Event.None
   _serviceBrand: undefined
 
@@ -1292,6 +1301,7 @@ registerSingleton(ITerminalEditorService, class TerminalEditorService implements
 }, InstantiationType.Delayed)
 
 registerSingleton(ITerminalGroupService, class TerminalGroupService implements ITerminalGroupService {
+  lastAccessedMenu: 'inline-tab' | 'tab-list' = 'inline-tab'
   _serviceBrand: undefined
   instances = []
   groups = []
@@ -1560,7 +1570,7 @@ registerSingleton(INotebookEditorService, class NotebookEditorService implements
   listNotebookEditors = () => []
 }, InstantiationType.Delayed)
 
-registerSingleton(ISearchWorkbenchService, class SearchWorkbenchService implements ISearchWorkbenchService {
+registerSingleton(ISearchViewModelWorkbenchService, class SearchWorkbenchService implements ISearchViewModelWorkbenchService {
   _serviceBrand: undefined
   get searchModel () {
     return unsupported()
@@ -1686,6 +1696,9 @@ registerSingleton(IRemoteAuthorityResolverService, class RemoteAuthorityResolver
 registerSingleton(IExternalUriOpenerService, ExternalUriOpenerService, InstantiationType.Delayed)
 
 registerSingleton(IAccessibleViewService, class AccessibleViewService implements IAccessibleViewService {
+  showAccessibleViewHelp = unsupported
+  goToSymbol = unsupported
+  disableHint = unsupported
   next = unsupported
   previous = unsupported
   getOpenAriaHint = unsupported
@@ -1892,6 +1905,7 @@ registerSingleton(IInteractiveDocumentService, class InteractiveDocumentService 
 }, InstantiationType.Delayed)
 
 registerSingleton(IInlineChatService, class InlineChatService implements IInlineChatService {
+  onDidChangeProviders = Event.None
   _serviceBrand: undefined
   addProvider = unsupported
   getAllProvider = () => []
@@ -2122,14 +2136,15 @@ registerSingleton(IUserDataInitializationService, class UserDataInitializationSe
 registerSingleton(IDiagnosticsService, NullDiagnosticsService, InstantiationType.Delayed)
 
 registerSingleton(INotebookSearchService, class NotebookSearchService implements INotebookSearchService {
-  _serviceBrand: undefined
-  async notebookSearch () {
+  notebookSearch(query: ITextQuery, token: CancellationToken | undefined, searchInstanceID: string, onProgress?: ((result: ISearchProgressItem) => void) | undefined):
+  { openFilesToScan: ResourceSet; completeData: Promise<ISearchComplete>; allScannedFiles: Promise<ResourceSet> } {
     return {
       completeData: {
-        messages: [],
-        results: []
+        results: [],
+        messages: []
       },
       scannedFiles: new ResourceSet()
     }
   }
+  _serviceBrand: undefined
 }, InstantiationType.Delayed)

@@ -1,8 +1,8 @@
 diff --git a/.eslintrc.json b/.eslintrc.json
-index 2f52208fa18..0c52cf94757 100644
+index 0644079623d..cc233dc5888 100644
 --- a/.eslintrc.json
 +++ b/.eslintrc.json
-@@ -264,6 +264,7 @@
+@@ -267,6 +267,7 @@
  							"v8-inspect-profiler",
  							"vscode-regexpp",
  							"vscode-textmate",
@@ -69,10 +69,10 @@ index 775a1be5996..ce8435bd920 100644
  				if (!/(^\.\/)|(^\.\.\/)/.test(relativePath)) {
  					relativePath = './' + relativePath;
 diff --git a/extensions/typescript-language-features/web/webServer.ts b/extensions/typescript-language-features/web/webServer.ts
-index 1688a93fcc0..fb57c8db79e 100644
+index 191c2d03f63..f1526cf68ac 100644
 --- a/extensions/typescript-language-features/web/webServer.ts
 +++ b/extensions/typescript-language-features/web/webServer.ts
-@@ -44,7 +44,7 @@ function fromResource(extensionUri: URI, uri: URI) {
+@@ -46,7 +46,7 @@ function fromResource(extensionUri: URI, uri: URI) {
  		&& uri.path.endsWith('.d.ts')) {
  		return uri.path;
  	}
@@ -81,7 +81,7 @@ index 1688a93fcc0..fb57c8db79e 100644
  }
  
  function updateWatch(event: 'create' | 'change' | 'delete', uri: URI, extensionUri: URI) {
-@@ -196,7 +196,7 @@ function createServerHost(extensionUri: URI, logger: ts.server.Logger, apiClient
+@@ -207,7 +207,7 @@ function createServerHost(extensionUri: URI, logger: ts.server.Logger, apiClient
  
  			const scriptPath = combinePaths(packageRoot, browser);
  			try {
@@ -90,7 +90,7 @@ index 1688a93fcc0..fb57c8db79e 100644
  				return { module, error: undefined };
  			} catch (e) {
  				return { module: undefined, error: e };
-@@ -438,7 +438,7 @@ function createServerHost(extensionUri: URI, logger: ts.server.Logger, apiClient
+@@ -532,7 +532,7 @@ function createServerHost(extensionUri: URI, logger: ts.server.Logger, apiClient
  			return URI.from({
  				scheme: extensionUri.scheme,
  				authority: extensionUri.authority,
@@ -100,13 +100,13 @@ index 1688a93fcc0..fb57c8db79e 100644
  		}
  
 diff --git a/src/vs/base/browser/defaultWorkerFactory.ts b/src/vs/base/browser/defaultWorkerFactory.ts
-index 9cab3604196..b27fc0eb96d 100644
+index 4f42810f0bd..58b0747c812 100644
 --- a/src/vs/base/browser/defaultWorkerFactory.ts
 +++ b/src/vs/base/browser/defaultWorkerFactory.ts
-@@ -4,7 +4,9 @@
-  *--------------------------------------------------------------------------------------------*/
+@@ -5,7 +5,9 @@
  
  import { createTrustedTypesPolicy } from 'vs/base/browser/trustedTypes';
+ import { onUnexpectedError } from 'vs/base/common/errors';
 +// ESM-comment-begin
  import { COI } from 'vs/base/common/network';
 +// ESM-comment-end
@@ -253,7 +253,7 @@ index 23d547570e9..31dfb4fd8d4 100644
  
  export * from 'vs/editor/editor.api';
 diff --git a/src/vs/editor/standalone/browser/standaloneServices.ts b/src/vs/editor/standalone/browser/standaloneServices.ts
-index f026f61f400..706d3e15da0 100644
+index 01f2c6987ac..5d6abf9d561 100644
 --- a/src/vs/editor/standalone/browser/standaloneServices.ts
 +++ b/src/vs/editor/standalone/browser/standaloneServices.ts
 @@ -517,10 +517,14 @@ export class StandaloneKeybindingService extends AbstractKeybindingService {
@@ -294,7 +294,7 @@ index 67e34826627..7c5287d6a32 100644
  			telemetry: this.telemetry,
  			storageKey: ASSIGNMENT_STORAGE_KEY,
 diff --git a/src/vs/platform/telemetry/common/1dsAppender.ts b/src/vs/platform/telemetry/common/1dsAppender.ts
-index 02295cc4968..60d72be20b4 100644
+index ccfbc3f7d9b..5fe46b464b1 100644
 --- a/src/vs/platform/telemetry/common/1dsAppender.ts
 +++ b/src/vs/platform/telemetry/common/1dsAppender.ts
 @@ -5,7 +5,6 @@
@@ -371,10 +371,10 @@ index 43ee94f3893..7c265cd7752 100644
  			const messageHandle = this._notificationService.notify({
  				severity,
 diff --git a/src/vs/workbench/api/browser/statusBarExtensionPoint.ts b/src/vs/workbench/api/browser/statusBarExtensionPoint.ts
-index cd2e439f8f6..fcdc9a28ce2 100644
+index 99dd3279fe8..b692381eaa2 100644
 --- a/src/vs/workbench/api/browser/statusBarExtensionPoint.ts
 +++ b/src/vs/workbench/api/browser/statusBarExtensionPoint.ts
-@@ -56,7 +56,7 @@ export interface IExtensionStatusBarItemService {
+@@ -57,7 +57,7 @@ export interface IExtensionStatusBarItemService {
  }
  
  
@@ -384,10 +384,10 @@ index cd2e439f8f6..fcdc9a28ce2 100644
  	declare readonly _serviceBrand: undefined;
  
 diff --git a/src/vs/workbench/api/common/extHost.protocol.ts b/src/vs/workbench/api/common/extHost.protocol.ts
-index ec414fd9269..ebda0de7819 100644
+index 3c894ef8694..8995e4932e8 100644
 --- a/src/vs/workbench/api/common/extHost.protocol.ts
 +++ b/src/vs/workbench/api/common/extHost.protocol.ts
-@@ -1305,6 +1305,7 @@ export interface MainThreadExtensionServiceShape extends IDisposable {
+@@ -1353,6 +1353,7 @@ export interface MainThreadExtensionServiceShape extends IDisposable {
  	$onExtensionRuntimeError(extensionId: ExtensionIdentifier, error: SerializedError): void;
  	$setPerformanceMarks(marks: performance.PerformanceMark[]): Promise<void>;
  	$asBrowserUri(uri: UriComponents): Promise<UriComponents>;
@@ -396,7 +396,7 @@ index ec414fd9269..ebda0de7819 100644
  
  export interface SCMProviderFeatures {
 diff --git a/src/vs/workbench/api/common/extHostExtensionService.ts b/src/vs/workbench/api/common/extHostExtensionService.ts
-index 0c35ea254f3..3a913226546 100644
+index 0a0eebdd8a5..f98fffcec6f 100644
 --- a/src/vs/workbench/api/common/extHostExtensionService.ts
 +++ b/src/vs/workbench/api/common/extHostExtensionService.ts
 @@ -44,7 +44,7 @@ import { Schemas } from 'vs/base/common/network';
@@ -424,7 +424,7 @@ index 0c35ea254f3..3a913226546 100644
  		// Invalidate all proxies
  		this._extHostContext.dispose();
 diff --git a/src/vs/workbench/api/common/extensionHostMain.ts b/src/vs/workbench/api/common/extensionHostMain.ts
-index a06c4e93d8f..18c66beee89 100644
+index 40f1cdaf146..03ff0c1ffae 100644
 --- a/src/vs/workbench/api/common/extensionHostMain.ts
 +++ b/src/vs/workbench/api/common/extensionHostMain.ts
 @@ -12,7 +12,7 @@ import { MainContext, MainThreadConsoleShape } from 'vs/workbench/api/common/ext
@@ -852,10 +852,10 @@ index 1f593cd65c3..3de01b22110 100644
  
  	isVisible(): boolean {
 diff --git a/src/vs/workbench/contrib/terminal/browser/terminalInstance.ts b/src/vs/workbench/contrib/terminal/browser/terminalInstance.ts
-index f814059bd6d..1e2e43ff3eb 100644
+index 645bcb88540..34bee647bd3 100644
 --- a/src/vs/workbench/contrib/terminal/browser/terminalInstance.ts
 +++ b/src/vs/workbench/contrib/terminal/browser/terminalInstance.ts
-@@ -84,9 +84,8 @@ import { IHistoryService } from 'vs/workbench/services/history/common/history';
+@@ -83,9 +83,8 @@ import { IHistoryService } from 'vs/workbench/services/history/common/history';
  import { IWorkbenchLayoutService, Position } from 'vs/workbench/services/layout/browser/layoutService';
  import { IPathService } from 'vs/workbench/services/path/common/pathService';
  import { IPreferencesService } from 'vs/workbench/services/preferences/common/preferences';
@@ -863,10 +863,10 @@ index f814059bd6d..1e2e43ff3eb 100644
  import { ISimpleSelectedSuggestion } from 'vs/workbench/services/suggest/browser/simpleSuggestWidget';
 -import type { IMarker, Terminal as XTermTerminal } from 'xterm';
 +import { IMarker, Terminal as XTermTerminal, Terminal } from 'xterm';
+ import { AccessibilityCommandId } from 'vs/workbench/contrib/accessibility/common/accessibilityCommands';
  
  const enum Constants {
- 	/**
-@@ -686,7 +685,6 @@ export class TerminalInstance extends Disposable implements ITerminalInstance {
+@@ -694,7 +693,6 @@ export class TerminalInstance extends Disposable implements ITerminalInstance {
  			return xtermConstructor;
  		}
  		xtermConstructor = Promises.withAsyncBody<typeof XTermTerminal>(async (resolve) => {
@@ -875,7 +875,7 @@ index f814059bd6d..1e2e43ff3eb 100644
  			Terminal.strings.promptLabel = nls.localize('terminal.integrated.a11yPromptLabel', 'Terminal input');
  			Terminal.strings.tooMuchOutput = keybinding ? nls.localize('terminal.integrated.useAccessibleBuffer', 'Use the accessible buffer {0} to manually review output', keybinding.getLabel()) : nls.localize('terminal.integrated.useAccessibleBufferNoKb', 'Use the Terminal: Focus Accessible Buffer command to manually review output');
 diff --git a/src/vs/workbench/contrib/terminal/browser/terminalService.ts b/src/vs/workbench/contrib/terminal/browser/terminalService.ts
-index 27ff2a40b23..4397c477887 100644
+index 3a8d8a3d34c..7b9fe938a80 100644
 --- a/src/vs/workbench/contrib/terminal/browser/terminalService.ts
 +++ b/src/vs/workbench/contrib/terminal/browser/terminalService.ts
 @@ -19,7 +19,7 @@ import { IContextKey, IContextKeyService } from 'vs/platform/contextkey/common/c
@@ -892,10 +892,10 @@ index 27ff2a40b23..4397c477887 100644
  import { ITimerService } from 'vs/workbench/services/timer/browser/timerService';
  import { mark } from 'vs/base/common/performance';
 +import { Registry } from 'vs/platform/registry/common/platform';
- 
- export class TerminalService implements ITerminalService {
- 	declare _serviceBrand: undefined;
-@@ -215,7 +216,7 @@ export class TerminalService implements ITerminalService {
+ import { DeatachedTerminal } from 'vs/workbench/contrib/terminal/browser/detachedTerminal';
+ import { ITerminalCapabilityImplMap, TerminalCapability } from 'vs/platform/terminal/common/capabilities/capabilities';
+ import { createInstanceCapabilityEventMultiplexer } from 'vs/workbench/contrib/terminal/browser/terminalEvents';
+@@ -220,7 +221,7 @@ export class TerminalService extends Disposable implements ITerminalService {
  		this._handleInstanceContextKeys();
  		this._terminalShellTypeContextKey = TerminalContextKeys.shellType.bindTo(this._contextKeyService);
  		this._processSupportContextKey = TerminalContextKeys.processSupported.bindTo(this._contextKeyService);
@@ -905,7 +905,7 @@ index 27ff2a40b23..4397c477887 100644
  		this._terminalCountContextKey = TerminalContextKeys.count.bindTo(this._contextKeyService);
  		this._terminalEditorActive = TerminalContextKeys.terminalEditorActive.bindTo(this._contextKeyService);
 diff --git a/src/vs/workbench/contrib/terminal/browser/xterm/xtermTerminal.ts b/src/vs/workbench/contrib/terminal/browser/xterm/xtermTerminal.ts
-index 0eb141ad11a..6df7e017272 100644
+index 12aaa0b0bb6..9aac558f2c8 100644
 --- a/src/vs/workbench/contrib/terminal/browser/xterm/xtermTerminal.ts
 +++ b/src/vs/workbench/contrib/terminal/browser/xterm/xtermTerminal.ts
 @@ -35,7 +35,6 @@ import { DecorationAddon } from 'vs/workbench/contrib/terminal/browser/xterm/dec
@@ -916,7 +916,7 @@ index 0eb141ad11a..6df7e017272 100644
  import { SuggestAddon } from 'vs/workbench/contrib/terminal/browser/xterm/suggestAddon';
  import { IContextKey, IContextKeyService } from 'vs/platform/contextkey/common/contextkey';
  import { TerminalContextKeys } from 'vs/workbench/contrib/terminal/common/terminalContextKey';
-@@ -684,7 +683,7 @@ export class XtermTerminal extends DisposableStore implements IXtermTerminal, ID
+@@ -756,7 +755,7 @@ export class XtermTerminal extends DisposableStore implements IXtermTerminal, ID
  
  	protected async _getCanvasAddonConstructor(): Promise<typeof CanvasAddonType> {
  		if (!CanvasAddon) {
@@ -925,7 +925,7 @@ index 0eb141ad11a..6df7e017272 100644
  		}
  		return CanvasAddon;
  	}
-@@ -710,35 +709,35 @@ export class XtermTerminal extends DisposableStore implements IXtermTerminal, ID
+@@ -782,35 +781,35 @@ export class XtermTerminal extends DisposableStore implements IXtermTerminal, ID
  
  	protected async _getImageAddonConstructor(): Promise<typeof ImageAddonType> {
  		if (!ImageAddon) {
@@ -1271,7 +1271,7 @@ index f4707432371..7c5cdde39cc 100644
  	declare _serviceBrand: undefined;
  
 diff --git a/src/vs/workbench/services/textMate/browser/backgroundTokenization/textMateWorkerTokenizerController.ts b/src/vs/workbench/services/textMate/browser/backgroundTokenization/textMateWorkerTokenizerController.ts
-index 8c0d074883b..e34e7048683 100644
+index f40a12b0380..25979bc0001 100644
 --- a/src/vs/workbench/services/textMate/browser/backgroundTokenization/textMateWorkerTokenizerController.ts
 +++ b/src/vs/workbench/services/textMate/browser/backgroundTokenization/textMateWorkerTokenizerController.ts
 @@ -3,7 +3,6 @@
@@ -1291,7 +1291,7 @@ index 8c0d074883b..e34e7048683 100644
  
  export class TextMateWorkerTokenizerController extends Disposable {
  	private static _id = 0;
-@@ -177,7 +176,6 @@ export class TextMateWorkerTokenizerController extends Disposable {
+@@ -178,7 +177,6 @@ export class TextMateWorkerTokenizerController extends Disposable {
  		);
  
  		if (!this._applyStateStackDiffFn || !this._initialState) {
@@ -1391,7 +1391,7 @@ index 1ba671448d2..bec87c04f1e 100644
  					data: wasm,
  					print: (str: string) => {
 diff --git a/src/vs/workbench/services/textfile/common/encoding.ts b/src/vs/workbench/services/textfile/common/encoding.ts
-index 6675f732b0e..d46f0fd893d 100644
+index ad67fb4f422..fadf86cece5 100644
 --- a/src/vs/workbench/services/textfile/common/encoding.ts
 +++ b/src/vs/workbench/services/textfile/common/encoding.ts
 @@ -5,7 +5,6 @@
@@ -1399,10 +1399,10 @@ index 6675f732b0e..d46f0fd893d 100644
  import { Readable, ReadableStream, newWriteableStream, listenStream } from 'vs/base/common/stream';
  import { VSBuffer, VSBufferReadable, VSBufferReadableStream } from 'vs/base/common/buffer';
 -import { importAMDNodeModule } from 'vs/amdX';
+ import { CancellationTokenSource } from 'vs/base/common/cancellation';
  
  export const UTF8 = 'utf8';
- export const UTF8_with_bom = 'utf8bom';
-@@ -79,7 +78,7 @@ class DecoderStream implements IDecoderStream {
+@@ -80,7 +79,7 @@ class DecoderStream implements IDecoderStream {
  	static async create(encoding: string): Promise<DecoderStream> {
  		let decoder: IDecoderStream | undefined = undefined;
  		if (encoding !== UTF8) {
@@ -1411,7 +1411,7 @@ index 6675f732b0e..d46f0fd893d 100644
  			decoder = iconv.getDecoder(toNodeEncoding(encoding));
  		} else {
  			const utf8TextDecoder = new TextDecoder();
-@@ -210,7 +209,7 @@ export function toDecodeStream(source: VSBufferReadableStream, options: IDecodeS
+@@ -213,7 +212,7 @@ export function toDecodeStream(source: VSBufferReadableStream, options: IDecodeS
  }
  
  export async function toEncodeReadable(readable: Readable<string>, encoding: string, options?: { addBOM?: boolean }): Promise<VSBufferReadable> {
@@ -1420,7 +1420,7 @@ index 6675f732b0e..d46f0fd893d 100644
  	const encoder = iconv.getEncoder(toNodeEncoding(encoding), options);
  
  	let bytesWritten = false;
-@@ -259,7 +258,7 @@ export async function toEncodeReadable(readable: Readable<string>, encoding: str
+@@ -262,7 +261,7 @@ export async function toEncodeReadable(readable: Readable<string>, encoding: str
  }
  
  export async function encodingExists(encoding: string): Promise<boolean> {
@@ -1429,7 +1429,7 @@ index 6675f732b0e..d46f0fd893d 100644
  
  	return iconv.encodingExists(toNodeEncoding(encoding));
  }
-@@ -315,7 +314,7 @@ const IGNORE_ENCODINGS = ['ascii', 'utf-16', 'utf-32'];
+@@ -318,7 +317,7 @@ const IGNORE_ENCODINGS = ['ascii', 'utf-16', 'utf-32'];
   * Guesses the encoding from buffer.
   */
  async function guessEncodingByBuffer(buffer: VSBuffer): Promise<string | null> {
