@@ -1,4 +1,4 @@
-import { Event, IDynamicListEventMultiplexer } from 'vs/base/common/event'
+import { Event } from 'vs/base/common/event'
 import { DomEmitter } from 'vs/base/browser/event'
 import { URI } from 'vs/base/common/uri'
 import { trackFocus } from 'vs/base/browser/dom'
@@ -51,7 +51,7 @@ import { BrowserPathService } from 'vs/workbench/services/path/browser/pathServi
 import { IRemoteAgentService } from 'vs/workbench/services/remote/common/remoteAgentService'
 import { ICustomEndpointTelemetryService } from 'vs/platform/telemetry/common/telemetry'
 import { NullEndpointTelemetryService } from 'vs/platform/telemetry/common/telemetryUtils'
-import { IFileMatch, ISearchComplete, ISearchProgressItem, ISearchService, ITextQuery } from 'vs/workbench/services/search/common/search'
+import { ISearchComplete, ISearchService } from 'vs/workbench/services/search/common/search'
 import { IRequestService } from 'vs/platform/request/common/request'
 import { IEditSessionIdentityService } from 'vs/platform/workspace/common/editSessions'
 import { IWorkspaceEditingService } from 'vs/workbench/services/workspaces/common/workspaceEditing'
@@ -98,7 +98,7 @@ import { IUpdateService, State } from 'vs/platform/update/common/update'
 import { IStatusbarService } from 'vs/workbench/services/statusbar/browser/statusbar'
 import { IExtensionGalleryService, IExtensionManagementService, ILocalExtension } from 'vs/platform/extensionManagement/common/extensionManagement'
 import { IModelService } from 'vs/editor/common/services/model'
-import { IDetachedTerminalInstance, IDetachedXTermOptions, ITerminalEditorService, ITerminalGroupService, ITerminalInstance, ITerminalInstanceService, ITerminalService, TerminalConnectionState } from 'vs/workbench/contrib/terminal/browser/terminal'
+import { IDetachedTerminalInstance, ITerminalEditorService, ITerminalGroupService, ITerminalInstance, ITerminalInstanceService, ITerminalService, TerminalConnectionState } from 'vs/workbench/contrib/terminal/browser/terminal'
 import { ITerminalProfileResolverService, ITerminalProfileService } from 'vs/workbench/contrib/terminal/common/terminal'
 import { ITerminalLogService, TerminalLocation } from 'vs/platform/terminal/common/terminal'
 import { ITerminalContributionService } from 'vs/workbench/contrib/terminal/common/terminalExtensionPoints'
@@ -166,8 +166,6 @@ import { INotebookSearchService } from 'vs/workbench/contrib/search/common/noteb
 import { ResourceSet } from 'vs/base/common/map'
 import { IEditorGroupView } from 'vs/workbench/browser/parts/editor/editor'
 import { unsupported } from './tools'
-import { CancellationToken } from 'vs/base/common/cancellation'
-import { TerminalCapability, ITerminalCapabilityImplMap } from 'vs/platform/terminal/common/capabilities/capabilities'
 
 class NullLoggerService extends AbstractLoggerService {
   constructor () {
@@ -869,9 +867,7 @@ registerSingleton(ICustomEndpointTelemetryService, NullEndpointTelemetryService,
 class MonacoSearchService implements ISearchService {
   _serviceBrand: undefined
   constructor (@IModelService private modelService: IModelService) {}
-  textSearchSplitSyncAsync(query: ITextQuery, token?: CancellationToken | undefined, onProgress?: ((result: ISearchProgressItem) => void) | undefined, notebookFilesToIgnore?: ResourceSet | undefined, asyncNotebookFilesToIgnore?: Promise<ResourceSet> | undefined): { syncResults: ISearchComplete; asyncResults: Promise<ISearchComplete> } {
-    throw new Error('Method not implemented.')
-  }
+  textSearchSplitSyncAsync = unsupported
 
   async textSearch (): Promise<ISearchComplete> {
     return {
@@ -1197,14 +1193,11 @@ registerSingleton(IExtensionGalleryService, class ExtensionGalleryService implem
 }, InstantiationType.Eager)
 
 registerSingleton(ITerminalService, class TerminalService implements ITerminalService {
-  onInstanceEvent<T>(getEvent: (instance: ITerminalInstance) => Event<T>): IDynamicListEventMultiplexer<T> {
-    throw new Error('Method not implemented.')
-  }
-  onInstanceCapabilityEvent<T extends TerminalCapability, K>(capabilityId: T, getEvent: (capability: ITerminalCapabilityImplMap[T]) => Event<K>): IDynamicListEventMultiplexer<{ instance: ITerminalInstance; data: K }> {
-    throw new Error('Method not implemented.')
-  }
-  createDetachedTerminal(options: IDetachedXTermOptions): Promise<IDetachedTerminalInstance> {
-    return Promise.reject(unsupported)
+  onInstanceEvent = unsupported
+  onInstanceCapabilityEvent = unsupported
+
+  async createDetachedTerminal (): Promise<IDetachedTerminalInstance> {
+    unsupported()
   }
 
   onDidChangeSelection = Event.None
@@ -2136,15 +2129,16 @@ registerSingleton(IUserDataInitializationService, class UserDataInitializationSe
 registerSingleton(IDiagnosticsService, NullDiagnosticsService, InstantiationType.Delayed)
 
 registerSingleton(INotebookSearchService, class NotebookSearchService implements INotebookSearchService {
-  notebookSearch(query: ITextQuery, token: CancellationToken | undefined, searchInstanceID: string, onProgress?: ((result: ISearchProgressItem) => void) | undefined):
-  { openFilesToScan: ResourceSet; completeData: Promise<ISearchComplete>; allScannedFiles: Promise<ResourceSet> } {
+  notebookSearch () {
     return {
-      completeData: {
+      openFilesToScan: new ResourceSet(),
+      completeData: Promise.resolve({
         results: [],
         messages: []
-      },
-      scannedFiles: new ResourceSet()
+      }),
+      allScannedFiles: Promise.resolve(new ResourceSet())
     }
   }
+
   _serviceBrand: undefined
 }, InstantiationType.Delayed)
