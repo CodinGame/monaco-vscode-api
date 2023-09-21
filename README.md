@@ -340,10 +340,6 @@ It includes:
 
 ### Demo Instructions
 
-⚠️ Make sure to open the project in a Dev Container[^1] or connect to the container first BEFORE running any commands⚠️
-
-First we need to install and build the dependencies the demo will use.
-
 ```bash
 # This will take some time, trust the process
 npm install 
@@ -365,24 +361,6 @@ For the debug feature, also run:
 ```bash
 npm run start:debugServer
 ```
-
-### Troubleshooting Demo Errors
-
----
-### Error
-
-```bash
-npm ERR! code 127
-npm ERR! path /workspaces/monaco-vscode-api
-npm ERR! command failed
-npm ERR! command sh -c ./scripts/install-vscode && node --loader ts-node/esm src/monaco-treemending.ts && patch-package
-```
-
-### Fix
-
-By default, git will change the line endings to whatever environment the repo was cloned into. If you are getting this error, you need to change the line endings in ./scripts from CRLF to LF. Optionally, you can set ```git config --global core.autocrlf input```
-
----
 
 ### History
 
