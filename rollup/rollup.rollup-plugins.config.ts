@@ -11,19 +11,27 @@ const EXTENSIONS = ['', '.ts', '.js']
 const BASE_DIR = path.resolve(__dirname, '..')
 const TSCONFIG = path.resolve(BASE_DIR, 'tsconfig.rollup.json')
 
-const config: rollup.RollupOptions = {
+const config: rollup.RollupOptions[] = [{
+  input: 'src/rollup-vsix-plugin.ts',
+  output: 'dist/rollup-vsix-plugin',
+  description: `Rollup plugin used to load VSCode extension files (VSIX), designed to be used with ${pkg.name}`
+}, {
+  input: 'src/rollup-extension-directory-plugin.ts',
+  output: 'dist/rollup-extension-directory-plugin',
+  description: `Rollup plugin used to load VSCode extension already extracted inside a directory, designed to be used with ${pkg.name}`
+}].map(({ input, output, description }) => ({
   cache: false,
-  external: ['@rollup/pluginutils', 'path', 'yauzl', 'fsevents'],
+  external: [
+    ...Object.keys({ ...pkg.dependencies }),
+    '@rollup/pluginutils'
+  ],
   output: [{
     format: 'esm',
-    dir: 'dist',
+    dir: output,
     entryFileNames: '[name].js',
     chunkFileNames: '[name].js'
   }],
-  input: [
-    'src/rollup-vsix-plugin.ts',
-    'src/rollup-extension-directory-plugin.ts'
-  ],
+  input,
   plugins: [
     commonjs(),
     nodeResolve({
@@ -34,7 +42,10 @@ const config: rollup.RollupOptions = {
     }),
     typescript({
       noEmitOnError: true,
-      tsconfig: TSCONFIG
+      tsconfig: TSCONFIG,
+      compilerOptions: {
+        outDir: output
+      }
     }),
     json({
       compact: true,

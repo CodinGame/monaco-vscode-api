@@ -17,7 +17,7 @@ const config: rollup.RollupOptions = {
   external: ['path'],
   output: [{
     format: 'esm',
-    dir: 'dist',
+    dir: 'dist/main',
     entryFileNames: '[name].js'
   }],
   input: [
@@ -36,7 +36,10 @@ const config: rollup.RollupOptions = {
     }),
     typescript({
       noEmitOnError: true,
-      tsconfig: TSCONFIG
+      tsconfig: TSCONFIG,
+      compilerOptions: {
+        outDir: 'dist/main'
+      }
     }),
     importMetaAssets()
   ]

@@ -49,7 +49,10 @@ const config: rollup.RollupOptions = {
     }),
     typescript({
       noEmitOnError: true,
-      tsconfig: TSCONFIG
+      tsconfig: TSCONFIG,
+      compilerOptions: {
+        outDir: 'dist/server'
+      }
     })
   ]
 }
