@@ -82,21 +82,6 @@ There are workarounds for both:
   }
 }
 ```
-- we can serialize and eval the code to prevent vite from touching it:
-```typescript
-{
-  plugins: [{
-    // prevent vite from trying to inject code into an extension file du to an `import()` in that file
-    name: 'hack-prevent-transform-javascript',
-    apply: 'serve',
-    load (source) {
-      if (source.includes('tsserver.web.js')) {
-        return `eval(${JSON.stringify(fs.readFileSync(source).toString('utf-8'))})`
-      }
-    }
-  }]
-}
-```
 
 # Usage
 
