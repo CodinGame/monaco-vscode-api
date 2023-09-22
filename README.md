@@ -119,65 +119,65 @@ await initialize({
 })
 ```
 
-Additionally, this library exposes 23 modules that include the vscode version of some services (with some glue to make it work with monaco):
+Additionally, 25 packages that include the vscode version of some services (with some glue to make it work with monaco) are published:
 
-- **Extensions** (included by default): `vscode/service-override/extensions`
+- **Extensions** (included by default): `@codingame/monaco-vscode-extensions-service-override`
   - Support for VSCode extensions. A worker configuration can be past to it:
     - Then, everything runs in one worker, where extensions run in an iframe, with all the implications (can be created by the bundler directly). The worker script is expected to be hosted on a separate domain.
-- **Files** (included by default): `vscode/service-override/files`
+- **Files** (included by default): `@codingame/monaco-vscode-file-service-override`
   - It adds the memory filesystem for `file://` files, but also adds the support for lazy loaded extension files. It adds separate memory user files (e.g. config, keybindings), cache files and log files.
-- **QuickAccess** (included by default): `vscode/service-override/quickaccess`
+- **QuickAccess** (included by default): `@codingame/monaco-vscode-quickaccess-service-override`
   - Enables the quickaccess menu in the editor (press F1 or ctrl+shift+p)
-- **Notifications**: `vscode/service-override/notifications`
+- **Notifications**: `@codingame/monaco-vscode-notifications-service-override`
   - This services enables vscode notifications you usually find in the bottom right corner.
-- **Dialogs**: `vscode/service-override/dialogs`
+- **Dialogs**: `@codingame/monaco-vscode-dialogs-service-override`
   - Enable vscode modal dialogs. It allows users to select an action to do. Those actions are exposed to the vscode API. Additionally, this service can be used by the language client to delegate questions to the user.
-- **Model**: `vscode/service-override/model`
+- **Model**: `@codingame/monaco-vscode-model-service-override`
   - This service creates and takes care of model references. For example:
     - Create model if content is unknown
     - Count references
     - Destroy models when they are no longer used
-- **Editor**: `vscode/service-override/editor`
+- **Editor**: `@codingame/monaco-vscode-editor-service-override`
   - Enable editor support. This is usually needed when working with the language server protocol. Without enabling the editor service, it will only be able to resolve the currently open model (only internal file links will work).
-- **Views**: `vscode/service-override/views`
+- **Views**: `@codingame/monaco-vscode-views-service-override`
   - Enable full views support. Is exclusive with the `editor` service. Do not use both services at the same time.
-- **Configuration**: `vscode/service-override/configuration`
+- **Configuration**: `@codingame/monaco-vscode-configuration-service-override`
   - Allows to change the configuration of not only the editors, but every part of vscode. The language client for instance uses it to send the requested configuration to the server. The default configuration service already allows to change the configuration. This service overrides makes it rely on a user configuration file (with json schema, overridable by language including all vscode features).
-- **Keybindings**: `vscode/service-override/keybindings`
+- **Keybindings**: `@codingame/monaco-vscode-keybindings-service-override`
   - Enables platform specific keybindings and make it rely on a user definded keybindings configuration (if available).
-- **Languages**: `vscode/service-override/languages`
+- **Languages**: `@codingame/monaco-vscode-languages-service-override`
   - Enable language support. It's like the standalone service with 2 differences:
     - It handle the language extension point (getting languages from vscode extensions)
     - It triggers the `onLanguage:${language}` event (to load vscode extension listening to those events)
-- **Textmate**: `vscode/service-override/textmate`
+- **Textmate**: `@codingame/monaco-vscode-textmate-service-override`
   - Allows to use textmate grammars. Depends on *themes* service. vscode extensions use textmate grammars exclusively for highlighting. Once this is enabled monarch grammars can no longer be loaded by monaco-editor.
-- **Themes**: `vscode/service-override/theme`
+- **Themes**: `@codingame/monaco-vscode-theme-service-override`
   - Allows to use VSCode themes.
-- **Snippets**: `vscode/service-override/snippets`
+- **Snippets**: `@codingame/monaco-vscode-snippets-service-override`
   - Add snippet extension point (register vscode extension snippets)
-- **Audio cue**: `vscode/service-override/audioCue`
+- **Audio cue**: `@codingame/monaco-vscode-audio-cue-service-override`
   - If enabled the editor may provides audible hints
-- **Debug**: `vscode/service-override/debug`
+- **Debug**: `@codingame/monaco-vscode-debug-service-override`
   - Activate debugging support
-- **Preferences**: `vscode/service-override/preferences`
+- **Preferences**: `@codingame/monaco-vscode-preferences-service-override`
   - Allow to read and write preferences
-- **Output**: `vscode/service-override/output`
+- **Output**: `@codingame/monaco-vscode-output-service-override`
   - Output panel support. *Hint*: It only makes sense to enable it when *Views* service is used.
-- **Terminal**: `vscode/service-override/terminal`
+- **Terminal**: `@codingame/monaco-vscode-terminal-service-override`
   - Terminal panel support. *Hint*: It only makes sense to enable it when *Views* service is used.
-- **Search**: `vscode/service-override/search`
+- **Search**: `@codingame/monaco-vscode-search-service-override`
   - search panel support. *Hint*: It only makes sense to enable it when *Views* service is used.
-- **Markers**: `vscode/service-override/markers`
+- **Markers**: `@codingame/monaco-vscode-markers-service-override`
   - It adds the problems panel tab. *Hint*: It only makes sense to enable it when *Views* service is used.
-- **Language detection worker**: `vscode/service-override/languageDetectionWorker`
+- **Language detection worker**: `@codingame/monaco-vscode-language-detection-worker-service-override`
   - When opening an untitled model or a file without extension or if vscode is unable to guess the language simply by the file extension or by reading the first line. Then it will use tensorflow in a worker to try to guess the most probable language (here we are only able to rely on the open source model).
-- **Storage**: `vscode/service-override/storage`
+- **Storage**: `@codingame/monaco-vscode-storage-service-override`
   - Define your own storage or use the default BrowserStorageService. The storage service is used in many places either as a cache or as a user preference store. For instance:
     - Current loaded theme is stored in there to be loaded faster on start.
     - Every panel/view positions are stored in there.
-- **LifeCycle**: `vscode/service-override/lifecycle`
+- **LifeCycle**: `@codingame/monaco-vscode-lifecycle-service-override`
   - Allow other services to veto a page reload (for instance when not all open files are saved)
-- **Remote agent**: `vscode/service-override/remoteAgent`
+- **Remote agent**: `@codingame/monaco-vscode-remote-agent-service-override`
   - Connect to a remote vscode agent and have access to:
     - The remote filesystem
     - The remote file search
@@ -185,14 +185,15 @@ Additionally, this library exposes 23 modules that include the vscode version of
     - Running vscode extensions (not web-compatible)
     - and probably more?
   This library exports a `vscode-ext-host-server` bin to start the remote agent
-
+- **Accessibility**: `@codingame/monaco-vscode-accessibility-service-override`
+  - Register accessibility helpers
 Usage:
 
 ```typescript
 import * as vscode from 'vscode'
 import { initialize } from 'vscode/services'
-import getEditorServiceOverride from 'vscode/service-override/editor'
-import getConfigurationServiceOverride, { updateUserConfiguration, configurationRegistry } from 'vscode/service-override/configuration'
+import getEditorServiceOverride from '@codingame/monaco-vscode-editor-service-override'
+import getConfigurationServiceOverride, { updateUserConfiguration, configurationRegistry } from '@codingame/monaco-vscode-configuration-service-override'
 
 await initialize({
   ...getModelEditorServiceOverride((model, input, sideBySide) => {
@@ -295,21 +296,21 @@ getApi().then(vscodeApi => vscodeApi.languages.registerCompletionItemProvider(..
 
 VSCode uses a bunch of default extensions. Most of them are used to load the default languages and grammars (see https://github.com/microsoft/vscode/tree/main/extensions).
 
-This library bundles most of them and allows to import the ones you want:
+This library bundles and publishes them and allows to import the ones you want:
 ```typescript
-import 'vscode/default-extensions/javascript'
-import 'vscode/default-extensions/json'
+import '@codingame/monaco-vscode-javascript-default-extension'
+import '@codingame/monaco-vscode-json-default-extension'
 ...
 ```
 
 ### Loading vsix file
 
 VSCode extension are bundled as vsix files.
-This library exposes a rollup plugin (vite-compatible) that allows to load a vsix file.
+This library publishes a rollup plugin (vite-compatible) that allows to load a vsix file.
 
 - rollup/vite config:
 ```typescript
-import vsixPlugin from 'vscode/rollup-vsix-plugin'
+import vsixPlugin from '@codingame/monaco-vscode-rollup-vsix-plugin'
 ...
 plugins: [
   ...,
