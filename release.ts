@@ -5,7 +5,11 @@
 import { $ } from 'zx'
 import semver from 'semver'
 import { Octokit } from '@octokit/rest'
+import path from 'path'
 import fs from 'fs/promises'
+import syncFs from 'fs'
+import { fileURLToPath } from 'url'
+const __dirname = path.dirname(fileURLToPath(import.meta.url))
 
 const githubToken = process.env.GH_TOKEN ?? process.env.GITHUB_TOKEN
 if (githubToken == null) {
@@ -130,8 +134,23 @@ async function releaseGithub (repoInfos: RepositoryInfos, version: string, relea
 
 async function publishNpm (version: string) {
   await fs.writeFile('.npmrc', `//registry.npmjs.org/:_authToken=${NPM_TOKEN}\n`)
-  await $`npm --no-git-tag-version version ${version}`
-  await $`npm publish --no-git-tag-version`
+
+  const distDir = path.resolve(__dirname, 'dist')
+  for (const dirName of await fs.readdir(distDir)) {
+    const libDir = path.resolve(distDir, dirName)
+    const packageJsonFile = path.resolve(libDir, 'package.json')
+    if (syncFs.existsSync(packageJsonFile)) {
+      const packageJson = JSON.parse((await fs.readFile(packageJsonFile)).toString())
+      packageJson.version = version
+      if (packageJson.dependencies?.vscode != null) {
+        packageJson.dependencies.vscode = `npm:@codingame/monaco-vscode-api@${version}`
+      }
+      await fs.writeFile(packageJsonFile, JSON.stringify(packageJson, null, 2))
+
+      $.cwd = libDir
+      await $`npm publish`
+    }
+  }
 }
 
 async function run () {
