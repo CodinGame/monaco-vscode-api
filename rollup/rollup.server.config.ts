@@ -26,7 +26,8 @@ const config: rollup.RollupOptions = {
     format: 'esm',
     dir: 'dist/server',
     entryFileNames: '[name].js',
-    chunkFileNames: '[name].js'
+    chunkFileNames: '[name].js',
+    banner: (module) => module.isEntry ? '#!/usr/bin/env node' : ''
   }],
   input: {
     server: 'src/server/server.ts',

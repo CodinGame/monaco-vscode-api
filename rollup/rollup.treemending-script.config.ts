@@ -18,7 +18,9 @@ const config: rollup.RollupOptions = {
   output: [{
     format: 'esm',
     dir: 'dist/main',
-    entryFileNames: '[name].js'
+    entryFileNames: '[name].js',
+    assetFileNames: '[name][extname]',
+    banner: (module) => module.isEntry ? '#!/usr/bin/env node' : ''
   }],
   input: [
     'src/monaco-treemending.ts'
