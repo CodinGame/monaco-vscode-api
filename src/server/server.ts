@@ -2,7 +2,7 @@ import './server-assets'
 import type { IServerAPI } from 'vs/server/node/remoteExtensionHostAgentServer'
 import { createServer } from 'vs/server/node/server.main.js'
 import { buildHelpMessage, buildVersionMessage, parseArgs } from 'vs/platform/environment/node/argv'
-import { serverOptions } from 'vs/server/node/serverEnvironmentService'
+import { ServerParsedArgs, serverOptions } from 'vs/server/node/serverEnvironmentService'
 import product from 'vs/platform/product/common/product'
 import { AddressInfo, ListenOptions, Socket } from 'net'
 import http from 'http'
@@ -40,9 +40,8 @@ export async function start (options: ListenOptions): Promise<void> {
       throw new Error('Unexpected server address')
     }
 
+    // eslint-disable-next-line no-console
     console.log(`Server bound to ${typeof address === 'string' ? address : `${address.address}:${address.port} (${address.family})`}`)
-    // Do not change this line. VS Code looks for this in the output.
-    console.log(`Extension host agent listening on ${typeof address === 'string' ? address : address.port}`)
 
     await getRemoteExtensionHostAgentServer()
   })
@@ -107,7 +106,7 @@ async function parsePort (host: string, strPort: string | undefined) {
   return 8000
 }
 
-const parsedArgs = parseArgs(process.argv.slice(2), serverOptions)
+const parsedArgs = parseArgs<ServerParsedArgs>(process.argv.slice(2), serverOptions)
 if (parsedArgs.help) {
   const serverOptionsWithoutExtensionManagement = Object.fromEntries(Object.entries(serverOptions).filter(([, def]) => def.cat !== 'e'))
   // eslint-disable-next-line no-console
