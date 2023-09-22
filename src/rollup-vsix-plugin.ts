@@ -93,7 +93,7 @@ export default function plugin ({
         ...await getAdditionalResources(manifest)
       ]
 
-      const pathMapping = await Promise.all(resources.map(async resource => {
+      const pathMapping = (await Promise.all(resources.map(async resource => {
         const assetPath = getVsixPath(resource.realPath ?? resource.path)
         let url: string
         if (process.env.NODE_ENV === 'development') {
@@ -106,12 +106,18 @@ export default function plugin ({
           })
         }
 
-        return ({
+        return [{
           pathInExtension: getVsixPath(resource.path),
           url,
           mimeType: resource.mimeType
-        })
-      }))
+        }, ...(resource.realPath != null
+          ? [{
+              pathInExtension: getVsixPath(resource.realPath),
+              url,
+              mimeType: resource.mimeType
+            }]
+          : [])]
+      }))).flat()
 
       let packageJson = parseJson<IExtensionManifest>(id, vsixFile['package.json']!.toString('utf8'))
       if ('package.nls.json' in vsixFile) {
