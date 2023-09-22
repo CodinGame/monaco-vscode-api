@@ -1,4 +1,4 @@
-import { ITerminalChildProcess, SimpleTerminalBackend, SimpleTerminalProcess } from 'vscode/service-override/terminal'
+import { ITerminalChildProcess, SimpleTerminalBackend, SimpleTerminalProcess } from '@codingame/monaco-vscode-terminal-service-override'
 import ansiColors from 'ansi-colors'
 import * as vscode from 'vscode'
 

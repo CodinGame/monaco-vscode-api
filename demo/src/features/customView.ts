@@ -1,5 +1,5 @@
 import { IDialogService } from 'vscode/services'
-import { registerCustomView, registerEditorPane, ViewContainerLocation } from 'vscode/service-override/views'
+import { registerCustomView, registerEditorPane, ViewContainerLocation } from '@codingame/monaco-vscode-views-service-override'
 import * as monaco from 'monaco-editor'
 import iconUrl from '../Visual_Studio_Code_1.35_icon.svg?url'
 
