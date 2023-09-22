@@ -11,10 +11,14 @@ import dynamicImportVars from '@rollup/plugin-dynamic-import-vars'
 import styles from 'rollup-plugin-styles'
 import { importMetaAssets } from '@web/rollup-plugin-import-meta-assets'
 import glob from 'fast-glob'
+import { paramCase } from 'param-case'
+import { PackageJson } from 'type-fest'
+import copy from 'rollup-plugin-copy'
 import * as fs from 'fs'
 import * as fsPromise from 'fs/promises'
 import * as path from 'path'
 import { fileURLToPath } from 'url'
+import metadataPlugin from './rollup-metadata-plugin'
 import pkg from '../package.json' assert { type: 'json' }
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url))
@@ -493,7 +497,13 @@ const input = {
   )
 }
 
-const externals = Object.keys({ ...pkg.peerDependencies })
+const workerGroups: Record<string, string> = {
+  languageDetection: 'service-override:language-detection-worker',
+  outputLinkComputer: 'service-override:output',
+  textmate: 'service-override:textmate'
+}
+
+const externals = Object.keys({ ...pkg.dependencies })
 const external: rollup.ExternalOption = (source) => {
   if (source.includes('tas-client-umd')) return true
   if (source.startsWith(MONACO_EDITOR_DIR) || source.startsWith('monaco-editor/')) {
@@ -803,7 +813,147 @@ export default (args: Record<string, string>): rollup.RollupOptions[] => {
           sourcemap: false
         }).code
       }
-    }]
+    },
+    copy({
+      targets: [
+        { src: ['README.md'], dest: 'dist/main' }
+      ]
+    }),
+    metadataPlugin({
+      // generate package.json and meta packages
+      getGroup (id: string, options) {
+        const serviceOverrideDir = path.resolve(options.dir!, 'service-override')
+        const workersDir = path.resolve(options.dir!, 'workers')
+
+        if (id.startsWith(serviceOverrideDir)) {
+          return `service-override:${paramCase(path.basename(id, '.js'))}`
+        }
+        if (id.startsWith(workersDir)) {
+          return workerGroups[path.basename(id, '.worker.js')] ?? 'main'
+        }
+        return 'main'
+      },
+      async handle (groupName, dependencies, entrypoints, options) {
+        if (groupName === 'main') {
+          // Generate package.json
+          const packageJson: PackageJson = {
+            ...Object.fromEntries(Object.entries(pkg).filter(([key]) => ['name', 'description', 'version', 'keywords', 'author', 'license', 'repository', 'type'].includes(key))),
+            private: false,
+            main: 'api.js',
+            module: 'api.js',
+            exports: {
+              '.': {
+                default: './api.js'
+              },
+              './services': {
+                types: './services.d.ts',
+                default: './services.js'
+              },
+              './extensions': {
+                types: './extensions.d.ts',
+                default: './extensions.js'
+              },
+              './service-override/*': {
+                types: './service-override/*.d.ts',
+                default: './service-override/*.js'
+              },
+              './workers/*': {
+                default: './workers/*.js'
+              },
+              './monaco': {
+                types: './monaco.d.ts',
+                default: './monaco.js'
+              }
+            },
+            typesVersions: {
+              '*': {
+                services: [
+                  './services.d.ts'
+                ],
+                extensions: [
+                  './extensions.d.ts'
+                ],
+                'service-override/*': [
+                  './service-override/*.d.ts'
+                ],
+                monaco: [
+                  './monaco.d.ts'
+                ]
+              }
+            },
+            bin: {
+              'monaco-treemending': './monaco-treemending.js'
+            },
+            dependencies: {
+              ...Object.fromEntries(Object.entries(pkg.dependencies).filter(([key]) => dependencies.has(key)))
+            }
+          }
+          this.emitFile({
+            fileName: 'package.json',
+            needsCodeReference: false,
+            source: JSON.stringify(packageJson, null, 2),
+            type: 'asset'
+          })
+        } else {
+          const [_, category, name] = /^(.*):(.*)$/.exec(groupName)!
+
+          const directory = path.resolve(DIST_DIR, `${category}-${name}`)
+
+          await fsPromise.mkdir(directory, {
+            recursive: true
+          })
+          const serviceOverrideEntryPoint = Array.from(entrypoints).find(e => e.includes('/service-override/'))!
+          const workerEntryPoint = Array.from(entrypoints).find(e => e.includes('/workers/'))
+
+          const packageJson: PackageJson = {
+            name: `@codingame/monaco-vscode-${name}-${category}`,
+            ...Object.fromEntries(Object.entries(pkg).filter(([key]) => ['version', 'keywords', 'author', 'license', 'repository', 'type'].includes(key))),
+            private: false,
+            description: `${pkg.description} - ${name} ${category} meta package`,
+            main: 'index.js',
+            module: 'index.js',
+            types: 'index.d.ts',
+            dependencies: {
+              vscode: `npm:${pkg.name}@^${pkg.version}`,
+              ...Object.fromEntries(Object.entries(pkg.dependencies).filter(([key]) => dependencies.has(key)))
+            }
+          }
+
+          const reexportFrom = `vscode/${path.relative(options.dir!, serviceOverrideEntryPoint).slice(0, -3)}`
+
+          const entrypointInfo = this.getModuleInfo(serviceOverrideEntryPoint)!
+          const codeLines: string[] = []
+          if ((entrypointInfo.exports ?? []).includes('default')) {
+            codeLines.push(`export { default } from '${reexportFrom}'`)
+          }
+          if ((entrypointInfo.exports ?? []).some(e => e !== 'default')) {
+            codeLines.push(`export * from '${reexportFrom}'`)
+          }
+          if ((entrypointInfo.exports ?? []).length === 0) {
+            codeLines.push(`import '${reexportFrom}'`)
+          }
+          await fsPromise.writeFile(path.resolve(directory, 'index.js'), codeLines.join('\n'))
+          await fsPromise.writeFile(path.resolve(directory, 'index.d.ts'), codeLines.join('\n'))
+
+          if (workerEntryPoint != null) {
+            const workerFrom = `vscode/${path.relative(options.dir!, workerEntryPoint).slice(0, -3)}`
+            await fsPromise.writeFile(path.resolve(directory, 'worker.js'), `import '${workerFrom}'`)
+
+            packageJson.exports = {
+              '.': {
+                default: './index.js'
+              },
+              './worker': {
+                default: './worker.js'
+              }
+            }
+          }
+
+          await fsPromise.writeFile(path.resolve(directory, 'package.json'), JSON.stringify(packageJson, null, 2))
+        }
+      }
+    })
+    ]
   }])
 }
 
