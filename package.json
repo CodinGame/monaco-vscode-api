@@ -1,7 +1,7 @@
 {
   "name": "@codingame/monaco-vscode-api",
   "version": "0.0.0-semantic-release",
-  "private": false,
+  "private": true,
   "description": "VSCode public API plugged on the monaco editor",
   "keywords": [],
   "author": {
@@ -14,79 +14,12 @@
     "url": "https://github.com/CodinGame/monaco-vscode-api"
   },
   "type": "module",
-  "main": "dist/api.js",
-  "module": "dist/api.js",
   "enabledApiProposals": [
     "fileSearchProvider",
     "textSearchProvider",
     "extensionsAny",
     "documentPaste",
     "externalUriOpener"
-  ],
-  "exports": {
-    ".": {
-      "default": "./dist/api.js"
-    },
-    "./services": {
-      "types": "./dist/services.d.ts",
-      "default": "./dist/services.js"
-    },
-    "./extensions": {
-      "types": "./dist/extensions.d.ts",
-      "default": "./dist/extensions.js"
-    },
-    "./service-override/*": {
-      "types": "./dist/service-override/*.d.ts",
-      "default": "./dist/service-override/*.js"
-    },
-    "./workers/*": {
-      "types": "./dist/workers/*.d.ts",
-      "default": "./dist/workers/*.js"
-    },
-    "./monaco": {
-      "types": "./dist/monaco.d.ts",
-      "default": "./dist/monaco.js"
-    },
-    "./default-extensions/*": {
-      "default": "./dist/default-extensions/*.js"
-    },
-    "./rollup-vsix-plugin": {
-      "types": "./dist/rollup-vsix-plugin.d.ts",
-      "default": "./dist/rollup-vsix-plugin.js"
-    },
-    "./rollup-extension-directory-plugin": {
-      "types": "./dist/rollup-extension-directory-plugin.d.ts",
-      "default": "./dist/rollup-extension-directory-plugin.js"
-    }
-  },
-  "typesVersions": {
-    "*": {
-      "services": [
-        "./dist/services.d.ts"
-      ],
-      "extensions": [
-        "./dist/extensions.d.ts"
-      ],
-      "service-override/*": [
-        "./dist/service-override/*.d.ts"
-      ],
-      "monaco": [
-        "./dist/monaco.d.ts"
-      ],
-      "rollup-vsix-plugin": [
-        "./dist/rollup-vsix-plugin.d.ts"
-      ],
-      "rollup-extension_directory-plugin": [
-        "./dist/rollup-extension_directory-plugin.d.ts"
-      ]
-    }
-  },
-  "files": [
-    "dist",
-    "monaco-treemending.js",
-    "ext-host-server.js",
-    "monaco-editor-treemending.patch",
-    "README.md"
   ],
   "scripts": {
     "build": "npm run clean && npm run generate-types && npm run lint && npm run compile-rollup-plugins && npm run compile-treemending-script && npm run compile && npm run compile-server && npm run compile-default-extensions",
@@ -101,10 +34,6 @@
     "generate-types": "./scripts/generate-types",
     "release": "node --loader ts-node/esm release.ts ${npm_package_config_vscode_version}",
     "reset:repo": "git clean -f -X -d"
-  },
-  "bin": {
-    "monaco-treemending": "./monaco-treemending.js",
-    "vscode-ext-host-server": "./ext-host-server.js"
   },
   "config": {
     "vscode": {
