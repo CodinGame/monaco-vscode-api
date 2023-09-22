@@ -3,13 +3,14 @@ import * as fs from 'fs/promises'
 import * as path from 'path'
 import * as os from 'os'
 import { createRequire } from 'node:module'
+import { fileURLToPath } from 'node:url'
+
+declare const MONACO_VERSION: string
+
 const require = createRequire(import.meta.url)
 
 async function run () {
-  const ownPackageJson = JSON.parse((await fs.readFile(require.resolve('../package.json'))).toString('utf-8'))
-  const expectedMonacoVersion = ownPackageJson.peerDependencies['monaco-editor']
-
-  const patchContent = await fs.readFile(require.resolve('../monaco-editor-treemending.patch'))
+  const patchContent = await fs.readFile(fileURLToPath(new URL('../monaco-editor-treemending.patch', import.meta.url)))
 
   const monacoDirectory = path.dirname(require.resolve('monaco-editor/monaco.d.ts', { paths: [process.cwd()] }))
   const monacoEsmDirectory = path.resolve(monacoDirectory, 'esm')
@@ -18,8 +19,8 @@ async function run () {
   const monacoPackageJson = JSON.parse((await fs.readFile(monacoPackageJsonFile)).toString('utf-8'))
   const monacoVersion = monacoPackageJson.version
 
-  if (expectedMonacoVersion !== monacoVersion) {
-    console.error(`Wrong monaco-editor version: expecting ${expectedMonacoVersion}, got ${monacoVersion}`)
+  if (typeof MONACO_VERSION !== 'undefined' && MONACO_VERSION !== monacoVersion) {
+    console.error(`Wrong monaco-editor version: expecting ${MONACO_VERSION}, got ${monacoVersion}`)
     process.exit(1)
   }
 
