@@ -70,7 +70,7 @@ async function publishNpm (version: string) {
       await fs.writeFile(packageJsonFile, JSON.stringify(packageJson, null, 2))
 
       $.cwd = libDir
-      await $`npm publish --tag next`
+      await $`npm publish --tag next --access public`
     }
   }
 }
