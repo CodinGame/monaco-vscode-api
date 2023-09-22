@@ -1,8 +1,11 @@
 import nodeResolve from '@rollup/plugin-node-resolve'
 import * as rollup from 'rollup'
 import typescript from '@rollup/plugin-typescript'
+import { importMetaAssets } from '@web/rollup-plugin-import-meta-assets'
+import replace from '@rollup/plugin-replace'
 import * as path from 'path'
 import { fileURLToPath } from 'url'
+import pkg from '../package.json' assert { type: 'json' }
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url))
 const EXTENSIONS = ['', '.ts', '.js']
@@ -21,6 +24,10 @@ const config: rollup.RollupOptions = {
     'src/monaco-treemending.ts'
   ],
   plugins: [
+    replace({
+      MONACO_VERSION: JSON.stringify(pkg.dependencies['monaco-editor']),
+      preventAssignment: true
+    }),
     nodeResolve({
       extensions: EXTENSIONS,
       modulePaths: ['vscode/src/'],
@@ -30,7 +37,8 @@ const config: rollup.RollupOptions = {
     typescript({
       noEmitOnError: true,
       tsconfig: TSCONFIG
-    })
+    }),
+    importMetaAssets()
   ]
 }
 
