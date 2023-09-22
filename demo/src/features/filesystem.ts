@@ -1,4 +1,4 @@
-import { RegisteredFileSystemProvider, registerFileSystemOverlay, RegisteredReadOnlyFile, RegisteredMemoryFile } from 'vscode/service-override/files'
+import { RegisteredFileSystemProvider, registerFileSystemOverlay, RegisteredReadOnlyFile, RegisteredMemoryFile } from '@codingame/monaco-vscode-files-service-override'
 import * as vscode from 'vscode'
 
 const fileSystemProvider = new RegisteredFileSystemProvider(false)

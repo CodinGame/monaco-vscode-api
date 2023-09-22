@@ -1,4 +1,4 @@
-import type { WorkerConfig } from 'vscode/service-override/extensions'
+import type { WorkerConfig } from '@codingame/monaco-vscode-extensions-service-override'
 
 /**
  * Cross origin workers don't work

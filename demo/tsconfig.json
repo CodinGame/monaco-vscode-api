@@ -13,7 +13,11 @@
     "noEmit": true,
     "noUnusedLocals": true,
     "noUnusedParameters": true,
-    "noImplicitReturns": true
+    "noImplicitReturns": true,
+    "baseUrl": ".",
+    "paths": {
+      "vscode/*": ["../dist/main/*"]
+    }
   },
   "include": ["src"]
 }
