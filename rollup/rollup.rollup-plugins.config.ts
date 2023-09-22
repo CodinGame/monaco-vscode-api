@@ -3,8 +3,11 @@ import * as rollup from 'rollup'
 import typescript from '@rollup/plugin-typescript'
 import commonjs from '@rollup/plugin-commonjs'
 import json from '@rollup/plugin-json'
+import { PackageJson } from 'type-fest'
 import * as path from 'path'
 import { fileURLToPath } from 'url'
+import metadataPlugin from './rollup-metadata-plugin'
+import pkg from '../package.json' assert { type: 'json' }
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url))
 const EXTENSIONS = ['', '.ts', '.js']
@@ -51,8 +54,31 @@ const config: rollup.RollupOptions[] = [{
       compact: true,
       namedExports: false,
       preferConst: false
+    }),
+    metadataPlugin({
+      handle (_, dependencies) {
+        const packageJson: PackageJson = {
+          name: `@codingame/monaco-vscode-${path.basename(output)}`,
+          ...Object.fromEntries(Object.entries(pkg).filter(([key]) => ['version', 'keywords', 'author', 'license', 'repository', 'type'].includes(key))),
+          private: false,
+          description,
+          main: `${path.basename(output)}.js`,
+          module: `${path.basename(output)}.js`,
+          types: `${path.basename(output)}.d.ts`,
+          dependencies: {
+            vscode: `npm:${pkg.name}@^${pkg.version}`,
+            ...Object.fromEntries(Object.entries(pkg.dependencies).filter(([key]) => dependencies.has(key)))
+          }
+        }
+        this.emitFile({
+          fileName: 'package.json',
+          needsCodeReference: false,
+          source: JSON.stringify(packageJson, null, 2),
+          type: 'asset'
+        })
+      }
     })
   ]
-}
+}))
 
 export default config

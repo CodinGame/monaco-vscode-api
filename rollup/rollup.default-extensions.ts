@@ -1,11 +1,14 @@
 import nodeResolve from '@rollup/plugin-node-resolve'
 import * as rollup from 'rollup'
 import { importMetaAssets } from '@web/rollup-plugin-import-meta-assets'
+import { PackageJson } from 'type-fest'
 import * as fs from 'fs'
 import * as fsPromise from 'fs/promises'
 import * as path from 'path'
 import { fileURLToPath } from 'url'
-import extensionDirectoryPlugin from '../dist/rollup-extension-directory-plugin.js'
+import metadataPlugin from './rollup-metadata-plugin'
+import extensionDirectoryPlugin from '../dist/rollup-extension-directory-plugin/rollup-extension-directory-plugin.js'
+import pkg from '../package.json' assert { type: 'json' }
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url))
 
@@ -93,5 +96,30 @@ export default rollup.defineConfig(defaultExtensions.map(name => (<rollup.Rollup
         }
         return []
       }
-    })]
+    }),
+    metadataPlugin({
+      handle (_, dependencies, entrypoints, options, bundle) {
+        const entrypoint = Object.values(bundle).filter(v => (v as rollup.OutputChunk).isEntry)[0]!.fileName
+        const packageJson: PackageJson = {
+          name: `@codingame/monaco-vscode-${name}-default-extension`,
+          ...Object.fromEntries(Object.entries(pkg).filter(([key]) => ['version', 'keywords', 'author', 'license', 'repository', 'type'].includes(key))),
+          private: false,
+          description: `Default VSCode extension designed to be used with ${pkg.name}`,
+          main: entrypoint,
+          module: entrypoint,
+          dependencies: {
+            vscode: `npm:${pkg.name}@^${pkg.version}`,
+            ...Object.fromEntries(Object.entries(pkg.dependencies).filter(([key]) => dependencies.has(key)))
+          }
+        }
+
+        this.emitFile({
+          fileName: 'package.json',
+          needsCodeReference: false,
+          source: JSON.stringify(packageJson, null, 2),
+          type: 'asset'
+        })
+      }
+    })
+  ]
 })))
