@@ -31,25 +31,37 @@ interfaceOverride.set('IStandaloneDiffEditor', 'monaco.editor.IStandaloneDiffEdi
 interfaceOverride.set('IStandaloneEditorConstructionOptions', 'monaco.editor.IStandaloneEditorConstructionOptions')
 interfaceOverride.set('IStandaloneDiffEditorConstructionOptions', 'monaco.editor.IStandaloneDiffEditorConstructionOptions')
 
-export default rollup.defineConfig({
-  input: Object.fromEntries([
+export default rollup.defineConfig([{
+  input: [
     './dist/types/src/services.d.ts',
     './dist/types/src/extensions.d.ts',
     ...fs.readdirSync(path.resolve(DIST_DIR, 'types/src/service-override'), { withFileTypes: true })
       .filter(f => f.isFile())
       .map(f => f.name)
       .map(name => `./dist/types/src/service-override/${name}`),
-    './dist/types/src/monaco.d.ts',
-    './dist/types/src/rollup-vsix-plugin.d.ts',
+    './dist/types/src/monaco.d.ts'
+  ],
+  output: 'dist/main'
+}, {
+  input: [
+    './dist/types/src/rollup-vsix-plugin.d.ts'
+  ],
+  output: 'dist/rollup-vsix-plugin'
+}, {
+  input: [
     './dist/types/src/rollup-extension-directory-plugin.d.ts'
-  ].map(input => ([
+  ],
+  output: 'dist/rollup-extension-directory-plugin'
+}].map(({ input, output }) => (<rollup.RollupOptions>{
+  input: Object.fromEntries(input.map(input => ([
     path.relative(path.resolve(DIST_DIR, 'types/src'), path.resolve(__dirname, '..', input)).slice(0, -3),
     input
   ]))),
   output: {
     preserveModules: true,
+    preserveModulesRoot: 'dist/types/src',
     format: 'esm',
-    dir: 'dist',
+    dir: output,
     entryFileNames: chunk => `${chunk.name}.ts`,
     chunkFileNames: chunk => `${chunk.name}.ts`,
     assetFileNames: chunk => `${chunk.name}.ts`
@@ -128,4 +140,4 @@ export default rollup.defineConfig({
       respectExternal: true
     })
   ]
-})
+})))

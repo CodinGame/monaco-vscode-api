@@ -548,7 +548,7 @@ export default (args: Record<string, string>): rollup.RollupOptions[] => {
       minifyInternalExports: false,
       assetFileNames: 'assets/[name][extname]',
       format: 'esm',
-      dir: 'dist',
+      dir: 'dist/main',
       entryFileNames: '[name].js',
       chunkFileNames: '[name].js',
       hoistTransitiveImports: false,
@@ -615,6 +615,9 @@ export default (args: Record<string, string>): rollup.RollupOptions[] => {
       typescript({
         noEmitOnError: true,
         tsconfig: TSCONFIG,
+        compilerOptions: {
+          outDir: 'dist/main'
+        },
         transformers: {
           before: [{
             type: 'program',
@@ -727,14 +730,14 @@ export default (args: Record<string, string>): rollup.RollupOptions[] => {
       }
     },
     external,
-    input: Object.fromEntries(Object.keys(input).map(f => [f, `./dist/${f}`])),
+    input: Object.fromEntries(Object.keys(input).map(f => [f, `./dist/main/${f}`])),
     output: [{
       preserveModules: true,
-      preserveModulesRoot: 'dist',
+      preserveModulesRoot: 'dist/main',
       minifyInternalExports: false,
       assetFileNames: 'assets/[name][extname]',
       format: 'esm',
-      dir: 'dist',
+      dir: 'dist/main',
       entryFileNames: '[name].js',
       chunkFileNames: '[name].js',
       hoistTransitiveImports: false

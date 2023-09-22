@@ -19,36 +19,26 @@ const defaultExtensions = fs.readdirSync(DEFAULT_EXTENSIONS_PATH, { withFileType
   .map(f => f.name)
 
 export default rollup.defineConfig(defaultExtensions.map(name => (<rollup.RollupOptions>{
-  // default entensions
   input: path.resolve(DEFAULT_EXTENSIONS_PATH, name),
   output: [{
     minifyInternalExports: false,
     assetFileNames: chunkInfo => {
       if (chunkInfo.name != null && chunkInfo.name.endsWith('d.ts')) {
         // append .txt at the end of d.ts files: those file are required by the typescript extension and are just expected to be loaded as simple text
-        return `default-extensions/${name}/[name][extname].txt`
+        return '[name][extname].txt'
       }
-      return `default-extensions/${name}/[name][extname]`
+      return '[name][extname]'
     },
     format: 'esm',
-    dir: 'dist',
-    entryFileNames: `default-extensions/${name}.js`,
-    chunkFileNames: `default-extensions/${name}/[name].js`,
+    dir: `dist/default-extension-${name}`,
+    entryFileNames: 'index.js',
+    chunkFileNames: '[name].js',
     hoistTransitiveImports: false
   }],
+  external (source) {
+    return source === 'vscode/extensions'
+  },
   plugins: [
-    {
-      name: 'resolve',
-      resolveId (importee) {
-        if (importee === 'vscode/extensions') {
-          return {
-            id: '../extensions.js',
-            external: true
-          }
-        }
-        return undefined
-      }
-    },
     {
       name: 'resolve-asset-url',
       resolveFileUrl (options) {

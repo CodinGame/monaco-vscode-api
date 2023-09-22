@@ -10,7 +10,7 @@
 			"es2021",
 			"DOM"
 		],
-		"outDir": "dist/server",
+		"outDir": "dist",
 		"rootDir": "./",
 		"paths": {
 			"vs/*": [
