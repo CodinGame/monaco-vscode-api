@@ -163,9 +163,14 @@ import { IEncryptionService } from 'vs/platform/encryption/common/encryptionServ
 import { ITestResultService } from 'vs/workbench/contrib/testing/common/testResultService'
 import { IDiagnosticsService, NullDiagnosticsService } from 'vs/platform/diagnostics/common/diagnostics'
 import { INotebookSearchService } from 'vs/workbench/contrib/search/common/notebookSearch'
+import { IChatProviderService } from 'vs/workbench/contrib/chat/common/chatProvider'
+import { IChatSlashCommandService } from 'vs/workbench/contrib/chat/common/chatSlashCommands'
+import { IChatVariablesService } from 'vs/workbench/contrib/chat/common/chatVariables'
+import { IAiRelatedInformationService } from 'vs/workbench/services/aiRelatedInformation/common/aiRelatedInformation'
+import { IAiEmbeddingVectorService } from 'vs/workbench/services/aiEmbeddingVector/common/aiEmbeddingVectorService'
 import { ResourceSet } from 'vs/base/common/map'
-import { IEditorGroupView } from 'vs/workbench/browser/parts/editor/editor'
 import { unsupported } from './tools'
+import { IEditorGroupView } from 'vs/workbench/browser/parts/editor/editor'
 
 class NullLoggerService extends AbstractLoggerService {
   constructor () {
@@ -2141,4 +2146,42 @@ registerSingleton(INotebookSearchService, class NotebookSearchService implements
   }
 
   _serviceBrand: undefined
+}, InstantiationType.Delayed)
+
+registerSingleton(IChatProviderService, class ChatProviderService implements IChatProviderService {
+  _serviceBrand: undefined
+  registerChatResponseProvider = unsupported
+  fetchChatResponse = unsupported
+}, InstantiationType.Delayed)
+
+registerSingleton(IChatSlashCommandService, class ChatSlashCommandService implements IChatSlashCommandService {
+  onDidChangeCommands = unsupported
+  registerSlashData = unsupported
+  registerSlashCallback = unsupported
+  registerSlashCommand = unsupported
+  executeCommand = unsupported
+  getCommands = unsupported
+  hasCommand = unsupported
+  _serviceBrand: undefined
+}, InstantiationType.Delayed)
+
+registerSingleton(IChatVariablesService, class ChatVariablesService implements IChatVariablesService {
+  registerVariable = unsupported
+  getVariables = unsupported
+  resolveVariables = unsupported
+  _serviceBrand: undefined
+}, InstantiationType.Delayed)
+
+registerSingleton(IAiRelatedInformationService, class AiRelatedInformationService implements IAiRelatedInformationService {
+  isEnabled = () => false
+  getRelatedInformation = unsupported
+  registerAiRelatedInformationProvider = unsupported
+  _serviceBrand: undefined
+}, InstantiationType.Delayed)
+
+registerSingleton(IAiEmbeddingVectorService, class AiEmbeddingVectorService implements IAiEmbeddingVectorService {
+  _serviceBrand: undefined
+  isEnabled = () => false
+  getEmbeddingVector = unsupported
+  registerAiEmbeddingVectorProvider = unsupported
 }, InstantiationType.Delayed)
