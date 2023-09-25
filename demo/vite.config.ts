@@ -47,7 +47,8 @@ export default defineConfig({
       '@codingame/monaco-vscode-typescript-language-features-default-extension', '@codingame/monaco-vscode-markdown-language-features-default-extension',
       '@codingame/monaco-vscode-json-language-features-default-extension', '@codingame/monaco-vscode-css-language-features-default-extension',
       '@codingame/monaco-vscode-npm-default-extension', '@codingame/monaco-vscode-css-default-extension', '@codingame/monaco-vscode-markdown-basics-default-extension', '@codingame/monaco-vscode-html-default-extension',
-      '@codingame/monaco-vscode-html-language-features-default-extension', '@codingame/monaco-vscode-configuration-editing-default-extension', '@codingame/monaco-vscode-media-preview-default-extension', '@codingame/monaco-vscode-markdown-math-default-extension'
+      '@codingame/monaco-vscode-html-language-features-default-extension', '@codingame/monaco-vscode-configuration-editing-default-extension', '@codingame/monaco-vscode-media-preview-default-extension', '@codingame/monaco-vscode-markdown-math-default-extension',
+      'vscode/workers/textmate.worker'
     ],
     esbuildOptions: {
       plugins: [{
