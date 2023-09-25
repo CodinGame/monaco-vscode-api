@@ -2,6 +2,7 @@ import nodeResolve from '@rollup/plugin-node-resolve'
 import * as rollup from 'rollup'
 import { importMetaAssets } from '@web/rollup-plugin-import-meta-assets'
 import { PackageJson } from 'type-fest'
+import { pascalCase } from 'pascal-case'
 import * as fs from 'fs'
 import * as fsPromise from 'fs/promises'
 import * as path from 'path'
@@ -121,6 +122,7 @@ export default rollup.defineConfig([
             description: `Default VSCode extension designed to be used with ${pkg.name}`,
             main: entrypoint,
             module: entrypoint,
+            types: 'index.d.ts',
             dependencies: {
               vscode: `npm:${pkg.name}@^${pkg.version}`,
               ...Object.fromEntries(Object.entries(pkg.dependencies).filter(([key]) => dependencies.has(key)))
@@ -131,6 +133,13 @@ export default rollup.defineConfig([
             fileName: 'package.json',
             needsCodeReference: false,
             source: JSON.stringify(packageJson, null, 2),
+            type: 'asset'
+          })
+
+          this.emitFile({
+            fileName: 'index.d.ts',
+            needsCodeReference: false,
+            source: 'declare const whenReady: () => Promise<void>\nexport { whenReady }',
             type: 'asset'
           })
         }
@@ -165,7 +174,10 @@ export default rollup.defineConfig([
       },
       load () {
         return `
-${extensions.map(name => `import '@codingame/monaco-vscode-${name}-default-extension'`).join('\n')}
+${extensions.map(name => `import { whenReady as whenReady${pascalCase(name)} } from '@codingame/monaco-vscode-${name}-default-extension'`).join('\n')}
+const whenReady = Promise.all(
+${extensions.map(name => `  whenReady${pascalCase(name)}()`).join(',\n')}
+)
         `
       }
     },
@@ -179,6 +191,7 @@ ${extensions.map(name => `import '@codingame/monaco-vscode-${name}-default-exten
           description: `Meta package including default VSCode extensions designed to be used with ${pkg.name}`,
           main: entrypoint,
           module: entrypoint,
+          types: 'index.d.ts',
           dependencies: Object.fromEntries(Array.from(dependencies).map(name => [
             name,
             pkg.version
@@ -189,6 +202,13 @@ ${extensions.map(name => `import '@codingame/monaco-vscode-${name}-default-exten
           fileName: 'package.json',
           needsCodeReference: false,
           source: JSON.stringify(packageJson, null, 2),
+          type: 'asset'
+        })
+
+        this.emitFile({
+          fileName: 'index.d.ts',
+          needsCodeReference: false,
+          source: 'declare const whenReady: () => Promise<void>\nexport { whenReady }',
           type: 'asset'
         })
       }

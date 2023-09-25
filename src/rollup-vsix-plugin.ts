@@ -129,10 +129,12 @@ import { registerExtension } from 'vscode/extensions'
 
 const manifest = ${JSON.stringify(transformManifest(packageJson))}
 
-const { registerFileUrl } = registerExtension(manifest)
+const { registerFileUrl, whenReady } = registerExtension(manifest)
 
 ${pathMapping.map(({ pathInExtension, url, mimeType }) => (`
 registerFileUrl('${pathInExtension}', ${url}${mimeType != null ? `, '${mimeType}'` : ''})`)).join('\n')}
+
+export { whenReady }
 `
     }
   }

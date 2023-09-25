@@ -36,6 +36,7 @@ interface RegisterRemoteExtensionParams extends RegisterExtensionParams {
 interface RegisterExtensionResult {
   id: string
   dispose (): Promise<void>
+  whenReady(): Promise<void>
 }
 
 interface RegisterRemoteExtensionResult extends RegisterExtensionResult {
@@ -126,6 +127,9 @@ export function registerExtension (manifest: IExtensionManifest, extHostKind?: E
 
   let api: RegisterExtensionResult = {
     id,
+    async whenReady () {
+      await addExtensionPromise
+    },
     async dispose () {
       const extension = await addExtensionPromise
       await deltaExtensions([], [extension])

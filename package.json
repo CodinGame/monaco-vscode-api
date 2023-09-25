@@ -75,6 +75,7 @@
     "jschardet": "^3.0.0",
     "package-json": "^8.1.1",
     "param-case": "^3.0.4",
+    "pascal-case": "^3.1.2",
     "patch-package": "^8.0.0",
     "recast": "^0.23.4",
     "rollup": "^3.29.1",

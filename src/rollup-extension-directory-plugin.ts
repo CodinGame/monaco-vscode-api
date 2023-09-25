@@ -77,7 +77,7 @@ export default function plugin ({
 import manifest from '${manifestPath}'
 import { registerExtension } from 'vscode/extensions'
 
-const { registerFileUrl } = registerExtension(manifest)
+const { registerFileUrl, whenReady } = registerExtension(manifest)
 ${resources.map(resource => {
   const lines: string[] = [
     generateFileRegistrationInstruction(resource.path, path.resolve(id, resource.realPath ?? resource.path), resource.mimeType)
@@ -88,7 +88,9 @@ ${resources.map(resource => {
 
   return lines.join('\n')
 }).join('\n')}
-        `
+
+export { whenReady }
+`
         } catch (err) {
           console.error(err, (err as Error).stack)
           throw err
