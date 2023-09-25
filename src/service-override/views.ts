@@ -92,6 +92,7 @@ import { MonacoDelegateEditorGroupsService, MonacoEditorService, OpenEditor } fr
 import getBulkEditServiceOverride from './bulkEdit'
 import getLayoutServiceOverride, { LayoutService } from './layout'
 import getQuickAccessOverride from './quickaccess'
+import getKeybindingsOverride from './keybindings'
 import { changeUrlDomain } from './tools/url'
 import { registerAssets } from '../assets'
 import { registerServiceInitializePostParticipant } from '../lifecycle'
@@ -610,6 +611,9 @@ export default function getServiceOverride (openEditorFallback?: OpenEditor, _we
     ...getQuickAccessOverride({
       isKeybindingConfigurationVisible: isEditorPartVisible,
       shouldUseGlobalPicker: isEditorPartVisible
+    }),
+    ...getKeybindingsOverride({
+      shouldUseGlobalKeybindings: isEditorPartVisible
     }),
     [IViewsService.toString()]: new SyncDescriptor(ViewsService, [], false),
     [IViewDescriptorService.toString()]: new SyncDescriptor(ViewDescriptorService, [], true),
