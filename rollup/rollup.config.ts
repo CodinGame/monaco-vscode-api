@@ -559,7 +559,14 @@ export default (args: Record<string, string>): rollup.RollupOptions[] => {
       assetFileNames: 'assets/[name][extname]',
       format: 'esm',
       dir: 'dist/main',
-      entryFileNames: '[name].js',
+      entryFileNames: (chunkInfo) => {
+        // Rename node_modules to external so it's not removing while publishing the package
+        // tslib and rollup-plugin-styles and bundled
+        if (chunkInfo.name.includes('node_modules')) {
+          return chunkInfo.name.replace('node_modules', 'external') + '.js'
+        }
+        return '[name].js'
+      },
       chunkFileNames: '[name].js',
       hoistTransitiveImports: false,
       paths: {
