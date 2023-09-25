@@ -1,26 +1,32 @@
-# How to upgrade to next vscode and monaco-editor version
+# How to upgrade to next vscode and monaco-editor versions
 
 ## Preparation
 
+- It is assumed `monaco-vscode-api`, `vscode` and `monaco-editor` repos are cloned locally on the same directory level. `monaco-editor` is not required, but helpful
+
+## vscode repository
+
 - Get the new vscode commit from the new monaco-editor release version (in the package.json there is a `vscodeRef` field)
-- Open the vscode repo, reset to the previous vscodeRef commit
-- Apply the current patch: `patch -p1 < /path/to/monaco-vscode-api/scripts/vscode.patch`
+- Go to the vscode repo directory, reset to the previous vscodeRef commit
+- Apply the current patch: `patch -p1 < ../monaco-vscode-api/scripts/vscode.patch`
 - `git stash`
-- checkout new vscodeRef commit
+- Checkout new vscodeRef commit
 - `git stash pop`
-- resolve conflicts, update code...
-- generate new patch: `git diff --staged > /path/to/monaco-vscode-api/scripts/vscode.patch`
+- Resolve conflicts / update code (e.g. broken imports)
+- Generate new patch: `git diff --staged > ../monaco-vscode-api/scripts/vscode.patch`
 
-## the monaco-vscode-api side
+## monaco-vscode-api repository
 
-- update monaco-editor (and other dependencies) and update to the new `vscodeRef`
-- wait for the new vscode version to be downloaded and built
+- Update `monaco-editor` and other dependencies and update to the new `vscodeRef` from above
+  - Run `npx @vscode/dts dev` afterwards to update the `vscode.proposed.xxx.d.ts` files. It fixes potential errors in `api.ts`
+- Wait for the new vscode version to be downloaded and built
 - Fix errors, adapt code, build, include the `vscode.patch` into this commit
-- update demo
+  - Do not hesitate to run the eslint autofix, it gets rid of the majority of your errors
+  - Implement missing services. This is easily observable seem when running the demo (see next point)
+- Update demo
+  - Update dependencies
+  - Implement improvements dependening on the new features available from vscode (optional)
 
-## Further points (needs polishing / ne integrated properly)
+## Hints:
 
-- Do not hesitate to run the eslint autofix, it gets rid of the majority of your errors
-- I've just realized we need to run npx @vscode/dts dev after an update (to upate the vscode.proposed.xxx.d.ts files): it fixes the error in api.ts
-- The remaining errors in missing-services.ts are not hard to fix
-- Implement missing services (usually seem when running the demo)
+Use repo log viewers and check the last update branch when in doubt
