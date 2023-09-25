@@ -39,9 +39,10 @@ import { ITelemetryService } from 'vs/platform/telemetry/common/telemetry'
 import { INotificationService } from 'vs/platform/notification/common/notification'
 import { ILogService } from 'vs/platform/log/common/log'
 import { ICodeEditorService } from 'vs/editor/browser/services/codeEditorService'
-import { IKeybindingService } from 'vs/platform/keybinding/common/keybinding'
+import { IKeybindingService, IKeyboardEvent } from 'vs/platform/keybinding/common/keybinding'
 import { KeybindingResolver } from 'vs/platform/keybinding/common/keybindingResolver'
 import { ResolvedKeybindingItem } from 'vs/platform/keybinding/common/resolvedKeybindingItem'
+import { ResolvedKeybinding } from 'vs/base/common/keybindings'
 import { createInjectedClass } from './tools/injection'
 // Selectively comes from vs/workbench/contrib/codeEditor/browser/codeEditor.contribution.ts
 import 'vs/workbench/contrib/codeEditor/browser/workbenchReferenceSearch'
@@ -209,6 +210,10 @@ class DelegateStandaloneKeybindingService extends StandaloneKeybindingService {
 
   protected override _getResolver (): KeybindingResolver {
     return this.delegate._getResolver()
+  }
+
+  override resolveKeyboardEvent (keyboardEvent: IKeyboardEvent): ResolvedKeybinding {
+    return this.delegate.resolveKeyboardEvent(keyboardEvent)
   }
 }
 
