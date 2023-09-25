@@ -145,6 +145,11 @@ async function publishNpm (version: string) {
       if (packageJson.dependencies?.vscode != null) {
         packageJson.dependencies.vscode = `npm:@codingame/monaco-vscode-api@${version}`
       }
+      for (const dependency in packageJson.dependencies) {
+        if (dependency.startsWith('@codingame/monaco-vscode-')) {
+          packageJson.dependencies[dependency] = version
+        }
+      }
       await fs.writeFile(packageJsonFile, JSON.stringify(packageJson, null, 2))
 
       $.cwd = libDir
