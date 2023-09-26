@@ -84,7 +84,7 @@ await initializeMonacoService({
   ...getSnippetServiceOverride(),
   ...getQuickAccessServiceOverride({
     isKeybindingConfigurationVisible: isEditorPartVisible,
-    shouldUseGlobalPicker: isEditorPartVisible
+    shouldUseGlobalPicker: (_editor, isStandalone) => !isStandalone && isEditorPartVisible()
   }),
   ...getOutputServiceOverride(),
   ...getTerminalServiceOverride(new TerminalBackend()),

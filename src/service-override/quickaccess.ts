@@ -15,11 +15,12 @@ import 'vs/workbench/contrib/codeEditor/browser/quickaccess/gotoLineQuickAccess'
 import 'vs/workbench/contrib/codeEditor/browser/quickaccess/gotoSymbolQuickAccess'
 import 'vs/workbench/browser/actions/quickAccessActions'
 import 'vs/workbench/contrib/quickaccess/browser/quickAccess.contribution'
+import { ICodeEditor } from 'vs/editor/browser/editorBrowser'
 
 let isKeybindingConfigurationVisible = () => {
   return false
 }
-let shouldUseGlobalPicker = () => {
+let shouldUseGlobalPicker = (_activeCodeEditor: ICodeEditor | null, _activeCodeEditorStandalone: boolean) => {
   return false
 }
 
@@ -50,7 +51,8 @@ class DelegateQuickInputService implements IQuickInputService {
 
   private get activeService (): IQuickInputService {
     const activeCodeEditor = StandaloneServices.get(ICodeEditorService).getFocusedCodeEditor()
-    if (!(activeCodeEditor instanceof StandaloneCodeEditor) && shouldUseGlobalPicker()) {
+
+    if (shouldUseGlobalPicker(activeCodeEditor, activeCodeEditor instanceof StandaloneCodeEditor)) {
       return this.workbenchQuickInputService
     }
 
@@ -112,7 +114,7 @@ class DelegateQuickInputService implements IQuickInputService {
 
 interface QuickAccessProps {
   isKeybindingConfigurationVisible?: () => boolean
-  shouldUseGlobalPicker?: () => boolean
+  shouldUseGlobalPicker?: (activeCodeEditor: ICodeEditor | null, activeCodeEditorStandalone: boolean) => boolean
 }
 
 export default function getServiceOverride ({
