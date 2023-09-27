@@ -1,6 +1,7 @@
 import { defineConfig } from 'vite'
 import * as fs from 'fs'
 import url from 'url'
+import path from 'path'
 
 const cdnDomain = 'http://127.0.0.2:5173'
 
@@ -20,6 +21,27 @@ export default defineConfig({
           res.setHeader('Cross-Origin-Resource-Policy', 'cross-origin')
           next()
         })
+      }
+    },
+    {
+      name: 'force-prevent-transform-assets',
+      apply: 'serve',
+      configureServer (server) {
+        return () => {
+          server.middlewares.use(async (req, res, next) => {
+            if (req.originalUrl != null) {
+              const pathname = new URL(req.originalUrl, import.meta.url).pathname
+              if (pathname.endsWith('.html')) {
+                res.setHeader('Content-Type', 'text/html')
+                res.writeHead(200)
+                res.write(fs.readFileSync(path.join(__dirname, pathname)))
+                res.end()
+              }
+            }
+
+            next()
+          })
+        }
       }
     }
   ],
