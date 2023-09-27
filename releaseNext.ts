@@ -26,34 +26,21 @@ $.env = {
   GIT_TERMINAL_PROMPT: '0'
 }
 
-function escapeRegExp (string: string) {
-  return string.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')
-}
-
 const vscodeVersion = process.argv[process.argv.length - 1]!
-const minorVscodeVersion = `${semver.major(vscodeVersion)}.${semver.minor(vscodeVersion)}`
-const tagPattern = new RegExp(`^v?(${escapeRegExp(minorVscodeVersion)}\\.\\d+)$`)
+const vscodeVersionRange = `${semver.major(vscodeVersion)}.${semver.minor(vscodeVersion)}.*`
 
-async function getLastTag () {
-  const tags = (await $`git tag -l --sort=-v:refname`).toString().split('\n').map(tag => tag.trim())
-
-  const matchingTags = tags.filter(tag => tagPattern.test(tag)).sort(semver.compare)
-  const lastTag = matchingTags[matchingTags.length - 1]!
-
-  return lastTag
-}
-
-async function getNextVersion (lastTag: string) {
-  // Find available next version
+async function getNextVersion () {
   const allVersions = new Set(Object.keys((await packageJson('@codingame/monaco-vscode-api', {
     allVersions: true
   })).versions))
-  let nextVersion: string = lastTag
-  do {
-    nextVersion = semver.inc(nextVersion, 'prerelease', true, 'next')!
-  } while (allVersions.has(nextVersion))
 
-  return nextVersion
+  const lastPublishedVersion = semver.maxSatisfying(Array.from(allVersions), vscodeVersionRange, { includePrerelease: true })
+
+  if (lastPublishedVersion != null) {
+    return semver.inc(lastPublishedVersion, 'prerelease', true, 'next')!
+  } else {
+    return `${semver.major(vscodeVersion)}.${semver.minor(vscodeVersion)}.0-next.0`
+  }
 }
 
 async function publishNpm (version: string) {
@@ -81,8 +68,7 @@ async function publishNpm (version: string) {
 }
 
 async function run () {
-  const lastTag = await getLastTag()
-  const nextVersion = await getNextVersion(lastTag)
+  const nextVersion = await getNextVersion()
   await publishNpm(nextVersion)
 }
 
