@@ -63,7 +63,6 @@ import { CodeEditorService } from 'vs/workbench/services/editor/browser/codeEdit
 import { IUntitledTextEditorService, UntitledTextEditorService } from 'vs/workbench/services/untitled/common/untitledTextEditorService'
 import { StatusbarPart } from 'vs/workbench/browser/parts/statusbar/statusbarPart'
 import { IStatusbarService } from 'vs/workbench/services/statusbar/browser/statusbar'
-import { ISemanticSimilarityService, SemanticSimilarityService } from 'vs/workbench/services/semanticSimilarity/common/semanticSimilarityService'
 import { IHistoryService } from 'vs/workbench/services/history/common/history'
 import { HistoryService } from 'vs/workbench/services/history/browser/historyService'
 import { Action2, MenuId, registerAction2 } from 'vs/platform/actions/common/actions'
@@ -629,7 +628,6 @@ export default function getServiceOverride (openEditorFallback?: OpenEditor, _we
     [IBreadcrumbsService.toString()]: new SyncDescriptor(BreadcrumbsService, [], true),
     [IContextViewService.toString()]: new SyncDescriptor(ContextViewService, [], true),
     [IUntitledTextEditorService.toString()]: new SyncDescriptor(UntitledTextEditorService, [], true),
-    [ISemanticSimilarityService.toString()]: new SyncDescriptor(SemanticSimilarityService, [], true),
     [IHistoryService.toString()]: new SyncDescriptor(HistoryService, [], false),
     [IOutlineService.toString()]: new SyncDescriptor(OutlineService, [], true),
     [ICustomEditorService.toString()]: new SyncDescriptor(CustomEditorService, [], true),

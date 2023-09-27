@@ -93,13 +93,12 @@ import { ITreeViewsDnDService } from 'vs/editor/common/services/treeViewsDndServ
 import { TreeviewsService } from 'vs/workbench/services/views/common/treeViewsService'
 import { ITreeViewsService } from 'vs/workbench/services/views/browser/treeViewsService'
 import { IBreadcrumbsService } from 'vs/workbench/browser/parts/editor/breadcrumbs'
-import { ISemanticSimilarityService } from 'vs/workbench/services/semanticSimilarity/common/semanticSimilarityService'
 import { IOutlineService } from 'vs/workbench/services/outline/browser/outline'
 import { IUpdateService, State } from 'vs/platform/update/common/update'
 import { IStatusbarService } from 'vs/workbench/services/statusbar/browser/statusbar'
 import { IExtensionGalleryService, IExtensionManagementService, ILocalExtension } from 'vs/platform/extensionManagement/common/extensionManagement'
 import { IModelService } from 'vs/editor/common/services/model'
-import { ITerminalEditorService, ITerminalGroupService, ITerminalInstance, ITerminalInstanceService, ITerminalService, TerminalConnectionState } from 'vs/workbench/contrib/terminal/browser/terminal'
+import { IDetachedTerminalInstance, ITerminalEditorService, ITerminalGroupService, ITerminalInstance, ITerminalInstanceService, ITerminalService, TerminalConnectionState } from 'vs/workbench/contrib/terminal/browser/terminal'
 import { ITerminalProfileResolverService, ITerminalProfileService } from 'vs/workbench/contrib/terminal/common/terminal'
 import { ITerminalLogService, TerminalLocation } from 'vs/platform/terminal/common/terminal'
 import { ITerminalContributionService } from 'vs/workbench/contrib/terminal/common/terminalExtensionPoints'
@@ -113,7 +112,7 @@ import { IKeybindingEditingService } from 'vs/workbench/services/keybinding/comm
 import { INotebookService } from 'vs/workbench/contrib/notebook/common/notebookService'
 import { ISearchHistoryService } from 'vs/workbench/contrib/search/common/searchHistoryService'
 import { IReplaceService } from 'vs/workbench/contrib/search/browser/replace'
-import { ISearchWorkbenchService } from 'vs/workbench/contrib/search/browser/searchModel'
+import { ISearchViewModelWorkbenchService } from 'vs/workbench/contrib/search/browser/searchModel'
 import { INotebookEditorService } from 'vs/workbench/contrib/notebook/browser/services/notebookEditorService'
 import { INotebookEditorModelResolverService } from 'vs/workbench/contrib/notebook/common/notebookEditorModelResolverService'
 import { IWorkingCopyEditorService, WorkingCopyEditorService } from 'vs/workbench/services/workingCopy/common/workingCopyEditorService'
@@ -163,10 +162,15 @@ import { ITestProfileService } from 'vs/workbench/contrib/testing/common/testPro
 import { IEncryptionService } from 'vs/platform/encryption/common/encryptionService'
 import { ITestResultService } from 'vs/workbench/contrib/testing/common/testResultService'
 import { IDiagnosticsService, NullDiagnosticsService } from 'vs/platform/diagnostics/common/diagnostics'
-import { INotebookSearchService } from 'vs/workbench/contrib/search/browser/notebookSearch'
+import { INotebookSearchService } from 'vs/workbench/contrib/search/common/notebookSearch'
+import { IChatProviderService } from 'vs/workbench/contrib/chat/common/chatProvider'
+import { IChatSlashCommandService } from 'vs/workbench/contrib/chat/common/chatSlashCommands'
+import { IChatVariablesService } from 'vs/workbench/contrib/chat/common/chatVariables'
+import { IAiRelatedInformationService } from 'vs/workbench/services/aiRelatedInformation/common/aiRelatedInformation'
+import { IAiEmbeddingVectorService } from 'vs/workbench/services/aiEmbeddingVector/common/aiEmbeddingVectorService'
 import { ResourceSet } from 'vs/base/common/map'
-import { IEditorGroupView } from 'vs/workbench/browser/parts/editor/editor'
 import { unsupported } from './tools'
+import { IEditorGroupView } from 'vs/workbench/browser/parts/editor/editor'
 
 class NullLoggerService extends AbstractLoggerService {
   constructor () {
@@ -742,6 +746,8 @@ registerSingleton(IExtensionHostDebugService, class ExtensionHostDebugService im
 }, InstantiationType.Eager)
 
 registerSingleton(IViewsService, class ViewsService implements IViewsService {
+  getFocusedViewName = unsupported
+  onDidChangeFocusedView = Event.None
   _serviceBrand: undefined
   onDidChangeViewContainerVisibility = Event.None
   isViewContainerVisible = () => false
@@ -866,6 +872,7 @@ registerSingleton(ICustomEndpointTelemetryService, NullEndpointTelemetryService,
 class MonacoSearchService implements ISearchService {
   _serviceBrand: undefined
   constructor (@IModelService private modelService: IModelService) {}
+  textSearchSplitSyncAsync = unsupported
 
   async textSearch (): Promise<ISearchComplete> {
     return {
@@ -1135,13 +1142,6 @@ registerSingleton(IBreadcrumbsService, class BreadcrumbsService implements IBrea
   getWidget = () => undefined
 }, InstantiationType.Eager)
 
-registerSingleton(ISemanticSimilarityService, class SemanticSimilarityService implements ISemanticSimilarityService {
-  _serviceBrand: undefined
-  isEnabled = () => false
-  getSimilarityScore = unsupported
-  registerSemanticSimilarityProvider = unsupported
-}, InstantiationType.Delayed)
-
 registerSingleton(IOutlineService, class OutlineService implements IOutlineService {
   _serviceBrand: undefined
   onDidChange = Event.None
@@ -1198,6 +1198,13 @@ registerSingleton(IExtensionGalleryService, class ExtensionGalleryService implem
 }, InstantiationType.Eager)
 
 registerSingleton(ITerminalService, class TerminalService implements ITerminalService {
+  onInstanceEvent = unsupported
+  onInstanceCapabilityEvent = unsupported
+
+  async createDetachedTerminal (): Promise<IDetachedTerminalInstance> {
+    unsupported()
+  }
+
   onDidChangeSelection = Event.None
   _serviceBrand: undefined
 
@@ -1292,6 +1299,7 @@ registerSingleton(ITerminalEditorService, class TerminalEditorService implements
 }, InstantiationType.Delayed)
 
 registerSingleton(ITerminalGroupService, class TerminalGroupService implements ITerminalGroupService {
+  lastAccessedMenu: 'inline-tab' | 'tab-list' = 'inline-tab'
   _serviceBrand: undefined
   instances = []
   groups = []
@@ -1560,7 +1568,7 @@ registerSingleton(INotebookEditorService, class NotebookEditorService implements
   listNotebookEditors = () => []
 }, InstantiationType.Delayed)
 
-registerSingleton(ISearchWorkbenchService, class SearchWorkbenchService implements ISearchWorkbenchService {
+registerSingleton(ISearchViewModelWorkbenchService, class SearchWorkbenchService implements ISearchViewModelWorkbenchService {
   _serviceBrand: undefined
   get searchModel () {
     return unsupported()
@@ -1686,6 +1694,9 @@ registerSingleton(IRemoteAuthorityResolverService, class RemoteAuthorityResolver
 registerSingleton(IExternalUriOpenerService, ExternalUriOpenerService, InstantiationType.Delayed)
 
 registerSingleton(IAccessibleViewService, class AccessibleViewService implements IAccessibleViewService {
+  showAccessibleViewHelp = unsupported
+  goToSymbol = unsupported
+  disableHint = unsupported
   next = unsupported
   previous = unsupported
   getOpenAriaHint = unsupported
@@ -1892,6 +1903,7 @@ registerSingleton(IInteractiveDocumentService, class InteractiveDocumentService 
 }, InstantiationType.Delayed)
 
 registerSingleton(IInlineChatService, class InlineChatService implements IInlineChatService {
+  onDidChangeProviders = Event.None
   _serviceBrand: undefined
   addProvider = unsupported
   getAllProvider = () => []
@@ -2122,14 +2134,54 @@ registerSingleton(IUserDataInitializationService, class UserDataInitializationSe
 registerSingleton(IDiagnosticsService, NullDiagnosticsService, InstantiationType.Delayed)
 
 registerSingleton(INotebookSearchService, class NotebookSearchService implements INotebookSearchService {
-  _serviceBrand: undefined
-  async notebookSearch () {
+  notebookSearch () {
     return {
-      completeData: {
-        messages: [],
-        results: []
-      },
-      scannedFiles: new ResourceSet()
+      openFilesToScan: new ResourceSet(),
+      completeData: Promise.resolve({
+        results: [],
+        messages: []
+      }),
+      allScannedFiles: Promise.resolve(new ResourceSet())
     }
   }
+
+  _serviceBrand: undefined
+}, InstantiationType.Delayed)
+
+registerSingleton(IChatProviderService, class ChatProviderService implements IChatProviderService {
+  _serviceBrand: undefined
+  registerChatResponseProvider = unsupported
+  fetchChatResponse = unsupported
+}, InstantiationType.Delayed)
+
+registerSingleton(IChatSlashCommandService, class ChatSlashCommandService implements IChatSlashCommandService {
+  onDidChangeCommands = unsupported
+  registerSlashData = unsupported
+  registerSlashCallback = unsupported
+  registerSlashCommand = unsupported
+  executeCommand = unsupported
+  getCommands = unsupported
+  hasCommand = unsupported
+  _serviceBrand: undefined
+}, InstantiationType.Delayed)
+
+registerSingleton(IChatVariablesService, class ChatVariablesService implements IChatVariablesService {
+  registerVariable = unsupported
+  getVariables = unsupported
+  resolveVariables = unsupported
+  _serviceBrand: undefined
+}, InstantiationType.Delayed)
+
+registerSingleton(IAiRelatedInformationService, class AiRelatedInformationService implements IAiRelatedInformationService {
+  isEnabled = () => false
+  getRelatedInformation = unsupported
+  registerAiRelatedInformationProvider = unsupported
+  _serviceBrand: undefined
+}, InstantiationType.Delayed)
+
+registerSingleton(IAiEmbeddingVectorService, class AiEmbeddingVectorService implements IAiEmbeddingVectorService {
+  _serviceBrand: undefined
+  isEnabled = () => false
+  getEmbeddingVector = unsupported
+  registerAiEmbeddingVectorProvider = unsupported
 }, InstantiationType.Delayed)

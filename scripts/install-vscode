@@ -95,7 +95,7 @@ mkdir -p $output_directory
 echo $vscodeRef > $version_info
 
 echo "Building vscode..."
-npx tsc --declaration --importHelpers --module es2020 --preserveConstEnums --outDir "$output_directory/vs"
+NODE_OPTIONS=--max-old-space-size=8192 npx tsc --declaration --importHelpers --module es2020 --preserveConstEnums --outDir "$output_directory/vs"
 # Copy files that are already built
 find ./vs \( -name '*.js' -o -name '*.d.ts' -o -name '*.css' -o -name '*.mp3' -o -name '*.svg' -o -name '*.html' \) -exec rsync -R \{\} "$output_directory/" \;
 

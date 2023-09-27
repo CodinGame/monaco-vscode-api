@@ -21,16 +21,6 @@ export default defineConfig({
           next()
         })
       }
-    },
-    {
-      // prevent vite from trying to inject code into an extension file du to an `import()` in that file
-      name: 'hack-prevent-transform-javascript',
-      apply: 'serve',
-      load (source) {
-        if (source.includes('tsserver.web.js')) {
-          return `eval(${JSON.stringify(fs.readFileSync(source).toString('utf-8'))})`
-        }
-      }
     }
   ],
   optimizeDeps: {
@@ -50,10 +40,9 @@ export default defineConfig({
       'vscode/default-extensions/objective-c', 'vscode/default-extensions/perl', 'vscode/default-extensions/php', 'vscode/default-extensions/powershell',
       'vscode/default-extensions/python', 'vscode/default-extensions/r', 'vscode/default-extensions/ruby', 'vscode/default-extensions/rust',
       'vscode/default-extensions/scss', 'vscode/default-extensions/shellscript', 'vscode/default-extensions/sql', 'vscode/default-extensions/swift',
-      'vscode/default-extensions/typescript-basics', 'vscode/default-extensions/vb', 'vscode/default-extensions/xml', 'vscode/default-extensions/yaml',
-      'vscode/default-extensions/theme-defaults', 'vscode/default-extensions/theme-seti',
-      'vscode/default-extensions/references-view', 'vscode/default-extensions/typescript-basics', 'vscode/default-extensions/search-result',
-      'vscode/default-extensions/typescript-language-features', 'vscode/default-extensions/markdown-language-features',
+      'vscode/default-extensions/typescript-basics', 'vscode/default-extensions/typescript-language-features', 'vscode/default-extensions/vb',
+      'vscode/default-extensions/xml', 'vscode/default-extensions/yaml', 'vscode/default-extensions/theme-defaults', 'vscode/default-extensions/theme-seti',
+      'vscode/default-extensions/references-view', 'vscode/default-extensions/search-result', 'vscode/default-extensions/markdown-language-features',
       'vscode/default-extensions/json-language-features', 'vscode/default-extensions/css-language-features',
       'vscode/default-extensions/npm', 'vscode/default-extensions/css', 'vscode/default-extensions/markdown-basics', 'vscode/default-extensions/html',
       'vscode/default-extensions/html-language-features', 'vscode/default-extensions/configuration-editing', 'vscode/default-extensions/media-preview', 'vscode/default-extensions/markdown-math',
