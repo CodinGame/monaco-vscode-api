@@ -27,6 +27,6 @@
   - Update dependencies
   - Implement improvements dependening on the new features available from vscode (optional)
 
-## Hints:
+## Hints
 
 Use repo log viewers and check the last update branch when in doubt
