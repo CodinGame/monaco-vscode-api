@@ -318,7 +318,7 @@ index 67e34826627..7c5287d6a32 100644
  			telemetry: this.telemetry,
  			storageKey: ASSIGNMENT_STORAGE_KEY,
 diff --git a/src/vs/platform/environment/node/argv.ts b/src/vs/platform/environment/node/argv.ts
-index b3e423e20f9..58045b68058 100644
+index 63243fcf3a0..d948ee599cf 100644
 --- a/src/vs/platform/environment/node/argv.ts
 +++ b/src/vs/platform/environment/node/argv.ts
 @@ -3,7 +3,7 @@
@@ -331,7 +331,7 @@ index b3e423e20f9..58045b68058 100644
  import { localize } from 'vs/nls';
  import { NativeParsedArgs } from 'vs/platform/environment/common/argv';
 diff --git a/src/vs/platform/environment/node/argvHelper.ts b/src/vs/platform/environment/node/argvHelper.ts
-index 74a7369225d..26e97cb6681 100644
+index d8cefb6df67..a94fca911ea 100644
 --- a/src/vs/platform/environment/node/argvHelper.ts
 +++ b/src/vs/platform/environment/node/argvHelper.ts
 @@ -3,7 +3,7 @@
@@ -344,7 +344,7 @@ index 74a7369225d..26e97cb6681 100644
  import { localize } from 'vs/nls';
  import { NativeParsedArgs } from 'vs/platform/environment/common/argv';
 diff --git a/src/vs/platform/files/node/diskFileSystemProvider.ts b/src/vs/platform/files/node/diskFileSystemProvider.ts
-index 0142abfb605..a891dd16694 100644
+index 4ea7d28e214..71ae1c060b0 100644
 --- a/src/vs/platform/files/node/diskFileSystemProvider.ts
 +++ b/src/vs/platform/files/node/diskFileSystemProvider.ts
 @@ -4,7 +4,6 @@
@@ -379,7 +379,7 @@ index 0142abfb605..a891dd16694 100644
  	IFileSystemProviderWithFileReadWriteCapability,
  	IFileSystemProviderWithOpenReadWriteCloseCapability,
 diff --git a/src/vs/platform/native/electron-main/nativeHostMainService.ts b/src/vs/platform/native/electron-main/nativeHostMainService.ts
-index af0e0cfe14c..30b6c87382e 100644
+index 053f3822d27..46fd5932bc5 100644
 --- a/src/vs/platform/native/electron-main/nativeHostMainService.ts
 +++ b/src/vs/platform/native/electron-main/nativeHostMainService.ts
 @@ -447,7 +447,7 @@ export class NativeHostMainService extends Disposable implements INativeHostMain
@@ -389,7 +389,7 @@ index af0e0cfe14c..30b6c87382e 100644
 -			isAdmin = (await import('native-is-elevated'))();
 +			isAdmin = (await import('native-is-elevated')).default();
  		} else {
- 			isAdmin = process.getuid() === 0;
+ 			isAdmin = process.getuid?.() === 0;
  		}
 diff --git a/src/vs/platform/request/node/proxy.ts b/src/vs/platform/request/node/proxy.ts
 index ee2aae8814b..7073eb1e548 100644
@@ -1406,10 +1406,10 @@ index 7ac17418689..fedd15e8fb6 100644
  		const deltaExtensions = this.extensions.set(remoteInitData.allExtensions, remoteInitData.myExtensions);
  		return {
 diff --git a/src/vs/workbench/services/extensions/electron-sandbox/localProcessExtensionHost.ts b/src/vs/workbench/services/extensions/electron-sandbox/localProcessExtensionHost.ts
-index 6360149dfce..e88ef0b288a 100644
+index b72e19b9ec6..79278e098bb 100644
 --- a/src/vs/workbench/services/extensions/electron-sandbox/localProcessExtensionHost.ts
 +++ b/src/vs/workbench/services/extensions/electron-sandbox/localProcessExtensionHost.ts
-@@ -191,6 +191,7 @@ export class NativeLocalProcessExtensionHost implements IExtensionHost {
+@@ -190,6 +190,7 @@ export class NativeLocalProcessExtensionHost implements IExtensionHost {
  	}
  
  	protected async _startWithCommunication<T>(communication: IExtHostCommunication<T>): Promise<IMessagePassingProtocol> {
@@ -1417,7 +1417,7 @@ index 6360149dfce..e88ef0b288a 100644
  
  		const [extensionHostCreationResult, communicationPreparedData, portNumber, processEnv] = await Promise.all([
  			this._extensionHostStarter.createExtensionHost(),
-@@ -323,7 +324,7 @@ export class NativeLocalProcessExtensionHost implements IExtensionHost {
+@@ -325,7 +326,7 @@ export class NativeLocalProcessExtensionHost implements IExtensionHost {
  
  		// Initialize extension host process with hand shakes
  		const protocol = await communication.establishProtocol(communicationPreparedData, this._extensionHostProcess, opts);
@@ -1426,7 +1426,7 @@ index 6360149dfce..e88ef0b288a 100644
  		clearTimeout(startupTimeoutHandle);
  		return protocol;
  	}
-@@ -358,7 +359,7 @@ export class NativeLocalProcessExtensionHost implements IExtensionHost {
+@@ -360,7 +361,7 @@ export class NativeLocalProcessExtensionHost implements IExtensionHost {
  		return port || 0;
  	}
  
@@ -1435,7 +1435,7 @@ index 6360149dfce..e88ef0b288a 100644
  		// 1) wait for the incoming `ready` event and send the initialization data.
  		// 2) wait for the incoming `initialized` event.
  		return new Promise<void>((resolve, reject) => {
-@@ -383,7 +384,7 @@ export class NativeLocalProcessExtensionHost implements IExtensionHost {
+@@ -385,7 +386,7 @@ export class NativeLocalProcessExtensionHost implements IExtensionHost {
  					// 1) Extension Host is ready to receive messages, initialize it
  					uninstallTimeoutCheck();
  
@@ -1444,7 +1444,7 @@ index 6360149dfce..e88ef0b288a 100644
  
  						// Wait 60s for the initialized message
  						installTimeoutCheck();
-@@ -412,8 +413,8 @@ export class NativeLocalProcessExtensionHost implements IExtensionHost {
+@@ -414,8 +415,8 @@ export class NativeLocalProcessExtensionHost implements IExtensionHost {
  		});
  	}
  
