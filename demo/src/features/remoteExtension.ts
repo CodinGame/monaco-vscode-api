@@ -3,10 +3,12 @@ import manifest from './remoteExtensionExample/package.json'
 
 declare global {
   interface Window {
-    rootDirectory: string
+    rootDirectory?: string
   }
 }
 
-registerExtension(manifest, ExtensionHostKind.Remote, {
-  path: `${window.rootDirectory}/src/features/remoteExtensionExample/`
-})
+if (window.rootDirectory != null) {
+  registerExtension(manifest, ExtensionHostKind.Remote, {
+    path: `${window.rootDirectory}/src/features/remoteExtensionExample/`
+  })
+}
