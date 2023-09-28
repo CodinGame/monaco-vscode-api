@@ -170,6 +170,8 @@ import { ResourceSet } from 'vs/base/common/map'
 import { IEditorGroupView } from 'vs/workbench/browser/parts/editor/editor'
 import { IMessage, ISignService } from 'vs/platform/sign/common/sign'
 import { BrowserHostService } from 'vs/workbench/services/host/browser/browserHostService'
+import { IBannerService } from 'vs/workbench/services/banner/browser/bannerService'
+import { ITitleService } from 'vs/workbench/services/title/common/titleService'
 import { unsupported } from './tools'
 
 class NullLoggerService extends AbstractLoggerService {
@@ -395,6 +397,23 @@ export class EmptyEditorGroupsService implements IEditorGroupsService {
 }
 
 registerSingleton(IEditorGroupsService, EmptyEditorGroupsService, InstantiationType.Eager)
+
+registerSingleton(IBannerService, class BannerService implements IBannerService {
+  _serviceBrand: undefined
+  focus (): void {}
+  focusNextAction (): void {}
+  focusPreviousAction (): void {}
+  hide (): void {}
+  show (): void {}
+}, InstantiationType.Eager)
+
+registerSingleton(ITitleService, class TitleService implements ITitleService {
+  _serviceBrand: undefined
+  onMenubarVisibilityChange = Event.None
+  isCommandCenterVisible = false
+  onDidChangeCommandCenterVisibility = Event.None
+  updateProperties (): void {}
+}, InstantiationType.Eager)
 
 registerSingleton(IWorkingCopyFileService, WorkingCopyFileService, InstantiationType.Eager)
 registerSingleton(IPathService, BrowserPathService, InstantiationType.Delayed)
