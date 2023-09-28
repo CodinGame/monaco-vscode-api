@@ -18,7 +18,6 @@
 ## monaco-vscode-api repository
 
 - Update `monaco-editor` and other dependencies and update to the new `vscodeRef` from above
-  - Run `npx @vscode/dts dev` afterwards to update the `vscode.proposed.xxx.d.ts` files. It fixes potential errors in `api.ts`
 - Wait for the new vscode version to be downloaded and built
 - Fix errors, adapt code, build, include the `vscode.patch` into this commit
   - Do not hesitate to run the eslint autofix, it gets rid of the majority of your errors

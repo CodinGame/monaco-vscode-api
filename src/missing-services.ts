@@ -1,7 +1,5 @@
 import { Event } from 'vs/base/common/event'
-import { DomEmitter } from 'vs/base/browser/event'
 import { URI } from 'vs/base/common/uri'
-import { trackFocus } from 'vs/base/browser/dom'
 import { IEditorService } from 'vs/workbench/services/editor/common/editorService'
 import { IPaneCompositePartService } from 'vs/workbench/services/panecomposite/browser/panecomposite'
 import { IUriIdentityService } from 'vs/platform/uriIdentity/common/uriIdentity'
@@ -169,8 +167,10 @@ import { IChatVariablesService } from 'vs/workbench/contrib/chat/common/chatVari
 import { IAiRelatedInformationService } from 'vs/workbench/services/aiRelatedInformation/common/aiRelatedInformation'
 import { IAiEmbeddingVectorService } from 'vs/workbench/services/aiEmbeddingVector/common/aiEmbeddingVectorService'
 import { ResourceSet } from 'vs/base/common/map'
-import { unsupported } from './tools'
 import { IEditorGroupView } from 'vs/workbench/browser/parts/editor/editor'
+import { IMessage, ISignService } from 'vs/platform/sign/common/sign'
+import { BrowserHostService } from 'vs/workbench/services/host/browser/browserHostService'
+import { unsupported } from './tools'
 
 class NullLoggerService extends AbstractLoggerService {
   constructor () {
@@ -441,50 +441,7 @@ registerSingleton(ILanguageStatusService, class LanguageStatusServiceImpl implem
   }
 }, InstantiationType.Eager)
 
-const focusTracker = trackFocus(window)
-const onVisibilityChange = new DomEmitter(window.document, 'visibilitychange')
-
-const onDidChangeFocus = Event.latch(Event.any(
-  Event.map(focusTracker.onDidFocus, () => document.hasFocus()),
-  Event.map(focusTracker.onDidBlur, () => document.hasFocus()),
-  Event.map(onVisibilityChange.event, () => document.hasFocus())
-))
-
-registerSingleton(IHostService, class HostService implements IHostService {
-  withExpectedShutdown = unsupported
-
-  _serviceBrand: undefined
-
-  onDidChangeFocus = onDidChangeFocus
-
-  get hasFocus (): boolean {
-    return document.hasFocus()
-  }
-
-  async hadLastFocus (): Promise<boolean> {
-    return true
-  }
-
-  async focus (): Promise<void> {
-    window.focus()
-  }
-
-  openWindow = unsupported
-
-  async toggleFullScreen (): Promise<void> {
-    // This is a false positive
-    // eslint-disable-next-line @typescript-eslint/strict-boolean-expressions
-    if (document.fullscreenEnabled) {
-      await document.body.requestFullscreen()
-    } else {
-      await document.exitFullscreen()
-    }
-  }
-
-  restart = unsupported
-  reload = unsupported
-  close = unsupported
-}, InstantiationType.Eager)
+registerSingleton(IHostService, BrowserHostService, InstantiationType.Eager)
 
 registerSingleton(ILifecycleService, class LifecycleService extends AbstractLifecycleService {
   shutdown = unsupported
@@ -2184,4 +2141,25 @@ registerSingleton(IAiEmbeddingVectorService, class AiEmbeddingVectorService impl
   isEnabled = () => false
   getEmbeddingVector = unsupported
   registerAiEmbeddingVectorProvider = unsupported
+}, InstantiationType.Delayed)
+
+registerSingleton(ISignService, class SignService implements ISignService {
+  _serviceBrand: undefined
+  private static _nextId = 1
+
+  async createNewMessage (value: string): Promise<IMessage> {
+    const id = String(SignService._nextId++)
+    return {
+      id,
+      data: value
+    }
+  }
+
+  async validate (): Promise<boolean> {
+    return true
+  }
+
+  async sign (value: string): Promise<string> {
+    return value
+  }
 }, InstantiationType.Delayed)

@@ -395,7 +395,7 @@ export class SimpleExtensionService extends AbstractExtensionService implements 
     super(
       extensionsProposedApi,
       extensionHostFactory,
-      new LocalBrowserExtensionHostKindPicker(workerConfig != null ? [ExtensionHostKind.LocalWebWorker, ExtensionHostKind.LocalProcess] : [ExtensionHostKind.LocalProcess], logService),
+      new LocalBrowserExtensionHostKindPicker(workerConfig != null ? [ExtensionHostKind.LocalWebWorker, ExtensionHostKind.LocalProcess, ExtensionHostKind.Remote] : [ExtensionHostKind.LocalProcess, ExtensionHostKind.Remote], logService),
       instantiationService,
       notificationService,
       browserEnvironmentService,

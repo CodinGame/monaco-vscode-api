@@ -1,5 +1,5 @@
-import { IResolvedTextEditorModel, IReference, OpenEditor } from 'vscode/service-override/views'
-import * as monaco from 'monaco-editor/esm/vs/editor/editor.api.js'
+import { IResolvedTextEditorModel, IReference, OpenEditor } from '@codingame/monaco-vscode-views-service-override'
+import * as monaco from 'monaco-editor'
 import { createConfiguredEditor } from 'vscode/monaco'
 
 let currentEditor: ({

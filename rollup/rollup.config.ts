@@ -11,10 +11,14 @@ import dynamicImportVars from '@rollup/plugin-dynamic-import-vars'
 import styles from 'rollup-plugin-styles'
 import { importMetaAssets } from '@web/rollup-plugin-import-meta-assets'
 import glob from 'fast-glob'
+import { paramCase } from 'param-case'
+import { PackageJson } from 'type-fest'
+import copy from 'rollup-plugin-copy'
 import * as fs from 'fs'
 import * as fsPromise from 'fs/promises'
 import * as path from 'path'
 import { fileURLToPath } from 'url'
+import metadataPlugin from './rollup-metadata-plugin'
 import pkg from '../package.json' assert { type: 'json' }
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url))
@@ -98,8 +102,6 @@ const REMOVE_WORKBENCH_CONTRIBUTIONS = new Set([
   'ResetConfigurationDefaultsOverridesCache',
   'ConfigurationMigrationWorkbenchContribution',
   'RegisterSearchViewContribution',
-  'RemoteTerminalBackendContribution',
-  'DebugStatusContribution',
   'ExtensionPoints'
 ])
 
@@ -110,11 +112,12 @@ const TSCONFIG = path.resolve(BASE_DIR, 'tsconfig.rollup.json')
 const SRC_DIR = path.resolve(BASE_DIR, 'src')
 const DIST_DIR = path.resolve(BASE_DIR, 'dist')
 const VSCODE_DIR = path.resolve(BASE_DIR, 'vscode')
+const VSCODE_SRC_DIR = path.resolve(VSCODE_DIR, 'src')
 const NODE_MODULES_DIR = path.resolve(BASE_DIR, 'node_modules')
 const MONACO_EDITOR_DIR = path.resolve(NODE_MODULES_DIR, './monaco-editor')
 const MONACO_EDITOR_ESM_DIR = path.resolve(MONACO_EDITOR_DIR, './esm')
 const OVERRIDE_PATH = path.resolve(BASE_DIR, 'src/override')
-const KEYBOARD_LAYOUT_DIR = path.resolve(VSCODE_DIR, 'vs/workbench/services/keybinding/browser/keyboardLayouts')
+const KEYBOARD_LAYOUT_DIR = path.resolve(VSCODE_SRC_DIR, 'vs/workbench/services/keybinding/browser/keyboardLayouts')
 
 function getMemberExpressionPath (node: recast.types.namedTypes.MemberExpression | recast.types.namedTypes.Identifier): string | null {
   if (node.type === 'MemberExpression') {
@@ -451,8 +454,8 @@ function resolveVscode (importee: string, importer?: string) {
     return resolve(path.relative('vscode', importee), [VSCODE_DIR])
   }
   let vscodeImportPath = importee
-  if (importee.startsWith(VSCODE_DIR)) {
-    vscodeImportPath = path.relative(VSCODE_DIR, importee)
+  if (importee.startsWith(VSCODE_SRC_DIR)) {
+    vscodeImportPath = path.relative(VSCODE_SRC_DIR, importee)
   }
   const overridePath = resolve(vscodeImportPath, [OVERRIDE_PATH])
   if (overridePath != null) {
@@ -464,7 +467,7 @@ function resolveVscode (importee: string, importer?: string) {
       // File exists on monaco, import from monaco esm
       return path.relative(NODE_MODULES_DIR, path.resolve(MONACO_EDITOR_ESM_DIR, vscodeImportPath)) + '.js'
     }
-    return resolve(vscodeImportPath, [VSCODE_DIR])
+    return resolve(vscodeImportPath, [VSCODE_SRC_DIR])
   }
   return undefined
 }
@@ -494,7 +497,13 @@ const input = {
   )
 }
 
-const externals = Object.keys({ ...pkg.peerDependencies })
+const workerGroups: Record<string, string> = {
+  languageDetection: 'service-override:language-detection-worker',
+  outputLinkComputer: 'service-override:output',
+  textmate: 'service-override:textmate'
+}
+
+const externals = Object.keys({ ...pkg.dependencies })
 const external: rollup.ExternalOption = (source) => {
   if (source.includes('tas-client-umd')) return true
   if (source.startsWith(MONACO_EDITOR_DIR) || source.startsWith('monaco-editor/')) {
@@ -549,8 +558,15 @@ export default (args: Record<string, string>): rollup.RollupOptions[] => {
       minifyInternalExports: false,
       assetFileNames: 'assets/[name][extname]',
       format: 'esm',
-      dir: 'dist',
-      entryFileNames: '[name].js',
+      dir: 'dist/main',
+      entryFileNames: (chunkInfo) => {
+        // Rename node_modules to external so it's not removing while publishing the package
+        // tslib and rollup-plugin-styles and bundled
+        if (chunkInfo.name.includes('node_modules')) {
+          return chunkInfo.name.replace('node_modules', 'external') + '.js'
+        }
+        return '[name].js'
+      },
       chunkFileNames: '[name].js',
       hoistTransitiveImports: false,
       paths: {
@@ -580,7 +596,7 @@ export default (args: Record<string, string>): rollup.RollupOptions[] => {
           return undefined
         },
         async load (id) {
-          if (!id.startsWith(VSCODE_DIR)) {
+          if (!id.startsWith(VSCODE_SRC_DIR)) {
             return undefined
           }
           const [, path, query] = /^(.*?)(\?.*?)?$/.exec(id)!
@@ -616,6 +632,9 @@ export default (args: Record<string, string>): rollup.RollupOptions[] => {
       typescript({
         noEmitOnError: true,
         tsconfig: TSCONFIG,
+        compilerOptions: {
+          outDir: 'dist/main'
+        },
         transformers: {
           before: [{
             type: 'program',
@@ -676,7 +695,7 @@ export default (args: Record<string, string>): rollup.RollupOptions[] => {
               return null
             }
 
-            const fakePath = path.resolve(VSCODE_DIR, importee.replace(/\*/, 'all'))
+            const fakePath = path.resolve(VSCODE_SRC_DIR, importee.replace(/\*/, 'all'))
             realPaths.set(fakePath, importee)
             return fakePath
           },
@@ -685,10 +704,10 @@ export default (args: Record<string, string>): rollup.RollupOptions[] => {
             if (realPath == null) {
               return undefined
             }
-            const files = await glob(realPath, { cwd: VSCODE_DIR })
+            const files = await glob(realPath, { cwd: VSCODE_SRC_DIR })
 
             const fileRefs = await Promise.all(files.map(async file => {
-              const filePath = path.resolve(VSCODE_DIR, file)
+              const filePath = path.resolve(VSCODE_SRC_DIR, file)
               const ref = this.emitFile({
                 type: 'asset',
                 name: path.basename(file),
@@ -728,14 +747,14 @@ export default (args: Record<string, string>): rollup.RollupOptions[] => {
       }
     },
     external,
-    input: Object.fromEntries(Object.keys(input).map(f => [f, `./dist/${f}`])),
+    input: Object.fromEntries(Object.keys(input).map(f => [f, `./dist/main/${f}`])),
     output: [{
       preserveModules: true,
-      preserveModulesRoot: 'dist',
+      preserveModulesRoot: 'dist/main',
       minifyInternalExports: false,
       assetFileNames: 'assets/[name][extname]',
       format: 'esm',
-      dir: 'dist',
+      dir: 'dist/main',
       entryFileNames: '[name].js',
       chunkFileNames: '[name].js',
       hoistTransitiveImports: false
@@ -801,7 +820,147 @@ export default (args: Record<string, string>): rollup.RollupOptions[] => {
           sourcemap: false
         }).code
       }
-    }]
+    },
+    copy({
+      targets: [
+        { src: ['README.md'], dest: 'dist/main' }
+      ]
+    }),
+    metadataPlugin({
+      // generate package.json and meta packages
+      getGroup (id: string, options) {
+        const serviceOverrideDir = path.resolve(options.dir!, 'service-override')
+        const workersDir = path.resolve(options.dir!, 'workers')
+
+        if (id.startsWith(serviceOverrideDir)) {
+          return `service-override:${paramCase(path.basename(id, '.js'))}`
+        }
+        if (id.startsWith(workersDir)) {
+          return workerGroups[path.basename(id, '.worker.js')] ?? 'main'
+        }
+        return 'main'
+      },
+      async handle (groupName, dependencies, entrypoints, options) {
+        if (groupName === 'main') {
+          // Generate package.json
+          const packageJson: PackageJson = {
+            ...Object.fromEntries(Object.entries(pkg).filter(([key]) => ['name', 'description', 'version', 'keywords', 'author', 'license', 'repository', 'type'].includes(key))),
+            private: false,
+            main: 'api.js',
+            module: 'api.js',
+            exports: {
+              '.': {
+                default: './api.js'
+              },
+              './services': {
+                types: './services.d.ts',
+                default: './services.js'
+              },
+              './extensions': {
+                types: './extensions.d.ts',
+                default: './extensions.js'
+              },
+              './service-override/*': {
+                types: './service-override/*.d.ts',
+                default: './service-override/*.js'
+              },
+              './workers/*': {
+                default: './workers/*.js'
+              },
+              './monaco': {
+                types: './monaco.d.ts',
+                default: './monaco.js'
+              }
+            },
+            typesVersions: {
+              '*': {
+                services: [
+                  './services.d.ts'
+                ],
+                extensions: [
+                  './extensions.d.ts'
+                ],
+                'service-override/*': [
+                  './service-override/*.d.ts'
+                ],
+                monaco: [
+                  './monaco.d.ts'
+                ]
+              }
+            },
+            bin: {
+              'monaco-treemending': './monaco-treemending.js'
+            },
+            dependencies: {
+              ...Object.fromEntries(Object.entries(pkg.dependencies).filter(([key]) => dependencies.has(key)))
+            }
+          }
+          this.emitFile({
+            fileName: 'package.json',
+            needsCodeReference: false,
+            source: JSON.stringify(packageJson, null, 2),
+            type: 'asset'
+          })
+        } else {
+          const [_, category, name] = /^(.*):(.*)$/.exec(groupName)!
+
+          const directory = path.resolve(DIST_DIR, `${category}-${name}`)
+
+          await fsPromise.mkdir(directory, {
+            recursive: true
+          })
+          const serviceOverrideEntryPoint = Array.from(entrypoints).find(e => e.includes('/service-override/'))!
+          const workerEntryPoint = Array.from(entrypoints).find(e => e.includes('/workers/'))
+
+          const packageJson: PackageJson = {
+            name: `@codingame/monaco-vscode-${name}-${category}`,
+            ...Object.fromEntries(Object.entries(pkg).filter(([key]) => ['version', 'keywords', 'author', 'license', 'repository', 'type'].includes(key))),
+            private: false,
+            description: `${pkg.description} - ${name} ${category} meta package`,
+            main: 'index.js',
+            module: 'index.js',
+            types: 'index.d.ts',
+            dependencies: {
+              vscode: `npm:${pkg.name}@^${pkg.version}`,
+              ...Object.fromEntries(Object.entries(pkg.dependencies).filter(([key]) => dependencies.has(key)))
+            }
+          }
+
+          const reexportFrom = `vscode/${path.relative(options.dir!, serviceOverrideEntryPoint).slice(0, -3)}`
+
+          const entrypointInfo = this.getModuleInfo(serviceOverrideEntryPoint)!
+          const codeLines: string[] = []
+          if ((entrypointInfo.exports ?? []).includes('default')) {
+            codeLines.push(`export { default } from '${reexportFrom}'`)
+          }
+          if ((entrypointInfo.exports ?? []).some(e => e !== 'default')) {
+            codeLines.push(`export * from '${reexportFrom}'`)
+          }
+          if ((entrypointInfo.exports ?? []).length === 0) {
+            codeLines.push(`import '${reexportFrom}'`)
+          }
+          await fsPromise.writeFile(path.resolve(directory, 'index.js'), codeLines.join('\n'))
+          await fsPromise.writeFile(path.resolve(directory, 'index.d.ts'), codeLines.join('\n'))
+
+          if (workerEntryPoint != null) {
+            const workerFrom = `vscode/${path.relative(options.dir!, workerEntryPoint).slice(0, -3)}`
+            await fsPromise.writeFile(path.resolve(directory, 'worker.js'), `import '${workerFrom}'`)
+
+            packageJson.exports = {
+              '.': {
+                default: './index.js'
+              },
+              './worker': {
+                default: './worker.js'
+              }
+            }
+          }
+
+          await fsPromise.writeFile(path.resolve(directory, 'package.json'), JSON.stringify(packageJson, null, 2))
+        }
+      }
+    })
+    ]
   }])
 }
 

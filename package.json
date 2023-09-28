@@ -1,7 +1,7 @@
 {
   "name": "@codingame/monaco-vscode-api",
   "version": "0.0.0-semantic-release",
-  "private": false,
+  "private": true,
   "description": "VSCode public API plugged on the monaco editor",
   "keywords": [],
   "author": {
@@ -11,97 +11,23 @@
   "license": "MIT",
   "repository": {
     "type": "git",
-    "url": "https://github.com/CodinGame/monaco-vscode-api"
+    "url": "git+https://github.com/CodinGame/monaco-vscode-api.git"
   },
   "type": "module",
-  "main": "dist/api.js",
-  "module": "dist/api.js",
-  "enabledApiProposals": [
-    "fileSearchProvider",
-    "textSearchProvider",
-    "extensionsAny",
-    "documentPaste",
-    "externalUriOpener"
-  ],
-  "exports": {
-    ".": {
-      "default": "./dist/api.js"
-    },
-    "./services": {
-      "types": "./dist/services.d.ts",
-      "default": "./dist/services.js"
-    },
-    "./extensions": {
-      "types": "./dist/extensions.d.ts",
-      "default": "./dist/extensions.js"
-    },
-    "./service-override/*": {
-      "types": "./dist/service-override/*.d.ts",
-      "default": "./dist/service-override/*.js"
-    },
-    "./workers/*": {
-      "types": "./dist/workers/*.d.ts",
-      "default": "./dist/workers/*.js"
-    },
-    "./monaco": {
-      "types": "./dist/monaco.d.ts",
-      "default": "./dist/monaco.js"
-    },
-    "./default-extensions/*": {
-      "default": "./dist/default-extensions/*.js"
-    },
-    "./rollup-vsix-plugin": {
-      "types": "./dist/rollup-vsix-plugin.d.ts",
-      "default": "./dist/rollup-vsix-plugin.js"
-    },
-    "./rollup-extension-directory-plugin": {
-      "types": "./dist/rollup-extension-directory-plugin.d.ts",
-      "default": "./dist/rollup-extension-directory-plugin.js"
-    }
-  },
-  "typesVersions": {
-    "*": {
-      "services": [
-        "./dist/services.d.ts"
-      ],
-      "extensions": [
-        "./dist/extensions.d.ts"
-      ],
-      "service-override/*": [
-        "./dist/service-override/*.d.ts"
-      ],
-      "monaco": [
-        "./dist/monaco.d.ts"
-      ],
-      "rollup-vsix-plugin": [
-        "./dist/rollup-vsix-plugin.d.ts"
-      ],
-      "rollup-extension_directory-plugin": [
-        "./dist/rollup-extension_directory-plugin.d.ts"
-      ]
-    }
-  },
-  "files": [
-    "dist",
-    "monaco-treemending.js",
-    "monaco-editor-treemending.patch",
-    "README.md"
-  ],
   "scripts": {
-    "build": "npm run clean && npm run generate-types && npm run lint && npm run compile-rollup-plugins && npm run compile-treemending-script && npm run compile && npm run compile-default-extensions",
+    "build": "npm run clean && npm run generate-types && npm run lint && npm run compile-rollup-plugins && npm run compile-treemending-script && npm run compile && npm run compile-server && npm run compile-default-extensions",
     "compile": "NODE_OPTIONS=--max_old_space_size=8192 rollup --config rollup/rollup.config.ts --configPlugin 'typescript={tsconfig: `tsconfig.rollup-config.json`}' --vscode-version ${npm_package_config_vscode_version} --vscode-ref ${npm_package_config_vscode_ref}",
     "compile-default-extensions": "NODE_OPTIONS=--max_old_space_size=8192 rollup --config rollup/rollup.default-extensions.ts --configPlugin 'typescript={tsconfig: `tsconfig.rollup-config-default-extensions.json`}'",
     "clean": "rm -rf dist/",
-    "compile-treemending-script": "rollup --config rollup/rollup.treemending-script.config.ts --configPlugin 'typescript={tsconfig: `tsconfig.rollup-config-treemending-script.json`, include: [`./rollup/rollup.treemending-script.config.ts`]}'",
-    "compile-rollup-plugins": "rollup --config rollup/rollup.rollup-plugins.config.ts --configPlugin 'typescript={tsconfig: `tsconfig.rollup-config-plugins.json`, include: [`./rollup/rollup.rollup-plugins.config.ts`]}'",
+    "compile-server": "rollup --config rollup/rollup.server.config.ts --configPlugin 'typescript={tsconfig: `tsconfig.rollup-config-server.json`, include: [`./rollup/rollup.server.config.ts`, `./rollup/rollup-metadata-plugin.ts`]}'",
+    "compile-treemending-script": "rollup --config rollup/rollup.treemending-script.config.ts --configPlugin 'typescript={tsconfig: `tsconfig.rollup-config-treemending-script.json`, include: [`./rollup/rollup.treemending-script.config.ts`, `./rollup/rollup-metadata-plugin.ts`]}'",
+    "compile-rollup-plugins": "rollup --config rollup/rollup.rollup-plugins.config.ts --configPlugin 'typescript={tsconfig: `tsconfig.rollup-config-plugins.json`, include: [`./rollup/rollup.rollup-plugins.config.ts`, `./rollup/rollup-metadata-plugin.ts`]}'",
     "preprepare": "./scripts/install-vscode && node --loader ts-node/esm src/monaco-treemending.ts && patch-package",
-    "lint": "eslint {/src/**/*.ts,./rollup/*.ts,./*.ts}",
+    "lint": "eslint '{src/**/*.ts,rollup/*.ts,*.ts}'",
     "generate-types": "./scripts/generate-types",
     "release": "node --loader ts-node/esm release.ts ${npm_package_config_vscode_version}",
+    "releaseNext": "node --loader ts-node/esm releaseNext.ts ${npm_package_config_vscode_version}",
     "reset:repo": "git clean -f -X -d"
-  },
-  "bin": {
-    "monaco-treemending": "./monaco-treemending.js"
   },
   "config": {
     "vscode": {
@@ -120,7 +46,6 @@
     "@octokit/rest": "^20.0.1",
     "@rollup/plugin-commonjs": "^25.0.4",
     "@rollup/plugin-dynamic-import-vars": "^2.0.5",
-    "@rollup/plugin-inject": "^5.0.3",
     "@rollup/plugin-json": "^6.0.0",
     "@rollup/plugin-node-resolve": "^15.2.1",
     "@rollup/plugin-replace": "^5.0.2",
@@ -144,34 +69,55 @@
     "eslint-plugin-promise": "^6.1.1",
     "eslint-plugin-unused-imports": "^2.0.0",
     "fast-glob": "^3.3.1",
+    "graceful-fs": "^4.2.11",
+    "is-builtin-module": "^3.2.1",
     "js-cleanup": "^1.2.0",
     "jschardet": "^3.0.0",
-    "mime-types": "^2.1.35",
+    "package-json": "^8.1.1",
+    "param-case": "^3.0.4",
+    "pascal-case": "^3.1.2",
     "patch-package": "^8.0.0",
     "recast": "^0.23.4",
     "rollup": "^3.29.1",
+    "rollup-plugin-copy": "^3.5.0",
     "rollup-plugin-dts": "^6.0.2",
     "rollup-plugin-styles": "^4.0.0",
     "semver": "^7.5.4",
     "ts-morph": "^19.0.0",
     "ts-node": "^10.9.1",
+    "xterm-headless": "^5.3.0",
+    "type-fest": "^4.3.1",
     "typescript": "5.2.2",
     "zx": "^7.2.3"
   },
-  "peerDependencies": {
+  "dependencies": {
+    "@microsoft/1ds-core-js": "^3.2.13",
+    "@microsoft/1ds-post-js": "^3.2.13",
+    "@parcel/watcher": "^2.3.0",
+    "@vscode/proxy-agent": "^0.17.2",
+    "@vscode/ripgrep": "^1.15.5",
+    "@vscode/spdlog": "^0.13.11",
     "@vscode/vscode-languagedetection": "^1.0.22",
     "monaco-editor": "0.43.0",
     "vscode-oniguruma": "^2.0.0",
+    "@vscode/windows-process-tree": "^0.5.0",
+    "cookie": "^0.5.0",
+    "kerberos": "^2.0.2",
+    "keytar": "^7.9.0",
+    "mime-types": "^2.1.35",
+    "node-pty": "^1.0.0",
+    "vscode-regexpp": "^3.1.0",
     "vscode-textmate": "^9.0.0",
-    "xterm": "5.3.0",
-    "xterm-addon-canvas": "0.5.0",
-    "xterm-addon-image": "0.5.0",
-    "xterm-addon-search": "0.13.0",
-    "xterm-addon-serialize": "0.11.0",
-    "xterm-addon-unicode11": "0.6.0",
-    "xterm-addon-webgl": "0.16.0",
+    "xterm": "5.2.1",
+    "xterm-addon-canvas": "0.4.0",
+    "xterm-addon-image": "0.4.1",
+    "xterm-addon-search": "0.12.0",
+    "xterm-addon-serialize": "0.10.0",
+    "xterm-addon-unicode11": "0.5.0",
+    "xterm-addon-webgl": "0.15.0",
     "xterm-headless": "5.3.0",
-    "yauzl": "^2.10.0"
+    "yauzl": "^2.10.0",
+    "yazl": "^2.5.1"
   },
   "overrides": {
     "typescript": "5.2.2",

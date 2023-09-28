@@ -9,7 +9,7 @@ import { SyncDescriptor } from 'vs/platform/instantiation/common/descriptors'
 import { Part } from 'vs/workbench/browser/part'
 import { isAncestorUsingFlowTo } from 'vs/base/browser/dom'
 import { IPaneCompositePartService } from 'vs/workbench/services/panecomposite/browser/panecomposite'
-import { IViewDescriptorService, ViewContainerLocation } from 'vs/workbench/common/views'
+import { IViewContainerModel, IViewDescriptorService, ViewContainerLocation } from 'vs/workbench/common/views'
 import { isChrome, isFirefox, isLinux, isSafari, isWindows } from 'vs/base/common/platform'
 import { coalesce } from 'vs/base/common/arrays'
 import { ActivitybarPart } from 'vs/workbench/browser/parts/activitybar/activitybarPart'
@@ -185,7 +185,7 @@ export class LayoutService implements ILayoutService, IWorkbenchLayoutService {
       return false
     }
 
-    const viewContainerModel = this.viewDescriptorService.getViewContainerModel(viewContainer)
+    const viewContainerModel = this.viewDescriptorService.getViewContainerModel(viewContainer) as IViewContainerModel | undefined
     if (viewContainerModel == null) {
       return false
     }
@@ -213,7 +213,7 @@ export class LayoutService implements ILayoutService, IWorkbenchLayoutService {
         this.paneCompositeService.hideActivePaneComposite(location)
       } else if (paneComposite == null && !hidden) {
         // If panel part becomes visible, show last active panel or default panel
-        let panelToOpen: string | undefined = this.paneCompositeService.getLastActivePaneCompositeId(location)
+        let panelToOpen = this.paneCompositeService.getLastActivePaneCompositeId(location) as string | undefined
 
         // verify that the panel we try to open has views before we default to it
         // otherwise fall back to any view that has views still refs #111463

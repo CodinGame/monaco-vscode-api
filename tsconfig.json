@@ -14,21 +14,21 @@
 		"rootDir": "./",
 		"paths": {
 			"vs/*": [
-				"./vscode/vs/*"
+				"./vscode/src/vs/*"
 			],
 			"vscode/*": [
 				"./vscode/*"
 			],
 			"monaco-editor/esm/*": [
-				"./vscode/*"
+				"./vscode/src/*"
 			]
 		},
 		"preserveConstEnums": true,
 		"types": ["monaco-editor", "node"]
 	},
 	"include": [
+		"./vscode/src/vscode-dts/vscode.proposed.*.d.ts",
 		"./src/**/*",
-		"./vscode/**/*",
 		"./rollup/*.ts",
 		"./release.ts"
 	]

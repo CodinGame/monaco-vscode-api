@@ -84,7 +84,7 @@ export default function plugin ({
 
       const extensionResources = (await extractResourcesFromExtensionManifest(manifest, async path => {
         return files[getVsixPath(path)]!
-      })).filter(resource => getVsixPath(resource.path) in files)
+      })).filter(resource => getVsixPath(resource.realPath ?? resource.path) in files)
 
       const vsixFile = Object.fromEntries(Object.entries(files).map(([key, value]) => [getVsixPath(key), value]))
 
@@ -93,8 +93,8 @@ export default function plugin ({
         ...await getAdditionalResources(manifest)
       ]
 
-      const pathMapping = await Promise.all(resources.map(async resource => {
-        const assetPath = getVsixPath(resource.path)
+      const pathMapping = (await Promise.all(resources.map(async resource => {
+        const assetPath = getVsixPath(resource.realPath ?? resource.path)
         let url: string
         if (process.env.NODE_ENV === 'development') {
           url = `'data:text/javascript;base64,${vsixFile[assetPath]!.toString('base64')}'`
@@ -106,12 +106,18 @@ export default function plugin ({
           })
         }
 
-        return ({
-          pathInExtension: assetPath,
+        return [{
+          pathInExtension: getVsixPath(resource.path),
           url,
           mimeType: resource.mimeType
-        })
-      }))
+        }, ...(resource.realPath != null
+          ? [{
+              pathInExtension: getVsixPath(resource.realPath),
+              url,
+              mimeType: resource.mimeType
+            }]
+          : [])]
+      }))).flat()
 
       let packageJson = parseJson<IExtensionManifest>(id, vsixFile['package.json']!.toString('utf8'))
       if ('package.nls.json' in vsixFile) {
@@ -123,10 +129,12 @@ import { registerExtension } from 'vscode/extensions'
 
 const manifest = ${JSON.stringify(transformManifest(packageJson))}
 
-const { registerFileUrl } = registerExtension(manifest)
+const { registerFileUrl, whenReady } = registerExtension(manifest)
 
 ${pathMapping.map(({ pathInExtension, url, mimeType }) => (`
 registerFileUrl('${pathInExtension}', ${url}${mimeType != null ? `, '${mimeType}'` : ''})`)).join('\n')}
+
+export { whenReady }
 `
     }
   }

@@ -16,6 +16,7 @@ import * as path from 'path'
 
 export interface ExtensionResource {
   path: string
+  realPath?: string
   mimeType?: string
 }
 
@@ -178,7 +179,12 @@ export async function extractResourcesFromExtensionManifest (manifest: IExtensio
   }
   if (manifest.browser != null) {
     const jsPath = addExtension(manifest.browser, '.js')
-    resources.push({ path: jsPath, mimeType: 'text/javascript' })
+    resources.push({ path: manifest.browser, mimeType: 'text/javascript', realPath: jsPath })
+    resources.push(...(await extractResources(jsPath, getFileContent)))
+  }
+  if (manifest.main != null) {
+    const jsPath = addExtension(manifest.main, '.js')
+    resources.push({ path: manifest.main, mimeType: 'text/javascript', realPath: jsPath })
     resources.push(...(await extractResources(jsPath, getFileContent)))
   }
 
