@@ -133,8 +133,6 @@ async function releaseGithub (repoInfos: RepositoryInfos, version: string, relea
 }
 
 async function publishNpm (version: string) {
-  await fs.writeFile('.npmrc', `//registry.npmjs.org/:_authToken=${NPM_TOKEN}\n`)
-
   const distDir = path.resolve(__dirname, 'dist')
   for (const dirName of await fs.readdir(distDir)) {
     const libDir = path.resolve(distDir, dirName)
@@ -150,6 +148,7 @@ async function publishNpm (version: string) {
           packageJson.dependencies[dependency] = version
         }
       }
+      await fs.writeFile(path.resolve(libDir, '.npmrc'), `//registry.npmjs.org/:_authToken=${NPM_TOKEN}\n`)
       await fs.writeFile(packageJsonFile, JSON.stringify(packageJson, null, 2))
 
       $.cwd = libDir
