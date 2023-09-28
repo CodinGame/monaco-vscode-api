@@ -30,6 +30,7 @@
   ],
   "dependencies": {
     "@codingame/monaco-vscode-accessibility-service-override": "file:../dist/service-override-accessibility",
+    "@codingame/monaco-vscode-workspace-trust-service-override": "file:../dist/service-override-workspace-trust",
     "@codingame/monaco-vscode-audio-cue-service-override": "file:../dist/service-override-audio-cue",
     "@codingame/monaco-vscode-bat-default-extension": "file:../dist/default-extension-bat",
     "@codingame/monaco-vscode-bulk-edit-service-override": "file:../dist/service-override-bulk-edit",
