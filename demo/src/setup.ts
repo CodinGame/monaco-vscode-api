@@ -111,6 +111,8 @@ export async function clearStorage (): Promise<void> {
 await initializeVscodeExtensions()
 
 for (const { part, element } of [
+  { part: Parts.TITLEBAR_PART, element: '#titleBar' },
+  { part: Parts.BANNER_PART, element: '#banner' },
   { part: Parts.SIDEBAR_PART, element: '#sidebar' },
   { part: Parts.ACTIVITYBAR_PART, element: '#activityBar' },
   { part: Parts.PANEL_PART, element: '#panel' },
