@@ -9,6 +9,6 @@ export default defineConfig({
   },
   base: 'https://codingame.github.io/monaco-vscode-api',
   resolve: {
-    dedupe: ['monaco-editor']
+    dedupe: ['monaco-editor', 'vscode']
   }
 })
