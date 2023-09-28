@@ -187,6 +187,8 @@ Additionally, 25 packages that include the vscode version of some services (with
   This library exports a `vscode-ext-host-server` bin to start the remote agent
 - **Accessibility**: `@codingame/monaco-vscode-accessibility-service-override`
   - Register accessibility helpers
+- **Workspace trust**: `@codingame/monaco-vscode-workspace-trust-service-override`
+  - Ask user it they trust the current workspace, disable some features if not
 Usage:
 
 ```typescript
