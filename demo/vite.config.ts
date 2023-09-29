@@ -2,8 +2,7 @@ import { defineConfig } from 'vite'
 import * as fs from 'fs'
 import url from 'url'
 
-//const cdnDomain = 'http://127.0.0.2:5173'
-const cdnDomain = 'http://127.0.0.1:5173' // This fixes the issue with CORS
+const cdnDomain = 'http://127.0.0.2:5173'
 
 
 export default defineConfig({

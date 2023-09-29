@@ -342,7 +342,7 @@ It includes:
 
 ```bash
 # This will take some time, trust the process
-npm install 
+npm ci 
 npm run build
 ```
 
