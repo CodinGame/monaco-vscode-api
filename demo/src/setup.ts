@@ -16,6 +16,9 @@ import getViewsServiceOverride, {
   isPartVisibile,
   attachPart
 } from '@codingame/monaco-vscode-views-service-override'
+import getBannerServiceOverride from '@codingame/monaco-vscode-view-banner-service-override'
+import getStatusBarServiceOverride from '@codingame/monaco-vscode-view-status-bar-service-override'
+import getTitleBarServiceOverride from '@codingame/monaco-vscode-view-title-bar-service-override'
 import getDebugServiceOverride from '@codingame/monaco-vscode-debug-service-override'
 import getPreferencesServiceOverride from '@codingame/monaco-vscode-preferences-service-override'
 import getSnippetServiceOverride from '@codingame/monaco-vscode-snippets-service-override'
@@ -82,6 +85,9 @@ await initializeMonacoService({
   ...getDebugServiceOverride(),
   ...getPreferencesServiceOverride(),
   ...getViewsServiceOverride(openNewCodeEditor),
+  ...getBannerServiceOverride(),
+  ...getStatusBarServiceOverride(),
+  ...getTitleBarServiceOverride(),
   ...getSnippetServiceOverride(),
   ...getQuickAccessServiceOverride({
     isKeybindingConfigurationVisible: isEditorPartVisible,
