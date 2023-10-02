@@ -1147,12 +1147,12 @@ registerSingleton(IStatusbarService, class StatusbarService implements IStatusba
   })
 
   isEntryVisible = () => false
-  updateEntryVisibility = unsupported
-  focus = unsupported
-  focusNextEntry = unsupported
-  focusPreviousEntry = unsupported
-  isEntryFocused = unsupported
-  overrideStyle = unsupported
+  updateEntryVisibility = () => { /* ignore */ }
+  focus = () => { /* ignore */ }
+  focusNextEntry = () => { /* ignore */ }
+  focusPreviousEntry = () => { /* ignore */ }
+  isEntryFocused = () => false
+  overrideStyle = () => Disposable.None
 }, InstantiationType.Eager)
 
 registerSingleton(IExtensionGalleryService, class ExtensionGalleryService implements IExtensionGalleryService {
