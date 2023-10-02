@@ -185,6 +185,9 @@ export { IActivityService, IBadge } from 'vs/workbench/services/activity/common/
 export { IHoverService } from 'vs/workbench/services/hover/browser/hover'
 export { IExplorerService } from 'vs/workbench/contrib/files/browser/files'
 export { IStatusbarService } from 'vs/workbench/services/statusbar/browser/statusbar'
+export { ITitleService } from 'vs/workbench/services/title/common/titleService'
+export { IBannerService } from 'vs/workbench/services/banner/browser/bannerService'
+export { IWorkspaceTrustManagementService, IWorkspaceTrustUriInfo, IWorkspaceTrustRequestService, IWorkspaceTrustEnablementService } from 'vs/platform/workspace/common/workspaceTrust'
 
 export {
   IAction,

@@ -20,7 +20,7 @@ import { ICodeEditor } from 'vs/editor/browser/editorBrowser'
 let isKeybindingConfigurationVisible = () => {
   return false
 }
-let shouldUseGlobalPicker = (_activeCodeEditor: ICodeEditor | null, _activeCodeEditorStandalone: boolean) => {
+let shouldUseGlobalPicker = (_activeCodeEditor: ICodeEditor, _activeCodeEditorStandalone: boolean) => {
   return false
 }
 
@@ -52,7 +52,7 @@ class DelegateQuickInputService implements IQuickInputService {
   private get activeService (): IQuickInputService {
     const activeCodeEditor = StandaloneServices.get(ICodeEditorService).getFocusedCodeEditor()
 
-    if (shouldUseGlobalPicker(activeCodeEditor, activeCodeEditor instanceof StandaloneCodeEditor)) {
+    if (activeCodeEditor == null || shouldUseGlobalPicker(activeCodeEditor, activeCodeEditor instanceof StandaloneCodeEditor)) {
       return this.workbenchQuickInputService
     }
 

@@ -88,6 +88,10 @@ import { IStorageService } from 'vs/platform/storage/common/storage'
 import { IThemeService } from 'vs/platform/theme/common/themeService'
 import { ConfirmResult } from 'vs/platform/dialogs/common/dialogs'
 import { ILayoutService } from 'vs/platform/layout/browser/layoutService'
+import { BannerPart } from 'vs/workbench/browser/parts/banner/bannerPart'
+import { IBannerService } from 'vs/workbench/services/banner/browser/bannerService'
+import { ITitleService } from 'vs/workbench/services/title/common/titleService'
+import { TitlebarPart } from 'vs/workbench/browser/parts/titlebar/titlebarPart'
 import { MonacoDelegateEditorGroupsService, MonacoEditorService, OpenEditor } from './tools/editor'
 import getBulkEditServiceOverride from './bulkEdit'
 import getLayoutServiceOverride, { LayoutService } from './layout'
@@ -569,6 +573,8 @@ registerServiceInitializePostParticipant(async (accessor) => {
 
   // force service instantiation
   accessor.get(IStatusbarService)
+  accessor.get(IBannerService)
+  accessor.get(ITitleService)
   paneCompositePartService.getPaneComposites(ViewContainerLocation.Panel)
 
   const layoutService = accessor.get(ILayoutService) as LayoutService
@@ -579,6 +585,8 @@ registerServiceInitializePostParticipant(async (accessor) => {
 
   // Create Parts
   for (const { id, role, classes, options } of [
+    { id: Parts.TITLEBAR_PART, role: 'none', classes: ['titlebar'] },
+    { id: Parts.BANNER_PART, role: 'banner', classes: ['banner'] },
     { id: Parts.ACTIVITYBAR_PART, role: 'none', classes: ['activitybar', 'left'] },
     { id: Parts.SIDEBAR_PART, role: 'none', classes: ['sidebar', 'left'] },
     { id: Parts.EDITOR_PART, role: 'main', classes: ['editor'], options: { restorePreviousState: false } },
@@ -625,6 +633,8 @@ export default function getServiceOverride (openEditorFallback?: OpenEditor, _we
     [ICodeEditorService.toString()]: new SyncDescriptor(CodeEditorService, [], true),
     [ITextEditorService.toString()]: new SyncDescriptor(TextEditorService, [], false),
     [IEditorGroupsService.toString()]: new SyncDescriptor(MonacoEditorPart, [], false),
+    [ITitleService.toString()]: new SyncDescriptor(TitlebarPart, [], false),
+    [IBannerService.toString()]: new SyncDescriptor(BannerPart, [], false),
     [IStatusbarService.toString()]: new SyncDescriptor(StatusbarPart, [], false),
     [IEditorDropService.toString()]: new SyncDescriptor(EditorDropService, [], true),
     [IEditorService.toString()]: new SyncDescriptor(MonacoEditorService, [openEditorFallback, isEditorPartVisible], false),

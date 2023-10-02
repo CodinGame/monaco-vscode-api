@@ -56,6 +56,7 @@ export default defineConfig({
       '@codingame/monaco-vscode-preferences-service-override', '@codingame/monaco-vscode-snippets-service-override', '@codingame/monaco-vscode-files-service-override', '@codingame/monaco-vscode-output-service-override',
       '@codingame/monaco-vscode-terminal-service-override', '@codingame/monaco-vscode-search-service-override', '@codingame/monaco-vscode-markers-service-override', '@codingame/monaco-vscode-accessibility-service-override', '@codingame/monaco-vscode-storage-service-override',
       '@codingame/monaco-vscode-language-detection-worker-service-override', '@codingame/monaco-vscode-remote-agent-service-override', '@codingame/monaco-vscode-environment-service-override', '@codingame/monaco-vscode-lifecycle-service-override',
+      '@codingame/monaco-vscode-workspace-trust-service-override',
       '@codingame/monaco-vscode-clojure-default-extension', '@codingame/monaco-vscode-coffeescript-default-extension', '@codingame/monaco-vscode-cpp-default-extension',
       '@codingame/monaco-vscode-csharp-default-extension', '@codingame/monaco-vscode-css-default-extension', '@codingame/monaco-vscode-diff-default-extension', '@codingame/monaco-vscode-fsharp-default-extension', '@codingame/monaco-vscode-go-default-extension',
       '@codingame/monaco-vscode-groovy-default-extension', '@codingame/monaco-vscode-html-default-extension', '@codingame/monaco-vscode-java-default-extension', '@codingame/monaco-vscode-javascript-default-extension',

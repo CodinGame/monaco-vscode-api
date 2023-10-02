@@ -202,12 +202,8 @@ function isCallPure (file: string, functionName: string, node: recast.types.name
 
     const firstParamCode = recast.print(firstParam).code
     if (firstParamCode.includes('DEBUG_CONFIGURE_COMMAND_ID') ||
-      firstParamCode.includes('workbench.action.closePanel') ||
       firstParamCode.includes('workbench.action.toggleMaximizedPanel') ||
-      firstParamCode.includes('OpenEditorsView') ||
-      firstParamCode.includes('openWorkspaceSettings') ||
-      firstParamCode.includes('openRemoteSettings') ||
-      firstParamCode.includes('openApplicationSettings')) {
+      firstParamCode.includes('OpenEditorsView')) {
       return true
     }
   }

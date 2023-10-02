@@ -31,6 +31,7 @@ import getExtensionServiceOverride from '@codingame/monaco-vscode-extensions-ser
 import getRemoteAgentServiceOverride from '@codingame/monaco-vscode-remote-agent-service-override'
 import getEnvironmentServiceOverride from '@codingame/monaco-vscode-environment-service-override'
 import getLifecycleServiceOverride from '@codingame/monaco-vscode-lifecycle-service-override'
+import getWorkspaceTrustOverride from '@codingame/monaco-vscode-workspace-trust-service-override'
 import EditorWorker from 'monaco-editor/esm/vs/editor/editor.worker.js?worker'
 import TextMateWorker from '@codingame/monaco-vscode-textmate-service-override/worker?worker'
 import OutputLinkComputerWorker from '@codingame/monaco-vscode-output-service-override/worker?worker'
@@ -96,8 +97,10 @@ await initializeMonacoService({
   ...getRemoteAgentServiceOverride(connectionToken),
   ...getLifecycleServiceOverride(),
   ...getEnvironmentServiceOverride({
-    remoteAuthority
-  })
+    remoteAuthority,
+    enableWorkspaceTrust: true
+  }),
+  ...getWorkspaceTrustOverride()
 })
 StandaloneServices.get(ILogService).setLevel(LogLevel.Off)
 
@@ -108,6 +111,8 @@ export async function clearStorage (): Promise<void> {
 await initializeVscodeExtensions()
 
 for (const { part, element } of [
+  { part: Parts.TITLEBAR_PART, element: '#titleBar' },
+  { part: Parts.BANNER_PART, element: '#banner' },
   { part: Parts.SIDEBAR_PART, element: '#sidebar' },
   { part: Parts.ACTIVITYBAR_PART, element: '#activityBar' },
   { part: Parts.PANEL_PART, element: '#panel' },
