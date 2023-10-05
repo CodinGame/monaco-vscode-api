@@ -146,7 +146,7 @@ import { INotebookKernelService } from 'vs/workbench/contrib/notebook/common/not
 import { INotebookRendererMessagingService } from 'vs/workbench/contrib/notebook/common/notebookRendererMessagingService'
 import { IInteractiveDocumentService } from 'vs/workbench/contrib/interactive/browser/interactiveDocumentService'
 import { IInlineChatService } from 'vs/workbench/contrib/inlineChat/common/inlineChat'
-import { IChatWidgetService } from 'vs/workbench/contrib/chat/browser/chat'
+import { IChatWidgetService, IQuickChatService } from 'vs/workbench/contrib/chat/browser/chat'
 import { IRemoteExplorerService } from 'vs/workbench/services/remote/common/remoteExplorerService'
 import { IAuthenticationService } from 'vs/workbench/services/authentication/common/authentication'
 import { ITimelineService } from 'vs/workbench/contrib/timeline/common/timeline'
@@ -1596,6 +1596,17 @@ registerSingleton(IChatService, class ChatService implements IChatService {
   removeHistoryEntry = unsupported
   onDidPerformUserAction = Event.None
   notifyUserAction = unsupported
+}, InstantiationType.Delayed)
+
+registerSingleton(IQuickChatService, class QuickChatService implements IQuickChatService {
+  _serviceBrand: undefined
+  onDidClose = Event.None
+  enabled = false
+  toggle = unsupported
+  focus = unsupported
+  open = unsupported
+  close = unsupported
+  openInChatView = unsupported
 }, InstantiationType.Delayed)
 
 registerSingleton(IEmbedderTerminalService, class EmbedderTerminalService implements IEmbedderTerminalService {
