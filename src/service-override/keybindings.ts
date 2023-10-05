@@ -21,10 +21,13 @@ import { IUserDataProfileService } from 'vs/workbench/services/userDataProfile/c
 import { IHostService } from 'vs/workbench/services/host/browser/host'
 import { IExtensionService } from 'vs/workbench/services/extensions/common/extensions'
 import { ILogService } from 'vs/platform/log/common/log'
+import { WorkbenchContextKeysHandler } from 'vs/workbench/browser/contextkeys'
 import getFileServiceOverride from './files'
 import { DynamicKeybindingService } from '../monaco'
 import 'vs/workbench/browser/workbench.contribution'
 import 'vs/workbench/contrib/keybindings/browser/keybindings.contribution'
+import { onRenderWorkbench } from '../lifecycle'
+import { IInstantiationService } from '../services'
 
 async function updateUserKeybindings (keybindingsJson: string): Promise<void> {
   const userDataProfilesService: IUserDataProfilesService = StandaloneServices.get(IUserDataProfilesService)
@@ -83,6 +86,10 @@ class DynamicWorkbenchKeybindingService extends WorkbenchKeybindingService imple
 interface KeybindingsProps {
   shouldUseGlobalKeybindings?: () => boolean
 }
+
+onRenderWorkbench((accessor) => {
+  accessor.get(IInstantiationService).createInstance(WorkbenchContextKeysHandler)
+})
 
 export default function getServiceOverride ({ shouldUseGlobalKeybindings = () => false }: KeybindingsProps = {}): IEditorOverrideServices {
   return {
