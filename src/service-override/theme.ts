@@ -1,4 +1,3 @@
-import '../missing-services'
 import { WorkbenchThemeService } from 'vs/workbench/services/themes/browser/workbenchThemeService'
 import { IThemeExtensionPoint } from 'vs/workbench/services/themes/common/workbenchThemeService'
 import { IEditorOverrideServices } from 'vs/editor/standalone/browser/standaloneServices'

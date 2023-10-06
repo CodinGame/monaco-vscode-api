@@ -352,7 +352,7 @@ class EmptyEditorGroup implements IEditorGroup, IEditorGroupView {
 }
 
 const fakeActiveGroup = new EmptyEditorGroup()
-export class EmptyEditorGroupsService implements IEditorGroupsService {
+class EmptyEditorGroupsService implements IEditorGroupsService {
   readonly _serviceBrand = undefined
   getLayout = unsupported
   onDidChangeActiveGroup = Event.None

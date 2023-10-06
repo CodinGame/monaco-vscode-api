@@ -1,4 +1,3 @@
-import '../missing-services'
 import { IEditorOverrideServices } from 'vs/editor/standalone/browser/standaloneServices'
 import { SyncDescriptor } from 'vs/platform/instantiation/common/descriptors'
 import { IProcessReadyEvent, ITerminalBackend, ITerminalBackendRegistry, ITerminalChildProcess, ITerminalLaunchError, ITerminalProfile, ITerminalsLayoutInfo, TerminalExtensions, ITerminalLogService, IPtyHostLatencyMeasurement } from 'vs/platform/terminal/common/terminal'

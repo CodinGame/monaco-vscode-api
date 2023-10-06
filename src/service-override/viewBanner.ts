@@ -1,4 +1,3 @@
-import '../missing-services'
 import { IEditorOverrideServices } from 'vs/editor/standalone/browser/standaloneServices'
 import { SyncDescriptor } from 'vs/platform/instantiation/common/descriptors'
 import { BannerPart } from 'vs/workbench/browser/parts/banner/bannerPart'

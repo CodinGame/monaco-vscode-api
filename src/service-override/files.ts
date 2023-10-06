@@ -1,4 +1,3 @@
-import '../missing-services'
 import { IEditorOverrideServices, StandaloneServices } from 'vs/editor/standalone/browser/standaloneServices'
 import { SyncDescriptor } from 'vs/platform/instantiation/common/descriptors'
 import { FileService } from 'vs/platform/files/common/fileService'

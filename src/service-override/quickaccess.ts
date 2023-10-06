@@ -1,4 +1,3 @@
-import '../missing-services'
 import { SyncDescriptor } from 'vs/platform/instantiation/common/descriptors'
 import { IInputBox, IInputOptions, IPickOptions, IQuickInputButton, IQuickInputService, IQuickNavigateConfiguration, IQuickPick, IQuickPickItem, IQuickWidget, QuickPickInput } from 'vs/platform/quickinput/common/quickInput'
 import { CancellationToken } from 'vs/base/common/cancellation'
