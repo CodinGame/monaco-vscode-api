@@ -13,9 +13,9 @@ import getFileServiceOverride from './service-override/files'
 import getQuickAccessOverride from './service-override/quickaccess'
 import { serviceInitializedBarrier, startup } from './lifecycle'
 
-export async function initialize (overrides: IEditorOverrideServices): Promise<void> {
+export async function initialize (overrides: IEditorOverrideServices, container?: HTMLElement): Promise<void> {
   const instantiationService = StandaloneServices.initialize({
-    ...getLayoutServiceOverride(), // Always override layout service to break cyclic dependency with ICodeEditorService
+    ...getLayoutServiceOverride(container), // Always override layout service to break cyclic dependency with ICodeEditorService
     ...getEnvironmentServiceOverride(),
     ...getExtensionsServiceOverride(),
     ...getFileServiceOverride(),
