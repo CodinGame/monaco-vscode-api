@@ -46,6 +46,11 @@ function isExternal (id: string, main: boolean) {
   if (id.includes('.contribution')) {
     return true
   }
+  if (main) {
+    return [
+      'vscode', 'monaco-editor', 'tas-client-umd'
+    ].includes(id)
+  }
 
   return [
     'vscode', 'monaco-editor', 'tas-client-umd', 'vscode-textmate', 'rollup', '@rollup/pluginutils',
@@ -198,16 +203,28 @@ export default rollup.defineConfig((<{input: Record<string, string>, output: str
       load (id) {
         const path = new URL(id, 'file:/').pathname
         const [sourceFile] = project.addSourceFilesAtPaths(path)
+        if (sourceFile == null) {
+          return undefined
+        }
 
-        sourceFile!.addImportDeclaration({
+        if (id.includes('node_modules') && id.includes('xterm')) {
+          // xterm modules use `declare module` syntax not supposed by the rollup-dts-plugin, so let's transform the code
+          const module = sourceFile.getModules()[0]!
+          for (const _interface of module.getInterfaces()) {
+            _interface.setIsExported(true)
+          }
+          return `${sourceFile.getImportDeclarations().map(e => e.getText()).join('\n')}\n${module.getBodyText()}`
+        }
+
+        sourceFile.addImportDeclaration({
           moduleSpecifier: 'monaco-editor',
           namespaceImport: 'monaco'
         })
-        sourceFile!.addImportDeclaration({
+        sourceFile.addImportDeclaration({
           moduleSpecifier: 'vscode',
           namespaceImport: 'vscode'
         })
-        return sourceFile!.getFullText()
+        return sourceFile.getFullText()
       },
       transform (code, id) {
         interfaceOverride.forEach((value, key) => {
