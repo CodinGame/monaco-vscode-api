@@ -16,6 +16,7 @@
     "noImplicitReturns": true,
     "baseUrl": ".",
     "paths": {
+      "vscode/vscode/*": ["../dist/main/vscode/src/*"],
       "vscode/*": ["../dist/main/*"]
     }
   },
