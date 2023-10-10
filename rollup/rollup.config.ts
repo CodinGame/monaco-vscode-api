@@ -862,6 +862,14 @@ export default (args: Record<string, string>): rollup.RollupOptions[] => {
                 types: './extensions.d.ts',
                 default: './extensions.js'
               },
+              './assets': {
+                types: './assets.d.ts',
+                default: './assets.js'
+              },
+              './lifecycle': {
+                types: './lifecycle.d.ts',
+                default: './lifecycle.js'
+              },
               './service-override/*': {
                 types: './service-override/*.d.ts',
                 default: './service-override/*.js'
@@ -872,6 +880,9 @@ export default (args: Record<string, string>): rollup.RollupOptions[] => {
               './monaco': {
                 types: './monaco.d.ts',
                 default: './monaco.js'
+              },
+              './vscode/*': {
+                default: './vscode/src/*.js'
               }
             },
             typesVersions: {
@@ -887,6 +898,15 @@ export default (args: Record<string, string>): rollup.RollupOptions[] => {
                 ],
                 monaco: [
                   './monaco.d.ts'
+                ],
+                assets: [
+                  './assets.d.ts'
+                ],
+                lifecycle: [
+                  './lifecycle.d.ts'
+                ],
+                'vscode/*': [
+                  './vscode/src/*.d.ts'
                 ]
               }
             },
@@ -927,27 +947,7 @@ export default (args: Record<string, string>): rollup.RollupOptions[] => {
               ...Object.fromEntries(Object.entries(pkg.dependencies).filter(([key]) => dependencies.has(key)))
             }
           }
-
-          const reexportFrom = `vscode/${path.relative(options.dir!, serviceOverrideEntryPoint).slice(0, -3)}`
-
-          const entrypointInfo = this.getModuleInfo(serviceOverrideEntryPoint)!
-          const codeLines: string[] = []
-          if ((entrypointInfo.exports ?? []).includes('default')) {
-            codeLines.push(`export { default } from '${reexportFrom}'`)
-          }
-          if ((entrypointInfo.exports ?? []).some(e => e !== 'default')) {
-            codeLines.push(`export * from '${reexportFrom}'`)
-          }
-          if ((entrypointInfo.exports ?? []).length === 0) {
-            codeLines.push(`import '${reexportFrom}'`)
-          }
-          await fsPromise.writeFile(path.resolve(directory, 'index.js'), codeLines.join('\n'))
-          await fsPromise.writeFile(path.resolve(directory, 'index.d.ts'), codeLines.join('\n'))
-
           if (workerEntryPoint != null) {
-            const workerFrom = `vscode/${path.relative(options.dir!, workerEntryPoint).slice(0, -3)}`
-            await fsPromise.writeFile(path.resolve(directory, 'worker.js'), `import '${workerFrom}'`)
-
             packageJson.exports = {
               '.': {
                 default: './index.js'
@@ -958,7 +958,112 @@ export default (args: Record<string, string>): rollup.RollupOptions[] => {
             }
           }
 
-          await fsPromise.writeFile(path.resolve(directory, 'package.json'), JSON.stringify(packageJson, null, 2))
+          const entrypointInfo = this.getModuleInfo(serviceOverrideEntryPoint)!
+
+          const groupBundle = await rollup.rollup({
+            input: {
+              index: 'entrypoint',
+              ...(workerEntryPoint != null
+                ? {
+                    worker: 'worker'
+                  }
+                : {})
+            },
+            external,
+            plugins: [
+              importMetaAssets({
+                include: ['**/*.ts', '**/*.js'],
+                // assets are externals and this plugin is not able to ignore external assets
+                exclude: ['**/service-override/textmate.js', '**/service-override/languageDetectionWorker.js']
+              }),
+              nodeResolve({
+                extensions: EXTENSIONS
+              }), {
+                name: 'loader',
+                resolveId (source, importer) {
+                  if (source === 'entrypoint' || source === 'worker') {
+                    return source
+                  }
+                  if (source.startsWith('monaco-editor/')) {
+                    return null
+                  }
+                  const importerDir = path.dirname(path.resolve(DIST_DIR_MAIN, importer ?? '/'))
+                  const resolved = path.resolve(importerDir, source)
+                  const resolvedWithExtension = resolved.endsWith('.js') ? resolved : `${resolved}.js`
+
+                  const isNotExclusive = (resolved.startsWith(VSCODE_SRC_DIST_DIR) || path.dirname(resolved) === path.resolve(DIST_DIR_MAIN, 'service-override')) && !exclusiveModules.has(resolvedWithExtension)
+                  const shouldBeShared = resolvedWithExtension === path.resolve(DIST_DIR_MAIN, 'assets.js') || resolvedWithExtension === path.resolve(DIST_DIR_MAIN, 'lifecycle.js')
+
+                  if (isNotExclusive || shouldBeShared) {
+                    // Those modules will be imported from external monaco-vscode-api
+                    let externalResolved = resolved.startsWith(VSCODE_SRC_DIST_DIR) ? `vscode/vscode/${path.relative(VSCODE_SRC_DIST_DIR, resolved)}` : `vscode/${path.relative(DIST_DIR_MAIN, resolved)}`
+                    if (externalResolved.endsWith('.js')) {
+                      externalResolved = externalResolved.slice(0, -3)
+                    }
+                    return {
+                      id: externalResolved,
+                      external: true
+                    }
+                  }
+
+                  return undefined
+                },
+                load (id) {
+                  if (id === 'entrypoint') {
+                    const codeLines: string[] = []
+                    if ((entrypointInfo.exports ?? []).includes('default')) {
+                      codeLines.push(`export { default } from '${serviceOverrideEntryPoint.slice(0, -3)}'`)
+                    }
+                    if ((entrypointInfo.exports ?? []).some(e => e !== 'default')) {
+                      codeLines.push(`export * from '${serviceOverrideEntryPoint.slice(0, -3)}'`)
+                    }
+                    if ((entrypointInfo.exports ?? []).length === 0) {
+                      codeLines.push(`import '${serviceOverrideEntryPoint.slice(0, -3)}'`)
+                    }
+                    return codeLines.join('\n')
+                  }
+                  if (id === 'worker') {
+                    return `import '${workerEntryPoint}'`
+                  }
+                  if (id.startsWith('vscode/')) {
+                    return (bundle[path.relative('vscode', id)] as rollup.OutputChunk | undefined)?.code
+                  }
+                  return (bundle[path.relative(DIST_DIR_MAIN, id)] as rollup.OutputChunk | undefined)?.code
+                },
+                resolveFileUrl (options) {
+                  let relativePath = options.relativePath
+                  if (!relativePath.startsWith('.')) {
+                    relativePath = `./${options.relativePath}`
+                  }
+                  return `'${relativePath}'`
+                },
+                generateBundle () {
+                  this.emitFile({
+                    fileName: 'package.json',
+                    needsCodeReference: false,
+                    source: JSON.stringify(packageJson, null, 2),
+                    type: 'asset'
+                  })
+                }
+              }]
+          })
+          await groupBundle.write({
+            preserveModules: true,
+            preserveModulesRoot: path.resolve(DIST_DIR, 'main/service-override'),
+            minifyInternalExports: false,
+            assetFileNames: 'assets/[name][extname]',
+            format: 'esm',
+            dir: directory,
+            entryFileNames: '[name].js',
+            chunkFileNames: '[name].js',
+            hoistTransitiveImports: false
+          })
+          await groupBundle.close()
+
+          // remove exclusive files from main bundle to prevent them from being duplicated
+          for (const exclusiveModule of exclusiveModules) {
+            delete bundle[path.relative(DIST_DIR_MAIN, exclusiveModule)]
+          }
         }
       }
     }), {
