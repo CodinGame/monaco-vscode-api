@@ -15,7 +15,7 @@
   },
   "type": "module",
   "scripts": {
-    "build": "npm run clean && npm run generate-types && npm run lint && npm run compile-rollup-plugins && npm run compile-treemending-script && npm run compile && npm run compile-server && npm run compile-default-extensions && npm run copy-monaco-editor",
+    "build": "npm run clean && npm run lint && npm run compile && npm run compile-rollup-plugins && npm run generate-types && npm run compile-treemending-script && npm run compile-server && npm run compile-default-extensions && npm run copy-monaco-editor",
     "compile": "NODE_OPTIONS=--max_old_space_size=8192 rollup --config rollup/rollup.config.ts --configPlugin 'typescript={tsconfig: `tsconfig.rollup-config.json`}' --vscode-version ${npm_package_config_vscode_version} --vscode-ref ${npm_package_config_vscode_ref}",
     "compile-default-extensions": "NODE_OPTIONS=--max_old_space_size=8192 rollup --config rollup/rollup.default-extensions.ts --configPlugin 'typescript={tsconfig: `tsconfig.rollup-config-default-extensions.json`}'",
     "clean": "rm -rf dist/",
