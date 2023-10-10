@@ -836,7 +836,7 @@ export default (args: Record<string, string>): rollup.RollupOptions[] => {
         }
         return 'main'
       },
-      async handle (groupName, dependencies, entrypoints, options) {
+      async handle (groupName, dependencies, exclusiveModules, entrypoints, options, bundle) {
         if (groupName === 'main') {
           // Generate package.json
           const packageJson: PackageJson = {
