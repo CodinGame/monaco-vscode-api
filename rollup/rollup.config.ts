@@ -111,6 +111,8 @@ const BASE_DIR = path.resolve(__dirname, '..')
 const TSCONFIG = path.resolve(BASE_DIR, 'tsconfig.rollup.json')
 const SRC_DIR = path.resolve(BASE_DIR, 'src')
 const DIST_DIR = path.resolve(BASE_DIR, 'dist')
+const DIST_DIR_MAIN = path.resolve(DIST_DIR, 'main')
+const VSCODE_SRC_DIST_DIR = path.resolve(DIST_DIR_MAIN, 'vscode', 'src')
 const VSCODE_DIR = path.resolve(BASE_DIR, 'vscode')
 const VSCODE_SRC_DIR = path.resolve(VSCODE_DIR, 'src')
 const NODE_MODULES_DIR = path.resolve(BASE_DIR, 'node_modules')
@@ -755,7 +757,11 @@ export default (args: Record<string, string>): rollup.RollupOptions[] => {
       chunkFileNames: '[name].js',
       hoistTransitiveImports: false
     }],
-    plugins: [{
+    plugins: [importMetaAssets({
+      include: ['**/*.ts', '**/*.js'],
+      // assets are externals and this plugin is not able to ignore external assets
+      exclude: ['**/service-override/textmate.js', '**/service-override/languageDetectionWorker.js']
+    }), {
       name: 'improve-treeshaking',
       transform (code) {
         const ast = recast.parse(code, {
@@ -955,7 +961,15 @@ export default (args: Record<string, string>): rollup.RollupOptions[] => {
           await fsPromise.writeFile(path.resolve(directory, 'package.json'), JSON.stringify(packageJson, null, 2))
         }
       }
-    })
+    }), {
+      name: 'clean-src',
+      async generateBundle () {
+        // Delete intermediate sources because writing to make sur there is no unused files
+        await fsPromise.rm(DIST_DIR_MAIN, {
+          recursive: true
+        })
+      }
+    }
     ]
   }])
 }
