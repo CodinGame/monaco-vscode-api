@@ -59,6 +59,7 @@
     "@types/yauzl": "^2.10.0",
     "@typescript-eslint/eslint-plugin": "^5.62.0",
     "@typescript-eslint/parser": "^5.62.0",
+    "@typescript/vfs": "^1.5.0",
     "@vscode/iconv-lite-umd": "^0.7.0",
     "@web/rollup-plugin-import-meta-assets": "^2.1.0",
     "change-package-name": "^1.0.5",
