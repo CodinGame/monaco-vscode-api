@@ -20,12 +20,12 @@ export default ({ handle, getGroup = () => 'main', stage = 'generateBundle' }: O
   [stage]: async function (this: PluginContext, options: OutputOptions, bundle: OutputBundle) {
     const dependencyCache = new Map<string, { externals: Set<string>, internals: Set<string> }>()
 
-    const inputToOutput = Object.fromEntries(Object.values(bundle).filter((chunk): chunk is OutputChunk => (chunk as OutputChunk).code != null).map(chunk => {
-      return [
+    const inputToOutput = Object.fromEntries(Object.values(bundle)
+      .filter((chunk): chunk is OutputChunk => 'code' in chunk)
+      .map(chunk => [
         chunk.facadeModuleId,
         path.resolve(options.dir!, chunk.preliminaryFileName)
-      ]
-    }))
+      ]))
     const getModuleDependencies = (id: string, path: string[]): { externals: Set<string>, internals: Set<string> } => {
       if (path.includes(id)) {
         // Break recursive imports
