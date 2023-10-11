@@ -1,4 +1,3 @@
-import '../missing-services'
 import { IEditorOverrideServices, StandaloneServices } from 'vs/editor/standalone/browser/standaloneServices'
 import { SyncDescriptor } from 'vs/platform/instantiation/common/descriptors'
 import { IViewContainersRegistry, IViewDescriptor, IViewDescriptorService, IViewsRegistry, IViewsService, ViewContainerLocation, Extensions as ViewExtensions } from 'vs/workbench/common/views'

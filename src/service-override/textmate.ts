@@ -1,4 +1,3 @@
-import '../missing-services'
 import { IEditorOverrideServices, StandaloneServices } from 'vs/editor/standalone/browser/standaloneServices'
 import { ITextMateTokenizationService } from 'vs/workbench/services/textMate/browser/textMateTokenizationFeature'
 import { SyncDescriptor } from 'vs/platform/instantiation/common/descriptors'

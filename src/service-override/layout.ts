@@ -1,4 +1,3 @@
-import '../missing-services'
 import { IEditorOverrideServices, StandaloneServices } from 'vs/editor/standalone/browser/standaloneServices'
 import { IWorkbenchLayoutService, PanelAlignment, Parts, Position } from 'vs/workbench/services/layout/browser/layoutService'
 import { ILayoutOffsetInfo, ILayoutService } from 'vs/platform/layout/browser/layoutService'

@@ -1,4 +1,3 @@
-import '../missing-services'
 import { IEditorOverrideServices } from 'vs/editor/standalone/browser/standaloneServices'
 import { SyncDescriptor } from 'vs/platform/instantiation/common/descriptors'
 import { IDebugService } from 'vs/workbench/contrib/debug/common/debug'

@@ -1,3 +1,4 @@
+import './missing-services'
 import Severity from 'vs/base/common/severity'
 import { IConfigurationChangeEvent } from 'vs/platform/configuration/common/configuration'
 import { ITextModelContentProvider } from 'vs/editor/common/services/resolverService'
@@ -6,6 +7,7 @@ import { StorageScope, StorageTarget } from 'vscode/src/vs/platform/storage/comm
 import { IEditorOverrideServices, StandaloneServices } from 'vs/editor/standalone/browser/standaloneServices'
 import { ServiceIdentifier } from 'vs/platform/instantiation/common/instantiation'
 import { IAction } from 'vs/base/common/actions'
+import { Disposable } from 'vs/base/common/lifecycle'
 import getLayoutServiceOverride from './service-override/layout'
 import getEnvironmentServiceOverride from './service-override/environment'
 import getExtensionsServiceOverride from './service-override/extensions'
@@ -13,7 +15,16 @@ import getFileServiceOverride from './service-override/files'
 import getQuickAccessOverride from './service-override/quickaccess'
 import { serviceInitializedBarrier, startup } from './lifecycle'
 
+let servicesInitialized = false
+StandaloneServices.withServices(() => {
+  servicesInitialized = true
+  return Disposable.None
+})
+
 export async function initialize (overrides: IEditorOverrideServices, container?: HTMLElement): Promise<void> {
+  if (servicesInitialized) {
+    throw new Error('The services are already initialized.')
+  }
   const instantiationService = StandaloneServices.initialize({
     ...getLayoutServiceOverride(container), // Always override layout service to break cyclic dependency with ICodeEditorService
     ...getEnvironmentServiceOverride(),
