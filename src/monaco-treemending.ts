@@ -19,16 +19,16 @@ async function run () {
   const monacoPackageJson = JSON.parse((await fs.readFile(monacoPackageJsonFile)).toString('utf-8'))
   const monacoVersion = monacoPackageJson.version
 
-  if (typeof MONACO_VERSION !== 'undefined' && MONACO_VERSION !== monacoVersion) {
-    console.error(`Wrong monaco-editor version: expecting ${MONACO_VERSION}, got ${monacoVersion}`)
-    process.exit(1)
-  }
-
   const alreadyPatched: boolean = monacoPackageJson.treemended ?? false
   if (alreadyPatched) {
     // eslint-disable-next-line no-console
     console.info('Monaco-editor has already been tree-mended, ignoring')
     process.exit(0)
+  }
+
+  if (typeof MONACO_VERSION !== 'undefined' && MONACO_VERSION !== monacoVersion) {
+    console.error(`Wrong monaco-editor version: expecting ${MONACO_VERSION}, got ${monacoVersion}`)
+    process.exit(1)
   }
 
   // pnpm WA: copy files to a temp directory and patch files there. When finished copy back
