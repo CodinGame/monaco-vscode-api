@@ -26,6 +26,7 @@
     "preprepare": "./scripts/install-vscode && node --loader ts-node/esm src/monaco-treemending.ts && patch-package",
     "lint": "eslint '{src/**/*.ts,rollup/*.ts,*.ts}'",
     "generate-types": "./scripts/generate-types",
+    "update-vscode-dependencies": "node --loader ts-node/esm scripts/update-vscode-dependencies.ts",
     "release": "node --loader ts-node/esm release.ts ${npm_package_config_vscode_version}",
     "releaseNext": "node --loader ts-node/esm releaseNext.ts ${npm_package_config_vscode_version}",
     "reset:repo": "git clean -f -X -d"

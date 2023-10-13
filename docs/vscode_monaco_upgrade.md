@@ -17,8 +17,11 @@
 
 ## monaco-vscode-api repository
 
-- Update `monaco-editor` and other dependencies and update to the new `vscodeRef` from above
+- Update the package.json to set `monaco-editor` to the same version as the one using the `vscodeRef` from above (usually the latest version)
+- Run `npm install` which will trigger the vscode install script
 - Wait for the new vscode version to be downloaded and built
+- Run `npm run update-vscode-dependencies` to update the vscode dependencies we use to the same versions as vscode
+- Run `npm install` (might need to update/add the npm override for `xterm` in the `package.json` to fix the invalid peer deps)
 - Fix errors, adapt code, build, include the `vscode.patch` into this commit
   - Do not hesitate to run the eslint autofix, it gets rid of the majority of your errors
   - Implement missing services. This is easily observable seem when running the demo (see next point)
