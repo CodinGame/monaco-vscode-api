@@ -344,7 +344,7 @@ function registerCustomView (options: CustomViewOption): IDisposable {
 
   const VIEW_CONTAINER = Registry.as<IViewContainersRegistry>(ViewExtensions.ViewContainersRegistry).registerViewContainer({
     id: options.id,
-    title: options.name,
+    title: { value: options.name, original: options.name },
     order: options.order,
     ctorDescriptor: new SyncDescriptor(ViewPaneContainer, [options.id, { mergeViewWithContainerWhenSingleView: true }]),
     hideIfEmpty: true,

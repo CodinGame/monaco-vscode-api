@@ -23,6 +23,7 @@ export interface IStorageProvider {
   write (scope: StorageScope, data: Map<string, string>): Promise<void>
   close? (scope: StorageScope): Promise<void>
   onDidChange? (listener: (event: IStorageItemsChangeEvent) => void): IDisposable
+  optimize? (scope: StorageScope): Promise<void>
 }
 
 class ExternalStorage extends Storage {
@@ -67,6 +68,10 @@ class ExternalStorageDatabase implements IStorageDatabase {
 
   async close () {
     return this.provider.close?.(this.scope)
+  }
+
+  async optimize (): Promise<void> {
+    return this.provider.optimize?.(this.scope)
   }
 }
 

@@ -2,6 +2,7 @@ import { createFilter, FilterPattern, dataToEsm } from '@rollup/pluginutils'
 import { Plugin } from 'rollup'
 import { IExtensionManifest } from 'vs/platform/extensions/common/extensions'
 import { localizeManifest } from 'vs/platform/extensionManagement/common/extensionNls.js'
+import { ConsoleLogger } from 'vs/platform/log/common/log'
 import * as path from 'path'
 import * as fsPromise from 'fs/promises'
 import * as fs from 'fs'
@@ -13,6 +14,8 @@ interface Options {
   transformManifest?: (manifest: IExtensionManifest) => IExtensionManifest
   getAdditionalResources?: (manifest: IExtensionManifest, directory: string) => Promise<ExtensionResource[]>
 }
+
+const logger = new ConsoleLogger()
 
 export default function plugin ({
   include,
@@ -43,7 +46,7 @@ export default function plugin ({
         let parsed = parseJson<IExtensionManifest>(id, content.toString('utf-8'))
         const nlsFile = path.resolve(path.dirname(id), 'package.nls.json')
         if (fs.existsSync(nlsFile)) {
-          parsed = localizeManifest(parsed, parseJson(id, (await fsPromise.readFile(nlsFile)).toString()))
+          parsed = localizeManifest(logger, parsed, parseJson(id, (await fsPromise.readFile(nlsFile)).toString()))
         }
         return {
           code: dataToEsm(transformManifest(parsed), {

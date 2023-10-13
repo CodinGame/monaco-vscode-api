@@ -3,6 +3,7 @@ import { InputPluginOption, Plugin } from 'rollup'
 import * as yauzl from 'yauzl'
 import { IExtensionManifest } from 'vs/platform/extensions/common/extensions'
 import { localizeManifest } from 'vs/platform/extensionManagement/common/extensionNls.js'
+import { ConsoleLogger } from 'vs/platform/log/common/log'
 import { Readable } from 'stream'
 import * as path from 'path'
 import { ExtensionResource, extractResourcesFromExtensionManifest, parseJson } from './extension-tools'
@@ -14,6 +15,8 @@ interface Options {
   transformManifest?: (manifest: IExtensionManifest) => IExtensionManifest
   getAdditionalResources?: (manifest: IExtensionManifest) => Promise<ExtensionResource[]>
 }
+
+const logger = new ConsoleLogger()
 
 function read (stream: Readable): Promise<Buffer> {
   const bufs: Buffer[] = []
@@ -121,7 +124,7 @@ export default function plugin ({
 
       let packageJson = parseJson<IExtensionManifest>(id, vsixFile['package.json']!.toString('utf8'))
       if ('package.nls.json' in vsixFile) {
-        packageJson = localizeManifest(packageJson, parseJson(id, vsixFile['package.nls.json']!.toString()))
+        packageJson = localizeManifest(logger, packageJson, parseJson(id, vsixFile['package.nls.json']!.toString()))
       }
 
       return `
