@@ -1069,7 +1069,7 @@ export default (args: Record<string, string>): rollup.RollupOptions[] => {
     }), {
       name: 'clean-src',
       async generateBundle () {
-        // Delete intermediate sources because writing to make sur there is no unused files
+        // Delete intermediate sources before writing to make sur there is no unused files
         await fsPromise.rm(DIST_DIR_MAIN, {
           recursive: true
         })
