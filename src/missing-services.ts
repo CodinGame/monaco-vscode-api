@@ -171,6 +171,7 @@ import { IMessage, ISignService } from 'vs/platform/sign/common/sign'
 import { BrowserHostService } from 'vs/workbench/services/host/browser/browserHostService'
 import { IBannerService } from 'vs/workbench/services/banner/browser/bannerService'
 import { ITitleService } from 'vs/workbench/services/title/common/titleService'
+import { IChatAgentService } from 'vs/workbench/contrib/chat/common/chatAgents'
 import { unsupported } from './tools'
 
 class NullLoggerService extends AbstractLoggerService {
@@ -1610,6 +1611,18 @@ registerSingleton(IQuickChatService, class QuickChatService implements IQuickCha
   open = unsupported
   close = unsupported
   openInChatView = unsupported
+}, InstantiationType.Delayed)
+
+registerSingleton(IChatAgentService, class QuickChatService implements IChatAgentService {
+  _serviceBrand = undefined
+  onDidChangeAgents = Event.None
+  registerAgentData = unsupported
+  registerAgentCallback = unsupported
+  registerAgent = unsupported
+  invokeAgent = unsupported
+  getAgents = unsupported
+  getAgent = unsupported
+  hasAgent = unsupported
 }, InstantiationType.Delayed)
 
 registerSingleton(IEmbedderTerminalService, class EmbedderTerminalService implements IEmbedderTerminalService {
