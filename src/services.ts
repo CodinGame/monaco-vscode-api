@@ -77,7 +77,6 @@ export {
   GroupsArrangement,
   GroupLayoutArgument,
   EditorGroupLayout,
-  IAddGroupOptions,
   MergeGroupMode,
   IMergeGroupOptions,
   ICloseEditorOptions,

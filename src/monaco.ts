@@ -1,7 +1,7 @@
 import { StandaloneKeybindingService, StandaloneServices } from 'vs/editor/standalone/browser/standaloneServices'
 import { ITextResourceConfigurationService } from 'vs/editor/common/services/textResourceConfiguration'
 import { IInstantiationService } from 'vs/platform/instantiation/common/instantiation'
-import { IStandaloneEditorConstructionOptions, StandaloneDiffEditor, StandaloneEditor } from 'vs/editor/standalone/browser/standaloneCodeEditor'
+import { IStandaloneEditorConstructionOptions, StandaloneDiffEditor2, StandaloneEditor } from 'vs/editor/standalone/browser/standaloneCodeEditor'
 import { IEditorOptions } from 'vs/editor/common/config/editorOptions'
 import { IEditorConfiguration } from 'vs/workbench/browser/parts/editor/textEditor'
 import { isObject } from 'vs/base/common/types'
@@ -160,7 +160,7 @@ class ConfiguredStandaloneEditor extends createInjectedClass(StandaloneEditor) {
   }
 }
 
-class ConfiguredStandaloneDiffEditor extends StandaloneDiffEditor {
+class ConfiguredStandaloneDiffEditor extends StandaloneDiffEditor2 {
   protected override _createInnerEditor (instantiationService: IInstantiationService, container: HTMLElement, options: Readonly<IEditorOptions>): CodeEditorWidget {
     return instantiationService.createInstance(ConfiguredStandaloneEditor, container, true, options)
   }

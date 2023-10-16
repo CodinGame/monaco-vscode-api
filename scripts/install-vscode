@@ -2,7 +2,7 @@
 set -e
 
 vscodeRef=$(cat './node_modules/monaco-editor/package.json' | jq -r '.["vscodeRef"]')
-cat <<< $(jq ".config.vscode.ref = \"$vscodeRef\"" package.json) > package.json
+cat <<< "$(jq ".config.vscode.ref = \"$vscodeRef\"" package.json)" > package.json
 
 monaco_esm_directory="`pwd`/node_modules/monaco-editor/esm"
 output_directory="`pwd`/vscode"
@@ -25,7 +25,7 @@ echo "Downloading vscode $vscodeRef in $build_directory..."
 
 curl -L --max-redirs 5 https://github.com/Microsoft/vscode/tarball/$vscodeRef | tar -xz -C $build_directory --strip-components=1 microsoft-vscode-${vscodeRef:0:7}
 vscodeVersion=$(cat "$build_directory/package.json" | jq -r '.["version"]')
-cat <<< $(jq ".config.vscode.version = \"$vscodeVersion\"" package.json) > package.json
+cat <<< "$(jq ".config.vscode.version = \"$vscodeVersion\"" package.json)" > package.json
 
 cd $build_directory
 
@@ -47,10 +47,10 @@ mkdir -p editor-patch
 cp -R $monaco_esm_directory editor-patch/a
 cp -R $monaco_esm_directory editor-patch/b
 ## Change shake level from ClassMembers to Files
-sed -i 's/shakeLevel: 2/shakeLevel: 0/g' build/gulpfile.editor.js
+sed -i'' -e 's/shakeLevel: 2/shakeLevel: 0/g' build/gulpfile.editor.js
 yarn gulp editor-distro
 cd out-monaco-editor-core/esm/
-cp --parents $(find -name \*.js) ../../editor-patch/b
+rsync -R $(find . -name \*.js) ../../editor-patch/b
 cd ../../editor-patch
 diff -urN -x '*.map' a b > "$editor_patch_file" || true
 cd ..
@@ -79,7 +79,7 @@ cat << EOF | node -
 	});
 EOF
 cd resources
-cp --parents $(find -name \*.js) ../src/
+rsync -R $(find . -name \*.js) ../src/
 cd ..
 
 cd src

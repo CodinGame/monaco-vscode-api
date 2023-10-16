@@ -49,6 +49,7 @@ import { ILayoutService } from 'vs/platform/layout/browser/layoutService'
 import { IStorageService } from 'vs/platform/storage/common/storage'
 import { ILabelService } from 'vs/platform/label/common/label'
 import { ExtensionKind } from 'vs/platform/environment/common/environment'
+import { ExtensionDescriptionRegistrySnapshot } from 'vs/workbench/services/extensions/common/extensionDescriptionRegistry'
 import getOutputServiceOverride from './output'
 import { changeUrlDomain } from './tools/url'
 import { registerAssets } from '../assets'
@@ -129,7 +130,7 @@ const localExtHostPromise = localExtHostDeferred.p
 
 class LocalExtensionHost implements IExtensionHost {
   public readonly remoteAuthority = null
-  public readonly extensions = new ExtensionHostExtensions()
+  public extensions: ExtensionHostExtensions | null = null
   private readonly _extensionHostLogsLocation: URI
   private _protocolPromise: Promise<IMessagePassingProtocol> | null
 
@@ -177,8 +178,8 @@ class LocalExtensionHost implements IExtensionHost {
 
   private async _createExtHostInitData (): Promise<IExtensionHostInitData> {
     const initData = await this._initDataProvider.getInitData()
+    this.extensions = initData.extensions
     const workspace = this._contextService.getWorkspace()
-    const deltaExtensions = this.extensions.set(initData.allExtensions, initData.myExtensions)
     const nlsBaseUrl = this._productService.extensionsGallery?.nlsBaseUrl
     let nlsUrlWithDetails: URI | undefined
     // Only use the nlsBaseUrl if we are using a language other than the default, English.
@@ -216,9 +217,7 @@ class LocalExtensionHost implements IExtensionHost {
         includeStack: false,
         logNative: this._environmentService.debugRenderer
       },
-      allExtensions: deltaExtensions.toAdd,
-      activationEvents: deltaExtensions.addActivationEvents,
-      myExtensions: deltaExtensions.myToAdd,
+      extensions: initData.extensions.toSnapshot(),
       nlsBaseUrl: nlsUrlWithDetails,
       telemetryInfo: {
         sessionId: this._telemetryService.sessionId,
@@ -293,13 +292,14 @@ class LocalBrowserExtensionHostFactory extends BrowserExtensionHostFactory {
     private readonly workerConfig: WorkerConfig | undefined,
     _extensionsProposedApi: ExtensionsProposedApi,
     _scanWebExtensions: () => Promise<IExtensionDescription[]>,
-    _getExtensions: () => Promise<IExtensionDescription[]>,
+    _getExtensionRegistrySnapshotWhenReady: () => Promise<ExtensionDescriptionRegistrySnapshot>,
     @IInstantiationService _instantiationService: IInstantiationService,
     @IRemoteAgentService _remoteAgentService: IRemoteAgentService,
     @IRemoteAuthorityResolverService _remoteAuthorityResolverService: IRemoteAuthorityResolverService,
-    @IWorkbenchExtensionEnablementService _extensionEnablementService: IWorkbenchExtensionEnablementService
+    @IWorkbenchExtensionEnablementService _extensionEnablementService: IWorkbenchExtensionEnablementService,
+    @ILogService _logService: ILogService
   ) {
-    super(_extensionsProposedApi, _scanWebExtensions, _getExtensions, _instantiationService, _remoteAgentService, _remoteAuthorityResolverService, _extensionEnablementService)
+    super(_extensionsProposedApi, _scanWebExtensions, _getExtensionRegistrySnapshotWhenReady, _instantiationService, _remoteAgentService, _remoteAuthorityResolverService, _extensionEnablementService, _logService)
   }
 
   override createExtensionHost (runningLocations: ExtensionRunningLocationTracker, runningLocation: ExtensionRunningLocation, isInitialStart: boolean): IExtensionHost | null {
@@ -386,11 +386,12 @@ export class SimpleExtensionService extends AbstractExtensionService implements 
       workerConfig,
       extensionsProposedApi,
       async () => [],
-      () => this._getExtensions(),
+      () => this._getExtensionRegistrySnapshotWhenReady(),
       instantiationService,
       remoteAgentService,
       remoteAuthorityResolverService,
-      extensionEnablementService
+      extensionEnablementService,
+      logService
     )
     super(
       extensionsProposedApi,

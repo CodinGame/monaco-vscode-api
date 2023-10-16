@@ -134,7 +134,6 @@ import { IExtensionManifestPropertiesService } from 'vs/workbench/services/exten
 import { IRemoteExtensionsScannerService } from 'vs/platform/remote/common/remoteExtensionsScanner'
 import { BrowserURLService } from 'vs/workbench/services/url/browser/urlService'
 import { IURLService } from 'vs/platform/url/common/url'
-import { ICredentialsService } from 'vs/platform/credentials/common/credentials'
 import { IRemoteSocketFactoryService } from 'vs/platform/remote/common/remoteSocketFactoryService'
 import { IQuickDiffService } from 'vs/workbench/contrib/scm/common/quickDiff'
 import { ISCMService, ISCMViewService } from 'vs/workbench/contrib/scm/common/scm'
@@ -172,6 +171,7 @@ import { IMessage, ISignService } from 'vs/platform/sign/common/sign'
 import { BrowserHostService } from 'vs/workbench/services/host/browser/browserHostService'
 import { IBannerService } from 'vs/workbench/services/banner/browser/bannerService'
 import { ITitleService } from 'vs/workbench/services/title/common/titleService'
+import { IChatAgentService } from 'vs/workbench/contrib/chat/common/chatAgents'
 import { unsupported } from './tools'
 
 class NullLoggerService extends AbstractLoggerService {
@@ -567,8 +567,8 @@ registerSingleton(IUserDataProfilesService, class UserDataProfilesService implem
   removeProfile = unsupported
 }, InstantiationType.Eager)
 class InjectedUserDataProfileService extends UserDataProfileService {
-  constructor (@IUserDataProfilesService userDataProfilesService: IUserDataProfilesService) {
-    super(profile, userDataProfilesService)
+  constructor () {
+    super(profile)
   }
 }
 registerSingleton(IUserDataProfileService, InjectedUserDataProfileService, InstantiationType.Eager)
@@ -814,6 +814,8 @@ registerSingleton(ITaskService, class TaskService implements ITaskService {
   hasTaskSystemInfo = false
   registerSupportedExecutions = () => {}
   extensionCallbackTaskComplete = unsupported
+  isReconnected = false
+  onDidReconnectToTasks = Event.None
 }, InstantiationType.Eager)
 
 registerSingleton(IConfigurationResolverService, class ConfigurationResolverService implements IConfigurationResolverService {
@@ -1445,7 +1447,7 @@ registerSingleton(IUserDataSyncWorkbenchService, class UserDataSyncWorkbenchServ
   authenticationProviders = []
   all = []
   current = undefined
-  accountStatus = AccountStatus.Uninitialized
+  accountStatus = AccountStatus.Unavailable
   onDidChangeAccountStatus = Event.None
   turnOn = unsupported
   turnoff = unsupported
@@ -1456,6 +1458,8 @@ registerSingleton(IUserDataSyncWorkbenchService, class UserDataSyncWorkbenchServ
   synchroniseUserDataSyncStoreType = unsupported
   showConflicts = unsupported
   accept = unsupported
+  getAllLogResources = unsupported
+  downloadSyncActivity = unsupported
 }, InstantiationType.Delayed)
 
 registerSingleton(IUserDataSyncEnablementService, class UserDataSyncEnablementService implements IUserDataSyncEnablementService {
@@ -1609,6 +1613,18 @@ registerSingleton(IQuickChatService, class QuickChatService implements IQuickCha
   openInChatView = unsupported
 }, InstantiationType.Delayed)
 
+registerSingleton(IChatAgentService, class QuickChatService implements IChatAgentService {
+  _serviceBrand = undefined
+  onDidChangeAgents = Event.None
+  registerAgentData = unsupported
+  registerAgentCallback = unsupported
+  registerAgent = unsupported
+  invokeAgent = unsupported
+  getAgents = unsupported
+  getAgent = unsupported
+  hasAgent = unsupported
+}, InstantiationType.Delayed)
+
 registerSingleton(IEmbedderTerminalService, class EmbedderTerminalService implements IEmbedderTerminalService {
   _serviceBrand: undefined
   onDidCreateTerminal = Event.None
@@ -1690,6 +1706,9 @@ registerSingleton(IAccessibleViewService, class AccessibleViewService implements
   _serviceBrand: undefined
   show = unsupported
   registerProvider = unsupported
+  getPosition = unsupported
+  setPosition = unsupported
+  getLastPosition = unsupported
 }, InstantiationType.Delayed)
 
 registerSingleton(IWorkbenchExtensionManagementService, class WorkbenchExtensionManagementService implements IWorkbenchExtensionManagementService {
@@ -1762,17 +1781,6 @@ registerSingleton(IRemoteExtensionsScannerService, class RemoteExtensionsScanner
 
 registerSingleton(IURLService, BrowserURLService, InstantiationType.Delayed)
 
-registerSingleton(ICredentialsService, class CredentialsService implements ICredentialsService {
-  _serviceBrand: undefined
-  onDidChangePassword = Event.None
-  getSecretStoragePrefix = async () => 'code-oss'
-  getPassword = unsupported
-  setPassword = unsupported
-  deletePassword = unsupported
-  findPassword = unsupported
-  findCredentials = unsupported
-}, InstantiationType.Delayed)
-
 registerSingleton(IRemoteSocketFactoryService, class RemoteSocketFactoryService implements IRemoteSocketFactoryService {
   _serviceBrand: undefined
   register = unsupported
@@ -1841,6 +1849,8 @@ registerSingleton(ICommentService, class CommentService implements ICommentServi
   setActiveCommentThread = unsupported
   setCurrentCommentThread = unsupported
   enableCommenting = unsupported
+  registerContinueOnCommentProvider = unsupported
+  removeContinueOnComment = unsupported
 }, InstantiationType.Delayed)
 
 registerSingleton(INotebookCellStatusBarService, class NotebookCellStatusBarService implements INotebookCellStatusBarService {
@@ -2072,6 +2082,8 @@ registerSingleton(IChatContributionService, class ChatContributionService implem
   _serviceBrand: undefined
   registeredProviders = []
   getViewIdForProvider = unsupported
+  registerChatProvider = unsupported
+  deregisterChatProvider = unsupported
 }, InstantiationType.Delayed)
 
 registerSingleton(ITestProfileService, class TestProfileService implements ITestProfileService {
@@ -2156,6 +2168,7 @@ registerSingleton(IChatVariablesService, class ChatVariablesService implements I
   registerVariable = unsupported
   getVariables = unsupported
   resolveVariables = unsupported
+  hasVariable = unsupported
   _serviceBrand: undefined
 }, InstantiationType.Delayed)
 

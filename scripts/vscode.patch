@@ -1,8 +1,8 @@
 diff --git a/.eslintrc.json b/.eslintrc.json
-index 0644079623d..cc233dc5888 100644
+index f44673cd1cd..cdb439f7dd1 100644
 --- a/.eslintrc.json
 +++ b/.eslintrc.json
-@@ -267,6 +267,7 @@
+@@ -308,6 +308,7 @@
  							"v8-inspect-profiler",
  							"vscode-regexpp",
  							"vscode-textmate",
@@ -247,7 +247,7 @@ index aff4d0734de..ea43e4a2fcc 100644
 +// };
 +// ESM-uncomment-end
 diff --git a/src/vs/editor/browser/config/editorConfiguration.ts b/src/vs/editor/browser/config/editorConfiguration.ts
-index fc197da1d57..a4d9573979f 100644
+index cf9154ce7d6..5c954f75f8e 100644
 --- a/src/vs/editor/browser/config/editorConfiguration.ts
 +++ b/src/vs/editor/browser/config/editorConfiguration.ts
 @@ -269,7 +269,7 @@ export class ComputedEditorOptions implements IComputedEditorOptions {
@@ -318,7 +318,7 @@ index 67e34826627..7c5287d6a32 100644
  			telemetry: this.telemetry,
  			storageKey: ASSIGNMENT_STORAGE_KEY,
 diff --git a/src/vs/platform/environment/node/argv.ts b/src/vs/platform/environment/node/argv.ts
-index 63243fcf3a0..d948ee599cf 100644
+index c69605d16e9..a1400daf522 100644
 --- a/src/vs/platform/environment/node/argv.ts
 +++ b/src/vs/platform/environment/node/argv.ts
 @@ -3,7 +3,7 @@
@@ -344,7 +344,7 @@ index d8cefb6df67..a94fca911ea 100644
  import { localize } from 'vs/nls';
  import { NativeParsedArgs } from 'vs/platform/environment/common/argv';
 diff --git a/src/vs/platform/files/node/diskFileSystemProvider.ts b/src/vs/platform/files/node/diskFileSystemProvider.ts
-index 4ea7d28e214..71ae1c060b0 100644
+index e22cfe1b45e..b48c1babf86 100644
 --- a/src/vs/platform/files/node/diskFileSystemProvider.ts
 +++ b/src/vs/platform/files/node/diskFileSystemProvider.ts
 @@ -4,7 +4,6 @@
@@ -428,7 +428,7 @@ index ccfbc3f7d9b..5fe46b464b1 100644
  	const collectorChannelPlugin: PostChannel = new postPlugin.PostChannel();
  	// Configure the app insights core to send to collector++ and disable logging of debug info
 diff --git a/src/vs/workbench/api/browser/mainThreadExtensionService.ts b/src/vs/workbench/api/browser/mainThreadExtensionService.ts
-index cbddc0c233b..931ce877ff6 100644
+index 5afc945cc16..bc5fc8ed8f9 100644
 --- a/src/vs/workbench/api/browser/mainThreadExtensionService.ts
 +++ b/src/vs/workbench/api/browser/mainThreadExtensionService.ts
 @@ -193,6 +193,13 @@ export class MainThreadExtensionService implements MainThreadExtensionServiceSha
@@ -495,10 +495,10 @@ index 99dd3279fe8..b692381eaa2 100644
  	declare readonly _serviceBrand: undefined;
  
 diff --git a/src/vs/workbench/api/common/extHost.protocol.ts b/src/vs/workbench/api/common/extHost.protocol.ts
-index 3c894ef8694..8995e4932e8 100644
+index 53224b35c02..acc9785411e 100644
 --- a/src/vs/workbench/api/common/extHost.protocol.ts
 +++ b/src/vs/workbench/api/common/extHost.protocol.ts
-@@ -1353,6 +1353,7 @@ export interface MainThreadExtensionServiceShape extends IDisposable {
+@@ -1367,6 +1367,7 @@ export interface MainThreadExtensionServiceShape extends IDisposable {
  	$onExtensionRuntimeError(extensionId: ExtensionIdentifier, error: SerializedError): void;
  	$setPerformanceMarks(marks: performance.PerformanceMark[]): Promise<void>;
  	$asBrowserUri(uri: UriComponents): Promise<UriComponents>;
@@ -507,19 +507,19 @@ index 3c894ef8694..8995e4932e8 100644
  
  export interface SCMProviderFeatures {
 diff --git a/src/vs/workbench/api/common/extHostExtensionService.ts b/src/vs/workbench/api/common/extHostExtensionService.ts
-index 0a0eebdd8a5..f98fffcec6f 100644
+index 404f8f7d9c0..59e6c2b983c 100644
 --- a/src/vs/workbench/api/common/extHostExtensionService.ts
 +++ b/src/vs/workbench/api/common/extHostExtensionService.ts
 @@ -44,7 +44,7 @@ import { Schemas } from 'vs/base/common/network';
  import { IResolveAuthorityResult } from 'vs/workbench/services/extensions/common/extensionHostProxy';
  import { IExtHostLocalizationService } from 'vs/workbench/api/common/extHostLocalizationService';
  import { StopWatch } from 'vs/base/common/stopwatch';
--import { setTimeout0 } from 'vs/base/common/platform';
-+import { isWebWorker, setTimeout0 } from 'vs/base/common/platform';
+-import { isCI, setTimeout0 } from 'vs/base/common/platform';
++import { isWebWorker, isCI, setTimeout0 } from 'vs/base/common/platform';
  import { IExtHostManagedSockets } from 'vs/workbench/api/common/extHostManagedSockets';
  import { Dto } from 'vs/workbench/services/extensions/common/proxyIdentifier';
  
-@@ -250,9 +250,11 @@ export abstract class AbstractExtHostExtensionService extends Disposable impleme
+@@ -256,9 +256,11 @@ export abstract class AbstractExtHostExtensionService extends Disposable impleme
  		this._extHostTerminalService.dispose();
  		this._activator.dispose();
  
@@ -535,7 +535,7 @@ index 0a0eebdd8a5..f98fffcec6f 100644
  		// Invalidate all proxies
  		this._extHostContext.dispose();
 diff --git a/src/vs/workbench/api/common/extensionHostMain.ts b/src/vs/workbench/api/common/extensionHostMain.ts
-index 40f1cdaf146..03ff0c1ffae 100644
+index 2bd275cbc21..b1c93afd65f 100644
 --- a/src/vs/workbench/api/common/extensionHostMain.ts
 +++ b/src/vs/workbench/api/common/extensionHostMain.ts
 @@ -12,7 +12,7 @@ import { MainContext, MainThreadConsoleShape } from 'vs/workbench/api/common/ext
@@ -605,7 +605,7 @@ index 40f1cdaf146..03ff0c1ffae 100644
 +	}
 +
  	private static _transform(initData: IExtensionHostInitData, rpcProtocol: RPCProtocol): IExtensionHostInitData {
- 		initData.allExtensions.forEach((ext) => {
+ 		initData.extensions.allExtensions.forEach((ext) => {
  			(<Mutable<IRelaxedExtensionDescription>>ext).extensionLocation = URI.revive(rpcProtocol.transformIncomingURIs(ext.extensionLocation));
 diff --git a/src/vs/workbench/api/node/extHostExtensionService.ts b/src/vs/workbench/api/node/extHostExtensionService.ts
 index 5ac0ddc7ec9..6ea024b237b 100644
@@ -671,10 +671,10 @@ index bb3cbfbca7b..b650ff592b1 100644
  const nativeExit: IExitFn = process.exit.bind(process);
  function patchProcess(allowExit: boolean) {
 diff --git a/src/vs/workbench/api/node/proxyResolver.ts b/src/vs/workbench/api/node/proxyResolver.ts
-index 6c0cd980ced..04084152187 100644
+index 1f59cbf5ca3..783ff5b34ba 100644
 --- a/src/vs/workbench/api/node/proxyResolver.ts
 +++ b/src/vs/workbench/api/node/proxyResolver.ts
-@@ -67,10 +67,10 @@ export function connectProxyResolver(
+@@ -81,10 +81,10 @@ export function connectProxyResolver(
  
  function createPatchedModules(params: ProxyAgentParams, resolveProxy: ReturnType<typeof createProxyResolver>) {
  	return {
@@ -1032,7 +1032,7 @@ index afa384aa88c..bc631450591 100644
  					: compositeSwitcherBar.getWidth(currentItemsLength + index)
  				));
 diff --git a/src/vs/workbench/browser/parts/views/viewPaneContainer.ts b/src/vs/workbench/browser/parts/views/viewPaneContainer.ts
-index 1f593cd65c3..3de01b22110 100644
+index f23c48b7db1..3a638425a2d 100644
 --- a/src/vs/workbench/browser/parts/views/viewPaneContainer.ts
 +++ b/src/vs/workbench/browser/parts/views/viewPaneContainer.ts
 @@ -671,7 +671,7 @@ export class ViewPaneContainer extends Component implements IViewPaneContainer {
@@ -1045,7 +1045,7 @@ index 1f593cd65c3..3de01b22110 100644
  
  	isVisible(): boolean {
 diff --git a/src/vs/workbench/contrib/terminal/browser/terminalInstance.ts b/src/vs/workbench/contrib/terminal/browser/terminalInstance.ts
-index 645bcb88540..34bee647bd3 100644
+index e6ae569ad9d..3b2ac782391 100644
 --- a/src/vs/workbench/contrib/terminal/browser/terminalInstance.ts
 +++ b/src/vs/workbench/contrib/terminal/browser/terminalInstance.ts
 @@ -83,9 +83,8 @@ import { IHistoryService } from 'vs/workbench/services/history/common/history';
@@ -1068,7 +1068,7 @@ index 645bcb88540..34bee647bd3 100644
  			Terminal.strings.promptLabel = nls.localize('terminal.integrated.a11yPromptLabel', 'Terminal input');
  			Terminal.strings.tooMuchOutput = keybinding ? nls.localize('terminal.integrated.useAccessibleBuffer', 'Use the accessible buffer {0} to manually review output', keybinding.getLabel()) : nls.localize('terminal.integrated.useAccessibleBufferNoKb', 'Use the Terminal: Focus Accessible Buffer command to manually review output');
 diff --git a/src/vs/workbench/contrib/terminal/browser/terminalService.ts b/src/vs/workbench/contrib/terminal/browser/terminalService.ts
-index 3a8d8a3d34c..7b9fe938a80 100644
+index e37b1ba4d2b..549d13aa21c 100644
 --- a/src/vs/workbench/contrib/terminal/browser/terminalService.ts
 +++ b/src/vs/workbench/contrib/terminal/browser/terminalService.ts
 @@ -19,7 +19,7 @@ import { IContextKey, IContextKeyService } from 'vs/platform/contextkey/common/c
@@ -1098,7 +1098,7 @@ index 3a8d8a3d34c..7b9fe938a80 100644
  		this._terminalCountContextKey = TerminalContextKeys.count.bindTo(this._contextKeyService);
  		this._terminalEditorActive = TerminalContextKeys.terminalEditorActive.bindTo(this._contextKeyService);
 diff --git a/src/vs/workbench/contrib/terminal/browser/xterm/xtermTerminal.ts b/src/vs/workbench/contrib/terminal/browser/xterm/xtermTerminal.ts
-index 12aaa0b0bb6..9aac558f2c8 100644
+index ac1a2096320..c823dcc38b1 100644
 --- a/src/vs/workbench/contrib/terminal/browser/xterm/xtermTerminal.ts
 +++ b/src/vs/workbench/contrib/terminal/browser/xterm/xtermTerminal.ts
 @@ -35,7 +35,6 @@ import { DecorationAddon } from 'vs/workbench/contrib/terminal/browser/xterm/dec
@@ -1109,7 +1109,7 @@ index 12aaa0b0bb6..9aac558f2c8 100644
  import { SuggestAddon } from 'vs/workbench/contrib/terminal/browser/xterm/suggestAddon';
  import { IContextKey, IContextKeyService } from 'vs/platform/contextkey/common/contextkey';
  import { TerminalContextKeys } from 'vs/workbench/contrib/terminal/common/terminalContextKey';
-@@ -756,7 +755,7 @@ export class XtermTerminal extends DisposableStore implements IXtermTerminal, ID
+@@ -756,7 +755,7 @@ export class XtermTerminal extends Disposable implements IXtermTerminal, IDetach
  
  	protected async _getCanvasAddonConstructor(): Promise<typeof CanvasAddonType> {
  		if (!CanvasAddon) {
@@ -1118,7 +1118,7 @@ index 12aaa0b0bb6..9aac558f2c8 100644
  		}
  		return CanvasAddon;
  	}
-@@ -782,35 +781,35 @@ export class XtermTerminal extends DisposableStore implements IXtermTerminal, ID
+@@ -782,35 +781,35 @@ export class XtermTerminal extends Disposable implements IXtermTerminal, IDetach
  
  	protected async _getImageAddonConstructor(): Promise<typeof ImageAddonType> {
  		if (!ImageAddon) {
@@ -1173,7 +1173,7 @@ index a6e9943b866..c470a1c9ed5 100644
  	});
  }
 diff --git a/src/vs/workbench/contrib/webview/browser/webviewElement.ts b/src/vs/workbench/contrib/webview/browser/webviewElement.ts
-index 535da4b66c8..91a9bca8a36 100644
+index a860270eca9..0ef927948db 100644
 --- a/src/vs/workbench/contrib/webview/browser/webviewElement.ts
 +++ b/src/vs/workbench/contrib/webview/browser/webviewElement.ts
 @@ -11,7 +11,7 @@ import { streamToBuffer, VSBufferReadableStream } from 'vs/base/common/buffer';
@@ -1230,10 +1230,10 @@ index 535da4b66c8..91a9bca8a36 100644
  		if (this.element && this._messagePort) {
  			this._messagePort.postMessage({ channel, args: data }, transferable);
 diff --git a/src/vs/workbench/services/extensions/browser/extensionService.ts b/src/vs/workbench/services/extensions/browser/extensionService.ts
-index d8652bf5ac0..d0cf61f0983 100644
+index 25885c7c4f9..ec1beb2c951 100644
 --- a/src/vs/workbench/services/extensions/browser/extensionService.ts
 +++ b/src/vs/workbench/services/extensions/browser/extensionService.ts
-@@ -210,16 +210,16 @@ export class ExtensionService extends AbstractExtensionService implements IExten
+@@ -212,16 +212,16 @@ export class ExtensionService extends AbstractExtensionService implements IExten
  	}
  }
  
@@ -1243,7 +1243,7 @@ index d8652bf5ac0..d0cf61f0983 100644
  	constructor(
  		private readonly _extensionsProposedApi: ExtensionsProposedApi,
  		private readonly _scanWebExtensions: () => Promise<IExtensionDescription[]>,
- 		private readonly _getExtensions: () => Promise<IExtensionDescription[]>,
+ 		private readonly _getExtensionRegistrySnapshotWhenReady: () => Promise<ExtensionDescriptionRegistrySnapshot>,
 -		@IInstantiationService private readonly _instantiationService: IInstantiationService,
 -		@IRemoteAgentService private readonly _remoteAgentService: IRemoteAgentService,
 -		@IRemoteAuthorityResolverService private readonly _remoteAuthorityResolverService: IRemoteAuthorityResolverService,
@@ -1252,10 +1252,10 @@ index d8652bf5ac0..d0cf61f0983 100644
 +		@IRemoteAgentService protected readonly _remoteAgentService: IRemoteAgentService,
 +		@IRemoteAuthorityResolverService protected readonly _remoteAuthorityResolverService: IRemoteAuthorityResolverService,
 +		@IWorkbenchExtensionEnablementService protected readonly _extensionEnablementService: IWorkbenchExtensionEnablementService,
+ 		@ILogService private readonly _logService: ILogService,
  	) { }
  
- 	createExtensionHost(runningLocations: ExtensionRunningLocationTracker, runningLocation: ExtensionRunningLocation, isInitialStart: boolean): IExtensionHost | null {
-@@ -245,7 +245,7 @@ class BrowserExtensionHostFactory implements IExtensionHostFactory {
+@@ -248,7 +248,7 @@ class BrowserExtensionHostFactory implements IExtensionHostFactory {
  		}
  	}
  
@@ -1265,10 +1265,10 @@ index d8652bf5ac0..d0cf61f0983 100644
  			getInitData: async (): Promise<IWebWorkerExtensionHostInitData> => {
  				if (isInitialStart) {
 diff --git a/src/vs/workbench/services/extensions/browser/webWorkerExtensionHost.ts b/src/vs/workbench/services/extensions/browser/webWorkerExtensionHost.ts
-index ad66755797e..98d63a5eecf 100644
+index a7ce017ab9f..fd873470224 100644
 --- a/src/vs/workbench/services/extensions/browser/webWorkerExtensionHost.ts
 +++ b/src/vs/workbench/services/extensions/browser/webWorkerExtensionHost.ts
-@@ -76,7 +76,7 @@ export class WebWorkerExtensionHost extends Disposable implements IExtensionHost
+@@ -74,7 +74,7 @@ export class WebWorkerExtensionHost extends Disposable implements IExtensionHost
  		this._extensionHostLogsLocation = joinPath(this._environmentService.extHostLogsPath, 'webWorker');
  	}
  
@@ -1277,7 +1277,7 @@ index ad66755797e..98d63a5eecf 100644
  		const suffixSearchParams = new URLSearchParams();
  		if (this._environmentService.debugExtensionHost && this._environmentService.debugRenderer) {
  			suffixSearchParams.set('debugged', '1');
-@@ -111,8 +111,6 @@ export class WebWorkerExtensionHost extends Disposable implements IExtensionHost
+@@ -109,8 +109,6 @@ export class WebWorkerExtensionHost extends Disposable implements IExtensionHost
  				res.searchParams.set('salt', stableOriginUUID);
  				return res.toString();
  			}
@@ -1286,53 +1286,11 @@ index ad66755797e..98d63a5eecf 100644
  		}
  
  		const relativeExtensionHostIframeSrc = FileAccess.asBrowserUri(iframeModulePath);
-@@ -128,6 +126,8 @@ export class WebWorkerExtensionHost extends Disposable implements IExtensionHost
- 	}
- 
- 	private async _startInsideIframe(): Promise<IMessagePassingProtocol> {
-+		const initDataPromise = this._initDataProvider.getInitData();
-+
- 		const webWorkerExtensionHostIframeSrc = await this._getWebWorkerExtensionHostIframeSrc();
- 		const emitter = this._register(new Emitter<VSBuffer>());
- 
-@@ -223,10 +223,10 @@ export class WebWorkerExtensionHost extends Disposable implements IExtensionHost
- 			}
- 		};
- 
--		return this._performHandshake(protocol);
-+		return this._performHandshake(protocol, initDataPromise);
- 	}
- 
--	private async _performHandshake(protocol: IMessagePassingProtocol): Promise<IMessagePassingProtocol> {
-+	private async _performHandshake(protocol: IMessagePassingProtocol, initDataPromise: Promise<IWebWorkerExtensionHostInitData>): Promise<IMessagePassingProtocol> {
- 		// extension host handshake happens below
- 		// (1) <== wait for: Ready
- 		// (2) ==> send: init data
-@@ -236,7 +236,7 @@ export class WebWorkerExtensionHost extends Disposable implements IExtensionHost
- 		if (this._isTerminating) {
- 			throw canceled();
- 		}
--		protocol.send(VSBuffer.fromString(JSON.stringify(await this._createExtHostInitData())));
-+		protocol.send(VSBuffer.fromString(JSON.stringify(await this._createExtHostInitData(initDataPromise))));
- 		if (this._isTerminating) {
- 			throw canceled();
- 		}
-@@ -265,8 +265,8 @@ export class WebWorkerExtensionHost extends Disposable implements IExtensionHost
- 		return Promise.resolve(false);
- 	}
- 
--	private async _createExtHostInitData(): Promise<IExtensionHostInitData> {
--		const initData = await this._initDataProvider.getInitData();
-+	private async _createExtHostInitData(initDataPromise: Promise<IWebWorkerExtensionHostInitData>): Promise<IExtensionHostInitData> {
-+		const initData = await initDataPromise;
- 		const workspace = this._contextService.getWorkspace();
- 		const deltaExtensions = this.extensions.set(initData.allExtensions, initData.myExtensions);
- 		const nlsBaseUrl = this._productService.extensionsGallery?.nlsBaseUrl;
 diff --git a/src/vs/workbench/services/extensions/common/abstractExtensionService.ts b/src/vs/workbench/services/extensions/common/abstractExtensionService.ts
-index c529886ca92..2311e7a0fb5 100644
+index e1308458a40..0d4fe0cae01 100644
 --- a/src/vs/workbench/services/extensions/common/abstractExtensionService.ts
 +++ b/src/vs/workbench/services/extensions/common/abstractExtensionService.ts
-@@ -87,9 +87,9 @@ export abstract class AbstractExtensionService extends Disposable implements IEx
+@@ -88,9 +88,9 @@ export abstract class AbstractExtensionService extends Disposable implements IEx
  	private _resolveAuthorityAttempt: number = 0;
  
  	constructor(
@@ -1345,7 +1303,7 @@ index c529886ca92..2311e7a0fb5 100644
  		@IInstantiationService protected readonly _instantiationService: IInstantiationService,
  		@INotificationService protected readonly _notificationService: INotificationService,
  		@IWorkbenchEnvironmentService protected readonly _environmentService: IWorkbenchEnvironmentService,
-@@ -192,7 +192,7 @@ export abstract class AbstractExtensionService extends Disposable implements IEx
+@@ -205,7 +205,7 @@ export abstract class AbstractExtensionService extends Disposable implements IEx
  
  	//#region deltaExtensions
  
@@ -1354,7 +1312,7 @@ index c529886ca92..2311e7a0fb5 100644
  		this._deltaExtensionsQueue.push(item);
  		if (this._inHandleDeltaExtensions) {
  			// Let the current item finish, the new one will be picked up
-@@ -1156,7 +1156,7 @@ export interface IExtensionHostFactory {
+@@ -1183,7 +1183,7 @@ export interface IExtensionHostFactory {
  	createExtensionHost(runningLocations: ExtensionRunningLocationTracker, runningLocation: ExtensionRunningLocation, isInitialStart: boolean): IExtensionHost | null;
  }
  
@@ -1363,103 +1321,11 @@ index c529886ca92..2311e7a0fb5 100644
  	constructor(
  		public readonly toAdd: IExtension[],
  		public readonly toRemove: string[] | IExtension[]
-diff --git a/src/vs/workbench/services/extensions/common/remoteExtensionHost.ts b/src/vs/workbench/services/extensions/common/remoteExtensionHost.ts
-index 7ac17418689..fedd15e8fb6 100644
---- a/src/vs/workbench/services/extensions/common/remoteExtensionHost.ts
-+++ b/src/vs/workbench/services/extensions/common/remoteExtensionHost.ts
-@@ -84,7 +84,7 @@ export class RemoteExtensionHost extends Disposable implements IExtensionHost {
- 		this._isExtensionDevHost = devOpts.isExtensionDevHost;
- 	}
- 
--	public start(): Promise<IMessagePassingProtocol> {
-+	public async start(): Promise<IMessagePassingProtocol> {
- 		const options: IConnectionOptions = {
- 			commit: this._productService.commit,
- 			quality: this._productService.quality,
-@@ -99,6 +99,8 @@ export class RemoteExtensionHost extends Disposable implements IExtensionHost {
- 			logService: this._logService,
- 			ipcLogger: null
- 		};
-+		const initDataPromise = this._initDataProvider.getInitData();
-+
- 		return this.remoteAuthorityResolverService.resolveAuthority(this._initDataProvider.remoteAuthority).then((resolverResult) => {
- 
- 			const startParams: IRemoteExtensionHostStartParams = {
-@@ -153,7 +155,7 @@ export class RemoteExtensionHost extends Disposable implements IExtensionHost {
- 
- 						if (isMessageOfType(msg, MessageType.Ready)) {
- 							// 1) Extension Host is ready to receive messages, initialize it
--							this._createExtHostInitData(isExtensionDevelopmentDebug).then(data => {
-+							this._createExtHostInitData(initDataPromise, isExtensionDevelopmentDebug).then(data => {
- 								protocol.send(VSBuffer.fromString(JSON.stringify(data)));
- 							});
- 							return;
-@@ -201,8 +203,8 @@ export class RemoteExtensionHost extends Disposable implements IExtensionHost {
- 		this._onExit.fire([0, reconnectionToken]);
- 	}
- 
--	private async _createExtHostInitData(isExtensionDevelopmentDebug: boolean): Promise<IExtensionHostInitData> {
--		const remoteInitData = await this._initDataProvider.getInitData();
-+	private async _createExtHostInitData(initDataPromise: Promise<IRemoteExtensionHostInitData>, isExtensionDevelopmentDebug: boolean): Promise<IExtensionHostInitData> {
-+		const remoteInitData = await initDataPromise;
- 		const workspace = this._contextService.getWorkspace();
- 		const deltaExtensions = this.extensions.set(remoteInitData.allExtensions, remoteInitData.myExtensions);
- 		return {
-diff --git a/src/vs/workbench/services/extensions/electron-sandbox/localProcessExtensionHost.ts b/src/vs/workbench/services/extensions/electron-sandbox/localProcessExtensionHost.ts
-index b72e19b9ec6..79278e098bb 100644
---- a/src/vs/workbench/services/extensions/electron-sandbox/localProcessExtensionHost.ts
-+++ b/src/vs/workbench/services/extensions/electron-sandbox/localProcessExtensionHost.ts
-@@ -190,6 +190,7 @@ export class NativeLocalProcessExtensionHost implements IExtensionHost {
- 	}
- 
- 	protected async _startWithCommunication<T>(communication: IExtHostCommunication<T>): Promise<IMessagePassingProtocol> {
-+		const initDataPromise = this._initDataProvider.getInitData();
- 
- 		const [extensionHostCreationResult, communicationPreparedData, portNumber, processEnv] = await Promise.all([
- 			this._extensionHostStarter.createExtensionHost(),
-@@ -325,7 +326,7 @@ export class NativeLocalProcessExtensionHost implements IExtensionHost {
- 
- 		// Initialize extension host process with hand shakes
- 		const protocol = await communication.establishProtocol(communicationPreparedData, this._extensionHostProcess, opts);
--		await this._performHandshake(protocol);
-+		await this._performHandshake(protocol, initDataPromise);
- 		clearTimeout(startupTimeoutHandle);
- 		return protocol;
- 	}
-@@ -360,7 +361,7 @@ export class NativeLocalProcessExtensionHost implements IExtensionHost {
- 		return port || 0;
- 	}
- 
--	private _performHandshake(protocol: IMessagePassingProtocol): Promise<void> {
-+	private _performHandshake(protocol: IMessagePassingProtocol, initDataPromise: Promise<ILocalProcessExtensionHostInitData>): Promise<void> {
- 		// 1) wait for the incoming `ready` event and send the initialization data.
- 		// 2) wait for the incoming `initialized` event.
- 		return new Promise<void>((resolve, reject) => {
-@@ -385,7 +386,7 @@ export class NativeLocalProcessExtensionHost implements IExtensionHost {
- 					// 1) Extension Host is ready to receive messages, initialize it
- 					uninstallTimeoutCheck();
- 
--					this._createExtHostInitData().then(data => {
-+					this._createExtHostInitData(initDataPromise).then(data => {
- 
- 						// Wait 60s for the initialized message
- 						installTimeoutCheck();
-@@ -414,8 +415,8 @@ export class NativeLocalProcessExtensionHost implements IExtensionHost {
- 		});
- 	}
- 
--	private async _createExtHostInitData(): Promise<IExtensionHostInitData> {
--		const initData = await this._initDataProvider.getInitData();
-+	private async _createExtHostInitData(initDataPromise: Promise<ILocalProcessExtensionHostInitData>): Promise<IExtensionHostInitData> {
-+		const initData = await initDataPromise;
- 		const workspace = this._contextService.getWorkspace();
- 		const deltaExtensions = this.extensions.set(initData.allExtensions, initData.myExtensions);
- 		return {
 diff --git a/src/vs/workbench/services/keybinding/browser/keybindingService.ts b/src/vs/workbench/services/keybinding/browser/keybindingService.ts
-index e6112182d25..0bc70e55633 100644
+index 10e58f90efe..cf1ee5bf6c7 100644
 --- a/src/vs/workbench/services/keybinding/browser/keybindingService.ts
 +++ b/src/vs/workbench/services/keybinding/browser/keybindingService.ts
-@@ -381,15 +381,19 @@ export class WorkbenchKeybindingService extends AbstractKeybindingService {
+@@ -392,15 +392,19 @@ export class WorkbenchKeybindingService extends AbstractKeybindingService {
  		return this.userKeybindings.keybindings.length;
  	}
  
@@ -1598,7 +1464,7 @@ index f4707432371..7c5cdde39cc 100644
  	declare _serviceBrand: undefined;
  
 diff --git a/src/vs/workbench/services/textMate/browser/backgroundTokenization/textMateWorkerTokenizerController.ts b/src/vs/workbench/services/textMate/browser/backgroundTokenization/textMateWorkerTokenizerController.ts
-index f40a12b0380..25979bc0001 100644
+index 850b58e1e6c..2eb835fa2b6 100644
 --- a/src/vs/workbench/services/textMate/browser/backgroundTokenization/textMateWorkerTokenizerController.ts
 +++ b/src/vs/workbench/services/textMate/browser/backgroundTokenization/textMateWorkerTokenizerController.ts
 @@ -3,7 +3,6 @@
@@ -1607,7 +1473,7 @@ index f40a12b0380..25979bc0001 100644
  
 -import { importAMDNodeModule } from 'vs/amdX';
  import { Disposable } from 'vs/base/common/lifecycle';
- import { IObservable, autorun, keepAlive, observableFromEvent } from 'vs/base/common/observable';
+ import { IObservable, autorun, keepObserved, observableFromEvent } from 'vs/base/common/observable';
  import { countEOL } from 'vs/editor/common/core/eolCounter';
 @@ -17,7 +16,7 @@ import { ContiguousMultilineTokensBuilder } from 'vs/editor/common/tokens/contig
  import { IConfigurationService } from 'vs/platform/configuration/common/configuration';
@@ -1650,7 +1516,7 @@ index 3974d642732..6e7de4d5d0d 100644
  
  		// Using the response directly only works if the server sets the MIME type 'application/wasm'.
 diff --git a/src/vs/workbench/services/textMate/browser/backgroundTokenization/worker/textMateWorkerTokenizer.ts b/src/vs/workbench/services/textMate/browser/backgroundTokenization/worker/textMateWorkerTokenizer.ts
-index a7c586b2442..07fd6ca42de 100644
+index bc98f7239ce..5937fa2286a 100644
 --- a/src/vs/workbench/services/textMate/browser/backgroundTokenization/worker/textMateWorkerTokenizer.ts
 +++ b/src/vs/workbench/services/textMate/browser/backgroundTokenization/worker/textMateWorkerTokenizer.ts
 @@ -3,7 +3,6 @@

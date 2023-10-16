@@ -10,6 +10,7 @@ import { FileAccess, Schemas } from 'vs/base/common/network'
 import { Barrier } from 'vs/base/common/async'
 import { ExtensionHostKind } from 'vs/workbench/services/extensions/common/extensionHostKind'
 import { IWorkbenchEnvironmentService } from 'vs/workbench/services/environment/common/environmentService'
+import { ILogService } from 'vs/platform/log/common/log'
 import { IExtensionWithExtHostKind, SimpleExtensionService, getLocalExtHostExtensionService } from './service-override/extensions'
 import { registerExtensionFile } from './service-override/files'
 import { setDefaultApi } from './api'
@@ -95,23 +96,25 @@ export function registerExtension (manifest: IExtensionManifest, extHostKind: Ex
 export function registerExtension (manifest: IExtensionManifest, extHostKind?: ExtensionHostKind, params?: RegisterExtensionParams): RegisterExtensionResult
 export function registerExtension (manifest: IExtensionManifest, extHostKind?: ExtensionHostKind, { defaultNLS, builtin = manifest.publisher === 'vscode', path = '/' }: RegisterExtensionParams = {}): RegisterExtensionResult {
   const disposableStore = new DisposableStore()
-  const localizedManifest = defaultNLS != null ? localizeManifest(manifest, defaultNLS) : manifest
-
-  const id = getExtensionId(localizedManifest.publisher, localizedManifest.name)
-
-  let extension: IExtensionWithExtHostKind = {
-    manifest: localizedManifest,
-    type: builtin ? ExtensionType.System : ExtensionType.User,
-    isBuiltin: builtin,
-    identifier: { id },
-    location: URI.from({ scheme: 'extension', authority: id, path }),
-    targetPlatform: TargetPlatform.WEB,
-    isValid: true,
-    validations: [],
-    extHostKind
-  }
+  const id = getExtensionId(manifest.publisher, manifest.name)
+  const location = URI.from({ scheme: 'extension', authority: id, path })
 
   const addExtensionPromise = (async () => {
+    const logger = await getService(ILogService)
+    const localizedManifest = defaultNLS != null ? localizeManifest(logger, manifest, defaultNLS) : manifest
+
+    let extension: IExtensionWithExtHostKind = {
+      manifest: localizedManifest,
+      type: builtin ? ExtensionType.System : ExtensionType.User,
+      isBuiltin: builtin,
+      identifier: { id },
+      location,
+      targetPlatform: TargetPlatform.WEB,
+      isValid: true,
+      validations: [],
+      extHostKind
+    }
+
     if (extHostKind === ExtensionHostKind.Remote) {
       const remoteAuthority = (await getService(IWorkbenchEnvironmentService)).remoteAuthority
       extension = {
@@ -139,7 +142,7 @@ export function registerExtension (manifest: IExtensionManifest, extHostKind?: E
 
   if (extHostKind !== ExtensionHostKind.Remote) {
     function registerFileUrl (path: string, url: string, mimeType?: string) {
-      return registerExtensionFileUrl(extension.location, path, url, mimeType)
+      return registerExtensionFileUrl(location, path, url, mimeType)
     }
     api = <RegisterLocalExtensionResult>{
       ...api,

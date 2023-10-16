@@ -829,7 +829,7 @@ export default (args: Record<string, string>): rollup.RollupOptions[] => {
       ]
     }),
     metadataPlugin({
-      // generate package.json and meta packages
+      // generate package.json and service-override packages
       getGroup (id: string, options) {
         const serviceOverrideDir = path.resolve(options.dir!, 'service-override')
         const workersDir = path.resolve(options.dir!, 'workers')
@@ -938,7 +938,7 @@ export default (args: Record<string, string>): rollup.RollupOptions[] => {
             name: `@codingame/monaco-vscode-${name}-${category}`,
             ...Object.fromEntries(Object.entries(pkg).filter(([key]) => ['version', 'keywords', 'author', 'license', 'repository', 'type'].includes(key))),
             private: false,
-            description: `${pkg.description} - ${name} ${category} meta package`,
+            description: `${pkg.description} - ${name} ${category}`,
             main: 'index.js',
             module: 'index.js',
             types: 'index.d.ts',
@@ -1069,7 +1069,7 @@ export default (args: Record<string, string>): rollup.RollupOptions[] => {
     }), {
       name: 'clean-src',
       async generateBundle () {
-        // Delete intermediate sources because writing to make sur there is no unused files
+        // Delete intermediate sources before writing to make sur there is no unused files
         await fsPromise.rm(DIST_DIR_MAIN, {
           recursive: true
         })

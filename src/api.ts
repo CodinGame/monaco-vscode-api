@@ -180,6 +180,7 @@ const api: typeof vscode = {
   TextEditorLineNumbersStyle: extHostTypes.TextEditorLineNumbersStyle,
   TextEditorRevealType: extHostTypes.TextEditorRevealType,
   TextEditorSelectionChangeKind: extHostTypes.TextEditorSelectionChangeKind,
+  SyntaxTokenType: extHostTypes.SyntaxTokenType,
   TextDocumentChangeReason: extHostTypes.TextDocumentChangeReason,
   ThemeColor: extHostTypes.ThemeColor,
   ThemeIcon: extHostTypes.ThemeIcon,
@@ -260,7 +261,6 @@ const api: typeof vscode = {
   StackFrameFocus: <any>extHostTypes.StackFrameFocus,
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   ThreadFocus: <any>extHostTypes.ThreadFocus,
-  NotebookCodeActionKind: extHostTypes.NotebookCodeActionKind,
   RelatedInformationType: extHostTypes.RelatedInformationType
 }
 
