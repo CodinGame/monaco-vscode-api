@@ -38,7 +38,7 @@ $.env = {
 
 const vscodeVersion = process.argv[process.argv.length - 1]!
 const minorVscodeVersion = `${semver.major(vscodeVersion)}.${semver.minor(vscodeVersion)}`
-const tagPattern = /^v?(\\d+\\.\\d+\\.\\d+)$/
+const tagPattern = /^v?(\d+\.\d+\.\d+)$/
 
 async function getLastTag () {
   const tags = (await $`git tag -l --sort=-v:refname`).toString().split('\n').map(tag => tag.trim())
