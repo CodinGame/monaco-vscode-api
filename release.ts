@@ -36,13 +36,9 @@ $.env = {
   GIT_TERMINAL_PROMPT: '0'
 }
 
-function escapeRegExp (string: string) {
-  return string.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')
-}
-
 const vscodeVersion = process.argv[process.argv.length - 1]!
 const minorVscodeVersion = `${semver.major(vscodeVersion)}.${semver.minor(vscodeVersion)}`
-const tagPattern = new RegExp(`^v?(${escapeRegExp(minorVscodeVersion)}\\.\\d+)$`)
+const tagPattern = /^v?(\\d+\\.\\d+\\.\\d+)$/
 
 async function getLastTag () {
   const tags = (await $`git tag -l --sort=-v:refname`).toString().split('\n').map(tag => tag.trim())
@@ -54,7 +50,12 @@ async function getLastTag () {
 }
 
 async function getNextVersion (lastTag?: string) {
-  return lastTag != null ? semver.inc(tagPattern.exec(lastTag)![1]!, 'patch')! : `${minorVscodeVersion}.0`
+  if (lastTag == null || !semver.satisfies(lastTag, `=${minorVscodeVersion}.x`)) {
+    // There is no last tag OR the tag is from an older minor version
+    return `${minorVscodeVersion}.0`
+  }
+
+  return semver.inc(tagPattern.exec(lastTag)![1]!, 'patch')!
 }
 
 function parseGithubUrl (repositoryUrl: string) {
