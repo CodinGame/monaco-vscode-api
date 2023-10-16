@@ -1265,7 +1265,7 @@ index 25885c7c4f9..ec1beb2c951 100644
  			getInitData: async (): Promise<IWebWorkerExtensionHostInitData> => {
  				if (isInitialStart) {
 diff --git a/src/vs/workbench/services/extensions/browser/webWorkerExtensionHost.ts b/src/vs/workbench/services/extensions/browser/webWorkerExtensionHost.ts
-index a7ce017ab9f..5bcf0abf9ca 100644
+index a7ce017ab9f..fd873470224 100644
 --- a/src/vs/workbench/services/extensions/browser/webWorkerExtensionHost.ts
 +++ b/src/vs/workbench/services/extensions/browser/webWorkerExtensionHost.ts
 @@ -74,7 +74,7 @@ export class WebWorkerExtensionHost extends Disposable implements IExtensionHost
@@ -1286,48 +1286,6 @@ index a7ce017ab9f..5bcf0abf9ca 100644
  		}
  
  		const relativeExtensionHostIframeSrc = FileAccess.asBrowserUri(iframeModulePath);
-@@ -126,6 +124,8 @@ export class WebWorkerExtensionHost extends Disposable implements IExtensionHost
- 	}
- 
- 	private async _startInsideIframe(): Promise<IMessagePassingProtocol> {
-+		const initDataPromise = this._initDataProvider.getInitData();
-+
- 		const webWorkerExtensionHostIframeSrc = await this._getWebWorkerExtensionHostIframeSrc();
- 		const emitter = this._register(new Emitter<VSBuffer>());
- 
-@@ -221,10 +221,10 @@ export class WebWorkerExtensionHost extends Disposable implements IExtensionHost
- 			}
- 		};
- 
--		return this._performHandshake(protocol);
-+		return this._performHandshake(protocol, initDataPromise);
- 	}
- 
--	private async _performHandshake(protocol: IMessagePassingProtocol): Promise<IMessagePassingProtocol> {
-+	private async _performHandshake(protocol: IMessagePassingProtocol, initDataPromise: Promise<IWebWorkerExtensionHostInitData>): Promise<IMessagePassingProtocol> {
- 		// extension host handshake happens below
- 		// (1) <== wait for: Ready
- 		// (2) ==> send: init data
-@@ -234,7 +234,7 @@ export class WebWorkerExtensionHost extends Disposable implements IExtensionHost
- 		if (this._isTerminating) {
- 			throw canceled();
- 		}
--		protocol.send(VSBuffer.fromString(JSON.stringify(await this._createExtHostInitData())));
-+		protocol.send(VSBuffer.fromString(JSON.stringify(await this._createExtHostInitData(initDataPromise))));
- 		if (this._isTerminating) {
- 			throw canceled();
- 		}
-@@ -263,8 +263,8 @@ export class WebWorkerExtensionHost extends Disposable implements IExtensionHost
- 		return Promise.resolve(false);
- 	}
- 
--	private async _createExtHostInitData(): Promise<IExtensionHostInitData> {
--		const initData = await this._initDataProvider.getInitData();
-+	private async _createExtHostInitData(initDataPromise: Promise<IWebWorkerExtensionHostInitData>): Promise<IExtensionHostInitData> {
-+		const initData = await initDataPromise;
- 		this.extensions = initData.extensions;
- 		const workspace = this._contextService.getWorkspace();
- 		const nlsBaseUrl = this._productService.extensionsGallery?.nlsBaseUrl;
 diff --git a/src/vs/workbench/services/extensions/common/abstractExtensionService.ts b/src/vs/workbench/services/extensions/common/abstractExtensionService.ts
 index e1308458a40..0d4fe0cae01 100644
 --- a/src/vs/workbench/services/extensions/common/abstractExtensionService.ts
@@ -1363,98 +1321,6 @@ index e1308458a40..0d4fe0cae01 100644
  	constructor(
  		public readonly toAdd: IExtension[],
  		public readonly toRemove: string[] | IExtension[]
-diff --git a/src/vs/workbench/services/extensions/common/remoteExtensionHost.ts b/src/vs/workbench/services/extensions/common/remoteExtensionHost.ts
-index a4036f94bd2..c1ffbbd31ca 100644
---- a/src/vs/workbench/services/extensions/common/remoteExtensionHost.ts
-+++ b/src/vs/workbench/services/extensions/common/remoteExtensionHost.ts
-@@ -82,7 +82,7 @@ export class RemoteExtensionHost extends Disposable implements IExtensionHost {
- 		this._isExtensionDevHost = devOpts.isExtensionDevHost;
- 	}
- 
--	public start(): Promise<IMessagePassingProtocol> {
-+	public async start(): Promise<IMessagePassingProtocol> {
- 		const options: IConnectionOptions = {
- 			commit: this._productService.commit,
- 			quality: this._productService.quality,
-@@ -97,6 +97,8 @@ export class RemoteExtensionHost extends Disposable implements IExtensionHost {
- 			logService: this._logService,
- 			ipcLogger: null
- 		};
-+		const initDataPromise = this._initDataProvider.getInitData();
-+
- 		return this.remoteAuthorityResolverService.resolveAuthority(this._initDataProvider.remoteAuthority).then((resolverResult) => {
- 
- 			const startParams: IRemoteExtensionHostStartParams = {
-@@ -151,7 +153,7 @@ export class RemoteExtensionHost extends Disposable implements IExtensionHost {
- 
- 						if (isMessageOfType(msg, MessageType.Ready)) {
- 							// 1) Extension Host is ready to receive messages, initialize it
--							this._createExtHostInitData(isExtensionDevelopmentDebug).then(data => {
-+							this._createExtHostInitData(initDataPromise, isExtensionDevelopmentDebug).then(data => {
- 								protocol.send(VSBuffer.fromString(JSON.stringify(data)));
- 							});
- 							return;
-@@ -199,8 +201,8 @@ export class RemoteExtensionHost extends Disposable implements IExtensionHost {
- 		this._onExit.fire([0, reconnectionToken]);
- 	}
- 
--	private async _createExtHostInitData(isExtensionDevelopmentDebug: boolean): Promise<IExtensionHostInitData> {
--		const remoteInitData = await this._initDataProvider.getInitData();
-+	private async _createExtHostInitData(initDataPromise: Promise<IRemoteExtensionHostInitData>, isExtensionDevelopmentDebug: boolean): Promise<IExtensionHostInitData> {
-+		const remoteInitData = await initDataPromise;
- 		this.extensions = remoteInitData.extensions;
- 		const workspace = this._contextService.getWorkspace();
- 		return {
-diff --git a/src/vs/workbench/services/extensions/electron-sandbox/localProcessExtensionHost.ts b/src/vs/workbench/services/extensions/electron-sandbox/localProcessExtensionHost.ts
-index c635003cea3..74d397f5ed4 100644
---- a/src/vs/workbench/services/extensions/electron-sandbox/localProcessExtensionHost.ts
-+++ b/src/vs/workbench/services/extensions/electron-sandbox/localProcessExtensionHost.ts
-@@ -188,6 +188,7 @@ export class NativeLocalProcessExtensionHost implements IExtensionHost {
- 	}
- 
- 	protected async _startWithCommunication<T>(communication: IExtHostCommunication<T>): Promise<IMessagePassingProtocol> {
-+		const initDataPromise = this._initDataProvider.getInitData();
- 
- 		const [extensionHostCreationResult, communicationPreparedData, portNumber, processEnv] = await Promise.all([
- 			this._extensionHostStarter.createExtensionHost(),
-@@ -323,7 +324,7 @@ export class NativeLocalProcessExtensionHost implements IExtensionHost {
- 
- 		// Initialize extension host process with hand shakes
- 		const protocol = await communication.establishProtocol(communicationPreparedData, this._extensionHostProcess, opts);
--		await this._performHandshake(protocol);
-+		await this._performHandshake(protocol, initDataPromise);
- 		clearTimeout(startupTimeoutHandle);
- 		return protocol;
- 	}
-@@ -358,7 +359,7 @@ export class NativeLocalProcessExtensionHost implements IExtensionHost {
- 		return port || 0;
- 	}
- 
--	private _performHandshake(protocol: IMessagePassingProtocol): Promise<void> {
-+	private _performHandshake(protocol: IMessagePassingProtocol, initDataPromise: Promise<ILocalProcessExtensionHostInitData>): Promise<void> {
- 		// 1) wait for the incoming `ready` event and send the initialization data.
- 		// 2) wait for the incoming `initialized` event.
- 		return new Promise<void>((resolve, reject) => {
-@@ -383,7 +384,7 @@ export class NativeLocalProcessExtensionHost implements IExtensionHost {
- 					// 1) Extension Host is ready to receive messages, initialize it
- 					uninstallTimeoutCheck();
- 
--					this._createExtHostInitData().then(data => {
-+					this._createExtHostInitData(initDataPromise).then(data => {
- 
- 						// Wait 60s for the initialized message
- 						installTimeoutCheck();
-@@ -412,8 +413,8 @@ export class NativeLocalProcessExtensionHost implements IExtensionHost {
- 		});
- 	}
- 
--	private async _createExtHostInitData(): Promise<IExtensionHostInitData> {
--		const initData = await this._initDataProvider.getInitData();
-+	private async _createExtHostInitData(initDataPromise: Promise<ILocalProcessExtensionHostInitData>): Promise<IExtensionHostInitData> {
-+		const initData = await initDataPromise;
- 		this.extensions = initData.extensions;
- 		const workspace = this._contextService.getWorkspace();
- 		return {
 diff --git a/src/vs/workbench/services/keybinding/browser/keybindingService.ts b/src/vs/workbench/services/keybinding/browser/keybindingService.ts
 index 10e58f90efe..cf1ee5bf6c7 100644
 --- a/src/vs/workbench/services/keybinding/browser/keybindingService.ts
