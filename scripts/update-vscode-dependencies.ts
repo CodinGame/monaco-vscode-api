@@ -28,6 +28,12 @@ async function updateVSCodeDependencies () {
     }
   }
 
+  console.debug('Updating monaco-vscode-api overrides with vscode dependencies versions...')
+  for (const dependency in apiPackageJson.overrides) {
+    if (dependency in vsCodePackageJson.dependencies) {
+      apiPackageJson.overrides[dependency] = vsCodePackageJson.dependencies[dependency]
+    }
+  }
   // update the dev dependency @types/vscode version to the same as config.version in the package.json
   apiPackageJson.devDependencies['@types/vscode'] = `~${vsCodePackageJson.version}`
 
