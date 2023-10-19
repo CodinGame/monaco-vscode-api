@@ -296,6 +296,44 @@ index 01f2c6987ac..5d6abf9d561 100644
  			this._cachedResolver = new KeybindingResolver(defaults, overrides, (str) => this._log(str));
  		}
  		return this._cachedResolver;
+diff --git a/src/vs/nls.ts b/src/vs/nls.ts
+index db57b98d67b..defd683e0b0 100644
+--- a/src/vs/nls.ts
++++ b/src/vs/nls.ts
+@@ -130,6 +130,24 @@ export function localize(data: ILocalizeInfo | string, message: string, ...args:
+ 	return _format(message, args);
+ }
+ 
++
++let locale: string | undefined = undefined;
++let translations: Record<string, Record<string, string>> = {};
++
++export function setLocale(_locale: string, _translations: Record<string, Record<string, string>>) {
++	locale = _locale;
++	translations = _translations;
++}
++
++/**
++ * @skipMangle
++ */
++export function localizeWithPath(path: string, data: ILocalizeInfo | string, defaultMessage: string, ...args: (string | number | boolean | undefined | null)[]): string {
++	const key = typeof data === 'object' ? data.key : data;
++	const message = (translations[path] ?? {})[key] ?? defaultMessage;
++	return _format(message, args);
++}
++
+ /**
+  *
+  * @param stringFromLocalizeCall You must pass in a string that was returned from a `nls.localize()` call
+@@ -142,7 +160,7 @@ export function getConfiguredDefaultLocale(stringFromLocalizeCall: string): stri
+ export function getConfiguredDefaultLocale(_: string): string | undefined {
+ 	// This returns undefined because this implementation isn't used and is overwritten by the loader
+ 	// when loaded.
+-	return undefined;
++	return locale;
+ }
+ 
+ /**
 diff --git a/src/vs/platform/assignment/common/assignmentService.ts b/src/vs/platform/assignment/common/assignmentService.ts
 index 67e34826627..7c5287d6a32 100644
 --- a/src/vs/platform/assignment/common/assignmentService.ts
