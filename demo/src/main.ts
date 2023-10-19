@@ -5,7 +5,7 @@ import { registerFileSystemOverlay, HTMLFileSystemProvider } from '@codingame/mo
 import * as vscode from 'vscode'
 import { ILogService, StandaloneServices, IPreferencesService, IEditorService, IDialogService, getService } from 'vscode/services'
 import { ConfirmResult, Parts, isPartVisibile, setPartVisibility } from '@codingame/monaco-vscode-views-service-override'
-import { clearStorage } from './setup'
+import { clearStorage, remoteAuthority } from './setup'
 import { CustomEditorInput } from './features/customView'
 import './features/debugger'
 import './features/search'
@@ -14,8 +14,6 @@ import './features/filesystem'
 import './features/intellisense'
 import './features/notifications'
 import './features/terminal'
-import './features/remoteExtension'
-
 import '@codingame/monaco-vscode-clojure-default-extension'
 import '@codingame/monaco-vscode-coffeescript-default-extension'
 import '@codingame/monaco-vscode-cpp-default-extension'
@@ -57,6 +55,10 @@ import '@codingame/monaco-vscode-configuration-editing-default-extension'
 import '@codingame/monaco-vscode-markdown-math-default-extension'
 import '@codingame/monaco-vscode-npm-default-extension'
 import '@codingame/monaco-vscode-media-preview-default-extension'
+
+if (remoteAuthority != null) {
+  import('./features/remoteExtension')
+}
 
 const modelRef = await createModelReference(monaco.Uri.file('/tmp/test.js'), `// import anotherfile
 let variable = 1
