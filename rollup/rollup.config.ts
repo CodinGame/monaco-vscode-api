@@ -464,6 +464,7 @@ const input = {
   api: './src/api.ts',
   extensions: './src/extensions.ts',
   services: './src/services.ts',
+  l10n: './src/l10n.ts',
   monaco: './src/monaco.ts',
   ...Object.fromEntries(
     fs.readdirSync(path.resolve(SRC_DIR, 'service-override'), { withFileTypes: true })
@@ -871,6 +872,10 @@ export default (args: Record<string, string>): rollup.RollupOptions[] => {
                 types: './monaco.d.ts',
                 default: './monaco.js'
               },
+              './l10n': {
+                types: './l10n.d.ts',
+                default: './l10n.js'
+              },
               './vscode/*': {
                 default: './vscode/src/*.js'
               }
@@ -894,6 +899,9 @@ export default (args: Record<string, string>): rollup.RollupOptions[] => {
                 ],
                 lifecycle: [
                   './lifecycle.d.ts'
+                ],
+                l10n: [
+                  './l10n.d.ts'
                 ],
                 'vscode/*': [
                   './vscode/src/*.d.ts'
