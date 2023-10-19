@@ -100,7 +100,12 @@ export function registerExtension (manifest: IExtensionManifest, extHostKind?: E
   const location = URI.from({ scheme: 'extension', authority: id, path })
 
   const addExtensionPromise = (async () => {
-    const logger = await getService(ILogService)
+    const remoteAuthority = (await getService(IWorkbenchEnvironmentService)).remoteAuthority
+    let realLocation = location
+    if (extHostKind === ExtensionHostKind.Remote) {
+      realLocation = URI.from({ scheme: Schemas.vscodeRemote, authority: remoteAuthority, path })
+    }
+
     const localizedManifest = defaultNLS != null ? localizeManifest(logger, manifest, defaultNLS) : manifest
 
     let extension: IExtensionWithExtHostKind = {
@@ -108,19 +113,11 @@ export function registerExtension (manifest: IExtensionManifest, extHostKind?: E
       type: builtin ? ExtensionType.System : ExtensionType.User,
       isBuiltin: builtin,
       identifier: { id },
-      location,
+      location: realLocation,
       targetPlatform: TargetPlatform.WEB,
       isValid: true,
       validations: [],
       extHostKind
-    }
-
-    if (extHostKind === ExtensionHostKind.Remote) {
-      const remoteAuthority = (await getService(IWorkbenchEnvironmentService)).remoteAuthority
-      extension = {
-        ...extension,
-        location: URI.from({ scheme: Schemas.vscodeRemote, authority: remoteAuthority, path })
-      }
     }
 
     await deltaExtensions([extension], [])
