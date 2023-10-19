@@ -1,5 +1,4 @@
-import { ExtensionHostKind, registerExtension } from 'vscode/extensions'
-import manifest from './remoteExtensionExample/package.json'
+import { registerRemoteExtension } from 'vscode/extensions'
 
 declare global {
   interface Window {
@@ -8,7 +7,5 @@ declare global {
 }
 
 if (window.rootDirectory != null) {
-  registerExtension(manifest, ExtensionHostKind.Remote, {
-    path: `${window.rootDirectory}/src/features/remoteExtensionExample/`
-  })
+  registerRemoteExtension(`${window.rootDirectory}/src/features/remoteExtensionExample/`)
 }
