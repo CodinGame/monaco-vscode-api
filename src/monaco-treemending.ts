@@ -62,8 +62,13 @@ async function run () {
           return
         }
         try {
-          await fs.mkdir(path.dirname(file), { recursive: true })
-          await fs.writeFile(file, content)
+          if (index.newHeader === '1970-01-01 01:00:00.000000000 +0100') {
+            // timestamp 0 means the fiel was removed
+            await fs.unlink(file)
+          } else {
+            await fs.mkdir(path.dirname(file), { recursive: true })
+            await fs.writeFile(file, content)
+          }
           callback(null)
         } catch (err) {
           callback(err)
