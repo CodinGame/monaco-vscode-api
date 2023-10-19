@@ -10,10 +10,11 @@ import { FileAccess, Schemas } from 'vs/base/common/network'
 import { Barrier } from 'vs/base/common/async'
 import { ExtensionHostKind } from 'vs/workbench/services/extensions/common/extensionHostKind'
 import { IWorkbenchEnvironmentService } from 'vs/workbench/services/environment/common/environmentService'
+import { parse } from 'vs/base/common/json'
 import { IExtensionWithExtHostKind, SimpleExtensionService, getLocalExtHostExtensionService } from './service-override/extensions'
 import { registerExtensionFile } from './service-override/files'
 import { setDefaultApi } from './api'
-import { IInstantiationService, getService } from './services'
+import { IFileService, IInstantiationService, getService } from './services'
 import { ExtensionManifestTranslator } from './tools/l10n'
 import { throttle } from './tools'
 
@@ -79,6 +80,15 @@ const deltaExtensions = throttle(async ({ toAdd, toRemove }: ExtensionDelta) => 
   const extensionService = await getService(IExtensionService) as SimpleExtensionService
   await extensionService.deltaExtensions(toAdd, toRemove)
 }, (a, b) => ({ toAdd: [...a.toAdd, ...b.toAdd], toRemove: [...a.toRemove, ...b.toRemove] }), 0)
+
+export async function registerRemoteExtension (directory: string): Promise<RegisterRemoteExtensionResult> {
+  const fileService = await getService(IFileService)
+  const remoteAuthority = (await getService(IWorkbenchEnvironmentService)).remoteAuthority
+  const content = await fileService.readFile(joinPath(URI.from({ scheme: Schemas.vscodeRemote, authority: remoteAuthority, path: directory }), 'package.json'))
+  const manifest: IExtensionManifest = parse(content.value.toString())
+
+  return registerExtension(manifest, ExtensionHostKind.Remote, { path: directory })
+}
 
 export function registerExtension (manifest: IExtensionManifest, extHostKind: ExtensionHostKind.LocalProcess, params?: RegisterExtensionParams): RegisterLocalProcessExtensionResult
 export function registerExtension (manifest: IExtensionManifest, extHostKind: ExtensionHostKind.LocalWebWorker, params?: RegisterExtensionParams): RegisterLocalExtensionResult
