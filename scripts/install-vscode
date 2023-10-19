@@ -46,6 +46,9 @@ cd ..
 mkdir -p editor-patch
 cp -R $monaco_esm_directory editor-patch/a
 cp -R $monaco_esm_directory editor-patch/b
+find editor-patch/b/vs/editor -name "*.js" -type f -delete
+find editor-patch/b/vs/base -name "*.js" -type f -delete
+find editor-patch/b/vs/platform -name "*.js" -type f -delete
 ## Change shake level from ClassMembers to Files
 sed -i'' -e 's/shakeLevel: 2/shakeLevel: 0/g' build/gulpfile.editor.js
 yarn gulp editor-distro
