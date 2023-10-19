@@ -324,6 +324,27 @@ plugins: [
 import './extension.vsix'
 ```
 
+### Localization
+
+This library also offers the possibility to localize vscode and the extensions in the supported languages. To do so, import one of the following packages before anything else:
+- `@codingame/monaco-vscode-language-pack-cs`
+- `@codingame/monaco-vscode-language-pack-de`
+- `@codingame/monaco-vscode-language-pack-es`
+- `@codingame/monaco-vscode-language-pack-fr`
+- `@codingame/monaco-vscode-language-pack-it`
+- `@codingame/monaco-vscode-language-pack-ja`
+- `@codingame/monaco-vscode-language-pack-ko`
+- `@codingame/monaco-vscode-language-pack-pl`
+- `@codingame/monaco-vscode-language-pack-pt-br`
+- `@codingame/monaco-vscode-language-pack-qps-ploc`
+- `@codingame/monaco-vscode-language-pack-ru`
+- `@codingame/monaco-vscode-language-pack-tr`
+- `@codingame/monaco-vscode-language-pack-zh-hans`
+- `@codingame/monaco-vscode-language-pack-zh-hant`
+
+⚠️ The language pack should be imported and loaded BEFORE anything else from monaco-editor or this library is loaded. Otherwise, some translations would be missing. ⚠️
+
+
 ### Demo
 
 Try it out on https://codingame.github.io/monaco-vscode-api/
