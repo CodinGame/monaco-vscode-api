@@ -193,6 +193,13 @@ export async function extractResourcesFromExtensionManifest (manifest: IExtensio
     path,
     mimeType: 'application/json'
   })))
+  if (manifest.l10n != null) {
+    const bundleFiles = (await listFiles(manifest.l10n)).filter(file => /^bundle\.l10n(?:\..*)?\.json$/.exec(file) != null)
+    resources.push(...bundleFiles.map(path => (<ExtensionResource>{
+      path,
+      mimeType: 'application/json'
+    })))
+  }
 
   resources = resources.map(r => {
     if (r.mimeType == null) {
