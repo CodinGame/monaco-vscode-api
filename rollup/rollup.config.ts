@@ -98,10 +98,8 @@ const KEEP_COLORS = new Set([
 ])
 
 const REMOVE_WORKBENCH_CONTRIBUTIONS = new Set([
-  'DebugTitleContribution',
   'ResetConfigurationDefaultsOverridesCache',
   'ConfigurationMigrationWorkbenchContribution',
-  'RegisterSearchViewContribution',
   'ExtensionPoints'
 ])
 
@@ -198,13 +196,12 @@ function isCallPure (file: string, functionName: string, node: recast.types.name
       }
     }
 
-    if (file.includes('layoutActions') || file.includes('fileActions.contribution') || file.includes('windowActions') || file.includes('workspaceActions')) {
+    if (file.includes('windowActions') || file.includes('workspaceActions')) {
       return true
     }
 
     const firstParamCode = recast.print(firstParam).code
     if (firstParamCode.includes('DEBUG_CONFIGURE_COMMAND_ID') ||
-      firstParamCode.includes('workbench.action.toggleMaximizedPanel') ||
       firstParamCode.includes('OpenEditorsView')) {
       return true
     }
@@ -271,13 +268,6 @@ function isCallPure (file: string, functionName: string, node: recast.types.name
       return true
     }
     return false
-  }
-
-  if (functionName === 'viewDescriptorsToRegister.push') {
-    const firstParamName = args[0]!.type === 'Identifier' ? getMemberExpressionPath(args[0]) : null
-    if (firstParamName === 'openEditorsViewDescriptor') {
-      return true
-    }
   }
 
   if (functionName === 'registerSingleton') {
