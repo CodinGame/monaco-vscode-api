@@ -1,12 +1,11 @@
 import { createFilter, FilterPattern } from '@rollup/pluginutils'
 import { InputPluginOption, Plugin } from 'rollup'
 import * as yauzl from 'yauzl'
-import { IExtensionManifest } from 'vs/platform/extensions/common/extensions'
-import { localizeManifest } from 'vs/platform/extensionManagement/common/extensionNls.js'
-import { ConsoleLogger } from 'vs/platform/log/common/log'
+import type { IExtensionManifest } from 'vs/platform/extensions/common/extensions'
+import { IFs, createFsFromVolume, Volume } from 'memfs'
 import { Readable } from 'stream'
 import * as path from 'path'
-import { ExtensionResource, extractResourcesFromExtensionManifest, parseJson } from './extension-tools'
+import { ExtensionResource, extractResourcesFromExtensionManifest, parseJson } from './extension-tools.js'
 
 interface Options {
   include?: FilterPattern
@@ -15,8 +14,6 @@ interface Options {
   transformManifest?: (manifest: IExtensionManifest) => IExtensionManifest
   getAdditionalResources?: (manifest: IExtensionManifest) => Promise<ExtensionResource[]>
 }
-
-const logger = new ConsoleLogger()
 
 function read (stream: Readable): Promise<Buffer> {
   const bufs: Buffer[] = []
@@ -30,7 +27,7 @@ function read (stream: Readable): Promise<Buffer> {
   })
 }
 
-async function readVsix (file: string): Promise<Record<string, Buffer>> {
+async function readVsix (file: string): Promise<IFs> {
   return new Promise((resolve) => {
     const files: Record<string, Buffer> = {}
     yauzl.open(file, { lazyEntries: true }, (err, zipfile) => {
@@ -50,7 +47,7 @@ async function readVsix (file: string): Promise<Record<string, Buffer>> {
         }
       })
       zipfile.on('end', function () {
-        resolve(files)
+        resolve(createFsFromVolume(Volume.fromJSON(files, '/')))
       })
     })
   })
@@ -82,14 +79,18 @@ export default function plugin ({
     async load (id) {
       if (!filter(id)) return null
 
-      const files = await readVsix(id)
-      const manifest = transformManifest(parseJson<IExtensionManifest>(id, files['package.json']!.toString('utf8')))
+      const vsixFS = await readVsix(id)
+      const readFileSync = (filePath: string) => vsixFS.readFileSync(path.join('/', filePath)) as Buffer
+      const manifest = transformManifest(parseJson<IExtensionManifest>(id, readFileSync('package.json').toString('utf8')))
 
-      const extensionResources = (await extractResourcesFromExtensionManifest(manifest, async path => {
-        return files[getVsixPath(path)]!
-      })).filter(resource => getVsixPath(resource.realPath ?? resource.path) in files)
-
-      const vsixFile = Object.fromEntries(Object.entries(files).map(([key, value]) => [getVsixPath(key), value]))
+      const getFileContent = async (filePath: string): Promise<Buffer> => {
+        return readFileSync(filePath)
+      }
+      const listFiles = async (path: string) => {
+        return (vsixFS.readdirSync(path) as string[])
+      }
+      const extensionResources = (await extractResourcesFromExtensionManifest(manifest, getFileContent, listFiles))
+        .filter(resource => vsixFS.existsSync(path.join('/', resource.realPath ?? resource.path)))
 
       const resources = [
         ...extensionResources,
@@ -100,12 +101,12 @@ export default function plugin ({
         const assetPath = getVsixPath(resource.realPath ?? resource.path)
         let url: string
         if (process.env.NODE_ENV === 'development') {
-          url = `'data:text/javascript;base64,${vsixFile[assetPath]!.toString('base64')}'`
+          url = `'data:text/javascript;base64,${readFileSync(assetPath).toString('base64')}'`
         } else {
           url = 'import.meta.ROLLUP_FILE_URL_' + this.emitFile({
             type: 'asset',
             name: `${path.basename(id)}/${path.basename(assetPath)}`,
-            source: vsixFile[assetPath]
+            source: readFileSync(assetPath)
           })
         }
 
@@ -122,15 +123,10 @@ export default function plugin ({
           : [])]
       }))).flat()
 
-      let packageJson = parseJson<IExtensionManifest>(id, vsixFile['package.json']!.toString('utf8'))
-      if ('package.nls.json' in vsixFile) {
-        packageJson = localizeManifest(logger, packageJson, parseJson(id, vsixFile['package.nls.json']!.toString()))
-      }
-
       return `
 import { registerExtension } from 'vscode/extensions'
 
-const manifest = ${JSON.stringify(transformManifest(packageJson))}
+const manifest = ${JSON.stringify(manifest)}
 
 const { registerFileUrl, whenReady } = registerExtension(manifest)
 

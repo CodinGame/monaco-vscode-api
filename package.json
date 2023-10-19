@@ -106,6 +106,7 @@
     "cookie": "^0.5.0",
     "kerberos": "^2.0.1",
     "keytar": "^7.9.0",
+    "memfs": "^4.6.0",
     "mime-types": "^2.1.35",
     "monaco-editor": "0.44.0",
     "node-pty": "1.1.0-beta1",
