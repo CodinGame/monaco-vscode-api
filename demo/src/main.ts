@@ -216,3 +216,16 @@ document.querySelector('#togglePanel')!.addEventListener('click', async () => {
 document.querySelector('#toggleAuxiliary')!.addEventListener('click', async () => {
   setPartVisibility(Parts.AUXILIARYBAR_PART, !isPartVisibile(Parts.AUXILIARYBAR_PART))
 })
+
+const locale = new URLSearchParams(window.location.search).get('locale') ?? ''
+const select: HTMLSelectElement = document.querySelector('#localeSelect')!
+select.value = locale
+select.addEventListener('change', () => {
+  const url = new URL(window.location.href)
+  if (select.value !== '') {
+    url.searchParams.set('locale', select.value)
+  } else {
+    url.searchParams.delete('locale')
+  }
+  window.location.href = url.toString()
+})
