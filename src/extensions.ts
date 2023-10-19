@@ -4,17 +4,17 @@ import { IExtensionService } from 'vs/workbench/services/extensions/common/exten
 import { URI } from 'vs/base/common/uri'
 import { getExtensionId } from 'vs/platform/extensionManagement/common/extensionManagementUtil'
 import { DisposableStore, IDisposable } from 'vs/base/common/lifecycle'
-import { ITranslations, localizeManifest } from 'vs/platform/extensionManagement/common/extensionNls'
+import { ITranslations } from 'vs/platform/extensionManagement/common/extensionNls'
 import { joinPath } from 'vs/base/common/resources'
 import { FileAccess, Schemas } from 'vs/base/common/network'
 import { Barrier } from 'vs/base/common/async'
 import { ExtensionHostKind } from 'vs/workbench/services/extensions/common/extensionHostKind'
 import { IWorkbenchEnvironmentService } from 'vs/workbench/services/environment/common/environmentService'
-import { ILogService } from 'vs/platform/log/common/log'
 import { IExtensionWithExtHostKind, SimpleExtensionService, getLocalExtHostExtensionService } from './service-override/extensions'
 import { registerExtensionFile } from './service-override/files'
 import { setDefaultApi } from './api'
-import { getService } from './services'
+import { IInstantiationService, getService } from './services'
+import { ExtensionManifestTranslator } from './tools/l10n'
 import { throttle } from './tools'
 
 const defaultApiInitializeBarrier = new Barrier()
@@ -26,7 +26,6 @@ export async function initialize (): Promise<void> {
 }
 
 interface RegisterExtensionParams {
-  defaultNLS?: ITranslations
   builtin?: boolean
   path?: string
 }
@@ -85,7 +84,7 @@ export function registerExtension (manifest: IExtensionManifest, extHostKind: Ex
 export function registerExtension (manifest: IExtensionManifest, extHostKind: ExtensionHostKind.LocalWebWorker, params?: RegisterExtensionParams): RegisterLocalExtensionResult
 export function registerExtension (manifest: IExtensionManifest, extHostKind: ExtensionHostKind.Remote, params?: RegisterRemoteExtensionParams): RegisterRemoteExtensionResult
 export function registerExtension (manifest: IExtensionManifest, extHostKind?: ExtensionHostKind, params?: RegisterExtensionParams): RegisterExtensionResult
-export function registerExtension (manifest: IExtensionManifest, extHostKind?: ExtensionHostKind, { defaultNLS, builtin = manifest.publisher === 'vscode', path = '/' }: RegisterExtensionParams = {}): RegisterExtensionResult {
+export function registerExtension (manifest: IExtensionManifest, extHostKind?: ExtensionHostKind, { builtin = manifest.publisher === 'vscode', path = '/' }: RegisterExtensionParams = {}): RegisterExtensionResult {
   const disposableStore = new DisposableStore()
   const id = getExtensionId(manifest.publisher, manifest.name)
   const location = URI.from({ scheme: 'extension', authority: id, path })
@@ -97,9 +96,12 @@ export function registerExtension (manifest: IExtensionManifest, extHostKind?: E
       realLocation = URI.from({ scheme: Schemas.vscodeRemote, authority: remoteAuthority, path })
     }
 
-    const localizedManifest = defaultNLS != null ? localizeManifest(logger, manifest, defaultNLS) : manifest
+    const instantiationService = await getService(IInstantiationService)
+    const translator = instantiationService.createInstance(ExtensionManifestTranslator)
 
-    let extension: IExtensionWithExtHostKind = {
+    const localizedManifest = await translator.translateManifest(realLocation, manifest)
+
+    const extension: IExtensionWithExtHostKind = {
       manifest: localizedManifest,
       type: builtin ? ExtensionType.System : ExtensionType.User,
       isBuiltin: builtin,
