@@ -15,6 +15,7 @@ import { IExtensionWithExtHostKind, SimpleExtensionService, getLocalExtHostExten
 import { registerExtensionFile } from './service-override/files'
 import { setDefaultApi } from './api'
 import { getService } from './services'
+import { throttle } from './tools'
 
 const defaultApiInitializeBarrier = new Barrier()
 export async function initialize (): Promise<void> {
@@ -71,24 +72,14 @@ function registerExtensionFileUrl (extensionLocation: URI, filePath: string, url
   return fileDisposable
 }
 
-let _toAdd: IExtension[] = []
-let _toRemove: IExtension[] = []
-let lastPromise: Promise<void> | undefined
-async function deltaExtensions (toAdd: IExtensionWithExtHostKind[], toRemove: IExtension[]) {
-  _toAdd.push(...toAdd)
-  _toRemove.push(...toRemove)
-
-  if (lastPromise == null) {
-    lastPromise = new Promise(resolve => setTimeout(resolve)).then(async () => {
-      const extensionService = await getService(IExtensionService) as SimpleExtensionService
-      await extensionService.deltaExtensions(_toAdd, _toRemove)
-      _toAdd = []
-      _toRemove = []
-      lastPromise = undefined
-    })
-  }
-  await lastPromise
+interface ExtensionDelta {
+  toAdd: IExtensionWithExtHostKind[]
+  toRemove: IExtension[]
 }
+const deltaExtensions = throttle(async ({ toAdd, toRemove }: ExtensionDelta) => {
+  const extensionService = await getService(IExtensionService) as SimpleExtensionService
+  await extensionService.deltaExtensions(toAdd, toRemove)
+}, (a, b) => ({ toAdd: [...a.toAdd, ...b.toAdd], toRemove: [...a.toRemove, ...b.toRemove] }), 0)
 
 export function registerExtension (manifest: IExtensionManifest, extHostKind: ExtensionHostKind.LocalProcess, params?: RegisterExtensionParams): RegisterLocalProcessExtensionResult
 export function registerExtension (manifest: IExtensionManifest, extHostKind: ExtensionHostKind.LocalWebWorker, params?: RegisterExtensionParams): RegisterLocalExtensionResult
@@ -120,7 +111,7 @@ export function registerExtension (manifest: IExtensionManifest, extHostKind?: E
       extHostKind
     }
 
-    await deltaExtensions([extension], [])
+    await deltaExtensions({ toAdd: [extension], toRemove: [] })
 
     return extension
   })()
@@ -132,7 +123,7 @@ export function registerExtension (manifest: IExtensionManifest, extHostKind?: E
     },
     async dispose () {
       const extension = await addExtensionPromise
-      await deltaExtensions([], [extension])
+      await deltaExtensions({ toAdd: [], toRemove: [extension] })
       disposableStore.dispose()
     }
   }
