@@ -97,6 +97,19 @@ index 775a1be5996..9a6d37f2765 100644
  			write(getDestAbsoluteFilePath(file), fileContents);
  			continue;
  		}
+diff --git a/extensions/markdown-language-features/src/extension.browser.ts b/extensions/markdown-language-features/src/extension.browser.ts
+index 30639672490..2095905a4d8 100644
+--- a/extensions/markdown-language-features/src/extension.browser.ts
++++ b/extensions/markdown-language-features/src/extension.browser.ts
+@@ -30,7 +30,7 @@ function startServer(context: vscode.ExtensionContext, parser: IMdParser): Promi
+ 	const serverMain = vscode.Uri.joinPath(context.extensionUri, 'server/dist/browser/workerMain.js');
+ 
+ 	const worker = new Worker(serverMain.toString());
+-	worker.postMessage({ i10lLocation: vscode.l10n.uri?.toString() ?? '' });
++	worker.postMessage({ i10lLocation: vscode.l10n.uri?.toString(true) ?? '' });
+ 
+ 	return startClient((id: string, name: string, clientOptions: LanguageClientOptions) => {
+ 		return new LanguageClient(id, name, clientOptions, worker);
 diff --git a/extensions/typescript-language-features/web/typingsInstaller.ts b/extensions/typescript-language-features/web/typingsInstaller.ts
 index 7b9b164c40c..a961bb7267a 100644
 --- a/extensions/typescript-language-features/web/typingsInstaller.ts
