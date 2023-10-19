@@ -21,3 +21,26 @@ export function memoizedConstructor<T> (ctor: new (...args: any[]) => T): new (.
     })
   })
 }
+
+export async function sleep (duration: number): Promise<void> {
+  await new Promise(resolve => setTimeout(resolve, duration))
+}
+
+export function throttle<T> (fct: (param: T) => Promise<void>, merge: (a: T, b: T) => T, delay: number): (param: T) => Promise<void> {
+  let lastPromise: Promise<void> = Promise.resolve()
+  let toConsume: T | null = null
+
+  return async (param: T) => {
+    if (toConsume == null) {
+      toConsume = param
+      lastPromise = lastPromise.then(async () => sleep(delay)).then(async () => {
+        const _toConsume = toConsume!
+        toConsume = null
+        await fct(_toConsume)
+      })
+    } else {
+      toConsume = merge(toConsume, param)
+    }
+    await lastPromise
+  }
+}
