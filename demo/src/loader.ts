@@ -26,6 +26,6 @@ if (locale != null) {
   }
 }
 
-await import('./main')
+import('./main')
 
 export {}
