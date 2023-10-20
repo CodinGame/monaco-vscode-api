@@ -6,6 +6,7 @@ cat <<< "$(jq ".config.vscode.ref = \"$vscodeRef\"" package.json)" > package.jso
 
 monaco_esm_directory="`pwd`/node_modules/monaco-editor/esm"
 output_directory="`pwd`/vscode"
+loc_output_directory="`pwd`/vscode-loc"
 extension_output_directory="`pwd`/vscode-default-extensions"
 patch_file="`pwd`/scripts/vscode.patch"
 editor_patch_file="`pwd`/monaco-editor-treemending.patch"
@@ -46,6 +47,9 @@ cd ..
 mkdir -p editor-patch
 cp -R $monaco_esm_directory editor-patch/a
 cp -R $monaco_esm_directory editor-patch/b
+find editor-patch/b/vs/editor -name "*.js" -type f -delete
+find editor-patch/b/vs/base -name "*.js" -type f -delete
+find editor-patch/b/vs/platform -name "*.js" -type f -delete
 ## Change shake level from ClassMembers to Files
 sed -i'' -e 's/shakeLevel: 2/shakeLevel: 0/g' build/gulpfile.editor.js
 yarn gulp editor-distro
@@ -95,6 +99,12 @@ echo "Building vscode..."
 NODE_OPTIONS=--max-old-space-size=8192 npx tsc --declaration --importHelpers --module es2020 --preserveConstEnums --outDir "$output_directory"
 # Copy files that are already built
 find ./ \( -name '*.js' -o -name '*.d.ts' -o -name '*.css' -o -name '*.mp3' -o -name '*.svg' -o -name '*.html' \) -exec rsync -R \{\} "$output_directory/src" \;
+
+echo "Downloading vscode-loc"
+rm -rf $loc_output_directory
+mkdir -p $loc_output_directory
+curl -L --max-redirs 5 https://github.com/microsoft/vscode-loc/archive/refs/heads/main.tar.gz | tar -xz -C $loc_output_directory --strip-components=2 vscode-loc-main/i18n
+
 
 echo "Cleaning..."
 rm -rf $build_directory

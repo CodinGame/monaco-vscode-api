@@ -101,6 +101,7 @@ export default rollup.defineConfig((<{input: Record<string, string>, output: str
     'services.d': './dist/types/src/services.d.ts',
     'extensions.d': './dist/types/src/extensions.d.ts',
     'monaco.d': './dist/types/src/monaco.d.ts',
+    'l10n.d': './dist/types/src/l10n.d.ts',
     ...Object.fromEntries(fs.readdirSync(path.resolve(DIST_DIR, 'types/src/service-override'), { withFileTypes: true })
       .filter(f => f.isFile())
       .map(f => f.name)

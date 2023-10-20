@@ -71,7 +71,11 @@ export default defineConfig({
       '@codingame/monaco-vscode-typescript-language-features-default-extension', '@codingame/monaco-vscode-markdown-language-features-default-extension',
       '@codingame/monaco-vscode-json-language-features-default-extension', '@codingame/monaco-vscode-css-language-features-default-extension',
       '@codingame/monaco-vscode-npm-default-extension', '@codingame/monaco-vscode-css-default-extension', '@codingame/monaco-vscode-markdown-basics-default-extension', '@codingame/monaco-vscode-html-default-extension',
-      '@codingame/monaco-vscode-html-language-features-default-extension', '@codingame/monaco-vscode-configuration-editing-default-extension', '@codingame/monaco-vscode-media-preview-default-extension', '@codingame/monaco-vscode-markdown-math-default-extension'
+      '@codingame/monaco-vscode-html-language-features-default-extension', '@codingame/monaco-vscode-configuration-editing-default-extension', '@codingame/monaco-vscode-media-preview-default-extension', '@codingame/monaco-vscode-markdown-math-default-extension',
+      '@codingame/monaco-vscode-language-pack-cs', '@codingame/monaco-vscode-language-pack-de', '@codingame/monaco-vscode-language-pack-es', '@codingame/monaco-vscode-language-pack-fr',
+      '@codingame/monaco-vscode-language-pack-it', '@codingame/monaco-vscode-language-pack-ja', '@codingame/monaco-vscode-language-pack-ko', '@codingame/monaco-vscode-language-pack-pl',
+      '@codingame/monaco-vscode-language-pack-pt-br', '@codingame/monaco-vscode-language-pack-qps-ploc', '@codingame/monaco-vscode-language-pack-ru', '@codingame/monaco-vscode-language-pack-tr',
+      '@codingame/monaco-vscode-language-pack-zh-hans', '@codingame/monaco-vscode-language-pack-zh-hant'
     ],
     esbuildOptions: {
       plugins: [{

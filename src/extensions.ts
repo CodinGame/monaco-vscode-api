@@ -4,17 +4,19 @@ import { IExtensionService } from 'vs/workbench/services/extensions/common/exten
 import { URI } from 'vs/base/common/uri'
 import { getExtensionId } from 'vs/platform/extensionManagement/common/extensionManagementUtil'
 import { DisposableStore, IDisposable } from 'vs/base/common/lifecycle'
-import { ITranslations, localizeManifest } from 'vs/platform/extensionManagement/common/extensionNls'
+import { ITranslations } from 'vs/platform/extensionManagement/common/extensionNls'
 import { joinPath } from 'vs/base/common/resources'
 import { FileAccess, Schemas } from 'vs/base/common/network'
 import { Barrier } from 'vs/base/common/async'
 import { ExtensionHostKind } from 'vs/workbench/services/extensions/common/extensionHostKind'
 import { IWorkbenchEnvironmentService } from 'vs/workbench/services/environment/common/environmentService'
-import { ILogService } from 'vs/platform/log/common/log'
+import { parse } from 'vs/base/common/json'
 import { IExtensionWithExtHostKind, SimpleExtensionService, getLocalExtHostExtensionService } from './service-override/extensions'
 import { registerExtensionFile } from './service-override/files'
 import { setDefaultApi } from './api'
-import { getService } from './services'
+import { IFileService, IInstantiationService, getService } from './services'
+import { ExtensionManifestTranslator } from './tools/l10n'
+import { throttle } from './tools'
 
 const defaultApiInitializeBarrier = new Barrier()
 export async function initialize (): Promise<void> {
@@ -25,7 +27,6 @@ export async function initialize (): Promise<void> {
 }
 
 interface RegisterExtensionParams {
-  defaultNLS?: ITranslations
   builtin?: boolean
   path?: string
 }
@@ -71,59 +72,58 @@ function registerExtensionFileUrl (extensionLocation: URI, filePath: string, url
   return fileDisposable
 }
 
-let _toAdd: IExtension[] = []
-let _toRemove: IExtension[] = []
-let lastPromise: Promise<void> | undefined
-async function deltaExtensions (toAdd: IExtensionWithExtHostKind[], toRemove: IExtension[]) {
-  _toAdd.push(...toAdd)
-  _toRemove.push(...toRemove)
+interface ExtensionDelta {
+  toAdd: IExtensionWithExtHostKind[]
+  toRemove: IExtension[]
+}
+const deltaExtensions = throttle(async ({ toAdd, toRemove }: ExtensionDelta) => {
+  const extensionService = await getService(IExtensionService) as SimpleExtensionService
+  await extensionService.deltaExtensions(toAdd, toRemove)
+}, (a, b) => ({ toAdd: [...a.toAdd, ...b.toAdd], toRemove: [...a.toRemove, ...b.toRemove] }), 0)
 
-  if (lastPromise == null) {
-    lastPromise = new Promise(resolve => setTimeout(resolve)).then(async () => {
-      const extensionService = await getService(IExtensionService) as SimpleExtensionService
-      await extensionService.deltaExtensions(_toAdd, _toRemove)
-      _toAdd = []
-      _toRemove = []
-      lastPromise = undefined
-    })
-  }
-  await lastPromise
+export async function registerRemoteExtension (directory: string): Promise<RegisterRemoteExtensionResult> {
+  const fileService = await getService(IFileService)
+  const remoteAuthority = (await getService(IWorkbenchEnvironmentService)).remoteAuthority
+  const content = await fileService.readFile(joinPath(URI.from({ scheme: Schemas.vscodeRemote, authority: remoteAuthority, path: directory }), 'package.json'))
+  const manifest: IExtensionManifest = parse(content.value.toString())
+
+  return registerExtension(manifest, ExtensionHostKind.Remote, { path: directory })
 }
 
 export function registerExtension (manifest: IExtensionManifest, extHostKind: ExtensionHostKind.LocalProcess, params?: RegisterExtensionParams): RegisterLocalProcessExtensionResult
 export function registerExtension (manifest: IExtensionManifest, extHostKind: ExtensionHostKind.LocalWebWorker, params?: RegisterExtensionParams): RegisterLocalExtensionResult
 export function registerExtension (manifest: IExtensionManifest, extHostKind: ExtensionHostKind.Remote, params?: RegisterRemoteExtensionParams): RegisterRemoteExtensionResult
 export function registerExtension (manifest: IExtensionManifest, extHostKind?: ExtensionHostKind, params?: RegisterExtensionParams): RegisterExtensionResult
-export function registerExtension (manifest: IExtensionManifest, extHostKind?: ExtensionHostKind, { defaultNLS, builtin = manifest.publisher === 'vscode', path = '/' }: RegisterExtensionParams = {}): RegisterExtensionResult {
+export function registerExtension (manifest: IExtensionManifest, extHostKind?: ExtensionHostKind, { builtin = manifest.publisher === 'vscode', path = '/' }: RegisterExtensionParams = {}): RegisterExtensionResult {
   const disposableStore = new DisposableStore()
   const id = getExtensionId(manifest.publisher, manifest.name)
   const location = URI.from({ scheme: 'extension', authority: id, path })
 
   const addExtensionPromise = (async () => {
-    const logger = await getService(ILogService)
-    const localizedManifest = defaultNLS != null ? localizeManifest(logger, manifest, defaultNLS) : manifest
+    const remoteAuthority = (await getService(IWorkbenchEnvironmentService)).remoteAuthority
+    let realLocation = location
+    if (extHostKind === ExtensionHostKind.Remote) {
+      realLocation = URI.from({ scheme: Schemas.vscodeRemote, authority: remoteAuthority, path })
+    }
 
-    let extension: IExtensionWithExtHostKind = {
+    const instantiationService = await getService(IInstantiationService)
+    const translator = instantiationService.createInstance(ExtensionManifestTranslator)
+
+    const localizedManifest = await translator.translateManifest(realLocation, manifest)
+
+    const extension: IExtensionWithExtHostKind = {
       manifest: localizedManifest,
       type: builtin ? ExtensionType.System : ExtensionType.User,
       isBuiltin: builtin,
       identifier: { id },
-      location,
+      location: realLocation,
       targetPlatform: TargetPlatform.WEB,
       isValid: true,
       validations: [],
       extHostKind
     }
 
-    if (extHostKind === ExtensionHostKind.Remote) {
-      const remoteAuthority = (await getService(IWorkbenchEnvironmentService)).remoteAuthority
-      extension = {
-        ...extension,
-        location: URI.from({ scheme: Schemas.vscodeRemote, authority: remoteAuthority, path })
-      }
-    }
-
-    await deltaExtensions([extension], [])
+    await deltaExtensions({ toAdd: [extension], toRemove: [] })
 
     return extension
   })()
@@ -135,7 +135,7 @@ export function registerExtension (manifest: IExtensionManifest, extHostKind?: E
     },
     async dispose () {
       const extension = await addExtensionPromise
-      await deltaExtensions([], [extension])
+      await deltaExtensions({ toAdd: [], toRemove: [extension] })
       disposableStore.dispose()
     }
   }

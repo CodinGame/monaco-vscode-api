@@ -218,12 +218,12 @@ export class LayoutService implements ILayoutService, IWorkbenchLayoutService {
         // otherwise fall back to any view that has views still refs #111463
         if (panelToOpen == null || !this.hasViews(panelToOpen)) {
           panelToOpen = this.viewDescriptorService
-            .getViewContainersByLocation(ViewContainerLocation.Panel)
+            .getViewContainersByLocation(location)
             .find(viewContainer => this.hasViews(viewContainer.id))?.id
         }
 
         if (panelToOpen != null) {
-          void this.paneCompositeService.openPaneComposite(panelToOpen, ViewContainerLocation.Panel, true)
+          void this.paneCompositeService.openPaneComposite(panelToOpen, location, true)
         }
       }
 

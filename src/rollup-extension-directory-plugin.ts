@@ -1,12 +1,9 @@
 import { createFilter, FilterPattern, dataToEsm } from '@rollup/pluginutils'
 import { Plugin } from 'rollup'
-import { IExtensionManifest } from 'vs/platform/extensions/common/extensions'
-import { localizeManifest } from 'vs/platform/extensionManagement/common/extensionNls.js'
-import { ConsoleLogger } from 'vs/platform/log/common/log'
+import type { IExtensionManifest } from 'vs/platform/extensions/common/extensions'
 import * as path from 'path'
 import * as fsPromise from 'fs/promises'
-import * as fs from 'fs'
-import { ExtensionResource, extractResourcesFromExtensionManifest, parseJson } from './extension-tools'
+import { ExtensionResource, extractResourcesFromExtensionManifest, parseJson } from './extension-tools.js'
 
 interface Options {
   include?: FilterPattern
@@ -14,8 +11,6 @@ interface Options {
   transformManifest?: (manifest: IExtensionManifest) => IExtensionManifest
   getAdditionalResources?: (manifest: IExtensionManifest, directory: string) => Promise<ExtensionResource[]>
 }
-
-const logger = new ConsoleLogger()
 
 export default function plugin ({
   include,
@@ -43,11 +38,7 @@ export default function plugin ({
       const basename = path.basename(id)
       if (basename === 'package.json') {
         const content = await fsPromise.readFile(id)
-        let parsed = parseJson<IExtensionManifest>(id, content.toString('utf-8'))
-        const nlsFile = path.resolve(path.dirname(id), 'package.nls.json')
-        if (fs.existsSync(nlsFile)) {
-          parsed = localizeManifest(logger, parsed, parseJson(id, (await fsPromise.readFile(nlsFile)).toString()))
-        }
+        const parsed = parseJson<IExtensionManifest>(id, content.toString('utf-8'))
         return {
           code: dataToEsm(transformManifest(parsed), {
             compact: true,
@@ -64,9 +55,13 @@ export default function plugin ({
         const manifestPath = path.resolve(id, 'package.json')
         const manifest = transformManifest(parseJson<IExtensionManifest>(id, (await fsPromise.readFile(manifestPath)).toString('utf8')))
         try {
-          const extensionResources = await extractResourcesFromExtensionManifest(manifest, async (resourcePath) => {
+          const getFileContent = async (resourcePath: string) => {
             return (await fsPromise.readFile(path.join(id, resourcePath)))
-          })
+          }
+          const listFiles = async (dirPath: string) => {
+            return (await fsPromise.readdir(path.join(id, dirPath)))
+          }
+          const extensionResources = await extractResourcesFromExtensionManifest(manifest, getFileContent, listFiles)
           const resources = Array.from(new Set([
             ...extensionResources,
             ...await getAdditionalResources(manifest, id)

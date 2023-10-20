@@ -63,6 +63,7 @@
 		"src/extensions.ts",
 		"src/service-override/*.ts",
 		"src/monaco.ts",
+		"src/l10n.ts",
 		"src/rollup-vsix-plugin.ts",
 		"src/rollup-extension-directory-plugin.ts"
 	]

@@ -62,8 +62,13 @@ async function run () {
           return
         }
         try {
-          await fs.mkdir(path.dirname(file), { recursive: true })
-          await fs.writeFile(file, content)
+          if (index.newHeader != null && Date.parse(index.newHeader) === 0) {
+            // timestamp 0 means the field was removed
+            await fs.unlink(file)
+          } else {
+            await fs.mkdir(path.dirname(file), { recursive: true })
+            await fs.writeFile(file, content)
+          }
           callback(null)
         } catch (err) {
           callback(err)

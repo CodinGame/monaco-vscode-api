@@ -64,7 +64,7 @@ window.MonacoEnvironment = {
 }
 
 const params = new URL(document.location.href).searchParams
-const remoteAuthority = params.get('remoteAuthority') ?? undefined
+export const remoteAuthority = params.get('remoteAuthority') ?? undefined
 const connectionToken = params.get('connectionToken') ?? undefined
 const remotePath = remoteAuthority != null ? params.get('remotePath') ?? undefined : undefined
 

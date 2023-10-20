@@ -171,7 +171,7 @@ async function extractResourcesFromExtensionManifestContribute (contribute: Real
   return resources.filter((resource, index, list) => !resource.path.startsWith('$(') && !list.slice(0, index).some(o => o === resource))
 }
 
-export async function extractResourcesFromExtensionManifest (manifest: IExtensionManifest, getFileContent: (path: string) => Promise<Buffer>): Promise<ExtensionResource[]> {
+export async function extractResourcesFromExtensionManifest (manifest: IExtensionManifest, getFileContent: (path: string) => Promise<Buffer>, listFiles: (path: string) => Promise<string[]>): Promise<ExtensionResource[]> {
   let resources: ExtensionResource[] = []
 
   if (manifest.contributes != null) {
@@ -186,6 +186,19 @@ export async function extractResourcesFromExtensionManifest (manifest: IExtensio
     const jsPath = addExtension(manifest.main, '.js')
     resources.push({ path: manifest.main, mimeType: 'text/javascript', realPath: jsPath })
     resources.push(...(await extractResources(jsPath, getFileContent)))
+  }
+
+  const nlsFiles = (await listFiles('/')).filter(file => /^package\.nls(?:\..*)?\.json$/.exec(file) != null)
+  resources.push(...nlsFiles.map(path => (<ExtensionResource>{
+    path,
+    mimeType: 'application/json'
+  })))
+  if (manifest.l10n != null) {
+    const bundleFiles = (await listFiles(manifest.l10n)).filter(file => /^bundle\.l10n(?:\..*)?\.json$/.exec(file) != null)
+    resources.push(...bundleFiles.map(path => (<ExtensionResource>{
+      path,
+      mimeType: 'application/json'
+    })))
   }
 
   resources = resources.map(r => {

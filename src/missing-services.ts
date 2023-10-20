@@ -173,6 +173,7 @@ import { IBannerService } from 'vs/workbench/services/banner/browser/bannerServi
 import { ITitleService } from 'vs/workbench/services/title/common/titleService'
 import { IChatAgentService } from 'vs/workbench/contrib/chat/common/chatAgents'
 import { unsupported } from './tools'
+import { getBuiltInExtensionTranslationsUris } from './l10n'
 
 class NullLoggerService extends AbstractLoggerService {
   constructor () {
@@ -1106,8 +1107,9 @@ registerSingleton(ILanguagePackService, class LanguagePackService implements ILa
     return []
   }
 
-  async getBuiltInExtensionTranslationsUri (): Promise<URI | undefined> {
-    return undefined
+  async getBuiltInExtensionTranslationsUri (id: string, language: string): Promise<URI | undefined> {
+    const uri = getBuiltInExtensionTranslationsUris(language)?.[id]
+    return uri != null ? URI.parse(uri) : undefined
   }
 }, InstantiationType.Delayed)
 
