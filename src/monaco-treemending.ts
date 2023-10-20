@@ -62,8 +62,8 @@ async function run () {
           return
         }
         try {
-          if (index.newHeader === '1970-01-01 01:00:00.000000000 +0100') {
-            // timestamp 0 means the fiel was removed
+          if (index.newHeader != null && Date.parse(index.newHeader) === 0) {
+            // timestamp 0 means the field was removed
             await fs.unlink(file)
           } else {
             await fs.mkdir(path.dirname(file), { recursive: true })
