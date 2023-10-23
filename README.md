@@ -124,7 +124,7 @@ Additionally, 25 packages that include the vscode version of some services (with
 - **Extensions** (included by default): `@codingame/monaco-vscode-extensions-service-override`
   - Support for VSCode extensions. A worker configuration can be past to it:
     - Then, everything runs in one worker, where extensions run in an iframe, with all the implications (can be created by the bundler directly). The worker script is expected to be hosted on a separate domain.
-- **Files** (included by default): `@codingame/monaco-vscode-file-service-override`
+- **Files** (included by default): `@codingame/monaco-vscode-files-service-override`
   - It adds the memory filesystem for `file://` files, but also adds the support for lazy loaded extension files. It adds separate memory user files (e.g. config, keybindings), cache files and log files.
 - **QuickAccess** (included by default): `@codingame/monaco-vscode-quickaccess-service-override`
   - Enables the quickaccess menu in the editor (press F1 or ctrl+shift+p)
