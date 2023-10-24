@@ -3,6 +3,7 @@ import * as rollup from 'rollup'
 import { IExtensionManifest } from 'vs/platform/extensions/common/extensions'
 import { dataToEsm } from '@rollup/pluginutils'
 import { PackageJson } from 'type-fest'
+import glob from 'fast-glob'
 import * as fs from 'fs'
 import * as path from 'path'
 import { fileURLToPath } from 'url'
@@ -15,10 +16,26 @@ const EXTENSIONS = ['', '.ts', '.js']
 
 const BASE_DIR = path.resolve(__dirname, '..')
 const LOC_PATH = path.resolve(BASE_DIR, 'vscode-loc')
+const DIST_DIR = path.resolve(BASE_DIR, 'dist')
+const NODE_MODULES_DIR = path.resolve(BASE_DIR, 'node_modules')
+const MONACO_EDITOR_DIR = path.resolve(NODE_MODULES_DIR, './monaco-editor')
+const MONACO_EDITOR_ESM_DIR = path.resolve(MONACO_EDITOR_DIR, './esm')
 
 const locExtensions = fs.readdirSync(LOC_PATH, { withFileTypes: true })
   .filter(f => f.isDirectory() && fs.existsSync(path.resolve(LOC_PATH, f.name, 'package.json')))
   .map(f => f.name)
+
+const vscodeModules = (await glob('**/vscode/src/**/*.js', {
+  cwd: DIST_DIR,
+  onlyFiles: true
+})).map(fileName => /vscode\/src\/(.*).js$/.exec(fileName)![1]!)
+
+const monacoModules = (await glob('**/*.js', {
+  cwd: MONACO_EDITOR_ESM_DIR,
+  onlyFiles: true
+})).map(fileName => fileName.slice(0, -3))
+
+const usedModules = new Set<string>([...vscodeModules, ...monacoModules])
 
 export default rollup.defineConfig([
   ...locExtensions.map(name => (<rollup.RollupOptions>{
@@ -83,9 +100,12 @@ ${Object.entries(translationAssets).map(([id, assetRef]) => `  '${id}': new URL(
         transform (code, id) {
           if (!id.endsWith('.json')) return null
 
-          const parsed = JSON.parse(code)
+          const parsed = JSON.parse(code).contents
+          // remove keys that we don't use
+          const filtered = Object.fromEntries(Object.entries(parsed).filter(([key]) => usedModules.has(key)))
+
           return {
-            code: dataToEsm(parsed.contents, {
+            code: dataToEsm(filtered, {
               preferConst: true
             }),
             map: { mappings: '' }
