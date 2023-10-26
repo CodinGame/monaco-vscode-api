@@ -12,7 +12,7 @@ interface Options {
   exclude?: FilterPattern
   rollupPlugins?: InputPluginOption[]
   transformManifest?: (manifest: IExtensionManifest) => IExtensionManifest
-  getAdditionalResources?: (manifest: IExtensionManifest) => Promise<ExtensionResource[]>
+  getAdditionalResources?: (manifest: IExtensionManifest, getFileContent: (path: string) => Promise<Buffer>, listFiles: (path: string) => Promise<string[]>) => Promise<ExtensionResource[]>
 }
 
 function read (stream: Readable): Promise<Buffer> {
@@ -94,7 +94,7 @@ export default function plugin ({
 
       const resources = [
         ...extensionResources,
-        ...await getAdditionalResources(manifest)
+        ...await getAdditionalResources(manifest, getFileContent, listFiles)
       ]
 
       const pathMapping = (await Promise.all(resources.map(async resource => {
