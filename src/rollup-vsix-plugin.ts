@@ -86,8 +86,8 @@ export default function plugin ({
       const getFileContent = async (filePath: string): Promise<Buffer> => {
         return readFileSync(filePath)
       }
-      const listFiles = async (path: string) => {
-        return (vsixFS.readdirSync(path) as string[])
+      const listFiles = async (filePath: string) => {
+        return (vsixFS.readdirSync(path.join('/', filePath)) as string[])
       }
       const extensionResources = (await extractResourcesFromExtensionManifest(manifest, getFileContent, listFiles))
         .filter(resource => vsixFS.existsSync(path.join('/', resource.realPath ?? resource.path)))
