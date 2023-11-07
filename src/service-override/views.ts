@@ -43,19 +43,19 @@ import 'vs/workbench/contrib/languageDetection/browser/languageDetection.contrib
 import 'vs/workbench/contrib/files/browser/files.contribution.js?include=registerConfiguration'
 import 'vs/workbench/contrib/files/browser/files.contribution.js?exclude=registerConfiguration'
 import { Codicon } from 'vs/base/common/codicons'
-import { IEditorGroupsService } from 'vs/workbench/services/editor/common/editorGroupsService'
+import { IEditorGroup, IEditorGroupsService } from 'vs/workbench/services/editor/common/editorGroupsService'
 import { IEditorDropService } from 'vs/workbench/services/editor/browser/editorDropService'
 import { IEditorDropTargetDelegate } from 'vs/workbench/browser/parts/editor/editorDropTarget'
 import { IEditorService } from 'vs/workbench/services/editor/common/editorService'
-import { IEditorResolverService } from 'vs/workbench/services/editor/common/editorResolverService'
+import { IEditorResolverService, RegisteredEditorInfo, RegisteredEditorOptions, RegisteredEditorPriority } from 'vs/workbench/services/editor/common/editorResolverService'
 import { EditorResolverService } from 'vs/workbench/services/editor/browser/editorResolverService'
 import { BreadcrumbsService, IBreadcrumbsService } from 'vs/workbench/browser/parts/editor/breadcrumbs'
 import { IContextViewService } from 'vs/platform/contextview/browser/contextView'
 import { ContextViewService } from 'vs/platform/contextview/browser/contextViewService'
 import { ICodeEditorService } from 'vs/editor/browser/services/codeEditorService'
 import { EditorInput, IEditorCloseHandler } from 'vs/workbench/common/editor/editorInput'
-import { EditorExtensions, Verbosity } from 'vs/workbench/common/editor'
-import { IEditorOptions } from 'vs/platform/editor/common/editor'
+import { EditorExtensions, IEditorOpenContext, Verbosity } from 'vs/workbench/common/editor'
+import { IEditorOptions, IResourceEditorInput, ITextResourceEditorInput } from 'vs/platform/editor/common/editor'
 import { IResolvedTextEditorModel } from 'vs/editor/common/services/resolverService'
 import { ITextEditorService, TextEditorService } from 'vs/workbench/services/textfile/common/textEditorService'
 import { CodeEditorService } from 'vs/workbench/services/editor/browser/codeEditorService'
@@ -87,6 +87,7 @@ import { ConfirmResult } from 'vs/platform/dialogs/common/dialogs'
 import { ILayoutService } from 'vs/platform/layout/browser/layoutService'
 import { IBannerService } from 'vs/workbench/services/banner/browser/bannerService'
 import { ITitleService } from 'vs/workbench/services/title/common/titleService'
+import { CancellationToken } from 'vs/base/common/cancellation'
 import { MonacoDelegateEditorGroupsService, MonacoEditorService, OpenEditor } from './tools/editor'
 import getBulkEditServiceOverride from './bulkEdit'
 import getLayoutServiceOverride, { LayoutService } from './layout'
@@ -94,7 +95,7 @@ import getQuickAccessOverride from './quickaccess'
 import getKeybindingsOverride from './keybindings'
 import { changeUrlDomain } from './tools/url'
 import { registerAssets } from '../assets'
-import { registerServiceInitializePostParticipant } from '../lifecycle'
+import { registerServiceInitializePostParticipant, serviceInitializedBarrier } from '../lifecycle'
 
 function createPart (id: string, role: string, classes: string[]): HTMLElement {
   const part = document.createElement(role === 'status' ? 'footer' /* Use footer element for status bar #98376 */ : 'div')
@@ -189,6 +190,10 @@ function renderStatusBarPart (container: HTMLElement): IDisposable {
   return attachPart(Parts.STATUSBAR_PART, container)
 }
 
+interface BodyRenderer extends IDisposable {
+  setInput? (accessor: ServicesAccessor, input: EditorInput, options: IEditorOptions | undefined, context: IEditorOpenContext, token: CancellationToken): Promise<void>
+}
+
 type Label = string | {
   short: string
   medium: string
@@ -197,7 +202,7 @@ type Label = string | {
 interface EditorPanelOption {
   readonly id: string
   name: string
-  renderBody (container: HTMLElement): IDisposable
+  renderBody (container: HTMLElement): BodyRenderer
 }
 
 interface SimpleEditorInput extends EditorInput {
@@ -207,13 +212,25 @@ interface SimpleEditorInput extends EditorInput {
   setDirty (dirty: boolean): void
 }
 
-function registerEditorPane (options: EditorPanelOption): { disposable: IDisposable, CustomEditorInput: new (closeHandler?: IEditorCloseHandler) => SimpleEditorInput } {
+type RegisteredEditorInfoWithoutId = Partial<Omit<RegisteredEditorInfo, 'id'>>
+type RegisterEditorPaneResult = {
+  disposable: IDisposable
+  CustomEditorInput: new (closeHandler?: IEditorCloseHandler, baseInput?: IResourceEditorInput | ITextResourceEditorInput) => SimpleEditorInput
+  /**
+   * Allows you to register the editor for a certain file type. When opening that input, it will render this editor.
+   */
+  registerEditor(globPattern: string, info?: RegisteredEditorInfoWithoutId, options?: RegisteredEditorOptions, closeHandler?: IEditorCloseHandler): IDisposable
+}
+
+function registerEditorPane (options: EditorPanelOption): RegisterEditorPaneResult {
   class CustomEditorPane extends EditorPane {
     private content?: HTMLElement
+    private bodyRenderer?: BodyRenderer
     constructor (
       @ITelemetryService telemetryService: ITelemetryService,
       @IThemeService themeService: IThemeService,
-      @IStorageService storageService: IStorageService
+      @IStorageService storageService: IStorageService,
+      @IInstantiationService private instantiationService: IInstantiationService
     ) {
       super(options.id, telemetryService, themeService, storageService)
     }
@@ -223,12 +240,30 @@ function registerEditorPane (options: EditorPanelOption): { disposable: IDisposa
       this.content.style.display = 'flex'
       this.content.style.alignItems = 'stretch'
       append(parent, this.content)
-      this._register(options.renderBody(this.content))
+      this.bodyRenderer = options.renderBody(this.content)
+      this._register(this.bodyRenderer)
     }
 
     override layout (dimension: Dimension): void {
       this.content!.style.height = `${dimension.height}px`
       this.content!.style.width = `${dimension.width}px`
+    }
+
+    override async setInput (input: EditorInput, options: IEditorOptions | undefined, context: IEditorOpenContext, token: CancellationToken): Promise<void> {
+      await this.instantiationService.invokeFunction(accessor => {
+        if (this.bodyRenderer != null && this.bodyRenderer.setInput != null) {
+          return this.bodyRenderer.setInput(
+            accessor,
+            input,
+            options,
+            context,
+            token
+          )
+        }
+        return undefined
+      })
+
+      return super.setInput(input, options, context, token)
     }
   }
 
@@ -240,7 +275,7 @@ function registerEditorPane (options: EditorPanelOption): { disposable: IDisposa
     private description: Label = options.name
     private dirty: boolean = false
 
-    constructor (public override readonly closeHandler?: IEditorCloseHandler) {
+    constructor (public override readonly closeHandler?: IEditorCloseHandler, public baseInput?: IResourceEditorInput | ITextResourceEditorInput) {
       super()
     }
 
@@ -249,7 +284,7 @@ function registerEditorPane (options: EditorPanelOption): { disposable: IDisposa
     }
 
     override get resource (): URI | undefined {
-      return undefined
+      return this.baseInput?.resource
     }
 
     public setName (name: string) {
@@ -304,17 +339,48 @@ function registerEditorPane (options: EditorPanelOption): { disposable: IDisposa
     }
   }
 
-  const disposable = Registry.as<IEditorPaneRegistry>(EditorExtensions.EditorPane).registerEditorPane(
+  const disposableStore = new DisposableStore()
+
+  disposableStore.add(Registry.as<IEditorPaneRegistry>(EditorExtensions.EditorPane).registerEditorPane(
     EditorPaneDescriptor.create(
       CustomEditorPane,
       options.id,
       options.name
     ),
-    [new SyncDescriptor(CustomEditorInput)])
+    [new SyncDescriptor(CustomEditorInput)]))
 
   return {
-    disposable,
-    CustomEditorInput
+    disposable: disposableStore,
+    CustomEditorInput,
+    registerEditor (globPattern, registerEditorInfo = {}, registeredEditorOptions = {}, closeHandler): IDisposable {
+      if (!serviceInitializedBarrier.isOpen()) {
+        throw new Error("Can't register editor before services are initialized")
+      }
+
+      const resolverService = StandaloneServices.get(IEditorResolverService)
+      const registeredDisposable = resolverService.registerEditor(
+        globPattern,
+        {
+          id: CustomEditorInput.ID,
+          label: options.name,
+          priority: RegisteredEditorPriority.default,
+          ...registerEditorInfo
+        },
+        registeredEditorOptions,
+        {
+          createEditorInput (editorInput: IResourceEditorInput | ITextResourceEditorInput, _group: IEditorGroup) {
+            return {
+              options: {},
+              editor: new CustomEditorInput(closeHandler, editorInput)
+            }
+          }
+        }
+      )
+
+      disposableStore.add(registeredDisposable)
+
+      return registeredDisposable
+    }
   }
 }
 
@@ -652,6 +718,10 @@ export {
   IEditorCloseHandler,
   ConfirmResult,
   registerEditorPane,
+  RegisterEditorPaneResult,
+  RegisteredEditorInfoWithoutId as RegisterEditorOptions,
+  RegisteredEditorInfo,
+  RegisteredEditorOptions,
 
   renderPart,
   renderSidebarPart,
@@ -676,5 +746,7 @@ export {
   SidebarPart,
   ActivitybarPart,
   PanelPart,
-  Parts
+  Parts,
+
+  BodyRenderer
 }

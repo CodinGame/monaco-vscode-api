@@ -1,7 +1,8 @@
-import { IDialogService } from 'vscode/services'
+import { IDialogService, EditorInput } from 'vscode/services'
 import { registerCustomView, registerEditorPane, ViewContainerLocation } from '@codingame/monaco-vscode-views-service-override'
 import * as monaco from 'monaco-editor'
 import iconUrl from '../Visual_Studio_Code_1.35_icon.svg?url'
+import { ServicesAccessor } from 'vscode/vscode/vs/platform/instantiation/common/instantiation'
 
 registerCustomView({
   id: 'custom-view',
@@ -43,7 +44,7 @@ registerCustomView({
   }]
 })
 
-const { CustomEditorInput } = registerEditorPane({
+const { CustomEditorInput, registerEditor } = registerEditorPane({
   id: 'custom-editor-pane',
   name: 'Custom editor pane',
   renderBody (container) {
@@ -54,9 +55,19 @@ const { CustomEditorInput } = registerEditorPane({
 
     return {
       dispose () {
+      },
+
+      async setInput (_accessor: ServicesAccessor, input: EditorInput) {
+        if (input.resource != null) {
+          container.innerHTML = 'Opened file: ' + input.resource.path
+        } else {
+          container.innerHTML = 'This is a custom editor pane<br />You can render anything you want here'
+        }
       }
     }
   }
 })
+
+registerEditor('*.customeditor')
 
 export { CustomEditorInput }
