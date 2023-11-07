@@ -192,7 +192,7 @@ export class LayoutService implements ILayoutService, IWorkbenchLayoutService {
     return viewContainerModel.activeViewDescriptors.length >= 1
   }
 
-  setPartHidden (hidden: boolean, part: Exclude<Parts, Parts.STATUSBAR_PART | Parts.TITLEBAR_PART>): void {
+  setPartHidden (hidden: boolean, part: Parts): void {
     if (hidden) {
       this.hiddenParts.add(part)
     } else {
@@ -226,14 +226,10 @@ export class LayoutService implements ILayoutService, IWorkbenchLayoutService {
           void this.paneCompositeService.openPaneComposite(panelToOpen, location, true)
         }
       }
-
-      // The code that show or hide parts in vscode is not pulled by this library, so let's do it by hands here
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      if ((this.paneCompositeService as any).getPartByLocation != null) {
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        (this.paneCompositeService as any).getPartByLocation(location).setVisible(!hidden)
-      }
     }
+
+    // The code that show or hide parts in vscode is not pulled by this library, so let's do it by hands here
+    this.getPart(part).setVisible(!hidden)
   }
 
   isVisible (part: Parts): boolean {
