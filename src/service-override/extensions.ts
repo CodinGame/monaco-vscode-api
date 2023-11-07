@@ -433,13 +433,13 @@ export class SimpleExtensionService extends AbstractExtensionService implements 
 
   public async deltaExtensions (toAdd: IExtensionWithExtHostKind[], toRemove: IExtension[]): Promise<void> {
     const extHostPicker = (this._extensionHostKindPicker as LocalBrowserExtensionHostKindPicker)
+    for (const extension of toRemove) {
+      extHostPicker.removeForcedExtensionHostKind(extension.identifier.id)
+    }
     for (const extension of toAdd) {
       if (extension.extHostKind != null) {
         extHostPicker.setForcedExtensionHostKind(extension.identifier.id, extension.extHostKind)
       }
-    }
-    for (const extension of toRemove) {
-      extHostPicker.removeForcedExtensionHostKind(extension.identifier.id)
     }
 
     await this._handleDeltaExtensions(new DeltaExtensionsQueueItem(toAdd, toRemove))
