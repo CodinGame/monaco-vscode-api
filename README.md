@@ -364,6 +364,10 @@ It includes:
 From CLI run:
 
 ```bash
+# build monaco-vscode-api (the demo use it as a local dependency)
+npm ci
+npm run build
+# start demo
 cd demo
 npm ci
 npm start
