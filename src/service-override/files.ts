@@ -462,9 +462,7 @@ fileSystemProvider.register(0, new MkdirpOnWriteInMemoryFileSystemProvider())
 const extensionFileSystemProvider = new RegisteredFileSystemProvider(true)
 
 const providers: Record<string, IFileSystemProvider> = {
-  user: new InMemoryFileSystemProvider(),
   extension: extensionFileSystemProvider,
-  cache: new InMemoryFileSystemProvider(),
   logs: new InMemoryFileSystemProvider(),
   [Schemas.vscodeUserData]: new InMemoryFileSystemProvider(),
   [Schemas.tmp]: new InMemoryFileSystemProvider(),
