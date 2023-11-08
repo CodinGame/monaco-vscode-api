@@ -13,6 +13,8 @@ import { HTMLFileSystemProvider } from 'vs/platform/files/browser/htmlFileSystem
 import * as path from 'vs/base/common/path'
 import 'vs/workbench/contrib/files/browser/files.contribution.js?include=registerConfiguration'
 import { Schemas } from 'vs/base/common/network'
+import { IndexedDBFileSystemProvider } from 'vs/platform/files/browser/indexedDBFileSystemProvider'
+import { IndexedDB } from 'vs/base/browser/indexedDB'
 
 abstract class RegisteredFile {
   private ctime: number
@@ -534,6 +536,8 @@ export {
   FilePermission,
   HTMLFileSystemProvider,
   InMemoryFileSystemProvider,
+  IndexedDB,
+  IndexedDBFileSystemProvider,
   RegisteredFileSystemProvider,
   RegisteredFile,
   RegisteredReadOnlyFile,
