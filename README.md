@@ -364,6 +364,10 @@ It includes:
 From CLI run:
 
 ```bash
+# build monaco-vscode-api (the demo use it as a local dependency)
+npm ci
+npm run build
+# start demo
 cd demo
 npm ci
 npm start
@@ -375,6 +379,8 @@ For the debug feature, also run:
 ```bash
 npm run start:debugServer
 ```
+
+⚠️ Building monaco-vscode-api is only supported on Linux or Mac. It you use Windows, have a look at [WSL](https://learn.microsoft.com/windows/wsl/install) ⚠️
 
 #### Remote agent
 
