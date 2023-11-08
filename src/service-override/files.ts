@@ -13,6 +13,8 @@ import { HTMLFileSystemProvider } from 'vs/platform/files/browser/htmlFileSystem
 import * as path from 'vs/base/common/path'
 import 'vs/workbench/contrib/files/browser/files.contribution.js?include=registerConfiguration'
 import { Schemas } from 'vs/base/common/network'
+import { IndexedDBFileSystemProvider } from 'vs/platform/files/browser/indexedDBFileSystemProvider'
+import { IndexedDB } from 'vs/base/browser/indexedDB'
 
 abstract class RegisteredFile {
   private ctime: number
@@ -458,23 +460,30 @@ const fileSystemProvider = new OverlayFileSystemProvider()
 fileSystemProvider.register(0, new MkdirpOnWriteInMemoryFileSystemProvider())
 
 const extensionFileSystemProvider = new RegisteredFileSystemProvider(true)
+
+const providers: Record<string, IFileSystemProvider> = {
+  user: new InMemoryFileSystemProvider(),
+  extension: extensionFileSystemProvider,
+  cache: new InMemoryFileSystemProvider(),
+  logs: new InMemoryFileSystemProvider(),
+  [Schemas.vscodeUserData]: new InMemoryFileSystemProvider(),
+  [Schemas.tmp]: new InMemoryFileSystemProvider(),
+  file: fileSystemProvider
+}
+
 class MemoryFileService extends FileService {
   constructor (@ILogService logService: ILogService) {
     super(logService)
 
-    const userMemoryFileSystem = new InMemoryFileSystemProvider()
-
-    this.registerProvider('user', userMemoryFileSystem)
-    this.registerProvider('extension', extensionFileSystemProvider)
-    this.registerProvider('cache', new InMemoryFileSystemProvider())
-    this.registerProvider('logs', new InMemoryFileSystemProvider())
-    this.registerProvider(Schemas.vscodeUserData, new InMemoryFileSystemProvider())
-    this.registerProvider(Schemas.tmp, new InMemoryFileSystemProvider())
-    let fileSystemProviderDisposable = this.registerProvider('file', fileSystemProvider)
-    fileSystemProvider.onDidChangeOverlays(() => {
-      fileSystemProviderDisposable.dispose()
-      fileSystemProviderDisposable = this.registerProvider('file', fileSystemProvider)
-    })
+    for (const [scheme, provider] of Object.entries(providers)) {
+      let disposable = this.registerProvider(scheme, provider)
+      if (provider instanceof OverlayFileSystemProvider) {
+        provider.onDidChangeOverlays(() => {
+          disposable.dispose()
+          disposable = this.registerProvider('file', fileSystemProvider)
+        })
+      }
+    }
   }
 }
 
@@ -482,6 +491,14 @@ export default function getServiceOverride (): IEditorOverrideServices {
   return {
     [IFileService.toString()]: new SyncDescriptor(MemoryFileService, [], true)
   }
+}
+
+/**
+ * Register a custom file system provider for the given scheme. This allows us to override
+ * the default file system provider for a given scheme.
+ */
+export function registerCustomProvider (scheme: string, provider: IFileSystemProvider): void {
+  providers[scheme] = provider
 }
 
 export function registerExtensionFile (extensionLocation: URI, filePath: string, getContent: () => Promise<string | Uint8Array>): IDisposable {
@@ -519,6 +536,8 @@ export {
   FilePermission,
   HTMLFileSystemProvider,
   InMemoryFileSystemProvider,
+  IndexedDB,
+  IndexedDBFileSystemProvider,
   RegisteredFileSystemProvider,
   RegisteredFile,
   RegisteredReadOnlyFile,
