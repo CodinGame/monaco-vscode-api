@@ -380,6 +380,8 @@ For the debug feature, also run:
 npm run start:debugServer
 ```
 
+⚠️ Building monaco-vscode-api is only supported on Linux or Mac. It you use Windows, have a look at [WSL](https://learn.microsoft.com/fr-fr/windows/wsl/install) ⚠️
+
 #### Remote agent
 
 To connect to a remote agent, run:
