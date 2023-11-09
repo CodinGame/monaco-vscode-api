@@ -282,15 +282,27 @@ The api will use the manifest of a default vscode extension, which can be overri
 
 You can also register a new extension from its manifest:
 ```typescript
-import { registerExtension, initialize } from 'vscode/extensions'
+import { registerExtension, initialize, ExtensionHostKind } from 'vscode/extensions'
 
 await initialize()
 
-const { registerFile: registerExtensionFile, getApi } = registerExtension(defaultThemesExtensions)
+const extension = {
+  name: 'my-extension',
+  publisher: 'someone',
+  version: '1.0.0',
+  engines: {
+      vscode: '*'
+  },
+  contributes: {
+  }
+}
+const { registerFileUrl, getApi } = registerExtension(extension, ExtensionHostKind.LocalProcess)
 
-registerExtensionFile('/file.json', async () => fileContent)
+registerFileUrl('/file-extension-path.json', new URL('./file-real-path.json', import.meta.url).toString())
 
-getApi().then(vscodeApi => vscodeApi.languages.registerCompletionItemProvider(...))
+const vscode = await getApi()
+
+vscode.languages.registerCompletionItemProvider(...)
 
 ```
 

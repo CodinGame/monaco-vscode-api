@@ -460,11 +460,16 @@ const fileSystemProvider = new OverlayFileSystemProvider()
 fileSystemProvider.register(0, new MkdirpOnWriteInMemoryFileSystemProvider())
 
 const extensionFileSystemProvider = new RegisteredFileSystemProvider(true)
+const userDataFileSystemProvider = new InMemoryFileSystemProvider()
+
+// Initialize /User/ folder to be able to write configuration and keybindings in it before the fileService is initialized
+// The `mkdirp` logic is inside the service, and the provider will just fail if asked to write a file in a non-existent directory
+void userDataFileSystemProvider.mkdir(URI.from({ scheme: Schemas.vscodeUserData, path: '/User/' }))
 
 const providers: Record<string, IFileSystemProvider> = {
   extension: extensionFileSystemProvider,
   logs: new InMemoryFileSystemProvider(),
-  [Schemas.vscodeUserData]: new InMemoryFileSystemProvider(),
+  [Schemas.vscodeUserData]: userDataFileSystemProvider,
   [Schemas.tmp]: new InMemoryFileSystemProvider(),
   file: fileSystemProvider
 }
@@ -478,7 +483,7 @@ class MemoryFileService extends FileService {
       if (provider instanceof OverlayFileSystemProvider) {
         provider.onDidChangeOverlays(() => {
           disposable.dispose()
-          disposable = this.registerProvider('file', fileSystemProvider)
+          disposable = this.registerProvider(scheme, fileSystemProvider)
         })
       }
     }
@@ -501,6 +506,24 @@ export function registerCustomProvider (scheme: string, provider: IFileSystemPro
 
 export function registerExtensionFile (extensionLocation: URI, filePath: string, getContent: () => Promise<string | Uint8Array>): IDisposable {
   return extensionFileSystemProvider.registerFile(new RegisteredReadOnlyFile(joinPath(extensionLocation, filePath), getContent))
+}
+
+/**
+ * Can be used to create a file before the fileService is initialized
+ */
+export async function initFile (scheme: string, file: URI, content: Uint8Array | string, options?: Partial<IFileWriteOptions>): Promise<void> {
+  const provider = providers[scheme]
+  if (provider == null || provider.writeFile == null) {
+    throw new Error(`${scheme} provider doesn't exist or doesn't support writing files`)
+  }
+
+  await provider.writeFile(file, content instanceof Uint8Array ? content : encoder.encode(content), {
+    atomic: false,
+    create: true,
+    overwrite: false,
+    unlock: false,
+    ...options
+  })
 }
 
 /**

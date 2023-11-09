@@ -77,7 +77,6 @@ import { WebviewService } from 'vs/workbench/contrib/webview/browser/webviewServ
 import { IWebviewWorkbenchService, WebviewEditorService } from 'vs/workbench/contrib/webviewPanel/browser/webviewWorkbenchService'
 import { IWebviewService } from 'vs/workbench/contrib/webview/browser/webview'
 import { IWebviewViewService, WebviewViewService } from 'vs/workbench/contrib/webviewView/browser/webviewViewService'
-import { ILifecycleService, LifecyclePhase } from 'vs/workbench/services/lifecycle/common/lifecycle'
 import { IWorkbenchLayoutService, Parts, Position, positionToString } from 'vs/workbench/services/layout/browser/layoutService'
 import { EditorPaneDescriptor, IEditorPaneRegistry } from 'vs/workbench/browser/editor'
 import { EditorPane } from 'vs/workbench/browser/parts/editor/editorPane'
@@ -349,7 +348,9 @@ function registerCustomView (options: CustomViewOption): IDisposable {
     ctorDescriptor: new SyncDescriptor(ViewPaneContainer, [options.id, { mergeViewWithContainerWhenSingleView: true }]),
     hideIfEmpty: true,
     icon: iconUrl
-  }, options.location)
+  }, options.location, {
+    isDefault: options.default
+  })
 
   const views: IViewDescriptor[] = [{
     id: options.id,
@@ -388,12 +389,6 @@ function registerCustomView (options: CustomViewOption): IDisposable {
   }]
 
   Registry.as<IViewsRegistry>(ViewExtensions.ViewsRegistry).registerViews(views, VIEW_CONTAINER)
-
-  if (options.default ?? false) {
-    void StandaloneServices.get(ILifecycleService).when(LifecyclePhase.Eventually).then(() => {
-      void StandaloneServices.get(IViewsService).openViewContainer(options.id)
-    })
-  }
 
   const disposableCollection = new DisposableStore()
   disposableCollection.add({

@@ -6,7 +6,7 @@ import { VSBuffer } from 'vs/base/common/buffer'
 import { IUserDataProfilesService } from 'vs/platform/userDataProfile/common/userDataProfile'
 import { IKeyboardLayoutService } from 'vs/platform/keyboardLayout/common/keyboardLayout'
 import { BrowserKeyboardLayoutService } from 'vs/workbench/services/keybinding/browser/keyboardLayoutService'
-import { IFileService } from 'vs/platform/files/common/files'
+import { IFileService, IFileWriteOptions } from 'vs/platform/files/common/files'
 import { ICommandService } from 'vs/platform/commands/common/commands'
 import { CommandService } from 'vs/workbench/services/commands/common/commandService'
 import { ResolvedKeybindingItem } from 'vs/platform/keybinding/common/resolvedKeybindingItem'
@@ -21,12 +21,28 @@ import { IHostService } from 'vs/workbench/services/host/browser/host'
 import { IExtensionService } from 'vs/workbench/services/extensions/common/extensions'
 import { ILogService } from 'vs/platform/log/common/log'
 import { WorkbenchContextKeysHandler } from 'vs/workbench/browser/contextkeys'
-import getFileServiceOverride from './files'
+import { Schemas } from 'vs/base/common/network'
+import { URI } from 'vs/base/common/uri'
+import getFileServiceOverride, { initFile } from './files'
 import { DynamicKeybindingService } from '../monaco'
-import 'vs/workbench/browser/workbench.contribution'
-import 'vs/workbench/contrib/keybindings/browser/keybindings.contribution'
 import { onRenderWorkbench } from '../lifecycle'
 import { IInstantiationService } from '../services'
+import 'vs/workbench/browser/workbench.contribution'
+import 'vs/workbench/contrib/keybindings/browser/keybindings.contribution'
+
+// This is the default value, but can be overriden by overriding the Environment or UserDataProfileService service
+const defaultUserKeybindindsFile = URI.from({ scheme: Schemas.vscodeUserData, path: '/User/keybindings.json' })
+
+/**
+ * Should be called only BEFORE the service are initialized to initialize the file on the filesystem before the keybindings service initializes
+ */
+async function initUserKeybindings (configurationJson: string, options?: Partial<IFileWriteOptions>, file: URI = defaultUserKeybindindsFile): Promise<void> {
+  await initFile(defaultUserKeybindindsFile.scheme, file, configurationJson, options)
+}
+
+/**
+ * Can be called at any time after the services are initialized to update the user configuration
+ */
 
 async function updateUserKeybindings (keybindingsJson: string): Promise<void> {
   const userDataProfilesService: IUserDataProfilesService = StandaloneServices.get(IUserDataProfilesService)
@@ -100,6 +116,8 @@ export default function getServiceOverride ({ shouldUseGlobalKeybindings = () =>
 }
 
 export {
+  defaultUserKeybindindsFile,
+  initUserKeybindings,
   updateUserKeybindings,
   IUserFriendlyKeybinding
 }
