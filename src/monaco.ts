@@ -63,6 +63,7 @@ import 'vs/workbench/contrib/folding/browser/folding.contribution'
 import 'vs/workbench/contrib/inlayHints/browser/inlayHintsAccessibilty'
 import 'vs/workbench/contrib/codeActions/browser/codeActions.contribution'
 import 'vs/workbench/contrib/list/browser/list.contribution'
+import 'vs/workbench/contrib/codeEditor/browser/editorFeatures'
 
 class ExtensionPoints implements IWorkbenchContribution {
   constructor (

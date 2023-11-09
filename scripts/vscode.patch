@@ -319,10 +319,19 @@ index 23d547570e9..31dfb4fd8d4 100644
  
  export * from 'vs/editor/editor.api';
 diff --git a/src/vs/editor/standalone/browser/standaloneServices.ts b/src/vs/editor/standalone/browser/standaloneServices.ts
-index 01f2c6987ac..5d6abf9d561 100644
+index 01f2c6987ac..fcd285d22b5 100644
 --- a/src/vs/editor/standalone/browser/standaloneServices.ts
 +++ b/src/vs/editor/standalone/browser/standaloneServices.ts
-@@ -517,10 +517,14 @@ export class StandaloneKeybindingService extends AbstractKeybindingService {
+@@ -89,8 +89,6 @@ import { DefaultConfiguration } from 'vs/platform/configuration/common/configura
+ import { WorkspaceEdit } from 'vs/editor/common/languages';
+ import { AudioCue, IAudioCueService, Sound } from 'vs/platform/audioCues/browser/audioCueService';
+ import { LogService } from 'vs/platform/log/common/logService';
+-import { getEditorFeatures } from 'vs/editor/common/editorFeatures';
+-import { onUnexpectedError } from 'vs/base/common/errors';
+ import { ExtensionKind, IEnvironmentService, IExtensionHostDebugParams } from 'vs/platform/environment/common/environment';
+ 
+ class SimpleModel implements IResolvedTextEditorModel {
+@@ -517,10 +515,14 @@ export class StandaloneKeybindingService extends AbstractKeybindingService {
  		this._onDidUpdateKeybindings.fire();
  	}
  
@@ -338,6 +347,23 @@ index 01f2c6987ac..5d6abf9d561 100644
  			this._cachedResolver = new KeybindingResolver(defaults, overrides, (str) => this._log(str));
  		}
  		return this._cachedResolver;
+@@ -1155,16 +1157,6 @@ export module StandaloneServices {
+ 			}
+ 		}
+ 
+-		// Instantiate all editor features
+-		const editorFeatures = getEditorFeatures();
+-		for (const feature of editorFeatures) {
+-			try {
+-				instantiationService.createInstance(feature);
+-			} catch (err) {
+-				onUnexpectedError(err);
+-			}
+-		}
+-
+ 		onDidInitialize.fire();
+ 
+ 		return instantiationService;
 diff --git a/src/vs/nls.ts b/src/vs/nls.ts
 index db57b98d67b..defd683e0b0 100644
 --- a/src/vs/nls.ts
