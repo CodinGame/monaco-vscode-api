@@ -95,7 +95,7 @@ diagnostics.set(modelRef.object.textEditorModel!.uri, [{
   code: 42
 }])
 
-const settingsModelReference = await createModelReference(monaco.Uri.from({ scheme: 'user', path: '/settings.json' }), `{
+const settingsModelReference = await createModelReference(monaco.Uri.from({ scheme: 'user-store', path: '/User/settings.json' }), `{
   "workbench.colorTheme": "Default Dark+",
   "workbench.iconTheme": "vs-seti",
   "editor.autoClosingBrackets": "languageDefined",
@@ -134,7 +134,7 @@ settingEditor.addAction({
   contextMenuGroupId: 'custom'
 })
 
-const keybindingsModelReference = await createModelReference(monaco.Uri.from({ scheme: 'user', path: '/keybindings.json' }), `[
+const keybindingsModelReference = await createModelReference(monaco.Uri.from({ scheme: 'user-store', path: '/User/keybindings.json' }), `[
   {
     "key": "ctrl+d",
     "command": "editor.action.deleteLines",

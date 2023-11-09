@@ -28,7 +28,7 @@ import { IPreferencesService } from 'vs/workbench/services/preferences/common/pr
 import { IContextKeyService } from 'vs/platform/contextkey/common/contextkey'
 import { StandaloneServices } from 'vs/editor/standalone/browser/standaloneServices'
 import { ICodeEditorService } from 'vs/editor/browser/services/codeEditorService'
-import { IUserDataProfile, IUserDataProfilesService } from 'vs/platform/userDataProfile/common/userDataProfile'
+import { IUserDataProfilesService, toUserDataProfile } from 'vs/platform/userDataProfile/common/userDataProfile'
 import { IPolicyService } from 'vs/platform/policy/common/policy'
 import { IUserDataProfileImportExportService, IUserDataProfileService } from 'vs/workbench/services/userDataProfile/common/userDataProfile'
 import { UserDataProfileService } from 'vs/workbench/services/userDataProfile/common/userDataProfileService'
@@ -172,6 +172,7 @@ import { BrowserHostService } from 'vs/workbench/services/host/browser/browserHo
 import { IBannerService } from 'vs/workbench/services/banner/browser/bannerService'
 import { ITitleService } from 'vs/workbench/services/title/common/titleService'
 import { IChatAgentService } from 'vs/workbench/contrib/chat/common/chatAgents'
+import { joinPath } from 'vs/base/common/resources'
 import { unsupported } from './tools'
 import { getBuiltInExtensionTranslationsUris } from './l10n'
 
@@ -504,9 +505,11 @@ registerSingleton(IUserDataInitializationService, class NullUserDataInitializati
 
 registerSingleton(IHostColorSchemeService, BrowserHostColorSchemeService, InstantiationType.Eager)
 
-registerSingleton(IPreferencesService, class PreferencesService implements IPreferencesService {
+class PreferencesService implements IPreferencesService {
+  constructor (@IUserDataProfileService protected readonly profileService: IUserDataProfileService) {}
+
   _serviceBrand: undefined
-  userSettingsResource = profile.settingsResource
+  userSettingsResource = this.profileService.currentProfile.settingsResource
   workspaceSettingsResource = null
   getFolderSettingsResource = unsupported
   createPreferencesEditorModel = unsupported
@@ -524,7 +527,9 @@ registerSingleton(IPreferencesService, class PreferencesService implements IPref
   createSplitJsonEditorInput = unsupported
   openApplicationSettings = unsupported
   openLanguageSpecificSettings = unsupported
-}, InstantiationType.Eager)
+}
+
+registerSingleton(IPreferencesService, PreferencesService, InstantiationType.Eager)
 
 registerSingleton(ITextMateTokenizationService, class NullTextMateService implements ITextMateTokenizationService {
   _serviceBrand: undefined
@@ -534,21 +539,9 @@ registerSingleton(ITextMateTokenizationService, class NullTextMateService implem
   createTokenizer = unsupported
 }, InstantiationType.Eager)
 
-const profile: IUserDataProfile = {
-  id: 'default',
-  isDefault: true,
-  name: 'default',
-  location: URI.from({ scheme: 'user', path: '/profile.json' }),
-  globalStorageHome: URI.from({ scheme: 'user', path: '/globalStorage' }),
-  settingsResource: URI.from({ scheme: 'user', path: '/settings.json' }),
-  keybindingsResource: URI.from({ scheme: 'user', path: '/keybindings.json' }),
-  tasksResource: URI.from({ scheme: 'user', path: '/tasks.json' }),
-  snippetsHome: URI.from({ scheme: 'user', path: '/snippets' }),
-  extensionsResource: URI.from({ scheme: 'user', path: '/extensions.json' }),
-  cacheHome: URI.from({ scheme: 'cache', path: '/' })
-}
+class UserDataProfilesService implements IUserDataProfilesService {
+  constructor (@IUserDataProfileService protected readonly profileService: IUserDataProfileService) {}
 
-registerSingleton(IUserDataProfilesService, class UserDataProfilesService implements IUserDataProfilesService {
   _serviceBrand: undefined
   onDidResetWorkspaces = Event.None
   isEnabled = () => false
@@ -558,18 +551,28 @@ registerSingleton(IUserDataProfilesService, class UserDataProfilesService implem
   cleanUp = unsupported
   cleanUpTransientProfiles = unsupported
   get profilesHome () { return unsupported() }
-  defaultProfile = profile
+  defaultProfile = this.profileService.currentProfile
   onDidChangeProfiles = Event.None
-  profiles = [profile]
+  profiles = [this.profileService.currentProfile]
   createProfile = unsupported
   updateProfile = unsupported
   setProfileForWorkspace = unsupported
-  getProfile = () => profile
+  getProfile = () => this.profileService.currentProfile
   removeProfile = unsupported
-}, InstantiationType.Eager)
+}
+
+registerSingleton(IUserDataProfilesService, UserDataProfilesService, InstantiationType.Eager)
 class InjectedUserDataProfileService extends UserDataProfileService {
-  constructor () {
-    super(profile)
+  constructor (@IEnvironmentService environmentService: IEnvironmentService) {
+    super({
+      ...toUserDataProfile(
+        '__default__profile__',
+        'Default',
+        environmentService.userRoamingDataHome,
+        joinPath(environmentService.cacheHome, 'CachedProfilesData')
+      ),
+      isDefault: true
+    })
   }
 }
 registerSingleton(IUserDataProfileService, InjectedUserDataProfileService, InstantiationType.Eager)
