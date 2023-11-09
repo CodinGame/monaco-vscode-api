@@ -5,6 +5,8 @@ import { registerFileSystemOverlay, HTMLFileSystemProvider } from '@codingame/mo
 import * as vscode from 'vscode'
 import { ILogService, StandaloneServices, IPreferencesService, IEditorService, IDialogService, getService } from 'vscode/services'
 import { ConfirmResult, Parts, isPartVisibile, setPartVisibility } from '@codingame/monaco-vscode-views-service-override'
+import { defaultUserConfigurationFile } from '@codingame/monaco-vscode-configuration-service-override'
+import { defaultUserKeybindindsFile } from '@codingame/monaco-vscode-keybindings-service-override'
 import { clearStorage, remoteAuthority } from './setup'
 import { CustomEditorInput } from './features/customView'
 import './features/debugger'
@@ -94,7 +96,7 @@ diagnostics.set(modelRef.object.textEditorModel!.uri, [{
   source: 'Demo',
   code: 42
 }])
-const settingsModelReference = await createModelReference(monaco.Uri.from({ scheme: 'user-store', path: '/User/settings.json' }))
+const settingsModelReference = await createModelReference(defaultUserConfigurationFile)
 const settingEditor = createConfiguredEditor(document.getElementById('settings-editor')!, {
   model: settingsModelReference.object.textEditorModel,
   automaticLayout: true
@@ -112,7 +114,7 @@ settingEditor.addAction({
   contextMenuGroupId: 'custom'
 })
 
-const keybindingsModelReference = await createModelReference(monaco.Uri.from({ scheme: 'user-store', path: '/User/keybindings.json' }))
+const keybindingsModelReference = await createModelReference(defaultUserKeybindindsFile)
 createConfiguredEditor(document.getElementById('keybindings-editor')!, {
   model: keybindingsModelReference.object.textEditorModel,
   automaticLayout: true

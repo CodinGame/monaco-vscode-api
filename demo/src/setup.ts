@@ -3,8 +3,8 @@ import { initialize as initializeVscodeExtensions } from 'vscode/extensions'
 import getModelServiceOverride from '@codingame/monaco-vscode-model-service-override'
 import getNotificationServiceOverride from '@codingame/monaco-vscode-notifications-service-override'
 import getDialogsServiceOverride from '@codingame/monaco-vscode-dialogs-service-override'
-import getConfigurationServiceOverride from '@codingame/monaco-vscode-configuration-service-override'
-import getKeybindingsServiceOverride from '@codingame/monaco-vscode-keybindings-service-override'
+import getConfigurationServiceOverride, { initUserConfiguration } from '@codingame/monaco-vscode-configuration-service-override'
+import getKeybindingsServiceOverride, { initUserKeybindings } from '@codingame/monaco-vscode-keybindings-service-override'
 import getTextmateServiceOverride from '@codingame/monaco-vscode-textmate-service-override'
 import getThemeServiceOverride from '@codingame/monaco-vscode-theme-service-override'
 import getLanguagesServiceOverride from '@codingame/monaco-vscode-languages-service-override'
@@ -35,7 +35,6 @@ import getRemoteAgentServiceOverride from '@codingame/monaco-vscode-remote-agent
 import getEnvironmentServiceOverride from '@codingame/monaco-vscode-environment-service-override'
 import getLifecycleServiceOverride from '@codingame/monaco-vscode-lifecycle-service-override'
 import getWorkspaceTrustOverride from '@codingame/monaco-vscode-workspace-trust-service-override'
-import { registerCustomProvider, RegisteredFileSystemProvider, RegisteredMemoryFile } from '@codingame/monaco-vscode-files-service-override'
 import EditorWorker from 'monaco-editor/esm/vs/editor/editor.worker.js?worker'
 import TextMateWorker from '@codingame/monaco-vscode-textmate-service-override/worker?worker'
 import OutputLinkComputerWorker from '@codingame/monaco-vscode-output-service-override/worker?worker'
@@ -70,38 +69,37 @@ const connectionToken = params.get('connectionToken') ?? undefined
 const remotePath = remoteAuthority != null ? params.get('remotePath') ?? undefined : undefined
 
 // Set configuration before initializing service so it's directly available (especially for the theme, to prevent a flicker)
-const userFileSystemProvider = new RegisteredFileSystemProvider(false)
-registerCustomProvider('user', userFileSystemProvider)
-userFileSystemProvider.registerFile(new RegisteredMemoryFile(monaco.Uri.from({ scheme: 'user-store', path: '/User/settings.json' }), `{
-  "workbench.colorTheme": "Default Dark+",
-  "workbench.iconTheme": "vs-seti",
-  "editor.autoClosingBrackets": "languageDefined",
-  "editor.autoClosingQuotes": "languageDefined",
-  "editor.scrollBeyondLastLine": true,
-  "editor.mouseWheelZoom": true,
-  "editor.wordBasedSuggestions": false,
-  "editor.acceptSuggestionOnEnter": "on",
-  "editor.foldingHighlight": false,
-  "editor.semanticHighlighting.enabled": true,
-  "editor.bracketPairColorization.enabled": false,
-  "editor.fontSize": 12,
-  "audioCues.lineHasError": "on",
-  "audioCues.onDebugBreak": "on",
-  "files.autoSave": "afterDelay",
-  "files.autoSaveDelay": 1000,
-  "debug.toolBarLocation": "docked",
-  "editor.experimental.asyncTokenization": true,
-  "terminal.integrated.tabs.title": "\${sequence}",
-  "typescript.tsserver.log": "normal"
-}`))
-
-userFileSystemProvider.registerFile(new RegisteredMemoryFile(monaco.Uri.from({ scheme: 'user-store', path: '/User/keybindings.json' }), `[
-  {
-    "key": "ctrl+d",
-    "command": "editor.action.deleteLines",
-    "when": "editorTextFocus"
-  }
-]`))
+await Promise.all([
+  initUserConfiguration(`{
+    "workbench.colorTheme": "Default Dark+",
+    "workbench.iconTheme": "vs-seti",
+    "editor.autoClosingBrackets": "languageDefined",
+    "editor.autoClosingQuotes": "languageDefined",
+    "editor.scrollBeyondLastLine": true,
+    "editor.mouseWheelZoom": true,
+    "editor.wordBasedSuggestions": false,
+    "editor.acceptSuggestionOnEnter": "on",
+    "editor.foldingHighlight": false,
+    "editor.semanticHighlighting.enabled": true,
+    "editor.bracketPairColorization.enabled": false,
+    "editor.fontSize": 12,
+    "audioCues.lineHasError": "on",
+    "audioCues.onDebugBreak": "on",
+    "files.autoSave": "afterDelay",
+    "files.autoSaveDelay": 1000,
+    "debug.toolBarLocation": "docked",
+    "editor.experimental.asyncTokenization": true,
+    "terminal.integrated.tabs.title": "\${sequence}",
+    "typescript.tsserver.log": "normal"
+  }`),
+  initUserKeybindings(`[
+    {
+      "key": "ctrl+d",
+      "command": "editor.action.deleteLines",
+      "when": "editorTextFocus"
+    }
+  ]`)
+])
 
 // Override services
 await initializeMonacoService({
