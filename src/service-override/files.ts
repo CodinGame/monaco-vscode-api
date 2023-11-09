@@ -478,7 +478,7 @@ class MemoryFileService extends FileService {
       if (provider instanceof OverlayFileSystemProvider) {
         provider.onDidChangeOverlays(() => {
           disposable.dispose()
-          disposable = this.registerProvider('file', fileSystemProvider)
+          disposable = this.registerProvider(scheme, fileSystemProvider)
         })
       }
     }
