@@ -1150,6 +1150,19 @@ index f23c48b7db1..3a638425a2d 100644
  	}
  
  	isVisible(): boolean {
+diff --git a/src/vs/workbench/common/views.ts b/src/vs/workbench/common/views.ts
+index 84cee2b04a6..63167893dd7 100644
+--- a/src/vs/workbench/common/views.ts
++++ b/src/vs/workbench/common/views.ts
+@@ -217,7 +217,7 @@ class ViewContainersRegistryImpl extends Disposable implements IViewContainersRe
+ 		const viewContainers = getOrSet(this.viewContainers, viewContainerLocation, []);
+ 		viewContainers.push(viewContainer);
+ 		if (options?.isDefault) {
+-			this.defaultViewContainers.push(viewContainer);
++			this.defaultViewContainers.unshift(viewContainer);
+ 		}
+ 		this._onDidRegister.fire({ viewContainer, viewContainerLocation });
+ 		return viewContainer;
 diff --git a/src/vs/workbench/contrib/terminal/browser/terminalInstance.ts b/src/vs/workbench/contrib/terminal/browser/terminalInstance.ts
 index e6ae569ad9d..3b2ac782391 100644
 --- a/src/vs/workbench/contrib/terminal/browser/terminalInstance.ts
