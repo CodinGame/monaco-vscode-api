@@ -94,29 +94,7 @@ diagnostics.set(modelRef.object.textEditorModel!.uri, [{
   source: 'Demo',
   code: 42
 }])
-
-const settingsModelReference = await createModelReference(monaco.Uri.from({ scheme: 'user-store', path: '/User/settings.json' }), `{
-  "workbench.colorTheme": "Default Dark+",
-  "workbench.iconTheme": "vs-seti",
-  "editor.autoClosingBrackets": "languageDefined",
-  "editor.autoClosingQuotes": "languageDefined",
-  "editor.scrollBeyondLastLine": true,
-  "editor.mouseWheelZoom": true,
-  "editor.wordBasedSuggestions": false,
-  "editor.acceptSuggestionOnEnter": "on",
-  "editor.foldingHighlight": false,
-  "editor.semanticHighlighting.enabled": true,
-  "editor.bracketPairColorization.enabled": false,
-  "editor.fontSize": 12,
-  "audioCues.lineHasError": "on",
-  "audioCues.onDebugBreak": "on",
-  "files.autoSave": "afterDelay",
-  "files.autoSaveDelay": 1000,
-  "debug.toolBarLocation": "docked",
-  "editor.experimental.asyncTokenization": true,
-  "terminal.integrated.tabs.title": "\${sequence}",
-  "typescript.tsserver.log": "normal"
-}`)
+const settingsModelReference = await createModelReference(monaco.Uri.from({ scheme: 'user-store', path: '/User/settings.json' }))
 const settingEditor = createConfiguredEditor(document.getElementById('settings-editor')!, {
   model: settingsModelReference.object.textEditorModel,
   automaticLayout: true
@@ -134,13 +112,7 @@ settingEditor.addAction({
   contextMenuGroupId: 'custom'
 })
 
-const keybindingsModelReference = await createModelReference(monaco.Uri.from({ scheme: 'user-store', path: '/User/keybindings.json' }), `[
-  {
-    "key": "ctrl+d",
-    "command": "editor.action.deleteLines",
-    "when": "editorTextFocus"
-  }
-]`)
+const keybindingsModelReference = await createModelReference(monaco.Uri.from({ scheme: 'user-store', path: '/User/keybindings.json' }))
 createConfiguredEditor(document.getElementById('keybindings-editor')!, {
   model: keybindingsModelReference.object.textEditorModel,
   automaticLayout: true
