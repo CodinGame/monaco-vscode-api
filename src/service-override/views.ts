@@ -77,7 +77,6 @@ import { WebviewService } from 'vs/workbench/contrib/webview/browser/webviewServ
 import { IWebviewWorkbenchService, WebviewEditorService } from 'vs/workbench/contrib/webviewPanel/browser/webviewWorkbenchService'
 import { IWebviewService } from 'vs/workbench/contrib/webview/browser/webview'
 import { IWebviewViewService, WebviewViewService } from 'vs/workbench/contrib/webviewView/browser/webviewViewService'
-import { ILifecycleService, LifecyclePhase } from 'vs/workbench/services/lifecycle/common/lifecycle'
 import { IWorkbenchLayoutService, Parts, Position, positionToString } from 'vs/workbench/services/layout/browser/layoutService'
 import { EditorPaneDescriptor, IEditorPaneRegistry } from 'vs/workbench/browser/editor'
 import { EditorPane } from 'vs/workbench/browser/parts/editor/editorPane'
