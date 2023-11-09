@@ -349,7 +349,9 @@ function registerCustomView (options: CustomViewOption): IDisposable {
     ctorDescriptor: new SyncDescriptor(ViewPaneContainer, [options.id, { mergeViewWithContainerWhenSingleView: true }]),
     hideIfEmpty: true,
     icon: iconUrl
-  }, options.location)
+  }, options.location, {
+    isDefault: options.default
+  })
 
   const views: IViewDescriptor[] = [{
     id: options.id,
@@ -388,12 +390,6 @@ function registerCustomView (options: CustomViewOption): IDisposable {
   }]
 
   Registry.as<IViewsRegistry>(ViewExtensions.ViewsRegistry).registerViews(views, VIEW_CONTAINER)
-
-  if (options.default ?? false) {
-    void StandaloneServices.get(ILifecycleService).when(LifecyclePhase.Eventually).then(() => {
-      void StandaloneServices.get(IViewsService).openViewContainer(options.id)
-    })
-  }
 
   const disposableCollection = new DisposableStore()
   disposableCollection.add({
