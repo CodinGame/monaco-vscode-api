@@ -8,7 +8,7 @@ import { ConfigurationScope } from 'vscode/src/vs/platform/configuration/common/
 import { IConfigurationRegistry, Extensions as ConfigurationExtensions, IConfigurationNode, IConfigurationDefaults } from 'vs/platform/configuration/common/configurationRegistry'
 import { Registry } from 'vs/platform/registry/common/platform'
 import { VSBuffer } from 'vs/base/common/buffer'
-import { IFileService } from 'vs/platform/files/common/files'
+import { IFileService, IFileWriteOptions } from 'vs/platform/files/common/files'
 import { ILogService } from 'vs/platform/log/common/log'
 import { IColorCustomizations, IThemeScopedColorCustomizations } from 'vs/workbench/services/themes/common/workbenchThemeService'
 import { IUserDataProfilesService } from 'vs/platform/userDataProfile/common/userDataProfile'
@@ -32,12 +32,26 @@ import { AbstractWorkspaceEditingService } from 'vs/workbench/services/workspace
 import { URI } from 'vs/base/common/uri'
 import 'vs/workbench/api/common/configurationExtensionPoint'
 import { IBrowserWorkbenchEnvironmentService } from 'vs/workbench/services/environment/browser/environmentService'
-import getFileServiceOverride from './files'
+import getFileServiceOverride, { initFile } from './files'
 import { memoizedConstructor, unsupported } from '../tools'
 import { registerServiceInitializePreParticipant } from '../lifecycle'
+import { getService } from '../services'
 
+// This is the default value, but can be overriden by overriding the Environment or UserDataProfileService service
+const defaultUserConfigurationFile = URI.from({ scheme: Schemas.vscodeUserData, path: '/User/settings.json' })
+
+/**
+ * Should be called only BEFORE the service are initialized to initialize the file on the filesystem before the configuration service initializes
+ */
+async function initUserConfiguration (configurationJson: string, options?: Partial<IFileWriteOptions>, file: URI = defaultUserConfigurationFile): Promise<void> {
+  await initFile(defaultUserConfigurationFile.scheme, file, configurationJson, options)
+}
+
+/**
+ * Can be called at any time after the services are initialized to update the user configuration
+ */
 async function updateUserConfiguration (configurationJson: string): Promise<void> {
-  const userDataProfilesService = StandaloneServices.get(IUserDataProfilesService)
+  const userDataProfilesService = await getService(IUserDataProfilesService)
   await StandaloneServices.get(IFileService).writeFile(userDataProfilesService.defaultProfile.settingsResource, VSBuffer.fromString(configurationJson))
 }
 
@@ -125,6 +139,8 @@ export default function getServiceOverride (defaultWorkspace: URI | IAnyWorkspac
 }
 
 export {
+  defaultUserConfigurationFile,
+  initUserConfiguration,
   updateUserConfiguration,
   getUserConfiguration,
   onUserConfigurationChange,
