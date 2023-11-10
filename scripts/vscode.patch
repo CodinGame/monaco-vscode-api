@@ -1675,6 +1675,19 @@ index f4707432371..7c5cdde39cc 100644
  
  	declare _serviceBrand: undefined;
  
+diff --git a/src/vs/workbench/services/remote/common/remoteExtensionsScanner.ts b/src/vs/workbench/services/remote/common/remoteExtensionsScanner.ts
+index a466cc1f3a1..09f6a40eb26 100644
+--- a/src/vs/workbench/services/remote/common/remoteExtensionsScanner.ts
++++ b/src/vs/workbench/services/remote/common/remoteExtensionsScanner.ts
+@@ -16,7 +16,7 @@ import { ILogService } from 'vs/platform/log/common/log';
+ import { InstantiationType, registerSingleton } from 'vs/platform/instantiation/common/extensions';
+ import { IActiveLanguagePackService } from 'vs/workbench/services/localization/common/locale';
+ 
+-class RemoteExtensionsScannerService implements IRemoteExtensionsScannerService {
++export class RemoteExtensionsScannerService implements IRemoteExtensionsScannerService {
+ 
+ 	declare readonly _serviceBrand: undefined;
+ 
 diff --git a/src/vs/workbench/services/textMate/browser/backgroundTokenization/textMateWorkerTokenizerController.ts b/src/vs/workbench/services/textMate/browser/backgroundTokenization/textMateWorkerTokenizerController.ts
 index 850b58e1e6c..2eb835fa2b6 100644
 --- a/src/vs/workbench/services/textMate/browser/backgroundTokenization/textMateWorkerTokenizerController.ts
@@ -1843,6 +1856,19 @@ index ad67fb4f422..fadf86cece5 100644
  
  	// ensure to limit buffer for guessing due to https://github.com/aadsm/jschardet/issues/53
  	const limitedBuffer = buffer.slice(0, AUTO_ENCODING_GUESS_MAX_BYTES);
+diff --git a/src/vs/workbench/services/userDataProfile/common/remoteUserDataProfiles.ts b/src/vs/workbench/services/userDataProfile/common/remoteUserDataProfiles.ts
+index d3ef612836b..0d0fb8d2862 100644
+--- a/src/vs/workbench/services/userDataProfile/common/remoteUserDataProfiles.ts
++++ b/src/vs/workbench/services/userDataProfile/common/remoteUserDataProfiles.ts
+@@ -25,7 +25,7 @@ export interface IRemoteUserDataProfilesService {
+ 	getRemoteProfile(localProfile: IUserDataProfile): Promise<IUserDataProfile>;
+ }
+ 
+-class RemoteUserDataProfilesService extends Disposable implements IRemoteUserDataProfilesService {
++export class RemoteUserDataProfilesService extends Disposable implements IRemoteUserDataProfilesService {
+ 
+ 	readonly _serviceBrand: undefined;
+ 
 diff --git a/src/vs/workbench/services/workspaces/browser/abstractWorkspaceEditingService.ts b/src/vs/workbench/services/workspaces/browser/abstractWorkspaceEditingService.ts
 index 4653e395be9..1eccfce4bf4 100644
 --- a/src/vs/workbench/services/workspaces/browser/abstractWorkspaceEditingService.ts

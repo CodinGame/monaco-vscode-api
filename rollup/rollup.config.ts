@@ -496,6 +496,7 @@ const workerGroups: Record<string, string> = {
 
 const externals = Object.keys({ ...pkg.dependencies })
 const external: rollup.ExternalOption = (source) => {
+  if (source === 'semver' || source.startsWith('semver')) return true
   if (source.includes('tas-client-umd')) return true
   if (source.startsWith(MONACO_EDITOR_DIR) || source.startsWith('monaco-editor/')) {
     return true

@@ -49,6 +49,7 @@
     "@codingame/monaco-vscode-editor-service-override": "file:../dist/service-override-editor",
     "@codingame/monaco-vscode-emmet-default-extension": "file:../dist/default-extension-emmet",
     "@codingame/monaco-vscode-environment-service-override": "file:../dist/service-override-environment",
+    "@codingame/monaco-vscode-extension-gallery-service-override": "file:../dist/service-override-extension-gallery",
     "@codingame/monaco-vscode-extension-editing-default-extension": "file:../dist/default-extension-extension-editing",
     "@codingame/monaco-vscode-extensions-service-override": "file:../dist/service-override-extensions",
     "@codingame/monaco-vscode-files-service-override": "file:../dist/service-override-files",

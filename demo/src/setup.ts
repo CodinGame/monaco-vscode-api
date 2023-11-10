@@ -9,6 +9,7 @@ import getTextmateServiceOverride from '@codingame/monaco-vscode-textmate-servic
 import getThemeServiceOverride from '@codingame/monaco-vscode-theme-service-override'
 import getLanguagesServiceOverride from '@codingame/monaco-vscode-languages-service-override'
 import getAudioCueServiceOverride from '@codingame/monaco-vscode-audio-cue-service-override'
+import getExtensionGalleryServiceOverride from '@codingame/monaco-vscode-extension-gallery-service-override'
 import getViewsServiceOverride, {
   isEditorPartVisible,
   Parts,
@@ -91,6 +92,7 @@ await Promise.all([
 await initializeMonacoService({
   ...getLogServiceOverride(),
   ...getExtensionServiceOverride(toWorkerConfig(ExtensionHostWorker)),
+  ...getExtensionGalleryServiceOverride(),
   ...getModelServiceOverride(),
   ...getNotificationServiceOverride(),
   ...getDialogsServiceOverride(),
@@ -140,6 +142,16 @@ await initializeMonacoService({
   },
   developmentOptions: {
     logLevel: LogLevel.Info // Default value
+  },
+  productConfiguration: {
+    extensionsGallery: {
+      serviceUrl: 'https://open-vsx.org/vscode/gallery',
+      itemUrl: 'https://open-vsx.org/vscode/item',
+      resourceUrlTemplate: 'https://open-vsx.org/vscode/unpkg/{publisher}/{name}/{version}/{path}',
+      controlUrl: '',
+      nlsBaseUrl: '',
+      publisherUrl: ''
+    }
   }
 })
 
