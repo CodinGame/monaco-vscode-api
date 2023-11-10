@@ -1,7 +1,9 @@
 import { defineConfig } from 'vite'
+import glob from 'fast-glob'
 import * as fs from 'fs'
 import url from 'url'
 import path from 'path'
+import pkg from './package.json' assert { type: 'json' }
 
 const cdnDomain = 'http://127.0.0.2:5173'
 
@@ -46,37 +48,20 @@ export default defineConfig({
     }
   ],
   optimizeDeps: {
-    // This is require because vscode is a local dependency
-    // and vite doesn't want to optimize it and the number of modules makes chrome hang
+    // This is require because vite excludes local dependencies from being optimized
+    // Monaco-vscode-api packages are local dependencies and the number of modules makes chrome hang
     include: [
-      'vscode', 'vscode/extensions', 'vscode/services', 'vscode/monaco', '@codingame/monaco-vscode-model-service-override', '@codingame/monaco-vscode-editor-service-override',
-      '@codingame/monaco-vscode-extensions-service-override', '@codingame/monaco-vscode-notifications-service-override', '@codingame/monaco-vscode-bulk-edit-service-override', '@codingame/monaco-vscode-dialogs-service-override', '@codingame/monaco-vscode-configuration-service-override',
-      '@codingame/monaco-vscode-keybindings-service-override', '@codingame/monaco-vscode-textmate-service-override', '@codingame/monaco-vscode-theme-service-override', '@codingame/monaco-vscode-languages-service-override',
-      '@codingame/monaco-vscode-audio-cue-service-override', '@codingame/monaco-vscode-views-service-override', '@codingame/monaco-vscode-view-banner-service-override', '@codingame/monaco-vscode-view-status-bar-service-override', '@codingame/monaco-vscode-view-title-bar-service-override',
-      '@codingame/monaco-vscode-quickaccess-service-override', '@codingame/monaco-vscode-debug-service-override',
-      '@codingame/monaco-vscode-preferences-service-override', '@codingame/monaco-vscode-snippets-service-override', '@codingame/monaco-vscode-files-service-override', '@codingame/monaco-vscode-output-service-override',
-      '@codingame/monaco-vscode-terminal-service-override', '@codingame/monaco-vscode-search-service-override', '@codingame/monaco-vscode-markers-service-override', '@codingame/monaco-vscode-accessibility-service-override', '@codingame/monaco-vscode-storage-service-override',
-      '@codingame/monaco-vscode-language-detection-worker-service-override', '@codingame/monaco-vscode-remote-agent-service-override', '@codingame/monaco-vscode-environment-service-override', '@codingame/monaco-vscode-lifecycle-service-override',
-      '@codingame/monaco-vscode-workspace-trust-service-override',
-      '@codingame/monaco-vscode-clojure-default-extension', '@codingame/monaco-vscode-coffeescript-default-extension', '@codingame/monaco-vscode-cpp-default-extension',
-      '@codingame/monaco-vscode-csharp-default-extension', '@codingame/monaco-vscode-css-default-extension', '@codingame/monaco-vscode-diff-default-extension', '@codingame/monaco-vscode-fsharp-default-extension', '@codingame/monaco-vscode-go-default-extension',
-      '@codingame/monaco-vscode-groovy-default-extension', '@codingame/monaco-vscode-html-default-extension', '@codingame/monaco-vscode-java-default-extension', '@codingame/monaco-vscode-javascript-default-extension',
-      '@codingame/monaco-vscode-json-default-extension', '@codingame/monaco-vscode-julia-default-extension', '@codingame/monaco-vscode-lua-default-extension', '@codingame/monaco-vscode-markdown-basics-default-extension',
-      '@codingame/monaco-vscode-objective-c-default-extension', '@codingame/monaco-vscode-perl-default-extension', '@codingame/monaco-vscode-php-default-extension', '@codingame/monaco-vscode-powershell-default-extension',
-      '@codingame/monaco-vscode-python-default-extension', '@codingame/monaco-vscode-r-default-extension', '@codingame/monaco-vscode-ruby-default-extension', '@codingame/monaco-vscode-rust-default-extension',
-      '@codingame/monaco-vscode-scss-default-extension', '@codingame/monaco-vscode-shellscript-default-extension', '@codingame/monaco-vscode-sql-default-extension', '@codingame/monaco-vscode-swift-default-extension',
-      '@codingame/monaco-vscode-typescript-basics-default-extension', '@codingame/monaco-vscode-vb-default-extension', '@codingame/monaco-vscode-xml-default-extension', '@codingame/monaco-vscode-yaml-default-extension',
-      '@codingame/monaco-vscode-theme-defaults-default-extension', '@codingame/monaco-vscode-theme-seti-default-extension',
-      '@codingame/monaco-vscode-references-view-default-extension', '@codingame/monaco-vscode-typescript-basics-default-extension', '@codingame/monaco-vscode-search-result-default-extension',
-      '@codingame/monaco-vscode-typescript-language-features-default-extension', '@codingame/monaco-vscode-markdown-language-features-default-extension',
-      '@codingame/monaco-vscode-json-language-features-default-extension', '@codingame/monaco-vscode-css-language-features-default-extension',
-      '@codingame/monaco-vscode-npm-default-extension', '@codingame/monaco-vscode-css-default-extension', '@codingame/monaco-vscode-markdown-basics-default-extension', '@codingame/monaco-vscode-html-default-extension',
-      '@codingame/monaco-vscode-html-language-features-default-extension', '@codingame/monaco-vscode-configuration-editing-default-extension', '@codingame/monaco-vscode-media-preview-default-extension', '@codingame/monaco-vscode-markdown-math-default-extension',
-      '@codingame/monaco-vscode-language-pack-cs', '@codingame/monaco-vscode-language-pack-de', '@codingame/monaco-vscode-language-pack-es', '@codingame/monaco-vscode-language-pack-fr',
-      '@codingame/monaco-vscode-language-pack-it', '@codingame/monaco-vscode-language-pack-ja', '@codingame/monaco-vscode-language-pack-ko', '@codingame/monaco-vscode-language-pack-pl',
-      '@codingame/monaco-vscode-language-pack-pt-br', '@codingame/monaco-vscode-language-pack-qps-ploc', '@codingame/monaco-vscode-language-pack-ru', '@codingame/monaco-vscode-language-pack-tr',
-      '@codingame/monaco-vscode-language-pack-zh-hans', '@codingame/monaco-vscode-language-pack-zh-hant'
+      // add all local dependencies...
+      ...Object.entries(pkg.dependencies).filter(([, version]) => version.startsWith('file:../')).map(([name]) => name),
+      // and their exports
+      'vscode/extensions', 'vscode/services', 'vscode/monaco',
+
+      // These 2 lines prevent vite from reloading the whole page when starting a worker (so 2 times in a row after cleaning the vite cache - for the editor then the textmate workers)
+      // it's mainly empirical and probably not the best way, fix me if you find a better way
+      'monaco-editor/esm/vs/nls.js', 'monaco-editor/esm/vs/editor/editor.worker.js', 'vscode-textmate', 'vscode-oniguruma', '@vscode/vscode-languagedetection',
+      ...(await glob('monaco-editor/esm/vs/**/common/**/*.js', { cwd: path.resolve(__dirname, '../node_modules') })),
     ],
+    exclude: [],
     esbuildOptions: {
       plugins: [{
         name: 'import.meta.url',
