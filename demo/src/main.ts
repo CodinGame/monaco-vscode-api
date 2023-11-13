@@ -3,8 +3,8 @@ import * as monaco from 'monaco-editor'
 import { createConfiguredEditor, createModelReference } from 'vscode/monaco'
 import { registerFileSystemOverlay, HTMLFileSystemProvider } from '@codingame/monaco-vscode-files-service-override'
 import * as vscode from 'vscode'
-import { ILogService, StandaloneServices, IPreferencesService, IEditorService, IDialogService, getService } from 'vscode/services'
-import { ConfirmResult, Parts, isPartVisibile, setPartVisibility } from '@codingame/monaco-vscode-views-service-override'
+import { ILogService, StandaloneServices, IPreferencesService, IEditorService, IDialogService, getService, createInstance } from 'vscode/services'
+import { Parts, isPartVisibile, setPartVisibility } from '@codingame/monaco-vscode-views-service-override'
 import { defaultUserConfigurationFile } from '@codingame/monaco-vscode-configuration-service-override'
 import { defaultUserKeybindindsFile } from '@codingame/monaco-vscode-keybindings-service-override'
 import { clearStorage, remoteAuthority } from './setup'
@@ -151,17 +151,7 @@ document.querySelector('#keybindingsui')!.addEventListener('click', async () => 
 })
 
 document.querySelector('#customEditorPanel')!.addEventListener('click', async () => {
-  const input = new CustomEditorInput({
-    async confirm () {
-      const { confirmed } = await StandaloneServices.get(IDialogService).confirm({
-        message: 'Are you sure you want to close this INCREDIBLE editor pane?'
-      })
-      return confirmed ? ConfirmResult.DONT_SAVE : ConfirmResult.CANCEL
-    },
-    showConfirm () {
-      return true
-    }
-  })
+  const input = await createInstance(CustomEditorInput, undefined)
   let toggle = false
   const interval = window.setInterval(() => {
     const title = toggle ? 'Awesome editor pane' : 'Incredible editor pane'
