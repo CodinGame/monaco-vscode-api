@@ -140,6 +140,8 @@ export { IRemoteAgentService } from 'vs/workbench/services/remote/common/remoteA
 export { IRemoteAuthorityResolverService } from 'vs/platform/remote/common/remoteAuthorityResolver'
 export { IRemoteSocketFactoryService } from 'vs/platform/remote/common/remoteSocketFactoryService'
 export { ITerminalService, ITerminalInstanceService } from 'vs/workbench/contrib/terminal/browser/terminal'
+export { IFilesConfigurationService } from 'vs/workbench/services/filesConfiguration/common/filesConfigurationService'
+export { ILabelService } from 'vs/platform/label/common/label'
 
 // Export all Notification service parts
 export {
