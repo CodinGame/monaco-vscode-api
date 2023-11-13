@@ -49,6 +49,10 @@ $$
 $$`
 ))
 
+fileSystemProvider.registerFile(new RegisteredMemoryFile(vscode.Uri.file('/tmp/test.customeditor'), `
+Custom Editor!`
+))
+
 fileSystemProvider.registerFile(new RegisteredMemoryFile(vscode.Uri.file('/tmp/test.css'), `
 h1 {
   color: DeepSkyBlue;

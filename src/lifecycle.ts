@@ -9,6 +9,7 @@ const renderWorkbenchEmitter = new Emitter<ServicesAccessor>()
 export const onRenderWorkbench = renderWorkbenchEmitter.event
 
 export const serviceInitializedBarrier = new Barrier()
+export const serviceInitializedEmitter = new Emitter<void>()
 
 interface ServiceInitializeParticipant {
   (accessor: ServicesAccessor): Promise<void>
@@ -45,6 +46,7 @@ export async function startup (instantiationService: IInstantiationService): Pro
   })
 
   serviceInitializedBarrier.open()
+  serviceInitializedEmitter.fire()
 
   instantiationService.invokeFunction(accessor => {
     const lifecycleService = accessor.get(ILifecycleService)

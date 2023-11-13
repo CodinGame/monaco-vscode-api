@@ -1,7 +1,6 @@
-import { IDialogService } from 'vscode/services'
-import { registerCustomView, registerEditorPane, ViewContainerLocation } from '@codingame/monaco-vscode-views-service-override'
+import { IDialogService, EditorInput, ITelemetryService, IThemeService, IStorageService, createInstance } from 'vscode/services'
+import { registerCustomView, registerEditorPane, registerEditor, ViewContainerLocation, SimpleEditorPane, SimpleEditorInput, RegisteredEditorPriority, IEditorCloseHandler, ConfirmResult } from '@codingame/monaco-vscode-views-service-override'
 import * as monaco from 'monaco-editor'
-import iconUrl from '../Visual_Studio_Code_1.35_icon.svg?url'
 
 registerCustomView({
   id: 'custom-view',
@@ -20,7 +19,7 @@ registerCustomView({
     }
   },
   location: ViewContainerLocation.Panel,
-  icon: new URL(iconUrl, window.location.href).toString(),
+  icon: new URL('../Visual_Studio_Code_1.35_icon.svg', import.meta.url).toString(),
   actions: [{
     id: 'custom-action',
     title: 'Custom action',
@@ -43,18 +42,74 @@ registerCustomView({
   }]
 })
 
-const { CustomEditorInput } = registerEditorPane({
-  id: 'custom-editor-pane',
-  name: 'Custom editor pane',
-  renderBody (container) {
+class CustomEditorPane extends SimpleEditorPane {
+  static readonly ID = 'workbench.editors.customEditor'
+
+  constructor (
+    @ITelemetryService telemetryService: ITelemetryService, @IThemeService themeService: IThemeService, @IStorageService storageService: IStorageService
+  ) {
+    super(CustomEditorPane.ID, telemetryService, themeService, storageService)
+  }
+
+  initialize (): HTMLElement {
+    const container = document.createElement('div')
     container.style.display = 'flex'
     container.style.alignItems = 'center'
     container.style.justifyContent = 'center'
     container.innerHTML = 'This is a custom editor pane<br />You can render anything you want here'
+    return container
+  }
+
+  async renderInput (input: EditorInput): Promise<monaco.IDisposable> {
+    if (input.resource != null) {
+      this.container.innerHTML = 'Opened file: ' + input.resource.path
+    } else {
+      this.container.innerHTML = 'This is a custom editor pane<br />You can render anything you want here'
+    }
 
     return {
       dispose () {
       }
+    }
+  }
+}
+class CustomEditorInput extends SimpleEditorInput implements IEditorCloseHandler {
+  constructor (resource: monaco.Uri | undefined, @IDialogService private dialogService: IDialogService) {
+    super(resource)
+
+    this.closeHandler = this
+
+    this.setName('Custom editor pane input')
+  }
+
+  async confirm (): Promise<ConfirmResult> {
+    const { confirmed } = await this.dialogService.confirm({
+      message: 'Are you sure you want to close this INCREDIBLE editor pane?'
+    })
+    return confirmed ? ConfirmResult.DONT_SAVE : ConfirmResult.CANCEL
+  }
+
+  showConfirm (): boolean {
+    return true
+  }
+
+  get typeId (): string {
+    return CustomEditorPane.ID
+  }
+}
+
+registerEditorPane('custom-editor-pane', 'Custom editor pane', CustomEditorPane, [CustomEditorInput])
+
+registerEditor('*.customeditor', {
+  id: CustomEditorPane.ID,
+  label: 'Custom editor pane input',
+  priority: RegisteredEditorPriority.default
+}, {
+  singlePerResource: true
+}, {
+  async createEditorInput (editorInput) {
+    return {
+      editor: await createInstance(CustomEditorInput, editorInput.resource)
     }
   }
 })
