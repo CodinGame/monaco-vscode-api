@@ -5,15 +5,15 @@ import { ITextModelContentProvider } from 'vs/editor/common/services/resolverSer
 import { IColorTheme } from 'vs/platform/theme/common/themeService'
 import { StorageScope, StorageTarget } from 'vscode/src/vs/platform/storage/common/storage'
 import { IEditorOverrideServices, StandaloneServices } from 'vs/editor/standalone/browser/standaloneServices'
-import { ServiceIdentifier } from 'vs/platform/instantiation/common/instantiation'
+import { GetLeadingNonServiceArgs, IInstantiationService, ServiceIdentifier, ServicesAccessor } from 'vs/platform/instantiation/common/instantiation'
 import { IAction } from 'vs/base/common/actions'
-import { Disposable } from 'vs/base/common/lifecycle'
+import { Disposable, DisposableStore, IDisposable } from 'vs/base/common/lifecycle'
 import getLayoutServiceOverride from './service-override/layout'
 import getEnvironmentServiceOverride from './service-override/environment'
 import getExtensionsServiceOverride from './service-override/extensions'
 import getFileServiceOverride from './service-override/files'
 import getQuickAccessOverride from './service-override/quickaccess'
-import { serviceInitializedBarrier, startup } from './lifecycle'
+import { serviceInitializedBarrier, serviceInitializedEmitter, startup } from './lifecycle'
 
 let servicesInitialized = false
 StandaloneServices.withServices(() => {
@@ -37,9 +37,49 @@ export async function initialize (overrides: IEditorOverrideServices, container?
   await startup(instantiationService)
 }
 
-export async function getService<T> (identifier: ServiceIdentifier<T>): Promise<T> {
+export async function waitServicesReady (): Promise<void> {
   await serviceInitializedBarrier.wait()
+}
+
+export function checkServicesReady (): void {
+  if (!serviceInitializedBarrier.isOpen()) {
+    throw new Error('Services are not ready yet')
+  }
+}
+
+export async function getService<T> (identifier: ServiceIdentifier<T>): Promise<T> {
+  await waitServicesReady()
   return StandaloneServices.get(identifier)
+}
+
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+export async function createInstance <Ctor extends new (...args: any[]) => any, R extends InstanceType<Ctor>>(ctor: Ctor, ...args: GetLeadingNonServiceArgs<ConstructorParameters<Ctor>>): Promise<R> {
+  await waitServicesReady()
+  return StandaloneServices.get(IInstantiationService).createInstance(ctor, ...args)
+}
+
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+export function createInstanceSync <Ctor extends new (...args: any[]) => any, R extends InstanceType<Ctor>>(ctor: Ctor, ...args: GetLeadingNonServiceArgs<ConstructorParameters<Ctor>>): R {
+  checkServicesReady()
+  return StandaloneServices.get(IInstantiationService).createInstance(ctor, ...args)
+}
+
+/**
+ * Equivalent to `StandaloneServices.withServices` except the callback is called when the services are ready, not just initialized
+ */
+export function withReadyServices (callback: (serviceAccessor: ServicesAccessor) => IDisposable): IDisposable {
+  if (serviceInitializedBarrier.isOpen()) {
+    return StandaloneServices.get(IInstantiationService).invokeFunction(callback)
+  }
+
+  const disposable = new DisposableStore()
+
+  const listener = disposable.add(serviceInitializedEmitter.event(() => {
+    listener.dispose()
+    disposable.add(StandaloneServices.get(IInstantiationService).invokeFunction(callback))
+  }))
+
+  return disposable
 }
 
 export { SyncDescriptor } from 'vs/platform/instantiation/common/descriptors'
