@@ -124,6 +124,11 @@ registerServiceInitializePreParticipant(async (accessor) => {
 
 const MemoizedInjectedConfigurationService = memoizedConstructor(InjectedConfigurationService)
 
+export async function reinitializeWorkspace (workspace: IAnyWorkspaceIdentifier): Promise<void> {
+  const workspaceService = StandaloneServices.get(IWorkspaceContextService) as WorkspaceService
+  await workspaceService.initialize(workspace)
+}
+
 export default function getServiceOverride (defaultWorkspace: URI | IAnyWorkspaceIdentifier): IEditorOverrideServices {
   _defaultWorkspace = defaultWorkspace
 
