@@ -42,7 +42,7 @@ import { ICodeEditorService } from 'vs/editor/browser/services/codeEditorService
 import { IKeybindingService, IKeyboardEvent } from 'vs/platform/keybinding/common/keybinding'
 import { KeybindingResolver } from 'vs/platform/keybinding/common/keybindingResolver'
 import { ResolvedKeybindingItem } from 'vs/platform/keybinding/common/resolvedKeybindingItem'
-import { ResolvedKeybinding } from 'vs/base/common/keybindings'
+import { Keybinding, ResolvedKeybinding } from 'vs/base/common/keybindings'
 import { createInjectedClass } from './tools/injection'
 // Selectively comes from vs/workbench/contrib/codeEditor/browser/codeEditor.contribution.ts
 import 'vs/workbench/contrib/codeEditor/browser/workbenchReferenceSearch'
@@ -215,6 +215,10 @@ class DelegateStandaloneKeybindingService extends StandaloneKeybindingService {
 
   override resolveKeyboardEvent (keyboardEvent: IKeyboardEvent): ResolvedKeybinding {
     return this.delegate.resolveKeyboardEvent(keyboardEvent)
+  }
+
+  override resolveKeybinding (keybinding: Keybinding): ResolvedKeybinding[] {
+    return this.delegate.resolveKeybinding(keybinding)
   }
 }
 
