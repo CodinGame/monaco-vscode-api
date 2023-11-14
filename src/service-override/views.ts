@@ -610,6 +610,7 @@ registerAssets({
   'vs/workbench/contrib/webview/browser/pre/fake.html': () => changeUrlDomain(new URL('../../vscode/src/vs/workbench/contrib/webview/browser/pre/fake.html', import.meta.url).href, webviewIframeAlternateDomains)
 })
 
+let restoreEditorView = false
 registerServiceInitializePostParticipant(async (accessor) => {
   const paneCompositePartService = accessor.get(IPaneCompositePartService)
   const viewDescriptorService = accessor.get(IViewDescriptorService)
@@ -633,7 +634,7 @@ registerServiceInitializePostParticipant(async (accessor) => {
     { id: Parts.BANNER_PART, role: 'banner', classes: ['banner'], enabled: withBannerPart },
     { id: Parts.ACTIVITYBAR_PART, role: 'none', classes: ['activitybar', 'left'] },
     { id: Parts.SIDEBAR_PART, role: 'none', classes: ['sidebar', 'left'] },
-    { id: Parts.EDITOR_PART, role: 'main', classes: ['editor'], options: { restorePreviousState: false } },
+    { id: Parts.EDITOR_PART, role: 'main', classes: ['editor'], options: { restorePreviousState: restoreEditorView } },
     { id: Parts.PANEL_PART, role: 'none', classes: ['panel', 'basepanel', positionToString(Position.BOTTOM)] },
     { id: Parts.AUXILIARYBAR_PART, role: 'none', classes: ['auxiliarybar', 'basepanel', 'right'] },
     { id: Parts.STATUSBAR_PART, role: 'status', classes: ['statusbar'], enabled: withStatusBar }
@@ -657,10 +658,14 @@ registerServiceInitializePostParticipant(async (accessor) => {
   await paneCompositePartService.openPaneComposite(viewDescriptorService.getDefaultViewContainer(ViewContainerLocation.AuxiliaryBar)?.id, ViewContainerLocation.AuxiliaryBar)
 })
 
-export default function getServiceOverride (openEditorFallback?: OpenEditor, _webviewIframeAlternateDomains?: string): IEditorOverrideServices {
+export default function getServiceOverride (openEditorFallback?: OpenEditor, _webviewIframeAlternateDomains?: string, _restoreEditorView?: boolean): IEditorOverrideServices {
   if (_webviewIframeAlternateDomains != null) {
     webviewIframeAlternateDomains = _webviewIframeAlternateDomains
   }
+  if (_restoreEditorView != null) {
+    restoreEditorView = _restoreEditorView
+  }
+
   return {
     ...getLayoutServiceOverride(),
     ...getBulkEditServiceOverride(),
