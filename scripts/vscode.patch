@@ -397,7 +397,7 @@ index 23d547570e9..31dfb4fd8d4 100644
  
  export * from 'vs/editor/editor.api';
 diff --git a/src/vs/editor/standalone/browser/standaloneServices.ts b/src/vs/editor/standalone/browser/standaloneServices.ts
-index 01f2c6987ac..fcd285d22b5 100644
+index 01f2c6987ac..a4853357178 100644
 --- a/src/vs/editor/standalone/browser/standaloneServices.ts
 +++ b/src/vs/editor/standalone/browser/standaloneServices.ts
 @@ -89,8 +89,6 @@ import { DefaultConfiguration } from 'vs/platform/configuration/common/configura
@@ -425,6 +425,15 @@ index 01f2c6987ac..fcd285d22b5 100644
  			this._cachedResolver = new KeybindingResolver(defaults, overrides, (str) => this._log(str));
  		}
  		return this._cachedResolver;
+@@ -541,7 +543,7 @@ export class StandaloneKeybindingService extends AbstractKeybindingService {
+ 				// This might be a removal keybinding item in user settings => accept it
+ 				result[resultLen++] = new ResolvedKeybindingItem(undefined, item.command, item.commandArgs, when, isDefault, null, false);
+ 			} else {
+-				const resolvedKeybindings = USLayoutResolvedKeybinding.resolveKeybinding(keybinding, OS);
++				const resolvedKeybindings = this.resolveKeybinding(keybinding);
+ 				for (const resolvedKeybinding of resolvedKeybindings) {
+ 					result[resultLen++] = new ResolvedKeybindingItem(resolvedKeybinding, item.command, item.commandArgs, when, isDefault, null, false);
+ 				}
 @@ -1155,16 +1157,6 @@ export module StandaloneServices {
  			}
  		}
