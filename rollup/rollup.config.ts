@@ -559,10 +559,7 @@ export default (args: Record<string, string>): rollup.RollupOptions[] => {
         return '[name].js'
       },
       chunkFileNames: '[name].js',
-      hoistTransitiveImports: false,
-      paths: {
-        'monaco-editor': 'monaco-editor/esm/vs/editor/editor.api.js'
-      }
+      hoistTransitiveImports: false
     }],
     input,
     plugins: [
