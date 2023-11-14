@@ -739,5 +739,9 @@ export {
   SidebarPart,
   ActivitybarPart,
   PanelPart,
-  Parts
+  Parts,
+
+  IActivityService,
+  IViewDescriptorService,
+  IPaneCompositePartService
 }
