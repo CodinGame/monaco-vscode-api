@@ -1,5 +1,4 @@
 import { createRequire } from 'node:module'
-import { registerAssets } from '../assets'
 
 const entrypoints: Record<string, () => Promise<void>> = {
   'vs/workbench/api/node/extensionHostProcess': async () => { await import('vs/workbench/api/node/extensionHostProcess') },
@@ -9,9 +8,6 @@ const entrypoints: Record<string, () => Promise<void>> = {
 }
 
 const require = createRequire(import.meta.url)
-
-// just to create globalThis.monacoRequire
-registerAssets({})
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 ;(globalThis as any)._VSCODE_NODE_MODULES = new Proxy(Object.create(null), { get: (_target, mod) => require(String(mod)) })
