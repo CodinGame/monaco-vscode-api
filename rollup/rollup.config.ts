@@ -68,7 +68,6 @@ const FUNCTIONS_TO_REMOVE = new Set([
   'registerViewWelcomeContent',
   'registerExtensionPoint',
   'registerTouchBarEntry',
-  'registerEditorSerializer',
 
   // For ActivityBar, remove unused actions/items
   'fillExtraContextMenuActions',
