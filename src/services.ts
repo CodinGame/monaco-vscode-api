@@ -8,12 +8,14 @@ import { IEditorOverrideServices, StandaloneServices } from 'vs/editor/standalon
 import { GetLeadingNonServiceArgs, IInstantiationService, ServiceIdentifier, ServicesAccessor } from 'vs/platform/instantiation/common/instantiation'
 import { IAction } from 'vs/base/common/actions'
 import { Disposable, DisposableStore, IDisposable } from 'vs/base/common/lifecycle'
+import { IWorkbenchConstructionOptions } from 'vs/workbench/browser/web.api'
 import getLayoutServiceOverride from './service-override/layout'
 import getEnvironmentServiceOverride from './service-override/environment'
 import getExtensionsServiceOverride from './service-override/extensions'
 import getFileServiceOverride from './service-override/files'
 import getQuickAccessOverride from './service-override/quickaccess'
 import { serviceInitializedBarrier, serviceInitializedEmitter, startup } from './lifecycle'
+import { initialize as initializeWorkbench } from './workbench'
 
 let servicesInitialized = false
 StandaloneServices.withServices(() => {
@@ -21,10 +23,13 @@ StandaloneServices.withServices(() => {
   return Disposable.None
 })
 
-export async function initialize (overrides: IEditorOverrideServices, container?: HTMLElement): Promise<void> {
+export async function initialize (overrides: IEditorOverrideServices, container: HTMLElement = document.body, configuration: IWorkbenchConstructionOptions = {}): Promise<void> {
   if (servicesInitialized) {
     throw new Error('The services are already initialized.')
   }
+
+  initializeWorkbench(container, configuration)
+
   const instantiationService = StandaloneServices.initialize({
     ...getLayoutServiceOverride(container), // Always override layout service to break cyclic dependency with ICodeEditorService
     ...getEnvironmentServiceOverride(),
@@ -248,5 +253,6 @@ export {
   IColorTheme,
   StorageScope,
   StorageTarget,
-  Severity
+  Severity,
+  IWorkbenchConstructionOptions
 }
