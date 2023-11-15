@@ -1,5 +1,5 @@
-import { IDialogService, EditorInput, ITelemetryService, IThemeService, IStorageService, createInstance } from 'vscode/services'
-import { registerCustomView, registerEditorPane, registerEditor, ViewContainerLocation, SimpleEditorPane, SimpleEditorInput, RegisteredEditorPriority, IEditorCloseHandler, ConfirmResult } from '@codingame/monaco-vscode-views-service-override'
+import { IDialogService, EditorInput, ITelemetryService, IThemeService, IStorageService, createInstance, IInstantiationService } from 'vscode/services'
+import { registerCustomView, registerEditorPane, registerEditor, registerEditorSerializer, ViewContainerLocation, SimpleEditorPane, SimpleEditorInput, RegisteredEditorPriority, IEditorCloseHandler, ConfirmResult, IEditorSerializer } from '@codingame/monaco-vscode-views-service-override'
 import * as monaco from 'monaco-editor'
 
 registerCustomView({
@@ -111,6 +111,28 @@ registerEditor('*.customeditor', {
     return {
       editor: await createInstance(CustomEditorInput, editorInput.resource)
     }
+  }
+})
+
+interface ISerializedCustomEditorInput {
+  resourceJSON?: monaco.UriComponents
+}
+registerEditorSerializer(CustomEditorPane.ID, class implements IEditorSerializer {
+  canSerialize (): boolean {
+    return true
+  }
+
+  serialize (editor: CustomEditorInput): string | undefined {
+    const serializedFileEditorInput: ISerializedCustomEditorInput = {
+      resourceJSON: editor.resource?.toJSON()
+    }
+
+    return JSON.stringify(serializedFileEditorInput)
+  }
+
+  deserialize (instantiationService: IInstantiationService, serializedEditor: string): EditorInput | undefined {
+    const serializedFileEditorInput: ISerializedCustomEditorInput = JSON.parse(serializedEditor)
+    return instantiationService.createInstance(CustomEditorInput, monaco.Uri.revive(serializedFileEditorInput.resourceJSON))
   }
 })
 
