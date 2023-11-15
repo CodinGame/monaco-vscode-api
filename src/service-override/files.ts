@@ -13,8 +13,9 @@ import { HTMLFileSystemProvider } from 'vs/platform/files/browser/htmlFileSystem
 import * as path from 'vs/base/common/path'
 import 'vs/workbench/contrib/files/browser/files.contribution.js?include=registerConfiguration'
 import { Schemas } from 'vs/base/common/network'
-import { IndexedDBFileSystemProvider } from 'vs/platform/files/browser/indexedDBFileSystemProvider'
+import { IndexedDBFileSystemProvider, IndexedDBFileSystemProviderErrorData, IndexedDBFileSystemProviderErrorDataClassification } from 'vs/platform/files/browser/indexedDBFileSystemProvider'
 import { IndexedDB } from 'vs/base/browser/indexedDB'
+import { ITelemetryService } from 'vs/platform/telemetry/common/telemetry'
 import { logsPath } from '../workbench'
 
 abstract class RegisteredFile {
@@ -476,7 +477,7 @@ const providers: Record<string, IFileSystemProvider> = {
 }
 
 class MemoryFileService extends FileService {
-  constructor (@ILogService logService: ILogService) {
+  constructor (@ILogService logService: ILogService, @ITelemetryService telemetryService: ITelemetryService) {
     super(logService)
 
     for (const [scheme, provider] of Object.entries(providers)) {
@@ -486,6 +487,10 @@ class MemoryFileService extends FileService {
           disposable.dispose()
           disposable = this.registerProvider(scheme, fileSystemProvider)
         })
+      }
+
+      if (provider instanceof IndexedDBFileSystemProvider) {
+        this._register(provider.onReportError(e => telemetryService.publicLog2<IndexedDBFileSystemProviderErrorData, IndexedDBFileSystemProviderErrorDataClassification>('indexedDBFileSystemProviderError', e)))
       }
     }
   }
@@ -525,6 +530,21 @@ export async function initFile (scheme: string, file: URI, content: Uint8Array |
     unlock: false,
     ...options
   })
+}
+
+/**
+ * Can be used to replace memory providers by indexeddb providers before the fileService is initialized
+ */
+export async function createIndexedDBProviders (): Promise<void> {
+  const userDataStore = 'vscode-userdata-store'
+  const logsStore = 'vscode-logs-store'
+  const indexedDB = await IndexedDB.create('vscode-web-db', 3, [userDataStore, logsStore])
+
+  // Logger
+  providers[logsPath.scheme] = new IndexedDBFileSystemProvider(logsPath.scheme, indexedDB, logsStore, false)
+
+  const userDataProvider = new IndexedDBFileSystemProvider(Schemas.vscodeUserData, indexedDB, userDataStore, true)
+  providers[Schemas.vscodeUserData] = userDataProvider
 }
 
 /**
