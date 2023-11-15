@@ -5,7 +5,7 @@ import url from 'url'
 import path from 'path'
 import pkg from './package.json' assert { type: 'json' }
 
-const cdnDomain = 'http://127.0.0.2:5173'
+const cdnDomain = process.env.CDN_HOST ?? 'http://127.0.0.2:5173'
 
 export default defineConfig({
   build: {
