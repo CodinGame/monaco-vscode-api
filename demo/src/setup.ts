@@ -48,7 +48,7 @@ import { toCrossOriginWorker, toWorkerConfig } from './tools/workers'
 import defaultConfiguration from './user/configuration.json?raw'
 import defaultKeybindings from './user/keybindings.json?raw'
 
-await createIndexedDBProviders()
+const userDataProvider = await createIndexedDBProviders()
 
 // Workers
 export type WorkerLoader = () => Worker
@@ -129,6 +129,7 @@ await initializeMonacoService({
 StandaloneServices.get(ILogService).setLevel(LogLevel.Off)
 
 export async function clearStorage (): Promise<void> {
+  await userDataProvider.reset()
   await (await getService(IStorageService) as BrowserStorageService).clear()
 }
 

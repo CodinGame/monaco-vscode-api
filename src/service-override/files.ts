@@ -543,7 +543,7 @@ export async function initFile (scheme: string, file: URI, content: Uint8Array |
 /**
  * Can be used to replace memory providers by indexeddb providers before the fileService is initialized
  */
-export async function createIndexedDBProviders (): Promise<void> {
+export async function createIndexedDBProviders (): Promise<IndexedDBFileSystemProvider> {
   const userDataStore = 'vscode-userdata-store'
   const logsStore = 'vscode-logs-store'
   const indexedDB = await IndexedDB.create('vscode-web-db', 3, [userDataStore, logsStore])
@@ -553,6 +553,8 @@ export async function createIndexedDBProviders (): Promise<void> {
 
   const userDataProvider = new IndexedDBFileSystemProvider(Schemas.vscodeUserData, indexedDB, userDataStore, true)
   providers[Schemas.vscodeUserData] = userDataProvider
+
+  return userDataProvider
 }
 
 /**
