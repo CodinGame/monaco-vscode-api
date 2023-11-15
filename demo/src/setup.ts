@@ -38,6 +38,7 @@ import getWorkspaceTrustOverride from '@codingame/monaco-vscode-workspace-trust-
 import EditorWorker from 'monaco-editor/esm/vs/editor/editor.worker.js?worker'
 import TextMateWorker from '@codingame/monaco-vscode-textmate-service-override/worker?worker'
 import OutputLinkComputerWorker from '@codingame/monaco-vscode-output-service-override/worker?worker'
+import { createIndexedDBProviders } from '@codingame/monaco-vscode-files-service-override'
 import ExtensionHostWorker from 'vscode/workers/extensionHost.worker?worker'
 import LanguageDetectionWorker from '@codingame/monaco-vscode-language-detection-worker-service-override/worker?worker'
 import * as monaco from 'monaco-editor'
@@ -46,6 +47,8 @@ import { openNewCodeEditor } from './features/editor'
 import { toCrossOriginWorker, toWorkerConfig } from './tools/workers'
 import defaultConfiguration from './user/configuration.json?raw'
 import defaultKeybindings from './user/keybindings.json?raw'
+
+await createIndexedDBProviders()
 
 // Workers
 export type WorkerLoader = () => Worker
