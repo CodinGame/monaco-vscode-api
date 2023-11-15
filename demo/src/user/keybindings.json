@@ -1,0 +1,7 @@
+[
+    {
+      "key": "ctrl+d",
+      "command": "editor.action.deleteLines",
+      "when": "editorTextFocus"
+    }
+]

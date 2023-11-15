@@ -44,6 +44,8 @@ import * as monaco from 'monaco-editor'
 import { TerminalBackend } from './features/terminal'
 import { openNewCodeEditor } from './features/editor'
 import { toCrossOriginWorker, toWorkerConfig } from './tools/workers'
+import defaultConfiguration from './user/configuration.json?raw'
+import defaultKeybindings from './user/keybindings.json?raw'
 
 // Workers
 export type WorkerLoader = () => Worker
@@ -70,35 +72,8 @@ const remotePath = remoteAuthority != null ? params.get('remotePath') ?? undefin
 
 // Set configuration before initializing service so it's directly available (especially for the theme, to prevent a flicker)
 await Promise.all([
-  initUserConfiguration(`{
-    "workbench.colorTheme": "Default Dark+",
-    "workbench.iconTheme": "vs-seti",
-    "editor.autoClosingBrackets": "languageDefined",
-    "editor.autoClosingQuotes": "languageDefined",
-    "editor.scrollBeyondLastLine": true,
-    "editor.mouseWheelZoom": true,
-    "editor.wordBasedSuggestions": false,
-    "editor.acceptSuggestionOnEnter": "on",
-    "editor.foldingHighlight": false,
-    "editor.semanticHighlighting.enabled": true,
-    "editor.bracketPairColorization.enabled": false,
-    "editor.fontSize": 12,
-    "audioCues.lineHasError": "on",
-    "audioCues.onDebugBreak": "on",
-    "files.autoSave": "afterDelay",
-    "files.autoSaveDelay": 1000,
-    "debug.toolBarLocation": "docked",
-    "editor.experimental.asyncTokenization": true,
-    "terminal.integrated.tabs.title": "\${sequence}",
-    "typescript.tsserver.log": "normal"
-  }`),
-  initUserKeybindings(`[
-    {
-      "key": "ctrl+d",
-      "command": "editor.action.deleteLines",
-      "when": "editorTextFocus"
-    }
-  ]`)
+  initUserConfiguration(defaultConfiguration),
+  initUserKeybindings(defaultKeybindings)
 ])
 
 // Override services
