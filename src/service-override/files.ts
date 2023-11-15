@@ -522,6 +522,14 @@ export async function initFile (scheme: string, file: URI, content: Uint8Array |
   if (provider == null || provider.writeFile == null) {
     throw new Error(`${scheme} provider doesn't exist or doesn't support writing files`)
   }
+  if (!(options?.overwrite ?? false)) {
+    try {
+      await provider.stat(file)
+      // The file already exists, do nothing
+      return
+    } catch (error) {
+    }
+  }
 
   await provider.writeFile(file, content instanceof Uint8Array ? content : encoder.encode(content), {
     atomic: false,
