@@ -100,7 +100,7 @@ import getQuickAccessOverride from './quickaccess'
 import getKeybindingsOverride from './keybindings'
 import { changeUrlDomain } from './tools/url'
 import { registerAssets } from '../assets'
-import { registerServiceInitializePostParticipant } from '../lifecycle'
+import { onRenderWorkbench } from '../lifecycle'
 import { withReadyServices } from '../services'
 
 function createPart (id: string, role: string, classes: string[]): HTMLElement {
@@ -621,7 +621,7 @@ registerAssets({
 })
 
 let restoreEditorView = false
-registerServiceInitializePostParticipant(async (accessor) => {
+onRenderWorkbench(async (accessor) => {
   const paneCompositePartService = accessor.get(IPaneCompositePartService)
   const viewDescriptorService = accessor.get(IViewDescriptorService)
 
