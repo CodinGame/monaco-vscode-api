@@ -11,6 +11,7 @@ import { ILogService } from 'vs/platform/log/common/log'
 import { IUserDataProfileService } from 'vs/workbench/services/userDataProfile/common/userDataProfile'
 import { registerServiceInitializePreParticipant } from '../lifecycle'
 import { getWorkspaceIdentifier } from '../workbench'
+import { IHostService } from '../services'
 
 export enum StorageScope {
   APPLICATION = VSStorageScope.APPLICATION,
@@ -130,7 +131,17 @@ class ExternalStorageService extends AbstractStorageService {
 }
 
 registerServiceInitializePreParticipant(async (accessor) => {
-  await (accessor.get(IStorageService) as ExternalStorageService).initialize()
+  const storageService = accessor.get(IStorageService)
+  const hostService = accessor.get(IHostService)
+  if (storageService instanceof AbstractStorageService) {
+    await storageService.initialize()
+
+    hostService.onDidChangeFocus(focus => {
+      if (!focus) {
+        void storageService.flush()
+      }
+    })
+  }
 })
 
 class InjectedBrowserStorageService extends BrowserStorageService {
