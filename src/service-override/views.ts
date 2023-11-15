@@ -54,7 +54,7 @@ import { IContextViewService } from 'vs/platform/contextview/browser/contextView
 import { ContextViewService } from 'vs/platform/contextview/browser/contextViewService'
 import { ICodeEditorService } from 'vs/editor/browser/services/codeEditorService'
 import { EditorInput, IEditorCloseHandler } from 'vs/workbench/common/editor/editorInput'
-import { EditorExtensions, EditorInputCapabilities, IEditorOpenContext, Verbosity } from 'vs/workbench/common/editor'
+import { EditorExtensions, EditorInputCapabilities, IEditorFactoryRegistry, IEditorOpenContext, IEditorSerializer, Verbosity } from 'vs/workbench/common/editor'
 import { IEditorOptions } from 'vs/platform/editor/common/editor'
 import { IResolvedTextEditorModel } from 'vs/editor/common/services/resolverService'
 import { ITextEditorService, TextEditorService } from 'vs/workbench/services/textfile/common/textEditorService'
@@ -368,6 +368,12 @@ function registerEditor (globPattern: string, editorInfo: RegisteredEditorInfo, 
       factory
     )
   })
+}
+
+function registerEditorSerializer<Services extends BrandedService[]> (editorTypeId: string, ctor: {
+  new (...Services: Services): IEditorSerializer
+}): IDisposable {
+  return Registry.as<IEditorFactoryRegistry>(EditorExtensions.EditorFactory).registerEditorSerializer(editorTypeId, ctor)
 }
 
 interface CustomViewOption {
@@ -724,6 +730,8 @@ export {
   AbstractTextResourceEditorInput,
   EditorInput,
   registerEditor,
+  IEditorSerializer,
+  registerEditorSerializer,
   RegisteredEditorInfo,
   RegisteredEditorOptions,
   EditorInputFactoryObject,
