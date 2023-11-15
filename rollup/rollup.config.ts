@@ -859,6 +859,10 @@ export default (args: Record<string, string>): rollup.RollupOptions[] => {
                 types: './lifecycle.d.ts',
                 default: './lifecycle.js'
               },
+              './workbench': {
+                types: './workbench.d.ts',
+                default: './workbench.js'
+              },
               './service-override/*': {
                 types: './service-override/*.d.ts',
                 default: './service-override/*.js'
@@ -897,6 +901,9 @@ export default (args: Record<string, string>): rollup.RollupOptions[] => {
                 ],
                 lifecycle: [
                   './lifecycle.d.ts'
+                ],
+                workbench: [
+                  './workbench.d.ts'
                 ],
                 l10n: [
                   './l10n.d.ts'
@@ -988,7 +995,7 @@ export default (args: Record<string, string>): rollup.RollupOptions[] => {
                   const resolvedWithExtension = resolved.endsWith('.js') ? resolved : `${resolved}.js`
 
                   const isNotExclusive = (resolved.startsWith(VSCODE_SRC_DIST_DIR) || path.dirname(resolved) === path.resolve(DIST_DIR_MAIN, 'service-override')) && !exclusiveModules.has(resolvedWithExtension)
-                  const shouldBeShared = resolvedWithExtension === path.resolve(DIST_DIR_MAIN, 'assets.js') || resolvedWithExtension === path.resolve(DIST_DIR_MAIN, 'lifecycle.js')
+                  const shouldBeShared = resolvedWithExtension === path.resolve(DIST_DIR_MAIN, 'assets.js') || resolvedWithExtension === path.resolve(DIST_DIR_MAIN, 'lifecycle.js') || resolvedWithExtension === path.resolve(DIST_DIR_MAIN, 'workbench.js')
 
                   if (isNotExclusive || shouldBeShared) {
                     // Those modules will be imported from external monaco-vscode-api

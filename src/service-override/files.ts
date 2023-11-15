@@ -15,6 +15,7 @@ import 'vs/workbench/contrib/files/browser/files.contribution.js?include=registe
 import { Schemas } from 'vs/base/common/network'
 import { IndexedDBFileSystemProvider } from 'vs/platform/files/browser/indexedDBFileSystemProvider'
 import { IndexedDB } from 'vs/base/browser/indexedDB'
+import { logsPath } from '../workbench'
 
 abstract class RegisteredFile {
   private ctime: number
@@ -468,7 +469,7 @@ void userDataFileSystemProvider.mkdir(URI.from({ scheme: Schemas.vscodeUserData,
 
 const providers: Record<string, IFileSystemProvider> = {
   extension: extensionFileSystemProvider,
-  logs: new InMemoryFileSystemProvider(),
+  [logsPath.scheme]: new InMemoryFileSystemProvider(),
   [Schemas.vscodeUserData]: userDataFileSystemProvider,
   [Schemas.tmp]: new InMemoryFileSystemProvider(),
   file: fileSystemProvider

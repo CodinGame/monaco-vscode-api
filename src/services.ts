@@ -31,7 +31,7 @@ export async function initialize (overrides: IEditorOverrideServices, container:
   initializeWorkbench(container, configuration)
 
   const instantiationService = StandaloneServices.initialize({
-    ...getLayoutServiceOverride(container), // Always override layout service to break cyclic dependency with ICodeEditorService
+    ...getLayoutServiceOverride(), // Always override layout service to break cyclic dependency with ICodeEditorService
     ...getEnvironmentServiceOverride(),
     ...getExtensionsServiceOverride(),
     ...getFileServiceOverride(),

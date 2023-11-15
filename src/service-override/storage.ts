@@ -9,8 +9,8 @@ import { IAnyWorkspaceIdentifier } from 'vs/platform/workspace/common/workspace'
 import { BrowserStorageService } from 'vs/workbench/services/storage/browser/storageService'
 import { ILogService } from 'vs/platform/log/common/log'
 import { IUserDataProfileService } from 'vs/workbench/services/userDataProfile/common/userDataProfile'
-import { generateUuid } from 'vs/base/common/uuid'
 import { registerServiceInitializePreParticipant } from '../lifecycle'
+import { getWorkspaceIdentifier } from '../workbench'
 
 export enum StorageScope {
   APPLICATION = VSStorageScope.APPLICATION,
@@ -138,9 +138,7 @@ class InjectedBrowserStorageService extends BrowserStorageService {
     @IUserDataProfileService userDataProfileService: IUserDataProfileService,
     @ILogService logService: ILogService
   ) {
-    super({
-      id: generateUuid()
-    }, userDataProfileService, logService)
+    super(getWorkspaceIdentifier(), userDataProfileService, logService)
   }
 }
 
