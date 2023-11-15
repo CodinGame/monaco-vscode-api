@@ -82,9 +82,7 @@ await initializeMonacoService({
   ...getModelServiceOverride(),
   ...getNotificationServiceOverride(),
   ...getDialogsServiceOverride(),
-  ...getConfigurationServiceOverride(remotePath == null
-    ? monaco.Uri.file('/tmp')
-    : { id: 'remote-workspace', uri: monaco.Uri.from({ scheme: 'vscode-remote', path: remotePath, authority: remoteAuthority }) }),
+  ...getConfigurationServiceOverride(),
   ...getKeybindingsServiceOverride(),
   ...getTextmateServiceOverride(),
   ...getThemeServiceOverride(),
@@ -92,7 +90,7 @@ await initializeMonacoService({
   ...getAudioCueServiceOverride(),
   ...getDebugServiceOverride(),
   ...getPreferencesServiceOverride(),
-  ...getViewsServiceOverride(openNewCodeEditor),
+  ...getViewsServiceOverride(openNewCodeEditor, undefined, true),
   ...getBannerServiceOverride(),
   ...getStatusBarServiceOverride(),
   ...getTitleBarServiceOverride(),
@@ -110,11 +108,20 @@ await initializeMonacoService({
   ...getStorageServiceOverride(),
   ...getRemoteAgentServiceOverride(connectionToken),
   ...getLifecycleServiceOverride(),
-  ...getEnvironmentServiceOverride({
-    remoteAuthority,
-    enableWorkspaceTrust: true
-  }),
+  ...getEnvironmentServiceOverride(),
   ...getWorkspaceTrustOverride()
+}, document.body, {
+  remoteAuthority,
+  enableWorkspaceTrust: true,
+  workspaceProvider: {
+    trusted: true,
+    async open () {
+      return false
+    },
+    workspace: {
+      folderUri: remotePath == null ? monaco.Uri.file('/tmp') : monaco.Uri.from({ scheme: 'vscode-remote', path: remotePath, authority: remoteAuthority })
+    }
+  }
 })
 StandaloneServices.get(ILogService).setLevel(LogLevel.Off)
 
