@@ -5,8 +5,8 @@ import { registerFileSystemOverlay, HTMLFileSystemProvider } from '@codingame/mo
 import * as vscode from 'vscode'
 import { ILogService, StandaloneServices, IPreferencesService, IEditorService, IDialogService, getService, createInstance } from 'vscode/services'
 import { Parts, isPartVisibile, setPartVisibility } from '@codingame/monaco-vscode-views-service-override'
-import { defaultUserConfigurationFile } from '@codingame/monaco-vscode-configuration-service-override'
-import { defaultUserKeybindindsFile } from '@codingame/monaco-vscode-keybindings-service-override'
+import { defaultUserConfigurationFile, updateUserConfiguration } from '@codingame/monaco-vscode-configuration-service-override'
+import { defaultUserKeybindindsFile, updateUserKeybindings } from '@codingame/monaco-vscode-keybindings-service-override'
 import { clearStorage, remoteAuthority } from './setup'
 import { CustomEditorInput } from './features/customView'
 import './features/debugger'
@@ -57,6 +57,8 @@ import '@codingame/monaco-vscode-configuration-editing-default-extension'
 import '@codingame/monaco-vscode-markdown-math-default-extension'
 import '@codingame/monaco-vscode-npm-default-extension'
 import '@codingame/monaco-vscode-media-preview-default-extension'
+import defaultConfiguration from './user/configuration.json?raw'
+import defaultKeybindings from './user/keybindings.json?raw'
 
 if (remoteAuthority != null) {
   import('./features/remoteExtension')
@@ -143,6 +145,14 @@ document.querySelector('#run')!.addEventListener('click', () => {
 document.querySelector('#settingsui')!.addEventListener('click', async () => {
   await StandaloneServices.get(IPreferencesService).openUserSettings()
   window.scrollTo({ top: 0, behavior: 'smooth' })
+})
+
+document.querySelector('#resetsettings')!.addEventListener('click', async () => {
+  await updateUserConfiguration(defaultConfiguration)
+})
+
+document.querySelector('#resetkeybindings')!.addEventListener('click', async () => {
+  await updateUserKeybindings(defaultKeybindings)
 })
 
 document.querySelector('#keybindingsui')!.addEventListener('click', async () => {
