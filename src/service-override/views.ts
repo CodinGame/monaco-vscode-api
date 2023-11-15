@@ -630,8 +630,6 @@ onRenderWorkbench(async (accessor) => {
   const withBannerPart = accessor.get(IBannerService) instanceof Part
   const withTitlePart = accessor.get(ITitleService) instanceof Part
 
-  paneCompositePartService.getPaneComposites(ViewContainerLocation.Panel)
-
   const layoutService = accessor.get(ILayoutService) as LayoutService
 
   const invisibleContainer = document.createElement('div')
