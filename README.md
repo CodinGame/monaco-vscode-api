@@ -189,6 +189,8 @@ Additionally, 25 packages that include the vscode version of some services (with
   - Register accessibility helpers
 - **Workspace trust**: `@codingame/monaco-vscode-workspace-trust-service-override`
   - Ask user it they trust the current workspace, disable some features if not
+- **Extension Gallery**: `@codingame/monaco-vscode-extension-gallery-service-override`
+  - Support for the VSCode marketplace, it allows to install extensions from the marketplace.
 Usage:
 
 ```typescript
