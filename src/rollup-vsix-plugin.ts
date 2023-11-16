@@ -101,7 +101,8 @@ export default function plugin ({
         const assetPath = getVsixPath(resource.realPath ?? resource.path)
         let url: string
         if (process.env.NODE_ENV === 'development') {
-          url = `'data:text/javascript;base64,${readFileSync(assetPath).toString('base64')}'`
+          const fileType = resource.mimeType ?? 'text/javascript'
+          url = `'data:${fileType};base64,${readFileSync(assetPath).toString('base64')}'`
         } else {
           url = 'import.meta.ROLLUP_FILE_URL_' + this.emitFile({
             type: 'asset',
