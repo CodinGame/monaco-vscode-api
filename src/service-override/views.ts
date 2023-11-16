@@ -1,6 +1,6 @@
 import { IEditorOverrideServices, StandaloneServices } from 'vs/editor/standalone/browser/standaloneServices'
 import { SyncDescriptor } from 'vs/platform/instantiation/common/descriptors'
-import { IViewContainersRegistry, IViewDescriptor, IViewDescriptorService, IViewsRegistry, IViewsService, ViewContainerLocation, Extensions as ViewExtensions } from 'vs/workbench/common/views'
+import { IViewContainersRegistry, IViewDescriptor, IViewDescriptorService, IViewsRegistry, IViewsService, ViewContainer, ViewContainerLocation, Extensions as ViewExtensions } from 'vs/workbench/common/views'
 import { ViewsService } from 'vs/workbench/browser/parts/views/viewsService'
 import { BrandedService, IInstantiationService, ServicesAccessor } from 'vs/platform/instantiation/common/instantiation'
 import { SidebarPart } from 'vs/workbench/browser/parts/sidebar/sidebarPart'
@@ -388,12 +388,16 @@ interface CustomViewOption {
     icon?: keyof typeof Codicon
     render?(container: HTMLElement): void
   }[]
+  viewContainer?: ViewContainer
+  canToggleVisibility?: boolean
+  hideByDefault?: boolean
+  collapsed?: boolean
 }
 
 function registerCustomView (options: CustomViewOption): IDisposable {
   const iconUrl = options.icon != null ? URI.parse(options.icon) : undefined
 
-  const VIEW_CONTAINER = Registry.as<IViewContainersRegistry>(ViewExtensions.ViewContainersRegistry).registerViewContainer({
+  const viewContainer = options.viewContainer ?? Registry.as<IViewContainersRegistry>(ViewExtensions.ViewContainersRegistry).registerViewContainer({
     id: options.id,
     title: { value: options.name, original: options.name },
     order: options.order,
@@ -407,7 +411,6 @@ function registerCustomView (options: CustomViewOption): IDisposable {
   const views: IViewDescriptor[] = [{
     id: options.id,
     name: options.name,
-    canToggleVisibility: false,
     ctorDescriptor: new SyncDescriptor(class extends ViewPane {
       private content?: HTMLElement
 
@@ -437,16 +440,23 @@ function registerCustomView (options: CustomViewOption): IDisposable {
       }
     }),
     canMoveView: options.canMoveView ?? true,
+    canToggleVisibility: options.canToggleVisibility ?? false,
+    hideByDefault: options.hideByDefault ?? false,
+    collapsed: options.collapsed ?? false,
+    order: options.order,
     containerIcon: iconUrl
   }]
 
-  Registry.as<IViewsRegistry>(ViewExtensions.ViewsRegistry).registerViews(views, VIEW_CONTAINER)
+  Registry.as<IViewsRegistry>(ViewExtensions.ViewsRegistry).registerViews(views, viewContainer)
 
   const disposableCollection = new DisposableStore()
   disposableCollection.add({
     dispose () {
-      Registry.as<IViewsRegistry>(ViewExtensions.ViewsRegistry).deregisterViews(views, VIEW_CONTAINER)
-      Registry.as<IViewContainersRegistry>(ViewExtensions.ViewContainersRegistry).deregisterViewContainer(VIEW_CONTAINER)
+      Registry.as<IViewsRegistry>(ViewExtensions.ViewsRegistry).deregisterViews(views, viewContainer)
+      if (options.viewContainer == null) {
+        // Only deregister if it's newly created
+        Registry.as<IViewContainersRegistry>(ViewExtensions.ViewContainersRegistry).deregisterViewContainer(viewContainer)
+      }
     }
   })
 
