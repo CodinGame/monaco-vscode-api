@@ -43,6 +43,8 @@ import { IKeybindingService, IKeyboardEvent } from 'vs/platform/keybinding/commo
 import { KeybindingResolver } from 'vs/platform/keybinding/common/keybindingResolver'
 import { ResolvedKeybindingItem } from 'vs/platform/keybinding/common/resolvedKeybindingItem'
 import { Keybinding, ResolvedKeybinding } from 'vs/base/common/keybindings'
+import { Event } from 'vs/base/common/event'
+import { Emitter } from 'monaco-editor'
 import { createInjectedClass } from './tools/injection'
 // Selectively comes from vs/workbench/contrib/codeEditor/browser/codeEditor.contribution.ts
 import 'vs/workbench/contrib/codeEditor/browser/workbenchReferenceSearch'
@@ -182,8 +184,13 @@ export async function createModelReference (resource: URI, content?: string): Pr
   return (await StandaloneServices.get(ITextModelService).createModelReference(resource)) as IReference<ITextFileEditorModel>
 }
 
+export interface KeybindingProvider {
+  provideKeybindings (): ResolvedKeybindingItem[]
+  onDidChangeKeybindings: Event<void>
+}
+
 export interface DynamicKeybindingService extends IKeybindingService {
-  registerKeybindingProvider (provider: () => ResolvedKeybindingItem[]): IDisposable
+  registerKeybindingProvider (provider: KeybindingProvider): IDisposable
   _getResolver(): KeybindingResolver
 }
 
@@ -195,6 +202,7 @@ function isDynamicKeybindingService (keybindingService: IKeybindingService) {
 // This class use useful so editor.addAction and editor.addCommand still work
 // Monaco do an `instanceof` on the KeybindingService so we need it to extends `StandaloneKeybindingService`
 class DelegateStandaloneKeybindingService extends StandaloneKeybindingService {
+  private _onDidChangeKeybindings = new Emitter<void>()
   constructor (
     private delegate: DynamicKeybindingService,
     @IContextKeyService contextKeyService: IContextKeyService,
@@ -206,11 +214,21 @@ class DelegateStandaloneKeybindingService extends StandaloneKeybindingService {
   ) {
     super(contextKeyService, commandService, telemetryService, notificationService, logService, codeEditorService)
 
-    this._register(delegate.registerKeybindingProvider(() => this.getUserKeybindingItems()))
+    this._register(delegate.registerKeybindingProvider({
+      provideKeybindings: () => {
+        return this.getUserKeybindingItems()
+      },
+      onDidChangeKeybindings: this._onDidChangeKeybindings.event
+    }))
   }
 
   protected override _getResolver (): KeybindingResolver {
     return this.delegate._getResolver()
+  }
+
+  protected override updateResolver (): void {
+    super.updateResolver()
+    this._onDidChangeKeybindings.fire()
   }
 
   override resolveKeyboardEvent (keyboardEvent: IKeyboardEvent): ResolvedKeybinding {
