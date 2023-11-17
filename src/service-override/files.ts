@@ -16,7 +16,9 @@ import { Schemas } from 'vs/base/common/network'
 import { IndexedDBFileSystemProvider, IndexedDBFileSystemProviderErrorData, IndexedDBFileSystemProviderErrorDataClassification } from 'vs/platform/files/browser/indexedDBFileSystemProvider'
 import { IndexedDB } from 'vs/base/browser/indexedDB'
 import { ITelemetryService } from 'vs/platform/telemetry/common/telemetry'
+import { BufferLogger } from 'vs/platform/log/common/bufferLog'
 import { logsPath } from '../workbench'
+import { registerServiceInitializePreParticipant } from '../lifecycle'
 
 abstract class RegisteredFile {
   private ctime: number
@@ -477,7 +479,7 @@ const providers: Record<string, IFileSystemProvider> = {
 }
 
 class MemoryFileService extends FileService {
-  constructor (@ILogService logService: ILogService, @ITelemetryService telemetryService: ITelemetryService) {
+  constructor (logService: ILogService, @ITelemetryService telemetryService: ITelemetryService) {
     super(logService)
 
     for (const [scheme, provider] of Object.entries(providers)) {
@@ -496,9 +498,16 @@ class MemoryFileService extends FileService {
   }
 }
 
+// Set the logger of the fileLogger after the log service is ready.
+// This is to avoid cyclic dependency
+const fileLogger = new BufferLogger()
+registerServiceInitializePreParticipant(async (accessor) => {
+  fileLogger.logger = accessor.get(ILogService)
+})
+
 export default function getServiceOverride (): IEditorOverrideServices {
   return {
-    [IFileService.toString()]: new SyncDescriptor(MemoryFileService, [], true)
+    [IFileService.toString()]: new SyncDescriptor(MemoryFileService, [fileLogger], true)
   }
 }
 
