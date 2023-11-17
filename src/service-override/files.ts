@@ -1,10 +1,10 @@
-import { IEditorOverrideServices, StandaloneServices } from 'vs/editor/standalone/browser/standaloneServices'
+import { IEditorOverrideServices } from 'vs/editor/standalone/browser/standaloneServices'
 import { SyncDescriptor } from 'vs/platform/instantiation/common/descriptors'
 import { FileService } from 'vs/platform/files/common/fileService'
 import { ILogService } from 'vs/platform/log/common/log'
 import { InMemoryFileSystemProvider } from 'vs/platform/files/common/inMemoryFilesystemProvider'
 import { URI } from 'vs/base/common/uri'
-import { FileChangeType, FilePermission, FileSystemProviderCapabilities, FileType, IFileSystemProvider } from 'vscode/src/vs/platform/files/common/files'
+import { FileChangeType, FilePermission, FileSystemProviderCapabilities, FileType, IFileSystemProvider, toFileSystemProviderErrorCode } from 'vscode/src/vs/platform/files/common/files'
 import { createFileSystemProviderError, FileSystemProviderError, FileSystemProviderErrorCode, IFileChange, IFileDeleteOptions, IFileOverwriteOptions, IFileService, IFileSystemProviderWithFileReadWriteCapability, IFileWriteOptions, IStat, IWatchOptions } from 'vs/platform/files/common/files'
 import { DisposableStore, IDisposable, Disposable, toDisposable } from 'vs/base/common/lifecycle'
 import { extUri, joinPath } from 'vs/base/common/resources'
@@ -17,6 +17,7 @@ import { IndexedDBFileSystemProvider, IndexedDBFileSystemProviderErrorData, Inde
 import { IndexedDB } from 'vs/base/browser/indexedDB'
 import { ITelemetryService } from 'vs/platform/telemetry/common/telemetry'
 import { BufferLogger } from 'vs/platform/log/common/bufferLog'
+import { localizeWithPath } from 'vs/nls'
 import { logsPath } from '../workbench'
 import { checkServicesNotInitialized, registerServiceInitializePreParticipant } from '../lifecycle'
 
@@ -397,13 +398,58 @@ class OverlayFileSystemProvider implements IFileSystemProviderWithFileReadWriteC
   }
 }
 
+function resourceForError (resource: URI): string {
+  if (resource.scheme === Schemas.file) {
+    return resource.fsPath
+  }
+
+  return resource.toString(true)
+}
+async function mkdirp (provider: IFileSystemProviderWithFileReadWriteCapability, directory: URI) {
+  const directoriesToCreate: string[] = []
+
+  // mkdir until we reach root
+  while (!extUri.isEqual(directory, extUri.dirname(directory))) {
+    try {
+      const stat = await provider.stat(directory)
+      if ((stat.type & FileType.Directory) === 0) {
+        throw new Error(localizeWithPath('mkdirExistsError', "Unable to create folder '{0}' that already exists but is not a directory", resourceForError(directory)))
+      }
+
+      break // we have hit a directory that exists -> good
+    } catch (error) {
+      // Bubble up any other error that is not file not found
+      if (toFileSystemProviderErrorCode(error as Error) !== FileSystemProviderErrorCode.FileNotFound) {
+        throw error
+      }
+
+      // Upon error, remember directories that need to be created
+      directoriesToCreate.push(extUri.basename(directory))
+
+      // Continue up
+      directory = extUri.dirname(directory)
+    }
+  }
+
+  // Create directories as needed
+  for (let i = directoriesToCreate.length - 1; i >= 0; i--) {
+    directory = extUri.joinPath(directory, directoriesToCreate[i]!)
+
+    try {
+      await provider.mkdir(directory)
+    } catch (error) {
+      if (toFileSystemProviderErrorCode(error as Error) !== FileSystemProviderErrorCode.FileExists) {
+        throw error
+      }
+    }
+  }
+}
+
 class MkdirpOnWriteInMemoryFileSystemProvider extends InMemoryFileSystemProvider {
   override async writeFile (resource: URI, content: Uint8Array, opts: IFileWriteOptions): Promise<void> {
     // when using overlay providers, the fileservice won't be able to detect that the parent directory doesn't exist
     // if another provider has this directory. So it won't create the parent directories on this memory file system.
-    // So let's do it ourself
-    // eslint-disable-next-line dot-notation
-    await (StandaloneServices.get(IFileService) as FileService)['mkdirp'](this, extUri.dirname(resource))
+    await mkdirp(this, extUri.dirname(resource))
 
     return super.writeFile(resource, content, opts)
   }
