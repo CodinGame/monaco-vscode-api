@@ -111,6 +111,7 @@ const TSCONFIG = path.resolve(BASE_DIR, 'tsconfig.rollup.json')
 const SRC_DIR = path.resolve(BASE_DIR, 'src')
 const DIST_DIR = path.resolve(BASE_DIR, 'dist')
 const DIST_DIR_MAIN = path.resolve(DIST_DIR, 'main')
+const DIST_SERVICE_OVERRIDE_DIR_MAIN = path.resolve(DIST_DIR_MAIN, 'service-override')
 const VSCODE_SRC_DIST_DIR = path.resolve(DIST_DIR_MAIN, 'vscode', 'src')
 const VSCODE_DIR = path.resolve(BASE_DIR, 'vscode')
 const VSCODE_SRC_DIR = path.resolve(VSCODE_DIR, 'src')
@@ -800,7 +801,23 @@ export default (args: Record<string, string>): rollup.RollupOptions[] => {
         }
         return code
       }
-    }, nodeResolve({
+    },
+    {
+      name: 'externalize-service-overrides',
+      resolveId (source, importer) {
+        const importerDir = path.dirname(path.resolve(DIST_DIR_MAIN, importer ?? '/'))
+        const resolved = path.resolve(importerDir, source)
+        if (path.dirname(resolved) === DIST_SERVICE_OVERRIDE_DIR_MAIN && importer != null) {
+          const serviceOverride = path.basename(resolved, '.js')
+          return {
+            external: true,
+            id: `@codingame/monaco-vscode-${paramCase(serviceOverride)}-service-override`
+          }
+        }
+        return undefined
+      }
+    },
+    nodeResolve({
       extensions: EXTENSIONS
     }),
     {
@@ -916,7 +933,8 @@ export default (args: Record<string, string>): rollup.RollupOptions[] => {
               'monaco-treemending': './monaco-treemending.js'
             },
             dependencies: {
-              ...Object.fromEntries(Object.entries(pkg.dependencies).filter(([key]) => dependencies.has(key)))
+              ...Object.fromEntries(Object.entries(pkg.dependencies).filter(([key]) => dependencies.has(key))),
+              ...Object.fromEntries(Array.from(dependencies).filter(dep => dep.startsWith('@codingame/monaco-vscode-')).map(dep => [dep, pkg.version]))
             }
           }
           this.emitFile({
@@ -946,7 +964,8 @@ export default (args: Record<string, string>): rollup.RollupOptions[] => {
             types: 'index.d.ts',
             dependencies: {
               vscode: `npm:${pkg.name}@^${pkg.version}`,
-              ...Object.fromEntries(Object.entries(pkg.dependencies).filter(([key]) => dependencies.has(key)))
+              ...Object.fromEntries(Object.entries(pkg.dependencies).filter(([key]) => dependencies.has(key))),
+              ...Object.fromEntries(Array.from(dependencies).filter(dep => dep.startsWith('@codingame/monaco-vscode-')).map(dep => [dep, pkg.version]))
             }
           }
           if (workerEntryPoint != null) {
@@ -985,6 +1004,12 @@ export default (args: Record<string, string>): rollup.RollupOptions[] => {
                 resolveId (source, importer) {
                   if (source === 'entrypoint' || source === 'worker') {
                     return source
+                  }
+                  if (source.startsWith('@codingame/monaco-vscode-')) {
+                    return {
+                      external: true,
+                      id: source
+                    }
                   }
                   if (source.startsWith('monaco-editor/')) {
                     return null
