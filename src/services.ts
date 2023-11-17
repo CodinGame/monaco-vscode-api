@@ -7,26 +7,18 @@ import { StorageScope, StorageTarget } from 'vscode/src/vs/platform/storage/comm
 import { IEditorOverrideServices, StandaloneServices } from 'vs/editor/standalone/browser/standaloneServices'
 import { GetLeadingNonServiceArgs, IInstantiationService, ServiceIdentifier, ServicesAccessor } from 'vs/platform/instantiation/common/instantiation'
 import { IAction } from 'vs/base/common/actions'
-import { Disposable, DisposableStore, IDisposable } from 'vs/base/common/lifecycle'
+import { DisposableStore, IDisposable } from 'vs/base/common/lifecycle'
 import { IWorkbenchConstructionOptions } from 'vs/workbench/browser/web.api'
 import getLayoutServiceOverride from './service-override/layout'
 import getEnvironmentServiceOverride from './service-override/environment'
 import getExtensionsServiceOverride from './service-override/extensions'
 import getFileServiceOverride from './service-override/files'
 import getQuickAccessOverride from './service-override/quickaccess'
-import { serviceInitializedBarrier, serviceInitializedEmitter, startup } from './lifecycle'
+import { checkServicesNotInitialized, checkServicesReady, serviceInitializedBarrier, serviceInitializedEmitter, startup, waitServicesReady } from './lifecycle'
 import { initialize as initializeWorkbench } from './workbench'
 
-let servicesInitialized = false
-StandaloneServices.withServices(() => {
-  servicesInitialized = true
-  return Disposable.None
-})
-
 export async function initialize (overrides: IEditorOverrideServices, container: HTMLElement = document.body, configuration: IWorkbenchConstructionOptions = {}): Promise<void> {
-  if (servicesInitialized) {
-    throw new Error('The services are already initialized.')
-  }
+  checkServicesNotInitialized()
 
   initializeWorkbench(container, configuration)
 
@@ -40,16 +32,6 @@ export async function initialize (overrides: IEditorOverrideServices, container:
   })
 
   await startup(instantiationService)
-}
-
-export async function waitServicesReady (): Promise<void> {
-  await serviceInitializedBarrier.wait()
-}
-
-export function checkServicesReady (): void {
-  if (!serviceInitializedBarrier.isOpen()) {
-    throw new Error('Services are not ready yet')
-  }
 }
 
 export async function getService<T> (identifier: ServiceIdentifier<T>): Promise<T> {
