@@ -126,9 +126,11 @@ await initializeMonacoService({
     workspace: {
       folderUri: remotePath == null ? monaco.Uri.file('/tmp') : monaco.Uri.from({ scheme: 'vscode-remote', path: remotePath, authority: remoteAuthority })
     }
+  },
+  developmentOptions: {
+    logLevel: LogLevel.Info // Default value
   }
 })
-StandaloneServices.get(ILogService).setLevel(LogLevel.Off)
 
 export async function clearStorage (): Promise<void> {
   await userDataProvider.reset()
