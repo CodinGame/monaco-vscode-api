@@ -2,8 +2,7 @@ import * as rollup from 'rollup'
 import dts from 'rollup-plugin-dts'
 import * as tsMorph from 'ts-morph'
 import { paramCase } from 'param-case'
-import { createFSBackedSystem } from '@typescript/vfs'
-import ts from 'typescript'
+import fastGlob from 'fast-glob'
 import * as path from 'path'
 import { fileURLToPath } from 'url'
 import * as fs from 'fs'
@@ -29,39 +28,6 @@ const DIST_DIR_VSCODE_SRC_MAIN = path.resolve(DIST_DIR_MAIN, 'vscode/src')
 const TYPES_SRC_DIR = path.join(DIST_DIR, 'types/src')
 const SERVICE_OVERRIDE_DIR = path.join(TYPES_SRC_DIR, 'service-override')
 const SERVICE_OVERRIDE_DIST_DIR = path.join(DIST_DIR_MAIN, 'service-override')
-
-function getProposedVscodeTypes () {
-  const proposedTypes = fs.readdirSync(VSCODE_SRC_DTS_DIR).filter(f => f !== 'vscode.d.ts').map(f => {
-    const [sourceFile] = project.addSourceFilesAtPaths(path.resolve(VSCODE_SRC_DTS_DIR, f))
-    for (const module of sourceFile!.getModules()) {
-      for (const exportable of [
-        ...module.getInterfaces(),
-        ...module.getEnums(),
-        ...module.getClasses(),
-        ...module.getFunctions(),
-        ...module.getVariableStatements()
-      ]) {
-        exportable.setIsExported(true)
-      }
-    }
-    return sourceFile!.getModules().map(module => module.getBodyText()).join('\n')
-  }).join('\n')
-
-  const [mainVscodeTypes] = project.addSourceFilesAtPaths(path.resolve(VSCODE_SRC_DTS_DIR, 'vscode.d.ts'))
-  const exported = mainVscodeTypes!.getModules().flatMap(module => Array.from(module.getExportedDeclarations().keys()))
-  return `export * from 'vscode'\nimport { ${exported.join(', ')} } from 'vscode'\n\n${proposedTypes}`
-}
-
-// create a virtual filesystem for typescript so we don't have to write the temporary file on the disk
-const typescriptFilesystemOverride = new Map<string, string>()
-typescriptFilesystemOverride.set(path.resolve(PROJECT_ROOT, 'vscode-proposed.d.ts'), getProposedVscodeTypes())
-// For some reasons, the `setSys` method is not exposed
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
-;(ts as any).setSys(createFSBackedSystem(typescriptFilesystemOverride, PROJECT_ROOT, ts))
-// This method is not implemented in @typescript/vfs and it makes the build crash
-ts.sys.getExecutingFilePath = () => {
-  return PROJECT_ROOT
-}
 
 const interfaceOverride = new Map<string, string>()
 interfaceOverride.set('Event<T>', 'vscode.Event<T>')
@@ -178,13 +144,9 @@ export default rollup.defineConfig((<{input: Record<string, string>, output: str
                   return null
                 }
                 if (source === 'vscode') {
-                  if (!importer!.includes('vscode-proposed.d.ts')) {
-                    return path.resolve(PROJECT_ROOT, 'vscode-proposed.d.ts')
-                  } else {
-                    return {
-                      id: 'vscode',
-                      external: true
-                    }
+                  return {
+                    id: 'vscode',
+                    external: true
                   }
                 }
                 const importerDir = path.dirname(path.resolve(DIST_DIR_MAIN, importer ?? '/'))
@@ -216,9 +178,6 @@ export default rollup.defineConfig((<{input: Record<string, string>, output: str
                     codeLines.push(`export * from '${serviceOverrideTypesPath}'`)
                   }
                   return codeLines.join('\n')
-                }
-                if (typescriptFilesystemOverride.has(id)) {
-                  return typescriptFilesystemOverride.get(id)
                 }
                 if (id.startsWith('vscode/')) {
                   return (bundle[path.relative('vscode', id)] as rollup.OutputChunk | undefined)?.code
@@ -259,10 +218,7 @@ export default rollup.defineConfig((<{input: Record<string, string>, output: str
       name: 'replace-interfaces',
       load (id) {
         const path = new URL(id, 'file:/').pathname
-        const [sourceFile] = project.addSourceFilesAtPaths(path)
-        if (sourceFile == null) {
-          return undefined
-        }
+        const sourceFile = project.addSourceFileAtPath(path)
 
         if (id.includes('node_modules') && id.includes('xterm')) {
           // xterm modules use `declare module` syntax not supposed by the rollup-dts-plugin, so let's transform the code
@@ -273,14 +229,19 @@ export default rollup.defineConfig((<{input: Record<string, string>, output: str
           return `${sourceFile.getImportDeclarations().map(e => e.getText()).join('\n')}\n${module.getBodyText()}`
         }
 
-        sourceFile.addImportDeclaration({
-          moduleSpecifier: 'monaco-editor',
-          namespaceImport: 'monaco'
-        })
-        sourceFile.addImportDeclaration({
-          moduleSpecifier: 'vscode',
-          namespaceImport: 'vscode'
-        })
+        if (sourceFile.getImportDeclaration('monaco-editor') == null) {
+          sourceFile.addImportDeclaration({
+            moduleSpecifier: 'monaco-editor',
+            namespaceImport: 'monaco'
+          })
+        }
+        if (sourceFile.getImportDeclaration('vscode') == null) {
+          sourceFile.addImportDeclaration({
+            moduleSpecifier: 'vscode',
+            namespaceImport: 'vscode'
+          })
+        }
+
         return sourceFile.getFullText()
       },
       transform (code, id) {
@@ -315,6 +276,21 @@ export default rollup.defineConfig((<{input: Record<string, string>, output: str
           return path.join(VSCODE_SRC_DIR, `${importee}.d.ts`)
         }
         return undefined
+      }
+    },
+    {
+      name: 'vscode-proposed',
+      async generateBundle () {
+        const types = await fastGlob('vscode.proposed.*.d.ts', {
+          cwd: VSCODE_SRC_DTS_DIR
+        })
+        const contents = await Promise.all(types.map(file => fsPromise.readFile(path.resolve(VSCODE_SRC_DTS_DIR, file))))
+        this.emitFile({
+          type: 'asset',
+          needsCodeReference: false,
+          fileName: 'vscode.proposed.d.ts',
+          source: contents.join('\n\n')
+        })
       }
     },
     dts({
