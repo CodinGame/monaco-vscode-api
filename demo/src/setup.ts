@@ -92,7 +92,7 @@ await Promise.all([
 await initializeMonacoService({
   ...getLogServiceOverride(),
   ...getExtensionServiceOverride(toWorkerConfig(ExtensionHostWorker)),
-  ...getExtensionGalleryServiceOverride(),
+  ...getExtensionGalleryServiceOverride({ webOnly: false }),
   ...getModelServiceOverride(),
   ...getNotificationServiceOverride(),
   ...getDialogsServiceOverride(),

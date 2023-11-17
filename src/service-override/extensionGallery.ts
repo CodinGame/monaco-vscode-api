@@ -28,13 +28,44 @@ import 'vs/workbench/contrib/logs/common/logs.contribution'
 import { IRemoteUserDataProfilesService, RemoteUserDataProfilesService } from 'vs/workbench/services/userDataProfile/common/remoteUserDataProfiles'
 import { ExtensionEnablementService } from 'vs/workbench/services/extensionManagement/browser/extensionEnablementService'
 import 'vs/workbench/services/extensionManagement/browser/extensionBisect'
+import { IInstantiationService, ILabelService, IRemoteAgentService } from '../services'
 
-export default function getServiceOverride (): IEditorOverrideServices {
+class ExtensionManagementServerServiceOverride extends ExtensionManagementServerService {
+  constructor (
+    private isWebOnly: boolean,
+    @IRemoteAgentService readonly remoteAgentService: IRemoteAgentService,
+    @ILabelService readonly labelService: ILabelService,
+    @IInstantiationService readonly instantiationService: IInstantiationService
+  ) {
+    super(remoteAgentService, labelService, instantiationService)
+
+    if (this.isWebOnly) {
+      /**
+      * If `isWebOnly` is set to true, we explicitly set the remote extension management server to `null`, even if
+      * we're connected to a remote server.
+      */
+      // Cannot override read-only property, but this is the only way we can override it to be null,
+      // overriding the field doesn't work and setting a getter is not allowed.
+      // @ts-ignore
+      this.remoteExtensionManagementServer = null
+    }
+  }
+}
+
+export interface ExtensionGalleryOptions {
+  /**
+   * Whether we should only allow for web extensions to be installed, this is generally
+   * true if there is no server part.
+   */
+  webOnly: boolean
+}
+
+export default function getServiceOverride (options: ExtensionGalleryOptions = { webOnly: false }): IEditorOverrideServices {
   return {
     [IExtensionGalleryService.toString()]: new SyncDescriptor(ExtensionGalleryService, [], true),
     [IGlobalExtensionEnablementService.toString()]: new SyncDescriptor(GlobalExtensionEnablementService, [], true),
     [IExtensionsWorkbenchService.toString()]: new SyncDescriptor(ExtensionsWorkbenchService, [], true),
-    [IExtensionManagementServerService.toString()]: new SyncDescriptor(ExtensionManagementServerService, [], true),
+    [IExtensionManagementServerService.toString()]: new SyncDescriptor(ExtensionManagementServerServiceOverride, [options.webOnly], true),
     [IExtensionRecommendationsService.toString()]: new SyncDescriptor(ExtensionRecommendationsService, [], true),
     [IExtensionRecommendationNotificationService.toString()]: new SyncDescriptor(ExtensionRecommendationNotificationService, [], true),
     [IWebExtensionsScannerService.toString()]: new SyncDescriptor(WebExtensionsScannerService, [], true),
