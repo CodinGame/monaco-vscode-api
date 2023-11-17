@@ -526,10 +526,10 @@ export function registerExtensionFile (extensionLocation: URI, filePath: string,
 /**
  * Can be used to create a file before the fileService is initialized
  */
-export async function initFile (scheme: string, file: URI, content: Uint8Array | string, options?: Partial<IFileWriteOptions>): Promise<void> {
-  const provider = providers[scheme]
+export async function initFile (file: URI, content: Uint8Array | string, options?: Partial<IFileWriteOptions>): Promise<void> {
+  const provider = providers[file.scheme]
   if (provider == null || provider.writeFile == null) {
-    throw new Error(`${scheme} provider doesn't exist or doesn't support writing files`)
+    throw new Error(`${file.scheme} provider doesn't exist or doesn't support writing files`)
   }
   if (!(options?.overwrite ?? false)) {
     try {

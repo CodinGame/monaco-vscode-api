@@ -45,7 +45,7 @@ const defaultUserConfigurationFile = URI.from({ scheme: Schemas.vscodeUserData, 
  * Should be called only BEFORE the service are initialized to initialize the file on the filesystem before the configuration service initializes
  */
 async function initUserConfiguration (configurationJson: string, options?: Partial<IFileWriteOptions>, file: URI = defaultUserConfigurationFile): Promise<void> {
-  await initFile(defaultUserConfigurationFile.scheme, file, configurationJson, options)
+  await initFile(file, configurationJson, options)
 }
 
 /**
