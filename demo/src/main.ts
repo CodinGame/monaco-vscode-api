@@ -7,12 +7,14 @@ import { ILogService, StandaloneServices, IPreferencesService, IEditorService, I
 import { Parts, isPartVisibile, setPartVisibility } from '@codingame/monaco-vscode-views-service-override'
 import { defaultUserConfigurationFile, updateUserConfiguration } from '@codingame/monaco-vscode-configuration-service-override'
 import { defaultUserKeybindindsFile, updateUserKeybindings } from '@codingame/monaco-vscode-keybindings-service-override'
+import './features/filesystem'
 import { clearStorage, remoteAuthority } from './setup'
 import { CustomEditorInput } from './features/customView'
+import { anotherFakeOutputChannel } from './features/output'
+import defaultConfiguration from './user/configuration.json?raw'
+import defaultKeybindings from './user/keybindings.json?raw'
 import './features/debugger'
 import './features/search'
-import { anotherFakeOutputChannel } from './features/output'
-import './features/filesystem'
 import './features/intellisense'
 import './features/notifications'
 import './features/terminal'
@@ -57,23 +59,12 @@ import '@codingame/monaco-vscode-configuration-editing-default-extension'
 import '@codingame/monaco-vscode-markdown-math-default-extension'
 import '@codingame/monaco-vscode-npm-default-extension'
 import '@codingame/monaco-vscode-media-preview-default-extension'
-import defaultConfiguration from './user/configuration.json?raw'
-import defaultKeybindings from './user/keybindings.json?raw'
 
 if (remoteAuthority != null) {
   import('./features/remoteExtension')
 }
 
-const modelRef = await createModelReference(monaco.Uri.file('/tmp/test.js'), `// import anotherfile
-let variable = 1
-function inc () {
-  variable++
-}
-
-while (variable < 5000) {
-  inc()
-  console.log('Hello world', variable);
-}`)
+const modelRef = await createModelReference(monaco.Uri.file('/tmp/test.js'))
 
 const [mainDocument] = await Promise.all([
   vscode.workspace.openTextDocument(modelRef.object.textEditorModel!.uri),

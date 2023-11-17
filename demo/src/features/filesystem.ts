@@ -1,5 +1,16 @@
-import { RegisteredFileSystemProvider, registerFileSystemOverlay, RegisteredReadOnlyFile, RegisteredMemoryFile } from '@codingame/monaco-vscode-files-service-override'
+import { RegisteredFileSystemProvider, registerFileSystemOverlay, RegisteredReadOnlyFile, RegisteredMemoryFile, initFile } from '@codingame/monaco-vscode-files-service-override'
 import * as vscode from 'vscode'
+
+void initFile(vscode.Uri.file('/tmp/test.js'), `// import anotherfile
+let variable = 1
+function inc () {
+  variable++
+}
+
+while (variable < 5000) {
+  inc()
+  console.log('Hello world', variable);
+}`)
 
 const fileSystemProvider = new RegisteredFileSystemProvider(false)
 fileSystemProvider.registerFile(new RegisteredReadOnlyFile(vscode.Uri.file('/tmp/test_readonly.js'), async () => 'This is a readonly static file'))
