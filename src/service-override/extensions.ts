@@ -10,10 +10,10 @@ import { AbstractExtensionService, DeltaExtensionsQueueItem, ResolvedExtensions 
 import { ITelemetryService } from 'vs/platform/telemetry/common/telemetry'
 import { Event } from 'vs/base/common/event'
 import { IDialogService } from 'vs/platform/dialogs/common/dialogs'
-import { IRemoteAuthorityResolverService, ResolverResult } from 'vs/platform/remote/common/remoteAuthorityResolver'
+import { IRemoteAuthorityResolverService, RemoteAuthorityResolverError, ResolverResult } from 'vs/platform/remote/common/remoteAuthorityResolver'
 import { IRemoteExtensionsScannerService } from 'vs/platform/remote/common/remoteExtensionsScanner'
 import { IRemoteAgentService } from 'vs/workbench/services/remote/common/remoteAgentService'
-import { IWorkbenchExtensionEnablementService, IWorkbenchExtensionManagementService } from 'vs/workbench/services/extensionManagement/common/extensionManagement'
+import { IWebExtensionsScannerService, IWorkbenchExtensionEnablementService, IWorkbenchExtensionManagementService } from 'vs/workbench/services/extensionManagement/common/extensionManagement'
 import { ExtensionManifestPropertiesService, IExtensionManifestPropertiesService } from 'vs/workbench/services/extensions/common/extensionManifestPropertiesService'
 import { IConfigurationService } from 'vs/platform/configuration/common/configuration'
 import { IProductService } from 'vs/platform/product/common/productService'
@@ -28,6 +28,7 @@ import { Schemas } from 'vs/base/common/network'
 import { ExtensionHostKind, ExtensionRunningPreference } from 'vs/workbench/services/extensions/common/extensionHostKind'
 import { ExtensionRunningLocation, LocalProcessRunningLocation, LocalWebWorkerRunningLocation } from 'vs/workbench/services/extensions/common/extensionRunningLocation'
 import { ExtensionRunningLocationTracker } from 'vs/workbench/services/extensions/common/extensionRunningLocationTracker'
+import { dedupExtensions } from 'vs/workbench/services/extensions/common/extensionsUtil'
 import { IExtHostExtensionService, IHostUtils } from 'vs/workbench/api/common/extHostExtensionService'
 import { ExtHostExtensionService } from 'vs/workbench/api/worker/extHostExtensionService'
 import type * as vscode from 'vscode'
@@ -49,7 +50,11 @@ import { ILayoutService } from 'vs/platform/layout/browser/layoutService'
 import { IStorageService } from 'vs/platform/storage/common/storage'
 import { ILabelService } from 'vs/platform/label/common/label'
 import { ExtensionKind } from 'vs/platform/environment/common/environment'
+import { IUserDataProfileService } from 'vs/workbench/services/userDataProfile/common/userDataProfile'
+import { IWorkspaceTrustManagementService } from 'vs/platform/workspace/common/workspaceTrust'
+import { IRemoteExplorerService } from 'vs/workbench/services/remote/common/remoteExplorerService'
 import { ExtensionDescriptionRegistrySnapshot } from 'vs/workbench/services/extensions/common/extensionDescriptionRegistry'
+import { PersistentConnectionEventType } from 'vs/platform/remote/common/remoteAgentConnection'
 import { changeUrlDomain } from './tools/url'
 import { registerAssets } from '../assets'
 import { unsupported } from '../tools'
@@ -380,7 +385,12 @@ export class SimpleExtensionService extends AbstractExtensionService implements 
     @ILifecycleService lifecycleService: ILifecycleService,
     @IRemoteAuthorityResolverService remoteAuthorityResolverService: IRemoteAuthorityResolverService,
     @IUserDataInitializationService userDataInitializationService: IUserDataInitializationService,
-    @IDialogService dialogService: IDialogService
+    @IDialogService dialogService: IDialogService,
+    @IWebExtensionsScannerService private readonly _webExtensionsScannerService: IWebExtensionsScannerService,
+    @IUserDataProfileService private readonly _userDataProfileService: IUserDataProfileService,
+    @IBrowserWorkbenchEnvironmentService private readonly _browserEnvironmentService: IBrowserWorkbenchEnvironmentService,
+    @IWorkspaceTrustManagementService private readonly _workspaceTrustManagementService: IWorkspaceTrustManagementService,
+    @IRemoteExplorerService private readonly _remoteExplorerService: IRemoteExplorerService
   ) {
     const extensionsProposedApi = instantiationService.createInstance(ExtensionsProposedApi)
     const extensionHostFactory = new LocalBrowserExtensionHostFactory(
@@ -446,8 +456,76 @@ export class SimpleExtensionService extends AbstractExtensionService implements 
     await this._handleDeltaExtensions(new DeltaExtensionsQueueItem(toAdd, toRemove))
   }
 
+  private async _scanWebExtensions (): Promise<IExtensionDescription[]> {
+    const system: IExtensionDescription[] = []
+    const user: IExtensionDescription[] = []
+    const development: IExtensionDescription[] = []
+    try {
+      await Promise.all([
+        this._webExtensionsScannerService.scanSystemExtensions().then(extensions => system.push(...extensions.map(e => toExtensionDescription(e)))),
+        this._webExtensionsScannerService.scanUserExtensions(this._userDataProfileService.currentProfile.extensionsResource, { skipInvalidExtensions: true }).then(extensions => user.push(...extensions.map(e => toExtensionDescription(e)))),
+        this._webExtensionsScannerService.scanExtensionsUnderDevelopment().then(extensions => development.push(...extensions.map(e => toExtensionDescription(e, true))))
+      ])
+    } catch (error) {
+      if (error instanceof Error) {
+        this._logService.error(error)
+      }
+    }
+    return dedupExtensions(system, user, development, this._logService)
+  }
+
+  protected async _resolveExtensionsDefault (): Promise<ResolvedExtensions> {
+    const [localExtensions, remoteExtensions] = await Promise.all([
+      this._scanWebExtensions(),
+      this._remoteExtensionsScannerService.scanExtensions()
+    ])
+
+    return new ResolvedExtensions(localExtensions, remoteExtensions, true, true)
+  }
+
   protected override async _resolveExtensions (): Promise<ResolvedExtensions> {
-    return new ResolvedExtensions([], [], false, false)
+    // Taken from vs/workbench/services/extensions/browser/extensionService
+    if (!this._browserEnvironmentService.expectsResolverExtension) {
+      return this._resolveExtensionsDefault()
+    }
+
+    const remoteAuthority = this._environmentService.remoteAuthority!
+
+    // Now that the canonical URI provider has been registered, we need to wait for the trust state to be
+    // calculated. The trust state will be used while resolving the authority, however the resolver can
+    // override the trust state through the resolver result.
+    await this._workspaceTrustManagementService.workspaceResolved
+
+    let resolverResult: ResolverResult
+    try {
+      resolverResult = await this._resolveAuthorityInitial(remoteAuthority)
+    } catch (err) {
+      if (RemoteAuthorityResolverError.isHandled(err)) {
+        // eslint-disable-next-line no-console
+        console.log('Error handled: Not showing a notification for the error')
+      }
+      this._remoteAuthorityResolverService._setResolvedAuthorityError(remoteAuthority, err)
+
+      // Proceed with the local extension host
+      return this._resolveExtensionsDefault()
+    }
+
+    // set the resolved authority
+    this._remoteAuthorityResolverService._setResolvedAuthority(resolverResult.authority, resolverResult.options)
+    this._remoteExplorerService.setTunnelInformation(resolverResult.tunnelInformation)
+
+    // monitor for breakage
+    const connection = this._remoteAgentService.getConnection()
+    if (connection != null) {
+      connection.onDidStateChange(async (e) => {
+        if (e.type === PersistentConnectionEventType.ConnectionLost) {
+          this._remoteAuthorityResolverService._clearResolvedAuthority(remoteAuthority)
+        }
+      })
+      connection.onReconnecting(() => this._resolveAuthorityAgain())
+    }
+
+    return this._resolveExtensionsDefault()
   }
 
   protected override async _scanSingleExtension (extension: IExtension): Promise<Readonly<IRelaxedExtensionDescription> | null> {
