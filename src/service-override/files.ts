@@ -18,7 +18,7 @@ import { IndexedDB } from 'vs/base/browser/indexedDB'
 import { ITelemetryService } from 'vs/platform/telemetry/common/telemetry'
 import { BufferLogger } from 'vs/platform/log/common/bufferLog'
 import { logsPath } from '../workbench'
-import { registerServiceInitializePreParticipant } from '../lifecycle'
+import { checkServicesNotInitialized, registerServiceInitializePreParticipant } from '../lifecycle'
 
 abstract class RegisteredFile {
   private ctime: number
@@ -516,6 +516,7 @@ export default function getServiceOverride (): IEditorOverrideServices {
  * the default file system provider for a given scheme.
  */
 export function registerCustomProvider (scheme: string, provider: IFileSystemProvider): void {
+  checkServicesNotInitialized()
   providers[scheme] = provider
 }
 
@@ -527,6 +528,7 @@ export function registerExtensionFile (extensionLocation: URI, filePath: string,
  * Can be used to create a file before the fileService is initialized
  */
 export async function initFile (file: URI, content: Uint8Array | string, options?: Partial<IFileWriteOptions>): Promise<void> {
+  checkServicesNotInitialized()
   const provider = providers[file.scheme]
   if (provider == null || provider.writeFile == null) {
     throw new Error(`${file.scheme} provider doesn't exist or doesn't support writing files`)
@@ -558,10 +560,10 @@ export async function createIndexedDBProviders (): Promise<IndexedDBFileSystemPr
   const indexedDB = await IndexedDB.create('vscode-web-db', 3, [userDataStore, logsStore])
 
   // Logger
-  providers[logsPath.scheme] = new IndexedDBFileSystemProvider(logsPath.scheme, indexedDB, logsStore, false)
+  registerCustomProvider(logsPath.scheme, new IndexedDBFileSystemProvider(logsPath.scheme, indexedDB, logsStore, false))
 
   const userDataProvider = new IndexedDBFileSystemProvider(Schemas.vscodeUserData, indexedDB, userDataStore, true)
-  providers[Schemas.vscodeUserData] = userDataProvider
+  registerCustomProvider(Schemas.vscodeUserData, userDataProvider)
 
   return userDataProvider
 }
