@@ -35,7 +35,7 @@ const monacoModules = (await glob('**/*.js', {
   onlyFiles: true
 })).map(fileName => fileName.slice(0, -3))
 
-const usedModules = new Set<string>([...vscodeModules, ...monacoModules])
+const usedModules = new Set<string>([...vscodeModules, ...monacoModules, 'vs/workbench/browser/web.main'])
 
 export default rollup.defineConfig([
   ...locExtensions.map(name => (<rollup.RollupOptions>{
