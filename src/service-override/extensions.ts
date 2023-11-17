@@ -55,6 +55,8 @@ import { changeUrlDomain } from './tools/url'
 import { registerAssets } from '../assets'
 import { unsupported } from '../tools'
 import 'vs/workbench/api/browser/extensionHost.contribution'
+// We need to import missing service here because extHost.common.services registers ILoggerService and we want the implementation from missing-service to win
+import '../missing-services'
 // We need it for the local extHost
 import 'vs/workbench/api/common/extHost.common.services'
 
