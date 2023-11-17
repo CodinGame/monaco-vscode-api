@@ -860,7 +860,6 @@ export default (args: Record<string, string>): rollup.RollupOptions[] => {
                 default: './lifecycle.js'
               },
               './workbench': {
-                types: './workbench.d.ts',
                 default: './workbench.js'
               },
               './service-override/*': {
@@ -901,9 +900,6 @@ export default (args: Record<string, string>): rollup.RollupOptions[] => {
                 ],
                 lifecycle: [
                   './lifecycle.d.ts'
-                ],
-                workbench: [
-                  './workbench.d.ts'
                 ],
                 l10n: [
                   './l10n.d.ts'
