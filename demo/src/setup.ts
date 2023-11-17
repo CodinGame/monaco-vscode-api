@@ -1,4 +1,4 @@
-import { ILogService, IStorageService, LogLevel, StandaloneServices, getService, initialize as initializeMonacoService } from 'vscode/services'
+import { IStorageService, LogLevel, getService, initialize as initializeMonacoService } from 'vscode/services'
 import { initialize as initializeVscodeExtensions } from 'vscode/extensions'
 import getModelServiceOverride from '@codingame/monaco-vscode-model-service-override'
 import getNotificationServiceOverride from '@codingame/monaco-vscode-notifications-service-override'

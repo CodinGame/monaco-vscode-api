@@ -25,10 +25,6 @@
     "typescript": "~5.2.2",
     "vite": "~4.4.9"
   },
-  "enabledApiProposals": [
-    "fileSearchProvider",
-    "textSearchProvider"
-  ],
   "dependencies": {
     "@codingame/monaco-vscode-log-service-override": "file:../dist/service-override-log",
     "@codingame/monaco-vscode-accessibility-service-override": "file:../dist/service-override-accessibility",
