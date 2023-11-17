@@ -35,6 +35,7 @@ import getRemoteAgentServiceOverride from '@codingame/monaco-vscode-remote-agent
 import getEnvironmentServiceOverride from '@codingame/monaco-vscode-environment-service-override'
 import getLifecycleServiceOverride from '@codingame/monaco-vscode-lifecycle-service-override'
 import getWorkspaceTrustOverride from '@codingame/monaco-vscode-workspace-trust-service-override'
+import getLogServiceOverride from '@codingame/monaco-vscode-log-service-override'
 import EditorWorker from 'monaco-editor/esm/vs/editor/editor.worker.js?worker'
 import TextMateWorker from '@codingame/monaco-vscode-textmate-service-override/worker?worker'
 import OutputLinkComputerWorker from '@codingame/monaco-vscode-output-service-override/worker?worker'
@@ -81,6 +82,7 @@ await Promise.all([
 
 // Override services
 await initializeMonacoService({
+  ...getLogServiceOverride(),
   ...getExtensionServiceOverride(toWorkerConfig(ExtensionHostWorker)),
   ...getModelServiceOverride(),
   ...getNotificationServiceOverride(),

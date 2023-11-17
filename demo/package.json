@@ -30,6 +30,7 @@
     "textSearchProvider"
   ],
   "dependencies": {
+    "@codingame/monaco-vscode-log-service-override": "file:../dist/service-override-log",
     "@codingame/monaco-vscode-accessibility-service-override": "file:../dist/service-override-accessibility",
     "@codingame/monaco-vscode-audio-cue-service-override": "file:../dist/service-override-audio-cue",
     "@codingame/monaco-vscode-bat-default-extension": "file:../dist/default-extension-bat",
