@@ -4,6 +4,7 @@ import { ILifecycleService, LifecyclePhase } from 'vs/workbench/services/lifecyc
 import { IInstantiationService, ServicesAccessor } from 'vs/platform/instantiation/common/instantiation'
 import { Barrier, RunOnceScheduler, runWhenIdle } from 'vs/base/common/async'
 import { Emitter } from 'vs/base/common/event'
+import { EditorExtensions, IEditorFactoryRegistry } from 'vs/workbench/common/editor'
 
 const renderWorkbenchEmitter = new Emitter<ServicesAccessor>()
 export const onRenderWorkbench = renderWorkbenchEmitter.event
@@ -52,6 +53,7 @@ export async function startup (instantiationService: IInstantiationService): Pro
     const lifecycleService = accessor.get(ILifecycleService)
 
     Registry.as<IWorkbenchContributionsRegistry>(WorkbenchExtensions.Workbench).start(accessor)
+    Registry.as<IEditorFactoryRegistry>(EditorExtensions.EditorFactory).start(accessor)
 
     renderWorkbenchEmitter.fire(accessor)
 

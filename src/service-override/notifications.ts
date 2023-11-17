@@ -31,9 +31,9 @@ onRenderWorkbench(async (accessor) => {
   })
 })
 
-export default function getServiceOverride (container?: HTMLElement): IEditorOverrideServices {
+export default function getServiceOverride (): IEditorOverrideServices {
   return {
     [INotificationService.toString()]: new SyncDescriptor(NotificationService, undefined, true),
-    ...getLayoutServiceOverride(container)
+    ...getLayoutServiceOverride()
   }
 }

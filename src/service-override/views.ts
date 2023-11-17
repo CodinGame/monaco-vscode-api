@@ -54,7 +54,7 @@ import { IContextViewService } from 'vs/platform/contextview/browser/contextView
 import { ContextViewService } from 'vs/platform/contextview/browser/contextViewService'
 import { ICodeEditorService } from 'vs/editor/browser/services/codeEditorService'
 import { EditorInput, IEditorCloseHandler } from 'vs/workbench/common/editor/editorInput'
-import { EditorExtensions, EditorInputCapabilities, IEditorOpenContext, Verbosity } from 'vs/workbench/common/editor'
+import { EditorExtensions, EditorInputCapabilities, IEditorFactoryRegistry, IEditorOpenContext, IEditorSerializer, Verbosity } from 'vs/workbench/common/editor'
 import { IEditorOptions } from 'vs/platform/editor/common/editor'
 import { IResolvedTextEditorModel } from 'vs/editor/common/services/resolverService'
 import { ITextEditorService, TextEditorService } from 'vs/workbench/services/textfile/common/textEditorService'
@@ -100,7 +100,7 @@ import getQuickAccessOverride from './quickaccess'
 import getKeybindingsOverride from './keybindings'
 import { changeUrlDomain } from './tools/url'
 import { registerAssets } from '../assets'
-import { registerServiceInitializePostParticipant } from '../lifecycle'
+import { onRenderWorkbench } from '../lifecycle'
 import { withReadyServices } from '../services'
 
 function createPart (id: string, role: string, classes: string[]): HTMLElement {
@@ -370,6 +370,12 @@ function registerEditor (globPattern: string, editorInfo: RegisteredEditorInfo, 
   })
 }
 
+function registerEditorSerializer<Services extends BrandedService[]> (editorTypeId: string, ctor: {
+  new (...Services: Services): IEditorSerializer
+}): IDisposable {
+  return Registry.as<IEditorFactoryRegistry>(EditorExtensions.EditorFactory).registerEditorSerializer(editorTypeId, ctor)
+}
+
 interface CustomViewOption {
   readonly id: string
   name: string
@@ -621,7 +627,7 @@ registerAssets({
 })
 
 let restoreEditorView = false
-registerServiceInitializePostParticipant(async (accessor) => {
+onRenderWorkbench(async (accessor) => {
   const paneCompositePartService = accessor.get(IPaneCompositePartService)
   const viewDescriptorService = accessor.get(IViewDescriptorService)
 
@@ -629,8 +635,6 @@ registerServiceInitializePostParticipant(async (accessor) => {
   const withStatusBar = accessor.get(IStatusbarService) instanceof Part
   const withBannerPart = accessor.get(IBannerService) instanceof Part
   const withTitlePart = accessor.get(ITitleService) instanceof Part
-
-  paneCompositePartService.getPaneComposites(ViewContainerLocation.Panel)
 
   const layoutService = accessor.get(ILayoutService) as LayoutService
 
@@ -726,6 +730,8 @@ export {
   AbstractTextResourceEditorInput,
   EditorInput,
   registerEditor,
+  IEditorSerializer,
+  registerEditorSerializer,
   RegisteredEditorInfo,
   RegisteredEditorOptions,
   EditorInputFactoryObject,

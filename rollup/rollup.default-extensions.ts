@@ -83,20 +83,6 @@ export default rollup.defineConfig([
       extensionDirectoryPlugin({
         include: `${DEFAULT_EXTENSIONS_PATH}/**/*`,
         transformManifest (manifest) {
-          if (manifest.name === 'configuration-editing') {
-            manifest = {
-              ...manifest,
-              contributes: {
-                ...manifest.contributes,
-                jsonValidation: manifest.contributes!.jsonValidation!.map(validation => {
-                  return {
-                    fileMatch: (validation.fileMatch as string).replaceAll('%APP_SETTINGS_HOME%', 'user:'),
-                    url: validation.url
-                  }
-                })
-              }
-            }
-          }
           return {
             ...manifest,
             main: undefined

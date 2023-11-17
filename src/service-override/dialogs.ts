@@ -60,10 +60,10 @@ class FileDialogService extends AbstractFileDialogService {
   }
 }
 
-export default function getServiceOverride (container?: HTMLElement): IEditorOverrideServices {
+export default function getServiceOverride (): IEditorOverrideServices {
   return {
     [IDialogService.toString()]: new SyncDescriptor(DialogService, undefined, true),
     [IFileDialogService.toString()]: new SyncDescriptor(FileDialogService, undefined, true),
-    ...getLayoutServiceOverride(container)
+    ...getLayoutServiceOverride()
   }
 }

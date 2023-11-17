@@ -9,7 +9,6 @@ import { BrowserKeyboardLayoutService } from 'vs/workbench/services/keybinding/b
 import { IFileService, IFileWriteOptions } from 'vs/platform/files/common/files'
 import { ICommandService } from 'vs/platform/commands/common/commands'
 import { CommandService } from 'vs/workbench/services/commands/common/commandService'
-import { ResolvedKeybindingItem } from 'vs/platform/keybinding/common/resolvedKeybindingItem'
 import { toDisposable } from 'vs/base/common/lifecycle'
 import { KeybindingResolver } from 'vs/platform/keybinding/common/keybindingResolver'
 import { IContextKeyService, IContextKeyServiceTarget } from 'vs/platform/contextkey/common/contextkey'
@@ -24,7 +23,7 @@ import { WorkbenchContextKeysHandler } from 'vs/workbench/browser/contextkeys'
 import { Schemas } from 'vs/base/common/network'
 import { URI } from 'vs/base/common/uri'
 import getFileServiceOverride, { initFile } from './files'
-import { DynamicKeybindingService } from '../monaco'
+import { DisposableStore, DynamicKeybindingService, KeybindingProvider } from '../monaco'
 import { onRenderWorkbench } from '../lifecycle'
 import { IInstantiationService } from '../services'
 import 'vs/workbench/browser/workbench.contribution'
@@ -50,7 +49,7 @@ async function updateUserKeybindings (keybindingsJson: string): Promise<void> {
 }
 
 class DynamicWorkbenchKeybindingService extends WorkbenchKeybindingService implements DynamicKeybindingService {
-  private keybindingProviders: (() => ResolvedKeybindingItem[])[] = []
+  private keybindingProviders: KeybindingProvider[] = []
 
   constructor (
     private shouldUseGlobalKeybindings: () => boolean,
@@ -69,17 +68,24 @@ class DynamicWorkbenchKeybindingService extends WorkbenchKeybindingService imple
     super(contextKeyService, commandService, telemetryService, notificationService, userDataProfileService, hostService, extensionService, fileService, uriIdentityService, logService, keyboardLayoutService)
   }
 
-  public registerKeybindingProvider (provider: () => ResolvedKeybindingItem[]) {
+  public registerKeybindingProvider (provider: KeybindingProvider) {
     this.keybindingProviders.push(provider)
     this.updateResolver()
 
-    return toDisposable(() => {
+    const store = new DisposableStore()
+    store.add(provider.onDidChangeKeybindings(() => {
+      this.updateResolver()
+    }))
+
+    store.add(toDisposable(() => {
       const idx = this.keybindingProviders.indexOf(provider)
       if (idx >= 0) {
         this.keybindingProviders.splice(idx, 1)
         this.updateResolver()
       }
-    })
+    }))
+
+    return store
   }
 
   public override _getResolver (): KeybindingResolver {
@@ -94,7 +100,7 @@ class DynamicWorkbenchKeybindingService extends WorkbenchKeybindingService imple
   }
 
   protected override getUserKeybindingItems () {
-    return [...super.getUserKeybindingItems(), ...this.keybindingProviders.flatMap(provider => provider())]
+    return [...super.getUserKeybindingItems(), ...this.keybindingProviders.flatMap(provider => provider.provideKeybindings())]
   }
 }
 

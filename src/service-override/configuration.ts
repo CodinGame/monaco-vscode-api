@@ -36,6 +36,7 @@ import getFileServiceOverride, { initFile } from './files'
 import { memoizedConstructor, unsupported } from '../tools'
 import { registerServiceInitializePreParticipant } from '../lifecycle'
 import { getService } from '../services'
+import { getWorkspaceIdentifier } from '../workbench'
 
 // This is the default value, but can be overriden by overriding the Environment or UserDataProfileService service
 const defaultUserConfigurationFile = URI.from({ scheme: Schemas.vscodeUserData, path: '/User/settings.json' })
@@ -91,21 +92,25 @@ class MonacoWorkspaceEditingService extends AbstractWorkspaceEditingService {
   enterWorkspace = unsupported
 }
 
-let _defaultWorkspace: URI | IAnyWorkspaceIdentifier = URI.file('/workspace')
+/**
+ * @deprecated
+ */
+let _defaultWorkspace: URI | IAnyWorkspaceIdentifier | undefined
 registerServiceInitializePreParticipant(async (accessor) => {
   const workspaceService = accessor.get(IWorkspaceContextService) as WorkspaceService
   workspaceService.acquireInstantiationService(accessor.get(IInstantiationService))
 
-  if (URI.isUri(_defaultWorkspace)) {
-    const configPath = _defaultWorkspace.with({ path: '/workspace.code-workspace' })
+  const workspace = _defaultWorkspace ?? getWorkspaceIdentifier()
+  if (URI.isUri(workspace)) {
+    const configPath = workspace.with({ path: '/workspace.code-workspace' })
     try {
       const fileService = accessor.get(IFileService)
       // Create the directory in the memory filesystem to prevent a warn log
-      await fileService.createFolder(_defaultWorkspace)
+      await fileService.createFolder(workspace)
       await fileService.writeFile(configPath, VSBuffer.fromString(JSON.stringify({
         folders: [
           {
-            path: _defaultWorkspace.path
+            path: workspace.path
           }
         ]
       })))
@@ -118,7 +123,7 @@ registerServiceInitializePreParticipant(async (accessor) => {
       configPath
     })
   } else {
-    await workspaceService.initialize(_defaultWorkspace)
+    await workspaceService.initialize(workspace)
   }
 })
 
@@ -129,7 +134,13 @@ export async function reinitializeWorkspace (workspace: IAnyWorkspaceIdentifier)
   await workspaceService.initialize(workspace)
 }
 
-export default function getServiceOverride (defaultWorkspace: URI | IAnyWorkspaceIdentifier): IEditorOverrideServices {
+function getServiceOverride (): IEditorOverrideServices
+/**
+ * @deprecated Provide workspace via the services `initialize` function `configuration.workspaceProvider` parameter
+ */
+function getServiceOverride (defaultWorkspace?: URI | IAnyWorkspaceIdentifier): IEditorOverrideServices
+
+function getServiceOverride (defaultWorkspace?: URI | IAnyWorkspaceIdentifier): IEditorOverrideServices {
   _defaultWorkspace = defaultWorkspace
 
   return {
@@ -142,6 +153,8 @@ export default function getServiceOverride (defaultWorkspace: URI | IAnyWorkspac
     [IWorkspacesService.toString()]: new SyncDescriptor(BrowserWorkspacesService, undefined, true)
   }
 }
+
+export default getServiceOverride
 
 export {
   defaultUserConfigurationFile,

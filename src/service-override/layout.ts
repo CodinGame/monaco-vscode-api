@@ -16,6 +16,7 @@ import { IEditorGroupsService } from 'vs/workbench/services/editor/common/editor
 import { IStatusbarService } from 'vs/workbench/services/statusbar/browser/statusbar'
 import { ServicesAccessor } from 'vs/platform/instantiation/common/instantiation'
 import { onRenderWorkbench } from '../lifecycle'
+import { getWorkbenchContainer } from '../workbench'
 
 export class LayoutService implements ILayoutService, IWorkbenchLayoutService {
   declare readonly _serviceBrand: undefined
@@ -26,7 +27,7 @@ export class LayoutService implements ILayoutService, IWorkbenchLayoutService {
   private viewDescriptorService!: IViewDescriptorService
 
   constructor (
-    public container: HTMLElement
+    public container: HTMLElement = getWorkbenchContainer()
   ) {
     window.addEventListener('resize', () => this.layout())
     this.layout()
@@ -280,9 +281,7 @@ onRenderWorkbench((accessor) => {
   if (layoutService instanceof LayoutService) {
     layoutService.init(accessor)
   }
-})
 
-export default function getServiceOverride (container: HTMLElement = document.body): IEditorOverrideServices {
   const platformClass = isWindows ? 'windows' : isLinux ? 'linux' : 'mac'
   const workbenchClasses = coalesce([
     'monaco-workbench',
@@ -291,12 +290,21 @@ export default function getServiceOverride (container: HTMLElement = document.bo
     isChrome ? 'chromium' : isFirefox ? 'firefox' : isSafari ? 'safari' : undefined
   ])
 
-  container.classList.add(...workbenchClasses)
+  layoutService.container.classList.add(...workbenchClasses)
   document.body.classList.add(platformClass)
   document.body.classList.add('web')
+})
 
+function getServiceOverride (): IEditorOverrideServices
+/**
+ * @deprecated Provide container via the services `initialize` function
+ */
+function getServiceOverride (container?: HTMLElement): IEditorOverrideServices
+
+function getServiceOverride (container?: HTMLElement): IEditorOverrideServices {
   return {
-    [ILayoutService.toString()]: new SyncDescriptor(LayoutService, [container], true),
-    [IWorkbenchLayoutService.toString()]: new SyncDescriptor(LayoutService, [container], true)
+    [ILayoutService.toString()]: new SyncDescriptor(LayoutService, [container], true)
   }
 }
+
+export default getServiceOverride
