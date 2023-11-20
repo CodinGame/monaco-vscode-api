@@ -111,6 +111,7 @@ const TSCONFIG = path.resolve(BASE_DIR, 'tsconfig.rollup.json')
 const SRC_DIR = path.resolve(BASE_DIR, 'src')
 const DIST_DIR = path.resolve(BASE_DIR, 'dist')
 const DIST_DIR_MAIN = path.resolve(DIST_DIR, 'main')
+const DIST_SERVICE_OVERRIDE_DIR_MAIN = path.resolve(DIST_DIR_MAIN, 'service-override')
 const VSCODE_SRC_DIST_DIR = path.resolve(DIST_DIR_MAIN, 'vscode', 'src')
 const VSCODE_DIR = path.resolve(BASE_DIR, 'vscode')
 const VSCODE_SRC_DIR = path.resolve(VSCODE_DIR, 'src')
@@ -800,7 +801,23 @@ export default (args: Record<string, string>): rollup.RollupOptions[] => {
         }
         return code
       }
-    }, nodeResolve({
+    },
+    {
+      name: 'externalize-service-overrides',
+      resolveId (source, importer) {
+        const importerDir = path.dirname(path.resolve(DIST_DIR_MAIN, importer ?? '/'))
+        const resolved = path.resolve(importerDir, source)
+        if (path.dirname(resolved) === DIST_SERVICE_OVERRIDE_DIR_MAIN && importer != null) {
+          const serviceOverride = path.basename(resolved, '.js')
+          return {
+            external: true,
+            id: `@codingame/monaco-vscode-${paramCase(serviceOverride)}-service-override`
+          }
+        }
+        return undefined
+      }
+    },
+    nodeResolve({
       extensions: EXTENSIONS
     }),
     {
@@ -839,6 +856,7 @@ export default (args: Record<string, string>): rollup.RollupOptions[] => {
             private: false,
             main: 'api.js',
             module: 'api.js',
+            types: 'vscode.proposed.d.ts',
             exports: {
               '.': {
                 default: './api.js'
@@ -855,12 +873,14 @@ export default (args: Record<string, string>): rollup.RollupOptions[] => {
                 types: './assets.d.ts',
                 default: './assets.js'
               },
+              './missing-services': {
+                default: './missing-services.js'
+              },
               './lifecycle': {
                 types: './lifecycle.d.ts',
                 default: './lifecycle.js'
               },
               './workbench': {
-                types: './workbench.d.ts',
                 default: './workbench.js'
               },
               './service-override/*': {
@@ -902,9 +922,6 @@ export default (args: Record<string, string>): rollup.RollupOptions[] => {
                 lifecycle: [
                   './lifecycle.d.ts'
                 ],
-                workbench: [
-                  './workbench.d.ts'
-                ],
                 l10n: [
                   './l10n.d.ts'
                 ],
@@ -917,7 +934,8 @@ export default (args: Record<string, string>): rollup.RollupOptions[] => {
               'monaco-treemending': './monaco-treemending.js'
             },
             dependencies: {
-              ...Object.fromEntries(Object.entries(pkg.dependencies).filter(([key]) => dependencies.has(key)))
+              ...Object.fromEntries(Object.entries(pkg.dependencies).filter(([key]) => dependencies.has(key))),
+              ...Object.fromEntries(Array.from(dependencies).filter(dep => dep.startsWith('@codingame/monaco-vscode-')).map(dep => [dep, pkg.version]))
             }
           }
           this.emitFile({
@@ -947,7 +965,8 @@ export default (args: Record<string, string>): rollup.RollupOptions[] => {
             types: 'index.d.ts',
             dependencies: {
               vscode: `npm:${pkg.name}@^${pkg.version}`,
-              ...Object.fromEntries(Object.entries(pkg.dependencies).filter(([key]) => dependencies.has(key)))
+              ...Object.fromEntries(Object.entries(pkg.dependencies).filter(([key]) => dependencies.has(key))),
+              ...Object.fromEntries(Array.from(dependencies).filter(dep => dep.startsWith('@codingame/monaco-vscode-')).map(dep => [dep, pkg.version]))
             }
           }
           if (workerEntryPoint != null) {
@@ -987,6 +1006,12 @@ export default (args: Record<string, string>): rollup.RollupOptions[] => {
                   if (source === 'entrypoint' || source === 'worker') {
                     return source
                   }
+                  if (source.startsWith('@codingame/monaco-vscode-')) {
+                    return {
+                      external: true,
+                      id: source
+                    }
+                  }
                   if (source.startsWith('monaco-editor/')) {
                     return null
                   }
@@ -994,8 +1019,10 @@ export default (args: Record<string, string>): rollup.RollupOptions[] => {
                   const resolved = path.resolve(importerDir, source)
                   const resolvedWithExtension = resolved.endsWith('.js') ? resolved : `${resolved}.js`
 
-                  const isNotExclusive = (resolved.startsWith(VSCODE_SRC_DIST_DIR) || path.dirname(resolved) === path.resolve(DIST_DIR_MAIN, 'service-override')) && !exclusiveModules.has(resolvedWithExtension)
-                  const shouldBeShared = resolvedWithExtension === path.resolve(DIST_DIR_MAIN, 'assets.js') || resolvedWithExtension === path.resolve(DIST_DIR_MAIN, 'lifecycle.js') || resolvedWithExtension === path.resolve(DIST_DIR_MAIN, 'workbench.js')
+                  const isVscodeFile = resolved.startsWith(VSCODE_SRC_DIST_DIR)
+                  const isServiceOverride = path.dirname(resolved) === DIST_SERVICE_OVERRIDE_DIR_MAIN
+                  const isNotExclusive = (isVscodeFile || isServiceOverride) && !exclusiveModules.has(resolvedWithExtension)
+                  const shouldBeShared = ['assets.js', 'lifecycle.js', 'workbench.js', 'missing-services.js'].includes(path.relative(DIST_DIR_MAIN, resolvedWithExtension))
 
                   if (isNotExclusive || shouldBeShared) {
                     // Those modules will be imported from external monaco-vscode-api

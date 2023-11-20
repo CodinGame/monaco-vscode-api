@@ -36,7 +36,7 @@ const defaultUserKeybindindsFile = URI.from({ scheme: Schemas.vscodeUserData, pa
  * Should be called only BEFORE the service are initialized to initialize the file on the filesystem before the keybindings service initializes
  */
 async function initUserKeybindings (configurationJson: string, options?: Partial<IFileWriteOptions>, file: URI = defaultUserKeybindindsFile): Promise<void> {
-  await initFile(defaultUserKeybindindsFile.scheme, file, configurationJson, options)
+  await initFile(file, configurationJson, options)
 }
 
 /**

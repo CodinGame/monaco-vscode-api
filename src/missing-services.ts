@@ -76,8 +76,7 @@ import { IWorkspacesService } from 'vs/platform/workspaces/common/workspaces'
 import { ITextEditorService } from 'vs/workbench/services/textfile/common/textEditorService'
 import { IEditorResolverService } from 'vs/workbench/services/editor/common/editorResolverService'
 import { AbstractLifecycleService } from 'vs/workbench/services/lifecycle/common/lifecycleService'
-import { IOutputService } from 'vs/workbench/services/output/common/output'
-import { OutputService } from 'vs/workbench/contrib/output/browser/outputServices'
+import { IOutputChannel, IOutputChannelDescriptor, IOutputService } from 'vs/workbench/services/output/common/output'
 import { IOutputChannelModelService, OutputChannelModelService } from 'vs/workbench/contrib/output/common/outputChannelModelService'
 import { AbstractExtensionResourceLoaderService, IExtensionResourceLoaderService } from 'vs/platform/extensionResourceLoader/common/extensionResourceLoader'
 import { IStorageService } from 'vs/platform/storage/common/storage'
@@ -1049,7 +1048,31 @@ registerSingleton(IEditorResolverService, class EditorResolverService implements
   getEditors = () => ([])
 }, InstantiationType.Eager)
 
-registerSingleton(IOutputService, OutputService, InstantiationType.Delayed)
+registerSingleton(IOutputService, class OutputService implements IOutputService {
+  _serviceBrand: undefined
+  getChannel (): IOutputChannel | undefined {
+    return undefined
+  }
+
+  getChannelDescriptor (): IOutputChannelDescriptor | undefined {
+    return undefined
+  }
+
+  getChannelDescriptors (): IOutputChannelDescriptor[] {
+    return []
+  }
+
+  getActiveChannel (): IOutputChannel | undefined {
+    return undefined
+  }
+
+  async showChannel (): Promise<void> {
+    // ignore
+  }
+
+  onActiveOutputChannel = Event.None
+}, InstantiationType.Delayed)
+
 registerSingleton(IOutputChannelModelService, OutputChannelModelService, InstantiationType.Delayed)
 class SimpleExtensionResourceLoaderService extends AbstractExtensionResourceLoaderService {
   // required for injection

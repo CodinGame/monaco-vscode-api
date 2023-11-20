@@ -1,4 +1,3 @@
-import './missing-services'
 import { IAnyWorkspaceIdentifier, UNKNOWN_EMPTY_WINDOW_WORKSPACE } from 'vs/platform/workspace/common/workspace'
 import { IWorkspace } from 'vs/workbench/services/host/browser/browserHostService'
 import { IWorkbenchConstructionOptions } from 'vs/workbench/browser/web.api'

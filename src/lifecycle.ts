@@ -5,6 +5,8 @@ import { IInstantiationService, ServicesAccessor } from 'vs/platform/instantiati
 import { Barrier, RunOnceScheduler, runWhenIdle } from 'vs/base/common/async'
 import { Emitter } from 'vs/base/common/event'
 import { EditorExtensions, IEditorFactoryRegistry } from 'vs/workbench/common/editor'
+import { StandaloneServices } from 'vs/editor/standalone/browser/standaloneServices'
+import { Disposable } from 'vs/base/common/lifecycle'
 
 const renderWorkbenchEmitter = new Emitter<ServicesAccessor>()
 export const onRenderWorkbench = renderWorkbenchEmitter.event
@@ -67,4 +69,26 @@ export async function startup (instantiationService: IInstantiationService): Pro
     }, 2500)
     eventuallyPhaseScheduler.schedule()
   })
+}
+
+let servicesInitialized = false
+StandaloneServices.withServices(() => {
+  servicesInitialized = true
+  return Disposable.None
+})
+
+export async function waitServicesReady (): Promise<void> {
+  await serviceInitializedBarrier.wait()
+}
+
+export function checkServicesReady (): void {
+  if (!serviceInitializedBarrier.isOpen()) {
+    throw new Error('Services are not ready yet')
+  }
+}
+
+export function checkServicesNotInitialized (): void {
+  if (servicesInitialized) {
+    throw new Error('Services are already initialized')
+  }
 }

@@ -7,6 +7,7 @@ import pkg from './package.json' assert { type: 'json' }
 
 const cdnDomain = process.env.CDN_HOST ?? 'http://127.0.0.2:5173'
 
+const localDependencies = Object.entries(pkg.dependencies).filter(([, version]) => version.startsWith('file:../')).map(([name]) => name)
 export default defineConfig({
   build: {
     target: 'esnext'
@@ -52,7 +53,7 @@ export default defineConfig({
     // Monaco-vscode-api packages are local dependencies and the number of modules makes chrome hang
     include: [
       // add all local dependencies...
-      ...Object.entries(pkg.dependencies).filter(([, version]) => version.startsWith('file:../')).map(([name]) => name),
+      ...localDependencies,
       // and their exports
       'vscode/extensions', 'vscode/services', 'vscode/monaco',
 
@@ -103,6 +104,6 @@ export default defineConfig({
     rootDirectory: JSON.stringify(__dirname)
   },
   resolve: {
-    dedupe: ['monaco-editor', 'vscode']
+    dedupe: ['monaco-editor', 'vscode', ...localDependencies]
   }
 })

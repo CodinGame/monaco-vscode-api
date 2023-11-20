@@ -20,8 +20,7 @@ function getServiceOverride (): IEditorOverrideServices
 
 function getServiceOverride (options?: IWorkbenchConstructionOptions): IEditorOverrideServices {
   return {
-    [IEnvironmentService.toString()]: new SyncDescriptor(InjectedBrowserWorkbenchEnvironmentService, [], true),
-    [IBrowserWorkbenchEnvironmentService.toString()]: new SyncDescriptor(InjectedBrowserWorkbenchEnvironmentService, [undefined, options], true)
+    [IEnvironmentService.toString()]: new SyncDescriptor(InjectedBrowserWorkbenchEnvironmentService, [undefined, options], true)
   }
 }
 

@@ -50,11 +50,12 @@ import { IStorageService } from 'vs/platform/storage/common/storage'
 import { ILabelService } from 'vs/platform/label/common/label'
 import { ExtensionKind } from 'vs/platform/environment/common/environment'
 import { ExtensionDescriptionRegistrySnapshot } from 'vs/workbench/services/extensions/common/extensionDescriptionRegistry'
-import getOutputServiceOverride from './output'
 import { changeUrlDomain } from './tools/url'
 import { registerAssets } from '../assets'
 import { unsupported } from '../tools'
 import 'vs/workbench/api/browser/extensionHost.contribution'
+// We need to import missing service here because extHost.common.services registers ILoggerService and we want the implementation from missing-service to win
+import '../missing-services'
 // We need it for the local extHost
 import 'vs/workbench/api/common/extHost.common.services'
 
@@ -480,7 +481,6 @@ export default function getServiceOverride (workerConfig?: WorkerConfig, _iframe
     : undefined
 
   return {
-    ...getOutputServiceOverride(),
     [IExtensionService.toString()]: new SyncDescriptor(SimpleExtensionService, [_workerConfig], false),
     [IExtensionManifestPropertiesService.toString()]: new SyncDescriptor(ExtensionManifestPropertiesService, [], true)
   }
