@@ -517,7 +517,7 @@ const userDataFileSystemProvider = new InMemoryFileSystemProvider()
 void userDataFileSystemProvider.mkdir(URI.from({ scheme: Schemas.vscodeUserData, path: '/User/' }))
 
 const providers: Record<string, IFileSystemProvider> = {
-  extension: extensionFileSystemProvider,
+  'extension-fs': extensionFileSystemProvider,
   [logsPath.scheme]: new InMemoryFileSystemProvider(),
   [Schemas.vscodeUserData]: userDataFileSystemProvider,
   [Schemas.tmp]: new InMemoryFileSystemProvider(),

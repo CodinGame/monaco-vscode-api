@@ -1065,7 +1065,7 @@ index 6e6f8845da5..48462781c2a 100644
 +						private notFound = false;
 +						override open(method: string, url: string | URL, async?: boolean, username?: string | null, password?: string | null): void {
 +							const transformedUrl = asWorkerBrowserUrl(url);
-+							this.notFound = transformedUrl.startsWith('extension:');
++							this.notFound = transformedUrl.startsWith('extension-fs:');
 +							return super.open(method, transformedUrl, async ?? true, username, password);
 +						}
 +						override send(body?: Document | XMLHttpRequestBodyInit | null | undefined): void {

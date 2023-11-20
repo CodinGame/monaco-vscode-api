@@ -99,7 +99,7 @@ export function registerExtension (manifest: IExtensionManifest, extHostKind?: E
 export function registerExtension (manifest: IExtensionManifest, extHostKind?: ExtensionHostKind, { builtin = manifest.publisher === 'vscode', path = '/' }: RegisterExtensionParams = {}): RegisterExtensionResult {
   const disposableStore = new DisposableStore()
   const id = getExtensionId(manifest.publisher, manifest.name)
-  const location = URI.from({ scheme: 'extension', authority: id, path })
+  const location = URI.from({ scheme: 'extension-fs', authority: id, path })
 
   const addExtensionPromise = (async () => {
     const remoteAuthority = (await getService(IWorkbenchEnvironmentService)).remoteAuthority
