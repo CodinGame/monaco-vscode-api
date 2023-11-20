@@ -9,9 +9,10 @@ import { BrowserSocketFactory } from 'vs/platform/remote/browser/browserSocketFa
 import { RemoteFileSystemProviderClient } from 'vs/workbench/services/remote/common/remoteFileSystemProviderClient'
 import { IBrowserWorkbenchEnvironmentService } from 'vs/workbench/services/environment/browser/environmentService'
 import { URI } from 'vs/base/common/uri'
+import { IFileService } from 'vs/platform/files/common/files'
+import { ILogService } from 'vs/platform/log/common/log'
 import getEnvironmentServiceOverride from './environment'
 import { registerServiceInitializePreParticipant } from '../lifecycle'
-import { IFileService, ILogService } from '../services'
 import 'vs/workbench/contrib/remote/common/remote.contribution'
 
 class CustomRemoteSocketFactoryService extends RemoteSocketFactoryService {
