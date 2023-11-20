@@ -25,7 +25,7 @@ import { IAnyWorkspaceIdentifier, IEmptyWorkspaceIdentifier, ISingleFolderWorksp
 import { LabelService } from 'vs/workbench/services/label/common/labelService'
 import { ILabelService } from 'vs/platform/label/common/label'
 import { generateUuid } from 'vs/base/common/uuid'
-import { IWorkspacesService, IWorkspaceFolderCreationData } from 'vs/platform/workspaces/common/workspaces'
+import { IWorkspacesService, IWorkspaceFolderCreationData, IStoredWorkspace } from 'vs/platform/workspaces/common/workspaces'
 import { BrowserWorkspacesService } from 'vs/workbench/services/workspaces/browser/workspacesService'
 import { IWorkspaceEditingService } from 'vs/workbench/services/workspaces/common/workspaceEditing'
 import { AbstractWorkspaceEditingService } from 'vs/workbench/services/workspaces/browser/abstractWorkspaceEditingService'
@@ -107,7 +107,7 @@ registerServiceInitializePreParticipant(async (accessor) => {
       const fileService = accessor.get(IFileService)
       // Create the directory in the memory filesystem to prevent a warn log
       await fileService.createFolder(workspace)
-      await fileService.writeFile(configPath, VSBuffer.fromString(JSON.stringify({
+      await fileService.writeFile(configPath, VSBuffer.fromString(JSON.stringify(<IStoredWorkspace>{
         folders: [
           {
             path: workspace.path
@@ -172,5 +172,6 @@ export {
   IWorkspaceIdentifier,
   ISingleFolderWorkspaceIdentifier,
   IEmptyWorkspaceIdentifier,
-  IWorkspaceFolderCreationData
+  IWorkspaceFolderCreationData,
+  IStoredWorkspace
 }
