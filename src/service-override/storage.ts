@@ -9,9 +9,9 @@ import { IAnyWorkspaceIdentifier } from 'vs/platform/workspace/common/workspace'
 import { BrowserStorageService } from 'vs/workbench/services/storage/browser/storageService'
 import { ILogService } from 'vs/platform/log/common/log'
 import { IUserDataProfileService } from 'vs/workbench/services/userDataProfile/common/userDataProfile'
+import { IHostService } from 'vs/workbench/services/host/browser/host'
 import { registerServiceInitializePreParticipant } from '../lifecycle'
 import { getWorkspaceIdentifier } from '../workbench'
-import { IHostService } from '../services'
 
 export enum StorageScope {
   APPLICATION = VSStorageScope.APPLICATION,

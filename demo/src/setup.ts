@@ -3,7 +3,7 @@ import { initialize as initializeVscodeExtensions } from 'vscode/extensions'
 import getModelServiceOverride from '@codingame/monaco-vscode-model-service-override'
 import getNotificationServiceOverride from '@codingame/monaco-vscode-notifications-service-override'
 import getDialogsServiceOverride from '@codingame/monaco-vscode-dialogs-service-override'
-import getConfigurationServiceOverride, { initUserConfiguration } from '@codingame/monaco-vscode-configuration-service-override'
+import getConfigurationServiceOverride, { IStoredWorkspace, initUserConfiguration } from '@codingame/monaco-vscode-configuration-service-override'
 import getKeybindingsServiceOverride, { initUserKeybindings } from '@codingame/monaco-vscode-keybindings-service-override'
 import getTextmateServiceOverride from '@codingame/monaco-vscode-textmate-service-override'
 import getThemeServiceOverride from '@codingame/monaco-vscode-theme-service-override'
@@ -39,7 +39,7 @@ import getLogServiceOverride from '@codingame/monaco-vscode-log-service-override
 import EditorWorker from 'monaco-editor/esm/vs/editor/editor.worker.js?worker'
 import TextMateWorker from '@codingame/monaco-vscode-textmate-service-override/worker?worker'
 import OutputLinkComputerWorker from '@codingame/monaco-vscode-output-service-override/worker?worker'
-import { createIndexedDBProviders } from '@codingame/monaco-vscode-files-service-override'
+import { createIndexedDBProviders, initFile } from '@codingame/monaco-vscode-files-service-override'
 import ExtensionHostWorker from 'vscode/workers/extensionHost.worker?worker'
 import LanguageDetectionWorker from '@codingame/monaco-vscode-language-detection-worker-service-override/worker?worker'
 import * as monaco from 'monaco-editor'
@@ -75,9 +75,16 @@ const connectionToken = params.get('connectionToken') ?? undefined
 const remotePath = remoteAuthority != null ? params.get('remotePath') ?? undefined : undefined
 
 // Set configuration before initializing service so it's directly available (especially for the theme, to prevent a flicker)
+const workspaceFile = monaco.Uri.file('/workspace.code-workspace')
 await Promise.all([
   initUserConfiguration(defaultConfiguration),
-  initUserKeybindings(defaultKeybindings)
+  initUserKeybindings(defaultKeybindings),
+  // Use a workspace file to be able to add another folder later (for the "Attach filesystem" button)
+  initFile(workspaceFile, JSON.stringify(<IStoredWorkspace>{
+    folders: [{
+      path: '/tmp'
+    }]
+  }))
 ])
 
 // Override services
@@ -123,9 +130,13 @@ await initializeMonacoService({
     async open () {
       return false
     },
-    workspace: {
-      folderUri: remotePath == null ? monaco.Uri.file('/tmp') : monaco.Uri.from({ scheme: 'vscode-remote', path: remotePath, authority: remoteAuthority })
-    }
+    workspace: remotePath == null
+      ? {
+          workspaceUri: workspaceFile
+        }
+      : {
+          folderUri: monaco.Uri.from({ scheme: 'vscode-remote', path: remotePath, authority: remoteAuthority })
+        }
   },
   developmentOptions: {
     logLevel: LogLevel.Info // Default value
