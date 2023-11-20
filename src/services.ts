@@ -5,8 +5,10 @@ import { ITextModelContentProvider } from 'vs/editor/common/services/resolverSer
 import { IColorTheme } from 'vs/platform/theme/common/themeService'
 import { StorageScope, StorageTarget } from 'vscode/src/vs/platform/storage/common/storage'
 import { IEditorOverrideServices, StandaloneServices } from 'vs/editor/standalone/browser/standaloneServices'
+import { mixin } from 'vs/base/common/objects'
 import { GetLeadingNonServiceArgs, IInstantiationService, ServiceIdentifier, ServicesAccessor } from 'vs/platform/instantiation/common/instantiation'
 import { IAction } from 'vs/base/common/actions'
+import { IProductService } from 'vs/platform/product/common/productService'
 import { DisposableStore, IDisposable } from 'vs/base/common/lifecycle'
 import { IWorkbenchConstructionOptions } from 'vs/workbench/browser/web.api'
 import getLayoutServiceOverride from './service-override/layout'
@@ -23,6 +25,19 @@ export async function initialize (overrides: IEditorOverrideServices, container:
   initializeWorkbench(container, configuration)
 
   const instantiationService = StandaloneServices.initialize({
+    [IProductService.toString()]: mixin({
+      version: VSCODE_VERSION,
+      commit: VSCODE_REF,
+      nameShort: 'Code - OSS Dev',
+      nameLong: 'Code - OSS Dev',
+      applicationName: 'code-oss',
+      dataFolderName: '.vscode-oss',
+      urlProtocol: 'code-oss',
+      reportIssueUrl: 'https://github.com/microsoft/vscode/issues/new',
+      licenseName: 'MIT',
+      licenseUrl: 'https://github.com/microsoft/vscode/blob/main/LICENSE.txt',
+      serverApplicationName: 'code-server-oss'
+    }, configuration.productConfiguration ?? {}),
     ...getLayoutServiceOverride(), // Always override layout service to break cyclic dependency with ICodeEditorService
     ...getEnvironmentServiceOverride(),
     ...getExtensionsServiceOverride(),
@@ -90,7 +105,6 @@ export { IFileService } from 'vs/platform/files/common/files'
 export { IInstantiationService } from 'vs/platform/instantiation/common/instantiation'
 export { IMarkerService } from 'vs/platform/markers/common/markers'
 export { IOpenerService } from 'vs/platform/opener/common/opener'
-export { IProductService } from 'vs/platform/product/common/productService'
 export { IQuickInputService } from 'vs/platform/quickinput/common/quickInput'
 export { ITelemetryService } from 'vs/platform/telemetry/common/telemetry'
 export { IUriIdentityService } from 'vs/platform/uriIdentity/common/uriIdentity'
@@ -236,5 +250,6 @@ export {
   StorageScope,
   StorageTarget,
   Severity,
-  IWorkbenchConstructionOptions
+  IWorkbenchConstructionOptions,
+  IProductService
 }
