@@ -109,7 +109,7 @@ Also, monaco-editor doesn't provide good type for them, so this library does it.
 Example:
 
 ```typescript
-import { StandaloneServices, INotificationService, initialize } from 'vscode/services'
+import { INotificationService, initialize } from 'vscode/services'
 
 class MyCustomNotificationService implements INotificationService { ... }
 await initialize({
