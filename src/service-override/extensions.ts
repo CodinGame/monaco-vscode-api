@@ -52,6 +52,7 @@ import { IWorkspaceTrustManagementService } from 'vs/platform/workspace/common/w
 import { IRemoteExplorerService } from 'vs/workbench/services/remote/common/remoteExplorerService'
 import { ExtensionDescriptionRegistrySnapshot } from 'vs/workbench/services/extensions/common/extensionDescriptionRegistry'
 import { changeUrlDomain } from './tools/url'
+import { CustomSchemas } from './files'
 import { registerAssets } from '../assets'
 import { unsupported } from '../tools'
 import 'vs/workbench/api/browser/extensionHost.contribution'
@@ -443,7 +444,7 @@ export class ExtensionServiceOverride extends ExtensionService implements IExten
   }
 
   protected override async _scanSingleExtension (extension: IExtension): Promise<Readonly<IRelaxedExtensionDescription> | null> {
-    if (extension.location.scheme === 'extension-fs') {
+    if (extension.location.scheme === CustomSchemas.extensionFile) {
       return toExtensionDescription(extension)
     }
     return super._scanSingleExtension(extension)

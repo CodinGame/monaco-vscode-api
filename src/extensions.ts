@@ -14,7 +14,7 @@ import { parse } from 'vs/base/common/json'
 import { IFileService } from 'vs/platform/files/common/files'
 import { IInstantiationService } from 'vs/platform/instantiation/common/instantiation'
 import { IExtensionWithExtHostKind, ExtensionServiceOverride, getLocalExtHostExtensionService } from './service-override/extensions'
-import { registerExtensionFile } from './service-override/files'
+import { CustomSchemas, registerExtensionFile } from './service-override/files'
 import { setDefaultApi } from './api'
 import { getService } from './services'
 import { ExtensionManifestTranslator } from './tools/l10n'
@@ -99,7 +99,7 @@ export function registerExtension (manifest: IExtensionManifest, extHostKind?: E
 export function registerExtension (manifest: IExtensionManifest, extHostKind?: ExtensionHostKind, { builtin = manifest.publisher === 'vscode', path = '/' }: RegisterExtensionParams = {}): RegisterExtensionResult {
   const disposableStore = new DisposableStore()
   const id = getExtensionId(manifest.publisher, manifest.name)
-  const location = URI.from({ scheme: 'extension-fs', authority: id, path })
+  const location = URI.from({ scheme: CustomSchemas.extensionFile, authority: id, path })
 
   const addExtensionPromise = (async () => {
     const remoteAuthority = (await getService(IWorkbenchEnvironmentService)).remoteAuthority
