@@ -85,7 +85,12 @@ await Promise.all([
     folders: [{
       path: '/tmp'
     }]
-  }))
+  })),
+  initFile(monaco.Uri.file('/tmp/.vscode/extensions.json'), `{
+    "recommendations": [
+        "vscodevim.vim"
+    ]
+}`)
 ])
 
 // Override services
