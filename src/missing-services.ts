@@ -430,6 +430,7 @@ registerSingleton(IProductService, class ProductService implements IProductServi
 
   version = VSCODE_VERSION
   commit = VSCODE_REF
+  quality = 'oss'
   nameShort = 'Code - OSS Dev'
   nameLong = 'Code - OSS Dev'
   applicationName = 'code-oss'

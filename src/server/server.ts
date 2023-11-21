@@ -2,6 +2,7 @@ import { IProductService } from 'vs/platform/product/common/productService'
 import * as fs from 'fs/promises'
 import * as path from 'path'
 import { fileURLToPath } from 'url'
+import VSCODE_PACKAGE_JSON from '../../vscode/package.json' assert { type: 'json' }
 
 const thisWithVSCodeParams = globalThis as typeof globalThis & {
   _VSCODE_PRODUCT_JSON: Partial<IProductService>
@@ -10,6 +11,8 @@ const thisWithVSCodeParams = globalThis as typeof globalThis & {
 
 // Initialize the product information for the server, including the extension gallery URL.
 thisWithVSCodeParams._VSCODE_PRODUCT_JSON = {
+  quality: 'oss',
+  commit: VSCODE_REF,
   extensionsGallery: {
     serviceUrl: 'https://open-vsx.org/vscode/gallery',
     itemUrl: 'https://open-vsx.org/vscode/item',
@@ -19,9 +22,7 @@ thisWithVSCodeParams._VSCODE_PRODUCT_JSON = {
     publisherUrl: ''
   }
 }
-thisWithVSCodeParams._VSCODE_PACKAGE_JSON = {
-  version: VSCODE_VERSION
-}
+thisWithVSCodeParams._VSCODE_PACKAGE_JSON = VSCODE_PACKAGE_JSON
 
 const PRODUCT_JSON_PATH = process.env.PRODUCT_JSON_PATH
 if (PRODUCT_JSON_PATH != null) {

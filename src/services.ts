@@ -11,6 +11,7 @@ import { IAction } from 'vs/base/common/actions'
 import { IProductService } from 'vs/platform/product/common/productService'
 import { DisposableStore, IDisposable } from 'vs/base/common/lifecycle'
 import { IWorkbenchConstructionOptions } from 'vs/workbench/browser/web.api'
+import { IProductConfiguration } from 'vs/base/common/product'
 import getLayoutServiceOverride from './service-override/layout'
 import getEnvironmentServiceOverride from './service-override/environment'
 import getExtensionsServiceOverride from './service-override/extensions'
@@ -25,8 +26,9 @@ export async function initialize (overrides: IEditorOverrideServices, container:
   initializeWorkbench(container, configuration)
 
   const instantiationService = StandaloneServices.initialize({
-    [IProductService.toString()]: mixin({
+    [IProductService.toString()]: mixin(<Partial<IProductConfiguration>>{
       version: VSCODE_VERSION,
+      quality: 'oss',
       commit: VSCODE_REF,
       nameShort: 'Code - OSS Dev',
       nameLong: 'Code - OSS Dev',
