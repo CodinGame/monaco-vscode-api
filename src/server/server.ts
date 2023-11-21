@@ -9,10 +9,16 @@ const thisWithVSCodeParams = globalThis as typeof globalThis & {
   _VSCODE_PACKAGE_JSON: { version: string }
 }
 
+const WEB_ENDPOINT_URL_TEMPLATE = process.env.WEB_ENDPOINT_URL_TEMPLATE
+if (WEB_ENDPOINT_URL_TEMPLATE == null) {
+  console.warn('No WEB_ENDPOINT_URL_TEMPLATE env variable set, the client won\'t be able to load server extension files')
+}
+
 // Initialize the product information for the server, including the extension gallery URL.
 thisWithVSCodeParams._VSCODE_PRODUCT_JSON = {
   quality: 'oss',
   commit: VSCODE_REF,
+  webEndpointUrlTemplate: WEB_ENDPOINT_URL_TEMPLATE,
   extensionsGallery: {
     serviceUrl: 'https://open-vsx.org/vscode/gallery',
     itemUrl: 'https://open-vsx.org/vscode/item',

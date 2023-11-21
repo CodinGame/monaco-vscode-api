@@ -12,7 +12,7 @@
     "build": "tsc --noEmit && vite --config vite.config.ts build",
     "build:github": "tsc --noEmit && vite --config vite.github-page.config.ts build && touch dist/.nojekyll",
     "start:debugServer": "node --loader ts-node/esm src/debugServer.ts",
-    "start:extHostServer": "vscode-ext-host-server --without-connection-token"
+    "start:extHostServer": "WEB_ENDPOINT_URL_TEMPLATE=http://localhost:5173/ vscode-ext-host-server --without-connection-token"
   },
   "devDependencies": {
     "@codingame/monaco-vscode-rollup-vsix-plugin": "file:../dist/rollup-vsix-plugin",
