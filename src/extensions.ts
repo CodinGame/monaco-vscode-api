@@ -13,7 +13,7 @@ import { IWorkbenchEnvironmentService } from 'vs/workbench/services/environment/
 import { parse } from 'vs/base/common/json'
 import { IFileService } from 'vs/platform/files/common/files'
 import { IInstantiationService } from 'vs/platform/instantiation/common/instantiation'
-import { IExtensionWithExtHostKind, SimpleExtensionService, getLocalExtHostExtensionService } from './service-override/extensions'
+import { IExtensionWithExtHostKind, ExtensionServiceOverride, getLocalExtHostExtensionService } from './service-override/extensions'
 import { registerExtensionFile } from './service-override/files'
 import { setDefaultApi } from './api'
 import { getService } from './services'
@@ -79,7 +79,7 @@ interface ExtensionDelta {
   toRemove: IExtension[]
 }
 const deltaExtensions = throttle(async ({ toAdd, toRemove }: ExtensionDelta) => {
-  const extensionService = await getService(IExtensionService) as SimpleExtensionService
+  const extensionService = await getService(IExtensionService) as ExtensionServiceOverride
   await extensionService.deltaExtensions(toAdd, toRemove)
 }, (a, b) => ({ toAdd: [...a.toAdd, ...b.toAdd], toRemove: [...a.toRemove, ...b.toRemove] }), 0)
 

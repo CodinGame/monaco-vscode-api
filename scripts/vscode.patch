@@ -968,7 +968,7 @@ index b83a462131d..5555f431ba0 100644
  		performance.mark('code/extHost/didInitAPI');
  
 diff --git a/src/vs/workbench/api/worker/extensionHostWorker.ts b/src/vs/workbench/api/worker/extensionHostWorker.ts
-index 6e6f8845da5..48462781c2a 100644
+index 6e6f8845da5..80a3a9f0095 100644
 --- a/src/vs/workbench/api/worker/extensionHostWorker.ts
 +++ b/src/vs/workbench/api/worker/extensionHostWorker.ts
 @@ -15,7 +15,6 @@ import * as performance from 'vs/base/common/performance';
@@ -1455,10 +1455,54 @@ index a860270eca9..0ef927948db 100644
  		if (this.element && this._messagePort) {
  			this._messagePort.postMessage({ channel, args: data }, transferable);
 diff --git a/src/vs/workbench/services/extensions/browser/extensionService.ts b/src/vs/workbench/services/extensions/browser/extensionService.ts
-index 25885c7c4f9..ec1beb2c951 100644
+index 25885c7c4f9..2d220cbe1ad 100644
 --- a/src/vs/workbench/services/extensions/browser/extensionService.ts
 +++ b/src/vs/workbench/services/extensions/browser/extensionService.ts
-@@ -212,16 +212,16 @@ export class ExtensionService extends AbstractExtensionService implements IExten
+@@ -42,8 +42,10 @@ import { IUserDataInitializationService } from 'vs/workbench/services/userData/b
+ import { IUserDataProfileService } from 'vs/workbench/services/userDataProfile/common/userDataProfile';
+ 
+ export class ExtensionService extends AbstractExtensionService implements IExtensionService {
+-
+ 	constructor(
++		extensionsProposedApi: ExtensionsProposedApi,
++		extensionHostFactory: IExtensionHostFactory,
++		extensionHostKindPicker: IExtensionHostKindPicker,
+ 		@IInstantiationService instantiationService: IInstantiationService,
+ 		@INotificationService notificationService: INotificationService,
+ 		@IBrowserWorkbenchEnvironmentService private readonly _browserEnvironmentService: IBrowserWorkbenchEnvironmentService,
+@@ -67,21 +69,10 @@ export class ExtensionService extends AbstractExtensionService implements IExten
+ 		@IRemoteExplorerService private readonly _remoteExplorerService: IRemoteExplorerService,
+ 		@IDialogService dialogService: IDialogService,
+ 	) {
+-		const extensionsProposedApi = instantiationService.createInstance(ExtensionsProposedApi);
+-		const extensionHostFactory = new BrowserExtensionHostFactory(
+-			extensionsProposedApi,
+-			() => this._scanWebExtensions(),
+-			() => this._getExtensionRegistrySnapshotWhenReady(),
+-			instantiationService,
+-			remoteAgentService,
+-			remoteAuthorityResolverService,
+-			extensionEnablementService,
+-			logService
+-		);
+ 		super(
+ 			extensionsProposedApi,
+ 			extensionHostFactory,
+-			new BrowserExtensionHostKindPicker(logService),
++			extensionHostKindPicker,
+ 			instantiationService,
+ 			notificationService,
+ 			_browserEnvironmentService,
+@@ -129,7 +120,7 @@ export class ExtensionService extends AbstractExtensionService implements IExten
+ 		this._register(this._fileService.registerProvider(Schemas.https, provider));
+ 	}
+ 
+-	private async _scanWebExtensions(): Promise<IExtensionDescription[]> {
++	protected async _scanWebExtensions(): Promise<IExtensionDescription[]> {
+ 		const system: IExtensionDescription[] = [], user: IExtensionDescription[] = [], development: IExtensionDescription[] = [];
+ 		try {
+ 			await Promise.all([
+@@ -212,16 +203,16 @@ export class ExtensionService extends AbstractExtensionService implements IExten
  	}
  }
  
@@ -1480,7 +1524,7 @@ index 25885c7c4f9..ec1beb2c951 100644
  		@ILogService private readonly _logService: ILogService,
  	) { }
  
-@@ -248,7 +248,7 @@ class BrowserExtensionHostFactory implements IExtensionHostFactory {
+@@ -248,7 +239,7 @@ class BrowserExtensionHostFactory implements IExtensionHostFactory {
  		}
  	}
  
@@ -1489,6 +1533,79 @@ index 25885c7c4f9..ec1beb2c951 100644
  		return {
  			getInitData: async (): Promise<IWebWorkerExtensionHostInitData> => {
  				if (isInitialStart) {
+@@ -345,4 +336,71 @@ export class BrowserExtensionHostKindPicker implements IExtensionHostKindPicker
+ 	}
+ }
+ 
+-registerSingleton(IExtensionService, ExtensionService, InstantiationType.Eager);
++export class BrowserExtensionService extends ExtensionService {
++	constructor(
++		@IInstantiationService instantiationService: IInstantiationService,
++		@INotificationService notificationService: INotificationService,
++		@IBrowserWorkbenchEnvironmentService browserEnvironmentService: IBrowserWorkbenchEnvironmentService,
++		@ITelemetryService telemetryService: ITelemetryService,
++		@IWorkbenchExtensionEnablementService extensionEnablementService: IWorkbenchExtensionEnablementService,
++		@IFileService fileService: IFileService,
++		@IProductService productService: IProductService,
++		@IWorkbenchExtensionManagementService extensionManagementService: IWorkbenchExtensionManagementService,
++		@IWorkspaceContextService contextService: IWorkspaceContextService,
++		@IConfigurationService configurationService: IConfigurationService,
++		@IExtensionManifestPropertiesService extensionManifestPropertiesService: IExtensionManifestPropertiesService,
++		@IWebExtensionsScannerService webExtensionsScannerService: IWebExtensionsScannerService,
++		@ILogService logService: ILogService,
++		@IRemoteAgentService remoteAgentService: IRemoteAgentService,
++		@IRemoteExtensionsScannerService remoteExtensionsScannerService: IRemoteExtensionsScannerService,
++		@ILifecycleService lifecycleService: ILifecycleService,
++		@IRemoteAuthorityResolverService remoteAuthorityResolverService: IRemoteAuthorityResolverService,
++		@IUserDataInitializationService userDataInitializationService: IUserDataInitializationService,
++		@IUserDataProfileService userDataProfileService: IUserDataProfileService,
++		@IWorkspaceTrustManagementService workspaceTrustManagementService: IWorkspaceTrustManagementService,
++		@IRemoteExplorerService remoteExplorerService: IRemoteExplorerService,
++		@IDialogService dialogService: IDialogService,
++	) {
++		const extensionsProposedApi = instantiationService.createInstance(ExtensionsProposedApi);
++		const extensionHostFactory = new BrowserExtensionHostFactory(
++			extensionsProposedApi,
++			() => this._scanWebExtensions(),
++			() => this._getExtensionRegistrySnapshotWhenReady(),
++			instantiationService,
++			remoteAgentService,
++			remoteAuthorityResolverService,
++			extensionEnablementService,
++			logService
++		);
++		super(
++			extensionsProposedApi,
++			extensionHostFactory,
++			new BrowserExtensionHostKindPicker(logService),
++			instantiationService,
++			notificationService,
++			browserEnvironmentService,
++			telemetryService,
++			extensionEnablementService,
++			fileService,
++			productService,
++			extensionManagementService,
++			contextService,
++			configurationService,
++			extensionManifestPropertiesService,
++			webExtensionsScannerService,
++			logService,
++			remoteAgentService,
++			remoteExtensionsScannerService,
++			lifecycleService,
++			remoteAuthorityResolverService,
++			userDataInitializationService,
++			userDataProfileService,
++			workspaceTrustManagementService,
++			remoteExplorerService,
++			dialogService
++		);
++	}
++}
++
++
++registerSingleton(IExtensionService, BrowserExtensionService, InstantiationType.Eager);
 diff --git a/src/vs/workbench/services/extensions/browser/webWorkerExtensionHost.ts b/src/vs/workbench/services/extensions/browser/webWorkerExtensionHost.ts
 index a7ce017ab9f..fd873470224 100644
 --- a/src/vs/workbench/services/extensions/browser/webWorkerExtensionHost.ts
