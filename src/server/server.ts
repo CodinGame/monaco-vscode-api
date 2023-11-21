@@ -32,7 +32,7 @@ if (PRODUCT_JSON_PATH != null) {
 // Create a directory for system extensions to be installed in, VSCode
 // will try to read this folder to find system extensions, and will
 // error if it does not exist.
-const currentDirPath = fileURLToPath(import.meta.url)
+const currentDirPath = path.dirname(fileURLToPath(import.meta.url))
 await fs.mkdir(path.join(currentDirPath, 'extensions'), { recursive: true })
 
 import('./server-main')
