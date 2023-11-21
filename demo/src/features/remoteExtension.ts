@@ -7,5 +7,5 @@ declare global {
 }
 
 if (window.rootDirectory != null) {
-  registerRemoteExtension(`${window.rootDirectory}/src/features/remoteExtensionExample/`)
+  void registerRemoteExtension(`${window.rootDirectory}/src/features/remoteExtensionExample/`)
 }
