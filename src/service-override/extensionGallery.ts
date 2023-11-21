@@ -22,13 +22,11 @@ import { RemoteExtensionsScannerService } from 'vs/workbench/services/remote/com
 import { ExtensionRecommendationNotificationService } from 'vs/workbench/contrib/extensions/browser/extensionRecommendationNotificationService'
 import { ExtensionTipsService } from 'vs/platform/extensionManagement/common/extensionTipsService'
 import { ExtensionManagementService } from 'vs/workbench/services/extensionManagement/common/extensionManagementService'
-import 'vs/workbench/contrib/extensions/browser/extensions.contribution'
-import 'vs/workbench/contrib/extensions/browser/extensions.web.contribution'
-import 'vs/workbench/contrib/logs/common/logs.contribution'
 import { IRemoteUserDataProfilesService, RemoteUserDataProfilesService } from 'vs/workbench/services/userDataProfile/common/remoteUserDataProfiles'
 import { ExtensionEnablementService } from 'vs/workbench/services/extensionManagement/browser/extensionEnablementService'
-import 'vs/workbench/services/extensionManagement/browser/extensionBisect'
 import { IInstantiationService, ILabelService, IRemoteAgentService } from '../services'
+import 'vs/workbench/contrib/extensions/browser/extensions.contribution'
+import 'vs/workbench/contrib/extensions/browser/extensions.web.contribution'
 
 class ExtensionManagementServerServiceOverride extends ExtensionManagementServerService {
   constructor (
