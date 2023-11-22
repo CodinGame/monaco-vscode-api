@@ -1266,18 +1266,21 @@ index f23c48b7db1..3a638425a2d 100644
  
  	isVisible(): boolean {
 diff --git a/src/vs/workbench/common/views.ts b/src/vs/workbench/common/views.ts
-index 84cee2b04a6..63167893dd7 100644
+index 84cee2b04a6..f5a54d6925b 100644
 --- a/src/vs/workbench/common/views.ts
 +++ b/src/vs/workbench/common/views.ts
-@@ -217,7 +217,7 @@ class ViewContainersRegistryImpl extends Disposable implements IViewContainersRe
- 		const viewContainers = getOrSet(this.viewContainers, viewContainerLocation, []);
- 		viewContainers.push(viewContainer);
- 		if (options?.isDefault) {
--			this.defaultViewContainers.push(viewContainer);
-+			this.defaultViewContainers.unshift(viewContainer);
- 		}
- 		this._onDidRegister.fire({ viewContainer, viewContainerLocation });
- 		return viewContainer;
+@@ -251,7 +251,10 @@ class ViewContainersRegistryImpl extends Disposable implements IViewContainersRe
+ 	}
+ 
+ 	getDefaultViewContainer(location: ViewContainerLocation): ViewContainer | undefined {
+-		return this.defaultViewContainers.find(viewContainer => this.getViewContainerLocation(viewContainer) === location);
++		const locationViewContainers = this.defaultViewContainers.filter(viewContainer => this.getViewContainerLocation(viewContainer) === location);
++
++		locationViewContainers.sort((a, b) => (a.order ?? 0) - (b.order ?? 0));
++		return locationViewContainers[0];
+ 	}
+ }
+ 
 diff --git a/src/vs/workbench/contrib/extensions/browser/abstractRuntimeExtensionsEditor.ts b/src/vs/workbench/contrib/extensions/browser/abstractRuntimeExtensionsEditor.ts
 index 295c3fd59cb..d3aa77446b4 100644
 --- a/src/vs/workbench/contrib/extensions/browser/abstractRuntimeExtensionsEditor.ts
