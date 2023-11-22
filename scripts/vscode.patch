@@ -977,7 +977,7 @@ index b83a462131d..5555f431ba0 100644
  		performance.mark('code/extHost/didInitAPI');
  
 diff --git a/src/vs/workbench/api/worker/extensionHostWorker.ts b/src/vs/workbench/api/worker/extensionHostWorker.ts
-index 6e6f8845da5..80a3a9f0095 100644
+index 6e6f8845da5..8e51cff49ca 100644
 --- a/src/vs/workbench/api/worker/extensionHostWorker.ts
 +++ b/src/vs/workbench/api/worker/extensionHostWorker.ts
 @@ -15,7 +15,6 @@ import * as performance from 'vs/base/common/performance';
@@ -1278,6 +1278,52 @@ index 84cee2b04a6..63167893dd7 100644
  		}
  		this._onDidRegister.fire({ viewContainer, viewContainerLocation });
  		return viewContainer;
+diff --git a/src/vs/workbench/contrib/extensions/browser/abstractRuntimeExtensionsEditor.ts b/src/vs/workbench/contrib/extensions/browser/abstractRuntimeExtensionsEditor.ts
+index 295c3fd59cb..d3aa77446b4 100644
+--- a/src/vs/workbench/contrib/extensions/browser/abstractRuntimeExtensionsEditor.ts
++++ b/src/vs/workbench/contrib/extensions/browser/abstractRuntimeExtensionsEditor.ts
+@@ -35,7 +35,7 @@ import { IExtension, IExtensionsWorkbenchService } from 'vs/workbench/contrib/ex
+ import { RuntimeExtensionsInput } from 'vs/workbench/contrib/extensions/common/runtimeExtensionsInput';
+ import { IEditorService } from 'vs/workbench/services/editor/common/editorService';
+ import { IWorkbenchEnvironmentService } from 'vs/workbench/services/environment/common/environmentService';
+-import { DefaultIconPath, EnablementState } from 'vs/workbench/services/extensionManagement/common/extensionManagement';
++import { getDefaultIconPath, EnablementState } from 'vs/workbench/services/extensionManagement/common/extensionManagement';
+ import { LocalWebWorkerRunningLocation } from 'vs/workbench/services/extensions/common/extensionRunningLocation';
+ import { IExtensionHostProfile, IExtensionService, IExtensionsStatus } from 'vs/workbench/services/extensions/common/extensions';
+ 
+@@ -266,8 +266,8 @@ export abstract class AbstractRuntimeExtensionsEditor extends EditorPane {
+ 
+ 				data.root.classList.toggle('odd', index % 2 === 1);
+ 
+-				data.elementDisposables.push(addDisposableListener(data.icon, 'error', () => data.icon.src = element.marketplaceInfo?.iconUrlFallback || DefaultIconPath, { once: true }));
+-				data.icon.src = element.marketplaceInfo?.iconUrl || DefaultIconPath;
++				data.elementDisposables.push(addDisposableListener(data.icon, 'error', () => data.icon.src = element.marketplaceInfo?.iconUrlFallback || getDefaultIconPath(), { once: true }));
++				data.icon.src = element.marketplaceInfo?.iconUrl || getDefaultIconPath();
+ 
+ 				if (!data.icon.complete) {
+ 					data.icon.style.visibility = 'hidden';
+diff --git a/src/vs/workbench/contrib/extensions/browser/extensionsWorkbenchService.ts b/src/vs/workbench/contrib/extensions/browser/extensionsWorkbenchService.ts
+index 154696503e3..b1bb13e65ee 100644
+--- a/src/vs/workbench/contrib/extensions/browser/extensionsWorkbenchService.ts
++++ b/src/vs/workbench/contrib/extensions/browser/extensionsWorkbenchService.ts
+@@ -17,7 +17,7 @@ import {
+ 	InstallExtensionEvent, DidUninstallExtensionEvent, InstallOperation, InstallOptions, WEB_EXTENSION_TAG, InstallExtensionResult,
+ 	IExtensionsControlManifest, InstallVSIXOptions, IExtensionInfo, IExtensionQueryOptions, IDeprecationInfo, isTargetPlatformCompatible
+ } from 'vs/platform/extensionManagement/common/extensionManagement';
+-import { IWorkbenchExtensionEnablementService, EnablementState, IExtensionManagementServerService, IExtensionManagementServer, IWorkbenchExtensionManagementService, DefaultIconPath } from 'vs/workbench/services/extensionManagement/common/extensionManagement';
++import { IWorkbenchExtensionEnablementService, EnablementState, IExtensionManagementServerService, IExtensionManagementServer, IWorkbenchExtensionManagementService, getDefaultIconPath } from 'vs/workbench/services/extensionManagement/common/extensionManagement';
+ import { getGalleryExtensionTelemetryData, getLocalExtensionTelemetryData, areSameExtensions, groupByExtension, ExtensionKey, getGalleryExtensionId } from 'vs/platform/extensionManagement/common/extensionManagementUtil';
+ import { IInstantiationService } from 'vs/platform/instantiation/common/instantiation';
+ import { IConfigurationService } from 'vs/platform/configuration/common/configuration';
+@@ -205,7 +205,7 @@ export class Extension implements IExtension {
+ 				}
+ 			}
+ 		}
+-		return DefaultIconPath;
++		return getDefaultIconPath();
+ 	}
+ 
+ 	get repository(): string | undefined {
 diff --git a/src/vs/workbench/contrib/terminal/browser/terminalInstance.ts b/src/vs/workbench/contrib/terminal/browser/terminalInstance.ts
 index e6ae569ad9d..3b2ac782391 100644
 --- a/src/vs/workbench/contrib/terminal/browser/terminalInstance.ts
@@ -1463,6 +1509,41 @@ index a860270eca9..0ef927948db 100644
  	private doPostMessage(channel: string, data?: any, transferable: Transferable[] = []): boolean {
  		if (this.element && this._messagePort) {
  			this._messagePort.postMessage({ channel, args: data }, transferable);
+diff --git a/src/vs/workbench/contrib/welcomeGettingStarted/browser/gettingStartedService.ts b/src/vs/workbench/contrib/welcomeGettingStarted/browser/gettingStartedService.ts
+index f0c08e1b826..e63f4724028 100644
+--- a/src/vs/workbench/contrib/welcomeGettingStarted/browser/gettingStartedService.ts
++++ b/src/vs/workbench/contrib/welcomeGettingStarted/browser/gettingStartedService.ts
+@@ -33,7 +33,7 @@ import { ITelemetryService } from 'vs/platform/telemetry/common/telemetry';
+ import { checkGlobFileExists } from 'vs/workbench/services/extensions/common/workspaceContains';
+ import { IWorkspaceContextService } from 'vs/platform/workspace/common/workspace';
+ import { CancellationTokenSource } from 'vs/base/common/cancellation';
+-import { DefaultIconPath } from 'vs/workbench/services/extensionManagement/common/extensionManagement';
++import { getDefaultIconPath } from 'vs/workbench/services/extensionManagement/common/extensionManagement';
+ 
+ export const HasMultipleNewFileEntries = new RawContextKey<boolean>('hasMultipleNewFileEntries', false);
+ 
+@@ -396,7 +396,7 @@ export class WalkthroughsService extends Disposable implements IWalkthroughsServ
+ 					type: 'image',
+ 					path: iconStr
+ 						? FileAccess.uriToBrowserUri(joinPath(extension.extensionLocation, iconStr)).toString(true)
+-						: DefaultIconPath
++						: getDefaultIconPath()
+ 				},
+ 				when: ContextKeyExpr.deserialize(override ?? walkthrough.when) ?? ContextKeyExpr.true(),
+ 			} as const;
+diff --git a/src/vs/workbench/services/extensionManagement/common/extensionManagement.ts b/src/vs/workbench/services/extensionManagement/common/extensionManagement.ts
+index 362e485948a..50f5a5f175d 100644
+--- a/src/vs/workbench/services/extensionManagement/common/extensionManagement.ts
++++ b/src/vs/workbench/services/extensionManagement/common/extensionManagement.ts
+@@ -39,7 +39,7 @@ export interface IExtensionManagementServerService {
+ 	getExtensionInstallLocation(extension: IExtension): ExtensionInstallLocation | null;
+ }
+ 
+-export const DefaultIconPath = FileAccess.asBrowserUri('vs/workbench/services/extensionManagement/common/media/defaultIcon.png').toString(true);
++export const getDefaultIconPath = () => FileAccess.asBrowserUri('vs/workbench/services/extensionManagement/common/media/defaultIcon.png').toString(true);
+ 
+ export type InstallExtensionOnServerEvent = InstallExtensionEvent & { server: IExtensionManagementServer };
+ export type UninstallExtensionOnServerEvent = UninstallExtensionEvent & { server: IExtensionManagementServer };
 diff --git a/src/vs/workbench/services/extensions/browser/extensionService.ts b/src/vs/workbench/services/extensions/browser/extensionService.ts
 index 25885c7c4f9..2d220cbe1ad 100644
 --- a/src/vs/workbench/services/extensions/browser/extensionService.ts
