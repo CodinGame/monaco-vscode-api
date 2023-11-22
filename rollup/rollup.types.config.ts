@@ -102,7 +102,9 @@ export default rollup.defineConfig((<{input: Record<string, string>, output: str
         return chunkInfo.name.replace('node_modules', 'external') + '.ts'
       }
       return '[name].ts'
-    }
+    },
+    // the extension file exposes a way to get the vscode API, so we should reference the proposed vscode types here too
+    banner: (chunk) => chunk.fileName === 'extensions.d.ts' ? '/// <reference path="vscode.proposed.d.ts" />' : ''
   },
   external: (id) => isExternal(id, main),
   plugins: [
