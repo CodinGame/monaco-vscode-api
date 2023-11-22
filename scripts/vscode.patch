@@ -543,7 +543,7 @@ index d8cefb6df67..a94fca911ea 100644
  import { localize } from 'vs/nls';
  import { NativeParsedArgs } from 'vs/platform/environment/common/argv';
 diff --git a/src/vs/platform/extensionResourceLoader/browser/extensionResourceLoaderService.ts b/src/vs/platform/extensionResourceLoader/browser/extensionResourceLoaderService.ts
-index c766318f30f..58c3000cbd3 100644
+index c766318f30f..1d3bc4affc5 100644
 --- a/src/vs/platform/extensionResourceLoader/browser/extensionResourceLoaderService.ts
 +++ b/src/vs/platform/extensionResourceLoader/browser/extensionResourceLoaderService.ts
 @@ -14,7 +14,7 @@ import { ILogService } from 'vs/platform/log/common/log';
@@ -555,6 +555,15 @@ index c766318f30f..58c3000cbd3 100644
  
  	declare readonly _serviceBrand: undefined;
  
+@@ -32,7 +32,7 @@ class ExtensionResourceLoaderService extends AbstractExtensionResourceLoaderServ
+ 	async readExtensionResource(uri: URI): Promise<string> {
+ 		uri = FileAccess.uriToBrowserUri(uri);
+ 
+-		if (uri.scheme !== Schemas.http && uri.scheme !== Schemas.https) {
++		if (uri.scheme !== Schemas.http && uri.scheme !== Schemas.https && uri.scheme !== Schemas.data) {
+ 			const result = await this._fileService.readFile(uri);
+ 			return result.value.toString();
+ 		}
 diff --git a/src/vs/platform/files/node/diskFileSystemProvider.ts b/src/vs/platform/files/node/diskFileSystemProvider.ts
 index e22cfe1b45e..b48c1babf86 100644
 --- a/src/vs/platform/files/node/diskFileSystemProvider.ts
