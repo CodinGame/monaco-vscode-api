@@ -55,7 +55,7 @@ import { IEditSessionIdentityService } from 'vs/platform/workspace/common/editSe
 import { IWorkspaceEditingService } from 'vs/workbench/services/workspaces/common/workspaceEditing'
 import { ITimerService } from 'vs/workbench/services/timer/browser/timerService'
 import { IExtensionsWorkbenchService } from 'vs/workbench/contrib/extensions/common/extensions'
-import { EnablementState, IWorkbenchExtensionEnablementService, IWorkbenchExtensionManagementService } from 'vs/workbench/services/extensionManagement/common/extensionManagement'
+import { EnablementState, IExtensionManagementServerService, IWebExtensionsScannerService, IWorkbenchExtensionEnablementService, IWorkbenchExtensionManagementService } from 'vs/workbench/services/extensionManagement/common/extensionManagement'
 import { ITunnelService } from 'vs/platform/tunnel/common/tunnel'
 import { IWorkingCopyBackupService } from 'vs/workbench/services/workingCopy/common/workingCopyBackup'
 import { IWorkingCopyService, WorkingCopyService } from 'vs/workbench/services/workingCopy/common/workingCopyService'
@@ -78,9 +78,8 @@ import { IEditorResolverService } from 'vs/workbench/services/editor/common/edit
 import { AbstractLifecycleService } from 'vs/workbench/services/lifecycle/common/lifecycleService'
 import { IOutputChannel, IOutputChannelDescriptor, IOutputService } from 'vs/workbench/services/output/common/output'
 import { IOutputChannelModelService, OutputChannelModelService } from 'vs/workbench/contrib/output/common/outputChannelModelService'
-import { AbstractExtensionResourceLoaderService, IExtensionResourceLoaderService } from 'vs/platform/extensionResourceLoader/common/extensionResourceLoader'
-import { IStorageService } from 'vs/platform/storage/common/storage'
-import { IConfigurationService } from 'vs/platform/configuration/common/configuration'
+import { IExtensionResourceLoaderService } from 'vs/platform/extensionResourceLoader/common/extensionResourceLoader'
+import { ExtensionResourceLoaderService } from 'vs/platform/extensionResourceLoader/browser/extensionResourceLoaderService'
 import { IHoverService } from 'vs/workbench/services/hover/browser/hover'
 import { IExplorerService } from 'vs/workbench/contrib/files/browser/files'
 import { ExtensionStorageService, IExtensionStorageService } from 'vs/platform/extensionManagement/common/extensionStorage'
@@ -93,7 +92,7 @@ import { IBreadcrumbsService } from 'vs/workbench/browser/parts/editor/breadcrum
 import { IOutlineService } from 'vs/workbench/services/outline/browser/outline'
 import { IUpdateService, State } from 'vs/platform/update/common/update'
 import { IStatusbarService } from 'vs/workbench/services/statusbar/browser/statusbar'
-import { IExtensionGalleryService, IExtensionManagementService, ILocalExtension } from 'vs/platform/extensionManagement/common/extensionManagement'
+import { IExtensionGalleryService, IExtensionManagementService, IExtensionTipsService, IGlobalExtensionEnablementService, ILocalExtension } from 'vs/platform/extensionManagement/common/extensionManagement'
 import { IModelService } from 'vs/editor/common/services/model'
 import { IDetachedTerminalInstance, ITerminalEditorService, ITerminalGroupService, ITerminalInstance, ITerminalInstanceService, ITerminalService, TerminalConnectionState } from 'vs/workbench/contrib/terminal/browser/terminal'
 import { ITerminalProfileResolverService, ITerminalProfileService } from 'vs/workbench/contrib/terminal/common/terminal'
@@ -104,7 +103,7 @@ import { IEnvironmentVariableService } from 'vs/workbench/contrib/terminal/commo
 import { ITerminalQuickFixService } from 'vs/workbench/contrib/terminalContrib/quickFix/browser/quickFix'
 import { IPreferencesSearchService } from 'vs/workbench/contrib/preferences/common/preferences'
 import { AccountStatus, IUserDataSyncWorkbenchService } from 'vs/workbench/services/userDataSync/common/userDataSync'
-import { IUserDataSyncEnablementService } from 'vs/platform/userDataSync/common/userDataSync'
+import { IUserDataAutoSyncService, IUserDataSyncEnablementService } from 'vs/platform/userDataSync/common/userDataSync'
 import { IKeybindingEditingService } from 'vs/workbench/services/keybinding/common/keybindingEditing'
 import { INotebookService } from 'vs/workbench/contrib/notebook/common/notebookService'
 import { ISearchHistoryService } from 'vs/workbench/contrib/search/common/searchHistoryService'
@@ -128,7 +127,7 @@ import { IEditorDropService } from 'vs/workbench/services/editor/browser/editorD
 import { IRemoteAuthorityResolverService } from 'vs/platform/remote/common/remoteAuthorityResolver'
 import { ExternalUriOpenerService, IExternalUriOpenerService } from 'vs/workbench/contrib/externalUriOpener/common/externalUriOpenerService'
 import { IAccessibleViewService } from 'vs/workbench/contrib/accessibility/browser/accessibleView'
-import { IExtension, IRelaxedExtensionDescription } from 'vs/platform/extensions/common/extensions'
+import { IBuiltinExtensionsScannerService, IExtension, IRelaxedExtensionDescription } from 'vs/platform/extensions/common/extensions'
 import { IExtensionManifestPropertiesService } from 'vs/workbench/services/extensions/common/extensionManifestPropertiesService'
 import { IRemoteExtensionsScannerService } from 'vs/platform/remote/common/remoteExtensionsScanner'
 import { BrowserURLService } from 'vs/workbench/services/url/browser/urlService'
@@ -171,10 +170,17 @@ import { BrowserHostService } from 'vs/workbench/services/host/browser/browserHo
 import { IBannerService } from 'vs/workbench/services/banner/browser/bannerService'
 import { ITitleService } from 'vs/workbench/services/title/common/titleService'
 import { IChatAgentService } from 'vs/workbench/contrib/chat/common/chatAgents'
+import { IActiveLanguagePackService, ILocaleService } from 'vs/workbench/services/localization/common/locale'
 import { joinPath } from 'vs/base/common/resources'
+import { IExtensionIgnoredRecommendationsService, IExtensionRecommendationsService } from 'vs/workbench/services/extensionRecommendations/common/extensionRecommendations'
+import { IIgnoredExtensionsManagementService } from 'vs/platform/userDataSync/common/ignoredExtensions'
+import { IExtensionRecommendationNotificationService } from 'vs/platform/extensionRecommendations/common/extensionRecommendations'
+import { IWorkspaceExtensionsConfigService } from 'vs/workbench/services/extensionRecommendations/common/workspaceExtensionsConfig'
+import { IRemoteUserDataProfilesService } from 'vs/workbench/services/userDataProfile/common/remoteUserDataProfiles'
+import { IExtensionBisectService } from 'vs/workbench/services/extensionManagement/browser/extensionBisect'
+import { IUserDataSyncAccountService } from 'vs/platform/userDataSync/common/userDataSyncAccount'
 import { unsupported } from './tools'
 import { getBuiltInExtensionTranslationsUris } from './l10n'
-
 class NullLoggerService extends AbstractLoggerService {
   constructor () {
     super(LogLevel.Info, URI.file('logs.log'))
@@ -424,6 +430,7 @@ registerSingleton(IProductService, class ProductService implements IProductServi
 
   version = VSCODE_VERSION
   commit = VSCODE_REF
+  quality = 'oss'
   nameShort = 'Code - OSS Dev'
   nameLong = 'Code - OSS Dev'
   applicationName = 'code-oss'
@@ -433,6 +440,13 @@ registerSingleton(IProductService, class ProductService implements IProductServi
   licenseName = 'MIT'
   licenseUrl = 'https://github.com/microsoft/vscode/blob/main/LICENSE.txt'
   serverApplicationName = 'code-server-oss'
+}, InstantiationType.Eager)
+
+registerSingleton(IExtensionTipsService, class ExtensionTipsService implements IExtensionTipsService {
+  readonly _serviceBrand = undefined
+  getConfigBasedTips = async () => []
+  getImportantExecutableBasedTips = async () => []
+  getOtherExecutableBasedTips = async () => []
 }, InstantiationType.Eager)
 
 registerSingleton(ILanguageStatusService, class LanguageStatusServiceImpl implements ILanguageStatusService {
@@ -939,6 +953,93 @@ registerSingleton(IExtensionsWorkbenchService, class ExtensionsWorkbenchService 
   toggleExtensionIgnoredToSync = unsupported
 }, InstantiationType.Eager)
 
+registerSingleton(IExtensionManagementServerService, class ExtensionManagementServerService implements IExtensionManagementServerService {
+  _serviceBrand = undefined
+  localExtensionManagementServer = null
+  remoteExtensionManagementServer = null
+  webExtensionManagementServer = null
+
+  getExtensionManagementServer (_extension: IExtension) {
+    return null
+  }
+
+  getExtensionInstallLocation (_extension: IExtension) {
+    return null
+  }
+}, InstantiationType.Eager)
+
+registerSingleton(IExtensionRecommendationsService, class ExtensionRecommendationsService implements IExtensionRecommendationsService {
+  _serviceBrand: undefined
+  onDidChangeRecommendations = Event.None
+  getAllRecommendationsWithReason = () => ({})
+  getImportantRecommendations = async () => []
+  getOtherRecommendations = async () => []
+  getFileBasedRecommendations = () => []
+  getExeBasedRecommendations = async () => ({ important: [], others: [] })
+  getConfigBasedRecommendations = async () => ({ important: [], others: [] })
+  getWorkspaceRecommendations = async () => []
+  getKeymapRecommendations = () => []
+  getLanguageRecommendations = () => []
+  getRemoteRecommendations = () => []
+}, InstantiationType.Eager)
+registerSingleton(IUserDataAutoSyncService, class UserDataAutoSyncService implements IUserDataAutoSyncService {
+  _serviceBrand: undefined
+  readonly onError = Event.None
+  turnOn = unsupported
+  turnOff = unsupported
+  triggerSync = unsupported
+}, InstantiationType.Eager)
+
+registerSingleton(IIgnoredExtensionsManagementService, class IgnoredExtensionsManagementService implements IIgnoredExtensionsManagementService {
+  _serviceBrand: undefined
+  getIgnoredExtensions = () => []
+  hasToNeverSyncExtension = () => false
+  hasToAlwaysSyncExtension = () => false
+  updateIgnoredExtensions = unsupported
+  updateSynchronizedExtensions = unsupported
+}, InstantiationType.Eager)
+
+registerSingleton(IExtensionRecommendationNotificationService, class ExtensionRecommendationNotificationService implements IExtensionRecommendationNotificationService {
+  _serviceBrand: undefined
+  readonly ignoredRecommendations: string[] = []
+  hasToIgnoreRecommendationNotifications = () => false
+  promptImportantExtensionsInstallNotification = unsupported
+  promptWorkspaceRecommendations = unsupported
+}, InstantiationType.Eager)
+
+registerSingleton(IWebExtensionsScannerService, class WebExtensionsScannerService implements IWebExtensionsScannerService {
+  _serviceBrand: undefined
+  scanSystemExtensions = async () => []
+  scanUserExtensions = async () => []
+  scanExtensionsUnderDevelopment = async () => []
+  scanExistingExtension = async () => null
+  addExtension = unsupported
+  addExtensionFromGallery = unsupported
+  removeExtension = async () => {}
+  copyExtensions = async () => {}
+  updateMetadata = unsupported
+  scanExtensionManifest = async () => null
+}, InstantiationType.Eager)
+
+registerSingleton(IExtensionIgnoredRecommendationsService, class ExtensionIgnoredRecommendationsService implements IExtensionIgnoredRecommendationsService {
+  _serviceBrand: undefined
+  onDidChangeIgnoredRecommendations = Event.None
+  ignoredRecommendations = []
+  onDidChangeGlobalIgnoredRecommendation = Event.None
+  globalIgnoredRecommendations = []
+  toggleGlobalIgnoredRecommendation = unsupported
+}, InstantiationType.Eager)
+
+registerSingleton(IWorkspaceExtensionsConfigService, class WorkspaceExtensionsConfigService implements IWorkspaceExtensionsConfigService {
+  _serviceBrand: undefined
+  onDidChangeExtensionsConfigs = Event.None
+  getExtensionsConfigs = unsupported
+  getRecommendations = unsupported
+  getUnwantedRecommendations = unsupported
+  toggleRecommendation = unsupported
+  toggleUnwantedRecommendation = unsupported
+}, InstantiationType.Eager)
+
 registerSingleton(IWorkbenchExtensionEnablementService, class WorkbenchExtensionEnablementService implements IWorkbenchExtensionEnablementService {
   _serviceBrand: undefined
   onEnablementChanged = Event.None
@@ -1074,25 +1175,14 @@ registerSingleton(IOutputService, class OutputService implements IOutputService 
 }, InstantiationType.Delayed)
 
 registerSingleton(IOutputChannelModelService, OutputChannelModelService, InstantiationType.Delayed)
-class SimpleExtensionResourceLoaderService extends AbstractExtensionResourceLoaderService {
-  // required for injection
-  // eslint-disable-next-line @typescript-eslint/no-useless-constructor
-  constructor (
-    @IFileService fileService: IFileService,
-    @IStorageService storageService: IStorageService,
-    @IProductService productService: IProductService,
-    @IEnvironmentService environmentService: IEnvironmentService,
-    @IConfigurationService configurationService: IConfigurationService
-  ) {
-    super(fileService, storageService, productService, environmentService, configurationService)
-  }
+registerSingleton(IExtensionResourceLoaderService, ExtensionResourceLoaderService, InstantiationType.Eager)
 
-  async readExtensionResource (uri: URI): Promise<string> {
-    const result = await this._fileService.readFile(uri)
-    return result.value.toString()
+registerSingleton(IBuiltinExtensionsScannerService, class BuiltinExtensionsScannerService implements IBuiltinExtensionsScannerService {
+  _serviceBrand: undefined
+  scanBuiltinExtensions () {
+    return Promise.resolve([])
   }
-}
-registerSingleton(IExtensionResourceLoaderService, SimpleExtensionResourceLoaderService, InstantiationType.Eager)
+}, InstantiationType.Eager)
 
 registerSingleton(IHoverService, class HoverService implements IHoverService {
   showAndFocusLastHover = unsupported
@@ -1122,6 +1212,22 @@ registerSingleton(IExplorerService, class ExplorerService implements IExplorerSe
 }, InstantiationType.Delayed)
 
 registerSingleton(IExtensionStorageService, ExtensionStorageService, InstantiationType.Delayed)
+
+registerSingleton(IGlobalExtensionEnablementService, class GlobalExtensionEnablementService implements IGlobalExtensionEnablementService {
+  _serviceBrand: undefined
+  onDidChangeEnablement = Event.None
+  getDisabledExtensions () {
+    return []
+  }
+
+  enableExtension () {
+    return Promise.resolve(true)
+  }
+
+  disableExtension () {
+    return Promise.resolve(true)
+  }
+}, InstantiationType.Delayed)
 
 registerSingleton(ILanguagePackService, class LanguagePackService implements ILanguagePackService {
   _serviceBrand: undefined
@@ -1689,6 +1795,15 @@ registerSingleton(IWebviewViewService, class WebviewService implements IWebviewV
   resolve = unsupported
 }, InstantiationType.Delayed)
 
+registerSingleton(ILocaleService, class LocaleService implements ILocaleService {
+  _serviceBrand: undefined
+  setLocale = unsupported
+
+  clearLocalePreference () {
+    return Promise.resolve()
+  }
+}, InstantiationType.Delayed)
+
 registerSingleton(IWebviewWorkbenchService, class WebviewWorkbenchService implements IWebviewWorkbenchService {
   _serviceBrand: undefined
   get iconManager () {
@@ -1926,6 +2041,39 @@ registerSingleton(IInteractiveDocumentService, class InteractiveDocumentService 
   willCreateInteractiveDocument = unsupported
   willRemoveInteractiveDocument = unsupported
 }, InstantiationType.Delayed)
+
+registerSingleton(IActiveLanguagePackService, class ActiveLanguagePackService implements IActiveLanguagePackService {
+  readonly _serviceBrand: undefined
+  getExtensionIdProvidingCurrentLocale () {
+    return Promise.resolve(undefined)
+  }
+}, InstantiationType.Eager)
+
+registerSingleton(IRemoteUserDataProfilesService, class RemoteUserDataProfilesService implements IRemoteUserDataProfilesService {
+  _serviceBrand: undefined
+  getRemoteProfiles = async () => []
+  getRemoteProfile = unsupported
+}, InstantiationType.Eager)
+
+registerSingleton(IExtensionBisectService, class ExtensionBisectService implements IExtensionBisectService {
+  _serviceBrand: undefined
+  isDisabledByBisect = () => false
+  isActive = false
+  disabledCount = 0
+  start = unsupported
+  next = unsupported
+  reset = unsupported
+}, InstantiationType.Eager)
+registerSingleton(IUserDataSyncAccountService, class UserDataSyncAccountService implements IUserDataSyncAccountService {
+  _serviceBrand: undefined
+
+  readonly onTokenFailed = Event.None
+  readonly account = undefined
+  readonly onDidChangeAccount = Event.None
+  updateAccount (): Promise<void> {
+    return Promise.resolve()
+  }
+}, InstantiationType.Eager)
 
 registerSingleton(IInlineChatService, class InlineChatService implements IInlineChatService {
   onDidChangeProviders = Event.None

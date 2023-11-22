@@ -13,8 +13,8 @@ import { IWorkbenchEnvironmentService } from 'vs/workbench/services/environment/
 import { parse } from 'vs/base/common/json'
 import { IFileService } from 'vs/platform/files/common/files'
 import { IInstantiationService } from 'vs/platform/instantiation/common/instantiation'
-import { IExtensionWithExtHostKind, SimpleExtensionService, getLocalExtHostExtensionService } from './service-override/extensions'
-import { registerExtensionFile } from './service-override/files'
+import { IExtensionWithExtHostKind, ExtensionServiceOverride, getLocalExtHostExtensionService } from './service-override/extensions'
+import { CustomSchemas, registerExtensionFile } from './service-override/files'
 import { setDefaultApi } from './api'
 import { getService } from './services'
 import { ExtensionManifestTranslator } from './tools/l10n'
@@ -79,7 +79,7 @@ interface ExtensionDelta {
   toRemove: IExtension[]
 }
 const deltaExtensions = throttle(async ({ toAdd, toRemove }: ExtensionDelta) => {
-  const extensionService = await getService(IExtensionService) as SimpleExtensionService
+  const extensionService = await getService(IExtensionService) as ExtensionServiceOverride
   await extensionService.deltaExtensions(toAdd, toRemove)
 }, (a, b) => ({ toAdd: [...a.toAdd, ...b.toAdd], toRemove: [...a.toRemove, ...b.toRemove] }), 0)
 
@@ -99,7 +99,7 @@ export function registerExtension (manifest: IExtensionManifest, extHostKind?: E
 export function registerExtension (manifest: IExtensionManifest, extHostKind?: ExtensionHostKind, { builtin = manifest.publisher === 'vscode', path = '/' }: RegisterExtensionParams = {}): RegisterExtensionResult {
   const disposableStore = new DisposableStore()
   const id = getExtensionId(manifest.publisher, manifest.name)
-  const location = URI.from({ scheme: 'extension', authority: id, path })
+  const location = URI.from({ scheme: CustomSchemas.extensionFile, authority: id, path })
 
   const addExtensionPromise = (async () => {
     const remoteAuthority = (await getService(IWorkbenchEnvironmentService)).remoteAuthority

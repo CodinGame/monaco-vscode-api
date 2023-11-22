@@ -4,7 +4,7 @@
     "version": "1.0.0",
     "activationEvents": ["*"],
     "engines": {
-      "vscode": "*"
+      "vscode": "^1.77.0"
     },
     "l10n": "./l10n",
     "main": "./main.js",

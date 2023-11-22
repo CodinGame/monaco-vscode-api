@@ -184,11 +184,14 @@ Additionally, 25 packages that include the vscode version of some services (with
     - Running terminals
     - Running vscode extensions (not web-compatible)
     - and probably more?
-  This library exports a `vscode-ext-host-server` bin to start the remote agent
+
+  Another package `@codingame/monaco-vscode-server` is published, which expose a `vscode-ext-host-server` bin to start the remote agent
 - **Accessibility**: `@codingame/monaco-vscode-accessibility-service-override`
   - Register accessibility helpers
 - **Workspace trust**: `@codingame/monaco-vscode-workspace-trust-service-override`
   - Ask user it they trust the current workspace, disable some features if not
+- **Extension Gallery**: `@codingame/monaco-vscode-extension-gallery-service-override`
+  - Support for the VSCode marketplace, it allows to install extensions from the marketplace.
 Usage:
 
 ```typescript

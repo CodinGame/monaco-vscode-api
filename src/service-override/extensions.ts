@@ -1,19 +1,19 @@
 import { IFileService } from 'vs/platform/files/common/files'
-import { ILifecycleService, LifecyclePhase } from 'vs/workbench/services/lifecycle/common/lifecycle'
+import { ILifecycleService } from 'vs/workbench/services/lifecycle/common/lifecycle'
 import { ExtensionHostExtensions, ExtensionHostStartup, IExtensionHost, IExtensionService, nullExtensionDescription, toExtensionDescription } from 'vs/workbench/services/extensions/common/extensions'
 import { ILogService, ILoggerService } from 'vs/platform/log/common/log'
 import { ExtensionIdentifier, ExtensionIdentifierMap, IExtension, IExtensionDescription, IRelaxedExtensionDescription } from 'vs/platform/extensions/common/extensions'
 import { IWorkspaceContextService, WorkbenchState } from 'vs/platform/workspace/common/workspace'
 import { IInstantiationService } from 'vs/platform/instantiation/common/instantiation'
 import { INotificationService } from 'vs/platform/notification/common/notification'
-import { AbstractExtensionService, DeltaExtensionsQueueItem, ResolvedExtensions } from 'vs/workbench/services/extensions/common/abstractExtensionService'
+import { DeltaExtensionsQueueItem } from 'vs/workbench/services/extensions/common/abstractExtensionService'
 import { ITelemetryService } from 'vs/platform/telemetry/common/telemetry'
 import { Event } from 'vs/base/common/event'
 import { IDialogService } from 'vs/platform/dialogs/common/dialogs'
-import { IRemoteAuthorityResolverService, ResolverResult } from 'vs/platform/remote/common/remoteAuthorityResolver'
+import { IRemoteAuthorityResolverService } from 'vs/platform/remote/common/remoteAuthorityResolver'
 import { IRemoteExtensionsScannerService } from 'vs/platform/remote/common/remoteExtensionsScanner'
 import { IRemoteAgentService } from 'vs/workbench/services/remote/common/remoteAgentService'
-import { IWorkbenchExtensionEnablementService, IWorkbenchExtensionManagementService } from 'vs/workbench/services/extensionManagement/common/extensionManagement'
+import { IWebExtensionsScannerService, IWorkbenchExtensionEnablementService, IWorkbenchExtensionManagementService } from 'vs/workbench/services/extensionManagement/common/extensionManagement'
 import { ExtensionManifestPropertiesService, IExtensionManifestPropertiesService } from 'vs/workbench/services/extensions/common/extensionManifestPropertiesService'
 import { IConfigurationService } from 'vs/platform/configuration/common/configuration'
 import { IProductService } from 'vs/platform/product/common/productService'
@@ -22,9 +22,7 @@ import { IEditorOverrideServices } from 'vs/editor/standalone/browser/standalone
 import { SyncDescriptor } from 'vs/platform/instantiation/common/descriptors'
 import { IUserDataInitializationService } from 'vs/workbench/services/userData/browser/userDataInit'
 import { ExtensionsProposedApi } from 'vs/workbench/services/extensions/common/extensionsProposedApi'
-import { BrowserExtensionHostFactory, BrowserExtensionHostKindPicker } from 'vs/workbench/services/extensions/browser/extensionService'
-import { FetchFileSystemProvider } from 'vs/workbench/services/extensions/browser/webWorkerFileSystemProvider'
-import { Schemas } from 'vs/base/common/network'
+import { BrowserExtensionHostFactory, BrowserExtensionHostKindPicker, ExtensionService } from 'vs/workbench/services/extensions/browser/extensionService'
 import { ExtensionHostKind, ExtensionRunningPreference } from 'vs/workbench/services/extensions/common/extensionHostKind'
 import { ExtensionRunningLocation, LocalProcessRunningLocation, LocalWebWorkerRunningLocation } from 'vs/workbench/services/extensions/common/extensionRunningLocation'
 import { ExtensionRunningLocationTracker } from 'vs/workbench/services/extensions/common/extensionRunningLocationTracker'
@@ -49,8 +47,12 @@ import { ILayoutService } from 'vs/platform/layout/browser/layoutService'
 import { IStorageService } from 'vs/platform/storage/common/storage'
 import { ILabelService } from 'vs/platform/label/common/label'
 import { ExtensionKind } from 'vs/platform/environment/common/environment'
+import { IUserDataProfileService } from 'vs/workbench/services/userDataProfile/common/userDataProfile'
+import { IWorkspaceTrustManagementService } from 'vs/platform/workspace/common/workspaceTrust'
+import { IRemoteExplorerService } from 'vs/workbench/services/remote/common/remoteExplorerService'
 import { ExtensionDescriptionRegistrySnapshot } from 'vs/workbench/services/extensions/common/extensionDescriptionRegistry'
 import { changeUrlDomain } from './tools/url'
+import { CustomSchemas } from './files'
 import { registerAssets } from '../assets'
 import { unsupported } from '../tools'
 import 'vs/workbench/api/browser/extensionHost.contribution'
@@ -360,7 +362,7 @@ export interface IExtensionWithExtHostKind extends IExtension {
   extHostKind?: ExtensionHostKind
 }
 
-export class SimpleExtensionService extends AbstractExtensionService implements IExtensionService {
+export class ExtensionServiceOverride extends ExtensionService implements IExtensionService {
   constructor (
     workerConfig: WorkerConfig | undefined,
     @IInstantiationService instantiationService: IInstantiationService,
@@ -374,19 +376,23 @@ export class SimpleExtensionService extends AbstractExtensionService implements 
     @IWorkspaceContextService contextService: IWorkspaceContextService,
     @IConfigurationService configurationService: IConfigurationService,
     @IExtensionManifestPropertiesService extensionManifestPropertiesService: IExtensionManifestPropertiesService,
+    @IWebExtensionsScannerService webExtensionsScannerService: IWebExtensionsScannerService,
     @ILogService logService: ILogService,
     @IRemoteAgentService remoteAgentService: IRemoteAgentService,
     @IRemoteExtensionsScannerService remoteExtensionsScannerService: IRemoteExtensionsScannerService,
     @ILifecycleService lifecycleService: ILifecycleService,
     @IRemoteAuthorityResolverService remoteAuthorityResolverService: IRemoteAuthorityResolverService,
     @IUserDataInitializationService userDataInitializationService: IUserDataInitializationService,
+    @IUserDataProfileService userDataProfileService: IUserDataProfileService,
+    @IWorkspaceTrustManagementService workspaceTrustManagementService: IWorkspaceTrustManagementService,
+    @IRemoteExplorerService remoteExplorerService: IRemoteExplorerService,
     @IDialogService dialogService: IDialogService
   ) {
     const extensionsProposedApi = instantiationService.createInstance(ExtensionsProposedApi)
     const extensionHostFactory = new LocalBrowserExtensionHostFactory(
       workerConfig,
       extensionsProposedApi,
-      async () => [],
+      async () => this._scanWebExtensions(),
       () => this._getExtensionRegistrySnapshotWhenReady(),
       instantiationService,
       remoteAgentService,
@@ -409,27 +415,18 @@ export class SimpleExtensionService extends AbstractExtensionService implements 
       contextService,
       configurationService,
       extensionManifestPropertiesService,
+      webExtensionsScannerService,
       logService,
       remoteAgentService,
       remoteExtensionsScannerService,
       lifecycleService,
       remoteAuthorityResolverService,
+      userDataInitializationService,
+      userDataProfileService,
+      workspaceTrustManagementService,
+      remoteExplorerService,
       dialogService
     )
-
-    // Initialize installed extensions first and do it only after workbench is ready
-    void lifecycleService.when(LifecyclePhase.Ready).then(async () => {
-      await userDataInitializationService.initializeInstalledExtensions(instantiationService)
-      return this._initialize()
-    })
-
-    this._initFetchFileSystem()
-  }
-
-  private _initFetchFileSystem (): void {
-    const provider = new FetchFileSystemProvider()
-    this._register(this._fileService.registerProvider(Schemas.http, provider))
-    this._register(this._fileService.registerProvider(Schemas.https, provider))
   }
 
   public async deltaExtensions (toAdd: IExtensionWithExtHostKind[], toRemove: IExtension[]): Promise<void> {
@@ -446,21 +443,11 @@ export class SimpleExtensionService extends AbstractExtensionService implements 
     await this._handleDeltaExtensions(new DeltaExtensionsQueueItem(toAdd, toRemove))
   }
 
-  protected override async _resolveExtensions (): Promise<ResolvedExtensions> {
-    return new ResolvedExtensions([], [], false, false)
-  }
-
   protected override async _scanSingleExtension (extension: IExtension): Promise<Readonly<IRelaxedExtensionDescription> | null> {
-    return toExtensionDescription(extension)
-  }
-
-  protected _onExtensionHostExit (): void {
-    // Dispose everything associated with the extension host
-    this._doStopExtensionHosts()
-  }
-
-  protected _resolveAuthority (remoteAuthority: string): Promise<ResolverResult> {
-    return this._resolveAuthorityOnExtensionHosts(ExtensionHostKind.LocalWebWorker, remoteAuthority)
+    if (extension.location.scheme === CustomSchemas.extensionFile) {
+      return toExtensionDescription(extension)
+    }
+    return super._scanSingleExtension(extension)
   }
 }
 
@@ -481,7 +468,7 @@ export default function getServiceOverride (workerConfig?: WorkerConfig, _iframe
     : undefined
 
   return {
-    [IExtensionService.toString()]: new SyncDescriptor(SimpleExtensionService, [_workerConfig], false),
+    [IExtensionService.toString()]: new SyncDescriptor(ExtensionServiceOverride, [_workerConfig], false),
     [IExtensionManifestPropertiesService.toString()]: new SyncDescriptor(ExtensionManifestPropertiesService, [], true)
   }
 }

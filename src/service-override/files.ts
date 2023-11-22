@@ -516,12 +516,20 @@ const userDataFileSystemProvider = new InMemoryFileSystemProvider()
 // The `mkdirp` logic is inside the service, and the provider will just fail if asked to write a file in a non-existent directory
 void userDataFileSystemProvider.mkdir(URI.from({ scheme: Schemas.vscodeUserData, path: '/User/' }))
 
+export namespace CustomSchemas {
+  /**
+   * A schema that is used for models that exist in memory
+   * only and that have no correspondence on a server or such.
+   */
+  export const extensionFile = 'extension-file'
+}
+
 const providers: Record<string, IFileSystemProvider> = {
-  extension: extensionFileSystemProvider,
+  [CustomSchemas.extensionFile]: extensionFileSystemProvider,
   [logsPath.scheme]: new InMemoryFileSystemProvider(),
   [Schemas.vscodeUserData]: userDataFileSystemProvider,
   [Schemas.tmp]: new InMemoryFileSystemProvider(),
-  file: fileSystemProvider
+  [Schemas.file]: fileSystemProvider
 }
 
 class MemoryFileService extends FileService {
