@@ -1001,7 +1001,7 @@ index 6e6f8845da5..8e51cff49ca 100644
  	// that parsing https URIs might end up decoding escape characters
  	// and result in an unintended transformation
 -	return /^(file|vscode-remote):/i.test(uri);
-+	return /^(file|extension|vscode-remote):/i.test(uri);
++	return /^(file|extension-file|vscode-remote):/i.test(uri);
  }
  
  const nativeFetch = fetch.bind(self);
