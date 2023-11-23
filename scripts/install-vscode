@@ -97,8 +97,8 @@ echo $vscodeRef > $version_info
 
 echo "Building vscode..."
 NODE_OPTIONS=--max-old-space-size=8192 npx tsc --declaration --importHelpers --module es2020 --preserveConstEnums --outDir "$output_directory"
-# Copy files that are already built
-find ./ \( -name '*.js' -o -name '*.d.ts' -o -name '*.css' -o -name '*.mp3' -o -name '*.svg' -o -name '*.html' \) -exec rsync -R \{\} "$output_directory/src" \;
+# Copy files that are already built and assets
+find ./ \( -name '*.js' -o -name '*.d.ts' -o -name '*.css' -o -name '*.mp3' -o -name '*.svg' -o -name '*.png' -o -name '*.html' \) -exec rsync -R \{\} "$output_directory/src" \;
 
 echo "Downloading vscode-loc"
 rm -rf $loc_output_directory

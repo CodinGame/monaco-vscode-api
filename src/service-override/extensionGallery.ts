@@ -27,6 +27,12 @@ import { ExtensionEnablementService } from 'vs/workbench/services/extensionManag
 import { IInstantiationService, ILabelService, IRemoteAgentService } from '../services'
 import 'vs/workbench/contrib/extensions/browser/extensions.contribution'
 import 'vs/workbench/contrib/extensions/browser/extensions.web.contribution'
+import { registerAssets } from '../assets'
+
+// plugin-import-meta-asset only allows relative paths
+registerAssets({
+  'vs/workbench/services/extensionManagement/common/media/defaultIcon.png': new URL('../../vscode/src/vs/workbench/services/extensionManagement/common/media/defaultIcon.png', import.meta.url).toString()
+})
 
 class ExtensionManagementServerServiceOverride extends ExtensionManagementServerService {
   constructor (

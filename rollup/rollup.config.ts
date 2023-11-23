@@ -753,6 +753,15 @@ export default (args: Record<string, string>): rollup.RollupOptions[] => {
       // assets are externals and this plugin is not able to ignore external assets
       exclude: ['**/service-override/textmate.js', '**/service-override/languageDetectionWorker.js']
     }), {
+      name: 'resolve-asset-url',
+      resolveFileUrl (options) {
+        let relativePath = options.relativePath
+        if (!relativePath.startsWith('.')) {
+          relativePath = `./${options.relativePath}`
+        }
+        return `'${relativePath}'`
+      }
+    }, {
       name: 'improve-treeshaking',
       transform (code) {
         const ast = recast.parse(code, {
