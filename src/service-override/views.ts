@@ -87,6 +87,8 @@ import { ConfirmResult } from 'vs/platform/dialogs/common/dialogs'
 import { ILayoutService } from 'vs/platform/layout/browser/layoutService'
 import { IBannerService } from 'vs/workbench/services/banner/browser/bannerService'
 import { ITitleService } from 'vs/workbench/services/title/common/titleService'
+import { IProgressService } from 'vs/platform/progress/common/progress'
+import { ProgressService } from 'vs/workbench/services/progress/browser/progressService'
 import { CancellationToken } from 'vs/base/common/cancellation'
 import { DomScrollableElement } from 'vs/base/browser/ui/scrollbar/scrollableElement'
 import { assertAllDefined, assertIsDefined } from 'vs/base/common/types'
@@ -711,7 +713,8 @@ export default function getServiceOverride (openEditorFallback?: OpenEditor, _we
     [ICustomEditorService.toString()]: new SyncDescriptor(CustomEditorService, [], true),
     [IWebviewService.toString()]: new SyncDescriptor(WebviewService, [], true),
     [IWebviewViewService.toString()]: new SyncDescriptor(WebviewViewService, [], true),
-    [IWebviewWorkbenchService.toString()]: new SyncDescriptor(WebviewEditorService, [], true)
+    [IWebviewWorkbenchService.toString()]: new SyncDescriptor(WebviewEditorService, [], true),
+    [IProgressService.toString()]: new SyncDescriptor(ProgressService, [], true)
   }
 }
 
