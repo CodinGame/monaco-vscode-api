@@ -599,6 +599,22 @@ index e22cfe1b45e..b48c1babf86 100644
  export class DiskFileSystemProvider extends AbstractDiskFileSystemProvider implements
  	IFileSystemProviderWithFileReadWriteCapability,
  	IFileSystemProviderWithOpenReadWriteCloseCapability,
+diff --git a/src/vs/platform/instantiation/common/instantiationService.ts b/src/vs/platform/instantiation/common/instantiationService.ts
+index f0db479e3c1..b8d93aae3f2 100644
+--- a/src/vs/platform/instantiation/common/instantiationService.ts
++++ b/src/vs/platform/instantiation/common/instantiationService.ts
+@@ -195,8 +195,10 @@ export class InstantiationService implements IInstantiationService {
+ 
+ 				if (instanceOrDesc instanceof SyncDescriptor) {
+ 					const d = { id: dependency.id, desc: instanceOrDesc, _trace: item._trace.branch(dependency.id, true) };
++					if (!graph.lookup(d)) {
++						stack.push(d);
++					}
+ 					graph.insertEdge(item, d);
+-					stack.push(d);
+ 				}
+ 			}
+ 		}
 diff --git a/src/vs/platform/native/electron-main/nativeHostMainService.ts b/src/vs/platform/native/electron-main/nativeHostMainService.ts
 index 053f3822d27..46fd5932bc5 100644
 --- a/src/vs/platform/native/electron-main/nativeHostMainService.ts
@@ -977,7 +993,7 @@ index b83a462131d..5555f431ba0 100644
  		performance.mark('code/extHost/didInitAPI');
  
 diff --git a/src/vs/workbench/api/worker/extensionHostWorker.ts b/src/vs/workbench/api/worker/extensionHostWorker.ts
-index 6e6f8845da5..8e51cff49ca 100644
+index 6e6f8845da5..f4824f99f9f 100644
 --- a/src/vs/workbench/api/worker/extensionHostWorker.ts
 +++ b/src/vs/workbench/api/worker/extensionHostWorker.ts
 @@ -15,7 +15,6 @@ import * as performance from 'vs/base/common/performance';
