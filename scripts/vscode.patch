@@ -1911,6 +1911,66 @@ index a466cc1f3a1..09f6a40eb26 100644
  
  	declare readonly _serviceBrand: undefined;
  
+diff --git a/src/vs/workbench/services/storage/browser/storageService.ts b/src/vs/workbench/services/storage/browser/storageService.ts
+index 46b202086ae..79042d7ca93 100644
+--- a/src/vs/workbench/services/storage/browser/storageService.ts
++++ b/src/vs/workbench/services/storage/browser/storageService.ts
+@@ -33,6 +33,7 @@ export class BrowserStorageService extends AbstractStorageService {
+ 
+ 	private workspaceStorage: IStorage | undefined;
+ 	private workspaceStorageDatabase: IIndexedDBStorageDatabase | undefined;
++	private readonly workspaceStorageDisposables = this._register(new DisposableStore());
+ 
+ 	get hasPendingUpdate(): boolean {
+ 		return Boolean(
+@@ -43,7 +44,7 @@ export class BrowserStorageService extends AbstractStorageService {
+ 	}
+ 
+ 	constructor(
+-		private readonly workspace: IAnyWorkspaceIdentifier,
++		private workspace: IAnyWorkspaceIdentifier,
+ 		private readonly userDataProfileService: IUserDataProfileService,
+ 		@ILogService private readonly logService: ILogService,
+ 	) {
+@@ -117,12 +118,15 @@ export class BrowserStorageService extends AbstractStorageService {
+ 	}
+ 
+ 	private async createWorkspaceStorage(): Promise<void> {
++		// First clear any previously associated disposables
++		this.workspaceStorageDisposables.clear();
++
+ 		const workspaceStorageIndexedDB = await IndexedDBStorageDatabase.createWorkspaceStorage(this.workspace.id, this.logService);
+ 
+-		this.workspaceStorageDatabase = this._register(workspaceStorageIndexedDB);
+-		this.workspaceStorage = this._register(new Storage(this.workspaceStorageDatabase));
++		this.workspaceStorageDatabase = this.workspaceStorageDisposables.add(workspaceStorageIndexedDB);
++		this.workspaceStorage = this.workspaceStorageDisposables.add(new Storage(this.workspaceStorageDatabase));
+ 
+-		this._register(this.workspaceStorage.onDidChangeStorage(e => this.emitDidChangeValue(StorageScope.WORKSPACE, e)));
++		this.workspaceStorageDisposables.add(this.workspaceStorage.onDidChangeStorage(e => this.emitDidChangeValue(StorageScope.WORKSPACE, e)));
+ 
+ 		await this.workspaceStorage.init();
+ 
+@@ -182,7 +186,18 @@ export class BrowserStorageService extends AbstractStorageService {
+ 	}
+ 
+ 	protected async switchToWorkspace(toWorkspace: IAnyWorkspaceIdentifier, preserveData: boolean): Promise<void> {
+-		throw new Error('Migrating storage is currently unsupported in Web');
++		const oldWorkspaceStorage = assertIsDefined(this.workspaceStorage);
++		const oldItems = preserveData ? oldWorkspaceStorage.items : new Map();
++
++		// Close old workpace storage
++		await oldWorkspaceStorage.close();
++		this.workspace = toWorkspace;
++
++		// Create new workspace storage & init
++		await this.createWorkspaceStorage();
++
++		// Handle data switch and eventing
++		this.switchData(oldItems, assertIsDefined(this.workspaceStorage), StorageScope.WORKSPACE);
+ 	}
+ 
+ 	protected override shouldFlushWhenIdle(): boolean {
 diff --git a/src/vs/workbench/services/textMate/browser/backgroundTokenization/textMateWorkerTokenizerController.ts b/src/vs/workbench/services/textMate/browser/backgroundTokenization/textMateWorkerTokenizerController.ts
 index 850b58e1e6c..2eb835fa2b6 100644
 --- a/src/vs/workbench/services/textMate/browser/backgroundTokenization/textMateWorkerTokenizerController.ts
