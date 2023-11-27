@@ -380,46 +380,66 @@ index cf9154ce7d6..5c954f75f8e 100644
  	public static validateOptions(options: IEditorOptions): ValidatedEditorOptions {
  		const result = new ValidatedEditorOptions();
 diff --git a/src/vs/editor/contrib/find/browser/findController.ts b/src/vs/editor/contrib/find/browser/findController.ts
-index ce1cdb9084e..0836c1d3f98 100644
+index ce1cdb9084e..7083bcde458 100644
 --- a/src/vs/editor/contrib/find/browser/findController.ts
 +++ b/src/vs/editor/contrib/find/browser/findController.ts
-@@ -259,7 +259,7 @@ export class CommonFindController extends Disposable implements IEditorContribut
+@@ -30,6 +30,7 @@ import { INotificationService, Severity } from 'vs/platform/notification/common/
+ import { IQuickInputService } from 'vs/platform/quickinput/common/quickInput';
+ import { IStorageService, StorageScope, StorageTarget } from 'vs/platform/storage/common/storage';
+ import { IThemeService, themeColorFromId } from 'vs/platform/theme/common/themeService';
++import { Selection } from 'vs/editor/common/core/selection';
+ 
+ const SEARCH_STRING_MAX_LENGTH = 524288;
+ 
+@@ -258,8 +259,8 @@ export class CommonFindController extends Disposable implements IEditorContribut
+ 			this._state.change({ searchScope: null }, true);
  		} else {
  			if (this._editor.hasModel()) {
- 				const selections = this._editor.getSelections();
+-				const selections = this._editor.getSelections();
 -				selections.map(selection => {
-+				selections.forEach(selection => {
++				let selections = this._editor.getSelections();
++				selections = selections.map(selection => {
  					if (selection.endColumn === 1 && selection.endLineNumber > selection.startLineNumber) {
  						selection = selection.setEndPosition(
  							selection.endLineNumber - 1,
-@@ -270,7 +270,7 @@ export class CommonFindController extends Disposable implements IEditorContribut
+@@ -270,7 +271,7 @@ export class CommonFindController extends Disposable implements IEditorContribut
  						return selection;
  					}
  					return null;
 -				}).filter(element => !!element);
-+				});
++				}).filter((element): element is Selection => !!element);
  
  				if (selections.length) {
  					this._state.change({ searchScope: selections }, true);
 diff --git a/src/vs/editor/contrib/find/browser/findWidget.ts b/src/vs/editor/contrib/find/browser/findWidget.ts
-index a7dd879a53e..b9960ceb5a1 100644
+index a7dd879a53e..9bf73d43298 100644
 --- a/src/vs/editor/contrib/find/browser/findWidget.ts
 +++ b/src/vs/editor/contrib/find/browser/findWidget.ts
-@@ -1052,7 +1052,7 @@ export class FindWidget extends Widget implements IOverlayWidget, IVerticalSashL
+@@ -43,6 +43,7 @@ import { ThemeIcon } from 'vs/base/common/themables';
+ import { isHighContrast } from 'vs/platform/theme/common/theme';
+ import { assertIsDefined } from 'vs/base/common/types';
+ import { defaultInputBoxStyles, defaultToggleStyles } from 'vs/platform/theme/browser/defaultStyles';
++import { Selection } from 'vs/editor/common/core/selection';
+ 
+ const findSelectionIcon = registerIcon('find-selection', Codicon.selection, nls.localize('findSelectionIcon', 'Icon for \'Find in Selection\' in the editor find widget.'));
+ const findCollapsedIcon = registerIcon('find-collapsed', Codicon.chevronRight, nls.localize('findCollapsedIcon', 'Icon to indicate that the editor find widget is collapsed.'));
+@@ -1051,8 +1052,8 @@ export class FindWidget extends Widget implements IOverlayWidget, IVerticalSashL
+ 		this._register(this._toggleSelectionFind.onChange(() => {
  			if (this._toggleSelectionFind.checked) {
  				if (this._codeEditor.hasModel()) {
- 					const selections = this._codeEditor.getSelections();
+-					const selections = this._codeEditor.getSelections();
 -					selections.map(selection => {
-+					selections.forEach(selection => {
++					let selections = this._codeEditor.getSelections();
++					selections = selections.map(selection => {
  						if (selection.endColumn === 1 && selection.endLineNumber > selection.startLineNumber) {
  							selection = selection.setEndPosition(selection.endLineNumber - 1, this._codeEditor.getModel()!.getLineMaxColumn(selection.endLineNumber - 1));
  						}
-@@ -1060,7 +1060,7 @@ export class FindWidget extends Widget implements IOverlayWidget, IVerticalSashL
+@@ -1060,7 +1061,7 @@ export class FindWidget extends Widget implements IOverlayWidget, IVerticalSashL
  							return selection;
  						}
  						return null;
 -					}).filter(element => !!element);
-+					});
++					}).filter((element): element is Selection => !!element);
  
  					if (selections.length) {
  						this._state.change({ searchScope: selections as Range[] }, true);
