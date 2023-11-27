@@ -379,6 +379,50 @@ index cf9154ce7d6..5c954f75f8e 100644
  
  	public static validateOptions(options: IEditorOptions): ValidatedEditorOptions {
  		const result = new ValidatedEditorOptions();
+diff --git a/src/vs/editor/contrib/find/browser/findController.ts b/src/vs/editor/contrib/find/browser/findController.ts
+index ce1cdb9084e..0836c1d3f98 100644
+--- a/src/vs/editor/contrib/find/browser/findController.ts
++++ b/src/vs/editor/contrib/find/browser/findController.ts
+@@ -259,7 +259,7 @@ export class CommonFindController extends Disposable implements IEditorContribut
+ 		} else {
+ 			if (this._editor.hasModel()) {
+ 				const selections = this._editor.getSelections();
+-				selections.map(selection => {
++				selections.forEach(selection => {
+ 					if (selection.endColumn === 1 && selection.endLineNumber > selection.startLineNumber) {
+ 						selection = selection.setEndPosition(
+ 							selection.endLineNumber - 1,
+@@ -270,7 +270,7 @@ export class CommonFindController extends Disposable implements IEditorContribut
+ 						return selection;
+ 					}
+ 					return null;
+-				}).filter(element => !!element);
++				});
+ 
+ 				if (selections.length) {
+ 					this._state.change({ searchScope: selections }, true);
+diff --git a/src/vs/editor/contrib/find/browser/findWidget.ts b/src/vs/editor/contrib/find/browser/findWidget.ts
+index a7dd879a53e..b9960ceb5a1 100644
+--- a/src/vs/editor/contrib/find/browser/findWidget.ts
++++ b/src/vs/editor/contrib/find/browser/findWidget.ts
+@@ -1052,7 +1052,7 @@ export class FindWidget extends Widget implements IOverlayWidget, IVerticalSashL
+ 			if (this._toggleSelectionFind.checked) {
+ 				if (this._codeEditor.hasModel()) {
+ 					const selections = this._codeEditor.getSelections();
+-					selections.map(selection => {
++					selections.forEach(selection => {
+ 						if (selection.endColumn === 1 && selection.endLineNumber > selection.startLineNumber) {
+ 							selection = selection.setEndPosition(selection.endLineNumber - 1, this._codeEditor.getModel()!.getLineMaxColumn(selection.endLineNumber - 1));
+ 						}
+@@ -1060,7 +1060,7 @@ export class FindWidget extends Widget implements IOverlayWidget, IVerticalSashL
+ 							return selection;
+ 						}
+ 						return null;
+-					}).filter(element => !!element);
++					});
+ 
+ 					if (selections.length) {
+ 						this._state.change({ searchScope: selections as Range[] }, true);
 diff --git a/src/vs/editor/editor.main.ts b/src/vs/editor/editor.main.ts
 index 23d547570e9..31dfb4fd8d4 100644
 --- a/src/vs/editor/editor.main.ts
@@ -1268,6 +1312,19 @@ index afa384aa88c..bc631450591 100644
  					? compositeSwitcherBar.getHeight(currentItemsLength + index)
  					: compositeSwitcherBar.getWidth(currentItemsLength + index)
  				));
+diff --git a/src/vs/workbench/browser/parts/editor/editorGroupWatermark.ts b/src/vs/workbench/browser/parts/editor/editorGroupWatermark.ts
+index 67d993e2f04..0fe14249c66 100644
+--- a/src/vs/workbench/browser/parts/editor/editorGroupWatermark.ts
++++ b/src/vs/workbench/browser/parts/editor/editorGroupWatermark.ts
+@@ -140,7 +140,7 @@ export class EditorGroupWatermark extends Disposable {
+ 
+ 		const update = () => {
+ 			clearNode(box);
+-			selected.map(entry => {
++			selected.forEach(entry => {
+ 				const keys = this.keybindingService.lookupKeybinding(entry.id);
+ 				if (!keys) {
+ 					return;
 diff --git a/src/vs/workbench/browser/parts/views/viewPaneContainer.ts b/src/vs/workbench/browser/parts/views/viewPaneContainer.ts
 index f23c48b7db1..3a638425a2d 100644
 --- a/src/vs/workbench/browser/parts/views/viewPaneContainer.ts
@@ -1321,6 +1378,19 @@ index 295c3fd59cb..d3aa77446b4 100644
  
  				if (!data.icon.complete) {
  					data.icon.style.visibility = 'hidden';
+diff --git a/src/vs/workbench/contrib/extensions/browser/extensions.contribution.ts b/src/vs/workbench/contrib/extensions/browser/extensions.contribution.ts
+index ff33245ded3..46c454d68a6 100644
+--- a/src/vs/workbench/contrib/extensions/browser/extensions.contribution.ts
++++ b/src/vs/workbench/contrib/extensions/browser/extensions.contribution.ts
+@@ -977,7 +977,7 @@ class ExtensionsContributions extends Disposable implements IWorkbenchContributi
+ 			order: 1,
+ 		});
+ 
+-		EXTENSION_CATEGORIES.map((category, index) => {
++		EXTENSION_CATEGORIES.forEach((category, index) => {
+ 			this.registerExtensionAction({
+ 				id: `extensions.actions.searchByCategory.${category}`,
+ 				title: category,
 diff --git a/src/vs/workbench/contrib/extensions/browser/extensionsWorkbenchService.ts b/src/vs/workbench/contrib/extensions/browser/extensionsWorkbenchService.ts
 index 154696503e3..b1bb13e65ee 100644
 --- a/src/vs/workbench/contrib/extensions/browser/extensionsWorkbenchService.ts
@@ -1343,6 +1413,19 @@ index 154696503e3..b1bb13e65ee 100644
  	}
  
  	get repository(): string | undefined {
+diff --git a/src/vs/workbench/contrib/search/browser/searchModel.ts b/src/vs/workbench/contrib/search/browser/searchModel.ts
+index f8261d8871b..ee73a4a9591 100644
+--- a/src/vs/workbench/contrib/search/browser/searchModel.ts
++++ b/src/vs/workbench/contrib/search/browser/searchModel.ts
+@@ -2356,7 +2356,7 @@ function textSearchResultToMatches(rawMatch: ITextSearchMatch, fileMatch: FileMa
+ 
+ export function textSearchMatchesToNotebookMatches(textSearchMatches: ITextSearchMatch[], cell: CellMatch): MatchInNotebook[] {
+ 	const notebookMatches: MatchInNotebook[] = [];
+-	textSearchMatches.map((textSearchMatch) => {
++	textSearchMatches.forEach((textSearchMatch) => {
+ 		const previewLines = textSearchMatch.preview.text.split('\n');
+ 		if (Array.isArray(textSearchMatch.ranges)) {
+ 			textSearchMatch.ranges.forEach((r, i) => {
 diff --git a/src/vs/workbench/contrib/terminal/browser/terminalInstance.ts b/src/vs/workbench/contrib/terminal/browser/terminalInstance.ts
 index e6ae569ad9d..3b2ac782391 100644
 --- a/src/vs/workbench/contrib/terminal/browser/terminalInstance.ts
