@@ -41,6 +41,7 @@ import EditorWorker from 'monaco-editor/esm/vs/editor/editor.worker.js?worker'
 import TextMateWorker from '@codingame/monaco-vscode-textmate-service-override/worker?worker'
 import OutputLinkComputerWorker from '@codingame/monaco-vscode-output-service-override/worker?worker'
 import { createIndexedDBProviders, initFile } from '@codingame/monaco-vscode-files-service-override'
+import getWorkingCopyServiceOverride from '@codingame/monaco-vscode-working-copy-service-override'
 import ExtensionHostWorker from 'vscode/workers/extensionHost.worker?worker'
 import LanguageDetectionWorker from '@codingame/monaco-vscode-language-detection-worker-service-override/worker?worker'
 import * as monaco from 'monaco-editor'
@@ -134,7 +135,8 @@ await initializeMonacoService({
   ...getRemoteAgentServiceOverride(connectionToken),
   ...getLifecycleServiceOverride(),
   ...getEnvironmentServiceOverride(),
-  ...getWorkspaceTrustOverride()
+  ...getWorkspaceTrustOverride(),
+  ...getWorkingCopyServiceOverride()
 }, document.body, {
   remoteAuthority,
   enableWorkspaceTrust: true,
