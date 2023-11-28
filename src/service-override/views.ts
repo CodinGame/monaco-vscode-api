@@ -43,7 +43,7 @@ import 'vs/workbench/contrib/languageDetection/browser/languageDetection.contrib
 import 'vs/workbench/contrib/files/browser/files.contribution.js?include=registerConfiguration'
 import 'vs/workbench/contrib/files/browser/files.contribution.js?exclude=registerConfiguration'
 import { Codicon } from 'vs/base/common/codicons'
-import { IEditorGroupsService } from 'vs/workbench/services/editor/common/editorGroupsService'
+import { GroupOrientation, GroupsOrder, IEditorGroupsService } from 'vs/workbench/services/editor/common/editorGroupsService'
 import { IEditorDropService } from 'vs/workbench/services/editor/browser/editorDropService'
 import { IEditorDropTargetDelegate } from 'vs/workbench/browser/parts/editor/editorDropTarget'
 import { IEditorService } from 'vs/workbench/services/editor/common/editorService'
@@ -54,7 +54,7 @@ import { IContextViewService } from 'vs/platform/contextview/browser/contextView
 import { ContextViewService } from 'vs/platform/contextview/browser/contextViewService'
 import { ICodeEditorService } from 'vs/editor/browser/services/codeEditorService'
 import { EditorInput, IEditorCloseHandler } from 'vs/workbench/common/editor/editorInput'
-import { EditorExtensions, EditorInputCapabilities, IEditorFactoryRegistry, IEditorOpenContext, IEditorSerializer, Verbosity } from 'vs/workbench/common/editor'
+import { EditorExtensions, EditorInputCapabilities, GroupIdentifier, IEditorFactoryRegistry, IEditorOpenContext, IEditorSerializer, IUntypedEditorInput, Verbosity, isResourceEditorInput, pathsToEditors } from 'vs/workbench/common/editor'
 import { IEditorOptions } from 'vs/platform/editor/common/editor'
 import { IResolvedTextEditorModel } from 'vs/editor/common/services/resolverService'
 import { ITextEditorService, TextEditorService } from 'vs/workbench/services/textfile/common/textEditorService'
@@ -81,9 +81,10 @@ import { IWorkbenchLayoutService, Parts, Position, positionToString } from 'vs/w
 import { EditorPaneDescriptor, IEditorPaneRegistry } from 'vs/workbench/browser/editor'
 import { EditorPane } from 'vs/workbench/browser/parts/editor/editorPane'
 import { ITelemetryService } from 'vs/platform/telemetry/common/telemetry'
-import { IStorageService } from 'vs/platform/storage/common/storage'
+import { IStorageService, StorageScope } from 'vs/platform/storage/common/storage'
 import { IThemeService } from 'vs/platform/theme/common/themeService'
 import { ConfirmResult } from 'vs/platform/dialogs/common/dialogs'
+import { IFileService } from 'vs/platform/files/common/files'
 import { ILayoutService } from 'vs/platform/layout/browser/layoutService'
 import { IBannerService } from 'vs/workbench/services/banner/browser/bannerService'
 import { ITitleService } from 'vs/workbench/services/title/common/titleService'
@@ -95,6 +96,20 @@ import { assertAllDefined, assertIsDefined } from 'vs/base/common/types'
 import { ScrollbarVisibility } from 'vs/base/common/scrollable'
 import { AbstractResourceEditorInput } from 'vs/workbench/common/editor/resourceEditorInput'
 import { AbstractTextResourceEditorInput } from 'vs/workbench/common/editor/textResourceEditorInput'
+import { ILifecycleService, StartupKind } from 'vs/workbench/services/lifecycle/common/lifecycle'
+import { AuxiliaryBarPart } from 'vs/workbench/browser/parts/auxiliarybar/auxiliaryBarPart'
+import { ILogService } from 'vs/platform/log/common/log'
+import { mark } from 'vs/base/common/performance'
+import { IExtensionService } from 'vs/workbench/services/extensions/common/extensions'
+import { Promises } from 'vs/base/common/async'
+import { isWeb } from 'vs/base/common/platform'
+import { IEnvironmentService } from 'vs/platform/environment/common/environment'
+import { IEditorToOpen, IInitialEditorsState, ILayoutInitializationState } from 'vs/workbench/browser/layout'
+import { IBrowserWorkbenchEnvironmentService } from 'vs/workbench/services/environment/browser/environmentService'
+import { IWorkspaceContextService, WorkbenchState, isTemporaryWorkspace } from 'vs/platform/workspace/common/workspace'
+import { IConfigurationService } from 'vs/platform/configuration/common/configuration'
+import { coalesce } from 'vs/base/common/arrays'
+import { IWorkingCopyBackupService } from 'vs/workbench/services/workingCopy/common/workingCopyBackup'
 import { MonacoDelegateEditorGroupsService, MonacoEditorService, OpenEditor } from './tools/editor'
 import getBulkEditServiceOverride from './bulkEdit'
 import getLayoutServiceOverride, { LayoutService } from './layout'
@@ -628,10 +643,23 @@ registerAssets({
   'vs/workbench/contrib/webview/browser/pre/fake.html': () => changeUrlDomain(new URL('../../vscode/src/vs/workbench/contrib/webview/browser/pre/fake.html', import.meta.url).href, webviewIframeAlternateDomains)
 })
 
-let restoreEditorView = false
+type InitializationStateTransformer = (state: ILayoutInitializationState) => ILayoutInitializationState
+let transformInitializationState: InitializationStateTransformer = state => state
+
 onRenderWorkbench(async (accessor) => {
   const paneCompositePartService = accessor.get(IPaneCompositePartService)
   const viewDescriptorService = accessor.get(IViewDescriptorService)
+  const lifecycleService = accessor.get(ILifecycleService)
+  const storageService = accessor.get(IStorageService)
+  const editorGroupService = accessor.get(IEditorGroupsService)
+  const editorService = accessor.get(IEditorService)
+  const logService = accessor.get(ILogService)
+  const extensionService = accessor.get(IExtensionService)
+  const environmentService = accessor.get(IEnvironmentService) as IBrowserWorkbenchEnvironmentService
+  const contextService = accessor.get(IWorkspaceContextService)
+  const configurationService = accessor.get(IConfigurationService)
+  const fileService = accessor.get(IFileService)
+  const workingCopyBackupService = accessor.get(IWorkingCopyBackupService)
 
   // force service instantiation
   const withStatusBar = accessor.get(IStatusbarService) instanceof Part
@@ -639,6 +667,185 @@ onRenderWorkbench(async (accessor) => {
   const withTitlePart = accessor.get(ITitleService) instanceof Part
 
   const layoutService = accessor.get(ILayoutService) as LayoutService
+
+  function getInitialEditorsState (): IInitialEditorsState | undefined {
+    // Check for editors / editor layout from `defaultLayout` options first
+    const defaultLayout = environmentService.options?.defaultLayout
+    if (((defaultLayout?.editors != null && defaultLayout.editors.length > 0) || defaultLayout?.layout?.editors != null) && ((defaultLayout.force ?? false) || storageService.isNew(StorageScope.WORKSPACE))) {
+      return {
+        layout: defaultLayout.layout?.editors,
+        filesToOpenOrCreate: defaultLayout.editors?.map(editor => {
+          return {
+            viewColumn: editor.viewColumn,
+            fileUri: URI.revive(editor.uri),
+            openOnlyIfExists: editor.openOnlyIfExists,
+            options: editor.options
+          }
+        })
+      }
+    }
+
+    // Then check for files to open, create or diff/merge from main side
+    const { filesToOpenOrCreate, filesToDiff, filesToMerge } = environmentService
+    if (filesToOpenOrCreate != null || filesToDiff != null || filesToMerge != null) {
+      return { filesToOpenOrCreate, filesToDiff, filesToMerge }
+    }
+
+    return undefined
+  }
+
+  function getDefaultLayoutViews (environmentService: IBrowserWorkbenchEnvironmentService, storageService: IStorageService): string[] | undefined {
+    const defaultLayout = environmentService.options?.defaultLayout
+    if (defaultLayout == null) {
+      return undefined
+    }
+
+    if (!(defaultLayout.force ?? false) && !storageService.isNew(StorageScope.WORKSPACE)) {
+      return undefined
+    }
+
+    const { views } = defaultLayout
+    if (views != null && views.length > 0) {
+      return views.map(view => view.id)
+    }
+
+    return undefined
+  }
+
+  function shouldRestoreEditors (contextService: IWorkspaceContextService, initialEditorsState: IInitialEditorsState | undefined): boolean {
+    if (isTemporaryWorkspace(contextService.getWorkspace())) {
+      return false
+    }
+
+    const forceRestoreEditors = configurationService.getValue<string>('window.restoreWindows') === 'preserve'
+    return !!forceRestoreEditors || initialEditorsState === undefined
+  }
+
+  async function resolveEditorsToOpen (fileService: IFileService, initialEditorsState: IInitialEditorsState | undefined): Promise<IEditorToOpen[]> {
+    if (initialEditorsState != null) {
+      // Merge editor (single)
+      const filesToMerge = coalesce(await pathsToEditors(initialEditorsState.filesToMerge, fileService, logService))
+      if (filesToMerge.length === 4 && isResourceEditorInput(filesToMerge[0]) && isResourceEditorInput(filesToMerge[1]) && isResourceEditorInput(filesToMerge[2]) && isResourceEditorInput(filesToMerge[3])) {
+        return [{
+          editor: {
+            input1: { resource: filesToMerge[0].resource },
+            input2: { resource: filesToMerge[1].resource },
+            base: { resource: filesToMerge[2].resource },
+            result: { resource: filesToMerge[3].resource },
+            options: { pinned: true }
+          }
+        }]
+      }
+
+      // Diff editor (single)
+      const filesToDiff = coalesce(await pathsToEditors(initialEditorsState.filesToDiff, fileService, logService))
+      if (filesToDiff.length === 2) {
+        return [{
+          editor: {
+            original: { resource: filesToDiff[0]!.resource },
+            modified: { resource: filesToDiff[1]!.resource },
+            options: { pinned: true }
+          }
+        }]
+      }
+
+      // Normal editor (multiple)
+      const filesToOpenOrCreate: IEditorToOpen[] = []
+      const resolvedFilesToOpenOrCreate = await pathsToEditors(initialEditorsState.filesToOpenOrCreate, fileService, logService)
+      for (let i = 0; i < resolvedFilesToOpenOrCreate.length; i++) {
+        const resolvedFileToOpenOrCreate = resolvedFilesToOpenOrCreate[i]
+        if (resolvedFileToOpenOrCreate != null) {
+          filesToOpenOrCreate.push({
+            editor: resolvedFileToOpenOrCreate,
+            viewColumn: initialEditorsState.filesToOpenOrCreate?.[i]!.viewColumn // take over `viewColumn` from initial state
+          })
+        }
+      }
+
+      return filesToOpenOrCreate
+    } else if (contextService.getWorkbenchState() === WorkbenchState.EMPTY && configurationService.getValue('workbench.startupEditor') === 'newUntitledFile') {
+      if (editorGroupService.hasRestorableState) {
+        return [] // do not open any empty untitled file if we restored groups/editors from previous session
+      }
+
+      const hasBackups = await workingCopyBackupService.hasBackups()
+      if (hasBackups) {
+        return [] // do not open any empty untitled file if we have backups to restore
+      }
+
+      return [{
+        editor: { resource: undefined } // open empty untitled file
+      }]
+    }
+
+    return []
+  }
+
+  const initialEditorsState = getInitialEditorsState()
+  if (initialEditorsState != null) {
+    logService.info('Initial editor state', initialEditorsState)
+  }
+  let initialLayoutState: ILayoutInitializationState = {
+    layout: {
+      editors: initialEditorsState?.layout
+    },
+    editor: {
+      restoreEditors: shouldRestoreEditors(contextService, initialEditorsState),
+      editorsToOpen: resolveEditorsToOpen(fileService, initialEditorsState)
+    },
+    views: {
+      defaults: getDefaultLayoutViews(environmentService, storageService),
+      containerToRestore: {}
+    }
+  }
+
+  function getDefaultViewContainer (location: ViewContainerLocation) {
+    return viewDescriptorService.getDefaultViewContainer(location) ?? viewDescriptorService.getViewContainersByLocation(location)[0]
+  }
+
+  function initLayoutState () {
+    if (layoutService.isVisible(Parts.SIDEBAR_PART)) {
+      // Only restore last viewlet if window was reloaded or we are in development mode
+      let viewContainerToRestore: string | undefined
+      if (!environmentService.isBuilt || lifecycleService.startupKind === StartupKind.ReloadedWindow || isWeb) {
+        viewContainerToRestore = storageService.get(SidebarPart.activeViewletSettingsKey, StorageScope.WORKSPACE, getDefaultViewContainer(ViewContainerLocation.Sidebar)?.id)
+      } else {
+        viewContainerToRestore = getDefaultViewContainer(ViewContainerLocation.Sidebar)?.id
+      }
+
+      initialLayoutState.views.containerToRestore.sideBar = viewContainerToRestore
+    }
+
+    // Panel View Container To Restore
+    if (layoutService.isVisible(Parts.PANEL_PART)) {
+      const viewContainerToRestore = storageService.get(PanelPart.activePanelSettingsKey, StorageScope.WORKSPACE, getDefaultViewContainer(ViewContainerLocation.Panel)?.id)
+
+      initialLayoutState.views.containerToRestore.panel = viewContainerToRestore
+    }
+
+    // Auxiliary Panel to restore
+    if (layoutService.isVisible(Parts.AUXILIARYBAR_PART)) {
+      const viewContainerToRestore = storageService.get(AuxiliaryBarPart.activePanelSettingsKey, StorageScope.WORKSPACE, getDefaultViewContainer(ViewContainerLocation.AuxiliaryBar)?.id)
+
+      initialLayoutState.views.containerToRestore.auxiliaryBar = viewContainerToRestore
+    }
+  }
+
+  initLayoutState()
+
+  initialLayoutState = transformInitializationState(initialLayoutState)
+
+  if (initialLayoutState.views.containerToRestore.sideBar == null) {
+    layoutService.setPartHidden(true, Parts.SIDEBAR_PART)
+  }
+
+  if (initialLayoutState.views.containerToRestore.panel == null) {
+    layoutService.setPartHidden(true, Parts.PANEL_PART)
+  }
+
+  if (initialLayoutState.views.containerToRestore.auxiliaryBar == null) {
+    layoutService.setPartHidden(true, Parts.AUXILIARYBAR_PART)
+  }
 
   const invisibleContainer = document.createElement('div')
   invisibleContainer.style.display = 'none'
@@ -650,7 +857,7 @@ onRenderWorkbench(async (accessor) => {
     { id: Parts.BANNER_PART, role: 'banner', classes: ['banner'], enabled: withBannerPart },
     { id: Parts.ACTIVITYBAR_PART, role: 'none', classes: ['activitybar', 'left'] },
     { id: Parts.SIDEBAR_PART, role: 'none', classes: ['sidebar', 'left'] },
-    { id: Parts.EDITOR_PART, role: 'main', classes: ['editor'], options: { restorePreviousState: restoreEditorView } },
+    { id: Parts.EDITOR_PART, role: 'main', classes: ['editor'], options: { restorePreviousState: initialLayoutState.editor.restoreEditors } },
     { id: Parts.PANEL_PART, role: 'none', classes: ['panel', 'basepanel', positionToString(Position.BOTTOM)] },
     { id: Parts.AUXILIARYBAR_PART, role: 'none', classes: ['auxiliarybar', 'basepanel', 'right'] },
     { id: Parts.STATUSBAR_PART, role: 'status', classes: ['statusbar'], enabled: withStatusBar }
@@ -664,22 +871,224 @@ onRenderWorkbench(async (accessor) => {
     const part = layoutService.getPart(id)
     part.create(partContainer, options)
     renderPart(partContainer, part)
+    // we should layout the part otherwise the part dimension wont be set which leads to errors
+    // use use values to allow settings setting editor size in workbench construction options (VSCode checks that provided size are smaller than part size)
+    part.layout(9999, 9999, 0, 0)
 
     // We need the container to be attached for some views to work (like xterm)
     invisibleContainer.append(partContainer)
   }
 
-  await paneCompositePartService.openPaneComposite(viewDescriptorService.getDefaultViewContainer(ViewContainerLocation.Sidebar)?.id, ViewContainerLocation.Sidebar)
-  await paneCompositePartService.openPaneComposite(viewDescriptorService.getDefaultViewContainer(ViewContainerLocation.Panel)?.id, ViewContainerLocation.Panel)
-  await paneCompositePartService.openPaneComposite(viewDescriptorService.getDefaultViewContainer(ViewContainerLocation.AuxiliaryBar)?.id, ViewContainerLocation.AuxiliaryBar)
+  const layoutReadyPromises: Promise<unknown>[] = []
+  const layoutRestoredPromises: Promise<unknown>[] = []
+
+  // Restore editors
+  layoutReadyPromises.push((async () => {
+    mark('code/willRestoreEditors')
+
+    // first ensure the editor part is ready
+    await editorGroupService.whenReady
+    mark('code/restoreEditors/editorGroupsReady')
+
+    // apply editor layout if any
+    if (initialLayoutState.layout?.editors != null) {
+      editorGroupService.applyLayout(initialLayoutState.layout.editors)
+    }
+
+    // then see for editors to open as instructed
+    // it is important that we trigger this from
+    // the overall restore flow to reduce possible
+    // flicker on startup: we want any editor to
+    // open to get a chance to open first before
+    // signaling that layout is restored, but we do
+    // not need to await the editors from having
+    // fully loaded.
+
+    const editors = await initialLayoutState.editor.editorsToOpen
+    mark('code/restoreEditors/editorsToOpenResolved')
+
+    let openEditorsPromise: Promise<unknown> | undefined
+    if (editors.length > 0) {
+      // we have to map editors to their groups as instructed
+      // by the input. this is important to ensure that we open
+      // the editors in the groups they belong to.
+
+      const editorGroupsInVisualOrder = editorGroupService.getGroups(GroupsOrder.GRID_APPEARANCE)
+      const mapEditorsToGroup = new Map<GroupIdentifier, Set<IUntypedEditorInput>>()
+
+      for (const editor of editors) {
+        const group = editorGroupsInVisualOrder[(editor.viewColumn ?? 1) - 1]! // viewColumn is index+1 based
+
+        let editorsByGroup = mapEditorsToGroup.get(group.id)
+        if (editorsByGroup == null) {
+          editorsByGroup = new Set<IUntypedEditorInput>()
+          mapEditorsToGroup.set(group.id, editorsByGroup)
+        }
+
+        editorsByGroup.add(editor.editor)
+      }
+
+      openEditorsPromise = Promise.all(Array.from(mapEditorsToGroup).map(async ([groupId, editors]) => {
+        try {
+          await editorService.openEditors(Array.from(editors), groupId, { validateTrust: true })
+        } catch (error) {
+          logService.error(<Error>error)
+        }
+      }))
+    }
+
+    // do not block the overall layout ready flow from potentially
+    // slow editors to resolve on startup
+    layoutRestoredPromises.push(
+      Promise.all([
+        openEditorsPromise?.finally(() => mark('code/restoreEditors/editorsOpened')),
+        editorGroupService.whenRestored.finally(() => mark('code/restoreEditors/editorGroupsRestored'))
+      ]).finally(() => {
+        // the `code/didRestoreEditors` perf mark is specifically
+        // for when visible editors have resolved, so we only mark
+        // if when editor group service has restored.
+        mark('code/didRestoreEditors')
+      })
+    )
+  })())
+
+  // Restore default views (only when `IDefaultLayout` is provided)
+  const restoreDefaultViewsPromise = (async () => {
+    if (initialLayoutState.views.defaults != null && initialLayoutState.views.defaults.length > 0) {
+      mark('code/willOpenDefaultViews')
+
+      const locationsRestored: { id: string, order: number }[] = []
+
+      const tryOpenView = (view: { id: string, order: number }): boolean => {
+        const location = viewDescriptorService.getViewLocationById(view.id)
+        if (location !== null) {
+          const container = viewDescriptorService.getViewContainerByViewId(view.id)
+          if (container != null) {
+            if (view.order >= (locationsRestored[location]?.order ?? 0)) {
+              locationsRestored[location] = { id: container.id, order: view.order }
+            }
+
+            const containerModel = viewDescriptorService.getViewContainerModel(container)
+            containerModel.setCollapsed(view.id, false)
+            containerModel.setVisible(view.id, true)
+
+            return true
+          }
+        }
+
+        return false
+      }
+
+      const defaultViews = [...initialLayoutState.views.defaults].reverse().map((v, index) => ({ id: v, order: index }))
+
+      let i = defaultViews.length
+      while (i > 0) {
+        i--
+        if (tryOpenView(defaultViews[i]!)) {
+          defaultViews.splice(i, 1)
+        }
+      }
+
+      // If we still have views left over, wait until all extensions have been registered and try again
+      if (defaultViews.length > 0) {
+        await extensionService.whenInstalledExtensionsRegistered()
+
+        let i = defaultViews.length
+        while (i > 0) {
+          i--
+          if (tryOpenView(defaultViews[i]!)) {
+            defaultViews.splice(i, 1)
+          }
+        }
+      }
+
+      mark('code/didOpenDefaultViews')
+    }
+  })()
+  layoutReadyPromises.push(restoreDefaultViewsPromise)
+
+  // Restore Sidebar
+  layoutReadyPromises.push((async () => {
+    // Restoring views could mean that sidebar already
+    // restored, as such we need to test again
+    await restoreDefaultViewsPromise
+    if (initialLayoutState.views.containerToRestore.sideBar == null) {
+      return
+    }
+
+    mark('code/willRestoreViewlet')
+
+    const viewlet = await paneCompositePartService.openPaneComposite(initialLayoutState.views.containerToRestore.sideBar, ViewContainerLocation.Sidebar)
+    if (viewlet == null) {
+      await paneCompositePartService.openPaneComposite(getDefaultViewContainer(ViewContainerLocation.Sidebar)?.id, ViewContainerLocation.Sidebar) // fallback to default viewlet as needed
+    }
+
+    mark('code/didRestoreViewlet')
+  })())
+
+  // Restore Panel
+  layoutReadyPromises.push((async () => {
+    // Restoring views could mean that panel already
+    // restored, as such we need to test again
+    await restoreDefaultViewsPromise
+    if (initialLayoutState.views.containerToRestore.panel == null) {
+      return
+    }
+
+    mark('code/willRestorePanel')
+
+    const panel = await paneCompositePartService.openPaneComposite(initialLayoutState.views.containerToRestore.panel, ViewContainerLocation.Panel)
+    if (panel == null) {
+      await paneCompositePartService.openPaneComposite(getDefaultViewContainer(ViewContainerLocation.Panel)?.id, ViewContainerLocation.Panel) // fallback to default panel as needed
+    }
+
+    mark('code/didRestorePanel')
+  })())
+
+  // Restore Auxiliary Bar
+  layoutReadyPromises.push((async () => {
+    // Restoring views could mean that panel already
+    // restored, as such we need to test again
+    await restoreDefaultViewsPromise
+    if (initialLayoutState.views.containerToRestore.auxiliaryBar == null) {
+      return
+    }
+
+    mark('code/willRestoreAuxiliaryBar')
+
+    const panel = await paneCompositePartService.openPaneComposite(initialLayoutState.views.containerToRestore.auxiliaryBar, ViewContainerLocation.AuxiliaryBar)
+    if (panel == null) {
+      await paneCompositePartService.openPaneComposite(getDefaultViewContainer(ViewContainerLocation.AuxiliaryBar)?.id, ViewContainerLocation.AuxiliaryBar) // fallback to default panel as needed
+    }
+
+    mark('code/didRestoreAuxiliaryBar')
+  })())
+
+  await Promises.settled(layoutReadyPromises)
+  await Promises.settled(layoutRestoredPromises)
 })
 
-export default function getServiceOverride (openEditorFallback?: OpenEditor, _webviewIframeAlternateDomains?: string, _restoreEditorView?: boolean): IEditorOverrideServices {
+function getServiceOverride (openEditorFallback?: OpenEditor, _webviewIframeAlternateDomains?: string): IEditorOverrideServices
+/**
+ * @deprecated Provide restoreEditors with the initializationState.editor.restoreEditors params
+ */
+function getServiceOverride (openEditorFallback?: OpenEditor, _webviewIframeAlternateDomains?: string, restoreEditors?: boolean): IEditorOverrideServices
+function getServiceOverride (openEditorFallback?: OpenEditor, _webviewIframeAlternateDomains?: string, initializationState?: InitializationStateTransformer): IEditorOverrideServices
+function getServiceOverride (openEditorFallback?: OpenEditor, _webviewIframeAlternateDomains?: string, initializationStateOrRestoreEditors?: boolean | InitializationStateTransformer): IEditorOverrideServices {
   if (_webviewIframeAlternateDomains != null) {
     webviewIframeAlternateDomains = _webviewIframeAlternateDomains
   }
-  if (_restoreEditorView != null) {
-    restoreEditorView = _restoreEditorView
+
+  if (initializationStateOrRestoreEditors != null) {
+    transformInitializationState = typeof initializationStateOrRestoreEditors === 'boolean'
+      ? (state: ILayoutInitializationState) => ({
+          ...state,
+          editor: {
+            ...state.editor,
+            restoreEditors: initializationStateOrRestoreEditors
+          }
+        })
+      : initializationStateOrRestoreEditors
   }
 
   return {
@@ -718,6 +1127,8 @@ export default function getServiceOverride (openEditorFallback?: OpenEditor, _we
   }
 }
 
+export default getServiceOverride
+
 export {
   ViewContainerLocation,
   CustomViewOption,
@@ -739,6 +1150,9 @@ export {
   RegisteredEditorOptions,
   EditorInputFactoryObject,
   EditorInputCapabilities,
+  ILayoutInitializationState,
+  InitializationStateTransformer,
+  GroupOrientation,
 
   renderPart,
   renderSidebarPart,
