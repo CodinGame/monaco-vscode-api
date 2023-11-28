@@ -70,9 +70,6 @@ const [mainDocument] = await Promise.all([
   vscode.workspace.openTextDocument(modelRef.object.textEditorModel!.uri),
   vscode.workspace.openTextDocument(monaco.Uri.file('/tmp/test_readonly.js')) // open the file so vscode sees it's locked
 ])
-await vscode.window.showTextDocument(mainDocument, {
-  preview: false
-})
 
 anotherFakeOutputChannel.replace(mainDocument.getText())
 vscode.workspace.onDidChangeTextDocument((e) => {
