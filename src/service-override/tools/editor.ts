@@ -387,10 +387,10 @@ class StandaloneEditorGroup extends Disposable implements IEditorGroup, IEditorG
   closeEditors = unsupported
   closeAllEditors = unsupported
   replaceEditors = unsupported
-  pinEditor = unsupported
-  stickEditor = unsupported
-  unstickEditor = unsupported
-  lock = unsupported
+  pinEditor = () => {}
+  stickEditor = () => {}
+  unstickEditor = () => {}
+  lock = () => {}
   focus (): void {
     this.editor.focus()
   }

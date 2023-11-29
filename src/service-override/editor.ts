@@ -83,10 +83,10 @@ class EmptyEditorGroup implements IEditorGroup, IEditorGroupView {
   closeEditors = unsupported
   closeAllEditors = unsupported
   replaceEditors = unsupported
-  pinEditor = unsupported
-  stickEditor = unsupported
-  unstickEditor = unsupported
-  lock = unsupported
+  pinEditor = () => {}
+  stickEditor = () => {}
+  unstickEditor = () => {}
+  lock = () => {}
   focus (): void {
     // ignore
   }
