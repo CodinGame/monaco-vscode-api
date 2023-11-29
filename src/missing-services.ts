@@ -78,7 +78,6 @@ import { AbstractLifecycleService } from 'vs/workbench/services/lifecycle/common
 import { IOutputChannel, IOutputChannelDescriptor, IOutputService } from 'vs/workbench/services/output/common/output'
 import { IOutputChannelModelService, OutputChannelModelService } from 'vs/workbench/contrib/output/common/outputChannelModelService'
 import { IExtensionResourceLoaderService } from 'vs/platform/extensionResourceLoader/common/extensionResourceLoader'
-import { ExtensionResourceLoaderService } from 'vs/platform/extensionResourceLoader/browser/extensionResourceLoaderService'
 import { IHoverService } from 'vs/workbench/services/hover/browser/hover'
 import { IExplorerService } from 'vs/workbench/contrib/files/browser/files'
 import { ExtensionStorageService, IExtensionStorageService } from 'vs/platform/extensionManagement/common/extensionStorage'
@@ -1201,7 +1200,13 @@ registerSingleton(IOutputService, class OutputService implements IOutputService 
 }, InstantiationType.Delayed)
 
 registerSingleton(IOutputChannelModelService, OutputChannelModelService, InstantiationType.Delayed)
-registerSingleton(IExtensionResourceLoaderService, ExtensionResourceLoaderService, InstantiationType.Eager)
+registerSingleton(IExtensionResourceLoaderService, class ExtensionResourceLoaderService implements IExtensionResourceLoaderService {
+  _serviceBrand: undefined
+  readExtensionResource = unsupported
+  supportsExtensionGalleryResources = false
+  isExtensionGalleryResource = () => false
+  getExtensionGalleryResourceURL = unsupported
+}, InstantiationType.Eager)
 
 registerSingleton(IBuiltinExtensionsScannerService, class BuiltinExtensionsScannerService implements IBuiltinExtensionsScannerService {
   _serviceBrand: undefined

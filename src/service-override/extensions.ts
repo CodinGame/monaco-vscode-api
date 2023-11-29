@@ -51,6 +51,8 @@ import { IUserDataProfileService } from 'vs/workbench/services/userDataProfile/c
 import { IWorkspaceTrustManagementService } from 'vs/platform/workspace/common/workspaceTrust'
 import { IRemoteExplorerService } from 'vs/workbench/services/remote/common/remoteExplorerService'
 import { ExtensionDescriptionRegistrySnapshot } from 'vs/workbench/services/extensions/common/extensionDescriptionRegistry'
+import { ExtensionResourceLoaderService } from 'vs/platform/extensionResourceLoader/browser/extensionResourceLoaderService'
+import { IExtensionResourceLoaderService } from 'vs/platform/extensionResourceLoader/common/extensionResourceLoader'
 import { changeUrlDomain } from './tools/url'
 import { CustomSchemas } from './files'
 import { registerAssets } from '../assets'
@@ -451,6 +453,22 @@ export class ExtensionServiceOverride extends ExtensionService implements IExten
   }
 }
 
+class ExtensionResourceLoaderServiceOverride extends ExtensionResourceLoaderService {
+  override async readExtensionResource (uri: URI): Promise<string> {
+    /**
+     * Small hack to make it work in jest environment
+     * The default implementation transforms the uri to a browser uri and then loads it using the file service
+     * inside jest which runs in a node environment, the browser uri for web extensions will be a file uri and the file service will be unable to load it
+     * so try to directly load the non-browser uri using the file service for web extensions
+     */
+    if (uri.scheme === CustomSchemas.extensionFile) {
+      const result = await this._fileService.readFile(uri)
+      return result.value.toString()
+    }
+    return super.readExtensionResource(uri)
+  }
+}
+
 let iframeAlternateDomains: string | undefined
 registerAssets({
   'vs/workbench/services/extensions/worker/webWorkerExtensionHostIframe.html': () => changeUrlDomain(new URL('../assets/webWorkerExtensionHostIframe.html', import.meta.url).href, iframeAlternateDomains)
@@ -469,7 +487,8 @@ export default function getServiceOverride (workerConfig?: WorkerConfig, _iframe
 
   return {
     [IExtensionService.toString()]: new SyncDescriptor(ExtensionServiceOverride, [_workerConfig], false),
-    [IExtensionManifestPropertiesService.toString()]: new SyncDescriptor(ExtensionManifestPropertiesService, [], true)
+    [IExtensionManifestPropertiesService.toString()]: new SyncDescriptor(ExtensionManifestPropertiesService, [], true),
+    [IExtensionResourceLoaderService.toString()]: new SyncDescriptor(ExtensionResourceLoaderServiceOverride, [], true)
   }
 }
 
