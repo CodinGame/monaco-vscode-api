@@ -57,7 +57,7 @@ import { ITimerService } from 'vs/workbench/services/timer/browser/timerService'
 import { IExtensionsWorkbenchService } from 'vs/workbench/contrib/extensions/common/extensions'
 import { EnablementState, IExtensionManagementServerService, IWebExtensionsScannerService, IWorkbenchExtensionEnablementService, IWorkbenchExtensionManagementService } from 'vs/workbench/services/extensionManagement/common/extensionManagement'
 import { ITunnelService } from 'vs/platform/tunnel/common/tunnel'
-import { IWorkingCopyBackupService } from 'vs/workbench/services/workingCopy/common/workingCopyBackup'
+import { IResolvedWorkingCopyBackup, IWorkingCopyBackupService } from 'vs/workbench/services/workingCopy/common/workingCopyBackup'
 import { IWorkingCopyService, WorkingCopyService } from 'vs/workbench/services/workingCopy/common/workingCopyService'
 import { FilesConfigurationService, IFilesConfigurationService } from 'vs/workbench/services/filesConfiguration/common/filesConfigurationService'
 import { IUntitledTextEditorService } from 'vs/workbench/services/untitled/common/untitledTextEditorService'
@@ -66,7 +66,6 @@ import { IElevatedFileService } from 'vs/workbench/services/files/common/elevate
 import { BrowserElevatedFileService } from 'vs/workbench/services/files/browser/elevatedFileService'
 import { IDecorationsService } from 'vs/workbench/services/decorations/common/decorations'
 import { RequestService } from 'vs/platform/request/browser/requestService'
-import { InMemoryWorkingCopyBackupService } from 'vs/workbench/services/workingCopy/common/workingCopyBackupService'
 import { BrowserTextFileService } from 'vs/workbench/services/textfile/browser/browserTextFileService'
 import { DecorationsService } from 'vs/workbench/services/decorations/browser/decorationsService'
 import { UriIdentityService } from 'vs/platform/uriIdentity/common/uriIdentityService'
@@ -179,8 +178,9 @@ import { IWorkspaceExtensionsConfigService } from 'vs/workbench/services/extensi
 import { IRemoteUserDataProfilesService } from 'vs/workbench/services/userDataProfile/common/remoteUserDataProfiles'
 import { IExtensionBisectService } from 'vs/workbench/services/extensionManagement/browser/extensionBisect'
 import { IUserDataSyncAccountService } from 'vs/platform/userDataSync/common/userDataSyncAccount'
-import { unsupported } from './tools'
+import { IWorkingCopyIdentifier, IWorkingCopyBackupMeta } from 'vs/workbench/services/workingCopy/common/workingCopy'
 import { getBuiltInExtensionTranslationsUris } from './l10n'
+import { unsupported } from './tools'
 class NullLoggerService extends AbstractLoggerService {
   constructor () {
     super(LogLevel.Info, URI.file('logs.log'))
@@ -1090,7 +1090,33 @@ registerSingleton(IUntitledTextEditorService, class UntitledTextEditorService im
   resolve = unsupported
 }, InstantiationType.Eager)
 
-registerSingleton(IWorkingCopyBackupService, InMemoryWorkingCopyBackupService, InstantiationType.Eager)
+registerSingleton(IWorkingCopyBackupService, class WorkingCopyBackupService implements IWorkingCopyBackupService {
+  _serviceBrand: undefined
+  async hasBackups (): Promise<boolean> {
+    return false
+  }
+
+  hasBackupSync (): boolean {
+    return false
+  }
+
+  async getBackups (): Promise<readonly IWorkingCopyIdentifier[]> {
+    return []
+  }
+
+  async resolve<T extends IWorkingCopyBackupMeta> (): Promise<IResolvedWorkingCopyBackup<T> | undefined> {
+    return undefined
+  }
+
+  async backup (): Promise<void> {
+  }
+
+  async discardBackup (): Promise<void> {
+  }
+
+  async discardBackups (): Promise<void> {
+  }
+}, InstantiationType.Eager)
 registerSingleton(IWorkingCopyService, WorkingCopyService, InstantiationType.Eager)
 registerSingleton(IDecorationsService, DecorationsService, InstantiationType.Eager)
 registerSingleton(IElevatedFileService, BrowserElevatedFileService, InstantiationType.Eager)

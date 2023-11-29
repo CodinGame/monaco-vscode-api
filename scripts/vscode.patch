@@ -1319,6 +1319,48 @@ index 6e6f8845da5..f4824f99f9f 100644
  
  				onTerminate = (reason: string) => extHostMain.terminate(reason);
  			});
+diff --git a/src/vs/workbench/browser/layout.ts b/src/vs/workbench/browser/layout.ts
+index bef9b44215c..bd87a6dacfc 100644
+--- a/src/vs/workbench/browser/layout.ts
++++ b/src/vs/workbench/browser/layout.ts
+@@ -51,7 +51,7 @@ import { ITelemetryService } from 'vs/platform/telemetry/common/telemetry';
+ 
+ //#region Layout Implementation
+ 
+-interface ILayoutRuntimeState {
++export interface ILayoutRuntimeState {
+ 	fullscreen: boolean;
+ 	maximized: boolean;
+ 	hasFocus: boolean;
+@@ -64,12 +64,12 @@ interface ILayoutRuntimeState {
+ 	};
+ }
+ 
+-interface IEditorToOpen {
++export interface IEditorToOpen {
+ 	readonly editor: IUntypedEditorInput;
+ 	readonly viewColumn?: number;
+ }
+ 
+-interface ILayoutInitializationState {
++export interface ILayoutInitializationState {
+ 	readonly views: {
+ 		readonly defaults: string[] | undefined;
+ 		readonly containerToRestore: {
+@@ -103,11 +103,11 @@ enum LayoutClasses {
+ 	WINDOW_BORDER = 'border'
+ }
+ 
+-interface IPathToOpen extends IPath {
++export interface IPathToOpen extends IPath {
+ 	readonly viewColumn?: number;
+ }
+ 
+-interface IInitialEditorsState {
++export interface IInitialEditorsState {
+ 	readonly filesToOpenOrCreate?: IPathToOpen[];
+ 	readonly filesToDiff?: IPathToOpen[];
+ 	readonly filesToMerge?: IPathToOpen[];
 diff --git a/src/vs/workbench/browser/parts/compositeBar.ts b/src/vs/workbench/browser/parts/compositeBar.ts
 index afa384aa88c..bc631450591 100644
 --- a/src/vs/workbench/browser/parts/compositeBar.ts
