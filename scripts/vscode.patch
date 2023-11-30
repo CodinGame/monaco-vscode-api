@@ -740,18 +740,6 @@ index ccfbc3f7d9b..5fe46b464b1 100644
  	const appInsightsCore = new oneDs.AppInsightsCore();
  	const collectorChannelPlugin: PostChannel = new postPlugin.PostChannel();
  	// Configure the app insights core to send to collector++ and disable logging of debug info
-diff --git a/src/vs/workbench/api/browser/mainThreadDocumentsAndEditors.ts b/src/vs/workbench/api/browser/mainThreadDocumentsAndEditors.ts
-index dc20f23f976..6f011cd36a0 100644
---- a/src/vs/workbench/api/browser/mainThreadDocumentsAndEditors.ts
-+++ b/src/vs/workbench/api/browser/mainThreadDocumentsAndEditors.ts
-@@ -124,6 +124,7 @@ class MainThreadDocumentAndEditorStateComputer {
- 		@IEditorService private readonly _editorService: IEditorService,
- 		@IPaneCompositePartService private readonly _paneCompositeService: IPaneCompositePartService,
- 	) {
-+		this._modelService.getModels().forEach(model => this._updateStateOnModelAdd(model));
- 		this._modelService.onModelAdded(this._updateStateOnModelAdd, this, this._toDispose);
- 		this._modelService.onModelRemoved(_ => this._updateState(), this, this._toDispose);
- 		this._editorService.onDidActiveEditorChange(_ => this._updateState(), this, this._toDispose);
 diff --git a/src/vs/workbench/api/browser/mainThreadExtensionService.ts b/src/vs/workbench/api/browser/mainThreadExtensionService.ts
 index 5afc945cc16..bc5fc8ed8f9 100644
 --- a/src/vs/workbench/api/browser/mainThreadExtensionService.ts
