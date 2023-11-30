@@ -79,8 +79,12 @@ interface ExtensionDelta {
   toRemove: IExtension[]
 }
 const deltaExtensions = throttle(async ({ toAdd, toRemove }: ExtensionDelta) => {
-  const extensionService = await getService(IExtensionService) as ExtensionServiceOverride
-  await extensionService.deltaExtensions(toAdd, toRemove)
+  const extensionService = await getService(IExtensionService)
+  if (extensionService instanceof ExtensionServiceOverride) {
+    await extensionService.deltaExtensions(toAdd, toRemove)
+  } else {
+    throw new Error('Extension service override is mandatory to register extensions')
+  }
 }, (a, b) => ({ toAdd: [...a.toAdd, ...b.toAdd], toRemove: [...a.toRemove, ...b.toRemove] }), 0)
 
 export async function registerRemoteExtension (directory: string): Promise<RegisterRemoteExtensionResult> {

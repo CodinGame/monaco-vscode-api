@@ -15,8 +15,6 @@ import { IWorkbenchConstructionOptions } from 'vs/workbench/browser/web.api'
 import { IProductConfiguration } from 'vs/base/common/product'
 import getLayoutServiceOverride from './service-override/layout'
 import getEnvironmentServiceOverride from './service-override/environment'
-import getExtensionsServiceOverride from './service-override/extensions'
-import getFileServiceOverride from './service-override/files'
 import getQuickAccessOverride from './service-override/quickaccess'
 import { checkServicesNotInitialized, checkServicesReady, serviceInitializedBarrier, serviceInitializedEmitter, startup, waitServicesReady } from './lifecycle'
 import { initialize as initializeWorkbench } from './workbench'
@@ -43,8 +41,6 @@ export async function initialize (overrides: IEditorOverrideServices, container:
     }, configuration.productConfiguration ?? {}),
     ...getLayoutServiceOverride(), // Always override layout service to break cyclic dependency with ICodeEditorService
     ...getEnvironmentServiceOverride(),
-    ...getExtensionsServiceOverride(),
-    ...getFileServiceOverride(),
     ...getQuickAccessOverride(),
     ...overrides
   })

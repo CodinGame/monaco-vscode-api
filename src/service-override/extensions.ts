@@ -54,7 +54,7 @@ import { ExtensionDescriptionRegistrySnapshot } from 'vs/workbench/services/exte
 import { ExtensionResourceLoaderService } from 'vs/platform/extensionResourceLoader/browser/extensionResourceLoaderService'
 import { IExtensionResourceLoaderService } from 'vs/platform/extensionResourceLoader/common/extensionResourceLoader'
 import { changeUrlDomain } from './tools/url'
-import { CustomSchemas } from './files'
+import getFileServiceOverride, { CustomSchemas } from './files'
 import { registerAssets } from '../assets'
 import { unsupported } from '../tools'
 import 'vs/workbench/api/browser/extensionHost.contribution'
@@ -486,6 +486,7 @@ export default function getServiceOverride (workerConfig?: WorkerConfig, _iframe
     : undefined
 
   return {
+    ...getFileServiceOverride(),
     [IExtensionService.toString()]: new SyncDescriptor(ExtensionServiceOverride, [_workerConfig], false),
     [IExtensionManifestPropertiesService.toString()]: new SyncDescriptor(ExtensionManifestPropertiesService, [], true),
     [IExtensionResourceLoaderService.toString()]: new SyncDescriptor(ExtensionResourceLoaderServiceOverride, [], true)
