@@ -14,6 +14,8 @@ import 'vs/workbench/contrib/codeEditor/browser/quickaccess/gotoLineQuickAccess'
 import 'vs/workbench/contrib/codeEditor/browser/quickaccess/gotoSymbolQuickAccess'
 import 'vs/workbench/browser/actions/quickAccessActions'
 import 'vs/workbench/contrib/quickaccess/browser/quickAccess.contribution'
+// required for the workbench.commandPalette.preserveInput config key
+import 'vs/workbench/browser/workbench.contribution'
 import { ICodeEditor } from 'vs/editor/browser/editorBrowser'
 
 let isKeybindingConfigurationVisible = () => {
