@@ -25,10 +25,6 @@ import { URI } from 'vs/base/common/uri'
 import { ITextModelService } from 'vs/editor/common/services/resolverService'
 import { IFileDeleteOptions, IFileService } from 'vs/platform/files/common/files'
 import { VSBuffer } from 'vs/base/common/buffer'
-import { JSONValidationExtensionPoint } from 'vs/workbench/api/common/jsonValidationExtensionPoint'
-import { IWorkbenchContribution, IWorkbenchContributionsRegistry, Extensions as WorkbenchExtensions } from 'vs/workbench/common/contributions'
-import { ColorExtensionPoint } from 'vs/workbench/services/themes/common/colorExtensionPoint'
-import { LifecyclePhase } from 'vs/workbench/services/lifecycle/common/lifecycle'
 import { ITextFileEditorModel } from 'vs/workbench/services/textfile/common/textfiles'
 import { ServiceCollection } from 'vs/platform/instantiation/common/serviceCollection'
 import { IQuickInputService } from 'vs/platform/quickinput/common/quickInput'
@@ -46,36 +42,6 @@ import { Keybinding, ResolvedKeybinding } from 'vs/base/common/keybindings'
 import { Event } from 'vs/base/common/event'
 import { Emitter } from 'monaco-editor'
 import { createInjectedClass } from './tools/injection'
-// Selectively comes from vs/workbench/contrib/codeEditor/browser/codeEditor.contribution.ts
-import 'vs/workbench/contrib/codeEditor/browser/workbenchReferenceSearch'
-import 'vs/workbench/contrib/codeEditor/browser/menuPreventer'
-import 'vs/workbench/contrib/codeEditor/browser/diffEditorHelper'
-import 'vs/workbench/contrib/codeEditor/browser/largeFileOptimizations'
-import 'vs/workbench/contrib/codeEditor/browser/inspectEditorTokens/inspectEditorTokens'
-import 'vs/workbench/contrib/codeEditor/browser/saveParticipants'
-import 'vs/workbench/contrib/codeEditor/browser/toggleMinimap'
-import 'vs/workbench/contrib/codeEditor/browser/toggleMultiCursorModifier'
-import 'vs/workbench/contrib/codeEditor/browser/toggleRenderControlCharacter'
-import 'vs/workbench/contrib/codeEditor/browser/toggleWordWrap'
-import 'vs/workbench/contrib/codeEditor/browser/toggleRenderWhitespace'
-import 'vs/workbench/contrib/codeEditor/browser/editorLineNumberMenu'
-
-import 'vs/workbench/contrib/format/browser/format.contribution'
-import 'vs/workbench/contrib/folding/browser/folding.contribution'
-import 'vs/workbench/contrib/inlayHints/browser/inlayHintsAccessibilty'
-import 'vs/workbench/contrib/codeActions/browser/codeActions.contribution'
-import 'vs/workbench/contrib/list/browser/list.contribution'
-import 'vs/workbench/contrib/codeEditor/browser/editorFeatures'
-
-class ExtensionPoints implements IWorkbenchContribution {
-  constructor (
-    @IInstantiationService private readonly instantiationService: IInstantiationService
-  ) {
-    this.instantiationService.createInstance(JSONValidationExtensionPoint)
-    this.instantiationService.createInstance(ColorExtensionPoint)
-  }
-}
-Registry.as<IWorkbenchContributionsRegistry>(WorkbenchExtensions.Workbench).registerWorkbenchContribution(ExtensionPoints, LifecyclePhase.Starting)
 
 function computeConfiguration (configuration: IEditorConfiguration, overrides?: Readonly<IEditorOptions>): IEditorOptions {
   const editorConfiguration: IEditorOptions = isObject(configuration.editor) ? deepClone(configuration.editor) : Object.create(null)

@@ -443,6 +443,18 @@ index a7dd879a53e..9bf73d43298 100644
  
  					if (selections.length) {
  						this._state.change({ searchScope: selections as Range[] }, true);
+diff --git a/src/vs/editor/contrib/semanticTokens/browser/documentSemanticTokens.ts b/src/vs/editor/contrib/semanticTokens/browser/documentSemanticTokens.ts
+index 10ad6211d76..9ed4aca8706 100644
+--- a/src/vs/editor/contrib/semanticTokens/browser/documentSemanticTokens.ts
++++ b/src/vs/editor/contrib/semanticTokens/browser/documentSemanticTokens.ts
+@@ -59,6 +59,7 @@ export class DocumentSemanticTokensFeature extends Disposable {
+ 				}
+ 			}
+ 		};
++		modelService.getModels().forEach(model => register(model));
+ 		this._register(modelService.onModelAdded((model) => {
+ 			if (isSemanticColoringEnabled(model, themeService, configurationService)) {
+ 				register(model);
 diff --git a/src/vs/editor/editor.main.ts b/src/vs/editor/editor.main.ts
 index 23d547570e9..31dfb4fd8d4 100644
 --- a/src/vs/editor/editor.main.ts
@@ -728,6 +740,18 @@ index ccfbc3f7d9b..5fe46b464b1 100644
  	const appInsightsCore = new oneDs.AppInsightsCore();
  	const collectorChannelPlugin: PostChannel = new postPlugin.PostChannel();
  	// Configure the app insights core to send to collector++ and disable logging of debug info
+diff --git a/src/vs/workbench/api/browser/mainThreadDocumentsAndEditors.ts b/src/vs/workbench/api/browser/mainThreadDocumentsAndEditors.ts
+index dc20f23f976..6f011cd36a0 100644
+--- a/src/vs/workbench/api/browser/mainThreadDocumentsAndEditors.ts
++++ b/src/vs/workbench/api/browser/mainThreadDocumentsAndEditors.ts
+@@ -124,6 +124,7 @@ class MainThreadDocumentAndEditorStateComputer {
+ 		@IEditorService private readonly _editorService: IEditorService,
+ 		@IPaneCompositePartService private readonly _paneCompositeService: IPaneCompositePartService,
+ 	) {
++		this._modelService.getModels().forEach(model => this._updateStateOnModelAdd(model));
+ 		this._modelService.onModelAdded(this._updateStateOnModelAdd, this, this._toDispose);
+ 		this._modelService.onModelRemoved(_ => this._updateState(), this, this._toDispose);
+ 		this._editorService.onDidActiveEditorChange(_ => this._updateState(), this, this._toDispose);
 diff --git a/src/vs/workbench/api/browser/mainThreadExtensionService.ts b/src/vs/workbench/api/browser/mainThreadExtensionService.ts
 index 5afc945cc16..bc5fc8ed8f9 100644
 --- a/src/vs/workbench/api/browser/mainThreadExtensionService.ts
@@ -1476,10 +1500,18 @@ index 154696503e3..b1bb13e65ee 100644
  
  	get repository(): string | undefined {
 diff --git a/src/vs/workbench/contrib/search/browser/searchModel.ts b/src/vs/workbench/contrib/search/browser/searchModel.ts
-index f8261d8871b..ee73a4a9591 100644
+index f8261d8871b..d6acd6a35cf 100644
 --- a/src/vs/workbench/contrib/search/browser/searchModel.ts
 +++ b/src/vs/workbench/contrib/search/browser/searchModel.ts
-@@ -2356,7 +2356,7 @@ function textSearchResultToMatches(rawMatch: ITextSearchMatch, fileMatch: FileMa
+@@ -1598,6 +1598,7 @@ export class SearchResult extends Disposable {
+ 		super();
+ 		this._rangeHighlightDecorations = this.instantiationService.createInstance(RangeHighlightDecorations);
+ 
++		this.modelService.getModels().forEach(model => this.onModelAdded(model));
+ 		this._register(this.modelService.onModelAdded(model => this.onModelAdded(model)));
+ 
+ 		this._register(this.notebookEditorService.onDidAddNotebookEditor(widget => {
+@@ -2356,7 +2357,7 @@ function textSearchResultToMatches(rawMatch: ITextSearchMatch, fileMatch: FileMa
  
  export function textSearchMatchesToNotebookMatches(textSearchMatches: ITextSearchMatch[], cell: CellMatch): MatchInNotebook[] {
  	const notebookMatches: MatchInNotebook[] = [];
