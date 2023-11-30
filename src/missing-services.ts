@@ -113,7 +113,7 @@ import { IWorkingCopyEditorService, WorkingCopyEditorService } from 'vs/workbenc
 import { IUserActivityService, UserActivityService } from 'vs/workbench/services/userActivity/common/userActivityService'
 import { CanonicalUriService } from 'vs/workbench/services/workspaces/common/canonicalUriService'
 import { ICanonicalUriService } from 'vs/platform/workspace/common/canonicalUri'
-import { ExtensionStatusBarItemService, IExtensionStatusBarItemService } from 'vs/workbench/api/browser/statusBarExtensionPoint'
+import { ExtensionStatusBarEntry, IExtensionStatusBarItemService, StatusBarUpdateKind } from 'vs/workbench/api/browser/statusBarExtensionPoint'
 import { IWorkbenchAssignmentService } from 'vs/workbench/services/assignment/common/assignmentService'
 import { IChatService } from 'vs/workbench/contrib/chat/common/chatService'
 import { IEmbedderTerminalService } from 'vs/workbench/services/terminal/common/embedderTerminalService'
@@ -178,8 +178,8 @@ import { IRemoteUserDataProfilesService } from 'vs/workbench/services/userDataPr
 import { IExtensionBisectService } from 'vs/workbench/services/extensionManagement/browser/extensionBisect'
 import { IUserDataSyncAccountService } from 'vs/platform/userDataSync/common/userDataSyncAccount'
 import { IWorkingCopyIdentifier, IWorkingCopyBackupMeta } from 'vs/workbench/services/workingCopy/common/workingCopy'
-import { getBuiltInExtensionTranslationsUris } from './l10n'
 import { unsupported } from './tools'
+import { getBuiltInExtensionTranslationsUris } from './l10n'
 class NullLoggerService extends AbstractLoggerService {
   constructor () {
     super(LogLevel.Info, URI.file('logs.log'))
@@ -1732,7 +1732,21 @@ registerSingleton(INotebookEditorModelResolverService, class NotebookEditorModel
 registerSingleton(IWorkingCopyEditorService, WorkingCopyEditorService, InstantiationType.Delayed)
 registerSingleton(IUserActivityService, UserActivityService, InstantiationType.Delayed)
 registerSingleton(ICanonicalUriService, CanonicalUriService, InstantiationType.Delayed)
-registerSingleton(IExtensionStatusBarItemService, ExtensionStatusBarItemService, InstantiationType.Delayed)
+registerSingleton(IExtensionStatusBarItemService, class ExtensionStatusBarItemService implements IExtensionStatusBarItemService {
+  _serviceBrand: undefined
+  onDidChange = Event.None
+  setOrUpdateEntry (): StatusBarUpdateKind {
+    // ignore
+    return StatusBarUpdateKind.DidUpdate
+  }
+
+  unsetEntry (): void {
+  }
+
+  getEntries (): Iterable<ExtensionStatusBarEntry> {
+    return []
+  }
+}, InstantiationType.Delayed)
 registerSingleton(IWorkbenchAssignmentService, class WorkbenchAssignmentService implements IWorkbenchAssignmentService {
   _serviceBrand: undefined
   getCurrentExperiments = async () => []

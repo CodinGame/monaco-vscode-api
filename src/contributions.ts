@@ -4,6 +4,7 @@ import { JSONValidationExtensionPoint } from 'vs/workbench/api/common/jsonValida
 import { IWorkbenchContribution, IWorkbenchContributionsRegistry, Extensions as WorkbenchExtensions } from 'vs/workbench/common/contributions'
 import { ColorExtensionPoint } from 'vs/workbench/services/themes/common/colorExtensionPoint'
 import { LifecyclePhase } from 'vs/workbench/services/lifecycle/common/lifecycle'
+import { IconExtensionPoint } from 'vs/workbench/services/themes/common/iconExtensionPoint'
 // Selectively comes from vs/workbench/contrib/codeEditor/browser/codeEditor.contribution.ts
 import 'vs/workbench/contrib/codeEditor/browser/workbenchReferenceSearch'
 import 'vs/workbench/contrib/codeEditor/browser/menuPreventer'
@@ -31,6 +32,7 @@ class ExtensionPoints implements IWorkbenchContribution {
   ) {
     this.instantiationService.createInstance(JSONValidationExtensionPoint)
     this.instantiationService.createInstance(ColorExtensionPoint)
+    this.instantiationService.createInstance(IconExtensionPoint)
   }
 }
 Registry.as<IWorkbenchContributionsRegistry>(WorkbenchExtensions.Workbench).registerWorkbenchContribution(ExtensionPoints, LifecyclePhase.Starting)
