@@ -102,9 +102,7 @@ export default rollup.defineConfig((<{input: Record<string, string>, output: str
         return chunkInfo.name.replace('node_modules', 'external') + '.ts'
       }
       return '[name].ts'
-    },
-    // the extension file exposes a way to get the vscode API, so we should reference the proposed vscode types here too
-    banner: (chunk) => chunk.fileName === 'extensions.d.ts' ? '/// <reference path="vscode.proposed.d.ts" />' : ''
+    }
   },
   external: (id) => isExternal(id, main),
   plugins: [
@@ -217,6 +215,23 @@ export default rollup.defineConfig((<{input: Record<string, string>, output: str
       }
     },
     {
+      name: 'resolve-vscode-proposed-types',
+      transform (code) {
+        return code.replace(/\/\/\/ <reference types="vscode\/src\/vscode-dts\/(vscode\.proposed\..*)" \/>/g, '/// <reference path="./vscode-dts/$1.d.ts" />')
+      },
+      async generateBundle () {
+        const types = await fastGlob('vscode.proposed.*.d.ts', {
+          cwd: VSCODE_SRC_DTS_DIR
+        })
+        await Promise.all(types.map(async file => this.emitFile({
+          type: 'asset',
+          needsCodeReference: false,
+          fileName: `vscode-dts/${file}`,
+          source: await fsPromise.readFile(path.resolve(VSCODE_SRC_DTS_DIR, file))
+        })))
+      }
+    },
+    {
       name: 'replace-interfaces',
       load (id) {
         const path = new URL(id, 'file:/').pathname
@@ -278,21 +293,6 @@ export default rollup.defineConfig((<{input: Record<string, string>, output: str
           return path.join(VSCODE_SRC_DIR, `${importee}.d.ts`)
         }
         return undefined
-      }
-    },
-    {
-      name: 'vscode-proposed',
-      async generateBundle () {
-        const types = await fastGlob('vscode.proposed.*.d.ts', {
-          cwd: VSCODE_SRC_DTS_DIR
-        })
-        const contents = await Promise.all(types.map(file => fsPromise.readFile(path.resolve(VSCODE_SRC_DTS_DIR, file))))
-        this.emitFile({
-          type: 'asset',
-          needsCodeReference: false,
-          fileName: 'vscode.proposed.d.ts',
-          source: contents.join('\n\n')
-        })
       }
     },
     dts({
