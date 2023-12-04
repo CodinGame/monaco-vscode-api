@@ -1,6 +1,4 @@
-import { ExtensionHostKind, onExtHostInitialized, registerExtension } from 'vscode/extensions'
-
-await new Promise<void>(resolve => onExtHostInitialized(resolve))
+import { ExtensionHostKind, registerExtension } from 'vscode/extensions'
 
 const { getApi } = registerExtension({
   name: 'outputDemo',

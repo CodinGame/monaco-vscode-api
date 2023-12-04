@@ -1,7 +1,5 @@
 import * as vscode from 'vscode'
-import { onExtHostInitialized } from 'vscode/extensions'
-
-await new Promise<void>(resolve => onExtHostInitialized(resolve))
+import '../setup' // import setup file to wait for services initialization
 
 void vscode.window.showInformationMessage('Hello', {
   detail: 'Welcome to the monaco-vscode-api demo',
