@@ -8,6 +8,7 @@ import getKeybindingsServiceOverride, { initUserKeybindings } from '@codingame/m
 import getTextmateServiceOverride from '@codingame/monaco-vscode-textmate-service-override'
 import getThemeServiceOverride from '@codingame/monaco-vscode-theme-service-override'
 import getLanguagesServiceOverride from '@codingame/monaco-vscode-languages-service-override'
+import getAuthenticationServiceOverride from '@codingame/monaco-vscode-authentication-service-override'
 import getAudioCueServiceOverride from '@codingame/monaco-vscode-audio-cue-service-override'
 import getExtensionGalleryServiceOverride from '@codingame/monaco-vscode-extension-gallery-service-override'
 import getViewsServiceOverride, {
@@ -92,6 +93,7 @@ await Promise.all([
 
 // Override services
 await initializeMonacoService({
+  ...getAuthenticationServiceOverride(),
   ...getLogServiceOverride(),
   ...getExtensionServiceOverride(workerConfig),
   ...getExtensionGalleryServiceOverride({ webOnly: false }),

@@ -1880,6 +1880,19 @@ index 25885c7c4f9..2d220cbe1ad 100644
 +
 +
 +registerSingleton(IExtensionService, BrowserExtensionService, InstantiationType.Eager);
+diff --git a/src/vs/workbench/services/extensions/browser/extensionUrlHandler.ts b/src/vs/workbench/services/extensions/browser/extensionUrlHandler.ts
+index 9da3a6e5c58..dce278df3bb 100644
+--- a/src/vs/workbench/services/extensions/browser/extensionUrlHandler.ts
++++ b/src/vs/workbench/services/extensions/browser/extensionUrlHandler.ts
+@@ -99,7 +99,7 @@ type ExtensionUrlHandlerClassification = {
+  *
+  * It also makes sure the user confirms opening URLs directed towards extensions.
+  */
+-class ExtensionUrlHandler implements IExtensionUrlHandler, IURLHandler {
++export class ExtensionUrlHandler implements IExtensionUrlHandler, IURLHandler {
+ 
+ 	readonly _serviceBrand: undefined;
+ 
 diff --git a/src/vs/workbench/services/extensions/browser/webWorkerExtensionHost.ts b/src/vs/workbench/services/extensions/browser/webWorkerExtensionHost.ts
 index a7ce017ab9f..fd873470224 100644
 --- a/src/vs/workbench/services/extensions/browser/webWorkerExtensionHost.ts
