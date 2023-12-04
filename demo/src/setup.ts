@@ -37,29 +37,25 @@ import getEnvironmentServiceOverride from '@codingame/monaco-vscode-environment-
 import getLifecycleServiceOverride from '@codingame/monaco-vscode-lifecycle-service-override'
 import getWorkspaceTrustOverride from '@codingame/monaco-vscode-workspace-trust-service-override'
 import getLogServiceOverride from '@codingame/monaco-vscode-log-service-override'
-import EditorWorker from 'monaco-editor/esm/vs/editor/editor.worker.js?worker'
-import TextMateWorker from '@codingame/monaco-vscode-textmate-service-override/worker?worker'
-import OutputLinkComputerWorker from '@codingame/monaco-vscode-output-service-override/worker?worker'
 import { createIndexedDBProviders, initFile } from '@codingame/monaco-vscode-files-service-override'
 import getWorkingCopyServiceOverride from '@codingame/monaco-vscode-working-copy-service-override'
-import ExtensionHostWorker from 'vscode/workers/extensionHost.worker?worker'
-import LanguageDetectionWorker from '@codingame/monaco-vscode-language-detection-worker-service-override/worker?worker'
 import * as monaco from 'monaco-editor'
 import { TerminalBackend } from './features/terminal'
 import { openNewCodeEditor } from './features/editor'
-import { toCrossOriginWorker, toWorkerConfig } from './tools/workers'
 import defaultConfiguration from './user/configuration.json?raw'
 import defaultKeybindings from './user/keybindings.json?raw'
+import { workerConfig } from './tools/extHostWorker'
+import { Worker } from './tools/crossOriginWorker'
 
 const userDataProvider = await createIndexedDBProviders()
 
 // Workers
 export type WorkerLoader = () => Worker
 const workerLoaders: Partial<Record<string, WorkerLoader>> = {
-  editorWorkerService: () => new (toCrossOriginWorker(EditorWorker))(),
-  textMateWorker: () => new (toCrossOriginWorker(TextMateWorker))(),
-  outputLinkComputer: () => new (toCrossOriginWorker(OutputLinkComputerWorker))(),
-  languageDetectionWorkerService: () => new (toCrossOriginWorker(LanguageDetectionWorker))()
+  editorWorkerService: () => new Worker(new URL('monaco-editor/esm/vs/editor/editor.worker.js', import.meta.url), { type: 'module' }),
+  textMateWorker: () => new Worker(new URL('@codingame/monaco-vscode-textmate-service-override/worker', import.meta.url), { type: 'module' }),
+  outputLinkComputer: () => new Worker(new URL('@codingame/monaco-vscode-output-service-override/worker', import.meta.url), { type: 'module' }),
+  languageDetectionWorkerService: () => new Worker(new URL('@codingame/monaco-vscode-language-detection-worker-service-override/worker', import.meta.url), { type: 'module' })
 }
 window.MonacoEnvironment = {
   getWorker: function (moduleId, label) {
@@ -97,7 +93,7 @@ await Promise.all([
 // Override services
 await initializeMonacoService({
   ...getLogServiceOverride(),
-  ...getExtensionServiceOverride(toWorkerConfig(ExtensionHostWorker)),
+  ...getExtensionServiceOverride(workerConfig),
   ...getExtensionGalleryServiceOverride({ webOnly: false }),
   ...getModelServiceOverride(),
   ...getNotificationServiceOverride(),
