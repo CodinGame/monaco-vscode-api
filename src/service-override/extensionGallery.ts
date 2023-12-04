@@ -24,9 +24,10 @@ import { ExtensionTipsService } from 'vs/platform/extensionManagement/common/ext
 import { ExtensionManagementService } from 'vs/workbench/services/extensionManagement/common/extensionManagementService'
 import { IRemoteUserDataProfilesService, RemoteUserDataProfilesService } from 'vs/workbench/services/userDataProfile/common/remoteUserDataProfiles'
 import { ExtensionEnablementService } from 'vs/workbench/services/extensionManagement/browser/extensionEnablementService'
-import { IInstantiationService, ILabelService, IRemoteAgentService } from '../services'
 import 'vs/workbench/contrib/extensions/browser/extensions.contribution'
 import 'vs/workbench/contrib/extensions/browser/extensions.web.contribution'
+import { ExtensionUrlHandler, IExtensionUrlHandler } from 'vs/workbench/services/extensions/browser/extensionUrlHandler'
+import { IInstantiationService, ILabelService, IRemoteAgentService } from '../services'
 import { registerAssets } from '../assets'
 
 // plugin-import-meta-asset only allows relative paths
@@ -82,6 +83,7 @@ export default function getServiceOverride (options: ExtensionGalleryOptions = {
     [IRemoteExtensionsScannerService.toString()]: new SyncDescriptor(RemoteExtensionsScannerService, [], true),
     [IExtensionTipsService.toString()]: new SyncDescriptor(ExtensionTipsService, [], true),
     [IRemoteUserDataProfilesService.toString()]: new SyncDescriptor(RemoteUserDataProfilesService, [], true),
-    [IWorkbenchExtensionEnablementService.toString()]: new SyncDescriptor(ExtensionEnablementService, [], true)
+    [IWorkbenchExtensionEnablementService.toString()]: new SyncDescriptor(ExtensionEnablementService, [], true),
+    [IExtensionUrlHandler.toString()]: new SyncDescriptor(ExtensionUrlHandler, [], true)
   }
 }
