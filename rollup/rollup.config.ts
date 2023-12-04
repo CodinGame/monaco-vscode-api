@@ -1037,7 +1037,7 @@ export default (args: Record<string, string>): rollup.RollupOptions[] => {
                   const isVscodeFile = resolved.startsWith(VSCODE_SRC_DIST_DIR)
                   const isServiceOverride = path.dirname(resolved) === DIST_SERVICE_OVERRIDE_DIR_MAIN
                   const isNotExclusive = (isVscodeFile || isServiceOverride) && !exclusiveModules.has(resolvedWithExtension)
-                  const shouldBeShared = ['extensions.js', 'monaco.js', 'assets.js', 'lifecycle.js', 'workbench.js', 'missing-services.js'].includes(path.relative(DIST_DIR_MAIN, resolvedWithExtension))
+                  const shouldBeShared = ['services.js', 'extensions.js', 'monaco.js', 'assets.js', 'lifecycle.js', 'workbench.js', 'missing-services.js'].includes(path.relative(DIST_DIR_MAIN, resolvedWithExtension))
 
                   if (isNotExclusive || shouldBeShared) {
                     // Those modules will be imported from external monaco-vscode-api
