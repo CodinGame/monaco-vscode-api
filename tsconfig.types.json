@@ -1,6 +1,6 @@
 {
   "compilerOptions": {
-	"module": "es2020",
+	"module": "es2022",
 	"moduleResolution": "node",
 	"target": "es2020",
 	"outDir": "dist/types",
@@ -61,6 +61,7 @@
 		"src/services.ts",
 		"src/types.d.ts",
 		"src/extensions.ts",
+		"src/localExtensionHost.ts",
 		"src/service-override/*.ts",
 		"src/monaco.ts",
 		"src/l10n.ts",

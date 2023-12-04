@@ -7,25 +7,23 @@ import { DisposableStore, IDisposable } from 'vs/base/common/lifecycle'
 import { ITranslations } from 'vs/platform/extensionManagement/common/extensionNls'
 import { joinPath } from 'vs/base/common/resources'
 import { FileAccess, Schemas } from 'vs/base/common/network'
-import { Barrier } from 'vs/base/common/async'
 import { ExtensionHostKind } from 'vs/workbench/services/extensions/common/extensionHostKind'
 import { IWorkbenchEnvironmentService } from 'vs/workbench/services/environment/common/environmentService'
 import { parse } from 'vs/base/common/json'
 import { IFileService } from 'vs/platform/files/common/files'
 import { IInstantiationService } from 'vs/platform/instantiation/common/instantiation'
-import { IExtensionWithExtHostKind, ExtensionServiceOverride, getLocalExtHostExtensionService } from './service-override/extensions'
+import { IExtensionWithExtHostKind, ExtensionServiceOverride } from './service-override/extensions'
 import { CustomSchemas, registerExtensionFile } from './service-override/files'
-import { setDefaultApi } from './api'
 import { getService } from './services'
 import { ExtensionManifestTranslator } from './tools/l10n'
 import { throttle } from './tools'
+import { setDefaultApi } from './api'
 
-const defaultApiInitializeBarrier = new Barrier()
-export async function initialize (): Promise<void> {
-  await getLocalExtHostExtensionService().then(async (extHostExtensionService) => {
-    setDefaultApi(await extHostExtensionService.getApi())
-    defaultApiInitializeBarrier.open()
-  })
+export type ApiFactory = (extensionId?: string) => Promise<typeof vscode>
+
+let apiFactory: ApiFactory | undefined
+export function registerLocalApiFactory (_apiFactory: ApiFactory): void {
+  apiFactory = _apiFactory
 }
 
 interface RegisterExtensionParams {
@@ -155,7 +153,10 @@ export function registerExtension (manifest: IExtensionManifest, extHostKind?: E
   if (extHostKind === ExtensionHostKind.LocalProcess) {
     async function getApi () {
       await addExtensionPromise
-      return (await getLocalExtHostExtensionService()).getApi(id)
+      if (apiFactory == null) {
+        throw new Error('The local api can\'t be used without registering the local extension host by importing `vscode/localExtensionHost`')
+      }
+      return apiFactory(id)
     }
 
     api = <RegisterLocalProcessExtensionResult>{
@@ -170,14 +171,9 @@ export function registerExtension (manifest: IExtensionManifest, extHostKind?: E
   return api
 }
 
-function onExtHostInitialized (fct: () => void): void {
-  void defaultApiInitializeBarrier.wait().then(fct)
-}
-
 export {
   IExtensionManifest,
   ITranslations,
   IExtensionContributions,
-  onExtHostInitialized,
   ExtensionHostKind
 }
