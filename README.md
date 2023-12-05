@@ -2,14 +2,6 @@
 
 [NPM module](https://www.npmjs.com/) that implements the VSCode api and redirects calls to Monaco editor.
 
-The VSCode api is composed of:
-
-- A lot of classes and tools, which are exported the same way as in VSCode.
-- Some features that are supported by Monaco (Language feature registrations...) which are just forwarded to it (with some transformations)
-- Some features that are not supported by Monaco, and in such case:
-  - If it's an important feature: it requires to use the corresponding service override.
-  - If it's some advanced features that don't make a lot of sense on Monaco (tests...), it just throws an error when you try to use it.
-
 ## Installation
 
 ```bash
