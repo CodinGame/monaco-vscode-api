@@ -78,6 +78,7 @@
     "@codingame/monaco-vscode-keybindings-service-override": "file:../dist/service-override-keybindings",
     "@codingame/monaco-vscode-language-detection-worker-service-override": "file:../dist/service-override-language-detection-worker",
     "@codingame/monaco-vscode-working-copy-service-override": "file:../dist/service-override-working-copy",
+    "@codingame/monaco-vscode-testing-service-override": "file:../dist/service-override-testing",
     "@codingame/monaco-vscode-language-pack-cs": "file:../dist/vscode-language-pack-cs",
     "@codingame/monaco-vscode-language-pack-de": "file:../dist/vscode-language-pack-de",
     "@codingame/monaco-vscode-language-pack-es": "file:../dist/vscode-language-pack-es",

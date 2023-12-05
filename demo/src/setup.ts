@@ -40,6 +40,7 @@ import getWorkspaceTrustOverride from '@codingame/monaco-vscode-workspace-trust-
 import getLogServiceOverride from '@codingame/monaco-vscode-log-service-override'
 import { createIndexedDBProviders, initFile } from '@codingame/monaco-vscode-files-service-override'
 import getWorkingCopyServiceOverride from '@codingame/monaco-vscode-working-copy-service-override'
+import getTestingServiceOverride from '@codingame/monaco-vscode-testing-service-override'
 import * as monaco from 'monaco-editor'
 import { TerminalBackend } from './features/terminal'
 import { openNewCodeEditor } from './features/editor'
@@ -136,7 +137,8 @@ await initializeMonacoService({
   ...getEnvironmentServiceOverride(),
   ...getWorkspaceTrustOverride(),
   ...getWorkingCopyServiceOverride(),
-  ...getScmServiceOverride()
+  ...getScmServiceOverride(),
+  ...getTestingServiceOverride()
 }, document.body, {
   remoteAuthority,
   enableWorkspaceTrust: true,
@@ -161,7 +163,7 @@ await initializeMonacoService({
       uri: monaco.Uri.file('/tmp/test.js'),
       viewColumn: 1
     }, {
-      uri: monaco.Uri.file('/tmp/test.css'),
+      uri: monaco.Uri.file('/tmp/test.md'),
       viewColumn: 2
     }],
     layout: {
