@@ -27,7 +27,7 @@ function createProxy<T extends keyof typeof vscode> (key: T): typeof vscode[T] {
   return new Proxy({}, {
     get (target, p) {
       if (defaultApi == null) {
-        throw new Error('Default api is not ready yet, do not forget to call `initialize` from \'vscode/extensions\'')
+        throw new Error('Default api is not ready yet, do not forget to import \'vscode/localExtensionHost\' and wait for services initialization')
       }
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
       return (defaultApi[key] as any)[p]

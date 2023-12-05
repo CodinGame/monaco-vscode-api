@@ -1,5 +1,4 @@
 import { IStorageService, LogLevel, getService, initialize as initializeMonacoService } from 'vscode/services'
-import { initialize as initializeVscodeExtensions } from 'vscode/extensions'
 import getModelServiceOverride from '@codingame/monaco-vscode-model-service-override'
 import getNotificationServiceOverride from '@codingame/monaco-vscode-notifications-service-override'
 import getDialogsServiceOverride from '@codingame/monaco-vscode-dialogs-service-override'
@@ -48,6 +47,7 @@ import defaultConfiguration from './user/configuration.json?raw'
 import defaultKeybindings from './user/keybindings.json?raw'
 import { workerConfig } from './tools/extHostWorker'
 import { Worker } from './tools/crossOriginWorker'
+import 'vscode/localExtensionHost'
 
 const userDataProvider = await createIndexedDBProviders()
 
@@ -187,8 +187,6 @@ export async function clearStorage (): Promise<void> {
   await userDataProvider.reset()
   await (await getService(IStorageService) as BrowserStorageService).clear()
 }
-
-await initializeVscodeExtensions()
 
 for (const { part, element } of [
   { part: Parts.TITLEBAR_PART, element: '#titleBar' },

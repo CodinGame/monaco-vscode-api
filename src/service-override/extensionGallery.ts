@@ -27,7 +27,9 @@ import { ExtensionEnablementService } from 'vs/workbench/services/extensionManag
 import 'vs/workbench/contrib/extensions/browser/extensions.contribution'
 import 'vs/workbench/contrib/extensions/browser/extensions.web.contribution'
 import { ExtensionUrlHandler, IExtensionUrlHandler } from 'vs/workbench/services/extensions/browser/extensionUrlHandler'
-import { IInstantiationService, ILabelService, IRemoteAgentService } from '../services'
+import { IRemoteAgentService } from 'vs/workbench/services/remote/common/remoteAgentService'
+import { IInstantiationService } from 'vs/platform/instantiation/common/instantiation'
+import { ILabelService } from 'vs/platform/label/common/label'
 import { registerAssets } from '../assets'
 
 // plugin-import-meta-asset only allows relative paths

@@ -14,7 +14,6 @@ import { IColorCustomizations, IThemeScopedColorCustomizations } from 'vs/workbe
 import { IUserDataProfilesService } from 'vs/platform/userDataProfile/common/userDataProfile'
 import { IPolicyService } from 'vs/platform/policy/common/policy'
 import { IInstantiationService } from 'vs/platform/instantiation/common/instantiation'
-import type * as vscode from 'vscode'
 import { IUserDataProfileService } from 'vs/workbench/services/userDataProfile/common/userDataProfile'
 import { IRemoteAgentService } from 'vs/workbench/services/remote/common/remoteAgentService'
 import { IUriIdentityService } from 'vs/platform/uriIdentity/common/uriIdentity'
@@ -32,6 +31,7 @@ import { AbstractWorkspaceEditingService } from 'vs/workbench/services/workspace
 import { URI } from 'vs/base/common/uri'
 import 'vs/workbench/api/common/configurationExtensionPoint'
 import { IBrowserWorkbenchEnvironmentService } from 'vs/workbench/services/environment/browser/environmentService'
+import { IDisposable } from 'vs/base/common/lifecycle'
 import getFileServiceOverride, { initFile } from './files'
 import { memoizedConstructor, unsupported } from '../tools'
 import { registerServiceInitializePreParticipant } from '../lifecycle'
@@ -61,7 +61,7 @@ async function getUserConfiguration (): Promise<string> {
   return (await StandaloneServices.get(IFileService).readFile(userDataProfilesService.defaultProfile.settingsResource)).value.toString()
 }
 
-function onUserConfigurationChange (callback: () => void): vscode.Disposable {
+function onUserConfigurationChange (callback: () => void): IDisposable {
   const userDataProfilesService = StandaloneServices.get(IUserDataProfilesService)
   return StandaloneServices.get(IFileService).onDidFilesChange(e => {
     if (e.affects(userDataProfilesService.defaultProfile.settingsResource)) {

@@ -12,6 +12,8 @@
       "vscode-oniguruma",
       "yazl",
       "@types/vscode",
-      "@types/node"
+      "@types/node",
+      "vscode-semver",
+      "@types/vscode-semver"
     ]
   }

@@ -18,12 +18,12 @@
     "@codingame/monaco-vscode-rollup-vsix-plugin": "file:../dist/rollup-vsix-plugin",
     "@types/dockerode": "^3.3.23",
     "@types/express": "^4.17.21",
-    "@types/wicg-file-system-access": "^2023.10.3",
-    "@types/ws": "^8.5.9",
+    "@types/wicg-file-system-access": "^2023.10.4",
+    "@types/ws": "^8.5.10",
     "fast-glob": "^3.3.2",
     "ts-node": "^10.9.1",
-    "typescript": "~5.2.2",
-    "vite": "~4.4.9"
+    "typescript": "~5.3.2",
+    "vite": "~4.4.12"
   },
   "dependencies": {
     "@codingame/monaco-vscode-log-service-override": "file:../dist/service-override-log",

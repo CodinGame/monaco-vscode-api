@@ -271,11 +271,14 @@ The reference can then be disposed, the model will only be disposed if there is 
 
 ## VSCode api usage
 
-You can just import it as if you were in a vscode extension:
+To be able to use the VSCode api directly from your code, you need to import `vscode/localExtensionHost` and the services to be initialized.
+
+You will then be able to import it as if you were in a VSCode extension:
 
 ```typescript
 import * as vscode from 'vscode'
 import { initialize } from 'vscode/extensions'
+import 'vscode/localExtensionHost'
 
 await initialize()
 
