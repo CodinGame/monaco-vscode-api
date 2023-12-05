@@ -1,5 +1,5 @@
 import type { Uri } from 'vscode'
-import { registerExtension } from 'vscode/extensions'
+import { ExtensionHostKind, registerExtension } from 'vscode/extensions'
 
 const { getApi } = registerExtension({
   name: 'scm-demo',
@@ -9,7 +9,7 @@ const { getApi } = registerExtension({
   },
   version: '1.0.0',
   enabledApiProposals: ['scmActionButton']
-}, 1)
+}, ExtensionHostKind.LocalProcess)
 
 const vscode = await getApi()
 
