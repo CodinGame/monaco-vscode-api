@@ -10,6 +10,7 @@ import getThemeServiceOverride from '@codingame/monaco-vscode-theme-service-over
 import getLanguagesServiceOverride from '@codingame/monaco-vscode-languages-service-override'
 import getAuthenticationServiceOverride from '@codingame/monaco-vscode-authentication-service-override'
 import getAudioCueServiceOverride from '@codingame/monaco-vscode-audio-cue-service-override'
+import getScmServiceOverride from '@codingame/monaco-vscode-scm-service-override'
 import getExtensionGalleryServiceOverride from '@codingame/monaco-vscode-extension-gallery-service-override'
 import getViewsServiceOverride, {
   isEditorPartVisible,
@@ -134,7 +135,8 @@ await initializeMonacoService({
   ...getLifecycleServiceOverride(),
   ...getEnvironmentServiceOverride(),
   ...getWorkspaceTrustOverride(),
-  ...getWorkingCopyServiceOverride()
+  ...getWorkingCopyServiceOverride(),
+  ...getScmServiceOverride()
 }, document.body, {
   remoteAuthority,
   enableWorkspaceTrust: true,

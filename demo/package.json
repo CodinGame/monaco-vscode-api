@@ -129,6 +129,7 @@
     "@codingame/monaco-vscode-ruby-default-extension": "file:../dist/default-extension-ruby",
     "@codingame/monaco-vscode-rust-default-extension": "file:../dist/default-extension-rust",
     "@codingame/monaco-vscode-scss-default-extension": "file:../dist/default-extension-scss",
+    "@codingame/monaco-vscode-scm-service-override": "file:../dist/service-override-scm",
     "@codingame/monaco-vscode-search-result-default-extension": "file:../dist/default-extension-search-result",
     "@codingame/monaco-vscode-search-service-override": "file:../dist/service-override-search",
     "@codingame/monaco-vscode-server": "file:../dist/server",
