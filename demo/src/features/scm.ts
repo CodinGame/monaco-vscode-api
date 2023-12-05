@@ -1,3 +1,4 @@
+import type { Uri } from 'vscode'
 import { registerExtension } from 'vscode/extensions'
 
 const { getApi } = registerExtension({
@@ -17,8 +18,9 @@ if (workspaceFolder == null) {
   throw new Error('No workspace folder')
 }
 
-vscode.commands.registerCommand('scm-demo.click-file', async () => {
-  await vscode.window.showInformationMessage('You pressed a file!')
+vscode.commands.registerCommand('scm-demo.click-file', async (uri: Uri) => {
+  await vscode.commands.executeCommand('vscode.open', uri)
+  await vscode.window.showInformationMessage(`You pressed a file! (${uri.toString()})`)
 })
 vscode.commands.registerCommand('scm-demo.commit', async () => {
   await vscode.window.showInformationMessage("You've committed!")
@@ -44,13 +46,15 @@ group.resourceStates = [{
   resourceUri: vscode.Uri.file('/tmp/test.js'),
   command: {
     title: 'Commit',
-    command: 'scm-demo.click-file'
+    command: 'scm-demo.click-file',
+    arguments: [vscode.Uri.file('/tmp/test.js')]
   }
 }, {
   resourceUri: vscode.Uri.file('/tmp/test_readonly.js'),
   command: {
     title: 'Commit',
-    command: 'scm-demo.click-file'
+    command: 'scm-demo.click-file',
+    arguments: [vscode.Uri.file('/tmp/test_readonly.js')]
   },
   decorations: {
     strikeThrough: true,
