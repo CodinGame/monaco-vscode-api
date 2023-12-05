@@ -840,11 +840,6 @@ export default (args: Record<string, string>): rollup.RollupOptions[] => {
         }).code
       }
     },
-    copy({
-      targets: [
-        { src: ['README.md'], dest: 'dist/main' }
-      ]
-    }),
     metadataPlugin({
       // generate package.json and service-override packages
       getGroup (id: string, options) {
@@ -1114,12 +1109,18 @@ export default (args: Record<string, string>): rollup.RollupOptions[] => {
     }), {
       name: 'clean-src',
       async generateBundle () {
-        // Delete intermediate sources before writing to make sur there is no unused files
+        // Delete intermediate sources before writing to make sure there is no unused files
         await fsPromise.rm(DIST_DIR_MAIN, {
           recursive: true
         })
       }
-    }
+    },
+    copy({
+      hook: 'generateBundle',
+      targets: [
+        { src: ['README.md'], dest: 'dist/main' }
+      ]
+    })
     ]
   }])
 }
