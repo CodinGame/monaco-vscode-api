@@ -541,7 +541,8 @@ export default (args: Record<string, string>): rollup.RollupOptions[] => {
           path.includes('vs/workbench/contrib/codeEditor/browser/') ||
           path.includes('extHost.common.services') ||
           path.includes('extHost.worker.services') ||
-          path.includes('inlayHintsAccessibilty')
+          path.includes('inlayHintsAccessibilty') ||
+          path.includes('vs/workbench/contrib/format/browser/')
       }
     },
     external,
