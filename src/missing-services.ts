@@ -178,8 +178,14 @@ import { IRemoteUserDataProfilesService } from 'vs/workbench/services/userDataPr
 import { IExtensionBisectService } from 'vs/workbench/services/extensionManagement/browser/extensionBisect'
 import { IUserDataSyncAccountService } from 'vs/platform/userDataSync/common/userDataSyncAccount'
 import { IWorkingCopyIdentifier, IWorkingCopyBackupMeta } from 'vs/workbench/services/workingCopy/common/workingCopy'
-import { unsupported } from './tools'
+import { ITestResultStorage } from 'vs/workbench/contrib/testing/common/testResultStorage'
+import { ITestingDecorationsService } from 'vs/workbench/contrib/testing/common/testingDecorations'
+import { ITestingContinuousRunService } from 'vs/workbench/contrib/testing/common/testingContinuousRunService'
+import { ITestExplorerFilterState } from 'vs/workbench/contrib/testing/common/testExplorerFilterState'
+import { ITestingPeekOpener } from 'vs/workbench/contrib/testing/common/testingPeekOpener'
 import { getBuiltInExtensionTranslationsUris } from './l10n'
+import { unsupported } from './tools'
+
 class NullLoggerService extends AbstractLoggerService {
   constructor () {
     super(LogLevel.Info, URI.file('logs.log'))
@@ -2342,6 +2348,20 @@ registerSingleton(ITestResultService, class TestResultService implements ITestRe
   getStateById = () => undefined
 }, InstantiationType.Delayed)
 
+registerSingleton(ITestResultStorage, class TestResultStorage implements ITestResultStorage {
+  _serviceBrand: undefined
+  read = unsupported
+  persist = unsupported
+}, InstantiationType.Delayed)
+
+registerSingleton(ITestingDecorationsService, class TestingDecorationsService implements ITestingDecorationsService {
+  _serviceBrand: undefined
+  onDidChange = Event.None
+  invalidateResultMessage = unsupported
+  syncDecorations = unsupported
+  getDecoratedTestPosition = unsupported
+}, InstantiationType.Delayed)
+
 registerSingleton(IUserDataInitializationService, class UserDataInitializationService implements IUserDataInitializationService {
   _serviceBrand: undefined
   requiresInitialization = async () => false
@@ -2426,4 +2446,41 @@ registerSingleton(ISignService, class SignService implements ISignService {
   async sign (value: string): Promise<string> {
     return value
   }
+}, InstantiationType.Delayed)
+
+registerSingleton(ITestingContinuousRunService, class TestingContinuousRunService implements ITestingContinuousRunService {
+  _serviceBrand: undefined
+  lastRunProfileIds = new Set<number>()
+  onDidChange = Event.None
+  isSpecificallyEnabledFor = () => false
+  isEnabledForAParentOf = () => false
+  isEnabledForAChildOf = () => false
+  isEnabled = () => false
+  start = unsupported
+  stop = unsupported
+}, InstantiationType.Delayed)
+
+registerSingleton(ITestExplorerFilterState, class TestExplorerFilterState implements ITestExplorerFilterState {
+  _serviceBrand: undefined
+  get text () { return unsupported() }
+  get reveal () { return unsupported() }
+  onDidRequestInputFocus = Event.None
+  get globList () { return unsupported() }
+  get includeTags () { return unsupported() }
+  get excludeTags () { return unsupported() }
+  get fuzzy () { return unsupported() }
+  focusInput = unsupported
+  setText = unsupported
+  isFilteringFor = () => false
+  toggleFilteringFor = unsupported
+}, InstantiationType.Delayed)
+
+registerSingleton(ITestingPeekOpener, class TestingPeekOpener implements ITestingPeekOpener {
+  _serviceBrand: undefined
+  get historyVisible () { return unsupported() }
+  tryPeekFirstError = unsupported
+  peekUri = unsupported
+  openCurrentInEditor = unsupported
+  open = unsupported
+  closeAllPeeks = unsupported
 }, InstantiationType.Delayed)

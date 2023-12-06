@@ -2,14 +2,6 @@
 
 [NPM module](https://www.npmjs.com/) that implements the VSCode api and redirects calls to Monaco editor.
 
-The VSCode api is composed of:
-
-- A lot of classes and tools, which are exported the same way as in VSCode.
-- Some features that are supported by Monaco (Language feature registrations...) which are just forwarded to it (with some transformations)
-- Some features that are not supported by Monaco, and in such case:
-  - If it's an important feature: it requires to use the corresponding service override.
-  - If it's some advanced features that don't make a lot of sense on Monaco (tests...), it just throws an error when you try to use it.
-
 ## Installation
 
 ```bash
@@ -171,6 +163,8 @@ Additionally, 25 packages that include the vscode version of some services (with
   - It adds the problems panel tab. *Hint*: It only makes sense to enable it when *Views* service is used.
 - **SCM**: `@codingame/monaco-vscode-scm-service-override`
   - It adds the SCM API that can be used to implement source control. *Hint*: It only makes sense to enable it when *Views* service is used.
+- **Testing**: `@codingame/monaco-vscode-testing-service-override`
+  - It adds the Tests API. *Hint*: It makes more sense to enable it when *Views* service is used.
 - **Language detection worker**: `@codingame/monaco-vscode-language-detection-worker-service-override`
   - When opening an untitled model or a file without extension or if vscode is unable to guess the language simply by the file extension or by reading the first line. Then it will use tensorflow in a worker to try to guess the most probable language (here we are only able to rely on the open source model).
 - **Storage**: `@codingame/monaco-vscode-storage-service-override`
