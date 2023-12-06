@@ -91,7 +91,7 @@ async function getRepoInformations (): Promise<RepositoryInfos> {
   }
 }
 
-async function generateReleaseNotes (repoInfos: RepositoryInfos, changes: string, version: string, lastTag?: string) {
+async function generateReleaseNotes (repoInfos: RepositoryInfos, version: string, changes: string, lastTag?: string) {
   const tag = `v${version}`
 
   const newCommits = (lastTag != null
@@ -110,7 +110,7 @@ async function generateReleaseNotes (repoInfos: RepositoryInfos, changes: string
 
   const releaseDetails = newCommits.map(({ hash, subj, short }) => `* ${subj} ([${short}](${repoInfos.publicUrl}/commit/${hash}))`).join('\n')
 
-  const releaseNotes = `${releaseDiffRef}\n${changes}\n### commits: ${releaseDetails}\n`
+  const releaseNotes = `${releaseDiffRef}\n${changes}\n### commits:\n${releaseDetails}\n`
 
   return releaseNotes
 }
