@@ -1,7 +1,7 @@
 import { IEditorOverrideServices, StandaloneServices } from 'vs/editor/standalone/browser/standaloneServices'
 import { WorkspaceService } from 'vs/workbench/services/configuration/browser/configurationService'
 import { IConfigurationService } from 'vs/platform/configuration/common/configuration'
-import { ITextResourceConfigurationService } from 'vs/editor/common/services/textResourceConfiguration'
+import { ITextResourceConfigurationService, ITextResourcePropertiesService } from 'vs/editor/common/services/textResourceConfiguration'
 import { TextResourceConfigurationService } from 'vs/editor/common/services/textResourceConfigurationService'
 import { SyncDescriptor } from 'vs/platform/instantiation/common/descriptors'
 import { ConfigurationScope } from 'vscode/src/vs/platform/configuration/common/configurationRegistry'
@@ -32,6 +32,7 @@ import { URI } from 'vs/base/common/uri'
 import 'vs/workbench/api/common/configurationExtensionPoint'
 import { IBrowserWorkbenchEnvironmentService } from 'vs/workbench/services/environment/browser/environmentService'
 import { IDisposable } from 'vs/base/common/lifecycle'
+import { TextResourcePropertiesService } from 'vs/workbench/services/textresourceProperties/common/textResourcePropertiesService'
 import getFileServiceOverride, { initFile } from './files'
 import { memoizedConstructor, unsupported } from '../tools'
 import { registerServiceInitializePreParticipant } from '../lifecycle'
@@ -150,7 +151,8 @@ function getServiceOverride (defaultWorkspace?: URI | IAnyWorkspaceIdentifier): 
     [IWorkspaceContextService.toString()]: new SyncDescriptor(MemoizedInjectedConfigurationService, [], true),
     [ITextResourceConfigurationService.toString()]: new SyncDescriptor(TextResourceConfigurationService, [], true),
     [IWorkspaceEditingService.toString()]: new SyncDescriptor(MonacoWorkspaceEditingService, [], true),
-    [IWorkspacesService.toString()]: new SyncDescriptor(BrowserWorkspacesService, undefined, true)
+    [IWorkspacesService.toString()]: new SyncDescriptor(BrowserWorkspacesService, undefined, true),
+    [ITextResourcePropertiesService.toString()]: new SyncDescriptor(TextResourcePropertiesService, undefined, true)
   }
 }
 

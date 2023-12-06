@@ -13,7 +13,7 @@ import * as platform from 'vs/base/common/platform'
 import { IMessagePassingProtocol } from 'vs/base/parts/ipc/common/ipc'
 import { LocalProcessRunningLocation } from 'vs/workbench/services/extensions/common/extensionRunningLocation'
 import { IExtHostExtensionService, IHostUtils } from 'vs/workbench/api/common/extHostExtensionService'
-import { ExtensionHostExtensions, ExtensionHostStartup, IExtensionHost, nullExtensionDescription } from 'vs/workbench/services/extensions/common/extensions'
+import { ExtensionHostExtensions, ExtensionHostStartup, IExtensionHost, IExtensionService, nullExtensionDescription } from 'vs/workbench/services/extensions/common/extensions'
 import { IWebWorkerExtensionHostDataProvider } from 'vs/workbench/services/extensions/browser/webWorkerExtensionHost'
 import { ITelemetryService } from 'vs/platform/telemetry/common/telemetry'
 import { IWorkspaceContextService, WorkbenchState } from 'vs/platform/workspace/common/workspace'
@@ -240,6 +240,8 @@ async function createLocalApi (extensionId?: string): Promise<typeof vscode> {
 setLocalExtensionHost(LocalExtensionHost)
 registerLocalApiFactory(createLocalApi)
 
-registerServiceInitializePostParticipant(async () => {
+registerServiceInitializePostParticipant(async (accessor) => {
+  // Make sure the extension service is loaded
+  accessor.get(IExtensionService)
   setDefaultApi(await createLocalApi())
 })

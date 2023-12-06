@@ -271,10 +271,7 @@ You will then be able to import it as if you were in a VSCode extension:
 
 ```typescript
 import * as vscode from 'vscode'
-import { initialize } from 'vscode/extensions'
 import 'vscode/localExtensionHost'
-
-await initialize()
 
 const range = new vscode.Range(...)
 vscode.languages.registerCompletionItemProvider(...)

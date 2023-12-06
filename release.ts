@@ -91,7 +91,7 @@ async function getRepoInformations (): Promise<RepositoryInfos> {
   }
 }
 
-async function generateReleaseNotes (repoInfos: RepositoryInfos, version: string, lastTag?: string) {
+async function generateReleaseNotes (repoInfos: RepositoryInfos, changes: string, version: string, lastTag?: string) {
   const tag = `v${version}`
 
   const newCommits = (lastTag != null
@@ -110,7 +110,7 @@ async function generateReleaseNotes (repoInfos: RepositoryInfos, version: string
 
   const releaseDetails = newCommits.map(({ hash, subj, short }) => `* ${subj} ([${short}](${repoInfos.publicUrl}/commit/${hash}))`).join('\n')
 
-  const releaseNotes = releaseDiffRef + '\n' + releaseDetails + '\n'
+  const releaseNotes = `${releaseDiffRef}\n${changes}\n### commits: ${releaseDetails}\n`
 
   return releaseNotes
 }
@@ -162,7 +162,7 @@ async function run () {
   const repoInfos = await getRepoInformations()
   const lastTag = await getLastTag()
   const nextVersion = await getNextVersion(lastTag)
-  const releaseNotes = await generateReleaseNotes(repoInfos, nextVersion, lastTag)
+  const releaseNotes = await generateReleaseNotes(repoInfos, nextVersion, process.env.RELEASE_CHANGES ?? 'Unknown', lastTag)
 
   await releaseGithub(repoInfos, nextVersion, releaseNotes)
   await publishNpm(nextVersion)
