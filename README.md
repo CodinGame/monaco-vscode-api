@@ -163,6 +163,8 @@ Additionally, 25 packages that include the vscode version of some services (with
   - It adds the problems panel tab. *Hint*: It only makes sense to enable it when *Views* service is used.
 - **SCM**: `@codingame/monaco-vscode-scm-service-override`
   - It adds the SCM API that can be used to implement source control. *Hint*: It only makes sense to enable it when *Views* service is used.
+- **Testing**: `@codingame/monaco-vscode-testing-service-override`
+  - It adds the Tests API. *Hint*: It makes more sense to enable it when *Views* service is used.
 - **Language detection worker**: `@codingame/monaco-vscode-language-detection-worker-service-override`
   - When opening an untitled model or a file without extension or if vscode is unable to guess the language simply by the file extension or by reading the first line. Then it will use tensorflow in a worker to try to guess the most probable language (here we are only able to rely on the open source model).
 - **Storage**: `@codingame/monaco-vscode-storage-service-override`
