@@ -2117,6 +2117,26 @@ index 767dd15ab7d..aff608f0a42 100644
  		}
  		return SerializeAddon;
  	}
+diff --git a/src/vs/workbench/contrib/terminalContrib/stickyScroll/browser/terminalStickyScrollOverlay.ts b/src/vs/workbench/contrib/terminalContrib/stickyScroll/browser/terminalStickyScrollOverlay.ts
+index b60f155a14a..69d18a43b22 100644
+--- a/src/vs/workbench/contrib/terminalContrib/stickyScroll/browser/terminalStickyScrollOverlay.ts
++++ b/src/vs/workbench/contrib/terminalContrib/stickyScroll/browser/terminalStickyScrollOverlay.ts
+@@ -457,13 +457,13 @@ export class TerminalStickyScrollOverlay extends Disposable {
+ 
+ 	@memoize
+ 	private async _getCanvasAddonConstructor(): Promise<typeof CanvasAddonType> {
+-		const m = await importAMDNodeModule<typeof import('@xterm/addon-canvas')>('@xterm/addon-canvas', 'lib/xterm-addon-canvas.js');
++		const m = await import('@xterm/addon-canvas');
+ 		return m.CanvasAddon;
+ 	}
+ 
+ 	@memoize
+ 	private async _getSerializeAddonConstructor(): Promise<typeof SerializeAddonType> {
+-		const m = await importAMDNodeModule<typeof import('@xterm/addon-serialize')>('@xterm/addon-serialize', 'lib/addon-serialize.js');
++		const m = await import('@xterm/addon-serialize');
+ 		return m.SerializeAddon;
+ 	}
+ }
 diff --git a/src/vs/workbench/contrib/webview/browser/pre/service-worker.js b/src/vs/workbench/contrib/webview/browser/pre/service-worker.js
 index a6e9943b866..c470a1c9ed5 100644
 --- a/src/vs/workbench/contrib/webview/browser/pre/service-worker.js

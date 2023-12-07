@@ -14,6 +14,7 @@ import { ILogService } from 'vs/platform/log/common/log'
 import getEnvironmentServiceOverride from './environment'
 import { registerServiceInitializePreParticipant } from '../lifecycle'
 import 'vs/workbench/contrib/remote/common/remote.contribution'
+import 'vs/workbench/contrib/remote/browser/remote.contribution'
 
 class CustomRemoteSocketFactoryService extends RemoteSocketFactoryService {
   constructor (@IBrowserWorkbenchEnvironmentService browserWorkbenchEnvironmentService: IBrowserWorkbenchEnvironmentService) {

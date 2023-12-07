@@ -30,7 +30,8 @@
         "worker": "always",
         "ts": "always",
         "services": "always",
-        "api": "always"
+        "api": "always",
+        "all": "always"
       }
     ],
     "@typescript-eslint/no-unused-vars": [

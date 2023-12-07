@@ -506,6 +506,7 @@ export default (args: Record<string, string>): rollup.RollupOptions[] => {
           path.endsWith('.css') ||
           path.startsWith(KEYBOARD_LAYOUT_DIR) ||
           path.endsWith('.contribution.js') ||
+          path.endsWith('.all.js') ||
           path.endsWith('xtensionPoint.js') ||
           path.includes('vs/workbench/api/browser/') ||
           path.endsWith('/fileCommands.js') ||
