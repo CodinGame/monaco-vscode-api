@@ -520,7 +520,8 @@ export default (args: Record<string, string>): rollup.RollupOptions[] => {
           path.includes('extHost.common.services') ||
           path.includes('extHost.worker.services') ||
           path.includes('inlayHintsAccessibilty') ||
-          path.includes('vs/workbench/contrib/format/browser/')
+          path.includes('vs/workbench/contrib/format/browser/') ||
+          path.includes('vs/workbench/contrib/chat/browser/contrib/')
       }
     },
     external,

@@ -140,7 +140,7 @@ import { INotebookKernelService } from 'vs/workbench/contrib/notebook/common/not
 import { INotebookRendererMessagingService } from 'vs/workbench/contrib/notebook/common/notebookRendererMessagingService'
 import { IInteractiveDocumentService } from 'vs/workbench/contrib/interactive/browser/interactiveDocumentService'
 import { IInlineChatService } from 'vs/workbench/contrib/inlineChat/common/inlineChat'
-import { IChatWidgetService, IQuickChatService } from 'vs/workbench/contrib/chat/browser/chat'
+import { IChatAccessibilityService, IChatWidgetService, IQuickChatService } from 'vs/workbench/contrib/chat/browser/chat'
 import { IRemoteExplorerService } from 'vs/workbench/services/remote/common/remoteExplorerService'
 import { IAuthenticationService } from 'vs/workbench/services/authentication/common/authentication'
 import { ITimelineService } from 'vs/workbench/contrib/timeline/common/timeline'
@@ -185,8 +185,9 @@ import { IAuxiliaryWindowService } from 'vs/workbench/services/auxiliaryWindow/b
 import { ISpeechService } from 'vs/workbench/contrib/speech/common/speechService'
 import { ITitleService } from 'vs/workbench/services/title/browser/titleService'
 import { ITestCoverageService } from 'vs/workbench/contrib/testing/common/testCoverageService'
-import { unsupported } from './tools'
+import { IChatWidgetHistoryService } from 'vs/workbench/contrib/chat/common/chatWidgetHistoryService'
 import { getBuiltInExtensionTranslationsUris } from './l10n'
+import { unsupported } from './tools'
 
 class NullLoggerService extends AbstractLoggerService {
   constructor () {
@@ -2622,4 +2623,18 @@ registerSingleton(ITestCoverageService, class TestCoverageService implements ITe
 
   openCoverage = unsupported
   closeCoverage = unsupported
+}, InstantiationType.Delayed)
+
+registerSingleton(IChatAccessibilityService, class ChatAccessibilityService implements IChatAccessibilityService {
+  _serviceBrand: undefined
+  acceptRequest = unsupported
+  acceptResponse = unsupported
+}, InstantiationType.Delayed)
+
+registerSingleton(IChatWidgetHistoryService, class ChatWidgetHistoryService implements IChatWidgetHistoryService {
+  _serviceBrand: undefined
+  onDidClearHistory = Event.None
+  clearHistory = unsupported
+  getHistory = () => []
+  saveHistory = unsupported
 }, InstantiationType.Delayed)
