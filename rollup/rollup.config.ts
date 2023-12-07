@@ -470,7 +470,8 @@ const input = {
 const workerGroups: Record<string, string> = {
   languageDetection: 'service-override:language-detection-worker',
   outputLinkComputer: 'service-override:output',
-  textmate: 'service-override:textmate'
+  textmate: 'service-override:textmate',
+  notebook: 'service-override:notebook'
 }
 
 const externals = Object.keys({ ...pkg.dependencies })
@@ -522,7 +523,8 @@ export default (args: Record<string, string>): rollup.RollupOptions[] => {
           path.includes('extHost.worker.services') ||
           path.includes('inlayHintsAccessibilty') ||
           path.includes('vs/workbench/contrib/format/browser/') ||
-          path.includes('vs/workbench/contrib/chat/browser/contrib/')
+          path.includes('vs/workbench/contrib/chat/browser/contrib/') ||
+          path.includes('vs/workbench/contrib/notebook/browser/')
       }
     },
     external,

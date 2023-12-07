@@ -136,7 +136,7 @@ import { IDownloadService } from 'vs/platform/download/common/download'
 import { IExtensionUrlHandler } from 'vs/workbench/services/extensions/browser/extensionUrlHandler'
 import { ICommentService } from 'vs/workbench/contrib/comments/browser/commentService'
 import { INotebookCellStatusBarService } from 'vs/workbench/contrib/notebook/common/notebookCellStatusBarService'
-import { INotebookKernelService } from 'vs/workbench/contrib/notebook/common/notebookKernelService'
+import { INotebookKernelHistoryService, INotebookKernelService } from 'vs/workbench/contrib/notebook/common/notebookKernelService'
 import { INotebookRendererMessagingService } from 'vs/workbench/contrib/notebook/common/notebookRendererMessagingService'
 import { IInteractiveDocumentService } from 'vs/workbench/contrib/interactive/browser/interactiveDocumentService'
 import { IInlineChatService } from 'vs/workbench/contrib/inlineChat/common/inlineChat'
@@ -186,6 +186,11 @@ import { ISpeechService } from 'vs/workbench/contrib/speech/common/speechService
 import { ITitleService } from 'vs/workbench/services/title/browser/titleService'
 import { ITestCoverageService } from 'vs/workbench/contrib/testing/common/testCoverageService'
 import { IChatWidgetHistoryService } from 'vs/workbench/contrib/chat/common/chatWidgetHistoryService'
+import { INotebookEditorWorkerService } from 'vs/workbench/contrib/notebook/common/services/notebookWorkerService'
+import { INotebookExecutionService } from 'vs/workbench/contrib/notebook/common/notebookExecutionService'
+import { INotebookKeymapService } from 'vs/workbench/contrib/notebook/common/notebookKeymapService'
+import { INotebookLoggingService } from 'vs/workbench/contrib/notebook/common/notebookLoggingService'
+import { IInlineChatSessionService } from 'vs/workbench/contrib/inlineChat/browser/inlineChatSession'
 import { getBuiltInExtensionTranslationsUris } from './l10n'
 import { unsupported } from './tools'
 
@@ -2138,8 +2143,8 @@ registerSingleton(ICommentService, class CommentService implements ICommentServi
   updateComments = unsupported
   updateNotebookComments = unsupported
   disposeCommentThread = unsupported
-  getDocumentComments = unsupported
-  getNotebookComments = unsupported
+  getDocumentComments = async () => []
+  getNotebookComments = async () => []
   updateCommentingRanges = unsupported
   hasReactionHandler = unsupported
   toggleReaction = unsupported
@@ -2637,4 +2642,47 @@ registerSingleton(IChatWidgetHistoryService, class ChatWidgetHistoryService impl
   clearHistory = unsupported
   getHistory = () => []
   saveHistory = unsupported
+}, InstantiationType.Delayed)
+
+registerSingleton(IInlineChatSessionService, class InlineChatSessionService implements IInlineChatSessionService {
+  _serviceBrand: undefined
+  onWillStartSession = Event.None
+  onDidEndSession = Event.None
+  createSession = unsupported
+  getSession = unsupported
+  releaseSession = unsupported
+  registerSessionKeyComputer = unsupported
+  recordings = unsupported
+  dispose = unsupported
+}, InstantiationType.Delayed)
+
+registerSingleton(INotebookEditorWorkerService, class NotebookEditorWorkerService implements INotebookEditorWorkerService {
+  _serviceBrand: undefined
+  canComputeDiff = () => false
+  computeDiff = unsupported
+  canPromptRecommendation = async () => false
+}, InstantiationType.Delayed)
+
+registerSingleton(INotebookKernelHistoryService, class NotebookKernelHistoryService implements INotebookKernelHistoryService {
+  _serviceBrand: undefined
+  getKernels = unsupported
+  addMostRecentKernel = unsupported
+}, InstantiationType.Delayed)
+
+registerSingleton(INotebookExecutionService, class NotebookExecutionService implements INotebookExecutionService {
+  _serviceBrand: undefined
+  executeNotebookCells = unsupported
+  cancelNotebookCells = unsupported
+  cancelNotebookCellHandles = unsupported
+  registerExecutionParticipant = unsupported
+}, InstantiationType.Delayed)
+
+registerSingleton(INotebookKeymapService, class NotebookKeymapService implements INotebookKeymapService {
+  _serviceBrand: undefined
+}, InstantiationType.Delayed)
+
+registerSingleton(INotebookLoggingService, class NotebookLoggingService implements INotebookLoggingService {
+  _serviceBrand: undefined
+  info = unsupported
+  debug = unsupported
 }, InstantiationType.Delayed)
