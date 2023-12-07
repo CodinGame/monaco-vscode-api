@@ -20,6 +20,12 @@ import { unsupported } from '../tools'
 import 'vs/workbench/browser/parts/editor/editor.contribution'
 
 class EmptyEditorGroup implements IEditorGroup, IEditorGroupView {
+  get groupsView () {
+    return unsupported()
+  }
+
+  notifyLabelChanged (): void {}
+  createEditorActions = unsupported
   onDidFocus = Event.None
   onDidOpenEditorFail = Event.None
   whenRestored = Promise.resolve()
@@ -98,6 +104,26 @@ class EmptyEditorGroup implements IEditorGroup, IEditorGroupView {
 const fakeActiveGroup = new EmptyEditorGroup()
 
 class EmptyEditorGroupsService implements IEditorGroupsService {
+  onDidCreateAuxiliaryEditorPart = Event.None
+  parts = []
+  get activePart () {
+    return unsupported()
+  }
+
+  get mainPart () {
+    return unsupported()
+  }
+
+  getPart = unsupported
+  createAuxiliaryEditorPart = unsupported
+  onDidChangeGroupMaximized = Event.None
+  toggleMaximizeGroup = unsupported
+  toggleExpandGroup = unsupported
+  get partOptions () {
+    return unsupported()
+  }
+
+  createEditorDropTarget = unsupported
   readonly _serviceBrand = undefined
   getLayout = unsupported
   onDidChangeActiveGroup = Event.None
@@ -136,7 +162,6 @@ class EmptyEditorGroupsService implements IEditorGroupsService {
   mergeGroup = unsupported
   mergeAllGroups = unsupported
   copyGroup = unsupported
-  partOptions = {}
   onDidChangeEditorPartOptions = Event.None
   enforcePartOptions = unsupported
 }

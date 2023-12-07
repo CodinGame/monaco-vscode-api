@@ -10,9 +10,9 @@ import { ICodeEditor, IDiffEditor } from 'vs/editor/browser/editorBrowser'
 import { IEditorGroupView, DEFAULT_EDITOR_MAX_DIMENSIONS, DEFAULT_EDITOR_MIN_DIMENSIONS } from 'vs/workbench/browser/parts/editor/editor'
 import { IResolvedTextEditorModel, ITextModelService } from 'vs/editor/common/services/resolverService'
 import { IStandaloneCodeEditor, StandaloneCodeEditor, StandaloneEditor } from 'vs/editor/standalone/browser/standaloneCodeEditor'
-import { Disposable, IReference } from 'vs/base/common/lifecycle'
+import { Disposable, IDisposable, IReference } from 'vs/base/common/lifecycle'
 import { EditorService } from 'vs/workbench/services/editor/browser/editorService'
-import { IEditorGroup, IEditorGroupsService } from 'vs/workbench/services/editor/common/editorGroupsService'
+import { IActiveEditorActions, IAuxiliaryEditorPart, IEditorDropTargetDelegate, IEditorGroup, IEditorGroupsService, IEditorPart } from 'vs/workbench/services/editor/common/editorGroupsService'
 import { IInstantiationService } from 'vs/platform/instantiation/common/instantiation'
 import { IConfigurationService } from 'vs/platform/configuration/common/configuration'
 import { IWorkspaceTrustRequestService } from 'vs/platform/workspace/common/workspaceTrust'
@@ -28,6 +28,7 @@ import { IContextKeyService } from 'vs/platform/contextkey/common/contextkey'
 import { URI } from 'vs/base/common/uri'
 import { IGroupModelChangeEvent } from 'vs/workbench/common/editor/editorGroupModel'
 import { EditorLayoutInfo } from 'vs/editor/common/config/editorOptions'
+import { IRectangle } from 'vs/platform/window/common/window'
 import { unsupported } from '../../tools'
 
 export type OpenEditor = (modelRef: IReference<IResolvedTextEditorModel>, options: IEditorOptions | undefined, sideBySide?: boolean) => Promise<ICodeEditor | undefined>
@@ -138,6 +139,7 @@ export class MonacoEditorService extends EditorService {
     @ITextModelService textModelService: ITextModelService
   ) {
     super(
+      undefined,
       _editorGroupService,
       instantiationService,
       fileService,
@@ -302,6 +304,22 @@ class StandaloneEditorGroup extends Disposable implements IEditorGroup, IEditorG
     }
   }
 
+  get groupsView () {
+    return unsupported()
+  }
+
+  notifyLabelChanged (): void {}
+
+  createEditorActions (): IActiveEditorActions {
+    return {
+      actions: {
+        primary: [],
+        secondary: []
+      },
+      onDidChange: Event.None
+    }
+  }
+
   onDidFocus = this.editor.onDidFocusEditorWidget
   onDidOpenEditorFail = Event.None
   whenRestored = Promise.resolve()
@@ -416,8 +434,16 @@ export class MonacoDelegateEditorGroupsService<D extends IEditorGroupsService> e
             this.activeGroupOverride = this.additionalGroups.find(group => group.editor === editor)
             this._onDidChangeActiveGroup.fire(this.activeGroup)
           }
+          const onEditorBlurred = () => {
+            if (this.activeGroupOverride === this.additionalGroups.find(group => group.editor === editor)) {
+              this.activeGroupOverride = undefined
+              this._onDidChangeActiveGroup.fire(this.activeGroup)
+            }
+          }
           editor.onDidFocusEditorText(onEditorFocused)
           editor.onDidFocusEditorWidget(onEditorFocused)
+          editor.onDidBlurEditorText(onEditorBlurred)
+          editor.onDidBlurEditorWidget(onEditorBlurred)
           if (editor.hasWidgetFocus()) {
             onEditorFocused()
           }
@@ -447,6 +473,33 @@ export class MonacoDelegateEditorGroupsService<D extends IEditorGroupsService> e
     })
   }
 
+  onDidCreateAuxiliaryEditorPart = this.delegate.onDidCreateAuxiliaryEditorPart
+  get parts (): IEditorGroupsService['parts'] { return this.delegate.parts }
+  createAuxiliaryEditorPart (options?: { bounds?: Partial<IRectangle> | undefined } | undefined): Promise<IAuxiliaryEditorPart> {
+    return this.delegate.createAuxiliaryEditorPart(options)
+  }
+
+  get mainPart (): IEditorGroupsService['mainPart'] { return this.delegate.mainPart }
+  get activePart (): IEditorGroupsService['activePart'] { return this.delegate.activePart }
+  onDidChangeGroupMaximized = this.delegate.onDidChangeGroupMaximized
+  getPart(group: number | IEditorGroup): IEditorPart
+  getPart(container: unknown): IEditorPart | undefined
+  getPart (container: unknown): IEditorPart | undefined {
+    return this.delegate.getPart(container)
+  }
+
+  toggleMaximizeGroup (group?: number | IEditorGroup | undefined): void {
+    return this.delegate.toggleMaximizeGroup(group)
+  }
+
+  toggleExpandGroup (group?: number | IEditorGroup | undefined): void {
+    return this.delegate.toggleExpandGroup(group)
+  }
+
+  createEditorDropTarget (container: unknown, delegate: IEditorDropTargetDelegate): IDisposable {
+    return this.delegate.createEditorDropTarget(container, delegate)
+  }
+
   public get groups (): IEditorGroup[] {
     return [...this.additionalGroups, ...this.delegate.groups]
   }
@@ -466,18 +519,11 @@ export class MonacoDelegateEditorGroupsService<D extends IEditorGroupsService> e
 
   onDidMoveGroup = this.delegate.onDidMoveGroup
   onDidActivateGroup = this.delegate.onDidActivateGroup
-  onDidLayout = this.delegate.onDidLayout
-  onDidScroll = this.delegate.onDidScroll
   onDidChangeGroupIndex = this.delegate.onDidChangeGroupIndex
   onDidChangeGroupLocked = this.delegate.onDidChangeGroupLocked
-  get contentDimension (): IEditorGroupsService['contentDimension'] { return this.delegate.contentDimension }
   get sideGroup (): IEditorGroupsService['sideGroup'] { return this.delegate.sideGroup }
   get count (): IEditorGroupsService['count'] { return this.delegate.count + this.additionalGroups.length }
   get orientation (): IEditorGroupsService['orientation'] { return this.delegate.orientation }
-  get isReady (): IEditorGroupsService['isReady'] { return this.delegate.isReady }
-  get whenReady (): IEditorGroupsService['whenReady'] { return this.delegate.whenReady }
-  get whenRestored (): IEditorGroupsService['whenRestored'] { return this.delegate.whenRestored }
-  get hasRestorableState (): IEditorGroupsService['hasRestorableState'] { return this.delegate.hasRestorableState }
   get partOptions (): IEditorGroupsService['partOptions'] { return this.delegate.partOptions }
 
   getLayout: IEditorGroupsService['getLayout'] = () => {
@@ -512,14 +558,6 @@ export class MonacoDelegateEditorGroupsService<D extends IEditorGroupsService> e
     return this.delegate.applyLayout(...args)
   }
 
-  centerLayout: IEditorGroupsService['centerLayout'] = (...args) => {
-    return this.delegate.centerLayout(...args)
-  }
-
-  isLayoutCentered: IEditorGroupsService['isLayoutCentered'] = (...args) => {
-    return this.delegate.isLayoutCentered(...args)
-  }
-
   setGroupOrientation: IEditorGroupsService['setGroupOrientation'] = (...args) => {
     return this.delegate.setGroupOrientation(...args)
   }
@@ -550,10 +588,6 @@ export class MonacoDelegateEditorGroupsService<D extends IEditorGroupsService> e
 
   copyGroup: IEditorGroupsService['copyGroup'] = (...args) => {
     return this.delegate.copyGroup(...args)
-  }
-
-  enforcePartOptions: IEditorGroupsService['enforcePartOptions'] = (...args) => {
-    return this.delegate.enforcePartOptions(...args)
   }
 
   onDidChangeEditorPartOptions = this.delegate.onDidChangeEditorPartOptions

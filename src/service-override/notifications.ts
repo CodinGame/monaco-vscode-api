@@ -14,7 +14,7 @@ import getLayoutServiceOverride from './layout'
 import { onRenderWorkbench } from '../lifecycle'
 
 onRenderWorkbench(async (accessor) => {
-  const container = accessor.get(ILayoutService).container
+  const container = accessor.get(ILayoutService).mainContainer
   const model = (accessor.get(INotificationService) as NotificationService).model
   const instantiationService = accessor.get(IInstantiationService)
 

@@ -8,7 +8,6 @@ import { ViewDescriptorService } from 'vs/workbench/services/views/browser/viewD
 import { IActivityService } from 'vs/workbench/services/activity/common/activity'
 import { ActivityService } from 'vs/workbench/services/activity/browser/activityService'
 import { IPaneCompositePartService } from 'vs/workbench/services/panecomposite/browser/panecomposite'
-import { PaneCompositeParts } from 'vs/workbench/browser/parts/paneCompositePart'
 import { ActivitybarPart } from 'vs/workbench/browser/parts/activitybar/activitybarPart'
 import { DisposableStore, IDisposable, IReference, MutableDisposable } from 'vs/base/common/lifecycle'
 import { IHoverService } from 'vs/workbench/services/hover/browser/hover'
@@ -44,8 +43,6 @@ import 'vs/workbench/contrib/files/browser/files.contribution.js?include=registe
 import 'vs/workbench/contrib/files/browser/files.contribution.js?exclude=registerConfiguration'
 import { Codicon } from 'vs/base/common/codicons'
 import { GroupOrientation, GroupsOrder, IEditorGroupsService } from 'vs/workbench/services/editor/common/editorGroupsService'
-import { IEditorDropService } from 'vs/workbench/services/editor/browser/editorDropService'
-import { IEditorDropTargetDelegate } from 'vs/workbench/browser/parts/editor/editorDropTarget'
 import { IEditorService } from 'vs/workbench/services/editor/common/editorService'
 import { EditorInputFactoryObject, IEditorResolverService, RegisteredEditorInfo, RegisteredEditorOptions, RegisteredEditorPriority } from 'vs/workbench/services/editor/common/editorResolverService'
 import { EditorResolverService } from 'vs/workbench/services/editor/browser/editorResolverService'
@@ -60,7 +57,6 @@ import { IResolvedTextEditorModel } from 'vs/editor/common/services/resolverServ
 import { ITextEditorService, TextEditorService } from 'vs/workbench/services/textfile/common/textEditorService'
 import { CodeEditorService } from 'vs/workbench/services/editor/browser/codeEditorService'
 import { IUntitledTextEditorService, UntitledTextEditorService } from 'vs/workbench/services/untitled/common/untitledTextEditorService'
-import { IStatusbarService } from 'vs/workbench/services/statusbar/browser/statusbar'
 import { IHistoryService } from 'vs/workbench/services/history/common/history'
 import { HistoryService } from 'vs/workbench/services/history/browser/historyService'
 import { Action2, MenuId, registerAction2 } from 'vs/platform/actions/common/actions'
@@ -86,8 +82,6 @@ import { IThemeService } from 'vs/platform/theme/common/themeService'
 import { ConfirmResult } from 'vs/platform/dialogs/common/dialogs'
 import { IFileService } from 'vs/platform/files/common/files'
 import { ILayoutService } from 'vs/platform/layout/browser/layoutService'
-import { IBannerService } from 'vs/workbench/services/banner/browser/bannerService'
-import { ITitleService } from 'vs/workbench/services/title/common/titleService'
 import { IProgressService } from 'vs/platform/progress/common/progress'
 import { ProgressService } from 'vs/workbench/services/progress/browser/progressService'
 import { CancellationToken } from 'vs/base/common/cancellation'
@@ -110,6 +104,9 @@ import { IWorkspaceContextService, WorkbenchState, isTemporaryWorkspace } from '
 import { IConfigurationService } from 'vs/platform/configuration/common/configuration'
 import { coalesce } from 'vs/base/common/arrays'
 import { IWorkingCopyBackupService } from 'vs/workbench/services/workingCopy/common/workingCopyBackup'
+import { PaneCompositePartService } from 'vs/workbench/browser/parts/paneCompositePartService'
+import { EditorParts } from 'vs/workbench/browser/parts/editor/editorParts'
+import { BrowserAuxiliaryWindowService, IAuxiliaryWindowService } from 'vs/workbench/services/auxiliaryWindow/browser/auxiliaryWindowService'
 import { MonacoDelegateEditorGroupsService, MonacoEditorService, OpenEditor } from './tools/editor'
 import getBulkEditServiceOverride from './bulkEdit'
 import getLayoutServiceOverride, { LayoutService } from './layout'
@@ -157,7 +154,7 @@ function renderPart (partContainer: HTMLElement, part: Part): void {
   layout()
 }
 
-function getPart (part: Parts): Part {
+function getPart (part: Parts): Part | undefined {
   return (StandaloneServices.get(ILayoutService) as LayoutService).getPart(part)
 }
 
@@ -174,19 +171,27 @@ function _attachPart (part: Part, container: HTMLElement) {
 }
 
 function attachPart (part: Parts, container: HTMLElement): IDisposable {
-  return _attachPart(getPart(part), container)
+  const _part = getPart(part)
+  if (_part == null) {
+    throw new Error('Part not found')
+  }
+  return _attachPart(_part, container)
 }
 
 function onPartVisibilityChange (part: Parts, listener: (visible: boolean) => void): IDisposable {
-  return getPart(part).onDidVisibilityChange(listener)
+  const _part = getPart(part)
+  if (_part == null) {
+    throw new Error('Part not found')
+  }
+  return _part.onDidVisibilityChange(listener)
 }
 
 function isPartVisibile (part: Parts): boolean {
-  return StandaloneServices.get(IWorkbenchLayoutService).isVisible(part)
+  return StandaloneServices.get(IWorkbenchLayoutService).isVisible(part, window)
 }
 
 function setPartVisibility (part: Exclude<Parts, Parts.STATUSBAR_PART | Parts.TITLEBAR_PART>, visible: boolean): void {
-  StandaloneServices.get(IWorkbenchLayoutService).setPartHidden(!visible, part)
+  StandaloneServices.get(IWorkbenchLayoutService).setPartHidden(!visible, part, window)
 }
 
 function renderActivitybarPar (container: HTMLElement): IDisposable {
@@ -433,7 +438,10 @@ function registerCustomView (options: CustomViewOption): IDisposable {
 
   const views: IViewDescriptor[] = [{
     id: options.id,
-    name: options.name,
+    name: {
+      value: options.name,
+      original: options.name
+    },
     ctorDescriptor: new SyncDescriptor(class extends ViewPane {
       private content?: HTMLElement
 
@@ -510,16 +518,6 @@ function registerCustomView (options: CustomViewOption): IDisposable {
   return disposableCollection
 }
 
-class EditorDropService implements IEditorDropService {
-  declare readonly _serviceBrand: undefined
-
-  constructor (@IEditorGroupsService private readonly editorPart: EditorPart) { }
-
-  createEditorDropTarget (container: HTMLElement, delegate: IEditorDropTargetDelegate): IDisposable {
-    return this.editorPart.createEditorDropTarget(container, delegate)
-  }
-}
-
 function isElementVisible (el: HTMLElement) {
   if (!el.isConnected) {
     return false
@@ -536,102 +534,26 @@ function isElementVisible (el: HTMLElement) {
 }
 
 function isEditorPartVisible (): boolean {
-  const container = (StandaloneServices.get(IEditorGroupsService) as EditorPart).getContainer()
+  const container = (StandaloneServices.get(IEditorGroupsService).mainPart as EditorPart).getContainer()
   return container != null && isElementVisible(container)
 }
 
 type PublicInterface<T> = Pick<T, keyof T>
 
-class MonacoEditorPart extends MonacoDelegateEditorGroupsService<EditorPart> implements Omit<PublicInterface<EditorPart>, keyof IEditorGroupsService> {
+class MonacoEditorParts extends MonacoDelegateEditorGroupsService<EditorParts> implements Omit<PublicInterface<EditorParts>, keyof IEditorGroupsService> {
   constructor (@IInstantiationService instantiationService: IInstantiationService) {
     super(
-      instantiationService.createInstance(EditorPart),
+      instantiationService.createInstance(EditorParts),
       instantiationService
     )
   }
 
-  onDidChangeSizeConstraints = this.delegate.onDidChangeSizeConstraints
+  registerPart (part: EditorPart): IDisposable {
+    return this.delegate.registerPart(part)
+  }
 
   restoreGroup: EditorPart['restoreGroup'] = (...args) => {
     return this.delegate.restoreGroup(...args)
-  }
-
-  isGroupMaximized: EditorPart['isGroupMaximized'] = (...args) => {
-    return this.delegate.isGroupMaximized(...args)
-  }
-
-  createEditorDropTarget: EditorPart['createEditorDropTarget'] = (...args) => {
-    return this.delegate.createEditorDropTarget(...args)
-  }
-
-  get minimumWidth (): number {
-    return this.delegate.minimumWidth
-  }
-
-  get maximumWidth (): number {
-    return this.delegate.maximumWidth
-  }
-
-  get minimumHeight (): number {
-    return this.delegate.minimumHeight
-  }
-
-  get maximumHeight (): number {
-    return this.delegate.maximumHeight
-  }
-
-  get snap (): boolean {
-    return this.delegate.snap
-  }
-
-  get onDidChange () {
-    return this.delegate.onDidChange
-  }
-
-  get priority () {
-    return this.delegate.priority
-  }
-
-  updateStyles: EditorPart['updateStyles'] = (...args) => {
-    return this.delegate.updateStyles(...args)
-  }
-
-  setBoundarySashes: EditorPart['setBoundarySashes'] = (...args) => {
-    return this.delegate.setBoundarySashes(...args)
-  }
-
-  layout: EditorPart['layout'] = (...args) => {
-    return this.delegate.layout(...args)
-  }
-
-  toJSON: EditorPart['toJSON'] = (...args) => {
-    return this.delegate.toJSON(...args)
-  }
-
-  get dimension () {
-    return this.delegate.dimension
-  }
-
-  onDidVisibilityChange = this.delegate.onDidVisibilityChange
-
-  create: EditorPart['create'] = (...args) => {
-    return this.delegate.create(...args)
-  }
-
-  getContainer: EditorPart['getContainer'] = (...args) => {
-    return this.delegate.getContainer(...args)
-  }
-
-  setVisible: EditorPart['setVisible'] = (...args) => {
-    return this.delegate.setVisible(...args)
-  }
-
-  getId: EditorPart['getId'] = (...args) => {
-    return this.delegate.getId(...args)
-  }
-
-  get element () {
-    return this.delegate.element
   }
 }
 
@@ -662,10 +584,6 @@ onRenderWorkbench(async (accessor) => {
   const workingCopyBackupService = accessor.get(IWorkingCopyBackupService)
 
   // force service instantiation
-  const withStatusBar = accessor.get(IStatusbarService) instanceof Part
-  const withBannerPart = accessor.get(IBannerService) instanceof Part
-  const withTitlePart = accessor.get(ITitleService) instanceof Part
-
   const layoutService = accessor.get(ILayoutService) as LayoutService
 
   function getInitialEditorsState (): IInitialEditorsState | undefined {
@@ -764,7 +682,7 @@ onRenderWorkbench(async (accessor) => {
 
       return filesToOpenOrCreate
     } else if (contextService.getWorkbenchState() === WorkbenchState.EMPTY && configurationService.getValue('workbench.startupEditor') === 'newUntitledFile') {
-      if (editorGroupService.hasRestorableState) {
+      if (editorGroupService.mainPart.hasRestorableState) {
         return [] // do not open any empty untitled file if we restored groups/editors from previous session
       }
 
@@ -852,31 +770,28 @@ onRenderWorkbench(async (accessor) => {
   document.body.append(invisibleContainer)
 
   // Create Parts
-  for (const { id, role, classes, options, enabled = true } of [
-    { id: Parts.TITLEBAR_PART, role: 'none', classes: ['titlebar'], enabled: withTitlePart },
-    { id: Parts.BANNER_PART, role: 'banner', classes: ['banner'], enabled: withBannerPart },
+  for (const { id, role, classes, options } of [
+    { id: Parts.TITLEBAR_PART, role: 'none', classes: ['titlebar'] },
+    { id: Parts.BANNER_PART, role: 'banner', classes: ['banner'] },
     { id: Parts.ACTIVITYBAR_PART, role: 'none', classes: ['activitybar', 'left'] },
     { id: Parts.SIDEBAR_PART, role: 'none', classes: ['sidebar', 'left'] },
     { id: Parts.EDITOR_PART, role: 'main', classes: ['editor'], options: { restorePreviousState: initialLayoutState.editor.restoreEditors } },
     { id: Parts.PANEL_PART, role: 'none', classes: ['panel', 'basepanel', positionToString(Position.BOTTOM)] },
     { id: Parts.AUXILIARYBAR_PART, role: 'none', classes: ['auxiliarybar', 'basepanel', 'right'] },
-    { id: Parts.STATUSBAR_PART, role: 'status', classes: ['statusbar'], enabled: withStatusBar }
+    { id: Parts.STATUSBAR_PART, role: 'status', classes: ['statusbar'] }
   ]) {
-    if (!enabled) {
-      continue
-    }
-
-    const partContainer = createPart(id, role, classes)
-
     const part = layoutService.getPart(id)
-    part.create(partContainer, options)
-    renderPart(partContainer, part)
-    // we should layout the part otherwise the part dimension wont be set which leads to errors
-    // use use values to allow settings setting editor size in workbench construction options (VSCode checks that provided size are smaller than part size)
-    part.layout(9999, 9999, 0, 0)
+    if (part != null) {
+      const partContainer = createPart(id, role, classes)
+      part.create(partContainer, options)
+      renderPart(partContainer, part)
+      // we should layout the part otherwise the part dimension wont be set which leads to errors
+      // use use values to allow settings setting editor size in workbench construction options (VSCode checks that provided size are smaller than part size)
+      part.layout(9999, 9999, 0, 0)
 
-    // We need the container to be attached for some views to work (like xterm)
-    invisibleContainer.append(partContainer)
+      // We need the container to be attached for some views to work (like xterm)
+      invisibleContainer.append(partContainer)
+    }
   }
 
   const layoutReadyPromises: Promise<unknown>[] = []
@@ -887,7 +802,7 @@ onRenderWorkbench(async (accessor) => {
     mark('code/willRestoreEditors')
 
     // first ensure the editor part is ready
-    await editorGroupService.whenReady
+    await editorGroupService.mainPart.whenReady
     mark('code/restoreEditors/editorGroupsReady')
 
     // apply editor layout if any
@@ -942,7 +857,7 @@ onRenderWorkbench(async (accessor) => {
     layoutRestoredPromises.push(
       Promise.all([
         openEditorsPromise?.finally(() => mark('code/restoreEditors/editorsOpened')),
-        editorGroupService.whenRestored.finally(() => mark('code/restoreEditors/editorGroupsRestored'))
+        editorGroupService.mainPart.whenRestored.finally(() => mark('code/restoreEditors/editorGroupsRestored'))
       ]).finally(() => {
         // the `code/didRestoreEditors` perf mark is specifically
         // for when visible editors have resolved, so we only mark
@@ -1104,14 +1019,13 @@ function getServiceOverride (openEditorFallback?: OpenEditor, _webviewIframeAlte
     [IViewsService.toString()]: new SyncDescriptor(ViewsService, [], false),
     [IViewDescriptorService.toString()]: new SyncDescriptor(ViewDescriptorService, [], true),
     [IActivityService.toString()]: new SyncDescriptor(ActivityService, [], true),
-    [IPaneCompositePartService.toString()]: new SyncDescriptor(PaneCompositeParts, [], true),
+    [IPaneCompositePartService.toString()]: new SyncDescriptor(PaneCompositePartService, [], true),
     [IHoverService.toString()]: new SyncDescriptor(HoverService, [], true),
     [IExplorerService.toString()]: new SyncDescriptor(ExplorerService, [], true),
 
     [ICodeEditorService.toString()]: new SyncDescriptor(CodeEditorService, [], true),
     [ITextEditorService.toString()]: new SyncDescriptor(TextEditorService, [], false),
-    [IEditorGroupsService.toString()]: new SyncDescriptor(MonacoEditorPart, [], false),
-    [IEditorDropService.toString()]: new SyncDescriptor(EditorDropService, [], true),
+    [IEditorGroupsService.toString()]: new SyncDescriptor(MonacoEditorParts, [], false),
     [IEditorService.toString()]: new SyncDescriptor(MonacoEditorService, [openEditorFallback, isEditorPartVisible], false),
     [IEditorResolverService.toString()]: new SyncDescriptor(EditorResolverService, [], false),
     [IBreadcrumbsService.toString()]: new SyncDescriptor(BreadcrumbsService, [], true),
@@ -1123,7 +1037,8 @@ function getServiceOverride (openEditorFallback?: OpenEditor, _webviewIframeAlte
     [IWebviewService.toString()]: new SyncDescriptor(WebviewService, [], true),
     [IWebviewViewService.toString()]: new SyncDescriptor(WebviewViewService, [], true),
     [IWebviewWorkbenchService.toString()]: new SyncDescriptor(WebviewEditorService, [], true),
-    [IProgressService.toString()]: new SyncDescriptor(ProgressService, [], true)
+    [IProgressService.toString()]: new SyncDescriptor(ProgressService, [], true),
+    [IAuxiliaryWindowService.toString()]: new SyncDescriptor(BrowserAuxiliaryWindowService, [], true)
   }
 }
 
