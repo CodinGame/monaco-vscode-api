@@ -119,7 +119,7 @@ async function releaseGithub (repoInfos: RepositoryInfos, version: string, relea
   const gitTag = `v${version}`
 
   await $`git tag -a ${gitTag} HEAD -m "chore(release): ${version} [skip ci]"`
-  await $`git push --follow-tags origin HEAD:refs/heads/master`
+  await $`git push --follow-tags origin HEAD:refs/heads/main`
 
   const octokit = new Octokit({
     auth: `token ${githubToken}`
