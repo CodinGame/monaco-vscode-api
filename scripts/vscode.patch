@@ -2118,10 +2118,18 @@ index 767dd15ab7d..aff608f0a42 100644
  		return SerializeAddon;
  	}
 diff --git a/src/vs/workbench/contrib/terminalContrib/stickyScroll/browser/terminalStickyScrollOverlay.ts b/src/vs/workbench/contrib/terminalContrib/stickyScroll/browser/terminalStickyScrollOverlay.ts
-index b60f155a14a..69d18a43b22 100644
+index b60f155a14a..09ce9a928fe 100644
 --- a/src/vs/workbench/contrib/terminalContrib/stickyScroll/browser/terminalStickyScrollOverlay.ts
 +++ b/src/vs/workbench/contrib/terminalContrib/stickyScroll/browser/terminalStickyScrollOverlay.ts
-@@ -457,13 +457,13 @@ export class TerminalStickyScrollOverlay extends Disposable {
+@@ -5,7 +5,6 @@
+ import type { CanvasAddon as CanvasAddonType } from '@xterm/addon-canvas';
+ import type { SerializeAddon as SerializeAddonType } from '@xterm/addon-serialize';
+ import type { IBufferLine, IMarker, ITerminalOptions, ITheme, Terminal as RawXtermTerminal, Terminal as XTermTerminal } from '@xterm/xterm';
+-import { importAMDNodeModule } from 'vs/amdX';
+ import { $, addDisposableListener, addStandardDisposableListener, getWindow } from 'vs/base/browser/dom';
+ import { CancelablePromise, createCancelablePromise } from 'vs/base/common/async';
+ import { debounce, memoize, throttle } from 'vs/base/common/decorators';
+@@ -457,13 +456,13 @@ export class TerminalStickyScrollOverlay extends Disposable {
  
  	@memoize
  	private async _getCanvasAddonConstructor(): Promise<typeof CanvasAddonType> {
