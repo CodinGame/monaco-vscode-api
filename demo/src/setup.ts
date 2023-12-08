@@ -41,6 +41,8 @@ import getLogServiceOverride from '@codingame/monaco-vscode-log-service-override
 import { createIndexedDBProviders, initFile } from '@codingame/monaco-vscode-files-service-override'
 import getWorkingCopyServiceOverride from '@codingame/monaco-vscode-working-copy-service-override'
 import getTestingServiceOverride from '@codingame/monaco-vscode-testing-service-override'
+import getChatServiceOverride from '@codingame/monaco-vscode-chat-service-override'
+import getNotebookServiceOverride from '@codingame/monaco-vscode-notebook-service-override'
 import * as monaco from 'monaco-editor'
 import { registerExtension } from 'vscode/extensions'
 import { TerminalBackend } from './features/terminal'
@@ -59,7 +61,9 @@ const workerLoaders: Partial<Record<string, WorkerLoader>> = {
   editorWorkerService: () => new Worker(new URL('monaco-editor/esm/vs/editor/editor.worker.js', import.meta.url), { type: 'module' }),
   textMateWorker: () => new Worker(new URL('@codingame/monaco-vscode-textmate-service-override/worker', import.meta.url), { type: 'module' }),
   outputLinkComputer: () => new Worker(new URL('@codingame/monaco-vscode-output-service-override/worker', import.meta.url), { type: 'module' }),
-  languageDetectionWorkerService: () => new Worker(new URL('@codingame/monaco-vscode-language-detection-worker-service-override/worker', import.meta.url), { type: 'module' })
+  languageDetectionWorkerService: () => new Worker(new URL('@codingame/monaco-vscode-language-detection-worker-service-override/worker', import.meta.url), { type: 'module' }),
+  notebookEditorWorkerService: () => new Worker(new URL('@codingame/monaco-vscode-notebook-service-override/worker', import.meta.url), { type: 'module' })
+
 }
 window.MonacoEnvironment = {
   getWorker: function (moduleId, label) {
@@ -139,7 +143,9 @@ await initializeMonacoService({
   ...getWorkspaceTrustOverride(),
   ...getWorkingCopyServiceOverride(),
   ...getScmServiceOverride(),
-  ...getTestingServiceOverride()
+  ...getTestingServiceOverride(),
+  ...getChatServiceOverride(),
+  ...getNotebookServiceOverride()
 }, document.body, {
   remoteAuthority,
   enableWorkspaceTrust: true,
