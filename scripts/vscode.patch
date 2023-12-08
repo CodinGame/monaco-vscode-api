@@ -2614,6 +2614,19 @@ index f4707432371..7c5cdde39cc 100644
  
  	declare _serviceBrand: undefined;
  
+diff --git a/src/vs/workbench/services/remote/common/remoteExplorerService.ts b/src/vs/workbench/services/remote/common/remoteExplorerService.ts
+index 51edd57eddd..e51481b69b3 100644
+--- a/src/vs/workbench/services/remote/common/remoteExplorerService.ts
++++ b/src/vs/workbench/services/remote/common/remoteExplorerService.ts
+@@ -138,7 +138,7 @@ export interface IRemoteExplorerService {
+ 	readonly namedProcesses: Map<number, string>;
+ }
+ 
+-class RemoteExplorerService implements IRemoteExplorerService {
++export class RemoteExplorerService implements IRemoteExplorerService {
+ 	public _serviceBrand: undefined;
+ 	private _targetType: string[] = [];
+ 	private readonly _onDidChangeTargetType: Emitter<string[]> = new Emitter<string[]>();
 diff --git a/src/vs/workbench/services/remote/common/remoteExtensionsScanner.ts b/src/vs/workbench/services/remote/common/remoteExtensionsScanner.ts
 index a466cc1f3a1..09f6a40eb26 100644
 --- a/src/vs/workbench/services/remote/common/remoteExtensionsScanner.ts
