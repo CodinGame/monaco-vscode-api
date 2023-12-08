@@ -32,13 +32,13 @@ To **tree-mend** (to **un**treeshake it) monaco-editor, this library provides a 
 
 This library uses a lot the `new URL('asset.extension', import.meta.url)` syntax which [is supported by vite](https://vitejs.dev/guide/assets.html#new-url-url-import-meta-url)
 
-While it works great in `build` mode (because rollup is used), there is some issues in `watch`` mode:
+While it works great in `build` mode (because rollup is used), there is some issues in `watch` mode:
 - import.meta.url is not replaced while creating bundles, it is an issue when the syntax is used inside a dependency
 - vite is still trying to inject/transform javascript assets files, breaking the code by injecting ESM imports in commonjs files
 
 There are workarounds for both:
 
-- We can help vite by replacing `import.meta.url` by the original module path (you need the --experimental-import-meta-resolve note option):
+- We can help vite by replacing `import.meta.url` by the original module path (you need the `--experimental-import-meta-resolve` note option):
 ```typescript
 {
   ...
@@ -188,6 +188,7 @@ Additionally, 25 packages that include the vscode version of some services (with
   - Ask user it they trust the current workspace, disable some features if not
 - **Extension Gallery**: `@codingame/monaco-vscode-extension-gallery-service-override`
   - Support for the VSCode marketplace, it allows to install extensions from the marketplace.
+
 Usage:
 
 ```typescript
