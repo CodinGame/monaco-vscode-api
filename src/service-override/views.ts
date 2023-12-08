@@ -131,14 +131,14 @@ function createPart (id: string, role: string, classes: string[]): HTMLElement {
 }
 
 function layoutPart (part: Part) {
-  const parent = part.getContainer()?.parentNode
+  const parent = part.getContainer()?.parentNode as HTMLElement | undefined
   if (parent == null) {
     return
   }
   part.layout(
-    Math.max(part.minimumWidth, Math.min(part.maximumWidth, (parent as HTMLElement).offsetWidth)),
-    Math.max(part.minimumHeight, Math.min(part.maximumHeight, (parent as HTMLElement).offsetHeight)),
-    0, 0
+    Math.max(part.minimumWidth, Math.min(part.maximumWidth, parent.offsetWidth)),
+    Math.max(part.minimumHeight, Math.min(part.maximumHeight, parent.offsetHeight)),
+    parent.offsetTop, parent.offsetLeft
   )
 }
 
