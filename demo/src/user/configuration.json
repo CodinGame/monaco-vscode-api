@@ -17,5 +17,6 @@
     "debug.toolBarLocation": "docked",
     "editor.experimental.asyncTokenization": true,
     "terminal.integrated.tabs.title": "${sequence}",
-    "typescript.tsserver.log": "normal"
+    "typescript.tsserver.log": "normal",
+    "workbench.sideBar.location": "left"
 }

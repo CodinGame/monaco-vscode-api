@@ -16,7 +16,10 @@ import getViewsServiceOverride, {
   Parts,
   onPartVisibilityChange,
   isPartVisibile,
-  attachPart
+  attachPart,
+  getSideBarPosition,
+  onDidChangeSideBarPosition,
+  Position
 } from '@codingame/monaco-vscode-views-service-override'
 import getBannerServiceOverride from '@codingame/monaco-vscode-view-banner-service-override'
 import getStatusBarServiceOverride from '@codingame/monaco-vscode-view-status-bar-service-override'
@@ -197,25 +200,28 @@ export async function clearStorage (): Promise<void> {
   await (await getService(IStorageService) as BrowserStorageService).clear()
 }
 
-for (const { part, element } of [
+for (const config of [
   { part: Parts.TITLEBAR_PART, element: '#titleBar' },
   { part: Parts.BANNER_PART, element: '#banner' },
-  { part: Parts.SIDEBAR_PART, element: '#sidebar' },
-  { part: Parts.ACTIVITYBAR_PART, element: '#activityBar' },
+  { part: Parts.SIDEBAR_PART, get element () { return getSideBarPosition() === Position.LEFT ? '#sidebar' : '#sidebar-right' }, onDidElementChange: onDidChangeSideBarPosition },
+  { part: Parts.ACTIVITYBAR_PART, get element () { return getSideBarPosition() === Position.LEFT ? '#activityBar' : '#activityBar-right' }, onDidElementChange: onDidChangeSideBarPosition },
   { part: Parts.PANEL_PART, element: '#panel' },
   { part: Parts.EDITOR_PART, element: '#editors' },
   { part: Parts.STATUSBAR_PART, element: '#statusBar' },
-  { part: Parts.AUXILIARYBAR_PART, element: '#auxiliaryBar' }
+  { part: Parts.AUXILIARYBAR_PART, get element () { return getSideBarPosition() === Position.LEFT ? '#auxiliaryBar' : '#auxiliaryBar-left' }, onDidElementChange: onDidChangeSideBarPosition }
 ]) {
-  const el = document.querySelector<HTMLDivElement>(element)!
-  attachPart(part, el)
+  attachPart(config.part, document.querySelector<HTMLDivElement>(config.element)!)
 
-  if (!isPartVisibile(part)) {
-    el.style.display = 'none'
+  config.onDidElementChange?.(() => {
+    attachPart(config.part, document.querySelector<HTMLDivElement>(config.element)!)
+  })
+
+  if (!isPartVisibile(config.part)) {
+    document.querySelector<HTMLDivElement>(config.element)!.style.display = 'none'
   }
 
-  onPartVisibilityChange(part, visible => {
-    el.style.display = visible ? 'block' : 'none'
+  onPartVisibilityChange(config.part, visible => {
+    document.querySelector<HTMLDivElement>(config.element)!.style.display = visible ? 'block' : 'none'
   })
 }
 
