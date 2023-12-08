@@ -89,6 +89,11 @@ diagnostics.set(modelRef.object.textEditorModel!.uri, [{
   code: 42
 }])
 const settingsModelReference = await createModelReference(defaultUserConfigurationFile)
+function updateSettingsDirty () {
+  document.getElementById('settings-dirty')!.style.display = settingsModelReference.object.isDirty() ? 'inline' : 'none'
+}
+updateSettingsDirty()
+settingsModelReference.object.onDidChangeDirty(updateSettingsDirty)
 const settingEditor = createConfiguredEditor(document.getElementById('settings-editor')!, {
   model: settingsModelReference.object.textEditorModel,
   automaticLayout: true
@@ -107,6 +112,12 @@ settingEditor.addAction({
 })
 
 const keybindingsModelReference = await createModelReference(defaultUserKeybindindsFile)
+function updateKeydinbingsDirty () {
+  document.getElementById('keybindings-dirty')!.style.display = keybindingsModelReference.object.isDirty() ? 'inline' : 'none'
+}
+updateKeydinbingsDirty()
+keybindingsModelReference.object.onDidChangeDirty(updateKeydinbingsDirty)
+
 createConfiguredEditor(document.getElementById('keybindings-editor')!, {
   model: keybindingsModelReference.object.textEditorModel,
   automaticLayout: true
