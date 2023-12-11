@@ -191,6 +191,8 @@ import { INotebookExecutionService } from 'vs/workbench/contrib/notebook/common/
 import { INotebookKeymapService } from 'vs/workbench/contrib/notebook/common/notebookKeymapService'
 import { INotebookLoggingService } from 'vs/workbench/contrib/notebook/common/notebookLoggingService'
 import { IInlineChatSessionService } from 'vs/workbench/contrib/inlineChat/browser/inlineChatSession'
+import { IWalkthroughsService } from 'vs/workbench/contrib/welcomeGettingStarted/browser/gettingStartedService'
+import { IFeaturedExtensionsService } from 'vs/workbench/contrib/welcomeGettingStarted/browser/featuredExtensionService'
 import { getBuiltInExtensionTranslationsUris } from './l10n'
 import { unsupported } from './tools'
 
@@ -2685,4 +2687,27 @@ registerSingleton(INotebookLoggingService, class NotebookLoggingService implemen
   _serviceBrand: undefined
   info = unsupported
   debug = unsupported
+}, InstantiationType.Delayed)
+
+registerSingleton(IWalkthroughsService, class WalkthroughsService implements IWalkthroughsService {
+  _serviceBrand: undefined
+  onDidAddWalkthrough = Event.None
+  onDidRemoveWalkthrough = Event.None
+  onDidChangeWalkthrough = Event.None
+  onDidProgressStep = Event.None
+  getWalkthroughs = unsupported
+  getWalkthrough = unsupported
+  registerWalkthrough = unsupported
+  progressByEvent = unsupported
+  progressStep = unsupported
+  deprogressStep = unsupported
+  markWalkthroughOpened = unsupported
+}, InstantiationType.Delayed)
+
+registerSingleton(IFeaturedExtensionsService, class FeaturedExtensionsService implements IFeaturedExtensionsService {
+  _serviceBrand: undefined
+  getExtensions = unsupported
+  get title () {
+    return unsupported()
+  }
 }, InstantiationType.Delayed)

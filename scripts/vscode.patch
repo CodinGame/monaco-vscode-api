@@ -240,7 +240,7 @@ index 4f42810f0bd..58b0747c812 100644
  
  const ttPolicy = createTrustedTypesPolicy('defaultWorkerFactory', { createScriptURL: value => value });
 diff --git a/src/vs/base/common/network.ts b/src/vs/base/common/network.ts
-index 00ad27c3d55..5811b217ced 100644
+index 00ad27c3d55..9e5e31ad723 100644
 --- a/src/vs/base/common/network.ts
 +++ b/src/vs/base/common/network.ts
 @@ -4,6 +4,8 @@
@@ -252,12 +252,22 @@ index 00ad27c3d55..5811b217ced 100644
  import * as platform from 'vs/base/common/platform';
  import { equalsIgnoreCase, startsWithIgnoreCase } from 'vs/base/common/strings';
  import { URI } from 'vs/base/common/uri';
-@@ -210,6 +212,20 @@ export const VSCODE_AUTHORITY = 'vscode-app';
+@@ -210,6 +212,30 @@ export const VSCODE_AUTHORITY = 'vscode-app';
  class FileAccessImpl {
  
  	private static readonly FALLBACK_AUTHORITY = VSCODE_AUTHORITY;
 +	private staticBrowserUris = new ResourceMap<URI>();
 +	private appResourcePathUrls = new Map<string, string | (() => string)>();
++
++	private moduleContentProvider = new Map<string, () => Promise<any>>();
++
++	public registerModuleContentProvider(moduleId: string, contentLoader: () => Promise<any>) {
++		this.moduleContentProvider.set(moduleId, contentLoader);
++	}
++
++	public toModuleContent<T>(moduleId: string): Promise<T> {
++		return this.moduleContentProvider.get(moduleId)!();
++	}
 +
 +	public registerAppResourcePathUrl(moduleId: string, url: string | (() => string)): void {
 +		this.appResourcePathUrls.set(moduleId, url);
@@ -268,12 +278,12 @@ index 00ad27c3d55..5811b217ced 100644
 +		if (typeof url === 'function') {
 +			url = url();
 +		}
-+		return new URL(url ?? '', globalThis.location?.href ?? import.meta.url).toString();
++		return new URL(url ?? moduleId, globalThis.location?.href ?? import.meta.url).toString();
 +	}
  
  	/**
  	 * Returns a URI to use in contexts where the browser is responsible
-@@ -218,7 +234,7 @@ class FileAccessImpl {
+@@ -218,7 +244,7 @@ class FileAccessImpl {
  	 * **Note:** use `dom.ts#asCSSUrl` whenever the URL is to be used in CSS context.
  	 */
  	asBrowserUri(resourcePath: AppResourcePath | ''): URI {
@@ -282,7 +292,7 @@ index 00ad27c3d55..5811b217ced 100644
  		return this.uriToBrowserUri(uri);
  	}
  
-@@ -257,7 +273,7 @@ class FileAccessImpl {
+@@ -257,7 +283,7 @@ class FileAccessImpl {
  			});
  		}
  
@@ -291,7 +301,7 @@ index 00ad27c3d55..5811b217ced 100644
  	}
  
  	/**
-@@ -265,7 +281,7 @@ class FileAccessImpl {
+@@ -265,7 +291,7 @@ class FileAccessImpl {
  	 * is responsible for loading.
  	 */
  	asFileUri(resourcePath: AppResourcePath | ''): URI {
@@ -300,7 +310,7 @@ index 00ad27c3d55..5811b217ced 100644
  		return this.uriToFileUri(uri);
  	}
  
-@@ -297,6 +313,19 @@ class FileAccessImpl {
+@@ -297,6 +323,19 @@ class FileAccessImpl {
  
  		return URI.parse(moduleIdToUrl.toUrl(uriOrModule));
  	}
@@ -2215,6 +2225,34 @@ index b442277e920..481ab494561 100644
  	private doPostMessage(channel: string, data?: any, transferable: Transferable[] = []): boolean {
  		if (this.element && this._messagePort) {
  			this._messagePort.postMessage({ channel, args: data }, transferable);
+diff --git a/src/vs/workbench/contrib/welcomeGettingStarted/browser/gettingStartedDetailsRenderer.ts b/src/vs/workbench/contrib/welcomeGettingStarted/browser/gettingStartedDetailsRenderer.ts
+index 869f44526b4..0587e08a8ec 100644
+--- a/src/vs/workbench/contrib/welcomeGettingStarted/browser/gettingStartedDetailsRenderer.ts
++++ b/src/vs/workbench/contrib/welcomeGettingStarted/browser/gettingStartedDetailsRenderer.ts
+@@ -17,6 +17,7 @@ import { IFileService } from 'vs/platform/files/common/files';
+ import { INotificationService } from 'vs/platform/notification/common/notification';
+ import { ILanguageService } from 'vs/editor/common/languages/language';
+ import { IExtensionService } from 'vs/workbench/services/extensions/common/extensions';
++import { FileAccess } from 'vs/base/common/network';
+ 
+ 
+ export class GettingStartedDetailsRenderer {
+@@ -221,12 +222,9 @@ export class GettingStartedDetailsRenderer {
+ 		try {
+ 			const moduleId = JSON.parse(path.query).moduleId;
+ 			if (useModuleId && moduleId) {
+-				const contents = await new Promise<string>(c => {
+-					require([moduleId], content => {
+-						c(content.default());
+-					});
+-				});
+-				return contents;
++				const content = await FileAccess.toModuleContent<() => Promise<string>>(moduleId);
++
++				return content();
+ 			}
+ 		} catch { }
+ 
 diff --git a/src/vs/workbench/contrib/welcomeGettingStarted/browser/gettingStartedService.ts b/src/vs/workbench/contrib/welcomeGettingStarted/browser/gettingStartedService.ts
 index f0c08e1b826..e63f4724028 100644
 --- a/src/vs/workbench/contrib/welcomeGettingStarted/browser/gettingStartedService.ts
@@ -2237,6 +2275,47 @@ index f0c08e1b826..e63f4724028 100644
  				},
  				when: ContextKeyExpr.deserialize(override ?? walkthrough.when) ?? ContextKeyExpr.true(),
  			} as const;
+diff --git a/src/vs/workbench/contrib/welcomeWalkthrough/common/walkThroughContentProvider.ts b/src/vs/workbench/contrib/welcomeWalkthrough/common/walkThroughContentProvider.ts
+index 94a4879c2f9..b58e3ffb222 100644
+--- a/src/vs/workbench/contrib/welcomeWalkthrough/common/walkThroughContentProvider.ts
++++ b/src/vs/workbench/contrib/welcomeWalkthrough/common/walkThroughContentProvider.ts
+@@ -10,13 +10,13 @@ import { ITextModel, DefaultEndOfLine, EndOfLinePreference, ITextBufferFactory }
+ import { ILanguageService } from 'vs/editor/common/languages/language';
+ import { IWorkbenchContribution } from 'vs/workbench/common/contributions';
+ import { marked } from 'vs/base/common/marked/marked';
+-import { Schemas } from 'vs/base/common/network';
++import { FileAccess, Schemas } from 'vs/base/common/network';
+ import { Range } from 'vs/editor/common/core/range';
+ import { createTextBufferFactory } from 'vs/editor/common/model/textModel';
+ import { assertIsDefined } from 'vs/base/common/types';
+-import { IInstantiationService } from 'vs/platform/instantiation/common/instantiation';
++import { IInstantiationService, ServicesAccessor } from 'vs/platform/instantiation/common/instantiation';
+ 
+-export function requireToContent(instantiationService: IInstantiationService, resource: URI): Promise<string> {
++export async function requireToContent(instantiationService: IInstantiationService, resource: URI): Promise<string> {
+ 	if (!resource.query) {
+ 		throw new Error('Welcome: invalid resource');
+ 	}
+@@ -26,17 +26,9 @@ export function requireToContent(instantiationService: IInstantiationService, re
+ 		throw new Error('Welcome: invalid resource');
+ 	}
+ 
+-	const content: Promise<string> = new Promise<string>((resolve, reject) => {
+-		require([query.moduleId], content => {
+-			try {
+-				resolve(instantiationService.invokeFunction(content.default));
+-			} catch (err) {
+-				reject(err);
+-			}
+-		});
+-	});
++	const content = await FileAccess.toModuleContent<(accessor: ServicesAccessor) => Promise<string>>(query.moduleId);
+ 
+-	return content;
++	return instantiationService.invokeFunction(content);
+ }
+ 
+ export class WalkThroughSnippetContentProvider implements ITextModelContentProvider, IWorkbenchContribution {
 diff --git a/src/vs/workbench/services/extensionManagement/common/extensionManagement.ts b/src/vs/workbench/services/extensionManagement/common/extensionManagement.ts
 index 362e485948a..50f5a5f175d 100644
 --- a/src/vs/workbench/services/extensionManagement/common/extensionManagement.ts

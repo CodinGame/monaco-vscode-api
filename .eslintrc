@@ -22,6 +22,7 @@
         "css": "always",
         "js": "always",
         "mp3": "always",
+        "svg": "always",
         "json": "always",
         "contribution": "always", // Hack for vscode .contribution.js files
         "protocol": "always", // Hack for vscode .protocol.js files
