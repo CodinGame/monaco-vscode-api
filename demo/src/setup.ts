@@ -46,6 +46,7 @@ import getWorkingCopyServiceOverride from '@codingame/monaco-vscode-working-copy
 import getTestingServiceOverride from '@codingame/monaco-vscode-testing-service-override'
 import getChatServiceOverride from '@codingame/monaco-vscode-chat-service-override'
 import getNotebookServiceOverride from '@codingame/monaco-vscode-notebook-service-override'
+import getWelcomeServiceOverride from '@codingame/monaco-vscode-welcome-service-override'
 import * as monaco from 'monaco-editor'
 import { registerExtension } from 'vscode/extensions'
 import { TerminalBackend } from './features/terminal'
@@ -148,7 +149,8 @@ await initializeMonacoService({
   ...getScmServiceOverride(),
   ...getTestingServiceOverride(),
   ...getChatServiceOverride(),
-  ...getNotebookServiceOverride()
+  ...getNotebookServiceOverride(),
+  ...getWelcomeServiceOverride()
 }, document.body, {
   remoteAuthority,
   enableWorkspaceTrust: true,
