@@ -1070,7 +1070,7 @@ export default (args: Record<string, string>): rollup.RollupOptions[] => {
                 }
               }]
           })
-          await groupBundle.write({
+          const output = await groupBundle.write({
             preserveModules: true,
             preserveModulesRoot: path.resolve(DIST_DIR, 'main/service-override'),
             minifyInternalExports: false,
@@ -1086,6 +1086,13 @@ export default (args: Record<string, string>): rollup.RollupOptions[] => {
           // remove exclusive files from main bundle to prevent them from being duplicated
           for (const exclusiveModule of exclusiveModules) {
             delete bundle[path.relative(DIST_DIR_MAIN, exclusiveModule)]
+          }
+
+          const assets = output.output
+            .filter((file): file is rollup.OutputAsset => file.type === 'asset')
+            .filter(file => file.fileName !== 'package.json')
+          for (const asset of assets) {
+            delete bundle[asset.fileName]
           }
         }
       }
