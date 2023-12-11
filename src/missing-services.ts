@@ -5,7 +5,7 @@ import { IPaneCompositePartService } from 'vs/workbench/services/panecomposite/b
 import { IUriIdentityService } from 'vs/platform/uriIdentity/common/uriIdentity'
 import { ITextFileService } from 'vs/workbench/services/textfile/common/textfiles'
 import { IFileService } from 'vs/platform/files/common/files'
-import { GroupOrientation, IEditorGroup, IEditorGroupsService } from 'vs/workbench/services/editor/common/editorGroupsService'
+import { GroupOrientation, IEditorGroup, IEditorGroupsService, IEditorPart } from 'vs/workbench/services/editor/common/editorGroupsService'
 import { IWorkingCopyFileService, WorkingCopyFileService } from 'vs/workbench/services/workingCopy/common/workingCopyFileService'
 import { IPathService } from 'vs/workbench/services/path/common/pathService'
 import { InstantiationType, registerSingleton } from 'vs/platform/instantiation/common/extensions'
@@ -161,7 +161,7 @@ import { IChatVariablesService } from 'vs/workbench/contrib/chat/common/chatVari
 import { IAiRelatedInformationService } from 'vs/workbench/services/aiRelatedInformation/common/aiRelatedInformation'
 import { IAiEmbeddingVectorService } from 'vs/workbench/services/aiEmbeddingVector/common/aiEmbeddingVectorService'
 import { ResourceSet } from 'vs/base/common/map'
-import { IEditorGroupView } from 'vs/workbench/browser/parts/editor/editor'
+import { DEFAULT_EDITOR_PART_OPTIONS, IEditorGroupView } from 'vs/workbench/browser/parts/editor/editor'
 import { IMessage, ISignService } from 'vs/platform/sign/common/sign'
 import { BrowserHostService } from 'vs/workbench/services/host/browser/browserHostService'
 import { IBannerService } from 'vs/workbench/services/banner/browser/bannerService'
@@ -376,26 +376,67 @@ class EmptyEditorGroup implements IEditorGroup, IEditorGroupView {
 }
 
 const fakeActiveGroup = new EmptyEditorGroup()
+
+class EmptyEditorPart implements IEditorPart {
+  onDidLayout = Event.None
+  onDidScroll = Event.None
+  get contentDimension (): never { return unsupported() }
+  isReady = true
+  whenReady = Promise.resolve()
+  whenRestored = Promise.resolve()
+  hasRestorableState = false
+  centerLayout = unsupported
+  isLayoutCentered = unsupported
+  enforcePartOptions = unsupported
+  onDidChangeActiveGroup = Event.None
+  onDidAddGroup = Event.None
+  onDidRemoveGroup = Event.None
+  onDidMoveGroup = Event.None
+  onDidActivateGroup = Event.None
+  onDidChangeGroupIndex = Event.None
+  onDidChangeGroupLocked = Event.None
+  onDidChangeGroupMaximized = Event.None
+  activeGroup = fakeActiveGroup
+  get sideGroup (): never { return unsupported() }
+  groups = [fakeActiveGroup]
+  count = 0
+  orientation = GroupOrientation.HORIZONTAL
+  getGroups = () => []
+  getGroup = () => undefined
+  activateGroup = unsupported
+  getSize = unsupported
+  setSize = unsupported
+  arrangeGroups = unsupported
+  toggleMaximizeGroup = unsupported
+  toggleExpandGroup = unsupported
+  applyLayout = unsupported
+  getLayout = unsupported
+  setGroupOrientation = unsupported
+  findGroup = () => undefined
+  addGroup = unsupported
+  removeGroup = unsupported
+  moveGroup = unsupported
+  mergeGroup = unsupported
+  mergeAllGroups = unsupported
+  copyGroup = unsupported
+  partOptions = DEFAULT_EDITOR_PART_OPTIONS
+
+  onDidChangeEditorPartOptions = Event.None
+  createEditorDropTarget = unsupported
+}
+
 class EmptyEditorGroupsService implements IEditorGroupsService {
   onDidCreateAuxiliaryEditorPart = Event.None
-  parts = []
-
-  get activePart () {
-    return this
-  }
-
-  get mainPart () {
-    return this
-  }
+  mainPart = new EmptyEditorPart()
+  activePart = this.mainPart
+  parts = [this.mainPart]
 
   getPart = unsupported
   createAuxiliaryEditorPart = unsupported
   onDidChangeGroupMaximized = Event.None
   toggleMaximizeGroup = unsupported
   toggleExpandGroup = unsupported
-  get partOptions () {
-    return unsupported()
-  }
+  partOptions = DEFAULT_EDITOR_PART_OPTIONS
 
   createEditorDropTarget = unsupported
   readonly _serviceBrand = undefined
@@ -1888,8 +1929,8 @@ registerSingleton(ICustomEditorService, class CustomEditorService implements ICu
   getAllCustomEditors = unsupported
   getContributedCustomEditors = unsupported
   getUserConfiguredCustomEditors = unsupported
-  registerCustomEditorCapabilities = unsupported
-  getCustomEditorCapabilities = unsupported
+  registerCustomEditorCapabilities = () => Disposable.None
+  getCustomEditorCapabilities = () => undefined
 }, InstantiationType.Delayed)
 
 registerSingleton(IWebviewService, class WebviewService implements IWebviewService {
