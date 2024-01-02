@@ -89,7 +89,9 @@ const REMOVE_COMMANDS = new Set([
   'debug.startFromConfig',
   'debug.installAdditionalDebuggers',
   'REMOVE_ROOT_FOLDER_COMMAND_ID',
-  'debug.openView'
+  'debug.openView',
+  '_files.windowOpen',
+  '_files.newWindow'
 ])
 
 const KEEP_COLORS = new Set([
@@ -159,8 +161,14 @@ function isCallPure (file: string, functionName: string, node: recast.types.name
   }
 
   if (functionName === 'CommandsRegistry.registerCommand') {
-    if (file.includes('fileActions.contribution') || file.includes('workspaceCommands') || file.includes('mainThreadCLICommands')) {
+    if (file.includes('workspaceCommands') || file.includes('mainThreadCLICommands')) {
       return true
+    }
+
+    const firstParam = args[0]!
+    if (firstParam.type === 'StringLiteral') {
+      const commandId = firstParam.value
+      return REMOVE_COMMANDS.has(commandId)
     }
   }
 
