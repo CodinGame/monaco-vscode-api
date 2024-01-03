@@ -1,8 +1,7 @@
 import { IEditorOverrideServices, StandaloneServices } from 'vs/editor/standalone/browser/standaloneServices'
-import { IWorkbenchLayoutService, PanelAlignment, Parts, Position } from 'vs/workbench/services/layout/browser/layoutService'
+import { ActivityBarPosition, IWorkbenchLayoutService, LayoutSettings, PanelAlignment, Parts, Position } from 'vs/workbench/services/layout/browser/layoutService'
 import { ILayoutOffsetInfo, ILayoutService } from 'vs/platform/layout/browser/layoutService'
 import { Emitter, Event } from 'vs/base/common/event'
-import { ICodeEditorService } from 'vs/editor/browser/services/codeEditorService'
 import * as dom from 'vs/base/browser/dom'
 import { SyncDescriptor } from 'vs/platform/instantiation/common/descriptors'
 import { Part } from 'vs/workbench/browser/part'
@@ -15,23 +14,90 @@ import { ActivitybarPart } from 'vs/workbench/browser/parts/activitybar/activity
 import { IEditorGroupsService } from 'vs/workbench/services/editor/common/editorGroupsService'
 import { IStatusbarService } from 'vs/workbench/services/statusbar/browser/statusbar'
 import { ServicesAccessor } from 'vs/platform/instantiation/common/instantiation'
+import { IConfigurationService } from 'vs/platform/configuration/common/configuration'
+import { Disposable, DisposableStore, toDisposable } from 'vs/base/common/lifecycle'
+import { IAuxiliaryWindowService } from 'vs/workbench/services/auxiliaryWindow/browser/auxiliaryWindowService'
+import { StandaloneCodeEditor } from 'vs/editor/standalone/browser/standaloneCodeEditor'
+import { IHostService } from 'vs/workbench/services/host/browser/host'
+import { ICodeEditorService } from 'vs/editor/browser/services/codeEditorService'
 import { onRenderWorkbench } from '../lifecycle'
 import { getWorkbenchContainer } from '../workbench'
 
-export class LayoutService implements ILayoutService, IWorkbenchLayoutService {
+export class LayoutService extends Disposable implements ILayoutService, IWorkbenchLayoutService {
   declare readonly _serviceBrand: undefined
 
   private paneCompositeService!: IPaneCompositePartService
   private editorGroupService!: IEditorGroupsService
   private statusBarService!: IStatusbarService
   private viewDescriptorService!: IViewDescriptorService
+  private configurationService!: IConfigurationService
+  private auxiliaryWindowService!: IAuxiliaryWindowService
+  private hostService!: IHostService
+
+  private activeContainerId: number | undefined
 
   constructor (
-    public container: HTMLElement = getWorkbenchContainer()
+    public mainContainer: HTMLElement = getWorkbenchContainer()
   ) {
+    super()
     window.addEventListener('resize', () => this.layout())
     this.layout()
   }
+
+  hasMainWindowBorder (): boolean {
+    return false
+  }
+
+  getMainWindowBorderRadius (): string | undefined {
+    return undefined
+  }
+
+  isMainEditorLayoutCentered (): boolean {
+    return false
+  }
+
+  centerMainEditorLayout (): void {
+  }
+
+  private readonly _onDidLayoutContainer = this._register(new Emitter<{ readonly container: HTMLElement, readonly dimension: dom.IDimension }>())
+  readonly onDidLayoutContainer = this._onDidLayoutContainer.event
+
+  private readonly _onDidAddContainer = this._register(new Emitter<{ readonly container: HTMLElement, readonly disposables: DisposableStore }>())
+  readonly onDidAddContainer = this._onDidAddContainer.event
+
+  private readonly _onDidRemoveContainer = this._register(new Emitter<HTMLElement>())
+  readonly onDidRemoveContainer = this._onDidRemoveContainer.event
+
+  private readonly _onDidLayoutMainContainer = this._register(new Emitter<dom.IDimension>())
+  readonly onDidLayoutMainContainer = this._onDidLayoutMainContainer.event
+
+  private readonly _onDidLayoutActiveContainer = this._register(new Emitter<dom.IDimension>())
+  readonly onDidLayoutActiveContainer = this._onDidLayoutActiveContainer.event
+  private readonly _onDidChangeActiveContainer = this._register(new Emitter<void>())
+  readonly onDidChangeActiveContainer = this._onDidChangeActiveContainer.event
+
+  get activeContainer (): HTMLElement { return this.getContainerFromDocument(dom.getActiveDocument()) }
+  get containers (): Iterable<HTMLElement> {
+    const containers: HTMLElement[] = []
+    for (const { window } of dom.getWindows()) {
+      containers.push(this.getContainerFromDocument(window.document))
+    }
+
+    return containers
+  }
+
+  private getContainerFromDocument (document: Document): HTMLElement {
+    if (document === this.mainContainer.ownerDocument) {
+      // main window
+      return this.mainContainer
+    } else {
+      // auxiliary window
+      return document.body.getElementsByClassName('monaco-workbench')[0] as HTMLElement
+    }
+  }
+
+  mainContainerOffset = { top: 0, quickPickTop: 0 }
+  activeContainerOffset = { top: 0, quickPickTop: 0 }
 
   onDidChangeFullscreen = Event.None
   onDidChangeZenMode = Event.None
@@ -48,6 +114,64 @@ export class LayoutService implements ILayoutService, IWorkbenchLayoutService {
     this.paneCompositeService = accessor.get(IPaneCompositePartService)
     this.statusBarService = accessor.get(IStatusbarService)
     this.viewDescriptorService = accessor.get(IViewDescriptorService)
+    this.configurationService = accessor.get(IConfigurationService)
+    this.auxiliaryWindowService = accessor.get(IAuxiliaryWindowService)
+    this.hostService = accessor.get(IHostService)
+
+    this._register(this.configurationService.onDidChangeConfiguration((e) => {
+      if (e.affectsConfiguration(LayoutSettings.ACTIVITY_BAR_LOCATION)) {
+        this.setPartHidden(this.isActivityBarHidden(), Parts.ACTIVITYBAR_PART)
+      }
+
+      if (e.affectsConfiguration('workbench.statusBar.visible')) {
+        this.setPartHidden(this.configurationService.getValue<boolean>('workbench.statusBar.visible'), Parts.STATUSBAR_PART)
+      }
+    }))
+    this.setPartHidden(this.isActivityBarHidden(), Parts.ACTIVITYBAR_PART)
+    this.setPartHidden(!this.configurationService.getValue<boolean>('workbench.statusBar.visible'), Parts.STATUSBAR_PART)
+
+    // Window active / focus changes
+    this._register(this.hostService.onDidChangeActiveWindow(() => this.onActiveWindowChanged()))
+
+    // Auxiliary windows
+    this._register(this.auxiliaryWindowService.onDidOpenAuxiliaryWindow(({ window, disposables }) => {
+      this._onDidAddContainer.fire({ container: window.container, disposables: new DisposableStore() })
+
+      disposables.add(window.onDidLayout(dimension => this.handleContainerDidLayout(window.container, dimension)))
+      disposables.add(toDisposable(() => this._onDidRemoveContainer.fire(window.container)))
+    }))
+  }
+
+  private handleContainerDidLayout (container: HTMLElement, dimension: dom.IDimension): void {
+    if (container === this.mainContainer) {
+      this._onDidLayoutMainContainer.fire(dimension)
+    }
+
+    if (dom.isActiveDocument(container)) {
+      this._onDidLayoutActiveContainer.fire(dimension)
+    }
+  }
+
+  private getActiveContainerId (): number {
+    const activeContainer = this.activeContainer
+
+    return dom.getWindow(activeContainer).vscodeWindowId
+  }
+
+  private onActiveWindowChanged (): void {
+    const activeContainerId = this.getActiveContainerId()
+    if (this.activeContainerId !== activeContainerId) {
+      this.activeContainerId = activeContainerId
+      this._onDidChangeActiveContainer.fire()
+    }
+  }
+
+  private isActivityBarHidden (): boolean {
+    const oldValue = this.configurationService.getValue<boolean | undefined>('workbench.activityBar.visible')
+    if (oldValue !== undefined) {
+      return !oldValue
+    }
+    return this.configurationService.getValue(LayoutSettings.ACTIVITY_BAR_LOCATION) !== ActivityBarPosition.SIDE
   }
 
   focusPart (part: Parts): void {
@@ -80,7 +204,7 @@ export class LayoutService implements ILayoutService, IWorkbenchLayoutService {
   }
 
   getDimension (part: Parts): dom.Dimension | undefined {
-    return this.getPart(part).dimension
+    return this.getPart(part)?.dimension
   }
 
   toggleMaximizedPanel (): void {
@@ -160,21 +284,21 @@ export class LayoutService implements ILayoutService, IWorkbenchLayoutService {
     return !(container == null) && isAncestorUsingFlowTo(activeElement, container)
   }
 
-  getContainer (part: Parts): HTMLElement | undefined {
-    if (this.parts.get(part) == null) {
-      return undefined
-    }
+  getContainer(window: Window): HTMLElement
+  getContainer(part: Parts): HTMLElement | undefined
+  getContainer (windowOrPart: Parts | Window): HTMLElement | undefined {
+    if (typeof windowOrPart === 'string') {
+      if (this.parts.get(windowOrPart) == null) {
+        return undefined
+      }
 
-    return this.getPart(part).getContainer()
+      return this.getPart(windowOrPart)?.getContainer()
+    }
+    return document.body.getElementsByClassName('monaco-workbench')[0] as HTMLElement
   }
 
-  public getPart (key: Parts): Part {
-    const part = this.parts.get(key)
-    if (part == null) {
-      throw new Error(`Unknown part ${key}`)
-    }
-
-    return part
+  public getPart (key: Parts): Part | undefined {
+    return this.parts.get(key)
   }
 
   private hiddenParts = new Set<Parts>()
@@ -230,7 +354,7 @@ export class LayoutService implements ILayoutService, IWorkbenchLayoutService {
     }
 
     // The code that show or hide parts in vscode is not pulled by this library, so let's do it by hands here
-    this.getPart(part).setVisible(!hidden)
+    this.getPart(part)?.setVisible(!hidden)
   }
 
   isVisible (part: Parts): boolean {
@@ -257,13 +381,23 @@ export class LayoutService implements ILayoutService, IWorkbenchLayoutService {
   private readonly _onDidLayout = new Emitter<dom.IDimension>()
   readonly onDidLayout = this._onDidLayout.event
 
-  private _dimension!: dom.IDimension
-  get dimension (): dom.IDimension { return this._dimension }
+  private _mainContainerDimension!: dom.IDimension
+  get mainContainerDimension (): dom.IDimension { return this._mainContainerDimension }
+  get activeContainerDimension (): dom.IDimension {
+    const activeContainer = this.activeContainer
+    if (activeContainer === this.mainContainer) {
+      // main window
+      return this.mainContainerDimension
+    } else {
+      // auxiliary window
+      return dom.getClientArea(activeContainer)
+    }
+  }
 
   layout (): void {
-    this._dimension = dom.getClientArea(window.document.body)
+    this._mainContainerDimension = dom.getClientArea(window.document.body)
 
-    this._onDidLayout.fire(this._dimension)
+    this._onDidLayout.fire(this._mainContainerDimension)
   }
 
   get hasContainer (): boolean {
@@ -271,8 +405,21 @@ export class LayoutService implements ILayoutService, IWorkbenchLayoutService {
   }
 
   focus (): void {
-    // Break cyclic dependency but getting it only when needed
-    StandaloneServices.get(ICodeEditorService).getFocusedCodeEditor()?.focus()
+    const activeContainer = this.activeContainer
+    if (activeContainer === this.mainContainer) {
+      // main window
+
+      // Break cyclic dependency by getting it only when needed
+      const focusedCodeEditor = StandaloneServices.get(ICodeEditorService).getFocusedCodeEditor()
+      if (focusedCodeEditor instanceof StandaloneCodeEditor) {
+        focusedCodeEditor.focus()
+      } else {
+        this.focusPart(Parts.EDITOR_PART)
+      }
+    } else {
+      // auxiliary window
+      this.editorGroupService.getPart(activeContainer)?.activeGroup.focus()
+    }
   }
 }
 
@@ -290,7 +437,7 @@ onRenderWorkbench((accessor) => {
     isChrome ? 'chromium' : isFirefox ? 'firefox' : isSafari ? 'safari' : undefined
   ])
 
-  layoutService.container.classList.add(...workbenchClasses)
+  layoutService.mainContainer.classList.add(...workbenchClasses)
   document.body.classList.add(platformClass)
   document.body.classList.add('web')
 })

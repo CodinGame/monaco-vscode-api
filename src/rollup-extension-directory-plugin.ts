@@ -1,6 +1,7 @@
 import { createFilter, FilterPattern, dataToEsm } from '@rollup/pluginutils'
 import { Plugin } from 'rollup'
 import type { IExtensionManifest } from 'vs/platform/extensions/common/extensions'
+import glob from 'fast-glob'
 import * as path from 'path'
 import * as fsPromise from 'fs/promises'
 import { ExtensionResource, extractResourcesFromExtensionManifest, parseJson } from './extension-tools.js'
@@ -9,7 +10,7 @@ interface Options {
   include?: FilterPattern
   exclude?: FilterPattern
   transformManifest?: (manifest: IExtensionManifest) => IExtensionManifest
-  getAdditionalResources?: (manifest: IExtensionManifest, directory: string) => Promise<ExtensionResource[]>
+  getAdditionalResources?: (manifest: IExtensionManifest, directory: string, glob: (pattern: string) => Promise<ExtensionResource[]>) => Promise<ExtensionResource[]>
 }
 
 export default function plugin ({
@@ -62,9 +63,17 @@ export default function plugin ({
             return (await fsPromise.readdir(path.join(id, dirPath)))
           }
           const extensionResources = await extractResourcesFromExtensionManifest(manifest, getFileContent, listFiles)
+
+          async function _glob (pattern: string) {
+            return (await glob(pattern, {
+              cwd: id,
+              onlyFiles: true
+            })).map(path => ({ path }))
+          }
+
           const resources = Array.from(new Set([
             ...extensionResources,
-            ...await getAdditionalResources(manifest, id)
+            ...await getAdditionalResources(manifest, id, _glob)
           ]))
 
           function generateFileRegistrationInstruction (filePath: string, importPath: string, mimeType?: string) {

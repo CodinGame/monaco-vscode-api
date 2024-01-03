@@ -1,8 +1,9 @@
 import { createFilter, FilterPattern } from '@rollup/pluginutils'
-import { InputPluginOption, Plugin } from 'rollup'
+import { Plugin } from 'rollup'
 import * as yauzl from 'yauzl'
 import type { IExtensionManifest } from 'vs/platform/extensions/common/extensions'
 import { IFs, createFsFromVolume, Volume } from 'memfs'
+import glob, { FileSystemAdapter } from 'fast-glob'
 import { Readable } from 'stream'
 import * as path from 'path'
 import { ExtensionResource, extractResourcesFromExtensionManifest, parseJson } from './extension-tools.js'
@@ -10,9 +11,8 @@ import { ExtensionResource, extractResourcesFromExtensionManifest, parseJson } f
 interface Options {
   include?: FilterPattern
   exclude?: FilterPattern
-  rollupPlugins?: InputPluginOption[]
   transformManifest?: (manifest: IExtensionManifest) => IExtensionManifest
-  getAdditionalResources?: (manifest: IExtensionManifest, getFileContent: (path: string) => Promise<Buffer>, listFiles: (path: string) => Promise<string[]>) => Promise<ExtensionResource[]>
+  getAdditionalResources?: (manifest: IExtensionManifest, readFile: (path: string) => Promise<Buffer>, readDir: (path: string) => Promise<string[]>, glob: (pattern: string) => Promise<ExtensionResource[]>) => Promise<ExtensionResource[]>
 }
 
 function read (stream: Readable): Promise<Buffer> {
@@ -92,9 +92,17 @@ export default function plugin ({
       const extensionResources = (await extractResourcesFromExtensionManifest(manifest, getFileContent, listFiles))
         .filter(resource => vsixFS.existsSync(path.join('/', resource.realPath ?? resource.path)))
 
-      const resources = [
+      async function _glob (pattern: string) {
+        return (await glob(pattern, {
+          fs: <FileSystemAdapter>vsixFS,
+          cwd: '/',
+          onlyFiles: true
+        })).map(path => ({ path }))
+      }
+
+      const resources: ExtensionResource[] = [
         ...extensionResources,
-        ...await getAdditionalResources(manifest, getFileContent, listFiles)
+        ...await getAdditionalResources(manifest, getFileContent, listFiles, _glob)
       ]
 
       const pathMapping = (await Promise.all(resources.map(async resource => {

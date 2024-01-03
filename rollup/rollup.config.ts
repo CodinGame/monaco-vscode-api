@@ -29,7 +29,9 @@ const PURE_FUNCTIONS = new Set([
   'createProxyIdentifier',
   'createDecorator',
   'localize',
+  'localize2',
   'localizeWithPath',
+  'localize2WithPath',
   'Registry.as',
   'Object.freeze',
   'URI.parse',
@@ -161,7 +163,7 @@ function isCallPure (file: string, functionName: string, node: recast.types.name
   }
 
   if (functionName === 'CommandsRegistry.registerCommand') {
-    if (file.includes('workspaceCommands') || file.includes('mainThreadCLICommands')) {
+    if (file.includes('mainThreadCLICommands')) {
       return true
     }
 
@@ -193,30 +195,6 @@ function isCallPure (file: string, functionName: string, node: recast.types.name
     }
   }
 
-  if (functionName.endsWith('registerAction2')) {
-    const firstParam = args[0]!
-
-    const className = firstParam.type === 'Identifier' ? firstParam.name : firstParam.type === 'ClassExpression' ? firstParam.id?.name as string : undefined
-    if (className != null) {
-      if (['AddConfigurationAction', 'AskInInteractiveAction'].includes(className)) {
-        return true
-      }
-      if (['ToggleTabsVisibilityAction'].includes(className)) {
-        return false
-      }
-    }
-
-    if (file.includes('windowActions') || file.includes('workspaceActions')) {
-      return true
-    }
-
-    const firstParamCode = recast.print(firstParam).code
-    if (firstParamCode.includes('DEBUG_CONFIGURE_COMMAND_ID') ||
-      firstParamCode.includes('OpenEditorsView')) {
-      return true
-    }
-  }
-
   if (functionName === 'MenuRegistry.appendMenuItems') {
     if (file.includes('layoutActions')) {
       return true
@@ -226,8 +204,8 @@ function isCallPure (file: string, functionName: string, node: recast.types.name
     const firstParamCode = recast.print(args[0]!).code
     if (
       firstParamCode.startsWith('MenuId.MenubarDebugMenu') ||
-      firstParamCode.startsWith('MenuId.MenubarFileMenu') ||
-      firstParamCode.startsWith('MenuId.TouchBarContext')
+      firstParamCode.startsWith('MenuId.TouchBarContext') ||
+      firstParamCode.startsWith('MenuId.AccountsContext')
     ) {
       return true
     }
@@ -267,14 +245,6 @@ function isCallPure (file: string, functionName: string, node: recast.types.name
   if (functionName === 'registerDebugCommandPaletteItem') {
     const firstParamCode = recast.print(args[0]!).code
     if (['RESTART_SESSION_ID', 'DISCONNECT_ID', 'DISCONNECT_AND_SUSPEND_ID', 'DEBUG_START_COMMAND_ID', 'DEBUG_RUN_COMMAND_ID'].includes(firstParamCode)) {
-      return true
-    }
-    return false
-  }
-
-  if (functionName === 'registerViews') {
-    const firstParamCode = recast.print(args[0]!).code
-    if (firstParamCode.includes('WelcomeView.ID')) {
       return true
     }
     return false

@@ -54,6 +54,7 @@ const api: typeof vscode = {
   interactive: createProxy('interactive'),
   ai: createProxy('ai'),
   chat: createProxy('chat'),
+  speech: createProxy('speech'),
 
   // types
   Breakpoint: extHostTypes.Breakpoint,
@@ -168,7 +169,6 @@ const api: typeof vscode = {
   TaskRevealKind: extHostTypes.TaskRevealKind,
   TaskScope: extHostTypes.TaskScope,
   TerminalLink: extHostTypes.TerminalLink,
-  TerminalQuickFixExecuteTerminalCommand: extHostTypes.TerminalQuickFixCommand,
   TerminalQuickFixOpener: extHostTypes.TerminalQuickFixOpener,
   TerminalLocation: extHostTypes.TerminalLocation,
   TerminalProfile: extHostTypes.TerminalProfile,
@@ -228,7 +228,6 @@ const api: typeof vscode = {
   TestResultState: extHostTypes.TestResultState,
   TestRunRequest: extHostTypes.TestRunRequest,
   TestMessage: extHostTypes.TestMessage,
-  TestMessage2: extHostTypes.TestMessage,
   TestTag: extHostTypes.TestTag,
   TestRunProfileKind: extHostTypes.TestRunProfileKind,
   TextSearchCompleteMessageType: searchExtTypes.TextSearchCompleteMessageType,
@@ -261,7 +260,14 @@ const api: typeof vscode = {
   StackFrameFocus: <any>extHostTypes.StackFrameFocus,
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   ThreadFocus: <any>extHostTypes.ThreadFocus,
-  RelatedInformationType: extHostTypes.RelatedInformationType
+  RelatedInformationType: extHostTypes.RelatedInformationType,
+  ChatAgentResultFeedbackKind: extHostTypes.ChatAgentResultFeedbackKind,
+  TabInputChat: extHostTypes.ChatEditorTabInput,
+  SpeechToTextStatus: extHostTypes.SpeechToTextStatus,
+  ChatAgentCompletionItem: extHostTypes.ChatAgentCompletionItem,
+  MultiDocumentHighlight: extHostTypes.MultiDocumentHighlight,
+  NotebookVariablesRequestKind: extHostTypes.NotebookVariablesRequestKind,
+  TerminalQuickFixTerminalCommand: extHostTypes.TerminalQuickFixCommand
 }
 
 // @ts-ignore the syntax will be transformed by a typescript transformer in the rollup config

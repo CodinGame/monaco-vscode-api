@@ -109,6 +109,7 @@ class LocalExtensionHost implements IExtensionHost {
   public extensions: ExtensionHostExtensions | null = null
   private readonly _extensionHostLogsLocation: URI
   private _protocolPromise: Promise<IMessagePassingProtocol> | null
+  public pid = null
 
   constructor (
     public readonly runningLocation: LocalProcessRunningLocation,
@@ -201,7 +202,8 @@ class LocalExtensionHost implements IExtensionHost {
         sessionId: this._telemetryService.sessionId,
         machineId: this._telemetryService.machineId,
         firstSessionDate: this._telemetryService.firstSessionDate,
-        msftInternal: this._telemetryService.msftInternal
+        msftInternal: this._telemetryService.msftInternal,
+        sqmId: this._telemetryService.sqmId
       },
       logLevel: this._logService.getLevel(),
       loggers: [...this._loggerService.getRegisteredLoggers()],

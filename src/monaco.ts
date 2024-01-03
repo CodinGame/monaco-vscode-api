@@ -1,7 +1,7 @@
 import { StandaloneKeybindingService, StandaloneServices } from 'vs/editor/standalone/browser/standaloneServices'
 import { ITextResourceConfigurationService } from 'vs/editor/common/services/textResourceConfiguration'
 import { IInstantiationService } from 'vs/platform/instantiation/common/instantiation'
-import { IStandaloneDiffEditorConstructionOptions, IStandaloneEditorConstructionOptions, StandaloneDiffEditor2, StandaloneEditor } from 'vs/editor/standalone/browser/standaloneCodeEditor'
+import { IStandaloneDiffEditorConstructionOptions, IStandaloneEditorConstructionOptions, StandaloneCodeEditor, StandaloneDiffEditor2, StandaloneEditor } from 'vs/editor/standalone/browser/standaloneCodeEditor'
 import { IDiffEditorOptions, IEditorOptions } from 'vs/editor/common/config/editorOptions'
 import { IEditorConfiguration } from 'vs/workbench/browser/parts/editor/textEditor'
 import { isObject } from 'vs/base/common/types'
@@ -78,78 +78,85 @@ function computeDiffConfiguration (configuration: IEditorConfiguration, override
  * So instead of just taking the options given by the user via the `updateOptions` method,
  * it fallbacks on the current configurationService configuration
  */
-class ConfiguredStandaloneEditor extends createInjectedClass(StandaloneEditor) {
-  private optionsOverrides: Readonly<IEditorOptions> = {}
-  private lastAppliedEditorOptions?: IEditorOptions
+function createConfiguredEditorClass (impl: new (instantiationService: IInstantiationService, domElement: HTMLElement, _options: Readonly<IStandaloneEditorConstructionOptions>) => StandaloneCodeEditor) {
+  class ConfiguredStandaloneEditor extends impl {
+    private optionsOverrides: Readonly<IEditorOptions> = {}
+    private lastAppliedEditorOptions?: IEditorOptions
 
-  constructor (
-    domElement: HTMLElement,
-    _options: Readonly<IStandaloneEditorConstructionOptions> = {},
-    @IInstantiationService instantiationService: IInstantiationService,
-    @ITextResourceConfigurationService private textResourceConfigurationService: ITextResourceConfigurationService
-  ) {
-    // Remove Construction specific options
-    const { theme, autoDetectHighContrast, model, value, language, accessibilityHelpUrl, ariaContainerElement, overflowWidgetsDomNode, dimension, ...options } = _options
-    const computedOptions = computeConfiguration(textResourceConfigurationService.getValue<IEditorConfiguration>(_options.model?.uri), options)
-    super(instantiationService, domElement, { ...computedOptions, overflowWidgetsDomNode, dimension, theme, autoDetectHighContrast, model, value, language, accessibilityHelpUrl, ariaContainerElement })
-    this.lastAppliedEditorOptions = computedOptions
+    constructor (
+      domElement: HTMLElement,
+      _options: Readonly<IStandaloneEditorConstructionOptions> = {},
+      @IInstantiationService instantiationService: IInstantiationService,
+      @ITextResourceConfigurationService private textResourceConfigurationService: ITextResourceConfigurationService
+    ) {
+      // Remove Construction specific options
+      const { theme, autoDetectHighContrast, model, value, language, accessibilityHelpUrl, ariaContainerElement, overflowWidgetsDomNode, dimension, ...options } = _options
+      const computedOptions = computeConfiguration(textResourceConfigurationService.getValue<IEditorConfiguration>(_options.model?.uri), options)
+      super(instantiationService, domElement, { ...computedOptions, overflowWidgetsDomNode, dimension, theme, autoDetectHighContrast, model, value, language, accessibilityHelpUrl, ariaContainerElement })
+      this.lastAppliedEditorOptions = computedOptions
 
-    this.optionsOverrides = options
-    this._register(textResourceConfigurationService.onDidChangeConfiguration((e) => {
-      const resource = this.getModel()?.uri
-      if (resource != null && e.affectsConfiguration(resource, 'editor')) {
-        this.updateEditorConfiguration()
+      this.optionsOverrides = options
+      this._register(textResourceConfigurationService.onDidChangeConfiguration((e) => {
+        const resource = this.getModel()?.uri
+        if (resource != null && e.affectsConfiguration(resource, 'editor')) {
+          this.updateEditorConfiguration()
+        }
+      }))
+      this._register(this.onDidChangeModelLanguage(() => this.updateEditorConfiguration()))
+      this._register(this.onDidChangeModel(() => this.updateEditorConfiguration()))
+      this.updateEditorConfiguration()
+    }
+
+    /**
+     * This method is widely inspired from vs/workbench/browser/parts/editor/textEditor
+     */
+    private updateEditorConfiguration (): void {
+      // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
+      if (!this.hasModel() || this.textResourceConfigurationService == null) {
+        // textResourceConfigurationService can be null if this method is called by the constructor of StandaloneEditor
+        return
       }
-    }))
-    this._register(this.onDidChangeModelLanguage(() => this.updateEditorConfiguration()))
-    this._register(this.onDidChangeModel(() => this.updateEditorConfiguration()))
-    this.updateEditorConfiguration()
-  }
+      const resource = this.getModel()!.uri
+      const configuration = this.textResourceConfigurationService.getValue<IEditorConfiguration | undefined>(resource)
+      if (configuration == null) {
+        return
+      }
 
-  /**
-   * This method is widely inspired from vs/workbench/browser/parts/editor/textEditor
-   */
-  private updateEditorConfiguration (): void {
-    // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
-    if (!this.hasModel() || this.textResourceConfigurationService == null) {
-      // textResourceConfigurationService can be null if this method is called by the constructor of StandaloneEditor
-      return
-    }
-    const resource = this.getModel()!.uri
-    const configuration = this.textResourceConfigurationService.getValue<IEditorConfiguration | undefined>(resource)
-    if (configuration == null) {
-      return
-    }
+      const editorConfiguration = computeConfiguration(configuration, this.optionsOverrides)
 
-    const editorConfiguration = computeConfiguration(configuration, this.optionsOverrides)
+      // Try to figure out the actual editor options that changed from the last time we updated the editor.
+      // We do this so that we are not overwriting some dynamic editor settings (e.g. word wrap) that might
+      // have been applied to the editor directly.
+      let editorSettingsToApply = editorConfiguration
+      if (this.lastAppliedEditorOptions != null) {
+        editorSettingsToApply = distinct(this.lastAppliedEditorOptions, editorSettingsToApply)
+      }
 
-    // Try to figure out the actual editor options that changed from the last time we updated the editor.
-    // We do this so that we are not overwriting some dynamic editor settings (e.g. word wrap) that might
-    // have been applied to the editor directly.
-    let editorSettingsToApply = editorConfiguration
-    if (this.lastAppliedEditorOptions != null) {
-      editorSettingsToApply = distinct(this.lastAppliedEditorOptions, editorSettingsToApply)
+      if (Object.keys(editorSettingsToApply).length > 0) {
+        this.lastAppliedEditorOptions = editorConfiguration
+
+        super.updateOptions(editorSettingsToApply)
+      }
     }
 
-    if (Object.keys(editorSettingsToApply).length > 0) {
-      this.lastAppliedEditorOptions = editorConfiguration
+    override updateOptions (newOptions: Readonly<IEditorOptions>): void {
+      // it can be null if this method is called by the constructor of StandaloneEditor
+      // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
+      this.optionsOverrides ??= {}
+      const didChange = EditorOptionsUtil.applyUpdate(this.optionsOverrides, newOptions)
+      if (!didChange) {
+        return
+      }
 
-      super.updateOptions(editorSettingsToApply)
+      this.updateEditorConfiguration()
     }
   }
 
-  override updateOptions (newOptions: Readonly<IEditorOptions>): void {
-    // it can be null if this method is called by the constructor of StandaloneEditor
-    // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
-    this.optionsOverrides ??= {}
-    const didChange = EditorOptionsUtil.applyUpdate(this.optionsOverrides, newOptions)
-    if (!didChange) {
-      return
-    }
-
-    this.updateEditorConfiguration()
-  }
+  return ConfiguredStandaloneEditor
 }
+
+const ConfiguredStandaloneCodeEditor = createConfiguredEditorClass(createInjectedClass(StandaloneCodeEditor))
+const ConfiguredStandaloneEditor = createConfiguredEditorClass(createInjectedClass(StandaloneEditor))
 
 class ConfiguredStandaloneDiffEditor extends createInjectedClass(StandaloneDiffEditor2) {
   private optionsOverrides: Readonly<IEditorOptions> = {}
@@ -224,7 +231,7 @@ class ConfiguredStandaloneDiffEditor extends createInjectedClass(StandaloneDiffE
   }
 
   protected override _createInnerEditor (instantiationService: IInstantiationService, container: HTMLElement, options: Readonly<IEditorOptions>): CodeEditorWidget {
-    return instantiationService.createInstance(ConfiguredStandaloneEditor, container, options)
+    return instantiationService.createInstance(ConfiguredStandaloneCodeEditor, container, options)
   }
 }
 

@@ -32,7 +32,7 @@ import getMarkersServiceOverride from '@codingame/monaco-vscode-markers-service-
 import getAccessibilityServiceOverride from '@codingame/monaco-vscode-accessibility-service-override'
 import getLanguageDetectionWorkerServiceOverride from '@codingame/monaco-vscode-language-detection-worker-service-override'
 import getStorageServiceOverride, { BrowserStorageService } from '@codingame/monaco-vscode-storage-service-override'
-import getExtensionServiceOverride from '@codingame/monaco-vscode-extensions-service-override'
+import getExtensionServiceOverride, { ExtensionHostKind } from '@codingame/monaco-vscode-extensions-service-override'
 import getRemoteAgentServiceOverride from '@codingame/monaco-vscode-remote-agent-service-override'
 import getEnvironmentServiceOverride from '@codingame/monaco-vscode-environment-service-override'
 import getLifecycleServiceOverride from '@codingame/monaco-vscode-lifecycle-service-override'
@@ -42,6 +42,7 @@ import { createIndexedDBProviders, initFile } from '@codingame/monaco-vscode-fil
 import getWorkingCopyServiceOverride from '@codingame/monaco-vscode-working-copy-service-override'
 import getTestingServiceOverride from '@codingame/monaco-vscode-testing-service-override'
 import * as monaco from 'monaco-editor'
+import { registerExtension } from 'vscode/extensions'
 import { TerminalBackend } from './features/terminal'
 import { openNewCodeEditor } from './features/editor'
 import defaultConfiguration from './user/configuration.json?raw'
@@ -211,3 +212,13 @@ for (const { part, element } of [
     el.style.display = visible ? 'block' : 'none'
   })
 }
+
+await registerExtension({
+  name: 'demo',
+  publisher: 'codingame',
+  version: '1.0.0',
+  engines: {
+    vscode: '*'
+  },
+  enabledApiProposals: ['testCoverage']
+}, ExtensionHostKind.LocalProcess).setAsDefaultApi()

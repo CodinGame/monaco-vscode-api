@@ -1,6 +1,5 @@
 import { IAnyWorkspaceIdentifier, UNKNOWN_EMPTY_WINDOW_WORKSPACE } from 'vs/platform/workspace/common/workspace'
-import { IWorkspace } from 'vs/workbench/services/host/browser/browserHostService'
-import { IWorkbenchConstructionOptions } from 'vs/workbench/browser/web.api'
+import { IWorkbenchConstructionOptions, IWorkspace } from 'vs/workbench/browser/web.api'
 import { isFolderToOpen, isWorkspaceToOpen } from 'vs/platform/window/common/window'
 import { getSingleFolderWorkspaceIdentifier, getWorkspaceIdentifier as getWorkspaceIdentifierFromUri } from 'vs/workbench/services/workspaces/browser/workspaces'
 import { URI } from 'vs/base/common/uri'

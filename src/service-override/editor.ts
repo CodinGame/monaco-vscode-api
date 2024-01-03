@@ -11,15 +11,21 @@ import { IReference } from 'vs/base/common/lifecycle'
 import { ITextEditorService, TextEditorService } from 'vs/workbench/services/textfile/common/textEditorService'
 import { Registry } from 'vs/platform/registry/common/platform'
 import { FILE_EDITOR_INPUT_ID } from 'vs/workbench/contrib/files/common/files'
-import { GroupOrientation, IEditorGroup, IEditorGroupsService } from 'vs/workbench/services/editor/common/editorGroupsService'
+import { GroupOrientation, IEditorGroup, IEditorGroupsService, IEditorPart } from 'vs/workbench/services/editor/common/editorGroupsService'
 import { IInstantiationService } from 'vs/platform/instantiation/common/instantiation'
 import { IContextKeyService } from 'vs/platform/contextkey/common/contextkey'
-import { IEditorGroupView } from 'vs/workbench/browser/parts/editor/editor'
+import { DEFAULT_EDITOR_PART_OPTIONS, IEditorGroupView } from 'vs/workbench/browser/parts/editor/editor'
 import { MonacoDelegateEditorGroupsService, MonacoEditorService, OpenEditor } from './tools/editor'
 import { unsupported } from '../tools'
 import 'vs/workbench/browser/parts/editor/editor.contribution'
 
 class EmptyEditorGroup implements IEditorGroup, IEditorGroupView {
+  get groupsView () {
+    return unsupported()
+  }
+
+  notifyLabelChanged (): void {}
+  createEditorActions = unsupported
   onDidFocus = Event.None
   onDidOpenEditorFail = Event.None
   whenRestored = Promise.resolve()
@@ -97,7 +103,69 @@ class EmptyEditorGroup implements IEditorGroup, IEditorGroupView {
 
 const fakeActiveGroup = new EmptyEditorGroup()
 
+class EmptyEditorPart implements IEditorPart {
+  onDidLayout = Event.None
+  onDidScroll = Event.None
+  get contentDimension (): never { return unsupported() }
+  isReady = true
+  whenReady = Promise.resolve()
+  whenRestored = Promise.resolve()
+  hasRestorableState = false
+  centerLayout = unsupported
+  isLayoutCentered = unsupported
+  enforcePartOptions = unsupported
+  onDidChangeActiveGroup = Event.None
+  onDidAddGroup = Event.None
+  onDidRemoveGroup = Event.None
+  onDidMoveGroup = Event.None
+  onDidActivateGroup = Event.None
+  onDidChangeGroupIndex = Event.None
+  onDidChangeGroupLocked = Event.None
+  onDidChangeGroupMaximized = Event.None
+  activeGroup = fakeActiveGroup
+  get sideGroup (): never { return unsupported() }
+  groups = [fakeActiveGroup]
+  count = 0
+  orientation = GroupOrientation.HORIZONTAL
+  getGroups = () => []
+  getGroup = () => undefined
+  activateGroup = unsupported
+  getSize = unsupported
+  setSize = unsupported
+  arrangeGroups = unsupported
+  toggleMaximizeGroup = unsupported
+  toggleExpandGroup = unsupported
+  applyLayout = unsupported
+  getLayout = unsupported
+  setGroupOrientation = unsupported
+  findGroup = () => undefined
+  addGroup = unsupported
+  removeGroup = unsupported
+  moveGroup = unsupported
+  mergeGroup = unsupported
+  mergeAllGroups = unsupported
+  copyGroup = unsupported
+  partOptions = DEFAULT_EDITOR_PART_OPTIONS
+
+  onDidChangeEditorPartOptions = Event.None
+  createEditorDropTarget = unsupported
+}
+
 class EmptyEditorGroupsService implements IEditorGroupsService {
+  onDidCreateAuxiliaryEditorPart = Event.None
+
+  mainPart = new EmptyEditorPart()
+  activePart = this.mainPart
+  parts = [this.mainPart]
+
+  getPart = unsupported
+  createAuxiliaryEditorPart = unsupported
+  onDidChangeGroupMaximized = Event.None
+  toggleMaximizeGroup = unsupported
+  toggleExpandGroup = unsupported
+  partOptions = DEFAULT_EDITOR_PART_OPTIONS
+
+  createEditorDropTarget = unsupported
   readonly _serviceBrand = undefined
   getLayout = unsupported
   onDidChangeActiveGroup = Event.None
@@ -136,7 +204,6 @@ class EmptyEditorGroupsService implements IEditorGroupsService {
   mergeGroup = unsupported
   mergeAllGroups = unsupported
   copyGroup = unsupported
-  partOptions = {}
   onDidChangeEditorPartOptions = Event.None
   enforcePartOptions = unsupported
 }

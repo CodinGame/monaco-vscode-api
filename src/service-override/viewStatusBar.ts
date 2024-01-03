@@ -1,7 +1,7 @@
 import { IEditorOverrideServices } from 'vs/editor/standalone/browser/standaloneServices'
 import { SyncDescriptor } from 'vs/platform/instantiation/common/descriptors'
 import { IInstantiationService } from 'vs/platform/instantiation/common/instantiation'
-import { StatusbarPart } from 'vs/workbench/browser/parts/statusbar/statusbarPart'
+import { StatusbarService } from 'vs/workbench/browser/parts/statusbar/statusbarPart'
 import { IStatusbarService } from 'vs/workbench/services/statusbar/browser/statusbar'
 import { IWorkbenchContribution, IWorkbenchContributionsRegistry, Extensions as WorkbenchExtensions } from 'vs/workbench/common/contributions'
 import { LifecyclePhase } from 'vs/workbench/services/lifecycle/common/lifecycle'
@@ -19,11 +19,7 @@ Registry.as<IWorkbenchContributionsRegistry>(WorkbenchExtensions.Workbench).regi
 
 export default function getServiceOverride (): IEditorOverrideServices {
   return {
-    [IStatusbarService.toString()]: new SyncDescriptor(StatusbarPart, [], false),
+    [IStatusbarService.toString()]: new SyncDescriptor(StatusbarService, [], false),
     [IExtensionStatusBarItemService.toString()]: new SyncDescriptor(ExtensionStatusBarItemService, [], false)
   }
-}
-
-export {
-  StatusbarPart
 }

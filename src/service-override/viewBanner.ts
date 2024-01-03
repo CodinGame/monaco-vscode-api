@@ -2,12 +2,17 @@ import { IEditorOverrideServices } from 'vs/editor/standalone/browser/standalone
 import { SyncDescriptor } from 'vs/platform/instantiation/common/descriptors'
 import { BannerPart } from 'vs/workbench/browser/parts/banner/bannerPart'
 import { IBannerService } from 'vs/workbench/services/banner/browser/bannerService'
+import { registerServiceInitializePostParticipant } from '../lifecycle'
 
 export default function getServiceOverride (): IEditorOverrideServices {
   return {
     [IBannerService.toString()]: new SyncDescriptor(BannerPart, [], false)
   }
 }
+
+registerServiceInitializePostParticipant(async accessor => {
+  accessor.get(IBannerService)
+})
 
 export {
   BannerPart

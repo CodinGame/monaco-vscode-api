@@ -2,7 +2,7 @@ import { Registry } from 'vs/platform/registry/common/platform'
 import { IWorkbenchContributionsRegistry, Extensions as WorkbenchExtensions } from 'vs/workbench/common/contributions'
 import { ILifecycleService, LifecyclePhase } from 'vs/workbench/services/lifecycle/common/lifecycle'
 import { IInstantiationService, ServicesAccessor } from 'vs/platform/instantiation/common/instantiation'
-import { Barrier, RunOnceScheduler, runWhenIdle } from 'vs/base/common/async'
+import { Barrier, RunOnceScheduler, _runWhenIdle } from 'vs/base/common/async'
 import { Emitter } from 'vs/base/common/event'
 import { EditorExtensions, IEditorFactoryRegistry } from 'vs/workbench/common/editor'
 import { StandaloneServices } from 'vs/editor/standalone/browser/standaloneServices'
@@ -63,7 +63,7 @@ export async function startup (instantiationService: IInstantiationService): Pro
 
     // Set lifecycle phase to `Eventually` after a short delay and when idle (min 2.5sec, max 5sec)
     const eventuallyPhaseScheduler = new RunOnceScheduler(() => {
-      runWhenIdle(() => {
+      _runWhenIdle(window, () => {
         lifecycleService.phase = LifecyclePhase.Eventually
       }, 2500)
     }, 2500)
