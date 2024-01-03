@@ -111,13 +111,15 @@ await initialize({
 })
 ```
 
-Additionally, 25 packages that include the vscode version of some services (with some glue to make it work with monaco) are published:
+Additionally, several packages that include the VSCode version of some services (with some glue to make it work with monaco) are published:
 
 - **Extensions** (included by default): `@codingame/monaco-vscode-extensions-service-override`
-  - Support for VSCode extensions. A worker configuration can be past to it:
-    - Then, everything runs in one worker, where extensions run in an iframe, with all the implications (can be created by the bundler directly). The worker script is expected to be hosted on a separate domain.
+  - Support for VSCode extensions.
+  - A worker configuration can be provided to it:
+    - Then, extensions run in a worker which runs in an iframe, with all the implications (can be created by the bundler directly). The worker script is expected to be hosted on a separate domain.
 - **Files** (included by default): `@codingame/monaco-vscode-files-service-override`
-  - It adds the memory filesystem for `file://` files, but also adds the support for lazy loaded extension files. It adds separate memory user files (e.g. config, keybindings), cache files and log files.
+  - It adds the overlay filesystem for `file://` files, but also adds the support for lazy loaded extension files. It adds separate memory user files (e.g. config, keybindings), cache files and log files.
+  - It supports adding overlay filesystems for `file://` files
 - **QuickAccess** (included by default): `@codingame/monaco-vscode-quickaccess-service-override`
   - Enables the quickaccess menu in the editor (press F1 or ctrl+shift+p)
 - **Notifications**: `@codingame/monaco-vscode-notifications-service-override`
@@ -126,7 +128,7 @@ Additionally, 25 packages that include the vscode version of some services (with
   - Enable vscode modal dialogs. It allows users to select an action to do. Those actions are exposed to the vscode API. Additionally, this service can be used by the language client to delegate questions to the user.
 - **Model**: `@codingame/monaco-vscode-model-service-override`
   - This service creates and takes care of model references. For example:
-    - Create model if content is unknown
+    - Create model from filesystem if content is unknown
     - Count references
     - Destroy models when they are no longer used
 - **Editor**: `@codingame/monaco-vscode-editor-service-override`
@@ -188,6 +190,12 @@ Additionally, 25 packages that include the vscode version of some services (with
   - Ask user it they trust the current workspace, disable some features if not
 - **Extension Gallery**: `@codingame/monaco-vscode-extension-gallery-service-override`
   - Support for the VSCode marketplace, it allows to install extensions from the marketplace.
+- **Chat**: `@codingame/monaco-vscode-chat-service-override`
+  - Support for chat and inline chat features
+- **Notebook**
+  - Support for Jupyter notebooks
+- **Welcome**
+  - Support for welcome pages/components. *Hint*: It only makes sense to enable it when *Views* service is used.
 
 Usage:
 
@@ -278,8 +286,6 @@ const range = new vscode.Range(...)
 vscode.languages.registerCompletionItemProvider(...)
 ```
 
-The api will use the manifest of a default vscode extension, which can be overriden by providing it to the `initialize` function.
-
 You can also register a new extension from its manifest:
 ```typescript
 import { registerExtension, initialize, ExtensionHostKind } from 'vscode/extensions'
@@ -319,7 +325,7 @@ import '@codingame/monaco-vscode-json-default-extension'
 
 ### Loading vsix file
 
-VSCode extension are bundled as vsix files.
+VSCode extensions are bundled as vsix files.
 This library publishes a rollup plugin (vite-compatible) that allows to load a vsix file.
 
 - rollup/vite config:
@@ -372,6 +378,8 @@ It includes:
 - Configuration service, with user configuration editor
 - Keybinding service, with user keybindings editor
 - Debuggers
+- Remote agent
+- and much more
 
 From CLI run:
 
