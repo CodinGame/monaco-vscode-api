@@ -10,6 +10,7 @@ import { NotificationsCenter } from 'vs/workbench/browser/parts/notifications/no
 import { NotificationsAlerts } from 'vs/workbench/browser/parts/notifications/notificationsAlerts'
 import { NotificationsTelemetry } from 'vs/workbench/browser/parts/notifications/notificationsTelemetry'
 import { ILayoutService } from 'vs/platform/layout/browser/layoutService'
+import { NotificationsStatus } from 'vs/workbench/browser/parts/notifications/notificationsStatus'
 import getLayoutServiceOverride from './layout'
 import { onRenderWorkbench } from '../lifecycle'
 
@@ -23,7 +24,18 @@ onRenderWorkbench(async (accessor) => {
     const notificationsCenter = instantiationService.createInstance(NotificationsCenter, container, model)
     const notificationsToasts = instantiationService.createInstance(NotificationsToasts, container, model)
     instantiationService.createInstance(NotificationsAlerts, model)
+    const notificationsStatus = instantiationService.createInstance(NotificationsStatus, model)
     instantiationService.createInstance(NotificationsTelemetry)
+
+    // Visibility
+    notificationsCenter.onDidChangeVisibility(() => {
+      notificationsStatus.update(notificationsCenter.isVisible, notificationsToasts.isVisible)
+      notificationsToasts.update(notificationsCenter.isVisible)
+    })
+
+    notificationsToasts.onDidChangeVisibility(() => {
+      notificationsStatus.update(notificationsCenter.isVisible, notificationsToasts.isVisible)
+    })
     // Register Commands
     registerNotificationCommands(notificationsCenter, notificationsToasts, model)
 
