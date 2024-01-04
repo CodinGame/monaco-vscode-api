@@ -195,11 +195,6 @@ function isCallPure (file: string, functionName: string, node: recast.types.name
     }
   }
 
-  if (functionName === 'MenuRegistry.appendMenuItems') {
-    if (file.includes('layoutActions')) {
-      return true
-    }
-  }
   if (functionName === 'MenuRegistry.appendMenuItem') {
     const firstParamCode = recast.print(args[0]!).code
     if (
