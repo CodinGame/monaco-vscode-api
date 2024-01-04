@@ -26,9 +26,9 @@ body {
 
 #panel {
   display: flex;
-  flex: none;
+  flex: 1;
   border: 1px solid var(--vscode-editorWidget-border);
-  height: 30vh;
+  min-height: 0;
 }
 
 .standalone-editor {
@@ -38,4 +38,22 @@ body {
 
 #titleBar {
   position: relative;
+  flex: none;
+}
+
+#banner {
+  flex: none;
+}
+
+#workbench-container {
+  height: 100vh;
+  display: flex;
+  flex-direction: column
+}
+
+#workbench-top {
+  display: flex;
+  gap: 20px;
+  flex: 2;
+  min-height: 0
 }
