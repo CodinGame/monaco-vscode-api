@@ -129,7 +129,7 @@ export class LayoutService extends Disposable implements ILayoutService, IWorkbe
       }
 
       if (e.affectsConfiguration('workbench.statusBar.visible')) {
-        this.setPartHidden(this.configurationService.getValue<boolean>('workbench.statusBar.visible'), Parts.STATUSBAR_PART)
+        this.setPartHidden(!this.configurationService.getValue<boolean>('workbench.statusBar.visible'), Parts.STATUSBAR_PART)
       }
 
       if (e.affectsConfiguration('workbench.sideBar.location')) {
