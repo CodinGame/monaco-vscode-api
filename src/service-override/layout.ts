@@ -20,6 +20,7 @@ import { IAuxiliaryWindowService } from 'vs/workbench/services/auxiliaryWindow/b
 import { StandaloneCodeEditor } from 'vs/editor/standalone/browser/standaloneCodeEditor'
 import { IHostService } from 'vs/workbench/services/host/browser/host'
 import { ICodeEditorService } from 'vs/editor/browser/services/codeEditorService'
+import { getMenuBarVisibility, getTitleBarStyle } from 'vs/platform/window/common/window'
 import { onRenderWorkbench } from '../lifecycle'
 import { getWorkbenchContainer } from '../workbench'
 
@@ -225,19 +226,20 @@ export class LayoutService extends Disposable implements ILayoutService, IWorkbe
   toggleMaximizedPanel (): void {
   }
 
-  hasWindowBorder (): boolean {
-    return false
-  }
-
-  getWindowBorderWidth (): number {
-    return 0
-  }
-
-  getWindowBorderRadius (): string | undefined {
-    return undefined
-  }
-
   toggleMenuBar (): void {
+    let currentVisibilityValue = getMenuBarVisibility(this.configurationService)
+    if (typeof currentVisibilityValue !== 'string') {
+      currentVisibilityValue = 'classic'
+    }
+
+    let newVisibilityValue: string
+    if (currentVisibilityValue === 'visible' || currentVisibilityValue === 'classic') {
+      newVisibilityValue = getTitleBarStyle(this.configurationService) === 'native' ? 'toggle' : 'compact'
+    } else {
+      newVisibilityValue = 'classic'
+    }
+
+    void this.configurationService.updateValue('window.menuBarVisibility', newVisibilityValue)
   }
 
   setPanelPosition (position: Position): void {
