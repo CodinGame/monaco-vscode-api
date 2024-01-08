@@ -27,7 +27,7 @@ export default (args: Record<string, string>): rollup.RollupOptions => {
   return rollup.defineConfig({
     cache: false,
     external: (source) => {
-      if (source === 'graceful-fs' || source === 'xterm-headless') {
+      if (source === 'graceful-fs') {
         // commonjs module
         return false
       }
