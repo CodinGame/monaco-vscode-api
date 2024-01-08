@@ -5,6 +5,7 @@ import commonjs from '@rollup/plugin-commonjs'
 import json from '@rollup/plugin-json'
 import { PackageJson } from 'type-fest'
 import replace from '@rollup/plugin-replace'
+import copy from 'rollup-plugin-copy'
 import * as path from 'path'
 import { fileURLToPath } from 'url'
 import metadataPlugin from './rollup-metadata-plugin.js'
@@ -45,6 +46,15 @@ export default (args: Record<string, string>): rollup.RollupOptions => {
       'bootstrap-fork': 'src/server/bootstrap-fork.ts'
     },
     plugins: [
+      copy({
+        targets: [{
+          src: 'vscode/src/vs/workbench/contrib/terminal/browser/media/*.(sh|zsh|ps1)',
+          dest: 'dist/server/out/vs/workbench/contrib/terminal/browser/media/'
+        }, {
+          src: 'vs/base/node/*.sh',
+          dest: 'dist/server/out/vs/base/node/'
+        }]
+      }),
       replace({
         VSCODE_VERSION: JSON.stringify(vscodeVersion),
         VSCODE_REF: JSON.stringify(vscodeRef),
