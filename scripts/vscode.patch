@@ -2226,14 +2226,14 @@ index b442277e920..481ab494561 100644
  		if (this.element && this._messagePort) {
  			this._messagePort.postMessage({ channel, args: data }, transferable);
 diff --git a/src/vs/workbench/contrib/welcomeGettingStarted/browser/gettingStartedDetailsRenderer.ts b/src/vs/workbench/contrib/welcomeGettingStarted/browser/gettingStartedDetailsRenderer.ts
-index 869f44526b4..0587e08a8ec 100644
+index 869f44526b4..296ac140860 100644
 --- a/src/vs/workbench/contrib/welcomeGettingStarted/browser/gettingStartedDetailsRenderer.ts
 +++ b/src/vs/workbench/contrib/welcomeGettingStarted/browser/gettingStartedDetailsRenderer.ts
 @@ -17,6 +17,7 @@ import { IFileService } from 'vs/platform/files/common/files';
  import { INotificationService } from 'vs/platform/notification/common/notification';
  import { ILanguageService } from 'vs/editor/common/languages/language';
  import { IExtensionService } from 'vs/workbench/services/extensions/common/extensions';
-+import { FileAccess } from 'vs/base/common/network';
++import { AppResourcePath, FileAccess } from 'vs/base/common/network';
  
  
  export class GettingStartedDetailsRenderer {
@@ -2252,6 +2252,15 @@ index 869f44526b4..0587e08a8ec 100644
 +				return content();
  			}
  		} catch { }
+ 
+@@ -262,7 +260,7 @@ export class GettingStartedDetailsRenderer {
+ }
+ 
+ const transformUri = (src: string, base: URI) => {
+-	const path = joinPath(base, src);
++	const path = FileAccess.asBrowserUri(joinPath(base, src).fsPath.slice(1) as AppResourcePath);
+ 	return asWebviewUri(path).toString(true);
+ };
  
 diff --git a/src/vs/workbench/contrib/welcomeGettingStarted/browser/gettingStartedService.ts b/src/vs/workbench/contrib/welcomeGettingStarted/browser/gettingStartedService.ts
 index f0c08e1b826..e63f4724028 100644

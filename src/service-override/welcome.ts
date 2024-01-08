@@ -8,10 +8,13 @@ import 'vs/workbench/contrib/welcomeViews/common/viewsWelcome.contribution'
 import 'vs/workbench/contrib/welcomeViews/common/newFile.contribution'
 // @ts-ignore
 import svgAssets from 'vs/workbench/contrib/welcomeGettingStarted/common/media/*.svg'
+// @ts-ignore
+import pngAssets from 'vs/workbench/contrib/welcomeGettingStarted/common/media/*.png'
 import { FileAccess } from 'vs/base/common/network'
 import { registerAssets } from '../assets'
 
 registerAssets(svgAssets)
+registerAssets(pngAssets)
 
 FileAccess.registerModuleContentProvider('vs/workbench/contrib/welcomeWalkthrough/browser/editor/vs_code_editor_walkthrough', () => import('vs/workbench/contrib/welcomeWalkthrough/browser/editor/vs_code_editor_walkthrough'))
 FileAccess.registerModuleContentProvider('vs/workbench/contrib/welcomeGettingStarted/common/media/theme_picker', () => import('vs/workbench/contrib/welcomeGettingStarted/common/media/theme_picker'))
