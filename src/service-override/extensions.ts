@@ -38,6 +38,7 @@ import { IRemoteExplorerService } from 'vs/workbench/services/remote/common/remo
 import { ExtensionDescriptionRegistrySnapshot } from 'vs/workbench/services/extensions/common/extensionDescriptionRegistry'
 import { ExtensionResourceLoaderService } from 'vs/platform/extensionResourceLoader/browser/extensionResourceLoaderService'
 import { IExtensionResourceLoaderService } from 'vs/platform/extensionResourceLoader/common/extensionResourceLoader'
+import { ExtensionBisectService, IExtensionBisectService } from 'vs/workbench/services/extensionManagement/browser/extensionBisect'
 import { changeUrlDomain } from './tools/url'
 import { CustomSchemas } from './files'
 import type { LocalExtensionHost } from '../localExtensionHost'
@@ -285,7 +286,8 @@ export default function getServiceOverride (workerConfig?: WorkerConfig, _iframe
   return {
     [IExtensionService.toString()]: new SyncDescriptor(ExtensionServiceOverride, [_workerConfig], false),
     [IExtensionManifestPropertiesService.toString()]: new SyncDescriptor(ExtensionManifestPropertiesService, [], true),
-    [IExtensionResourceLoaderService.toString()]: new SyncDescriptor(ExtensionResourceLoaderServiceOverride, [], true)
+    [IExtensionResourceLoaderService.toString()]: new SyncDescriptor(ExtensionResourceLoaderServiceOverride, [], true),
+    [IExtensionBisectService.toString()]: new SyncDescriptor(ExtensionBisectService, [], true)
   }
 }
 
