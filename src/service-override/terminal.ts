@@ -24,7 +24,8 @@ import { PerformanceMark } from 'vs/base/common/performance'
 import { DeferredPromise } from 'vs/base/common/async'
 import { unsupported } from '../tools'
 import 'vs/workbench/contrib/terminal/browser/terminal.contribution'
-import 'vs/workbench/contrib/terminalContrib/accessibility/browser/terminal.accessibility.contribution'
+import 'vs/workbench/contrib/terminal/terminal.all'
+import 'vs/workbench/contrib/externalTerminal/browser/externalTerminal.contribution'
 
 abstract class SimpleTerminalBackend implements ITerminalBackend {
   getLatency = async (): Promise<IPtyHostLatencyMeasurement[]> => []

@@ -37,7 +37,8 @@ import 'vs/workbench/contrib/customEditor/browser/customEditor.contribution'
 import 'vs/workbench/contrib/webviewPanel/browser/webviewPanel.contribution'
 import 'vs/workbench/contrib/externalUriOpener/common/externalUriOpener.contribution'
 import 'vs/workbench/contrib/languageStatus/browser/languageStatus.contribution'
-import 'vs/workbench/contrib/languageDetection/browser/languageDetection.contribution'
+import 'vs/workbench/contrib/mergeEditor/browser/mergeEditor.contribution'
+import 'vs/workbench/contrib/webview/browser/webview.contribution'
 // import to 2 times with filter to not duplicate the import from files.ts
 import 'vs/workbench/contrib/files/browser/files.contribution.js?include=registerConfiguration'
 import 'vs/workbench/contrib/files/browser/files.contribution.js?exclude=registerConfiguration'
@@ -107,6 +108,7 @@ import { IWorkingCopyBackupService } from 'vs/workbench/services/workingCopy/com
 import { PaneCompositePartService } from 'vs/workbench/browser/parts/paneCompositePartService'
 import { EditorParts } from 'vs/workbench/browser/parts/editor/editorParts'
 import { BrowserAuxiliaryWindowService, IAuxiliaryWindowService } from 'vs/workbench/services/auxiliaryWindow/browser/auxiliaryWindowService'
+import { Event } from 'vs/base/common/event'
 import { MonacoDelegateEditorGroupsService, MonacoEditorService, OpenEditor } from './tools/editor'
 import getBulkEditServiceOverride from './bulkEdit'
 import getLayoutServiceOverride, { LayoutService } from './layout'
@@ -130,14 +132,14 @@ function createPart (id: string, role: string, classes: string[]): HTMLElement {
 }
 
 function layoutPart (part: Part) {
-  const parent = part.getContainer()?.parentNode
+  const parent = part.getContainer()?.parentNode as HTMLElement | undefined
   if (parent == null) {
     return
   }
   part.layout(
-    Math.max(part.minimumWidth, Math.min(part.maximumWidth, (parent as HTMLElement).offsetWidth)),
-    Math.max(part.minimumHeight, Math.min(part.maximumHeight, (parent as HTMLElement).offsetHeight)),
-    0, 0
+    Math.max(part.minimumWidth, Math.min(part.maximumWidth, parent.offsetWidth)),
+    Math.max(part.minimumHeight, Math.min(part.maximumHeight, parent.offsetHeight)),
+    parent.offsetTop, parent.offsetLeft
   )
 }
 
@@ -192,6 +194,22 @@ function isPartVisibile (part: Parts): boolean {
 
 function setPartVisibility (part: Exclude<Parts, Parts.STATUSBAR_PART | Parts.TITLEBAR_PART>, visible: boolean): void {
   StandaloneServices.get(IWorkbenchLayoutService).setPartHidden(!visible, part, window)
+}
+
+const onDidChangePanelPosition: Event<string> = (listener) => {
+  return StandaloneServices.get(IWorkbenchLayoutService).onDidChangePanelPosition(listener)
+}
+
+function getPanelPosition (): Position {
+  return StandaloneServices.get(IWorkbenchLayoutService).getPanelPosition()
+}
+
+const onDidChangeSideBarPosition: Event<string> = (listener) => {
+  return (StandaloneServices.get(IWorkbenchLayoutService) as LayoutService).onDidChangeSideBarPosition(listener)
+}
+
+function getSideBarPosition (): Position {
+  return StandaloneServices.get(IWorkbenchLayoutService).getSideBarPosition()
 }
 
 function renderActivitybarPar (container: HTMLElement): IDisposable {
@@ -770,14 +788,14 @@ onRenderWorkbench(async (accessor) => {
   document.body.append(invisibleContainer)
 
   // Create Parts
-  for (const { id, role, classes, options } of [
+  for (const { id, role, classes, options, getPosition, onDidChangePosition } of [
     { id: Parts.TITLEBAR_PART, role: 'none', classes: ['titlebar'] },
     { id: Parts.BANNER_PART, role: 'banner', classes: ['banner'] },
-    { id: Parts.ACTIVITYBAR_PART, role: 'none', classes: ['activitybar', 'left'] },
-    { id: Parts.SIDEBAR_PART, role: 'none', classes: ['sidebar', 'left'] },
+    { id: Parts.ACTIVITYBAR_PART, role: 'none', classes: ['activitybar'], getPosition: () => layoutService.getSideBarPosition(), onDidChangePosition: layoutService.onDidChangeSideBarPosition },
+    { id: Parts.SIDEBAR_PART, role: 'none', classes: ['sidebar'], getPosition: () => layoutService.getSideBarPosition(), onDidChangePosition: layoutService.onDidChangeSideBarPosition },
     { id: Parts.EDITOR_PART, role: 'main', classes: ['editor'], options: { restorePreviousState: initialLayoutState.editor.restoreEditors } },
-    { id: Parts.PANEL_PART, role: 'none', classes: ['panel', 'basepanel', positionToString(Position.BOTTOM)] },
-    { id: Parts.AUXILIARYBAR_PART, role: 'none', classes: ['auxiliarybar', 'basepanel', 'right'] },
+    { id: Parts.PANEL_PART, role: 'none', classes: ['panel', 'basepanel'], getPosition: () => layoutService.getPanelPosition(), onDidChangePosition: layoutService.onDidChangePanelPosition },
+    { id: Parts.AUXILIARYBAR_PART, role: 'none', classes: ['auxiliarybar', 'basepanel'], getPosition: () => layoutService.getSideBarPosition() === Position.LEFT ? Position.RIGHT : Position.LEFT, onDidChangePosition: layoutService.onDidChangeSideBarPosition },
     { id: Parts.STATUSBAR_PART, role: 'status', classes: ['statusbar'] }
   ]) {
     const part = layoutService.getPart(id)
@@ -791,6 +809,16 @@ onRenderWorkbench(async (accessor) => {
 
       // We need the container to be attached for some views to work (like xterm)
       invisibleContainer.append(partContainer)
+
+      if (getPosition != null) {
+        let position = getPosition()
+        part.element.classList.add(positionToString(position))
+        onDidChangePosition?.(() => {
+          part.element.classList.remove(positionToString(position))
+          position = getPosition()
+          part.element.classList.add(positionToString(position))
+        })
+      }
     }
   }
 
@@ -1081,6 +1109,11 @@ export {
   onPartVisibilityChange,
   isPartVisibile,
   setPartVisibility,
+  onDidChangePanelPosition,
+  getPanelPosition,
+  onDidChangeSideBarPosition,
+  getSideBarPosition,
+  Position,
 
   OpenEditor,
   IEditorOptions,

@@ -16,7 +16,10 @@ import getViewsServiceOverride, {
   Parts,
   onPartVisibilityChange,
   isPartVisibile,
-  attachPart
+  attachPart,
+  getSideBarPosition,
+  onDidChangeSideBarPosition,
+  Position
 } from '@codingame/monaco-vscode-views-service-override'
 import getBannerServiceOverride from '@codingame/monaco-vscode-view-banner-service-override'
 import getStatusBarServiceOverride from '@codingame/monaco-vscode-view-status-bar-service-override'
@@ -41,6 +44,9 @@ import getLogServiceOverride from '@codingame/monaco-vscode-log-service-override
 import { createIndexedDBProviders, initFile } from '@codingame/monaco-vscode-files-service-override'
 import getWorkingCopyServiceOverride from '@codingame/monaco-vscode-working-copy-service-override'
 import getTestingServiceOverride from '@codingame/monaco-vscode-testing-service-override'
+import getChatServiceOverride from '@codingame/monaco-vscode-chat-service-override'
+import getNotebookServiceOverride from '@codingame/monaco-vscode-notebook-service-override'
+import getWelcomeServiceOverride from '@codingame/monaco-vscode-welcome-service-override'
 import * as monaco from 'monaco-editor'
 import { registerExtension } from 'vscode/extensions'
 import { TerminalBackend } from './features/terminal'
@@ -59,7 +65,9 @@ const workerLoaders: Partial<Record<string, WorkerLoader>> = {
   editorWorkerService: () => new Worker(new URL('monaco-editor/esm/vs/editor/editor.worker.js', import.meta.url), { type: 'module' }),
   textMateWorker: () => new Worker(new URL('@codingame/monaco-vscode-textmate-service-override/worker', import.meta.url), { type: 'module' }),
   outputLinkComputer: () => new Worker(new URL('@codingame/monaco-vscode-output-service-override/worker', import.meta.url), { type: 'module' }),
-  languageDetectionWorkerService: () => new Worker(new URL('@codingame/monaco-vscode-language-detection-worker-service-override/worker', import.meta.url), { type: 'module' })
+  languageDetectionWorkerService: () => new Worker(new URL('@codingame/monaco-vscode-language-detection-worker-service-override/worker', import.meta.url), { type: 'module' }),
+  notebookEditorWorkerService: () => new Worker(new URL('@codingame/monaco-vscode-notebook-service-override/worker', import.meta.url), { type: 'module' })
+
 }
 window.MonacoEnvironment = {
   getWorker: function (moduleId, label) {
@@ -139,7 +147,10 @@ await initializeMonacoService({
   ...getWorkspaceTrustOverride(),
   ...getWorkingCopyServiceOverride(),
   ...getScmServiceOverride(),
-  ...getTestingServiceOverride()
+  ...getTestingServiceOverride(),
+  ...getChatServiceOverride(),
+  ...getNotebookServiceOverride(),
+  ...getWelcomeServiceOverride()
 }, document.body, {
   remoteAuthority,
   enableWorkspaceTrust: true,
@@ -191,25 +202,28 @@ export async function clearStorage (): Promise<void> {
   await (await getService(IStorageService) as BrowserStorageService).clear()
 }
 
-for (const { part, element } of [
+for (const config of [
   { part: Parts.TITLEBAR_PART, element: '#titleBar' },
   { part: Parts.BANNER_PART, element: '#banner' },
-  { part: Parts.SIDEBAR_PART, element: '#sidebar' },
-  { part: Parts.ACTIVITYBAR_PART, element: '#activityBar' },
+  { part: Parts.SIDEBAR_PART, get element () { return getSideBarPosition() === Position.LEFT ? '#sidebar' : '#sidebar-right' }, onDidElementChange: onDidChangeSideBarPosition },
+  { part: Parts.ACTIVITYBAR_PART, get element () { return getSideBarPosition() === Position.LEFT ? '#activityBar' : '#activityBar-right' }, onDidElementChange: onDidChangeSideBarPosition },
   { part: Parts.PANEL_PART, element: '#panel' },
   { part: Parts.EDITOR_PART, element: '#editors' },
   { part: Parts.STATUSBAR_PART, element: '#statusBar' },
-  { part: Parts.AUXILIARYBAR_PART, element: '#auxiliaryBar' }
+  { part: Parts.AUXILIARYBAR_PART, get element () { return getSideBarPosition() === Position.LEFT ? '#auxiliaryBar' : '#auxiliaryBar-left' }, onDidElementChange: onDidChangeSideBarPosition }
 ]) {
-  const el = document.querySelector<HTMLDivElement>(element)!
-  attachPart(part, el)
+  attachPart(config.part, document.querySelector<HTMLDivElement>(config.element)!)
 
-  if (!isPartVisibile(part)) {
-    el.style.display = 'none'
+  config.onDidElementChange?.(() => {
+    attachPart(config.part, document.querySelector<HTMLDivElement>(config.element)!)
+  })
+
+  if (!isPartVisibile(config.part)) {
+    document.querySelector<HTMLDivElement>(config.element)!.style.display = 'none'
   }
 
-  onPartVisibilityChange(part, visible => {
-    el.style.display = visible ? 'block' : 'none'
+  onPartVisibilityChange(config.part, visible => {
+    document.querySelector<HTMLDivElement>(config.element)!.style.display = visible ? 'block' : 'none'
   })
 }
 

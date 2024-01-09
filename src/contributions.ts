@@ -25,6 +25,7 @@ import 'vs/workbench/contrib/inlayHints/browser/inlayHintsAccessibilty'
 import 'vs/workbench/contrib/codeActions/browser/codeActions.contribution'
 import 'vs/workbench/contrib/list/browser/list.contribution'
 import 'vs/workbench/contrib/codeEditor/browser/editorFeatures'
+import 'vs/workbench/contrib/contextmenu/browser/contextmenu.contribution'
 
 class ExtensionPoints implements IWorkbenchContribution {
   constructor (

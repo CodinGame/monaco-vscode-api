@@ -1,5 +1,5 @@
 import { IEditorOverrideServices, StandaloneServices } from 'vs/editor/standalone/browser/standaloneServices'
-import { ActivityBarPosition, IWorkbenchLayoutService, LayoutSettings, PanelAlignment, Parts, Position } from 'vs/workbench/services/layout/browser/layoutService'
+import { ActivityBarPosition, IWorkbenchLayoutService, LayoutSettings, PanelAlignment, Parts, Position, positionFromString, positionToString } from 'vs/workbench/services/layout/browser/layoutService'
 import { ILayoutOffsetInfo, ILayoutService } from 'vs/platform/layout/browser/layoutService'
 import { Emitter, Event } from 'vs/base/common/event'
 import * as dom from 'vs/base/browser/dom'
@@ -20,6 +20,7 @@ import { IAuxiliaryWindowService } from 'vs/workbench/services/auxiliaryWindow/b
 import { StandaloneCodeEditor } from 'vs/editor/standalone/browser/standaloneCodeEditor'
 import { IHostService } from 'vs/workbench/services/host/browser/host'
 import { ICodeEditorService } from 'vs/editor/browser/services/codeEditorService'
+import { getMenuBarVisibility, getTitleBarStyle } from 'vs/platform/window/common/window'
 import { onRenderWorkbench } from '../lifecycle'
 import { getWorkbenchContainer } from '../workbench'
 
@@ -35,6 +36,8 @@ export class LayoutService extends Disposable implements ILayoutService, IWorkbe
   private hostService!: IHostService
 
   private activeContainerId: number | undefined
+  private sideBarPosition!: Position
+  private panelPosition!: Position
 
   constructor (
     public mainContainer: HTMLElement = getWorkbenchContainer()
@@ -103,7 +106,10 @@ export class LayoutService extends Disposable implements ILayoutService, IWorkbe
   onDidChangeZenMode = Event.None
   onDidChangeWindowMaximized = Event.None
   onDidChangeCenteredLayout = Event.None
-  onDidChangePanelPosition = Event.None
+  private readonly _onDidChangePanelPosition = this._register(new Emitter<string>())
+  readonly onDidChangePanelPosition = this._onDidChangePanelPosition.event
+  private readonly _onDidChangeSideBarPosition = this._register(new Emitter<string>())
+  readonly onDidChangeSideBarPosition = this._onDidChangeSideBarPosition.event
   onDidChangePanelAlignment = Event.None
   onDidChangeNotificationsVisibility = Event.None
   openedDefaultEditors = false
@@ -124,11 +130,21 @@ export class LayoutService extends Disposable implements ILayoutService, IWorkbe
       }
 
       if (e.affectsConfiguration('workbench.statusBar.visible')) {
-        this.setPartHidden(this.configurationService.getValue<boolean>('workbench.statusBar.visible'), Parts.STATUSBAR_PART)
+        this.setPartHidden(!this.configurationService.getValue<boolean>('workbench.statusBar.visible'), Parts.STATUSBAR_PART)
+      }
+
+      if (e.affectsConfiguration('workbench.sideBar.location')) {
+        this.setSideBarPosition(positionFromString(this.configurationService.getValue<string | undefined>('workbench.sideBar.location') ?? 'left'))
+      }
+
+      if (e.affectsConfiguration('workbench.panel.defaultLocation')) {
+        this.setPanelPosition(positionFromString(this.configurationService.getValue<string | undefined>('workbench.panel.defaultLocation') ?? 'bottom'))
       }
     }))
     this.setPartHidden(this.isActivityBarHidden(), Parts.ACTIVITYBAR_PART)
     this.setPartHidden(!this.configurationService.getValue<boolean>('workbench.statusBar.visible'), Parts.STATUSBAR_PART)
+    this.sideBarPosition = positionFromString(this.configurationService.getValue<string | undefined>('workbench.sideBar.location') ?? 'left')
+    this.panelPosition = positionFromString(this.configurationService.getValue<string | undefined>('workbench.panel.defaultLocation') ?? 'bottom')
 
     // Window active / focus changes
     this._register(this.hostService.onDidChangeActiveWindow(() => this.onActiveWindowChanged()))
@@ -210,23 +226,30 @@ export class LayoutService extends Disposable implements ILayoutService, IWorkbe
   toggleMaximizedPanel (): void {
   }
 
-  hasWindowBorder (): boolean {
-    return false
-  }
-
-  getWindowBorderWidth (): number {
-    return 0
-  }
-
-  getWindowBorderRadius (): string | undefined {
-    return undefined
-  }
-
   toggleMenuBar (): void {
+    let currentVisibilityValue = getMenuBarVisibility(this.configurationService)
+    if (typeof currentVisibilityValue !== 'string') {
+      currentVisibilityValue = 'classic'
+    }
+
+    let newVisibilityValue: string
+    if (currentVisibilityValue === 'visible' || currentVisibilityValue === 'classic') {
+      newVisibilityValue = getTitleBarStyle(this.configurationService) === 'native' ? 'toggle' : 'compact'
+    } else {
+      newVisibilityValue = 'classic'
+    }
+
+    void this.configurationService.updateValue('window.menuBarVisibility', newVisibilityValue)
   }
 
-  setPanelPosition (): void {
-    // not supported
+  setPanelPosition (position: Position): void {
+    this.panelPosition = position
+
+    const panelPart = this.getPart(Parts.PANEL_PART)
+
+    panelPart?.updateStyles()
+
+    this._onDidChangePanelPosition.fire(positionToString(position))
   }
 
   getPanelAlignment (): PanelAlignment {
@@ -269,7 +292,7 @@ export class LayoutService extends Disposable implements ILayoutService, IWorkbe
   }
 
   getPanelPosition (): Position {
-    return Position.BOTTOM
+    return this.panelPosition
   }
 
   private readonly parts = new Map<string, Part>()
@@ -362,7 +385,22 @@ export class LayoutService extends Disposable implements ILayoutService, IWorkbe
   }
 
   getSideBarPosition (): Position {
-    return Position.LEFT
+    return this.sideBarPosition
+  }
+
+  setSideBarPosition (position: Position): void {
+    this.sideBarPosition = position
+
+    const activityBar = this.getPart(Parts.ACTIVITYBAR_PART)
+    const sideBar = this.getPart(Parts.SIDEBAR_PART)
+    const auxiliaryBar = this.getPart(Parts.AUXILIARYBAR_PART)
+
+    // Update Styles
+    activityBar?.updateStyles()
+    sideBar?.updateStyles()
+    auxiliaryBar?.updateStyles()
+
+    this._onDidChangeSideBarPosition.fire(positionToString(position))
   }
 
   registerPart (part: Part): void {
@@ -418,7 +456,7 @@ export class LayoutService extends Disposable implements ILayoutService, IWorkbe
       }
     } else {
       // auxiliary window
-      this.editorGroupService.getPart(activeContainer)?.activeGroup.focus()
+      this.editorGroupService.getPart(activeContainer).activeGroup.focus()
     }
   }
 }

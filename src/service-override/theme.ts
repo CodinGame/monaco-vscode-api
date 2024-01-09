@@ -7,6 +7,7 @@ import type { StandaloneThemeService } from 'vs/editor/standalone/browser/standa
 import { ConfigurationTarget } from 'vs/platform/configuration/common/configuration'
 import { IDisposable } from 'vs/base/common/lifecycle'
 import getFileServiceOverride from './files'
+import 'vs/workbench/contrib/themes/browser/themes.contribution'
 
 class StandaloneWorkbenchThemeService extends WorkbenchThemeService implements Pick<StandaloneThemeService, 'setTheme' | 'registerEditorContainer'> {
   registerEditorContainer (): IDisposable {

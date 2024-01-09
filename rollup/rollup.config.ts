@@ -195,11 +195,6 @@ function isCallPure (file: string, functionName: string, node: recast.types.name
     }
   }
 
-  if (functionName === 'MenuRegistry.appendMenuItems') {
-    if (file.includes('layoutActions')) {
-      return true
-    }
-  }
   if (functionName === 'MenuRegistry.appendMenuItem') {
     const firstParamCode = recast.print(args[0]!).code
     if (
@@ -470,7 +465,8 @@ const input = {
 const workerGroups: Record<string, string> = {
   languageDetection: 'service-override:language-detection-worker',
   outputLinkComputer: 'service-override:output',
-  textmate: 'service-override:textmate'
+  textmate: 'service-override:textmate',
+  notebook: 'service-override:notebook'
 }
 
 const externals = Object.keys({ ...pkg.dependencies })
@@ -506,6 +502,7 @@ export default (args: Record<string, string>): rollup.RollupOptions[] => {
           path.endsWith('.css') ||
           path.startsWith(KEYBOARD_LAYOUT_DIR) ||
           path.endsWith('.contribution.js') ||
+          path.endsWith('.all.js') ||
           path.endsWith('xtensionPoint.js') ||
           path.includes('vs/workbench/api/browser/') ||
           path.endsWith('/fileCommands.js') ||
@@ -520,7 +517,10 @@ export default (args: Record<string, string>): rollup.RollupOptions[] => {
           path.includes('extHost.common.services') ||
           path.includes('extHost.worker.services') ||
           path.includes('inlayHintsAccessibilty') ||
-          path.includes('vs/workbench/contrib/format/browser/')
+          path.includes('vs/workbench/contrib/format/browser/') ||
+          path.includes('vs/workbench/contrib/chat/browser/contrib/') ||
+          path.includes('vs/workbench/contrib/notebook/browser/') ||
+          path.includes('vs/workbench/contrib/welcomeGettingStarted/browser/gettingStartedColors')
       }
     },
     external,
@@ -1066,7 +1066,7 @@ export default (args: Record<string, string>): rollup.RollupOptions[] => {
                 }
               }]
           })
-          await groupBundle.write({
+          const output = await groupBundle.write({
             preserveModules: true,
             preserveModulesRoot: path.resolve(DIST_DIR, 'main/service-override'),
             minifyInternalExports: false,
@@ -1082,6 +1082,13 @@ export default (args: Record<string, string>): rollup.RollupOptions[] => {
           // remove exclusive files from main bundle to prevent them from being duplicated
           for (const exclusiveModule of exclusiveModules) {
             delete bundle[path.relative(DIST_DIR_MAIN, exclusiveModule)]
+          }
+
+          const assets = output.output
+            .filter((file): file is rollup.OutputAsset => file.type === 'asset')
+            .filter(file => file.fileName !== 'package.json')
+          for (const asset of assets) {
+            delete bundle[asset.fileName]
           }
         }
       }

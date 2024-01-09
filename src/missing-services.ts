@@ -136,11 +136,11 @@ import { IDownloadService } from 'vs/platform/download/common/download'
 import { IExtensionUrlHandler } from 'vs/workbench/services/extensions/browser/extensionUrlHandler'
 import { ICommentService } from 'vs/workbench/contrib/comments/browser/commentService'
 import { INotebookCellStatusBarService } from 'vs/workbench/contrib/notebook/common/notebookCellStatusBarService'
-import { INotebookKernelService } from 'vs/workbench/contrib/notebook/common/notebookKernelService'
+import { INotebookKernelHistoryService, INotebookKernelService } from 'vs/workbench/contrib/notebook/common/notebookKernelService'
 import { INotebookRendererMessagingService } from 'vs/workbench/contrib/notebook/common/notebookRendererMessagingService'
 import { IInteractiveDocumentService } from 'vs/workbench/contrib/interactive/browser/interactiveDocumentService'
 import { IInlineChatService } from 'vs/workbench/contrib/inlineChat/common/inlineChat'
-import { IChatWidgetService, IQuickChatService } from 'vs/workbench/contrib/chat/browser/chat'
+import { IChatAccessibilityService, IChatWidgetService, IQuickChatService } from 'vs/workbench/contrib/chat/browser/chat'
 import { IRemoteExplorerService } from 'vs/workbench/services/remote/common/remoteExplorerService'
 import { IAuthenticationService } from 'vs/workbench/services/authentication/common/authentication'
 import { ITimelineService } from 'vs/workbench/contrib/timeline/common/timeline'
@@ -185,8 +185,16 @@ import { IAuxiliaryWindowService } from 'vs/workbench/services/auxiliaryWindow/b
 import { ISpeechService } from 'vs/workbench/contrib/speech/common/speechService'
 import { ITitleService } from 'vs/workbench/services/title/browser/titleService'
 import { ITestCoverageService } from 'vs/workbench/contrib/testing/common/testCoverageService'
-import { unsupported } from './tools'
+import { IChatWidgetHistoryService } from 'vs/workbench/contrib/chat/common/chatWidgetHistoryService'
+import { INotebookEditorWorkerService } from 'vs/workbench/contrib/notebook/common/services/notebookWorkerService'
+import { INotebookExecutionService } from 'vs/workbench/contrib/notebook/common/notebookExecutionService'
+import { INotebookKeymapService } from 'vs/workbench/contrib/notebook/common/notebookKeymapService'
+import { INotebookLoggingService } from 'vs/workbench/contrib/notebook/common/notebookLoggingService'
+import { IInlineChatSessionService } from 'vs/workbench/contrib/inlineChat/browser/inlineChatSession'
+import { IWalkthroughsService } from 'vs/workbench/contrib/welcomeGettingStarted/browser/gettingStartedService'
+import { IFeaturedExtensionsService } from 'vs/workbench/contrib/welcomeGettingStarted/browser/featuredExtensionService'
 import { getBuiltInExtensionTranslationsUris } from './l10n'
+import { unsupported } from './tools'
 
 class NullLoggerService extends AbstractLoggerService {
   constructor () {
@@ -2137,8 +2145,8 @@ registerSingleton(ICommentService, class CommentService implements ICommentServi
   updateComments = unsupported
   updateNotebookComments = unsupported
   disposeCommentThread = unsupported
-  getDocumentComments = unsupported
-  getNotebookComments = unsupported
+  getDocumentComments = async () => []
+  getNotebookComments = async () => []
   updateCommentingRanges = unsupported
   hasReactionHandler = unsupported
   toggleReaction = unsupported
@@ -2622,4 +2630,84 @@ registerSingleton(ITestCoverageService, class TestCoverageService implements ITe
 
   openCoverage = unsupported
   closeCoverage = unsupported
+}, InstantiationType.Delayed)
+
+registerSingleton(IChatAccessibilityService, class ChatAccessibilityService implements IChatAccessibilityService {
+  _serviceBrand: undefined
+  acceptRequest = unsupported
+  acceptResponse = unsupported
+}, InstantiationType.Delayed)
+
+registerSingleton(IChatWidgetHistoryService, class ChatWidgetHistoryService implements IChatWidgetHistoryService {
+  _serviceBrand: undefined
+  onDidClearHistory = Event.None
+  clearHistory = unsupported
+  getHistory = () => []
+  saveHistory = unsupported
+}, InstantiationType.Delayed)
+
+registerSingleton(IInlineChatSessionService, class InlineChatSessionService implements IInlineChatSessionService {
+  _serviceBrand: undefined
+  onWillStartSession = Event.None
+  onDidEndSession = Event.None
+  createSession = unsupported
+  getSession = unsupported
+  releaseSession = unsupported
+  registerSessionKeyComputer = unsupported
+  recordings = unsupported
+  dispose = unsupported
+}, InstantiationType.Delayed)
+
+registerSingleton(INotebookEditorWorkerService, class NotebookEditorWorkerService implements INotebookEditorWorkerService {
+  _serviceBrand: undefined
+  canComputeDiff = () => false
+  computeDiff = unsupported
+  canPromptRecommendation = async () => false
+}, InstantiationType.Delayed)
+
+registerSingleton(INotebookKernelHistoryService, class NotebookKernelHistoryService implements INotebookKernelHistoryService {
+  _serviceBrand: undefined
+  getKernels = unsupported
+  addMostRecentKernel = unsupported
+}, InstantiationType.Delayed)
+
+registerSingleton(INotebookExecutionService, class NotebookExecutionService implements INotebookExecutionService {
+  _serviceBrand: undefined
+  executeNotebookCells = unsupported
+  cancelNotebookCells = unsupported
+  cancelNotebookCellHandles = unsupported
+  registerExecutionParticipant = unsupported
+}, InstantiationType.Delayed)
+
+registerSingleton(INotebookKeymapService, class NotebookKeymapService implements INotebookKeymapService {
+  _serviceBrand: undefined
+}, InstantiationType.Delayed)
+
+registerSingleton(INotebookLoggingService, class NotebookLoggingService implements INotebookLoggingService {
+  _serviceBrand: undefined
+  info = unsupported
+  debug = unsupported
+}, InstantiationType.Delayed)
+
+registerSingleton(IWalkthroughsService, class WalkthroughsService implements IWalkthroughsService {
+  _serviceBrand: undefined
+  onDidAddWalkthrough = Event.None
+  onDidRemoveWalkthrough = Event.None
+  onDidChangeWalkthrough = Event.None
+  onDidProgressStep = Event.None
+  getWalkthroughs = unsupported
+  getWalkthrough = unsupported
+  registerWalkthrough = unsupported
+  progressByEvent = unsupported
+  progressStep = unsupported
+  deprogressStep = unsupported
+  markWalkthroughOpened = unsupported
+}, InstantiationType.Delayed)
+
+registerSingleton(IFeaturedExtensionsService, class FeaturedExtensionsService implements IFeaturedExtensionsService {
+  _serviceBrand: undefined
+  getExtensions = unsupported
+  get title () {
+    return unsupported()
+  }
 }, InstantiationType.Delayed)
