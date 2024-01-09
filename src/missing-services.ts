@@ -101,7 +101,7 @@ import { IEnvironmentVariableService } from 'vs/workbench/contrib/terminal/commo
 import { ITerminalQuickFixService } from 'vs/workbench/contrib/terminalContrib/quickFix/browser/quickFix'
 import { IPreferencesSearchService } from 'vs/workbench/contrib/preferences/common/preferences'
 import { AccountStatus, IUserDataSyncWorkbenchService } from 'vs/workbench/services/userDataSync/common/userDataSync'
-import { IUserDataAutoSyncService, IUserDataSyncEnablementService } from 'vs/platform/userDataSync/common/userDataSync'
+import { IUserDataAutoSyncService, IUserDataSyncEnablementService, IUserDataSyncLocalStoreService, IUserDataSyncLogService, IUserDataSyncResourceProviderService, IUserDataSyncService, IUserDataSyncStoreManagementService, IUserDataSyncStoreService, IUserDataSyncUtilService, SyncStatus } from 'vs/platform/userDataSync/common/userDataSync'
 import { IKeybindingEditingService } from 'vs/workbench/services/keybinding/common/keybindingEditing'
 import { INotebookService } from 'vs/workbench/contrib/notebook/common/notebookService'
 import { ISearchHistoryService } from 'vs/workbench/contrib/search/common/searchHistoryService'
@@ -193,8 +193,9 @@ import { INotebookLoggingService } from 'vs/workbench/contrib/notebook/common/no
 import { IInlineChatSessionService } from 'vs/workbench/contrib/inlineChat/browser/inlineChatSession'
 import { IWalkthroughsService } from 'vs/workbench/contrib/welcomeGettingStarted/browser/gettingStartedService'
 import { IFeaturedExtensionsService } from 'vs/workbench/contrib/welcomeGettingStarted/browser/featuredExtensionService'
-import { getBuiltInExtensionTranslationsUris } from './l10n'
+import { IUserDataSyncMachinesService } from 'vs/platform/userDataSync/common/userDataSyncMachines'
 import { unsupported } from './tools'
+import { getBuiltInExtensionTranslationsUris } from './l10n'
 
 class NullLoggerService extends AbstractLoggerService {
   constructor () {
@@ -2710,4 +2711,110 @@ registerSingleton(IFeaturedExtensionsService, class FeaturedExtensionsService im
   get title () {
     return unsupported()
   }
+}, InstantiationType.Delayed)
+
+registerSingleton(IUserDataSyncStoreManagementService, class UserDataSyncStoreManagementService implements IUserDataSyncStoreManagementService {
+  _serviceBrand: undefined
+  onDidChangeUserDataSyncStore = Event.None
+  userDataSyncStore = undefined
+  switch = unsupported
+  getPreviousUserDataSyncStore = unsupported
+}, InstantiationType.Delayed)
+
+registerSingleton(IUserDataSyncStoreService, class UserDataSyncStoreService implements IUserDataSyncStoreService {
+  _serviceBrand: undefined
+  onDidChangeDonotMakeRequestsUntil = Event.None
+  donotMakeRequestsUntil = undefined
+  onTokenFailed = Event.None
+  onTokenSucceed = Event.None
+  setAuthToken = unsupported
+  manifest = unsupported
+  readResource = unsupported
+  writeResource = unsupported
+  deleteResource = unsupported
+  getAllResourceRefs = unsupported
+  resolveResourceContent = unsupported
+  getAllCollections = unsupported
+  createCollection = unsupported
+  deleteCollection = unsupported
+  getActivityData = unsupported
+  clear = unsupported
+}, InstantiationType.Delayed)
+
+registerSingleton(IUserDataSyncLogService, class UserDataSyncLogService implements IUserDataSyncLogService {
+  _serviceBrand: undefined
+  onDidChangeLogLevel = Event.None
+  getLevel = unsupported
+  setLevel = unsupported
+  trace = unsupported
+  debug = unsupported
+  info = unsupported
+  warn = unsupported
+  error = unsupported
+  flush = unsupported
+  dispose = unsupported
+}, InstantiationType.Delayed)
+
+registerSingleton(IUserDataSyncService, class UserDataSyncService implements IUserDataSyncService {
+  _serviceBrand: undefined
+  status = SyncStatus.Uninitialized
+  onDidChangeStatus = Event.None
+  conflicts = []
+  onDidChangeConflicts = Event.None
+  onDidChangeLocal = Event.None
+  onSyncErrors = Event.None
+  lastSyncTime: number | undefined
+  onDidChangeLastSyncTime = Event.None
+  onDidResetRemote = Event.None
+  onDidResetLocal = Event.None
+  createSyncTask = unsupported
+  createManualSyncTask = unsupported
+  resolveContent = unsupported
+  accept = unsupported
+  reset = unsupported
+  resetRemote = unsupported
+  cleanUpRemoteData = unsupported
+  resetLocal = unsupported
+  hasLocalData = unsupported
+  hasPreviouslySynced = unsupported
+  replace = unsupported
+  saveRemoteActivityData = unsupported
+  extractActivityData = unsupported
+}, InstantiationType.Delayed)
+
+registerSingleton(IUserDataSyncMachinesService, class UserDataSyncMachinesService implements IUserDataSyncMachinesService {
+  _serviceBrand: undefined
+  onDidChange = Event.None
+  getMachines = unsupported
+  addCurrentMachine = unsupported
+  removeCurrentMachine = unsupported
+  renameMachine = unsupported
+  setEnablements = unsupported
+}, InstantiationType.Delayed)
+
+registerSingleton(IUserDataSyncResourceProviderService, class UserDataSyncResourceProviderService implements IUserDataSyncResourceProviderService {
+  _serviceBrand: undefined
+  getRemoteSyncedProfiles = unsupported
+  getLocalSyncedProfiles = unsupported
+  getRemoteSyncResourceHandles = unsupported
+  getLocalSyncResourceHandles = unsupported
+  getAssociatedResources = unsupported
+  getMachineId = unsupported
+  getLocalSyncedMachines = unsupported
+  resolveContent = unsupported
+  resolveUserDataSyncResource = unsupported
+}, InstantiationType.Delayed)
+
+registerSingleton(IUserDataSyncLocalStoreService, class UserDataSyncLocalStoreService implements IUserDataSyncLocalStoreService {
+  _serviceBrand: undefined
+  writeResource = unsupported
+  getAllResourceRefs = unsupported
+  resolveResourceContent = unsupported
+}, InstantiationType.Delayed)
+
+registerSingleton(IUserDataSyncUtilService, class UserDataSyncUtilService implements IUserDataSyncUtilService {
+  _serviceBrand: undefined
+  resolveUserBindings = unsupported
+  resolveFormattingOptions = unsupported
+  resolveDefaultIgnoredSettings = unsupported
 }, InstantiationType.Delayed)
