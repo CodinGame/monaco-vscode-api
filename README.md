@@ -192,10 +192,12 @@ Additionally, several packages that include the VSCode version of some services 
   - Support for the VSCode marketplace, it allows to install extensions from the marketplace.
 - **Chat**: `@codingame/monaco-vscode-chat-service-override`
   - Support for chat and inline chat features
-- **Notebook**
+- **Notebook**: `@codingame/monaco-vscode-notebook-service-override`
   - Support for Jupyter notebooks
-- **Welcome**
+- **Welcome**: `@codingame/monaco-vscode-welcome-service-override`
   - Support for welcome pages/components. *Hint*: It only makes sense to enable it when *Views* service is used.
+- **User data sync**: `@codingame/monaco-vscode-user-data-sync-service-override`
+  - Support for user data sync. ⚠️ It can't really be used as it relies on a [closed source backend from microsoft](https://code.visualstudio.com/docs/editor/settings-sync#_can-i-use-a-different-backend-or-service-for-settings-sync) for the moment ⚠️
 
 Usage:
 
