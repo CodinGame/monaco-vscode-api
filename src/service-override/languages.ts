@@ -7,6 +7,7 @@ import { Registry } from 'vs/platform/registry/common/platform'
 import { LifecyclePhase } from 'vs/workbench/services/lifecycle/common/lifecycle'
 import { IInstantiationService } from 'vs/platform/instantiation/common/instantiation'
 import { ILanguageService } from 'vs/editor/common/languages/language'
+import { ILanguageStatusService, LanguageStatusServiceImpl } from 'vs/workbench/services/languageStatus/common/languageStatusService'
 import getFileServiceOverride from './files'
 
 export class ExtensionPoints implements IWorkbenchContribution {
@@ -22,6 +23,7 @@ Registry.as<IWorkbenchContributionsRegistry>(WorkbenchExtensions.Workbench).regi
 export default function getServiceOverride (): IEditorOverrideServices {
   return {
     ...getFileServiceOverride(),
-    [ILanguageService.toString()]: new SyncDescriptor(WorkbenchLanguageService, [], false)
+    [ILanguageService.toString()]: new SyncDescriptor(WorkbenchLanguageService, [], false),
+    [ILanguageStatusService.toString()]: new SyncDescriptor(LanguageStatusServiceImpl, [], true)
   }
 }

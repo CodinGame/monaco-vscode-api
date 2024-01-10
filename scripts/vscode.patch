@@ -2702,6 +2702,19 @@ index e8c8239b35f..9017a971ee5 100644
  		this._modelOperations = new ModelOperations({
  			modelJsonLoaderFunc: async () => {
  				const response = await fetch(await this._host.fhr('getModelJsonUri', []));
+diff --git a/src/vs/workbench/services/languageStatus/common/languageStatusService.ts b/src/vs/workbench/services/languageStatus/common/languageStatusService.ts
+index e10d2a3ef1e..6dd88102a64 100644
+--- a/src/vs/workbench/services/languageStatus/common/languageStatusService.ts
++++ b/src/vs/workbench/services/languageStatus/common/languageStatusService.ts
+@@ -47,7 +47,7 @@ export interface ILanguageStatusService {
+ }
+ 
+ 
+-class LanguageStatusServiceImpl implements ILanguageStatusService {
++export class LanguageStatusServiceImpl implements ILanguageStatusService {
+ 
+ 	declare _serviceBrand: undefined;
+ 
 diff --git a/src/vs/workbench/services/outline/browser/outlineService.ts b/src/vs/workbench/services/outline/browser/outlineService.ts
 index f4707432371..7c5cdde39cc 100644
 --- a/src/vs/workbench/services/outline/browser/outlineService.ts

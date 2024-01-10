@@ -18,8 +18,13 @@ import { IndexedDB } from 'vs/base/browser/indexedDB'
 import { ITelemetryService } from 'vs/platform/telemetry/common/telemetry'
 import { BufferLogger } from 'vs/platform/log/common/bufferLog'
 import { localizeWithPath } from 'vs/nls'
-import { logsPath } from '../workbench'
+import { ITextFileService } from 'vs/workbench/services/textfile/common/textfiles'
+import { BrowserTextFileService } from 'vs/workbench/services/textfile/browser/browserTextFileService'
+import { FilesConfigurationService, IFilesConfigurationService } from 'vs/workbench/services/filesConfiguration/common/filesConfigurationService'
+import { BrowserElevatedFileService } from 'vs/workbench/services/files/browser/elevatedFileService'
+import { IElevatedFileService } from 'vs/workbench/services/files/common/elevatedFileService'
 import { checkServicesNotInitialized, registerServiceInitializePreParticipant } from '../lifecycle'
+import { logsPath } from '../workbench'
 
 abstract class RegisteredFile {
   private ctime: number
@@ -561,7 +566,10 @@ registerServiceInitializePreParticipant(async (accessor) => {
 
 export default function getServiceOverride (): IEditorOverrideServices {
   return {
-    [IFileService.toString()]: new SyncDescriptor(MemoryFileService, [fileLogger], true)
+    [IFileService.toString()]: new SyncDescriptor(MemoryFileService, [fileLogger], true),
+    [ITextFileService.toString()]: new SyncDescriptor(BrowserTextFileService, [], true),
+    [IFilesConfigurationService.toString()]: new SyncDescriptor(FilesConfigurationService, [], true),
+    [IElevatedFileService.toString()]: new SyncDescriptor(BrowserElevatedFileService, [], true)
   }
 }
 
