@@ -26,7 +26,7 @@ import { StandaloneServices } from 'vs/editor/standalone/browser/standaloneServi
 import { ICodeEditorService } from 'vs/editor/browser/services/codeEditorService'
 import { IUserDataProfilesService, toUserDataProfile } from 'vs/platform/userDataProfile/common/userDataProfile'
 import { IPolicyService } from 'vs/platform/policy/common/policy'
-import { IUserDataProfileImportExportService, IUserDataProfileService } from 'vs/workbench/services/userDataProfile/common/userDataProfile'
+import { IUserDataProfileImportExportService, IUserDataProfileManagementService, IUserDataProfileService } from 'vs/workbench/services/userDataProfile/common/userDataProfile'
 import { UserDataProfileService } from 'vs/workbench/services/userDataProfile/common/userDataProfileService'
 import { ISnippetsService } from 'vs/workbench/contrib/snippets/browser/snippets'
 import { AbstractLoggerService, ILogger, ILoggerService, LogLevel, NullLogger } from 'vs/platform/log/common/log'
@@ -1484,7 +1484,7 @@ registerSingleton(IUpdateService, class UpdateService implements IUpdateService 
   downloadUpdate = unsupported
   applyUpdate = unsupported
   quitAndInstall = unsupported
-  isLatestVersion = unsupported
+  isLatestVersion = async () => true
   _applySpecificUpdate = unsupported
 }, InstantiationType.Eager)
 
@@ -2924,4 +2924,14 @@ registerSingleton(IUserDataSyncUtilService, class UserDataSyncUtilService implem
   resolveUserBindings = unsupported
   resolveFormattingOptions = unsupported
   resolveDefaultIgnoredSettings = unsupported
+}, InstantiationType.Delayed)
+
+registerSingleton(IUserDataProfileManagementService, class UserDataProfileManagementService implements IUserDataProfileManagementService {
+  _serviceBrand: undefined
+  createAndEnterProfile = unsupported
+  createAndEnterTransientProfile = unsupported
+  removeProfile = unsupported
+  updateProfile = unsupported
+  switchProfile = unsupported
+  getBuiltinProfileTemplates = unsupported
 }, InstantiationType.Delayed)

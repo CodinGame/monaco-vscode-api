@@ -26,12 +26,14 @@ import { IProductService } from 'vs/platform/product/common/productService'
 import { IRequestService } from 'vs/platform/request/common/request'
 import { ILogService } from 'vs/platform/log/common/log'
 import { IUriIdentityService } from 'vs/platform/uriIdentity/common/uriIdentity'
-import { IUserDataProfileService } from 'vs/workbench/services/userDataProfile/common/userDataProfile'
+import { IUserDataProfileImportExportService, IUserDataProfileManagementService, IUserDataProfileService } from 'vs/workbench/services/userDataProfile/common/userDataProfile'
 import { mark } from 'vs/base/common/performance'
 import type { WorkspaceService } from 'vs/workbench/services/configuration/browser/configurationService'
 import { timeout } from 'vs/base/common/async'
 import { IWorkbenchConfigurationService } from 'vs/workbench/services/configuration/common/configuration'
 import { UserDataSyncUtilService } from 'vs/workbench/services/userDataSync/common/userDataSyncUtil'
+import { UserDataProfileImportExportService } from 'vs/workbench/services/userDataProfile/browser/userDataProfileImportExportService'
+import { UserDataProfileManagementService } from 'vs/workbench/services/userDataProfile/browser/userDataProfileManagement'
 import { registerServiceInitializePostParticipant } from '../lifecycle'
 
 function isWorkspaceService (configurationService: IWorkbenchConfigurationService): configurationService is WorkspaceService {
@@ -106,6 +108,8 @@ export default function getServiceOverride (): IEditorOverrideServices {
     [IUserDataSyncLocalStoreService.toString()]: new SyncDescriptor(UserDataSyncLocalStoreService, [], true),
     [IUserDataSyncWorkbenchService.toString()]: new SyncDescriptor(UserDataSyncWorkbenchService, [], true),
     [IUserDataInitializationService.toString()]: new SyncDescriptor(InjectedUserDataInitializationService, [], true),
-    [IUserDataSyncUtilService.toString()]: new SyncDescriptor(UserDataSyncUtilService, [], true)
+    [IUserDataSyncUtilService.toString()]: new SyncDescriptor(UserDataSyncUtilService, [], true),
+    [IUserDataProfileImportExportService.toString()]: new SyncDescriptor(UserDataProfileImportExportService, [], true),
+    [IUserDataProfileManagementService.toString()]: new SyncDescriptor(UserDataProfileManagementService, [], true)
   }
 }

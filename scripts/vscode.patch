@@ -1934,6 +1934,19 @@ index 9c886825943..116cc28ed20 100644
  	}
  }
  
+diff --git a/src/vs/workbench/contrib/debug/browser/extensionHostDebugService.ts b/src/vs/workbench/contrib/debug/browser/extensionHostDebugService.ts
+index 08449bd2cd7..f82ac191725 100644
+--- a/src/vs/workbench/contrib/debug/browser/extensionHostDebugService.ts
++++ b/src/vs/workbench/contrib/debug/browser/extensionHostDebugService.ts
+@@ -19,7 +19,7 @@ import { IBrowserWorkbenchEnvironmentService } from 'vs/workbench/services/envir
+ import { IHostService } from 'vs/workbench/services/host/browser/host';
+ import { IRemoteAgentService } from 'vs/workbench/services/remote/common/remoteAgentService';
+ 
+-class BrowserExtensionHostDebugService extends ExtensionHostDebugChannelClient implements IExtensionHostDebugService {
++export class BrowserExtensionHostDebugService extends ExtensionHostDebugChannelClient implements IExtensionHostDebugService {
+ 
+ 	private static readonly LAST_EXTENSION_DEVELOPMENT_WORKSPACE_KEY = 'debug.lastExtensionDevelopmentWorkspace';
+ 
 diff --git a/src/vs/workbench/contrib/extensions/browser/abstractRuntimeExtensionsEditor.ts b/src/vs/workbench/contrib/extensions/browser/abstractRuntimeExtensionsEditor.ts
 index 295c3fd59cb..d3aa77446b4 100644
 --- a/src/vs/workbench/contrib/extensions/browser/abstractRuntimeExtensionsEditor.ts
@@ -2814,6 +2827,19 @@ index a77c2db9446..2b9a8c19926 100644
  	}
  
  	protected override shouldFlushWhenIdle(): boolean {
+diff --git a/src/vs/workbench/services/terminal/common/embedderTerminalService.ts b/src/vs/workbench/services/terminal/common/embedderTerminalService.ts
+index 5e322af7a0f..07b4abdd636 100644
+--- a/src/vs/workbench/services/terminal/common/embedderTerminalService.ts
++++ b/src/vs/workbench/services/terminal/common/embedderTerminalService.ts
+@@ -52,7 +52,7 @@ export interface IEmbedderTerminalPty {
+ 	//   setDimensions?(dimensions: TerminalDimensions): void;
+ }
+ 
+-class EmbedderTerminalService implements IEmbedderTerminalService {
++export class EmbedderTerminalService implements IEmbedderTerminalService {
+ 	declare _serviceBrand: undefined;
+ 
+ 	private readonly _onDidCreateTerminal = new Emitter<IShellLaunchConfig>();
 diff --git a/src/vs/workbench/services/textMate/browser/backgroundTokenization/textMateWorkerTokenizerController.ts b/src/vs/workbench/services/textMate/browser/backgroundTokenization/textMateWorkerTokenizerController.ts
 index 850b58e1e6c..2eb835fa2b6 100644
 --- a/src/vs/workbench/services/textMate/browser/backgroundTokenization/textMateWorkerTokenizerController.ts
