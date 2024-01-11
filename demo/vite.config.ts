@@ -64,6 +64,7 @@ export default defineConfig({
     ],
     exclude: [],
     esbuildOptions: {
+      tsconfig: './tsconfig.json',
       plugins: [{
         name: 'import.meta.url',
         setup ({ onLoad }) {
