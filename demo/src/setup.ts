@@ -48,6 +48,7 @@ import getChatServiceOverride from '@codingame/monaco-vscode-chat-service-overri
 import getNotebookServiceOverride from '@codingame/monaco-vscode-notebook-service-override'
 import getWelcomeServiceOverride from '@codingame/monaco-vscode-welcome-service-override'
 import getUserDataSyncServiceOverride from '@codingame/monaco-vscode-user-data-sync-service-override'
+import getAiServiceOverride from '@codingame/monaco-vscode-ai-service-override'
 import * as monaco from 'monaco-editor'
 import { registerExtension } from 'vscode/extensions'
 import { TerminalBackend } from './features/terminal'
@@ -152,7 +153,8 @@ await initializeMonacoService({
   ...getChatServiceOverride(),
   ...getNotebookServiceOverride(),
   ...getWelcomeServiceOverride(),
-  ...getUserDataSyncServiceOverride()
+  ...getUserDataSyncServiceOverride(),
+  ...getAiServiceOverride()
 }, document.body, {
   remoteAuthority,
   enableWorkspaceTrust: true,

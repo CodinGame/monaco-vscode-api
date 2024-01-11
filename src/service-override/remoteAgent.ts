@@ -12,6 +12,7 @@ import { URI } from 'vs/base/common/uri'
 import { IFileService } from 'vs/platform/files/common/files'
 import { ILogService } from 'vs/platform/log/common/log'
 import { IRemoteExplorerService, RemoteExplorerService } from 'vs/workbench/services/remote/common/remoteExplorerService'
+import { ExternalUriOpenerService, IExternalUriOpenerService } from 'vs/workbench/contrib/externalUriOpener/common/externalUriOpenerService'
 import getEnvironmentServiceOverride from './environment'
 import { registerServiceInitializePreParticipant } from '../lifecycle'
 import 'vs/workbench/contrib/remote/common/remote.contribution'
@@ -34,6 +35,7 @@ export default function getServiceOverride (connectionToken?: Promise<string> | 
     [IRemoteAgentService.toString()]: new SyncDescriptor(RemoteAgentService, [], true),
     [IRemoteSocketFactoryService.toString()]: new SyncDescriptor(CustomRemoteSocketFactoryService, [], true),
     [IRemoteAuthorityResolverService.toString()]: new SyncDescriptor(RemoteAuthorityResolverService, [true, connectionToken, resourceUriProvider]),
-    [IRemoteExplorerService.toString()]: new SyncDescriptor(RemoteExplorerService, [], true)
+    [IRemoteExplorerService.toString()]: new SyncDescriptor(RemoteExplorerService, [], true),
+    [IExternalUriOpenerService.toString()]: new SyncDescriptor(ExternalUriOpenerService, [], true)
   }
 }

@@ -7,6 +7,8 @@ import { ILanguageFeaturesService } from 'vs/editor/common/services/languageFeat
 import { ConfigurationResolverService } from 'vs/workbench/services/configurationResolver/browser/configurationResolverService'
 import { IConfigurationResolverService } from 'vs/workbench/services/configurationResolver/common/configurationResolver'
 import { IAction } from 'vs/base/common/actions'
+import { IExtensionHostDebugService } from 'vs/platform/debug/common/extensionHostDebug'
+import { BrowserExtensionHostDebugService } from 'vs/workbench/contrib/debug/browser/extensionHostDebugService'
 import getLayoutServiceOverride from './layout'
 import 'vs/workbench/contrib/debug/browser/debug.contribution'
 
@@ -23,6 +25,7 @@ export default function getServiceOverride (): IEditorOverrideServices {
     ...getLayoutServiceOverride(),
     [ILanguageFeaturesService.toString()]: new SyncDescriptor(LanguageFeaturesService, [], true), // To restore inlineValuesProvider
     [IDebugService.toString()]: new SyncDescriptor(DebugService, [], true),
-    [IConfigurationResolverService.toString()]: new SyncDescriptor(ConfigurationResolverService, [], true)
+    [IConfigurationResolverService.toString()]: new SyncDescriptor(ConfigurationResolverService, [], true),
+    [IExtensionHostDebugService.toString()]: new SyncDescriptor(BrowserExtensionHostDebugService, [], true)
   }
 }

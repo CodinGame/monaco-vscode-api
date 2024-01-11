@@ -22,6 +22,7 @@ import { Registry } from 'vs/platform/registry/common/platform'
 import { IProcessEnvironment } from 'vs/base/common/platform'
 import { PerformanceMark } from 'vs/base/common/performance'
 import { DeferredPromise } from 'vs/base/common/async'
+import { EmbedderTerminalService, IEmbedderTerminalService } from 'vs/workbench/services/terminal/common/embedderTerminalService'
 import { unsupported } from '../tools'
 import 'vs/workbench/contrib/terminal/browser/terminal.contribution'
 import 'vs/workbench/contrib/terminal/terminal.all'
@@ -139,7 +140,8 @@ export default function getServiceOverride (backend?: ITerminalBackend): IEditor
     [ITerminalLinkProviderService.toString()]: new SyncDescriptor(TerminalLinkProviderService, [], true),
     [ITerminalProfileResolverService.toString()]: new SyncDescriptor(ElectronTerminalProfileResolverService, [], true),
     [IEnvironmentVariableService.toString()]: new SyncDescriptor(EnvironmentVariableService, [], true),
-    [ITerminalQuickFixService.toString()]: new SyncDescriptor(TerminalQuickFixService, [], true)
+    [ITerminalQuickFixService.toString()]: new SyncDescriptor(TerminalQuickFixService, [], true),
+    [IEmbedderTerminalService.toString()]: new SyncDescriptor(EmbedderTerminalService, [], true)
   }
 }
 

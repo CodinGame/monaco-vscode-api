@@ -10,6 +10,7 @@ import { BrowserStorageService } from 'vs/workbench/services/storage/browser/sto
 import { ILogService } from 'vs/platform/log/common/log'
 import { IUserDataProfileService } from 'vs/workbench/services/userDataProfile/common/userDataProfile'
 import { IHostService } from 'vs/workbench/services/host/browser/host'
+import { ExtensionStorageService, IExtensionStorageService } from 'vs/platform/extensionManagement/common/extensionStorage'
 import { registerServiceInitializePreParticipant } from '../lifecycle'
 import { getWorkspaceIdentifier } from '../workbench'
 
@@ -156,11 +157,13 @@ class InjectedBrowserStorageService extends BrowserStorageService {
 export default function getStorageServiceOverride (provider?: IStorageProvider): IEditorOverrideServices {
   if (provider != null) {
     return {
-      [IStorageService.toString()]: new SyncDescriptor(ExternalStorageService, [provider], true)
+      [IStorageService.toString()]: new SyncDescriptor(ExternalStorageService, [provider], true),
+      [IExtensionStorageService.toString()]: new SyncDescriptor(ExtensionStorageService, [], true)
     }
   } else {
     return {
-      [IStorageService.toString()]: new SyncDescriptor(InjectedBrowserStorageService, [], true)
+      [IStorageService.toString()]: new SyncDescriptor(InjectedBrowserStorageService, [], true),
+      [IExtensionStorageService.toString()]: new SyncDescriptor(ExtensionStorageService, [], true)
     }
   }
 }

@@ -10,10 +10,7 @@ import { IWorkingCopyFileService, WorkingCopyFileService } from 'vs/workbench/se
 import { IPathService } from 'vs/workbench/services/path/common/pathService'
 import { InstantiationType, registerSingleton } from 'vs/platform/instantiation/common/extensions'
 import { IProductService } from 'vs/platform/product/common/productService'
-import { ILanguageStatus, ILanguageStatusService } from 'vs/workbench/services/languageStatus/common/languageStatusService'
-import { ITextModel } from 'vs/editor/common/model'
-import { LanguageFeatureRegistry } from 'vs/editor/common/languageFeatureRegistry'
-import { compare } from 'vs/base/common/strings'
+import { ILanguageStatusService } from 'vs/workbench/services/languageStatus/common/languageStatusService'
 import { IHostService } from 'vs/workbench/services/host/browser/host'
 import { ILifecycleService } from 'vs/workbench/services/lifecycle/common/lifecycle'
 import { ILanguageDetectionService } from 'vs/workbench/services/languageDetection/common/languageDetectionWorkerService'
@@ -22,7 +19,6 @@ import { IKeyboardLayoutService } from 'vs/platform/keyboardLayout/common/keyboa
 import { OS } from 'vs/base/common/platform'
 import { IEnvironmentService } from 'vs/platform/environment/common/environment'
 import { IUserDataInitializationService } from 'vs/workbench/services/userData/browser/userDataInit'
-import { BrowserHostColorSchemeService } from 'vs/workbench/services/themes/browser/browserHostColorSchemeService'
 import { IHostColorSchemeService } from 'vs/workbench/services/themes/common/hostColorSchemeService'
 import { IPreferencesService } from 'vs/workbench/services/preferences/common/preferences'
 import { IContextKeyService } from 'vs/platform/contextkey/common/contextkey'
@@ -30,11 +26,11 @@ import { StandaloneServices } from 'vs/editor/standalone/browser/standaloneServi
 import { ICodeEditorService } from 'vs/editor/browser/services/codeEditorService'
 import { IUserDataProfilesService, toUserDataProfile } from 'vs/platform/userDataProfile/common/userDataProfile'
 import { IPolicyService } from 'vs/platform/policy/common/policy'
-import { IUserDataProfileImportExportService, IUserDataProfileService } from 'vs/workbench/services/userDataProfile/common/userDataProfile'
+import { IUserDataProfileImportExportService, IUserDataProfileManagementService, IUserDataProfileService } from 'vs/workbench/services/userDataProfile/common/userDataProfile'
 import { UserDataProfileService } from 'vs/workbench/services/userDataProfile/common/userDataProfileService'
 import { ISnippetsService } from 'vs/workbench/contrib/snippets/browser/snippets'
 import { AbstractLoggerService, ILogger, ILoggerService, LogLevel, NullLogger } from 'vs/platform/log/common/log'
-import { IDisposable, Disposable, DisposableStore } from 'vs/base/common/lifecycle'
+import { Disposable, DisposableStore, IDisposable } from 'vs/base/common/lifecycle'
 import { FallbackKeyboardMapper } from 'vs/workbench/services/keybinding/common/fallbackKeyboardMapper'
 import { ITextMateTokenizationService } from 'vs/workbench/services/textMate/browser/textMateTokenizationFeature'
 import { IDebugService, IDebugModel, IViewModel, IAdapterManager } from 'vs/workbench/contrib/debug/common/debug'
@@ -58,33 +54,26 @@ import { IExtensionsWorkbenchService } from 'vs/workbench/contrib/extensions/com
 import { EnablementState, IExtensionManagementServerService, IWebExtensionsScannerService, IWorkbenchExtensionEnablementService, IWorkbenchExtensionManagementService } from 'vs/workbench/services/extensionManagement/common/extensionManagement'
 import { ITunnelService } from 'vs/platform/tunnel/common/tunnel'
 import { IResolvedWorkingCopyBackup, IWorkingCopyBackupService } from 'vs/workbench/services/workingCopy/common/workingCopyBackup'
-import { IWorkingCopyService, WorkingCopyService } from 'vs/workbench/services/workingCopy/common/workingCopyService'
-import { FilesConfigurationService, IFilesConfigurationService } from 'vs/workbench/services/filesConfiguration/common/filesConfigurationService'
+import { IWorkingCopyService } from 'vs/workbench/services/workingCopy/common/workingCopyService'
+import { IFilesConfigurationService } from 'vs/workbench/services/filesConfiguration/common/filesConfigurationService'
 import { IUntitledTextEditorService } from 'vs/workbench/services/untitled/common/untitledTextEditorService'
 import { IFileDialogService } from 'vs/platform/dialogs/common/dialogs'
 import { IElevatedFileService } from 'vs/workbench/services/files/common/elevatedFileService'
-import { BrowserElevatedFileService } from 'vs/workbench/services/files/browser/elevatedFileService'
 import { IDecorationsService } from 'vs/workbench/services/decorations/common/decorations'
-import { BrowserRequestService } from 'vs/workbench/services/request/browser/requestService'
-import { BrowserTextFileService } from 'vs/workbench/services/textfile/browser/browserTextFileService'
-import { DecorationsService } from 'vs/workbench/services/decorations/browser/decorationsService'
 import { UriIdentityService } from 'vs/platform/uriIdentity/common/uriIdentityService'
 import { IJSONEditingService } from 'vs/workbench/services/configuration/common/jsonEditing'
-import { JSONEditingService } from 'vs/workbench/services/configuration/common/jsonEditingService'
 import { IWorkspacesService } from 'vs/platform/workspaces/common/workspaces'
 import { ITextEditorService } from 'vs/workbench/services/textfile/common/textEditorService'
 import { IEditorResolverService } from 'vs/workbench/services/editor/common/editorResolverService'
 import { AbstractLifecycleService } from 'vs/workbench/services/lifecycle/common/lifecycleService'
 import { IOutputChannel, IOutputChannelDescriptor, IOutputService } from 'vs/workbench/services/output/common/output'
-import { IOutputChannelModelService, OutputChannelModelService } from 'vs/workbench/contrib/output/common/outputChannelModelService'
+import { IOutputChannelModelService } from 'vs/workbench/contrib/output/common/outputChannelModelService'
 import { IExtensionResourceLoaderService } from 'vs/platform/extensionResourceLoader/common/extensionResourceLoader'
 import { IHoverService } from 'vs/workbench/services/hover/browser/hover'
 import { IExplorerService } from 'vs/workbench/contrib/files/browser/files'
-import { ExtensionStorageService, IExtensionStorageService } from 'vs/platform/extensionManagement/common/extensionStorage'
+import { IExtensionStorageService } from 'vs/platform/extensionManagement/common/extensionStorage'
 import { ILanguagePackItem, ILanguagePackService } from 'vs/platform/languagePacks/common/languagePacks'
-import { TreeViewsDnDService } from 'vs/editor/common/services/treeViewsDnd'
 import { ITreeViewsDnDService } from 'vs/editor/common/services/treeViewsDndService'
-import { TreeviewsService } from 'vs/workbench/services/views/common/treeViewsService'
 import { ITreeViewsService } from 'vs/workbench/services/views/browser/treeViewsService'
 import { IBreadcrumbsService } from 'vs/workbench/browser/parts/editor/breadcrumbs'
 import { IOutlineService } from 'vs/workbench/services/outline/browser/outline'
@@ -109,9 +98,8 @@ import { IReplaceService } from 'vs/workbench/contrib/search/browser/replace'
 import { ISearchViewModelWorkbenchService } from 'vs/workbench/contrib/search/browser/searchModel'
 import { INotebookEditorService } from 'vs/workbench/contrib/notebook/browser/services/notebookEditorService'
 import { INotebookEditorModelResolverService } from 'vs/workbench/contrib/notebook/common/notebookEditorModelResolverService'
-import { IWorkingCopyEditorService, WorkingCopyEditorService } from 'vs/workbench/services/workingCopy/common/workingCopyEditorService'
-import { IUserActivityService, UserActivityService } from 'vs/workbench/services/userActivity/common/userActivityService'
-import { CanonicalUriService } from 'vs/workbench/services/workspaces/common/canonicalUriService'
+import { IWorkingCopyEditorService } from 'vs/workbench/services/workingCopy/common/workingCopyEditorService'
+import { IUserActivityService } from 'vs/workbench/services/userActivity/common/userActivityService'
 import { ICanonicalUriService } from 'vs/platform/workspace/common/canonicalUri'
 import { ExtensionStatusBarEntry, IExtensionStatusBarItemService, StatusBarUpdateKind } from 'vs/workbench/api/browser/statusBarExtensionPoint'
 import { IWorkbenchAssignmentService } from 'vs/workbench/services/assignment/common/assignmentService'
@@ -122,12 +110,11 @@ import { IWebviewWorkbenchService } from 'vs/workbench/contrib/webviewPanel/brow
 import { IWebview, IWebviewService } from 'vs/workbench/contrib/webview/browser/webview'
 import { IWebviewViewService } from 'vs/workbench/contrib/webviewView/browser/webviewViewService'
 import { IRemoteAuthorityResolverService } from 'vs/platform/remote/common/remoteAuthorityResolver'
-import { ExternalUriOpenerService, IExternalUriOpenerService } from 'vs/workbench/contrib/externalUriOpener/common/externalUriOpenerService'
+import { IExternalUriOpenerService } from 'vs/workbench/contrib/externalUriOpener/common/externalUriOpenerService'
 import { IAccessibleViewService } from 'vs/workbench/contrib/accessibility/browser/accessibleView'
 import { IExtension, IBuiltinExtensionsScannerService, IRelaxedExtensionDescription } from 'vs/platform/extensions/common/extensions'
 import { IExtensionManifestPropertiesService } from 'vs/workbench/services/extensions/common/extensionManifestPropertiesService'
 import { IRemoteExtensionsScannerService } from 'vs/platform/remote/common/remoteExtensionsScanner'
-import { BrowserURLService } from 'vs/workbench/services/url/browser/urlService'
 import { IURLService } from 'vs/platform/url/common/url'
 import { IRemoteSocketFactoryService } from 'vs/platform/remote/common/remoteSocketFactoryService'
 import { IQuickDiffService } from 'vs/workbench/contrib/scm/common/quickDiff'
@@ -163,7 +150,6 @@ import { IAiEmbeddingVectorService } from 'vs/workbench/services/aiEmbeddingVect
 import { ResourceSet } from 'vs/base/common/map'
 import { DEFAULT_EDITOR_PART_OPTIONS, IEditorGroupView } from 'vs/workbench/browser/parts/editor/editor'
 import { IMessage, ISignService } from 'vs/platform/sign/common/sign'
-import { BrowserHostService } from 'vs/workbench/services/host/browser/browserHostService'
 import { IBannerService } from 'vs/workbench/services/banner/browser/bannerService'
 import { IChatAgentService } from 'vs/workbench/contrib/chat/common/chatAgents'
 import { IActiveLanguagePackService, ILocaleService } from 'vs/workbench/services/localization/common/locale'
@@ -194,17 +180,16 @@ import { IInlineChatSessionService } from 'vs/workbench/contrib/inlineChat/brows
 import { IWalkthroughsService } from 'vs/workbench/contrib/welcomeGettingStarted/browser/gettingStartedService'
 import { IFeaturedExtensionsService } from 'vs/workbench/contrib/welcomeGettingStarted/browser/featuredExtensionService'
 import { IUserDataSyncMachinesService } from 'vs/platform/userDataSync/common/userDataSyncMachines'
-import { unsupported } from './tools'
 import { getBuiltInExtensionTranslationsUris } from './l10n'
+import { unsupported } from './tools'
 
-class NullLoggerService extends AbstractLoggerService {
+registerSingleton(ILoggerService, class NullLoggerService extends AbstractLoggerService {
   constructor () {
     super(LogLevel.Info, URI.file('logs.log'))
   }
 
   protected doCreateLogger (): ILogger { return new NullLogger() }
-}
-registerSingleton(ILoggerService, NullLoggerService, InstantiationType.Eager)
+}, InstantiationType.Eager)
 
 registerSingleton(IEditorService, class EditorService implements IEditorService {
   readonly _serviceBrand = undefined
@@ -258,7 +243,32 @@ registerSingleton(IPaneCompositePartService, class PaneCompositePartService impl
 
 registerSingleton(IUriIdentityService, UriIdentityService, InstantiationType.Delayed)
 
-registerSingleton(ITextFileService, BrowserTextFileService, InstantiationType.Eager)
+registerSingleton(ITextFileService, class TextFileService implements ITextFileService {
+  _serviceBrand: undefined
+  get files () {
+    return unsupported()
+  }
+
+  get untitled () {
+    return unsupported()
+  }
+
+  get encoding () {
+    return unsupported()
+  }
+
+  isDirty = unsupported
+  save = unsupported
+  saveAs = unsupported
+  revert = unsupported
+  read = unsupported
+  readStream = unsupported
+  write = unsupported
+  create = unsupported
+  getEncodedReadable = unsupported
+  getDecodedStream = unsupported
+  dispose = unsupported
+}, InstantiationType.Eager)
 
 registerSingleton(IFileService, class FileService implements IFileService {
   readonly _serviceBrand = undefined
@@ -539,33 +549,29 @@ registerSingleton(IExtensionTipsService, class ExtensionTipsService implements I
   getOtherExecutableBasedTips = async () => []
 }, InstantiationType.Eager)
 
-registerSingleton(ILanguageStatusService, class LanguageStatusServiceImpl implements ILanguageStatusService {
-  declare _serviceBrand: undefined
+registerSingleton(ILanguageStatusService, class LanguageStatusService implements ILanguageStatusService {
+  _serviceBrand: undefined
+  onDidChange = Event.None
+  addStatus = unsupported
+  getLanguageStatus = unsupported
+}, InstantiationType.Delayed)
 
-  private readonly _provider = new LanguageFeatureRegistry<ILanguageStatus>()
-
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  readonly onDidChange: Event<any> = this._provider.onDidChange
-
-  addStatus (status: ILanguageStatus): IDisposable {
-    return this._provider.register(status.selector, status)
-  }
-
-  getLanguageStatus (model: ITextModel): ILanguageStatus[] {
-    return this._provider.ordered(model).sort((a, b) => {
-      let res = b.severity - a.severity
-      if (res === 0) {
-        res = compare(a.source, b.source)
-      }
-      if (res === 0) {
-        res = compare(a.id, b.id)
-      }
-      return res
-    })
-  }
+registerSingleton(IHostService, class HostService implements IHostService {
+  _serviceBrand: undefined
+  onDidChangeFocus = Event.None
+  hasFocus = false
+  hadLastFocus = async () => false
+  focus = unsupported
+  onDidChangeActiveWindow = Event.None
+  openWindow = unsupported
+  toggleFullScreen = unsupported
+  moveTop = unsupported
+  getCursorScreenPoint = unsupported
+  restart = unsupported
+  reload = unsupported
+  close = unsupported
+  withExpectedShutdown = unsupported
 }, InstantiationType.Eager)
-
-registerSingleton(IHostService, BrowserHostService, InstantiationType.Eager)
 
 registerSingleton(ILifecycleService, class LifecycleService extends AbstractLifecycleService {
   shutdown = unsupported
@@ -606,7 +612,12 @@ registerSingleton(IUserDataInitializationService, class NullUserDataInitializati
   async initializeOtherResources (): Promise<void> {}
 }, InstantiationType.Eager)
 
-registerSingleton(IHostColorSchemeService, BrowserHostColorSchemeService, InstantiationType.Eager)
+registerSingleton(IHostColorSchemeService, class HostColorSchemeService implements IHostColorSchemeService {
+  _serviceBrand: undefined
+  dark = false
+  highContrast = false
+  onDidChangeColorScheme = Event.None
+}, InstantiationType.Eager)
 
 class PreferencesService implements IPreferencesService {
   constructor (@IUserDataProfileService protected readonly profileService: IUserDataProfileService) {}
@@ -793,7 +804,12 @@ registerSingleton(IDebugService, class DebugService implements IDebugService {
   runTo = unsupported
 }, InstantiationType.Eager)
 
-registerSingleton(IRequestService, BrowserRequestService, InstantiationType.Eager)
+registerSingleton(IRequestService, class RequestService implements IRequestService {
+  _serviceBrand: undefined
+  request = unsupported
+  resolveProxy = unsupported
+  loadCertificates = unsupported
+}, InstantiationType.Eager)
 
 registerSingleton(IWorkspaceTrustRequestService, class WorkspaceTrustRequestService implements IWorkspaceTrustRequestService {
   _serviceBrand: undefined
@@ -1170,7 +1186,20 @@ registerSingleton(ITunnelService, class TunnelService implements ITunnelService 
   isPortPrivileged = () => false
 }, InstantiationType.Eager)
 
-registerSingleton(IFilesConfigurationService, FilesConfigurationService, InstantiationType.Eager)
+registerSingleton(IFilesConfigurationService, class FilesConfigurationService implements IFilesConfigurationService {
+  _serviceBrand: undefined
+  onAutoSaveConfigurationChange = Event.None
+  getAutoSaveConfiguration = unsupported
+  getAutoSaveMode = unsupported
+  toggleAutoSave = unsupported
+  onReadonlyChange = Event.None
+  isReadonly = unsupported
+  updateReadonly = unsupported
+  onFilesAssociationChange = Event.None
+  isHotExitEnabled = true
+  hotExitConfiguration = undefined
+  preventSaveConflicts = unsupported
+}, InstantiationType.Eager)
 
 registerSingleton(IUntitledTextEditorService, class UntitledTextEditorService implements IUntitledTextEditorService {
   canDispose = (): true | Promise<true> => true
@@ -1213,9 +1242,40 @@ registerSingleton(IWorkingCopyBackupService, class WorkingCopyBackupService impl
   async discardBackups (): Promise<void> {
   }
 }, InstantiationType.Eager)
-registerSingleton(IWorkingCopyService, WorkingCopyService, InstantiationType.Eager)
-registerSingleton(IDecorationsService, DecorationsService, InstantiationType.Eager)
-registerSingleton(IElevatedFileService, BrowserElevatedFileService, InstantiationType.Eager)
+registerSingleton(IWorkingCopyService, class WorkingCopyService implements IWorkingCopyService {
+  _serviceBrand: undefined
+  onDidRegister = Event.None
+  onDidUnregister = Event.None
+  onDidChangeDirty = Event.None
+  onDidChangeContent = Event.None
+  onDidSave = Event.None
+  dirtyCount = 0
+  dirtyWorkingCopies = []
+  modifiedCount = 0
+  modifiedWorkingCopies = []
+  hasDirty = false
+  isDirty = () => false
+  workingCopies = []
+  registerWorkingCopy (): IDisposable {
+    // ignore
+    return Disposable.None
+  }
+
+  has = () => false
+  get = () => undefined
+  getAll = () => undefined
+}, InstantiationType.Eager)
+registerSingleton(IDecorationsService, class DecorationsService implements IDecorationsService {
+  _serviceBrand: undefined
+  onDidChangeDecorations = Event.None
+  registerDecorationsProvider = unsupported
+  getDecoration = () => undefined
+}, InstantiationType.Eager)
+registerSingleton(IElevatedFileService, class ElevatedFileService implements IElevatedFileService {
+  _serviceBrand: undefined
+  isSupported = () => false
+  writeFileElevated = unsupported
+}, InstantiationType.Eager)
 registerSingleton(IFileDialogService, class FileDialogService implements IFileDialogService {
   preferredHome = unsupported
   _serviceBrand: undefined
@@ -1232,7 +1292,10 @@ registerSingleton(IFileDialogService, class FileDialogService implements IFileDi
   showOpenDialog = unsupported
 }, InstantiationType.Eager)
 
-registerSingleton(IJSONEditingService, JSONEditingService, InstantiationType.Delayed)
+registerSingleton(IJSONEditingService, class JSONEditingService implements IJSONEditingService {
+  _serviceBrand: undefined
+  write = unsupported
+}, InstantiationType.Delayed)
 
 registerSingleton(IWorkspacesService, class WorkspacesService implements IWorkspacesService {
   _serviceBrand: undefined
@@ -1297,7 +1360,10 @@ registerSingleton(IOutputService, class OutputService implements IOutputService 
   onActiveOutputChannel = Event.None
 }, InstantiationType.Delayed)
 
-registerSingleton(IOutputChannelModelService, OutputChannelModelService, InstantiationType.Delayed)
+registerSingleton(IOutputChannelModelService, class OutputChannelModelService implements IOutputChannelModelService {
+  _serviceBrand: undefined
+  createOutputChannelModel = unsupported
+}, InstantiationType.Delayed)
 registerSingleton(IExtensionResourceLoaderService, class ExtensionResourceLoaderService implements IExtensionResourceLoaderService {
   _serviceBrand: undefined
   readExtensionResource = unsupported
@@ -1340,7 +1406,17 @@ registerSingleton(IExplorerService, class ExplorerService implements IExplorerSe
   registerView = unsupported
 }, InstantiationType.Delayed)
 
-registerSingleton(IExtensionStorageService, ExtensionStorageService, InstantiationType.Delayed)
+registerSingleton(IExtensionStorageService, class ExtensionStorageService implements IExtensionStorageService {
+  _serviceBrand: undefined
+  getExtensionState = () => undefined
+  getExtensionStateRaw = () => undefined
+  setExtensionState = unsupported
+  onDidChangeExtensionStorageToSync = Event.None
+  setKeysForSync = unsupported
+  getKeysForSync = () => undefined
+  addToMigrationList = unsupported
+  getSourceExtensionToMigrate = () => undefined
+}, InstantiationType.Delayed)
 
 registerSingleton(IGlobalExtensionEnablementService, class GlobalExtensionEnablementService implements IGlobalExtensionEnablementService {
   _serviceBrand: undefined
@@ -1374,8 +1450,17 @@ registerSingleton(ILanguagePackService, class LanguagePackService implements ILa
   }
 }, InstantiationType.Delayed)
 
-registerSingleton(ITreeViewsDnDService, TreeViewsDnDService, InstantiationType.Delayed)
-registerSingleton(ITreeViewsService, TreeviewsService, InstantiationType.Delayed)
+registerSingleton(ITreeViewsDnDService, class TreeViewsDnDService implements ITreeViewsDnDService {
+  _serviceBrand: undefined
+  removeDragOperationTransfer = unsupported
+  addDragOperationTransfer = unsupported
+}, InstantiationType.Delayed)
+registerSingleton(ITreeViewsService, class TreeviewsService implements ITreeViewsService {
+  _serviceBrand: undefined
+  getRenderedTreeElement = unsupported
+  addRenderedTreeItemElement = unsupported
+  removeRenderedTreeItemElement = unsupported
+}, InstantiationType.Delayed)
 
 registerSingleton(IBreadcrumbsService, class BreadcrumbsService implements IBreadcrumbsService {
   _serviceBrand: undefined
@@ -1399,7 +1484,7 @@ registerSingleton(IUpdateService, class UpdateService implements IUpdateService 
   downloadUpdate = unsupported
   applyUpdate = unsupported
   quitAndInstall = unsupported
-  isLatestVersion = unsupported
+  isLatestVersion = async () => true
   _applySpecificUpdate = unsupported
 }, InstantiationType.Eager)
 
@@ -1838,9 +1923,22 @@ registerSingleton(INotebookEditorModelResolverService, class NotebookEditorModel
   resolve = unsupported
 }, InstantiationType.Delayed)
 
-registerSingleton(IWorkingCopyEditorService, WorkingCopyEditorService, InstantiationType.Delayed)
-registerSingleton(IUserActivityService, UserActivityService, InstantiationType.Delayed)
-registerSingleton(ICanonicalUriService, CanonicalUriService, InstantiationType.Delayed)
+registerSingleton(IWorkingCopyEditorService, class WorkingCopyEditorService implements IWorkingCopyEditorService {
+  _serviceBrand: undefined
+  onDidRegisterHandler = Event.None
+  registerHandler = () => Disposable.None
+  findEditor = () => undefined
+}, InstantiationType.Delayed)
+registerSingleton(IUserActivityService, class UserActivityService implements IUserActivityService {
+  _serviceBrand: undefined
+  isActive = false
+  onDidChangeIsActive = Event.None
+  markActive = unsupported
+}, InstantiationType.Delayed)
+registerSingleton(ICanonicalUriService, class CanonicalUriService implements ICanonicalUriService {
+  _serviceBrand: undefined
+  registerCanonicalUriProvider = unsupported
+}, InstantiationType.Delayed)
 registerSingleton(IExtensionStatusBarItemService, class ExtensionStatusBarItemService implements IExtensionStatusBarItemService {
   _serviceBrand: undefined
   onDidChange = Event.None
@@ -1995,7 +2093,11 @@ registerSingleton(IRemoteAuthorityResolverService, class RemoteAuthorityResolver
   _setCanonicalURIProvider = unsupported
 }, InstantiationType.Delayed)
 
-registerSingleton(IExternalUriOpenerService, ExternalUriOpenerService, InstantiationType.Delayed)
+registerSingleton(IExternalUriOpenerService, class ExternalUriOpenerService implements IExternalUriOpenerService {
+  _serviceBrand: undefined
+  registerExternalOpenerProvider = unsupported
+  getOpener = async () => undefined
+}, InstantiationType.Delayed)
 
 registerSingleton(IAccessibleViewService, class AccessibleViewService implements IAccessibleViewService {
   showLastProvider = unsupported
@@ -2081,7 +2183,12 @@ registerSingleton(IRemoteExtensionsScannerService, class RemoteExtensionsScanner
   }
 }, InstantiationType.Delayed)
 
-registerSingleton(IURLService, BrowserURLService, InstantiationType.Delayed)
+registerSingleton(IURLService, class URLService implements IURLService {
+  _serviceBrand: undefined
+  create = unsupported
+  open = async () => false
+  registerHandler = unsupported
+}, InstantiationType.Delayed)
 
 registerSingleton(IRemoteSocketFactoryService, class RemoteSocketFactoryService implements IRemoteSocketFactoryService {
   _serviceBrand: undefined
@@ -2817,4 +2924,14 @@ registerSingleton(IUserDataSyncUtilService, class UserDataSyncUtilService implem
   resolveUserBindings = unsupported
   resolveFormattingOptions = unsupported
   resolveDefaultIgnoredSettings = unsupported
+}, InstantiationType.Delayed)
+
+registerSingleton(IUserDataProfileManagementService, class UserDataProfileManagementService implements IUserDataProfileManagementService {
+  _serviceBrand: undefined
+  createAndEnterProfile = unsupported
+  createAndEnterTransientProfile = unsupported
+  removeProfile = unsupported
+  updateProfile = unsupported
+  switchProfile = unsupported
+  getBuiltinProfileTemplates = unsupported
 }, InstantiationType.Delayed)
