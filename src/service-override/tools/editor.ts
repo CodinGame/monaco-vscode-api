@@ -531,7 +531,7 @@ export class MonacoDelegateEditorGroupsService<D extends IEditorGroupsService> e
   }
 
   getGroups: IEditorGroupsService['getGroups'] = (order) => {
-    return [...this.additionalGroups, ...this.delegate.getGroups(order)]
+    return [...this.delegate.getGroups(order), ...this.additionalGroups]
   }
 
   getGroup: IEditorGroupsService['getGroup'] = (identifier) => {

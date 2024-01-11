@@ -2325,6 +2325,19 @@ index 94a4879c2f9..b58e3ffb222 100644
  }
  
  export class WalkThroughSnippetContentProvider implements ITextModelContentProvider, IWorkbenchContribution {
+diff --git a/src/vs/workbench/services/extensionManagement/browser/extensionBisect.ts b/src/vs/workbench/services/extensionManagement/browser/extensionBisect.ts
+index 1029b67197d..2ee4f0db240 100644
+--- a/src/vs/workbench/services/extensionManagement/browser/extensionBisect.ts
++++ b/src/vs/workbench/services/extensionManagement/browser/extensionBisect.ts
+@@ -65,7 +65,7 @@ class BisectState {
+ 	) { }
+ }
+ 
+-class ExtensionBisectService implements IExtensionBisectService {
++export class ExtensionBisectService implements IExtensionBisectService {
+ 
+ 	declare readonly _serviceBrand: undefined;
+ 
 diff --git a/src/vs/workbench/services/extensionManagement/common/extensionManagement.ts b/src/vs/workbench/services/extensionManagement/common/extensionManagement.ts
 index 362e485948a..50f5a5f175d 100644
 --- a/src/vs/workbench/services/extensionManagement/common/extensionManagement.ts
@@ -2968,6 +2981,19 @@ index d3ef612836b..0d0fb8d2862 100644
 +export class RemoteUserDataProfilesService extends Disposable implements IRemoteUserDataProfilesService {
  
  	readonly _serviceBrand: undefined;
+ 
+diff --git a/src/vs/workbench/services/userDataSync/common/userDataSyncUtil.ts b/src/vs/workbench/services/userDataSync/common/userDataSyncUtil.ts
+index 45329df40c4..84119b7c042 100644
+--- a/src/vs/workbench/services/userDataSync/common/userDataSyncUtil.ts
++++ b/src/vs/workbench/services/userDataSync/common/userDataSyncUtil.ts
+@@ -12,7 +12,7 @@ import { URI } from 'vs/base/common/uri';
+ import { ITextModelService } from 'vs/editor/common/services/resolverService';
+ import { ITextResourcePropertiesService, ITextResourceConfigurationService } from 'vs/editor/common/services/textResourceConfiguration';
+ 
+-class UserDataSyncUtilService implements IUserDataSyncUtilService {
++export class UserDataSyncUtilService implements IUserDataSyncUtilService {
+ 
+ 	declare readonly _serviceBrand: undefined;
  
 diff --git a/src/vs/workbench/services/workspaces/browser/abstractWorkspaceEditingService.ts b/src/vs/workbench/services/workspaces/browser/abstractWorkspaceEditingService.ts
 index 4653e395be9..1eccfce4bf4 100644
