@@ -841,7 +841,6 @@ export default (args: Record<string, string>): rollup.RollupOptions[] => {
             private: false,
             main: 'api.js',
             module: 'api.js',
-            types: 'vscode.proposed.d.ts',
             exports: {
               '.': {
                 default: './api.js'
