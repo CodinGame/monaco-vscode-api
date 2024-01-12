@@ -113,6 +113,10 @@ await initialize({
 
 Additionally, several packages that include the VSCode version of some services (with some glue to make it work with monaco) are published:
 
+- **Base** (included by default): `@codingame/monaco-vscode-base-service-override`
+  - Contains some general-use services that are mandatory to most of the other features
+- **Host** (included by default): `@codingame/monaco-vscode-host-service-override`
+  - Interaction with the host/browser (shutdown veto, focus/active management, window opening, fullscreen...)
 - **Extensions** (included by default): `@codingame/monaco-vscode-extensions-service-override`
   - Support for VSCode extensions.
   - A worker configuration can be provided to it:
@@ -198,6 +202,10 @@ Additionally, several packages that include the VSCode version of some services 
   - Support for welcome pages/components. *Hint*: It only makes sense to enable it when *Views* service is used.
 - **User data sync**: `@codingame/monaco-vscode-user-data-sync-service-override`
   - Support for user data sync. ⚠️ It can't really be used as it relies on a [closed source backend from microsoft](https://code.visualstudio.com/docs/editor/settings-sync#_can-i-use-a-different-backend-or-service-for-settings-sync) for the moment ⚠️
+- **Ai**: `@codingame/monaco-vscode-ai-service-override`
+  - Ai support for the ai extension api (RelatedInformation/EmbeddingVector)
+- **Task**: `@codingame/monaco-vscode-task-service-override`
+  - Task management
 
 Usage:
 
@@ -294,7 +302,7 @@ import { registerExtension, initialize, ExtensionHostKind } from 'vscode/extensi
 
 await initialize()
 
-const extension = {
+const { registerFileUrl, getApi } = registerExtension({
   name: 'my-extension',
   publisher: 'someone',
   version: '1.0.0',
@@ -303,8 +311,7 @@ const extension = {
   },
   contributes: {
   }
-}
-const { registerFileUrl, getApi } = registerExtension(extension, ExtensionHostKind.LocalProcess)
+}, ExtensionHostKind.LocalProcess)
 
 registerFileUrl('/file-extension-path.json', new URL('./file-real-path.json', import.meta.url).toString())
 
