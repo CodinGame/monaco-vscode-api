@@ -49,6 +49,7 @@ import getNotebookServiceOverride from '@codingame/monaco-vscode-notebook-servic
 import getWelcomeServiceOverride from '@codingame/monaco-vscode-welcome-service-override'
 import getUserDataSyncServiceOverride from '@codingame/monaco-vscode-user-data-sync-service-override'
 import getAiServiceOverride from '@codingame/monaco-vscode-ai-service-override'
+import getTaskServiceOverride from '@codingame/monaco-vscode-task-service-override'
 import * as monaco from 'monaco-editor'
 import { registerExtension } from 'vscode/extensions'
 import { TerminalBackend } from './features/terminal'
@@ -154,7 +155,8 @@ await initializeMonacoService({
   ...getNotebookServiceOverride(),
   ...getWelcomeServiceOverride(),
   ...getUserDataSyncServiceOverride(),
-  ...getAiServiceOverride()
+  ...getAiServiceOverride(),
+  ...getTaskServiceOverride()
 }, document.body, {
   remoteAuthority,
   enableWorkspaceTrust: true,
