@@ -208,6 +208,8 @@ Additionally, several packages that include the VSCode version of some services 
   - Task management
 - **Outline**: `@codingame/monaco-vscode-outline-service-override`
   - Support for the outline view. *Hint*: It only makes sense to enable it when *Views* service is used.
+- **Timeline**: `@codingame/monaco-vscode-timeline-service-override`
+  - Support for the timeline view. *Hint*: It only makes sense to enable it when *Views* service is used.
 
 Usage:
 

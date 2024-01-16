@@ -180,6 +180,7 @@ import { IInlineChatSessionService } from 'vs/workbench/contrib/inlineChat/brows
 import { IWalkthroughsService } from 'vs/workbench/contrib/welcomeGettingStarted/browser/gettingStartedService'
 import { IFeaturedExtensionsService } from 'vs/workbench/contrib/welcomeGettingStarted/browser/featuredExtensionService'
 import { IUserDataSyncMachinesService } from 'vs/platform/userDataSync/common/userDataSyncMachines'
+import { IWorkingCopyHistoryService } from 'vs/workbench/services/workingCopy/common/workingCopyHistory'
 import { getBuiltInExtensionTranslationsUris } from './l10n'
 import { unsupported } from './tools'
 
@@ -2759,7 +2760,7 @@ registerSingleton(IInlineChatSessionService, class InlineChatSessionService impl
   onWillStartSession = Event.None
   onDidEndSession = Event.None
   createSession = unsupported
-  getSession = unsupported
+  getSession = () => undefined
   releaseSession = unsupported
   registerSessionKeyComputer = unsupported
   recordings = unsupported
@@ -2934,4 +2935,21 @@ registerSingleton(IUserDataProfileManagementService, class UserDataProfileManage
   updateProfile = unsupported
   switchProfile = unsupported
   getBuiltinProfileTemplates = unsupported
+}, InstantiationType.Delayed)
+
+registerSingleton(IWorkingCopyHistoryService, class WorkingCopyHistoryService implements IWorkingCopyHistoryService {
+  _serviceBrand: undefined
+  onDidAddEntry = Event.None
+  onDidChangeEntry = Event.None
+  onDidReplaceEntry = Event.None
+  onDidRemoveEntry = Event.None
+  onDidMoveEntries = Event.None
+  onDidRemoveEntries = Event.None
+  addEntry = unsupported
+  updateEntry = unsupported
+  removeEntry = unsupported
+  moveEntries = unsupported
+  getEntries = unsupported
+  getAll = unsupported
+  removeAll = unsupported
 }, InstantiationType.Delayed)
