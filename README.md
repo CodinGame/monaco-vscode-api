@@ -206,6 +206,8 @@ Additionally, several packages that include the VSCode version of some services 
   - Ai support for the ai extension api (RelatedInformation/EmbeddingVector)
 - **Task**: `@codingame/monaco-vscode-task-service-override`
   - Task management
+- **Outline**: `@codingame/monaco-vscode-outline-service-override`
+  - Support for the outline view. *Hint*: It only makes sense to enable it when *Views* service is used.
 
 Usage:
 

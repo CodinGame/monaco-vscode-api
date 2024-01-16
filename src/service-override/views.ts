@@ -26,8 +26,6 @@ import 'vs/workbench/contrib/files/browser/fileCommands'
 import 'vs/workbench/contrib/files/browser/fileActions.contribution'
 import 'vs/workbench/contrib/callHierarchy/browser/callHierarchy.contribution'
 import 'vs/workbench/contrib/typeHierarchy/browser/typeHierarchy.contribution'
-import 'vs/workbench/contrib/codeEditor/browser/outline/documentSymbolsOutline'
-import 'vs/workbench/contrib/outline/browser/outline.contribution'
 import 'vs/workbench/browser/actions/listCommands'
 import 'vscode/src/vs/workbench/browser/parts/views/media/views.css'
 import 'vs/workbench/api/browser/viewsExtensionPoint'
@@ -66,8 +64,6 @@ import { ContextKeyExpr } from 'vs/platform/contextkey/common/contextkey'
 import { IDropdownMenuActionViewItemOptions } from 'vs/base/browser/ui/dropdown/dropdownActionViewItem'
 import { IAction } from 'vs/base/common/actions'
 import { BaseActionViewItem } from 'vs/base/browser/ui/actionbar/actionViewItems'
-import { IOutlineService } from 'vs/workbench/services/outline/browser/outline'
-import { OutlineService } from 'vs/workbench/services/outline/browser/outlineService'
 import { ICustomEditorService } from 'vs/workbench/contrib/customEditor/common/customEditor'
 import { CustomEditorService } from 'vs/workbench/contrib/customEditor/browser/customEditors'
 import { WebviewService } from 'vs/workbench/contrib/webview/browser/webviewService'
@@ -1060,7 +1056,6 @@ function getServiceOverride (openEditorFallback?: OpenEditor, _webviewIframeAlte
     [IContextViewService.toString()]: new SyncDescriptor(ContextViewService, [], true),
     [IUntitledTextEditorService.toString()]: new SyncDescriptor(UntitledTextEditorService, [], true),
     [IHistoryService.toString()]: new SyncDescriptor(HistoryService, [], false),
-    [IOutlineService.toString()]: new SyncDescriptor(OutlineService, [], true),
     [ICustomEditorService.toString()]: new SyncDescriptor(CustomEditorService, [], true),
     [IWebviewService.toString()]: new SyncDescriptor(WebviewService, [], true),
     [IWebviewViewService.toString()]: new SyncDescriptor(WebviewViewService, [], true),
