@@ -50,6 +50,8 @@ import getWelcomeServiceOverride from '@codingame/monaco-vscode-welcome-service-
 import getUserDataSyncServiceOverride from '@codingame/monaco-vscode-user-data-sync-service-override'
 import getAiServiceOverride from '@codingame/monaco-vscode-ai-service-override'
 import getTaskServiceOverride from '@codingame/monaco-vscode-task-service-override'
+import getOutlineServiceOverride from '@codingame/monaco-vscode-outline-service-override'
+import getTimelineServiceOverride from '@codingame/monaco-vscode-timeline-service-override'
 import * as monaco from 'monaco-editor'
 import { registerExtension } from 'vscode/extensions'
 import { TerminalBackend } from './features/terminal'
@@ -129,6 +131,8 @@ await initializeMonacoService({
       restoreEditors: true
     }
   })),
+  ...getOutlineServiceOverride(),
+  ...getTimelineServiceOverride(),
   ...getBannerServiceOverride(),
   ...getStatusBarServiceOverride(),
   ...getTitleBarServiceOverride(),

@@ -76,7 +76,7 @@ export default rollup.defineConfig([
             const mainLocalization = packageJson.contributes!.localizations![0]!
 
             const mainTranslation = mainLocalization.translations.find(t => t.id === 'vscode')!
-            const otherTranslations = mainLocalization.translations.filter(t => t.id !== 'vscode')!
+            const otherTranslations = mainLocalization.translations.filter(t => t.id !== 'vscode')
 
             const translationAssets: Record<string, string> = Object.fromEntries(await Promise.all(otherTranslations.map(async t => {
               const assetRef = this.emitFile({

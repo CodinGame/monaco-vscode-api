@@ -176,6 +176,8 @@
     "@codingame/monaco-vscode-host-service-override": "file:../dist/service-override-host",
     "@codingame/monaco-vscode-ai-service-override": "file:../dist/service-override-ai",
     "@codingame/monaco-vscode-task-service-override": "file:../dist/service-override-task",
+    "@codingame/monaco-vscode-outline-service-override": "file:../dist/service-override-outline",
+    "@codingame/monaco-vscode-timeline-service-override": "file:../dist/service-override-timeline",
     "ansi-colors": "^4.1.3",
     "dockerode": "^4.0.2",
     "express": "^4.18.2",
@@ -184,7 +186,7 @@
     "ws": "^8.16.0"
   },
   "volta": {
-    "node": "18.18.0",
-    "npm": "9.8.1"
+    "node": "21.2.0",
+    "npm": "10.3.0"
   }
 }
