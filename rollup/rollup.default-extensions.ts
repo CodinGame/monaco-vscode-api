@@ -42,10 +42,10 @@ export default rollup.defineConfig([
       minifyInternalExports: false,
       assetFileNames: chunkInfo => {
         if (chunkInfo.name != null && chunkInfo.name.endsWith('d.ts')) {
-        // append .txt at the end of d.ts files: those file are required by the typescript extension and are just expected to be loaded as simple text
-          return '[name][extname].txt'
+          // append .txt at the end of d.ts files: those file are required by the typescript extension and are just expected to be loaded as simple text
+          return 'resources/[name][extname].txt'
         }
-        return '[name][extname]'
+        return 'resources/[name][extname]'
       },
       format: 'esm',
       dir: `dist/default-extension-${name}`,
