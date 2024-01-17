@@ -25,16 +25,31 @@ class CustomRemoteSocketFactoryService extends RemoteSocketFactoryService {
   }
 }
 
+class InjectedRemoteAuthorityResolverService extends RemoteAuthorityResolverService {
+  constructor (
+    @IEnvironmentService environmentService: BrowserWorkbenchEnvironmentService,
+    @IProductService productService: IProductService,
+    @ILogService logService: ILogService,
+    @IFileService fileService: IFileService
+  ) {
+    const configuration = getWorkbenchConstructionOptions()
+    const connectionToken = environmentService.options.connectionToken
+    const remoteResourceLoader = configuration.remoteResourceProvider != null ? new BrowserRemoteResourceLoader(fileService, configuration.remoteResourceProvider) : undefined
+    const resourceUriProvider = configuration.resourceUriProvider ?? remoteResourceLoader?.getResourceUriProvider()
+    super(!environmentService.expectsResolverExtension, connectionToken, resourceUriProvider, productService, logService)
+  }
+}
+
 registerServiceInitializePreParticipant(async (serviceAccessor) => {
   RemoteFileSystemProviderClient.register(serviceAccessor.get(IRemoteAgentService), serviceAccessor.get(IFileService), serviceAccessor.get(ILogService))
 })
 
-export default function getServiceOverride (connectionToken?: Promise<string> | string, resourceUriProvider?: ((uri: URI) => URI)): IEditorOverrideServices {
+export default function getServiceOverride (): IEditorOverrideServices {
   return {
     ...getEnvironmentServiceOverride(),
     [IRemoteAgentService.toString()]: new SyncDescriptor(RemoteAgentService, [], true),
     [IRemoteSocketFactoryService.toString()]: new SyncDescriptor(CustomRemoteSocketFactoryService, [], true),
-    [IRemoteAuthorityResolverService.toString()]: new SyncDescriptor(RemoteAuthorityResolverService, [true, connectionToken, resourceUriProvider]),
+    [IRemoteAuthorityResolverService.toString()]: new SyncDescriptor(InjectedRemoteAuthorityResolverService, []),
     [IRemoteExplorerService.toString()]: new SyncDescriptor(RemoteExplorerService, [], true),
     [IExternalUriOpenerService.toString()]: new SyncDescriptor(ExternalUriOpenerService, [], true)
   }
