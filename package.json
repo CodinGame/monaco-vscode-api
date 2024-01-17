@@ -133,7 +133,7 @@
     "@typescript-eslint/eslint-plugin": "$@typescript-eslint/eslint-plugin"
   },
   "volta": {
-    "node": "20.10.0",
+    "node": "18.17.1",
     "npm": "10.3.0"
   }
 }
