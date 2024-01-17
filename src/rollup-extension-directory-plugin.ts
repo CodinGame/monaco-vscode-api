@@ -4,20 +4,17 @@ import type { IExtensionManifest } from 'vs/platform/extensions/common/extension
 import glob from 'fast-glob'
 import * as path from 'path'
 import * as fsPromise from 'fs/promises'
-import { ExtensionResource, extractResourcesFromExtensionManifest, parseJson } from './extension-tools.js'
-
+import { parseJson, toResource } from './extension-tools.js'
 interface Options {
   include?: FilterPattern
   exclude?: FilterPattern
   transformManifest?: (manifest: IExtensionManifest) => IExtensionManifest
-  getAdditionalResources?: (manifest: IExtensionManifest, directory: string, glob: (pattern: string) => Promise<ExtensionResource[]>) => Promise<ExtensionResource[]>
 }
 
 export default function plugin ({
   include,
   exclude,
-  transformManifest = manifest => manifest,
-  getAdditionalResources = () => Promise.resolve([])
+  transformManifest = manifest => manifest
 }: Options): Plugin {
   const filter = createFilter(include, exclude)
 
@@ -54,27 +51,11 @@ export default function plugin ({
       if (stat.isDirectory()) {
         // Load the extension directory as a module importing the required files and registering the extension
         const manifestPath = path.resolve(id, 'package.json')
-        const manifest = transformManifest(parseJson<IExtensionManifest>(id, (await fsPromise.readFile(manifestPath)).toString('utf8')))
         try {
-          const getFileContent = async (resourcePath: string) => {
-            return (await fsPromise.readFile(path.join(id, resourcePath)))
-          }
-          const listFiles = async (dirPath: string) => {
-            return (await fsPromise.readdir(path.join(id, dirPath)))
-          }
-          const extensionResources = await extractResourcesFromExtensionManifest(manifest, getFileContent, listFiles)
-
-          async function _glob (pattern: string) {
-            return (await glob(pattern, {
-              cwd: id,
-              onlyFiles: true
-            })).map(path => ({ path }))
-          }
-
-          const resources = Array.from(new Set([
-            ...extensionResources,
-            ...await getAdditionalResources(manifest, id, _glob)
-          ]))
+          const resources = (await glob('**/*', {
+            cwd: id,
+            onlyFiles: true
+          })).map(toResource)
 
           function generateFileRegistrationInstruction (filePath: string, importPath: string, mimeType?: string) {
             return `registerFileUrl('${filePath}', new URL('${importPath}', import.meta.url).toString()${mimeType != null ? `, '${mimeType}'` : ''})`
@@ -86,12 +67,9 @@ import { registerExtension } from 'vscode/extensions'
 
 const { registerFileUrl, whenReady } = registerExtension(manifest)
 ${resources.map(resource => {
-  const lines: string[] = [
-    generateFileRegistrationInstruction(resource.path, path.resolve(id, resource.realPath ?? resource.path), resource.mimeType)
-  ]
-  if (resource.realPath != null && resource.realPath !== resource.path) {
-    lines.push(generateFileRegistrationInstruction(resource.realPath, path.resolve(id, resource.realPath), resource.mimeType))
-  }
+  const lines: string[] = resource.extensionPaths.map(extensionPath =>
+    generateFileRegistrationInstruction(extensionPath, path.resolve(id, resource.path), resource.mimeType)
+  )
 
   return lines.join('\n')
 }).join('\n')}
