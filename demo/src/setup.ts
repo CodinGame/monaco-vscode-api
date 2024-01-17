@@ -148,7 +148,7 @@ await initializeMonacoService({
   ...getAccessibilityServiceOverride(),
   ...getLanguageDetectionWorkerServiceOverride(),
   ...getStorageServiceOverride(),
-  ...getRemoteAgentServiceOverride(),
+  ...getRemoteAgentServiceOverride({ scanRemoteExtensions: true }),
   ...getLifecycleServiceOverride(),
   ...getEnvironmentServiceOverride(),
   ...getWorkspaceTrustOverride(),
