@@ -61,10 +61,9 @@ cd ..
 # end treemending patch
 
 # build and copy default extensions
-yarn compile-web || true
-yarn gulp compile-extension-media
+BUILD_SOURCEVERSION=$vscodeRef yarn gulp compile-web-extensions-build
 rm -rf $extension_output_directory
-cp -R extensions "$extension_output_directory"
+cp -R .build/web/extensions "$extension_output_directory"
 
 # transform to relative imports, replace ESM comments and vs/css! imports
 cat << EOF | node -
