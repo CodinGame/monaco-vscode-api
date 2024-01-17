@@ -17,8 +17,6 @@ import { IBuiltinExtensionsScannerService } from 'vs/platform/extensions/common/
 import { BuiltinExtensionsScannerService } from 'vs/workbench/services/extensionManagement/browser/builtinExtensionsScannerService'
 import { ExtensionIgnoredRecommendationsService } from 'vs/workbench/services/extensionRecommendations/common/extensionIgnoredRecommendationsService'
 import { IWorkspaceExtensionsConfigService, WorkspaceExtensionsConfigService } from 'vs/workbench/services/extensionRecommendations/common/workspaceExtensionsConfig'
-import { IRemoteExtensionsScannerService } from 'vs/platform/remote/common/remoteExtensionsScanner'
-import { RemoteExtensionsScannerService } from 'vs/workbench/services/remote/common/remoteExtensionsScanner'
 import { ExtensionRecommendationNotificationService } from 'vs/workbench/contrib/extensions/browser/extensionRecommendationNotificationService'
 import { ExtensionTipsService } from 'vs/platform/extensionManagement/common/extensionTipsService'
 import { ExtensionManagementService } from 'vs/workbench/services/extensionManagement/common/extensionManagementService'
@@ -82,7 +80,6 @@ export default function getServiceOverride (options: ExtensionGalleryOptions = {
     [IExtensionManagementService.toString()]: new SyncDescriptor(ExtensionManagementService, [], true),
     [IBuiltinExtensionsScannerService.toString()]: new SyncDescriptor(BuiltinExtensionsScannerService, [], true),
     [IWorkspaceExtensionsConfigService.toString()]: new SyncDescriptor(WorkspaceExtensionsConfigService, [], true),
-    [IRemoteExtensionsScannerService.toString()]: new SyncDescriptor(RemoteExtensionsScannerService, [], true),
     [IExtensionTipsService.toString()]: new SyncDescriptor(ExtensionTipsService, [], true),
     [IRemoteUserDataProfilesService.toString()]: new SyncDescriptor(RemoteUserDataProfilesService, [], true),
     [IWorkbenchExtensionEnablementService.toString()]: new SyncDescriptor(ExtensionEnablementService, [], true),

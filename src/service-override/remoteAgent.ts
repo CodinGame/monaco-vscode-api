@@ -51,6 +51,7 @@ export default function getServiceOverride (): IEditorOverrideServices {
     [IRemoteSocketFactoryService.toString()]: new SyncDescriptor(CustomRemoteSocketFactoryService, [], true),
     [IRemoteAuthorityResolverService.toString()]: new SyncDescriptor(InjectedRemoteAuthorityResolverService, []),
     [IRemoteExplorerService.toString()]: new SyncDescriptor(RemoteExplorerService, [], true),
-    [IExternalUriOpenerService.toString()]: new SyncDescriptor(ExternalUriOpenerService, [], true)
+    [IExternalUriOpenerService.toString()]: new SyncDescriptor(ExternalUriOpenerService, [], true),
+    [IRemoteExtensionsScannerService.toString()]: new SyncDescriptor(RemoteExtensionsScannerService, [scanRemoteExtensions], true)
   }
 }
