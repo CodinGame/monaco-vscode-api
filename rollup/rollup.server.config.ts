@@ -56,6 +56,9 @@ export default (args: Record<string, string>): rollup.RollupOptions => {
         }, {
           src: 'vs/base/node/*.sh',
           dest: 'dist/server/out/vs/base/node/'
+        }, {
+          src: 'product.json',
+          dest: 'dist/server/'
         }]
       }),
       replace({
