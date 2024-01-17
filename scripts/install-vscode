@@ -63,12 +63,12 @@ cd ..
 
 # build and copy default extensions
 # for server
-BUILD_SOURCEVERSION=$vscodeRef yarn extensions-ci
+BUILD_SOURCEVERSION=$vscodeRef NODE_OPTIONS=--max-old-space-size=8192 yarn extensions-ci
 rm -rf $extension_node_output_directory
 cp -R .build/extensions "$extension_node_output_directory"
 
 # for web
-BUILD_SOURCEVERSION=$vscodeRef yarn gulp compile-web-extensions-build
+BUILD_SOURCEVERSION=$vscodeRef NODE_OPTIONS=--max-old-space-size=8192 yarn gulp compile-web-extensions-build
 rm -rf $extension_output_directory
 cp -R .build/web/extensions "$extension_output_directory"
 
