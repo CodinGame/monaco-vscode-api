@@ -134,7 +134,7 @@
     "@typescript-eslint/eslint-plugin": "$@typescript-eslint/eslint-plugin"
   },
   "volta": {
-    "node": "18.18.0",
-    "npm": "9.8.1"
+    "node": "21.2.0",
+    "npm": "10.3.0"
   }
 }
