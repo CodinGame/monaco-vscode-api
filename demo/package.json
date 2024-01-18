@@ -65,7 +65,7 @@
     "@codingame/monaco-vscode-gulp-default-extension": "file:../dist/default-extension-gulp",
     "@codingame/monaco-vscode-handlebars-default-extension": "file:../dist/default-extension-handlebars",
     "@codingame/monaco-vscode-hlsl-default-extension": "file:../dist/default-extension-hlsl",
-    "@codingame/monaco-vscode-html-default-extension": "file:../dist/default-extension-html",
+        "@codingame/monaco-vscode-html-default-extension": "file:../dist/default-extension-html",
     "@codingame/monaco-vscode-html-language-features-default-extension": "file:../dist/default-extension-html-language-features",
     "@codingame/monaco-vscode-ini-default-extension": "file:../dist/default-extension-ini",
     "@codingame/monaco-vscode-ipynb-default-extension": "file:../dist/default-extension-ipynb",
@@ -181,6 +181,7 @@
     "ansi-colors": "^4.1.3",
     "dockerode": "^4.0.2",
     "express": "^4.18.2",
+    "import-meta-resolve": "^4.0.0",
     "monaco-editor": "^0.45.0",
     "vscode": "file:../dist/main",
     "ws": "^8.16.0"

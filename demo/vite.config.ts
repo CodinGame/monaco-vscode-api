@@ -1,5 +1,6 @@
 import { defineConfig } from 'vite'
 import glob from 'fast-glob'
+import { resolve } from 'import-meta-resolve'
 import * as fs from 'fs'
 import url from 'url'
 import path from 'path'
@@ -33,7 +34,7 @@ export default defineConfig({
         return () => {
           server.middlewares.use(async (req, res, next) => {
             if (req.originalUrl != null) {
-              const pathname = new URL(req.originalUrl, import.meta.url).pathname
+              const pathname = new URL(req.originalUrl, server.resolvedUrls?.local.toString()).pathname
               if (pathname.endsWith('.html')) {
                 res.setHeader('Content-Type', 'text/html')
                 res.writeHead(200)
@@ -79,7 +80,7 @@ export default defineConfig({
               newCode += code.slice(i, match.index)
 
               const path = match[1].slice(1, -1)
-              const resolved = await import.meta.resolve!(path, url.pathToFileURL(args.path))
+              const resolved = await resolve(path, url.pathToFileURL(args.path).toString())
 
               newCode += `new URL(${JSON.stringify(url.fileURLToPath(resolved))}, import.meta.url)`
 
