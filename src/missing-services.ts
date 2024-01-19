@@ -2096,7 +2096,7 @@ registerSingleton(IRemoteAuthorityResolverService, class RemoteAuthorityResolver
 
 registerSingleton(IExternalUriOpenerService, class ExternalUriOpenerService implements IExternalUriOpenerService {
   _serviceBrand: undefined
-  registerExternalOpenerProvider = unsupported
+  registerExternalOpenerProvider = () => Disposable.None
   getOpener = async () => undefined
 }, InstantiationType.Delayed)
 
