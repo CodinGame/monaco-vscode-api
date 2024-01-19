@@ -48,11 +48,17 @@ export default (args: Record<string, string>): rollup.RollupOptions => {
     plugins: [
       copy({
         targets: [{
+          src: 'vscode-default-extensions-node/*',
+          dest: 'dist/server/extensions/'
+        }, {
           src: 'vscode/src/vs/workbench/contrib/terminal/browser/media/*.(sh|zsh|ps1)',
           dest: 'dist/server/out/vs/workbench/contrib/terminal/browser/media/'
         }, {
           src: 'vs/base/node/*.sh',
           dest: 'dist/server/out/vs/base/node/'
+        }, {
+          src: 'product.json',
+          dest: 'dist/server/'
         }]
       }),
       replace({

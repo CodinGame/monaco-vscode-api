@@ -6,13 +6,12 @@ import { IFs, createFsFromVolume, Volume } from 'memfs'
 import glob, { FileSystemAdapter } from 'fast-glob'
 import { Readable } from 'stream'
 import * as path from 'path'
-import { ExtensionResource, extractResourcesFromExtensionManifest, parseJson } from './extension-tools.js'
+import { parseJson, toResource } from './extension-tools.js'
 
 interface Options {
   include?: FilterPattern
   exclude?: FilterPattern
   transformManifest?: (manifest: IExtensionManifest) => IExtensionManifest
-  getAdditionalResources?: (manifest: IExtensionManifest, readFile: (path: string) => Promise<Buffer>, readDir: (path: string) => Promise<string[]>, glob: (pattern: string) => Promise<ExtensionResource[]>) => Promise<ExtensionResource[]>
 }
 
 function read (stream: Readable): Promise<Buffer> {
@@ -60,8 +59,7 @@ function getVsixPath (file: string) {
 export default function plugin ({
   include = '**/*.vsix',
   exclude,
-  transformManifest = manifest => manifest,
-  getAdditionalResources = () => Promise.resolve([])
+  transformManifest = manifest => manifest
 }: Options = {}): Plugin {
   const filter = createFilter(include, exclude)
 
@@ -83,30 +81,14 @@ export default function plugin ({
       const readFileSync = (filePath: string) => vsixFS.readFileSync(path.join('/', filePath)) as Buffer
       const manifest = transformManifest(parseJson<IExtensionManifest>(id, readFileSync('package.json').toString('utf8')))
 
-      const getFileContent = async (filePath: string): Promise<Buffer> => {
-        return readFileSync(filePath)
-      }
-      const listFiles = async (filePath: string) => {
-        return (vsixFS.readdirSync(path.join('/', filePath)) as string[])
-      }
-      const extensionResources = (await extractResourcesFromExtensionManifest(manifest, getFileContent, listFiles))
-        .filter(resource => vsixFS.existsSync(path.join('/', resource.realPath ?? resource.path)))
-
-      async function _glob (pattern: string) {
-        return (await glob(pattern, {
-          fs: <FileSystemAdapter>vsixFS,
-          cwd: '/',
-          onlyFiles: true
-        })).map(path => ({ path }))
-      }
-
-      const resources: ExtensionResource[] = [
-        ...extensionResources,
-        ...await getAdditionalResources(manifest, getFileContent, listFiles, _glob)
-      ]
+      const resources = (await glob('**/*', {
+        fs: <FileSystemAdapter>vsixFS,
+        cwd: id,
+        onlyFiles: true
+      })).map(toResource)
 
       const pathMapping = (await Promise.all(resources.map(async resource => {
-        const assetPath = getVsixPath(resource.realPath ?? resource.path)
+        const assetPath = getVsixPath(resource.path)
         let url: string
         if (process.env.NODE_ENV === 'development') {
           const fileType = resource.mimeType ?? 'text/javascript'
@@ -119,17 +101,11 @@ export default function plugin ({
           })
         }
 
-        return [{
-          pathInExtension: getVsixPath(resource.path),
+        return resource.extensionPaths.map(extensionPath => ({
+          pathInExtension: getVsixPath(extensionPath),
           url,
           mimeType: resource.mimeType
-        }, ...(resource.realPath != null
-          ? [{
-              pathInExtension: getVsixPath(resource.realPath),
-              url,
-              mimeType: resource.mimeType
-            }]
-          : [])]
+        }))
       }))).flat()
 
       return `

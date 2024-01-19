@@ -148,7 +148,7 @@ await initializeMonacoService({
   ...getAccessibilityServiceOverride(),
   ...getLanguageDetectionWorkerServiceOverride(),
   ...getStorageServiceOverride(),
-  ...getRemoteAgentServiceOverride(connectionToken),
+  ...getRemoteAgentServiceOverride({ scanRemoteExtensions: true }),
   ...getLifecycleServiceOverride(),
   ...getEnvironmentServiceOverride(),
   ...getWorkspaceTrustOverride(),
@@ -164,6 +164,7 @@ await initializeMonacoService({
 }, document.body, {
   remoteAuthority,
   enableWorkspaceTrust: true,
+  connectionToken,
   workspaceProvider: {
     trusted: true,
     async open () {

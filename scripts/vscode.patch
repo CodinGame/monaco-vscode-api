@@ -182,18 +182,20 @@ index f2f9ca95996..f5c28ec0cab 100644
  			} catch (e) {
  				return { module: undefined, error: e };
 diff --git a/extensions/typescript-language-features/web/src/typingsInstaller/typingsInstaller.ts b/extensions/typescript-language-features/web/src/typingsInstaller/typingsInstaller.ts
-index 7c40993d6df..7480fbb21c3 100644
+index 7c40993d6df..4f3893aa7c6 100644
 --- a/extensions/typescript-language-features/web/src/typingsInstaller/typingsInstaller.ts
 +++ b/extensions/typescript-language-features/web/src/typingsInstaller/typingsInstaller.ts
-@@ -66,6 +66,8 @@ export class WebTypingsInstallerClient implements ts.server.ITypingsInstaller {
+@@ -66,7 +66,9 @@ export class WebTypingsInstallerClient implements ts.server.ITypingsInstaller {
  			case 'action::packageInstalled':
  			case 'action::invalidate':
  			case 'action::set':
+-				this.projectService!.updateTypingsForProject(response);
 +			// missing case leads to error
 +			case 'action::watchTypingLocations':
- 				this.projectService!.updateTypingsForProject(response);
++				this.projectService!.updateTypingsForProject(response as any);
  				break;
  			case 'event::beginInstallTypes':
+ 			case 'event::endInstallTypes':
 diff --git a/src/tsconfig.base.json b/src/tsconfig.base.json
 index c0a2e174591..1d80c22afa3 100644
 --- a/src/tsconfig.base.json

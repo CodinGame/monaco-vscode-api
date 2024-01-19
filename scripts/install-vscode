@@ -8,6 +8,7 @@ monaco_esm_directory="`pwd`/node_modules/monaco-editor/esm"
 output_directory="`pwd`/vscode"
 loc_output_directory="`pwd`/vscode-loc"
 extension_output_directory="`pwd`/vscode-default-extensions"
+extension_node_output_directory="`pwd`/vscode-default-extensions-node"
 patch_file="`pwd`/scripts/vscode.patch"
 editor_patch_file="`pwd`/monaco-editor-treemending.patch"
 version_info=$output_directory/version.info
@@ -61,10 +62,15 @@ cd ..
 # end treemending patch
 
 # build and copy default extensions
-yarn compile-web || true
-yarn gulp compile-extension-media
+# for server
+BUILD_SOURCEVERSION=$vscodeRef NODE_OPTIONS=--max-old-space-size=8192 yarn extensions-ci
+rm -rf $extension_node_output_directory
+cp -R .build/extensions "$extension_node_output_directory"
+
+# for web
+BUILD_SOURCEVERSION=$vscodeRef NODE_OPTIONS=--max-old-space-size=8192 yarn gulp compile-web-extensions-build
 rm -rf $extension_output_directory
-cp -R extensions "$extension_output_directory"
+cp -R .build/web/extensions "$extension_output_directory"
 
 # transform to relative imports, replace ESM comments and vs/css! imports
 cat << EOF | node -
