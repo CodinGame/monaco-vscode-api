@@ -83,7 +83,7 @@ export default function plugin ({
 
       const resources = (await glob('**/*', {
         fs: <FileSystemAdapter>vsixFS,
-        cwd: id,
+        cwd: '/',
         onlyFiles: true
       })).map(toResource)
 
