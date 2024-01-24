@@ -1,21 +1,18 @@
 # @codingame/monaco-vscode-api &middot; [![monthly downloads](https://img.shields.io/npm/dm/@codingame/monaco-vscode-api)](https://www.npmjs.com/package/@codingame/monaco-vscode-api) [![npm version](https://img.shields.io/npm/v/@codingame/monaco-vscode-api.svg?style=flat)](https://www.npmjs.com/package/@codingame/monaco-vscode-api) [![PRs welcome](https://img.shields.io/badge/PRs-welcome-brightgreen.svg)](https://github.com/codingame/monaco-vscode-api/pulls)
 
-[NPM module](https://www.npmjs.com/) that implements the VSCode api and redirects calls to Monaco editor.
+[NPM module](https://www.npmjs.com/) that allows to use every part of VSCode, including the monaco editor
 
 ## Installation
 
 ```bash
 npm install vscode@npm:@codingame/monaco-vscode-api
+npm install monaco-editor@npm:@codingame/monaco-vscode-editor-api
 npm install -D @types/vscode
 ```
 
-### Why?
+`@codingame/monaco-vscode-api` is installed as an alias to `vscode` to be able to run `import * as vscode from 'vscode'`, similar to what is done inside a VSCode extension
 
-Monaco-editor is a library that is constructed using code from vscode and goes through an intense treeshaking process.
-
-However, due to the inclusion of additional code from VSCode in this library that utilizes internal modules bundled in monaco, this treeshaking is a problem here.
-
-To **tree-mend** (to **un**treeshake it) monaco-editor, this library provides a script that will apply a patch on the local installation of monaco-editor, restoring all the code that was treeshaken during the monaco-editor build process
+`@codingame/monaco-vscode-editor-api` is installed as an alias to `monaco-editor` because it provides the same api as the official `monaco-editor`
 
 ## Troubleshooting
 
@@ -84,10 +81,10 @@ See [this issue](https://github.com/CodinGame/monaco-vscode-api/issues/186) or t
 
 ## Monaco standalone services
 
-Also, monaco-editor use `standalone` versions or the vscode services, which are much simpler.
+`monaco-editor`, as well as this library by default, uses `standalone` versions or the vscode services, which are much simpler than the one used in VSCode.
 
 You may want to provide your custom implementations of them. To do so, you can use the `initialize` method from `vscode/services`.
-Also, monaco-editor doesn't provide good type for them, so this library does it.
+Also, monaco-editor doesn't provide types for them, so this library exports them.
 
 Example:
 
@@ -230,11 +227,20 @@ updateUserConfiguration(`{
 
 `initialize` can only be called once ( and it should be called BEFORE creating your first editor).
 
-## Editor configuration
+## Model creation
 
-The editors created using `monaco.editor.create` don't use the configuration from the configurationService.
+The official `monaco-editor` package provides a function to create models: `monaco.editor.createModel`.
 
-This library exposes functions to create editors binded on the configuration service:
+This method creates a standalone model that cannot be found or used by any VSCode services.
+
+The recommended way is to used the `createModelReference` method instead (added on top of the official monaco-editor api) which returns instead a reference to a model.
+
+It has some pros:
+- The model reference can be used by VSCode services, allowing for instance following links between files (ctrl+click)
+- The returned model is bound to a filesystem file, and you have access to methods allowing to control the file lifecycle (saving the file, accessing the dirty state...)
+- It is possible to call the method multiple times on the same file to get multiple references. The model is disposed when there is no reference left
+
+The second argument of the method allows to write the file content to the virtual filesystem in case the file wasn't registered in it beforehand.
 
 before:
 
@@ -253,11 +259,11 @@ editor.dispose()
 after:
 
 ```typescript
-import { createConfiguredEditor, createModelReference } from 'vscode/monaco'
+import * as monaco from 'monaco-editor'
 
-const modelRef = await createModelReference(...)
+const modelRef = await monaco.editor.createModelReference(...)
 
-const editor = createConfiguredEditor({ model: modelRef.object.textEditorModel })
+const editor = monaco.editor.createModel({ model: modelRef.object.textEditorModel })
 
 ...
 
@@ -270,9 +276,6 @@ editor.dispose()
 
 
 ```
-
-`createConfiguredEditor` returns a subclass of what is returned by `monaco.editor.create`, the `updateOptions` method can still be used.
-The only difference is that is will use the `configurationService` as a default configuration
 
 `createModelReference` return a reference to a model. The value is fetched from the memory filesystem (which is written if you provide the second argument).
 The reference can then be disposed, the model will only be disposed if there is no remaining references.
