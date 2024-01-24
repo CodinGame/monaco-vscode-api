@@ -32,7 +32,7 @@ import { DeferredPromise } from 'vs/base/common/async'
 import { setLocalExtensionHost } from './service-override/extensions'
 import { unsupported } from './tools'
 import { ApiFactory, registerLocalApiFactory } from './extensions'
-import { setDefaultApi } from './api'
+import { setDefaultApi } from './extension.api'
 import { registerServiceInitializePostParticipant } from './lifecycle'
 
 const apiFactoryDeferred = new DeferredPromise<ApiFactory>()

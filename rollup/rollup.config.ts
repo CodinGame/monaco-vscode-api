@@ -414,7 +414,7 @@ function resolveVscode (importee: string, importer?: string) {
 }
 
 const input = {
-  api: './src/api.ts',
+  api: './src/extension.api.ts',
   localExtensionHost: './src/localExtensionHost.ts',
   extensions: './src/extensions.ts',
   services: './src/services.ts',
@@ -585,7 +585,7 @@ export default (args: Record<string, string>): rollup.RollupOptions[] => {
             factory: function factory (program) {
               return function transformerFactory (context) {
                 return function transformer (sourceFile) {
-                  if (sourceFile.fileName.endsWith('api.ts')) {
+                  if (sourceFile.fileName.endsWith('extension.api.ts')) {
                     let exportEqualsFound = false
                     function visitor (node: ts.Node): ts.Node {
                       // Transform `export = api` to `export { field1, field2, ... } = api` as the first syntax is not supported when generating ESM

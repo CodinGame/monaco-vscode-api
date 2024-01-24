@@ -17,7 +17,7 @@ import { CustomSchemas, registerExtensionFile } from './service-override/files'
 import { getService } from './services'
 import { ExtensionManifestTranslator } from './tools/l10n'
 import { throttle } from './tools'
-import { setDefaultApi } from './api'
+import { setDefaultApi } from './extension.api'
 
 export type ApiFactory = (extensionId?: string) => Promise<typeof vscode>
 
