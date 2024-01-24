@@ -31,16 +31,16 @@ const SERVICE_OVERRIDE_DIST_DIR = path.join(DIST_DIR_MAIN, 'service-override')
 
 const interfaceOverride = new Map<string, string>()
 interfaceOverride.set('Event<T>', 'vscode.Event<T>')
-interfaceOverride.set('ICodeEditor', 'monaco.editor.ICodeEditor')
-interfaceOverride.set('IEditor', 'monaco.editor.IEditor')
-interfaceOverride.set('URI', 'monaco.Uri')
-interfaceOverride.set('ITextModel', 'monaco.editor.ITextModel')
-interfaceOverride.set('vs/editor/common/config/editorOptions:IEditorOptions', 'monaco.editor.IEditorOptions')
-interfaceOverride.set('IEditorOverrideServices', 'monaco.editor.IEditorOverrideServices')
-interfaceOverride.set('IStandaloneCodeEditor', 'monaco.editor.IStandaloneCodeEditor')
-interfaceOverride.set('IStandaloneDiffEditor', 'monaco.editor.IStandaloneDiffEditor')
-interfaceOverride.set('IStandaloneEditorConstructionOptions', 'monaco.editor.IStandaloneEditorConstructionOptions')
-interfaceOverride.set('IStandaloneDiffEditorConstructionOptions', 'monaco.editor.IStandaloneDiffEditorConstructionOptions')
+interfaceOverride.set('ICodeEditor', 'import(\'vs/editor/editor.api\').editor.ICodeEditor')
+interfaceOverride.set('IEditor', 'import(\'vs/editor/editor.api\').editor.IEditor')
+interfaceOverride.set('URI', 'import(\'vs/editor/editor.api\').Uri')
+interfaceOverride.set('ITextModel', 'import(\'vs/editor/editor.api\').editor.ITextModel')
+interfaceOverride.set('vs/editor/common/config/editorOptions:IEditorOptions', 'import(\'vs/editor/editor.api\').editor.IEditorOptions')
+interfaceOverride.set('IEditorOverrideServices', 'import(\'vs/editor/editor.api\').editor.IEditorOverrideServices')
+interfaceOverride.set('IStandaloneCodeEditor', 'import(\'vs/editor/editor.api\').editor.IStandaloneCodeEditor')
+interfaceOverride.set('IStandaloneDiffEditor', 'import(\'vs/editor/editor.api\').editor.IStandaloneDiffEditor')
+interfaceOverride.set('IStandaloneEditorConstructionOptions', 'import(\'vs/editor/editor.api\').editor.IStandaloneEditorConstructionOptions')
+interfaceOverride.set('IStandaloneDiffEditorConstructionOptions', 'import(\'vs/editor/editor.api\').editor.IStandaloneDiffEditorConstructionOptions')
 
 function isExternal (id: string, main: boolean) {
   if (id.endsWith('.css')) {
@@ -68,6 +68,7 @@ export default rollup.defineConfig((<{input: Record<string, string>, output: str
     'extensions.d': './dist/types/src/extensions.d.ts',
     'monaco.d': './dist/types/src/monaco.d.ts',
     'l10n.d': './dist/types/src/l10n.d.ts',
+    'editor.api.d': './dist/types/src/editor.api.d.ts',
     ...Object.fromEntries(fs.readdirSync(path.resolve(DIST_DIR, 'types/src/service-override'), { withFileTypes: true })
       .filter(f => f.isFile())
       .map(f => f.name)
@@ -253,14 +254,16 @@ export default rollup.defineConfig((<{input: Record<string, string>, output: str
         return sourceFile.getFullText()
       },
       transform (code, id) {
-        interfaceOverride.forEach((value, key) => {
-          const [, path, name] = /(?:(.*):)?(.*)/.exec(key)!
-          if (path == null || path === id) {
-            code = code.replace(`interface ${name} `, `type ${name} = ${value}\ninterface _${name} `)
-          }
-        })
-
-        return code
+        if (!id.endsWith('editor.api.d.ts')) {
+          interfaceOverride.forEach((value, key) => {
+            const [, path, name] = /(?:(.*):)?(.*)/.exec(key)!
+            if (path == null || path === id) {
+              code = code.replace(`interface ${name} `, `type ${name} = ${value}\ninterface _${name} `)
+            }
+          })
+          return code
+        }
+        return undefined
       },
       renderChunk (code, chunk) {
         const chunkParentPath = path.resolve(DIST_DIR, path.dirname(chunk.fileName))
@@ -282,6 +285,23 @@ export default rollup.defineConfig((<{input: Record<string, string>, output: str
         }
         if (importee.startsWith('vs/')) {
           return path.join(VSCODE_SRC_DIR, `${importee}.d.ts`)
+        }
+        return undefined
+      }
+    },
+    {
+      name: 'fix-editor-api-types',
+      renderChunk (code, chunk) {
+        // Generate editor api type by hands because there is no way in typescript to extends an exported namespace
+        if (chunk.fileName === 'editor.api.d.ts') {
+          return `import { createModelReference, writeFile } from './monaco.js';
+export * from './vscode/src/vs/editor/editor.api.js';
+
+declare module './vscode/src/vs/editor/editor.api.js' {
+    export namespace editor {
+        export { createModelReference, writeFile };
+    }
+}`
         }
         return undefined
       }
