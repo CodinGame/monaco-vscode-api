@@ -89,6 +89,8 @@ echo $vscodeRef > $version_info
 echo "Building vscode..."
 NODE_OPTIONS=--max-old-space-size=8192 npx tsc --declaration --importHelpers --module es2020 --preserveConstEnums --outDir "$output_directory"
 # Copy files that are already built and assets
+find ./ \( -name '*.js' -o -name '*.d.ts' -o -name '*.ttf' -o -name '*.css' -o -name '*.mp3' -o -name '*.svg' -o -name '*.png' -o -name '*.html' -o -name '*.sh' -o -name '*.zsh' -o -name '*.ps1' \) -exec rsync -R \{\} "$output_directory/src" \;
+
 cd ..
 # Copy editor types
 cp out-monaco-editor-core/esm/vs/editor/editor.api.d.ts $output_directory/src/vs/editor/editor.api.d.ts
