@@ -1,15 +1,6 @@
 name: Release
 
-on:
-  workflow_dispatch:
-    inputs:
-      changes:
-        description: 'Changes in the releases'
-        required: true
-        type: string
-env:
-  RELEASE_CHANGES: ${{ github.event.inputs.changes }}
-
+on: workflow_dispatch
 permissions:
   contents: write      # to be able to publish a GitHub release
   issues: write        # to be able to comment on released issues
@@ -55,6 +46,7 @@ jobs:
         path: ./demo/dist/
         retention-days: 7
   deploy:
+    if: success() && github.ref == 'refs/heads/main'
     environment:
       name: github-pages
       url: ${{ steps.deployment.outputs.page_url }}

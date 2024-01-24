@@ -1,139 +1,22 @@
 /**
  * This script was inspired by https://dev.to/antongolub/you-don-t-need-semantic-release-sometimes-3k6k
  */
-
+import semanticRelease, { Options as SemanticReleaseOptions } from 'semantic-release'
 import { $ } from 'zx'
-import semver from 'semver'
-import { Octokit } from '@octokit/rest'
+import yargs, { Options } from 'yargs'
 import path from 'path'
 import fs from 'fs/promises'
 import syncFs from 'fs'
 import { fileURLToPath } from 'url'
+import util from 'node:util'
 const __dirname = path.dirname(fileURLToPath(import.meta.url))
-
-const githubToken = process.env.GH_TOKEN ?? process.env.GITHUB_TOKEN
-if (githubToken == null) {
-  throw new Error('env.GITHUB_TOKEN or env.GH_TOKEN must be set')
-}
 
 const { NPM_TOKEN } = process.env
 if (NPM_TOKEN == null) {
   throw new Error('env.NPM_TOKEN must be set')
 }
 
-/**
- * Comes from https://github.com/semantic-release/semantic-release/blob/9589a96239826abe9b07e8deffcc7d8aeb9c2e40/index.js#L45
- */
-const COMMIT_NAME = 'release-bot'
-const COMMIT_EMAIL = 'release-bot@codingame.com'
-$.env = {
-  GIT_AUTHOR_NAME: COMMIT_NAME,
-  GIT_AUTHOR_EMAIL: COMMIT_EMAIL,
-  GIT_COMMITTER_NAME: COMMIT_NAME,
-  GIT_COMMITTER_EMAIL: COMMIT_EMAIL,
-  ...process.env,
-  GIT_ASKPASS: 'echo',
-  GIT_TERMINAL_PROMPT: '0'
-}
-
-const vscodeVersion = process.argv[process.argv.length - 1]!
-const minorVscodeVersion = `${semver.major(vscodeVersion)}.${semver.minor(vscodeVersion)}`
-const tagPattern = /^v?(\d+\.\d+\.\d+)$/
-
-async function getLastTag () {
-  const tags = (await $`git tag -l --sort=-v:refname`).toString().split('\n').map(tag => tag.trim())
-
-  const matchingTags = tags.filter(tag => tagPattern.test(tag)).sort(semver.compare)
-  const lastTag = matchingTags[matchingTags.length - 1]
-
-  return lastTag
-}
-
-async function getNextVersion (lastTag?: string) {
-  if (lastTag == null || !semver.satisfies(lastTag, `=${minorVscodeVersion}.x`)) {
-    // There is no last tag OR the tag is from an older minor version
-    return `${minorVscodeVersion}.0`
-  }
-
-  return semver.inc(tagPattern.exec(lastTag)![1]!, 'patch')!
-}
-
-function parseGithubUrl (repositoryUrl: string) {
-  const [match, auth, host, path] = /^(?!.+:\/\/)(?:(?<auth>.*)@)?(?<host>.*?):(?<path>.*)$/.exec(repositoryUrl) ?? []
-  try {
-    const [, owner, repo] = /^\/(?<owner>[^/]+)?\/?(?<repo>.+?)(?:\.git)?$/.exec(
-      new URL(match != null ? `ssh://${auth != null ? `${auth}@` : ''}${host}/${path}` : repositoryUrl).pathname
-    )!
-    return { owner, repo }
-  } catch {
-    return {}
-  }
-}
-
-interface RepositoryInfos {
-  publicUrl: string
-  name: string
-  owner: string
-  repo: string
-}
-async function getRepoInformations (): Promise<RepositoryInfos> {
-  const originUrl = (await $`git config --get remote.origin.url`).toString().trim()
-  const [,, repoHost, repoName] = originUrl.replace(':', '/').replace(/\.git/, '').match(/.+(@|\/\/)([^/]+)\/(.+)$/)!
-  const publicUrl = `https://${repoHost}/${repoName}`
-
-  const { owner, repo } = parseGithubUrl(originUrl)
-
-  return {
-    publicUrl,
-    name: repoName!,
-    owner: owner!,
-    repo: repo!
-  }
-}
-
-async function generateReleaseNotes (repoInfos: RepositoryInfos, version: string, changes: string, lastTag?: string) {
-  const tag = `v${version}`
-
-  const newCommits = (lastTag != null
-    ? await $`git log --format=+++%s__%b__%h__%H ${await $`git rev-list -1 ${lastTag}`}..HEAD --no-merges`
-    : await $`git log --format=+++%s__%b__%h__%H HEAD --no-merges`)
-    .toString()
-    .split('+++')
-    .filter(commit => commit.trim() !== '')
-    .map(msg => {
-      const [subj, body, short, hash] = msg.split('__').map(raw => raw.trim())
-      return { subj, body, short, hash }
-    })
-
-  const title = lastTag != null ? `[${version}](${repoInfos.publicUrl}/compare/${lastTag}...${tag})` : version
-  const releaseDiffRef = `## ${title} (${new Date().toISOString().slice(0, 10)})`
-
-  const releaseDetails = newCommits.map(({ hash, subj, short }) => `* ${subj} ([${short}](${repoInfos.publicUrl}/commit/${hash}))`).join('\n')
-
-  const releaseNotes = `${releaseDiffRef}\n${changes}\n### commits:\n${releaseDetails}\n`
-
-  return releaseNotes
-}
-
-async function releaseGithub (repoInfos: RepositoryInfos, version: string, releaseNotes: string) {
-  const gitTag = `v${version}`
-
-  await $`git tag -a ${gitTag} HEAD -m "chore(release): ${version} [skip ci]"`
-  await $`git push --follow-tags origin HEAD:refs/heads/main`
-
-  const octokit = new Octokit({
-    auth: `token ${githubToken}`
-  })
-
-  await octokit.repos.createRelease({
-    owner: repoInfos.owner,
-    repo: repoInfos.repo,
-    tag_name: gitTag,
-    body: releaseNotes
-  })
-}
-
-async function publishNpm (version: string) {
+async function publishNpm (version: string, tag: string = 'latest') {
   const distDir = path.resolve(__dirname, 'dist')
   for (const dirName of await fs.readdir(distDir)) {
     const libDir = path.resolve(distDir, dirName)
@@ -153,22 +36,86 @@ async function publishNpm (version: string) {
       await fs.writeFile(packageJsonFile, JSON.stringify(packageJson, null, 2))
 
       $.cwd = libDir
-      await $`npm publish --access public`
+      await $`npm publish --tag "${tag}" --access public`
     }
   }
 }
 
-async function run () {
-  const repoInfos = await getRepoInformations()
-  const lastTag = await getLastTag()
-  const nextVersion = await getNextVersion(lastTag)
-  const releaseNotes = await generateReleaseNotes(repoInfos, nextVersion, process.env.RELEASE_CHANGES ?? 'Unknown', lastTag)
+async function run (options: SemanticReleaseOptions) {
+  const result = await semanticRelease(
+    {
+      ...options,
+      plugins: [
+        '@semantic-release/commit-analyzer',
+        '@semantic-release/release-notes-generator',
+        '@semantic-release/github'
+      ],
+      branches: [
+        'main',
+        { name: '*', channel: 'next', prerelease: true }
+      ],
+      extends: '@codingame/semantic-release-config'
+    }
+  )
 
-  await releaseGithub(repoInfos, nextVersion, releaseNotes)
-  await publishNpm(nextVersion)
+  if (result === false) {
+    return
+  }
+
+  if (options.dryRun ?? false) {
+    return
+  }
+
+  await publishNpm(result.nextRelease.version, result.nextRelease.channel)
 }
 
-run().catch(error => {
-  console.error(error)
+async function cli () {
+  const stringList: Options = {
+    type: 'string',
+    array: true,
+    coerce: (values: string[]) =>
+      values.length === 1 && values[0]!.trim() === 'false'
+        ? []
+        : values.reduce((values, value) => values.concat(value.split(',').map((value) => value.trim())), <string[]>[])
+  }
+
+  const argv = process.argv.slice(2)
+  const cli = yargs(argv)
+    .command('$0', 'Run automated package publishing', (yargs) => {
+      yargs.demandCommand(0, 0).usage(`Run automated package publishing
+
+  Usage:
+  release [options] [plugins]`)
+    })
+    .option('b', { alias: 'branches', describe: 'Git branches to release from', ...stringList, group: 'Options' })
+    .option('r', { alias: 'repository-url', describe: 'Git repository URL', type: 'string', group: 'Options' })
+    .option('t', { alias: 'tag-format', describe: 'Git tag format', type: 'string', group: 'Options' })
+    .option('p', { alias: 'plugins', describe: 'Plugins', ...stringList, group: 'Options' })
+    .option('e', { alias: 'extends', describe: 'Shareable configurations', ...stringList, group: 'Options' })
+    .option('ci', { describe: 'Toggle CI verifications', type: 'boolean', group: 'Options' })
+    .option('verify-conditions', { ...stringList, group: 'Plugins' })
+    .option('analyze-commits', { type: 'string', group: 'Plugins' })
+    .option('verify-release', { ...stringList, group: 'Plugins' })
+    .option('generate-notes', { ...stringList, group: 'Plugins' })
+    .option('prepare', { ...stringList, group: 'Plugins' })
+    .option('publish', { ...stringList, group: 'Plugins' })
+    .option('success', { ...stringList, group: 'Plugins' })
+    .option('fail', { ...stringList, group: 'Plugins' })
+    .option('d', { alias: 'dry-run', describe: 'Skip publishing', type: 'boolean', group: 'Options' })
+    .option('h', { alias: 'help', group: 'Options' })
+    .strict(false)
+    .exitProcess(false)
+
+  const { help, version, ...options } = await cli.parse(argv)
+
+  if (Boolean(help) || Boolean(version)) {
+    return
+  }
+
+  await run(options)
+}
+
+cli().catch(error => {
+  console.error(util.inspect(error, { colors: true }))
   process.exit(1)
 })
