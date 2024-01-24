@@ -31,6 +31,7 @@ const SERVICE_OVERRIDE_DIST_DIR = path.join(DIST_DIR_MAIN, 'service-override')
 
 const interfaceOverride = new Map<string, string>()
 interfaceOverride.set('Event<T>', 'vscode.Event<T>')
+interfaceOverride.set('IActionDescriptor', 'import(\'vs/editor/editor.api\').editor.IActionDescriptor')
 interfaceOverride.set('ICodeEditor', 'import(\'vs/editor/editor.api\').editor.ICodeEditor')
 interfaceOverride.set('IEditor', 'import(\'vs/editor/editor.api\').editor.IEditor')
 interfaceOverride.set('URI', 'import(\'vs/editor/editor.api\').Uri')
