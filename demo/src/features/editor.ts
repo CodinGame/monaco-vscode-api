@@ -1,6 +1,5 @@
 import { IResolvedTextEditorModel, IReference, OpenEditor } from '@codingame/monaco-vscode-views-service-override'
 import * as monaco from 'monaco-editor'
-import { createConfiguredEditor } from 'vscode/monaco'
 
 let currentEditor: ({
   modelRef: IReference<IResolvedTextEditorModel>
@@ -28,7 +27,7 @@ export const openNewCodeEditor: OpenEditor = async (modelRef) => {
 
   document.body.appendChild(container)
   try {
-    const editor = createConfiguredEditor(
+    const editor = monaco.editor.create(
       editorElem,
       {
         model: modelRef.object.textEditorModel,
