@@ -39,8 +39,7 @@ import { IKeybindingService, IKeyboardEvent } from 'vs/platform/keybinding/commo
 import { KeybindingResolver } from 'vs/platform/keybinding/common/keybindingResolver'
 import { ResolvedKeybindingItem } from 'vs/platform/keybinding/common/resolvedKeybindingItem'
 import { Keybinding, ResolvedKeybinding } from 'vs/base/common/keybindings'
-import { Event } from 'vs/base/common/event'
-import { Emitter } from 'monaco-editor'
+import { Emitter, Event } from 'vs/base/common/event'
 import { createInjectedClass } from './tools/injection'
 
 function computeConfiguration (configuration: IEditorConfiguration, overrides?: Readonly<IEditorOptions>): IEditorOptions {

@@ -51,12 +51,12 @@ function isExternal (id: string, main: boolean) {
   }
   if (main) {
     return [
-      'vscode', 'monaco-editor', 'tas-client-umd'
+      'vscode', 'tas-client-umd'
     ].includes(id)
   }
 
   return [
-    'vscode', 'monaco-editor', 'tas-client-umd', 'vscode-textmate', 'rollup', '@rollup/pluginutils',
+    'vscode', 'tas-client-umd', 'vscode-textmate', 'rollup', '@rollup/pluginutils',
     'xterm', 'xterm-addon-canvas', 'xterm-addon-search', 'xterm-addon-unicode11',
     'xterm-addon-webgl', 'xterm-addon-serialize', 'xterm-addon-image', 'xterm-headless'
   ].some(external => id === external || id.startsWith(`${external}/`))
@@ -139,9 +139,6 @@ export default rollup.defineConfig((<{input: Record<string, string>, output: str
               resolveId (source, importer) {
                 if (source === 'entrypoint') {
                   return source
-                }
-                if (source.startsWith('monaco-editor/')) {
-                  return null
                 }
                 if (source === 'vscode') {
                   return {
@@ -246,12 +243,6 @@ export default rollup.defineConfig((<{input: Record<string, string>, output: str
           return `${sourceFile.getImportDeclarations().map(e => e.getText()).join('\n')}\n${module.getBodyText()}`
         }
 
-        if (sourceFile.getImportDeclaration('monaco-editor') == null) {
-          sourceFile.addImportDeclaration({
-            moduleSpecifier: 'monaco-editor',
-            namespaceImport: 'monaco'
-          })
-        }
         if (sourceFile.getImportDeclaration('vscode') == null) {
           sourceFile.addImportDeclaration({
             moduleSpecifier: 'vscode',

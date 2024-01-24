@@ -47,15 +47,12 @@
 		],
 		"vscode/*": [
 			"./vscode/*"
-		],
-		"monaco-editor/esm/*": [
-			"./vscode/src/*"
 		]
 	},
 	"declaration": true,
 	"emitDeclarationOnly": true,
 	"skipLibCheck": true,
-	"types": ["monaco-editor", "node"]
+	"types": ["node"]
   },
   "include": [
 		"./vscode/src/vscode-dts/vscode.proposed.*.d.ts",

@@ -9,15 +9,6 @@ npm install vscode@npm:@codingame/monaco-vscode-api
 npm install -D @types/vscode
 ```
 
-⚠️ And add in your package.json ⚠️:
-```json
-{
-  "scripts": {
-    "postinstall": "monaco-treemending",
-  }
-}
-```
-
 ### Why?
 
 Monaco-editor is a library that is constructed using code from vscode and goes through an intense treeshaking process.

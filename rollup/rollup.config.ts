@@ -119,9 +119,6 @@ const DIST_SERVICE_OVERRIDE_DIR_MAIN = path.resolve(DIST_DIR_MAIN, 'service-over
 const VSCODE_SRC_DIST_DIR = path.resolve(DIST_DIR_MAIN, 'vscode', 'src')
 const VSCODE_DIR = path.resolve(BASE_DIR, 'vscode')
 const VSCODE_SRC_DIR = path.resolve(VSCODE_DIR, 'src')
-const NODE_MODULES_DIR = path.resolve(BASE_DIR, 'node_modules')
-const MONACO_EDITOR_DIR = path.resolve(NODE_MODULES_DIR, './monaco-editor')
-const MONACO_EDITOR_ESM_DIR = path.resolve(MONACO_EDITOR_DIR, './esm')
 const OVERRIDE_PATH = path.resolve(BASE_DIR, 'src/override')
 const KEYBOARD_LAYOUT_DIR = path.resolve(VSCODE_SRC_DIR, 'vs/workbench/services/keybinding/browser/keyboardLayouts')
 
@@ -426,10 +423,6 @@ function resolveVscode (importee: string, importer?: string) {
   }
 
   if (vscodeImportPath.startsWith('vs/')) {
-    if (resolve(vscodeImportPath, [MONACO_EDITOR_ESM_DIR]) != null) {
-      // File exists on monaco, import from monaco esm
-      return path.relative(NODE_MODULES_DIR, path.resolve(MONACO_EDITOR_ESM_DIR, vscodeImportPath)) + '.js'
-    }
     return resolve(vscodeImportPath, [VSCODE_SRC_DIR])
   }
   return undefined
@@ -473,9 +466,6 @@ const externals = Object.keys({ ...pkg.dependencies })
 const external: rollup.ExternalOption = (source) => {
   if (source === 'semver' || source.startsWith('semver')) return true
   if (source.includes('tas-client-umd')) return true
-  if (source.startsWith(MONACO_EDITOR_DIR) || source.startsWith('monaco-editor/')) {
-    return true
-  }
   return externals.some(external => source === external || source.startsWith(`${external}/`))
 }
 
@@ -918,9 +908,6 @@ export default (args: Record<string, string>): rollup.RollupOptions[] => {
                 ]
               }
             },
-            bin: {
-              'monaco-treemending': './monaco-treemending.js'
-            },
             dependencies: {
               ...Object.fromEntries(Object.entries(pkg.dependencies).filter(([key]) => dependencies.has(key))),
               ...Object.fromEntries(Array.from(dependencies).filter(dep => dep.startsWith('@codingame/monaco-vscode-')).map(dep => [dep, pkg.version]))
@@ -999,9 +986,6 @@ export default (args: Record<string, string>): rollup.RollupOptions[] => {
                       external: true,
                       id: source
                     }
-                  }
-                  if (source.startsWith('monaco-editor/')) {
-                    return null
                   }
                   const importerDir = path.dirname(path.resolve(DIST_DIR_MAIN, importer ?? '/'))
                   const resolved = path.resolve(importerDir, source)

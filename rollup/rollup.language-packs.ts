@@ -17,9 +17,6 @@ const EXTENSIONS = ['', '.ts', '.js']
 const BASE_DIR = path.resolve(__dirname, '..')
 const LOC_PATH = path.resolve(BASE_DIR, 'vscode-loc')
 const DIST_DIR = path.resolve(BASE_DIR, 'dist')
-const NODE_MODULES_DIR = path.resolve(BASE_DIR, 'node_modules')
-const MONACO_EDITOR_DIR = path.resolve(NODE_MODULES_DIR, './monaco-editor')
-const MONACO_EDITOR_ESM_DIR = path.resolve(MONACO_EDITOR_DIR, './esm')
 
 const locExtensions = fs.readdirSync(LOC_PATH, { withFileTypes: true })
   .filter(f => f.isDirectory() && fs.existsSync(path.resolve(LOC_PATH, f.name, 'package.json')))
@@ -30,12 +27,7 @@ const vscodeModules = (await glob('**/vscode/src/**/*.js', {
   onlyFiles: true
 })).map(fileName => /vscode\/src\/(.*).js$/.exec(fileName)![1]!)
 
-const monacoModules = (await glob('**/*.js', {
-  cwd: MONACO_EDITOR_ESM_DIR,
-  onlyFiles: true
-})).map(fileName => fileName.slice(0, -3))
-
-const usedModules = new Set<string>([...vscodeModules, ...monacoModules, 'vs/workbench/browser/web.main'])
+const usedModules = new Set<string>([...vscodeModules, 'vs/workbench/browser/web.main'])
 
 export default rollup.defineConfig([
   ...locExtensions.map(name => (<rollup.RollupOptions>{
