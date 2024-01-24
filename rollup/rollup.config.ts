@@ -96,12 +96,6 @@ const REMOVE_COMMANDS = new Set([
   '_files.newWindow'
 ])
 
-const KEEP_COLORS = new Set([
-  'notifications.background',
-  'notification.foreground',
-  'notificationToast.border'
-])
-
 const REMOVE_WORKBENCH_CONTRIBUTIONS = new Set([
   'ResetConfigurationDefaultsOverridesCache',
   'ConfigurationMigrationWorkbenchContribution',
@@ -200,15 +194,6 @@ function isCallPure (file: string, functionName: string, node: recast.types.name
       firstParamCode.startsWith('MenuId.AccountsContext')
     ) {
       return true
-    }
-  }
-
-  if (functionName.endsWith('registerColor')) {
-    const firstParam = args[0]!
-    if (firstParam.type === 'StringLiteral') {
-      if (KEEP_COLORS.has(firstParam.value)) {
-        return false
-      }
     }
   }
 
