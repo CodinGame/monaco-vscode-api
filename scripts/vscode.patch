@@ -259,6 +259,19 @@ index 4f42810f0bd..58b0747c812 100644
  import { IWorker, IWorkerCallback, IWorkerFactory, logOnceWebWorkerWarning } from 'vs/base/common/worker/simpleWorker';
  
  const ttPolicy = createTrustedTypesPolicy('defaultWorkerFactory', { createScriptURL: value => value });
+diff --git a/src/vs/base/browser/ui/codicons/codicon/codicon.css b/src/vs/base/browser/ui/codicons/codicon/codicon.css
+index 02154e77b68..d7f257db934 100644
+--- a/src/vs/base/browser/ui/codicons/codicon/codicon.css
++++ b/src/vs/base/browser/ui/codicons/codicon/codicon.css
+@@ -6,7 +6,7 @@
+ @font-face {
+ 	font-family: "codicon";
+ 	font-display: block;
+-	src: url("./codicon.ttf?5d4d76ab2ce5108968ad644d591a16a6") format("truetype");
++	src: url("./codicon.ttf") format("truetype");
+ }
+ 
+ .codicon[class*='codicon-'] {
 diff --git a/src/vs/base/common/network.ts b/src/vs/base/common/network.ts
 index 00ad27c3d55..9e5e31ad723 100644
 --- a/src/vs/base/common/network.ts
