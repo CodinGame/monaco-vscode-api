@@ -181,7 +181,17 @@ function isCallPure (file: string, functionName: string, node: recast.types.name
         firstParamName.includes('Auxiliary') ||
         firstParamName.includes('EditorPane') ||
         firstParamName.includes('TerminalExtensions') ||
-        firstParamName.includes('ConfigurationMigration')
+        firstParamName.includes('ConfigurationMigration') ||
+        firstParamName.includes('JSONContribution') ||
+        firstParamName.includes('DragAndDropContribution') ||
+        firstParamName.includes('EditorModes') ||
+        firstParamName.includes('Quickaccess') ||
+        firstParamName.includes('IconContribution') ||
+        firstParamName.includes('ThemingContribution') ||
+        firstParamName.includes('ColorContribution') ||
+        firstParamName.includes('Configuration') ||
+        firstParamName.includes('ModesRegistry') ||
+        firstParamName.includes('EditorCommonContributions')
       return !allowed
     }
   }
@@ -228,7 +238,12 @@ function isCallPure (file: string, functionName: string, node: recast.types.name
   }
 
   if (functionName === 'registerSingleton') {
-    if (file.includes('vs/workbench/api/')) {
+    if (
+      file.includes('vs/workbench/api/') ||
+      file.includes('vs/editor') ||
+      file.includes('vs/platform/undoRedo/common/undoRedoService') ||
+      file.includes('vs/platform/actionWidget/browser/actionWidget')
+    ) {
       return false
     }
     return true
@@ -474,6 +489,9 @@ export default (args: Record<string, string>): rollup.RollupOptions[] => {
           return false
         }
         return path.startsWith(SRC_DIR) ||
+          path.includes('vs/editor') ||
+          path.includes('codiconStyles') ||
+          path.includes('vs/platform/undoRedo/common/undoRedoService') ||
           path.endsWith('.css') ||
           path.startsWith(KEYBOARD_LAYOUT_DIR) ||
           path.endsWith('.contribution.js') ||
