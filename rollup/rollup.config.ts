@@ -102,6 +102,11 @@ const REMOVE_WORKBENCH_CONTRIBUTIONS = new Set([
   'ExtensionPoints'
 ])
 
+/**
+ * root files that should never be extracted from the main package to a service override package
+ */
+const SHARED_ROOT_FILES_BETWEEN_PACKAGES = ['services.js', 'extensions.js', 'monaco.js', 'assets.js', 'lifecycle.js', 'workbench.js', 'missing-services.js']
+
 const EXTENSIONS = ['', '.ts', '.js']
 
 const BASE_DIR = path.resolve(__dirname, '..')
@@ -997,7 +1002,7 @@ export default (args: Record<string, string>): rollup.RollupOptions[] => {
                   const isVscodeFile = resolved.startsWith(VSCODE_SRC_DIST_DIR)
                   const isServiceOverride = path.dirname(resolved) === DIST_SERVICE_OVERRIDE_DIR_MAIN
                   const isNotExclusive = (isVscodeFile || isServiceOverride) && !exclusiveModules.has(resolvedWithExtension)
-                  const shouldBeShared = ['services.js', 'extensions.js', 'monaco.js', 'assets.js', 'lifecycle.js', 'workbench.js', 'missing-services.js'].includes(path.relative(DIST_DIR_MAIN, resolvedWithExtension))
+                  const shouldBeShared = SHARED_ROOT_FILES_BETWEEN_PACKAGES.includes(path.relative(DIST_DIR_MAIN, resolvedWithExtension))
 
                   if (isNotExclusive || shouldBeShared) {
                     // Those modules will be imported from external monaco-vscode-api
