@@ -11,10 +11,28 @@ index fd88130a1e8..60c5418dc79 100644
  							"@xterm/addon-canvas",
  							"@xterm/addon-image",
 diff --git a/build/gulpfile.editor.js b/build/gulpfile.editor.js
-index 22b70a953df..3a56cc4cb0d 100644
+index 22b70a953df..4c92c45941a 100644
 --- a/build/gulpfile.editor.js
 +++ b/build/gulpfile.editor.js
-@@ -404,17 +404,10 @@ gulp.task('editor-distro',
+@@ -277,7 +277,16 @@ function toExternalDTS(contents) {
+ 		}
+ 
+ 		if (line.indexOf('declare let MonacoEnvironment') === 0) {
+-			lines[i] = `declare global {\n    let MonacoEnvironment: Environment | undefined;\n}`;
++			lines[i] = [
++				'declare global {',
++				'    let MonacoEnvironment: Environment | undefined;',
++				'',
++				'    interface Window {',
++				'        MonacoEnvironment?: Environment | undefined;',
++				'    }',
++				'}',
++				''
++			].join('\n');
+ 		}
+ 
+ 		if (line.indexOf('\tMonacoEnvironment?') === 0) {
+@@ -404,17 +413,10 @@ gulp.task('editor-distro',
  			util.rimraf('out-editor-min')
  		),
  		extractEditorSrcTask,
