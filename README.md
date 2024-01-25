@@ -16,6 +16,17 @@ npm install -D @types/vscode
 
 ## Troubleshooting
 
+### If you use Webpack
+
+Starting from v2, [monaco-editor-webpack-plugin](https://www.npmjs.com/package/monaco-editor-webpack-plugin) can't be used
+
+Here's the alternative for each options:
+- `filename`: it can be configured at the webpack level directly
+- `publicPath`: it can be configured at the webpack level or by hands when redistering the worker in `window.MonacoEnvironment`.
+- `languages`: Monaco languages cannot be used anyway. Import vscode language extensions instead (`@codingame/monaco-vscode-xxx-default-extension`).
+- `features`: With this lib, you can't remove editor features.
+- `globalAPI`: you can set `window.MonacoEnvironment.globalAPI` to true
+
 ### If you use Vite
 
 This library uses a lot the `new URL('asset.extension', import.meta.url)` syntax which [is supported by vite](https://vitejs.dev/guide/assets.html#new-url-url-import-meta-url)
