@@ -1,10 +1,10 @@
 import { createFilter, FilterPattern, dataToEsm } from '@rollup/pluginutils'
 import { Plugin } from 'rollup'
 import type { IExtensionManifest } from 'vs/platform/extensions/common/extensions'
-import glob from 'fast-glob'
 import * as path from 'path'
-import * as fsPromise from 'fs/promises'
-import { parseJson, toResource } from './extension-tools.js'
+import * as fs from 'fs'
+import { getExtensionResources, parseJson } from './extension-tools.js'
+
 interface Options {
   include?: FilterPattern
   exclude?: FilterPattern
@@ -35,7 +35,7 @@ export default function plugin ({
       // Load extension resources
       const basename = path.basename(id)
       if (basename === 'package.json') {
-        const content = await fsPromise.readFile(id)
+        const content = await fs.promises.readFile(id)
         const parsed = parseJson<IExtensionManifest>(id, content.toString('utf-8'))
         return {
           code: dataToEsm(transformManifest(parsed), {
@@ -47,15 +47,13 @@ export default function plugin ({
       }
 
       // load extension directory as a module that loads the extension
-      const stat = await fsPromise.stat(id)
+      const stat = await fs.promises.stat(id)
       if (stat.isDirectory()) {
         // Load the extension directory as a module importing the required files and registering the extension
         const manifestPath = path.resolve(id, 'package.json')
+        const manifest = transformManifest(parseJson<IExtensionManifest>(id, (await fs.promises.readFile(manifestPath)).toString('utf8')))
         try {
-          const resources = (await glob('**/*', {
-            cwd: id,
-            onlyFiles: true
-          })).map(toResource)
+          const resources = await getExtensionResources(manifest, fs, id)
 
           function generateFileRegistrationInstruction (filePath: string, importPath: string, mimeType?: string) {
             return `registerFileUrl('${filePath}', new URL('${importPath}', import.meta.url).toString()${mimeType != null ? `, '${mimeType}'` : ''})`
