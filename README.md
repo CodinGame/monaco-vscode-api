@@ -81,7 +81,7 @@ See [this issue](https://github.com/CodinGame/monaco-vscode-api/issues/186) or t
 
 ## Monaco standalone services
 
-`monaco-editor`, as well as this library by default, uses `standalone` versions or the vscode services, which are much simpler than the one used in VSCode.
+`monaco-editor`, as well as this library by default, uses `standalone` version or the vscode services, which are much simpler than the one used in VSCode.
 
 You may want to provide your custom implementations of them. To do so, you can use the `initialize` method from `vscode/services`.
 Also, monaco-editor doesn't provide types for them, so this library exports them.
@@ -240,7 +240,7 @@ It has some pros:
 - The returned model is bound to a filesystem file, and you have access to methods allowing to control the file lifecycle (saving the file, accessing the dirty state...)
 - It is possible to call the method multiple times on the same file to get multiple references. The model is disposed when there is no reference left
 
-The second argument of the method allows to write the file content to the virtual filesystem in case the file wasn't registered in it beforehand.
+The second argument of the method allows you to write the file content to the virtual filesystem in case the file wasn't registered in it beforehand.
 
 before:
 
