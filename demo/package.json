@@ -15,6 +15,7 @@
     "start:extHostServer": "WEB_ENDPOINT_URL_TEMPLATE=http://localhost:5173/ vscode-ext-host-server --without-connection-token"
   },
   "devDependencies": {
+    "@codingame/esbuild-import-meta-url-plugin": "^1.0.2",
     "@codingame/monaco-vscode-rollup-vsix-plugin": "file:../dist/rollup-vsix-plugin",
     "@types/dockerode": "^3.3.23",
     "@types/express": "^4.17.21",
