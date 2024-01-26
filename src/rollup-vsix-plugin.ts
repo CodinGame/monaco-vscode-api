@@ -3,10 +3,10 @@ import { Plugin } from 'rollup'
 import * as yauzl from 'yauzl'
 import type { IExtensionManifest } from 'vs/platform/extensions/common/extensions'
 import { IFs, createFsFromVolume, Volume } from 'memfs'
-import glob, { FileSystemAdapter } from 'fast-glob'
 import { Readable } from 'stream'
 import * as path from 'path'
-import { parseJson, toResource } from './extension-tools.js'
+import type nodeFs from 'node:fs'
+import { getExtensionResources, parseJson } from './extension-tools.js'
 
 interface Options {
   include?: FilterPattern
@@ -81,11 +81,7 @@ export default function plugin ({
       const readFileSync = (filePath: string) => vsixFS.readFileSync(path.join('/', filePath)) as Buffer
       const manifest = transformManifest(parseJson<IExtensionManifest>(id, readFileSync('package.json').toString('utf8')))
 
-      const resources = (await glob('**/*', {
-        fs: <FileSystemAdapter>vsixFS,
-        cwd: '/',
-        onlyFiles: true
-      })).map(toResource)
+      const resources = await getExtensionResources(manifest, <typeof nodeFs><unknown>vsixFS, '/')
 
       const pathMapping = (await Promise.all(resources.map(async resource => {
         const assetPath = getVsixPath(resource.path)
