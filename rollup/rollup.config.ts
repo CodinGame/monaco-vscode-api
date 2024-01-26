@@ -1034,12 +1034,6 @@ export default (args: Record<string, string>): rollup.RollupOptions[] => {
                     source: JSON.stringify(packageJson, null, 2),
                     type: 'asset'
                   })
-                  this.emitFile({
-                    fileName: 'esm/vs/editor/editor.api.d.ts',
-                    needsCodeReference: false,
-                    source: "export * from 'vscode/editor.api'",
-                    type: 'asset'
-                  })
                   for (const path of EDITOR_API_EXPOSE_MODULES) {
                     this.emitFile({
                       fileName: `esm/${path}`,

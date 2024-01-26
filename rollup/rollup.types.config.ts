@@ -27,7 +27,6 @@ const DIST_DIR_MAIN = path.resolve(DIST_DIR, 'main')
 const DIST_DIR_VSCODE_SRC_MAIN = path.resolve(DIST_DIR_MAIN, 'vscode/src')
 const TYPES_SRC_DIR = path.join(DIST_DIR, 'types/src')
 const SERVICE_OVERRIDE_DIR = path.join(TYPES_SRC_DIR, 'service-override')
-const SERVICE_OVERRIDE_DIST_DIR = path.join(DIST_DIR_MAIN, 'service-override')
 
 const interfaceOverride = new Map<string, string>()
 interfaceOverride.set('Event<T>', 'vscode.Event<T>')
@@ -112,7 +111,10 @@ export default rollup.defineConfig((<{input: Record<string, string>, output: str
       stage: 'writeBundle', // rollup-plugin-dts needs the file to exist on the disk
       getGroup (id: string) {
         if (id.startsWith(SERVICE_OVERRIDE_DIR)) {
-          return path.basename(id, '.d.ts')
+          return `service-override/${path.basename(id, '.d.ts')}`
+        }
+        if (id === path.resolve(TYPES_SRC_DIR, 'editor.api.d.ts')) {
+          return 'editor.api'
         }
         return 'main'
       },
@@ -126,7 +128,7 @@ export default rollup.defineConfig((<{input: Record<string, string>, output: str
 
         const groupBundle = await rollup.rollup({
           input: {
-            'index.d': 'entrypoint'
+            [groupName === 'editor.api' ? 'esm/vs/editor/editor.api.d' : 'index.d']: 'entrypoint'
           },
           external: (id) => {
             if (id === 'vscode') {
@@ -168,13 +170,13 @@ export default rollup.defineConfig((<{input: Record<string, string>, output: str
               },
               load (id) {
                 if (id === 'entrypoint') {
-                  const serviceOverrideTypesPath = `${path.resolve(SERVICE_OVERRIDE_DIST_DIR, groupName)}`
+                  const entryTypesPath = `${path.resolve(DIST_DIR_MAIN, groupName)}`
                   const codeLines: string[] = []
                   if ((entrypointInfo.exports ?? []).includes('default')) {
-                    codeLines.push(`export { default } from '${serviceOverrideTypesPath}'`)
+                    codeLines.push(`export { default } from '${entryTypesPath}'`)
                   }
                   if ((entrypointInfo.exports ?? []).some(e => e !== 'default')) {
-                    codeLines.push(`export * from '${serviceOverrideTypesPath}'`)
+                    codeLines.push(`export * from '${entryTypesPath}'`)
                   }
                   return codeLines.join('\n')
                 }
@@ -191,11 +193,11 @@ export default rollup.defineConfig((<{input: Record<string, string>, output: str
         })
         await groupBundle.write({
           preserveModules: true,
-          preserveModulesRoot: path.resolve(DIST_DIR, 'main/service-override'),
+          preserveModulesRoot: path.dirname(path.resolve(DIST_DIR_MAIN, groupName)),
           minifyInternalExports: false,
           assetFileNames: 'assets/[name][extname]',
           format: 'esm',
-          dir: path.resolve(DIST_DIR, `service-override-${paramCase(groupName)}`),
+          dir: path.resolve(DIST_DIR, paramCase(groupName.replace(/\//g, '-'))),
           entryFileNames: '[name].ts',
           hoistTransitiveImports: false
         })
@@ -292,19 +294,9 @@ export default rollup.defineConfig((<{input: Record<string, string>, output: str
     },
     {
       name: 'fix-editor-api-types',
-      renderChunk (code, chunk) {
-        // Generate editor api type by hands because there is no way in typescript to extends an exported namespace
-        if (chunk.fileName === 'editor.api.d.ts') {
-          return `import { createModelReference, writeFile } from './monaco.js';
-export * from './vscode/src/vs/editor/editor.api.js';
-
-declare module './vscode/src/vs/editor/editor.api.js' {
-    export namespace editor {
-        export { createModelReference, writeFile };
-    }
-}`
-        }
-        return undefined
+      renderChunk (code) {
+        // rollup-plugin-dts is not able to transform "declare module" syntaxes
+        return code.replaceAll("declare module 'vs/editor/editor.api'", "declare module 'vscode/vscode/vs/editor/editor.api'")
       }
     },
     dts({
