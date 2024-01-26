@@ -51,8 +51,7 @@
 	},
 	"declaration": true,
 	"emitDeclarationOnly": true,
-	"skipLibCheck": true,
-	"types": ["node"]
+	"skipLibCheck": true
   },
   "include": [
 		"./vscode/src/vscode-dts/vscode.proposed.*.d.ts",

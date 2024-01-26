@@ -20,8 +20,7 @@
 				"./vscode/*"
 			]
 		},
-		"preserveConstEnums": true,
-		"types": ["node"]
+		"preserveConstEnums": true
 	},
 	"include": [
 		"./vscode/src/vscode-dts/vscode.proposed.*.d.ts",
