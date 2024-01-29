@@ -112,7 +112,8 @@ const SHARED_ROOT_FILES_BETWEEN_PACKAGES = ['services.js', 'extensions.js', 'mon
  */
 const EDITOR_API_EXPOSE_MODULES = [
   // use by monaco-vim
-  'vs/editor/common/commands/shiftCommand.js'
+  'vs/editor/common/commands/shiftCommand.js',
+  'vs/editor/browser/config/tabFocus.js'
 ]
 
 const EXTENSIONS = ['', '.ts', '.js']
