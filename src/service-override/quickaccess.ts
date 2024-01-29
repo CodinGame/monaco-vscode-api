@@ -34,7 +34,7 @@ CommandsQuickAccessProvider.prototype['getCommandPicks'] = async function (this:
   if (!isKeybindingConfigurationVisible()) {
     result = result.map(picks => ({
       ...picks,
-      buttons: picks.buttons?.filter(button => button.tooltip !== 'Configure Keybinding')
+      buttons: undefined
     }))
   }
   return result
