@@ -4123,6 +4123,25 @@ index a466cc1f3a1..09f6a40eb26 100644
  
  	declare readonly _serviceBrand: undefined;
  
+diff --git a/src/vs/workbench/services/search/common/queryBuilder.ts b/src/vs/workbench/services/search/common/queryBuilder.ts
+index 78b4d0c9227..e6fadfd11d8 100644
+--- a/src/vs/workbench/services/search/common/queryBuilder.ts
++++ b/src/vs/workbench/services/search/common/queryBuilder.ts
+@@ -543,10 +543,10 @@ export class QueryBuilder {
+ 			folderName: includeFolderName ? folderName : undefined,
+ 			excludePattern: Object.keys(excludePattern).length > 0 ? excludePattern : undefined,
+ 			fileEncoding: folderConfig.files && folderConfig.files.encoding,
+-			disregardIgnoreFiles: typeof options.disregardIgnoreFiles === 'boolean' ? options.disregardIgnoreFiles : !folderConfig.search.useIgnoreFiles,
+-			disregardGlobalIgnoreFiles: typeof options.disregardGlobalIgnoreFiles === 'boolean' ? options.disregardGlobalIgnoreFiles : !folderConfig.search.useGlobalIgnoreFiles,
+-			disregardParentIgnoreFiles: typeof options.disregardParentIgnoreFiles === 'boolean' ? options.disregardParentIgnoreFiles : !folderConfig.search.useParentIgnoreFiles,
+-			ignoreSymlinks: typeof options.ignoreSymlinks === 'boolean' ? options.ignoreSymlinks : !folderConfig.search.followSymlinks,
++			disregardIgnoreFiles: typeof options.disregardIgnoreFiles === 'boolean' ? options.disregardIgnoreFiles : !folderConfig.search?.useIgnoreFiles,
++			disregardGlobalIgnoreFiles: typeof options.disregardGlobalIgnoreFiles === 'boolean' ? options.disregardGlobalIgnoreFiles : !folderConfig.search?.useGlobalIgnoreFiles,
++			disregardParentIgnoreFiles: typeof options.disregardParentIgnoreFiles === 'boolean' ? options.disregardParentIgnoreFiles : !folderConfig.search?.useParentIgnoreFiles,
++			ignoreSymlinks: typeof options.ignoreSymlinks === 'boolean' ? options.ignoreSymlinks : !folderConfig.search?.followSymlinks,
+ 		};
+ 	}
+ }
 diff --git a/src/vs/workbench/services/storage/browser/storageService.ts b/src/vs/workbench/services/storage/browser/storageService.ts
 index a77c2db9446..2b9a8c19926 100644
 --- a/src/vs/workbench/services/storage/browser/storageService.ts
