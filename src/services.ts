@@ -1,5 +1,7 @@
 import './missing-services'
 import './contributions'
+import 'vs/editor/editor.all'
+import 'vs/editor/standalone/browser/iPadShowKeyboard/iPadShowKeyboard'
 import Severity from 'vs/base/common/severity'
 import { IConfigurationChangeEvent } from 'vs/platform/configuration/common/configuration'
 import { ITextModelContentProvider } from 'vs/editor/common/services/resolverService'

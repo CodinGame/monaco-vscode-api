@@ -27,20 +27,20 @@ const DIST_DIR_MAIN = path.resolve(DIST_DIR, 'main')
 const DIST_DIR_VSCODE_SRC_MAIN = path.resolve(DIST_DIR_MAIN, 'vscode/src')
 const TYPES_SRC_DIR = path.join(DIST_DIR, 'types/src')
 const SERVICE_OVERRIDE_DIR = path.join(TYPES_SRC_DIR, 'service-override')
-const SERVICE_OVERRIDE_DIST_DIR = path.join(DIST_DIR_MAIN, 'service-override')
 
 const interfaceOverride = new Map<string, string>()
 interfaceOverride.set('Event<T>', 'vscode.Event<T>')
-interfaceOverride.set('ICodeEditor', 'monaco.editor.ICodeEditor')
-interfaceOverride.set('IEditor', 'monaco.editor.IEditor')
-interfaceOverride.set('URI', 'monaco.Uri')
-interfaceOverride.set('ITextModel', 'monaco.editor.ITextModel')
-interfaceOverride.set('vs/editor/common/config/editorOptions:IEditorOptions', 'monaco.editor.IEditorOptions')
-interfaceOverride.set('IEditorOverrideServices', 'monaco.editor.IEditorOverrideServices')
-interfaceOverride.set('IStandaloneCodeEditor', 'monaco.editor.IStandaloneCodeEditor')
-interfaceOverride.set('IStandaloneDiffEditor', 'monaco.editor.IStandaloneDiffEditor')
-interfaceOverride.set('IStandaloneEditorConstructionOptions', 'monaco.editor.IStandaloneEditorConstructionOptions')
-interfaceOverride.set('IStandaloneDiffEditorConstructionOptions', 'monaco.editor.IStandaloneDiffEditorConstructionOptions')
+interfaceOverride.set('IActionDescriptor', 'import(\'vs/editor/editor.api\').editor.IActionDescriptor')
+interfaceOverride.set('ICodeEditor', 'import(\'vs/editor/editor.api\').editor.ICodeEditor')
+interfaceOverride.set('IEditor', 'import(\'vs/editor/editor.api\').editor.IEditor')
+interfaceOverride.set('URI', 'import(\'vs/editor/editor.api\').Uri')
+interfaceOverride.set('ITextModel', 'import(\'vs/editor/editor.api\').editor.ITextModel')
+interfaceOverride.set('vs/editor/common/config/editorOptions:IEditorOptions', 'import(\'vs/editor/editor.api\').editor.IEditorOptions')
+interfaceOverride.set('IEditorOverrideServices', 'import(\'vs/editor/editor.api\').editor.IEditorOverrideServices')
+interfaceOverride.set('IStandaloneCodeEditor', 'import(\'vs/editor/editor.api\').editor.IStandaloneCodeEditor')
+interfaceOverride.set('IStandaloneDiffEditor', 'import(\'vs/editor/editor.api\').editor.IStandaloneDiffEditor')
+interfaceOverride.set('IStandaloneEditorConstructionOptions', 'import(\'vs/editor/editor.api\').editor.IStandaloneEditorConstructionOptions')
+interfaceOverride.set('IStandaloneDiffEditorConstructionOptions', 'import(\'vs/editor/editor.api\').editor.IStandaloneDiffEditorConstructionOptions')
 
 function isExternal (id: string, main: boolean) {
   if (id.endsWith('.css')) {
@@ -51,12 +51,12 @@ function isExternal (id: string, main: boolean) {
   }
   if (main) {
     return [
-      'vscode', 'monaco-editor', 'tas-client-umd'
+      'vscode', 'tas-client-umd'
     ].includes(id)
   }
 
   return [
-    'vscode', 'monaco-editor', 'tas-client-umd', 'vscode-textmate', 'rollup', '@rollup/pluginutils',
+    'vscode', 'tas-client-umd', 'vscode-textmate', 'rollup', '@rollup/pluginutils',
     'xterm', 'xterm-addon-canvas', 'xterm-addon-search', 'xterm-addon-unicode11',
     'xterm-addon-webgl', 'xterm-addon-serialize', 'xterm-addon-image', 'xterm-headless'
   ].some(external => id === external || id.startsWith(`${external}/`))
@@ -68,6 +68,7 @@ export default rollup.defineConfig((<{input: Record<string, string>, output: str
     'extensions.d': './dist/types/src/extensions.d.ts',
     'monaco.d': './dist/types/src/monaco.d.ts',
     'l10n.d': './dist/types/src/l10n.d.ts',
+    'editor.api.d': './dist/types/src/editor.api.d.ts',
     ...Object.fromEntries(fs.readdirSync(path.resolve(DIST_DIR, 'types/src/service-override'), { withFileTypes: true })
       .filter(f => f.isFile())
       .map(f => f.name)
@@ -110,7 +111,10 @@ export default rollup.defineConfig((<{input: Record<string, string>, output: str
       stage: 'writeBundle', // rollup-plugin-dts needs the file to exist on the disk
       getGroup (id: string) {
         if (id.startsWith(SERVICE_OVERRIDE_DIR)) {
-          return path.basename(id, '.d.ts')
+          return `service-override/${path.basename(id, '.d.ts')}`
+        }
+        if (id === path.resolve(TYPES_SRC_DIR, 'editor.api.d.ts')) {
+          return 'editor.api'
         }
         return 'main'
       },
@@ -124,7 +128,7 @@ export default rollup.defineConfig((<{input: Record<string, string>, output: str
 
         const groupBundle = await rollup.rollup({
           input: {
-            'index.d': 'entrypoint'
+            [groupName === 'editor.api' ? 'esm/vs/editor/editor.api.d' : 'index.d']: 'entrypoint'
           },
           external: (id) => {
             if (id === 'vscode') {
@@ -139,9 +143,6 @@ export default rollup.defineConfig((<{input: Record<string, string>, output: str
               resolveId (source, importer) {
                 if (source === 'entrypoint') {
                   return source
-                }
-                if (source.startsWith('monaco-editor/')) {
-                  return null
                 }
                 if (source === 'vscode') {
                   return {
@@ -169,13 +170,13 @@ export default rollup.defineConfig((<{input: Record<string, string>, output: str
               },
               load (id) {
                 if (id === 'entrypoint') {
-                  const serviceOverrideTypesPath = `${path.resolve(SERVICE_OVERRIDE_DIST_DIR, groupName)}`
+                  const entryTypesPath = `${path.resolve(DIST_DIR_MAIN, groupName)}`
                   const codeLines: string[] = []
                   if ((entrypointInfo.exports ?? []).includes('default')) {
-                    codeLines.push(`export { default } from '${serviceOverrideTypesPath}'`)
+                    codeLines.push(`export { default } from '${entryTypesPath}'`)
                   }
                   if ((entrypointInfo.exports ?? []).some(e => e !== 'default')) {
-                    codeLines.push(`export * from '${serviceOverrideTypesPath}'`)
+                    codeLines.push(`export * from '${entryTypesPath}'`)
                   }
                   return codeLines.join('\n')
                 }
@@ -192,11 +193,11 @@ export default rollup.defineConfig((<{input: Record<string, string>, output: str
         })
         await groupBundle.write({
           preserveModules: true,
-          preserveModulesRoot: path.resolve(DIST_DIR, 'main/service-override'),
+          preserveModulesRoot: path.dirname(path.resolve(DIST_DIR_MAIN, groupName)),
           minifyInternalExports: false,
           assetFileNames: 'assets/[name][extname]',
           format: 'esm',
-          dir: path.resolve(DIST_DIR, `service-override-${paramCase(groupName)}`),
+          dir: path.resolve(DIST_DIR, paramCase(groupName.replace(/\//g, '-'))),
           entryFileNames: '[name].ts',
           hoistTransitiveImports: false
         })
@@ -246,12 +247,6 @@ export default rollup.defineConfig((<{input: Record<string, string>, output: str
           return `${sourceFile.getImportDeclarations().map(e => e.getText()).join('\n')}\n${module.getBodyText()}`
         }
 
-        if (sourceFile.getImportDeclaration('monaco-editor') == null) {
-          sourceFile.addImportDeclaration({
-            moduleSpecifier: 'monaco-editor',
-            namespaceImport: 'monaco'
-          })
-        }
         if (sourceFile.getImportDeclaration('vscode') == null) {
           sourceFile.addImportDeclaration({
             moduleSpecifier: 'vscode',
@@ -262,14 +257,16 @@ export default rollup.defineConfig((<{input: Record<string, string>, output: str
         return sourceFile.getFullText()
       },
       transform (code, id) {
-        interfaceOverride.forEach((value, key) => {
-          const [, path, name] = /(?:(.*):)?(.*)/.exec(key)!
-          if (path == null || path === id) {
-            code = code.replace(`interface ${name} `, `type ${name} = ${value}\ninterface _${name} `)
-          }
-        })
-
-        return code
+        if (!id.endsWith('editor.api.d.ts')) {
+          interfaceOverride.forEach((value, key) => {
+            const [, path, name] = /(?:(.*):)?(.*)/.exec(key)!
+            if (path == null || path === id) {
+              code = code.replace(`interface ${name} `, `type ${name} = ${value}\ninterface _${name} `)
+            }
+          })
+          return code
+        }
+        return undefined
       },
       renderChunk (code, chunk) {
         const chunkParentPath = path.resolve(DIST_DIR, path.dirname(chunk.fileName))
@@ -293,6 +290,13 @@ export default rollup.defineConfig((<{input: Record<string, string>, output: str
           return path.join(VSCODE_SRC_DIR, `${importee}.d.ts`)
         }
         return undefined
+      }
+    },
+    {
+      name: 'fix-editor-api-types',
+      renderChunk (code) {
+        // rollup-plugin-dts is not able to transform "declare module" syntaxes
+        return code.replaceAll("declare module 'vs/editor/editor.api'", "declare module 'vscode/vscode/vs/editor/editor.api'")
       }
     },
     dts({

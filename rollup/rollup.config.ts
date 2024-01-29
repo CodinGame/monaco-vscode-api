@@ -96,17 +96,24 @@ const REMOVE_COMMANDS = new Set([
   '_files.newWindow'
 ])
 
-const KEEP_COLORS = new Set([
-  'notifications.background',
-  'notification.foreground',
-  'notificationToast.border'
-])
-
 const REMOVE_WORKBENCH_CONTRIBUTIONS = new Set([
   'ResetConfigurationDefaultsOverridesCache',
   'ConfigurationMigrationWorkbenchContribution',
   'ExtensionPoints'
 ])
+
+/**
+ * root files that should never be extracted from the main package to a service override package
+ */
+const SHARED_ROOT_FILES_BETWEEN_PACKAGES = ['services.js', 'extensions.js', 'monaco.js', 'assets.js', 'lifecycle.js', 'workbench.js', 'missing-services.js']
+/**
+ * Files to expose in the editor-api package (just exporting everyting from the corresponding VSCode file)
+ * for compability with libraries that import internal monaco-editor modules
+ */
+const EDITOR_API_EXPOSE_MODULES = [
+  // use by monaco-vim
+  'vs/editor/common/commands/shiftCommand.js'
+]
 
 const EXTENSIONS = ['', '.ts', '.js']
 
@@ -119,9 +126,6 @@ const DIST_SERVICE_OVERRIDE_DIR_MAIN = path.resolve(DIST_DIR_MAIN, 'service-over
 const VSCODE_SRC_DIST_DIR = path.resolve(DIST_DIR_MAIN, 'vscode', 'src')
 const VSCODE_DIR = path.resolve(BASE_DIR, 'vscode')
 const VSCODE_SRC_DIR = path.resolve(VSCODE_DIR, 'src')
-const NODE_MODULES_DIR = path.resolve(BASE_DIR, 'node_modules')
-const MONACO_EDITOR_DIR = path.resolve(NODE_MODULES_DIR, './monaco-editor')
-const MONACO_EDITOR_ESM_DIR = path.resolve(MONACO_EDITOR_DIR, './esm')
 const OVERRIDE_PATH = path.resolve(BASE_DIR, 'src/override')
 const KEYBOARD_LAYOUT_DIR = path.resolve(VSCODE_SRC_DIR, 'vs/workbench/services/keybinding/browser/keyboardLayouts')
 
@@ -190,7 +194,17 @@ function isCallPure (file: string, functionName: string, node: recast.types.name
         firstParamName.includes('Auxiliary') ||
         firstParamName.includes('EditorPane') ||
         firstParamName.includes('TerminalExtensions') ||
-        firstParamName.includes('ConfigurationMigration')
+        firstParamName.includes('ConfigurationMigration') ||
+        firstParamName.includes('JSONContribution') ||
+        firstParamName.includes('DragAndDropContribution') ||
+        firstParamName.includes('EditorModes') ||
+        firstParamName.includes('Quickaccess') ||
+        firstParamName.includes('IconContribution') ||
+        firstParamName.includes('ThemingContribution') ||
+        firstParamName.includes('ColorContribution') ||
+        firstParamName.includes('Configuration') ||
+        firstParamName.includes('ModesRegistry') ||
+        firstParamName.includes('EditorCommonContributions')
       return !allowed
     }
   }
@@ -203,15 +217,6 @@ function isCallPure (file: string, functionName: string, node: recast.types.name
       firstParamCode.startsWith('MenuId.AccountsContext')
     ) {
       return true
-    }
-  }
-
-  if (functionName.endsWith('registerColor')) {
-    const firstParam = args[0]!
-    if (firstParam.type === 'StringLiteral') {
-      if (KEEP_COLORS.has(firstParam.value)) {
-        return false
-      }
     }
   }
 
@@ -246,7 +251,12 @@ function isCallPure (file: string, functionName: string, node: recast.types.name
   }
 
   if (functionName === 'registerSingleton') {
-    if (file.includes('vs/workbench/api/')) {
+    if (
+      file.includes('vs/workbench/api/') ||
+      file.includes('vs/editor') ||
+      file.includes('vs/platform/undoRedo/common/undoRedoService') ||
+      file.includes('vs/platform/actionWidget/browser/actionWidget')
+    ) {
       return false
     }
     return true
@@ -426,17 +436,14 @@ function resolveVscode (importee: string, importer?: string) {
   }
 
   if (vscodeImportPath.startsWith('vs/')) {
-    if (resolve(vscodeImportPath, [MONACO_EDITOR_ESM_DIR]) != null) {
-      // File exists on monaco, import from monaco esm
-      return path.relative(NODE_MODULES_DIR, path.resolve(MONACO_EDITOR_ESM_DIR, vscodeImportPath)) + '.js'
-    }
     return resolve(vscodeImportPath, [VSCODE_SRC_DIR])
   }
   return undefined
 }
 
 const input = {
-  api: './src/api.ts',
+  api: './src/extension.api.ts',
+  'editor.api': './src/editor.api.ts',
   localExtensionHost: './src/localExtensionHost.ts',
   extensions: './src/extensions.ts',
   services: './src/services.ts',
@@ -473,9 +480,6 @@ const externals = Object.keys({ ...pkg.dependencies })
 const external: rollup.ExternalOption = (source) => {
   if (source === 'semver' || source.startsWith('semver')) return true
   if (source.includes('tas-client-umd')) return true
-  if (source.startsWith(MONACO_EDITOR_DIR) || source.startsWith('monaco-editor/')) {
-    return true
-  }
   return externals.some(external => source === external || source.startsWith(`${external}/`))
 }
 
@@ -499,6 +503,9 @@ export default (args: Record<string, string>): rollup.RollupOptions[] => {
           return false
         }
         return path.startsWith(SRC_DIR) ||
+          path.includes('vs/editor') ||
+          path.includes('codiconStyles') ||
+          path.includes('vs/platform/undoRedo/common/undoRedoService') ||
           path.endsWith('.css') ||
           path.startsWith(KEYBOARD_LAYOUT_DIR) ||
           path.endsWith('.contribution.js') ||
@@ -610,7 +617,7 @@ export default (args: Record<string, string>): rollup.RollupOptions[] => {
             factory: function factory (program) {
               return function transformerFactory (context) {
                 return function transformer (sourceFile) {
-                  if (sourceFile.fileName.endsWith('api.ts')) {
+                  if (sourceFile.fileName.endsWith('extension.api.ts')) {
                     let exportEqualsFound = false
                     function visitor (node: ts.Node): ts.Node {
                       // Transform `export = api` to `export { field1, field2, ... } = api` as the first syntax is not supported when generating ESM
@@ -831,6 +838,9 @@ export default (args: Record<string, string>): rollup.RollupOptions[] => {
         if (id.startsWith(workersDir)) {
           return workerGroups[path.basename(id, '.worker.js')] ?? 'main'
         }
+        if (id === path.resolve(options.dir!, 'editor.api.js')) {
+          return 'editor.api'
+        }
         return 'main'
       },
       async handle (groupName, dependencies, exclusiveModules, entrypoints, options, bundle) {
@@ -918,9 +928,6 @@ export default (args: Record<string, string>): rollup.RollupOptions[] => {
                 ]
               }
             },
-            bin: {
-              'monaco-treemending': './monaco-treemending.js'
-            },
             dependencies: {
               ...Object.fromEntries(Object.entries(pkg.dependencies).filter(([key]) => dependencies.has(key))),
               ...Object.fromEntries(Array.from(dependencies).filter(dep => dep.startsWith('@codingame/monaco-vscode-')).map(dep => [dep, pkg.version]))
@@ -932,6 +939,131 @@ export default (args: Record<string, string>): rollup.RollupOptions[] => {
             source: JSON.stringify(packageJson, null, 2),
             type: 'asset'
           })
+        } else if (groupName === 'editor.api') {
+          const directory = path.resolve(DIST_DIR, 'editor-api')
+
+          await fsPromise.mkdir(directory, {
+            recursive: true
+          })
+
+          const packageJson: PackageJson = {
+            name: '@codingame/monaco-vscode-editor-api',
+            version: '0.0.0-semantic-release',
+            keywords: [],
+            author: {
+              name: 'CodinGame',
+              url: 'http://www.codingame.com'
+            },
+            license: 'MIT',
+            repository: {
+              type: 'git',
+              url: 'git+https://github.com/CodinGame/monaco-vscode-api.git'
+            },
+            type: 'module',
+            private: false,
+            description: 'VSCode public API plugged on the monaco editor - monaco-editor compatible api',
+            main: 'esm/vs/editor/editor.api.js',
+            module: 'esm/vs/editor/editor.api.js',
+            types: 'esm/vs/editor/editor.api.d.ts',
+            dependencies: {
+              vscode: `npm:${pkg.name}@^${pkg.version}`
+            }
+          }
+          const groupBundle = await rollup.rollup({
+            input: {
+              'esm/vs/editor/editor.api': 'entrypoint'
+            },
+            external,
+            plugins: [
+              nodeResolve({
+                extensions: EXTENSIONS
+              }), {
+                name: 'loader',
+                resolveId (source, importer) {
+                  if (source === 'entrypoint') {
+                    return source
+                  }
+                  if (source.startsWith('@codingame/monaco-vscode-')) {
+                    return {
+                      external: true,
+                      id: source
+                    }
+                  }
+                  const importerDir = path.dirname(path.resolve(DIST_DIR_MAIN, importer ?? '/'))
+                  const resolved = path.resolve(importerDir, source)
+                  const resolvedWithExtension = resolved.endsWith('.js') ? resolved : `${resolved}.js`
+
+                  const isVscodeFile = resolved.startsWith(VSCODE_SRC_DIST_DIR)
+                  const isServiceOverride = path.dirname(resolved) === DIST_SERVICE_OVERRIDE_DIR_MAIN
+                  const isNotExclusive = (isVscodeFile || isServiceOverride) && !exclusiveModules.has(resolvedWithExtension)
+                  const shouldBeShared = SHARED_ROOT_FILES_BETWEEN_PACKAGES.includes(path.relative(DIST_DIR_MAIN, resolvedWithExtension))
+                  if (isNotExclusive || shouldBeShared) {
+                    // Those modules will be imported from external monaco-vscode-api
+                    let externalResolved = resolved.startsWith(VSCODE_SRC_DIST_DIR) ? `vscode/vscode/${path.relative(VSCODE_SRC_DIST_DIR, resolved)}` : `vscode/${path.relative(DIST_DIR_MAIN, resolved)}`
+                    if (externalResolved.endsWith('.js')) {
+                      externalResolved = externalResolved.slice(0, -3)
+                    }
+                    return {
+                      id: externalResolved,
+                      external: true
+                    }
+                  }
+
+                  return undefined
+                },
+                load (id) {
+                  if (id === 'entrypoint') {
+                    return `export * from '${Array.from(entrypoints)[0]!.slice(0, -3)}'`
+                  }
+                  if (id.startsWith('vscode/')) {
+                    return (bundle[path.relative('vscode', id)] as rollup.OutputChunk | undefined)?.code
+                  }
+                  return (bundle[path.relative(DIST_DIR_MAIN, id)] as rollup.OutputChunk | undefined)?.code
+                },
+                resolveFileUrl (options) {
+                  let relativePath = options.relativePath
+                  if (!relativePath.startsWith('.')) {
+                    relativePath = `./${options.relativePath}`
+                  }
+                  return `'${relativePath}'`
+                },
+                generateBundle () {
+                  this.emitFile({
+                    fileName: 'package.json',
+                    needsCodeReference: false,
+                    source: JSON.stringify(packageJson, null, 2),
+                    type: 'asset'
+                  })
+                  for (const path of EDITOR_API_EXPOSE_MODULES) {
+                    this.emitFile({
+                      fileName: `esm/${path}`,
+                      needsCodeReference: false,
+                      source: `export * from 'vscode/vscode/${path}'`,
+                      type: 'asset'
+                    })
+                  }
+                  this.emitFile({
+                    fileName: 'esm/vs/editor/editor.worker.js',
+                    needsCodeReference: false,
+                    source: "import 'vscode/workers/editor.worker'",
+                    type: 'asset'
+                  })
+                }
+              }]
+          })
+          await groupBundle.write({
+            minifyInternalExports: false,
+            format: 'esm',
+            dir: directory,
+            entryFileNames: '[name].js',
+            chunkFileNames: '[name].js',
+            hoistTransitiveImports: false
+          })
+          await groupBundle.close()
+          // remove exclusive files from main bundle to prevent them from being duplicated
+          for (const exclusiveModule of exclusiveModules) {
+            delete bundle[path.relative(DIST_DIR_MAIN, exclusiveModule)]
+          }
         } else {
           const [_, category, name] = /^(.*):(.*)$/.exec(groupName)!
 
@@ -1000,9 +1132,6 @@ export default (args: Record<string, string>): rollup.RollupOptions[] => {
                       id: source
                     }
                   }
-                  if (source.startsWith('monaco-editor/')) {
-                    return null
-                  }
                   const importerDir = path.dirname(path.resolve(DIST_DIR_MAIN, importer ?? '/'))
                   const resolved = path.resolve(importerDir, source)
                   const resolvedWithExtension = resolved.endsWith('.js') ? resolved : `${resolved}.js`
@@ -1010,7 +1139,7 @@ export default (args: Record<string, string>): rollup.RollupOptions[] => {
                   const isVscodeFile = resolved.startsWith(VSCODE_SRC_DIST_DIR)
                   const isServiceOverride = path.dirname(resolved) === DIST_SERVICE_OVERRIDE_DIR_MAIN
                   const isNotExclusive = (isVscodeFile || isServiceOverride) && !exclusiveModules.has(resolvedWithExtension)
-                  const shouldBeShared = ['services.js', 'extensions.js', 'monaco.js', 'assets.js', 'lifecycle.js', 'workbench.js', 'missing-services.js'].includes(path.relative(DIST_DIR_MAIN, resolvedWithExtension))
+                  const shouldBeShared = SHARED_ROOT_FILES_BETWEEN_PACKAGES.includes(path.relative(DIST_DIR_MAIN, resolvedWithExtension))
 
                   if (isNotExclusive || shouldBeShared) {
                     // Those modules will be imported from external monaco-vscode-api

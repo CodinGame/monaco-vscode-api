@@ -4,7 +4,6 @@ import { importMetaAssets } from '@web/rollup-plugin-import-meta-assets'
 import { PackageJson } from 'type-fest'
 import { pascalCase } from 'pascal-case'
 import * as fs from 'fs'
-import * as fsPromise from 'fs/promises'
 import * as path from 'path'
 import { fileURLToPath } from 'url'
 import metadataPlugin from './rollup-metadata-plugin'
@@ -87,15 +86,6 @@ export default rollup.defineConfig([
             ...manifest,
             main: undefined
           }
-        },
-        async getAdditionalResources (manifest, directory) {
-          if (manifest.name === 'typescript-language-features') {
-            const files = (await fsPromise.readdir(path.resolve(directory, 'dist/browser/typescript'), {
-              withFileTypes: true
-            })).filter(f => f.isFile()).map(f => f.name)
-            return files.map(file => ({ path: path.join('./dist/browser/typescript', file), mimeType: 'text/plain' }))
-          }
-          return []
         }
       }),
       metadataPlugin({

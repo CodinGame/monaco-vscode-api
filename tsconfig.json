@@ -18,13 +18,9 @@
 			],
 			"vscode/*": [
 				"./vscode/*"
-			],
-			"monaco-editor/esm/*": [
-				"./vscode/src/*"
 			]
 		},
-		"preserveConstEnums": true,
-		"types": ["monaco-editor", "node"]
+		"preserveConstEnums": true
 	},
 	"include": [
 		"./vscode/src/vscode-dts/vscode.proposed.*.d.ts",

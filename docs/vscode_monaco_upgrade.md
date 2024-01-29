@@ -17,7 +17,7 @@
 
 ## monaco-vscode-api repository
 
-- Update the package.json to set `monaco-editor` to the same version as the one using the `vscodeRef` from above (usually the latest version)
+- Update the package.json to set config.vscode.ref to the `vscodeRef` from above
 - Run `npm install` which will trigger the vscode install script
 - Wait for the new vscode version to be downloaded and built
 - Run `npm run update-vscode-dependencies` to update the vscode dependencies we use to the same versions as vscode

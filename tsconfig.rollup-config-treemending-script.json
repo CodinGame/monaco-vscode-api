@@ -1,7 +1,0 @@
-{
-	"extends": "./tsconfig.json",
-	"include": [
-		"./rollup/types.d.ts",
-		"./rollup/rollup.treemending-script.config.ts"
-	]
-}

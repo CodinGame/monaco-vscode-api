@@ -47,15 +47,11 @@
 		],
 		"vscode/*": [
 			"./vscode/*"
-		],
-		"monaco-editor/esm/*": [
-			"./vscode/src/*"
 		]
 	},
 	"declaration": true,
 	"emitDeclarationOnly": true,
-	"skipLibCheck": true,
-	"types": ["monaco-editor", "node"]
+	"skipLibCheck": true
   },
   "include": [
 		"./vscode/src/vscode-dts/vscode.proposed.*.d.ts",
@@ -66,6 +62,7 @@
 		"src/service-override/*.ts",
 		"src/monaco.ts",
 		"src/l10n.ts",
+		"src/editor.api.ts",
 		"src/rollup-vsix-plugin.ts",
 		"src/rollup-extension-directory-plugin.ts"
 	]
