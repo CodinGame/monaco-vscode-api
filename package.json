@@ -32,7 +32,7 @@
   "config": {
     "vscode": {
       "version": "1.85.0",
-      "ref": "af28b32d7e553898b2a91af498b1fb666fdebe0c"
+      "ref": "1.85.2"
     }
   },
   "devDependencies": {
