@@ -263,6 +263,11 @@ function isCallPure (file: string, functionName: string, node: recast.types.name
     return true
   }
 
+  if (functionName === 'registerThemingParticipant' && file.includes('vs/workbench/browser/style')) {
+    // Remove VSCode global style
+    return true
+  }
+
   return PURE_OR_TO_REMOVE_FUNCTIONS.has(functionName)
 }
 
