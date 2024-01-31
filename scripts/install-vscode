@@ -22,7 +22,7 @@ rm -rf $output_directory
 build_directory=`mktemp -d`
 echo "Downloading vscode $vscodeRef in $build_directory..."
 
-curl -L --max-redirs 5 https://github.com/Microsoft/vscode/tarball/$vscodeRef | tar -xz -C $build_directory --strip-components=1 microsoft-vscode-${vscodeRef:0:7}
+curl -L --max-redirs 5 https://github.com/Microsoft/vscode/tarball/$vscodeRef | tar -xz -C $build_directory --strip-components=1
 vscodeVersion=$(cat "$build_directory/package.json" | jq -r '.["version"]')
 cat <<< "$(jq ".config.vscode.version = \"$vscodeVersion\"" package.json)" > package.json
 
