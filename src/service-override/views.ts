@@ -37,9 +37,7 @@ import 'vs/workbench/contrib/externalUriOpener/common/externalUriOpener.contribu
 import 'vs/workbench/contrib/languageStatus/browser/languageStatus.contribution'
 import 'vs/workbench/contrib/mergeEditor/browser/mergeEditor.contribution'
 import 'vs/workbench/contrib/webview/browser/webview.contribution'
-// import to 2 times with filter to not duplicate the import from files.ts
-import 'vs/workbench/contrib/files/browser/files.contribution.js?include=registerConfiguration'
-import 'vs/workbench/contrib/files/browser/files.contribution.js?exclude=registerConfiguration'
+import 'vs/workbench/contrib/files/browser/files.contribution'
 import { Codicon } from 'vs/base/common/codicons'
 import { GroupOrientation, GroupsOrder, IEditorGroupsService } from 'vs/workbench/services/editor/common/editorGroupsService'
 import { IEditorService } from 'vs/workbench/services/editor/common/editorService'
