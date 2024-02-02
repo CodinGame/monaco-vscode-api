@@ -4,13 +4,10 @@ import { IResolvedTextEditorModel } from 'vs/editor/common/services/resolverServ
 import { ICodeEditorService } from 'vs/editor/browser/services/codeEditorService'
 import { CodeEditorService } from 'vs/workbench/services/editor/browser/codeEditorService'
 import { IEditorService } from 'vs/workbench/services/editor/common/editorService'
-import { EditorExtensions, IEditorFactoryRegistry, IFileEditorInput } from 'vs/workbench/common/editor'
 import { IEditorOptions } from 'vs/platform/editor/common/editor'
 import { SyncDescriptor } from 'vs/platform/instantiation/common/descriptors'
 import { IReference } from 'vs/base/common/lifecycle'
 import { ITextEditorService, TextEditorService } from 'vs/workbench/services/textfile/common/textEditorService'
-import { Registry } from 'vs/platform/registry/common/platform'
-import { FILE_EDITOR_INPUT_ID } from 'vs/workbench/contrib/files/common/files'
 import { GroupOrientation, IEditorGroup, IEditorGroupsService, IEditorPart } from 'vs/workbench/services/editor/common/editorGroupsService'
 import { IInstantiationService } from 'vs/platform/instantiation/common/instantiation'
 import { IContextKeyService } from 'vs/platform/contextkey/common/contextkey'
@@ -18,6 +15,7 @@ import { DEFAULT_EDITOR_PART_OPTIONS, IEditorGroupView } from 'vs/workbench/brow
 import { MonacoDelegateEditorGroupsService, MonacoEditorService, OpenEditor } from './tools/editor'
 import { unsupported } from '../tools'
 import 'vs/workbench/browser/parts/editor/editor.autosave.contribution'
+import 'vs/workbench/contrib/files/browser/files.fileEditorFactory.contribution'
 
 class EmptyEditorGroup implements IEditorGroup, IEditorGroupView {
   get groupsView () {
@@ -216,16 +214,6 @@ class MonacoEditorGroupsService extends MonacoDelegateEditorGroupsService<EmptyE
     )
   }
 }
-
-/**
- * Register a fake file editor factory
- * The code check that there is a registered factory even if it's not used
- */
-Registry.as<IEditorFactoryRegistry>(EditorExtensions.EditorFactory).registerFileEditorFactory({
-  typeId: FILE_EDITOR_INPUT_ID,
-  createFileEditor: unsupported,
-  isFileEditor: (obj): obj is IFileEditorInput => false
-})
 
 export default function getServiceOverride (openEditor: OpenEditor): IEditorOverrideServices {
   return {

@@ -3711,10 +3711,10 @@ index 00000000000..37a4bbd32ce
 +	}
 +});
 diff --git a/src/vs/workbench/contrib/files/browser/files.contribution.ts b/src/vs/workbench/contrib/files/browser/files.contribution.ts
-index 985ef683fce..d89f4aa9d16 100644
+index 985ef683fce..689f25c1926 100644
 --- a/src/vs/workbench/contrib/files/browser/files.contribution.ts
 +++ b/src/vs/workbench/contrib/files/browser/files.contribution.ts
-@@ -3,39 +3,37 @@
+@@ -3,39 +3,38 @@
   *  Licensed under the MIT License. See License.txt in the project root for license information.
   *--------------------------------------------------------------------------------------------*/
  
@@ -3740,7 +3740,7 @@ index 985ef683fce..d89f4aa9d16 100644
 +import { IUndoRedoService } from 'vs/platform/undoRedo/common/undoRedo';
 +import { EditorPaneDescriptor, IEditorPaneRegistry } from 'vs/workbench/browser/editor';
 +import { IWorkbenchContribution, IWorkbenchContributionsRegistry, Extensions as WorkbenchExtensions } from 'vs/workbench/common/contributions';
-+import { EditorExtensions, IEditorFactoryRegistry, IFileEditorInput } from 'vs/workbench/common/editor';
++import { EditorExtensions, IEditorFactoryRegistry } from 'vs/workbench/common/editor';
 +import { BinaryFileEditor } from 'vs/workbench/contrib/files/browser/editors/binaryFileEditor';
 +import { FileEditorInputSerializer, FileEditorWorkingCopyEditorHandler } from 'vs/workbench/contrib/files/browser/editors/fileEditorHandler';
 +import { FileEditorInput } from 'vs/workbench/contrib/files/browser/editors/fileEditorInput';
@@ -3775,10 +3775,32 @@ index 985ef683fce..d89f4aa9d16 100644
 +import { BINARY_TEXT_FILE_MODE, FILE_EDITOR_INPUT_ID, IFilesConfiguration, LexicographicOptions, SortOrder, UndoConfirmLevel } from 'vs/workbench/contrib/files/common/files';
 +import { LifecyclePhase } from 'vs/workbench/services/lifecycle/common/lifecycle';
 +import './files.configuration.contribution';
++import './files.fileEditorFactory.contribution';
  
  class FileUriLabelContribution implements IWorkbenchContribution {
  
-@@ -119,257 +117,6 @@ Registry.as<IWorkbenchContributionsRegistry>(WorkbenchExtensions.Workbench).regi
+@@ -80,20 +79,6 @@ Registry.as<IEditorPaneRegistry>(EditorExtensions.EditorPane).registerEditorPane
+ 	]
+ );
+ 
+-// Register default file input factory
+-Registry.as<IEditorFactoryRegistry>(EditorExtensions.EditorFactory).registerFileEditorFactory({
+-
+-	typeId: FILE_EDITOR_INPUT_ID,
+-
+-	createFileEditor: (resource, preferredResource, preferredName, preferredDescription, preferredEncoding, preferredLanguageId, preferredContents, instantiationService): IFileEditorInput => {
+-		return instantiationService.createInstance(FileEditorInput, resource, preferredResource, preferredName, preferredDescription, preferredEncoding, preferredLanguageId, preferredContents);
+-	},
+-
+-	isFileEditor: (obj): obj is IFileEditorInput => {
+-		return obj instanceof FileEditorInput;
+-	}
+-});
+-
+ // Register Editor Input Serializer & Handler
+ Registry.as<IEditorFactoryRegistry>(EditorExtensions.EditorFactory).registerEditorSerializer(FILE_EDITOR_INPUT_ID, FileEditorInputSerializer);
+ Registry.as<IWorkbenchContributionsRegistry>(WorkbenchExtensions.Workbench).registerWorkbenchContribution(FileEditorWorkingCopyEditorHandler, LifecyclePhase.Ready);
+@@ -119,257 +104,6 @@ Registry.as<IWorkbenchContributionsRegistry>(WorkbenchExtensions.Workbench).regi
  // Configuration
  const configurationRegistry = Registry.as<IConfigurationRegistry>(ConfigurationExtensions.Configuration);
  
@@ -4036,6 +4058,35 @@ index 985ef683fce..d89f4aa9d16 100644
  configurationRegistry.registerConfiguration({
  	'id': 'explorer',
  	'order': 10,
+diff --git a/src/vs/workbench/contrib/files/browser/files.fileEditorFactory.contribution.ts b/src/vs/workbench/contrib/files/browser/files.fileEditorFactory.contribution.ts
+new file mode 100644
+index 00000000000..2f31d6a7984
+--- /dev/null
++++ b/src/vs/workbench/contrib/files/browser/files.fileEditorFactory.contribution.ts
+@@ -0,0 +1,23 @@
++/*---------------------------------------------------------------------------------------------
++ *  Copyright (c) Microsoft Corporation. All rights reserved.
++ *  Licensed under the MIT License. See License.txt in the project root for license information.
++ *--------------------------------------------------------------------------------------------*/
++
++import { Registry } from 'vs/platform/registry/common/platform';
++import { EditorExtensions, IEditorFactoryRegistry, IFileEditorInput } from 'vs/workbench/common/editor';
++import { FileEditorInput } from 'vs/workbench/contrib/files/browser/editors/fileEditorInput';
++import { FILE_EDITOR_INPUT_ID } from 'vs/workbench/contrib/files/common/files';
++
++// Register default file input factory
++Registry.as<IEditorFactoryRegistry>(EditorExtensions.EditorFactory).registerFileEditorFactory({
++
++	typeId: FILE_EDITOR_INPUT_ID,
++
++	createFileEditor: (resource, preferredResource, preferredName, preferredDescription, preferredEncoding, preferredLanguageId, preferredContents, instantiationService): IFileEditorInput => {
++		return instantiationService.createInstance(FileEditorInput, resource, preferredResource, preferredName, preferredDescription, preferredEncoding, preferredLanguageId, preferredContents);
++	},
++
++	isFileEditor: (obj): obj is IFileEditorInput => {
++		return obj instanceof FileEditorInput;
++	}
++});
 diff --git a/src/vs/workbench/contrib/search/browser/searchModel.ts b/src/vs/workbench/contrib/search/browser/searchModel.ts
 index 82b4121cf6a..8b6803f2396 100644
 --- a/src/vs/workbench/contrib/search/browser/searchModel.ts
