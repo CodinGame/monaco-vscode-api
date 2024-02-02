@@ -2771,6 +2771,51 @@ index a2007e18299..7446cfcfc5f 100644
  					? compositeSwitcherBar.getHeight(currentItemsLength + index)
  					: compositeSwitcherBar.getWidth(currentItemsLength + index)
  				));
+diff --git a/src/vs/workbench/browser/parts/editor/editor.autosave.contribution.ts b/src/vs/workbench/browser/parts/editor/editor.autosave.contribution.ts
+new file mode 100644
+index 00000000000..aa99110545a
+--- /dev/null
++++ b/src/vs/workbench/browser/parts/editor/editor.autosave.contribution.ts
+@@ -0,0 +1,11 @@
++/*---------------------------------------------------------------------------------------------
++ *  Copyright (c) Microsoft Corporation. All rights reserved.
++ *  Licensed under the MIT License. See License.txt in the project root for license information.
++ *--------------------------------------------------------------------------------------------*/
++
++import { Registry } from 'vs/platform/registry/common/platform';
++import { EditorAutoSave } from 'vs/workbench/browser/parts/editor/editorAutoSave';
++import { IWorkbenchContributionsRegistry, Extensions as WorkbenchExtensions } from 'vs/workbench/common/contributions';
++import { LifecyclePhase } from 'vs/workbench/services/lifecycle/common/lifecycle';
++
++Registry.as<IWorkbenchContributionsRegistry>(WorkbenchExtensions.Workbench).registerWorkbenchContribution(EditorAutoSave, LifecyclePhase.Ready);
+diff --git a/src/vs/workbench/browser/parts/editor/editor.contribution.ts b/src/vs/workbench/browser/parts/editor/editor.contribution.ts
+index ac6ace35f03..a04cb0f5ad1 100644
+--- a/src/vs/workbench/browser/parts/editor/editor.contribution.ts
++++ b/src/vs/workbench/browser/parts/editor/editor.contribution.ts
+@@ -57,7 +57,6 @@ import { EditorContributionInstantiation, registerEditorContribution } from 'vs/
+ import { FloatingEditorClickMenu } from 'vs/workbench/browser/codeeditor';
+ import { Extensions as WorkbenchExtensions, IWorkbenchContributionsRegistry } from 'vs/workbench/common/contributions';
+ import { LifecyclePhase } from 'vs/workbench/services/lifecycle/common/lifecycle';
+-import { EditorAutoSave } from 'vs/workbench/browser/parts/editor/editorAutoSave';
+ import { IQuickAccessRegistry, Extensions as QuickAccessExtensions } from 'vs/platform/quickinput/common/quickAccess';
+ import { ActiveGroupEditorsByMostRecentlyUsedQuickAccess, AllEditorsByAppearanceQuickAccess, AllEditorsByMostRecentlyUsedQuickAccess } from 'vs/workbench/browser/parts/editor/editorQuickAccess';
+ import { FileAccess } from 'vs/base/common/network';
+@@ -68,6 +67,7 @@ import { DynamicEditorConfigurations } from 'vs/workbench/browser/parts/editor/e
+ import { EditorActionsDefaultAction, EditorActionsTitleBarAction, HideEditorActionsAction, HideEditorTabsAction, ShowMultipleEditorTabsAction, ShowSingleEditorTabAction } from 'vs/workbench/browser/actions/layoutActions';
+ import { ICommandAction } from 'vs/platform/action/common/action';
+ import { EditorContextKeys } from 'vs/editor/common/editorContextKeys';
++import './editor.autosave.contribution';
+ 
+ //#region Editor Registrations
+ 
+@@ -124,7 +124,6 @@ Registry.as<IEditorFactoryRegistry>(EditorExtensions.EditorFactory).registerEdit
+ 
+ //#region Workbench Contributions
+ 
+-Registry.as<IWorkbenchContributionsRegistry>(WorkbenchExtensions.Workbench).registerWorkbenchContribution(EditorAutoSave, LifecyclePhase.Ready);
+ Registry.as<IWorkbenchContributionsRegistry>(WorkbenchExtensions.Workbench).registerWorkbenchContribution(EditorStatusContribution, LifecyclePhase.Ready);
+ Registry.as<IWorkbenchContributionsRegistry>(WorkbenchExtensions.Workbench).registerWorkbenchContribution(UntitledTextEditorWorkingCopyEditorHandler, LifecyclePhase.Ready);
+ Registry.as<IWorkbenchContributionsRegistry>(WorkbenchExtensions.Workbench).registerWorkbenchContribution(DynamicEditorConfigurations, LifecyclePhase.Ready);
 diff --git a/src/vs/workbench/browser/parts/editor/editorGroupWatermark.ts b/src/vs/workbench/browser/parts/editor/editorGroupWatermark.ts
 index 3c4ac7d594b..e942fbd2e40 100644
 --- a/src/vs/workbench/browser/parts/editor/editorGroupWatermark.ts

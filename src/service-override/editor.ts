@@ -17,7 +17,7 @@ import { IContextKeyService } from 'vs/platform/contextkey/common/contextkey'
 import { DEFAULT_EDITOR_PART_OPTIONS, IEditorGroupView } from 'vs/workbench/browser/parts/editor/editor'
 import { MonacoDelegateEditorGroupsService, MonacoEditorService, OpenEditor } from './tools/editor'
 import { unsupported } from '../tools'
-import 'vs/workbench/browser/parts/editor/editor.contribution'
+import 'vs/workbench/browser/parts/editor/editor.autosave.contribution'
 
 class EmptyEditorGroup implements IEditorGroup, IEditorGroupView {
   get groupsView () {
