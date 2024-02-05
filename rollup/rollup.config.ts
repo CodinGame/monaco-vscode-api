@@ -271,12 +271,7 @@ function isCallPure (file: string, functionName: string, node: recast.types.name
   return PURE_OR_TO_REMOVE_FUNCTIONS.has(functionName)
 }
 
-interface TreeShakeOptions {
-  include: string[]
-  exclude: string[]
-}
-
-function transformVSCodeCode (id: string, code: string, options: TreeShakeOptions) {
+function transformVSCodeCode (id: string, code: string) {
   // HACK: assign typescript decorator result to a decorated class field so rollup doesn't remove them
   // before:
   // __decorate([
@@ -330,11 +325,11 @@ function transformVSCodeCode (id: string, code: string, options: TreeShakeOption
           if (name != null) {
             names.unshift(name)
           }
-          if (options.include.length > 0 ? !names.some(name => options.include.includes(name)) : (names.some(name => isCallPure(id, name, node) || options.exclude.includes(name)))) {
+          if (names.some(name => isCallPure(id, name, node))) {
             path.replace(addComment(node))
           }
         }
-      } else if (node.callee.type === 'Identifier' && (options.include.length > 0 ? !options.include.includes(node.callee.name) : (isCallPure(id, node.callee.name, node) || options.exclude.includes(node.callee.name)))) {
+      } else if (node.callee.type === 'Identifier' && isCallPure(id, node.callee.name, node)) {
         path.replace(addComment(node))
       } else if (node.callee.type === 'FunctionExpression') {
         const lastInstruction = node.callee.body.body[node.callee.body.body.length - 1]
@@ -519,7 +514,6 @@ export default (args: Record<string, string>): rollup.RollupOptions[] => {
           path.endsWith('xtensionPoint.js') ||
           path.includes('vs/workbench/api/browser/') ||
           path.endsWith('/fileCommands.js') ||
-          path.endsWith('/explorerViewlet.js') ||
           path.endsWith('/listCommands.js') ||
           path.endsWith('/quickAccessActions.js') ||
           path.endsWith('/gotoLineQuickAccess.js') ||
@@ -581,18 +575,12 @@ export default (args: Record<string, string>): rollup.RollupOptions[] => {
           if (!id.startsWith(VSCODE_SRC_DIR)) {
             return undefined
           }
-          const [, path, query] = /^(.*?)(\?.*?)?$/.exec(id)!
-          if (!path!.endsWith('.js')) {
+          if (!id.endsWith('.js')) {
             return undefined
           }
 
-          const searchParams = new URLSearchParams(query)
-          const options: TreeShakeOptions = {
-            include: searchParams.getAll('include'),
-            exclude: searchParams.getAll('exclude')
-          }
-          const content = (await fsPromise.readFile(path!)).toString('utf-8')
-          return transformVSCodeCode(path!, content, options)
+          const content = (await fsPromise.readFile(id)).toString('utf-8')
+          return transformVSCodeCode(id, content)
         },
         transform (code) {
           return code.replaceAll("'./keyboardLayouts/layout.contribution.' + platform", "'./keyboardLayouts/layout.contribution.' + platform + '.js'")
