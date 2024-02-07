@@ -15,8 +15,11 @@ import { ChatVariablesService } from 'vs/workbench/contrib/chat/browser/chatVari
 import { QuickChatService } from 'vs/workbench/contrib/chat/browser/chatQuick'
 import { ChatAgentService, IChatAgentService } from 'vs/workbench/contrib/chat/common/chatAgents'
 import { InlineChatServiceImpl } from 'vs/workbench/contrib/inlineChat/common/inlineChatServiceImpl'
-import { IInlineChatSessionService, InlineChatSessionService } from 'vs/workbench/contrib/inlineChat/browser/inlineChatSession'
 import { IInlineChatService } from 'vs/workbench/contrib/inlineChat/common/inlineChat'
+import { IInlineChatSessionService } from 'vs/workbench/contrib/inlineChat/browser/inlineChatSessionService'
+import { InlineChatSessionServiceImpl } from 'vs/workbench/contrib/inlineChat/browser/inlineChatSessionServiceImpl'
+import { IInlineChatSavingService } from 'vs/workbench/contrib/inlineChat/browser/inlineChatSavingService'
+import { InlineChatSavingServiceImpl } from 'vs/workbench/contrib/inlineChat/browser/inlineChatSavingServiceImpl'
 import 'vs/workbench/contrib/chat/browser/chat.contribution'
 import 'vs/workbench/contrib/inlineChat/browser/inlineChat.contribution'
 
@@ -33,6 +36,7 @@ export default function getServiceOverride (): IEditorOverrideServices {
     [IChatAgentService.toString()]: new SyncDescriptor(ChatAgentService, [], true),
     [IChatVariablesService.toString()]: new SyncDescriptor(ChatVariablesService, [], true),
     [IInlineChatService.toString()]: new SyncDescriptor(InlineChatServiceImpl, [], true),
-    [IInlineChatSessionService.toString()]: new SyncDescriptor(InlineChatSessionService, [], true)
+    [IInlineChatSessionService.toString()]: new SyncDescriptor(InlineChatSessionServiceImpl, [], true),
+    [IInlineChatSavingService.toString()]: new SyncDescriptor(InlineChatSavingServiceImpl, [], true)
   }
 }

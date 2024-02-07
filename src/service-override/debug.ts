@@ -9,6 +9,7 @@ import { IConfigurationResolverService } from 'vs/workbench/services/configurati
 import { IAction } from 'vs/base/common/actions'
 import { IExtensionHostDebugService } from 'vs/platform/debug/common/extensionHostDebug'
 import { BrowserExtensionHostDebugService } from 'vs/workbench/contrib/debug/browser/extensionHostDebugService'
+import { DebugVisualizerService, IDebugVisualizerService } from 'vs/workbench/contrib/debug/common/debugVisualizers'
 import getLayoutServiceOverride from './layout'
 import 'vs/workbench/contrib/debug/browser/debug.contribution'
 
@@ -26,6 +27,7 @@ export default function getServiceOverride (): IEditorOverrideServices {
     [ILanguageFeaturesService.toString()]: new SyncDescriptor(LanguageFeaturesService, [], true), // To restore inlineValuesProvider
     [IDebugService.toString()]: new SyncDescriptor(DebugService, [], true),
     [IConfigurationResolverService.toString()]: new SyncDescriptor(ConfigurationResolverService, [], true),
-    [IExtensionHostDebugService.toString()]: new SyncDescriptor(BrowserExtensionHostDebugService, [], true)
+    [IExtensionHostDebugService.toString()]: new SyncDescriptor(BrowserExtensionHostDebugService, [], true),
+    [IDebugVisualizerService.toString()]: new SyncDescriptor(DebugVisualizerService, [], true)
   }
 }

@@ -29,6 +29,7 @@ import { URI } from 'vs/base/common/uri'
 import { IGroupModelChangeEvent } from 'vs/workbench/common/editor/editorGroupModel'
 import { EditorLayoutInfo } from 'vs/editor/common/config/editorOptions'
 import { IRectangle } from 'vs/platform/window/common/window'
+import { mainWindow } from 'vs/base/browser/window'
 import { unsupported } from '../../tools'
 
 export type OpenEditor = (modelRef: IReference<IResolvedTextEditorModel>, options: IEditorOptions | undefined, sideBySide?: boolean) => Promise<ICodeEditor | undefined>
@@ -304,6 +305,8 @@ class StandaloneEditorGroup extends Disposable implements IEditorGroup, IEditorG
     }
   }
 
+  windowId = mainWindow.vscodeWindowId
+
   get groupsView () {
     return unsupported()
   }
@@ -471,6 +474,22 @@ export class MonacoDelegateEditorGroupsService<D extends IEditorGroupsService> e
       this._register(codeEditorService.onCodeEditorRemove(handleCodeEditorRemoved))
       codeEditorService.listCodeEditors().forEach(handleCodeEditor)
     })
+  }
+
+  get isReady (): IEditorGroupsService['isReady'] {
+    return this.delegate.isReady
+  }
+
+  get whenReady (): IEditorGroupsService['whenReady'] {
+    return this.delegate.whenReady
+  }
+
+  get whenRestored (): IEditorGroupsService['whenRestored'] {
+    return this.delegate.whenRestored
+  }
+
+  get hasRestorableState (): IEditorGroupsService['hasRestorableState'] {
+    return this.delegate.hasRestorableState
   }
 
   onDidCreateAuxiliaryEditorPart = this.delegate.onDidCreateAuxiliaryEditorPart

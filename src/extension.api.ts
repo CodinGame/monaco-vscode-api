@@ -11,11 +11,11 @@ import * as event from 'vs/base/common/event'
 import * as model from 'vs/editor/common/model'
 import * as extensionHostProtocol from 'vs/workbench/services/extensions/common/extensionHostProtocol'
 import * as searchExtTypes from 'vs/workbench/services/search/common/searchExtTypes'
-import * as telemetryUtils from 'vs/platform/telemetry/common/telemetryUtils'
 import * as log from 'vs/platform/log/common/log'
 import * as editSessions from 'vs/platform/workspace/common/editSessions'
 import * as editorOptions from 'vs/editor/common/config/editorOptions'
 import * as uri from 'vs/base/common/uri'
+import * as telemetry from 'vs/platform/telemetry/common/telemetryUtils'
 
 let defaultApi: typeof vscode | undefined
 
@@ -59,9 +59,11 @@ const api: typeof vscode = {
   // types
   Breakpoint: extHostTypes.Breakpoint,
   TerminalOutputAnchor: extHostTypes.TerminalOutputAnchor,
+  ChatAgentResultFeedbackKind: extHostTypes.ChatAgentResultFeedbackKind,
   ChatMessage: extHostTypes.ChatMessage,
   ChatMessageRole: extHostTypes.ChatMessageRole,
   ChatVariableLevel: extHostTypes.ChatVariableLevel,
+  ChatAgentCompletionItem: extHostTypes.ChatAgentCompletionItem,
   CallHierarchyIncomingCall: extHostTypes.CallHierarchyIncomingCall,
   CallHierarchyItem: extHostTypes.CallHierarchyItem,
   CallHierarchyOutgoingCall: extHostTypes.CallHierarchyOutgoingCall,
@@ -94,6 +96,7 @@ const api: typeof vscode = {
   DebugAdapterServer: extHostTypes.DebugAdapterServer,
   DebugConfigurationProviderTriggerKind: debugTypes.DebugConfigurationProviderTriggerKind,
   DebugConsoleMode: extHostTypes.DebugConsoleMode,
+  DebugVisualization: extHostTypes.DebugVisualization,
   DecorationRangeBehavior: extHostTypes.DecorationRangeBehavior,
   Diagnostic: extHostTypes.Diagnostic,
   DiagnosticRelatedInformation: extHostTypes.DiagnosticRelatedInformation,
@@ -102,6 +105,7 @@ const api: typeof vscode = {
   Disposable: extHostTypes.Disposable,
   DocumentHighlight: extHostTypes.DocumentHighlight,
   DocumentHighlightKind: extHostTypes.DocumentHighlightKind,
+  MultiDocumentHighlight: extHostTypes.MultiDocumentHighlight,
   DocumentLink: extHostTypes.DocumentLink,
   DocumentSymbol: extHostTypes.DocumentSymbol,
   EndOfLine: extHostTypes.EndOfLine,
@@ -169,6 +173,7 @@ const api: typeof vscode = {
   TaskRevealKind: extHostTypes.TaskRevealKind,
   TaskScope: extHostTypes.TaskScope,
   TerminalLink: extHostTypes.TerminalLink,
+  TerminalQuickFixTerminalCommand: extHostTypes.TerminalQuickFixCommand,
   TerminalQuickFixOpener: extHostTypes.TerminalQuickFixOpener,
   TerminalLocation: extHostTypes.TerminalLocation,
   TerminalProfile: extHostTypes.TerminalProfile,
@@ -228,6 +233,8 @@ const api: typeof vscode = {
   TestResultState: extHostTypes.TestResultState,
   TestRunRequest: extHostTypes.TestRunRequest,
   TestMessage: extHostTypes.TestMessage,
+  // @ts-ignore
+  TestMessage2: extHostTypes.TestMessage, // back compat for Oct 2023
   TestTag: extHostTypes.TestTag,
   TestRunProfileKind: extHostTypes.TestRunProfileKind,
   TextSearchCompleteMessageType: searchExtTypes.TextSearchCompleteMessageType,
@@ -238,6 +245,7 @@ const api: typeof vscode = {
   StatementCoverage: extHostTypes.StatementCoverage,
   BranchCoverage: extHostTypes.BranchCoverage,
   FunctionCoverage: extHostTypes.FunctionCoverage,
+  WorkspaceTrustState: extHostTypes.WorkspaceTrustState,
   LanguageStatusSeverity: extHostTypes.LanguageStatusSeverity,
   QuickPickItemKind: extHostTypes.QuickPickItemKind,
   InputBoxValidationSeverity: extHostTypes.InputBoxValidationSeverity,
@@ -250,24 +258,20 @@ const api: typeof vscode = {
   TabInputWebview: extHostTypes.WebviewEditorTabInput,
   TabInputTerminal: extHostTypes.TerminalEditorTabInput,
   TabInputInteractiveWindow: extHostTypes.InteractiveWindowInput,
-  TelemetryTrustedValue: telemetryUtils.TelemetryTrustedValue,
+  TabInputChat: extHostTypes.ChatEditorTabInput,
+  TelemetryTrustedValue: telemetry.TelemetryTrustedValue,
   LogLevel: log.LogLevel,
   EditSessionIdentityMatch: editSessions.EditSessionIdentityMatch,
   InteractiveSessionVoteDirection: extHostTypes.InteractiveSessionVoteDirection,
-  InteractiveSessionCopyKind: extHostTypes.InteractiveSessionCopyKind,
+  ChatAgentCopyKind: extHostTypes.ChatAgentCopyKind,
   InteractiveEditorResponseFeedbackKind: extHostTypes.InteractiveEditorResponseFeedbackKind,
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   StackFrameFocus: <any>extHostTypes.StackFrameFocus,
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   ThreadFocus: <any>extHostTypes.ThreadFocus,
   RelatedInformationType: extHostTypes.RelatedInformationType,
-  ChatAgentResultFeedbackKind: extHostTypes.ChatAgentResultFeedbackKind,
-  TabInputChat: extHostTypes.ChatEditorTabInput,
   SpeechToTextStatus: extHostTypes.SpeechToTextStatus,
-  ChatAgentCompletionItem: extHostTypes.ChatAgentCompletionItem,
-  MultiDocumentHighlight: extHostTypes.MultiDocumentHighlight,
-  NotebookVariablesRequestKind: extHostTypes.NotebookVariablesRequestKind,
-  TerminalQuickFixTerminalCommand: extHostTypes.TerminalQuickFixCommand
+  KeywordRecognitionStatus: extHostTypes.KeywordRecognitionStatus
 }
 
 // @ts-ignore the syntax will be transformed by a typescript transformer in the rollup config

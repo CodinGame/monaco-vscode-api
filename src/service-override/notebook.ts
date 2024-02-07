@@ -26,6 +26,7 @@ import { NotebookLoggingService } from 'vs/workbench/contrib/notebook/browser/se
 import { INotebookSearchService } from 'vs/workbench/contrib/search/common/notebookSearch'
 import { NotebookSearchService } from 'vs/workbench/contrib/search/browser/notebookSearch/notebookSearchService'
 import 'vs/workbench/contrib/notebook/browser/notebook.contribution'
+import { INotebookDocumentService, NotebookDocumentWorkbenchService } from 'vs/workbench/services/notebook/common/notebookDocumentService'
 
 export default function getServiceOverride (): IEditorOverrideServices {
   return {
@@ -41,6 +42,7 @@ export default function getServiceOverride (): IEditorOverrideServices {
     [INotebookRendererMessagingService.toString()]: new SyncDescriptor(NotebookRendererMessagingService, [], true),
     [INotebookKeymapService.toString()]: new SyncDescriptor(NotebookKeymapService, [], true),
     [INotebookLoggingService.toString()]: new SyncDescriptor(NotebookLoggingService, [], true),
-    [INotebookSearchService.toString()]: new SyncDescriptor(NotebookSearchService, [], true)
+    [INotebookSearchService.toString()]: new SyncDescriptor(NotebookSearchService, [], true),
+    [INotebookDocumentService.toString()]: new SyncDescriptor(NotebookDocumentWorkbenchService, [], true)
   }
 }

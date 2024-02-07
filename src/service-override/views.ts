@@ -1,7 +1,6 @@
 import { IEditorOverrideServices, StandaloneServices } from 'vs/editor/standalone/browser/standaloneServices'
 import { SyncDescriptor } from 'vs/platform/instantiation/common/descriptors'
-import { IViewContainersRegistry, IViewDescriptor, IViewDescriptorService, IViewsRegistry, IViewsService, ViewContainer, ViewContainerLocation, Extensions as ViewExtensions } from 'vs/workbench/common/views'
-import { ViewsService } from 'vs/workbench/browser/parts/views/viewsService'
+import { IViewContainersRegistry, IViewDescriptor, IViewDescriptorService, IViewsRegistry, ViewContainer, ViewContainerLocation, Extensions as ViewExtensions } from 'vs/workbench/common/views'
 import { BrandedService, IInstantiationService, ServicesAccessor } from 'vs/platform/instantiation/common/instantiation'
 import { SidebarPart } from 'vs/workbench/browser/parts/sidebar/sidebarPart'
 import { ViewDescriptorService } from 'vs/workbench/services/views/browser/viewDescriptorService'
@@ -10,8 +9,6 @@ import { ActivityService } from 'vs/workbench/services/activity/browser/activity
 import { IPaneCompositePartService } from 'vs/workbench/services/panecomposite/browser/panecomposite'
 import { ActivitybarPart } from 'vs/workbench/browser/parts/activitybar/activitybarPart'
 import { DisposableStore, IDisposable, IReference, MutableDisposable } from 'vs/base/common/lifecycle'
-import { IHoverService } from 'vs/workbench/services/hover/browser/hover'
-import { HoverService } from 'vs/workbench/services/hover/browser/hoverService'
 import { ExplorerService } from 'vs/workbench/contrib/files/browser/explorerService'
 import { IExplorerService } from 'vs/workbench/contrib/files/browser/files'
 import { PanelPart } from 'vs/workbench/browser/parts/panel/panelPart'
@@ -103,6 +100,10 @@ import { PaneCompositePartService } from 'vs/workbench/browser/parts/paneComposi
 import { EditorParts } from 'vs/workbench/browser/parts/editor/editorParts'
 import { BrowserAuxiliaryWindowService, IAuxiliaryWindowService } from 'vs/workbench/services/auxiliaryWindow/browser/auxiliaryWindowService'
 import { Event } from 'vs/base/common/event'
+import { IViewsService } from 'vs/workbench/services/views/common/viewsService'
+import { ViewsService } from 'vs/workbench/services/views/browser/viewsService'
+import { HoverService } from 'vs/editor/browser/services/hoverService'
+import { IHoverService } from 'vs/platform/hover/browser/hover'
 import { MonacoDelegateEditorGroupsService, MonacoEditorService, OpenEditor } from './tools/editor'
 import getBulkEditServiceOverride from './bulkEdit'
 import getLayoutServiceOverride, { LayoutService } from './layout'
@@ -558,6 +559,13 @@ class MonacoEditorParts extends MonacoDelegateEditorGroupsService<EditorParts> i
       instantiationService.createInstance(EditorParts),
       instantiationService
     )
+  }
+
+  getId (): string {
+    return 'standalone'
+  }
+
+  updateStyles (): void {
   }
 
   registerPart (part: EditorPart): IDisposable {
