@@ -16,7 +16,7 @@ import { IExtensionWithExtHostKind, ExtensionServiceOverride } from './service-o
 import { CustomSchemas, registerExtensionFile } from './service-override/files'
 import { getService } from './services'
 import { ExtensionManifestTranslator } from './tools/l10n'
-import { throttle } from './tools'
+import { throttle, memoized } from './tools'
 import { setDefaultApi } from './extension.api'
 
 export type ApiFactory = (extensionId?: string) => Promise<typeof vscode>
@@ -56,7 +56,8 @@ interface RegisterLocalProcessExtensionResult extends RegisterLocalExtensionResu
 function registerExtensionFileUrl (extensionLocation: URI, filePath: string, url: string, mimeType?: string): IDisposable {
   const fileDisposable = new DisposableStore()
   fileDisposable.add(FileAccess.registerStaticBrowserUri(joinPath(extensionLocation, filePath), URI.parse(url)))
-  fileDisposable.add(registerExtensionFile(extensionLocation, filePath, async () => {
+
+  fileDisposable.add(registerExtensionFile(extensionLocation, filePath, memoized(async () => {
     const response = await fetch(url, {
       headers: mimeType != null
         ? {
@@ -68,7 +69,7 @@ function registerExtensionFileUrl (extensionLocation: URI, filePath: string, url
       throw new Error(response.statusText)
     }
     return new Uint8Array(await response.arrayBuffer())
-  }))
+  })))
   return fileDisposable
 }
 
