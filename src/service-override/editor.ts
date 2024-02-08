@@ -12,12 +12,14 @@ import { GroupOrientation, IEditorGroup, IEditorGroupsService, IEditorPart } fro
 import { IInstantiationService } from 'vs/platform/instantiation/common/instantiation'
 import { IContextKeyService } from 'vs/platform/contextkey/common/contextkey'
 import { DEFAULT_EDITOR_PART_OPTIONS, IEditorGroupView } from 'vs/workbench/browser/parts/editor/editor'
+import { mainWindow } from 'vs/base/browser/window'
 import { MonacoDelegateEditorGroupsService, MonacoEditorService, OpenEditor } from './tools/editor'
 import { unsupported } from '../tools'
 import 'vs/workbench/browser/parts/editor/editor.autosave.contribution'
 import 'vs/workbench/contrib/files/browser/files.fileEditorFactory.contribution'
 
 class EmptyEditorGroup implements IEditorGroup, IEditorGroupView {
+  windowId = mainWindow.vscodeWindowId
   get groupsView () {
     return unsupported()
   }
@@ -102,6 +104,8 @@ class EmptyEditorGroup implements IEditorGroup, IEditorGroupView {
 const fakeActiveGroup = new EmptyEditorGroup()
 
 class EmptyEditorPart implements IEditorPart {
+  hasMaximizedGroup = () => false
+  windowId = mainWindow.vscodeWindowId
   onDidLayout = Event.None
   onDidScroll = Event.None
   get contentDimension (): never { return unsupported() }

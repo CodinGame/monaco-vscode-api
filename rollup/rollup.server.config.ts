@@ -54,10 +54,10 @@ export default (args: Record<string, string>): rollup.RollupOptions => {
           src: 'vscode/src/vs/workbench/contrib/terminal/browser/media/*.(sh|zsh|ps1)',
           dest: 'dist/server/out/vs/workbench/contrib/terminal/browser/media/'
         }, {
-          src: 'vs/base/node/*.sh',
+          src: 'vscode/src/vs/base/node/*.sh',
           dest: 'dist/server/out/vs/base/node/'
         }, {
-          src: 'product.json',
+          src: 'vscode/product.json',
           dest: 'dist/server/'
         }]
       }),

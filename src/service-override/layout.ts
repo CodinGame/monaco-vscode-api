@@ -47,6 +47,8 @@ export class LayoutService extends Disposable implements ILayoutService, IWorkbe
     this.layout()
   }
 
+  whenActiveContainerStylesLoaded = Promise.resolve()
+
   hasMainWindowBorder (): boolean {
     return false
   }
