@@ -499,10 +499,6 @@ export default (args: Record<string, string>): rollup.RollupOptions[] => {
       preset: 'smallest',
       moduleSideEffects (id) {
         const path = new URL(id, 'file:/').pathname
-        if (path.endsWith('vs/workbench/browser/media/style.css')) {
-          // Remove global vscode css rules
-          return false
-        }
         return path.startsWith(SRC_DIR) ||
           path.includes('vs/editor') ||
           path.includes('codiconStyles') ||
@@ -513,7 +509,7 @@ export default (args: Record<string, string>): rollup.RollupOptions[] => {
           path.endsWith('.all.js') ||
           path.endsWith('xtensionPoint.js') ||
           path.includes('vs/workbench/api/browser/') ||
-          path.endsWith('/fileCommands.js') ||
+          path.includes('fileCommands') ||
           path.endsWith('/listCommands.js') ||
           path.endsWith('/quickAccessActions.js') ||
           path.endsWith('/gotoLineQuickAccess.js') ||

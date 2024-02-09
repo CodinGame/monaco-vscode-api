@@ -17,6 +17,7 @@ import { MonacoDelegateEditorGroupsService, MonacoEditorService, OpenEditor } fr
 import { unsupported } from '../tools'
 import 'vs/workbench/browser/parts/editor/editor.autosave.contribution'
 import 'vs/workbench/contrib/files/browser/files.fileEditorFactory.contribution'
+import 'vs/workbench/contrib/files/browser/fileCommands.save'
 
 class EmptyEditorGroup implements IEditorGroup, IEditorGroupView {
   windowId = mainWindow.vscodeWindowId
