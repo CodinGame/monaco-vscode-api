@@ -2720,6 +2720,200 @@ index ccdbaf9d6bd..77e894faf5c 100644
  	readonly filesToOpenOrCreate?: IPathToOpen[];
  	readonly filesToDiff?: IPathToOpen[];
  	readonly filesToMerge?: IPathToOpen[];
+diff --git a/src/vs/workbench/browser/media/style.css b/src/vs/workbench/browser/media/style.css
+index 262745f0ed2..487faffe72e 100644
+--- a/src/vs/workbench/browser/media/style.css
++++ b/src/vs/workbench/browser/media/style.css
+@@ -34,22 +34,7 @@
+ 
+ /* Global Styles */
+ 
+-body {
+-	height: 100%;
+-	width: 100%;
+-	margin: 0;
+-	padding: 0;
+-	overflow: hidden;
+-	font-size: 11px;
+-	user-select: none;
+-	-webkit-user-select: none;
+-}
+-
+-body.web {
+-	position: fixed; /* prevent bounce effect */
+-}
+-
+-.monaco-workbench {
++.monaco-workbench .monaco-editor, .monaco-workbench .part {
+ 	font-size: 13px;
+ 	line-height: 1.4em;
+ 	position: relative;
+@@ -58,81 +43,70 @@ body.web {
+ 	color: var(--vscode-foreground);
+ }
+ 
+-.monaco-workbench.web {
++.monaco-workbench.web .monaco-editor, .monaco-workbench.web .part {
+ 	touch-action: none; /* Disable browser handling of all panning and zooming gestures. Removes 300ms touch delay. */
+ }
+ 
+-.monaco-workbench.border:not(.fullscreen) {
+-	box-sizing: border-box;
+-	border: 1px solid var(--window-border-color);
+-}
+-
+-.monaco-workbench.border.mac {
+-	border-radius: 5px;
+-}
+-
+-.monaco-workbench.border.mac.macos-bigsur-or-newer {
+-	border-radius: 10px; /* macOS Big Sur increased rounded corners size */
+-}
+-
+-.monaco-workbench img {
++.monaco-workbench .monaco-editor img, .monaco-workbench .part img {
+ 	border: 0;
+ }
+ 
+-.monaco-workbench label {
++.monaco-workbench .monaco-editor label, .monaco-workbench .part label {
+ 	cursor: pointer;
+ }
+ 
+-.monaco-workbench a {
++.monaco-workbench .monaco-editor a, .monaco-workbench .part a  {
+ 	text-decoration: none;
+ }
+ 
+-.monaco-workbench a:active {
++.monaco-workbench .monaco-editor a:active, .monaco-workbench .part a:active {
+ 	color: inherit;
+ 	background-color: inherit;
+ }
+ 
+-.monaco-workbench a.plain {
++.monaco-workbench .monaco-editor a.plain, .monaco-workbench .part a.plain {
+ 	color: inherit;
+ 	text-decoration: none;
+ }
+ 
+-.monaco-workbench a.plain:hover,
+-.monaco-workbench a.plain.hover {
++.monaco-workbench .monaco-editor a.plain:hover,
++.monaco-workbench .monaco-editor a.plain.hover,
++.monaco-workbench .part a.plain:hover,
++.monaco-workbench .part a.plain.hover {
+ 	color: inherit;
+ 	text-decoration: none;
+ }
+ 
+-.monaco-workbench input {
++.monaco-workbench .monaco-editor input, .monaco-workbench .part input {
+ 	color: inherit;
+ 	font-family: inherit;
+ 	font-size: 100%;
+ }
+ 
+-.monaco-workbench input::placeholder { color: var(--vscode-input-placeholderForeground); }
+-.monaco-workbench input::-webkit-input-placeholder  { color: var(--vscode-input-placeholderForeground); }
+-.monaco-workbench input::-moz-placeholder { color: var(--vscode-input-placeholderForeground); }
++.monaco-workbench .monaco-editor input::placeholder, .monaco-workbench .part input::placeholder { color: var(--vscode-input-placeholderForeground); }
++.monaco-workbench .monaco-editor input::-webkit-input-placeholder , .monaco-workbench .part input::-webkit-input-placeholder  { color: var(--vscode-input-placeholderForeground); }
++.monaco-workbench .monaco-editor input::-moz-placeholder, .monaco-workbench .part input::-moz-placeholder { color: var(--vscode-input-placeholderForeground); }
+ 
+-.monaco-workbench textarea::placeholder { color: var(--vscode-input-placeholderForeground); }
+-.monaco-workbench textarea::-webkit-input-placeholder { color: var(--vscode-input-placeholderForeground); }
+-.monaco-workbench textarea::-moz-placeholder { color: var(--vscode-input-placeholderForeground); }
++.monaco-workbench .monaco-editor textarea::placeholder, .monaco-workbench .part textarea::placeholder { color: var(--vscode-input-placeholderForeground); }
++.monaco-workbench .monaco-editor textarea::-webkit-input-placeholder, .monaco-workbench .part textarea::-webkit-input-placeholder { color: var(--vscode-input-placeholderForeground); }
++.monaco-workbench .monaco-editor textarea::-moz-placeholder, .monaco-workbench .part textarea::-moz-placeholder { color: var(--vscode-input-placeholderForeground); }
+ 
+-.monaco-workbench .pointer {
++.monaco-workbench .monaco-editor .pointer, .monaco-workbench .part .pointer {
+ 	cursor: pointer;
+ }
+ 
+-.monaco-workbench.mac.monaco-font-aliasing-antialiased {
++.monaco-workbench.mac.monaco-font-aliasing-antialiased .monaco-editor, .monaco-workbench.mac.monaco-font-aliasing-antialiased .part {
+ 	-webkit-font-smoothing: antialiased;
+ 	-moz-osx-font-smoothing: grayscale;
+ }
+ 
+-.monaco-workbench.mac.monaco-font-aliasing-none {
++.monaco-workbench.mac.monaco-font-aliasing-none .monaco-editor, .monaco-workbench.mac.monaco-font-aliasing-none .part {
+ 	-webkit-font-smoothing: none;
+ 	-moz-osx-font-smoothing: unset;
+ }
+ 
+ @media (-webkit-min-device-pixel-ratio: 2), (min-resolution: 192dpi) {
+-	.monaco-workbench.mac.monaco-font-aliasing-auto {
++	.monaco-workbench.mac.monaco-font-aliasing-auto .monaco-editor,	.monaco-workbench.mac.monaco-font-aliasing-auto .part {
+ 		-webkit-font-smoothing: antialiased;
+ 		-moz-osx-font-smoothing: grayscale;
+ 	}
+@@ -167,7 +141,7 @@ body.web {
+ 
+ /* Custom Dropdown (select) Arrows */
+ 
+-.monaco-workbench select {
++.monaco-workbench .monaco-editor select, .monaco-workbench .part select {
+ 	font-family: inherit;
+ 	appearance: none;
+ 	-webkit-appearance: none;
+@@ -197,16 +171,16 @@ body.web {
+ 
+ /* Keyboard Focus Indication Styles */
+ 
+-.monaco-workbench [tabindex="0"]:focus,
+-.monaco-workbench [tabindex="-1"]:focus,
+-.monaco-workbench .synthetic-focus,
+-.monaco-workbench select:focus,
+-.monaco-workbench input[type="button"]:focus,
+-.monaco-workbench input[type="text"]:focus,
+-.monaco-workbench button:focus,
+-.monaco-workbench textarea:focus,
+-.monaco-workbench input[type="search"]:focus,
+-.monaco-workbench input[type="checkbox"]:focus {
++.monaco-workbench .monaco-editor [tabindex="0"]:focus, .monaco-workbench .mpart [tabindex="0"]:focus,,
++.monaco-workbench .monaco-editor [tabindex="-1"]:focus, .monaco-workbench .part [tabindex="-1"]:focus,
++.monaco-workbench .monaco-editor .synthetic-focus, .monaco-workbench .part .synthetic-focus,
++.monaco-workbench .monaco-editor select:focus, .monaco-workbench .part select:focus,
++.monaco-workbench .monaco-editor input[type="button"]:focus,.monaco-workbench .part input[type="button"]:focus,
++.monaco-workbench .monaco-editor input[type="text"]:focus, .monaco-workbench .part input[type="text"]:focus,
++.monaco-workbench .monaco-editor button:focus, .monaco-workbench .part button:focus,
++.monaco-workbench .monaco-editor textarea:focus, .monaco-workbench .part textarea:focus,
++.monaco-workbench .monaco-editor input[type="search"]:focus, .monaco-workbench .part input[type="search"]:focus,
++.monaco-workbench .monaco-editor input[type="checkbox"]:focus, .monaco-workbench .part input[type="checkbox"]:focus {
+ 	outline-width: 1px;
+ 	outline-style: solid;
+ 	outline-offset: -1px;
+@@ -219,19 +193,19 @@ body.web {
+ 	background: transparent; /* Search input focus fix when in high contrast */
+ }
+ 
+-.monaco-workbench input[type="checkbox"]:focus {
++.monaco-workbench .monaco-editor input[type="checkbox"]:focus, .monaco-workbench .part input[type="checkbox"]:focus {
+ 	outline-offset: 2px;
+ }
+ 
+-.monaco-workbench [tabindex="0"]:active,
+-.monaco-workbench [tabindex="-1"]:active,
+-.monaco-workbench select:active,
+-.monaco-workbench input[type="button"]:active,
+-.monaco-workbench input[type="checkbox"]:active {
++.monaco-workbench .monaco-editor [tabindex="0"]:active, .monaco-workbench part [tabindex="0"]:active,
++.monaco-workbench .monaco-editor [tabindex="-1"]:active, .monaco-workbench .part [tabindex="-1"]:active,
++.monaco-workbench .monaco-editor select:active, .monaco-workbench .part select:active,
++.monaco-workbench .monaco-editor input[type="button"]:active, .monaco-workbench .part input[type="button"]:active,
++.monaco-workbench .monaco-editor input[type="checkbox"]:active, .monaco-workbench .part input[type="checkbox"]:active {
+ 	outline: 0 !important; /* fixes some flashing outlines from showing up when clicking */
+ }
+ 
+-.monaco-workbench.mac select:focus {
++.monaco-workbench.mac .monaco-editor select:focus, .monaco-workbench.mac .part select:focus  {
+ 	border-color: transparent; /* outline is a square, but border has a radius, so we avoid this glitch when focused (https://github.com/microsoft/vscode/issues/26045) */
+ }
+ 
 diff --git a/src/vs/workbench/browser/parts/compositeBar.ts b/src/vs/workbench/browser/parts/compositeBar.ts
 index a2007e18299..7446cfcfc5f 100644
 --- a/src/vs/workbench/browser/parts/compositeBar.ts
