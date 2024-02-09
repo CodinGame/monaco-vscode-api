@@ -5752,6 +5752,35 @@ index 1ba671448d2..bec87c04f1e 100644
  				await vscodeOniguruma.loadWASM({
  					data: wasm,
  					print: (str: string) => {
+diff --git a/src/vs/workbench/services/textMate/common/TMScopeRegistry.ts b/src/vs/workbench/services/textMate/common/TMScopeRegistry.ts
+index a1a0779371e..18ca6d1b496 100644
+--- a/src/vs/workbench/services/textMate/common/TMScopeRegistry.ts
++++ b/src/vs/workbench/services/textMate/common/TMScopeRegistry.ts
+@@ -3,7 +3,6 @@
+  *  Licensed under the MIT License. See License.txt in the project root for license information.
+  *--------------------------------------------------------------------------------------------*/
+ 
+-import * as resources from 'vs/base/common/resources';
+ import { URI } from 'vs/base/common/uri';
+ import { LanguageId, StandardTokenType } from 'vs/editor/common/encodedTokenAttributes';
+ 
+@@ -40,16 +39,6 @@ export class TMScopeRegistry {
+ 	}
+ 
+ 	public register(def: IValidGrammarDefinition): void {
+-		if (this._scopeNameToLanguageRegistration[def.scopeName]) {
+-			const existingRegistration = this._scopeNameToLanguageRegistration[def.scopeName];
+-			if (!resources.isEqual(existingRegistration.location, def.location)) {
+-				console.warn(
+-					`Overwriting grammar scope name to file mapping for scope ${def.scopeName}.\n` +
+-					`Old grammar file: ${existingRegistration.location.toString()}.\n` +
+-					`New grammar file: ${def.location.toString()}`
+-				);
+-			}
+-		}
+ 		this._scopeNameToLanguageRegistration[def.scopeName] = def;
+ 	}
+ 
 diff --git a/src/vs/workbench/services/textfile/common/encoding.ts b/src/vs/workbench/services/textfile/common/encoding.ts
 index ad67fb4f422..fadf86cece5 100644
 --- a/src/vs/workbench/services/textfile/common/encoding.ts
