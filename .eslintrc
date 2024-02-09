@@ -34,7 +34,8 @@
         "services": "always",
         "api": "always",
         "all": "always",
-        "main": "always"
+        "main": "always",
+        "save": "always"
       }
     ],
     "@typescript-eslint/no-unused-vars": [

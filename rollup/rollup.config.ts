@@ -513,7 +513,7 @@ export default (args: Record<string, string>): rollup.RollupOptions[] => {
           path.endsWith('.all.js') ||
           path.endsWith('xtensionPoint.js') ||
           path.includes('vs/workbench/api/browser/') ||
-          path.endsWith('/fileCommands.js') ||
+          path.includes('fileCommands') ||
           path.endsWith('/listCommands.js') ||
           path.endsWith('/quickAccessActions.js') ||
           path.endsWith('/gotoLineQuickAccess.js') ||
