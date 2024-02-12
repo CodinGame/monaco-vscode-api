@@ -2721,7 +2721,7 @@ index ccdbaf9d6bd..77e894faf5c 100644
  	readonly filesToDiff?: IPathToOpen[];
  	readonly filesToMerge?: IPathToOpen[];
 diff --git a/src/vs/workbench/browser/media/style.css b/src/vs/workbench/browser/media/style.css
-index 262745f0ed2..3e7660e64ad 100644
+index 262745f0ed2..ff70f984888 100644
 --- a/src/vs/workbench/browser/media/style.css
 +++ b/src/vs/workbench/browser/media/style.css
 @@ -9,130 +9,99 @@
@@ -2917,7 +2917,7 @@ index 262745f0ed2..3e7660e64ad 100644
 -.monaco-workbench textarea:focus,
 -.monaco-workbench input[type="search"]:focus,
 -.monaco-workbench input[type="checkbox"]:focus {
-+.monaco-workbench .mpart [tabindex="0"]:focus,
++.monaco-workbench .part [tabindex="0"]:focus,
 +.monaco-workbench .part [tabindex="-1"]:focus,
 +.monaco-workbench .part .synthetic-focus,
 +.monaco-workbench .part select:focus,
