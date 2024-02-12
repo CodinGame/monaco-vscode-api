@@ -481,6 +481,18 @@ index 7f675f67e9d..9c20173bd7a 100644
  
  					if (selections.length) {
  						this._state.change({ searchScope: selections as Range[] }, true);
+diff --git a/src/vs/editor/standalone/browser/standaloneEditor.ts b/src/vs/editor/standalone/browser/standaloneEditor.ts
+index 059a4928862..8e31d662d19 100644
+--- a/src/vs/editor/standalone/browser/standaloneEditor.ts
++++ b/src/vs/editor/standalone/browser/standaloneEditor.ts
+@@ -7,7 +7,6 @@ import { mainWindow } from 'vs/base/browser/window';
+ import { Disposable, DisposableStore, IDisposable } from 'vs/base/common/lifecycle';
+ import { splitLines } from 'vs/base/common/strings';
+ import { URI } from 'vs/base/common/uri';
+-import 'vs/css!./standalone-tokens';
+ import { FontMeasurements } from 'vs/editor/browser/config/fontMeasurements';
+ import { ICodeEditor } from 'vs/editor/browser/editorBrowser';
+ import { EditorCommand, ServicesAccessor } from 'vs/editor/browser/editorExtensions';
 diff --git a/src/vs/editor/standalone/browser/standaloneServices.ts b/src/vs/editor/standalone/browser/standaloneServices.ts
 index 97841a6012b..f7f7a5a021a 100644
 --- a/src/vs/editor/standalone/browser/standaloneServices.ts
