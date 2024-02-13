@@ -4,6 +4,7 @@
 import semanticRelease, { Options as SemanticReleaseOptions } from 'semantic-release'
 import { $ } from 'zx'
 import yargs, { Options } from 'yargs'
+import semanticReleaseConfig from '@codingame/semantic-release-config-github'
 import path from 'path'
 import fs from 'fs/promises'
 import syncFs from 'fs'
@@ -45,16 +46,8 @@ async function run (options: SemanticReleaseOptions) {
   const result = await semanticRelease(
     {
       ...options,
-      plugins: [
-        '@semantic-release/commit-analyzer',
-        '@semantic-release/release-notes-generator',
-        '@semantic-release/github'
-      ],
-      branches: [
-        'main',
-        { name: '*', channel: 'next', prerelease: true }
-      ],
-      extends: '@codingame/semantic-release-config'
+      ...semanticReleaseConfig,
+      plugins: semanticReleaseConfig.plugins?.filter(plugin => plugin !== '@semantic-release/npm')
     }
   )
 

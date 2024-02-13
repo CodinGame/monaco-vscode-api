@@ -185,7 +185,7 @@ export class MonacoEditorService extends EditorService {
 }
 
 class StandaloneEditorPane implements IVisibleEditorPane {
-  constructor (private editor: IStandaloneCodeEditor, public input: TextResourceEditorInput, public group: IEditorGroup) {
+  constructor (public readonly editor: IStandaloneCodeEditor, public input: TextResourceEditorInput, public group: IEditorGroup) {
   }
 
   onDidChangeControl = Event.None
@@ -335,7 +335,10 @@ class StandaloneEditorGroup extends Disposable implements IEditorGroup, IEditorG
   notifyIndexChanged = unsupported
   relayout = unsupported
   toJSON = unsupported
-  get element () { return unsupported() }
+  get element () {
+    return this.editor.getContainerDomNode()
+  }
+
   minimumWidth = 0
   maximumWidth = Number.POSITIVE_INFINITY
   minimumHeight = 0

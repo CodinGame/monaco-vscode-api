@@ -15,12 +15,12 @@ jobs:
 
     steps:
     - name: Checkout
-      uses: actions/checkout@v3
+      uses: actions/checkout@v4
       with:
         # get all tags for semantic release
         fetch-depth: 0
     - name: Setup Node.js
-      uses: actions/setup-node@v3
+      uses: actions/setup-node@v4
       with:
         node-version: 18.17.1
     - name: Install dependencies
@@ -39,7 +39,7 @@ jobs:
       working-directory: ./demo
       run: npm run build:github
     - name: Setup Pages
-      uses: actions/configure-pages@v3
+      uses: actions/configure-pages@v4
     - name: Upload demo artifact
       uses: actions/upload-pages-artifact@v1
       with:
