@@ -3520,6 +3520,97 @@ index 3021fe51eee..80ce472b2e7 100644
  	}
  
  	isVisible(): boolean {
+diff --git a/src/vs/workbench/browser/workbench.ts b/src/vs/workbench/browser/workbench.ts
+index bce16d5cb77..e513f04b435 100644
+--- a/src/vs/workbench/browser/workbench.ts
++++ b/src/vs/workbench/browser/workbench.ts
+@@ -11,10 +11,7 @@ import { RunOnceScheduler, timeout } from 'vs/base/common/async';
+ import { isFirefox, isSafari, isChrome, PixelRatio } from 'vs/base/browser/browser';
+ import { mark } from 'vs/base/common/performance';
+ import { onUnexpectedError, setUnexpectedErrorHandler } from 'vs/base/common/errors';
+-import { Registry } from 'vs/platform/registry/common/platform';
+ import { isWindows, isLinux, isWeb, isNative, isMacintosh } from 'vs/base/common/platform';
+-import { IWorkbenchContributionsRegistry, Extensions as WorkbenchExtensions } from 'vs/workbench/common/contributions';
+-import { IEditorFactoryRegistry, EditorExtensions } from 'vs/workbench/common/editor';
+ import { getSingletonServiceDescriptors } from 'vs/platform/instantiation/common/extensions';
+ import { Position, Parts, IWorkbenchLayoutService, positionToString } from 'vs/workbench/services/layout/browser/layoutService';
+ import { IStorageService, WillSaveStateReason, StorageScope, StorageTarget } from 'vs/platform/storage/common/storage';
+@@ -35,7 +32,6 @@ import { FontMeasurements } from 'vs/editor/browser/config/fontMeasurements';
+ import { BareFontInfo } from 'vs/editor/common/config/fontInfo';
+ import { ILogService } from 'vs/platform/log/common/log';
+ import { toErrorMessage } from 'vs/base/common/errorMessage';
+-import { WorkbenchContextKeysHandler } from 'vs/workbench/browser/contextkeys';
+ import { coalesce } from 'vs/base/common/arrays';
+ import { InstantiationService } from 'vs/platform/instantiation/common/instantiationService';
+ import { Layout } from 'vs/workbench/browser/layout';
+@@ -73,7 +69,7 @@ export class Workbench extends Layout {
+ 		this.registerErrorHandler(logService);
+ 	}
+ 
+-	private registerErrorHandler(logService: ILogService): void {
++	protected registerErrorHandler(logService: ILogService): void {
+ 
+ 		// Listen on unhandled rejection events
+ 		this._register(addDisposableListener(mainWindow, 'unhandledrejection', event => {
+@@ -154,13 +150,6 @@ export class Workbench extends Layout {
+ 				// Layout
+ 				this.initLayout(accessor);
+ 
+-				// Registries
+-				Registry.as<IWorkbenchContributionsRegistry>(WorkbenchExtensions.Workbench).start(accessor);
+-				Registry.as<IEditorFactoryRegistry>(EditorExtensions.EditorFactory).start(accessor);
+-
+-				// Context Keys
+-				this._register(instantiationService.createInstance(WorkbenchContextKeysHandler));
+-
+ 				// Register Listeners
+ 				this.registerListeners(lifecycleService, storageService, configurationService, hostService, dialogService);
+ 
+@@ -185,7 +174,7 @@ export class Workbench extends Layout {
+ 		}
+ 	}
+ 
+-	private initServices(serviceCollection: ServiceCollection): IInstantiationService {
++	protected initServices(serviceCollection: ServiceCollection): IInstantiationService {
+ 
+ 		// Layout Service
+ 		serviceCollection.set(IWorkbenchLayoutService, this);
+@@ -224,7 +213,7 @@ export class Workbench extends Layout {
+ 		return instantiationService;
+ 	}
+ 
+-	private registerListeners(lifecycleService: ILifecycleService, storageService: IStorageService, configurationService: IConfigurationService, hostService: IHostService, dialogService: IDialogService): void {
++	protected registerListeners(lifecycleService: ILifecycleService, storageService: IStorageService, configurationService: IConfigurationService, hostService: IHostService, dialogService: IDialogService): void {
+ 
+ 		// Configuration changes
+ 		this._register(configurationService.onDidChangeConfiguration(e => this.updateFontAliasing(e, configurationService)));
+@@ -313,7 +302,7 @@ export class Workbench extends Layout {
+ 		}
+ 	}
+ 
+-	private renderWorkbench(instantiationService: IInstantiationService, notificationService: NotificationService, storageService: IStorageService, configurationService: IConfigurationService): void {
++	protected renderWorkbench(instantiationService: IInstantiationService, notificationService: NotificationService, storageService: IStorageService, configurationService: IConfigurationService): void {
+ 
+ 		// ARIA
+ 		setARIAContainer(this.mainContainer);
+@@ -379,7 +368,7 @@ export class Workbench extends Layout {
+ 		return part;
+ 	}
+ 
+-	private createNotificationsHandlers(instantiationService: IInstantiationService, notificationService: NotificationService): void {
++	protected createNotificationsHandlers(instantiationService: IInstantiationService, notificationService: NotificationService): void {
+ 
+ 		// Instantiate Notification components
+ 		const notificationsCenter = this._register(instantiationService.createInstance(NotificationsCenter, this.mainContainer, notificationService.model));
+@@ -407,7 +396,7 @@ export class Workbench extends Layout {
+ 		});
+ 	}
+ 
+-	private restore(lifecycleService: ILifecycleService): void {
++	protected restore(lifecycleService: ILifecycleService): void {
+ 
+ 		// Ask each part to restore
+ 		try {
 diff --git a/src/vs/workbench/common/views.ts b/src/vs/workbench/common/views.ts
 index 7288219657e..d6af0e2dbc7 100644
 --- a/src/vs/workbench/common/views.ts
