@@ -1,5 +1,5 @@
 import { IDialogService, EditorInput, ITelemetryService, IThemeService, IStorageService, createInstance, IInstantiationService } from 'vscode/services'
-import { registerCustomView, registerEditorPane, registerEditor, registerEditorSerializer, ViewContainerLocation, SimpleEditorPane, SimpleEditorInput, RegisteredEditorPriority, IEditorCloseHandler, ConfirmResult, IEditorSerializer } from '@codingame/monaco-vscode-views-service-override'
+import { IEditorCloseHandler, IEditorSerializer, registerCustomView, registerEditorPane, registerEditor, registerEditorSerializer, ViewContainerLocation, SimpleEditorPane, SimpleEditorInput, RegisteredEditorPriority, ConfirmResult } from '@codingame/monaco-vscode-workbench-service-override'
 import * as monaco from 'monaco-editor'
 
 registerCustomView({
@@ -82,7 +82,7 @@ class CustomEditorInput extends SimpleEditorInput implements IEditorCloseHandler
     this.setName('Custom editor pane input')
   }
 
-  async confirm (): Promise<ConfirmResult> {
+  async confirm (): Promise<number> {
     const { confirmed } = await this.dialogService.confirm({
       message: 'Are you sure you want to close this INCREDIBLE editor pane?'
     })
