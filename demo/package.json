@@ -21,7 +21,6 @@
     "@types/node": "^20.11.4",
     "@types/wicg-file-system-access": "^2023.10.4",
     "@types/ws": "^8.5.10",
-    "fast-glob": "^3.3.2",
     "ts-node": "^10.9.2",
     "typescript": "~5.3.3",
     "vite": "~5.1.3"
