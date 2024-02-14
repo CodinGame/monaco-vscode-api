@@ -784,5 +784,7 @@ export {
   SidebarPart,
   ActivitybarPart,
   PanelPart,
-  Parts
+  Parts,
+  SplitView,
+  IView
 }
