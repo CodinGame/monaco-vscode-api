@@ -194,6 +194,8 @@ Additionally, several packages that include the VSCode version of some services 
   - Support for the outline view. *Hint*: It only makes sense to enable it when *Views* service is used.
 - **Timeline**: `@codingame/monaco-vscode-timeline-service-override`
   - Support for the timeline view. *Hint*: It only makes sense to enable it when *Views* service is used.
+- **Workbench**: `@codingame/monaco-vscode-workbench-service-override`
+  - Allows to render the full workbench layout. Is exclusive with the `views` service. Do not use both services at the same time.
 
 Usage:
 

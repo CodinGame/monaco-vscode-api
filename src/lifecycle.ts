@@ -9,6 +9,9 @@ import { StandaloneServices } from 'vs/editor/standalone/browser/standaloneServi
 import { Disposable } from 'vs/base/common/lifecycle'
 import { IWorkbenchLayoutService } from 'vs/workbench/services/layout/browser/layoutService'
 
+const layoutEmitter = new Emitter<ServicesAccessor>()
+export const onLayout = layoutEmitter.event
+
 const renderWorkbenchEmitter = new Emitter<ServicesAccessor>()
 export const onRenderWorkbench = renderWorkbenchEmitter.event
 
@@ -58,6 +61,7 @@ export async function startup (instantiationService: IInstantiationService): Pro
     Registry.as<IWorkbenchContributionsRegistry>(WorkbenchExtensions.Workbench).start(accessor)
     Registry.as<IEditorFactoryRegistry>(EditorExtensions.EditorFactory).start(accessor)
 
+    layoutEmitter.fire(accessor)
     renderWorkbenchEmitter.fire(accessor)
 
     await Promise.race([
