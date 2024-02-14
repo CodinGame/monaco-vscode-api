@@ -16,19 +16,20 @@ const { getApi } = registerExtension({
   enabledApiProposals: ['aiRelatedInformation']
 }, ExtensionHostKind.LocalProcess)
 
-const vscode = await getApi()
-vscode.commands.registerCommand('aiSuggestedCommand', () => {
-  void vscode.window.showInformationMessage('Hello', {
-    detail: 'You just run the AI suggested command',
-    modal: true
+void getApi().then(async vscode => {
+  vscode.commands.registerCommand('aiSuggestedCommand', () => {
+    void vscode.window.showInformationMessage('Hello', {
+      detail: 'You just run the AI suggested command',
+      modal: true
+    })
   })
-})
-vscode.ai.registerRelatedInformationProvider(vscode.RelatedInformationType.CommandInformation, {
-  provideRelatedInformation () {
-    return [{
-      type: vscode.RelatedInformationType.CommandInformation,
-      command: 'aiSuggestedCommand',
-      weight: 9999
-    }]
-  }
+  vscode.ai.registerRelatedInformationProvider(vscode.RelatedInformationType.CommandInformation, {
+    provideRelatedInformation () {
+      return [{
+        type: vscode.RelatedInformationType.CommandInformation,
+        command: 'aiSuggestedCommand',
+        weight: 9999
+      }]
+    }
+  })
 })

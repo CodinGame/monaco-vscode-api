@@ -1,4 +1,5 @@
-const locale = new URLSearchParams(window.location.search).get('locale')
+const searchParams = new URLSearchParams(window.location.search)
+const locale = searchParams.get('locale')
 
 const localeLoader: Partial<Record<string, () => Promise<void>>> = {
   cs: async () => { await import('@codingame/monaco-vscode-language-pack-cs') },
@@ -26,6 +27,12 @@ if (locale != null) {
   }
 }
 
-import('./main')
+const mode = searchParams.get('mode')
+
+if (mode === 'full-workbench') {
+  void import('./main.workbench')
+} else {
+  void import('./main.views')
+}
 
 export {}

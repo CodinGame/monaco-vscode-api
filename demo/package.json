@@ -8,7 +8,7 @@
     "compile": "tsc",
     "start": "NODE_OPTIONS=--experimental-import-meta-resolve vite --config vite.config.ts",
     "start:debug": "vite --config vite.config.ts --debug --force",
-    "build": "tsc --noEmit && vite --config vite.config.ts build",
+    "build": "vite --config vite.config.ts build",
     "build:github": "tsc --noEmit && vite --config vite.github-page.config.ts build && touch dist/.nojekyll",
     "start:debugServer": "node --loader ts-node/esm src/debugServer.ts",
     "start:extHostServer": "WEB_ENDPOINT_URL_TEMPLATE=http://localhost:5173/ vscode-ext-host-server --without-connection-token"
@@ -162,6 +162,7 @@
     "@codingame/monaco-vscode-view-status-bar-service-override": "file:../dist/service-override-view-status-bar",
     "@codingame/monaco-vscode-view-title-bar-service-override": "file:../dist/service-override-view-title-bar",
     "@codingame/monaco-vscode-views-service-override": "file:../dist/service-override-views",
+    "@codingame/monaco-vscode-workbench-service-override": "file:../dist/service-override-workbench",
     "@codingame/monaco-vscode-welcome-service-override": "file:../dist/service-override-welcome",
     "@codingame/monaco-vscode-working-copy-service-override": "file:../dist/service-override-working-copy",
     "@codingame/monaco-vscode-workspace-trust-service-override": "file:../dist/service-override-workspace-trust",

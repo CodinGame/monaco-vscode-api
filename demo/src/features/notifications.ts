@@ -1,15 +1,25 @@
-import * as vscode from 'vscode'
-import '../setup' // import setup file to wait for services initialization
+import { ExtensionHostKind, registerExtension } from 'vscode/extensions'
 
-void vscode.window.showInformationMessage('Hello', {
-  detail: 'Welcome to the monaco-vscode-api demo',
-  modal: true
-}).then(() => {
-  void vscode.window.showInformationMessage('Try to change the settings or the configuration, the changes will be applied to all 3 editors')
-})
+const { getApi } = registerExtension({
+  name: 'welcome-notifications',
+  publisher: 'codingame',
+  version: '1.0.0',
+  engines: {
+    vscode: '*'
+  }
+}, ExtensionHostKind.LocalProcess)
 
-setTimeout(() => {
-  vscode.workspace.onDidChangeConfiguration(() => {
-    void vscode.window.showInformationMessage('The configuration was changed')
+void getApi().then(async api => {
+  void api.window.showInformationMessage('Hello', {
+    detail: 'Welcome to the monaco-vscode-api demo',
+    modal: true
+  }).then(() => {
+    void api.window.showInformationMessage('Try to change the settings or the configuration, the changes will be applied to all 3 editors')
   })
-}, 1000)
+
+  setTimeout(() => {
+    api.workspace.onDidChangeConfiguration(() => {
+      void api.window.showInformationMessage('The configuration was changed')
+    })
+  }, 1000)
+})
