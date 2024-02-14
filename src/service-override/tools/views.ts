@@ -30,6 +30,11 @@ import { ScrollbarVisibility } from 'vs/base/common/scrollable'
 import { ConfirmResult } from 'vs/platform/dialogs/common/dialogs'
 import { AbstractResourceEditorInput } from 'vs/workbench/common/editor/resourceEditorInput'
 import { AbstractTextResourceEditorInput } from 'vs/workbench/common/editor/textResourceEditorInput'
+import { IWorkbenchLayoutService, Parts, Position } from 'vs/workbench/services/layout/browser/layoutService'
+import { StandaloneServices } from 'vs/editor/standalone/browser/standaloneServices'
+import { Event } from 'vs/base/common/event'
+import { IView, SplitView } from 'vs/base/browser/ui/splitview/splitview'
+import type { LayoutService } from '../layout'
 import { withReadyServices } from '../../services'
 
 type Label = string | {
@@ -332,6 +337,30 @@ function registerCustomView (options: CustomViewOption): IDisposable {
   return disposableCollection
 }
 
+export function isPartVisibile (part: Parts): boolean {
+  return StandaloneServices.get(IWorkbenchLayoutService).isVisible(part, window)
+}
+
+export function setPartVisibility (part: Exclude<Parts, Parts.STATUSBAR_PART | Parts.TITLEBAR_PART>, visible: boolean): void {
+  StandaloneServices.get(IWorkbenchLayoutService).setPartHidden(!visible, part, window)
+}
+
+export const onDidChangePanelPosition: Event<string> = (listener) => {
+  return StandaloneServices.get(IWorkbenchLayoutService).onDidChangePanelPosition(listener)
+}
+
+export function getPanelPosition (): Position {
+  return StandaloneServices.get(IWorkbenchLayoutService).getPanelPosition()
+}
+
+export const onDidChangeSideBarPosition: Event<string> = (listener) => {
+  return (StandaloneServices.get(IWorkbenchLayoutService) as LayoutService).onDidChangeSideBarPosition(listener)
+}
+
+export function getSideBarPosition (): Position {
+  return StandaloneServices.get(IWorkbenchLayoutService).getSideBarPosition()
+}
+
 export {
   ViewContainerLocation,
   CustomViewOption,
@@ -352,5 +381,8 @@ export {
   RegisteredEditorInfo,
   RegisteredEditorOptions,
   EditorInputFactoryObject,
-  EditorInputCapabilities
+  EditorInputCapabilities,
+  Parts,
+  SplitView,
+  IView
 }
