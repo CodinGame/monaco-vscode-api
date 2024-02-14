@@ -11,7 +11,6 @@ import { NotificationsAlerts } from 'vs/workbench/browser/parts/notifications/no
 import { NotificationsTelemetry } from 'vs/workbench/browser/parts/notifications/notificationsTelemetry'
 import { ILayoutService } from 'vs/platform/layout/browser/layoutService'
 import { NotificationsStatus } from 'vs/workbench/browser/parts/notifications/notificationsStatus'
-import getLayoutServiceOverride from './layout'
 import { onRenderWorkbench } from '../lifecycle'
 
 onRenderWorkbench(async (accessor) => {
@@ -45,7 +44,6 @@ onRenderWorkbench(async (accessor) => {
 
 export default function getServiceOverride (): IEditorOverrideServices {
   return {
-    [INotificationService.toString()]: new SyncDescriptor(NotificationService, undefined, true),
-    ...getLayoutServiceOverride()
+    [INotificationService.toString()]: new SyncDescriptor(NotificationService, undefined, true)
   }
 }

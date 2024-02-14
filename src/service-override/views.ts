@@ -84,7 +84,7 @@ import { IHoverService } from 'vs/platform/hover/browser/hover'
 import { SplitView } from 'vs/base/browser/ui/splitview/splitview'
 import { MonacoDelegateEditorGroupsService, MonacoEditorService, OpenEditor } from './tools/editor'
 import getBulkEditServiceOverride from './bulkEdit'
-import getLayoutServiceOverride, { LayoutService } from './layout'
+import { LayoutService } from './layout'
 import getQuickAccessOverride from './quickaccess'
 import getKeybindingsOverride from './keybindings'
 import { changeUrlDomain } from './tools/url'
@@ -715,7 +715,6 @@ function getServiceOverride (openEditorFallback?: OpenEditor, _webviewIframeAlte
   }
 
   return {
-    ...getLayoutServiceOverride(),
     ...getBulkEditServiceOverride(),
     ...getQuickAccessOverride({
       isKeybindingConfigurationVisible: isEditorPartVisible,
