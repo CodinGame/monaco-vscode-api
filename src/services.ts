@@ -193,6 +193,7 @@ export { IRemoteSocketFactoryService } from 'vs/platform/remote/common/remoteSoc
 export { ITerminalService, ITerminalInstanceService } from 'vs/workbench/contrib/terminal/browser/terminal'
 export { IFilesConfigurationService } from 'vs/workbench/services/filesConfiguration/common/filesConfigurationService'
 export { ILabelService } from 'vs/platform/label/common/label'
+export { IWorkbenchLayoutService } from 'vs/workbench/services/layout/browser/layoutService'
 
 // Export all Notification service parts
 export {
