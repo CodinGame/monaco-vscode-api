@@ -1,6 +1,6 @@
 import { IEditorOverrideServices, StandaloneServices } from 'vs/editor/standalone/browser/standaloneServices'
 import { SyncDescriptor } from 'vs/platform/instantiation/common/descriptors'
-import { IView, IViewDescriptorService, ViewContainerLocation } from 'vs/workbench/common/views'
+import { IViewDescriptorService, ViewContainerLocation } from 'vs/workbench/common/views'
 import { IInstantiationService } from 'vs/platform/instantiation/common/instantiation'
 import { SidebarPart } from 'vs/workbench/browser/parts/sidebar/sidebarPart'
 import { ViewDescriptorService } from 'vs/workbench/services/views/browser/viewDescriptorService'
@@ -53,7 +53,7 @@ import { WebviewService } from 'vs/workbench/contrib/webview/browser/webviewServ
 import { IWebviewWorkbenchService, WebviewEditorService } from 'vs/workbench/contrib/webviewPanel/browser/webviewWorkbenchService'
 import { IWebviewService } from 'vs/workbench/contrib/webview/browser/webview'
 import { IWebviewViewService, WebviewViewService } from 'vs/workbench/contrib/webviewView/browser/webviewViewService'
-import { IWorkbenchLayoutService, Parts, Position, positionToString } from 'vs/workbench/services/layout/browser/layoutService'
+import { Parts, Position, positionToString } from 'vs/workbench/services/layout/browser/layoutService'
 import { IStorageService, StorageScope } from 'vs/platform/storage/common/storage'
 import { IFileService } from 'vs/platform/files/common/files'
 import { ILayoutService } from 'vs/platform/layout/browser/layoutService'
@@ -76,12 +76,10 @@ import { IWorkingCopyBackupService } from 'vs/workbench/services/workingCopy/com
 import { PaneCompositePartService } from 'vs/workbench/browser/parts/paneCompositePartService'
 import { EditorParts } from 'vs/workbench/browser/parts/editor/editorParts'
 import { BrowserAuxiliaryWindowService, IAuxiliaryWindowService } from 'vs/workbench/services/auxiliaryWindow/browser/auxiliaryWindowService'
-import { Event } from 'vs/base/common/event'
 import { IViewsService } from 'vs/workbench/services/views/common/viewsService'
 import { ViewsService } from 'vs/workbench/services/views/browser/viewsService'
 import { HoverService } from 'vs/editor/browser/services/hoverService'
 import { IHoverService } from 'vs/platform/hover/browser/hover'
-import { SplitView } from 'vs/base/browser/ui/splitview/splitview'
 import { MonacoDelegateEditorGroupsService, MonacoEditorService, OpenEditor } from './tools/editor'
 import getBulkEditServiceOverride from './bulkEdit'
 import { LayoutService } from './layout'
@@ -159,30 +157,6 @@ function onPartVisibilityChange (part: Parts, listener: (visible: boolean) => vo
     throw new Error('Part not found')
   }
   return _part.onDidVisibilityChange(listener)
-}
-
-function isPartVisibile (part: Parts): boolean {
-  return StandaloneServices.get(IWorkbenchLayoutService).isVisible(part, window)
-}
-
-function setPartVisibility (part: Exclude<Parts, Parts.STATUSBAR_PART | Parts.TITLEBAR_PART>, visible: boolean): void {
-  StandaloneServices.get(IWorkbenchLayoutService).setPartHidden(!visible, part, window)
-}
-
-const onDidChangePanelPosition: Event<string> = (listener) => {
-  return StandaloneServices.get(IWorkbenchLayoutService).onDidChangePanelPosition(listener)
-}
-
-function getPanelPosition (): Position {
-  return StandaloneServices.get(IWorkbenchLayoutService).getPanelPosition()
-}
-
-const onDidChangeSideBarPosition: Event<string> = (listener) => {
-  return (StandaloneServices.get(IWorkbenchLayoutService) as LayoutService).onDidChangeSideBarPosition(listener)
-}
-
-function getSideBarPosition (): Position {
-  return StandaloneServices.get(IWorkbenchLayoutService).getSideBarPosition()
 }
 
 function renderActivitybarPar (container: HTMLElement): IDisposable {
@@ -765,12 +739,6 @@ export {
   isEditorPartVisible,
   attachPart,
   onPartVisibilityChange,
-  isPartVisibile,
-  setPartVisibility,
-  onDidChangePanelPosition,
-  getPanelPosition,
-  onDidChangeSideBarPosition,
-  getSideBarPosition,
   Position,
 
   OpenEditor,
@@ -782,8 +750,5 @@ export {
   ActivityService,
   SidebarPart,
   ActivitybarPart,
-  PanelPart,
-  Parts,
-  SplitView,
-  IView
+  PanelPart
 }
