@@ -5,7 +5,6 @@ import { IDialogService, IFileDialogService, IOpenDialogOptions, IPickAndOpenOpt
 import { SyncDescriptor } from 'vs/platform/instantiation/common/descriptors'
 import { AbstractFileDialogService } from 'vs/workbench/services/dialogs/browser/abstractFileDialogService'
 import { URI } from 'vs/base/common/uri'
-import getLayoutServiceOverride from './layout'
 import { unsupported } from '../tools'
 
 class FileDialogService extends AbstractFileDialogService {
@@ -63,7 +62,6 @@ class FileDialogService extends AbstractFileDialogService {
 export default function getServiceOverride (): IEditorOverrideServices {
   return {
     [IDialogService.toString()]: new SyncDescriptor(DialogService, undefined, true),
-    [IFileDialogService.toString()]: new SyncDescriptor(FileDialogService, undefined, true),
-    ...getLayoutServiceOverride()
+    [IFileDialogService.toString()]: new SyncDescriptor(FileDialogService, undefined, true)
   }
 }
