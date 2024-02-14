@@ -116,7 +116,7 @@ import { withReadyServices } from '../services'
 
 function createPart (id: string, role: string, classes: string[]): HTMLElement {
   const part = document.createElement(role === 'status' ? 'footer' /* Use footer element for status bar #98376 */ : 'div')
-  part.classList.add('part', ...classes)
+  part.classList.add('part', 'monaco-workbench-part', ...classes)
   part.id = id
   part.setAttribute('role', role)
   if (role === 'status') {

@@ -2733,10 +2733,10 @@ index ccdbaf9d6bd..77e894faf5c 100644
  	readonly filesToDiff?: IPathToOpen[];
  	readonly filesToMerge?: IPathToOpen[];
 diff --git a/src/vs/workbench/browser/media/style.css b/src/vs/workbench/browser/media/style.css
-index 262745f0ed2..ff70f984888 100644
+index 262745f0ed2..109419c2b55 100644
 --- a/src/vs/workbench/browser/media/style.css
 +++ b/src/vs/workbench/browser/media/style.css
-@@ -9,130 +9,99 @@
+@@ -9,56 +9,38 @@
  
  /* Font Families (with CJK support) */
  
@@ -2751,17 +2751,17 @@ index 262745f0ed2..ff70f984888 100644
 -.windows:lang(zh-Hant) { font-family: "Segoe WPC", "Segoe UI", "Microsoft Jhenghei", sans-serif; }
 -.windows:lang(ja) { font-family: "Segoe WPC", "Segoe UI", "Yu Gothic UI", "Meiryo UI", sans-serif; }
 -.windows:lang(ko) { font-family: "Segoe WPC", "Segoe UI", "Malgun Gothic", "Dotom", sans-serif; }
-+.mac .part { font-family: -apple-system, BlinkMacSystemFont, sans-serif; }
-+.mac:lang(zh-Hans) .part { font-family: -apple-system, BlinkMacSystemFont, "PingFang SC", "Hiragino Sans GB", sans-serif; }
-+.mac:lang(zh-Hant) .part { font-family: -apple-system, BlinkMacSystemFont, "PingFang TC", sans-serif; }
-+.mac:lang(ja) .part { font-family: -apple-system, BlinkMacSystemFont, "Hiragino Kaku Gothic Pro", sans-serif; }
-+.mac:lang(ko) .part { font-family: -apple-system, BlinkMacSystemFont, "Nanum Gothic", "Apple SD Gothic Neo", "AppleGothic", sans-serif; }
++.mac .monaco-workbench-part{ font-family: -apple-system, BlinkMacSystemFont, sans-serif; }
++.mac:lang(zh-Hans) .monaco-workbench-part { font-family: -apple-system, BlinkMacSystemFont, "PingFang SC", "Hiragino Sans GB", sans-serif; }
++.mac:lang(zh-Hant) .monaco-workbench-part { font-family: -apple-system, BlinkMacSystemFont, "PingFang TC", sans-serif; }
++.mac:lang(ja) .monaco-workbench-part { font-family: -apple-system, BlinkMacSystemFont, "Hiragino Kaku Gothic Pro", sans-serif; }
++.mac:lang(ko) .monaco-workbench-part { font-family: -apple-system, BlinkMacSystemFont, "Nanum Gothic", "Apple SD Gothic Neo", "AppleGothic", sans-serif; }
 +
-+.windows .part { font-family: "Segoe WPC", "Segoe UI", sans-serif; }
-+.windows:lang(zh-Hans) .part { font-family: "Segoe WPC", "Segoe UI", "Microsoft YaHei", sans-serif; }
-+.windows:lang(zh-Hant) .part { font-family: "Segoe WPC", "Segoe UI", "Microsoft Jhenghei", sans-serif; }
-+.windows:lang(ja) .part { font-family: "Segoe WPC", "Segoe UI", "Yu Gothic UI", "Meiryo UI", sans-serif; }
-+.windows:lang(ko) .part { font-family: "Segoe WPC", "Segoe UI", "Malgun Gothic", "Dotom", sans-serif; }
++.windows .monaco-workbench-part { font-family: "Segoe WPC", "Segoe UI", sans-serif; }
++.windows:lang(zh-Hans) .monaco-workbench-part { font-family: "Segoe WPC", "Segoe UI", "Microsoft YaHei", sans-serif; }
++.windows:lang(zh-Hant) .monaco-workbench-part { font-family: "Segoe WPC", "Segoe UI", "Microsoft Jhenghei", sans-serif; }
++.windows:lang(ja) .monaco-workbench-part { font-family: "Segoe WPC", "Segoe UI", "Yu Gothic UI", "Meiryo UI", sans-serif; }
++.windows:lang(ko) .monaco-workbench-part { font-family: "Segoe WPC", "Segoe UI", "Malgun Gothic", "Dotom", sans-serif; }
  
  /* Linux: add `system-ui` as first font and not `Ubuntu` to allow other distribution pick their standard OS font */
 -.linux { font-family: system-ui, "Ubuntu", "Droid Sans", sans-serif; }
@@ -2769,18 +2769,18 @@ index 262745f0ed2..ff70f984888 100644
 -.linux:lang(zh-Hant) { font-family: system-ui, "Ubuntu", "Droid Sans", "Source Han Sans TC", "Source Han Sans TW", "Source Han Sans", sans-serif; }
 -.linux:lang(ja) { font-family: system-ui, "Ubuntu", "Droid Sans", "Source Han Sans J", "Source Han Sans JP", "Source Han Sans", sans-serif; }
 -.linux:lang(ko) { font-family: system-ui, "Ubuntu", "Droid Sans", "Source Han Sans K", "Source Han Sans JR", "Source Han Sans", "UnDotum", "FBaekmuk Gulim", sans-serif; }
-+.linux .part { font-family: system-ui, "Ubuntu", "Droid Sans", sans-serif; }
-+.linux:lang(zh-Hans) .part { font-family: system-ui, "Ubuntu", "Droid Sans", "Source Han Sans SC", "Source Han Sans CN", "Source Han Sans", sans-serif; }
-+.linux:lang(zh-Hant) .part { font-family: system-ui, "Ubuntu", "Droid Sans", "Source Han Sans TC", "Source Han Sans TW", "Source Han Sans", sans-serif; }
-+.linux:lang(ja) .part { font-family: system-ui, "Ubuntu", "Droid Sans", "Source Han Sans J", "Source Han Sans JP", "Source Han Sans", sans-serif; }
-+.linux:lang(ko) .part { font-family: system-ui, "Ubuntu", "Droid Sans", "Source Han Sans K", "Source Han Sans JR", "Source Han Sans", "UnDotum", "FBaekmuk Gulim", sans-serif; }
++.linux .monaco-workbench-part { font-family: system-ui, "Ubuntu", "Droid Sans", sans-serif; }
++.linux:lang(zh-Hans) .monaco-workbench-part { font-family: system-ui, "Ubuntu", "Droid Sans", "Source Han Sans SC", "Source Han Sans CN", "Source Han Sans", sans-serif; }
++.linux:lang(zh-Hant) .monaco-workbench-partt { font-family: system-ui, "Ubuntu", "Droid Sans", "Source Han Sans TC", "Source Han Sans TW", "Source Han Sans", sans-serif; }
++.linux:lang(ja) .monaco-workbench-part { font-family: system-ui, "Ubuntu", "Droid Sans", "Source Han Sans J", "Source Han Sans JP", "Source Han Sans", sans-serif; }
++.linux:lang(ko) .monaco-workbench-part { font-family: system-ui, "Ubuntu", "Droid Sans", "Source Han Sans K", "Source Han Sans JR", "Source Han Sans", "UnDotum", "FBaekmuk Gulim", sans-serif; }
  
 -.mac { --monaco-monospace-font: "SF Mono", Monaco, Menlo, Courier, monospace; }
 -.windows { --monaco-monospace-font: Consolas, "Courier New", monospace; }
 -.linux { --monaco-monospace-font: "Ubuntu Mono", "Liberation Mono", "DejaVu Sans Mono", "Courier New", monospace; }
-+.mac .part { --monaco-monospace-font: "SF Mono", Monaco, Menlo, Courier, monospace; }
-+.windows .part { --monaco-monospace-font: Consolas, "Courier New", monospace; }
-+.linux .part { --monaco-monospace-font: "Ubuntu Mono", "Liberation Mono", "DejaVu Sans Mono", "Courier New", monospace; }
++.mac .monaco-workbench-part { --monaco-monospace-font: "SF Mono", Monaco, Menlo, Courier, monospace; }
++.windows .monaco-workbench-part { --monaco-monospace-font: Consolas, "Courier New", monospace; }
++.linux .monaco-workbench-part { --monaco-monospace-font: "Ubuntu Mono", "Liberation Mono", "DejaVu Sans Mono", "Courier New", monospace; }
  
  /* Global Styles */
  
@@ -2800,7 +2800,7 @@ index 262745f0ed2..ff70f984888 100644
 -}
 -
 -.monaco-workbench {
-+.monaco-workbench .part {
++.monaco-workbench-part {
  	font-size: 13px;
  	line-height: 1.4em;
 -	position: relative;
@@ -2810,60 +2810,46 @@ index 262745f0ed2..ff70f984888 100644
  }
  
 -.monaco-workbench.web {
-+.monaco-workbench.web .part {
++.monaco-workbench.web .monaco-workbench-part, .monaco-workbench-part.web {
  	touch-action: none; /* Disable browser handling of all panning and zooming gestures. Removes 300ms touch delay. */
  }
  
--.monaco-workbench.border:not(.fullscreen) {
--	box-sizing: border-box;
--	border: 1px solid var(--window-border-color);
--}
--
--.monaco-workbench.border.mac {
--	border-radius: 5px;
--}
--
--.monaco-workbench.border.mac.macos-bigsur-or-newer {
--	border-radius: 10px; /* macOS Big Sur increased rounded corners size */
--}
--
--.monaco-workbench img {
-+.monaco-workbench .part img {
+@@ -79,60 +61,60 @@ body.web {
  	border: 0;
  }
  
 -.monaco-workbench label {
-+.monaco-workbench .part label {
++.monaco-workbench-part label {
  	cursor: pointer;
  }
  
 -.monaco-workbench a {
-+.monaco-workbench .part a  {
++.monaco-workbench-part a  {
  	text-decoration: none;
  }
  
 -.monaco-workbench a:active {
-+.monaco-workbench .part a:active {
++.monaco-workbench-part a:active {
  	color: inherit;
  	background-color: inherit;
  }
  
 -.monaco-workbench a.plain {
-+.monaco-workbench .part a.plain {
++.monaco-workbench-part a.plain {
  	color: inherit;
  	text-decoration: none;
  }
  
 -.monaco-workbench a.plain:hover,
 -.monaco-workbench a.plain.hover {
-+.monaco-workbench .part a.plain:hover,
-+.monaco-workbench .part a.plain.hover {
++.monaco-workbench-part a.plain:hover,
++.monaco-workbench-part a.plain.hover {
  	color: inherit;
  	text-decoration: none;
  }
  
 -.monaco-workbench input {
-+.monaco-workbench .part input {
++.monaco-workbench-part input {
  	color: inherit;
  	font-family: inherit;
  	font-size: 100%;
@@ -2872,50 +2858,50 @@ index 262745f0ed2..ff70f984888 100644
 -.monaco-workbench input::placeholder { color: var(--vscode-input-placeholderForeground); }
 -.monaco-workbench input::-webkit-input-placeholder  { color: var(--vscode-input-placeholderForeground); }
 -.monaco-workbench input::-moz-placeholder { color: var(--vscode-input-placeholderForeground); }
-+.monaco-workbench .part input::placeholder { color: var(--vscode-input-placeholderForeground); }
-+.monaco-workbench .part input::-webkit-input-placeholder  { color: var(--vscode-input-placeholderForeground); }
-+.monaco-workbench .part input::-moz-placeholder { color: var(--vscode-input-placeholderForeground); }
++.monaco-workbench-part input::placeholder { color: var(--vscode-input-placeholderForeground); }
++.monaco-workbench-part input::-webkit-input-placeholder  { color: var(--vscode-input-placeholderForeground); }
++.monaco-workbench-part input::-moz-placeholder { color: var(--vscode-input-placeholderForeground); }
  
 -.monaco-workbench textarea::placeholder { color: var(--vscode-input-placeholderForeground); }
 -.monaco-workbench textarea::-webkit-input-placeholder { color: var(--vscode-input-placeholderForeground); }
 -.monaco-workbench textarea::-moz-placeholder { color: var(--vscode-input-placeholderForeground); }
-+.monaco-workbench .part textarea::placeholder { color: var(--vscode-input-placeholderForeground); }
-+.monaco-workbench .part textarea::-webkit-input-placeholder { color: var(--vscode-input-placeholderForeground); }
-+.monaco-workbench .part textarea::-moz-placeholder { color: var(--vscode-input-placeholderForeground); }
++.monaco-workbench-part textarea::placeholder { color: var(--vscode-input-placeholderForeground); }
++.monaco-workbench-part textarea::-webkit-input-placeholder { color: var(--vscode-input-placeholderForeground); }
++.monaco-workbench-part textarea::-moz-placeholder { color: var(--vscode-input-placeholderForeground); }
  
 -.monaco-workbench .pointer {
-+.monaco-workbench .part .pointer {
++.monaco-workbench-part .pointer {
  	cursor: pointer;
  }
  
 -.monaco-workbench.mac.monaco-font-aliasing-antialiased {
-+.monaco-workbench.mac.monaco-font-aliasing-antialiased .part {
++.monaco-workbench.mac.monaco-font-aliasing-antialiased.monaco-workbench-part, .monaco-workbench.mac.monaco-font-aliasing-antialiased .monaco-workbench-part {
  	-webkit-font-smoothing: antialiased;
  	-moz-osx-font-smoothing: grayscale;
  }
  
 -.monaco-workbench.mac.monaco-font-aliasing-none {
-+.monaco-workbench.mac.monaco-font-aliasing-none .part {
++.monaco-workbench.mac.monaco-font-aliasing-none.monaco-workbench-part,	.monaco-workbench.mac.monaco-font-aliasing-none .monaco-workbench-part {
  	-webkit-font-smoothing: none;
  	-moz-osx-font-smoothing: unset;
  }
  
  @media (-webkit-min-device-pixel-ratio: 2), (min-resolution: 192dpi) {
 -	.monaco-workbench.mac.monaco-font-aliasing-auto {
-+  .monaco-workbench.mac.monaco-font-aliasing-auto .part {
++	.monaco-workbench.mac.monaco-font-aliasing-auto.monaco-workbench-part, .monaco-workbench.mac.monaco-font-aliasing-auto .monaco-workbench-part {
  		-webkit-font-smoothing: antialiased;
  		-moz-osx-font-smoothing: grayscale;
  	}
-@@ -167,7 +136,7 @@ body.web {
+@@ -167,7 +149,7 @@ body.web {
  
  /* Custom Dropdown (select) Arrows */
  
 -.monaco-workbench select {
-+.monaco-workbench .part select {
++.monaco-workbench-part select {
  	font-family: inherit;
  	appearance: none;
  	-webkit-appearance: none;
-@@ -197,16 +166,16 @@ body.web {
+@@ -197,16 +179,16 @@ body.web {
  
  /* Keyboard Focus Indication Styles */
  
@@ -2929,25 +2915,25 @@ index 262745f0ed2..ff70f984888 100644
 -.monaco-workbench textarea:focus,
 -.monaco-workbench input[type="search"]:focus,
 -.monaco-workbench input[type="checkbox"]:focus {
-+.monaco-workbench .part [tabindex="0"]:focus,
-+.monaco-workbench .part [tabindex="-1"]:focus,
-+.monaco-workbench .part .synthetic-focus,
-+.monaco-workbench .part select:focus,
-+.monaco-workbench .part input[type="button"]:focus,
-+.monaco-workbench .part input[type="text"]:focus,
-+.monaco-workbench .part button:focus,
-+.monaco-workbench .part textarea:focus,
-+.monaco-workbench .part input[type="search"]:focus,
-+.monaco-workbench .part input[type="checkbox"]:focus {
++.monaco-workbench-part [tabindex="0"]:focus,
++.monaco-workbench-part [tabindex="-1"]:focus,
++.monaco-workbench-part .synthetic-focus,
++.monaco-workbench-part select:focus,
++.monaco-workbench-part input[type="button"]:focus,
++.monaco-workbench-part input[type="text"]:focus,
++.monaco-workbench-part button:focus,
++.monaco-workbench-part textarea:focus,
++.monaco-workbench-part input[type="search"]:focus,
++.monaco-workbench-part input[type="checkbox"]:focus {
  	outline-width: 1px;
  	outline-style: solid;
  	outline-offset: -1px;
-@@ -219,19 +188,19 @@ body.web {
+@@ -219,19 +201,19 @@ body.web {
  	background: transparent; /* Search input focus fix when in high contrast */
  }
  
 -.monaco-workbench input[type="checkbox"]:focus {
-+.monaco-workbench .part input[type="checkbox"]:focus {
++.monaco-workbench-part input[type="checkbox"]:focus {
  	outline-offset: 2px;
  }
  
@@ -2956,16 +2942,16 @@ index 262745f0ed2..ff70f984888 100644
 -.monaco-workbench select:active,
 -.monaco-workbench input[type="button"]:active,
 -.monaco-workbench input[type="checkbox"]:active {
-+.monaco-workbench part [tabindex="0"]:active,
-+.monaco-workbench .part [tabindex="-1"]:active,
-+.monaco-workbench .part select:active,
-+.monaco-workbench .part input[type="button"]:active,
-+.monaco-workbench .part input[type="checkbox"]:active {
++.monaco-workbench-part [tabindex="0"]:active,
++.monaco-workbench-part [tabindex="-1"]:active,
++.monaco-workbench-part select:active,
++.monaco-workbench-part input[type="button"]:active,
++.monaco-workbench-part input[type="checkbox"]:active {
  	outline: 0 !important; /* fixes some flashing outlines from showing up when clicking */
  }
  
 -.monaco-workbench.mac select:focus {
-+.monaco-workbench.mac .part select:focus  {
++.monaco-workbench.mac.monaco-workbench-part select:focus, .monaco-workbench.mac .monaco-workbench-part select:focus  {
  	border-color: transparent; /* outline is a square, but border has a radius, so we avoid this glitch when focused (https://github.com/microsoft/vscode/issues/26045) */
  }
  
