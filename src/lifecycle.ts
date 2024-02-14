@@ -2,11 +2,12 @@ import { Registry } from 'vs/platform/registry/common/platform'
 import { IWorkbenchContributionsRegistry, Extensions as WorkbenchExtensions } from 'vs/workbench/common/contributions'
 import { ILifecycleService, LifecyclePhase } from 'vs/workbench/services/lifecycle/common/lifecycle'
 import { IInstantiationService, ServicesAccessor } from 'vs/platform/instantiation/common/instantiation'
-import { Barrier, RunOnceScheduler, _runWhenIdle } from 'vs/base/common/async'
+import { Barrier, RunOnceScheduler, _runWhenIdle, timeout } from 'vs/base/common/async'
 import { Emitter } from 'vs/base/common/event'
 import { EditorExtensions, IEditorFactoryRegistry } from 'vs/workbench/common/editor'
 import { StandaloneServices } from 'vs/editor/standalone/browser/standaloneServices'
 import { Disposable } from 'vs/base/common/lifecycle'
+import { IWorkbenchLayoutService } from 'vs/workbench/services/layout/browser/layoutService'
 
 const renderWorkbenchEmitter = new Emitter<ServicesAccessor>()
 export const onRenderWorkbench = renderWorkbenchEmitter.event
@@ -51,13 +52,18 @@ export async function startup (instantiationService: IInstantiationService): Pro
   serviceInitializedBarrier.open()
   serviceInitializedEmitter.fire()
 
-  instantiationService.invokeFunction(accessor => {
+  void instantiationService.invokeFunction(async accessor => {
     const lifecycleService = accessor.get(ILifecycleService)
 
     Registry.as<IWorkbenchContributionsRegistry>(WorkbenchExtensions.Workbench).start(accessor)
     Registry.as<IEditorFactoryRegistry>(EditorExtensions.EditorFactory).start(accessor)
 
     renderWorkbenchEmitter.fire(accessor)
+
+    await Promise.race([
+      accessor.get(IWorkbenchLayoutService).whenRestored,
+      timeout(2000)
+    ])
 
     lifecycleService.phase = LifecyclePhase.Restored
 
