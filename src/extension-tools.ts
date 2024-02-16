@@ -159,6 +159,12 @@ export async function getExtensionResources (manifest: IExtensionManifest, fs: t
 async function extractResourcesFromExtensionManifest (manifest: IExtensionManifest, fs: typeof nodeFs, cwd: string): Promise<string[]> {
   const resources: string[] = []
 
+  const children = await fs.promises.readdir('/')
+  const readme = children.filter(child => /^readme(\.txt|\.md|)$/i.test(child))[0]
+  if (readme != null) resources.push(readme)
+  const changelog = children.filter(child => /^changelog(\.txt|\.md|)$/i.test(child))[0]
+  if (changelog != null) resources.push(changelog)
+
   if (manifest.contributes != null) {
     resources.push(...await extractResourcesFromExtensionManifestContribute(<IExtensionContributions & { [customKey: string]: unknown }>manifest.contributes, fs, cwd))
   }
@@ -176,6 +182,10 @@ async function extractResourcesFromExtensionManifest (manifest: IExtensionManife
       onlyFiles: true
     }))
     resources.push(...bundleFiles)
+  }
+
+  if (manifest.icon != null) {
+    resources.push(manifest.icon)
   }
 
   // remove duplicates
