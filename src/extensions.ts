@@ -29,6 +29,8 @@ export function registerLocalApiFactory (_apiFactory: ApiFactory): void {
 interface RegisterExtensionParams {
   path?: string
   system?: boolean
+  readmePath?: string
+  changelogPath?: string
 }
 
 interface RegisterRemoteExtensionParams extends RegisterExtensionParams {
@@ -95,7 +97,7 @@ export function registerExtension (manifest: IExtensionManifest, extHostKind: Ex
 export function registerExtension (manifest: IExtensionManifest, extHostKind: ExtensionHostKind.LocalWebWorker, params?: RegisterExtensionParams): RegisterLocalExtensionResult
 export function registerExtension (manifest: IExtensionManifest, extHostKind: ExtensionHostKind.Remote, params?: RegisterRemoteExtensionParams): RegisterRemoteExtensionResult
 export function registerExtension (manifest: IExtensionManifest, extHostKind?: ExtensionHostKind, params?: RegisterExtensionParams): RegisterExtensionResult
-export function registerExtension (manifest: IExtensionManifest, extHostKind?: ExtensionHostKind, { path = '/', system = false }: RegisterExtensionParams = {}): RegisterExtensionResult {
+export function registerExtension (manifest: IExtensionManifest, extHostKind?: ExtensionHostKind, { path = '/', system = false, readmePath, changelogPath }: RegisterExtensionParams = {}): RegisterExtensionResult {
   const id = getExtensionId(manifest.publisher, manifest.name)
   const location = URI.from({ scheme: CustomSchemas.extensionFile, authority: id, path })
 
@@ -120,7 +122,9 @@ export function registerExtension (manifest: IExtensionManifest, extHostKind?: E
       targetPlatform: TargetPlatform.WEB,
       isValid: true,
       validations: [],
-      extHostKind
+      extHostKind,
+      readmeUrl: readmePath != null ? URI.joinPath(realLocation, readmePath) : undefined,
+      changelogUrl: changelogPath != null ? URI.joinPath(realLocation, changelogPath) : undefined
     }
 
     await deltaExtensions({ toAdd: [extension], toRemove: [] })
