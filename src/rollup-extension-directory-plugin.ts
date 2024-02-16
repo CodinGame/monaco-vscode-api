@@ -55,6 +55,10 @@ export default function plugin ({
         try {
           const resources = await getExtensionResources(manifest, fs, id)
 
+          const resourcePaths = resources.map(r => r.path)
+          const readmePath = resourcePaths.filter(child => /^readme(\.txt|\.md|)$/i.test(child))[0]
+          const changelogPath = resourcePaths.filter(child => /^changelog(\.txt|\.md|)$/i.test(child))[0]
+
           function generateFileRegistrationInstruction (filePath: string, importPath: string, mimeType?: string) {
             return `registerFileUrl('${filePath}', new URL('${importPath}', import.meta.url).toString()${mimeType != null ? `, '${mimeType}'` : ''})`
           }
@@ -63,7 +67,7 @@ export default function plugin ({
 import manifest from '${manifestPath}'
 import { registerExtension } from 'vscode/extensions'
 
-const { registerFileUrl, whenReady } = registerExtension(manifest)
+const { registerFileUrl, whenReady } = registerExtension(manifest, undefined, ${JSON.stringify({ system: true, readmePath, changelogPath })})
 ${resources.map(resource => {
   const lines: string[] = resource.extensionPaths.map(extensionPath =>
     generateFileRegistrationInstruction(extensionPath, path.resolve(id, resource.path), resource.mimeType)
