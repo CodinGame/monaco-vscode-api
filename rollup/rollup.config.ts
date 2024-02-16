@@ -523,7 +523,8 @@ export default (args: Record<string, string>): rollup.RollupOptions[] => {
           path.includes('vs/workbench/contrib/format/browser/') ||
           path.includes('vs/workbench/contrib/chat/browser/contrib/') ||
           path.includes('vs/workbench/contrib/notebook/browser/') ||
-          path.includes('vs/workbench/contrib/welcomeGettingStarted/browser/gettingStartedColors')
+          path.includes('vs/workbench/contrib/welcomeGettingStarted/browser/gettingStartedColors') ||
+          path.includes('keyboardLayoutPicker')
       }
     },
     external,
