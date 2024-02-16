@@ -524,7 +524,8 @@ export default (args: Record<string, string>): rollup.RollupOptions[] => {
           path.includes('vs/workbench/contrib/chat/browser/contrib/') ||
           path.includes('vs/workbench/contrib/notebook/browser/') ||
           path.includes('vs/workbench/contrib/welcomeGettingStarted/browser/gettingStartedColors') ||
-          path.includes('keyboardLayoutPicker')
+          path.includes('keyboardLayoutPicker') ||
+          path.includes('expandAbbreviation')
       }
     },
     external,
