@@ -38,6 +38,7 @@ import { memoizedConstructor, unsupported } from '../tools'
 import { registerServiceInitializePreParticipant } from '../lifecycle'
 import { getService, withReadyServices } from '../services'
 import { getWorkspaceIdentifier } from '../workbench'
+import 'vs/workbench/contrib/workspaces/browser/workspaces.contribution'
 
 // This is the default value, but can be overriden by overriding the Environment or UserDataProfileService service
 const defaultUserConfigurationFile = URI.from({ scheme: Schemas.vscodeUserData, path: '/User/settings.json' })
