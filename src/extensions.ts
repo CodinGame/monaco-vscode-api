@@ -93,6 +93,11 @@ export async function registerRemoteExtension (directory: string): Promise<Regis
   return registerExtension(manifest, ExtensionHostKind.Remote, { path: directory })
 }
 
+const extensions: IExtension[] = []
+export function getExtensionManifests (): IExtension[] {
+  return extensions
+}
+
 export function registerExtension (manifest: IExtensionManifest, extHostKind: ExtensionHostKind.LocalProcess, params?: RegisterExtensionParams): RegisterLocalProcessExtensionResult
 export function registerExtension (manifest: IExtensionManifest, extHostKind: ExtensionHostKind.LocalWebWorker, params?: RegisterExtensionParams): RegisterLocalExtensionResult
 export function registerExtension (manifest: IExtensionManifest, extHostKind: ExtensionHostKind.Remote, params?: RegisterRemoteExtensionParams): RegisterRemoteExtensionResult
@@ -127,6 +132,10 @@ export function registerExtension (manifest: IExtensionManifest, extHostKind?: E
       changelogUrl: changelogPath != null ? URI.joinPath(realLocation, changelogPath) : undefined
     }
 
+    if (extHostKind !== ExtensionHostKind.Remote) {
+      extensions.push(extension)
+    }
+
     await deltaExtensions({ toAdd: [extension], toRemove: [] })
 
     return extension
@@ -139,6 +148,12 @@ export function registerExtension (manifest: IExtensionManifest, extHostKind?: E
     },
     async dispose () {
       const extension = await addExtensionPromise
+
+      const index = extensions.indexOf(extension)
+      if (index >= 0) {
+        extensions.splice(extensions.indexOf(extension), 1)
+      }
+
       await deltaExtensions({ toAdd: [], toRemove: [extension] })
     }
   }
