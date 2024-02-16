@@ -12,6 +12,7 @@ import { IWorkbenchEnvironmentService } from 'vs/workbench/services/environment/
 import { parse } from 'vs/base/common/json'
 import { IFileService } from 'vs/platform/files/common/files'
 import { IInstantiationService } from 'vs/platform/instantiation/common/instantiation'
+import { IWorkbenchExtensionEnablementService } from 'vs/workbench/services/extensionManagement/common/extensionManagement'
 import { IExtensionWithExtHostKind, ExtensionServiceOverride } from './service-override/extensions'
 import { CustomSchemas, registerExtensionFile } from './service-override/files'
 import { getService } from './services'
@@ -41,6 +42,7 @@ interface RegisterExtensionResult {
   id: string
   dispose (): Promise<void>
   whenReady(): Promise<void>
+  isEnabled(): Promise<boolean>
 }
 
 interface RegisterRemoteExtensionResult extends RegisterExtensionResult {
@@ -136,7 +138,11 @@ export function registerExtension (manifest: IExtensionManifest, extHostKind?: E
       extensions.push(extension)
     }
 
-    await deltaExtensions({ toAdd: [extension], toRemove: [] })
+    // Wait for extension to be enabled
+    const extensionEnablementService = await getService(IWorkbenchExtensionEnablementService)
+    if (extensionEnablementService.isEnabled(extension)) {
+      await deltaExtensions({ toAdd: [extension], toRemove: [] })
+    }
 
     return extension
   })()
@@ -145,6 +151,11 @@ export function registerExtension (manifest: IExtensionManifest, extHostKind?: E
     id,
     async whenReady () {
       await addExtensionPromise
+    },
+    async isEnabled () {
+      const extensionEnablementService = await getService(IWorkbenchExtensionEnablementService)
+      const extension = await addExtensionPromise
+      return extensionEnablementService.isEnabled(extension)
     },
     async dispose () {
       const extension = await addExtensionPromise
