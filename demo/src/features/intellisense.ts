@@ -4,6 +4,7 @@ import '@codingame/monaco-vscode-typescript-language-features-default-extension'
 import '@codingame/monaco-vscode-html-language-features-default-extension'
 import '@codingame/monaco-vscode-css-language-features-default-extension'
 import '@codingame/monaco-vscode-markdown-language-features-default-extension'
+import '@codingame/monaco-vscode-emmet-default-extension'
 import { ExtensionHostKind, registerExtension } from 'vscode/extensions'
 
 const { getApi } = registerExtension({

@@ -43,6 +43,18 @@ import getAiServiceOverride from '@codingame/monaco-vscode-ai-service-override'
 import getTaskServiceOverride from '@codingame/monaco-vscode-task-service-override'
 import getOutlineServiceOverride from '@codingame/monaco-vscode-outline-service-override'
 import getTimelineServiceOverride from '@codingame/monaco-vscode-timeline-service-override'
+import getCommentsServiceOverride from '@codingame/monaco-vscode-comments-service-override'
+import getEditSessionsServiceOverride from '@codingame/monaco-vscode-edit-sessions-service-override'
+import getEmmetServiceOverride from '@codingame/monaco-vscode-emmet-service-override'
+import getInteractiveServiceOverride from '@codingame/monaco-vscode-interactive-service-override'
+import getIssueServiceOverride from '@codingame/monaco-vscode-issue-service-override'
+import getMultiDiffEditorServiceOverride from '@codingame/monaco-vscode-multi-diff-editor-service-override'
+import getPerformanceServiceOverride from '@codingame/monaco-vscode-performance-service-override'
+import getRelauncherServiceOverride from '@codingame/monaco-vscode-relauncher-service-override'
+import getShareServiceOverride from '@codingame/monaco-vscode-share-service-override'
+import getSpeechServiceOverride from '@codingame/monaco-vscode-speech-service-override'
+import getSurveyServiceOverride from '@codingame/monaco-vscode-survey-service-override'
+import getUpdateServiceOverride from '@codingame/monaco-vscode-update-service-override'
 import { Worker } from './tools/crossOriginWorker'
 import defaultKeybindings from './user/keybindings.json?raw'
 import defaultConfiguration from './user/configuration.json?raw'
@@ -273,5 +285,17 @@ export const commonServices: IEditorOverrideServices = {
   ...getWelcomeServiceOverride(),
   ...getUserDataSyncServiceOverride(),
   ...getAiServiceOverride(),
-  ...getTaskServiceOverride()
+  ...getTaskServiceOverride(),
+  ...getCommentsServiceOverride(),
+  ...getEditSessionsServiceOverride(),
+  ...getEmmetServiceOverride(),
+  ...getInteractiveServiceOverride(),
+  ...getIssueServiceOverride(),
+  ...getMultiDiffEditorServiceOverride(),
+  ...getPerformanceServiceOverride(),
+  ...getRelauncherServiceOverride(),
+  ...getShareServiceOverride(),
+  ...getSpeechServiceOverride(),
+  ...getSurveyServiceOverride(),
+  ...getUpdateServiceOverride()
 }
