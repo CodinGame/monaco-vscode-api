@@ -1,13 +1,15 @@
 import { ExtensionHostKind, registerExtension } from 'vscode/extensions'
 import type * as vscode from 'vscode'
 
-const { getApi } = registerExtension({
+const { getApi, registerFileUrl } = registerExtension({
   name: 'debugger',
   publisher: 'codingame',
   version: '1.0.0',
   engines: {
     vscode: '*'
   },
+  // A browser field is mandatory for the extension to be flagged as `web`
+  browser: 'extension.js',
   contributes: {
     debuggers: [{
       type: 'javascript',
@@ -19,6 +21,8 @@ const { getApi } = registerExtension({
     }]
   }
 }, ExtensionHostKind.LocalProcess)
+
+registerFileUrl('./extension.js', 'data:text/javascript;base64,' + window.btoa('// nothing'))
 
 const debuggerVscodeApi = await getApi()
 class WebsocketDebugAdapter implements vscode.DebugAdapter {
