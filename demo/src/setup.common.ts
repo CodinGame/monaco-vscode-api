@@ -198,6 +198,10 @@ export const constructOptions: IWorkbenchConstructionOptions = {
   developmentOptions: {
     logLevel: LogLevel.Info // Default value
   },
+  configurationDefaults: {
+    // eslint-disable-next-line no-template-curly-in-string
+    'window.title': 'Monaco-Vscode-Api${separator}${dirty}${activeEditorShort}'
+  },
   defaultLayout: {
     editors: [{
       uri: monaco.Uri.file('/tmp/test.js'),
@@ -212,6 +216,9 @@ export const constructOptions: IWorkbenchConstructionOptions = {
         groups: [{ size: 1 }, { size: 1 }]
       }
     }
+  },
+  welcomeBanner: {
+    message: 'Welcome in monaco-vscode-api demo'
   },
   productConfiguration: {
     extensionsGallery: {
