@@ -67,7 +67,6 @@ const PURE_FUNCTIONS = new Set([
 // Function calls to remove when the result is not used
 const FUNCTIONS_TO_REMOVE = new Set([
   'registerProxyConfigurations',
-  'registerViewWelcomeContent',
   'registerExtensionPoint',
   'registerTouchBarEntry',
 
@@ -524,7 +523,9 @@ export default (args: Record<string, string>): rollup.RollupOptions[] => {
           path.includes('vs/workbench/contrib/chat/browser/contrib/') ||
           path.includes('vs/workbench/contrib/notebook/browser/') ||
           path.includes('vs/workbench/contrib/welcomeGettingStarted/browser/gettingStartedColors') ||
-          path.includes('keyboardLayoutPicker')
+          path.includes('keyboardLayoutPicker') ||
+          path.includes('expandAbbreviation') ||
+          path.includes('commentsEditorContribution')
       }
     },
     external,

@@ -25,7 +25,7 @@ import { IContextKeyService } from 'vs/platform/contextkey/common/contextkey'
 import { StandaloneServices } from 'vs/editor/standalone/browser/standaloneServices'
 import { ICodeEditorService } from 'vs/editor/browser/services/codeEditorService'
 import { IUserDataProfilesService, toUserDataProfile } from 'vs/platform/userDataProfile/common/userDataProfile'
-import { IPolicyService } from 'vs/platform/policy/common/policy'
+import { IPolicyService, NullPolicyService } from 'vs/platform/policy/common/policy'
 import { IUserDataProfileImportExportService, IUserDataProfileManagementService, IUserDataProfileService } from 'vs/workbench/services/userDataProfile/common/userDataProfile'
 import { UserDataProfileService } from 'vs/workbench/services/userDataProfile/common/userDataProfileService'
 import { ISnippetsService } from 'vs/workbench/contrib/snippets/browser/snippets'
@@ -186,6 +186,11 @@ import { IInlineChatSessionService } from 'vs/workbench/contrib/inlineChat/brows
 import { IInlineChatSavingService } from 'vs/workbench/contrib/inlineChat/browser/inlineChatSavingService'
 import { INotebookDocumentService } from 'vs/workbench/services/notebook/common/notebookDocumentService'
 import { IDebugVisualizerService } from 'vs/workbench/contrib/debug/common/debugVisualizers'
+import { IEditSessionsLogService, IEditSessionsStorageService, SyncResource } from 'vs/workbench/contrib/editSessions/common/editSessions'
+import { IMultiDiffSourceResolverService } from 'vs/workbench/contrib/multiDiffEditor/browser/multiDiffSourceResolverService'
+import { IInteractiveHistoryService } from 'vs/workbench/contrib/interactive/browser/interactiveHistoryService'
+import { IWorkspaceTagsService } from 'vs/workbench/contrib/tags/common/workspaceTags'
+import { NoOpWorkspaceTagsService } from 'vs/workbench/contrib/tags/browser/workspaceTagsService'
 import { unsupported } from './tools'
 import { getBuiltInExtensionTranslationsUris } from './l10n'
 
@@ -701,14 +706,7 @@ class InjectedUserDataProfileService extends UserDataProfileService {
 }
 registerSingleton(IUserDataProfileService, InjectedUserDataProfileService, InstantiationType.Eager)
 
-registerSingleton(IPolicyService, class PolicyService implements IPolicyService {
-  _serviceBrand: undefined
-  updatePolicyDefinitions = unsupported
-  onDidChange = Event.None
-  registerPolicyDefinitions = unsupported
-  getPolicyValue = () => undefined
-  serialize = () => undefined
-}, InstantiationType.Eager)
+registerSingleton(IPolicyService, NullPolicyService, InstantiationType.Eager)
 
 registerSingleton(ISnippetsService, class SnippetsService implements ISnippetsService {
   _serviceBrand: undefined
@@ -2332,6 +2330,16 @@ registerSingleton(INotebookRendererMessagingService, class NotebookRendererMessa
   receiveMessage = unsupported
 }, InstantiationType.Delayed)
 
+registerSingleton(IInteractiveHistoryService, class InteractiveHistoryService implements IInteractiveHistoryService {
+  _serviceBrand: undefined
+  addToHistory = unsupported
+  getPreviousValue = unsupported
+  getNextValue = unsupported
+  replaceLast = unsupported
+  clearHistory = unsupported
+  has = unsupported
+}, InstantiationType.Delayed)
+
 registerSingleton(IInteractiveDocumentService, class InteractiveDocumentService implements IInteractiveDocumentService {
   _serviceBrand: undefined
   onWillAddInteractiveDocument = Event.None
@@ -3010,3 +3018,42 @@ registerSingleton(IDebugVisualizerService, class DebugVisualizerService implemen
   getApplicableFor = unsupported
   register = unsupported
 }, InstantiationType.Delayed)
+
+registerSingleton(IEditSessionsLogService, class EditSessionsLogService implements IEditSessionsLogService {
+  _serviceBrand: undefined
+  onDidChangeLogLevel = Event.None
+  getLevel = unsupported
+  setLevel = unsupported
+  trace = unsupported
+  debug = unsupported
+  info = unsupported
+  warn = unsupported
+  error = unsupported
+  flush = unsupported
+  dispose = unsupported
+}, InstantiationType.Delayed)
+
+registerSingleton(IEditSessionsStorageService, class EditSessionsWorkbenchService implements IEditSessionsStorageService {
+  _serviceBrand: undefined
+  SIZE_LIMIT = 0
+  isSignedIn = false
+  onDidSignIn = Event.None
+  onDidSignOut = Event.None
+  storeClient = undefined
+  lastReadResources = new Map<SyncResource, { ref: string, content: string }>()
+  lastWrittenResources = new Map<SyncResource, { ref: string, content: string }>()
+  initialize = unsupported
+  read = unsupported
+  write = unsupported
+  delete = unsupported
+  list = unsupported
+  getMachineById = unsupported
+}, InstantiationType.Delayed)
+
+registerSingleton(IMultiDiffSourceResolverService, class MultiDiffSourceResolverService implements IMultiDiffSourceResolverService {
+  _serviceBrand: undefined
+  registerResolver = unsupported
+  resolve = unsupported
+}, InstantiationType.Delayed)
+
+registerSingleton(IWorkspaceTagsService, NoOpWorkspaceTagsService, InstantiationType.Delayed)
