@@ -96,7 +96,6 @@ export function registerExtension (manifest: IExtensionManifest, extHostKind: Ex
 export function registerExtension (manifest: IExtensionManifest, extHostKind: ExtensionHostKind.Remote, params?: RegisterRemoteExtensionParams): RegisterRemoteExtensionResult
 export function registerExtension (manifest: IExtensionManifest, extHostKind?: ExtensionHostKind, params?: RegisterExtensionParams): RegisterExtensionResult
 export function registerExtension (manifest: IExtensionManifest, extHostKind?: ExtensionHostKind, { path = '/', system = false }: RegisterExtensionParams = {}): RegisterExtensionResult {
-  const disposableStore = new DisposableStore()
   const id = getExtensionId(manifest.publisher, manifest.name)
   const location = URI.from({ scheme: CustomSchemas.extensionFile, authority: id, path })
 
@@ -137,7 +136,6 @@ export function registerExtension (manifest: IExtensionManifest, extHostKind?: E
     async dispose () {
       const extension = await addExtensionPromise
       await deltaExtensions({ toAdd: [], toRemove: [extension] })
-      disposableStore.dispose()
     }
   }
 
