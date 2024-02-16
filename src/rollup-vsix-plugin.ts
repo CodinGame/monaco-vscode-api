@@ -83,6 +83,10 @@ export default function plugin ({
 
       const resources = await getExtensionResources(manifest, <typeof nodeFs><unknown>vsixFS, '/')
 
+      const resourcePaths = resources.map(r => r.path)
+      const readmePath = resourcePaths.filter(child => /^readme(\.txt|\.md|)$/i.test(child))[0]
+      const changelogPath = resourcePaths.filter(child => /^changelog(\.txt|\.md|)$/i.test(child))[0]
+
       const pathMapping = (await Promise.all(resources.map(async resource => {
         const assetPath = getVsixPath(resource.path)
         let url: string
@@ -109,7 +113,7 @@ import { registerExtension } from 'vscode/extensions'
 
 const manifest = ${JSON.stringify(manifest)}
 
-const { registerFileUrl, whenReady } = registerExtension(manifest)
+const { registerFileUrl, whenReady } = registerExtension(manifest, undefined, ${JSON.stringify({ system: true, readmePath, changelogPath })})
 
 ${pathMapping.map(({ pathInExtension, url, mimeType }) => (`
 registerFileUrl('${pathInExtension}', ${url}${mimeType != null ? `, '${mimeType}'` : ''})`)).join('\n')}
