@@ -27,8 +27,8 @@ export function registerLocalApiFactory (_apiFactory: ApiFactory): void {
 }
 
 interface RegisterExtensionParams {
-  builtin?: boolean
   path?: string
+  system?: boolean
 }
 
 interface RegisterRemoteExtensionParams extends RegisterExtensionParams {
@@ -95,7 +95,7 @@ export function registerExtension (manifest: IExtensionManifest, extHostKind: Ex
 export function registerExtension (manifest: IExtensionManifest, extHostKind: ExtensionHostKind.LocalWebWorker, params?: RegisterExtensionParams): RegisterLocalExtensionResult
 export function registerExtension (manifest: IExtensionManifest, extHostKind: ExtensionHostKind.Remote, params?: RegisterRemoteExtensionParams): RegisterRemoteExtensionResult
 export function registerExtension (manifest: IExtensionManifest, extHostKind?: ExtensionHostKind, params?: RegisterExtensionParams): RegisterExtensionResult
-export function registerExtension (manifest: IExtensionManifest, extHostKind?: ExtensionHostKind, { builtin = manifest.publisher === 'vscode', path = '/' }: RegisterExtensionParams = {}): RegisterExtensionResult {
+export function registerExtension (manifest: IExtensionManifest, extHostKind?: ExtensionHostKind, { path = '/', system = false }: RegisterExtensionParams = {}): RegisterExtensionResult {
   const disposableStore = new DisposableStore()
   const id = getExtensionId(manifest.publisher, manifest.name)
   const location = URI.from({ scheme: CustomSchemas.extensionFile, authority: id, path })
@@ -114,8 +114,8 @@ export function registerExtension (manifest: IExtensionManifest, extHostKind?: E
 
     const extension: IExtensionWithExtHostKind = {
       manifest: localizedManifest,
-      type: builtin ? ExtensionType.System : ExtensionType.User,
-      isBuiltin: builtin,
+      type: system ? ExtensionType.System : ExtensionType.User,
+      isBuiltin: true,
       identifier: { id },
       location: realLocation,
       targetPlatform: TargetPlatform.WEB,
