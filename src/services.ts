@@ -262,5 +262,6 @@ export {
   StorageTarget,
   Severity,
   IWorkbenchConstructionOptions,
-  IProductService
+  IProductService,
+  IEditorOverrideServices
 }
