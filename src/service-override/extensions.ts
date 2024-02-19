@@ -43,6 +43,7 @@ import { changeUrlDomain } from './tools/url'
 import { CustomSchemas } from './files'
 import type { LocalExtensionHost } from '../localExtensionHost'
 import { registerAssets } from '../assets'
+import { getForcedExtensionHostKind } from '../extensions'
 import 'vs/workbench/api/browser/extensionHost.contribution'
 
 export interface WorkerConfig {
@@ -129,7 +130,6 @@ class BrowserExtensionHostFactoryOverride extends BrowserExtensionHostFactory {
 }
 
 class LocalBrowserExtensionHostKindPicker extends BrowserExtensionHostKindPicker {
-  private extensionHostKinds = new Map<string, ExtensionHostKind>()
   constructor (
     private readonly allowedExtHostKinds: ExtensionHostKind[],
     @ILogService _logService: ILogService
@@ -138,7 +138,7 @@ class LocalBrowserExtensionHostKindPicker extends BrowserExtensionHostKindPicker
   }
 
   public override pickExtensionHostKind (extensionId: ExtensionIdentifier, extensionKinds: ExtensionKind[], isInstalledLocally: boolean, isInstalledRemotely: boolean, preference: ExtensionRunningPreference): ExtensionHostKind | null {
-    const forcedKind = this.extensionHostKinds.get(extensionId.value)
+    const forcedKind = getForcedExtensionHostKind(extensionId.value)
     if (forcedKind != null) {
       return forcedKind
     }
@@ -147,14 +147,6 @@ class LocalBrowserExtensionHostKindPicker extends BrowserExtensionHostKindPicker
       return this.allowedExtHostKinds[0] ?? null
     }
     return detectedKind
-  }
-
-  public setForcedExtensionHostKind (id: string, kind: ExtensionHostKind): void {
-    this.extensionHostKinds.set(id, kind)
-  }
-
-  public removeForcedExtensionHostKind (id: string): void {
-    this.extensionHostKinds.delete(id)
   }
 }
 
@@ -230,16 +222,6 @@ export class ExtensionServiceOverride extends ExtensionService implements IExten
   }
 
   public async deltaExtensions (toAdd: IExtensionWithExtHostKind[], toRemove: IExtension[]): Promise<void> {
-    const extHostPicker = (this._extensionHostKindPicker as LocalBrowserExtensionHostKindPicker)
-    for (const extension of toRemove) {
-      extHostPicker.removeForcedExtensionHostKind(extension.identifier.id)
-    }
-    for (const extension of toAdd) {
-      if (extension.extHostKind != null) {
-        extHostPicker.setForcedExtensionHostKind(extension.identifier.id, extension.extHostKind)
-      }
-    }
-
     await this._handleDeltaExtensions(new DeltaExtensionsQueueItem(toAdd, toRemove))
   }
 
