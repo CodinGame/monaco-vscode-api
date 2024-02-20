@@ -49,21 +49,23 @@ class LocalExtHostExtensionService extends ExtHostExtensionService {
     ])
     const extensionRegistry = { mine: myRegistry, all: this._globalRegistry }
 
-    const ext = extensionId != null ? myRegistry.getExtensionDescription(extensionId) : undefined
-    if (ext != null) {
-      let apiImpl = this._extApiImpl.get(ext.identifier)
-      if (apiImpl == null) {
-        apiImpl = this._apiFactory!(ext, extensionRegistry, configProvider)
-        this._extApiImpl.set(ext.identifier, apiImpl)
+    if (extensionId == null) {
+      if (this._defaultApiImpl == null) {
+        this._defaultApiImpl = this._apiFactory!(nullExtensionDescription, extensionRegistry, configProvider)
       }
-      return apiImpl
+      return this._defaultApiImpl
     }
 
-    // fall back to a default implementation
-    if (this._defaultApiImpl == null) {
-      this._defaultApiImpl = this._apiFactory!(nullExtensionDescription, extensionRegistry, configProvider)
+    const ext = myRegistry.getExtensionDescription(extensionId)
+    if (ext == null) {
+      throw new Error(`Extension ${extensionId} does not exist or is disabled`)
     }
-    return this._defaultApiImpl
+    let apiImpl = this._extApiImpl.get(ext.identifier)
+    if (apiImpl == null) {
+      apiImpl = this._apiFactory!(ext, extensionRegistry, configProvider)
+      this._extApiImpl.set(ext.identifier, apiImpl)
+    }
+    return apiImpl
   }
 }
 

@@ -13,8 +13,7 @@ import { WebExtensionsScannerService } from 'vs/workbench/services/extensionMana
 import { IExtensionRecommendationNotificationService } from 'vs/platform/extensionRecommendations/common/extensionRecommendations'
 import { IIgnoredExtensionsManagementService, IgnoredExtensionsManagementService } from 'vs/platform/userDataSync/common/ignoredExtensions'
 import { ExtensionManifestPropertiesService, IExtensionManifestPropertiesService } from 'vs/workbench/services/extensions/common/extensionManifestPropertiesService'
-import { IBuiltinExtensionsScannerService } from 'vs/platform/extensions/common/extensions'
-import { BuiltinExtensionsScannerService } from 'vs/workbench/services/extensionManagement/browser/builtinExtensionsScannerService'
+import { IBuiltinExtensionsScannerService, IExtension } from 'vs/platform/extensions/common/extensions'
 import { ExtensionIgnoredRecommendationsService } from 'vs/workbench/services/extensionRecommendations/common/extensionIgnoredRecommendationsService'
 import { IWorkspaceExtensionsConfigService, WorkspaceExtensionsConfigService } from 'vs/workbench/services/extensionRecommendations/common/workspaceExtensionsConfig'
 import { ExtensionRecommendationNotificationService } from 'vs/workbench/contrib/extensions/browser/extensionRecommendationNotificationService'
@@ -29,10 +28,13 @@ import { IRemoteAgentService } from 'vs/workbench/services/remote/common/remoteA
 import { IInstantiationService } from 'vs/platform/instantiation/common/instantiation'
 import { ILabelService } from 'vs/platform/label/common/label'
 import { registerAssets } from '../assets'
+import { getExtensionManifests } from '../extensions'
 
 // plugin-import-meta-asset only allows relative paths
 registerAssets({
-  'vs/workbench/services/extensionManagement/common/media/defaultIcon.png': new URL('../../vscode/src/vs/workbench/services/extensionManagement/common/media/defaultIcon.png', import.meta.url).toString()
+  'vs/workbench/services/extensionManagement/common/media/defaultIcon.png': new URL('../../vscode/src/vs/workbench/services/extensionManagement/common/media/defaultIcon.png', import.meta.url).toString(),
+  'vs/workbench/contrib/extensions/browser/media/theme-icon.png': new URL('../../vscode/src/vs/workbench/contrib/extensions/browser/media/theme-icon.png', import.meta.url).href,
+  'vs/workbench/contrib/extensions/browser/media/language-icon.svg': new URL('../../vscode/src/vs/workbench/contrib/extensions/browser/media/theme-icon.png', import.meta.url).href
 })
 
 class ExtensionManagementServerServiceOverride extends ExtensionManagementServerService {
@@ -57,6 +59,14 @@ class ExtensionManagementServerServiceOverride extends ExtensionManagementServer
   }
 }
 
+class CustomBuiltinExtensionsScannerService implements IBuiltinExtensionsScannerService {
+  _serviceBrand: undefined
+
+  async scanBuiltinExtensions (): Promise<IExtension[]> {
+    return getExtensionManifests()
+  }
+}
+
 export interface ExtensionGalleryOptions {
   /**
    * Whether we should only allow for web extensions to be installed, this is generally
@@ -78,7 +88,7 @@ export default function getServiceOverride (options: ExtensionGalleryOptions = {
     [IIgnoredExtensionsManagementService.toString()]: new SyncDescriptor(IgnoredExtensionsManagementService, [], true),
     [IExtensionManifestPropertiesService.toString()]: new SyncDescriptor(ExtensionManifestPropertiesService, [], true),
     [IExtensionManagementService.toString()]: new SyncDescriptor(ExtensionManagementService, [], true),
-    [IBuiltinExtensionsScannerService.toString()]: new SyncDescriptor(BuiltinExtensionsScannerService, [], true),
+    [IBuiltinExtensionsScannerService.toString()]: new SyncDescriptor(CustomBuiltinExtensionsScannerService, [], true),
     [IWorkspaceExtensionsConfigService.toString()]: new SyncDescriptor(WorkspaceExtensionsConfigService, [], true),
     [IExtensionTipsService.toString()]: new SyncDescriptor(ExtensionTipsService, [], true),
     [IRemoteUserDataProfilesService.toString()]: new SyncDescriptor(RemoteUserDataProfilesService, [], true),

@@ -12,6 +12,7 @@ import { IWorkbenchEnvironmentService } from 'vs/workbench/services/environment/
 import { parse } from 'vs/base/common/json'
 import { IFileService } from 'vs/platform/files/common/files'
 import { IInstantiationService } from 'vs/platform/instantiation/common/instantiation'
+import { IWorkbenchExtensionEnablementService } from 'vs/workbench/services/extensionManagement/common/extensionManagement'
 import { IExtensionWithExtHostKind, ExtensionServiceOverride } from './service-override/extensions'
 import { CustomSchemas, registerExtensionFile } from './service-override/files'
 import { getService } from './services'
@@ -27,8 +28,10 @@ export function registerLocalApiFactory (_apiFactory: ApiFactory): void {
 }
 
 interface RegisterExtensionParams {
-  builtin?: boolean
   path?: string
+  system?: boolean
+  readmePath?: string
+  changelogPath?: string
 }
 
 interface RegisterRemoteExtensionParams extends RegisterExtensionParams {
@@ -39,6 +42,7 @@ interface RegisterExtensionResult {
   id: string
   dispose (): Promise<void>
   whenReady(): Promise<void>
+  isEnabled(): Promise<boolean>
 }
 
 interface RegisterRemoteExtensionResult extends RegisterExtensionResult {
@@ -91,12 +95,20 @@ export async function registerRemoteExtension (directory: string): Promise<Regis
   return registerExtension(manifest, ExtensionHostKind.Remote, { path: directory })
 }
 
+const forcedExtensionHostKinds = new Map<string, ExtensionHostKind>()
+const extensions: IExtension[] = []
+export function getExtensionManifests (): IExtension[] {
+  return extensions
+}
+export function getForcedExtensionHostKind (id: string): ExtensionHostKind | undefined {
+  return forcedExtensionHostKinds.get(id)
+}
+
 export function registerExtension (manifest: IExtensionManifest, extHostKind: ExtensionHostKind.LocalProcess, params?: RegisterExtensionParams): RegisterLocalProcessExtensionResult
 export function registerExtension (manifest: IExtensionManifest, extHostKind: ExtensionHostKind.LocalWebWorker, params?: RegisterExtensionParams): RegisterLocalExtensionResult
 export function registerExtension (manifest: IExtensionManifest, extHostKind: ExtensionHostKind.Remote, params?: RegisterRemoteExtensionParams): RegisterRemoteExtensionResult
 export function registerExtension (manifest: IExtensionManifest, extHostKind?: ExtensionHostKind, params?: RegisterExtensionParams): RegisterExtensionResult
-export function registerExtension (manifest: IExtensionManifest, extHostKind?: ExtensionHostKind, { builtin = manifest.publisher === 'vscode', path = '/' }: RegisterExtensionParams = {}): RegisterExtensionResult {
-  const disposableStore = new DisposableStore()
+export function registerExtension (manifest: IExtensionManifest, extHostKind?: ExtensionHostKind, { path = '/', system = false, readmePath, changelogPath }: RegisterExtensionParams = {}): RegisterExtensionResult {
   const id = getExtensionId(manifest.publisher, manifest.name)
   const location = URI.from({ scheme: CustomSchemas.extensionFile, authority: id, path })
 
@@ -114,17 +126,30 @@ export function registerExtension (manifest: IExtensionManifest, extHostKind?: E
 
     const extension: IExtensionWithExtHostKind = {
       manifest: localizedManifest,
-      type: builtin ? ExtensionType.System : ExtensionType.User,
-      isBuiltin: builtin,
+      type: system ? ExtensionType.System : ExtensionType.User,
+      isBuiltin: true,
       identifier: { id },
       location: realLocation,
       targetPlatform: TargetPlatform.WEB,
       isValid: true,
       validations: [],
-      extHostKind
+      extHostKind,
+      readmeUrl: readmePath != null ? URI.joinPath(realLocation, readmePath) : undefined,
+      changelogUrl: changelogPath != null ? URI.joinPath(realLocation, changelogPath) : undefined
     }
 
-    await deltaExtensions({ toAdd: [extension], toRemove: [] })
+    if (extHostKind != null) {
+      forcedExtensionHostKinds.set(id, extHostKind)
+    }
+    if (extHostKind !== ExtensionHostKind.Remote) {
+      extensions.push(extension)
+    }
+
+    // Wait for extension to be enabled
+    const extensionEnablementService = await getService(IWorkbenchExtensionEnablementService)
+    if (extensionEnablementService.isEnabled(extension)) {
+      await deltaExtensions({ toAdd: [extension], toRemove: [] })
+    }
 
     return extension
   })()
@@ -134,10 +159,21 @@ export function registerExtension (manifest: IExtensionManifest, extHostKind?: E
     async whenReady () {
       await addExtensionPromise
     },
+    async isEnabled () {
+      const extensionEnablementService = await getService(IWorkbenchExtensionEnablementService)
+      const extension = await addExtensionPromise
+      return extensionEnablementService.isEnabled(extension)
+    },
     async dispose () {
       const extension = await addExtensionPromise
+
+      const index = extensions.indexOf(extension)
+      if (index >= 0) {
+        extensions.splice(extensions.indexOf(extension), 1)
+      }
+      forcedExtensionHostKinds.delete(id)
+
       await deltaExtensions({ toAdd: [], toRemove: [extension] })
-      disposableStore.dispose()
     }
   }
 
