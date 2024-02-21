@@ -10,7 +10,6 @@ import { DisposableStore, IDisposable, Disposable, toDisposable } from 'vs/base/
 import { extUri, joinPath } from 'vs/base/common/resources'
 import { Emitter, Event } from 'vs/base/common/event'
 import { HTMLFileSystemProvider } from 'vs/platform/files/browser/htmlFileSystemProvider'
-import 'vs/workbench/contrib/files/browser/files.configuration.contribution'
 import { Schemas } from 'vs/base/common/network'
 import { IndexedDBFileSystemProvider, IndexedDBFileSystemProviderErrorData, IndexedDBFileSystemProviderErrorDataClassification } from 'vs/platform/files/browser/indexedDBFileSystemProvider'
 import { IndexedDB } from 'vs/base/browser/indexedDB'
@@ -24,6 +23,7 @@ import { BrowserElevatedFileService } from 'vs/workbench/services/files/browser/
 import { IElevatedFileService } from 'vs/workbench/services/files/common/elevatedFileService'
 import { checkServicesNotInitialized, registerServiceInitializePreParticipant } from '../lifecycle'
 import { logsPath } from '../workbench'
+import 'vs/workbench/contrib/files/browser/files.configuration.contribution'
 
 abstract class RegisteredFile {
   private ctime: number
