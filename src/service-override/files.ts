@@ -10,7 +10,6 @@ import { DisposableStore, IDisposable, Disposable, toDisposable } from 'vs/base/
 import { extUri, joinPath } from 'vs/base/common/resources'
 import { Emitter, Event } from 'vs/base/common/event'
 import { HTMLFileSystemProvider } from 'vs/platform/files/browser/htmlFileSystemProvider'
-import * as path from 'vs/base/common/path'
 import 'vs/workbench/contrib/files/browser/files.configuration.contribution'
 import { Schemas } from 'vs/base/common/network'
 import { IndexedDBFileSystemProvider, IndexedDBFileSystemProviderErrorData, IndexedDBFileSystemProviderErrorDataClassification } from 'vs/platform/files/browser/indexedDBFileSystemProvider'
@@ -191,7 +190,7 @@ class RegisteredFileSystemProvider extends Disposable implements IFileSystemProv
 
   public async readdir (resource: URI): Promise<[string, FileType][]> {
     const includedPaths = Array.from(this.files.keys())
-      .map(uri => path.relative(resource.path, URI.parse(uri).path))
+      .map(uri => extUri.relativePath(resource, URI.parse(uri))!)
       .filter(path => !path.startsWith('..'))
 
     const files = includedPaths.filter(path => !path.includes('/'))
