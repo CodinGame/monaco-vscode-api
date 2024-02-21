@@ -1,5 +1,5 @@
 import { SyncDescriptor } from 'vs/platform/instantiation/common/descriptors'
-import { IViewContainersRegistry, IViewDescriptor, IViewsRegistry, ViewContainer, ViewContainerLocation, Extensions as ViewExtensions } from 'vs/workbench/common/views'
+import { IViewContainerDescriptor, IViewContainersRegistry, IViewDescriptor, IViewsRegistry, ViewContainer, ViewContainerLocation, Extensions as ViewExtensions } from 'vs/workbench/common/views'
 import { BrandedService, ServicesAccessor } from 'vs/platform/instantiation/common/instantiation'
 import { DisposableStore, IDisposable, MutableDisposable } from 'vs/base/common/lifecycle'
 import { append, $, Dimension, size } from 'vs/base/browser/dom'
@@ -241,10 +241,13 @@ interface CustomViewOption {
   collapsed?: boolean
 }
 
+const viewContainerRegistry = Registry.as<IViewContainersRegistry>(ViewExtensions.ViewContainersRegistry)
+const viewRegistry = Registry.as<IViewsRegistry>(ViewExtensions.ViewsRegistry)
+
 function registerCustomView (options: CustomViewOption): IDisposable {
   const iconUrl = options.icon != null ? URI.parse(options.icon) : undefined
 
-  const viewContainer = options.viewContainer ?? Registry.as<IViewContainersRegistry>(ViewExtensions.ViewContainersRegistry).registerViewContainer({
+  const viewContainer = options.viewContainer ?? viewContainerRegistry.registerViewContainer({
     id: options.id,
     title: { value: options.name, original: options.name },
     order: options.order,
@@ -297,15 +300,15 @@ function registerCustomView (options: CustomViewOption): IDisposable {
     containerIcon: iconUrl
   }]
 
-  Registry.as<IViewsRegistry>(ViewExtensions.ViewsRegistry).registerViews(views, viewContainer)
+  viewRegistry.registerViews(views, viewContainer)
 
   const disposableCollection = new DisposableStore()
   disposableCollection.add({
     dispose () {
-      Registry.as<IViewsRegistry>(ViewExtensions.ViewsRegistry).deregisterViews(views, viewContainer)
+      viewRegistry.deregisterViews(views, viewContainer)
       if (options.viewContainer == null) {
         // Only deregister if it's newly created
-        Registry.as<IViewContainersRegistry>(ViewExtensions.ViewContainersRegistry).deregisterViewContainer(viewContainer)
+        viewContainerRegistry.deregisterViewContainer(viewContainer)
       }
     }
   })
@@ -384,5 +387,10 @@ export {
   EditorInputCapabilities,
   Parts,
   SplitView,
-  IView
+  IView,
+  viewRegistry,
+  viewContainerRegistry,
+  IViewContainerDescriptor,
+  ViewContainer,
+  IViewDescriptor
 }
