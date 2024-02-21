@@ -31,8 +31,8 @@
   },
   "config": {
     "vscode": {
-      "version": "1.86.1",
-      "ref": "1.86.1"
+      "version": "1.86.2",
+      "ref": "1.86.2"
     }
   },
   "devDependencies": {
