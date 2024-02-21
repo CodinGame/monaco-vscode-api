@@ -152,12 +152,11 @@ class RegisteredFileSystemProvider extends Disposable implements IFileSystemProv
     disposableStore.add(file.onDidRename(({ from, to }) => {
       if (this.files.get(from.toString()) === file) {
         this.files.delete(from.toString())
+        this.files.set(to.toString(), file)
         this._onDidChangeFile.fire([{
           resource: from,
           type: FileChangeType.DELETED
-        }])
-        this.files.set(to.toString(), file)
-        this._onDidChangeFile.fire([{
+        }, {
           resource: to,
           type: FileChangeType.ADDED
         }])
