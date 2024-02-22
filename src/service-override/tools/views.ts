@@ -45,6 +45,7 @@ type Label = string | {
 
 abstract class SimpleEditorPane extends EditorPane {
   protected container!: HTMLElement
+  protected wrapper!: HTMLElement
   private scrollbar: DomScrollableElement | undefined
   private inputDisposable = this._register(new MutableDisposable())
   constructor (
@@ -59,9 +60,22 @@ abstract class SimpleEditorPane extends EditorPane {
   protected override createEditor (parent: HTMLElement): void {
     this.container = this.initialize()
 
+    this.wrapper = document.createElement('div')
+    this.wrapper.append(this.container)
+
     // Custom Scrollbars
-    this.scrollbar = this._register(new DomScrollableElement(this.container, { horizontal: ScrollbarVisibility.Auto, vertical: ScrollbarVisibility.Auto }))
+    this.scrollbar = this._register(new DomScrollableElement(this.wrapper, { horizontal: ScrollbarVisibility.Auto, vertical: ScrollbarVisibility.Auto }))
     parent.appendChild(this.scrollbar.getDomNode())
+
+    const observer = new ResizeObserver(() => {
+      assertIsDefined(this.scrollbar).scanDomNode()
+    })
+    observer.observe(this.container)
+    this._register({
+      dispose () {
+        observer.disconnect()
+      }
+    })
   }
 
   override async setInput (input: EditorInput, editorOptions: IEditorOptions | undefined, context: IEditorOpenContext, token: CancellationToken): Promise<void> {
@@ -73,13 +87,14 @@ abstract class SimpleEditorPane extends EditorPane {
     }
 
     this.inputDisposable.value = await this.renderInput?.(input, editorOptions, context, token)
+    assertIsDefined(this.scrollbar).scanDomNode()
   }
 
   override layout (dimension: Dimension): void {
-    const [container, scrollbar] = assertAllDefined(this.container, this.scrollbar)
+    const [wrapper, scrollbar] = assertAllDefined(this.wrapper, this.scrollbar)
 
     // Pass on to Container
-    size(container, dimension.width, dimension.height)
+    size(wrapper, dimension.width, dimension.height)
 
     // Adjust scrollbar
     scrollbar.scanDomNode()
