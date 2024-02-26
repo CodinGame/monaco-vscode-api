@@ -1,12 +1,12 @@
 import { IEditorOverrideServices } from 'vs/editor/standalone/browser/standaloneServices'
-import 'vs/workbench/browser/parts/dialogs/dialog.web.contribution'
 import { DialogService } from 'vs/workbench/services/dialogs/common/dialogService'
 import { IDialogService, IFileDialogService, IOpenDialogOptions, IPickAndOpenOptions, ISaveDialogOptions } from 'vs/platform/dialogs/common/dialogs'
 import { SyncDescriptor } from 'vs/platform/instantiation/common/descriptors'
 import { AbstractFileDialogService } from 'vs/workbench/services/dialogs/browser/abstractFileDialogService'
 import { URI } from 'vs/base/common/uri'
-import getLayoutServiceOverride from './layout'
 import { unsupported } from '../tools'
+import 'vs/workbench/browser/parts/dialogs/dialog.web.contribution'
+import 'vs/workbench/contrib/welcomeDialog/browser/welcomeDialog.contribution'
 
 class FileDialogService extends AbstractFileDialogService {
   override pickWorkspaceAndOpen = unsupported
@@ -63,7 +63,6 @@ class FileDialogService extends AbstractFileDialogService {
 export default function getServiceOverride (): IEditorOverrideServices {
   return {
     [IDialogService.toString()]: new SyncDescriptor(DialogService, undefined, true),
-    [IFileDialogService.toString()]: new SyncDescriptor(FileDialogService, undefined, true),
-    ...getLayoutServiceOverride()
+    [IFileDialogService.toString()]: new SyncDescriptor(FileDialogService, undefined, true)
   }
 }

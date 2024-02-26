@@ -1,4 +1,4 @@
-import { IEditorOverrideServices, StandaloneServices } from 'vs/editor/standalone/browser/standaloneServices'
+import { IEditorOverrideServices } from 'vs/editor/standalone/browser/standaloneServices'
 import { SyncDescriptor } from 'vs/platform/instantiation/common/descriptors'
 import { WorkbenchKeybindingService } from 'vs/workbench/services/keybinding/browser/keybindingService'
 import { IKeybindingService, IKeyboardEvent, IUserFriendlyKeybinding } from 'vs/platform/keybinding/common/keybinding'
@@ -30,6 +30,7 @@ import 'vs/workbench/browser/workbench.contribution'
 import 'vs/workbench/contrib/keybindings/browser/keybindings.contribution'
 import 'vs/workbench/contrib/preferences/browser/keybindingsEditorContribution'
 import 'vs/workbench/contrib/commands/common/commands.contribution'
+import { getService } from '../services'
 
 // This is the default value, but can be overriden by overriding the Environment or UserDataProfileService service
 const defaultUserKeybindindsFile = URI.from({ scheme: Schemas.vscodeUserData, path: '/User/keybindings.json' })
@@ -46,8 +47,9 @@ async function initUserKeybindings (configurationJson: string, options?: Partial
  */
 
 async function updateUserKeybindings (keybindingsJson: string): Promise<void> {
-  const userDataProfilesService: IUserDataProfilesService = StandaloneServices.get(IUserDataProfilesService)
-  await StandaloneServices.get(IFileService).writeFile(userDataProfilesService.defaultProfile.keybindingsResource, VSBuffer.fromString(keybindingsJson))
+  const userDataProfilesService: IUserDataProfilesService = await getService(IUserDataProfilesService)
+  const fileService = await getService(IFileService)
+  await fileService.writeFile(userDataProfilesService.defaultProfile.keybindingsResource, VSBuffer.fromString(keybindingsJson))
 }
 
 class DynamicWorkbenchKeybindingService extends WorkbenchKeybindingService implements DynamicKeybindingService {

@@ -194,6 +194,30 @@ Additionally, several packages that include the VSCode version of some services 
   - Support for the outline view. *Hint*: It only makes sense to enable it when *Views* service is used.
 - **Timeline**: `@codingame/monaco-vscode-timeline-service-override`
   - Support for the timeline view. *Hint*: It only makes sense to enable it when *Views* service is used.
+- **Workbench**: `@codingame/monaco-vscode-workbench-service-override`
+  - Allows to render the full workbench layout. Is exclusive with the `views` service. Do not use both services at the same time.
+- **Comments**
+  - Enables comments extension api
+- **Edit-sessions**
+  - Enable cloudchanges
+- **Emmet**
+  - Enables the `triggerExpansionOnTab` command for the emmet default extension
+- **Interactive**
+  - Interactive notbooks
+- **Issue**
+  - Issue reporting
+- **Multi diff editor**
+  - Multi diff editor support (https://code.visualstudio.com/updates/v1_85#_multifile-diff-editor)
+- **Performance**
+  - Performance monitoring
+- **Relauncher**
+  - Detects changes that require a reload (like settings change) and prompt the user for it
+- **Share**
+  - Enables the share extension api
+- **Survey**
+  - Survey/feedback support
+- **Update**
+  - Update detection, release notes...
 
 Usage:
 

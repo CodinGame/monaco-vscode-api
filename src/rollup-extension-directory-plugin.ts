@@ -88,3 +88,7 @@ export { whenReady }
     }
   }
 }
+
+export {
+  IExtensionManifest
+}

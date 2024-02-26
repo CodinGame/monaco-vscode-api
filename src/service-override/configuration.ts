@@ -1,4 +1,4 @@
-import { IEditorOverrideServices, StandaloneServices } from 'vs/editor/standalone/browser/standaloneServices'
+import { IEditorOverrideServices } from 'vs/editor/standalone/browser/standaloneServices'
 import { WorkspaceService } from 'vs/workbench/services/configuration/browser/configurationService'
 import { IConfigurationService } from 'vs/platform/configuration/common/configuration'
 import { ITextResourceConfigurationService, ITextResourcePropertiesService } from 'vs/editor/common/services/textResourceConfiguration'
@@ -36,8 +36,9 @@ import { TextResourcePropertiesService } from 'vs/workbench/services/textresourc
 import getFileServiceOverride, { initFile } from './files'
 import { memoizedConstructor, unsupported } from '../tools'
 import { registerServiceInitializePreParticipant } from '../lifecycle'
-import { getService } from '../services'
+import { getService, withReadyServices } from '../services'
 import { getWorkspaceIdentifier } from '../workbench'
+import 'vs/workbench/contrib/workspaces/browser/workspaces.contribution'
 
 // This is the default value, but can be overriden by overriding the Environment or UserDataProfileService service
 const defaultUserConfigurationFile = URI.from({ scheme: Schemas.vscodeUserData, path: '/User/settings.json' })
@@ -54,20 +55,24 @@ async function initUserConfiguration (configurationJson: string, options?: Parti
  */
 async function updateUserConfiguration (configurationJson: string): Promise<void> {
   const userDataProfilesService = await getService(IUserDataProfilesService)
-  await StandaloneServices.get(IFileService).writeFile(userDataProfilesService.defaultProfile.settingsResource, VSBuffer.fromString(configurationJson))
+  const fileService = await getService(IFileService)
+  await fileService.writeFile(userDataProfilesService.defaultProfile.settingsResource, VSBuffer.fromString(configurationJson))
 }
 
 async function getUserConfiguration (): Promise<string> {
-  const userDataProfilesService = StandaloneServices.get(IUserDataProfilesService)
-  return (await StandaloneServices.get(IFileService).readFile(userDataProfilesService.defaultProfile.settingsResource)).value.toString()
+  const userDataProfilesService = await getService(IUserDataProfilesService)
+  const fileService = await getService(IFileService)
+  return (await fileService.readFile(userDataProfilesService.defaultProfile.settingsResource)).value.toString()
 }
 
 function onUserConfigurationChange (callback: () => void): IDisposable {
-  const userDataProfilesService = StandaloneServices.get(IUserDataProfilesService)
-  return StandaloneServices.get(IFileService).onDidFilesChange(e => {
-    if (e.affects(userDataProfilesService.defaultProfile.settingsResource)) {
-      callback()
-    }
+  return withReadyServices(accessor => {
+    const userDataProfilesService = accessor.get(IUserDataProfilesService)
+    return accessor.get(IFileService).onDidFilesChange(e => {
+      if (e.affects(userDataProfilesService.defaultProfile.settingsResource)) {
+        callback()
+      }
+    })
   })
 }
 
@@ -131,7 +136,7 @@ registerServiceInitializePreParticipant(async (accessor) => {
 const MemoizedInjectedConfigurationService = memoizedConstructor(InjectedConfigurationService)
 
 export async function reinitializeWorkspace (workspace: IAnyWorkspaceIdentifier): Promise<void> {
-  const workspaceService = StandaloneServices.get(IWorkspaceContextService) as WorkspaceService
+  const workspaceService = await getService(IWorkspaceContextService) as WorkspaceService
   await workspaceService.initialize(workspace)
 }
 

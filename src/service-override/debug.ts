@@ -10,7 +10,6 @@ import { IAction } from 'vs/base/common/actions'
 import { IExtensionHostDebugService } from 'vs/platform/debug/common/extensionHostDebug'
 import { BrowserExtensionHostDebugService } from 'vs/workbench/contrib/debug/browser/extensionHostDebugService'
 import { DebugVisualizerService, IDebugVisualizerService } from 'vs/workbench/contrib/debug/common/debugVisualizers'
-import getLayoutServiceOverride from './layout'
 import 'vs/workbench/contrib/debug/browser/debug.contribution'
 
 // remove "Open 'launch.json'" button
@@ -23,7 +22,6 @@ DebugService.prototype['showError'] = function (message: string, errorActions?: 
 
 export default function getServiceOverride (): IEditorOverrideServices {
   return {
-    ...getLayoutServiceOverride(),
     [ILanguageFeaturesService.toString()]: new SyncDescriptor(LanguageFeaturesService, [], true), // To restore inlineValuesProvider
     [IDebugService.toString()]: new SyncDescriptor(DebugService, [], true),
     [IConfigurationResolverService.toString()]: new SyncDescriptor(ConfigurationResolverService, [], true),

@@ -5,7 +5,7 @@ set -e
 tsc --project tsconfig.types.json
 
 # bundle them with rollup
-NODE_OPTIONS=--max_old_space_size=8192 rollup --config rollup/rollup.types.config.ts --configPlugin 'typescript={tsconfig: `tsconfig.rollup-config-types.json`}'
+NODE_OPTIONS=--max_old_space_size=16384 rollup --config rollup/rollup.types.config.ts --configPlugin 'typescript={tsconfig: `tsconfig.rollup-config-types.json`}'
 
 # remove temporary files
 rm -rf ./dist/types

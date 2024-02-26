@@ -123,3 +123,7 @@ export { whenReady }
     }
   }
 }
+
+export {
+  IExtensionManifest
+}

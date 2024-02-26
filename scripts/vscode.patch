@@ -2691,7 +2691,7 @@ index 6e6f8845da5..f4824f99f9f 100644
  				onTerminate = (reason: string) => extHostMain.terminate(reason);
  			});
 diff --git a/src/vs/workbench/browser/layout.ts b/src/vs/workbench/browser/layout.ts
-index ccdbaf9d6bd..77e894faf5c 100644
+index ccdbaf9d6bd..8a1f6e23c77 100644
 --- a/src/vs/workbench/browser/layout.ts
 +++ b/src/vs/workbench/browser/layout.ts
 @@ -52,7 +52,7 @@ import { CustomTitleBarVisibility } from '../../platform/window/common/window';
@@ -2732,11 +2732,20 @@ index ccdbaf9d6bd..77e894faf5c 100644
  	readonly filesToOpenOrCreate?: IPathToOpen[];
  	readonly filesToDiff?: IPathToOpen[];
  	readonly filesToMerge?: IPathToOpen[];
+@@ -1615,7 +1615,7 @@ export abstract class Layout extends Disposable implements IWorkbenchLayoutServi
+ 
+ 	layout(): void {
+ 		if (!this.disposed) {
+-			this._mainContainerDimension = getClientArea(this.parent);
++			this._mainContainerDimension = getClientArea(this.state.runtime.mainWindowFullscreen ? mainWindow.document.body : this.parent);
+ 			this.logService.trace(`Layout#layout, height: ${this._mainContainerDimension.height}, width: ${this._mainContainerDimension.width}`);
+ 
+ 			position(this.mainContainer, 0, 0, 0, 0, 'relative');
 diff --git a/src/vs/workbench/browser/media/style.css b/src/vs/workbench/browser/media/style.css
-index 262745f0ed2..ff70f984888 100644
+index 262745f0ed2..109419c2b55 100644
 --- a/src/vs/workbench/browser/media/style.css
 +++ b/src/vs/workbench/browser/media/style.css
-@@ -9,130 +9,99 @@
+@@ -9,56 +9,38 @@
  
  /* Font Families (with CJK support) */
  
@@ -2751,17 +2760,17 @@ index 262745f0ed2..ff70f984888 100644
 -.windows:lang(zh-Hant) { font-family: "Segoe WPC", "Segoe UI", "Microsoft Jhenghei", sans-serif; }
 -.windows:lang(ja) { font-family: "Segoe WPC", "Segoe UI", "Yu Gothic UI", "Meiryo UI", sans-serif; }
 -.windows:lang(ko) { font-family: "Segoe WPC", "Segoe UI", "Malgun Gothic", "Dotom", sans-serif; }
-+.mac .part { font-family: -apple-system, BlinkMacSystemFont, sans-serif; }
-+.mac:lang(zh-Hans) .part { font-family: -apple-system, BlinkMacSystemFont, "PingFang SC", "Hiragino Sans GB", sans-serif; }
-+.mac:lang(zh-Hant) .part { font-family: -apple-system, BlinkMacSystemFont, "PingFang TC", sans-serif; }
-+.mac:lang(ja) .part { font-family: -apple-system, BlinkMacSystemFont, "Hiragino Kaku Gothic Pro", sans-serif; }
-+.mac:lang(ko) .part { font-family: -apple-system, BlinkMacSystemFont, "Nanum Gothic", "Apple SD Gothic Neo", "AppleGothic", sans-serif; }
++.mac .monaco-workbench-part{ font-family: -apple-system, BlinkMacSystemFont, sans-serif; }
++.mac:lang(zh-Hans) .monaco-workbench-part { font-family: -apple-system, BlinkMacSystemFont, "PingFang SC", "Hiragino Sans GB", sans-serif; }
++.mac:lang(zh-Hant) .monaco-workbench-part { font-family: -apple-system, BlinkMacSystemFont, "PingFang TC", sans-serif; }
++.mac:lang(ja) .monaco-workbench-part { font-family: -apple-system, BlinkMacSystemFont, "Hiragino Kaku Gothic Pro", sans-serif; }
++.mac:lang(ko) .monaco-workbench-part { font-family: -apple-system, BlinkMacSystemFont, "Nanum Gothic", "Apple SD Gothic Neo", "AppleGothic", sans-serif; }
 +
-+.windows .part { font-family: "Segoe WPC", "Segoe UI", sans-serif; }
-+.windows:lang(zh-Hans) .part { font-family: "Segoe WPC", "Segoe UI", "Microsoft YaHei", sans-serif; }
-+.windows:lang(zh-Hant) .part { font-family: "Segoe WPC", "Segoe UI", "Microsoft Jhenghei", sans-serif; }
-+.windows:lang(ja) .part { font-family: "Segoe WPC", "Segoe UI", "Yu Gothic UI", "Meiryo UI", sans-serif; }
-+.windows:lang(ko) .part { font-family: "Segoe WPC", "Segoe UI", "Malgun Gothic", "Dotom", sans-serif; }
++.windows .monaco-workbench-part { font-family: "Segoe WPC", "Segoe UI", sans-serif; }
++.windows:lang(zh-Hans) .monaco-workbench-part { font-family: "Segoe WPC", "Segoe UI", "Microsoft YaHei", sans-serif; }
++.windows:lang(zh-Hant) .monaco-workbench-part { font-family: "Segoe WPC", "Segoe UI", "Microsoft Jhenghei", sans-serif; }
++.windows:lang(ja) .monaco-workbench-part { font-family: "Segoe WPC", "Segoe UI", "Yu Gothic UI", "Meiryo UI", sans-serif; }
++.windows:lang(ko) .monaco-workbench-part { font-family: "Segoe WPC", "Segoe UI", "Malgun Gothic", "Dotom", sans-serif; }
  
  /* Linux: add `system-ui` as first font and not `Ubuntu` to allow other distribution pick their standard OS font */
 -.linux { font-family: system-ui, "Ubuntu", "Droid Sans", sans-serif; }
@@ -2769,18 +2778,18 @@ index 262745f0ed2..ff70f984888 100644
 -.linux:lang(zh-Hant) { font-family: system-ui, "Ubuntu", "Droid Sans", "Source Han Sans TC", "Source Han Sans TW", "Source Han Sans", sans-serif; }
 -.linux:lang(ja) { font-family: system-ui, "Ubuntu", "Droid Sans", "Source Han Sans J", "Source Han Sans JP", "Source Han Sans", sans-serif; }
 -.linux:lang(ko) { font-family: system-ui, "Ubuntu", "Droid Sans", "Source Han Sans K", "Source Han Sans JR", "Source Han Sans", "UnDotum", "FBaekmuk Gulim", sans-serif; }
-+.linux .part { font-family: system-ui, "Ubuntu", "Droid Sans", sans-serif; }
-+.linux:lang(zh-Hans) .part { font-family: system-ui, "Ubuntu", "Droid Sans", "Source Han Sans SC", "Source Han Sans CN", "Source Han Sans", sans-serif; }
-+.linux:lang(zh-Hant) .part { font-family: system-ui, "Ubuntu", "Droid Sans", "Source Han Sans TC", "Source Han Sans TW", "Source Han Sans", sans-serif; }
-+.linux:lang(ja) .part { font-family: system-ui, "Ubuntu", "Droid Sans", "Source Han Sans J", "Source Han Sans JP", "Source Han Sans", sans-serif; }
-+.linux:lang(ko) .part { font-family: system-ui, "Ubuntu", "Droid Sans", "Source Han Sans K", "Source Han Sans JR", "Source Han Sans", "UnDotum", "FBaekmuk Gulim", sans-serif; }
++.linux .monaco-workbench-part { font-family: system-ui, "Ubuntu", "Droid Sans", sans-serif; }
++.linux:lang(zh-Hans) .monaco-workbench-part { font-family: system-ui, "Ubuntu", "Droid Sans", "Source Han Sans SC", "Source Han Sans CN", "Source Han Sans", sans-serif; }
++.linux:lang(zh-Hant) .monaco-workbench-partt { font-family: system-ui, "Ubuntu", "Droid Sans", "Source Han Sans TC", "Source Han Sans TW", "Source Han Sans", sans-serif; }
++.linux:lang(ja) .monaco-workbench-part { font-family: system-ui, "Ubuntu", "Droid Sans", "Source Han Sans J", "Source Han Sans JP", "Source Han Sans", sans-serif; }
++.linux:lang(ko) .monaco-workbench-part { font-family: system-ui, "Ubuntu", "Droid Sans", "Source Han Sans K", "Source Han Sans JR", "Source Han Sans", "UnDotum", "FBaekmuk Gulim", sans-serif; }
  
 -.mac { --monaco-monospace-font: "SF Mono", Monaco, Menlo, Courier, monospace; }
 -.windows { --monaco-monospace-font: Consolas, "Courier New", monospace; }
 -.linux { --monaco-monospace-font: "Ubuntu Mono", "Liberation Mono", "DejaVu Sans Mono", "Courier New", monospace; }
-+.mac .part { --monaco-monospace-font: "SF Mono", Monaco, Menlo, Courier, monospace; }
-+.windows .part { --monaco-monospace-font: Consolas, "Courier New", monospace; }
-+.linux .part { --monaco-monospace-font: "Ubuntu Mono", "Liberation Mono", "DejaVu Sans Mono", "Courier New", monospace; }
++.mac .monaco-workbench-part { --monaco-monospace-font: "SF Mono", Monaco, Menlo, Courier, monospace; }
++.windows .monaco-workbench-part { --monaco-monospace-font: Consolas, "Courier New", monospace; }
++.linux .monaco-workbench-part { --monaco-monospace-font: "Ubuntu Mono", "Liberation Mono", "DejaVu Sans Mono", "Courier New", monospace; }
  
  /* Global Styles */
  
@@ -2800,7 +2809,7 @@ index 262745f0ed2..ff70f984888 100644
 -}
 -
 -.monaco-workbench {
-+.monaco-workbench .part {
++.monaco-workbench-part {
  	font-size: 13px;
  	line-height: 1.4em;
 -	position: relative;
@@ -2810,60 +2819,46 @@ index 262745f0ed2..ff70f984888 100644
  }
  
 -.monaco-workbench.web {
-+.monaco-workbench.web .part {
++.monaco-workbench.web .monaco-workbench-part, .monaco-workbench-part.web {
  	touch-action: none; /* Disable browser handling of all panning and zooming gestures. Removes 300ms touch delay. */
  }
  
--.monaco-workbench.border:not(.fullscreen) {
--	box-sizing: border-box;
--	border: 1px solid var(--window-border-color);
--}
--
--.monaco-workbench.border.mac {
--	border-radius: 5px;
--}
--
--.monaco-workbench.border.mac.macos-bigsur-or-newer {
--	border-radius: 10px; /* macOS Big Sur increased rounded corners size */
--}
--
--.monaco-workbench img {
-+.monaco-workbench .part img {
+@@ -79,60 +61,60 @@ body.web {
  	border: 0;
  }
  
 -.monaco-workbench label {
-+.monaco-workbench .part label {
++.monaco-workbench-part label {
  	cursor: pointer;
  }
  
 -.monaco-workbench a {
-+.monaco-workbench .part a  {
++.monaco-workbench-part a  {
  	text-decoration: none;
  }
  
 -.monaco-workbench a:active {
-+.monaco-workbench .part a:active {
++.monaco-workbench-part a:active {
  	color: inherit;
  	background-color: inherit;
  }
  
 -.monaco-workbench a.plain {
-+.monaco-workbench .part a.plain {
++.monaco-workbench-part a.plain {
  	color: inherit;
  	text-decoration: none;
  }
  
 -.monaco-workbench a.plain:hover,
 -.monaco-workbench a.plain.hover {
-+.monaco-workbench .part a.plain:hover,
-+.monaco-workbench .part a.plain.hover {
++.monaco-workbench-part a.plain:hover,
++.monaco-workbench-part a.plain.hover {
  	color: inherit;
  	text-decoration: none;
  }
  
 -.monaco-workbench input {
-+.monaco-workbench .part input {
++.monaco-workbench-part input {
  	color: inherit;
  	font-family: inherit;
  	font-size: 100%;
@@ -2872,50 +2867,50 @@ index 262745f0ed2..ff70f984888 100644
 -.monaco-workbench input::placeholder { color: var(--vscode-input-placeholderForeground); }
 -.monaco-workbench input::-webkit-input-placeholder  { color: var(--vscode-input-placeholderForeground); }
 -.monaco-workbench input::-moz-placeholder { color: var(--vscode-input-placeholderForeground); }
-+.monaco-workbench .part input::placeholder { color: var(--vscode-input-placeholderForeground); }
-+.monaco-workbench .part input::-webkit-input-placeholder  { color: var(--vscode-input-placeholderForeground); }
-+.monaco-workbench .part input::-moz-placeholder { color: var(--vscode-input-placeholderForeground); }
++.monaco-workbench-part input::placeholder { color: var(--vscode-input-placeholderForeground); }
++.monaco-workbench-part input::-webkit-input-placeholder  { color: var(--vscode-input-placeholderForeground); }
++.monaco-workbench-part input::-moz-placeholder { color: var(--vscode-input-placeholderForeground); }
  
 -.monaco-workbench textarea::placeholder { color: var(--vscode-input-placeholderForeground); }
 -.monaco-workbench textarea::-webkit-input-placeholder { color: var(--vscode-input-placeholderForeground); }
 -.monaco-workbench textarea::-moz-placeholder { color: var(--vscode-input-placeholderForeground); }
-+.monaco-workbench .part textarea::placeholder { color: var(--vscode-input-placeholderForeground); }
-+.monaco-workbench .part textarea::-webkit-input-placeholder { color: var(--vscode-input-placeholderForeground); }
-+.monaco-workbench .part textarea::-moz-placeholder { color: var(--vscode-input-placeholderForeground); }
++.monaco-workbench-part textarea::placeholder { color: var(--vscode-input-placeholderForeground); }
++.monaco-workbench-part textarea::-webkit-input-placeholder { color: var(--vscode-input-placeholderForeground); }
++.monaco-workbench-part textarea::-moz-placeholder { color: var(--vscode-input-placeholderForeground); }
  
 -.monaco-workbench .pointer {
-+.monaco-workbench .part .pointer {
++.monaco-workbench-part .pointer {
  	cursor: pointer;
  }
  
 -.monaco-workbench.mac.monaco-font-aliasing-antialiased {
-+.monaco-workbench.mac.monaco-font-aliasing-antialiased .part {
++.monaco-workbench.mac.monaco-font-aliasing-antialiased.monaco-workbench-part, .monaco-workbench.mac.monaco-font-aliasing-antialiased .monaco-workbench-part {
  	-webkit-font-smoothing: antialiased;
  	-moz-osx-font-smoothing: grayscale;
  }
  
 -.monaco-workbench.mac.monaco-font-aliasing-none {
-+.monaco-workbench.mac.monaco-font-aliasing-none .part {
++.monaco-workbench.mac.monaco-font-aliasing-none.monaco-workbench-part,	.monaco-workbench.mac.monaco-font-aliasing-none .monaco-workbench-part {
  	-webkit-font-smoothing: none;
  	-moz-osx-font-smoothing: unset;
  }
  
  @media (-webkit-min-device-pixel-ratio: 2), (min-resolution: 192dpi) {
 -	.monaco-workbench.mac.monaco-font-aliasing-auto {
-+  .monaco-workbench.mac.monaco-font-aliasing-auto .part {
++	.monaco-workbench.mac.monaco-font-aliasing-auto.monaco-workbench-part, .monaco-workbench.mac.monaco-font-aliasing-auto .monaco-workbench-part {
  		-webkit-font-smoothing: antialiased;
  		-moz-osx-font-smoothing: grayscale;
  	}
-@@ -167,7 +136,7 @@ body.web {
+@@ -167,7 +149,7 @@ body.web {
  
  /* Custom Dropdown (select) Arrows */
  
 -.monaco-workbench select {
-+.monaco-workbench .part select {
++.monaco-workbench-part select {
  	font-family: inherit;
  	appearance: none;
  	-webkit-appearance: none;
-@@ -197,16 +166,16 @@ body.web {
+@@ -197,16 +179,16 @@ body.web {
  
  /* Keyboard Focus Indication Styles */
  
@@ -2929,25 +2924,25 @@ index 262745f0ed2..ff70f984888 100644
 -.monaco-workbench textarea:focus,
 -.monaco-workbench input[type="search"]:focus,
 -.monaco-workbench input[type="checkbox"]:focus {
-+.monaco-workbench .part [tabindex="0"]:focus,
-+.monaco-workbench .part [tabindex="-1"]:focus,
-+.monaco-workbench .part .synthetic-focus,
-+.monaco-workbench .part select:focus,
-+.monaco-workbench .part input[type="button"]:focus,
-+.monaco-workbench .part input[type="text"]:focus,
-+.monaco-workbench .part button:focus,
-+.monaco-workbench .part textarea:focus,
-+.monaco-workbench .part input[type="search"]:focus,
-+.monaco-workbench .part input[type="checkbox"]:focus {
++.monaco-workbench-part [tabindex="0"]:focus,
++.monaco-workbench-part [tabindex="-1"]:focus,
++.monaco-workbench-part .synthetic-focus,
++.monaco-workbench-part select:focus,
++.monaco-workbench-part input[type="button"]:focus,
++.monaco-workbench-part input[type="text"]:focus,
++.monaco-workbench-part button:focus,
++.monaco-workbench-part textarea:focus,
++.monaco-workbench-part input[type="search"]:focus,
++.monaco-workbench-part input[type="checkbox"]:focus {
  	outline-width: 1px;
  	outline-style: solid;
  	outline-offset: -1px;
-@@ -219,19 +188,19 @@ body.web {
+@@ -219,19 +201,19 @@ body.web {
  	background: transparent; /* Search input focus fix when in high contrast */
  }
  
 -.monaco-workbench input[type="checkbox"]:focus {
-+.monaco-workbench .part input[type="checkbox"]:focus {
++.monaco-workbench-part input[type="checkbox"]:focus {
  	outline-offset: 2px;
  }
  
@@ -2956,16 +2951,16 @@ index 262745f0ed2..ff70f984888 100644
 -.monaco-workbench select:active,
 -.monaco-workbench input[type="button"]:active,
 -.monaco-workbench input[type="checkbox"]:active {
-+.monaco-workbench part [tabindex="0"]:active,
-+.monaco-workbench .part [tabindex="-1"]:active,
-+.monaco-workbench .part select:active,
-+.monaco-workbench .part input[type="button"]:active,
-+.monaco-workbench .part input[type="checkbox"]:active {
++.monaco-workbench-part [tabindex="0"]:active,
++.monaco-workbench-part [tabindex="-1"]:active,
++.monaco-workbench-part select:active,
++.monaco-workbench-part input[type="button"]:active,
++.monaco-workbench-part input[type="checkbox"]:active {
  	outline: 0 !important; /* fixes some flashing outlines from showing up when clicking */
  }
  
 -.monaco-workbench.mac select:focus {
-+.monaco-workbench.mac .part select:focus  {
++.monaco-workbench.mac.monaco-workbench-part select:focus, .monaco-workbench.mac .monaco-workbench-part select:focus  {
  	border-color: transparent; /* outline is a square, but border has a radius, so we avoid this glitch when focused (https://github.com/microsoft/vscode/issues/26045) */
  }
  
@@ -3534,6 +3529,97 @@ index 3021fe51eee..80ce472b2e7 100644
  	}
  
  	isVisible(): boolean {
+diff --git a/src/vs/workbench/browser/workbench.ts b/src/vs/workbench/browser/workbench.ts
+index bce16d5cb77..e513f04b435 100644
+--- a/src/vs/workbench/browser/workbench.ts
++++ b/src/vs/workbench/browser/workbench.ts
+@@ -11,10 +11,7 @@ import { RunOnceScheduler, timeout } from 'vs/base/common/async';
+ import { isFirefox, isSafari, isChrome, PixelRatio } from 'vs/base/browser/browser';
+ import { mark } from 'vs/base/common/performance';
+ import { onUnexpectedError, setUnexpectedErrorHandler } from 'vs/base/common/errors';
+-import { Registry } from 'vs/platform/registry/common/platform';
+ import { isWindows, isLinux, isWeb, isNative, isMacintosh } from 'vs/base/common/platform';
+-import { IWorkbenchContributionsRegistry, Extensions as WorkbenchExtensions } from 'vs/workbench/common/contributions';
+-import { IEditorFactoryRegistry, EditorExtensions } from 'vs/workbench/common/editor';
+ import { getSingletonServiceDescriptors } from 'vs/platform/instantiation/common/extensions';
+ import { Position, Parts, IWorkbenchLayoutService, positionToString } from 'vs/workbench/services/layout/browser/layoutService';
+ import { IStorageService, WillSaveStateReason, StorageScope, StorageTarget } from 'vs/platform/storage/common/storage';
+@@ -35,7 +32,6 @@ import { FontMeasurements } from 'vs/editor/browser/config/fontMeasurements';
+ import { BareFontInfo } from 'vs/editor/common/config/fontInfo';
+ import { ILogService } from 'vs/platform/log/common/log';
+ import { toErrorMessage } from 'vs/base/common/errorMessage';
+-import { WorkbenchContextKeysHandler } from 'vs/workbench/browser/contextkeys';
+ import { coalesce } from 'vs/base/common/arrays';
+ import { InstantiationService } from 'vs/platform/instantiation/common/instantiationService';
+ import { Layout } from 'vs/workbench/browser/layout';
+@@ -73,7 +69,7 @@ export class Workbench extends Layout {
+ 		this.registerErrorHandler(logService);
+ 	}
+ 
+-	private registerErrorHandler(logService: ILogService): void {
++	protected registerErrorHandler(logService: ILogService): void {
+ 
+ 		// Listen on unhandled rejection events
+ 		this._register(addDisposableListener(mainWindow, 'unhandledrejection', event => {
+@@ -154,13 +150,6 @@ export class Workbench extends Layout {
+ 				// Layout
+ 				this.initLayout(accessor);
+ 
+-				// Registries
+-				Registry.as<IWorkbenchContributionsRegistry>(WorkbenchExtensions.Workbench).start(accessor);
+-				Registry.as<IEditorFactoryRegistry>(EditorExtensions.EditorFactory).start(accessor);
+-
+-				// Context Keys
+-				this._register(instantiationService.createInstance(WorkbenchContextKeysHandler));
+-
+ 				// Register Listeners
+ 				this.registerListeners(lifecycleService, storageService, configurationService, hostService, dialogService);
+ 
+@@ -185,7 +174,7 @@ export class Workbench extends Layout {
+ 		}
+ 	}
+ 
+-	private initServices(serviceCollection: ServiceCollection): IInstantiationService {
++	protected initServices(serviceCollection: ServiceCollection): IInstantiationService {
+ 
+ 		// Layout Service
+ 		serviceCollection.set(IWorkbenchLayoutService, this);
+@@ -224,7 +213,7 @@ export class Workbench extends Layout {
+ 		return instantiationService;
+ 	}
+ 
+-	private registerListeners(lifecycleService: ILifecycleService, storageService: IStorageService, configurationService: IConfigurationService, hostService: IHostService, dialogService: IDialogService): void {
++	protected registerListeners(lifecycleService: ILifecycleService, storageService: IStorageService, configurationService: IConfigurationService, hostService: IHostService, dialogService: IDialogService): void {
+ 
+ 		// Configuration changes
+ 		this._register(configurationService.onDidChangeConfiguration(e => this.updateFontAliasing(e, configurationService)));
+@@ -313,7 +302,7 @@ export class Workbench extends Layout {
+ 		}
+ 	}
+ 
+-	private renderWorkbench(instantiationService: IInstantiationService, notificationService: NotificationService, storageService: IStorageService, configurationService: IConfigurationService): void {
++	protected renderWorkbench(instantiationService: IInstantiationService, notificationService: NotificationService, storageService: IStorageService, configurationService: IConfigurationService): void {
+ 
+ 		// ARIA
+ 		setARIAContainer(this.mainContainer);
+@@ -379,7 +368,7 @@ export class Workbench extends Layout {
+ 		return part;
+ 	}
+ 
+-	private createNotificationsHandlers(instantiationService: IInstantiationService, notificationService: NotificationService): void {
++	protected createNotificationsHandlers(instantiationService: IInstantiationService, notificationService: NotificationService): void {
+ 
+ 		// Instantiate Notification components
+ 		const notificationsCenter = this._register(instantiationService.createInstance(NotificationsCenter, this.mainContainer, notificationService.model));
+@@ -407,7 +396,7 @@ export class Workbench extends Layout {
+ 		});
+ 	}
+ 
+-	private restore(lifecycleService: ILifecycleService): void {
++	protected restore(lifecycleService: ILifecycleService): void {
+ 
+ 		// Ask each part to restore
+ 		try {
 diff --git a/src/vs/workbench/common/views.ts b/src/vs/workbench/common/views.ts
 index 7288219657e..d6af0e2dbc7 100644
 --- a/src/vs/workbench/common/views.ts

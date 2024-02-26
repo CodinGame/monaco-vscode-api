@@ -41,6 +41,7 @@ import { ResolvedKeybindingItem } from 'vs/platform/keybinding/common/resolvedKe
 import { Keybinding, ResolvedKeybinding } from 'vs/base/common/keybindings'
 import { Emitter, Event } from 'vs/base/common/event'
 import { createInjectedClass } from './tools/injection'
+import { getService } from './services'
 
 function computeConfiguration (configuration: IEditorConfiguration, overrides?: Readonly<IEditorOptions>): IEditorOptions {
   const editorConfiguration: IEditorOptions = isObject(configuration.editor) ? deepClone(configuration.editor) : Object.create(null)
@@ -235,18 +236,21 @@ class ConfiguredStandaloneDiffEditor extends createInjectedClass(StandaloneDiffE
 }
 
 export async function writeFile (uri: URI, content: string): Promise<void> {
-  await StandaloneServices.get(IFileService).writeFile(uri, VSBuffer.fromString(content))
+  const fileService = await getService(IFileService)
+  await fileService.writeFile(uri, VSBuffer.fromString(content))
 }
 
 export async function deleteFile (uri: URI, options?: Partial<IFileDeleteOptions>): Promise<void> {
-  await StandaloneServices.get(IFileService).del(uri, options)
+  const fileService = await getService(IFileService)
+  await fileService.del(uri, options)
 }
 
 export async function createModelReference (resource: URI, content?: string): Promise<IReference<ITextFileEditorModel>> {
   if (content != null) {
     await writeFile(resource, content)
   }
-  return (await StandaloneServices.get(ITextModelService).createModelReference(resource)) as IReference<ITextFileEditorModel>
+  const textModelService = await getService(ITextModelService)
+  return (await textModelService.createModelReference(resource)) as IReference<ITextFileEditorModel>
 }
 
 export interface KeybindingProvider {

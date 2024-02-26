@@ -3,6 +3,7 @@ import { SyncDescriptor } from 'vs/platform/instantiation/common/descriptors'
 import { BannerPart } from 'vs/workbench/browser/parts/banner/bannerPart'
 import { IBannerService } from 'vs/workbench/services/banner/browser/bannerService'
 import { registerServiceInitializePostParticipant } from '../lifecycle'
+import 'vs/workbench/contrib/welcomeBanner/browser/welcomeBanner.contribution'
 
 export default function getServiceOverride (): IEditorOverrideServices {
   return {

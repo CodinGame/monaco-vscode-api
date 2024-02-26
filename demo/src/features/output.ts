@@ -9,13 +9,20 @@ const { getApi } = registerExtension({
   }
 }, ExtensionHostKind.LocalProcess)
 
-const vscode = await getApi()
-const fakeOutputChannel = vscode.window.createOutputChannel('Fake output')
-const anotherFakeOutputChannel = vscode.window.createOutputChannel('Your code', 'javascript')
+void getApi().then(async vscode => {
+  const fakeOutputChannel = vscode.window.createOutputChannel('Fake output')
+  const anotherFakeOutputChannel = vscode.window.createOutputChannel('Your code', 'javascript')
 
-fakeOutputChannel.append('Here\'s some fake output\n')
-setInterval(() => {
-  fakeOutputChannel.append('Hello world\n')
-}, 1000)
+  fakeOutputChannel.append('Here\'s some fake output\n')
+  setInterval(() => {
+    fakeOutputChannel.append('Hello world\n')
+  }, 1000)
 
-export { anotherFakeOutputChannel }
+  const mainDocument = await vscode.workspace.openTextDocument(vscode.Uri.file('/tmp/test.js'))
+  anotherFakeOutputChannel.replace(mainDocument.getText())
+  vscode.workspace.onDidChangeTextDocument((e) => {
+    if (e.document === mainDocument && e.contentChanges.length > 0) {
+      anotherFakeOutputChannel.replace(e.document.getText())
+    }
+  })
+})

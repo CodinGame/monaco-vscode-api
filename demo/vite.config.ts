@@ -1,5 +1,4 @@
 import { defineConfig } from 'vite'
-import glob from 'fast-glob'
 import importMetaUrlPlugin from '@codingame/esbuild-import-meta-url-plugin'
 import * as fs from 'fs'
 import path from 'path'
@@ -59,8 +58,7 @@ export default defineConfig({
 
       // These 2 lines prevent vite from reloading the whole page when starting a worker (so 2 times in a row after cleaning the vite cache - for the editor then the textmate workers)
       // it's mainly empirical and probably not the best way, fix me if you find a better way
-      'vscode-textmate', 'vscode-oniguruma', '@vscode/vscode-languagedetection', 'vscode-semver', 'vscode-marked',
-      ...(await glob('monaco-editor/esm/vs/**/common/**/*.js', { cwd: path.resolve(__dirname, '../node_modules') }))
+      'vscode-textmate', 'vscode-oniguruma', '@vscode/vscode-languagedetection', 'vscode-semver', 'vscode-marked'
     ],
     exclude: [],
     esbuildOptions: {

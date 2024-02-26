@@ -45,6 +45,18 @@ export class LayoutService extends Disposable implements ILayoutService, IWorkbe
     super()
     window.addEventListener('resize', () => this.layout())
     this.layout()
+
+    const platformClass = isWindows ? 'windows' : isLinux ? 'linux' : 'mac'
+    const workbenchClasses = coalesce([
+      'monaco-workbench',
+      platformClass,
+      'web',
+      isChrome ? 'chromium' : isFirefox ? 'firefox' : isSafari ? 'safari' : undefined
+    ])
+
+    mainContainer.classList.add(...workbenchClasses)
+    document.body.classList.add(platformClass)
+    document.body.classList.add('web')
   }
 
   whenActiveContainerStylesLoaded = Promise.resolve()
@@ -468,18 +480,6 @@ onRenderWorkbench((accessor) => {
   if (layoutService instanceof LayoutService) {
     layoutService.init(accessor)
   }
-
-  const platformClass = isWindows ? 'windows' : isLinux ? 'linux' : 'mac'
-  const workbenchClasses = coalesce([
-    'monaco-workbench',
-    platformClass,
-    'web',
-    isChrome ? 'chromium' : isFirefox ? 'firefox' : isSafari ? 'safari' : undefined
-  ])
-
-  layoutService.mainContainer.classList.add(...workbenchClasses)
-  document.body.classList.add(platformClass)
-  document.body.classList.add('web')
 })
 
 function getServiceOverride (): IEditorOverrideServices
