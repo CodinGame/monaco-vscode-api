@@ -10,8 +10,6 @@ import { DisposableStore, IDisposable, Disposable, toDisposable } from 'vs/base/
 import { extUri, joinPath } from 'vs/base/common/resources'
 import { Emitter, Event } from 'vs/base/common/event'
 import { HTMLFileSystemProvider } from 'vs/platform/files/browser/htmlFileSystemProvider'
-import * as path from 'vs/base/common/path'
-import 'vs/workbench/contrib/files/browser/files.configuration.contribution'
 import { Schemas } from 'vs/base/common/network'
 import { IndexedDBFileSystemProvider, IndexedDBFileSystemProviderErrorData, IndexedDBFileSystemProviderErrorDataClassification } from 'vs/platform/files/browser/indexedDBFileSystemProvider'
 import { IndexedDB } from 'vs/base/browser/indexedDB'
@@ -25,6 +23,7 @@ import { BrowserElevatedFileService } from 'vs/workbench/services/files/browser/
 import { IElevatedFileService } from 'vs/workbench/services/files/common/elevatedFileService'
 import { checkServicesNotInitialized, registerServiceInitializePreParticipant } from '../lifecycle'
 import { logsPath } from '../workbench'
+import 'vs/workbench/contrib/files/browser/files.configuration.contribution'
 
 abstract class RegisteredFile {
   private ctime: number
@@ -153,12 +152,11 @@ class RegisteredFileSystemProvider extends Disposable implements IFileSystemProv
     disposableStore.add(file.onDidRename(({ from, to }) => {
       if (this.files.get(from.toString()) === file) {
         this.files.delete(from.toString())
+        this.files.set(to.toString(), file)
         this._onDidChangeFile.fire([{
           resource: from,
           type: FileChangeType.DELETED
-        }])
-        this.files.set(to.toString(), file)
-        this._onDidChangeFile.fire([{
+        }, {
           resource: to,
           type: FileChangeType.ADDED
         }])
@@ -191,7 +189,7 @@ class RegisteredFileSystemProvider extends Disposable implements IFileSystemProv
 
   public async readdir (resource: URI): Promise<[string, FileType][]> {
     const includedPaths = Array.from(this.files.keys())
-      .map(uri => path.relative(resource.path, URI.parse(uri).path))
+      .map(uri => extUri.relativePath(resource, URI.parse(uri))!)
       .filter(path => !path.startsWith('..'))
 
     const files = includedPaths.filter(path => !path.includes('/'))
