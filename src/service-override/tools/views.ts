@@ -407,6 +407,7 @@ export {
   ViewContainerLocation,
   CustomViewOption,
   registerCustomView,
+  ViewPaneContainer,
   IEditorCloseHandler,
   ConfirmResult,
   registerEditorPane,
