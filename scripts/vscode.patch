@@ -2691,7 +2691,7 @@ index 6e6f8845da5..f4824f99f9f 100644
  				onTerminate = (reason: string) => extHostMain.terminate(reason);
  			});
 diff --git a/src/vs/workbench/browser/layout.ts b/src/vs/workbench/browser/layout.ts
-index ccdbaf9d6bd..77e894faf5c 100644
+index ccdbaf9d6bd..8a1f6e23c77 100644
 --- a/src/vs/workbench/browser/layout.ts
 +++ b/src/vs/workbench/browser/layout.ts
 @@ -52,7 +52,7 @@ import { CustomTitleBarVisibility } from '../../platform/window/common/window';
@@ -2732,6 +2732,15 @@ index ccdbaf9d6bd..77e894faf5c 100644
  	readonly filesToOpenOrCreate?: IPathToOpen[];
  	readonly filesToDiff?: IPathToOpen[];
  	readonly filesToMerge?: IPathToOpen[];
+@@ -1615,7 +1615,7 @@ export abstract class Layout extends Disposable implements IWorkbenchLayoutServi
+ 
+ 	layout(): void {
+ 		if (!this.disposed) {
+-			this._mainContainerDimension = getClientArea(this.parent);
++			this._mainContainerDimension = getClientArea(this.state.runtime.mainWindowFullscreen ? mainWindow.document.body : this.parent);
+ 			this.logService.trace(`Layout#layout, height: ${this._mainContainerDimension.height}, width: ${this._mainContainerDimension.width}`);
+ 
+ 			position(this.mainContainer, 0, 0, 0, 0, 'relative');
 diff --git a/src/vs/workbench/browser/media/style.css b/src/vs/workbench/browser/media/style.css
 index 262745f0ed2..109419c2b55 100644
 --- a/src/vs/workbench/browser/media/style.css
