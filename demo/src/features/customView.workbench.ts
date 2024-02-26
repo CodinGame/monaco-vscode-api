@@ -11,6 +11,7 @@ registerCustomView({
     container.style.display = 'flex'
     container.style.alignItems = 'center'
     container.style.justifyContent = 'center'
+    container.style.height = '100%'
     container.innerHTML = 'This is a custom view<br />You can render anything you want here'
 
     return {
