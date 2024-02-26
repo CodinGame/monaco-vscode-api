@@ -2,7 +2,7 @@ import { SyncDescriptor } from 'vs/platform/instantiation/common/descriptors'
 import { IViewContainerDescriptor, IViewContainersRegistry, IViewDescriptor, IViewsRegistry, ViewContainer, ViewContainerLocation, Extensions as ViewExtensions } from 'vs/workbench/common/views'
 import { BrandedService, ServicesAccessor } from 'vs/platform/instantiation/common/instantiation'
 import { DisposableStore, IDisposable, MutableDisposable } from 'vs/base/common/lifecycle'
-import { append, $, Dimension, size } from 'vs/base/browser/dom'
+import { $, Dimension, size } from 'vs/base/browser/dom'
 import { ViewPane } from 'vs/workbench/browser/parts/views/viewPane'
 import { Registry } from 'vs/platform/registry/common/platform'
 import { ViewPaneContainer } from 'vs/workbench/browser/parts/views/viewPaneContainer'
@@ -280,15 +280,34 @@ function registerCustomView (options: CustomViewOption): IDisposable {
       original: options.name
     },
     ctorDescriptor: new SyncDescriptor(class extends ViewPane {
-      private content?: HTMLElement
+      protected wrapper!: HTMLElement
+      protected container!: HTMLElement
+      private scrollbar: DomScrollableElement | undefined
 
       protected override renderBody (container: HTMLElement): void {
         super.renderBody(container)
-        this.content = $('.view-pane-content')
-        this.content.style.display = 'flex'
-        this.content.style.alignItems = 'stretch'
-        append(container, this.content)
-        this._register(options.renderBody(this.content))
+
+        this.container = $('.view-pane-content')
+        this.container.style.display = 'flex'
+        this.container.style.alignItems = 'stretch'
+        this._register(options.renderBody(this.container))
+
+        this.wrapper = document.createElement('div')
+        this.wrapper.append(this.container)
+
+        // Custom Scrollbars
+        this.scrollbar = this._register(new DomScrollableElement(this.wrapper, { horizontal: ScrollbarVisibility.Auto, vertical: ScrollbarVisibility.Auto }))
+        container.appendChild(this.scrollbar.getDomNode())
+
+        const observer = new ResizeObserver(() => {
+          assertIsDefined(this.scrollbar).scanDomNode()
+        })
+        observer.observe(this.container)
+        this._register({
+          dispose () {
+            observer.disconnect()
+          }
+        })
       }
 
       public override getActionViewItem (action: IAction, actionOptions?: IDropdownMenuActionViewItemOptions) {
@@ -303,8 +322,13 @@ function registerCustomView (options: CustomViewOption): IDisposable {
       }
 
       protected override layoutBody (height: number, width: number): void {
-        this.content!.style.height = `${height}px`
-        this.content!.style.width = `${width}px`
+        const [wrapper, scrollbar] = assertAllDefined(this.wrapper, this.scrollbar)
+
+        // Pass on to Container
+        size(wrapper, width, height)
+
+        // Adjust scrollbar
+        scrollbar.scanDomNode()
       }
     }),
     canMoveView: options.canMoveView ?? true,
