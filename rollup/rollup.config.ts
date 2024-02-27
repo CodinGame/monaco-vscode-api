@@ -922,8 +922,8 @@ export default (args: Record<string, string>): rollup.RollupOptions[] => {
               'monaco-treemending': './monaco-treemending.js'
             },
             dependencies: {
-              ...Object.fromEntries(Object.entries(pkg.dependencies).filter(([key]) => dependencies.has(key))),
-              ...Object.fromEntries(Array.from(dependencies).filter(dep => dep.startsWith('@codingame/monaco-vscode-')).map(dep => [dep, pkg.version]))
+              ...Object.fromEntries(Object.entries(pkg.dependencies).filter(([key]) => dependencies.has(key) && key !== 'monaco-editor')),
+              ...Object.fromEntries(Array.from(dependencies).filter(dep => dep.startsWith('@codingame/monaco-vscode-') && dep !== 'monaco-editor').map(dep => [dep, pkg.version]))
             }
           }
           this.emitFile({
@@ -953,8 +953,8 @@ export default (args: Record<string, string>): rollup.RollupOptions[] => {
             types: 'index.d.ts',
             dependencies: {
               vscode: `npm:${pkg.name}@^${pkg.version}`,
-              ...Object.fromEntries(Object.entries(pkg.dependencies).filter(([key]) => dependencies.has(key))),
-              ...Object.fromEntries(Array.from(dependencies).filter(dep => dep.startsWith('@codingame/monaco-vscode-')).map(dep => [dep, pkg.version]))
+              ...Object.fromEntries(Object.entries(pkg.dependencies).filter(([key]) => dependencies.has(key) && key !== 'monaco-editor')),
+              ...Object.fromEntries(Array.from(dependencies).filter(dep => dep.startsWith('@codingame/monaco-vscode-') && dep !== 'monaco-editor').map(dep => [dep, pkg.version]))
             }
           }
           if (workerEntryPoint != null) {

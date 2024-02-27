@@ -99,7 +99,7 @@ export default (args: Record<string, string>): rollup.RollupOptions => {
             },
             dependencies: {
               vscode: `npm:${pkg.name}@^${pkg.version}`,
-              ...Object.fromEntries(Object.entries(pkg.dependencies).filter(([key]) => dependencies.has(key)))
+              ...Object.fromEntries(Object.entries(pkg.dependencies).filter(([key]) => dependencies.has(key) && key !== 'monaco-editor'))
             }
           }
           this.emitFile({

@@ -111,7 +111,7 @@ export default rollup.defineConfig([
             types: 'index.d.ts',
             dependencies: {
               vscode: `npm:${pkg.name}@^${pkg.version}`,
-              ...Object.fromEntries(Object.entries(pkg.dependencies).filter(([key]) => dependencies.has(key)))
+              ...Object.fromEntries(Object.entries(pkg.dependencies).filter(([key]) => dependencies.has(key) && key !== 'monaco-editor'))
             }
           }
 
@@ -178,7 +178,7 @@ ${extensions.map(name => `  whenReady${pascalCase(name)}()`).join(',\n')}
           main: entrypoint,
           module: entrypoint,
           types: 'index.d.ts',
-          dependencies: Object.fromEntries(Array.from(dependencies).map(name => [
+          dependencies: Object.fromEntries(Array.from(dependencies).filter(dep => dep !== 'monaco-editor').map(name => [
             name,
             pkg.version
           ]))
