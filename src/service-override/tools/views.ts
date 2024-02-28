@@ -46,7 +46,7 @@ type Label = string | {
 abstract class SimpleEditorPane extends EditorPane {
   protected container!: HTMLElement
   protected wrapper!: HTMLElement
-  private scrollbar: DomScrollableElement | undefined
+  protected scrollbar: DomScrollableElement | undefined
   private inputDisposable = this._register(new MutableDisposable())
   constructor (
     id: string,
@@ -236,7 +236,7 @@ interface CustomViewOption {
   readonly id: string
   name: string
   order?: number
-  renderBody (container: HTMLElement): IDisposable
+  renderBody (container: HTMLElement, scrollbar: DomScrollableElement): IDisposable
   location: ViewContainerLocation
   icon?: string
   canMoveView?: boolean
@@ -282,21 +282,23 @@ function registerCustomView (options: CustomViewOption): IDisposable {
     ctorDescriptor: new SyncDescriptor(class extends ViewPane {
       protected wrapper!: HTMLElement
       protected container!: HTMLElement
-      private scrollbar: DomScrollableElement | undefined
+      protected scrollbar: DomScrollableElement | undefined
 
       protected override renderBody (container: HTMLElement): void {
         super.renderBody(container)
 
+        this.wrapper = document.createElement('div')
+
+        this.scrollbar = this._register(new DomScrollableElement(this.wrapper, { horizontal: ScrollbarVisibility.Auto, vertical: ScrollbarVisibility.Auto }))
+
         this.container = $('.view-pane-content')
         this.container.style.display = 'flex'
         this.container.style.alignItems = 'stretch'
-        this._register(options.renderBody(this.container))
+        this._register(options.renderBody(this.container, this.scrollbar))
 
-        this.wrapper = document.createElement('div')
         this.wrapper.append(this.container)
 
         // Custom Scrollbars
-        this.scrollbar = this._register(new DomScrollableElement(this.wrapper, { horizontal: ScrollbarVisibility.Auto, vertical: ScrollbarVisibility.Auto }))
         container.appendChild(this.scrollbar.getDomNode())
 
         const observer = new ResizeObserver(() => {
