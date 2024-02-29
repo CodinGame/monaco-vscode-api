@@ -434,5 +434,6 @@ export {
   viewContainerRegistry,
   IViewContainerDescriptor,
   ViewContainer,
-  IViewDescriptor
+  IViewDescriptor,
+  DomScrollableElement
 }
