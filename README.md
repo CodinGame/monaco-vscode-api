@@ -137,8 +137,6 @@ Additionally, several packages that include the VSCode version of some services 
   - Allows to use VSCode themes.
 - **Snippets**: `@codingame/monaco-vscode-snippets-service-override`
   - Add snippet extension point (register vscode extension snippets)
-- **Audio cue**: `@codingame/monaco-vscode-audio-cue-service-override`
-  - If enabled the editor may provides audible hints
 - **Debug**: `@codingame/monaco-vscode-debug-service-override`
   - Activate debugging support
 - **Preferences**: `@codingame/monaco-vscode-preferences-service-override`
@@ -173,7 +171,7 @@ Additionally, several packages that include the VSCode version of some services 
 
   Another package `@codingame/monaco-vscode-server` is published, which expose a `vscode-ext-host-server` bin to start the remote agent
 - **Accessibility**: `@codingame/monaco-vscode-accessibility-service-override`
-  - Register accessibility helpers
+  - Register accessibility helpers and signals
 - **Workspace trust**: `@codingame/monaco-vscode-workspace-trust-service-override`
   - Ask user it they trust the current workspace, disable some features if not
 - **Extension Gallery**: `@codingame/monaco-vscode-extension-gallery-service-override`

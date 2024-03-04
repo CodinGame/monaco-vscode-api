@@ -46,6 +46,8 @@ import { BrowserWindow } from 'vs/workbench/browser/window'
 import { detectFullscreen } from 'vs/base/browser/dom'
 import { mainWindow } from 'vs/base/browser/window'
 import { setFullscreen } from 'vs/base/browser/browser'
+import { EditorPaneService } from 'vs/workbench/services/editor/browser/editorPaneService'
+import { IEditorPaneService } from 'vs/workbench/services/editor/common/editorPaneService'
 import getKeybindingsOverride from './keybindings'
 import getQuickAccessOverride from './quickaccess'
 import getBulkEditServiceOverride from './bulkEdit'
@@ -55,6 +57,7 @@ import getStatusBarServiceOverride from './viewStatusBar'
 import getBannerServiceOverride from './viewBanner'
 import { getWorkbenchContainer } from '../workbench'
 import { onLayout, onRenderWorkbench } from '../lifecycle'
+import { registerAssets } from '../assets'
 import 'vs/workbench/contrib/files/browser/fileCommands'
 import 'vs/workbench/contrib/files/browser/fileActions.contribution'
 import 'vs/workbench/contrib/callHierarchy/browser/callHierarchy.contribution'
@@ -74,7 +77,6 @@ import 'vs/workbench/contrib/files/browser/files.contribution'
 import 'vs/workbench/contrib/limitIndicator/browser/limitIndicator.contribution'
 import 'vs/workbench/contrib/sash/browser/sash.contribution'
 import 'vs/workbench/contrib/preferences/browser/keyboardLayoutPicker'
-import { registerAssets } from '../assets'
 export * from './tools/views'
 
 let webviewIframeAlternateDomains: string | undefined
@@ -164,6 +166,7 @@ function getServiceOverride (options?: IWorkbenchOptions, _webviewIframeAlternat
     [IWebviewWorkbenchService.toString()]: new SyncDescriptor(WebviewEditorService, [], true),
     [IProgressService.toString()]: new SyncDescriptor(ProgressService, [], true),
     [IAuxiliaryWindowService.toString()]: new SyncDescriptor(BrowserAuxiliaryWindowService, [], true),
+    [IEditorPaneService.toString()]: new SyncDescriptor(EditorPaneService, [], true),
     ...getTitleBarServiceOverride(),
     ...getStatusBarServiceOverride(),
     ...getBannerServiceOverride()

@@ -83,6 +83,8 @@ import { IViewsService } from 'vs/workbench/services/views/common/viewsService'
 import { ViewsService } from 'vs/workbench/services/views/browser/viewsService'
 import { HoverService } from 'vs/editor/browser/services/hoverService'
 import { IHoverService } from 'vs/platform/hover/browser/hover'
+import { IEditorPaneService } from 'vs/workbench/services/editor/common/editorPaneService'
+import { EditorPaneService } from 'vs/workbench/services/editor/browser/editorPaneService'
 import { MonacoDelegateEditorGroupsService, MonacoEditorService, OpenEditor } from './tools/editor'
 import getBulkEditServiceOverride from './bulkEdit'
 import { LayoutService } from './layout'
@@ -721,7 +723,8 @@ function getServiceOverride (openEditorFallback?: OpenEditor, _webviewIframeAlte
     [IWebviewViewService.toString()]: new SyncDescriptor(WebviewViewService, [], true),
     [IWebviewWorkbenchService.toString()]: new SyncDescriptor(WebviewEditorService, [], true),
     [IProgressService.toString()]: new SyncDescriptor(ProgressService, [], true),
-    [IAuxiliaryWindowService.toString()]: new SyncDescriptor(BrowserAuxiliaryWindowService, [], true)
+    [IAuxiliaryWindowService.toString()]: new SyncDescriptor(BrowserAuxiliaryWindowService, [], true),
+    [IEditorPaneService.toString()]: new SyncDescriptor(EditorPaneService, [], true)
   }
 }
 

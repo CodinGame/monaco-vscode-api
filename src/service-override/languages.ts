@@ -2,15 +2,15 @@ import { IEditorOverrideServices } from 'vs/editor/standalone/browser/standalone
 import { SyncDescriptor } from 'vs/platform/instantiation/common/descriptors'
 import { WorkbenchLanguageService } from 'vs/workbench/services/language/common/languageService'
 import { LanguageConfigurationFileHandler } from 'vs/workbench/contrib/codeEditor/browser/languageConfigurationExtensionPoint'
-import { IWorkbenchContribution, IWorkbenchContributionsRegistry, Extensions as WorkbenchExtensions } from 'vs/workbench/common/contributions'
-import { Registry } from 'vs/platform/registry/common/platform'
-import { LifecyclePhase } from 'vs/workbench/services/lifecycle/common/lifecycle'
+import { IWorkbenchContribution, WorkbenchPhase, registerWorkbenchContribution2 } from 'vs/workbench/common/contributions'
 import { IInstantiationService } from 'vs/platform/instantiation/common/instantiation'
 import { ILanguageService } from 'vs/editor/common/languages/language'
 import { ILanguageStatusService, LanguageStatusServiceImpl } from 'vs/workbench/services/languageStatus/common/languageStatusService'
 import getFileServiceOverride from './files'
 
 export class ExtensionPoints implements IWorkbenchContribution {
+  static readonly ID = 'workbench.contrib.extensionPoints.languageConfiguration'
+
   constructor (
     @IInstantiationService private readonly instantiationService: IInstantiationService
   ) {
@@ -18,7 +18,7 @@ export class ExtensionPoints implements IWorkbenchContribution {
   }
 }
 
-Registry.as<IWorkbenchContributionsRegistry>(WorkbenchExtensions.Workbench).registerWorkbenchContribution(ExtensionPoints, LifecyclePhase.Starting)
+registerWorkbenchContribution2(ExtensionPoints.ID, ExtensionPoints, WorkbenchPhase.BlockStartup)
 
 export default function getServiceOverride (): IEditorOverrideServices {
   return {

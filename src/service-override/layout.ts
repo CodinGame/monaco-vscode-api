@@ -59,6 +59,8 @@ export class LayoutService extends Disposable implements ILayoutService, IWorkbe
     document.body.classList.add('web')
   }
 
+  onDidChangeMainEditorCenteredLayout = Event.None
+
   whenActiveContainerStylesLoaded = Promise.resolve()
 
   hasMainWindowBorder (): boolean {

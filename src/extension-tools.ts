@@ -107,8 +107,8 @@ async function extractThemeResources (theme: IColorTheme | IIconTheme, fs: typeo
 }
 
 function extractJsonValidationResources (jsonValidation: IJSONValidation): string[] {
-  if (jsonValidation.url!.startsWith('./')) {
-    return [jsonValidation.url!]
+  if (jsonValidation.url.startsWith('./')) {
+    return [jsonValidation.url]
   }
   return []
 }
