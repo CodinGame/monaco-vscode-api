@@ -43,19 +43,19 @@ type Label = string | {
   long: string
 }
 
-abstract class SimpleEditorPane extends EditorPane {
+abstract class InjectedEditorPane extends EditorPane {
+  constructor (
+    id: string
+  ) {
+    super(id, StandaloneServices.get(ITelemetryService), StandaloneServices.get(IThemeService), StandaloneServices.get(IStorageService))
+  }
+}
+
+abstract class SimpleEditorPane extends InjectedEditorPane {
   protected container!: HTMLElement
   protected wrapper!: HTMLElement
   protected scrollbar: DomScrollableElement | undefined
   private inputDisposable = this._register(new MutableDisposable())
-  constructor (
-    id: string,
-    @ITelemetryService telemetryService: ITelemetryService,
-    @IThemeService themeService: IThemeService,
-    @IStorageService storageService: IStorageService
-  ) {
-    super(id, telemetryService, themeService, storageService)
-  }
 
   protected override createEditor (parent: HTMLElement): void {
     this.container = this.initialize()
@@ -414,7 +414,7 @@ export {
   ConfirmResult,
   registerEditorPane,
   RegisteredEditorPriority,
-  EditorPane,
+  InjectedEditorPane as EditorPane,
   SimpleEditorPane,
   SimpleEditorInput,
   AbstractResourceEditorInput,
@@ -434,5 +434,6 @@ export {
   viewContainerRegistry,
   IViewContainerDescriptor,
   ViewContainer,
-  IViewDescriptor
+  IViewDescriptor,
+  DomScrollableElement
 }
