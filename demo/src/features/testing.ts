@@ -260,7 +260,7 @@ void getApi().then(async api => {
         const fileCoverage = coveredLines.get(test.uri!.toString())
         const lineInfo = fileCoverage?.[lineNo]
         if (lineInfo != null) {
-          lineInfo.executionCount++
+          (lineInfo.executed as number)++
         }
 
         run.appendOutput(`Completed ${test.id}\r\n`)
