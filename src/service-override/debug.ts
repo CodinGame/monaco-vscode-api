@@ -10,6 +10,8 @@ import { IAction } from 'vs/base/common/actions'
 import { IExtensionHostDebugService } from 'vs/platform/debug/common/extensionHostDebug'
 import { BrowserExtensionHostDebugService } from 'vs/workbench/contrib/debug/browser/extensionHostDebugService'
 import { DebugVisualizerService, IDebugVisualizerService } from 'vs/workbench/contrib/debug/common/debugVisualizers'
+// Debug assets should be registered BEFORE the contribution code runs
+import './tools/debugAssets'
 import 'vs/workbench/contrib/debug/browser/debug.contribution'
 
 // remove "Open 'launch.json'" button
