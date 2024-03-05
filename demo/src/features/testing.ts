@@ -9,7 +9,9 @@ const { getApi } = registerExtension({
     vscode: '*'
   },
   enabledApiProposals: ['testCoverage']
-}, ExtensionHostKind.LocalProcess)
+}, ExtensionHostKind.LocalProcess, {
+  system: true
+})
 
 void getApi().then(async api => {
   const testRe = /^([0-9]+)\s*([+*/-])\s*([0-9]+)\s*=\s*([0-9]+)/

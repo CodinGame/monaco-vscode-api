@@ -9,7 +9,9 @@ const { getApi } = registerExtension({
   },
   version: '1.0.0',
   enabledApiProposals: ['scmActionButton']
-}, ExtensionHostKind.LocalProcess)
+}, ExtensionHostKind.LocalProcess, {
+  system: true // to be able to use api proposals
+})
 
 void getApi().then(async vscode => {
   const workspaceFolder = vscode.workspace.workspaceFolders![0]
