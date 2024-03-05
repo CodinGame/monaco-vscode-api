@@ -271,7 +271,6 @@ function isDynamicKeybindingService (keybindingService: IKeybindingService) {
 // This class use useful so editor.addAction and editor.addCommand still work
 // Monaco do an `instanceof` on the KeybindingService so we need it to extends `StandaloneKeybindingService`
 class DelegateStandaloneKeybindingService extends StandaloneKeybindingService {
-  private _onDidChangeKeybindings = new Emitter<void>()
   constructor (
     private delegate: DynamicKeybindingService,
     @IContextKeyService contextKeyService: IContextKeyService,
@@ -287,17 +286,12 @@ class DelegateStandaloneKeybindingService extends StandaloneKeybindingService {
       provideKeybindings: () => {
         return this.getUserKeybindingItems()
       },
-      onDidChangeKeybindings: this._onDidChangeKeybindings.event
+      onDidChangeKeybindings: this.onDidUpdateKeybindings
     }))
   }
 
   protected override _getResolver (): KeybindingResolver {
     return this.delegate._getResolver()
-  }
-
-  protected override updateResolver (): void {
-    super.updateResolver()
-    this._onDidChangeKeybindings.fire()
   }
 
   override resolveKeyboardEvent (keyboardEvent: IKeyboardEvent): ResolvedKeybinding {
