@@ -114,12 +114,4 @@ void getApi().then(async vscode => {
       uri: vscode.Uri.file(dirHandle.name)
     })
   })
-
-  document.querySelector('#run')!.addEventListener('click', () => {
-    void vscode.debug.startDebugging(undefined, {
-      name: 'Test',
-      request: 'attach',
-      type: 'javascript'
-    })
-  })
 })

@@ -32,7 +32,6 @@ container.innerHTML = `
     <h1>Editor</h1>
     <div id="editors"></div>
 
-    <button id="run">Run with debugger</button>
     <button id="filesystem">Attach filesystem</button>
     <button id="customEditorPanel">Open custom editor panel</button>
     <button id="clearStorage">Clear user data</button>

@@ -1,10 +1,9 @@
 import { defineConfig } from 'vite'
 import importMetaUrlPlugin from '@codingame/esbuild-import-meta-url-plugin'
+import { viteStaticCopy } from 'vite-plugin-static-copy'
 import * as fs from 'fs'
 import path from 'path'
 import pkg from './package.json' assert { type: 'json' }
-
-const cdnDomain = process.env.CDN_HOST ?? 'http://127.0.0.2:5173'
 
 const localDependencies = Object.entries(pkg.dependencies).filter(([, version]) => version.startsWith('file:../')).map(([name]) => name)
 export default defineConfig({
@@ -12,19 +11,14 @@ export default defineConfig({
     target: 'esnext'
   },
   plugins: [
-    {
-      // For the *-language-features extensions which use SharedArrayBuffer
-      name: 'configure-response-headers',
-      apply: 'serve',
-      configureServer: server => {
-        server.middlewares.use((_req, res, next) => {
-          res.setHeader('Cross-Origin-Embedder-Policy', 'credentialless')
-          res.setHeader('Cross-Origin-Opener-Policy', 'same-origin')
-          res.setHeader('Cross-Origin-Resource-Policy', 'cross-origin')
-          next()
-        })
-      }
-    },
+    viteStaticCopy({
+      targets: [
+        {
+          src: 'coi-serviceworker.js',
+          dest: './'
+        }
+      ]
+    }),
     {
       name: 'force-prevent-transform-assets',
       apply: 'serve',
@@ -68,7 +62,6 @@ export default defineConfig({
   },
   server: {
     port: 5173,
-    origin: cdnDomain,
     host: '0.0.0.0',
     fs: {
       allow: ['../'] // allow to load codicon.ttf from monaco-editor in the parent folder

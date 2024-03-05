@@ -21,14 +21,16 @@ import { ExtensionTipsService } from 'vs/platform/extensionManagement/common/ext
 import { ExtensionManagementService } from 'vs/workbench/services/extensionManagement/common/extensionManagementService'
 import { IRemoteUserDataProfilesService, RemoteUserDataProfilesService } from 'vs/workbench/services/userDataProfile/common/remoteUserDataProfiles'
 import { ExtensionEnablementService } from 'vs/workbench/services/extensionManagement/browser/extensionEnablementService'
-import 'vs/workbench/contrib/extensions/browser/extensions.contribution'
-import 'vs/workbench/contrib/extensions/browser/extensions.web.contribution'
 import { ExtensionUrlHandler, IExtensionUrlHandler } from 'vs/workbench/services/extensions/browser/extensionUrlHandler'
 import { IRemoteAgentService } from 'vs/workbench/services/remote/common/remoteAgentService'
 import { IInstantiationService } from 'vs/platform/instantiation/common/instantiation'
 import { ILabelService } from 'vs/platform/label/common/label'
+import { IExtensionFeaturesManagementService } from 'vs/workbench/services/extensionManagement/common/extensionFeatures'
+import { ExtensionFeaturesManagementService } from 'vs/workbench/services/extensionManagement/common/extensionFeaturesManagemetService'
 import { registerAssets } from '../assets'
 import { getExtensionManifests } from '../extensions'
+import 'vs/workbench/contrib/extensions/browser/extensions.contribution'
+import 'vs/workbench/contrib/extensions/browser/extensions.web.contribution'
 
 // plugin-import-meta-asset only allows relative paths
 registerAssets({
@@ -37,25 +39,30 @@ registerAssets({
   'vs/workbench/contrib/extensions/browser/media/language-icon.svg': new URL('../../vscode/src/vs/workbench/contrib/extensions/browser/media/theme-icon.png', import.meta.url).href
 })
 
+class EmptyRemoteAgentService implements IRemoteAgentService {
+  _serviceBrand: undefined
+  getConnection = () => null
+  getEnvironment = async () => null
+  getRawEnvironment = async () => null
+  getExtensionHostExitInfo = async () => null
+  getRoundTripTime = async () => undefined
+  whenExtensionsReady = async () => undefined
+  scanExtensions = async () => []
+  scanSingleExtension = async () => null
+  getDiagnosticInfo = async () => undefined
+  updateTelemetryLevel = async () => undefined
+  logTelemetry = async () => undefined
+  flushTelemetry = async () => undefined
+}
+
 class ExtensionManagementServerServiceOverride extends ExtensionManagementServerService {
   constructor (
-    private isWebOnly: boolean,
+    isWebOnly: boolean,
     @IRemoteAgentService readonly remoteAgentService: IRemoteAgentService,
     @ILabelService readonly labelService: ILabelService,
     @IInstantiationService readonly instantiationService: IInstantiationService
   ) {
-    super(remoteAgentService, labelService, instantiationService)
-
-    if (this.isWebOnly) {
-      /**
-      * If `isWebOnly` is set to true, we explicitly set the remote extension management server to `null`, even if
-      * we're connected to a remote server.
-      */
-      // Cannot override read-only property, but this is the only way we can override it to be null,
-      // overriding the field doesn't work and setting a getter is not allowed.
-      // @ts-ignore
-      this.remoteExtensionManagementServer = null
-    }
+    super(isWebOnly ? remoteAgentService : new EmptyRemoteAgentService(), labelService, instantiationService)
   }
 }
 
@@ -93,6 +100,7 @@ export default function getServiceOverride (options: ExtensionGalleryOptions = {
     [IExtensionTipsService.toString()]: new SyncDescriptor(ExtensionTipsService, [], true),
     [IRemoteUserDataProfilesService.toString()]: new SyncDescriptor(RemoteUserDataProfilesService, [], true),
     [IWorkbenchExtensionEnablementService.toString()]: new SyncDescriptor(ExtensionEnablementService, [], true),
-    [IExtensionUrlHandler.toString()]: new SyncDescriptor(ExtensionUrlHandler, [], true)
+    [IExtensionUrlHandler.toString()]: new SyncDescriptor(ExtensionUrlHandler, [], true),
+    [IExtensionFeaturesManagementService.toString()]: new SyncDescriptor(ExtensionFeaturesManagementService, [], true)
   }
 }

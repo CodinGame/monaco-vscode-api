@@ -176,7 +176,6 @@ import { INotebookExecutionService } from 'vs/workbench/contrib/notebook/common/
 import { INotebookKeymapService } from 'vs/workbench/contrib/notebook/common/notebookKeymapService'
 import { INotebookLoggingService } from 'vs/workbench/contrib/notebook/common/notebookLoggingService'
 import { IWalkthroughsService } from 'vs/workbench/contrib/welcomeGettingStarted/browser/gettingStartedService'
-import { IFeaturedExtensionsService } from 'vs/workbench/contrib/welcomeGettingStarted/browser/featuredExtensionService'
 import { IUserDataSyncMachinesService } from 'vs/platform/userDataSync/common/userDataSyncMachines'
 import { IWorkingCopyHistoryService } from 'vs/workbench/services/workingCopy/common/workingCopyHistory'
 import { mainWindow } from 'vs/base/browser/window'
@@ -191,8 +190,10 @@ import { IMultiDiffSourceResolverService } from 'vs/workbench/contrib/multiDiffE
 import { IInteractiveHistoryService } from 'vs/workbench/contrib/interactive/browser/interactiveHistoryService'
 import { IWorkspaceTagsService } from 'vs/workbench/contrib/tags/common/workspaceTags'
 import { NoOpWorkspaceTagsService } from 'vs/workbench/contrib/tags/browser/workspaceTagsService'
-import { unsupported } from './tools'
+import { IExtensionFeaturesManagementService } from 'vs/workbench/services/extensionManagement/common/extensionFeatures'
+import { IEditorPaneService } from 'vs/workbench/services/editor/common/editorPaneService'
 import { getBuiltInExtensionTranslationsUris } from './l10n'
+import { unsupported } from './tools'
 
 registerSingleton(ILoggerService, class NullLoggerService extends AbstractLoggerService {
   constructor () {
@@ -205,6 +206,7 @@ registerSingleton(ILoggerService, class NullLoggerService extends AbstractLogger
 registerSingleton(IEditorService, class EditorService implements IEditorService {
   readonly _serviceBrand = undefined
 
+  onWillOpenEditor = Event.None
   onDidActiveEditorChange = Event.None
   onDidVisibleEditorsChange = Event.None
   onDidEditorsChange = Event.None
@@ -534,6 +536,7 @@ registerSingleton(ITitleService, class TitleService implements ITitleService {
   isCommandCenterVisible = false
   onDidChangeCommandCenterVisibility = Event.None
   updateProperties (): void {}
+  registerVariables = () => {}
 }, InstantiationType.Eager)
 
 registerSingleton(IWorkingCopyFileService, WorkingCopyFileService, InstantiationType.Eager)
@@ -733,10 +736,15 @@ const debugModel: IDebugModel = {
   onDidChangeCallStack: Event.None,
   onDidChangeWatchExpressions: Event.None,
   fetchCallstack: unsupported,
-  getId: unsupported
+  getId: unsupported,
+  registerBreakpointModes: unsupported,
+  getBreakpointModes: () => []
 }
 
 class FakeViewModel implements IViewModel {
+  setVisualizedExpression = unsupported
+  getVisualizedExpression = () => undefined
+  onDidChangeVisualization = Event.None
   getId = unsupported
   readonly focusedSession = undefined
   readonly focusedThread = undefined
@@ -909,6 +917,11 @@ registerSingleton(IViewDescriptorService, class ViewDescriptorService implements
 
 registerSingleton(IHistoryService, class HistoryService implements IHistoryService {
   _serviceBrand: undefined
+  suspendTracking = () => ({
+    dispose () {
+    }
+  })
+
   goForward = unsupported
   goBack = unsupported
   goPrevious = unsupported
@@ -926,6 +939,7 @@ registerSingleton(IHistoryService, class HistoryService implements IHistoryServi
 
 registerSingleton(ITaskService, class TaskService implements ITaskService {
   _serviceBrand: undefined
+  onDidChangeTaskConfig = Event.None
   onDidStateChange = Event.None
   supportsMultipleTaskExecutions = false
   configureAction = unsupported
@@ -1982,6 +1996,7 @@ registerSingleton(IWorkbenchAssignmentService, class WorkbenchAssignmentService 
 
 registerSingleton(IChatService, class ChatService implements IChatService {
   _serviceBrand: undefined
+  onDidUnregisterProvider = Event.None
   clearAllHistoryEntries = unsupported
   onDidSubmitAgent = Event.None
   onDidRegisterProvider = Event.None
@@ -2250,9 +2265,14 @@ registerSingleton(IExtensionUrlHandler, class ExtensionUrlHandler implements IEx
 
 registerSingleton(ICommentService, class CommentService implements ICommentService {
   _serviceBrand: undefined
+
   get commentsModel () {
     return unsupported()
   }
+
+  onDidChangeActiveEditingCommentThread = Event.None
+  setActiveEditingCommentThread = unsupported
+  setActiveCommentAndThread = unsupported
 
   onDidSetResourceCommentInfos = Event.None
   onDidSetAllCommentThreads = Event.None
@@ -2426,6 +2446,8 @@ registerSingleton(IRemoteExplorerService, class RemoteExplorerService implements
 
 registerSingleton(IAuthenticationService, class AuthenticationService implements IAuthenticationService {
   _serviceBrand: undefined
+  onDidChangeExtensionSessionAccess = Event.None
+  readAllowedExtensions = () => []
   isAuthenticationProviderRegistered = () => false
   getProviderIds = () => []
   registerAuthenticationProvider = unsupported
@@ -2651,6 +2673,8 @@ registerSingleton(INotebookSearchService, class NotebookSearchService implements
 
 registerSingleton(IChatProviderService, class ChatProviderService implements IChatProviderService {
   _serviceBrand: undefined
+  onDidChangeProviders = Event.None
+  getProviders = () => []
   lookupChatResponseProvider = unsupported
   registerChatResponseProvider = unsupported
   fetchChatResponse = unsupported
@@ -2860,14 +2884,6 @@ registerSingleton(IWalkthroughsService, class WalkthroughsService implements IWa
   markWalkthroughOpened = unsupported
 }, InstantiationType.Delayed)
 
-registerSingleton(IFeaturedExtensionsService, class FeaturedExtensionsService implements IFeaturedExtensionsService {
-  _serviceBrand: undefined
-  getExtensions = unsupported
-  get title () {
-    return unsupported()
-  }
-}, InstantiationType.Delayed)
-
 registerSingleton(IUserDataSyncStoreManagementService, class UserDataSyncStoreManagementService implements IUserDataSyncStoreManagementService {
   _serviceBrand: undefined
   onDidChangeUserDataSyncStore = Event.None
@@ -3015,6 +3031,10 @@ registerSingleton(INotebookDocumentService, class NotebookDocumentService implem
 
 registerSingleton(IDebugVisualizerService, class DebugVisualizerService implements IDebugVisualizerService {
   _serviceBrand: undefined
+  registerTree = unsupported
+  getVisualizedNodeFor = unsupported
+  getVisualizedChildren = unsupported
+  editTreeItem = unsupported
   getApplicableFor = unsupported
   register = unsupported
 }, InstantiationType.Delayed)
@@ -3057,3 +3077,21 @@ registerSingleton(IMultiDiffSourceResolverService, class MultiDiffSourceResolver
 }, InstantiationType.Delayed)
 
 registerSingleton(IWorkspaceTagsService, NoOpWorkspaceTagsService, InstantiationType.Delayed)
+
+registerSingleton(IExtensionFeaturesManagementService, class ExtensionFeaturesManagementService implements IExtensionFeaturesManagementService {
+  _serviceBrand: undefined
+  onDidChangeEnablement = Event.None
+  isEnabled = () => true
+  setEnablement = unsupported
+  getEnablementData = unsupported
+  getAccess = unsupported
+  onDidChangeAccessData = Event.None
+  getAccessData = () => undefined
+  setStatus = unsupported
+}, InstantiationType.Delayed)
+
+registerSingleton(IEditorPaneService, class EditorPaneService implements IEditorPaneService {
+  _serviceBrand: undefined
+  onWillInstantiateEditorPane = Event.None
+  didInstantiateEditorPane = () => false
+}, InstantiationType.Delayed)

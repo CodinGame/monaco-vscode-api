@@ -1,9 +1,7 @@
 import { IInstantiationService } from 'vs/platform/instantiation/common/instantiation'
-import { Registry } from 'vs/platform/registry/common/platform'
 import { JSONValidationExtensionPoint } from 'vs/workbench/api/common/jsonValidationExtensionPoint'
-import { IWorkbenchContribution, IWorkbenchContributionsRegistry, Extensions as WorkbenchExtensions } from 'vs/workbench/common/contributions'
+import { IWorkbenchContribution, WorkbenchPhase, registerWorkbenchContribution2 } from 'vs/workbench/common/contributions'
 import { ColorExtensionPoint } from 'vs/workbench/services/themes/common/colorExtensionPoint'
-import { LifecyclePhase } from 'vs/workbench/services/lifecycle/common/lifecycle'
 import { IconExtensionPoint } from 'vs/workbench/services/themes/common/iconExtensionPoint'
 // Selectively comes from vs/workbench/contrib/codeEditor/browser/codeEditor.contribution.ts
 import 'vs/workbench/contrib/codeEditor/browser/workbenchReferenceSearch'
@@ -28,6 +26,8 @@ import 'vs/workbench/contrib/contextmenu/browser/contextmenu.contribution'
 import 'vs/workbench/contrib/mappedEdits/common/mappedEdits.contribution'
 
 class ExtensionPoints implements IWorkbenchContribution {
+  static readonly ID = 'workbench.contrib.extensionPoints.main'
+
   constructor (
     @IInstantiationService private readonly instantiationService: IInstantiationService
   ) {
@@ -36,4 +36,4 @@ class ExtensionPoints implements IWorkbenchContribution {
     this.instantiationService.createInstance(IconExtensionPoint)
   }
 }
-Registry.as<IWorkbenchContributionsRegistry>(WorkbenchExtensions.Workbench).registerWorkbenchContribution(ExtensionPoints, LifecyclePhase.Starting)
+registerWorkbenchContribution2(ExtensionPoints.ID, ExtensionPoints, WorkbenchPhase.BlockStartup)

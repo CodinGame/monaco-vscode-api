@@ -64,40 +64,11 @@ const PURE_FUNCTIONS = new Set([
   'negate'
 ])
 
-// Function calls to remove when the result is not used
-const FUNCTIONS_TO_REMOVE = new Set([
-  'registerProxyConfigurations',
-  'registerExtensionPoint',
-  'registerTouchBarEntry',
-
-  // For ActivityBar, remove unused actions/items
-  'fillExtraContextMenuActions',
-  'createGlobalActivityActionBar',
-  'assertRegistered', // because we implement only partially the api and vscode assert the all extHosts are registered
-  'updateEnabledApiProposals' // do not check for extension proposal api declaration
-])
-
 const PURE_OR_TO_REMOVE_FUNCTIONS = new Set([
-  ...PURE_FUNCTIONS,
-  ...FUNCTIONS_TO_REMOVE
-])
-
-const REMOVE_COMMANDS = new Set([
-  'DEBUG_START_COMMAND_ID',
-  'DEBUG_RUN_COMMAND_ID',
-  'SELECT_DEBUG_CONSOLE_ID',
-  'SELECT_AND_START_ID',
-  'debug.startFromConfig',
-  'debug.installAdditionalDebuggers',
-  'REMOVE_ROOT_FOLDER_COMMAND_ID',
-  'debug.openView',
-  '_files.windowOpen',
-  '_files.newWindow'
+  ...PURE_FUNCTIONS
 ])
 
 const REMOVE_WORKBENCH_CONTRIBUTIONS = new Set([
-  'ResetConfigurationDefaultsOverridesCache',
-  'ConfigurationMigrationWorkbenchContribution',
   'ExtensionPoints'
 ])
 
@@ -154,66 +125,9 @@ function isCallPure (file: string, functionName: string, node: recast.types.name
     return true
   }
 
-  if (functionName === 'KeybindingsRegistry.registerCommandAndKeybindingRule') {
-    const firstParam = args[0]!
-    if (firstParam.type === 'ObjectExpression') {
-      for (const prop of firstParam.properties) {
-        if (prop.type === 'ObjectProperty' && prop.key.type === 'Identifier' && prop.key.name === 'id') {
-          const id = prop.value.type === 'StringLiteral' ? prop.value.value : (prop.value.type === 'Identifier' ? prop.value.name : null)
-          return id != null && REMOVE_COMMANDS.has(id)
-        }
-      }
-    }
-  }
-
-  if (functionName === 'CommandsRegistry.registerCommand') {
-    if (file.includes('mainThreadCLICommands')) {
-      return true
-    }
-
-    const firstParam = args[0]!
-    if (firstParam.type === 'StringLiteral') {
-      const commandId = firstParam.value
-      return REMOVE_COMMANDS.has(commandId)
-    }
-  }
-
-  // Remove Registry.add calls
-  if (functionName.endsWith('Registry.add')) {
-    const firstParam = args[0]!
-    const firstParamName = firstParam.type === 'MemberExpression' ? getMemberExpressionPath(firstParam) : undefined
-    if (firstParamName != null) {
-      const allowed = firstParamName.includes('ExtensionsRegistry') ||
-        firstParamName.includes('EditorFactory') ||
-        firstParamName.includes('Workbench') ||
-        firstParamName.includes('OutputChannels') ||
-        firstParamName.includes('ViewsRegistry') ||
-        firstParamName.includes('ViewContainersRegistry') ||
-        firstParamName.includes('Viewlets') ||
-        firstParamName.includes('Panels') ||
-        firstParamName.includes('Auxiliary') ||
-        firstParamName.includes('EditorPane') ||
-        firstParamName.includes('TerminalExtensions') ||
-        firstParamName.includes('ConfigurationMigration') ||
-        firstParamName.includes('JSONContribution') ||
-        firstParamName.includes('DragAndDropContribution') ||
-        firstParamName.includes('EditorModes') ||
-        firstParamName.includes('Quickaccess') ||
-        firstParamName.includes('IconContribution') ||
-        firstParamName.includes('ThemingContribution') ||
-        firstParamName.includes('ColorContribution') ||
-        firstParamName.includes('Configuration') ||
-        firstParamName.includes('ModesRegistry') ||
-        firstParamName.includes('EditorCommonContributions')
-      return !allowed
-    }
-  }
-
   if (functionName === 'MenuRegistry.appendMenuItem') {
     const firstParamCode = recast.print(args[0]!).code
     if (
-      firstParamCode.startsWith('MenuId.MenubarDebugMenu') ||
-      firstParamCode.startsWith('MenuId.TouchBarContext') ||
       firstParamCode.startsWith('MenuId.AccountsContext')
     ) {
       return true
@@ -229,25 +143,6 @@ function isCallPure (file: string, functionName: string, node: recast.types.name
       return false
     }
     return true
-  }
-
-  if (functionName === 'MenuRegistry.appendMenuItem') {
-    if (file.includes('debugViewlet')) {
-      // Remove DEBUG_START_COMMAND_ID and SELECT_AND_START_ID
-      return true
-    }
-    if (file.includes('layoutActions')) {
-      return true
-    }
-    return false
-  }
-
-  if (functionName === 'registerDebugCommandPaletteItem') {
-    const firstParamCode = recast.print(args[0]!).code
-    if (['RESTART_SESSION_ID', 'DISCONNECT_ID', 'DISCONNECT_AND_SUSPEND_ID', 'DEBUG_START_COMMAND_ID', 'DEBUG_RUN_COMMAND_ID'].includes(firstParamCode)) {
-      return true
-    }
-    return false
   }
 
   if (functionName === 'registerSingleton') {
@@ -525,7 +420,9 @@ export default (args: Record<string, string>): rollup.RollupOptions[] => {
           path.includes('vs/workbench/contrib/welcomeGettingStarted/browser/gettingStartedColors') ||
           path.includes('keyboardLayoutPicker') ||
           path.includes('expandAbbreviation') ||
-          path.includes('commentsEditorContribution')
+          path.includes('commentsEditorContribution') ||
+          path.includes('keybindingsEditorContribution') ||
+          path.includes('preferencesSearch')
       }
     },
     external,

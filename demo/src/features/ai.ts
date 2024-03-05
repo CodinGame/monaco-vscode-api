@@ -14,7 +14,9 @@ const { getApi } = registerExtension({
     }]
   },
   enabledApiProposals: ['aiRelatedInformation']
-}, ExtensionHostKind.LocalProcess)
+}, ExtensionHostKind.LocalProcess, {
+  system: true // to be able to use api proposals
+})
 
 void getApi().then(async vscode => {
   vscode.commands.registerCommand('aiSuggestedCommand', () => {

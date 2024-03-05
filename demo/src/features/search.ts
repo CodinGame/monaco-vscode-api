@@ -9,7 +9,9 @@ const { getApi } = registerExtension({
     vscode: '*'
   },
   enabledApiProposals: ['fileSearchProvider', 'textSearchProvider']
-}, ExtensionHostKind.LocalProcess)
+}, ExtensionHostKind.LocalProcess, {
+  system: true // to be able to use api proposals
+})
 
 void getApi().then(async api => {
   api.workspace.registerFileSearchProvider('file', {

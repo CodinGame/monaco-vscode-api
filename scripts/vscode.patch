@@ -1,8 +1,8 @@
 diff --git a/.eslintrc.json b/.eslintrc.json
-index e9670fc9c83..eb652558f22 100644
+index 0922babfe92..59769eeda54 100644
 --- a/.eslintrc.json
 +++ b/.eslintrc.json
-@@ -699,6 +699,7 @@
+@@ -671,6 +671,7 @@
  							"v8-inspect-profiler",
  							"vscode-regexpp",
  							"vscode-textmate",
@@ -273,7 +273,7 @@ index 02154e77b68..d7f257db934 100644
  
  .codicon[class*='codicon-'] {
 diff --git a/src/vs/base/common/network.ts b/src/vs/base/common/network.ts
-index 00ad27c3d55..9e5e31ad723 100644
+index 974d0c21743..aae916fa686 100644
 --- a/src/vs/base/common/network.ts
 +++ b/src/vs/base/common/network.ts
 @@ -4,6 +4,8 @@
@@ -285,7 +285,7 @@ index 00ad27c3d55..9e5e31ad723 100644
  import * as platform from 'vs/base/common/platform';
  import { equalsIgnoreCase, startsWithIgnoreCase } from 'vs/base/common/strings';
  import { URI } from 'vs/base/common/uri';
-@@ -210,6 +212,30 @@ export const VSCODE_AUTHORITY = 'vscode-app';
+@@ -223,6 +225,30 @@ export const VSCODE_AUTHORITY = 'vscode-app';
  class FileAccessImpl {
  
  	private static readonly FALLBACK_AUTHORITY = VSCODE_AUTHORITY;
@@ -316,7 +316,7 @@ index 00ad27c3d55..9e5e31ad723 100644
  
  	/**
  	 * Returns a URI to use in contexts where the browser is responsible
-@@ -218,7 +244,7 @@ class FileAccessImpl {
+@@ -231,7 +257,7 @@ class FileAccessImpl {
  	 * **Note:** use `dom.ts#asCSSUrl` whenever the URL is to be used in CSS context.
  	 */
  	asBrowserUri(resourcePath: AppResourcePath | ''): URI {
@@ -325,7 +325,7 @@ index 00ad27c3d55..9e5e31ad723 100644
  		return this.uriToBrowserUri(uri);
  	}
  
-@@ -257,7 +283,7 @@ class FileAccessImpl {
+@@ -270,7 +296,7 @@ class FileAccessImpl {
  			});
  		}
  
@@ -334,7 +334,7 @@ index 00ad27c3d55..9e5e31ad723 100644
  	}
  
  	/**
-@@ -265,7 +291,7 @@ class FileAccessImpl {
+@@ -278,7 +304,7 @@ class FileAccessImpl {
  	 * is responsible for loading.
  	 */
  	asFileUri(resourcePath: AppResourcePath | ''): URI {
@@ -343,7 +343,7 @@ index 00ad27c3d55..9e5e31ad723 100644
  		return this.uriToFileUri(uri);
  	}
  
-@@ -297,6 +323,19 @@ class FileAccessImpl {
+@@ -310,6 +336,19 @@ class FileAccessImpl {
  
  		return URI.parse(moduleIdToUrl.toUrl(uriOrModule));
  	}
@@ -405,10 +405,10 @@ index aff4d0734de..ea43e4a2fcc 100644
 +// };
 +// ESM-uncomment-end
 diff --git a/src/vs/editor/browser/config/editorConfiguration.ts b/src/vs/editor/browser/config/editorConfiguration.ts
-index cf9154ce7d6..304985d13ef 100644
+index 06e8339cbc7..799c2f81cd0 100644
 --- a/src/vs/editor/browser/config/editorConfiguration.ts
 +++ b/src/vs/editor/browser/config/editorConfiguration.ts
-@@ -41,6 +41,7 @@ export class EditorConfiguration extends Disposable implements IEditorConfigurat
+@@ -43,6 +43,7 @@ export class EditorConfiguration extends Disposable implements IEditorConfigurat
  	public readonly onDidChangeFast: Event<ConfigurationChangedEvent> = this._onDidChangeFast.event;
  
  	public readonly isSimpleWidget: boolean;
@@ -416,7 +416,7 @@ index cf9154ce7d6..304985d13ef 100644
  	private readonly _containerObserver: ElementSizeObserver;
  
  	private _isDominatedByLongLines: boolean = false;
-@@ -65,12 +66,14 @@ export class EditorConfiguration extends Disposable implements IEditorConfigurat
+@@ -68,12 +69,14 @@ export class EditorConfiguration extends Disposable implements IEditorConfigurat
  
  	constructor(
  		isSimpleWidget: boolean,
@@ -429,9 +429,9 @@ index cf9154ce7d6..304985d13ef 100644
  		this.isSimpleWidget = isSimpleWidget;
 +		this.isStandaloneEditor = isStandaloneEditor;
  		this._containerObserver = this._register(new ElementSizeObserver(container, options.dimension));
+ 		this._targetWindowId = getWindow(container).vscodeWindowId;
  
- 		this._rawOptions = deepCloneAndMigrateOptions(options);
-@@ -126,7 +129,7 @@ export class EditorConfiguration extends Disposable implements IEditorConfigurat
+@@ -130,7 +133,7 @@ export class EditorConfiguration extends Disposable implements IEditorConfigurat
  
  	protected _readEnvConfiguration(): IEnvConfiguration {
  		return {
@@ -440,7 +440,7 @@ index cf9154ce7d6..304985d13ef 100644
  			outerWidth: this._containerObserver.getWidth(),
  			outerHeight: this._containerObserver.getHeight(),
  			emptySelectionClipboard: browser.isWebKit || browser.isFirefox,
-@@ -214,7 +217,7 @@ function digitCount(n: number): number {
+@@ -218,7 +221,7 @@ function digitCount(n: number): number {
  	return r ? r : 1;
  }
  
@@ -449,7 +449,7 @@ index cf9154ce7d6..304985d13ef 100644
  	let extra = '';
  	if (!browser.isSafari && !browser.isWebkitWebView) {
  		// Use user-select: none in all browsers except Safari and native macOS WebView
-@@ -228,6 +231,9 @@ function getExtraEditorClassName(): string {
+@@ -232,6 +235,9 @@ function getExtraEditorClassName(): string {
  	if (platform.isMacintosh) {
  		extra += 'mac ';
  	}
@@ -459,7 +459,7 @@ index cf9154ce7d6..304985d13ef 100644
  	return extra;
  }
  
-@@ -269,7 +275,7 @@ export class ComputedEditorOptions implements IComputedEditorOptions {
+@@ -273,7 +279,7 @@ export class ComputedEditorOptions implements IComputedEditorOptions {
  	}
  }
  
@@ -469,7 +469,7 @@ index cf9154ce7d6..304985d13ef 100644
  	public static validateOptions(options: IEditorOptions): ValidatedEditorOptions {
  		const result = new ValidatedEditorOptions();
 diff --git a/src/vs/editor/browser/widget/codeEditorWidget.ts b/src/vs/editor/browser/widget/codeEditorWidget.ts
-index 1950771ff41..9747196212e 100644
+index 5466f913d24..d8dfad03a43 100644
 --- a/src/vs/editor/browser/widget/codeEditorWidget.ts
 +++ b/src/vs/editor/browser/widget/codeEditorWidget.ts
 @@ -70,6 +70,12 @@ export interface ICodeEditorWidgetOptions {
@@ -485,7 +485,7 @@ index 1950771ff41..9747196212e 100644
  	/**
  	 * Contributions to instantiate.
  	 * When provided, only the contributions included will be instantiated.
-@@ -299,7 +305,7 @@ export class CodeEditorWidget extends Disposable implements editorBrowser.ICodeE
+@@ -300,7 +306,7 @@ export class CodeEditorWidget extends Disposable implements editorBrowser.ICodeE
  		this._decorationTypeSubtypes = {};
  		this._telemetryData = codeEditorWidgetOptions.telemetryData;
  
@@ -494,7 +494,7 @@ index 1950771ff41..9747196212e 100644
  		this._register(this._configuration.onDidChange((e) => {
  			this._onDidChangeConfiguration.fire(e);
  
-@@ -407,8 +413,8 @@ export class CodeEditorWidget extends Disposable implements editorBrowser.ICodeE
+@@ -408,8 +414,8 @@ export class CodeEditorWidget extends Disposable implements editorBrowser.ICodeE
  		this._modelData?.view.writeScreenReaderContent(reason);
  	}
  
@@ -506,7 +506,7 @@ index 1950771ff41..9747196212e 100644
  
  	public getId(): string {
 diff --git a/src/vs/editor/browser/widget/diffEditor/diffEditorWidget.ts b/src/vs/editor/browser/widget/diffEditor/diffEditorWidget.ts
-index 3fd6e543a61..6b196ef694c 100644
+index 6b57de66397..67837f9885e 100644
 --- a/src/vs/editor/browser/widget/diffEditor/diffEditorWidget.ts
 +++ b/src/vs/editor/browser/widget/diffEditor/diffEditorWidget.ts
 @@ -49,6 +49,12 @@ import { RevertButtonsFeature } from 'vs/editor/browser/widget/diffEditor/featur
@@ -532,10 +532,10 @@ index 3fd6e543a61..6b196ef694c 100644
  		this._register(toDisposable(() => this._domElement.removeChild(this.elements.root)));
  
 diff --git a/src/vs/editor/common/config/editorOptions.ts b/src/vs/editor/common/config/editorOptions.ts
-index 720944ca3e1..c5f02b8c64b 100644
+index bd51c9ec27d..7e818a253d4 100644
 --- a/src/vs/editor/common/config/editorOptions.ts
 +++ b/src/vs/editor/common/config/editorOptions.ts
-@@ -857,6 +857,7 @@ export interface IDiffEditorBaseOptions {
+@@ -858,6 +858,7 @@ export interface IDiffEditorBaseOptions {
  		minimumLineCount?: number;
  		contextLineCount?: number;
  	};
@@ -543,70 +543,6 @@ index 720944ca3e1..c5f02b8c64b 100644
  }
  
  /**
-diff --git a/src/vs/editor/contrib/find/browser/findController.ts b/src/vs/editor/contrib/find/browser/findController.ts
-index 1c661f651c2..5dd9bcc6fb5 100644
---- a/src/vs/editor/contrib/find/browser/findController.ts
-+++ b/src/vs/editor/contrib/find/browser/findController.ts
-@@ -30,6 +30,7 @@ import { INotificationService, Severity } from 'vs/platform/notification/common/
- import { IQuickInputService } from 'vs/platform/quickinput/common/quickInput';
- import { IStorageService, StorageScope, StorageTarget } from 'vs/platform/storage/common/storage';
- import { IThemeService, themeColorFromId } from 'vs/platform/theme/common/themeService';
-+import { Selection } from 'vs/editor/common/core/selection';
- 
- const SEARCH_STRING_MAX_LENGTH = 524288;
- 
-@@ -258,8 +259,8 @@ export class CommonFindController extends Disposable implements IEditorContribut
- 			this._state.change({ searchScope: null }, true);
- 		} else {
- 			if (this._editor.hasModel()) {
--				const selections = this._editor.getSelections();
--				selections.map(selection => {
-+				let selections = this._editor.getSelections();
-+				selections = selections.map(selection => {
- 					if (selection.endColumn === 1 && selection.endLineNumber > selection.startLineNumber) {
- 						selection = selection.setEndPosition(
- 							selection.endLineNumber - 1,
-@@ -270,7 +271,7 @@ export class CommonFindController extends Disposable implements IEditorContribut
- 						return selection;
- 					}
- 					return null;
--				}).filter(element => !!element);
-+				}).filter((element): element is Selection => !!element);
- 
- 				if (selections.length) {
- 					this._state.change({ searchScope: selections }, true);
-diff --git a/src/vs/editor/contrib/find/browser/findWidget.ts b/src/vs/editor/contrib/find/browser/findWidget.ts
-index 7f675f67e9d..9c20173bd7a 100644
---- a/src/vs/editor/contrib/find/browser/findWidget.ts
-+++ b/src/vs/editor/contrib/find/browser/findWidget.ts
-@@ -43,6 +43,7 @@ import { ThemeIcon } from 'vs/base/common/themables';
- import { isHighContrast } from 'vs/platform/theme/common/theme';
- import { assertIsDefined } from 'vs/base/common/types';
- import { defaultInputBoxStyles, defaultToggleStyles } from 'vs/platform/theme/browser/defaultStyles';
-+import { Selection } from 'vs/editor/common/core/selection';
- 
- const findSelectionIcon = registerIcon('find-selection', Codicon.selection, nls.localize('findSelectionIcon', 'Icon for \'Find in Selection\' in the editor find widget.'));
- const findCollapsedIcon = registerIcon('find-collapsed', Codicon.chevronRight, nls.localize('findCollapsedIcon', 'Icon to indicate that the editor find widget is collapsed.'));
-@@ -1051,8 +1052,8 @@ export class FindWidget extends Widget implements IOverlayWidget, IVerticalSashL
- 		this._register(this._toggleSelectionFind.onChange(() => {
- 			if (this._toggleSelectionFind.checked) {
- 				if (this._codeEditor.hasModel()) {
--					const selections = this._codeEditor.getSelections();
--					selections.map(selection => {
-+					let selections = this._codeEditor.getSelections();
-+					selections = selections.map(selection => {
- 						if (selection.endColumn === 1 && selection.endLineNumber > selection.startLineNumber) {
- 							selection = selection.setEndPosition(selection.endLineNumber - 1, this._codeEditor.getModel()!.getLineMaxColumn(selection.endLineNumber - 1));
- 						}
-@@ -1060,7 +1061,7 @@ export class FindWidget extends Widget implements IOverlayWidget, IVerticalSashL
- 							return selection;
- 						}
- 						return null;
--					}).filter(element => !!element);
-+					}).filter((element): element is Selection => !!element);
- 
- 					if (selections.length) {
- 						this._state.change({ searchScope: selections as Range[] }, true);
 diff --git a/src/vs/editor/standalone/browser/standalone-tokens.css b/src/vs/editor/standalone/browser/standalone-tokens.css
 index 1fc85078f9e..c74aca00541 100644
 --- a/src/vs/editor/standalone/browser/standalone-tokens.css
@@ -661,10 +597,10 @@ index 1fc85078f9e..c74aca00541 100644
  	outline-style: solid;
  	outline-offset: -1px;
 diff --git a/src/vs/editor/standalone/browser/standaloneCodeEditor.ts b/src/vs/editor/standalone/browser/standaloneCodeEditor.ts
-index 60c16599bf3..6df8e6bf60b 100644
+index 479bb75745c..f5b5da97a2c 100644
 --- a/src/vs/editor/standalone/browser/standaloneCodeEditor.ts
 +++ b/src/vs/editor/standalone/browser/standaloneCodeEditor.ts
-@@ -280,7 +280,7 @@ export class StandaloneCodeEditor extends CodeEditorWidget implements IStandalon
+@@ -282,7 +282,7 @@ export class StandaloneCodeEditor extends CodeEditorWidget implements IStandalon
  		const options = { ..._options };
  		options.ariaLabel = options.ariaLabel || StandaloneCodeEditorNLS.editorViewAccessibleLabel;
  		options.ariaLabel = options.ariaLabel + ';' + (StandaloneCodeEditorNLS.accessibilityHelpMessage);
@@ -673,7 +609,7 @@ index 60c16599bf3..6df8e6bf60b 100644
  
  		if (keybindingService instanceof StandaloneKeybindingService) {
  			this._standaloneKeybindingService = keybindingService;
-@@ -514,7 +514,7 @@ export class StandaloneDiffEditor2 extends DiffEditorWidget implements IStandalo
+@@ -518,7 +518,7 @@ export class StandaloneDiffEditor2 extends DiffEditorWidget implements IStandalo
  		super(
  			domElement,
  			options,
@@ -683,12 +619,12 @@ index 60c16599bf3..6df8e6bf60b 100644
  			instantiationService,
  			codeEditorService,
 diff --git a/src/vs/editor/standalone/browser/standaloneServices.ts b/src/vs/editor/standalone/browser/standaloneServices.ts
-index 97841a6012b..f7f7a5a021a 100644
+index 351f85537d8..d6995d24729 100644
 --- a/src/vs/editor/standalone/browser/standaloneServices.ts
 +++ b/src/vs/editor/standalone/browser/standaloneServices.ts
 @@ -90,8 +90,6 @@ import { DefaultConfiguration } from 'vs/platform/configuration/common/configura
  import { WorkspaceEdit } from 'vs/editor/common/languages';
- import { AudioCue, IAudioCueService, Sound } from 'vs/platform/audioCues/browser/audioCueService';
+ import { AccessibilitySignal, IAccessibilitySignalService, Sound } from 'vs/platform/accessibilitySignal/browser/accessibilitySignalService';
  import { LogService } from 'vs/platform/log/common/logService';
 -import { getEditorFeatures } from 'vs/editor/common/editorFeatures';
 -import { onUnexpectedError } from 'vs/base/common/errors';
@@ -744,28 +680,28 @@ index 97841a6012b..f7f7a5a021a 100644
  
  		return instantiationService;
 diff --git a/src/vs/editor/test/browser/config/testConfiguration.ts b/src/vs/editor/test/browser/config/testConfiguration.ts
-index 71f1c4d0e0c..c2d2c418c4a 100644
+index b5d42908ded..3815f8fb823 100644
 --- a/src/vs/editor/test/browser/config/testConfiguration.ts
 +++ b/src/vs/editor/test/browser/config/testConfiguration.ts
-@@ -12,7 +12,7 @@ import { TestAccessibilityService } from 'vs/platform/accessibility/test/common/
+@@ -13,7 +13,7 @@ import { TestAccessibilityService } from 'vs/platform/accessibility/test/common/
  export class TestConfiguration extends EditorConfiguration {
  
- 	constructor(opts: IEditorOptions) {
+ 	constructor(opts: Readonly<TestCodeEditorCreationOptions>) {
 -		super(false, opts, null, new TestAccessibilityService());
 +		super(false, false, opts, null, new TestAccessibilityService());
  	}
  
  	protected override _readEnvConfiguration(): IEnvConfiguration {
 diff --git a/src/vs/editor/test/browser/testCodeEditor.ts b/src/vs/editor/test/browser/testCodeEditor.ts
-index 507dbe2cc6f..c8949b26d23 100644
+index b29e05c8053..f941b3a248f 100644
 --- a/src/vs/editor/test/browser/testCodeEditor.ts
 +++ b/src/vs/editor/test/browser/testCodeEditor.ts
 @@ -68,7 +68,7 @@ export interface ITestCodeEditor extends IActiveCodeEditor {
  export class TestCodeEditor extends CodeEditorWidget implements ICodeEditor {
  
  	//#region testing overrides
--	protected override _createConfiguration(isSimpleWidget: boolean, options: Readonly<IEditorConstructionOptions>): EditorConfiguration {
-+	protected override _createConfiguration(isSimpleWidget: boolean, isStandaloneEditor: boolean, options: Readonly<IEditorConstructionOptions>): EditorConfiguration {
+-	protected override _createConfiguration(isSimpleWidget: boolean, options: Readonly<TestCodeEditorCreationOptions>): EditorConfiguration {
++	protected override _createConfiguration(isSimpleWidget: boolean, isStandaloneEditor: boolean, options: Readonly<TestCodeEditorCreationOptions>): EditorConfiguration {
  		return new TestConfiguration(options);
  	}
  	protected override _createView(viewModel: ViewModel): [View, boolean] {
@@ -819,7 +755,7 @@ index 233840e65ab..ff3661e3472 100644
  
  /**
 diff --git a/src/vs/platform/assignment/common/assignmentService.ts b/src/vs/platform/assignment/common/assignmentService.ts
-index 67e34826627..7c5287d6a32 100644
+index c573b727e0b..8c52126a590 100644
 --- a/src/vs/platform/assignment/common/assignmentService.ts
 +++ b/src/vs/platform/assignment/common/assignmentService.ts
 @@ -9,7 +9,6 @@ import { IConfigurationService } from 'vs/platform/configuration/common/configur
@@ -827,10 +763,10 @@ index 67e34826627..7c5287d6a32 100644
  import { getTelemetryLevel } from 'vs/platform/telemetry/common/telemetryUtils';
  import { AssignmentFilterProvider, ASSIGNMENT_REFETCH_INTERVAL, ASSIGNMENT_STORAGE_KEY, IAssignmentService, TargetPopulation } from 'vs/platform/assignment/common/assignment';
 -import { importAMDNodeModule } from 'vs/amdX';
+ import { IEnvironmentService } from 'vs/platform/environment/common/environment';
  
  export abstract class BaseAssignmentService implements IAssignmentService {
- 	_serviceBrand: undefined;
-@@ -86,7 +85,7 @@ export abstract class BaseAssignmentService implements IAssignmentService {
+@@ -88,7 +87,7 @@ export abstract class BaseAssignmentService implements IAssignmentService {
  		);
  
  		const tasConfig = this.productService.tasConfig!;
@@ -840,7 +776,7 @@ index 67e34826627..7c5287d6a32 100644
  			telemetry: this.telemetry,
  			storageKey: ASSIGNMENT_STORAGE_KEY,
 diff --git a/src/vs/platform/environment/node/argv.ts b/src/vs/platform/environment/node/argv.ts
-index a5d96361f08..34fce841fb2 100644
+index 0d3a9795ffb..2cc1981808a 100644
 --- a/src/vs/platform/environment/node/argv.ts
 +++ b/src/vs/platform/environment/node/argv.ts
 @@ -3,7 +3,7 @@
@@ -879,7 +815,7 @@ index fdefc170db0..1d3bc4affc5 100644
  	declare readonly _serviceBrand: undefined;
  
 diff --git a/src/vs/platform/extensions/common/extensions.ts b/src/vs/platform/extensions/common/extensions.ts
-index 413c1db06f1..fff472a70ba 100644
+index 413c1db06f1..c1667ac6c33 100644
 --- a/src/vs/platform/extensions/common/extensions.ts
 +++ b/src/vs/platform/extensions/common/extensions.ts
 @@ -3,6 +3,7 @@
@@ -1102,7 +1038,7 @@ index 413c1db06f1..fff472a70ba 100644
 +	/**
 +	 * A schema URL ('http:', 'https:') or relative path to the extension folder ('./').
 +	 */
-+	readonly url?: string;
++	readonly url: string;
  }
  
  export interface IKeyBinding {
@@ -1355,7 +1291,7 @@ index 413c1db06f1..fff472a70ba 100644
 +	/**
 +	 * The description of the themable color
 +	 */
-+	readonly description?: string;
++	readonly description: string;
 +	readonly defaults: {
 +		/**
 +		 * The default color for light themes. Either a color value in hex (#RRGGBB[AA]) or the identifier of a themable color which provides the default.
@@ -2231,7 +2167,7 @@ index 180aa7e2960..d589be25ed6 100644
  	IFileSystemProviderWithFileReadWriteCapability,
  	IFileSystemProviderWithOpenReadWriteCloseCapability,
 diff --git a/src/vs/platform/instantiation/common/instantiationService.ts b/src/vs/platform/instantiation/common/instantiationService.ts
-index cd9c15da0df..defef23451a 100644
+index ef9ae6601ce..6182c4881a6 100644
 --- a/src/vs/platform/instantiation/common/instantiationService.ts
 +++ b/src/vs/platform/instantiation/common/instantiationService.ts
 @@ -195,8 +195,10 @@ export class InstantiationService implements IInstantiationService {
@@ -2247,10 +2183,10 @@ index cd9c15da0df..defef23451a 100644
  			}
  		}
 diff --git a/src/vs/platform/native/electron-main/nativeHostMainService.ts b/src/vs/platform/native/electron-main/nativeHostMainService.ts
-index a9f4b9ed735..0c9336fdf7b 100644
+index a1d28301611..2ffbae2fd9c 100644
 --- a/src/vs/platform/native/electron-main/nativeHostMainService.ts
 +++ b/src/vs/platform/native/electron-main/nativeHostMainService.ts
-@@ -499,7 +499,7 @@ export class NativeHostMainService extends Disposable implements INativeHostMain
+@@ -495,7 +495,7 @@ export class NativeHostMainService extends Disposable implements INativeHostMain
  	async isAdmin(): Promise<boolean> {
  		let isAdmin: boolean;
  		if (isWindows) {
@@ -2315,7 +2251,7 @@ index ec8182b3c1d..85de100c7c0 100644
  			rows,
  			scrollback,
 diff --git a/src/vs/workbench/api/browser/mainThreadExtensionService.ts b/src/vs/workbench/api/browser/mainThreadExtensionService.ts
-index 5afc945cc16..bc5fc8ed8f9 100644
+index 6732d38f5e6..72abfc8af21 100644
 --- a/src/vs/workbench/api/browser/mainThreadExtensionService.ts
 +++ b/src/vs/workbench/api/browser/mainThreadExtensionService.ts
 @@ -193,6 +193,13 @@ export class MainThreadExtensionService implements MainThreadExtensionServiceSha
@@ -2332,42 +2268,6 @@ index 5afc945cc16..bc5fc8ed8f9 100644
  }
  
  class ExtensionHostProxy implements IExtensionHostProxy {
-diff --git a/src/vs/workbench/api/browser/mainThreadMessageService.ts b/src/vs/workbench/api/browser/mainThreadMessageService.ts
-index 5cf20960f3f..49e34e35f75 100644
---- a/src/vs/workbench/api/browser/mainThreadMessageService.ts
-+++ b/src/vs/workbench/api/browser/mainThreadMessageService.ts
-@@ -11,7 +11,6 @@ import { extHostNamedCustomer, IExtHostContext } from 'vs/workbench/services/ext
- import { IDialogService, IPromptButton } from 'vs/platform/dialogs/common/dialogs';
- import { INotificationService, INotificationSource } from 'vs/platform/notification/common/notification';
- import { Event } from 'vs/base/common/event';
--import { ICommandService } from 'vs/platform/commands/common/commands';
- import { IExtensionService } from 'vs/workbench/services/extensions/common/extensions';
- import { IDisposable } from 'vs/base/common/lifecycle';
- 
-@@ -23,7 +22,6 @@ export class MainThreadMessageService implements MainThreadMessageServiceShape {
- 	constructor(
- 		extHostContext: IExtHostContext,
- 		@INotificationService private readonly _notificationService: INotificationService,
--		@ICommandService private readonly _commandService: ICommandService,
- 		@IDialogService private readonly _dialogService: IDialogService,
- 		@IExtensionService extensionService: IExtensionService
- 	) {
-@@ -73,15 +71,6 @@ export class MainThreadMessageService implements MainThreadMessageServiceShape {
- 			}
- 
- 			const secondaryActions: IAction[] = [];
--			if (options.source) {
--				secondaryActions.push(toAction({
--					id: options.source.identifier.value,
--					label: nls.localize('manageExtension', "Manage Extension"),
--					run: () => {
--						return this._commandService.executeCommand('_extensions.manage', options.source!.identifier.value);
--					}
--				}));
--			}
- 
- 			const messageHandle = this._notificationService.notify({
- 				severity,
 diff --git a/src/vs/workbench/api/browser/statusBarExtensionPoint.ts b/src/vs/workbench/api/browser/statusBarExtensionPoint.ts
 index 99dd3279fe8..b692381eaa2 100644
 --- a/src/vs/workbench/api/browser/statusBarExtensionPoint.ts
@@ -2382,10 +2282,10 @@ index 99dd3279fe8..b692381eaa2 100644
  	declare readonly _serviceBrand: undefined;
  
 diff --git a/src/vs/workbench/api/common/extHost.protocol.ts b/src/vs/workbench/api/common/extHost.protocol.ts
-index b4605fd2111..a76b87b5fa5 100644
+index 5c18ab8657a..d7f00aaca84 100644
 --- a/src/vs/workbench/api/common/extHost.protocol.ts
 +++ b/src/vs/workbench/api/common/extHost.protocol.ts
-@@ -1422,6 +1422,7 @@ export interface MainThreadExtensionServiceShape extends IDisposable {
+@@ -1436,6 +1436,7 @@ export interface MainThreadExtensionServiceShape extends IDisposable {
  	$onExtensionRuntimeError(extensionId: ExtensionIdentifier, error: SerializedError): void;
  	$setPerformanceMarks(marks: performance.PerformanceMark[]): Promise<void>;
  	$asBrowserUri(uri: UriComponents): Promise<UriComponents>;
@@ -2643,7 +2543,7 @@ index b83a462131d..5555f431ba0 100644
  		performance.mark('code/extHost/didInitAPI');
  
 diff --git a/src/vs/workbench/api/worker/extensionHostWorker.ts b/src/vs/workbench/api/worker/extensionHostWorker.ts
-index 6e6f8845da5..f4824f99f9f 100644
+index 86136a080e6..8a2608599ee 100644
 --- a/src/vs/workbench/api/worker/extensionHostWorker.ts
 +++ b/src/vs/workbench/api/worker/extensionHostWorker.ts
 @@ -15,7 +15,6 @@ import * as performance from 'vs/base/common/performance';
@@ -2671,7 +2571,7 @@ index 6e6f8845da5..f4824f99f9f 100644
  }
  
  const nativeFetch = fetch.bind(self);
-@@ -89,66 +89,171 @@ self.addEventListener = () => console.trace(`'addEventListener' has been blocked
+@@ -89,66 +89,172 @@ self.addEventListener = () => console.trace(`'addEventListener' has been blocked
  (<any>self)['webkitResolveLocalFileSystemSyncURL'] = undefined;
  (<any>self)['webkitResolveLocalFileSystemURL'] = undefined;
  
@@ -2778,7 +2678,8 @@ index 6e6f8845da5..f4824f99f9f 100644
 -					// Request object - massage not supported
 -					return nativeFetch(input, init);
 +			options = options || {};
-+			options.name = options.name || path.basename(stringUrl.toString());
++			options.name = `${name} -> ${options.name || path.basename(stringUrl.toString())}`;
++
 +			class ExtensionWorker implements Worker {
 +				private workerPromise: Promise<Worker>;
 +				constructor(scriptURL: string | URL, options?: WorkerOptions) {
@@ -2810,7 +2711,7 @@ index 6e6f8845da5..f4824f99f9f 100644
 -
 -		const js = `(${bootstrapFnSource}('${stringUrl}'))`;
 -		options = options || {};
--		options.name = options.name || path.basename(stringUrl.toString());
+-		options.name = `${name} -> ${options.name || path.basename(stringUrl.toString())}`;
 -		const blob = new Blob([js], { type: 'application/javascript' });
 -		const blobUrl = URL.createObjectURL(blob);
 -		return new _Worker(blobUrl, options);
@@ -2897,7 +2798,7 @@ index 6e6f8845da5..f4824f99f9f 100644
  }
  
  //#endregion ---
-@@ -255,6 +360,7 @@ export function create(): { onmessage: (message: any) => void } {
+@@ -255,6 +361,7 @@ export function create(): { onmessage: (message: any) => void } {
  				);
  
  				patchFetching(uri => extHostMain.asBrowserUri(uri));
@@ -2906,7 +2807,7 @@ index 6e6f8845da5..f4824f99f9f 100644
  				onTerminate = (reason: string) => extHostMain.terminate(reason);
  			});
 diff --git a/src/vs/workbench/browser/layout.ts b/src/vs/workbench/browser/layout.ts
-index ccdbaf9d6bd..8a1f6e23c77 100644
+index a2b6007fb79..4efc11d8888 100644
 --- a/src/vs/workbench/browser/layout.ts
 +++ b/src/vs/workbench/browser/layout.ts
 @@ -52,7 +52,7 @@ import { CustomTitleBarVisibility } from '../../platform/window/common/window';
@@ -2947,7 +2848,7 @@ index ccdbaf9d6bd..8a1f6e23c77 100644
  	readonly filesToOpenOrCreate?: IPathToOpen[];
  	readonly filesToDiff?: IPathToOpen[];
  	readonly filesToMerge?: IPathToOpen[];
-@@ -1615,7 +1615,7 @@ export abstract class Layout extends Disposable implements IWorkbenchLayoutServi
+@@ -1541,7 +1541,7 @@ export abstract class Layout extends Disposable implements IWorkbenchLayoutServi
  
  	layout(): void {
  		if (!this.disposed) {
@@ -2957,7 +2858,7 @@ index ccdbaf9d6bd..8a1f6e23c77 100644
  
  			position(this.mainContainer, 0, 0, 0, 0, 'relative');
 diff --git a/src/vs/workbench/browser/media/style.css b/src/vs/workbench/browser/media/style.css
-index 262745f0ed2..109419c2b55 100644
+index db4862c7427..63c0d15ad5e 100644
 --- a/src/vs/workbench/browser/media/style.css
 +++ b/src/vs/workbench/browser/media/style.css
 @@ -9,56 +9,38 @@
@@ -3038,7 +2939,7 @@ index 262745f0ed2..109419c2b55 100644
  	touch-action: none; /* Disable browser handling of all panning and zooming gestures. Removes 300ms touch delay. */
  }
  
-@@ -79,60 +61,60 @@ body.web {
+@@ -79,65 +61,65 @@ body.web {
  	border: 0;
  }
  
@@ -3050,6 +2951,13 @@ index 262745f0ed2..109419c2b55 100644
 -.monaco-workbench a {
 +.monaco-workbench-part a  {
  	text-decoration: none;
+ }
+ 
+-.monaco-workbench.hc-black p > a,
+-.monaco-workbench.hc-light p > a {
++.monaco-workbench.hc-black .monaco-workbench-part p > a,
++.monaco-workbench.hc-light .monaco-workbench-part p > a {
+ 	text-decoration: underline !important;
  }
  
 -.monaco-workbench a:active {
@@ -3116,7 +3024,7 @@ index 262745f0ed2..109419c2b55 100644
  		-webkit-font-smoothing: antialiased;
  		-moz-osx-font-smoothing: grayscale;
  	}
-@@ -167,7 +149,7 @@ body.web {
+@@ -172,7 +154,7 @@ body.web {
  
  /* Custom Dropdown (select) Arrows */
  
@@ -3125,7 +3033,7 @@ index 262745f0ed2..109419c2b55 100644
  	font-family: inherit;
  	appearance: none;
  	-webkit-appearance: none;
-@@ -197,16 +179,16 @@ body.web {
+@@ -202,16 +184,16 @@ body.web {
  
  /* Keyboard Focus Indication Styles */
  
@@ -3152,7 +3060,7 @@ index 262745f0ed2..109419c2b55 100644
  	outline-width: 1px;
  	outline-style: solid;
  	outline-offset: -1px;
-@@ -219,19 +201,19 @@ body.web {
+@@ -224,19 +206,19 @@ body.web {
  	background: transparent; /* Search input focus fix when in high contrast */
  }
  
@@ -3180,10 +3088,10 @@ index 262745f0ed2..109419c2b55 100644
  }
  
 diff --git a/src/vs/workbench/browser/parts/compositeBar.ts b/src/vs/workbench/browser/parts/compositeBar.ts
-index a2007e18299..7446cfcfc5f 100644
+index 76d6c0c1ee4..3060baec73a 100644
 --- a/src/vs/workbench/browser/parts/compositeBar.ts
 +++ b/src/vs/workbench/browser/parts/compositeBar.ts
-@@ -477,7 +477,7 @@ export class CompositeBar extends Widget implements ICompositeBar {
+@@ -476,7 +476,7 @@ export class CompositeBar extends Widget implements ICompositeBar {
  				// Compute sizes only if visible. Otherwise the size measurment would be computed wrongly.
  				const currentItemsLength = compositeSwitcherBar.viewItems.length;
  				compositeSwitcherBar.push(items.map(composite => composite.activityAction));
@@ -3194,34 +3102,32 @@ index a2007e18299..7446cfcfc5f 100644
  				));
 diff --git a/src/vs/workbench/browser/parts/editor/editor.autosave.contribution.ts b/src/vs/workbench/browser/parts/editor/editor.autosave.contribution.ts
 new file mode 100644
-index 00000000000..aa99110545a
+index 00000000000..c7416d68719
 --- /dev/null
 +++ b/src/vs/workbench/browser/parts/editor/editor.autosave.contribution.ts
-@@ -0,0 +1,11 @@
+@@ -0,0 +1,9 @@
 +/*---------------------------------------------------------------------------------------------
 + *  Copyright (c) Microsoft Corporation. All rights reserved.
 + *  Licensed under the MIT License. See License.txt in the project root for license information.
 + *--------------------------------------------------------------------------------------------*/
 +
-+import { Registry } from 'vs/platform/registry/common/platform';
 +import { EditorAutoSave } from 'vs/workbench/browser/parts/editor/editorAutoSave';
-+import { IWorkbenchContributionsRegistry, Extensions as WorkbenchExtensions } from 'vs/workbench/common/contributions';
-+import { LifecyclePhase } from 'vs/workbench/services/lifecycle/common/lifecycle';
++import { WorkbenchPhase, registerWorkbenchContribution2 } from 'vs/workbench/common/contributions';
 +
-+Registry.as<IWorkbenchContributionsRegistry>(WorkbenchExtensions.Workbench).registerWorkbenchContribution(EditorAutoSave, LifecyclePhase.Ready);
++registerWorkbenchContribution2(EditorAutoSave.ID, EditorAutoSave, WorkbenchPhase.BlockRestore);
 diff --git a/src/vs/workbench/browser/parts/editor/editor.contribution.ts b/src/vs/workbench/browser/parts/editor/editor.contribution.ts
-index 014acd8d37a..22ca5319775 100644
+index ca21ad13864..cd246dcb75b 100644
 --- a/src/vs/workbench/browser/parts/editor/editor.contribution.ts
 +++ b/src/vs/workbench/browser/parts/editor/editor.contribution.ts
-@@ -61,7 +61,6 @@ import { EditorContributionInstantiation, registerEditorContribution } from 'vs/
+@@ -60,7 +60,6 @@ import { isMacintosh } from 'vs/base/common/platform';
+ import { EditorContributionInstantiation, registerEditorContribution } from 'vs/editor/browser/editorExtensions';
  import { FloatingEditorClickMenu } from 'vs/workbench/browser/codeeditor';
- import { Extensions as WorkbenchExtensions, IWorkbenchContributionsRegistry } from 'vs/workbench/common/contributions';
- import { LifecyclePhase } from 'vs/workbench/services/lifecycle/common/lifecycle';
+ import { WorkbenchPhase, registerWorkbenchContribution2 } from 'vs/workbench/common/contributions';
 -import { EditorAutoSave } from 'vs/workbench/browser/parts/editor/editorAutoSave';
  import { IQuickAccessRegistry, Extensions as QuickAccessExtensions } from 'vs/platform/quickinput/common/quickAccess';
  import { ActiveGroupEditorsByMostRecentlyUsedQuickAccess, AllEditorsByAppearanceQuickAccess, AllEditorsByMostRecentlyUsedQuickAccess } from 'vs/workbench/browser/parts/editor/editorQuickAccess';
  import { FileAccess } from 'vs/base/common/network';
-@@ -72,6 +71,7 @@ import { DynamicEditorConfigurations } from 'vs/workbench/browser/parts/editor/e
+@@ -71,6 +70,7 @@ import { DynamicEditorConfigurations } from 'vs/workbench/browser/parts/editor/e
  import { EditorActionsDefaultAction, EditorActionsTitleBarAction, HideEditorActionsAction, HideEditorTabsAction, ShowMultipleEditorTabsAction, ShowSingleEditorTabAction, ZenHideEditorTabsAction, ZenShowMultipleEditorTabsAction, ZenShowSingleEditorTabAction } from 'vs/workbench/browser/actions/layoutActions';
  import { ICommandAction } from 'vs/platform/action/common/action';
  import { EditorContextKeys } from 'vs/editor/common/editorContextKeys';
@@ -3229,92 +3135,61 @@ index 014acd8d37a..22ca5319775 100644
  
  //#region Editor Registrations
  
-@@ -128,7 +128,6 @@ Registry.as<IEditorFactoryRegistry>(EditorExtensions.EditorFactory).registerEdit
+@@ -127,7 +127,6 @@ Registry.as<IEditorFactoryRegistry>(EditorExtensions.EditorFactory).registerEdit
  
  //#region Workbench Contributions
  
--Registry.as<IWorkbenchContributionsRegistry>(WorkbenchExtensions.Workbench).registerWorkbenchContribution(EditorAutoSave, LifecyclePhase.Ready);
- Registry.as<IWorkbenchContributionsRegistry>(WorkbenchExtensions.Workbench).registerWorkbenchContribution(EditorStatusContribution, LifecyclePhase.Ready);
- Registry.as<IWorkbenchContributionsRegistry>(WorkbenchExtensions.Workbench).registerWorkbenchContribution(UntitledTextEditorWorkingCopyEditorHandler, LifecyclePhase.Ready);
- Registry.as<IWorkbenchContributionsRegistry>(WorkbenchExtensions.Workbench).registerWorkbenchContribution(DynamicEditorConfigurations, LifecyclePhase.Ready);
-diff --git a/src/vs/workbench/browser/parts/editor/editorGroupWatermark.ts b/src/vs/workbench/browser/parts/editor/editorGroupWatermark.ts
-index f2f8c9704f0..b0f71cdc5fc 100644
---- a/src/vs/workbench/browser/parts/editor/editorGroupWatermark.ts
-+++ b/src/vs/workbench/browser/parts/editor/editorGroupWatermark.ts
-@@ -135,7 +135,7 @@ export class EditorGroupWatermark extends Disposable {
- 
- 		const update = () => {
- 			clearNode(box);
--			selected.map(entry => {
-+			selected.forEach(entry => {
- 				const keys = this.keybindingService.lookupKeybinding(entry.id);
- 				if (!keys) {
- 					return;
+-registerWorkbenchContribution2(EditorAutoSave.ID, EditorAutoSave, WorkbenchPhase.BlockRestore);
+ registerWorkbenchContribution2(EditorStatusContribution.ID, EditorStatusContribution, WorkbenchPhase.BlockRestore);
+ registerWorkbenchContribution2(UntitledTextEditorWorkingCopyEditorHandler.ID, UntitledTextEditorWorkingCopyEditorHandler, WorkbenchPhase.BlockRestore);
+ registerWorkbenchContribution2(DynamicEditorConfigurations.ID, DynamicEditorConfigurations, WorkbenchPhase.BlockRestore);
 diff --git a/src/vs/workbench/browser/parts/globalCompositeBar.ts b/src/vs/workbench/browser/parts/globalCompositeBar.ts
-index 50a63bb9e00..edbe2f0b3b9 100644
+index db3471fcadc..2b0e2cfaa61 100644
 --- a/src/vs/workbench/browser/parts/globalCompositeBar.ts
 +++ b/src/vs/workbench/browser/parts/globalCompositeBar.ts
-@@ -3,55 +3,44 @@
-  *  Licensed under the MIT License. See License.txt in the project root for license information.
-  *--------------------------------------------------------------------------------------------*/
+@@ -5,38 +5,29 @@
  
--import { localize } from 'vs/nls';
--import { ActionBar, ActionsOrientation } from 'vs/base/browser/ui/actionbar/actionbar';
+ import { localize } from 'vs/nls';
+ import { ActionBar, ActionsOrientation } from 'vs/base/browser/ui/actionbar/actionbar';
 -import { ACCOUNTS_ACTIVITY_ID, GLOBAL_ACTIVITY_ID } from 'vs/workbench/common/activity';
--import { IActivity, IActivityService, NumberBadge } from 'vs/workbench/services/activity/common/activity';
--import { IInstantiationService } from 'vs/platform/instantiation/common/instantiation';
--import { DisposableStore, Disposable } from 'vs/base/common/lifecycle';
--import { IColorTheme, IThemeService } from 'vs/platform/theme/common/themeService';
++import { GLOBAL_ACTIVITY_ID } from 'vs/workbench/common/activity';
+ import { IActivity, IActivityService, NumberBadge } from 'vs/workbench/services/activity/common/activity';
+ import { IInstantiationService } from 'vs/platform/instantiation/common/instantiation';
+ import { DisposableStore, Disposable } from 'vs/base/common/lifecycle';
+ import { IColorTheme, IThemeService } from 'vs/platform/theme/common/themeService';
 -import { IStorageService, StorageScope, StorageTarget } from 'vs/platform/storage/common/storage';
 -import { IExtensionService } from 'vs/workbench/services/extensions/common/extensions';
--import { CompoisteBarActionViewItem, CompositeBarAction, IActivityHoverOptions, ICompositeBarActionViewItemOptions, ICompositeBarColors } from 'vs/workbench/browser/parts/compositeBarActions';
--import { Codicon } from 'vs/base/common/codicons';
--import { ThemeIcon } from 'vs/base/common/themables';
--import { registerIcon } from 'vs/platform/theme/common/iconRegistry';
+ import { CompositeBarActionViewItem, CompositeBarAction, IActivityHoverOptions, ICompositeBarActionViewItemOptions, ICompositeBarColors } from 'vs/workbench/browser/parts/compositeBarActions';
+ import { Codicon } from 'vs/base/common/codicons';
+ import { ThemeIcon } from 'vs/base/common/themables';
+ import { registerIcon } from 'vs/platform/theme/common/iconRegistry';
 -import { Action, IAction, Separator, SubmenuAction, toAction } from 'vs/base/common/actions';
--import { IMenu, IMenuService, MenuId } from 'vs/platform/actions/common/actions';
++import { Action, IAction } from 'vs/base/common/actions';
+ import { IMenu, IMenuService, MenuId } from 'vs/platform/actions/common/actions';
 -import { addDisposableListener, EventType, append, clearNode, hide, show, EventHelper, $, runWhenWindowIdle, getWindow } from 'vs/base/browser/dom';
-+import { $, EventHelper, EventType, addDisposableListener, append, clearNode, getWindow, hide, show } from 'vs/base/browser/dom';
++import { addDisposableListener, EventType, append, clearNode, hide, show, EventHelper, $, getWindow } from 'vs/base/browser/dom';
  import { StandardKeyboardEvent } from 'vs/base/browser/keyboardEvent';
  import { StandardMouseEvent } from 'vs/base/browser/mouseEvent';
--import { EventType as TouchEventType, GestureEvent } from 'vs/base/browser/touch';
-+import { GestureEvent, EventType as TouchEventType } from 'vs/base/browser/touch';
-+import { ActionBar, ActionsOrientation } from 'vs/base/browser/ui/actionbar/actionbar';
+ import { EventType as TouchEventType, GestureEvent } from 'vs/base/browser/touch';
  import { AnchorAlignment, AnchorAxisAlignment } from 'vs/base/browser/ui/contextview/contextview';
 -import { Lazy } from 'vs/base/common/lazy';
-+import { Action, IAction } from 'vs/base/common/actions';
-+import { Codicon } from 'vs/base/common/codicons';
-+import { KeyCode } from 'vs/base/common/keyCodes';
-+import { Disposable, DisposableStore } from 'vs/base/common/lifecycle';
-+import { ThemeIcon } from 'vs/base/common/themables';
-+import { isString } from 'vs/base/common/types';
-+import { localize } from 'vs/nls';
  import { createAndFillInActionBarActions } from 'vs/platform/actions/browser/menuEntryActionViewItem';
-+import { IMenu, IMenuService, MenuId } from 'vs/platform/actions/common/actions';
  import { IConfigurationService } from 'vs/platform/configuration/common/configuration';
  import { IContextKeyService } from 'vs/platform/contextkey/common/contextkey';
  import { IContextMenuService } from 'vs/platform/contextview/browser/contextView';
-+import { IInstantiationService } from 'vs/platform/instantiation/common/instantiation';
  import { IKeybindingService } from 'vs/platform/keybinding/common/keybinding';
 -import { ILogService } from 'vs/platform/log/common/log';
 -import { IProductService } from 'vs/platform/product/common/productService';
 -import { ISecretStorageService } from 'vs/platform/secrets/common/secrets';
 -import { AuthenticationSessionInfo, getCurrentAuthenticationSessionInfo } from 'vs/workbench/services/authentication/browser/authenticationService';
 -import { AuthenticationSessionAccount, IAuthenticationService } from 'vs/workbench/services/authentication/common/authentication';
-+import { registerIcon } from 'vs/platform/theme/common/iconRegistry';
-+import { IColorTheme, IThemeService } from 'vs/platform/theme/common/themeService';
-+import { CompoisteBarActionViewItem, CompositeBarAction, IActivityHoverOptions, ICompositeBarActionViewItemOptions, ICompositeBarColors } from 'vs/workbench/browser/parts/compositeBarActions';
-+import { GLOBAL_ACTIVITY_ID } from 'vs/workbench/common/activity';
-+import { ACTIVITY_BAR_BADGE_BACKGROUND, ACTIVITY_BAR_BADGE_FOREGROUND } from 'vs/workbench/common/theme';
-+import { IActivity, IActivityService, NumberBadge } from 'vs/workbench/services/activity/common/activity';
  import { IWorkbenchEnvironmentService } from 'vs/workbench/services/environment/common/environmentService';
  import { IHoverService } from 'vs/platform/hover/browser/hover';
 -import { ILifecycleService, LifecyclePhase } from 'vs/workbench/services/lifecycle/common/lifecycle';
  import { IUserDataProfileService } from 'vs/workbench/services/userDataProfile/common/userDataProfile';
  import { DEFAULT_ICON } from 'vs/workbench/services/userDataProfile/common/userDataProfileIcons';
--import { isString } from 'vs/base/common/types';
--import { KeyCode } from 'vs/base/common/keyCodes';
--import { ACTIVITY_BAR_BADGE_BACKGROUND, ACTIVITY_BAR_BADGE_FOREGROUND } from 'vs/workbench/common/theme';
+ import { isString } from 'vs/base/common/types';
+@@ -46,13 +37,11 @@ import { IBaseActionViewItemOptions } from 'vs/base/browser/ui/actionbar/actionV
  
  export class GlobalCompositeBar extends Disposable {
  
@@ -3328,7 +3203,7 @@ index 50a63bb9e00..edbe2f0b3b9 100644
  	private readonly globalActivityActionBar: ActionBar;
  
  	constructor(
-@@ -59,9 +48,7 @@ export class GlobalCompositeBar extends Disposable {
+@@ -60,9 +49,7 @@ export class GlobalCompositeBar extends Disposable {
  		private readonly colors: (theme: IColorTheme) => ICompositeBarColors,
  		private readonly activityHoverOptions: IActivityHoverOptions,
  		@IConfigurationService configurationService: IConfigurationService,
@@ -3339,7 +3214,7 @@ index 50a63bb9e00..edbe2f0b3b9 100644
  	) {
  		super();
  
-@@ -76,22 +63,6 @@ export class GlobalCompositeBar extends Disposable {
+@@ -77,22 +64,6 @@ export class GlobalCompositeBar extends Disposable {
  					return this.instantiationService.createInstance(GlobalActivityActionViewItem, this.contextMenuActionsProvider, { colors: this.colors, hoverOptions: this.activityHoverOptions }, contextMenuAlignmentOptions);
  				}
  
@@ -3412,7 +3287,7 @@ index 50a63bb9e00..edbe2f0b3b9 100644
  	}
  }
  
-@@ -278,256 +216,6 @@ abstract class AbstractGlobalActivityActionViewItem extends CompoisteBarActionVi
+@@ -278,256 +216,6 @@ abstract class AbstractGlobalActivityActionViewItem extends CompositeBarActionVi
  	}
  }
  
@@ -3669,7 +3544,7 @@ index 50a63bb9e00..edbe2f0b3b9 100644
  export class GlobalActivityActionViewItem extends AbstractGlobalActivityActionViewItem {
  
  	private profileBadge: HTMLElement | undefined;
-@@ -607,38 +295,6 @@ export class GlobalActivityActionViewItem extends AbstractGlobalActivityActionVi
+@@ -607,40 +295,6 @@ export class GlobalActivityActionViewItem extends AbstractGlobalActivityActionVi
  		return this.userDataProfileService.currentProfile.isDefault ? super.computeTitle() : localize('manage profile', "Manage {0} (Profile)", this.userDataProfileService.currentProfile.name);
  	}
  }
@@ -3678,6 +3553,7 @@ index 50a63bb9e00..edbe2f0b3b9 100644
 -
 -	constructor(
 -		hoverOptions: IActivityHoverOptions,
+-		options: IBaseActionViewItemOptions,
 -		@IThemeService themeService: IThemeService,
 -		@ILifecycleService lifecycleService: ILifecycleService,
 -		@IHoverService hoverService: IHoverService,
@@ -3695,6 +3571,7 @@ index 50a63bb9e00..edbe2f0b3b9 100644
 -		@IInstantiationService instantiationService: IInstantiationService
 -	) {
 -		super(() => [], {
+-			...options,
 -			colors: theme => ({
 -				badgeBackground: theme.getColor(ACTIVITY_BAR_BADGE_BACKGROUND),
 -				badgeForeground: theme.getColor(ACTIVITY_BAR_BADGE_FOREGROUND),
@@ -3709,10 +3586,10 @@ index 50a63bb9e00..edbe2f0b3b9 100644
  
  	constructor(
 diff --git a/src/vs/workbench/browser/parts/titlebar/titlebarPart.ts b/src/vs/workbench/browser/parts/titlebar/titlebarPart.ts
-index 7e481cf928d..c3a38bf35ab 100644
+index 05ad43933f8..398a41fb0aa 100644
 --- a/src/vs/workbench/browser/parts/titlebar/titlebarPart.ts
 +++ b/src/vs/workbench/browser/parts/titlebar/titlebarPart.ts
-@@ -38,7 +38,7 @@ import { IHoverService } from 'vs/platform/hover/browser/hover';
+@@ -36,7 +36,7 @@ import { CommandCenterControl } from 'vs/workbench/browser/parts/titlebar/comman
  import { Categories } from 'vs/platform/action/common/actionCommonCategories';
  import { WorkbenchToolBar } from 'vs/platform/actions/browser/toolbar';
  import { ACCOUNTS_ACTIVITY_ID, GLOBAL_ACTIVITY_ID } from 'vs/workbench/common/activity';
@@ -3721,21 +3598,21 @@ index 7e481cf928d..c3a38bf35ab 100644
  import { HoverPosition } from 'vs/base/browser/ui/hover/hoverWidget';
  import { IEditorGroupsContainer, IEditorGroupsService } from 'vs/workbench/services/editor/common/editorGroupsService';
  import { ActionRunner, IAction } from 'vs/base/common/actions';
-@@ -508,9 +508,6 @@ export class BrowserTitlebarPart extends Part implements ITitlebarPart {
+@@ -524,9 +524,6 @@ export class BrowserTitlebarPart extends Part implements ITitlebarPart {
  			if (action.id === GLOBAL_ACTIVITY_ID) {
- 				return this.instantiationService.createInstance(SimpleGlobalActivityActionViewItem, { position: () => HoverPosition.BELOW });
+ 				return this.instantiationService.createInstance(SimpleGlobalActivityActionViewItem, { position: () => HoverPosition.BELOW }, options);
  			}
 -			if (action.id === ACCOUNTS_ACTIVITY_ID) {
--				return this.instantiationService.createInstance(SimpleAccountActivityActionViewItem, { position: () => HoverPosition.BELOW });
+-				return this.instantiationService.createInstance(SimpleAccountActivityActionViewItem, { position: () => HoverPosition.BELOW }, options);
 -			}
  		}
  
  		// --- Editor Actions
 diff --git a/src/vs/workbench/browser/parts/views/viewPaneContainer.ts b/src/vs/workbench/browser/parts/views/viewPaneContainer.ts
-index 3021fe51eee..80ce472b2e7 100644
+index f575fa95242..e0fc917b228 100644
 --- a/src/vs/workbench/browser/parts/views/viewPaneContainer.ts
 +++ b/src/vs/workbench/browser/parts/views/viewPaneContainer.ts
-@@ -678,7 +678,7 @@ export class ViewPaneContainer extends Component implements IViewPaneContainer {
+@@ -679,7 +679,7 @@ export class ViewPaneContainer extends Component implements IViewPaneContainer {
  		}
  
  		this.panes.filter(view => view.isVisible() !== visible)
@@ -3745,11 +3622,11 @@ index 3021fe51eee..80ce472b2e7 100644
  
  	isVisible(): boolean {
 diff --git a/src/vs/workbench/browser/workbench.ts b/src/vs/workbench/browser/workbench.ts
-index bce16d5cb77..e513f04b435 100644
+index 8a311d4bb0e..bea66a053e5 100644
 --- a/src/vs/workbench/browser/workbench.ts
 +++ b/src/vs/workbench/browser/workbench.ts
 @@ -11,10 +11,7 @@ import { RunOnceScheduler, timeout } from 'vs/base/common/async';
- import { isFirefox, isSafari, isChrome, PixelRatio } from 'vs/base/browser/browser';
+ import { isFirefox, isSafari, isChrome } from 'vs/base/browser/browser';
  import { mark } from 'vs/base/common/performance';
  import { onUnexpectedError, setUnexpectedErrorHandler } from 'vs/base/common/errors';
 -import { Registry } from 'vs/platform/registry/common/platform';
@@ -3767,7 +3644,7 @@ index bce16d5cb77..e513f04b435 100644
  import { coalesce } from 'vs/base/common/arrays';
  import { InstantiationService } from 'vs/platform/instantiation/common/instantiationService';
  import { Layout } from 'vs/workbench/browser/layout';
-@@ -73,7 +69,7 @@ export class Workbench extends Layout {
+@@ -76,7 +72,7 @@ export class Workbench extends Layout {
  		this.registerErrorHandler(logService);
  	}
  
@@ -3776,7 +3653,7 @@ index bce16d5cb77..e513f04b435 100644
  
  		// Listen on unhandled rejection events
  		this._register(addDisposableListener(mainWindow, 'unhandledrejection', event => {
-@@ -154,13 +150,6 @@ export class Workbench extends Layout {
+@@ -161,13 +157,6 @@ export class Workbench extends Layout {
  				// Layout
  				this.initLayout(accessor);
  
@@ -3790,7 +3667,7 @@ index bce16d5cb77..e513f04b435 100644
  				// Register Listeners
  				this.registerListeners(lifecycleService, storageService, configurationService, hostService, dialogService);
  
-@@ -185,7 +174,7 @@ export class Workbench extends Layout {
+@@ -192,7 +181,7 @@ export class Workbench extends Layout {
  		}
  	}
  
@@ -3799,7 +3676,7 @@ index bce16d5cb77..e513f04b435 100644
  
  		// Layout Service
  		serviceCollection.set(IWorkbenchLayoutService, this);
-@@ -224,7 +213,7 @@ export class Workbench extends Layout {
+@@ -231,7 +220,7 @@ export class Workbench extends Layout {
  		return instantiationService;
  	}
  
@@ -3808,7 +3685,7 @@ index bce16d5cb77..e513f04b435 100644
  
  		// Configuration changes
  		this._register(configurationService.onDidChangeConfiguration(e => this.updateFontAliasing(e, configurationService)));
-@@ -313,7 +302,7 @@ export class Workbench extends Layout {
+@@ -320,7 +309,7 @@ export class Workbench extends Layout {
  		}
  	}
  
@@ -3817,7 +3694,7 @@ index bce16d5cb77..e513f04b435 100644
  
  		// ARIA
  		setARIAContainer(this.mainContainer);
-@@ -379,7 +368,7 @@ export class Workbench extends Layout {
+@@ -386,7 +375,7 @@ export class Workbench extends Layout {
  		return part;
  	}
  
@@ -3826,7 +3703,7 @@ index bce16d5cb77..e513f04b435 100644
  
  		// Instantiate Notification components
  		const notificationsCenter = this._register(instantiationService.createInstance(NotificationsCenter, this.mainContainer, notificationService.model));
-@@ -407,7 +396,7 @@ export class Workbench extends Layout {
+@@ -414,7 +403,7 @@ export class Workbench extends Layout {
  		});
  	}
  
@@ -3865,19 +3742,19 @@ index 08449bd2cd7..f82ac191725 100644
  	private static readonly LAST_EXTENSION_DEVELOPMENT_WORKSPACE_KEY = 'debug.lastExtensionDevelopmentWorkspace';
  
 diff --git a/src/vs/workbench/contrib/extensions/browser/abstractRuntimeExtensionsEditor.ts b/src/vs/workbench/contrib/extensions/browser/abstractRuntimeExtensionsEditor.ts
-index b9c28057f04..3a7398b149f 100644
+index 991a3df035c..cb0b0288249 100644
 --- a/src/vs/workbench/contrib/extensions/browser/abstractRuntimeExtensionsEditor.ts
 +++ b/src/vs/workbench/contrib/extensions/browser/abstractRuntimeExtensionsEditor.ts
-@@ -35,7 +35,7 @@ import { IExtension, IExtensionsWorkbenchService } from 'vs/workbench/contrib/ex
- import { RuntimeExtensionsInput } from 'vs/workbench/contrib/extensions/common/runtimeExtensionsInput';
+@@ -39,7 +39,7 @@ import { RuntimeExtensionsInput } from 'vs/workbench/contrib/extensions/common/r
  import { IEditorService } from 'vs/workbench/services/editor/common/editorService';
  import { IWorkbenchEnvironmentService } from 'vs/workbench/services/environment/common/environmentService';
+ import { Extensions, IExtensionFeaturesManagementService, IExtensionFeaturesRegistry } from 'vs/workbench/services/extensionManagement/common/extensionFeatures';
 -import { DefaultIconPath, EnablementState } from 'vs/workbench/services/extensionManagement/common/extensionManagement';
 +import { getDefaultIconPath, EnablementState } from 'vs/workbench/services/extensionManagement/common/extensionManagement';
  import { LocalWebWorkerRunningLocation } from 'vs/workbench/services/extensions/common/extensionRunningLocation';
  import { IExtensionHostProfile, IExtensionService, IExtensionsStatus } from 'vs/workbench/services/extensions/common/extensions';
  
-@@ -266,8 +266,8 @@ export abstract class AbstractRuntimeExtensionsEditor extends EditorPane {
+@@ -271,8 +271,8 @@ export abstract class AbstractRuntimeExtensionsEditor extends EditorPane {
  
  				data.root.classList.toggle('odd', index % 2 === 1);
  
@@ -3888,49 +3765,8 @@ index b9c28057f04..3a7398b149f 100644
  
  				if (!data.icon.complete) {
  					data.icon.style.visibility = 'hidden';
-diff --git a/src/vs/workbench/contrib/extensions/browser/extensionEditor.ts b/src/vs/workbench/contrib/extensions/browser/extensionEditor.ts
-index 8b49ea2903f..83a8c74b1c0 100644
---- a/src/vs/workbench/contrib/extensions/browser/extensionEditor.ts
-+++ b/src/vs/workbench/contrib/extensions/browser/extensionEditor.ts
-@@ -1513,10 +1513,10 @@ export class ExtensionEditor extends EditorPane {
- 					.sort((a, b) => a.id.localeCompare(b.id))
- 					.map(color => $('tr', undefined,
- 						$('td', undefined, $('code', undefined, color.id)),
--						$('td', undefined, color.description),
-+						$('td', undefined, color.description!),
- 						$('td', undefined, ...colorPreview(color.defaults.dark)),
- 						$('td', undefined, ...colorPreview(color.defaults.light)),
--						$('td', undefined, ...colorPreview(color.defaults.highContrast))
-+						$('td', undefined, ...colorPreview(color.defaults.highContrast!))
- 					))
- 			)
- 		);
-@@ -1540,8 +1540,8 @@ export class ExtensionEditor extends EditorPane {
- 					$('th', undefined, localize('schema', "Schema"))
- 				),
- 				...contrib.map(v => $('tr', undefined,
--					$('td', undefined, $('code', undefined, Array.isArray(v.fileMatch) ? v.fileMatch.join(', ') : v.fileMatch)),
--					$('td', undefined, v.url)
-+					$('td', undefined, $('code', undefined, Array.isArray(v.fileMatch) ? v.fileMatch.join(', ') : v.fileMatch!)),
-+					$('td', undefined, v.url!)
- 				))));
- 
- 		append(container, details);
-diff --git a/src/vs/workbench/contrib/extensions/browser/extensions.contribution.ts b/src/vs/workbench/contrib/extensions/browser/extensions.contribution.ts
-index 2254a205092..98e056c9005 100644
---- a/src/vs/workbench/contrib/extensions/browser/extensions.contribution.ts
-+++ b/src/vs/workbench/contrib/extensions/browser/extensions.contribution.ts
-@@ -992,7 +992,7 @@ class ExtensionsContributions extends Disposable implements IWorkbenchContributi
- 			order: 1,
- 		});
- 
--		EXTENSION_CATEGORIES.map((category, index) => {
-+		EXTENSION_CATEGORIES.forEach((category, index) => {
- 			this.registerExtensionAction({
- 				id: `extensions.actions.searchByCategory.${category}`,
- 				title: category,
 diff --git a/src/vs/workbench/contrib/extensions/browser/extensionsWorkbenchService.ts b/src/vs/workbench/contrib/extensions/browser/extensionsWorkbenchService.ts
-index bb3f66c7175..6c9601873bc 100644
+index fa11076ab65..dbca12bf6aa 100644
 --- a/src/vs/workbench/contrib/extensions/browser/extensionsWorkbenchService.ts
 +++ b/src/vs/workbench/contrib/extensions/browser/extensionsWorkbenchService.ts
 @@ -17,7 +17,7 @@ import {
@@ -3942,7 +3778,7 @@ index bb3f66c7175..6c9601873bc 100644
  import { getGalleryExtensionTelemetryData, getLocalExtensionTelemetryData, areSameExtensions, groupByExtension, getGalleryExtensionId } from 'vs/platform/extensionManagement/common/extensionManagementUtil';
  import { IInstantiationService } from 'vs/platform/instantiation/common/instantiation';
  import { IConfigurationService } from 'vs/platform/configuration/common/configuration';
-@@ -206,7 +206,7 @@ export class Extension implements IExtension {
+@@ -205,7 +205,7 @@ export class Extension implements IExtension {
  				}
  			}
  		}
@@ -4740,75 +4576,51 @@ index 00000000000..39509160248
 +	}
 +});
 diff --git a/src/vs/workbench/contrib/files/browser/files.contribution.ts b/src/vs/workbench/contrib/files/browser/files.contribution.ts
-index efd9fe59af7..a177be001d8 100644
+index 80162ffd007..294759ab0f3 100644
 --- a/src/vs/workbench/contrib/files/browser/files.contribution.ts
 +++ b/src/vs/workbench/contrib/files/browser/files.contribution.ts
-@@ -3,39 +3,38 @@
-  *  Licensed under the MIT License. See License.txt in the project root for license information.
-  *--------------------------------------------------------------------------------------------*/
- 
--import * as nls from 'vs/nls';
-+import { Schemas } from 'vs/base/common/network';
+@@ -6,10 +6,9 @@
+ import * as nls from 'vs/nls';
  import { sep } from 'vs/base/common/path';
-+import { isWindows } from 'vs/base/common/platform';
-+import { RedoCommand, UndoCommand } from 'vs/editor/browser/editorExtensions';
-+import { ModesRegistry } from 'vs/editor/common/languages/modesRegistry';
-+import * as nls from 'vs/nls';
-+import { IConfigurationService } from 'vs/platform/configuration/common/configuration';
-+import { Extensions as ConfigurationExtensions, ConfigurationScope, IConfigurationRegistry } from 'vs/platform/configuration/common/configurationRegistry';
-+import { SyncDescriptor } from 'vs/platform/instantiation/common/descriptors';
-+import { InstantiationType, registerSingleton } from 'vs/platform/instantiation/common/extensions';
-+import { ServicesAccessor } from 'vs/platform/instantiation/common/instantiation';
-+import { ILabelService } from 'vs/platform/label/common/label';
  import { Registry } from 'vs/platform/registry/common/platform';
 -import { IConfigurationRegistry, Extensions as ConfigurationExtensions, ConfigurationScope, IConfigurationPropertySchema } from 'vs/platform/configuration/common/configurationRegistry';
--import { IWorkbenchContributionsRegistry, Extensions as WorkbenchExtensions, IWorkbenchContribution } from 'vs/workbench/common/contributions';
++import { IConfigurationRegistry, Extensions as ConfigurationExtensions, ConfigurationScope } from 'vs/platform/configuration/common/configurationRegistry';
+ import { IWorkbenchContributionsRegistry, Extensions as WorkbenchExtensions, IWorkbenchContribution, WorkbenchPhase, registerWorkbenchContribution2 } from 'vs/workbench/common/contributions';
 -import { IFileEditorInput, IEditorFactoryRegistry, EditorExtensions } from 'vs/workbench/common/editor';
 -import { AutoSaveConfiguration, HotExitConfiguration, FILES_EXCLUDE_CONFIG, FILES_ASSOCIATIONS_CONFIG, FILES_READONLY_INCLUDE_CONFIG, FILES_READONLY_EXCLUDE_CONFIG, FILES_READONLY_FROM_PERMISSIONS_CONFIG } from 'vs/platform/files/common/files';
--import { SortOrder, LexicographicOptions, FILE_EDITOR_INPUT_ID, BINARY_TEXT_FILE_MODE, UndoConfirmLevel, IFilesConfiguration } from 'vs/workbench/contrib/files/common/files';
-+import { IUndoRedoService } from 'vs/platform/undoRedo/common/undoRedo';
-+import { EditorPaneDescriptor, IEditorPaneRegistry } from 'vs/workbench/browser/editor';
-+import { IWorkbenchContribution, IWorkbenchContributionsRegistry, Extensions as WorkbenchExtensions } from 'vs/workbench/common/contributions';
-+import { EditorExtensions, IEditorFactoryRegistry } from 'vs/workbench/common/editor';
-+import { BinaryFileEditor } from 'vs/workbench/contrib/files/browser/editors/binaryFileEditor';
-+import { FileEditorInputSerializer, FileEditorWorkingCopyEditorHandler } from 'vs/workbench/contrib/files/browser/editors/fileEditorHandler';
-+import { FileEditorInput } from 'vs/workbench/contrib/files/browser/editors/fileEditorInput';
-+import { TextFileEditor } from 'vs/workbench/contrib/files/browser/editors/textFileEditor';
++import { IEditorFactoryRegistry, EditorExtensions } from 'vs/workbench/common/editor';
+ import { SortOrder, LexicographicOptions, FILE_EDITOR_INPUT_ID, BINARY_TEXT_FILE_MODE, UndoConfirmLevel, IFilesConfiguration } from 'vs/workbench/contrib/files/common/files';
  import { TextFileEditorTracker } from 'vs/workbench/contrib/files/browser/editors/textFileEditorTracker';
  import { TextFileSaveErrorHandler } from 'vs/workbench/contrib/files/browser/editors/textFileSaveErrorHandler';
--import { FileEditorInput } from 'vs/workbench/contrib/files/browser/editors/fileEditorInput';
--import { BinaryFileEditor } from 'vs/workbench/contrib/files/browser/editors/binaryFileEditor';
--import { ServicesAccessor } from 'vs/platform/instantiation/common/instantiation';
--import { SyncDescriptor } from 'vs/platform/instantiation/common/descriptors';
+@@ -17,17 +16,15 @@ import { FileEditorInput } from 'vs/workbench/contrib/files/browser/editors/file
+ import { BinaryFileEditor } from 'vs/workbench/contrib/files/browser/editors/binaryFileEditor';
+ import { ServicesAccessor } from 'vs/platform/instantiation/common/instantiation';
+ import { SyncDescriptor } from 'vs/platform/instantiation/common/descriptors';
 -import { isNative, isWeb, isWindows } from 'vs/base/common/platform';
--import { ExplorerViewletViewsContribution } from 'vs/workbench/contrib/files/browser/explorerViewlet';
--import { IEditorPaneRegistry, EditorPaneDescriptor } from 'vs/workbench/browser/editor';
--import { LifecyclePhase } from 'vs/workbench/services/lifecycle/common/lifecycle';
--import { ILabelService } from 'vs/platform/label/common/label';
--import { InstantiationType, registerSingleton } from 'vs/platform/instantiation/common/extensions';
++import { isWindows } from 'vs/base/common/platform';
+ import { ExplorerViewletViewsContribution } from 'vs/workbench/contrib/files/browser/explorerViewlet';
+ import { IEditorPaneRegistry, EditorPaneDescriptor } from 'vs/workbench/browser/editor';
+ import { LifecyclePhase } from 'vs/workbench/services/lifecycle/common/lifecycle';
+ import { ILabelService } from 'vs/platform/label/common/label';
+ import { InstantiationType, registerSingleton } from 'vs/platform/instantiation/common/extensions';
  import { ExplorerService, UNDO_REDO_SOURCE } from 'vs/workbench/contrib/files/browser/explorerService';
 -import { SUPPORTED_ENCODINGS } from 'vs/workbench/services/textfile/common/encoding';
--import { Schemas } from 'vs/base/common/network';
-+import { ExplorerViewletViewsContribution } from 'vs/workbench/contrib/files/browser/explorerViewlet';
-+import { IExplorerService } from 'vs/workbench/contrib/files/browser/files';
+ import { Schemas } from 'vs/base/common/network';
  import { WorkspaceWatcher } from 'vs/workbench/contrib/files/browser/workspaceWatcher';
 -import { editorConfigurationBaseNode } from 'vs/editor/common/config/editorConfigurationSchema';
  import { DirtyFilesIndicator } from 'vs/workbench/contrib/files/common/dirtyFilesIndicator';
--import { UndoCommand, RedoCommand } from 'vs/editor/browser/editorExtensions';
--import { IUndoRedoService } from 'vs/platform/undoRedo/common/undoRedo';
--import { IExplorerService } from 'vs/workbench/contrib/files/browser/files';
--import { FileEditorInputSerializer, FileEditorWorkingCopyEditorHandler } from 'vs/workbench/contrib/files/browser/editors/fileEditorHandler';
--import { ModesRegistry } from 'vs/editor/common/languages/modesRegistry';
--import { IConfigurationService } from 'vs/platform/configuration/common/configuration';
--import { TextFileEditor } from 'vs/workbench/contrib/files/browser/editors/textFileEditor';
-+import { BINARY_TEXT_FILE_MODE, FILE_EDITOR_INPUT_ID, IFilesConfiguration, LexicographicOptions, SortOrder, UndoConfirmLevel } from 'vs/workbench/contrib/files/common/files';
-+import { LifecyclePhase } from 'vs/workbench/services/lifecycle/common/lifecycle';
+ import { UndoCommand, RedoCommand } from 'vs/editor/browser/editorExtensions';
+ import { IUndoRedoService } from 'vs/platform/undoRedo/common/undoRedo';
+@@ -36,6 +33,8 @@ import { FileEditorInputSerializer, FileEditorWorkingCopyEditorHandler } from 'v
+ import { ModesRegistry } from 'vs/editor/common/languages/modesRegistry';
+ import { IConfigurationService } from 'vs/platform/configuration/common/configuration';
+ import { TextFileEditor } from 'vs/workbench/contrib/files/browser/editors/textFileEditor';
 +import './files.configuration.contribution';
 +import './files.fileEditorFactory.contribution';
  
  class FileUriLabelContribution implements IWorkbenchContribution {
  
-@@ -80,20 +79,6 @@ Registry.as<IEditorPaneRegistry>(EditorExtensions.EditorPane).registerEditorPane
+@@ -82,20 +81,6 @@ Registry.as<IEditorPaneRegistry>(EditorExtensions.EditorPane).registerEditorPane
  	]
  );
  
@@ -4828,8 +4640,8 @@ index efd9fe59af7..a177be001d8 100644
 -
  // Register Editor Input Serializer & Handler
  Registry.as<IEditorFactoryRegistry>(EditorExtensions.EditorFactory).registerEditorSerializer(FILE_EDITOR_INPUT_ID, FileEditorInputSerializer);
- Registry.as<IWorkbenchContributionsRegistry>(WorkbenchExtensions.Workbench).registerWorkbenchContribution(FileEditorWorkingCopyEditorHandler, LifecyclePhase.Ready);
-@@ -119,271 +104,6 @@ Registry.as<IWorkbenchContributionsRegistry>(WorkbenchExtensions.Workbench).regi
+ registerWorkbenchContribution2(FileEditorWorkingCopyEditorHandler.ID, FileEditorWorkingCopyEditorHandler, WorkbenchPhase.BlockRestore);
+@@ -121,271 +106,6 @@ registerWorkbenchContribution2(DirtyFilesIndicator.ID, DirtyFilesIndicator, Work
  // Configuration
  const configurationRegistry = Registry.as<IConfigurationRegistry>(ConfigurationExtensions.Configuration);
  
@@ -5130,21 +4942,8 @@ index 00000000000..2f31d6a7984
 +		return obj instanceof FileEditorInput;
 +	}
 +});
-diff --git a/src/vs/workbench/contrib/search/browser/searchModel.ts b/src/vs/workbench/contrib/search/browser/searchModel.ts
-index 9ff6b1d1072..0f280b7f1d0 100644
---- a/src/vs/workbench/contrib/search/browser/searchModel.ts
-+++ b/src/vs/workbench/contrib/search/browser/searchModel.ts
-@@ -2372,7 +2372,7 @@ function textSearchResultToMatches(rawMatch: ITextSearchMatch, fileMatch: FileMa
- 
- export function textSearchMatchesToNotebookMatches(textSearchMatches: ITextSearchMatch[], cell: CellMatch): MatchInNotebook[] {
- 	const notebookMatches: MatchInNotebook[] = [];
--	textSearchMatches.map((textSearchMatch) => {
-+	textSearchMatches.forEach((textSearchMatch) => {
- 		const previewLines = textSearchMatch.preview.text.split('\n');
- 		if (Array.isArray(textSearchMatch.ranges)) {
- 			textSearchMatch.ranges.forEach((r, i) => {
 diff --git a/src/vs/workbench/contrib/terminal/browser/terminalInstance.ts b/src/vs/workbench/contrib/terminal/browser/terminalInstance.ts
-index 9bd13171c8f..c0421702804 100644
+index 84bde0d8006..941c88582cb 100644
 --- a/src/vs/workbench/contrib/terminal/browser/terminalInstance.ts
 +++ b/src/vs/workbench/contrib/terminal/browser/terminalInstance.ts
 @@ -83,7 +83,6 @@ import { IHistoryService } from 'vs/workbench/services/history/common/history';
@@ -5155,7 +4954,7 @@ index 9bd13171c8f..c0421702804 100644
  import type { IMarker, Terminal as XTermTerminal } from '@xterm/xterm';
  import { AccessibilityCommandId } from 'vs/workbench/contrib/accessibility/common/accessibilityCommands';
  import { terminalStrings } from 'vs/workbench/contrib/terminal/common/terminalStrings';
-@@ -702,7 +701,7 @@ export class TerminalInstance extends Disposable implements ITerminalInstance {
+@@ -703,7 +702,7 @@ export class TerminalInstance extends Disposable implements ITerminalInstance {
  			return xtermConstructor;
  		}
  		xtermConstructor = Promises.withAsyncBody<typeof XTermTerminal>(async (resolve) => {
@@ -5195,7 +4994,7 @@ index f78008e14db..5cf622e0620 100644
  		this._terminalCountContextKey = TerminalContextKeys.count.bindTo(this._contextKeyService);
  		this._terminalEditorActive = TerminalContextKeys.terminalEditorActive.bindTo(this._contextKeyService);
 diff --git a/src/vs/workbench/contrib/terminal/browser/xterm/xtermTerminal.ts b/src/vs/workbench/contrib/terminal/browser/xterm/xtermTerminal.ts
-index 529b33ddef5..188f69676f1 100644
+index 0f2ef8f01f4..a0d82d41170 100644
 --- a/src/vs/workbench/contrib/terminal/browser/xterm/xtermTerminal.ts
 +++ b/src/vs/workbench/contrib/terminal/browser/xterm/xtermTerminal.ts
 @@ -35,7 +35,6 @@ import { DecorationAddon } from 'vs/workbench/contrib/terminal/browser/xterm/dec
@@ -5257,7 +5056,7 @@ index 529b33ddef5..188f69676f1 100644
  		return SerializeAddon;
  	}
 diff --git a/src/vs/workbench/contrib/terminalContrib/stickyScroll/browser/terminalStickyScrollOverlay.ts b/src/vs/workbench/contrib/terminalContrib/stickyScroll/browser/terminalStickyScrollOverlay.ts
-index 2001ba551a8..310deb6f855 100644
+index 8868f63beef..6aaa5c0c2df 100644
 --- a/src/vs/workbench/contrib/terminalContrib/stickyScroll/browser/terminalStickyScrollOverlay.ts
 +++ b/src/vs/workbench/contrib/terminalContrib/stickyScroll/browser/terminalStickyScrollOverlay.ts
 @@ -5,7 +5,6 @@
@@ -5268,7 +5067,7 @@ index 2001ba551a8..310deb6f855 100644
  import { $, addDisposableListener, addStandardDisposableListener, getWindow } from 'vs/base/browser/dom';
  import { CancelablePromise, createCancelablePromise } from 'vs/base/common/async';
  import { debounce, memoize, throttle } from 'vs/base/common/decorators';
-@@ -465,13 +464,13 @@ export class TerminalStickyScrollOverlay extends Disposable {
+@@ -467,13 +466,13 @@ export class TerminalStickyScrollOverlay extends Disposable {
  
  	@memoize
  	private async _getCanvasAddonConstructor(): Promise<typeof CanvasAddonType> {
@@ -5298,7 +5097,7 @@ index a6e9943b866..c470a1c9ed5 100644
  	});
  }
 diff --git a/src/vs/workbench/contrib/webview/browser/webviewElement.ts b/src/vs/workbench/contrib/webview/browser/webviewElement.ts
-index 0cfe554c54e..b683520c96f 100644
+index 6514979da3d..e05a401c479 100644
 --- a/src/vs/workbench/contrib/webview/browser/webviewElement.ts
 +++ b/src/vs/workbench/contrib/webview/browser/webviewElement.ts
 @@ -11,7 +11,7 @@ import { streamToBuffer, VSBufferReadableStream } from 'vs/base/common/buffer';
@@ -5322,7 +5121,7 @@ index 0cfe554c54e..b683520c96f 100644
  			if (e.data.channel === 'webview-ready') {
  				if (this._messagePort) {
  					return;
-@@ -476,6 +471,9 @@ export class WebviewElement extends Disposable implements IWebview, WebviewFindD
+@@ -475,6 +470,9 @@ export class WebviewElement extends Disposable implements IWebview, WebviewFindD
  			params.purpose = options.purpose;
  		}
  
@@ -5332,7 +5131,7 @@ index 0cfe554c54e..b683520c96f 100644
  		COI.addSearchParam(params, true, true);
  
  		const queryString = new URLSearchParams(params).toString();
-@@ -483,7 +481,8 @@ export class WebviewElement extends Disposable implements IWebview, WebviewFindD
+@@ -482,7 +480,8 @@ export class WebviewElement extends Disposable implements IWebview, WebviewFindD
  		// Workaround for https://bugzilla.mozilla.org/show_bug.cgi?id=1754872
  		const fileName = isFirefox ? 'index-no-csp.html' : 'index.html';
  
@@ -5342,7 +5141,7 @@ index 0cfe554c54e..b683520c96f 100644
  	}
  
  	public mountTo(element: HTMLElement) {
-@@ -537,11 +536,6 @@ export class WebviewElement extends Disposable implements IWebview, WebviewFindD
+@@ -536,11 +535,6 @@ export class WebviewElement extends Disposable implements IWebview, WebviewFindD
  		return endpoint;
  	}
  
@@ -5392,7 +5191,7 @@ index 869f44526b4..296ac140860 100644
  };
  
 diff --git a/src/vs/workbench/contrib/welcomeGettingStarted/browser/gettingStartedService.ts b/src/vs/workbench/contrib/welcomeGettingStarted/browser/gettingStartedService.ts
-index b6683748bc8..7622f0a5b4a 100644
+index 8a068851f28..eb4ed86bd31 100644
 --- a/src/vs/workbench/contrib/welcomeGettingStarted/browser/gettingStartedService.ts
 +++ b/src/vs/workbench/contrib/welcomeGettingStarted/browser/gettingStartedService.ts
 @@ -33,7 +33,7 @@ import { ITelemetryService } from 'vs/platform/telemetry/common/telemetry';
@@ -5414,7 +5213,7 @@ index b6683748bc8..7622f0a5b4a 100644
  				when: ContextKeyExpr.deserialize(override ?? walkthrough.when) ?? ContextKeyExpr.true(),
  			} as const;
 diff --git a/src/vs/workbench/contrib/welcomeWalkthrough/common/walkThroughContentProvider.ts b/src/vs/workbench/contrib/welcomeWalkthrough/common/walkThroughContentProvider.ts
-index 94a4879c2f9..b58e3ffb222 100644
+index 24764f1e31a..e16d9f5afcd 100644
 --- a/src/vs/workbench/contrib/welcomeWalkthrough/common/walkThroughContentProvider.ts
 +++ b/src/vs/workbench/contrib/welcomeWalkthrough/common/walkThroughContentProvider.ts
 @@ -10,13 +10,13 @@ import { ITextModel, DefaultEndOfLine, EndOfLinePreference, ITextBufferFactory }
@@ -5455,10 +5254,10 @@ index 94a4879c2f9..b58e3ffb222 100644
  
  export class WalkThroughSnippetContentProvider implements ITextModelContentProvider, IWorkbenchContribution {
 diff --git a/src/vs/workbench/services/auxiliaryWindow/browser/auxiliaryWindowService.ts b/src/vs/workbench/services/auxiliaryWindow/browser/auxiliaryWindowService.ts
-index 57c904416e0..a6fec33c15c 100644
+index ce6f32b0914..4fe4fb39bd7 100644
 --- a/src/vs/workbench/services/auxiliaryWindow/browser/auxiliaryWindowService.ts
 +++ b/src/vs/workbench/services/auxiliaryWindow/browser/auxiliaryWindowService.ts
-@@ -292,13 +292,6 @@ export class BrowserAuxiliaryWindowService extends Disposable implements IAuxili
+@@ -302,13 +302,6 @@ export class BrowserAuxiliaryWindowService extends Disposable implements IAuxili
  	}
  
  	protected patchMethods(auxiliaryWindow: CodeWindow): void {
@@ -5485,6 +5284,19 @@ index caf3def4700..232570b93fa 100644
  
  	declare readonly _serviceBrand: undefined;
  
+diff --git a/src/vs/workbench/services/extensionManagement/common/extensionFeaturesManagemetService.ts b/src/vs/workbench/services/extensionManagement/common/extensionFeaturesManagemetService.ts
+index 0e60b30cd13..a8fef74dbc4 100644
+--- a/src/vs/workbench/services/extensionManagement/common/extensionFeaturesManagemetService.ts
++++ b/src/vs/workbench/services/extensionManagement/common/extensionFeaturesManagemetService.ts
+@@ -27,7 +27,7 @@ interface IExtensionFeatureState {
+ 
+ const FEATURES_STATE_KEY = 'extension.features.state';
+ 
+-class ExtensionFeaturesManagementService extends Disposable implements IExtensionFeaturesManagementService {
++export class ExtensionFeaturesManagementService extends Disposable implements IExtensionFeaturesManagementService {
+ 	declare readonly _serviceBrand: undefined;
+ 
+ 	private readonly _onDidChangeEnablement = this._register(new Emitter<{ extension: ExtensionIdentifier; featureId: string; enabled: boolean }>());
 diff --git a/src/vs/workbench/services/extensionManagement/common/extensionManagement.ts b/src/vs/workbench/services/extensionManagement/common/extensionManagement.ts
 index 362e485948a..50f5a5f175d 100644
 --- a/src/vs/workbench/services/extensionManagement/common/extensionManagement.ts
@@ -5651,10 +5463,10 @@ index a181772e8c4..0b12e5972ce 100644
 +
 +registerSingleton(IExtensionService, BrowserExtensionService, InstantiationType.Eager);
 diff --git a/src/vs/workbench/services/extensions/browser/extensionUrlHandler.ts b/src/vs/workbench/services/extensions/browser/extensionUrlHandler.ts
-index ecc45f88c83..e43e3a09aa8 100644
+index d019d14c4fb..78d4a00fa7f 100644
 --- a/src/vs/workbench/services/extensions/browser/extensionUrlHandler.ts
 +++ b/src/vs/workbench/services/extensions/browser/extensionUrlHandler.ts
-@@ -100,7 +100,7 @@ type ExtensionUrlHandlerClassification = {
+@@ -98,7 +98,7 @@ type ExtensionUrlHandlerClassification = {
   *
   * It also makes sure the user confirms opening URLs directed towards extensions.
   */
@@ -5686,10 +5498,10 @@ index b6d4f0f3831..7d462411a9c 100644
  
  		const relativeExtensionHostIframeSrc = FileAccess.asBrowserUri(iframeModulePath);
 diff --git a/src/vs/workbench/services/extensions/common/abstractExtensionService.ts b/src/vs/workbench/services/extensions/common/abstractExtensionService.ts
-index 4b9a9581b0d..6d87d41df51 100644
+index 2d93e41d0f0..0abfe0b61a3 100644
 --- a/src/vs/workbench/services/extensions/common/abstractExtensionService.ts
 +++ b/src/vs/workbench/services/extensions/common/abstractExtensionService.ts
-@@ -90,9 +90,9 @@ export abstract class AbstractExtensionService extends Disposable implements IEx
+@@ -94,9 +94,9 @@ export abstract class AbstractExtensionService extends Disposable implements IEx
  	private _resolveAuthorityAttempt: number = 0;
  
  	constructor(
@@ -5702,7 +5514,7 @@ index 4b9a9581b0d..6d87d41df51 100644
  		@IInstantiationService protected readonly _instantiationService: IInstantiationService,
  		@INotificationService protected readonly _notificationService: INotificationService,
  		@IWorkbenchEnvironmentService protected readonly _environmentService: IWorkbenchEnvironmentService,
-@@ -207,7 +207,7 @@ export abstract class AbstractExtensionService extends Disposable implements IEx
+@@ -211,7 +211,7 @@ export abstract class AbstractExtensionService extends Disposable implements IEx
  
  	//#region deltaExtensions
  
@@ -5711,7 +5523,7 @@ index 4b9a9581b0d..6d87d41df51 100644
  		this._deltaExtensionsQueue.push(item);
  		if (this._inHandleDeltaExtensions) {
  			// Let the current item finish, the new one will be picked up
-@@ -1189,7 +1189,7 @@ export interface IExtensionHostFactory {
+@@ -1193,7 +1193,7 @@ export interface IExtensionHostFactory {
  	createExtensionHost(runningLocations: ExtensionRunningLocationTracker, runningLocation: ExtensionRunningLocation, isInitialStart: boolean): IExtensionHost | null;
  }
  
@@ -5721,7 +5533,7 @@ index 4b9a9581b0d..6d87d41df51 100644
  		public readonly toAdd: IExtension[],
  		public readonly toRemove: string[] | IExtension[]
 diff --git a/src/vs/workbench/services/host/browser/browserHostService.ts b/src/vs/workbench/services/host/browser/browserHostService.ts
-index 79c91e10dba..639fd0a61a0 100644
+index 3ce96bba22a..d2067bf7445 100644
 --- a/src/vs/workbench/services/host/browser/browserHostService.ts
 +++ b/src/vs/workbench/services/host/browser/browserHostService.ts
 @@ -213,13 +213,18 @@ export class BrowserHostService extends Disposable implements IHostService {
@@ -5772,7 +5584,7 @@ index 708268ba3c3..956db0ac3bd 100644
  		}
  		return this._cachedResolver;
 diff --git a/src/vs/workbench/services/keybinding/browser/keyboardLayoutService.ts b/src/vs/workbench/services/keybinding/browser/keyboardLayoutService.ts
-index c55684f0424..ab8d76f8903 100644
+index bb50e96ff77..ab8d76f8903 100644
 --- a/src/vs/workbench/services/keybinding/browser/keyboardLayoutService.ts
 +++ b/src/vs/workbench/services/keybinding/browser/keyboardLayoutService.ts
 @@ -42,6 +42,7 @@ export class BrowserKeyboardMapperFactoryBase extends Disposable {
@@ -5783,18 +5595,15 @@ index c55684f0424..ab8d76f8903 100644
  
  	get activeKeymap(): KeymapInfo | null {
  		return this._activeKeymapInfo;
-@@ -394,9 +395,9 @@ export class BrowserKeyboardMapperFactoryBase extends Disposable {
+@@ -394,7 +395,7 @@ export class BrowserKeyboardMapperFactoryBase extends Disposable {
  	}
  
  	private async _getBrowserKeyMapping(keyboardEvent?: IKeyboardEvent): Promise<IRawMixedKeyboardMapping | null> {
 -		if ((navigator as any).keyboard) {
 +		if (this.keyboardLayoutMapAllowed) {
  			try {
--				return (navigator as any).keyboard.getLayoutMap().then((e: any) => {
-+				return await (navigator as any).keyboard.getLayoutMap().then((e: any) => {
+ 				return await (navigator as any).keyboard.getLayoutMap().then((e: any) => {
  					const ret: IKeyboardMapping = {};
- 					for (const key of e) {
- 						ret[key[0]] = {
 @@ -419,8 +420,10 @@ export class BrowserKeyboardMapperFactoryBase extends Disposable {
  				});
  			} catch {
@@ -5808,7 +5617,7 @@ index c55684f0424..ab8d76f8903 100644
  			const standardKeyboardEvent = keyboardEvent as StandardKeyboardEvent;
  			ret[standardKeyboardEvent.browserEvent.code] = {
 diff --git a/src/vs/workbench/services/languageDetection/browser/languageDetectionSimpleWorker.ts b/src/vs/workbench/services/languageDetection/browser/languageDetectionSimpleWorker.ts
-index e8c8239b35f..9017a971ee5 100644
+index f967fc38127..4da1da8f591 100644
 --- a/src/vs/workbench/services/languageDetection/browser/languageDetectionSimpleWorker.ts
 +++ b/src/vs/workbench/services/languageDetection/browser/languageDetectionSimpleWorker.ts
 @@ -3,14 +3,12 @@
@@ -5963,10 +5772,10 @@ index a466cc1f3a1..09f6a40eb26 100644
  	declare readonly _serviceBrand: undefined;
  
 diff --git a/src/vs/workbench/services/search/common/queryBuilder.ts b/src/vs/workbench/services/search/common/queryBuilder.ts
-index 78b4d0c9227..e6fadfd11d8 100644
+index 9124249957a..057b9a21ea2 100644
 --- a/src/vs/workbench/services/search/common/queryBuilder.ts
 +++ b/src/vs/workbench/services/search/common/queryBuilder.ts
-@@ -543,10 +543,10 @@ export class QueryBuilder {
+@@ -545,10 +545,10 @@ export class QueryBuilder {
  			folderName: includeFolderName ? folderName : undefined,
  			excludePattern: Object.keys(excludePattern).length > 0 ? excludePattern : undefined,
  			fileEncoding: folderConfig.files && folderConfig.files.encoding,
@@ -6251,6 +6060,19 @@ index ad67fb4f422..fadf86cece5 100644
  
  	// ensure to limit buffer for guessing due to https://github.com/aadsm/jschardet/issues/53
  	const limitedBuffer = buffer.slice(0, AUTO_ENCODING_GUESS_MAX_BYTES);
+diff --git a/src/vs/workbench/services/themes/common/colorExtensionPoint.ts b/src/vs/workbench/services/themes/common/colorExtensionPoint.ts
+index 9a7bf4aa503..235e0ed2948 100644
+--- a/src/vs/workbench/services/themes/common/colorExtensionPoint.ts
++++ b/src/vs/workbench/services/themes/common/colorExtensionPoint.ts
+@@ -186,7 +186,7 @@ class ColorDataRenderer extends Disposable implements IExtensionFeatureTableRend
+ 					color.description,
+ 					toColor(color.defaults.dark) ?? new MarkdownString().appendMarkdown(`\`${color.defaults.dark}\``),
+ 					toColor(color.defaults.light) ?? new MarkdownString().appendMarkdown(`\`${color.defaults.light}\``),
+-					toColor(color.defaults.highContrast) ?? new MarkdownString().appendMarkdown(`\`${color.defaults.highContrast}\``),
++					toColor(color.defaults.highContrast!) ?? new MarkdownString().appendMarkdown(`\`${color.defaults.highContrast}\``),
+ 				];
+ 			});
+ 
 diff --git a/src/vs/workbench/services/themes/common/tokenClassificationExtensionPoint.ts b/src/vs/workbench/services/themes/common/tokenClassificationExtensionPoint.ts
 index 80f5ee077cb..49abd845677 100644
 --- a/src/vs/workbench/services/themes/common/tokenClassificationExtensionPoint.ts

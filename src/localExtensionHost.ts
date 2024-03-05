@@ -142,7 +142,6 @@ class LocalExtensionHost implements IExtensionHost {
     const [mainThreadMessagePassingProtocol, extHostMessagePassingProtocol] = createMessagePassingProtocolPair()
     const initData = await this._createExtHostInitData()
 
-    // eslint-disable-next-line no-new
     const hostMain = new ExtensionHostMain(
       extHostMessagePassingProtocol,
       initData,

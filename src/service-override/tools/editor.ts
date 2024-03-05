@@ -1,7 +1,7 @@
 import { StandaloneServices } from 'vs/editor/standalone/browser/standaloneServices'
 import { ICodeEditorService } from 'vs/editor/browser/services/codeEditorService'
 import { IEditorService, isPreferredGroup, PreferredGroup, SIDE_GROUP } from 'vs/workbench/services/editor/common/editorService'
-import { EditorCloseContext, GroupModelChangeKind, IActiveEditorChangeEvent, IEditorCloseEvent, IEditorControl, IEditorPane, IEditorWillOpenEvent, IResourceDiffEditorInput, isEditorInput, isResourceEditorInput, ITextDiffEditorPane, IUntitledTextResourceEditorInput, IUntypedEditorInput, IVisibleEditorPane } from 'vs/workbench/common/editor'
+import { EditorCloseContext, EditorInputWithOptions, GroupModelChangeKind, IActiveEditorChangeEvent, IEditorCloseEvent, IEditorControl, IEditorPane, IEditorWillOpenEvent, IResourceDiffEditorInput, isEditorInput, isResourceEditorInput, ITextDiffEditorPane, IUntitledTextResourceEditorInput, IUntypedEditorInput, IVisibleEditorPane } from 'vs/workbench/common/editor'
 import { EditorInput } from 'vs/workbench/common/editor/editorInput'
 import { IEditorOptions, IResourceEditorInput, ITextResourceEditorInput } from 'vs/platform/editor/common/editor'
 import { applyTextEditorOptions } from 'vs/workbench/common/editor/editorOptions'
@@ -365,8 +365,8 @@ class StandaloneEditorGroup extends Disposable implements IEditorGroup, IEditorG
 
   readonly id = --StandaloneEditorGroup.idCounter
   index = -1
-  label = `standalone editor ${this.editor.getId()}`
-  ariaLabel = `standalone editor ${this.editor.getId()}`
+  label = `standalone editor ${-this.id}`
+  ariaLabel = `standalone editor ${-this.id}`
   get activeEditorPane () {
     return this.pane
   }
@@ -394,8 +394,25 @@ class StandaloneEditorGroup extends Disposable implements IEditorGroup, IEditorG
   findEditors = (resource: URI) => this.pane != null && resource.toString() === this.pane.input.resource.toString() ? [this.pane.input] : []
   getEditorByIndex = (index: number) => this.pane != null && index === 0 ? this.pane.input : undefined
   getIndexOfEditor = (editorInput: EditorInput) => this.pane != null && this.pane.input === editorInput ? 0 : -1
-  openEditor = unsupported
-  openEditors = unsupported
+  openEditor = async (editor: EditorInput): Promise<IEditorPane | undefined> => {
+    if (editor.isDisposed()) {
+      return undefined
+    }
+
+    if (editor instanceof TextResourceEditorInput && editor.resource.toString() === this.pane?.input.resource.toString()) {
+      this.focus()
+      return this.pane
+    }
+    return undefined
+  }
+
+  openEditors = async (editors: EditorInputWithOptions[]): Promise<IEditorPane | undefined> => {
+    if (editors.length === 1) {
+      return this.openEditor(editors[0]!.editor)
+    }
+    return undefined
+  }
+
   isPinned = () => false
   isSticky = () => false
   isActive = () => this.editor.hasWidgetFocus()
@@ -417,6 +434,7 @@ class StandaloneEditorGroup extends Disposable implements IEditorGroup, IEditorG
   lock = () => {}
   focus (): void {
     this.editor.focus()
+    this.editor.getContainerDomNode().scrollIntoView()
   }
 
   isFirst = unsupported
@@ -436,15 +454,23 @@ export class MonacoDelegateEditorGroupsService<D extends IEditorGroupsService> e
 
       const handleCodeEditor = (editor: ICodeEditor) => {
         if (editor instanceof StandaloneEditor) {
+          let timeout: number | undefined
           const onEditorFocused = () => {
+            if (timeout != null) window.clearTimeout(timeout)
             this.activeGroupOverride = this.additionalGroups.find(group => group.editor === editor)
             this._onDidChangeActiveGroup.fire(this.activeGroup)
           }
           const onEditorBlurred = () => {
-            if (this.activeGroupOverride === this.additionalGroups.find(group => group.editor === editor)) {
-              this.activeGroupOverride = undefined
-              this._onDidChangeActiveGroup.fire(this.activeGroup)
-            }
+            if (timeout != null) window.clearTimeout(timeout)
+            // Do it in a timeout to be able to ignore short blur followed by focus
+            // It happens when the focus goes from the editor itself to the overflow widgets dom node
+            timeout = window.setTimeout(() => {
+              timeout = undefined
+              if (this.activeGroupOverride === this.additionalGroups.find(group => group.editor === editor)) {
+                this.activeGroupOverride = undefined
+                this._onDidChangeActiveGroup.fire(this.activeGroup)
+              }
+            }, 100)
           }
           editor.onDidFocusEditorText(onEditorFocused)
           editor.onDidFocusEditorWidget(onEditorFocused)
