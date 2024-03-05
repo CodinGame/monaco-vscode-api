@@ -4,8 +4,6 @@ import * as fs from 'fs'
 import path from 'path'
 import pkg from './package.json' assert { type: 'json' }
 
-const cdnDomain = process.env.CDN_HOST ?? 'http://127.0.0.2:5173'
-
 const localDependencies = Object.entries(pkg.dependencies).filter(([, version]) => version.startsWith('file:../')).map(([name]) => name)
 export default defineConfig({
   build: {
@@ -68,7 +66,6 @@ export default defineConfig({
   },
   server: {
     port: 5173,
-    origin: cdnDomain,
     host: '0.0.0.0',
     fs: {
       allow: ['../'] // allow to load codicon.ttf from monaco-editor in the parent folder
