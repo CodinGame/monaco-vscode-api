@@ -2,7 +2,6 @@ import { IEditorOverrideServices } from 'vs/editor/standalone/browser/standalone
 import { SyncDescriptor } from 'vs/platform/instantiation/common/descriptors'
 import { AccessibleViewService, IAccessibleViewService } from 'vs/workbench/contrib/accessibility/browser/accessibleView'
 import { AccessibilitySignalService, IAccessibilitySignalService } from 'vs/platform/accessibilitySignal/browser/accessibilitySignalService'
-// @ts-ignore
 import audioAssets from 'vs/platform/accessibilitySignal/browser/media/*.mp3'
 import { registerAssets } from '../assets'
 import 'vs/workbench/contrib/accessibility/browser/accessibility.contribution'
