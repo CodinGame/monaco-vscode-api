@@ -72,6 +72,21 @@ parser: {
 
 See [this issue](https://github.com/CodinGame/monaco-vscode-api/issues/186) or this [StackOverflow answer](https://stackoverflow.com/a/75252098) for more details, and [this discussion](https://github.com/angular/angular-cli/issues/24617) for more context.
 
+### The typescript language features extension is not providing project-wide intellisense
+
+The typescript language features extensions requires [SharedArrayBuffer](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/SharedArrayBuffer) to enable project wide intellisense or only a per-file intellisense is provided.
+
+It requires [crossOriginIsolated](https://developer.mozilla.org/en-US/docs/Web/API/crossOriginIsolated) to be true, which requires assets files to be servers with some specific headers:
+- [Cross-Origin-Opener-Policy](https://developer.mozilla.org/en-US/docs/Web/HTTP/Headers/Cross-Origin-Opener-Policy): `same-origin`
+- [Cross-Origin-Embedder-Policy](https://developer.mozilla.org/en-US/docs/Web/HTTP/Headers/Cross-Origin-Embedder-Policy): `require-corp` or `credentialless`
+
+At least thoses files should have the headers:
+- the main page html
+- the worker extension host iframe html: `webWorkerExtensionHostIframe.html`
+- the worker extension host worker javascript: `extensionHost.worker.js`
+
+If adding those headers is not an options, you can have a look at https://github.com/gzuidhof/coi-serviceworker
+
 
 # Usage
 
