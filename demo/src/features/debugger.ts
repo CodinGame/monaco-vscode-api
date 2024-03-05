@@ -44,6 +44,16 @@ void getApi().then(async debuggerVscodeApi => {
     }
   }
 
+  debuggerVscodeApi.debug.registerDebugConfigurationProvider('javascript', {
+    resolveDebugConfiguration () {
+      return {
+        name: 'Test debugger',
+        type: 'javascript',
+        request: 'launch'
+      }
+    }
+  })
+
   debuggerVscodeApi.debug.registerDebugAdapterDescriptorFactory('javascript', {
     async createDebugAdapterDescriptor () {
       const websocket = new WebSocket('ws://localhost:5555')
