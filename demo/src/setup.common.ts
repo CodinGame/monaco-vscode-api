@@ -11,7 +11,6 @@ import getTextmateServiceOverride from '@codingame/monaco-vscode-textmate-servic
 import getThemeServiceOverride from '@codingame/monaco-vscode-theme-service-override'
 import getLanguagesServiceOverride from '@codingame/monaco-vscode-languages-service-override'
 import getAuthenticationServiceOverride from '@codingame/monaco-vscode-authentication-service-override'
-import getAudioCueServiceOverride from '@codingame/monaco-vscode-audio-cue-service-override'
 import getScmServiceOverride from '@codingame/monaco-vscode-scm-service-override'
 import getExtensionGalleryServiceOverride from '@codingame/monaco-vscode-extension-gallery-service-override'
 import getBannerServiceOverride from '@codingame/monaco-vscode-view-banner-service-override'
@@ -257,7 +256,6 @@ export const commonServices: IEditorOverrideServices = {
   ...getTextmateServiceOverride(),
   ...getThemeServiceOverride(),
   ...getLanguagesServiceOverride(),
-  ...getAudioCueServiceOverride(),
   ...getDebugServiceOverride(),
   ...getPreferencesServiceOverride(),
   ...getOutlineServiceOverride(),
