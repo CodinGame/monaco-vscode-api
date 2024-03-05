@@ -1,6 +1,6 @@
 import { StandaloneKeybindingService, StandaloneServices } from 'vs/editor/standalone/browser/standaloneServices'
 import { ITextResourceConfigurationService } from 'vs/editor/common/services/textResourceConfiguration'
-import { IInstantiationService } from 'vs/platform/instantiation/common/instantiation'
+import { IInstantiationService, ServicesAccessor } from 'vs/platform/instantiation/common/instantiation'
 import { IStandaloneDiffEditorConstructionOptions, IStandaloneEditorConstructionOptions, StandaloneCodeEditor, StandaloneDiffEditor2, StandaloneEditor } from 'vs/editor/standalone/browser/standaloneCodeEditor'
 import { IDiffEditorOptions, IEditorOptions } from 'vs/editor/common/config/editorOptions'
 import { IEditorConfiguration } from 'vs/workbench/browser/parts/editor/textEditor'
@@ -40,6 +40,7 @@ import { KeybindingResolver } from 'vs/platform/keybinding/common/keybindingReso
 import { ResolvedKeybindingItem } from 'vs/platform/keybinding/common/resolvedKeybindingItem'
 import { Keybinding, ResolvedKeybinding } from 'vs/base/common/keybindings'
 import { Event } from 'vs/base/common/event'
+import { ResourceContextKey } from 'vs/workbench/common/contextkeys'
 import { createInjectedClass } from './tools/injection'
 import { getService } from './services'
 
@@ -105,6 +106,15 @@ function createConfiguredEditorClass (impl: new (instantiationService: IInstanti
       this._register(this.onDidChangeModelLanguage(() => this.updateEditorConfiguration()))
       this._register(this.onDidChangeModel(() => this.updateEditorConfiguration()))
       this.updateEditorConfiguration()
+
+      const scopedInstantiationService = instantiationService.createChild(new ServiceCollection(
+        [IContextKeyService, this._contextKeyService]
+      ))
+      const resourceContext = this._register(scopedInstantiationService.createInstance(ResourceContextKey))
+      this.onDidChangeModel((e) => {
+        resourceContext.set(e.newModelUrl)
+      })
+      resourceContext.set(this.getModel()?.uri)
     }
 
     /**
@@ -324,27 +334,27 @@ class DelegateStandaloneKeybindingService extends StandaloneKeybindingService {
 }
 
 let standaloneEditorInstantiationService: IInstantiationService | null = null
-function getStandaloneEditorInstantiationService () {
+function getStandaloneEditorInstantiationService (accessor: ServicesAccessor) {
   if (standaloneEditorInstantiationService == null) {
     const serviceCollection = new ServiceCollection()
     serviceCollection.set(IQuickInputService, new SyncDescriptor(StandaloneQuickInputService, undefined, true))
-    const keybindingService = StandaloneServices.get(IKeybindingService)
+    const keybindingService = accessor.get(IKeybindingService)
     if (!(keybindingService instanceof StandaloneKeybindingService) && isDynamicKeybindingService(keybindingService)) {
       serviceCollection.set(IKeybindingService, new SyncDescriptor(DelegateStandaloneKeybindingService, [keybindingService], true))
     }
-    standaloneEditorInstantiationService = StandaloneServices.get(IInstantiationService).createChild(serviceCollection)
+    standaloneEditorInstantiationService = accessor.get(IInstantiationService).createChild(serviceCollection)
   }
   return standaloneEditorInstantiationService
 }
 
 export const createConfiguredEditor: typeof createEditor = (domElement, options, override) => {
-  StandaloneServices.initialize(override ?? {})
-  return getStandaloneEditorInstantiationService().createInstance(ConfiguredStandaloneEditor, domElement, options)
+  const instantiationService = StandaloneServices.initialize(override ?? {})
+  return instantiationService.invokeFunction(getStandaloneEditorInstantiationService).createInstance(ConfiguredStandaloneEditor, domElement, options)
 }
 
 export const createConfiguredDiffEditor: typeof createDiffEditor = (domElement, options, override) => {
-  StandaloneServices.initialize(override ?? {})
-  return getStandaloneEditorInstantiationService().createInstance(ConfiguredStandaloneDiffEditor, domElement, options)
+  const instantiationService = StandaloneServices.initialize(override ?? {})
+  return instantiationService.invokeFunction(getStandaloneEditorInstantiationService).createInstance(ConfiguredStandaloneDiffEditor, domElement, options)
 }
 
 const Extensions = {
