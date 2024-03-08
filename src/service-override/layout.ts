@@ -332,8 +332,15 @@ export class LayoutService extends Disposable implements ILayoutService, IWorkbe
       }
 
       return this.getPart(windowOrPart)?.getContainer()
+    } else {
+      if (windowOrPart.document === this.mainContainer.ownerDocument) {
+        // main window
+        return this.mainContainer
+      } else {
+        // auxiliary window
+        return windowOrPart.document.body.getElementsByClassName('monaco-workbench')[0] as HTMLElement
+      }
     }
-    return document.body.getElementsByClassName('monaco-workbench')[0] as HTMLElement
   }
 
   public getPart (key: Parts): Part | undefined {
