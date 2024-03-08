@@ -9,10 +9,11 @@ import { localizeWithPath } from 'vs/nls'
 import { windowLogId } from 'vs/workbench/services/log/common/logConstants'
 import { IWorkbenchEnvironmentService } from 'vs/workbench/services/environment/common/environmentService'
 import { IDisposable, toDisposable } from 'vs/base/common/lifecycle'
+import { IDefaultLogLevelsService, DefaultLogLevelsService } from 'vs/workbench/contrib/logs/common/defaultLogLevels'
 import getEnvironmentServiceOverride from './environment'
 import { logsPath } from '../workbench'
-import 'vs/workbench/contrib/logs/common/logs.contribution'
 import { checkServicesNotInitialized } from '../lifecycle'
+import 'vs/workbench/contrib/logs/common/logs.contribution'
 
 class _FileLoggerService extends FileLoggerService {
   constructor (logLevel: LogLevel | undefined, @IFileService fileService: IFileService, @IEnvironmentService environmentService: IEnvironmentService) {
@@ -38,7 +39,8 @@ function getServiceOverride (logLevel?: LogLevel): IEditorOverrideServices {
   return {
     ...getEnvironmentServiceOverride(),
     [ILoggerService.toString()]: new SyncDescriptor(_FileLoggerService, [logLevel], true),
-    [ILogService.toString()]: new SyncDescriptor(_LogService, [], true)
+    [ILogService.toString()]: new SyncDescriptor(_LogService, [], true),
+    [IDefaultLogLevelsService.toString()]: new SyncDescriptor(DefaultLogLevelsService, [], true)
   }
 }
 
