@@ -76,6 +76,7 @@ import 'vs/workbench/browser/parts/editor/editor.autosave.contribution'
 import 'vs/workbench/contrib/files/browser/files.editorPane.contribution'
 import 'vs/workbench/contrib/files/browser/fileCommands.save'
 import 'vs/workbench/browser/actions/navigationActions'
+import './tools/editorAssets'
 export * from './tools/views'
 
 let webviewIframeAlternateDomains: string | undefined
