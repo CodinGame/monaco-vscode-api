@@ -54,6 +54,7 @@ import getShareServiceOverride from '@codingame/monaco-vscode-share-service-over
 import getSpeechServiceOverride from '@codingame/monaco-vscode-speech-service-override'
 import getSurveyServiceOverride from '@codingame/monaco-vscode-survey-service-override'
 import getUpdateServiceOverride from '@codingame/monaco-vscode-update-service-override'
+import getExplorerServiceOverride from '@codingame/monaco-vscode-explorer-service-override'
 import { Worker } from './tools/crossOriginWorker'
 import defaultKeybindings from './user/keybindings.json?raw'
 import defaultConfiguration from './user/configuration.json?raw'
@@ -295,5 +296,6 @@ export const commonServices: IEditorOverrideServices = {
   ...getShareServiceOverride(),
   ...getSpeechServiceOverride(),
   ...getSurveyServiceOverride(),
-  ...getUpdateServiceOverride()
+  ...getUpdateServiceOverride(),
+  ...getExplorerServiceOverride()
 }
