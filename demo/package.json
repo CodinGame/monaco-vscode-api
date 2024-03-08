@@ -23,8 +23,7 @@
     "@types/ws": "^8.5.10",
     "ts-node": "^10.9.2",
     "typescript": "~5.3.3",
-    "vite": "~5.1.5",
-    "vite-plugin-static-copy": "^1.0.1"
+    "vite": "~5.1.5"
   },
   "dependencies": {
     "@codingame/monaco-vscode-accessibility-service-override": "file:../dist/service-override-accessibility",

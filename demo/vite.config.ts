@@ -1,6 +1,5 @@
 import { defineConfig } from 'vite'
 import importMetaUrlPlugin from '@codingame/esbuild-import-meta-url-plugin'
-import { viteStaticCopy } from 'vite-plugin-static-copy'
 import * as fs from 'fs'
 import path from 'path'
 import pkg from './package.json' assert { type: 'json' }
@@ -11,14 +10,19 @@ export default defineConfig({
     target: 'esnext'
   },
   plugins: [
-    viteStaticCopy({
-      targets: [
-        {
-          src: 'coi-serviceworker.js',
-          dest: './'
-        }
-      ]
-    }),
+    {
+      // For the *-language-features extensions which use SharedArrayBuffer
+      name: 'configure-response-headers',
+      apply: 'serve',
+      configureServer: server => {
+        server.middlewares.use((_req, res, next) => {
+          res.setHeader('Cross-Origin-Embedder-Policy', 'credentialless')
+          res.setHeader('Cross-Origin-Opener-Policy', 'same-origin')
+          res.setHeader('Cross-Origin-Resource-Policy', 'cross-origin')
+          next()
+        })
+      }
+    },
     {
       name: 'force-prevent-transform-assets',
       apply: 'serve',
