@@ -194,6 +194,11 @@ export const constructOptions: IWorkbenchConstructionOptions = {
   remoteAuthority,
   enableWorkspaceTrust: true,
   connectionToken,
+  windowIndicator: {
+    label: 'monaco-vscode-api',
+    tooltip: '',
+    command: ''
+  },
   workspaceProvider: {
     trusted: true,
     async open () {
