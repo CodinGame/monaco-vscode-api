@@ -15,6 +15,7 @@ import { IProductService } from 'vs/platform/product/common/productService'
 import { DisposableStore, IDisposable } from 'vs/base/common/lifecycle'
 import { IWorkbenchConstructionOptions } from 'vs/workbench/browser/web.api'
 import { IProductConfiguration } from 'vs/base/common/product'
+import { ILazyWorkbenchContributionInstantiation, IOnEditorWorkbenchContributionInstantiation, IWorkbenchContribution, WorkbenchContributionInstantiation, WorkbenchPhase, registerWorkbenchContribution2 } from 'vs/workbench/common/contributions'
 import { initialize as initializeWorkbench } from './workbench'
 import { checkServicesNotInitialized, checkServicesReady, serviceInitializedBarrier, serviceInitializedEmitter, startup, waitServicesReady } from './lifecycle'
 import getQuickAccessOverride from './service-override/quickaccess'
@@ -92,6 +93,15 @@ export function withReadyServices (callback: (serviceAccessor: ServicesAccessor)
   }))
 
   return disposable
+}
+
+export const registerWorkbenchContribution = (id: string, contribution: (accessor: ServicesAccessor) => void, instantiation: WorkbenchContributionInstantiation): void => {
+  class Contribution implements IWorkbenchContribution {
+    constructor (@IInstantiationService instantiationService: IInstantiationService) {
+      instantiationService.invokeFunction(contribution)
+    }
+  }
+  registerWorkbenchContribution2(id, Contribution, instantiation)
 }
 
 export { SyncDescriptor } from 'vs/platform/instantiation/common/descriptors'
@@ -265,5 +275,10 @@ export {
   Severity,
   IWorkbenchConstructionOptions,
   IProductService,
-  IEditorOverrideServices
+  IEditorOverrideServices,
+  WorkbenchContributionInstantiation,
+  WorkbenchPhase,
+  ILazyWorkbenchContributionInstantiation,
+  IOnEditorWorkbenchContributionInstantiation,
+  ServicesAccessor
 }
