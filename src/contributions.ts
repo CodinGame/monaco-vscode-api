@@ -24,6 +24,8 @@ import 'vs/workbench/contrib/list/browser/list.contribution'
 import 'vs/workbench/contrib/codeEditor/browser/editorFeatures'
 import 'vs/workbench/contrib/contextmenu/browser/contextmenu.contribution'
 import 'vs/workbench/contrib/mappedEdits/common/mappedEdits.contribution'
+import 'vs/workbench/browser/actions/textInputActions'
+import 'vs/workbench/browser/actions/developerActions'
 
 class ExtensionPoints implements IWorkbenchContribution {
   static readonly ID = 'workbench.contrib.extensionPoints.main'

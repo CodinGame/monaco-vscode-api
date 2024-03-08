@@ -421,7 +421,8 @@ export default (args: Record<string, string>): rollup.RollupOptions[] => {
           path.includes('expandAbbreviation') ||
           path.includes('commentsEditorContribution') ||
           path.includes('keybindingsEditorContribution') ||
-          path.includes('preferencesSearch')
+          path.includes('preferencesSearch') ||
+          path.includes('vs/workbench/browser/actions')
       }
     },
     external,
