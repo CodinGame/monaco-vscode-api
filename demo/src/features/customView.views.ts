@@ -6,7 +6,6 @@ registerCustomView({
   id: 'custom-view',
   name: 'Custom demo view',
   order: 0,
-  default: true,
   renderBody: function (container: HTMLElement): monaco.IDisposable {
     container.style.display = 'flex'
     container.style.alignItems = 'center'

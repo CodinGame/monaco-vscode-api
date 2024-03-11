@@ -4,6 +4,7 @@ import getQuickAccessServiceOverride from '@codingame/monaco-vscode-quickaccess-
 import { BrowserStorageService } from '@codingame/monaco-vscode-storage-service-override'
 import { ExtensionHostKind } from '@codingame/monaco-vscode-extensions-service-override'
 import { registerExtension } from 'vscode/extensions'
+import './features/customView.workbench'
 import { commonServices, constructOptions, remoteAuthority, userDataProvider } from './setup.common'
 
 const container = document.createElement('div')

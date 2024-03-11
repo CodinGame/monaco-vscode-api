@@ -14,6 +14,7 @@ import getViewsServiceOverride, {
   Position
 } from '@codingame/monaco-vscode-views-service-override'
 import { openNewCodeEditor } from './features/editor'
+import './features/customView.views'
 import { commonServices, constructOptions, remoteAuthority, userDataProvider } from './setup.common'
 
 const container = document.createElement('div')
