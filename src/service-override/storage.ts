@@ -82,7 +82,7 @@ class ExternalStorageService extends AbstractStorageService {
   private readonly profileStorage = this._register(new ExternalStorage(StorageScope.PROFILE, this.provider))
   private readonly workspaceStorage = this._register(new ExternalStorage(StorageScope.WORKSPACE, this.provider))
 
-  constructor (protected readonly provider: IStorageProvider) {
+  constructor (protected readonly provider: IStorageProvider, private fallbackOverride?: Record<string, unknown>) {
     super({
       flushInterval: 5000
     })
@@ -129,6 +129,30 @@ class ExternalStorageService extends AbstractStorageService {
   hasScope (_scope: IAnyWorkspaceIdentifier | IUserDataProfile): boolean {
     return false
   }
+
+  override get(key: string, scope: VSStorageScope, fallbackValue: string): string
+  override get(key: string, scope: VSStorageScope): string | undefined
+  override get (key: string, scope: VSStorageScope, fallbackValue?: string): string | undefined {
+    return this.getStorage(scope).get(key, (this.fallbackOverride?.[key] as string | undefined) ?? fallbackValue)
+  }
+
+  override getBoolean(key: string, scope: VSStorageScope, fallbackValue: boolean): boolean
+  override getBoolean(key: string, scope: VSStorageScope): boolean | undefined
+  override getBoolean (key: string, scope: VSStorageScope, fallbackValue?: boolean): boolean | undefined {
+    return this.getStorage(scope).getBoolean(key, (this.fallbackOverride?.[key] as boolean | undefined) ?? fallbackValue)
+  }
+
+  override getNumber(key: string, scope: VSStorageScope, fallbackValue: number): number
+  override getNumber(key: string, scope: VSStorageScope): number | undefined
+  override getNumber (key: string, scope: VSStorageScope, fallbackValue?: number): number | undefined {
+    return this.getStorage(scope).getNumber(key, (this.fallbackOverride?.[key] as number | undefined) ?? fallbackValue)
+  }
+
+  override getObject(key: string, scope: VSStorageScope, fallbackValue: object): object
+  override getObject(key: string, scope: VSStorageScope): object | undefined
+  override getObject (key: string, scope: VSStorageScope, fallbackValue?: object): object | undefined {
+    return this.getStorage(scope).getObject(key, (this.fallbackOverride?.[key] as object | undefined) ?? fallbackValue)
+  }
 }
 
 registerServiceInitializePreParticipant(async (accessor) => {
@@ -147,22 +171,55 @@ registerServiceInitializePreParticipant(async (accessor) => {
 
 class InjectedBrowserStorageService extends BrowserStorageService {
   constructor (
+    private fallbackOverride: Record<string, unknown> | undefined,
     @IUserDataProfileService userDataProfileService: IUserDataProfileService,
     @ILogService logService: ILogService
   ) {
     super(getWorkspaceIdentifier(), userDataProfileService, logService)
   }
+
+  override get(key: string, scope: VSStorageScope, fallbackValue: string): string
+  override get(key: string, scope: VSStorageScope): string | undefined
+  override get (key: string, scope: VSStorageScope, fallbackValue?: string): string | undefined {
+    return this.getStorage(scope)?.get(key, (this.fallbackOverride?.[key] as string | undefined) ?? fallbackValue)
+  }
+
+  override getBoolean(key: string, scope: VSStorageScope, fallbackValue: boolean): boolean
+  override getBoolean(key: string, scope: VSStorageScope): boolean | undefined
+  override getBoolean (key: string, scope: VSStorageScope, fallbackValue?: boolean): boolean | undefined {
+    return this.getStorage(scope)?.getBoolean(key, (this.fallbackOverride?.[key] as boolean | undefined) ?? fallbackValue)
+  }
+
+  override getNumber(key: string, scope: VSStorageScope, fallbackValue: number): number
+  override getNumber(key: string, scope: VSStorageScope): number | undefined
+  override getNumber (key: string, scope: VSStorageScope, fallbackValue?: number): number | undefined {
+    return this.getStorage(scope)?.getNumber(key, (this.fallbackOverride?.[key] as number | undefined) ?? fallbackValue)
+  }
+
+  override getObject(key: string, scope: VSStorageScope, fallbackValue: object): object
+  override getObject(key: string, scope: VSStorageScope): object | undefined
+  override getObject (key: string, scope: VSStorageScope, fallbackValue?: object): object | undefined {
+    return this.getStorage(scope)?.getObject(key, (this.fallbackOverride?.[key] as object | undefined) ?? fallbackValue)
+  }
 }
 
-export default function getStorageServiceOverride (provider?: IStorageProvider): IEditorOverrideServices {
-  if (provider != null) {
+interface StorageServiceParameters {
+  customProvider?: IStorageProvider
+  /**
+   * Allows to override the storage key default values
+   */
+  fallbackOverride?: Record<string, unknown>
+}
+
+export default function getStorageServiceOverride ({ customProvider, fallbackOverride }: StorageServiceParameters = {}): IEditorOverrideServices {
+  if (customProvider != null) {
     return {
-      [IStorageService.toString()]: new SyncDescriptor(ExternalStorageService, [provider], true),
+      [IStorageService.toString()]: new SyncDescriptor(ExternalStorageService, [customProvider, fallbackOverride], true),
       [IExtensionStorageService.toString()]: new SyncDescriptor(ExtensionStorageService, [], true)
     }
   } else {
     return {
-      [IStorageService.toString()]: new SyncDescriptor(InjectedBrowserStorageService, [], true),
+      [IStorageService.toString()]: new SyncDescriptor(InjectedBrowserStorageService, [fallbackOverride], true),
       [IExtensionStorageService.toString()]: new SyncDescriptor(ExtensionStorageService, [], true)
     }
   }
