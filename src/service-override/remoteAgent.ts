@@ -22,11 +22,14 @@ import { IRemoteUserDataProfilesService } from 'vs/workbench/services/userDataPr
 import { IUserDataProfileService } from 'vs/workbench/services/userDataProfile/common/userDataProfile'
 import { IActiveLanguagePackService } from 'vs/workbench/services/localization/common/locale'
 import { IExtensionDescription } from 'vs/platform/extensions/common/extensions'
+import { ITunnelService } from 'vs/platform/tunnel/common/tunnel'
+import { TunnelService } from 'vs/workbench/services/tunnel/browser/tunnelService'
 import getEnvironmentServiceOverride from './environment'
 import { getWorkbenchConstructionOptions } from '../workbench'
 import { registerServiceInitializePreParticipant } from '../lifecycle'
 import 'vs/workbench/contrib/remote/common/remote.contribution'
 import 'vs/workbench/contrib/remote/browser/remote.contribution'
+import 'vs/workbench/contrib/remote/browser/remoteStartEntry.contribution'
 
 class CustomRemoteSocketFactoryService extends RemoteSocketFactoryService {
   constructor (@IBrowserWorkbenchEnvironmentService browserWorkbenchEnvironmentService: IBrowserWorkbenchEnvironmentService) {
@@ -91,6 +94,7 @@ export default function getServiceOverride ({ scanRemoteExtensions = false }: Re
     [IRemoteAuthorityResolverService.toString()]: new SyncDescriptor(InjectedRemoteAuthorityResolverService, []),
     [IRemoteExplorerService.toString()]: new SyncDescriptor(RemoteExplorerService, [], true),
     [IExternalUriOpenerService.toString()]: new SyncDescriptor(ExternalUriOpenerService, [], true),
-    [IRemoteExtensionsScannerService.toString()]: new SyncDescriptor(CustomRemoteExtensionsScannerService, [scanRemoteExtensions], true)
+    [IRemoteExtensionsScannerService.toString()]: new SyncDescriptor(CustomRemoteExtensionsScannerService, [scanRemoteExtensions], true),
+    [ITunnelService.toString()]: new SyncDescriptor(TunnelService, [], true)
   }
 }
