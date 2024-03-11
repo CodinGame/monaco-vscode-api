@@ -1,0 +1,126 @@
+From 7468c893deb4e3b64b399318a0b8b1efc0d7f764 Mon Sep 17 00:00:00 2001
+From: =?UTF-8?q?Lo=C3=AFc=20Mangeonjean?= <loic@coderpad.io>
+Date: Mon, 11 Mar 2024 17:23:59 +0100
+Subject: [PATCH 22/58] fix: update import syntax for node in ESM
+
+---
+ src/vs/platform/environment/node/argv.ts                   | 2 +-
+ src/vs/platform/environment/node/argvHelper.ts             | 2 +-
+ .../platform/native/electron-main/nativeHostMainService.ts | 2 +-
+ src/vs/platform/terminal/node/ptyService.ts                | 7 ++++---
+ src/vs/workbench/api/node/extHostExtensionService.ts       | 7 ++++++-
+ src/vs/workbench/api/node/extensionHostProcess.ts          | 2 +-
+ 6 files changed, 14 insertions(+), 8 deletions(-)
+
+diff --git a/src/vs/platform/environment/node/argv.ts b/src/vs/platform/environment/node/argv.ts
+index 0d3a9795ffb..2cc1981808a 100644
+--- a/src/vs/platform/environment/node/argv.ts
++++ b/src/vs/platform/environment/node/argv.ts
+@@ -3,7 +3,7 @@
+  *  Licensed under the MIT License. See License.txt in the project root for license information.
+  *--------------------------------------------------------------------------------------------*/
+ 
+-import * as minimist from 'minimist';
++import minimist from 'minimist';
+ import { isWindows } from 'vs/base/common/platform';
+ import { localize } from 'vs/nls';
+ import { NativeParsedArgs } from 'vs/platform/environment/common/argv';
+diff --git a/src/vs/platform/environment/node/argvHelper.ts b/src/vs/platform/environment/node/argvHelper.ts
+index d8cefb6df67..a94fca911ea 100644
+--- a/src/vs/platform/environment/node/argvHelper.ts
++++ b/src/vs/platform/environment/node/argvHelper.ts
+@@ -3,7 +3,7 @@
+  *  Licensed under the MIT License. See License.txt in the project root for license information.
+  *--------------------------------------------------------------------------------------------*/
+ 
+-import * as assert from 'assert';
++import assert from 'assert';
+ import { IProcessEnvironment } from 'vs/base/common/platform';
+ import { localize } from 'vs/nls';
+ import { NativeParsedArgs } from 'vs/platform/environment/common/argv';
+diff --git a/src/vs/platform/native/electron-main/nativeHostMainService.ts b/src/vs/platform/native/electron-main/nativeHostMainService.ts
+index a1d28301611..2ffbae2fd9c 100644
+--- a/src/vs/platform/native/electron-main/nativeHostMainService.ts
++++ b/src/vs/platform/native/electron-main/nativeHostMainService.ts
+@@ -495,7 +495,7 @@ export class NativeHostMainService extends Disposable implements INativeHostMain
+ 	async isAdmin(): Promise<boolean> {
+ 		let isAdmin: boolean;
+ 		if (isWindows) {
+-			isAdmin = (await import('native-is-elevated'))();
++			isAdmin = (await import('native-is-elevated')).default();
+ 		} else {
+ 			isAdmin = process.getuid?.() === 0;
+ 		}
+diff --git a/src/vs/platform/terminal/node/ptyService.ts b/src/vs/platform/terminal/node/ptyService.ts
+index ec8182b3c1d..85de100c7c0 100644
+--- a/src/vs/platform/terminal/node/ptyService.ts
++++ b/src/vs/platform/terminal/node/ptyService.ts
+@@ -15,7 +15,8 @@ import { RequestStore } from 'vs/platform/terminal/common/requestStore';
+ import { IProcessDataEvent, IProcessReadyEvent, IPtyService, IRawTerminalInstanceLayoutInfo, IReconnectConstants, IShellLaunchConfig, ITerminalInstanceLayoutInfoById, ITerminalLaunchError, ITerminalsLayoutInfo, ITerminalTabLayoutInfoById, TerminalIcon, IProcessProperty, TitleEventSource, ProcessPropertyType, IProcessPropertyMap, IFixedTerminalDimensions, IPersistentTerminalProcessLaunchConfig, ICrossVersionSerializedTerminalState, ISerializedTerminalState, ITerminalProcessOptions, IPtyHostLatencyMeasurement } from 'vs/platform/terminal/common/terminal';
+ import { TerminalDataBufferer } from 'vs/platform/terminal/common/terminalDataBuffering';
+ import { escapeNonWindowsPath } from 'vs/platform/terminal/common/terminalEnvironment';
+-import { Terminal as XtermTerminal } from '@xterm/headless';
++// Fix/Hack for xterm being build as umd
++import xtermHeadless from '@xterm/headless';
+ import type { ISerializeOptions, SerializeAddon as XtermSerializeAddon } from '@xterm/addon-serialize';
+ import type { Unicode11Addon as XtermUnicode11Addon } from '@xterm/addon-unicode11';
+ import { IGetTerminalLayoutInfoArgs, IProcessDetails, ISetTerminalLayoutInfoArgs, ITerminalTabLayoutInfoDto } from 'vs/platform/terminal/common/terminalProcess';
+@@ -976,7 +977,7 @@ class MutationLogger<T> {
+ }
+ 
+ class XtermSerializer implements ITerminalSerializer {
+-	private readonly _xterm: XtermTerminal;
++	private readonly _xterm: xtermHeadless.Terminal;
+ 	private readonly _shellIntegrationAddon: ShellIntegrationAddon;
+ 	private _unicodeAddon?: XtermUnicode11Addon;
+ 
+@@ -990,7 +991,7 @@ class XtermSerializer implements ITerminalSerializer {
+ 		private _rawReviveBuffer: string | undefined,
+ 		logService: ILogService
+ 	) {
+-		this._xterm = new XtermTerminal({
++		this._xterm = new xtermHeadless.Terminal({
+ 			cols,
+ 			rows,
+ 			scrollback,
+diff --git a/src/vs/workbench/api/node/extHostExtensionService.ts b/src/vs/workbench/api/node/extHostExtensionService.ts
+index 5ac0ddc7ec9..6ea024b237b 100644
+--- a/src/vs/workbench/api/node/extHostExtensionService.ts
++++ b/src/vs/workbench/api/node/extHostExtensionService.ts
+@@ -19,6 +19,11 @@ import { realpathSync } from 'vs/base/node/extpath';
+ import { ExtHostConsoleForwarder } from 'vs/workbench/api/node/extHostConsoleForwarder';
+ import { ExtHostDiskFileSystemProvider } from 'vs/workbench/api/node/extHostDiskFileSystemProvider';
+ 
++// ESM-uncomment-begin
++// import { createRequire } from 'node:module';
++// globalThis.require = createRequire(import.meta.url);
++// ESM-uncomment-end
++
+ class NodeModuleRequireInterceptor extends RequireInterceptor {
+ 
+ 	protected _installInterceptor(): void {
+@@ -109,7 +114,7 @@ export class ExtHostExtensionService extends AbstractExtHostExtensionService {
+ 			if (extensionId) {
+ 				performance.mark(`code/extHost/willLoadExtensionCode/${extensionId}`);
+ 			}
+-			r = require.__$__nodeRequire<T>(module.fsPath);
++			r = await <T>require(module.fsPath);
+ 		} finally {
+ 			if (extensionId) {
+ 				performance.mark(`code/extHost/didLoadExtensionCode/${extensionId}`);
+diff --git a/src/vs/workbench/api/node/extensionHostProcess.ts b/src/vs/workbench/api/node/extensionHostProcess.ts
+index 785db7edd43..c98941f5181 100644
+--- a/src/vs/workbench/api/node/extensionHostProcess.ts
++++ b/src/vs/workbench/api/node/extensionHostProcess.ts
+@@ -5,7 +5,7 @@
+ 
+ import * as nativeWatchdog from 'native-watchdog';
+ import * as net from 'net';
+-import * as minimist from 'minimist';
++import minimist from 'minimist';
+ import * as performance from 'vs/base/common/performance';
+ import type { MessagePortMain } from 'vs/base/parts/sandbox/node/electronTypes';
+ import { isCancellationError, isSigPipeError, onUnexpectedError } from 'vs/base/common/errors';
+-- 
+2.34.1
+

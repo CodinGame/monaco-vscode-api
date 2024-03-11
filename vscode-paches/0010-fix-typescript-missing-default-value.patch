@@ -1,0 +1,25 @@
+From 02b40ff300716dfb3ab800ac10621194d5c5d433 Mon Sep 17 00:00:00 2001
+From: =?UTF-8?q?Lo=C3=AFc=20Mangeonjean?= <loic@coderpad.io>
+Date: Mon, 11 Mar 2024 16:48:25 +0100
+Subject: [PATCH 10/58] fix(typescript): missing default value
+
+---
+ extensions/typescript-language-features/web/src/pathMapper.ts | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+
+diff --git a/extensions/typescript-language-features/web/src/pathMapper.ts b/extensions/typescript-language-features/web/src/pathMapper.ts
+index b24ba5155d3..a0c2c248f96 100644
+--- a/extensions/typescript-language-features/web/src/pathMapper.ts
++++ b/extensions/typescript-language-features/web/src/pathMapper.ts
+@@ -76,7 +76,7 @@ export function fromResource(extensionUri: URI, uri: URI) {
+ 		&& uri.path.endsWith('.d.ts')) {
+ 		return uri.path;
+ 	}
+-	return `/${uri.scheme}/${uri.authority}${uri.path}`;
++	return `/${uri.scheme}/${uri.authority || 'ts-nul-authority'}${uri.path}`;
+ }
+ 
+ export function looksLikeLibDtsPath(filepath: string) {
+-- 
+2.34.1
+

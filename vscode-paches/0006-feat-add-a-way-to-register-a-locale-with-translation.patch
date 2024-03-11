@@ -1,0 +1,100 @@
+From 7da0ea2de48343828487f09296ec309d4f2816cd Mon Sep 17 00:00:00 2001
+From: =?UTF-8?q?Lo=C3=AFc=20Mangeonjean?= <loic@coderpad.io>
+Date: Mon, 11 Mar 2024 16:45:29 +0100
+Subject: [PATCH 06/58] feat: add a way to register a locale with translations
+
+---
+ build/lib/standalone.js |  7 +++++++
+ build/lib/standalone.ts |  8 ++++++++
+ src/vs/nls.ts           | 31 ++++++++++++++++++++++++++++++-
+ 3 files changed, 45 insertions(+), 1 deletion(-)
+
+diff --git a/build/lib/standalone.js b/build/lib/standalone.js
+index 2ffc91efc9c..ddb16108fda 100644
+--- a/build/lib/standalone.js
++++ b/build/lib/standalone.js
+@@ -190,6 +190,13 @@ function createESMSourcesAndResources2(options) {
+             fileContents = fileContents.replace(/import ([a-zA-Z0-9]+) = require\(('[^']+')\);/g, function (_, m1, m2) {
+                 return `import * as ${m1} from ${m2};`;
+             });
++            if (!file.includes('vs/nls')) {
++                fileContents = fileContents.replace(/\b(localize2?)\(/g, function (_, name) {
++                    return `${name}WithPath('${file.slice(0, -3)}', `;
++                });
++            }
++            fileContents = fileContents.replace(/import { (localize2?) }/g, 'import { $1WithPath }');
++            fileContents = fileContents.replace(/import { localize, localize2 }/g, 'import { localizeWithPath, localize2WithPath }');
+             write(getDestAbsoluteFilePath(file), fileContents);
+             continue;
+         }
+diff --git a/build/lib/standalone.ts b/build/lib/standalone.ts
+index 90517a9236f..224f376d4bf 100644
+--- a/build/lib/standalone.ts
++++ b/build/lib/standalone.ts
+@@ -223,6 +223,14 @@ export function createESMSourcesAndResources2(options: IOptions2): void {
+ 				return `import * as ${m1} from ${m2};`;
+ 			});
+ 
++			if (!file.includes('vs/nls')) {
++				fileContents = fileContents.replace(/\b(localize2?)\(/g, function (_, name) {
++					return `${name}WithPath('${file.slice(0, -3)}', `;
++				});
++			}
++			fileContents = fileContents.replace(/import { (localize2?) }/g, 'import { $1WithPath }');
++			fileContents = fileContents.replace(/import { localize, localize2 }/g, 'import { localizeWithPath, localize2WithPath }');
++
+ 			write(getDestAbsoluteFilePath(file), fileContents);
+ 			continue;
+ 		}
+diff --git a/src/vs/nls.ts b/src/vs/nls.ts
+index 233840e65ab..ff3661e3472 100644
+--- a/src/vs/nls.ts
++++ b/src/vs/nls.ts
+@@ -164,6 +164,35 @@ export function localize(data: ILocalizeInfo | string, message: string, ...args:
+ 	return _format(message, args);
+ }
+ 
++let locale: string | undefined = undefined;
++let translations: Record<string, Record<string, string>> = {};
++
++export function setLocale(_locale: string, _translations: Record<string, Record<string, string>>) {
++	locale = _locale;
++	translations = _translations;
++}
++
++/**
++ * @skipMangle
++ */
++export function localizeWithPath(path: string, data: ILocalizeInfo | string, defaultMessage: string, ...args: (string | number | boolean | undefined | null)[]): string {
++	const key = typeof data === 'object' ? data.key : data;
++	const message = (translations[path] ?? {})[key] ?? defaultMessage;
++	return _format(message, args);
++}
++
++/**
++ * @skipMangle
++ */
++export function localize2WithPath(path: string, data: ILocalizeInfo | string, defaultMessage: string, ...args: (string | number | boolean | undefined | null)[]): ILocalizedString {
++	const key = typeof data === 'object' ? data.key : data;
++	const message = (translations[path] ?? {})[key] ?? defaultMessage;
++	return {
++		value: _format(message, args),
++		original: _format(defaultMessage, args)
++	};
++}
++
+ /**
+  * Marks a string to be localized. Returns an {@linkcode ILocalizedString}
+  * which contains the localized string and the original string.
+@@ -217,7 +246,7 @@ export function getConfiguredDefaultLocale(stringFromLocalizeCall: string): stri
+ export function getConfiguredDefaultLocale(_: string): string | undefined {
+ 	// This returns undefined because this implementation isn't used and is overwritten by the loader
+ 	// when loaded.
+-	return undefined;
++	return locale;
+ }
+ 
+ /**
+-- 
+2.34.1
+

@@ -1,0 +1,40 @@
+From fcda1b6d1cec1de033f11141884363727d9dca08 Mon Sep 17 00:00:00 2001
+From: =?UTF-8?q?Lo=C3=AFc=20Mangeonjean?= <loic@coderpad.io>
+Date: Mon, 11 Mar 2024 18:19:03 +0100
+Subject: [PATCH 46/58] fixup! cleanup: remove some checks and warnings
+
+---
+ .../contrib/webview/browser/webviewElement.ts          | 10 ----------
+ 1 file changed, 10 deletions(-)
+
+diff --git a/src/vs/workbench/contrib/webview/browser/webviewElement.ts b/src/vs/workbench/contrib/webview/browser/webviewElement.ts
+index 6514979da3d..d31d55c9e01 100644
+--- a/src/vs/workbench/contrib/webview/browser/webviewElement.ts
++++ b/src/vs/workbench/contrib/webview/browser/webviewElement.ts
+@@ -185,11 +185,6 @@ export class WebviewElement extends Disposable implements IWebview, WebviewFindD
+ 				return;
+ 			}
+ 
+-			if (e.origin !== this._webviewContentOrigin(this._encodedWebviewOrigin)) {
+-				console.log(`Skipped renderer receiving message due to mismatched origins: ${e.origin} ${this._webviewContentOrigin}`);
+-				return;
+-			}
+-
+ 			if (e.data.channel === 'webview-ready') {
+ 				if (this._messagePort) {
+ 					return;
+@@ -536,11 +531,6 @@ export class WebviewElement extends Disposable implements IWebview, WebviewFindD
+ 		return endpoint;
+ 	}
+ 
+-	private _webviewContentOrigin(encodedWebviewOrigin: string): string {
+-		const uri = URI.parse(this.webviewContentEndpoint(encodedWebviewOrigin));
+-		return uri.scheme + '://' + uri.authority.toLowerCase();
+-	}
+-
+ 	private doPostMessage(channel: string, data?: any, transferable: Transferable[] = []): boolean {
+ 		if (this.element && this._messagePort) {
+ 			this._messagePort.postMessage({ channel, args: data }, transferable);
+-- 
+2.34.1
+

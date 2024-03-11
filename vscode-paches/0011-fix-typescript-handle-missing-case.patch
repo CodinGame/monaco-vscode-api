@@ -1,0 +1,27 @@
+From 2e0616e25fab6513e9da87c47ea6dbad6b2e0d02 Mon Sep 17 00:00:00 2001
+From: =?UTF-8?q?Lo=C3=AFc=20Mangeonjean?= <loic@coderpad.io>
+Date: Mon, 11 Mar 2024 16:50:57 +0100
+Subject: [PATCH 11/58] fix(typescript): handle missing case
+
+---
+ .../web/src/typingsInstaller/typingsInstaller.ts              | 4 +++-
+ 1 file changed, 3 insertions(+), 1 deletion(-)
+
+diff --git a/extensions/typescript-language-features/web/src/typingsInstaller/typingsInstaller.ts b/extensions/typescript-language-features/web/src/typingsInstaller/typingsInstaller.ts
+index 7c40993d6df..950ed338c30 100644
+--- a/extensions/typescript-language-features/web/src/typingsInstaller/typingsInstaller.ts
++++ b/extensions/typescript-language-features/web/src/typingsInstaller/typingsInstaller.ts
+@@ -66,7 +66,9 @@ export class WebTypingsInstallerClient implements ts.server.ITypingsInstaller {
+ 			case 'action::packageInstalled':
+ 			case 'action::invalidate':
+ 			case 'action::set':
+-				this.projectService!.updateTypingsForProject(response);
++			// missing case leads to error
++			case 'action::watchTypingLocations':
++				this.projectService!.updateTypingsForProject(response as ts.server.PackageInstalledResponse | ts.server.SetTypings | ts.server.InvalidateCachedTypings);
+ 				break;
+ 			case 'event::beginInstallTypes':
+ 			case 'event::endInstallTypes':
+-- 
+2.34.1
+

@@ -1,0 +1,374 @@
+From 1136962265c165887f318ba3d0f90eb9de2fea14 Mon Sep 17 00:00:00 2001
+From: =?UTF-8?q?Lo=C3=AFc=20Mangeonjean?= <loic@coderpad.io>
+Date: Mon, 11 Mar 2024 17:32:31 +0100
+Subject: [PATCH 24/58] feat: export some classes and make some methods
+ accessible
+
+---
+ .../browser/extensionResourceLoaderService.ts        |  2 +-
+ .../workbench/api/browser/statusBarExtensionPoint.ts |  2 +-
+ src/vs/workbench/browser/layout.ts                   | 10 +++++-----
+ src/vs/workbench/browser/workbench.ts                | 12 ++++++------
+ .../debug/browser/extensionHostDebugService.ts       |  2 +-
+ .../contrib/logs/common/defaultLogLevels.ts          |  2 +-
+ .../extensionManagement/browser/extensionBisect.ts   |  2 +-
+ .../services/extensions/browser/extensionService.ts  |  2 +-
+ .../extensions/browser/extensionUrlHandler.ts        |  2 +-
+ .../extensions/browser/webWorkerExtensionHost.ts     |  2 +-
+ .../extensions/common/abstractExtensionService.ts    | 10 +++++-----
+ .../services/keybinding/browser/keybindingService.ts |  2 +-
+ .../languageStatus/common/languageStatusService.ts   |  2 +-
+ .../services/outline/browser/outlineService.ts       |  2 +-
+ .../services/remote/common/remoteExplorerService.ts  |  2 +-
+ .../remote/common/remoteExtensionsScanner.ts         |  2 +-
+ .../terminal/common/embedderTerminalService.ts       |  2 +-
+ .../userDataProfile/common/remoteUserDataProfiles.ts |  2 +-
+ .../services/userDataSync/common/userDataSyncUtil.ts |  2 +-
+ 19 files changed, 32 insertions(+), 32 deletions(-)
+
+diff --git a/src/vs/platform/extensionResourceLoader/browser/extensionResourceLoaderService.ts b/src/vs/platform/extensionResourceLoader/browser/extensionResourceLoaderService.ts
+index fdefc170db0..1d3bc4affc5 100644
+--- a/src/vs/platform/extensionResourceLoader/browser/extensionResourceLoaderService.ts
++++ b/src/vs/platform/extensionResourceLoader/browser/extensionResourceLoaderService.ts
+@@ -14,7 +14,7 @@ import { ILogService } from 'vs/platform/log/common/log';
+ import { IConfigurationService } from 'vs/platform/configuration/common/configuration';
+ import { AbstractExtensionResourceLoaderService, IExtensionResourceLoaderService } from 'vs/platform/extensionResourceLoader/common/extensionResourceLoader';
+ 
+-class ExtensionResourceLoaderService extends AbstractExtensionResourceLoaderService {
++export class ExtensionResourceLoaderService extends AbstractExtensionResourceLoaderService {
+ 
+ 	declare readonly _serviceBrand: undefined;
+ 
+diff --git a/src/vs/workbench/api/browser/statusBarExtensionPoint.ts b/src/vs/workbench/api/browser/statusBarExtensionPoint.ts
+index 99dd3279fe8..b692381eaa2 100644
+--- a/src/vs/workbench/api/browser/statusBarExtensionPoint.ts
++++ b/src/vs/workbench/api/browser/statusBarExtensionPoint.ts
+@@ -57,7 +57,7 @@ export interface IExtensionStatusBarItemService {
+ }
+ 
+ 
+-class ExtensionStatusBarItemService implements IExtensionStatusBarItemService {
++export class ExtensionStatusBarItemService implements IExtensionStatusBarItemService {
+ 
+ 	declare readonly _serviceBrand: undefined;
+ 
+diff --git a/src/vs/workbench/browser/layout.ts b/src/vs/workbench/browser/layout.ts
+index a2b6007fb79..4ee25602224 100644
+--- a/src/vs/workbench/browser/layout.ts
++++ b/src/vs/workbench/browser/layout.ts
+@@ -52,7 +52,7 @@ import { CustomTitleBarVisibility } from '../../platform/window/common/window';
+ 
+ //#region Layout Implementation
+ 
+-interface ILayoutRuntimeState {
++export interface ILayoutRuntimeState {
+ 	activeContainerId: number;
+ 	mainWindowFullscreen: boolean;
+ 	readonly maximized: Set<number>;
+@@ -66,12 +66,12 @@ interface ILayoutRuntimeState {
+ 	};
+ }
+ 
+-interface IEditorToOpen {
++export interface IEditorToOpen {
+ 	readonly editor: IUntypedEditorInput;
+ 	readonly viewColumn?: number;
+ }
+ 
+-interface ILayoutInitializationState {
++export interface ILayoutInitializationState {
+ 	readonly views: {
+ 		readonly defaults: string[] | undefined;
+ 		readonly containerToRestore: {
+@@ -105,11 +105,11 @@ enum LayoutClasses {
+ 	WINDOW_BORDER = 'border'
+ }
+ 
+-interface IPathToOpen extends IPath {
++export interface IPathToOpen extends IPath {
+ 	readonly viewColumn?: number;
+ }
+ 
+-interface IInitialEditorsState {
++export interface IInitialEditorsState {
+ 	readonly filesToOpenOrCreate?: IPathToOpen[];
+ 	readonly filesToDiff?: IPathToOpen[];
+ 	readonly filesToMerge?: IPathToOpen[];
+diff --git a/src/vs/workbench/browser/workbench.ts b/src/vs/workbench/browser/workbench.ts
+index 8a311d4bb0e..56e9b6f58cf 100644
+--- a/src/vs/workbench/browser/workbench.ts
++++ b/src/vs/workbench/browser/workbench.ts
+@@ -76,7 +76,7 @@ export class Workbench extends Layout {
+ 		this.registerErrorHandler(logService);
+ 	}
+ 
+-	private registerErrorHandler(logService: ILogService): void {
++	protected registerErrorHandler(logService: ILogService): void {
+ 
+ 		// Listen on unhandled rejection events
+ 		this._register(addDisposableListener(mainWindow, 'unhandledrejection', event => {
+@@ -192,7 +192,7 @@ export class Workbench extends Layout {
+ 		}
+ 	}
+ 
+-	private initServices(serviceCollection: ServiceCollection): IInstantiationService {
++	protected initServices(serviceCollection: ServiceCollection): IInstantiationService {
+ 
+ 		// Layout Service
+ 		serviceCollection.set(IWorkbenchLayoutService, this);
+@@ -231,7 +231,7 @@ export class Workbench extends Layout {
+ 		return instantiationService;
+ 	}
+ 
+-	private registerListeners(lifecycleService: ILifecycleService, storageService: IStorageService, configurationService: IConfigurationService, hostService: IHostService, dialogService: IDialogService): void {
++	protected registerListeners(lifecycleService: ILifecycleService, storageService: IStorageService, configurationService: IConfigurationService, hostService: IHostService, dialogService: IDialogService): void {
+ 
+ 		// Configuration changes
+ 		this._register(configurationService.onDidChangeConfiguration(e => this.updateFontAliasing(e, configurationService)));
+@@ -320,7 +320,7 @@ export class Workbench extends Layout {
+ 		}
+ 	}
+ 
+-	private renderWorkbench(instantiationService: IInstantiationService, notificationService: NotificationService, storageService: IStorageService, configurationService: IConfigurationService): void {
++	protected renderWorkbench(instantiationService: IInstantiationService, notificationService: NotificationService, storageService: IStorageService, configurationService: IConfigurationService): void {
+ 
+ 		// ARIA
+ 		setARIAContainer(this.mainContainer);
+@@ -386,7 +386,7 @@ export class Workbench extends Layout {
+ 		return part;
+ 	}
+ 
+-	private createNotificationsHandlers(instantiationService: IInstantiationService, notificationService: NotificationService): void {
++	protected createNotificationsHandlers(instantiationService: IInstantiationService, notificationService: NotificationService): void {
+ 
+ 		// Instantiate Notification components
+ 		const notificationsCenter = this._register(instantiationService.createInstance(NotificationsCenter, this.mainContainer, notificationService.model));
+@@ -414,7 +414,7 @@ export class Workbench extends Layout {
+ 		});
+ 	}
+ 
+-	private restore(lifecycleService: ILifecycleService): void {
++	protected restore(lifecycleService: ILifecycleService): void {
+ 
+ 		// Ask each part to restore
+ 		try {
+diff --git a/src/vs/workbench/contrib/debug/browser/extensionHostDebugService.ts b/src/vs/workbench/contrib/debug/browser/extensionHostDebugService.ts
+index 08449bd2cd7..f82ac191725 100644
+--- a/src/vs/workbench/contrib/debug/browser/extensionHostDebugService.ts
++++ b/src/vs/workbench/contrib/debug/browser/extensionHostDebugService.ts
+@@ -19,7 +19,7 @@ import { IBrowserWorkbenchEnvironmentService } from 'vs/workbench/services/envir
+ import { IHostService } from 'vs/workbench/services/host/browser/host';
+ import { IRemoteAgentService } from 'vs/workbench/services/remote/common/remoteAgentService';
+ 
+-class BrowserExtensionHostDebugService extends ExtensionHostDebugChannelClient implements IExtensionHostDebugService {
++export class BrowserExtensionHostDebugService extends ExtensionHostDebugChannelClient implements IExtensionHostDebugService {
+ 
+ 	private static readonly LAST_EXTENSION_DEVELOPMENT_WORKSPACE_KEY = 'debug.lastExtensionDevelopmentWorkspace';
+ 
+diff --git a/src/vs/workbench/contrib/logs/common/defaultLogLevels.ts b/src/vs/workbench/contrib/logs/common/defaultLogLevels.ts
+index 9feccec6965..64b9e5d3ed0 100644
+--- a/src/vs/workbench/contrib/logs/common/defaultLogLevels.ts
++++ b/src/vs/workbench/contrib/logs/common/defaultLogLevels.ts
+@@ -33,7 +33,7 @@ export interface IDefaultLogLevelsService {
+ 	migrateLogLevels(): void;
+ }
+ 
+-class DefaultLogLevelsService implements IDefaultLogLevelsService {
++export class DefaultLogLevelsService implements IDefaultLogLevelsService {
+ 
+ 	_serviceBrand: undefined;
+ 
+diff --git a/src/vs/workbench/services/extensionManagement/browser/extensionBisect.ts b/src/vs/workbench/services/extensionManagement/browser/extensionBisect.ts
+index caf3def4700..232570b93fa 100644
+--- a/src/vs/workbench/services/extensionManagement/browser/extensionBisect.ts
++++ b/src/vs/workbench/services/extensionManagement/browser/extensionBisect.ts
+@@ -65,7 +65,7 @@ class BisectState {
+ 	) { }
+ }
+ 
+-class ExtensionBisectService implements IExtensionBisectService {
++export class ExtensionBisectService implements IExtensionBisectService {
+ 
+ 	declare readonly _serviceBrand: undefined;
+ 
+diff --git a/src/vs/workbench/services/extensions/browser/extensionService.ts b/src/vs/workbench/services/extensions/browser/extensionService.ts
+index a181772e8c4..27b6797fd78 100644
+--- a/src/vs/workbench/services/extensions/browser/extensionService.ts
++++ b/src/vs/workbench/services/extensions/browser/extensionService.ts
+@@ -249,7 +249,7 @@ class BrowserExtensionHostFactory implements IExtensionHostFactory {
+ 		}
+ 	}
+ 
+-	private _createLocalExtensionHostDataProvider(runningLocations: ExtensionRunningLocationTracker, desiredRunningLocation: ExtensionRunningLocation, isInitialStart: boolean): IWebWorkerExtensionHostDataProvider {
++	protected _createLocalExtensionHostDataProvider(runningLocations: ExtensionRunningLocationTracker, desiredRunningLocation: ExtensionRunningLocation, isInitialStart: boolean): IWebWorkerExtensionHostDataProvider {
+ 		return {
+ 			getInitData: async (): Promise<IWebWorkerExtensionHostInitData> => {
+ 				if (isInitialStart) {
+diff --git a/src/vs/workbench/services/extensions/browser/extensionUrlHandler.ts b/src/vs/workbench/services/extensions/browser/extensionUrlHandler.ts
+index d019d14c4fb..78d4a00fa7f 100644
+--- a/src/vs/workbench/services/extensions/browser/extensionUrlHandler.ts
++++ b/src/vs/workbench/services/extensions/browser/extensionUrlHandler.ts
+@@ -98,7 +98,7 @@ type ExtensionUrlHandlerClassification = {
+  *
+  * It also makes sure the user confirms opening URLs directed towards extensions.
+  */
+-class ExtensionUrlHandler implements IExtensionUrlHandler, IURLHandler {
++export class ExtensionUrlHandler implements IExtensionUrlHandler, IURLHandler {
+ 
+ 	readonly _serviceBrand: undefined;
+ 
+diff --git a/src/vs/workbench/services/extensions/browser/webWorkerExtensionHost.ts b/src/vs/workbench/services/extensions/browser/webWorkerExtensionHost.ts
+index b6d4f0f3831..a5f5e42eddd 100644
+--- a/src/vs/workbench/services/extensions/browser/webWorkerExtensionHost.ts
++++ b/src/vs/workbench/services/extensions/browser/webWorkerExtensionHost.ts
+@@ -76,7 +76,7 @@ export class WebWorkerExtensionHost extends Disposable implements IExtensionHost
+ 		this._extensionHostLogsLocation = joinPath(this._environmentService.extHostLogsPath, 'webWorker');
+ 	}
+ 
+-	private async _getWebWorkerExtensionHostIframeSrc(): Promise<string> {
++	protected async _getWebWorkerExtensionHostIframeSrc(): Promise<string> {
+ 		const suffixSearchParams = new URLSearchParams();
+ 		if (this._environmentService.debugExtensionHost && this._environmentService.debugRenderer) {
+ 			suffixSearchParams.set('debugged', '1');
+diff --git a/src/vs/workbench/services/extensions/common/abstractExtensionService.ts b/src/vs/workbench/services/extensions/common/abstractExtensionService.ts
+index 2d93e41d0f0..0abfe0b61a3 100644
+--- a/src/vs/workbench/services/extensions/common/abstractExtensionService.ts
++++ b/src/vs/workbench/services/extensions/common/abstractExtensionService.ts
+@@ -94,9 +94,9 @@ export abstract class AbstractExtensionService extends Disposable implements IEx
+ 	private _resolveAuthorityAttempt: number = 0;
+ 
+ 	constructor(
+-		private readonly _extensionsProposedApi: ExtensionsProposedApi,
+-		private readonly _extensionHostFactory: IExtensionHostFactory,
+-		private readonly _extensionHostKindPicker: IExtensionHostKindPicker,
++		protected readonly _extensionsProposedApi: ExtensionsProposedApi,
++		protected readonly _extensionHostFactory: IExtensionHostFactory,
++		protected readonly _extensionHostKindPicker: IExtensionHostKindPicker,
+ 		@IInstantiationService protected readonly _instantiationService: IInstantiationService,
+ 		@INotificationService protected readonly _notificationService: INotificationService,
+ 		@IWorkbenchEnvironmentService protected readonly _environmentService: IWorkbenchEnvironmentService,
+@@ -211,7 +211,7 @@ export abstract class AbstractExtensionService extends Disposable implements IEx
+ 
+ 	//#region deltaExtensions
+ 
+-	private async _handleDeltaExtensions(item: DeltaExtensionsQueueItem): Promise<void> {
++	protected async _handleDeltaExtensions(item: DeltaExtensionsQueueItem): Promise<void> {
+ 		this._deltaExtensionsQueue.push(item);
+ 		if (this._inHandleDeltaExtensions) {
+ 			// Let the current item finish, the new one will be picked up
+@@ -1193,7 +1193,7 @@ export interface IExtensionHostFactory {
+ 	createExtensionHost(runningLocations: ExtensionRunningLocationTracker, runningLocation: ExtensionRunningLocation, isInitialStart: boolean): IExtensionHost | null;
+ }
+ 
+-class DeltaExtensionsQueueItem {
++export class DeltaExtensionsQueueItem {
+ 	constructor(
+ 		public readonly toAdd: IExtension[],
+ 		public readonly toRemove: string[] | IExtension[]
+diff --git a/src/vs/workbench/services/keybinding/browser/keybindingService.ts b/src/vs/workbench/services/keybinding/browser/keybindingService.ts
+index 708268ba3c3..cbed3a6137c 100644
+--- a/src/vs/workbench/services/keybinding/browser/keybindingService.ts
++++ b/src/vs/workbench/services/keybinding/browser/keybindingService.ts
+@@ -423,7 +423,7 @@ export class WorkbenchKeybindingService extends AbstractKeybindingService {
+ 		return this.userKeybindings.keybindings.length;
+ 	}
+ 
+-	private updateResolver(): void {
++	protected updateResolver(): void {
+ 		this._cachedResolver = null;
+ 		this._onDidUpdateKeybindings.fire();
+ 	}
+diff --git a/src/vs/workbench/services/languageStatus/common/languageStatusService.ts b/src/vs/workbench/services/languageStatus/common/languageStatusService.ts
+index e10d2a3ef1e..6dd88102a64 100644
+--- a/src/vs/workbench/services/languageStatus/common/languageStatusService.ts
++++ b/src/vs/workbench/services/languageStatus/common/languageStatusService.ts
+@@ -47,7 +47,7 @@ export interface ILanguageStatusService {
+ }
+ 
+ 
+-class LanguageStatusServiceImpl implements ILanguageStatusService {
++export class LanguageStatusServiceImpl implements ILanguageStatusService {
+ 
+ 	declare _serviceBrand: undefined;
+ 
+diff --git a/src/vs/workbench/services/outline/browser/outlineService.ts b/src/vs/workbench/services/outline/browser/outlineService.ts
+index f4707432371..7c5cdde39cc 100644
+--- a/src/vs/workbench/services/outline/browser/outlineService.ts
++++ b/src/vs/workbench/services/outline/browser/outlineService.ts
+@@ -11,7 +11,7 @@ import { IEditorPane } from 'vs/workbench/common/editor';
+ import { IOutline, IOutlineCreator, IOutlineService, OutlineTarget } from 'vs/workbench/services/outline/browser/outline';
+ import { Event, Emitter } from 'vs/base/common/event';
+ 
+-class OutlineService implements IOutlineService {
++export class OutlineService implements IOutlineService {
+ 
+ 	declare _serviceBrand: undefined;
+ 
+diff --git a/src/vs/workbench/services/remote/common/remoteExplorerService.ts b/src/vs/workbench/services/remote/common/remoteExplorerService.ts
+index be889244846..875a9072cf0 100644
+--- a/src/vs/workbench/services/remote/common/remoteExplorerService.ts
++++ b/src/vs/workbench/services/remote/common/remoteExplorerService.ts
+@@ -139,7 +139,7 @@ export interface IRemoteExplorerService {
+ 	readonly namedProcesses: Map<number, string>;
+ }
+ 
+-class RemoteExplorerService implements IRemoteExplorerService {
++export class RemoteExplorerService implements IRemoteExplorerService {
+ 	public _serviceBrand: undefined;
+ 	private _targetType: string[] = [];
+ 	private readonly _onDidChangeTargetType: Emitter<string[]> = new Emitter<string[]>();
+diff --git a/src/vs/workbench/services/remote/common/remoteExtensionsScanner.ts b/src/vs/workbench/services/remote/common/remoteExtensionsScanner.ts
+index a466cc1f3a1..09f6a40eb26 100644
+--- a/src/vs/workbench/services/remote/common/remoteExtensionsScanner.ts
++++ b/src/vs/workbench/services/remote/common/remoteExtensionsScanner.ts
+@@ -16,7 +16,7 @@ import { ILogService } from 'vs/platform/log/common/log';
+ import { InstantiationType, registerSingleton } from 'vs/platform/instantiation/common/extensions';
+ import { IActiveLanguagePackService } from 'vs/workbench/services/localization/common/locale';
+ 
+-class RemoteExtensionsScannerService implements IRemoteExtensionsScannerService {
++export class RemoteExtensionsScannerService implements IRemoteExtensionsScannerService {
+ 
+ 	declare readonly _serviceBrand: undefined;
+ 
+diff --git a/src/vs/workbench/services/terminal/common/embedderTerminalService.ts b/src/vs/workbench/services/terminal/common/embedderTerminalService.ts
+index 5e322af7a0f..07b4abdd636 100644
+--- a/src/vs/workbench/services/terminal/common/embedderTerminalService.ts
++++ b/src/vs/workbench/services/terminal/common/embedderTerminalService.ts
+@@ -52,7 +52,7 @@ export interface IEmbedderTerminalPty {
+ 	//   setDimensions?(dimensions: TerminalDimensions): void;
+ }
+ 
+-class EmbedderTerminalService implements IEmbedderTerminalService {
++export class EmbedderTerminalService implements IEmbedderTerminalService {
+ 	declare _serviceBrand: undefined;
+ 
+ 	private readonly _onDidCreateTerminal = new Emitter<IShellLaunchConfig>();
+diff --git a/src/vs/workbench/services/userDataProfile/common/remoteUserDataProfiles.ts b/src/vs/workbench/services/userDataProfile/common/remoteUserDataProfiles.ts
+index d3ef612836b..0d0fb8d2862 100644
+--- a/src/vs/workbench/services/userDataProfile/common/remoteUserDataProfiles.ts
++++ b/src/vs/workbench/services/userDataProfile/common/remoteUserDataProfiles.ts
+@@ -25,7 +25,7 @@ export interface IRemoteUserDataProfilesService {
+ 	getRemoteProfile(localProfile: IUserDataProfile): Promise<IUserDataProfile>;
+ }
+ 
+-class RemoteUserDataProfilesService extends Disposable implements IRemoteUserDataProfilesService {
++export class RemoteUserDataProfilesService extends Disposable implements IRemoteUserDataProfilesService {
+ 
+ 	readonly _serviceBrand: undefined;
+ 
+diff --git a/src/vs/workbench/services/userDataSync/common/userDataSyncUtil.ts b/src/vs/workbench/services/userDataSync/common/userDataSyncUtil.ts
+index 45329df40c4..84119b7c042 100644
+--- a/src/vs/workbench/services/userDataSync/common/userDataSyncUtil.ts
++++ b/src/vs/workbench/services/userDataSync/common/userDataSyncUtil.ts
+@@ -12,7 +12,7 @@ import { URI } from 'vs/base/common/uri';
+ import { ITextModelService } from 'vs/editor/common/services/resolverService';
+ import { ITextResourcePropertiesService, ITextResourceConfigurationService } from 'vs/editor/common/services/textResourceConfiguration';
+ 
+-class UserDataSyncUtilService implements IUserDataSyncUtilService {
++export class UserDataSyncUtilService implements IUserDataSyncUtilService {
+ 
+ 	declare readonly _serviceBrand: undefined;
+ 
+-- 
+2.34.1
+
