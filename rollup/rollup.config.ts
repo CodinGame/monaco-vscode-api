@@ -134,15 +134,14 @@ function isCallPure (file: string, functionName: string, node: recast.types.name
     }
   }
 
-  if (functionName === 'registerWorkbenchContribution') {
-    const firstParam = args[0]!
+  if (functionName === 'registerWorkbenchContribution2') {
+    const firstParam = args[1]!
     if (firstParam.type === 'Identifier') {
       if (REMOVE_WORKBENCH_CONTRIBUTIONS.has(firstParam.name)) {
         return true
       }
-      return false
     }
-    return true
+    return false
   }
 
   if (functionName === 'registerSingleton') {
@@ -422,7 +421,8 @@ export default (args: Record<string, string>): rollup.RollupOptions[] => {
           path.includes('expandAbbreviation') ||
           path.includes('commentsEditorContribution') ||
           path.includes('keybindingsEditorContribution') ||
-          path.includes('preferencesSearch')
+          path.includes('preferencesSearch') ||
+          path.includes('vs/workbench/browser/actions')
       }
     },
     external,

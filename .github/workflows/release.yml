@@ -41,7 +41,7 @@ jobs:
     - name: Setup Pages
       uses: actions/configure-pages@v4
     - name: Upload demo artifact
-      uses: actions/upload-pages-artifact@v1
+      uses: actions/upload-pages-artifact@v3
       with:
         path: ./demo/dist/
         retention-days: 7
@@ -55,4 +55,4 @@ jobs:
     steps:
       - name: Deploy to GitHub Pages
         id: deployment
-        uses: actions/deploy-pages@v1
+        uses: actions/deploy-pages@v4

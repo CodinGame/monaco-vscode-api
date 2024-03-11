@@ -23,8 +23,7 @@
     "@types/ws": "^8.5.10",
     "ts-node": "^10.9.2",
     "typescript": "~5.3.3",
-    "vite": "~5.1.5",
-    "vite-plugin-static-copy": "^1.0.1"
+    "vite": "~5.1.5"
   },
   "dependencies": {
     "@codingame/monaco-vscode-accessibility-service-override": "file:../dist/service-override-accessibility",
@@ -53,6 +52,7 @@
     "@codingame/monaco-vscode-emmet-default-extension": "file:../dist/default-extension-emmet",
     "@codingame/monaco-vscode-emmet-service-override": "file:../dist/service-override-emmet",
     "@codingame/monaco-vscode-environment-service-override": "file:../dist/service-override-environment",
+    "@codingame/monaco-vscode-explorer-service-override": "file:../dist/service-override-explorer",
     "@codingame/monaco-vscode-extension-editing-default-extension": "file:../dist/default-extension-extension-editing",
     "@codingame/monaco-vscode-extension-gallery-service-override": "file:../dist/service-override-extension-gallery",
     "@codingame/monaco-vscode-extensions-service-override": "file:../dist/service-override-extensions",

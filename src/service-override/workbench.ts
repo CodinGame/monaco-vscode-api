@@ -11,8 +11,6 @@ import { ViewDescriptorService } from 'vs/workbench/services/views/browser/viewD
 import { IActivityService } from 'vs/workbench/services/activity/common/activity'
 import { ActivityService } from 'vs/workbench/services/activity/browser/activityService'
 import { IPaneCompositePartService } from 'vs/workbench/services/panecomposite/browser/panecomposite'
-import { ExplorerService } from 'vs/workbench/contrib/files/browser/explorerService'
-import { IExplorerService } from 'vs/workbench/contrib/files/browser/files'
 import { IEditorGroupsService } from 'vs/workbench/services/editor/common/editorGroupsService'
 import { IEditorService } from 'vs/workbench/services/editor/common/editorService'
 import { IEditorResolverService } from 'vs/workbench/services/editor/common/editorResolverService'
@@ -58,8 +56,6 @@ import getBannerServiceOverride from './viewBanner'
 import { getWorkbenchContainer } from '../workbench'
 import { onLayout, onRenderWorkbench } from '../lifecycle'
 import { registerAssets } from '../assets'
-import 'vs/workbench/contrib/files/browser/fileCommands'
-import 'vs/workbench/contrib/files/browser/fileActions.contribution'
 import 'vs/workbench/contrib/callHierarchy/browser/callHierarchy.contribution'
 import 'vs/workbench/contrib/typeHierarchy/browser/typeHierarchy.contribution'
 import 'vs/workbench/browser/actions/listCommands'
@@ -73,10 +69,14 @@ import 'vs/workbench/contrib/externalUriOpener/common/externalUriOpener.contribu
 import 'vs/workbench/contrib/languageStatus/browser/languageStatus.contribution'
 import 'vs/workbench/contrib/mergeEditor/browser/mergeEditor.contribution'
 import 'vs/workbench/contrib/webview/browser/webview.contribution'
-import 'vs/workbench/contrib/files/browser/files.contribution'
 import 'vs/workbench/contrib/limitIndicator/browser/limitIndicator.contribution'
 import 'vs/workbench/contrib/sash/browser/sash.contribution'
 import 'vs/workbench/contrib/preferences/browser/keyboardLayoutPicker'
+import 'vs/workbench/browser/parts/editor/editor.autosave.contribution'
+import 'vs/workbench/contrib/files/browser/files.editorPane.contribution'
+import 'vs/workbench/contrib/files/browser/fileCommands.save'
+import 'vs/workbench/browser/actions/navigationActions'
+import './tools/editorAssets'
 export * from './tools/views'
 
 let webviewIframeAlternateDomains: string | undefined
@@ -150,7 +150,6 @@ function getServiceOverride (options?: IWorkbenchOptions, _webviewIframeAlternat
     [IActivityService.toString()]: new SyncDescriptor(ActivityService, [], true),
     [IPaneCompositePartService.toString()]: new SyncDescriptor(PaneCompositePartService, [], false),
     [IHoverService.toString()]: new SyncDescriptor(HoverService, [], true),
-    [IExplorerService.toString()]: new SyncDescriptor(ExplorerService, [], true),
     [ICodeEditorService.toString()]: new SyncDescriptor(CodeEditorService, [], true),
     [ITextEditorService.toString()]: new SyncDescriptor(TextEditorService, [], false),
     [IEditorGroupsService.toString()]: new SyncDescriptor(EditorParts, [], false),

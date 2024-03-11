@@ -192,6 +192,8 @@ import { IWorkspaceTagsService } from 'vs/workbench/contrib/tags/common/workspac
 import { NoOpWorkspaceTagsService } from 'vs/workbench/contrib/tags/browser/workspaceTagsService'
 import { IExtensionFeaturesManagementService } from 'vs/workbench/services/extensionManagement/common/extensionFeatures'
 import { IEditorPaneService } from 'vs/workbench/services/editor/common/editorPaneService'
+import { IWorkspaceIdentityService } from 'vs/workbench/services/workspaces/common/workspaceIdentityService'
+import { IDefaultLogLevelsService } from 'vs/workbench/contrib/logs/common/defaultLogLevels'
 import { getBuiltInExtensionTranslationsUris } from './l10n'
 import { unsupported } from './tools'
 
@@ -3094,4 +3096,17 @@ registerSingleton(IEditorPaneService, class EditorPaneService implements IEditor
   _serviceBrand: undefined
   onWillInstantiateEditorPane = Event.None
   didInstantiateEditorPane = () => false
+}, InstantiationType.Delayed)
+
+registerSingleton(IWorkspaceIdentityService, class WorkspaceIdentityService implements IWorkspaceIdentityService {
+  _serviceBrand: undefined
+  matches = unsupported
+  getWorkspaceStateFolders = unsupported
+}, InstantiationType.Delayed)
+
+registerSingleton(IDefaultLogLevelsService, class DefaultLogLevelsService implements IDefaultLogLevelsService {
+  _serviceBrand: undefined
+  getDefaultLogLevels = unsupported
+  setDefaultLogLevel = unsupported
+  migrateLogLevels = unsupported
 }, InstantiationType.Delayed)
