@@ -167,11 +167,6 @@ window.MonacoEnvironment = {
   }
 }
 
-// Remove "account" item from activity bar
-registerWorkbenchContribution('remove-accounts', accessor => {
-  accessor.get(IStorageService).store('workbench.activity.showAccounts', false, StorageScope.APPLICATION, StorageTarget.USER)
-}, WorkbenchPhase.BlockRestore)
-
 const params = new URL(document.location.href).searchParams
 export const remoteAuthority = params.get('remoteAuthority') ?? undefined
 export const connectionToken = params.get('connectionToken') ?? undefined
@@ -281,7 +276,11 @@ export const commonServices: IEditorOverrideServices = {
   ...getMarkersServiceOverride(),
   ...getAccessibilityServiceOverride(),
   ...getLanguageDetectionWorkerServiceOverride(),
-  ...getStorageServiceOverride(),
+  ...getStorageServiceOverride({
+    fallbackOverride: {
+      'workbench.activity.showAccounts': false
+    }
+  }),
   ...getRemoteAgentServiceOverride({ scanRemoteExtensions: true }),
   ...getLifecycleServiceOverride(),
   ...getEnvironmentServiceOverride(),
