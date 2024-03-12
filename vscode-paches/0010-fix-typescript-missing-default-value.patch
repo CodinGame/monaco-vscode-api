@@ -1,7 +1,7 @@
-From 02b40ff300716dfb3ab800ac10621194d5c5d433 Mon Sep 17 00:00:00 2001
+From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
 From: =?UTF-8?q?Lo=C3=AFc=20Mangeonjean?= <loic@coderpad.io>
 Date: Mon, 11 Mar 2024 16:48:25 +0100
-Subject: [PATCH 10/58] fix(typescript): missing default value
+Subject: [PATCH] fix(typescript): missing default value
 
 ---
  extensions/typescript-language-features/web/src/pathMapper.ts | 2 +-

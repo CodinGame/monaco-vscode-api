@@ -1,7 +1,7 @@
-From 39d109f59aa34ce663a369f38a7e51a8ea82765a Mon Sep 17 00:00:00 2001
+From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
 From: =?UTF-8?q?Lo=C3=AFc=20Mangeonjean?= <loic@coderpad.io>
 Date: Mon, 11 Mar 2024 17:16:02 +0100
-Subject: [PATCH 20/58] fixup! fix: apply style only on standalone editors
+Subject: [PATCH] fixup! fix: apply style only on standalone editors
 
 ---
  src/vs/editor/test/browser/config/testConfiguration.ts | 2 +-

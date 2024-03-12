@@ -1,7 +1,7 @@
-From c816fc894631d4e10c09c613e4875d0da97100d7 Mon Sep 17 00:00:00 2001
+From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
 From: =?UTF-8?q?Lo=C3=AFc=20Mangeonjean?= <loic@coderpad.io>
 Date: Mon, 11 Mar 2024 16:40:57 +0100
-Subject: [PATCH 01/58] fix: allow importing vscode-oniguruma
+Subject: [PATCH] fix: allow importing vscode-oniguruma
 
 ---
  .eslintrc.json | 1 +

@@ -1,7 +1,7 @@
-From e72487c8dc1c7ded54f3753976c89d2e41ca5872 Mon Sep 17 00:00:00 2001
+From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
 From: =?UTF-8?q?Lo=C3=AFc=20Mangeonjean?= <loic@coderpad.io>
 Date: Mon, 11 Mar 2024 16:41:55 +0100
-Subject: [PATCH 02/58] fix: fix editor api types
+Subject: [PATCH] fix: fix editor api types
 
 ---
  build/gulpfile.editor.js | 11 ++++++++++-

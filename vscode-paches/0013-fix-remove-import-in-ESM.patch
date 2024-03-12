@@ -1,7 +1,7 @@
-From 4de935e674716989bd97c33c694fe8d316e5ffa2 Mon Sep 17 00:00:00 2001
+From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
 From: =?UTF-8?q?Lo=C3=AFc=20Mangeonjean?= <loic@coderpad.io>
 Date: Mon, 11 Mar 2024 17:11:37 +0100
-Subject: [PATCH 13/58] fix: remove import in ESM
+Subject: [PATCH] fix: remove import in ESM
 
 ---
  src/vs/base/browser/defaultWorkerFactory.ts | 2 ++

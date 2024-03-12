@@ -1,7 +1,7 @@
-From a44d5eef6d3fea3ad4c01b4f0a9963420961c7c7 Mon Sep 17 00:00:00 2001
+From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
 From: =?UTF-8?q?Lo=C3=AFc=20Mangeonjean?= <loic@coderpad.io>
 Date: Mon, 11 Mar 2024 17:11:14 +0100
-Subject: [PATCH 12/58] feat: add static asset url mechanism
+Subject: [PATCH] feat: add static asset url mechanism
 
 ---
  src/vs/base/common/network.ts                 |  45 +++-

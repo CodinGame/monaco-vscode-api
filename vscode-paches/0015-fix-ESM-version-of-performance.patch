@@ -1,7 +1,7 @@
-From e0dae16b2ad90e9ae4a31a6f5e57e326e528773e Mon Sep 17 00:00:00 2001
+From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
 From: =?UTF-8?q?Lo=C3=AFc=20Mangeonjean?= <loic@coderpad.io>
 Date: Mon, 11 Mar 2024 17:12:32 +0100
-Subject: [PATCH 15/58] fix: ESM version of performance
+Subject: [PATCH] fix: ESM version of performance
 
 ---
  src/vs/base/common/performance.js | 26 +++++++++++++++++++++++++-

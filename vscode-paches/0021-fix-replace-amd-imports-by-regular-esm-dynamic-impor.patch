@@ -1,7 +1,7 @@
-From 59061c511d5a8f0540bf414e483f29aa8f4155d3 Mon Sep 17 00:00:00 2001
+From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
 From: =?UTF-8?q?Lo=C3=AFc=20Mangeonjean?= <loic@coderpad.io>
 Date: Mon, 11 Mar 2024 17:22:31 +0100
-Subject: [PATCH 21/58] fix: replace amd imports by regular esm dynamic imports
+Subject: [PATCH] fix: replace amd imports by regular esm dynamic imports
 
 ---
  .eslintrc.json                                      |  8 --------

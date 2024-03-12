@@ -1,7 +1,7 @@
-From 724683e02b1201c946c5f50622cb665ffad1f328 Mon Sep 17 00:00:00 2001
+From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
 From: =?UTF-8?q?Lo=C3=AFc=20Mangeonjean?= <loic@coderpad.io>
 Date: Mon, 11 Mar 2024 17:12:08 +0100
-Subject: [PATCH 14/58] fix: remove ttf url search parameter breaking import
+Subject: [PATCH] fix: remove ttf url search parameter breaking import
 
 ---
  src/vs/base/browser/ui/codicons/codicon/codicon.css | 2 +-

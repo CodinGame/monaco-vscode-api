@@ -1,7 +1,7 @@
-From 24c535ceef82265bcaf1a5d901b98f0c3e717d8f Mon Sep 17 00:00:00 2001
+From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
 From: =?UTF-8?q?Lo=C3=AFc=20Mangeonjean?= <loic@coderpad.io>
 Date: Mon, 11 Mar 2024 16:44:35 +0100
-Subject: [PATCH 05/58] feat: output es2020
+Subject: [PATCH] feat: output es2020
 
 ---
  build/lib/standalone.js | 2 +-

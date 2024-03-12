@@ -1,7 +1,7 @@
-From b3ac0ff98eccedf2efcfe67a64b15008343b64f6 Mon Sep 17 00:00:00 2001
+From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
 From: =?UTF-8?q?Lo=C3=AFc=20Mangeonjean?= <loic@coderpad.io>
 Date: Mon, 11 Mar 2024 17:36:13 +0100
-Subject: [PATCH 25/58] fixup! fix: replace amd imports by regular esm dynamic
+Subject: [PATCH] fixup! fix: replace amd imports by regular esm dynamic
  imports
 
 ---

@@ -1,7 +1,7 @@
-From fcda1b6d1cec1de033f11141884363727d9dca08 Mon Sep 17 00:00:00 2001
+From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
 From: =?UTF-8?q?Lo=C3=AFc=20Mangeonjean?= <loic@coderpad.io>
 Date: Mon, 11 Mar 2024 18:19:03 +0100
-Subject: [PATCH 46/58] fixup! cleanup: remove some checks and warnings
+Subject: [PATCH] fixup! cleanup: remove some checks and warnings
 
 ---
  .../contrib/webview/browser/webviewElement.ts          | 10 ----------

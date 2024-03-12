@@ -1,7 +1,7 @@
-From f69bbad5cdfbfdd31534f6e7d30e01c7599f233b Mon Sep 17 00:00:00 2001
+From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
 From: =?UTF-8?q?Lo=C3=AFc=20Mangeonjean?= <loic@coderpad.io>
 Date: Mon, 11 Mar 2024 17:50:13 +0100
-Subject: [PATCH 36/58] fix: replace map by forEach
+Subject: [PATCH] fix: replace map by forEach
 
 ---
  src/vs/workbench/browser/parts/compositeBar.ts            | 2 +-

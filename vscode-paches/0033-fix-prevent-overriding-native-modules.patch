@@ -1,7 +1,7 @@
-From 52f92894c697406cd3d130544a66aa51039fa789 Mon Sep 17 00:00:00 2001
+From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
 From: =?UTF-8?q?Lo=C3=AFc=20Mangeonjean?= <loic@coderpad.io>
 Date: Mon, 11 Mar 2024 17:48:39 +0100
-Subject: [PATCH 33/58] fix: prevent overriding native modules
+Subject: [PATCH] fix: prevent overriding native modules
 
 ---
  src/vs/workbench/api/node/proxyResolver.ts | 8 ++++----

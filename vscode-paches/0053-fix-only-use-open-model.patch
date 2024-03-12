@@ -1,7 +1,7 @@
-From 2605674d58bdbb152525e4eda26944b41ce15e90 Mon Sep 17 00:00:00 2001
+From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
 From: =?UTF-8?q?Lo=C3=AFc=20Mangeonjean?= <loic@coderpad.io>
 Date: Mon, 11 Mar 2024 18:24:35 +0100
-Subject: [PATCH 53/58] fix: only use open model
+Subject: [PATCH] fix: only use open model
 
 ---
  .../browser/languageDetectionSimpleWorker.ts  | 61 +------------------

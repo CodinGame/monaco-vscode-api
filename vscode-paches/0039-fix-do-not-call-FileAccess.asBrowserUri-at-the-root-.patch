@@ -1,8 +1,8 @@
-From 82d7b76be9be6858c800ce69e4c972de985e45e5 Mon Sep 17 00:00:00 2001
+From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
 From: =?UTF-8?q?Lo=C3=AFc=20Mangeonjean?= <loic@coderpad.io>
 Date: Mon, 11 Mar 2024 18:15:15 +0100
-Subject: [PATCH 39/58] fix: do not call FileAccess.asBrowserUri at the root of
- the module
+Subject: [PATCH] fix: do not call FileAccess.asBrowserUri at the root of the
+ module
 
 to be able to register the file before
 ---

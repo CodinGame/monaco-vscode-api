@@ -1,0 +1,49 @@
+From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
+From: =?UTF-8?q?Lo=C3=AFc=20Mangeonjean?= <loic@coderpad.io>
+Date: Tue, 12 Mar 2024 17:03:08 +0100
+Subject: [PATCH] feat: add a way to detect if localization were already used
+
+---
+ src/vs/nls.ts | 8 ++++++++
+ 1 file changed, 8 insertions(+)
+
+diff --git a/src/vs/nls.ts b/src/vs/nls.ts
+index ff3661e3472..00b509d1b41 100644
+--- a/src/vs/nls.ts
++++ b/src/vs/nls.ts
+@@ -164,10 +164,16 @@ export function localize(data: ILocalizeInfo | string, message: string, ...args:
+ 	return _format(message, args);
+ }
+ 
++let initialized = false;
+ let locale: string | undefined = undefined;
+ let translations: Record<string, Record<string, string>> = {};
+ 
++export function isInitialized() {
++	return initialized;
++}
++
+ export function setLocale(_locale: string, _translations: Record<string, Record<string, string>>) {
++	initialized = true;
+ 	locale = _locale;
+ 	translations = _translations;
+ }
+@@ -176,6 +182,7 @@ export function setLocale(_locale: string, _translations: Record<string, Record<
+  * @skipMangle
+  */
+ export function localizeWithPath(path: string, data: ILocalizeInfo | string, defaultMessage: string, ...args: (string | number | boolean | undefined | null)[]): string {
++	initialized = true;
+ 	const key = typeof data === 'object' ? data.key : data;
+ 	const message = (translations[path] ?? {})[key] ?? defaultMessage;
+ 	return _format(message, args);
+@@ -185,6 +192,7 @@ export function localizeWithPath(path: string, data: ILocalizeInfo | string, def
+  * @skipMangle
+  */
+ export function localize2WithPath(path: string, data: ILocalizeInfo | string, defaultMessage: string, ...args: (string | number | boolean | undefined | null)[]): ILocalizedString {
++	initialized = true;
+ 	const key = typeof data === 'object' ? data.key : data;
+ 	const message = (translations[path] ?? {})[key] ?? defaultMessage;
+ 	return {
+-- 
+2.34.1
+

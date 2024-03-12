@@ -1,7 +1,7 @@
-From eb444dfb4a70d1d5464de92faf056b1687e927af Mon Sep 17 00:00:00 2001
+From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
 From: =?UTF-8?q?Lo=C3=AFc=20Mangeonjean?= <loic@coderpad.io>
 Date: Mon, 11 Mar 2024 18:23:19 +0100
-Subject: [PATCH 51/58] fixup! refactor: split code
+Subject: [PATCH] fixup! refactor: split code
 
 ---
  .../services/keybinding/browser/keybindingService.ts        | 6 +++++-

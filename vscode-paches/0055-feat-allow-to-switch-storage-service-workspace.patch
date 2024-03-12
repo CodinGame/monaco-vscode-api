@@ -1,7 +1,7 @@
-From 146eeef414318bcbcab150484c5d700754759c83 Mon Sep 17 00:00:00 2001
+From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
 From: =?UTF-8?q?Lo=C3=AFc=20Mangeonjean?= <loic@coderpad.io>
 Date: Mon, 11 Mar 2024 18:26:01 +0100
-Subject: [PATCH 55/58] feat: allow to switch storage service workspace
+Subject: [PATCH] feat: allow to switch storage service workspace
 
 ---
  .../storage/browser/storageService.ts         | 25 +++++++++++++++----

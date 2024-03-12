@@ -1,8 +1,7 @@
-From 1136962265c165887f318ba3d0f90eb9de2fea14 Mon Sep 17 00:00:00 2001
+From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
 From: =?UTF-8?q?Lo=C3=AFc=20Mangeonjean?= <loic@coderpad.io>
 Date: Mon, 11 Mar 2024 17:32:31 +0100
-Subject: [PATCH 24/58] feat: export some classes and make some methods
- accessible
+Subject: [PATCH] feat: export some classes and make some methods accessible
 
 ---
  .../browser/extensionResourceLoaderService.ts        |  2 +-

@@ -1,7 +1,7 @@
-From 8108407d456dba533370212e90adfd19ece98319 Mon Sep 17 00:00:00 2001
+From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
 From: =?UTF-8?q?Lo=C3=AFc=20Mangeonjean?= <loic@coderpad.io>
 Date: Mon, 11 Mar 2024 16:42:35 +0100
-Subject: [PATCH 03/58] fix: fix some build process edge cases
+Subject: [PATCH] fix: fix some build process edge cases
 
 ---
  build/lib/standalone.js | 7 +++++++

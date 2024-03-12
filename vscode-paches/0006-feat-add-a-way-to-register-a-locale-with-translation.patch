@@ -1,7 +1,7 @@
-From 7da0ea2de48343828487f09296ec309d4f2816cd Mon Sep 17 00:00:00 2001
+From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
 From: =?UTF-8?q?Lo=C3=AFc=20Mangeonjean?= <loic@coderpad.io>
 Date: Mon, 11 Mar 2024 16:45:29 +0100
-Subject: [PATCH 06/58] feat: add a way to register a locale with translations
+Subject: [PATCH] feat: add a way to register a locale with translations
 
 ---
  build/lib/standalone.js |  7 +++++++

@@ -1,7 +1,7 @@
-From 27246fe31bf918770171eca8dc456335c4cd4d31 Mon Sep 17 00:00:00 2001
+From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
 From: =?UTF-8?q?Lo=C3=AFc=20Mangeonjean?= <loic@coderpad.io>
 Date: Mon, 11 Mar 2024 18:27:43 +0100
-Subject: [PATCH 58/58] cleanup: remove graceful-fs
+Subject: [PATCH] cleanup: remove graceful-fs
 
 ---
  .../platform/files/node/diskFileSystemProvider.ts  | 14 --------------

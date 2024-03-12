@@ -1,7 +1,7 @@
-From 2215f84e70f386c76ce6c74d77df42b6f68afccb Mon Sep 17 00:00:00 2001
+From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
 From: =?UTF-8?q?Lo=C3=AFc=20Mangeonjean?= <loic@coderpad.io>
 Date: Mon, 11 Mar 2024 18:18:03 +0100
-Subject: [PATCH 44/58] fixup! cleanup: remove some checks and warnings
+Subject: [PATCH] fixup! cleanup: remove some checks and warnings
 
 ---
  src/vs/workbench/contrib/webview/browser/pre/service-worker.js | 3 +--

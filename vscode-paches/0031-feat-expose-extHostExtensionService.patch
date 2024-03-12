@@ -1,7 +1,7 @@
-From 0beca3776335cf03ee70b3b0893f04dec63ed2e0 Mon Sep 17 00:00:00 2001
+From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
 From: =?UTF-8?q?Lo=C3=AFc=20Mangeonjean?= <loic@coderpad.io>
 Date: Mon, 11 Mar 2024 17:47:22 +0100
-Subject: [PATCH 31/58] feat: expose extHostExtensionService
+Subject: [PATCH] feat: expose extHostExtensionService
 
 ---
  src/vs/workbench/api/common/extensionHostMain.ts | 6 +++++-

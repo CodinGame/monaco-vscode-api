@@ -1,7 +1,7 @@
-From 1560c6326b050938a29a185ca522b34f479f4842 Mon Sep 17 00:00:00 2001
+From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
 From: =?UTF-8?q?Lo=C3=AFc=20Mangeonjean?= <loic@coderpad.io>
 Date: Mon, 11 Mar 2024 17:49:14 +0100
-Subject: [PATCH 34/58] feat: expose api factory
+Subject: [PATCH] feat: expose api factory
 
 ---
  src/vs/workbench/api/worker/extHostExtensionService.ts | 7 ++++---
