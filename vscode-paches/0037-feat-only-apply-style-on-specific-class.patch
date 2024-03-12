@@ -1,7 +1,7 @@
-From ad4c750fef43f836355a0cd9194a8cdacc77f247 Mon Sep 17 00:00:00 2001
+From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
 From: =?UTF-8?q?Lo=C3=AFc=20Mangeonjean?= <loic@coderpad.io>
 Date: Mon, 11 Mar 2024 17:51:04 +0100
-Subject: [PATCH 37/58] feat: only apply style on specific class
+Subject: [PATCH] feat: only apply style on specific class
 
 ---
  src/vs/workbench/browser/media/style.css | 134 ++++++++++-------------

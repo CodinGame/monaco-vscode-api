@@ -1,7 +1,7 @@
-From a6f7a2e8627c5efc106d95066b2bfe4f6f70b930 Mon Sep 17 00:00:00 2001
+From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
 From: =?UTF-8?q?Lo=C3=AFc=20Mangeonjean?= <loic@coderpad.io>
 Date: Mon, 11 Mar 2024 17:25:46 +0100
-Subject: [PATCH 23/58] fixup! feat: add static asset url mechanism
+Subject: [PATCH] fixup! feat: add static asset url mechanism
 
 ---
  src/vs/workbench/api/common/extHost.protocol.ts | 1 +

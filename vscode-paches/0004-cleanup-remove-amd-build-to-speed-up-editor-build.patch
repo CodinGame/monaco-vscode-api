@@ -1,7 +1,7 @@
-From 6f0b37c46903402a1df195467990e443fd1a7f0c Mon Sep 17 00:00:00 2001
+From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
 From: =?UTF-8?q?Lo=C3=AFc=20Mangeonjean?= <loic@coderpad.io>
 Date: Mon, 11 Mar 2024 16:44:07 +0100
-Subject: [PATCH 04/58] cleanup: remove amd build to speed up editor build
+Subject: [PATCH] cleanup: remove amd build to speed up editor build
 
 ---
  build/gulpfile.editor.js | 15 ++++-----------

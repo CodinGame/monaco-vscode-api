@@ -1,7 +1,7 @@
-From 427d7fa82ca2ae1da2b8c6784552bebb3510a435 Mon Sep 17 00:00:00 2001
+From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
 From: =?UTF-8?q?Lo=C3=AFc=20Mangeonjean?= <loic@coderpad.io>
 Date: Mon, 11 Mar 2024 18:16:29 +0100
-Subject: [PATCH 41/58] cleanup: remove some checks and warnings
+Subject: [PATCH] cleanup: remove some checks and warnings
 
 ---
  .../auxiliaryWindow/browser/auxiliaryWindowService.ts |  7 -------

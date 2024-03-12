@@ -1,7 +1,7 @@
-From 16153ac220cf09abf17a7ff1662d692fbbeb6e99 Mon Sep 17 00:00:00 2001
+From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
 From: =?UTF-8?q?Lo=C3=AFc=20Mangeonjean?= <loic@coderpad.io>
 Date: Mon, 11 Mar 2024 18:22:48 +0100
-Subject: [PATCH 50/58] fix: only detect fullscreen if it's not a guess
+Subject: [PATCH] fix: only detect fullscreen if it's not a guess
 
 ---
  .../services/host/browser/browserHostService.ts          | 9 +++++++--

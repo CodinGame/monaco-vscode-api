@@ -1,7 +1,7 @@
-From 26a6c2cdc69046c58736a021a9052d5a34c65480 Mon Sep 17 00:00:00 2001
+From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
 From: =?UTF-8?q?Lo=C3=AFc=20Mangeonjean?= <loic@coderpad.io>
 Date: Mon, 11 Mar 2024 17:13:49 +0100
-Subject: [PATCH 16/58] fix: apply style only on standalone editors
+Subject: [PATCH] fix: apply style only on standalone editors
 
 ---
  .../browser/config/editorConfiguration.ts     | 12 ++++++--

@@ -1,7 +1,7 @@
-From 108bc5903368d15f9d32cc332d3f8457fb253cc9 Mon Sep 17 00:00:00 2001
+From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
 From: =?UTF-8?q?Lo=C3=AFc=20Mangeonjean?= <loic@coderpad.io>
 Date: Mon, 11 Mar 2024 17:46:45 +0100
-Subject: [PATCH 30/58] fix: override log services even in main thread
+Subject: [PATCH] fix: override log services even in main thread
 
 ---
  src/vs/workbench/api/common/extensionHostMain.ts       | 5 +++++

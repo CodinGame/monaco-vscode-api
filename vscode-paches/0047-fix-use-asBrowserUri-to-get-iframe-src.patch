@@ -1,7 +1,7 @@
-From 2f696f65b0e046500d4790b1e1e562703ea4f34e Mon Sep 17 00:00:00 2001
+From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
 From: =?UTF-8?q?Lo=C3=AFc=20Mangeonjean?= <loic@coderpad.io>
 Date: Mon, 11 Mar 2024 18:21:20 +0100
-Subject: [PATCH 47/58] fix: use asBrowserUri to get iframe src
+Subject: [PATCH] fix: use asBrowserUri to get iframe src
 
 ---
  src/vs/workbench/contrib/webview/browser/webviewElement.ts | 3 ++-

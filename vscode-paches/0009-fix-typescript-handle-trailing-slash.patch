@@ -1,7 +1,7 @@
-From 37cf174a96d33cf100d966a527d2e958077e3c14 Mon Sep 17 00:00:00 2001
+From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
 From: =?UTF-8?q?Lo=C3=AFc=20Mangeonjean?= <loic@coderpad.io>
 Date: Mon, 11 Mar 2024 16:47:24 +0100
-Subject: [PATCH 09/58] fix(typescript): handle trailing slash
+Subject: [PATCH] fix(typescript): handle trailing slash
 
 ---
  extensions/typescript-language-features/web/src/pathMapper.ts | 2 +-

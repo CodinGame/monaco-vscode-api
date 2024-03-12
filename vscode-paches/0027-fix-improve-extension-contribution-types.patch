@@ -1,7 +1,7 @@
-From 75a1252bf2979ab5475983ad380ecccd9288473c Mon Sep 17 00:00:00 2001
+From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
 From: =?UTF-8?q?Lo=C3=AFc=20Mangeonjean?= <loic@coderpad.io>
 Date: Mon, 11 Mar 2024 17:38:30 +0100
-Subject: [PATCH 27/58] fix: improve extension contribution types
+Subject: [PATCH] fix: improve extension contribution types
 
 ---
  .../platform/extensions/common/extensions.ts  | 1194 ++++++++++++++++-

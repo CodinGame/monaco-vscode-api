@@ -1,8 +1,8 @@
-From 910b0353811b28fbbce47e2707d70a34cc47f33b Mon Sep 17 00:00:00 2001
+From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
 From: =?UTF-8?q?Lo=C3=AFc=20Mangeonjean?= <loic@coderpad.io>
 Date: Mon, 11 Mar 2024 18:18:39 +0100
-Subject: [PATCH 45/58] fix: mark process supported as soon as there is a
- registered backend
+Subject: [PATCH] fix: mark process supported as soon as there is a registered
+ backend
 
 ---
  src/vs/workbench/contrib/terminal/browser/terminalService.ts | 5 +++--

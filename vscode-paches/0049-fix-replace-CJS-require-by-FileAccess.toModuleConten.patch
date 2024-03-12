@@ -1,7 +1,7 @@
-From 1b620e23dbdc07012f6e43998edd6cb4bbc7d058 Mon Sep 17 00:00:00 2001
+From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
 From: =?UTF-8?q?Lo=C3=AFc=20Mangeonjean?= <loic@coderpad.io>
 Date: Mon, 11 Mar 2024 18:22:25 +0100
-Subject: [PATCH 49/58] fix: replace CJS require by FileAccess.toModuleContent
+Subject: [PATCH] fix: replace CJS require by FileAccess.toModuleContent
 
 to make it work in ESM context
 ---

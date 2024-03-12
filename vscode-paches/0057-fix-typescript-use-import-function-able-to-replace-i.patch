@@ -1,8 +1,8 @@
-From bda500a3251a5eea253d69dbb81f27808744b395 Mon Sep 17 00:00:00 2001
+From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
 From: =?UTF-8?q?Lo=C3=AFc=20Mangeonjean?= <loic@coderpad.io>
 Date: Mon, 11 Mar 2024 18:27:13 +0100
-Subject: [PATCH 57/58] fix(typescript): use import function able to replace
- imported url
+Subject: [PATCH] fix(typescript): use import function able to replace imported
+ url
 
 ---
  extensions/typescript-language-features/web/src/serverHost.ts | 2 +-

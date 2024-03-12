@@ -1,7 +1,7 @@
-From 7e53575e8b8dc013d91047bdcdde8bf0d75ca1e2 Mon Sep 17 00:00:00 2001
+From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
 From: =?UTF-8?q?Lo=C3=AFc=20Mangeonjean?= <loic@coderpad.io>
 Date: Mon, 11 Mar 2024 16:46:45 +0100
-Subject: [PATCH 08/58] fix(markdown): do not encode i10l location
+Subject: [PATCH] fix(markdown): do not encode i10l location
 
 ---
  extensions/markdown-language-features/src/extension.browser.ts | 2 +-

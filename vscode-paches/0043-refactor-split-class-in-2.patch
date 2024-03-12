@@ -1,7 +1,7 @@
-From da03c4c2ff60093a267b457025b3822f7f2cd004 Mon Sep 17 00:00:00 2001
+From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
 From: =?UTF-8?q?Lo=C3=AFc=20Mangeonjean?= <loic@coderpad.io>
 Date: Mon, 11 Mar 2024 18:17:31 +0100
-Subject: [PATCH 43/58] refactor: split class in 2
+Subject: [PATCH] refactor: split class in 2
 
 ---
  .../extensions/browser/extensionService.ts    | 94 +++++++++++++++----

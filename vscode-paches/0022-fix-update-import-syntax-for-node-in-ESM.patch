@@ -1,7 +1,7 @@
-From 7468c893deb4e3b64b399318a0b8b1efc0d7f764 Mon Sep 17 00:00:00 2001
+From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
 From: =?UTF-8?q?Lo=C3=AFc=20Mangeonjean?= <loic@coderpad.io>
 Date: Mon, 11 Mar 2024 17:23:59 +0100
-Subject: [PATCH 22/58] fix: update import syntax for node in ESM
+Subject: [PATCH] fix: update import syntax for node in ESM
 
 ---
  src/vs/platform/environment/node/argv.ts                   | 2 +-

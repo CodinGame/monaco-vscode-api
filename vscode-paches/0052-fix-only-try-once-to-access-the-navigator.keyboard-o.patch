@@ -1,8 +1,7 @@
-From fcf6d85c7f4a122078cc8ca9c00cc57ee1a94951 Mon Sep 17 00:00:00 2001
+From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
 From: =?UTF-8?q?Lo=C3=AFc=20Mangeonjean?= <loic@coderpad.io>
 Date: Mon, 11 Mar 2024 18:23:55 +0100
-Subject: [PATCH 52/58] fix: only try once to access the navigator.keyboard
- object
+Subject: [PATCH] fix: only try once to access the navigator.keyboard object
 
 ---
  .../services/keybinding/browser/keyboardLayoutService.ts   | 7 +++++--

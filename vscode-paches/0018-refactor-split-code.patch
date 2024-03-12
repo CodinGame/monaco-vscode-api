@@ -1,7 +1,7 @@
-From 5e3e2281266924398533c620c26b01db4627e245 Mon Sep 17 00:00:00 2001
+From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
 From: =?UTF-8?q?Lo=C3=AFc=20Mangeonjean?= <loic@coderpad.io>
 Date: Mon, 11 Mar 2024 17:14:56 +0100
-Subject: [PATCH 18/58] refactor: split code
+Subject: [PATCH] refactor: split code
 
 ---
  src/vs/editor/standalone/browser/standaloneServices.ts | 8 ++++++--

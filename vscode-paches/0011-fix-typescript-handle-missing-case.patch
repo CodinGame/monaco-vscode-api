@@ -1,7 +1,7 @@
-From 2e0616e25fab6513e9da87c47ea6dbad6b2e0d02 Mon Sep 17 00:00:00 2001
+From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
 From: =?UTF-8?q?Lo=C3=AFc=20Mangeonjean?= <loic@coderpad.io>
 Date: Mon, 11 Mar 2024 16:50:57 +0100
-Subject: [PATCH 11/58] fix(typescript): handle missing case
+Subject: [PATCH] fix(typescript): handle missing case
 
 ---
  .../web/src/typingsInstaller/typingsInstaller.ts              | 4 +++-

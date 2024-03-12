@@ -1,7 +1,7 @@
-From 4b5c45bc335946c4760e83edcc49a104e5590c1f Mon Sep 17 00:00:00 2001
+From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
 From: =?UTF-8?q?Lo=C3=AFc=20Mangeonjean?= <loic@coderpad.io>
 Date: Mon, 11 Mar 2024 18:26:35 +0100
-Subject: [PATCH 56/58] cleanup: remove code that we will run ourselves
+Subject: [PATCH] cleanup: remove code that we will run ourselves
 
 ---
  src/vs/workbench/browser/workbench.ts | 11 -----------

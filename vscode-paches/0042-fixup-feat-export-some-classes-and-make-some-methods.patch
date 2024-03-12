@@ -1,7 +1,7 @@
-From d0564b8023c85678a7eb9c6b1e7696259053d20e Mon Sep 17 00:00:00 2001
+From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
 From: =?UTF-8?q?Lo=C3=AFc=20Mangeonjean?= <loic@coderpad.io>
 Date: Mon, 11 Mar 2024 18:17:05 +0100
-Subject: [PATCH 42/58] fixup! feat: export some classes and make some methods
+Subject: [PATCH] fixup! feat: export some classes and make some methods
  accessible
 
 ---

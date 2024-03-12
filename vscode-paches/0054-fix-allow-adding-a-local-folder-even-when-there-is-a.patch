@@ -1,8 +1,8 @@
-From 6a0f26e6f7eed4e236145eaf68ed0f5f53898964 Mon Sep 17 00:00:00 2001
+From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
 From: =?UTF-8?q?Lo=C3=AFc=20Mangeonjean?= <loic@coderpad.io>
 Date: Mon, 11 Mar 2024 18:25:28 +0100
-Subject: [PATCH 54/58] fix: allow adding a local folder even when there is a
- remote connection
+Subject: [PATCH] fix: allow adding a local folder even when there is a remote
+ connection
 
 ---
  .../workspaces/browser/abstractWorkspaceEditingService.ts  | 7 +------

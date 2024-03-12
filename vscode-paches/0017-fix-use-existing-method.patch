@@ -1,7 +1,7 @@
-From 2a22436234fd47d83e798fcd5e0f683dda6f8c81 Mon Sep 17 00:00:00 2001
+From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
 From: =?UTF-8?q?Lo=C3=AFc=20Mangeonjean?= <loic@coderpad.io>
 Date: Mon, 11 Mar 2024 17:14:41 +0100
-Subject: [PATCH 17/58] fix: use existing method
+Subject: [PATCH] fix: use existing method
 
 ---
  src/vs/editor/standalone/browser/standaloneServices.ts | 2 +-

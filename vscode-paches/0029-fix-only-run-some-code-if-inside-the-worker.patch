@@ -1,7 +1,7 @@
-From bf65674987d4be98b1608be74adda73970cfaf53 Mon Sep 17 00:00:00 2001
+From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
 From: =?UTF-8?q?Lo=C3=AFc=20Mangeonjean?= <loic@coderpad.io>
 Date: Mon, 11 Mar 2024 17:42:28 +0100
-Subject: [PATCH 29/58] fix: only run some code if inside the worker
+Subject: [PATCH] fix: only run some code if inside the worker
 
 ---
  .../workbench/api/common/extHostExtensionService.ts   | 10 ++++++----

@@ -1,7 +1,7 @@
-From 617d919a1dfb192e6ece326239248a51671b172d Mon Sep 17 00:00:00 2001
+From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
 From: =?UTF-8?q?Lo=C3=AFc=20Mangeonjean?= <loic@coderpad.io>
 Date: Mon, 11 Mar 2024 17:48:09 +0100
-Subject: [PATCH 32/58] cleanup: remove non-ESM compatible code
+Subject: [PATCH] cleanup: remove non-ESM compatible code
 
 ---
  .../workbench/api/node/extensionHostProcess.ts | 18 ------------------
