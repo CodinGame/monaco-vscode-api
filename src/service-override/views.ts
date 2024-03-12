@@ -604,6 +604,21 @@ onRenderWorkbench(async (accessor) => {
         }
       }
 
+      // If we opened a view in the sidebar, stop any restore there
+      if (locationsRestored[ViewContainerLocation.Sidebar] != null) {
+        initialLayoutState.views.containerToRestore.sideBar = locationsRestored[ViewContainerLocation.Sidebar].id
+      }
+
+      // If we opened a view in the panel, stop any restore there
+      if (locationsRestored[ViewContainerLocation.Panel] != null) {
+        initialLayoutState.views.containerToRestore.panel = locationsRestored[ViewContainerLocation.Panel].id
+      }
+
+      // If we opened a view in the auxiliary bar, stop any restore there
+      if (locationsRestored[ViewContainerLocation.AuxiliaryBar] != null) {
+        initialLayoutState.views.containerToRestore.auxiliaryBar = locationsRestored[ViewContainerLocation.AuxiliaryBar].id
+      }
+
       mark('code/didOpenDefaultViews')
     }
   })()

@@ -1,0 +1,25 @@
+From 724683e02b1201c946c5f50622cb665ffad1f328 Mon Sep 17 00:00:00 2001
+From: =?UTF-8?q?Lo=C3=AFc=20Mangeonjean?= <loic@coderpad.io>
+Date: Mon, 11 Mar 2024 17:12:08 +0100
+Subject: [PATCH 14/58] fix: remove ttf url search parameter breaking import
+
+---
+ src/vs/base/browser/ui/codicons/codicon/codicon.css | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+
+diff --git a/src/vs/base/browser/ui/codicons/codicon/codicon.css b/src/vs/base/browser/ui/codicons/codicon/codicon.css
+index 02154e77b68..d7f257db934 100644
+--- a/src/vs/base/browser/ui/codicons/codicon/codicon.css
++++ b/src/vs/base/browser/ui/codicons/codicon/codicon.css
+@@ -6,7 +6,7 @@
+ @font-face {
+ 	font-family: "codicon";
+ 	font-display: block;
+-	src: url("./codicon.ttf?5d4d76ab2ce5108968ad644d591a16a6") format("truetype");
++	src: url("./codicon.ttf") format("truetype");
+ }
+ 
+ .codicon[class*='codicon-'] {
+-- 
+2.34.1
+

@@ -237,7 +237,10 @@ export const constructOptions: IWorkbenchConstructionOptions = {
         orientation: 0,
         groups: [{ size: 1 }, { size: 1 }]
       }
-    }
+    },
+    views: [{
+      id: 'custom-view'
+    }]
   },
   welcomeBanner: {
     message: 'Welcome in monaco-vscode-api demo'

@@ -1,0 +1,26 @@
+From 2f696f65b0e046500d4790b1e1e562703ea4f34e Mon Sep 17 00:00:00 2001
+From: =?UTF-8?q?Lo=C3=AFc=20Mangeonjean?= <loic@coderpad.io>
+Date: Mon, 11 Mar 2024 18:21:20 +0100
+Subject: [PATCH 47/58] fix: use asBrowserUri to get iframe src
+
+---
+ src/vs/workbench/contrib/webview/browser/webviewElement.ts | 3 ++-
+ 1 file changed, 2 insertions(+), 1 deletion(-)
+
+diff --git a/src/vs/workbench/contrib/webview/browser/webviewElement.ts b/src/vs/workbench/contrib/webview/browser/webviewElement.ts
+index d31d55c9e01..51405ded346 100644
+--- a/src/vs/workbench/contrib/webview/browser/webviewElement.ts
++++ b/src/vs/workbench/contrib/webview/browser/webviewElement.ts
+@@ -477,7 +477,8 @@ export class WebviewElement extends Disposable implements IWebview, WebviewFindD
+ 		// Workaround for https://bugzilla.mozilla.org/show_bug.cgi?id=1754872
+ 		const fileName = isFirefox ? 'index-no-csp.html' : 'index.html';
+ 
+-		this.element!.setAttribute('src', `${this.webviewContentEndpoint(encodedWebviewOrigin)}/${fileName}?${queryString}`);
++		const relativeIframeSrc = FileAccess.asBrowserUri(`vs/workbench/contrib/webview/browser/pre/${fileName}`);
++		this.element!.setAttribute('src', `${relativeIframeSrc.toString(true)}?${queryString}`);
+ 	}
+ 
+ 	public mountTo(element: HTMLElement) {
+-- 
+2.34.1
+

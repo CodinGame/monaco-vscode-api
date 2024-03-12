@@ -1,0 +1,26 @@
+From 1516c57b26b2fca65195323964d28ce6a7f6b949 Mon Sep 17 00:00:00 2001
+From: =?UTF-8?q?Lo=C3=AFc=20Mangeonjean?= <loic@coderpad.io>
+Date: Mon, 11 Mar 2024 17:37:43 +0100
+Subject: [PATCH 26/58] fixup! feat: export some classes and make some methods
+ accessible
+
+---
+ .../common/extensionFeaturesManagemetService.ts                 | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+
+diff --git a/src/vs/workbench/services/extensionManagement/common/extensionFeaturesManagemetService.ts b/src/vs/workbench/services/extensionManagement/common/extensionFeaturesManagemetService.ts
+index 0e60b30cd13..a8fef74dbc4 100644
+--- a/src/vs/workbench/services/extensionManagement/common/extensionFeaturesManagemetService.ts
++++ b/src/vs/workbench/services/extensionManagement/common/extensionFeaturesManagemetService.ts
+@@ -27,7 +27,7 @@ interface IExtensionFeatureState {
+ 
+ const FEATURES_STATE_KEY = 'extension.features.state';
+ 
+-class ExtensionFeaturesManagementService extends Disposable implements IExtensionFeaturesManagementService {
++export class ExtensionFeaturesManagementService extends Disposable implements IExtensionFeaturesManagementService {
+ 	declare readonly _serviceBrand: undefined;
+ 
+ 	private readonly _onDidChangeEnablement = this._register(new Emitter<{ extension: ExtensionIdentifier; featureId: string; enabled: boolean }>());
+-- 
+2.34.1
+

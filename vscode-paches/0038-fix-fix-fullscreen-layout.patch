@@ -1,0 +1,29 @@
+From 3f2f0af6a250da6c08868015c377404df5c40367 Mon Sep 17 00:00:00 2001
+From: =?UTF-8?q?Lo=C3=AFc=20Mangeonjean?= <loic@coderpad.io>
+Date: Mon, 11 Mar 2024 17:51:27 +0100
+Subject: [PATCH 38/58] fix: fix fullscreen layout
+
+---
+ src/vs/workbench/browser/layout.ts | 6 ++++--
+ 1 file changed, 4 insertions(+), 2 deletions(-)
+
+diff --git a/src/vs/workbench/browser/layout.ts b/src/vs/workbench/browser/layout.ts
+index 4ee25602224..b563b949fb7 100644
+--- a/src/vs/workbench/browser/layout.ts
++++ b/src/vs/workbench/browser/layout.ts
+@@ -1541,8 +1541,10 @@ export abstract class Layout extends Disposable implements IWorkbenchLayoutServi
+ 
+ 	layout(): void {
+ 		if (!this.disposed) {
+-			this._mainContainerDimension = getClientArea(this.parent);
+-			this.logService.trace(`Layout#layout, height: ${this._mainContainerDimension.height}, width: ${this._mainContainerDimension.width}`);
++			this._mainContainerDimension = getClientArea(this.state.runtime.mainWindowFullscreen ?
++				mainWindow.document.body : 	// in fullscreen mode, make sure to use <body> element because
++				this.parent					// in that case the workbench will span the entire site
++			); this.logService.trace(`Layout#layout, height: ${this._mainContainerDimension.height}, width: ${this._mainContainerDimension.width}`);
+ 
+ 			position(this.mainContainer, 0, 0, 0, 0, 'relative');
+ 			size(this.mainContainer, this._mainContainerDimension.width, this._mainContainerDimension.height);
+-- 
+2.34.1
+

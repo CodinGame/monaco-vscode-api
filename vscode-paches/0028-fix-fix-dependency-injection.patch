@@ -1,0 +1,28 @@
+From ccc8e80c56f617f0951632fd2af833647367525d Mon Sep 17 00:00:00 2001
+From: =?UTF-8?q?Lo=C3=AFc=20Mangeonjean?= <loic@coderpad.io>
+Date: Mon, 11 Mar 2024 17:41:13 +0100
+Subject: [PATCH 28/58] fix: fix dependency injection
+
+---
+ src/vs/platform/instantiation/common/instantiationService.ts | 4 +++-
+ 1 file changed, 3 insertions(+), 1 deletion(-)
+
+diff --git a/src/vs/platform/instantiation/common/instantiationService.ts b/src/vs/platform/instantiation/common/instantiationService.ts
+index ef9ae6601ce..6182c4881a6 100644
+--- a/src/vs/platform/instantiation/common/instantiationService.ts
++++ b/src/vs/platform/instantiation/common/instantiationService.ts
+@@ -195,8 +195,10 @@ export class InstantiationService implements IInstantiationService {
+ 
+ 				if (instanceOrDesc instanceof SyncDescriptor) {
+ 					const d = { id: dependency.id, desc: instanceOrDesc, _trace: item._trace.branch(dependency.id, true) };
++					if (!graph.lookup(d)) {
++						stack.push(d);
++					}
+ 					graph.insertEdge(item, d);
+-					stack.push(d);
+ 				}
+ 			}
+ 		}
+-- 
+2.34.1
+

@@ -1,0 +1,43 @@
+From 5ef17e9f56cf78f1417c66bbad8b6291908b050c Mon Sep 17 00:00:00 2001
+From: =?UTF-8?q?Lo=C3=AFc=20Mangeonjean?= <loic@coderpad.io>
+Date: Mon, 11 Mar 2024 17:15:40 +0100
+Subject: [PATCH 19/58] cleanup: remove code already done in
+ EditorFeaturesInstantiator
+
+---
+ .../editor/standalone/browser/standaloneServices.ts  | 12 ------------
+ 1 file changed, 12 deletions(-)
+
+diff --git a/src/vs/editor/standalone/browser/standaloneServices.ts b/src/vs/editor/standalone/browser/standaloneServices.ts
+index a2565626513..d6995d24729 100644
+--- a/src/vs/editor/standalone/browser/standaloneServices.ts
++++ b/src/vs/editor/standalone/browser/standaloneServices.ts
+@@ -90,8 +90,6 @@ import { DefaultConfiguration } from 'vs/platform/configuration/common/configura
+ import { WorkspaceEdit } from 'vs/editor/common/languages';
+ import { AccessibilitySignal, IAccessibilitySignalService, Sound } from 'vs/platform/accessibilitySignal/browser/accessibilitySignalService';
+ import { LogService } from 'vs/platform/log/common/logService';
+-import { getEditorFeatures } from 'vs/editor/common/editorFeatures';
+-import { onUnexpectedError } from 'vs/base/common/errors';
+ import { ExtensionKind, IEnvironmentService, IExtensionHostDebugParams } from 'vs/platform/environment/common/environment';
+ import { mainWindow } from 'vs/base/browser/window';
+ 
+@@ -1187,16 +1185,6 @@ export module StandaloneServices {
+ 			}
+ 		}
+ 
+-		// Instantiate all editor features
+-		const editorFeatures = getEditorFeatures();
+-		for (const feature of editorFeatures) {
+-			try {
+-				instantiationService.createInstance(feature);
+-			} catch (err) {
+-				onUnexpectedError(err);
+-			}
+-		}
+-
+ 		onDidInitialize.fire();
+ 
+ 		return instantiationService;
+-- 
+2.34.1
+

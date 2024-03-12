@@ -7,7 +7,7 @@ output_directory="`pwd`/vscode"
 loc_output_directory="`pwd`/vscode-loc"
 extension_output_directory="`pwd`/vscode-default-extensions"
 extension_node_output_directory="`pwd`/vscode-default-extensions-node"
-patch_file="`pwd`/scripts/vscode.patch"
+patch_directory="`pwd`/vscode-paches"
 version_info=$output_directory/version.info
 
 if [[ -e $version_info && $(cat $version_info) == $vscodeRef ]]; then
@@ -34,7 +34,7 @@ yarn install --ignore-scripts
 yarn postinstall || true
 
 echo "Patching vscode..."
-patch -p1 < $patch_file
+find "$patch_directory" -type f -name '*.patch' -print0 | sort -z | xargs -t -0 -n 1 patch -p1 -i
 
 echo "Installing build dependencies"
 cd build

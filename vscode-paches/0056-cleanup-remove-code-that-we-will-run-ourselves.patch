@@ -1,0 +1,49 @@
+From 4b5c45bc335946c4760e83edcc49a104e5590c1f Mon Sep 17 00:00:00 2001
+From: =?UTF-8?q?Lo=C3=AFc=20Mangeonjean?= <loic@coderpad.io>
+Date: Mon, 11 Mar 2024 18:26:35 +0100
+Subject: [PATCH 56/58] cleanup: remove code that we will run ourselves
+
+---
+ src/vs/workbench/browser/workbench.ts | 11 -----------
+ 1 file changed, 11 deletions(-)
+
+diff --git a/src/vs/workbench/browser/workbench.ts b/src/vs/workbench/browser/workbench.ts
+index 56e9b6f58cf..bea66a053e5 100644
+--- a/src/vs/workbench/browser/workbench.ts
++++ b/src/vs/workbench/browser/workbench.ts
+@@ -11,10 +11,7 @@ import { RunOnceScheduler, timeout } from 'vs/base/common/async';
+ import { isFirefox, isSafari, isChrome } from 'vs/base/browser/browser';
+ import { mark } from 'vs/base/common/performance';
+ import { onUnexpectedError, setUnexpectedErrorHandler } from 'vs/base/common/errors';
+-import { Registry } from 'vs/platform/registry/common/platform';
+ import { isWindows, isLinux, isWeb, isNative, isMacintosh } from 'vs/base/common/platform';
+-import { IWorkbenchContributionsRegistry, Extensions as WorkbenchExtensions } from 'vs/workbench/common/contributions';
+-import { IEditorFactoryRegistry, EditorExtensions } from 'vs/workbench/common/editor';
+ import { getSingletonServiceDescriptors } from 'vs/platform/instantiation/common/extensions';
+ import { Position, Parts, IWorkbenchLayoutService, positionToString } from 'vs/workbench/services/layout/browser/layoutService';
+ import { IStorageService, WillSaveStateReason, StorageScope, StorageTarget } from 'vs/platform/storage/common/storage';
+@@ -35,7 +32,6 @@ import { FontMeasurements } from 'vs/editor/browser/config/fontMeasurements';
+ import { BareFontInfo } from 'vs/editor/common/config/fontInfo';
+ import { ILogService } from 'vs/platform/log/common/log';
+ import { toErrorMessage } from 'vs/base/common/errorMessage';
+-import { WorkbenchContextKeysHandler } from 'vs/workbench/browser/contextkeys';
+ import { coalesce } from 'vs/base/common/arrays';
+ import { InstantiationService } from 'vs/platform/instantiation/common/instantiationService';
+ import { Layout } from 'vs/workbench/browser/layout';
+@@ -161,13 +157,6 @@ export class Workbench extends Layout {
+ 				// Layout
+ 				this.initLayout(accessor);
+ 
+-				// Registries
+-				Registry.as<IWorkbenchContributionsRegistry>(WorkbenchExtensions.Workbench).start(accessor);
+-				Registry.as<IEditorFactoryRegistry>(EditorExtensions.EditorFactory).start(accessor);
+-
+-				// Context Keys
+-				this._register(instantiationService.createInstance(WorkbenchContextKeysHandler));
+-
+ 				// Register Listeners
+ 				this.registerListeners(lifecycleService, storageService, configurationService, hostService, dialogService);
+ 
+-- 
+2.34.1
+

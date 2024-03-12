@@ -1,0 +1,74 @@
+From 427d7fa82ca2ae1da2b8c6784552bebb3510a435 Mon Sep 17 00:00:00 2001
+From: =?UTF-8?q?Lo=C3=AFc=20Mangeonjean?= <loic@coderpad.io>
+Date: Mon, 11 Mar 2024 18:16:29 +0100
+Subject: [PATCH 41/58] cleanup: remove some checks and warnings
+
+---
+ .../auxiliaryWindow/browser/auxiliaryWindowService.ts |  7 -------
+ .../extensions/browser/webWorkerExtensionHost.ts      |  2 --
+ .../services/textMate/common/TMScopeRegistry.ts       | 11 -----------
+ 3 files changed, 20 deletions(-)
+
+diff --git a/src/vs/workbench/services/auxiliaryWindow/browser/auxiliaryWindowService.ts b/src/vs/workbench/services/auxiliaryWindow/browser/auxiliaryWindowService.ts
+index ce6f32b0914..4fe4fb39bd7 100644
+--- a/src/vs/workbench/services/auxiliaryWindow/browser/auxiliaryWindowService.ts
++++ b/src/vs/workbench/services/auxiliaryWindow/browser/auxiliaryWindowService.ts
+@@ -302,13 +302,6 @@ export class BrowserAuxiliaryWindowService extends Disposable implements IAuxili
+ 	}
+ 
+ 	protected patchMethods(auxiliaryWindow: CodeWindow): void {
+-
+-		// Disallow `createElement` because it would create
+-		// HTML Elements in the "wrong" context and break
+-		// code that does "instanceof HTMLElement" etc.
+-		auxiliaryWindow.document.createElement = function () {
+-			throw new Error('Not allowed to create elements in child window JavaScript context. Always use the main window so that "xyz instanceof HTMLElement" continues to work.');
+-		};
+ 	}
+ 
+ 	private applyMeta(auxiliaryWindow: CodeWindow): void {
+diff --git a/src/vs/workbench/services/extensions/browser/webWorkerExtensionHost.ts b/src/vs/workbench/services/extensions/browser/webWorkerExtensionHost.ts
+index a5f5e42eddd..7d462411a9c 100644
+--- a/src/vs/workbench/services/extensions/browser/webWorkerExtensionHost.ts
++++ b/src/vs/workbench/services/extensions/browser/webWorkerExtensionHost.ts
+@@ -111,8 +111,6 @@ export class WebWorkerExtensionHost extends Disposable implements IExtensionHost
+ 				res.searchParams.set('salt', stableOriginUUID);
+ 				return res.toString();
+ 			}
+-
+-			console.warn(`The web worker extension host is started in a same-origin iframe!`);
+ 		}
+ 
+ 		const relativeExtensionHostIframeSrc = FileAccess.asBrowserUri(iframeModulePath);
+diff --git a/src/vs/workbench/services/textMate/common/TMScopeRegistry.ts b/src/vs/workbench/services/textMate/common/TMScopeRegistry.ts
+index a1a0779371e..18ca6d1b496 100644
+--- a/src/vs/workbench/services/textMate/common/TMScopeRegistry.ts
++++ b/src/vs/workbench/services/textMate/common/TMScopeRegistry.ts
+@@ -3,7 +3,6 @@
+  *  Licensed under the MIT License. See License.txt in the project root for license information.
+  *--------------------------------------------------------------------------------------------*/
+ 
+-import * as resources from 'vs/base/common/resources';
+ import { URI } from 'vs/base/common/uri';
+ import { LanguageId, StandardTokenType } from 'vs/editor/common/encodedTokenAttributes';
+ 
+@@ -40,16 +39,6 @@ export class TMScopeRegistry {
+ 	}
+ 
+ 	public register(def: IValidGrammarDefinition): void {
+-		if (this._scopeNameToLanguageRegistration[def.scopeName]) {
+-			const existingRegistration = this._scopeNameToLanguageRegistration[def.scopeName];
+-			if (!resources.isEqual(existingRegistration.location, def.location)) {
+-				console.warn(
+-					`Overwriting grammar scope name to file mapping for scope ${def.scopeName}.\n` +
+-					`Old grammar file: ${existingRegistration.location.toString()}.\n` +
+-					`New grammar file: ${def.location.toString()}`
+-				);
+-			}
+-		}
+ 		this._scopeNameToLanguageRegistration[def.scopeName] = def;
+ 	}
+ 
+-- 
+2.34.1
+

@@ -1,0 +1,38 @@
+From 5e3e2281266924398533c620c26b01db4627e245 Mon Sep 17 00:00:00 2001
+From: =?UTF-8?q?Lo=C3=AFc=20Mangeonjean?= <loic@coderpad.io>
+Date: Mon, 11 Mar 2024 17:14:56 +0100
+Subject: [PATCH 18/58] refactor: split code
+
+---
+ src/vs/editor/standalone/browser/standaloneServices.ts | 8 ++++++--
+ 1 file changed, 6 insertions(+), 2 deletions(-)
+
+diff --git a/src/vs/editor/standalone/browser/standaloneServices.ts b/src/vs/editor/standalone/browser/standaloneServices.ts
+index cf0f43c7d48..a2565626513 100644
+--- a/src/vs/editor/standalone/browser/standaloneServices.ts
++++ b/src/vs/editor/standalone/browser/standaloneServices.ts
+@@ -525,15 +525,19 @@ export class StandaloneKeybindingService extends AbstractKeybindingService {
+ 		});
+ 	}
+ 
+-	private updateResolver(): void {
++	protected updateResolver(): void {
+ 		this._cachedResolver = null;
+ 		this._onDidUpdateKeybindings.fire();
+ 	}
+ 
++	protected getUserKeybindingItems() {
++		return this._toNormalizedKeybindingItems(this._dynamicKeybindings, false);
++	}
++
+ 	protected _getResolver(): KeybindingResolver {
+ 		if (!this._cachedResolver) {
+ 			const defaults = this._toNormalizedKeybindingItems(KeybindingsRegistry.getDefaultKeybindings(), true);
+-			const overrides = this._toNormalizedKeybindingItems(this._dynamicKeybindings, false);
++			const overrides = this.getUserKeybindingItems();
+ 			this._cachedResolver = new KeybindingResolver(defaults, overrides, (str) => this._log(str));
+ 		}
+ 		return this._cachedResolver;
+-- 
+2.34.1
+

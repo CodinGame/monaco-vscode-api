@@ -1,0 +1,39 @@
+From 24c535ceef82265bcaf1a5d901b98f0c3e717d8f Mon Sep 17 00:00:00 2001
+From: =?UTF-8?q?Lo=C3=AFc=20Mangeonjean?= <loic@coderpad.io>
+Date: Mon, 11 Mar 2024 16:44:35 +0100
+Subject: [PATCH 05/58] feat: output es2020
+
+---
+ build/lib/standalone.js | 2 +-
+ build/lib/standalone.ts | 2 +-
+ 2 files changed, 2 insertions(+), 2 deletions(-)
+
+diff --git a/build/lib/standalone.js b/build/lib/standalone.js
+index d24023726cd..2ffc91efc9c 100644
+--- a/build/lib/standalone.js
++++ b/build/lib/standalone.js
+@@ -134,7 +134,7 @@ function createESMSourcesAndResources2(options) {
+         }
+         if (file === 'tsconfig.json') {
+             const tsConfig = JSON.parse(fs.readFileSync(path.join(SRC_FOLDER, file)).toString());
+-            tsConfig.compilerOptions.module = 'es6';
++            tsConfig.compilerOptions.module = 'es2020';
+             tsConfig.compilerOptions.outDir = path.join(path.relative(OUT_FOLDER, OUT_RESOURCES_FOLDER), 'vs').replace(/\\/g, '/');
+             write(getDestAbsoluteFilePath(file), JSON.stringify(tsConfig, null, '\t'));
+             continue;
+diff --git a/build/lib/standalone.ts b/build/lib/standalone.ts
+index ce8435bd920..90517a9236f 100644
+--- a/build/lib/standalone.ts
++++ b/build/lib/standalone.ts
+@@ -160,7 +160,7 @@ export function createESMSourcesAndResources2(options: IOptions2): void {
+ 
+ 		if (file === 'tsconfig.json') {
+ 			const tsConfig = JSON.parse(fs.readFileSync(path.join(SRC_FOLDER, file)).toString());
+-			tsConfig.compilerOptions.module = 'es6';
++			tsConfig.compilerOptions.module = 'es2020';
+ 			tsConfig.compilerOptions.outDir = path.join(path.relative(OUT_FOLDER, OUT_RESOURCES_FOLDER), 'vs').replace(/\\/g, '/');
+ 			write(getDestAbsoluteFilePath(file), JSON.stringify(tsConfig, null, '\t'));
+ 			continue;
+-- 
+2.34.1
+
