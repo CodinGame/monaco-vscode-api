@@ -26,8 +26,8 @@ import { logsPath } from '../workbench'
 import 'vs/workbench/contrib/files/browser/files.configuration.contribution'
 
 abstract class RegisteredFile {
-  private ctime: number
-  private mtime: number
+  protected ctime: number
+  protected mtime: number
   public readonly type: FileType
 
   protected _onDidChange = new Emitter<void>()
