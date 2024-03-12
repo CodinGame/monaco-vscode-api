@@ -53,7 +53,7 @@ async function readVsix (file: string): Promise<IFs> {
 }
 
 function getVsixPath (file: string) {
-  return path.relative('/', path.resolve('/', file))
+  return path.posix.relative('/', path.posix.resolve('/', file))
 }
 
 export default function plugin ({

@@ -62,7 +62,7 @@ class ExtensionManagementServerServiceOverride extends ExtensionManagementServer
     @ILabelService readonly labelService: ILabelService,
     @IInstantiationService readonly instantiationService: IInstantiationService
   ) {
-    super(isWebOnly ? remoteAgentService : new EmptyRemoteAgentService(), labelService, instantiationService)
+    super(isWebOnly ? new EmptyRemoteAgentService() : remoteAgentService, labelService, instantiationService)
   }
 }
 

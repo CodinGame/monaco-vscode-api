@@ -2,7 +2,7 @@ import getConfigurationServiceOverride, { IStoredWorkspace, initUserConfiguratio
 import getKeybindingsServiceOverride, { initUserKeybindings } from '@codingame/monaco-vscode-keybindings-service-override'
 import { RegisteredFileSystemProvider, RegisteredMemoryFile, RegisteredReadOnlyFile, createIndexedDBProviders, initFile, registerFileSystemOverlay } from '@codingame/monaco-vscode-files-service-override'
 import * as monaco from 'monaco-editor'
-import { IWorkbenchConstructionOptions, LogLevel, IEditorOverrideServices, registerWorkbenchContribution, WorkbenchPhase, IStorageService, StorageScope, StorageTarget } from 'vscode/services'
+import { IWorkbenchConstructionOptions, LogLevel, IEditorOverrideServices } from 'vscode/services'
 import * as vscode from 'vscode'
 import getModelServiceOverride from '@codingame/monaco-vscode-model-service-override'
 import getNotificationServiceOverride from '@codingame/monaco-vscode-notifications-service-override'
@@ -167,11 +167,6 @@ window.MonacoEnvironment = {
   }
 }
 
-// Remove "account" item from activity bar
-registerWorkbenchContribution('remove-accounts', accessor => {
-  accessor.get(IStorageService).store('workbench.activity.showAccounts', false, StorageScope.APPLICATION, StorageTarget.USER)
-}, WorkbenchPhase.BlockRestore)
-
 const params = new URL(document.location.href).searchParams
 export const remoteAuthority = params.get('remoteAuthority') ?? undefined
 export const connectionToken = params.get('connectionToken') ?? undefined
@@ -284,7 +279,11 @@ export const commonServices: IEditorOverrideServices = {
   ...getMarkersServiceOverride(),
   ...getAccessibilityServiceOverride(),
   ...getLanguageDetectionWorkerServiceOverride(),
-  ...getStorageServiceOverride(),
+  ...getStorageServiceOverride({
+    fallbackOverride: {
+      'workbench.activity.showAccounts': false
+    }
+  }),
   ...getRemoteAgentServiceOverride({ scanRemoteExtensions: true }),
   ...getLifecycleServiceOverride(),
   ...getEnvironmentServiceOverride(),
