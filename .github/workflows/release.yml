@@ -7,6 +7,7 @@ permissions:
   pull-requests: write # to be able to comment on released pull requests
   pages: write         # to deploy to Pages
   id-token: write      # to verify the deployment originates from an appropriate source
+  deployments: write
 
 jobs:
   release:
