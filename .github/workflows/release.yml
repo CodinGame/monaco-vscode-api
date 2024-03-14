@@ -8,6 +8,7 @@ permissions:
   pages: write         # to deploy to Pages
   id-token: write      # to verify the deployment originates from an appropriate source
   deployments: write
+  statuses: write
 
 jobs:
   release:
