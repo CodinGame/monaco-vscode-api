@@ -9,7 +9,7 @@
     "start": "NODE_OPTIONS=--experimental-import-meta-resolve vite --config vite.config.ts",
     "start:debug": "vite --config vite.config.ts --debug --force",
     "build": "vite --config vite.config.ts build",
-    "build:github": "tsc --noEmit && vite --config vite.github-page.config.ts build && touch dist/.nojekyll",
+    "build:netlify": "tsc --noEmit && vite --config vite.netlify.config.ts build",
     "start:debugServer": "node --loader ts-node/esm src/debugServer.ts",
     "start:extHostServer": "WEB_ENDPOINT_URL_TEMPLATE=http://localhost:5173/ vscode-ext-host-server --without-connection-token"
   },
