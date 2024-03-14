@@ -43,6 +43,10 @@ abstract class RegisteredFile {
     this.ctime = Date.now()
     this.mtime = Date.now()
     this.type = FileType.File
+
+    this.onDidChange(() => {
+      this.mtime = Date.now()
+    })
   }
 
   async stats (): Promise<IStat> {
