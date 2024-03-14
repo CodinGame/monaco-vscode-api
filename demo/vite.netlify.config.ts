@@ -10,7 +10,6 @@ export default defineConfig({
   worker: {
     format: 'es'
   },
-  base: 'https://codingame.github.io/monaco-vscode-api',
   resolve: {
     dedupe: ['vscode', ...localDependencies]
   }

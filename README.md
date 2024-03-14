@@ -405,7 +405,7 @@ This library also offers the possibility to localize vscode and the extensions i
 
 ### Demo
 
-Try it out on https://codingame.github.io/monaco-vscode-api/
+Try it out on https://monaco-vscode-api.netlify.app/
 
 There is a demo that showcases the service-override features. It allows to register contributions with the same syntaxes as in VSCode.
 It includes:
