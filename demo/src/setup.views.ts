@@ -36,6 +36,7 @@ container.innerHTML = `
     <button id="filesystem">Attach filesystem</button>
     <button id="customEditorPanel">Open custom editor panel</button>
     <button id="clearStorage">Clear user data</button>
+    <button id="resetLayout">Reset layout</button>
     <button id="toggleFullWorkbench">Switch to full workbench mode</button>
     <br />
     <button id="togglePanel">Toggle Panel</button>

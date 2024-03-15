@@ -167,10 +167,15 @@ window.MonacoEnvironment = {
   }
 }
 
-const params = new URL(document.location.href).searchParams
+const url = new URL(document.location.href)
+const params = url.searchParams
 export const remoteAuthority = params.get('remoteAuthority') ?? undefined
 export const connectionToken = params.get('connectionToken') ?? undefined
 export const remotePath = remoteAuthority != null ? params.get('remotePath') ?? undefined : undefined
+export const resetLayout = params.has('resetLayout')
+params.delete('resetLayout')
+
+window.history.replaceState({}, document.title, url.href)
 
 // Set configuration before initializing service so it's directly available (especially for the theme, to prevent a flicker)
 export const workspaceFile = monaco.Uri.file('/workspace.code-workspace')
@@ -235,7 +240,8 @@ export const constructOptions: IWorkbenchConstructionOptions = {
     },
     views: [{
       id: 'custom-view'
-    }]
+    }],
+    force: resetLayout
   },
   welcomeBanner: {
     message: 'Welcome in monaco-vscode-api demo'
