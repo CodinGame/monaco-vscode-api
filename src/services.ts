@@ -16,7 +16,7 @@ import { DisposableStore, IDisposable } from 'vs/base/common/lifecycle'
 import { IWorkbenchConstructionOptions } from 'vs/workbench/browser/web.api'
 import { IProductConfiguration } from 'vs/base/common/product'
 import { ILazyWorkbenchContributionInstantiation, IOnEditorWorkbenchContributionInstantiation, IWorkbenchContribution, WorkbenchContributionInstantiation, WorkbenchPhase, registerWorkbenchContribution2 } from 'vs/workbench/common/contributions'
-import { initialize as initializeWorkbench } from './workbench'
+import { EnvironmentOverride, initialize as initializeWorkbench } from './workbench'
 import { checkServicesNotInitialized, checkServicesReady, serviceInitializedBarrier, serviceInitializedEmitter, startup, waitServicesReady } from './lifecycle'
 import getQuickAccessOverride from './service-override/quickaccess'
 import getFileServiceOverride from './service-override/files'
@@ -26,10 +26,10 @@ import getLayoutServiceOverride from './service-override/layout'
 import getHostServiceOverride from './service-override/host'
 import getBaseServiceOverride from './service-override/base'
 
-export async function initialize (overrides: IEditorOverrideServices, container: HTMLElement = document.body, configuration: IWorkbenchConstructionOptions = {}): Promise<void> {
+export async function initialize (overrides: IEditorOverrideServices, container: HTMLElement = document.body, configuration: IWorkbenchConstructionOptions = {}, env?: EnvironmentOverride): Promise<void> {
   checkServicesNotInitialized()
 
-  initializeWorkbench(container, configuration)
+  initializeWorkbench(container, configuration, env)
 
   const instantiationService = StandaloneServices.initialize({
     [IProductService.toString()]: mixin(<Partial<IProductConfiguration>>{

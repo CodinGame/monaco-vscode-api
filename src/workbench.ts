@@ -5,8 +5,13 @@ import { getSingleFolderWorkspaceIdentifier, getWorkspaceIdentifier as getWorksp
 import { URI } from 'vs/base/common/uri'
 import { toLocalISOString } from 'vs/base/common/date'
 
+export interface EnvironmentOverride {
+  userHome?: URI
+}
+
 let workbenchContainer: HTMLElement = document.body
 let workbenchConstructionOptions: IWorkbenchConstructionOptions = {}
+let environmentOverride: EnvironmentOverride = {}
 let workspaceIdentifier: IAnyWorkspaceIdentifier = UNKNOWN_EMPTY_WINDOW_WORKSPACE
 export const logsPath = URI.file(toLocalISOString(new Date()).replace(/-|:|\.\d+Z$/g, '')).with({ scheme: 'vscode-log' })
 
@@ -16,6 +21,10 @@ export function getWorkbenchContainer (): HTMLElement {
 
 export function getWorkbenchConstructionOptions (): IWorkbenchConstructionOptions {
   return workbenchConstructionOptions
+}
+
+export function getEnvironmentOverride (): EnvironmentOverride {
+  return environmentOverride
 }
 
 export function getWorkspaceIdentifier (): IAnyWorkspaceIdentifier {
@@ -42,8 +51,9 @@ function resolveWorkspace (configuration: IWorkbenchConstructionOptions): IAnyWo
   return UNKNOWN_EMPTY_WINDOW_WORKSPACE
 }
 
-export function initialize (container: HTMLElement, options: IWorkbenchConstructionOptions): void {
+export function initialize (container: HTMLElement, options: IWorkbenchConstructionOptions, env: EnvironmentOverride = {}): void {
   workbenchContainer = container
   workbenchConstructionOptions = options
+  environmentOverride = env
   workspaceIdentifier = resolveWorkspace(options)
 }
