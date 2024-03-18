@@ -17,6 +17,9 @@ import { ICanonicalUriService } from 'vs/platform/workspace/common/canonicalUri'
 import { IUserActivityService, UserActivityService } from 'vs/workbench/services/userActivity/common/userActivityService'
 import { IDownloadService } from 'vs/platform/download/common/download'
 import { DownloadService } from 'vs/platform/download/common/downloadService'
+import { IPathService } from 'vs/workbench/services/path/common/pathService'
+import { IWorkingCopyFileService, WorkingCopyFileService } from 'vs/workbench/services/workingCopy/common/workingCopyFileService'
+import { BrowserPathService } from 'vs/workbench/services/path/browser/pathService'
 
 export default function getServiceOverride (): IEditorOverrideServices {
   return {
@@ -28,6 +31,8 @@ export default function getServiceOverride (): IEditorOverrideServices {
     [ITreeViewsService.toString()]: new SyncDescriptor(TreeviewsService, [], true),
     [IURLService.toString()]: new SyncDescriptor(BrowserURLService, [], true),
     [ICanonicalUriService.toString()]: new SyncDescriptor(CanonicalUriService, [], false),
-    [IUserActivityService.toString()]: new SyncDescriptor(UserActivityService, [], true)
+    [IUserActivityService.toString()]: new SyncDescriptor(UserActivityService, [], true),
+    [IWorkingCopyFileService.toString()]: new SyncDescriptor(WorkingCopyFileService, [], false),
+    [IPathService.toString()]: new SyncDescriptor(BrowserPathService, [], true)
   }
 }
