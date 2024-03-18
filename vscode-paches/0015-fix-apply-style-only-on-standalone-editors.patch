@@ -9,7 +9,9 @@ Subject: [PATCH] fix: apply style only on standalone editors
  .../widget/diffEditor/diffEditorWidget.ts     |  8 ++++++
  .../standalone/browser/standalone-tokens.css  | 28 +++++++++----------
  .../browser/standaloneCodeEditor.ts           |  4 +--
- 5 files changed, 42 insertions(+), 22 deletions(-)
+ .../test/browser/config/testConfiguration.ts  |  2 +-
+ src/vs/editor/test/browser/testCodeEditor.ts  |  2 +-
+ 7 files changed, 44 insertions(+), 24 deletions(-)
 
 diff --git a/src/vs/editor/browser/config/editorConfiguration.ts b/src/vs/editor/browser/config/editorConfiguration.ts
 index 06e8339cbc7..799c2f81cd0 100644
@@ -213,6 +215,32 @@ index 479bb75745c..f5b5da97a2c 100644
  			contextKeyService,
  			instantiationService,
  			codeEditorService,
+diff --git a/src/vs/editor/test/browser/config/testConfiguration.ts b/src/vs/editor/test/browser/config/testConfiguration.ts
+index b5d42908ded..3815f8fb823 100644
+--- a/src/vs/editor/test/browser/config/testConfiguration.ts
++++ b/src/vs/editor/test/browser/config/testConfiguration.ts
+@@ -13,7 +13,7 @@ import { TestAccessibilityService } from 'vs/platform/accessibility/test/common/
+ export class TestConfiguration extends EditorConfiguration {
+ 
+ 	constructor(opts: Readonly<TestCodeEditorCreationOptions>) {
+-		super(false, opts, null, new TestAccessibilityService());
++		super(false, false, opts, null, new TestAccessibilityService());
+ 	}
+ 
+ 	protected override _readEnvConfiguration(): IEnvConfiguration {
+diff --git a/src/vs/editor/test/browser/testCodeEditor.ts b/src/vs/editor/test/browser/testCodeEditor.ts
+index b29e05c8053..f941b3a248f 100644
+--- a/src/vs/editor/test/browser/testCodeEditor.ts
++++ b/src/vs/editor/test/browser/testCodeEditor.ts
+@@ -68,7 +68,7 @@ export interface ITestCodeEditor extends IActiveCodeEditor {
+ export class TestCodeEditor extends CodeEditorWidget implements ICodeEditor {
+ 
+ 	//#region testing overrides
+-	protected override _createConfiguration(isSimpleWidget: boolean, options: Readonly<TestCodeEditorCreationOptions>): EditorConfiguration {
++	protected override _createConfiguration(isSimpleWidget: boolean, isStandaloneEditor: boolean, options: Readonly<TestCodeEditorCreationOptions>): EditorConfiguration {
+ 		return new TestConfiguration(options);
+ 	}
+ 	protected override _createView(viewModel: ViewModel): [View, boolean] {
 -- 
 2.34.1
 

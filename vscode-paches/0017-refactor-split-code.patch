@@ -4,8 +4,9 @@ Date: Mon, 11 Mar 2024 17:14:56 +0100
 Subject: [PATCH] refactor: split code
 
 ---
- src/vs/editor/standalone/browser/standaloneServices.ts | 8 ++++++--
- 1 file changed, 6 insertions(+), 2 deletions(-)
+ src/vs/editor/standalone/browser/standaloneServices.ts    | 8 ++++++--
+ .../services/keybinding/browser/keybindingService.ts      | 6 +++++-
+ 2 files changed, 11 insertions(+), 3 deletions(-)
 
 diff --git a/src/vs/editor/standalone/browser/standaloneServices.ts b/src/vs/editor/standalone/browser/standaloneServices.ts
 index cf0f43c7d48..a2565626513 100644
@@ -29,6 +30,26 @@ index cf0f43c7d48..a2565626513 100644
  		if (!this._cachedResolver) {
  			const defaults = this._toNormalizedKeybindingItems(KeybindingsRegistry.getDefaultKeybindings(), true);
 -			const overrides = this._toNormalizedKeybindingItems(this._dynamicKeybindings, false);
++			const overrides = this.getUserKeybindingItems();
+ 			this._cachedResolver = new KeybindingResolver(defaults, overrides, (str) => this._log(str));
+ 		}
+ 		return this._cachedResolver;
+diff --git a/src/vs/workbench/services/keybinding/browser/keybindingService.ts b/src/vs/workbench/services/keybinding/browser/keybindingService.ts
+index 708268ba3c3..c2cee773044 100644
+--- a/src/vs/workbench/services/keybinding/browser/keybindingService.ts
++++ b/src/vs/workbench/services/keybinding/browser/keybindingService.ts
+@@ -428,10 +428,14 @@ export class WorkbenchKeybindingService extends AbstractKeybindingService {
+ 		this._onDidUpdateKeybindings.fire();
+ 	}
+ 
++	protected getUserKeybindingItems() {
++		return this._resolveUserKeybindingItems(this.userKeybindings.keybindings, false);
++	}
++
+ 	protected _getResolver(): KeybindingResolver {
+ 		if (!this._cachedResolver) {
+ 			const defaults = this._resolveKeybindingItems(KeybindingsRegistry.getDefaultKeybindings(), true);
+-			const overrides = this._resolveUserKeybindingItems(this.userKeybindings.keybindings, false);
 +			const overrides = this.getUserKeybindingItems();
  			this._cachedResolver = new KeybindingResolver(defaults, overrides, (str) => this._log(str));
  		}
