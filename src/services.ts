@@ -26,7 +26,7 @@ import getLayoutServiceOverride from './service-override/layout'
 import getHostServiceOverride from './service-override/host'
 import getBaseServiceOverride from './service-override/base'
 
-export async function initialize (overrides: IEditorOverrideServices, container: HTMLElement = document.body, configuration: IWorkbenchConstructionOptions = {}, productConfiguration: Partial<IProductConfiguration> = {}): Promise<void> {
+export async function initialize (overrides: IEditorOverrideServices, container: HTMLElement = document.body, configuration: IWorkbenchConstructionOptions = {}): Promise<void> {
   checkServicesNotInitialized()
 
   initializeWorkbench(container, configuration)
@@ -44,8 +44,7 @@ export async function initialize (overrides: IEditorOverrideServices, container:
       reportIssueUrl: 'https://github.com/microsoft/vscode/issues/new',
       licenseName: 'MIT',
       licenseUrl: 'https://github.com/microsoft/vscode/blob/main/LICENSE.txt',
-      serverApplicationName: 'code-server-oss',
-      ...productConfiguration
+      serverApplicationName: 'code-server-oss'
     }, configuration.productConfiguration ?? {}),
     ...getLayoutServiceOverride(), // Always override layout service to break cyclic dependency with ICodeEditorService
     ...getEnvironmentServiceOverride(),
