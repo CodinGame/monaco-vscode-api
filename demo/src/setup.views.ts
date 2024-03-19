@@ -87,13 +87,7 @@ document.body.append(container)
 // Override services
 await initializeMonacoService({
   ...commonServices,
-  ...getViewsServiceOverride(openNewCodeEditor, undefined, state => ({
-    ...state,
-    editor: {
-      ...state.editor,
-      restoreEditors: true
-    }
-  })),
+  ...getViewsServiceOverride(openNewCodeEditor, undefined),
 
   ...getQuickAccessServiceOverride({
     isKeybindingConfigurationVisible: isEditorPartVisible,
