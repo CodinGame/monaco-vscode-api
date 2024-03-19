@@ -15,7 +15,7 @@ import getViewsServiceOverride, {
 } from '@codingame/monaco-vscode-views-service-override'
 import { openNewCodeEditor } from './features/editor'
 import './features/customView.views'
-import { commonServices, constructOptions, remoteAuthority, userDataProvider } from './setup.common'
+import { commonServices, constructOptions, envOptions, remoteAuthority, userDataProvider } from './setup.common'
 
 const container = document.createElement('div')
 container.id = 'app'
@@ -93,7 +93,7 @@ await initializeMonacoService({
     isKeybindingConfigurationVisible: isEditorPartVisible,
     shouldUseGlobalPicker: (_editor, isStandalone) => !isStandalone && isEditorPartVisible()
   })
-}, document.body, constructOptions)
+}, document.body, constructOptions, envOptions)
 
 for (const config of [
   { part: Parts.TITLEBAR_PART, element: '#titleBar' },

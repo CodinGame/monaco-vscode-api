@@ -5,7 +5,7 @@ import { BrowserStorageService } from '@codingame/monaco-vscode-storage-service-
 import { ExtensionHostKind } from '@codingame/monaco-vscode-extensions-service-override'
 import { registerExtension } from 'vscode/extensions'
 import './features/customView.workbench'
-import { commonServices, constructOptions, remoteAuthority, userDataProvider } from './setup.common'
+import { commonServices, constructOptions, envOptions, remoteAuthority, userDataProvider } from './setup.common'
 
 const container = document.createElement('div')
 container.style.height = '100vh'
@@ -53,7 +53,7 @@ await initializeMonacoService({
     isKeybindingConfigurationVisible: () => true,
     shouldUseGlobalPicker: (_editor) => true
   })
-}, container, constructOptions)
+}, container, constructOptions, envOptions)
 
 const layoutService = await getService(IWorkbenchLayoutService)
 document.querySelector('#togglePanel')!.addEventListener('click', async () => {

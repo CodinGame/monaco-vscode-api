@@ -55,6 +55,7 @@ import getSpeechServiceOverride from '@codingame/monaco-vscode-speech-service-ov
 import getSurveyServiceOverride from '@codingame/monaco-vscode-survey-service-override'
 import getUpdateServiceOverride from '@codingame/monaco-vscode-update-service-override'
 import getExplorerServiceOverride from '@codingame/monaco-vscode-explorer-service-override'
+import { EnvironmentOverride } from 'vscode/workbench'
 import { Worker } from './tools/crossOriginWorker'
 import defaultKeybindings from './user/keybindings.json?raw'
 import defaultConfiguration from './user/configuration.json?raw'
@@ -256,6 +257,12 @@ export const constructOptions: IWorkbenchConstructionOptions = {
       publisherUrl: ''
     }
   }
+}
+
+export const envOptions: EnvironmentOverride = {
+  // Otherwise, VSCode detect it as the first open workspace folder
+  // which make the search result extension fail as it's not able to know what was detected by VSCode
+  userHome: vscode.Uri.file('/')
 }
 
 export const commonServices: IEditorOverrideServices = {
