@@ -933,7 +933,7 @@ export default (args: Record<string, string>): rollup.RollupOptions[] => {
                   this.emitFile({
                     fileName: 'esm/vs/editor/editor.worker.js',
                     needsCodeReference: false,
-                    source: "import 'vscode/workers/editor.worker'",
+                    source: "export * from 'vscode/workers/editor.worker'",
                     type: 'asset'
                   })
                 }
