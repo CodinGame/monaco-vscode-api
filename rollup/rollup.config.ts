@@ -372,7 +372,6 @@ const workerGroups: Record<string, string> = {
 
 const externals = Object.keys({ ...pkg.dependencies })
 const external: rollup.ExternalOption = (source) => {
-  if (source === 'semver' || source.startsWith('semver')) return true
   if (source.includes('tas-client-umd')) return true
   return externals.some(external => source === external || source.startsWith(`${external}/`))
 }

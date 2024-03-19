@@ -91,6 +91,8 @@
     "ts-node": "^10.9.2",
     "type-fest": "^4.11.1",
     "typescript": "5.3.3",
+    "vscode-marked": "npm:marked@=3.0.2",
+    "vscode-semver": "npm:semver@=5.5.0",
     "yargs": "^17.7.2",
     "zx": "^7.2.3"
   },
@@ -119,10 +121,8 @@
     "memfs": "^4.7.7",
     "mime-types": "^2.1.35",
     "node-pty": "1.1.0-beta6",
-    "vscode-marked": "npm:marked@=3.0.2",
     "vscode-oniguruma": "1.7.0",
     "vscode-regexpp": "^3.1.0",
-    "vscode-semver": "npm:semver@=5.5.0",
     "vscode-textmate": "9.0.0",
     "yauzl": "^2.9.2",
     "yazl": "^2.4.3"

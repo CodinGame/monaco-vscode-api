@@ -81,7 +81,7 @@ export default rollup.defineConfig((<{input: Record<string, string>, output: str
     'rollup-extension-directory-plugin.d': './dist/types/src/rollup-extension-directory-plugin.d.ts'
   },
   output: 'dist/rollup-extension-directory-plugin'
-}]).map(({ input, output, preserveModulesRoot = TYPES_SRC_DIR, main = false }) => (<rollup.RollupOptions>{
+}]).map(({ input, output, preserveModulesRoot = TYPES_SRC_DIR }) => (<rollup.RollupOptions>{
   input,
   treeshake: false,
   output: {
