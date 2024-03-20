@@ -450,7 +450,9 @@ export default (args: Record<string, string>): rollup.RollupOptions[] => {
         // assets are externals and this plugin is not able to ignore external assets
         exclude: ['**/service-override/textmate.ts', '**/service-override/languageDetectionWorker.ts']
       }),
-      commonjs(),
+      commonjs({
+        include: '**/vscode-semver/**/*'
+      }),
       {
         name: 'resolve-vscode',
         resolveId: (importeeUrl, importer) => {
@@ -638,7 +640,11 @@ export default (args: Record<string, string>): rollup.RollupOptions[] => {
       }
     }, {
       name: 'improve-treeshaking',
-      transform (code) {
+      transform (code, id) {
+        if (id.includes('semver')) {
+          // ignore semver because it's commonjs code and rollup commonjs code generate IIFEs that this plugin will remove
+          return
+        }
         const ast = recast.parse(code, {
           parser: babylonParser
         })
