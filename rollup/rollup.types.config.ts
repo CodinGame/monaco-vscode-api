@@ -42,23 +42,16 @@ interfaceOverride.set('IStandaloneDiffEditor', 'import(\'vs/editor/editor.api\')
 interfaceOverride.set('IStandaloneEditorConstructionOptions', 'import(\'vs/editor/editor.api\').editor.IStandaloneEditorConstructionOptions')
 interfaceOverride.set('IStandaloneDiffEditorConstructionOptions', 'import(\'vs/editor/editor.api\').editor.IStandaloneDiffEditorConstructionOptions')
 
-function isExternal (id: string, main: boolean) {
+function isExternal (id: string) {
   if (id.endsWith('.css')) {
     return true
   }
   if (id.includes('.contribution')) {
     return true
   }
-  if (main) {
-    return [
-      'vscode', 'tas-client-umd'
-    ].includes(id)
-  }
 
   return [
-    'vscode', 'tas-client-umd', 'vscode-textmate', 'rollup', '@rollup/pluginutils',
-    'xterm', 'xterm-addon-canvas', 'xterm-addon-search', 'xterm-addon-unicode11',
-    'xterm-addon-webgl', 'xterm-addon-serialize', 'xterm-addon-image', 'xterm-headless'
+    'vscode', 'tas-client-umd', 'vscode-textmate', 'rollup', '@rollup/pluginutils', '@xterm'
   ].some(external => id === external || id.startsWith(`${external}/`))
 }
 
@@ -105,7 +98,7 @@ export default rollup.defineConfig((<{input: Record<string, string>, output: str
       return '[name].ts'
     }
   },
-  external: (id) => isExternal(id, main),
+  external: (id) => isExternal(id),
   plugins: [
     metadataPlugin({
       stage: 'writeBundle', // rollup-plugin-dts needs the file to exist on the disk
@@ -135,7 +128,7 @@ export default rollup.defineConfig((<{input: Record<string, string>, output: str
               // we need to load the proposed types of vscode, so let says it's not external and override the load method to load the proposed types
               return undefined
             }
-            return isExternal(id, main)
+            return isExternal(id)
           },
           plugins: [
             {

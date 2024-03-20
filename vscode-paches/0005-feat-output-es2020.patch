@@ -4,9 +4,11 @@ Date: Mon, 11 Mar 2024 16:44:35 +0100
 Subject: [PATCH] feat: output es2020
 
 ---
- build/lib/standalone.js | 2 +-
- build/lib/standalone.ts | 2 +-
- 2 files changed, 2 insertions(+), 2 deletions(-)
+ build/lib/standalone.js  | 2 +-
+ build/lib/standalone.ts  | 2 +-
+ src/tsconfig.base.json   | 3 ++-
+ src/tsconfig.monaco.json | 4 ++--
+ 4 files changed, 6 insertions(+), 5 deletions(-)
 
 diff --git a/build/lib/standalone.js b/build/lib/standalone.js
 index d24023726cd..2ffc91efc9c 100644
@@ -34,6 +36,37 @@ index ce8435bd920..90517a9236f 100644
  			tsConfig.compilerOptions.outDir = path.join(path.relative(OUT_FOLDER, OUT_RESOURCES_FOLDER), 'vs').replace(/\\/g, '/');
  			write(getDestAbsoluteFilePath(file), JSON.stringify(tsConfig, null, '\t'));
  			continue;
+diff --git a/src/tsconfig.base.json b/src/tsconfig.base.json
+index c0a2e174591..1d80c22afa3 100644
+--- a/src/tsconfig.base.json
++++ b/src/tsconfig.base.json
+@@ -1,6 +1,7 @@
+ {
+ 	"compilerOptions": {
+-		"module": "amd",
++		"esModuleInterop": true,
++		"module": "ES2020",
+ 		"moduleResolution": "node",
+ 		"experimentalDecorators": true,
+ 		"noImplicitReturns": true,
+diff --git a/src/tsconfig.monaco.json b/src/tsconfig.monaco.json
+index 988f0485713..c73b524ea2a 100644
+--- a/src/tsconfig.monaco.json
++++ b/src/tsconfig.monaco.json
+@@ -7,11 +7,11 @@
+ 			"wicg-file-system-access"
+ 		],
+ 		"paths": {},
+-		"module": "amd",
++		"module": "es2020",
+ 		"moduleResolution": "classic",
+ 		"removeComments": false,
+ 		"preserveConstEnums": true,
+-		"target": "es2018",
++		"target": "es2020",
+ 		"sourceMap": false,
+ 		"declaration": true
+ 	},
 -- 
 2.34.1
 

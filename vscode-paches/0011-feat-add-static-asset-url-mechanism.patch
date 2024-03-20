@@ -6,9 +6,10 @@ Subject: [PATCH] feat: add static asset url mechanism
 ---
  src/vs/base/common/network.ts                 |  45 +++-
  .../api/browser/mainThreadExtensionService.ts |   7 +
+ .../workbench/api/common/extHost.protocol.ts  |   1 +
  .../workbench/api/common/extensionHostMain.ts |   5 +
  .../api/worker/extensionHostWorker.ts         | 219 +++++++++++++-----
- 4 files changed, 217 insertions(+), 59 deletions(-)
+ 5 files changed, 218 insertions(+), 59 deletions(-)
 
 diff --git a/src/vs/base/common/network.ts b/src/vs/base/common/network.ts
 index 974d0c21743..aae916fa686 100644
@@ -119,6 +120,18 @@ index 6732d38f5e6..72abfc8af21 100644
  }
  
  class ExtensionHostProxy implements IExtensionHostProxy {
+diff --git a/src/vs/workbench/api/common/extHost.protocol.ts b/src/vs/workbench/api/common/extHost.protocol.ts
+index 5c18ab8657a..d7f00aaca84 100644
+--- a/src/vs/workbench/api/common/extHost.protocol.ts
++++ b/src/vs/workbench/api/common/extHost.protocol.ts
+@@ -1436,6 +1436,7 @@ export interface MainThreadExtensionServiceShape extends IDisposable {
+ 	$onExtensionRuntimeError(extensionId: ExtensionIdentifier, error: SerializedError): void;
+ 	$setPerformanceMarks(marks: performance.PerformanceMark[]): Promise<void>;
+ 	$asBrowserUri(uri: UriComponents): Promise<UriComponents>;
++	$getAllStaticBrowserUris(): Promise<[UriComponents, UriComponents][]>;
+ }
+ 
+ export interface SCMProviderFeatures {
 diff --git a/src/vs/workbench/api/common/extensionHostMain.ts b/src/vs/workbench/api/common/extensionHostMain.ts
 index 2bd275cbc21..f1c84b938a2 100644
 --- a/src/vs/workbench/api/common/extensionHostMain.ts

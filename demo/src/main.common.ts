@@ -103,6 +103,12 @@ void getApi().then(async vscode => {
     window.location.href = url.toString()
   })
 
+  document.querySelector('#resetLayout')!.addEventListener('click', async () => {
+    const url = new URL(window.location.href)
+    url.searchParams.set('resetLayout', 'true')
+    window.location.href = url.toString()
+  })
+
   document.querySelector('#filesystem')!.addEventListener('click', async () => {
     const dirHandle = await window.showDirectoryPicker()
 

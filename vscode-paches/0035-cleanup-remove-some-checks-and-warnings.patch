@@ -4,11 +4,54 @@ Date: Mon, 11 Mar 2024 18:16:29 +0100
 Subject: [PATCH] cleanup: remove some checks and warnings
 
 ---
+ .../contrib/webview/browser/pre/service-worker.js     |  3 +--
+ .../contrib/webview/browser/webviewElement.ts         | 10 ----------
  .../auxiliaryWindow/browser/auxiliaryWindowService.ts |  7 -------
  .../extensions/browser/webWorkerExtensionHost.ts      |  2 --
  .../services/textMate/common/TMScopeRegistry.ts       | 11 -----------
- 3 files changed, 20 deletions(-)
+ 5 files changed, 1 insertion(+), 32 deletions(-)
 
+diff --git a/src/vs/workbench/contrib/webview/browser/pre/service-worker.js b/src/vs/workbench/contrib/webview/browser/pre/service-worker.js
+index a6e9943b866..c470a1c9ed5 100644
+--- a/src/vs/workbench/contrib/webview/browser/pre/service-worker.js
++++ b/src/vs/workbench/contrib/webview/browser/pre/service-worker.js
+@@ -452,7 +452,6 @@ async function getOuterIframeClient(webviewId) {
+ 	const allClients = await sw.clients.matchAll({ includeUncontrolled: true });
+ 	return allClients.filter(client => {
+ 		const clientUrl = new URL(client.url);
+-		const hasExpectedPathName = (clientUrl.pathname === `${rootPath}/` || clientUrl.pathname === `${rootPath}/index.html` || clientUrl.pathname === `${rootPath}/index-no-csp.html`);
+-		return hasExpectedPathName && clientUrl.searchParams.get('id') === webviewId;
++		return clientUrl.searchParams.get('id') === webviewId;
+ 	});
+ }
+diff --git a/src/vs/workbench/contrib/webview/browser/webviewElement.ts b/src/vs/workbench/contrib/webview/browser/webviewElement.ts
+index 6514979da3d..d31d55c9e01 100644
+--- a/src/vs/workbench/contrib/webview/browser/webviewElement.ts
++++ b/src/vs/workbench/contrib/webview/browser/webviewElement.ts
+@@ -185,11 +185,6 @@ export class WebviewElement extends Disposable implements IWebview, WebviewFindD
+ 				return;
+ 			}
+ 
+-			if (e.origin !== this._webviewContentOrigin(this._encodedWebviewOrigin)) {
+-				console.log(`Skipped renderer receiving message due to mismatched origins: ${e.origin} ${this._webviewContentOrigin}`);
+-				return;
+-			}
+-
+ 			if (e.data.channel === 'webview-ready') {
+ 				if (this._messagePort) {
+ 					return;
+@@ -536,11 +531,6 @@ export class WebviewElement extends Disposable implements IWebview, WebviewFindD
+ 		return endpoint;
+ 	}
+ 
+-	private _webviewContentOrigin(encodedWebviewOrigin: string): string {
+-		const uri = URI.parse(this.webviewContentEndpoint(encodedWebviewOrigin));
+-		return uri.scheme + '://' + uri.authority.toLowerCase();
+-	}
+-
+ 	private doPostMessage(channel: string, data?: any, transferable: Transferable[] = []): boolean {
+ 		if (this.element && this._messagePort) {
+ 			this._messagePort.postMessage({ channel, args: data }, transferable);
 diff --git a/src/vs/workbench/services/auxiliaryWindow/browser/auxiliaryWindowService.ts b/src/vs/workbench/services/auxiliaryWindow/browser/auxiliaryWindowService.ts
 index ce6f32b0914..4fe4fb39bd7 100644
 --- a/src/vs/workbench/services/auxiliaryWindow/browser/auxiliaryWindowService.ts

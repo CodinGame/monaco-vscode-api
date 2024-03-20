@@ -15,7 +15,7 @@ import getViewsServiceOverride, {
 } from '@codingame/monaco-vscode-views-service-override'
 import { openNewCodeEditor } from './features/editor'
 import './features/customView.views'
-import { commonServices, constructOptions, remoteAuthority, userDataProvider } from './setup.common'
+import { commonServices, constructOptions, envOptions, remoteAuthority, userDataProvider } from './setup.common'
 
 const container = document.createElement('div')
 container.id = 'app'
@@ -36,6 +36,7 @@ container.innerHTML = `
     <button id="filesystem">Attach filesystem</button>
     <button id="customEditorPanel">Open custom editor panel</button>
     <button id="clearStorage">Clear user data</button>
+    <button id="resetLayout">Reset layout</button>
     <button id="toggleFullWorkbench">Switch to full workbench mode</button>
     <br />
     <button id="togglePanel">Toggle Panel</button>
@@ -86,19 +87,13 @@ document.body.append(container)
 // Override services
 await initializeMonacoService({
   ...commonServices,
-  ...getViewsServiceOverride(openNewCodeEditor, undefined, state => ({
-    ...state,
-    editor: {
-      ...state.editor,
-      restoreEditors: true
-    }
-  })),
+  ...getViewsServiceOverride(openNewCodeEditor, undefined),
 
   ...getQuickAccessServiceOverride({
     isKeybindingConfigurationVisible: isEditorPartVisible,
     shouldUseGlobalPicker: (_editor, isStandalone) => !isStandalone && isEditorPartVisible()
   })
-}, document.body, constructOptions)
+}, document.body, constructOptions, envOptions)
 
 for (const config of [
   { part: Parts.TITLEBAR_PART, element: '#titleBar' },

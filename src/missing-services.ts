@@ -6,7 +6,7 @@ import { IUriIdentityService } from 'vs/platform/uriIdentity/common/uriIdentity'
 import { ITextFileService } from 'vs/workbench/services/textfile/common/textfiles'
 import { IFileService } from 'vs/platform/files/common/files'
 import { GroupOrientation, IEditorGroup, IEditorGroupsService, IEditorPart } from 'vs/workbench/services/editor/common/editorGroupsService'
-import { IWorkingCopyFileService, WorkingCopyFileService } from 'vs/workbench/services/workingCopy/common/workingCopyFileService'
+import { IWorkingCopyFileService } from 'vs/workbench/services/workingCopy/common/workingCopyFileService'
 import { IPathService } from 'vs/workbench/services/path/common/pathService'
 import { InstantiationType, registerSingleton } from 'vs/platform/instantiation/common/extensions'
 import { IProductService } from 'vs/platform/product/common/productService'
@@ -41,7 +41,6 @@ import { IViewContainerModel, IViewDescriptorService } from 'vs/workbench/common
 import { IHistoryService } from 'vs/workbench/services/history/common/history'
 import { ITaskService } from 'vs/workbench/contrib/tasks/common/taskService'
 import { IConfigurationResolverService } from 'vs/workbench/services/configurationResolver/common/configurationResolver'
-import { BrowserPathService } from 'vs/workbench/services/path/browser/pathService'
 import { IRemoteAgentService } from 'vs/workbench/services/remote/common/remoteAgentService'
 import { ICustomEndpointTelemetryService } from 'vs/platform/telemetry/common/telemetry'
 import { NullEndpointTelemetryService } from 'vs/platform/telemetry/common/telemetryUtils'
@@ -194,8 +193,8 @@ import { IExtensionFeaturesManagementService } from 'vs/workbench/services/exten
 import { IEditorPaneService } from 'vs/workbench/services/editor/common/editorPaneService'
 import { IWorkspaceIdentityService } from 'vs/workbench/services/workspaces/common/workspaceIdentityService'
 import { IDefaultLogLevelsService } from 'vs/workbench/contrib/logs/common/defaultLogLevels'
-import { getBuiltInExtensionTranslationsUris } from './l10n'
 import { unsupported } from './tools'
+import { getBuiltInExtensionTranslationsUris } from './l10n'
 
 registerSingleton(ILoggerService, class NullLoggerService extends AbstractLoggerService {
   constructor () {
@@ -541,8 +540,46 @@ registerSingleton(ITitleService, class TitleService implements ITitleService {
   registerVariables = () => {}
 }, InstantiationType.Eager)
 
-registerSingleton(IWorkingCopyFileService, WorkingCopyFileService, InstantiationType.Eager)
-registerSingleton(IPathService, BrowserPathService, InstantiationType.Delayed)
+registerSingleton(IWorkingCopyFileService, class WorkingCopyFileService implements IWorkingCopyFileService {
+  _serviceBrand: undefined
+  onWillRunWorkingCopyFileOperation = Event.None
+  onDidFailWorkingCopyFileOperation = Event.None
+  onDidRunWorkingCopyFileOperation = Event.None
+  addFileOperationParticipant = unsupported
+
+  hasSaveParticipants = false
+
+  addSaveParticipant = unsupported
+
+  runSaveParticipants = unsupported
+
+  create = unsupported
+
+  createFolder = unsupported
+
+  move = unsupported
+
+  copy = unsupported
+
+  delete = unsupported
+
+  registerWorkingCopyProvider = unsupported
+
+  getDirty = () => []
+}, InstantiationType.Eager)
+
+registerSingleton(IPathService, class PathService implements IPathService {
+  _serviceBrand: undefined
+  get path () {
+    return unsupported()
+  }
+
+  defaultUriScheme = 'file'
+  fileURI = unsupported
+  userHome = unsupported
+  hasValidBasename = unsupported
+  resolvedUserHome = undefined
+}, InstantiationType.Delayed)
 
 registerSingleton(IProductService, class ProductService implements IProductService {
   readonly _serviceBrand = undefined
