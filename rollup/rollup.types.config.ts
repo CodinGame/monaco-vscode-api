@@ -81,7 +81,7 @@ export default rollup.defineConfig((<{input: Record<string, string>, output: str
     'rollup-extension-directory-plugin.d': './dist/types/src/rollup-extension-directory-plugin.d.ts'
   },
   output: 'dist/rollup-extension-directory-plugin'
-}]).map(({ input, output, preserveModulesRoot = TYPES_SRC_DIR, main = false }) => (<rollup.RollupOptions>{
+}]).map(({ input, output, preserveModulesRoot = TYPES_SRC_DIR }) => (<rollup.RollupOptions>{
   input,
   treeshake: false,
   output: {
@@ -268,6 +268,12 @@ export default rollup.defineConfig((<{input: Record<string, string>, output: str
           return `/// <reference path="./${importPath}" />\n\n${code}`
         }
         return undefined
+      },
+      async generateBundle (options, bundle) {
+        const editorTypesChunk = bundle['vscode/src/vs/editor/editor.api.d.ts'] as rollup.OutputChunk | undefined
+        if (editorTypesChunk != null) {
+          editorTypesChunk.code = (await fs.promises.readFile(path.resolve(PROJECT_ROOT, 'monaco-editor/editor.api.d.ts'))).toString('utf-8')
+        }
       }
     },
     {
@@ -283,13 +289,6 @@ export default rollup.defineConfig((<{input: Record<string, string>, output: str
           return path.join(VSCODE_SRC_DIR, `${importee}.d.ts`)
         }
         return undefined
-      }
-    },
-    {
-      name: 'fix-editor-api-types',
-      renderChunk (code) {
-        // rollup-plugin-dts is not able to transform "declare module" syntaxes
-        return code.replaceAll("declare module 'vs/editor/editor.api'", "declare module 'vscode/vscode/vs/editor/editor.api'")
       }
     },
     dts({

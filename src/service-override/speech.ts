@@ -2,7 +2,7 @@ import { IEditorOverrideServices } from 'vs/editor/standalone/browser/standalone
 import { SyncDescriptor } from 'vs/platform/instantiation/common/descriptors'
 import { ISpeechService } from 'vs/workbench/contrib/speech/common/speechService'
 import { SpeechService } from 'vs/workbench/contrib/speech/browser/speechService'
-import 'vs/workbench/contrib/speech/common/speech.contribution'
+import 'vs/workbench/contrib/speech/browser/speech.contribution'
 
 export default function getServiceOverride (): IEditorOverrideServices {
   return {

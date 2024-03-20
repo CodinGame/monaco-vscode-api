@@ -1,1 +1,1 @@
-import 'vs/editor/editor.worker'
+export * from 'vs/editor/editor.worker'

@@ -28,6 +28,9 @@ async function publishNpm (version: string, tag: string) {
       if (packageJson.dependencies?.vscode != null) {
         packageJson.dependencies.vscode = `npm:@codingame/monaco-vscode-api@${version}`
       }
+      if (packageJson.dependencies?.['monaco-editor'] != null) {
+        packageJson.dependencies['monaco-editor'] = `npm:@codingame/monaco-vscode-editor-api@${version}`
+      }
       for (const dependency in packageJson.dependencies) {
         if (dependency.startsWith('@codingame/monaco-vscode-')) {
           packageJson.dependencies[dependency] = version

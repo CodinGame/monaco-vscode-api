@@ -372,7 +372,6 @@ const workerGroups: Record<string, string> = {
 
 const externals = Object.keys({ ...pkg.dependencies })
 const external: rollup.ExternalOption = (source) => {
-  if (source === 'semver' || source.startsWith('semver')) return true
   if (source.includes('tas-client-umd')) return true
   return externals.some(external => source === external || source.startsWith(`${external}/`))
 }
@@ -451,7 +450,9 @@ export default (args: Record<string, string>): rollup.RollupOptions[] => {
         // assets are externals and this plugin is not able to ignore external assets
         exclude: ['**/service-override/textmate.ts', '**/service-override/languageDetectionWorker.ts']
       }),
-      commonjs(),
+      commonjs({
+        include: '**/vscode-semver/**/*'
+      }),
       {
         name: 'resolve-vscode',
         resolveId: (importeeUrl, importer) => {
@@ -639,7 +640,11 @@ export default (args: Record<string, string>): rollup.RollupOptions[] => {
       }
     }, {
       name: 'improve-treeshaking',
-      transform (code) {
+      transform (code, id) {
+        if (id.includes('semver')) {
+          // ignore semver because it's commonjs code and rollup commonjs code generate IIFEs that this plugin will remove
+          return
+        }
         const ast = recast.parse(code, {
           parser: babylonParser
         })
@@ -934,7 +939,7 @@ export default (args: Record<string, string>): rollup.RollupOptions[] => {
                   this.emitFile({
                     fileName: 'esm/vs/editor/editor.worker.js',
                     needsCodeReference: false,
-                    source: "import 'vscode/workers/editor.worker'",
+                    source: "export * from 'vscode/workers/editor.worker'",
                     type: 'asset'
                   })
                 }
