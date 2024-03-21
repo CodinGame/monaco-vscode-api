@@ -24,12 +24,12 @@ void getApi().then(async api => {
     const lines = text.split('\n')
 
     for (let lineNo = 0; lineNo < lines.length; lineNo++) {
-      const line = lines[lineNo]
+      const line = lines[lineNo]!
       const test = testRe.exec(line)
       if (test != null) {
         const [, a, operator, b, expected] = test
         const range = new api.Range(new api.Position(lineNo, 0), new api.Position(lineNo, test[0].length))
-        events.onTest(range, Number(a), operator, Number(b), Number(expected))
+        events.onTest(range, Number(a), operator!, Number(b), Number(expected))
         continue
       }
 
@@ -37,7 +37,7 @@ void getApi().then(async api => {
       if (heading != null) {
         const [, pounds, name] = heading
         const range = new api.Range(new api.Position(lineNo, 0), new api.Position(lineNo, line.length))
-        events.onHeading(range, name, pounds.length)
+        events.onHeading(range, name!, pounds!.length)
       }
     }
   }
@@ -91,7 +91,7 @@ void getApi().then(async api => {
 
       parseMarkdown(content, {
         onTest: (range, a, operator, b, expected) => {
-          const parent = ancestors[ancestors.length - 1]
+          const parent = ancestors[ancestors.length - 1]!
           const data = new TestCase(a, operator as Operator, b, expected, thisGeneration)
           const id = `${item.uri}/${data.getLabel()}`
 
@@ -103,7 +103,7 @@ void getApi().then(async api => {
 
         onHeading: (range, name, depth) => {
           ascend(depth)
-          const parent = ancestors[ancestors.length - 1]
+          const parent = ancestors[ancestors.length - 1]!
           const id = `${item.uri}/${name}`
 
           const thead = controller.createTestItem(id, name, item.uri)

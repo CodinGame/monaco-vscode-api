@@ -16,6 +16,7 @@
     "noImplicitReturns": true,
     "baseUrl": ".",
     "experimentalDecorators": true,
+    "noUncheckedIndexedAccess": true,
     "paths": {
       "vscode/vscode/*": ["../dist/main/vscode/src/*"],
       "vscode/*": ["../dist/main/*"]
