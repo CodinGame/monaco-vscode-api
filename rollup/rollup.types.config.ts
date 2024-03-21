@@ -257,9 +257,10 @@ export default rollup.defineConfig((<{input: Record<string, string>, output: str
               code = code.replace(`interface ${name} `, `type ${name} = ${value}\ninterface _${name} `)
             }
           })
-          return code
+        } else {
+          code = code.replace("declare module 'vs/editor/editor.api'", "declare module 'vscode/vscode/vs/editor/editor.api'")
         }
-        return undefined
+        return code
       },
       renderChunk (code, chunk) {
         const chunkParentPath = path.resolve(DIST_DIR, path.dirname(chunk.fileName))
