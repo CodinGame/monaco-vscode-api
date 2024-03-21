@@ -45,7 +45,7 @@ registerCustomView({
 class CustomEditorPane extends SimpleEditorPane {
   static readonly ID = 'workbench.editors.customEditor'
 
-  constructor ( ) {
+  constructor () {
     super(CustomEditorPane.ID)
   }
 
