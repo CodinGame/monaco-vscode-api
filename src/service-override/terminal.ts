@@ -28,6 +28,7 @@ import 'vs/workbench/contrib/terminal/browser/terminal.contribution'
 import 'vs/workbench/contrib/terminal/terminal.all'
 import 'vs/workbench/contrib/externalTerminal/browser/externalTerminal.contribution'
 import 'vs/workbench/contrib/terminal/browser/terminal.web.contribution'
+export { ITerminalService, ITerminalInstanceService } from 'vs/workbench/contrib/terminal/browser/terminal'
 
 abstract class SimpleTerminalBackend implements ITerminalBackend {
   getLatency = async (): Promise<IPtyHostLatencyMeasurement[]> => []
