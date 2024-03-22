@@ -98,7 +98,6 @@ export default (args: Record<string, string>): rollup.RollupOptions => {
               'vscode-ext-host-server': './server.js'
             },
             dependencies: {
-              vscode: `npm:${pkg.name}@^${pkg.version}`,
               ...Object.fromEntries(Object.entries(pkg.dependencies).filter(([key]) => dependencies.has(key)))
             }
           }
