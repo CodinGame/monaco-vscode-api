@@ -29,9 +29,10 @@ Make sure `typeof process === 'undefined'` returns true when using this library.
 Starting from v2, [monaco-editor-webpack-plugin](https://www.npmjs.com/package/monaco-editor-webpack-plugin) can't be used
 
 Here's the alternative for each options:
+
 - `filename`: it can be configured at the webpack level directly
 - `publicPath`: it can be configured at the webpack level or by hands when redistering the worker in `window.MonacoEnvironment`.
-- `languages`: Monaco languages cannot be used anyway. Import vscode language extensions instead (`@codingame/monaco-vscode-xxx-default-extension`).
+- `languages`: Import vscode language extensions (`@codingame/monaco-vscode-xxx-default-extension`) or (`@codingame/@codingame/monaco-vscode-standalone-*`), but please obey that monaco languages can only be used if `themes` and `textmate` service overrides are not configured.
 - `features`: With this lib, you can't remove editor features.
 - `globalAPI`: you can set `window.MonacoEnvironment.globalAPI` to true
 
@@ -40,12 +41,14 @@ Here's the alternative for each options:
 This library uses a lot the `new URL('asset.extension', import.meta.url)` syntax which [is supported by vite](https://vitejs.dev/guide/assets.html#new-url-url-import-meta-url)
 
 While it works great in `build` mode (because rollup is used), there is some issues in `watch` mode:
+
 - import.meta.url is not replaced while creating bundles, it is an issue when the syntax is used inside a dependency
 - vite is still trying to inject/transform javascript assets files, breaking the code by injecting ESM imports in commonjs files
 
 There are workarounds for both:
 
 - We can help vite by replacing `import.meta.url` by the original module path:
+
 ```typescript
 import importMetaUrlPlugin from '@codingame/esbuild-import-meta-url-plugin'
 
@@ -62,12 +65,13 @@ import importMetaUrlPlugin from '@codingame/esbuild-import-meta-url-plugin'
 ### If using Angular and getting `Not allowed to load local resource:` errors
 
 *The short version*: set up and use a custom webpack config file and add this under `module`:
+
 ```typescript
 parser: {
   javascript: {
     url: true,
-  },
-},
+  }
+}
 ```
 
 See [this issue](https://github.com/CodinGame/monaco-vscode-api/issues/186) or this [StackOverflow answer](https://stackoverflow.com/a/75252098) for more details, and [this discussion](https://github.com/angular/angular-cli/issues/24617) for more context.
@@ -77,16 +81,17 @@ See [this issue](https://github.com/CodinGame/monaco-vscode-api/issues/186) or t
 The typescript language features extensions requires [SharedArrayBuffer](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/SharedArrayBuffer) to enable project wide intellisense or only a per-file intellisense is provided.
 
 It requires [crossOriginIsolated](https://developer.mozilla.org/en-US/docs/Web/API/crossOriginIsolated) to be true, which requires assets files to be servers with some specific headers:
+
 - [Cross-Origin-Opener-Policy](https://developer.mozilla.org/en-US/docs/Web/HTTP/Headers/Cross-Origin-Opener-Policy): `same-origin`
 - [Cross-Origin-Embedder-Policy](https://developer.mozilla.org/en-US/docs/Web/HTTP/Headers/Cross-Origin-Embedder-Policy): `require-corp` or `credentialless`
 
 At least thoses files should have the headers:
+
 - the main page html
 - the worker extension host iframe html: `webWorkerExtensionHostIframe.html`
 - the worker extension host worker javascript: `extensionHost.worker.js`
 
-If adding those headers is not an options, you can have a look at https://github.com/gzuidhof/coi-serviceworker
-
+If adding those headers is not an options, you can have a look at <https://github.com/gzuidhof/coi-serviceworker>
 
 # Usage
 
@@ -220,7 +225,7 @@ Additionally, several packages that include the VSCode version of some services 
 - **Issue**
   - Issue reporting
 - **Multi diff editor**
-  - Multi diff editor support (https://code.visualstudio.com/updates/v1_85#_multifile-diff-editor)
+  - Multi diff editor support (<https://code.visualstudio.com/updates/v1_85#_multifile-diff-editor>)
 - **Performance**
   - Performance monitoring
 - **Relauncher**
@@ -269,6 +274,7 @@ This method creates a standalone model that cannot be found or used by any VSCod
 The recommended way is to used the `createModelReference` method instead (added on top of the official monaco-editor api) which returns instead a reference to a model.
 
 It has some pros:
+
 - The model reference can be used by VSCode services, allowing for instance following links between files (ctrl+click)
 - The returned model is bound to a filesystem file, and you have access to methods allowing to control the file lifecycle (saving the file, accessing the dirty state...)
 - It is possible to call the method multiple times on the same file to get multiple references. The model is disposed when there is no reference left
@@ -328,6 +334,7 @@ vscode.languages.registerCompletionItemProvider(...)
 ```
 
 You can also register a new extension from its manifest:
+
 ```typescript
 import { registerExtension, initialize, ExtensionHostKind } from 'vscode/extensions'
 
@@ -354,9 +361,10 @@ vscode.languages.registerCompletionItemProvider(...)
 
 ### Default vscode extensions
 
-VSCode uses a bunch of default extensions. Most of them are used to load the default languages and grammars (see https://github.com/microsoft/vscode/tree/main/extensions).
+VSCode uses a bunch of default extensions. Most of them are used to load the default languages and grammars (see <ttps://github.com/microsoft/vscode/tree/main/extensions>).
 
 This library bundles and publishes them and allows to import the ones you want:
+
 ```typescript
 import '@codingame/monaco-vscode-javascript-default-extension'
 import '@codingame/monaco-vscode-json-default-extension'
@@ -369,6 +377,7 @@ VSCode extensions are bundled as vsix files.
 This library publishes a rollup plugin (vite-compatible) that allows to load a vsix file.
 
 - rollup/vite config:
+
 ```typescript
 import vsixPlugin from '@codingame/monaco-vscode-rollup-vsix-plugin'
 ...
@@ -377,7 +386,9 @@ plugins: [
   vsixPlugin()
 ]
 ```
+
 - code:
+
 ```typescript
 import './extension.vsix'
 ```
@@ -385,6 +396,7 @@ import './extension.vsix'
 ### Localization
 
 This library also offers the possibility to localize vscode and the extensions in the supported languages. To do so, import one of the following packages before anything else:
+
 - `@codingame/monaco-vscode-language-pack-cs`
 - `@codingame/monaco-vscode-language-pack-de`
 - `@codingame/monaco-vscode-language-pack-es`
@@ -402,10 +414,9 @@ This library also offers the possibility to localize vscode and the extensions i
 
 ⚠️ The language pack should be imported and loaded BEFORE anything else from monaco-editor or this library is loaded. Otherwise, some translations would be missing. ⚠️
 
-
 ### Demo
 
-Try it out on https://monaco-vscode-api.netlify.app/
+Try it out on <https://monaco-vscode-api.netlify.app/>
 
 There is a demo that showcases the service-override features. It allows to register contributions with the same syntaxes as in VSCode.
 It includes:
@@ -436,6 +447,7 @@ npm run start:debug
 ```
 
 For the debug feature, also run:
+
 ```bash
 npm run start:debugServer
 ```
@@ -445,13 +457,14 @@ npm run start:debugServer
 #### Remote agent
 
 To connect to a remote agent, run:
+
 ```bash
 npm run start:extHostServer
 ```
 
-Then go to http://localhost:5173/?remoteAuthority=localhost:8000
+Then go to <http://localhost:5173/?remoteAuthority=localhost:8000>
 
-You can also go to http://localhost:5173/?remoteAuthority=localhost:8000&remotePath=/any/path/on/your/machine to open a directory on your machine as the current workspace
+You can also go to <http://localhost:5173/?remoteAuthority=localhost:8000&remotePath=/any/path/on/your/machine> to open a directory on your machine as the current workspace
 
 ### History
 
