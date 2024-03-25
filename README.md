@@ -32,7 +32,7 @@ Here's the alternative for each options:
 
 - `filename`: it can be configured at the webpack level directly
 - `publicPath`: it can be configured at the webpack level or by hands when redistering the worker in `window.MonacoEnvironment`.
-- `languages`: Import vscode language extensions (`@codingame/monaco-vscode-xxx-default-extension`) or (`@codingame/@codingame/monaco-vscode-standalone-*`), but please obey that monaco languages can only be used if `themes` and `textmate` service overrides are not configured.
+- `languages`: Import vscode language extensions (`@codingame/monaco-vscode-xxx-default-extension`) or (`@codingame/@codingame/monaco-vscode-standalone-*`). Please obey: VSCode extensions can only be used if `themes` and `textmate` service overrides are configured and monaco languages can only be used if those two services are not configured (see [here](#monaco-standalone-services) for further details).
 - `features`: With this lib, you can't remove editor features.
 - `globalAPI`: you can set `window.MonacoEnvironment.globalAPI` to true
 
@@ -91,7 +91,7 @@ At least thoses files should have the headers:
 - the worker extension host iframe html: `webWorkerExtensionHostIframe.html`
 - the worker extension host worker javascript: `extensionHost.worker.js`
 
-If adding those headers is not an options, you can have a look at <https://github.com/gzuidhof/coi-serviceworker>
+If adding those headers is not an options, you can have a look at <https://github.com/gzuidhof/coi-serviceworker>, but only if you are not using webviews as it introduces problems then.
 
 # Usage
 
