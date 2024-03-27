@@ -12,8 +12,7 @@
     "check-build": "npm run lint && npm run typecheck",
     "build": "npm run check-build && vite --config vite.config.ts build",
     "build:netlify": "npm run check-build && vite --config vite.netlify.config.ts build",
-    "start:debugServer": "node --loader ts-node/esm src/debugServer.ts",
-    "start:extHostServer": "WEB_ENDPOINT_URL_TEMPLATE=http://localhost:5173/ vscode-ext-host-server --without-connection-token"
+    "start:debugServer": "node --loader ts-node/esm src/debugServer.ts"
   },
   "devDependencies": {
     "@codingame/esbuild-import-meta-url-plugin": "^1.0.2",
@@ -139,7 +138,6 @@
     "@codingame/monaco-vscode-scss-default-extension": "file:../dist/default-extension-scss",
     "@codingame/monaco-vscode-search-result-default-extension": "file:../dist/default-extension-search-result",
     "@codingame/monaco-vscode-search-service-override": "file:../dist/service-override-search",
-    "@codingame/monaco-vscode-server": "file:../dist/server",
     "@codingame/monaco-vscode-shaderlab-default-extension": "file:../dist/default-extension-shaderlab",
     "@codingame/monaco-vscode-share-service-override": "file:../dist/service-override-share",
     "@codingame/monaco-vscode-shellscript-default-extension": "file:../dist/default-extension-shellscript",
