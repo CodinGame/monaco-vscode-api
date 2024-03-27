@@ -456,15 +456,7 @@ npm run start:debugServer
 
 #### Remote agent
 
-To connect to a remote agent, run:
-
-```bash
-npm run start:extHostServer
-```
-
-Then go to <http://localhost:5173/?remoteAuthority=localhost:8000>
-
-You can also go to <http://localhost:5173/?remoteAuthority=localhost:8000&remotePath=/any/path/on/your/machine> to open a directory on your machine as the current workspace
+[See vscode_server.md](./docs/vscode_server.md)
 
 ### History
 
