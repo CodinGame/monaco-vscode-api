@@ -9,7 +9,8 @@
   "globals": {
     "Thenable": "readonly",
     "VSCODE_VERSION": "readonly",
-    "VSCODE_REF": "readonly"
+    "VSCODE_REF": "readonly",
+    "VSCODE_COMMIT": "readonly"
   },
   "extends": [
     "@codingame"

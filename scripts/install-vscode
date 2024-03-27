@@ -26,7 +26,9 @@ echo "Downloading vscode $vscodeRef in $build_directory..."
 
 curl -L --max-redirs 5 https://github.com/Microsoft/vscode/tarball/$vscodeRef | tar -xz -C $build_directory --strip-components=1
 vscodeVersion=$(cat "$build_directory/package.json" | jq -r '.["version"]')
+vscodeCommit=$(curl "https://api.github.com/repos/Microsoft/vscode/git/refs/tags/$vscodeRef" | jq -r '.["object"]["sha"]')
 cat <<< "$(jq ".config.vscode.version = \"$vscodeVersion\"" $package_json)" > $package_json
+cat <<< "$(jq ".config.vscode.commit = \"$vscodeCommit\"" $package_json)" > $package_json
 
 cd $build_directory
 
