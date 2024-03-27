@@ -4,12 +4,15 @@ import { EditSessionsLogService } from 'vs/workbench/contrib/editSessions/common
 import { IEditSessionsLogService, IEditSessionsStorageService } from 'vs/workbench/contrib/editSessions/common/editSessions'
 import { EditSessionsWorkbenchService } from 'vs/workbench/contrib/editSessions/browser/editSessionsStorageService'
 import { IWorkspaceIdentityService, WorkspaceIdentityService } from 'vs/workbench/services/workspaces/common/workspaceIdentityService'
+import { IEditSessionIdentityService } from 'vs/platform/workspace/common/editSessions'
+import { EditSessionIdentityService } from 'vs/workbench/services/workspaces/common/editSessionIdentityService'
 import 'vs/workbench/contrib/editSessions/browser/editSessions.contribution'
 
 export default function getServiceOverride (): IEditorOverrideServices {
   return {
     [IEditSessionsLogService.toString()]: new SyncDescriptor(EditSessionsLogService, [], false),
     [IEditSessionsStorageService.toString()]: new SyncDescriptor(EditSessionsWorkbenchService, [], false),
-    [IWorkspaceIdentityService.toString()]: new SyncDescriptor(WorkspaceIdentityService, [], false)
+    [IWorkspaceIdentityService.toString()]: new SyncDescriptor(WorkspaceIdentityService, [], false),
+    [IEditSessionIdentityService.toString()]: new SyncDescriptor(EditSessionIdentityService, [], false)
   }
 }
