@@ -378,6 +378,7 @@ const external: rollup.ExternalOption = (source) => {
 
 export default (args: Record<string, string>): rollup.RollupOptions[] => {
   const vscodeVersion = args['vscode-version']
+  const vscodeCommit = args['vscode-commit']
   delete args['vscode-version']
   const vscodeRef = args['vscode-ref']
   delete args['vscode-ref']
@@ -550,6 +551,7 @@ export default (args: Record<string, string>): rollup.RollupOptions[] => {
       }), replace({
         VSCODE_VERSION: JSON.stringify(vscodeVersion),
         VSCODE_REF: JSON.stringify(vscodeRef),
+        VSCODE_COMMIT: JSON.stringify(vscodeCommit),
         preventAssignment: true
       }),
       (() => {

@@ -12,8 +12,7 @@
     "check-build": "npm run lint && npm run typecheck",
     "build": "npm run check-build && vite --config vite.config.ts build",
     "build:netlify": "npm run check-build && vite --config vite.netlify.config.ts build",
-    "start:debugServer": "node --loader ts-node/esm src/debugServer.ts",
-    "start:extHostServer": "WEB_ENDPOINT_URL_TEMPLATE=http://localhost:5173/ vscode-ext-host-server --without-connection-token"
+    "start:debugServer": "node --loader ts-node/esm src/debugServer.ts"
   },
   "devDependencies": {
     "@codingame/esbuild-import-meta-url-plugin": "^1.0.2",
@@ -25,7 +24,7 @@
     "@types/ws": "^8.5.10",
     "ts-node": "^10.9.2",
     "typescript": "~5.4.3",
-    "vite": "~5.2.2"
+    "vite": "~5.2.6"
   },
   "dependencies": {
     "@codingame/monaco-vscode-accessibility-service-override": "file:../dist/service-override-accessibility",
@@ -139,7 +138,6 @@
     "@codingame/monaco-vscode-scss-default-extension": "file:../dist/default-extension-scss",
     "@codingame/monaco-vscode-search-result-default-extension": "file:../dist/default-extension-search-result",
     "@codingame/monaco-vscode-search-service-override": "file:../dist/service-override-search",
-    "@codingame/monaco-vscode-server": "file:../dist/server",
     "@codingame/monaco-vscode-shaderlab-default-extension": "file:../dist/default-extension-shaderlab",
     "@codingame/monaco-vscode-share-service-override": "file:../dist/service-override-share",
     "@codingame/monaco-vscode-shellscript-default-extension": "file:../dist/default-extension-shellscript",
@@ -184,7 +182,7 @@
     "@codingame/monaco-vscode-yaml-default-extension": "file:../dist/default-extension-yaml",
     "ansi-colors": "^4.1.3",
     "dockerode": "^4.0.2",
-    "express": "^4.19.1",
+    "express": "^4.19.2",
     "monaco-editor": "file:../dist/editor-api",
     "vscode": "file:../dist/main",
     "ws": "^8.16.0"
