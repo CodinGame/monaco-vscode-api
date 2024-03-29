@@ -1,5 +1,6 @@
 declare const VSCODE_VERSION: string
 declare const VSCODE_REF: string
+declare const VSCODE_COMMIT: string
 
 declare module 'vs/platform/accessibilitySignal/browser/media/*.mp3' {
   const assets: Record<string, string>

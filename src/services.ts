@@ -34,10 +34,10 @@ export async function initialize (overrides: IEditorOverrideServices, container:
   const instantiationService = StandaloneServices.initialize({
     [IProductService.toString()]: mixin(<Partial<IProductConfiguration>>{
       version: VSCODE_VERSION,
-      quality: 'oss',
-      commit: VSCODE_REF,
-      nameShort: 'Code - OSS Dev',
-      nameLong: 'Code - OSS Dev',
+      quality: 'stable',
+      commit: VSCODE_COMMIT,
+      nameShort: 'Code - OSS',
+      nameLong: 'Code - OSS',
       applicationName: 'code-oss',
       dataFolderName: '.vscode-oss',
       urlProtocol: 'code-oss',

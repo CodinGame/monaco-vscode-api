@@ -15,13 +15,12 @@
   },
   "type": "module",
   "scripts": {
-    "build": "npm run clean && npm run lint && npm run compile && npm run compile-rollup-plugins && npm run generate-types && npm run compile-server && npm run compile-default-extensions && npm run compile-language-packs && npm run compile-monaco-languages",
-    "compile": "NODE_OPTIONS=--max_old_space_size=16384 rollup --config rollup/rollup.config.ts --configPlugin 'typescript={tsconfig: `tsconfig.rollup-config.json`}' --vscode-version ${npm_package_config_vscode_version} --vscode-ref ${npm_package_config_vscode_ref}",
+    "build": "npm run clean && npm run lint && npm run compile && npm run compile-rollup-plugins && npm run generate-types && npm run compile-default-extensions && npm run compile-language-packs && npm run compile-monaco-languages",
+    "compile": "NODE_OPTIONS=--max_old_space_size=16384 rollup --config rollup/rollup.config.ts --configPlugin 'typescript={tsconfig: `tsconfig.rollup-config.json`}' --vscode-version ${npm_package_config_vscode_version} --vscode-ref ${npm_package_config_vscode_ref} --vscode-commit ${npm_package_config_vscode_commit}",
     "compile-default-extensions": "NODE_OPTIONS=--max_old_space_size=16384 rollup --config rollup/rollup.default-extensions.ts --configPlugin 'typescript={tsconfig: `tsconfig.rollup-config-default-extensions.json`}'",
     "compile-language-packs": "NODE_OPTIONS=--max_old_space_size=16384 rollup --config rollup/rollup.language-packs.ts --configPlugin 'typescript={tsconfig: `tsconfig.rollup-config-language-packs.json`}'",
     "compile-monaco-languages": "NODE_OPTIONS=--max_old_space_size=16384 rollup --config rollup/rollup.monaco.ts --configPlugin 'typescript={tsconfig: `tsconfig.rollup-config-monaco.json`}'",
     "clean": "rm -rf dist/",
-    "compile-server": "rollup --config rollup/rollup.server.config.ts --configPlugin 'typescript={tsconfig: `tsconfig.rollup-config-server.json`, include: [`./rollup/rollup.server.config.ts`, `./rollup/rollup-metadata-plugin.ts`, `./rollup/rollup-asset-glob-meta-url-plugin.ts`]}' --vscode-version ${npm_package_config_vscode_version} --vscode-ref ${npm_package_config_vscode_ref}",
     "compile-rollup-plugins": "rollup --config rollup/rollup.rollup-plugins.config.ts --configPlugin 'typescript={tsconfig: `tsconfig.rollup-config-plugins.json`, include: [`./rollup/rollup.rollup-plugins.config.ts`, `./rollup/rollup-metadata-plugin.ts`]}'",
     "preprepare": "patch-package && ./scripts/install-vscode",
     "lint": "eslint '{src/**/*.ts,rollup/*.ts,*.ts}'",
@@ -33,7 +32,8 @@
   "config": {
     "vscode": {
       "version": "1.87.2",
-      "ref": "1.87.2"
+      "ref": "1.87.2",
+      "commit": "863d2581ecda6849923a2118d93a088b0745d9d6"
     },
     "monaco": {
       "ref": "v0.47.0",

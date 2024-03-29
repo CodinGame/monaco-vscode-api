@@ -30,7 +30,7 @@ import { IUserDataProfileImportExportService, IUserDataProfileManagementService,
 import { UserDataProfileService } from 'vs/workbench/services/userDataProfile/common/userDataProfileService'
 import { ISnippetsService } from 'vs/workbench/contrib/snippets/browser/snippets'
 import { AbstractLoggerService, ILogger, ILoggerService, LogLevel, NullLogger } from 'vs/platform/log/common/log'
-import { Disposable, DisposableStore, IDisposable } from 'vs/base/common/lifecycle'
+import { Disposable, IDisposable } from 'vs/base/common/lifecycle'
 import { FallbackKeyboardMapper } from 'vs/workbench/services/keybinding/common/fallbackKeyboardMapper'
 import { ITextMateTokenizationService } from 'vs/workbench/services/textMate/browser/textMateTokenizationFeature'
 import { IDebugService, IDebugModel, IViewModel, IAdapterManager } from 'vs/workbench/contrib/debug/common/debug'
@@ -585,7 +585,7 @@ registerSingleton(IProductService, class ProductService implements IProductServi
   readonly _serviceBrand = undefined
 
   version = VSCODE_VERSION
-  commit = VSCODE_REF
+  commit = VSCODE_COMMIT
   quality = 'oss'
   nameShort = 'Code - OSS Dev'
   nameLong = 'Code - OSS Dev'
@@ -1067,11 +1067,11 @@ registerSingleton(ISearchService, MonacoSearchService, InstantiationType.Eager)
 
 registerSingleton(IEditSessionIdentityService, class EditSessionIdentityService implements IEditSessionIdentityService {
   _serviceBrand: undefined
-  registerEditSessionIdentityProvider = unsupported
-  getEditSessionIdentifier = unsupported
-  provideEditSessionIdentityMatch = unsupported
-  addEditSessionIdentityCreateParticipant = () => new DisposableStore()
-  onWillCreateEditSessionIdentity = unsupported
+  registerEditSessionIdentityProvider = () => Disposable.None
+  getEditSessionIdentifier = async () => undefined
+  provideEditSessionIdentityMatch = async () => undefined
+  addEditSessionIdentityCreateParticipant = () => Disposable.None
+  onWillCreateEditSessionIdentity = async () => {}
 }, InstantiationType.Eager)
 
 registerSingleton(IWorkspaceEditingService, class WorkspaceEditingService implements IWorkspaceEditingService {
