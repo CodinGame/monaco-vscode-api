@@ -79,7 +79,10 @@ cd src
 
 # Remove useless files
 rm -rf `find . -name '*.test.ts' -o -name 'test' -o -name 'electron-browser'`
-rm -rf vs/code
+rm -rf vs/code/electron-main
+rm -rf vs/code/electron-sandbox
+rm -rf vs/code/node
+rm -rf vs/code/test
 
 mkdir -p $output_directory
 echo $vscodeRef > $version_info
