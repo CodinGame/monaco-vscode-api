@@ -238,6 +238,8 @@ Additionally, several packages that include the VSCode version of some services 
   - Update detection, release notes...
 - **Localization**
   - Register callbacks to update the display language from the VSCode UI (either from the `Set Display Language` command or from the extension gallery extension packs)
+- **Secret Storage**
+  - Storage of secrets for extensions, will store by default in-memory. You can pass a custom implementation as part of the workbench construction options when initializing monaco services (under `secretStorageProvider`).
 
 Usage:
 
