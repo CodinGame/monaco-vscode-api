@@ -139,6 +139,7 @@
     "@codingame/monaco-vscode-scss-default-extension": "file:../dist/default-extension-scss",
     "@codingame/monaco-vscode-search-result-default-extension": "file:../dist/default-extension-search-result",
     "@codingame/monaco-vscode-search-service-override": "file:../dist/service-override-search",
+    "@codingame/monaco-vscode-secret-storage-service-override": "file:../dist/service-override-secret-storage",
     "@codingame/monaco-vscode-shaderlab-default-extension": "file:../dist/default-extension-shaderlab",
     "@codingame/monaco-vscode-share-service-override": "file:../dist/service-override-share",
     "@codingame/monaco-vscode-shellscript-default-extension": "file:../dist/default-extension-shellscript",
