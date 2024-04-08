@@ -60,10 +60,11 @@ import { EditorParts } from 'vs/workbench/browser/parts/editor/editorParts'
 import { BrowserAuxiliaryWindowService, IAuxiliaryWindowService } from 'vs/workbench/services/auxiliaryWindow/browser/auxiliaryWindowService'
 import { IViewsService } from 'vs/workbench/services/views/common/viewsService'
 import { ViewsService } from 'vs/workbench/services/views/browser/viewsService'
-import { HoverService } from 'vs/editor/browser/services/hoverService'
 import { IHoverService } from 'vs/platform/hover/browser/hover'
 import { IEditorPaneService } from 'vs/workbench/services/editor/common/editorPaneService'
 import { EditorPaneService } from 'vs/workbench/services/editor/browser/editorPaneService'
+import { HoverService } from 'vs/editor/browser/services/hoverService/hoverService'
+import { CustomEditorLabelService, ICustomEditorLabelService } from 'vs/workbench/services/editor/common/customEditorLabelService'
 import { MonacoDelegateEditorGroupsService, MonacoEditorService, OpenEditor } from './tools/editor'
 import getBulkEditServiceOverride from './bulkEdit'
 import { LayoutService } from './layout'
@@ -231,6 +232,10 @@ class MonacoEditorParts extends MonacoDelegateEditorGroupsService<EditorParts> i
 
   restoreGroup: EditorPart['restoreGroup'] = (...args) => {
     return this.delegate.restoreGroup(...args)
+  }
+
+  get activePart (): EditorPart {
+    return this.delegate.activePart
   }
 }
 
@@ -738,7 +743,8 @@ function getServiceOverride (openEditorFallback?: OpenEditor, _webviewIframeAlte
     [IWebviewWorkbenchService.toString()]: new SyncDescriptor(WebviewEditorService, [], true),
     [IProgressService.toString()]: new SyncDescriptor(ProgressService, [], true),
     [IAuxiliaryWindowService.toString()]: new SyncDescriptor(BrowserAuxiliaryWindowService, [], true),
-    [IEditorPaneService.toString()]: new SyncDescriptor(EditorPaneService, [], true)
+    [IEditorPaneService.toString()]: new SyncDescriptor(EditorPaneService, [], true),
+    [ICustomEditorLabelService.toString()]: new SyncDescriptor(CustomEditorLabelService, [], true)
   }
 }
 

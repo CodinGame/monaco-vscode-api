@@ -8,7 +8,7 @@ Subject: [PATCH] cleanup: remove code that we will run ourselves
  1 file changed, 11 deletions(-)
 
 diff --git a/src/vs/workbench/browser/workbench.ts b/src/vs/workbench/browser/workbench.ts
-index 56e9b6f58cf..bea66a053e5 100644
+index cbc07dc7fb0..455bb043b5d 100644
 --- a/src/vs/workbench/browser/workbench.ts
 +++ b/src/vs/workbench/browser/workbench.ts
 @@ -11,10 +11,7 @@ import { RunOnceScheduler, timeout } from 'vs/base/common/async';

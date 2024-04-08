@@ -4,15 +4,33 @@ Date: Mon, 11 Mar 2024 16:45:29 +0100
 Subject: [PATCH] feat: add a way to register a locale with translations
 
 ---
- build/lib/standalone.js |  7 +++++++
+ build/lib/standalone.js | 12 ++++++++++--
  build/lib/standalone.ts |  8 ++++++++
  src/vs/nls.ts           | 31 ++++++++++++++++++++++++++++++-
- 3 files changed, 45 insertions(+), 1 deletion(-)
+ 3 files changed, 48 insertions(+), 3 deletions(-)
 
 diff --git a/build/lib/standalone.js b/build/lib/standalone.js
-index 2ffc91efc9c..ddb16108fda 100644
+index 723a1127492..206d4dfb9a4 100644
 --- a/build/lib/standalone.js
 +++ b/build/lib/standalone.js
+@@ -4,8 +4,7 @@
+  *  Licensed under the MIT License. See License.txt in the project root for license information.
+  *--------------------------------------------------------------------------------------------*/
+ Object.defineProperty(exports, "__esModule", { value: true });
+-exports.extractEditor = extractEditor;
+-exports.createESMSourcesAndResources2 = createESMSourcesAndResources2;
++exports.createESMSourcesAndResources2 = exports.extractEditor = void 0;
+ const fs = require("fs");
+ const path = require("path");
+ const tss = require("./treeshaking");
+@@ -112,6 +111,7 @@ function extractEditor(options) {
+         'vs/nls.mock.ts',
+     ].forEach(copyFile);
+ }
++exports.extractEditor = extractEditor;
+ function createESMSourcesAndResources2(options) {
+     const ts = require('typescript');
+     const SRC_FOLDER = path.join(REPO_ROOT, options.srcFolder);
 @@ -190,6 +190,13 @@ function createESMSourcesAndResources2(options) {
              fileContents = fileContents.replace(/import ([a-zA-Z0-9]+) = require\(('[^']+')\);/g, function (_, m1, m2) {
                  return `import * as ${m1} from ${m2};`;
@@ -23,12 +41,20 @@ index 2ffc91efc9c..ddb16108fda 100644
 +                });
 +            }
 +            fileContents = fileContents.replace(/import { (localize2?) }/g, 'import { $1WithPath }');
-+            fileContents = fileContents.replace(/import { localize, localize2 }/g, 'import { localizeWithPath, localize2WithPath }');
++            fileContents = fileContents.replace(/import { (localize2?), (localize2?) }/g, 'import { $1WithPath, $2WithPath }');
              write(getDestAbsoluteFilePath(file), fileContents);
              continue;
          }
+@@ -258,6 +265,7 @@ function createESMSourcesAndResources2(options) {
+         }
+     }
+ }
++exports.createESMSourcesAndResources2 = createESMSourcesAndResources2;
+ function transportCSS(module, enqueue, write) {
+     if (!/\.css/.test(module)) {
+         return false;
 diff --git a/build/lib/standalone.ts b/build/lib/standalone.ts
-index 90517a9236f..224f376d4bf 100644
+index 90517a9236f..193ed02f7f6 100644
 --- a/build/lib/standalone.ts
 +++ b/build/lib/standalone.ts
 @@ -223,6 +223,14 @@ export function createESMSourcesAndResources2(options: IOptions2): void {
@@ -41,7 +67,7 @@ index 90517a9236f..224f376d4bf 100644
 +				});
 +			}
 +			fileContents = fileContents.replace(/import { (localize2?) }/g, 'import { $1WithPath }');
-+			fileContents = fileContents.replace(/import { localize, localize2 }/g, 'import { localizeWithPath, localize2WithPath }');
++			fileContents = fileContents.replace(/import { (localize2?), (localize2?) }/g, 'import { $1WithPath, $2WithPath }');
 +
  			write(getDestAbsoluteFilePath(file), fileContents);
  			continue;

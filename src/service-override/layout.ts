@@ -21,6 +21,7 @@ import { StandaloneCodeEditor } from 'vs/editor/standalone/browser/standaloneCod
 import { IHostService } from 'vs/workbench/services/host/browser/host'
 import { ICodeEditorService } from 'vs/editor/browser/services/codeEditorService'
 import { getMenuBarVisibility, getTitleBarStyle } from 'vs/platform/window/common/window'
+import { IDisposable } from '@xterm/headless'
 import { onRenderWorkbench } from '../lifecycle'
 import { getWorkbenchContainer } from '../workbench'
 
@@ -57,6 +58,10 @@ export class LayoutService extends Disposable implements ILayoutService, IWorkbe
     mainContainer.classList.add(...workbenchClasses)
     document.body.classList.add(platformClass)
     document.body.classList.add('web')
+  }
+
+  whenContainerStylesLoaded (): undefined {
+    return undefined
   }
 
   onDidChangeMainEditorCenteredLayout = Event.None
@@ -203,7 +208,7 @@ export class LayoutService extends Disposable implements ILayoutService, IWorkbe
     if (oldValue !== undefined) {
       return !oldValue
     }
-    return this.configurationService.getValue(LayoutSettings.ACTIVITY_BAR_LOCATION) !== ActivityBarPosition.SIDE
+    return this.configurationService.getValue(LayoutSettings.ACTIVITY_BAR_LOCATION) !== ActivityBarPosition.DEFAULT
   }
 
   focusPart (part: Parts): void {
@@ -426,8 +431,11 @@ export class LayoutService extends Disposable implements ILayoutService, IWorkbe
     this._onDidChangeSideBarPosition.fire(positionToString(position))
   }
 
-  registerPart (part: Part): void {
-    this.parts.set(part.getId(), part)
+  registerPart (part: Part): IDisposable {
+    const id = part.getId()
+    this.parts.set(id, part)
+
+    return toDisposable(() => this.parts.delete(id))
   }
 
   isRestored (): boolean {

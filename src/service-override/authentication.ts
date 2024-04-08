@@ -1,10 +1,16 @@
 import { IEditorOverrideServices } from 'vs/editor/standalone/browser/standaloneServices'
 import { SyncDescriptor } from 'vs/platform/instantiation/common/descriptors'
-import { IAuthenticationService } from 'vs/workbench/services/authentication/common/authentication'
+import { IAuthenticationExtensionsService, IAuthenticationService } from 'vs/workbench/services/authentication/common/authentication'
 import { AuthenticationService } from 'vs/workbench/services/authentication/browser/authenticationService'
+import { AuthenticationAccessService, IAuthenticationAccessService } from 'vs/workbench/services/authentication/browser/authenticationAccessService'
+import { AuthenticationUsageService, IAuthenticationUsageService } from 'vs/workbench/services/authentication/browser/authenticationUsageService'
+import { AuthenticationExtensionsService } from 'vs/workbench/services/authentication/browser/authenticationExtensionsService'
 
 export default function getServiceOverride (): IEditorOverrideServices {
   return {
-    [IAuthenticationService.toString()]: new SyncDescriptor(AuthenticationService, [], true)
+    [IAuthenticationService.toString()]: new SyncDescriptor(AuthenticationService, [], true),
+    [IAuthenticationAccessService.toString()]: new SyncDescriptor(AuthenticationAccessService, [], true),
+    [IAuthenticationExtensionsService.toString()]: new SyncDescriptor(AuthenticationExtensionsService, [], true),
+    [IAuthenticationUsageService.toString()]: new SyncDescriptor(AuthenticationUsageService, [], true)
   }
 }

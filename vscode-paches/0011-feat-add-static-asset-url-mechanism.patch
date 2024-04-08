@@ -12,7 +12,7 @@ Subject: [PATCH] feat: add static asset url mechanism
  5 files changed, 218 insertions(+), 59 deletions(-)
 
 diff --git a/src/vs/base/common/network.ts b/src/vs/base/common/network.ts
-index 974d0c21743..aae916fa686 100644
+index cfc5b173887..f7e8874332c 100644
 --- a/src/vs/base/common/network.ts
 +++ b/src/vs/base/common/network.ts
 @@ -4,6 +4,8 @@
@@ -24,7 +24,7 @@ index 974d0c21743..aae916fa686 100644
  import * as platform from 'vs/base/common/platform';
  import { equalsIgnoreCase, startsWithIgnoreCase } from 'vs/base/common/strings';
  import { URI } from 'vs/base/common/uri';
-@@ -223,6 +225,30 @@ export const VSCODE_AUTHORITY = 'vscode-app';
+@@ -231,6 +233,30 @@ export const VSCODE_AUTHORITY = 'vscode-app';
  class FileAccessImpl {
  
  	private static readonly FALLBACK_AUTHORITY = VSCODE_AUTHORITY;
@@ -55,7 +55,7 @@ index 974d0c21743..aae916fa686 100644
  
  	/**
  	 * Returns a URI to use in contexts where the browser is responsible
-@@ -231,7 +257,7 @@ class FileAccessImpl {
+@@ -239,7 +265,7 @@ class FileAccessImpl {
  	 * **Note:** use `dom.ts#asCSSUrl` whenever the URL is to be used in CSS context.
  	 */
  	asBrowserUri(resourcePath: AppResourcePath | ''): URI {
@@ -64,7 +64,7 @@ index 974d0c21743..aae916fa686 100644
  		return this.uriToBrowserUri(uri);
  	}
  
-@@ -270,7 +296,7 @@ class FileAccessImpl {
+@@ -278,7 +304,7 @@ class FileAccessImpl {
  			});
  		}
  
@@ -73,7 +73,7 @@ index 974d0c21743..aae916fa686 100644
  	}
  
  	/**
-@@ -278,7 +304,7 @@ class FileAccessImpl {
+@@ -286,7 +312,7 @@ class FileAccessImpl {
  	 * is responsible for loading.
  	 */
  	asFileUri(resourcePath: AppResourcePath | ''): URI {
@@ -82,7 +82,7 @@ index 974d0c21743..aae916fa686 100644
  		return this.uriToFileUri(uri);
  	}
  
-@@ -310,6 +336,19 @@ class FileAccessImpl {
+@@ -318,6 +344,19 @@ class FileAccessImpl {
  
  		return URI.parse(moduleIdToUrl.toUrl(uriOrModule));
  	}
@@ -121,10 +121,10 @@ index 6732d38f5e6..72abfc8af21 100644
  
  class ExtensionHostProxy implements IExtensionHostProxy {
 diff --git a/src/vs/workbench/api/common/extHost.protocol.ts b/src/vs/workbench/api/common/extHost.protocol.ts
-index 5c18ab8657a..d7f00aaca84 100644
+index c4f5c720677..4a83e7e54ae 100644
 --- a/src/vs/workbench/api/common/extHost.protocol.ts
 +++ b/src/vs/workbench/api/common/extHost.protocol.ts
-@@ -1436,6 +1436,7 @@ export interface MainThreadExtensionServiceShape extends IDisposable {
+@@ -1443,6 +1443,7 @@ export interface MainThreadExtensionServiceShape extends IDisposable {
  	$onExtensionRuntimeError(extensionId: ExtensionIdentifier, error: SerializedError): void;
  	$setPerformanceMarks(marks: performance.PerformanceMark[]): Promise<void>;
  	$asBrowserUri(uri: UriComponents): Promise<UriComponents>;

@@ -49,7 +49,7 @@ class InjectedRemoteAuthorityResolverService extends RemoteAuthorityResolverServ
     const connectionToken = environmentService.options.connectionToken
     const remoteResourceLoader = configuration.remoteResourceProvider != null ? new BrowserRemoteResourceLoader(fileService, configuration.remoteResourceProvider) : undefined
     const resourceUriProvider = configuration.resourceUriProvider ?? remoteResourceLoader?.getResourceUriProvider()
-    super(!environmentService.expectsResolverExtension, connectionToken, resourceUriProvider, productService, logService)
+    super(!environmentService.expectsResolverExtension, connectionToken, resourceUriProvider, configuration.serverBasePath, productService, logService)
   }
 }
 

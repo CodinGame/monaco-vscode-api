@@ -9,10 +9,10 @@ Subject: [PATCH] fix: replace map by forEach
  2 files changed, 2 insertions(+), 2 deletions(-)
 
 diff --git a/src/vs/workbench/browser/parts/compositeBar.ts b/src/vs/workbench/browser/parts/compositeBar.ts
-index 76d6c0c1ee4..3060baec73a 100644
+index a9fc39c84ed..957684aa7f7 100644
 --- a/src/vs/workbench/browser/parts/compositeBar.ts
 +++ b/src/vs/workbench/browser/parts/compositeBar.ts
-@@ -476,7 +476,7 @@ export class CompositeBar extends Widget implements ICompositeBar {
+@@ -477,7 +477,7 @@ export class CompositeBar extends Widget implements ICompositeBar {
  				// Compute sizes only if visible. Otherwise the size measurment would be computed wrongly.
  				const currentItemsLength = compositeSwitcherBar.viewItems.length;
  				compositeSwitcherBar.push(items.map(composite => composite.activityAction));
@@ -22,10 +22,10 @@ index 76d6c0c1ee4..3060baec73a 100644
  					: compositeSwitcherBar.getWidth(currentItemsLength + index)
  				));
 diff --git a/src/vs/workbench/browser/parts/views/viewPaneContainer.ts b/src/vs/workbench/browser/parts/views/viewPaneContainer.ts
-index f575fa95242..e0fc917b228 100644
+index 67b7f28268f..342cc8a56c7 100644
 --- a/src/vs/workbench/browser/parts/views/viewPaneContainer.ts
 +++ b/src/vs/workbench/browser/parts/views/viewPaneContainer.ts
-@@ -679,7 +679,7 @@ export class ViewPaneContainer extends Component implements IViewPaneContainer {
+@@ -684,7 +684,7 @@ export class ViewPaneContainer extends Component implements IViewPaneContainer {
  		}
  
  		this.panes.filter(view => view.isVisible() !== visible)

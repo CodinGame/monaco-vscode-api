@@ -9,7 +9,7 @@ Subject: [PATCH] fix: fix some build process edge cases
  2 files changed, 14 insertions(+)
 
 diff --git a/build/lib/standalone.js b/build/lib/standalone.js
-index 4ddf88ed223..d24023726cd 100644
+index dbc47db0833..796415b5721 100644
 --- a/build/lib/standalone.js
 +++ b/build/lib/standalone.js
 @@ -150,6 +150,9 @@ function createESMSourcesAndResources2(options) {

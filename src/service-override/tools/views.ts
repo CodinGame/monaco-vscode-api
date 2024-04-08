@@ -34,8 +34,9 @@ import { IWorkbenchLayoutService, Parts, Position } from 'vs/workbench/services/
 import { StandaloneServices } from 'vs/editor/standalone/browser/standaloneServices'
 import { Event } from 'vs/base/common/event'
 import { IView, SplitView } from 'vs/base/browser/ui/splitview/splitview'
+import { fakeActiveGroup } from './editor'
 import type { LayoutService } from '../layout'
-import { withReadyServices } from '../../services'
+import { IEditorGroup, withReadyServices } from '../../services'
 
 type Label = string | {
   short: string
@@ -47,7 +48,7 @@ abstract class InjectedEditorPane extends EditorPane {
   constructor (
     id: string
   ) {
-    super(id, StandaloneServices.get(ITelemetryService), StandaloneServices.get(IThemeService), StandaloneServices.get(IStorageService))
+    super(id, fakeActiveGroup, StandaloneServices.get(ITelemetryService), StandaloneServices.get(IThemeService), StandaloneServices.get(IStorageService))
   }
 }
 
@@ -202,7 +203,7 @@ abstract class SimpleEditorInput extends EditorInput {
 function registerEditorPane<Services extends BrandedService[]> (
   typeId: string,
   name: string,
-  ctor: new (...services: Services) => EditorPane,
+  ctor: new (group: IEditorGroup, ...services: Services) => EditorPane,
   inputCtors: (new (...args: any[]) => EditorInput)[]
 ): IDisposable {
   return Registry.as<IEditorPaneRegistry>(EditorExtensions.EditorPane).registerEditorPane(

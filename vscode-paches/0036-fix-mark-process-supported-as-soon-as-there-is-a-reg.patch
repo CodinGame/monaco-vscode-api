@@ -9,7 +9,7 @@ Subject: [PATCH] fix: mark process supported as soon as there is a registered
  1 file changed, 3 insertions(+), 2 deletions(-)
 
 diff --git a/src/vs/workbench/contrib/terminal/browser/terminalService.ts b/src/vs/workbench/contrib/terminal/browser/terminalService.ts
-index f78008e14db..5cf622e0620 100644
+index 2b1dc0a6b13..42e0d5788e9 100644
 --- a/src/vs/workbench/contrib/terminal/browser/terminalService.ts
 +++ b/src/vs/workbench/contrib/terminal/browser/terminalService.ts
 @@ -19,7 +19,7 @@ import { IContextKey, IContextKeyService } from 'vs/platform/contextkey/common/c
@@ -29,7 +29,7 @@ index f78008e14db..5cf622e0620 100644
  import { ITerminalCapabilityImplMap, TerminalCapability } from 'vs/platform/terminal/common/capabilities/capabilities';
  import { createInstanceCapabilityEventMultiplexer } from 'vs/workbench/contrib/terminal/browser/terminalEvents';
  import { mainWindow } from 'vs/base/browser/window';
-@@ -216,7 +217,7 @@ export class TerminalService extends Disposable implements ITerminalService {
+@@ -218,7 +219,7 @@ export class TerminalService extends Disposable implements ITerminalService {
  		this._handleInstanceContextKeys();
  		this._terminalShellTypeContextKey = TerminalContextKeys.shellType.bindTo(this._contextKeyService);
  		this._processSupportContextKey = TerminalContextKeys.processSupported.bindTo(this._contextKeyService);

@@ -54,7 +54,7 @@ index 99dd3279fe8..b692381eaa2 100644
  	declare readonly _serviceBrand: undefined;
  
 diff --git a/src/vs/workbench/browser/layout.ts b/src/vs/workbench/browser/layout.ts
-index a2b6007fb79..4ee25602224 100644
+index 69fd77ff4ff..3ff2d974cb6 100644
 --- a/src/vs/workbench/browser/layout.ts
 +++ b/src/vs/workbench/browser/layout.ts
 @@ -52,7 +52,7 @@ import { CustomTitleBarVisibility } from '../../platform/window/common/window';
@@ -96,7 +96,7 @@ index a2b6007fb79..4ee25602224 100644
  	readonly filesToDiff?: IPathToOpen[];
  	readonly filesToMerge?: IPathToOpen[];
 diff --git a/src/vs/workbench/browser/workbench.ts b/src/vs/workbench/browser/workbench.ts
-index 8a311d4bb0e..56e9b6f58cf 100644
+index c7302a6be67..cbc07dc7fb0 100644
 --- a/src/vs/workbench/browser/workbench.ts
 +++ b/src/vs/workbench/browser/workbench.ts
 @@ -76,7 +76,7 @@ export class Workbench extends Layout {
@@ -167,15 +167,15 @@ index 08449bd2cd7..f82ac191725 100644
  	private static readonly LAST_EXTENSION_DEVELOPMENT_WORKSPACE_KEY = 'debug.lastExtensionDevelopmentWorkspace';
  
 diff --git a/src/vs/workbench/contrib/logs/common/defaultLogLevels.ts b/src/vs/workbench/contrib/logs/common/defaultLogLevels.ts
-index 9feccec6965..64b9e5d3ed0 100644
+index 522b64a8cd6..b43c170bf2e 100644
 --- a/src/vs/workbench/contrib/logs/common/defaultLogLevels.ts
 +++ b/src/vs/workbench/contrib/logs/common/defaultLogLevels.ts
-@@ -33,7 +33,7 @@ export interface IDefaultLogLevelsService {
+@@ -42,7 +42,7 @@ export interface IDefaultLogLevelsService {
  	migrateLogLevels(): void;
  }
  
--class DefaultLogLevelsService implements IDefaultLogLevelsService {
-+export class DefaultLogLevelsService implements IDefaultLogLevelsService {
+-class DefaultLogLevelsService extends Disposable implements IDefaultLogLevelsService {
++export class DefaultLogLevelsService extends Disposable implements IDefaultLogLevelsService {
  
  	_serviceBrand: undefined;
  
@@ -237,10 +237,10 @@ index a181772e8c4..098be8e230d 100644
  			getInitData: async (): Promise<IWebWorkerExtensionHostInitData> => {
  				if (isInitialStart) {
 diff --git a/src/vs/workbench/services/extensions/browser/extensionUrlHandler.ts b/src/vs/workbench/services/extensions/browser/extensionUrlHandler.ts
-index d019d14c4fb..78d4a00fa7f 100644
+index 65672a170be..0426642269a 100644
 --- a/src/vs/workbench/services/extensions/browser/extensionUrlHandler.ts
 +++ b/src/vs/workbench/services/extensions/browser/extensionUrlHandler.ts
-@@ -98,7 +98,7 @@ type ExtensionUrlHandlerClassification = {
+@@ -108,7 +108,7 @@ type ExtensionUrlReloadHandlerClassification = {
   *
   * It also makes sure the user confirms opening URLs directed towards extensions.
   */
@@ -263,7 +263,7 @@ index b6d4f0f3831..a5f5e42eddd 100644
  		if (this._environmentService.debugExtensionHost && this._environmentService.debugRenderer) {
  			suffixSearchParams.set('debugged', '1');
 diff --git a/src/vs/workbench/services/extensions/common/abstractExtensionService.ts b/src/vs/workbench/services/extensions/common/abstractExtensionService.ts
-index 2d93e41d0f0..0abfe0b61a3 100644
+index 4b2a585afc3..70b20e8fd08 100644
 --- a/src/vs/workbench/services/extensions/common/abstractExtensionService.ts
 +++ b/src/vs/workbench/services/extensions/common/abstractExtensionService.ts
 @@ -94,9 +94,9 @@ export abstract class AbstractExtensionService extends Disposable implements IEx
@@ -279,7 +279,7 @@ index 2d93e41d0f0..0abfe0b61a3 100644
  		@IInstantiationService protected readonly _instantiationService: IInstantiationService,
  		@INotificationService protected readonly _notificationService: INotificationService,
  		@IWorkbenchEnvironmentService protected readonly _environmentService: IWorkbenchEnvironmentService,
-@@ -211,7 +211,7 @@ export abstract class AbstractExtensionService extends Disposable implements IEx
+@@ -220,7 +220,7 @@ export abstract class AbstractExtensionService extends Disposable implements IEx
  
  	//#region deltaExtensions
  
@@ -288,7 +288,7 @@ index 2d93e41d0f0..0abfe0b61a3 100644
  		this._deltaExtensionsQueue.push(item);
  		if (this._inHandleDeltaExtensions) {
  			// Let the current item finish, the new one will be picked up
-@@ -1193,7 +1193,7 @@ export interface IExtensionHostFactory {
+@@ -1206,7 +1206,7 @@ export interface IExtensionHostFactory {
  	createExtensionHost(runningLocations: ExtensionRunningLocationTracker, runningLocation: ExtensionRunningLocation, isInitialStart: boolean): IExtensionHost | null;
  }
  
@@ -298,7 +298,7 @@ index 2d93e41d0f0..0abfe0b61a3 100644
  		public readonly toAdd: IExtension[],
  		public readonly toRemove: string[] | IExtension[]
 diff --git a/src/vs/workbench/services/keybinding/browser/keybindingService.ts b/src/vs/workbench/services/keybinding/browser/keybindingService.ts
-index c2cee773044..956db0ac3bd 100644
+index 3c98bf9aec0..3ab26183771 100644
 --- a/src/vs/workbench/services/keybinding/browser/keybindingService.ts
 +++ b/src/vs/workbench/services/keybinding/browser/keybindingService.ts
 @@ -423,7 +423,7 @@ export class WorkbenchKeybindingService extends AbstractKeybindingService {

@@ -35,7 +35,6 @@ import { ProgressService } from 'vs/workbench/services/progress/browser/progress
 import { PaneCompositePartService } from 'vs/workbench/browser/parts/paneCompositePartService'
 import { BrowserAuxiliaryWindowService, IAuxiliaryWindowService } from 'vs/workbench/services/auxiliaryWindow/browser/auxiliaryWindowService'
 import { ViewsService } from 'vs/workbench/services/views/browser/viewsService'
-import { HoverService } from 'vs/editor/browser/services/hoverService'
 import { IHoverService } from 'vs/platform/hover/browser/hover'
 import { EditorService } from 'vs/workbench/services/editor/browser/editorService'
 import { EditorParts } from 'vs/workbench/browser/parts/editor/editorParts'
@@ -46,6 +45,8 @@ import { mainWindow } from 'vs/base/browser/window'
 import { setFullscreen } from 'vs/base/browser/browser'
 import { EditorPaneService } from 'vs/workbench/services/editor/browser/editorPaneService'
 import { IEditorPaneService } from 'vs/workbench/services/editor/common/editorPaneService'
+import { CustomEditorLabelService, ICustomEditorLabelService } from 'vs/workbench/services/editor/common/customEditorLabelService'
+import { HoverService } from './views'
 import getKeybindingsOverride from './keybindings'
 import getQuickAccessOverride from './quickaccess'
 import getBulkEditServiceOverride from './bulkEdit'
@@ -166,6 +167,7 @@ function getServiceOverride (options?: IWorkbenchOptions, _webviewIframeAlternat
     [IProgressService.toString()]: new SyncDescriptor(ProgressService, [], true),
     [IAuxiliaryWindowService.toString()]: new SyncDescriptor(BrowserAuxiliaryWindowService, [], true),
     [IEditorPaneService.toString()]: new SyncDescriptor(EditorPaneService, [], true),
+    [ICustomEditorLabelService.toString()]: new SyncDescriptor(CustomEditorLabelService, [], true),
     ...getTitleBarServiceOverride(),
     ...getStatusBarServiceOverride(),
     ...getBannerServiceOverride()
