@@ -22,7 +22,7 @@
 - Wait for the new vscode version to be downloaded and built
 - Run `npm run update-vscode-dependencies` to update the vscode dependencies we use to the same versions as VSCode
 - Run `npm install` (might need to update/add the npm override for `xterm` in the `package.json` to fix the invalid peer deps)
-- Fix errors, adapt code, build, include the `vscode.patch` into this commit
+- Fix errors, adapt code, build, include the `vscode-patches` directory into this commit
   - Do not hesitate to run the eslint autofix, it gets rid of the majority of your errors
   - Implement missing services. This is easily observable seem when running the demo (see next point)
 - Update demo
