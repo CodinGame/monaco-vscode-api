@@ -98,7 +98,6 @@ const VSCODE_SRC_DIST_DIR = path.resolve(DIST_DIR_MAIN, 'vscode', 'src')
 const VSCODE_DIR = path.resolve(BASE_DIR, 'vscode')
 const VSCODE_SRC_DIR = path.resolve(VSCODE_DIR, 'src')
 const OVERRIDE_PATH = path.resolve(BASE_DIR, 'src/override')
-const KEYBOARD_LAYOUT_DIR = path.resolve(VSCODE_SRC_DIR, 'vs/workbench/services/keybinding/browser/keyboardLayouts')
 
 function getMemberExpressionPath (node: recast.types.namedTypes.MemberExpression | recast.types.namedTypes.Identifier): string | null {
   if (node.type === 'MemberExpression') {
@@ -153,11 +152,6 @@ function isCallPure (file: string, functionName: string, node: recast.types.name
     ) {
       return false
     }
-    return true
-  }
-
-  if (functionName === 'registerThemingParticipant' && file.includes('vs/workbench/browser/style')) {
-    // Remove VSCode global style
     return true
   }
 
@@ -391,40 +385,7 @@ export default (args: Record<string, string>): rollup.RollupOptions[] => {
     treeshake: {
       annotations: true,
       preset: 'smallest',
-      moduleSideEffects (id) {
-        const path = new URL(id, 'file:/').pathname
-        return path.startsWith(SRC_DIR) ||
-          path.includes('vs/editor') ||
-          path.includes('codiconStyles') ||
-          path.includes('vs/platform/undoRedo/common/undoRedoService') ||
-          path.endsWith('.css') ||
-          path.startsWith(KEYBOARD_LAYOUT_DIR) ||
-          path.endsWith('.contribution.js') ||
-          path.endsWith('.all.js') ||
-          path.endsWith('xtensionPoint.js') ||
-          path.includes('vs/workbench/api/browser/') ||
-          path.includes('fileCommands') ||
-          path.endsWith('/listCommands.js') ||
-          path.endsWith('/quickAccessActions.js') ||
-          path.endsWith('/gotoLineQuickAccess.js') ||
-          path.endsWith('/workbenchReferenceSearch.js') ||
-          path.includes('/searchActions') ||
-          path.endsWith('documentSymbolsOutline.js') ||
-          path.includes('vs/workbench/contrib/codeEditor/browser/') ||
-          path.includes('extHost.common.services') ||
-          path.includes('extHost.worker.services') ||
-          path.includes('inlayHintsAccessibilty') ||
-          path.includes('vs/workbench/contrib/format/browser/') ||
-          path.includes('vs/workbench/contrib/chat/browser/contrib/') ||
-          path.includes('vs/workbench/contrib/notebook/browser/') ||
-          path.includes('vs/workbench/contrib/welcomeGettingStarted/browser/gettingStartedColors') ||
-          path.includes('keyboardLayoutPicker') ||
-          path.includes('expandAbbreviation') ||
-          path.includes('commentsEditorContribution') ||
-          path.includes('keybindingsEditorContribution') ||
-          path.includes('preferencesSearch') ||
-          path.includes('vs/workbench/browser/actions')
-      }
+      moduleSideEffects: true
     },
     external,
     output: [{
