@@ -378,8 +378,9 @@ const external: rollup.ExternalOption = (source) => {
 
 export default (args: Record<string, string>): rollup.RollupOptions[] => {
   const vscodeVersion = args['vscode-version']
-  const vscodeCommit = args['vscode-commit']
   delete args['vscode-version']
+  const vscodeCommit = args['vscode-commit']
+  delete args['vscode-commit']
   const vscodeRef = args['vscode-ref']
   delete args['vscode-ref']
   if (vscodeVersion == null) {
