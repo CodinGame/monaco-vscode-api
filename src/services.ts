@@ -203,6 +203,8 @@ export { IRemoteSocketFactoryService } from 'vs/platform/remote/common/remoteSoc
 export { IFilesConfigurationService } from 'vs/workbench/services/filesConfiguration/common/filesConfigurationService'
 export { ILabelService } from 'vs/platform/label/common/label'
 export { IWorkbenchLayoutService } from 'vs/workbench/services/layout/browser/layoutService'
+export { ILanguagePackService } from 'vs/platform/languagePacks/common/languagePacks'
+export { ILocaleService } from 'vs/workbench/services/localization/common/locale'
 
 // Export all Notification service parts
 export {
