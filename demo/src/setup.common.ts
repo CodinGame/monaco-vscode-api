@@ -55,6 +55,7 @@ import getSpeechServiceOverride from '@codingame/monaco-vscode-speech-service-ov
 import getSurveyServiceOverride from '@codingame/monaco-vscode-survey-service-override'
 import getUpdateServiceOverride from '@codingame/monaco-vscode-update-service-override'
 import getExplorerServiceOverride from '@codingame/monaco-vscode-explorer-service-override'
+import getLocalizationServiceOverride from '@codingame/monaco-vscode-localization-service-override'
 import { EnvironmentOverride } from 'vscode/workbench'
 import { Worker } from './tools/crossOriginWorker'
 import defaultKeybindings from './user/keybindings.json?raw'
@@ -248,6 +249,8 @@ export const constructOptions: IWorkbenchConstructionOptions = {
     message: 'Welcome in monaco-vscode-api demo'
   },
   productConfiguration: {
+    nameShort: 'monaco-vscode-api',
+    nameLong: 'monaco-vscode-api',
     extensionsGallery: {
       serviceUrl: 'https://open-vsx.org/vscode/gallery',
       itemUrl: 'https://open-vsx.org/vscode/item',
@@ -322,5 +325,66 @@ export const commonServices: IEditorOverrideServices = {
   ...getSpeechServiceOverride(),
   ...getSurveyServiceOverride(),
   ...getUpdateServiceOverride(),
-  ...getExplorerServiceOverride()
+  ...getExplorerServiceOverride(),
+  ...getLocalizationServiceOverride({
+    async clearLocale () {
+      const url = new URL(window.location.href)
+      url.searchParams.delete('locale')
+      window.history.pushState(null, '', url.toString())
+    },
+    async setLocale (id) {
+      const url = new URL(window.location.href)
+      url.searchParams.set('locale', id)
+      window.history.pushState(null, '', url.toString())
+    },
+    availableLanguages: [{
+      locale: 'en',
+      languageName: 'English'
+    }, {
+      locale: 'cs',
+      languageName: 'Czech'
+    }, {
+      locale: 'de',
+      languageName: 'German'
+    }, {
+      locale: 'es',
+      languageName: 'Spanish'
+    }, {
+      locale: 'fr',
+      languageName: 'French'
+    }, {
+      locale: 'it',
+      languageName: 'Italian'
+    }, {
+      locale: 'ja',
+      languageName: 'Japanese'
+    }, {
+      locale: 'ko',
+      languageName: 'Korean'
+    }, {
+      locale: 'pl',
+      languageName: 'Polish'
+    }, {
+      locale: 'pt-br',
+      languageName: 'Portuguese (Brazil)'
+    }, {
+      locale: 'qps-ploc',
+      languageName: 'Pseudo Language'
+    }, {
+      locale: 'ru',
+      languageName: 'Russian'
+    }, {
+      locale: 'tr',
+      languageName: 'Turkish'
+    }, {
+      locale: 'zh-hans',
+      languageName: 'Chinese (Simplified)'
+    }, {
+      locale: 'zh-hant',
+      languageName: 'Chinese (Traditional)'
+    }, {
+      locale: 'en',
+      languageName: 'English'
+    }]
+  })
 }

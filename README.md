@@ -236,6 +236,8 @@ Additionally, several packages that include the VSCode version of some services 
   - Survey/feedback support
 - **Update**
   - Update detection, release notes...
+- **Localization**
+  - Register callbacks to update the display language from the VSCode UI (either from the `Set Display Language` command or from the extension gallery extension packs)
 
 Usage:
 

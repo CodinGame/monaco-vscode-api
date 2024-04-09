@@ -80,19 +80,6 @@ void getApi().then(async vscode => {
     code: 42
   }])
 
-  const locale = new URLSearchParams(window.location.search).get('locale') ?? ''
-  const select: HTMLSelectElement = document.querySelector('#localeSelect')!
-  select.value = locale
-  select.addEventListener('change', () => {
-    const url = new URL(window.location.href)
-    if (select.value !== '') {
-      url.searchParams.set('locale', select.value)
-    } else {
-      url.searchParams.delete('locale')
-    }
-    window.location.href = url.toString()
-  })
-
   document.querySelector('#toggleFullWorkbench')!.addEventListener('click', async () => {
     const url = new URL(window.location.href)
     if (url.searchParams.get('mode') === 'full-workbench') {

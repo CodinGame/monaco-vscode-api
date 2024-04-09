@@ -82,7 +82,7 @@ export default rollup.defineConfig([
             return `
 import { registerLocalization } from 'vscode/l10n'
 import content from '${path.resolve(id, mainTranslation.path)}'
-registerLocalization('${mainLocalization.languageId}', content, {
+registerLocalization('${packageJson.publisher}.${packageJson.name}', '${mainLocalization.languageId}', content, {
 ${Object.entries(translationAssets).map(([id, assetRef]) => `  '${id}': new URL(import.meta.ROLLUP_FILE_URL_${assetRef}, import.meta.url).href`).join(',\n')}
 })
   `
