@@ -24,6 +24,10 @@ import { ExtensionEnablementService } from 'vs/workbench/services/extensionManag
 import { ExtensionUrlHandler, IExtensionUrlHandler } from 'vs/workbench/services/extensions/browser/extensionUrlHandler'
 import { IRemoteAgentService } from 'vs/workbench/services/remote/common/remoteAgentService'
 import { IInstantiationService } from 'vs/platform/instantiation/common/instantiation'
+import { IExtensionsScannerService } from 'vs/platform/extensionManagement/common/extensionsScannerService'
+import { ExtensionsScannerService } from 'vs/workbench/services/extensions/browser/extensionsScannerService'
+import { ExtensionsProfileScannerService } from 'vs/workbench/services/extensionManagement/browser/extensionsProfileScannerService'
+import { IExtensionsProfileScannerService } from 'vs/platform/extensionManagement/common/extensionsProfileScannerService'
 import { ILabelService } from 'vs/platform/label/common/label'
 import { IExtensionFeaturesManagementService } from 'vs/workbench/services/extensionManagement/common/extensionFeatures'
 import { ExtensionFeaturesManagementService } from 'vs/workbench/services/extensionManagement/common/extensionFeaturesManagemetService'
@@ -101,6 +105,8 @@ export default function getServiceOverride (options: ExtensionGalleryOptions = {
     [IRemoteUserDataProfilesService.toString()]: new SyncDescriptor(RemoteUserDataProfilesService, [], true),
     [IWorkbenchExtensionEnablementService.toString()]: new SyncDescriptor(ExtensionEnablementService, [], true),
     [IExtensionUrlHandler.toString()]: new SyncDescriptor(ExtensionUrlHandler, [], true),
-    [IExtensionFeaturesManagementService.toString()]: new SyncDescriptor(ExtensionFeaturesManagementService, [], true)
+    [IExtensionFeaturesManagementService.toString()]: new SyncDescriptor(ExtensionFeaturesManagementService, [], true),
+    [IExtensionsScannerService.toString()]: new SyncDescriptor(ExtensionsScannerService, [], true),
+    [IExtensionsProfileScannerService.toString()]: new SyncDescriptor(ExtensionsProfileScannerService, [], true)
   }
 }

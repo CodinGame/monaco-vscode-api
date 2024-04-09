@@ -4,11 +4,12 @@ Date: Mon, 11 Mar 2024 17:51:04 +0100
 Subject: [PATCH] feat: only apply style on specific class
 
 ---
- src/vs/workbench/browser/media/style.css | 134 ++++++++++-------------
- 1 file changed, 58 insertions(+), 76 deletions(-)
+ src/vs/workbench/browser/media/style.css | 136 ++++++++++-------------
+ src/vs/workbench/browser/style.ts        |  10 +-
+ 2 files changed, 64 insertions(+), 82 deletions(-)
 
 diff --git a/src/vs/workbench/browser/media/style.css b/src/vs/workbench/browser/media/style.css
-index db4862c7427..63c0d15ad5e 100644
+index 9299856d6ff..06cb3c3e140 100644
 --- a/src/vs/workbench/browser/media/style.css
 +++ b/src/vs/workbench/browser/media/style.css
 @@ -9,56 +9,38 @@
@@ -89,7 +90,7 @@ index db4862c7427..63c0d15ad5e 100644
  	touch-action: none; /* Disable browser handling of all panning and zooming gestures. Removes 300ms touch delay. */
  }
  
-@@ -79,65 +61,65 @@ body.web {
+@@ -79,42 +61,42 @@ body.web {
  	border: 0;
  }
  
@@ -137,6 +138,15 @@ index db4862c7427..63c0d15ad5e 100644
  	font-size: 100%;
  }
  
+-.monaco-workbench table {
++.monaco-workbench-part table {
+ 	/*
+ 	 * Somehow this is required when tables show in floating windows
+ 	 * to override the user-agent style which sets a specific color
+@@ -124,30 +106,30 @@ body.web {
+ 	font-size: inherit;
+ }
+ 
 -.monaco-workbench input::placeholder { color: var(--vscode-input-placeholderForeground); }
 -.monaco-workbench input::-webkit-input-placeholder  { color: var(--vscode-input-placeholderForeground); }
 -.monaco-workbench input::-moz-placeholder { color: var(--vscode-input-placeholderForeground); }
@@ -174,7 +184,7 @@ index db4862c7427..63c0d15ad5e 100644
  		-webkit-font-smoothing: antialiased;
  		-moz-osx-font-smoothing: grayscale;
  	}
-@@ -172,7 +154,7 @@ body.web {
+@@ -182,7 +164,7 @@ body.web {
  
  /* Custom Dropdown (select) Arrows */
  
@@ -183,7 +193,7 @@ index db4862c7427..63c0d15ad5e 100644
  	font-family: inherit;
  	appearance: none;
  	-webkit-appearance: none;
-@@ -202,16 +184,16 @@ body.web {
+@@ -212,16 +194,16 @@ body.web {
  
  /* Keyboard Focus Indication Styles */
  
@@ -210,7 +220,7 @@ index db4862c7427..63c0d15ad5e 100644
  	outline-width: 1px;
  	outline-style: solid;
  	outline-offset: -1px;
-@@ -224,19 +206,19 @@ body.web {
+@@ -234,19 +216,19 @@ body.web {
  	background: transparent; /* Search input focus fix when in high contrast */
  }
  
@@ -237,6 +247,46 @@ index db4862c7427..63c0d15ad5e 100644
  	border-color: transparent; /* outline is a square, but border has a radius, so we avoid this glitch when focused (https://github.com/microsoft/vscode/issues/26045) */
  }
  
+diff --git a/src/vs/workbench/browser/style.ts b/src/vs/workbench/browser/style.ts
+index 8fab9bc5b71..30f20a45b2a 100644
+--- a/src/vs/workbench/browser/style.ts
++++ b/src/vs/workbench/browser/style.ts
+@@ -16,12 +16,12 @@ registerThemingParticipant((theme, collector) => {
+ 
+ 	// Background (helps for subpixel-antialiasing on Windows)
+ 	const workbenchBackground = WORKBENCH_BACKGROUND(theme);
+-	collector.addRule(`.monaco-workbench { background-color: ${workbenchBackground}; }`);
++	collector.addRule(`.monaco-workbench-part { background-color: ${workbenchBackground}; }`);
+ 
+ 	// Selection (do NOT remove - https://github.com/microsoft/vscode/issues/169662)
+ 	const windowSelectionBackground = theme.getColor(selectionBackground);
+ 	if (windowSelectionBackground) {
+-		collector.addRule(`.monaco-workbench ::selection { background-color: ${windowSelectionBackground}; }`);
++		collector.addRule(`.monaco-workbench-part ::selection { background-color: ${windowSelectionBackground}; }`);
+ 	}
+ 
+ 	// Update <meta name="theme-color" content=""> based on selected theme
+@@ -45,10 +45,10 @@ registerThemingParticipant((theme, collector) => {
+ 	// allow to select text in monaco editor instances.
+ 	if (isSafari) {
+ 		collector.addRule(`
+-			body.web {
++			.monaco-workbench-part.web {
+ 				touch-action: none;
+ 			}
+-			.monaco-workbench .monaco-editor .view-lines {
++			.monaco-workbench-part .monaco-editor .view-lines {
+ 				user-select: text;
+ 				-webkit-user-select: text;
+ 			}
+@@ -57,6 +57,6 @@ registerThemingParticipant((theme, collector) => {
+ 
+ 	// Update body background color to ensure the home indicator area looks similar to the workbench
+ 	if (isIOS && isStandalone()) {
+-		collector.addRule(`body { background-color: ${workbenchBackground}; }`);
++		collector.addRule(`.monaco-workbench-part { background-color: ${workbenchBackground}; }`);
+ 	}
+ });
 -- 
 2.34.1
 

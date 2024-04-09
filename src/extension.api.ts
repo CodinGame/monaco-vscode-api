@@ -197,7 +197,8 @@ const api: typeof vscode = {
   ViewColumn: extHostTypes.ViewColumn,
   WorkspaceEdit: extHostTypes.WorkspaceEdit,
   // proposed api types
-  DocumentDropEdit: extHostTypes.DocumentDropEdit,
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  DocumentDropEdit: <any>extHostTypes.DocumentDropEdit,
   DocumentPasteEdit: extHostTypes.DocumentPasteEdit,
   InlayHint: extHostTypes.InlayHint,
   InlayHintLabelPart: extHostTypes.InlayHintLabelPart,
@@ -239,7 +240,6 @@ const api: typeof vscode = {
   TextSearchCompleteMessageType: searchExtTypes.TextSearchCompleteMessageType,
   DataTransfer: extHostTypes.DataTransfer,
   DataTransferItem: extHostTypes.DataTransferItem,
-  CoveredCount: extHostTypes.CoveredCount,
   FileCoverage: extHostTypes.FileCoverage,
   StatementCoverage: extHostTypes.StatementCoverage,
   BranchCoverage: extHostTypes.BranchCoverage,
@@ -264,10 +264,6 @@ const api: typeof vscode = {
   InteractiveSessionVoteDirection: extHostTypes.InteractiveSessionVoteDirection,
   ChatCopyKind: extHostTypes.ChatCopyKind,
   InteractiveEditorResponseFeedbackKind: extHostTypes.InteractiveEditorResponseFeedbackKind,
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  StackFrameFocus: <any>extHostTypes.StackFrameFocus,
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  ThreadFocus: <any>extHostTypes.ThreadFocus,
   RelatedInformationType: extHostTypes.RelatedInformationType,
   SpeechToTextStatus: extHostTypes.SpeechToTextStatus,
   KeywordRecognitionStatus: extHostTypes.KeywordRecognitionStatus

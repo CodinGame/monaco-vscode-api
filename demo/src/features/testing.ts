@@ -266,20 +266,11 @@ void getApi().then(async api => {
         run.appendOutput(`Completed ${test.id}\r\n`)
       }
 
-      run.coverageProvider = {
-        provideFileCoverage () {
-          const coverage: vscode.FileCoverage[] = []
-          for (const [uri, statements] of coveredLines) {
-            coverage.push(
-              api.FileCoverage.fromDetails(
-                api.Uri.parse(uri),
-                statements.filter((s): s is vscode.StatementCoverage => s != null)
-              )
-            )
-          }
-
-          return coverage
-        }
+      for (const [uri, statements] of coveredLines) {
+        run.addCoverage(api.FileCoverage.fromDetails(
+          api.Uri.parse(uri),
+          statements.filter((s): s is vscode.StatementCoverage => s != null)
+        ))
       }
 
       run.end()

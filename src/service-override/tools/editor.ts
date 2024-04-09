@@ -34,6 +34,92 @@ import { unsupported } from '../../tools'
 
 export type OpenEditor = (modelRef: IReference<IResolvedTextEditorModel>, options: IEditorOptions | undefined, sideBySide?: boolean) => Promise<ICodeEditor | undefined>
 
+class EmptyEditorGroup implements IEditorGroup, IEditorGroupView {
+  isTransient = () => false
+  windowId = mainWindow.vscodeWindowId
+  get groupsView () {
+    return unsupported()
+  }
+
+  notifyLabelChanged (): void {}
+  createEditorActions = unsupported
+  onDidFocus = Event.None
+  onDidOpenEditorFail = Event.None
+  whenRestored = Promise.resolve()
+  get titleHeight () {
+    return unsupported()
+  }
+
+  disposed = false
+  setActive = unsupported
+  notifyIndexChanged = unsupported
+  relayout = unsupported
+  dispose = unsupported
+  toJSON = unsupported
+  preferredWidth?: number | undefined
+  preferredHeight?: number | undefined
+  get element () {
+    return unsupported()
+  }
+
+  minimumWidth = 0
+  maximumWidth = Number.POSITIVE_INFINITY
+  minimumHeight = 0
+  maximumHeight = Number.POSITIVE_INFINITY
+  onDidChange = Event.None
+  layout = unsupported
+  onDidModelChange = Event.None
+  onWillDispose = Event.None
+  onDidActiveEditorChange = Event.None
+  onWillCloseEditor = Event.None
+  onDidCloseEditor = Event.None
+  onWillMoveEditor = Event.None
+  onWillOpenEditor = Event.None
+  id = 0
+  index = 0
+  label = 'main'
+  ariaLabel = 'main'
+  activeEditorPane = undefined
+  activeEditor = null
+  previewEditor = null
+  count = 0
+  isEmpty = false
+  isLocked = false
+  stickyCount = 0
+  editors = []
+  get scopedContextKeyService (): IContextKeyService { return StandaloneServices.get(IContextKeyService) }
+  getEditors = () => []
+  findEditors = () => []
+  getEditorByIndex = () => undefined
+  getIndexOfEditor = unsupported
+  openEditor = unsupported
+  openEditors = unsupported
+  isPinned = () => false
+  isSticky = () => false
+  isActive = () => false
+  contains = () => false
+  moveEditor = unsupported
+  moveEditors = unsupported
+  copyEditor = unsupported
+  copyEditors = unsupported
+  closeEditor = unsupported
+  closeEditors = unsupported
+  closeAllEditors = unsupported
+  replaceEditors = unsupported
+  pinEditor = () => {}
+  stickEditor = () => {}
+  unstickEditor = () => {}
+  lock = () => {}
+  focus (): void {
+    // ignore
+  }
+
+  isFirst = unsupported
+  isLast = unsupported
+}
+
+export const fakeActiveGroup = new EmptyEditorGroup()
+
 class SimpleEditorPane implements IEditorPane {
   constructor (private editor?: ICodeEditor) {}
 
@@ -43,7 +129,7 @@ class SimpleEditorPane implements IEditorPane {
   onDidBlur = Event.None
   input = undefined
   options = undefined
-  group = undefined
+  group = fakeActiveGroup
   scopedContextKeyService = undefined
   get minimumWidth () { return DEFAULT_EDITOR_MIN_DIMENSIONS.width }
   get maximumWidth () { return DEFAULT_EDITOR_MAX_DIMENSIONS.width }
@@ -305,6 +391,8 @@ class StandaloneEditorGroup extends Disposable implements IEditorGroup, IEditorG
     }
   }
 
+  isTransient = () => false
+
   windowId = mainWindow.vscodeWindowId
 
   get groupsView () {
@@ -528,7 +616,6 @@ export class MonacoDelegateEditorGroupsService<D extends IEditorGroupsService> e
   }
 
   get mainPart (): IEditorGroupsService['mainPart'] { return this.delegate.mainPart }
-  get activePart (): IEditorGroupsService['activePart'] { return this.delegate.activePart }
   onDidChangeGroupMaximized = this.delegate.onDidChangeGroupMaximized
   getPart(group: number | IEditorGroup): IEditorPart
   getPart(container: unknown): IEditorPart | undefined

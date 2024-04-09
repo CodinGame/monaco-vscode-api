@@ -6,7 +6,7 @@ import { IDiffEditorOptions, IEditorOptions } from 'vs/editor/common/config/edit
 import { IEditorConfiguration } from 'vs/workbench/browser/parts/editor/textEditor'
 import { isObject } from 'vs/base/common/types'
 import { deepClone, distinct } from 'vs/base/common/objects'
-import { CodeEditorWidget } from 'vs/editor/browser/widget/codeEditorWidget'
+import { CodeEditorWidget } from 'vs/editor/browser/widget/codeEditor/codeEditorWidget'
 import type { create as createEditor, createDiffEditor } from 'vs/editor/standalone/browser/standaloneEditor'
 import { errorHandler } from 'vs/base/common/errors'
 import { FoldingModel, setCollapseStateForMatchingLines } from 'vs/editor/contrib/folding/browser/foldingModel'

@@ -1,0 +1,175 @@
+From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
+From: =?UTF-8?q?Lo=C3=AFc=20Mangeonjean?= <loic@coderpad.io>
+Date: Mon, 8 Apr 2024 15:39:58 +0200
+Subject: [PATCH] fixup! feat: only apply style on specific class
+
+---
+ src/vs/workbench/browser/media/style.css | 84 ++++++++++++------------
+ 1 file changed, 43 insertions(+), 41 deletions(-)
+
+diff --git a/src/vs/workbench/browser/media/style.css b/src/vs/workbench/browser/media/style.css
+index 06cb3c3e140..7e3f89d012d 100644
+--- a/src/vs/workbench/browser/media/style.css
++++ b/src/vs/workbench/browser/media/style.css
+@@ -9,28 +9,28 @@
+ 
+ /* Font Families (with CJK support) */
+ 
+-.mac .monaco-workbench-part{ font-family: -apple-system, BlinkMacSystemFont, sans-serif; }
+-.mac:lang(zh-Hans) .monaco-workbench-part { font-family: -apple-system, BlinkMacSystemFont, "PingFang SC", "Hiragino Sans GB", sans-serif; }
+-.mac:lang(zh-Hant) .monaco-workbench-part { font-family: -apple-system, BlinkMacSystemFont, "PingFang TC", sans-serif; }
+-.mac:lang(ja) .monaco-workbench-part { font-family: -apple-system, BlinkMacSystemFont, "Hiragino Kaku Gothic Pro", sans-serif; }
+-.mac:lang(ko) .monaco-workbench-part { font-family: -apple-system, BlinkMacSystemFont, "Nanum Gothic", "Apple SD Gothic Neo", "AppleGothic", sans-serif; }
+-
+-.windows .monaco-workbench-part { font-family: "Segoe WPC", "Segoe UI", sans-serif; }
+-.windows:lang(zh-Hans) .monaco-workbench-part { font-family: "Segoe WPC", "Segoe UI", "Microsoft YaHei", sans-serif; }
+-.windows:lang(zh-Hant) .monaco-workbench-part { font-family: "Segoe WPC", "Segoe UI", "Microsoft Jhenghei", sans-serif; }
+-.windows:lang(ja) .monaco-workbench-part { font-family: "Segoe WPC", "Segoe UI", "Yu Gothic UI", "Meiryo UI", sans-serif; }
+-.windows:lang(ko) .monaco-workbench-part { font-family: "Segoe WPC", "Segoe UI", "Malgun Gothic", "Dotom", sans-serif; }
++.mac .monaco-workbench-part, .mac.monaco-workbench-part { font-family: -apple-system, BlinkMacSystemFont, sans-serif; }
++.mac:lang(zh-Hans) .monaco-workbench-part, .mac:lang(zh-Hans).monaco-workbench-part { font-family: -apple-system, BlinkMacSystemFont, "PingFang SC", "Hiragino Sans GB", sans-serif; }
++.mac:lang(zh-Hant) .monaco-workbench-part, .mac:lang(zh-Hant).monaco-workbench-part { font-family: -apple-system, BlinkMacSystemFont, "PingFang TC", sans-serif; }
++.mac:lang(ja) .monaco-workbench-part, .mac:lang(ja).monaco-workbench-part { font-family: -apple-system, BlinkMacSystemFont, "Hiragino Kaku Gothic Pro", sans-serif; }
++.mac:lang(ko) .monaco-workbench-part, .mac:lang(ko).monaco-workbench-part { font-family: -apple-system, BlinkMacSystemFont, "Nanum Gothic", "Apple SD Gothic Neo", "AppleGothic", sans-serif; }
++
++.windows .monaco-workbench-part, .windows.monaco-workbench-part { font-family: "Segoe WPC", "Segoe UI", sans-serif; }
++.windows:lang(zh-Hans) .monaco-workbench-part, .windows:lang(zh-Hans).monaco-workbench-part { font-family: "Segoe WPC", "Segoe UI", "Microsoft YaHei", sans-serif; }
++.windows:lang(zh-Hant) .monaco-workbench-part, .windows:lang(zh-Hant).monaco-workbench-part { font-family: "Segoe WPC", "Segoe UI", "Microsoft Jhenghei", sans-serif; }
++.windows:lang(ja) .monaco-workbench-part, .windows:lang(ja).monaco-workbench-part { font-family: "Segoe WPC", "Segoe UI", "Yu Gothic UI", "Meiryo UI", sans-serif; }
++.windows:lang(ko) .monaco-workbench-part, .windows:lang(ko).monaco-workbench-part { font-family: "Segoe WPC", "Segoe UI", "Malgun Gothic", "Dotom", sans-serif; }
+ 
+ /* Linux: add `system-ui` as first font and not `Ubuntu` to allow other distribution pick their standard OS font */
+-.linux .monaco-workbench-part { font-family: system-ui, "Ubuntu", "Droid Sans", sans-serif; }
+-.linux:lang(zh-Hans) .monaco-workbench-part { font-family: system-ui, "Ubuntu", "Droid Sans", "Source Han Sans SC", "Source Han Sans CN", "Source Han Sans", sans-serif; }
+-.linux:lang(zh-Hant) .monaco-workbench-partt { font-family: system-ui, "Ubuntu", "Droid Sans", "Source Han Sans TC", "Source Han Sans TW", "Source Han Sans", sans-serif; }
+-.linux:lang(ja) .monaco-workbench-part { font-family: system-ui, "Ubuntu", "Droid Sans", "Source Han Sans J", "Source Han Sans JP", "Source Han Sans", sans-serif; }
+-.linux:lang(ko) .monaco-workbench-part { font-family: system-ui, "Ubuntu", "Droid Sans", "Source Han Sans K", "Source Han Sans JR", "Source Han Sans", "UnDotum", "FBaekmuk Gulim", sans-serif; }
++.linux .monaco-workbench-part, .linux.monaco-workbench-part { font-family: system-ui, "Ubuntu", "Droid Sans", sans-serif; }
++.linux:lang(zh-Hans) .monaco-workbench-part, .linux:lang(zh-Hans).monaco-workbench-part { font-family: system-ui, "Ubuntu", "Droid Sans", "Source Han Sans SC", "Source Han Sans CN", "Source Han Sans", sans-serif; }
++.linux:lang(zh-Hant) .monaco-workbench-part, .linux:lang(zh-Hant).monaco-workbench-part { font-family: system-ui, "Ubuntu", "Droid Sans", "Source Han Sans TC", "Source Han Sans TW", "Source Han Sans", sans-serif; }
++.linux:lang(ja) .monaco-workbench-part, .linux:lang(ja).monaco-workbench-part { font-family: system-ui, "Ubuntu", "Droid Sans", "Source Han Sans J", "Source Han Sans JP", "Source Han Sans", sans-serif; }
++.linux:lang(ko) .monaco-workbench-part, .linux:lang(ko).monaco-workbench-part { font-family: system-ui, "Ubuntu", "Droid Sans", "Source Han Sans K", "Source Han Sans JR", "Source Han Sans", "UnDotum", "FBaekmuk Gulim", sans-serif; }
+ 
+-.mac .monaco-workbench-part { --monaco-monospace-font: "SF Mono", Monaco, Menlo, Courier, monospace; }
+-.windows .monaco-workbench-part { --monaco-monospace-font: Consolas, "Courier New", monospace; }
+-.linux .monaco-workbench-part { --monaco-monospace-font: "Ubuntu Mono", "Liberation Mono", "DejaVu Sans Mono", "Courier New", monospace; }
++.mac .monaco-workbench-part, .mac.monaco-workbench-part { --monaco-monospace-font: "SF Mono", Monaco, Menlo, Courier, monospace; }
++.windows .monaco-workbench-part, .windows.monaco-workbench-part { --monaco-monospace-font: Consolas, "Courier New", monospace; }
++.linux .monaco-workbench-part, .linux.monaco-workbench-part { --monaco-monospace-font: "Ubuntu Mono", "Liberation Mono", "DejaVu Sans Mono", "Courier New", monospace; }
+ 
+ /* Global Styles */
+ 
+@@ -57,7 +57,7 @@
+ 	border-radius: 10px; /* macOS Big Sur increased rounded corners size */
+ }
+ 
+-.monaco-workbench img {
++.monaco-workbench-part img {
+ 	border: 0;
+ }
+ 
+@@ -70,7 +70,9 @@
+ }
+ 
+ .monaco-workbench.hc-black .monaco-workbench-part p > a,
+-.monaco-workbench.hc-light .monaco-workbench-part p > a {
++.monaco-workbench.hc-light .monaco-workbench-part p > a,
++.monaco-workbench.hc-black.monaco-workbench-part p > a,
++.monaco-workbench.hc-light.monaco-workbench-part p > a {
+ 	text-decoration: underline !important;
+ }
+ 
+@@ -135,19 +137,19 @@
+ 	}
+ }
+ 
+-.monaco-workbench .context-view {
++.monaco-workbench-part .context-view {
+ 	-webkit-app-region: no-drag;
+ }
+ 
+-.monaco-workbench .codicon {
++.monaco-workbench-part .codicon {
+ 	color: var(--vscode-icon-foreground);
+ }
+ 
+-.monaco-workbench .codicon[class*='codicon-'] {
++.monaco-workbench-part .codicon[class*='codicon-'] {
+ 	font-size: 16px; /* sets font-size for codicons in workbench (https://github.com/microsoft/vscode/issues/98495) */
+ }
+ 
+-.monaco-workbench .predefined-file-icon[class*='codicon-']::before {
++.monaco-workbench-part .predefined-file-icon[class*='codicon-']::before {
+ 	font-family: 'codicon';
+ 	width: 16px;
+ 	padding-left: 3px; /* width (16px) - font-size (13px) = padding-left (3px) */
+@@ -173,11 +175,11 @@
+ 	border: 1px solid;
+ }
+ 
+-.monaco-workbench .select-container {
++.monaco-workbench-part .select-container {
+ 	position: relative;
+ }
+ 
+-.monaco-workbench .select-container:after {
++.monaco-workbench-part .select-container:after {
+ 	content: "\eab4";
+ 	font-family: codicon;
+ 	font-size: 16px;
+@@ -256,38 +258,38 @@
+ 	color: var(--vscode-list-focusHighlightForeground);
+ }
+ 
+-.monaco-workbench .synthetic-focus :focus {
++.monaco-workbench-part .synthetic-focus :focus {
+ 	outline: 0 !important; /* elements within widgets that draw synthetic-focus should never show focus */
+ }
+ 
+-.monaco-workbench .monaco-inputbox.info.synthetic-focus,
+-.monaco-workbench .monaco-inputbox.warning.synthetic-focus,
+-.monaco-workbench .monaco-inputbox.error.synthetic-focus,
+-.monaco-workbench .monaco-inputbox.info input[type="text"]:focus,
+-.monaco-workbench .monaco-inputbox.warning input[type="text"]:focus,
+-.monaco-workbench .monaco-inputbox.error input[type="text"]:focus {
++.monaco-workbench-part .monaco-inputbox.info.synthetic-focus,
++.monaco-workbench-part .monaco-inputbox.warning.synthetic-focus,
++.monaco-workbench-part .monaco-inputbox.error.synthetic-focus,
++.monaco-workbench-part .monaco-inputbox.info input[type="text"]:focus,
++.monaco-workbench-part .monaco-inputbox.warning input[type="text"]:focus,
++.monaco-workbench-part .monaco-inputbox.error input[type="text"]:focus {
+ 	outline: 0 !important; /* outline is not going well with decoration */
+ }
+ 
+-.monaco-workbench .monaco-list:focus {
++.monaco-workbench-part .monaco-list:focus {
+ 	outline: 0 !important; /* tree indicates focus not via outline but through the focused item */
+ }
+ 
+-.monaco-workbench a.monaco-link:hover {
++.monaco-workbench-part a.monaco-link:hover {
+ 	text-decoration: underline; /* render underline on hover for accessibility requirements */
+ }
+ 
+-.monaco-workbench .monaco-action-bar:not(.vertical) .action-label:not(.disabled):hover,
+-.monaco-workbench .monaco-action-bar:not(.vertical) .monaco-dropdown-with-primary:not(.disabled):hover {
++.monaco-workbench-part .monaco-action-bar:not(.vertical) .action-label:not(.disabled):hover,
++.monaco-workbench-part .monaco-action-bar:not(.vertical) .monaco-dropdown-with-primary:not(.disabled):hover {
+ 	background-color: var(--vscode-toolbar-hoverBackground);
+ }
+ 
+-.monaco-workbench .monaco-action-bar:not(.vertical) .action-item.active .action-label:not(.disabled),
+-.monaco-workbench .monaco-action-bar:not(.vertical) .monaco-dropdown.active .action-label:not(.disabled) {
++.monaco-workbench-part .monaco-action-bar:not(.vertical) .action-item.active .action-label:not(.disabled),
++.monaco-workbench-part .monaco-action-bar:not(.vertical) .monaco-dropdown.active .action-label:not(.disabled) {
+ 	background-color: var(--vscode-toolbar-activeBackground);
+ }
+ 
+-.monaco-workbench .monaco-action-bar:not(.vertical) .action-item .action-label:hover:not(.disabled) {
++.monaco-workbench-part .monaco-action-bar:not(.vertical) .action-item .action-label:hover:not(.disabled) {
+ 	outline: 1px dashed var(--vscode-toolbar-hoverOutline);
+ 	outline-offset: -1px;
+ }
+-- 
+2.34.1
+

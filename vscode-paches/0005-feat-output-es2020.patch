@@ -11,7 +11,7 @@ Subject: [PATCH] feat: output es2020
  4 files changed, 6 insertions(+), 5 deletions(-)
 
 diff --git a/build/lib/standalone.js b/build/lib/standalone.js
-index d24023726cd..2ffc91efc9c 100644
+index 796415b5721..723a1127492 100644
 --- a/build/lib/standalone.js
 +++ b/build/lib/standalone.js
 @@ -134,7 +134,7 @@ function createESMSourcesAndResources2(options) {

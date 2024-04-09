@@ -8,10 +8,10 @@ Subject: [PATCH] fix: allow importing vscode-oniguruma
  1 file changed, 1 insertion(+)
 
 diff --git a/.eslintrc.json b/.eslintrc.json
-index 0922babfe92..59769eeda54 100644
+index b174b6f348a..851564cf0e5 100644
 --- a/.eslintrc.json
 +++ b/.eslintrc.json
-@@ -671,6 +671,7 @@
+@@ -669,6 +669,7 @@
  							"v8-inspect-profiler",
  							"vscode-regexpp",
  							"vscode-textmate",

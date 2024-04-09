@@ -8,10 +8,10 @@ Subject: [PATCH] feat: hide terminal view if there is no backend available
  1 file changed, 1 insertion(+)
 
 diff --git a/src/vs/workbench/contrib/terminal/browser/terminal.contribution.ts b/src/vs/workbench/contrib/terminal/browser/terminal.contribution.ts
-index fba9c78e785..336d89cfcca 100644
+index 19b81cf9659..fce5c1d4eb4 100644
 --- a/src/vs/workbench/contrib/terminal/browser/terminal.contribution.ts
 +++ b/src/vs/workbench/contrib/terminal/browser/terminal.contribution.ts
-@@ -138,6 +138,7 @@ Registry.as<IViewsRegistry>(ViewContainerExtensions.ViewsRegistry).registerViews
+@@ -137,6 +137,7 @@ Registry.as<IViewsRegistry>(ViewContainerExtensions.ViewsRegistry).registerViews
  	canToggleVisibility: false,
  	canMoveView: true,
  	ctorDescriptor: new SyncDescriptor(TerminalViewPane),

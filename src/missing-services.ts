@@ -125,9 +125,9 @@ import { INotebookKernelHistoryService, INotebookKernelService } from 'vs/workbe
 import { INotebookRendererMessagingService } from 'vs/workbench/contrib/notebook/common/notebookRendererMessagingService'
 import { IInteractiveDocumentService } from 'vs/workbench/contrib/interactive/browser/interactiveDocumentService'
 import { IInlineChatService } from 'vs/workbench/contrib/inlineChat/common/inlineChat'
-import { IChatAccessibilityService, IChatWidgetService, IQuickChatService } from 'vs/workbench/contrib/chat/browser/chat'
+import { IChatAccessibilityService, IChatCodeBlockContextProviderService, IChatWidgetService, IQuickChatService } from 'vs/workbench/contrib/chat/browser/chat'
 import { IRemoteExplorerService } from 'vs/workbench/services/remote/common/remoteExplorerService'
-import { IAuthenticationService } from 'vs/workbench/services/authentication/common/authentication'
+import { IAuthenticationExtensionsService, IAuthenticationService } from 'vs/workbench/services/authentication/common/authentication'
 import { ITimelineService } from 'vs/workbench/contrib/timeline/common/timeline'
 import { ITestService } from 'vs/workbench/contrib/testing/common/testService'
 import { ISecretStorageService } from 'vs/platform/secrets/common/secrets'
@@ -140,7 +140,6 @@ import { IEncryptionService } from 'vs/platform/encryption/common/encryptionServ
 import { ITestResultService } from 'vs/workbench/contrib/testing/common/testResultService'
 import { IDiagnosticsService, NullDiagnosticsService } from 'vs/platform/diagnostics/common/diagnostics'
 import { INotebookSearchService } from 'vs/workbench/contrib/search/common/notebookSearch'
-import { IChatProviderService } from 'vs/workbench/contrib/chat/common/chatProvider'
 import { IChatSlashCommandService } from 'vs/workbench/contrib/chat/common/chatSlashCommands'
 import { IChatVariablesService } from 'vs/workbench/contrib/chat/common/chatVariables'
 import { IAiRelatedInformationService } from 'vs/workbench/services/aiRelatedInformation/common/aiRelatedInformation'
@@ -193,8 +192,14 @@ import { IExtensionFeaturesManagementService } from 'vs/workbench/services/exten
 import { IEditorPaneService } from 'vs/workbench/services/editor/common/editorPaneService'
 import { IWorkspaceIdentityService } from 'vs/workbench/services/workspaces/common/workspaceIdentityService'
 import { IDefaultLogLevelsService } from 'vs/workbench/contrib/logs/common/defaultLogLevels'
-import { unsupported } from './tools'
+import { ILanguageModelsService } from 'vs/workbench/contrib/chat/common/languageModels'
+import { IExtensionsScannerService } from 'vs/platform/extensionManagement/common/extensionsScannerService'
+import { IAuthenticationAccessService } from 'vs/workbench/services/authentication/browser/authenticationAccessService'
+import { IAuthenticationUsageService } from 'vs/workbench/services/authentication/browser/authenticationUsageService'
+import { ICustomEditorLabelService } from 'vs/workbench/services/editor/common/customEditorLabelService'
+import { IExtensionsProfileScannerService } from 'vs/platform/extensionManagement/common/extensionsProfileScannerService'
 import { getBuiltInExtensionTranslationsUris } from './l10n'
+import { unsupported } from './tools'
 
 registerSingleton(ILoggerService, class NullLoggerService extends AbstractLoggerService {
   constructor () {
@@ -327,6 +332,7 @@ registerSingleton(IFileService, class FileService implements IFileService {
 }, InstantiationType.Eager)
 
 class EmptyEditorGroup implements IEditorGroup, IEditorGroupView {
+  isTransient = () => false
   windowId = mainWindow.vscodeWindowId
   get groupsView () {
     return unsupported()
@@ -1040,6 +1046,7 @@ registerSingleton(ICustomEndpointTelemetryService, NullEndpointTelemetryService,
 class MonacoSearchService implements ISearchService {
   _serviceBrand: undefined
   constructor (@IModelService private modelService: IModelService) {}
+  aiTextSearch = unsupported
   textSearchSplitSyncAsync = unsupported
 
   async textSearch (): Promise<ISearchComplete> {
@@ -1098,6 +1105,8 @@ registerSingleton(ITimerService, class TimerService implements ITimerService {
 
 registerSingleton(IExtensionsWorkbenchService, class ExtensionsWorkbenchService implements IExtensionsWorkbenchService {
   _serviceBrand: undefined
+  getResourceExtensions = unsupported
+  updateRunningExtensions = unsupported
   togglePreRelease = unsupported
   isAutoUpdateEnabledFor = unsupported
   updateAutoUpdateEnablementFor = unsupported
@@ -1194,6 +1203,42 @@ registerSingleton(IWebExtensionsScannerService, class WebExtensionsScannerServic
   copyExtensions = async () => {}
   updateMetadata = unsupported
   scanExtensionManifest = async () => null
+}, InstantiationType.Eager)
+
+registerSingleton(IExtensionsScannerService, class ExtensionsScannerService implements IExtensionsScannerService {
+  _serviceBrand: undefined
+  get systemExtensionsLocation () {
+    return unsupported()
+  }
+
+  get userExtensionsLocation () {
+    return unsupported()
+  }
+
+  onDidChangeCache = Event.None
+  getTargetPlatform = unsupported
+  scanAllExtensions = unsupported
+  scanSystemExtensions = unsupported
+  scanUserExtensions = unsupported
+  scanExtensionsUnderDevelopment = unsupported
+  scanExistingExtension = unsupported
+  scanOneOrMultipleExtensions = unsupported
+  scanMultipleExtensions = unsupported
+  scanMetadata = unsupported
+  updateMetadata = unsupported
+  initializeDefaultProfileExtensions = unsupported
+}, InstantiationType.Eager)
+
+registerSingleton(IExtensionsProfileScannerService, class ExtensionsProfileScannerService implements IExtensionsProfileScannerService {
+  _serviceBrand: undefined
+  onAddExtensions = Event.None
+  onDidAddExtensions = Event.None
+  onRemoveExtensions = Event.None
+  onDidRemoveExtensions = Event.None
+  scanProfileExtensions = unsupported
+  addExtensionsToProfile = unsupported
+  updateMetadata = unsupported
+  removeExtensionFromProfile = unsupported
 }, InstantiationType.Eager)
 
 registerSingleton(IExtensionIgnoredRecommendationsService, class ExtensionIgnoredRecommendationsService implements IExtensionIgnoredRecommendationsService {
@@ -1601,6 +1646,7 @@ registerSingleton(IExtensionGalleryService, class ExtensionGalleryService implem
 
 registerSingleton(ITerminalService, class TerminalService implements ITerminalService {
   _serviceBrand: undefined
+  onAnyInstanceData = Event.None
   moveIntoNewEditor = unsupported
   detachedInstances = []
   onAnyInstanceDataInput = Event.None
@@ -2080,11 +2126,15 @@ registerSingleton(IQuickChatService, class QuickChatService implements IQuickCha
 }, InstantiationType.Delayed)
 
 registerSingleton(IChatAgentService, class QuickChatService implements IChatAgentService {
+  _serviceBrand = undefined
+  registerAgentImplementation = unsupported
+  registerDynamicAgent = unsupported
+  getActivatedAgents = () => []
+  getAgentsByName = () => []
   getFollowups = unsupported
   getDefaultAgent = unsupported
   getSecondaryAgent = unsupported
   updateAgent = unsupported
-  _serviceBrand = undefined
   onDidChangeAgents = Event.None
   registerAgentData = unsupported
   registerAgentCallback = unsupported
@@ -2175,6 +2225,7 @@ registerSingleton(IExternalUriOpenerService, class ExternalUriOpenerService impl
 }, InstantiationType.Delayed)
 
 registerSingleton(IAccessibleViewService, class AccessibleViewService implements IAccessibleViewService {
+  getCodeBlockContext = () => undefined
   showLastProvider = unsupported
   showAccessibleViewHelp = unsupported
   goToSymbol = unsupported
@@ -2191,8 +2242,13 @@ registerSingleton(IAccessibleViewService, class AccessibleViewService implements
 }, InstantiationType.Delayed)
 
 registerSingleton(IWorkbenchExtensionManagementService, class WorkbenchExtensionManagementService implements IWorkbenchExtensionManagementService {
-  toggleAppliationScope = async (extension: ILocalExtension) => extension
   _serviceBrand: undefined
+  onDidEnableExtensions = Event.None
+  isWorkspaceExtensionsSupported = () => false
+  getExtensions = async () => []
+  getInstalledWorkspaceExtensions = async () => []
+  installResourceExtension = unsupported
+  toggleAppliationScope = async (extension: ILocalExtension) => extension
   onInstallExtension = Event.None
   onDidInstallExtensions = Event.None
   onUninstallExtension = Event.None
@@ -2309,6 +2365,7 @@ registerSingleton(ICommentService, class CommentService implements ICommentServi
     return unsupported()
   }
 
+  resourceHasCommentingRanges = () => false
   onDidChangeActiveEditingCommentThread = Event.None
   setActiveEditingCommentThread = unsupported
   setActiveCommentAndThread = unsupported
@@ -2485,35 +2542,47 @@ registerSingleton(IRemoteExplorerService, class RemoteExplorerService implements
 
 registerSingleton(IAuthenticationService, class AuthenticationService implements IAuthenticationService {
   _serviceBrand: undefined
-  onDidChangeExtensionSessionAccess = Event.None
-  readAllowedExtensions = () => []
-  isAuthenticationProviderRegistered = () => false
-  getProviderIds = () => []
-  registerAuthenticationProvider = unsupported
-  unregisterAuthenticationProvider = unsupported
-  isAccessAllowed = () => false
-  updateAllowedExtension = unsupported
-  updateSessionPreference = unsupported
-  getSessionPreference = () => undefined
-  removeSessionPreference = unsupported
-  showGetSessionPrompt = unsupported
-  selectSession = unsupported
-  requestSessionAccess = unsupported
-  completeSessionAccessRequest = unsupported
-  requestNewSession = unsupported
-  sessionsUpdate = unsupported
   onDidRegisterAuthenticationProvider = Event.None
   onDidUnregisterAuthenticationProvider = Event.None
   onDidChangeSessions = Event.None
-  declaredProviders = []
   onDidChangeDeclaredProviders = Event.None
-  getSessions = async () => []
-  getLabel = unsupported
-  supportsMultipleAccounts = () => false
+  declaredProviders = []
+  registerDeclaredAuthenticationProvider = unsupported
+  unregisterDeclaredAuthenticationProvider = unsupported
+  isAuthenticationProviderRegistered = () => false
+  registerAuthenticationProvider = unsupported
+  unregisterAuthenticationProvider = unsupported
+  getProviderIds = () => []
+  getProvider = unsupported
+  getSessions = unsupported
   createSession = unsupported
   removeSession = unsupported
-  manageTrustedExtensionsForAccount = unsupported
-  removeAccountSessions = unsupported
+}, InstantiationType.Delayed)
+
+registerSingleton(IAuthenticationAccessService, class AuthenticationAccessService implements IAuthenticationAccessService {
+  _serviceBrand: undefined
+  onDidChangeExtensionSessionAccess = Event.None
+  isAccessAllowed = () => false
+  readAllowedExtensions = () => []
+  updateAllowedExtensions = unsupported
+  removeAllowedExtensions = unsupported
+}, InstantiationType.Delayed)
+
+registerSingleton(IAuthenticationExtensionsService, class AuthenticationExtensionsService implements IAuthenticationExtensionsService {
+  _serviceBrand: undefined
+  updateSessionPreference = unsupported
+  getSessionPreference = () => undefined
+  removeSessionPreference = unsupported
+  selectSession = unsupported
+  requestSessionAccess = unsupported
+  requestNewSession = unsupported
+}, InstantiationType.Delayed)
+
+registerSingleton(IAuthenticationUsageService, class AuthenticationUsageService implements IAuthenticationUsageService {
+  _serviceBrand: undefined
+  readAccountUsages = unsupported
+  removeAccountUsage = unsupported
+  addAccountUsage = unsupported
 }, InstantiationType.Delayed)
 
 registerSingleton(ITimelineService, class TimelineService implements ITimelineService {
@@ -2710,13 +2779,13 @@ registerSingleton(INotebookSearchService, class NotebookSearchService implements
   _serviceBrand: undefined
 }, InstantiationType.Delayed)
 
-registerSingleton(IChatProviderService, class ChatProviderService implements IChatProviderService {
+registerSingleton(ILanguageModelsService, class LanguageModelsService implements ILanguageModelsService {
   _serviceBrand: undefined
-  onDidChangeProviders = Event.None
-  getProviders = () => []
-  lookupChatResponseProvider = unsupported
-  registerChatResponseProvider = unsupported
-  fetchChatResponse = unsupported
+  onDidChangeLanguageModels = Event.None
+  getLanguageModelIds = () => []
+  lookupLanguageModel = () => undefined
+  registerLanguageModelChat = unsupported
+  makeLanguageModelChatRequest = unsupported
 }, InstantiationType.Delayed)
 
 registerSingleton(IChatSlashCommandService, class ChatSlashCommandService implements IChatSlashCommandService {
@@ -2731,6 +2800,8 @@ registerSingleton(IChatSlashCommandService, class ChatSlashCommandService implem
 }, InstantiationType.Delayed)
 
 registerSingleton(IChatVariablesService, class ChatVariablesService implements IChatVariablesService {
+  getVariable = () => undefined
+  resolveVariable = async () => []
   getDynamicVariables = unsupported
   getDynamicReferences = unsupported
   registerVariable = unsupported
@@ -2821,6 +2892,7 @@ registerSingleton(IAuxiliaryWindowService, class AuxiliaryWindowService implemen
 
 registerSingleton(ISpeechService, class SpeechService implements ISpeechService {
   _serviceBrand: undefined
+  onDidChangeHasSpeechProvider = Event.None
   onDidStartSpeechToTextSession = Event.None
   onDidEndSpeechToTextSession = Event.None
   hasActiveSpeechToTextSession = false
@@ -2857,6 +2929,12 @@ registerSingleton(IChatWidgetHistoryService, class ChatWidgetHistoryService impl
   clearHistory = unsupported
   getHistory = () => []
   saveHistory = unsupported
+}, InstantiationType.Delayed)
+
+registerSingleton(IChatCodeBlockContextProviderService, class ChatCodeBlockContextProviderService implements IChatCodeBlockContextProviderService {
+  _serviceBrand: undefined
+  providers = []
+  registerProvider = unsupported
 }, InstantiationType.Delayed)
 
 registerSingleton(IInlineChatSessionService, class InlineChatSessionService implements IInlineChatSessionService {
@@ -3143,7 +3221,15 @@ registerSingleton(IWorkspaceIdentityService, class WorkspaceIdentityService impl
 
 registerSingleton(IDefaultLogLevelsService, class DefaultLogLevelsService implements IDefaultLogLevelsService {
   _serviceBrand: undefined
+  onDidChangeDefaultLogLevels = Event.None
+  getDefaultLogLevel = async () => LogLevel.Off
   getDefaultLogLevels = unsupported
   setDefaultLogLevel = unsupported
   migrateLogLevels = unsupported
+}, InstantiationType.Delayed)
+
+registerSingleton(ICustomEditorLabelService, class CustomEditorLabelService implements ICustomEditorLabelService {
+  _serviceBrand: undefined
+  onDidChange = Event.None
+  getName = () => undefined
 }, InstantiationType.Delayed)

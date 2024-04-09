@@ -10,10 +10,10 @@ Subject: [PATCH] fix: only run some code if inside the worker
  3 files changed, 19 insertions(+), 9 deletions(-)
 
 diff --git a/src/vs/workbench/api/common/extHostExtensionService.ts b/src/vs/workbench/api/common/extHostExtensionService.ts
-index 91f910aa4c8..4660b516306 100644
+index 2679364d945..acb1625ad3f 100644
 --- a/src/vs/workbench/api/common/extHostExtensionService.ts
 +++ b/src/vs/workbench/api/common/extHostExtensionService.ts
-@@ -44,7 +44,7 @@ import { Schemas } from 'vs/base/common/network';
+@@ -45,7 +45,7 @@ import { Schemas } from 'vs/base/common/network';
  import { IResolveAuthorityResult } from 'vs/workbench/services/extensions/common/extensionHostProxy';
  import { IExtHostLocalizationService } from 'vs/workbench/api/common/extHostLocalizationService';
  import { StopWatch } from 'vs/base/common/stopwatch';
@@ -22,7 +22,7 @@ index 91f910aa4c8..4660b516306 100644
  import { IExtHostManagedSockets } from 'vs/workbench/api/common/extHostManagedSockets';
  import { Dto } from 'vs/workbench/services/extensions/common/proxyIdentifier';
  
-@@ -256,9 +256,11 @@ export abstract class AbstractExtHostExtensionService extends Disposable impleme
+@@ -259,9 +259,11 @@ export abstract class AbstractExtHostExtensionService extends Disposable impleme
  		this._extHostTerminalService.dispose();
  		this._activator.dispose();
  

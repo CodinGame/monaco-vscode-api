@@ -9,12 +9,12 @@ Subject: [PATCH] refactor: split some modules to be able to import them
  .../parts/editor/editor.contribution.ts       |   3 +-
  .../files/browser/fileCommands.save.ts        | 198 ++++++
  .../contrib/files/browser/fileCommands.ts     | 245 +------
- .../files.configuration.contribution.ts       | 307 +++++++++
- .../files/browser/files.contribution.ts       | 633 +-----------------
+ .../files.configuration.contribution.ts       | 313 +++++++++
+ .../files/browser/files.contribution.ts       | 639 +-----------------
  .../browser/files.editorPane.contribution.ts  |  94 +++
  .../browser/files.explorer.contribution.ts    | 270 ++++++++
  .../files.fileEditorFactory.contribution.ts   |  23 +
- 9 files changed, 940 insertions(+), 842 deletions(-)
+ 9 files changed, 946 insertions(+), 848 deletions(-)
  create mode 100644 src/vs/workbench/browser/parts/editor/editor.autosave.contribution.ts
  create mode 100644 src/vs/workbench/contrib/files/browser/fileCommands.save.ts
  create mode 100644 src/vs/workbench/contrib/files/browser/files.configuration.contribution.ts
@@ -38,10 +38,10 @@ index 00000000000..c7416d68719
 +
 +registerWorkbenchContribution2(EditorAutoSave.ID, EditorAutoSave, WorkbenchPhase.BlockRestore);
 diff --git a/src/vs/workbench/browser/parts/editor/editor.contribution.ts b/src/vs/workbench/browser/parts/editor/editor.contribution.ts
-index ca21ad13864..cd246dcb75b 100644
+index 1611076ea51..5dbfc0eb861 100644
 --- a/src/vs/workbench/browser/parts/editor/editor.contribution.ts
 +++ b/src/vs/workbench/browser/parts/editor/editor.contribution.ts
-@@ -60,7 +60,6 @@ import { isMacintosh } from 'vs/base/common/platform';
+@@ -61,7 +61,6 @@ import { isMacintosh } from 'vs/base/common/platform';
  import { EditorContributionInstantiation, registerEditorContribution } from 'vs/editor/browser/editorExtensions';
  import { FloatingEditorClickMenu } from 'vs/workbench/browser/codeeditor';
  import { WorkbenchPhase, registerWorkbenchContribution2 } from 'vs/workbench/common/contributions';
@@ -49,7 +49,7 @@ index ca21ad13864..cd246dcb75b 100644
  import { IQuickAccessRegistry, Extensions as QuickAccessExtensions } from 'vs/platform/quickinput/common/quickAccess';
  import { ActiveGroupEditorsByMostRecentlyUsedQuickAccess, AllEditorsByAppearanceQuickAccess, AllEditorsByMostRecentlyUsedQuickAccess } from 'vs/workbench/browser/parts/editor/editorQuickAccess';
  import { FileAccess } from 'vs/base/common/network';
-@@ -71,6 +70,7 @@ import { DynamicEditorConfigurations } from 'vs/workbench/browser/parts/editor/e
+@@ -72,6 +71,7 @@ import { DynamicEditorConfigurations } from 'vs/workbench/browser/parts/editor/e
  import { EditorActionsDefaultAction, EditorActionsTitleBarAction, HideEditorActionsAction, HideEditorTabsAction, ShowMultipleEditorTabsAction, ShowSingleEditorTabAction, ZenHideEditorTabsAction, ZenShowMultipleEditorTabsAction, ZenShowSingleEditorTabAction } from 'vs/workbench/browser/actions/layoutActions';
  import { ICommandAction } from 'vs/platform/action/common/action';
  import { EditorContextKeys } from 'vs/editor/common/editorContextKeys';
@@ -57,7 +57,7 @@ index ca21ad13864..cd246dcb75b 100644
  
  //#region Editor Registrations
  
-@@ -127,7 +127,6 @@ Registry.as<IEditorFactoryRegistry>(EditorExtensions.EditorFactory).registerEdit
+@@ -128,7 +128,6 @@ Registry.as<IEditorFactoryRegistry>(EditorExtensions.EditorFactory).registerEdit
  
  //#region Workbench Contributions
  
@@ -67,7 +67,7 @@ index ca21ad13864..cd246dcb75b 100644
  registerWorkbenchContribution2(DynamicEditorConfigurations.ID, DynamicEditorConfigurations, WorkbenchPhase.BlockRestore);
 diff --git a/src/vs/workbench/contrib/files/browser/fileCommands.save.ts b/src/vs/workbench/contrib/files/browser/fileCommands.save.ts
 new file mode 100644
-index 00000000000..e7540d3d049
+index 00000000000..d9a94570df9
 --- /dev/null
 +++ b/src/vs/workbench/contrib/files/browser/fileCommands.save.ts
 @@ -0,0 +1,198 @@
@@ -85,7 +85,7 @@ index 00000000000..e7540d3d049
 +import { isEqual } from 'vs/base/common/resources';
 +import { URI } from 'vs/base/common/uri';
 +import { ICodeEditorService } from 'vs/editor/browser/services/codeEditorService';
-+import { EmbeddedCodeEditorWidget } from 'vs/editor/browser/widget/embeddedCodeEditorWidget';
++import { EmbeddedCodeEditorWidget } from 'vs/editor/browser/widget/codeEditor/embeddedCodeEditorWidget';
 +import * as nls from 'vs/nls';
 +import { CommandsRegistry } from 'vs/platform/commands/common/commands';
 +import { IInstantiationService, ServicesAccessor } from 'vs/platform/instantiation/common/instantiation';
@@ -270,7 +270,7 @@ index 00000000000..e7540d3d049
 +	}
 +});
 diff --git a/src/vs/workbench/contrib/files/browser/fileCommands.ts b/src/vs/workbench/contrib/files/browser/fileCommands.ts
-index 6fa04545a0e..7fe3e6ecee1 100644
+index da1e9c4dcd5..7fe3e6ecee1 100644
 --- a/src/vs/workbench/contrib/files/browser/fileCommands.ts
 +++ b/src/vs/workbench/contrib/files/browser/fileCommands.ts
 @@ -3,56 +3,48 @@
@@ -327,7 +327,7 @@ index 6fa04545a0e..7fe3e6ecee1 100644
 -import { IEnvironmentService } from 'vs/platform/environment/common/environment';
 -import { coalesce } from 'vs/base/common/arrays';
 -import { ICodeEditorService } from 'vs/editor/browser/services/codeEditorService';
--import { EmbeddedCodeEditorWidget } from 'vs/editor/browser/widget/embeddedCodeEditorWidget';
+-import { EmbeddedCodeEditorWidget } from 'vs/editor/browser/widget/codeEditor/embeddedCodeEditorWidget';
 -import { ITextFileService } from 'vs/workbench/services/textfile/common/textfiles';
 +import { IListService } from 'vs/platform/list/browser/listService';
 +import { INotificationService } from 'vs/platform/notification/common/notification';
@@ -542,10 +542,10 @@ index 6fa04545a0e..7fe3e6ecee1 100644
  	handler: async accessor => {
 diff --git a/src/vs/workbench/contrib/files/browser/files.configuration.contribution.ts b/src/vs/workbench/contrib/files/browser/files.configuration.contribution.ts
 new file mode 100644
-index 00000000000..39509160248
+index 00000000000..500edea7d1b
 --- /dev/null
 +++ b/src/vs/workbench/contrib/files/browser/files.configuration.contribution.ts
-@@ -0,0 +1,307 @@
+@@ -0,0 +1,313 @@
 +/*---------------------------------------------------------------------------------------------
 + *  Copyright (c) Microsoft Corporation. All rights reserved.
 + *  Licensed under the MIT License. See License.txt in the project root for license information.
@@ -669,6 +669,12 @@ index 00000000000..39509160248
 +			'type': 'boolean',
 +			'default': false,
 +			'description': nls.localize('trimTrailingWhitespace', "When enabled, will trim trailing whitespace when saving a file."),
++			'scope': ConfigurationScope.LANGUAGE_OVERRIDABLE
++		},
++		'files.trimTrailingWhitespaceInRegexAndStrings': {
++			'type': 'boolean',
++			'default': true,
++			'description': nls.localize('trimTrailingWhitespaceInRegexAndStrings', "When enabled, trailing whitespace will be removed from multiline strings and regexes will be removed on save or when executing 'editor.action.trimTrailingWhitespace'. This can cause whitespace to not be trimmed from lines when there isn't up-to-date token information."),
 +			'scope': ConfigurationScope.LANGUAGE_OVERRIDABLE
 +		},
 +		'files.insertFinalNewline': {
@@ -854,10 +860,10 @@ index 00000000000..39509160248
 +	}
 +});
 diff --git a/src/vs/workbench/contrib/files/browser/files.contribution.ts b/src/vs/workbench/contrib/files/browser/files.contribution.ts
-index 80162ffd007..98d8dec26be 100644
+index cc35374830e..98d8dec26be 100644
 --- a/src/vs/workbench/contrib/files/browser/files.contribution.ts
 +++ b/src/vs/workbench/contrib/files/browser/files.contribution.ts
-@@ -3,632 +3,7 @@
+@@ -3,638 +3,7 @@
   *  Licensed under the MIT License. See License.txt in the project root for license information.
   *--------------------------------------------------------------------------------------------*/
  
@@ -1086,6 +1092,12 @@ index 80162ffd007..98d8dec26be 100644
 -			'type': 'boolean',
 -			'default': false,
 -			'description': nls.localize('trimTrailingWhitespace', "When enabled, will trim trailing whitespace when saving a file."),
+-			'scope': ConfigurationScope.LANGUAGE_OVERRIDABLE
+-		},
+-		'files.trimTrailingWhitespaceInRegexAndStrings': {
+-			'type': 'boolean',
+-			'default': true,
+-			'description': nls.localize('trimTrailingWhitespaceInRegexAndStrings', "When enabled, trailing whitespace will be removed from multiline strings and regexes will be removed on save or when executing 'editor.action.trimTrailingWhitespace'. This can cause whitespace to not be trimmed from lines when there isn't up-to-date token information."),
 -			'scope': ConfigurationScope.LANGUAGE_OVERRIDABLE
 -		},
 -		'files.insertFinalNewline': {

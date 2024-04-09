@@ -11,7 +11,7 @@ Subject: [PATCH] fix: improve extension contribution types
  4 files changed, 1127 insertions(+), 78 deletions(-)
 
 diff --git a/src/vs/platform/extensions/common/extensions.ts b/src/vs/platform/extensions/common/extensions.ts
-index 413c1db06f1..c1667ac6c33 100644
+index 331aba1b55f..7b6a935ec9c 100644
 --- a/src/vs/platform/extensions/common/extensions.ts
 +++ b/src/vs/platform/extensions/common/extensions.ts
 @@ -3,6 +3,7 @@
