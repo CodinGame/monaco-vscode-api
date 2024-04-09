@@ -75,7 +75,7 @@ const REMOVE_WORKBENCH_CONTRIBUTIONS = new Set([
 /**
  * root files that should never be extracted from the main package to a service override package
  */
-const SHARED_ROOT_FILES_BETWEEN_PACKAGES = ['services.js', 'extensions.js', 'monaco.js', 'assets.js', 'lifecycle.js', 'workbench.js', 'missing-services.js']
+const SHARED_ROOT_FILES_BETWEEN_PACKAGES = ['services.js', 'extensions.js', 'monaco.js', 'assets.js', 'lifecycle.js', 'workbench.js', 'missing-services.js', 'l10n.js']
 /**
  * Files to expose in the editor-api package (just exporting everyting from the corresponding VSCode file)
  * for compability with libraries that import internal monaco-editor modules
