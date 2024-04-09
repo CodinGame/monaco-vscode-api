@@ -10,7 +10,7 @@ to make it work in ESM context
  2 files changed, 10 insertions(+), 20 deletions(-)
 
 diff --git a/src/vs/workbench/contrib/welcomeGettingStarted/browser/gettingStartedDetailsRenderer.ts b/src/vs/workbench/contrib/welcomeGettingStarted/browser/gettingStartedDetailsRenderer.ts
-index 869f44526b4..296ac140860 100644
+index 869f44526b4..c2149139c66 100644
 --- a/src/vs/workbench/contrib/welcomeGettingStarted/browser/gettingStartedDetailsRenderer.ts
 +++ b/src/vs/workbench/contrib/welcomeGettingStarted/browser/gettingStartedDetailsRenderer.ts
 @@ -17,6 +17,7 @@ import { IFileService } from 'vs/platform/files/common/files';
@@ -42,7 +42,7 @@ index 869f44526b4..296ac140860 100644
  
  const transformUri = (src: string, base: URI) => {
 -	const path = joinPath(base, src);
-+	const path = FileAccess.asBrowserUri(joinPath(base, src).fsPath.slice(1) as AppResourcePath);
++	const path = FileAccess.asBrowserUri(joinPath(base, src).path.slice(1) as AppResourcePath);
  	return asWebviewUri(path).toString(true);
  };
  
