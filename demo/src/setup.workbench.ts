@@ -22,25 +22,6 @@ buttons.innerHTML = `
 <br />
 <button id="togglePanel">Toggle Panel</button>
 <button id="toggleAuxiliary">Toggle Secondary Panel</button>
-<br />
-<label for="localeSelect">Language:</label>
-<select id="localeSelect">
-  <option value="">English</option>
-  <option value="cs">Czech</option>
-  <option value="de">German</option>
-  <option value="es">Spanish</option>
-  <option value="fr">French</option>
-  <option value="it">Italian</option>
-  <option value="ja">Japanese</option>
-  <option value="ko">Korean</option>
-  <option value="pl">Polish</option>
-  <option value="pt-br">Portuguese (Brazil)</option>
-  <option value="qps-ploc">Pseudo Language</option>
-  <option value="ru">Russian</option>
-  <option value="tr">Turkish</option>
-  <option value="zh-hans">Chinese (Simplified)</option>
-  <option value="zh-hant">Chinese (Traditional)</option>
-</select>
 </div>
 `
 document.body.append(buttons)
