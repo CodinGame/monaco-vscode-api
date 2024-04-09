@@ -2,6 +2,15 @@ import { setLocale, isInitialized } from 'vs/nls'
 
 const extensionTranslationsUri: Record<string, Record<string, string>> = {}
 let currentLocaleExtensionId: string | undefined
+let availableLocales: Set<string> = new Set()
+
+function setAvailableLocales (locales: Set<string>): void {
+  availableLocales = locales
+}
+
+function isLocaleAvailable (locale: string): boolean {
+  return availableLocales.has(locale)
+}
 
 function registerLocalization (extensionId: string, language: string, main: Record<string, Record<string, string>>, extensionTranslationsUris: Record<string, string>): void {
   if (isInitialized()) {
@@ -24,5 +33,7 @@ function getExtensionIdProvidingCurrentLocale (): string | undefined {
 export {
   registerLocalization,
   getBuiltInExtensionTranslationsUris,
-  getExtensionIdProvidingCurrentLocale
+  getExtensionIdProvidingCurrentLocale,
+  setAvailableLocales,
+  isLocaleAvailable
 }
