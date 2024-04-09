@@ -198,7 +198,7 @@ import { IAuthenticationAccessService } from 'vs/workbench/services/authenticati
 import { IAuthenticationUsageService } from 'vs/workbench/services/authentication/browser/authenticationUsageService'
 import { ICustomEditorLabelService } from 'vs/workbench/services/editor/common/customEditorLabelService'
 import { IExtensionsProfileScannerService } from 'vs/platform/extensionManagement/common/extensionsProfileScannerService'
-import { getBuiltInExtensionTranslationsUris } from './l10n'
+import { getBuiltInExtensionTranslationsUris, getExtensionIdProvidingCurrentLocale } from './l10n'
 import { unsupported } from './tools'
 
 registerSingleton(ILoggerService, class NullLoggerService extends AbstractLoggerService {
@@ -2466,8 +2466,8 @@ registerSingleton(IInteractiveDocumentService, class InteractiveDocumentService 
 
 registerSingleton(IActiveLanguagePackService, class ActiveLanguagePackService implements IActiveLanguagePackService {
   readonly _serviceBrand: undefined
-  getExtensionIdProvidingCurrentLocale () {
-    return Promise.resolve(undefined)
+  async getExtensionIdProvidingCurrentLocale (): Promise<string | undefined> {
+    return getExtensionIdProvidingCurrentLocale()
   }
 }, InstantiationType.Eager)
 
