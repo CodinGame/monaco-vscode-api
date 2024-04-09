@@ -2,12 +2,12 @@ import { IEditorOverrideServices } from 'vs/editor/standalone/browser/standalone
 import { SyncDescriptor } from 'vs/platform/instantiation/common/descriptors'
 import { ILanguagePackItem, ILanguagePackService } from 'vs/platform/languagePacks/common/languagePacks'
 import { ILocaleService } from 'vs/workbench/services/localization/common/locale'
-import { URI } from 'vs/workbench/workbench.web.main'
 import { IDialogService } from 'vs/platform/dialogs/common/dialogs'
 import { IHostService } from 'vs/workbench/services/host/browser/host'
 import { IProductService } from 'vs/platform/product/common/productService'
 import { localize, localizeWithPath } from 'vs/nls'
 import { Language, language } from 'vs/base/common/platform'
+import { URI } from 'vs/base/common/uri'
 import { getBuiltInExtensionTranslationsUris, setAvailableLocales } from '../l10n'
 import 'vs/workbench/contrib/localization/common/localization.contribution'
 
