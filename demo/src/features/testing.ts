@@ -7,8 +7,7 @@ const { getApi } = registerExtension({
   version: '1.0.0',
   engines: {
     vscode: '*'
-  },
-  enabledApiProposals: ['testCoverage']
+  }
 }, ExtensionHostKind.LocalProcess, {
   system: true
 })

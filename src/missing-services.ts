@@ -200,6 +200,7 @@ import { ICustomEditorLabelService } from 'vs/workbench/services/editor/common/c
 import { IExtensionsProfileScannerService } from 'vs/platform/extensionManagement/common/extensionsProfileScannerService'
 import { createInstanceCapabilityEventMultiplexer } from 'vs/workbench/contrib/terminal/browser/terminalEvents'
 import { TerminalCapability } from 'vs/platform/terminal/common/capabilities/capabilities'
+import { ITroubleshootIssueService } from 'vs/workbench/services/issue/browser/issueTroubleshoot'
 import { getBuiltInExtensionTranslationsUris, getExtensionIdProvidingCurrentLocale } from './l10n'
 import { unsupported } from './tools'
 
@@ -3189,8 +3190,8 @@ registerSingleton(IEditSessionsStorageService, class EditSessionsWorkbenchServic
 
 registerSingleton(IMultiDiffSourceResolverService, class MultiDiffSourceResolverService implements IMultiDiffSourceResolverService {
   _serviceBrand: undefined
-  registerResolver = unsupported
-  resolve = unsupported
+  registerResolver = () => Disposable.None
+  resolve = async () => undefined
 }, InstantiationType.Delayed)
 
 registerSingleton(IWorkspaceTagsService, NoOpWorkspaceTagsService, InstantiationType.Delayed)
@@ -3232,4 +3233,12 @@ registerSingleton(ICustomEditorLabelService, class CustomEditorLabelService impl
   _serviceBrand: undefined
   onDidChange = Event.None
   getName = () => undefined
+}, InstantiationType.Delayed)
+
+registerSingleton(ITroubleshootIssueService, class TroubleshootIssueService implements ITroubleshootIssueService {
+  _serviceBrand: undefined
+  isActive = () => false
+  start = unsupported
+  resume = unsupported
+  stop = unsupported
 }, InstantiationType.Delayed)

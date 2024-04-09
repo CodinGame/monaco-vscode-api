@@ -16,8 +16,10 @@ Subject: [PATCH] feat: export some classes and make some methods accessible
  .../extensions/browser/extensionUrlHandler.ts        |  2 +-
  .../extensions/browser/webWorkerExtensionHost.ts     |  2 +-
  .../extensions/common/abstractExtensionService.ts    | 10 +++++-----
+ .../services/issue/browser/issueTroubleshoot.ts      |  4 ++--
  .../services/keybinding/browser/keybindingService.ts |  2 +-
  .../languageStatus/common/languageStatusService.ts   |  2 +-
+ .../services/localization/browser/localeService.ts   |  2 +-
  .../services/outline/browser/outlineService.ts       |  2 +-
  .../workbench/services/path/browser/pathService.ts   |  2 +-
  .../services/remote/common/remoteExplorerService.ts  |  2 +-
@@ -25,7 +27,7 @@ Subject: [PATCH] feat: export some classes and make some methods accessible
  .../terminal/common/embedderTerminalService.ts       |  2 +-
  .../userDataProfile/common/remoteUserDataProfiles.ts |  2 +-
  .../services/userDataSync/common/userDataSyncUtil.ts |  2 +-
- 21 files changed, 36 insertions(+), 36 deletions(-)
+ 23 files changed, 39 insertions(+), 39 deletions(-)
 
 diff --git a/src/vs/platform/extensionResourceLoader/browser/extensionResourceLoaderService.ts b/src/vs/platform/extensionResourceLoader/browser/extensionResourceLoaderService.ts
 index fdefc170db0..1d3bc4affc5 100644
@@ -297,6 +299,28 @@ index 4b2a585afc3..70b20e8fd08 100644
  	constructor(
  		public readonly toAdd: IExtension[],
  		public readonly toRemove: string[] | IExtension[]
+diff --git a/src/vs/workbench/services/issue/browser/issueTroubleshoot.ts b/src/vs/workbench/services/issue/browser/issueTroubleshoot.ts
+index 86f84f2af22..c6ac789265b 100644
+--- a/src/vs/workbench/services/issue/browser/issueTroubleshoot.ts
++++ b/src/vs/workbench/services/issue/browser/issueTroubleshoot.ts
+@@ -30,7 +30,7 @@ import { URI } from 'vs/base/common/uri';
+ import { RemoteNameContext } from 'vs/workbench/common/contextkeys';
+ import { IsWebContext } from 'vs/platform/contextkey/common/contextkeys';
+ 
+-const ITroubleshootIssueService = createDecorator<ITroubleshootIssueService>('ITroubleshootIssueService');
++export const ITroubleshootIssueService = createDecorator<ITroubleshootIssueService>('ITroubleshootIssueService');
+ 
+ interface ITroubleshootIssueService {
+ 	_serviceBrand: undefined;
+@@ -72,7 +72,7 @@ class TroubleShootState {
+ 	) { }
+ }
+ 
+-class TroubleshootIssueService extends Disposable implements ITroubleshootIssueService {
++export class TroubleshootIssueService extends Disposable implements ITroubleshootIssueService {
+ 
+ 	readonly _serviceBrand: undefined;
+ 
 diff --git a/src/vs/workbench/services/keybinding/browser/keybindingService.ts b/src/vs/workbench/services/keybinding/browser/keybindingService.ts
 index 3c98bf9aec0..3ab26183771 100644
 --- a/src/vs/workbench/services/keybinding/browser/keybindingService.ts
@@ -323,6 +347,19 @@ index e10d2a3ef1e..6dd88102a64 100644
  
  	declare _serviceBrand: undefined;
  
+diff --git a/src/vs/workbench/services/localization/browser/localeService.ts b/src/vs/workbench/services/localization/browser/localeService.ts
+index 0d9c51c72cf..ec2aeac2149 100644
+--- a/src/vs/workbench/services/localization/browser/localeService.ts
++++ b/src/vs/workbench/services/localization/browser/localeService.ts
+@@ -74,7 +74,7 @@ export class WebLocaleService implements ILocaleService {
+ 	}
+ }
+ 
+-class WebActiveLanguagePackService implements IActiveLanguagePackService {
++export class WebActiveLanguagePackService implements IActiveLanguagePackService {
+ 	_serviceBrand: undefined;
+ 
+ 	constructor(
 diff --git a/src/vs/workbench/services/outline/browser/outlineService.ts b/src/vs/workbench/services/outline/browser/outlineService.ts
 index f4707432371..7c5cdde39cc 100644
 --- a/src/vs/workbench/services/outline/browser/outlineService.ts
