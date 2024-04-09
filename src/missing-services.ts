@@ -3233,3 +3233,11 @@ registerSingleton(ICustomEditorLabelService, class CustomEditorLabelService impl
   onDidChange = Event.None
   getName = () => undefined
 }, InstantiationType.Delayed)
+
+registerSingleton(ITroubleshootIssueService, class TroubleshootIssueService implements ITroubleshootIssueService {
+  _serviceBrand: undefined
+  isActive = () => false
+  start = unsupported
+  resume = unsupported
+  stop = unsupported
+}, InstantiationType.Delayed)
