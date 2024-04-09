@@ -9,7 +9,7 @@ import { localize, localizeWithPath } from 'vs/nls'
 import { Language, language } from 'vs/base/common/platform'
 import { URI } from 'vs/base/common/uri'
 import { getBuiltInExtensionTranslationsUris, setAvailableLocales } from '../l10n'
-import 'vs/workbench/contrib/localization/common/localization.contribution'
+import 'vs/workbench/contrib/localization/browser/localization.contribution'
 
 interface AvailableLanguage {
   locale: string
