@@ -198,6 +198,8 @@ import { IAuthenticationAccessService } from 'vs/workbench/services/authenticati
 import { IAuthenticationUsageService } from 'vs/workbench/services/authentication/browser/authenticationUsageService'
 import { ICustomEditorLabelService } from 'vs/workbench/services/editor/common/customEditorLabelService'
 import { IExtensionsProfileScannerService } from 'vs/platform/extensionManagement/common/extensionsProfileScannerService'
+import { createInstanceCapabilityEventMultiplexer } from 'vs/workbench/contrib/terminal/browser/terminalEvents'
+import { TerminalCapability } from 'vs/platform/terminal/common/capabilities/capabilities'
 import { getBuiltInExtensionTranslationsUris, getExtensionIdProvidingCurrentLocale } from './l10n'
 import { unsupported } from './tools'
 
@@ -1656,10 +1658,8 @@ registerSingleton(ITerminalService, class TerminalService implements ITerminalSe
   onAnyInstanceProcessIdReady = Event.None
   onAnyInstanceSelectionChange = Event.None
   onAnyInstanceTitleChange = Event.None
-  createOnInstanceEvent = unsupported
-  createOnInstanceCapabilityEvent = unsupported
-  onInstanceEvent = unsupported
-  onInstanceCapabilityEvent = unsupported
+  createOnInstanceEvent = () => Event.None
+  createOnInstanceCapabilityEvent = <T extends TerminalCapability, K>(capabilityId: T) => createInstanceCapabilityEventMultiplexer<T, K>([], Event.None, Event.None, capabilityId, () => Event.None)
   createDetachedTerminal = unsupported
 
   onDidChangeSelection = Event.None
