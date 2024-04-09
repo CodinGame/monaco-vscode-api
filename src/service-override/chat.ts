@@ -2,7 +2,7 @@ import { IEditorOverrideServices } from 'vs/editor/standalone/browser/standalone
 import { SyncDescriptor } from 'vs/platform/instantiation/common/descriptors'
 import { IChatService } from 'vs/workbench/contrib/chat/common/chatService'
 import { IChatContributionService } from 'vs/workbench/contrib/chat/common/chatContributionService'
-import { IChatWidgetService, IChatAccessibilityService, IQuickChatService } from 'vs/workbench/contrib/chat/browser/chat'
+import { IChatWidgetService, IChatAccessibilityService, IQuickChatService, IChatCodeBlockContextProviderService } from 'vs/workbench/contrib/chat/browser/chat'
 import { ChatContributionService } from 'vs/workbench/contrib/chat/browser/chatContributionServiceImpl'
 import { ChatWidgetService } from 'vs/workbench/contrib/chat/browser/chatWidget'
 import { ChatService } from 'vs/workbench/contrib/chat/common/chatServiceImpl'
@@ -20,6 +20,7 @@ import { InlineChatSessionServiceImpl } from 'vs/workbench/contrib/inlineChat/br
 import { IInlineChatSavingService } from 'vs/workbench/contrib/inlineChat/browser/inlineChatSavingService'
 import { InlineChatSavingServiceImpl } from 'vs/workbench/contrib/inlineChat/browser/inlineChatSavingServiceImpl'
 import { ILanguageModelsService, LanguageModelsService } from 'vs/workbench/contrib/chat/common/languageModels'
+import { ChatCodeBlockContextProviderService } from 'vs/workbench/contrib/chat/browser/codeBlockContextProviderService'
 import 'vs/workbench/contrib/chat/browser/chat.contribution'
 import 'vs/workbench/contrib/inlineChat/browser/inlineChat.contribution'
 
@@ -37,6 +38,7 @@ export default function getServiceOverride (): IEditorOverrideServices {
     [IChatVariablesService.toString()]: new SyncDescriptor(ChatVariablesService, [], true),
     [IInlineChatService.toString()]: new SyncDescriptor(InlineChatServiceImpl, [], true),
     [IInlineChatSessionService.toString()]: new SyncDescriptor(InlineChatSessionServiceImpl, [], true),
-    [IInlineChatSavingService.toString()]: new SyncDescriptor(InlineChatSavingServiceImpl, [], true)
+    [IInlineChatSavingService.toString()]: new SyncDescriptor(InlineChatSavingServiceImpl, [], true),
+    [IChatCodeBlockContextProviderService.toString()]: new SyncDescriptor(ChatCodeBlockContextProviderService, [], true)
   }
 }

@@ -125,7 +125,7 @@ import { INotebookKernelHistoryService, INotebookKernelService } from 'vs/workbe
 import { INotebookRendererMessagingService } from 'vs/workbench/contrib/notebook/common/notebookRendererMessagingService'
 import { IInteractiveDocumentService } from 'vs/workbench/contrib/interactive/browser/interactiveDocumentService'
 import { IInlineChatService } from 'vs/workbench/contrib/inlineChat/common/inlineChat'
-import { IChatAccessibilityService, IChatWidgetService, IQuickChatService } from 'vs/workbench/contrib/chat/browser/chat'
+import { IChatAccessibilityService, IChatCodeBlockContextProviderService, IChatWidgetService, IQuickChatService } from 'vs/workbench/contrib/chat/browser/chat'
 import { IRemoteExplorerService } from 'vs/workbench/services/remote/common/remoteExplorerService'
 import { IAuthenticationExtensionsService, IAuthenticationService } from 'vs/workbench/services/authentication/common/authentication'
 import { ITimelineService } from 'vs/workbench/contrib/timeline/common/timeline'
@@ -2929,6 +2929,12 @@ registerSingleton(IChatWidgetHistoryService, class ChatWidgetHistoryService impl
   clearHistory = unsupported
   getHistory = () => []
   saveHistory = unsupported
+}, InstantiationType.Delayed)
+
+registerSingleton(IChatCodeBlockContextProviderService, class ChatCodeBlockContextProviderService implements IChatCodeBlockContextProviderService {
+  _serviceBrand: undefined
+  providers = []
+  registerProvider = unsupported
 }, InstantiationType.Delayed)
 
 registerSingleton(IInlineChatSessionService, class InlineChatSessionService implements IInlineChatSessionService {
