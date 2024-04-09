@@ -5,7 +5,7 @@
   "type": "module",
   "scripts": {
     "clean": "tsc -b -c",
-    "start": "NODE_OPTIONS=--experimental-import-meta-resolve vite --config vite.config.ts",
+    "start": "vite --config vite.config.ts",
     "start:debug": "vite --config vite.config.ts --debug --force",
     "lint": "eslint '{src/**/*.ts,rollup/*.ts,*.ts}'",
     "typecheck": "tsc --noEmit",
