@@ -249,6 +249,8 @@ export const constructOptions: IWorkbenchConstructionOptions = {
     message: 'Welcome in monaco-vscode-api demo'
   },
   productConfiguration: {
+    nameShort: 'monaco-vscode-api',
+    nameLong: 'monaco-vscode-api',
     extensionsGallery: {
       serviceUrl: 'https://open-vsx.org/vscode/gallery',
       itemUrl: 'https://open-vsx.org/vscode/item',
