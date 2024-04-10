@@ -13,9 +13,10 @@ import { parse } from 'vs/base/common/json'
 import { IFileService } from 'vs/platform/files/common/files'
 import { IInstantiationService } from 'vs/platform/instantiation/common/instantiation'
 import { IWorkbenchExtensionEnablementService } from 'vs/workbench/services/extensionManagement/common/extensionManagement'
+import { StandaloneServices } from 'vs/editor/standalone/browser/standaloneServices'
 import { IExtensionWithExtHostKind, ExtensionServiceOverride } from './service-override/extensions'
 import { CustomSchemas, registerExtensionFile } from './service-override/files'
-import { getService } from './services'
+import { waitServicesReady } from './lifecycle'
 import { ExtensionManifestTranslator } from './tools/l10n'
 import { throttle, memoized } from './tools'
 import { setDefaultApi } from './extension.api'
@@ -82,13 +83,15 @@ interface ExtensionDelta {
   toRemove: IExtension[]
 }
 const deltaExtensions = throttle(async ({ toAdd, toRemove }: ExtensionDelta) => {
-  const extensionService = await getService(IExtensionService) as ExtensionServiceOverride
+  await waitServicesReady()
+  const extensionService = StandaloneServices.get(IExtensionService) as ExtensionServiceOverride
   await extensionService.deltaExtensions(toAdd, toRemove)
 }, (a, b) => ({ toAdd: [...a.toAdd, ...b.toAdd], toRemove: [...a.toRemove, ...b.toRemove] }), 0)
 
 export async function registerRemoteExtension (directory: string): Promise<RegisterRemoteExtensionResult> {
-  const fileService = await getService(IFileService)
-  const remoteAuthority = (await getService(IWorkbenchEnvironmentService)).remoteAuthority
+  await waitServicesReady()
+  const fileService = StandaloneServices.get(IFileService)
+  const remoteAuthority = StandaloneServices.get(IWorkbenchEnvironmentService).remoteAuthority
   const content = await fileService.readFile(joinPath(URI.from({ scheme: Schemas.vscodeRemote, authority: remoteAuthority, path: directory }), 'package.json'))
   const manifest: IExtensionManifest = parse(content.value.toString())
 
@@ -113,13 +116,14 @@ export function registerExtension (manifest: IExtensionManifest, extHostKind?: E
   const location = URI.from({ scheme: CustomSchemas.extensionFile, authority: id, path })
 
   const addExtensionPromise = (async () => {
-    const remoteAuthority = (await getService(IWorkbenchEnvironmentService)).remoteAuthority
+    await waitServicesReady()
+    const remoteAuthority = StandaloneServices.get(IWorkbenchEnvironmentService).remoteAuthority
     let realLocation = location
     if (extHostKind === ExtensionHostKind.Remote) {
       realLocation = URI.from({ scheme: Schemas.vscodeRemote, authority: remoteAuthority, path })
     }
 
-    const instantiationService = await getService(IInstantiationService)
+    const instantiationService = StandaloneServices.get(IInstantiationService)
     const translator = instantiationService.createInstance(ExtensionManifestTranslator)
 
     const localizedManifest = await translator.translateManifest(realLocation, manifest)
@@ -146,7 +150,7 @@ export function registerExtension (manifest: IExtensionManifest, extHostKind?: E
     }
 
     // Wait for extension to be enabled
-    const extensionEnablementService = await getService(IWorkbenchExtensionEnablementService)
+    const extensionEnablementService = StandaloneServices.get(IWorkbenchExtensionEnablementService)
     if (extensionEnablementService.isEnabled(extension)) {
       await deltaExtensions({ toAdd: [extension], toRemove: [] })
     }
@@ -160,7 +164,8 @@ export function registerExtension (manifest: IExtensionManifest, extHostKind?: E
       await addExtensionPromise
     },
     async isEnabled () {
-      const extensionEnablementService = await getService(IWorkbenchExtensionEnablementService)
+      await waitServicesReady()
+      const extensionEnablementService = StandaloneServices.get(IWorkbenchExtensionEnablementService)
       const extension = await addExtensionPromise
       return extensionEnablementService.isEnabled(extension)
     },
