@@ -11,12 +11,12 @@ import { URI } from 'vs/base/common/uri'
 import { getBuiltInExtensionTranslationsUris, setAvailableLocales } from '../l10n'
 import 'vs/workbench/contrib/localization/browser/localization.contribution'
 
-interface AvailableLanguage {
+export interface AvailableLanguage {
   locale: string
   languageName?: string
 }
 
-interface LocalizationOptions {
+export interface LocalizationOptions {
   setLocale (id: string): Promise<void>
   clearLocale(): Promise<void>
   availableLanguages: AvailableLanguage[]
