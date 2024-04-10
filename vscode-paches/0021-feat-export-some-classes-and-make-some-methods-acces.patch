@@ -16,7 +16,7 @@ Subject: [PATCH] feat: export some classes and make some methods accessible
  .../extensions/browser/extensionUrlHandler.ts        |  2 +-
  .../extensions/browser/webWorkerExtensionHost.ts     |  2 +-
  .../extensions/common/abstractExtensionService.ts    | 10 +++++-----
- .../services/issue/browser/issueTroubleshoot.ts      |  4 ++--
+ .../services/issue/browser/issueTroubleshoot.ts      |  6 +++---
  .../services/keybinding/browser/keybindingService.ts |  2 +-
  .../languageStatus/common/languageStatusService.ts   |  2 +-
  .../services/localization/browser/localeService.ts   |  2 +-
@@ -27,7 +27,7 @@ Subject: [PATCH] feat: export some classes and make some methods accessible
  .../terminal/common/embedderTerminalService.ts       |  2 +-
  .../userDataProfile/common/remoteUserDataProfiles.ts |  2 +-
  .../services/userDataSync/common/userDataSyncUtil.ts |  2 +-
- 23 files changed, 39 insertions(+), 39 deletions(-)
+ 23 files changed, 40 insertions(+), 40 deletions(-)
 
 diff --git a/src/vs/platform/extensionResourceLoader/browser/extensionResourceLoaderService.ts b/src/vs/platform/extensionResourceLoader/browser/extensionResourceLoaderService.ts
 index fdefc170db0..1d3bc4affc5 100644
@@ -300,18 +300,21 @@ index 4b2a585afc3..70b20e8fd08 100644
  		public readonly toAdd: IExtension[],
  		public readonly toRemove: string[] | IExtension[]
 diff --git a/src/vs/workbench/services/issue/browser/issueTroubleshoot.ts b/src/vs/workbench/services/issue/browser/issueTroubleshoot.ts
-index 86f84f2af22..c6ac789265b 100644
+index 86f84f2af22..089333e2c9f 100644
 --- a/src/vs/workbench/services/issue/browser/issueTroubleshoot.ts
 +++ b/src/vs/workbench/services/issue/browser/issueTroubleshoot.ts
-@@ -30,7 +30,7 @@ import { URI } from 'vs/base/common/uri';
+@@ -30,9 +30,9 @@ import { URI } from 'vs/base/common/uri';
  import { RemoteNameContext } from 'vs/workbench/common/contextkeys';
  import { IsWebContext } from 'vs/platform/contextkey/common/contextkeys';
  
 -const ITroubleshootIssueService = createDecorator<ITroubleshootIssueService>('ITroubleshootIssueService');
 +export const ITroubleshootIssueService = createDecorator<ITroubleshootIssueService>('ITroubleshootIssueService');
  
- interface ITroubleshootIssueService {
+-interface ITroubleshootIssueService {
++export interface ITroubleshootIssueService {
  	_serviceBrand: undefined;
+ 	isActive(): boolean;
+ 	start(): Promise<void>;
 @@ -72,7 +72,7 @@ class TroubleShootState {
  	) { }
  }
