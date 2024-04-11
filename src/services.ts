@@ -264,6 +264,8 @@ export { ITitleService } from 'vs/workbench/services/title/browser/titleService'
 export { IBannerService } from 'vs/workbench/services/banner/browser/bannerService'
 export { IWorkspaceTrustManagementService, IWorkspaceTrustUriInfo, IWorkspaceTrustRequestService, IWorkspaceTrustEnablementService } from 'vs/platform/workspace/common/workspaceTrust'
 export { IKeybindingService } from 'vs/platform/keybinding/common/keybinding'
+export { ISecretStorageProvider, ISecretStorageService } from 'vs/platform/secrets/common/secrets'
+export { IProductConfiguration } from 'vs/base/common/product'
 
 export {
   IAction,
