@@ -5,8 +5,6 @@ import { ISecretStorageService } from 'vs/platform/secrets/common/secrets'
 import { EncryptionService } from 'vs/workbench/services/encryption/browser/encryptionService'
 import { BrowserSecretStorageService } from 'vs/workbench/services/secrets/browser/secretStorageService'
 
-export { LocalStorageSecretStorageProvider } from 'vs/code/browser/workbench/workbench'
-
 export default function getServiceOverride (): IEditorOverrideServices {
   return {
     [ISecretStorageService.toString()]: new SyncDescriptor(BrowserSecretStorageService, [], true),
