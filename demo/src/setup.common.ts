@@ -10,6 +10,7 @@ import getDialogsServiceOverride from '@codingame/monaco-vscode-dialogs-service-
 import getTextmateServiceOverride from '@codingame/monaco-vscode-textmate-service-override'
 import getThemeServiceOverride from '@codingame/monaco-vscode-theme-service-override'
 import getLanguagesServiceOverride from '@codingame/monaco-vscode-languages-service-override'
+import getSecretStorageServiceOverride from '@codingame/monaco-vscode-secret-storage-service-override'
 import getAuthenticationServiceOverride from '@codingame/monaco-vscode-authentication-service-override'
 import getScmServiceOverride from '@codingame/monaco-vscode-scm-service-override'
 import getExtensionGalleryServiceOverride from '@codingame/monaco-vscode-extension-gallery-service-override'
@@ -386,5 +387,6 @@ export const commonServices: IEditorOverrideServices = {
       locale: 'en',
       languageName: 'English'
     }]
-  })
+  }),
+  ...getSecretStorageServiceOverride()
 }
