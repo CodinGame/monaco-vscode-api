@@ -82,8 +82,19 @@ const SHARED_ROOT_FILES_BETWEEN_PACKAGES = ['services.js', 'extensions.js', 'mon
  */
 const EDITOR_API_EXPOSE_MODULES = [
   // use by monaco-vim
-  'vs/editor/common/commands/shiftCommand.js',
-  'vs/editor/browser/config/tabFocus.js'
+  'vs/editor/common/commands/shiftCommand',
+  'vs/editor/browser/config/tabFocus',
+
+  // monaco-graphql
+  'vs/editor/contrib/inlineCompletions/browser/inlineCompletions.contribution',
+  'vs/editor/contrib/format/browser/formatActions',
+  'vs/editor/contrib/bracketMatching/browser/bracketMatching',
+  'vs/editor/contrib/hover/browser/hover',
+  'vs/editor/browser/coreCommands',
+  'vs/editor/contrib/clipboard/browser/clipboard',
+  'vs/editor/contrib/cursorUndo/browser/cursorUndo',
+  'vs/editor/contrib/contextmenu/browser/contextmenu',
+  'vs/editor/contrib/find/browser/findController'
 ]
 
 const EXTENSIONS = ['', '.ts', '.js']
@@ -817,6 +828,21 @@ export default (args: Record<string, string>): rollup.RollupOptions[] => {
               type: 'git',
               url: 'git+https://github.com/CodinGame/monaco-vscode-api.git'
             },
+            exports: {
+              '.': './esm/vs/editor/editor.api.js',
+              ...Object.fromEntries([
+                'vs/editor/editor.api',
+                'vs/editor/editor.worker',
+                ...EDITOR_API_EXPOSE_MODULES
+              ].flatMap(module => {
+                return Object.entries({
+                  [`./esm/${module}`]: `./esm/${module}.js`,
+                  [`./esm/${module}.js`]: `./esm/${module}.js`
+                })
+              })),
+              './esm/vs/basic-languages/*': './empty.js',
+              './esm/vs/language/*': './empty.js'
+            },
             type: 'module',
             private: false,
             description: 'VSCode public API plugged on the monaco editor - monaco-editor compatible api',
@@ -894,9 +920,9 @@ export default (args: Record<string, string>): rollup.RollupOptions[] => {
                   })
                   for (const modulePath of EDITOR_API_EXPOSE_MODULES) {
                     this.emitFile({
-                      fileName: `esm/${modulePath}`,
+                      fileName: `esm/${modulePath}.js`,
                       needsCodeReference: false,
-                      source: `export * from 'vscode/vscode/${modulePath.slice(0, -path.extname(modulePath).length)}'`,
+                      source: `export * from 'vscode/vscode/${modulePath}'`,
                       type: 'asset'
                     })
                   }
@@ -904,6 +930,12 @@ export default (args: Record<string, string>): rollup.RollupOptions[] => {
                     fileName: 'esm/vs/editor/editor.worker.js',
                     needsCodeReference: false,
                     source: "export * from 'vscode/workers/editor.worker'",
+                    type: 'asset'
+                  })
+                  this.emitFile({
+                    fileName: 'empty.js',
+                    needsCodeReference: false,
+                    source: 'export {}',
                     type: 'asset'
                   })
                 }
