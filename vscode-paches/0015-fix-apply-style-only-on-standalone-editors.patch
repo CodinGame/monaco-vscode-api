@@ -115,7 +115,7 @@ index 108aa52fa8a..dd294d50a2e 100644
  	 * Contributions to instantiate.
  	 * When provided, only the contributions included will be instantiated.
 diff --git a/src/vs/editor/browser/widget/diffEditor/diffEditorWidget.ts b/src/vs/editor/browser/widget/diffEditor/diffEditorWidget.ts
-index 7e5ac2ea408..5bcb6f60fab 100644
+index ecdc471e69e..5ab68a61136 100644
 --- a/src/vs/editor/browser/widget/diffEditor/diffEditorWidget.ts
 +++ b/src/vs/editor/browser/widget/diffEditor/diffEditorWidget.ts
 @@ -50,6 +50,12 @@ import { DiffEditorGutter } from 'vs/editor/browser/widget/diffEditor/features/g
