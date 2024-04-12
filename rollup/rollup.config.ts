@@ -64,6 +64,10 @@ const PURE_FUNCTIONS = new Set([
   'negate'
 ])
 
+const SIDE_EFFECT_CONSTRUCTORS = new Set([
+  'DomListener'
+])
+
 const PURE_OR_TO_REMOVE_FUNCTIONS = new Set([
   ...PURE_FUNCTIONS
 ])
@@ -208,7 +212,7 @@ function transformVSCodeCode (id: string, code: string) {
     },
     visitNewExpression (path) {
       const node = path.node
-      if (node.callee.type === 'Identifier') {
+      if (node.callee.type === 'Identifier' && !SIDE_EFFECT_CONSTRUCTORS.has(node.callee.name)) {
         path.replace(addComment(node))
       }
       this.traverse(path)
