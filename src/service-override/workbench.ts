@@ -133,7 +133,7 @@ onRenderWorkbench(async accessor => {
 })
 
 function getServiceOverride (options?: IWorkbenchOptions, _webviewIframeAlternateDomains?: string): IEditorOverrideServices {
-  if (webviewIframeAlternateDomains != null) {
+  if (_webviewIframeAlternateDomains != null) {
     webviewIframeAlternateDomains = _webviewIframeAlternateDomains
   }
 
