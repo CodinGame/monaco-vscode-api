@@ -177,6 +177,7 @@
     "@codingame/monaco-vscode-view-title-bar-service-override": "file:../dist/service-override-view-title-bar",
     "@codingame/monaco-vscode-views-service-override": "file:../dist/service-override-views",
     "@codingame/monaco-vscode-welcome-service-override": "file:../dist/service-override-welcome",
+    "@codingame/monaco-vscode-walkthrough-service-override": "file:../dist/service-override-walkthrough",
     "@codingame/monaco-vscode-workbench-service-override": "file:../dist/service-override-workbench",
     "@codingame/monaco-vscode-working-copy-service-override": "file:../dist/service-override-working-copy",
     "@codingame/monaco-vscode-workspace-trust-service-override": "file:../dist/service-override-workspace-trust",

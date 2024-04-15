@@ -38,6 +38,7 @@ import getTestingServiceOverride from '@codingame/monaco-vscode-testing-service-
 import getChatServiceOverride from '@codingame/monaco-vscode-chat-service-override'
 import getNotebookServiceOverride from '@codingame/monaco-vscode-notebook-service-override'
 import getWelcomeServiceOverride from '@codingame/monaco-vscode-welcome-service-override'
+import getWalkThroughServiceOverride from '@codingame/monaco-vscode-walkthrough-service-override'
 import getUserDataSyncServiceOverride from '@codingame/monaco-vscode-user-data-sync-service-override'
 import getAiServiceOverride from '@codingame/monaco-vscode-ai-service-override'
 import getTaskServiceOverride from '@codingame/monaco-vscode-task-service-override'
@@ -311,6 +312,7 @@ export const commonServices: IEditorOverrideServices = {
   ...getChatServiceOverride(),
   ...getNotebookServiceOverride(),
   ...getWelcomeServiceOverride(),
+  ...getWalkThroughServiceOverride(),
   ...getUserDataSyncServiceOverride(),
   ...getAiServiceOverride(),
   ...getTaskServiceOverride(),
