@@ -771,6 +771,9 @@ export default (args: Record<string, string>): rollup.RollupOptions[] => {
               },
               './vscode/*': {
                 default: './vscode/src/*.js'
+              },
+              './external/*': {
+                default: './external/*'
               }
             },
             typesVersions: {
@@ -883,9 +886,16 @@ export default (args: Record<string, string>): rollup.RollupOptions[] => {
 
                   const isVscodeFile = resolved.startsWith(VSCODE_SRC_DIST_DIR)
                   const isServiceOverride = path.dirname(resolved) === DIST_SERVICE_OVERRIDE_DIR_MAIN
-                  const isNotExclusive = (isVscodeFile || isServiceOverride) && !exclusiveModules.has(resolvedWithExtension)
+                  const isExclusive = exclusiveModules.has(resolvedWithExtension)
+                  const pathFromRoot = path.relative(DIST_DIR_MAIN, resolvedWithExtension)
                   const shouldBeShared = SHARED_ROOT_FILES_BETWEEN_PACKAGES.includes(path.relative(DIST_DIR_MAIN, resolvedWithExtension))
-                  if (isNotExclusive || shouldBeShared) {
+                  if (pathFromRoot.startsWith('external/') && !isExclusive) {
+                    return {
+                      external: true,
+                      id: `vscode/${pathFromRoot}`
+                    }
+                  }
+                  if (((isVscodeFile || isServiceOverride) && !isExclusive) || shouldBeShared) {
                     // Those modules will be imported from external monaco-vscode-api
                     let externalResolved = resolved.startsWith(VSCODE_SRC_DIST_DIR) ? `vscode/vscode/${path.relative(VSCODE_SRC_DIST_DIR, resolved)}` : `vscode/${path.relative(DIST_DIR_MAIN, resolved)}`
                     if (externalResolved.endsWith('.js')) {
@@ -1032,10 +1042,17 @@ export default (args: Record<string, string>): rollup.RollupOptions[] => {
 
                   const isVscodeFile = resolved.startsWith(VSCODE_SRC_DIST_DIR)
                   const isServiceOverride = path.dirname(resolved) === DIST_SERVICE_OVERRIDE_DIR_MAIN
-                  const isNotExclusive = (isVscodeFile || isServiceOverride) && !exclusiveModules.has(resolvedWithExtension)
+                  const isExclusive = exclusiveModules.has(resolvedWithExtension)
+                  const pathFromRoot = path.relative(DIST_DIR_MAIN, resolvedWithExtension)
                   const shouldBeShared = SHARED_ROOT_FILES_BETWEEN_PACKAGES.includes(path.relative(DIST_DIR_MAIN, resolvedWithExtension))
+                  if (pathFromRoot.startsWith('external/') && !isExclusive) {
+                    return {
+                      external: true,
+                      id: `vscode/${pathFromRoot}`
+                    }
+                  }
 
-                  if (isNotExclusive || shouldBeShared) {
+                  if (((isVscodeFile || isServiceOverride) && !isExclusive) || shouldBeShared) {
                     // Those modules will be imported from external monaco-vscode-api
                     let externalResolved = resolved.startsWith(VSCODE_SRC_DIST_DIR) ? `vscode/vscode/${path.relative(VSCODE_SRC_DIST_DIR, resolved)}` : `vscode/${path.relative(DIST_DIR_MAIN, resolved)}`
                     if (externalResolved.endsWith('.js')) {
