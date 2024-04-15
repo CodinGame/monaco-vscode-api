@@ -379,13 +379,14 @@ class OverlayFileSystemProvider implements IFileSystemProviderWithFileReadWriteC
 
   async writeFile (resource: URI, content: Uint8Array, opts: IFileWriteOptions): Promise<void> {
     await this.writeToDelegates(async delegate => {
+      let stats: IStat | undefined
       try {
-        const stats = await delegate.stat(resource)
-        if (((stats.permissions ?? 0) & FilePermission.Readonly) > 0) {
-          throw createFileSystemProviderError('Not allowed', FileSystemProviderErrorCode.NoPermissions)
-        }
+        stats = await delegate.stat(resource)
       } catch (err) {
         // ignore
+      }
+      if (stats != null && ((stats.permissions ?? 0) & FilePermission.Readonly) > 0) {
+        throw createFileSystemProviderError('Not allowed', FileSystemProviderErrorCode.NoPermissions)
       }
       return delegate.writeFile(resource, content, opts)
     })
