@@ -162,15 +162,15 @@ Additionally, several packages that include the VSCode version of some services 
 - **Preferences**: `@codingame/monaco-vscode-preferences-service-override`
   - Allow to read and write preferences
 - **Output**: `@codingame/monaco-vscode-output-service-override`
-  - Output panel support. *Hint*: It only makes sense to enable it when *Views* service is used.
+  - Output panel support. *Hint*: It only makes sense to enable it when *Views* or *Workbench* service are used.
 - **Terminal**: `@codingame/monaco-vscode-terminal-service-override`
-  - Terminal panel support. *Hint*: It only makes sense to enable it when *Views* service is used.
+  - Terminal panel support. *Hint*: It only makes sense to enable it when *Views* or *Workbench* service are used.
 - **Search**: `@codingame/monaco-vscode-search-service-override`
-  - search panel support. *Hint*: It only makes sense to enable it when *Views* service is used.
+  - search panel support. *Hint*: It only makes sense to enable it when *Views* or *Workbench* service are used.
 - **Markers**: `@codingame/monaco-vscode-markers-service-override`
-  - It adds the problems panel tab. *Hint*: It only makes sense to enable it when *Views* service is used.
+  - It adds the problems panel tab. *Hint*: It only makes sense to enable it when *Views* or *Workbench* service are used.
 - **SCM**: `@codingame/monaco-vscode-scm-service-override`
-  - It adds the SCM API that can be used to implement source control. *Hint*: It only makes sense to enable it when *Views* service is used.
+  - It adds the SCM API that can be used to implement source control. *Hint*: It only makes sense to enable it when *Views* or *Workbench* service are used.
 - **Testing**: `@codingame/monaco-vscode-testing-service-override`
   - It adds the Tests API. *Hint*: It makes more sense to enable it when *Views* service is used.
 - **Language detection worker**: `@codingame/monaco-vscode-language-detection-worker-service-override`
@@ -201,7 +201,9 @@ Additionally, several packages that include the VSCode version of some services 
 - **Notebook**: `@codingame/monaco-vscode-notebook-service-override`
   - Support for Jupyter notebooks
 - **Welcome**: `@codingame/monaco-vscode-welcome-service-override`
-  - Support for welcome pages/components. *Hint*: It only makes sense to enable it when *Views* service is used.
+  - Support for [viewsWelcome contribution point](https://code.visualstudio.com/api/references/contribution-points#contributes.viewsWelcome). *Hint*: It only makes sense to enable it when *Views* or *Workbench* service are used.
+- **Walkthrough**: `@codingame/monaco-vscode-walkthrough-service-override`
+  - Getting Started page and support for [walkthrough contribution point](https://code.visualstudio.com/api/references/contribution-points#contributes.walkthroughs). *Hint*: It only makes sense to enable it when *Views* or *Workbench* service are used.
 - **User data sync**: `@codingame/monaco-vscode-user-data-sync-service-override`
   - Support for user data sync. ⚠️ It can't really be used as it relies on a [closed source backend from microsoft](https://code.visualstudio.com/docs/editor/settings-sync#_can-i-use-a-different-backend-or-service-for-settings-sync) for the moment ⚠️
 - **Ai**: `@codingame/monaco-vscode-ai-service-override`
@@ -209,9 +211,9 @@ Additionally, several packages that include the VSCode version of some services 
 - **Task**: `@codingame/monaco-vscode-task-service-override`
   - Task management
 - **Outline**: `@codingame/monaco-vscode-outline-service-override`
-  - Support for the outline view. *Hint*: It only makes sense to enable it when *Views* service is used.
+  - Support for the outline view. *Hint*: It only makes sense to enable it when *Views* or *Workbench* service are used.
 - **Timeline**: `@codingame/monaco-vscode-timeline-service-override`
-  - Support for the timeline view. *Hint*: It only makes sense to enable it when *Views* service is used.
+  - Support for the timeline view. *Hint*: It only makes sense to enable it when *Views* or *Workbench* service are used.
 - **Workbench**: `@codingame/monaco-vscode-workbench-service-override`
   - Allows to render the full workbench layout. Is exclusive with the `views` service. Do not use both services at the same time.
 - **Comments**
