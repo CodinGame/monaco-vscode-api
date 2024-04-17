@@ -178,11 +178,10 @@ if (useHtmlFileSystemProvider) {
   }, null, 2)))
 
   fileSystemProvider.registerFile(new RegisteredMemoryFile(monaco.Uri.file('/tmp/.vscode/extensions.json'), JSON.stringify({
-    "recommendations": [
-      "vscodevim.vim"
+    recommendations: [
+      'vscodevim.vim'
     ]
   }, null, 2)))
-
 
   registerFileSystemOverlay(1, fileSystemProvider)
 }
@@ -211,7 +210,7 @@ window.MonacoEnvironment = {
 // Set configuration before initializing service so it's directly available (especially for the theme, to prevent a flicker)
 await Promise.all([
   initUserConfiguration(defaultConfiguration),
-  initUserKeybindings(defaultKeybindings),
+  initUserKeybindings(defaultKeybindings)
 ])
 
 export const constructOptions: IWorkbenchConstructionOptions = {
@@ -244,19 +243,23 @@ export const constructOptions: IWorkbenchConstructionOptions = {
     'window.title': 'Monaco-Vscode-Api${separator}${dirty}${activeEditorShort}'
   },
   defaultLayout: {
-    editors: useHtmlFileSystemProvider ? undefined : [{
-      uri: monaco.Uri.file('/tmp/test.js'),
-      viewColumn: 1
-    }, {
-      uri: monaco.Uri.file('/tmp/test.md'),
-      viewColumn: 2
-    }],
-    layout: useHtmlFileSystemProvider ? undefined : {
-      editors: {
-        orientation: 0,
-        groups: [{ size: 1 }, { size: 1 }]
-      }
-    },
+    editors: useHtmlFileSystemProvider
+      ? undefined
+      : [{
+          uri: monaco.Uri.file('/tmp/test.js'),
+          viewColumn: 1
+        }, {
+          uri: monaco.Uri.file('/tmp/test.md'),
+          viewColumn: 2
+        }],
+    layout: useHtmlFileSystemProvider
+      ? undefined
+      : {
+          editors: {
+            orientation: 0,
+            groups: [{ size: 1 }, { size: 1 }]
+          }
+        },
     views: [{
       id: 'custom-view'
     }],

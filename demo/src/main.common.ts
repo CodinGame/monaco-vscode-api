@@ -1,6 +1,7 @@
 import './style.css'
 import * as monaco from 'monaco-editor'
-import './setup.common'
+import { ExtensionHostKind, registerExtension } from 'vscode/extensions'
+import { useHtmlFileSystemProvider } from './setup.common'
 import './features/output'
 import './features/debugger'
 import './features/search'
@@ -51,8 +52,6 @@ import '@codingame/monaco-vscode-markdown-math-default-extension'
 import '@codingame/monaco-vscode-npm-default-extension'
 import '@codingame/monaco-vscode-media-preview-default-extension'
 import '@codingame/monaco-vscode-ipynb-default-extension'
-import { ExtensionHostKind, registerExtension } from 'vscode/extensions'
-import { useHtmlFileSystemProvider } from './setup.common'
 
 const { getApi } = registerExtension({
   name: 'demo-main',

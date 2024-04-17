@@ -1,5 +1,5 @@
-import { useHtmlFileSystemProvider } from '../setup.common'
 import { ExtensionHostKind, registerExtension } from 'vscode/extensions'
+import { useHtmlFileSystemProvider } from '../setup.common'
 
 if (!useHtmlFileSystemProvider) {
   const { getApi } = registerExtension({
