@@ -12,7 +12,7 @@
 - Fetch the new tag: `git fetch origin <tag>`
 - rebase on the new tag: `git rebase <tag>`
 - Resolve conflicts / update code (e.g. broken imports)
-- Generate new patch: `rm -rf ../monaco-vscode-api/vscode-paches && git format-patch --zero-commit --no-numbered <tag>.. -o '../monaco-vscode-api/vscode-paches'`
+- Generate new patch: `rm -rf ../monaco-vscode-api/vscode-paches && git format-patch --zero-commit --no-numbered --no-signature <tag>.. -o '../monaco-vscode-api/vscode-paches'`
 
 ## monaco-vscode-api repository
 
