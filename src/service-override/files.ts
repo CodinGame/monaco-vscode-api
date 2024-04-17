@@ -548,7 +548,7 @@ class FileServiceOverride extends FileService {
       if (provider instanceof OverlayFileSystemProvider) {
         provider.onDidChangeOverlays(() => {
           disposable.dispose()
-          disposable = this.registerProvider(scheme, fileSystemProvider)
+          disposable = this.registerProvider(scheme, provider)
         })
       }
 
