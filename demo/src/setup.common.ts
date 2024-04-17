@@ -1,6 +1,6 @@
 import getConfigurationServiceOverride, { IStoredWorkspace, initUserConfiguration } from '@codingame/monaco-vscode-configuration-service-override'
 import getKeybindingsServiceOverride, { initUserKeybindings } from '@codingame/monaco-vscode-keybindings-service-override'
-import { RegisteredFileSystemProvider, RegisteredMemoryFile, RegisteredReadOnlyFile, createIndexedDBProviders, initFile, registerFileSystemOverlay } from '@codingame/monaco-vscode-files-service-override'
+import { RegisteredFileSystemProvider, RegisteredMemoryFile, RegisteredReadOnlyFile, createIndexedDBProviders, registerFileSystemOverlay } from '@codingame/monaco-vscode-files-service-override'
 import * as monaco from 'monaco-editor'
 import { IWorkbenchConstructionOptions, LogLevel, IEditorOverrideServices } from 'vscode/services'
 import * as vscode from 'vscode'
@@ -147,6 +147,20 @@ h1 {
 }`
 ))
 
+// Use a workspace file to be able to add another folder later (for the "Attach filesystem" button)
+fileSystemProvider.registerFile(new RegisteredMemoryFile(workspaceFile, JSON.stringify(<IStoredWorkspace>{
+  folders: [{
+    path: '/tmp'
+  }]
+}, null, 2)))
+
+fileSystemProvider.registerFile(new RegisteredMemoryFile(monaco.Uri.file('/tmp/.vscode/extensions.json'), JSON.stringify({
+  "recommendations": [
+    "vscodevim.vim"
+  ]
+}, null, 2)))
+
+
 registerFileSystemOverlay(1, fileSystemProvider)
 
 export const userDataProvider = await createIndexedDBProviders()
@@ -186,17 +200,6 @@ export const workspaceFile = monaco.Uri.file('/workspace.code-workspace')
 await Promise.all([
   initUserConfiguration(defaultConfiguration),
   initUserKeybindings(defaultKeybindings),
-  // Use a workspace file to be able to add another folder later (for the "Attach filesystem" button)
-  initFile(workspaceFile, JSON.stringify(<IStoredWorkspace>{
-    folders: [{
-      path: '/tmp'
-    }]
-  })),
-  initFile(monaco.Uri.file('/tmp/.vscode/extensions.json'), `{
-    "recommendations": [
-        "vscodevim.vim"
-    ]
-}`)
 ])
 
 export const constructOptions: IWorkbenchConstructionOptions = {
