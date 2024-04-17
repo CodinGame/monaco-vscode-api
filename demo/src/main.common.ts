@@ -1,7 +1,5 @@
 import './style.css'
 import * as monaco from 'monaco-editor'
-import { registerFileSystemOverlay, HTMLFileSystemProvider } from '@codingame/monaco-vscode-files-service-override'
-import { ILogService, StandaloneServices } from 'vscode/services'
 import './setup.common'
 import './features/output'
 import './features/debugger'
@@ -96,15 +94,13 @@ void getApi().then(async vscode => {
     window.location.href = url.toString()
   })
 
-  document.querySelector('#filesystem')!.addEventListener('click', async () => {
-    const dirHandle = await window.showDirectoryPicker()
-
-    const htmlFileSystemProvider = new HTMLFileSystemProvider(undefined, 'unused', StandaloneServices.get(ILogService))
-    await htmlFileSystemProvider.registerDirectoryHandle(dirHandle)
-    registerFileSystemOverlay(1, htmlFileSystemProvider)
-
-    vscode.workspace.updateWorkspaceFolders(0, 0, {
-      uri: vscode.Uri.file(dirHandle.name)
-    })
+  document.querySelector('#toggleHTMLFileSystemProvider')!.addEventListener('click', async () => {
+    const url = new URL(window.location.href)
+    if (url.searchParams.has('htmlFileSystemProvider')) {
+      url.searchParams.delete('htmlFileSystemProvider')
+    } else {
+      url.searchParams.set('htmlFileSystemProvider', 'true')
+    }
+    window.location.href = url.toString()
   })
 })
