@@ -39,6 +39,3 @@ index 5ce2ec7413b..5555f431ba0 100644
  		await this._fakeModules.install();
  		performance.mark('code/extHost/didInitAPI');
  
--- 
-2.34.1
-

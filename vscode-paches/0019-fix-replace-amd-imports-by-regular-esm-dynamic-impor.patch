@@ -417,6 +417,3 @@ index ad67fb4f422..fadf86cece5 100644
  
  	// ensure to limit buffer for guessing due to https://github.com/aadsm/jschardet/issues/53
  	const limitedBuffer = buffer.slice(0, AUTO_ENCODING_GUESS_MAX_BYTES);
--- 
-2.34.1
-

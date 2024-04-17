@@ -412,6 +412,3 @@ index 86136a080e6..8a2608599ee 100644
  
  				onTerminate = (reason: string) => extHostMain.terminate(reason);
  			});
--- 
-2.34.1
-

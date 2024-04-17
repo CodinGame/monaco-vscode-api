@@ -31,6 +31,3 @@ index af014495458..b1c93afd65f 100644
  	private static _transform(initData: IExtensionHostInitData, rpcProtocol: RPCProtocol): IExtensionHostInitData {
  		initData.extensions.allExtensions.forEach((ext) => {
  			(<Mutable<IRelaxedExtensionDescription>>ext).extensionLocation = URI.revive(rpcProtocol.transformIncomingURIs(ext.extensionLocation));
--- 
-2.34.1
-

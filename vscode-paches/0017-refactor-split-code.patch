@@ -54,6 +54,3 @@ index 76b3fa79a5c..3c98bf9aec0 100644
  			this._cachedResolver = new KeybindingResolver(defaults, overrides, (str) => this._log(str));
  		}
  		return this._cachedResolver;
--- 
-2.34.1
-

@@ -54,6 +54,3 @@ index 20ec7e138a6..e284ed6752b 100644
 -registerSingleton(ILogService, new SyncDescriptor(ExtHostLogService, [true], true));
  registerSingleton(IExtHostExtensionService, ExtHostExtensionService, InstantiationType.Eager);
  registerSingleton(IExtensionStoragePaths, ExtensionStoragePaths, InstantiationType.Eager);
--- 
-2.34.1
-

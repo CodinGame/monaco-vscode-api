@@ -110,6 +110,3 @@ index f967fc38127..4da1da8f591 100644
  		this._modelOperations = new ModelOperations({
  			modelJsonLoaderFunc: async () => {
  				const response = await fetch(await this._host.fhr('getModelJsonUri', []));
--- 
-2.34.1
-

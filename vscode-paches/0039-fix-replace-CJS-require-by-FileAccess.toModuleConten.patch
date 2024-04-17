@@ -87,6 +87,3 @@ index 24764f1e31a..e16d9f5afcd 100644
  }
  
  export class WalkThroughSnippetContentProvider implements ITextModelContentProvider, IWorkbenchContribution {
--- 
-2.34.1
-

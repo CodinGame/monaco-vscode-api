@@ -1911,6 +1911,3 @@ index 00000000000..2f31d6a7984
 +		return obj instanceof FileEditorInput;
 +	}
 +});
--- 
-2.34.1
-

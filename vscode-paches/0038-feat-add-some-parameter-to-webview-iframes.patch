@@ -30,6 +30,3 @@ index bd0c97c183a..9a4070e0d1c 100644
  		COI.addSearchParam(params, true, true);
  
  		const queryString = new URLSearchParams(params).toString();
--- 
-2.34.1
-

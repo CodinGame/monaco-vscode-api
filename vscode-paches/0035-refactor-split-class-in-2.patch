@@ -134,6 +134,3 @@ index 098be8e230d..0b12e5972ce 100644
 +
 +
 +registerSingleton(IExtensionService, BrowserExtensionService, InstantiationType.Eager);
--- 
-2.34.1
-
