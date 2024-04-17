@@ -513,8 +513,8 @@ class DelegateFileSystemProvider implements IFileSystemProvider {
   }
 }
 
-const fileSystemProvider = new OverlayFileSystemProvider()
-fileSystemProvider.register(0, new MkdirpOnWriteInMemoryFileSystemProvider())
+const overlayFileSystemProvider = new OverlayFileSystemProvider()
+overlayFileSystemProvider.register(0, new MkdirpOnWriteInMemoryFileSystemProvider())
 
 const extensionFileSystemProvider = new RegisteredFileSystemProvider(true)
 const userDataFileSystemProvider = new InMemoryFileSystemProvider()
@@ -536,10 +536,10 @@ const providers: Record<string, IFileSystemProvider> = {
   [logsPath.scheme]: new InMemoryFileSystemProvider(),
   [Schemas.vscodeUserData]: userDataFileSystemProvider,
   [Schemas.tmp]: new InMemoryFileSystemProvider(),
-  [Schemas.file]: fileSystemProvider
+  [Schemas.file]: overlayFileSystemProvider
 }
 
-class MemoryFileService extends FileService {
+class FileServiceOverride extends FileService {
   constructor (logService: ILogService, @ITelemetryService telemetryService: ITelemetryService) {
     super(logService)
 
@@ -568,7 +568,7 @@ registerServiceInitializePreParticipant(async (accessor) => {
 
 export default function getServiceOverride (): IEditorOverrideServices {
   return {
-    [IFileService.toString()]: new SyncDescriptor(MemoryFileService, [fileLogger], true),
+    [IFileService.toString()]: new SyncDescriptor(FileServiceOverride, [fileLogger], true),
     [ITextFileService.toString()]: new SyncDescriptor(BrowserTextFileService, [], true),
     [IFilesConfigurationService.toString()]: new SyncDescriptor(FilesConfigurationService, [], true),
     [IElevatedFileService.toString()]: new SyncDescriptor(BrowserElevatedFileService, [], true)
