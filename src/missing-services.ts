@@ -99,7 +99,7 @@ import { INotebookEditorModelResolverService } from 'vs/workbench/contrib/notebo
 import { IWorkingCopyEditorService } from 'vs/workbench/services/workingCopy/common/workingCopyEditorService'
 import { IUserActivityService } from 'vs/workbench/services/userActivity/common/userActivityService'
 import { ICanonicalUriService } from 'vs/platform/workspace/common/canonicalUri'
-import { ExtensionStatusBarEntry, IExtensionStatusBarItemService, StatusBarUpdateKind } from 'vs/workbench/api/browser/statusBarExtensionPoint'
+import { ExtensionStatusBarEntry, IExtensionStatusBarItemService, StatusBarUpdateKind } from 'vs/workbench/api/browser/statusBarService'
 import { IWorkbenchAssignmentService } from 'vs/workbench/services/assignment/common/assignmentService'
 import { IChatService } from 'vs/workbench/contrib/chat/common/chatService'
 import { IEmbedderTerminalService } from 'vs/workbench/services/terminal/common/embedderTerminalService'

@@ -2,13 +2,11 @@ import { IEditorOverrideServices, StandaloneServices } from 'vs/editor/standalon
 import { ITextMateTokenizationService } from 'vs/workbench/services/textMate/browser/textMateTokenizationFeature'
 import { SyncDescriptor } from 'vs/platform/instantiation/common/descriptors'
 import { TextMateTokenizationFeature } from 'vs/workbench/services/textMate/browser/textMateTokenizationFeatureImpl'
-import { TokenClassificationExtensionPoints } from 'vs/workbench/services/themes/common/tokenClassificationExtensionPoint'
-import { IWorkbenchContribution, WorkbenchPhase, registerWorkbenchContribution2 } from 'vs/workbench/common/contributions'
 import { ILifecycleService, LifecyclePhase } from 'vs/workbench/services/lifecycle/common/lifecycle'
-import { IInstantiationService } from 'vs/platform/instantiation/common/instantiation'
 import getFileServiceOverride from './files'
 import { registerServiceInitializeParticipant } from '../lifecycle'
 import { registerAssets } from '../assets'
+import 'vs/workbench/services/themes/common/tokenClassificationExtensionPoint'
 
 const _onigWasm = new URL('vscode-oniguruma/release/onig.wasm', import.meta.url).href
 registerAssets({
@@ -22,17 +20,6 @@ registerServiceInitializeParticipant(async (accessor) => {
     StandaloneServices.get(ITextMateTokenizationService)
   })
 })
-
-class ExtensionPoints implements IWorkbenchContribution {
-  static readonly ID = 'workbench.contrib.extensionPoints.textmate'
-
-  constructor (
-    @IInstantiationService private readonly instantiationService: IInstantiationService
-  ) {
-    this.instantiationService.createInstance(TokenClassificationExtensionPoints)
-  }
-}
-registerWorkbenchContribution2(ExtensionPoints.ID, ExtensionPoints, WorkbenchPhase.BlockStartup)
 
 export default function getServiceOverride (): IEditorOverrideServices {
   return {

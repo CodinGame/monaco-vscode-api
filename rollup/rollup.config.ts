@@ -72,10 +72,6 @@ const PURE_OR_TO_REMOVE_FUNCTIONS = new Set([
   ...PURE_FUNCTIONS
 ])
 
-const REMOVE_WORKBENCH_CONTRIBUTIONS = new Set([
-  'ExtensionPoints'
-])
-
 /**
  * root files that should never be extracted from the main package to a service override package
  */
@@ -146,16 +142,6 @@ function isCallPure (file: string, functionName: string, node: recast.types.name
     ) {
       return true
     }
-  }
-
-  if (functionName === 'registerWorkbenchContribution2') {
-    const firstParam = args[1]!
-    if (firstParam.type === 'Identifier') {
-      if (REMOVE_WORKBENCH_CONTRIBUTIONS.has(firstParam.name)) {
-        return true
-      }
-    }
-    return false
   }
 
   if (functionName === 'registerSingleton') {
