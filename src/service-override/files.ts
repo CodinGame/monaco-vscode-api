@@ -1,7 +1,7 @@
-import { IEditorOverrideServices } from 'vs/editor/standalone/browser/standaloneServices'
+import { IEditorOverrideServices, StandaloneServices } from 'vs/editor/standalone/browser/standaloneServices'
 import { SyncDescriptor } from 'vs/platform/instantiation/common/descriptors'
 import { FileService } from 'vs/platform/files/common/fileService'
-import { ILogService } from 'vs/platform/log/common/log'
+import { ILogService, LogLevel } from 'vs/platform/log/common/log'
 import { InMemoryFileSystemProvider } from 'vs/platform/files/common/inMemoryFilesystemProvider'
 import { URI } from 'vs/base/common/uri'
 import { FileChangeType, FilePermission, FileSystemProviderCapabilities, FileType, IFileSystemProvider, toFileSystemProviderErrorCode, createFileSystemProviderError, FileSystemProviderError, FileSystemProviderErrorCode, IFileChange, IFileDeleteOptions, IFileOverwriteOptions, IFileService, IFileSystemProviderWithFileReadWriteCapability, IFileWriteOptions, IStat, IWatchOptions } from 'vs/platform/files/common/files'
@@ -658,13 +658,15 @@ export async function initFile (file: URI, content: Uint8Array | string, options
   })
 }
 
+let indexedDB: IndexedDB | undefined
+const userDataStore = 'vscode-userdata-store'
+const logsStore = 'vscode-logs-store'
+const handlesStore = 'vscode-filehandles-store'
 /**
  * Can be used to replace memory providers by indexeddb providers before the fileService is initialized
  */
 export async function createIndexedDBProviders (): Promise<IndexedDBFileSystemProvider> {
-  const userDataStore = 'vscode-userdata-store'
-  const logsStore = 'vscode-logs-store'
-  const indexedDB = await IndexedDB.create('vscode-web-db', 3, [userDataStore, logsStore])
+  indexedDB = await IndexedDB.create('vscode-web-db', 3, [userDataStore, logsStore, handlesStore])
 
   // Logger
   registerCustomProvider(logsPath.scheme, new IndexedDBFileSystemProvider(logsPath.scheme, indexedDB, logsStore, false))
@@ -673,6 +675,56 @@ export async function createIndexedDBProviders (): Promise<IndexedDBFileSystemPr
   registerCustomProvider(Schemas.vscodeUserData, userDataProvider)
 
   return userDataProvider
+}
+
+/**
+ * Can be used to replace the default filesystem provider by the HTMLFileSystemProvider before the fileService is initialized
+ * Should be called "after" createIndexedDBProviders if used
+ */
+export function registerHTMLFileSystemProvider (): void {
+  class LazyLogService implements ILogService {
+    _serviceBrand: undefined
+    get onDidChangeLogLevel () {
+      return StandaloneServices.get(ILogService).onDidChangeLogLevel
+    }
+
+    getLevel (): LogLevel {
+      return StandaloneServices.get(ILogService).getLevel()
+    }
+
+    setLevel (level: LogLevel): void {
+      StandaloneServices.get(ILogService).setLevel(level)
+    }
+
+    trace (message: string, ...args: any[]): void {
+      StandaloneServices.get(ILogService).trace(message, ...args)
+    }
+
+    debug (message: string, ...args: any[]): void {
+      StandaloneServices.get(ILogService).debug(message, ...args)
+    }
+
+    info (message: string, ...args: any[]): void {
+      StandaloneServices.get(ILogService).info(message, ...args)
+    }
+
+    warn (message: string, ...args: any[]): void {
+      StandaloneServices.get(ILogService).warn(message, ...args)
+    }
+
+    error (message: string | Error, ...args: any[]): void {
+      StandaloneServices.get(ILogService).error(message, ...args)
+    }
+
+    flush (): void {
+      StandaloneServices.get(ILogService).flush()
+    }
+
+    dispose (): void {
+      StandaloneServices.get(ILogService).dispose()
+    }
+  }
+  registerCustomProvider(Schemas.file, new HTMLFileSystemProvider(indexedDB, handlesStore, new LazyLogService()))
 }
 
 /**
