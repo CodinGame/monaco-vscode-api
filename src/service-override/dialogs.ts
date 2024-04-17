@@ -3,12 +3,13 @@ import { DialogService } from 'vs/workbench/services/dialogs/common/dialogServic
 import { IDialogService, IFileDialogService, IOpenDialogOptions, IPickAndOpenOptions, ISaveDialogOptions } from 'vs/platform/dialogs/common/dialogs'
 import { SyncDescriptor } from 'vs/platform/instantiation/common/descriptors'
 import { AbstractFileDialogService } from 'vs/workbench/services/dialogs/browser/abstractFileDialogService'
+import { FileDialogService } from 'vs/workbench/services/dialogs/browser/fileDialogService'
 import { URI } from 'vs/base/common/uri'
 import { unsupported } from '../tools'
 import 'vs/workbench/browser/parts/dialogs/dialog.web.contribution'
 import 'vs/workbench/contrib/welcomeDialog/browser/welcomeDialog.contribution'
 
-class FileDialogService extends AbstractFileDialogService {
+class DialogServiceOverride extends AbstractFileDialogService {
   override pickWorkspaceAndOpen = unsupported
 
   async pickFileFolderAndOpen (options: IPickAndOpenOptions): Promise<void> {
@@ -60,9 +61,17 @@ class FileDialogService extends AbstractFileDialogService {
   }
 }
 
-export default function getServiceOverride (): IEditorOverrideServices {
+interface DialogServiceOverrideProps {
+  /**
+   * Is an `HTMLFileSystemProvider` is used as only provider for the `file` scheme directly (without overlay)
+   * Enable this option to enable browser file dialogs
+   */
+  useHtmlFileSystemProvider: boolean
+}
+
+export default function getServiceOverride ({ useHtmlFileSystemProvider }: DialogServiceOverrideProps): IEditorOverrideServices {
   return {
     [IDialogService.toString()]: new SyncDescriptor(DialogService, undefined, true),
-    [IFileDialogService.toString()]: new SyncDescriptor(FileDialogService, undefined, true)
+    [IFileDialogService.toString()]: useHtmlFileSystemProvider ? new SyncDescriptor(FileDialogService, undefined, true) : new SyncDescriptor(DialogServiceOverride, undefined, true)
   }
 }
