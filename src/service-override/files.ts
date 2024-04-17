@@ -687,7 +687,11 @@ export async function createIndexedDBProviders (): Promise<IndexedDBFileSystemPr
  * - any provider registered with a negative priority will be behind the default one
  */
 export function registerFileSystemOverlay (priority: number, provider: IFileSystemProviderWithFileReadWriteCapability): IDisposable {
-  return fileSystemProvider.register(priority, provider)
+  const overlayProvider = providers.file
+  if (!(overlayProvider instanceof OverlayFileSystemProvider)) {
+    throw new Error('The overlay filesystem provider was replaced')
+  }
+  return overlayProvider.register(priority, provider)
 }
 
 export {
