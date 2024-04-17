@@ -362,7 +362,8 @@ const workerGroups: Record<string, string> = {
   languageDetection: 'service-override:language-detection-worker',
   outputLinkComputer: 'service-override:output',
   textmate: 'service-override:textmate',
-  notebook: 'service-override:notebook'
+  notebook: 'service-override:notebook',
+  localFileSearch: 'service-override:search'
 }
 
 const externals = Object.keys({ ...pkg.dependencies })
