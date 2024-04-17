@@ -305,6 +305,9 @@ class OverlayFileSystemProvider implements IFileSystemProviderWithFileReadWriteC
   capabilities = FileSystemProviderCapabilities.FileReadWrite | FileSystemProviderCapabilities.PathCaseSensitive
 
   private async readFromDelegates<T> (caller: (delegate: IFileSystemProviderWithFileReadWriteCapability) => Promise<T>) {
+    if (this.delegates.length === 0) {
+      throw createFileSystemProviderError('No delegate', FileSystemProviderErrorCode.Unavailable)
+    }
     let firstError: unknown | undefined
     for (const delegate of this.delegates) {
       try {
@@ -325,6 +328,9 @@ class OverlayFileSystemProvider implements IFileSystemProviderWithFileReadWriteC
   }
 
   private async writeToDelegates (caller: (delegate: IFileSystemProviderWithFileReadWriteCapability) => Promise<void>): Promise<void> {
+    if (this.delegates.length === 0) {
+      throw createFileSystemProviderError('No delegate', FileSystemProviderErrorCode.Unavailable)
+    }
     for (const provider of this.delegates) {
       if ((provider.capabilities & FileSystemProviderCapabilities.Readonly) > 0) {
         continue
@@ -669,5 +675,6 @@ export {
   RegisteredFile,
   RegisteredReadOnlyFile,
   RegisteredMemoryFile,
-  DelegateFileSystemProvider
+  DelegateFileSystemProvider,
+  OverlayFileSystemProvider
 }
