@@ -519,6 +519,43 @@ class DelegateFileSystemProvider implements IFileSystemProvider {
   }
 }
 
+class EmptyFileSystemProvider implements IFileSystemProviderWithFileReadWriteCapability {
+  async readFile (): Promise<Uint8Array> {
+    throw createFileSystemProviderError('Not found', FileSystemProviderErrorCode.FileNotFound)
+  }
+
+  async writeFile (): Promise<void> {
+    throw createFileSystemProviderError('Not allowed', FileSystemProviderErrorCode.NoPermissions)
+  }
+
+  capabilities = FileSystemProviderCapabilities.FileReadWrite | FileSystemProviderCapabilities.PathCaseSensitive
+  onDidChangeCapabilities = Event.None
+  onDidChangeFile = Event.None
+  watch (): IDisposable {
+    return Disposable.None
+  }
+
+  async stat (): Promise<IStat> {
+    throw createFileSystemProviderError('Not found', FileSystemProviderErrorCode.FileNotFound)
+  }
+
+  async mkdir (): Promise<void> {
+    throw createFileSystemProviderError('Not allowed', FileSystemProviderErrorCode.NoPermissions)
+  }
+
+  async readdir (): Promise<[string, FileType][]> {
+    throw createFileSystemProviderError('Not found', FileSystemProviderErrorCode.FileNotFound)
+  }
+
+  async delete (): Promise<void> {
+    throw createFileSystemProviderError('Not allowed', FileSystemProviderErrorCode.NoPermissions)
+  }
+
+  async rename (): Promise<void> {
+    throw createFileSystemProviderError('Not allowed', FileSystemProviderErrorCode.NoPermissions)
+  }
+}
+
 const overlayFileSystemProvider = new OverlayFileSystemProvider()
 overlayFileSystemProvider.register(0, new MkdirpOnWriteInMemoryFileSystemProvider())
 
@@ -676,5 +713,6 @@ export {
   RegisteredReadOnlyFile,
   RegisteredMemoryFile,
   DelegateFileSystemProvider,
-  OverlayFileSystemProvider
+  OverlayFileSystemProvider,
+  EmptyFileSystemProvider
 }
