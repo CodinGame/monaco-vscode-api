@@ -43,6 +43,8 @@ import { Event } from 'vs/base/common/event'
 import { ResourceContextKey } from 'vs/workbench/common/contextkeys'
 import { createInjectedClass } from './tools/injection'
 import { getService } from './services'
+export { registerEditorAction, registerEditorContribution, registerDiffEditorContribution, registerMultiEditorAction, EditorAction, EditorCommand } from 'vs/editor/browser/editorExtensions'
+export { IEditorContribution, IDiffEditorContribution } from 'vs/editor/common/editorCommon'
 
 function computeConfiguration (configuration: IEditorConfiguration, overrides?: Readonly<IEditorOptions>): IEditorOptions {
   const editorConfiguration: IEditorOptions = isObject(configuration.editor) ? deepClone(configuration.editor) : Object.create(null)
