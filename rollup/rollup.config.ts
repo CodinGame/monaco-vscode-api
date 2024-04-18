@@ -297,12 +297,6 @@ function transformVSCodeCode (id: string, code: string) {
 }
 
 function resolveVscode (importee: string, importer?: string) {
-  if (importee === '@vscode/iconv-lite-umd') {
-    return path.resolve(OVERRIDE_PATH, 'iconv.ts')
-  }
-  if (importee === 'jschardet') {
-    return path.resolve(OVERRIDE_PATH, 'jschardet.ts')
-  }
   if (importer != null && importee.startsWith('.')) {
     importee = path.resolve(path.dirname(importer), importee)
   }
