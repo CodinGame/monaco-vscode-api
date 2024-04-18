@@ -111,7 +111,7 @@ export default rollup.defineConfig((<{input: Record<string, string>, output: str
         }
         return 'main'
       },
-      async handle (groupName, dependencies, exclusiveModules, entrypoints, options, bundle) {
+      async handle ({ name: groupName, exclusiveModules, entrypoints }, commonDependencies, options, bundle) {
         if (groupName === 'main') {
           return
         }

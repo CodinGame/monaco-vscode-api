@@ -89,7 +89,7 @@ export default rollup.defineConfig([
         }
       }),
       metadataPlugin({
-        handle (_, dependencies, entrypoints, exclusiveModules, options, bundle) {
+        handle ({ directDependencies }, commonDependencies, options, bundle) {
           const entrypoint = Object.values(bundle).filter(v => (v as rollup.OutputChunk).isEntry)[0]!.fileName
           const packageJson: PackageJson = {
             name: `@codingame/monaco-vscode-${name}-default-extension`,
@@ -101,7 +101,7 @@ export default rollup.defineConfig([
             types: 'index.d.ts',
             dependencies: {
               vscode: `npm:${pkg.name}@^${pkg.version}`,
-              ...Object.fromEntries(Object.entries(pkg.dependencies).filter(([key]) => dependencies.has(key)))
+              ...Object.fromEntries(Object.entries(pkg.dependencies).filter(([key]) => directDependencies.has(key)))
             }
           }
 
@@ -158,7 +158,7 @@ ${extensions.map(name => `  whenReady${pascalCase(name)}()`).join(',\n')}
       }
     },
     metadataPlugin({
-      handle (_, dependencies, entrypoints, exclusiveModules, options, bundle) {
+      handle ({ directDependencies }, commonDependencies, options, bundle) {
         const entrypoint = Object.values(bundle).filter(v => (v as rollup.OutputChunk).isEntry)[0]!.fileName
         const packageJson: PackageJson = {
           name,
@@ -168,7 +168,7 @@ ${extensions.map(name => `  whenReady${pascalCase(name)}()`).join(',\n')}
           main: entrypoint,
           module: entrypoint,
           types: 'index.d.ts',
-          dependencies: Object.fromEntries(Array.from(dependencies).map(name => [
+          dependencies: Object.fromEntries(Array.from(directDependencies).map(name => [
             name,
             pkg.version
           ]))

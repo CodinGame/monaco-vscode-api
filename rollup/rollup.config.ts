@@ -697,8 +697,8 @@ export default (args: Record<string, string>): rollup.RollupOptions[] => {
         }
         return 'main'
       },
-      async handle (groupName, dependencies, exclusiveModules, entrypoints, options, bundle) {
-        if (groupName === 'main') {
+      async handle (group, commonDependencies, options, bundle) {
+        if (group.name === 'main') {
           // Generate package.json
           const packageJson: PackageJson = {
             ...Object.fromEntries(Object.entries(pkg).filter(([key]) => ['name', 'description', 'version', 'keywords', 'author', 'license', 'repository', 'type'].includes(key))),
@@ -786,8 +786,8 @@ export default (args: Record<string, string>): rollup.RollupOptions[] => {
               }
             },
             dependencies: {
-              ...Object.fromEntries(Object.entries(pkg.dependencies).filter(([key]) => dependencies.has(key))),
-              ...Object.fromEntries(Array.from(dependencies).filter(dep => dep.startsWith('@codingame/monaco-vscode-')).map(dep => [dep, pkg.version]))
+              ...Object.fromEntries(Object.entries(pkg.dependencies).filter(([key]) => commonDependencies.has(key))),
+              ...Object.fromEntries(Array.from(commonDependencies).filter(dep => dep.startsWith('@codingame/monaco-vscode-')).map(dep => [dep, pkg.version]))
             }
           }
           this.emitFile({
@@ -796,7 +796,7 @@ export default (args: Record<string, string>): rollup.RollupOptions[] => {
             source: JSON.stringify(packageJson, null, 2),
             type: 'asset'
           })
-        } else if (groupName === 'editor.api') {
+        } else if (group.name === 'editor.api') {
           const directory = path.resolve(DIST_DIR, 'editor-api')
 
           await fsPromise.mkdir(directory, {
@@ -867,7 +867,7 @@ export default (args: Record<string, string>): rollup.RollupOptions[] => {
 
                   const isVscodeFile = resolved.startsWith(VSCODE_SRC_DIST_DIR)
                   const isServiceOverride = path.dirname(resolved) === DIST_SERVICE_OVERRIDE_DIR_MAIN
-                  const isExclusive = exclusiveModules.has(resolvedWithExtension)
+                  const isExclusive = group.exclusiveModules.has(resolvedWithExtension)
                   const pathFromRoot = path.relative(DIST_DIR_MAIN, resolvedWithExtension)
                   const shouldBeShared = SHARED_ROOT_FILES_BETWEEN_PACKAGES.includes(path.relative(DIST_DIR_MAIN, resolvedWithExtension))
                   if (pathFromRoot.startsWith('external/') && !isExclusive) {
@@ -892,7 +892,7 @@ export default (args: Record<string, string>): rollup.RollupOptions[] => {
                 },
                 load (id) {
                   if (id === 'entrypoint') {
-                    return `export * from '${Array.from(entrypoints)[0]!.slice(0, -3)}'`
+                    return `export * from '${Array.from(group.entrypoints)[0]!.slice(0, -3)}'`
                   }
                   if (id.startsWith('vscode/')) {
                     return (bundle[path.relative('vscode', id)] as rollup.OutputChunk | undefined)?.code
@@ -946,19 +946,19 @@ export default (args: Record<string, string>): rollup.RollupOptions[] => {
           })
           await groupBundle.close()
           // remove exclusive files from main bundle to prevent them from being duplicated
-          for (const exclusiveModule of exclusiveModules) {
+          for (const exclusiveModule of group.exclusiveModules) {
             delete bundle[path.relative(DIST_DIR_MAIN, exclusiveModule)]
           }
         } else {
-          const [_, category, name] = /^(.*):(.*)$/.exec(groupName)!
+          const [_, category, name] = /^(.*):(.*)$/.exec(group.name)!
 
           const directory = path.resolve(DIST_DIR, `${category}-${name}`)
 
           await fsPromise.mkdir(directory, {
             recursive: true
           })
-          const serviceOverrideEntryPoint = Array.from(entrypoints).find(e => e.includes('/service-override/'))!
-          const workerEntryPoint = Array.from(entrypoints).find(e => e.includes('/workers/'))
+          const serviceOverrideEntryPoint = Array.from(group.entrypoints).find(e => e.includes('/service-override/'))!
+          const workerEntryPoint = Array.from(group.entrypoints).find(e => e.includes('/workers/'))
 
           const packageJson: PackageJson = {
             name: `@codingame/monaco-vscode-${name}-${category}`,
@@ -970,8 +970,8 @@ export default (args: Record<string, string>): rollup.RollupOptions[] => {
             types: 'index.d.ts',
             dependencies: {
               vscode: `npm:${pkg.name}@^${pkg.version}`,
-              ...Object.fromEntries(Object.entries(pkg.dependencies).filter(([key]) => dependencies.has(key))),
-              ...Object.fromEntries(Array.from(dependencies).filter(dep => dep.startsWith('@codingame/monaco-vscode-')).map(dep => [dep, pkg.version]))
+              ...Object.fromEntries(Object.entries(pkg.dependencies).filter(([key]) => group.directDependencies.has(key))),
+              ...Object.fromEntries(Array.from(group.directDependencies).filter(dep => dep.startsWith('@codingame/monaco-vscode-')).map(dep => [dep, pkg.version]))
             }
           }
           if (workerEntryPoint != null) {
@@ -1023,7 +1023,7 @@ export default (args: Record<string, string>): rollup.RollupOptions[] => {
 
                   const isVscodeFile = resolved.startsWith(VSCODE_SRC_DIST_DIR)
                   const isServiceOverride = path.dirname(resolved) === DIST_SERVICE_OVERRIDE_DIR_MAIN
-                  const isExclusive = exclusiveModules.has(resolvedWithExtension)
+                  const isExclusive = group.exclusiveModules.has(resolvedWithExtension)
                   const pathFromRoot = path.relative(DIST_DIR_MAIN, resolvedWithExtension)
                   const shouldBeShared = SHARED_ROOT_FILES_BETWEEN_PACKAGES.includes(path.relative(DIST_DIR_MAIN, resolvedWithExtension))
                   if (pathFromRoot.startsWith('external/') && !isExclusive) {
@@ -1100,7 +1100,7 @@ export default (args: Record<string, string>): rollup.RollupOptions[] => {
           await groupBundle.close()
 
           // remove exclusive files from main bundle to prevent them from being duplicated
-          for (const exclusiveModule of exclusiveModules) {
+          for (const exclusiveModule of group.exclusiveModules) {
             delete bundle[path.relative(DIST_DIR_MAIN, exclusiveModule)]
           }
 
