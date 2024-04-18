@@ -14,9 +14,9 @@ const { getApi } = registerExtension({
 })
 
 void getApi().then(async vscode => {
-  const workspaceFolder = vscode.workspace.workspaceFolders![0]
+  const workspaceFolder = vscode.workspace.workspaceFolders?.[0]
   if (workspaceFolder == null) {
-    throw new Error('No workspace folder')
+    return
   }
 
   vscode.commands.registerCommand('scm-demo.click-file', async (uri: Uri) => {

@@ -1,6 +1,6 @@
 import getConfigurationServiceOverride, { IStoredWorkspace, initUserConfiguration } from '@codingame/monaco-vscode-configuration-service-override'
 import getKeybindingsServiceOverride, { initUserKeybindings } from '@codingame/monaco-vscode-keybindings-service-override'
-import { RegisteredFileSystemProvider, RegisteredMemoryFile, RegisteredReadOnlyFile, createIndexedDBProviders, initFile, registerFileSystemOverlay } from '@codingame/monaco-vscode-files-service-override'
+import { RegisteredFileSystemProvider, RegisteredMemoryFile, RegisteredReadOnlyFile, createIndexedDBProviders, registerHTMLFileSystemProvider, registerFileSystemOverlay, initFile } from '@codingame/monaco-vscode-files-service-override'
 import * as monaco from 'monaco-editor'
 import { IWorkbenchConstructionOptions, LogLevel, IEditorOverrideServices } from 'vscode/services'
 import * as vscode from 'vscode'
@@ -66,90 +66,125 @@ import { TerminalBackend } from './features/terminal'
 import { workerConfig } from './tools/extHostWorker'
 import 'vscode/localExtensionHost'
 
-const fileSystemProvider = new RegisteredFileSystemProvider(false)
+const url = new URL(document.location.href)
+const params = url.searchParams
+export const remoteAuthority = params.get('remoteAuthority') ?? undefined
+export const connectionToken = params.get('connectionToken') ?? undefined
+export const remotePath = remoteAuthority != null ? params.get('remotePath') ?? undefined : undefined
+export const resetLayout = params.has('resetLayout')
+export const useHtmlFileSystemProvider = params.has('htmlFileSystemProvider')
+params.delete('resetLayout')
 
-fileSystemProvider.registerFile(new RegisteredMemoryFile(vscode.Uri.file('/tmp/test.js'), `// import anotherfile
-let variable = 1
-function inc () {
-  variable++
-}
+window.history.replaceState({}, document.title, url.href)
 
-while (variable < 5000) {
-  inc()
-  console.log('Hello world', variable);
-}`
-))
-
-fileSystemProvider.registerFile(new RegisteredReadOnlyFile(vscode.Uri.file('/tmp/test_readonly.js'), async () => 'This is a readonly static file'))
-
-fileSystemProvider.registerFile(new RegisteredMemoryFile(vscode.Uri.file('/tmp/jsconfig.json'), `{
-  "compilerOptions": {
-    "target": "es2020",
-    "module": "esnext",
-    "lib": [
-      "es2021",
-      "DOM"
-    ]
-  }
-}`
-))
-
-fileSystemProvider.registerFile(new RegisteredMemoryFile(vscode.Uri.file('/tmp/index.html'), `
-<!DOCTYPE html>
-<html lang="en">
-  <head>
-    <meta charset="UTF-8" />
-    <title>monaco-vscode-api demo</title>
-    <link rel="stylesheet" href="test.css">
-  </head>
-  <body>
-    <style type="text/css">
-      h1 {
-        color: DeepSkyBlue;
-      }
-    </style>
-
-    <h1>Hello, world!</h1>
-  </body>
-</html>`
-))
-
-fileSystemProvider.registerFile(new RegisteredMemoryFile(vscode.Uri.file('/tmp/test.md'), `
-***Hello World***
-
-Math block:
-$$
-\\displaystyle
-\\left( \\sum_{k=1}^n a_k b_k \\right)^2
-\\leq
-\\left( \\sum_{k=1}^n a_k^2 \\right)
-\\left( \\sum_{k=1}^n b_k^2 \\right)
-$$
-
-# Easy Math
-
-2 + 2 = 4 // this test will pass
-2 + 2 = 5 // this test will fail
-
-# Harder Math
-
-230230 + 5819123 = 6049353
-`
-))
-
-fileSystemProvider.registerFile(new RegisteredMemoryFile(vscode.Uri.file('/tmp/test.customeditor'), `
-Custom Editor!`
-))
-
-fileSystemProvider.registerFile(new RegisteredMemoryFile(vscode.Uri.file('/tmp/test.css'), `
-h1 {
-  color: DeepSkyBlue;
-}`
-))
-
-registerFileSystemOverlay(1, fileSystemProvider)
+export let workspaceFile = monaco.Uri.file('/workspace.code-workspace')
 
 export const userDataProvider = await createIndexedDBProviders()
+
+if (useHtmlFileSystemProvider) {
+  workspaceFile = monaco.Uri.from({ scheme: 'tmp', path: '/test.code-workspace' })
+  await initFile(workspaceFile, JSON.stringify(<IStoredWorkspace>{
+    folders: []
+  }, null, 2))
+
+  registerHTMLFileSystemProvider()
+} else {
+  const fileSystemProvider = new RegisteredFileSystemProvider(false)
+
+  fileSystemProvider.registerFile(new RegisteredMemoryFile(vscode.Uri.file('/tmp/test.js'), `// import anotherfile
+  let variable = 1
+  function inc () {
+    variable++
+  }
+
+  while (variable < 5000) {
+    inc()
+    console.log('Hello world', variable);
+  }`
+  ))
+
+  fileSystemProvider.registerFile(new RegisteredReadOnlyFile(vscode.Uri.file('/tmp/test_readonly.js'), async () => 'This is a readonly static file'))
+
+  fileSystemProvider.registerFile(new RegisteredMemoryFile(vscode.Uri.file('/tmp/jsconfig.json'), `{
+    "compilerOptions": {
+      "target": "es2020",
+      "module": "esnext",
+      "lib": [
+        "es2021",
+        "DOM"
+      ]
+    }
+  }`
+  ))
+
+  fileSystemProvider.registerFile(new RegisteredMemoryFile(vscode.Uri.file('/tmp/index.html'), `
+  <!DOCTYPE html>
+  <html lang="en">
+    <head>
+      <meta charset="UTF-8" />
+      <title>monaco-vscode-api demo</title>
+      <link rel="stylesheet" href="test.css">
+    </head>
+    <body>
+      <style type="text/css">
+        h1 {
+          color: DeepSkyBlue;
+        }
+      </style>
+
+      <h1>Hello, world!</h1>
+    </body>
+  </html>`
+  ))
+
+  fileSystemProvider.registerFile(new RegisteredMemoryFile(vscode.Uri.file('/tmp/test.md'), `
+  ***Hello World***
+
+  Math block:
+  $$
+  \\displaystyle
+  \\left( \\sum_{k=1}^n a_k b_k \\right)^2
+  \\leq
+  \\left( \\sum_{k=1}^n a_k^2 \\right)
+  \\left( \\sum_{k=1}^n b_k^2 \\right)
+  $$
+
+  # Easy Math
+
+  2 + 2 = 4 // this test will pass
+  2 + 2 = 5 // this test will fail
+
+  # Harder Math
+
+  230230 + 5819123 = 6049353
+  `
+  ))
+
+  fileSystemProvider.registerFile(new RegisteredMemoryFile(vscode.Uri.file('/tmp/test.customeditor'), `
+  Custom Editor!`
+  ))
+
+  fileSystemProvider.registerFile(new RegisteredMemoryFile(vscode.Uri.file('/tmp/test.css'), `
+  h1 {
+    color: DeepSkyBlue;
+  }`
+  ))
+
+  // Use a workspace file to be able to add another folder later (for the "Attach filesystem" button)
+  fileSystemProvider.registerFile(new RegisteredMemoryFile(workspaceFile, JSON.stringify(<IStoredWorkspace>{
+    folders: [{
+      path: '/tmp'
+    }]
+  }, null, 2)))
+
+  fileSystemProvider.registerFile(new RegisteredMemoryFile(monaco.Uri.file('/tmp/.vscode/extensions.json'), JSON.stringify({
+    recommendations: [
+      'vscodevim.vim'
+    ]
+  }, null, 2)))
+
+  registerFileSystemOverlay(1, fileSystemProvider)
+}
 
 // Workers
 export type WorkerLoader = () => Worker
@@ -158,7 +193,8 @@ const workerLoaders: Partial<Record<string, WorkerLoader>> = {
   textMateWorker: () => new Worker(new URL('@codingame/monaco-vscode-textmate-service-override/worker', import.meta.url), { type: 'module' }),
   outputLinkComputer: () => new Worker(new URL('@codingame/monaco-vscode-output-service-override/worker', import.meta.url), { type: 'module' }),
   languageDetectionWorkerService: () => new Worker(new URL('@codingame/monaco-vscode-language-detection-worker-service-override/worker', import.meta.url), { type: 'module' }),
-  notebookEditorWorkerService: () => new Worker(new URL('@codingame/monaco-vscode-notebook-service-override/worker', import.meta.url), { type: 'module' })
+  notebookEditorWorkerService: () => new Worker(new URL('@codingame/monaco-vscode-notebook-service-override/worker', import.meta.url), { type: 'module' }),
+  localFileSearchWorker: () => new Worker(new URL('@codingame/monaco-vscode-search-service-override/worker', import.meta.url), { type: 'module' })
 
 }
 window.MonacoEnvironment = {
@@ -171,32 +207,10 @@ window.MonacoEnvironment = {
   }
 }
 
-const url = new URL(document.location.href)
-const params = url.searchParams
-export const remoteAuthority = params.get('remoteAuthority') ?? undefined
-export const connectionToken = params.get('connectionToken') ?? undefined
-export const remotePath = remoteAuthority != null ? params.get('remotePath') ?? undefined : undefined
-export const resetLayout = params.has('resetLayout')
-params.delete('resetLayout')
-
-window.history.replaceState({}, document.title, url.href)
-
 // Set configuration before initializing service so it's directly available (especially for the theme, to prevent a flicker)
-export const workspaceFile = monaco.Uri.file('/workspace.code-workspace')
 await Promise.all([
   initUserConfiguration(defaultConfiguration),
-  initUserKeybindings(defaultKeybindings),
-  // Use a workspace file to be able to add another folder later (for the "Attach filesystem" button)
-  initFile(workspaceFile, JSON.stringify(<IStoredWorkspace>{
-    folders: [{
-      path: '/tmp'
-    }]
-  })),
-  initFile(monaco.Uri.file('/tmp/.vscode/extensions.json'), `{
-    "recommendations": [
-        "vscodevim.vim"
-    ]
-}`)
+  initUserKeybindings(defaultKeybindings)
 ])
 
 export const constructOptions: IWorkbenchConstructionOptions = {
@@ -229,19 +243,23 @@ export const constructOptions: IWorkbenchConstructionOptions = {
     'window.title': 'Monaco-Vscode-Api${separator}${dirty}${activeEditorShort}'
   },
   defaultLayout: {
-    editors: [{
-      uri: monaco.Uri.file('/tmp/test.js'),
-      viewColumn: 1
-    }, {
-      uri: monaco.Uri.file('/tmp/test.md'),
-      viewColumn: 2
-    }],
-    layout: {
-      editors: {
-        orientation: 0,
-        groups: [{ size: 1 }, { size: 1 }]
-      }
-    },
+    editors: useHtmlFileSystemProvider
+      ? undefined
+      : [{
+          uri: monaco.Uri.file('/tmp/test.js'),
+          viewColumn: 1
+        }, {
+          uri: monaco.Uri.file('/tmp/test.md'),
+          viewColumn: 2
+        }],
+    layout: useHtmlFileSystemProvider
+      ? undefined
+      : {
+          editors: {
+            orientation: 0,
+            groups: [{ size: 1 }, { size: 1 }]
+          }
+        },
     views: [{
       id: 'custom-view'
     }],
@@ -277,7 +295,7 @@ export const commonServices: IEditorOverrideServices = {
   ...getExtensionGalleryServiceOverride({ webOnly: false }),
   ...getModelServiceOverride(),
   ...getNotificationServiceOverride(),
-  ...getDialogsServiceOverride(),
+  ...getDialogsServiceOverride({ useHtmlFileSystemProvider }),
   ...getConfigurationServiceOverride(),
   ...getKeybindingsServiceOverride(),
   ...getTextmateServiceOverride(),
@@ -293,7 +311,7 @@ export const commonServices: IEditorOverrideServices = {
   ...getSnippetServiceOverride(),
   ...getOutputServiceOverride(),
   ...getTerminalServiceOverride(new TerminalBackend()),
-  ...getSearchServiceOverride(),
+  ...getSearchServiceOverride({ useHtmlFileSystemProvider }),
   ...getMarkersServiceOverride(),
   ...getAccessibilityServiceOverride(),
   ...getLanguageDetectionWorkerServiceOverride(),

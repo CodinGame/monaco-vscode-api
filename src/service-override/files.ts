@@ -1,7 +1,7 @@
-import { IEditorOverrideServices } from 'vs/editor/standalone/browser/standaloneServices'
+import { IEditorOverrideServices, StandaloneServices } from 'vs/editor/standalone/browser/standaloneServices'
 import { SyncDescriptor } from 'vs/platform/instantiation/common/descriptors'
 import { FileService } from 'vs/platform/files/common/fileService'
-import { ILogService } from 'vs/platform/log/common/log'
+import { ILogService, LogLevel } from 'vs/platform/log/common/log'
 import { InMemoryFileSystemProvider } from 'vs/platform/files/common/inMemoryFilesystemProvider'
 import { URI } from 'vs/base/common/uri'
 import { FileChangeType, FilePermission, FileSystemProviderCapabilities, FileType, IFileSystemProvider, toFileSystemProviderErrorCode, createFileSystemProviderError, FileSystemProviderError, FileSystemProviderErrorCode, IFileChange, IFileDeleteOptions, IFileOverwriteOptions, IFileService, IFileSystemProviderWithFileReadWriteCapability, IFileWriteOptions, IStat, IWatchOptions } from 'vs/platform/files/common/files'
@@ -305,6 +305,9 @@ class OverlayFileSystemProvider implements IFileSystemProviderWithFileReadWriteC
   capabilities = FileSystemProviderCapabilities.FileReadWrite | FileSystemProviderCapabilities.PathCaseSensitive
 
   private async readFromDelegates<T> (caller: (delegate: IFileSystemProviderWithFileReadWriteCapability) => Promise<T>) {
+    if (this.delegates.length === 0) {
+      throw createFileSystemProviderError('No delegate', FileSystemProviderErrorCode.Unavailable)
+    }
     let firstError: unknown | undefined
     for (const delegate of this.delegates) {
       try {
@@ -325,6 +328,9 @@ class OverlayFileSystemProvider implements IFileSystemProviderWithFileReadWriteC
   }
 
   private async writeToDelegates (caller: (delegate: IFileSystemProviderWithFileReadWriteCapability) => Promise<void>): Promise<void> {
+    if (this.delegates.length === 0) {
+      throw createFileSystemProviderError('No delegate', FileSystemProviderErrorCode.Unavailable)
+    }
     for (const provider of this.delegates) {
       if ((provider.capabilities & FileSystemProviderCapabilities.Readonly) > 0) {
         continue
@@ -513,8 +519,45 @@ class DelegateFileSystemProvider implements IFileSystemProvider {
   }
 }
 
-const fileSystemProvider = new OverlayFileSystemProvider()
-fileSystemProvider.register(0, new MkdirpOnWriteInMemoryFileSystemProvider())
+class EmptyFileSystemProvider implements IFileSystemProviderWithFileReadWriteCapability {
+  async readFile (): Promise<Uint8Array> {
+    throw createFileSystemProviderError('Not found', FileSystemProviderErrorCode.FileNotFound)
+  }
+
+  async writeFile (): Promise<void> {
+    throw createFileSystemProviderError('Not allowed', FileSystemProviderErrorCode.NoPermissions)
+  }
+
+  capabilities = FileSystemProviderCapabilities.FileReadWrite | FileSystemProviderCapabilities.PathCaseSensitive
+  onDidChangeCapabilities = Event.None
+  onDidChangeFile = Event.None
+  watch (): IDisposable {
+    return Disposable.None
+  }
+
+  async stat (): Promise<IStat> {
+    throw createFileSystemProviderError('Not found', FileSystemProviderErrorCode.FileNotFound)
+  }
+
+  async mkdir (): Promise<void> {
+    throw createFileSystemProviderError('Not allowed', FileSystemProviderErrorCode.NoPermissions)
+  }
+
+  async readdir (): Promise<[string, FileType][]> {
+    throw createFileSystemProviderError('Not found', FileSystemProviderErrorCode.FileNotFound)
+  }
+
+  async delete (): Promise<void> {
+    throw createFileSystemProviderError('Not allowed', FileSystemProviderErrorCode.NoPermissions)
+  }
+
+  async rename (): Promise<void> {
+    throw createFileSystemProviderError('Not allowed', FileSystemProviderErrorCode.NoPermissions)
+  }
+}
+
+const overlayFileSystemProvider = new OverlayFileSystemProvider()
+overlayFileSystemProvider.register(0, new MkdirpOnWriteInMemoryFileSystemProvider())
 
 const extensionFileSystemProvider = new RegisteredFileSystemProvider(true)
 const userDataFileSystemProvider = new InMemoryFileSystemProvider()
@@ -536,10 +579,10 @@ const providers: Record<string, IFileSystemProvider> = {
   [logsPath.scheme]: new InMemoryFileSystemProvider(),
   [Schemas.vscodeUserData]: userDataFileSystemProvider,
   [Schemas.tmp]: new InMemoryFileSystemProvider(),
-  [Schemas.file]: fileSystemProvider
+  [Schemas.file]: overlayFileSystemProvider
 }
 
-class MemoryFileService extends FileService {
+class FileServiceOverride extends FileService {
   constructor (logService: ILogService, @ITelemetryService telemetryService: ITelemetryService) {
     super(logService)
 
@@ -548,7 +591,7 @@ class MemoryFileService extends FileService {
       if (provider instanceof OverlayFileSystemProvider) {
         provider.onDidChangeOverlays(() => {
           disposable.dispose()
-          disposable = this.registerProvider(scheme, fileSystemProvider)
+          disposable = this.registerProvider(scheme, provider)
         })
       }
 
@@ -568,7 +611,7 @@ registerServiceInitializePreParticipant(async (accessor) => {
 
 export default function getServiceOverride (): IEditorOverrideServices {
   return {
-    [IFileService.toString()]: new SyncDescriptor(MemoryFileService, [fileLogger], true),
+    [IFileService.toString()]: new SyncDescriptor(FileServiceOverride, [fileLogger], true),
     [ITextFileService.toString()]: new SyncDescriptor(BrowserTextFileService, [], true),
     [IFilesConfigurationService.toString()]: new SyncDescriptor(FilesConfigurationService, [], true),
     [IElevatedFileService.toString()]: new SyncDescriptor(BrowserElevatedFileService, [], true)
@@ -615,13 +658,15 @@ export async function initFile (file: URI, content: Uint8Array | string, options
   })
 }
 
+let indexedDB: IndexedDB | undefined
+const userDataStore = 'vscode-userdata-store'
+const logsStore = 'vscode-logs-store'
+const handlesStore = 'vscode-filehandles-store'
 /**
  * Can be used to replace memory providers by indexeddb providers before the fileService is initialized
  */
 export async function createIndexedDBProviders (): Promise<IndexedDBFileSystemProvider> {
-  const userDataStore = 'vscode-userdata-store'
-  const logsStore = 'vscode-logs-store'
-  const indexedDB = await IndexedDB.create('vscode-web-db', 3, [userDataStore, logsStore])
+  indexedDB = await IndexedDB.create('vscode-web-db', 3, [userDataStore, logsStore, handlesStore])
 
   // Logger
   registerCustomProvider(logsPath.scheme, new IndexedDBFileSystemProvider(logsPath.scheme, indexedDB, logsStore, false))
@@ -630,6 +675,56 @@ export async function createIndexedDBProviders (): Promise<IndexedDBFileSystemPr
   registerCustomProvider(Schemas.vscodeUserData, userDataProvider)
 
   return userDataProvider
+}
+
+/**
+ * Can be used to replace the default filesystem provider by the HTMLFileSystemProvider before the fileService is initialized
+ * Should be called "after" createIndexedDBProviders if used
+ */
+export function registerHTMLFileSystemProvider (): void {
+  class LazyLogService implements ILogService {
+    _serviceBrand: undefined
+    get onDidChangeLogLevel () {
+      return StandaloneServices.get(ILogService).onDidChangeLogLevel
+    }
+
+    getLevel (): LogLevel {
+      return StandaloneServices.get(ILogService).getLevel()
+    }
+
+    setLevel (level: LogLevel): void {
+      StandaloneServices.get(ILogService).setLevel(level)
+    }
+
+    trace (message: string, ...args: any[]): void {
+      StandaloneServices.get(ILogService).trace(message, ...args)
+    }
+
+    debug (message: string, ...args: any[]): void {
+      StandaloneServices.get(ILogService).debug(message, ...args)
+    }
+
+    info (message: string, ...args: any[]): void {
+      StandaloneServices.get(ILogService).info(message, ...args)
+    }
+
+    warn (message: string, ...args: any[]): void {
+      StandaloneServices.get(ILogService).warn(message, ...args)
+    }
+
+    error (message: string | Error, ...args: any[]): void {
+      StandaloneServices.get(ILogService).error(message, ...args)
+    }
+
+    flush (): void {
+      StandaloneServices.get(ILogService).flush()
+    }
+
+    dispose (): void {
+      StandaloneServices.get(ILogService).dispose()
+    }
+  }
+  registerCustomProvider(Schemas.file, new HTMLFileSystemProvider(indexedDB, handlesStore, new LazyLogService()))
 }
 
 /**
@@ -644,7 +739,11 @@ export async function createIndexedDBProviders (): Promise<IndexedDBFileSystemPr
  * - any provider registered with a negative priority will be behind the default one
  */
 export function registerFileSystemOverlay (priority: number, provider: IFileSystemProviderWithFileReadWriteCapability): IDisposable {
-  return fileSystemProvider.register(priority, provider)
+  const overlayProvider = providers.file
+  if (!(overlayProvider instanceof OverlayFileSystemProvider)) {
+    throw new Error('The overlay filesystem provider was replaced')
+  }
+  return overlayProvider.register(priority, provider)
 }
 
 export {
@@ -669,5 +768,7 @@ export {
   RegisteredFile,
   RegisteredReadOnlyFile,
   RegisteredMemoryFile,
-  DelegateFileSystemProvider
+  DelegateFileSystemProvider,
+  OverlayFileSystemProvider,
+  EmptyFileSystemProvider
 }

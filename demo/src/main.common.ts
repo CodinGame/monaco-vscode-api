@@ -1,8 +1,7 @@
 import './style.css'
 import * as monaco from 'monaco-editor'
-import { registerFileSystemOverlay, HTMLFileSystemProvider } from '@codingame/monaco-vscode-files-service-override'
-import { ILogService, StandaloneServices } from 'vscode/services'
-import './setup.common'
+import { ExtensionHostKind, registerExtension } from 'vscode/extensions'
+import { useHtmlFileSystemProvider } from './setup.common'
 import './features/output'
 import './features/debugger'
 import './features/search'
@@ -53,7 +52,6 @@ import '@codingame/monaco-vscode-markdown-math-default-extension'
 import '@codingame/monaco-vscode-npm-default-extension'
 import '@codingame/monaco-vscode-media-preview-default-extension'
 import '@codingame/monaco-vscode-ipynb-default-extension'
-import { ExtensionHostKind, registerExtension } from 'vscode/extensions'
 
 const { getApi } = registerExtension({
   name: 'demo-main',
@@ -65,20 +63,22 @@ const { getApi } = registerExtension({
 }, ExtensionHostKind.LocalProcess)
 
 void getApi().then(async vscode => {
-  const mainModelUri = vscode.Uri.file('/tmp/test.js')
-  await Promise.all([
-    vscode.workspace.openTextDocument(mainModelUri),
-    vscode.workspace.openTextDocument(monaco.Uri.file('/tmp/test_readonly.js')) // open the file so vscode sees it's locked
-  ])
+  if (!useHtmlFileSystemProvider) {
+    const mainModelUri = vscode.Uri.file('/tmp/test.js')
+    await Promise.all([
+      vscode.workspace.openTextDocument(mainModelUri),
+      vscode.workspace.openTextDocument(monaco.Uri.file('/tmp/test_readonly.js')) // open the file so vscode sees it's locked
+    ])
 
-  const diagnostics = vscode.languages.createDiagnosticCollection('demo')
-  diagnostics.set(mainModelUri, [{
-    range: new vscode.Range(2, 9, 2, 12),
-    severity: vscode.DiagnosticSeverity.Error,
-    message: 'This is not a real error, just a demo, don\'t worry',
-    source: 'Demo',
-    code: 42
-  }])
+    const diagnostics = vscode.languages.createDiagnosticCollection('demo')
+    diagnostics.set(mainModelUri, [{
+      range: new vscode.Range(2, 9, 2, 12),
+      severity: vscode.DiagnosticSeverity.Error,
+      message: 'This is not a real error, just a demo, don\'t worry',
+      source: 'Demo',
+      code: 42
+    }])
+  }
 
   document.querySelector('#toggleFullWorkbench')!.addEventListener('click', async () => {
     const url = new URL(window.location.href)
@@ -96,15 +96,13 @@ void getApi().then(async vscode => {
     window.location.href = url.toString()
   })
 
-  document.querySelector('#filesystem')!.addEventListener('click', async () => {
-    const dirHandle = await window.showDirectoryPicker()
-
-    const htmlFileSystemProvider = new HTMLFileSystemProvider(undefined, 'unused', StandaloneServices.get(ILogService))
-    await htmlFileSystemProvider.registerDirectoryHandle(dirHandle)
-    registerFileSystemOverlay(1, htmlFileSystemProvider)
-
-    vscode.workspace.updateWorkspaceFolders(0, 0, {
-      uri: vscode.Uri.file(dirHandle.name)
-    })
+  document.querySelector('#toggleHTMLFileSystemProvider')!.addEventListener('click', async () => {
+    const url = new URL(window.location.href)
+    if (url.searchParams.has('htmlFileSystemProvider')) {
+      url.searchParams.delete('htmlFileSystemProvider')
+    } else {
+      url.searchParams.set('htmlFileSystemProvider', 'true')
+    }
+    window.location.href = url.toString()
   })
 })
