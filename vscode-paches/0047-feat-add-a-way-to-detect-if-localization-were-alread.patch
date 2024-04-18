@@ -44,6 +44,3 @@ index ff3661e3472..00b509d1b41 100644
  	const key = typeof data === 'object' ? data.key : data;
  	const message = (translations[path] ?? {})[key] ?? defaultMessage;
  	return {
--- 
-2.34.1
-

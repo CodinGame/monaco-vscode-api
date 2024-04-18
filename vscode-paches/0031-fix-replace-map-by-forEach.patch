@@ -34,6 +34,3 @@ index 67b7f28268f..342cc8a56c7 100644
  	}
  
  	isVisible(): boolean {
--- 
-2.34.1
-

@@ -33,6 +33,3 @@ index 21312c7e76c..1f89122e0df 100644
  
  		// If we are in no-workspace or single-folder workspace, adding folders has to
  		// enter a workspace.
--- 
-2.34.1
-

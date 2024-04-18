@@ -67,6 +67,3 @@ index a77c2db9446..2b9a8c19926 100644
  	}
  
  	protected override shouldFlushWhenIdle(): boolean {
--- 
-2.34.1
-

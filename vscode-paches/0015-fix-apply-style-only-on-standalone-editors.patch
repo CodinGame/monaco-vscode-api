@@ -241,6 +241,3 @@ index c0a4b9d1cf3..f260372b1fc 100644
  		return new TestConfiguration(options);
  	}
  	protected override _createView(viewModel: ViewModel): [View, boolean] {
--- 
-2.34.1
-

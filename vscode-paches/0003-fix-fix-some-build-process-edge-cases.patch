@@ -58,6 +58,3 @@ index 775a1be5996..ce8435bd920 100644
  				relativePath = relativePath.replace(/\\/g, '/');
  				if (!/(^\.\/)|(^\.\.\/)/.test(relativePath)) {
  					relativePath = './' + relativePath;
--- 
-2.34.1
-

@@ -121,6 +121,3 @@ index 785db7edd43..c98941f5181 100644
  import * as performance from 'vs/base/common/performance';
  import type { MessagePortMain } from 'vs/base/parts/sandbox/node/electronTypes';
  import { isCancellationError, isSigPipeError, onUnexpectedError } from 'vs/base/common/errors';
--- 
-2.34.1
-

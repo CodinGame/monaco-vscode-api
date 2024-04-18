@@ -98,6 +98,3 @@ index b83a462131d..5ce2ec7413b 100644
  
  		// initialize API and register actors
  		const apiFactory = this._instaService.invokeFunction(createApiFactoryAndRegisterActors);
--- 
-2.34.1
-

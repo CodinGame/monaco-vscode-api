@@ -383,6 +383,3 @@ index 8fab9bc5b71..30f20a45b2a 100644
 +		collector.addRule(`.monaco-workbench-part { background-color: ${workbenchBackground}; }`);
  	}
  });
--- 
-2.34.1
-

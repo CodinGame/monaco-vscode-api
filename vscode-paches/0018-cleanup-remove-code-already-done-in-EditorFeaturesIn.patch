@@ -38,6 +38,3 @@ index df611c4ad7f..85fc1c5f58d 100644
  		onDidInitialize.fire();
  
  		return instantiationService;
--- 
-2.34.1
-

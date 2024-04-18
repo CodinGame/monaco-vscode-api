@@ -44,6 +44,3 @@ index cbc07dc7fb0..455bb043b5d 100644
  				// Register Listeners
  				this.registerListeners(lifecycleService, storageService, configurationService, hostService, dialogService);
  
--- 
-2.34.1
-

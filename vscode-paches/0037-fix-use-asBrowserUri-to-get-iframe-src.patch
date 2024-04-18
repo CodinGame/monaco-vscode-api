@@ -21,6 +21,3 @@ index 44c0c97a128..bd0c97c183a 100644
  	}
  
  	public mountTo(element: HTMLElement, targetWindow: CodeWindow) {
--- 
-2.34.1
-

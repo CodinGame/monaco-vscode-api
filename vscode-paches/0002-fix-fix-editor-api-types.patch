@@ -29,6 +29,3 @@ index 22b70a953df..e781d39d9e2 100644
  		}
  
  		if (line.indexOf('\tMonacoEnvironment?') === 0) {
--- 
-2.34.1
-

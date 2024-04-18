@@ -21,6 +21,3 @@ index f2f9ca95996..f5c28ec0cab 100644
  				return { module, error: undefined };
  			} catch (e) {
  				return { module: undefined, error: e };
--- 
-2.34.1
-

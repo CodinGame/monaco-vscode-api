@@ -147,6 +147,3 @@ index ae62d18f2d0..5bf6ad46471 100644
 -});
 -
  registerSingleton(IWalkthroughsService, WalkthroughsService, InstantiationType.Delayed);
--- 
-2.34.1
-

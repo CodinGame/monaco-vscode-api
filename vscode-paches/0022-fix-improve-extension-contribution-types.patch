@@ -1371,6 +1371,3 @@ index 80f5ee077cb..49abd845677 100644
  					description: nls.localize('contributes.semanticTokenModifiers.description', 'The description of the semantic token modifier')
  				}
  			}
--- 
-2.34.1
-

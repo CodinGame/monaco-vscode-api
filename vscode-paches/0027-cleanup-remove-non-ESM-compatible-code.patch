@@ -36,6 +36,3 @@ index c98941f5181..0ab601bdbfc 100644
  // custom process.exit logic...
  const nativeExit: IExitFn = process.exit.bind(process);
  const nativeOn = process.on.bind(process);
--- 
-2.34.1
-

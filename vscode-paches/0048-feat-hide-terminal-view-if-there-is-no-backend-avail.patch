@@ -19,6 +19,3 @@ index 19b81cf9659..fce5c1d4eb4 100644
  	openCommandActionDescriptor: {
  		id: TerminalCommandId.Toggle,
  		mnemonicTitle: nls.localize({ key: 'miToggleIntegratedTerminal', comment: ['&& denotes a mnemonic'] }, "&&Terminal"),
--- 
-2.34.1
-

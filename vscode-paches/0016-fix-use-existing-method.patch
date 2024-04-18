@@ -20,6 +20,3 @@ index c3d2f3c41c3..9e012841726 100644
  				for (const resolvedKeybinding of resolvedKeybindings) {
  					result[resultLen++] = new ResolvedKeybindingItem(resolvedKeybinding, item.command, item.commandArgs, when, isDefault, null, false);
  				}
--- 
-2.34.1
-

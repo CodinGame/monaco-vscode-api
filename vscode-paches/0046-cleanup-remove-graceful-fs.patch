@@ -42,6 +42,3 @@ index 180aa7e2960..d589be25ed6 100644
  export class DiskFileSystemProvider extends AbstractDiskFileSystemProvider implements
  	IFileSystemProviderWithFileReadWriteCapability,
  	IFileSystemProviderWithOpenReadWriteCloseCapability,
--- 
-2.34.1
-

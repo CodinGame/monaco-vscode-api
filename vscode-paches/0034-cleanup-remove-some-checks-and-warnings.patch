@@ -112,6 +112,3 @@ index a1a0779371e..18ca6d1b496 100644
  		this._scopeNameToLanguageRegistration[def.scopeName] = def;
  	}
  
--- 
-2.34.1
-

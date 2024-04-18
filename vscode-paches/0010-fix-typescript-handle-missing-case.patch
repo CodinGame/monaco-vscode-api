@@ -22,6 +22,3 @@ index 7c40993d6df..950ed338c30 100644
  				break;
  			case 'event::beginInstallTypes':
  			case 'event::endInstallTypes':
--- 
-2.34.1
-

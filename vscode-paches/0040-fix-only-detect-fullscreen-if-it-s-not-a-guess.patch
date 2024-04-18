@@ -32,6 +32,3 @@ index 3ce96bba22a..d2067bf7445 100644
  		}, { window: mainWindow, disposables: this._store }));
  
  		return emitter.event;
--- 
-2.34.1
-

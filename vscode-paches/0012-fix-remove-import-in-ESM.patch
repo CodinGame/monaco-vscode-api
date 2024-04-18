@@ -21,6 +21,3 @@ index 71391b063f3..7878de1cbfa 100644
  import { IWorker, IWorkerCallback, IWorkerFactory, logOnceWebWorkerWarning } from 'vs/base/common/worker/simpleWorker';
  import { Disposable, toDisposable } from 'vs/base/common/lifecycle';
  
--- 
-2.34.1
-

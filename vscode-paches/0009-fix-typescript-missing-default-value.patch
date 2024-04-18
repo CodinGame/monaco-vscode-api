@@ -20,6 +20,3 @@ index b24ba5155d3..a0c2c248f96 100644
  }
  
  export function looksLikeLibDtsPath(filepath: string) {
--- 
-2.34.1
-

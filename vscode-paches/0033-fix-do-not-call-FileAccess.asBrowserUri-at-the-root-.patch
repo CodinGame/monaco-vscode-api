@@ -93,6 +93,3 @@ index 59bea5e74fc..5a8c9083989 100644
  
  export interface IResourceExtension {
  	readonly identifier: IExtensionIdentifier;
--- 
-2.34.1
-
