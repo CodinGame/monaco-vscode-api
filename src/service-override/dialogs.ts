@@ -66,10 +66,10 @@ interface DialogServiceOverrideProps {
    * Is an `HTMLFileSystemProvider` is used as only provider for the `file` scheme directly (without overlay)
    * Enable this option to enable browser file dialogs
    */
-  useHtmlFileSystemProvider: boolean
+  useHtmlFileSystemProvider?: boolean
 }
 
-export default function getServiceOverride ({ useHtmlFileSystemProvider }: DialogServiceOverrideProps): IEditorOverrideServices {
+export default function getServiceOverride ({ useHtmlFileSystemProvider = false }: DialogServiceOverrideProps = {}): IEditorOverrideServices {
   return {
     [IDialogService.toString()]: new SyncDescriptor(DialogService, undefined, true),
     [IFileDialogService.toString()]: useHtmlFileSystemProvider ? new SyncDescriptor(FileDialogService, undefined, true) : new SyncDescriptor(DialogServiceOverride, undefined, true)

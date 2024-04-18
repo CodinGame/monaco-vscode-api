@@ -15,10 +15,10 @@ interface SearchServiceOverrideProps {
    * Is an `HTMLFileSystemProvider` is used as only provider for the `file` scheme directly (without overlay)
    * Enable this option to enable searching local filesystem
    */
-  useHtmlFileSystemProvider: boolean
+  useHtmlFileSystemProvider?: boolean
 }
 
-export default function getServiceOverride ({ useHtmlFileSystemProvider }: SearchServiceOverrideProps): IEditorOverrideServices {
+export default function getServiceOverride ({ useHtmlFileSystemProvider = false }: SearchServiceOverrideProps = {}): IEditorOverrideServices {
   return {
     [ISearchService.toString()]: useHtmlFileSystemProvider ? new SyncDescriptor(RemoteSearchService, [], true) : new SyncDescriptor(SearchService, [], true),
     [ISearchViewModelWorkbenchService.toString()]: new SyncDescriptor(SearchViewModelWorkbenchService, [], true),
