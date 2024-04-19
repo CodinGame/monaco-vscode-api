@@ -89,7 +89,7 @@ export default rollup.defineConfig([
         }
       }),
       metadataPlugin({
-        handle ({ directDependencies }, commonDependencies, options, bundle) {
+        handle ({ directDependencies }, moduleGroupName, options, bundle) {
           const entrypoint = Object.values(bundle).filter(v => (v as rollup.OutputChunk).isEntry)[0]!.fileName
           const packageJson: PackageJson = {
             name: `@codingame/monaco-vscode-${name}-default-extension`,
@@ -158,7 +158,7 @@ ${extensions.map(name => `  whenReady${pascalCase(name)}()`).join(',\n')}
       }
     },
     metadataPlugin({
-      handle ({ directDependencies }, commonDependencies, options, bundle) {
+      handle ({ directDependencies }, moduleGroupName, options, bundle) {
         const entrypoint = Object.values(bundle).filter(v => (v as rollup.OutputChunk).isEntry)[0]!.fileName
         const packageJson: PackageJson = {
           name,

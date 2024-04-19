@@ -104,14 +104,25 @@ export default rollup.defineConfig((<{input: Record<string, string>, output: str
       stage: 'writeBundle', // rollup-plugin-dts needs the file to exist on the disk
       getGroup (id: string) {
         if (id.startsWith(SERVICE_OVERRIDE_DIR)) {
-          return `service-override/${path.basename(id, '.d.ts')}`
+          const name = path.basename(id, '.d.ts')
+          return {
+            name: `service-override/${name}`,
+            publicName: `@codingame/monaco-vscode-${name}-service-override`
+          }
         }
         if (id === path.resolve(TYPES_SRC_DIR, 'editor.api.d.ts')) {
-          return 'editor.api'
+          return {
+            name: 'editor.api',
+            publicName: '@codngame/monaco-vscode-editor-api'
+          }
         }
-        return 'main'
+        return {
+          name: 'main',
+          publicName: 'vscode',
+          priority: 1
+        }
       },
-      async handle ({ name: groupName, exclusiveModules, entrypoints }, commonDependencies, options, bundle) {
+      async handle ({ name: groupName, exclusiveModules, entrypoints }, moduleGroupName, options, bundle) {
         if (groupName === 'main') {
           return
         }
@@ -148,11 +159,22 @@ export default rollup.defineConfig((<{input: Record<string, string>, output: str
                 const resolvedWithoutExtension = resolved.endsWith('.js') ? resolved.slice(0, -3) : resolved
                 const resolvedWithExtension = resolvedWithoutExtension.endsWith('.d.ts') ? resolvedWithoutExtension : `${resolvedWithoutExtension}.d.ts`
 
-                const isNotExclusive = (resolved.startsWith(path.resolve(DIST_DIR_MAIN, 'vscode')) || path.dirname(resolved) === path.resolve(DIST_DIR_MAIN, 'service-override')) && !exclusiveModules.has(resolvedWithExtension)
+                const isVscodeFile = resolved.startsWith(path.resolve(DIST_DIR_MAIN, 'vscode'))
+                const isServiceOverride = path.dirname(resolved) === path.resolve(DIST_DIR_MAIN, 'service-override')
+                const isExclusive = exclusiveModules.has(resolvedWithExtension)
 
-                if (isNotExclusive) {
+                if ((isVscodeFile || isServiceOverride) && !isExclusive) {
+                  function getPackageFromGroupName (groupName: string) {
+                    if (groupName === 'main') {
+                      return 'vscode'
+                    }
+                    const [_, category, name] = /^(.*):(.*)$/.exec(groupName)!
+                    return `@codingame/monaco-vscode-${name}-${category}`
+                  }
+                  const importFromGroup = isVscodeFile ? moduleGroupName.get(resolved) ?? 'main' : 'main'
+                  const importFromModule = getPackageFromGroupName(importFromGroup)
+                  const externalResolved = resolved.startsWith(DIST_DIR_VSCODE_SRC_MAIN) ? `${importFromModule}/vscode/${path.relative(DIST_DIR_VSCODE_SRC_MAIN, resolvedWithoutExtension)}` : `${importFromModule}/${path.relative(DIST_DIR_MAIN, resolvedWithoutExtension)}`
                   // Those modules will be imported from external monaco-vscode-api
-                  const externalResolved = resolved.startsWith(DIST_DIR_VSCODE_SRC_MAIN) ? `vscode/vscode/${path.relative(DIST_DIR_VSCODE_SRC_MAIN, resolvedWithoutExtension)}` : `vscode/${path.relative(DIST_DIR_MAIN, resolvedWithoutExtension)}`
                   return {
                     id: externalResolved,
                     external: true
