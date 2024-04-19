@@ -12,11 +12,13 @@ import { ITestingContinuousRunService, TestingContinuousRunService } from 'vs/wo
 import { ITestExplorerFilterState, TestExplorerFilterState } from 'vs/workbench/contrib/testing/common/testExplorerFilterState'
 import { TestingPeekOpener } from 'vs/workbench/contrib/testing/browser/testingOutputPeek'
 import { ITestCoverageService, TestCoverageService } from 'vs/workbench/contrib/testing/common/testCoverageService'
+import getTerminalServiceOverride from './terminal'
 import 'vs/workbench/contrib/testing/browser/testing.contribution'
 import 'vs/workbench/contrib/testing/browser/testingConfigurationUi'
 
 export default function getServiceOverride (): IEditorOverrideServices {
   return {
+    ...getTerminalServiceOverride(),
     [ITestService.toString()]: new SyncDescriptor(TestService, [], true),
     [ITestResultStorage.toString()]: new SyncDescriptor(TestResultStorage, [], true),
     [ITestProfileService.toString()]: new SyncDescriptor(TestProfileService, [], true),
