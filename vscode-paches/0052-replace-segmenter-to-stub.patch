@@ -1,0 +1,88 @@
+From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
+From: =?UTF-8?q?Lo=C3=AFc=20Mangeonjean?= <loic@coderpad.io>
+Date: Fri, 19 Apr 2024 16:59:22 +0200
+Subject: [PATCH] replace segmenter to stub
+
+---
+ .../common/core/wordCharacterClassifier.ts    | 54 +++++--------------
+ 1 file changed, 13 insertions(+), 41 deletions(-)
+
+diff --git a/src/vs/editor/common/core/wordCharacterClassifier.ts b/src/vs/editor/common/core/wordCharacterClassifier.ts
+index b984c272657..cebbf2ff7a3 100644
+--- a/src/vs/editor/common/core/wordCharacterClassifier.ts
++++ b/src/vs/editor/common/core/wordCharacterClassifier.ts
+@@ -16,18 +16,10 @@ export const enum WordCharacterClass {
+ export class WordCharacterClassifier extends CharacterClassifier<WordCharacterClass> {
+ 
+ 	public readonly intlSegmenterLocales: Intl.UnicodeBCP47LocaleIdentifier[];
+-	private readonly _segmenter: Intl.Segmenter | null = null;
+-	private _cachedLine: string | null = null;
+-	private _cachedSegments: IntlWordSegmentData[] = [];
+ 
+ 	constructor(wordSeparators: string, intlSegmenterLocales: Intl.UnicodeBCP47LocaleIdentifier[]) {
+ 		super(WordCharacterClass.Regular);
+ 		this.intlSegmenterLocales = intlSegmenterLocales;
+-		if (this.intlSegmenterLocales.length > 0) {
+-			this._segmenter = new Intl.Segmenter(this.intlSegmenterLocales, { granularity: 'word' });
+-		} else {
+-			this._segmenter = null;
+-		}
+ 
+ 		for (let i = 0, len = wordSeparators.length; i < len; i++) {
+ 			this.set(wordSeparators.charCodeAt(i), WordCharacterClass.WordSeparator);
+@@ -59,42 +51,22 @@ export class WordCharacterClassifier extends CharacterClassifier<WordCharacterCl
+ 	}
+ 
+ 	private _getIntlSegmenterWordsOnLine(line: string): IntlWordSegmentData[] {
+-		if (!this._segmenter) {
+-			return [];
+-		}
+-
+-		// Check if the line has changed from the previous call
+-		if (this._cachedLine === line) {
+-			return this._cachedSegments;
+-		}
+-
+-		// Update the cache with the new line
+-		this._cachedLine = line;
+-		this._cachedSegments = this._filterWordSegments(this._segmenter.segment(line));
+-
+-		return this._cachedSegments;
+-	}
+-
+-	private _filterWordSegments(segments: Intl.Segments): IntlWordSegmentData[] {
+-		const result: IntlWordSegmentData[] = [];
+-		for (const segment of segments) {
+-			if (this._isWordLike(segment)) {
+-				result.push(segment);
+-			}
+-		}
+-		return result;
+-	}
+-
+-	private _isWordLike(segment: Intl.SegmentData): segment is IntlWordSegmentData {
+-		if (segment.isWordLike) {
+-			return true;
+-		}
+-		return false;
++		return [];
+ 	}
+ }
+ 
+-export interface IntlWordSegmentData extends Intl.SegmentData {
+-	isWordLike: true;
++export interface IntlWordSegmentData {
++	/** A string containing the segment extracted from the original input string. */
++	segment: string
++	/** The code unit index in the original input string at which the segment begins. */
++	index: number
++	/** The complete input string that was segmented. */
++	input: string
++	/**
++	 * A boolean value only if granularity is "word"; otherwise, undefined.
++	 * If granularity is "word", then isWordLike is true when the segment is word-like (i.e., consists of letters/numbers/ideographs/etc.); otherwise, false.
++	 */
++	isWordLike: true
+ }
+ 
+ const wordClassifierCache = new LRUCache<string, WordCharacterClassifier>(10);
