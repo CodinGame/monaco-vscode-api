@@ -3,8 +3,6 @@ import { SyncDescriptor } from 'vs/platform/instantiation/common/descriptors'
 import { IViewDescriptorService, ViewContainerLocation } from 'vs/workbench/common/views'
 import { IInstantiationService } from 'vs/platform/instantiation/common/instantiation'
 import { SidebarPart } from 'vs/workbench/browser/parts/sidebar/sidebarPart'
-import { ViewDescriptorService } from 'vs/workbench/services/views/browser/viewDescriptorService'
-import { IActivityService } from 'vs/workbench/services/activity/common/activity'
 import { ActivityService } from 'vs/workbench/services/activity/browser/activityService'
 import { IPaneCompositePartService } from 'vs/workbench/services/panecomposite/browser/panecomposite'
 import { ActivitybarPart } from 'vs/workbench/browser/parts/activitybar/activitybarPart'
@@ -15,32 +13,13 @@ import { Part } from 'vs/workbench/browser/part'
 import { EditorPart } from 'vs/workbench/browser/parts/editor/editorPart'
 import { GroupOrientation, GroupsOrder, IEditorGroupsService } from 'vs/workbench/services/editor/common/editorGroupsService'
 import { IEditorService } from 'vs/workbench/services/editor/common/editorService'
-import { IEditorResolverService } from 'vs/workbench/services/editor/common/editorResolverService'
-import { EditorResolverService } from 'vs/workbench/services/editor/browser/editorResolverService'
-import { BreadcrumbsService, IBreadcrumbsService } from 'vs/workbench/browser/parts/editor/breadcrumbs'
-import { IContextViewService } from 'vs/platform/contextview/browser/contextView'
-import { ContextViewService } from 'vs/platform/contextview/browser/contextViewService'
-import { ICodeEditorService } from 'vs/editor/browser/services/codeEditorService'
 import { GroupIdentifier, IUntypedEditorInput, isResourceEditorInput, pathsToEditors } from 'vs/workbench/common/editor'
 import { IEditorOptions } from 'vs/platform/editor/common/editor'
 import { IResolvedTextEditorModel } from 'vs/editor/common/services/resolverService'
-import { ITextEditorService, TextEditorService } from 'vs/workbench/services/textfile/common/textEditorService'
-import { CodeEditorService } from 'vs/workbench/services/editor/browser/codeEditorService'
-import { IUntitledTextEditorService, UntitledTextEditorService } from 'vs/workbench/services/untitled/common/untitledTextEditorService'
-import { IHistoryService } from 'vs/workbench/services/history/common/history'
-import { HistoryService } from 'vs/workbench/services/history/browser/historyService'
-import { ICustomEditorService } from 'vs/workbench/contrib/customEditor/common/customEditor'
-import { CustomEditorService } from 'vs/workbench/contrib/customEditor/browser/customEditors'
-import { WebviewService } from 'vs/workbench/contrib/webview/browser/webviewService'
-import { IWebviewWorkbenchService, WebviewEditorService } from 'vs/workbench/contrib/webviewPanel/browser/webviewWorkbenchService'
-import { IWebviewService } from 'vs/workbench/contrib/webview/browser/webview'
-import { IWebviewViewService, WebviewViewService } from 'vs/workbench/contrib/webviewView/browser/webviewViewService'
 import { Parts, Position, positionToString } from 'vs/workbench/services/layout/browser/layoutService'
 import { IStorageService, StorageScope } from 'vs/platform/storage/common/storage'
 import { IFileService } from 'vs/platform/files/common/files'
 import { ILayoutService } from 'vs/platform/layout/browser/layoutService'
-import { IProgressService } from 'vs/platform/progress/common/progress'
-import { ProgressService } from 'vs/workbench/services/progress/browser/progressService'
 import { ILifecycleService, StartupKind } from 'vs/workbench/services/lifecycle/common/lifecycle'
 import { AuxiliaryBarPart } from 'vs/workbench/browser/parts/auxiliarybar/auxiliaryBarPart'
 import { ILogService } from 'vs/platform/log/common/log'
@@ -55,46 +34,14 @@ import { IWorkspaceContextService, WorkbenchState, isTemporaryWorkspace } from '
 import { IConfigurationService } from 'vs/platform/configuration/common/configuration'
 import { coalesce } from 'vs/base/common/arrays'
 import { IWorkingCopyBackupService } from 'vs/workbench/services/workingCopy/common/workingCopyBackup'
-import { PaneCompositePartService } from 'vs/workbench/browser/parts/paneCompositePartService'
 import { EditorParts } from 'vs/workbench/browser/parts/editor/editorParts'
-import { BrowserAuxiliaryWindowService, IAuxiliaryWindowService } from 'vs/workbench/services/auxiliaryWindow/browser/auxiliaryWindowService'
-import { IViewsService } from 'vs/workbench/services/views/common/viewsService'
-import { ViewsService } from 'vs/workbench/services/views/browser/viewsService'
-import { IHoverService } from 'vs/platform/hover/browser/hover'
-import { IEditorPaneService } from 'vs/workbench/services/editor/common/editorPaneService'
-import { EditorPaneService } from 'vs/workbench/services/editor/browser/editorPaneService'
 import { HoverService } from 'vs/editor/browser/services/hoverService/hoverService'
-import { CustomEditorLabelService, ICustomEditorLabelService } from 'vs/workbench/services/editor/common/customEditorLabelService'
 import { MonacoDelegateEditorGroupsService, MonacoEditorService, OpenEditor } from './tools/editor'
-import getBulkEditServiceOverride from './bulkEdit'
 import { LayoutService } from './layout'
 import getQuickAccessOverride from './quickaccess'
 import getKeybindingsOverride from './keybindings'
-import { changeUrlDomain } from './tools/url'
+import getViewCommonServiceOverride from './viewCommon'
 import { onRenderWorkbench } from '../lifecycle'
-import { registerAssets } from '../assets'
-import 'vs/workbench/contrib/callHierarchy/browser/callHierarchy.contribution'
-import 'vs/workbench/contrib/typeHierarchy/browser/typeHierarchy.contribution'
-import 'vs/workbench/browser/actions/listCommands'
-import 'vscode/src/vs/workbench/browser/parts/views/media/views.css'
-import 'vs/workbench/api/browser/viewsExtensionPoint'
-import 'vs/workbench/browser/parts/editor/editor.contribution'
-import 'vs/workbench/browser/workbench.contribution'
-import 'vs/workbench/contrib/customEditor/browser/customEditor.contribution'
-import 'vs/workbench/contrib/webviewPanel/browser/webviewPanel.contribution'
-import 'vs/workbench/contrib/externalUriOpener/common/externalUriOpener.contribution'
-import 'vs/workbench/contrib/languageStatus/browser/languageStatus.contribution'
-import 'vs/workbench/contrib/mergeEditor/browser/mergeEditor.contribution'
-import 'vs/workbench/contrib/webview/browser/webview.contribution'
-import 'vs/workbench/contrib/limitIndicator/browser/limitIndicator.contribution'
-import 'vs/workbench/contrib/sash/browser/sash.contribution'
-import 'vs/workbench/contrib/preferences/browser/keyboardLayoutPicker'
-import 'vs/workbench/browser/parts/editor/editor.autosave.contribution'
-import 'vs/workbench/contrib/files/browser/files.editorPane.contribution'
-import 'vs/workbench/contrib/files/browser/fileCommands.save'
-import 'vs/workbench/browser/actions/navigationActions'
-import 'vs/workbench/browser/style'
-import './tools/editorAssets'
 export * from './tools/views'
 
 function createPart (id: string, role: string, classes: string[]): HTMLElement {
@@ -239,14 +186,6 @@ class MonacoEditorParts extends MonacoDelegateEditorGroupsService<EditorParts> i
     return this.delegate.activePart
   }
 }
-
-let webviewIframeAlternateDomains: string | undefined
-registerAssets({
-  'vs/workbench/contrib/webview/browser/pre/service-worker.js': () => changeUrlDomain(new URL('../../vscode/src/vs/workbench/contrib/webview/browser/pre/service-worker.js', import.meta.url).href, webviewIframeAlternateDomains),
-  'vs/workbench/contrib/webview/browser/pre/index.html': () => changeUrlDomain(new URL('../assets/webview/index.html', import.meta.url).href, webviewIframeAlternateDomains),
-  'vs/workbench/contrib/webview/browser/pre/index-no-csp.html': () => changeUrlDomain(new URL('../assets/webview/index-no-csp.html', import.meta.url).href, webviewIframeAlternateDomains),
-  'vs/workbench/contrib/webview/browser/pre/fake.html': () => changeUrlDomain(new URL('../../vscode/src/vs/workbench/contrib/webview/browser/pre/fake.html', import.meta.url).href, webviewIframeAlternateDomains)
-})
 
 type InitializationStateTransformer = (state: ILayoutInitializationState) => ILayoutInitializationState
 let transformInitializationState: InitializationStateTransformer = state => state
@@ -698,10 +637,6 @@ function getServiceOverride (openEditorFallback?: OpenEditor, _webviewIframeAlte
 function getServiceOverride (openEditorFallback?: OpenEditor, _webviewIframeAlternateDomains?: string, restoreEditors?: boolean): IEditorOverrideServices
 function getServiceOverride (openEditorFallback?: OpenEditor, _webviewIframeAlternateDomains?: string, initializationState?: InitializationStateTransformer): IEditorOverrideServices
 function getServiceOverride (openEditorFallback?: OpenEditor, _webviewIframeAlternateDomains?: string, initializationStateOrRestoreEditors?: boolean | InitializationStateTransformer): IEditorOverrideServices {
-  if (_webviewIframeAlternateDomains != null) {
-    webviewIframeAlternateDomains = _webviewIframeAlternateDomains
-  }
-
   if (initializationStateOrRestoreEditors != null) {
     transformInitializationState = typeof initializationStateOrRestoreEditors === 'boolean'
       ? (state: ILayoutInitializationState) => ({
@@ -715,7 +650,7 @@ function getServiceOverride (openEditorFallback?: OpenEditor, _webviewIframeAlte
   }
 
   return {
-    ...getBulkEditServiceOverride(),
+    ...getViewCommonServiceOverride(_webviewIframeAlternateDomains),
     ...getQuickAccessOverride({
       isKeybindingConfigurationVisible: isEditorPartVisible,
       shouldUseGlobalPicker: isEditorPartVisible
@@ -723,29 +658,8 @@ function getServiceOverride (openEditorFallback?: OpenEditor, _webviewIframeAlte
     ...getKeybindingsOverride({
       shouldUseGlobalKeybindings: isEditorPartVisible
     }),
-    [IViewsService.toString()]: new SyncDescriptor(ViewsService, [], false),
-    [IViewDescriptorService.toString()]: new SyncDescriptor(ViewDescriptorService, [], true),
-    [IActivityService.toString()]: new SyncDescriptor(ActivityService, [], true),
-    [IPaneCompositePartService.toString()]: new SyncDescriptor(PaneCompositePartService, [], true),
-    [IHoverService.toString()]: new SyncDescriptor(HoverService, [], true),
-
-    [ICodeEditorService.toString()]: new SyncDescriptor(CodeEditorService, [], true),
-    [ITextEditorService.toString()]: new SyncDescriptor(TextEditorService, [], false),
     [IEditorGroupsService.toString()]: new SyncDescriptor(MonacoEditorParts, [], false),
-    [IEditorService.toString()]: new SyncDescriptor(MonacoEditorService, [openEditorFallback, isEditorPartVisible], false),
-    [IEditorResolverService.toString()]: new SyncDescriptor(EditorResolverService, [], false),
-    [IBreadcrumbsService.toString()]: new SyncDescriptor(BreadcrumbsService, [], true),
-    [IContextViewService.toString()]: new SyncDescriptor(ContextViewService, [], true),
-    [IUntitledTextEditorService.toString()]: new SyncDescriptor(UntitledTextEditorService, [], true),
-    [IHistoryService.toString()]: new SyncDescriptor(HistoryService, [], false),
-    [ICustomEditorService.toString()]: new SyncDescriptor(CustomEditorService, [], true),
-    [IWebviewService.toString()]: new SyncDescriptor(WebviewService, [], true),
-    [IWebviewViewService.toString()]: new SyncDescriptor(WebviewViewService, [], true),
-    [IWebviewWorkbenchService.toString()]: new SyncDescriptor(WebviewEditorService, [], true),
-    [IProgressService.toString()]: new SyncDescriptor(ProgressService, [], true),
-    [IAuxiliaryWindowService.toString()]: new SyncDescriptor(BrowserAuxiliaryWindowService, [], true),
-    [IEditorPaneService.toString()]: new SyncDescriptor(EditorPaneService, [], true),
-    [ICustomEditorLabelService.toString()]: new SyncDescriptor(CustomEditorLabelService, [], true)
+    [IEditorService.toString()]: new SyncDescriptor(MonacoEditorService, [openEditorFallback, isEditorPartVisible], false)
   }
 }
 

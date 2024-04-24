@@ -11,8 +11,12 @@
     "editor.semanticHighlighting.enabled": true,
     "editor.bracketPairColorization.enabled": false,
     "editor.fontSize": 12,
-    "audioCues.lineHasError": "on",
-    "audioCues.onDebugBreak": "on",
+    "accessibility.signals.lineHasError": {
+        "sound": "on"
+    },
+    "accessibility.signals.onDebugBreak": {
+        "sound": "on"
+    },
     "files.autoSave": "off",
     "debug.toolBarLocation": "docked",
     "editor.experimental.asyncTokenization": true,

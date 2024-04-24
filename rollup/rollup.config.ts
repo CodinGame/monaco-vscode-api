@@ -297,12 +297,6 @@ function transformVSCodeCode (id: string, code: string) {
 }
 
 function resolveVscode (importee: string, importer?: string) {
-  if (importee === '@vscode/iconv-lite-umd') {
-    return path.resolve(OVERRIDE_PATH, 'iconv.ts')
-  }
-  if (importee === 'jschardet') {
-    return path.resolve(OVERRIDE_PATH, 'jschardet.ts')
-  }
   if (importer != null && importee.startsWith('.')) {
     importee = path.resolve(path.dirname(importer), importee)
   }
@@ -359,11 +353,11 @@ const input = {
 }
 
 const workerGroups: Record<string, string> = {
-  languageDetection: 'service-override:language-detection-worker',
-  outputLinkComputer: 'service-override:output',
-  textmate: 'service-override:textmate',
-  notebook: 'service-override:notebook',
-  localFileSearch: 'service-override:search'
+  languageDetection: 'language-detection-worker',
+  outputLinkComputer: 'output',
+  textmate: 'textmate',
+  notebook: 'notebook',
+  localFileSearch: 'search'
 }
 
 const externals = Object.keys({ ...pkg.dependencies })
@@ -693,18 +687,33 @@ export default (args: Record<string, string>): rollup.RollupOptions[] => {
         const workersDir = path.resolve(options.dir!, 'workers')
 
         if (id.startsWith(serviceOverrideDir)) {
-          return `service-override:${paramCase(path.basename(id, '.js'))}`
+          const name = paramCase(path.basename(id, '.js'))
+          return {
+            name: `service-override:${name}`,
+            publicName: `@codingame/monaco-vscode-${name}-service-override`
+          }
         }
         if (id.startsWith(workersDir)) {
-          return workerGroups[path.basename(id, '.worker.js')] ?? 'main'
+          const name = workerGroups[path.basename(id, '.worker.js')]
+          return {
+            name: name != null ? `service-override:${name}` : 'main',
+            publicName: name != null ? `@codingame/monaco-vscode-${name}-service-override` : 'vscode'
+          }
         }
         if (id === path.resolve(options.dir!, 'editor.api.js')) {
-          return 'editor.api'
+          return {
+            name: 'editor.api',
+            publicName: '@codngame/monaco-vscode-editor-api'
+          }
         }
-        return 'main'
+        return {
+          name: 'main',
+          publicName: 'vscode',
+          priority: 1
+        }
       },
-      async handle (groupName, dependencies, exclusiveModules, entrypoints, options, bundle) {
-        if (groupName === 'main') {
+      async handle (group, moduleGroupName, options, bundle) {
+        if (group.name === 'main') {
           // Generate package.json
           const packageJson: PackageJson = {
             ...Object.fromEntries(Object.entries(pkg).filter(([key]) => ['name', 'description', 'version', 'keywords', 'author', 'license', 'repository', 'type'].includes(key))),
@@ -792,8 +801,8 @@ export default (args: Record<string, string>): rollup.RollupOptions[] => {
               }
             },
             dependencies: {
-              ...Object.fromEntries(Object.entries(pkg.dependencies).filter(([key]) => dependencies.has(key))),
-              ...Object.fromEntries(Array.from(dependencies).filter(dep => dep.startsWith('@codingame/monaco-vscode-')).map(dep => [dep, pkg.version]))
+              ...Object.fromEntries(Object.entries(pkg.dependencies).filter(([key]) => group.directDependencies.has(key))),
+              ...Object.fromEntries(Array.from(group.directDependencies).filter(dep => dep.startsWith('@codingame/monaco-vscode-')).map(dep => [dep, pkg.version]))
             }
           }
           this.emitFile({
@@ -802,7 +811,7 @@ export default (args: Record<string, string>): rollup.RollupOptions[] => {
             source: JSON.stringify(packageJson, null, 2),
             type: 'asset'
           })
-        } else if (groupName === 'editor.api') {
+        } else if (group.name === 'editor.api') {
           const directory = path.resolve(DIST_DIR, 'editor-api')
 
           await fsPromise.mkdir(directory, {
@@ -852,6 +861,7 @@ export default (args: Record<string, string>): rollup.RollupOptions[] => {
               'esm/vs/editor/editor.api': 'entrypoint'
             },
             external,
+            treeshake: false,
             plugins: [
               nodeResolve({
                 extensions: EXTENSIONS
@@ -873,7 +883,7 @@ export default (args: Record<string, string>): rollup.RollupOptions[] => {
 
                   const isVscodeFile = resolved.startsWith(VSCODE_SRC_DIST_DIR)
                   const isServiceOverride = path.dirname(resolved) === DIST_SERVICE_OVERRIDE_DIR_MAIN
-                  const isExclusive = exclusiveModules.has(resolvedWithExtension)
+                  const isExclusive = group.exclusiveModules.has(resolvedWithExtension)
                   const pathFromRoot = path.relative(DIST_DIR_MAIN, resolvedWithExtension)
                   const shouldBeShared = SHARED_ROOT_FILES_BETWEEN_PACKAGES.includes(path.relative(DIST_DIR_MAIN, resolvedWithExtension))
                   if (pathFromRoot.startsWith('external/') && !isExclusive) {
@@ -883,8 +893,17 @@ export default (args: Record<string, string>): rollup.RollupOptions[] => {
                     }
                   }
                   if (((isVscodeFile || isServiceOverride) && !isExclusive) || shouldBeShared) {
+                    function getPackageFromGroupName (groupName: string) {
+                      if (groupName === 'main') {
+                        return 'vscode'
+                      }
+                      const [_, category, name] = /^(.*):(.*)$/.exec(groupName)!
+                      return `@codingame/monaco-vscode-${name}-${category}`
+                    }
+                    const importFromGroup = isVscodeFile ? moduleGroupName.get(resolved) ?? 'main' : 'main'
+                    const importFromModule = getPackageFromGroupName(importFromGroup)
                     // Those modules will be imported from external monaco-vscode-api
-                    let externalResolved = resolved.startsWith(VSCODE_SRC_DIST_DIR) ? `vscode/vscode/${path.relative(VSCODE_SRC_DIST_DIR, resolved)}` : `vscode/${path.relative(DIST_DIR_MAIN, resolved)}`
+                    let externalResolved = resolved.startsWith(VSCODE_SRC_DIST_DIR) ? `${importFromModule}/vscode/${path.relative(VSCODE_SRC_DIST_DIR, resolved)}` : `${importFromModule}/${path.relative(DIST_DIR_MAIN, resolved)}`
                     if (externalResolved.endsWith('.js')) {
                       externalResolved = externalResolved.slice(0, -3)
                     }
@@ -898,7 +917,7 @@ export default (args: Record<string, string>): rollup.RollupOptions[] => {
                 },
                 load (id) {
                   if (id === 'entrypoint') {
-                    return `export * from '${Array.from(entrypoints)[0]!.slice(0, -3)}'`
+                    return `export * from '${Array.from(group.entrypoints)[0]!.slice(0, -3)}'`
                   }
                   if (id.startsWith('vscode/')) {
                     return (bundle[path.relative('vscode', id)] as rollup.OutputChunk | undefined)?.code
@@ -952,19 +971,19 @@ export default (args: Record<string, string>): rollup.RollupOptions[] => {
           })
           await groupBundle.close()
           // remove exclusive files from main bundle to prevent them from being duplicated
-          for (const exclusiveModule of exclusiveModules) {
+          for (const exclusiveModule of group.exclusiveModules) {
             delete bundle[path.relative(DIST_DIR_MAIN, exclusiveModule)]
           }
         } else {
-          const [_, category, name] = /^(.*):(.*)$/.exec(groupName)!
+          const [_, category, name] = /^(.*):(.*)$/.exec(group.name)!
 
           const directory = path.resolve(DIST_DIR, `${category}-${name}`)
 
           await fsPromise.mkdir(directory, {
             recursive: true
           })
-          const serviceOverrideEntryPoint = Array.from(entrypoints).find(e => e.includes('/service-override/'))!
-          const workerEntryPoint = Array.from(entrypoints).find(e => e.includes('/workers/'))
+          const serviceOverrideEntryPoint = Array.from(group.entrypoints).find(e => e.includes('/service-override/'))!
+          const workerEntryPoint = Array.from(group.entrypoints).find(e => e.includes('/workers/'))
 
           const packageJson: PackageJson = {
             name: `@codingame/monaco-vscode-${name}-${category}`,
@@ -974,20 +993,25 @@ export default (args: Record<string, string>): rollup.RollupOptions[] => {
             main: 'index.js',
             module: 'index.js',
             types: 'index.d.ts',
-            dependencies: {
-              vscode: `npm:${pkg.name}@^${pkg.version}`,
-              ...Object.fromEntries(Object.entries(pkg.dependencies).filter(([key]) => dependencies.has(key))),
-              ...Object.fromEntries(Array.from(dependencies).filter(dep => dep.startsWith('@codingame/monaco-vscode-')).map(dep => [dep, pkg.version]))
-            }
-          }
-          if (workerEntryPoint != null) {
-            packageJson.exports = {
+            exports: {
               '.': {
                 default: './index.js'
               },
-              './worker': {
-                default: './worker.js'
-              }
+              './vscode/*': {
+                default: './vscode/src/*.js'
+              },
+              ...(workerEntryPoint != null
+                ? {
+                    './worker': {
+                      default: './worker.js'
+                    }
+                  }
+                : {})
+            },
+            dependencies: {
+              vscode: `npm:${pkg.name}@^${pkg.version}`,
+              ...Object.fromEntries(Object.entries(pkg.dependencies).filter(([key]) => group.directDependencies.has(key))),
+              ...Object.fromEntries(Array.from(group.directDependencies).filter(dep => dep.startsWith('@codingame/monaco-vscode-')).map(dep => [dep, pkg.version]))
             }
           }
 
@@ -1003,6 +1027,7 @@ export default (args: Record<string, string>): rollup.RollupOptions[] => {
                 : {})
             },
             external,
+            treeshake: false,
             plugins: [
               importMetaAssets({
                 include: ['**/*.ts', '**/*.js'],
@@ -1029,7 +1054,7 @@ export default (args: Record<string, string>): rollup.RollupOptions[] => {
 
                   const isVscodeFile = resolved.startsWith(VSCODE_SRC_DIST_DIR)
                   const isServiceOverride = path.dirname(resolved) === DIST_SERVICE_OVERRIDE_DIR_MAIN
-                  const isExclusive = exclusiveModules.has(resolvedWithExtension)
+                  const isExclusive = group.exclusiveModules.has(resolvedWithExtension)
                   const pathFromRoot = path.relative(DIST_DIR_MAIN, resolvedWithExtension)
                   const shouldBeShared = SHARED_ROOT_FILES_BETWEEN_PACKAGES.includes(path.relative(DIST_DIR_MAIN, resolvedWithExtension))
                   if (pathFromRoot.startsWith('external/') && !isExclusive) {
@@ -1040,8 +1065,17 @@ export default (args: Record<string, string>): rollup.RollupOptions[] => {
                   }
 
                   if (((isVscodeFile || isServiceOverride) && !isExclusive) || shouldBeShared) {
+                    function getPackageFromGroupName (groupName: string) {
+                      if (groupName === 'main') {
+                        return 'vscode'
+                      }
+                      const [_, category, name] = /^(.*):(.*)$/.exec(groupName)!
+                      return `@codingame/monaco-vscode-${name}-${category}`
+                    }
+                    const importFromGroup = isVscodeFile ? moduleGroupName.get(resolved) ?? 'main' : 'main'
+                    const importFromModule = getPackageFromGroupName(importFromGroup)
                     // Those modules will be imported from external monaco-vscode-api
-                    let externalResolved = resolved.startsWith(VSCODE_SRC_DIST_DIR) ? `vscode/vscode/${path.relative(VSCODE_SRC_DIST_DIR, resolved)}` : `vscode/${path.relative(DIST_DIR_MAIN, resolved)}`
+                    let externalResolved = resolved.startsWith(VSCODE_SRC_DIST_DIR) ? `${importFromModule}/vscode/${path.relative(VSCODE_SRC_DIST_DIR, resolved)}` : `${importFromModule}/${path.relative(DIST_DIR_MAIN, resolved)}`
                     if (externalResolved.endsWith('.js')) {
                       externalResolved = externalResolved.slice(0, -3)
                     }
@@ -1106,7 +1140,7 @@ export default (args: Record<string, string>): rollup.RollupOptions[] => {
           await groupBundle.close()
 
           // remove exclusive files from main bundle to prevent them from being duplicated
-          for (const exclusiveModule of exclusiveModules) {
+          for (const exclusiveModule of group.exclusiveModules) {
             delete bundle[path.relative(DIST_DIR_MAIN, exclusiveModule)]
           }
 
