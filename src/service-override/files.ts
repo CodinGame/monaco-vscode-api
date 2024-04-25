@@ -368,7 +368,7 @@ class OverlayFileSystemProvider implements IFileSystemProviderWithFileReadWriteC
   }
 
   async readdir (resource: URI): Promise<[string, FileType][]> {
-    const results = await Promise.allSettled(this.delegates.map(delegate => delegate.readdir(resource)))
+    const results = await Promise.allSettled(this.delegates.map(async delegate => delegate.readdir(resource)))
     if (!results.some(isFullfiled)) {
       throw (results[0] as PromiseRejectedResult).reason
     }
