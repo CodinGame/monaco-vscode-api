@@ -10,7 +10,7 @@ Subject: [PATCH] feat: add a way to register a locale with translations
  3 files changed, 48 insertions(+), 3 deletions(-)
 
 diff --git a/build/lib/standalone.js b/build/lib/standalone.js
-index 723a1127492..206d4dfb9a4 100644
+index 723a1127492..9d09ee7d9f5 100644
 --- a/build/lib/standalone.js
 +++ b/build/lib/standalone.js
 @@ -4,8 +4,7 @@
@@ -41,7 +41,7 @@ index 723a1127492..206d4dfb9a4 100644
 +                });
 +            }
 +            fileContents = fileContents.replace(/import { (localize2?) }/g, 'import { $1WithPath }');
-+            fileContents = fileContents.replace(/import { (localize2?), (localize2?) }/g, 'import { $1WithPath, $2WithPath }');
++            fileContents = fileContents.replace(/import { (localize2?), *(localize2?) }/g, 'import { $1WithPath, $2WithPath }');
              write(getDestAbsoluteFilePath(file), fileContents);
              continue;
          }
@@ -54,7 +54,7 @@ index 723a1127492..206d4dfb9a4 100644
      if (!/\.css/.test(module)) {
          return false;
 diff --git a/build/lib/standalone.ts b/build/lib/standalone.ts
-index 90517a9236f..193ed02f7f6 100644
+index 90517a9236f..8095b353bb4 100644
 --- a/build/lib/standalone.ts
 +++ b/build/lib/standalone.ts
 @@ -223,6 +223,14 @@ export function createESMSourcesAndResources2(options: IOptions2): void {
@@ -67,7 +67,7 @@ index 90517a9236f..193ed02f7f6 100644
 +				});
 +			}
 +			fileContents = fileContents.replace(/import { (localize2?) }/g, 'import { $1WithPath }');
-+			fileContents = fileContents.replace(/import { (localize2?), (localize2?) }/g, 'import { $1WithPath, $2WithPath }');
++			fileContents = fileContents.replace(/import { (localize2?), *(localize2?) }/g, 'import { $1WithPath, $2WithPath }');
 +
  			write(getDestAbsoluteFilePath(file), fileContents);
  			continue;
