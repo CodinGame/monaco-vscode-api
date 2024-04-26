@@ -1,0 +1,28 @@
+From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
+From: =?UTF-8?q?Lo=C3=AFc=20Mangeonjean?= <loic@coderpad.io>
+Date: Tue, 23 Apr 2024 22:06:54 +0200
+Subject: [PATCH] fix: weird syntax
+
+---
+ src/vs/platform/notification/common/notification.ts | 6 ++++--
+ 1 file changed, 4 insertions(+), 2 deletions(-)
+
+diff --git a/src/vs/platform/notification/common/notification.ts b/src/vs/platform/notification/common/notification.ts
+index 8506385b01c..3f6554ac9c0 100644
+--- a/src/vs/platform/notification/common/notification.ts
++++ b/src/vs/platform/notification/common/notification.ts
+@@ -6,10 +6,12 @@
+ import { IAction } from 'vs/base/common/actions';
+ import { Event } from 'vs/base/common/event';
+ import { IDisposable } from 'vs/base/common/lifecycle';
+-import BaseSeverity from 'vs/base/common/severity';
++import Severity from 'vs/base/common/severity';
+ import { createDecorator } from 'vs/platform/instantiation/common/instantiation';
+ 
+-export import Severity = BaseSeverity;
++export {
++	Severity
++};
+ 
+ export const INotificationService = createDecorator<INotificationService>('notificationService');
+ 

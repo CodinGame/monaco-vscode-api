@@ -1,0 +1,54 @@
+From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
+From: =?UTF-8?q?Lo=C3=AFc=20Mangeonjean?= <loic@coderpad.io>
+Date: Thu, 25 Apr 2024 18:13:11 +0200
+Subject: [PATCH] fix: do not export stuff from web workbench or the typescript
+ language service is trying to import from it
+
+---
+ src/vs/workbench/workbench.web.main.ts | 28 ++------------------------
+ 1 file changed, 2 insertions(+), 26 deletions(-)
+
+diff --git a/src/vs/workbench/workbench.web.main.ts b/src/vs/workbench/workbench.web.main.ts
+index e4a0a7e3e72..da0be08af02 100644
+--- a/src/vs/workbench/workbench.web.main.ts
++++ b/src/vs/workbench/workbench.web.main.ts
+@@ -175,37 +175,13 @@ import 'vs/workbench/contrib/remote/browser/remoteStartEntry.contribution';
+ //
+ // !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+ 
+-import { create, commands, env, window, workspace, logger } from 'vs/workbench/browser/web.factory';
+-import { Menu } from 'vs/workbench/browser/web.api';
+-import { URI } from 'vs/base/common/uri';
+-import { Event, Emitter } from 'vs/base/common/event';
+-import { Disposable } from 'vs/base/common/lifecycle';
+-import { GroupOrientation } from 'vs/workbench/services/editor/common/editorGroupsService';
++import { create } from 'vs/workbench/browser/web.factory';
+ import { UserDataSyncResourceProviderService } from 'vs/platform/userDataSync/common/userDataSyncResourceProvider';
+-import { RemoteAuthorityResolverError, RemoteAuthorityResolverErrorCode } from 'vs/platform/remote/common/remoteAuthorityResolver';
+ 
+ export {
+ 
+ 	// Factory
+-	create,
+-
+-	// Basic Types
+-	URI,
+-	Event,
+-	Emitter,
+-	Disposable,
+-	GroupOrientation,
+-	LogLevel,
+-	RemoteAuthorityResolverError,
+-	RemoteAuthorityResolverErrorCode,
+-
+-	// Facade API
+-	env,
+-	window,
+-	workspace,
+-	commands,
+-	logger,
+-	Menu
++	create
+ };
+ 
+ //#endregion
