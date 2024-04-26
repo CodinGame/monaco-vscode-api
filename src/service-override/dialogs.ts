@@ -1,6 +1,7 @@
 import { IEditorOverrideServices } from 'vs/editor/standalone/browser/standaloneServices'
 import { DialogService } from 'vs/workbench/services/dialogs/common/dialogService'
-import { IDialogService, IFileDialogService, IOpenDialogOptions, IPickAndOpenOptions, ISaveDialogOptions } from 'vs/platform/dialogs/common/dialogs'
+import { IOpenDialogOptions, IPickAndOpenOptions, ISaveDialogOptions } from 'vs/platform/dialogs/common/dialogs'
+import { IDialogService, IFileDialogService } from 'vs/platform/dialogs/common/dialogs.service'
 import { SyncDescriptor } from 'vs/platform/instantiation/common/descriptors'
 import { AbstractFileDialogService } from 'vs/workbench/services/dialogs/browser/abstractFileDialogService'
 import { FileDialogService } from 'vs/workbench/services/dialogs/browser/fileDialogService'

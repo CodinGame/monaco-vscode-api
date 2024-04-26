@@ -1,43 +1,46 @@
-import { IEditorOverrideServices } from 'vs/editor/standalone/browser/standaloneServices'
-import { WorkspaceService } from 'vs/workbench/services/configuration/browser/configurationService'
-import { IConfigurationService } from 'vs/platform/configuration/common/configuration'
+import { VSBuffer } from 'vs/base/common/buffer'
+import { IDisposable } from 'vs/base/common/lifecycle'
+import { Schemas } from 'vs/base/common/network'
+import { URI } from 'vs/base/common/uri'
+import { generateUuid } from 'vs/base/common/uuid'
 import { ITextResourceConfigurationService, ITextResourcePropertiesService } from 'vs/editor/common/services/textResourceConfiguration'
 import { TextResourceConfigurationService } from 'vs/editor/common/services/textResourceConfigurationService'
+import { IEditorOverrideServices } from 'vs/editor/standalone/browser/standaloneServices'
+import { IConfigurationService } from 'vs/platform/configuration/common/configuration.service'
+import { Extensions as ConfigurationExtensions, ConfigurationScope, IConfigurationDefaults, IConfigurationNode, IConfigurationRegistry } from 'vs/platform/configuration/common/configurationRegistry'
+import { IFileWriteOptions } from 'vs/platform/files/common/files'
+import { IFileService } from 'vs/platform/files/common/files.service'
 import { SyncDescriptor } from 'vs/platform/instantiation/common/descriptors'
-import { ConfigurationScope, IConfigurationRegistry, Extensions as ConfigurationExtensions, IConfigurationNode, IConfigurationDefaults } from 'vs/platform/configuration/common/configurationRegistry'
-import { Registry } from 'vs/platform/registry/common/platform'
-import { VSBuffer } from 'vs/base/common/buffer'
-import { IFileService, IFileWriteOptions } from 'vs/platform/files/common/files'
-import { ILogService } from 'vs/platform/log/common/log'
-import { IColorCustomizations, IThemeScopedColorCustomizations } from 'vs/workbench/services/themes/common/workbenchThemeService'
-import { IUserDataProfilesService } from 'vs/platform/userDataProfile/common/userDataProfile'
-import { IPolicyService } from 'vs/platform/policy/common/policy'
 import { IInstantiationService } from 'vs/platform/instantiation/common/instantiation'
-import { IUserDataProfileService } from 'vs/workbench/services/userDataProfile/common/userDataProfile'
-import { IRemoteAgentService } from 'vs/workbench/services/remote/common/remoteAgentService'
-import { IUriIdentityService } from 'vs/platform/uriIdentity/common/uriIdentity'
-import { ConfigurationCache } from 'vs/workbench/services/configuration/common/configurationCache'
-import { Schemas } from 'vs/base/common/network'
-import { IWorkbenchEnvironmentService } from 'vs/workbench/services/environment/common/environmentService'
-import { IAnyWorkspaceIdentifier, IEmptyWorkspaceIdentifier, ISingleFolderWorkspaceIdentifier, IWorkspaceContextService, IWorkspaceIdentifier } from 'vs/platform/workspace/common/workspace'
-import { LabelService } from 'vs/workbench/services/label/common/labelService'
-import { ILabelService } from 'vs/platform/label/common/label'
-import { generateUuid } from 'vs/base/common/uuid'
-import { IWorkspacesService, IWorkspaceFolderCreationData, IStoredWorkspace } from 'vs/platform/workspaces/common/workspaces'
-import { BrowserWorkspacesService } from 'vs/workbench/services/workspaces/browser/workspacesService'
-import { IWorkspaceEditingService } from 'vs/workbench/services/workspaces/common/workspaceEditing'
-import { AbstractWorkspaceEditingService } from 'vs/workbench/services/workspaces/browser/abstractWorkspaceEditingService'
-import { URI } from 'vs/base/common/uri'
+import { ILabelService } from 'vs/platform/label/common/label.service'
+import { ILogService } from 'vs/platform/log/common/log.service'
+import { IPolicyService } from 'vs/platform/policy/common/policy.service'
+import { Registry } from 'vs/platform/registry/common/platform'
+import { IUriIdentityService } from 'vs/platform/uriIdentity/common/uriIdentity.service'
+import { IUserDataProfilesService } from 'vs/platform/userDataProfile/common/userDataProfile.service'
+import { IAnyWorkspaceIdentifier, IEmptyWorkspaceIdentifier, ISingleFolderWorkspaceIdentifier, IWorkspaceIdentifier } from 'vs/platform/workspace/common/workspace'
+import { IWorkspaceContextService } from 'vs/platform/workspace/common/workspace.service'
+import { IStoredWorkspace, IWorkspaceFolderCreationData } from 'vs/platform/workspaces/common/workspaces'
+import { IWorkspacesService } from 'vs/platform/workspaces/common/workspaces.service'
 import 'vs/workbench/api/common/configurationExtensionPoint'
-import { IBrowserWorkbenchEnvironmentService } from 'vs/workbench/services/environment/browser/environmentService'
-import { IDisposable } from 'vs/base/common/lifecycle'
+import 'vs/workbench/contrib/workspaces/browser/workspaces.contribution'
+import { WorkspaceService } from 'vs/workbench/services/configuration/browser/configurationService'
+import { ConfigurationCache } from 'vs/workbench/services/configuration/common/configurationCache'
+import { IBrowserWorkbenchEnvironmentService } from 'vs/workbench/services/environment/browser/environmentService.service'
+import { IWorkbenchEnvironmentService } from 'vs/workbench/services/environment/common/environmentService.service'
+import { LabelService } from 'vs/workbench/services/label/common/labelService'
+import { IRemoteAgentService } from 'vs/workbench/services/remote/common/remoteAgentService.service'
 import { TextResourcePropertiesService } from 'vs/workbench/services/textresourceProperties/common/textResourcePropertiesService'
+import { IColorCustomizations, IThemeScopedColorCustomizations } from 'vs/workbench/services/themes/common/workbenchThemeService'
+import { IUserDataProfileService } from 'vs/workbench/services/userDataProfile/common/userDataProfile.service'
+import { AbstractWorkspaceEditingService } from 'vs/workbench/services/workspaces/browser/abstractWorkspaceEditingService'
+import { BrowserWorkspacesService } from 'vs/workbench/services/workspaces/browser/workspacesService'
+import { IWorkspaceEditingService } from 'vs/workbench/services/workspaces/common/workspaceEditing.service'
 import getFileServiceOverride, { initFile } from './files'
-import { memoizedConstructor, unsupported } from '../tools'
 import { registerServiceInitializePreParticipant } from '../lifecycle'
 import { getService, withReadyServices } from '../services'
+import { memoizedConstructor, unsupported } from '../tools'
 import { getWorkspaceIdentifier } from '../workbench'
-import 'vs/workbench/contrib/workspaces/browser/workspaces.contribution'
 
 // This is the default value, but can be overriden by overriding the Environment or UserDataProfileService service
 const defaultUserConfigurationFile = URI.from({ scheme: Schemas.vscodeUserData, path: '/User/settings.json' })
@@ -163,21 +166,5 @@ function getServiceOverride (defaultWorkspace?: URI | IAnyWorkspaceIdentifier): 
 export default getServiceOverride
 
 export {
-  defaultUserConfigurationFile,
-  initUserConfiguration,
-  updateUserConfiguration,
-  getUserConfiguration,
-  onUserConfigurationChange,
-  configurationRegistry,
-  ConfigurationScope,
-  IThemeScopedColorCustomizations,
-  IColorCustomizations,
-  IConfigurationNode,
-  IConfigurationDefaults,
-  IAnyWorkspaceIdentifier,
-  IWorkspaceIdentifier,
-  ISingleFolderWorkspaceIdentifier,
-  IEmptyWorkspaceIdentifier,
-  IWorkspaceFolderCreationData,
-  IStoredWorkspace
+  ConfigurationScope, IAnyWorkspaceIdentifier, IColorCustomizations, IConfigurationDefaults, IConfigurationNode, IEmptyWorkspaceIdentifier, ISingleFolderWorkspaceIdentifier, IStoredWorkspace, IThemeScopedColorCustomizations, IWorkspaceFolderCreationData, IWorkspaceIdentifier, configurationRegistry, defaultUserConfigurationFile, getUserConfiguration, initUserConfiguration, onUserConfigurationChange, updateUserConfiguration
 }

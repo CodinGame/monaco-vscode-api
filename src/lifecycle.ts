@@ -1,13 +1,14 @@
 import { Registry } from 'vs/platform/registry/common/platform'
 import { IWorkbenchContributionsRegistry, Extensions as WorkbenchExtensions } from 'vs/workbench/common/contributions'
-import { ILifecycleService, LifecyclePhase } from 'vs/workbench/services/lifecycle/common/lifecycle'
+import { LifecyclePhase } from 'vs/workbench/services/lifecycle/common/lifecycle'
+import { ILifecycleService } from 'vs/workbench/services/lifecycle/common/lifecycle.service'
 import { IInstantiationService, ServicesAccessor } from 'vs/platform/instantiation/common/instantiation'
 import { Barrier, RunOnceScheduler, _runWhenIdle, timeout } from 'vs/base/common/async'
 import { Emitter } from 'vs/base/common/event'
 import { EditorExtensions, IEditorFactoryRegistry } from 'vs/workbench/common/editor'
 import { StandaloneServices } from 'vs/editor/standalone/browser/standaloneServices'
 import { Disposable } from 'vs/base/common/lifecycle'
-import { IWorkbenchLayoutService } from 'vs/workbench/services/layout/browser/layoutService'
+import { IWorkbenchLayoutService } from 'vs/workbench/services/layout/browser/layoutService.service'
 
 const layoutEmitter = new Emitter<ServicesAccessor>()
 export const onLayout = layoutEmitter.event

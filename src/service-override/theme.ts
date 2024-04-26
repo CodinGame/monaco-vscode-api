@@ -1,7 +1,7 @@
 import { WorkbenchThemeService } from 'vs/workbench/services/themes/browser/workbenchThemeService'
 import { IThemeExtensionPoint } from 'vs/workbench/services/themes/common/workbenchThemeService'
 import { IEditorOverrideServices } from 'vs/editor/standalone/browser/standaloneServices'
-import { IThemeService } from 'vs/platform/theme/common/themeService'
+import { IThemeService } from 'vs/platform/theme/common/themeService.service'
 import { SyncDescriptor } from 'vs/platform/instantiation/common/descriptors'
 import type { StandaloneThemeService } from 'vs/editor/standalone/browser/standaloneThemeService'
 import { ConfigurationTarget } from 'vs/platform/configuration/common/configuration'
