@@ -16,14 +16,6 @@ npm install -D @types/vscode
 
 ## Troubleshooting
 
-### `process` node builtin
-
-Since v1.86, VSCode detects its running environment by checking if a global variable `process` exists.
-For backward compatibility reasons or to be able to use node libraries in the browser, bundlers can be configured to inject a polyfill for it.
-Doing so may create unexpected behaviors and crashes.
-
-Make sure `typeof process === 'undefined'` returns true when using this library.
-
 ### If you use Webpack
 
 Starting from v2, [monaco-editor-webpack-plugin](https://www.npmjs.com/package/monaco-editor-webpack-plugin) can't be used
