@@ -1,12 +1,14 @@
 import { IEditorOverrideServices, StandaloneServices } from 'vs/editor/standalone/browser/standaloneServices'
-import { ITextMateTokenizationService } from 'vs/workbench/services/textMate/browser/textMateTokenizationFeature'
+import { ITextMateTokenizationService } from 'vs/workbench/services/textMate/browser/textMateTokenizationFeature.service'
 import { SyncDescriptor } from 'vs/platform/instantiation/common/descriptors'
 import { TextMateTokenizationFeature } from 'vs/workbench/services/textMate/browser/textMateTokenizationFeatureImpl'
-import { ILifecycleService, LifecyclePhase } from 'vs/workbench/services/lifecycle/common/lifecycle'
+import { LifecyclePhase } from 'vs/workbench/services/lifecycle/common/lifecycle'
+import { ILifecycleService } from 'vs/workbench/services/lifecycle/common/lifecycle.service'
 import getFileServiceOverride from './files'
 import { registerServiceInitializeParticipant } from '../lifecycle'
 import { registerAssets } from '../assets'
 import 'vs/workbench/services/themes/common/tokenClassificationExtensionPoint'
+import 'vs/workbench/contrib/codeEditor/browser/inspectEditorTokens/inspectEditorTokens'
 
 const _onigWasm = new URL('vscode-oniguruma/release/onig.wasm', import.meta.url).href
 registerAssets({

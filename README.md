@@ -16,14 +16,6 @@ npm install -D @types/vscode
 
 ## Troubleshooting
 
-### `process` node builtin
-
-Since v1.86, VSCode detects its running environment by checking if a global variable `process` exists.
-For backward compatibility reasons or to be able to use node libraries in the browser, bundlers can be configured to inject a polyfill for it.
-Doing so may create unexpected behaviors and crashes.
-
-Make sure `typeof process === 'undefined'` returns true when using this library.
-
 ### If you use Webpack
 
 Starting from v2, [monaco-editor-webpack-plugin](https://www.npmjs.com/package/monaco-editor-webpack-plugin) can't be used
@@ -119,6 +111,8 @@ Additionally, several packages that include the VSCode version of some services 
 
 - **Base** (included by default): `@codingame/monaco-vscode-base-service-override`
   - Contains some general-use services that are mandatory to most of the other features
+- **Monarch**:
+  - When textmate and theme service overrides are not used, it allows to restore some standalone features (Token inspection and toggle high contrast commands)
 - **Host** (included by default): `@codingame/monaco-vscode-host-service-override`
   - Interaction with the host/browser (shutdown veto, focus/active management, window opening, fullscreen...)
 - **Extensions** (included by default): `@codingame/monaco-vscode-extensions-service-override`

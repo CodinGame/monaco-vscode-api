@@ -1,10 +1,12 @@
 import { IEditorOverrideServices, StandaloneServices } from 'vs/editor/standalone/browser/standaloneServices'
 import { SyncDescriptor } from 'vs/platform/instantiation/common/descriptors'
 import { FileService } from 'vs/platform/files/common/fileService'
-import { ILogService, LogLevel } from 'vs/platform/log/common/log'
+import { LogLevel } from 'vs/platform/log/common/log'
+import { ILogService } from 'vs/platform/log/common/log.service'
 import { InMemoryFileSystemProvider } from 'vs/platform/files/common/inMemoryFilesystemProvider'
 import { URI } from 'vs/base/common/uri'
-import { FileChangeType, FilePermission, FileSystemProviderCapabilities, FileType, IFileSystemProvider, toFileSystemProviderErrorCode, createFileSystemProviderError, FileSystemProviderError, FileSystemProviderErrorCode, IFileChange, IFileDeleteOptions, IFileOverwriteOptions, IFileService, IFileSystemProviderWithFileReadWriteCapability, IFileWriteOptions, IStat, IWatchOptions } from 'vs/platform/files/common/files'
+import { IFileService } from 'vs/platform/files/common/files.service'
+import { FileChangeType, FilePermission, FileSystemProviderCapabilities, FileType, IFileSystemProvider, toFileSystemProviderErrorCode, createFileSystemProviderError, FileSystemProviderError, FileSystemProviderErrorCode, IFileChange, IFileDeleteOptions, IFileOverwriteOptions, IFileSystemProviderWithFileReadWriteCapability, IFileWriteOptions, IStat, IWatchOptions } from 'vs/platform/files/common/files'
 import { DisposableStore, IDisposable, Disposable, toDisposable } from 'vs/base/common/lifecycle'
 import { extUri, joinPath } from 'vs/base/common/resources'
 import { Emitter, Event } from 'vs/base/common/event'
@@ -12,14 +14,15 @@ import { HTMLFileSystemProvider } from 'vs/platform/files/browser/htmlFileSystem
 import { Schemas } from 'vs/base/common/network'
 import { IndexedDBFileSystemProvider, IndexedDBFileSystemProviderErrorData, IndexedDBFileSystemProviderErrorDataClassification } from 'vs/platform/files/browser/indexedDBFileSystemProvider'
 import { IndexedDB } from 'vs/base/browser/indexedDB'
-import { ITelemetryService } from 'vs/platform/telemetry/common/telemetry'
+import { ITelemetryService } from 'vs/platform/telemetry/common/telemetry.service'
 import { BufferLogger } from 'vs/platform/log/common/bufferLog'
 import { localizeWithPath } from 'vs/nls'
-import { ITextFileService } from 'vs/workbench/services/textfile/common/textfiles'
+import { ITextFileService } from 'vs/workbench/services/textfile/common/textfiles.service'
 import { BrowserTextFileService } from 'vs/workbench/services/textfile/browser/browserTextFileService'
-import { FilesConfigurationService, IFilesConfigurationService } from 'vs/workbench/services/filesConfiguration/common/filesConfigurationService'
+import { FilesConfigurationService } from 'vs/workbench/services/filesConfiguration/common/filesConfigurationService'
+import { IFilesConfigurationService } from 'vs/workbench/services/filesConfiguration/common/filesConfigurationService.service'
 import { BrowserElevatedFileService } from 'vs/workbench/services/files/browser/elevatedFileService'
-import { IElevatedFileService } from 'vs/workbench/services/files/common/elevatedFileService'
+import { IElevatedFileService } from 'vs/workbench/services/files/common/elevatedFileService.service'
 import { checkServicesNotInitialized, registerServiceInitializePreParticipant } from '../lifecycle'
 import { logsPath } from '../workbench'
 import 'vs/workbench/contrib/files/browser/files.configuration.contribution'
@@ -368,7 +371,7 @@ class OverlayFileSystemProvider implements IFileSystemProviderWithFileReadWriteC
   }
 
   async readdir (resource: URI): Promise<[string, FileType][]> {
-    const results = await Promise.allSettled(this.delegates.map(delegate => delegate.readdir(resource)))
+    const results = await Promise.allSettled(this.delegates.map(async delegate => delegate.readdir(resource)))
     if (!results.some(isFullfiled)) {
       throw (results[0] as PromiseRejectedResult).reason
     }

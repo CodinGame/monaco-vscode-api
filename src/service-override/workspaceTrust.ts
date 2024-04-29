@@ -1,6 +1,6 @@
 import { IEditorOverrideServices } from 'vs/editor/standalone/browser/standaloneServices'
 import { SyncDescriptor } from 'vs/platform/instantiation/common/descriptors'
-import { IWorkspaceTrustEnablementService, IWorkspaceTrustManagementService, IWorkspaceTrustRequestService } from 'vs/platform/workspace/common/workspaceTrust'
+import { IWorkspaceTrustEnablementService, IWorkspaceTrustManagementService, IWorkspaceTrustRequestService } from 'vs/platform/workspace/common/workspaceTrust.service'
 import { WorkspaceTrustEnablementService, WorkspaceTrustManagementService, WorkspaceTrustRequestService } from 'vs/workbench/services/workspaces/common/workspaceTrust'
 import 'vs/workbench/contrib/workspace/browser/workspace.contribution'
 

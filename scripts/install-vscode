@@ -45,6 +45,9 @@ cd build
 yarn install --ignore-engines
 cd ..
 
+echo "Extracting service identifiers"
+node build/lib/extractServices.js
+
 ## Change shake level from ClassMembers to Files to speed up build
 sed -i'' -e 's/shakeLevel: 2/shakeLevel: 0/g' build/gulpfile.editor.js
 ## build editor just to get the editor.api.d.ts file compiled
