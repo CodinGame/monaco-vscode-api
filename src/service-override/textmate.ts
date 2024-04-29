@@ -8,6 +8,7 @@ import getFileServiceOverride from './files'
 import { registerServiceInitializeParticipant } from '../lifecycle'
 import { registerAssets } from '../assets'
 import 'vs/workbench/services/themes/common/tokenClassificationExtensionPoint'
+import 'vs/workbench/contrib/codeEditor/browser/inspectEditorTokens/inspectEditorTokens'
 
 const _onigWasm = new URL('vscode-oniguruma/release/onig.wasm', import.meta.url).href
 registerAssets({
