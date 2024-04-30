@@ -3,7 +3,6 @@ import * as rollup from 'rollup'
 import { IExtensionManifest } from 'vs/platform/extensions/common/extensions'
 import { dataToEsm } from '@rollup/pluginutils'
 import { PackageJson } from 'type-fest'
-import glob from 'fast-glob'
 import * as fs from 'fs'
 import * as path from 'path'
 import { fileURLToPath } from 'url'
@@ -22,12 +21,7 @@ const locExtensions = fs.readdirSync(LOC_PATH, { withFileTypes: true })
   .filter(f => f.isDirectory() && fs.existsSync(path.resolve(LOC_PATH, f.name, 'package.json')))
   .map(f => f.name)
 
-const vscodeModules = (await glob('**/vscode/src/**/*.js', {
-  cwd: DIST_DIR,
-  onlyFiles: true
-})).map(fileName => /vscode\/src\/(.*).js$/.exec(fileName)![1]!)
-
-const usedModules = new Set<string>([...vscodeModules, 'vs/workbench/browser/web.main'])
+const nlsMetadata: Record<string, string[]> = JSON.parse((await fs.promises.readFile(path.resolve(DIST_DIR, 'nls.metadata.json'))).toString())
 
 export default rollup.defineConfig([
   ...locExtensions.map(name => (<rollup.RollupOptions>{
@@ -92,12 +86,18 @@ ${Object.entries(translationAssets).map(([id, assetRef]) => `  '${id}': new URL(
         transform (code, id) {
           if (!id.endsWith('.json')) return null
 
-          const parsed = JSON.parse(code).contents
-          // remove keys that we don't use
-          const filtered = Object.fromEntries(Object.entries(parsed).filter(([key]) => usedModules.has(key)))
+          const parsed: Record<string, Record<string, string>> = JSON.parse(code).contents
+
+          const encoded = Object.fromEntries(Object.entries(nlsMetadata).map(([moduleId, keys]) => {
+            const values = parsed[moduleId] ?? {}
+            return [
+              moduleId,
+              keys.map(key => values[key])
+            ]
+          }))
 
           return {
-            code: dataToEsm(filtered, {
+            code: dataToEsm(encoded, {
               preferConst: true
             }),
             map: { mappings: '' }

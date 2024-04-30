@@ -158,6 +158,8 @@ function isCallPure (file: string, functionName: string, node: recast.types.name
   return PURE_OR_TO_REMOVE_FUNCTIONS.has(functionName)
 }
 
+const moduleNlsKeys: Record<string, string[]> = {}
+
 function transformVSCodeCode (id: string, code: string) {
   // HACK: assign typescript decorator result to a decorated class field so rollup doesn't remove them
   // before:
@@ -206,7 +208,43 @@ function transformVSCodeCode (id: string, code: string) {
       const node = path.node
       const name = node.callee.type === 'MemberExpression' || node.callee.type === 'Identifier' ? getMemberExpressionPath(node.callee) : null
 
-      if (node.callee.type === 'MemberExpression') {
+      if (name != null && (name.endsWith('localizeWithPath') || name.endsWith('localize2WithPath'))) {
+        const translationPath = nodePath.relative(id.startsWith(OVERRIDE_PATH) ? OVERRIDE_PATH : VSCODE_SRC_DIR, id).slice(0, -3)
+        let localizationKey: string
+        if (path.node.arguments[1]?.type === 'StringLiteral') {
+          localizationKey = path.node.arguments[1].value
+        } else if (path.node.arguments[1]?.type === 'ObjectExpression') {
+          const properties = path.node.arguments[1].properties
+          const keyProperty = properties.find<recast.types.namedTypes.ObjectProperty>((prop): prop is recast.types.namedTypes.ObjectProperty => prop.type === 'ObjectProperty' && prop.key.type === 'Identifier' && prop.key.name === 'key')
+          if (keyProperty == null) {
+            throw new Error('No key property')
+          }
+          if (keyProperty.value.type !== 'StringLiteral') {
+            throw new Error('Key property is not literal')
+          }
+          localizationKey = keyProperty.value.value
+        } else if (path.node.arguments[1]?.type === 'TemplateLiteral' && path.node.arguments[1].expressions.length === 0 && path.node.arguments[1].quasis.length === 1) {
+          localizationKey = path.node.arguments[1].quasis[0]!.value.raw
+        } else {
+          throw new Error('Unable to extract translation key')
+        }
+        let nlsKeys = moduleNlsKeys[translationPath]
+        if (nlsKeys == null) {
+          nlsKeys = []
+          moduleNlsKeys[translationPath] = nlsKeys
+        }
+
+        let index = nlsKeys.indexOf(localizationKey)
+        if (index < 0) {
+          index = nlsKeys.length
+          nlsKeys.push(localizationKey)
+        }
+        path.replace(recast.types.builders.callExpression(
+          path.node.callee,
+          [path.node.arguments[0]!, recast.types.builders.numericLiteral(index), ...path.node.arguments.slice(2)]
+        ))
+        transformed = true
+      } else if (node.callee.type === 'MemberExpression') {
         if (node.callee.property.type === 'Identifier') {
           const names: string[] = [node.callee.property.name]
           if (name != null) {
@@ -422,10 +460,10 @@ export default (args: Record<string, string>): rollup.RollupOptions[] => {
           return undefined
         },
         async load (id) {
-          if (!id.startsWith(VSCODE_SRC_DIR)) {
+          if (!id.startsWith(VSCODE_SRC_DIR) && !id.startsWith(OVERRIDE_PATH)) {
             return undefined
           }
-          if (!id.endsWith('.js')) {
+          if (!id.endsWith('.js') && !id.endsWith('.ts')) {
             return undefined
           }
 
@@ -434,6 +472,9 @@ export default (args: Record<string, string>): rollup.RollupOptions[] => {
         },
         transform (code) {
           return code.replaceAll("'./keyboardLayouts/layout.contribution.' + platform", "'./keyboardLayouts/layout.contribution.' + platform + '.js'")
+        },
+        async writeBundle () {
+          await fs.promises.writeFile(nodePath.resolve(DIST_DIR, 'nls.metadata.json'), JSON.stringify(moduleNlsKeys, null, 2))
         }
       },
       {
