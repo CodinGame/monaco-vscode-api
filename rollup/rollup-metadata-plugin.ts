@@ -1,6 +1,5 @@
-import type { OutputBundle, OutputChunk, OutputOptions, Plugin, PluginContext } from 'rollup'
+import type { OutputBundle, OutputOptions, Plugin, PluginContext } from 'rollup'
 import { builtinModules } from 'module'
-import path from 'path'
 
 interface Group {
   name: string
@@ -22,7 +21,7 @@ interface GroupResult {
 interface Options {
   stage?: 'generateBundle' | 'writeBundle'
   getGroup?: (entryPoint: string, options: OutputOptions) => { name: string, publicName?: string, priority?: number }
-  handle (this: PluginContext, group: GroupResult, moduleGroupName: Map<string, string | undefined>, options: OutputOptions, bundle: OutputBundle): void | Promise<void>
+  handle (this: PluginContext, group: GroupResult, moduleGroupName: Map<string, string | undefined>, otherDependencies: Set<string>, options: OutputOptions, bundle: OutputBundle): void | Promise<void>
 }
 
 export default ({ handle, getGroup = () => ({ name: 'main' }), stage = 'generateBundle' }: Options): Plugin => ({
@@ -30,13 +29,6 @@ export default ({ handle, getGroup = () => ({ name: 'main' }), stage = 'generate
   [stage]: async function (this: PluginContext, options: OutputOptions, bundle: OutputBundle) {
     const dependencyCache = new Map<string, Set<string>>()
     const externalDependencyCache = new Map<string, Set<string>>()
-
-    const inputToOutput = Object.fromEntries(Object.values(bundle)
-      .filter((chunk): chunk is OutputChunk => 'code' in chunk)
-      .map(chunk => [
-        chunk.facadeModuleId,
-        path.resolve(options.dir!, chunk.preliminaryFileName)
-      ]))
 
     const moduleExternalDependencies = new Map<string, Set<string>>()
     const getModuleDependencies = (id: string, paths: string[]): { internal: Set<string>, external: Set<string> } => {
@@ -61,7 +53,7 @@ export default ({ handle, getGroup = () => ({ name: 'main' }), stage = 'generate
         const dependencies = [...moduleInfo.importedIds, ...moduleInfo.dynamicallyImportedIds].map(depId => {
           return getModuleDependencies(depId, [...paths, id])
         })
-        dependencyCache.set(id, new Set([inputToOutput[id] ?? id, ...dependencies.flatMap(d => Array.from(d.internal))]))
+        dependencyCache.set(id, new Set([id, ...dependencies.flatMap(d => Array.from(d.internal))]))
         externalDependencyCache.set(id, new Set(dependencies.flatMap(d => Array.from(d.external))))
       }
 
@@ -137,8 +129,15 @@ export default ({ handle, getGroup = () => ({ name: 'main' }), stage = 'generate
       }
     })
 
+    const otherDependencies = new Set(Array.from(moduleExternalDependencies.values()).map(set => Array.from(set)).flat())
+    for (const group of groupResults) {
+      for (const directDependency of group.directDependencies) {
+        otherDependencies.delete(directDependency)
+      }
+    }
+
     await Promise.all(groupResults.map(async (group) => {
-      await handle.call(this, group, moduleGroupName, options, bundle)
+      await handle.call(this, group, moduleGroupName, otherDependencies, options, bundle)
     }))
   }
 })

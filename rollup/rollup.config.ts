@@ -713,9 +713,10 @@ export default (args: Record<string, string>): rollup.RollupOptions[] => {
           priority: 1
         }
       },
-      async handle (group, moduleGroupName, options, bundle) {
+      async handle (group, moduleGroupName, otherDependencies, options, bundle) {
         if (group.name === 'main') {
           // Generate package.json
+          const dependencies = new Set([...group.directDependencies, ...otherDependencies])
           const packageJson: PackageJson = {
             ...Object.fromEntries(Object.entries(pkg).filter(([key]) => ['name', 'description', 'version', 'keywords', 'author', 'license', 'repository', 'type'].includes(key))),
             private: false,
@@ -802,8 +803,8 @@ export default (args: Record<string, string>): rollup.RollupOptions[] => {
               }
             },
             dependencies: {
-              ...Object.fromEntries(Object.entries(pkg.dependencies).filter(([key]) => group.directDependencies.has(key))),
-              ...Object.fromEntries(Array.from(group.directDependencies).filter(dep => dep.startsWith('@codingame/monaco-vscode-')).map(dep => [dep, pkg.version]))
+              ...Object.fromEntries(Object.entries(pkg.dependencies).filter(([key]) => dependencies.has(key))),
+              ...Object.fromEntries(Array.from(dependencies).filter(dep => dep.startsWith('@codingame/monaco-vscode-')).map(dep => [dep, pkg.version]))
             }
           }
           this.emitFile({
