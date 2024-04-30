@@ -227,10 +227,6 @@ function transformVSCodeCode (id: string, code: string) {
         }
       }
       this.traverse(path)
-      return undefined
-    },
-    visitThrowStatement () {
-      return false
     },
     visitClassDeclaration (path) {
       /**
