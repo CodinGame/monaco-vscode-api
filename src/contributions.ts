@@ -1,6 +1,7 @@
 import 'vs/workbench/api/common/jsonValidationExtensionPoint'
 import 'vs/workbench/services/themes/common/colorExtensionPoint'
 import 'vs/workbench/services/themes/common/iconExtensionPoint'
+import 'vs/platform/actions/common/actions.contribution'
 // Selectively comes from vs/workbench/contrib/codeEditor/browser/codeEditor.contribution.ts
 import 'vs/workbench/contrib/codeEditor/browser/workbenchReferenceSearch'
 import 'vs/workbench/contrib/codeEditor/browser/menuPreventer'
