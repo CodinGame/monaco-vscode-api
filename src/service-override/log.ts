@@ -14,6 +14,7 @@ import { IDefaultLogLevelsService } from 'vs/workbench/contrib/logs/common/defau
 import getEnvironmentServiceOverride from './environment'
 import { logsPath } from '../workbench'
 import { checkServicesNotInitialized } from '../lifecycle'
+import { rendererLogLabel } from '../override/vs/workbench/browser/web.main'
 import 'vs/workbench/contrib/logs/common/logs.contribution'
 
 class _FileLoggerService extends FileLoggerService {
@@ -25,7 +26,7 @@ class _FileLoggerService extends FileLoggerService {
 const otherLoggers: ILogger[] = []
 class _LogService extends LogService {
   constructor (@ILoggerService loggerService: ILoggerService, @IWorkbenchEnvironmentService environmentService: IWorkbenchEnvironmentService) {
-    const logger = loggerService.createLogger(environmentService.logFile, { id: windowLogId, name: 'Window' })
+    const logger = loggerService.createLogger(environmentService.logFile, { id: windowLogId, name: rendererLogLabel })
     super(logger, otherLoggers)
   }
 }
