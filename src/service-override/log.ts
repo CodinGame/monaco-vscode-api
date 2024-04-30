@@ -6,7 +6,6 @@ import { ILogService, ILoggerService } from 'vs/platform/log/common/log.service'
 import { FileLoggerService } from 'vs/platform/log/common/fileLog'
 import { LogService } from 'vs/platform/log/common/logService'
 import { IEnvironmentService } from 'vs/platform/environment/common/environment.service'
-import { localizeWithPath } from 'vs/nls'
 import { windowLogId } from 'vs/workbench/services/log/common/logConstants'
 import { IWorkbenchEnvironmentService } from 'vs/workbench/services/environment/common/environmentService.service'
 import { IDisposable, toDisposable } from 'vs/base/common/lifecycle'
@@ -26,7 +25,7 @@ class _FileLoggerService extends FileLoggerService {
 const otherLoggers: ILogger[] = []
 class _LogService extends LogService {
   constructor (@ILoggerService loggerService: ILoggerService, @IWorkbenchEnvironmentService environmentService: IWorkbenchEnvironmentService) {
-    const logger = loggerService.createLogger(environmentService.logFile, { id: windowLogId, name: localizeWithPath('vs/workbench/browser/web.main', 'rendererLog', 'Window') })
+    const logger = loggerService.createLogger(environmentService.logFile, { id: windowLogId, name: 'Window' })
     super(logger, otherLoggers)
   }
 }
