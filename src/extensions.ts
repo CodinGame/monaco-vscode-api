@@ -14,12 +14,14 @@ import { IFileService } from 'vs/platform/files/common/files.service'
 import { IInstantiationService } from 'vs/platform/instantiation/common/instantiation'
 import { IWorkbenchExtensionEnablementService } from 'vs/workbench/services/extensionManagement/common/extensionManagement.service'
 import { StandaloneServices } from 'vs/editor/standalone/browser/standaloneServices'
+import { ExtensionManifestTranslator, NlsConfiguration } from 'vs/platform/extensionManagement/common/extensionsScannerService'
+import * as platform from 'vs/base/common/platform'
 import { IExtensionWithExtHostKind, ExtensionServiceOverride } from './service-override/extensions'
 import { CustomSchemas, registerExtensionFile } from './service-override/files'
 import { waitServicesReady } from './lifecycle'
-import { ExtensionManifestTranslator } from './tools/l10n'
 import { throttle, memoized } from './tools'
 import { setDefaultApi } from './extension.api'
+import { getBuiltInExtensionTranslationsUris } from './l10n'
 
 export type ApiFactory = (extensionId?: string) => Promise<typeof vscode>
 
@@ -126,7 +128,13 @@ export function registerExtension (manifest: IExtensionManifest, extHostKind?: E
     const instantiationService = StandaloneServices.get(IInstantiationService)
     const translator = instantiationService.createInstance(ExtensionManifestTranslator)
 
-    const localizedManifest = await translator.translateManifest(realLocation, manifest)
+    const nlsConfiguration: NlsConfiguration = {
+      devMode: false,
+      language: platform.language,
+      pseudo: platform.language === 'pseudo',
+      translations: getBuiltInExtensionTranslationsUris(platform.language) ?? {}
+    }
+    const localizedManifest = await translator.translateManifest(realLocation, manifest, nlsConfiguration)
 
     const extension: IExtensionWithExtHostKind = {
       manifest: localizedManifest,
