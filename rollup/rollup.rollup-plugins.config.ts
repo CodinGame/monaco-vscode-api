@@ -56,7 +56,7 @@ const config: rollup.RollupOptions[] = [{
       preferConst: false
     }),
     metadataPlugin({
-      handle (_, dependencies) {
+      handle ({ directDependencies }) {
         const packageJson: PackageJson = {
           name: `@codingame/monaco-vscode-${path.basename(output)}`,
           ...Object.fromEntries(Object.entries(pkg).filter(([key]) => ['version', 'keywords', 'author', 'license', 'repository', 'type'].includes(key))),
@@ -67,7 +67,7 @@ const config: rollup.RollupOptions[] = [{
           types: `${path.basename(output)}.d.ts`,
           dependencies: {
             vscode: `npm:${pkg.name}@^${pkg.version}`,
-            ...Object.fromEntries(Object.entries(pkg.dependencies).filter(([key]) => dependencies.has(key)))
+            ...Object.fromEntries(Object.entries(pkg.dependencies).filter(([key]) => directDependencies.has(key)))
           }
         }
         this.emitFile({

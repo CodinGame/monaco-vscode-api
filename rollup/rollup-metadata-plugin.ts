@@ -21,7 +21,7 @@ interface GroupResult {
 interface Options {
   stage?: 'generateBundle' | 'writeBundle'
   getGroup?: (entryPoint: string, options: OutputOptions) => { name: string, publicName?: string, priority?: number }
-  handle (this: PluginContext, group: GroupResult, moduleGroupName: Map<string, string | undefined>, options: OutputOptions, bundle: OutputBundle): void | Promise<void>
+  handle (this: PluginContext, group: GroupResult, moduleGroupName: Map<string, string | undefined>, otherDependencies: Set<string>, options: OutputOptions, bundle: OutputBundle): void | Promise<void>
 }
 
 export default ({ handle, getGroup = () => ({ name: 'main' }), stage = 'generateBundle' }: Options): Plugin => ({
@@ -129,8 +129,15 @@ export default ({ handle, getGroup = () => ({ name: 'main' }), stage = 'generate
       }
     })
 
+    const otherDependencies = new Set(Array.from(moduleExternalDependencies.values()).map(set => Array.from(set)).flat())
+    for (const group of groupResults) {
+      for (const directDependency of group.directDependencies) {
+        otherDependencies.delete(directDependency)
+      }
+    }
+
     await Promise.all(groupResults.map(async (group) => {
-      await handle.call(this, group, moduleGroupName, options, bundle)
+      await handle.call(this, group, moduleGroupName, otherDependencies, options, bundle)
     }))
   }
 })
