@@ -1,6 +1,5 @@
-import type { OutputBundle, OutputChunk, OutputOptions, Plugin, PluginContext } from 'rollup'
+import type { OutputBundle, OutputOptions, Plugin, PluginContext } from 'rollup'
 import { builtinModules } from 'module'
-import path from 'path'
 
 interface Group {
   name: string
@@ -31,13 +30,6 @@ export default ({ handle, getGroup = () => ({ name: 'main' }), stage = 'generate
     const dependencyCache = new Map<string, Set<string>>()
     const externalDependencyCache = new Map<string, Set<string>>()
 
-    const inputToOutput = Object.fromEntries(Object.values(bundle)
-      .filter((chunk): chunk is OutputChunk => 'code' in chunk)
-      .map(chunk => [
-        chunk.facadeModuleId,
-        path.resolve(options.dir!, chunk.preliminaryFileName)
-      ]))
-
     const moduleExternalDependencies = new Map<string, Set<string>>()
     const getModuleDependencies = (id: string, paths: string[]): { internal: Set<string>, external: Set<string> } => {
       if (paths.includes(id)) {
@@ -61,7 +53,7 @@ export default ({ handle, getGroup = () => ({ name: 'main' }), stage = 'generate
         const dependencies = [...moduleInfo.importedIds, ...moduleInfo.dynamicallyImportedIds].map(depId => {
           return getModuleDependencies(depId, [...paths, id])
         })
-        dependencyCache.set(id, new Set([inputToOutput[id] ?? id, ...dependencies.flatMap(d => Array.from(d.internal))]))
+        dependencyCache.set(id, new Set([id, ...dependencies.flatMap(d => Array.from(d.internal))]))
         externalDependencyCache.set(id, new Set(dependencies.flatMap(d => Array.from(d.external))))
       }
 
