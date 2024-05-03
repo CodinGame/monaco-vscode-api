@@ -14,14 +14,13 @@ import glob from 'fast-glob'
 import { paramCase } from 'param-case'
 import { PackageJson } from 'type-fest'
 import copy from 'rollup-plugin-copy'
-import * as fs from 'fs'
-import * as fsPromise from 'fs/promises'
-import * as path from 'path'
-import { fileURLToPath } from 'url'
+import * as fs from 'node:fs'
+import * as nodePath from 'node:path'
+import { fileURLToPath } from 'node:url'
 import metadataPlugin from './rollup-metadata-plugin'
 import pkg from '../package.json' assert { type: 'json' }
 
-const __dirname = path.dirname(fileURLToPath(import.meta.url))
+const __dirname = nodePath.dirname(fileURLToPath(import.meta.url))
 
 const PURE_ANNO = '#__PURE__'
 const PURE_FUNCTIONS = new Set([
@@ -99,16 +98,16 @@ const EDITOR_API_EXPOSE_MODULES = [
 
 const EXTENSIONS = ['', '.ts', '.js']
 
-const BASE_DIR = path.resolve(__dirname, '..')
-const TSCONFIG = path.resolve(BASE_DIR, 'tsconfig.rollup.json')
-const SRC_DIR = path.resolve(BASE_DIR, 'src')
-const DIST_DIR = path.resolve(BASE_DIR, 'dist')
-const DIST_DIR_MAIN = path.resolve(DIST_DIR, 'main')
-const DIST_SERVICE_OVERRIDE_DIR_MAIN = path.resolve(DIST_DIR_MAIN, 'service-override')
-const VSCODE_SRC_DIST_DIR = path.resolve(DIST_DIR_MAIN, 'vscode', 'src')
-const VSCODE_DIR = path.resolve(BASE_DIR, 'vscode')
-const VSCODE_SRC_DIR = path.resolve(VSCODE_DIR, 'src')
-const OVERRIDE_PATH = path.resolve(BASE_DIR, 'src/override')
+const BASE_DIR = nodePath.resolve(__dirname, '..')
+const TSCONFIG = nodePath.resolve(BASE_DIR, 'tsconfig.rollup.json')
+const SRC_DIR = nodePath.resolve(BASE_DIR, 'src')
+const DIST_DIR = nodePath.resolve(BASE_DIR, 'dist')
+const DIST_DIR_MAIN = nodePath.resolve(DIST_DIR, 'main')
+const DIST_SERVICE_OVERRIDE_DIR_MAIN = nodePath.resolve(DIST_DIR_MAIN, 'service-override')
+const VSCODE_SRC_DIST_DIR = nodePath.resolve(DIST_DIR_MAIN, 'vscode', 'src')
+const VSCODE_DIR = nodePath.resolve(BASE_DIR, 'vscode')
+const VSCODE_SRC_DIR = nodePath.resolve(VSCODE_DIR, 'src')
+const OVERRIDE_PATH = nodePath.resolve(BASE_DIR, 'src/override')
 
 function getMemberExpressionPath (node: recast.types.namedTypes.MemberExpression | recast.types.namedTypes.Identifier): string | null {
   if (node.type === 'MemberExpression') {
@@ -159,6 +158,8 @@ function isCallPure (file: string, functionName: string, node: recast.types.name
   return PURE_OR_TO_REMOVE_FUNCTIONS.has(functionName)
 }
 
+const moduleNlsKeys: Record<string, string[]> = {}
+
 function transformVSCodeCode (id: string, code: string) {
   // HACK: assign typescript decorator result to a decorated class field so rollup doesn't remove them
   // before:
@@ -207,7 +208,43 @@ function transformVSCodeCode (id: string, code: string) {
       const node = path.node
       const name = node.callee.type === 'MemberExpression' || node.callee.type === 'Identifier' ? getMemberExpressionPath(node.callee) : null
 
-      if (node.callee.type === 'MemberExpression') {
+      if (name != null && (name.endsWith('localizeWithPath') || name.endsWith('localize2WithPath'))) {
+        const translationPath = nodePath.relative(id.startsWith(OVERRIDE_PATH) ? OVERRIDE_PATH : VSCODE_SRC_DIR, id).slice(0, -3)
+        let localizationKey: string
+        if (path.node.arguments[1]?.type === 'StringLiteral') {
+          localizationKey = path.node.arguments[1].value
+        } else if (path.node.arguments[1]?.type === 'ObjectExpression') {
+          const properties = path.node.arguments[1].properties
+          const keyProperty = properties.find<recast.types.namedTypes.ObjectProperty>((prop): prop is recast.types.namedTypes.ObjectProperty => prop.type === 'ObjectProperty' && prop.key.type === 'Identifier' && prop.key.name === 'key')
+          if (keyProperty == null) {
+            throw new Error('No key property')
+          }
+          if (keyProperty.value.type !== 'StringLiteral') {
+            throw new Error('Key property is not literal')
+          }
+          localizationKey = keyProperty.value.value
+        } else if (path.node.arguments[1]?.type === 'TemplateLiteral' && path.node.arguments[1].expressions.length === 0 && path.node.arguments[1].quasis.length === 1) {
+          localizationKey = path.node.arguments[1].quasis[0]!.value.raw
+        } else {
+          throw new Error('Unable to extract translation key')
+        }
+        let nlsKeys = moduleNlsKeys[translationPath]
+        if (nlsKeys == null) {
+          nlsKeys = []
+          moduleNlsKeys[translationPath] = nlsKeys
+        }
+
+        let index = nlsKeys.indexOf(localizationKey)
+        if (index < 0) {
+          index = nlsKeys.length
+          nlsKeys.push(localizationKey)
+        }
+        path.replace(recast.types.builders.callExpression(
+          path.node.callee,
+          [path.node.arguments[0]!, recast.types.builders.numericLiteral(index), ...path.node.arguments.slice(2)]
+        ))
+        transformed = true
+      } else if (node.callee.type === 'MemberExpression') {
         if (node.callee.property.type === 'Identifier') {
           const names: string[] = [node.callee.property.name]
           if (name != null) {
@@ -228,10 +265,6 @@ function transformVSCodeCode (id: string, code: string) {
         }
       }
       this.traverse(path)
-      return undefined
-    },
-    visitThrowStatement () {
-      return false
     },
     visitClassDeclaration (path) {
       /**
@@ -298,7 +331,7 @@ function transformVSCodeCode (id: string, code: string) {
 
 function resolveVscode (importee: string, importer?: string) {
   if (importer != null && importee.startsWith('.')) {
-    importee = path.resolve(path.dirname(importer), importee)
+    importee = nodePath.resolve(nodePath.dirname(importer), importee)
   }
 
   // import weak so that AbstractTextEditor is not imported just to do an instanceof on it
@@ -307,11 +340,11 @@ function resolveVscode (importee: string, importer?: string) {
   }
 
   if (importee.startsWith('vscode/')) {
-    return resolve(path.relative('vscode', importee), [VSCODE_DIR])
+    return resolve(nodePath.relative('vscode', importee), [VSCODE_DIR])
   }
   let vscodeImportPath = importee
   if (importee.startsWith(VSCODE_SRC_DIR)) {
-    vscodeImportPath = path.relative(VSCODE_SRC_DIR, importee)
+    vscodeImportPath = nodePath.relative(VSCODE_SRC_DIR, importee)
   }
   const overridePath = resolve(vscodeImportPath, [OVERRIDE_PATH])
   if (overridePath != null) {
@@ -333,20 +366,20 @@ const input = {
   l10n: './src/l10n.ts',
   monaco: './src/monaco.ts',
   ...Object.fromEntries(
-    fs.readdirSync(path.resolve(SRC_DIR, 'service-override'), { withFileTypes: true })
+    fs.readdirSync(nodePath.resolve(SRC_DIR, 'service-override'), { withFileTypes: true })
       .filter(f => f.isFile())
       .map(f => f.name)
       .map(name => [
-        `service-override/${path.basename(name, '.ts')}`,
+        `service-override/${nodePath.basename(name, '.ts')}`,
         `./src/service-override/${name}`
       ])
   ),
   ...Object.fromEntries(
-    fs.readdirSync(path.resolve(SRC_DIR, 'workers'), { withFileTypes: true })
+    fs.readdirSync(nodePath.resolve(SRC_DIR, 'workers'), { withFileTypes: true })
       .filter(f => f.isFile())
       .map(f => f.name)
       .map(name => [
-        `workers/${path.basename(name, '.ts')}`,
+        `workers/${nodePath.basename(name, '.ts')}`,
         `./src/workers/${name}`
       ])
   )
@@ -427,18 +460,21 @@ export default (args: Record<string, string>): rollup.RollupOptions[] => {
           return undefined
         },
         async load (id) {
-          if (!id.startsWith(VSCODE_SRC_DIR)) {
+          if (!id.startsWith(VSCODE_SRC_DIR) && !id.startsWith(OVERRIDE_PATH)) {
             return undefined
           }
-          if (!id.endsWith('.js')) {
+          if (!id.endsWith('.js') && !id.endsWith('.ts')) {
             return undefined
           }
 
-          const content = (await fsPromise.readFile(id)).toString('utf-8')
+          const content = (await fs.promises.readFile(id)).toString('utf-8')
           return transformVSCodeCode(id, content)
         },
         transform (code) {
           return code.replaceAll("'./keyboardLayouts/layout.contribution.' + platform", "'./keyboardLayouts/layout.contribution.' + platform + '.js'")
+        },
+        async writeBundle () {
+          await fs.promises.writeFile(nodePath.resolve(DIST_DIR, 'nls.metadata.json'), JSON.stringify(moduleNlsKeys, null, 2))
         }
       },
       {
@@ -522,7 +558,7 @@ export default (args: Record<string, string>): rollup.RollupOptions[] => {
               return null
             }
 
-            const fakePath = path.resolve(VSCODE_SRC_DIR, importee.replace(/\*/, 'all'))
+            const fakePath = nodePath.resolve(VSCODE_SRC_DIR, importee.replace(/\*/, 'all'))
             realPaths.set(fakePath, importee)
             return fakePath
           },
@@ -534,11 +570,11 @@ export default (args: Record<string, string>): rollup.RollupOptions[] => {
             const files = await glob(realPath, { cwd: VSCODE_SRC_DIR })
 
             const fileRefs = await Promise.all(files.map(async file => {
-              const filePath = path.resolve(VSCODE_SRC_DIR, file)
+              const filePath = nodePath.resolve(VSCODE_SRC_DIR, file)
               const ref = this.emitFile({
                 type: 'asset',
-                name: path.basename(file),
-                source: await fsPromise.readFile(filePath)
+                name: nodePath.basename(file),
+                source: await fs.promises.readFile(filePath)
               })
               return { file, ref }
             }))
@@ -657,10 +693,10 @@ export default (args: Record<string, string>): rollup.RollupOptions[] => {
     {
       name: 'externalize-service-overrides',
       resolveId (source, importer) {
-        const importerDir = path.dirname(path.resolve(DIST_DIR_MAIN, importer ?? '/'))
-        const resolved = path.resolve(importerDir, source)
-        if (path.dirname(resolved) === DIST_SERVICE_OVERRIDE_DIR_MAIN && importer != null) {
-          const serviceOverride = path.basename(resolved, '.js')
+        const importerDir = nodePath.dirname(nodePath.resolve(DIST_DIR_MAIN, importer ?? '/'))
+        const resolved = nodePath.resolve(importerDir, source)
+        if (nodePath.dirname(resolved) === DIST_SERVICE_OVERRIDE_DIR_MAIN && importer != null) {
+          const serviceOverride = nodePath.basename(resolved, '.js')
           return {
             external: true,
             id: `@codingame/monaco-vscode-${paramCase(serviceOverride)}-service-override`
@@ -684,24 +720,24 @@ export default (args: Record<string, string>): rollup.RollupOptions[] => {
     metadataPlugin({
       // generate package.json and service-override packages
       getGroup (id: string, options) {
-        const serviceOverrideDir = path.resolve(options.dir!, 'service-override')
-        const workersDir = path.resolve(options.dir!, 'workers')
+        const serviceOverrideDir = nodePath.resolve(options.dir!, 'service-override')
+        const workersDir = nodePath.resolve(options.dir!, 'workers')
 
         if (id.startsWith(serviceOverrideDir)) {
-          const name = paramCase(path.basename(id, '.js'))
+          const name = paramCase(nodePath.basename(id, '.js'))
           return {
             name: `service-override:${name}`,
             publicName: `@codingame/monaco-vscode-${name}-service-override`
           }
         }
         if (id.startsWith(workersDir)) {
-          const name = workerGroups[path.basename(id, '.worker.js')]
+          const name = workerGroups[nodePath.basename(id, '.worker.js')]
           return {
             name: name != null ? `service-override:${name}` : 'main',
             publicName: name != null ? `@codingame/monaco-vscode-${name}-service-override` : 'vscode'
           }
         }
-        if (id === path.resolve(options.dir!, 'editor.api.js')) {
+        if (id === nodePath.resolve(options.dir!, 'editor.api.js')) {
           return {
             name: 'editor.api',
             publicName: '@codngame/monaco-vscode-editor-api'
@@ -814,9 +850,9 @@ export default (args: Record<string, string>): rollup.RollupOptions[] => {
             type: 'asset'
           })
         } else if (group.name === 'editor.api') {
-          const directory = path.resolve(DIST_DIR, 'editor-api')
+          const directory = nodePath.resolve(DIST_DIR, 'editor-api')
 
-          await fsPromise.mkdir(directory, {
+          await fs.promises.mkdir(directory, {
             recursive: true
           })
 
@@ -879,15 +915,15 @@ export default (args: Record<string, string>): rollup.RollupOptions[] => {
                       id: source
                     }
                   }
-                  const importerDir = path.dirname(path.resolve(DIST_DIR_MAIN, importer ?? '/'))
-                  const resolved = path.resolve(importerDir, source)
+                  const importerDir = nodePath.dirname(nodePath.resolve(DIST_DIR_MAIN, importer ?? '/'))
+                  const resolved = nodePath.resolve(importerDir, source)
                   const resolvedWithExtension = resolved.endsWith('.js') ? resolved : `${resolved}.js`
 
                   const isVscodeFile = resolved.startsWith(VSCODE_SRC_DIST_DIR)
-                  const isServiceOverride = path.dirname(resolved) === DIST_SERVICE_OVERRIDE_DIR_MAIN
+                  const isServiceOverride = nodePath.dirname(resolved) === DIST_SERVICE_OVERRIDE_DIR_MAIN
                   const isExclusive = group.exclusiveModules.has(resolvedWithExtension)
-                  const pathFromRoot = path.relative(DIST_DIR_MAIN, resolvedWithExtension)
-                  const shouldBeShared = SHARED_ROOT_FILES_BETWEEN_PACKAGES.includes(path.relative(DIST_DIR_MAIN, resolvedWithExtension))
+                  const pathFromRoot = nodePath.relative(DIST_DIR_MAIN, resolvedWithExtension)
+                  const shouldBeShared = SHARED_ROOT_FILES_BETWEEN_PACKAGES.includes(nodePath.relative(DIST_DIR_MAIN, resolvedWithExtension))
                   if (pathFromRoot.startsWith('external/') && !isExclusive) {
                     return {
                       external: true,
@@ -905,7 +941,7 @@ export default (args: Record<string, string>): rollup.RollupOptions[] => {
                     const importFromGroup = isVscodeFile ? moduleGroupName.get(resolved) ?? 'main' : 'main'
                     const importFromModule = getPackageFromGroupName(importFromGroup)
                     // Those modules will be imported from external monaco-vscode-api
-                    let externalResolved = resolved.startsWith(VSCODE_SRC_DIST_DIR) ? `${importFromModule}/vscode/${path.relative(VSCODE_SRC_DIST_DIR, resolved)}` : `${importFromModule}/${path.relative(DIST_DIR_MAIN, resolved)}`
+                    let externalResolved = resolved.startsWith(VSCODE_SRC_DIST_DIR) ? `${importFromModule}/vscode/${nodePath.relative(VSCODE_SRC_DIST_DIR, resolved)}` : `${importFromModule}/${nodePath.relative(DIST_DIR_MAIN, resolved)}`
                     if (externalResolved.endsWith('.js')) {
                       externalResolved = externalResolved.slice(0, -3)
                     }
@@ -922,9 +958,9 @@ export default (args: Record<string, string>): rollup.RollupOptions[] => {
                     return `export * from '${Array.from(group.entrypoints)[0]!.slice(0, -3)}'`
                   }
                   if (id.startsWith('vscode/')) {
-                    return (bundle[path.relative('vscode', id)] as rollup.OutputChunk | undefined)?.code
+                    return (bundle[nodePath.relative('vscode', id)] as rollup.OutputChunk | undefined)?.code
                   }
-                  return (bundle[path.relative(DIST_DIR_MAIN, id)] as rollup.OutputChunk | undefined)?.code
+                  return (bundle[nodePath.relative(DIST_DIR_MAIN, id)] as rollup.OutputChunk | undefined)?.code
                 },
                 resolveFileUrl (options) {
                   let relativePath = options.relativePath
@@ -974,14 +1010,14 @@ export default (args: Record<string, string>): rollup.RollupOptions[] => {
           await groupBundle.close()
           // remove exclusive files from main bundle to prevent them from being duplicated
           for (const exclusiveModule of group.exclusiveModules) {
-            delete bundle[path.relative(DIST_DIR_MAIN, exclusiveModule)]
+            delete bundle[nodePath.relative(DIST_DIR_MAIN, exclusiveModule)]
           }
         } else {
           const [_, category, name] = /^(.*):(.*)$/.exec(group.name)!
 
-          const directory = path.resolve(DIST_DIR, `${category}-${name}`)
+          const directory = nodePath.resolve(DIST_DIR, `${category}-${name}`)
 
-          await fsPromise.mkdir(directory, {
+          await fs.promises.mkdir(directory, {
             recursive: true
           })
           const serviceOverrideEntryPoint = Array.from(group.entrypoints).find(e => e.includes('/service-override/'))!
@@ -1050,15 +1086,15 @@ export default (args: Record<string, string>): rollup.RollupOptions[] => {
                       id: source
                     }
                   }
-                  const importerDir = path.dirname(path.resolve(DIST_DIR_MAIN, importer ?? '/'))
-                  const resolved = path.resolve(importerDir, source)
+                  const importerDir = nodePath.dirname(nodePath.resolve(DIST_DIR_MAIN, importer ?? '/'))
+                  const resolved = nodePath.resolve(importerDir, source)
                   const resolvedWithExtension = resolved.endsWith('.js') ? resolved : `${resolved}.js`
 
                   const isVscodeFile = resolved.startsWith(VSCODE_SRC_DIST_DIR)
-                  const isServiceOverride = path.dirname(resolved) === DIST_SERVICE_OVERRIDE_DIR_MAIN
+                  const isServiceOverride = nodePath.dirname(resolved) === DIST_SERVICE_OVERRIDE_DIR_MAIN
                   const isExclusive = group.exclusiveModules.has(resolvedWithExtension)
-                  const pathFromRoot = path.relative(DIST_DIR_MAIN, resolvedWithExtension)
-                  const shouldBeShared = SHARED_ROOT_FILES_BETWEEN_PACKAGES.includes(path.relative(DIST_DIR_MAIN, resolvedWithExtension))
+                  const pathFromRoot = nodePath.relative(DIST_DIR_MAIN, resolvedWithExtension)
+                  const shouldBeShared = SHARED_ROOT_FILES_BETWEEN_PACKAGES.includes(nodePath.relative(DIST_DIR_MAIN, resolvedWithExtension))
                   if (pathFromRoot.startsWith('external/') && !isExclusive) {
                     return {
                       external: true,
@@ -1077,7 +1113,7 @@ export default (args: Record<string, string>): rollup.RollupOptions[] => {
                     const importFromGroup = isVscodeFile ? moduleGroupName.get(resolved) ?? 'main' : 'main'
                     const importFromModule = getPackageFromGroupName(importFromGroup)
                     // Those modules will be imported from external monaco-vscode-api
-                    let externalResolved = resolved.startsWith(VSCODE_SRC_DIST_DIR) ? `${importFromModule}/vscode/${path.relative(VSCODE_SRC_DIST_DIR, resolved)}` : `${importFromModule}/${path.relative(DIST_DIR_MAIN, resolved)}`
+                    let externalResolved = resolved.startsWith(VSCODE_SRC_DIST_DIR) ? `${importFromModule}/vscode/${nodePath.relative(VSCODE_SRC_DIST_DIR, resolved)}` : `${importFromModule}/${nodePath.relative(DIST_DIR_MAIN, resolved)}`
                     if (externalResolved.endsWith('.js')) {
                       externalResolved = externalResolved.slice(0, -3)
                     }
@@ -1107,9 +1143,9 @@ export default (args: Record<string, string>): rollup.RollupOptions[] => {
                     return `import '${workerEntryPoint}'`
                   }
                   if (id.startsWith('vscode/')) {
-                    return (bundle[path.relative('vscode', id)] as rollup.OutputChunk | undefined)?.code
+                    return (bundle[nodePath.relative('vscode', id)] as rollup.OutputChunk | undefined)?.code
                   }
-                  return (bundle[path.relative(DIST_DIR_MAIN, id)] as rollup.OutputChunk | undefined)?.code
+                  return (bundle[nodePath.relative(DIST_DIR_MAIN, id)] as rollup.OutputChunk | undefined)?.code
                 },
                 resolveFileUrl (options) {
                   let relativePath = options.relativePath
@@ -1130,7 +1166,7 @@ export default (args: Record<string, string>): rollup.RollupOptions[] => {
           })
           const output = await groupBundle.write({
             preserveModules: true,
-            preserveModulesRoot: path.resolve(DIST_DIR, 'main/service-override'),
+            preserveModulesRoot: nodePath.resolve(DIST_DIR, 'main/service-override'),
             minifyInternalExports: false,
             assetFileNames: 'assets/[name][extname]',
             format: 'esm',
@@ -1143,7 +1179,7 @@ export default (args: Record<string, string>): rollup.RollupOptions[] => {
 
           // remove exclusive files from main bundle to prevent them from being duplicated
           for (const exclusiveModule of group.exclusiveModules) {
-            delete bundle[path.relative(DIST_DIR_MAIN, exclusiveModule)]
+            delete bundle[nodePath.relative(DIST_DIR_MAIN, exclusiveModule)]
           }
 
           const assets = output.output
@@ -1158,7 +1194,7 @@ export default (args: Record<string, string>): rollup.RollupOptions[] => {
       name: 'clean-src',
       async generateBundle () {
         // Delete intermediate sources before writing to make sure there is no unused files
-        await fsPromise.rm(DIST_DIR_MAIN, {
+        await fs.promises.rm(DIST_DIR_MAIN, {
           recursive: true
         })
       }
@@ -1176,7 +1212,7 @@ export default (args: Record<string, string>): rollup.RollupOptions[] => {
 function resolve (_path: string, fromPaths: string[]) {
   for (const fromPath of fromPaths) {
     for (const extension of EXTENSIONS) {
-      const outputPath = path.resolve(fromPath, `${_path}${extension}`)
+      const outputPath = nodePath.resolve(fromPath, `${_path}${extension}`)
       if (fs.existsSync(outputPath) && fs.lstatSync(outputPath).isFile()) {
         return outputPath
       }
