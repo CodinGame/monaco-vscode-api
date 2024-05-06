@@ -571,6 +571,9 @@ export class MonacoDelegateEditorGroupsService<D extends IEditorGroupsService> e
               remoteActiveGroup(editor)
             }, 100)
           }
+          editor.onDidDispose(() => {
+            remoteActiveGroup(editor)
+          })
           editor.onDidFocusEditorText(onEditorFocused)
           editor.onDidFocusEditorWidget(onEditorFocused)
           editor.onDidBlurEditorText(onEditorBlurred)
