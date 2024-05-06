@@ -36,7 +36,6 @@ import { IWorkbenchLayoutService } from 'vs/workbench/services/layout/browser/la
 import { StandaloneServices } from 'vs/editor/standalone/browser/standaloneServices'
 import { Event } from 'vs/base/common/event'
 import { IView, SplitView } from 'vs/base/browser/ui/splitview/splitview'
-import { fakeActiveGroup } from './editor'
 import type { LayoutService } from '../layout'
 import { IEditorGroup, withReadyServices } from '../../services'
 
@@ -48,9 +47,10 @@ type Label = string | {
 
 abstract class InjectedEditorPane extends EditorPane {
   constructor (
-    id: string
+    id: string,
+    group: IEditorGroup
   ) {
-    super(id, fakeActiveGroup, StandaloneServices.get(ITelemetryService), StandaloneServices.get(IThemeService), StandaloneServices.get(IStorageService))
+    super(id, group, StandaloneServices.get(ITelemetryService), StandaloneServices.get(IThemeService), StandaloneServices.get(IStorageService))
   }
 }
 
