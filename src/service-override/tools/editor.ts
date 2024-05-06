@@ -545,10 +545,22 @@ export class MonacoDelegateEditorGroupsService<D extends IEditorGroupsService> e
       const handleCodeEditor = (editor: ICodeEditor) => {
         if (editor instanceof StandaloneEditor) {
           let timeout: number | undefined
+          const updateActiveGroup = (editor: StandaloneEditor | undefined) => {
+            const newActiveGroup = editor != null ? this.additionalGroups.find(group => group.editor === editor) : undefined
+            if (this.activeGroupOverride !== newActiveGroup) {
+              this.activeGroupOverride = newActiveGroup
+              this._onDidChangeActiveGroup.fire(this.activeGroup)
+            }
+          }
+          const remoteActiveGroup = (editor: StandaloneEditor | undefined) => {
+            if (this.activeGroupOverride === this.additionalGroups.find(group => group.editor === editor)) {
+              updateActiveGroup(undefined)
+            }
+          }
+
           const onEditorFocused = () => {
             if (timeout != null) window.clearTimeout(timeout)
-            this.activeGroupOverride = this.additionalGroups.find(group => group.editor === editor)
-            this._onDidChangeActiveGroup.fire(this.activeGroup)
+            updateActiveGroup(editor)
           }
           const onEditorBlurred = () => {
             if (timeout != null) window.clearTimeout(timeout)
@@ -556,10 +568,7 @@ export class MonacoDelegateEditorGroupsService<D extends IEditorGroupsService> e
             // It happens when the focus goes from the editor itself to the overflow widgets dom node
             timeout = window.setTimeout(() => {
               timeout = undefined
-              if (this.activeGroupOverride === this.additionalGroups.find(group => group.editor === editor)) {
-                this.activeGroupOverride = undefined
-                this._onDidChangeActiveGroup.fire(this.activeGroup)
-              }
+              remoteActiveGroup(editor)
             }, 100)
           }
           editor.onDidFocusEditorText(onEditorFocused)
