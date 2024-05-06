@@ -34,10 +34,8 @@ import { BrowserAuxiliaryWindowService } from 'vs/workbench/services/auxiliaryWi
 import { IAuxiliaryWindowService } from 'vs/workbench/services/auxiliaryWindow/browser/auxiliaryWindowService.service'
 import { IViewsService } from 'vs/workbench/services/views/common/viewsService.service'
 import { ViewsService } from 'vs/workbench/services/views/browser/viewsService'
-import { IHoverService } from 'vs/platform/hover/browser/hover.service'
 import { IEditorPaneService } from 'vs/workbench/services/editor/common/editorPaneService.service'
 import { EditorPaneService } from 'vs/workbench/services/editor/browser/editorPaneService'
-import { HoverService } from 'vs/editor/browser/services/hoverService/hoverService'
 import { CustomEditorLabelService } from 'vs/workbench/services/editor/common/customEditorLabelService'
 import { ICustomEditorLabelService } from 'vs/workbench/services/editor/common/customEditorLabelService.service'
 import getBulkEditServiceOverride from './bulkEdit'
@@ -88,7 +86,6 @@ function getServiceOverride (_webviewIframeAlternateDomains?: string): IEditorOv
     [IViewDescriptorService.toString()]: new SyncDescriptor(ViewDescriptorService, [], true),
     [IActivityService.toString()]: new SyncDescriptor(ActivityService, [], true),
     [IPaneCompositePartService.toString()]: new SyncDescriptor(PaneCompositePartService, [], true),
-    [IHoverService.toString()]: new SyncDescriptor(HoverService, [], true),
 
     [ICodeEditorService.toString()]: new SyncDescriptor(CodeEditorService, [], true),
     [ITextEditorService.toString()]: new SyncDescriptor(TextEditorService, [], false),

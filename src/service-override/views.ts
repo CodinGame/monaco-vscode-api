@@ -40,7 +40,6 @@ import { IConfigurationService } from 'vs/platform/configuration/common/configur
 import { coalesce } from 'vs/base/common/arrays'
 import { IWorkingCopyBackupService } from 'vs/workbench/services/workingCopy/common/workingCopyBackup.service'
 import { EditorParts } from 'vs/workbench/browser/parts/editor/editorParts'
-import { HoverService } from 'vs/editor/browser/services/hoverService/hoverService'
 import { MonacoDelegateEditorGroupsService, MonacoEditorService, OpenEditor } from './tools/editor'
 import { LayoutService } from './layout'
 import getQuickAccessOverride from './quickaccess'
@@ -693,7 +692,6 @@ export {
   IResolvedTextEditorModel,
   IReference,
 
-  HoverService,
   ActivityService,
   SidebarPart,
   ActivitybarPart,
