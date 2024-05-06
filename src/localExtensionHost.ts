@@ -221,7 +221,7 @@ class LocalExtensionHost implements IExtensionHost {
     }
   }
 
-  getInspectPort (): number | undefined {
+  getInspectPort (): { port: number, host: string } | undefined {
     return undefined
   }
 

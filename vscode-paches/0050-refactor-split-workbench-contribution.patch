@@ -15,7 +15,7 @@ Subject: [PATCH] refactor: split workbench contribution
  8 files changed, 93 insertions(+), 31 deletions(-)
 
 diff --git a/src/vs/workbench/api/browser/extensionHost.contribution.ts b/src/vs/workbench/api/browser/extensionHost.contribution.ts
-index 1fc190391ff..dd5b1a22022 100644
+index b8d406e1691..789c96e1e80 100644
 --- a/src/vs/workbench/api/browser/extensionHost.contribution.ts
 +++ b/src/vs/workbench/api/browser/extensionHost.contribution.ts
 @@ -3,17 +3,6 @@
@@ -36,10 +36,10 @@ index 1fc190391ff..dd5b1a22022 100644
  // --- mainThread participants
  import './mainThreadLocalization';
  import './mainThreadBulkEdits';
-@@ -89,22 +78,3 @@ import './mainThreadProfileContentHandlers';
+@@ -87,22 +76,3 @@ import './mainThreadShare';
+ import './mainThreadProfileContentHandlers';
  import './mainThreadAiRelatedInformation';
  import './mainThreadAiEmbeddingVector';
- import './mainThreadIssueReporter';
 -
 -export class ExtensionPoints implements IWorkbenchContribution {
 -

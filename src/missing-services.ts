@@ -1,5 +1,5 @@
 import { mainWindow } from 'vs/base/browser/window'
-import { Event } from 'vs/base/common/event'
+import { DynamicListEventMultiplexer, Event, IDynamicListEventMultiplexer } from 'vs/base/common/event'
 import { Disposable, IDisposable } from 'vs/base/common/lifecycle'
 import { ResourceSet } from 'vs/base/common/map'
 import { OS } from 'vs/base/common/platform'
@@ -27,7 +27,6 @@ import { IExtensionResourceLoaderService } from 'vs/platform/extensionResourceLo
 import { IExtension, IRelaxedExtensionDescription } from 'vs/platform/extensions/common/extensions'
 import { IBuiltinExtensionsScannerService } from 'vs/platform/extensions/common/extensions.service'
 import { IFileService } from 'vs/platform/files/common/files.service'
-import { IHoverService } from 'vs/platform/hover/browser/hover.service'
 import { InstantiationType, registerSingleton } from 'vs/platform/instantiation/common/extensions'
 import { IKeyboardLayoutService } from 'vs/platform/keyboardLayout/common/keyboardLayout.service'
 import { ILanguagePackItem } from 'vs/platform/languagePacks/common/languagePacks'
@@ -46,7 +45,6 @@ import { ISignService } from 'vs/platform/sign/common/sign.service'
 import { IMessage } from 'vs/platform/sign/common/sign'
 import { ICustomEndpointTelemetryService } from 'vs/platform/telemetry/common/telemetry.service'
 import { NullEndpointTelemetryService } from 'vs/platform/telemetry/common/telemetryUtils'
-import { TerminalCapability } from 'vs/platform/terminal/common/capabilities/capabilities'
 import { TerminalLocation } from 'vs/platform/terminal/common/terminal'
 import { ITerminalLogService } from 'vs/platform/terminal/common/terminal.service'
 import { ITunnelService } from 'vs/platform/tunnel/common/tunnel.service'
@@ -73,7 +71,6 @@ import { IViewDescriptorService } from 'vs/workbench/common/views.service'
 import { IAccessibleViewService } from 'vs/workbench/contrib/accessibility/browser/accessibleView.service'
 import { IChatAccessibilityService, IChatCodeBlockContextProviderService, IChatWidgetService, IQuickChatService } from 'vs/workbench/contrib/chat/browser/chat.service'
 import { IChatAgentService } from 'vs/workbench/contrib/chat/common/chatAgents.service'
-import { IChatContributionService } from 'vs/workbench/contrib/chat/common/chatContributionService.service'
 import { IChatService } from 'vs/workbench/contrib/chat/common/chatService.service'
 import { IChatSlashCommandService } from 'vs/workbench/contrib/chat/common/chatSlashCommands.service'
 import { IChatVariablesService } from 'vs/workbench/contrib/chat/common/chatVariables.service'
@@ -119,8 +116,7 @@ import { ISpeechService } from 'vs/workbench/contrib/speech/common/speechService
 import { NoOpWorkspaceTagsService } from 'vs/workbench/contrib/tags/browser/workspaceTagsService'
 import { IWorkspaceTagsService } from 'vs/workbench/contrib/tags/common/workspaceTags.service'
 import { ITaskService } from 'vs/workbench/contrib/tasks/common/taskService.service'
-import { ITerminalEditorService, ITerminalGroupService, ITerminalInstanceService, ITerminalService } from 'vs/workbench/contrib/terminal/browser/terminal.service'
-import { createInstanceCapabilityEventMultiplexer } from 'vs/workbench/contrib/terminal/browser/terminalEvents'
+import { ITerminalConfigurationService, ITerminalEditorService, ITerminalGroupService, ITerminalInstanceService, ITerminalService } from 'vs/workbench/contrib/terminal/browser/terminal.service'
 import { IEnvironmentVariableService } from 'vs/workbench/contrib/terminal/common/environmentVariable.service'
 import { ITerminalProfileResolverService, ITerminalProfileService } from 'vs/workbench/contrib/terminal/common/terminal.service'
 import { ITerminalContributionService } from 'vs/workbench/contrib/terminal/common/terminalExtensionPoints.service'
@@ -225,8 +221,9 @@ import { ITerminalInstance, TerminalConnectionState } from 'vs/workbench/contrib
 import { AccountStatus } from 'vs/workbench/services/userDataSync/common/userDataSync'
 import { IWebview } from 'vs/workbench/contrib/webview/browser/webview'
 import { SyncResource } from 'vs/workbench/contrib/editSessions/common/editSessions'
-import { unsupported } from './tools'
+import { ILanguageModelStatsService } from 'vs/workbench/contrib/chat/common/languageModelStats.service'
 import { getBuiltInExtensionTranslationsUris, getExtensionIdProvidingCurrentLocale } from './l10n'
+import { unsupported } from './tools'
 
 registerSingleton(ILoggerService, class NullLoggerService extends AbstractLoggerService {
   constructor () {
@@ -495,6 +492,10 @@ class EmptyEditorPart implements IEditorPart {
 }
 
 class EmptyEditorGroupsService implements IEditorGroupsService {
+  saveWorkingSet = unsupported
+  getWorkingSets = unsupported
+  applyWorkingSet = unsupported
+  deleteWorkingSet = unsupported
   onDidCreateAuxiliaryEditorPart = Event.None
   mainPart = new EmptyEditorPart()
   activePart = this.mainPart
@@ -1523,13 +1524,6 @@ registerSingleton(IBuiltinExtensionsScannerService, class BuiltinExtensionsScann
   }
 }, InstantiationType.Eager)
 
-registerSingleton(IHoverService, class HoverService implements IHoverService {
-  showAndFocusLastHover = unsupported
-  _serviceBrand: undefined
-  showHover = unsupported
-  hideHover = unsupported
-}, InstantiationType.Eager)
-
 registerSingleton(IExplorerService, class ExplorerService implements IExplorerService {
   _serviceBrand: undefined
   roots = []
@@ -1672,6 +1666,13 @@ registerSingleton(IExtensionGalleryService, class ExtensionGalleryService implem
 }, InstantiationType.Eager)
 
 registerSingleton(ITerminalService, class TerminalService implements ITerminalService {
+  createOnInstanceCapabilityEvent<K> (): IDynamicListEventMultiplexer<{ instance: ITerminalInstance, data: K }> {
+    return {
+      event: Event.None,
+      dispose () {}
+    }
+  }
+
   _serviceBrand: undefined
   onAnyInstanceData = Event.None
   moveIntoNewEditor = unsupported
@@ -1683,8 +1684,10 @@ registerSingleton(ITerminalService, class TerminalService implements ITerminalSe
   onAnyInstanceProcessIdReady = Event.None
   onAnyInstanceSelectionChange = Event.None
   onAnyInstanceTitleChange = Event.None
-  createOnInstanceEvent = () => Event.None
-  createOnInstanceCapabilityEvent = <T extends TerminalCapability, K>(capabilityId: T) => createInstanceCapabilityEventMultiplexer<T, K>([], Event.None, Event.None, capabilityId, () => Event.None)
+  createOnInstanceEvent<T> (getEvent: (instance: ITerminalInstance) => Event<T>): DynamicListEventMultiplexer<ITerminalInstance, T> {
+    return new DynamicListEventMultiplexer(this.instances, this.onDidCreateInstance, this.onDidDisposeInstance, getEvent)
+  }
+
   createDetachedTerminal = unsupported
 
   onDidChangeSelection = Event.None
@@ -1756,6 +1759,18 @@ registerSingleton(ITerminalService, class TerminalService implements ITerminalSe
   setActiveInstance = unsupported
   focusActiveInstance = unsupported
   getInstanceFromResource = unsupported
+}, InstantiationType.Delayed)
+
+registerSingleton(ITerminalConfigurationService, class TerminalConfigurationService implements ITerminalConfigurationService {
+  _serviceBrand: undefined
+  get config () {
+    return unsupported()
+  }
+
+  onConfigChanged = Event.None
+  setPanelContainer = unsupported
+  configFontIsMonospace = unsupported
+  getFont = unsupported
 }, InstantiationType.Delayed)
 registerSingleton(ITerminalEditorService, class TerminalEditorService implements ITerminalEditorService {
   _serviceBrand: undefined
@@ -2106,6 +2121,8 @@ registerSingleton(IWorkbenchAssignmentService, class WorkbenchAssignmentService 
 
 registerSingleton(IChatService, class ChatService implements IChatService {
   _serviceBrand: undefined
+  isEnabled = () => false
+  resendRequest = unsupported
   onDidUnregisterProvider = Event.None
   clearAllHistoryEntries = unsupported
   onDidSubmitAgent = Event.None
@@ -2138,6 +2155,11 @@ registerSingleton(IChatService, class ChatService implements IChatService {
   notifyUserAction = unsupported
 }, InstantiationType.Delayed)
 
+registerSingleton(ILanguageModelStatsService, class LanguageModelStatsService implements ILanguageModelStatsService {
+  _serviceBrand: undefined
+  update = unsupported
+}, InstantiationType.Delayed)
+
 registerSingleton(IQuickChatService, class QuickChatService implements IQuickChatService {
   focused = false
   _serviceBrand: undefined
@@ -2152,6 +2174,7 @@ registerSingleton(IQuickChatService, class QuickChatService implements IQuickCha
 
 registerSingleton(IChatAgentService, class QuickChatService implements IChatAgentService {
   _serviceBrand = undefined
+  getContributedDefaultAgent = () => undefined
   registerAgentImplementation = unsupported
   registerDynamicAgent = unsupported
   getActivatedAgents = () => []
@@ -2250,6 +2273,8 @@ registerSingleton(IExternalUriOpenerService, class ExternalUriOpenerService impl
 }, InstantiationType.Delayed)
 
 registerSingleton(IAccessibleViewService, class AccessibleViewService implements IAccessibleViewService {
+  _serviceBrand: undefined
+  navigateToCodeBlock = unsupported
   getCodeBlockContext = () => undefined
   showLastProvider = unsupported
   showAccessibleViewHelp = unsupported
@@ -2258,7 +2283,6 @@ registerSingleton(IAccessibleViewService, class AccessibleViewService implements
   next = unsupported
   previous = unsupported
   getOpenAriaHint = unsupported
-  _serviceBrand: undefined
   show = unsupported
   registerProvider = unsupported
   getPosition = unsupported
@@ -2721,14 +2745,6 @@ registerSingleton(INotebookExecutionStateService, class NotebookExecutionStateSe
   getLastFailedCellForNotebook = unsupported
 }, InstantiationType.Delayed)
 
-registerSingleton(IChatContributionService, class ChatContributionService implements IChatContributionService {
-  _serviceBrand: undefined
-  registeredProviders = []
-  getViewIdForProvider = unsupported
-  registerChatProvider = unsupported
-  deregisterChatProvider = unsupported
-}, InstantiationType.Delayed)
-
 registerSingleton(ITestProfileService, class TestProfileService implements ITestProfileService {
   _serviceBrand: undefined
   onDidChange = Event.None
@@ -2806,6 +2822,7 @@ registerSingleton(INotebookSearchService, class NotebookSearchService implements
 
 registerSingleton(ILanguageModelsService, class LanguageModelsService implements ILanguageModelsService {
   _serviceBrand: undefined
+  computeTokenLength = unsupported
   onDidChangeLanguageModels = Event.None
   getLanguageModelIds = () => []
   lookupLanguageModel = () => undefined
@@ -2910,6 +2927,7 @@ registerSingleton(ITestingPeekOpener, class TestingPeekOpener implements ITestin
 
 registerSingleton(IAuxiliaryWindowService, class AuxiliaryWindowService implements IAuxiliaryWindowService {
   _serviceBrand: undefined
+  getWindow = () => undefined
   onDidOpenAuxiliaryWindow = Event.None
   hasWindow = () => false
   open = unsupported

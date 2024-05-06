@@ -56,7 +56,7 @@ index 99dd3279fe8..b692381eaa2 100644
  	declare readonly _serviceBrand: undefined;
  
 diff --git a/src/vs/workbench/browser/layout.ts b/src/vs/workbench/browser/layout.ts
-index 69fd77ff4ff..3ff2d974cb6 100644
+index 94ec1087453..4aa2834584f 100644
 --- a/src/vs/workbench/browser/layout.ts
 +++ b/src/vs/workbench/browser/layout.ts
 @@ -52,7 +52,7 @@ import { CustomTitleBarVisibility } from '../../platform/window/common/window';
@@ -98,10 +98,10 @@ index 69fd77ff4ff..3ff2d974cb6 100644
  	readonly filesToDiff?: IPathToOpen[];
  	readonly filesToMerge?: IPathToOpen[];
 diff --git a/src/vs/workbench/browser/workbench.ts b/src/vs/workbench/browser/workbench.ts
-index c7302a6be67..cbc07dc7fb0 100644
+index 3678a7f6286..0dc55e03b6a 100644
 --- a/src/vs/workbench/browser/workbench.ts
 +++ b/src/vs/workbench/browser/workbench.ts
-@@ -76,7 +76,7 @@ export class Workbench extends Layout {
+@@ -79,7 +79,7 @@ export class Workbench extends Layout {
  		this.registerErrorHandler(logService);
  	}
  
@@ -109,8 +109,8 @@ index c7302a6be67..cbc07dc7fb0 100644
 +	protected registerErrorHandler(logService: ILogService): void {
  
  		// Listen on unhandled rejection events
- 		this._register(addDisposableListener(mainWindow, 'unhandledrejection', event => {
-@@ -192,7 +192,7 @@ export class Workbench extends Layout {
+ 		// Note: intentionally not registered as disposable to handle
+@@ -199,7 +199,7 @@ export class Workbench extends Layout {
  		}
  	}
  
@@ -119,7 +119,7 @@ index c7302a6be67..cbc07dc7fb0 100644
  
  		// Layout Service
  		serviceCollection.set(IWorkbenchLayoutService, this);
-@@ -231,7 +231,7 @@ export class Workbench extends Layout {
+@@ -238,7 +238,7 @@ export class Workbench extends Layout {
  		return instantiationService;
  	}
  
@@ -128,16 +128,16 @@ index c7302a6be67..cbc07dc7fb0 100644
  
  		// Configuration changes
  		this._register(configurationService.onDidChangeConfiguration(e => this.updateFontAliasing(e, configurationService)));
-@@ -320,7 +320,7 @@ export class Workbench extends Layout {
+@@ -327,7 +327,7 @@ export class Workbench extends Layout {
  		}
  	}
  
 -	private renderWorkbench(instantiationService: IInstantiationService, notificationService: NotificationService, storageService: IStorageService, configurationService: IConfigurationService): void {
 +	protected renderWorkbench(instantiationService: IInstantiationService, notificationService: NotificationService, storageService: IStorageService, configurationService: IConfigurationService): void {
  
- 		// ARIA
+ 		// ARIA & Signals
  		setARIAContainer(this.mainContainer);
-@@ -386,7 +386,7 @@ export class Workbench extends Layout {
+@@ -394,7 +394,7 @@ export class Workbench extends Layout {
  		return part;
  	}
  
@@ -146,7 +146,7 @@ index c7302a6be67..cbc07dc7fb0 100644
  
  		// Instantiate Notification components
  		const notificationsCenter = this._register(instantiationService.createInstance(NotificationsCenter, this.mainContainer, notificationService.model));
-@@ -414,7 +414,7 @@ export class Workbench extends Layout {
+@@ -422,7 +422,7 @@ export class Workbench extends Layout {
  		});
  	}
  
@@ -252,7 +252,7 @@ index 65672a170be..0426642269a 100644
  	readonly _serviceBrand: undefined;
  
 diff --git a/src/vs/workbench/services/extensions/browser/webWorkerExtensionHost.ts b/src/vs/workbench/services/extensions/browser/webWorkerExtensionHost.ts
-index b6d4f0f3831..a5f5e42eddd 100644
+index 77969d88de9..848d8e9a4d2 100644
 --- a/src/vs/workbench/services/extensions/browser/webWorkerExtensionHost.ts
 +++ b/src/vs/workbench/services/extensions/browser/webWorkerExtensionHost.ts
 @@ -76,7 +76,7 @@ export class WebWorkerExtensionHost extends Disposable implements IExtensionHost
@@ -265,10 +265,10 @@ index b6d4f0f3831..a5f5e42eddd 100644
  		if (this._environmentService.debugExtensionHost && this._environmentService.debugRenderer) {
  			suffixSearchParams.set('debugged', '1');
 diff --git a/src/vs/workbench/services/extensions/common/abstractExtensionService.ts b/src/vs/workbench/services/extensions/common/abstractExtensionService.ts
-index 4b2a585afc3..70b20e8fd08 100644
+index 124b22f400b..771c289dbca 100644
 --- a/src/vs/workbench/services/extensions/common/abstractExtensionService.ts
 +++ b/src/vs/workbench/services/extensions/common/abstractExtensionService.ts
-@@ -94,9 +94,9 @@ export abstract class AbstractExtensionService extends Disposable implements IEx
+@@ -95,9 +95,9 @@ export abstract class AbstractExtensionService extends Disposable implements IEx
  	private _resolveAuthorityAttempt: number = 0;
  
  	constructor(
@@ -281,7 +281,7 @@ index 4b2a585afc3..70b20e8fd08 100644
  		@IInstantiationService protected readonly _instantiationService: IInstantiationService,
  		@INotificationService protected readonly _notificationService: INotificationService,
  		@IWorkbenchEnvironmentService protected readonly _environmentService: IWorkbenchEnvironmentService,
-@@ -220,7 +220,7 @@ export abstract class AbstractExtensionService extends Disposable implements IEx
+@@ -221,7 +221,7 @@ export abstract class AbstractExtensionService extends Disposable implements IEx
  
  	//#region deltaExtensions
  
@@ -290,7 +290,7 @@ index 4b2a585afc3..70b20e8fd08 100644
  		this._deltaExtensionsQueue.push(item);
  		if (this._inHandleDeltaExtensions) {
  			// Let the current item finish, the new one will be picked up
-@@ -1206,7 +1206,7 @@ export interface IExtensionHostFactory {
+@@ -1207,7 +1207,7 @@ export interface IExtensionHostFactory {
  	createExtensionHost(runningLocations: ExtensionRunningLocationTracker, runningLocation: ExtensionRunningLocation, isInitialStart: boolean): IExtensionHost | null;
  }
  

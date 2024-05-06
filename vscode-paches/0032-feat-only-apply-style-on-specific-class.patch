@@ -9,7 +9,7 @@ Subject: [PATCH] feat: only apply style on specific class
  2 files changed, 87 insertions(+), 103 deletions(-)
 
 diff --git a/src/vs/workbench/browser/media/style.css b/src/vs/workbench/browser/media/style.css
-index 9299856d6ff..7e3f89d012d 100644
+index 8d4313f5f15..1d8f17f56f1 100644
 --- a/src/vs/workbench/browser/media/style.css
 +++ b/src/vs/workbench/browser/media/style.css
 @@ -9,56 +9,38 @@
@@ -233,10 +233,10 @@ index 9299856d6ff..7e3f89d012d 100644
  
 -.monaco-workbench .select-container:after {
 +.monaco-workbench-part .select-container:after {
- 	content: "\eab4";
+ 	content: var(--vscode-icon-chevron-down-content);
+ 	font-family: var(--vscode-icon-chevron-down-font-family);
  	font-family: codicon;
- 	font-size: 16px;
-@@ -212,16 +196,16 @@ body.web {
+@@ -213,16 +197,16 @@ body.web {
  
  /* Keyboard Focus Indication Styles */
  
@@ -263,7 +263,7 @@ index 9299856d6ff..7e3f89d012d 100644
  	outline-width: 1px;
  	outline-style: solid;
  	outline-offset: -1px;
-@@ -234,19 +218,19 @@ body.web {
+@@ -235,19 +219,19 @@ body.web {
  	background: transparent; /* Search input focus fix when in high contrast */
  }
  
@@ -290,7 +290,7 @@ index 9299856d6ff..7e3f89d012d 100644
  	border-color: transparent; /* outline is a square, but border has a radius, so we avoid this glitch when focused (https://github.com/microsoft/vscode/issues/26045) */
  }
  
-@@ -274,38 +258,38 @@ body.web {
+@@ -275,38 +259,38 @@ body.web {
  	color: var(--vscode-list-focusHighlightForeground);
  }
  

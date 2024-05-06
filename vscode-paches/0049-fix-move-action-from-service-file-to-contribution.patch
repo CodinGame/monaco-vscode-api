@@ -4,12 +4,12 @@ Date: Mon, 15 Apr 2024 10:52:20 +0200
 Subject: [PATCH] fix: move action from service file to contribution
 
 ---
- .../browser/gettingStarted.contribution.ts    | 45 +++++++++++++++++-
- .../browser/gettingStartedService.ts          | 46 +------------------
- 2 files changed, 46 insertions(+), 45 deletions(-)
+ .../browser/gettingStarted.contribution.ts    | 48 +++++++++++++++++-
+ .../browser/gettingStartedService.ts          | 49 +------------------
+ 2 files changed, 49 insertions(+), 48 deletions(-)
 
 diff --git a/src/vs/workbench/contrib/welcomeGettingStarted/browser/gettingStarted.contribution.ts b/src/vs/workbench/contrib/welcomeGettingStarted/browser/gettingStarted.contribution.ts
-index 66b9062611f..353af173d3f 100644
+index c957f53f54c..09dd9b2c409 100644
 --- a/src/vs/workbench/contrib/welcomeGettingStarted/browser/gettingStarted.contribution.ts
 +++ b/src/vs/workbench/contrib/welcomeGettingStarted/browser/gettingStarted.contribution.ts
 @@ -15,7 +15,7 @@ import { KeybindingWeight } from 'vs/platform/keybinding/common/keybindingsRegis
@@ -30,7 +30,7 @@ index 66b9062611f..353af173d3f 100644
  
  export * as icons from 'vs/workbench/contrib/welcomeGettingStarted/browser/gettingStartedIcons';
  
-@@ -341,3 +343,44 @@ configurationRegistry.registerConfiguration({
+@@ -344,3 +346,47 @@ configurationRegistry.registerConfiguration({
  registerWorkbenchContribution2(WorkspacePlatformContribution.ID, WorkspacePlatformContribution, WorkbenchPhase.AfterRestored);
  registerWorkbenchContribution2(StartupPageEditorResolverContribution.ID, StartupPageEditorResolverContribution, WorkbenchPhase.BlockRestore);
  registerWorkbenchContribution2(StartupPageRunnerContribution.ID, StartupPageRunnerContribution, WorkbenchPhase.AfterRestored);
@@ -41,7 +41,10 @@ index 66b9062611f..353af173d3f 100644
 +			id: 'resetGettingStartedProgress',
 +			category: localize2('developer', "Developer"),
 +			title: localize2('resetWelcomePageWalkthroughProgress', "Reset Welcome Page Walkthrough Progress"),
-+			f1: true
++			f1: true,
++			metadata: {
++				description: localize2('resetGettingStartedProgressDescription', 'Reset the progress of all Walkthrough steps on the Welcome Page to make them appear as if they are being viewed for the first time, providing a fresh start to the getting started experience.'),
++			}
 +		});
 +	}
 +
@@ -76,7 +79,7 @@ index 66b9062611f..353af173d3f 100644
 +	}
 +});
 diff --git a/src/vs/workbench/contrib/welcomeGettingStarted/browser/gettingStartedService.ts b/src/vs/workbench/contrib/welcomeGettingStarted/browser/gettingStartedService.ts
-index ae62d18f2d0..5bf6ad46471 100644
+index ad87eb90c41..5bf6ad46471 100644
 --- a/src/vs/workbench/contrib/welcomeGettingStarted/browser/gettingStartedService.ts
 +++ b/src/vs/workbench/contrib/welcomeGettingStarted/browser/gettingStartedService.ts
 @@ -3,11 +3,10 @@
@@ -101,7 +104,7 @@ index ae62d18f2d0..5bf6ad46471 100644
  import { ITelemetryService } from 'vs/platform/telemetry/common/telemetry';
  import { checkGlobFileExists } from 'vs/workbench/services/extensions/common/workspaceContains';
  import { IWorkspaceContextService } from 'vs/platform/workspace/common/workspace';
-@@ -668,45 +667,4 @@ const convertInternalMediaPathsToBrowserURIs = (path: string | { hc: string; hcL
+@@ -668,48 +667,4 @@ const convertInternalMediaPathsToBrowserURIs = (path: string | { hc: string; hcL
  	}
  };
  
@@ -111,7 +114,10 @@ index ae62d18f2d0..5bf6ad46471 100644
 -			id: 'resetGettingStartedProgress',
 -			category: localize2('developer', "Developer"),
 -			title: localize2('resetWelcomePageWalkthroughProgress', "Reset Welcome Page Walkthrough Progress"),
--			f1: true
+-			f1: true,
+-			metadata: {
+-				description: localize2('resetGettingStartedProgressDescription', 'Reset the progress of all Walkthrough steps on the Welcome Page to make them appear as if they are being viewed for the first time, providing a fresh start to the getting started experience.'),
+-			}
 -		});
 -	}
 -

@@ -10,7 +10,7 @@ Subject: [PATCH] fix: only run some code if inside the worker
  3 files changed, 19 insertions(+), 9 deletions(-)
 
 diff --git a/src/vs/workbench/api/common/extHostExtensionService.ts b/src/vs/workbench/api/common/extHostExtensionService.ts
-index 2679364d945..acb1625ad3f 100644
+index 4ea250c3bf8..1af6c78ff25 100644
 --- a/src/vs/workbench/api/common/extHostExtensionService.ts
 +++ b/src/vs/workbench/api/common/extHostExtensionService.ts
 @@ -45,7 +45,7 @@ import { Schemas } from 'vs/base/common/network';

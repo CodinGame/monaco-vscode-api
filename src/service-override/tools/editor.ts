@@ -13,7 +13,7 @@ import { IResolvedTextEditorModel, ITextModelService } from 'vs/editor/common/se
 import { IStandaloneCodeEditor, StandaloneCodeEditor, StandaloneEditor } from 'vs/editor/standalone/browser/standaloneCodeEditor'
 import { Disposable, IDisposable, IReference } from 'vs/base/common/lifecycle'
 import { EditorService } from 'vs/workbench/services/editor/browser/editorService'
-import { IAuxiliaryEditorPart, IEditorDropTargetDelegate, IEditorPart, IActiveEditorActions, IEditorGroup } from 'vs/workbench/services/editor/common/editorGroupsService'
+import { IAuxiliaryEditorPart, IEditorDropTargetDelegate, IEditorPart, IActiveEditorActions, IEditorGroup, IEditorWorkingSet } from 'vs/workbench/services/editor/common/editorGroupsService'
 import { IEditorGroupsService } from 'vs/workbench/services/editor/common/editorGroupsService.service'
 import { IInstantiationService } from 'vs/platform/instantiation/common/instantiation'
 import { IConfigurationService } from 'vs/platform/configuration/common/configuration.service'
@@ -605,6 +605,22 @@ export class MonacoDelegateEditorGroupsService<D extends IEditorGroupsService> e
       this._register(codeEditorService.onCodeEditorRemove(handleCodeEditorRemoved))
       codeEditorService.listCodeEditors().forEach(handleCodeEditor)
     })
+  }
+
+  saveWorkingSet (name: string): IEditorWorkingSet {
+    return this.delegate.saveWorkingSet(name)
+  }
+
+  getWorkingSets (): IEditorWorkingSet[] {
+    return this.delegate.getWorkingSets()
+  }
+
+  applyWorkingSet (workingSet: IEditorWorkingSet | 'empty'): Promise<boolean> {
+    return this.delegate.applyWorkingSet(workingSet)
+  }
+
+  deleteWorkingSet (workingSet: IEditorWorkingSet): void {
+    return this.delegate.deleteWorkingSet(workingSet)
   }
 
   get isReady (): IEditorGroupsService['isReady'] {

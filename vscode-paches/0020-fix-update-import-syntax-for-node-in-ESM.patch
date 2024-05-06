@@ -13,7 +13,7 @@ Subject: [PATCH] fix: update import syntax for node in ESM
  6 files changed, 14 insertions(+), 8 deletions(-)
 
 diff --git a/src/vs/platform/environment/node/argv.ts b/src/vs/platform/environment/node/argv.ts
-index 327c18c18ad..49b3d6d47c5 100644
+index 91b5d5aeaba..4a09932c773 100644
 --- a/src/vs/platform/environment/node/argv.ts
 +++ b/src/vs/platform/environment/node/argv.ts
 @@ -3,7 +3,7 @@
@@ -39,7 +39,7 @@ index d8cefb6df67..a94fca911ea 100644
  import { localize } from 'vs/nls';
  import { NativeParsedArgs } from 'vs/platform/environment/common/argv';
 diff --git a/src/vs/platform/native/electron-main/nativeHostMainService.ts b/src/vs/platform/native/electron-main/nativeHostMainService.ts
-index a1d28301611..2ffbae2fd9c 100644
+index 64737b07d00..3124bdce945 100644
 --- a/src/vs/platform/native/electron-main/nativeHostMainService.ts
 +++ b/src/vs/platform/native/electron-main/nativeHostMainService.ts
 @@ -495,7 +495,7 @@ export class NativeHostMainService extends Disposable implements INativeHostMain
