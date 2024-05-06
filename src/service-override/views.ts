@@ -168,6 +168,7 @@ class MonacoEditorParts extends MonacoDelegateEditorGroupsService<EditorParts> i
   constructor (@IInstantiationService instantiationService: IInstantiationService) {
     super(
       instantiationService.createInstance(EditorParts),
+      false,
       instantiationService
     )
   }

@@ -537,7 +537,7 @@ export class MonacoDelegateEditorGroupsService<D extends IEditorGroupsService> e
   public additionalGroups: StandaloneEditorGroup[] = []
   public activeGroupOverride: StandaloneEditorGroup | undefined = undefined
 
-  constructor (protected delegate: D, @IInstantiationService instantiationService: IInstantiationService) {
+  constructor (protected delegate: D, emptyDelegate: boolean, @IInstantiationService instantiationService: IInstantiationService) {
     super()
     setTimeout(() => {
       const codeEditorService = StandaloneServices.get(ICodeEditorService)
@@ -553,7 +553,7 @@ export class MonacoDelegateEditorGroupsService<D extends IEditorGroupsService> e
             }
           }
           const remoteActiveGroup = (editor: StandaloneEditor | undefined) => {
-            if (this.activeGroupOverride === this.additionalGroups.find(group => group.editor === editor)) {
+            if (!emptyDelegate && this.activeGroupOverride === this.additionalGroups.find(group => group.editor === editor)) {
               updateActiveGroup(undefined)
             }
           }

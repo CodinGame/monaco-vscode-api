@@ -131,6 +131,7 @@ class MonacoEditorGroupsService extends MonacoDelegateEditorGroupsService<EmptyE
   constructor (@IInstantiationService instantiationService: IInstantiationService) {
     super(
       instantiationService.createInstance(EmptyEditorGroupsService),
+      true,
       instantiationService
     )
   }
