@@ -58,6 +58,12 @@ BUILD_SOURCEVERSION=$vscodeRef NODE_OPTIONS=--max-old-space-size=8192 yarn gulp 
 rm -rf $extension_output_directory
 cp -R .build/web/extensions "$extension_output_directory"
 
+# Remove useless files
+cd src
+rm -rf `find . -name '*.test.ts' -o -name 'test' -o -name 'electron-browser'`
+rm -rf vs/code
+cd ..
+
 # transform to relative imports, replace ESM comments and vs/css! imports
 cat << EOF | node -
 	require('./build/lib/standalone').createESMSourcesAndResources2({
@@ -79,10 +85,6 @@ rsync -R $(find . -name \*.js) ../src/
 cd ..
 
 cd src
-
-# Remove useless files
-rm -rf `find . -name '*.test.ts' -o -name 'test' -o -name 'electron-browser'`
-rm -rf vs/code
 
 mkdir -p $output_directory
 echo $vscodeRef > $version_info
