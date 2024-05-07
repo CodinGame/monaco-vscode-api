@@ -301,14 +301,15 @@ export default rollup.defineConfig((<{input: Record<string, string>, output: str
     {
       name: 'resolve-vscode',
       resolveId: async function (importee, importer) {
-        if (importee.startsWith('vscode/')) {
-          return path.resolve(VSCODE_DIR, path.relative('vscode', `${importee}.d.ts`))
+        const importeeWithoutExtension = importee.endsWith('.js') ? importee.slice(0, -3) : importee
+        if (importeeWithoutExtension.startsWith('vscode/')) {
+          return path.resolve(VSCODE_DIR, path.relative('vscode', `${importeeWithoutExtension}.d.ts`))
         }
-        if (importee.startsWith('.') && importer != null && importer.startsWith(VSCODE_SRC_DIR)) {
-          importee = path.relative(VSCODE_SRC_DIR, path.resolve(path.dirname(importer), importee))
+        if (importeeWithoutExtension.startsWith('.') && importer != null && importeeWithoutExtension.startsWith(VSCODE_SRC_DIR)) {
+          importee = path.relative(VSCODE_SRC_DIR, path.resolve(path.dirname(importer), importeeWithoutExtension))
         }
-        if (importee.startsWith('vs/')) {
-          return path.join(VSCODE_SRC_DIR, `${importee}.d.ts`)
+        if (importeeWithoutExtension.startsWith('vs/')) {
+          return path.join(VSCODE_SRC_DIR, `${importeeWithoutExtension}.d.ts`)
         }
         return undefined
       }
