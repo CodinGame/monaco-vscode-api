@@ -4,7 +4,7 @@ import { ExplorerService } from 'vs/workbench/contrib/files/browser/explorerServ
 import { IExplorerService } from 'vs/workbench/contrib/files/browser/files.service'
 import 'vs/workbench/contrib/files/browser/fileCommands'
 import 'vs/workbench/contrib/files/browser/fileActions.contribution'
-import 'vs/workbench/contrib/files/browser/files.explorer.contribution'
+import 'vs/workbench/contrib/files/browser/files.contribution._explorer.js'
 
 function getServiceOverride (): IEditorOverrideServices {
   return {

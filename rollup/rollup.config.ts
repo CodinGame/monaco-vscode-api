@@ -209,7 +209,9 @@ function transformVSCodeCode (id: string, code: string) {
       const name = node.callee.type === 'MemberExpression' || node.callee.type === 'Identifier' ? getMemberExpressionPath(node.callee) : null
 
       if (name != null && (name.endsWith('localizeWithPath') || name.endsWith('localize2WithPath'))) {
-        const translationPath = nodePath.relative(id.startsWith(OVERRIDE_PATH) ? OVERRIDE_PATH : VSCODE_SRC_DIR, id).slice(0, -3)
+        const translationPath = nodePath.relative(id.startsWith(OVERRIDE_PATH) ? OVERRIDE_PATH : VSCODE_SRC_DIR, id)
+          .slice(0, -3) // remove extension
+          .replace(/\._[^/.]*/g, '') // remove own refactor module suffixes
         let localizationKey: string
         if (path.node.arguments[1]?.type === 'StringLiteral') {
           localizationKey = path.node.arguments[1].value

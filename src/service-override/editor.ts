@@ -16,9 +16,9 @@ import { DEFAULT_EDITOR_PART_OPTIONS } from 'vs/workbench/browser/parts/editor/e
 import { mainWindow } from 'vs/base/browser/window'
 import { MonacoDelegateEditorGroupsService, MonacoEditorService, OpenEditor, fakeActiveGroup } from './tools/editor'
 import { unsupported } from '../tools'
-import 'vs/workbench/browser/parts/editor/editor.autosave.contribution'
-import 'vs/workbench/contrib/files/browser/files.fileEditorFactory.contribution'
-import 'vs/workbench/contrib/files/browser/fileCommands.save'
+import 'vs/workbench/browser/parts/editor/editor.contribution._autosave.js'
+import 'vs/workbench/contrib/files/browser/files.contribution._fileEditorFactory.js'
+import 'vs/workbench/contrib/files/browser/fileCommands._save.js'
 
 class EmptyEditorPart implements IEditorPart {
   hasMaximizedGroup = () => false

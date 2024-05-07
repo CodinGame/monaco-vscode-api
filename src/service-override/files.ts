@@ -24,7 +24,7 @@ import { BrowserElevatedFileService } from 'vs/workbench/services/files/browser/
 import { IElevatedFileService } from 'vs/workbench/services/files/common/elevatedFileService.service'
 import { checkServicesNotInitialized, registerServiceInitializePreParticipant } from '../lifecycle'
 import { logsPath } from '../workbench'
-import 'vs/workbench/contrib/files/browser/files.configuration.contribution'
+import 'vs/workbench/contrib/files/browser/files.contribution._configuration.js'
 
 abstract class RegisteredFile {
   protected ctime: number

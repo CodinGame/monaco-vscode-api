@@ -113,7 +113,7 @@ export default rollup.defineConfig((<{input: Record<string, string>, output: str
         if (id === path.resolve(TYPES_SRC_DIR, 'editor.api.d.ts')) {
           return {
             name: 'editor.api',
-            publicName: '@codngame/monaco-vscode-editor-api'
+            publicName: '@codingame/monaco-vscode-editor-api'
           }
         }
         return {
@@ -250,8 +250,7 @@ export default rollup.defineConfig((<{input: Record<string, string>, output: str
     {
       name: 'replace-interfaces',
       load (id) {
-        const path = new URL(id, 'file:/').pathname
-        const sourceFile = project.addSourceFileAtPath(path)
+        const sourceFile = project.addSourceFileAtPath(id)
 
         if (id.includes('node_modules') && id.includes('xterm')) {
           // xterm modules use `declare module` syntax not supposed by the rollup-dts-plugin, so let's transform the code
@@ -302,14 +301,15 @@ export default rollup.defineConfig((<{input: Record<string, string>, output: str
     {
       name: 'resolve-vscode',
       resolveId: async function (importee, importer) {
-        if (importee.startsWith('vscode/')) {
-          return path.resolve(VSCODE_DIR, path.relative('vscode', `${importee}.d.ts`))
+        const importeeWithoutExtension = importee.endsWith('.js') ? importee.slice(0, -3) : importee
+        if (importeeWithoutExtension.startsWith('vscode/')) {
+          return path.resolve(VSCODE_DIR, path.relative('vscode', `${importeeWithoutExtension}.d.ts`))
         }
-        if (importee.startsWith('.') && importer != null && importer.startsWith(VSCODE_SRC_DIR)) {
-          importee = path.relative(VSCODE_SRC_DIR, path.resolve(path.dirname(importer), importee))
+        if (importeeWithoutExtension.startsWith('.') && importer != null && importeeWithoutExtension.startsWith(VSCODE_SRC_DIR)) {
+          importee = path.relative(VSCODE_SRC_DIR, path.resolve(path.dirname(importer), importeeWithoutExtension))
         }
-        if (importee.startsWith('vs/')) {
-          return path.join(VSCODE_SRC_DIR, `${importee}.d.ts`)
+        if (importeeWithoutExtension.startsWith('vs/')) {
+          return path.join(VSCODE_SRC_DIR, `${importeeWithoutExtension}.d.ts`)
         }
         return undefined
       }

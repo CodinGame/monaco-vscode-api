@@ -5,28 +5,28 @@ Subject: [PATCH] refactor: split some modules to be able to import them
  partially
 
 ---
- .../editor/editor.autosave.contribution.ts    |   9 +
+ .../editor/editor.contribution._autosave.ts   |   9 +
  .../parts/editor/editor.contribution.ts       |   3 +-
- .../files/browser/fileCommands.save.ts        | 198 ++++++
+ .../files/browser/fileCommands._save.ts       | 198 ++++++
  .../contrib/files/browser/fileCommands.ts     | 245 +------
- .../files.configuration.contribution.ts       | 313 +++++++++
+ .../files.contribution._configuration.ts      | 313 +++++++++
+ .../browser/files.contribution._editorPane.ts |  93 +++
+ .../browser/files.contribution._explorer.ts   | 270 ++++++++
+ .../files.contribution._fileEditorFactory.ts  |  23 +
  .../files/browser/files.contribution.ts       | 638 +-----------------
- .../browser/files.editorPane.contribution.ts  |  93 +++
- .../browser/files.explorer.contribution.ts    | 270 ++++++++
- .../files.fileEditorFactory.contribution.ts   |  23 +
  9 files changed, 945 insertions(+), 847 deletions(-)
- create mode 100644 src/vs/workbench/browser/parts/editor/editor.autosave.contribution.ts
- create mode 100644 src/vs/workbench/contrib/files/browser/fileCommands.save.ts
- create mode 100644 src/vs/workbench/contrib/files/browser/files.configuration.contribution.ts
- create mode 100644 src/vs/workbench/contrib/files/browser/files.editorPane.contribution.ts
- create mode 100644 src/vs/workbench/contrib/files/browser/files.explorer.contribution.ts
- create mode 100644 src/vs/workbench/contrib/files/browser/files.fileEditorFactory.contribution.ts
+ create mode 100644 src/vs/workbench/browser/parts/editor/editor.contribution._autosave.ts
+ create mode 100644 src/vs/workbench/contrib/files/browser/fileCommands._save.ts
+ create mode 100644 src/vs/workbench/contrib/files/browser/files.contribution._configuration.ts
+ create mode 100644 src/vs/workbench/contrib/files/browser/files.contribution._editorPane.ts
+ create mode 100644 src/vs/workbench/contrib/files/browser/files.contribution._explorer.ts
+ create mode 100644 src/vs/workbench/contrib/files/browser/files.contribution._fileEditorFactory.ts
 
-diff --git a/src/vs/workbench/browser/parts/editor/editor.autosave.contribution.ts b/src/vs/workbench/browser/parts/editor/editor.autosave.contribution.ts
+diff --git a/src/vs/workbench/browser/parts/editor/editor.contribution._autosave.ts b/src/vs/workbench/browser/parts/editor/editor.contribution._autosave.ts
 new file mode 100644
 index 00000000000..c7416d68719
 --- /dev/null
-+++ b/src/vs/workbench/browser/parts/editor/editor.autosave.contribution.ts
++++ b/src/vs/workbench/browser/parts/editor/editor.contribution._autosave.ts
 @@ -0,0 +1,9 @@
 +/*---------------------------------------------------------------------------------------------
 + *  Copyright (c) Microsoft Corporation. All rights reserved.
@@ -38,7 +38,7 @@ index 00000000000..c7416d68719
 +
 +registerWorkbenchContribution2(EditorAutoSave.ID, EditorAutoSave, WorkbenchPhase.BlockRestore);
 diff --git a/src/vs/workbench/browser/parts/editor/editor.contribution.ts b/src/vs/workbench/browser/parts/editor/editor.contribution.ts
-index 1611076ea51..5dbfc0eb861 100644
+index 1611076ea51..35327f35901 100644
 --- a/src/vs/workbench/browser/parts/editor/editor.contribution.ts
 +++ b/src/vs/workbench/browser/parts/editor/editor.contribution.ts
 @@ -61,7 +61,6 @@ import { isMacintosh } from 'vs/base/common/platform';
@@ -53,7 +53,7 @@ index 1611076ea51..5dbfc0eb861 100644
  import { EditorActionsDefaultAction, EditorActionsTitleBarAction, HideEditorActionsAction, HideEditorTabsAction, ShowMultipleEditorTabsAction, ShowSingleEditorTabAction, ZenHideEditorTabsAction, ZenShowMultipleEditorTabsAction, ZenShowSingleEditorTabAction } from 'vs/workbench/browser/actions/layoutActions';
  import { ICommandAction } from 'vs/platform/action/common/action';
  import { EditorContextKeys } from 'vs/editor/common/editorContextKeys';
-+import './editor.autosave.contribution';
++import './editor.contribution._autosave';
  
  //#region Editor Registrations
  
@@ -65,11 +65,11 @@ index 1611076ea51..5dbfc0eb861 100644
  registerWorkbenchContribution2(EditorStatusContribution.ID, EditorStatusContribution, WorkbenchPhase.BlockRestore);
  registerWorkbenchContribution2(UntitledTextEditorWorkingCopyEditorHandler.ID, UntitledTextEditorWorkingCopyEditorHandler, WorkbenchPhase.BlockRestore);
  registerWorkbenchContribution2(DynamicEditorConfigurations.ID, DynamicEditorConfigurations, WorkbenchPhase.BlockRestore);
-diff --git a/src/vs/workbench/contrib/files/browser/fileCommands.save.ts b/src/vs/workbench/contrib/files/browser/fileCommands.save.ts
+diff --git a/src/vs/workbench/contrib/files/browser/fileCommands._save.ts b/src/vs/workbench/contrib/files/browser/fileCommands._save.ts
 new file mode 100644
 index 00000000000..d9a94570df9
 --- /dev/null
-+++ b/src/vs/workbench/contrib/files/browser/fileCommands.save.ts
++++ b/src/vs/workbench/contrib/files/browser/fileCommands._save.ts
 @@ -0,0 +1,198 @@
 +/*---------------------------------------------------------------------------------------------
 + *  Copyright (c) Microsoft Corporation. All rights reserved.
@@ -270,7 +270,7 @@ index 00000000000..d9a94570df9
 +	}
 +});
 diff --git a/src/vs/workbench/contrib/files/browser/fileCommands.ts b/src/vs/workbench/contrib/files/browser/fileCommands.ts
-index da1e9c4dcd5..7fe3e6ecee1 100644
+index da1e9c4dcd5..6f929af2ef9 100644
 --- a/src/vs/workbench/contrib/files/browser/fileCommands.ts
 +++ b/src/vs/workbench/contrib/files/browser/fileCommands.ts
 @@ -3,56 +3,48 @@
@@ -360,7 +360,7 @@ index da1e9c4dcd5..7fe3e6ecee1 100644
 +import { IViewsService } from 'vs/workbench/services/views/common/viewsService';
 +import { IWorkspaceEditingService } from 'vs/workbench/services/workspaces/common/workspaceEditing';
 +import { COMPARE_RESOURCE_COMMAND_ID, COMPARE_SELECTED_COMMAND_ID, COMPARE_WITH_SAVED_COMMAND_ID, COPY_PATH_COMMAND_ID, COPY_RELATIVE_PATH_COMMAND_ID, FIRST_COMPRESSED_FOLDER, LAST_COMPRESSED_FOLDER, NEW_FILE_COMMAND_ID, NEW_UNTITLED_FILE_COMMAND_ID, NEW_UNTITLED_FILE_LABEL, NEXT_COMPRESSED_FOLDER, OPEN_TO_SIDE_COMMAND_ID, OPEN_WITH_EXPLORER_COMMAND_ID, PREVIOUS_COMPRESSED_FOLDER, REMOVE_ROOT_FOLDER_COMMAND_ID, REVEAL_IN_EXPLORER_COMMAND_ID, REVERT_FILE_COMMAND_ID, ResourceSelectedForCompareContext, SELECT_FOR_COMPARE_COMMAND_ID } from './fileConstants';
-+import './fileCommands.save';
++import './fileCommands._save';
  
  export const openWindowCommand = (accessor: ServicesAccessor, toOpen: IWindowOpenable[], options?: IOpenWindowOptions) => {
  	if (Array.isArray(toOpen)) {
@@ -540,11 +540,11 @@ index da1e9c4dcd5..7fe3e6ecee1 100644
  CommandsRegistry.registerCommand({
  	id: REVERT_FILE_COMMAND_ID,
  	handler: async accessor => {
-diff --git a/src/vs/workbench/contrib/files/browser/files.configuration.contribution.ts b/src/vs/workbench/contrib/files/browser/files.configuration.contribution.ts
+diff --git a/src/vs/workbench/contrib/files/browser/files.contribution._configuration.ts b/src/vs/workbench/contrib/files/browser/files.contribution._configuration.ts
 new file mode 100644
 index 00000000000..500edea7d1b
 --- /dev/null
-+++ b/src/vs/workbench/contrib/files/browser/files.configuration.contribution.ts
++++ b/src/vs/workbench/contrib/files/browser/files.contribution._configuration.ts
 @@ -0,0 +1,313 @@
 +/*---------------------------------------------------------------------------------------------
 + *  Copyright (c) Microsoft Corporation. All rights reserved.
@@ -859,8 +859,412 @@ index 00000000000..500edea7d1b
 +		},
 +	}
 +});
+diff --git a/src/vs/workbench/contrib/files/browser/files.contribution._editorPane.ts b/src/vs/workbench/contrib/files/browser/files.contribution._editorPane.ts
+new file mode 100644
+index 00000000000..27601da294a
+--- /dev/null
++++ b/src/vs/workbench/contrib/files/browser/files.contribution._editorPane.ts
+@@ -0,0 +1,93 @@
++/*---------------------------------------------------------------------------------------------
++ *  Copyright (c) Microsoft Corporation. All rights reserved.
++ *  Licensed under the MIT License. See License.txt in the project root for license information.
++ *--------------------------------------------------------------------------------------------*/
++
++import { Schemas } from 'vs/base/common/network';
++import { sep } from 'vs/base/common/path';
++import { isWindows } from 'vs/base/common/platform';
++import { ModesRegistry } from 'vs/editor/common/languages/modesRegistry';
++import * as nls from 'vs/nls';
++import { SyncDescriptor } from 'vs/platform/instantiation/common/descriptors';
++import { ILabelService } from 'vs/platform/label/common/label';
++import { Registry } from 'vs/platform/registry/common/platform';
++import { EditorPaneDescriptor, IEditorPaneRegistry } from 'vs/workbench/browser/editor';
++import { IWorkbenchContribution, WorkbenchPhase, registerWorkbenchContribution2 } from 'vs/workbench/common/contributions';
++import { EditorExtensions, IEditorFactoryRegistry } from 'vs/workbench/common/editor';
++import { BinaryFileEditor } from 'vs/workbench/contrib/files/browser/editors/binaryFileEditor';
++import { FileEditorInputSerializer, FileEditorWorkingCopyEditorHandler } from 'vs/workbench/contrib/files/browser/editors/fileEditorHandler';
++import { FileEditorInput } from 'vs/workbench/contrib/files/browser/editors/fileEditorInput';
++import { TextFileEditor } from 'vs/workbench/contrib/files/browser/editors/textFileEditor';
++import { TextFileEditorTracker } from 'vs/workbench/contrib/files/browser/editors/textFileEditorTracker';
++import { TextFileSaveErrorHandler } from 'vs/workbench/contrib/files/browser/editors/textFileSaveErrorHandler';
++import { WorkspaceWatcher } from 'vs/workbench/contrib/files/browser/workspaceWatcher';
++import { DirtyFilesIndicator } from 'vs/workbench/contrib/files/common/dirtyFilesIndicator';
++import { BINARY_TEXT_FILE_MODE, FILE_EDITOR_INPUT_ID } from 'vs/workbench/contrib/files/common/files';
++import './files.contribution._fileEditorFactory';
++
++class FileUriLabelContribution implements IWorkbenchContribution {
++
++	static readonly ID = 'workbench.contrib.fileUriLabel';
++
++	constructor(@ILabelService labelService: ILabelService) {
++		labelService.registerFormatter({
++			scheme: Schemas.file,
++			formatting: {
++				label: '${authority}${path}',
++				separator: sep,
++				tildify: !isWindows,
++				normalizeDriveLetter: isWindows,
++				authorityPrefix: sep + sep,
++				workspaceSuffix: ''
++			}
++		});
++	}
++}
++// Register file editors
++
++Registry.as<IEditorPaneRegistry>(EditorExtensions.EditorPane).registerEditorPane(
++	EditorPaneDescriptor.create(
++		TextFileEditor,
++		TextFileEditor.ID,
++		nls.localize('textFileEditor', "Text File Editor")
++	),
++	[
++		new SyncDescriptor(FileEditorInput)
++	]
++);
++
++Registry.as<IEditorPaneRegistry>(EditorExtensions.EditorPane).registerEditorPane(
++	EditorPaneDescriptor.create(
++		BinaryFileEditor,
++		BinaryFileEditor.ID,
++		nls.localize('binaryFileEditor', "Binary File Editor")
++	),
++	[
++		new SyncDescriptor(FileEditorInput)
++	]
++);
++
++// Register Editor Input Serializer & Handler
++Registry.as<IEditorFactoryRegistry>(EditorExtensions.EditorFactory).registerEditorSerializer(FILE_EDITOR_INPUT_ID, FileEditorInputSerializer);
++registerWorkbenchContribution2(FileEditorWorkingCopyEditorHandler.ID, FileEditorWorkingCopyEditorHandler, WorkbenchPhase.BlockRestore);
++
++// Register Text File Editor Tracker
++registerWorkbenchContribution2(TextFileEditorTracker.ID, TextFileEditorTracker, WorkbenchPhase.BlockStartup);
++
++// Register Text File Save Error Handler
++registerWorkbenchContribution2(TextFileSaveErrorHandler.ID, TextFileSaveErrorHandler, WorkbenchPhase.BlockStartup);
++
++// Register uri display for file uris
++registerWorkbenchContribution2(FileUriLabelContribution.ID, FileUriLabelContribution, WorkbenchPhase.BlockStartup);
++
++// Register Workspace Watcher
++registerWorkbenchContribution2(WorkspaceWatcher.ID, WorkspaceWatcher, WorkbenchPhase.AfterRestored);
++
++// Register Dirty Files Indicator
++registerWorkbenchContribution2(DirtyFilesIndicator.ID, DirtyFilesIndicator, WorkbenchPhase.BlockStartup);
++
++ModesRegistry.registerLanguage({
++	id: BINARY_TEXT_FILE_MODE,
++	aliases: ['Binary'],
++	mimetypes: ['text/x-code-binary']
++});
+diff --git a/src/vs/workbench/contrib/files/browser/files.contribution._explorer.ts b/src/vs/workbench/contrib/files/browser/files.contribution._explorer.ts
+new file mode 100644
+index 00000000000..dfc9e8c5d99
+--- /dev/null
++++ b/src/vs/workbench/contrib/files/browser/files.contribution._explorer.ts
+@@ -0,0 +1,270 @@
++/*---------------------------------------------------------------------------------------------
++ *  Copyright (c) Microsoft Corporation. All rights reserved.
++ *  Licensed under the MIT License. See License.txt in the project root for license information.
++ *--------------------------------------------------------------------------------------------*/
++
++import { RedoCommand, UndoCommand } from 'vs/editor/browser/editorExtensions';
++import * as nls from 'vs/nls';
++import { IConfigurationService } from 'vs/platform/configuration/common/configuration';
++import { Extensions as ConfigurationExtensions, ConfigurationScope, IConfigurationRegistry } from 'vs/platform/configuration/common/configurationRegistry';
++import { InstantiationType, registerSingleton } from 'vs/platform/instantiation/common/extensions';
++import { ServicesAccessor } from 'vs/platform/instantiation/common/instantiation';
++import { Registry } from 'vs/platform/registry/common/platform';
++import { IUndoRedoService } from 'vs/platform/undoRedo/common/undoRedo';
++import { WorkbenchPhase, registerWorkbenchContribution2 } from 'vs/workbench/common/contributions';
++import { ExplorerService, UNDO_REDO_SOURCE } from 'vs/workbench/contrib/files/browser/explorerService';
++import { ExplorerViewletViewsContribution } from 'vs/workbench/contrib/files/browser/explorerViewlet';
++import { IExplorerService } from 'vs/workbench/contrib/files/browser/files';
++import { IFilesConfiguration, LexicographicOptions, SortOrder, UndoConfirmLevel } from 'vs/workbench/contrib/files/common/files';
++import './files.contribution._configuration';
++import './files.contribution._editorPane';
++import './files.contribution._fileEditorFactory';
++
++registerSingleton(IExplorerService, ExplorerService, InstantiationType.Delayed);
++
++// Register Explorer views
++registerWorkbenchContribution2(ExplorerViewletViewsContribution.ID, ExplorerViewletViewsContribution, WorkbenchPhase.BlockStartup);
++
++// Configuration
++const configurationRegistry = Registry.as<IConfigurationRegistry>(ConfigurationExtensions.Configuration);
++
++configurationRegistry.registerConfiguration({
++	'id': 'explorer',
++	'order': 10,
++	'title': nls.localize('explorerConfigurationTitle', "File Explorer"),
++	'type': 'object',
++	'properties': {
++		'explorer.openEditors.visible': {
++			'type': 'number',
++			'description': nls.localize({ key: 'openEditorsVisible', comment: ['Open is an adjective'] }, "The initial maximum number of editors shown in the Open Editors pane. Exceeding this limit will show a scroll bar and allow resizing the pane to display more items."),
++			'default': 9,
++			'minimum': 1
++		},
++		'explorer.openEditors.minVisible': {
++			'type': 'number',
++			'description': nls.localize({ key: 'openEditorsVisibleMin', comment: ['Open is an adjective'] }, "The minimum number of editor slots pre-allocated in the Open Editors pane. If set to 0 the Open Editors pane will dynamically resize based on the number of editors."),
++			'default': 0,
++			'minimum': 0
++		},
++		'explorer.openEditors.sortOrder': {
++			'type': 'string',
++			'enum': ['editorOrder', 'alphabetical', 'fullPath'],
++			'description': nls.localize({ key: 'openEditorsSortOrder', comment: ['Open is an adjective'] }, "Controls the sorting order of editors in the Open Editors pane."),
++			'enumDescriptions': [
++				nls.localize('sortOrder.editorOrder', 'Editors are ordered in the same order editor tabs are shown.'),
++				nls.localize('sortOrder.alphabetical', 'Editors are ordered alphabetically by tab name inside each editor group.'),
++				nls.localize('sortOrder.fullPath', 'Editors are ordered alphabetically by full path inside each editor group.')
++			],
++			'default': 'editorOrder'
++		},
++		'explorer.autoReveal': {
++			'type': ['boolean', 'string'],
++			'enum': [true, false, 'focusNoScroll'],
++			'default': true,
++			'enumDescriptions': [
++				nls.localize('autoReveal.on', 'Files will be revealed and selected.'),
++				nls.localize('autoReveal.off', 'Files will not be revealed and selected.'),
++				nls.localize('autoReveal.focusNoScroll', 'Files will not be scrolled into view, but will still be focused.'),
++			],
++			'description': nls.localize('autoReveal', "Controls whether the Explorer should automatically reveal and select files when opening them.")
++		},
++		'explorer.autoRevealExclude': {
++			'type': 'object',
++			'markdownDescription': nls.localize('autoRevealExclude', "Configure paths or [glob patterns](https://aka.ms/vscode-glob-patterns) for excluding files and folders from being revealed and selected in the Explorer when they are opened. Glob patterns are always evaluated relative to the path of the workspace folder unless they are absolute paths."),
++			'default': { '**/node_modules': true, '**/bower_components': true },
++			'additionalProperties': {
++				'anyOf': [
++					{
++						'type': 'boolean',
++						'description': nls.localize('explorer.autoRevealExclude.boolean', "The glob pattern to match file paths against. Set to true or false to enable or disable the pattern."),
++					},
++					{
++						type: 'object',
++						properties: {
++							when: {
++								type: 'string', // expression ({ "**/*.js": { "when": "$(basename).js" } })
++								pattern: '\\w*\\$\\(basename\\)\\w*',
++								default: '$(basename).ext',
++								description: nls.localize('explorer.autoRevealExclude.when', 'Additional check on the siblings of a matching file. Use $(basename) as variable for the matching file name.')
++							}
++						}
++					}
++				]
++			}
++		},
++		'explorer.enableDragAndDrop': {
++			'type': 'boolean',
++			'description': nls.localize('enableDragAndDrop', "Controls whether the Explorer should allow to move files and folders via drag and drop. This setting only effects drag and drop from inside the Explorer."),
++			'default': true
++		},
++		'explorer.confirmDragAndDrop': {
++			'type': 'boolean',
++			'description': nls.localize('confirmDragAndDrop', "Controls whether the Explorer should ask for confirmation to move files and folders via drag and drop."),
++			'default': true
++		},
++		'explorer.confirmPasteNative': {
++			'type': 'boolean',
++			'description': nls.localize('confirmPasteNative', "Controls whether the Explorer should ask for confirmation when pasting native files and folders."),
++			'default': true
++		},
++		'explorer.confirmDelete': {
++			'type': 'boolean',
++			'description': nls.localize('confirmDelete', "Controls whether the Explorer should ask for confirmation when deleting a file via the trash."),
++			'default': true
++		},
++		'explorer.enableUndo': {
++			'type': 'boolean',
++			'description': nls.localize('enableUndo', "Controls whether the Explorer should support undoing file and folder operations."),
++			'default': true
++		},
++		'explorer.confirmUndo': {
++			'type': 'string',
++			'enum': [UndoConfirmLevel.Verbose, UndoConfirmLevel.Default, UndoConfirmLevel.Light],
++			'description': nls.localize('confirmUndo', "Controls whether the Explorer should ask for confirmation when undoing."),
++			'default': UndoConfirmLevel.Default,
++			'enumDescriptions': [
++				nls.localize('enableUndo.verbose', 'Explorer will prompt before all undo operations.'),
++				nls.localize('enableUndo.default', 'Explorer will prompt before destructive undo operations.'),
++				nls.localize('enableUndo.light', 'Explorer will not prompt before undo operations when focused.'),
++			],
++		},
++		'explorer.expandSingleFolderWorkspaces': {
++			'type': 'boolean',
++			'description': nls.localize('expandSingleFolderWorkspaces', "Controls whether the Explorer should expand multi-root workspaces containing only one folder during initialization"),
++			'default': true
++		},
++		'explorer.sortOrder': {
++			'type': 'string',
++			'enum': [SortOrder.Default, SortOrder.Mixed, SortOrder.FilesFirst, SortOrder.Type, SortOrder.Modified, SortOrder.FoldersNestsFiles],
++			'default': SortOrder.Default,
++			'enumDescriptions': [
++				nls.localize('sortOrder.default', 'Files and folders are sorted by their names. Folders are displayed before files.'),
++				nls.localize('sortOrder.mixed', 'Files and folders are sorted by their names. Files are interwoven with folders.'),
++				nls.localize('sortOrder.filesFirst', 'Files and folders are sorted by their names. Files are displayed before folders.'),
++				nls.localize('sortOrder.type', 'Files and folders are grouped by extension type then sorted by their names. Folders are displayed before files.'),
++				nls.localize('sortOrder.modified', 'Files and folders are sorted by last modified date in descending order. Folders are displayed before files.'),
++				nls.localize('sortOrder.foldersNestsFiles', 'Files and folders are sorted by their names. Folders are displayed before files. Files with nested children are displayed before other files.')
++			],
++			'markdownDescription': nls.localize('sortOrder', "Controls the property-based sorting of files and folders in the Explorer. When `#explorer.fileNesting.enabled#` is enabled, also controls sorting of nested files.")
++		},
++		'explorer.sortOrderLexicographicOptions': {
++			'type': 'string',
++			'enum': [LexicographicOptions.Default, LexicographicOptions.Upper, LexicographicOptions.Lower, LexicographicOptions.Unicode],
++			'default': LexicographicOptions.Default,
++			'enumDescriptions': [
++				nls.localize('sortOrderLexicographicOptions.default', 'Uppercase and lowercase names are mixed together.'),
++				nls.localize('sortOrderLexicographicOptions.upper', 'Uppercase names are grouped together before lowercase names.'),
++				nls.localize('sortOrderLexicographicOptions.lower', 'Lowercase names are grouped together before uppercase names.'),
++				nls.localize('sortOrderLexicographicOptions.unicode', 'Names are sorted in Unicode order.')
++			],
++			'description': nls.localize('sortOrderLexicographicOptions', "Controls the lexicographic sorting of file and folder names in the Explorer.")
++		},
++		'explorer.decorations.colors': {
++			type: 'boolean',
++			description: nls.localize('explorer.decorations.colors', "Controls whether file decorations should use colors."),
++			default: true
++		},
++		'explorer.decorations.badges': {
++			type: 'boolean',
++			description: nls.localize('explorer.decorations.badges', "Controls whether file decorations should use badges."),
++			default: true
++		},
++		'explorer.incrementalNaming': {
++			'type': 'string',
++			enum: ['simple', 'smart', 'disabled'],
++			enumDescriptions: [
++				nls.localize('simple', "Appends the word \"copy\" at the end of the duplicated name potentially followed by a number."),
++				nls.localize('smart', "Adds a number at the end of the duplicated name. If some number is already part of the name, tries to increase that number."),
++				nls.localize('disabled', "Disables incremental naming. If two files with the same name exist you will be prompted to overwrite the existing file.")
++			],
++			description: nls.localize('explorer.incrementalNaming', "Controls which naming strategy to use when giving a new name to a duplicated Explorer item on paste."),
++			default: 'simple'
++		},
++		'explorer.compactFolders': {
++			'type': 'boolean',
++			'description': nls.localize('compressSingleChildFolders', "Controls whether the Explorer should render folders in a compact form. In such a form, single child folders will be compressed in a combined tree element. Useful for Java package structures, for example."),
++			'default': true
++		},
++		'explorer.copyRelativePathSeparator': {
++			'type': 'string',
++			'enum': [
++				'/',
++				'\\',
++				'auto'
++			],
++			'enumDescriptions': [
++				nls.localize('copyRelativePathSeparator.slash', "Use slash as path separation character."),
++				nls.localize('copyRelativePathSeparator.backslash', "Use backslash as path separation character."),
++				nls.localize('copyRelativePathSeparator.auto', "Uses operating system specific path separation character."),
++			],
++			'description': nls.localize('copyRelativePathSeparator', "The path separation character used when copying relative file paths."),
++			'default': 'auto'
++		},
++		'explorer.excludeGitIgnore': {
++			type: 'boolean',
++			markdownDescription: nls.localize('excludeGitignore', "Controls whether entries in .gitignore should be parsed and excluded from the Explorer. Similar to {0}.", '`#files.exclude#`'),
++			default: false,
++			scope: ConfigurationScope.RESOURCE
++		},
++		'explorer.fileNesting.enabled': {
++			'type': 'boolean',
++			scope: ConfigurationScope.RESOURCE,
++			'markdownDescription': nls.localize('fileNestingEnabled', "Controls whether file nesting is enabled in the Explorer. File nesting allows for related files in a directory to be visually grouped together under a single parent file."),
++			'default': false,
++		},
++		'explorer.fileNesting.expand': {
++			'type': 'boolean',
++			'markdownDescription': nls.localize('fileNestingExpand', "Controls whether file nests are automatically expanded. {0} must be set for this to take effect.", '`#explorer.fileNesting.enabled#`'),
++			'default': true,
++		},
++		'explorer.fileNesting.patterns': {
++			'type': 'object',
++			scope: ConfigurationScope.RESOURCE,
++			'markdownDescription': nls.localize('fileNestingPatterns', "Controls nesting of files in the Explorer. {0} must be set for this to take effect. Each __Item__ represents a parent pattern and may contain a single `*` character that matches any string. Each __Value__ represents a comma separated list of the child patterns that should be shown nested under a given parent. Child patterns may contain several special tokens:\n- `${capture}`: Matches the resolved value of the `*` from the parent pattern\n- `${basename}`: Matches the parent file's basename, the `file` in `file.ts`\n- `${extname}`: Matches the parent file's extension, the `ts` in `file.ts`\n- `${dirname}`: Matches the parent file's directory name, the `src` in `src/file.ts`\n- `*`:  Matches any string, may only be used once per child pattern", '`#explorer.fileNesting.enabled#`'),
++			patternProperties: {
++				'^[^*]*\\*?[^*]*$': {
++					markdownDescription: nls.localize('fileNesting.description', "Each key pattern may contain a single `*` character which will match any string."),
++					type: 'string',
++					pattern: '^([^,*]*\\*?[^,*]*)(, ?[^,*]*\\*?[^,*]*)*$',
++				}
++			},
++			additionalProperties: false,
++			'default': {
++				'*.ts': '${capture}.js',
++				'*.js': '${capture}.js.map, ${capture}.min.js, ${capture}.d.ts',
++				'*.jsx': '${capture}.js',
++				'*.tsx': '${capture}.ts',
++				'tsconfig.json': 'tsconfig.*.json',
++				'package.json': 'package-lock.json, yarn.lock, pnpm-lock.yaml, bun.lockb',
++			}
++		}
++	}
++});
++
++UndoCommand.addImplementation(110, 'explorer', (accessor: ServicesAccessor) => {
++	const undoRedoService = accessor.get(IUndoRedoService);
++	const explorerService = accessor.get(IExplorerService);
++	const configurationService = accessor.get(IConfigurationService);
++
++	const explorerCanUndo = configurationService.getValue<IFilesConfiguration>().explorer.enableUndo;
++	if (explorerService.hasViewFocus() && undoRedoService.canUndo(UNDO_REDO_SOURCE) && explorerCanUndo) {
++		undoRedoService.undo(UNDO_REDO_SOURCE);
++		return true;
++	}
++
++	return false;
++});
++
++RedoCommand.addImplementation(110, 'explorer', (accessor: ServicesAccessor) => {
++	const undoRedoService = accessor.get(IUndoRedoService);
++	const explorerService = accessor.get(IExplorerService);
++	const configurationService = accessor.get(IConfigurationService);
++
++	const explorerCanUndo = configurationService.getValue<IFilesConfiguration>().explorer.enableUndo;
++	if (explorerService.hasViewFocus() && undoRedoService.canRedo(UNDO_REDO_SOURCE) && explorerCanUndo) {
++		undoRedoService.redo(UNDO_REDO_SOURCE);
++		return true;
++	}
++
++	return false;
++});
+diff --git a/src/vs/workbench/contrib/files/browser/files.contribution._fileEditorFactory.ts b/src/vs/workbench/contrib/files/browser/files.contribution._fileEditorFactory.ts
+new file mode 100644
+index 00000000000..2f31d6a7984
+--- /dev/null
++++ b/src/vs/workbench/contrib/files/browser/files.contribution._fileEditorFactory.ts
+@@ -0,0 +1,23 @@
++/*---------------------------------------------------------------------------------------------
++ *  Copyright (c) Microsoft Corporation. All rights reserved.
++ *  Licensed under the MIT License. See License.txt in the project root for license information.
++ *--------------------------------------------------------------------------------------------*/
++
++import { Registry } from 'vs/platform/registry/common/platform';
++import { EditorExtensions, IEditorFactoryRegistry, IFileEditorInput } from 'vs/workbench/common/editor';
++import { FileEditorInput } from 'vs/workbench/contrib/files/browser/editors/fileEditorInput';
++import { FILE_EDITOR_INPUT_ID } from 'vs/workbench/contrib/files/common/files';
++
++// Register default file input factory
++Registry.as<IEditorFactoryRegistry>(EditorExtensions.EditorFactory).registerFileEditorFactory({
++
++	typeId: FILE_EDITOR_INPUT_ID,
++
++	createFileEditor: (resource, preferredResource, preferredName, preferredDescription, preferredEncoding, preferredLanguageId, preferredContents, instantiationService): IFileEditorInput => {
++		return instantiationService.createInstance(FileEditorInput, resource, preferredResource, preferredName, preferredDescription, preferredEncoding, preferredLanguageId, preferredContents);
++	},
++
++	isFileEditor: (obj): obj is IFileEditorInput => {
++		return obj instanceof FileEditorInput;
++	}
++});
 diff --git a/src/vs/workbench/contrib/files/browser/files.contribution.ts b/src/vs/workbench/contrib/files/browser/files.contribution.ts
-index 4af58b0bd45..98d8dec26be 100644
+index 4af58b0bd45..fa00f1d55a1 100644
 --- a/src/vs/workbench/contrib/files/browser/files.contribution.ts
 +++ b/src/vs/workbench/contrib/files/browser/files.contribution.ts
 @@ -3,637 +3,7 @@
@@ -1501,411 +1905,7 @@ index 4af58b0bd45..98d8dec26be 100644
 -	aliases: ['Binary'],
 -	mimetypes: ['text/x-code-binary']
 -});
-+import './files.configuration.contribution';
-+import './files.editorPane.contribution';
-+import './files.fileEditorFactory.contribution';
-+import './files.explorer.contribution';
-diff --git a/src/vs/workbench/contrib/files/browser/files.editorPane.contribution.ts b/src/vs/workbench/contrib/files/browser/files.editorPane.contribution.ts
-new file mode 100644
-index 00000000000..afc1d8cc34a
---- /dev/null
-+++ b/src/vs/workbench/contrib/files/browser/files.editorPane.contribution.ts
-@@ -0,0 +1,93 @@
-+/*---------------------------------------------------------------------------------------------
-+ *  Copyright (c) Microsoft Corporation. All rights reserved.
-+ *  Licensed under the MIT License. See License.txt in the project root for license information.
-+ *--------------------------------------------------------------------------------------------*/
-+
-+import { Schemas } from 'vs/base/common/network';
-+import { sep } from 'vs/base/common/path';
-+import { isWindows } from 'vs/base/common/platform';
-+import { ModesRegistry } from 'vs/editor/common/languages/modesRegistry';
-+import * as nls from 'vs/nls';
-+import { SyncDescriptor } from 'vs/platform/instantiation/common/descriptors';
-+import { ILabelService } from 'vs/platform/label/common/label';
-+import { Registry } from 'vs/platform/registry/common/platform';
-+import { EditorPaneDescriptor, IEditorPaneRegistry } from 'vs/workbench/browser/editor';
-+import { IWorkbenchContribution, WorkbenchPhase, registerWorkbenchContribution2 } from 'vs/workbench/common/contributions';
-+import { EditorExtensions, IEditorFactoryRegistry } from 'vs/workbench/common/editor';
-+import { BinaryFileEditor } from 'vs/workbench/contrib/files/browser/editors/binaryFileEditor';
-+import { FileEditorInputSerializer, FileEditorWorkingCopyEditorHandler } from 'vs/workbench/contrib/files/browser/editors/fileEditorHandler';
-+import { FileEditorInput } from 'vs/workbench/contrib/files/browser/editors/fileEditorInput';
-+import { TextFileEditor } from 'vs/workbench/contrib/files/browser/editors/textFileEditor';
-+import { TextFileEditorTracker } from 'vs/workbench/contrib/files/browser/editors/textFileEditorTracker';
-+import { TextFileSaveErrorHandler } from 'vs/workbench/contrib/files/browser/editors/textFileSaveErrorHandler';
-+import { WorkspaceWatcher } from 'vs/workbench/contrib/files/browser/workspaceWatcher';
-+import { DirtyFilesIndicator } from 'vs/workbench/contrib/files/common/dirtyFilesIndicator';
-+import { BINARY_TEXT_FILE_MODE, FILE_EDITOR_INPUT_ID } from 'vs/workbench/contrib/files/common/files';
-+import './files.fileEditorFactory.contribution';
-+
-+class FileUriLabelContribution implements IWorkbenchContribution {
-+
-+	static readonly ID = 'workbench.contrib.fileUriLabel';
-+
-+	constructor(@ILabelService labelService: ILabelService) {
-+		labelService.registerFormatter({
-+			scheme: Schemas.file,
-+			formatting: {
-+				label: '${authority}${path}',
-+				separator: sep,
-+				tildify: !isWindows,
-+				normalizeDriveLetter: isWindows,
-+				authorityPrefix: sep + sep,
-+				workspaceSuffix: ''
-+			}
-+		});
-+	}
-+}
-+// Register file editors
-+
-+Registry.as<IEditorPaneRegistry>(EditorExtensions.EditorPane).registerEditorPane(
-+	EditorPaneDescriptor.create(
-+		TextFileEditor,
-+		TextFileEditor.ID,
-+		nls.localize('textFileEditor', "Text File Editor")
-+	),
-+	[
-+		new SyncDescriptor(FileEditorInput)
-+	]
-+);
-+
-+Registry.as<IEditorPaneRegistry>(EditorExtensions.EditorPane).registerEditorPane(
-+	EditorPaneDescriptor.create(
-+		BinaryFileEditor,
-+		BinaryFileEditor.ID,
-+		nls.localize('binaryFileEditor', "Binary File Editor")
-+	),
-+	[
-+		new SyncDescriptor(FileEditorInput)
-+	]
-+);
-+
-+// Register Editor Input Serializer & Handler
-+Registry.as<IEditorFactoryRegistry>(EditorExtensions.EditorFactory).registerEditorSerializer(FILE_EDITOR_INPUT_ID, FileEditorInputSerializer);
-+registerWorkbenchContribution2(FileEditorWorkingCopyEditorHandler.ID, FileEditorWorkingCopyEditorHandler, WorkbenchPhase.BlockRestore);
-+
-+// Register Text File Editor Tracker
-+registerWorkbenchContribution2(TextFileEditorTracker.ID, TextFileEditorTracker, WorkbenchPhase.BlockStartup);
-+
-+// Register Text File Save Error Handler
-+registerWorkbenchContribution2(TextFileSaveErrorHandler.ID, TextFileSaveErrorHandler, WorkbenchPhase.BlockStartup);
-+
-+// Register uri display for file uris
-+registerWorkbenchContribution2(FileUriLabelContribution.ID, FileUriLabelContribution, WorkbenchPhase.BlockStartup);
-+
-+// Register Workspace Watcher
-+registerWorkbenchContribution2(WorkspaceWatcher.ID, WorkspaceWatcher, WorkbenchPhase.AfterRestored);
-+
-+// Register Dirty Files Indicator
-+registerWorkbenchContribution2(DirtyFilesIndicator.ID, DirtyFilesIndicator, WorkbenchPhase.BlockStartup);
-+
-+ModesRegistry.registerLanguage({
-+	id: BINARY_TEXT_FILE_MODE,
-+	aliases: ['Binary'],
-+	mimetypes: ['text/x-code-binary']
-+});
-diff --git a/src/vs/workbench/contrib/files/browser/files.explorer.contribution.ts b/src/vs/workbench/contrib/files/browser/files.explorer.contribution.ts
-new file mode 100644
-index 00000000000..0ed00cb19e7
---- /dev/null
-+++ b/src/vs/workbench/contrib/files/browser/files.explorer.contribution.ts
-@@ -0,0 +1,270 @@
-+/*---------------------------------------------------------------------------------------------
-+ *  Copyright (c) Microsoft Corporation. All rights reserved.
-+ *  Licensed under the MIT License. See License.txt in the project root for license information.
-+ *--------------------------------------------------------------------------------------------*/
-+
-+import { RedoCommand, UndoCommand } from 'vs/editor/browser/editorExtensions';
-+import * as nls from 'vs/nls';
-+import { IConfigurationService } from 'vs/platform/configuration/common/configuration';
-+import { Extensions as ConfigurationExtensions, ConfigurationScope, IConfigurationRegistry } from 'vs/platform/configuration/common/configurationRegistry';
-+import { InstantiationType, registerSingleton } from 'vs/platform/instantiation/common/extensions';
-+import { ServicesAccessor } from 'vs/platform/instantiation/common/instantiation';
-+import { Registry } from 'vs/platform/registry/common/platform';
-+import { IUndoRedoService } from 'vs/platform/undoRedo/common/undoRedo';
-+import { WorkbenchPhase, registerWorkbenchContribution2 } from 'vs/workbench/common/contributions';
-+import { ExplorerService, UNDO_REDO_SOURCE } from 'vs/workbench/contrib/files/browser/explorerService';
-+import { ExplorerViewletViewsContribution } from 'vs/workbench/contrib/files/browser/explorerViewlet';
-+import { IExplorerService } from 'vs/workbench/contrib/files/browser/files';
-+import { IFilesConfiguration, LexicographicOptions, SortOrder, UndoConfirmLevel } from 'vs/workbench/contrib/files/common/files';
-+import './files.configuration.contribution';
-+import './files.editorPane.contribution';
-+import './files.fileEditorFactory.contribution';
-+
-+registerSingleton(IExplorerService, ExplorerService, InstantiationType.Delayed);
-+
-+// Register Explorer views
-+registerWorkbenchContribution2(ExplorerViewletViewsContribution.ID, ExplorerViewletViewsContribution, WorkbenchPhase.BlockStartup);
-+
-+// Configuration
-+const configurationRegistry = Registry.as<IConfigurationRegistry>(ConfigurationExtensions.Configuration);
-+
-+configurationRegistry.registerConfiguration({
-+	'id': 'explorer',
-+	'order': 10,
-+	'title': nls.localize('explorerConfigurationTitle', "File Explorer"),
-+	'type': 'object',
-+	'properties': {
-+		'explorer.openEditors.visible': {
-+			'type': 'number',
-+			'description': nls.localize({ key: 'openEditorsVisible', comment: ['Open is an adjective'] }, "The initial maximum number of editors shown in the Open Editors pane. Exceeding this limit will show a scroll bar and allow resizing the pane to display more items."),
-+			'default': 9,
-+			'minimum': 1
-+		},
-+		'explorer.openEditors.minVisible': {
-+			'type': 'number',
-+			'description': nls.localize({ key: 'openEditorsVisibleMin', comment: ['Open is an adjective'] }, "The minimum number of editor slots pre-allocated in the Open Editors pane. If set to 0 the Open Editors pane will dynamically resize based on the number of editors."),
-+			'default': 0,
-+			'minimum': 0
-+		},
-+		'explorer.openEditors.sortOrder': {
-+			'type': 'string',
-+			'enum': ['editorOrder', 'alphabetical', 'fullPath'],
-+			'description': nls.localize({ key: 'openEditorsSortOrder', comment: ['Open is an adjective'] }, "Controls the sorting order of editors in the Open Editors pane."),
-+			'enumDescriptions': [
-+				nls.localize('sortOrder.editorOrder', 'Editors are ordered in the same order editor tabs are shown.'),
-+				nls.localize('sortOrder.alphabetical', 'Editors are ordered alphabetically by tab name inside each editor group.'),
-+				nls.localize('sortOrder.fullPath', 'Editors are ordered alphabetically by full path inside each editor group.')
-+			],
-+			'default': 'editorOrder'
-+		},
-+		'explorer.autoReveal': {
-+			'type': ['boolean', 'string'],
-+			'enum': [true, false, 'focusNoScroll'],
-+			'default': true,
-+			'enumDescriptions': [
-+				nls.localize('autoReveal.on', 'Files will be revealed and selected.'),
-+				nls.localize('autoReveal.off', 'Files will not be revealed and selected.'),
-+				nls.localize('autoReveal.focusNoScroll', 'Files will not be scrolled into view, but will still be focused.'),
-+			],
-+			'description': nls.localize('autoReveal', "Controls whether the Explorer should automatically reveal and select files when opening them.")
-+		},
-+		'explorer.autoRevealExclude': {
-+			'type': 'object',
-+			'markdownDescription': nls.localize('autoRevealExclude', "Configure paths or [glob patterns](https://aka.ms/vscode-glob-patterns) for excluding files and folders from being revealed and selected in the Explorer when they are opened. Glob patterns are always evaluated relative to the path of the workspace folder unless they are absolute paths."),
-+			'default': { '**/node_modules': true, '**/bower_components': true },
-+			'additionalProperties': {
-+				'anyOf': [
-+					{
-+						'type': 'boolean',
-+						'description': nls.localize('explorer.autoRevealExclude.boolean', "The glob pattern to match file paths against. Set to true or false to enable or disable the pattern."),
-+					},
-+					{
-+						type: 'object',
-+						properties: {
-+							when: {
-+								type: 'string', // expression ({ "**/*.js": { "when": "$(basename).js" } })
-+								pattern: '\\w*\\$\\(basename\\)\\w*',
-+								default: '$(basename).ext',
-+								description: nls.localize('explorer.autoRevealExclude.when', 'Additional check on the siblings of a matching file. Use $(basename) as variable for the matching file name.')
-+							}
-+						}
-+					}
-+				]
-+			}
-+		},
-+		'explorer.enableDragAndDrop': {
-+			'type': 'boolean',
-+			'description': nls.localize('enableDragAndDrop', "Controls whether the Explorer should allow to move files and folders via drag and drop. This setting only effects drag and drop from inside the Explorer."),
-+			'default': true
-+		},
-+		'explorer.confirmDragAndDrop': {
-+			'type': 'boolean',
-+			'description': nls.localize('confirmDragAndDrop', "Controls whether the Explorer should ask for confirmation to move files and folders via drag and drop."),
-+			'default': true
-+		},
-+		'explorer.confirmPasteNative': {
-+			'type': 'boolean',
-+			'description': nls.localize('confirmPasteNative', "Controls whether the Explorer should ask for confirmation when pasting native files and folders."),
-+			'default': true
-+		},
-+		'explorer.confirmDelete': {
-+			'type': 'boolean',
-+			'description': nls.localize('confirmDelete', "Controls whether the Explorer should ask for confirmation when deleting a file via the trash."),
-+			'default': true
-+		},
-+		'explorer.enableUndo': {
-+			'type': 'boolean',
-+			'description': nls.localize('enableUndo', "Controls whether the Explorer should support undoing file and folder operations."),
-+			'default': true
-+		},
-+		'explorer.confirmUndo': {
-+			'type': 'string',
-+			'enum': [UndoConfirmLevel.Verbose, UndoConfirmLevel.Default, UndoConfirmLevel.Light],
-+			'description': nls.localize('confirmUndo', "Controls whether the Explorer should ask for confirmation when undoing."),
-+			'default': UndoConfirmLevel.Default,
-+			'enumDescriptions': [
-+				nls.localize('enableUndo.verbose', 'Explorer will prompt before all undo operations.'),
-+				nls.localize('enableUndo.default', 'Explorer will prompt before destructive undo operations.'),
-+				nls.localize('enableUndo.light', 'Explorer will not prompt before undo operations when focused.'),
-+			],
-+		},
-+		'explorer.expandSingleFolderWorkspaces': {
-+			'type': 'boolean',
-+			'description': nls.localize('expandSingleFolderWorkspaces', "Controls whether the Explorer should expand multi-root workspaces containing only one folder during initialization"),
-+			'default': true
-+		},
-+		'explorer.sortOrder': {
-+			'type': 'string',
-+			'enum': [SortOrder.Default, SortOrder.Mixed, SortOrder.FilesFirst, SortOrder.Type, SortOrder.Modified, SortOrder.FoldersNestsFiles],
-+			'default': SortOrder.Default,
-+			'enumDescriptions': [
-+				nls.localize('sortOrder.default', 'Files and folders are sorted by their names. Folders are displayed before files.'),
-+				nls.localize('sortOrder.mixed', 'Files and folders are sorted by their names. Files are interwoven with folders.'),
-+				nls.localize('sortOrder.filesFirst', 'Files and folders are sorted by their names. Files are displayed before folders.'),
-+				nls.localize('sortOrder.type', 'Files and folders are grouped by extension type then sorted by their names. Folders are displayed before files.'),
-+				nls.localize('sortOrder.modified', 'Files and folders are sorted by last modified date in descending order. Folders are displayed before files.'),
-+				nls.localize('sortOrder.foldersNestsFiles', 'Files and folders are sorted by their names. Folders are displayed before files. Files with nested children are displayed before other files.')
-+			],
-+			'markdownDescription': nls.localize('sortOrder', "Controls the property-based sorting of files and folders in the Explorer. When `#explorer.fileNesting.enabled#` is enabled, also controls sorting of nested files.")
-+		},
-+		'explorer.sortOrderLexicographicOptions': {
-+			'type': 'string',
-+			'enum': [LexicographicOptions.Default, LexicographicOptions.Upper, LexicographicOptions.Lower, LexicographicOptions.Unicode],
-+			'default': LexicographicOptions.Default,
-+			'enumDescriptions': [
-+				nls.localize('sortOrderLexicographicOptions.default', 'Uppercase and lowercase names are mixed together.'),
-+				nls.localize('sortOrderLexicographicOptions.upper', 'Uppercase names are grouped together before lowercase names.'),
-+				nls.localize('sortOrderLexicographicOptions.lower', 'Lowercase names are grouped together before uppercase names.'),
-+				nls.localize('sortOrderLexicographicOptions.unicode', 'Names are sorted in Unicode order.')
-+			],
-+			'description': nls.localize('sortOrderLexicographicOptions', "Controls the lexicographic sorting of file and folder names in the Explorer.")
-+		},
-+		'explorer.decorations.colors': {
-+			type: 'boolean',
-+			description: nls.localize('explorer.decorations.colors', "Controls whether file decorations should use colors."),
-+			default: true
-+		},
-+		'explorer.decorations.badges': {
-+			type: 'boolean',
-+			description: nls.localize('explorer.decorations.badges', "Controls whether file decorations should use badges."),
-+			default: true
-+		},
-+		'explorer.incrementalNaming': {
-+			'type': 'string',
-+			enum: ['simple', 'smart', 'disabled'],
-+			enumDescriptions: [
-+				nls.localize('simple', "Appends the word \"copy\" at the end of the duplicated name potentially followed by a number."),
-+				nls.localize('smart', "Adds a number at the end of the duplicated name. If some number is already part of the name, tries to increase that number."),
-+				nls.localize('disabled', "Disables incremental naming. If two files with the same name exist you will be prompted to overwrite the existing file.")
-+			],
-+			description: nls.localize('explorer.incrementalNaming', "Controls which naming strategy to use when giving a new name to a duplicated Explorer item on paste."),
-+			default: 'simple'
-+		},
-+		'explorer.compactFolders': {
-+			'type': 'boolean',
-+			'description': nls.localize('compressSingleChildFolders', "Controls whether the Explorer should render folders in a compact form. In such a form, single child folders will be compressed in a combined tree element. Useful for Java package structures, for example."),
-+			'default': true
-+		},
-+		'explorer.copyRelativePathSeparator': {
-+			'type': 'string',
-+			'enum': [
-+				'/',
-+				'\\',
-+				'auto'
-+			],
-+			'enumDescriptions': [
-+				nls.localize('copyRelativePathSeparator.slash', "Use slash as path separation character."),
-+				nls.localize('copyRelativePathSeparator.backslash', "Use backslash as path separation character."),
-+				nls.localize('copyRelativePathSeparator.auto', "Uses operating system specific path separation character."),
-+			],
-+			'description': nls.localize('copyRelativePathSeparator', "The path separation character used when copying relative file paths."),
-+			'default': 'auto'
-+		},
-+		'explorer.excludeGitIgnore': {
-+			type: 'boolean',
-+			markdownDescription: nls.localize('excludeGitignore', "Controls whether entries in .gitignore should be parsed and excluded from the Explorer. Similar to {0}.", '`#files.exclude#`'),
-+			default: false,
-+			scope: ConfigurationScope.RESOURCE
-+		},
-+		'explorer.fileNesting.enabled': {
-+			'type': 'boolean',
-+			scope: ConfigurationScope.RESOURCE,
-+			'markdownDescription': nls.localize('fileNestingEnabled', "Controls whether file nesting is enabled in the Explorer. File nesting allows for related files in a directory to be visually grouped together under a single parent file."),
-+			'default': false,
-+		},
-+		'explorer.fileNesting.expand': {
-+			'type': 'boolean',
-+			'markdownDescription': nls.localize('fileNestingExpand', "Controls whether file nests are automatically expanded. {0} must be set for this to take effect.", '`#explorer.fileNesting.enabled#`'),
-+			'default': true,
-+		},
-+		'explorer.fileNesting.patterns': {
-+			'type': 'object',
-+			scope: ConfigurationScope.RESOURCE,
-+			'markdownDescription': nls.localize('fileNestingPatterns', "Controls nesting of files in the Explorer. {0} must be set for this to take effect. Each __Item__ represents a parent pattern and may contain a single `*` character that matches any string. Each __Value__ represents a comma separated list of the child patterns that should be shown nested under a given parent. Child patterns may contain several special tokens:\n- `${capture}`: Matches the resolved value of the `*` from the parent pattern\n- `${basename}`: Matches the parent file's basename, the `file` in `file.ts`\n- `${extname}`: Matches the parent file's extension, the `ts` in `file.ts`\n- `${dirname}`: Matches the parent file's directory name, the `src` in `src/file.ts`\n- `*`:  Matches any string, may only be used once per child pattern", '`#explorer.fileNesting.enabled#`'),
-+			patternProperties: {
-+				'^[^*]*\\*?[^*]*$': {
-+					markdownDescription: nls.localize('fileNesting.description', "Each key pattern may contain a single `*` character which will match any string."),
-+					type: 'string',
-+					pattern: '^([^,*]*\\*?[^,*]*)(, ?[^,*]*\\*?[^,*]*)*$',
-+				}
-+			},
-+			additionalProperties: false,
-+			'default': {
-+				'*.ts': '${capture}.js',
-+				'*.js': '${capture}.js.map, ${capture}.min.js, ${capture}.d.ts',
-+				'*.jsx': '${capture}.js',
-+				'*.tsx': '${capture}.ts',
-+				'tsconfig.json': 'tsconfig.*.json',
-+				'package.json': 'package-lock.json, yarn.lock, pnpm-lock.yaml, bun.lockb',
-+			}
-+		}
-+	}
-+});
-+
-+UndoCommand.addImplementation(110, 'explorer', (accessor: ServicesAccessor) => {
-+	const undoRedoService = accessor.get(IUndoRedoService);
-+	const explorerService = accessor.get(IExplorerService);
-+	const configurationService = accessor.get(IConfigurationService);
-+
-+	const explorerCanUndo = configurationService.getValue<IFilesConfiguration>().explorer.enableUndo;
-+	if (explorerService.hasViewFocus() && undoRedoService.canUndo(UNDO_REDO_SOURCE) && explorerCanUndo) {
-+		undoRedoService.undo(UNDO_REDO_SOURCE);
-+		return true;
-+	}
-+
-+	return false;
-+});
-+
-+RedoCommand.addImplementation(110, 'explorer', (accessor: ServicesAccessor) => {
-+	const undoRedoService = accessor.get(IUndoRedoService);
-+	const explorerService = accessor.get(IExplorerService);
-+	const configurationService = accessor.get(IConfigurationService);
-+
-+	const explorerCanUndo = configurationService.getValue<IFilesConfiguration>().explorer.enableUndo;
-+	if (explorerService.hasViewFocus() && undoRedoService.canRedo(UNDO_REDO_SOURCE) && explorerCanUndo) {
-+		undoRedoService.redo(UNDO_REDO_SOURCE);
-+		return true;
-+	}
-+
-+	return false;
-+});
-diff --git a/src/vs/workbench/contrib/files/browser/files.fileEditorFactory.contribution.ts b/src/vs/workbench/contrib/files/browser/files.fileEditorFactory.contribution.ts
-new file mode 100644
-index 00000000000..2f31d6a7984
---- /dev/null
-+++ b/src/vs/workbench/contrib/files/browser/files.fileEditorFactory.contribution.ts
-@@ -0,0 +1,23 @@
-+/*---------------------------------------------------------------------------------------------
-+ *  Copyright (c) Microsoft Corporation. All rights reserved.
-+ *  Licensed under the MIT License. See License.txt in the project root for license information.
-+ *--------------------------------------------------------------------------------------------*/
-+
-+import { Registry } from 'vs/platform/registry/common/platform';
-+import { EditorExtensions, IEditorFactoryRegistry, IFileEditorInput } from 'vs/workbench/common/editor';
-+import { FileEditorInput } from 'vs/workbench/contrib/files/browser/editors/fileEditorInput';
-+import { FILE_EDITOR_INPUT_ID } from 'vs/workbench/contrib/files/common/files';
-+
-+// Register default file input factory
-+Registry.as<IEditorFactoryRegistry>(EditorExtensions.EditorFactory).registerFileEditorFactory({
-+
-+	typeId: FILE_EDITOR_INPUT_ID,
-+
-+	createFileEditor: (resource, preferredResource, preferredName, preferredDescription, preferredEncoding, preferredLanguageId, preferredContents, instantiationService): IFileEditorInput => {
-+		return instantiationService.createInstance(FileEditorInput, resource, preferredResource, preferredName, preferredDescription, preferredEncoding, preferredLanguageId, preferredContents);
-+	},
-+
-+	isFileEditor: (obj): obj is IFileEditorInput => {
-+		return obj instanceof FileEditorInput;
-+	}
-+});
++import './files.contribution._configuration';
++import './files.contribution._editorPane';
++import './files.contribution._fileEditorFactory';
++import './files.contribution._explorer';
