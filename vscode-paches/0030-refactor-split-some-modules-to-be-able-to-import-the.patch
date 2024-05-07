@@ -10,11 +10,11 @@ Subject: [PATCH] refactor: split some modules to be able to import them
  .../files/browser/fileCommands.save.ts        | 198 ++++++
  .../contrib/files/browser/fileCommands.ts     | 245 +------
  .../files.configuration.contribution.ts       | 313 +++++++++
- .../files/browser/files.contribution.ts       | 639 +-----------------
- .../browser/files.editorPane.contribution.ts  |  94 +++
+ .../files/browser/files.contribution.ts       | 638 +-----------------
+ .../browser/files.editorPane.contribution.ts  |  93 +++
  .../browser/files.explorer.contribution.ts    | 270 ++++++++
  .../files.fileEditorFactory.contribution.ts   |  23 +
- 9 files changed, 946 insertions(+), 848 deletions(-)
+ 9 files changed, 945 insertions(+), 847 deletions(-)
  create mode 100644 src/vs/workbench/browser/parts/editor/editor.autosave.contribution.ts
  create mode 100644 src/vs/workbench/contrib/files/browser/fileCommands.save.ts
  create mode 100644 src/vs/workbench/contrib/files/browser/files.configuration.contribution.ts
@@ -860,10 +860,10 @@ index 00000000000..500edea7d1b
 +	}
 +});
 diff --git a/src/vs/workbench/contrib/files/browser/files.contribution.ts b/src/vs/workbench/contrib/files/browser/files.contribution.ts
-index cc35374830e..98d8dec26be 100644
+index 4af58b0bd45..98d8dec26be 100644
 --- a/src/vs/workbench/contrib/files/browser/files.contribution.ts
 +++ b/src/vs/workbench/contrib/files/browser/files.contribution.ts
-@@ -3,638 +3,7 @@
+@@ -3,637 +3,7 @@
   *  Licensed under the MIT License. See License.txt in the project root for license information.
   *--------------------------------------------------------------------------------------------*/
  
@@ -871,7 +871,7 @@ index cc35374830e..98d8dec26be 100644
 -import { sep } from 'vs/base/common/path';
 -import { Registry } from 'vs/platform/registry/common/platform';
 -import { IConfigurationRegistry, Extensions as ConfigurationExtensions, ConfigurationScope, IConfigurationPropertySchema } from 'vs/platform/configuration/common/configurationRegistry';
--import { IWorkbenchContributionsRegistry, Extensions as WorkbenchExtensions, IWorkbenchContribution, WorkbenchPhase, registerWorkbenchContribution2 } from 'vs/workbench/common/contributions';
+-import { IWorkbenchContribution, WorkbenchPhase, registerWorkbenchContribution2 } from 'vs/workbench/common/contributions';
 -import { IFileEditorInput, IEditorFactoryRegistry, EditorExtensions } from 'vs/workbench/common/editor';
 -import { AutoSaveConfiguration, HotExitConfiguration, FILES_EXCLUDE_CONFIG, FILES_ASSOCIATIONS_CONFIG, FILES_READONLY_INCLUDE_CONFIG, FILES_READONLY_EXCLUDE_CONFIG, FILES_READONLY_FROM_PERMISSIONS_CONFIG } from 'vs/platform/files/common/files';
 -import { SortOrder, LexicographicOptions, FILE_EDITOR_INPUT_ID, BINARY_TEXT_FILE_MODE, UndoConfirmLevel, IFilesConfiguration } from 'vs/workbench/contrib/files/common/files';
@@ -884,7 +884,6 @@ index cc35374830e..98d8dec26be 100644
 -import { isNative, isWeb, isWindows } from 'vs/base/common/platform';
 -import { ExplorerViewletViewsContribution } from 'vs/workbench/contrib/files/browser/explorerViewlet';
 -import { IEditorPaneRegistry, EditorPaneDescriptor } from 'vs/workbench/browser/editor';
--import { LifecyclePhase } from 'vs/workbench/services/lifecycle/common/lifecycle';
 -import { ILabelService } from 'vs/platform/label/common/label';
 -import { InstantiationType, registerSingleton } from 'vs/platform/instantiation/common/extensions';
 -import { ExplorerService, UNDO_REDO_SOURCE } from 'vs/workbench/contrib/files/browser/explorerService';
@@ -977,7 +976,7 @@ index cc35374830e..98d8dec26be 100644
 -registerWorkbenchContribution2(FileUriLabelContribution.ID, FileUriLabelContribution, WorkbenchPhase.BlockStartup);
 -
 -// Register Workspace Watcher
--Registry.as<IWorkbenchContributionsRegistry>(WorkbenchExtensions.Workbench).registerWorkbenchContribution(WorkspaceWatcher, LifecyclePhase.Restored);
+-registerWorkbenchContribution2(WorkspaceWatcher.ID, WorkspaceWatcher, WorkbenchPhase.AfterRestored);
 -
 -// Register Dirty Files Indicator
 -registerWorkbenchContribution2(DirtyFilesIndicator.ID, DirtyFilesIndicator, WorkbenchPhase.BlockStartup);
@@ -1508,36 +1507,35 @@ index cc35374830e..98d8dec26be 100644
 +import './files.explorer.contribution';
 diff --git a/src/vs/workbench/contrib/files/browser/files.editorPane.contribution.ts b/src/vs/workbench/contrib/files/browser/files.editorPane.contribution.ts
 new file mode 100644
-index 00000000000..18a1975b685
+index 00000000000..afc1d8cc34a
 --- /dev/null
 +++ b/src/vs/workbench/contrib/files/browser/files.editorPane.contribution.ts
-@@ -0,0 +1,94 @@
+@@ -0,0 +1,93 @@
 +/*---------------------------------------------------------------------------------------------
 + *  Copyright (c) Microsoft Corporation. All rights reserved.
 + *  Licensed under the MIT License. See License.txt in the project root for license information.
 + *--------------------------------------------------------------------------------------------*/
 +
-+import * as nls from 'vs/nls';
++import { Schemas } from 'vs/base/common/network';
 +import { sep } from 'vs/base/common/path';
++import { isWindows } from 'vs/base/common/platform';
++import { ModesRegistry } from 'vs/editor/common/languages/modesRegistry';
++import * as nls from 'vs/nls';
++import { SyncDescriptor } from 'vs/platform/instantiation/common/descriptors';
++import { ILabelService } from 'vs/platform/label/common/label';
 +import { Registry } from 'vs/platform/registry/common/platform';
-+import { IWorkbenchContributionsRegistry, Extensions as WorkbenchExtensions, IWorkbenchContribution, WorkbenchPhase, registerWorkbenchContribution2 } from 'vs/workbench/common/contributions';
-+import { IEditorFactoryRegistry, EditorExtensions } from 'vs/workbench/common/editor';
-+import { FILE_EDITOR_INPUT_ID, BINARY_TEXT_FILE_MODE } from 'vs/workbench/contrib/files/common/files';
++import { EditorPaneDescriptor, IEditorPaneRegistry } from 'vs/workbench/browser/editor';
++import { IWorkbenchContribution, WorkbenchPhase, registerWorkbenchContribution2 } from 'vs/workbench/common/contributions';
++import { EditorExtensions, IEditorFactoryRegistry } from 'vs/workbench/common/editor';
++import { BinaryFileEditor } from 'vs/workbench/contrib/files/browser/editors/binaryFileEditor';
++import { FileEditorInputSerializer, FileEditorWorkingCopyEditorHandler } from 'vs/workbench/contrib/files/browser/editors/fileEditorHandler';
++import { FileEditorInput } from 'vs/workbench/contrib/files/browser/editors/fileEditorInput';
++import { TextFileEditor } from 'vs/workbench/contrib/files/browser/editors/textFileEditor';
 +import { TextFileEditorTracker } from 'vs/workbench/contrib/files/browser/editors/textFileEditorTracker';
 +import { TextFileSaveErrorHandler } from 'vs/workbench/contrib/files/browser/editors/textFileSaveErrorHandler';
-+import { FileEditorInput } from 'vs/workbench/contrib/files/browser/editors/fileEditorInput';
-+import { BinaryFileEditor } from 'vs/workbench/contrib/files/browser/editors/binaryFileEditor';
-+import { SyncDescriptor } from 'vs/platform/instantiation/common/descriptors';
-+import { isWindows } from 'vs/base/common/platform';
-+import { IEditorPaneRegistry, EditorPaneDescriptor } from 'vs/workbench/browser/editor';
-+import { LifecyclePhase } from 'vs/workbench/services/lifecycle/common/lifecycle';
-+import { ILabelService } from 'vs/platform/label/common/label';
-+import { Schemas } from 'vs/base/common/network';
 +import { WorkspaceWatcher } from 'vs/workbench/contrib/files/browser/workspaceWatcher';
 +import { DirtyFilesIndicator } from 'vs/workbench/contrib/files/common/dirtyFilesIndicator';
-+import { FileEditorInputSerializer, FileEditorWorkingCopyEditorHandler } from 'vs/workbench/contrib/files/browser/editors/fileEditorHandler';
-+import { ModesRegistry } from 'vs/editor/common/languages/modesRegistry';
-+import { TextFileEditor } from 'vs/workbench/contrib/files/browser/editors/textFileEditor';
++import { BINARY_TEXT_FILE_MODE, FILE_EDITOR_INPUT_ID } from 'vs/workbench/contrib/files/common/files';
 +import './files.fileEditorFactory.contribution';
 +
 +class FileUriLabelContribution implements IWorkbenchContribution {
@@ -1596,7 +1594,7 @@ index 00000000000..18a1975b685
 +registerWorkbenchContribution2(FileUriLabelContribution.ID, FileUriLabelContribution, WorkbenchPhase.BlockStartup);
 +
 +// Register Workspace Watcher
-+Registry.as<IWorkbenchContributionsRegistry>(WorkbenchExtensions.Workbench).registerWorkbenchContribution(WorkspaceWatcher, LifecyclePhase.Restored);
++registerWorkbenchContribution2(WorkspaceWatcher.ID, WorkspaceWatcher, WorkbenchPhase.AfterRestored);
 +
 +// Register Dirty Files Indicator
 +registerWorkbenchContribution2(DirtyFilesIndicator.ID, DirtyFilesIndicator, WorkbenchPhase.BlockStartup);

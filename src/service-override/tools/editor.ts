@@ -13,7 +13,7 @@ import { IResolvedTextEditorModel, ITextModelService } from 'vs/editor/common/se
 import { IStandaloneCodeEditor, StandaloneCodeEditor, StandaloneEditor } from 'vs/editor/standalone/browser/standaloneCodeEditor'
 import { Disposable, IDisposable, IReference } from 'vs/base/common/lifecycle'
 import { EditorService } from 'vs/workbench/services/editor/browser/editorService'
-import { IAuxiliaryEditorPart, IEditorDropTargetDelegate, IEditorPart, IActiveEditorActions, IEditorGroup } from 'vs/workbench/services/editor/common/editorGroupsService'
+import { IAuxiliaryEditorPart, IEditorDropTargetDelegate, IEditorPart, IActiveEditorActions, IEditorGroup, IEditorWorkingSet } from 'vs/workbench/services/editor/common/editorGroupsService'
 import { IEditorGroupsService } from 'vs/workbench/services/editor/common/editorGroupsService.service'
 import { IInstantiationService } from 'vs/platform/instantiation/common/instantiation'
 import { IConfigurationService } from 'vs/platform/configuration/common/configuration.service'
@@ -537,7 +537,7 @@ export class MonacoDelegateEditorGroupsService<D extends IEditorGroupsService> e
   public additionalGroups: StandaloneEditorGroup[] = []
   public activeGroupOverride: StandaloneEditorGroup | undefined = undefined
 
-  constructor (protected delegate: D, @IInstantiationService instantiationService: IInstantiationService) {
+  constructor (protected delegate: D, emptyDelegate: boolean, @IInstantiationService instantiationService: IInstantiationService) {
     super()
     setTimeout(() => {
       const codeEditorService = StandaloneServices.get(ICodeEditorService)
@@ -545,10 +545,22 @@ export class MonacoDelegateEditorGroupsService<D extends IEditorGroupsService> e
       const handleCodeEditor = (editor: ICodeEditor) => {
         if (editor instanceof StandaloneEditor) {
           let timeout: number | undefined
+          const updateActiveGroup = (editor: StandaloneEditor | undefined) => {
+            const newActiveGroup = editor != null ? this.additionalGroups.find(group => group.editor === editor) : undefined
+            if (this.activeGroupOverride !== newActiveGroup) {
+              this.activeGroupOverride = newActiveGroup
+              this._onDidChangeActiveGroup.fire(this.activeGroup)
+            }
+          }
+          const remoteActiveGroup = (editor: StandaloneEditor | undefined) => {
+            if (!emptyDelegate && this.activeGroupOverride === this.additionalGroups.find(group => group.editor === editor)) {
+              updateActiveGroup(undefined)
+            }
+          }
+
           const onEditorFocused = () => {
             if (timeout != null) window.clearTimeout(timeout)
-            this.activeGroupOverride = this.additionalGroups.find(group => group.editor === editor)
-            this._onDidChangeActiveGroup.fire(this.activeGroup)
+            updateActiveGroup(editor)
           }
           const onEditorBlurred = () => {
             if (timeout != null) window.clearTimeout(timeout)
@@ -556,12 +568,12 @@ export class MonacoDelegateEditorGroupsService<D extends IEditorGroupsService> e
             // It happens when the focus goes from the editor itself to the overflow widgets dom node
             timeout = window.setTimeout(() => {
               timeout = undefined
-              if (this.activeGroupOverride === this.additionalGroups.find(group => group.editor === editor)) {
-                this.activeGroupOverride = undefined
-                this._onDidChangeActiveGroup.fire(this.activeGroup)
-              }
+              remoteActiveGroup(editor)
             }, 100)
           }
+          editor.onDidDispose(() => {
+            remoteActiveGroup(editor)
+          })
           editor.onDidFocusEditorText(onEditorFocused)
           editor.onDidFocusEditorWidget(onEditorFocused)
           editor.onDidBlurEditorText(onEditorBlurred)
@@ -593,6 +605,22 @@ export class MonacoDelegateEditorGroupsService<D extends IEditorGroupsService> e
       this._register(codeEditorService.onCodeEditorRemove(handleCodeEditorRemoved))
       codeEditorService.listCodeEditors().forEach(handleCodeEditor)
     })
+  }
+
+  saveWorkingSet (name: string): IEditorWorkingSet {
+    return this.delegate.saveWorkingSet(name)
+  }
+
+  getWorkingSets (): IEditorWorkingSet[] {
+    return this.delegate.getWorkingSets()
+  }
+
+  applyWorkingSet (workingSet: IEditorWorkingSet | 'empty'): Promise<boolean> {
+    return this.delegate.applyWorkingSet(workingSet)
+  }
+
+  deleteWorkingSet (workingSet: IEditorWorkingSet): void {
+    return this.delegate.deleteWorkingSet(workingSet)
   }
 
   get isReady (): IEditorGroupsService['isReady'] {

@@ -1,4 +1,4 @@
-import { IDialogService, EditorInput, createInstance, IInstantiationService } from 'vscode/services'
+import { IDialogService, EditorInput, createInstance, IInstantiationService, IEditorGroup } from 'vscode/services'
 import { IEditorCloseHandler, IEditorSerializer, registerCustomView, registerEditorPane, registerEditor, registerEditorSerializer, ViewContainerLocation, SimpleEditorPane, SimpleEditorInput, RegisteredEditorPriority, ConfirmResult } from '@codingame/monaco-vscode-views-service-override'
 import * as monaco from 'monaco-editor'
 
@@ -45,8 +45,8 @@ registerCustomView({
 class CustomEditorPane extends SimpleEditorPane {
   static readonly ID = 'workbench.editors.customEditor'
 
-  constructor () {
-    super(CustomEditorPane.ID)
+  constructor (group: IEditorGroup) {
+    super(CustomEditorPane.ID, group)
   }
 
   initialize (): HTMLElement {

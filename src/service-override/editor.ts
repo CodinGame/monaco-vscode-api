@@ -71,6 +71,10 @@ class EmptyEditorPart implements IEditorPart {
 }
 
 class EmptyEditorGroupsService implements IEditorGroupsService {
+  saveWorkingSet = unsupported
+  getWorkingSets = unsupported
+  applyWorkingSet = unsupported
+  deleteWorkingSet = unsupported
   onDidCreateAuxiliaryEditorPart = Event.None
 
   mainPart = new EmptyEditorPart()
@@ -131,6 +135,7 @@ class MonacoEditorGroupsService extends MonacoDelegateEditorGroupsService<EmptyE
   constructor (@IInstantiationService instantiationService: IInstantiationService) {
     super(
       instantiationService.createInstance(EmptyEditorGroupsService),
+      true,
       instantiationService
     )
   }

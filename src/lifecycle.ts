@@ -9,6 +9,10 @@ import { EditorExtensions, IEditorFactoryRegistry } from 'vs/workbench/common/ed
 import { StandaloneServices } from 'vs/editor/standalone/browser/standaloneServices'
 import { Disposable } from 'vs/base/common/lifecycle'
 import { IWorkbenchLayoutService } from 'vs/workbench/services/layout/browser/layoutService.service'
+import { setHoverDelegateFactory } from 'vs/base/browser/ui/hover/hoverDelegateFactory'
+import { setBaseLayerHoverDelegate } from 'vs/base/browser/ui/hover/hoverDelegate2'
+import { WorkbenchHoverDelegate } from 'vs/platform/hover/browser/hover'
+import { IHoverService } from 'vs/platform/hover/browser/hover.service'
 
 const layoutEmitter = new Emitter<ServicesAccessor>()
 export const onLayout = layoutEmitter.event
@@ -58,6 +62,9 @@ export async function startup (instantiationService: IInstantiationService): Pro
 
   void instantiationService.invokeFunction(async accessor => {
     const lifecycleService = accessor.get(ILifecycleService)
+
+    setHoverDelegateFactory((placement, enableInstantHover) => instantiationService.createInstance(WorkbenchHoverDelegate, placement, enableInstantHover, {}))
+    setBaseLayerHoverDelegate(accessor.get(IHoverService))
 
     Registry.as<IWorkbenchContributionsRegistry>(WorkbenchExtensions.Workbench).start(accessor)
     Registry.as<IEditorFactoryRegistry>(EditorExtensions.EditorFactory).start(accessor)

@@ -3,7 +3,7 @@ import { SyncDescriptor } from 'vs/platform/instantiation/common/descriptors'
 import { ITerminalsLayoutInfo, IProcessReadyEvent, ITerminalBackend, ITerminalBackendRegistry, ITerminalChildProcess, ITerminalLaunchError, ITerminalProfile, TerminalExtensions, IPtyHostLatencyMeasurement } from 'vs/platform/terminal/common/terminal'
 import { ITerminalLogService } from 'vs/platform/terminal/common/terminal.service'
 import { ITerminalProfileResolverService, ITerminalProfileService } from 'vs/workbench/contrib/terminal/common/terminal.service'
-import { ITerminalEditorService, ITerminalGroupService, ITerminalInstanceService, ITerminalService } from 'vs/workbench/contrib/terminal/browser/terminal.service'
+import { ITerminalConfigurationService, ITerminalEditorService, ITerminalGroupService, ITerminalInstanceService, ITerminalService } from 'vs/workbench/contrib/terminal/browser/terminal.service'
 import { TerminalService } from 'vs/workbench/contrib/terminal/browser/terminalService'
 import { TerminalEditorService } from 'vs/workbench/contrib/terminal/browser/terminalEditorService'
 import { TerminalGroupService } from 'vs/workbench/contrib/terminal/browser/terminalGroupService'
@@ -26,6 +26,7 @@ import { PerformanceMark } from 'vs/base/common/performance'
 import { DeferredPromise } from 'vs/base/common/async'
 import { EmbedderTerminalService } from 'vs/workbench/services/terminal/common/embedderTerminalService'
 import { IEmbedderTerminalService } from 'vs/workbench/services/terminal/common/embedderTerminalService.service'
+import { TerminalConfigurationService } from 'vs/workbench/contrib/terminal/browser/terminalConfigurationService'
 import { unsupported } from '../tools'
 import 'vs/workbench/contrib/terminal/browser/terminal.contribution'
 import 'vs/workbench/contrib/terminal/terminal.all'
@@ -146,7 +147,8 @@ export default function getServiceOverride (backend?: ITerminalBackend): IEditor
     [ITerminalProfileResolverService.toString()]: new SyncDescriptor(ElectronTerminalProfileResolverService, [], true),
     [IEnvironmentVariableService.toString()]: new SyncDescriptor(EnvironmentVariableService, [], true),
     [ITerminalQuickFixService.toString()]: new SyncDescriptor(TerminalQuickFixService, [], true),
-    [IEmbedderTerminalService.toString()]: new SyncDescriptor(EmbedderTerminalService, [], true)
+    [IEmbedderTerminalService.toString()]: new SyncDescriptor(EmbedderTerminalService, [], true),
+    [ITerminalConfigurationService.toString()]: new SyncDescriptor(TerminalConfigurationService, [], true)
   }
 }
 

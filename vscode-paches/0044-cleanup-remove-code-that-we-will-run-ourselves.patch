@@ -4,11 +4,11 @@ Date: Mon, 11 Mar 2024 18:26:35 +0100
 Subject: [PATCH] cleanup: remove code that we will run ourselves
 
 ---
- src/vs/workbench/browser/workbench.ts | 11 -----------
- 1 file changed, 11 deletions(-)
+ src/vs/workbench/browser/workbench.ts | 20 --------------------
+ 1 file changed, 20 deletions(-)
 
 diff --git a/src/vs/workbench/browser/workbench.ts b/src/vs/workbench/browser/workbench.ts
-index cbc07dc7fb0..455bb043b5d 100644
+index 0dc55e03b6a..3e3c485a6a7 100644
 --- a/src/vs/workbench/browser/workbench.ts
 +++ b/src/vs/workbench/browser/workbench.ts
 @@ -11,10 +11,7 @@ import { RunOnceScheduler, timeout } from 'vs/base/common/async';
@@ -30,7 +30,29 @@ index cbc07dc7fb0..455bb043b5d 100644
  import { coalesce } from 'vs/base/common/arrays';
  import { InstantiationService } from 'vs/platform/instantiation/common/instantiationService';
  import { Layout } from 'vs/workbench/browser/layout';
-@@ -161,13 +157,6 @@ export class Workbench extends Layout {
+@@ -43,9 +39,6 @@ import { IHostService } from 'vs/workbench/services/host/browser/host';
+ import { IDialogService } from 'vs/platform/dialogs/common/dialogs';
+ import { mainWindow } from 'vs/base/browser/window';
+ import { PixelRatio } from 'vs/base/browser/pixelRatio';
+-import { IHoverService, WorkbenchHoverDelegate } from 'vs/platform/hover/browser/hover';
+-import { setHoverDelegateFactory } from 'vs/base/browser/ui/hover/hoverDelegateFactory';
+-import { setBaseLayerHoverDelegate } from 'vs/base/browser/ui/hover/hoverDelegate2';
+ import { AccessibilityProgressSignalScheduler } from 'vs/platform/accessibilitySignal/browser/progressAccessibilitySignalScheduler';
+ import { setProgressAcccessibilitySignalScheduler } from 'vs/base/browser/ui/progressbar/progressAccessibilitySignal';
+ 
+@@ -156,25 +149,12 @@ export class Workbench extends Layout {
+ 				const storageService = accessor.get(IStorageService);
+ 				const configurationService = accessor.get(IConfigurationService);
+ 				const hostService = accessor.get(IHostService);
+-				const hoverService = accessor.get(IHoverService);
+ 				const dialogService = accessor.get(IDialogService);
+ 				const notificationService = accessor.get(INotificationService) as NotificationService;
+ 
+-				// Default Hover Delegate must be registered before creating any workbench/layout components
+-				// as these possibly will use the default hover delegate
+-				setHoverDelegateFactory((placement, enableInstantHover) => instantiationService.createInstance(WorkbenchHoverDelegate, placement, enableInstantHover, {}));
+-				setBaseLayerHoverDelegate(hoverService);
+-
  				// Layout
  				this.initLayout(accessor);
  

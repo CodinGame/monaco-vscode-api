@@ -18,10 +18,10 @@ Subject: [PATCH] fix: replace amd imports by regular esm dynamic imports
  11 files changed, 31 insertions(+), 50 deletions(-)
 
 diff --git a/.eslintrc.json b/.eslintrc.json
-index 851564cf0e5..ca34f633edd 100644
+index eab054aab59..e7ceb332d0f 100644
 --- a/.eslintrc.json
 +++ b/.eslintrc.json
-@@ -295,14 +295,6 @@
+@@ -296,14 +296,6 @@
  				"jsdoc/require-returns": "warn"
  			}
  		},
@@ -36,14 +36,14 @@ index 851564cf0e5..ca34f633edd 100644
  		{
  			"files": [
  				"src/**/{browser,electron-sandbox}/**/*.ts"
-@@ -858,6 +850,7 @@
+@@ -859,6 +851,7 @@
  							}, // TODO@layers
  							"tas-client-umd", // node module allowed even in /common/
  							"vscode-textmate", // node module allowed even in /common/
 +							"vscode-oniguruma",
- 							"@vscode/vscode-languagedetection" // node module allowed even in /common/
- 						]
- 					},
+ 							"@vscode/vscode-languagedetection", // node module allowed even in /common/
+ 							{
+ 								"when": "hasBrowser",
 diff --git a/src/vs/platform/assignment/common/assignmentService.ts b/src/vs/platform/assignment/common/assignmentService.ts
 index c573b727e0b..8c52126a590 100644
 --- a/src/vs/platform/assignment/common/assignmentService.ts
@@ -89,10 +89,10 @@ index c54187f89c9..a4729fabe2e 100644
  	const collectorChannelPlugin: PostChannel = new postPlugin.PostChannel();
  	// Configure the app insights core to send to collector++ and disable logging of debug info
 diff --git a/src/vs/workbench/contrib/terminal/browser/terminalInstance.ts b/src/vs/workbench/contrib/terminal/browser/terminalInstance.ts
-index 99f6f8b4357..2682e80eaae 100644
+index 97f735e675c..ecb4ef4d557 100644
 --- a/src/vs/workbench/contrib/terminal/browser/terminalInstance.ts
 +++ b/src/vs/workbench/contrib/terminal/browser/terminalInstance.ts
-@@ -83,7 +83,6 @@ import { IHistoryService } from 'vs/workbench/services/history/common/history';
+@@ -82,7 +82,6 @@ import { IHistoryService } from 'vs/workbench/services/history/common/history';
  import { IWorkbenchLayoutService, Position } from 'vs/workbench/services/layout/browser/layoutService';
  import { IPathService } from 'vs/workbench/services/path/common/pathService';
  import { IPreferencesService } from 'vs/workbench/services/preferences/common/preferences';
@@ -100,7 +100,7 @@ index 99f6f8b4357..2682e80eaae 100644
  import type { IMarker, Terminal as XTermTerminal } from '@xterm/xterm';
  import { AccessibilityCommandId } from 'vs/workbench/contrib/accessibility/common/accessibilityCommands';
  import { terminalStrings } from 'vs/workbench/contrib/terminal/common/terminalStrings';
-@@ -703,7 +702,7 @@ export class TerminalInstance extends Disposable implements ITerminalInstance {
+@@ -707,7 +706,7 @@ export class TerminalInstance extends Disposable implements ITerminalInstance {
  			return xtermConstructor;
  		}
  		xtermConstructor = Promises.withAsyncBody<typeof XTermTerminal>(async (resolve) => {
@@ -110,10 +110,10 @@ index 99f6f8b4357..2682e80eaae 100644
  			Terminal.strings.promptLabel = nls.localize('terminal.integrated.a11yPromptLabel', 'Terminal input');
  			Terminal.strings.tooMuchOutput = keybinding ? nls.localize('terminal.integrated.useAccessibleBuffer', 'Use the accessible buffer {0} to manually review output', keybinding.getLabel()) : nls.localize('terminal.integrated.useAccessibleBufferNoKb', 'Use the Terminal: Focus Accessible Buffer command to manually review output');
 diff --git a/src/vs/workbench/contrib/terminal/browser/xterm/xtermTerminal.ts b/src/vs/workbench/contrib/terminal/browser/xterm/xtermTerminal.ts
-index c304610faa7..1a2362cf7b8 100644
+index 7aeb0a59417..f96bcc71a42 100644
 --- a/src/vs/workbench/contrib/terminal/browser/xterm/xtermTerminal.ts
 +++ b/src/vs/workbench/contrib/terminal/browser/xterm/xtermTerminal.ts
-@@ -35,7 +35,6 @@ import { DecorationAddon } from 'vs/workbench/contrib/terminal/browser/xterm/dec
+@@ -31,7 +31,6 @@ import { DecorationAddon } from 'vs/workbench/contrib/terminal/browser/xterm/dec
  import { ITerminalCapabilityStore, ITerminalCommand, TerminalCapability } from 'vs/platform/terminal/common/capabilities/capabilities';
  import { Emitter } from 'vs/base/common/event';
  import { ITelemetryService } from 'vs/platform/telemetry/common/telemetry';
@@ -121,7 +121,7 @@ index c304610faa7..1a2362cf7b8 100644
  import { IContextKey, IContextKeyService } from 'vs/platform/contextkey/common/contextkey';
  import { TerminalContextKeys } from 'vs/workbench/contrib/terminal/common/terminalContextKey';
  import { IClipboardService } from 'vs/platform/clipboard/common/clipboardService';
-@@ -756,7 +755,7 @@ export class XtermTerminal extends Disposable implements IXtermTerminal, IDetach
+@@ -729,7 +728,7 @@ export class XtermTerminal extends Disposable implements IXtermTerminal, IDetach
  
  	protected async _getCanvasAddonConstructor(): Promise<typeof CanvasAddonType> {
  		if (!CanvasAddon) {
@@ -130,7 +130,7 @@ index c304610faa7..1a2362cf7b8 100644
  		}
  		return CanvasAddon;
  	}
-@@ -782,35 +781,35 @@ export class XtermTerminal extends Disposable implements IXtermTerminal, IDetach
+@@ -755,35 +754,35 @@ export class XtermTerminal extends Disposable implements IXtermTerminal, IDetach
  
  	protected async _getImageAddonConstructor(): Promise<typeof ImageAddonType> {
  		if (!ImageAddon) {
@@ -172,7 +172,7 @@ index c304610faa7..1a2362cf7b8 100644
  		return SerializeAddon;
  	}
 diff --git a/src/vs/workbench/contrib/terminalContrib/stickyScroll/browser/terminalStickyScrollOverlay.ts b/src/vs/workbench/contrib/terminalContrib/stickyScroll/browser/terminalStickyScrollOverlay.ts
-index f3c1633701d..61ddc698f93 100644
+index eac420466bb..3bf0dd38699 100644
 --- a/src/vs/workbench/contrib/terminalContrib/stickyScroll/browser/terminalStickyScrollOverlay.ts
 +++ b/src/vs/workbench/contrib/terminalContrib/stickyScroll/browser/terminalStickyScrollOverlay.ts
 @@ -5,7 +5,6 @@
@@ -183,7 +183,7 @@ index f3c1633701d..61ddc698f93 100644
  import { $, addDisposableListener, addStandardDisposableListener, getWindow } from 'vs/base/browser/dom';
  import { CancelablePromise, createCancelablePromise } from 'vs/base/common/async';
  import { memoize, throttle } from 'vs/base/common/decorators';
-@@ -480,13 +479,13 @@ export class TerminalStickyScrollOverlay extends Disposable {
+@@ -488,13 +487,13 @@ export class TerminalStickyScrollOverlay extends Disposable {
  
  	@memoize
  	private async _getCanvasAddonConstructor(): Promise<typeof CanvasAddonType> {
@@ -310,7 +310,7 @@ index bc98f7239ce..5937fa2286a 100644
  		}
  
 diff --git a/src/vs/workbench/services/textMate/browser/textMateTokenizationFeatureImpl.ts b/src/vs/workbench/services/textMate/browser/textMateTokenizationFeatureImpl.ts
-index 1ba671448d2..9b682c0746c 100644
+index 74a52fae9ff..2266456fb53 100644
 --- a/src/vs/workbench/services/textMate/browser/textMateTokenizationFeatureImpl.ts
 +++ b/src/vs/workbench/services/textMate/browser/textMateTokenizationFeatureImpl.ts
 @@ -3,7 +3,6 @@

@@ -11,7 +11,7 @@ Subject: [PATCH] fix: improve extension contribution types
  4 files changed, 1127 insertions(+), 78 deletions(-)
 
 diff --git a/src/vs/platform/extensions/common/extensions.ts b/src/vs/platform/extensions/common/extensions.ts
-index 331aba1b55f..7b6a935ec9c 100644
+index cfe5313b905..7c5c680c551 100644
 --- a/src/vs/platform/extensions/common/extensions.ts
 +++ b/src/vs/platform/extensions/common/extensions.ts
 @@ -3,6 +3,7 @@
@@ -740,7 +740,7 @@ index 331aba1b55f..7b6a935ec9c 100644
  }
  
  export interface IDebugVisualizationContribution {
-@@ -168,43 +699,560 @@ export interface IDebugVisualizationContribution {
+@@ -168,44 +699,561 @@ export interface IDebugVisualizationContribution {
  }
  
  export interface ITranslation {
@@ -1271,6 +1271,7 @@ index 331aba1b55f..7b6a935ec9c 100644
 +	 */
  	readonly notebookRenderer?: INotebookRendererContribution[];
  	readonly debugVisualizers?: IDebugVisualizationContribution[];
+ 	readonly chatParticipants?: ReadonlyArray<{ id: string }>;
 +	/**
 +	 * Contributes notebook preloads.
 +	 */
