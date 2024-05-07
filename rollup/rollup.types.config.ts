@@ -250,8 +250,7 @@ export default rollup.defineConfig((<{input: Record<string, string>, output: str
     {
       name: 'replace-interfaces',
       load (id) {
-        const path = new URL(id, 'file:/').pathname
-        const sourceFile = project.addSourceFileAtPath(path)
+        const sourceFile = project.addSourceFileAtPath(id)
 
         if (id.includes('node_modules') && id.includes('xterm')) {
           // xterm modules use `declare module` syntax not supposed by the rollup-dts-plugin, so let's transform the code
