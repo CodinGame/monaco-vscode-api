@@ -195,7 +195,7 @@ class RegisteredFileSystemProvider extends Disposable implements IFileSystemProv
   public async readdir (resource: URI): Promise<[string, FileType][]> {
     const includedPaths = Array.from(this.files.keys())
       .map(uri => URI.parse(uri))
-      .filter(uri => uri.path.startsWith(resource.path))
+      .filter(uri => uri.path.startsWith(resource.path + '/'))
       .map(uri => extUri.relativePath(resource, uri)!)
 
     const files = includedPaths.filter(path => !path.includes('/'))
