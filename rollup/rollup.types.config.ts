@@ -113,7 +113,7 @@ export default rollup.defineConfig((<{input: Record<string, string>, output: str
         if (id === path.resolve(TYPES_SRC_DIR, 'editor.api.d.ts')) {
           return {
             name: 'editor.api',
-            publicName: '@codngame/monaco-vscode-editor-api'
+            publicName: '@codingame/monaco-vscode-editor-api'
           }
         }
         return {
