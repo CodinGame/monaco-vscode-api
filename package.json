@@ -139,7 +139,7 @@
     "eslint-plugin-n": "$eslint-plugin-n"
   },
   "volta": {
-    "node": "18.17.1",
-    "npm": "10.3.0"
+    "node": "18.19.0",
+    "npm": "10.7.0"
   }
 }
