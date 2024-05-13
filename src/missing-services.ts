@@ -222,6 +222,7 @@ import { AccountStatus } from 'vs/workbench/services/userDataSync/common/userDat
 import { IWebview } from 'vs/workbench/contrib/webview/browser/webview'
 import { SyncResource } from 'vs/workbench/contrib/editSessions/common/editSessions'
 import { ILanguageModelStatsService } from 'vs/workbench/contrib/chat/common/languageModelStats.service'
+import { IAccessibleViewInformationService } from 'vs/workbench/services/accessibility/common/accessibleViewInformationService.service'
 import { getBuiltInExtensionTranslationsUris, getExtensionIdProvidingCurrentLocale } from './l10n'
 import { unsupported } from './tools'
 
@@ -2288,6 +2289,11 @@ registerSingleton(IAccessibleViewService, class AccessibleViewService implements
   getPosition = unsupported
   setPosition = unsupported
   getLastPosition = unsupported
+}, InstantiationType.Delayed)
+
+registerSingleton(IAccessibleViewInformationService, class AccessibleViewInformationService implements IAccessibleViewInformationService {
+  _serviceBrand: undefined
+  hasShownAccessibleView = () => false
 }, InstantiationType.Delayed)
 
 registerSingleton(IWorkbenchExtensionManagementService, class WorkbenchExtensionManagementService implements IWorkbenchExtensionManagementService {
