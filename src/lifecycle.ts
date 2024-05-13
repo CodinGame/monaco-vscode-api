@@ -45,6 +45,11 @@ export async function startup (instantiationService: IInstantiationService): Pro
   })
 
   await instantiationService.invokeFunction(async accessor => {
+    setHoverDelegateFactory((placement, enableInstantHover) => instantiationService.createInstance(WorkbenchHoverDelegate, placement, enableInstantHover, {}))
+    setBaseLayerHoverDelegate(accessor.get(IHoverService))
+  })
+
+  await instantiationService.invokeFunction(async accessor => {
     const lifecycleService = accessor.get(ILifecycleService)
 
     await Promise.all(serviceInitializeParticipants.map(participant => participant(accessor)))
@@ -62,9 +67,6 @@ export async function startup (instantiationService: IInstantiationService): Pro
 
   void instantiationService.invokeFunction(async accessor => {
     const lifecycleService = accessor.get(ILifecycleService)
-
-    setHoverDelegateFactory((placement, enableInstantHover) => instantiationService.createInstance(WorkbenchHoverDelegate, placement, enableInstantHover, {}))
-    setBaseLayerHoverDelegate(accessor.get(IHoverService))
 
     Registry.as<IWorkbenchContributionsRegistry>(WorkbenchExtensions.Workbench).start(accessor)
     Registry.as<IEditorFactoryRegistry>(EditorExtensions.EditorFactory).start(accessor)
