@@ -12,7 +12,7 @@ import { EditorInputFactoryObject, RegisteredEditorInfo, RegisteredEditorOptions
 import { IEditorResolverService } from 'vs/workbench/services/editor/common/editorResolverService.service'
 import { EditorInput, IEditorCloseHandler } from 'vs/workbench/common/editor/editorInput'
 import { EditorExtensions, EditorInputCapabilities, IEditorFactoryRegistry, IEditorOpenContext, IEditorSerializer, Verbosity } from 'vs/workbench/common/editor'
-import { IEditorOptions } from 'vs/platform/editor/common/editor'
+import { IEditorOptions, IResourceEditorInput } from 'vs/platform/editor/common/editor'
 import { Action2, MenuId, registerAction2 } from 'vs/platform/actions/common/actions'
 import { Categories } from 'vs/platform/action/common/actionCommonCategories'
 import { ContextKeyExpr } from 'vs/platform/contextkey/common/contextkey'
@@ -199,6 +199,15 @@ abstract class SimpleEditorInput extends EditorInput {
   public setDirty (dirty: boolean): void {
     this.dirty = dirty
     this._onDidChangeDirty.fire()
+  }
+
+  public override toUntyped (): IResourceEditorInput | undefined {
+    if (this.resource == null) {
+      return undefined
+    }
+    return {
+      resource: this.resource
+    }
   }
 }
 
