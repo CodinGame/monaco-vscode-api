@@ -552,7 +552,7 @@ export class MonacoDelegateEditorGroupsService<D extends IEditorGroupsService> e
               this._onDidChangeActiveGroup.fire(this.activeGroup)
             }
           }
-          const remoteActiveGroup = (editor: StandaloneEditor | undefined) => {
+          const removeActiveGroup = (editor: StandaloneEditor | undefined) => {
             if (!emptyDelegate && this.activeGroupOverride === this.additionalGroups.find(group => group.editor === editor)) {
               updateActiveGroup(undefined)
             }
@@ -568,11 +568,11 @@ export class MonacoDelegateEditorGroupsService<D extends IEditorGroupsService> e
             // It happens when the focus goes from the editor itself to the overflow widgets dom node
             timeout = window.setTimeout(() => {
               timeout = undefined
-              remoteActiveGroup(editor)
+              removeActiveGroup(editor)
             }, 100)
           }
           editor.onDidDispose(() => {
-            remoteActiveGroup(editor)
+            removeActiveGroup(editor)
           })
           editor.onDidFocusEditorText(onEditorFocused)
           editor.onDidFocusEditorWidget(onEditorFocused)
