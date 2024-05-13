@@ -129,16 +129,20 @@ class RegisteredFileSystemProvider extends Disposable implements IFileSystemProv
   _onDidChangeFile = new Emitter<readonly IFileChange[]>()
   onDidChangeFile = this._onDidChangeFile.event
 
+  private formatUri (uri: URI) {
+    return uri.with({ query: null, fragment: null }).toString(true)
+  }
+
   public registerFile (file: RegisteredFile): IDisposable {
-    this.files.set(file.uri.toString(), file)
+    this.files.set(this.formatUri(file.uri), file)
     this._onDidChangeFile.fire([{
       resource: file.uri,
       type: FileChangeType.ADDED
     }])
     const disposableStore = new DisposableStore()
     disposableStore.add(toDisposable(() => {
-      if (this.files.get(file.uri.toString()) === file) {
-        this.files.delete(file.uri.toString())
+      if (this.files.get(this.formatUri(file.uri)) === file) {
+        this.files.delete(this.formatUri(file.uri))
         this._onDidChangeFile.fire([{
           resource: file.uri,
           type: FileChangeType.DELETED
@@ -155,9 +159,9 @@ class RegisteredFileSystemProvider extends Disposable implements IFileSystemProv
       }])
     }))
     disposableStore.add(file.onDidRename(({ from, to }) => {
-      if (this.files.get(from.toString()) === file) {
-        this.files.delete(from.toString())
-        this.files.set(to.toString(), file)
+      if (this.files.get(this.formatUri(from)) === file) {
+        this.files.delete(this.formatUri(from))
+        this.files.set(this.formatUri(to), file)
         this._onDidChangeFile.fire([{
           resource: from,
           type: FileChangeType.DELETED
@@ -171,7 +175,7 @@ class RegisteredFileSystemProvider extends Disposable implements IFileSystemProv
   }
 
   async stat (resource: URI): Promise<IStat> {
-    const resourceUri = resource.toString()
+    const resourceUri = this.formatUri(resource)
 
     const file = this.files.get(resourceUri)
     if (file != null) {
@@ -195,7 +199,7 @@ class RegisteredFileSystemProvider extends Disposable implements IFileSystemProv
   public async readdir (resource: URI): Promise<[string, FileType][]> {
     const includedPaths = Array.from(this.files.keys())
       .map(uri => URI.parse(uri))
-      .filter(uri => uri.path.startsWith(resource.path + '/'))
+      .filter(uri => uri.authority === resource.authority && uri.path.startsWith(resource.path + '/'))
       .map(uri => extUri.relativePath(resource, uri)!)
 
     const files = includedPaths.filter(path => !path.includes('/'))
@@ -214,7 +218,7 @@ class RegisteredFileSystemProvider extends Disposable implements IFileSystemProv
   }
 
   async readFile (resource: URI): Promise<Uint8Array> {
-    const file = this.files.get(resource.toString())
+    const file = this.files.get(this.formatUri(resource))
     if (file != null) {
       const data = await file.read()
       if (data instanceof Uint8Array) {
@@ -232,7 +236,7 @@ class RegisteredFileSystemProvider extends Disposable implements IFileSystemProv
   }
 
   async writeFile (resource: URI, content: Uint8Array): Promise<void> {
-    const file = this.files.get(resource.toString())
+    const file = this.files.get(this.formatUri(resource))
     if (file?.write != null) {
       await file.write(decoder.decode(content))
       return
@@ -241,7 +245,7 @@ class RegisteredFileSystemProvider extends Disposable implements IFileSystemProv
   }
 
   async delete (resource: URI): Promise<void> {
-    const file = this.files.get(resource.toString())
+    const file = this.files.get(this.formatUri(resource))
     if (file != null) {
       await file.delete()
       return
@@ -251,7 +255,7 @@ class RegisteredFileSystemProvider extends Disposable implements IFileSystemProv
   }
 
   async rename (from: URI, to: URI): Promise<void> {
-    const file = this.files.get(from.toString())
+    const file = this.files.get(this.formatUri(from))
     if (file != null) {
       await file.rename(to)
       return
