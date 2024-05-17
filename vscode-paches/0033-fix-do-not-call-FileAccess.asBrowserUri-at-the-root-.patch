@@ -37,7 +37,7 @@ index 1ee623c22a0..b283d23ee70 100644
  				if (!data.icon.complete) {
  					data.icon.style.visibility = 'hidden';
 diff --git a/src/vs/workbench/contrib/extensions/browser/extensionsWorkbenchService.ts b/src/vs/workbench/contrib/extensions/browser/extensionsWorkbenchService.ts
-index f3ef2fb217c..1c09cb112ed 100644
+index 863b2e4aa34..36751d2bc23 100644
 --- a/src/vs/workbench/contrib/extensions/browser/extensionsWorkbenchService.ts
 +++ b/src/vs/workbench/contrib/extensions/browser/extensionsWorkbenchService.ts
 @@ -18,7 +18,7 @@ import {
@@ -81,7 +81,7 @@ index db46c01330b..ad87eb90c41 100644
  				when: ContextKeyExpr.deserialize(override ?? walkthrough.when) ?? ContextKeyExpr.true(),
  			} as const;
 diff --git a/src/vs/workbench/services/extensionManagement/common/extensionManagement.ts b/src/vs/workbench/services/extensionManagement/common/extensionManagement.ts
-index d17f98f886a..3323eb4bd77 100644
+index f1c1a1ead52..8a0d948a68c 100644
 --- a/src/vs/workbench/services/extensionManagement/common/extensionManagement.ts
 +++ b/src/vs/workbench/services/extensionManagement/common/extensionManagement.ts
 @@ -40,7 +40,7 @@ export interface IExtensionManagementServerService {
