@@ -250,7 +250,7 @@ await initialize({
     // Open a new editor here and return it
     // It will be called when for instance the user ctrl+click on an import
   }),
-  ...getConfigurationServiceOverride(vscode.Uri.file('/tmp/'))
+  ...getConfigurationServiceOverride()
 })
 
 updateUserConfiguration(`{
