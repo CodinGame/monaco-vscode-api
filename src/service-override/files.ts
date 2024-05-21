@@ -111,6 +111,13 @@ class RegisteredMemoryFile extends RegisteredFile {
   }
 }
 
+function addTrailingSlash (uri: string) {
+  if (!uri.endsWith('/')) {
+    return uri + '/'
+  }
+  return uri
+}
+
 const encoder = new TextEncoder()
 const decoder = new TextDecoder()
 class RegisteredFileSystemProvider extends Disposable implements IFileSystemProviderWithFileReadWriteCapability {
@@ -183,7 +190,7 @@ class RegisteredFileSystemProvider extends Disposable implements IFileSystemProv
     }
     const handledUris = Array.from(this.files.keys())
     for (const handledUri of handledUris) {
-      if (handledUri.startsWith(resourceUri + '/')) {
+      if (handledUri.startsWith(addTrailingSlash(resourceUri))) {
         return {
           ctime: Date.now(),
           mtime: Date.now(),
@@ -199,7 +206,7 @@ class RegisteredFileSystemProvider extends Disposable implements IFileSystemProv
   public async readdir (resource: URI): Promise<[string, FileType][]> {
     const includedPaths = Array.from(this.files.keys())
       .map(uri => URI.parse(uri))
-      .filter(uri => uri.authority === resource.authority && uri.path.startsWith(resource.path + '/'))
+      .filter(uri => uri.authority === resource.authority && uri.path.startsWith(addTrailingSlash(resource.path)))
       .map(uri => extUri.relativePath(resource, uri)!)
 
     const files = includedPaths.filter(path => !path.includes('/'))
