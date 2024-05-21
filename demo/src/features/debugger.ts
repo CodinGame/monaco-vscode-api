@@ -64,9 +64,9 @@ void getApi().then(async debuggerVscodeApi => {
       })
 
       websocket.send(JSON.stringify({
-        main: '/tmp/test.js',
+        main: '/workspace/test.js',
         files: {
-          '/tmp/test.js': new TextDecoder().decode(await debuggerVscodeApi.workspace.fs.readFile(debuggerVscodeApi.Uri.file('/tmp/test.js')))
+          '/workspace/test.js': new TextDecoder().decode(await debuggerVscodeApi.workspace.fs.readFile(debuggerVscodeApi.Uri.file('/workspace/test.js')))
         }
       }))
 

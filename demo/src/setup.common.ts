@@ -91,7 +91,7 @@ if (useHtmlFileSystemProvider) {
 } else {
   const fileSystemProvider = new RegisteredFileSystemProvider(false)
 
-  fileSystemProvider.registerFile(new RegisteredMemoryFile(vscode.Uri.file('/tmp/test.js'), `// import anotherfile
+  fileSystemProvider.registerFile(new RegisteredMemoryFile(vscode.Uri.file('/workspace/test.js'), `// import anotherfile
 let variable = 1
 function inc () {
   variable++
@@ -103,9 +103,9 @@ while (variable < 5000) {
 }`
   ))
 
-  fileSystemProvider.registerFile(new RegisteredReadOnlyFile(vscode.Uri.file('/tmp/test_readonly.js'), async () => 'This is a readonly static file'))
+  fileSystemProvider.registerFile(new RegisteredReadOnlyFile(vscode.Uri.file('/workspace/test_readonly.js'), async () => 'This is a readonly static file'))
 
-  fileSystemProvider.registerFile(new RegisteredMemoryFile(vscode.Uri.file('/tmp/jsconfig.json'), `{
+  fileSystemProvider.registerFile(new RegisteredMemoryFile(vscode.Uri.file('/workspace/jsconfig.json'), `{
   "compilerOptions": {
     "target": "es2020",
     "module": "esnext",
@@ -117,7 +117,7 @@ while (variable < 5000) {
 }`
   ))
 
-  fileSystemProvider.registerFile(new RegisteredMemoryFile(vscode.Uri.file('/tmp/index.html'), `
+  fileSystemProvider.registerFile(new RegisteredMemoryFile(vscode.Uri.file('/workspace/index.html'), `
 <!DOCTYPE html>
 <html lang="en">
   <head>
@@ -137,7 +137,7 @@ while (variable < 5000) {
 </html>`
   ))
 
-  fileSystemProvider.registerFile(new RegisteredMemoryFile(vscode.Uri.file('/tmp/test.md'), `
+  fileSystemProvider.registerFile(new RegisteredMemoryFile(vscode.Uri.file('/workspace/test.md'), `
 ***Hello World***
 
 Math block:
@@ -160,11 +160,11 @@ $$
 `
   ))
 
-  fileSystemProvider.registerFile(new RegisteredMemoryFile(vscode.Uri.file('/tmp/test.customeditor'), `
+  fileSystemProvider.registerFile(new RegisteredMemoryFile(vscode.Uri.file('/workspace/test.customeditor'), `
 Custom Editor!`
   ))
 
-  fileSystemProvider.registerFile(new RegisteredMemoryFile(vscode.Uri.file('/tmp/test.css'), `
+  fileSystemProvider.registerFile(new RegisteredMemoryFile(vscode.Uri.file('/workspace/test.css'), `
 h1 {
   color: DeepSkyBlue;
 }`
@@ -173,11 +173,11 @@ h1 {
   // Use a workspace file to be able to add another folder later (for the "Attach filesystem" button)
   fileSystemProvider.registerFile(new RegisteredMemoryFile(workspaceFile, JSON.stringify(<IStoredWorkspace>{
     folders: [{
-      path: '/tmp'
+      path: '/workspace'
     }]
   }, null, 2)))
 
-  fileSystemProvider.registerFile(new RegisteredMemoryFile(monaco.Uri.file('/tmp/.vscode/extensions.json'), JSON.stringify({
+  fileSystemProvider.registerFile(new RegisteredMemoryFile(monaco.Uri.file('/workspace/.vscode/extensions.json'), JSON.stringify({
     recommendations: [
       'vscodevim.vim'
     ]
@@ -246,10 +246,10 @@ export const constructOptions: IWorkbenchConstructionOptions = {
     editors: useHtmlFileSystemProvider
       ? undefined
       : [{
-          uri: monaco.Uri.file('/tmp/test.js'),
+          uri: monaco.Uri.file('/workspace/test.js'),
           viewColumn: 1
         }, {
-          uri: monaco.Uri.file('/tmp/test.md'),
+          uri: monaco.Uri.file('/workspace/test.md'),
           viewColumn: 2
         }],
     layout: useHtmlFileSystemProvider

@@ -22,7 +22,7 @@ void getApi().then(async api => {
       return {
         name: 'Fake call hierarchy',
         kind: api.SymbolKind.Class,
-        uri: api.Uri.file('/tmp/test.js'),
+        uri: api.Uri.file('/workspace/test.js'),
         range: new api.Range(0, 0, 0, 10),
         selectionRange: new api.Range(0, 0, 0, 10)
       }
@@ -32,7 +32,7 @@ void getApi().then(async api => {
         from: {
           name: 'Fake incomming call',
           kind: api.SymbolKind.Class,
-          uri: api.Uri.file('/tmp/test.js'),
+          uri: api.Uri.file('/workspace/test.js'),
           range: new api.Range(0, 0, 0, 10),
           selectionRange: new api.Range(0, 0, 0, 10)
         },
@@ -71,7 +71,7 @@ void getApi().then(async api => {
       if (wordRange != null && document.getText(wordRange) === 'anotherfile') {
         return {
           range: wordRange,
-          uri: api.Uri.file('/tmp/test_readonly.js')
+          uri: api.Uri.file('/workspace/test_readonly.js')
         }
       }
       return []

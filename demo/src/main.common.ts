@@ -64,10 +64,10 @@ const { getApi } = registerExtension({
 
 void getApi().then(async vscode => {
   if (!useHtmlFileSystemProvider) {
-    const mainModelUri = vscode.Uri.file('/tmp/test.js')
+    const mainModelUri = vscode.Uri.file('/workspace/test.js')
     await Promise.all([
       vscode.workspace.openTextDocument(mainModelUri),
-      vscode.workspace.openTextDocument(monaco.Uri.file('/tmp/test_readonly.js')) // open the file so vscode sees it's locked
+      vscode.workspace.openTextDocument(monaco.Uri.file('/workspace/test_readonly.js')) // open the file so vscode sees it's locked
     ])
 
     const diagnostics = vscode.languages.createDiagnosticCollection('demo')
