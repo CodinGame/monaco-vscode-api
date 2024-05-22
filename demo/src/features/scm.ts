@@ -44,18 +44,18 @@ void getApi().then(async vscode => {
 
   const group = scm.createResourceGroup('working-tree', 'Working Tree')
   group.resourceStates = [{
-    resourceUri: vscode.Uri.file('/tmp/test.js'),
+    resourceUri: vscode.Uri.file('/workspace/test.js'),
     command: {
       title: 'Commit',
       command: 'scm-demo.click-file',
-      arguments: [vscode.Uri.file('/tmp/test.js')]
+      arguments: [vscode.Uri.file('/workspace/test.js')]
     }
   }, {
-    resourceUri: vscode.Uri.file('/tmp/test_readonly.js'),
+    resourceUri: vscode.Uri.file('/workspace/test_readonly.js'),
     command: {
       title: 'Commit',
       command: 'scm-demo.click-file',
-      arguments: [vscode.Uri.file('/tmp/test_readonly.js')]
+      arguments: [vscode.Uri.file('/workspace/test_readonly.js')]
     },
     decorations: {
       strikeThrough: true,

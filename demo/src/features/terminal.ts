@@ -55,6 +55,6 @@ export class TerminalBackend extends SimpleTerminalBackend {
       override clearBuffer (): void | Promise<void> {
       }
     }
-    return new FakeTerminalProcess(1, 1, '/tmp', dataEmitter.event)
+    return new FakeTerminalProcess(1, 1, '/workspace', dataEmitter.event)
   }
 }

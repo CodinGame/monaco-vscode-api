@@ -20,7 +20,7 @@ if (!useHtmlFileSystemProvider) {
       fakeOutputChannel.append('Hello world\n')
     }, 1000)
 
-    const mainDocument = await vscode.workspace.openTextDocument(vscode.Uri.file('/tmp/test.js'))
+    const mainDocument = await vscode.workspace.openTextDocument(vscode.Uri.file('/workspace/test.js'))
     anotherFakeOutputChannel.replace(mainDocument.getText())
     vscode.workspace.onDidChangeTextDocument((e) => {
       if (e.document === mainDocument && e.contentChanges.length > 0) {
