@@ -586,7 +586,12 @@ function isFullfiled<T> (result: PromiseSettledResult<T>): result is PromiseFulf
   return result.status === 'fulfilled'
 }
 
-class OverlayFileSystemProvider implements IFileSystemProviderWithFileReadWriteCapability {
+class OverlayFileSystemProvider implements
+IFileSystemProviderWithFileReadWriteCapability,
+IFileSystemProviderWithFileReadStreamCapability,
+IFileSystemProviderWithFileAtomicReadCapability,
+IFileSystemProviderWithFileAtomicWriteCapability,
+IFileSystemProviderWithFileAtomicDeleteCapability {
   private providers: { priority: number, provider: IFileSystemProviderWithFileReadWriteCapability }[] = []
 
   public register (priority: number, provider: IFileSystemProviderWithFileReadWriteCapability): IDisposable {
@@ -622,7 +627,7 @@ class OverlayFileSystemProvider implements IFileSystemProviderWithFileReadWriteC
   _onDidChangeOverlays = new Emitter<void>()
   onDidChangeOverlays = this._onDidChangeOverlays.event
 
-  capabilities = FileSystemProviderCapabilities.FileReadWrite | FileSystemProviderCapabilities.PathCaseSensitive
+  capabilities = FileSystemProviderCapabilities.FileReadWrite | FileSystemProviderCapabilities.PathCaseSensitive | FileSystemProviderCapabilities.FileReadStream
 
   private async readFromDelegates<T> (caller: (delegate: IFileSystemProviderWithFileReadWriteCapability) => Promise<T>) {
     if (this.delegates.length === 0) {
@@ -632,6 +637,29 @@ class OverlayFileSystemProvider implements IFileSystemProviderWithFileReadWriteC
     for (const delegate of this.delegates) {
       try {
         return await caller(delegate)
+      } catch (err) {
+        firstError ??= err
+        if (err instanceof FileSystemProviderError && [
+          FileSystemProviderErrorCode.NoPermissions,
+          FileSystemProviderErrorCode.FileNotFound,
+          FileSystemProviderErrorCode.Unavailable
+        ].includes(err.code)) {
+          continue
+        }
+        throw err
+      }
+    }
+    throw firstError
+  }
+
+  private readFromDelegatesSync<T> (caller: (delegate: IFileSystemProviderWithFileReadWriteCapability) => T) {
+    if (this.delegates.length === 0) {
+      throw createFileSystemProviderError('No delegate', FileSystemProviderErrorCode.Unavailable)
+    }
+    let firstError: unknown | undefined
+    for (const delegate of this.delegates) {
+      try {
+        return caller(delegate)
       } catch (err) {
         firstError ??= err
         if (err instanceof FileSystemProviderError && [
@@ -685,6 +713,22 @@ class OverlayFileSystemProvider implements IFileSystemProviderWithFileReadWriteC
 
   async readFile (resource: URI): Promise<Uint8Array> {
     return this.readFromDelegates(delegate => delegate.readFile(resource))
+  }
+
+  readFileStream (resource: URI, opts: IFileReadStreamOptions, token: CancellationToken): ReadableStreamEvents<Uint8Array> {
+    return this.readFromDelegatesSync(delegate => {
+      if (hasFileReadStreamCapability(delegate)) {
+        return delegate.readFileStream(resource, opts, token)
+      } else {
+        const stream = newWriteableStream<Uint8Array>(data => VSBuffer.concat(data.map(data => VSBuffer.wrap(data))).buffer)
+        delegate.readFile(resource).then(data => {
+          stream.end(data)
+        }, err => {
+          stream.error(err)
+        })
+        return stream
+      }
+    })
   }
 
   async readdir (resource: URI): Promise<[string, FileType][]> {
