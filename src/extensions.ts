@@ -17,9 +17,9 @@ import { StandaloneServices } from 'vs/editor/standalone/browser/standaloneServi
 import { ExtensionManifestTranslator, NlsConfiguration } from 'vs/platform/extensionManagement/common/extensionsScannerService'
 import * as platform from 'vs/base/common/platform'
 import { IExtensionWithExtHostKind, ExtensionServiceOverride } from './service-override/extensions'
-import { CustomSchemas, registerExtensionFile } from './service-override/files'
+import { CustomSchemas, ExtensionFileMetadata, RegisteredUriFile, registerExtensionFile } from './service-override/files'
 import { waitServicesReady } from './lifecycle'
-import { throttle, memoized } from './tools'
+import { throttle } from './tools'
 import { setDefaultApi } from './extension.api'
 import { getBuiltInExtensionTranslationsUris } from './l10n'
 
@@ -60,23 +60,12 @@ interface RegisterLocalProcessExtensionResult extends RegisterLocalExtensionResu
   setAsDefaultApi (): Promise<void>
 }
 
-function registerExtensionFileUrl (extensionLocation: URI, filePath: string, url: string, mimeType?: string): IDisposable {
+function registerExtensionFileUrl (extensionLocation: URI, filePath: string, url: string, metadataOrMimeType?: string | ExtensionFileMetadata): IDisposable {
   const fileDisposable = new DisposableStore()
   fileDisposable.add(FileAccess.registerStaticBrowserUri(joinPath(extensionLocation, filePath), URI.parse(url)))
 
-  fileDisposable.add(registerExtensionFile(extensionLocation, filePath, memoized(async () => {
-    const response = await fetch(url, {
-      headers: mimeType != null
-        ? {
-            Accept: mimeType
-          }
-        : {}
-    })
-    if (response.status !== 200) {
-      throw new Error(response.statusText)
-    }
-    return new Uint8Array(await response.arrayBuffer())
-  })))
+  const metadata: ExtensionFileMetadata | undefined = typeof metadataOrMimeType === 'string' ? { mimeType: metadataOrMimeType } : metadataOrMimeType
+  fileDisposable.add(registerExtensionFile(new RegisteredUriFile(joinPath(extensionLocation, filePath), url, metadata)))
   return fileDisposable
 }
 
@@ -191,8 +180,8 @@ export function registerExtension (manifest: IExtensionManifest, extHostKind?: E
   }
 
   if (extHostKind !== ExtensionHostKind.Remote) {
-    function registerFileUrl (path: string, url: string, mimeType?: string) {
-      return registerExtensionFileUrl(location, path, url, mimeType)
+    function registerFileUrl (path: string, url: string, metadataOrMimeType?: string | ExtensionFileMetadata) {
+      return registerExtensionFileUrl(location, path, url, metadataOrMimeType)
     }
     api = <RegisterLocalExtensionResult>{
       ...api,
@@ -225,5 +214,6 @@ export {
   IExtensionManifest,
   ITranslations,
   IExtensionContributions,
-  ExtensionHostKind
+  ExtensionHostKind,
+  ExtensionFileMetadata
 }
