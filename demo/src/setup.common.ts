@@ -103,7 +103,8 @@ while (variable < 5000) {
 }`
   ))
 
-  fileSystemProvider.registerFile(new RegisteredReadOnlyFile(vscode.Uri.file('/workspace/test_readonly.js'), async () => 'This is a readonly static file'))
+  const content = new TextEncoder().encode('This is a readonly static file')
+  fileSystemProvider.registerFile(new RegisteredReadOnlyFile(vscode.Uri.file('/workspace/test_readonly.js'), async () => content, content.length))
 
   fileSystemProvider.registerFile(new RegisteredMemoryFile(vscode.Uri.file('/workspace/jsconfig.json'), `{
   "compilerOptions": {
