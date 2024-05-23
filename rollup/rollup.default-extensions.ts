@@ -40,8 +40,8 @@ export default rollup.defineConfig([
     output: [{
       minifyInternalExports: false,
       assetFileNames: chunkInfo => {
-        if (chunkInfo.name != null && chunkInfo.name.endsWith('d.ts')) {
-          // append .txt at the end of d.ts files: those file are required by the typescript extension and are just expected to be loaded as simple text
+        if (chunkInfo.name != null && (chunkInfo.name.endsWith('d.ts') || chunkInfo.name.endsWith('.css'))) {
+          // append .txt at the end of d.ts and css files: those file are expected to be loaded as simple text while some bundlers like vite tries to transform them
           return 'resources/[name][extname].txt'
         }
         return 'resources/[name][extname]'
