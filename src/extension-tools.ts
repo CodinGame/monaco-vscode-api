@@ -13,6 +13,7 @@ export interface ExtensionResource {
   path: string
   extensionPaths: string[]
   mimeType?: string
+  size: number
 }
 
 function lookupMime (path: string) {
@@ -31,11 +32,12 @@ function getPaths (filePath: string) {
   return paths
 }
 
-export function toResource (path: string): ExtensionResource {
+export function toResource (resourcePath: string, fs: typeof nodeFs, cwd: string): ExtensionResource {
   return {
-    path,
-    extensionPaths: getPaths(path),
-    mimeType: lookupMime(path)
+    path: resourcePath,
+    extensionPaths: getPaths(resourcePath),
+    mimeType: lookupMime(resourcePath),
+    size: fs.statSync(path.resolve(cwd, resourcePath)).size
   }
 }
 
@@ -150,9 +152,9 @@ export async function getExtensionResources (manifest: IExtensionManifest, fs: t
       fs: <FileSystemAdapter>fs,
       cwd,
       onlyFiles: true
-    })).map(toResource)
+    })).map(p => toResource(p, fs, cwd))
   } else {
-    return (await extractResourcesFromExtensionManifest(manifest, fs, cwd)).map(toResource)
+    return (await extractResourcesFromExtensionManifest(manifest, fs, cwd)).map(p => toResource(p, fs, cwd))
   }
 }
 

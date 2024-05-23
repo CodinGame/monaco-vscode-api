@@ -4,6 +4,7 @@ import type { IExtensionManifest } from 'vs/platform/extensions/common/extension
 import * as path from 'path'
 import * as fs from 'fs'
 import { getExtensionResources, parseJson } from './extension-tools.js'
+import { ExtensionFileMetadata } from './extensions.js'
 
 interface Options {
   include?: FilterPattern
@@ -59,8 +60,11 @@ export default function plugin ({
           const readmePath = resourcePaths.filter(child => /^readme(\.txt|\.md|)$/i.test(child))[0]
           const changelogPath = resourcePaths.filter(child => /^changelog(\.txt|\.md|)$/i.test(child))[0]
 
-          function generateFileRegistrationInstruction (filePath: string, importPath: string, mimeType?: string) {
-            return `registerFileUrl('${filePath}', new URL('${importPath}', import.meta.url).toString()${mimeType != null ? `, '${mimeType}'` : ''})`
+          function generateFileRegistrationInstruction (filePath: string, importPath: string, mimeType?: string, size?: number) {
+            return `registerFileUrl('${filePath}', new URL('${importPath}', import.meta.url).toString(), ${JSON.stringify(<ExtensionFileMetadata>{
+              mimeType,
+              size
+            })})`
           }
 
           return `
@@ -70,7 +74,7 @@ import { registerExtension } from 'vscode/extensions'
 const { registerFileUrl, whenReady } = registerExtension(manifest, undefined, ${JSON.stringify({ system: true, readmePath, changelogPath })})
 ${resources.map(resource => {
   const lines: string[] = resource.extensionPaths.map(extensionPath =>
-    generateFileRegistrationInstruction(extensionPath, path.resolve(id, resource.path), resource.mimeType)
+    generateFileRegistrationInstruction(extensionPath, path.resolve(id, resource.path), resource.mimeType, resource.size)
   )
 
   return lines.join('\n')

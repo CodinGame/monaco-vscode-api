@@ -7,6 +7,7 @@ import { Readable } from 'stream'
 import * as path from 'path'
 import type nodeFs from 'node:fs'
 import { getExtensionResources, parseJson } from './extension-tools.js'
+import { ExtensionFileMetadata } from './extensions.js'
 
 interface Options {
   include?: FilterPattern
@@ -104,7 +105,8 @@ export default function plugin ({
         return resource.extensionPaths.map(extensionPath => ({
           pathInExtension: getVsixPath(extensionPath),
           url,
-          mimeType: resource.mimeType
+          mimeType: resource.mimeType,
+          size: resource.size
         }))
       }))).flat()
 
@@ -115,8 +117,11 @@ const manifest = ${JSON.stringify(manifest)}
 
 const { registerFileUrl, whenReady } = registerExtension(manifest, undefined, ${JSON.stringify({ system: true, readmePath, changelogPath })})
 
-${pathMapping.map(({ pathInExtension, url, mimeType }) => (`
-registerFileUrl('${pathInExtension}', ${url}${mimeType != null ? `, '${mimeType}'` : ''})`)).join('\n')}
+${pathMapping.map(({ pathInExtension, url, mimeType, size }) => (`
+registerFileUrl('${pathInExtension}', ${url}, ${JSON.stringify(<ExtensionFileMetadata>{
+  mimeType,
+  size
+})})`)).join('\n')}
 
 export { whenReady }
 `
