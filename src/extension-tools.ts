@@ -16,7 +16,14 @@ export interface ExtensionResource {
   size: number
 }
 
+const plainTextExtensions = [
+  '.d.ts'
+]
+
 function lookupMime (path: string) {
+  if (plainTextExtensions.some(e => path.endsWith(e))) {
+    return 'text/plain'
+  }
   const mimeType = mime.lookup(path)
   if (mimeType === false) {
     return undefined
