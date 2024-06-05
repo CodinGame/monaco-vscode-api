@@ -1,0 +1,21 @@
+From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
+From: =?UTF-8?q?Lo=C3=AFc=20Mangeonjean?= <loic@coderpad.io>
+Date: Wed, 5 Jun 2024 18:33:13 +0200
+Subject: [PATCH] fix: update preference markers on profile change
+
+---
+ .../contrib/preferences/browser/preferencesRenderers.ts          | 1 +
+ 1 file changed, 1 insertion(+)
+
+diff --git a/src/vs/workbench/contrib/preferences/browser/preferencesRenderers.ts b/src/vs/workbench/contrib/preferences/browser/preferencesRenderers.ts
+index 078adf7dfa9..2bb9d798d6b 100644
+--- a/src/vs/workbench/contrib/preferences/browser/preferencesRenderers.ts
++++ b/src/vs/workbench/contrib/preferences/browser/preferencesRenderers.ts
+@@ -492,6 +492,7 @@ class UnsupportedSettingsRenderer extends Disposable implements languages.CodeAc
+ 		this._register(this.editor.getModel()!.onDidChangeContent(() => this.delayedRender()));
+ 		this._register(Event.filter(this.configurationService.onDidChangeConfiguration, e => e.source === ConfigurationTarget.DEFAULT)(() => this.delayedRender()));
+ 		this._register(languageFeaturesService.codeActionProvider.register({ pattern: settingsEditorModel.uri.path }, this));
++		this._register(userDataProfileService.onDidChangeCurrentProfile(() => this.delayedRender()));
+ 	}
+ 
+ 	private delayedRender(): void {
