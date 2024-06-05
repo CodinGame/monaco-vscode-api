@@ -22,7 +22,13 @@ import { timeout } from 'vs/base/common/async'
 import { IWorkbenchConfigurationService } from 'vs/workbench/services/configuration/common/configuration.service'
 import { UserDataProfileImportExportService } from 'vs/workbench/services/userDataProfile/browser/userDataProfileImportExportService'
 import { UserDataProfileManagementService } from 'vs/workbench/services/userDataProfile/browser/userDataProfileManagement'
+import { IUserDataProfileStorageService } from 'vs/platform/userDataProfile/common/userDataProfileStorageService.service'
+import { UserDataProfileStorageService } from 'vs/workbench/services/userDataProfile/browser/userDataProfileStorageService'
+import { UserDataProfileService } from 'vs/workbench/services/userDataProfile/common/userDataProfileService'
+import { IAnyWorkspaceIdentifier } from 'vs/platform/workspace/common/workspace'
+import { IUserDataProfile } from 'vs/platform/userDataProfile/common/userDataProfile'
 import { registerServiceInitializePostParticipant } from '../lifecycle'
+import { getWorkspaceIdentifier } from '../workbench'
 import 'vs/workbench/contrib/userDataProfile/browser/userDataProfile.contribution'
 
 function isWorkspaceService (configurationService: IWorkbenchConfigurationService): configurationService is WorkspaceService {
@@ -82,11 +88,44 @@ class InjectedUserDataInitializationService extends UserDataInitializationServic
   }
 }
 
+function getCurrentProfile (workspace: IAnyWorkspaceIdentifier, userDataProfilesService: BrowserUserDataProfilesService, environmentService: IBrowserWorkbenchEnvironmentService): IUserDataProfile {
+  if (environmentService.options?.profile != null) {
+    const profile = userDataProfilesService.profiles.find(p => p.name === environmentService.options?.profile?.name)
+    if (profile != null) {
+      return profile
+    }
+    return userDataProfilesService.defaultProfile
+  }
+  return userDataProfilesService.getProfileForWorkspace(workspace) ?? userDataProfilesService.defaultProfile
+}
+
+class InjectedUserDataProfileService extends UserDataProfileService {
+  constructor (
+    @IBrowserWorkbenchEnvironmentService environmentService: IBrowserWorkbenchEnvironmentService,
+    @IUserDataProfilesService userDataProfilesService: BrowserUserDataProfilesService,
+    @ILogService logService: ILogService
+  ) {
+    const workspace = getWorkspaceIdentifier()
+    const profile = getCurrentProfile(workspace, userDataProfilesService, environmentService)
+    super(profile)
+
+    if (profile === userDataProfilesService.defaultProfile && environmentService.options?.profile != null) {
+      userDataProfilesService.createNamedProfile(environmentService.options.profile.name, undefined, workspace).then(async (profile) => {
+        await this.updateCurrentProfile(profile)
+      }).catch(err => {
+        logService.error(err)
+      })
+    }
+  }
+}
+
 export default function getServiceOverride (): IEditorOverrideServices {
   return {
+    [IUserDataProfileService.toString()]: new SyncDescriptor(InjectedUserDataProfileService, [], true),
     [IUserDataProfilesService.toString()]: new SyncDescriptor(BrowserUserDataProfilesService, [], true),
     [IUserDataInitializationService.toString()]: new SyncDescriptor(InjectedUserDataInitializationService, [], true),
     [IUserDataProfileImportExportService.toString()]: new SyncDescriptor(UserDataProfileImportExportService, [], true),
     [IUserDataProfileManagementService.toString()]: new SyncDescriptor(UserDataProfileManagementService, [], true),
+    [IUserDataProfileStorageService.toString()]: new SyncDescriptor(UserDataProfileStorageService, [], true)
   }
 }
