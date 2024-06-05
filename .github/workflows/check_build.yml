@@ -13,7 +13,8 @@ jobs:
         with:
           # we actually need "github.event.pull_request.commits + 1" commit
           fetch-depth: 0
-      - uses: actions/setup-node@v4
+      - name: Volta
+        uses: volta-cli/action@v4
       - run: npm ci --ignore-scripts
       - run: npx commitlint --from ${{ github.event.pull_request.head.sha }}~${{ github.event.pull_request.commits }} --to ${{ github.event.pull_request.head.sha }} --verbose
   check:
@@ -23,10 +24,8 @@ jobs:
     steps:
     - name: Checkout
       uses: actions/checkout@v4
-    - name: Setup Node.js
-      uses: actions/setup-node@v4
-      with:
-        node-version: 18.19.0
+    - name: Volta
+      uses: volta-cli/action@v4
     - name: Install dependencies
       run: npm ci
     - name: Build
