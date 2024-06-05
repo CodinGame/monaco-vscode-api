@@ -24,7 +24,7 @@
     "@types/ws": "^8.5.10",
     "ts-node": "^10.9.2",
     "typescript": "~5.4.5",
-    "vite": "~5.2.11"
+    "vite": "~5.2.12"
   },
   "dependencies": {
     "@codingame/monaco-vscode-accessibility-service-override": "file:../dist/service-override-accessibility",
