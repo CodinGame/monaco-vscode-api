@@ -198,6 +198,8 @@ Additionally, several packages that include the VSCode version of some services 
   - Support for [viewsWelcome contribution point](https://code.visualstudio.com/api/references/contribution-points#contributes.viewsWelcome). *Hint*: It only makes sense to enable it when *Views* or *Workbench* service are used.
 - **Walkthrough**: `@codingame/monaco-vscode-walkthrough-service-override`
   - Getting Started page and support for [walkthrough contribution point](https://code.visualstudio.com/api/references/contribution-points#contributes.walkthroughs). *Hint*: It only makes sense to enable it when *Views* or *Workbench* service are used.
+- **User data profile**: `@codingame/monaco-vscode-user-data-profile-service-override`
+  - User profiles support
 - **User data sync**: `@codingame/monaco-vscode-user-data-sync-service-override`
   - Support for user data sync. ⚠️ It can't really be used as it relies on a [closed source backend from microsoft](https://code.visualstudio.com/docs/editor/settings-sync#_can-i-use-a-different-backend-or-service-for-settings-sync) for the moment ⚠️
 - **Ai**: `@codingame/monaco-vscode-ai-service-override`
