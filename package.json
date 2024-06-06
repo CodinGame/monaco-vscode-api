@@ -31,9 +31,9 @@
   },
   "config": {
     "vscode": {
-      "version": "1.89.1",
-      "ref": "1.89.1",
-      "commit": "dc96b837cf6bb4af9cd736aa3af08cf8279f7685"
+      "version": "1.90.0",
+      "ref": "1.90.0",
+      "commit": "89de5a8d4d6205e5b11647eb6a74844ca23d2573"
     },
     "monaco": {
       "ref": "v0.49.0",
@@ -60,7 +60,7 @@
     "@types/mime-types": "^2.1.4",
     "@types/node": "18.19.8",
     "@types/semver": "^7.5.8",
-    "@types/vscode": "~1.89.0",
+    "@types/vscode": "~1.90.0",
     "@types/vscode-marked": "npm:@types/marked@^3.0.2",
     "@types/vscode-semver": "npm:@types/semver@=5.5.0",
     "@types/yargs": "^17.0.32",
@@ -109,7 +109,6 @@
     "@vscode/vscode-languagedetection": "npm:@codingame/vscode-languagedetection@1.0.23",
     "@vscode/windows-process-tree": "^0.6.0",
     "@vscode/windows-registry": "^1.1.0",
-    "@xterm/addon-canvas": "0.8.0-beta.17",
     "@xterm/addon-image": "0.9.0-beta.17",
     "@xterm/addon-search": "0.16.0-beta.17",
     "@xterm/addon-serialize": "0.14.0-beta.17",

@@ -79,10 +79,10 @@ index 4de800bd521..de9b4b9143c 100644
  	public static validateOptions(options: IEditorOptions): ValidatedEditorOptions {
  		const result = new ValidatedEditorOptions();
 diff --git a/src/vs/editor/browser/widget/codeEditor/codeEditorWidget.ts b/src/vs/editor/browser/widget/codeEditor/codeEditorWidget.ts
-index 2bf7d7afb8e..ff546aeb0e0 100644
+index 07753688f7e..a1fbaf3c277 100644
 --- a/src/vs/editor/browser/widget/codeEditor/codeEditorWidget.ts
 +++ b/src/vs/editor/browser/widget/codeEditor/codeEditorWidget.ts
-@@ -261,6 +261,7 @@ export class CodeEditorWidget extends Disposable implements editorBrowser.ICodeE
+@@ -270,6 +270,7 @@ export class CodeEditorWidget extends Disposable implements editorBrowser.ICodeE
  
  		this._configuration = this._register(this._createConfiguration(codeEditorWidgetOptions.isSimpleWidget || false,
  			codeEditorWidgetOptions.contextMenuId ?? (codeEditorWidgetOptions.isSimpleWidget ? MenuId.SimpleEditorContext : MenuId.EditorContext),
@@ -90,7 +90,7 @@ index 2bf7d7afb8e..ff546aeb0e0 100644
  			options, accessibilityService));
  		this._register(this._configuration.onDidChange((e) => {
  			this._onDidChangeConfiguration.fire(e);
-@@ -369,8 +370,8 @@ export class CodeEditorWidget extends Disposable implements editorBrowser.ICodeE
+@@ -378,8 +379,8 @@ export class CodeEditorWidget extends Disposable implements editorBrowser.ICodeE
  		this._modelData?.view.writeScreenReaderContent(reason);
  	}
  
@@ -101,7 +101,7 @@ index 2bf7d7afb8e..ff546aeb0e0 100644
  	}
  
  	public getId(): string {
-@@ -1905,6 +1906,12 @@ export interface ICodeEditorWidgetOptions {
+@@ -1944,6 +1945,12 @@ export interface ICodeEditorWidgetOptions {
  	 */
  	isSimpleWidget?: boolean;
  
@@ -115,10 +115,10 @@ index 2bf7d7afb8e..ff546aeb0e0 100644
  	 * Contributions to instantiate.
  	 * When provided, only the contributions included will be instantiated.
 diff --git a/src/vs/editor/browser/widget/diffEditor/diffEditorWidget.ts b/src/vs/editor/browser/widget/diffEditor/diffEditorWidget.ts
-index 40763f34568..95141e7ca43 100644
+index c3c798529ca..6f50a8e02ca 100644
 --- a/src/vs/editor/browser/widget/diffEditor/diffEditorWidget.ts
 +++ b/src/vs/editor/browser/widget/diffEditor/diffEditorWidget.ts
-@@ -50,6 +50,12 @@ import { DiffEditorViewModel, DiffMapping, DiffState } from './diffEditorViewMod
+@@ -51,6 +51,12 @@ import { DiffEditorViewModel, DiffMapping, DiffState } from './diffEditorViewMod
  export interface IDiffCodeEditorWidgetOptions {
  	originalEditor?: ICodeEditorWidgetOptions;
  	modifiedEditor?: ICodeEditorWidgetOptions;

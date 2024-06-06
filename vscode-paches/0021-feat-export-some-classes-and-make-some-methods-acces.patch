@@ -9,6 +9,7 @@ Subject: [PATCH] feat: export some classes and make some methods accessible
  src/vs/workbench/browser/layout.ts                   | 10 +++++-----
  src/vs/workbench/browser/workbench.ts                | 12 ++++++------
  .../debug/browser/extensionHostDebugService.ts       |  2 +-
+ .../contrib/issue/browser/issueTroubleshoot.ts       |  6 +++---
  .../contrib/logs/common/defaultLogLevels.ts          |  2 +-
  .../dialogs/browser/abstractFileDialogService.ts     |  2 +-
  .../services/dialogs/browser/fileDialogService.ts    |  4 ++--
@@ -18,7 +19,6 @@ Subject: [PATCH] feat: export some classes and make some methods accessible
  .../extensions/browser/extensionUrlHandler.ts        |  2 +-
  .../extensions/browser/webWorkerExtensionHost.ts     |  2 +-
  .../extensions/common/abstractExtensionService.ts    | 10 +++++-----
- .../services/issue/browser/issueTroubleshoot.ts      |  6 +++---
  .../services/keybinding/browser/keybindingService.ts |  2 +-
  .../languageStatus/common/languageStatusService.ts   |  2 +-
  .../services/localization/browser/localeService.ts   |  2 +-
@@ -58,7 +58,7 @@ index 99dd3279fe8..b692381eaa2 100644
  	declare readonly _serviceBrand: undefined;
  
 diff --git a/src/vs/workbench/browser/layout.ts b/src/vs/workbench/browser/layout.ts
-index 94ec1087453..4aa2834584f 100644
+index 4e2809e149c..a7891fadef0 100644
 --- a/src/vs/workbench/browser/layout.ts
 +++ b/src/vs/workbench/browser/layout.ts
 @@ -52,7 +52,7 @@ import { CustomTitleBarVisibility } from '../../platform/window/common/window';
@@ -100,10 +100,10 @@ index 94ec1087453..4aa2834584f 100644
  	readonly filesToDiff?: IPathToOpen[];
  	readonly filesToMerge?: IPathToOpen[];
 diff --git a/src/vs/workbench/browser/workbench.ts b/src/vs/workbench/browser/workbench.ts
-index 3678a7f6286..0dc55e03b6a 100644
+index b0688133537..b0f76f8d08d 100644
 --- a/src/vs/workbench/browser/workbench.ts
 +++ b/src/vs/workbench/browser/workbench.ts
-@@ -79,7 +79,7 @@ export class Workbench extends Layout {
+@@ -81,7 +81,7 @@ export class Workbench extends Layout {
  		this.registerErrorHandler(logService);
  	}
  
@@ -112,7 +112,7 @@ index 3678a7f6286..0dc55e03b6a 100644
  
  		// Listen on unhandled rejection events
  		// Note: intentionally not registered as disposable to handle
-@@ -199,7 +199,7 @@ export class Workbench extends Layout {
+@@ -201,7 +201,7 @@ export class Workbench extends Layout {
  		}
  	}
  
@@ -121,7 +121,7 @@ index 3678a7f6286..0dc55e03b6a 100644
  
  		// Layout Service
  		serviceCollection.set(IWorkbenchLayoutService, this);
-@@ -238,7 +238,7 @@ export class Workbench extends Layout {
+@@ -240,7 +240,7 @@ export class Workbench extends Layout {
  		return instantiationService;
  	}
  
@@ -130,7 +130,7 @@ index 3678a7f6286..0dc55e03b6a 100644
  
  		// Configuration changes
  		this._register(configurationService.onDidChangeConfiguration(e => this.updateFontAliasing(e, configurationService)));
-@@ -327,7 +327,7 @@ export class Workbench extends Layout {
+@@ -329,7 +329,7 @@ export class Workbench extends Layout {
  		}
  	}
  
@@ -139,7 +139,7 @@ index 3678a7f6286..0dc55e03b6a 100644
  
  		// ARIA & Signals
  		setARIAContainer(this.mainContainer);
-@@ -394,7 +394,7 @@ export class Workbench extends Layout {
+@@ -396,7 +396,7 @@ export class Workbench extends Layout {
  		return part;
  	}
  
@@ -148,7 +148,7 @@ index 3678a7f6286..0dc55e03b6a 100644
  
  		// Instantiate Notification components
  		const notificationsCenter = this._register(instantiationService.createInstance(NotificationsCenter, this.mainContainer, notificationService.model));
-@@ -422,7 +422,7 @@ export class Workbench extends Layout {
+@@ -427,7 +427,7 @@ export class Workbench extends Layout {
  		});
  	}
  
@@ -169,6 +169,31 @@ index 08449bd2cd7..f82ac191725 100644
 +export class BrowserExtensionHostDebugService extends ExtensionHostDebugChannelClient implements IExtensionHostDebugService {
  
  	private static readonly LAST_EXTENSION_DEVELOPMENT_WORKSPACE_KEY = 'debug.lastExtensionDevelopmentWorkspace';
+ 
+diff --git a/src/vs/workbench/contrib/issue/browser/issueTroubleshoot.ts b/src/vs/workbench/contrib/issue/browser/issueTroubleshoot.ts
+index f9f3104f8b3..8d3eb0c0e4e 100644
+--- a/src/vs/workbench/contrib/issue/browser/issueTroubleshoot.ts
++++ b/src/vs/workbench/contrib/issue/browser/issueTroubleshoot.ts
+@@ -30,9 +30,9 @@ import { URI } from 'vs/base/common/uri';
+ import { RemoteNameContext } from 'vs/workbench/common/contextkeys';
+ import { IsWebContext } from 'vs/platform/contextkey/common/contextkeys';
+ 
+-const ITroubleshootIssueService = createDecorator<ITroubleshootIssueService>('ITroubleshootIssueService');
++export const ITroubleshootIssueService = createDecorator<ITroubleshootIssueService>('ITroubleshootIssueService');
+ 
+-interface ITroubleshootIssueService {
++export interface ITroubleshootIssueService {
+ 	_serviceBrand: undefined;
+ 	isActive(): boolean;
+ 	start(): Promise<void>;
+@@ -72,7 +72,7 @@ class TroubleShootState {
+ 	) { }
+ }
+ 
+-class TroubleshootIssueService extends Disposable implements ITroubleshootIssueService {
++export class TroubleshootIssueService extends Disposable implements ITroubleshootIssueService {
+ 
+ 	readonly _serviceBrand: undefined;
  
 diff --git a/src/vs/workbench/contrib/logs/common/defaultLogLevels.ts b/src/vs/workbench/contrib/logs/common/defaultLogLevels.ts
 index 522b64a8cd6..b43c170bf2e 100644
@@ -219,10 +244,10 @@ index de6a4ad8227..2b0ac26789f 100644
  	}
  }
 diff --git a/src/vs/workbench/services/extensionManagement/browser/extensionBisect.ts b/src/vs/workbench/services/extensionManagement/browser/extensionBisect.ts
-index caf3def4700..232570b93fa 100644
+index d339e68cfe8..201e6372cde 100644
 --- a/src/vs/workbench/services/extensionManagement/browser/extensionBisect.ts
 +++ b/src/vs/workbench/services/extensionManagement/browser/extensionBisect.ts
-@@ -65,7 +65,7 @@ class BisectState {
+@@ -64,7 +64,7 @@ class BisectState {
  	) { }
  }
  
@@ -245,7 +270,7 @@ index 0e60b30cd13..a8fef74dbc4 100644
  
  	private readonly _onDidChangeEnablement = this._register(new Emitter<{ extension: ExtensionIdentifier; featureId: string; enabled: boolean }>());
 diff --git a/src/vs/workbench/services/extensions/browser/extensionService.ts b/src/vs/workbench/services/extensions/browser/extensionService.ts
-index a181772e8c4..098be8e230d 100644
+index 1611fb02870..7feadf27b0f 100644
 --- a/src/vs/workbench/services/extensions/browser/extensionService.ts
 +++ b/src/vs/workbench/services/extensions/browser/extensionService.ts
 @@ -130,7 +130,7 @@ export class ExtensionService extends AbstractExtensionService implements IExten
@@ -276,7 +301,7 @@ index a181772e8c4..098be8e230d 100644
  			getInitData: async (): Promise<IWebWorkerExtensionHostInitData> => {
  				if (isInitialStart) {
 diff --git a/src/vs/workbench/services/extensions/browser/extensionUrlHandler.ts b/src/vs/workbench/services/extensions/browser/extensionUrlHandler.ts
-index 65672a170be..0426642269a 100644
+index 696f8227e6e..48c0e3bc2d4 100644
 --- a/src/vs/workbench/services/extensions/browser/extensionUrlHandler.ts
 +++ b/src/vs/workbench/services/extensions/browser/extensionUrlHandler.ts
 @@ -108,7 +108,7 @@ type ExtensionUrlReloadHandlerClassification = {
@@ -289,7 +314,7 @@ index 65672a170be..0426642269a 100644
  	readonly _serviceBrand: undefined;
  
 diff --git a/src/vs/workbench/services/extensions/browser/webWorkerExtensionHost.ts b/src/vs/workbench/services/extensions/browser/webWorkerExtensionHost.ts
-index 77969d88de9..848d8e9a4d2 100644
+index 0c8d2e27317..972bc7fe243 100644
 --- a/src/vs/workbench/services/extensions/browser/webWorkerExtensionHost.ts
 +++ b/src/vs/workbench/services/extensions/browser/webWorkerExtensionHost.ts
 @@ -76,7 +76,7 @@ export class WebWorkerExtensionHost extends Disposable implements IExtensionHost
@@ -336,31 +361,6 @@ index 124b22f400b..771c289dbca 100644
  	constructor(
  		public readonly toAdd: IExtension[],
  		public readonly toRemove: string[] | IExtension[]
-diff --git a/src/vs/workbench/services/issue/browser/issueTroubleshoot.ts b/src/vs/workbench/services/issue/browser/issueTroubleshoot.ts
-index 86f84f2af22..089333e2c9f 100644
---- a/src/vs/workbench/services/issue/browser/issueTroubleshoot.ts
-+++ b/src/vs/workbench/services/issue/browser/issueTroubleshoot.ts
-@@ -30,9 +30,9 @@ import { URI } from 'vs/base/common/uri';
- import { RemoteNameContext } from 'vs/workbench/common/contextkeys';
- import { IsWebContext } from 'vs/platform/contextkey/common/contextkeys';
- 
--const ITroubleshootIssueService = createDecorator<ITroubleshootIssueService>('ITroubleshootIssueService');
-+export const ITroubleshootIssueService = createDecorator<ITroubleshootIssueService>('ITroubleshootIssueService');
- 
--interface ITroubleshootIssueService {
-+export interface ITroubleshootIssueService {
- 	_serviceBrand: undefined;
- 	isActive(): boolean;
- 	start(): Promise<void>;
-@@ -72,7 +72,7 @@ class TroubleShootState {
- 	) { }
- }
- 
--class TroubleshootIssueService extends Disposable implements ITroubleshootIssueService {
-+export class TroubleshootIssueService extends Disposable implements ITroubleshootIssueService {
- 
- 	readonly _serviceBrand: undefined;
- 
 diff --git a/src/vs/workbench/services/keybinding/browser/keybindingService.ts b/src/vs/workbench/services/keybinding/browser/keybindingService.ts
 index 3c98bf9aec0..3ab26183771 100644
 --- a/src/vs/workbench/services/keybinding/browser/keybindingService.ts
@@ -440,12 +440,12 @@ index be889244846..875a9072cf0 100644
  	private _targetType: string[] = [];
  	private readonly _onDidChangeTargetType: Emitter<string[]> = new Emitter<string[]>();
 diff --git a/src/vs/workbench/services/remote/common/remoteExtensionsScanner.ts b/src/vs/workbench/services/remote/common/remoteExtensionsScanner.ts
-index a466cc1f3a1..09f6a40eb26 100644
+index 89e2791637e..a6d6babb175 100644
 --- a/src/vs/workbench/services/remote/common/remoteExtensionsScanner.ts
 +++ b/src/vs/workbench/services/remote/common/remoteExtensionsScanner.ts
-@@ -16,7 +16,7 @@ import { ILogService } from 'vs/platform/log/common/log';
- import { InstantiationType, registerSingleton } from 'vs/platform/instantiation/common/extensions';
+@@ -17,7 +17,7 @@ import { InstantiationType, registerSingleton } from 'vs/platform/instantiation/
  import { IActiveLanguagePackService } from 'vs/workbench/services/localization/common/locale';
+ import { IWorkbenchExtensionManagementService } from 'vs/workbench/services/extensionManagement/common/extensionManagement';
  
 -class RemoteExtensionsScannerService implements IRemoteExtensionsScannerService {
 +export class RemoteExtensionsScannerService implements IRemoteExtensionsScannerService {

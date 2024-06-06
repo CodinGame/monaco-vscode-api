@@ -38,7 +38,7 @@ index 00000000000..c7416d68719
 +
 +registerWorkbenchContribution2(EditorAutoSave.ID, EditorAutoSave, WorkbenchPhase.BlockRestore);
 diff --git a/src/vs/workbench/browser/parts/editor/editor.contribution.ts b/src/vs/workbench/browser/parts/editor/editor.contribution.ts
-index 1611076ea51..35327f35901 100644
+index dfb20dc68fb..f9be9fff359 100644
 --- a/src/vs/workbench/browser/parts/editor/editor.contribution.ts
 +++ b/src/vs/workbench/browser/parts/editor/editor.contribution.ts
 @@ -61,7 +61,6 @@ import { isMacintosh } from 'vs/base/common/platform';
@@ -270,7 +270,7 @@ index 00000000000..d9a94570df9
 +	}
 +});
 diff --git a/src/vs/workbench/contrib/files/browser/fileCommands.ts b/src/vs/workbench/contrib/files/browser/fileCommands.ts
-index da1e9c4dcd5..6f929af2ef9 100644
+index 81bf68c3e0b..d5c6aae3d1d 100644
 --- a/src/vs/workbench/contrib/files/browser/fileCommands.ts
 +++ b/src/vs/workbench/contrib/files/browser/fileCommands.ts
 @@ -3,56 +3,48 @@
@@ -364,7 +364,7 @@ index da1e9c4dcd5..6f929af2ef9 100644
  
  export const openWindowCommand = (accessor: ServicesAccessor, toOpen: IWindowOpenable[], options?: IOpenWindowOptions) => {
  	if (Array.isArray(toOpen)) {
-@@ -366,175 +358,6 @@ CommandsRegistry.registerCommand({
+@@ -368,175 +360,6 @@ CommandsRegistry.registerCommand({
  
  // Save / Save As / Save All / Revert
  

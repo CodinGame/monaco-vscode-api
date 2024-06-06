@@ -9,7 +9,7 @@ Subject: [PATCH] feat: only apply style on specific class
  2 files changed, 87 insertions(+), 103 deletions(-)
 
 diff --git a/src/vs/workbench/browser/media/style.css b/src/vs/workbench/browser/media/style.css
-index 8d4313f5f15..1d8f17f56f1 100644
+index 35f856b931a..6f6f8d2d94d 100644
 --- a/src/vs/workbench/browser/media/style.css
 +++ b/src/vs/workbench/browser/media/style.css
 @@ -9,56 +9,38 @@
@@ -210,10 +210,10 @@ index 8d4313f5f15..1d8f17f56f1 100644
  
 -.monaco-workbench .predefined-file-icon[class*='codicon-']::before {
 +.monaco-workbench-part .predefined-file-icon[class*='codicon-']::before {
- 	font-family: 'codicon';
  	width: 16px;
  	padding-left: 3px; /* width (16px) - font-size (13px) = padding-left (3px) */
-@@ -182,7 +166,7 @@ body.web {
+ 	padding-right: 3px;
+@@ -185,7 +169,7 @@ body.web {
  
  /* Custom Dropdown (select) Arrows */
  
@@ -222,7 +222,7 @@ index 8d4313f5f15..1d8f17f56f1 100644
  	font-family: inherit;
  	appearance: none;
  	-webkit-appearance: none;
-@@ -191,11 +175,11 @@ body.web {
+@@ -194,11 +178,11 @@ body.web {
  	border: 1px solid;
  }
  
@@ -235,8 +235,8 @@ index 8d4313f5f15..1d8f17f56f1 100644
 +.monaco-workbench-part .select-container:after {
  	content: var(--vscode-icon-chevron-down-content);
  	font-family: var(--vscode-icon-chevron-down-font-family);
- 	font-family: codicon;
-@@ -213,16 +197,16 @@ body.web {
+ 	font-size: 16px;
+@@ -215,16 +199,16 @@ body.web {
  
  /* Keyboard Focus Indication Styles */
  
@@ -263,7 +263,7 @@ index 8d4313f5f15..1d8f17f56f1 100644
  	outline-width: 1px;
  	outline-style: solid;
  	outline-offset: -1px;
-@@ -235,19 +219,19 @@ body.web {
+@@ -237,19 +221,19 @@ body.web {
  	background: transparent; /* Search input focus fix when in high contrast */
  }
  
@@ -290,7 +290,7 @@ index 8d4313f5f15..1d8f17f56f1 100644
  	border-color: transparent; /* outline is a square, but border has a radius, so we avoid this glitch when focused (https://github.com/microsoft/vscode/issues/26045) */
  }
  
-@@ -275,38 +259,38 @@ body.web {
+@@ -277,38 +261,38 @@ body.web {
  	color: var(--vscode-list-focusHighlightForeground);
  }
  

@@ -9,7 +9,7 @@ Subject: [PATCH] refactor: split code
  2 files changed, 11 insertions(+), 3 deletions(-)
 
 diff --git a/src/vs/editor/standalone/browser/standaloneServices.ts b/src/vs/editor/standalone/browser/standaloneServices.ts
-index 1881230c0ed..84a019c7717 100644
+index 70ced506d39..edd6dffdde6 100644
 --- a/src/vs/editor/standalone/browser/standaloneServices.ts
 +++ b/src/vs/editor/standalone/browser/standaloneServices.ts
 @@ -526,15 +526,19 @@ export class StandaloneKeybindingService extends AbstractKeybindingService {
