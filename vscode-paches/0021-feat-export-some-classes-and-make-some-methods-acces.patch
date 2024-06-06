@@ -10,6 +10,8 @@ Subject: [PATCH] feat: export some classes and make some methods accessible
  src/vs/workbench/browser/workbench.ts                | 12 ++++++------
  .../debug/browser/extensionHostDebugService.ts       |  2 +-
  .../contrib/logs/common/defaultLogLevels.ts          |  2 +-
+ .../dialogs/browser/abstractFileDialogService.ts     |  2 +-
+ .../services/dialogs/browser/fileDialogService.ts    |  4 ++--
  .../extensionManagement/browser/extensionBisect.ts   |  2 +-
  .../common/extensionFeaturesManagemetService.ts      |  2 +-
  .../services/extensions/browser/extensionService.ts  |  6 +++---
@@ -27,7 +29,7 @@ Subject: [PATCH] feat: export some classes and make some methods accessible
  .../terminal/common/embedderTerminalService.ts       |  2 +-
  .../userDataProfile/common/remoteUserDataProfiles.ts |  2 +-
  .../services/userDataSync/common/userDataSyncUtil.ts |  2 +-
- 23 files changed, 40 insertions(+), 40 deletions(-)
+ 25 files changed, 43 insertions(+), 43 deletions(-)
 
 diff --git a/src/vs/platform/extensionResourceLoader/browser/extensionResourceLoaderService.ts b/src/vs/platform/extensionResourceLoader/browser/extensionResourceLoaderService.ts
 index fdefc170db0..1d3bc4affc5 100644
@@ -181,6 +183,41 @@ index 522b64a8cd6..b43c170bf2e 100644
  
  	_serviceBrand: undefined;
  
+diff --git a/src/vs/workbench/services/dialogs/browser/abstractFileDialogService.ts b/src/vs/workbench/services/dialogs/browser/abstractFileDialogService.ts
+index c6a2df09c76..88399f0d728 100644
+--- a/src/vs/workbench/services/dialogs/browser/abstractFileDialogService.ts
++++ b/src/vs/workbench/services/dialogs/browser/abstractFileDialogService.ts
+@@ -54,7 +54,7 @@ export abstract class AbstractFileDialogService implements IFileDialogService {
+ 		@ICommandService protected readonly commandService: ICommandService,
+ 		@IEditorService protected readonly editorService: IEditorService,
+ 		@ICodeEditorService protected readonly codeEditorService: ICodeEditorService,
+-		@ILogService private readonly logService: ILogService
++		@ILogService protected readonly logService: ILogService
+ 	) { }
+ 
+ 	async defaultFilePath(schemeFilter = this.getSchemeFilterForWindow(), authorityFilter = this.getAuthorityFilterForWindow()): Promise<URI> {
+diff --git a/src/vs/workbench/services/dialogs/browser/fileDialogService.ts b/src/vs/workbench/services/dialogs/browser/fileDialogService.ts
+index de6a4ad8227..2b0ac26789f 100644
+--- a/src/vs/workbench/services/dialogs/browser/fileDialogService.ts
++++ b/src/vs/workbench/services/dialogs/browser/fileDialogService.ts
+@@ -24,7 +24,7 @@ import { EmbeddedCodeEditorWidget } from 'vs/editor/browser/widget/codeEditor/em
+ export class FileDialogService extends AbstractFileDialogService implements IFileDialogService {
+ 
+ 	@memoize
+-	private get fileSystemProvider(): HTMLFileSystemProvider {
++	protected get fileSystemProvider(): HTMLFileSystemProvider {
+ 		return this.fileService.getProvider(Schemas.file) as HTMLFileSystemProvider;
+ 	}
+ 
+@@ -271,7 +271,7 @@ export class FileDialogService extends AbstractFileDialogService implements IFil
+ 		return undefined;
+ 	}
+ 
+-	private shouldUseSimplified(scheme: string): boolean {
++	protected shouldUseSimplified(scheme: string): boolean {
+ 		return ![Schemas.file, Schemas.vscodeUserData, Schemas.tmp].includes(scheme);
+ 	}
+ }
 diff --git a/src/vs/workbench/services/extensionManagement/browser/extensionBisect.ts b/src/vs/workbench/services/extensionManagement/browser/extensionBisect.ts
 index caf3def4700..232570b93fa 100644
 --- a/src/vs/workbench/services/extensionManagement/browser/extensionBisect.ts
