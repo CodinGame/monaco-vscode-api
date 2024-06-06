@@ -24,7 +24,7 @@
     "@types/ws": "^8.5.10",
     "ts-node": "^10.9.2",
     "typescript": "~5.4.5",
-    "vite": "~5.2.11"
+    "vite": "~5.2.12"
   },
   "dependencies": {
     "@codingame/monaco-vscode-accessibility-service-override": "file:../dist/service-override-accessibility",
@@ -171,6 +171,7 @@
     "@codingame/monaco-vscode-typescript-language-features-default-extension": "file:../dist/default-extension-typescript-language-features",
     "@codingame/monaco-vscode-update-service-override": "file:../dist/service-override-update",
     "@codingame/monaco-vscode-user-data-sync-service-override": "file:../dist/service-override-user-data-sync",
+    "@codingame/monaco-vscode-user-data-profile-service-override": "file:../dist/service-override-user-data-profile",
     "@codingame/monaco-vscode-vb-default-extension": "file:../dist/default-extension-vb",
     "@codingame/monaco-vscode-view-banner-service-override": "file:../dist/service-override-view-banner",
     "@codingame/monaco-vscode-view-status-bar-service-override": "file:../dist/service-override-view-status-bar",

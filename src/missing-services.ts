@@ -223,6 +223,7 @@ import { IWebview } from 'vs/workbench/contrib/webview/browser/webview'
 import { SyncResource } from 'vs/workbench/contrib/editSessions/common/editSessions'
 import { ILanguageModelStatsService } from 'vs/workbench/contrib/chat/common/languageModelStats.service'
 import { IAccessibleViewInformationService } from 'vs/workbench/services/accessibility/common/accessibleViewInformationService.service'
+import { IUserDataProfileStorageService } from 'vs/platform/userDataProfile/common/userDataProfileStorageService.service'
 import { getBuiltInExtensionTranslationsUris, getExtensionIdProvidingCurrentLocale } from './l10n'
 import { unsupported } from './tools'
 
@@ -768,6 +769,15 @@ class UserDataProfilesService implements IUserDataProfilesService {
 }
 
 registerSingleton(IUserDataProfilesService, UserDataProfilesService, InstantiationType.Eager)
+
+registerSingleton(IUserDataProfileStorageService, class UserDataProfileStorageService implements IUserDataProfileStorageService {
+  _serviceBrand: undefined
+  onDidChange = Event.None
+  readStorageData = unsupported
+  updateStorageData = unsupported
+  withProfileScopedStorageService = unsupported
+}, InstantiationType.Eager)
+
 class InjectedUserDataProfileService extends UserDataProfileService {
   constructor (@IEnvironmentService environmentService: IEnvironmentService) {
     super({
