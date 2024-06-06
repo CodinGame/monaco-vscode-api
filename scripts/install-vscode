@@ -32,13 +32,13 @@ cat <<< "$(jq ".config.vscode.commit = \"$vscodeCommit\"" $package_json)" > $pac
 
 cd $build_directory
 
+echo "Patching vscode..."
+find "$patch_directory" -type f -name '*.patch' -print0 | sort -z | xargs -t -0 -n 1 patch -p1 -i
+
 echo "Installing vscode dependencies..."
 yarn config set ignore-engines
 yarn install --ignore-scripts
 yarn postinstall || true
-
-echo "Patching vscode..."
-find "$patch_directory" -type f -name '*.patch' -print0 | sort -z | xargs -t -0 -n 1 patch -p1 -i
 
 echo "Installing build dependencies"
 cd build
