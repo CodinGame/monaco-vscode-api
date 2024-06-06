@@ -206,7 +206,8 @@ class LocalExtensionHost implements IExtensionHost {
         machineId: this._telemetryService.machineId,
         firstSessionDate: this._telemetryService.firstSessionDate,
         msftInternal: this._telemetryService.msftInternal,
-        sqmId: this._telemetryService.sqmId
+        sqmId: this._telemetryService.sqmId,
+        devDeviceId: this._telemetryService.devDeviceId
       },
       logLevel: this._logService.getLevel(),
       loggers: [...this._loggerService.getRegisteredLoggers()],

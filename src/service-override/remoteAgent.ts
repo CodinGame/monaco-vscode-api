@@ -29,6 +29,7 @@ import { IActiveLanguagePackService } from 'vs/workbench/services/localization/c
 import { IExtensionDescription } from 'vs/platform/extensions/common/extensions'
 import { ITunnelService } from 'vs/platform/tunnel/common/tunnel.service'
 import { TunnelService } from 'vs/workbench/services/tunnel/browser/tunnelService'
+import { IWorkbenchExtensionManagementService } from 'vs/workbench/services/extensionManagement/common/extensionManagement.service'
 import getEnvironmentServiceOverride from './environment'
 import { getWorkbenchConstructionOptions } from '../workbench'
 import { registerServiceInitializePreParticipant } from '../lifecycle'
@@ -65,10 +66,11 @@ class CustomRemoteExtensionsScannerService extends RemoteExtensionsScannerServic
     @IWorkbenchEnvironmentService environmentService: IWorkbenchEnvironmentService,
     @IUserDataProfileService userDataProfileService: IUserDataProfileService,
     @IRemoteUserDataProfilesService remoteUserDataProfilesService: IRemoteUserDataProfilesService,
-    @ILogService logService: ILogService,
-    @IActiveLanguagePackService activeLanguagePackService: IActiveLanguagePackService
+    @IActiveLanguagePackService activeLanguagePackService: IActiveLanguagePackService,
+    @IWorkbenchExtensionManagementService extensionManagementService: IWorkbenchExtensionManagementService,
+    @ILogService logService: ILogService
   ) {
-    super(remoteAgentService, environmentService, userDataProfileService, remoteUserDataProfilesService, logService, activeLanguagePackService)
+    super(remoteAgentService, environmentService, userDataProfileService, remoteUserDataProfilesService, activeLanguagePackService, extensionManagementService, logService)
   }
 
   override async scanExtensions (): Promise<IExtensionDescription[]> {

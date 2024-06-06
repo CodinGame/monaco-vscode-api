@@ -40,12 +40,15 @@ import { IConfigurationService } from 'vs/platform/configuration/common/configur
 import { coalesce } from 'vs/base/common/arrays'
 import { IWorkingCopyBackupService } from 'vs/workbench/services/workingCopy/common/workingCopyBackup.service'
 import { EditorParts } from 'vs/workbench/browser/parts/editor/editorParts'
+import { ContextKeyValue, IContextKey } from 'vs/platform/contextkey/common/contextkey'
+import { IEditorGroupView } from 'vs/workbench/browser/parts/editor/editor'
 import { MonacoDelegateEditorGroupsService, MonacoEditorService, OpenEditor } from './tools/editor'
 import { LayoutService } from './layout'
 import getQuickAccessOverride from './quickaccess'
 import getKeybindingsOverride from './keybindings'
 import getViewCommonServiceOverride from './viewCommon'
 import { onRenderWorkbench } from '../lifecycle'
+import { RawContextKey } from '../monaco'
 export * from './tools/views'
 
 function createPart (id: string, role: string, classes: string[]): HTMLElement {
@@ -185,6 +188,10 @@ class MonacoEditorParts extends MonacoDelegateEditorGroupsService<EditorParts> i
 
   restoreGroup: EditorPart['restoreGroup'] = (...args) => {
     return this.delegate.restoreGroup(...args)
+  }
+
+  bind<T extends ContextKeyValue> (contextKey: RawContextKey<T>, group: IEditorGroupView): IContextKey<T> {
+    return this.delegate.bind(contextKey, group)
   }
 
   get activePart (): EditorPart {

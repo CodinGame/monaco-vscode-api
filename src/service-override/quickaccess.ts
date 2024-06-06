@@ -1,6 +1,6 @@
 import { SyncDescriptor } from 'vs/platform/instantiation/common/descriptors'
 import { IQuickInputService } from 'vs/platform/quickinput/common/quickInput.service'
-import { IInputBox, IInputOptions, IPickOptions, IQuickInputButton, IQuickNavigateConfiguration, IQuickPick, IQuickPickItem, IQuickWidget, QuickPickInput } from 'vs/platform/quickinput/common/quickInput'
+import { IInputBox, IInputOptions, IPickOptions, IQuickInput, IQuickInputButton, IQuickNavigateConfiguration, IQuickPick, IQuickPickItem, IQuickWidget, QuickPickInput } from 'vs/platform/quickinput/common/quickInput'
 import { CancellationToken } from 'vs/base/common/cancellation'
 import { StandaloneQuickInputService } from 'vs/editor/standalone/browser/quickInput/standaloneQuickInputService'
 import { IEditorOverrideServices, StandaloneServices } from 'vs/editor/standalone/browser/standaloneServices'
@@ -62,6 +62,8 @@ class DelegateQuickInputService implements IQuickInputService {
     this.standaloneQuickInputService ??= this.instantiationService.createInstance(StandaloneQuickInputService)
     return this.standaloneQuickInputService
   }
+
+  get currentQuickInput (): IQuickInput | undefined { return this.activeService.currentQuickInput }
 
   get quickAccess (): IQuickAccessController { return this.activeService.quickAccess }
 
