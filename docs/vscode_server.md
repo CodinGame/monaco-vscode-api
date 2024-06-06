@@ -77,7 +77,7 @@ Note: it starts the service on every interfaces and without a security token jus
 
 Run the demo, then go to <http://localhost:5173/?remoteAuthority=localhost:8080>
 
-You can also go to <http://localhost:5173/?remoteAuthority=localhost:8000&remotePath=/any/path/on/your/machine> to open a directory on your machine as the current workspace
+You can also go to <http://localhost:5173/?remoteAuthority=localhost:8080&remotePath=/any/path/on/your/machine> to open a directory on your machine as the current workspace
 
 ## Production concerns
 
