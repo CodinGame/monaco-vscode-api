@@ -1648,7 +1648,7 @@ index cfe5313b905..6f247e26143 100644
  
  export interface IExtensionCapabilities {
 diff --git a/src/vs/workbench/services/search/common/queryBuilder.ts b/src/vs/workbench/services/search/common/queryBuilder.ts
-index 9124249957a..057b9a21ea2 100644
+index 0db88575f27..baf35ad2efe 100644
 --- a/src/vs/workbench/services/search/common/queryBuilder.ts
 +++ b/src/vs/workbench/services/search/common/queryBuilder.ts
 @@ -545,10 +545,10 @@ export class QueryBuilder {

@@ -13,7 +13,7 @@ import { IResolvedTextEditorModel, ITextModelService } from 'vs/editor/common/se
 import { IStandaloneCodeEditor, StandaloneCodeEditor, StandaloneEditor } from 'vs/editor/standalone/browser/standaloneCodeEditor'
 import { Disposable, IDisposable, IReference } from 'vs/base/common/lifecycle'
 import { EditorService } from 'vs/workbench/services/editor/browser/editorService'
-import { IAuxiliaryEditorPart, IEditorDropTargetDelegate, IEditorPart, IActiveEditorActions, IEditorGroup, IEditorWorkingSet } from 'vs/workbench/services/editor/common/editorGroupsService'
+import { IAuxiliaryEditorPart, IEditorDropTargetDelegate, IEditorPart, IActiveEditorActions, IEditorGroup, IEditorWorkingSet, IEditorGroupContextKeyProvider } from 'vs/workbench/services/editor/common/editorGroupsService'
 import { IEditorGroupsService } from 'vs/workbench/services/editor/common/editorGroupsService.service'
 import { IInstantiationService } from 'vs/platform/instantiation/common/instantiation'
 import { IConfigurationService } from 'vs/platform/configuration/common/configuration.service'
@@ -32,11 +32,15 @@ import { IGroupModelChangeEvent } from 'vs/workbench/common/editor/editorGroupMo
 import { EditorLayoutInfo } from 'vs/editor/common/config/editorOptions'
 import { IRectangle } from 'vs/platform/window/common/window'
 import { mainWindow } from 'vs/base/browser/window'
+import { ContextKeyValue } from 'vs/platform/contextkey/common/contextkey'
 import { unsupported } from '../../tools'
 
 export type OpenEditor = (modelRef: IReference<IResolvedTextEditorModel>, options: IEditorOptions | undefined, sideBySide?: boolean) => Promise<ICodeEditor | undefined>
 
 class EmptyEditorGroup implements IEditorGroup, IEditorGroupView {
+  selectedEditors = []
+  isSelected = () => false
+  setSelection = unsupported
   isTransient = () => false
   windowId = mainWindow.vscodeWindowId
   get groupsView () {
@@ -393,6 +397,10 @@ class StandaloneEditorGroup extends Disposable implements IEditorGroup, IEditorG
     }
   }
 
+  selectedEditors = []
+  isSelected = () => false
+  setSelection = unsupported
+
   isTransient = () => false
 
   windowId = mainWindow.vscodeWindowId
@@ -605,6 +613,10 @@ export class MonacoDelegateEditorGroupsService<D extends IEditorGroupsService> e
       this._register(codeEditorService.onCodeEditorRemove(handleCodeEditorRemoved))
       codeEditorService.listCodeEditors().forEach(handleCodeEditor)
     })
+  }
+
+  registerContextKeyProvider<T extends ContextKeyValue> (provider: IEditorGroupContextKeyProvider<T>): IDisposable {
+    return this.delegate.registerContextKeyProvider(provider)
   }
 
   saveWorkingSet (name: string): IEditorWorkingSet {

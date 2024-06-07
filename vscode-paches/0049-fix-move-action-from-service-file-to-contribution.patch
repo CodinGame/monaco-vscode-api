@@ -11,7 +11,7 @@ Subject: [PATCH] fix: move action from service file to contribution
  create mode 100644 src/vs/workbench/contrib/welcomeGettingStarted/browser/gettingStartedService._contribution.ts
 
 diff --git a/src/vs/workbench/contrib/welcomeGettingStarted/browser/gettingStarted.contribution.ts b/src/vs/workbench/contrib/welcomeGettingStarted/browser/gettingStarted.contribution.ts
-index c957f53f54c..02524e5abbe 100644
+index c581ac0e4d2..384d28b7362 100644
 --- a/src/vs/workbench/contrib/welcomeGettingStarted/browser/gettingStarted.contribution.ts
 +++ b/src/vs/workbench/contrib/welcomeGettingStarted/browser/gettingStarted.contribution.ts
 @@ -30,6 +30,7 @@ import { IExtensionService } from 'vs/workbench/services/extensions/common/exten
@@ -84,7 +84,7 @@ index 00000000000..3fc81fe28fc
 +	}
 +});
 diff --git a/src/vs/workbench/contrib/welcomeGettingStarted/browser/gettingStartedService.ts b/src/vs/workbench/contrib/welcomeGettingStarted/browser/gettingStartedService.ts
-index ad87eb90c41..5bf6ad46471 100644
+index 6d1732f8fc5..21e6975c4c1 100644
 --- a/src/vs/workbench/contrib/welcomeGettingStarted/browser/gettingStartedService.ts
 +++ b/src/vs/workbench/contrib/welcomeGettingStarted/browser/gettingStartedService.ts
 @@ -3,11 +3,10 @@
@@ -102,7 +102,7 @@ index ad87eb90c41..5bf6ad46471 100644
  import { Disposable } from 'vs/base/common/lifecycle';
 @@ -28,7 +27,7 @@ import { InstantiationType, registerSingleton } from 'vs/platform/instantiation/
  import { dirname } from 'vs/base/common/path';
- import { coalesce, flatten } from 'vs/base/common/arrays';
+ import { coalesce } from 'vs/base/common/arrays';
  import { IViewsService } from 'vs/workbench/services/views/common/viewsService';
 -import { localize, localize2 } from 'vs/nls';
 +import { localize } from 'vs/nls';

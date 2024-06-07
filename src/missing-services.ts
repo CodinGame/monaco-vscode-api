@@ -68,9 +68,9 @@ import { ExtensionStatusBarEntry, IExtensionStatusBarItemService, StatusBarUpdat
 import { IBreadcrumbsService } from 'vs/workbench/browser/parts/editor/breadcrumbs.service'
 import { DEFAULT_EDITOR_PART_OPTIONS, IEditorGroupView } from 'vs/workbench/browser/parts/editor/editor'
 import { IViewDescriptorService } from 'vs/workbench/common/views.service'
-import { IAccessibleViewService } from 'vs/workbench/contrib/accessibility/browser/accessibleView.service'
+import { IAccessibleViewService } from 'vs/platform/accessibility/browser/accessibleView.service'
 import { IChatAccessibilityService, IChatCodeBlockContextProviderService, IChatWidgetService, IQuickChatService } from 'vs/workbench/contrib/chat/browser/chat.service'
-import { IChatAgentService } from 'vs/workbench/contrib/chat/common/chatAgents.service'
+import { IChatAgentNameService, IChatAgentService } from 'vs/workbench/contrib/chat/common/chatAgents.service'
 import { IChatService } from 'vs/workbench/contrib/chat/common/chatService.service'
 import { IChatSlashCommandService } from 'vs/workbench/contrib/chat/common/chatSlashCommands.service'
 import { IChatVariablesService } from 'vs/workbench/contrib/chat/common/chatVariables.service'
@@ -86,7 +86,6 @@ import { IExternalUriOpenerService } from 'vs/workbench/contrib/externalUriOpene
 import { IExplorerService } from 'vs/workbench/contrib/files/browser/files.service'
 import { IInlineChatSavingService } from 'vs/workbench/contrib/inlineChat/browser/inlineChatSavingService.service'
 import { IInlineChatSessionService } from 'vs/workbench/contrib/inlineChat/browser/inlineChatSessionService.service'
-import { IInlineChatService } from 'vs/workbench/contrib/inlineChat/common/inlineChat.service'
 import { IInteractiveDocumentService } from 'vs/workbench/contrib/interactive/browser/interactiveDocumentService.service'
 import { IInteractiveHistoryService } from 'vs/workbench/contrib/interactive/browser/interactiveHistoryService.service'
 import { IDefaultLogLevelsService } from 'vs/workbench/contrib/logs/common/defaultLogLevels.service'
@@ -166,8 +165,8 @@ import { IElevatedFileService } from 'vs/workbench/services/files/common/elevate
 import { IFilesConfigurationService } from 'vs/workbench/services/filesConfiguration/common/filesConfigurationService.service'
 import { IHistoryService } from 'vs/workbench/services/history/common/history.service'
 import { IHostService } from 'vs/workbench/services/host/browser/host.service'
-import { ITroubleshootIssueService } from 'vs/workbench/services/issue/browser/issueTroubleshoot.service'
-import { IWorkbenchIssueService } from 'vs/workbench/services/issue/common/issue.service'
+import { ITroubleshootIssueService } from 'vs/workbench/contrib/issue/browser/issueTroubleshoot.service'
+import { IWorkbenchIssueService } from 'vs/workbench/contrib/issue/common/issue.service'
 import { FallbackKeyboardMapper } from 'vs/workbench/services/keybinding/common/fallbackKeyboardMapper'
 import { IKeybindingEditingService } from 'vs/workbench/services/keybinding/common/keybindingEditing.service'
 import { ILanguageDetectionService } from 'vs/workbench/services/languageDetection/common/languageDetectionWorkerService.service'
@@ -199,7 +198,6 @@ import { IRemoteUserDataProfilesService } from 'vs/workbench/services/userDataPr
 import { IUserDataProfileImportExportService, IUserDataProfileManagementService, IUserDataProfileService } from 'vs/workbench/services/userDataProfile/common/userDataProfile.service'
 import { UserDataProfileService } from 'vs/workbench/services/userDataProfile/common/userDataProfileService'
 import { IUserDataSyncWorkbenchService } from 'vs/workbench/services/userDataSync/common/userDataSync.service'
-import { ITreeViewsService } from 'vs/workbench/services/views/browser/treeViewsService.service'
 import { IViewsService } from 'vs/workbench/services/views/common/viewsService.service'
 import { IWorkingCopyBackupMeta, IWorkingCopyIdentifier } from 'vs/workbench/services/workingCopy/common/workingCopy'
 import { IResolvedWorkingCopyBackup } from 'vs/workbench/services/workingCopy/common/workingCopyBackup'
@@ -224,6 +222,10 @@ import { SyncResource } from 'vs/workbench/contrib/editSessions/common/editSessi
 import { ILanguageModelStatsService } from 'vs/workbench/contrib/chat/common/languageModelStats.service'
 import { IAccessibleViewInformationService } from 'vs/workbench/services/accessibility/common/accessibleViewInformationService.service'
 import { IUserDataProfileStorageService } from 'vs/platform/userDataProfile/common/userDataProfileStorageService.service'
+import { IIssueMainService } from 'vs/platform/issue/common/issue.service'
+import { IIntegrityService } from 'vs/workbench/services/integrity/common/integrity.service'
+import { IntegrityTestResult } from 'vs/workbench/services/integrity/common/integrity'
+import { ITrustedDomainService } from 'vs/workbench/contrib/url/browser/trustedDomainService.service'
 import { getBuiltInExtensionTranslationsUris, getExtensionIdProvidingCurrentLocale } from './l10n'
 import { unsupported } from './tools'
 
@@ -358,6 +360,9 @@ registerSingleton(IFileService, class FileService implements IFileService {
 }, InstantiationType.Eager)
 
 class EmptyEditorGroup implements IEditorGroup, IEditorGroupView {
+  selectedEditors = []
+  isSelected = () => false
+  setSelection = unsupported
   isTransient = () => false
   windowId = mainWindow.vscodeWindowId
   get groupsView () {
@@ -494,6 +499,7 @@ class EmptyEditorPart implements IEditorPart {
 }
 
 class EmptyEditorGroupsService implements IEditorGroupsService {
+  registerContextKeyProvider = unsupported
   saveWorkingSet = unsupported
   getWorkingSets = unsupported
   applyWorkingSet = unsupported
@@ -1134,6 +1140,7 @@ registerSingleton(IWorkspaceEditingService, class WorkspaceEditingService implem
 
 registerSingleton(ITimerService, class TimerService implements ITimerService {
   _serviceBrand: undefined
+  getStartTime = unsupported
   whenReady = unsupported
   get perfBaseline () { return unsupported() }
   get startupMetrics () { return unsupported() }
@@ -1603,12 +1610,6 @@ registerSingleton(ITreeViewsDnDService, class TreeViewsDnDService implements ITr
   _serviceBrand: undefined
   removeDragOperationTransfer = unsupported
   addDragOperationTransfer = unsupported
-}, InstantiationType.Delayed)
-registerSingleton(ITreeViewsService, class TreeviewsService implements ITreeViewsService {
-  _serviceBrand: undefined
-  getRenderedTreeElement = unsupported
-  addRenderedTreeItemElement = unsupported
-  removeRenderedTreeItemElement = unsupported
 }, InstantiationType.Delayed)
 
 registerSingleton(IBreadcrumbsService, class BreadcrumbsService implements IBreadcrumbsService {
@@ -2132,6 +2133,7 @@ registerSingleton(IWorkbenchAssignmentService, class WorkbenchAssignmentService 
 
 registerSingleton(IChatService, class ChatService implements IChatService {
   _serviceBrand: undefined
+  adoptRequest = unsupported
   isEnabled = () => false
   resendRequest = unsupported
   onDidUnregisterProvider = Event.None
@@ -2185,6 +2187,9 @@ registerSingleton(IQuickChatService, class QuickChatService implements IQuickCha
 
 registerSingleton(IChatAgentService, class QuickChatService implements IChatAgentService {
   _serviceBrand = undefined
+  registerAgentCompletionProvider = unsupported
+  getAgentCompletionItems = unsupported
+  getAgentByFullyQualifiedId = unsupported
   getContributedDefaultAgent = () => undefined
   registerAgentImplementation = unsupported
   registerDynamicAgent = unsupported
@@ -2204,6 +2209,12 @@ registerSingleton(IChatAgentService, class QuickChatService implements IChatAgen
   hasAgent = unsupported
 }, InstantiationType.Delayed)
 
+registerSingleton(IChatAgentNameService, class ChatAgentNameService implements IChatAgentNameService {
+  _serviceBrand: undefined
+  getAgentNameRestriction (): boolean {
+    return true
+  }
+}, InstantiationType.Delayed)
 registerSingleton(IEmbedderTerminalService, class EmbedderTerminalService implements IEmbedderTerminalService {
   _serviceBrand: undefined
   onDidCreateTerminal = Event.None
@@ -2285,6 +2296,8 @@ registerSingleton(IExternalUriOpenerService, class ExternalUriOpenerService impl
 
 registerSingleton(IAccessibleViewService, class AccessibleViewService implements IAccessibleViewService {
   _serviceBrand: undefined
+  configureKeybindings = unsupported
+  openHelpLink = unsupported
   navigateToCodeBlock = unsupported
   getCodeBlockContext = () => undefined
   showLastProvider = unsupported
@@ -2308,6 +2321,7 @@ registerSingleton(IAccessibleViewInformationService, class AccessibleViewInforma
 
 registerSingleton(IWorkbenchExtensionManagementService, class WorkbenchExtensionManagementService implements IWorkbenchExtensionManagementService {
   _serviceBrand: undefined
+  getInstalledWorkspaceExtensionLocations = () => []
   onDidEnableExtensions = Event.None
   isWorkspaceExtensionsSupported = () => false
   getExtensions = async () => []
@@ -2562,13 +2576,6 @@ registerSingleton(IUserDataSyncAccountService, class UserDataSyncAccountService 
   }
 }, InstantiationType.Eager)
 
-registerSingleton(IInlineChatService, class InlineChatService implements IInlineChatService {
-  onDidChangeProviders = Event.None
-  _serviceBrand: undefined
-  addProvider = unsupported
-  getAllProvider = () => []
-}, InstantiationType.Delayed)
-
 registerSingleton(IChatWidgetService, class ChatWidgetService implements IChatWidgetService {
   _serviceBrand: undefined
   getWidgetBySessionId = () => undefined
@@ -2664,6 +2671,8 @@ registerSingleton(ITimelineService, class TimelineService implements ITimelineSe
 
 registerSingleton(ITestService, class TestService implements ITestService {
   _serviceBrand: undefined
+  registerExtHost = unsupported
+  provideTestFollowups = unsupported
   onDidCancelTestRun = Event.None
   get excluded () {
     return unsupported()
@@ -2709,6 +2718,9 @@ registerSingleton(IShareService, class ShareService implements IShareService {
 
 registerSingleton(IUserDataProfileImportExportService, class UserDataProfileImportExportService implements IUserDataProfileImportExportService {
   _serviceBrand: undefined
+  resolveProfileTemplate = unsupported
+  exportProfile2 = unsupported
+  createFromProfile = unsupported
   createProfile = unsupported
   editProfile = unsupported
   registerProfileContentHandler = unsupported
@@ -2727,6 +2739,21 @@ registerSingleton(IWorkbenchIssueService, class WorkbenchIssueService implements
   openReporter = unsupported
   openProcessExplorer = unsupported
   registerIssueUriRequestHandler = unsupported
+}, InstantiationType.Delayed)
+
+registerSingleton(IIssueMainService, class IssueMainService implements IIssueMainService {
+  _serviceBrand: undefined
+  stopTracing = unsupported
+  openReporter = unsupported
+  openProcessExplorer = unsupported
+  getSystemStatus = unsupported
+  $getSystemInfo = unsupported
+  $getPerformanceInfo = unsupported
+  $reloadWithExtensionsDisabled = unsupported
+  $showConfirmCloseDialog = unsupported
+  $showClipboardDialog = unsupported
+  $sendReporterMenu = unsupported
+  $closeReporter = unsupported
 }, InstantiationType.Delayed)
 
 registerSingleton(ISCMViewService, class SCMViewService implements ISCMViewService {
@@ -2838,6 +2865,7 @@ registerSingleton(INotebookSearchService, class NotebookSearchService implements
 
 registerSingleton(ILanguageModelsService, class LanguageModelsService implements ILanguageModelsService {
   _serviceBrand: undefined
+  selectLanguageModels = unsupported
   computeTokenLength = unsupported
   onDidChangeLanguageModels = Event.None
   getLanguageModelIds = () => []
@@ -2858,6 +2886,8 @@ registerSingleton(IChatSlashCommandService, class ChatSlashCommandService implem
 }, InstantiationType.Delayed)
 
 registerSingleton(IChatVariablesService, class ChatVariablesService implements IChatVariablesService {
+  _serviceBrand: undefined
+  attachContext = unsupported
   getVariable = () => undefined
   resolveVariable = async () => []
   getDynamicVariables = unsupported
@@ -2866,7 +2896,6 @@ registerSingleton(IChatVariablesService, class ChatVariablesService implements I
   getVariables = unsupported
   resolveVariables = unsupported
   hasVariable = unsupported
-  _serviceBrand: undefined
 }, InstantiationType.Delayed)
 
 registerSingleton(IAiRelatedInformationService, class AiRelatedInformationService implements IAiRelatedInformationService {
@@ -2951,6 +2980,10 @@ registerSingleton(IAuxiliaryWindowService, class AuxiliaryWindowService implemen
 
 registerSingleton(ISpeechService, class SpeechService implements ISpeechService {
   _serviceBrand: undefined
+  onDidStartTextToSpeechSession = Event.None
+  onDidEndTextToSpeechSession = Event.None
+  hasActiveTextToSpeechSession = false
+  createTextToSpeechSession = unsupported
   onDidChangeHasSpeechProvider = Event.None
   onDidStartSpeechToTextSession = Event.None
   onDidEndSpeechToTextSession = Event.None
@@ -2968,6 +3001,10 @@ registerSingleton(ISpeechService, class SpeechService implements ISpeechService 
 
 registerSingleton(ITestCoverageService, class TestCoverageService implements ITestCoverageService {
   _serviceBrand: undefined
+  get filterToTest () {
+    return unsupported()
+  }
+
   get selected () {
     return unsupported()
   }
@@ -3299,4 +3336,21 @@ registerSingleton(ITroubleshootIssueService, class TroubleshootIssueService impl
   start = unsupported
   resume = unsupported
   stop = unsupported
+}, InstantiationType.Delayed)
+
+registerSingleton(IIntegrityService, class IntegrityService implements IIntegrityService {
+  _serviceBrand: undefined
+  async isPure (): Promise<IntegrityTestResult> {
+    return {
+      isPure: false,
+      proof: []
+    }
+  }
+}, InstantiationType.Delayed)
+
+registerSingleton(ITrustedDomainService, class TrustedDomainService implements ITrustedDomainService {
+  _serviceBrand: undefined
+  isValid (): boolean {
+    return false
+  }
 }, InstantiationType.Delayed)

@@ -14,6 +14,9 @@ async function createContainer () {
   await new Promise<void>((resolve, reject) => {
     docker.modem.followProgress(stream, err => err == null ? resolve() : reject(err))
   })
+  await fs.promises.mkdir('/tmp/workspace', {
+    recursive: true
+  })
   const container = await docker.createContainer({
     name: 'graalvm-debugger',
     Image: image,
@@ -22,8 +25,8 @@ async function createContainer () {
       NetworkMode: 'host',
       Mounts: [{
         Type: 'bind',
-        Target: '/tmp',
-        Source: '/tmp'
+        Target: '/workspace',
+        Source: '/tmp/workspace'
       }],
       AutoRemove: true
     }
@@ -171,7 +174,7 @@ wss.on('connection', (ws) => {
         initialized = true
         const init: { main: string, files: Record<string, string> } = JSON.parse(message)
         for (const [file, content] of Object.entries(init.files)) {
-          fs.writeFileSync(file, content)
+          await fs.promises.writeFile('/tmp/' + file, content)
         }
         const debuggerPort = await findPortFree()
         const exec = await container.exec({

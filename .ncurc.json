@@ -14,7 +14,6 @@
     "@vscode/vscode-languagedetection",
     "@vscode/windows-process-tree",
     "@vscode/windows-registry",
-    "@xterm/addon-canvas",
     "@xterm/addon-image",
     "@xterm/addon-search",
     "@xterm/addon-serialize",

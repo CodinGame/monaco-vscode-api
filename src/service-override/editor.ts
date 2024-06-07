@@ -71,6 +71,7 @@ class EmptyEditorPart implements IEditorPart {
 }
 
 class EmptyEditorGroupsService implements IEditorGroupsService {
+  registerContextKeyProvider = unsupported
   saveWorkingSet = unsupported
   getWorkingSets = unsupported
   applyWorkingSet = unsupported

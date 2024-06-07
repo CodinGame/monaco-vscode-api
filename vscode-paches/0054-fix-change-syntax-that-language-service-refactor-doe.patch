@@ -10,17 +10,17 @@ the re-exports source are removed during "Move to new file" refactor
  1 file changed, 3 insertions(+), 1 deletion(-)
 
 diff --git a/src/vs/workbench/contrib/tasks/common/taskService.ts b/src/vs/workbench/contrib/tasks/common/taskService.ts
-index 3ef60f6e047..7e3dd29b65a 100644
+index 3db39c2267d..c8bcdf12fe7 100644
 --- a/src/vs/workbench/contrib/tasks/common/taskService.ts
 +++ b/src/vs/workbench/contrib/tasks/common/taskService.ts
 @@ -15,7 +15,9 @@ import { ITaskSummary, ITaskTerminateResponse, ITaskSystemInfo } from 'vs/workbe
  import { IStringDictionary } from 'vs/base/common/collections';
  import { RawContextKey, ContextKeyExpr } from 'vs/platform/contextkey/common/contextkey';
  
--export { ITaskSummary, Task, ITaskTerminateResponse as TaskTerminateResponse };
-+export { ITaskSummary } from 'vs/workbench/contrib/tasks/common/taskSystem';
-+export { Task } from 'vs/workbench/contrib/tasks/common/tasks';
-+export { ITaskTerminateResponse as TaskTerminateResponse } from 'vs/workbench/contrib/tasks/common/taskSystem';
+-export type { ITaskSummary, Task, ITaskTerminateResponse as TaskTerminateResponse };
++export type { ITaskSummary } from 'vs/workbench/contrib/tasks/common/taskSystem';
++export type { Task } from 'vs/workbench/contrib/tasks/common/tasks';
++export type { ITaskTerminateResponse as TaskTerminateResponse } from 'vs/workbench/contrib/tasks/common/taskSystem';
  
  export const CustomExecutionSupportedContext = new RawContextKey<boolean>('customExecutionSupported', false, nls.localize('tasks.customExecutionSupported', "Whether CustomExecution tasks are supported. Consider using in the when clause of a \'taskDefinition\' contribution."));
  export const ShellExecutionSupportedContext = new RawContextKey<boolean>('shellExecutionSupported', false, nls.localize('tasks.shellExecutionSupported', "Whether ShellExecution tasks are supported. Consider using in the when clause of a \'taskDefinition\' contribution."));
