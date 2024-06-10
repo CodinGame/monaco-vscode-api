@@ -2667,7 +2667,7 @@ registerSingleton(ITimelineService, class TimelineService implements ITimelineSe
 
 registerSingleton(ITestService, class TestService implements ITestService {
   _serviceBrand: undefined
-  registerExtHost = unsupported
+  registerExtHost = () => Disposable.None
   provideTestFollowups = unsupported
   onDidCancelTestRun = Event.None
   get excluded () {
