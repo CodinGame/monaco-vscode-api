@@ -1705,11 +1705,7 @@ registerSingleton(ITerminalService, class TerminalService implements ITerminalSe
   onDidChangeSelection = Event.None
 
   detachedXterms = []
-  get whenConnected () {
-    return (async () => {
-      unsupported()
-    })()
-  }
+  whenConnected = Promise.resolve()
 
   restoredGroupCount = 0
   createDetachedXterm = unsupported
@@ -1740,7 +1736,7 @@ registerSingleton(ITerminalService, class TerminalService implements ITerminalSe
   createTerminal = unsupported
   getInstanceFromId = unsupported
   getInstanceFromIndex = unsupported
-  getReconnectedTerminals = unsupported
+  getReconnectedTerminals = () => undefined
   getActiveOrCreateInstance = unsupported
   moveToEditor = unsupported
   moveToTerminalView = unsupported
