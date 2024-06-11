@@ -1,0 +1,21 @@
+From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
+From: =?UTF-8?q?Lo=C3=AFc=20Mangeonjean?= <loic@coderpad.io>
+Date: Mon, 10 Jun 2024 15:50:08 +0200
+Subject: [PATCH] fix: backport fix
+
+---
+ .../contrib/preferences/browser/preferences.contribution.ts      | 1 +
+ 1 file changed, 1 insertion(+)
+
+diff --git a/src/vs/workbench/contrib/preferences/browser/preferences.contribution.ts b/src/vs/workbench/contrib/preferences/browser/preferences.contribution.ts
+index 66ca47c40e5..75ed60b1e89 100644
+--- a/src/vs/workbench/contrib/preferences/browser/preferences.contribution.ts
++++ b/src/vs/workbench/contrib/preferences/browser/preferences.contribution.ts
+@@ -1246,6 +1246,7 @@ class SettingsEditorTitleContribution extends Disposable implements IWorkbenchCo
+ 				ResourceContextKey.Resource.isEqualTo(this.userDataProfilesService.defaultProfile.settingsResource.toString())),
+ 			ContextKeyExpr.not('isInDiffEditor'));
+ 		const registerOpenUserSettingsEditorFromJsonAction = () => {
++			registerOpenUserSettingsEditorFromJsonActionDisposables.value?.dispose();
+ 			registerOpenUserSettingsEditorFromJsonActionDisposables.value = registerAction2(class extends Action2 {
+ 				constructor() {
+ 					super({

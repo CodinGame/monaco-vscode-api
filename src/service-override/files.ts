@@ -24,7 +24,7 @@ import { BrowserElevatedFileService } from 'vs/workbench/services/files/browser/
 import { IElevatedFileService } from 'vs/workbench/services/files/common/elevatedFileService.service'
 import * as resources from 'vs/base/common/resources'
 import { VSBuffer } from 'vs/base/common/buffer'
-import { ReadableStreamEvents, newWriteableStream } from 'vs/base/common/stream'
+import { ReadableStreamEvents, listenStream, newWriteableStream } from 'vs/base/common/stream'
 import { CancellationToken } from 'vs/base/common/cancellation'
 import { checkServicesNotInitialized, registerServiceInitializePreParticipant } from '../lifecycle'
 import { logsPath } from '../workbench'
@@ -458,12 +458,8 @@ class RegisteredFileSystemProvider extends Disposable implements
         if (file.readStream == null || typeof opts.length === 'number' || typeof opts.position === 'number') {
           let buffer = await file.read()
 
-          if (typeof opts.position === 'number') {
-            buffer = buffer.slice(opts.position)
-          }
-
-          if (typeof opts.length === 'number') {
-            buffer = buffer.slice(0, opts.length)
+          if (typeof opts.position === 'number' || typeof opts.length === 'number') {
+            buffer = buffer.slice(opts.position ?? 0, opts.length)
           }
 
           stream.end(buffer)
@@ -629,37 +625,17 @@ IFileSystemProviderWithFileAtomicDeleteCapability {
 
   capabilities = FileSystemProviderCapabilities.FileReadWrite | FileSystemProviderCapabilities.PathCaseSensitive | FileSystemProviderCapabilities.FileReadStream
 
-  private async readFromDelegates<T> (caller: (delegate: IFileSystemProviderWithFileReadWriteCapability) => Promise<T>) {
+  private async readFromDelegates<T> (caller: (delegate: IFileSystemProviderWithFileReadWriteCapability) => Promise<T>, token?: CancellationToken) {
     if (this.delegates.length === 0) {
       throw createFileSystemProviderError('No delegate', FileSystemProviderErrorCode.Unavailable)
     }
     let firstError: unknown | undefined
     for (const delegate of this.delegates) {
+      if (token != null && token.isCancellationRequested) {
+        throw new Error('Cancelled')
+      }
       try {
         return await caller(delegate)
-      } catch (err) {
-        firstError ??= err
-        if (err instanceof FileSystemProviderError && [
-          FileSystemProviderErrorCode.NoPermissions,
-          FileSystemProviderErrorCode.FileNotFound,
-          FileSystemProviderErrorCode.Unavailable
-        ].includes(err.code)) {
-          continue
-        }
-        throw err
-      }
-    }
-    throw firstError
-  }
-
-  private readFromDelegatesSync<T> (caller: (delegate: IFileSystemProviderWithFileReadWriteCapability) => T) {
-    if (this.delegates.length === 0) {
-      throw createFileSystemProviderError('No delegate', FileSystemProviderErrorCode.Unavailable)
-    }
-    let firstError: unknown | undefined
-    for (const delegate of this.delegates) {
-      try {
-        return caller(delegate)
       } catch (err) {
         firstError ??= err
         if (err instanceof FileSystemProviderError && [
@@ -716,19 +692,42 @@ IFileSystemProviderWithFileAtomicDeleteCapability {
   }
 
   readFileStream (resource: URI, opts: IFileReadStreamOptions, token: CancellationToken): ReadableStreamEvents<Uint8Array> {
-    return this.readFromDelegatesSync(delegate => {
+    const writableStream = newWriteableStream<Uint8Array>(data => VSBuffer.concat(data.map(data => VSBuffer.wrap(data))).buffer)
+    this.readFromDelegates(async delegate => {
       if (hasFileReadStreamCapability(delegate)) {
-        return delegate.readFileStream(resource, opts, token)
-      } else {
-        const stream = newWriteableStream<Uint8Array>(data => VSBuffer.concat(data.map(data => VSBuffer.wrap(data))).buffer)
-        delegate.readFile(resource).then(data => {
-          stream.end(data)
-        }, err => {
-          stream.error(err)
+        const stream = delegate.readFileStream(resource, opts, token)
+        await new Promise<void>((resolve, reject) => {
+          let dataReceived = false
+          listenStream(stream, {
+            onData (data) {
+              dataReceived = true
+              void writableStream.write(data)
+            },
+            onEnd () {
+              writableStream.end()
+              resolve()
+            },
+            onError (err) {
+              if (!dataReceived) {
+                reject(err)
+              } else {
+                writableStream.error(err)
+              }
+            }
+          }, token)
         })
-        return stream
+      } else {
+        let data = await this.readFile(resource)
+        if (typeof opts.position === 'number' || typeof opts.length === 'number') {
+          data = data.slice(opts.position ?? 0, opts.length)
+        }
+        return writableStream.end(data)
       }
+    }, token).catch(err => {
+      writableStream.error(err)
     })
+
+    return writableStream
   }
 
   async readdir (resource: URI): Promise<[string, FileType][]> {
