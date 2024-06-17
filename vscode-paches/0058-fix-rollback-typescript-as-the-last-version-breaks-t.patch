@@ -10,7 +10,7 @@ Subject: [PATCH] fix: rollback typescript as the last version breaks the
  2 files changed, 6 insertions(+), 6 deletions(-)
 
 diff --git a/package.json b/package.json
-index fc7e1dd92ad..e4b7bea84c9 100644
+index 804d8a602c0..d738d5207ac 100644
 --- a/package.json
 +++ b/package.json
 @@ -208,7 +208,7 @@
