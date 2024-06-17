@@ -31,9 +31,9 @@
   },
   "config": {
     "vscode": {
-      "version": "1.90.0",
-      "ref": "1.90.0",
-      "commit": "89de5a8d4d6205e5b11647eb6a74844ca23d2573"
+      "version": "1.90.1",
+      "ref": "1.90.1",
+      "commit": "611f9bfce64f25108829dd295f54a6894e87339d"
     },
     "monaco": {
       "ref": "v0.49.0",
@@ -102,6 +102,7 @@
     "@microsoft/1ds-core-js": "^3.2.13",
     "@microsoft/1ds-post-js": "^3.2.13",
     "@parcel/watcher": "2.1.0",
+    "@rollup/pluginutils": "^5.1.0",
     "@vscode/iconv-lite-umd": "0.7.0",
     "@vscode/proxy-agent": "^0.19.0",
     "@vscode/ripgrep": "^1.15.9",

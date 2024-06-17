@@ -13,7 +13,7 @@ Subject: [PATCH] fix: update import syntax for node in ESM
  6 files changed, 14 insertions(+), 8 deletions(-)
 
 diff --git a/src/vs/platform/environment/node/argv.ts b/src/vs/platform/environment/node/argv.ts
-index 26b7d9c6937..16a942afe05 100644
+index 0984c8da3bf..3d68843113b 100644
 --- a/src/vs/platform/environment/node/argv.ts
 +++ b/src/vs/platform/environment/node/argv.ts
 @@ -3,7 +3,7 @@

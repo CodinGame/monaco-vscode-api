@@ -295,3 +295,4 @@ export {
   IOnEditorWorkbenchContributionInstantiation,
   ServicesAccessor
 }
+export { ConfigurationTarget } from 'vs/platform/configuration/common/configuration'

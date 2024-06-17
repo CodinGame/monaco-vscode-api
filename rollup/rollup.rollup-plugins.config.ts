@@ -66,7 +66,6 @@ const config: rollup.RollupOptions[] = [{
           module: `${path.basename(output)}.js`,
           types: `${path.basename(output)}.d.ts`,
           dependencies: {
-            vscode: `npm:${pkg.name}@^${pkg.version}`,
             ...Object.fromEntries(Object.entries(pkg.dependencies).filter(([key]) => directDependencies.has(key)))
           }
         }
