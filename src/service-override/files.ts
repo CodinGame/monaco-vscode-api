@@ -399,7 +399,7 @@ class RegisteredFileSystemProvider extends Disposable implements
 
     const name = parts[parts.length - 1]!
     if (directory.getChildren(name) != null) {
-      throw new Error(`file '${uri.toString()}' already exists`)
+      throw new Error(`file '${extUri.joinPath(uri, name).toString()}/' already exists`)
     }
     const disposableStore = new DisposableStore()
     disposableStore.add(toDisposable(() => {
