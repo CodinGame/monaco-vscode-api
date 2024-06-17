@@ -324,10 +324,11 @@ class RegisteredFileSystemProvider extends Disposable implements
   }
 
   private _lookupRoot (authority: string) {
-    let root = this.rootByAuthority.get(authority)
+    const _authority = authority.toLowerCase()
+    let root = this.rootByAuthority.get(_authority)
     if (root == null) {
       root = new RegisteredDirectory()
-      this.rootByAuthority.set(authority, root)
+      this.rootByAuthority.set(_authority, root)
     }
     return root
   }
