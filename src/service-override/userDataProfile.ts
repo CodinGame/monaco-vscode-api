@@ -1,6 +1,6 @@
 import { IEditorOverrideServices } from 'vs/editor/standalone/browser/standaloneServices'
 import { SyncDescriptor } from 'vs/platform/instantiation/common/descriptors'
-import { IUserDataSyncStoreManagementService } from 'vs/platform/userDataSync/common/userDataSync.service'
+import { IUserDataSyncStoreManagementService, IUserDataSyncUtilService } from 'vs/platform/userDataSync/common/userDataSync.service'
 import { BrowserUserDataProfilesService } from 'vs/platform/userDataProfile/browser/userDataProfile'
 import { IUserDataProfilesService } from 'vs/platform/userDataProfile/common/userDataProfile.service'
 import { IUserDataInitializer, UserDataInitializationService } from 'vs/workbench/services/userData/browser/userDataInit'
@@ -27,6 +27,7 @@ import { UserDataProfileStorageService } from 'vs/workbench/services/userDataPro
 import { UserDataProfileService } from 'vs/workbench/services/userDataProfile/common/userDataProfileService'
 import { IAnyWorkspaceIdentifier } from 'vs/platform/workspace/common/workspace'
 import { IUserDataProfile } from 'vs/platform/userDataProfile/common/userDataProfile'
+import { UserDataSyncUtilService } from 'vs/workbench/services/userDataSync/common/userDataSyncUtil'
 import { registerServiceInitializePostParticipant } from '../lifecycle'
 import { getWorkspaceIdentifier } from '../workbench'
 import 'vs/workbench/contrib/userDataProfile/browser/userDataProfile.contribution'
@@ -126,6 +127,7 @@ export default function getServiceOverride (): IEditorOverrideServices {
     [IUserDataInitializationService.toString()]: new SyncDescriptor(InjectedUserDataInitializationService, [], true),
     [IUserDataProfileImportExportService.toString()]: new SyncDescriptor(UserDataProfileImportExportService, [], true),
     [IUserDataProfileManagementService.toString()]: new SyncDescriptor(UserDataProfileManagementService, [], true),
-    [IUserDataProfileStorageService.toString()]: new SyncDescriptor(UserDataProfileStorageService, [], true)
+    [IUserDataProfileStorageService.toString()]: new SyncDescriptor(UserDataProfileStorageService, [], true),
+    [IUserDataSyncUtilService.toString()]: new SyncDescriptor(UserDataSyncUtilService, [], true)
   }
 }

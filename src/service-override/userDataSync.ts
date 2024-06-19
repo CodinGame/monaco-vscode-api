@@ -1,6 +1,6 @@
 import { IEditorOverrideServices } from 'vs/editor/standalone/browser/standaloneServices'
 import { SyncDescriptor } from 'vs/platform/instantiation/common/descriptors'
-import { IUserDataAutoSyncService, IUserDataSyncEnablementService, IUserDataSyncLocalStoreService, IUserDataSyncLogService, IUserDataSyncResourceProviderService, IUserDataSyncService, IUserDataSyncStoreManagementService, IUserDataSyncStoreService, IUserDataSyncUtilService } from 'vs/platform/userDataSync/common/userDataSync.service'
+import { IUserDataAutoSyncService, IUserDataSyncEnablementService, IUserDataSyncLocalStoreService, IUserDataSyncLogService, IUserDataSyncResourceProviderService, IUserDataSyncService, IUserDataSyncStoreManagementService, IUserDataSyncStoreService } from 'vs/platform/userDataSync/common/userDataSync.service'
 import { UserDataSyncAccountService } from 'vs/platform/userDataSync/common/userDataSyncAccount'
 import { IUserDataSyncAccountService } from 'vs/platform/userDataSync/common/userDataSyncAccount.service'
 import { UserDataSyncMachinesService } from 'vs/platform/userDataSync/common/userDataSyncMachines'
@@ -14,7 +14,6 @@ import { UserDataSyncResourceProviderService } from 'vs/platform/userDataSync/co
 import { UserDataSyncLocalStoreService } from 'vs/platform/userDataSync/common/userDataSyncLocalStoreService'
 import { UserDataSyncWorkbenchService } from 'vs/workbench/services/userDataSync/browser/userDataSyncWorkbenchService'
 import { IUserDataSyncWorkbenchService } from 'vs/workbench/services/userDataSync/common/userDataSync.service'
-import { UserDataSyncUtilService } from 'vs/workbench/services/userDataSync/common/userDataSyncUtil'
 import getUserDataProfileServiceOverride from './userDataProfile'
 import 'vs/workbench/contrib/userDataSync/browser/userDataSync.contribution'
 
@@ -31,7 +30,6 @@ export default function getServiceOverride (): IEditorOverrideServices {
     [IUserDataSyncMachinesService.toString()]: new SyncDescriptor(UserDataSyncMachinesService, [], true),
     [IUserDataSyncResourceProviderService.toString()]: new SyncDescriptor(UserDataSyncResourceProviderService, [], true),
     [IUserDataSyncLocalStoreService.toString()]: new SyncDescriptor(UserDataSyncLocalStoreService, [], true),
-    [IUserDataSyncWorkbenchService.toString()]: new SyncDescriptor(UserDataSyncWorkbenchService, [], true),
-    [IUserDataSyncUtilService.toString()]: new SyncDescriptor(UserDataSyncUtilService, [], true)
+    [IUserDataSyncWorkbenchService.toString()]: new SyncDescriptor(UserDataSyncWorkbenchService, [], true)
   }
 }
