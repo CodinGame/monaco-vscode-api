@@ -47,7 +47,7 @@ import { ILogService } from 'vs/platform/log/common/log.service'
 import { IQuickInputService } from 'vs/platform/quickinput/common/quickInput.service'
 import { createInjectedClass } from './tools/injection'
 import { getService } from './services'
-export { registerEditorAction, registerEditorContribution, registerDiffEditorContribution, registerMultiEditorAction, EditorAction, EditorCommand } from 'vs/editor/browser/editorExtensions'
+export { EditorContributionInstantiation, registerEditorAction, registerEditorContribution, registerDiffEditorContribution, registerMultiEditorAction, EditorAction, EditorCommand } from 'vs/editor/browser/editorExtensions'
 export { IEditorContribution, IDiffEditorContribution } from 'vs/editor/common/editorCommon'
 
 function computeConfiguration (configuration: IEditorConfiguration, overrides?: Readonly<IEditorOptions>): IEditorOptions {
