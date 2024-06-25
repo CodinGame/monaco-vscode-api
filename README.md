@@ -193,7 +193,6 @@ updateUserConfiguration(`{
 ```
 
 ### Troubleshoot
-
 `initialize` can only be called once ( and it should be called BEFORE creating your first editor).
 
 ## Model creation
@@ -391,7 +390,17 @@ npm run start:debugServer
 
 ## Troubleshooting
 
+### Duplicate versions
+
+Many packages are published with the same version, and almost all of them depend on the `@codingame/monaco-vscode-api` main package (with strict version range).
+
+It is VERY important that only a single version of ALL the packages is installed, otherwise weird things can happen.
+
+You can check that `npm list vscode` only lists a single version.
+
 ### If you use Webpack
+
+#### monaco-editor-webpack-plugin
 
 Starting from v2, [monaco-editor-webpack-plugin](https://www.npmjs.com/package/monaco-editor-webpack-plugin) can't be used
 
@@ -402,6 +411,17 @@ Here's the alternative for each options:
 - `languages`: Import vscode language extensions (`@codingame/monaco-vscode-xxx-default-extension`) or (`@codingame/@codingame/monaco-vscode-standalone-*`). Please obey: VSCode extensions can only be used if `themes` and `textmate` service overrides are configured and monaco languages can only be used if those two services are not configured (see [here](#monaco-standalone-services) for further details).
 - `features`: With this lib, you can't remove editor features.
 - `globalAPI`: you can set `window.MonacoEnvironment.globalAPI` to true
+
+#### exclude assets from loaders
+
+Webpack makes all file go through all matching loaders. This libraries need to load a lot of internals resources, including HTML, svg and javascript files (for default extension codes).
+
+We need webpack to let those file untouched:
+- the babel loader shouldn't transform extension javascript files
+- the html loader shouldn't transform the worker extension host iframe html
+- ...
+
+Fortunately, all the assets are loaded via the `new URL('asset.extension', import.meta.url)` syntax, and webpack provide a way to exclude the file loaded that way: `dependency: { not: ['url'] }` see https://webpack.js.org/guides/asset-modules/
 
 ### If you use Vite
 
