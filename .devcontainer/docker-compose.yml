@@ -1,0 +1,12 @@
+# Use this compose to build or run the container independent of VSCode with the workspace bind-mounted to the container.
+
+services:
+  monaco-vscode-api-dev:
+    build:
+      dockerfile: ./.devcontainer/Dockerfile
+      context: ..
+    image: monaco-vscode-api-dev
+    container_name: monaco-vscode-api-dev
+    volumes:
+      - ../:/workspaces/monaco-vscode-api
+    tty: true

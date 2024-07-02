@@ -192,8 +192,7 @@ updateUserConfiguration(`{
 }`)
 ```
 
-### Troubleshoot
-`initialize` can only be called once ( and it should be called BEFORE creating your first editor).
+**Important**: `initialize` can only be called once ( and it should be called BEFORE creating your first editor).
 
 ## Model creation
 
@@ -382,7 +381,10 @@ For the debug feature, also run:
 npm run start:debugServer
 ```
 
-⚠️ Building monaco-vscode-api is only supported on Linux or Mac. It you use Windows, have a look at [WSL](https://learn.microsoft.com/windows/wsl/install) ⚠️
+⚠️ Building monaco-vscode-api is only supported on Linux or Mac. It you use Windows or you can't change the installation, please use the docker image or the devcontainer:
+
+- Pure docker environment: Use `docker compose -f ./.devcontainer/docker-compose.yml up -d` to launch the container. If the image is not yet available, it will build it. The workspace is bind-mounted to `/workspaces/monaco-vscode-api`
+- devcontainer. Use VSCode's Remote Explorer, use `+` and choose *Open Current Folder in Container* to launch the project in the container. Bind mounts are slow when you are using Windows + WSL/Docker, so consider using the *Clone Repository in Container Volume` instead.
 
 #### Remote agent
 
@@ -417,11 +419,12 @@ Here's the alternative for each options:
 Webpack makes all file go through all matching loaders. This libraries need to load a lot of internals resources, including HTML, svg and javascript files (for default extension codes).
 
 We need webpack to let those file untouched:
+
 - the babel loader shouldn't transform extension javascript files
 - the html loader shouldn't transform the worker extension host iframe html
 - ...
 
-Fortunately, all the assets are loaded via the `new URL('asset.extension', import.meta.url)` syntax, and webpack provide a way to exclude the file loaded that way: `dependency: { not: ['url'] }` see https://webpack.js.org/guides/asset-modules/
+Fortunately, all the assets are loaded via the `new URL('asset.extension', import.meta.url)` syntax, and webpack provide a way to exclude the file loaded that way: `dependency: { not: ['url'] }` see <https://webpack.js.org/guides/asset-modules/>
 
 ### If you use Vite
 
