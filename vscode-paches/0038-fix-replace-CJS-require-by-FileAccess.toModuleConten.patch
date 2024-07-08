@@ -10,7 +10,7 @@ to make it work in ESM context
  2 files changed, 10 insertions(+), 20 deletions(-)
 
 diff --git a/src/vs/workbench/contrib/welcomeGettingStarted/browser/gettingStartedDetailsRenderer.ts b/src/vs/workbench/contrib/welcomeGettingStarted/browser/gettingStartedDetailsRenderer.ts
-index 869f44526b4..c2149139c66 100644
+index fef4b4928bf..4d24e500b54 100644
 --- a/src/vs/workbench/contrib/welcomeGettingStarted/browser/gettingStartedDetailsRenderer.ts
 +++ b/src/vs/workbench/contrib/welcomeGettingStarted/browser/gettingStartedDetailsRenderer.ts
 @@ -17,6 +17,7 @@ import { IFileService } from 'vs/platform/files/common/files';

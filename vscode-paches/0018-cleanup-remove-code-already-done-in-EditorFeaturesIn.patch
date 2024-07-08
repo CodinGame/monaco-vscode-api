@@ -9,7 +9,7 @@ Subject: [PATCH] cleanup: remove code already done in
  1 file changed, 12 deletions(-)
 
 diff --git a/src/vs/editor/standalone/browser/standaloneServices.ts b/src/vs/editor/standalone/browser/standaloneServices.ts
-index edd6dffdde6..c118ed71288 100644
+index a692fe86d7a..d1729b9dd9c 100644
 --- a/src/vs/editor/standalone/browser/standaloneServices.ts
 +++ b/src/vs/editor/standalone/browser/standaloneServices.ts
 @@ -90,8 +90,6 @@ import { DefaultConfiguration } from 'vs/platform/configuration/common/configura

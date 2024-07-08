@@ -226,6 +226,7 @@ import { IIssueMainService } from 'vs/platform/issue/common/issue.service'
 import { IIntegrityService } from 'vs/workbench/services/integrity/common/integrity.service'
 import { IntegrityTestResult } from 'vs/workbench/services/integrity/common/integrity'
 import { ITrustedDomainService } from 'vs/workbench/contrib/url/browser/trustedDomainService.service'
+import { ILanguageModelToolsService } from 'vs/workbench/contrib/chat/common/languageModelToolsService.service'
 import { getBuiltInExtensionTranslationsUris, getExtensionIdProvidingCurrentLocale } from './l10n'
 import { unsupported } from './tools'
 
@@ -655,8 +656,9 @@ registerSingleton(ILanguageStatusService, class LanguageStatusService implements
 }, InstantiationType.Delayed)
 
 registerSingleton(IHostService, class HostService implements IHostService {
-  onDidChangeFullScreen = Event.None
   _serviceBrand: undefined
+  getPathForFile = () => undefined
+  onDidChangeFullScreen = Event.None
   onDidChangeFocus = Event.None
   hasFocus = false
   hadLastFocus = async () => false
@@ -2016,6 +2018,7 @@ registerSingleton(IPreferencesSearchService, class PreferencesSearchService impl
 
 registerSingleton(INotebookService, class NotebookService implements INotebookService {
   _serviceBrand: undefined
+  tryGetDataProviderSync = () => undefined
   canResolve = async () => false
   onAddViewType = Event.None
   onWillRemoveViewType = Event.None
@@ -2183,6 +2186,7 @@ registerSingleton(IQuickChatService, class QuickChatService implements IQuickCha
 
 registerSingleton(IChatAgentService, class QuickChatService implements IChatAgentService {
   _serviceBrand = undefined
+  agentHasDupeName = () => false
   registerAgentCompletionProvider = unsupported
   getAgentCompletionItems = unsupported
   getAgentByFullyQualifiedId = unsupported
@@ -2714,6 +2718,7 @@ registerSingleton(IShareService, class ShareService implements IShareService {
 
 registerSingleton(IUserDataProfileImportExportService, class UserDataProfileImportExportService implements IUserDataProfileImportExportService {
   _serviceBrand: undefined
+  createProfileFromTemplate = async () => undefined
   resolveProfileTemplate = unsupported
   exportProfile2 = unsupported
   createFromProfile = unsupported
@@ -2861,6 +2866,7 @@ registerSingleton(INotebookSearchService, class NotebookSearchService implements
 
 registerSingleton(ILanguageModelsService, class LanguageModelsService implements ILanguageModelsService {
   _serviceBrand: undefined
+  sendChatRequest = unsupported
   selectLanguageModels = unsupported
   computeTokenLength = unsupported
   onDidChangeLanguageModels = Event.None
@@ -2997,6 +3003,10 @@ registerSingleton(ISpeechService, class SpeechService implements ISpeechService 
 
 registerSingleton(ITestCoverageService, class TestCoverageService implements ITestCoverageService {
   _serviceBrand: undefined
+  get showInline () {
+    return unsupported()
+  }
+
   get filterToTest () {
     return unsupported()
   }
@@ -3201,6 +3211,7 @@ registerSingleton(IUserDataSyncUtilService, class UserDataSyncUtilService implem
 
 registerSingleton(IUserDataProfileManagementService, class UserDataProfileManagementService implements IUserDataProfileManagementService {
   _serviceBrand: undefined
+  createProfile = unsupported
   createAndEnterProfile = unsupported
   createAndEnterTransientProfile = unsupported
   removeProfile = unsupported
@@ -3349,4 +3360,13 @@ registerSingleton(ITrustedDomainService, class TrustedDomainService implements I
   isValid (): boolean {
     return false
   }
+}, InstantiationType.Delayed)
+
+registerSingleton(ILanguageModelToolsService, class LanguageModelToolsService implements ILanguageModelToolsService {
+  _serviceBrand: undefined
+  onDidChangeTools = Event.None
+  registerToolData = unsupported
+  registerToolImplementation = unsupported
+  getTools = unsupported
+  invokeTool = unsupported
 }, InstantiationType.Delayed)

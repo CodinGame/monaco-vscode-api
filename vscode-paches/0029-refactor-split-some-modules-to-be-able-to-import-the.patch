@@ -9,12 +9,12 @@ Subject: [PATCH] refactor: split some modules to be able to import them
  .../parts/editor/editor.contribution.ts       |   3 +-
  .../files/browser/fileCommands._save.ts       | 198 ++++++
  .../contrib/files/browser/fileCommands.ts     | 245 +------
- .../files.contribution._configuration.ts      | 313 +++++++++
+ .../files.contribution._configuration.ts      | 324 +++++++++
  .../browser/files.contribution._editorPane.ts |  93 +++
  .../browser/files.contribution._explorer.ts   | 270 ++++++++
  .../files.contribution._fileEditorFactory.ts  |  23 +
- .../files/browser/files.contribution.ts       | 638 +-----------------
- 9 files changed, 945 insertions(+), 847 deletions(-)
+ .../files/browser/files.contribution.ts       | 649 +-----------------
+ 9 files changed, 956 insertions(+), 858 deletions(-)
  create mode 100644 src/vs/workbench/browser/parts/editor/editor.contribution._autosave.ts
  create mode 100644 src/vs/workbench/contrib/files/browser/fileCommands._save.ts
  create mode 100644 src/vs/workbench/contrib/files/browser/files.contribution._configuration.ts
@@ -542,10 +542,10 @@ index 81bf68c3e0b..d5c6aae3d1d 100644
  	handler: async accessor => {
 diff --git a/src/vs/workbench/contrib/files/browser/files.contribution._configuration.ts b/src/vs/workbench/contrib/files/browser/files.contribution._configuration.ts
 new file mode 100644
-index 00000000000..500edea7d1b
+index 00000000000..5979ca58c83
 --- /dev/null
 +++ b/src/vs/workbench/contrib/files/browser/files.contribution._configuration.ts
-@@ -0,0 +1,313 @@
+@@ -0,0 +1,324 @@
 +/*---------------------------------------------------------------------------------------------
 + *  Copyright (c) Microsoft Corporation. All rights reserved.
 + *  Licensed under the MIT License. See License.txt in the project root for license information.
@@ -557,7 +557,7 @@ index 00000000000..500edea7d1b
 +import { Extensions as ConfigurationExtensions, ConfigurationScope, IConfigurationPropertySchema, IConfigurationRegistry } from 'vs/platform/configuration/common/configurationRegistry';
 +import { AutoSaveConfiguration, FILES_ASSOCIATIONS_CONFIG, FILES_EXCLUDE_CONFIG, FILES_READONLY_EXCLUDE_CONFIG, FILES_READONLY_FROM_PERMISSIONS_CONFIG, FILES_READONLY_INCLUDE_CONFIG, HotExitConfiguration } from 'vs/platform/files/common/files';
 +import { Registry } from 'vs/platform/registry/common/platform';
-+import { SUPPORTED_ENCODINGS } from 'vs/workbench/services/textfile/common/encoding';
++import { GUESSABLE_ENCODINGS, SUPPORTED_ENCODINGS } from 'vs/workbench/services/textfile/common/encoding';
 +
 +// Configuration
 +const configurationRegistry = Registry.as<IConfigurationRegistry>(ConfigurationExtensions.Configuration);
@@ -644,6 +644,17 @@ index 00000000000..500edea7d1b
 +			'markdownDescription': nls.localize('autoGuessEncoding', "When enabled, the editor will attempt to guess the character set encoding when opening files. This setting can also be configured per language. Note, this setting is not respected by text search. Only {0} is respected.", '`#files.encoding#`'),
 +			'scope': ConfigurationScope.LANGUAGE_OVERRIDABLE
 +		},
++		'files.candidateGuessEncodings': {
++			'type': 'array',
++			'items': {
++				'type': 'string',
++				'enum': Object.keys(GUESSABLE_ENCODINGS),
++				'enumDescriptions': Object.keys(GUESSABLE_ENCODINGS).map(key => GUESSABLE_ENCODINGS[key].labelLong)
++			},
++			'default': [],
++			'markdownDescription': nls.localize('candidateGuessEncodings', "List of character set encodings that the editor should attempt to guess in the order they are listed. In case it cannot be determined, {0} is respected", '`#files.encoding#`'),
++			'scope': ConfigurationScope.LANGUAGE_OVERRIDABLE
++		},
 +		'files.eol': {
 +			'type': 'string',
 +			'enum': [
@@ -712,13 +723,13 @@ index 00000000000..500edea7d1b
 +		'files.autoSaveWorkspaceFilesOnly': {
 +			'type': 'boolean',
 +			'default': false,
-+			'markdownDescription': nls.localize({ comment: ['This is the description for a setting. Values surrounded by single quotes are not to be translated.'], key: 'autoSaveWorkspaceFilesOnly' }, "When enabled, will limit [auto save](https://code.visualstudio.com/docs/editor/codebasics#_save-auto-save) of editors to files that are inside the opened workspace. Only applies when `#files.autoSave#` is enabled."),
++			'markdownDescription': nls.localize('autoSaveWorkspaceFilesOnly', "When enabled, will limit [auto save](https://code.visualstudio.com/docs/editor/codebasics#_save-auto-save) of editors to files that are inside the opened workspace. Only applies when {0} is enabled.", '`#files.autoSave#`'),
 +			scope: ConfigurationScope.LANGUAGE_OVERRIDABLE
 +		},
 +		'files.autoSaveWhenNoErrors': {
 +			'type': 'boolean',
 +			'default': false,
-+			'markdownDescription': nls.localize({ comment: ['This is the description for a setting. Values surrounded by single quotes are not to be translated.'], key: 'autoSaveWhenNoErrors' }, "When enabled, will limit [auto save](https://code.visualstudio.com/docs/editor/codebasics#_save-auto-save) of editors to files that have no errors reported in them at the time the auto save is triggered. Only applies when `#files.autoSave#` is enabled."),
++			'markdownDescription': nls.localize('autoSaveWhenNoErrors', "When enabled, will limit [auto save](https://code.visualstudio.com/docs/editor/codebasics#_save-auto-save) of editors to files that have no errors reported in them at the time the auto save is triggered. Only applies when {0} is enabled.", '`#files.autoSave#`'),
 +			scope: ConfigurationScope.LANGUAGE_OVERRIDABLE
 +		},
 +		'files.watcherExclude': {
@@ -1264,10 +1275,10 @@ index 00000000000..2f31d6a7984
 +	}
 +});
 diff --git a/src/vs/workbench/contrib/files/browser/files.contribution.ts b/src/vs/workbench/contrib/files/browser/files.contribution.ts
-index 4af58b0bd45..fa00f1d55a1 100644
+index d525ba5860c..fa00f1d55a1 100644
 --- a/src/vs/workbench/contrib/files/browser/files.contribution.ts
 +++ b/src/vs/workbench/contrib/files/browser/files.contribution.ts
-@@ -3,637 +3,7 @@
+@@ -3,648 +3,7 @@
   *  Licensed under the MIT License. See License.txt in the project root for license information.
   *--------------------------------------------------------------------------------------------*/
  
@@ -1291,7 +1302,7 @@ index 4af58b0bd45..fa00f1d55a1 100644
 -import { ILabelService } from 'vs/platform/label/common/label';
 -import { InstantiationType, registerSingleton } from 'vs/platform/instantiation/common/extensions';
 -import { ExplorerService, UNDO_REDO_SOURCE } from 'vs/workbench/contrib/files/browser/explorerService';
--import { SUPPORTED_ENCODINGS } from 'vs/workbench/services/textfile/common/encoding';
+-import { GUESSABLE_ENCODINGS, SUPPORTED_ENCODINGS } from 'vs/workbench/services/textfile/common/encoding';
 -import { Schemas } from 'vs/base/common/network';
 -import { WorkspaceWatcher } from 'vs/workbench/contrib/files/browser/workspaceWatcher';
 -import { editorConfigurationBaseNode } from 'vs/editor/common/config/editorConfigurationSchema';
@@ -1470,6 +1481,17 @@ index 4af58b0bd45..fa00f1d55a1 100644
 -			'markdownDescription': nls.localize('autoGuessEncoding', "When enabled, the editor will attempt to guess the character set encoding when opening files. This setting can also be configured per language. Note, this setting is not respected by text search. Only {0} is respected.", '`#files.encoding#`'),
 -			'scope': ConfigurationScope.LANGUAGE_OVERRIDABLE
 -		},
+-		'files.candidateGuessEncodings': {
+-			'type': 'array',
+-			'items': {
+-				'type': 'string',
+-				'enum': Object.keys(GUESSABLE_ENCODINGS),
+-				'enumDescriptions': Object.keys(GUESSABLE_ENCODINGS).map(key => GUESSABLE_ENCODINGS[key].labelLong)
+-			},
+-			'default': [],
+-			'markdownDescription': nls.localize('candidateGuessEncodings', "List of character set encodings that the editor should attempt to guess in the order they are listed. In case it cannot be determined, {0} is respected", '`#files.encoding#`'),
+-			'scope': ConfigurationScope.LANGUAGE_OVERRIDABLE
+-		},
 -		'files.eol': {
 -			'type': 'string',
 -			'enum': [
@@ -1538,13 +1560,13 @@ index 4af58b0bd45..fa00f1d55a1 100644
 -		'files.autoSaveWorkspaceFilesOnly': {
 -			'type': 'boolean',
 -			'default': false,
--			'markdownDescription': nls.localize({ comment: ['This is the description for a setting. Values surrounded by single quotes are not to be translated.'], key: 'autoSaveWorkspaceFilesOnly' }, "When enabled, will limit [auto save](https://code.visualstudio.com/docs/editor/codebasics#_save-auto-save) of editors to files that are inside the opened workspace. Only applies when `#files.autoSave#` is enabled."),
+-			'markdownDescription': nls.localize('autoSaveWorkspaceFilesOnly', "When enabled, will limit [auto save](https://code.visualstudio.com/docs/editor/codebasics#_save-auto-save) of editors to files that are inside the opened workspace. Only applies when {0} is enabled.", '`#files.autoSave#`'),
 -			scope: ConfigurationScope.LANGUAGE_OVERRIDABLE
 -		},
 -		'files.autoSaveWhenNoErrors': {
 -			'type': 'boolean',
 -			'default': false,
--			'markdownDescription': nls.localize({ comment: ['This is the description for a setting. Values surrounded by single quotes are not to be translated.'], key: 'autoSaveWhenNoErrors' }, "When enabled, will limit [auto save](https://code.visualstudio.com/docs/editor/codebasics#_save-auto-save) of editors to files that have no errors reported in them at the time the auto save is triggered. Only applies when `#files.autoSave#` is enabled."),
+-			'markdownDescription': nls.localize('autoSaveWhenNoErrors', "When enabled, will limit [auto save](https://code.visualstudio.com/docs/editor/codebasics#_save-auto-save) of editors to files that have no errors reported in them at the time the auto save is triggered. Only applies when {0} is enabled.", '`#files.autoSave#`'),
 -			scope: ConfigurationScope.LANGUAGE_OVERRIDABLE
 -		},
 -		'files.watcherExclude': {

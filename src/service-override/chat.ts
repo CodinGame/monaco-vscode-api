@@ -25,6 +25,8 @@ import { InlineChatSessionServiceImpl } from 'vs/workbench/contrib/inlineChat/br
 import { LanguageModelStatsService } from 'vs/workbench/contrib/chat/common/languageModelStats'
 import 'vs/workbench/contrib/chat/browser/chat.contribution'
 import 'vs/workbench/contrib/inlineChat/browser/inlineChat.contribution'
+import { ILanguageModelToolsService } from 'vs/workbench/contrib/chat/common/languageModelToolsService.service'
+import { LanguageModelToolsService } from 'vs/workbench/contrib/chat/common/languageModelToolsService'
 
 export default function getServiceOverride (): IEditorOverrideServices {
   return {
@@ -41,6 +43,7 @@ export default function getServiceOverride (): IEditorOverrideServices {
     [IInlineChatSavingService.toString()]: new SyncDescriptor(InlineChatSavingServiceImpl, [], true),
     [IChatCodeBlockContextProviderService.toString()]: new SyncDescriptor(ChatCodeBlockContextProviderService, [], true),
     [ILanguageModelStatsService.toString()]: new SyncDescriptor(LanguageModelStatsService, [], true),
-    [IChatAgentNameService.toString()]: new SyncDescriptor(ChatAgentNameService, [], true)
+    [IChatAgentNameService.toString()]: new SyncDescriptor(ChatAgentNameService, [], true),
+    [ILanguageModelToolsService.toString()]: new SyncDescriptor(LanguageModelToolsService, [], true)
   }
 }

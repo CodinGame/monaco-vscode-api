@@ -13,7 +13,7 @@ to be able to register the file before
  4 files changed, 8 insertions(+), 8 deletions(-)
 
 diff --git a/src/vs/workbench/contrib/extensions/browser/abstractRuntimeExtensionsEditor.ts b/src/vs/workbench/contrib/extensions/browser/abstractRuntimeExtensionsEditor.ts
-index 1ee623c22a0..b283d23ee70 100644
+index a298cf3c232..f91b7cc7398 100644
 --- a/src/vs/workbench/contrib/extensions/browser/abstractRuntimeExtensionsEditor.ts
 +++ b/src/vs/workbench/contrib/extensions/browser/abstractRuntimeExtensionsEditor.ts
 @@ -42,7 +42,7 @@ import { IEditorGroup } from 'vs/workbench/services/editor/common/editorGroupsSe
@@ -37,19 +37,19 @@ index 1ee623c22a0..b283d23ee70 100644
  				if (!data.icon.complete) {
  					data.icon.style.visibility = 'hidden';
 diff --git a/src/vs/workbench/contrib/extensions/browser/extensionsWorkbenchService.ts b/src/vs/workbench/contrib/extensions/browser/extensionsWorkbenchService.ts
-index 3eb8c7ee130..cb6fb76ad67 100644
+index 826da4474fb..dec3f3fdfd9 100644
 --- a/src/vs/workbench/contrib/extensions/browser/extensionsWorkbenchService.ts
 +++ b/src/vs/workbench/contrib/extensions/browser/extensionsWorkbenchService.ts
 @@ -18,7 +18,7 @@ import {
  	IExtensionsControlManifest, IExtensionInfo, IExtensionQueryOptions, IDeprecationInfo, isTargetPlatformCompatible, InstallExtensionInfo, EXTENSION_IDENTIFIER_REGEX,
  	InstallOptions, IProductVersion
  } from 'vs/platform/extensionManagement/common/extensionManagement';
--import { IWorkbenchExtensionEnablementService, EnablementState, IExtensionManagementServerService, IExtensionManagementServer, IWorkbenchExtensionManagementService, DefaultIconPath, IResourceExtension } from 'vs/workbench/services/extensionManagement/common/extensionManagement';
-+import { IWorkbenchExtensionEnablementService, EnablementState, IExtensionManagementServerService, IExtensionManagementServer, IWorkbenchExtensionManagementService, getDefaultIconPath, IResourceExtension } from 'vs/workbench/services/extensionManagement/common/extensionManagement';
+-import { IWorkbenchExtensionEnablementService, EnablementState, IExtensionManagementServerService, IExtensionManagementServer, IWorkbenchExtensionManagementService, DefaultIconPath, IResourceExtension, extensionsConfigurationNodeBase } from 'vs/workbench/services/extensionManagement/common/extensionManagement';
++import { IWorkbenchExtensionEnablementService, EnablementState, IExtensionManagementServerService, IExtensionManagementServer, IWorkbenchExtensionManagementService, getDefaultIconPath, IResourceExtension, extensionsConfigurationNodeBase } from 'vs/workbench/services/extensionManagement/common/extensionManagement';
  import { getGalleryExtensionTelemetryData, getLocalExtensionTelemetryData, areSameExtensions, groupByExtension, getGalleryExtensionId } from 'vs/platform/extensionManagement/common/extensionManagementUtil';
  import { IInstantiationService } from 'vs/platform/instantiation/common/instantiation';
  import { IConfigurationService } from 'vs/platform/configuration/common/configuration';
-@@ -242,7 +242,7 @@ export class Extension implements IExtension {
+@@ -244,7 +244,7 @@ export class Extension implements IExtension {
  				}
  			}
  		}
@@ -81,7 +81,7 @@ index d70c6800b77..6d1732f8fc5 100644
  				when: ContextKeyExpr.deserialize(override ?? walkthrough.when) ?? ContextKeyExpr.true(),
  			} as const;
 diff --git a/src/vs/workbench/services/extensionManagement/common/extensionManagement.ts b/src/vs/workbench/services/extensionManagement/common/extensionManagement.ts
-index 3c7751e1f6b..e40e65e1f3e 100644
+index 4886c6ff699..9888464405d 100644
 --- a/src/vs/workbench/services/extensionManagement/common/extensionManagement.ts
 +++ b/src/vs/workbench/services/extensionManagement/common/extensionManagement.ts
 @@ -40,7 +40,7 @@ export interface IExtensionManagementServerService {

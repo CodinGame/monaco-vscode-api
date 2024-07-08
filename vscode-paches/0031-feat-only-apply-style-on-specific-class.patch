@@ -4,12 +4,12 @@ Date: Mon, 11 Mar 2024 17:51:04 +0100
 Subject: [PATCH] feat: only apply style on specific class
 
 ---
- src/vs/workbench/browser/media/style.css | 180 +++++++++++------------
+ src/vs/workbench/browser/media/style.css | 185 ++++++++++-------------
  src/vs/workbench/browser/style.ts        |  10 +-
- 2 files changed, 87 insertions(+), 103 deletions(-)
+ 2 files changed, 89 insertions(+), 106 deletions(-)
 
 diff --git a/src/vs/workbench/browser/media/style.css b/src/vs/workbench/browser/media/style.css
-index 35f856b931a..6f6f8d2d94d 100644
+index 6c9dbb9a0c9..4b381ddf79c 100644
 --- a/src/vs/workbench/browser/media/style.css
 +++ b/src/vs/workbench/browser/media/style.css
 @@ -9,56 +9,38 @@
@@ -90,7 +90,7 @@ index 35f856b931a..6f6f8d2d94d 100644
  	touch-action: none; /* Disable browser handling of all panning and zooming gestures. Removes 300ms touch delay. */
  }
  
-@@ -75,46 +57,48 @@ body.web {
+@@ -75,55 +57,56 @@ body.web {
  	border-radius: 10px; /* macOS Big Sur increased rounded corners size */
  }
  
@@ -107,6 +107,17 @@ index 35f856b931a..6f6f8d2d94d 100644
 -.monaco-workbench a {
 +.monaco-workbench-part a  {
  	text-decoration: none;
+ }
+ 
+-
+-.monaco-workbench p > a {
++.monaco-workbench-part p > a {
+ 	text-decoration: var(--text-link-decoration);
+ }
+ 
+-.monaco-workbench.underline-links {
++.monaco-workbench.underline-links .monaco-workbench-part {
+ 	--text-link-decoration: underline;
  }
  
 -.monaco-workbench.hc-black p > a,
@@ -150,7 +161,7 @@ index 35f856b931a..6f6f8d2d94d 100644
  	/*
  	 * Somehow this is required when tables show in floating windows
  	 * to override the user-agent style which sets a specific color
-@@ -124,48 +108,48 @@ body.web {
+@@ -133,48 +116,48 @@ body.web {
  	font-size: inherit;
  }
  
@@ -213,7 +224,7 @@ index 35f856b931a..6f6f8d2d94d 100644
  	width: 16px;
  	padding-left: 3px; /* width (16px) - font-size (13px) = padding-left (3px) */
  	padding-right: 3px;
-@@ -185,7 +169,7 @@ body.web {
+@@ -194,7 +177,7 @@ body.web {
  
  /* Custom Dropdown (select) Arrows */
  
@@ -222,7 +233,7 @@ index 35f856b931a..6f6f8d2d94d 100644
  	font-family: inherit;
  	appearance: none;
  	-webkit-appearance: none;
-@@ -194,11 +178,11 @@ body.web {
+@@ -203,11 +186,11 @@ body.web {
  	border: 1px solid;
  }
  
@@ -236,7 +247,7 @@ index 35f856b931a..6f6f8d2d94d 100644
  	content: var(--vscode-icon-chevron-down-content);
  	font-family: var(--vscode-icon-chevron-down-font-family);
  	font-size: 16px;
-@@ -215,16 +199,16 @@ body.web {
+@@ -224,16 +207,16 @@ body.web {
  
  /* Keyboard Focus Indication Styles */
  
@@ -263,7 +274,7 @@ index 35f856b931a..6f6f8d2d94d 100644
  	outline-width: 1px;
  	outline-style: solid;
  	outline-offset: -1px;
-@@ -237,19 +221,19 @@ body.web {
+@@ -246,19 +229,19 @@ body.web {
  	background: transparent; /* Search input focus fix when in high contrast */
  }
  
@@ -290,7 +301,7 @@ index 35f856b931a..6f6f8d2d94d 100644
  	border-color: transparent; /* outline is a square, but border has a radius, so we avoid this glitch when focused (https://github.com/microsoft/vscode/issues/26045) */
  }
  
-@@ -277,38 +261,38 @@ body.web {
+@@ -286,38 +269,38 @@ body.web {
  	color: var(--vscode-list-focusHighlightForeground);
  }
  

@@ -8,7 +8,7 @@ Subject: [PATCH] refactor: split class in 2
  1 file changed, 76 insertions(+), 18 deletions(-)
 
 diff --git a/src/vs/workbench/services/extensions/browser/extensionService.ts b/src/vs/workbench/services/extensions/browser/extensionService.ts
-index 7feadf27b0f..c12ad273c05 100644
+index 678e10e3be2..d6b5f5cde74 100644
 --- a/src/vs/workbench/services/extensions/browser/extensionService.ts
 +++ b/src/vs/workbench/services/extensions/browser/extensionService.ts
 @@ -43,8 +43,10 @@ import { IUserDataInitializationService } from 'vs/workbench/services/userData/b
@@ -46,7 +46,7 @@ index 7feadf27b0f..c12ad273c05 100644
  			instantiationService,
  			notificationService,
  			_browserEnvironmentService,
-@@ -219,10 +210,10 @@ export class BrowserExtensionHostFactory implements IExtensionHostFactory {
+@@ -206,10 +197,10 @@ export class BrowserExtensionHostFactory implements IExtensionHostFactory {
  		private readonly _extensionsProposedApi: ExtensionsProposedApi,
  		private readonly _scanWebExtensions: () => Promise<IExtensionDescription[]>,
  		private readonly _getExtensionRegistrySnapshotWhenReady: () => Promise<ExtensionDescriptionRegistrySnapshot>,
@@ -61,7 +61,7 @@ index 7feadf27b0f..c12ad273c05 100644
  		@ILogService private readonly _logService: ILogService,
  	) { }
  
-@@ -346,4 +337,71 @@ export class BrowserExtensionHostKindPicker implements IExtensionHostKindPicker
+@@ -333,4 +324,71 @@ export class BrowserExtensionHostKindPicker implements IExtensionHostKindPicker
  	}
  }
  

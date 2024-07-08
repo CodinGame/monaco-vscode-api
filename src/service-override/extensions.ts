@@ -1,9 +1,9 @@
 import { IFileService } from 'vs/platform/files/common/files.service'
 import { ILifecycleService } from 'vs/workbench/services/lifecycle/common/lifecycle.service'
-import { toExtensionDescription, ExtensionHostStartup, IExtensionHost } from 'vs/workbench/services/extensions/common/extensions'
+import { ExtensionHostStartup, IExtensionHost } from 'vs/workbench/services/extensions/common/extensions'
 import { IExtensionService } from 'vs/workbench/services/extensions/common/extensions.service'
 import { ILogService, ILoggerService } from 'vs/platform/log/common/log.service'
-import { ExtensionIdentifier, IExtension, IExtensionDescription, IRelaxedExtensionDescription } from 'vs/platform/extensions/common/extensions'
+import { ExtensionIdentifier, IExtension, IExtensionDescription } from 'vs/platform/extensions/common/extensions'
 import { IWorkspaceContextService } from 'vs/platform/workspace/common/workspace.service'
 import { IInstantiationService } from 'vs/platform/instantiation/common/instantiation'
 import { INotificationService } from 'vs/platform/notification/common/notification.service'
@@ -226,13 +226,6 @@ export class ExtensionServiceOverride extends ExtensionService implements IExten
 
   public async deltaExtensions (toAdd: IExtensionWithExtHostKind[], toRemove: IExtension[]): Promise<void> {
     await this._handleDeltaExtensions(new DeltaExtensionsQueueItem(toAdd, toRemove))
-  }
-
-  protected override async _scanSingleExtension (extension: IExtension): Promise<Readonly<IRelaxedExtensionDescription> | null> {
-    if (extension.location.scheme === CustomSchemas.extensionFile) {
-      return toExtensionDescription(extension)
-    }
-    return super._scanSingleExtension(extension)
   }
 }
 

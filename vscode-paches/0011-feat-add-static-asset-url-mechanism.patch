@@ -103,10 +103,10 @@ index 2d5f856ba7a..fb25d21c548 100644
  
  export const FileAccess = new FileAccessImpl();
 diff --git a/src/vs/workbench/api/browser/mainThreadExtensionService.ts b/src/vs/workbench/api/browser/mainThreadExtensionService.ts
-index 6732d38f5e6..72abfc8af21 100644
+index 7c4db0a5def..298e14f9b28 100644
 --- a/src/vs/workbench/api/browser/mainThreadExtensionService.ts
 +++ b/src/vs/workbench/api/browser/mainThreadExtensionService.ts
-@@ -193,6 +193,13 @@ export class MainThreadExtensionService implements MainThreadExtensionServiceSha
+@@ -187,6 +187,13 @@ export class MainThreadExtensionService implements MainThreadExtensionServiceSha
  	async $asBrowserUri(uri: UriComponents): Promise<UriComponents> {
  		return FileAccess.uriToBrowserUri(URI.revive(uri));
  	}
@@ -121,10 +121,10 @@ index 6732d38f5e6..72abfc8af21 100644
  
  class ExtensionHostProxy implements IExtensionHostProxy {
 diff --git a/src/vs/workbench/api/common/extHost.protocol.ts b/src/vs/workbench/api/common/extHost.protocol.ts
-index 2d10d6b7129..4d0d43674a9 100644
+index d810c7b892d..6f210e64360 100644
 --- a/src/vs/workbench/api/common/extHost.protocol.ts
 +++ b/src/vs/workbench/api/common/extHost.protocol.ts
-@@ -1451,6 +1451,7 @@ export interface MainThreadExtensionServiceShape extends IDisposable {
+@@ -1462,6 +1462,7 @@ export interface MainThreadExtensionServiceShape extends IDisposable {
  	$onExtensionRuntimeError(extensionId: ExtensionIdentifier, error: SerializedError): void;
  	$setPerformanceMarks(marks: performance.PerformanceMark[]): Promise<void>;
  	$asBrowserUri(uri: UriComponents): Promise<UriComponents>;
@@ -133,7 +133,7 @@ index 2d10d6b7129..4d0d43674a9 100644
  
  export interface SCMProviderFeatures {
 diff --git a/src/vs/workbench/api/common/extensionHostMain.ts b/src/vs/workbench/api/common/extensionHostMain.ts
-index 2bd275cbc21..f1c84b938a2 100644
+index 50c47ba98a8..2aa00be8fe4 100644
 --- a/src/vs/workbench/api/common/extensionHostMain.ts
 +++ b/src/vs/workbench/api/common/extensionHostMain.ts
 @@ -189,6 +189,11 @@ export class ExtensionHostMain {
