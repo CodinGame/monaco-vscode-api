@@ -23,8 +23,8 @@
     "@types/wicg-file-system-access": "^2023.10.5",
     "@types/ws": "^8.5.10",
     "ts-node": "^10.9.2",
-    "typescript": "~5.4.5",
-    "vite": "~5.2.12"
+    "typescript": "~5.5.3",
+    "vite": "~5.3.3"
   },
   "dependencies": {
     "@codingame/monaco-vscode-accessibility-service-override": "file:../dist/service-override-accessibility",
@@ -190,7 +190,7 @@
     "express": "^4.19.2",
     "monaco-editor": "file:../dist/editor-api",
     "vscode": "file:../dist/main",
-    "ws": "^8.17.0"
+    "ws": "^8.18.0"
   },
   "volta": {
     "node": "18.19.0",
