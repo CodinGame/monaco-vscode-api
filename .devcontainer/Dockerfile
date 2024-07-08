@@ -1,4 +1,4 @@
-FROM ubuntu
+FROM ubuntu:noble-20240605
 
 ENV DEBIAN_FRONTEND=noninteractive
 RUN apt update \
