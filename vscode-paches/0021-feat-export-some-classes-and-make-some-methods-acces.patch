@@ -58,7 +58,7 @@ index 99dd3279fe8..b692381eaa2 100644
  	declare readonly _serviceBrand: undefined;
  
 diff --git a/src/vs/workbench/browser/layout.ts b/src/vs/workbench/browser/layout.ts
-index 4e2809e149c..a7891fadef0 100644
+index b8232cb8490..348d4f64426 100644
 --- a/src/vs/workbench/browser/layout.ts
 +++ b/src/vs/workbench/browser/layout.ts
 @@ -52,7 +52,7 @@ import { CustomTitleBarVisibility } from '../../platform/window/common/window';
@@ -270,10 +270,10 @@ index 0e60b30cd13..a8fef74dbc4 100644
  
  	private readonly _onDidChangeEnablement = this._register(new Emitter<{ extension: ExtensionIdentifier; featureId: string; enabled: boolean }>());
 diff --git a/src/vs/workbench/services/extensions/browser/extensionService.ts b/src/vs/workbench/services/extensions/browser/extensionService.ts
-index 1611fb02870..7feadf27b0f 100644
+index a5596ccb66c..678e10e3be2 100644
 --- a/src/vs/workbench/services/extensions/browser/extensionService.ts
 +++ b/src/vs/workbench/services/extensions/browser/extensionService.ts
-@@ -130,7 +130,7 @@ export class ExtensionService extends AbstractExtensionService implements IExten
+@@ -117,7 +117,7 @@ export class ExtensionService extends AbstractExtensionService implements IExten
  		this._register(this._fileService.registerProvider(Schemas.https, provider));
  	}
  
@@ -282,7 +282,7 @@ index 1611fb02870..7feadf27b0f 100644
  		const system: IExtensionDescription[] = [], user: IExtensionDescription[] = [], development: IExtensionDescription[] = [];
  		try {
  			await Promise.all([
-@@ -213,7 +213,7 @@ export class ExtensionService extends AbstractExtensionService implements IExten
+@@ -200,7 +200,7 @@ export class ExtensionService extends AbstractExtensionService implements IExten
  	}
  }
  
@@ -291,7 +291,7 @@ index 1611fb02870..7feadf27b0f 100644
  
  	constructor(
  		private readonly _extensionsProposedApi: ExtensionsProposedApi,
-@@ -249,7 +249,7 @@ class BrowserExtensionHostFactory implements IExtensionHostFactory {
+@@ -236,7 +236,7 @@ class BrowserExtensionHostFactory implements IExtensionHostFactory {
  		}
  	}
  
@@ -327,7 +327,7 @@ index 0c8d2e27317..972bc7fe243 100644
  		if (this._environmentService.debugExtensionHost && this._environmentService.debugRenderer) {
  			suffixSearchParams.set('debugged', '1');
 diff --git a/src/vs/workbench/services/extensions/common/abstractExtensionService.ts b/src/vs/workbench/services/extensions/common/abstractExtensionService.ts
-index 124b22f400b..771c289dbca 100644
+index 731a48bf5b0..46963ffafc7 100644
 --- a/src/vs/workbench/services/extensions/common/abstractExtensionService.ts
 +++ b/src/vs/workbench/services/extensions/common/abstractExtensionService.ts
 @@ -95,9 +95,9 @@ export abstract class AbstractExtensionService extends Disposable implements IEx
@@ -343,7 +343,7 @@ index 124b22f400b..771c289dbca 100644
  		@IInstantiationService protected readonly _instantiationService: IInstantiationService,
  		@INotificationService protected readonly _notificationService: INotificationService,
  		@IWorkbenchEnvironmentService protected readonly _environmentService: IWorkbenchEnvironmentService,
-@@ -221,7 +221,7 @@ export abstract class AbstractExtensionService extends Disposable implements IEx
+@@ -212,7 +212,7 @@ export abstract class AbstractExtensionService extends Disposable implements IEx
  
  	//#region deltaExtensions
  
@@ -352,7 +352,7 @@ index 124b22f400b..771c289dbca 100644
  		this._deltaExtensionsQueue.push(item);
  		if (this._inHandleDeltaExtensions) {
  			// Let the current item finish, the new one will be picked up
-@@ -1207,7 +1207,7 @@ export interface IExtensionHostFactory {
+@@ -1264,7 +1264,7 @@ export interface IExtensionHostFactory {
  	createExtensionHost(runningLocations: ExtensionRunningLocationTracker, runningLocation: ExtensionRunningLocation, isInitialStart: boolean): IExtensionHost | null;
  }
  
@@ -440,12 +440,12 @@ index be889244846..875a9072cf0 100644
  	private _targetType: string[] = [];
  	private readonly _onDidChangeTargetType: Emitter<string[]> = new Emitter<string[]>();
 diff --git a/src/vs/workbench/services/remote/common/remoteExtensionsScanner.ts b/src/vs/workbench/services/remote/common/remoteExtensionsScanner.ts
-index 89e2791637e..a6d6babb175 100644
+index ce9954eb03d..477eceb0abd 100644
 --- a/src/vs/workbench/services/remote/common/remoteExtensionsScanner.ts
 +++ b/src/vs/workbench/services/remote/common/remoteExtensionsScanner.ts
-@@ -17,7 +17,7 @@ import { InstantiationType, registerSingleton } from 'vs/platform/instantiation/
- import { IActiveLanguagePackService } from 'vs/workbench/services/localization/common/locale';
+@@ -18,7 +18,7 @@ import { IActiveLanguagePackService } from 'vs/workbench/services/localization/c
  import { IWorkbenchExtensionManagementService } from 'vs/workbench/services/extensionManagement/common/extensionManagement';
+ import { Mutable } from 'vs/base/common/types';
  
 -class RemoteExtensionsScannerService implements IRemoteExtensionsScannerService {
 +export class RemoteExtensionsScannerService implements IRemoteExtensionsScannerService {

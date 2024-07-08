@@ -10,7 +10,7 @@ Subject: [PATCH] fix: only run some code if inside the worker
  3 files changed, 19 insertions(+), 9 deletions(-)
 
 diff --git a/src/vs/workbench/api/common/extHostExtensionService.ts b/src/vs/workbench/api/common/extHostExtensionService.ts
-index 4ea250c3bf8..1af6c78ff25 100644
+index 97935e89d08..5b48c458235 100644
 --- a/src/vs/workbench/api/common/extHostExtensionService.ts
 +++ b/src/vs/workbench/api/common/extHostExtensionService.ts
 @@ -45,7 +45,7 @@ import { Schemas } from 'vs/base/common/network';
@@ -38,7 +38,7 @@ index 4ea250c3bf8..1af6c78ff25 100644
  		// Invalidate all proxies
  		this._extHostContext.dispose();
 diff --git a/src/vs/workbench/api/common/extensionHostMain.ts b/src/vs/workbench/api/common/extensionHostMain.ts
-index f1c84b938a2..c0a5c4643be 100644
+index 2aa00be8fe4..b06a1560fa6 100644
 --- a/src/vs/workbench/api/common/extensionHostMain.ts
 +++ b/src/vs/workbench/api/common/extensionHostMain.ts
 @@ -23,6 +23,7 @@ import { IURITransformerService, URITransformerService } from 'vs/workbench/api/

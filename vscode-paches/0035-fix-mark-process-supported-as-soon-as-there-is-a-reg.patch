@@ -79,7 +79,7 @@ index f8e502eb908..1de8cfa93b1 100644
  }
  Registry.add(TerminalExtensions.Backend, new TerminalBackendRegistry());
 diff --git a/src/vs/workbench/contrib/terminal/browser/terminalService.ts b/src/vs/workbench/contrib/terminal/browser/terminalService.ts
-index af9508e1b1f..0ea422bdfb7 100644
+index e2edac02afd..0bee7fe517f 100644
 --- a/src/vs/workbench/contrib/terminal/browser/terminalService.ts
 +++ b/src/vs/workbench/contrib/terminal/browser/terminalService.ts
 @@ -19,7 +19,7 @@ import { IContextKey, IContextKeyService } from 'vs/platform/contextkey/common/c
@@ -115,7 +115,7 @@ index af9508e1b1f..0ea422bdfb7 100644
  		this._terminalHasBeenCreated = TerminalContextKeys.terminalHasBeenCreated.bindTo(this._contextKeyService);
  		this._terminalCountContextKey = TerminalContextKeys.count.bindTo(this._contextKeyService);
  		this._terminalEditorActive = TerminalContextKeys.terminalEditorActive.bindTo(this._contextKeyService);
-@@ -870,7 +878,7 @@ export class TerminalService extends Disposable implements ITerminalService {
+@@ -872,7 +880,7 @@ export class TerminalService extends Disposable implements ITerminalService {
  	}
  
  	registerProcessSupport(isSupported: boolean): void {

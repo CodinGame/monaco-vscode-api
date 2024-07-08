@@ -11,7 +11,7 @@ Subject: [PATCH] fix: improve extension contribution types
  4 files changed, 1440 insertions(+), 82 deletions(-)
 
 diff --git a/src/vs/platform/extensions/common/extensions.ts b/src/vs/platform/extensions/common/extensions.ts
-index cfe5313b905..6f247e26143 100644
+index 4dd080da3ae..0520fea0763 100644
 --- a/src/vs/platform/extensions/common/extensions.ts
 +++ b/src/vs/platform/extensions/common/extensions.ts
 @@ -3,6 +3,7 @@
@@ -187,11 +187,11 @@ index cfe5313b905..6f247e26143 100644
  }
  
  export interface IGrammar {
--	language: string;
+-	language?: string;
 +	/**
 +	 * Language identifier for which this syntax is contributed to.
 +	 */
-+	readonly language: string;
++	readonly language?: string;
 +	/**
 +	 * Textmate scope name used by the tmLanguage file.
 +	 */

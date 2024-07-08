@@ -4,23 +4,22 @@ Date: Mon, 11 Mar 2024 17:12:32 +0100
 Subject: [PATCH] fix: ESM version of performance
 
 ---
- src/vs/base/common/performance.js | 26 +++++++++++++++++++++++++-
- 1 file changed, 25 insertions(+), 1 deletion(-)
+ src/vs/base/common/performance.js | 25 +++++++++++++++++++++++++
+ 1 file changed, 25 insertions(+)
 
 diff --git a/src/vs/base/common/performance.js b/src/vs/base/common/performance.js
-index aff4d0734de..ea43e4a2fcc 100644
+index 2af54743f33..7ad3a955259 100644
 --- a/src/vs/base/common/performance.js
 +++ b/src/vs/base/common/performance.js
-@@ -6,7 +6,7 @@
+@@ -6,6 +6,7 @@
+ //@ts-check
  'use strict';
  
- //@ts-check
--
 +// ESM-comment-begin
  (function () {
  
  	/**
-@@ -123,3 +123,27 @@
+@@ -124,3 +125,27 @@
  	}
  
  })();

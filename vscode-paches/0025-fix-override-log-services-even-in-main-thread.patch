@@ -9,7 +9,7 @@ Subject: [PATCH] fix: override log services even in main thread
  2 files changed, 5 insertions(+), 4 deletions(-)
 
 diff --git a/src/vs/workbench/api/common/extensionHostMain.ts b/src/vs/workbench/api/common/extensionHostMain.ts
-index c0a5c4643be..af014495458 100644
+index b06a1560fa6..ac932a43faa 100644
 --- a/src/vs/workbench/api/common/extensionHostMain.ts
 +++ b/src/vs/workbench/api/common/extensionHostMain.ts
 @@ -24,6 +24,9 @@ import { IExtHostExtensionService, IHostUtils } from 'vs/workbench/api/common/ex

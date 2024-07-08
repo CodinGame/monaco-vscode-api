@@ -227,7 +227,8 @@ export const constructOptions: IWorkbenchConstructionOptions = {
   workspaceProvider: {
     trusted: true,
     async open () {
-      return false
+      window.open(window.location.href)
+      return true
     },
     workspace: remotePath == null
       ? {

@@ -10,10 +10,10 @@ Subject: [PATCH] refactor: split code to be able to import only required part
  3 files changed, 236 insertions(+), 206 deletions(-)
 
 diff --git a/src/vs/platform/extensionManagement/common/extensionsScannerService.ts b/src/vs/platform/extensionManagement/common/extensionsScannerService.ts
-index e92897f174f..ca7cfbd127b 100644
+index 1b6d8f3dab9..3cee7fe0d88 100644
 --- a/src/vs/platform/extensionManagement/common/extensionsScannerService.ts
 +++ b/src/vs/platform/extensionManagement/common/extensionsScannerService.ts
-@@ -545,23 +545,169 @@ export class ExtensionScannerInput {
+@@ -545,14 +545,160 @@ export class ExtensionScannerInput {
  	}
  }
  
@@ -174,21 +174,24 @@ index e92897f174f..ca7cfbd127b 100644
 +
 +class ExtensionsScanner extends ExtensionManifestTranslator {
  
- 	constructor(
+ 	private readonly extensionsEnabledWithApiProposalVersion: string[];
+ 
+@@ -560,11 +706,11 @@ class ExtensionsScanner extends Disposable {
  		private readonly obsoleteFile: URI,
  		@IExtensionsProfileScannerService protected readonly extensionsProfileScannerService: IExtensionsProfileScannerService,
  		@IUriIdentityService protected readonly uriIdentityService: IUriIdentityService,
 -		@IFileService protected readonly fileService: IFileService,
--		@ILogService protected readonly logService: ILogService
 +		@IFileService fileService: IFileService,
+ 		@IProductService productService: IProductService,
+-		@ILogService protected readonly logService: ILogService
 +		@ILogService logService: ILogService
  	) {
 -		super();
 +		super(fileService, logService);
+ 		this.extensionsEnabledWithApiProposalVersion = productService.extensionsEnabledWithApiProposalVersion?.map(id => id.toLowerCase()) ?? [];
  	}
  
- 	async scanExtensions(input: ExtensionScannerInput): Promise<IRelaxedScannedExtension[]> {
-@@ -718,144 +864,6 @@ class ExtensionsScanner extends Disposable {
+@@ -729,144 +875,6 @@ class ExtensionsScanner extends Disposable {
  		}
  		return manifest;
  	}

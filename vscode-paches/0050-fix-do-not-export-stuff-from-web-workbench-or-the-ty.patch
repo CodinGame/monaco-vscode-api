@@ -9,10 +9,10 @@ Subject: [PATCH] fix: do not export stuff from web workbench or the typescript
  1 file changed, 2 insertions(+), 26 deletions(-)
 
 diff --git a/src/vs/workbench/workbench.web.main.ts b/src/vs/workbench/workbench.web.main.ts
-index e4a0a7e3e72..da0be08af02 100644
+index ca5c357ed7f..7bb908a42db 100644
 --- a/src/vs/workbench/workbench.web.main.ts
 +++ b/src/vs/workbench/workbench.web.main.ts
-@@ -175,37 +175,13 @@ import 'vs/workbench/contrib/remote/browser/remoteStartEntry.contribution';
+@@ -176,37 +176,13 @@ import 'vs/workbench/contrib/remote/browser/remoteStartEntry.contribution';
  //
  // !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
  

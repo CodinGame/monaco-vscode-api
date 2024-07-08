@@ -8,17 +8,17 @@ Subject: [PATCH] fix: replace amd imports by regular esm dynamic imports
  .../assignment/common/assignmentService.ts         |  3 +--
  src/vs/platform/telemetry/common/1dsAppender.ts    |  5 ++---
  .../contrib/terminal/browser/terminalInstance.ts   |  3 +--
- .../terminal/browser/xterm/xtermTerminal.ts        | 11 +++++------
+ .../terminal/browser/xterm/xtermTerminal.ts        | 13 ++++++-------
  .../browser/terminalStickyScrollOverlay.ts         |  3 +--
  .../textMateWorkerTokenizerController.ts           |  4 +---
  .../worker/textMateTokenizationWorker.worker.ts    | 12 +++++-------
  .../worker/textMateWorkerTokenizer.ts              |  4 +---
  .../browser/textMateTokenizationFeatureImpl.ts     | 14 +++++++-------
  .../workbench/services/textfile/common/encoding.ts |  9 ++++-----
- 11 files changed, 29 insertions(+), 48 deletions(-)
+ 11 files changed, 30 insertions(+), 49 deletions(-)
 
 diff --git a/.eslintrc.json b/.eslintrc.json
-index 0c07b0d6600..75d53abba3b 100644
+index 2dc53f9790b..532e1e9e5c8 100644
 --- a/.eslintrc.json
 +++ b/.eslintrc.json
 @@ -288,14 +288,6 @@
@@ -89,7 +89,7 @@ index c54187f89c9..a4729fabe2e 100644
  	const collectorChannelPlugin: PostChannel = new postPlugin.PostChannel();
  	// Configure the app insights core to send to collector++ and disable logging of debug info
 diff --git a/src/vs/workbench/contrib/terminal/browser/terminalInstance.ts b/src/vs/workbench/contrib/terminal/browser/terminalInstance.ts
-index e6ca453010d..f24362d785f 100644
+index a48841d9802..b21f61b57e9 100644
 --- a/src/vs/workbench/contrib/terminal/browser/terminalInstance.ts
 +++ b/src/vs/workbench/contrib/terminal/browser/terminalInstance.ts
 @@ -82,7 +82,6 @@ import { IHistoryService } from 'vs/workbench/services/history/common/history';
@@ -100,7 +100,7 @@ index e6ca453010d..f24362d785f 100644
  import type { IMarker, Terminal as XTermTerminal } from '@xterm/xterm';
  import { AccessibilityCommandId } from 'vs/workbench/contrib/accessibility/common/accessibilityCommands';
  import { terminalStrings } from 'vs/workbench/contrib/terminal/common/terminalStrings';
-@@ -715,7 +714,7 @@ export class TerminalInstance extends Disposable implements ITerminalInstance {
+@@ -716,7 +715,7 @@ export class TerminalInstance extends Disposable implements ITerminalInstance {
  			return xtermConstructor;
  		}
  		xtermConstructor = Promises.withAsyncBody<typeof XTermTerminal>(async (resolve) => {
@@ -110,10 +110,10 @@ index e6ca453010d..f24362d785f 100644
  			Terminal.strings.promptLabel = nls.localize('terminal.integrated.a11yPromptLabel', 'Terminal input');
  			Terminal.strings.tooMuchOutput = keybinding ? nls.localize('terminal.integrated.useAccessibleBuffer', 'Use the accessible buffer {0} to manually review output', keybinding.getLabel()) : nls.localize('terminal.integrated.useAccessibleBufferNoKb', 'Use the Terminal: Focus Accessible Buffer command to manually review output');
 diff --git a/src/vs/workbench/contrib/terminal/browser/xterm/xtermTerminal.ts b/src/vs/workbench/contrib/terminal/browser/xterm/xtermTerminal.ts
-index 67136657ac5..789306336f5 100644
+index 8d14cc3a245..881e1e412dc 100644
 --- a/src/vs/workbench/contrib/terminal/browser/xterm/xtermTerminal.ts
 +++ b/src/vs/workbench/contrib/terminal/browser/xterm/xtermTerminal.ts
-@@ -30,7 +30,6 @@ import { DecorationAddon } from 'vs/workbench/contrib/terminal/browser/xterm/dec
+@@ -31,7 +31,6 @@ import { DecorationAddon } from 'vs/workbench/contrib/terminal/browser/xterm/dec
  import { ITerminalCapabilityStore, ITerminalCommand, TerminalCapability } from 'vs/platform/terminal/common/capabilities/capabilities';
  import { Emitter } from 'vs/base/common/event';
  import { ITelemetryService } from 'vs/platform/telemetry/common/telemetry';
@@ -121,7 +121,15 @@ index 67136657ac5..789306336f5 100644
  import { IContextKey, IContextKeyService } from 'vs/platform/contextkey/common/contextkey';
  import { TerminalContextKeys } from 'vs/workbench/contrib/terminal/common/terminalContextKey';
  import { IClipboardService } from 'vs/platform/clipboard/common/clipboardService';
-@@ -712,35 +711,35 @@ export class XtermTerminal extends Disposable implements IXtermTerminal, IDetach
+@@ -728,42 +727,42 @@ export class XtermTerminal extends Disposable implements IXtermTerminal, IDetach
+ 
+ 	protected async _getClipboardAddonConstructor(): Promise<typeof ClipboardAddonType> {
+ 		if (!ClipboardAddon) {
+-			ClipboardAddon = (await importAMDNodeModule<typeof import('@xterm/addon-clipboard')>('@xterm/addon-clipboard', 'lib/addon-clipboard.js')).ClipboardAddon;
++			ClipboardAddon = (await import('@xterm/addon-clipboard')).ClipboardAddon;
+ 		}
+ 		return ClipboardAddon;
+ 	}
  
  	protected async _getImageAddonConstructor(): Promise<typeof ImageAddonType> {
  		if (!ImageAddon) {
@@ -265,7 +273,7 @@ index 3974d642732..b391a7cda58 100644
  		grammarFactory?.setTheme(theme, colorMap);
  	}
 diff --git a/src/vs/workbench/services/textMate/browser/backgroundTokenization/worker/textMateWorkerTokenizer.ts b/src/vs/workbench/services/textMate/browser/backgroundTokenization/worker/textMateWorkerTokenizer.ts
-index bc98f7239ce..5937fa2286a 100644
+index 112d76ec0d9..99b09749431 100644
 --- a/src/vs/workbench/services/textMate/browser/backgroundTokenization/worker/textMateWorkerTokenizer.ts
 +++ b/src/vs/workbench/services/textMate/browser/backgroundTokenization/worker/textMateWorkerTokenizer.ts
 @@ -3,7 +3,6 @@
@@ -284,8 +292,8 @@ index bc98f7239ce..5937fa2286a 100644
 +import { StackDiff, StateStack, diffStateStacksRefEq } from 'vscode-textmate';
  import { ICreateGrammarResult } from 'vs/workbench/services/textMate/common/TMGrammarFactory';
  import { StateDeltas } from 'vs/workbench/services/textMate/browser/backgroundTokenization/worker/textMateTokenizationWorker.worker';
- 
-@@ -113,7 +112,6 @@ export class TextMateWorkerTokenizer extends MirrorTextModel {
+ import { Disposable } from 'vs/base/common/lifecycle';
+@@ -115,7 +114,6 @@ export class TextMateWorkerTokenizer extends MirrorTextModel {
  		}
  
  		if (!this._diffStateStacksRefEqFn) {
@@ -294,7 +302,7 @@ index bc98f7239ce..5937fa2286a 100644
  		}
  
 diff --git a/src/vs/workbench/services/textMate/browser/textMateTokenizationFeatureImpl.ts b/src/vs/workbench/services/textMate/browser/textMateTokenizationFeatureImpl.ts
-index 74a52fae9ff..2266456fb53 100644
+index 02eef664f6f..ba2dd435b5f 100644
 --- a/src/vs/workbench/services/textMate/browser/textMateTokenizationFeatureImpl.ts
 +++ b/src/vs/workbench/services/textMate/browser/textMateTokenizationFeatureImpl.ts
 @@ -3,7 +3,6 @@
@@ -354,7 +362,7 @@ index 74a52fae9ff..2266456fb53 100644
  					data: wasm,
  					print: (str: string) => {
 diff --git a/src/vs/workbench/services/textfile/common/encoding.ts b/src/vs/workbench/services/textfile/common/encoding.ts
-index ad67fb4f422..fadf86cece5 100644
+index bae27136de4..6be61851b33 100644
 --- a/src/vs/workbench/services/textfile/common/encoding.ts
 +++ b/src/vs/workbench/services/textfile/common/encoding.ts
 @@ -5,7 +5,6 @@
@@ -363,9 +371,9 @@ index ad67fb4f422..fadf86cece5 100644
  import { VSBuffer, VSBufferReadable, VSBufferReadableStream } from 'vs/base/common/buffer';
 -import { importAMDNodeModule } from 'vs/amdX';
  import { CancellationTokenSource } from 'vs/base/common/cancellation';
+ import { coalesce } from 'vs/base/common/arrays';
  
- export const UTF8 = 'utf8';
-@@ -80,7 +79,7 @@ class DecoderStream implements IDecoderStream {
+@@ -82,7 +81,7 @@ class DecoderStream implements IDecoderStream {
  	static async create(encoding: string): Promise<DecoderStream> {
  		let decoder: IDecoderStream | undefined = undefined;
  		if (encoding !== UTF8) {
@@ -374,7 +382,7 @@ index ad67fb4f422..fadf86cece5 100644
  			decoder = iconv.getDecoder(toNodeEncoding(encoding));
  		} else {
  			const utf8TextDecoder = new TextDecoder();
-@@ -213,7 +212,7 @@ export function toDecodeStream(source: VSBufferReadableStream, options: IDecodeS
+@@ -215,7 +214,7 @@ export function toDecodeStream(source: VSBufferReadableStream, options: IDecodeS
  }
  
  export async function toEncodeReadable(readable: Readable<string>, encoding: string, options?: { addBOM?: boolean }): Promise<VSBufferReadable> {
@@ -383,7 +391,7 @@ index ad67fb4f422..fadf86cece5 100644
  	const encoder = iconv.getEncoder(toNodeEncoding(encoding), options);
  
  	let bytesWritten = false;
-@@ -262,7 +261,7 @@ export async function toEncodeReadable(readable: Readable<string>, encoding: str
+@@ -264,7 +263,7 @@ export async function toEncodeReadable(readable: Readable<string>, encoding: str
  }
  
  export async function encodingExists(encoding: string): Promise<boolean> {
@@ -392,10 +400,10 @@ index ad67fb4f422..fadf86cece5 100644
  
  	return iconv.encodingExists(toNodeEncoding(encoding));
  }
-@@ -318,7 +317,7 @@ const IGNORE_ENCODINGS = ['ascii', 'utf-16', 'utf-32'];
+@@ -320,7 +319,7 @@ const IGNORE_ENCODINGS = ['ascii', 'utf-16', 'utf-32'];
   * Guesses the encoding from buffer.
   */
- async function guessEncodingByBuffer(buffer: VSBuffer): Promise<string | null> {
+ async function guessEncodingByBuffer(buffer: VSBuffer, candidateGuessEncodings?: string[]): Promise<string | null> {
 -	const jschardet = await importAMDNodeModule<typeof import('jschardet')>('jschardet', 'dist/jschardet.min.js');
 +	const jschardet = await import('jschardet');
  

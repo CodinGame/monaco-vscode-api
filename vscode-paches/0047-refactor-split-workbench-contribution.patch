@@ -15,7 +15,7 @@ Subject: [PATCH] refactor: split workbench contribution
  8 files changed, 93 insertions(+), 31 deletions(-)
 
 diff --git a/src/vs/workbench/api/browser/extensionHost.contribution.ts b/src/vs/workbench/api/browser/extensionHost.contribution.ts
-index 9fdc4b30306..3a0040f121d 100644
+index 1d563ea1dce..2d9cfed9595 100644
 --- a/src/vs/workbench/api/browser/extensionHost.contribution.ts
 +++ b/src/vs/workbench/api/browser/extensionHost.contribution.ts
 @@ -3,17 +3,6 @@
@@ -36,7 +36,7 @@ index 9fdc4b30306..3a0040f121d 100644
  // --- mainThread participants
  import './mainThreadLocalization';
  import './mainThreadBulkEdits';
-@@ -87,22 +76,3 @@ import './mainThreadShare';
+@@ -88,22 +77,3 @@ import './mainThreadShare';
  import './mainThreadProfileContentHandlers';
  import './mainThreadAiRelatedInformation';
  import './mainThreadAiEmbeddingVector';
@@ -247,7 +247,7 @@ index 49abd845677..33357dc7a36 100644
 +
 +registerWorkbenchContribution2(TokenClassificationExtensionPointWorkbenchContribution.ID, TokenClassificationExtensionPointWorkbenchContribution, WorkbenchPhase.BlockStartup);
 diff --git a/src/vs/workbench/workbench.common.main.ts b/src/vs/workbench/workbench.common.main.ts
-index a4e3fa69d6e..1b681f5d94f 100644
+index 8ec34fb9b6c..fcb9d1df267 100644
 --- a/src/vs/workbench/workbench.common.main.ts
 +++ b/src/vs/workbench/workbench.common.main.ts
 @@ -35,6 +35,12 @@ import 'vs/workbench/browser/actions/widgetNavigationCommands';

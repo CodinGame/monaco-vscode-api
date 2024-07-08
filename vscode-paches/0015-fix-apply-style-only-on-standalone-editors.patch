@@ -79,7 +79,7 @@ index 4de800bd521..de9b4b9143c 100644
  	public static validateOptions(options: IEditorOptions): ValidatedEditorOptions {
  		const result = new ValidatedEditorOptions();
 diff --git a/src/vs/editor/browser/widget/codeEditor/codeEditorWidget.ts b/src/vs/editor/browser/widget/codeEditor/codeEditorWidget.ts
-index 07753688f7e..a1fbaf3c277 100644
+index f8ed64fba6c..11da908d0f3 100644
 --- a/src/vs/editor/browser/widget/codeEditor/codeEditorWidget.ts
 +++ b/src/vs/editor/browser/widget/codeEditor/codeEditorWidget.ts
 @@ -270,6 +270,7 @@ export class CodeEditorWidget extends Disposable implements editorBrowser.ICodeE
@@ -101,7 +101,7 @@ index 07753688f7e..a1fbaf3c277 100644
  	}
  
  	public getId(): string {
-@@ -1944,6 +1945,12 @@ export interface ICodeEditorWidgetOptions {
+@@ -1954,6 +1955,12 @@ export interface ICodeEditorWidgetOptions {
  	 */
  	isSimpleWidget?: boolean;
  
@@ -115,7 +115,7 @@ index 07753688f7e..a1fbaf3c277 100644
  	 * Contributions to instantiate.
  	 * When provided, only the contributions included will be instantiated.
 diff --git a/src/vs/editor/browser/widget/diffEditor/diffEditorWidget.ts b/src/vs/editor/browser/widget/diffEditor/diffEditorWidget.ts
-index c3c798529ca..6f50a8e02ca 100644
+index 29942806d0c..8a2d6636054 100644
 --- a/src/vs/editor/browser/widget/diffEditor/diffEditorWidget.ts
 +++ b/src/vs/editor/browser/widget/diffEditor/diffEditorWidget.ts
 @@ -51,6 +51,12 @@ import { DiffEditorViewModel, DiffMapping, DiffState } from './diffEditorViewMod
@@ -138,7 +138,7 @@ index c3c798529ca..6f50a8e02ca 100644
 +		this.elements.root.classList.toggle('standalone', codeEditorWidgetOptions.isStandaloneEditor || false);
 +
  		this._domElement.appendChild(this.elements.root);
- 		this._register(toDisposable(() => this._domElement.removeChild(this.elements.root)));
+ 		this._register(toDisposable(() => this.elements.root.remove()));
  
 diff --git a/src/vs/editor/standalone/browser/standalone-tokens.css b/src/vs/editor/standalone/browser/standalone-tokens.css
 index 1fc85078f9e..c74aca00541 100644

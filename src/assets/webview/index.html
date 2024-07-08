@@ -49,7 +49,8 @@
 			const interval = 250;
 			let isFocused = document.hasFocus();
 			setInterval(() => {
-				const isCurrentlyFocused = document.hasFocus();
+				const target = getActiveFrame();
+				const isCurrentlyFocused = document.hasFocus() || !!(target && target.contentDocument && target.contentDocument.body.classList.contains('vscode-context-menu-visible'));
 				if (isCurrentlyFocused === isFocused) {
 					return;
 				}
@@ -111,6 +112,10 @@
 				color: var(--vscode-textLink-foreground);
 			}
 
+			p > a {
+				text-decoration: var(--text-link-decoration);
+			}
+
 			a:hover {
 				color: var(--vscode-textLink-activeForeground);
 			}
@@ -129,6 +134,10 @@
 				background-color: var(--vscode-textPreformat-background);
 				padding: 1px 3px;
 				border-radius: 4px;
+			}
+
+			pre code {
+				padding: 0;
 			}
 
 			blockquote {
@@ -571,7 +580,7 @@
 				} else {
 					return; // let the browser handle this
 				}
-			} else if (!onElectron && (isCloseTab(e) || isNewWindow(e))) {
+			} else if (!onElectron && (isCloseTab(e) || isNewWindow(e) || isHelp(e) || isRefresh(e))) {
 				// Prevent Ctrl+W closing window / Ctrl+N opening new window in PWA.
 				// (No effect in a regular browser tab.)
 				e.preventDefault();
@@ -676,6 +685,24 @@
 			return hasMeta && e.keyCode === 78;
 		}
 
+		/**
+		 * @param {KeyboardEvent} e
+		 * @return {boolean}
+		 */
+		 function isHelp(e) {
+			// 112: keyCode of "F1"
+			return e.keyCode === 112;
+		}
+
+		/**
+		 * @param {KeyboardEvent} e
+		 * @return {boolean}
+		 */
+		function isRefresh(e) {
+			// 116: keyCode of "F5"
+			return e.keyCode === 116;
+		}
+
 		let isHandlingScroll = false;
 
 		/**
@@ -740,6 +767,17 @@
 			if (e.dataTransfer.items.length && Array.prototype.every.call(e.dataTransfer.items, item => item.kind === 'file')) {
 				hostMessaging.postMessage('drag-start', undefined);
 			}
+		}
+
+
+		function handleInnerDragEvent(/** @type {DragEvent} */ e) {
+			if (!e.dataTransfer) {
+				return;
+			}
+
+			hostMessaging.postMessage('drag', {
+				shiftKey: e.shiftKey
+			});
 		}
 
 		/**
@@ -832,7 +870,8 @@
 		window.addEventListener('keydown', handleInnerKeydown);
 		window.addEventListener('keyup', handleInnerKeyup);
 		window.addEventListener('dragenter', handleInnerDragStartEvent);
-		window.addEventListener('dragover', handleInnerDragStartEvent);
+		window.addEventListener('dragover', handleInnerDragEvent);
+		window.addEventListener('drag', handleInnerDragEvent);
 
 		onDomReady(() => {
 			if (!document.body) {
@@ -925,7 +964,7 @@
 				const previousPendingFrame = getPendingFrame();
 				if (previousPendingFrame) {
 					previousPendingFrame.setAttribute('id', '');
-					document.body.removeChild(previousPendingFrame);
+					previousPendingFrame.remove();
 				}
 				if (!wasFirstLoad) {
 					pendingMessages = [];
@@ -1022,9 +1061,7 @@
 					if (newFrame && newFrame.contentDocument && newFrame.contentDocument === contentDocument) {
 						const wasFocused = document.hasFocus();
 						const oldActiveFrame = getActiveFrame();
-						if (oldActiveFrame) {
-							document.body.removeChild(oldActiveFrame);
-						}
+						oldActiveFrame?.remove();
 						// Styles may have changed since we created the element. Make sure we re-style
 						if (initialStyleVersion !== styleVersion) {
 							applyStyles(newFrame.contentDocument, newFrame.contentDocument.body);
@@ -1116,7 +1153,8 @@
 					});
 
 					contentWindow.addEventListener('dragenter', handleInnerDragStartEvent);
-					contentWindow.addEventListener('dragover', handleInnerDragStartEvent);
+					contentWindow.addEventListener('dragover', handleInnerDragEvent);
+					contentWindow.addEventListener('drag', handleInnerDragEvent);
 
 					unloadMonitor.onIframeLoaded(newFrame);
 				}
