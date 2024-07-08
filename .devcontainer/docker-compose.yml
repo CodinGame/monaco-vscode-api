@@ -1,0 +1,9 @@
+services:
+  monaco-vscode-api-dev:
+    build:
+      dockerfile: ./.devcontainer/Dockerfile
+      context: ..
+    image: monaco-vscode-api-dev
+    container_name: monaco-vscode-api-dev
+    volumes:
+      - ./:/home/ubuntu/monaco-vscode-api
