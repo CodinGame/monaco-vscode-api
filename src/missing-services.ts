@@ -3367,6 +3367,6 @@ registerSingleton(ILanguageModelToolsService, class LanguageModelToolsService im
   onDidChangeTools = Event.None
   registerToolData = unsupported
   registerToolImplementation = unsupported
-  getTools = unsupported
+  getTools = () => []
   invokeTool = unsupported
 }, InstantiationType.Delayed)
