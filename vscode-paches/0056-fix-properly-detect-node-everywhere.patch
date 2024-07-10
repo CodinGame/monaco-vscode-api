@@ -1,0 +1,22 @@
+From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
+From: =?UTF-8?q?Lo=C3=AFc=20Mangeonjean?= <loic@coderpad.io>
+Date: Wed, 10 Jul 2024 15:15:02 +0200
+Subject: [PATCH] fix: properly detect node everywhere
+
+---
+ src/vs/base/common/process.ts | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+
+diff --git a/src/vs/base/common/process.ts b/src/vs/base/common/process.ts
+index 48fcd8acb43..981e5924af3 100644
+--- a/src/vs/base/common/process.ts
++++ b/src/vs/base/common/process.ts
+@@ -21,7 +21,7 @@ if (typeof vscodeGlobal !== 'undefined' && typeof vscodeGlobal.process !== 'unde
+ }
+ 
+ // Native node.js environment
+-else if (typeof process !== 'undefined') {
++else if (typeof process !== 'undefined' && typeof process?.versions?.node === 'string') {
+ 	safeProcess = {
+ 		get platform() { return process.platform; },
+ 		get arch() { return process.arch; },
