@@ -195,7 +195,7 @@ updateUserConfiguration(`{
 ```
 
 ### Troubleshoot
-`initialize` can only be called once ( and it should be called BEFORE creating your first editor).
+`initialize` can only be called once (and it should be called BEFORE creating your first editor).
 
 ## Model creation
 
