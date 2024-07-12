@@ -2719,13 +2719,13 @@ registerSingleton(IShareService, class ShareService implements IShareService {
 registerSingleton(IUserDataProfileImportExportService, class UserDataProfileImportExportService implements IUserDataProfileImportExportService {
   _serviceBrand: undefined
   createProfileFromTemplate = async () => undefined
-  resolveProfileTemplate = unsupported
+  resolveProfileTemplate = async () => null
   exportProfile2 = unsupported
   createFromProfile = unsupported
   createProfile = unsupported
   editProfile = unsupported
-  registerProfileContentHandler = unsupported
-  unregisterProfileContentHandler = unsupported
+  registerProfileContentHandler = () => Disposable.None
+  unregisterProfileContentHandler = () => {}
   exportProfile = unsupported
   importProfile = unsupported
   showProfileContents = unsupported
