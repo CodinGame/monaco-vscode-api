@@ -407,7 +407,8 @@ export default (args: Record<string, string>): rollup.RollupOptions[] => {
     treeshake: {
       annotations: true,
       preset: 'smallest',
-      moduleSideEffects: true
+      moduleSideEffects: true,
+      tryCatchDeoptimization: true
     },
     external,
     output: [{
@@ -598,6 +599,7 @@ export default (args: Record<string, string>): rollup.RollupOptions[] => {
       annotations: true,
       preset: 'smallest',
       propertyReadSideEffects: false,
+      tryCatchDeoptimization: true,
       moduleSideEffects (id) {
         return id.startsWith(DIST_DIR) || id.endsWith('.css')
       }
