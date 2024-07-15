@@ -8,10 +8,10 @@ Subject: [PATCH] fix: use asBrowserUri to get iframe src
  1 file changed, 2 insertions(+), 1 deletion(-)
 
 diff --git a/src/vs/workbench/contrib/webview/browser/webviewElement.ts b/src/vs/workbench/contrib/webview/browser/webviewElement.ts
-index 3f03460c2be..68ced87c34f 100644
+index 44c0c97a128..bd0c97c183a 100644
 --- a/src/vs/workbench/contrib/webview/browser/webviewElement.ts
 +++ b/src/vs/workbench/contrib/webview/browser/webviewElement.ts
-@@ -448,7 +448,8 @@ export class WebviewElement extends Disposable implements IWebview, WebviewFindD
+@@ -444,7 +444,8 @@ export class WebviewElement extends Disposable implements IWebview, WebviewFindD
  		// Workaround for https://bugzilla.mozilla.org/show_bug.cgi?id=1754872
  		const fileName = isFirefox ? 'index-no-csp.html' : 'index.html';
  
