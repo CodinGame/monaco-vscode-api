@@ -12,7 +12,6 @@ import { IFileWriteOptions } from 'vs/platform/files/common/files'
 import { IFileService } from 'vs/platform/files/common/files.service'
 import { SyncDescriptor } from 'vs/platform/instantiation/common/descriptors'
 import { IInstantiationService } from 'vs/platform/instantiation/common/instantiation'
-import { ILabelService } from 'vs/platform/label/common/label.service'
 import { ILogService } from 'vs/platform/log/common/log.service'
 import { IPolicyService } from 'vs/platform/policy/common/policy.service'
 import { Registry } from 'vs/platform/registry/common/platform'
@@ -28,7 +27,6 @@ import { WorkspaceService } from 'vs/workbench/services/configuration/browser/co
 import { ConfigurationCache } from 'vs/workbench/services/configuration/common/configurationCache'
 import { IBrowserWorkbenchEnvironmentService } from 'vs/workbench/services/environment/browser/environmentService.service'
 import { IWorkbenchEnvironmentService } from 'vs/workbench/services/environment/common/environmentService.service'
-import { LabelService } from 'vs/workbench/services/label/common/labelService'
 import { IRemoteAgentService } from 'vs/workbench/services/remote/common/remoteAgentService.service'
 import { TextResourcePropertiesService } from 'vs/workbench/services/textresourceProperties/common/textResourcePropertiesService'
 import { IColorCustomizations, IThemeScopedColorCustomizations } from 'vs/workbench/services/themes/common/workbenchThemeService'
@@ -153,7 +151,6 @@ function getServiceOverride (defaultWorkspace?: URI | IAnyWorkspaceIdentifier): 
 
   return {
     ...getFileServiceOverride(),
-    [ILabelService.toString()]: new SyncDescriptor(LabelService, undefined, true),
     [IConfigurationService.toString()]: new SyncDescriptor(MemoizedInjectedConfigurationService, [], true),
     [IWorkspaceContextService.toString()]: new SyncDescriptor(MemoizedInjectedConfigurationService, [], true),
     [ITextResourceConfigurationService.toString()]: new SyncDescriptor(TextResourceConfigurationService, [], true),
