@@ -343,7 +343,7 @@ let standaloneEditorInstantiationService: IInstantiationService | null = null
 function getStandaloneEditorInstantiationService (accessor: ServicesAccessor) {
   if (standaloneEditorInstantiationService == null) {
     const serviceCollection = new ServiceCollection()
-    serviceCollection.set(IQuickInputService, new SyncDescriptor(StandaloneQuickInputService, undefined, true))
+    serviceCollection.set(IQuickInputService, new SyncDescriptor(StandaloneQuickInputService, [], true))
     const keybindingService = accessor.get(IKeybindingService)
     if (!(keybindingService instanceof StandaloneKeybindingService) && isDynamicKeybindingService(keybindingService)) {
       serviceCollection.set(IKeybindingService, new SyncDescriptor(DelegateStandaloneKeybindingService, [keybindingService], true))
