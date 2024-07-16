@@ -58,6 +58,6 @@ export default function getServiceOverride (): IEditorOverrideServices {
     [IWorkingCopyFileService.toString()]: new SyncDescriptor(WorkingCopyFileService, [], false),
     [IPathService.toString()]: new SyncDescriptor(BrowserPathServiceOverride, [], true),
     [ITrustedDomainService.toString()]: new SyncDescriptor(TrustedDomainService, [], true),
-    [ILabelService.toString()]: new SyncDescriptor(LabelService, undefined, true)
+    [ILabelService.toString()]: new SyncDescriptor(LabelService, [], true)
   }
 }

@@ -17,8 +17,8 @@ function getServiceOverride (logLevel?: LogLevel): IEditorOverrideServices
 function getServiceOverride (logLevel?: LogLevel): IEditorOverrideServices {
   return {
     ...getLogServiceOverride(logLevel),
-    [IOutputService.toString()]: new SyncDescriptor(OutputService, undefined, true),
-    [IOutputChannelModelService.toString()]: new SyncDescriptor(OutputChannelModelService, undefined, true)
+    [IOutputService.toString()]: new SyncDescriptor(OutputService, [], true),
+    [IOutputChannelModelService.toString()]: new SyncDescriptor(OutputChannelModelService, [], true)
   }
 }
 

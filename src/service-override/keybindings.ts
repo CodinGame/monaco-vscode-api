@@ -123,7 +123,7 @@ export default function getServiceOverride ({ shouldUseGlobalKeybindings = () =>
   return {
     ...getFileServiceOverride(),
     [IKeybindingService.toString()]: new SyncDescriptor(DynamicWorkbenchKeybindingService, [shouldUseGlobalKeybindings], false),
-    [IKeyboardLayoutService.toString()]: new SyncDescriptor(BrowserKeyboardLayoutService, undefined, true),
+    [IKeyboardLayoutService.toString()]: new SyncDescriptor(BrowserKeyboardLayoutService, [], true),
     [ICommandService.toString()]: new SyncDescriptor(CommandService, [], true)
   }
 }

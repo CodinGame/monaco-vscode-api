@@ -155,8 +155,8 @@ function getServiceOverride (defaultWorkspace?: URI | IAnyWorkspaceIdentifier): 
     [IWorkspaceContextService.toString()]: new SyncDescriptor(MemoizedInjectedConfigurationService, [], true),
     [ITextResourceConfigurationService.toString()]: new SyncDescriptor(TextResourceConfigurationService, [], true),
     [IWorkspaceEditingService.toString()]: new SyncDescriptor(MonacoWorkspaceEditingService, [], true),
-    [IWorkspacesService.toString()]: new SyncDescriptor(BrowserWorkspacesService, undefined, true),
-    [ITextResourcePropertiesService.toString()]: new SyncDescriptor(TextResourcePropertiesService, undefined, true)
+    [IWorkspacesService.toString()]: new SyncDescriptor(BrowserWorkspacesService, [], true),
+    [ITextResourcePropertiesService.toString()]: new SyncDescriptor(TextResourcePropertiesService, [], true)
   }
 }
 

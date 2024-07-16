@@ -5,6 +5,6 @@ import { SyncDescriptor } from 'vs/platform/instantiation/common/descriptors'
 
 export default function getServiceOverride (): IEditorOverrideServices {
   return {
-    [ITextModelService.toString()]: new SyncDescriptor(TextModelResolverService, undefined, true)
+    [ITextModelService.toString()]: new SyncDescriptor(TextModelResolverService, [], true)
   }
 }

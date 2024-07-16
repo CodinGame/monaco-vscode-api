@@ -44,6 +44,6 @@ onRenderWorkbench(async (accessor) => {
 
 export default function getServiceOverride (): IEditorOverrideServices {
   return {
-    [INotificationService.toString()]: new SyncDescriptor(NotificationService, undefined, true)
+    [INotificationService.toString()]: new SyncDescriptor(NotificationService, [], true)
   }
 }
