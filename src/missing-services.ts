@@ -18,7 +18,7 @@ import { IDownloadService } from 'vs/platform/download/common/download.service'
 import { IEncryptionService } from 'vs/platform/encryption/common/encryptionService.service'
 import { IEnvironmentService } from 'vs/platform/environment/common/environment.service'
 import { ILocalExtension } from 'vs/platform/extensionManagement/common/extensionManagement'
-import { IExtensionGalleryService, IExtensionManagementService, IExtensionTipsService, IGlobalExtensionEnablementService } from 'vs/platform/extensionManagement/common/extensionManagement.service'
+import { IExtensionGalleryService, IExtensionTipsService, IGlobalExtensionEnablementService } from 'vs/platform/extensionManagement/common/extensionManagement.service'
 import { IExtensionStorageService } from 'vs/platform/extensionManagement/common/extensionStorage.service'
 import { IExtensionsProfileScannerService } from 'vs/platform/extensionManagement/common/extensionsProfileScannerService.service'
 import { IExtensionsScannerService } from 'vs/platform/extensionManagement/common/extensionsScannerService.service'
@@ -1940,35 +1940,6 @@ registerSingleton(ITerminalQuickFixService, class TerminalQuickFixService implem
   registerCommandSelector = unsupported
 }, InstantiationType.Delayed)
 
-registerSingleton(IExtensionManagementService, class ExtensionManagementService implements IExtensionManagementService {
-  toggleAppliationScope = async (extension: ILocalExtension) => extension
-  _serviceBrand: undefined
-  installGalleryExtensions = unsupported
-  onInstallExtension = Event.None
-  onDidInstallExtensions = Event.None
-  onUninstallExtension = Event.None
-  onDidUninstallExtension = Event.None
-  onDidUpdateExtensionMetadata = Event.None
-  zip = unsupported
-  unzip = unsupported
-  getManifest = unsupported
-  install = unsupported
-  canInstall = unsupported
-  installFromGallery = unsupported
-  installFromLocation = unsupported
-  installExtensionsFromProfile = unsupported
-  uninstall = unsupported
-  reinstallFromGallery = unsupported
-  getInstalled = async () => []
-  getExtensionsControlManifest = unsupported
-  copyExtensions = unsupported
-  updateMetadata = unsupported
-  download = unsupported
-  registerParticipant = unsupported
-  getTargetPlatform = unsupported
-  cleanUp = unsupported
-}, InstantiationType.Delayed)
-
 registerSingleton(IUserDataSyncWorkbenchService, class UserDataSyncWorkbenchService implements IUserDataSyncWorkbenchService {
   _serviceBrand: undefined
   enabled = false
@@ -2347,7 +2318,7 @@ registerSingleton(IWorkbenchExtensionManagementService, class WorkbenchExtension
   installExtensionsFromProfile = unsupported
   uninstall = unsupported
   reinstallFromGallery = unsupported
-  getInstalled = unsupported
+  getInstalled = async () => []
   getExtensionsControlManifest = unsupported
   copyExtensions = unsupported
   updateMetadata = unsupported
