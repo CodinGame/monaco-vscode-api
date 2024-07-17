@@ -37,7 +37,7 @@ class BrowserPathServiceOverride extends AbstractPathService {
     @IWorkspaceContextService contextService: IWorkspaceContextService
   ) {
     super(
-      Promise.resolve(getEnvironmentOverride().userHome ?? guessLocalUserHome(environmentService, contextService)),
+      getEnvironmentOverride().userHome ?? guessLocalUserHome(environmentService, contextService),
       remoteAgentService,
       environmentService,
       contextService
