@@ -13,7 +13,7 @@ import { IUserDataProfileService } from 'vs/workbench/services/userDataProfile/c
 import { IHostService } from 'vs/workbench/services/host/browser/host.service'
 import { ExtensionStorageService } from 'vs/platform/extensionManagement/common/extensionStorage'
 import { IExtensionStorageService } from 'vs/platform/extensionManagement/common/extensionStorage.service'
-import { registerServiceInitializePreParticipant } from '../lifecycle'
+import { registerServiceInitializeParticipant, registerServiceInitializePreParticipant } from '../lifecycle'
 import { getWorkspaceIdentifier } from '../workbench'
 
 export enum StorageScope {
@@ -159,16 +159,19 @@ class ExternalStorageService extends AbstractStorageService {
 
 registerServiceInitializePreParticipant(async (accessor) => {
   const storageService = accessor.get(IStorageService)
-  const hostService = accessor.get(IHostService)
   if (storageService instanceof AbstractStorageService) {
     await storageService.initialize()
-
-    hostService.onDidChangeFocus(focus => {
-      if (!focus) {
-        void storageService.flush()
-      }
-    })
   }
+})
+
+registerServiceInitializeParticipant(async (accessor) => {
+  const hostService = accessor.get(IHostService)
+  const storageService = accessor.get(IStorageService)
+  hostService.onDidChangeFocus(focus => {
+    if (!focus) {
+      void storageService.flush()
+    }
+  })
 })
 
 class InjectedBrowserStorageService extends BrowserStorageService {
