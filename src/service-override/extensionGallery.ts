@@ -1,13 +1,13 @@
 import { IEditorOverrideServices } from 'vs/editor/standalone/browser/standaloneServices'
 import { SyncDescriptor } from 'vs/platform/instantiation/common/descriptors'
-import { IExtensionGalleryService, IExtensionManagementService, IExtensionTipsService, IGlobalExtensionEnablementService } from 'vs/platform/extensionManagement/common/extensionManagement.service'
+import { IExtensionGalleryService, IExtensionTipsService, IGlobalExtensionEnablementService } from 'vs/platform/extensionManagement/common/extensionManagement.service'
 import { ExtensionGalleryService } from 'vs/platform/extensionManagement/common/extensionGalleryService'
 import { GlobalExtensionEnablementService } from 'vs/platform/extensionManagement/common/extensionEnablementService'
 import { IExtension as IContribExtension } from 'vs/workbench/contrib/extensions/common/extensions'
 import { IExtensionsWorkbenchService } from 'vs/workbench/contrib/extensions/common/extensions.service'
 import { getLocale } from 'vs/platform/languagePacks/common/languagePacks'
 import { ExtensionsWorkbenchService } from 'vs/workbench/contrib/extensions/browser/extensionsWorkbenchService'
-import { IExtensionManagementServerService, IWebExtensionsScannerService, IWorkbenchExtensionEnablementService } from 'vs/workbench/services/extensionManagement/common/extensionManagement.service'
+import { IExtensionManagementServerService, IWebExtensionsScannerService, IWorkbenchExtensionEnablementService, IWorkbenchExtensionManagementService } from 'vs/workbench/services/extensionManagement/common/extensionManagement.service'
 import { ExtensionManagementServerService } from 'vs/workbench/services/extensionManagement/common/extensionManagementServerService'
 import { IExtensionIgnoredRecommendationsService, IExtensionRecommendationsService } from 'vs/workbench/services/extensionRecommendations/common/extensionRecommendations.service'
 import { ExtensionRecommendationsService } from 'vs/workbench/contrib/extensions/browser/extensionRecommendationsService'
@@ -117,7 +117,7 @@ export default function getServiceOverride (options: ExtensionGalleryOptions = {
     [IExtensionIgnoredRecommendationsService.toString()]: new SyncDescriptor(ExtensionIgnoredRecommendationsService, [], true),
     [IIgnoredExtensionsManagementService.toString()]: new SyncDescriptor(IgnoredExtensionsManagementService, [], true),
     [IExtensionManifestPropertiesService.toString()]: new SyncDescriptor(ExtensionManifestPropertiesService, [], true),
-    [IExtensionManagementService.toString()]: new SyncDescriptor(ExtensionManagementService, [], true),
+    [IWorkbenchExtensionManagementService.toString()]: new SyncDescriptor(ExtensionManagementService, [], true),
     [IBuiltinExtensionsScannerService.toString()]: new SyncDescriptor(CustomBuiltinExtensionsScannerService, [], true),
     [IWorkspaceExtensionsConfigService.toString()]: new SyncDescriptor(WorkspaceExtensionsConfigService, [], true),
     [IExtensionTipsService.toString()]: new SyncDescriptor(ExtensionTipsService, [], true),
