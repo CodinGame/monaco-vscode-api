@@ -963,10 +963,14 @@ export async function initFile (file: URI, content: Uint8Array | string, options
       // The file already exists, do nothing
       return
     } catch (error) {
+      if (!(error instanceof FileSystemProviderError) || error.code !== FileSystemProviderErrorCode.FileNotFound) {
+        console.error('Unable to check if file exists', error)
+      }
+      // File not found, write it
     }
   }
 
-  await provider.writeFile(file, content instanceof Uint8Array ? content : encoder.encode(content), {
+  await provider.writeFile(file, encode(content), {
     atomic: false,
     create: true,
     overwrite: false,
