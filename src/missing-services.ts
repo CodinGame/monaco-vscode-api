@@ -2106,10 +2106,8 @@ registerSingleton(IChatService, class ChatService implements IChatService {
   adoptRequest = unsupported
   isEnabled = () => false
   resendRequest = unsupported
-  onDidUnregisterProvider = Event.None
   clearAllHistoryEntries = unsupported
   onDidSubmitAgent = Event.None
-  onDidRegisterProvider = Event.None
   hasSessions = () => false
   onDidDisposeSession = Event.None
   transferredSessionData = undefined
@@ -2117,7 +2115,6 @@ registerSingleton(IChatService, class ChatService implements IChatService {
   getSessionId = () => undefined
   transferredSessionId = undefined
   transferChatSession = unsupported
-  registerProvider = unsupported
   registerSlashCommandProvider = unsupported
   getProviderInfos = () => []
   startSession = unsupported
@@ -3007,7 +3004,7 @@ registerSingleton(IChatWidgetHistoryService, class ChatWidgetHistoryService impl
 registerSingleton(IChatCodeBlockContextProviderService, class ChatCodeBlockContextProviderService implements IChatCodeBlockContextProviderService {
   _serviceBrand: undefined
   providers = []
-  registerProvider = unsupported
+  registerProvider = () => Disposable.None
 }, InstantiationType.Delayed)
 
 registerSingleton(IInlineChatSessionService, class InlineChatSessionService implements IInlineChatSessionService {
@@ -3203,8 +3200,8 @@ registerSingleton(IWorkingCopyHistoryService, class WorkingCopyHistoryService im
   updateEntry = unsupported
   removeEntry = unsupported
   moveEntries = unsupported
-  getEntries = unsupported
-  getAll = unsupported
+  getEntries = async () => []
+  getAll = async () => []
   removeAll = unsupported
 }, InstantiationType.Delayed)
 
