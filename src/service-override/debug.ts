@@ -4,8 +4,6 @@ import { IDebugService } from 'vs/workbench/contrib/debug/common/debug.service'
 import { DebugService } from 'vs/workbench/contrib/debug/browser/debugService'
 import { LanguageFeaturesService } from 'vscode/src/vs/editor/common/services/languageFeaturesService'
 import { ILanguageFeaturesService } from 'vs/editor/common/services/languageFeatures'
-import { ConfigurationResolverService } from 'vs/workbench/services/configurationResolver/browser/configurationResolverService'
-import { IConfigurationResolverService } from 'vs/workbench/services/configurationResolver/common/configurationResolver.service'
 import { IAction } from 'vs/base/common/actions'
 import { IExtensionHostDebugService } from 'vs/platform/debug/common/extensionHostDebug.service'
 import { BrowserExtensionHostDebugService } from 'vs/workbench/contrib/debug/browser/extensionHostDebugService'
@@ -27,7 +25,6 @@ export default function getServiceOverride (): IEditorOverrideServices {
   return {
     [ILanguageFeaturesService.toString()]: new SyncDescriptor(LanguageFeaturesService, [], true), // To restore inlineValuesProvider
     [IDebugService.toString()]: new SyncDescriptor(DebugService, [], true),
-    [IConfigurationResolverService.toString()]: new SyncDescriptor(ConfigurationResolverService, [], true),
     [IExtensionHostDebugService.toString()]: new SyncDescriptor(BrowserExtensionHostDebugService, [], true),
     [IDebugVisualizerService.toString()]: new SyncDescriptor(DebugVisualizerService, [], true)
   }

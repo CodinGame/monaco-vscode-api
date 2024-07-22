@@ -34,6 +34,8 @@ import { IUserDataProfileService } from 'vs/workbench/services/userDataProfile/c
 import { AbstractWorkspaceEditingService } from 'vs/workbench/services/workspaces/browser/abstractWorkspaceEditingService'
 import { BrowserWorkspacesService } from 'vs/workbench/services/workspaces/browser/workspacesService'
 import { IWorkspaceEditingService } from 'vs/workbench/services/workspaces/common/workspaceEditing.service'
+import { ConfigurationResolverService } from 'vs/workbench/services/configurationResolver/browser/configurationResolverService'
+import { IConfigurationResolverService } from 'vs/workbench/services/configurationResolver/common/configurationResolver.service'
 import getFileServiceOverride, { initFile } from './files'
 import { registerServiceInitializePreParticipant } from '../lifecycle'
 import { getService, withReadyServices } from '../services'
@@ -156,7 +158,8 @@ function getServiceOverride (defaultWorkspace?: URI | IAnyWorkspaceIdentifier): 
     [ITextResourceConfigurationService.toString()]: new SyncDescriptor(TextResourceConfigurationService, [], true),
     [IWorkspaceEditingService.toString()]: new SyncDescriptor(MonacoWorkspaceEditingService, [], true),
     [IWorkspacesService.toString()]: new SyncDescriptor(BrowserWorkspacesService, [], true),
-    [ITextResourcePropertiesService.toString()]: new SyncDescriptor(TextResourcePropertiesService, [], true)
+    [ITextResourcePropertiesService.toString()]: new SyncDescriptor(TextResourcePropertiesService, [], true),
+    [IConfigurationResolverService.toString()]: new SyncDescriptor(ConfigurationResolverService, [], true)
   }
 }
 
