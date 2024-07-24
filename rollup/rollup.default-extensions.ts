@@ -151,9 +151,9 @@ export default rollup.defineConfig([
       load () {
         return `
 ${extensions.map(name => `import { whenReady as whenReady${pascalCase(name)} } from '@codingame/monaco-vscode-${name}-default-extension'`).join('\n')}
-const whenReady = Promise.all(
+const whenReady = Promise.all([
 ${extensions.map(name => `  whenReady${pascalCase(name)}()`).join(',\n')}
-)
+])
         `
       }
     },
