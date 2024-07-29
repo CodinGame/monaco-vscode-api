@@ -32,10 +32,10 @@ class BrowserWorkingCopyBackupService extends WorkingCopyBackupService {
 }
 
 interface WorkingCopyServiceOptions {
-  storage: 'memory' | 'userData' | null
+  storage?: 'memory' | 'userData' | null
 }
 
-export default function getServiceOverride ({ storage = 'userData' }: WorkingCopyServiceOptions): IEditorOverrideServices {
+export default function getServiceOverride ({ storage = 'userData' }: WorkingCopyServiceOptions = {}): IEditorOverrideServices {
   return {
     ...getFileServiceOverride(),
     ...(storage != null
