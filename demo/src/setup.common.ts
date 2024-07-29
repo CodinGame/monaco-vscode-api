@@ -288,7 +288,7 @@ export const constructOptions: IWorkbenchConstructionOptions = {
 export const envOptions: EnvironmentOverride = {
   // Otherwise, VSCode detect it as the first open workspace folder
   // which make the search result extension fail as it's not able to know what was detected by VSCode
-  userHome: vscode.Uri.file('/')
+  // userHome: vscode.Uri.file('/')
 }
 
 export const commonServices: IEditorOverrideServices = {
