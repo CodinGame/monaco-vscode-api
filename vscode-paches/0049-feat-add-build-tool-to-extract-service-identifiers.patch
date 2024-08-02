@@ -4,24 +4,28 @@ Date: Thu, 25 Apr 2024 19:34:56 +0200
 Subject: [PATCH] feat: add build tool to extract service identifiers
 
 ---
- build/lib/extractServices.js | 199 +++++++++++++++++++++++++++++
- build/lib/extractServices.ts | 234 +++++++++++++++++++++++++++++++++++
- 2 files changed, 433 insertions(+)
+ build/lib/extractServices.js | 209 ++++++++++++++++++++++++++++++
+ build/lib/extractServices.ts | 239 +++++++++++++++++++++++++++++++++++
+ 2 files changed, 448 insertions(+)
  create mode 100644 build/lib/extractServices.js
  create mode 100644 build/lib/extractServices.ts
 
 diff --git a/build/lib/extractServices.js b/build/lib/extractServices.js
 new file mode 100644
-index 00000000000..7b5dc28eeac
+index 00000000000..e0f9ad3724e
 --- /dev/null
 +++ b/build/lib/extractServices.js
-@@ -0,0 +1,199 @@
+@@ -0,0 +1,209 @@
 +"use strict";
-+Object.defineProperty(exports, "__esModule", { value: true });
 +/*---------------------------------------------------------------------------------------------
 + *  Copyright (c) Microsoft Corporation. All rights reserved.
 + *  Licensed under the MIT License. See License.txt in the project root for license information.
 + *--------------------------------------------------------------------------------------------*/
++Object.defineProperty(exports, "__esModule", { value: true });
++/**
++ * The point of this file is to extract the service identifier to be able to import them without importing everything from the module
++ * It prevent importing useless classes when we just want to register a mocked implementation of the service
++ */
 +const ts = require("typescript");
 +const fs = require("fs");
 +const path = require("path");
@@ -198,10 +202,16 @@ index 00000000000..7b5dc28eeac
 +                incrementScriptVersion(fileName);
 +            }
 +            else {
-+                moveToNewFile({
-+                    pos: Math.min(serviceRegistrationNode.getStart(), serviceInterface.getStart()),
-+                    end: Math.max(serviceRegistrationNode.getEnd(), serviceInterface.getEnd())
-+                });
++                try {
++                    moveToNewFile({
++                        pos: Math.min(serviceRegistrationNode.getStart(), serviceInterface.getStart()),
++                        end: Math.max(serviceRegistrationNode.getEnd(), serviceInterface.getEnd())
++                    });
++                }
++                catch (err) {
++                    console.error('Unable to extract service identifier', err);
++                    break;
++                }
 +            }
 +        }
 +    }
@@ -218,10 +228,10 @@ index 00000000000..7b5dc28eeac
 \ No newline at end of file
 diff --git a/build/lib/extractServices.ts b/build/lib/extractServices.ts
 new file mode 100644
-index 00000000000..d69352c6e86
+index 00000000000..b340f10812d
 --- /dev/null
 +++ b/build/lib/extractServices.ts
-@@ -0,0 +1,234 @@
+@@ -0,0 +1,239 @@
 +/*---------------------------------------------------------------------------------------------
 + *  Copyright (c) Microsoft Corporation. All rights reserved.
 + *  Licensed under the MIT License. See License.txt in the project root for license information.
@@ -439,10 +449,15 @@ index 00000000000..d69352c6e86
 +				fs.writeFileSync(fileName, content);
 +				incrementScriptVersion(fileName);
 +			} else {
-+				moveToNewFile({
-+					pos: Math.min(serviceRegistrationNode.getStart(), serviceInterface!.getStart()),
-+					end: Math.max(serviceRegistrationNode.getEnd(), serviceInterface!.getEnd())
-+				});
++				try {
++					moveToNewFile({
++						pos: Math.min(serviceRegistrationNode.getStart(), serviceInterface!.getStart()),
++						end: Math.max(serviceRegistrationNode.getEnd(), serviceInterface!.getEnd())
++					});
++				} catch (err) {
++					console.error('Unable to extract service identifier', err);
++					break;
++				}
 +			}
 +		}
 +	}

@@ -1,0 +1,36 @@
+From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
+From: =?UTF-8?q?Lo=C3=AFc=20Mangeonjean?= <loic@coderpad.io>
+Date: Fri, 2 Aug 2024 14:20:58 +0200
+Subject: [PATCH] fix: rollback typescript as the last version breaks the
+ extractServices script
+
+---
+ package.json                                 | 2 +-
+ src/vs/base/parts/request/browser/request.ts | 1 +
+ 2 files changed, 2 insertions(+), 1 deletion(-)
+
+diff --git a/package.json b/package.json
+index 7b51678c85a..999105643e3 100644
+--- a/package.json
++++ b/package.json
+@@ -208,7 +208,7 @@
+     "ts-loader": "^9.4.2",
+     "ts-node": "^10.9.1",
+     "tsec": "0.2.7",
+-    "typescript": "^5.6.0-dev.20240715",
++    "typescript": "5.5.0-dev.20240408",
+     "util": "^0.12.4",
+     "vscode-nls-dev": "^3.3.1",
+     "webpack": "^5.91.0",
+diff --git a/src/vs/base/parts/request/browser/request.ts b/src/vs/base/parts/request/browser/request.ts
+index 7e40f2d80f5..d7cef790158 100644
+--- a/src/vs/base/parts/request/browser/request.ts
++++ b/src/vs/base/parts/request/browser/request.ts
+@@ -15,6 +15,7 @@ export async function request(options: IRequestOptions, token: CancellationToken
+ 
+ 	const cancellation = new AbortController();
+ 	const disposable = token.onCancellationRequested(() => cancellation.abort());
++	// @ts-ignore AbortSignal exists in more recent versions of typescript
+ 	const signal = options.timeout ? AbortSignal.any([
+ 		cancellation.signal,
+ 		AbortSignal.timeout(options.timeout),

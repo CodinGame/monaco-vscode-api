@@ -8,7 +8,7 @@ Subject: [PATCH] fix: remove import in ESM
  1 file changed, 2 insertions(+)
 
 diff --git a/src/vs/base/browser/defaultWorkerFactory.ts b/src/vs/base/browser/defaultWorkerFactory.ts
-index 71391b063f3..7878de1cbfa 100644
+index 8f077b399ab..2334c6fd176 100644
 --- a/src/vs/base/browser/defaultWorkerFactory.ts
 +++ b/src/vs/base/browser/defaultWorkerFactory.ts
 @@ -5,7 +5,9 @@

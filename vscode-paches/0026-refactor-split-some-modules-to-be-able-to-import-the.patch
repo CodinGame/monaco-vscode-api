@@ -7,14 +7,14 @@ Subject: [PATCH] refactor: split some modules to be able to import them
 ---
  .../editor/editor.contribution._autosave.ts   |   9 +
  .../parts/editor/editor.contribution.ts       |   3 +-
- .../files/browser/fileCommands._save.ts       | 198 ++++++
- .../contrib/files/browser/fileCommands.ts     | 245 +------
+ .../files/browser/fileCommands._save.ts       | 224 ++++++
+ .../contrib/files/browser/fileCommands.ts     | 220 +-----
  .../files.contribution._configuration.ts      | 324 +++++++++
  .../browser/files.contribution._editorPane.ts |  93 +++
- .../browser/files.contribution._explorer.ts   | 270 ++++++++
+ .../browser/files.contribution._explorer.ts   | 275 ++++++++
  .../files.contribution._fileEditorFactory.ts  |  23 +
- .../files/browser/files.contribution.ts       | 649 +-----------------
- 9 files changed, 956 insertions(+), 858 deletions(-)
+ .../files/browser/files.contribution.ts       | 654 +-----------------
+ 9 files changed, 961 insertions(+), 864 deletions(-)
  create mode 100644 src/vs/workbench/browser/parts/editor/editor.contribution._autosave.ts
  create mode 100644 src/vs/workbench/contrib/files/browser/fileCommands._save.ts
  create mode 100644 src/vs/workbench/contrib/files/browser/files.contribution._configuration.ts
@@ -38,7 +38,7 @@ index 00000000000..c7416d68719
 +
 +registerWorkbenchContribution2(EditorAutoSave.ID, EditorAutoSave, WorkbenchPhase.BlockRestore);
 diff --git a/src/vs/workbench/browser/parts/editor/editor.contribution.ts b/src/vs/workbench/browser/parts/editor/editor.contribution.ts
-index dfb20dc68fb..f9be9fff359 100644
+index fabc137b0ae..0a4ce484085 100644
 --- a/src/vs/workbench/browser/parts/editor/editor.contribution.ts
 +++ b/src/vs/workbench/browser/parts/editor/editor.contribution.ts
 @@ -61,7 +61,6 @@ import { isMacintosh } from 'vs/base/common/platform';
@@ -50,7 +50,7 @@ index dfb20dc68fb..f9be9fff359 100644
  import { ActiveGroupEditorsByMostRecentlyUsedQuickAccess, AllEditorsByAppearanceQuickAccess, AllEditorsByMostRecentlyUsedQuickAccess } from 'vs/workbench/browser/parts/editor/editorQuickAccess';
  import { FileAccess } from 'vs/base/common/network';
 @@ -72,6 +71,7 @@ import { DynamicEditorConfigurations } from 'vs/workbench/browser/parts/editor/e
- import { EditorActionsDefaultAction, EditorActionsTitleBarAction, HideEditorActionsAction, HideEditorTabsAction, ShowMultipleEditorTabsAction, ShowSingleEditorTabAction, ZenHideEditorTabsAction, ZenShowMultipleEditorTabsAction, ZenShowSingleEditorTabAction } from 'vs/workbench/browser/actions/layoutActions';
+ import { ConfigureEditorAction, ConfigureEditorTabsAction, EditorActionsDefaultAction, EditorActionsTitleBarAction, HideEditorActionsAction, HideEditorTabsAction, ShowMultipleEditorTabsAction, ShowSingleEditorTabAction, ZenHideEditorTabsAction, ZenShowMultipleEditorTabsAction, ZenShowSingleEditorTabAction } from 'vs/workbench/browser/actions/layoutActions';
  import { ICommandAction } from 'vs/platform/action/common/action';
  import { EditorContextKeys } from 'vs/editor/common/editorContextKeys';
 +import './editor.contribution._autosave';
@@ -67,48 +67,46 @@ index dfb20dc68fb..f9be9fff359 100644
  registerWorkbenchContribution2(DynamicEditorConfigurations.ID, DynamicEditorConfigurations, WorkbenchPhase.BlockRestore);
 diff --git a/src/vs/workbench/contrib/files/browser/fileCommands._save.ts b/src/vs/workbench/contrib/files/browser/fileCommands._save.ts
 new file mode 100644
-index 00000000000..d9a94570df9
+index 00000000000..037d615a820
 --- /dev/null
 +++ b/src/vs/workbench/contrib/files/browser/fileCommands._save.ts
-@@ -0,0 +1,198 @@
+@@ -0,0 +1,224 @@
 +/*---------------------------------------------------------------------------------------------
 + *  Copyright (c) Microsoft Corporation. All rights reserved.
 + *  Licensed under the MIT License. See License.txt in the project root for license information.
 + *--------------------------------------------------------------------------------------------*/
 +
-+import { toAction } from 'vs/base/common/actions';
-+import { coalesce } from 'vs/base/common/arrays';
-+import { toErrorMessage } from 'vs/base/common/errorMessage';
-+import { isCancellationError } from 'vs/base/common/errors';
-+import { hash } from 'vs/base/common/hash';
-+import { KeyChord, KeyCode, KeyMod } from 'vs/base/common/keyCodes';
-+import { isEqual } from 'vs/base/common/resources';
++import * as nls from 'vs/nls';
 +import { URI } from 'vs/base/common/uri';
++import { EditorResourceAccessor, IEditorCommandsContext, SideBySideEditor, IEditorIdentifier, SaveReason, EditorsOrder, EditorInputCapabilities } from 'vs/workbench/common/editor';
++import { SideBySideEditorInput } from 'vs/workbench/common/editor/sideBySideEditorInput';
++import { ServicesAccessor, IInstantiationService } from 'vs/platform/instantiation/common/instantiation';
++import { toErrorMessage } from 'vs/base/common/errorMessage';
++import { CommandsRegistry } from 'vs/platform/commands/common/commands';
++import { KeybindingsRegistry, KeybindingWeight } from 'vs/platform/keybinding/common/keybindingsRegistry';
++import { KeyMod, KeyCode, KeyChord } from 'vs/base/common/keyCodes';
++import { getOpenEditorsViewMultiSelection } from 'vs/workbench/contrib/files/browser/files';
++import { resolveCommandsContext } from 'vs/workbench/browser/parts/editor/editorCommandsContext';
++import { INotificationService, Severity } from 'vs/platform/notification/common/notification';
++import { IEditorService, ISaveEditorsOptions } from 'vs/workbench/services/editor/common/editorService';
++import { IEditorGroupsService, GroupsOrder, IEditorGroup } from 'vs/workbench/services/editor/common/editorGroupsService';
++import { isEqual } from 'vs/base/common/resources';
 +import { ICodeEditorService } from 'vs/editor/browser/services/codeEditorService';
 +import { EmbeddedCodeEditorWidget } from 'vs/editor/browser/widget/codeEditor/embeddedCodeEditorWidget';
-+import * as nls from 'vs/nls';
-+import { CommandsRegistry } from 'vs/platform/commands/common/commands';
-+import { IInstantiationService, ServicesAccessor } from 'vs/platform/instantiation/common/instantiation';
-+import { KeybindingWeight, KeybindingsRegistry } from 'vs/platform/keybinding/common/keybindingsRegistry';
-+import { IListService } from 'vs/platform/list/browser/listService';
-+import { INotificationService, Severity } from 'vs/platform/notification/common/notification';
-+import { getMultiSelectedEditorContexts } from 'vs/workbench/browser/parts/editor/editorCommands';
-+import { EditorInputCapabilities, EditorResourceAccessor, EditorsOrder, IEditorCommandsContext, IEditorIdentifier, SaveReason, SideBySideEditor } from 'vs/workbench/common/editor';
-+import { SideBySideEditorInput } from 'vs/workbench/common/editor/sideBySideEditorInput';
-+import { getOpenEditorsViewMultiSelection } from 'vs/workbench/contrib/files/browser/files';
-+import { GroupsOrder, IEditorGroup, IEditorGroupsService } from 'vs/workbench/services/editor/common/editorGroupsService';
-+import { IEditorService, ISaveEditorsOptions } from 'vs/workbench/services/editor/common/editorService';
 +import { ITextFileService } from 'vs/workbench/services/textfile/common/textfiles';
-+import { SAVE_ALL_COMMAND_ID, SAVE_ALL_IN_GROUP_COMMAND_ID, SAVE_FILES_COMMAND_ID, SAVE_FILE_AS_COMMAND_ID, SAVE_FILE_COMMAND_ID, SAVE_FILE_WITHOUT_FORMATTING_COMMAND_ID } from './fileConstants';
++import { isCancellationError } from 'vs/base/common/errors';
++import { toAction } from 'vs/base/common/actions';
++import { hash } from 'vs/base/common/hash';
++import { SAVE_FILE_COMMAND_ID, SAVE_FILE_WITHOUT_FORMATTING_COMMAND_ID, SAVE_FILE_AS_COMMAND_ID, SAVE_ALL_COMMAND_ID, SAVE_ALL_IN_GROUP_COMMAND_ID, SAVE_FILES_COMMAND_ID, REVERT_FILE_COMMAND_ID } from './fileConstants';
++import { IListService } from 'vs/platform/list/browser/listService';
 +
 +async function saveSelectedEditors(accessor: ServicesAccessor, options?: ISaveEditorsOptions): Promise<void> {
-+	const listService = accessor.get(IListService);
 +	const editorGroupService = accessor.get(IEditorGroupsService);
 +	const codeEditorService = accessor.get(ICodeEditorService);
 +	const textFileService = accessor.get(ITextFileService);
 +
 +	// Retrieve selected or active editor
-+	let editors = getOpenEditorsViewMultiSelection(listService, editorGroupService);
++	let editors = getOpenEditorsViewMultiSelection(accessor);
 +	if (!editors) {
 +		const activeGroup = editorGroupService.activeGroup;
 +		if (activeGroup.activeEditor) {
@@ -245,15 +243,15 @@ index 00000000000..d9a94570df9
 +CommandsRegistry.registerCommand({
 +	id: SAVE_ALL_IN_GROUP_COMMAND_ID,
 +	handler: (accessor, _: URI | object, editorContext: IEditorCommandsContext) => {
-+		const editorGroupService = accessor.get(IEditorGroupsService);
++		const editorGroupsService = accessor.get(IEditorGroupsService);
 +
-+		const contexts = getMultiSelectedEditorContexts(editorContext, accessor.get(IListService), accessor.get(IEditorGroupsService));
++		const resolvedContext = resolveCommandsContext([editorContext], accessor.get(IEditorService), editorGroupsService, accessor.get(IListService));
 +
 +		let groups: readonly IEditorGroup[] | undefined = undefined;
-+		if (!contexts.length) {
-+			groups = editorGroupService.getGroups(GroupsOrder.MOST_RECENTLY_ACTIVE);
++		if (!resolvedContext.groupedEditors.length) {
++			groups = editorGroupsService.getGroups(GroupsOrder.MOST_RECENTLY_ACTIVE);
 +		} else {
-+			groups = coalesce(contexts.map(context => editorGroupService.getGroup(context.groupId)));
++			groups = resolvedContext.groupedEditors.map(({ group }) => group);
 +		}
 +
 +		return saveDirtyEditorsOfGroups(accessor, groups, { reason: SaveReason.EXPLICIT });
@@ -269,113 +267,113 @@ index 00000000000..d9a94570df9
 +		return res.success;
 +	}
 +});
++
++CommandsRegistry.registerCommand({
++	id: REVERT_FILE_COMMAND_ID,
++	handler: async accessor => {
++		const editorGroupService = accessor.get(IEditorGroupsService);
++		const editorService = accessor.get(IEditorService);
++
++		// Retrieve selected or active editor
++		let editors = getOpenEditorsViewMultiSelection(accessor);
++		if (!editors) {
++			const activeGroup = editorGroupService.activeGroup;
++			if (activeGroup.activeEditor) {
++				editors = [{ groupId: activeGroup.id, editor: activeGroup.activeEditor }];
++			}
++		}
++
++		if (!editors || editors.length === 0) {
++			return; // nothing to revert
++		}
++
++		try {
++			await editorService.revert(editors.filter(({ editor }) => !editor.hasCapability(EditorInputCapabilities.Untitled) /* all except untitled */), { force: true });
++		} catch (error) {
++			const notificationService = accessor.get(INotificationService);
++			notificationService.error(nls.localize('genericRevertError', "Failed to revert '{0}': {1}", editors.map(({ editor }) => editor.getName()).join(', '), toErrorMessage(error, false)));
++		}
++	}
++});
 diff --git a/src/vs/workbench/contrib/files/browser/fileCommands.ts b/src/vs/workbench/contrib/files/browser/fileCommands.ts
-index 81bf68c3e0b..d5c6aae3d1d 100644
+index bfa8d97796c..474e3898e59 100644
 --- a/src/vs/workbench/contrib/files/browser/fileCommands.ts
 +++ b/src/vs/workbench/contrib/files/browser/fileCommands.ts
-@@ -3,56 +3,48 @@
+@@ -3,10 +3,10 @@
   *  Licensed under the MIT License. See License.txt in the project root for license information.
   *--------------------------------------------------------------------------------------------*/
  
--import * as nls from 'vs/nls';
-+import { toErrorMessage } from 'vs/base/common/errorMessage';
-+import { KeyChord, KeyCode, KeyMod } from 'vs/base/common/keyCodes';
-+import { IDisposable, dispose } from 'vs/base/common/lifecycle';
-+import { Schemas } from 'vs/base/common/network';
-+import { isWeb, isWindows } from 'vs/base/common/platform';
-+import { basename, joinPath } from 'vs/base/common/resources';
++
+ import * as nls from 'vs/nls';
  import { URI } from 'vs/base/common/uri';
 -import { EditorResourceAccessor, IEditorCommandsContext, SideBySideEditor, IEditorIdentifier, SaveReason, EditorsOrder, EditorInputCapabilities } from 'vs/workbench/common/editor';
 -import { SideBySideEditorInput } from 'vs/workbench/common/editor/sideBySideEditorInput';
--import { IWindowOpenable, IOpenWindowOptions, isWorkspaceToOpen, IOpenEmptyWindowOptions } from 'vs/platform/window/common/window';
--import { IHostService } from 'vs/workbench/services/host/browser/host';
--import { ServicesAccessor, IInstantiationService } from 'vs/platform/instantiation/common/instantiation';
--import { IWorkspaceContextService, UNTITLED_WORKSPACE_NAME } from 'vs/platform/workspace/common/workspace';
--import { ExplorerFocusCondition, TextFileContentProvider, VIEWLET_ID, ExplorerCompressedFocusContext, ExplorerCompressedFirstFocusContext, ExplorerCompressedLastFocusContext, FilesExplorerFocusCondition, ExplorerFolderContext, VIEW_ID } from 'vs/workbench/contrib/files/common/files';
--import { ExplorerViewPaneContainer } from 'vs/workbench/contrib/files/browser/explorerViewlet';
-+import { EditorContextKeys } from 'vs/editor/common/editorContextKeys';
-+import { ITextModelService } from 'vs/editor/common/services/resolverService';
-+import * as nls from 'vs/nls';
++import { EditorResourceAccessor, SideBySideEditor } from 'vs/workbench/common/editor';
+ import { IWindowOpenable, IOpenWindowOptions, isWorkspaceToOpen, IOpenEmptyWindowOptions } from 'vs/platform/window/common/window';
+ import { IHostService } from 'vs/workbench/services/host/browser/host';
+ import { ServicesAccessor, IInstantiationService } from 'vs/platform/instantiation/common/instantiation';
+@@ -14,7 +14,6 @@ import { IWorkspaceContextService, UNTITLED_WORKSPACE_NAME } from 'vs/platform/w
+ import { ExplorerFocusCondition, TextFileContentProvider, VIEWLET_ID, ExplorerCompressedFocusContext, ExplorerCompressedFirstFocusContext, ExplorerCompressedLastFocusContext, FilesExplorerFocusCondition, ExplorerFolderContext, VIEW_ID } from 'vs/workbench/contrib/files/common/files';
+ import { ExplorerViewPaneContainer } from 'vs/workbench/contrib/files/browser/explorerViewlet';
  import { IClipboardService } from 'vs/platform/clipboard/common/clipboardService';
 -import { toErrorMessage } from 'vs/base/common/errorMessage';
--import { IListService } from 'vs/platform/list/browser/listService';
  import { CommandsRegistry, ICommandHandler, ICommandService } from 'vs/platform/commands/common/commands';
--import { IContextKey, IContextKeyService, ContextKeyExpr } from 'vs/platform/contextkey/common/contextkey';
-+import { IConfigurationService } from 'vs/platform/configuration/common/configuration';
-+import { ContextKeyExpr, IContextKey, IContextKeyService } from 'vs/platform/contextkey/common/contextkey';
-+import { IFileDialogService } from 'vs/platform/dialogs/common/dialogs';
-+import { EditorOpenSource, EditorResolution } from 'vs/platform/editor/common/editor';
-+import { IEnvironmentService } from 'vs/platform/environment/common/environment';
+ import { IContextKey, IContextKeyService, ContextKeyExpr } from 'vs/platform/contextkey/common/contextkey';
  import { IFileService } from 'vs/platform/files/common/files';
--import { KeybindingsRegistry, KeybindingWeight } from 'vs/platform/keybinding/common/keybindingsRegistry';
--import { KeyMod, KeyCode, KeyChord } from 'vs/base/common/keyCodes';
--import { isWeb, isWindows } from 'vs/base/common/platform';
--import { ITextModelService } from 'vs/editor/common/services/resolverService';
+@@ -22,36 +21,29 @@ import { KeybindingsRegistry, KeybindingWeight } from 'vs/platform/keybinding/co
+ import { KeyMod, KeyCode, KeyChord } from 'vs/base/common/keyCodes';
+ import { isWeb, isWindows } from 'vs/base/common/platform';
+ import { ITextModelService } from 'vs/editor/common/services/resolverService';
 -import { getResourceForCommand, getMultiSelectedResources, getOpenEditorsViewMultiSelection, IExplorerService } from 'vs/workbench/contrib/files/browser/files';
--import { IWorkspaceEditingService } from 'vs/workbench/services/workspaces/common/workspaceEditing';
--import { getMultiSelectedEditorContexts } from 'vs/workbench/browser/parts/editor/editorCommands';
--import { Schemas } from 'vs/base/common/network';
++import { getResourceForCommand, getMultiSelectedResources, IExplorerService } from 'vs/workbench/contrib/files/browser/files';
+ import { IWorkspaceEditingService } from 'vs/workbench/services/workspaces/common/workspaceEditing';
+-import { resolveCommandsContext } from 'vs/workbench/browser/parts/editor/editorCommandsContext';
+ import { Schemas } from 'vs/base/common/network';
 -import { INotificationService, Severity } from 'vs/platform/notification/common/notification';
--import { EditorContextKeys } from 'vs/editor/common/editorContextKeys';
+ import { EditorContextKeys } from 'vs/editor/common/editorContextKeys';
 -import { IEditorService, SIDE_GROUP, ISaveEditorsOptions } from 'vs/workbench/services/editor/common/editorService';
 -import { IEditorGroupsService, GroupsOrder, IEditorGroup } from 'vs/workbench/services/editor/common/editorGroupsService';
-+import { IInstantiationService, ServicesAccessor } from 'vs/platform/instantiation/common/instantiation';
-+import { KeybindingWeight, KeybindingsRegistry } from 'vs/platform/keybinding/common/keybindingsRegistry';
++import { IEditorService, SIDE_GROUP } from 'vs/workbench/services/editor/common/editorService';
++import { IEditorGroupsService } from 'vs/workbench/services/editor/common/editorGroupsService';
  import { ILabelService } from 'vs/platform/label/common/label';
 -import { basename, joinPath, isEqual } from 'vs/base/common/resources';
--import { IDisposable, dispose } from 'vs/base/common/lifecycle';
--import { IEnvironmentService } from 'vs/platform/environment/common/environment';
--import { coalesce } from 'vs/base/common/arrays';
++import { basename, joinPath } from 'vs/base/common/resources';
+ import { IDisposable, dispose } from 'vs/base/common/lifecycle';
+ import { IEnvironmentService } from 'vs/platform/environment/common/environment';
 -import { ICodeEditorService } from 'vs/editor/browser/services/codeEditorService';
 -import { EmbeddedCodeEditorWidget } from 'vs/editor/browser/widget/codeEditor/embeddedCodeEditorWidget';
 -import { ITextFileService } from 'vs/workbench/services/textfile/common/textfiles';
-+import { IListService } from 'vs/platform/list/browser/listService';
-+import { INotificationService } from 'vs/platform/notification/common/notification';
  import { IUriIdentityService } from 'vs/platform/uriIdentity/common/uriIdentity';
 -import { isCancellationError } from 'vs/base/common/errors';
 -import { toAction } from 'vs/base/common/actions';
--import { EditorOpenSource, EditorResolution } from 'vs/platform/editor/common/editor';
+ import { EditorOpenSource, EditorResolution } from 'vs/platform/editor/common/editor';
 -import { hash } from 'vs/base/common/hash';
--import { IConfigurationService } from 'vs/platform/configuration/common/configuration';
--import { IPaneCompositePartService } from 'vs/workbench/services/panecomposite/browser/panecomposite';
--import { ViewContainerLocation } from 'vs/workbench/common/views';
--import { IViewsService } from 'vs/workbench/services/views/common/viewsService';
+ import { IConfigurationService } from 'vs/platform/configuration/common/configuration';
+ import { IPaneCompositePartService } from 'vs/workbench/services/panecomposite/browser/panecomposite';
+ import { ViewContainerLocation } from 'vs/workbench/common/views';
+ import { IViewsService } from 'vs/workbench/services/views/common/viewsService';
 -import { OPEN_TO_SIDE_COMMAND_ID, COMPARE_WITH_SAVED_COMMAND_ID, SELECT_FOR_COMPARE_COMMAND_ID, ResourceSelectedForCompareContext, COMPARE_SELECTED_COMMAND_ID, COMPARE_RESOURCE_COMMAND_ID, COPY_PATH_COMMAND_ID, COPY_RELATIVE_PATH_COMMAND_ID, REVEAL_IN_EXPLORER_COMMAND_ID, OPEN_WITH_EXPLORER_COMMAND_ID, SAVE_FILE_COMMAND_ID, SAVE_FILE_WITHOUT_FORMATTING_COMMAND_ID, SAVE_FILE_AS_COMMAND_ID, SAVE_ALL_COMMAND_ID, SAVE_ALL_IN_GROUP_COMMAND_ID, SAVE_FILES_COMMAND_ID, REVERT_FILE_COMMAND_ID, REMOVE_ROOT_FOLDER_COMMAND_ID, PREVIOUS_COMPRESSED_FOLDER, NEXT_COMPRESSED_FOLDER, FIRST_COMPRESSED_FOLDER, LAST_COMPRESSED_FOLDER, NEW_UNTITLED_FILE_COMMAND_ID, NEW_UNTITLED_FILE_LABEL, NEW_FILE_COMMAND_ID } from './fileConstants';
--import { IFileDialogService } from 'vs/platform/dialogs/common/dialogs';
-+import { IOpenEmptyWindowOptions, IOpenWindowOptions, IWindowOpenable, isWorkspaceToOpen } from 'vs/platform/window/common/window';
-+import { IWorkspaceContextService, UNTITLED_WORKSPACE_NAME } from 'vs/platform/workspace/common/workspace';
++import { OPEN_TO_SIDE_COMMAND_ID, COMPARE_WITH_SAVED_COMMAND_ID, SELECT_FOR_COMPARE_COMMAND_ID, ResourceSelectedForCompareContext, COMPARE_SELECTED_COMMAND_ID, COMPARE_RESOURCE_COMMAND_ID, COPY_PATH_COMMAND_ID, COPY_RELATIVE_PATH_COMMAND_ID, REVEAL_IN_EXPLORER_COMMAND_ID, OPEN_WITH_EXPLORER_COMMAND_ID, REMOVE_ROOT_FOLDER_COMMAND_ID, PREVIOUS_COMPRESSED_FOLDER, NEXT_COMPRESSED_FOLDER, FIRST_COMPRESSED_FOLDER, LAST_COMPRESSED_FOLDER, NEW_UNTITLED_FILE_COMMAND_ID, NEW_UNTITLED_FILE_LABEL, NEW_FILE_COMMAND_ID } from './fileConstants';
+ import { IFileDialogService } from 'vs/platform/dialogs/common/dialogs';
  import { RemoveRootFolderAction } from 'vs/workbench/browser/actions/workspaceActions';
--import { OpenEditorsView } from 'vs/workbench/contrib/files/browser/views/openEditorsView';
-+import { EditorInputCapabilities, EditorResourceAccessor, SideBySideEditor } from 'vs/workbench/common/editor';
-+import { ViewContainerLocation } from 'vs/workbench/common/views';
-+import { ExplorerViewPaneContainer } from 'vs/workbench/contrib/files/browser/explorerViewlet';
-+import { IExplorerService, getMultiSelectedResources, getOpenEditorsViewMultiSelection, getResourceForCommand } from 'vs/workbench/contrib/files/browser/files';
+ import { OpenEditorsView } from 'vs/workbench/contrib/files/browser/views/openEditorsView';
  import { ExplorerView } from 'vs/workbench/contrib/files/browser/views/explorerView';
-+import { OpenEditorsView } from 'vs/workbench/contrib/files/browser/views/openEditorsView';
-+import { ExplorerCompressedFirstFocusContext, ExplorerCompressedFocusContext, ExplorerCompressedLastFocusContext, ExplorerFocusCondition, ExplorerFolderContext, FilesExplorerFocusCondition, TextFileContentProvider, VIEWLET_ID, VIEW_ID } from 'vs/workbench/contrib/files/common/files';
-+import { IEditorGroupsService } from 'vs/workbench/services/editor/common/editorGroupsService';
-+import { IEditorService, SIDE_GROUP } from 'vs/workbench/services/editor/common/editorService';
-+import { IHostService } from 'vs/workbench/services/host/browser/host';
-+import { IPaneCompositePartService } from 'vs/workbench/services/panecomposite/browser/panecomposite';
-+import { IViewsService } from 'vs/workbench/services/views/common/viewsService';
-+import { IWorkspaceEditingService } from 'vs/workbench/services/workspaces/common/workspaceEditing';
-+import { COMPARE_RESOURCE_COMMAND_ID, COMPARE_SELECTED_COMMAND_ID, COMPARE_WITH_SAVED_COMMAND_ID, COPY_PATH_COMMAND_ID, COPY_RELATIVE_PATH_COMMAND_ID, FIRST_COMPRESSED_FOLDER, LAST_COMPRESSED_FOLDER, NEW_FILE_COMMAND_ID, NEW_UNTITLED_FILE_COMMAND_ID, NEW_UNTITLED_FILE_LABEL, NEXT_COMPRESSED_FOLDER, OPEN_TO_SIDE_COMMAND_ID, OPEN_WITH_EXPLORER_COMMAND_ID, PREVIOUS_COMPRESSED_FOLDER, REMOVE_ROOT_FOLDER_COMMAND_ID, REVEAL_IN_EXPLORER_COMMAND_ID, REVERT_FILE_COMMAND_ID, ResourceSelectedForCompareContext, SELECT_FOR_COMPARE_COMMAND_ID } from './fileConstants';
+ import { IListService } from 'vs/platform/list/browser/listService';
 +import './fileCommands._save';
  
  export const openWindowCommand = (accessor: ServicesAccessor, toOpen: IWindowOpenable[], options?: IOpenWindowOptions) => {
  	if (Array.isArray(toOpen)) {
-@@ -368,175 +360,6 @@ CommandsRegistry.registerCommand({
+@@ -362,202 +354,6 @@ CommandsRegistry.registerCommand({
  
  // Save / Save As / Save All / Revert
  
 -async function saveSelectedEditors(accessor: ServicesAccessor, options?: ISaveEditorsOptions): Promise<void> {
--	const listService = accessor.get(IListService);
 -	const editorGroupService = accessor.get(IEditorGroupsService);
 -	const codeEditorService = accessor.get(ICodeEditorService);
 -	const textFileService = accessor.get(ITextFileService);
 -
 -	// Retrieve selected or active editor
--	let editors = getOpenEditorsViewMultiSelection(listService, editorGroupService);
+-	let editors = getOpenEditorsViewMultiSelection(accessor);
 -	if (!editors) {
 -		const activeGroup = editorGroupService.activeGroup;
 -		if (activeGroup.activeEditor) {
@@ -512,15 +510,15 @@ index 81bf68c3e0b..d5c6aae3d1d 100644
 -CommandsRegistry.registerCommand({
 -	id: SAVE_ALL_IN_GROUP_COMMAND_ID,
 -	handler: (accessor, _: URI | object, editorContext: IEditorCommandsContext) => {
--		const editorGroupService = accessor.get(IEditorGroupsService);
+-		const editorGroupsService = accessor.get(IEditorGroupsService);
 -
--		const contexts = getMultiSelectedEditorContexts(editorContext, accessor.get(IListService), accessor.get(IEditorGroupsService));
+-		const resolvedContext = resolveCommandsContext([editorContext], accessor.get(IEditorService), editorGroupsService, accessor.get(IListService));
 -
 -		let groups: readonly IEditorGroup[] | undefined = undefined;
--		if (!contexts.length) {
--			groups = editorGroupService.getGroups(GroupsOrder.MOST_RECENTLY_ACTIVE);
+-		if (!resolvedContext.groupedEditors.length) {
+-			groups = editorGroupsService.getGroups(GroupsOrder.MOST_RECENTLY_ACTIVE);
 -		} else {
--			groups = coalesce(contexts.map(context => editorGroupService.getGroup(context.groupId)));
+-			groups = resolvedContext.groupedEditors.map(({ group }) => group);
 -		}
 -
 -		return saveDirtyEditorsOfGroups(accessor, groups, { reason: SaveReason.EXPLICIT });
@@ -537,9 +535,37 @@ index 81bf68c3e0b..d5c6aae3d1d 100644
 -	}
 -});
 -
+-CommandsRegistry.registerCommand({
+-	id: REVERT_FILE_COMMAND_ID,
+-	handler: async accessor => {
+-		const editorGroupService = accessor.get(IEditorGroupsService);
+-		const editorService = accessor.get(IEditorService);
+-
+-		// Retrieve selected or active editor
+-		let editors = getOpenEditorsViewMultiSelection(accessor);
+-		if (!editors) {
+-			const activeGroup = editorGroupService.activeGroup;
+-			if (activeGroup.activeEditor) {
+-				editors = [{ groupId: activeGroup.id, editor: activeGroup.activeEditor }];
+-			}
+-		}
+-
+-		if (!editors || editors.length === 0) {
+-			return; // nothing to revert
+-		}
+-
+-		try {
+-			await editorService.revert(editors.filter(({ editor }) => !editor.hasCapability(EditorInputCapabilities.Untitled) /* all except untitled */), { force: true });
+-		} catch (error) {
+-			const notificationService = accessor.get(INotificationService);
+-			notificationService.error(nls.localize('genericRevertError', "Failed to revert '{0}': {1}", editors.map(({ editor }) => editor.getName()).join(', '), toErrorMessage(error, false)));
+-		}
+-	}
+-});
+-
  CommandsRegistry.registerCommand({
- 	id: REVERT_FILE_COMMAND_ID,
- 	handler: async accessor => {
+ 	id: REMOVE_ROOT_FOLDER_COMMAND_ID,
+ 	handler: (accessor, resource: URI | object) => {
 diff --git a/src/vs/workbench/contrib/files/browser/files.contribution._configuration.ts b/src/vs/workbench/contrib/files/browser/files.contribution._configuration.ts
 new file mode 100644
 index 00000000000..5979ca58c83
@@ -971,10 +997,10 @@ index 00000000000..27601da294a
 +});
 diff --git a/src/vs/workbench/contrib/files/browser/files.contribution._explorer.ts b/src/vs/workbench/contrib/files/browser/files.contribution._explorer.ts
 new file mode 100644
-index 00000000000..dfc9e8c5d99
+index 00000000000..628bd4fd8bf
 --- /dev/null
 +++ b/src/vs/workbench/contrib/files/browser/files.contribution._explorer.ts
-@@ -0,0 +1,270 @@
+@@ -0,0 +1,275 @@
 +/*---------------------------------------------------------------------------------------------
 + *  Copyright (c) Microsoft Corporation. All rights reserved.
 + *  Licensed under the MIT License. See License.txt in the project root for license information.
@@ -1157,6 +1183,11 @@ index 00000000000..dfc9e8c5d99
 +			description: nls.localize('explorer.incrementalNaming', "Controls which naming strategy to use when giving a new name to a duplicated Explorer item on paste."),
 +			default: 'simple'
 +		},
++		'explorer.autoOpenDroppedFile': {
++			'type': 'boolean',
++			'description': nls.localize('autoOpenDroppedFile', "Controls whether the Explorer should automatically open a file when it is dropped into the explorer"),
++			'default': true
++		},
 +		'explorer.compactFolders': {
 +			'type': 'boolean',
 +			'description': nls.localize('compressSingleChildFolders', "Controls whether the Explorer should render folders in a compact form. In such a form, single child folders will be compressed in a combined tree element. Useful for Java package structures, for example."),
@@ -1275,10 +1306,10 @@ index 00000000000..2f31d6a7984
 +	}
 +});
 diff --git a/src/vs/workbench/contrib/files/browser/files.contribution.ts b/src/vs/workbench/contrib/files/browser/files.contribution.ts
-index d525ba5860c..fa00f1d55a1 100644
+index a7edb2ec8e3..fa00f1d55a1 100644
 --- a/src/vs/workbench/contrib/files/browser/files.contribution.ts
 +++ b/src/vs/workbench/contrib/files/browser/files.contribution.ts
-@@ -3,648 +3,7 @@
+@@ -3,653 +3,7 @@
   *  Licensed under the MIT License. See License.txt in the project root for license information.
   *--------------------------------------------------------------------------------------------*/
  
@@ -1832,6 +1863,11 @@ index d525ba5860c..fa00f1d55a1 100644
 -			],
 -			description: nls.localize('explorer.incrementalNaming', "Controls which naming strategy to use when giving a new name to a duplicated Explorer item on paste."),
 -			default: 'simple'
+-		},
+-		'explorer.autoOpenDroppedFile': {
+-			'type': 'boolean',
+-			'description': nls.localize('autoOpenDroppedFile', "Controls whether the Explorer should automatically open a file when it is dropped into the explorer"),
+-			'default': true
 -		},
 -		'explorer.compactFolders': {
 -			'type': 'boolean',
