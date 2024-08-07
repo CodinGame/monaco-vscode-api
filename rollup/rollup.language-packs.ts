@@ -21,7 +21,7 @@ const locExtensions = fs.readdirSync(LOC_PATH, { withFileTypes: true })
   .filter(f => f.isDirectory() && fs.existsSync(path.resolve(LOC_PATH, f.name, 'package.json')))
   .map(f => f.name)
 
-const nlsMetadata: Record<string, string[]> = JSON.parse((await fs.promises.readFile(path.resolve(DIST_DIR, 'nls.metadata.json'))).toString())
+const nlsKeys: [string, string[]][] = JSON.parse((await fs.promises.readFile(path.resolve(DIST_DIR, 'nls.keys.json'))).toString())
 
 export default rollup.defineConfig([
   ...locExtensions.map(name => (<rollup.RollupOptions>{
@@ -88,13 +88,10 @@ ${Object.entries(translationAssets).map(([id, assetRef]) => `  '${id}': new URL(
 
           const parsed: Record<string, Record<string, string>> = JSON.parse(code).contents
 
-          const encoded = Object.fromEntries(Object.entries(nlsMetadata).map(([moduleId, keys]) => {
-            const values = parsed[moduleId] ?? {}
-            return [
-              moduleId,
-              keys.map(key => values[key])
-            ]
-          }))
+          const encoded = nlsKeys.flatMap(([moduleId, keys]) => {
+            const moduleValues = parsed[moduleId]
+            return keys.map(key => moduleValues?.[key])
+          })
 
           return {
             code: dataToEsm(encoded, {

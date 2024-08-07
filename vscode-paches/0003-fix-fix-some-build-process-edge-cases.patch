@@ -9,10 +9,10 @@ Subject: [PATCH] fix: fix some build process edge cases
  2 files changed, 14 insertions(+)
 
 diff --git a/build/lib/standalone.js b/build/lib/standalone.js
-index dbc47db0833..796415b5721 100644
+index cf0e452aff3..8109e28cb0b 100644
 --- a/build/lib/standalone.js
 +++ b/build/lib/standalone.js
-@@ -150,6 +150,9 @@ function createESMSourcesAndResources2(options) {
+@@ -147,6 +147,9 @@ function createESMSourcesAndResources2(options) {
              const info = ts.preProcessFile(fileContents);
              for (let i = info.importedFiles.length - 1; i >= 0; i--) {
                  const importedFilename = info.importedFiles[i].fileName;
@@ -22,7 +22,7 @@ index dbc47db0833..796415b5721 100644
                  const pos = info.importedFiles[i].pos;
                  const end = info.importedFiles[i].end;
                  let importedFilepath;
-@@ -172,6 +175,10 @@ function createESMSourcesAndResources2(options) {
+@@ -169,6 +172,10 @@ function createESMSourcesAndResources2(options) {
                  else {
                      relativePath = path.relative(path.dirname(file), importedFilepath);
                  }
@@ -34,10 +34,10 @@ index dbc47db0833..796415b5721 100644
                  if (!/(^\.\/)|(^\.\.\/)/.test(relativePath)) {
                      relativePath = './' + relativePath;
 diff --git a/build/lib/standalone.ts b/build/lib/standalone.ts
-index 775a1be5996..ce8435bd920 100644
+index 9a65bfa7444..0b464b30f6f 100644
 --- a/build/lib/standalone.ts
 +++ b/build/lib/standalone.ts
-@@ -180,6 +180,9 @@ export function createESMSourcesAndResources2(options: IOptions2): void {
+@@ -177,6 +177,9 @@ export function createESMSourcesAndResources2(options: IOptions2): void {
  
  			for (let i = info.importedFiles.length - 1; i >= 0; i--) {
  				const importedFilename = info.importedFiles[i].fileName;
@@ -47,7 +47,7 @@ index 775a1be5996..ce8435bd920 100644
  				const pos = info.importedFiles[i].pos;
  				const end = info.importedFiles[i].end;
  
-@@ -201,6 +204,10 @@ export function createESMSourcesAndResources2(options: IOptions2): void {
+@@ -198,6 +201,10 @@ export function createESMSourcesAndResources2(options: IOptions2): void {
  				} else {
  					relativePath = path.relative(path.dirname(file), importedFilepath);
  				}

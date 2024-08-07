@@ -37,19 +37,19 @@ index a298cf3c232..f91b7cc7398 100644
  				if (!data.icon.complete) {
  					data.icon.style.visibility = 'hidden';
 diff --git a/src/vs/workbench/contrib/extensions/browser/extensionsWorkbenchService.ts b/src/vs/workbench/contrib/extensions/browser/extensionsWorkbenchService.ts
-index 826da4474fb..dec3f3fdfd9 100644
+index 1518123967e..bcc2b0ca734 100644
 --- a/src/vs/workbench/contrib/extensions/browser/extensionsWorkbenchService.ts
 +++ b/src/vs/workbench/contrib/extensions/browser/extensionsWorkbenchService.ts
-@@ -18,7 +18,7 @@ import {
- 	IExtensionsControlManifest, IExtensionInfo, IExtensionQueryOptions, IDeprecationInfo, isTargetPlatformCompatible, InstallExtensionInfo, EXTENSION_IDENTIFIER_REGEX,
- 	InstallOptions, IProductVersion
+@@ -19,7 +19,7 @@ import {
+ 	InstallOptions, IProductVersion,
+ 	UninstallExtensionInfo
  } from 'vs/platform/extensionManagement/common/extensionManagement';
 -import { IWorkbenchExtensionEnablementService, EnablementState, IExtensionManagementServerService, IExtensionManagementServer, IWorkbenchExtensionManagementService, DefaultIconPath, IResourceExtension, extensionsConfigurationNodeBase } from 'vs/workbench/services/extensionManagement/common/extensionManagement';
 +import { IWorkbenchExtensionEnablementService, EnablementState, IExtensionManagementServerService, IExtensionManagementServer, IWorkbenchExtensionManagementService, getDefaultIconPath, IResourceExtension, extensionsConfigurationNodeBase } from 'vs/workbench/services/extensionManagement/common/extensionManagement';
  import { getGalleryExtensionTelemetryData, getLocalExtensionTelemetryData, areSameExtensions, groupByExtension, getGalleryExtensionId } from 'vs/platform/extensionManagement/common/extensionManagementUtil';
  import { IInstantiationService } from 'vs/platform/instantiation/common/instantiation';
  import { IConfigurationService } from 'vs/platform/configuration/common/configuration';
-@@ -244,7 +244,7 @@ export class Extension implements IExtension {
+@@ -256,7 +256,7 @@ export class Extension implements IExtension {
  				}
  			}
  		}
@@ -59,7 +59,7 @@ index 826da4474fb..dec3f3fdfd9 100644
  
  	get repository(): string | undefined {
 diff --git a/src/vs/workbench/contrib/welcomeGettingStarted/browser/gettingStartedService.ts b/src/vs/workbench/contrib/welcomeGettingStarted/browser/gettingStartedService.ts
-index d70c6800b77..6d1732f8fc5 100644
+index afff5c25809..28b50d2e885 100644
 --- a/src/vs/workbench/contrib/welcomeGettingStarted/browser/gettingStartedService.ts
 +++ b/src/vs/workbench/contrib/welcomeGettingStarted/browser/gettingStartedService.ts
 @@ -33,7 +33,7 @@ import { ITelemetryService } from 'vs/platform/telemetry/common/telemetry';
@@ -71,7 +71,7 @@ index d70c6800b77..6d1732f8fc5 100644
  
  export const HasMultipleNewFileEntries = new RawContextKey<boolean>('hasMultipleNewFileEntries', false);
  
-@@ -396,7 +396,7 @@ export class WalkthroughsService extends Disposable implements IWalkthroughsServ
+@@ -395,7 +395,7 @@ export class WalkthroughsService extends Disposable implements IWalkthroughsServ
  					type: 'image',
  					path: iconStr
  						? FileAccess.uriToBrowserUri(joinPath(extension.extensionLocation, iconStr)).toString(true)

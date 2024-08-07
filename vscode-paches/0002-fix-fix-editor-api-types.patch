@@ -8,10 +8,10 @@ Subject: [PATCH] fix: fix editor api types
  1 file changed, 10 insertions(+), 1 deletion(-)
 
 diff --git a/build/gulpfile.editor.js b/build/gulpfile.editor.js
-index 22b70a953df..e781d39d9e2 100644
+index fe29d4fe183..8155be3210d 100644
 --- a/build/gulpfile.editor.js
 +++ b/build/gulpfile.editor.js
-@@ -277,7 +277,16 @@ function toExternalDTS(contents) {
+@@ -274,7 +274,16 @@ function toExternalDTS(contents) {
  		}
  
  		if (line.indexOf('declare let MonacoEnvironment') === 0) {

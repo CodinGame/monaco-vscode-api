@@ -6,11 +6,11 @@ Subject: [PATCH] refactor: split code to be able to import only required part
 ---
  .../common/extensionsScannerService.ts        | 294 +++++++++---------
  src/vs/platform/files/common/fileService.ts   | 111 ++++---
- .../localization/browser/localeService.ts     |  37 ++-
- 3 files changed, 236 insertions(+), 206 deletions(-)
+ .../localization/browser/localeService.ts     |  38 ++-
+ 3 files changed, 236 insertions(+), 207 deletions(-)
 
 diff --git a/src/vs/platform/extensionManagement/common/extensionsScannerService.ts b/src/vs/platform/extensionManagement/common/extensionsScannerService.ts
-index 1b6d8f3dab9..3cee7fe0d88 100644
+index 7d4c51d21bb..20758125c70 100644
 --- a/src/vs/platform/extensionManagement/common/extensionsScannerService.ts
 +++ b/src/vs/platform/extensionManagement/common/extensionsScannerService.ts
 @@ -545,14 +545,160 @@ export class ExtensionScannerInput {
@@ -176,13 +176,14 @@ index 1b6d8f3dab9..3cee7fe0d88 100644
  
  	private readonly extensionsEnabledWithApiProposalVersion: string[];
  
-@@ -560,11 +706,11 @@ class ExtensionsScanner extends Disposable {
+@@ -560,12 +706,12 @@ class ExtensionsScanner extends Disposable {
  		private readonly obsoleteFile: URI,
  		@IExtensionsProfileScannerService protected readonly extensionsProfileScannerService: IExtensionsProfileScannerService,
  		@IUriIdentityService protected readonly uriIdentityService: IUriIdentityService,
 -		@IFileService protected readonly fileService: IFileService,
 +		@IFileService fileService: IFileService,
  		@IProductService productService: IProductService,
+ 		@IEnvironmentService private readonly environmentService: IEnvironmentService,
 -		@ILogService protected readonly logService: ILogService
 +		@ILogService logService: ILogService
  	) {
@@ -191,7 +192,7 @@ index 1b6d8f3dab9..3cee7fe0d88 100644
  		this.extensionsEnabledWithApiProposalVersion = productService.extensionsEnabledWithApiProposalVersion?.map(id => id.toLowerCase()) ?? [];
  	}
  
-@@ -729,144 +875,6 @@ class ExtensionsScanner extends Disposable {
+@@ -731,144 +877,6 @@ class ExtensionsScanner extends Disposable {
  		}
  		return manifest;
  	}
@@ -474,19 +475,20 @@ index b353968540e..55977ded402 100644
  
  	//#endregion
 diff --git a/src/vs/workbench/services/localization/browser/localeService.ts b/src/vs/workbench/services/localization/browser/localeService.ts
-index ec2aeac2149..9ddc4b2d58f 100644
+index c77edccfe58..9d048b43b1f 100644
 --- a/src/vs/workbench/services/localization/browser/localeService.ts
 +++ b/src/vs/workbench/services/localization/browser/localeService.ts
-@@ -15,7 +15,7 @@ import { CancellationToken } from 'vs/base/common/cancellation';
- import { IExtensionGalleryService } from 'vs/platform/extensionManagement/common/extensionManagement';
- import { ILogService } from 'vs/platform/log/common/log';
+@@ -74,8 +74,7 @@ const localeStorage = new class LocaleStorage {
+ 	}
+ };
  
 -export class WebLocaleService implements ILocaleService {
+-
 +export abstract class AbstractLocaleService implements ILocaleService {
  	declare readonly _serviceBrand: undefined;
- 	static readonly _LOCAL_STORAGE_EXTENSION_ID_KEY = 'vscode.nls.languagePackExtensionId';
- 	static readonly _LOCAL_STORAGE_LOCALE_KEY = 'vscode.nls.locale';
-@@ -26,20 +26,15 @@ export class WebLocaleService implements ILocaleService {
+ 
+ 	constructor(
+@@ -84,20 +83,15 @@ export class WebLocaleService implements ILocaleService {
  		@IProductService private readonly productService: IProductService
  	) { }
  
@@ -499,48 +501,48 @@ index ec2aeac2149..9ddc4b2d58f 100644
  			return;
  		}
 -		if (locale) {
--			localStorage.setItem(WebLocaleService._LOCAL_STORAGE_LOCALE_KEY, locale);
+-			localeStorage.setLocale(locale);
 -			if (languagePackItem.extensionId) {
--				localStorage.setItem(WebLocaleService._LOCAL_STORAGE_EXTENSION_ID_KEY, languagePackItem.extensionId);
+-				localeStorage.setExtensionId(languagePackItem.extensionId);
 -			}
 -		} else {
--			localStorage.removeItem(WebLocaleService._LOCAL_STORAGE_LOCALE_KEY);
--			localStorage.removeItem(WebLocaleService._LOCAL_STORAGE_EXTENSION_ID_KEY);
+-			localeStorage.clearLocale();
+-			localeStorage.clearExtensionId();
 -		}
 +		this.storeLocale(locale, languagePackItem.extensionId);
  
  		const restartDialog = await this.dialogService.confirm({
  			type: 'info',
-@@ -54,8 +49,7 @@ export class WebLocaleService implements ILocaleService {
+@@ -112,8 +106,7 @@ export class WebLocaleService implements ILocaleService {
  	}
  
  	async clearLocalePreference(): Promise<void> {
--		localStorage.removeItem(WebLocaleService._LOCAL_STORAGE_LOCALE_KEY);
--		localStorage.removeItem(WebLocaleService._LOCAL_STORAGE_EXTENSION_ID_KEY);
+-		localeStorage.clearLocale();
+-		localeStorage.clearExtensionId();
 +		this.clearLocale();
  
  		if (Language.value() === navigator.language.toLowerCase()) {
  			return;
-@@ -74,6 +68,25 @@ export class WebLocaleService implements ILocaleService {
+@@ -132,6 +125,25 @@ export class WebLocaleService implements ILocaleService {
  	}
  }
  
 +export class WebLocaleService extends AbstractLocaleService {
 +	override async storeLocale(locale: string | undefined, extensionId: string | undefined): Promise<void> {
 +		if (locale) {
-+			localStorage.setItem(WebLocaleService._LOCAL_STORAGE_LOCALE_KEY, locale);
++			localeStorage.setLocale(locale);
 +			if (extensionId) {
-+				localStorage.setItem(WebLocaleService._LOCAL_STORAGE_EXTENSION_ID_KEY, extensionId);
++				localeStorage.setExtensionId(extensionId);
 +			}
 +		} else {
-+			localStorage.removeItem(WebLocaleService._LOCAL_STORAGE_LOCALE_KEY);
-+			localStorage.removeItem(WebLocaleService._LOCAL_STORAGE_EXTENSION_ID_KEY);
++			localeStorage.clearLocale();
++			localeStorage.clearExtensionId();
 +		}
 +	}
 +
 +	override async clearLocale(): Promise<void> {
-+		localStorage.removeItem(WebLocaleService._LOCAL_STORAGE_LOCALE_KEY);
-+		localStorage.removeItem(WebLocaleService._LOCAL_STORAGE_EXTENSION_ID_KEY);
++		localeStorage.clearLocale();
++		localeStorage.clearExtensionId();
 +	}
 +}
 +

@@ -8,10 +8,10 @@ Subject: [PATCH] cleanup: remove amd build to speed up editor build
  1 file changed, 4 insertions(+), 11 deletions(-)
 
 diff --git a/build/gulpfile.editor.js b/build/gulpfile.editor.js
-index e781d39d9e2..4c92c45941a 100644
+index 8155be3210d..d0c0e664961 100644
 --- a/build/gulpfile.editor.js
 +++ b/build/gulpfile.editor.js
-@@ -413,17 +413,10 @@ gulp.task('editor-distro',
+@@ -410,17 +410,10 @@ gulp.task('editor-distro',
  			util.rimraf('out-editor-min')
  		),
  		extractEditorSrcTask,

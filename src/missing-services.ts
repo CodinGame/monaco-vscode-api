@@ -166,7 +166,7 @@ import { IFilesConfigurationService } from 'vs/workbench/services/filesConfigura
 import { IHistoryService } from 'vs/workbench/services/history/common/history.service'
 import { IHostService } from 'vs/workbench/services/host/browser/host.service'
 import { ITroubleshootIssueService } from 'vs/workbench/contrib/issue/browser/issueTroubleshoot.service'
-import { IWorkbenchIssueService } from 'vs/workbench/contrib/issue/common/issue.service'
+import { IIssueFormService, IWorkbenchIssueService } from 'vs/workbench/contrib/issue/common/issue.service'
 import { FallbackKeyboardMapper } from 'vs/workbench/services/keybinding/common/fallbackKeyboardMapper'
 import { IKeybindingEditingService } from 'vs/workbench/services/keybinding/common/keybindingEditing.service'
 import { ILanguageDetectionService } from 'vs/workbench/services/languageDetection/common/languageDetectionWorkerService.service'
@@ -222,13 +222,12 @@ import { SyncResource } from 'vs/workbench/contrib/editSessions/common/editSessi
 import { ILanguageModelStatsService } from 'vs/workbench/contrib/chat/common/languageModelStats.service'
 import { IAccessibleViewInformationService } from 'vs/workbench/services/accessibility/common/accessibleViewInformationService.service'
 import { IUserDataProfileStorageService } from 'vs/platform/userDataProfile/common/userDataProfileStorageService.service'
-import { IIssueMainService } from 'vs/platform/issue/common/issue.service'
 import { IIntegrityService } from 'vs/workbench/services/integrity/common/integrity.service'
 import { IntegrityTestResult } from 'vs/workbench/services/integrity/common/integrity'
 import { ITrustedDomainService } from 'vs/workbench/contrib/url/browser/trustedDomainService.service'
 import { ILanguageModelToolsService } from 'vs/workbench/contrib/chat/common/languageModelToolsService.service'
-import { getBuiltInExtensionTranslationsUris, getExtensionIdProvidingCurrentLocale } from './l10n'
 import { unsupported } from './tools'
+import { getBuiltInExtensionTranslationsUris, getExtensionIdProvidingCurrentLocale } from './l10n'
 
 registerSingleton(ILoggerService, class NullLoggerService extends AbstractLoggerService {
   constructor () {
@@ -721,9 +720,15 @@ registerSingleton(IHostColorSchemeService, class HostColorSchemeService implemen
 }, InstantiationType.Eager)
 
 class PreferencesService implements IPreferencesService {
-  constructor (@IUserDataProfileService protected readonly profileService: IUserDataProfileService) {}
-
   _serviceBrand: undefined
+
+  constructor (@IUserDataProfileService protected readonly profileService: IUserDataProfileService) {}
+  onDidDefaultSettingsContentChanged = Event.None
+  getDefaultSettingsContent = () => undefined
+
+  hasDefaultSettingsContent = () => false
+  getSetting = () => undefined
+
   userSettingsResource = this.profileService.currentProfile.settingsResource
   workspaceSettingsResource = null
   getFolderSettingsResource = unsupported
@@ -830,7 +835,8 @@ const debugModel: IDebugModel = {
   fetchCallstack: unsupported,
   getId: unsupported,
   registerBreakpointModes: unsupported,
-  getBreakpointModes: () => []
+  getBreakpointModes: () => [],
+  onDidChangeWatchExpressionValue: Event.None
 }
 
 class FakeViewModel implements IViewModel {
@@ -916,6 +922,8 @@ registerSingleton(IDebugService, class DebugService implements IDebugService {
 
 registerSingleton(IRequestService, class RequestService implements IRequestService {
   _serviceBrand: undefined
+  lookupAuthorization = unsupported
+  lookupKerberosAuthorization = unsupported
   request = unsupported
   resolveProxy = unsupported
   loadCertificates = unsupported
@@ -1074,6 +1082,7 @@ registerSingleton(IConfigurationResolverService, class ConfigurationResolverServ
 
 registerSingleton(IRemoteAgentService, class RemoteAgentService implements IRemoteAgentService {
   _serviceBrand: undefined
+  endConnection = unsupported
   getConnection = () => null
   getEnvironment = async () => null
   getRawEnvironment = async () => null
@@ -1153,6 +1162,8 @@ registerSingleton(ITimerService, class TimerService implements ITimerService {
 
 registerSingleton(IExtensionsWorkbenchService, class ExtensionsWorkbenchService implements IExtensionsWorkbenchService {
   _serviceBrand: undefined
+  shouldRequireConsentToUpdate = async () => undefined
+  updateAutoUpdateValue = unsupported
   getResourceExtensions = unsupported
   updateRunningExtensions = unsupported
   togglePreRelease = unsupported
@@ -1680,6 +1691,10 @@ registerSingleton(IExtensionGalleryService, class ExtensionGalleryService implem
 }, InstantiationType.Eager)
 
 registerSingleton(ITerminalService, class TerminalService implements ITerminalService {
+  _serviceBrand: undefined
+
+  revealTerminal = unsupported
+  focusInstance = unsupported
   createOnInstanceCapabilityEvent<K> (): IDynamicListEventMultiplexer<{ instance: ITerminalInstance, data: K }> {
     return {
       event: Event.None,
@@ -1687,7 +1702,6 @@ registerSingleton(ITerminalService, class TerminalService implements ITerminalSe
     }
   }
 
-  _serviceBrand: undefined
   onAnyInstanceData = Event.None
   moveIntoNewEditor = unsupported
   detachedInstances = []
@@ -1784,6 +1798,7 @@ registerSingleton(ITerminalConfigurationService, class TerminalConfigurationServ
 }, InstantiationType.Delayed)
 registerSingleton(ITerminalEditorService, class TerminalEditorService implements ITerminalEditorService {
   _serviceBrand: undefined
+  focusInstance = unsupported
   instances = []
   openEditor = unsupported
   detachActiveEditorInstance = unsupported
@@ -1805,8 +1820,9 @@ registerSingleton(ITerminalEditorService, class TerminalEditorService implements
 }, InstantiationType.Delayed)
 
 registerSingleton(ITerminalGroupService, class TerminalGroupService implements ITerminalGroupService {
-  lastAccessedMenu: 'inline-tab' | 'tab-list' = 'inline-tab'
   _serviceBrand: undefined
+  focusInstance = unsupported
+  lastAccessedMenu: 'inline-tab' | 'tab-list' = 'inline-tab'
   instances = []
   groups = []
   activeGroup = undefined
@@ -2289,6 +2305,8 @@ registerSingleton(IAccessibleViewInformationService, class AccessibleViewInforma
 
 registerSingleton(IWorkbenchExtensionManagementService, class WorkbenchExtensionManagementService implements IWorkbenchExtensionManagementService {
   _serviceBrand: undefined
+  uninstallExtensions = unsupported
+  resetPinnedStateForAllUserExtensions = unsupported
   getInstalledWorkspaceExtensionLocations = () => []
   onDidEnableExtensions = Event.None
   isWorkspaceExtensionsSupported = () => false
@@ -2582,6 +2600,7 @@ registerSingleton(IRemoteExplorerService, class RemoteExplorerService implements
 
 registerSingleton(IAuthenticationService, class AuthenticationService implements IAuthenticationService {
   _serviceBrand: undefined
+  getAccounts = async () => []
   onDidRegisterAuthenticationProvider = Event.None
   onDidUnregisterAuthenticationProvider = Event.None
   onDidChangeSessions = Event.None
@@ -2639,6 +2658,8 @@ registerSingleton(ITimelineService, class TimelineService implements ITimelineSe
 
 registerSingleton(ITestService, class TestService implements ITestService {
   _serviceBrand: undefined
+  getTestsRelatedToCode = async () => []
+  getCodeRelatedToTest = async () => []
   registerExtHost = () => Disposable.None
   provideTestFollowups = unsupported
   onDidCancelTestRun = Event.None
@@ -2708,21 +2729,6 @@ registerSingleton(IWorkbenchIssueService, class WorkbenchIssueService implements
   openReporter = unsupported
   openProcessExplorer = unsupported
   registerIssueUriRequestHandler = unsupported
-}, InstantiationType.Delayed)
-
-registerSingleton(IIssueMainService, class IssueMainService implements IIssueMainService {
-  _serviceBrand: undefined
-  stopTracing = unsupported
-  openReporter = unsupported
-  openProcessExplorer = unsupported
-  getSystemStatus = unsupported
-  $getSystemInfo = unsupported
-  $getPerformanceInfo = unsupported
-  $reloadWithExtensionsDisabled = unsupported
-  $showConfirmCloseDialog = unsupported
-  $showClipboardDialog = unsupported
-  $sendReporterMenu = unsupported
-  $closeReporter = unsupported
 }, InstantiationType.Delayed)
 
 registerSingleton(ISCMViewService, class SCMViewService implements ISCMViewService {
@@ -3172,6 +3178,7 @@ registerSingleton(IUserDataSyncLocalStoreService, class UserDataSyncLocalStoreSe
 
 registerSingleton(IUserDataSyncUtilService, class UserDataSyncUtilService implements IUserDataSyncUtilService {
   _serviceBrand: undefined
+  resolveDefaultCoreIgnoredSettings = async () => []
   resolveUserBindings = unsupported
   resolveFormattingOptions = unsupported
   resolveDefaultIgnoredSettings = unsupported
@@ -3337,4 +3344,14 @@ registerSingleton(ILanguageModelToolsService, class LanguageModelToolsService im
   registerToolImplementation = unsupported
   getTools = () => []
   invokeTool = unsupported
+}, InstantiationType.Delayed)
+
+registerSingleton(IIssueFormService, class IssueFormService implements IIssueFormService {
+  _serviceBrand: undefined
+  openReporter = unsupported
+  reloadWithExtensionsDisabled = unsupported
+  showConfirmCloseDialog = unsupported
+  showClipboardDialog = unsupported
+  sendReporterMenu = unsupported
+  closeReporter = unsupported
 }, InstantiationType.Delayed)

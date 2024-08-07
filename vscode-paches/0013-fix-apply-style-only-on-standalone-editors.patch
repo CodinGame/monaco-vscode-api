@@ -115,10 +115,10 @@ index f8ed64fba6c..11da908d0f3 100644
  	 * Contributions to instantiate.
  	 * When provided, only the contributions included will be instantiated.
 diff --git a/src/vs/editor/browser/widget/diffEditor/diffEditorWidget.ts b/src/vs/editor/browser/widget/diffEditor/diffEditorWidget.ts
-index 29942806d0c..8a2d6636054 100644
+index e22b0291dd0..097167b755a 100644
 --- a/src/vs/editor/browser/widget/diffEditor/diffEditorWidget.ts
 +++ b/src/vs/editor/browser/widget/diffEditor/diffEditorWidget.ts
-@@ -51,6 +51,12 @@ import { DiffEditorViewModel, DiffMapping, DiffState } from './diffEditorViewMod
+@@ -52,6 +52,12 @@ import { DiffEditorViewModel, DiffMapping, DiffState } from './diffEditorViewMod
  export interface IDiffCodeEditorWidgetOptions {
  	originalEditor?: ICodeEditorWidgetOptions;
  	modifiedEditor?: ICodeEditorWidgetOptions;
@@ -131,7 +131,7 @@ index 29942806d0c..8a2d6636054 100644
  }
  
  export class DiffEditorWidget extends DelegatingEditor implements IDiffEditor {
-@@ -110,6 +116,8 @@ export class DiffEditorWidget extends DelegatingEditor implements IDiffEditor {
+@@ -111,6 +117,8 @@ export class DiffEditorWidget extends DelegatingEditor implements IDiffEditor {
  
  		this._contextKeyService.createKey('isInDiffEditor', true);
  

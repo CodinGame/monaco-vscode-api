@@ -58,7 +58,7 @@ index 99dd3279fe8..b692381eaa2 100644
  	declare readonly _serviceBrand: undefined;
  
 diff --git a/src/vs/workbench/browser/layout.ts b/src/vs/workbench/browser/layout.ts
-index b8232cb8490..348d4f64426 100644
+index 6ad52a2695e..c76aed46fc3 100644
 --- a/src/vs/workbench/browser/layout.ts
 +++ b/src/vs/workbench/browser/layout.ts
 @@ -52,7 +52,7 @@ import { CustomTitleBarVisibility } from '../../platform/window/common/window';
@@ -314,7 +314,7 @@ index 696f8227e6e..48c0e3bc2d4 100644
  	readonly _serviceBrand: undefined;
  
 diff --git a/src/vs/workbench/services/extensions/browser/webWorkerExtensionHost.ts b/src/vs/workbench/services/extensions/browser/webWorkerExtensionHost.ts
-index 0c8d2e27317..972bc7fe243 100644
+index 8f4dc4a6b57..b54e3a25543 100644
 --- a/src/vs/workbench/services/extensions/browser/webWorkerExtensionHost.ts
 +++ b/src/vs/workbench/services/extensions/browser/webWorkerExtensionHost.ts
 @@ -76,7 +76,7 @@ export class WebWorkerExtensionHost extends Disposable implements IExtensionHost
@@ -327,7 +327,7 @@ index 0c8d2e27317..972bc7fe243 100644
  		if (this._environmentService.debugExtensionHost && this._environmentService.debugRenderer) {
  			suffixSearchParams.set('debugged', '1');
 diff --git a/src/vs/workbench/services/extensions/common/abstractExtensionService.ts b/src/vs/workbench/services/extensions/common/abstractExtensionService.ts
-index 731a48bf5b0..46963ffafc7 100644
+index be9bb04b104..a4a9a3cd143 100644
 --- a/src/vs/workbench/services/extensions/common/abstractExtensionService.ts
 +++ b/src/vs/workbench/services/extensions/common/abstractExtensionService.ts
 @@ -95,9 +95,9 @@ export abstract class AbstractExtensionService extends Disposable implements IEx
@@ -343,7 +343,7 @@ index 731a48bf5b0..46963ffafc7 100644
  		@IInstantiationService protected readonly _instantiationService: IInstantiationService,
  		@INotificationService protected readonly _notificationService: INotificationService,
  		@IWorkbenchEnvironmentService protected readonly _environmentService: IWorkbenchEnvironmentService,
-@@ -212,7 +212,7 @@ export abstract class AbstractExtensionService extends Disposable implements IEx
+@@ -222,7 +222,7 @@ export abstract class AbstractExtensionService extends Disposable implements IEx
  
  	//#region deltaExtensions
  
@@ -352,7 +352,7 @@ index 731a48bf5b0..46963ffafc7 100644
  		this._deltaExtensionsQueue.push(item);
  		if (this._inHandleDeltaExtensions) {
  			// Let the current item finish, the new one will be picked up
-@@ -1264,7 +1264,7 @@ export interface IExtensionHostFactory {
+@@ -1274,7 +1274,7 @@ export interface IExtensionHostFactory {
  	createExtensionHost(runningLocations: ExtensionRunningLocationTracker, runningLocation: ExtensionRunningLocation, isInitialStart: boolean): IExtensionHost | null;
  }
  
@@ -388,10 +388,10 @@ index e10d2a3ef1e..6dd88102a64 100644
  	declare _serviceBrand: undefined;
  
 diff --git a/src/vs/workbench/services/localization/browser/localeService.ts b/src/vs/workbench/services/localization/browser/localeService.ts
-index 0d9c51c72cf..ec2aeac2149 100644
+index 07616fa0a2e..c77edccfe58 100644
 --- a/src/vs/workbench/services/localization/browser/localeService.ts
 +++ b/src/vs/workbench/services/localization/browser/localeService.ts
-@@ -74,7 +74,7 @@ export class WebLocaleService implements ILocaleService {
+@@ -132,7 +132,7 @@ export class WebLocaleService implements ILocaleService {
  	}
  }
  
@@ -479,7 +479,7 @@ index d3ef612836b..0d0fb8d2862 100644
  	readonly _serviceBrand: undefined;
  
 diff --git a/src/vs/workbench/services/userDataSync/common/userDataSyncUtil.ts b/src/vs/workbench/services/userDataSync/common/userDataSyncUtil.ts
-index 45329df40c4..84119b7c042 100644
+index cd7f253b913..cf07954716e 100644
 --- a/src/vs/workbench/services/userDataSync/common/userDataSyncUtil.ts
 +++ b/src/vs/workbench/services/userDataSync/common/userDataSyncUtil.ts
 @@ -12,7 +12,7 @@ import { URI } from 'vs/base/common/uri';

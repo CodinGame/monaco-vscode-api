@@ -9,19 +9,19 @@ Subject: [PATCH] fix: replace amd imports by regular esm dynamic imports
  src/vs/platform/telemetry/common/1dsAppender.ts    |  5 ++---
  .../contrib/terminal/browser/terminalInstance.ts   |  3 +--
  .../terminal/browser/xterm/xtermTerminal.ts        | 13 ++++++-------
- .../browser/terminalStickyScrollOverlay.ts         |  3 +--
+ .../browser/terminalStickyScrollOverlay.ts         |  5 ++---
  .../textMateWorkerTokenizerController.ts           |  4 +---
  .../worker/textMateTokenizationWorker.worker.ts    | 12 +++++-------
  .../worker/textMateWorkerTokenizer.ts              |  4 +---
  .../browser/textMateTokenizationFeatureImpl.ts     | 14 +++++++-------
  .../workbench/services/textfile/common/encoding.ts |  9 ++++-----
- 11 files changed, 30 insertions(+), 49 deletions(-)
+ 11 files changed, 31 insertions(+), 50 deletions(-)
 
 diff --git a/.eslintrc.json b/.eslintrc.json
-index 2dc53f9790b..532e1e9e5c8 100644
+index 5f965fb404b..a350e56914a 100644
 --- a/.eslintrc.json
 +++ b/.eslintrc.json
-@@ -288,14 +288,6 @@
+@@ -296,14 +296,6 @@
  				"jsdoc/require-returns": "warn"
  			}
  		},
@@ -36,7 +36,7 @@ index 2dc53f9790b..532e1e9e5c8 100644
  		{
  			"files": [
  				"src/**/{browser,electron-sandbox}/**/*.ts"
-@@ -854,6 +846,7 @@
+@@ -862,6 +854,7 @@
  							}, // TODO@layers
  							"tas-client-umd", // node module allowed even in /common/
  							"vscode-textmate", // node module allowed even in /common/
@@ -89,18 +89,18 @@ index c54187f89c9..a4729fabe2e 100644
  	const collectorChannelPlugin: PostChannel = new postPlugin.PostChannel();
  	// Configure the app insights core to send to collector++ and disable logging of debug info
 diff --git a/src/vs/workbench/contrib/terminal/browser/terminalInstance.ts b/src/vs/workbench/contrib/terminal/browser/terminalInstance.ts
-index a48841d9802..b21f61b57e9 100644
+index 0c1c1f8c9b6..2f2976fd1df 100644
 --- a/src/vs/workbench/contrib/terminal/browser/terminalInstance.ts
 +++ b/src/vs/workbench/contrib/terminal/browser/terminalInstance.ts
 @@ -82,7 +82,6 @@ import { IHistoryService } from 'vs/workbench/services/history/common/history';
- import { IWorkbenchLayoutService, Position } from 'vs/workbench/services/layout/browser/layoutService';
+ import { isHorizontal, IWorkbenchLayoutService } from 'vs/workbench/services/layout/browser/layoutService';
  import { IPathService } from 'vs/workbench/services/path/common/pathService';
  import { IPreferencesService } from 'vs/workbench/services/preferences/common/preferences';
 -import { importAMDNodeModule } from 'vs/amdX';
  import type { IMarker, Terminal as XTermTerminal } from '@xterm/xterm';
  import { AccessibilityCommandId } from 'vs/workbench/contrib/accessibility/common/accessibilityCommands';
  import { terminalStrings } from 'vs/workbench/contrib/terminal/common/terminalStrings';
-@@ -716,7 +715,7 @@ export class TerminalInstance extends Disposable implements ITerminalInstance {
+@@ -720,7 +719,7 @@ export class TerminalInstance extends Disposable implements ITerminalInstance {
  			return xtermConstructor;
  		}
  		xtermConstructor = Promises.withAsyncBody<typeof XTermTerminal>(async (resolve) => {
@@ -110,7 +110,7 @@ index a48841d9802..b21f61b57e9 100644
  			Terminal.strings.promptLabel = nls.localize('terminal.integrated.a11yPromptLabel', 'Terminal input');
  			Terminal.strings.tooMuchOutput = keybinding ? nls.localize('terminal.integrated.useAccessibleBuffer', 'Use the accessible buffer {0} to manually review output', keybinding.getLabel()) : nls.localize('terminal.integrated.useAccessibleBufferNoKb', 'Use the Terminal: Focus Accessible Buffer command to manually review output');
 diff --git a/src/vs/workbench/contrib/terminal/browser/xterm/xtermTerminal.ts b/src/vs/workbench/contrib/terminal/browser/xterm/xtermTerminal.ts
-index 8d14cc3a245..881e1e412dc 100644
+index 3f96c847469..5ba1425a49a 100644
 --- a/src/vs/workbench/contrib/terminal/browser/xterm/xtermTerminal.ts
 +++ b/src/vs/workbench/contrib/terminal/browser/xterm/xtermTerminal.ts
 @@ -31,7 +31,6 @@ import { DecorationAddon } from 'vs/workbench/contrib/terminal/browser/xterm/dec
@@ -121,7 +121,7 @@ index 8d14cc3a245..881e1e412dc 100644
  import { IContextKey, IContextKeyService } from 'vs/platform/contextkey/common/contextkey';
  import { TerminalContextKeys } from 'vs/workbench/contrib/terminal/common/terminalContextKey';
  import { IClipboardService } from 'vs/platform/clipboard/common/clipboardService';
-@@ -728,42 +727,42 @@ export class XtermTerminal extends Disposable implements IXtermTerminal, IDetach
+@@ -744,42 +743,42 @@ export class XtermTerminal extends Disposable implements IXtermTerminal, IDetach
  
  	protected async _getClipboardAddonConstructor(): Promise<typeof ClipboardAddonType> {
  		if (!ClipboardAddon) {
@@ -171,26 +171,32 @@ index 8d14cc3a245..881e1e412dc 100644
  		return SerializeAddon;
  	}
 diff --git a/src/vs/workbench/contrib/terminalContrib/stickyScroll/browser/terminalStickyScrollOverlay.ts b/src/vs/workbench/contrib/terminalContrib/stickyScroll/browser/terminalStickyScrollOverlay.ts
-index 194ee23694e..95c5efbdddd 100644
+index 07a40f9ef98..2f90e9f049c 100644
 --- a/src/vs/workbench/contrib/terminalContrib/stickyScroll/browser/terminalStickyScrollOverlay.ts
 +++ b/src/vs/workbench/contrib/terminalContrib/stickyScroll/browser/terminalStickyScrollOverlay.ts
-@@ -5,7 +5,6 @@
- 
+@@ -6,7 +6,6 @@
  import type { SerializeAddon as SerializeAddonType } from '@xterm/addon-serialize';
+ import type { WebglAddon as WebglAddonType } from '@xterm/addon-webgl';
  import type { IBufferLine, IMarker, ITerminalOptions, ITheme, Terminal as RawXtermTerminal, Terminal as XTermTerminal } from '@xterm/xterm';
 -import { importAMDNodeModule } from 'vs/amdX';
  import { $, addDisposableListener, addStandardDisposableListener, getWindow } from 'vs/base/browser/dom';
  import { memoize, throttle } from 'vs/base/common/decorators';
  import { Event } from 'vs/base/common/event';
-@@ -452,7 +451,7 @@ export class TerminalStickyScrollOverlay extends Disposable {
+@@ -485,12 +484,12 @@ export class TerminalStickyScrollOverlay extends Disposable {
  
  	@memoize
  	private async _getSerializeAddonConstructor(): Promise<typeof SerializeAddonType> {
--		const m = await importAMDNodeModule<typeof import('@xterm/addon-serialize')>('@xterm/addon-serialize', 'lib/addon-serialize.js');
-+		const m = await import('@xterm/addon-serialize');
- 		return m.SerializeAddon;
+-		return (await importAMDNodeModule<typeof import('@xterm/addon-serialize')>('@xterm/addon-serialize', 'lib/addon-serialize.js')).SerializeAddon;
++		return (await import('@xterm/addon-serialize')).SerializeAddon;
+ 	}
+ 
+ 	@memoize
+ 	private async _getWebglAddonConstructor(): Promise<typeof WebglAddonType> {
+-		return (await importAMDNodeModule<typeof import('@xterm/addon-webgl')>('@xterm/addon-webgl', 'lib/addon-webgl.js')).WebglAddon;
++		return (await import('@xterm/addon-webgl')).WebglAddon;
  	}
  }
+ 
 diff --git a/src/vs/workbench/services/textMate/browser/backgroundTokenization/textMateWorkerTokenizerController.ts b/src/vs/workbench/services/textMate/browser/backgroundTokenization/textMateWorkerTokenizerController.ts
 index 3695379f0e9..8ad5c86d522 100644
 --- a/src/vs/workbench/services/textMate/browser/backgroundTokenization/textMateWorkerTokenizerController.ts

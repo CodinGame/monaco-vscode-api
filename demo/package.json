@@ -17,14 +17,14 @@
   "devDependencies": {
     "@codingame/esbuild-import-meta-url-plugin": "^1.0.2",
     "@codingame/monaco-vscode-rollup-vsix-plugin": "file:../dist/rollup-vsix-plugin",
-    "@types/dockerode": "^3.3.29",
+    "@types/dockerode": "^3.3.31",
     "@types/express": "^4.17.21",
     "@types/node": "^20.11.4",
     "@types/wicg-file-system-access": "^2023.10.5",
-    "@types/ws": "^8.5.10",
+    "@types/ws": "^8.5.12",
     "ts-node": "^10.9.2",
-    "typescript": "~5.5.3",
-    "vite": "~5.3.3"
+    "typescript": "~5.5.4",
+    "vite": "~5.3.5"
   },
   "dependencies": {
     "@codingame/monaco-vscode-accessibility-service-override": "file:../dist/service-override-accessibility",
@@ -191,6 +191,9 @@
     "monaco-editor": "file:../dist/editor-api",
     "vscode": "file:../dist/main",
     "ws": "^8.18.0"
+  },
+  "overrides": {
+    "esbuild": "0.21.5"
   },
   "volta": {
     "node": "18.19.0",

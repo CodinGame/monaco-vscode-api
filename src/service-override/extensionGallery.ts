@@ -44,6 +44,7 @@ import { getExtensionManifests } from '../extensions'
 import { isLocaleAvailable } from '../l10n'
 import 'vs/workbench/contrib/extensions/browser/extensions.contribution'
 import 'vs/workbench/contrib/extensions/browser/extensions.web.contribution'
+import { unsupported } from '../tools'
 
 // plugin-import-meta-asset only allows relative paths
 registerAssets({
@@ -54,6 +55,7 @@ registerAssets({
 
 class EmptyRemoteAgentService implements IRemoteAgentService {
   _serviceBrand: undefined
+  endConnection = unsupported
   getConnection = () => null
   getEnvironment = async () => null
   getRawEnvironment = async () => null

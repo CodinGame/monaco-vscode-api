@@ -22,10 +22,10 @@ index a9fc39c84ed..957684aa7f7 100644
  					: compositeSwitcherBar.getWidth(currentItemsLength + index)
  				));
 diff --git a/src/vs/workbench/browser/parts/views/viewPaneContainer.ts b/src/vs/workbench/browser/parts/views/viewPaneContainer.ts
-index d782b08c3c2..1faf26e20ac 100644
+index 01df5c12a69..253b3890932 100644
 --- a/src/vs/workbench/browser/parts/views/viewPaneContainer.ts
 +++ b/src/vs/workbench/browser/parts/views/viewPaneContainer.ts
-@@ -684,7 +684,7 @@ export class ViewPaneContainer extends Component implements IViewPaneContainer {
+@@ -685,7 +685,7 @@ export class ViewPaneContainer extends Component implements IViewPaneContainer {
  		}
  
  		this.panes.filter(view => view.isVisible() !== visible)
