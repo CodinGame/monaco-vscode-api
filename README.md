@@ -363,7 +363,6 @@ Try it out on <https://monaco-vscode-api.netlify.app/>
 
 There is a demo that showcases the service-override features.
 It includes:
-
 - Languages
 - VSCode themes
 - Textmate grammars (requires VSCode themes)
