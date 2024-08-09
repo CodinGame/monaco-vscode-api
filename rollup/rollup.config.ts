@@ -157,7 +157,7 @@ function isCallPure (file: string, functionName: string, node: recast.types.name
 }
 
 const nlsKeys: [moduleId: string, keys: string[]][] = []
-let nlsIndex = -1
+let nlsIndex = 0
 
 function transformVSCodeCode (id: string, code: string) {
   const translationPath = nodePath.relative(id.startsWith(OVERRIDE_PATH) ? OVERRIDE_PATH : VSCODE_SRC_DIR, id)
@@ -224,13 +224,13 @@ function transformVSCodeCode (id: string, code: string) {
           throw new Error('Unable to extract translation key')
         }
 
-        if (!moduleNlsKeys.includes(localizationKey)) {
-          moduleNlsKeys.push(localizationKey)
-          nlsIndex++
+        let moduleNlsIndex = moduleNlsKeys.indexOf(localizationKey)
+        if (moduleNlsIndex === -1) {
+          moduleNlsIndex = moduleNlsKeys.push(localizationKey) - 1
         }
         path.replace(recast.types.builders.callExpression(
           path.node.callee,
-          [recast.types.builders.numericLiteral(nlsIndex), ...path.node.arguments.slice(1)]
+          [recast.types.builders.numericLiteral(nlsIndex + moduleNlsIndex), ...path.node.arguments.slice(1)]
         ))
         transformed = true
       } else if (node.callee.type === 'MemberExpression') {
@@ -318,6 +318,7 @@ function transformVSCodeCode (id: string, code: string) {
 
   if (moduleNlsKeys.length > 0) {
     nlsKeys.push([translationPath, moduleNlsKeys])
+    nlsIndex += moduleNlsKeys.length
   }
 
   return patchedCode
