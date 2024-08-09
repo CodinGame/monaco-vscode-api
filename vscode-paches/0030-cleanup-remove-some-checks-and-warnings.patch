@@ -25,10 +25,10 @@ index e5fa674ea82..c3e8d26f3da 100644
  	});
  }
 diff --git a/src/vs/workbench/contrib/webview/browser/webviewElement.ts b/src/vs/workbench/contrib/webview/browser/webviewElement.ts
-index 8870ddf4cc6..6bc4e3293c6 100644
+index e1efba3e802..8f87777ca82 100644
 --- a/src/vs/workbench/contrib/webview/browser/webviewElement.ts
 +++ b/src/vs/workbench/contrib/webview/browser/webviewElement.ts
-@@ -492,11 +492,6 @@ export class WebviewElement extends Disposable implements IWebview, WebviewFindD
+@@ -488,11 +488,6 @@ export class WebviewElement extends Disposable implements IWebview, WebviewFindD
  				return;
  			}
  
@@ -40,7 +40,7 @@ index 8870ddf4cc6..6bc4e3293c6 100644
  			if (e.data.channel === 'webview-ready') {
  				if (this._messagePort) {
  					return;
-@@ -551,11 +546,6 @@ export class WebviewElement extends Disposable implements IWebview, WebviewFindD
+@@ -547,11 +542,6 @@ export class WebviewElement extends Disposable implements IWebview, WebviewFindD
  		return endpoint;
  	}
  
