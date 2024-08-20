@@ -55,6 +55,10 @@ function isExternal (id: string) {
   ].some(external => id === external || id.startsWith(`${external}/`))
 }
 
+const proposedApiTypes = await fastGlob('vscode.proposed.*.d.ts', {
+  cwd: VSCODE_SRC_DTS_DIR
+})
+
 export default rollup.defineConfig((<{input: Record<string, string>, output: string, preserveModulesRoot?: string, main?: boolean}[]>[{
   input: {
     'services.d': './dist/types/src/services.d.ts',
@@ -233,13 +237,10 @@ export default rollup.defineConfig((<{input: Record<string, string>, output: str
     {
       name: 'resolve-vscode-proposed-types',
       transform (code) {
-        return code.replace(/\/\/\/ <reference types="vscode\/src\/vscode-dts\/(vscode\.proposed\..*)" \/>/g, '/// <reference path="./vscode-dts/$1.d.ts" />')
+        return code.replace('/** PROPOSED-type-references */', () => proposedApiTypes.map(file => `/// <reference path="./vscode-dts/${file}" />`).join('\n'))
       },
       async generateBundle () {
-        const types = await fastGlob('vscode.proposed.*.d.ts', {
-          cwd: VSCODE_SRC_DTS_DIR
-        })
-        await Promise.all(types.map(async file => this.emitFile({
+        await Promise.all(proposedApiTypes.map(async file => this.emitFile({
           type: 'asset',
           needsCodeReference: false,
           fileName: `vscode-dts/${file}`,
