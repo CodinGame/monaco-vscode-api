@@ -1,3 +1,4 @@
+/** PROPOSED-type-references */
 import type * as vscode from 'vscode'
 import { ExtensionType, IExtension, IExtensionContributions, IExtensionManifest, TargetPlatform } from 'vs/platform/extensions/common/extensions'
 import { IExtensionService } from 'vs/workbench/services/extensions/common/extensions.service'
