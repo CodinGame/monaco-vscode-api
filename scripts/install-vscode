@@ -105,23 +105,4 @@ rm -rf $loc_output_directory
 mkdir -p $loc_output_directory
 curl -L --max-redirs 5 https://github.com/microsoft/vscode-loc/archive/refs/heads/main.tar.gz | tar -xz -C $loc_output_directory --strip-components=2 vscode-loc-main/i18n
 
-monaco_build_directory=`mktemp -d`
-echo "Downloading monaco-editor languages $monacoRef in $monaco_build_directory..."
-rm -rf $monaco_editor_output_directory
-mkdir -p $monaco_editor_output_directory
-curl -L --max-redirs 5 https://github.com/Microsoft/monaco-editor/tarball/$monacoRef | tar -xz -C $monaco_build_directory --strip-components=1
-monacoVersion=$(cat "$monaco_build_directory/package.json" | jq -r '.["version"]')
-cat <<< "$(jq ".config.monaco.version = \"$monacoVersion\"" $package_json)" > $package_json
-
-cd $monaco_build_directory
-npm ci
-
-# Copy editor types
-npm run build-monaco-editor
-cp out/monaco-editor/esm/vs/editor/editor.api.d.ts $monaco_editor_output_directory/editor.api.d.ts
-cp -R out/monaco-editor/esm/vs/basic-languages $monaco_editor_output_directory/basic-languages
-cp -R out/monaco-editor/esm/vs/language $monaco_editor_output_directory/language
-
-# Cleaning
-rm -rf $monaco_build_directory
 rm -rf $build_directory
