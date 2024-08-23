@@ -22,7 +22,7 @@
     "compile-monaco-languages": "NODE_OPTIONS=--max_old_space_size=16384 rollup --config rollup/rollup.monaco.ts --configPlugin 'typescript={tsconfig: `tsconfig.rollup-config-monaco.json`}'",
     "clean": "rm -rf dist/",
     "compile-rollup-plugins": "rollup --config rollup/rollup.rollup-plugins.config.ts --configPlugin 'typescript={tsconfig: `tsconfig.rollup-config-plugins.json`, include: [`./rollup/rollup.rollup-plugins.config.ts`, `./rollup/rollup-metadata-plugin.ts`]}'",
-    "preprepare": "patch-package && ./scripts/install-vscode",
+    "preprepare": "patch-package && ./scripts/install-vscode && ./scripts/install-monaco-editor",
     "lint": "eslint '{src/**/*.ts,rollup/*.ts,*.ts}'",
     "generate-types": "./scripts/generate-types",
     "update-vscode-dependencies": "node --loader ts-node/esm scripts/update-vscode-dependencies.ts",
@@ -36,8 +36,8 @@
       "commit": "fee1edb8d6d72a0ddff41e5f71a671c23ed924b9"
     },
     "monaco": {
-      "ref": "v0.50.0",
-      "version": "0.50.0"
+      "ref": "v0.51.0",
+      "version": "0.51.0"
     }
   },
   "devDependencies": {
