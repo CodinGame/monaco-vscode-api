@@ -86,7 +86,7 @@ const EDITOR_API_EXPOSE_MODULES = [
   'vs/editor/contrib/inlineCompletions/browser/inlineCompletions.contribution',
   'vs/editor/contrib/format/browser/formatActions',
   'vs/editor/contrib/bracketMatching/browser/bracketMatching',
-  'vs/editor/contrib/hover/browser/hover',
+  'vs/editor/contrib/hover/browser/hoverController',
   'vs/editor/browser/coreCommands',
   'vs/editor/contrib/clipboard/browser/clipboard',
   'vs/editor/contrib/cursorUndo/browser/cursorUndo',
@@ -974,6 +974,8 @@ export default (args: Record<string, string>): rollup.RollupOptions[] => {
                     type: 'asset'
                   })
                   for (const modulePath of EDITOR_API_EXPOSE_MODULES) {
+                    // make sure file exists
+                    fs.statSync(nodePath.resolve(VSCODE_SRC_DIR, `${modulePath}.js`))
                     this.emitFile({
                       fileName: `esm/${modulePath}.js`,
                       needsCodeReference: false,
