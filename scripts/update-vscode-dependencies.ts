@@ -52,9 +52,8 @@ async function updateVSCodeDependencies () {
     '@types/node',
     '@types/vscode',
     'vscode-semver',
-    'vscode-marked',
+    'marked',
     '@types/vscode-semver',
-    '@types/vscode-marked',
     ...vscodeDependencies
   ].sort()
   await writeFile(ncuRcPath, JSON.stringify(ncuRc, null, 2))
