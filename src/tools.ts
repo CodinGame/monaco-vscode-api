@@ -33,7 +33,7 @@ export function throttle<T> (fct: (param: T) => Promise<void>, merge: (a: T, b: 
   return async (param: T) => {
     if (toConsume == null) {
       toConsume = param
-      lastPromise = lastPromise.then(async () => sleep(delay)).then(async () => {
+      lastPromise = lastPromise.then(async () => await sleep(delay)).then(async () => {
         const _toConsume = toConsume!
         toConsume = null
         await fct(_toConsume)

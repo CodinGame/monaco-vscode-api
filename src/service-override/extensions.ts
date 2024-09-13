@@ -187,7 +187,7 @@ export class ExtensionServiceOverride extends ExtensionService implements IExten
     const extensionHostFactory = new BrowserExtensionHostFactoryOverride(
       workerConfig,
       extensionsProposedApi,
-      async () => this._scanWebExtensions(),
+      async () => await this._scanWebExtensions(),
       () => this._getExtensionRegistrySnapshotWhenReady(),
       instantiationService,
       remoteAgentService,
@@ -241,7 +241,7 @@ class ExtensionResourceLoaderServiceOverride extends ExtensionResourceLoaderServ
       const result = await this._fileService.readFile(uri)
       return result.value.toString()
     }
-    return super.readExtensionResource(uri)
+    return await super.readExtensionResource(uri)
   }
 }
 

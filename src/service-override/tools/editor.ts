@@ -171,7 +171,7 @@ export function wrapOpenEditor (textModelService: ITextModelService, defaultBeha
 
     if (resource == null || !textModelService.canHandleResource(resource)) {
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      return defaultBehavior(editor as any, optionsOrPreferredGroup as any, preferredGroup)
+      return await defaultBehavior(editor as any, optionsOrPreferredGroup as any, preferredGroup)
     }
 
     let modelEditor: ICodeEditor | undefined
@@ -272,7 +272,7 @@ export class MonacoEditorService extends EditorService {
       return undefined
     }
 
-    return super.openEditor(editor, optionsOrPreferredGroup, preferredGroup)
+    return await super.openEditor(editor, optionsOrPreferredGroup, preferredGroup)
   }
 }
 
@@ -506,7 +506,7 @@ class StandaloneEditorGroup extends Disposable implements IEditorGroup, IEditorG
 
   openEditors = async (editors: EditorInputWithOptions[]): Promise<IEditorPane | undefined> => {
     if (editors.length === 1) {
-      return this.openEditor(editors[0]!.editor)
+      return await this.openEditor(editors[0]!.editor)
     }
     return undefined
   }

@@ -196,7 +196,7 @@ export function registerExtension (manifest: IExtensionManifest, extHostKind?: E
       if (apiFactory == null) {
         throw new Error('The local api can\'t be used without registering the local extension host by importing `vscode/localExtensionHost`')
       }
-      return apiFactory(id)
+      return await apiFactory(id)
     }
 
     api = <RegisterLocalProcessExtensionResult>{
