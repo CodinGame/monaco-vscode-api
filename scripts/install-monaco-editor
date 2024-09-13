@@ -31,5 +31,7 @@ cp out/monaco-editor/esm/vs/editor/editor.api.d.ts $output_directory/editor.api.
 cp -R out/monaco-editor/esm/vs/basic-languages $output_directory/basic-languages
 cp -R out/monaco-editor/esm/vs/language $output_directory/language
 
+echo $monacoRef > $version_info
+
 # Cleaning
 rm -rf $monaco_build_directory
