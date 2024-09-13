@@ -84,8 +84,10 @@ class DelegateQuickInputService implements IQuickInputService {
     return this.activeService.input(options, token)
   }
 
-  createQuickPick<T extends IQuickPickItem> (): IQuickPick<T> {
-    return this.activeService.createQuickPick()
+  createQuickPick<T extends IQuickPickItem>(options: { useSeparators: true }): IQuickPick<T, { useSeparators: true }>
+  createQuickPick<T extends IQuickPickItem>(options?: { useSeparators: boolean }): IQuickPick<T, { useSeparators: false }>
+  createQuickPick<T extends IQuickPickItem> (options: { useSeparators: boolean } = { useSeparators: false }): IQuickPick<T, { useSeparators: boolean }> {
+    return this.activeService.createQuickPick(options)
   }
 
   createInputBox (): IInputBox {

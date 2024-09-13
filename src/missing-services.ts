@@ -226,8 +226,8 @@ import { IIntegrityService } from 'vs/workbench/services/integrity/common/integr
 import { IntegrityTestResult } from 'vs/workbench/services/integrity/common/integrity'
 import { ITrustedDomainService } from 'vs/workbench/contrib/url/browser/trustedDomainService.service'
 import { ILanguageModelToolsService } from 'vs/workbench/contrib/chat/common/languageModelToolsService.service'
-import { unsupported } from './tools'
 import { getBuiltInExtensionTranslationsUris, getExtensionIdProvidingCurrentLocale } from './l10n'
+import { unsupported } from './tools'
 
 registerSingleton(ILoggerService, class NullLoggerService extends AbstractLoggerService {
   constructor () {
@@ -449,6 +449,7 @@ class EmptyEditorGroup implements IEditorGroup, IEditorGroupView {
 const fakeActiveGroup = new EmptyEditorGroup()
 
 class EmptyEditorPart implements IEditorPart {
+  onWillDispose = Event.None
   windowId = mainWindow.vscodeWindowId
   hasMaximizedGroup = () => false
   onDidLayout = Event.None
@@ -499,6 +500,7 @@ class EmptyEditorPart implements IEditorPart {
 }
 
 class EmptyEditorGroupsService implements IEditorGroupsService {
+  getScopedInstantiationService = unsupported
   registerContextKeyProvider = unsupported
   saveWorkingSet = unsupported
   getWorkingSets = unsupported
@@ -1038,6 +1040,8 @@ registerSingleton(IHistoryService, class HistoryService implements IHistoryServi
 }, InstantiationType.Eager)
 
 registerSingleton(ITaskService, class TaskService implements ITaskService {
+  onDidChangeTaskProviders = Event.None
+  getKnownTasks = async () => []
   _serviceBrand: undefined
   onDidChangeTaskConfig = Event.None
   onDidStateChange = Event.None
@@ -2073,6 +2077,7 @@ registerSingleton(ISearchViewModelWorkbenchService, class SearchWorkbenchService
 
 registerSingleton(INotebookEditorModelResolverService, class NotebookEditorModelResolverService implements INotebookEditorModelResolverService {
   _serviceBrand: undefined
+  createUntitledNotebookTextModel = unsupported
   onDidSaveNotebook = Event.None
   onDidChangeDirty = Event.None
   onWillFailWithConflict = Event.None
@@ -2119,6 +2124,7 @@ registerSingleton(IWorkbenchAssignmentService, class WorkbenchAssignmentService 
 
 registerSingleton(IChatService, class ChatService implements IChatService {
   _serviceBrand: undefined
+  setChatSessionTitle = unsupported
   adoptRequest = unsupported
   isEnabled = () => false
   resendRequest = unsupported
@@ -2170,6 +2176,10 @@ registerSingleton(IQuickChatService, class QuickChatService implements IQuickCha
 
 registerSingleton(IChatAgentService, class QuickChatService implements IChatAgentService {
   _serviceBrand = undefined
+  registerChatParticipantDetectionProvider = unsupported
+  detectAgentOrCommand = unsupported
+  hasChatParticipantDetectionProviders = () => false
+  getChatTitle = unsupported
   agentHasDupeName = () => false
   registerAgentCompletionProvider = unsupported
   getAgentCompletionItems = unsupported
@@ -2513,6 +2523,7 @@ registerSingleton(INotebookRendererMessagingService, class NotebookRendererMessa
 
 registerSingleton(IInteractiveHistoryService, class InteractiveHistoryService implements IInteractiveHistoryService {
   _serviceBrand: undefined
+  matchesCurrent = () => false
   addToHistory = unsupported
   getPreviousValue = unsupported
   getNextValue = unsupported
@@ -2806,6 +2817,7 @@ registerSingleton(ITestResultStorage, class TestResultStorage implements ITestRe
 
 registerSingleton(ITestingDecorationsService, class TestingDecorationsService implements ITestingDecorationsService {
   _serviceBrand: undefined
+  updateDecorationsAlternateAction = unsupported
   onDidChange = Event.None
   invalidateResultMessage = unsupported
   syncDecorations = unsupported
@@ -3060,6 +3072,8 @@ registerSingleton(INotebookLoggingService, class NotebookLoggingService implemen
   _serviceBrand: undefined
   info = unsupported
   debug = unsupported
+  warn = unsupported
+  error = unsupported
 }, InstantiationType.Delayed)
 
 registerSingleton(IWalkthroughsService, class WalkthroughsService implements IWalkthroughsService {
@@ -3339,6 +3353,8 @@ registerSingleton(ITrustedDomainService, class TrustedDomainService implements I
 
 registerSingleton(ILanguageModelToolsService, class LanguageModelToolsService implements ILanguageModelToolsService {
   _serviceBrand: undefined
+  getTool = () => undefined
+  getToolByName = () => undefined
   onDidChangeTools = Event.None
   registerToolData = unsupported
   registerToolImplementation = unsupported

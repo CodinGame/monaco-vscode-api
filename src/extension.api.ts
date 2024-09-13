@@ -243,7 +243,6 @@ const api: typeof vscode = {
   TestResultState: extHostTypes.TestResultState,
   TestRunRequest: extHostTypes.TestRunRequest,
   TestMessage: extHostTypes.TestMessage,
-  TestMessage2: extHostTypes.TestMessage,
   TestMessageStackFrame: extHostTypes.TestMessageStackFrame,
   TestTag: extHostTypes.TestTag,
   TestRunProfileKind: extHostTypes.TestRunProfileKind,
@@ -302,12 +301,13 @@ const api: typeof vscode = {
   ChatLocation: extHostTypes.ChatLocation,
   ChatRequestEditorData: extHostTypes.ChatRequestEditorData,
   ChatRequestNotebookData: extHostTypes.ChatRequestNotebookData,
+  ChatResponseMovePart: extHostTypes.ChatResponseMovePart,
   LanguageModelChatMessageRole: extHostTypes.LanguageModelChatMessageRole,
   LanguageModelChatMessage: extHostTypes.LanguageModelChatMessage,
-  LanguageModelChatMessageFunctionResultPart: extHostTypes.LanguageModelFunctionResultPart,
   LanguageModelChatResponseTextPart: extHostTypes.LanguageModelTextPart,
-  LanguageModelChatResponseFunctionUsePart: extHostTypes.LanguageModelFunctionUsePart,
   LanguageModelError: extHostTypes.LanguageModelError,
+  LanguageModelChatResponseToolCallPart: extHostTypes.LanguageModelToolCallPart,
+  LanguageModelChatMessageToolResultPart: extHostTypes.LanguageModelToolResultPart,
   NewSymbolName: extHostTypes.NewSymbolName,
   NewSymbolNameTag: extHostTypes.NewSymbolNameTag,
   NewSymbolNameTriggerKind: extHostTypes.NewSymbolNameTriggerKind,
@@ -315,8 +315,7 @@ const api: typeof vscode = {
   InlineEditTriggerKind: extHostTypes.InlineEditTriggerKind,
   ExcludeSettingOptions: searchExtTypes.ExcludeSettingOptions,
   TextSearchContextNew: searchExtTypes.TextSearchContextNew,
-  TextSearchMatchNew: searchExtTypes.TextSearchMatchNew,
-  TextSearchCompleteMessageTypeNew: searchExtTypes.TextSearchCompleteMessageTypeNew
+  TextSearchMatchNew: searchExtTypes.TextSearchMatchNew
 }
 
 // @ts-ignore the syntax will be transformed by a typescript transformer in the rollup config

@@ -1,5 +1,10 @@
-import { IWorkerContext } from 'vs/editor/common/services/editorSimpleWorker'
-import { ICreateData, ITextMateWorkerHost, TextMateTokenizationWorker } from 'vs/workbench/services/textMate/browser/backgroundTokenization/worker/textMateTokenizationWorker.worker'
-import { initialize } from 'vs/editor/editor.worker'
+import { create } from 'vs/workbench/services/textMate/browser/backgroundTokenization/worker/textMateTokenizationWorker.worker'
+import { SimpleWorkerServer } from 'vs/base/common/worker/simpleWorker'
 
-initialize((ctx: IWorkerContext<ITextMateWorkerHost>, createData: ICreateData) => new TextMateTokenizationWorker(ctx, createData))
+const simpleWorker = new SimpleWorkerServer((msg) => {
+  globalThis.postMessage(msg)
+}, create)
+
+globalThis.onmessage = (e: MessageEvent) => {
+  simpleWorker.onmessage(e.data)
+}

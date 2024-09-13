@@ -21,6 +21,7 @@ import 'vs/workbench/contrib/files/browser/files.contribution._fileEditorFactory
 import 'vs/workbench/contrib/files/browser/fileCommands._save.js'
 
 class EmptyEditorPart implements IEditorPart {
+  onWillDispose = Event.None
   hasMaximizedGroup = () => false
   windowId = mainWindow.vscodeWindowId
   onDidLayout = Event.None
@@ -71,6 +72,7 @@ class EmptyEditorPart implements IEditorPart {
 }
 
 class EmptyEditorGroupsService implements IEditorGroupsService {
+  getScopedInstantiationService = unsupported
   registerContextKeyProvider = unsupported
   saveWorkingSet = unsupported
   getWorkingSets = unsupported

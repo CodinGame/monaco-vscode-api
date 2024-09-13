@@ -6,15 +6,10 @@ import 'vs/workbench/contrib/welcomeGettingStarted/browser/gettingStarted.contri
 import 'vs/workbench/contrib/welcomeWalkthrough/browser/walkThrough.contribution'
 import svgAssets from 'vs/workbench/contrib/welcomeGettingStarted/common/media/*.svg'
 import pngAssets from 'vs/workbench/contrib/welcomeGettingStarted/common/media/*.png'
-import { FileAccess } from 'vs/base/common/network'
 import { registerAssets } from '../assets'
 
 registerAssets(svgAssets)
 registerAssets(pngAssets)
-
-FileAccess.registerModuleContentProvider('vs/workbench/contrib/welcomeWalkthrough/browser/editor/vs_code_editor_walkthrough', () => import('vs/workbench/contrib/welcomeWalkthrough/browser/editor/vs_code_editor_walkthrough'))
-FileAccess.registerModuleContentProvider('vs/workbench/contrib/welcomeGettingStarted/common/media/theme_picker', () => import('vs/workbench/contrib/welcomeGettingStarted/common/media/theme_picker'))
-FileAccess.registerModuleContentProvider('vs/workbench/contrib/welcomeGettingStarted/common/media/notebookProfile', () => import('vs/workbench/contrib/welcomeGettingStarted/common/media/notebookProfile'))
 
 export default function getServiceOverride (): IEditorOverrideServices {
   return {

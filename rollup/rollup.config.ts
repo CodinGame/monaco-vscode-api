@@ -86,7 +86,6 @@ const EDITOR_API_EXPOSE_MODULES = [
   'vs/editor/contrib/inlineCompletions/browser/inlineCompletions.contribution',
   'vs/editor/contrib/format/browser/formatActions',
   'vs/editor/contrib/bracketMatching/browser/bracketMatching',
-  'vs/editor/contrib/hover/browser/hoverController',
   'vs/editor/browser/coreCommands',
   'vs/editor/contrib/clipboard/browser/clipboard',
   'vs/editor/contrib/cursorUndo/browser/cursorUndo',
@@ -466,9 +465,6 @@ export default (args: Record<string, string>): rollup.RollupOptions[] => {
           const content = (await fs.promises.readFile(id)).toString('utf-8')
           return transformVSCodeCode(id, content)
         },
-        transform (code) {
-          return code.replaceAll("'./keyboardLayouts/layout.contribution.' + platform", "'./keyboardLayouts/layout.contribution.' + platform + '.js'")
-        },
         async writeBundle () {
           await fs.promises.writeFile(nodePath.resolve(DIST_DIR, 'nls.keys.json'), JSON.stringify(nlsKeys, null, 2))
         }
@@ -592,7 +588,9 @@ export default (args: Record<string, string>): rollup.RollupOptions[] => {
           }
         }
       },
-      dynamicImportVars()
+      dynamicImportVars({
+        exclude: ['**/amdX.js']
+      })
     ]
   }, {
     // 2nd pass to improve treeshaking

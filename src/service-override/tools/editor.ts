@@ -545,7 +545,7 @@ export class MonacoDelegateEditorGroupsService<D extends IEditorGroupsService> e
   public additionalGroups: StandaloneEditorGroup[] = []
   public activeGroupOverride: StandaloneEditorGroup | undefined = undefined
 
-  constructor (protected delegate: D, emptyDelegate: boolean, @IInstantiationService instantiationService: IInstantiationService) {
+  constructor (protected delegate: D, emptyDelegate: boolean, @IInstantiationService private instantiationService: IInstantiationService) {
     super()
     setTimeout(() => {
       const codeEditorService = StandaloneServices.get(ICodeEditorService)
@@ -613,6 +613,10 @@ export class MonacoDelegateEditorGroupsService<D extends IEditorGroupsService> e
       this._register(codeEditorService.onCodeEditorRemove(handleCodeEditorRemoved))
       codeEditorService.listCodeEditors().forEach(handleCodeEditor)
     })
+  }
+
+  getScopedInstantiationService (): IInstantiationService {
+    return this.instantiationService
   }
 
   registerContextKeyProvider<T extends ContextKeyValue> (provider: IEditorGroupContextKeyProvider<T>): IDisposable {
