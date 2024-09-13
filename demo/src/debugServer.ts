@@ -142,7 +142,7 @@ const server = http.createServer(app)
 const wss = new WebSocketServer({ server })
 
 async function findPortFree () {
-  return new Promise<number>(resolve => {
+  return await new Promise<number>(resolve => {
     const srv = net.createServer()
     srv.listen(0, () => {
       const port = (srv.address() as net.AddressInfo).port
