@@ -11,13 +11,13 @@ Subject: [PATCH] fix: move action from service file to contribution
  create mode 100644 src/vs/workbench/contrib/welcomeGettingStarted/browser/gettingStartedService._contribution.ts
 
 diff --git a/src/vs/workbench/contrib/welcomeGettingStarted/browser/gettingStarted.contribution.ts b/src/vs/workbench/contrib/welcomeGettingStarted/browser/gettingStarted.contribution.ts
-index c581ac0e4d2..384d28b7362 100644
+index f44d95e6694..ba7b881c0bb 100644
 --- a/src/vs/workbench/contrib/welcomeGettingStarted/browser/gettingStarted.contribution.ts
 +++ b/src/vs/workbench/contrib/welcomeGettingStarted/browser/gettingStarted.contribution.ts
-@@ -30,6 +30,7 @@ import { IExtensionService } from 'vs/workbench/services/extensions/common/exten
- import { StartupPageEditorResolverContribution, StartupPageRunnerContribution } from 'vs/workbench/contrib/welcomeGettingStarted/browser/startupPage';
+@@ -31,6 +31,7 @@ import { StartupPageEditorResolverContribution, StartupPageRunnerContribution }
  import { ExtensionsInput } from 'vs/workbench/contrib/extensions/common/extensionsInput';
  import { Categories } from 'vs/platform/action/common/actionCommonCategories';
+ import { DisposableStore } from 'vs/base/common/lifecycle';
 +import 'vs/workbench/contrib/welcomeGettingStarted/browser/gettingStartedService._contribution';
  
  export * as icons from 'vs/workbench/contrib/welcomeGettingStarted/browser/gettingStartedIcons';

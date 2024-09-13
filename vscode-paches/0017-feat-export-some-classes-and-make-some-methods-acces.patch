@@ -58,10 +58,10 @@ index 99dd3279fe8..b692381eaa2 100644
  	declare readonly _serviceBrand: undefined;
  
 diff --git a/src/vs/workbench/browser/layout.ts b/src/vs/workbench/browser/layout.ts
-index 6ad52a2695e..c76aed46fc3 100644
+index 4ca393d98c3..2753d08f437 100644
 --- a/src/vs/workbench/browser/layout.ts
 +++ b/src/vs/workbench/browser/layout.ts
-@@ -52,7 +52,7 @@ import { CustomTitleBarVisibility } from '../../platform/window/common/window';
+@@ -51,7 +51,7 @@ import { CodeWindow, mainWindow } from 'vs/base/browser/window';
  
  //#region Layout Implementation
  
@@ -70,7 +70,7 @@ index 6ad52a2695e..c76aed46fc3 100644
  	activeContainerId: number;
  	mainWindowFullscreen: boolean;
  	readonly maximized: Set<number>;
-@@ -66,12 +66,12 @@ interface ILayoutRuntimeState {
+@@ -65,12 +65,12 @@ interface ILayoutRuntimeState {
  	};
  }
  
@@ -85,7 +85,7 @@ index 6ad52a2695e..c76aed46fc3 100644
  	readonly views: {
  		readonly defaults: string[] | undefined;
  		readonly containerToRestore: {
-@@ -105,11 +105,11 @@ enum LayoutClasses {
+@@ -104,11 +104,11 @@ enum LayoutClasses {
  	WINDOW_BORDER = 'border'
  }
  
@@ -100,10 +100,10 @@ index 6ad52a2695e..c76aed46fc3 100644
  	readonly filesToDiff?: IPathToOpen[];
  	readonly filesToMerge?: IPathToOpen[];
 diff --git a/src/vs/workbench/browser/workbench.ts b/src/vs/workbench/browser/workbench.ts
-index b0688133537..b0f76f8d08d 100644
+index 7c11f502ea5..5211f730099 100644
 --- a/src/vs/workbench/browser/workbench.ts
 +++ b/src/vs/workbench/browser/workbench.ts
-@@ -81,7 +81,7 @@ export class Workbench extends Layout {
+@@ -82,7 +82,7 @@ export class Workbench extends Layout {
  		this.registerErrorHandler(logService);
  	}
  
@@ -270,7 +270,7 @@ index 0e60b30cd13..a8fef74dbc4 100644
  
  	private readonly _onDidChangeEnablement = this._register(new Emitter<{ extension: ExtensionIdentifier; featureId: string; enabled: boolean }>());
 diff --git a/src/vs/workbench/services/extensions/browser/extensionService.ts b/src/vs/workbench/services/extensions/browser/extensionService.ts
-index a5596ccb66c..678e10e3be2 100644
+index 82347b71978..83bce6798aa 100644
 --- a/src/vs/workbench/services/extensions/browser/extensionService.ts
 +++ b/src/vs/workbench/services/extensions/browser/extensionService.ts
 @@ -117,7 +117,7 @@ export class ExtensionService extends AbstractExtensionService implements IExten
@@ -314,10 +314,10 @@ index 696f8227e6e..48c0e3bc2d4 100644
  	readonly _serviceBrand: undefined;
  
 diff --git a/src/vs/workbench/services/extensions/browser/webWorkerExtensionHost.ts b/src/vs/workbench/services/extensions/browser/webWorkerExtensionHost.ts
-index 8f4dc4a6b57..b54e3a25543 100644
+index 543e8cd2206..0c2e68dd1ec 100644
 --- a/src/vs/workbench/services/extensions/browser/webWorkerExtensionHost.ts
 +++ b/src/vs/workbench/services/extensions/browser/webWorkerExtensionHost.ts
-@@ -76,7 +76,7 @@ export class WebWorkerExtensionHost extends Disposable implements IExtensionHost
+@@ -78,7 +78,7 @@ export class WebWorkerExtensionHost extends Disposable implements IExtensionHost
  		this._extensionHostLogsLocation = joinPath(this._environmentService.extHostLogsPath, 'webWorker');
  	}
  
@@ -327,7 +327,7 @@ index 8f4dc4a6b57..b54e3a25543 100644
  		if (this._environmentService.debugExtensionHost && this._environmentService.debugRenderer) {
  			suffixSearchParams.set('debugged', '1');
 diff --git a/src/vs/workbench/services/extensions/common/abstractExtensionService.ts b/src/vs/workbench/services/extensions/common/abstractExtensionService.ts
-index be9bb04b104..a4a9a3cd143 100644
+index df1b2733947..dace2286a1c 100644
 --- a/src/vs/workbench/services/extensions/common/abstractExtensionService.ts
 +++ b/src/vs/workbench/services/extensions/common/abstractExtensionService.ts
 @@ -95,9 +95,9 @@ export abstract class AbstractExtensionService extends Disposable implements IEx
@@ -343,7 +343,7 @@ index be9bb04b104..a4a9a3cd143 100644
  		@IInstantiationService protected readonly _instantiationService: IInstantiationService,
  		@INotificationService protected readonly _notificationService: INotificationService,
  		@IWorkbenchEnvironmentService protected readonly _environmentService: IWorkbenchEnvironmentService,
-@@ -222,7 +222,7 @@ export abstract class AbstractExtensionService extends Disposable implements IEx
+@@ -224,7 +224,7 @@ export abstract class AbstractExtensionService extends Disposable implements IEx
  
  	//#region deltaExtensions
  
@@ -352,7 +352,7 @@ index be9bb04b104..a4a9a3cd143 100644
  		this._deltaExtensionsQueue.push(item);
  		if (this._inHandleDeltaExtensions) {
  			// Let the current item finish, the new one will be picked up
-@@ -1274,7 +1274,7 @@ export interface IExtensionHostFactory {
+@@ -1285,7 +1285,7 @@ export interface IExtensionHostFactory {
  	createExtensionHost(runningLocations: ExtensionRunningLocationTracker, runningLocation: ExtensionRunningLocation, isInitialStart: boolean): IExtensionHost | null;
  }
  

@@ -10,14 +10,14 @@ Subject: [PATCH] fix: rollback typescript as the last version breaks the
  2 files changed, 2 insertions(+), 1 deletion(-)
 
 diff --git a/package.json b/package.json
-index 70ca212fe5e..893de369e19 100644
+index 2ff61bb3740..f85eb91c4f4 100644
 --- a/package.json
 +++ b/package.json
-@@ -208,7 +208,7 @@
-     "ts-loader": "^9.4.2",
+@@ -215,7 +215,7 @@
      "ts-node": "^10.9.1",
      "tsec": "0.2.7",
--    "typescript": "^5.6.0-dev.20240715",
+     "tslib": "^2.6.3",
+-    "typescript": "^5.7.0-dev.20240826",
 +    "typescript": "5.5.0-dev.20240408",
      "util": "^0.12.4",
      "vscode-nls-dev": "^3.3.1",

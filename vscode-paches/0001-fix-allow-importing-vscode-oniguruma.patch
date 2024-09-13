@@ -8,7 +8,7 @@ Subject: [PATCH] fix: allow importing vscode-oniguruma
  1 file changed, 1 insertion(+)
 
 diff --git a/.eslintrc.json b/.eslintrc.json
-index c39a66311e4..5f965fb404b 100644
+index 1deaf02985b..889ddcd4d3d 100644
 --- a/.eslintrc.json
 +++ b/.eslintrc.json
 @@ -673,6 +673,7 @@

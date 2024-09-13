@@ -4,21 +4,21 @@ Date: Mon, 11 Mar 2024 17:22:31 +0100
 Subject: [PATCH] fix: replace amd imports by regular esm dynamic imports
 
 ---
- .eslintrc.json                                     |  9 +--------
- .../assignment/common/assignmentService.ts         |  3 +--
- src/vs/platform/telemetry/common/1dsAppender.ts    |  5 ++---
- .../contrib/terminal/browser/terminalInstance.ts   |  3 +--
- .../terminal/browser/xterm/xtermTerminal.ts        | 13 ++++++-------
- .../browser/terminalStickyScrollOverlay.ts         |  5 ++---
- .../textMateWorkerTokenizerController.ts           |  4 +---
- .../worker/textMateTokenizationWorker.worker.ts    | 12 +++++-------
- .../worker/textMateWorkerTokenizer.ts              |  4 +---
- .../browser/textMateTokenizationFeatureImpl.ts     | 14 +++++++-------
- .../workbench/services/textfile/common/encoding.ts |  9 ++++-----
- 11 files changed, 31 insertions(+), 50 deletions(-)
+ .eslintrc.json                                   |  9 +--------
+ .../assignment/common/assignmentService.ts       |  3 +--
+ src/vs/platform/telemetry/common/1dsAppender.ts  | 16 ++--------------
+ .../contrib/terminal/browser/terminalInstance.ts |  3 +--
+ .../terminal/browser/xterm/xtermTerminal.ts      | 13 ++++++-------
+ .../browser/terminalStickyScrollOverlay.ts       |  5 ++---
+ .../textMateWorkerTokenizerController.ts         |  4 +---
+ .../worker/textMateTokenizationWorker.worker.ts  | 12 +++++-------
+ .../worker/textMateWorkerTokenizer.ts            |  4 +---
+ .../browser/textMateTokenizationFeatureImpl.ts   | 15 ++++++++-------
+ .../services/textfile/common/encoding.ts         | 14 ++++----------
+ 11 files changed, 32 insertions(+), 66 deletions(-)
 
 diff --git a/.eslintrc.json b/.eslintrc.json
-index 5f965fb404b..a350e56914a 100644
+index 889ddcd4d3d..05e59fcf47a 100644
 --- a/.eslintrc.json
 +++ b/.eslintrc.json
 @@ -296,14 +296,6 @@
@@ -36,7 +36,7 @@ index 5f965fb404b..a350e56914a 100644
  		{
  			"files": [
  				"src/**/{browser,electron-sandbox}/**/*.ts"
-@@ -862,6 +854,7 @@
+@@ -863,6 +855,7 @@
  							}, // TODO@layers
  							"tas-client-umd", // node module allowed even in /common/
  							"vscode-textmate", // node module allowed even in /common/
@@ -66,30 +66,43 @@ index c573b727e0b..8c52126a590 100644
  			telemetry: this.telemetry,
  			storageKey: ASSIGNMENT_STORAGE_KEY,
 diff --git a/src/vs/platform/telemetry/common/1dsAppender.ts b/src/vs/platform/telemetry/common/1dsAppender.ts
-index c54187f89c9..a4729fabe2e 100644
+index 6585e563ba0..a4729fabe2e 100644
 --- a/src/vs/platform/telemetry/common/1dsAppender.ts
 +++ b/src/vs/platform/telemetry/common/1dsAppender.ts
-@@ -5,7 +5,6 @@
+@@ -5,10 +5,8 @@
  
  import type { IExtendedConfiguration, IExtendedTelemetryItem, ITelemetryItem, ITelemetryUnloadState } from '@microsoft/1ds-core-js';
  import type { IChannelConfiguration, IXHROverride, PostChannel } from '@microsoft/1ds-post-js';
 -import { importAMDNodeModule } from 'vs/amdX';
  import { onUnexpectedError } from 'vs/base/common/errors';
  import { mixin } from 'vs/base/common/objects';
+-import { isWeb } from 'vs/base/common/platform';
  import { ITelemetryAppender, validateTelemetryData } from 'vs/platform/telemetry/common/telemetryUtils';
-@@ -22,8 +21,8 @@ const endpointUrl = 'https://mobile.events.data.microsoft.com/OneCollector/1.0';
+ 
+ // Interface type which is a subset of @microsoft/1ds-core-js AppInsightsCore.
+@@ -23,18 +21,8 @@ const endpointUrl = 'https://mobile.events.data.microsoft.com/OneCollector/1.0';
  const endpointHealthUrl = 'https://mobile.events.data.microsoft.com/ping';
  
  async function getClient(instrumentationKey: string, addInternalFlag?: boolean, xhrOverride?: IXHROverride): Promise<IAppInsightsCore> {
+-	// ESM-comment-begin
+-	if (isWeb) { /* fix the import warning */ }
 -	const oneDs = await importAMDNodeModule<typeof import('@microsoft/1ds-core-js')>('@microsoft/1ds-core-js', 'dist/ms.core.js');
 -	const postPlugin = await importAMDNodeModule<typeof import('@microsoft/1ds-post-js')>('@microsoft/1ds-post-js', 'dist/ms.post.js');
+-	// ESM-comment-end
+-	// ESM-uncomment-begin
+-	// // eslint-disable-next-line local/code-amd-node-module
+-	// const oneDs = isWeb ? await importAMDNodeModule<typeof import('@microsoft/1ds-core-js')>('@microsoft/1ds-core-js', 'bundle/ms.core.min.js') : await import('@microsoft/1ds-core-js');
+-	// // eslint-disable-next-line local/code-amd-node-module
+-	// const postPlugin = isWeb ? await importAMDNodeModule<typeof import('@microsoft/1ds-post-js')>('@microsoft/1ds-post-js', 'bundle/ms.post.min.js'): await import('@microsoft/1ds-post-js');
+-	// ESM-uncomment-end
+-
 +	const oneDs = await import('@microsoft/1ds-core-js');
 +	const postPlugin = await import('@microsoft/1ds-post-js');
  	const appInsightsCore = new oneDs.AppInsightsCore();
  	const collectorChannelPlugin: PostChannel = new postPlugin.PostChannel();
  	// Configure the app insights core to send to collector++ and disable logging of debug info
 diff --git a/src/vs/workbench/contrib/terminal/browser/terminalInstance.ts b/src/vs/workbench/contrib/terminal/browser/terminalInstance.ts
-index 0c1c1f8c9b6..2f2976fd1df 100644
+index ff8607f6019..896f61d9359 100644
 --- a/src/vs/workbench/contrib/terminal/browser/terminalInstance.ts
 +++ b/src/vs/workbench/contrib/terminal/browser/terminalInstance.ts
 @@ -82,7 +82,6 @@ import { IHistoryService } from 'vs/workbench/services/history/common/history';
@@ -100,7 +113,7 @@ index 0c1c1f8c9b6..2f2976fd1df 100644
  import type { IMarker, Terminal as XTermTerminal } from '@xterm/xterm';
  import { AccessibilityCommandId } from 'vs/workbench/contrib/accessibility/common/accessibilityCommands';
  import { terminalStrings } from 'vs/workbench/contrib/terminal/common/terminalStrings';
-@@ -720,7 +719,7 @@ export class TerminalInstance extends Disposable implements ITerminalInstance {
+@@ -727,7 +726,7 @@ export class TerminalInstance extends Disposable implements ITerminalInstance {
  			return xtermConstructor;
  		}
  		xtermConstructor = Promises.withAsyncBody<typeof XTermTerminal>(async (resolve) => {
@@ -171,7 +184,7 @@ index 3f96c847469..5ba1425a49a 100644
  		return SerializeAddon;
  	}
 diff --git a/src/vs/workbench/contrib/terminalContrib/stickyScroll/browser/terminalStickyScrollOverlay.ts b/src/vs/workbench/contrib/terminalContrib/stickyScroll/browser/terminalStickyScrollOverlay.ts
-index 07a40f9ef98..2f90e9f049c 100644
+index 92d0aeb48c4..d8ec5418112 100644
 --- a/src/vs/workbench/contrib/terminalContrib/stickyScroll/browser/terminalStickyScrollOverlay.ts
 +++ b/src/vs/workbench/contrib/terminalContrib/stickyScroll/browser/terminalStickyScrollOverlay.ts
 @@ -6,7 +6,6 @@
@@ -182,7 +195,7 @@ index 07a40f9ef98..2f90e9f049c 100644
  import { $, addDisposableListener, addStandardDisposableListener, getWindow } from 'vs/base/browser/dom';
  import { memoize, throttle } from 'vs/base/common/decorators';
  import { Event } from 'vs/base/common/event';
-@@ -485,12 +484,12 @@ export class TerminalStickyScrollOverlay extends Disposable {
+@@ -484,12 +483,12 @@ export class TerminalStickyScrollOverlay extends Disposable {
  
  	@memoize
  	private async _getSerializeAddonConstructor(): Promise<typeof SerializeAddonType> {
@@ -198,7 +211,7 @@ index 07a40f9ef98..2f90e9f049c 100644
  }
  
 diff --git a/src/vs/workbench/services/textMate/browser/backgroundTokenization/textMateWorkerTokenizerController.ts b/src/vs/workbench/services/textMate/browser/backgroundTokenization/textMateWorkerTokenizerController.ts
-index 3695379f0e9..8ad5c86d522 100644
+index 419a1320def..0f68e115b90 100644
 --- a/src/vs/workbench/services/textMate/browser/backgroundTokenization/textMateWorkerTokenizerController.ts
 +++ b/src/vs/workbench/services/textMate/browser/backgroundTokenization/textMateWorkerTokenizerController.ts
 @@ -3,7 +3,6 @@
@@ -208,8 +221,8 @@ index 3695379f0e9..8ad5c86d522 100644
 -import { importAMDNodeModule } from 'vs/amdX';
  import { Disposable } from 'vs/base/common/lifecycle';
  import { IObservable, autorun, keepObserved } from 'vs/base/common/observable';
- import { countEOL } from 'vs/editor/common/core/eolCounter';
-@@ -18,7 +17,7 @@ import { IConfigurationService } from 'vs/platform/configuration/common/configur
+ import { Proxied } from 'vs/base/common/worker/simpleWorker';
+@@ -19,7 +18,7 @@ import { IConfigurationService } from 'vs/platform/configuration/common/configur
  import { observableConfigValue } from 'vs/platform/observable/common/platformObservableUtils';
  import { ArrayEdit, MonotonousIndexTransformer, SingleArrayEdit } from 'vs/workbench/services/textMate/browser/arrayOperation';
  import type { StateDeltas, TextMateTokenizationWorker } from 'vs/workbench/services/textMate/browser/backgroundTokenization/worker/textMateTokenizationWorker.worker';
@@ -218,7 +231,7 @@ index 3695379f0e9..8ad5c86d522 100644
  
  export class TextMateWorkerTokenizerController extends Disposable {
  	private static _id = 0;
-@@ -179,7 +178,6 @@ export class TextMateWorkerTokenizerController extends Disposable {
+@@ -180,7 +179,6 @@ export class TextMateWorkerTokenizerController extends Disposable {
  		);
  
  		if (!this._applyStateStackDiffFn || !this._initialState) {
@@ -227,21 +240,24 @@ index 3695379f0e9..8ad5c86d522 100644
  			this._initialState = INITIAL;
  		}
 diff --git a/src/vs/workbench/services/textMate/browser/backgroundTokenization/worker/textMateTokenizationWorker.worker.ts b/src/vs/workbench/services/textMate/browser/backgroundTokenization/worker/textMateTokenizationWorker.worker.ts
-index 3974d642732..b391a7cda58 100644
+index 237f681f3bc..7ba45d41153 100644
 --- a/src/vs/workbench/services/textMate/browser/backgroundTokenization/worker/textMateTokenizationWorker.worker.ts
 +++ b/src/vs/workbench/services/textMate/browser/backgroundTokenization/worker/textMateTokenizationWorker.worker.ts
-@@ -9,8 +9,9 @@ import { IModelChangedEvent } from 'vs/editor/common/model/mirrorTextModel';
- import { IWorkerContext } from 'vs/editor/common/services/editorSimpleWorker';
+@@ -8,11 +8,11 @@ import { LanguageId } from 'vs/editor/common/encodedTokenAttributes';
+ import { IModelChangedEvent } from 'vs/editor/common/model/mirrorTextModel';
  import { ICreateGrammarResult, TMGrammarFactory } from 'vs/workbench/services/textMate/common/TMGrammarFactory';
  import { IValidEmbeddedLanguagesMap, IValidGrammarDefinition, IValidTokenTypeMap } from 'vs/workbench/services/textMate/common/TMScopeRegistry';
 -import type { IOnigLib, IRawTheme, StackDiff } from 'vscode-textmate';
  import { TextMateWorkerTokenizer } from './textMateWorkerTokenizer';
+-import { importAMDNodeModule } from 'vs/amdX';
+ import { IRequestHandler, IWorkerServer } from 'vs/base/common/worker/simpleWorker';
+ import { TextMateWorkerHost } from './textMateWorkerHost';
 +import * as vscodeTextmate from 'vscode-textmate';
 +import * as vscodeOniguruma from 'vscode-oniguruma';
  
  /**
   * Defines the worker entry point. Must be exported and named `create`.
-@@ -47,7 +48,7 @@ export interface IValidGrammarDefinitionDTO {
+@@ -42,7 +42,7 @@ export interface IValidGrammarDefinitionDTO {
  export interface StateDeltas {
  	startLineNumber: number;
  	// null means the state for that line did not change
@@ -249,18 +265,17 @@ index 3974d642732..b391a7cda58 100644
 +	stateDeltas: (vscodeTextmate.StackDiff | null)[];
  }
  
- export class TextMateTokenizationWorker {
-@@ -78,9 +79,6 @@ export class TextMateTokenizationWorker {
+ export class TextMateTokenizationWorker implements IRequestHandler {
+@@ -75,8 +75,6 @@ export class TextMateTokenizationWorker implements IRequestHandler {
  	}
  
- 	private async _loadTMGrammarFactory(grammarDefinitions: IValidGrammarDefinition[]): Promise<TMGrammarFactory> {
--		const uri = this._createData.textmateMainUri;
--		const vscodeTextmate = await import(uri);
--		const vscodeOniguruma = await import(this._createData.onigurumaMainUri);
- 		const response = await fetch(this._createData.onigurumaWASMUri);
+ 	private async _loadTMGrammarFactory(grammarDefinitions: IValidGrammarDefinition[], onigurumaWASMUri: string): Promise<TMGrammarFactory> {
+-		const vscodeTextmate = await importAMDNodeModule<typeof import('vscode-textmate')>('vscode-textmate', 'release/main.js');
+-		const vscodeOniguruma = await importAMDNodeModule<typeof import('vscode-oniguruma')>('vscode-oniguruma', 'release/main.js');
+ 		const response = await fetch(onigurumaWASMUri);
  
  		// Using the response directly only works if the server sets the MIME type 'application/wasm'.
-@@ -89,7 +87,7 @@ export class TextMateTokenizationWorker {
+@@ -85,7 +83,7 @@ export class TextMateTokenizationWorker implements IRequestHandler {
  		const bytes = await response.arrayBuffer();
  		await vscodeOniguruma.loadWASM(bytes);
  
@@ -269,12 +284,12 @@ index 3974d642732..b391a7cda58 100644
  			createOnigScanner: (sources) => vscodeOniguruma.createOnigScanner(sources),
  			createOnigString: (str) => vscodeOniguruma.createOnigString(str)
  		});
-@@ -146,7 +144,7 @@ export class TextMateTokenizationWorker {
+@@ -142,7 +140,7 @@ export class TextMateTokenizationWorker implements IRequestHandler {
  		}
  	}
  
--	public async acceptTheme(theme: IRawTheme, colorMap: string[]): Promise<void> {
-+	public async acceptTheme(theme: vscodeTextmate.IRawTheme, colorMap: string[]): Promise<void> {
+-	public async $acceptTheme(theme: IRawTheme, colorMap: string[]): Promise<void> {
++	public async $acceptTheme(theme: vscodeTextmate.IRawTheme, colorMap: string[]): Promise<void> {
  		const grammarFactory = await this._grammarFactory;
  		grammarFactory?.setTheme(theme, colorMap);
  	}
@@ -308,18 +323,19 @@ index 112d76ec0d9..99b09749431 100644
  		}
  
 diff --git a/src/vs/workbench/services/textMate/browser/textMateTokenizationFeatureImpl.ts b/src/vs/workbench/services/textMate/browser/textMateTokenizationFeatureImpl.ts
-index 02eef664f6f..ba2dd435b5f 100644
+index 734d72a998b..0daa52bbded 100644
 --- a/src/vs/workbench/services/textMate/browser/textMateTokenizationFeatureImpl.ts
 +++ b/src/vs/workbench/services/textMate/browser/textMateTokenizationFeatureImpl.ts
-@@ -3,7 +3,6 @@
+@@ -3,7 +3,7 @@
   *  Licensed under the MIT License. See License.txt in the project root for license information.
   *--------------------------------------------------------------------------------------------*/
  
--import { importAMDNodeModule } from 'vs/amdX';
+-import { importAMDNodeModule, resolveAmdNodeModulePath } from 'vs/amdX';
++import { resolveAmdNodeModulePath } from 'vs/amdX';
+ import { canASAR, isESM } from 'vs/base/common/amd';
  import * as dom from 'vs/base/browser/dom';
  import { equals as equalArray } from 'vs/base/common/arrays';
- import { Color } from 'vs/base/common/color';
-@@ -37,7 +36,8 @@ import { TMGrammarFactory, missingTMGrammarErrorMessage } from 'vs/workbench/ser
+@@ -38,7 +38,8 @@ import { TMGrammarFactory, missingTMGrammarErrorMessage } from 'vs/workbench/ser
  import { ITMSyntaxExtensionPoint, grammarsExtPoint } from 'vs/workbench/services/textMate/common/TMGrammars';
  import { IValidEmbeddedLanguagesMap, IValidGrammarDefinition, IValidTokenTypeMap } from 'vs/workbench/services/textMate/common/TMScopeRegistry';
  import { ITextMateThemingRule, IWorkbenchColorTheme, IWorkbenchThemeService } from 'vs/workbench/services/themes/common/workbenchThemeService';
@@ -329,7 +345,7 @@ index 02eef664f6f..ba2dd435b5f 100644
  
  export class TextMateTokenizationFeature extends Disposable implements ITextMateTokenizationService {
  	private static reportTokenizationTimeCounter = { sync: 0, async: 0 };
-@@ -53,7 +53,7 @@ export class TextMateTokenizationFeature extends Disposable implements ITextMate
+@@ -54,7 +55,7 @@ export class TextMateTokenizationFeature extends Disposable implements ITextMate
  	private _grammarDefinitions: IValidGrammarDefinition[] | null = null;
  	private _grammarFactory: TMGrammarFactory | null = null;
  	private readonly _tokenizersRegistrations = new DisposableStore();
@@ -338,7 +354,7 @@ index 02eef664f6f..ba2dd435b5f 100644
  	private _currentTokenColorMap: string[] | null = null;
  	private readonly _threadedBackgroundTokenizerFactory = this._instantiationService.createInstance(
  		ThreadedBackgroundTokenizerFactory,
-@@ -245,8 +245,8 @@ export class TextMateTokenizationFeature extends Disposable implements ITextMate
+@@ -246,8 +247,8 @@ export class TextMateTokenizationFeature extends Disposable implements ITextMate
  			return this._grammarFactory;
  		}
  
@@ -349,7 +365,7 @@ index 02eef664f6f..ba2dd435b5f 100644
  			createOnigScanner: (sources: string[]) => vscodeOniguruma.createOnigScanner(sources),
  			createOnigString: (str: string) => vscodeOniguruma.createOnigString(str)
  		});
-@@ -339,7 +339,7 @@ export class TextMateTokenizationFeature extends Disposable implements ITextMate
+@@ -340,7 +341,7 @@ export class TextMateTokenizationFeature extends Disposable implements ITextMate
  		}
  	}
  
@@ -358,7 +374,7 @@ index 02eef664f6f..ba2dd435b5f 100644
  		if (!this._languageService.isRegisteredLanguageId(languageId)) {
  			return null;
  		}
-@@ -356,7 +356,7 @@ export class TextMateTokenizationFeature extends Disposable implements ITextMate
+@@ -357,7 +358,7 @@ export class TextMateTokenizationFeature extends Disposable implements ITextMate
  	private _getVSCodeOniguruma(): Promise<typeof import('vscode-oniguruma')> {
  		if (!this._vscodeOniguruma) {
  			this._vscodeOniguruma = (async () => {
@@ -368,18 +384,21 @@ index 02eef664f6f..ba2dd435b5f 100644
  					data: wasm,
  					print: (str: string) => {
 diff --git a/src/vs/workbench/services/textfile/common/encoding.ts b/src/vs/workbench/services/textfile/common/encoding.ts
-index bae27136de4..6be61851b33 100644
+index 537ec42d3dc..6be61851b33 100644
 --- a/src/vs/workbench/services/textfile/common/encoding.ts
 +++ b/src/vs/workbench/services/textfile/common/encoding.ts
-@@ -5,7 +5,6 @@
+@@ -5,10 +5,8 @@
  
  import { Readable, ReadableStream, newWriteableStream, listenStream } from 'vs/base/common/stream';
  import { VSBuffer, VSBufferReadable, VSBufferReadableStream } from 'vs/base/common/buffer';
 -import { importAMDNodeModule } from 'vs/amdX';
  import { CancellationTokenSource } from 'vs/base/common/cancellation';
  import { coalesce } from 'vs/base/common/arrays';
+-import { isESM } from 'vs/base/common/amd';
  
-@@ -82,7 +81,7 @@ class DecoderStream implements IDecoderStream {
+ export const UTF8 = 'utf8';
+ export const UTF8_with_bom = 'utf8bom';
+@@ -83,7 +81,7 @@ class DecoderStream implements IDecoderStream {
  	static async create(encoding: string): Promise<DecoderStream> {
  		let decoder: IDecoderStream | undefined = undefined;
  		if (encoding !== UTF8) {
@@ -388,7 +407,7 @@ index bae27136de4..6be61851b33 100644
  			decoder = iconv.getDecoder(toNodeEncoding(encoding));
  		} else {
  			const utf8TextDecoder = new TextDecoder();
-@@ -215,7 +214,7 @@ export function toDecodeStream(source: VSBufferReadableStream, options: IDecodeS
+@@ -216,7 +214,7 @@ export function toDecodeStream(source: VSBufferReadableStream, options: IDecodeS
  }
  
  export async function toEncodeReadable(readable: Readable<string>, encoding: string, options?: { addBOM?: boolean }): Promise<VSBufferReadable> {
@@ -397,7 +416,7 @@ index bae27136de4..6be61851b33 100644
  	const encoder = iconv.getEncoder(toNodeEncoding(encoding), options);
  
  	let bytesWritten = false;
-@@ -264,7 +263,7 @@ export async function toEncodeReadable(readable: Readable<string>, encoding: str
+@@ -265,7 +263,7 @@ export async function toEncodeReadable(readable: Readable<string>, encoding: str
  }
  
  export async function encodingExists(encoding: string): Promise<boolean> {
@@ -406,11 +425,15 @@ index bae27136de4..6be61851b33 100644
  
  	return iconv.encodingExists(toNodeEncoding(encoding));
  }
-@@ -320,7 +319,7 @@ const IGNORE_ENCODINGS = ['ascii', 'utf-16', 'utf-32'];
+@@ -321,11 +319,7 @@ const IGNORE_ENCODINGS = ['ascii', 'utf-16', 'utf-32'];
   * Guesses the encoding from buffer.
   */
  async function guessEncodingByBuffer(buffer: VSBuffer, candidateGuessEncodings?: string[]): Promise<string | null> {
--	const jschardet = await importAMDNodeModule<typeof import('jschardet')>('jschardet', 'dist/jschardet.min.js');
+-
+-	// TODO@bpasero TODO@esm: this used to be `dist/jschardet.min.js`, but we are running into an issue that
+-	// https://github.com/aadsm/jschardet/pull/96 mitigates. Long-term we should just add minification
+-	// of dependencies into our build process so that we do not depend on how others are doing it.
+-	const jschardet = await importAMDNodeModule<typeof import('jschardet')>('jschardet', isESM ? 'dist/jschardet.js' : 'dist/jschardet.min.js');
 +	const jschardet = await import('jschardet');
  
  	// ensure to limit buffer for guessing due to https://github.com/aadsm/jschardet/issues/53

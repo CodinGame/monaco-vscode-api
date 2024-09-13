@@ -8,10 +8,10 @@ Subject: [PATCH] feat: add a way to detect if localization were already used
  1 file changed, 7 insertions(+)
 
 diff --git a/src/vs/nls.ts b/src/vs/nls.ts
-index 5a546325fc7..66bdeeb0b33 100644
+index 2e914738989..78ced4fe478 100644
 --- a/src/vs/nls.ts
 +++ b/src/vs/nls.ts
-@@ -43,6 +43,12 @@ function _format(message: string, args: (string | number | boolean | undefined |
+@@ -47,6 +47,12 @@ function _format(message: string, args: (string | number | boolean | undefined |
  	return result;
  }
  
@@ -24,11 +24,11 @@ index 5a546325fc7..66bdeeb0b33 100644
  /**
   * Marks a string to be localized. Returns the localized string.
   *
-@@ -87,6 +93,7 @@ export function localize(data: ILocalizeInfo | string /* | number when built */,
+@@ -91,6 +97,7 @@ export function localize(data: ILocalizeInfo | string /* | number when built */,
   * depending on the target context.
   */
  function lookupMessage(index: number, fallback: string | null): string {
 +	initialized = true;
- 	// VSCODE_GLOBALS: NLS
- 	const message = globalThis._VSCODE_NLS_MESSAGES?.[index];
+ 	const message = getNLSMessages()?.[index];
  	if (typeof message !== 'string') {
+ 		if (typeof fallback === 'string') {

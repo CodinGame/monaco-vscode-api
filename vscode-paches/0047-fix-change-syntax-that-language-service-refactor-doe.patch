@@ -10,7 +10,7 @@ the re-exports source are removed during "Move to new file" refactor
  1 file changed, 3 insertions(+), 1 deletion(-)
 
 diff --git a/src/vs/workbench/contrib/tasks/common/taskService.ts b/src/vs/workbench/contrib/tasks/common/taskService.ts
-index 3db39c2267d..c8bcdf12fe7 100644
+index dab0931a4c1..c8f3a8f30fe 100644
 --- a/src/vs/workbench/contrib/tasks/common/taskService.ts
 +++ b/src/vs/workbench/contrib/tasks/common/taskService.ts
 @@ -15,7 +15,9 @@ import { ITaskSummary, ITaskTerminateResponse, ITaskSystemInfo } from 'vs/workbe

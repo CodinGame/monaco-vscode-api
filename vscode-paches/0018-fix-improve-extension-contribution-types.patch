@@ -1627,12 +1627,12 @@ index 822260bdc2f..43dac321e5b 100644
  
  export interface IExtensionCapabilities {
 diff --git a/src/vs/workbench/services/search/common/queryBuilder.ts b/src/vs/workbench/services/search/common/queryBuilder.ts
-index 0db88575f27..baf35ad2efe 100644
+index 53b37e5f17d..1360c0dcf76 100644
 --- a/src/vs/workbench/services/search/common/queryBuilder.ts
 +++ b/src/vs/workbench/services/search/common/queryBuilder.ts
-@@ -545,10 +545,10 @@ export class QueryBuilder {
+@@ -604,10 +604,10 @@ export class QueryBuilder {
  			folderName: includeFolderName ? folderName : undefined,
- 			excludePattern: Object.keys(excludePattern).length > 0 ? excludePattern : undefined,
+ 			excludePattern: excludePatternRet,
  			fileEncoding: folderConfig.files && folderConfig.files.encoding,
 -			disregardIgnoreFiles: typeof options.disregardIgnoreFiles === 'boolean' ? options.disregardIgnoreFiles : !folderConfig.search.useIgnoreFiles,
 -			disregardGlobalIgnoreFiles: typeof options.disregardGlobalIgnoreFiles === 'boolean' ? options.disregardGlobalIgnoreFiles : !folderConfig.search.useGlobalIgnoreFiles,

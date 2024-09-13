@@ -9,19 +9,19 @@ Subject: [PATCH] cleanup: remove code already done in
  1 file changed, 12 deletions(-)
 
 diff --git a/src/vs/editor/standalone/browser/standaloneServices.ts b/src/vs/editor/standalone/browser/standaloneServices.ts
-index a692fe86d7a..d1729b9dd9c 100644
+index c763e7ccd83..85b999bf4de 100644
 --- a/src/vs/editor/standalone/browser/standaloneServices.ts
 +++ b/src/vs/editor/standalone/browser/standaloneServices.ts
-@@ -90,8 +90,6 @@ import { DefaultConfiguration } from 'vs/platform/configuration/common/configura
- import { WorkspaceEdit } from 'vs/editor/common/languages';
- import { AccessibilitySignal, AccessibilityModality, IAccessibilitySignalService, Sound } from 'vs/platform/accessibilitySignal/browser/accessibilitySignalService';
+@@ -91,8 +91,6 @@ import { AccessibilitySignal, AccessibilityModality, IAccessibilitySignalService
+ import { ILanguageFeaturesService } from 'vs/editor/common/services/languageFeatures';
+ import { ILanguageConfigurationService } from 'vs/editor/common/languages/languageConfigurationRegistry';
  import { LogService } from 'vs/platform/log/common/logService';
 -import { getEditorFeatures } from 'vs/editor/common/editorFeatures';
 -import { onUnexpectedError } from 'vs/base/common/errors';
  import { ExtensionKind, IEnvironmentService, IExtensionHostDebugParams } from 'vs/platform/environment/common/environment';
  import { mainWindow } from 'vs/base/browser/window';
  import { ResourceMap } from 'vs/base/common/map';
-@@ -1206,16 +1204,6 @@ export module StandaloneServices {
+@@ -1229,16 +1227,6 @@ export module StandaloneServices {
  			}
  		}
  
