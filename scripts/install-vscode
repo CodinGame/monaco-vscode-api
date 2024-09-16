@@ -7,7 +7,6 @@ monacoRef=$(cat package.json | jq -r '.config.monaco.ref')
 package_json="`pwd`/package.json"
 output_directory="`pwd`/vscode"
 loc_output_directory="`pwd`/vscode-loc"
-monaco_editor_output_directory="`pwd`/monaco-editor"
 extension_output_directory="`pwd`/vscode-default-extensions"
 patch_directory="`pwd`/vscode-paches"
 version_info=$output_directory/version.info
@@ -88,7 +87,6 @@ cd ..
 cd src
 
 mkdir -p $output_directory
-echo $vscodeRef > $version_info
 
 echo "Building vscode..."
 NODE_OPTIONS=--max-old-space-size=8192 npx tsc --declaration --importHelpers --module es2020 --preserveConstEnums --outDir "$output_directory/src" --rootDir .
@@ -104,5 +102,7 @@ echo "Downloading vscode-loc"
 rm -rf $loc_output_directory
 mkdir -p $loc_output_directory
 curl -L --max-redirs 5 https://github.com/microsoft/vscode-loc/archive/refs/heads/main.tar.gz | tar -xz -C $loc_output_directory --strip-components=2 vscode-loc-main/i18n
+
+echo $vscodeRef > $version_info
 
 rm -rf $build_directory

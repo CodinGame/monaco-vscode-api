@@ -23,7 +23,8 @@
     },
     "typeRoots": [
       "./node_modules/@types"
-    ]
+    ],
+    "skipLibCheck": true
   },
   "include": ["src", "vite.config.ts", "vite.netlify.config.ts"]
 }

@@ -28,7 +28,7 @@ function read (stream: Readable): Promise<Buffer> {
 }
 
 async function readVsix (file: string): Promise<IFs> {
-  return new Promise((resolve) => {
+  return await new Promise((resolve) => {
     const files: Record<string, Buffer> = {}
     yauzl.open(file, { lazyEntries: true }, (err, zipfile) => {
       if (err != null) throw err

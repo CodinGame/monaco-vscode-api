@@ -77,7 +77,7 @@ class CustomRemoteExtensionsScannerService extends RemoteExtensionsScannerServic
     if (!this.scanRemoteExtensions) {
       return []
     }
-    return super.scanExtensions()
+    return await super.scanExtensions()
   }
 }
 

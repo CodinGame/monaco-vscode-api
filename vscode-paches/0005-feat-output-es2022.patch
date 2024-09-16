@@ -1,0 +1,38 @@
+From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
+From: =?UTF-8?q?Lo=C3=AFc=20Mangeonjean?= <loic@coderpad.io>
+Date: Mon, 11 Mar 2024 16:44:35 +0100
+Subject: [PATCH] feat: output es2022
+
+---
+ src/tsconfig.base.json   | 3 ++-
+ src/tsconfig.monaco.json | 4 ++--
+ 2 files changed, 4 insertions(+), 3 deletions(-)
+
+diff --git a/src/tsconfig.base.json b/src/tsconfig.base.json
+index c0a2e174591..1d80c22afa3 100644
+--- a/src/tsconfig.base.json
++++ b/src/tsconfig.base.json
+@@ -1,6 +1,7 @@
+ {
+ 	"compilerOptions": {
+-		"module": "amd",
++		"esModuleInterop": true,
++		"module": "ES2020",
+ 		"moduleResolution": "node",
+ 		"experimentalDecorators": true,
+ 		"noImplicitReturns": true,
+diff --git a/src/tsconfig.monaco.json b/src/tsconfig.monaco.json
+index bb4fd1ccc35..702c492934b 100644
+--- a/src/tsconfig.monaco.json
++++ b/src/tsconfig.monaco.json
+@@ -7,8 +7,8 @@
+ 			"wicg-file-system-access"
+ 		],
+ 		"paths": {},
+-		"module": "amd",
+-		"moduleResolution": "node",
++		"module": "es2022",
++		"moduleResolution": "classic",
+ 		"removeComments": false,
+ 		"preserveConstEnums": true,
+ 		"target": "ES2022",

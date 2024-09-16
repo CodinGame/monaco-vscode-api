@@ -10,7 +10,7 @@ Subject: [PATCH] fix: mark process supported as soon as there is a registered
  2 files changed, 33 insertions(+), 11 deletions(-)
 
 diff --git a/src/vs/platform/terminal/common/terminal.ts b/src/vs/platform/terminal/common/terminal.ts
-index f8e502eb908..1de8cfa93b1 100644
+index 62a129b809d..0a1a2490bef 100644
 --- a/src/vs/platform/terminal/common/terminal.ts
 +++ b/src/vs/platform/terminal/common/terminal.ts
 @@ -3,7 +3,7 @@
@@ -22,7 +22,7 @@ index f8e502eb908..1de8cfa93b1 100644
  import { IProcessEnvironment, OperatingSystem } from 'vs/base/common/platform';
  import { URI, UriComponents } from 'vs/base/common/uri';
  import { createDecorator } from 'vs/platform/instantiation/common/instantiation';
-@@ -1049,12 +1049,27 @@ export const TerminalExtensions = {
+@@ -1055,12 +1055,27 @@ export const TerminalExtensions = {
  	Backend: 'workbench.contributions.terminal.processBackend'
  };
  
@@ -50,7 +50,7 @@ index f8e502eb908..1de8cfa93b1 100644
  	/**
  	 * Registers a terminal backend for a remote authority.
  	 */
-@@ -1071,21 +1086,20 @@ class TerminalBackendRegistry implements ITerminalBackendRegistry {
+@@ -1077,21 +1092,20 @@ class TerminalBackendRegistry implements ITerminalBackendRegistry {
  
  	get backends(): ReadonlyMap<string, ITerminalBackend> { return this._backends; }
  
@@ -79,7 +79,7 @@ index f8e502eb908..1de8cfa93b1 100644
  }
  Registry.add(TerminalExtensions.Backend, new TerminalBackendRegistry());
 diff --git a/src/vs/workbench/contrib/terminal/browser/terminalService.ts b/src/vs/workbench/contrib/terminal/browser/terminalService.ts
-index 6b0da407e24..46910ccf0a4 100644
+index 2dc85842d94..aad999896ea 100644
 --- a/src/vs/workbench/contrib/terminal/browser/terminalService.ts
 +++ b/src/vs/workbench/contrib/terminal/browser/terminalService.ts
 @@ -19,7 +19,7 @@ import { IContextKey, IContextKeyService } from 'vs/platform/contextkey/common/c

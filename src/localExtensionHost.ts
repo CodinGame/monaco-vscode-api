@@ -137,7 +137,7 @@ class LocalExtensionHost implements IExtensionHost {
     if (this._protocolPromise == null) {
       this._protocolPromise = this._start()
     }
-    return this._protocolPromise
+    return await this._protocolPromise
   }
 
   async _start (): Promise<IMessagePassingProtocol> {
@@ -240,7 +240,7 @@ export type {
 
 async function createLocalApi (extensionId?: string): Promise<typeof vscode> {
   const apiFactory = await apiFactoryDeferred.p
-  return apiFactory(extensionId)
+  return await apiFactory(extensionId)
 }
 
 setLocalExtensionHost(LocalExtensionHost)

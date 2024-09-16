@@ -8,36 +8,36 @@ Subject: [PATCH] fix: only use open model
  1 file changed, 3 insertions(+), 58 deletions(-)
 
 diff --git a/src/vs/workbench/services/languageDetection/browser/languageDetectionSimpleWorker.ts b/src/vs/workbench/services/languageDetection/browser/languageDetectionSimpleWorker.ts
-index f967fc38127..4da1da8f591 100644
+index 8067c690fa3..b5cd1fbd527 100644
 --- a/src/vs/workbench/services/languageDetection/browser/languageDetectionSimpleWorker.ts
 +++ b/src/vs/workbench/services/languageDetection/browser/languageDetectionSimpleWorker.ts
-@@ -3,14 +3,12 @@
+@@ -3,15 +3,12 @@
   *  Licensed under the MIT License. See License.txt in the project root for license information.
   *--------------------------------------------------------------------------------------------*/
  
 -import type { ModelOperations, ModelResult } from '@vscode/vscode-languagedetection';
+-import { importAMDNodeModule } from 'vs/amdX';
 +import { ModelOperations, ModelResult } from '@vscode/vscode-languagedetection';
  import { StopWatch } from 'vs/base/common/stopwatch';
- import { IRequestHandler } from 'vs/base/common/worker/simpleWorker';
- import { EditorSimpleWorker } from 'vs/editor/common/services/editorSimpleWorker';
- import { IEditorWorkerHost } from 'vs/editor/common/services/editorWorkerHost';
+ import { IRequestHandler, IWorkerServer } from 'vs/base/common/worker/simpleWorker';
+ import { LanguageDetectionWorkerHost, ILanguageDetectionWorker } from 'vs/workbench/services/languageDetection/browser/languageDetectionWorker.protocol';
+ import { WorkerTextModelSyncServer } from 'vs/editor/common/services/textModelSync/textModelSync.impl';
  
 -type RegexpModel = { detect: (inp: string, langBiases: Record<string, number>, supportedLangs?: string[]) => string | undefined };
 -
  /**
-  * Called on the worker side
-  * @internal
-@@ -28,9 +26,6 @@ export class LanguageDetectionSimpleWorker extends EditorSimpleWorker {
- 	private static readonly positiveConfidenceCorrectionBucket2 = 0.025;
- 	private static readonly negativeConfidenceCorrection = 0.5;
+  * Defines the worker entry point. Must be exported and named `create`.
+  * @skipMangle
+@@ -34,8 +31,6 @@ export class LanguageDetectionSimpleWorker implements ILanguageDetectionWorker {
+ 	private readonly _workerTextModelSyncServer = new WorkerTextModelSyncServer();
  
+ 	private readonly _host: LanguageDetectionWorkerHost;
 -	private _regexpModel: RegexpModel | undefined;
 -	private _regexpLoadFailed: boolean = false;
--
+ 
  	private _modelOperations: ModelOperations | undefined;
  	private _loadFailed: boolean = false;
- 
-@@ -63,19 +58,8 @@ export class LanguageDetectionSimpleWorker extends EditorSimpleWorker {
+@@ -74,19 +69,8 @@ export class LanguageDetectionSimpleWorker implements ILanguageDetectionWorker {
  			return undefined;
  		};
  
@@ -59,7 +59,7 @@ index f967fc38127..4da1da8f591 100644
  
  		return undefined;
  	}
-@@ -94,50 +78,11 @@ export class LanguageDetectionSimpleWorker extends EditorSimpleWorker {
+@@ -105,50 +89,11 @@ export class LanguageDetectionSimpleWorker implements ILanguageDetectionWorker {
  		return content;
  	}
  
@@ -70,9 +70,9 @@ index f967fc38127..4da1da8f591 100644
 -		if (this._regexpModel) {
 -			return this._regexpModel;
 -		}
--		const uri: string = await this._host.fhr('getRegexpModelUri', []);
+-		const uri: string = await this._host.$getRegexpModelUri();
 -		try {
--			this._regexpModel = await import(uri) as RegexpModel;
+-			this._regexpModel = await importAMDNodeModule(uri, '') as RegexpModel;
 -			return this._regexpModel;
 -		} catch (e) {
 -			this._regexpLoadFailed = true;
@@ -105,8 +105,8 @@ index f967fc38127..4da1da8f591 100644
  			return this._modelOperations;
  		}
  
--		const uri: string = await this._host.fhr('getIndexJsUri', []);
--		const { ModelOperations } = await import(uri) as typeof import('@vscode/vscode-languagedetection');
+-		const uri: string = await this._host.$getIndexJsUri();
+-		const { ModelOperations } = await importAMDNodeModule(uri, '') as typeof import('@vscode/vscode-languagedetection');
  		this._modelOperations = new ModelOperations({
  			modelJsonLoaderFunc: async () => {
- 				const response = await fetch(await this._host.fhr('getModelJsonUri', []));
+ 				const response = await fetch(await this._host.$getModelJsonUri());

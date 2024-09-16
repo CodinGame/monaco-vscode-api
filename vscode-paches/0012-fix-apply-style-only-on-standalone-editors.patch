@@ -11,7 +11,8 @@ Subject: [PATCH] fix: apply style only on standalone editors
  .../browser/standaloneCodeEditor.ts           |  4 +--
  .../test/browser/config/testConfiguration.ts  |  2 +-
  src/vs/editor/test/browser/testCodeEditor.ts  |  2 +-
- 7 files changed, 44 insertions(+), 23 deletions(-)
+ .../multicursor/notebookMulticursor.ts        |  2 +-
+ 8 files changed, 45 insertions(+), 24 deletions(-)
 
 diff --git a/src/vs/editor/browser/config/editorConfiguration.ts b/src/vs/editor/browser/config/editorConfiguration.ts
 index 4de800bd521..de9b4b9143c 100644
@@ -79,7 +80,7 @@ index 4de800bd521..de9b4b9143c 100644
  	public static validateOptions(options: IEditorOptions): ValidatedEditorOptions {
  		const result = new ValidatedEditorOptions();
 diff --git a/src/vs/editor/browser/widget/codeEditor/codeEditorWidget.ts b/src/vs/editor/browser/widget/codeEditor/codeEditorWidget.ts
-index f8ed64fba6c..11da908d0f3 100644
+index 660e00eea1c..8c999f39c86 100644
 --- a/src/vs/editor/browser/widget/codeEditor/codeEditorWidget.ts
 +++ b/src/vs/editor/browser/widget/codeEditor/codeEditorWidget.ts
 @@ -270,6 +270,7 @@ export class CodeEditorWidget extends Disposable implements editorBrowser.ICodeE
@@ -101,7 +102,7 @@ index f8ed64fba6c..11da908d0f3 100644
  	}
  
  	public getId(): string {
-@@ -1954,6 +1955,12 @@ export interface ICodeEditorWidgetOptions {
+@@ -1955,6 +1956,12 @@ export interface ICodeEditorWidgetOptions {
  	 */
  	isSimpleWidget?: boolean;
  
@@ -194,19 +195,19 @@ index 1fc85078f9e..c74aca00541 100644
  	outline-style: solid;
  	outline-offset: -1px;
 diff --git a/src/vs/editor/standalone/browser/standaloneCodeEditor.ts b/src/vs/editor/standalone/browser/standaloneCodeEditor.ts
-index 84deb53c57d..d9b8c63cfb3 100644
+index 3ccfa128dc2..9ee85e6804a 100644
 --- a/src/vs/editor/standalone/browser/standaloneCodeEditor.ts
 +++ b/src/vs/editor/standalone/browser/standaloneCodeEditor.ts
-@@ -284,7 +284,7 @@ export class StandaloneCodeEditor extends CodeEditorWidget implements IStandalon
+@@ -283,7 +283,7 @@ export class StandaloneCodeEditor extends CodeEditorWidget implements IStandalon
+ 	) {
  		const options = { ..._options };
  		options.ariaLabel = options.ariaLabel || StandaloneCodeEditorNLS.editorViewAccessibleLabel;
- 		options.ariaLabel = options.ariaLabel + ';' + (StandaloneCodeEditorNLS.accessibilityHelpMessage);
 -		super(domElement, options, {}, instantiationService, codeEditorService, commandService, contextKeyService, themeService, notificationService, accessibilityService, languageConfigurationService, languageFeaturesService);
 +		super(domElement, options, { isStandaloneEditor: true }, instantiationService, codeEditorService, commandService, contextKeyService, themeService, notificationService, accessibilityService, languageConfigurationService, languageFeaturesService);
  
  		if (keybindingService instanceof StandaloneKeybindingService) {
  			this._standaloneKeybindingService = keybindingService;
-@@ -522,7 +522,7 @@ export class StandaloneDiffEditor2 extends DiffEditorWidget implements IStandalo
+@@ -521,7 +521,7 @@ export class StandaloneDiffEditor2 extends DiffEditorWidget implements IStandalo
  		super(
  			domElement,
  			options,
@@ -229,10 +230,10 @@ index 4a2e87e6d48..d96690e36ee 100644
  
  	protected override _readEnvConfiguration(): IEnvConfiguration {
 diff --git a/src/vs/editor/test/browser/testCodeEditor.ts b/src/vs/editor/test/browser/testCodeEditor.ts
-index 5fcd0c1bd4c..9ad5fefd0c8 100644
+index 5a79e483795..3f5d2e03cd8 100644
 --- a/src/vs/editor/test/browser/testCodeEditor.ts
 +++ b/src/vs/editor/test/browser/testCodeEditor.ts
-@@ -69,7 +69,7 @@ export interface ITestCodeEditor extends IActiveCodeEditor {
+@@ -71,7 +71,7 @@ export interface ITestCodeEditor extends IActiveCodeEditor {
  export class TestCodeEditor extends CodeEditorWidget implements ICodeEditor {
  
  	//#region testing overrides
@@ -241,3 +242,16 @@ index 5fcd0c1bd4c..9ad5fefd0c8 100644
  		return new TestConfiguration(options);
  	}
  	protected override _createView(viewModel: ViewModel): [View, boolean] {
+diff --git a/src/vs/workbench/contrib/notebook/browser/contrib/multicursor/notebookMulticursor.ts b/src/vs/workbench/contrib/notebook/browser/contrib/multicursor/notebookMulticursor.ts
+index 1a2621a00c4..be7f7c085d9 100644
+--- a/src/vs/workbench/contrib/notebook/browser/contrib/multicursor/notebookMulticursor.ts
++++ b/src/vs/workbench/contrib/notebook/browser/contrib/multicursor/notebookMulticursor.ts
+@@ -504,7 +504,7 @@ export class NotebookMultiCursorController extends Disposable implements INotebo
+ 	private constructCellEditorOptions(cell: ICellViewModel): EditorConfiguration {
+ 		const cellEditorOptions = new CellEditorOptions(this.notebookEditor.getBaseCellEditorOptions(cell.language), this.notebookEditor.notebookOptions, this.configurationService);
+ 		const options = cellEditorOptions.getUpdatedValue(cell.internalMetadata, cell.uri);
+-		return new EditorConfiguration(false, MenuId.EditorContent, options, null, this.accessibilityService);
++		return new EditorConfiguration(false, MenuId.EditorContent, false, options, null, this.accessibilityService);
+ 	}
+ 
+ 	/**

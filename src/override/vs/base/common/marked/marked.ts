@@ -1,4 +1,1 @@
-import marked from 'vscode-marked'
-export {
-  marked
-}
+export * from 'marked'

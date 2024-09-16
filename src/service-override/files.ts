@@ -429,7 +429,7 @@ class RegisteredFileSystemProvider extends Disposable implements
 
   async stat (resource: URI): Promise<IStat> {
     const node = this._lookup(resource, false)
-    return node.stats()
+    return await node.stats()
   }
 
   public readdirSync (resource: URI): [string, FileType][] {
@@ -677,7 +677,7 @@ IFileSystemProviderWithFileAtomicDeleteCapability {
   }
 
   async stat (resource: URI): Promise<IStat> {
-    return this.readFromDelegates(async delegate => {
+    return await this.readFromDelegates(async delegate => {
       const result = await delegate.stat(resource)
 
       const readOnly = (delegate.capabilities & FileSystemProviderCapabilities.Readonly) > 0
@@ -689,7 +689,7 @@ IFileSystemProviderWithFileAtomicDeleteCapability {
   }
 
   async readFile (resource: URI): Promise<Uint8Array> {
-    return this.readFromDelegates(delegate => delegate.readFile(resource))
+    return await this.readFromDelegates(delegate => delegate.readFile(resource))
   }
 
   readFileStream (resource: URI, opts: IFileReadStreamOptions, token: CancellationToken): ReadableStreamEvents<Uint8Array> {
@@ -732,7 +732,7 @@ IFileSystemProviderWithFileAtomicDeleteCapability {
   }
 
   async readdir (resource: URI): Promise<[string, FileType][]> {
-    const results = await Promise.allSettled(this.delegates.map(async delegate => delegate.readdir(resource)))
+    const results = await Promise.allSettled(this.delegates.map(async delegate => await delegate.readdir(resource)))
     if (!results.some(isFullfiled)) {
       throw (results[0] as PromiseRejectedResult).reason
     }
@@ -758,7 +758,7 @@ IFileSystemProviderWithFileAtomicDeleteCapability {
       if (stats != null && ((stats.permissions ?? 0) & FilePermission.Readonly) > 0) {
         throw createFileSystemProviderError('Not allowed', FileSystemProviderErrorCode.NoPermissions)
       }
-      return delegate.writeFile(resource, content, opts)
+      return await delegate.writeFile(resource, content, opts)
     })
   }
 
@@ -781,7 +781,7 @@ class MkdirpOnWriteInMemoryFileSystemProvider extends InMemoryFileSystemProvider
     // if another provider has this directory. So it won't create the parent directories on this memory file system.
     await mkdirp(extUri, this, extUri.dirname(resource))
 
-    return super.writeFile(resource, content, opts)
+    return await super.writeFile(resource, content, opts)
   }
 }
 

@@ -8,7 +8,7 @@ Subject: [PATCH] fix(typescript): handle missing case
  1 file changed, 3 insertions(+), 1 deletion(-)
 
 diff --git a/extensions/typescript-language-features/web/src/typingsInstaller/typingsInstaller.ts b/extensions/typescript-language-features/web/src/typingsInstaller/typingsInstaller.ts
-index 7c40993d6df..950ed338c30 100644
+index 1f7790dc783..3ce2c137779 100644
 --- a/extensions/typescript-language-features/web/src/typingsInstaller/typingsInstaller.ts
 +++ b/extensions/typescript-language-features/web/src/typingsInstaller/typingsInstaller.ts
 @@ -66,7 +66,9 @@ export class WebTypingsInstallerClient implements ts.server.ITypingsInstaller {

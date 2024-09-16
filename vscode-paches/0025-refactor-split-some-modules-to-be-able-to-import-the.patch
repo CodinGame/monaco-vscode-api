@@ -7,14 +7,14 @@ Subject: [PATCH] refactor: split some modules to be able to import them
 ---
  .../editor/editor.contribution._autosave.ts   |   9 +
  .../parts/editor/editor.contribution.ts       |   3 +-
- .../files/browser/fileCommands._save.ts       | 224 ++++++
- .../contrib/files/browser/fileCommands.ts     | 220 +-----
- .../files.contribution._configuration.ts      | 324 +++++++++
+ .../files/browser/fileCommands._save.ts       | 225 ++++++
+ .../contrib/files/browser/fileCommands.ts     | 221 +-----
+ .../files.contribution._configuration.ts      | 297 ++++++++
  .../browser/files.contribution._editorPane.ts |  93 +++
- .../browser/files.contribution._explorer.ts   | 275 ++++++++
+ .../browser/files.contribution._explorer.ts   | 280 ++++++++
  .../files.contribution._fileEditorFactory.ts  |  23 +
- .../files/browser/files.contribution.ts       | 654 +-----------------
- 9 files changed, 961 insertions(+), 864 deletions(-)
+ .../files/browser/files.contribution.ts       | 659 +-----------------
+ 9 files changed, 940 insertions(+), 870 deletions(-)
  create mode 100644 src/vs/workbench/browser/parts/editor/editor.contribution._autosave.ts
  create mode 100644 src/vs/workbench/contrib/files/browser/fileCommands._save.ts
  create mode 100644 src/vs/workbench/contrib/files/browser/files.contribution._configuration.ts
@@ -38,7 +38,7 @@ index 00000000000..c7416d68719
 +
 +registerWorkbenchContribution2(EditorAutoSave.ID, EditorAutoSave, WorkbenchPhase.BlockRestore);
 diff --git a/src/vs/workbench/browser/parts/editor/editor.contribution.ts b/src/vs/workbench/browser/parts/editor/editor.contribution.ts
-index fabc137b0ae..0a4ce484085 100644
+index 753f4aa8860..6effe9075e1 100644
 --- a/src/vs/workbench/browser/parts/editor/editor.contribution.ts
 +++ b/src/vs/workbench/browser/parts/editor/editor.contribution.ts
 @@ -61,7 +61,6 @@ import { isMacintosh } from 'vs/base/common/platform';
@@ -67,10 +67,10 @@ index fabc137b0ae..0a4ce484085 100644
  registerWorkbenchContribution2(DynamicEditorConfigurations.ID, DynamicEditorConfigurations, WorkbenchPhase.BlockRestore);
 diff --git a/src/vs/workbench/contrib/files/browser/fileCommands._save.ts b/src/vs/workbench/contrib/files/browser/fileCommands._save.ts
 new file mode 100644
-index 00000000000..037d615a820
+index 00000000000..00d9d64137d
 --- /dev/null
 +++ b/src/vs/workbench/contrib/files/browser/fileCommands._save.ts
-@@ -0,0 +1,224 @@
+@@ -0,0 +1,225 @@
 +/*---------------------------------------------------------------------------------------------
 + *  Copyright (c) Microsoft Corporation. All rights reserved.
 + *  Licensed under the MIT License. See License.txt in the project root for license information.
@@ -95,7 +95,7 @@ index 00000000000..037d615a820
 +import { EmbeddedCodeEditorWidget } from 'vs/editor/browser/widget/codeEditor/embeddedCodeEditorWidget';
 +import { ITextFileService } from 'vs/workbench/services/textfile/common/textfiles';
 +import { isCancellationError } from 'vs/base/common/errors';
-+import { toAction } from 'vs/base/common/actions';
++import { toAction, IAction } from 'vs/base/common/actions';
 +import { hash } from 'vs/base/common/hash';
 +import { SAVE_FILE_COMMAND_ID, SAVE_FILE_WITHOUT_FORMATTING_COMMAND_ID, SAVE_FILE_AS_COMMAND_ID, SAVE_ALL_COMMAND_ID, SAVE_ALL_IN_GROUP_COMMAND_ID, SAVE_FILES_COMMAND_ID, REVERT_FILE_COMMAND_ID } from './fileConstants';
 +import { IListService } from 'vs/platform/list/browser/listService';
@@ -182,16 +182,17 @@ index 00000000000..037d615a820
 +		await editorService.save(editors, options);
 +	} catch (error) {
 +		if (!isCancellationError(error)) {
++			const actions: IAction[] = [toAction({ id: 'workbench.action.files.saveEditors', label: nls.localize('retry', "Retry"), run: () => instantiationService.invokeFunction(accessor => doSaveEditors(accessor, editors, options)) })];
++			const editorsToRevert = editors.filter(({ editor }) => !editor.hasCapability(EditorInputCapabilities.Untitled) /* all except untitled to prevent unexpected data-loss */);
++			if (editorsToRevert.length > 0) {
++				actions.push(toAction({ id: 'workbench.action.files.revertEditors', label: editorsToRevert.length > 1 ? nls.localize('revertAll', "Revert All") : nls.localize('revert', "Revert"), run: () => editorService.revert(editorsToRevert) }));
++			}
++
 +			notificationService.notify({
 +				id: editors.map(({ editor }) => hash(editor.resource?.toString())).join(), // ensure unique notification ID per set of editor
 +				severity: Severity.Error,
 +				message: nls.localize({ key: 'genericSaveError', comment: ['{0} is the resource that failed to save and {1} the error message'] }, "Failed to save '{0}': {1}", editors.map(({ editor }) => editor.getName()).join(', '), toErrorMessage(error, false)),
-+				actions: {
-+					primary: [
-+						toAction({ id: 'workbench.action.files.saveEditors', label: nls.localize('retry', "Retry"), run: () => instantiationService.invokeFunction(accessor => doSaveEditors(accessor, editors, options)) }),
-+						toAction({ id: 'workbench.action.files.revertEditors', label: nls.localize('discard', "Discard"), run: () => editorService.revert(editors) })
-+					]
-+				}
++				actions: { primary: actions }
 +			});
 +		}
 +	}
@@ -296,7 +297,7 @@ index 00000000000..037d615a820
 +	}
 +});
 diff --git a/src/vs/workbench/contrib/files/browser/fileCommands.ts b/src/vs/workbench/contrib/files/browser/fileCommands.ts
-index bfa8d97796c..474e3898e59 100644
+index c17a5b80692..501b58373c1 100644
 --- a/src/vs/workbench/contrib/files/browser/fileCommands.ts
 +++ b/src/vs/workbench/contrib/files/browser/fileCommands.ts
 @@ -3,10 +3,10 @@
@@ -345,7 +346,7 @@ index bfa8d97796c..474e3898e59 100644
 -import { ITextFileService } from 'vs/workbench/services/textfile/common/textfiles';
  import { IUriIdentityService } from 'vs/platform/uriIdentity/common/uriIdentity';
 -import { isCancellationError } from 'vs/base/common/errors';
--import { toAction } from 'vs/base/common/actions';
+-import { IAction, toAction } from 'vs/base/common/actions';
  import { EditorOpenSource, EditorResolution } from 'vs/platform/editor/common/editor';
 -import { hash } from 'vs/base/common/hash';
  import { IConfigurationService } from 'vs/platform/configuration/common/configuration';
@@ -363,7 +364,7 @@ index bfa8d97796c..474e3898e59 100644
  
  export const openWindowCommand = (accessor: ServicesAccessor, toOpen: IWindowOpenable[], options?: IOpenWindowOptions) => {
  	if (Array.isArray(toOpen)) {
-@@ -362,202 +354,6 @@ CommandsRegistry.registerCommand({
+@@ -362,203 +354,6 @@ CommandsRegistry.registerCommand({
  
  // Save / Save As / Save All / Revert
  
@@ -449,16 +450,17 @@ index bfa8d97796c..474e3898e59 100644
 -		await editorService.save(editors, options);
 -	} catch (error) {
 -		if (!isCancellationError(error)) {
+-			const actions: IAction[] = [toAction({ id: 'workbench.action.files.saveEditors', label: nls.localize('retry', "Retry"), run: () => instantiationService.invokeFunction(accessor => doSaveEditors(accessor, editors, options)) })];
+-			const editorsToRevert = editors.filter(({ editor }) => !editor.hasCapability(EditorInputCapabilities.Untitled) /* all except untitled to prevent unexpected data-loss */);
+-			if (editorsToRevert.length > 0) {
+-				actions.push(toAction({ id: 'workbench.action.files.revertEditors', label: editorsToRevert.length > 1 ? nls.localize('revertAll', "Revert All") : nls.localize('revert', "Revert"), run: () => editorService.revert(editorsToRevert) }));
+-			}
+-
 -			notificationService.notify({
 -				id: editors.map(({ editor }) => hash(editor.resource?.toString())).join(), // ensure unique notification ID per set of editor
 -				severity: Severity.Error,
 -				message: nls.localize({ key: 'genericSaveError', comment: ['{0} is the resource that failed to save and {1} the error message'] }, "Failed to save '{0}': {1}", editors.map(({ editor }) => editor.getName()).join(', '), toErrorMessage(error, false)),
--				actions: {
--					primary: [
--						toAction({ id: 'workbench.action.files.saveEditors', label: nls.localize('retry', "Retry"), run: () => instantiationService.invokeFunction(accessor => doSaveEditors(accessor, editors, options)) }),
--						toAction({ id: 'workbench.action.files.revertEditors', label: nls.localize('discard', "Discard"), run: () => editorService.revert(editors) })
--					]
--				}
+-				actions: { primary: actions }
 -			});
 -		}
 -	}
@@ -568,10 +570,10 @@ index bfa8d97796c..474e3898e59 100644
  	handler: (accessor, resource: URI | object) => {
 diff --git a/src/vs/workbench/contrib/files/browser/files.contribution._configuration.ts b/src/vs/workbench/contrib/files/browser/files.contribution._configuration.ts
 new file mode 100644
-index 00000000000..5979ca58c83
+index 00000000000..b44c86e2c7e
 --- /dev/null
 +++ b/src/vs/workbench/contrib/files/browser/files.contribution._configuration.ts
-@@ -0,0 +1,324 @@
+@@ -0,0 +1,297 @@
 +/*---------------------------------------------------------------------------------------------
 + *  Copyright (c) Microsoft Corporation. All rights reserved.
 + *  Licensed under the MIT License. See License.txt in the project root for license information.
@@ -869,33 +871,6 @@ index 00000000000..5979ca58c83
 +		},
 +	}
 +});
-+
-+configurationRegistry.registerConfiguration({
-+	...editorConfigurationBaseNode,
-+	properties: {
-+		'editor.formatOnSave': {
-+			'type': 'boolean',
-+			'description': nls.localize('formatOnSave', "Format a file on save. A formatter must be available, the file must not be saved after delay, and the editor must not be shutting down."),
-+			'scope': ConfigurationScope.LANGUAGE_OVERRIDABLE,
-+		},
-+		'editor.formatOnSaveMode': {
-+			'type': 'string',
-+			'default': 'file',
-+			'enum': [
-+				'file',
-+				'modifications',
-+				'modificationsIfAvailable'
-+			],
-+			'enumDescriptions': [
-+				nls.localize({ key: 'everything', comment: ['This is the description of an option'] }, "Format the whole file."),
-+				nls.localize({ key: 'modification', comment: ['This is the description of an option'] }, "Format modifications (requires source control)."),
-+				nls.localize({ key: 'modificationIfAvailable', comment: ['This is the description of an option'] }, "Will attempt to format modifications only (requires source control). If source control can't be used, then the whole file will be formatted."),
-+			],
-+			'markdownDescription': nls.localize('formatOnSaveMode', "Controls if format on save formats the whole file or only modifications. Only applies when `#editor.formatOnSave#` is enabled."),
-+			'scope': ConfigurationScope.LANGUAGE_OVERRIDABLE,
-+		},
-+	}
-+});
 diff --git a/src/vs/workbench/contrib/files/browser/files.contribution._editorPane.ts b/src/vs/workbench/contrib/files/browser/files.contribution._editorPane.ts
 new file mode 100644
 index 00000000000..27601da294a
@@ -997,10 +972,10 @@ index 00000000000..27601da294a
 +});
 diff --git a/src/vs/workbench/contrib/files/browser/files.contribution._explorer.ts b/src/vs/workbench/contrib/files/browser/files.contribution._explorer.ts
 new file mode 100644
-index 00000000000..628bd4fd8bf
+index 00000000000..6a76fd36387
 --- /dev/null
 +++ b/src/vs/workbench/contrib/files/browser/files.contribution._explorer.ts
-@@ -0,0 +1,275 @@
+@@ -0,0 +1,280 @@
 +/*---------------------------------------------------------------------------------------------
 + *  Copyright (c) Microsoft Corporation. All rights reserved.
 + *  Licensed under the MIT License. See License.txt in the project root for license information.
@@ -1162,6 +1137,11 @@ index 00000000000..628bd4fd8bf
 +			],
 +			'description': nls.localize('sortOrderLexicographicOptions', "Controls the lexicographic sorting of file and folder names in the Explorer.")
 +		},
++		'explorer.sortOrderReverse': {
++			'type': 'boolean',
++			'description': nls.localize('sortOrderReverse', "Controls whether the file and folder sort order, should be reversed."),
++			'default': false,
++		},
 +		'explorer.decorations.colors': {
 +			type: 'boolean',
 +			description: nls.localize('explorer.decorations.colors', "Controls whether file decorations should use colors."),
@@ -1306,10 +1286,10 @@ index 00000000000..2f31d6a7984
 +	}
 +});
 diff --git a/src/vs/workbench/contrib/files/browser/files.contribution.ts b/src/vs/workbench/contrib/files/browser/files.contribution.ts
-index a7edb2ec8e3..fa00f1d55a1 100644
+index 097721653f6..fa00f1d55a1 100644
 --- a/src/vs/workbench/contrib/files/browser/files.contribution.ts
 +++ b/src/vs/workbench/contrib/files/browser/files.contribution.ts
-@@ -3,653 +3,7 @@
+@@ -3,658 +3,7 @@
   *  Licensed under the MIT License. See License.txt in the project root for license information.
   *--------------------------------------------------------------------------------------------*/
  
@@ -1842,6 +1822,11 @@ index a7edb2ec8e3..fa00f1d55a1 100644
 -				nls.localize('sortOrderLexicographicOptions.unicode', 'Names are sorted in Unicode order.')
 -			],
 -			'description': nls.localize('sortOrderLexicographicOptions', "Controls the lexicographic sorting of file and folder names in the Explorer.")
+-		},
+-		'explorer.sortOrderReverse': {
+-			'type': 'boolean',
+-			'description': nls.localize('sortOrderReverse', "Controls whether the file and folder sort order, should be reversed."),
+-			'default': false,
 -		},
 -		'explorer.decorations.colors': {
 -			type: 'boolean',

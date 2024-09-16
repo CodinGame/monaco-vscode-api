@@ -71,11 +71,11 @@ class ExternalStorageDatabase implements IStorageDatabase {
   }
 
   async close () {
-    return this.provider.close?.(this.scope)
+    return await this.provider.close?.(this.scope)
   }
 
   async optimize (): Promise<void> {
-    return this.provider.optimize?.(this.scope)
+    return await this.provider.optimize?.(this.scope)
   }
 }
 

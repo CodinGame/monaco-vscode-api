@@ -8,7 +8,7 @@ Subject: [PATCH] refactor: split class in 2
  1 file changed, 76 insertions(+), 18 deletions(-)
 
 diff --git a/src/vs/workbench/services/extensions/browser/extensionService.ts b/src/vs/workbench/services/extensions/browser/extensionService.ts
-index 678e10e3be2..d6b5f5cde74 100644
+index 83bce6798aa..c97b6de14b8 100644
 --- a/src/vs/workbench/services/extensions/browser/extensionService.ts
 +++ b/src/vs/workbench/services/extensions/browser/extensionService.ts
 @@ -43,8 +43,10 @@ import { IUserDataInitializationService } from 'vs/workbench/services/userData/b
