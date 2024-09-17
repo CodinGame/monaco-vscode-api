@@ -136,7 +136,8 @@
     "rollup": "$rollup",
     "recast": "$recast",
     "@xterm/xterm": "$@xterm/xterm",
-    "eslint-plugin-n": "$eslint-plugin-n"
+    "eslint-plugin-n": "$eslint-plugin-n",
+    "@semantic-release/github": "^10.3.4"
   },
   "volta": {
     "node": "18.19.0",
