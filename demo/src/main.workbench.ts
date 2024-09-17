@@ -4,7 +4,7 @@ import { CustomEditorInput } from './features/customView.workbench'
 import './main.common'
 
 if (remoteAuthority != null) {
-  import('./features/remoteExtension')
+  void import('./features/remoteExtension')
 }
 
 document.querySelector('#customEditorPanel')!.addEventListener('click', async () => {

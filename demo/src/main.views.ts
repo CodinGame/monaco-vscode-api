@@ -9,7 +9,7 @@ import defaultKeybindings from './user/keybindings.json?raw'
 import './main.common'
 
 if (remoteAuthority != null) {
-  import('./features/remoteExtension')
+  void import('./features/remoteExtension')
 }
 
 document.querySelector('#customEditorPanel')!.addEventListener('click', async () => {
