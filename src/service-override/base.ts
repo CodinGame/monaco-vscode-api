@@ -28,6 +28,8 @@ import { ITrustedDomainService } from 'vs/workbench/contrib/url/browser/trustedD
 import { TrustedDomainService } from 'vs/workbench/contrib/url/browser/trustedDomainService'
 import { LabelService } from 'vs/workbench/services/label/common/labelService'
 import { ILabelService } from 'vs/platform/label/common/label.service'
+import { IEditorWorkerService } from 'vs/editor/common/services/editorWorker'
+import { WorkbenchEditorWorkerService } from 'vs/workbench/contrib/codeEditor/browser/workbenchEditorWorkerService'
 import { getEnvironmentOverride } from '../workbench'
 
 class BrowserPathServiceOverride extends AbstractPathService {
@@ -58,6 +60,8 @@ export default function getServiceOverride (): IEditorOverrideServices {
     [IWorkingCopyFileService.toString()]: new SyncDescriptor(WorkingCopyFileService, [], false),
     [IPathService.toString()]: new SyncDescriptor(BrowserPathServiceOverride, [], true),
     [ITrustedDomainService.toString()]: new SyncDescriptor(TrustedDomainService, [], true),
-    [ILabelService.toString()]: new SyncDescriptor(LabelService, [], true)
+    [ILabelService.toString()]: new SyncDescriptor(LabelService, [], true),
+    [IEditorWorkerService.toString()]: new SyncDescriptor(WorkbenchEditorWorkerService, [], true)
+
   }
 }
