@@ -7,5 +7,15 @@
 			"path": "demo"
 		}
 	],
-	"settings": {}
+  "settings": {
+    "[typescript]": {
+      "editor.defaultFormatter": "esbenp.prettier-vscode",
+      "editor.formatOnSave": true
+    },
+    "search.exclude": {
+      "**/dist": true,
+      "**/node_modules": true,
+      "**/*.code-search": true
+    }
+  }
 }

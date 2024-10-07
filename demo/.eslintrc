@@ -7,7 +7,7 @@
     "project": "./tsconfig.json"
   },
   "extends": [
-    "@codingame"
+    "@codingame/eslint-config", "prettier"
   ],
   "rules": {
     "import/extensions": ["off"],
