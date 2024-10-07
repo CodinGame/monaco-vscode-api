@@ -1,0 +1,34 @@
+From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
+From: =?UTF-8?q?Lo=C3=AFc=20Mangeonjean?= <loic@coderpad.io>
+Date: Sun, 6 Oct 2024 16:29:10 +0200
+Subject: [PATCH] fix: fix treeshaking script
+
+---
+ build/lib/treeshaking.js | 1 +
+ build/lib/treeshaking.ts | 1 +
+ 2 files changed, 2 insertions(+)
+
+diff --git a/build/lib/treeshaking.js b/build/lib/treeshaking.js
+index af06f4e3ec5..323603d8bfa 100644
+--- a/build/lib/treeshaking.js
++++ b/build/lib/treeshaking.js
+@@ -104,6 +104,7 @@ function discoverAndReadFiles(ts, options) {
+         if (options.redirects[moduleId]) {
+             redirectedModuleId = options.redirects[moduleId];
+         }
++        redirectedModuleId = moduleId.replace(/.js$/, '');
+         const dts_filename = path.join(options.sourcesRoot, redirectedModuleId + '.d.ts');
+         if (fs.existsSync(dts_filename)) {
+             const dts_filecontents = fs.readFileSync(dts_filename).toString();
+diff --git a/build/lib/treeshaking.ts b/build/lib/treeshaking.ts
+index cd17c5f0278..bbb9abf8169 100644
+--- a/build/lib/treeshaking.ts
++++ b/build/lib/treeshaking.ts
+@@ -159,6 +159,7 @@ function discoverAndReadFiles(ts: typeof import('typescript'), options: ITreeSha
+ 		if (options.redirects[moduleId]) {
+ 			redirectedModuleId = options.redirects[moduleId];
+ 		}
++		redirectedModuleId = moduleId.replace(/.js$/, '');
+ 
+ 		const dts_filename = path.join(options.sourcesRoot, redirectedModuleId + '.d.ts');
+ 		if (fs.existsSync(dts_filename)) {

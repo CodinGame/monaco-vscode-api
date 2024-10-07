@@ -1,0 +1,177 @@
+From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
+From: =?UTF-8?q?Lo=C3=AFc=20Mangeonjean?= <loic@coderpad.io>
+Date: Mon, 11 Mar 2024 17:48:09 +0100
+Subject: [PATCH] cleanup: remove non-ESM compatible code
+
+---
+ src/vs/base/common/worker/simpleWorker.ts     | 41 +------------------
+ .../common/services/editorSimpleWorker.ts     | 23 +----------
+ .../api/node/extensionHostProcess.ts          | 18 --------
+ .../webWorkerExtensionHostIframe.esm.html     |  7 +---
+ 4 files changed, 3 insertions(+), 86 deletions(-)
+
+diff --git a/src/vs/base/common/worker/simpleWorker.ts b/src/vs/base/common/worker/simpleWorker.ts
+index f08369f98cf..1e61f4c8fe2 100644
+--- a/src/vs/base/common/worker/simpleWorker.ts
++++ b/src/vs/base/common/worker/simpleWorker.ts
+@@ -7,18 +7,10 @@ import { CharCode } from '../charCode.js';
+ import { onUnexpectedError, transformErrorForSerialization } from '../errors.js';
+ import { Emitter, Event } from '../event.js';
+ import { Disposable, IDisposable } from '../lifecycle.js';
+-import { AppResourcePath, FileAccess } from '../network.js';
+ import { isWeb } from '../platform.js';
+ import * as strings from '../strings.js';
+ import { URI } from '../uri.js';
+ 
+-// ESM-comment-begin
+-// const isESM = false;
+-// ESM-comment-end
+-// ESM-uncomment-begin
+-const isESM = true;
+-// ESM-uncomment-end
+-
+ const DEFAULT_CHANNEL = 'default';
+ const INITIALIZE = '$initialize';
+ 
+@@ -576,38 +568,7 @@ export class SimpleWorkerServer implements IWorkerServer {
+ 			globalThis.require.config(loaderConfig);
+ 		}
+ 
+-		if (isESM) {
+-			const url = FileAccess.asBrowserUri(`${moduleId}.js` as AppResourcePath).toString(true);
+-			return import(`${url}`).then((module: { create: IRequestHandlerFactory }) => {
+-				this._requestHandler = module.create(this);
+-
+-				if (!this._requestHandler) {
+-					throw new Error(`No RequestHandler!`);
+-				}
+-			});
+-		}
+-
+-		return new Promise<void>((resolve, reject) => {
+-			// Use the global require to be sure to get the global config
+-
+-			// ESM-comment-begin
+-			// const req = (globalThis.require || require);
+-			// ESM-comment-end
+-			// ESM-uncomment-begin
+-			const req = globalThis.require;
+-			// ESM-uncomment-end
+-
+-			req([moduleId], (module: { create: IRequestHandlerFactory }) => {
+-				this._requestHandler = module.create(this);
+-
+-				if (!this._requestHandler) {
+-					reject(new Error(`No RequestHandler!`));
+-					return;
+-				}
+-
+-				resolve();
+-			}, reject);
+-		});
++		return Promise.reject(new Error(`Unexpected usage`));
+ 	}
+ }
+ 
+diff --git a/src/vs/editor/common/services/editorSimpleWorker.ts b/src/vs/editor/common/services/editorSimpleWorker.ts
+index ff8bbb85464..b0163997f9b 100644
+--- a/src/vs/editor/common/services/editorSimpleWorker.ts
++++ b/src/vs/editor/common/services/editorSimpleWorker.ts
+@@ -25,20 +25,12 @@ import { DetailedLineRangeMapping } from '../diff/rangeMapping.js';
+ import { linesDiffComputers } from '../diff/linesDiffComputers.js';
+ import { createProxyObject, getAllMethodNames } from '../../../base/common/objects.js';
+ import { IDocumentDiffProviderOptions } from '../diff/documentDiffProvider.js';
+-import { AppResourcePath, FileAccess } from '../../../base/common/network.js';
+ import { BugIndicatingError } from '../../../base/common/errors.js';
+ import { computeDefaultDocumentColors } from '../languages/defaultDocumentColorsComputer.js';
+ import { FindSectionHeaderOptions, SectionHeader, findSectionHeaders } from './findSectionHeaders.js';
+ import { IRawModelData, IWorkerTextModelSyncChannelServer } from './textModelSync/textModelSync.protocol.js';
+ import { ICommonModel, WorkerTextModelSyncServer } from './textModelSync/textModelSync.impl.js';
+ 
+-// ESM-comment-begin
+-// const isESM = false;
+-// ESM-comment-end
+-// ESM-uncomment-begin
+-const isESM = true;
+-// ESM-uncomment-end
+-
+ export interface IMirrorModel extends IMirrorTextModel {
+ 	readonly uri: URI;
+ 	readonly version: number;
+@@ -558,20 +550,7 @@ export class EditorSimpleWorker extends BaseEditorSimpleWorker {
+ 			return Promise.resolve(getAllMethodNames(this._foreignModule));
+ 		}
+ 
+-		return new Promise<any>((resolve, reject) => {
+-
+-			const onModuleCallback = (foreignModule: { create: IForeignModuleFactory }) => {
+-				this._foreignModule = foreignModule.create(ctx, createData);
+-				resolve(getAllMethodNames(this._foreignModule));
+-			};
+-
+-			if (!isESM) {
+-				require([`${moduleId}`], onModuleCallback, reject);
+-			} else {
+-				const url = FileAccess.asBrowserUri(`${moduleId}.js` as AppResourcePath).toString(true);
+-				import(`${url}`).then(onModuleCallback).catch(reject);
+-			}
+-		});
++		return Promise.reject(new Error(`Unexpected usage`));
+ 	}
+ 
+ 	// foreign method request
+diff --git a/src/vs/workbench/api/node/extensionHostProcess.ts b/src/vs/workbench/api/node/extensionHostProcess.ts
+index 694559385c4..0be2f11f004 100644
+--- a/src/vs/workbench/api/node/extensionHostProcess.ts
++++ b/src/vs/workbench/api/node/extensionHostProcess.ts
+@@ -60,24 +60,6 @@ const args = minimist(process.argv.slice(2), {
+ 	]
+ }) as ParsedExtHostArgs;
+ 
+-// With Electron 2.x and node.js 8.x the "natives" module
+-// can cause a native crash (see https://github.com/nodejs/node/issues/19891 and
+-// https://github.com/electron/electron/issues/10905). To prevent this from
+-// happening we essentially blocklist this module from getting loaded in any
+-// extension by patching the node require() function.
+-(function () {
+-	const Module = require('module');
+-	const originalLoad = Module._load;
+-
+-	Module._load = function (request: string) {
+-		if (request === 'natives') {
+-			throw new Error('Either the extension or an NPM dependency is using the [unsupported "natives" node module](https://go.microsoft.com/fwlink/?linkid=871887).');
+-		}
+-
+-		return originalLoad.apply(this, arguments);
+-	};
+-})();
+-
+ // custom process.exit logic...
+ const nativeExit: IExitFn = process.exit.bind(process);
+ const nativeOn = process.on.bind(process);
+diff --git a/src/vs/workbench/services/extensions/worker/webWorkerExtensionHostIframe.esm.html b/src/vs/workbench/services/extensions/worker/webWorkerExtensionHostIframe.esm.html
+index 53bc54bb5aa..9a3c7cec21d 100644
+--- a/src/vs/workbench/services/extensions/worker/webWorkerExtensionHostIframe.esm.html
++++ b/src/vs/workbench/services/extensions/worker/webWorkerExtensionHostIframe.esm.html
+@@ -4,7 +4,7 @@
+ 		<meta http-equiv="Content-Security-Policy" content="
+ 			default-src 'none';
+ 			child-src 'self' data: blob:;
+-			script-src 'self' 'unsafe-eval' 'sha256-YVBiNCLDtlDv8TpTuATV/fJ9rcBWIq9O9zBL2ndqAgw=' https: http://localhost:* blob:;
++			script-src 'self' 'unsafe-eval' 'sha256-fCnZ3iXydTZHO961jO3ioYDdWSfm8PZg/rI6zFX/SE0=' https: http://localhost:* blob:;
+ 			connect-src 'self' https: wss: http://localhost:* http://127.0.0.1:* ws://localhost:* ws://127.0.0.1:*;"/>
+ 	</head>
+ 	<body>
+@@ -93,12 +93,7 @@
+ 				workerUrl += '?vscode-coi=2'; // COEP
+ 			}
+ 
+-			// ESM-comment-begin
+-			// const isESM = false;
+-			// ESM-comment-end
+-			// ESM-uncomment-begin
+ 			const isESM = true;
+-			// ESM-uncomment-end
+ 
+ 			// In below blob code, we are using JSON.stringify to ensure the passed
+ 			// in values are not breaking our script. The values may contain string

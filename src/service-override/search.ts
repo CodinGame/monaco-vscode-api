@@ -24,14 +24,16 @@ import { Schemas } from 'vs/base/common/network'
 import { IFileSystemProvider } from 'vs/platform/files/common/files'
 import { HTMLFileSystemProvider } from 'vs/platform/files/browser/htmlFileSystemProvider'
 
-function isHTMLFileSystemProvider (provider: IFileSystemProvider): provider is HTMLFileSystemProvider {
+function isHTMLFileSystemProvider(
+  provider: IFileSystemProvider
+): provider is HTMLFileSystemProvider {
   // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
   return (provider as HTMLFileSystemProvider).directories != null
 }
 
 // Duplicated from RemoteSearchService, with a check on the file system provider being an HTMLFileSystemProvider
 class CustomSearchService extends SearchService {
-  constructor (
+  constructor(
     @IModelService modelService: IModelService,
     @IEditorService editorService: IEditorService,
     @ITelemetryService telemetryService: ITelemetryService,
@@ -41,7 +43,15 @@ class CustomSearchService extends SearchService {
     @IInstantiationService private readonly instantiationService: IInstantiationService,
     @IUriIdentityService uriIdentityService: IUriIdentityService
   ) {
-    super(modelService, editorService, telemetryService, logService, extensionService, fileService, uriIdentityService)
+    super(
+      modelService,
+      editorService,
+      telemetryService,
+      logService,
+      extensionService,
+      fileService,
+      uriIdentityService
+    )
     if (isHTMLFileSystemProvider(fileService.getProvider(Schemas.file)!)) {
       const searchProvider = this.instantiationService.createInstance(LocalFileSearchWorkerClient)
       this.registerSearchResultProvider(Schemas.file, SearchProviderType.file, searchProvider)
@@ -50,10 +60,14 @@ class CustomSearchService extends SearchService {
   }
 }
 
-export default function getServiceOverride (): IEditorOverrideServices {
+export default function getServiceOverride(): IEditorOverrideServices {
   return {
     [ISearchService.toString()]: new SyncDescriptor(CustomSearchService, [], true),
-    [ISearchViewModelWorkbenchService.toString()]: new SyncDescriptor(SearchViewModelWorkbenchService, [], true),
+    [ISearchViewModelWorkbenchService.toString()]: new SyncDescriptor(
+      SearchViewModelWorkbenchService,
+      [],
+      true
+    ),
     [ISearchHistoryService.toString()]: new SyncDescriptor(SearchHistoryService, [], true),
     [IReplaceService.toString()]: new SyncDescriptor(ReplaceService, [], true)
   }

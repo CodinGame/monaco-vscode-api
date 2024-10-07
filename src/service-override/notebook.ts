@@ -10,7 +10,10 @@ import { NotebookCellStatusBarService } from 'vs/workbench/contrib/notebook/brow
 import { INotebookEditorService } from 'vs/workbench/contrib/notebook/browser/services/notebookEditorService.service'
 import { NotebookEditorWidgetService } from 'vs/workbench/contrib/notebook/browser/services/notebookEditorServiceImpl'
 import { NotebookModelResolverServiceImpl } from 'vs/workbench/contrib/notebook/common/notebookEditorModelResolverServiceImpl'
-import { INotebookKernelHistoryService, INotebookKernelService } from 'vs/workbench/contrib/notebook/common/notebookKernelService.service'
+import {
+  INotebookKernelHistoryService,
+  INotebookKernelService
+} from 'vs/workbench/contrib/notebook/common/notebookKernelService.service'
 import { NotebookKernelService } from 'vs/workbench/contrib/notebook/browser/services/notebookKernelServiceImpl'
 import { NotebookRendererMessagingService } from 'vs/workbench/contrib/notebook/browser/services/notebookRendererMessagingServiceImpl'
 import { INotebookRendererMessagingService } from 'vs/workbench/contrib/notebook/common/notebookRendererMessagingService.service'
@@ -29,21 +32,49 @@ import { NotebookDocumentWorkbenchService } from 'vs/workbench/services/notebook
 import { INotebookDocumentService } from 'vs/workbench/services/notebook/common/notebookDocumentService.service'
 import 'vs/workbench/contrib/notebook/browser/notebook.contribution'
 
-export default function getServiceOverride (): IEditorOverrideServices {
+export default function getServiceOverride(): IEditorOverrideServices {
   return {
     [INotebookService.toString()]: new SyncDescriptor(NotebookService, [], true),
-    [INotebookEditorWorkerService.toString()]: new SyncDescriptor(NotebookEditorWorkerServiceImpl, [], true),
-    [INotebookEditorModelResolverService.toString()]: new SyncDescriptor(NotebookModelResolverServiceImpl, [], true),
-    [INotebookCellStatusBarService.toString()]: new SyncDescriptor(NotebookCellStatusBarService, [], true),
+    [INotebookEditorWorkerService.toString()]: new SyncDescriptor(
+      NotebookEditorWorkerServiceImpl,
+      [],
+      true
+    ),
+    [INotebookEditorModelResolverService.toString()]: new SyncDescriptor(
+      NotebookModelResolverServiceImpl,
+      [],
+      true
+    ),
+    [INotebookCellStatusBarService.toString()]: new SyncDescriptor(
+      NotebookCellStatusBarService,
+      [],
+      true
+    ),
     [INotebookEditorService.toString()]: new SyncDescriptor(NotebookEditorWidgetService, [], true),
     [INotebookKernelService.toString()]: new SyncDescriptor(NotebookKernelService, [], true),
-    [INotebookKernelHistoryService.toString()]: new SyncDescriptor(NotebookKernelHistoryService, [], true),
+    [INotebookKernelHistoryService.toString()]: new SyncDescriptor(
+      NotebookKernelHistoryService,
+      [],
+      true
+    ),
     [INotebookExecutionService.toString()]: new SyncDescriptor(NotebookExecutionService, [], true),
-    [INotebookExecutionStateService.toString()]: new SyncDescriptor(NotebookExecutionStateService, [], true),
-    [INotebookRendererMessagingService.toString()]: new SyncDescriptor(NotebookRendererMessagingService, [], true),
+    [INotebookExecutionStateService.toString()]: new SyncDescriptor(
+      NotebookExecutionStateService,
+      [],
+      true
+    ),
+    [INotebookRendererMessagingService.toString()]: new SyncDescriptor(
+      NotebookRendererMessagingService,
+      [],
+      true
+    ),
     [INotebookKeymapService.toString()]: new SyncDescriptor(NotebookKeymapService, [], true),
     [INotebookLoggingService.toString()]: new SyncDescriptor(NotebookLoggingService, [], true),
     [INotebookSearchService.toString()]: new SyncDescriptor(NotebookSearchService, [], true),
-    [INotebookDocumentService.toString()]: new SyncDescriptor(NotebookDocumentWorkbenchService, [], true)
+    [INotebookDocumentService.toString()]: new SyncDescriptor(
+      NotebookDocumentWorkbenchService,
+      [],
+      true
+    )
   }
 }

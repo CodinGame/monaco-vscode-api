@@ -1,4 +1,7 @@
-import { IEditorOverrideServices, StandaloneServices } from 'vs/editor/standalone/browser/standaloneServices'
+import {
+  IEditorOverrideServices,
+  StandaloneServices
+} from 'vs/editor/standalone/browser/standaloneServices'
 import { ITextMateTokenizationService } from 'vs/workbench/services/textMate/browser/textMateTokenizationFeature.service'
 import { SyncDescriptor } from 'vs/platform/instantiation/common/descriptors'
 import { TextMateTokenizationFeature } from 'vs/workbench/services/textMate/browser/textMateTokenizationFeatureImpl'
@@ -17,19 +20,24 @@ registerAssets({
 })
 
 registerServiceInitializeParticipant(async (accessor) => {
-  void accessor.get(ILifecycleService).when(LifecyclePhase.Ready).then(() => {
-    // Force load the service
-    StandaloneServices.get(ITextMateTokenizationService)
-  })
+  void accessor
+    .get(ILifecycleService)
+    .when(LifecyclePhase.Ready)
+    .then(() => {
+      // Force load the service
+      StandaloneServices.get(ITextMateTokenizationService)
+    })
 })
 
-export default function getServiceOverride (): IEditorOverrideServices {
+export default function getServiceOverride(): IEditorOverrideServices {
   return {
     ...getFileServiceOverride(),
-    [ITextMateTokenizationService.toString()]: new SyncDescriptor(TextMateTokenizationFeature, [], false)
+    [ITextMateTokenizationService.toString()]: new SyncDescriptor(
+      TextMateTokenizationFeature,
+      [],
+      false
+    )
   }
 }
 
-export {
-  ITextMateTokenizationService
-}
+export { ITextMateTokenizationService }

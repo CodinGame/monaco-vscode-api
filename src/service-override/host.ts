@@ -5,9 +5,13 @@ import { IHostColorSchemeService } from 'vs/workbench/services/themes/common/hos
 import { BrowserHostService } from 'vs/workbench/services/host/browser/browserHostService'
 import { BrowserHostColorSchemeService } from 'vs/workbench/services/themes/browser/browserHostColorSchemeService'
 
-export default function getServiceOverride (): IEditorOverrideServices {
+export default function getServiceOverride(): IEditorOverrideServices {
   return {
     [IHostService.toString()]: new SyncDescriptor(BrowserHostService, [], true),
-    [IHostColorSchemeService.toString()]: new SyncDescriptor(BrowserHostColorSchemeService, [], true)
+    [IHostColorSchemeService.toString()]: new SyncDescriptor(
+      BrowserHostColorSchemeService,
+      [],
+      true
+    )
   }
 }

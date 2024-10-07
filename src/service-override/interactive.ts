@@ -6,9 +6,17 @@ import { InteractiveDocumentService } from 'vs/workbench/contrib/interactive/bro
 import { IInteractiveDocumentService } from 'vs/workbench/contrib/interactive/browser/interactiveDocumentService.service'
 import 'vs/workbench/contrib/interactive/browser/interactive.contribution'
 
-export default function getServiceOverride (): IEditorOverrideServices {
+export default function getServiceOverride(): IEditorOverrideServices {
   return {
-    [IInteractiveHistoryService.toString()]: new SyncDescriptor(InteractiveHistoryService, [], true),
-    [IInteractiveDocumentService.toString()]: new SyncDescriptor(InteractiveDocumentService, [], true)
+    [IInteractiveHistoryService.toString()]: new SyncDescriptor(
+      InteractiveHistoryService,
+      [],
+      true
+    ),
+    [IInteractiveDocumentService.toString()]: new SyncDescriptor(
+      InteractiveDocumentService,
+      [],
+      true
+    )
   }
 }

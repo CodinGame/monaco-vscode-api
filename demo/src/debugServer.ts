@@ -9,10 +9,10 @@ import * as stream from 'stream'
 const docker = new Docker()
 const image = 'ghcr.io/graalvm/graalvm-ce:21.2.0'
 
-async function createContainer () {
+async function createContainer() {
   const stream = await docker.pull(image)
   await new Promise<void>((resolve, reject) => {
-    docker.modem.followProgress(stream, err => err == null ? resolve() : reject(err))
+    docker.modem.followProgress(stream, (err) => (err == null ? resolve() : reject(err)))
   })
   await fs.promises.mkdir('/tmp/workspace', {
     recursive: true
@@ -23,18 +23,20 @@ async function createContainer () {
     Entrypoint: ['sleep', 'infinity'],
     HostConfig: {
       NetworkMode: 'host',
-      Mounts: [{
-        Type: 'bind',
-        Target: '/workspace',
-        Source: '/tmp/workspace'
-      }],
+      Mounts: [
+        {
+          Type: 'bind',
+          Target: '/workspace',
+          Source: '/tmp/workspace'
+        }
+      ],
       AutoRemove: true
     }
   })
   return container
 }
 
-async function prepareContainer (container: Docker.Container) {
+async function prepareContainer(container: Docker.Container) {
   await container.start()
   // eslint-disable-next-line no-console
   console.log('Installing node')
@@ -47,7 +49,7 @@ async function prepareContainer (container: Docker.Container) {
     hijack: true
   })
   execStream.pipe(process.stdout)
-  await new Promise(resolve => execStream.on('end', resolve))
+  await new Promise((resolve) => execStream.on('end', resolve))
   // eslint-disable-next-line no-console
   console.log('Node installed')
 }
@@ -56,7 +58,7 @@ async function prepareContainer (container: Docker.Container) {
 console.log('Pulling image/starting container...')
 const containerPromise = createContainer()
 
-async function exitHandler () {
+async function exitHandler() {
   // eslint-disable-next-line no-console
   console.log('Exiting...')
   try {
@@ -83,7 +85,7 @@ class DAPSocket {
   private socket: net.Socket
   private rawData = Buffer.allocUnsafe(0)
   private contentLength = -1
-  constructor (private onMessage: (message: string) => void) {
+  constructor(private onMessage: (message: string) => void) {
     this.socket = new net.Socket()
     this.socket.on('data', this.onData)
   }
@@ -121,12 +123,15 @@ class DAPSocket {
     }
   }
 
-  public connect (port: number) {
+  public connect(port: number) {
     this.socket.connect(port)
   }
 
-  public sendMessage (message: string) {
-    this.socket.write(`Content-Length: ${Buffer.byteLength(message, 'utf8')}${TWO_CRLF}${message}`, 'utf8')
+  public sendMessage(message: string) {
+    this.socket.write(
+      `Content-Length: ${Buffer.byteLength(message, 'utf8')}${TWO_CRLF}${message}`,
+      'utf8'
+    )
   }
 }
 
@@ -141,8 +146,8 @@ const server = http.createServer(app)
 
 const wss = new WebSocketServer({ server })
 
-async function findPortFree () {
-  return await new Promise<number>(resolve => {
+async function findPortFree() {
+  return await new Promise<number>((resolve) => {
     const srv = net.createServer()
     srv.listen(0, () => {
       const port = (srv.address() as net.AddressInfo).port
@@ -151,71 +156,87 @@ async function findPortFree () {
   })
 }
 
-function sequential<T, P extends unknown[]> (fn: (...params: P) => Promise<T>): (...params: P) => Promise<T> {
+function sequential<T, P extends unknown[]>(
+  fn: (...params: P) => Promise<T>
+): (...params: P) => Promise<T> {
   let promise = Promise.resolve()
   return (...params: P) => {
     const result = promise.then(() => {
       return fn(...params)
     })
 
-    promise = result.then(() => {}, () => {})
+    promise = result.then(
+      () => {},
+      () => {}
+    )
     return result
   }
 }
 
 wss.on('connection', (ws) => {
-  const socket = new DAPSocket(message => ws.send(message))
+  const socket = new DAPSocket((message) => ws.send(message))
 
   let initialized = false
 
-  ws.on('message', sequential(async (message: string) => {
-    if (!initialized) {
-      try {
-        initialized = true
-        const init: { main: string, files: Record<string, string> } = JSON.parse(message)
-        for (const [file, content] of Object.entries(init.files)) {
-          await fs.promises.writeFile('/tmp/' + file, content)
+  ws.on(
+    'message',
+    sequential(async (message: string) => {
+      if (!initialized) {
+        try {
+          initialized = true
+          const init: { main: string; files: Record<string, string> } = JSON.parse(message)
+          for (const [file, content] of Object.entries(init.files)) {
+            await fs.promises.writeFile('/tmp/' + file, content)
+          }
+          const debuggerPort = await findPortFree()
+          const exec = await container.exec({
+            Cmd: [
+              'node',
+              `--dap=${debuggerPort}`,
+              '--dap.WaitAttached',
+              '--dap.Suspend=false',
+              `${init.main}`
+            ],
+            AttachStdout: true,
+            AttachStderr: true
+          })
+
+          const execStream = await exec.start({
+            hijack: true
+          })
+          const stdout = new stream.PassThrough()
+          const stderr = new stream.PassThrough()
+          container.modem.demuxStream(execStream, stdout, stderr)
+          function sendOutput(category: 'stdout' | 'stderr', output: Buffer) {
+            ws.send(
+              JSON.stringify({
+                type: 'event',
+                event: 'output',
+                body: {
+                  category,
+                  output: output.toString()
+                }
+              })
+            )
+          }
+          stdout.on('data', sendOutput.bind(undefined, 'stdout'))
+          stderr.on('data', sendOutput.bind(undefined, 'stderr'))
+
+          execStream.on('end', () => {
+            ws.close()
+          })
+
+          await new Promise((resolve) => setTimeout(resolve, 1000))
+          socket.connect(debuggerPort)
+
+          return
+        } catch (err) {
+          console.error('Failed to initialize', err)
         }
-        const debuggerPort = await findPortFree()
-        const exec = await container.exec({
-          Cmd: ['node', `--dap=${debuggerPort}`, '--dap.WaitAttached', '--dap.Suspend=false', `${init.main}`],
-          AttachStdout: true,
-          AttachStderr: true
-        })
-
-        const execStream = await exec.start({
-          hijack: true
-        })
-        const stdout = new stream.PassThrough()
-        const stderr = new stream.PassThrough()
-        container.modem.demuxStream(execStream, stdout, stderr)
-        function sendOutput (category: 'stdout' | 'stderr', output: Buffer) {
-          ws.send(JSON.stringify({
-            type: 'event',
-            event: 'output',
-            body: {
-              category,
-              output: output.toString()
-            }
-          }))
-        }
-        stdout.on('data', sendOutput.bind(undefined, 'stdout'))
-        stderr.on('data', sendOutput.bind(undefined, 'stderr'))
-
-        execStream.on('end', () => {
-          ws.close()
-        })
-
-        await new Promise(resolve => setTimeout(resolve, 1000))
-        socket.connect(debuggerPort)
-
-        return
-      } catch (err) {
-        console.error('Failed to initialize', err)
       }
-    }
-    socket.sendMessage(message)
-  }))
+      socket.sendMessage(message)
+    })
+  )
 })
 
 server.listen(PORT, () => {

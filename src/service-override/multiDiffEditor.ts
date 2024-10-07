@@ -4,8 +4,12 @@ import { MultiDiffSourceResolverService } from 'vs/workbench/contrib/multiDiffEd
 import { IMultiDiffSourceResolverService } from 'vs/workbench/contrib/multiDiffEditor/browser/multiDiffSourceResolverService.service'
 import 'vs/workbench/contrib/multiDiffEditor/browser/multiDiffEditor.contribution'
 
-export default function getServiceOverride (): IEditorOverrideServices {
+export default function getServiceOverride(): IEditorOverrideServices {
   return {
-    [IMultiDiffSourceResolverService.toString()]: new SyncDescriptor(MultiDiffSourceResolverService, [], true)
+    [IMultiDiffSourceResolverService.toString()]: new SyncDescriptor(
+      MultiDiffSourceResolverService,
+      [],
+      true
+    )
   }
 }

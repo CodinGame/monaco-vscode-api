@@ -15,7 +15,7 @@ interface Options {
   transformManifest?: (manifest: IExtensionManifest) => IExtensionManifest
 }
 
-function read (stream: Readable): Promise<Buffer> {
+function read(stream: Readable): Promise<Buffer> {
   const bufs: Buffer[] = []
   return new Promise((resolve) => {
     stream.on('data', function (d) {
@@ -27,7 +27,7 @@ function read (stream: Readable): Promise<Buffer> {
   })
 }
 
-async function readVsix (file: string): Promise<IFs> {
+async function readVsix(file: string): Promise<IFs> {
   return await new Promise((resolve) => {
     const files: Record<string, Buffer> = {}
     yauzl.open(file, { lazyEntries: true }, (err, zipfile) => {
@@ -53,20 +53,20 @@ async function readVsix (file: string): Promise<IFs> {
   })
 }
 
-function getVsixPath (file: string) {
+function getVsixPath(file: string) {
   return path.posix.relative('/', path.posix.resolve('/', file))
 }
 
-export default function plugin ({
+export default function plugin({
   include = '**/*.vsix',
   exclude,
-  transformManifest = manifest => manifest
+  transformManifest = (manifest) => manifest
 }: Options = {}): Plugin {
   const filter = createFilter(include, exclude)
 
   return {
     name: 'vsix-loader',
-    resolveId (source) {
+    resolveId(source) {
       if (filter(source)) {
         return source
       }
@@ -75,40 +75,51 @@ export default function plugin ({
       }
       return undefined
     },
-    async load (id) {
+    async load(id) {
       if (!filter(id)) return null
 
       const vsixFS = await readVsix(id)
-      const readFileSync = (filePath: string) => vsixFS.readFileSync(path.join('/', filePath)) as Buffer
-      const manifest = transformManifest(parseJson<IExtensionManifest>(id, readFileSync('package.json').toString('utf8')))
+      const readFileSync = (filePath: string) =>
+        vsixFS.readFileSync(path.join('/', filePath)) as Buffer
+      const manifest = transformManifest(
+        parseJson<IExtensionManifest>(id, readFileSync('package.json').toString('utf8'))
+      )
 
-      const resources = await getExtensionResources(manifest, <typeof nodeFs><unknown>vsixFS, '/')
+      const resources = await getExtensionResources(manifest, <typeof nodeFs>(<unknown>vsixFS), '/')
 
-      const resourcePaths = resources.map(r => r.path)
-      const readmePath = resourcePaths.filter(child => /^readme(\.txt|\.md|)$/i.test(child))[0]
-      const changelogPath = resourcePaths.filter(child => /^changelog(\.txt|\.md|)$/i.test(child))[0]
+      const resourcePaths = resources.map((r) => r.path)
+      const readmePath = resourcePaths.filter((child) => /^readme(\.txt|\.md|)$/i.test(child))[0]
+      const changelogPath = resourcePaths.filter((child) =>
+        /^changelog(\.txt|\.md|)$/i.test(child)
+      )[0]
 
-      const pathMapping = (await Promise.all(resources.map(async resource => {
-        const assetPath = getVsixPath(resource.path)
-        let url: string
-        if (process.env.NODE_ENV === 'development') {
-          const fileType = resource.mimeType ?? 'text/javascript'
-          url = `'data:${fileType};base64,${readFileSync(assetPath).toString('base64')}'`
-        } else {
-          url = 'import.meta.ROLLUP_FILE_URL_' + this.emitFile({
-            type: 'asset',
-            name: `${path.basename(id)}/${path.basename(assetPath)}`,
-            source: readFileSync(assetPath)
+      const pathMapping = (
+        await Promise.all(
+          resources.map(async (resource) => {
+            const assetPath = getVsixPath(resource.path)
+            let url: string
+            if (process.env.NODE_ENV === 'development') {
+              const fileType = resource.mimeType ?? 'text/javascript'
+              url = `'data:${fileType};base64,${readFileSync(assetPath).toString('base64')}'`
+            } else {
+              url =
+                'import.meta.ROLLUP_FILE_URL_' +
+                this.emitFile({
+                  type: 'asset',
+                  name: `${path.basename(id)}/${path.basename(assetPath)}`,
+                  source: readFileSync(assetPath)
+                })
+            }
+
+            return resource.extensionPaths.map((extensionPath) => ({
+              pathInExtension: getVsixPath(extensionPath),
+              url,
+              mimeType: resource.mimeType,
+              size: resource.size
+            }))
           })
-        }
-
-        return resource.extensionPaths.map(extensionPath => ({
-          pathInExtension: getVsixPath(extensionPath),
-          url,
-          mimeType: resource.mimeType,
-          size: resource.size
-        }))
-      }))).flat()
+        )
+      ).flat()
 
       return `
 import { registerExtension } from 'vscode/extensions'
@@ -117,11 +128,15 @@ const manifest = ${JSON.stringify(manifest)}
 
 const { registerFileUrl, whenReady } = registerExtension(manifest, undefined, ${JSON.stringify({ system: true, readmePath, changelogPath })})
 
-${pathMapping.map(({ pathInExtension, url, mimeType, size }) => (`
+${pathMapping
+  .map(
+    ({ pathInExtension, url, mimeType, size }) => `
 registerFileUrl('${pathInExtension}', ${url}, ${JSON.stringify(<ExtensionFileMetadata>{
-  mimeType,
-  size
-})})`)).join('\n')}
+      mimeType,
+      size
+    })})`
+  )
+  .join('\n')}
 
 export { whenReady }
 `
@@ -129,6 +144,4 @@ export { whenReady }
   }
 }
 
-export {
-  IExtensionManifest
-}
+export { IExtensionManifest }

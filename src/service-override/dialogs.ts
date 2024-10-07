@@ -8,18 +8,20 @@ import { HTMLFileSystemProvider } from 'vs/platform/files/browser/htmlFileSystem
 import 'vs/workbench/browser/parts/dialogs/dialog.web.contribution'
 import 'vs/workbench/contrib/welcomeDialog/browser/welcomeDialog.contribution'
 
-function isHTMLFileSystemProvider (provider: IFileSystemProvider): provider is HTMLFileSystemProvider {
+function isHTMLFileSystemProvider(
+  provider: IFileSystemProvider
+): provider is HTMLFileSystemProvider {
   // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
   return (provider as HTMLFileSystemProvider).directories != null
 }
 
 class DialogServiceOverride extends FileDialogService {
-  protected override shouldUseSimplified (scheme: string): boolean {
+  protected override shouldUseSimplified(scheme: string): boolean {
     return !isHTMLFileSystemProvider(super.fileSystemProvider) || super.shouldUseSimplified(scheme)
   }
 }
 
-export default function getServiceOverride (): IEditorOverrideServices {
+export default function getServiceOverride(): IEditorOverrideServices {
   return {
     [IDialogService.toString()]: new SyncDescriptor(DialogService, undefined, true),
     [IFileDialogService.toString()]: new SyncDescriptor(DialogServiceOverride, undefined, true)

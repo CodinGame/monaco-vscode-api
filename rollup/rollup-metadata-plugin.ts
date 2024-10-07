@@ -20,18 +20,35 @@ interface GroupResult {
 
 interface Options {
   stage?: 'generateBundle' | 'writeBundle'
-  getGroup?: (entryPoint: string, options: OutputOptions) => { name: string, publicName?: string, priority?: number }
-  handle (this: PluginContext, group: GroupResult, moduleGroupName: Map<string, string | undefined>, otherDependencies: Set<string>, options: OutputOptions, bundle: OutputBundle): void | Promise<void>
+  getGroup?: (
+    entryPoint: string,
+    options: OutputOptions
+  ) => { name: string; publicName?: string; priority?: number }
+  handle(
+    this: PluginContext,
+    group: GroupResult,
+    moduleGroupName: Map<string, string | undefined>,
+    otherDependencies: Set<string>,
+    options: OutputOptions,
+    bundle: OutputBundle
+  ): void | Promise<void>
 }
 
-export default ({ handle, getGroup = () => ({ name: 'main' }), stage = 'generateBundle' }: Options): Plugin => ({
+export default ({
+  handle,
+  getGroup = () => ({ name: 'main' }),
+  stage = 'generateBundle'
+}: Options): Plugin => ({
   name: 'generate-metadata',
   [stage]: async function (this: PluginContext, options: OutputOptions, bundle: OutputBundle) {
     const dependencyCache = new Map<string, Set<string>>()
     const externalDependencyCache = new Map<string, Set<string>>()
 
     const moduleExternalDependencies = new Map<string, Set<string>>()
-    const getModuleDependencies = (id: string, paths: string[]): { internal: Set<string>, external: Set<string> } => {
+    const getModuleDependencies = (
+      id: string,
+      paths: string[]
+    ): { internal: Set<string>; external: Set<string> } => {
       if (paths.includes(id)) {
         // Break recursive imports
         return { internal: new Set(), external: new Set() }
@@ -50,11 +67,19 @@ export default ({ handle, getGroup = () => ({ name: 'main' }), stage = 'generate
         }
         dependencyCache.set(id, new Set())
       } else if (!dependencyCache.has(id)) {
-        const dependencies = [...moduleInfo.importedIds, ...moduleInfo.dynamicallyImportedIds].map(depId => {
-          return getModuleDependencies(depId, [...paths, id])
-        })
-        dependencyCache.set(id, new Set([id, ...dependencies.flatMap(d => Array.from(d.internal))]))
-        externalDependencyCache.set(id, new Set(dependencies.flatMap(d => Array.from(d.external))))
+        const dependencies = [...moduleInfo.importedIds, ...moduleInfo.dynamicallyImportedIds].map(
+          (depId) => {
+            return getModuleDependencies(depId, [...paths, id])
+          }
+        )
+        dependencyCache.set(
+          id,
+          new Set([id, ...dependencies.flatMap((d) => Array.from(d.internal))])
+        )
+        externalDependencyCache.set(
+          id,
+          new Set(dependencies.flatMap((d) => Array.from(d.external)))
+        )
       }
 
       return {
@@ -71,7 +96,8 @@ export default ({ handle, getGroup = () => ({ name: 'main' }), stage = 'generate
         continue
       }
       const { name: groupName, publicName, priority } = getGroup(id, options)
-      const { internal: internalDependencies, external: externalDependencies } = getModuleDependencies(moduleInfo.id, [])
+      const { internal: internalDependencies, external: externalDependencies } =
+        getModuleDependencies(moduleInfo.id, [])
 
       if (!groups.has(groupName)) {
         groups.set(groupName, {
@@ -84,8 +110,8 @@ export default ({ handle, getGroup = () => ({ name: 'main' }), stage = 'generate
         })
       }
       const group = groups.get(groupName)!
-      internalDependencies.forEach(d => group.modules.add(d))
-      externalDependencies.forEach(d => group.dependencies.add(d))
+      internalDependencies.forEach((d) => group.modules.add(d))
+      externalDependencies.forEach((d) => group.dependencies.add(d))
       group.entrypoints.add(id)
 
       if (publicName != null) {
@@ -94,7 +120,11 @@ export default ({ handle, getGroup = () => ({ name: 'main' }), stage = 'generate
     }
 
     for (const group of groups.values()) {
-      group.groupDependencies = new Set(Array.from(group.dependencies).map(d => groupByPublicName.get(d)?.name).filter((g): g is string => g != null))
+      group.groupDependencies = new Set(
+        Array.from(group.dependencies)
+          .map((d) => groupByPublicName.get(d)?.name)
+          .filter((g): g is string => g != null)
+      )
     }
 
     const moduleGroups = new Map<string, Group[]>()
@@ -110,16 +140,31 @@ export default ({ handle, getGroup = () => ({ name: 'main' }), stage = 'generate
     const moduleGroup = new Map<string, Group | null>()
     for (const [id, groups] of moduleGroups.entries()) {
       // Find a group that everyone depends on
-      const greatestPriority = Math.max(...groups.map(g => g.priority))
-      const priorityGroups = groups.filter(g => g.priority >= greatestPriority)
-      moduleGroup.set(id, priorityGroups.find(group => priorityGroups.filter(ogroup => ogroup !== group).every(ogroup => ogroup.groupDependencies.has(group.name))) ?? null)
+      const greatestPriority = Math.max(...groups.map((g) => g.priority))
+      const priorityGroups = groups.filter((g) => g.priority >= greatestPriority)
+      moduleGroup.set(
+        id,
+        priorityGroups.find((group) =>
+          priorityGroups
+            .filter((ogroup) => ogroup !== group)
+            .every((ogroup) => ogroup.groupDependencies.has(group.name))
+        ) ?? null
+      )
     }
 
-    const moduleGroupName = new Map(Array.from(moduleGroup.entries()).map(([module, group]) => [module, group?.name]))
+    const moduleGroupName = new Map(
+      Array.from(moduleGroup.entries()).map(([module, group]) => [module, group?.name])
+    )
 
     const groupResults = Array.from(groups.entries()).map(([name, group]) => {
-      const exclusiveModules = new Set(Array.from(group.modules).filter(module => moduleGroup.get(module) === group))
-      const directDependencies = new Set(Array.from(exclusiveModules).flatMap(module => Array.from(moduleExternalDependencies.get(module) ?? new Set<string>())))
+      const exclusiveModules = new Set(
+        Array.from(group.modules).filter((module) => moduleGroup.get(module) === group)
+      )
+      const directDependencies = new Set(
+        Array.from(exclusiveModules).flatMap((module) =>
+          Array.from(moduleExternalDependencies.get(module) ?? new Set<string>())
+        )
+      )
 
       return <GroupResult>{
         directDependencies,
@@ -129,15 +174,21 @@ export default ({ handle, getGroup = () => ({ name: 'main' }), stage = 'generate
       }
     })
 
-    const otherDependencies = new Set(Array.from(moduleExternalDependencies.values()).map(set => Array.from(set)).flat())
+    const otherDependencies = new Set(
+      Array.from(moduleExternalDependencies.values())
+        .map((set) => Array.from(set))
+        .flat()
+    )
     for (const group of groupResults) {
       for (const directDependency of group.directDependencies) {
         otherDependencies.delete(directDependency)
       }
     }
 
-    await Promise.all(groupResults.map(async (group) => {
-      await handle.call(this, group, moduleGroupName, otherDependencies, options, bundle)
-    }))
+    await Promise.all(
+      groupResults.map(async (group) => {
+        await handle.call(this, group, moduleGroupName, otherDependencies, options, bundle)
+      })
+    )
   }
 })

@@ -8,12 +8,23 @@ import { BufferedEmitter } from 'vs/base/parts/ipc/common/ipc.net'
 import { VSBuffer } from 'vs/base/common/buffer'
 import { isLoggingOnly } from 'vs/platform/telemetry/common/telemetryUtils'
 import { joinPath } from 'vs/base/common/resources'
-import { IExtensionHostInitData, UIKind } from 'vs/workbench/services/extensions/common/extensionHostProtocol'
+import {
+  IExtensionHostInitData,
+  UIKind
+} from 'vs/workbench/services/extensions/common/extensionHostProtocol'
 import * as platform from 'vs/base/common/platform'
 import { IMessagePassingProtocol } from 'vs/base/parts/ipc/common/ipc'
 import { LocalProcessRunningLocation } from 'vs/workbench/services/extensions/common/extensionRunningLocation'
-import { IExtHostExtensionService, IHostUtils } from 'vs/workbench/api/common/extHostExtensionService'
-import { ExtensionHostExtensions, ExtensionHostStartup, IExtensionHost, nullExtensionDescription } from 'vs/workbench/services/extensions/common/extensions'
+import {
+  IExtHostExtensionService,
+  IHostUtils
+} from 'vs/workbench/api/common/extHostExtensionService'
+import {
+  ExtensionHostExtensions,
+  ExtensionHostStartup,
+  IExtensionHost,
+  nullExtensionDescription
+} from 'vs/workbench/services/extensions/common/extensions'
 import { IExtensionService } from 'vs/workbench/services/extensions/common/extensions.service'
 import { IWebWorkerExtensionHostDataProvider } from 'vs/workbench/services/extensions/browser/webWorkerExtensionHost'
 import { ITelemetryService } from 'vs/platform/telemetry/common/telemetry.service'
@@ -27,7 +38,10 @@ import { IUserDataProfilesService } from 'vs/platform/userDataProfile/common/use
 import { URI } from 'vs/base/common/uri'
 import { Event } from 'vs/base/common/event'
 import { InstantiationType, registerSingleton } from 'vs/platform/instantiation/common/extensions'
-import { ExtensionStoragePaths, IExtensionStoragePaths } from 'vs/workbench/api/common/extHostStoragePaths'
+import {
+  ExtensionStoragePaths,
+  IExtensionStoragePaths
+} from 'vs/workbench/api/common/extHostStoragePaths'
 import { ExtHostExtensionService } from 'vs/workbench/api/worker/extHostExtensionService'
 import { ExtensionIdentifierMap } from 'vs/platform/extensions/common/extensions'
 import { DeferredPromise } from 'vs/base/common/async'
@@ -44,7 +58,7 @@ class LocalExtHostExtensionService extends ExtHostExtensionService {
 
   private readonly _extApiImpl = new ExtensionIdentifierMap<typeof vscode>()
 
-  public async getApi (extensionId?: string): Promise<typeof vscode> {
+  public async getApi(extensionId?: string): Promise<typeof vscode> {
     const [myRegistry, configProvider] = await Promise.all([
       this.getExtensionRegistry(),
       this._extHostConfiguration.getConfigProvider()
@@ -53,7 +67,11 @@ class LocalExtHostExtensionService extends ExtHostExtensionService {
 
     if (extensionId == null) {
       if (this._defaultApiImpl == null) {
-        this._defaultApiImpl = this._apiFactory!(nullExtensionDescription, extensionRegistry, configProvider)
+        this._defaultApiImpl = this._apiFactory!(
+          nullExtensionDescription,
+          extensionRegistry,
+          configProvider
+        )
       }
       return this._defaultApiImpl
     }
@@ -74,39 +92,42 @@ class LocalExtHostExtensionService extends ExtHostExtensionService {
 registerSingleton(IExtHostExtensionService, LocalExtHostExtensionService, InstantiationType.Eager)
 registerSingleton(IExtensionStoragePaths, ExtensionStoragePaths, InstantiationType.Eager)
 
-function createMessagePassingProtocolPair (): [IMessagePassingProtocol, IMessagePassingProtocol] {
+function createMessagePassingProtocolPair(): [IMessagePassingProtocol, IMessagePassingProtocol] {
   const emitterA = new BufferedEmitter<VSBuffer>()
   const emitterB = new BufferedEmitter<VSBuffer>()
 
   class SimpleMessagePassingProtocol implements IMessagePassingProtocol {
-    constructor (
+    constructor(
       private readonly emitterIn: BufferedEmitter<VSBuffer>,
       private readonly emitterOut: BufferedEmitter<VSBuffer>
     ) {}
 
-    send (buffer: VSBuffer): void {
+    send(buffer: VSBuffer): void {
       this.emitterOut.fire(buffer)
     }
 
     onMessage = this.emitterIn.event
   }
 
-  return [new SimpleMessagePassingProtocol(emitterA, emitterB), new SimpleMessagePassingProtocol(emitterB, emitterA)]
+  return [
+    new SimpleMessagePassingProtocol(emitterA, emitterB),
+    new SimpleMessagePassingProtocol(emitterB, emitterA)
+  ]
 }
 
-const hostUtil = new class implements IHostUtils {
+const hostUtil = new (class implements IHostUtils {
   declare readonly _serviceBrand: undefined
   public readonly pid = undefined
   exit = unsupported
 
-  async exists (_path: string): Promise<boolean> {
+  async exists(_path: string): Promise<boolean> {
     return true
   }
 
-  async realpath (path: string): Promise<string> {
+  async realpath(path: string): Promise<string> {
     return path
   }
-}()
+})()
 
 class LocalExtensionHost implements IExtensionHost {
   public readonly remoteAuthority = null
@@ -115,7 +136,7 @@ class LocalExtensionHost implements IExtensionHost {
   private _protocolPromise: Promise<IMessagePassingProtocol> | null
   public pid = null
 
-  constructor (
+  constructor(
     public readonly runningLocation: LocalProcessRunningLocation,
     public readonly startup: ExtensionHostStartup,
     private readonly _initDataProvider: IWebWorkerExtensionHostDataProvider,
@@ -124,7 +145,8 @@ class LocalExtensionHost implements IExtensionHost {
     @ILabelService private readonly _labelService: ILabelService,
     @ILogService private readonly _logService: ILogService,
     @ILoggerService private readonly _loggerService: ILoggerService,
-    @IBrowserWorkbenchEnvironmentService private readonly _environmentService: IBrowserWorkbenchEnvironmentService,
+    @IBrowserWorkbenchEnvironmentService
+    private readonly _environmentService: IBrowserWorkbenchEnvironmentService,
     @IProductService private readonly _productService: IProductService,
     @IUserDataProfilesService private readonly _userDataProfilesService: IUserDataProfilesService
   ) {
@@ -133,40 +155,48 @@ class LocalExtensionHost implements IExtensionHost {
   }
 
   onExit = Event.None
-  public async start (): Promise<IMessagePassingProtocol> {
+  public async start(): Promise<IMessagePassingProtocol> {
     if (this._protocolPromise == null) {
       this._protocolPromise = this._start()
     }
     return await this._protocolPromise
   }
 
-  async _start (): Promise<IMessagePassingProtocol> {
-    const [mainThreadMessagePassingProtocol, extHostMessagePassingProtocol] = createMessagePassingProtocolPair()
+  async _start(): Promise<IMessagePassingProtocol> {
+    const [mainThreadMessagePassingProtocol, extHostMessagePassingProtocol] =
+      createMessagePassingProtocolPair()
     const initData = await this._createExtHostInitData()
 
-    const hostMain = new ExtensionHostMain(
-      extHostMessagePassingProtocol,
-      initData,
-      hostUtil,
-      null
+    const hostMain = new ExtensionHostMain(extHostMessagePassingProtocol, initData, hostUtil, null)
+
+    const localExtHostExtensionService =
+      hostMain.getExtHostExtensionService() as LocalExtHostExtensionService
+
+    await apiFactoryDeferred.complete((extensionId?: string) =>
+      localExtHostExtensionService.getApi(extensionId)
     )
-
-    const localExtHostExtensionService = hostMain.getExtHostExtensionService() as LocalExtHostExtensionService
-
-    await apiFactoryDeferred.complete((extensionId?: string) => localExtHostExtensionService.getApi(extensionId))
 
     return mainThreadMessagePassingProtocol
   }
 
-  private async _createExtHostInitData (): Promise<IExtensionHostInitData> {
+  private async _createExtHostInitData(): Promise<IExtensionHostInitData> {
     const initData = await this._initDataProvider.getInitData()
     this.extensions = initData.extensions
     const workspace = this._contextService.getWorkspace()
     const nlsBaseUrl = this._productService.extensionsGallery?.nlsBaseUrl
     let nlsUrlWithDetails: URI | undefined
     // Only use the nlsBaseUrl if we are using a language other than the default, English.
-    if (nlsBaseUrl != null && this._productService.commit != null && !platform.Language.isDefaultVariant()) {
-      nlsUrlWithDetails = URI.joinPath(URI.parse(nlsBaseUrl), this._productService.commit, this._productService.version, platform.Language.value())
+    if (
+      nlsBaseUrl != null &&
+      this._productService.commit != null &&
+      !platform.Language.isDefaultVariant()
+    ) {
+      nlsUrlWithDetails = URI.joinPath(
+        URI.parse(nlsBaseUrl),
+        this._productService.commit,
+        this._productService.version,
+        platform.Language.value()
+      )
     }
     return {
       commit: this._productService.commit,
@@ -180,21 +210,25 @@ class LocalExtensionHost implements IExtensionHost {
         appUriScheme: this._productService.urlProtocol,
         appLanguage: platform.language,
         extensionTelemetryLogResource: this._environmentService.extHostTelemetryLogFile,
-        isExtensionTelemetryLoggingOnly: isLoggingOnly(this._productService, this._environmentService),
+        isExtensionTelemetryLoggingOnly: isLoggingOnly(
+          this._productService,
+          this._environmentService
+        ),
         extensionDevelopmentLocationURI: this._environmentService.extensionDevelopmentLocationURI,
         extensionTestsLocationURI: this._environmentService.extensionTestsLocationURI,
         globalStorageHome: this._userDataProfilesService.defaultProfile.globalStorageHome,
         workspaceStorageHome: this._environmentService.workspaceStorageHome,
         extensionLogLevel: this._environmentService.extensionLogLevel
       },
-      workspace: this._contextService.getWorkbenchState() === WorkbenchState.EMPTY
-        ? undefined
-        : {
-            configuration: workspace.configuration ?? undefined,
-            id: workspace.id,
-            name: this._labelService.getWorkspaceLabel(workspace),
-            transient: workspace.transient
-          },
+      workspace:
+        this._contextService.getWorkbenchState() === WorkbenchState.EMPTY
+          ? undefined
+          : {
+              configuration: workspace.configuration ?? undefined,
+              id: workspace.id,
+              name: this._labelService.getWorkspaceLabel(workspace),
+              transient: workspace.transient
+            },
       consoleForward: {
         includeStack: false,
         logNative: this._environmentService.debugRenderer
@@ -212,7 +246,7 @@ class LocalExtensionHost implements IExtensionHost {
       logLevel: this._logService.getLevel(),
       loggers: [...this._loggerService.getRegisteredLoggers()],
       logsLocation: this._extensionHostLogsLocation,
-      autoStart: (this.startup === ExtensionHostStartup.EagerAutoStart),
+      autoStart: this.startup === ExtensionHostStartup.EagerAutoStart,
       remote: {
         authority: this._environmentService.remoteAuthority,
         connectionData: null,
@@ -222,23 +256,20 @@ class LocalExtensionHost implements IExtensionHost {
     }
   }
 
-  getInspectPort (): { port: number, host: string } | undefined {
+  getInspectPort(): { port: number; host: string } | undefined {
     return undefined
   }
 
-  enableInspectPort (): Promise<boolean> {
+  enableInspectPort(): Promise<boolean> {
     return Promise.resolve(false)
   }
 
-  dispose (): void {
-  }
+  dispose(): void {}
 }
 
-export type {
-  LocalExtensionHost
-}
+export type { LocalExtensionHost }
 
-async function createLocalApi (extensionId?: string): Promise<typeof vscode> {
+async function createLocalApi(extensionId?: string): Promise<typeof vscode> {
   const apiFactory = await apiFactoryDeferred.p
   return await apiFactory(extensionId)
 }

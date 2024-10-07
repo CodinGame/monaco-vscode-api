@@ -1,25 +1,32 @@
 import type * as vscode from 'vscode'
 import { ExtensionHostKind, registerExtension } from 'vscode/extensions'
 
-const { getApi } = registerExtension({
-  name: 'testing',
-  publisher: 'codingame',
-  version: '1.0.0',
-  engines: {
-    vscode: '*'
+const { getApi } = registerExtension(
+  {
+    name: 'testing',
+    publisher: 'codingame',
+    version: '1.0.0',
+    engines: {
+      vscode: '*'
+    }
+  },
+  ExtensionHostKind.LocalProcess,
+  {
+    system: true
   }
-}, ExtensionHostKind.LocalProcess, {
-  system: true
-})
+)
 
-void getApi().then(async api => {
+void getApi().then(async (api) => {
   const testRe = /^([0-9]+)\s*([+*/-])\s*([0-9]+)\s*=\s*([0-9]+)/
   const headingRe = /^(#+)\s*(.+)$/
 
-  const parseMarkdown = (text: string, events: {
-    onTest(range: vscode.Range, a: number, operator: string, b: number, expected: number): void
-    onHeading(range: vscode.Range, name: string, depth: number): void
-  }): void => {
+  const parseMarkdown = (
+    text: string,
+    events: {
+      onTest(range: vscode.Range, a: number, operator: string, b: number, expected: number): void
+      onHeading(range: vscode.Range, name: string, depth: number): void
+    }
+  ): void => {
     const lines = text.split('\n')
 
     for (let lineNo = 0; lineNo < lines.length; lineNo++) {
@@ -27,7 +34,10 @@ void getApi().then(async api => {
       const test = testRe.exec(line)
       if (test != null) {
         const [, a, operator, b, expected] = test
-        const range = new api.Range(new api.Position(lineNo, 0), new api.Position(lineNo, test[0].length))
+        const range = new api.Range(
+          new api.Position(lineNo, 0),
+          new api.Position(lineNo, test[0].length)
+        )
         events.onTest(range, Number(a), operator!, Number(b), Number(expected))
         continue
       }
@@ -35,7 +45,10 @@ void getApi().then(async api => {
       const heading = headingRe.exec(line)
       if (heading != null) {
         const [, pounds, name] = heading
-        const range = new api.Range(new api.Position(lineNo, 0), new api.Position(lineNo, line.length))
+        const range = new api.Range(
+          new api.Position(lineNo, 0),
+          new api.Position(lineNo, line.length)
+        )
         events.onHeading(range, name!, pounds!.length)
       }
     }
@@ -62,7 +75,10 @@ void getApi().then(async api => {
   class TestFile {
     public didResolve = false
 
-    public async updateFromDisk (controller: vscode.TestController, item: vscode.TestItem): Promise<void> {
+    public async updateFromDisk(
+      controller: vscode.TestController,
+      item: vscode.TestItem
+    ): Promise<void> {
       try {
         const content = await getContentFromFilesystem(item.uri!)
         item.error = undefined
@@ -73,10 +89,14 @@ void getApi().then(async api => {
     }
 
     /**
-   * Parses the tests from the input text, and updates the tests contained
-   * by this file to be those from the text,
-   */
-    public updateFromContents (controller: vscode.TestController, content: string, item: vscode.TestItem): void {
+     * Parses the tests from the input text, and updates the tests contained
+     * by this file to be those from the text,
+     */
+    public updateFromContents(
+      controller: vscode.TestController,
+      content: string,
+      item: vscode.TestItem
+    ): void {
       const ancestors = [{ item, children: [] as vscode.TestItem[] }]
       const thisGeneration = generationCounter++
       this.didResolve = true
@@ -118,40 +138,44 @@ void getApi().then(async api => {
   }
 
   class TestHeading {
-    constructor (public generation: number) { }
+    constructor(public generation: number) {}
   }
 
   type Operator = '+' | '-' | '*' | '/'
 
   class TestCase {
-    constructor (
+    constructor(
       private readonly a: number,
       private readonly operator: Operator,
       private readonly b: number,
       private readonly expected: number,
       public generation: number
-    ) { }
+    ) {}
 
-    getLabel (): string {
+    getLabel(): string {
       return `${this.a} ${this.operator} ${this.b} = ${this.expected}`
     }
 
-    async run (item: vscode.TestItem, options: vscode.TestRun): Promise<void> {
+    async run(item: vscode.TestItem, options: vscode.TestRun): Promise<void> {
       const start = Date.now()
-      await new Promise(resolve => setTimeout(resolve, 1000 + Math.random() * 1000))
+      await new Promise((resolve) => setTimeout(resolve, 1000 + Math.random() * 1000))
       const actual = this.evaluate()
       const duration = Date.now() - start
 
       if (actual === this.expected) {
         options.passed(item, duration)
       } else {
-        const message = api.TestMessage.diff(`Expected ${item.label}`, String(this.expected), String(actual))
+        const message = api.TestMessage.diff(
+          `Expected ${item.label}`,
+          String(this.expected),
+          String(actual)
+        )
         message.location = new api.Location(item.uri!, item.range!)
         options.failed(item, message, duration)
       }
     }
 
-    private evaluate () {
+    private evaluate() {
       switch (this.operator) {
         case '-':
           return this.a - this.b
@@ -169,7 +193,7 @@ void getApi().then(async api => {
 
   const fileChangedEmitter = new api.EventEmitter<vscode.Uri>()
   const watchingTests = new Map<vscode.TestItem | 'ALL', vscode.TestRunProfile | undefined>()
-  fileChangedEmitter.event(uri => {
+  fileChangedEmitter.event((uri) => {
     if (watchingTests.has('ALL')) {
       startTestRun(new api.TestRunRequest(undefined, undefined, watchingTests.get('ALL'), true))
       return
@@ -199,13 +223,15 @@ void getApi().then(async api => {
       watchingTests.set('ALL', request.profile)
       cancellation.onCancellationRequested(() => watchingTests.delete('ALL'))
     } else {
-      request.include.forEach(item => watchingTests.set(item, request.profile))
-      cancellation.onCancellationRequested(() => request.include!.forEach(item => watchingTests.delete(item)))
+      request.include.forEach((item) => watchingTests.set(item, request.profile))
+      cancellation.onCancellationRequested(() =>
+        request.include!.forEach((item) => watchingTests.delete(item))
+      )
     }
   }
 
   const startTestRun = (request: vscode.TestRunRequest) => {
-    const queue: { test: vscode.TestItem, data: TestCase }[] = []
+    const queue: { test: vscode.TestItem; data: TestCase }[] = []
     const run = ctrl.createTestRun(request)
     // map of file uris to statements on each line:
     type OptionalStatementCoverage = vscode.StatementCoverage | undefined
@@ -235,7 +261,9 @@ void getApi().then(async api => {
             coveredLines.set(
               test.uri.toString(),
               lines.map((lineText, lineNo) =>
-                lineText.trim().length > 0 ? new api.StatementCoverage(0, new api.Position(lineNo, 0)) : undefined
+                lineText.trim().length > 0
+                  ? new api.StatementCoverage(0, new api.Position(lineNo, 0))
+                  : undefined
               )
             )
           } catch {
@@ -259,17 +287,19 @@ void getApi().then(async api => {
         const fileCoverage = coveredLines.get(test.uri!.toString())
         const lineInfo = fileCoverage?.[lineNo]
         if (lineInfo != null) {
-          (lineInfo.executed as number)++
+          ;(lineInfo.executed as number)++
         }
 
         run.appendOutput(`Completed ${test.id}\r\n`)
       }
 
       for (const [uri, statements] of coveredLines) {
-        run.addCoverage(api.FileCoverage.fromDetails(
-          api.Uri.parse(uri),
-          statements.filter((s): s is vscode.StatementCoverage => s != null)
-        ))
+        run.addCoverage(
+          api.FileCoverage.fromDetails(
+            api.Uri.parse(uri),
+            statements.filter((s): s is vscode.StatementCoverage => s != null)
+          )
+        )
       }
 
       run.end()
@@ -279,12 +309,14 @@ void getApi().then(async api => {
   }
 
   ctrl.refreshHandler = async () => {
-    await Promise.all(getWorkspaceTestPatterns().map(({ pattern }) => findInitialFiles(ctrl, pattern)))
+    await Promise.all(
+      getWorkspaceTestPatterns().map(({ pattern }) => findInitialFiles(ctrl, pattern))
+    )
   }
 
   ctrl.createRunProfile('Run Tests', api.TestRunProfileKind.Run, runHandler, true, undefined, true)
 
-  ctrl.resolveHandler = async item => {
+  ctrl.resolveHandler = async (item) => {
     if (item == null) {
       startWatchingWorkspace(ctrl, fileChangedEmitter)
       return
@@ -296,7 +328,7 @@ void getApi().then(async api => {
     }
   }
 
-  function updateNodeForDocument (e: vscode.TextDocument) {
+  function updateNodeForDocument(e: vscode.TextDocument) {
     if (e.uri.scheme !== 'file') {
       return
     }
@@ -314,9 +346,9 @@ void getApi().then(async api => {
   }
 
   api.workspace.onDidOpenTextDocument(updateNodeForDocument)
-  api.workspace.onDidChangeTextDocument(e => updateNodeForDocument(e.document))
+  api.workspace.onDidChangeTextDocument((e) => updateNodeForDocument(e.document))
 
-  function getOrCreateFile (controller: vscode.TestController, uri: vscode.Uri) {
+  function getOrCreateFile(controller: vscode.TestController, uri: vscode.Uri) {
     const existing = controller.items.get(uri.toString())
     if (existing != null) {
       return { file: existing, data: testData.get(existing) as TestFile }
@@ -332,45 +364,48 @@ void getApi().then(async api => {
     return { file, data }
   }
 
-  function gatherTestItems (collection: vscode.TestItemCollection) {
+  function gatherTestItems(collection: vscode.TestItemCollection) {
     const items: vscode.TestItem[] = []
-    collection.forEach(item => items.push(item))
+    collection.forEach((item) => items.push(item))
     return items
   }
 
-  function getWorkspaceTestPatterns () {
+  function getWorkspaceTestPatterns() {
     if (api.workspace.workspaceFolders == null) {
       return []
     }
 
-    return api.workspace.workspaceFolders.map(workspaceFolder => ({
+    return api.workspace.workspaceFolders.map((workspaceFolder) => ({
       workspaceFolder,
       pattern: new api.RelativePattern(workspaceFolder, '**/*.md')
     }))
   }
 
-  async function findInitialFiles (controller: vscode.TestController, pattern: vscode.GlobPattern) {
+  async function findInitialFiles(controller: vscode.TestController, pattern: vscode.GlobPattern) {
     for (const file of await api.workspace.findFiles(pattern)) {
       getOrCreateFile(controller, file)
     }
   }
 
-  function startWatchingWorkspace (controller: vscode.TestController, fileChangedEmitter: vscode.EventEmitter<vscode.Uri>) {
+  function startWatchingWorkspace(
+    controller: vscode.TestController,
+    fileChangedEmitter: vscode.EventEmitter<vscode.Uri>
+  ) {
     return getWorkspaceTestPatterns().map(({ pattern }) => {
       const watcher = api.workspace.createFileSystemWatcher(pattern)
 
-      watcher.onDidCreate(uri => {
+      watcher.onDidCreate((uri) => {
         getOrCreateFile(controller, uri)
         fileChangedEmitter.fire(uri)
       })
-      watcher.onDidChange(async uri => {
+      watcher.onDidChange(async (uri) => {
         const { file, data } = getOrCreateFile(controller, uri)
         if (data.didResolve) {
           await data.updateFromDisk(controller, file)
         }
         fileChangedEmitter.fire(uri)
       })
-      watcher.onDidDelete(uri => controller.items.delete(uri.toString()))
+      watcher.onDidDelete((uri) => controller.items.delete(uri.toString()))
 
       void findInitialFiles(controller, pattern)
 

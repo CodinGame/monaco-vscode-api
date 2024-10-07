@@ -7,8 +7,15 @@ import { IProductService } from 'vs/platform/product/common/productService.servi
 import { IWorkbenchConstructionOptions } from 'vs/workbench/browser/web.api'
 import { getWorkbenchConstructionOptions, getWorkspaceIdentifier, logsPath } from '../workbench'
 
-class InjectedBrowserWorkbenchEnvironmentService extends BrowserWorkbenchEnvironmentService implements IBrowserWorkbenchEnvironmentService {
-  constructor (workspaceId: string = getWorkspaceIdentifier().id, options: IWorkbenchConstructionOptions = getWorkbenchConstructionOptions(), @IProductService productService: IProductService) {
+class InjectedBrowserWorkbenchEnvironmentService
+  extends BrowserWorkbenchEnvironmentService
+  implements IBrowserWorkbenchEnvironmentService
+{
+  constructor(
+    workspaceId: string = getWorkspaceIdentifier().id,
+    options: IWorkbenchConstructionOptions = getWorkbenchConstructionOptions(),
+    @IProductService productService: IProductService
+  ) {
     super(workspaceId, logsPath, options, productService)
   }
 }
@@ -16,17 +23,19 @@ class InjectedBrowserWorkbenchEnvironmentService extends BrowserWorkbenchEnviron
 /**
  * @deprecated Provide construction option via the services `initialize` function `configuration` parameter
  */
-function getServiceOverride (options: IWorkbenchConstructionOptions): IEditorOverrideServices
-function getServiceOverride (): IEditorOverrideServices
+function getServiceOverride(options: IWorkbenchConstructionOptions): IEditorOverrideServices
+function getServiceOverride(): IEditorOverrideServices
 
-function getServiceOverride (options?: IWorkbenchConstructionOptions): IEditorOverrideServices {
+function getServiceOverride(options?: IWorkbenchConstructionOptions): IEditorOverrideServices {
   return {
-    [IEnvironmentService.toString()]: new SyncDescriptor(InjectedBrowserWorkbenchEnvironmentService, [undefined, options], true)
+    [IEnvironmentService.toString()]: new SyncDescriptor(
+      InjectedBrowserWorkbenchEnvironmentService,
+      [undefined, options],
+      true
+    )
   }
 }
 
 export default getServiceOverride
 
-export {
-  IWorkbenchConstructionOptions
-}
+export { IWorkbenchConstructionOptions }

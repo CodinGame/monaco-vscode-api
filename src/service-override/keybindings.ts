@@ -36,12 +36,19 @@ import 'vs/workbench/contrib/commands/common/commands.contribution'
 import { getService } from '../services'
 
 // This is the default value, but can be overriden by overriding the Environment or UserDataProfileService service
-const defaultUserKeybindindsFile = URI.from({ scheme: Schemas.vscodeUserData, path: '/User/keybindings.json' })
+const defaultUserKeybindindsFile = URI.from({
+  scheme: Schemas.vscodeUserData,
+  path: '/User/keybindings.json'
+})
 
 /**
  * Should be called only BEFORE the service are initialized to initialize the file on the filesystem before the keybindings service initializes
  */
-async function initUserKeybindings (configurationJson: string, options?: Partial<IFileWriteOptions>, file: URI = defaultUserKeybindindsFile): Promise<void> {
+async function initUserKeybindings(
+  configurationJson: string,
+  options?: Partial<IFileWriteOptions>,
+  file: URI = defaultUserKeybindindsFile
+): Promise<void> {
   await initFile(file, configurationJson, options)
 }
 
@@ -49,16 +56,23 @@ async function initUserKeybindings (configurationJson: string, options?: Partial
  * Can be called at any time after the services are initialized to update the user configuration
  */
 
-async function updateUserKeybindings (keybindingsJson: string): Promise<void> {
-  const userDataProfilesService: IUserDataProfilesService = await getService(IUserDataProfilesService)
+async function updateUserKeybindings(keybindingsJson: string): Promise<void> {
+  const userDataProfilesService: IUserDataProfilesService =
+    await getService(IUserDataProfilesService)
   const fileService = await getService(IFileService)
-  await fileService.writeFile(userDataProfilesService.defaultProfile.keybindingsResource, VSBuffer.fromString(keybindingsJson))
+  await fileService.writeFile(
+    userDataProfilesService.defaultProfile.keybindingsResource,
+    VSBuffer.fromString(keybindingsJson)
+  )
 }
 
-class DynamicWorkbenchKeybindingService extends WorkbenchKeybindingService implements DynamicKeybindingService {
+class DynamicWorkbenchKeybindingService
+  extends WorkbenchKeybindingService
+  implements DynamicKeybindingService
+{
   private keybindingProviders: KeybindingProvider[] = []
 
-  constructor (
+  constructor(
     private shouldUseGlobalKeybindings: () => boolean,
     @IContextKeyService contextKeyService: IContextKeyService,
     @ICommandService commandService: ICommandService,
@@ -72,42 +86,61 @@ class DynamicWorkbenchKeybindingService extends WorkbenchKeybindingService imple
     @ILogService logService: ILogService,
     @IKeyboardLayoutService keyboardLayoutService: IKeyboardLayoutService
   ) {
-    super(contextKeyService, commandService, telemetryService, notificationService, userDataProfileService, hostService, extensionService, fileService, uriIdentityService, logService, keyboardLayoutService)
+    super(
+      contextKeyService,
+      commandService,
+      telemetryService,
+      notificationService,
+      userDataProfileService,
+      hostService,
+      extensionService,
+      fileService,
+      uriIdentityService,
+      logService,
+      keyboardLayoutService
+    )
   }
 
-  public registerKeybindingProvider (provider: KeybindingProvider) {
+  public registerKeybindingProvider(provider: KeybindingProvider) {
     this.keybindingProviders.push(provider)
     this.updateResolver()
 
     const store = new DisposableStore()
-    store.add(provider.onDidChangeKeybindings(() => {
-      this.updateResolver()
-    }))
-
-    store.add(toDisposable(() => {
-      const idx = this.keybindingProviders.indexOf(provider)
-      if (idx >= 0) {
-        this.keybindingProviders.splice(idx, 1)
+    store.add(
+      provider.onDidChangeKeybindings(() => {
         this.updateResolver()
-      }
-    }))
+      })
+    )
+
+    store.add(
+      toDisposable(() => {
+        const idx = this.keybindingProviders.indexOf(provider)
+        if (idx >= 0) {
+          this.keybindingProviders.splice(idx, 1)
+          this.updateResolver()
+        }
+      })
+    )
 
     return store
   }
 
-  public override _getResolver (): KeybindingResolver {
+  public override _getResolver(): KeybindingResolver {
     return super._getResolver()
   }
 
-  protected override _dispatch (e: IKeyboardEvent, target: IContextKeyServiceTarget): boolean {
+  protected override _dispatch(e: IKeyboardEvent, target: IContextKeyServiceTarget): boolean {
     if (!this.shouldUseGlobalKeybindings()) {
       return false
     }
     return super._dispatch(e, target)
   }
 
-  protected override getUserKeybindingItems () {
-    return [...super.getUserKeybindingItems(), ...this.keybindingProviders.flatMap(provider => provider.provideKeybindings())]
+  protected override getUserKeybindingItems() {
+    return [
+      ...super.getUserKeybindingItems(),
+      ...this.keybindingProviders.flatMap((provider) => provider.provideKeybindings())
+    ]
   }
 }
 
@@ -119,10 +152,16 @@ onRenderWorkbench((accessor) => {
   accessor.get(IInstantiationService).createInstance(WorkbenchContextKeysHandler)
 })
 
-export default function getServiceOverride ({ shouldUseGlobalKeybindings = () => false }: KeybindingsProps = {}): IEditorOverrideServices {
+export default function getServiceOverride({
+  shouldUseGlobalKeybindings = () => false
+}: KeybindingsProps = {}): IEditorOverrideServices {
   return {
     ...getFileServiceOverride(),
-    [IKeybindingService.toString()]: new SyncDescriptor(DynamicWorkbenchKeybindingService, [shouldUseGlobalKeybindings], false),
+    [IKeybindingService.toString()]: new SyncDescriptor(
+      DynamicWorkbenchKeybindingService,
+      [shouldUseGlobalKeybindings],
+      false
+    ),
     [IKeyboardLayoutService.toString()]: new SyncDescriptor(BrowserKeyboardLayoutService, [], true),
     [ICommandService.toString()]: new SyncDescriptor(CommandService, [], true)
   }

@@ -1,10 +1,16 @@
-import { IResolvedTextEditorModel, IReference, OpenEditor } from '@codingame/monaco-vscode-views-service-override'
+import {
+  IResolvedTextEditorModel,
+  IReference,
+  OpenEditor
+} from '@codingame/monaco-vscode-views-service-override'
 import * as monaco from 'monaco-editor'
 
-let currentEditor: ({
-  modelRef: IReference<IResolvedTextEditorModel>
-  editor: monaco.editor.IStandaloneCodeEditor
-} & monaco.IDisposable) | null = null
+let currentEditor:
+  | ({
+      modelRef: IReference<IResolvedTextEditorModel>
+      editor: monaco.editor.IStandaloneCodeEditor
+    } & monaco.IDisposable)
+  | null = null
 export const openNewCodeEditor: OpenEditor = async (modelRef) => {
   if (currentEditor != null) {
     currentEditor.dispose()
@@ -18,7 +24,11 @@ export const openNewCodeEditor: OpenEditor = async (modelRef) => {
 
   const editorElem = document.createElement('div')
   editorElem.style.position = 'absolute'
-  editorElem.style.top = editorElem.style.bottom = editorElem.style.left = editorElem.style.right = '0'
+  editorElem.style.top =
+    editorElem.style.bottom =
+    editorElem.style.left =
+    editorElem.style.right =
+      '0'
   editorElem.style.margin = 'auto'
   editorElem.style.width = '80%'
   editorElem.style.height = '80%'
@@ -27,14 +37,11 @@ export const openNewCodeEditor: OpenEditor = async (modelRef) => {
 
   document.body.appendChild(container)
   try {
-    const editor = monaco.editor.create(
-      editorElem,
-      {
-        model: modelRef.object.textEditorModel,
-        readOnly: true,
-        automaticLayout: true
-      }
-    )
+    const editor = monaco.editor.create(editorElem, {
+      model: modelRef.object.textEditorModel,
+      readOnly: true,
+      automaticLayout: true
+    })
 
     currentEditor = {
       dispose: () => {

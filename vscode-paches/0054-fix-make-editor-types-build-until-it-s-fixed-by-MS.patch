@@ -1,0 +1,55 @@
+From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
+From: =?UTF-8?q?Lo=C3=AFc=20Mangeonjean?= <loic@coderpad.io>
+Date: Sun, 6 Oct 2024 18:36:08 +0200
+Subject: [PATCH] fix: make editor types build until it's fixed by MS
+
+---
+ build/gulpfile.editor.js | 28 ++++++++++++++--------------
+ 1 file changed, 14 insertions(+), 14 deletions(-)
+
+diff --git a/build/gulpfile.editor.js b/build/gulpfile.editor.js
+index a5951d21d34..44c61cb0dfd 100644
+--- a/build/gulpfile.editor.js
++++ b/build/gulpfile.editor.js
+@@ -77,7 +77,7 @@ const extractEditorSrcTask = task.define('extract-editor-src', () => {
+ 			extrausages
+ 		],
+ 		shakeLevel: 2, // 0-Files, 1-InnerFile, 2-ClassMembers
+-		importIgnorePattern: /\.css$/,
++		importIgnorePattern: /\.css$|^@vscode\//,
+ 		destRoot: path.join(root, 'out-editor-src'),
+ 		redirects: {
+ 			'@vscode/tree-sitter-wasm': '../node_modules/@vscode/tree-sitter-wasm/wasm/tree-sitter-web',
+@@ -366,19 +366,19 @@ gulp.task('extract-editor-src',
+ 
+ gulp.task('editor-distro',
+ 	task.series(
+-		task.parallel(
+-			util.rimraf('out-editor-src'),
+-			util.rimraf('out-editor-build'),
+-			util.rimraf('out-editor-esm'),
+-			util.rimraf('out-monaco-editor-core'),
+-			util.rimraf('out-editor'),
+-			util.rimraf('out-editor-min')
+-		),
+-		extractEditorSrcTask,
+-		task.series(
+-			createESMSourcesAndResourcesTask,
+-			compileEditorESMTask,
+-		),
++		// task.parallel(
++		// 	util.rimraf('out-editor-src'),
++		// 	util.rimraf('out-editor-build'),
++		// 	util.rimraf('out-editor-esm'),
++		// 	util.rimraf('out-monaco-editor-core'),
++		// 	util.rimraf('out-editor'),
++		// 	util.rimraf('out-editor-min')
++		// ),
++		// extractEditorSrcTask,
++		// task.series(
++		// 	createESMSourcesAndResourcesTask,
++		// 	compileEditorESMTask,
++		// ),
+ 		finalEditorResourcesTask
+ 	)
+ );

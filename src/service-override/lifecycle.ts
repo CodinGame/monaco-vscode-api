@@ -5,7 +5,7 @@ import { ILifecycleService } from 'vs/workbench/services/lifecycle/common/lifecy
 import { TimerService } from 'vs/workbench/services/timer/browser/timerService'
 import { ITimerService } from 'vs/workbench/services/timer/browser/timerService.service'
 
-export default function getServiceOverride (): IEditorOverrideServices {
+export default function getServiceOverride(): IEditorOverrideServices {
   return {
     [ILifecycleService.toString()]: new SyncDescriptor(BrowserLifecycleService),
     [ITimerService.toString()]: new SyncDescriptor(TimerService)

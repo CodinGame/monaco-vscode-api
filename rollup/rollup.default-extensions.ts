@@ -17,9 +17,14 @@ const EXTENSIONS = ['', '.ts', '.js']
 const BASE_DIR = path.resolve(__dirname, '..')
 const DEFAULT_EXTENSIONS_PATH = path.resolve(BASE_DIR, 'vscode-default-extensions')
 
-const defaultExtensions = fs.readdirSync(DEFAULT_EXTENSIONS_PATH, { withFileTypes: true })
-  .filter(f => f.isDirectory() && fs.existsSync(path.resolve(DEFAULT_EXTENSIONS_PATH, f.name, 'package.json')))
-  .map(f => f.name)
+const defaultExtensions = fs
+  .readdirSync(DEFAULT_EXTENSIONS_PATH, { withFileTypes: true })
+  .filter(
+    (f) =>
+      f.isDirectory() &&
+      fs.existsSync(path.resolve(DEFAULT_EXTENSIONS_PATH, f.name, 'package.json'))
+  )
+  .map((f) => f.name)
 
 const languageGrammarExtensions: string[] = []
 const languageFeatureExtensions: string[] = []
@@ -35,158 +40,192 @@ for (const extension of defaultExtensions) {
 }
 
 export default rollup.defineConfig([
-  ...defaultExtensions.map(name => (<rollup.RollupOptions>{
-    input: path.resolve(DEFAULT_EXTENSIONS_PATH, name),
-    output: [{
-      minifyInternalExports: false,
-      assetFileNames: chunkInfo => {
-        if (chunkInfo.name != null && (chunkInfo.name.endsWith('d.ts') || chunkInfo.name.endsWith('.css'))) {
-          // append .txt at the end of d.ts and css files: those file are expected to be loaded as simple text while some bundlers like vite tries to transform them
-          return 'resources/[name][extname].txt'
-        }
-        return 'resources/[name][extname]'
-      },
-      format: 'esm',
-      dir: `dist/default-extension-${name}`,
-      entryFileNames: 'index.js',
-      chunkFileNames: '[name].js',
-      hoistTransitiveImports: false
-    }],
-    external (source) {
-      return source === 'vscode/extensions'
-    },
-    plugins: [
-      {
-        name: 'resolve-asset-url',
-        resolveFileUrl (options) {
-          let relativePath = options.relativePath
-          if (!relativePath.startsWith('.')) {
-            relativePath = `./${options.relativePath}`
+  ...defaultExtensions.map(
+    (name) =>
+      <rollup.RollupOptions>{
+        input: path.resolve(DEFAULT_EXTENSIONS_PATH, name),
+        output: [
+          {
+            minifyInternalExports: false,
+            assetFileNames: (chunkInfo) => {
+              if (
+                chunkInfo.name != null &&
+                (chunkInfo.name.endsWith('d.ts') || chunkInfo.name.endsWith('.css'))
+              ) {
+                // append .txt at the end of d.ts and css files: those file are expected to be loaded as simple text while some bundlers like vite tries to transform them
+                return 'resources/[name][extname].txt'
+              }
+              return 'resources/[name][extname]'
+            },
+            format: 'esm',
+            dir: `dist/default-extension-${name}`,
+            entryFileNames: 'index.js',
+            chunkFileNames: '[name].js',
+            hoistTransitiveImports: false
           }
-          return `'${relativePath}'`
-        }
-      },
-      nodeResolve({
-        extensions: EXTENSIONS
-      }),
-      importMetaAssets(),
-      {
-        name: 'dynamic-import-polyfill',
-        renderDynamicImport (): { left: string, right: string } {
-          return {
-            left: 'import(',
-            right: ').then(module => module.default ?? module)'
-          }
-        }
-      },
-      extensionDirectoryPlugin({
-        include: `${DEFAULT_EXTENSIONS_PATH}/**/*`,
-        transformManifest (manifest) {
-          return {
-            ...manifest,
-            main: undefined
-          }
-        }
-      }),
-      metadataPlugin({
-        handle ({ directDependencies }, moduleGroupName, otherDependencies, options, bundle) {
-          const entrypoint = Object.values(bundle).filter(v => (v as rollup.OutputChunk).isEntry)[0]!.fileName
-          const packageJson: PackageJson = {
-            name: `@codingame/monaco-vscode-${name}-default-extension`,
-            ...Object.fromEntries(Object.entries(pkg).filter(([key]) => ['version', 'keywords', 'author', 'license', 'repository', 'type'].includes(key))),
-            private: false,
-            description: `Default VSCode extension designed to be used with ${pkg.name}`,
-            main: entrypoint,
-            module: entrypoint,
-            types: 'index.d.ts',
-            dependencies: {
-              vscode: `npm:${pkg.name}@^${pkg.version}`,
-              ...Object.fromEntries(Object.entries(pkg.dependencies).filter(([key]) => directDependencies.has(key)))
+        ],
+        external(source) {
+          return source === 'vscode/extensions'
+        },
+        plugins: [
+          {
+            name: 'resolve-asset-url',
+            resolveFileUrl(options) {
+              let relativePath = options.relativePath
+              if (!relativePath.startsWith('.')) {
+                relativePath = `./${options.relativePath}`
+              }
+              return `'${relativePath}'`
             }
-          }
+          },
+          nodeResolve({
+            extensions: EXTENSIONS
+          }),
+          importMetaAssets(),
+          {
+            name: 'dynamic-import-polyfill',
+            renderDynamicImport(): { left: string; right: string } {
+              return {
+                left: 'import(',
+                right: ').then(module => module.default ?? module)'
+              }
+            }
+          },
+          extensionDirectoryPlugin({
+            include: `${DEFAULT_EXTENSIONS_PATH}/**/*`,
+            transformManifest(manifest) {
+              return {
+                ...manifest,
+                main: undefined
+              }
+            }
+          }),
+          metadataPlugin({
+            handle({ directDependencies }, moduleGroupName, otherDependencies, options, bundle) {
+              const entrypoint = Object.values(bundle).filter(
+                (v) => (v as rollup.OutputChunk).isEntry
+              )[0]!.fileName
+              const packageJson: PackageJson = {
+                name: `@codingame/monaco-vscode-${name}-default-extension`,
+                ...Object.fromEntries(
+                  Object.entries(pkg).filter(([key]) =>
+                    ['version', 'keywords', 'author', 'license', 'repository', 'type'].includes(key)
+                  )
+                ),
+                private: false,
+                description: `Default VSCode extension designed to be used with ${pkg.name}`,
+                main: entrypoint,
+                module: entrypoint,
+                types: 'index.d.ts',
+                dependencies: {
+                  vscode: `npm:${pkg.name}@^${pkg.version}`,
+                  ...Object.fromEntries(
+                    Object.entries(pkg.dependencies).filter(([key]) => directDependencies.has(key))
+                  )
+                }
+              }
 
-          this.emitFile({
-            fileName: 'package.json',
-            needsCodeReference: false,
-            source: JSON.stringify(packageJson, null, 2),
-            type: 'asset'
-          })
+              this.emitFile({
+                fileName: 'package.json',
+                needsCodeReference: false,
+                source: JSON.stringify(packageJson, null, 2),
+                type: 'asset'
+              })
 
-          this.emitFile({
-            fileName: 'index.d.ts',
-            needsCodeReference: false,
-            source: 'declare const whenReady: () => Promise<void>\nexport { whenReady }',
-            type: 'asset'
+              this.emitFile({
+                fileName: 'index.d.ts',
+                needsCodeReference: false,
+                source: 'declare const whenReady: () => Promise<void>\nexport { whenReady }',
+                type: 'asset'
+              })
+            }
           })
-        }
-      })
-    ]
-  })), ...[{
-    name: '@codingame/monaco-vscode-all-default-extensions',
-    directory: 'default-extension-all',
-    extensions: defaultExtensions
-  }, {
-    name: '@codingame/monaco-vscode-all-language-default-extensions',
-    directory: 'default-extension-all-languages',
-    extensions: languageGrammarExtensions
-  }, {
-    name: '@codingame/monaco-vscode-all-language-feature-default-extensions',
-    directory: 'default-extension-all-language-features',
-    extensions: languageFeatureExtensions
-  }].map(({ name, directory, extensions }) => (<rollup.RollupOptions>{
-    input: 'index.js',
-    output: [{
-      format: 'esm',
-      dir: 'dist/' + directory,
-      entryFileNames: 'index.js'
-    }],
-    external () {
-      return true
+        ]
+      }
+  ),
+  ...[
+    {
+      name: '@codingame/monaco-vscode-all-default-extensions',
+      directory: 'default-extension-all',
+      extensions: defaultExtensions
     },
-    plugins: [{
-      name: 'code-loader',
-      resolveId () {
-        return 'index.js'
-      },
-      load () {
-        return `
-${extensions.map(name => `import { whenReady as whenReady${pascalCase(name)} } from '@codingame/monaco-vscode-${name}-default-extension'`).join('\n')}
+    {
+      name: '@codingame/monaco-vscode-all-language-default-extensions',
+      directory: 'default-extension-all-languages',
+      extensions: languageGrammarExtensions
+    },
+    {
+      name: '@codingame/monaco-vscode-all-language-feature-default-extensions',
+      directory: 'default-extension-all-language-features',
+      extensions: languageFeatureExtensions
+    }
+  ].map(
+    ({ name, directory, extensions }) =>
+      <rollup.RollupOptions>{
+        input: 'index.js',
+        output: [
+          {
+            format: 'esm',
+            dir: 'dist/' + directory,
+            entryFileNames: 'index.js'
+          }
+        ],
+        external() {
+          return true
+        },
+        plugins: [
+          {
+            name: 'code-loader',
+            resolveId() {
+              return 'index.js'
+            },
+            load() {
+              return `
+${extensions.map((name) => `import { whenReady as whenReady${pascalCase(name)} } from '@codingame/monaco-vscode-${name}-default-extension'`).join('\n')}
 const whenReady = Promise.all([
-${extensions.map(name => `  whenReady${pascalCase(name)}()`).join(',\n')}
+${extensions.map((name) => `  whenReady${pascalCase(name)}()`).join(',\n')}
 ])
         `
-      }
-    },
-    metadataPlugin({
-      handle ({ directDependencies }, moduleGroupName, otherDependencies, options, bundle) {
-        const entrypoint = Object.values(bundle).filter(v => (v as rollup.OutputChunk).isEntry)[0]!.fileName
-        const packageJson: PackageJson = {
-          name,
-          ...Object.fromEntries(Object.entries(pkg).filter(([key]) => ['version', 'keywords', 'author', 'license', 'repository', 'type'].includes(key))),
-          private: false,
-          description: `Meta package including default VSCode extensions designed to be used with ${pkg.name}`,
-          main: entrypoint,
-          module: entrypoint,
-          types: 'index.d.ts',
-          dependencies: Object.fromEntries(Array.from(directDependencies).map(name => [
-            name,
-            pkg.version
-          ]))
-        }
+            }
+          },
+          metadataPlugin({
+            handle({ directDependencies }, moduleGroupName, otherDependencies, options, bundle) {
+              const entrypoint = Object.values(bundle).filter(
+                (v) => (v as rollup.OutputChunk).isEntry
+              )[0]!.fileName
+              const packageJson: PackageJson = {
+                name,
+                ...Object.fromEntries(
+                  Object.entries(pkg).filter(([key]) =>
+                    ['version', 'keywords', 'author', 'license', 'repository', 'type'].includes(key)
+                  )
+                ),
+                private: false,
+                description: `Meta package including default VSCode extensions designed to be used with ${pkg.name}`,
+                main: entrypoint,
+                module: entrypoint,
+                types: 'index.d.ts',
+                dependencies: Object.fromEntries(
+                  Array.from(directDependencies).map((name) => [name, pkg.version])
+                )
+              }
 
-        this.emitFile({
-          fileName: 'package.json',
-          needsCodeReference: false,
-          source: JSON.stringify(packageJson, null, 2),
-          type: 'asset'
-        })
+              this.emitFile({
+                fileName: 'package.json',
+                needsCodeReference: false,
+                source: JSON.stringify(packageJson, null, 2),
+                type: 'asset'
+              })
 
-        this.emitFile({
-          fileName: 'index.d.ts',
-          needsCodeReference: false,
-          source: 'declare const whenReady: () => Promise<void>\nexport { whenReady }',
-          type: 'asset'
-        })
+              this.emitFile({
+                fileName: 'index.d.ts',
+                needsCodeReference: false,
+                source: 'declare const whenReady: () => Promise<void>\nexport { whenReady }',
+                type: 'asset'
+              })
+            }
+          })
+        ]
       }
-    })]
-  }))])
+  )
+])

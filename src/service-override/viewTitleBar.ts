@@ -4,12 +4,12 @@ import { BrowserTitleService } from 'vs/workbench/browser/parts/titlebar/titleba
 import { ITitleService } from 'vs/workbench/services/title/browser/titleService.service'
 import { registerServiceInitializePostParticipant } from '../lifecycle'
 
-export default function getServiceOverride (): IEditorOverrideServices {
+export default function getServiceOverride(): IEditorOverrideServices {
   return {
     [ITitleService.toString()]: new SyncDescriptor(BrowserTitleService, [], false)
   }
 }
 
-registerServiceInitializePostParticipant(async accessor => {
+registerServiceInitializePostParticipant(async (accessor) => {
   accessor.get(ITitleService)
 })

@@ -9,12 +9,20 @@ import { SyncDescriptor } from 'vs/platform/instantiation/common/descriptors'
 import { IReference } from 'vs/base/common/lifecycle'
 import { TextEditorService } from 'vs/workbench/services/textfile/common/textEditorService'
 import { ITextEditorService } from 'vs/workbench/services/textfile/common/textEditorService.service'
-import { GroupOrientation, IEditorPart } from 'vs/workbench/services/editor/common/editorGroupsService'
+import {
+  GroupOrientation,
+  IEditorPart
+} from 'vs/workbench/services/editor/common/editorGroupsService'
 import { IEditorGroupsService } from 'vs/workbench/services/editor/common/editorGroupsService.service'
 import { IInstantiationService } from 'vs/platform/instantiation/common/instantiation'
 import { DEFAULT_EDITOR_PART_OPTIONS } from 'vs/workbench/browser/parts/editor/editor'
 import { mainWindow } from 'vs/base/browser/window'
-import { MonacoDelegateEditorGroupsService, MonacoEditorService, OpenEditor, fakeActiveGroup } from './tools/editor'
+import {
+  MonacoDelegateEditorGroupsService,
+  MonacoEditorService,
+  OpenEditor,
+  fakeActiveGroup
+} from './tools/editor'
 import { unsupported } from '../tools'
 import 'vs/workbench/browser/parts/editor/editor.contribution._autosave.js'
 import 'vs/workbench/contrib/files/browser/files.contribution._fileEditorFactory.js'
@@ -26,7 +34,10 @@ class EmptyEditorPart implements IEditorPart {
   windowId = mainWindow.vscodeWindowId
   onDidLayout = Event.None
   onDidScroll = Event.None
-  get contentDimension (): never { return unsupported() }
+  get contentDimension(): never {
+    return unsupported()
+  }
+
   isReady = true
   whenReady = Promise.resolve()
   whenRestored = Promise.resolve()
@@ -43,7 +54,10 @@ class EmptyEditorPart implements IEditorPart {
   onDidChangeGroupLocked = Event.None
   onDidChangeGroupMaximized = Event.None
   activeGroup = fakeActiveGroup
-  get sideGroup (): never { return unsupported() }
+  get sideGroup(): never {
+    return unsupported()
+  }
+
   groups = [fakeActiveGroup]
   count = 0
   orientation = GroupOrientation.HORIZONTAL
@@ -103,9 +117,15 @@ class EmptyEditorGroupsService implements IEditorGroupsService {
   onDidScroll = Event.None
   onDidChangeGroupIndex = Event.None
   onDidChangeGroupLocked = Event.None
-  get contentDimension (): never { return unsupported() }
+  get contentDimension(): never {
+    return unsupported()
+  }
+
   activeGroup = fakeActiveGroup
-  get sideGroup (): never { return unsupported() }
+  get sideGroup(): never {
+    return unsupported()
+  }
+
   groups = [fakeActiveGroup]
   count = 0
   orientation = GroupOrientation.HORIZONTAL
@@ -135,28 +155,22 @@ class EmptyEditorGroupsService implements IEditorGroupsService {
 }
 
 class MonacoEditorGroupsService extends MonacoDelegateEditorGroupsService<EmptyEditorGroupsService> {
-  constructor (@IInstantiationService instantiationService: IInstantiationService) {
-    super(
-      instantiationService.createInstance(EmptyEditorGroupsService),
-      true,
-      instantiationService
-    )
+  constructor(@IInstantiationService instantiationService: IInstantiationService) {
+    super(instantiationService.createInstance(EmptyEditorGroupsService), true, instantiationService)
   }
 }
 
-export default function getServiceOverride (openEditor: OpenEditor): IEditorOverrideServices {
+export default function getServiceOverride(openEditor: OpenEditor): IEditorOverrideServices {
   return {
     [ICodeEditorService.toString()]: new SyncDescriptor(CodeEditorService, undefined, true),
-    [IEditorService.toString()]: new SyncDescriptor(MonacoEditorService, [openEditor, () => false], true),
+    [IEditorService.toString()]: new SyncDescriptor(
+      MonacoEditorService,
+      [openEditor, () => false],
+      true
+    ),
     [ITextEditorService.toString()]: new SyncDescriptor(TextEditorService, [], false),
     [IEditorGroupsService.toString()]: new SyncDescriptor(MonacoEditorGroupsService)
   }
 }
 
-export {
-  OpenEditor,
-  IEditorOptions,
-  IResolvedTextEditorModel,
-  IReference,
-  MonacoEditorService
-}
+export { OpenEditor, IEditorOptions, IResolvedTextEditorModel, IReference, MonacoEditorService }

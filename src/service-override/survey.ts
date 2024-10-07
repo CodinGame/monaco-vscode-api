@@ -2,7 +2,6 @@ import { IEditorOverrideServices } from 'vs/editor/standalone/browser/standalone
 import 'vs/workbench/contrib/surveys/browser/nps.contribution'
 import 'vs/workbench/contrib/surveys/browser/languageSurveys.contribution'
 
-export default function getServiceOverride (): IEditorOverrideServices {
-  return {
-  }
+export default function getServiceOverride(): IEditorOverrideServices {
+  return {}
 }

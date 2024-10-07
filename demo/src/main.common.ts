@@ -53,16 +53,19 @@ import '@codingame/monaco-vscode-npm-default-extension'
 import '@codingame/monaco-vscode-media-preview-default-extension'
 import '@codingame/monaco-vscode-ipynb-default-extension'
 
-const { getApi } = registerExtension({
-  name: 'demo-main',
-  publisher: 'codingame',
-  version: '1.0.0',
-  engines: {
-    vscode: '*'
-  }
-}, ExtensionHostKind.LocalProcess)
+const { getApi } = registerExtension(
+  {
+    name: 'demo-main',
+    publisher: 'codingame',
+    version: '1.0.0',
+    engines: {
+      vscode: '*'
+    }
+  },
+  ExtensionHostKind.LocalProcess
+)
 
-void getApi().then(async vscode => {
+void getApi().then(async (vscode) => {
   if (!useHtmlFileSystemProvider) {
     const mainModelUri = vscode.Uri.file('/workspace/test.js')
     await Promise.all([
@@ -71,13 +74,15 @@ void getApi().then(async vscode => {
     ])
 
     const diagnostics = vscode.languages.createDiagnosticCollection('demo')
-    diagnostics.set(mainModelUri, [{
-      range: new vscode.Range(2, 9, 2, 12),
-      severity: vscode.DiagnosticSeverity.Error,
-      message: 'This is not a real error, just a demo, don\'t worry',
-      source: 'Demo',
-      code: 42
-    }])
+    diagnostics.set(mainModelUri, [
+      {
+        range: new vscode.Range(2, 9, 2, 12),
+        severity: vscode.DiagnosticSeverity.Error,
+        message: "This is not a real error, just a demo, don't worry",
+        source: 'Demo',
+        code: 42
+      }
+    ])
   }
 
   document.querySelector('#toggleFullWorkbench')!.addEventListener('click', async () => {

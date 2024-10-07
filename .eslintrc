@@ -13,7 +13,7 @@
     "VSCODE_COMMIT": "readonly"
   },
   "extends": [
-    "@codingame"
+    "@codingame/eslint-config", "prettier"
   ],
   "rules": {
     "import/extensions": [

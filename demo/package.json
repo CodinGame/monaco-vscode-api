@@ -185,6 +185,7 @@
     "@codingame/monaco-vscode-xml-default-extension": "file:../dist/default-extension-xml",
     "@codingame/monaco-vscode-yaml-default-extension": "file:../dist/default-extension-yaml",
     "@codingame/monaco-vscode-view-common-service-override": "file:../dist/service-override-view-common",
+    "@codingame/monaco-vscode-treesitter-service-override": "file:../dist/service-override-treesitter",
     "ansi-colors": "^4.1.3",
     "dockerode": "^4.0.2",
     "express": "^4.21.0",

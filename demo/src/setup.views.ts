@@ -1,4 +1,9 @@
-import { IStorageService, IWorkbenchLayoutService, getService, initialize as initializeMonacoService } from 'vscode/services'
+import {
+  IStorageService,
+  IWorkbenchLayoutService,
+  getService,
+  initialize as initializeMonacoService
+} from 'vscode/services'
 import getQuickAccessServiceOverride from '@codingame/monaco-vscode-quickaccess-service-override'
 import { BrowserStorageService } from '@codingame/monaco-vscode-storage-service-override'
 import { ExtensionHostKind } from '@codingame/monaco-vscode-extensions-service-override'
@@ -15,7 +20,13 @@ import getViewsServiceOverride, {
 } from '@codingame/monaco-vscode-views-service-override'
 import { openNewCodeEditor } from './features/editor'
 import './features/customView.views'
-import { commonServices, constructOptions, envOptions, remoteAuthority, userDataProvider } from './setup.common'
+import {
+  commonServices,
+  constructOptions,
+  envOptions,
+  remoteAuthority,
+  userDataProvider
+} from './setup.common'
 
 const container = document.createElement('div')
 container.id = 'app'
@@ -66,25 +77,48 @@ container.innerHTML = `
 document.body.append(container)
 
 // Override services
-await initializeMonacoService({
-  ...commonServices,
-  ...getViewsServiceOverride(openNewCodeEditor, undefined),
+await initializeMonacoService(
+  {
+    ...commonServices,
+    ...getViewsServiceOverride(openNewCodeEditor, undefined),
 
-  ...getQuickAccessServiceOverride({
-    isKeybindingConfigurationVisible: isEditorPartVisible,
-    shouldUseGlobalPicker: (_editor, isStandalone) => !isStandalone && isEditorPartVisible()
-  })
-}, document.body, constructOptions, envOptions)
+    ...getQuickAccessServiceOverride({
+      isKeybindingConfigurationVisible: isEditorPartVisible,
+      shouldUseGlobalPicker: (_editor, isStandalone) => !isStandalone && isEditorPartVisible()
+    })
+  },
+  document.body,
+  constructOptions,
+  envOptions
+)
 
 for (const config of [
   { part: Parts.TITLEBAR_PART, element: '#titleBar' },
   { part: Parts.BANNER_PART, element: '#banner' },
-  { part: Parts.SIDEBAR_PART, get element () { return getSideBarPosition() === Position.LEFT ? '#sidebar' : '#sidebar-right' }, onDidElementChange: onDidChangeSideBarPosition },
-  { part: Parts.ACTIVITYBAR_PART, get element () { return getSideBarPosition() === Position.LEFT ? '#activityBar' : '#activityBar-right' }, onDidElementChange: onDidChangeSideBarPosition },
+  {
+    part: Parts.SIDEBAR_PART,
+    get element() {
+      return getSideBarPosition() === Position.LEFT ? '#sidebar' : '#sidebar-right'
+    },
+    onDidElementChange: onDidChangeSideBarPosition
+  },
+  {
+    part: Parts.ACTIVITYBAR_PART,
+    get element() {
+      return getSideBarPosition() === Position.LEFT ? '#activityBar' : '#activityBar-right'
+    },
+    onDidElementChange: onDidChangeSideBarPosition
+  },
   { part: Parts.PANEL_PART, element: '#panel' },
   { part: Parts.EDITOR_PART, element: '#editors' },
   { part: Parts.STATUSBAR_PART, element: '#statusBar' },
-  { part: Parts.AUXILIARYBAR_PART, get element () { return getSideBarPosition() === Position.LEFT ? '#auxiliaryBar' : '#auxiliaryBar-left' }, onDidElementChange: onDidChangeSideBarPosition }
+  {
+    part: Parts.AUXILIARYBAR_PART,
+    get element() {
+      return getSideBarPosition() === Position.LEFT ? '#auxiliaryBar' : '#auxiliaryBar-left'
+    },
+    onDidElementChange: onDidChangeSideBarPosition
+  }
 ]) {
   attachPart(config.part, document.querySelector<HTMLDivElement>(config.element)!)
 
@@ -96,8 +130,10 @@ for (const config of [
     document.querySelector<HTMLDivElement>(config.element)!.style.display = 'none'
   }
 
-  onPartVisibilityChange(config.part, visible => {
-    document.querySelector<HTMLDivElement>(config.element)!.style.display = visible ? 'block' : 'none'
+  onPartVisibilityChange(config.part, (visible) => {
+    document.querySelector<HTMLDivElement>(config.element)!.style.display = visible
+      ? 'block'
+      : 'none'
   })
 }
 
@@ -107,23 +143,27 @@ document.querySelector('#togglePanel')!.addEventListener('click', async () => {
 })
 
 document.querySelector('#toggleAuxiliary')!.addEventListener('click', async () => {
-  layoutService.setPartHidden(layoutService.isVisible(Parts.AUXILIARYBAR_PART, window), Parts.AUXILIARYBAR_PART)
+  layoutService.setPartHidden(
+    layoutService.isVisible(Parts.AUXILIARYBAR_PART, window),
+    Parts.AUXILIARYBAR_PART
+  )
 })
 
-export async function clearStorage (): Promise<void> {
+export async function clearStorage(): Promise<void> {
   await userDataProvider.reset()
-  await (await getService(IStorageService) as BrowserStorageService).clear()
+  await ((await getService(IStorageService)) as BrowserStorageService).clear()
 }
 
-await registerExtension({
-  name: 'demo',
-  publisher: 'codingame',
-  version: '1.0.0',
-  engines: {
-    vscode: '*'
-  }
-}, ExtensionHostKind.LocalProcess).setAsDefaultApi()
+await registerExtension(
+  {
+    name: 'demo',
+    publisher: 'codingame',
+    version: '1.0.0',
+    engines: {
+      vscode: '*'
+    }
+  },
+  ExtensionHostKind.LocalProcess
+).setAsDefaultApi()
 
-export {
-  remoteAuthority
-}
+export { remoteAuthority }

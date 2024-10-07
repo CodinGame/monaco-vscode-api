@@ -1,9 +1,23 @@
 import { SyncDescriptor } from 'vs/platform/instantiation/common/descriptors'
 import { IQuickInputService } from 'vs/platform/quickinput/common/quickInput.service'
-import { IInputBox, IInputOptions, IPickOptions, IQuickInput, IQuickInputButton, IQuickNavigateConfiguration, IQuickPick, IQuickPickItem, IQuickWidget, QuickPickInput } from 'vs/platform/quickinput/common/quickInput'
+import {
+  IInputBox,
+  IInputOptions,
+  IPickOptions,
+  IQuickInput,
+  IQuickInputButton,
+  IQuickNavigateConfiguration,
+  IQuickPick,
+  IQuickPickItem,
+  IQuickWidget,
+  QuickPickInput
+} from 'vs/platform/quickinput/common/quickInput'
 import { CancellationToken } from 'vs/base/common/cancellation'
 import { StandaloneQuickInputService } from 'vs/editor/standalone/browser/quickInput/standaloneQuickInputService'
-import { IEditorOverrideServices, StandaloneServices } from 'vs/editor/standalone/browser/standaloneServices'
+import {
+  IEditorOverrideServices,
+  StandaloneServices
+} from 'vs/editor/standalone/browser/standaloneServices'
 import { IInstantiationService } from 'vs/platform/instantiation/common/instantiation'
 import { QuickInputController } from 'vs/platform/quickinput/browser/quickInputController'
 import { IQuickAccessController } from 'vs/platform/quickinput/common/quickAccess'
@@ -23,17 +37,23 @@ import { ICodeEditor } from 'vs/editor/browser/editorBrowser'
 let isKeybindingConfigurationVisible = () => {
   return false
 }
-let shouldUseGlobalPicker = (_activeCodeEditor: ICodeEditor, _activeCodeEditorStandalone: boolean) => {
+let shouldUseGlobalPicker = (
+  _activeCodeEditor: ICodeEditor,
+  _activeCodeEditorStandalone: boolean
+) => {
   return false
 }
 
 // eslint-disable-next-line dot-notation
 const original = CommandsQuickAccessProvider.prototype['getCommandPicks']
 // eslint-disable-next-line dot-notation
-CommandsQuickAccessProvider.prototype['getCommandPicks'] = async function (this: CommandsQuickAccessProvider, token: CancellationToken) {
+CommandsQuickAccessProvider.prototype['getCommandPicks'] = async function (
+  this: CommandsQuickAccessProvider,
+  token: CancellationToken
+) {
   let result = await original.call(this, token)
   if (!isKeybindingConfigurationVisible()) {
-    result = result.map(picks => ({
+    result = result.map((picks) => ({
       ...picks,
       buttons: undefined
     }))
@@ -46,85 +66,118 @@ class DelegateQuickInputService implements IQuickInputService {
 
   private workbenchQuickInputService: IQuickInputService
   private standaloneQuickInputService?: StandaloneQuickInputService
-  constructor (
-    @IInstantiationService private instantiationService: IInstantiationService
-  ) {
+  constructor(@IInstantiationService private instantiationService: IInstantiationService) {
     this.workbenchQuickInputService = instantiationService.createInstance(QuickInputService)
   }
 
-  private get activeService (): IQuickInputService {
+  private get activeService(): IQuickInputService {
     const activeCodeEditor = StandaloneServices.get(ICodeEditorService).getFocusedCodeEditor()
 
-    if (activeCodeEditor == null || shouldUseGlobalPicker(activeCodeEditor, activeCodeEditor instanceof StandaloneCodeEditor)) {
+    if (
+      activeCodeEditor == null ||
+      shouldUseGlobalPicker(activeCodeEditor, activeCodeEditor instanceof StandaloneCodeEditor)
+    ) {
       return this.workbenchQuickInputService
     }
 
-    this.standaloneQuickInputService ??= this.instantiationService.createInstance(StandaloneQuickInputService)
+    this.standaloneQuickInputService ??= this.instantiationService.createInstance(
+      StandaloneQuickInputService
+    )
     return this.standaloneQuickInputService
   }
 
-  get currentQuickInput (): IQuickInput | undefined { return this.activeService.currentQuickInput }
+  get currentQuickInput(): IQuickInput | undefined {
+    return this.activeService.currentQuickInput
+  }
 
-  get quickAccess (): IQuickAccessController { return this.activeService.quickAccess }
+  get quickAccess(): IQuickAccessController {
+    return this.activeService.quickAccess
+  }
 
-  get backButton (): IQuickInputButton { return this.activeService.backButton }
+  get backButton(): IQuickInputButton {
+    return this.activeService.backButton
+  }
 
-  get onShow () { return this.activeService.onShow }
-  get onHide () { return this.activeService.onHide }
+  get onShow() {
+    return this.activeService.onShow
+  }
 
-  createQuickWidget (): IQuickWidget {
+  get onHide() {
+    return this.activeService.onHide
+  }
+
+  createQuickWidget(): IQuickWidget {
     return this.activeService.createQuickWidget()
   }
 
-  pick<T extends IQuickPickItem, O extends IPickOptions<T>> (picks: Promise<QuickPickInput<T>[]> | QuickPickInput<T>[], options: O = <O>{}, token: CancellationToken = CancellationToken.None): Promise<(O extends { canPickMany: true } ? T[] : T) | undefined> {
-    return (this.activeService as unknown as QuickInputController /* TS fail */).pick(picks, options, token)
+  pick<T extends IQuickPickItem, O extends IPickOptions<T>>(
+    picks: Promise<QuickPickInput<T>[]> | QuickPickInput<T>[],
+    options: O = <O>{},
+    token: CancellationToken = CancellationToken.None
+  ): Promise<(O extends { canPickMany: true } ? T[] : T) | undefined> {
+    return (this.activeService as unknown as QuickInputController) /* TS fail */
+      .pick(picks, options, token)
   }
 
-  input (options?: IInputOptions | undefined, token?: CancellationToken | undefined): Promise<string | undefined> {
+  input(
+    options?: IInputOptions | undefined,
+    token?: CancellationToken | undefined
+  ): Promise<string | undefined> {
     return this.activeService.input(options, token)
   }
 
-  createQuickPick<T extends IQuickPickItem>(options: { useSeparators: true }): IQuickPick<T, { useSeparators: true }>
-  createQuickPick<T extends IQuickPickItem>(options?: { useSeparators: boolean }): IQuickPick<T, { useSeparators: false }>
-  createQuickPick<T extends IQuickPickItem> (options: { useSeparators: boolean } = { useSeparators: false }): IQuickPick<T, { useSeparators: boolean }> {
+  createQuickPick<T extends IQuickPickItem>(options: {
+    useSeparators: true
+  }): IQuickPick<T, { useSeparators: true }>
+
+  createQuickPick<T extends IQuickPickItem>(options?: {
+    useSeparators: boolean
+  }): IQuickPick<T, { useSeparators: false }>
+
+  createQuickPick<T extends IQuickPickItem>(
+    options: { useSeparators: boolean } = { useSeparators: false }
+  ): IQuickPick<T, { useSeparators: boolean }> {
     return this.activeService.createQuickPick(options)
   }
 
-  createInputBox (): IInputBox {
+  createInputBox(): IInputBox {
     return this.activeService.createInputBox()
   }
 
-  focus (): void {
+  focus(): void {
     return this.activeService.focus()
   }
 
-  toggle (): void {
+  toggle(): void {
     return this.activeService.toggle()
   }
 
-  navigate (next: boolean, quickNavigate?: IQuickNavigateConfiguration | undefined): void {
+  navigate(next: boolean, quickNavigate?: IQuickNavigateConfiguration | undefined): void {
     return this.activeService.navigate(next, quickNavigate)
   }
 
-  accept (): Promise<void> {
+  accept(): Promise<void> {
     return this.activeService.accept()
   }
 
-  back (): Promise<void> {
+  back(): Promise<void> {
     return this.activeService.back()
   }
 
-  cancel (): Promise<void> {
+  cancel(): Promise<void> {
     return this.activeService.cancel()
   }
 }
 
 interface QuickAccessProps {
   isKeybindingConfigurationVisible?: () => boolean
-  shouldUseGlobalPicker?: (activeCodeEditor: ICodeEditor | null, activeCodeEditorStandalone: boolean) => boolean
+  shouldUseGlobalPicker?: (
+    activeCodeEditor: ICodeEditor | null,
+    activeCodeEditorStandalone: boolean
+  ) => boolean
 }
 
-export default function getServiceOverride ({
+export default function getServiceOverride({
   isKeybindingConfigurationVisible: _isKeybindingConfigurationVisible,
   shouldUseGlobalPicker: _shouldUseGlobalPicker
 }: QuickAccessProps = {}): IEditorOverrideServices {

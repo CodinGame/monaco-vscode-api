@@ -5,19 +5,41 @@ import 'vs/editor/standalone/browser/iPadShowKeyboard/iPadShowKeyboard'
 import Severity from 'vs/base/common/severity'
 import { ITextModelContentProvider } from 'vs/editor/common/services/resolverService'
 import { StorageScope, StorageTarget } from 'vs/platform/storage/common/storage'
-import { IEditorOverrideServices, StandaloneServices } from 'vs/editor/standalone/browser/standaloneServices'
+import {
+  IEditorOverrideServices,
+  StandaloneServices
+} from 'vs/editor/standalone/browser/standaloneServices'
 import { mixin } from 'vs/base/common/objects'
-import { GetLeadingNonServiceArgs, IInstantiationService, ServiceIdentifier, ServicesAccessor } from 'vs/platform/instantiation/common/instantiation'
+import {
+  GetLeadingNonServiceArgs,
+  IInstantiationService,
+  ServiceIdentifier,
+  ServicesAccessor
+} from 'vs/platform/instantiation/common/instantiation'
 import { IAction } from 'vs/base/common/actions'
 import { DisposableStore, IDisposable } from 'vs/base/common/lifecycle'
 import { IWorkbenchConstructionOptions } from 'vs/workbench/browser/web.api'
 import { IProductConfiguration } from 'vs/base/common/product'
-import { ILazyWorkbenchContributionInstantiation, IOnEditorWorkbenchContributionInstantiation, IWorkbenchContribution, WorkbenchContributionInstantiation, WorkbenchPhase, registerWorkbenchContribution2 } from 'vs/workbench/common/contributions'
+import {
+  ILazyWorkbenchContributionInstantiation,
+  IOnEditorWorkbenchContributionInstantiation,
+  IWorkbenchContribution,
+  WorkbenchContributionInstantiation,
+  WorkbenchPhase,
+  registerWorkbenchContribution2
+} from 'vs/workbench/common/contributions'
 import { IProductService } from 'vs/platform/product/common/productService.service'
 import { IConfigurationChangeEvent } from 'vs/platform/configuration/common/configuration'
 import { IColorTheme } from 'vs/platform/theme/common/themeService'
 import { EnvironmentOverride, initialize as initializeWorkbench } from './workbench'
-import { checkServicesNotInitialized, checkServicesReady, serviceInitializedBarrier, serviceInitializedEmitter, startup, waitServicesReady } from './lifecycle'
+import {
+  checkServicesNotInitialized,
+  checkServicesReady,
+  serviceInitializedBarrier,
+  serviceInitializedEmitter,
+  startup,
+  waitServicesReady
+} from './lifecycle'
 import getQuickAccessOverride from './service-override/quickaccess'
 import getFileServiceOverride from './service-override/files'
 import getExtensionsServiceOverride from './service-override/extensions'
@@ -26,26 +48,34 @@ import getLayoutServiceOverride from './service-override/layout'
 import getHostServiceOverride from './service-override/host'
 import getBaseServiceOverride from './service-override/base'
 
-export async function initialize (overrides: IEditorOverrideServices, container: HTMLElement = document.body, configuration: IWorkbenchConstructionOptions = {}, env?: EnvironmentOverride): Promise<void> {
+export async function initialize(
+  overrides: IEditorOverrideServices,
+  container: HTMLElement = document.body,
+  configuration: IWorkbenchConstructionOptions = {},
+  env?: EnvironmentOverride
+): Promise<void> {
   checkServicesNotInitialized()
 
   initializeWorkbench(container, configuration, env)
 
   const instantiationService = StandaloneServices.initialize({
-    [IProductService.toString()]: mixin(<Partial<IProductConfiguration>>{
-      version: VSCODE_VERSION,
-      quality: 'stable',
-      commit: VSCODE_COMMIT,
-      nameShort: 'Code - OSS',
-      nameLong: 'Code - OSS',
-      applicationName: 'code-oss',
-      dataFolderName: '.vscode-oss',
-      urlProtocol: 'code-oss',
-      reportIssueUrl: 'https://github.com/microsoft/vscode/issues/new',
-      licenseName: 'MIT',
-      licenseUrl: 'https://github.com/microsoft/vscode/blob/main/LICENSE.txt',
-      serverApplicationName: 'code-server-oss'
-    }, configuration.productConfiguration ?? {}),
+    [IProductService.toString()]: mixin(
+      <Partial<IProductConfiguration>>{
+        version: VSCODE_VERSION,
+        quality: 'stable',
+        commit: VSCODE_COMMIT,
+        nameShort: 'Code - OSS',
+        nameLong: 'Code - OSS',
+        applicationName: 'code-oss',
+        dataFolderName: '.vscode-oss',
+        urlProtocol: 'code-oss',
+        reportIssueUrl: 'https://github.com/microsoft/vscode/issues/new',
+        licenseName: 'MIT',
+        licenseUrl: 'https://github.com/microsoft/vscode/blob/main/LICENSE.txt',
+        serverApplicationName: 'code-server-oss'
+      },
+      configuration.productConfiguration ?? {}
+    ),
     ...getLayoutServiceOverride(), // Always override layout service to break cyclic dependency with ICodeEditorService
     ...getEnvironmentServiceOverride(),
     ...getExtensionsServiceOverride(),
@@ -59,19 +89,25 @@ export async function initialize (overrides: IEditorOverrideServices, container:
   await startup(instantiationService)
 }
 
-export async function getService<T> (identifier: ServiceIdentifier<T>): Promise<T> {
+export async function getService<T>(identifier: ServiceIdentifier<T>): Promise<T> {
   await waitServicesReady()
   return StandaloneServices.get(identifier)
 }
 
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
-export async function createInstance <Ctor extends new (...args: any[]) => any, R extends InstanceType<Ctor>>(ctor: Ctor, ...args: GetLeadingNonServiceArgs<ConstructorParameters<Ctor>>): Promise<R> {
+export async function createInstance<
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  Ctor extends new (...args: any[]) => any,
+  R extends InstanceType<Ctor>
+>(ctor: Ctor, ...args: GetLeadingNonServiceArgs<ConstructorParameters<Ctor>>): Promise<R> {
   await waitServicesReady()
   return StandaloneServices.get(IInstantiationService).createInstance(ctor, ...args)
 }
 
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
-export function createInstanceSync <Ctor extends new (...args: any[]) => any, R extends InstanceType<Ctor>>(ctor: Ctor, ...args: GetLeadingNonServiceArgs<ConstructorParameters<Ctor>>): R {
+export function createInstanceSync<
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  Ctor extends new (...args: any[]) => any,
+  R extends InstanceType<Ctor>
+>(ctor: Ctor, ...args: GetLeadingNonServiceArgs<ConstructorParameters<Ctor>>): R {
   checkServicesReady()
   return StandaloneServices.get(IInstantiationService).createInstance(ctor, ...args)
 }
@@ -79,24 +115,32 @@ export function createInstanceSync <Ctor extends new (...args: any[]) => any, R 
 /**
  * Equivalent to `StandaloneServices.withServices` except the callback is called when the services are ready, not just initialized
  */
-export function withReadyServices (callback: (serviceAccessor: ServicesAccessor) => IDisposable): IDisposable {
+export function withReadyServices(
+  callback: (serviceAccessor: ServicesAccessor) => IDisposable
+): IDisposable {
   if (serviceInitializedBarrier.isOpen()) {
     return StandaloneServices.get(IInstantiationService).invokeFunction(callback)
   }
 
   const disposable = new DisposableStore()
 
-  const listener = disposable.add(serviceInitializedEmitter.event(() => {
-    listener.dispose()
-    disposable.add(StandaloneServices.get(IInstantiationService).invokeFunction(callback))
-  }))
+  const listener = disposable.add(
+    serviceInitializedEmitter.event(() => {
+      listener.dispose()
+      disposable.add(StandaloneServices.get(IInstantiationService).invokeFunction(callback))
+    })
+  )
 
   return disposable
 }
 
-export const registerWorkbenchContribution = (id: string, contribution: (accessor: ServicesAccessor) => void, instantiation: WorkbenchContributionInstantiation): void => {
+export const registerWorkbenchContribution = (
+  id: string,
+  contribution: (accessor: ServicesAccessor) => void,
+  instantiation: WorkbenchContributionInstantiation
+): void => {
   class Contribution implements IWorkbenchContribution {
-    constructor (@IInstantiationService instantiationService: IInstantiationService) {
+    constructor(@IInstantiationService instantiationService: IInstantiationService) {
       instantiationService.invokeFunction(contribution)
     }
   }
@@ -128,9 +172,7 @@ export { IQuickInputService } from 'vs/platform/quickinput/common/quickInput.ser
 export { ITelemetryService } from 'vs/platform/telemetry/common/telemetry.service'
 export { IUriIdentityService } from 'vs/platform/uriIdentity/common/uriIdentity.service'
 export { IBreadcrumbsService } from 'vs/workbench/browser/parts/editor/breadcrumbs.service'
-export {
-  IEditorGroupsService
-} from 'vs/workbench/services/editor/common/editorGroupsService.service'
+export { IEditorGroupsService } from 'vs/workbench/services/editor/common/editorGroupsService.service'
 export {
   IEditorGroup,
   GroupDirection,
@@ -168,7 +210,11 @@ export {
   IEditorControl
 } from 'vs/workbench/common/editor'
 export { IDimension } from 'vs/editor/common/core/dimension'
-export { IEditorOptions, ITextEditorOptions, IResourceEditorInput } from 'vs/platform/editor/common/editor'
+export {
+  IEditorOptions,
+  ITextEditorOptions,
+  IResourceEditorInput
+} from 'vs/platform/editor/common/editor'
 export { EditorInput } from 'vs/workbench/common/editor/editorInput'
 export { IGroupModelChangeEvent } from 'vs/workbench/common/editor/editorGroupModel'
 export { IEditorService } from 'vs/workbench/services/editor/common/editorService.service'
@@ -211,10 +257,7 @@ export { ILanguagePackService } from 'vs/platform/languagePacks/common/languageP
 export { ILocaleService } from 'vs/workbench/services/localization/common/locale.service'
 
 // Export all Notification service parts
-export {
-  NoOpNotification,
-  NoOpProgress
-} from 'vs/platform/notification/common/notification'
+export { NoOpNotification, NoOpProgress } from 'vs/platform/notification/common/notification'
 export {
   NotificationsFilter,
   NotificationMessage,
@@ -271,7 +314,11 @@ export { IExplorerService } from 'vs/workbench/contrib/files/browser/files.servi
 export { IStatusbarService } from 'vs/workbench/services/statusbar/browser/statusbar.service'
 export { ITitleService } from 'vs/workbench/services/title/browser/titleService.service'
 export { IBannerService } from 'vs/workbench/services/banner/browser/bannerService.service'
-export { IWorkspaceTrustManagementService, IWorkspaceTrustRequestService, IWorkspaceTrustEnablementService } from 'vs/platform/workspace/common/workspaceTrust.service'
+export {
+  IWorkspaceTrustManagementService,
+  IWorkspaceTrustRequestService,
+  IWorkspaceTrustEnablementService
+} from 'vs/platform/workspace/common/workspaceTrust.service'
 export { IWorkspaceTrustUriInfo } from 'vs/platform/workspace/common/workspaceTrust'
 export { IKeybindingService } from 'vs/platform/keybinding/common/keybinding.service'
 export { ISecretStorageService } from 'vs/platform/secrets/common/secrets.service'

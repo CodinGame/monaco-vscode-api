@@ -5,16 +5,14 @@ import { IBannerService } from 'vs/workbench/services/banner/browser/bannerServi
 import { registerServiceInitializePostParticipant } from '../lifecycle'
 import 'vs/workbench/contrib/welcomeBanner/browser/welcomeBanner.contribution'
 
-export default function getServiceOverride (): IEditorOverrideServices {
+export default function getServiceOverride(): IEditorOverrideServices {
   return {
     [IBannerService.toString()]: new SyncDescriptor(BannerPart, [], false)
   }
 }
 
-registerServiceInitializePostParticipant(async accessor => {
+registerServiceInitializePostParticipant(async (accessor) => {
   accessor.get(IBannerService)
 })
 
-export {
-  BannerPart
-}
+export { BannerPart }

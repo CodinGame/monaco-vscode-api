@@ -1,9 +1,16 @@
 import { IFileService } from 'vs/platform/files/common/files.service'
 import { ILifecycleService } from 'vs/workbench/services/lifecycle/common/lifecycle.service'
-import { ExtensionHostStartup, IExtensionHost } from 'vs/workbench/services/extensions/common/extensions'
+import {
+  ExtensionHostStartup,
+  IExtensionHost
+} from 'vs/workbench/services/extensions/common/extensions'
 import { IExtensionService } from 'vs/workbench/services/extensions/common/extensions.service'
 import { ILogService } from 'vs/platform/log/common/log.service'
-import { ExtensionIdentifier, IExtension, IExtensionDescription } from 'vs/platform/extensions/common/extensions'
+import {
+  ExtensionIdentifier,
+  IExtension,
+  IExtensionDescription
+} from 'vs/platform/extensions/common/extensions'
 import { IWorkspaceContextService } from 'vs/platform/workspace/common/workspace.service'
 import { IInstantiationService } from 'vs/platform/instantiation/common/instantiation'
 import { INotificationService } from 'vs/platform/notification/common/notification.service'
@@ -13,7 +20,11 @@ import { IDialogService } from 'vs/platform/dialogs/common/dialogs.service'
 import { IRemoteAuthorityResolverService } from 'vs/platform/remote/common/remoteAuthorityResolver.service'
 import { IRemoteExtensionsScannerService } from 'vs/platform/remote/common/remoteExtensionsScanner.service'
 import { IRemoteAgentService } from 'vs/workbench/services/remote/common/remoteAgentService.service'
-import { IWebExtensionsScannerService, IWorkbenchExtensionEnablementService, IWorkbenchExtensionManagementService } from 'vs/workbench/services/extensionManagement/common/extensionManagement.service'
+import {
+  IWebExtensionsScannerService,
+  IWorkbenchExtensionEnablementService,
+  IWorkbenchExtensionManagementService
+} from 'vs/workbench/services/extensionManagement/common/extensionManagement.service'
 import { ExtensionManifestPropertiesService } from 'vs/workbench/services/extensions/common/extensionManifestPropertiesService'
 import { IExtensionManifestPropertiesService } from 'vs/workbench/services/extensions/common/extensionManifestPropertiesService.service'
 import { IConfigurationService } from 'vs/platform/configuration/common/configuration.service'
@@ -23,8 +34,15 @@ import { IEditorOverrideServices } from 'vs/editor/standalone/browser/standalone
 import { SyncDescriptor } from 'vs/platform/instantiation/common/descriptors'
 import { IUserDataInitializationService } from 'vs/workbench/services/userData/browser/userDataInit.service'
 import { ExtensionsProposedApi } from 'vs/workbench/services/extensions/common/extensionsProposedApi'
-import { BrowserExtensionHostFactory, BrowserExtensionHostKindPicker, ExtensionService } from 'vs/workbench/services/extensions/browser/extensionService'
-import { ExtensionHostKind, ExtensionRunningPreference } from 'vs/workbench/services/extensions/common/extensionHostKind'
+import {
+  BrowserExtensionHostFactory,
+  BrowserExtensionHostKindPicker,
+  ExtensionService
+} from 'vs/workbench/services/extensions/browser/extensionService'
+import {
+  ExtensionHostKind,
+  ExtensionRunningPreference
+} from 'vs/workbench/services/extensions/common/extensionHostKind'
 import { ExtensionRunningLocation } from 'vs/workbench/services/extensions/common/extensionRunningLocation'
 import { ExtensionRunningLocationTracker } from 'vs/workbench/services/extensions/common/extensionRunningLocationTracker'
 import { URI } from 'vs/base/common/uri'
@@ -50,44 +68,75 @@ export interface WorkerConfig {
   options?: WorkerOptions
 }
 
-let localExtensionHost: (typeof LocalExtensionHost) | undefined
-function setLocalExtensionHost (_localExtensionHost: typeof LocalExtensionHost): void {
+let localExtensionHost: typeof LocalExtensionHost | undefined
+function setLocalExtensionHost(_localExtensionHost: typeof LocalExtensionHost): void {
   localExtensionHost = _localExtensionHost
 }
 
 class BrowserExtensionHostFactoryOverride extends BrowserExtensionHostFactory {
-  constructor (
+  constructor(
     private readonly workerExtHostEnabled: boolean,
     _extensionsProposedApi: ExtensionsProposedApi,
     _scanWebExtensions: () => Promise<IExtensionDescription[]>,
     _getExtensionRegistrySnapshotWhenReady: () => Promise<ExtensionDescriptionRegistrySnapshot>,
     @IInstantiationService _instantiationService: IInstantiationService,
     @IRemoteAgentService _remoteAgentService: IRemoteAgentService,
-    @IRemoteAuthorityResolverService _remoteAuthorityResolverService: IRemoteAuthorityResolverService,
-    @IWorkbenchExtensionEnablementService _extensionEnablementService: IWorkbenchExtensionEnablementService,
+    @IRemoteAuthorityResolverService
+    _remoteAuthorityResolverService: IRemoteAuthorityResolverService,
+    @IWorkbenchExtensionEnablementService
+    _extensionEnablementService: IWorkbenchExtensionEnablementService,
     @ILogService _logService: ILogService
   ) {
-    super(_extensionsProposedApi, _scanWebExtensions, _getExtensionRegistrySnapshotWhenReady, _instantiationService, _remoteAgentService, _remoteAuthorityResolverService, _extensionEnablementService, _logService)
+    super(
+      _extensionsProposedApi,
+      _scanWebExtensions,
+      _getExtensionRegistrySnapshotWhenReady,
+      _instantiationService,
+      _remoteAgentService,
+      _remoteAuthorityResolverService,
+      _extensionEnablementService,
+      _logService
+    )
   }
 
-  override createExtensionHost (runningLocations: ExtensionRunningLocationTracker, runningLocation: ExtensionRunningLocation, isInitialStart: boolean): IExtensionHost | null {
+  override createExtensionHost(
+    runningLocations: ExtensionRunningLocationTracker,
+    runningLocation: ExtensionRunningLocation,
+    isInitialStart: boolean
+  ): IExtensionHost | null {
     switch (runningLocation.kind) {
       case ExtensionHostKind.LocalProcess: {
         if (localExtensionHost == null) {
           return null
         }
-        return this._instantiationService.createInstance(localExtensionHost, runningLocation, ExtensionHostStartup.EagerAutoStart, this._createLocalExtensionHostDataProvider(runningLocations, runningLocation, isInitialStart))
+        return this._instantiationService.createInstance(
+          localExtensionHost,
+          runningLocation,
+          ExtensionHostStartup.EagerAutoStart,
+          this._createLocalExtensionHostDataProvider(
+            runningLocations,
+            runningLocation,
+            isInitialStart
+          )
+        )
       }
       case ExtensionHostKind.LocalWebWorker: {
         if (!this.workerExtHostEnabled) {
           return null
         }
-        const startup = (
-          isInitialStart
-            ? ExtensionHostStartup.EagerManualStart
-            : ExtensionHostStartup.EagerAutoStart
+        const startup = isInitialStart
+          ? ExtensionHostStartup.EagerManualStart
+          : ExtensionHostStartup.EagerAutoStart
+        return this._instantiationService.createInstance(
+          WebWorkerExtensionHost,
+          runningLocation,
+          startup,
+          this._createLocalExtensionHostDataProvider(
+            runningLocations,
+            runningLocation,
+            isInitialStart
+          )
         )
-        return this._instantiationService.createInstance(WebWorkerExtensionHost, runningLocation, startup, this._createLocalExtensionHostDataProvider(runningLocations, runningLocation, isInitialStart))
       }
       case ExtensionHostKind.Remote: {
         return super.createExtensionHost(runningLocations, runningLocation, isInitialStart)
@@ -97,19 +146,31 @@ class BrowserExtensionHostFactoryOverride extends BrowserExtensionHostFactory {
 }
 
 class LocalBrowserExtensionHostKindPicker extends BrowserExtensionHostKindPicker {
-  constructor (
+  constructor(
     private readonly allowedExtHostKinds: ExtensionHostKind[],
     @ILogService _logService: ILogService
   ) {
     super(_logService)
   }
 
-  public override pickExtensionHostKind (extensionId: ExtensionIdentifier, extensionKinds: ExtensionKind[], isInstalledLocally: boolean, isInstalledRemotely: boolean, preference: ExtensionRunningPreference): ExtensionHostKind | null {
+  public override pickExtensionHostKind(
+    extensionId: ExtensionIdentifier,
+    extensionKinds: ExtensionKind[],
+    isInstalledLocally: boolean,
+    isInstalledRemotely: boolean,
+    preference: ExtensionRunningPreference
+  ): ExtensionHostKind | null {
     const forcedKind = getForcedExtensionHostKind(extensionId.value)
     if (forcedKind != null) {
       return forcedKind
     }
-    const detectedKind = super.pickExtensionHostKind(extensionId, extensionKinds, isInstalledLocally, isInstalledRemotely, preference)
+    const detectedKind = super.pickExtensionHostKind(
+      extensionId,
+      extensionKinds,
+      isInstalledLocally,
+      isInstalledRemotely,
+      preference
+    )
     if (detectedKind != null && !this.allowedExtHostKinds.includes(detectedKind)) {
       return this.allowedExtHostKinds[0] ?? null
     }
@@ -122,28 +183,35 @@ export interface IExtensionWithExtHostKind extends IExtension {
 }
 
 export class ExtensionServiceOverride extends ExtensionService implements IExtensionService {
-  constructor (
+  constructor(
     workerExtHostEnabled: boolean,
     @IInstantiationService instantiationService: IInstantiationService,
     @INotificationService notificationService: INotificationService,
-    @IBrowserWorkbenchEnvironmentService browserEnvironmentService: IBrowserWorkbenchEnvironmentService,
+    @IBrowserWorkbenchEnvironmentService
+    browserEnvironmentService: IBrowserWorkbenchEnvironmentService,
     @ITelemetryService telemetryService: ITelemetryService,
-    @IWorkbenchExtensionEnablementService extensionEnablementService: IWorkbenchExtensionEnablementService,
+    @IWorkbenchExtensionEnablementService
+    extensionEnablementService: IWorkbenchExtensionEnablementService,
     @IFileService fileService: IFileService,
     @IProductService productService: IProductService,
-    @IWorkbenchExtensionManagementService extensionManagementService: IWorkbenchExtensionManagementService,
+    @IWorkbenchExtensionManagementService
+    extensionManagementService: IWorkbenchExtensionManagementService,
     @IWorkspaceContextService contextService: IWorkspaceContextService,
     @IConfigurationService configurationService: IConfigurationService,
-    @IExtensionManifestPropertiesService extensionManifestPropertiesService: IExtensionManifestPropertiesService,
+    @IExtensionManifestPropertiesService
+    extensionManifestPropertiesService: IExtensionManifestPropertiesService,
     @IWebExtensionsScannerService webExtensionsScannerService: IWebExtensionsScannerService,
     @ILogService logService: ILogService,
     @IRemoteAgentService remoteAgentService: IRemoteAgentService,
-    @IRemoteExtensionsScannerService remoteExtensionsScannerService: IRemoteExtensionsScannerService,
+    @IRemoteExtensionsScannerService
+    remoteExtensionsScannerService: IRemoteExtensionsScannerService,
     @ILifecycleService lifecycleService: ILifecycleService,
-    @IRemoteAuthorityResolverService remoteAuthorityResolverService: IRemoteAuthorityResolverService,
+    @IRemoteAuthorityResolverService
+    remoteAuthorityResolverService: IRemoteAuthorityResolverService,
     @IUserDataInitializationService userDataInitializationService: IUserDataInitializationService,
     @IUserDataProfileService userDataProfileService: IUserDataProfileService,
-    @IWorkspaceTrustManagementService workspaceTrustManagementService: IWorkspaceTrustManagementService,
+    @IWorkspaceTrustManagementService
+    workspaceTrustManagementService: IWorkspaceTrustManagementService,
     @IRemoteExplorerService remoteExplorerService: IRemoteExplorerService,
     @IDialogService dialogService: IDialogService
   ) {
@@ -162,7 +230,16 @@ export class ExtensionServiceOverride extends ExtensionService implements IExten
     super(
       extensionsProposedApi,
       extensionHostFactory,
-      new LocalBrowserExtensionHostKindPicker(workerExtHostEnabled ? [ExtensionHostKind.LocalWebWorker, ExtensionHostKind.LocalProcess, ExtensionHostKind.Remote] : [ExtensionHostKind.LocalProcess, ExtensionHostKind.Remote], logService),
+      new LocalBrowserExtensionHostKindPicker(
+        workerExtHostEnabled
+          ? [
+              ExtensionHostKind.LocalWebWorker,
+              ExtensionHostKind.LocalProcess,
+              ExtensionHostKind.Remote
+            ]
+          : [ExtensionHostKind.LocalProcess, ExtensionHostKind.Remote],
+        logService
+      ),
       instantiationService,
       notificationService,
       browserEnvironmentService,
@@ -188,13 +265,16 @@ export class ExtensionServiceOverride extends ExtensionService implements IExten
     )
   }
 
-  public async deltaExtensions (toAdd: IExtensionWithExtHostKind[], toRemove: IExtension[]): Promise<void> {
+  public async deltaExtensions(
+    toAdd: IExtensionWithExtHostKind[],
+    toRemove: IExtension[]
+  ): Promise<void> {
     await this._handleDeltaExtensions(new DeltaExtensionsQueueItem(toAdd, toRemove))
   }
 }
 
 class ExtensionResourceLoaderServiceOverride extends ExtensionResourceLoaderService {
-  override async readExtensionResource (uri: URI): Promise<string> {
+  override async readExtensionResource(uri: URI): Promise<string> {
     /**
      * Small hack to make it work in jest environment
      * The default implementation transforms the uri to a browser uri and then loads it using the file service
@@ -211,19 +291,30 @@ class ExtensionResourceLoaderServiceOverride extends ExtensionResourceLoaderServ
 
 let iframeAlternateDomains: string | undefined
 registerAssets({
-  'vs/workbench/services/extensions/worker/webWorkerExtensionHostIframe.esm.html': () => changeUrlDomain(new URL('../../vscode/src/vs/workbench/services/extensions/worker/webWorkerExtensionHostIframe.esm.html', import.meta.url).href, iframeAlternateDomains)
+  'vs/workbench/services/extensions/worker/webWorkerExtensionHostIframe.esm.html': () =>
+    changeUrlDomain(
+      new URL(
+        '../../vscode/src/vs/workbench/services/extensions/worker/webWorkerExtensionHostIframe.esm.html',
+        import.meta.url
+      ).href,
+      iframeAlternateDomains
+    )
 })
 
-export default function getServiceOverride (workerConfig?: WorkerConfig, _iframeAlternateDomains?: string): IEditorOverrideServices {
+export default function getServiceOverride(
+  workerConfig?: WorkerConfig,
+  _iframeAlternateDomains?: string
+): IEditorOverrideServices {
   if (_iframeAlternateDomains != null) {
     iframeAlternateDomains = _iframeAlternateDomains
   }
-  const _workerConfig = workerConfig != null
-    ? {
-        ...workerConfig,
-        url: changeUrlDomain(workerConfig.url, iframeAlternateDomains)
-      }
-    : undefined
+  const _workerConfig =
+    workerConfig != null
+      ? {
+          ...workerConfig,
+          url: changeUrlDomain(workerConfig.url, iframeAlternateDomains)
+        }
+      : undefined
 
   if (workerConfig != null) {
     registerAssets({
@@ -232,14 +323,23 @@ export default function getServiceOverride (workerConfig?: WorkerConfig, _iframe
   }
 
   return {
-    [IExtensionService.toString()]: new SyncDescriptor(ExtensionServiceOverride, [_workerConfig], false),
-    [IExtensionManifestPropertiesService.toString()]: new SyncDescriptor(ExtensionManifestPropertiesService, [], true),
-    [IExtensionResourceLoaderService.toString()]: new SyncDescriptor(ExtensionResourceLoaderServiceOverride, [], true),
+    [IExtensionService.toString()]: new SyncDescriptor(
+      ExtensionServiceOverride,
+      [_workerConfig],
+      false
+    ),
+    [IExtensionManifestPropertiesService.toString()]: new SyncDescriptor(
+      ExtensionManifestPropertiesService,
+      [],
+      true
+    ),
+    [IExtensionResourceLoaderService.toString()]: new SyncDescriptor(
+      ExtensionResourceLoaderServiceOverride,
+      [],
+      true
+    ),
     [IExtensionBisectService.toString()]: new SyncDescriptor(ExtensionBisectService, [], true)
   }
 }
 
-export {
-  ExtensionHostKind,
-  setLocalExtensionHost
-}
+export { ExtensionHostKind, setLocalExtensionHost }

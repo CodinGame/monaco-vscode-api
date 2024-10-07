@@ -5,7 +5,7 @@ declare module '*?url' {
 
 declare module '*?worker' {
   interface WorkerConstructor {
-    new(): Worker
+    new (): Worker
   }
 
   const Worker: WorkerConstructor

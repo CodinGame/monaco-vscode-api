@@ -1,3 +1,3 @@
 module.exports = {
-    extends: ['@codingame/commitlint-config-codingame']
-};
+  extends: ['@codingame/commitlint-config-codingame']
+}

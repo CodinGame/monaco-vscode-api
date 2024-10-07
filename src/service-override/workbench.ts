@@ -25,7 +25,7 @@ import { onLayout, onRenderWorkbench } from '../lifecycle'
 export * from './tools/views'
 
 class CustomWorkbench extends Workbench {
-  constructor (
+  constructor(
     options: IWorkbenchOptions | undefined,
     @ILogService logService: ILogService,
     @IInstantiationService private instantiationService: IInstantiationService
@@ -35,19 +35,19 @@ class CustomWorkbench extends Workbench {
     this.mainContainer.classList.add('monaco-workbench-part')
   }
 
-  protected override registerErrorHandler (): void {
+  protected override registerErrorHandler(): void {
     // prevent intercepting global error events
   }
 
-  override createNotificationsHandlers () {
+  override createNotificationsHandlers() {
     // nothing, it's done in the notification service override
   }
 
-  protected override initServices (): IInstantiationService {
+  protected override initServices(): IInstantiationService {
     return this.instantiationService
   }
 
-  override restore (): void {
+  override restore(): void {
     try {
       this.restoreParts()
     } catch (error) {
@@ -60,14 +60,17 @@ class CustomWorkbench extends Workbench {
 
 const detectedFullScreen = detectFullscreen(mainWindow)
 setFullscreen(detectedFullScreen != null && !detectedFullScreen.guess, mainWindow)
-onLayout(async accessor => {
-  (accessor.get(IWorkbenchLayoutService) as Workbench).startup()
+onLayout(async (accessor) => {
+  ;(accessor.get(IWorkbenchLayoutService) as Workbench).startup()
 })
-onRenderWorkbench(async accessor => {
+onRenderWorkbench(async (accessor) => {
   accessor.get(IInstantiationService).createInstance(BrowserWindow)
 })
 
-function getServiceOverride (options?: IWorkbenchOptions, _webviewIframeAlternateDomains?: string): IEditorOverrideServices {
+function getServiceOverride(
+  options?: IWorkbenchOptions,
+  _webviewIframeAlternateDomains?: string
+): IEditorOverrideServices {
   return {
     ...getViewCommonServiceOverride(_webviewIframeAlternateDomains),
     ...getQuickAccessOverride({

@@ -1,0 +1,41 @@
+From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
+From: =?UTF-8?q?Lo=C3=AFc=20Mangeonjean?= <loic@coderpad.io>
+Date: Mon, 11 Mar 2024 17:49:14 +0100
+Subject: [PATCH] feat: expose api factory
+
+---
+ src/vs/workbench/api/worker/extHostExtensionService.ts | 7 ++++---
+ 1 file changed, 4 insertions(+), 3 deletions(-)
+
+diff --git a/src/vs/workbench/api/worker/extHostExtensionService.ts b/src/vs/workbench/api/worker/extHostExtensionService.ts
+index 71c42330bd1..093049532e8 100644
+--- a/src/vs/workbench/api/worker/extHostExtensionService.ts
++++ b/src/vs/workbench/api/worker/extHostExtensionService.ts
+@@ -3,7 +3,7 @@
+  *  Licensed under the MIT License. See License.txt in the project root for license information.
+  *--------------------------------------------------------------------------------------------*/
+ 
+-import { createApiFactoryAndRegisterActors } from '../common/extHost.api.impl.js';
++import { createApiFactoryAndRegisterActors, IExtensionApiFactory } from '../common/extHost.api.impl.js';
+ import { ExtensionActivationTimesBuilder } from '../common/extHostExtensionActivator.js';
+ import { AbstractExtHostExtensionService } from '../common/extHostExtensionService.js';
+ import { URI } from '../../../base/common/uri.js';
+@@ -38,6 +38,7 @@ export class ExtHostExtensionService extends AbstractExtHostExtensionService {
+ 	readonly extensionRuntime = ExtensionRuntime.Webworker;
+ 
+ 	private _fakeModules?: WorkerRequireInterceptor;
++	protected _apiFactory?: IExtensionApiFactory;
+ 
+ 	protected async _beforeAlmostReadyToRunExtensions(): Promise<void> {
+ 		if (isWebWorker) {
+@@ -46,8 +47,8 @@ export class ExtHostExtensionService extends AbstractExtHostExtensionService {
+ 		}
+ 
+ 		// initialize API and register actors
+-		const apiFactory = this._instaService.invokeFunction(createApiFactoryAndRegisterActors);
+-		this._fakeModules = this._instaService.createInstance(WorkerRequireInterceptor, apiFactory, { mine: this._myRegistry, all: this._globalRegistry });
++		this._apiFactory = this._instaService.invokeFunction(createApiFactoryAndRegisterActors);
++		this._fakeModules = this._instaService.createInstance(WorkerRequireInterceptor, this._apiFactory, { mine: this._myRegistry, all: this._globalRegistry });
+ 		await this._fakeModules.install();
+ 		performance.mark('code/extHost/didInitAPI');
+ 

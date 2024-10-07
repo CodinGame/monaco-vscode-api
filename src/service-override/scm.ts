@@ -7,7 +7,7 @@ import { QuickDiffService } from 'vs/workbench/contrib/scm/common/quickDiffServi
 import 'vs/workbench/contrib/scm/browser/scm.contribution'
 import { SyncDescriptor } from 'vs/platform/instantiation/common/descriptors'
 
-export default function getServiceOverride (): IEditorOverrideServices {
+export default function getServiceOverride(): IEditorOverrideServices {
   return {
     [ISCMService.toString()]: new SyncDescriptor(SCMService, [], true),
     [ISCMViewService.toString()]: new SyncDescriptor(SCMViewService, [], true),

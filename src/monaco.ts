@@ -1,19 +1,40 @@
-import { StandaloneKeybindingService, StandaloneServices } from 'vs/editor/standalone/browser/standaloneServices'
+import {
+  StandaloneKeybindingService,
+  StandaloneServices
+} from 'vs/editor/standalone/browser/standaloneServices'
 import { ITextResourceConfigurationService } from 'vs/editor/common/services/textResourceConfiguration'
-import { IInstantiationService, ServicesAccessor } from 'vs/platform/instantiation/common/instantiation'
-import { IStandaloneDiffEditorConstructionOptions, IStandaloneEditorConstructionOptions, StandaloneCodeEditor, StandaloneDiffEditor2, StandaloneEditor } from 'vs/editor/standalone/browser/standaloneCodeEditor'
+import {
+  IInstantiationService,
+  ServicesAccessor
+} from 'vs/platform/instantiation/common/instantiation'
+import {
+  IStandaloneDiffEditorConstructionOptions,
+  IStandaloneEditorConstructionOptions,
+  StandaloneCodeEditor,
+  StandaloneDiffEditor2,
+  StandaloneEditor
+} from 'vs/editor/standalone/browser/standaloneCodeEditor'
 import { IDiffEditorOptions, IEditorOptions } from 'vs/editor/common/config/editorOptions'
 import { IEditorConfiguration } from 'vs/workbench/browser/parts/editor/textEditor'
 import { isObject } from 'vs/base/common/types'
 import { deepClone, distinct } from 'vs/base/common/objects'
 import { CodeEditorWidget } from 'vs/editor/browser/widget/codeEditor/codeEditorWidget'
-import type { create as createEditor, createDiffEditor } from 'vs/editor/standalone/browser/standaloneEditor'
+import type {
+  create as createEditor,
+  createDiffEditor
+} from 'vs/editor/standalone/browser/standaloneEditor'
 import { errorHandler } from 'vs/base/common/errors'
-import { FoldingModel, setCollapseStateForMatchingLines } from 'vs/editor/contrib/folding/browser/foldingModel'
+import {
+  FoldingModel,
+  setCollapseStateForMatchingLines
+} from 'vs/editor/contrib/folding/browser/foldingModel'
 import { FoldingController } from 'vs/editor/contrib/folding/browser/folding'
 import { DisposableStore, IDisposable, IReference } from 'vs/base/common/lifecycle'
 import { Registry } from 'vs/platform/registry/common/platform'
-import { IJSONContributionRegistry, Extensions as JsonExtensions } from 'vs/platform/jsonschemas/common/jsonContributionRegistry'
+import {
+  IJSONContributionRegistry,
+  Extensions as JsonExtensions
+} from 'vs/platform/jsonschemas/common/jsonContributionRegistry'
 import { CommandsRegistry } from 'vs/platform/commands/common/commands'
 import { MenuRegistry, MenuId } from 'vs/platform/actions/common/actions'
 import { KeybindingsRegistry } from 'vs/platform/keybinding/common/keybindingsRegistry'
@@ -31,7 +52,10 @@ import { StandaloneQuickInputService } from 'vs/editor/standalone/browser/quickI
 import { SyncDescriptor } from 'vs/platform/instantiation/common/descriptors'
 import { ContextKeyExpr, RawContextKey } from 'vs/platform/contextkey/common/contextkey'
 import { ICodeEditorService } from 'vs/editor/browser/services/codeEditorService'
-import { IKeyboardEvent, KeybindingsSchemaContribution } from 'vs/platform/keybinding/common/keybinding'
+import {
+  IKeyboardEvent,
+  KeybindingsSchemaContribution
+} from 'vs/platform/keybinding/common/keybinding'
 import { KeybindingResolver } from 'vs/platform/keybinding/common/keybindingResolver'
 import { ResolvedKeybindingItem } from 'vs/platform/keybinding/common/resolvedKeybindingItem'
 import { Keybinding, ResolvedKeybinding } from 'vs/base/common/keybindings'
@@ -47,16 +71,32 @@ import { ILogService } from 'vs/platform/log/common/log.service'
 import { IQuickInputService } from 'vs/platform/quickinput/common/quickInput.service'
 import { createInjectedClass } from './tools/injection'
 import { getService } from './services'
-export { EditorContributionInstantiation, registerEditorAction, registerEditorContribution, registerDiffEditorContribution, registerMultiEditorAction, EditorAction, EditorCommand } from 'vs/editor/browser/editorExtensions'
+export {
+  EditorContributionInstantiation,
+  registerEditorAction,
+  registerEditorContribution,
+  registerDiffEditorContribution,
+  registerMultiEditorAction,
+  EditorAction,
+  EditorCommand
+} from 'vs/editor/browser/editorExtensions'
 export { IEditorContribution, IDiffEditorContribution } from 'vs/editor/common/editorCommon'
 
-function computeConfiguration (configuration: IEditorConfiguration, overrides?: Readonly<IEditorOptions>): IEditorOptions {
-  const editorConfiguration: IEditorOptions = isObject(configuration.editor) ? deepClone(configuration.editor) : Object.create(null)
+function computeConfiguration(
+  configuration: IEditorConfiguration,
+  overrides?: Readonly<IEditorOptions>
+): IEditorOptions {
+  const editorConfiguration: IEditorOptions = isObject(configuration.editor)
+    ? deepClone(configuration.editor)
+    : Object.create(null)
   Object.assign(editorConfiguration, deepClone(overrides))
   return editorConfiguration
 }
 
-function computeDiffConfiguration (configuration: IEditorConfiguration, overrides?: Readonly<IEditorOptions>): IDiffEditorOptions {
+function computeDiffConfiguration(
+  configuration: IEditorConfiguration,
+  overrides?: Readonly<IEditorOptions>
+): IDiffEditorOptions {
   const editorConfiguration: IDiffEditorOptions = computeConfiguration(configuration)
 
   if (isObject(configuration.diffEditor)) {
@@ -67,13 +107,16 @@ function computeDiffConfiguration (configuration: IEditorConfiguration, override
     delete diffEditorConfiguration.codeLens
 
     // User settings defines `diffEditor.wordWrap`, but here we rename that to `diffEditor.diffWordWrap` to avoid collisions with `editor.wordWrap`.
-    diffEditorConfiguration.diffWordWrap = <'off' | 'on' | 'inherit' | undefined>diffEditorConfiguration.wordWrap
+    diffEditorConfiguration.diffWordWrap = <'off' | 'on' | 'inherit' | undefined>(
+      diffEditorConfiguration.wordWrap
+    )
     delete diffEditorConfiguration.wordWrap
 
     Object.assign(editorConfiguration, diffEditorConfiguration)
   }
 
-  editorConfiguration.accessibilityVerbose = configuration.accessibility?.verbosity?.diffEditor ?? false
+  editorConfiguration.accessibilityVerbose =
+    configuration.accessibility?.verbosity?.diffEditor ?? false
 
   Object.assign(editorConfiguration, deepClone(overrides))
 
@@ -85,38 +128,74 @@ function computeDiffConfiguration (configuration: IEditorConfiguration, override
  * So instead of just taking the options given by the user via the `updateOptions` method,
  * it fallbacks on the current configurationService configuration
  */
-function createConfiguredEditorClass (impl: new (instantiationService: IInstantiationService, domElement: HTMLElement, _options: Readonly<IStandaloneEditorConstructionOptions>) => StandaloneCodeEditor) {
+function createConfiguredEditorClass(
+  impl: new (
+    instantiationService: IInstantiationService,
+    domElement: HTMLElement,
+    _options: Readonly<IStandaloneEditorConstructionOptions>
+  ) => StandaloneCodeEditor
+) {
   class ConfiguredStandaloneEditor extends impl {
     private optionsOverrides: Readonly<IEditorOptions> = {}
     private lastAppliedEditorOptions?: IEditorOptions
 
-    constructor (
+    constructor(
       domElement: HTMLElement,
       _options: Readonly<IStandaloneEditorConstructionOptions> = {},
       @IInstantiationService instantiationService: IInstantiationService,
-      @ITextResourceConfigurationService private textResourceConfigurationService: ITextResourceConfigurationService
+      @ITextResourceConfigurationService
+      private textResourceConfigurationService: ITextResourceConfigurationService
     ) {
       // Remove Construction specific options
-      const { theme, autoDetectHighContrast, model, value, language, accessibilityHelpUrl, ariaContainerElement, overflowWidgetsDomNode, dimension, ...options } = _options
-      const computedOptions = computeConfiguration(textResourceConfigurationService.getValue<IEditorConfiguration>(_options.model?.uri), options)
-      super(instantiationService, domElement, { ...computedOptions, overflowWidgetsDomNode, dimension, theme, autoDetectHighContrast, model, value, language, accessibilityHelpUrl, ariaContainerElement })
+      const {
+        theme,
+        autoDetectHighContrast,
+        model,
+        value,
+        language,
+        accessibilityHelpUrl,
+        ariaContainerElement,
+        overflowWidgetsDomNode,
+        dimension,
+        ...options
+      } = _options
+      const computedOptions = computeConfiguration(
+        textResourceConfigurationService.getValue<IEditorConfiguration>(_options.model?.uri),
+        options
+      )
+      super(instantiationService, domElement, {
+        ...computedOptions,
+        overflowWidgetsDomNode,
+        dimension,
+        theme,
+        autoDetectHighContrast,
+        model,
+        value,
+        language,
+        accessibilityHelpUrl,
+        ariaContainerElement
+      })
       this.lastAppliedEditorOptions = computedOptions
 
       this.optionsOverrides = options
-      this._register(textResourceConfigurationService.onDidChangeConfiguration((e) => {
-        const resource = this.getModel()?.uri
-        if (resource != null && e.affectsConfiguration(resource, 'editor')) {
-          this.updateEditorConfiguration()
-        }
-      }))
+      this._register(
+        textResourceConfigurationService.onDidChangeConfiguration((e) => {
+          const resource = this.getModel()?.uri
+          if (resource != null && e.affectsConfiguration(resource, 'editor')) {
+            this.updateEditorConfiguration()
+          }
+        })
+      )
       this._register(this.onDidChangeModelLanguage(() => this.updateEditorConfiguration()))
       this._register(this.onDidChangeModel(() => this.updateEditorConfiguration()))
       this.updateEditorConfiguration()
 
-      const scopedInstantiationService = instantiationService.createChild(new ServiceCollection(
-        [IContextKeyService, this._contextKeyService]
-      ))
-      const resourceContext = this._register(scopedInstantiationService.createInstance(ResourceContextKey))
+      const scopedInstantiationService = instantiationService.createChild(
+        new ServiceCollection([IContextKeyService, this._contextKeyService])
+      )
+      const resourceContext = this._register(
+        scopedInstantiationService.createInstance(ResourceContextKey)
+      )
       this.onDidChangeModel((e) => {
         resourceContext.set(e.newModelUrl)
       })
@@ -126,14 +205,16 @@ function createConfiguredEditorClass (impl: new (instantiationService: IInstanti
     /**
      * This method is widely inspired from vs/workbench/browser/parts/editor/textEditor
      */
-    private updateEditorConfiguration (): void {
+    private updateEditorConfiguration(): void {
       // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
       if (!this.hasModel() || this.textResourceConfigurationService == null) {
         // textResourceConfigurationService can be null if this method is called by the constructor of StandaloneEditor
         return
       }
       const resource = this.getModel()!.uri
-      const configuration = this.textResourceConfigurationService.getValue<IEditorConfiguration | undefined>(resource)
+      const configuration = this.textResourceConfigurationService.getValue<
+        IEditorConfiguration | undefined
+      >(resource)
       if (configuration == null) {
         return
       }
@@ -155,7 +236,7 @@ function createConfiguredEditorClass (impl: new (instantiationService: IInstanti
       }
     }
 
-    override updateOptions (newOptions: Readonly<IEditorOptions>): void {
+    override updateOptions(newOptions: Readonly<IEditorOptions>): void {
       // it can be null if this method is called by the constructor of StandaloneEditor
       // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
       this.optionsOverrides ??= {}
@@ -171,32 +252,65 @@ function createConfiguredEditorClass (impl: new (instantiationService: IInstanti
   return ConfiguredStandaloneEditor
 }
 
-const ConfiguredStandaloneCodeEditor = createConfiguredEditorClass(createInjectedClass(StandaloneCodeEditor))
-const ConfiguredStandaloneEditor = createConfiguredEditorClass(createInjectedClass(StandaloneEditor))
+const ConfiguredStandaloneCodeEditor = createConfiguredEditorClass(
+  createInjectedClass(StandaloneCodeEditor)
+)
+const ConfiguredStandaloneEditor = createConfiguredEditorClass(
+  createInjectedClass(StandaloneEditor)
+)
 
 class ConfiguredStandaloneDiffEditor extends createInjectedClass(StandaloneDiffEditor2) {
   private optionsOverrides: Readonly<IEditorOptions> = {}
   private lastAppliedEditorOptions?: IEditorOptions
-  constructor (
+  constructor(
     domElement: HTMLElement,
     _options: Readonly<IStandaloneDiffEditorConstructionOptions> = {},
     @IInstantiationService instantiationService: IInstantiationService,
-    @ITextResourceConfigurationService private textResourceConfigurationService: ITextResourceConfigurationService
+    @ITextResourceConfigurationService
+    private textResourceConfigurationService: ITextResourceConfigurationService
   ) {
     // Remove Construction specific options
-    const { theme, autoDetectHighContrast, modifiedAriaLabel, originalAriaLabel, overflowWidgetsDomNode, dimension, ...options } = _options
-    const computedOptions = computeDiffConfiguration(textResourceConfigurationService.getValue<IEditorConfiguration>(undefined), options)
-    super(instantiationService, domElement, { ...computedOptions, overflowWidgetsDomNode, dimension, theme, autoDetectHighContrast, modifiedAriaLabel, originalAriaLabel })
+    const {
+      theme,
+      autoDetectHighContrast,
+      modifiedAriaLabel,
+      originalAriaLabel,
+      overflowWidgetsDomNode,
+      dimension,
+      ...options
+    } = _options
+    const computedOptions = computeDiffConfiguration(
+      textResourceConfigurationService.getValue<IEditorConfiguration>(undefined),
+      options
+    )
+    super(instantiationService, domElement, {
+      ...computedOptions,
+      overflowWidgetsDomNode,
+      dimension,
+      theme,
+      autoDetectHighContrast,
+      modifiedAriaLabel,
+      originalAriaLabel
+    })
     this.lastAppliedEditorOptions = computedOptions
 
     this.optionsOverrides = options
-    this._register(textResourceConfigurationService.onDidChangeConfiguration((e) => {
-      const resource = this._targetEditor.getModel()?.uri
-      if (resource != null && (e.affectsConfiguration(resource, 'editor') || e.affectsConfiguration(resource, 'diffEditor') || e.affectsConfiguration(resource, 'accessibility.verbosity.diffEditor'))) {
-        this.updateEditorConfiguration()
-      }
-    }))
-    this._register(this._targetEditor.onDidChangeModelLanguage(() => this.updateEditorConfiguration()))
+    this._register(
+      textResourceConfigurationService.onDidChangeConfiguration((e) => {
+        const resource = this._targetEditor.getModel()?.uri
+        if (
+          resource != null &&
+          (e.affectsConfiguration(resource, 'editor') ||
+            e.affectsConfiguration(resource, 'diffEditor') ||
+            e.affectsConfiguration(resource, 'accessibility.verbosity.diffEditor'))
+        ) {
+          this.updateEditorConfiguration()
+        }
+      })
+    )
+    this._register(
+      this._targetEditor.onDidChangeModelLanguage(() => this.updateEditorConfiguration())
+    )
     this._register(this.onDidChangeModel(() => this.updateEditorConfiguration()))
     this.updateEditorConfiguration()
   }
@@ -204,14 +318,16 @@ class ConfiguredStandaloneDiffEditor extends createInjectedClass(StandaloneDiffE
   /**
    * This method is widely inspired from vs/workbench/browser/parts/editor/textEditor
    */
-  private updateEditorConfiguration (): void {
+  private updateEditorConfiguration(): void {
     // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
     if (this.getModel() == null || this.textResourceConfigurationService == null) {
       // textResourceConfigurationService can be null if this method is called by the constructor of StandaloneEditor
       return
     }
     const resource = this._targetEditor.getModel()?.uri
-    const configuration = this.textResourceConfigurationService.getValue<IEditorConfiguration | undefined>(resource)
+    const configuration = this.textResourceConfigurationService.getValue<
+      IEditorConfiguration | undefined
+    >(resource)
     if (configuration == null) {
       return
     }
@@ -233,7 +349,7 @@ class ConfiguredStandaloneDiffEditor extends createInjectedClass(StandaloneDiffE
     }
   }
 
-  override updateOptions (newOptions: Readonly<IEditorOptions>): void {
+  override updateOptions(newOptions: Readonly<IEditorOptions>): void {
     // it can be null if this method is called by the constructor of StandaloneEditor
     // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
     this.optionsOverrides ??= {}
@@ -246,22 +362,29 @@ class ConfiguredStandaloneDiffEditor extends createInjectedClass(StandaloneDiffE
     this.updateEditorConfiguration()
   }
 
-  protected override _createInnerEditor (instantiationService: IInstantiationService, container: HTMLElement, options: Readonly<IEditorOptions>): CodeEditorWidget {
+  protected override _createInnerEditor(
+    instantiationService: IInstantiationService,
+    container: HTMLElement,
+    options: Readonly<IEditorOptions>
+  ): CodeEditorWidget {
     return instantiationService.createInstance(ConfiguredStandaloneCodeEditor, container, options)
   }
 }
 
-export async function writeFile (uri: URI, content: string): Promise<void> {
+export async function writeFile(uri: URI, content: string): Promise<void> {
   const fileService = await getService(IFileService)
   await fileService.writeFile(uri, VSBuffer.fromString(content))
 }
 
-export async function deleteFile (uri: URI, options?: Partial<IFileDeleteOptions>): Promise<void> {
+export async function deleteFile(uri: URI, options?: Partial<IFileDeleteOptions>): Promise<void> {
   const fileService = await getService(IFileService)
   await fileService.del(uri, options)
 }
 
-export async function createModelReference (resource: URI, content?: string): Promise<IReference<ITextFileEditorModel>> {
+export async function createModelReference(
+  resource: URI,
+  content?: string
+): Promise<IReference<ITextFileEditorModel>> {
   if (content != null) {
     await writeFile(resource, content)
   }
@@ -270,16 +393,16 @@ export async function createModelReference (resource: URI, content?: string): Pr
 }
 
 export interface KeybindingProvider {
-  provideKeybindings (): ResolvedKeybindingItem[]
+  provideKeybindings(): ResolvedKeybindingItem[]
   onDidChangeKeybindings: Event<void>
 }
 
 export interface DynamicKeybindingService extends IKeybindingService {
-  registerKeybindingProvider (provider: KeybindingProvider): IDisposable
+  registerKeybindingProvider(provider: KeybindingProvider): IDisposable
   _getResolver(): KeybindingResolver
 }
 
-function isDynamicKeybindingService (keybindingService: IKeybindingService) {
+function isDynamicKeybindingService(keybindingService: IKeybindingService) {
   // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
   return (keybindingService as DynamicKeybindingService).registerKeybindingProvider != null
 }
@@ -287,7 +410,7 @@ function isDynamicKeybindingService (keybindingService: IKeybindingService) {
 // This class use useful so editor.addAction and editor.addCommand still work
 // Monaco do an `instanceof` on the KeybindingService so we need it to extends `StandaloneKeybindingService`
 class DelegateStandaloneKeybindingService extends StandaloneKeybindingService {
-  constructor (
+  constructor(
     private delegate: DynamicKeybindingService,
     @IContextKeyService contextKeyService: IContextKeyService,
     @ICommandService commandService: ICommandService,
@@ -296,71 +419,99 @@ class DelegateStandaloneKeybindingService extends StandaloneKeybindingService {
     @ILogService logService: ILogService,
     @ICodeEditorService codeEditorService: ICodeEditorService
   ) {
-    super(contextKeyService, commandService, telemetryService, notificationService, logService, codeEditorService)
+    super(
+      contextKeyService,
+      commandService,
+      telemetryService,
+      notificationService,
+      logService,
+      codeEditorService
+    )
 
-    this._register(delegate.registerKeybindingProvider({
-      provideKeybindings: () => {
-        return this.getUserKeybindingItems()
-      },
-      onDidChangeKeybindings: this.onDidUpdateKeybindings
-    }))
+    this._register(
+      delegate.registerKeybindingProvider({
+        provideKeybindings: () => {
+          return this.getUserKeybindingItems()
+        },
+        onDidChangeKeybindings: this.onDidUpdateKeybindings
+      })
+    )
   }
 
-  protected override _getResolver (): KeybindingResolver {
+  protected override _getResolver(): KeybindingResolver {
     return this.delegate._getResolver()
   }
 
-  override resolveKeyboardEvent (keyboardEvent: IKeyboardEvent): ResolvedKeybinding {
+  override resolveKeyboardEvent(keyboardEvent: IKeyboardEvent): ResolvedKeybinding {
     return this.delegate.resolveKeyboardEvent(keyboardEvent)
   }
 
-  override resolveKeybinding (keybinding: Keybinding): ResolvedKeybinding[] {
+  override resolveKeybinding(keybinding: Keybinding): ResolvedKeybinding[] {
     return this.delegate.resolveKeybinding(keybinding)
   }
 
-  public override resolveUserBinding (userBinding: string): ResolvedKeybinding[] {
+  public override resolveUserBinding(userBinding: string): ResolvedKeybinding[] {
     return this.delegate.resolveUserBinding(userBinding)
   }
 
-  public override _dumpDebugInfo (): string {
+  public override _dumpDebugInfo(): string {
     return this.delegate._dumpDebugInfo()
   }
 
-  public override _dumpDebugInfoJSON (): string {
+  public override _dumpDebugInfoJSON(): string {
     return this.delegate._dumpDebugInfoJSON()
   }
 
-  public override registerSchemaContribution (contribution: KeybindingsSchemaContribution): void {
+  public override registerSchemaContribution(contribution: KeybindingsSchemaContribution): void {
     return this.delegate.registerSchemaContribution(contribution)
   }
 
-  public override enableKeybindingHoldMode (commandId: string): Promise<void> | undefined {
+  public override enableKeybindingHoldMode(commandId: string): Promise<void> | undefined {
     return this.delegate.enableKeybindingHoldMode(commandId)
   }
 }
 
 let standaloneEditorInstantiationService: IInstantiationService | null = null
-function getStandaloneEditorInstantiationService (accessor: ServicesAccessor) {
+function getStandaloneEditorInstantiationService(accessor: ServicesAccessor) {
   if (standaloneEditorInstantiationService == null) {
     const serviceCollection = new ServiceCollection()
-    serviceCollection.set(IQuickInputService, new SyncDescriptor(StandaloneQuickInputService, [], true))
+    serviceCollection.set(
+      IQuickInputService,
+      new SyncDescriptor(StandaloneQuickInputService, [], true)
+    )
     const keybindingService = accessor.get(IKeybindingService)
-    if (!(keybindingService instanceof StandaloneKeybindingService) && isDynamicKeybindingService(keybindingService)) {
-      serviceCollection.set(IKeybindingService, new SyncDescriptor(DelegateStandaloneKeybindingService, [keybindingService], true))
+    if (
+      !(keybindingService instanceof StandaloneKeybindingService) &&
+      isDynamicKeybindingService(keybindingService)
+    ) {
+      serviceCollection.set(
+        IKeybindingService,
+        new SyncDescriptor(DelegateStandaloneKeybindingService, [keybindingService], true)
+      )
     }
-    standaloneEditorInstantiationService = accessor.get(IInstantiationService).createChild(serviceCollection)
+    standaloneEditorInstantiationService = accessor
+      .get(IInstantiationService)
+      .createChild(serviceCollection)
   }
   return standaloneEditorInstantiationService
 }
 
 export const createConfiguredEditor: typeof createEditor = (domElement, options, override) => {
   const instantiationService = StandaloneServices.initialize(override ?? {})
-  return instantiationService.invokeFunction(getStandaloneEditorInstantiationService).createInstance(ConfiguredStandaloneEditor, domElement, options)
+  return instantiationService
+    .invokeFunction(getStandaloneEditorInstantiationService)
+    .createInstance(ConfiguredStandaloneEditor, domElement, options)
 }
 
-export const createConfiguredDiffEditor: typeof createDiffEditor = (domElement, options, override) => {
+export const createConfiguredDiffEditor: typeof createDiffEditor = (
+  domElement,
+  options,
+  override
+) => {
   const instantiationService = StandaloneServices.initialize(override ?? {})
-  return instantiationService.invokeFunction(getStandaloneEditorInstantiationService).createInstance(ConfiguredStandaloneDiffEditor, domElement, options)
+  return instantiationService
+    .invokeFunction(getStandaloneEditorInstantiationService)
+    .createInstance(ConfiguredStandaloneDiffEditor, domElement, options)
 }
 
 const Extensions = {
@@ -371,27 +522,20 @@ const Extensions = {
 export {
   errorHandler,
   DisposableStore,
-
   FoldingController,
   FoldingModel,
   setCollapseStateForMatchingLines,
-
   Registry,
   CommandsRegistry,
   Extensions,
   IJSONContributionRegistry,
   IJSONSchema,
-
   MenuRegistry,
   MenuId,
-
   KeybindingsRegistry,
-
   ContextKeyExpr,
   RawContextKey,
-
   registerColor,
-
   IReference,
   ITextFileEditorModel
 }

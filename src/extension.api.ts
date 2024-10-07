@@ -19,20 +19,25 @@ import * as telemetry from 'vs/platform/telemetry/common/telemetryUtils'
 
 let defaultApi: typeof vscode | undefined
 
-export function setDefaultApi (api: typeof vscode): void {
+export function setDefaultApi(api: typeof vscode): void {
   defaultApi = api
 }
 
-function createProxy<T extends keyof typeof vscode> (key: T): typeof vscode[T] {
-  return new Proxy({}, {
-    get (target, p) {
-      if (defaultApi == null) {
-        throw new Error('Default api is not ready yet, do not forget to import \'vscode/localExtensionHost\' and wait for services initialization')
+function createProxy<T extends keyof typeof vscode>(key: T): (typeof vscode)[T] {
+  return new Proxy(
+    {},
+    {
+      get(target, p) {
+        if (defaultApi == null) {
+          throw new Error(
+            "Default api is not ready yet, do not forget to import 'vscode/localExtensionHost' and wait for services initialization"
+          )
+        }
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        return (defaultApi[key] as any)[p]
       }
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      return (defaultApi[key] as any)[p]
     }
-  }) as typeof vscode[T]
+  ) as (typeof vscode)[T]
 }
 
 const api: typeof vscode = {
@@ -183,7 +188,8 @@ const api: typeof vscode = {
   TerminalLocation: extHostTypes.TerminalLocation,
   TerminalProfile: extHostTypes.TerminalProfile,
   TerminalExitReason: extHostTypes.TerminalExitReason,
-  TerminalShellExecutionCommandLineConfidence: extHostTypes.TerminalShellExecutionCommandLineConfidence,
+  TerminalShellExecutionCommandLineConfidence:
+    extHostTypes.TerminalShellExecutionCommandLineConfidence,
   TextDocumentSaveReason: extHostTypes.TextDocumentSaveReason,
   TextEdit: extHostTypes.TextEdit,
   SnippetTextEdit: extHostTypes.SnippetTextEdit,
@@ -291,7 +297,8 @@ const api: typeof vscode = {
   ChatResponseCodeCitationPart: extHostTypes.ChatResponseCodeCitationPart,
   ChatResponseWarningPart: extHostTypes.ChatResponseWarningPart,
   ChatResponseTextEditPart: extHostTypes.ChatResponseTextEditPart,
-  ChatResponseMarkdownWithVulnerabilitiesPart: extHostTypes.ChatResponseMarkdownWithVulnerabilitiesPart,
+  ChatResponseMarkdownWithVulnerabilitiesPart:
+    extHostTypes.ChatResponseMarkdownWithVulnerabilitiesPart,
   ChatResponseCommandButtonPart: extHostTypes.ChatResponseCommandButtonPart,
   ChatResponseDetectedParticipantPart: extHostTypes.ChatResponseDetectedParticipantPart,
   ChatResponseConfirmationPart: extHostTypes.ChatResponseConfirmationPart,
@@ -315,7 +322,8 @@ const api: typeof vscode = {
   InlineEditTriggerKind: extHostTypes.InlineEditTriggerKind,
   ExcludeSettingOptions: searchExtTypes.ExcludeSettingOptions,
   TextSearchContextNew: searchExtTypes.TextSearchContextNew,
-  TextSearchMatchNew: searchExtTypes.TextSearchMatchNew
+  TextSearchMatchNew: searchExtTypes.TextSearchMatchNew,
+  ChatResponseCodeblockUriPart: extHostTypes.ChatResponseCodeblockUriPart
 }
 
 // @ts-ignore the syntax will be transformed by a typescript transformer in the rollup config
