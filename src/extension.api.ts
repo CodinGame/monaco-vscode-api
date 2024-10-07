@@ -315,7 +315,8 @@ const api: typeof vscode = {
   InlineEditTriggerKind: extHostTypes.InlineEditTriggerKind,
   ExcludeSettingOptions: searchExtTypes.ExcludeSettingOptions,
   TextSearchContextNew: searchExtTypes.TextSearchContextNew,
-  TextSearchMatchNew: searchExtTypes.TextSearchMatchNew
+  TextSearchMatchNew: searchExtTypes.TextSearchMatchNew,
+  ChatResponseCodeblockUriPart: extHostTypes.ChatResponseCodeblockUriPart
 }
 
 // @ts-ignore the syntax will be transformed by a typescript transformer in the rollup config

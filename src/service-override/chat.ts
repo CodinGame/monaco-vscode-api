@@ -27,7 +27,10 @@ import 'vs/workbench/contrib/chat/browser/chat.contribution'
 import 'vs/workbench/contrib/inlineChat/browser/inlineChat.contribution'
 import { ILanguageModelToolsService } from 'vs/workbench/contrib/chat/common/languageModelToolsService.service'
 import { LanguageModelToolsService } from 'vs/workbench/contrib/chat/common/languageModelToolsService'
-
+import { ICodeMapperService } from 'vs/workbench/contrib/chat/common/chatCodeMapperService.service'
+import { CodeMapperService } from 'vs/workbench/contrib/chat/common/chatCodeMapperService'
+import { IChatEditingService } from 'vs/workbench/contrib/chat/common/chatEditingService.service'
+import { ChatEditingService } from 'vs/workbench/contrib/chat/browser/chatEditingService'
 export default function getServiceOverride (): IEditorOverrideServices {
   return {
     [IChatService.toString()]: new SyncDescriptor(ChatService, [], true),
@@ -44,6 +47,8 @@ export default function getServiceOverride (): IEditorOverrideServices {
     [IChatCodeBlockContextProviderService.toString()]: new SyncDescriptor(ChatCodeBlockContextProviderService, [], true),
     [ILanguageModelStatsService.toString()]: new SyncDescriptor(LanguageModelStatsService, [], true),
     [IChatAgentNameService.toString()]: new SyncDescriptor(ChatAgentNameService, [], true),
-    [ILanguageModelToolsService.toString()]: new SyncDescriptor(LanguageModelToolsService, [], true)
+    [ILanguageModelToolsService.toString()]: new SyncDescriptor(LanguageModelToolsService, [], true),
+    [ICodeMapperService.toString()]: new SyncDescriptor(CodeMapperService, [], true),
+    [IChatEditingService.toString()]: new SyncDescriptor(ChatEditingService, [], true)
   }
 }

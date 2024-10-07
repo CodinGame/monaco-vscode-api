@@ -324,6 +324,9 @@ function transformVSCodeCode (id: string, code: string) {
 }
 
 function resolveVscode (importee: string, importer?: string) {
+  if (importee.endsWith('.js')) {
+    importee = importee.slice(0, -3)
+  }
   if (importer != null && importee.startsWith('.')) {
     importee = nodePath.resolve(nodePath.dirname(importer), importee)
   }

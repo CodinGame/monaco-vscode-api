@@ -1,0 +1,112 @@
+From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
+From: =?UTF-8?q?Lo=C3=AFc=20Mangeonjean?= <loic@coderpad.io>
+Date: Mon, 11 Mar 2024 18:24:35 +0100
+Subject: [PATCH] fix: only use open model
+
+---
+ .../browser/languageDetectionSimpleWorker.ts  | 61 +------------------
+ 1 file changed, 3 insertions(+), 58 deletions(-)
+
+diff --git a/src/vs/workbench/services/languageDetection/browser/languageDetectionSimpleWorker.ts b/src/vs/workbench/services/languageDetection/browser/languageDetectionSimpleWorker.ts
+index f9e86fbd6b3..e949ee95479 100644
+--- a/src/vs/workbench/services/languageDetection/browser/languageDetectionSimpleWorker.ts
++++ b/src/vs/workbench/services/languageDetection/browser/languageDetectionSimpleWorker.ts
+@@ -3,15 +3,12 @@
+  *  Licensed under the MIT License. See License.txt in the project root for license information.
+  *--------------------------------------------------------------------------------------------*/
+ 
+-import type { ModelOperations, ModelResult } from '@vscode/vscode-languagedetection';
+-import { importAMDNodeModule } from '../../../../amdX.js';
++import { ModelOperations, ModelResult } from '@vscode/vscode-languagedetection';
+ import { StopWatch } from '../../../../base/common/stopwatch.js';
+ import { IRequestHandler, IWorkerServer } from '../../../../base/common/worker/simpleWorker.js';
+ import { LanguageDetectionWorkerHost, ILanguageDetectionWorker } from './languageDetectionWorker.protocol.js';
+ import { WorkerTextModelSyncServer } from '../../../../editor/common/services/textModelSync/textModelSync.impl.js';
+ 
+-type RegexpModel = { detect: (inp: string, langBiases: Record<string, number>, supportedLangs?: string[]) => string | undefined };
+-
+ /**
+  * Defines the worker entry point. Must be exported and named `create`.
+  * @skipMangle
+@@ -34,8 +31,6 @@ export class LanguageDetectionSimpleWorker implements ILanguageDetectionWorker {
+ 	private readonly _workerTextModelSyncServer = new WorkerTextModelSyncServer();
+ 
+ 	private readonly _host: LanguageDetectionWorkerHost;
+-	private _regexpModel: RegexpModel | undefined;
+-	private _regexpLoadFailed: boolean = false;
+ 
+ 	private _modelOperations: ModelOperations | undefined;
+ 	private _loadFailed: boolean = false;
+@@ -74,19 +69,8 @@ export class LanguageDetectionSimpleWorker implements ILanguageDetectionWorker {
+ 			return undefined;
+ 		};
+ 
+-		const historicalResolver = async () => this.runRegexpModel(documentTextSample, langBiases ?? {}, supportedLangs);
+-
+-		if (preferHistory) {
+-			const history = await historicalResolver();
+-			if (history) { return history; }
+-			const neural = await neuralResolver();
+-			if (neural) { return neural; }
+-		} else {
+-			const neural = await neuralResolver();
+-			if (neural) { return neural; }
+-			const history = await historicalResolver();
+-			if (history) { return history; }
+-		}
++		const neural = await neuralResolver();
++		if (neural) { return neural; }
+ 
+ 		return undefined;
+ 	}
+@@ -105,50 +89,11 @@ export class LanguageDetectionSimpleWorker implements ILanguageDetectionWorker {
+ 		return content;
+ 	}
+ 
+-	private async getRegexpModel(): Promise<RegexpModel | undefined> {
+-		if (this._regexpLoadFailed) {
+-			return;
+-		}
+-		if (this._regexpModel) {
+-			return this._regexpModel;
+-		}
+-		const uri: string = await this._host.$getRegexpModelUri();
+-		try {
+-			this._regexpModel = await importAMDNodeModule(uri, '') as RegexpModel;
+-			return this._regexpModel;
+-		} catch (e) {
+-			this._regexpLoadFailed = true;
+-			// console.warn('error loading language detection model', e);
+-			return;
+-		}
+-	}
+-
+-	private async runRegexpModel(content: string, langBiases: Record<string, number>, supportedLangs?: string[]): Promise<string | undefined> {
+-		const regexpModel = await this.getRegexpModel();
+-		if (!regexpModel) { return; }
+-
+-		if (supportedLangs?.length) {
+-			// When using supportedLangs, normally computed biases are too extreme. Just use a "bitmask" of sorts.
+-			for (const lang of Object.keys(langBiases)) {
+-				if (supportedLangs.includes(lang)) {
+-					langBiases[lang] = 1;
+-				} else {
+-					langBiases[lang] = 0;
+-				}
+-			}
+-		}
+-
+-		const detected = regexpModel.detect(content, langBiases, supportedLangs);
+-		return detected;
+-	}
+-
+ 	private async getModelOperations(): Promise<ModelOperations> {
+ 		if (this._modelOperations) {
+ 			return this._modelOperations;
+ 		}
+ 
+-		const uri: string = await this._host.$getIndexJsUri();
+-		const { ModelOperations } = await importAMDNodeModule(uri, '') as typeof import('@vscode/vscode-languagedetection');
+ 		this._modelOperations = new ModelOperations({
+ 			modelJsonLoaderFunc: async () => {
+ 				const response = await fetch(await this._host.$getModelJsonUri());

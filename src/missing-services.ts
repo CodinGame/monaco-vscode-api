@@ -226,6 +226,11 @@ import { IIntegrityService } from 'vs/workbench/services/integrity/common/integr
 import { IntegrityTestResult } from 'vs/workbench/services/integrity/common/integrity'
 import { ITrustedDomainService } from 'vs/workbench/contrib/url/browser/trustedDomainService.service'
 import { ILanguageModelToolsService } from 'vs/workbench/contrib/chat/common/languageModelToolsService.service'
+import { PortsEnablement } from 'vs/workbench/services/remote/common/remoteExplorerService'
+import { ICodeMapperService } from 'vs/workbench/contrib/chat/common/chatCodeMapperService.service'
+import { IChatEditingService } from 'vs/workbench/contrib/chat/common/chatEditingService.service'
+import { IActionViewItemService } from 'vs/platform/actions/browser/actionViewItemService.service'
+import { ITreeSitterTokenizationFeature } from 'vs/workbench/services/treeSitter/browser/treeSitterTokenizationFeature.service'
 import { getBuiltInExtensionTranslationsUris, getExtensionIdProvidingCurrentLocale } from './l10n'
 import { unsupported } from './tools'
 
@@ -969,9 +974,10 @@ registerSingleton(IExtensionHostDebugService, class ExtensionHostDebugService im
 }, InstantiationType.Eager)
 
 registerSingleton(IViewsService, class ViewsService implements IViewsService {
+  _serviceBrand: undefined
+  isViewContainerActive = () => false
   getFocusedViewName = unsupported
   onDidChangeFocusedView = Event.None
-  _serviceBrand: undefined
   onDidChangeViewContainerVisibility = Event.None
   isViewContainerVisible = () => false
   openViewContainer = unsupported
@@ -1106,6 +1112,7 @@ registerSingleton(ICustomEndpointTelemetryService, NullEndpointTelemetryService,
 class MonacoSearchService implements ISearchService {
   _serviceBrand: undefined
   constructor (@IModelService private modelService: IModelService) {}
+  getAIName = async () => undefined
   aiTextSearch = unsupported
   textSearchSplitSyncAsync = unsupported
 
@@ -1166,6 +1173,11 @@ registerSingleton(ITimerService, class TimerService implements ITimerService {
 
 registerSingleton(IExtensionsWorkbenchService, class ExtensionsWorkbenchService implements IExtensionsWorkbenchService {
   _serviceBrand: undefined
+  updateAutoUpdateForAllExtensions = unsupported
+  openSearch = unsupported
+  getExtensionRuntimeStatus = () => undefined
+  onDidChangeExtensionsNotification = Event.None
+  getExtensionsNotification = () => undefined
   shouldRequireConsentToUpdate = async () => undefined
   updateAutoUpdateValue = unsupported
   getResourceExtensions = unsupported
@@ -2315,6 +2327,9 @@ registerSingleton(IAccessibleViewInformationService, class AccessibleViewInforma
 
 registerSingleton(IWorkbenchExtensionManagementService, class WorkbenchExtensionManagementService implements IWorkbenchExtensionManagementService {
   _serviceBrand: undefined
+  onProfileAwareDidInstallExtensions = Event.None
+  onProfileAwareDidUninstallExtension = Event.None
+  onProfileAwareDidUpdateExtensionMetadata = Event.None
   uninstallExtensions = unsupported
   resetPinnedStateForAllUserExtensions = unsupported
   getInstalledWorkspaceExtensionLocations = () => []
@@ -2435,6 +2450,7 @@ registerSingleton(IExtensionUrlHandler, class ExtensionUrlHandler implements IEx
 
 registerSingleton(ICommentService, class CommentService implements ICommentService {
   _serviceBrand: undefined
+  lastActiveCommentcontroller = undefined
 
   get commentsModel () {
     return unsupported()
@@ -2605,7 +2621,7 @@ registerSingleton(IRemoteExplorerService, class RemoteExplorerService implements
   restore = unsupported
   enablePortsFeatures = unsupported
   onEnabledPortsFeatures = Event.None
-  portsFeaturesEnabled = false
+  portsFeaturesEnabled = PortsEnablement.Disabled
   namedProcesses = new Map()
 }, InstantiationType.Delayed)
 
@@ -2640,6 +2656,10 @@ registerSingleton(IAuthenticationAccessService, class AuthenticationAccessServic
 
 registerSingleton(IAuthenticationExtensionsService, class AuthenticationExtensionsService implements IAuthenticationExtensionsService {
   _serviceBrand: undefined
+  onDidChangeAccountPreference = Event.None
+  getAccountPreference = () => undefined
+  updateAccountPreference = unsupported
+  removeAccountPreference = unsupported
   updateSessionPreference = unsupported
   getSessionPreference = () => undefined
   removeSessionPreference = unsupported
@@ -2650,6 +2670,8 @@ registerSingleton(IAuthenticationExtensionsService, class AuthenticationExtensio
 
 registerSingleton(IAuthenticationUsageService, class AuthenticationUsageService implements IAuthenticationUsageService {
   _serviceBrand: undefined
+  initializeExtensionUsageCache = unsupported
+  extensionUsesAuth = async () => false
   readAccountUsages = unsupported
   removeAccountUsage = unsupported
   addAccountUsage = unsupported
@@ -2744,6 +2766,10 @@ registerSingleton(IWorkbenchIssueService, class WorkbenchIssueService implements
 
 registerSingleton(ISCMViewService, class SCMViewService implements ISCMViewService {
   _serviceBrand: undefined
+  get activeRepository () {
+    return unsupported()
+  }
+
   get menus () {
     return unsupported()
   }
@@ -3200,6 +3226,7 @@ registerSingleton(IUserDataSyncUtilService, class UserDataSyncUtilService implem
 
 registerSingleton(IUserDataProfileManagementService, class UserDataProfileManagementService implements IUserDataProfileManagementService {
   _serviceBrand: undefined
+  getDefaultProfileToUse = unsupported
   createProfile = unsupported
   createAndEnterProfile = unsupported
   createAndEnterTransientProfile = unsupported
@@ -3370,4 +3397,28 @@ registerSingleton(IIssueFormService, class IssueFormService implements IIssueFor
   showClipboardDialog = unsupported
   sendReporterMenu = unsupported
   closeReporter = unsupported
+}, InstantiationType.Delayed)
+
+registerSingleton(ICodeMapperService, class CodeMapperService implements ICodeMapperService {
+  _serviceBrand: undefined
+  registerCodeMapperProvider = unsupported
+  mapCode = async () => undefined
+}, InstantiationType.Delayed)
+
+registerSingleton(IChatEditingService, class ChatEditingService implements IChatEditingService {
+  _serviceBrand: undefined
+  onDidCreateEditingSession = Event.None
+  currentEditingSession = null
+  startOrContinueEditingSession = unsupported
+}, InstantiationType.Delayed)
+
+registerSingleton(IActionViewItemService, class ActionViewItemService implements IActionViewItemService {
+  _serviceBrand: undefined
+  onDidChange = Event.None
+  register = unsupported
+  lookUp = () => undefined
+}, InstantiationType.Delayed)
+
+registerSingleton(ITreeSitterTokenizationFeature, class TreeSitterTokenizationFeature implements ITreeSitterTokenizationFeature {
+  _serviceBrand: undefined
 }, InstantiationType.Delayed)

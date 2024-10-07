@@ -38,6 +38,8 @@ import { IEditorPaneService } from 'vs/workbench/services/editor/common/editorPa
 import { EditorPaneService } from 'vs/workbench/services/editor/browser/editorPaneService'
 import { CustomEditorLabelService } from 'vs/workbench/services/editor/common/customEditorLabelService'
 import { ICustomEditorLabelService } from 'vs/workbench/services/editor/common/customEditorLabelService.service'
+import { ActionViewItemService } from 'vs/platform/actions/browser/actionViewItemService'
+import { IActionViewItemService } from 'vs/platform/actions/browser/actionViewItemService.service'
 import getBulkEditServiceOverride from './bulkEdit'
 import { changeUrlDomain } from './tools/url'
 import { registerAssets } from '../assets'
@@ -101,7 +103,8 @@ function getServiceOverride (_webviewIframeAlternateDomains?: string): IEditorOv
     [IProgressService.toString()]: new SyncDescriptor(ProgressService, [], true),
     [IAuxiliaryWindowService.toString()]: new SyncDescriptor(BrowserAuxiliaryWindowService, [], true),
     [IEditorPaneService.toString()]: new SyncDescriptor(EditorPaneService, [], true),
-    [ICustomEditorLabelService.toString()]: new SyncDescriptor(CustomEditorLabelService, [], true)
+    [ICustomEditorLabelService.toString()]: new SyncDescriptor(CustomEditorLabelService, [], true),
+    [IActionViewItemService.toString()]: new SyncDescriptor(ActionViewItemService, [], true)
   }
 }
 
