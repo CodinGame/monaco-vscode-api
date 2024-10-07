@@ -8,7 +8,7 @@ import { KeybindingsEditingService } from 'vs/workbench/services/keybinding/comm
 import { IKeybindingEditingService } from 'vs/workbench/services/keybinding/common/keybindingEditing.service'
 import 'vs/workbench/contrib/preferences/browser/preferences.contribution'
 
-export default function getServiceOverride (): IEditorOverrideServices {
+export default function getServiceOverride(): IEditorOverrideServices {
   return {
     [IPreferencesService.toString()]: new SyncDescriptor(PreferencesService, [], true),
     [IPreferencesSearchService.toString()]: new SyncDescriptor(PreferencesSearchService, [], true),

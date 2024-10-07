@@ -5,7 +5,7 @@ import 'vs/workbench/contrib/localHistory/browser/localHistory.contribution'
 import { ITimelineService } from 'vs/workbench/contrib/timeline/common/timeline.service'
 import { TimelineService } from 'vs/workbench/contrib/timeline/common/timelineService'
 
-export default function getServiceOverride (): IEditorOverrideServices {
+export default function getServiceOverride(): IEditorOverrideServices {
   return {
     [ITimelineService.toString()]: new SyncDescriptor(TimelineService, [], true)
   }

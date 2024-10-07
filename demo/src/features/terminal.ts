@@ -1,4 +1,8 @@
-import { ITerminalChildProcess, SimpleTerminalBackend, SimpleTerminalProcess } from '@codingame/monaco-vscode-terminal-service-override'
+import {
+  ITerminalChildProcess,
+  SimpleTerminalBackend,
+  SimpleTerminalProcess
+} from '@codingame/monaco-vscode-terminal-service-override'
 import ansiColors from 'ansi-colors'
 import * as vscode from 'vscode'
 
@@ -12,7 +16,7 @@ export class TerminalBackend extends SimpleTerminalBackend {
     }>()
     class FakeTerminalProcess extends SimpleTerminalProcess {
       private column = 0
-      async start (): Promise<undefined> {
+      async start(): Promise<undefined> {
         ansiColors.enabled = true
         dataEmitter.fire(`This is a fake terminal\r\n${ansiColors.green('$')} `)
         setTimeout(() => {
@@ -25,12 +29,12 @@ export class TerminalBackend extends SimpleTerminalBackend {
 
       override onDidChangeProperty = propertyEmitter.event
 
-      override shutdown (immediate: boolean): void {
+      override shutdown(immediate: boolean): void {
         // eslint-disable-next-line no-console
         console.log('shutdown', immediate)
       }
 
-      override input (data: string): void {
+      override input(data: string): void {
         for (const c of data) {
           if (c.charCodeAt(0) === 13) {
             dataEmitter.fire(`\r\n${ansiColors.green('$')} `)
@@ -47,13 +51,12 @@ export class TerminalBackend extends SimpleTerminalBackend {
         }
       }
 
-      resize (cols: number, rows: number): void {
+      resize(cols: number, rows: number): void {
         // eslint-disable-next-line no-console
         console.log('resize', cols, rows)
       }
 
-      override clearBuffer (): void | Promise<void> {
-      }
+      override clearBuffer(): void | Promise<void> {}
     }
     return new FakeTerminalProcess(1, 1, '/workspace', dataEmitter.event)
   }

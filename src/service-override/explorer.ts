@@ -6,7 +6,7 @@ import 'vs/workbench/contrib/files/browser/fileCommands'
 import 'vs/workbench/contrib/files/browser/fileActions.contribution'
 import 'vs/workbench/contrib/files/browser/files.contribution._explorer.js'
 
-function getServiceOverride (): IEditorOverrideServices {
+function getServiceOverride(): IEditorOverrideServices {
   return {
     [IExplorerService.toString()]: new SyncDescriptor(ExplorerService, [], true)
   }

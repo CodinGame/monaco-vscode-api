@@ -17,15 +17,22 @@ import 'vs/workbench/contrib/debug/browser/debug.contribution'
 // eslint-disable-next-line dot-notation
 const original = DebugService.prototype['showError']
 // eslint-disable-next-line dot-notation
-DebugService.prototype['showError'] = function (message: string, errorActions?: ReadonlyArray<IAction>) {
+DebugService.prototype['showError'] = function (
+  message: string,
+  errorActions?: ReadonlyArray<IAction>
+) {
   return original.call(this, message, errorActions, false)
 }
 
-export default function getServiceOverride (): IEditorOverrideServices {
+export default function getServiceOverride(): IEditorOverrideServices {
   return {
     [ILanguageFeaturesService.toString()]: new SyncDescriptor(LanguageFeaturesService, [], true), // To restore inlineValuesProvider
     [IDebugService.toString()]: new SyncDescriptor(DebugService, [], true),
-    [IExtensionHostDebugService.toString()]: new SyncDescriptor(BrowserExtensionHostDebugService, [], true),
+    [IExtensionHostDebugService.toString()]: new SyncDescriptor(
+      BrowserExtensionHostDebugService,
+      [],
+      true
+    ),
     [IDebugVisualizerService.toString()]: new SyncDescriptor(DebugVisualizerService, [], true)
   }
 }

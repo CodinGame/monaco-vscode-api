@@ -17,7 +17,7 @@ if (NPM_TOKEN == null) {
   throw new Error('env.NPM_TOKEN must be set')
 }
 
-async function publishNpm (version: string, tag: string) {
+async function publishNpm(version: string, tag: string) {
   const distDir = path.resolve(__dirname, 'dist')
   for (const dirName of await fs.readdir(distDir)) {
     const libDir = path.resolve(distDir, dirName)
@@ -29,14 +29,18 @@ async function publishNpm (version: string, tag: string) {
         packageJson.dependencies.vscode = `npm:@codingame/monaco-vscode-api@${version}`
       }
       if (packageJson.dependencies?.['monaco-editor'] != null) {
-        packageJson.dependencies['monaco-editor'] = `npm:@codingame/monaco-vscode-editor-api@${version}`
+        packageJson.dependencies['monaco-editor'] =
+          `npm:@codingame/monaco-vscode-editor-api@${version}`
       }
       for (const dependency in packageJson.dependencies) {
         if (dependency.startsWith('@codingame/monaco-vscode-')) {
           packageJson.dependencies[dependency] = version
         }
       }
-      await fs.writeFile(path.resolve(libDir, '.npmrc'), `//registry.npmjs.org/:_authToken=${NPM_TOKEN}\n`)
+      await fs.writeFile(
+        path.resolve(libDir, '.npmrc'),
+        `//registry.npmjs.org/:_authToken=${NPM_TOKEN}\n`
+      )
       await fs.writeFile(packageJsonFile, JSON.stringify(packageJson, null, 2))
 
       $.cwd = libDir
@@ -45,14 +49,12 @@ async function publishNpm (version: string, tag: string) {
   }
 }
 
-async function run (options: SemanticReleaseOptions) {
-  const result = await semanticRelease(
-    {
-      ...options,
-      ...semanticReleaseConfig,
-      plugins: semanticReleaseConfig.plugins?.filter(plugin => plugin !== '@semantic-release/npm')
-    }
-  )
+async function run(options: SemanticReleaseOptions) {
+  const result = await semanticRelease({
+    ...options,
+    ...semanticReleaseConfig,
+    plugins: semanticReleaseConfig.plugins?.filter((plugin) => plugin !== '@semantic-release/npm')
+  })
 
   if (result === false) {
     return
@@ -66,14 +68,17 @@ async function run (options: SemanticReleaseOptions) {
   await publishNpm(result.nextRelease.version, result.nextRelease.channel ?? 'latest')
 }
 
-async function cli () {
+async function cli() {
   const stringList: Options = {
     type: 'string',
     array: true,
     coerce: (values: string[]) =>
       values.length === 1 && values[0]!.trim() === 'false'
         ? []
-        : values.reduce((values, value) => values.concat(value.split(',').map((value) => value.trim())), <string[]>[])
+        : values.reduce(
+            (values, value) => values.concat(value.split(',').map((value) => value.trim())),
+            <string[]>[]
+          )
   }
 
   const argv = process.argv.slice(2)
@@ -84,11 +89,31 @@ async function cli () {
   Usage:
   release [options] [plugins]`)
     })
-    .option('b', { alias: 'branches', describe: 'Git branches to release from', ...stringList, group: 'Options' })
-    .option('r', { alias: 'repository-url', describe: 'Git repository URL', type: 'string', group: 'Options' })
-    .option('t', { alias: 'tag-format', describe: 'Git tag format', type: 'string', group: 'Options' })
+    .option('b', {
+      alias: 'branches',
+      describe: 'Git branches to release from',
+      ...stringList,
+      group: 'Options'
+    })
+    .option('r', {
+      alias: 'repository-url',
+      describe: 'Git repository URL',
+      type: 'string',
+      group: 'Options'
+    })
+    .option('t', {
+      alias: 'tag-format',
+      describe: 'Git tag format',
+      type: 'string',
+      group: 'Options'
+    })
     .option('p', { alias: 'plugins', describe: 'Plugins', ...stringList, group: 'Options' })
-    .option('e', { alias: 'extends', describe: 'Shareable configurations', ...stringList, group: 'Options' })
+    .option('e', {
+      alias: 'extends',
+      describe: 'Shareable configurations',
+      ...stringList,
+      group: 'Options'
+    })
     .option('ci', { describe: 'Toggle CI verifications', type: 'boolean', group: 'Options' })
     .option('verify-conditions', { ...stringList, group: 'Plugins' })
     .option('analyze-commits', { type: 'string', group: 'Plugins' })
@@ -98,7 +123,12 @@ async function cli () {
     .option('publish', { ...stringList, group: 'Plugins' })
     .option('success', { ...stringList, group: 'Plugins' })
     .option('fail', { ...stringList, group: 'Plugins' })
-    .option('d', { alias: 'dry-run', describe: 'Skip publishing', type: 'boolean', group: 'Options' })
+    .option('d', {
+      alias: 'dry-run',
+      describe: 'Skip publishing',
+      type: 'boolean',
+      group: 'Options'
+    })
     .option('h', { alias: 'help', group: 'Options' })
     .strict(false)
     .exitProcess(false)
@@ -112,7 +142,7 @@ async function cli () {
   await run(options)
 }
 
-cli().catch(error => {
+cli().catch((error) => {
   console.error(util.inspect(error, { colors: true }))
   process.exit(1)
 })

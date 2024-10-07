@@ -14,26 +14,28 @@ const EXTENSIONS = ['', '.ts', '.js']
 const BASE_DIR = path.resolve(__dirname, '..')
 const TSCONFIG = path.resolve(BASE_DIR, 'tsconfig.rollup.json')
 
-const config: rollup.RollupOptions[] = [{
-  input: 'src/rollup-vsix-plugin.ts',
-  output: 'dist/rollup-vsix-plugin',
-  description: `Rollup plugin used to load VSCode extension files (VSIX), designed to be used with ${pkg.name}`
-}, {
-  input: 'src/rollup-extension-directory-plugin.ts',
-  output: 'dist/rollup-extension-directory-plugin',
-  description: `Rollup plugin used to load VSCode extension already extracted inside a directory, designed to be used with ${pkg.name}`
-}].map(({ input, output, description }) => ({
+const config: rollup.RollupOptions[] = [
+  {
+    input: 'src/rollup-vsix-plugin.ts',
+    output: 'dist/rollup-vsix-plugin',
+    description: `Rollup plugin used to load VSCode extension files (VSIX), designed to be used with ${pkg.name}`
+  },
+  {
+    input: 'src/rollup-extension-directory-plugin.ts',
+    output: 'dist/rollup-extension-directory-plugin',
+    description: `Rollup plugin used to load VSCode extension already extracted inside a directory, designed to be used with ${pkg.name}`
+  }
+].map(({ input, output, description }) => ({
   cache: false,
-  external: [
-    ...Object.keys({ ...pkg.dependencies }),
-    '@rollup/pluginutils'
+  external: [...Object.keys({ ...pkg.dependencies }), '@rollup/pluginutils'],
+  output: [
+    {
+      format: 'esm',
+      dir: output,
+      entryFileNames: '[name].js',
+      chunkFileNames: '[name].js'
+    }
   ],
-  output: [{
-    format: 'esm',
-    dir: output,
-    entryFileNames: '[name].js',
-    chunkFileNames: '[name].js'
-  }],
   input,
   plugins: [
     commonjs(),
@@ -56,17 +58,23 @@ const config: rollup.RollupOptions[] = [{
       preferConst: false
     }),
     metadataPlugin({
-      handle ({ directDependencies }) {
+      handle({ directDependencies }) {
         const packageJson: PackageJson = {
           name: `@codingame/monaco-vscode-${path.basename(output)}`,
-          ...Object.fromEntries(Object.entries(pkg).filter(([key]) => ['version', 'keywords', 'author', 'license', 'repository', 'type'].includes(key))),
+          ...Object.fromEntries(
+            Object.entries(pkg).filter(([key]) =>
+              ['version', 'keywords', 'author', 'license', 'repository', 'type'].includes(key)
+            )
+          ),
           private: false,
           description,
           main: `${path.basename(output)}.js`,
           module: `${path.basename(output)}.js`,
           types: `${path.basename(output)}.d.ts`,
           dependencies: {
-            ...Object.fromEntries(Object.entries(pkg.dependencies).filter(([key]) => directDependencies.has(key)))
+            ...Object.fromEntries(
+              Object.entries(pkg.dependencies).filter(([key]) => directDependencies.has(key))
+            )
           }
         }
         this.emitFile({

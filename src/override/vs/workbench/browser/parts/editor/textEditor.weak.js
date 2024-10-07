@@ -6,7 +6,7 @@
 let AbstractTextEditor = class {}
 class FakeAbstractTextEditor {
   static [Symbol.hasInstance](instance) {
-      return AbstractTextEditor != null && instance instanceof AbstractTextEditor
+    return AbstractTextEditor != null && instance instanceof AbstractTextEditor
   }
 }
 

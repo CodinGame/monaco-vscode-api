@@ -1,4 +1,4 @@
-export function changeUrlDomain (url: string, domain?: string): string {
+export function changeUrlDomain(url: string, domain?: string): string {
   if (domain == null) {
     return url
   }

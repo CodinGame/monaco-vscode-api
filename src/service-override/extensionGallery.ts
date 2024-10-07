@@ -1,15 +1,27 @@
 import { IEditorOverrideServices } from 'vs/editor/standalone/browser/standaloneServices'
 import { SyncDescriptor } from 'vs/platform/instantiation/common/descriptors'
-import { IExtensionGalleryService, IExtensionTipsService, IGlobalExtensionEnablementService } from 'vs/platform/extensionManagement/common/extensionManagement.service'
+import {
+  IExtensionGalleryService,
+  IExtensionTipsService,
+  IGlobalExtensionEnablementService
+} from 'vs/platform/extensionManagement/common/extensionManagement.service'
 import { ExtensionGalleryService } from 'vs/platform/extensionManagement/common/extensionGalleryService'
 import { GlobalExtensionEnablementService } from 'vs/platform/extensionManagement/common/extensionEnablementService'
 import { IExtension as IContribExtension } from 'vs/workbench/contrib/extensions/common/extensions'
 import { IExtensionsWorkbenchService } from 'vs/workbench/contrib/extensions/common/extensions.service'
 import { getLocale } from 'vs/platform/languagePacks/common/languagePacks'
 import { ExtensionsWorkbenchService } from 'vs/workbench/contrib/extensions/browser/extensionsWorkbenchService'
-import { IExtensionManagementServerService, IWebExtensionsScannerService, IWorkbenchExtensionEnablementService, IWorkbenchExtensionManagementService } from 'vs/workbench/services/extensionManagement/common/extensionManagement.service'
+import {
+  IExtensionManagementServerService,
+  IWebExtensionsScannerService,
+  IWorkbenchExtensionEnablementService,
+  IWorkbenchExtensionManagementService
+} from 'vs/workbench/services/extensionManagement/common/extensionManagement.service'
 import { ExtensionManagementServerService } from 'vs/workbench/services/extensionManagement/common/extensionManagementServerService'
-import { IExtensionIgnoredRecommendationsService, IExtensionRecommendationsService } from 'vs/workbench/services/extensionRecommendations/common/extensionRecommendations.service'
+import {
+  IExtensionIgnoredRecommendationsService,
+  IExtensionRecommendationsService
+} from 'vs/workbench/services/extensionRecommendations/common/extensionRecommendations.service'
 import { ExtensionRecommendationsService } from 'vs/workbench/contrib/extensions/browser/extensionRecommendationsService'
 import { WebExtensionsScannerService } from 'vs/workbench/services/extensionManagement/browser/webExtensionsScannerService'
 import { IExtensionRecommendationNotificationService } from 'vs/platform/extensionRecommendations/common/extensionRecommendations.service'
@@ -48,9 +60,18 @@ import { unsupported } from '../tools'
 
 // plugin-import-meta-asset only allows relative paths
 registerAssets({
-  'vs/workbench/services/extensionManagement/common/media/defaultIcon.png': new URL('../../vscode/src/vs/workbench/services/extensionManagement/common/media/defaultIcon.png', import.meta.url).toString(),
-  'vs/workbench/contrib/extensions/browser/media/theme-icon.png': new URL('../../vscode/src/vs/workbench/contrib/extensions/browser/media/theme-icon.png', import.meta.url).href,
-  'vs/workbench/contrib/extensions/browser/media/language-icon.svg': new URL('../../vscode/src/vs/workbench/contrib/extensions/browser/media/theme-icon.png', import.meta.url).href
+  'vs/workbench/services/extensionManagement/common/media/defaultIcon.png': new URL(
+    '../../vscode/src/vs/workbench/services/extensionManagement/common/media/defaultIcon.png',
+    import.meta.url
+  ).toString(),
+  'vs/workbench/contrib/extensions/browser/media/theme-icon.png': new URL(
+    '../../vscode/src/vs/workbench/contrib/extensions/browser/media/theme-icon.png',
+    import.meta.url
+  ).href,
+  'vs/workbench/contrib/extensions/browser/media/language-icon.svg': new URL(
+    '../../vscode/src/vs/workbench/contrib/extensions/browser/media/theme-icon.png',
+    import.meta.url
+  ).href
 })
 
 class EmptyRemoteAgentService implements IRemoteAgentService {
@@ -71,26 +92,30 @@ class EmptyRemoteAgentService implements IRemoteAgentService {
 }
 
 class ExtensionManagementServerServiceOverride extends ExtensionManagementServerService {
-  constructor (
+  constructor(
     isWebOnly: boolean,
     @IRemoteAgentService readonly remoteAgentService: IRemoteAgentService,
     @ILabelService readonly labelService: ILabelService,
     @IInstantiationService readonly instantiationService: IInstantiationService
   ) {
-    super(isWebOnly ? new EmptyRemoteAgentService() : remoteAgentService, labelService, instantiationService)
+    super(
+      isWebOnly ? new EmptyRemoteAgentService() : remoteAgentService,
+      labelService,
+      instantiationService
+    )
   }
 }
 
 class CustomBuiltinExtensionsScannerService implements IBuiltinExtensionsScannerService {
   _serviceBrand: undefined
 
-  async scanBuiltinExtensions (): Promise<IExtension[]> {
+  async scanBuiltinExtensions(): Promise<IExtension[]> {
     return getExtensionManifests()
   }
 }
 
 class ExtensionsWorkbenchServiceOverride extends ExtensionsWorkbenchService {
-  override canSetLanguage (extension: IContribExtension): boolean {
+  override canSetLanguage(extension: IContribExtension): boolean {
     if (super.canSetLanguage(extension)) {
       const locale = getLocale(extension.gallery!)!
       return isLocaleAvailable(locale)
@@ -107,27 +132,93 @@ export interface ExtensionGalleryOptions {
   webOnly: boolean
 }
 
-export default function getServiceOverride (options: ExtensionGalleryOptions = { webOnly: false }): IEditorOverrideServices {
+export default function getServiceOverride(
+  options: ExtensionGalleryOptions = { webOnly: false }
+): IEditorOverrideServices {
   return {
     [IExtensionGalleryService.toString()]: new SyncDescriptor(ExtensionGalleryService, [], true),
-    [IGlobalExtensionEnablementService.toString()]: new SyncDescriptor(GlobalExtensionEnablementService, [], true),
-    [IExtensionsWorkbenchService.toString()]: new SyncDescriptor(ExtensionsWorkbenchServiceOverride, [], true),
-    [IExtensionManagementServerService.toString()]: new SyncDescriptor(ExtensionManagementServerServiceOverride, [options.webOnly], true),
-    [IExtensionRecommendationsService.toString()]: new SyncDescriptor(ExtensionRecommendationsService, [], true),
-    [IExtensionRecommendationNotificationService.toString()]: new SyncDescriptor(ExtensionRecommendationNotificationService, [], true),
-    [IWebExtensionsScannerService.toString()]: new SyncDescriptor(WebExtensionsScannerService, [], true),
-    [IExtensionIgnoredRecommendationsService.toString()]: new SyncDescriptor(ExtensionIgnoredRecommendationsService, [], true),
-    [IIgnoredExtensionsManagementService.toString()]: new SyncDescriptor(IgnoredExtensionsManagementService, [], true),
-    [IExtensionManifestPropertiesService.toString()]: new SyncDescriptor(ExtensionManifestPropertiesService, [], true),
-    [IWorkbenchExtensionManagementService.toString()]: new SyncDescriptor(ExtensionManagementService, [], true),
-    [IBuiltinExtensionsScannerService.toString()]: new SyncDescriptor(CustomBuiltinExtensionsScannerService, [], true),
-    [IWorkspaceExtensionsConfigService.toString()]: new SyncDescriptor(WorkspaceExtensionsConfigService, [], true),
+    [IGlobalExtensionEnablementService.toString()]: new SyncDescriptor(
+      GlobalExtensionEnablementService,
+      [],
+      true
+    ),
+    [IExtensionsWorkbenchService.toString()]: new SyncDescriptor(
+      ExtensionsWorkbenchServiceOverride,
+      [],
+      true
+    ),
+    [IExtensionManagementServerService.toString()]: new SyncDescriptor(
+      ExtensionManagementServerServiceOverride,
+      [options.webOnly],
+      true
+    ),
+    [IExtensionRecommendationsService.toString()]: new SyncDescriptor(
+      ExtensionRecommendationsService,
+      [],
+      true
+    ),
+    [IExtensionRecommendationNotificationService.toString()]: new SyncDescriptor(
+      ExtensionRecommendationNotificationService,
+      [],
+      true
+    ),
+    [IWebExtensionsScannerService.toString()]: new SyncDescriptor(
+      WebExtensionsScannerService,
+      [],
+      true
+    ),
+    [IExtensionIgnoredRecommendationsService.toString()]: new SyncDescriptor(
+      ExtensionIgnoredRecommendationsService,
+      [],
+      true
+    ),
+    [IIgnoredExtensionsManagementService.toString()]: new SyncDescriptor(
+      IgnoredExtensionsManagementService,
+      [],
+      true
+    ),
+    [IExtensionManifestPropertiesService.toString()]: new SyncDescriptor(
+      ExtensionManifestPropertiesService,
+      [],
+      true
+    ),
+    [IWorkbenchExtensionManagementService.toString()]: new SyncDescriptor(
+      ExtensionManagementService,
+      [],
+      true
+    ),
+    [IBuiltinExtensionsScannerService.toString()]: new SyncDescriptor(
+      CustomBuiltinExtensionsScannerService,
+      [],
+      true
+    ),
+    [IWorkspaceExtensionsConfigService.toString()]: new SyncDescriptor(
+      WorkspaceExtensionsConfigService,
+      [],
+      true
+    ),
     [IExtensionTipsService.toString()]: new SyncDescriptor(ExtensionTipsService, [], true),
-    [IRemoteUserDataProfilesService.toString()]: new SyncDescriptor(RemoteUserDataProfilesService, [], true),
-    [IWorkbenchExtensionEnablementService.toString()]: new SyncDescriptor(ExtensionEnablementService, [], true),
+    [IRemoteUserDataProfilesService.toString()]: new SyncDescriptor(
+      RemoteUserDataProfilesService,
+      [],
+      true
+    ),
+    [IWorkbenchExtensionEnablementService.toString()]: new SyncDescriptor(
+      ExtensionEnablementService,
+      [],
+      true
+    ),
     [IExtensionUrlHandler.toString()]: new SyncDescriptor(ExtensionUrlHandler, [], true),
-    [IExtensionFeaturesManagementService.toString()]: new SyncDescriptor(ExtensionFeaturesManagementService, [], true),
+    [IExtensionFeaturesManagementService.toString()]: new SyncDescriptor(
+      ExtensionFeaturesManagementService,
+      [],
+      true
+    ),
     [IExtensionsScannerService.toString()]: new SyncDescriptor(ExtensionsScannerService, [], true),
-    [IExtensionsProfileScannerService.toString()]: new SyncDescriptor(ExtensionsProfileScannerService, [], true)
+    [IExtensionsProfileScannerService.toString()]: new SyncDescriptor(
+      ExtensionsProfileScannerService,
+      [],
+      true
+    )
   }
 }

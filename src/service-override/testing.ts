@@ -22,14 +22,18 @@ import getTerminalServiceOverride from './terminal'
 import 'vs/workbench/contrib/testing/browser/testing.contribution'
 import 'vs/workbench/contrib/testing/browser/testingConfigurationUi'
 
-export default function getServiceOverride (): IEditorOverrideServices {
+export default function getServiceOverride(): IEditorOverrideServices {
   return {
     ...getTerminalServiceOverride(),
     [ITestService.toString()]: new SyncDescriptor(TestService, [], true),
     [ITestResultStorage.toString()]: new SyncDescriptor(TestResultStorage, [], true),
     [ITestProfileService.toString()]: new SyncDescriptor(TestProfileService, [], true),
     [ITestCoverageService.toString()]: new SyncDescriptor(TestCoverageService, [], true),
-    [ITestingContinuousRunService.toString()]: new SyncDescriptor(TestingContinuousRunService, [], true),
+    [ITestingContinuousRunService.toString()]: new SyncDescriptor(
+      TestingContinuousRunService,
+      [],
+      true
+    ),
     [ITestResultService.toString()]: new SyncDescriptor(TestResultService, [], true),
     [ITestExplorerFilterState.toString()]: new SyncDescriptor(TestExplorerFilterState, [], true),
     [ITestingPeekOpener.toString()]: new SyncDescriptor(TestingPeekOpener, [], true),

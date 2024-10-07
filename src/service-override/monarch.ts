@@ -2,7 +2,6 @@ import { IEditorOverrideServices } from 'vs/editor/standalone/browser/standalone
 import 'vs/editor/standalone/browser/inspectTokens/inspectTokens'
 import 'vs/editor/standalone/browser/toggleHighContrast/toggleHighContrast'
 
-export default function getServiceOverride (): IEditorOverrideServices {
-  return {
-  }
+export default function getServiceOverride(): IEditorOverrideServices {
+  return {}
 }

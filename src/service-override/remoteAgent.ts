@@ -38,14 +38,20 @@ import 'vs/workbench/contrib/remote/browser/remote.contribution'
 import 'vs/workbench/contrib/remote/browser/remoteStartEntry.contribution'
 
 class CustomRemoteSocketFactoryService extends RemoteSocketFactoryService {
-  constructor (@IBrowserWorkbenchEnvironmentService browserWorkbenchEnvironmentService: IBrowserWorkbenchEnvironmentService) {
+  constructor(
+    @IBrowserWorkbenchEnvironmentService
+    browserWorkbenchEnvironmentService: IBrowserWorkbenchEnvironmentService
+  ) {
     super()
-    this.register(RemoteConnectionType.WebSocket, new BrowserSocketFactory(browserWorkbenchEnvironmentService.options?.webSocketFactory))
+    this.register(
+      RemoteConnectionType.WebSocket,
+      new BrowserSocketFactory(browserWorkbenchEnvironmentService.options?.webSocketFactory)
+    )
   }
 }
 
 class InjectedRemoteAuthorityResolverService extends RemoteAuthorityResolverService {
-  constructor (
+  constructor(
     @IEnvironmentService environmentService: BrowserWorkbenchEnvironmentService,
     @IProductService productService: IProductService,
     @ILogService logService: ILogService,
@@ -53,27 +59,47 @@ class InjectedRemoteAuthorityResolverService extends RemoteAuthorityResolverServ
   ) {
     const configuration = getWorkbenchConstructionOptions()
     const connectionToken = environmentService.options.connectionToken
-    const remoteResourceLoader = configuration.remoteResourceProvider != null ? new BrowserRemoteResourceLoader(fileService, configuration.remoteResourceProvider) : undefined
-    const resourceUriProvider = configuration.resourceUriProvider ?? remoteResourceLoader?.getResourceUriProvider()
-    super(!environmentService.expectsResolverExtension, connectionToken, resourceUriProvider, configuration.serverBasePath, productService, logService)
+    const remoteResourceLoader =
+      configuration.remoteResourceProvider != null
+        ? new BrowserRemoteResourceLoader(fileService, configuration.remoteResourceProvider)
+        : undefined
+    const resourceUriProvider =
+      configuration.resourceUriProvider ?? remoteResourceLoader?.getResourceUriProvider()
+    super(
+      !environmentService.expectsResolverExtension,
+      connectionToken,
+      resourceUriProvider,
+      configuration.serverBasePath,
+      productService,
+      logService
+    )
   }
 }
 
 class CustomRemoteExtensionsScannerService extends RemoteExtensionsScannerService {
-  constructor (
+  constructor(
     private scanRemoteExtensions: boolean,
     @IRemoteAgentService remoteAgentService: IRemoteAgentService,
     @IWorkbenchEnvironmentService environmentService: IWorkbenchEnvironmentService,
     @IUserDataProfileService userDataProfileService: IUserDataProfileService,
     @IRemoteUserDataProfilesService remoteUserDataProfilesService: IRemoteUserDataProfilesService,
     @IActiveLanguagePackService activeLanguagePackService: IActiveLanguagePackService,
-    @IWorkbenchExtensionManagementService extensionManagementService: IWorkbenchExtensionManagementService,
+    @IWorkbenchExtensionManagementService
+    extensionManagementService: IWorkbenchExtensionManagementService,
     @ILogService logService: ILogService
   ) {
-    super(remoteAgentService, environmentService, userDataProfileService, remoteUserDataProfilesService, activeLanguagePackService, extensionManagementService, logService)
+    super(
+      remoteAgentService,
+      environmentService,
+      userDataProfileService,
+      remoteUserDataProfilesService,
+      activeLanguagePackService,
+      extensionManagementService,
+      logService
+    )
   }
 
-  override async scanExtensions (): Promise<IExtensionDescription[]> {
+  override async scanExtensions(): Promise<IExtensionDescription[]> {
     if (!this.scanRemoteExtensions) {
       return []
     }
@@ -82,7 +108,11 @@ class CustomRemoteExtensionsScannerService extends RemoteExtensionsScannerServic
 }
 
 registerServiceInitializePreParticipant(async (serviceAccessor) => {
-  RemoteFileSystemProviderClient.register(serviceAccessor.get(IRemoteAgentService), serviceAccessor.get(IFileService), serviceAccessor.get(ILogService))
+  RemoteFileSystemProviderClient.register(
+    serviceAccessor.get(IRemoteAgentService),
+    serviceAccessor.get(IFileService),
+    serviceAccessor.get(ILogService)
+  )
 })
 
 export interface RemoteAgentServiceOverrideParams {
@@ -93,15 +123,28 @@ export interface RemoteAgentServiceOverrideParams {
   scanRemoteExtensions?: boolean
 }
 
-export default function getServiceOverride ({ scanRemoteExtensions = false }: RemoteAgentServiceOverrideParams = {}): IEditorOverrideServices {
+export default function getServiceOverride({
+  scanRemoteExtensions = false
+}: RemoteAgentServiceOverrideParams = {}): IEditorOverrideServices {
   return {
     ...getEnvironmentServiceOverride(),
     [IRemoteAgentService.toString()]: new SyncDescriptor(RemoteAgentService, [], true),
-    [IRemoteSocketFactoryService.toString()]: new SyncDescriptor(CustomRemoteSocketFactoryService, [], true),
-    [IRemoteAuthorityResolverService.toString()]: new SyncDescriptor(InjectedRemoteAuthorityResolverService, []),
+    [IRemoteSocketFactoryService.toString()]: new SyncDescriptor(
+      CustomRemoteSocketFactoryService,
+      [],
+      true
+    ),
+    [IRemoteAuthorityResolverService.toString()]: new SyncDescriptor(
+      InjectedRemoteAuthorityResolverService,
+      []
+    ),
     [IRemoteExplorerService.toString()]: new SyncDescriptor(RemoteExplorerService, [], true),
     [IExternalUriOpenerService.toString()]: new SyncDescriptor(ExternalUriOpenerService, [], true),
-    [IRemoteExtensionsScannerService.toString()]: new SyncDescriptor(CustomRemoteExtensionsScannerService, [scanRemoteExtensions], true),
+    [IRemoteExtensionsScannerService.toString()]: new SyncDescriptor(
+      CustomRemoteExtensionsScannerService,
+      [scanRemoteExtensions],
+      true
+    ),
     [ITunnelService.toString()]: new SyncDescriptor(TunnelService, [], true)
   }
 }

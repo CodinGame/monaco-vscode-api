@@ -4,9 +4,17 @@ import { IAiEmbeddingVectorService } from 'vs/workbench/services/aiEmbeddingVect
 import { IAiRelatedInformationService } from 'vs/workbench/services/aiRelatedInformation/common/aiRelatedInformation.service'
 import { AiRelatedInformationService } from 'vs/workbench/services/aiRelatedInformation/common/aiRelatedInformationService'
 
-export default function getServiceOverride (): IEditorOverrideServices {
+export default function getServiceOverride(): IEditorOverrideServices {
   return {
-    [IAiRelatedInformationService.toString()]: new SyncDescriptor(AiRelatedInformationService, [], true),
-    [IAiEmbeddingVectorService.toString()]: new SyncDescriptor(AiRelatedInformationService, [], true)
+    [IAiRelatedInformationService.toString()]: new SyncDescriptor(
+      AiRelatedInformationService,
+      [],
+      true
+    ),
+    [IAiEmbeddingVectorService.toString()]: new SyncDescriptor(
+      AiRelatedInformationService,
+      [],
+      true
+    )
   }
 }

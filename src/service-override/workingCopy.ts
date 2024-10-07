@@ -16,7 +16,7 @@ import { WorkingCopyBackupService } from 'vs/workbench/services/workingCopy/comm
 import getFileServiceOverride from './files'
 
 class BrowserWorkingCopyBackupService extends WorkingCopyBackupService {
-  constructor (
+  constructor(
     memory: boolean,
     @IWorkspaceContextService contextService: IWorkspaceContextService,
     @IWorkbenchEnvironmentService environmentService: IWorkbenchEnvironmentService,
@@ -24,7 +24,13 @@ class BrowserWorkingCopyBackupService extends WorkingCopyBackupService {
     @ILogService logService: ILogService
   ) {
     super(
-      memory ? undefined : joinPath(environmentService.userRoamingDataHome, 'Backups', contextService.getWorkspace().id),
+      memory
+        ? undefined
+        : joinPath(
+            environmentService.userRoamingDataHome,
+            'Backups',
+            contextService.getWorkspace().id
+          ),
       fileService,
       logService
     )
@@ -35,17 +41,26 @@ interface WorkingCopyServiceOptions {
   storage?: 'memory' | 'userData' | null
 }
 
-export default function getServiceOverride ({ storage = 'userData' }: WorkingCopyServiceOptions = {}): IEditorOverrideServices {
+export default function getServiceOverride({
+  storage = 'userData'
+}: WorkingCopyServiceOptions = {}): IEditorOverrideServices {
   return {
     ...getFileServiceOverride(),
     ...(storage != null
       ? {
-          [IWorkingCopyBackupService.toString()]: new SyncDescriptor(BrowserWorkingCopyBackupService, [storage === 'memory'], false)
+          [IWorkingCopyBackupService.toString()]: new SyncDescriptor(
+            BrowserWorkingCopyBackupService,
+            [storage === 'memory'],
+            false
+          )
         }
       : {}),
     [IWorkingCopyService.toString()]: new SyncDescriptor(WorkingCopyService, [], false),
     [IWorkingCopyEditorService.toString()]: new SyncDescriptor(WorkingCopyEditorService, [], false),
-    [IWorkingCopyHistoryService.toString()]: new SyncDescriptor(BrowserWorkingCopyHistoryService, [], false)
-
+    [IWorkingCopyHistoryService.toString()]: new SyncDescriptor(
+      BrowserWorkingCopyHistoryService,
+      [],
+      false
+    )
   }
 }

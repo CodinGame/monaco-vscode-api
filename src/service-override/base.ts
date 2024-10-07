@@ -33,7 +33,7 @@ import { WorkbenchEditorWorkerService } from 'vs/workbench/contrib/codeEditor/br
 import { getEnvironmentOverride } from '../workbench'
 
 class BrowserPathServiceOverride extends AbstractPathService {
-  constructor (
+  constructor(
     @IRemoteAgentService remoteAgentService: IRemoteAgentService,
     @IWorkbenchEnvironmentService environmentService: IWorkbenchEnvironmentService,
     @IWorkspaceContextService contextService: IWorkspaceContextService
@@ -47,7 +47,7 @@ class BrowserPathServiceOverride extends AbstractPathService {
   }
 }
 
-export default function getServiceOverride (): IEditorOverrideServices {
+export default function getServiceOverride(): IEditorOverrideServices {
   return {
     [IRequestService.toString()]: new SyncDescriptor(BrowserRequestService, [], true),
     [IDownloadService.toString()]: new SyncDescriptor(DownloadService, [], true),
@@ -62,6 +62,5 @@ export default function getServiceOverride (): IEditorOverrideServices {
     [ITrustedDomainService.toString()]: new SyncDescriptor(TrustedDomainService, [], true),
     [ILabelService.toString()]: new SyncDescriptor(LabelService, [], true),
     [IEditorWorkerService.toString()]: new SyncDescriptor(WorkbenchEditorWorkerService, [], true)
-
   }
 }

@@ -1,9 +1,15 @@
 import { IEditorOverrideServices } from 'vs/editor/standalone/browser/standaloneServices'
 import { SyncDescriptor } from 'vs/platform/instantiation/common/descriptors'
-import { IUserDataSyncStoreManagementService, IUserDataSyncUtilService } from 'vs/platform/userDataSync/common/userDataSync.service'
+import {
+  IUserDataSyncStoreManagementService,
+  IUserDataSyncUtilService
+} from 'vs/platform/userDataSync/common/userDataSync.service'
 import { BrowserUserDataProfilesService } from 'vs/platform/userDataProfile/browser/userDataProfile'
 import { IUserDataProfilesService } from 'vs/platform/userDataProfile/common/userDataProfile.service'
-import { IUserDataInitializer, UserDataInitializationService } from 'vs/workbench/services/userData/browser/userDataInit'
+import {
+  IUserDataInitializer,
+  UserDataInitializationService
+} from 'vs/workbench/services/userData/browser/userDataInit'
 import { IUserDataInitializationService } from 'vs/workbench/services/userData/browser/userDataInit.service'
 import { UserDataSyncInitializer } from 'vs/workbench/services/userDataSync/browser/userDataSyncInit'
 import { UserDataProfileInitializer } from 'vs/workbench/services/userDataProfile/browser/userDataProfileInit'
@@ -15,7 +21,11 @@ import { IProductService } from 'vs/platform/product/common/productService.servi
 import { IRequestService } from 'vs/platform/request/common/request.service'
 import { ILogService } from 'vs/platform/log/common/log.service'
 import { IUriIdentityService } from 'vs/platform/uriIdentity/common/uriIdentity.service'
-import { IUserDataProfileImportExportService, IUserDataProfileManagementService, IUserDataProfileService } from 'vs/workbench/services/userDataProfile/common/userDataProfile.service'
+import {
+  IUserDataProfileImportExportService,
+  IUserDataProfileManagementService,
+  IUserDataProfileService
+} from 'vs/workbench/services/userDataProfile/common/userDataProfile.service'
 import { mark } from 'vs/base/common/performance'
 import type { WorkspaceService } from 'vs/workbench/services/configuration/browser/configurationService'
 import { timeout } from 'vs/base/common/async'
@@ -32,11 +42,16 @@ import { registerServiceInitializePostParticipant } from '../lifecycle'
 import { getWorkspaceIdentifier } from '../workbench'
 import 'vs/workbench/contrib/userDataProfile/browser/userDataProfile.contribution'
 
-function isWorkspaceService (configurationService: IWorkbenchConfigurationService): configurationService is WorkspaceService {
+function isWorkspaceService(
+  configurationService: IWorkbenchConfigurationService
+): configurationService is WorkspaceService {
   return 'reloadLocalUserConfiguration' in configurationService
 }
 
-async function initializeUserData (userDataInitializationService: UserDataInitializationService, configurationService: IWorkbenchConfigurationService) {
+async function initializeUserData(
+  userDataInitializationService: UserDataInitializationService,
+  configurationService: IWorkbenchConfigurationService
+) {
   if (await userDataInitializationService.requiresInitialization()) {
     mark('code/willInitRequiredUserData')
 
@@ -53,23 +68,27 @@ async function initializeUserData (userDataInitializationService: UserDataInitia
   }
 }
 
-registerServiceInitializePostParticipant(async accessor => {
+registerServiceInitializePostParticipant(async (accessor) => {
   try {
     await Promise.race([
       // Do not block more than 5s
       timeout(5000),
-      initializeUserData(accessor.get(IUserDataInitializationService) as UserDataInitializationService, accessor.get(IWorkbenchConfigurationService))]
-    )
+      initializeUserData(
+        accessor.get(IUserDataInitializationService) as UserDataInitializationService,
+        accessor.get(IWorkbenchConfigurationService)
+      )
+    ])
   } catch (error) {
     accessor.get(ILogService).error(error as Error)
   }
 })
 
 class InjectedUserDataInitializationService extends UserDataInitializationService {
-  constructor (
+  constructor(
     @IBrowserWorkbenchEnvironmentService environmentService: IBrowserWorkbenchEnvironmentService,
     @ISecretStorageService secretStorageService: ISecretStorageService,
-    @IUserDataSyncStoreManagementService userDataSyncStoreManagementService: IUserDataSyncStoreManagementService,
+    @IUserDataSyncStoreManagementService
+    userDataSyncStoreManagementService: IUserDataSyncStoreManagementService,
     @IFileService fileService: IFileService,
     @IUserDataProfilesService userDataProfilesService: IUserDataProfilesService,
     @IStorageService storageService: IStorageService,
@@ -80,28 +99,60 @@ class InjectedUserDataInitializationService extends UserDataInitializationServic
     @IUserDataProfileService userDataProfileService: IUserDataProfileService
   ) {
     const userDataInitializers: IUserDataInitializer[] = []
-    userDataInitializers.push(new UserDataSyncInitializer(environmentService, secretStorageService, userDataSyncStoreManagementService, fileService, userDataProfilesService, storageService, productService, requestService, logService, uriIdentityService))
+    userDataInitializers.push(
+      new UserDataSyncInitializer(
+        environmentService,
+        secretStorageService,
+        userDataSyncStoreManagementService,
+        fileService,
+        userDataProfilesService,
+        storageService,
+        productService,
+        requestService,
+        logService,
+        uriIdentityService
+      )
+    )
     if (environmentService.options?.profile != null) {
-      userDataInitializers.push(new UserDataProfileInitializer(environmentService, fileService, userDataProfileService, storageService, logService, uriIdentityService, requestService))
+      userDataInitializers.push(
+        new UserDataProfileInitializer(
+          environmentService,
+          fileService,
+          userDataProfileService,
+          storageService,
+          logService,
+          uriIdentityService,
+          requestService
+        )
+      )
     }
 
     super(userDataInitializers)
   }
 }
 
-function getCurrentProfile (workspace: IAnyWorkspaceIdentifier, userDataProfilesService: BrowserUserDataProfilesService, environmentService: IBrowserWorkbenchEnvironmentService): IUserDataProfile {
+function getCurrentProfile(
+  workspace: IAnyWorkspaceIdentifier,
+  userDataProfilesService: BrowserUserDataProfilesService,
+  environmentService: IBrowserWorkbenchEnvironmentService
+): IUserDataProfile {
   if (environmentService.options?.profile != null) {
-    const profile = userDataProfilesService.profiles.find(p => p.name === environmentService.options?.profile?.name)
+    const profile = userDataProfilesService.profiles.find(
+      (p) => p.name === environmentService.options?.profile?.name
+    )
     if (profile != null) {
       return profile
     }
     return userDataProfilesService.defaultProfile
   }
-  return userDataProfilesService.getProfileForWorkspace(workspace) ?? userDataProfilesService.defaultProfile
+  return (
+    userDataProfilesService.getProfileForWorkspace(workspace) ??
+    userDataProfilesService.defaultProfile
+  )
 }
 
 class InjectedUserDataProfileService extends UserDataProfileService {
-  constructor (
+  constructor(
     @IBrowserWorkbenchEnvironmentService environmentService: IBrowserWorkbenchEnvironmentService,
     @IUserDataProfilesService userDataProfilesService: BrowserUserDataProfilesService,
     @ILogService logService: ILogService
@@ -110,24 +161,54 @@ class InjectedUserDataProfileService extends UserDataProfileService {
     const profile = getCurrentProfile(workspace, userDataProfilesService, environmentService)
     super(profile)
 
-    if (profile === userDataProfilesService.defaultProfile && environmentService.options?.profile != null) {
-      userDataProfilesService.createNamedProfile(environmentService.options.profile.name, undefined, workspace).then(async (profile) => {
-        await this.updateCurrentProfile(profile)
-      }).catch(err => {
-        logService.error(err)
-      })
+    if (
+      profile === userDataProfilesService.defaultProfile &&
+      environmentService.options?.profile != null
+    ) {
+      userDataProfilesService
+        .createNamedProfile(environmentService.options.profile.name, undefined, workspace)
+        .then(async (profile) => {
+          await this.updateCurrentProfile(profile)
+        })
+        .catch((err) => {
+          logService.error(err)
+        })
     }
   }
 }
 
-export default function getServiceOverride (): IEditorOverrideServices {
+export default function getServiceOverride(): IEditorOverrideServices {
   return {
-    [IUserDataProfileService.toString()]: new SyncDescriptor(InjectedUserDataProfileService, [], true),
-    [IUserDataProfilesService.toString()]: new SyncDescriptor(BrowserUserDataProfilesService, [], true),
-    [IUserDataInitializationService.toString()]: new SyncDescriptor(InjectedUserDataInitializationService, [], true),
-    [IUserDataProfileImportExportService.toString()]: new SyncDescriptor(UserDataProfileImportExportService, [], true),
-    [IUserDataProfileManagementService.toString()]: new SyncDescriptor(UserDataProfileManagementService, [], true),
-    [IUserDataProfileStorageService.toString()]: new SyncDescriptor(UserDataProfileStorageService, [], true),
+    [IUserDataProfileService.toString()]: new SyncDescriptor(
+      InjectedUserDataProfileService,
+      [],
+      true
+    ),
+    [IUserDataProfilesService.toString()]: new SyncDescriptor(
+      BrowserUserDataProfilesService,
+      [],
+      true
+    ),
+    [IUserDataInitializationService.toString()]: new SyncDescriptor(
+      InjectedUserDataInitializationService,
+      [],
+      true
+    ),
+    [IUserDataProfileImportExportService.toString()]: new SyncDescriptor(
+      UserDataProfileImportExportService,
+      [],
+      true
+    ),
+    [IUserDataProfileManagementService.toString()]: new SyncDescriptor(
+      UserDataProfileManagementService,
+      [],
+      true
+    ),
+    [IUserDataProfileStorageService.toString()]: new SyncDescriptor(
+      UserDataProfileStorageService,
+      [],
+      true
+    ),
     [IUserDataSyncUtilService.toString()]: new SyncDescriptor(UserDataSyncUtilService, [], true)
   }
 }

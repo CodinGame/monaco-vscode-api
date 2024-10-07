@@ -1,19 +1,62 @@
 import { StandaloneServices } from 'vs/editor/standalone/browser/standaloneServices'
 import { ICodeEditorService } from 'vs/editor/browser/services/codeEditorService'
-import { isPreferredGroup, PreferredGroup, SIDE_GROUP } from 'vs/workbench/services/editor/common/editorService'
+import {
+  isPreferredGroup,
+  PreferredGroup,
+  SIDE_GROUP
+} from 'vs/workbench/services/editor/common/editorService'
 import { IEditorService } from 'vs/workbench/services/editor/common/editorService.service'
-import { EditorCloseContext, EditorInputWithOptions, GroupModelChangeKind, IActiveEditorChangeEvent, IEditorCloseEvent, IEditorControl, IEditorPane, IEditorWillOpenEvent, IResourceDiffEditorInput, isEditorInput, isResourceEditorInput, ITextDiffEditorPane, IUntitledTextResourceEditorInput, IUntypedEditorInput, IVisibleEditorPane } from 'vs/workbench/common/editor'
+import {
+  EditorCloseContext,
+  EditorInputWithOptions,
+  GroupModelChangeKind,
+  IActiveEditorChangeEvent,
+  IEditorCloseEvent,
+  IEditorControl,
+  IEditorPane,
+  IEditorWillOpenEvent,
+  IResourceDiffEditorInput,
+  isEditorInput,
+  isResourceEditorInput,
+  ITextDiffEditorPane,
+  IUntitledTextResourceEditorInput,
+  IUntypedEditorInput,
+  IVisibleEditorPane
+} from 'vs/workbench/common/editor'
 import { EditorInput } from 'vs/workbench/common/editor/editorInput'
-import { IEditorOptions, IResourceEditorInput, ITextResourceEditorInput } from 'vs/platform/editor/common/editor'
+import {
+  IEditorOptions,
+  IResourceEditorInput,
+  ITextResourceEditorInput
+} from 'vs/platform/editor/common/editor'
 import { applyTextEditorOptions } from 'vs/workbench/common/editor/editorOptions'
 import { ScrollType } from 'vs/editor/common/editorCommon'
 import { ICodeEditor, IDiffEditor } from 'vs/editor/browser/editorBrowser'
-import { IEditorGroupView, DEFAULT_EDITOR_MAX_DIMENSIONS, DEFAULT_EDITOR_MIN_DIMENSIONS } from 'vs/workbench/browser/parts/editor/editor'
-import { IResolvedTextEditorModel, ITextModelService } from 'vs/editor/common/services/resolverService'
-import { IStandaloneCodeEditor, StandaloneCodeEditor, StandaloneEditor } from 'vs/editor/standalone/browser/standaloneCodeEditor'
+import {
+  IEditorGroupView,
+  DEFAULT_EDITOR_MAX_DIMENSIONS,
+  DEFAULT_EDITOR_MIN_DIMENSIONS
+} from 'vs/workbench/browser/parts/editor/editor'
+import {
+  IResolvedTextEditorModel,
+  ITextModelService
+} from 'vs/editor/common/services/resolverService'
+import {
+  IStandaloneCodeEditor,
+  StandaloneCodeEditor,
+  StandaloneEditor
+} from 'vs/editor/standalone/browser/standaloneCodeEditor'
 import { Disposable, IDisposable, IReference } from 'vs/base/common/lifecycle'
 import { EditorService } from 'vs/workbench/services/editor/browser/editorService'
-import { IAuxiliaryEditorPart, IEditorDropTargetDelegate, IEditorPart, IActiveEditorActions, IEditorGroup, IEditorWorkingSet, IEditorGroupContextKeyProvider } from 'vs/workbench/services/editor/common/editorGroupsService'
+import {
+  IAuxiliaryEditorPart,
+  IEditorDropTargetDelegate,
+  IEditorPart,
+  IActiveEditorActions,
+  IEditorGroup,
+  IEditorWorkingSet,
+  IEditorGroupContextKeyProvider
+} from 'vs/workbench/services/editor/common/editorGroupsService'
 import { IEditorGroupsService } from 'vs/workbench/services/editor/common/editorGroupsService.service'
 import { IInstantiationService } from 'vs/platform/instantiation/common/instantiation'
 import { IConfigurationService } from 'vs/platform/configuration/common/configuration.service'
@@ -35,7 +78,11 @@ import { mainWindow } from 'vs/base/browser/window'
 import { ContextKeyValue } from 'vs/platform/contextkey/common/contextkey'
 import { unsupported } from '../../tools'
 
-export type OpenEditor = (modelRef: IReference<IResolvedTextEditorModel>, options: IEditorOptions | undefined, sideBySide?: boolean) => Promise<ICodeEditor | undefined>
+export type OpenEditor = (
+  modelRef: IReference<IResolvedTextEditorModel>,
+  options: IEditorOptions | undefined,
+  sideBySide?: boolean
+) => Promise<ICodeEditor | undefined>
 
 class EmptyEditorGroup implements IEditorGroup, IEditorGroupView {
   selectedEditors = []
@@ -43,16 +90,16 @@ class EmptyEditorGroup implements IEditorGroup, IEditorGroupView {
   setSelection = unsupported
   isTransient = () => false
   windowId = mainWindow.vscodeWindowId
-  get groupsView () {
+  get groupsView() {
     return unsupported()
   }
 
-  notifyLabelChanged (): void {}
+  notifyLabelChanged(): void {}
   createEditorActions = unsupported
   onDidFocus = Event.None
   onDidOpenEditorFail = Event.None
   whenRestored = Promise.resolve()
-  get titleHeight () {
+  get titleHeight() {
     return unsupported()
   }
 
@@ -64,7 +111,7 @@ class EmptyEditorGroup implements IEditorGroup, IEditorGroupView {
   toJSON = unsupported
   preferredWidth?: number | undefined
   preferredHeight?: number | undefined
-  get element () {
+  get element() {
     return unsupported()
   }
 
@@ -93,7 +140,10 @@ class EmptyEditorGroup implements IEditorGroup, IEditorGroupView {
   isLocked = false
   stickyCount = 0
   editors = []
-  get scopedContextKeyService (): IContextKeyService { return StandaloneServices.get(IContextKeyService) }
+  get scopedContextKeyService(): IContextKeyService {
+    return StandaloneServices.get(IContextKeyService)
+  }
+
   getEditors = () => []
   findEditors = () => []
   getEditorByIndex = () => undefined
@@ -116,7 +166,7 @@ class EmptyEditorGroup implements IEditorGroup, IEditorGroupView {
   stickEditor = () => {}
   unstickEditor = () => {}
   lock = () => {}
-  focus (): void {
+  focus(): void {
     // ignore
   }
 
@@ -127,7 +177,7 @@ class EmptyEditorGroup implements IEditorGroup, IEditorGroupView {
 export const fakeActiveGroup = new EmptyEditorGroup()
 
 class SimpleEditorPane implements IEditorPane {
-  constructor (private editor?: ICodeEditor) {}
+  constructor(private editor?: ICodeEditor) {}
 
   onDidChangeControl = Event.None
   onDidChangeSizeConstraints = Event.None
@@ -137,10 +187,22 @@ class SimpleEditorPane implements IEditorPane {
   options = undefined
   group = fakeActiveGroup
   scopedContextKeyService = undefined
-  get minimumWidth () { return DEFAULT_EDITOR_MIN_DIMENSIONS.width }
-  get maximumWidth () { return DEFAULT_EDITOR_MAX_DIMENSIONS.width }
-  get minimumHeight () { return DEFAULT_EDITOR_MIN_DIMENSIONS.height }
-  get maximumHeight () { return DEFAULT_EDITOR_MAX_DIMENSIONS.height }
+  get minimumWidth() {
+    return DEFAULT_EDITOR_MIN_DIMENSIONS.width
+  }
+
+  get maximumWidth() {
+    return DEFAULT_EDITOR_MAX_DIMENSIONS.width
+  }
+
+  get minimumHeight() {
+    return DEFAULT_EDITOR_MIN_DIMENSIONS.height
+  }
+
+  get maximumHeight() {
+    return DEFAULT_EDITOR_MAX_DIMENSIONS.height
+  }
+
   getViewState = unsupported
   isVisible = unsupported
   hasFocus = unsupported
@@ -148,26 +210,57 @@ class SimpleEditorPane implements IEditorPane {
   getTitle = unsupported
   focus = unsupported
 
-  getControl (): IEditorControl | undefined {
+  getControl(): IEditorControl | undefined {
     return this.editor
   }
 }
 
-export function wrapOpenEditor (textModelService: ITextModelService, defaultBehavior: IEditorService['openEditor'], fallbackBahavior?: OpenEditor): IEditorService['openEditor'] {
-  function openEditor(editor: EditorInput, options?: IEditorOptions, group?: PreferredGroup): Promise<IEditorPane | undefined>
-  function openEditor(editor: IUntypedEditorInput, group?: PreferredGroup): Promise<IEditorPane | undefined>
-  function openEditor(editor: IResourceEditorInput, group?: PreferredGroup): Promise<IEditorPane | undefined>
-  function openEditor(editor: ITextResourceEditorInput | IUntitledTextResourceEditorInput, group?: PreferredGroup): Promise<IEditorPane | undefined>
-  function openEditor(editor: IResourceDiffEditorInput, group?: PreferredGroup): Promise<ITextDiffEditorPane | undefined>
-  function openEditor(editor: EditorInput | IUntypedEditorInput, optionsOrPreferredGroup?: IEditorOptions | PreferredGroup, preferredGroup?: PreferredGroup): Promise<IEditorPane | undefined>
-  async function openEditor (editor: EditorInput | IUntypedEditorInput, optionsOrPreferredGroup?: IEditorOptions | PreferredGroup, preferredGroup?: PreferredGroup): Promise<IEditorPane | undefined> {
-    const options = isEditorInput(editor) ? optionsOrPreferredGroup as IEditorOptions : editor.options
+export function wrapOpenEditor(
+  textModelService: ITextModelService,
+  defaultBehavior: IEditorService['openEditor'],
+  fallbackBahavior?: OpenEditor
+): IEditorService['openEditor'] {
+  function openEditor(
+    editor: EditorInput,
+    options?: IEditorOptions,
+    group?: PreferredGroup
+  ): Promise<IEditorPane | undefined>
+  function openEditor(
+    editor: IUntypedEditorInput,
+    group?: PreferredGroup
+  ): Promise<IEditorPane | undefined>
+  function openEditor(
+    editor: IResourceEditorInput,
+    group?: PreferredGroup
+  ): Promise<IEditorPane | undefined>
+  function openEditor(
+    editor: ITextResourceEditorInput | IUntitledTextResourceEditorInput,
+    group?: PreferredGroup
+  ): Promise<IEditorPane | undefined>
+  function openEditor(
+    editor: IResourceDiffEditorInput,
+    group?: PreferredGroup
+  ): Promise<ITextDiffEditorPane | undefined>
+  function openEditor(
+    editor: EditorInput | IUntypedEditorInput,
+    optionsOrPreferredGroup?: IEditorOptions | PreferredGroup,
+    preferredGroup?: PreferredGroup
+  ): Promise<IEditorPane | undefined>
+  async function openEditor(
+    editor: EditorInput | IUntypedEditorInput,
+    optionsOrPreferredGroup?: IEditorOptions | PreferredGroup,
+    preferredGroup?: PreferredGroup
+  ): Promise<IEditorPane | undefined> {
+    const options = isEditorInput(editor)
+      ? (optionsOrPreferredGroup as IEditorOptions)
+      : editor.options
 
     if (isPreferredGroup(optionsOrPreferredGroup)) {
       preferredGroup = optionsOrPreferredGroup
     }
 
-    const resource = isResourceEditorInput(editor) || isEditorInput(editor) ? editor.resource : undefined
+    const resource =
+      isResourceEditorInput(editor) || isEditorInput(editor) ? editor.resource : undefined
 
     if (resource == null || !textModelService.canHandleResource(resource)) {
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -178,11 +271,21 @@ export function wrapOpenEditor (textModelService: ITextModelService, defaultBeha
 
     // If the model is already existing, try to find an associated editor
     const codeEditors = StandaloneServices.get(ICodeEditorService).listCodeEditors()
-    modelEditor = codeEditors.find(editor => editor instanceof StandaloneEditor && editor.getModel() != null && editor.getModel()!.uri.toString() === resource.toString())
+    modelEditor = codeEditors.find(
+      (editor) =>
+        editor instanceof StandaloneEditor &&
+        editor.getModel() != null &&
+        editor.getModel()!.uri.toString() === resource.toString()
+    )
 
     if (modelEditor == null) {
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      const defaultBehaviorResult = await defaultBehavior(editor as any, optionsOrPreferredGroup as any, preferredGroup)
+      const defaultBehaviorResult = await defaultBehavior(
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        editor as any,
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        optionsOrPreferredGroup as any,
+        preferredGroup
+      )
       if (defaultBehaviorResult != null) {
         return defaultBehaviorResult
       }
@@ -216,7 +319,7 @@ export function wrapOpenEditor (textModelService: ITextModelService, defaultBeha
 }
 
 export class MonacoEditorService extends EditorService {
-  constructor (
+  constructor(
     _openEditorFallback: OpenEditor | undefined,
     private _isEditorPartVisible: () => boolean,
     @IEditorGroupsService _editorGroupService: IEditorGroupsService,
@@ -245,10 +348,14 @@ export class MonacoEditorService extends EditorService {
       textEditorService
     )
 
-    this.openEditor = wrapOpenEditor(textModelService, this.openEditor.bind(this), _openEditorFallback)
+    this.openEditor = wrapOpenEditor(
+      textModelService,
+      this.openEditor.bind(this),
+      _openEditorFallback
+    )
   }
 
-  override get activeTextEditorControl (): ICodeEditor | IDiffEditor | undefined {
+  override get activeTextEditorControl(): ICodeEditor | IDiffEditor | undefined {
     // By default, only the editor inside the EditorPart can be "active" here, hack it so the active editor is now the focused editor if it exists
     // It is required for the editor.addAction to be able to add an entry in the editor action menu
     const focusedCodeEditor = StandaloneServices.get(ICodeEditorService).getFocusedCodeEditor()
@@ -260,13 +367,43 @@ export class MonacoEditorService extends EditorService {
   }
 
   // Override openEditor to fallback on user function is the EditorPart is not visible
-  override openEditor(editor: EditorInput, options?: IEditorOptions, group?: PreferredGroup): Promise<IEditorPane | undefined>
-  override openEditor(editor: IUntypedEditorInput, group?: PreferredGroup): Promise<IEditorPane | undefined>
-  override openEditor(editor: IResourceEditorInput, group?: PreferredGroup): Promise<IEditorPane | undefined>
-  override openEditor(editor: ITextResourceEditorInput | IUntitledTextResourceEditorInput, group?: PreferredGroup): Promise<IEditorPane | undefined>
-  override openEditor(editor: IResourceDiffEditorInput, group?: PreferredGroup): Promise<ITextDiffEditorPane | undefined>
-  override openEditor(editor: EditorInput | IUntypedEditorInput, optionsOrPreferredGroup?: IEditorOptions | PreferredGroup, preferredGroup?: PreferredGroup): Promise<IEditorPane | undefined>
-  override async openEditor (editor: EditorInput | IUntypedEditorInput, optionsOrPreferredGroup?: IEditorOptions | PreferredGroup, preferredGroup?: PreferredGroup): Promise<IEditorPane | undefined> {
+  override openEditor(
+    editor: EditorInput,
+    options?: IEditorOptions,
+    group?: PreferredGroup
+  ): Promise<IEditorPane | undefined>
+
+  override openEditor(
+    editor: IUntypedEditorInput,
+    group?: PreferredGroup
+  ): Promise<IEditorPane | undefined>
+
+  override openEditor(
+    editor: IResourceEditorInput,
+    group?: PreferredGroup
+  ): Promise<IEditorPane | undefined>
+
+  override openEditor(
+    editor: ITextResourceEditorInput | IUntitledTextResourceEditorInput,
+    group?: PreferredGroup
+  ): Promise<IEditorPane | undefined>
+
+  override openEditor(
+    editor: IResourceDiffEditorInput,
+    group?: PreferredGroup
+  ): Promise<ITextDiffEditorPane | undefined>
+
+  override openEditor(
+    editor: EditorInput | IUntypedEditorInput,
+    optionsOrPreferredGroup?: IEditorOptions | PreferredGroup,
+    preferredGroup?: PreferredGroup
+  ): Promise<IEditorPane | undefined>
+
+  override async openEditor(
+    editor: EditorInput | IUntypedEditorInput,
+    optionsOrPreferredGroup?: IEditorOptions | PreferredGroup,
+    preferredGroup?: PreferredGroup
+  ): Promise<IEditorPane | undefined> {
     // Do not try to open the file if the editor part is not displayed, let the fallback happen
     if (!this._isEditorPartVisible()) {
       return undefined
@@ -277,8 +414,11 @@ export class MonacoEditorService extends EditorService {
 }
 
 class StandaloneEditorPane implements IVisibleEditorPane {
-  constructor (public readonly editor: IStandaloneCodeEditor, public input: TextResourceEditorInput, public group: IEditorGroup) {
-  }
+  constructor(
+    public readonly editor: IStandaloneCodeEditor,
+    public input: TextResourceEditorInput,
+    public group: IEditorGroup
+  ) {}
 
   onDidChangeControl = Event.None
 
@@ -289,33 +429,33 @@ class StandaloneEditorPane implements IVisibleEditorPane {
   maximumHeight = Number.POSITIVE_INFINITY
   onDidChangeSizeConstraints = Event.None
   scopedContextKeyService = undefined
-  getControl (): IEditorControl | undefined {
+  getControl(): IEditorControl | undefined {
     return this.editor
   }
 
-  getViewState (): object | undefined {
+  getViewState(): object | undefined {
     return undefined
   }
 
-  isVisible (): boolean {
+  isVisible(): boolean {
     return true
   }
 
   onDidFocus = this.editor.onDidFocusEditorWidget
   onDidBlur = this.editor.onDidBlurEditorWidget
-  hasFocus (): boolean {
+  hasFocus(): boolean {
     return this.editor.hasWidgetFocus()
   }
 
-  getId (): string {
+  getId(): string {
     return this.editor.getId()
   }
 
-  getTitle (): string | undefined {
+  getTitle(): string | undefined {
     return undefined
   }
 
-  focus (): void {
+  focus(): void {
     this.editor.focus()
   }
 }
@@ -325,14 +465,21 @@ class StandaloneEditorGroup extends Disposable implements IEditorGroup, IEditorG
 
   private pane: StandaloneEditorPane | undefined
   public active: boolean = false
-  constructor (
+  constructor(
     public editor: IStandaloneCodeEditor,
     @IInstantiationService instantiationService: IInstantiationService,
     @IContextKeyService public scopedContextKeyService: IContextKeyService
   ) {
     super()
     const onNewModel = (uri: URI) => {
-      const editorInput = instantiationService.createInstance(TextResourceEditorInput, uri, undefined, undefined, undefined, undefined)
+      const editorInput = instantiationService.createInstance(
+        TextResourceEditorInput,
+        uri,
+        undefined,
+        undefined,
+        undefined,
+        undefined
+      )
 
       this._onWillOpenEditor.fire({
         editor: editorInput,
@@ -392,7 +539,14 @@ class StandaloneEditorGroup extends Disposable implements IEditorGroup, IEditorG
     })
     const currentModel = editor.getModel()
     if (currentModel != null) {
-      const editorInput = instantiationService.createInstance(TextResourceEditorInput, currentModel.uri, undefined, undefined, undefined, undefined)
+      const editorInput = instantiationService.createInstance(
+        TextResourceEditorInput,
+        currentModel.uri,
+        undefined,
+        undefined,
+        undefined,
+        undefined
+      )
       this.pane = new StandaloneEditorPane(editor, editorInput, this)
     }
   }
@@ -405,13 +559,13 @@ class StandaloneEditorGroup extends Disposable implements IEditorGroup, IEditorG
 
   windowId = mainWindow.vscodeWindowId
 
-  get groupsView () {
+  get groupsView() {
     return unsupported()
   }
 
-  notifyLabelChanged (): void {}
+  notifyLabelChanged(): void {}
 
-  createEditorActions (): IActiveEditorActions {
+  createEditorActions(): IActiveEditorActions {
     return {
       actions: {
         primary: [],
@@ -424,16 +578,19 @@ class StandaloneEditorGroup extends Disposable implements IEditorGroup, IEditorG
   onDidFocus = this.editor.onDidFocusEditorWidget
   onDidOpenEditorFail = Event.None
   whenRestored = Promise.resolve()
-  get titleHeight () { return unsupported() }
+  get titleHeight() {
+    return unsupported()
+  }
+
   disposed = false
-  setActive (isActive: boolean) {
+  setActive(isActive: boolean) {
     this.active = isActive
   }
 
   notifyIndexChanged = unsupported
   relayout = unsupported
   toJSON = unsupported
-  get element () {
+  get element() {
     return this.editor.getContainerDomNode()
   }
 
@@ -465,39 +622,50 @@ class StandaloneEditorGroup extends Disposable implements IEditorGroup, IEditorG
   index = -1
   label = `standalone editor ${-this.id}`
   ariaLabel = `standalone editor ${-this.id}`
-  get activeEditorPane () {
+  get activeEditorPane() {
     return this.pane
   }
 
-  get activeEditor () {
+  get activeEditor() {
     return this.pane?.input ?? null
   }
 
   previewEditor = null
-  get count () {
+  get count() {
     return this.pane != null ? 1 : 0
   }
 
-  get isEmpty () {
+  get isEmpty() {
     return this.pane == null
   }
 
   isLocked = true
   stickyCount = 0
-  get editors () {
+  get editors() {
     return this.pane != null ? [this.pane.input] : []
   }
 
   getEditors = () => this.editors
-  findEditors = (resource: URI) => this.pane != null && resource.toString() === this.pane.input.resource.toString() ? [this.pane.input] : []
-  getEditorByIndex = (index: number) => this.pane != null && index === 0 ? this.pane.input : undefined
-  getIndexOfEditor = (editorInput: EditorInput) => this.pane != null && this.pane.input === editorInput ? 0 : -1
+  findEditors = (resource: URI) =>
+    this.pane != null && resource.toString() === this.pane.input.resource.toString()
+      ? [this.pane.input]
+      : []
+
+  getEditorByIndex = (index: number) =>
+    this.pane != null && index === 0 ? this.pane.input : undefined
+
+  getIndexOfEditor = (editorInput: EditorInput) =>
+    this.pane != null && this.pane.input === editorInput ? 0 : -1
+
   openEditor = async (editor: EditorInput): Promise<IEditorPane | undefined> => {
     if (editor.isDisposed()) {
       return undefined
     }
 
-    if (editor instanceof TextResourceEditorInput && editor.resource.toString() === this.pane?.input.resource.toString()) {
+    if (
+      editor instanceof TextResourceEditorInput &&
+      editor.resource.toString() === this.pane?.input.resource.toString()
+    ) {
       this.focus()
       return this.pane
     }
@@ -530,7 +698,7 @@ class StandaloneEditorGroup extends Disposable implements IEditorGroup, IEditorG
   stickEditor = () => {}
   unstickEditor = () => {}
   lock = () => {}
-  focus (): void {
+  focus(): void {
     this.editor.focus()
     this.editor.getContainerDomNode().scrollIntoView()
   }
@@ -539,13 +707,20 @@ class StandaloneEditorGroup extends Disposable implements IEditorGroup, IEditorG
   isLast = unsupported
 }
 
-export class MonacoDelegateEditorGroupsService<D extends IEditorGroupsService> extends Disposable implements IEditorGroupsService {
+export class MonacoDelegateEditorGroupsService<D extends IEditorGroupsService>
+  extends Disposable
+  implements IEditorGroupsService
+{
   readonly _serviceBrand = undefined
 
   public additionalGroups: StandaloneEditorGroup[] = []
   public activeGroupOverride: StandaloneEditorGroup | undefined = undefined
 
-  constructor (protected delegate: D, emptyDelegate: boolean, @IInstantiationService private instantiationService: IInstantiationService) {
+  constructor(
+    protected delegate: D,
+    emptyDelegate: boolean,
+    @IInstantiationService private instantiationService: IInstantiationService
+  ) {
     super()
     setTimeout(() => {
       const codeEditorService = StandaloneServices.get(ICodeEditorService)
@@ -554,14 +729,21 @@ export class MonacoDelegateEditorGroupsService<D extends IEditorGroupsService> e
         if (editor instanceof StandaloneEditor) {
           let timeout: number | undefined
           const updateActiveGroup = (editor: StandaloneEditor | undefined) => {
-            const newActiveGroup = editor != null ? this.additionalGroups.find(group => group.editor === editor) : undefined
+            const newActiveGroup =
+              editor != null
+                ? this.additionalGroups.find((group) => group.editor === editor)
+                : undefined
             if (this.activeGroupOverride !== newActiveGroup) {
               this.activeGroupOverride = newActiveGroup
               this._onDidChangeActiveGroup.fire(this.activeGroup)
             }
           }
           const removeActiveGroup = (editor: StandaloneEditor | undefined) => {
-            if (!emptyDelegate && this.activeGroupOverride === this.additionalGroups.find(group => group.editor === editor)) {
+            if (
+              !emptyDelegate &&
+              this.activeGroupOverride ===
+                this.additionalGroups.find((group) => group.editor === editor)
+            ) {
               updateActiveGroup(undefined)
             }
           }
@@ -597,14 +779,14 @@ export class MonacoDelegateEditorGroupsService<D extends IEditorGroupsService> e
       }
       const handleCodeEditorRemoved = (editor: ICodeEditor) => {
         if (editor instanceof StandaloneEditor) {
-          const removedGroup = this.additionalGroups.find(group => group.editor === editor)
+          const removedGroup = this.additionalGroups.find((group) => group.editor === editor)
           if (removedGroup != null) {
             removedGroup.dispose()
             if (this.activeGroupOverride === removedGroup) {
               this.activeGroupOverride = undefined
               this._onDidChangeActiveGroup.fire(this.activeGroup)
             }
-            this.additionalGroups = this.additionalGroups.filter(group => group !== removedGroup)
+            this.additionalGroups = this.additionalGroups.filter((group) => group !== removedGroup)
             this._onDidRemoveGroup.fire(removedGroup)
           }
         }
@@ -615,82 +797,95 @@ export class MonacoDelegateEditorGroupsService<D extends IEditorGroupsService> e
     })
   }
 
-  getScopedInstantiationService (): IInstantiationService {
+  getScopedInstantiationService(): IInstantiationService {
     return this.instantiationService
   }
 
-  registerContextKeyProvider<T extends ContextKeyValue> (provider: IEditorGroupContextKeyProvider<T>): IDisposable {
+  registerContextKeyProvider<T extends ContextKeyValue>(
+    provider: IEditorGroupContextKeyProvider<T>
+  ): IDisposable {
     return this.delegate.registerContextKeyProvider(provider)
   }
 
-  saveWorkingSet (name: string): IEditorWorkingSet {
+  saveWorkingSet(name: string): IEditorWorkingSet {
     return this.delegate.saveWorkingSet(name)
   }
 
-  getWorkingSets (): IEditorWorkingSet[] {
+  getWorkingSets(): IEditorWorkingSet[] {
     return this.delegate.getWorkingSets()
   }
 
-  applyWorkingSet (workingSet: IEditorWorkingSet | 'empty'): Promise<boolean> {
+  applyWorkingSet(workingSet: IEditorWorkingSet | 'empty'): Promise<boolean> {
     return this.delegate.applyWorkingSet(workingSet)
   }
 
-  deleteWorkingSet (workingSet: IEditorWorkingSet): void {
+  deleteWorkingSet(workingSet: IEditorWorkingSet): void {
     return this.delegate.deleteWorkingSet(workingSet)
   }
 
-  get isReady (): IEditorGroupsService['isReady'] {
+  get isReady(): IEditorGroupsService['isReady'] {
     return this.delegate.isReady
   }
 
-  get whenReady (): IEditorGroupsService['whenReady'] {
+  get whenReady(): IEditorGroupsService['whenReady'] {
     return this.delegate.whenReady
   }
 
-  get whenRestored (): IEditorGroupsService['whenRestored'] {
+  get whenRestored(): IEditorGroupsService['whenRestored'] {
     return this.delegate.whenRestored
   }
 
-  get hasRestorableState (): IEditorGroupsService['hasRestorableState'] {
+  get hasRestorableState(): IEditorGroupsService['hasRestorableState'] {
     return this.delegate.hasRestorableState
   }
 
   onDidCreateAuxiliaryEditorPart = this.delegate.onDidCreateAuxiliaryEditorPart
-  get parts (): IEditorGroupsService['parts'] { return this.delegate.parts }
-  createAuxiliaryEditorPart (options?: { bounds?: Partial<IRectangle> | undefined } | undefined): Promise<IAuxiliaryEditorPart> {
+  get parts(): IEditorGroupsService['parts'] {
+    return this.delegate.parts
+  }
+
+  createAuxiliaryEditorPart(
+    options?: { bounds?: Partial<IRectangle> | undefined } | undefined
+  ): Promise<IAuxiliaryEditorPart> {
     return this.delegate.createAuxiliaryEditorPart(options)
   }
 
-  get mainPart (): IEditorGroupsService['mainPart'] { return this.delegate.mainPart }
+  get mainPart(): IEditorGroupsService['mainPart'] {
+    return this.delegate.mainPart
+  }
+
   onDidChangeGroupMaximized = this.delegate.onDidChangeGroupMaximized
   getPart(group: number | IEditorGroup): IEditorPart
   getPart(container: unknown): IEditorPart | undefined
-  getPart (container: unknown): IEditorPart | undefined {
+  getPart(container: unknown): IEditorPart | undefined {
     return this.delegate.getPart(container)
   }
 
-  toggleMaximizeGroup (group?: number | IEditorGroup | undefined): void {
+  toggleMaximizeGroup(group?: number | IEditorGroup | undefined): void {
     return this.delegate.toggleMaximizeGroup(group)
   }
 
-  toggleExpandGroup (group?: number | IEditorGroup | undefined): void {
+  toggleExpandGroup(group?: number | IEditorGroup | undefined): void {
     return this.delegate.toggleExpandGroup(group)
   }
 
-  createEditorDropTarget (container: unknown, delegate: IEditorDropTargetDelegate): IDisposable {
+  createEditorDropTarget(container: unknown, delegate: IEditorDropTargetDelegate): IDisposable {
     return this.delegate.createEditorDropTarget(container, delegate)
   }
 
-  public get groups (): IEditorGroup[] {
+  public get groups(): IEditorGroup[] {
     return [...this.additionalGroups, ...this.delegate.groups]
   }
 
-  public get activeGroup (): IEditorGroup {
+  public get activeGroup(): IEditorGroup {
     return this.activeGroupOverride ?? this.delegate.activeGroup
   }
 
   _onDidChangeActiveGroup = new Emitter<IEditorGroup>()
-  onDidChangeActiveGroup = Event.any(this._onDidChangeActiveGroup.event, this.delegate.onDidChangeActiveGroup)
+  onDidChangeActiveGroup = Event.any(
+    this._onDidChangeActiveGroup.event,
+    this.delegate.onDidChangeActiveGroup
+  )
 
   _onDidAddGroup = new Emitter<IEditorGroup>()
   onDidAddGroup = Event.any(this._onDidAddGroup.event, this.delegate.onDidAddGroup)
@@ -702,10 +897,21 @@ export class MonacoDelegateEditorGroupsService<D extends IEditorGroupsService> e
   onDidActivateGroup = this.delegate.onDidActivateGroup
   onDidChangeGroupIndex = this.delegate.onDidChangeGroupIndex
   onDidChangeGroupLocked = this.delegate.onDidChangeGroupLocked
-  get sideGroup (): IEditorGroupsService['sideGroup'] { return this.delegate.sideGroup }
-  get count (): IEditorGroupsService['count'] { return this.delegate.count + this.additionalGroups.length }
-  get orientation (): IEditorGroupsService['orientation'] { return this.delegate.orientation }
-  get partOptions (): IEditorGroupsService['partOptions'] { return this.delegate.partOptions }
+  get sideGroup(): IEditorGroupsService['sideGroup'] {
+    return this.delegate.sideGroup
+  }
+
+  get count(): IEditorGroupsService['count'] {
+    return this.delegate.count + this.additionalGroups.length
+  }
+
+  get orientation(): IEditorGroupsService['orientation'] {
+    return this.delegate.orientation
+  }
+
+  get partOptions(): IEditorGroupsService['partOptions'] {
+    return this.delegate.partOptions
+  }
 
   getLayout: IEditorGroupsService['getLayout'] = () => {
     return this.delegate.getLayout()
@@ -716,7 +922,10 @@ export class MonacoDelegateEditorGroupsService<D extends IEditorGroupsService> e
   }
 
   getGroup: IEditorGroupsService['getGroup'] = (identifier) => {
-    return this.delegate.getGroup(identifier) ?? this.additionalGroups.find(group => group.id === identifier)
+    return (
+      this.delegate.getGroup(identifier) ??
+      this.additionalGroups.find((group) => group.id === identifier)
+    )
   }
 
   activateGroup: IEditorGroupsService['activateGroup'] = (...args) => {

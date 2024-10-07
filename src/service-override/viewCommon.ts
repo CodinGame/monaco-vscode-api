@@ -71,13 +71,35 @@ import 'vs/workbench/browser/parts/editor/editorParts'
 
 let webviewIframeAlternateDomains: string | undefined
 registerAssets({
-  'vs/workbench/contrib/webview/browser/pre/service-worker.js': () => changeUrlDomain(new URL('../../vscode/src/vs/workbench/contrib/webview/browser/pre/service-worker.js', import.meta.url).href, webviewIframeAlternateDomains),
-  'vs/workbench/contrib/webview/browser/pre/index.html': () => changeUrlDomain(new URL('../assets/webview/index.html', import.meta.url).href, webviewIframeAlternateDomains),
-  'vs/workbench/contrib/webview/browser/pre/index-no-csp.html': () => changeUrlDomain(new URL('../assets/webview/index-no-csp.html', import.meta.url).href, webviewIframeAlternateDomains),
-  'vs/workbench/contrib/webview/browser/pre/fake.html': () => changeUrlDomain(new URL('../../vscode/src/vs/workbench/contrib/webview/browser/pre/fake.html', import.meta.url).href, webviewIframeAlternateDomains)
+  'vs/workbench/contrib/webview/browser/pre/service-worker.js': () =>
+    changeUrlDomain(
+      new URL(
+        '../../vscode/src/vs/workbench/contrib/webview/browser/pre/service-worker.js',
+        import.meta.url
+      ).href,
+      webviewIframeAlternateDomains
+    ),
+  'vs/workbench/contrib/webview/browser/pre/index.html': () =>
+    changeUrlDomain(
+      new URL('../assets/webview/index.html', import.meta.url).href,
+      webviewIframeAlternateDomains
+    ),
+  'vs/workbench/contrib/webview/browser/pre/index-no-csp.html': () =>
+    changeUrlDomain(
+      new URL('../assets/webview/index-no-csp.html', import.meta.url).href,
+      webviewIframeAlternateDomains
+    ),
+  'vs/workbench/contrib/webview/browser/pre/fake.html': () =>
+    changeUrlDomain(
+      new URL(
+        '../../vscode/src/vs/workbench/contrib/webview/browser/pre/fake.html',
+        import.meta.url
+      ).href,
+      webviewIframeAlternateDomains
+    )
 })
 
-function getServiceOverride (_webviewIframeAlternateDomains?: string): IEditorOverrideServices {
+function getServiceOverride(_webviewIframeAlternateDomains?: string): IEditorOverrideServices {
   if (_webviewIframeAlternateDomains != null) {
     webviewIframeAlternateDomains = _webviewIframeAlternateDomains
   }
@@ -94,14 +116,22 @@ function getServiceOverride (_webviewIframeAlternateDomains?: string): IEditorOv
     [IEditorResolverService.toString()]: new SyncDescriptor(EditorResolverService, [], false),
     [IBreadcrumbsService.toString()]: new SyncDescriptor(BreadcrumbsService, [], true),
     [IContextViewService.toString()]: new SyncDescriptor(ContextViewService, [], true),
-    [IUntitledTextEditorService.toString()]: new SyncDescriptor(UntitledTextEditorService, [], true),
+    [IUntitledTextEditorService.toString()]: new SyncDescriptor(
+      UntitledTextEditorService,
+      [],
+      true
+    ),
     [IHistoryService.toString()]: new SyncDescriptor(HistoryService, [], false),
     [ICustomEditorService.toString()]: new SyncDescriptor(CustomEditorService, [], true),
     [IWebviewService.toString()]: new SyncDescriptor(WebviewService, [], true),
     [IWebviewViewService.toString()]: new SyncDescriptor(WebviewViewService, [], true),
     [IWebviewWorkbenchService.toString()]: new SyncDescriptor(WebviewEditorService, [], true),
     [IProgressService.toString()]: new SyncDescriptor(ProgressService, [], true),
-    [IAuxiliaryWindowService.toString()]: new SyncDescriptor(BrowserAuxiliaryWindowService, [], true),
+    [IAuxiliaryWindowService.toString()]: new SyncDescriptor(
+      BrowserAuxiliaryWindowService,
+      [],
+      true
+    ),
     [IEditorPaneService.toString()]: new SyncDescriptor(EditorPaneService, [], true),
     [ICustomEditorLabelService.toString()]: new SyncDescriptor(CustomEditorLabelService, [], true),
     [IActionViewItemService.toString()]: new SyncDescriptor(ActionViewItemService, [], true)

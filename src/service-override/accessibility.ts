@@ -16,11 +16,19 @@ import 'vs/workbench/contrib/accessibilitySignals/browser/accessibilitySignal.co
 
 registerAssets(audioAssets)
 
-export default function getServiceOverride (): IEditorOverrideServices {
+export default function getServiceOverride(): IEditorOverrideServices {
   return {
     [IAccessibleViewService.toString()]: new SyncDescriptor(AccessibleViewService, [], true),
-    [IAccessibilitySignalService.toString()]: new SyncDescriptor(AccessibilitySignalService, [], true),
+    [IAccessibilitySignalService.toString()]: new SyncDescriptor(
+      AccessibilitySignalService,
+      [],
+      true
+    ),
     [IAccessibilityService.toString()]: new SyncDescriptor(AccessibilityService, [], true),
-    [IAccessibleViewInformationService.toString()]: new SyncDescriptor(AccessibleViewInformationService, [], true)
+    [IAccessibleViewInformationService.toString()]: new SyncDescriptor(
+      AccessibleViewInformationService,
+      [],
+      true
+    )
   }
 }

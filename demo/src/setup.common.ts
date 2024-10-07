@@ -1,6 +1,19 @@
-import getConfigurationServiceOverride, { IStoredWorkspace, initUserConfiguration } from '@codingame/monaco-vscode-configuration-service-override'
-import getKeybindingsServiceOverride, { initUserKeybindings } from '@codingame/monaco-vscode-keybindings-service-override'
-import { RegisteredFileSystemProvider, RegisteredMemoryFile, RegisteredReadOnlyFile, createIndexedDBProviders, registerHTMLFileSystemProvider, registerFileSystemOverlay, initFile } from '@codingame/monaco-vscode-files-service-override'
+import getConfigurationServiceOverride, {
+  IStoredWorkspace,
+  initUserConfiguration
+} from '@codingame/monaco-vscode-configuration-service-override'
+import getKeybindingsServiceOverride, {
+  initUserKeybindings
+} from '@codingame/monaco-vscode-keybindings-service-override'
+import {
+  RegisteredFileSystemProvider,
+  RegisteredMemoryFile,
+  RegisteredReadOnlyFile,
+  createIndexedDBProviders,
+  registerHTMLFileSystemProvider,
+  registerFileSystemOverlay,
+  initFile
+} from '@codingame/monaco-vscode-files-service-override'
 import * as monaco from 'monaco-editor'
 import { IWorkbenchConstructionOptions, LogLevel, IEditorOverrideServices } from 'vscode/services'
 import * as vscode from 'vscode'
@@ -72,7 +85,8 @@ const url = new URL(document.location.href)
 const params = url.searchParams
 export const remoteAuthority = params.get('remoteAuthority') ?? undefined
 export const connectionToken = params.get('connectionToken') ?? undefined
-export const remotePath = remoteAuthority != null ? params.get('remotePath') ?? undefined : undefined
+export const remotePath =
+  remoteAuthority != null ? (params.get('remotePath') ?? undefined) : undefined
 export const resetLayout = params.has('resetLayout')
 export const useHtmlFileSystemProvider = params.has('htmlFileSystemProvider')
 params.delete('resetLayout')
@@ -85,15 +99,25 @@ export const userDataProvider = await createIndexedDBProviders()
 
 if (useHtmlFileSystemProvider) {
   workspaceFile = monaco.Uri.from({ scheme: 'tmp', path: '/test.code-workspace' })
-  await initFile(workspaceFile, JSON.stringify(<IStoredWorkspace>{
-    folders: []
-  }, null, 2))
+  await initFile(
+    workspaceFile,
+    JSON.stringify(
+      <IStoredWorkspace>{
+        folders: []
+      },
+      null,
+      2
+    )
+  )
 
   registerHTMLFileSystemProvider()
 } else {
   const fileSystemProvider = new RegisteredFileSystemProvider(false)
 
-  fileSystemProvider.registerFile(new RegisteredMemoryFile(vscode.Uri.file('/workspace/test.js'), `// import anotherfile
+  fileSystemProvider.registerFile(
+    new RegisteredMemoryFile(
+      vscode.Uri.file('/workspace/test.js'),
+      `// import anotherfile
 let variable = 1
 function inc () {
   variable++
@@ -103,12 +127,22 @@ while (variable < 5000) {
   inc()
   console.log('Hello world', variable);
 }`
-  ))
+    )
+  )
 
   const content = new TextEncoder().encode('This is a readonly static file')
-  fileSystemProvider.registerFile(new RegisteredReadOnlyFile(vscode.Uri.file('/workspace/test_readonly.js'), async () => content, content.length))
+  fileSystemProvider.registerFile(
+    new RegisteredReadOnlyFile(
+      vscode.Uri.file('/workspace/test_readonly.js'),
+      async () => content,
+      content.length
+    )
+  )
 
-  fileSystemProvider.registerFile(new RegisteredMemoryFile(vscode.Uri.file('/workspace/jsconfig.json'), `{
+  fileSystemProvider.registerFile(
+    new RegisteredMemoryFile(
+      vscode.Uri.file('/workspace/jsconfig.json'),
+      `{
   "compilerOptions": {
     "target": "es2020",
     "module": "esnext",
@@ -118,9 +152,13 @@ while (variable < 5000) {
     ]
   }
 }`
-  ))
+    )
+  )
 
-  fileSystemProvider.registerFile(new RegisteredMemoryFile(vscode.Uri.file('/workspace/index.html'), `
+  fileSystemProvider.registerFile(
+    new RegisteredMemoryFile(
+      vscode.Uri.file('/workspace/index.html'),
+      `
 <!DOCTYPE html>
 <html lang="en">
   <head>
@@ -138,9 +176,13 @@ while (variable < 5000) {
     <h1>Hello, world!</h1>
   </body>
 </html>`
-  ))
+    )
+  )
 
-  fileSystemProvider.registerFile(new RegisteredMemoryFile(vscode.Uri.file('/workspace/test.md'), `
+  fileSystemProvider.registerFile(
+    new RegisteredMemoryFile(
+      vscode.Uri.file('/workspace/test.md'),
+      `
 ***Hello World***
 
 Math block:
@@ -161,30 +203,57 @@ $$
 
 230230 + 5819123 = 6049353
 `
-  ))
+    )
+  )
 
-  fileSystemProvider.registerFile(new RegisteredMemoryFile(vscode.Uri.file('/workspace/test.customeditor'), `
+  fileSystemProvider.registerFile(
+    new RegisteredMemoryFile(
+      vscode.Uri.file('/workspace/test.customeditor'),
+      `
 Custom Editor!`
-  ))
+    )
+  )
 
-  fileSystemProvider.registerFile(new RegisteredMemoryFile(vscode.Uri.file('/workspace/test.css'), `
+  fileSystemProvider.registerFile(
+    new RegisteredMemoryFile(
+      vscode.Uri.file('/workspace/test.css'),
+      `
 h1 {
   color: DeepSkyBlue;
 }`
-  ))
+    )
+  )
 
   // Use a workspace file to be able to add another folder later (for the "Attach filesystem" button)
-  fileSystemProvider.registerFile(new RegisteredMemoryFile(workspaceFile, JSON.stringify(<IStoredWorkspace>{
-    folders: [{
-      path: '/workspace'
-    }]
-  }, null, 2)))
+  fileSystemProvider.registerFile(
+    new RegisteredMemoryFile(
+      workspaceFile,
+      JSON.stringify(
+        <IStoredWorkspace>{
+          folders: [
+            {
+              path: '/workspace'
+            }
+          ]
+        },
+        null,
+        2
+      )
+    )
+  )
 
-  fileSystemProvider.registerFile(new RegisteredMemoryFile(monaco.Uri.file('/workspace/.vscode/extensions.json'), JSON.stringify({
-    recommendations: [
-      'vscodevim.vim'
-    ]
-  }, null, 2)))
+  fileSystemProvider.registerFile(
+    new RegisteredMemoryFile(
+      monaco.Uri.file('/workspace/.vscode/extensions.json'),
+      JSON.stringify(
+        {
+          recommendations: ['vscodevim.vim']
+        },
+        null,
+        2
+      )
+    )
+  )
 
   registerFileSystemOverlay(1, fileSystemProvider)
 }
@@ -192,13 +261,38 @@ h1 {
 // Workers
 export type WorkerLoader = () => Worker
 const workerLoaders: Partial<Record<string, WorkerLoader>> = {
-  TextEditorWorker: () => new Worker(new URL('monaco-editor/esm/vs/editor/editor.worker.js', import.meta.url), { type: 'module' }),
-  TextMateWorker: () => new Worker(new URL('@codingame/monaco-vscode-textmate-service-override/worker', import.meta.url), { type: 'module' }),
-  OutputLinkDetectionWorker: () => new Worker(new URL('@codingame/monaco-vscode-output-service-override/worker', import.meta.url), { type: 'module' }),
-  LanguageDetectionWorker: () => new Worker(new URL('@codingame/monaco-vscode-language-detection-worker-service-override/worker', import.meta.url), { type: 'module' }),
-  NotebookEditorWorker: () => new Worker(new URL('@codingame/monaco-vscode-notebook-service-override/worker', import.meta.url), { type: 'module' }),
-  LocalFileSearchWorker: () => new Worker(new URL('@codingame/monaco-vscode-search-service-override/worker', import.meta.url), { type: 'module' })
-
+  TextEditorWorker: () =>
+    new Worker(new URL('monaco-editor/esm/vs/editor/editor.worker.js', import.meta.url), {
+      type: 'module'
+    }),
+  TextMateWorker: () =>
+    new Worker(
+      new URL('@codingame/monaco-vscode-textmate-service-override/worker', import.meta.url),
+      { type: 'module' }
+    ),
+  OutputLinkDetectionWorker: () =>
+    new Worker(
+      new URL('@codingame/monaco-vscode-output-service-override/worker', import.meta.url),
+      { type: 'module' }
+    ),
+  LanguageDetectionWorker: () =>
+    new Worker(
+      new URL(
+        '@codingame/monaco-vscode-language-detection-worker-service-override/worker',
+        import.meta.url
+      ),
+      { type: 'module' }
+    ),
+  NotebookEditorWorker: () =>
+    new Worker(
+      new URL('@codingame/monaco-vscode-notebook-service-override/worker', import.meta.url),
+      { type: 'module' }
+    ),
+  LocalFileSearchWorker: () =>
+    new Worker(
+      new URL('@codingame/monaco-vscode-search-service-override/worker', import.meta.url),
+      { type: 'module' }
+    )
 }
 window.MonacoEnvironment = {
   getWorker: function (moduleId, label) {
@@ -227,17 +321,22 @@ export const constructOptions: IWorkbenchConstructionOptions = {
   },
   workspaceProvider: {
     trusted: true,
-    async open () {
+    async open() {
       window.open(window.location.href)
       return true
     },
-    workspace: remotePath == null
-      ? {
-          workspaceUri: workspaceFile
-        }
-      : {
-          folderUri: monaco.Uri.from({ scheme: 'vscode-remote', path: remotePath, authority: remoteAuthority })
-        }
+    workspace:
+      remotePath == null
+        ? {
+            workspaceUri: workspaceFile
+          }
+        : {
+            folderUri: monaco.Uri.from({
+              scheme: 'vscode-remote',
+              path: remotePath,
+              authority: remoteAuthority
+            })
+          }
   },
   developmentOptions: {
     logLevel: LogLevel.Info // Default value
@@ -249,13 +348,16 @@ export const constructOptions: IWorkbenchConstructionOptions = {
   defaultLayout: {
     editors: useHtmlFileSystemProvider
       ? undefined
-      : [{
-          uri: monaco.Uri.file('/workspace/test.js'),
-          viewColumn: 1
-        }, {
-          uri: monaco.Uri.file('/workspace/test.md'),
-          viewColumn: 2
-        }],
+      : [
+          {
+            uri: monaco.Uri.file('/workspace/test.js'),
+            viewColumn: 1
+          },
+          {
+            uri: monaco.Uri.file('/workspace/test.md'),
+            viewColumn: 2
+          }
+        ],
     layout: useHtmlFileSystemProvider
       ? undefined
       : {
@@ -264,9 +366,11 @@ export const constructOptions: IWorkbenchConstructionOptions = {
             groups: [{ size: 1 }, { size: 1 }]
           }
         },
-    views: [{
-      id: 'custom-view'
-    }],
+    views: [
+      {
+        id: 'custom-view'
+      }
+    ],
     force: resetLayout
   },
   welcomeBanner: {
@@ -354,65 +458,82 @@ export const commonServices: IEditorOverrideServices = {
   ...getUpdateServiceOverride(),
   ...getExplorerServiceOverride(),
   ...getLocalizationServiceOverride({
-    async clearLocale () {
+    async clearLocale() {
       const url = new URL(window.location.href)
       url.searchParams.delete('locale')
       window.history.pushState(null, '', url.toString())
     },
-    async setLocale (id) {
+    async setLocale(id) {
       const url = new URL(window.location.href)
       url.searchParams.set('locale', id)
       window.history.pushState(null, '', url.toString())
     },
-    availableLanguages: [{
-      locale: 'en',
-      languageName: 'English'
-    }, {
-      locale: 'cs',
-      languageName: 'Czech'
-    }, {
-      locale: 'de',
-      languageName: 'German'
-    }, {
-      locale: 'es',
-      languageName: 'Spanish'
-    }, {
-      locale: 'fr',
-      languageName: 'French'
-    }, {
-      locale: 'it',
-      languageName: 'Italian'
-    }, {
-      locale: 'ja',
-      languageName: 'Japanese'
-    }, {
-      locale: 'ko',
-      languageName: 'Korean'
-    }, {
-      locale: 'pl',
-      languageName: 'Polish'
-    }, {
-      locale: 'pt-br',
-      languageName: 'Portuguese (Brazil)'
-    }, {
-      locale: 'qps-ploc',
-      languageName: 'Pseudo Language'
-    }, {
-      locale: 'ru',
-      languageName: 'Russian'
-    }, {
-      locale: 'tr',
-      languageName: 'Turkish'
-    }, {
-      locale: 'zh-hans',
-      languageName: 'Chinese (Simplified)'
-    }, {
-      locale: 'zh-hant',
-      languageName: 'Chinese (Traditional)'
-    }, {
-      locale: 'en',
-      languageName: 'English'
-    }]
+    availableLanguages: [
+      {
+        locale: 'en',
+        languageName: 'English'
+      },
+      {
+        locale: 'cs',
+        languageName: 'Czech'
+      },
+      {
+        locale: 'de',
+        languageName: 'German'
+      },
+      {
+        locale: 'es',
+        languageName: 'Spanish'
+      },
+      {
+        locale: 'fr',
+        languageName: 'French'
+      },
+      {
+        locale: 'it',
+        languageName: 'Italian'
+      },
+      {
+        locale: 'ja',
+        languageName: 'Japanese'
+      },
+      {
+        locale: 'ko',
+        languageName: 'Korean'
+      },
+      {
+        locale: 'pl',
+        languageName: 'Polish'
+      },
+      {
+        locale: 'pt-br',
+        languageName: 'Portuguese (Brazil)'
+      },
+      {
+        locale: 'qps-ploc',
+        languageName: 'Pseudo Language'
+      },
+      {
+        locale: 'ru',
+        languageName: 'Russian'
+      },
+      {
+        locale: 'tr',
+        languageName: 'Turkish'
+      },
+      {
+        locale: 'zh-hans',
+        languageName: 'Chinese (Simplified)'
+      },
+      {
+        locale: 'zh-hant',
+        languageName: 'Chinese (Traditional)'
+      },
+      {
+        locale: 'en',
+        languageName: 'English'
+      }
+    ]
   }),
   ...getSecretStorageServiceOverride()
 }

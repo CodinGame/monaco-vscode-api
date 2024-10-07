@@ -18,26 +18,36 @@ import { rendererLogLabel } from '../override/vs/workbench/browser/web.main'
 import 'vs/workbench/contrib/logs/common/logs.contribution'
 
 class _FileLoggerService extends FileLoggerService {
-  constructor (logLevel: LogLevel | undefined, @IFileService fileService: IFileService, @IEnvironmentService environmentService: IEnvironmentService) {
+  constructor(
+    logLevel: LogLevel | undefined,
+    @IFileService fileService: IFileService,
+    @IEnvironmentService environmentService: IEnvironmentService
+  ) {
     super(logLevel ?? getLogLevel(environmentService), logsPath, fileService)
   }
 }
 
 const otherLoggers: ILogger[] = []
 class _LogService extends LogService {
-  constructor (@ILoggerService loggerService: ILoggerService, @IWorkbenchEnvironmentService environmentService: IWorkbenchEnvironmentService) {
-    const logger = loggerService.createLogger(environmentService.logFile, { id: windowLogId, name: rendererLogLabel })
+  constructor(
+    @ILoggerService loggerService: ILoggerService,
+    @IWorkbenchEnvironmentService environmentService: IWorkbenchEnvironmentService
+  ) {
+    const logger = loggerService.createLogger(environmentService.logFile, {
+      id: windowLogId,
+      name: rendererLogLabel
+    })
     super(logger, otherLoggers)
   }
 }
 
-function getServiceOverride (): IEditorOverrideServices
+function getServiceOverride(): IEditorOverrideServices
 /**
  * @deprecated Provide logLevel via the services `initialize` function `configuration.developmentOptions.logLevel` parameter
  */
-function getServiceOverride (logLevel?: LogLevel): IEditorOverrideServices
+function getServiceOverride(logLevel?: LogLevel): IEditorOverrideServices
 
-function getServiceOverride (logLevel?: LogLevel): IEditorOverrideServices {
+function getServiceOverride(logLevel?: LogLevel): IEditorOverrideServices {
   return {
     ...getEnvironmentServiceOverride(),
     [ILoggerService.toString()]: new SyncDescriptor(_FileLoggerService, [logLevel], true),
@@ -48,7 +58,7 @@ function getServiceOverride (logLevel?: LogLevel): IEditorOverrideServices {
 
 export default getServiceOverride
 
-export function registerAdditionalLogger (logger: ILogger): IDisposable {
+export function registerAdditionalLogger(logger: ILogger): IDisposable {
   checkServicesNotInitialized()
   otherLoggers.push(logger)
 
@@ -60,7 +70,4 @@ export function registerAdditionalLogger (logger: ILogger): IDisposable {
   })
 }
 
-export {
-  ILogger,
-  ConsoleLogger
-}
+export { ILogger, ConsoleLogger }

@@ -20,8 +20,16 @@ onRenderWorkbench(async (accessor) => {
 
   // Instantiate Notification components
   setTimeout(() => {
-    const notificationsCenter = instantiationService.createInstance(NotificationsCenter, container, model)
-    const notificationsToasts = instantiationService.createInstance(NotificationsToasts, container, model)
+    const notificationsCenter = instantiationService.createInstance(
+      NotificationsCenter,
+      container,
+      model
+    )
+    const notificationsToasts = instantiationService.createInstance(
+      NotificationsToasts,
+      container,
+      model
+    )
     instantiationService.createInstance(NotificationsAlerts, model)
     const notificationsStatus = instantiationService.createInstance(NotificationsStatus, model)
     instantiationService.createInstance(NotificationsTelemetry)
@@ -42,7 +50,7 @@ onRenderWorkbench(async (accessor) => {
   })
 })
 
-export default function getServiceOverride (): IEditorOverrideServices {
+export default function getServiceOverride(): IEditorOverrideServices {
   return {
     [INotificationService.toString()]: new SyncDescriptor(NotificationService, [], true)
   }

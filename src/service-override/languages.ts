@@ -7,7 +7,7 @@ import { ILanguageStatusService } from 'vs/workbench/services/languageStatus/com
 import getFileServiceOverride from './files'
 import 'vs/workbench/contrib/codeEditor/common/languageConfigurationExtensionPoint'
 
-export default function getServiceOverride (): IEditorOverrideServices {
+export default function getServiceOverride(): IEditorOverrideServices {
   return {
     ...getFileServiceOverride(),
     [ILanguageService.toString()]: new SyncDescriptor(WorkbenchLanguageService, [], false),

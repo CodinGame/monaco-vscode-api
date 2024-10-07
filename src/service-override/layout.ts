@@ -1,5 +1,16 @@
-import { IEditorOverrideServices, StandaloneServices } from 'vs/editor/standalone/browser/standaloneServices'
-import { ActivityBarPosition, LayoutSettings, PanelAlignment, Parts, Position, positionFromString, positionToString } from 'vs/workbench/services/layout/browser/layoutService'
+import {
+  IEditorOverrideServices,
+  StandaloneServices
+} from 'vs/editor/standalone/browser/standaloneServices'
+import {
+  ActivityBarPosition,
+  LayoutSettings,
+  PanelAlignment,
+  Parts,
+  Position,
+  positionFromString,
+  positionToString
+} from 'vs/workbench/services/layout/browser/layoutService'
 import { IWorkbenchLayoutService } from 'vs/workbench/services/layout/browser/layoutService.service'
 import { ILayoutOffsetInfo } from 'vs/platform/layout/browser/layoutService'
 import { ILayoutService } from 'vs/platform/layout/browser/layoutService.service'
@@ -43,9 +54,7 @@ export class LayoutService extends Disposable implements ILayoutService, IWorkbe
   private sideBarPosition!: Position
   private panelPosition!: Position
 
-  constructor (
-    public mainContainer: HTMLElement = getWorkbenchContainer()
-  ) {
+  constructor(public mainContainer: HTMLElement = getWorkbenchContainer()) {
     super()
     window.addEventListener('resize', () => this.layout())
     this.layout()
@@ -63,7 +72,7 @@ export class LayoutService extends Disposable implements ILayoutService, IWorkbe
     document.body.classList.add('web')
   }
 
-  whenContainerStylesLoaded (): undefined {
+  whenContainerStylesLoaded(): undefined {
     return undefined
   }
 
@@ -71,25 +80,30 @@ export class LayoutService extends Disposable implements ILayoutService, IWorkbe
 
   whenActiveContainerStylesLoaded = Promise.resolve()
 
-  hasMainWindowBorder (): boolean {
+  hasMainWindowBorder(): boolean {
     return false
   }
 
-  getMainWindowBorderRadius (): string | undefined {
+  getMainWindowBorderRadius(): string | undefined {
     return undefined
   }
 
-  isMainEditorLayoutCentered (): boolean {
+  isMainEditorLayoutCentered(): boolean {
     return false
   }
 
-  centerMainEditorLayout (): void {
-  }
+  centerMainEditorLayout(): void {}
 
-  private readonly _onDidLayoutContainer = this._register(new Emitter<{ readonly container: HTMLElement, readonly dimension: dom.IDimension }>())
+  private readonly _onDidLayoutContainer = this._register(
+    new Emitter<{ readonly container: HTMLElement; readonly dimension: dom.IDimension }>()
+  )
+
   readonly onDidLayoutContainer = this._onDidLayoutContainer.event
 
-  private readonly _onDidAddContainer = this._register(new Emitter<{ readonly container: HTMLElement, readonly disposables: DisposableStore }>())
+  private readonly _onDidAddContainer = this._register(
+    new Emitter<{ readonly container: HTMLElement; readonly disposables: DisposableStore }>()
+  )
+
   readonly onDidAddContainer = this._onDidAddContainer.event
 
   private readonly _onDidRemoveContainer = this._register(new Emitter<HTMLElement>())
@@ -103,8 +117,11 @@ export class LayoutService extends Disposable implements ILayoutService, IWorkbe
   private readonly _onDidChangeActiveContainer = this._register(new Emitter<void>())
   readonly onDidChangeActiveContainer = this._onDidChangeActiveContainer.event
 
-  get activeContainer (): HTMLElement { return this.getContainerFromDocument(dom.getActiveDocument()) }
-  get containers (): Iterable<HTMLElement> {
+  get activeContainer(): HTMLElement {
+    return this.getContainerFromDocument(dom.getActiveDocument())
+  }
+
+  get containers(): Iterable<HTMLElement> {
     const containers: HTMLElement[] = []
     for (const { window } of dom.getWindows()) {
       containers.push(this.getContainerFromDocument(window.document))
@@ -113,7 +130,7 @@ export class LayoutService extends Disposable implements ILayoutService, IWorkbe
     return containers
   }
 
-  private getContainerFromDocument (document: Document): HTMLElement {
+  private getContainerFromDocument(document: Document): HTMLElement {
     if (document === this.mainContainer.ownerDocument) {
       // main window
       return this.mainContainer
@@ -139,7 +156,7 @@ export class LayoutService extends Disposable implements ILayoutService, IWorkbe
   openedDefaultEditors = false
   whenRestored = Promise.resolve()
 
-  public init (accessor: ServicesAccessor): void {
+  public init(accessor: ServicesAccessor): void {
     this.editorGroupService = accessor.get(IEditorGroupsService)
     this.paneCompositeService = accessor.get(IPaneCompositePartService)
     this.statusBarService = accessor.get(IStatusbarService)
@@ -148,41 +165,75 @@ export class LayoutService extends Disposable implements ILayoutService, IWorkbe
     this.auxiliaryWindowService = accessor.get(IAuxiliaryWindowService)
     this.hostService = accessor.get(IHostService)
 
-    this._register(this.configurationService.onDidChangeConfiguration((e) => {
-      if (e.affectsConfiguration(LayoutSettings.ACTIVITY_BAR_LOCATION)) {
-        this.setPartHidden(this.isActivityBarHidden(), Parts.ACTIVITYBAR_PART)
-      }
+    this._register(
+      this.configurationService.onDidChangeConfiguration((e) => {
+        if (e.affectsConfiguration(LayoutSettings.ACTIVITY_BAR_LOCATION)) {
+          this.setPartHidden(this.isActivityBarHidden(), Parts.ACTIVITYBAR_PART)
+        }
 
-      if (e.affectsConfiguration('workbench.statusBar.visible')) {
-        this.setPartHidden(!this.configurationService.getValue<boolean>('workbench.statusBar.visible'), Parts.STATUSBAR_PART)
-      }
+        if (e.affectsConfiguration('workbench.statusBar.visible')) {
+          this.setPartHidden(
+            !this.configurationService.getValue<boolean>('workbench.statusBar.visible'),
+            Parts.STATUSBAR_PART
+          )
+        }
 
-      if (e.affectsConfiguration('workbench.sideBar.location')) {
-        this.setSideBarPosition(positionFromString(this.configurationService.getValue<string | undefined>('workbench.sideBar.location') ?? 'left'))
-      }
+        if (e.affectsConfiguration('workbench.sideBar.location')) {
+          this.setSideBarPosition(
+            positionFromString(
+              this.configurationService.getValue<string | undefined>(
+                'workbench.sideBar.location'
+              ) ?? 'left'
+            )
+          )
+        }
 
-      if (e.affectsConfiguration('workbench.panel.defaultLocation')) {
-        this.setPanelPosition(positionFromString(this.configurationService.getValue<string | undefined>('workbench.panel.defaultLocation') ?? 'bottom'))
-      }
-    }))
+        if (e.affectsConfiguration('workbench.panel.defaultLocation')) {
+          this.setPanelPosition(
+            positionFromString(
+              this.configurationService.getValue<string | undefined>(
+                'workbench.panel.defaultLocation'
+              ) ?? 'bottom'
+            )
+          )
+        }
+      })
+    )
     this.setPartHidden(this.isActivityBarHidden(), Parts.ACTIVITYBAR_PART)
-    this.setPartHidden(!this.configurationService.getValue<boolean>('workbench.statusBar.visible'), Parts.STATUSBAR_PART)
-    this.sideBarPosition = positionFromString(this.configurationService.getValue<string | undefined>('workbench.sideBar.location') ?? 'left')
-    this.panelPosition = positionFromString(this.configurationService.getValue<string | undefined>('workbench.panel.defaultLocation') ?? 'bottom')
+    this.setPartHidden(
+      !this.configurationService.getValue<boolean>('workbench.statusBar.visible'),
+      Parts.STATUSBAR_PART
+    )
+    this.sideBarPosition = positionFromString(
+      this.configurationService.getValue<string | undefined>('workbench.sideBar.location') ?? 'left'
+    )
+    this.panelPosition = positionFromString(
+      this.configurationService.getValue<string | undefined>('workbench.panel.defaultLocation') ??
+        'bottom'
+    )
 
     // Window active / focus changes
     this._register(this.hostService.onDidChangeActiveWindow(() => this.onActiveWindowChanged()))
 
     // Auxiliary windows
-    this._register(this.auxiliaryWindowService.onDidOpenAuxiliaryWindow(({ window, disposables }) => {
-      this._onDidAddContainer.fire({ container: window.container, disposables: new DisposableStore() })
+    this._register(
+      this.auxiliaryWindowService.onDidOpenAuxiliaryWindow(({ window, disposables }) => {
+        this._onDidAddContainer.fire({
+          container: window.container,
+          disposables: new DisposableStore()
+        })
 
-      disposables.add(window.onDidLayout(dimension => this.handleContainerDidLayout(window.container, dimension)))
-      disposables.add(toDisposable(() => this._onDidRemoveContainer.fire(window.container)))
-    }))
+        disposables.add(
+          window.onDidLayout((dimension) =>
+            this.handleContainerDidLayout(window.container, dimension)
+          )
+        )
+        disposables.add(toDisposable(() => this._onDidRemoveContainer.fire(window.container)))
+      })
+    )
   }
 
-  private handleContainerDidLayout (container: HTMLElement, dimension: dom.IDimension): void {
+  private handleContainerDidLayout(container: HTMLElement, dimension: dom.IDimension): void {
     if (container === this.mainContainer) {
       this._onDidLayoutMainContainer.fire(dimension)
     }
@@ -192,13 +243,13 @@ export class LayoutService extends Disposable implements ILayoutService, IWorkbe
     }
   }
 
-  private getActiveContainerId (): number {
+  private getActiveContainerId(): number {
     const activeContainer = this.activeContainer
 
     return dom.getWindow(activeContainer).vscodeWindowId
   }
 
-  private onActiveWindowChanged (): void {
+  private onActiveWindowChanged(): void {
     const activeContainerId = this.getActiveContainerId()
     if (this.activeContainerId !== activeContainerId) {
       this.activeContainerId = activeContainerId
@@ -206,31 +257,40 @@ export class LayoutService extends Disposable implements ILayoutService, IWorkbe
     }
   }
 
-  private isActivityBarHidden (): boolean {
-    const oldValue = this.configurationService.getValue<boolean | undefined>('workbench.activityBar.visible')
+  private isActivityBarHidden(): boolean {
+    const oldValue = this.configurationService.getValue<boolean | undefined>(
+      'workbench.activityBar.visible'
+    )
     if (oldValue !== undefined) {
       return !oldValue
     }
-    return this.configurationService.getValue(LayoutSettings.ACTIVITY_BAR_LOCATION) !== ActivityBarPosition.DEFAULT
+    return (
+      this.configurationService.getValue(LayoutSettings.ACTIVITY_BAR_LOCATION) !==
+      ActivityBarPosition.DEFAULT
+    )
   }
 
-  focusPart (part: Parts): void {
+  focusPart(part: Parts): void {
     switch (part) {
       case Parts.EDITOR_PART:
         this.editorGroupService.activeGroup.focus()
         break
       case Parts.PANEL_PART: {
-        const activePanel = this.paneCompositeService.getActivePaneComposite(ViewContainerLocation.Panel)
+        const activePanel = this.paneCompositeService.getActivePaneComposite(
+          ViewContainerLocation.Panel
+        )
         activePanel?.focus()
         break
       }
       case Parts.SIDEBAR_PART: {
-        const activeViewlet = this.paneCompositeService.getActivePaneComposite(ViewContainerLocation.Sidebar)
+        const activeViewlet = this.paneCompositeService.getActivePaneComposite(
+          ViewContainerLocation.Sidebar
+        )
         activeViewlet?.focus()
         break
       }
       case Parts.ACTIVITYBAR_PART:
-        (this.getPart(Parts.ACTIVITYBAR_PART) as ActivitybarPart).focus()
+        ;(this.getPart(Parts.ACTIVITYBAR_PART) as ActivitybarPart).focus()
         break
       case Parts.STATUSBAR_PART:
         this.statusBarService.focus()
@@ -243,14 +303,13 @@ export class LayoutService extends Disposable implements ILayoutService, IWorkbe
     }
   }
 
-  getDimension (part: Parts): dom.Dimension | undefined {
+  getDimension(part: Parts): dom.Dimension | undefined {
     return this.getPart(part)?.dimension
   }
 
-  toggleMaximizedPanel (): void {
-  }
+  toggleMaximizedPanel(): void {}
 
-  toggleMenuBar (): void {
+  toggleMenuBar(): void {
     let currentVisibilityValue = getMenuBarVisibility(this.configurationService)
     if (typeof currentVisibilityValue !== 'string') {
       currentVisibilityValue = 'classic'
@@ -258,7 +317,8 @@ export class LayoutService extends Disposable implements ILayoutService, IWorkbe
 
     let newVisibilityValue: string
     if (currentVisibilityValue === 'visible' || currentVisibilityValue === 'classic') {
-      newVisibilityValue = getTitleBarStyle(this.configurationService) === 'native' ? 'toggle' : 'compact'
+      newVisibilityValue =
+        getTitleBarStyle(this.configurationService) === 'native' ? 'toggle' : 'compact'
     } else {
       newVisibilityValue = 'classic'
     }
@@ -266,7 +326,7 @@ export class LayoutService extends Disposable implements ILayoutService, IWorkbe
     void this.configurationService.updateValue('window.menuBarVisibility', newVisibilityValue)
   }
 
-  setPanelPosition (position: Position): void {
+  setPanelPosition(position: Position): void {
     this.panelPosition = position
 
     const panelPart = this.getPart(Parts.PANEL_PART)
@@ -276,51 +336,46 @@ export class LayoutService extends Disposable implements ILayoutService, IWorkbe
     this._onDidChangePanelPosition.fire(positionToString(position))
   }
 
-  getPanelAlignment (): PanelAlignment {
+  getPanelAlignment(): PanelAlignment {
     return 'left'
   }
 
-  setPanelAlignment (): void {
-  }
+  setPanelAlignment(): void {}
 
-  toggleZenMode (): void {
-  }
+  toggleZenMode(): void {}
 
-  isEditorLayoutCentered (): boolean {
+  isEditorLayoutCentered(): boolean {
     return false
   }
 
-  centerEditorLayout (): void {
-  }
+  centerEditorLayout(): void {}
 
-  resizePart (): void {
-  }
+  resizePart(): void {}
 
-  isWindowMaximized (): boolean {
+  isWindowMaximized(): boolean {
     return false
   }
 
-  updateWindowMaximizedState (): void {
-  }
+  updateWindowMaximizedState(): void {}
 
-  getVisibleNeighborPart (): Parts | undefined {
+  getVisibleNeighborPart(): Parts | undefined {
     return undefined
   }
 
-  getMaximumEditorDimensions (): dom.Dimension {
+  getMaximumEditorDimensions(): dom.Dimension {
     return new dom.Dimension(Infinity, Infinity)
   }
 
-  isPanelMaximized (): boolean {
+  isPanelMaximized(): boolean {
     return false
   }
 
-  getPanelPosition (): Position {
+  getPanelPosition(): Position {
     return this.panelPosition
   }
 
   private readonly parts = new Map<string, Part>()
-  hasFocus (part: Parts): boolean {
+  hasFocus(part: Parts): boolean {
     const activeElement = document.activeElement
     if (activeElement == null) {
       return false
@@ -333,7 +388,7 @@ export class LayoutService extends Disposable implements ILayoutService, IWorkbe
 
   getContainer(window: Window): HTMLElement
   getContainer(part: Parts): HTMLElement | undefined
-  getContainer (windowOrPart: Parts | Window): HTMLElement | undefined {
+  getContainer(windowOrPart: Parts | Window): HTMLElement | undefined {
     if (typeof windowOrPart === 'string') {
       if (this.parts.get(windowOrPart) == null) {
         return undefined
@@ -346,24 +401,28 @@ export class LayoutService extends Disposable implements ILayoutService, IWorkbe
         return this.mainContainer
       } else {
         // auxiliary window
-        return windowOrPart.document.body.getElementsByClassName('monaco-workbench')[0] as HTMLElement
+        return windowOrPart.document.body.getElementsByClassName(
+          'monaco-workbench'
+        )[0] as HTMLElement
       }
     }
   }
 
-  public getPart (key: Parts): Part | undefined {
+  public getPart(key: Parts): Part | undefined {
     return this.parts.get(key)
   }
 
   private hiddenParts = new Set<Parts>()
 
-  private hasViews (id: string): boolean {
+  private hasViews(id: string): boolean {
     const viewContainer = this.viewDescriptorService.getViewContainerById(id)
     if (viewContainer == null) {
       return false
     }
 
-    const viewContainerModel = this.viewDescriptorService.getViewContainerModel(viewContainer) as IViewContainerModel | undefined
+    const viewContainerModel = this.viewDescriptorService.getViewContainerModel(viewContainer) as
+      | IViewContainerModel
+      | undefined
     if (viewContainerModel == null) {
       return false
     }
@@ -371,7 +430,7 @@ export class LayoutService extends Disposable implements ILayoutService, IWorkbe
     return viewContainerModel.activeViewDescriptors.length >= 1
   }
 
-  setPartHidden (hidden: boolean, part: Parts): void {
+  setPartHidden(hidden: boolean, part: Parts): void {
     if (hidden) {
       this.hiddenParts.add(part)
     } else {
@@ -391,14 +450,16 @@ export class LayoutService extends Disposable implements ILayoutService, IWorkbe
         this.paneCompositeService.hideActivePaneComposite(location)
       } else if (paneComposite == null && !hidden) {
         // If panel part becomes visible, show last active panel or default panel
-        let panelToOpen = this.paneCompositeService.getLastActivePaneCompositeId(location) as string | undefined
+        let panelToOpen = this.paneCompositeService.getLastActivePaneCompositeId(location) as
+          | string
+          | undefined
 
         // verify that the panel we try to open has views before we default to it
         // otherwise fall back to any view that has views still refs #111463
         if (panelToOpen == null || !this.hasViews(panelToOpen)) {
           panelToOpen = this.viewDescriptorService
             .getViewContainersByLocation(location)
-            .find(viewContainer => this.hasViews(viewContainer.id))?.id
+            .find((viewContainer) => this.hasViews(viewContainer.id))?.id
         }
 
         if (panelToOpen != null) {
@@ -411,15 +472,15 @@ export class LayoutService extends Disposable implements ILayoutService, IWorkbe
     this.getPart(part)?.setVisible(!hidden)
   }
 
-  isVisible (part: Parts): boolean {
+  isVisible(part: Parts): boolean {
     return !this.hiddenParts.has(part)
   }
 
-  getSideBarPosition (): Position {
+  getSideBarPosition(): Position {
     return this.sideBarPosition
   }
 
-  setSideBarPosition (position: Position): void {
+  setSideBarPosition(position: Position): void {
     this.sideBarPosition = position
 
     const activityBar = this.getPart(Parts.ACTIVITYBAR_PART)
@@ -434,14 +495,14 @@ export class LayoutService extends Disposable implements ILayoutService, IWorkbe
     this._onDidChangeSideBarPosition.fire(positionToString(position))
   }
 
-  registerPart (part: Part): IDisposable {
+  registerPart(part: Part): IDisposable {
     const id = part.getId()
     this.parts.set(id, part)
 
     return toDisposable(() => this.parts.delete(id))
   }
 
-  isRestored (): boolean {
+  isRestored(): boolean {
     return true
   }
 
@@ -454,8 +515,11 @@ export class LayoutService extends Disposable implements ILayoutService, IWorkbe
   readonly onDidLayout = this._onDidLayout.event
 
   private _mainContainerDimension!: dom.IDimension
-  get mainContainerDimension (): dom.IDimension { return this._mainContainerDimension }
-  get activeContainerDimension (): dom.IDimension {
+  get mainContainerDimension(): dom.IDimension {
+    return this._mainContainerDimension
+  }
+
+  get activeContainerDimension(): dom.IDimension {
     const activeContainer = this.activeContainer
     if (activeContainer === this.mainContainer) {
       // main window
@@ -466,17 +530,17 @@ export class LayoutService extends Disposable implements ILayoutService, IWorkbe
     }
   }
 
-  layout (): void {
+  layout(): void {
     this._mainContainerDimension = dom.getClientArea(window.document.body)
 
     this._onDidLayout.fire(this._mainContainerDimension)
   }
 
-  get hasContainer (): boolean {
+  get hasContainer(): boolean {
     return true
   }
 
-  focus (): void {
+  focus(): void {
     const activeContainer = this.activeContainer
     if (activeContainer === this.mainContainer) {
       // main window
@@ -502,13 +566,13 @@ onRenderWorkbench((accessor) => {
   }
 })
 
-function getServiceOverride (): IEditorOverrideServices
+function getServiceOverride(): IEditorOverrideServices
 /**
  * @deprecated Provide container via the services `initialize` function
  */
-function getServiceOverride (container?: HTMLElement): IEditorOverrideServices
+function getServiceOverride(container?: HTMLElement): IEditorOverrideServices
 
-function getServiceOverride (container?: HTMLElement): IEditorOverrideServices {
+function getServiceOverride(container?: HTMLElement): IEditorOverrideServices {
   return {
     [ILayoutService.toString()]: new SyncDescriptor(LayoutService, [container], true)
   }

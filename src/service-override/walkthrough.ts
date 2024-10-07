@@ -11,7 +11,7 @@ import { registerAssets } from '../assets'
 registerAssets(svgAssets)
 registerAssets(pngAssets)
 
-export default function getServiceOverride (): IEditorOverrideServices {
+export default function getServiceOverride(): IEditorOverrideServices {
   return {
     [IWalkthroughsService.toString()]: new SyncDescriptor(WalkthroughsService, [], true)
   }

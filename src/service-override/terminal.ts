@@ -1,9 +1,28 @@
 import { IEditorOverrideServices } from 'vs/editor/standalone/browser/standaloneServices'
 import { SyncDescriptor } from 'vs/platform/instantiation/common/descriptors'
-import { ITerminalsLayoutInfo, IProcessReadyEvent, ITerminalBackend, ITerminalBackendRegistry, ITerminalChildProcess, ITerminalLaunchError, ITerminalProfile, TerminalExtensions, IPtyHostLatencyMeasurement } from 'vs/platform/terminal/common/terminal'
+import {
+  ITerminalsLayoutInfo,
+  IProcessReadyEvent,
+  ITerminalBackend,
+  ITerminalBackendRegistry,
+  ITerminalChildProcess,
+  ITerminalLaunchError,
+  ITerminalProfile,
+  TerminalExtensions,
+  IPtyHostLatencyMeasurement
+} from 'vs/platform/terminal/common/terminal'
 import { ITerminalLogService } from 'vs/platform/terminal/common/terminal.service'
-import { ITerminalProfileResolverService, ITerminalProfileService } from 'vs/workbench/contrib/terminal/common/terminal.service'
-import { ITerminalConfigurationService, ITerminalEditorService, ITerminalGroupService, ITerminalInstanceService, ITerminalService } from 'vs/workbench/contrib/terminal/browser/terminal.service'
+import {
+  ITerminalProfileResolverService,
+  ITerminalProfileService
+} from 'vs/workbench/contrib/terminal/common/terminal.service'
+import {
+  ITerminalConfigurationService,
+  ITerminalEditorService,
+  ITerminalGroupService,
+  ITerminalInstanceService,
+  ITerminalService
+} from 'vs/workbench/contrib/terminal/browser/terminal.service'
 import { TerminalService } from 'vs/workbench/contrib/terminal/browser/terminalService'
 import { TerminalEditorService } from 'vs/workbench/contrib/terminal/browser/terminalEditorService'
 import { TerminalGroupService } from 'vs/workbench/contrib/terminal/browser/terminalGroupService'
@@ -32,19 +51,25 @@ import 'vs/workbench/contrib/terminal/browser/terminal.contribution'
 import 'vs/workbench/contrib/terminal/terminal.all'
 import 'vs/workbench/contrib/externalTerminal/browser/externalTerminal.contribution'
 import 'vs/workbench/contrib/terminal/browser/terminal.web.contribution'
-export { ITerminalService, ITerminalInstanceService } from 'vs/workbench/contrib/terminal/browser/terminal.service'
+export {
+  ITerminalService,
+  ITerminalInstanceService
+} from 'vs/workbench/contrib/terminal/browser/terminal.service'
 
 abstract class SimpleTerminalBackend implements ITerminalBackend {
   getLatency = async (): Promise<IPtyHostLatencyMeasurement[]> => []
   isResponsive = true
 
   private readonly _whenConnected = new DeferredPromise<void>()
-  get whenReady (): Promise<void> { return this._whenConnected.p }
-  setReady (): void {
+  get whenReady(): Promise<void> {
+    return this._whenConnected.p
+  }
+
+  setReady(): void {
     void this._whenConnected.complete()
   }
 
-  async getPerformanceMarks (): Promise<PerformanceMark[]> {
+  async getPerformanceMarks(): Promise<PerformanceMark[]> {
     return []
   }
 
@@ -76,7 +101,7 @@ abstract class SimpleTerminalBackend implements ITerminalBackend {
 
 abstract class SimpleTerminalProcess implements ITerminalChildProcess {
   private onReady = new Emitter<IProcessReadyEvent>()
-  constructor (
+  constructor(
     readonly id: number,
     readonly pid: number,
     readonly cwd: string,
@@ -95,11 +120,11 @@ abstract class SimpleTerminalProcess implements ITerminalChildProcess {
 
   abstract start(): Promise<ITerminalLaunchError | { injectedArgs: string[] } | undefined>
 
-  abstract shutdown (immediate: boolean): void
+  abstract shutdown(immediate: boolean): void
 
-  abstract input (data: string): void
+  abstract input(data: string): void
 
-  abstract resize (cols: number, rows: number): void
+  abstract resize(cols: number, rows: number): void
 
   shouldPersist = false
   onProcessData = this.onData
@@ -107,33 +132,32 @@ abstract class SimpleTerminalProcess implements ITerminalChildProcess {
   onDidChangeProperty = Event.None
   onProcessExit = Event.None
   processBinary = unsupported
-  acknowledgeDataEvent (): void {
-  }
+  acknowledgeDataEvent(): void {}
 
-  async setUnicodeVersion (): Promise<void> {
-  }
+  async setUnicodeVersion(): Promise<void> {}
 
-  async getInitialCwd (): Promise<string> {
+  async getInitialCwd(): Promise<string> {
     return this.cwd
   }
 
-  async getCwd (): Promise<string> {
+  async getCwd(): Promise<string> {
     return this.cwd
   }
 
-  async getLatency (): Promise<number> {
+  async getLatency(): Promise<number> {
     return 0
   }
 
   refreshProperty = async (): Promise<never> => undefined as never
 
-  async updateProperty (): Promise<void> {
-  }
+  async updateProperty(): Promise<void> {}
 }
 
-export default function getServiceOverride (backend?: ITerminalBackend): IEditorOverrideServices {
+export default function getServiceOverride(backend?: ITerminalBackend): IEditorOverrideServices {
   if (backend != null) {
-    Registry.as<ITerminalBackendRegistry>(TerminalExtensions.Backend).registerTerminalBackend(backend)
+    Registry.as<ITerminalBackendRegistry>(TerminalExtensions.Backend).registerTerminalBackend(
+      backend
+    )
   }
   return {
     [ITerminalService.toString()]: new SyncDescriptor(TerminalService, [], true),
@@ -142,19 +166,34 @@ export default function getServiceOverride (backend?: ITerminalBackend): IEditor
     [ITerminalGroupService.toString()]: new SyncDescriptor(TerminalGroupService, [], true),
     [ITerminalInstanceService.toString()]: new SyncDescriptor(TerminalInstanceService, [], true),
     [ITerminalProfileService.toString()]: new SyncDescriptor(TerminalProfileService, [], true),
-    [ITerminalContributionService.toString()]: new SyncDescriptor(TerminalContributionService, [], true),
-    [ITerminalLinkProviderService.toString()]: new SyncDescriptor(TerminalLinkProviderService, [], true),
-    [ITerminalProfileResolverService.toString()]: new SyncDescriptor(ElectronTerminalProfileResolverService, [], true),
-    [IEnvironmentVariableService.toString()]: new SyncDescriptor(EnvironmentVariableService, [], true),
+    [ITerminalContributionService.toString()]: new SyncDescriptor(
+      TerminalContributionService,
+      [],
+      true
+    ),
+    [ITerminalLinkProviderService.toString()]: new SyncDescriptor(
+      TerminalLinkProviderService,
+      [],
+      true
+    ),
+    [ITerminalProfileResolverService.toString()]: new SyncDescriptor(
+      ElectronTerminalProfileResolverService,
+      [],
+      true
+    ),
+    [IEnvironmentVariableService.toString()]: new SyncDescriptor(
+      EnvironmentVariableService,
+      [],
+      true
+    ),
     [ITerminalQuickFixService.toString()]: new SyncDescriptor(TerminalQuickFixService, [], true),
     [IEmbedderTerminalService.toString()]: new SyncDescriptor(EmbedderTerminalService, [], true),
-    [ITerminalConfigurationService.toString()]: new SyncDescriptor(TerminalConfigurationService, [], true)
+    [ITerminalConfigurationService.toString()]: new SyncDescriptor(
+      TerminalConfigurationService,
+      [],
+      true
+    )
   }
 }
 
-export {
-  ITerminalBackend,
-  ITerminalChildProcess,
-  SimpleTerminalBackend,
-  SimpleTerminalProcess
-}
+export { ITerminalBackend, ITerminalChildProcess, SimpleTerminalBackend, SimpleTerminalProcess }

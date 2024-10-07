@@ -8,13 +8,13 @@ import { IOutputChannelModelService } from 'vs/workbench/contrib/output/common/o
 import getLogServiceOverride from './log'
 import 'vs/workbench/contrib/output/browser/output.contribution'
 
-function getServiceOverride (): IEditorOverrideServices
+function getServiceOverride(): IEditorOverrideServices
 /**
  * @deprecated Provide logLevel via the services `initialize` function `configuration.developmentOptions.logLevel` parameter
  */
-function getServiceOverride (logLevel?: LogLevel): IEditorOverrideServices
+function getServiceOverride(logLevel?: LogLevel): IEditorOverrideServices
 
-function getServiceOverride (logLevel?: LogLevel): IEditorOverrideServices {
+function getServiceOverride(logLevel?: LogLevel): IEditorOverrideServices {
   return {
     ...getLogServiceOverride(logLevel),
     [IOutputService.toString()]: new SyncDescriptor(OutputService, [], true),
