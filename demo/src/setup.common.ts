@@ -59,6 +59,7 @@ import getSurveyServiceOverride from '@codingame/monaco-vscode-survey-service-ov
 import getUpdateServiceOverride from '@codingame/monaco-vscode-update-service-override'
 import getExplorerServiceOverride from '@codingame/monaco-vscode-explorer-service-override'
 import getLocalizationServiceOverride from '@codingame/monaco-vscode-localization-service-override'
+import getTreeSitterServiceOverride from '@codingame/monaco-vscode-treesitter-service-override'
 import { EnvironmentOverride } from 'vscode/workbench'
 import { Worker } from './tools/crossOriginWorker'
 import defaultKeybindings from './user/keybindings.json?raw'
@@ -302,6 +303,7 @@ export const commonServices: IEditorOverrideServices = {
   ...getConfigurationServiceOverride(),
   ...getKeybindingsServiceOverride(),
   ...getTextmateServiceOverride(),
+  ...getTreeSitterServiceOverride(),
   ...getThemeServiceOverride(),
   ...getLanguagesServiceOverride(),
   ...getDebugServiceOverride(),
