@@ -78,6 +78,8 @@ Additionally, several packages that include the VSCode version of some services 
     - It triggers the `onLanguage:${language}` event (to load VSCode extension listening to those events)
 - **Textmate**: `@codingame/monaco-vscode-textmate-service-override`
   - Allows to use textmate grammars. Depends on *themes* service. VSCode extensions use textmate grammars exclusively for highlighting. Once this is enabled monarch grammars can no longer be loaded by monaco-editor
+- **TreeSitter**: `@codingame/monaco-vscode-treesitter-service-override`
+  - Experimental service which allows to use treesitter grammars, currently only optionally support typescript.
 - **Themes**: `@codingame/monaco-vscode-theme-service-override`
   - Allows to use VSCode themes
 - **Snippets**: `@codingame/monaco-vscode-snippets-service-override`
