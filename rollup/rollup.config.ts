@@ -436,9 +436,7 @@ export default (args: Record<string, string>): rollup.RollupOptions[] => {
     input,
     plugins: [
       importMetaAssets({
-        include: ['**/*.ts', '**/*.js'],
-        // assets are externals and this plugin is not able to ignore external assets
-        exclude: ['**/service-override/textmate.ts', '**/service-override/languageDetectionWorker.ts']
+        include: ['**/*.ts', '**/*.js']
       }),
       commonjs({
         include: '**/vscode-semver/**/*'
@@ -621,9 +619,8 @@ export default (args: Record<string, string>): rollup.RollupOptions[] => {
       hoistTransitiveImports: false
     }],
     plugins: [importMetaAssets({
-      include: ['**/*.ts', '**/*.js'],
+      include: ['**/*.ts', '**/*.js']
       // assets are externals and this plugin is not able to ignore external assets
-      exclude: ['**/service-override/textmate.js', '**/service-override/languageDetectionWorker.js']
     }), {
       name: 'resolve-asset-url',
       resolveFileUrl (options) {
@@ -1068,9 +1065,8 @@ export default (args: Record<string, string>): rollup.RollupOptions[] => {
             treeshake: false,
             plugins: [
               importMetaAssets({
-                include: ['**/*.ts', '**/*.js'],
+                include: ['**/*.ts', '**/*.js']
                 // assets are externals and this plugin is not able to ignore external assets
-                exclude: ['**/service-override/textmate.js', '**/service-override/languageDetectionWorker.js']
               }),
               nodeResolve({
                 extensions: EXTENSIONS
