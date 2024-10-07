@@ -11,6 +11,9 @@ export default defineConfig({
   build: {
     target: 'esnext'
   },
+  worker: {
+    format: 'es'
+  },
   plugins: [
     {
       // For the *-language-features extensions which use SharedArrayBuffer
