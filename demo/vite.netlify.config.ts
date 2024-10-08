@@ -12,6 +12,9 @@ export default defineConfig({
   worker: {
     format: 'es'
   },
+  esbuild: {
+    minifySyntax: false
+  },
   resolve: {
     dedupe: ['vscode', ...localDependencies]
   }
