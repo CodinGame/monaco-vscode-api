@@ -7,10 +7,14 @@ const localDependencies = Object.entries(pkg.dependencies)
 
 export default defineConfig({
   build: {
-    target: 'esnext'
+    target: 'esnext',
+    assetsInlineLimit: 0
   },
   worker: {
     format: 'es'
+  },
+  esbuild: {
+    minifySyntax: false
   },
   resolve: {
     dedupe: ['vscode', ...localDependencies]

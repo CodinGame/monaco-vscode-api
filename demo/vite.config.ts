@@ -50,6 +50,9 @@ export default defineConfig({
       }
     }
   ],
+  esbuild: {
+    minifySyntax: false
+  },
   optimizeDeps: {
     // This is require because vite excludes local dependencies from being optimized
     // Monaco-vscode-api packages are local dependencies and the number of modules makes chrome hang
