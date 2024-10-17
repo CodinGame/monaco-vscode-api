@@ -23,7 +23,7 @@ import type {
   create as createEditor,
   createDiffEditor
 } from 'vs/editor/standalone/browser/standaloneEditor'
-import { errorHandler } from 'vs/base/common/errors'
+import { errorHandler, setUnexpectedErrorHandler } from 'vs/base/common/errors'
 import {
   FoldingModel,
   setCollapseStateForMatchingLines
@@ -537,5 +537,6 @@ export {
   RawContextKey,
   registerColor,
   IReference,
-  ITextFileEditorModel
+  ITextFileEditorModel,
+  setUnexpectedErrorHandler
 }
