@@ -18,6 +18,7 @@ import getViewsServiceOverride, {
   onDidChangeSideBarPosition,
   Position
 } from '@codingame/monaco-vscode-views-service-override'
+import { setUnexpectedErrorHandler } from 'vscode/monaco'
 import { openNewCodeEditor } from './features/editor'
 import './features/customView.views'
 import {
@@ -91,6 +92,11 @@ await initializeMonacoService(
   constructOptions,
   envOptions
 )
+
+setUnexpectedErrorHandler((e) => {
+  // eslint-disable-next-line no-console
+  console.info('Unexpected error', e)
+})
 
 for (const config of [
   { part: Parts.TITLEBAR_PART, element: '#titleBar' },
