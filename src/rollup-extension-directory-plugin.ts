@@ -20,7 +20,7 @@ export default function plugin({
   const filter = createFilter(include, exclude)
 
   return {
-    name: 'default-extensions-loader',
+    name: 'extension-directory-loader',
     resolveId(source) {
       if (filter(source)) {
         return source
