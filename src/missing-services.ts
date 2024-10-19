@@ -2450,8 +2450,8 @@ registerSingleton(
     }
 
     onDidChangeCollections = Event.None
-    set = unsupported
-    delete = unsupported
+    set = () => {}
+    delete = () => {}
   },
   InstantiationType.Delayed
 )
