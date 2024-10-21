@@ -9,7 +9,7 @@ import { IEditorGroupsService } from 'vs/workbench/services/editor/common/editor
 import { IEditorService } from 'vs/workbench/services/editor/common/editorService.service'
 import { EditorService } from 'vs/workbench/services/editor/browser/editorService'
 import { EditorParts } from 'vs/workbench/browser/parts/editor/editorParts'
-import { onUnexpectedError } from 'vs/base/common/errors'
+import { onUnexpectedError, setUnexpectedErrorHandler } from 'vs/base/common/errors'
 import { BrowserWindow } from 'vs/workbench/browser/window'
 import { detectFullscreen } from 'vs/base/browser/dom'
 import { mainWindow } from 'vs/base/browser/window'
@@ -35,8 +35,9 @@ class CustomWorkbench extends Workbench {
     this.mainContainer.classList.add('monaco-workbench-part')
   }
 
-  protected override registerErrorHandler(): void {
+  protected override registerErrorHandler(logService: ILogService): void {
     // prevent intercepting global error events
+    setUnexpectedErrorHandler((error) => this.handleUnexpectedError(error, logService))
   }
 
   override createNotificationsHandlers() {
