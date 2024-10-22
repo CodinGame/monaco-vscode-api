@@ -472,7 +472,12 @@ export default (args: Record<string, string>): rollup.RollupOptions[] => {
       treeshake: {
         annotations: true,
         preset: 'smallest',
-        moduleSideEffects: true,
+        moduleSideEffects(id) {
+          if (id.includes('terminalContribExports')) {
+            return false
+          }
+          return true
+        },
         tryCatchDeoptimization: true
       },
       external,
