@@ -439,6 +439,8 @@ Fortunately, all the assets are loaded via the `new URL('asset.extension', impor
 
 ### If you use Vite
 
+#### Asset management
+
 This library uses a lot the `new URL('asset.extension', import.meta.url)` syntax which [is supported by vite](https://vitejs.dev/guide/assets.html#new-url-url-import-meta-url)
 
 While it works great in `build` mode (because rollup is used), there is some issues in `watch` mode:
@@ -462,6 +464,31 @@ import importMetaUrlPlugin from '@codingame/esbuild-import-meta-url-plugin'
   }
 }
 ```
+
+#### Commonjs dependencies
+
+Some dependencies are published only as CommonJS, and vite fails by default to work with them when used in a worker.
+
+Those libraries are concerned:
+- `vscode-textmate`
+- `vscode-oniguruma` (textmate dependency)
+- `@vscode/vscode-languagedetection`
+
+If you use the corresponding service override, you can force vite to optimize them, which will make vite properly handle commonjs, by adding them in the vite config in `optimizeDeps.include`:
+
+```typescript
+export default defineConfig({
+  optimizeDeps: {
+    include: [
+      'vscode-textmate',
+      'vscode-oniguruma',
+      '@vscode/vscode-languagedetection'
+    ]
+  }
+})
+```
+
+
 
 ### If using Angular and getting `Not allowed to load local resource:` errors
 
