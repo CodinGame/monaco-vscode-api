@@ -22,6 +22,8 @@ import pkg from '../package.json' assert { type: 'json' }
 
 const __dirname = nodePath.dirname(fileURLToPath(import.meta.url))
 
+const ALLOWED_MAIN_DEPENDENCIES = new Set(['@vscode/iconv-lite-umd', 'jschardet', 'marked'])
+
 const PURE_ANNO = '#__PURE__'
 const PURE_FUNCTIONS = new Set([
   '__param',
@@ -470,7 +472,12 @@ export default (args: Record<string, string>): rollup.RollupOptions[] => {
       treeshake: {
         annotations: true,
         preset: 'smallest',
-        moduleSideEffects: true,
+        moduleSideEffects(id) {
+          if (id.includes('terminalContribExports')) {
+            return false
+          }
+          return true
+        },
         tryCatchDeoptimization: true
       },
       external,
@@ -856,8 +863,20 @@ export default (args: Record<string, string>): rollup.RollupOptions[] => {
           },
           async handle(group, moduleGroupName, otherDependencies, options, bundle) {
             if (group.name === 'main') {
-              // Generate package.json
               const dependencies = new Set([...group.directDependencies, ...otherDependencies])
+              const externalMainDependencies = Object.fromEntries(
+                Object.entries(pkg.dependencies).filter(([key]) => dependencies.has(key))
+              )
+              const notAllowedDependencies = Object.keys(externalMainDependencies).filter(
+                (d) => !ALLOWED_MAIN_DEPENDENCIES.has(d)
+              )
+              if (notAllowedDependencies.length > 0) {
+                this.error(
+                  `Not allowed dependencies detected in main package: ${notAllowedDependencies.join(', ')}`
+                )
+              }
+
+              // Generate package.json
               const packageJson: PackageJson = {
                 ...Object.fromEntries(
                   Object.entries(pkg).filter(([key]) =>
@@ -941,9 +960,7 @@ export default (args: Record<string, string>): rollup.RollupOptions[] => {
                   }
                 },
                 dependencies: {
-                  ...Object.fromEntries(
-                    Object.entries(pkg.dependencies).filter(([key]) => dependencies.has(key))
-                  ),
+                  ...externalMainDependencies,
                   ...Object.fromEntries(
                     Array.from(dependencies)
                       .filter((dep) => dep.startsWith('@codingame/monaco-vscode-'))

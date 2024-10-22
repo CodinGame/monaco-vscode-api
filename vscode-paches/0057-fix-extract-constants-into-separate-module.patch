@@ -1,0 +1,148 @@
+From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
+From: =?UTF-8?q?Lo=C3=AFc=20Mangeonjean?= <loic@coderpad.io>
+Date: Tue, 22 Oct 2024 13:04:46 +0200
+Subject: [PATCH] fix: extract constants into separate module
+
+so that only the constant is pulled from the root instead of the whole module graph
+---
+ src/vs/workbench/api/browser/mainThreadChatAgents2.ts  |  5 +++--
+ .../contrib/chat/browser/actions/chatActions.ts        |  5 ++---
+ .../contrib/chat/browser/actions/chatConstants.ts      | 10 ++++++++++
+ .../chat/browser/actions/chatQuickInputActions.ts      |  3 ++-
+ .../chat/browser/contrib/chatDynamicVariables.ts       |  3 ++-
+ .../browser/contrib/chatDynamicVariablesConstant.ts    |  6 ++++++
+ .../contrib/quickaccess/browser/commandsQuickAccess.ts |  3 +--
+ 7 files changed, 26 insertions(+), 9 deletions(-)
+ create mode 100644 src/vs/workbench/contrib/chat/browser/actions/chatConstants.ts
+ create mode 100644 src/vs/workbench/contrib/chat/browser/contrib/chatDynamicVariablesConstant.ts
+
+diff --git a/src/vs/workbench/api/browser/mainThreadChatAgents2.ts b/src/vs/workbench/api/browser/mainThreadChatAgents2.ts
+index a61d91c78e1..f5c72bcb0ee 100644
+--- a/src/vs/workbench/api/browser/mainThreadChatAgents2.ts
++++ b/src/vs/workbench/api/browser/mainThreadChatAgents2.ts
+@@ -24,13 +24,14 @@ import { ILogService } from '../../../platform/log/common/log.js';
+ import { ExtHostChatAgentsShape2, ExtHostContext, IChatParticipantMetadata, IChatProgressDto, IDynamicChatAgentProps, IExtensionChatAgentMetadata, MainContext, MainThreadChatAgentsShape2 } from '../common/extHost.protocol.js';
+ import { IChatWidgetService } from '../../contrib/chat/browser/chat.js';
+ import { ChatInputPart } from '../../contrib/chat/browser/chatInputPart.js';
+-import { AddDynamicVariableAction, IAddDynamicVariableContext } from '../../contrib/chat/browser/contrib/chatDynamicVariables.js';
++import { IAddDynamicVariableContext } from '../../contrib/chat/browser/contrib/chatDynamicVariables.js';
+ import { ChatAgentLocation, IChatAgentHistoryEntry, IChatAgentImplementation, IChatAgentRequest, IChatAgentService } from '../../contrib/chat/common/chatAgents.js';
+ import { ChatRequestAgentPart } from '../../contrib/chat/common/chatParserTypes.js';
+ import { ChatRequestParser } from '../../contrib/chat/common/chatRequestParser.js';
+ import { IChatContentReference, IChatFollowup, IChatProgress, IChatService, IChatTask, IChatWarningMessage } from '../../contrib/chat/common/chatService.js';
+ import { IExtHostContext, extHostNamedCustomer } from '../../services/extensions/common/extHostCustomers.js';
+ import { IExtensionService } from '../../services/extensions/common/extensions.js';
++import { addDynamicVariableActionId } from '../../contrib/chat/browser/contrib/chatDynamicVariablesConstant.js';
+ 
+ interface AgentData {
+ 	dispose: () => void;
+@@ -289,7 +290,7 @@ export class MainThreadChatAgents2 extends Disposable implements MainThreadChatA
+ 						kind: CompletionItemKind.Text,
+ 						detail: v.detail,
+ 						documentation: v.documentation,
+-						command: { id: AddDynamicVariableAction.ID, title: '', arguments: [{ id: v.id, widget, range: rangeAfterInsert, variableData: revive(v.value) as any, command: v.command } satisfies IAddDynamicVariableContext] }
++						command: { id: addDynamicVariableActionId, title: '', arguments: [{ id: v.id, widget, range: rangeAfterInsert, variableData: revive(v.value) as any, command: v.command } satisfies IAddDynamicVariableContext] }
+ 					} satisfies CompletionItem;
+ 				});
+ 
+diff --git a/src/vs/workbench/contrib/chat/browser/actions/chatActions.ts b/src/vs/workbench/contrib/chat/browser/actions/chatActions.ts
+index 5ed8892df37..8d84695b3a4 100644
+--- a/src/vs/workbench/contrib/chat/browser/actions/chatActions.ts
++++ b/src/vs/workbench/contrib/chat/browser/actions/chatActions.ts
+@@ -38,6 +38,8 @@ import { toAction } from '../../../../../base/common/actions.js';
+ import { extractAgentAndCommand } from '../../common/chatParserTypes.js';
+ import { Position } from '../../../../../editor/common/core/position.js';
+ import { SuggestController } from '../../../../../editor/contrib/suggest/browser/suggestController.js';
++import { CHAT_CATEGORY, CHAT_OPEN_ACTION_ID } from './chatConstants.js';
++export { CHAT_CATEGORY, CHAT_OPEN_ACTION_ID } from './chatConstants.js';
+ 
+ export interface IChatViewTitleActionContext {
+ 	chatView: ChatViewPane;
+@@ -47,9 +49,6 @@ export function isChatViewTitleActionContext(obj: unknown): obj is IChatViewTitl
+ 	return obj instanceof Object && 'chatView' in obj;
+ }
+ 
+-export const CHAT_CATEGORY = localize2('chat.category', 'Chat');
+-export const CHAT_OPEN_ACTION_ID = 'workbench.action.chat.open';
+-
+ export interface IChatViewOpenOptions {
+ 	/**
+ 	 * The query for quick chat.
+diff --git a/src/vs/workbench/contrib/chat/browser/actions/chatConstants.ts b/src/vs/workbench/contrib/chat/browser/actions/chatConstants.ts
+new file mode 100644
+index 00000000000..6ce67486a58
+--- /dev/null
++++ b/src/vs/workbench/contrib/chat/browser/actions/chatConstants.ts
+@@ -0,0 +1,10 @@
++/*---------------------------------------------------------------------------------------------
++ *  Copyright (c) Microsoft Corporation. All rights reserved.
++ *  Licensed under the MIT License. See License.txt in the project root for license information.
++ *--------------------------------------------------------------------------------------------*/
++import { localize2 } from '../../../../../nls.js';
++
++export const CHAT_CATEGORY = localize2('chat.category', 'Chat');
++export const CHAT_OPEN_ACTION_ID = 'workbench.action.chat.open';
++export const ASK_QUICK_QUESTION_ACTION_ID = 'workbench.action.quickchat.toggle';
++
+diff --git a/src/vs/workbench/contrib/chat/browser/actions/chatQuickInputActions.ts b/src/vs/workbench/contrib/chat/browser/actions/chatQuickInputActions.ts
+index 05652beb196..1ced9c6afd4 100644
+--- a/src/vs/workbench/contrib/chat/browser/actions/chatQuickInputActions.ts
++++ b/src/vs/workbench/contrib/chat/browser/actions/chatQuickInputActions.ts
+@@ -15,8 +15,9 @@ import { CHAT_CATEGORY } from './chatActions.js';
+ import { IQuickChatOpenOptions, IQuickChatService } from '../chat.js';
+ import { CONTEXT_CHAT_ENABLED } from '../../common/chatContextKeys.js';
+ import { InlineChatController } from '../../../inlineChat/browser/inlineChatController.js';
++import { ASK_QUICK_QUESTION_ACTION_ID } from './chatConstants.js';
++export { ASK_QUICK_QUESTION_ACTION_ID } from './chatConstants.js';
+ 
+-export const ASK_QUICK_QUESTION_ACTION_ID = 'workbench.action.quickchat.toggle';
+ export function registerQuickChatActions() {
+ 	registerAction2(QuickChatGlobalAction);
+ 	registerAction2(AskQuickChatAction);
+diff --git a/src/vs/workbench/contrib/chat/browser/contrib/chatDynamicVariables.ts b/src/vs/workbench/contrib/chat/browser/contrib/chatDynamicVariables.ts
+index bd240abb61c..48db2999341 100644
+--- a/src/vs/workbench/contrib/chat/browser/contrib/chatDynamicVariables.ts
++++ b/src/vs/workbench/contrib/chat/browser/contrib/chatDynamicVariables.ts
+@@ -23,6 +23,7 @@ import { IQuickInputService } from '../../../../../platform/quickinput/common/qu
+ import { IChatWidget } from '../chat.js';
+ import { ChatWidget, IChatWidgetContrib } from '../chatWidget.js';
+ import { IChatRequestVariableValue, IChatVariablesService, IDynamicVariable } from '../../common/chatVariables.js';
++import { addDynamicVariableActionId } from './chatDynamicVariablesConstant.js';
+ 
+ export const dynamicVariableDecorationType = 'chat-dynamic-variable';
+ 
+@@ -230,7 +231,7 @@ function isAddDynamicVariableContext(context: any): context is IAddDynamicVariab
+ }
+ 
+ export class AddDynamicVariableAction extends Action2 {
+-	static readonly ID = 'workbench.action.chat.addDynamicVariable';
++	static readonly ID = addDynamicVariableActionId;
+ 
+ 	constructor() {
+ 		super({
+diff --git a/src/vs/workbench/contrib/chat/browser/contrib/chatDynamicVariablesConstant.ts b/src/vs/workbench/contrib/chat/browser/contrib/chatDynamicVariablesConstant.ts
+new file mode 100644
+index 00000000000..df0794493a8
+--- /dev/null
++++ b/src/vs/workbench/contrib/chat/browser/contrib/chatDynamicVariablesConstant.ts
+@@ -0,0 +1,6 @@
++/*---------------------------------------------------------------------------------------------
++ *  Copyright (c) Microsoft Corporation. All rights reserved.
++ *  Licensed under the MIT License. See License.txt in the project root for license information.
++ *--------------------------------------------------------------------------------------------*/
++
++export const addDynamicVariableActionId = 'workbench.action.chat.addDynamicVariable';
+diff --git a/src/vs/workbench/contrib/quickaccess/browser/commandsQuickAccess.ts b/src/vs/workbench/contrib/quickaccess/browser/commandsQuickAccess.ts
+index 3ab1684b9ac..a91549c6daf 100644
+--- a/src/vs/workbench/contrib/quickaccess/browser/commandsQuickAccess.ts
++++ b/src/vs/workbench/contrib/quickaccess/browser/commandsQuickAccess.ts
+@@ -30,8 +30,7 @@ import { IQuickInputService, IQuickPickSeparator } from '../../../../platform/qu
+ import { IStorageService } from '../../../../platform/storage/common/storage.js';
+ import { ITelemetryService } from '../../../../platform/telemetry/common/telemetry.js';
+ import { IWorkbenchQuickAccessConfiguration } from '../../../browser/quickaccess.js';
+-import { CHAT_OPEN_ACTION_ID } from '../../chat/browser/actions/chatActions.js';
+-import { ASK_QUICK_QUESTION_ACTION_ID } from '../../chat/browser/actions/chatQuickInputActions.js';
++import { CHAT_OPEN_ACTION_ID, ASK_QUICK_QUESTION_ACTION_ID } from '../../chat/browser/actions/chatConstants.js';
+ import { ChatAgentLocation, IChatAgentService } from '../../chat/common/chatAgents.js';
+ import { CommandInformationResult, IAiRelatedInformationService, RelatedInformationType } from '../../../services/aiRelatedInformation/common/aiRelatedInformation.js';
+ import { IEditorGroupsService } from '../../../services/editor/common/editorGroupsService.js';
