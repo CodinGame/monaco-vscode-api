@@ -1,6 +1,8 @@
 # @codingame/monaco-vscode-api &middot; [![monthly downloads](https://img.shields.io/npm/dm/@codingame/monaco-vscode-api)](https://www.npmjs.com/package/@codingame/monaco-vscode-api) [![npm version](https://img.shields.io/npm/v/@codingame/monaco-vscode-api.svg?style=flat)](https://www.npmjs.com/package/@codingame/monaco-vscode-api) [![PRs welcome](https://img.shields.io/badge/PRs-welcome-brightgreen.svg)](https://github.com/codingame/monaco-vscode-api/pulls)
 
-[NPM module](https://www.npmjs.com/) that allows to use every part of VSCode, including the monaco editor
+This [NPM module](https://www.npmjs.com/) allows to integrate full VSCode functionality into your `monaco-editor`. 
+
+For more information, please checkout the project's [wiki](https://github.com/CodinGame/monaco-vscode-api/wiki).
 
 ## Installation
 
@@ -15,189 +17,164 @@ npm install -D @types/vscode
 `@codingame/monaco-vscode-editor-api` is installed as an alias to `monaco-editor` because it provides the same api as the official `monaco-editor`
 
 # Usage
+If you are just starting with `monaco-editor` and `monaco-vscode-api` you may find helpful the [Getting Started Guide](https://github.com/CodinGame/monaco-vscode-api/wiki/Getting-started-guide) in the wiki.
+## Monaco service override
 
-## Monaco standalone services
+Most of VSCode functionality implemented as "services", e.g. 
+- theme service, providing support for VSCode themes
+- languages service, providing support for different language features.
 
-`monaco-editor`, as well as this library by default, uses `standalone` version or the VSCode services, which are much simpler than the one used in VSCode.
+By default, Monaco uses a simplified versions of the VSCode services, called `standalone` services. 
+This package allows to 
+1) override them with fully-functional alternatives from VSCode
+2) add new services that were not included in Monaco
 
-You may want to provide your custom implementations of them. To do so, you can use the `initialize` method from `vscode/services`.
-Also, monaco-editor doesn't provide types for them, so this library exports them.
-
-Example:
-
+Here is an example usage that overrides Monaco default configuration with VSCode json-based settings:
 ```typescript
-import { INotificationService, initialize } from 'vscode/services'
+// default monaco-editor imports
+import * as monaco from 'monaco-editor';
+import editorWorker from 'monaco-editor/esm/vs/editor/editor.worker?worker';
 
-class MyCustomNotificationService implements INotificationService { ... }
+// utilities to override Monaco services
+import { initialize } from 'vscode/services'
+import getConfigurationServiceOverride, { updateUserConfiguration } from '@codingame/monaco-vscode-configuration-service-override'
+
+window.MonacoEnvironment = {
+  getWorker: (_moduleId, _label) => new editorWorker()
+}
+
+// overriding Monaco service with VSCode
 await initialize({
-  get [INotificationService.toString()] () {
-    return new MyCustomNotificationService(...)
-  }
-})
+    ...getConfigurationServiceOverride(),
+});
+
+// json config like in vscode settings.json
+updateUserConfiguration(`{
+    "editor.fontSize": 30,
+    "editor.lineHeight": 30,
+    "editor.fontFamily": "monospace",
+    "editor.fontWeight": "bold",
+    "editor.letterSpacing": 0,
+}`)
+
+// creating an editor with VSCode configuration
+monaco.editor.create(document.getElementById('editor')!, {
+    value: "Editor with VSCode config and large bold fonts",
+});
 ```
+> [!NOTE]
+> `initialize` can only be called once (and it should be called BEFORE creating your first editor).
 
-Additionally, several packages that include the VSCode version of some services (with some glue to make it work with monaco) are published:
 
-- **Base** (included by default): `@codingame/monaco-vscode-base-service-override`
+Each `get<service-name>ServiceOverride` contains the service and some glue to make VSCode service work with Monaco.
+
+### List of service overrides
+Some basic service overrides are coming with this package as dependencies:
+- **Base**: `@codingame/monaco-vscode-base-service-override`
   - Contains some general-use services that are mandatory to most of the other features
-- **Monarch**:
-  - When textmate and theme service overrides are not used, it allows to restore some standalone features (Token inspection and toggle high contrast commands)
-- **Host** (included by default): `@codingame/monaco-vscode-host-service-override`
+- **Host**: `@codingame/monaco-vscode-host-service-override`
   - Interaction with the host/browser (shutdown veto, focus/active management, window opening, fullscreen...)
-- **Extensions** (included by default): `@codingame/monaco-vscode-extensions-service-override`
+- **Extensions**: `@codingame/monaco-vscode-extensions-service-override`
   - Support for VSCode extensions.
   - A worker configuration can be provided to it:
     - Then, the webworker extension host will be available, allowing to run extensions in a worker which runs in an iframe
-- **Files** (included by default): `@codingame/monaco-vscode-files-service-override`
+- **Files**: `@codingame/monaco-vscode-files-service-override`
   - It adds the overlay filesystem for `file://` files, but also adds the support for lazy loaded extension files. It adds separate memory user files (e.g. config, keybindings), cache files and log files
   - It supports adding overlay filesystems for `file://` files
-- **QuickAccess** (included by default): `@codingame/monaco-vscode-quickaccess-service-override`
+- **QuickAccess**: `@codingame/monaco-vscode-quickaccess-service-override`
   - Enables the quickaccess menu in the editor (press F1 or ctrl+shift+p)
-- **Notifications**: `@codingame/monaco-vscode-notifications-service-override`
-  - This services enables vscode notifications you usually find in the bottom right corner
-- **Dialogs**: `@codingame/monaco-vscode-dialogs-service-override`
-  - Enable VSCode modal dialogs. It allows users to select an action to do. Those actions are exposed to the VSCode API. Additionally, this service can be used by the language client to delegate questions to the user
-- **Model**: `@codingame/monaco-vscode-model-service-override`
-  - This service creates and takes care of model references. For example:
-    - Create model from filesystem if content is unknown
-    - Count references
-    - Destroy models when they are no longer used
-- **Editor**: `@codingame/monaco-vscode-editor-service-override`
-  - Enable editor support. This is usually needed when working with the language server protocol. Without enabling the editor service, it will only be able to resolve the currently open model (only internal file references will work)
-  - Is exclusive with the `views` and `workbench` services. Do not use more than 1 services at the same time
-- **Views**: `@codingame/monaco-vscode-views-service-override`
-  - Enable full views support
-  - Is exclusive with the `editor` and `workbench` services. Do not use more than 1 service at the same time
-- **Configuration**: `@codingame/monaco-vscode-configuration-service-override`
-  - Allows to change the configuration of not only the editors, but every part of VSCode. The language client for instance uses it to send the requested configuration to the server. The default configuration service already allows to change the configuration. This service overrides makes it rely on a user configuration file (with json schema, overridable by language including all VSCode features)
-- **Keybindings**: `@codingame/monaco-vscode-keybindings-service-override`
-  - Enables platform specific keybindings and make it rely on a user definded keybindings configuration (if available)
-- **Languages**: `@codingame/monaco-vscode-languages-service-override`
-  - Enable language support. It's like the standalone service with 2 differences:
-    - It handle the language extension point (getting languages from VSCode extensions)
-    - It triggers the `onLanguage:${language}` event (to load VSCode extension listening to those events)
-- **Textmate**: `@codingame/monaco-vscode-textmate-service-override`
-  - Allows to use textmate grammars. Depends on *themes* service. VSCode extensions use textmate grammars exclusively for highlighting. Once this is enabled monarch grammars can no longer be loaded by monaco-editor
-- **TreeSitter**: `@codingame/monaco-vscode-treesitter-service-override`
-  - Experimental service which allows to use treesitter grammars, currently only optionally support typescript.
-- **Themes**: `@codingame/monaco-vscode-theme-service-override`
-  - Allows to use VSCode themes
-- **Snippets**: `@codingame/monaco-vscode-snippets-service-override`
-  - Add snippet extension point (register VSCode extension snippets)
-- **Debug**: `@codingame/monaco-vscode-debug-service-override`
-  - Activate debugging support
-- **Preferences**: `@codingame/monaco-vscode-preferences-service-override`
-  - Allow to read and write preferences
-- **Output**: `@codingame/monaco-vscode-output-service-override`
-  - Output panel support. *Hint*: It only makes sense to enable it when *Views* or *Workbench* service are used
-- **Terminal**: `@codingame/monaco-vscode-terminal-service-override`
-  - Terminal panel support. *Hint*: It only makes sense to enable it when *Views* or *Workbench* service are used
-- **Search**: `@codingame/monaco-vscode-search-service-override`
-  - search panel support. *Hint*: It only makes sense to enable it when *Views* or *Workbench* service are used
-- **Markers**: `@codingame/monaco-vscode-markers-service-override`
-  - It adds the problems panel tab. *Hint*: It only makes sense to enable it when *Views* or *Workbench* service are used
-- **SCM**: `@codingame/monaco-vscode-scm-service-override`
-  - It adds the SCM API that can be used to implement source control. *Hint*: It only makes sense to enable it when *Views* or *Workbench* service are used
-- **Testing**: `@codingame/monaco-vscode-testing-service-override`
-  - It adds the Tests API. *Hint*: It makes more sense to enable it when *Views* or *Workbench* service are used
-- **Language detection worker**: `@codingame/monaco-vscode-language-detection-worker-service-override`
-  - When opening an untitled model or a file without extension or if VSCode is unable to guess the language simply by the file extension or by reading the first line. Then it will use tensorflow in a worker to try to guess the most probable language (only the open source model can be used)
-- **Storage**: `@codingame/monaco-vscode-storage-service-override`
-  - Define your own storage or use the default BrowserStorageService. The storage service is used in many places either as a cache or as a user preference store. For instance:
-    - Current loaded theme is stored in there to be loaded faster on start
-    - Every panel/view positions are stored in there
-- **LifeCycle**: `@codingame/monaco-vscode-lifecycle-service-override`
-  - Allow other services to veto a page reload (for instance when not all open files are saved)
-- **Remote agent**: `@codingame/monaco-vscode-remote-agent-service-override`
-  - Connect to a remote VSCode agent and have access to:
-    - The remote filesystem
-    - The remote file search
-    - Running terminals
-    - Running VSCode extensions (not web-compatible)
-    - and probably more?
 
-  Refer to [vscode_server.md](./docs/vscode_server.md) for the server part
-- **Accessibility**: `@codingame/monaco-vscode-accessibility-service-override`
-  - Register accessibility helpers and signals
-- **Workspace trust**: `@codingame/monaco-vscode-workspace-trust-service-override`
-  - Ask user it they trust the current workspace, disable some features if not
-- **Extension Gallery**: `@codingame/monaco-vscode-extension-gallery-service-override`
-  - Support for the VSCode marketplace, it allows to install extensions from the marketplace
-- **Chat**: `@codingame/monaco-vscode-chat-service-override`
-  - Support for chat and inline chat features
-- **Notebook**: `@codingame/monaco-vscode-notebook-service-override`
-  - Support for Jupyter notebooks
-- **Welcome**: `@codingame/monaco-vscode-welcome-service-override`
-  - Support for [viewsWelcome contribution point](https://code.visualstudio.com/api/references/contribution-points#contributes.viewsWelcome). *Hint*: It only makes sense to enable it when *Views* or *Workbench* service are used
-- **Walkthrough**: `@codingame/monaco-vscode-walkthrough-service-override`
-  - Getting Started page and support for [walkthrough contribution point](https://code.visualstudio.com/api/references/contribution-points#contributes.walkthroughs). *Hint*: It only makes sense to enable it when *Views* or *Workbench* service are used
-- **User data profile**: `@codingame/monaco-vscode-user-data-profile-service-override`
-  - User profiles support
-- **User data sync**: `@codingame/monaco-vscode-user-data-sync-service-override`
-  - Support for user data sync. ⚠️ It can't really be used as it relies on a [closed source backend from microsoft](https://code.visualstudio.com/docs/editor/settings-sync#_can-i-use-a-different-backend-or-service-for-settings-sync) for the moment ⚠️
-- **Ai**: `@codingame/monaco-vscode-ai-service-override`
-  - Ai support for the ai extension api (RelatedInformation/EmbeddingVector)
-- **Task**: `@codingame/monaco-vscode-task-service-override`
-  - Task management
-- **Outline**: `@codingame/monaco-vscode-outline-service-override`
-  - Support for the outline view. *Hint*: It only makes sense to enable it when *Views* or *Workbench* service are used
-- **Timeline**: `@codingame/monaco-vscode-timeline-service-override`
-  - Support for the timeline view. *Hint*: It only makes sense to enable it when *Views* or *Workbench* service are used
-- **Workbench**: `@codingame/monaco-vscode-workbench-service-override`
-  - Allows to render the full workbench layout. Is exclusive with the `editor` and `views` service. Do not use more than 1 service at the same time
-- **Comments**
-  - Enables comments extension api
-- **Edit-sessions**
-  - Enable cloudchanges
-- **Emmet**
-  - Enables the `triggerExpansionOnTab` command for the emmet default extension
-- **Interactive**
-  - Interactive notebooks
-- **Issue**
-  - Issue reporting
-- **Multi diff editor**
-  - Multi diff editor support (<https://code.visualstudio.com/updates/v1_85#_multifile-diff-editor>)
-- **Performance**
-  - Performance monitoring
-- **Relauncher**
-  - Detects changes that require a reload (like settings change) and prompt the user for it
-- **Share**
-  - Enables the share extension api
-- **Survey**
-  - Survey/feedback support
-- **Update**
-  - Update detection, release notes...
-- **Localization**
-  - Register callbacks to update the display language from the VSCode UI (either from the `Set Display Language` command or from the extension gallery extension packs)
-- **Secret Storage**
-  - Storage of secrets for extensions, will store by default in-memory. You can pass a custom implementation as part of the workbench construction options when initializing monaco services (under `secretStorageProvider`)
+However, most of the services are separated into different modules, so they can be imported as required. You can find a full list of services in the [corresponding wiki page](https://github.com/CodinGame/monaco-vscode-api/wiki/List-of-service-overrides).
 
-Usage:
+
+### Default vscode extensions
+
+VSCode uses a bunch of default extensions. Most of them are used to load the default languages and grammars (see <https://github.com/microsoft/vscode/tree/main/extensions>).
+
+This library bundles and publishes them as separate packages, which allows to use the ones you want. To use an extension, just install the corresponding package and import it in the beginning of the file:
 
 ```typescript
-import * as vscode from 'vscode'
-import { initialize } from 'vscode/services'
-import getEditorServiceOverride from '@codingame/monaco-vscode-editor-service-override'
-import getConfigurationServiceOverride, { updateUserConfiguration, configurationRegistry } from '@codingame/monaco-vscode-configuration-service-override'
-
-await initialize({
-  ...getEditorServiceOverride((model, input, sideBySide) => {
-    // Open a new editor here and return it
-    // It will be called when for instance the user ctrl+click on an import
-  }),
-  ...getConfigurationServiceOverride()
-})
-
-updateUserConfiguration(`{
-  "editor.fontSize": 12,
-  "[java]": {
-    "editor.fontSize": 15,
-  }
-}`)
+import '@codingame/monaco-vscode-javascript-default-extension'
+import '@codingame/monaco-vscode-json-default-extension'
+...
 ```
 
-### Troubleshoot
-`initialize` can only be called once (and it should be called BEFORE creating your first editor).
+Here is an example of usage of default VSCode theme extension with theme service override:
+
+```typescript
+// importing default VSCode theme extension
+import "@codingame/monaco-vscode-theme-defaults-default-extension";	
+
+// default monaco-editor imports
+import * as monaco from 'monaco-editor';
+import editorWorker from 'monaco-editor/esm/vs/editor/editor.worker?worker';
+
+// utilities to override Monaco services
+import { initialize } from 'vscode/services'
+import getThemeServiceOverride from "@codingame/monaco-vscode-theme-service-override";
+
+window.MonacoEnvironment = {
+  getWorker: function (_moduleId, _label) {
+	return new editorWorker();
+  }
+}
+
+// overriding Monaco service with VSCode
+await initialize({
+    ...getThemeServiceOverride(),
+});
+
+// creating an editor with VSCode theme
+monaco.editor.create(document.getElementById('editor')!, {
+    value: "Editor with VSCode Theme Support",
+});
+```
+
+See [the full list of ported default extensions](https://www.npmjs.com/search?q=%40codingame%2Fmonaco-vscode-*-default-extension)
+
+### Loading vsix file
+
+VSCode extensions are bundled as vsix files.
+This library publishes a rollup plugin (vite-compatible) that allows to load a vsix file.
+
+- rollup/vite config:
+
+```typescript
+import vsixPlugin from '@codingame/monaco-vscode-rollup-vsix-plugin'
+...
+plugins: [
+  ...,
+  vsixPlugin()
+]
+```
+
+- code:
+
+```typescript
+import './extension.vsix'
+```
+
+### Localization
+
+This library also offers the possibility to localize vscode and the extensions in the supported languages. To do so, import one of the following packages before anything else:
+
+- `@codingame/monaco-vscode-language-pack-cs`
+- `@codingame/monaco-vscode-language-pack-de`
+- `@codingame/monaco-vscode-language-pack-es`
+- `@codingame/monaco-vscode-language-pack-fr`
+- `@codingame/monaco-vscode-language-pack-it`
+- `@codingame/monaco-vscode-language-pack-ja`
+- `@codingame/monaco-vscode-language-pack-ko`
+- `@codingame/monaco-vscode-language-pack-pl`
+- `@codingame/monaco-vscode-language-pack-pt-br`
+- `@codingame/monaco-vscode-language-pack-qps-ploc`
+- `@codingame/monaco-vscode-language-pack-ru`
+- `@codingame/monaco-vscode-language-pack-tr`
+- `@codingame/monaco-vscode-language-pack-zh-hans`
+- `@codingame/monaco-vscode-language-pack-zh-hant`
+
+⚠️ The language pack should be imported and loaded BEFORE anything else from this library is loaded. Otherwise, some translations would be missing and an error would be displayed in the console. ⚠️
+
 
 ## Model creation
 
@@ -302,63 +279,6 @@ vscode.languages.registerCompletionItemProvider(...)
 
 ```
 
-### Default vscode extensions
-
-VSCode uses a bunch of default extensions. Most of them are used to load the default languages and grammars (see <https://github.com/microsoft/vscode/tree/main/extensions>).
-
-This library bundles and publishes them and allows to import the ones you want:
-
-```typescript
-import '@codingame/monaco-vscode-javascript-default-extension'
-import '@codingame/monaco-vscode-json-default-extension'
-...
-```
-
-See [the full list](https://www.npmjs.com/search?q=%40codingame%2Fmonaco-vscode-*-default-extension)
-
-### Loading vsix file
-
-VSCode extensions are bundled as vsix files.
-This library publishes a rollup plugin (vite-compatible) that allows to load a vsix file.
-
-- rollup/vite config:
-
-```typescript
-import vsixPlugin from '@codingame/monaco-vscode-rollup-vsix-plugin'
-...
-plugins: [
-  ...,
-  vsixPlugin()
-]
-```
-
-- code:
-
-```typescript
-import './extension.vsix'
-```
-
-### Localization
-
-This library also offers the possibility to localize vscode and the extensions in the supported languages. To do so, import one of the following packages before anything else:
-
-- `@codingame/monaco-vscode-language-pack-cs`
-- `@codingame/monaco-vscode-language-pack-de`
-- `@codingame/monaco-vscode-language-pack-es`
-- `@codingame/monaco-vscode-language-pack-fr`
-- `@codingame/monaco-vscode-language-pack-it`
-- `@codingame/monaco-vscode-language-pack-ja`
-- `@codingame/monaco-vscode-language-pack-ko`
-- `@codingame/monaco-vscode-language-pack-pl`
-- `@codingame/monaco-vscode-language-pack-pt-br`
-- `@codingame/monaco-vscode-language-pack-qps-ploc`
-- `@codingame/monaco-vscode-language-pack-ru`
-- `@codingame/monaco-vscode-language-pack-tr`
-- `@codingame/monaco-vscode-language-pack-zh-hans`
-- `@codingame/monaco-vscode-language-pack-zh-hant`
-
-⚠️ The language pack should be imported and loaded BEFORE anything else from this library is loaded. Otherwise, some translations would be missing and an error would be displayed in the console. ⚠️
-
 ### Demo
 
 Try it out on <https://monaco-vscode-api.netlify.app/>
@@ -400,126 +320,11 @@ npm run start:debugServer
 
 #### Remote agent
 
-[See vscode_server.md](./docs/vscode_server.md)
+See the [VSCode Server](https://github.com/CodinGame/monaco-vscode-api/wiki/How-to-install-and-use-VSCode-server-with-monaco‐vscode‐api) wiki page.
 
 ## Troubleshooting
 
-### Duplicate versions
-
-Many packages are published with the same version, and almost all of them depend on the `@codingame/monaco-vscode-api` main package (with strict version range).
-
-It is VERY important that only a single version of ALL the packages is installed, otherwise weird things can happen.
-
-You can check that `npm list vscode` only lists a single version.
-
-### If you use Webpack
-
-#### monaco-editor-webpack-plugin
-
-Starting from v2, [monaco-editor-webpack-plugin](https://www.npmjs.com/package/monaco-editor-webpack-plugin) can't be used
-
-Here's the alternative for each options:
-
-- `filename`: it can be configured at the webpack level directly
-- `publicPath`: it can be configured at the webpack level or by hands when redistering the worker in `window.MonacoEnvironment`.
-- `languages`: Import VSCode language extensions (`@codingame/monaco-vscode-xxx-default-extension`) or (`@codingame/@codingame/monaco-vscode-standalone-*`). Please obey: VSCode extensions can only be used if `themes` and `textmate` service overrides are configured and monaco languages can only be used if those two services are not configured (see [here](#monaco-standalone-services) for further details).
-- `features`: With this lib, you can't remove editor features.
-- `globalAPI`: you can set `window.MonacoEnvironment.globalAPI` to true
-
-#### exclude assets from loaders
-
-Webpack makes all file go through all matching loaders. This libraries need to load a lot of internals resources, including HTML, svg and javascript files (for default extension codes).
-
-We need webpack to let those file untouched:
-- the babel loader shouldn't transform extension javascript files
-- the html loader shouldn't transform the worker extension host iframe html
-- ...
-
-Fortunately, all the assets are loaded via the `new URL('asset.extension', import.meta.url)` syntax, and webpack provide a way to exclude the file loaded that way: `dependency: { not: ['url'] }` see https://webpack.js.org/guides/asset-modules/
-
-### If you use Vite
-
-#### Asset management
-
-This library uses a lot the `new URL('asset.extension', import.meta.url)` syntax which [is supported by vite](https://vitejs.dev/guide/assets.html#new-url-url-import-meta-url)
-
-While it works great in `build` mode (because rollup is used), there is some issues in `watch` mode:
-
-- `import.meta.url` is not replaced while creating bundles, it is an issue when the syntax is used inside a dependency
-- Vite is still trying to inject/transform javascript assets files, breaking the code by injecting ESM imports in commonjs files
-
-There are workarounds for both:
-
-- We can help vite by replacing `import.meta.url` by the original module path:
-
-```typescript
-import importMetaUrlPlugin from '@codingame/esbuild-import-meta-url-plugin'
-
-{
-  ...
-  optimizeDeps: {
-    esbuildOptions: {
-      plugins: [importMetaUrlPlugin]
-    }
-  }
-}
-```
-
-#### Commonjs dependencies
-
-Some dependencies are published only as CommonJS, and vite fails by default to work with them when used in a worker.
-
-Those libraries are concerned:
-- `vscode-textmate`
-- `vscode-oniguruma` (textmate dependency)
-- `@vscode/vscode-languagedetection`
-
-If you use the corresponding service override, you can force vite to optimize them, which will make vite properly handle commonjs, by adding them in the vite config in `optimizeDeps.include`:
-
-```typescript
-export default defineConfig({
-  optimizeDeps: {
-    include: [
-      'vscode-textmate',
-      'vscode-oniguruma',
-      '@vscode/vscode-languagedetection'
-    ]
-  }
-})
-```
-
-
-
-### If using Angular and getting `Not allowed to load local resource:` errors
-
-*The short version*: set up and use a custom webpack config file and add this under `module`:
-
-```typescript
-parser: {
-  javascript: {
-    url: true,
-  }
-}
-```
-
-See [this issue](https://github.com/CodinGame/monaco-vscode-api/issues/186) or this [StackOverflow answer](https://stackoverflow.com/a/75252098) for more details, and [this discussion](https://github.com/angular/angular-cli/issues/24617) for more context.
-
-### The typescript language features extension is not providing project-wide intellisense
-
-The typescript language features extensions requires [SharedArrayBuffer](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/SharedArrayBuffer) to enable project wide intellisense or only a per-file intellisense is provided.
-
-It requires [crossOriginIsolated](https://developer.mozilla.org/en-US/docs/Web/API/crossOriginIsolated) to be true, which requires assets files to be servers with some specific headers:
-
-- [Cross-Origin-Opener-Policy](https://developer.mozilla.org/en-US/docs/Web/HTTP/Headers/Cross-Origin-Opener-Policy): `same-origin`
-- [Cross-Origin-Embedder-Policy](https://developer.mozilla.org/en-US/docs/Web/HTTP/Headers/Cross-Origin-Embedder-Policy): `require-corp` or `credentialless`
-
-At least thoses files should have the headers:
-
-- the main page html
-- the worker extension host iframe html: `webWorkerExtensionHostIframe.html`
-- the worker extension host worker javascript: `extensionHost.worker.js`
-
-If adding those headers is not an options, you can have a look at <https://github.com/gzuidhof/coi-serviceworker>, but only if you are not using webviews as it introduces problems then.
+If something doesn't work, make sure to check out the [Troubleshooting](https://github.com/CodinGame/monaco-vscode-api/wiki/Troubleshooting) wiki page.
 
 ## History
 
