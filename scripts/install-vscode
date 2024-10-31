@@ -58,7 +58,7 @@ cp -R .build/web/extensions "$extension_output_directory"
 # Remove useless files
 cd src
 rm -rf `find . -name '*.test.ts' -o -name 'test' -o -name 'electron-browser'`
-rm -f bootstrap*.js *main.js *cli.js
+rm -f bootstrap*.ts *main.ts *cli.ts
 rm -rf vs/code
 cd ..
 
