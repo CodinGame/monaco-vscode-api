@@ -43,6 +43,7 @@ import { IActionViewItemService } from 'vs/platform/actions/browser/actionViewIt
 import getBulkEditServiceOverride from './bulkEdit'
 import { changeUrlDomain } from './tools/url'
 import { registerAssets } from '../assets'
+import { registerServiceInitializePostParticipant } from '../lifecycle'
 import 'vs/workbench/contrib/callHierarchy/browser/callHierarchy.contribution'
 import 'vs/workbench/contrib/typeHierarchy/browser/typeHierarchy.contribution'
 import 'vs/workbench/browser/actions/listCommands'
@@ -97,6 +98,10 @@ registerAssets({
       ).href,
       webviewIframeAlternateDomains
     )
+})
+
+registerServiceInitializePostParticipant(async (accessor) => {
+  accessor.get(IHistoryService)
 })
 
 function getServiceOverride(_webviewIframeAlternateDomains?: string): IEditorOverrideServices {
