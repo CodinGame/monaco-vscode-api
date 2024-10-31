@@ -865,6 +865,96 @@ export default (args: Record<string, string>): rollup.RollupOptions[] => {
             }
           },
           async handle(group, moduleGroupName, otherDependencies, options, bundle) {
+            const customResolutionPlugin = ({
+              customLoad
+            }: {
+              customLoad: (id: string) => string | undefined
+            }) =>
+              <rollup.Plugin>{
+                name: 'custom-resolution',
+                resolveId(source, importer) {
+                  if (source === 'entrypoint' || source === 'worker') {
+                    return source
+                  }
+                  if (source.startsWith('@codingame/monaco-vscode-')) {
+                    return {
+                      external: true,
+                      id: source
+                    }
+                  }
+                  const importerDir = nodePath.dirname(
+                    nodePath.resolve(DIST_DIR_MAIN, importer ?? '/')
+                  )
+                  const resolved = nodePath.resolve(importerDir, source)
+                  const resolvedWithExtension = resolved.endsWith('.js')
+                    ? resolved
+                    : `${resolved}.js`
+
+                  const isVscodeFile = resolved.startsWith(VSCODE_SRC_DIST_DIR)
+                  const isServiceOverride =
+                    nodePath.dirname(resolved) === DIST_SERVICE_OVERRIDE_DIR_MAIN
+                  const isExclusive = group.exclusiveModules.has(resolvedWithExtension)
+                  const pathFromRoot = nodePath.relative(DIST_DIR_MAIN, resolvedWithExtension)
+                  const shouldBeShared = SHARED_ROOT_FILES_BETWEEN_PACKAGES.includes(
+                    nodePath.relative(DIST_DIR_MAIN, resolvedWithExtension)
+                  )
+                  if (pathFromRoot.startsWith('external/') && !isExclusive) {
+                    return {
+                      external: true,
+                      id: `vscode/${pathFromRoot}`
+                    }
+                  }
+
+                  if (((isVscodeFile || isServiceOverride) && !isExclusive) || shouldBeShared) {
+                    function getPackageFromGroupName(groupName: string) {
+                      if (groupName === 'main') {
+                        return 'vscode'
+                      }
+                      const [_, category, name] = /^(.*):(.*)$/.exec(groupName)!
+                      return `@codingame/monaco-vscode-${name}-${category}`
+                    }
+                    const importFromGroup = isVscodeFile
+                      ? (moduleGroupName.get(resolved) ?? 'main')
+                      : 'main'
+                    const importFromModule = getPackageFromGroupName(importFromGroup)
+                    // Those modules will be imported from external monaco-vscode-api
+                    let externalResolved = resolved.startsWith(VSCODE_SRC_DIST_DIR)
+                      ? `${importFromModule}/vscode/${nodePath.relative(VSCODE_SRC_DIST_DIR, resolved)}`
+                      : `${importFromModule}/${nodePath.relative(DIST_DIR_MAIN, resolved)}`
+                    if (externalResolved.endsWith('.js')) {
+                      externalResolved = externalResolved.slice(0, -3)
+                    }
+                    return {
+                      id: externalResolved,
+                      external: true
+                    }
+                  }
+
+                  return undefined
+                },
+                load(id) {
+                  const customLoadResult = customLoad(id)
+                  if (customLoadResult != null) {
+                    return customLoadResult
+                  }
+                  if (id.startsWith('vscode/')) {
+                    return (
+                      bundle[nodePath.relative('vscode', id)] as rollup.OutputChunk | undefined
+                    )?.code
+                  }
+                  return (
+                    bundle[nodePath.relative(DIST_DIR_MAIN, id)] as rollup.OutputChunk | undefined
+                  )?.code
+                },
+                resolveFileUrl(options) {
+                  let relativePath = options.relativePath
+                  if (!relativePath.startsWith('.')) {
+                    relativePath = `./${options.relativePath}`
+                  }
+                  return `'${relativePath}'`
+                }
+              }
+
             if (group.name === 'main') {
               const dependencies = new Set([...group.directDependencies, ...otherDependencies])
               const externalMainDependencies = Object.fromEntries(
@@ -1035,89 +1125,16 @@ export default (args: Record<string, string>): rollup.RollupOptions[] => {
                   nodeResolve({
                     extensions: EXTENSIONS
                   }),
-                  {
-                    name: 'loader',
-                    resolveId(source, importer) {
-                      if (source === 'entrypoint') {
-                        return source
-                      }
-                      if (source.startsWith('@codingame/monaco-vscode-')) {
-                        return {
-                          external: true,
-                          id: source
-                        }
-                      }
-                      const importerDir = nodePath.dirname(
-                        nodePath.resolve(DIST_DIR_MAIN, importer ?? '/')
-                      )
-                      const resolved = nodePath.resolve(importerDir, source)
-                      const resolvedWithExtension = resolved.endsWith('.js')
-                        ? resolved
-                        : `${resolved}.js`
-
-                      const isVscodeFile = resolved.startsWith(VSCODE_SRC_DIST_DIR)
-                      const isServiceOverride =
-                        nodePath.dirname(resolved) === DIST_SERVICE_OVERRIDE_DIR_MAIN
-                      const isExclusive = group.exclusiveModules.has(resolvedWithExtension)
-                      const pathFromRoot = nodePath.relative(DIST_DIR_MAIN, resolvedWithExtension)
-                      const shouldBeShared = SHARED_ROOT_FILES_BETWEEN_PACKAGES.includes(
-                        nodePath.relative(DIST_DIR_MAIN, resolvedWithExtension)
-                      )
-                      if (pathFromRoot.startsWith('external/') && !isExclusive) {
-                        return {
-                          external: true,
-                          id: `vscode/${pathFromRoot}`
-                        }
-                      }
-                      if (((isVscodeFile || isServiceOverride) && !isExclusive) || shouldBeShared) {
-                        function getPackageFromGroupName(groupName: string) {
-                          if (groupName === 'main') {
-                            return 'vscode'
-                          }
-                          const [_, category, name] = /^(.*):(.*)$/.exec(groupName)!
-                          return `@codingame/monaco-vscode-${name}-${category}`
-                        }
-                        const importFromGroup = isVscodeFile
-                          ? (moduleGroupName.get(resolved) ?? 'main')
-                          : 'main'
-                        const importFromModule = getPackageFromGroupName(importFromGroup)
-                        // Those modules will be imported from external monaco-vscode-api
-                        let externalResolved = resolved.startsWith(VSCODE_SRC_DIST_DIR)
-                          ? `${importFromModule}/vscode/${nodePath.relative(VSCODE_SRC_DIST_DIR, resolved)}`
-                          : `${importFromModule}/${nodePath.relative(DIST_DIR_MAIN, resolved)}`
-                        if (externalResolved.endsWith('.js')) {
-                          externalResolved = externalResolved.slice(0, -3)
-                        }
-                        return {
-                          id: externalResolved,
-                          external: true
-                        }
-                      }
-
-                      return undefined
-                    },
-                    load(id) {
+                  customResolutionPlugin({
+                    customLoad: (id) => {
                       if (id === 'entrypoint') {
                         return `export * from '${Array.from(group.entrypoints)[0]!.slice(0, -3)}'`
                       }
-                      if (id.startsWith('vscode/')) {
-                        return (
-                          bundle[nodePath.relative('vscode', id)] as rollup.OutputChunk | undefined
-                        )?.code
-                      }
-                      return (
-                        bundle[nodePath.relative(DIST_DIR_MAIN, id)] as
-                          | rollup.OutputChunk
-                          | undefined
-                      )?.code
-                    },
-                    resolveFileUrl(options) {
-                      let relativePath = options.relativePath
-                      if (!relativePath.startsWith('.')) {
-                        relativePath = `./${options.relativePath}`
-                      }
-                      return `'${relativePath}'`
-                    },
+                      return undefined
+                    }
+                  }),
+                  {
+                    name: 'bundle-generator',
                     generateBundle() {
                       this.emitFile({
                         fileName: 'package.json',
@@ -1242,69 +1259,8 @@ export default (args: Record<string, string>): rollup.RollupOptions[] => {
                   nodeResolve({
                     extensions: EXTENSIONS
                   }),
-                  {
-                    name: 'loader',
-                    resolveId(source, importer) {
-                      if (source === 'entrypoint' || source === 'worker') {
-                        return source
-                      }
-                      if (source.startsWith('@codingame/monaco-vscode-')) {
-                        return {
-                          external: true,
-                          id: source
-                        }
-                      }
-                      const importerDir = nodePath.dirname(
-                        nodePath.resolve(DIST_DIR_MAIN, importer ?? '/')
-                      )
-                      const resolved = nodePath.resolve(importerDir, source)
-                      const resolvedWithExtension = resolved.endsWith('.js')
-                        ? resolved
-                        : `${resolved}.js`
-
-                      const isVscodeFile = resolved.startsWith(VSCODE_SRC_DIST_DIR)
-                      const isServiceOverride =
-                        nodePath.dirname(resolved) === DIST_SERVICE_OVERRIDE_DIR_MAIN
-                      const isExclusive = group.exclusiveModules.has(resolvedWithExtension)
-                      const pathFromRoot = nodePath.relative(DIST_DIR_MAIN, resolvedWithExtension)
-                      const shouldBeShared = SHARED_ROOT_FILES_BETWEEN_PACKAGES.includes(
-                        nodePath.relative(DIST_DIR_MAIN, resolvedWithExtension)
-                      )
-                      if (pathFromRoot.startsWith('external/') && !isExclusive) {
-                        return {
-                          external: true,
-                          id: `vscode/${pathFromRoot}`
-                        }
-                      }
-
-                      if (((isVscodeFile || isServiceOverride) && !isExclusive) || shouldBeShared) {
-                        function getPackageFromGroupName(groupName: string) {
-                          if (groupName === 'main') {
-                            return 'vscode'
-                          }
-                          const [_, category, name] = /^(.*):(.*)$/.exec(groupName)!
-                          return `@codingame/monaco-vscode-${name}-${category}`
-                        }
-                        const importFromGroup = isVscodeFile
-                          ? (moduleGroupName.get(resolved) ?? 'main')
-                          : 'main'
-                        const importFromModule = getPackageFromGroupName(importFromGroup)
-                        // Those modules will be imported from external monaco-vscode-api
-                        let externalResolved = resolved.startsWith(VSCODE_SRC_DIST_DIR)
-                          ? `${importFromModule}/vscode/${nodePath.relative(VSCODE_SRC_DIST_DIR, resolved)}`
-                          : `${importFromModule}/${nodePath.relative(DIST_DIR_MAIN, resolved)}`
-                        if (externalResolved.endsWith('.js')) {
-                          externalResolved = externalResolved.slice(0, -3)
-                        }
-                        return {
-                          id: externalResolved,
-                          external: true
-                        }
-                      }
-
-                      return undefined
-                    },
-                    load(id) {
+                  customResolutionPlugin({
+                    customLoad(id) {
                       if (id === 'entrypoint') {
                         const codeLines: string[] = []
                         if ((entrypointInfo.exports ?? []).includes('default')) {
@@ -1325,24 +1281,11 @@ export default (args: Record<string, string>): rollup.RollupOptions[] => {
                       if (id === 'worker') {
                         return `import '${workerEntryPoint}'`
                       }
-                      if (id.startsWith('vscode/')) {
-                        return (
-                          bundle[nodePath.relative('vscode', id)] as rollup.OutputChunk | undefined
-                        )?.code
-                      }
-                      return (
-                        bundle[nodePath.relative(DIST_DIR_MAIN, id)] as
-                          | rollup.OutputChunk
-                          | undefined
-                      )?.code
-                    },
-                    resolveFileUrl(options) {
-                      let relativePath = options.relativePath
-                      if (!relativePath.startsWith('.')) {
-                        relativePath = `./${options.relativePath}`
-                      }
-                      return `'${relativePath}'`
-                    },
+                      return undefined
+                    }
+                  }),
+                  {
+                    name: 'bundle-generator',
                     generateBundle() {
                       this.emitFile({
                         fileName: 'package.json',
