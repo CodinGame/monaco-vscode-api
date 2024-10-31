@@ -1,7 +1,10 @@
 import { defineConfig } from 'vite'
-import pkg from './package.json' assert { type: 'json' }
+import * as fs from 'fs'
+const pkg = JSON.parse(
+  fs.readFileSync(new URL('./package.json', import.meta.url).pathname).toString()
+)
 
-const localDependencies = Object.entries(pkg.dependencies)
+const localDependencies = Object.entries(pkg.dependencies as Record<string, string>)
   .filter(([, version]) => version.startsWith('file:../'))
   .map(([name]) => name)
 

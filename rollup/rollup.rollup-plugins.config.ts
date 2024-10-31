@@ -6,8 +6,11 @@ import json from '@rollup/plugin-json'
 import { PackageJson } from 'type-fest'
 import * as path from 'path'
 import { fileURLToPath } from 'url'
+import * as fs from 'fs'
 import metadataPlugin from './rollup-metadata-plugin'
-import pkg from '../package.json' assert { type: 'json' }
+const pkg = JSON.parse(
+  fs.readFileSync(new URL('../package.json', import.meta.url).pathname).toString()
+)
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url))
 const EXTENSIONS = ['', '.ts', '.js']
@@ -73,7 +76,9 @@ const config: rollup.RollupOptions[] = [
           types: `${path.basename(output)}.d.ts`,
           dependencies: {
             ...Object.fromEntries(
-              Object.entries(pkg.dependencies).filter(([key]) => directDependencies.has(key))
+              Object.entries(pkg.dependencies as Record<string, string>).filter(([key]) =>
+                directDependencies.has(key)
+              )
             )
           }
         }

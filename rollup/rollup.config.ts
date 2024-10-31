@@ -18,7 +18,10 @@ import * as fs from 'node:fs'
 import * as nodePath from 'node:path'
 import { fileURLToPath } from 'node:url'
 import metadataPlugin from './rollup-metadata-plugin'
-import pkg from '../package.json' assert { type: 'json' }
+
+const pkg = JSON.parse(
+  fs.readFileSync(new URL('../package.json', import.meta.url).pathname).toString()
+)
 
 const __dirname = nodePath.dirname(fileURLToPath(import.meta.url))
 

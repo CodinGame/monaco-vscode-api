@@ -7,7 +7,9 @@ import * as fs from 'fs'
 import * as path from 'path'
 import { fileURLToPath } from 'url'
 import * as fsPromise from 'fs/promises'
-import pkg from '../package.json' assert { type: 'json' }
+const pkg = JSON.parse(
+  fs.readFileSync(new URL('../package.json', import.meta.url).pathname).toString()
+)
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url))
 
