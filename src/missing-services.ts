@@ -148,7 +148,7 @@ import { IPreferencesSearchService } from 'vs/workbench/contrib/preferences/comm
 import { IQuickDiffService } from 'vs/workbench/contrib/scm/common/quickDiff.service'
 import { ISCMService, ISCMViewService } from 'vs/workbench/contrib/scm/common/scm.service'
 import { IReplaceService } from 'vs/workbench/contrib/search/browser/replace.service'
-import { ISearchViewModelWorkbenchService } from 'vs/workbench/contrib/search/browser/searchModel.service'
+import { ISearchViewModelWorkbenchService } from 'vs/workbench/contrib/search/browser/searchTreeModel/searchViewModelWorkbenchService.service'
 import { INotebookSearchService } from 'vs/workbench/contrib/search/common/notebookSearch.service'
 import { ISearchHistoryService } from 'vs/workbench/contrib/search/common/searchHistoryService.service'
 import { IShareService } from 'vs/workbench/contrib/share/common/share.service'
@@ -316,6 +316,7 @@ import { ICodeMapperService } from 'vs/workbench/contrib/chat/common/chatCodeMap
 import { IChatEditingService } from 'vs/workbench/contrib/chat/common/chatEditingService.service'
 import { IActionViewItemService } from 'vs/platform/actions/browser/actionViewItemService.service'
 import { ITreeSitterTokenizationFeature } from 'vs/workbench/services/treeSitter/browser/treeSitterTokenizationFeature.service'
+import { ILanguageModelIgnoredFilesService } from 'vs/workbench/contrib/chat/common/ignoredFiles.service'
 import { getBuiltInExtensionTranslationsUris, getExtensionIdProvidingCurrentLocale } from './l10n'
 import { unsupported } from './tools'
 
@@ -397,6 +398,7 @@ registerSingleton(IEditorService, EditorService, InstantiationType.Eager)
 
 class PaneCompositePartService implements IPaneCompositePartService {
   readonly _serviceBrand = undefined
+  getPaneCompositeIds = () => []
   onDidPaneCompositeOpen = Event.None
   onDidPaneCompositeClose = Event.None
   openPaneComposite = async () => undefined
@@ -1260,6 +1262,7 @@ registerSingleton(ILanguageStatusService, LanguageStatusService, InstantiationTy
 
 class HostService implements IHostService {
   _serviceBrand: undefined
+  getScreenshot = async () => undefined
   getPathForFile = () => undefined
   onDidChangeFullScreen = Event.None
   onDidChangeFocus = Event.None
@@ -2365,6 +2368,7 @@ registerSingleton(
 class MonacoSearchService implements ISearchService {
   _serviceBrand: undefined
   constructor(@IModelService private modelService: IModelService) {}
+  schemeHasFileSearchProvider = () => false
   getAIName = async () => undefined
   @Unsupported
   aiTextSearch(): never {
@@ -4204,6 +4208,7 @@ class TerminalGroupService implements ITerminalGroupService {
 registerSingleton(ITerminalGroupService, TerminalGroupService, InstantiationType.Delayed)
 class TerminalInstanceService implements ITerminalInstanceService {
   _serviceBrand: undefined
+  onDidRegisterBackend = Event.None
   getRegisteredBackends = () => [].values()
   onDidCreateInstance = Event.None
   @Unsupported
@@ -4433,6 +4438,7 @@ registerSingleton(ITerminalQuickFixService, TerminalQuickFixService, Instantiati
 
 class UserDataSyncWorkbenchService implements IUserDataSyncWorkbenchService {
   _serviceBrand: undefined
+  onDidTurnOnSync = Event.None
   enabled = false
   authenticationProviders = []
   all = []
@@ -6026,6 +6032,9 @@ registerSingleton(IUserDataSyncAccountService, UserDataSyncAccountService, Insta
 
 class ChatWidgetService implements IChatWidgetService {
   _serviceBrand: undefined
+  onDidAddWidget = Event.None
+  getAllWidgets = () => []
+  getWidgetByLocation = () => []
   getWidgetBySessionId = () => undefined
   lastFocusedWidget = undefined
   @Unsupported
@@ -6562,6 +6571,7 @@ registerSingleton(
 
 class TestProfileService implements ITestProfileService {
   _serviceBrand: undefined
+  getDefaultProfileForTest = () => undefined
   onDidChange = Event.None
   @Unsupported
   addProfile(): never {
@@ -6920,6 +6930,13 @@ registerSingleton(
 
 class TestExplorerFilterState implements ITestExplorerFilterState {
   _serviceBrand: undefined
+  onDidSelectTestInExplorer = Event.None
+
+  @Unsupported
+  didSelectTestInExplorer(): never {
+    unsupported()
+  }
+
   @Unsupported
   get text() {
     return unsupported()
@@ -8079,6 +8096,8 @@ registerSingleton(IIssueFormService, IssueFormService, InstantiationType.Delayed
 
 class CodeMapperService implements ICodeMapperService {
   _serviceBrand: undefined
+  mapCodeFromResponse = async () => undefined
+
   @Unsupported
   registerCodeMapperProvider(): never {
     unsupported()
@@ -8090,6 +8109,38 @@ registerSingleton(ICodeMapperService, CodeMapperService, InstantiationType.Delay
 
 class ChatEditingService implements IChatEditingService {
   _serviceBrand: undefined
+  onDidChangeEditingSession = Event.None
+
+  @Unsupported
+  get currentEditingSessionObs() {
+    return unsupported()
+  }
+
+  currentAutoApplyOperation = null
+  editingSessionFileLimit = 0
+
+  @Unsupported
+  triggerEditComputation(): never {
+    unsupported()
+  }
+
+  getEditingSession = () => null
+
+  @Unsupported
+  createSnapshot(): never {
+    unsupported()
+  }
+
+  @Unsupported
+  getSnapshotUri(): never {
+    unsupported()
+  }
+
+  @Unsupported
+  restoreSnapshot(): never {
+    unsupported()
+  }
+
   onDidCreateEditingSession = Event.None
   currentEditingSession = null
   @Unsupported
@@ -8117,5 +8168,21 @@ class TreeSitterTokenizationFeature implements ITreeSitterTokenizationFeature {
 registerSingleton(
   ITreeSitterTokenizationFeature,
   TreeSitterTokenizationFeature,
+  InstantiationType.Delayed
+)
+
+class LanguageModelIgnoredFilesService implements ILanguageModelIgnoredFilesService {
+  _serviceBrand: undefined
+
+  fileIsIgnored = async () => false
+
+  @Unsupported
+  registerIgnoredFileProvider(): never {
+    unsupported()
+  }
+}
+registerSingleton(
+  ILanguageModelIgnoredFilesService,
+  LanguageModelIgnoredFilesService,
   InstantiationType.Delayed
 )

@@ -34,11 +34,13 @@ import { LanguageModelStatsService } from 'vs/workbench/contrib/chat/common/lang
 import 'vs/workbench/contrib/chat/browser/chat.contribution'
 import 'vs/workbench/contrib/inlineChat/browser/inlineChat.contribution'
 import { ILanguageModelToolsService } from 'vs/workbench/contrib/chat/common/languageModelToolsService.service'
-import { LanguageModelToolsService } from 'vs/workbench/contrib/chat/common/languageModelToolsService'
+import { LanguageModelToolsService } from 'vs/workbench/contrib/chat/browser/languageModelToolsService'
 import { ICodeMapperService } from 'vs/workbench/contrib/chat/common/chatCodeMapperService.service'
 import { CodeMapperService } from 'vs/workbench/contrib/chat/common/chatCodeMapperService'
 import { IChatEditingService } from 'vs/workbench/contrib/chat/common/chatEditingService.service'
-import { ChatEditingService } from 'vs/workbench/contrib/chat/browser/chatEditingService'
+import { ChatEditingService } from 'vs/workbench/contrib/chat/browser/chatEditing/chatEditingService'
+import { LanguageModelIgnoredFilesService } from 'vs/workbench/contrib/chat/common/ignoredFiles'
+import { ILanguageModelIgnoredFilesService } from 'vs/workbench/contrib/chat/common/ignoredFiles.service'
 export default function getServiceOverride(): IEditorOverrideServices {
   return {
     [IChatService.toString()]: new SyncDescriptor(ChatService, [], true),
@@ -67,6 +69,11 @@ export default function getServiceOverride(): IEditorOverrideServices {
     ),
     [ILanguageModelStatsService.toString()]: new SyncDescriptor(
       LanguageModelStatsService,
+      [],
+      true
+    ),
+    [ILanguageModelIgnoredFilesService.toString()]: new SyncDescriptor(
+      LanguageModelIgnoredFilesService,
       [],
       true
     ),

@@ -291,10 +291,10 @@ class ExtensionResourceLoaderServiceOverride extends ExtensionResourceLoaderServ
 
 let iframeAlternateDomains: string | undefined
 registerAssets({
-  'vs/workbench/services/extensions/worker/webWorkerExtensionHostIframe.esm.html': () =>
+  'vs/workbench/services/extensions/worker/webWorkerExtensionHostIframe.html': () =>
     changeUrlDomain(
       new URL(
-        '../../vscode/src/vs/workbench/services/extensions/worker/webWorkerExtensionHostIframe.esm.html',
+        '../../vscode/src/vs/workbench/services/extensions/worker/webWorkerExtensionHostIframe.html',
         import.meta.url
       ).href,
       iframeAlternateDomains
@@ -318,7 +318,7 @@ export default function getServiceOverride(
 
   if (workerConfig != null) {
     registerAssets({
-      'vs/workbench/api/worker/extensionHostWorker.esm.js': () => workerConfig.url
+      'vs/workbench/api/worker/extensionHostWorkerMain.js': () => workerConfig.url
     })
   }
 

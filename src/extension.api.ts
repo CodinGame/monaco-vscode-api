@@ -310,11 +310,9 @@ const api: typeof vscode = {
   ChatRequestNotebookData: extHostTypes.ChatRequestNotebookData,
   ChatResponseMovePart: extHostTypes.ChatResponseMovePart,
   LanguageModelChatMessageRole: extHostTypes.LanguageModelChatMessageRole,
-  LanguageModelChatMessage: extHostTypes.LanguageModelChatMessage,
-  LanguageModelChatResponseTextPart: extHostTypes.LanguageModelTextPart,
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  LanguageModelChatMessage: <any>extHostTypes.LanguageModelChatMessage,
   LanguageModelError: extHostTypes.LanguageModelError,
-  LanguageModelChatResponseToolCallPart: extHostTypes.LanguageModelToolCallPart,
-  LanguageModelChatMessageToolResultPart: extHostTypes.LanguageModelToolResultPart,
   NewSymbolName: extHostTypes.NewSymbolName,
   NewSymbolNameTag: extHostTypes.NewSymbolNameTag,
   NewSymbolNameTriggerKind: extHostTypes.NewSymbolNameTriggerKind,
@@ -323,7 +321,15 @@ const api: typeof vscode = {
   ExcludeSettingOptions: searchExtTypes.ExcludeSettingOptions,
   TextSearchContextNew: searchExtTypes.TextSearchContextNew,
   TextSearchMatchNew: searchExtTypes.TextSearchMatchNew,
-  ChatResponseCodeblockUriPart: extHostTypes.ChatResponseCodeblockUriPart
+  ChatResponseCodeblockUriPart: extHostTypes.ChatResponseCodeblockUriPart,
+  ChatEditingSessionActionOutcome: extHostTypes.ChatEditingSessionActionOutcome,
+  LanguageModelChatToolMode: extHostTypes.LanguageModelChatToolMode,
+  LanguageModelToolCallPart: extHostTypes.LanguageModelToolCallPart,
+  LanguageModelToolResultPart: extHostTypes.LanguageModelToolResultPart,
+  LanguageModelTextPart: extHostTypes.LanguageModelTextPart,
+  LanguageModelPromptTsxPart: extHostTypes.LanguageModelPromptTsxPart,
+  LanguageModelToolResult: extHostTypes.LanguageModelToolResult,
+  ChatReferenceBinaryData: extHostTypes.ChatReferenceBinaryData
 }
 
 // @ts-ignore the syntax will be transformed by a typescript transformer in the rollup config

@@ -1,1 +1,1 @@
-import 'vs/workbench/services/languageDetection/browser/languageDetectionSimpleWorker.esm.js'
+import 'vs/workbench/services/languageDetection/browser/languageDetectionSimpleWorkerMain.js'
