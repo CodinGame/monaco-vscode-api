@@ -1,0 +1,23 @@
+From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
+From: =?UTF-8?q?Lo=C3=AFc=20Mangeonjean?= <loic@coderpad.io>
+Date: Mon, 11 Mar 2024 18:27:13 +0100
+Subject: [PATCH] fix(typescript): use import function able to replace imported
+ url
+
+---
+ extensions/typescript-language-features/web/src/serverHost.ts | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+
+diff --git a/extensions/typescript-language-features/web/src/serverHost.ts b/extensions/typescript-language-features/web/src/serverHost.ts
+index dedec85991f..dafc7f009a1 100644
+--- a/extensions/typescript-language-features/web/src/serverHost.ts
++++ b/extensions/typescript-language-features/web/src/serverHost.ts
+@@ -89,7 +89,7 @@ function createServerHost(
+ 
+ 			const scriptPath = combinePaths(packageRoot, browser);
+ 			try {
+-				const { default: module } = await import(/* webpackIgnore: true */ scriptPath);
++				const { default: module } = await new Function('url', 'return importExt(url)')(scriptPath);
+ 				return { module, error: undefined };
+ 			} catch (e) {
+ 				return { module: undefined, error: e };

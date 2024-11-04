@@ -1,0 +1,31 @@
+From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
+From: =?UTF-8?q?Lo=C3=AFc=20Mangeonjean?= <loic@coderpad.io>
+Date: Mon, 11 Mar 2024 16:41:55 +0100
+Subject: [PATCH] fix: fix editor api types
+
+---
+ build/gulpfile.editor.js | 11 ++++++++++-
+ 1 file changed, 10 insertions(+), 1 deletion(-)
+
+diff --git a/build/gulpfile.editor.js b/build/gulpfile.editor.js
+index 739c37fc677..ea10e2c1586 100644
+--- a/build/gulpfile.editor.js
++++ b/build/gulpfile.editor.js
+@@ -229,7 +229,16 @@ function toExternalDTS(contents) {
+ 		}
+ 
+ 		if (line.indexOf('declare let MonacoEnvironment') === 0) {
+-			lines[i] = `declare global {\n    let MonacoEnvironment: Environment | undefined;\n}`;
++			lines[i] = [
++				'declare global {',
++				'    let MonacoEnvironment: Environment | undefined;',
++				'',
++				'    interface Window {',
++				'        MonacoEnvironment?: Environment | undefined;',
++				'    }',
++				'}',
++				''
++			].join('\n');
+ 		}
+ 
+ 		if (line.indexOf('\tMonacoEnvironment?') === 0) {

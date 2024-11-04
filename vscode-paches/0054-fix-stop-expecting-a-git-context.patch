@@ -1,0 +1,21 @@
+From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
+From: =?UTF-8?q?Lo=C3=AFc=20Mangeonjean?= <loic@coderpad.io>
+Date: Wed, 30 Oct 2024 17:47:38 +0100
+Subject: [PATCH] fix: stop expecting a git context
+
+---
+ build/npm/postinstall.js | 4 ++--
+ 1 file changed, 2 insertions(+), 2 deletions(-)
+
+diff --git a/build/npm/postinstall.js b/build/npm/postinstall.js
+index 88e3c9eb1bb..1cf3bbde24e 100644
+--- a/build/npm/postinstall.js
++++ b/build/npm/postinstall.js
+@@ -171,5 +171,5 @@ for (let dir of dirs) {
+ 	npmInstall(dir, opts);
+ }
+ 
+-cp.execSync('git config pull.rebase merges');
+-cp.execSync('git config blame.ignoreRevsFile .git-blame-ignore-revs');
++// cp.execSync('git config pull.rebase merges');
++// cp.execSync('git config blame.ignoreRevsFile .git-blame-ignore-revs');

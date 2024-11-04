@@ -1,0 +1,473 @@
+From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
+From: =?UTF-8?q?Lo=C3=AFc=20Mangeonjean?= <loic@coderpad.io>
+Date: Thu, 25 Apr 2024 19:34:56 +0200
+Subject: [PATCH] feat: add build tool to extract service identifiers
+
+---
+ build/lib/extractServices.js | 209 ++++++++++++++++++++++++++++++
+ build/lib/extractServices.ts | 239 +++++++++++++++++++++++++++++++++++
+ 2 files changed, 448 insertions(+)
+ create mode 100644 build/lib/extractServices.js
+ create mode 100644 build/lib/extractServices.ts
+
+diff --git a/build/lib/extractServices.js b/build/lib/extractServices.js
+new file mode 100644
+index 00000000000..e0f9ad3724e
+--- /dev/null
++++ b/build/lib/extractServices.js
+@@ -0,0 +1,209 @@
++"use strict";
++/*---------------------------------------------------------------------------------------------
++ *  Copyright (c) Microsoft Corporation. All rights reserved.
++ *  Licensed under the MIT License. See License.txt in the project root for license information.
++ *--------------------------------------------------------------------------------------------*/
++Object.defineProperty(exports, "__esModule", { value: true });
++/**
++ * The point of this file is to extract the service identifier to be able to import them without importing everything from the module
++ * It prevent importing useless classes when we just want to register a mocked implementation of the service
++ */
++const ts = require("typescript");
++const fs = require("fs");
++const path = require("path");
++const REPO_ROOT = path.join(__dirname, '../../');
++const SRC_DIR = path.join(REPO_ROOT, 'src');
++/**
++ * The language service fails to properly render imports
++ * (Either because there are namespace/interface/object using the same name
++ * or sometime an import is duplicated)
++ */
++const ORGANIZE_IMPORTS = [
++    'vs/platform/log/common/log.service.ts',
++    'vs/platform/update/common/update.service.ts',
++    'vs/platform/markers/common/markers.service.ts',
++    'vs/platform/userDataSync/common/userDataSync.service.ts',
++    'vs/workbench/contrib/chat/common/chatAgents.service.ts',
++    'vs/workbench/contrib/tasks/common/taskService.ts',
++    'vs/workbench/workbench.web.main.ts'
++];
++const SERVICE_REGISTRATION_FUNCTIONS_NAMES = ['createDecorator', 'refineServiceDecorator'];
++const IGNORE = [
++    'vs/platform/instantiation/common/instantiation',
++    // Editor services
++    'vs/editor/',
++    'vs/platform/actionWidget/browser/actionWidget',
++    'vs/platform/undoRedo/common/undoRedoService',
++    'vs/platform/instantiation/common/extensions',
++    // The extension api, not modular anyway
++    'vs/workbench/api/'
++];
++function findFunctionDeclarations(sourceFile, names) {
++    const declarations = [];
++    function visit(node) {
++        if (ts.isFunctionDeclaration(node) && node.name !== undefined && ts.isIdentifier(node.name) && names.includes(node.name.text)) {
++            declarations.push(node);
++            return;
++        }
++        ts.forEachChild(node, visit);
++    }
++    visit(sourceFile);
++    return declarations;
++}
++function findFirstFunctionCall(sourceFile, names) {
++    const calls = [];
++    function visit(node) {
++        if (ts.isCallExpression(node) && ts.isIdentifier(node.expression) && names.includes(node.expression.text)) {
++            calls.push(node);
++            return;
++        }
++        ts.forEachChild(node, visit);
++    }
++    visit(sourceFile);
++    return calls[0];
++}
++function findInterface(sourceFile, name) {
++    let interfaceNode;
++    function visit(node) {
++        if (ts.isInterfaceDeclaration(node) && name === node.name.text) {
++            interfaceNode = node;
++            return;
++        }
++        ts.forEachChild(node, visit);
++    }
++    visit(sourceFile);
++    return interfaceNode;
++}
++const sourceFileVersion = new Map();
++function incrementScriptVersion(script) {
++    const newVersion = (sourceFileVersion.get(script) ?? 1) + 1;
++    sourceFileVersion.set(script, newVersion);
++    return newVersion.toString();
++}
++function applyEdits(edits) {
++    for (const edit of edits) {
++        const filePath = edit.fileName;
++        let fileContent = fs.existsSync(filePath) ? fs.readFileSync(filePath, 'utf8') : '';
++        for (const textChange of [...edit.textChanges].reverse()) {
++            const { span, newText } = textChange;
++            fileContent = fileContent.slice(0, span.start) + newText + fileContent.slice(span.start + span.length);
++        }
++        fs.writeFileSync(filePath, fileContent);
++        incrementScriptVersion(filePath);
++    }
++}
++async function run() {
++    const configPath = ts.findConfigFile(SRC_DIR, ts.sys.fileExists, 'tsconfig.json');
++    const configFile = ts.readConfigFile(configPath, ts.sys.readFile);
++    const parsedConfig = ts.parseJsonConfigFileContent(configFile.config, ts.sys, path.dirname(configPath));
++    const servicesHost = {
++        getScriptFileNames: () => parsedConfig.fileNames.filter(f => !f.endsWith('.test.ts')),
++        getScriptVersion: fileName => sourceFileVersion.get(fileName)?.toString() ?? '1',
++        getScriptSnapshot: fileName => {
++            if (!fs.existsSync(fileName)) {
++                return undefined;
++            }
++            return ts.ScriptSnapshot.fromString(fs.readFileSync(fileName).toString());
++        },
++        getCurrentDirectory: () => SRC_DIR,
++        getCompilationSettings: () => ({
++            'paths': {
++                'vs/*': [
++                    './vs/*'
++                ]
++            },
++            forceConsistentCasingInFileNames: true
++        }),
++        getDefaultLibFileName: options => ts.getDefaultLibFilePath(options),
++        fileExists: ts.sys.fileExists,
++        readFile: ts.sys.readFile,
++        readDirectory: ts.sys.readDirectory,
++        directoryExists: ts.sys.directoryExists,
++        getDirectories: ts.sys.getDirectories,
++        writeFile: ts.sys.writeFile,
++        useCaseSensitiveFileNames() {
++            return true;
++        }
++    };
++    const service = ts.createLanguageService(servicesHost, ts.createDocumentRegistry(true));
++    const instantiationModule = service.getProgram().getSourceFile('vs/platform/instantiation/common/instantiation.ts');
++    const serviceFiles = new Set();
++    for (const declaration of findFunctionDeclarations(instantiationModule, SERVICE_REGISTRATION_FUNCTIONS_NAMES)) {
++        for (const ref of service.findReferences(instantiationModule.fileName, declaration.getStart())) {
++            ref.references.forEach(ref => serviceFiles.add(ref.fileName));
++        }
++    }
++    const changedFiles = new Set();
++    for (const fileName of serviceFiles) {
++        if (IGNORE.some(ignored => fileName.includes(ignored))) {
++            continue;
++        }
++        if (service.getProgram().getSourceFile(fileName) === undefined) {
++            throw new Error(`${fileName} not found`);
++        }
++        function moveToNewFile(range) {
++            const refactors = service.getApplicableRefactors(fileName, range, {
++                allowTextChangesInNewFiles: true,
++                allowRenameOfImportPath: true,
++                preferTypeOnlyAutoImports: true
++            }, undefined, undefined, true);
++            const moveToFileRefactor = refactors.find(r => r.name === 'Move to file');
++            const edits = service.getEditsForRefactor(fileName, {}, range, moveToFileRefactor.name, moveToFileRefactor.actions[0].name, {
++                allowTextChangesInNewFiles: true,
++                allowRenameOfImportPath: true,
++                preferTypeOnlyAutoImports: true
++            }, {
++                targetFile: path.resolve(path.dirname(fileName), `${path.basename(fileName, '.ts')}.service.ts`)
++            });
++            applyEdits(edits.edits);
++            edits.edits.forEach(e => changedFiles.add(e.fileName));
++        }
++        console.log(fileName);
++        // Move service declarations to new file
++        let call;
++        const serviceNames = [];
++        while ((call = findFirstFunctionCall(service.getProgram().getSourceFile(fileName), SERVICE_REGISTRATION_FUNCTIONS_NAMES)) !== undefined) {
++            const serviceRegistrationNode = call.parent.parent.parent;
++            const serviceName = call.parent.name.text;
++            console.log('service:', serviceName);
++            serviceNames.push(serviceName);
++            const serviceInterface = findInterface(service.getProgram().getSourceFile(fileName), serviceName);
++            if (serviceInterface === undefined) {
++                throw new Error(`Service interface "${serviceInterface}" not found`);
++            }
++            const sourceFile = service.getProgram().getSourceFile(fileName);
++            const statements = [...sourceFile.getChildren()[0].getChildren().filter(ts.isStatement)];
++            const serviceDefinitionIndex = statements.indexOf(serviceRegistrationNode);
++            const serviceInterfaceIndex = statements.indexOf(serviceInterface);
++            if (Math.abs(serviceInterfaceIndex - serviceDefinitionIndex) > 1) {
++                // Not next to each other => move the interface
++                statements.splice(serviceInterfaceIndex > serviceDefinitionIndex ? serviceDefinitionIndex + 1 : serviceDefinitionIndex, 0, ...statements.splice(serviceInterfaceIndex, 1));
++                const newSourceFile = ts.factory.updateSourceFile(sourceFile, statements);
++                const content = ts.createPrinter().printNode(ts.EmitHint.Unspecified, newSourceFile, newSourceFile);
++                fs.writeFileSync(fileName, content);
++                incrementScriptVersion(fileName);
++            }
++            else {
++                try {
++                    moveToNewFile({
++                        pos: Math.min(serviceRegistrationNode.getStart(), serviceInterface.getStart()),
++                        end: Math.max(serviceRegistrationNode.getEnd(), serviceInterface.getEnd())
++                    });
++                }
++                catch (err) {
++                    console.error('Unable to extract service identifier', err);
++                    break;
++                }
++            }
++        }
++    }
++    for (const changedFile of ORGANIZE_IMPORTS) {
++        console.log('Organizing imports', changedFile);
++        applyEdits(service.organizeImports({
++            fileName: changedFile,
++            type: 'file'
++        }, {}, undefined));
++    }
++}
++void run();
++//# sourceMappingURL=extractServices.js.map
+\ No newline at end of file
+diff --git a/build/lib/extractServices.ts b/build/lib/extractServices.ts
+new file mode 100644
+index 00000000000..b340f10812d
+--- /dev/null
++++ b/build/lib/extractServices.ts
+@@ -0,0 +1,239 @@
++/*---------------------------------------------------------------------------------------------
++ *  Copyright (c) Microsoft Corporation. All rights reserved.
++ *  Licensed under the MIT License. See License.txt in the project root for license information.
++ *--------------------------------------------------------------------------------------------*/
++
++/**
++ * The point of this file is to extract the service identifier to be able to import them without importing everything from the module
++ * It prevent importing useless classes when we just want to register a mocked implementation of the service
++ */
++
++import * as ts from 'typescript';
++import * as fs from 'fs';
++import * as path from 'path';
++
++const REPO_ROOT = path.join(__dirname, '../../');
++const SRC_DIR = path.join(REPO_ROOT, 'src');
++
++/**
++ * The language service fails to properly render imports
++ * (Either because there are namespace/interface/object using the same name
++ * or sometime an import is duplicated)
++ */
++const ORGANIZE_IMPORTS = [
++	'vs/platform/log/common/log.service.ts',
++	'vs/platform/update/common/update.service.ts',
++	'vs/platform/markers/common/markers.service.ts',
++	'vs/platform/userDataSync/common/userDataSync.service.ts',
++	'vs/workbench/contrib/chat/common/chatAgents.service.ts',
++	'vs/workbench/contrib/tasks/common/taskService.ts',
++	'vs/workbench/workbench.web.main.ts'
++];
++
++const SERVICE_REGISTRATION_FUNCTIONS_NAMES = ['createDecorator', 'refineServiceDecorator'];
++const IGNORE = [
++	'vs/platform/instantiation/common/instantiation',
++
++	// Editor services
++	'vs/editor/',
++	'vs/platform/actionWidget/browser/actionWidget',
++	'vs/platform/undoRedo/common/undoRedoService',
++	'vs/platform/instantiation/common/extensions',
++
++	// The extension api, not modular anyway
++	'vs/workbench/api/'
++];
++
++function findFunctionDeclarations(sourceFile: ts.SourceFile, names: string[]): ts.FunctionDeclaration[] {
++	const declarations: ts.FunctionDeclaration[] = [];
++	function visit(node: ts.Node) {
++		if (ts.isFunctionDeclaration(node) && node.name !== undefined && ts.isIdentifier(node.name) && names.includes(node.name.text)) {
++			declarations.push(node);
++			return;
++		}
++		ts.forEachChild(node, visit);
++	}
++	visit(sourceFile);
++	return declarations;
++}
++
++function findFirstFunctionCall(sourceFile: ts.SourceFile, names: string[]): ts.CallExpression | undefined {
++	const calls: ts.CallExpression[] = [];
++	function visit(node: ts.Node) {
++		if (ts.isCallExpression(node) && ts.isIdentifier(node.expression) && names.includes(node.expression.text)) {
++			calls.push(node);
++			return;
++		}
++		ts.forEachChild(node, visit);
++	}
++	visit(sourceFile);
++	return calls[0];
++}
++
++function findInterface(sourceFile: ts.SourceFile, name: string): ts.InterfaceDeclaration | undefined {
++	let interfaceNode: ts.InterfaceDeclaration | undefined;
++	function visit(node: ts.Node) {
++		if (ts.isInterfaceDeclaration(node) && name === node.name.text) {
++			interfaceNode = node;
++			return;
++		}
++		ts.forEachChild(node, visit);
++	}
++	visit(sourceFile);
++	return interfaceNode;
++}
++
++const sourceFileVersion = new Map<string, number>();
++function incrementScriptVersion(script: string) {
++	const newVersion = (sourceFileVersion.get(script) ?? 1) + 1;
++	sourceFileVersion.set(script, newVersion);
++	return newVersion.toString();
++}
++
++function applyEdits(edits: readonly ts.FileTextChanges[]) {
++	for (const edit of edits) {
++		const filePath = edit.fileName;
++		let fileContent = fs.existsSync(filePath) ? fs.readFileSync(filePath, 'utf8') : '';
++
++		for (const textChange of [...edit.textChanges].reverse()) {
++			const { span, newText } = textChange;
++			fileContent = fileContent.slice(0, span.start) + newText + fileContent.slice(span.start + span.length);
++		}
++
++		fs.writeFileSync(filePath, fileContent);
++		incrementScriptVersion(filePath);
++	}
++}
++
++
++async function run() {
++	const configPath = ts.findConfigFile(SRC_DIR, ts.sys.fileExists, 'tsconfig.json')!;
++	const configFile = ts.readConfigFile(configPath, ts.sys.readFile);
++	const parsedConfig = ts.parseJsonConfigFileContent(configFile.config, ts.sys, path.dirname(configPath));
++
++	const servicesHost: ts.LanguageServiceHost = {
++		getScriptFileNames: () => parsedConfig.fileNames.filter(f => !f.endsWith('.test.ts')),
++		getScriptVersion: fileName => sourceFileVersion.get(fileName)?.toString() ?? '1',
++		getScriptSnapshot: fileName => {
++			if (!fs.existsSync(fileName)) {
++				return undefined;
++			}
++
++			return ts.ScriptSnapshot.fromString(fs.readFileSync(fileName).toString());
++		},
++		getCurrentDirectory: () => SRC_DIR,
++		getCompilationSettings: () => ({
++			'paths': {
++				'vs/*': [
++					'./vs/*'
++				]
++			},
++			forceConsistentCasingInFileNames: true
++		}),
++		getDefaultLibFileName: options => ts.getDefaultLibFilePath(options),
++		fileExists: ts.sys.fileExists,
++		readFile: ts.sys.readFile,
++		readDirectory: ts.sys.readDirectory,
++		directoryExists: ts.sys.directoryExists,
++		getDirectories: ts.sys.getDirectories,
++		writeFile: ts.sys.writeFile,
++		useCaseSensitiveFileNames() {
++			return true;
++		}
++	};
++	const service = ts.createLanguageService(servicesHost, ts.createDocumentRegistry(true));
++
++	const instantiationModule = service.getProgram()!.getSourceFile('vs/platform/instantiation/common/instantiation.ts')!;
++	const serviceFiles = new Set<string>();
++	for (const declaration of findFunctionDeclarations(instantiationModule, SERVICE_REGISTRATION_FUNCTIONS_NAMES)) {
++		for (const ref of service.findReferences(instantiationModule.fileName, declaration.getStart())!) {
++			ref.references.forEach(ref => serviceFiles.add(ref.fileName));
++		}
++	}
++
++	const changedFiles = new Set<string>();
++	for (const fileName of serviceFiles) {
++		if (IGNORE.some(ignored => fileName.includes(ignored))) {
++			continue;
++		}
++		if (service.getProgram()!.getSourceFile(fileName) === undefined) {
++			throw new Error(`${fileName} not found`);
++		}
++
++		function moveToNewFile(range: ts.TextRange) {
++			const refactors = service.getApplicableRefactors(fileName, range, {
++				allowTextChangesInNewFiles: true,
++				allowRenameOfImportPath: true,
++				preferTypeOnlyAutoImports: true
++			}, undefined, undefined, true);
++			const moveToFileRefactor = refactors.find(r => r.name === 'Move to file')!;
++			const edits = service.getEditsForRefactor(fileName, {
++
++			}, range, moveToFileRefactor.name, moveToFileRefactor.actions[0].name, {
++				allowTextChangesInNewFiles: true,
++				allowRenameOfImportPath: true,
++				preferTypeOnlyAutoImports: true
++			}, {
++				targetFile: path.resolve(path.dirname(fileName), `${path.basename(fileName, '.ts')}.service.ts`)
++			})!;
++
++			applyEdits(edits.edits);
++			edits.edits.forEach(e => changedFiles.add(e.fileName));
++		}
++
++		console.log(fileName);
++
++		// Move service declarations to new file
++		let call: ts.CallExpression | undefined;
++		const serviceNames: string[] = [];
++		while ((call = findFirstFunctionCall(service.getProgram()!.getSourceFile(fileName)!, SERVICE_REGISTRATION_FUNCTIONS_NAMES)) !== undefined) {
++			const serviceRegistrationNode = call!.parent.parent.parent as ts.ExportDeclaration;
++
++			const serviceName = ((call!.parent as ts.VariableDeclaration).name as ts.Identifier).text;
++			console.log('service:', serviceName);
++			serviceNames.push(serviceName);
++
++			const serviceInterface = findInterface(service.getProgram()!.getSourceFile(fileName)!, serviceName);
++			if (serviceInterface === undefined) {
++				throw new Error(`Service interface "${serviceInterface}" not found`);
++			}
++
++			const sourceFile = service.getProgram()!.getSourceFile(fileName)!;
++
++			const statements = [...sourceFile.getChildren()[0].getChildren().filter(ts.isStatement)];
++			const serviceDefinitionIndex = statements.indexOf(serviceRegistrationNode);
++			const serviceInterfaceIndex = statements.indexOf(serviceInterface);
++
++			if (Math.abs(serviceInterfaceIndex - serviceDefinitionIndex) > 1) {
++				// Not next to each other => move the interface
++				statements.splice(
++					serviceInterfaceIndex > serviceDefinitionIndex ? serviceDefinitionIndex + 1 : serviceDefinitionIndex, 0,
++					...statements.splice(serviceInterfaceIndex, 1)
++				);
++				const newSourceFile = ts.factory.updateSourceFile(sourceFile, statements);
++				const content = ts.createPrinter().printNode(ts.EmitHint.Unspecified, newSourceFile, newSourceFile);
++				fs.writeFileSync(fileName, content);
++				incrementScriptVersion(fileName);
++			} else {
++				try {
++					moveToNewFile({
++						pos: Math.min(serviceRegistrationNode.getStart(), serviceInterface!.getStart()),
++						end: Math.max(serviceRegistrationNode.getEnd(), serviceInterface!.getEnd())
++					});
++				} catch (err) {
++					console.error('Unable to extract service identifier', err);
++					break;
++				}
++			}
++		}
++	}
++
++	for (const changedFile of ORGANIZE_IMPORTS) {
++		console.log('Organizing imports', changedFile);
++		applyEdits(service.organizeImports({
++			fileName: changedFile,
++			type: 'file'
++		}, {}, undefined));
++	}
++}
++void run();

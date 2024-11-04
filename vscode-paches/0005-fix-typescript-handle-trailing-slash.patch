@@ -1,0 +1,22 @@
+From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
+From: =?UTF-8?q?Lo=C3=AFc=20Mangeonjean?= <loic@coderpad.io>
+Date: Mon, 11 Mar 2024 16:47:24 +0100
+Subject: [PATCH] fix(typescript): handle trailing slash
+
+---
+ extensions/typescript-language-features/web/src/pathMapper.ts | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+
+diff --git a/extensions/typescript-language-features/web/src/pathMapper.ts b/extensions/typescript-language-features/web/src/pathMapper.ts
+index e92548950fc..b24ba5155d3 100644
+--- a/extensions/typescript-language-features/web/src/pathMapper.ts
++++ b/extensions/typescript-language-features/web/src/pathMapper.ts
+@@ -20,7 +20,7 @@ export class PathMapper {
+ 			return URI.from({
+ 				scheme: this.extensionUri.scheme,
+ 				authority: this.extensionUri.authority,
+-				path: this.extensionUri.path + '/dist/browser/typescript/' + filepath.slice(1)
++				path: this.extensionUri.path.replace(/\/$/, '') + '/dist/browser/typescript/' + filepath.slice(1)
+ 			});
+ 		}
+ 

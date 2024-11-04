@@ -1,0 +1,30 @@
+From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
+From: =?UTF-8?q?Lo=C3=AFc=20Mangeonjean?= <loic@coderpad.io>
+Date: Fri, 13 Sep 2024 12:37:59 +0200
+Subject: [PATCH] fix: replace CJS require by FileAccess.toModuleContent
+
+---
+ .../browser/gettingStartedDetailsRenderer.ts                   | 3 ++-
+ 1 file changed, 2 insertions(+), 1 deletion(-)
+
+diff --git a/src/vs/workbench/contrib/welcomeGettingStarted/browser/gettingStartedDetailsRenderer.ts b/src/vs/workbench/contrib/welcomeGettingStarted/browser/gettingStartedDetailsRenderer.ts
+index 53e8a273940..1db9a86a7b0 100644
+--- a/src/vs/workbench/contrib/welcomeGettingStarted/browser/gettingStartedDetailsRenderer.ts
++++ b/src/vs/workbench/contrib/welcomeGettingStarted/browser/gettingStartedDetailsRenderer.ts
+@@ -18,6 +18,7 @@ import { INotificationService } from '../../../../platform/notification/common/n
+ import { ILanguageService } from '../../../../editor/common/languages/language.js';
+ import { IExtensionService } from '../../../services/extensions/common/extensions.js';
+ import { gettingStartedContentRegistry } from '../common/gettingStartedContent.js';
++import { AppResourcePath, FileAccess } from '../../../../base/common/network.js';
+ 
+ 
+ export class GettingStartedDetailsRenderer {
+@@ -266,7 +267,7 @@ export class GettingStartedDetailsRenderer {
+ }
+ 
+ const transformUri = (src: string, base: URI) => {
+-	const path = joinPath(base, src);
++	const path = FileAccess.asBrowserUri(joinPath(base, src).path.slice(1) as AppResourcePath);
+ 	return asWebviewUri(path).toString(true);
+ };
+ 
