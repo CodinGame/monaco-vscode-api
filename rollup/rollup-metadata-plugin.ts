@@ -26,11 +26,13 @@ interface Options {
   ) => { name: string; publicName?: string; priority?: number }
   handle(
     this: PluginContext,
-    group: GroupResult,
-    moduleGroupName: Map<string, string | undefined>,
-    otherDependencies: Set<string>,
-    options: OutputOptions,
-    bundle: OutputBundle
+    params: {
+      group: GroupResult
+      moduleGroupName: Map<string, string | undefined>
+      otherDependencies: Set<string>
+      options: OutputOptions
+      bundle: OutputBundle
+    }
   ): void | Promise<void>
 }
 
@@ -187,7 +189,13 @@ export default ({
 
     await Promise.all(
       groupResults.map(async (group) => {
-        await handle.call(this, group, moduleGroupName, otherDependencies, options, bundle)
+        await handle.call(this, {
+          group,
+          moduleGroupName,
+          otherDependencies,
+          options,
+          bundle
+        })
       })
     )
   }

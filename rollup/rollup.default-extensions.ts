@@ -103,7 +103,7 @@ export default rollup.defineConfig([
             }
           }),
           metadataPlugin({
-            handle({ directDependencies }, moduleGroupName, otherDependencies, options, bundle) {
+            handle({ group: { directDependencies }, bundle }) {
               const entrypoint = Object.values(bundle).filter(
                 (v) => (v as rollup.OutputChunk).isEntry
               )[0]!.fileName
@@ -191,7 +191,7 @@ ${extensions.map((name) => `  whenReady${pascalCase(name)}()`).join(',\n')}
             }
           },
           metadataPlugin({
-            handle({ directDependencies }, moduleGroupName, otherDependencies, options, bundle) {
+            handle({ group: { directDependencies }, bundle }) {
               const entrypoint = Object.values(bundle).filter(
                 (v) => (v as rollup.OutputChunk).isEntry
               )[0]!.fileName

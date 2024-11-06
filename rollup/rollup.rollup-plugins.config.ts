@@ -61,7 +61,7 @@ const config: rollup.RollupOptions[] = [
       preferConst: false
     }),
     metadataPlugin({
-      handle({ directDependencies }) {
+      handle({ group: { directDependencies } }) {
         const packageJson: PackageJson = {
           name: `@codingame/monaco-vscode-${path.basename(output)}`,
           ...Object.fromEntries(

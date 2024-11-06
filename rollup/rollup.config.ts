@@ -864,7 +864,7 @@ export default (args: Record<string, string>): rollup.RollupOptions[] => {
               priority: 1
             }
           },
-          async handle(group, moduleGroupName, otherDependencies, options, bundle) {
+          async handle({ group, moduleGroupName, otherDependencies, bundle }) {
             const customResolutionPlugin = ({
               customLoad
             }: {
