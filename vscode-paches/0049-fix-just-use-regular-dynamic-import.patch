@@ -1,33 +1,29 @@
 From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
 From: =?UTF-8?q?Lo=C3=AFc=20Mangeonjean?= <loic@coderpad.io>
-Date: Thu, 12 Sep 2024 19:19:39 +0200
+Date: Wed, 30 Oct 2024 15:01:33 +0100
 Subject: [PATCH] fix: just use regular dynamic import
 
 ---
- .../services/keybinding/browser/keyboardLayoutService.ts   | 7 +------
- 1 file changed, 1 insertion(+), 6 deletions(-)
+ .../services/keybinding/browser/keyboardLayoutService.ts       | 3 +--
+ 1 file changed, 1 insertion(+), 2 deletions(-)
 
 diff --git a/src/vs/workbench/services/keybinding/browser/keyboardLayoutService.ts b/src/vs/workbench/services/keybinding/browser/keyboardLayoutService.ts
-index 28f6ea57c03..0ab2ac0cdc0 100644
+index 8807b7ef370..0ab2ac0cdc0 100644
 --- a/src/vs/workbench/services/keybinding/browser/keyboardLayoutService.ts
 +++ b/src/vs/workbench/services/keybinding/browser/keyboardLayoutService.ts
-@@ -5,8 +5,6 @@
+@@ -5,7 +5,6 @@
  
  import * as nls from '../../../../nls.js';
  import { Emitter, Event } from '../../../../base/common/event.js';
--import { isESM } from '../../../../base/common/amd.js';
 -import { AppResourcePath, FileAccess } from '../../../../base/common/network.js';
  import { Disposable } from '../../../../base/common/lifecycle.js';
  import { KeymapInfo, IRawMixedKeyboardMapping, IKeymapInfo } from '../common/keymapInfo.js';
  import { InstantiationType, registerSingleton } from '../../../../platform/instantiation/common/extensions.js';
-@@ -457,10 +455,7 @@ export class BrowserKeyboardMapperFactory extends BrowserKeyboardMapperFactoryBa
+@@ -456,7 +455,7 @@ export class BrowserKeyboardMapperFactory extends BrowserKeyboardMapperFactoryBa
  
  		const platform = isWindows ? 'win' : isMacintosh ? 'darwin' : 'linux';
  
--		import(isESM ?
--			FileAccess.asBrowserUri(`vs/workbench/services/keybinding/browser/keyboardLayouts/layout.contribution.${platform}.js` satisfies AppResourcePath).path :
--			`vs/workbench/services/keybinding/browser/keyboardLayouts/layout.contribution.${platform}`
--		).then((m) => {
+-		import(FileAccess.asBrowserUri(`vs/workbench/services/keybinding/browser/keyboardLayouts/layout.contribution.${platform}.js` satisfies AppResourcePath).path).then((m) => {
 +		import(`./keyboardLayouts/layout.contribution.${platform}.js`).then((m) => {
  			const keymapInfos: IKeymapInfo[] = m.KeyboardLayoutContribution.INSTANCE.layoutInfos;
  			this._keymapInfos.push(...keymapInfos.map(info => (new KeymapInfo(info.layout, info.secondaryLayouts, info.mapping, info.isUserKeyboardLayout))));

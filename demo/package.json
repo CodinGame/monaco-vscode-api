@@ -21,10 +21,10 @@
     "@types/express": "^5.0.0",
     "@types/node": "^20.11.4",
     "@types/wicg-file-system-access": "^2023.10.5",
-    "@types/ws": "^8.5.12",
+    "@types/ws": "^8.5.13",
     "ts-node": "^10.9.2",
-    "typescript": "~5.6.2",
-    "vite": "~5.4.8"
+    "typescript": "~5.6.3",
+    "vite": "~5.4.10"
   },
   "dependencies": {
     "@codingame/monaco-vscode-accessibility-service-override": "file:../dist/service-override-accessibility",
@@ -186,9 +186,25 @@
     "@codingame/monaco-vscode-workspace-trust-service-override": "file:../dist/service-override-workspace-trust",
     "@codingame/monaco-vscode-xml-default-extension": "file:../dist/default-extension-xml",
     "@codingame/monaco-vscode-yaml-default-extension": "file:../dist/default-extension-yaml",
+
+    "@codingame/monaco-vscode-chat-extensions-notebook-terminal-common": "file:../dist/common-chat-extensions-notebook-terminal",
+    "@codingame/monaco-vscode-chat-extensions-notebook-task-terminal-testing-common": "file:../dist/common-chat-extensions-notebook-task-terminal-testing",
+    "@codingame/monaco-vscode-chat-interactive-notebook-search-common": "file:../dist/common-chat-interactive-notebook-search",
+    "@codingame/monaco-vscode-chat-notebook-common": "file:../dist/common-chat-notebook",
+    "@codingame/monaco-vscode-comments-extensions-common": "file:../dist/common-comments-extensions",
+    "@codingame/monaco-vscode-debug-notebook-common": "file:../dist/common-debug-notebook",
+    "@codingame/monaco-vscode-explorer-outline-timeline-view-common-views-workbench-common": "file:../dist/common-explorer-outline-timeline-view-common-views-workbench",
+    "@codingame/monaco-vscode-notifications-workbench-common": "file:../dist/common-notifications-workbench",
+    "@codingame/monaco-vscode-view-common-views-workbench-common": "file:../dist/common-view-common-views-workbench",
+    "@codingame/monaco-vscode-chat-comments-extensions-interactive-notebook-search-common": "file:../dist/common-chat-comments-extensions-interactive-notebook-search",
+    "@codingame/monaco-vscode-chat-extensions-notebook-common": "file:../dist/common-chat-extensions-notebook",
+    "@codingame/monaco-vscode-user-data-profile-user-data-sync-common": "file:../dist/common-user-data-profile-user-data-sync",
+    "@codingame/monaco-vscode-chat-extensions-notebook-terminal-testing-common": "file:../dist/common-chat-extensions-notebook-terminal-testing",
+    "@codingame/monaco-vscode-chat-extensions-interactive-notebook-quickaccess-search-terminal-common": "file:../dist/common-chat-extensions-interactive-notebook-quickaccess-search-terminal",
+
     "ansi-colors": "^4.1.3",
     "dockerode": "^4.0.2",
-    "express": "^4.21.0",
+    "express": "^4.21.1",
     "monaco-editor": "file:../dist/editor-api",
     "vscode": "file:../dist/main",
     "ws": "^8.18.0"
@@ -197,7 +213,7 @@
     "esbuild": "^0.24.0"
   },
   "volta": {
-    "node": "18.19.0",
-    "npm": "10.7.0"
+    "node": "20.18.0",
+    "npm": "10.9.0"
   }
 }

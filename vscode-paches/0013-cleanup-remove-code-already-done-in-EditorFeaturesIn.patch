@@ -9,7 +9,7 @@ Subject: [PATCH] cleanup: remove code already done in
  1 file changed, 12 deletions(-)
 
 diff --git a/src/vs/editor/standalone/browser/standaloneServices.ts b/src/vs/editor/standalone/browser/standaloneServices.ts
-index 260e404f3dd..17f50fb819e 100644
+index 24cf3f506ff..7d40658401c 100644
 --- a/src/vs/editor/standalone/browser/standaloneServices.ts
 +++ b/src/vs/editor/standalone/browser/standaloneServices.ts
 @@ -91,8 +91,6 @@ import { AccessibilitySignal, AccessibilityModality, IAccessibilitySignalService

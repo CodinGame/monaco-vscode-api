@@ -4,15 +4,15 @@ Date: Mon, 11 Mar 2024 17:11:14 +0100
 Subject: [PATCH] feat: add static asset url mechanism
 
 ---
- src/vs/base/common/network.ts                 |  45 ++--
+ src/vs/base/common/network.ts                 |  35 ++-
  .../api/browser/mainThreadExtensionService.ts |   7 +
  .../workbench/api/common/extHost.protocol.ts  |   1 +
  .../workbench/api/common/extensionHostMain.ts |   5 +
  .../api/worker/extensionHostWorker.ts         | 219 +++++++++++++-----
- 5 files changed, 208 insertions(+), 69 deletions(-)
+ 5 files changed, 208 insertions(+), 59 deletions(-)
 
 diff --git a/src/vs/base/common/network.ts b/src/vs/base/common/network.ts
-index 7f141568abf..9eeda8b4633 100644
+index f220611a722..1fb5fca2b8a 100644
 --- a/src/vs/base/common/network.ts
 +++ b/src/vs/base/common/network.ts
 @@ -8,6 +8,8 @@ import * as platform from './platform.js';
@@ -24,7 +24,7 @@ index 7f141568abf..9eeda8b4633 100644
  
  export namespace Schemas {
  
-@@ -248,6 +250,20 @@ export const VSCODE_AUTHORITY = 'vscode-app';
+@@ -253,6 +255,20 @@ export const VSCODE_AUTHORITY = 'vscode-app';
  class FileAccessImpl {
  
  	private static readonly FALLBACK_AUTHORITY = VSCODE_AUTHORITY;
@@ -45,21 +45,16 @@ index 7f141568abf..9eeda8b4633 100644
  
  	/**
  	 * Returns a URI to use in contexts where the browser is responsible
-@@ -256,12 +272,7 @@ class FileAccessImpl {
+@@ -261,7 +277,7 @@ class FileAccessImpl {
  	 * **Note:** use `dom.ts#asCSSUrl` whenever the URL is to be used in CSS context.
  	 */
  	asBrowserUri(resourcePath: AppResourcePath | ''): URI {
--		// ESM-comment-begin
--		// const uri = this.toUri(resourcePath, require);
--		// ESM-comment-end
--		// ESM-uncomment-begin
 -		const uri = this.toUri(resourcePath);
--		// ESM-uncomment-end
 +		const uri = this.toUri(resourcePath, { toUrl: this.toUrl.bind(this) });
  		return this.uriToBrowserUri(uri);
  	}
  
-@@ -300,7 +311,7 @@ class FileAccessImpl {
+@@ -300,7 +316,7 @@ class FileAccessImpl {
  			});
  		}
  
@@ -68,21 +63,16 @@ index 7f141568abf..9eeda8b4633 100644
  	}
  
  	/**
-@@ -308,12 +319,7 @@ class FileAccessImpl {
+@@ -308,7 +324,7 @@ class FileAccessImpl {
  	 * is responsible for loading.
  	 */
  	asFileUri(resourcePath: AppResourcePath | ''): URI {
--		// ESM-comment-begin
--		// const uri = this.toUri(resourcePath, require);
--		// ESM-comment-end
--		// ESM-uncomment-begin
 -		const uri = this.toUri(resourcePath);
--		// ESM-uncomment-end
 +		const uri = this.toUri(resourcePath, { toUrl: this.toUrl.bind(this) });
  		return this.uriToFileUri(uri);
  	}
  
-@@ -358,6 +364,19 @@ class FileAccessImpl {
+@@ -353,6 +369,19 @@ class FileAccessImpl {
  
  		return URI.parse(moduleIdToUrl!.toUrl(uriOrModule));
  	}
@@ -121,10 +111,10 @@ index faf19a0dce2..e83837db2db 100644
  
  class ExtensionHostProxy implements IExtensionHostProxy {
 diff --git a/src/vs/workbench/api/common/extHost.protocol.ts b/src/vs/workbench/api/common/extHost.protocol.ts
-index 4900f545fb4..15dc855752a 100644
+index 02b40ac0cbf..bc7724ef268 100644
 --- a/src/vs/workbench/api/common/extHost.protocol.ts
 +++ b/src/vs/workbench/api/common/extHost.protocol.ts
-@@ -1525,6 +1525,7 @@ export interface MainThreadExtensionServiceShape extends IDisposable {
+@@ -1530,6 +1530,7 @@ export interface MainThreadExtensionServiceShape extends IDisposable {
  	$onExtensionRuntimeError(extensionId: ExtensionIdentifier, error: SerializedError): void;
  	$setPerformanceMarks(marks: performance.PerformanceMark[]): Promise<void>;
  	$asBrowserUri(uri: UriComponents): Promise<UriComponents>;

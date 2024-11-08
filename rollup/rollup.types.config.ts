@@ -173,13 +173,11 @@ export default rollup.defineConfig(
                 priority: 1
               }
             },
-            async handle(
-              { name: groupName, exclusiveModules, entrypoints },
+            async handle({
+              group: { name: groupName, exclusiveModules, entrypoints },
               moduleGroupName,
-              otherDependencies,
-              options,
               bundle
-            ) {
+            }) {
               if (groupName === 'main') {
                 return
               }

@@ -57,6 +57,10 @@ export {
 } from 'vs/workbench/contrib/terminal/browser/terminal.service'
 
 abstract class SimpleTerminalBackend implements ITerminalBackend {
+  installAutoReply = async (): Promise<void> => {}
+
+  uninstallAllAutoReplies = async (): Promise<void> => {}
+
   getLatency = async (): Promise<IPtyHostLatencyMeasurement[]> => []
   isResponsive = true
 

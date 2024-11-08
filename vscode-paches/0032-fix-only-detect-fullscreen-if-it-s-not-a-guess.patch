@@ -8,7 +8,7 @@ Subject: [PATCH] fix: only detect fullscreen if it's not a guess
  1 file changed, 7 insertions(+), 2 deletions(-)
 
 diff --git a/src/vs/workbench/services/host/browser/browserHostService.ts b/src/vs/workbench/services/host/browser/browserHostService.ts
-index 88d7b0db4c2..7499230f9ed 100644
+index 97436b6913e..4e8bdea6c4f 100644
 --- a/src/vs/workbench/services/host/browser/browserHostService.ts
 +++ b/src/vs/workbench/services/host/browser/browserHostService.ts
 @@ -213,13 +213,18 @@ export class BrowserHostService extends Disposable implements IHostService {

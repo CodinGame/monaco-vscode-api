@@ -35,13 +35,11 @@ echo "Patching vscode..."
 find "$patch_directory" -type f -name '*.patch' -print0 | sort -z | xargs -t -0 -n 1 patch -p1 -i
 
 echo "Installing vscode dependencies..."
-yarn config set ignore-engines
-yarn install --ignore-scripts
-yarn postinstall || true
+npm ci
 
 echo "Installing build dependencies"
 cd build
-yarn install --ignore-engines
+npm ci
 cd ..
 
 echo "Extracting service identifiers"
@@ -60,7 +58,7 @@ cp -R .build/web/extensions "$extension_output_directory"
 # Remove useless files
 cd src
 rm -rf `find . -name '*.test.ts' -o -name 'test' -o -name 'electron-browser'`
-rm -f bootstrap*.js *main.js *cli.js
+rm -f bootstrap*.ts *main.ts *cli.ts
 rm -rf vs/code
 cd ..
 

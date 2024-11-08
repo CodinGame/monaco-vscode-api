@@ -567,7 +567,7 @@ index 69cfd27a424..484b77a02f7 100644
  	handler: (accessor, resource: URI | object) => {
 diff --git a/src/vs/workbench/contrib/files/browser/files.contribution._configuration.ts b/src/vs/workbench/contrib/files/browser/files.contribution._configuration.ts
 new file mode 100644
-index 00000000000..b7d4ca80081
+index 00000000000..0b73d701664
 --- /dev/null
 +++ b/src/vs/workbench/contrib/files/browser/files.contribution._configuration.ts
 @@ -0,0 +1,297 @@
@@ -847,7 +847,7 @@ index 00000000000..b7d4ca80081
 +	properties: {
 +		'editor.formatOnSave': {
 +			'type': 'boolean',
-+			'description': nls.localize('formatOnSave', "Format a file on save. A formatter must be available, the file must not be saved after delay, and the editor must not be shutting down."),
++			'markdownDescription': nls.localize('formatOnSave', "Format a file on save. A formatter must be available and the editor must not be shutting down. When {0} is set to `afterDelay`, the file will only be formatted when saved explicitly.", '`#files.autoSave#`'),
 +			'scope': ConfigurationScope.LANGUAGE_OVERRIDABLE,
 +		},
 +		'editor.formatOnSaveMode': {
@@ -1283,7 +1283,7 @@ index 00000000000..2f31d6a7984
 +	}
 +});
 diff --git a/src/vs/workbench/contrib/files/browser/files.contribution.ts b/src/vs/workbench/contrib/files/browser/files.contribution.ts
-index 250bb0c060a..269fb34cadb 100644
+index 266995ddc6d..269fb34cadb 100644
 --- a/src/vs/workbench/contrib/files/browser/files.contribution.ts
 +++ b/src/vs/workbench/contrib/files/browser/files.contribution.ts
 @@ -3,658 +3,7 @@
@@ -1667,7 +1667,7 @@ index 250bb0c060a..269fb34cadb 100644
 -	properties: {
 -		'editor.formatOnSave': {
 -			'type': 'boolean',
--			'description': nls.localize('formatOnSave', "Format a file on save. A formatter must be available, the file must not be saved after delay, and the editor must not be shutting down."),
+-			'markdownDescription': nls.localize('formatOnSave', "Format a file on save. A formatter must be available and the editor must not be shutting down. When {0} is set to `afterDelay`, the file will only be formatted when saved explicitly.", '`#files.autoSave#`'),
 -			'scope': ConfigurationScope.LANGUAGE_OVERRIDABLE,
 -		},
 -		'editor.formatOnSaveMode': {

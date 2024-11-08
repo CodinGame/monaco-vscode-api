@@ -116,7 +116,7 @@ index 59f027dd434..91703a85ce8 100644
  	 * Contributions to instantiate.
  	 * When provided, only the contributions included will be instantiated.
 diff --git a/src/vs/editor/browser/widget/diffEditor/diffEditorWidget.ts b/src/vs/editor/browser/widget/diffEditor/diffEditorWidget.ts
-index da2e28f1c44..41d9152f1e6 100644
+index 01688ab96bb..4d257011cd1 100644
 --- a/src/vs/editor/browser/widget/diffEditor/diffEditorWidget.ts
 +++ b/src/vs/editor/browser/widget/diffEditor/diffEditorWidget.ts
 @@ -51,6 +51,12 @@ import { CSSStyle, ObservableElementSizeObserver, RefCounted, applyStyle, applyV

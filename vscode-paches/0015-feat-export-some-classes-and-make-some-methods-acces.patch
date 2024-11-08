@@ -33,10 +33,10 @@ Subject: [PATCH] feat: export some classes and make some methods accessible
  26 files changed, 45 insertions(+), 45 deletions(-)
 
 diff --git a/src/vs/platform/actions/browser/actionViewItemService.ts b/src/vs/platform/actions/browser/actionViewItemService.ts
-index fa5739eec65..07f413b305f 100644
+index 851b6c9117e..99c9030692f 100644
 --- a/src/vs/platform/actions/browser/actionViewItemService.ts
 +++ b/src/vs/platform/actions/browser/actionViewItemService.ts
-@@ -38,7 +38,7 @@ export class NullActionViewItemService implements IActionViewItemService {
+@@ -40,7 +40,7 @@ export class NullActionViewItemService implements IActionViewItemService {
  	}
  }
  
@@ -72,7 +72,7 @@ index bae2812c5f3..022b7ff6e54 100644
  	declare readonly _serviceBrand: undefined;
  
 diff --git a/src/vs/workbench/browser/layout.ts b/src/vs/workbench/browser/layout.ts
-index 7290a2f7076..2e07af10fae 100644
+index 38a594c7d2f..64a254cfc51 100644
 --- a/src/vs/workbench/browser/layout.ts
 +++ b/src/vs/workbench/browser/layout.ts
 @@ -51,7 +51,7 @@ import { CodeWindow, mainWindow } from '../../base/browser/window.js';
@@ -114,10 +114,10 @@ index 7290a2f7076..2e07af10fae 100644
  	readonly filesToDiff?: IPathToOpen[];
  	readonly filesToMerge?: IPathToOpen[];
 diff --git a/src/vs/workbench/browser/workbench.ts b/src/vs/workbench/browser/workbench.ts
-index f081430e49f..cf237f2df62 100644
+index b40c9fa73a9..c6cefac928f 100644
 --- a/src/vs/workbench/browser/workbench.ts
 +++ b/src/vs/workbench/browser/workbench.ts
-@@ -82,7 +82,7 @@ export class Workbench extends Layout {
+@@ -80,7 +80,7 @@ export class Workbench extends Layout {
  		this.registerErrorHandler(logService);
  	}
  
@@ -126,7 +126,7 @@ index f081430e49f..cf237f2df62 100644
  
  		// Listen on unhandled rejection events
  		// Note: intentionally not registered as disposable to handle
-@@ -126,7 +126,7 @@ export class Workbench extends Layout {
+@@ -99,7 +99,7 @@ export class Workbench extends Layout {
  	}
  
  	private previousUnexpectedError: { message: string | undefined; time: number } = { message: undefined, time: 0 };
@@ -135,7 +135,7 @@ index f081430e49f..cf237f2df62 100644
  		const message = toErrorMessage(error, true);
  		if (!message) {
  			return;
-@@ -201,7 +201,7 @@ export class Workbench extends Layout {
+@@ -174,7 +174,7 @@ export class Workbench extends Layout {
  		}
  	}
  
@@ -144,7 +144,7 @@ index f081430e49f..cf237f2df62 100644
  
  		// Layout Service
  		serviceCollection.set(IWorkbenchLayoutService, this);
-@@ -240,7 +240,7 @@ export class Workbench extends Layout {
+@@ -213,7 +213,7 @@ export class Workbench extends Layout {
  		return instantiationService;
  	}
  
@@ -153,7 +153,7 @@ index f081430e49f..cf237f2df62 100644
  
  		// Configuration changes
  		this._register(configurationService.onDidChangeConfiguration(e => this.updateFontAliasing(e, configurationService)));
-@@ -329,7 +329,7 @@ export class Workbench extends Layout {
+@@ -302,7 +302,7 @@ export class Workbench extends Layout {
  		}
  	}
  
@@ -162,7 +162,7 @@ index f081430e49f..cf237f2df62 100644
  
  		// ARIA & Signals
  		setARIAContainer(this.mainContainer);
-@@ -396,7 +396,7 @@ export class Workbench extends Layout {
+@@ -369,7 +369,7 @@ export class Workbench extends Layout {
  		return part;
  	}
  
@@ -171,7 +171,7 @@ index f081430e49f..cf237f2df62 100644
  
  		// Instantiate Notification components
  		const notificationsCenter = this._register(instantiationService.createInstance(NotificationsCenter, this.mainContainer, notificationService.model));
-@@ -427,7 +427,7 @@ export class Workbench extends Layout {
+@@ -400,7 +400,7 @@ export class Workbench extends Layout {
  		});
  	}
  
@@ -337,10 +337,10 @@ index ac3c7ed5006..94663c3cde9 100644
  	readonly _serviceBrand: undefined;
  
 diff --git a/src/vs/workbench/services/extensions/browser/webWorkerExtensionHost.ts b/src/vs/workbench/services/extensions/browser/webWorkerExtensionHost.ts
-index cecd70c21af..8141d1dfe02 100644
+index 54fc51bb873..5754f65d0c5 100644
 --- a/src/vs/workbench/services/extensions/browser/webWorkerExtensionHost.ts
 +++ b/src/vs/workbench/services/extensions/browser/webWorkerExtensionHost.ts
-@@ -78,7 +78,7 @@ export class WebWorkerExtensionHost extends Disposable implements IExtensionHost
+@@ -77,7 +77,7 @@ export class WebWorkerExtensionHost extends Disposable implements IExtensionHost
  		this._extensionHostLogsLocation = joinPath(this._environmentService.extHostLogsPath, 'webWorker');
  	}
  
@@ -350,7 +350,7 @@ index cecd70c21af..8141d1dfe02 100644
  		if (this._environmentService.debugExtensionHost && this._environmentService.debugRenderer) {
  			suffixSearchParams.set('debugged', '1');
 diff --git a/src/vs/workbench/services/extensions/common/abstractExtensionService.ts b/src/vs/workbench/services/extensions/common/abstractExtensionService.ts
-index 0479473dcaa..9fa2663f0e5 100644
+index b14b72523de..633a24cee32 100644
 --- a/src/vs/workbench/services/extensions/common/abstractExtensionService.ts
 +++ b/src/vs/workbench/services/extensions/common/abstractExtensionService.ts
 @@ -95,9 +95,9 @@ export abstract class AbstractExtensionService extends Disposable implements IEx
@@ -366,7 +366,7 @@ index 0479473dcaa..9fa2663f0e5 100644
  		@IInstantiationService protected readonly _instantiationService: IInstantiationService,
  		@INotificationService protected readonly _notificationService: INotificationService,
  		@IWorkbenchEnvironmentService protected readonly _environmentService: IWorkbenchEnvironmentService,
-@@ -224,7 +224,7 @@ export abstract class AbstractExtensionService extends Disposable implements IEx
+@@ -228,7 +228,7 @@ export abstract class AbstractExtensionService extends Disposable implements IEx
  
  	//#region deltaExtensions
  
@@ -375,7 +375,7 @@ index 0479473dcaa..9fa2663f0e5 100644
  		this._deltaExtensionsQueue.push(item);
  		if (this._inHandleDeltaExtensions) {
  			// Let the current item finish, the new one will be picked up
-@@ -1289,7 +1289,7 @@ export interface IExtensionHostFactory {
+@@ -1293,7 +1293,7 @@ export interface IExtensionHostFactory {
  	createExtensionHost(runningLocations: ExtensionRunningLocationTracker, runningLocation: ExtensionRunningLocation, isInitialStart: boolean): IExtensionHost | null;
  }
  
@@ -385,7 +385,7 @@ index 0479473dcaa..9fa2663f0e5 100644
  		public readonly toAdd: IExtension[],
  		public readonly toRemove: string[] | IExtension[]
 diff --git a/src/vs/workbench/services/keybinding/browser/keybindingService.ts b/src/vs/workbench/services/keybinding/browser/keybindingService.ts
-index de6fc38cd0a..320c2526b7a 100644
+index 04c5e87def0..f10b332d8e2 100644
 --- a/src/vs/workbench/services/keybinding/browser/keybindingService.ts
 +++ b/src/vs/workbench/services/keybinding/browser/keybindingService.ts
 @@ -423,7 +423,7 @@ export class WorkbenchKeybindingService extends AbstractKeybindingService {
@@ -489,7 +489,7 @@ index e976a8617ca..b855f41710f 100644
  
  	private readonly _onDidCreateTerminal = new Emitter<IShellLaunchConfig>();
 diff --git a/src/vs/workbench/services/userDataProfile/common/remoteUserDataProfiles.ts b/src/vs/workbench/services/userDataProfile/common/remoteUserDataProfiles.ts
-index 65ca63829ec..0dd7d367fdd 100644
+index 1281d1f717b..96356254354 100644
 --- a/src/vs/workbench/services/userDataProfile/common/remoteUserDataProfiles.ts
 +++ b/src/vs/workbench/services/userDataProfile/common/remoteUserDataProfiles.ts
 @@ -25,7 +25,7 @@ export interface IRemoteUserDataProfilesService {

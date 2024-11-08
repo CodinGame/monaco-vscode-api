@@ -1,1 +1,1 @@
-import 'vs/workbench/services/search/worker/localFileSearch.esm.js'
+import 'vs/workbench/services/search/worker/localFileSearchMain.js'

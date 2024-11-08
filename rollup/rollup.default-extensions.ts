@@ -8,7 +8,9 @@ import * as path from 'path'
 import { fileURLToPath } from 'url'
 import metadataPlugin from './rollup-metadata-plugin'
 import extensionDirectoryPlugin from '../dist/rollup-extension-directory-plugin/rollup-extension-directory-plugin.js'
-import pkg from '../package.json' assert { type: 'json' }
+const pkg = JSON.parse(
+  fs.readFileSync(new URL('../package.json', import.meta.url).pathname).toString()
+)
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url))
 
@@ -101,7 +103,7 @@ export default rollup.defineConfig([
             }
           }),
           metadataPlugin({
-            handle({ directDependencies }, moduleGroupName, otherDependencies, options, bundle) {
+            handle({ group: { directDependencies }, bundle }) {
               const entrypoint = Object.values(bundle).filter(
                 (v) => (v as rollup.OutputChunk).isEntry
               )[0]!.fileName
@@ -189,7 +191,7 @@ ${extensions.map((name) => `  whenReady${pascalCase(name)}()`).join(',\n')}
             }
           },
           metadataPlugin({
-            handle({ directDependencies }, moduleGroupName, otherDependencies, options, bundle) {
+            handle({ group: { directDependencies }, bundle }) {
               const entrypoint = Object.values(bundle).filter(
                 (v) => (v as rollup.OutputChunk).isEntry
               )[0]!.fileName

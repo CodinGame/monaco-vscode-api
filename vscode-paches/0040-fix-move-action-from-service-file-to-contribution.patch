@@ -84,7 +84,7 @@ index 00000000000..3fc81fe28fc
 +	}
 +});
 diff --git a/src/vs/workbench/contrib/welcomeGettingStarted/browser/gettingStartedService.ts b/src/vs/workbench/contrib/welcomeGettingStarted/browser/gettingStartedService.ts
-index 310fd38c68f..0d7b7a10e1c 100644
+index 2780c01bc15..b0f9475c895 100644
 --- a/src/vs/workbench/contrib/welcomeGettingStarted/browser/gettingStartedService.ts
 +++ b/src/vs/workbench/contrib/welcomeGettingStarted/browser/gettingStartedService.ts
 @@ -3,11 +3,10 @@
@@ -109,7 +109,7 @@ index 310fd38c68f..0d7b7a10e1c 100644
  import { ITelemetryService } from '../../../../platform/telemetry/common/telemetry.js';
  import { checkGlobFileExists } from '../../../services/extensions/common/workspaceContains.js';
  import { IWorkspaceContextService } from '../../../../platform/workspace/common/workspace.js';
-@@ -668,48 +667,4 @@ const convertInternalMediaPathsToBrowserURIs = (path: string | { hc: string; hcL
+@@ -681,48 +680,4 @@ const convertInternalMediaPathsToBrowserURIs = (path: string | { hc: string; hcL
  	}
  };
  

@@ -37,7 +37,7 @@ index f6873bf5524..b653ac57a36 100644
  				if (!data.icon.complete) {
  					data.icon.style.visibility = 'hidden';
 diff --git a/src/vs/workbench/contrib/extensions/browser/extensionsWorkbenchService.ts b/src/vs/workbench/contrib/extensions/browser/extensionsWorkbenchService.ts
-index e34a9006982..307fc647c57 100644
+index 1575be24d0d..2a239ae2620 100644
 --- a/src/vs/workbench/contrib/extensions/browser/extensionsWorkbenchService.ts
 +++ b/src/vs/workbench/contrib/extensions/browser/extensionsWorkbenchService.ts
 @@ -19,7 +19,7 @@ import {
@@ -59,7 +59,7 @@ index e34a9006982..307fc647c57 100644
  
  	get repository(): string | undefined {
 diff --git a/src/vs/workbench/contrib/welcomeGettingStarted/browser/gettingStartedService.ts b/src/vs/workbench/contrib/welcomeGettingStarted/browser/gettingStartedService.ts
-index a3d6f047f65..310fd38c68f 100644
+index 0c7f3750cf3..2780c01bc15 100644
 --- a/src/vs/workbench/contrib/welcomeGettingStarted/browser/gettingStartedService.ts
 +++ b/src/vs/workbench/contrib/welcomeGettingStarted/browser/gettingStartedService.ts
 @@ -33,7 +33,7 @@ import { ITelemetryService } from '../../../../platform/telemetry/common/telemet
@@ -68,10 +68,10 @@ index a3d6f047f65..310fd38c68f 100644
  import { CancellationTokenSource } from '../../../../base/common/cancellation.js';
 -import { DefaultIconPath } from '../../../services/extensionManagement/common/extensionManagement.js';
 +import { getDefaultIconPath } from '../../../services/extensionManagement/common/extensionManagement.js';
+ import { IProductService } from '../../../../platform/product/common/productService.js';
  
  export const HasMultipleNewFileEntries = new RawContextKey<boolean>('hasMultipleNewFileEntries', false);
- 
-@@ -395,7 +395,7 @@ export class WalkthroughsService extends Disposable implements IWalkthroughsServ
+@@ -408,7 +408,7 @@ export class WalkthroughsService extends Disposable implements IWalkthroughsServ
  					type: 'image',
  					path: iconStr
  						? FileAccess.uriToBrowserUri(joinPath(extension.extensionLocation, iconStr)).toString(true)

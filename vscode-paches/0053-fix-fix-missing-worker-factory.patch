@@ -4,14 +4,14 @@ Date: Tue, 29 Oct 2024 12:00:15 +0100
 Subject: [PATCH] fix: fix missing worker factory
 
 ---
- .../common/services/editorSimpleWorker.esm.ts     |  5 +----
+ .../common/services/editorSimpleWorkerMain.ts     |  5 +----
  .../common/services/editorWorkerBootstrap.ts      | 15 +++------------
  2 files changed, 4 insertions(+), 16 deletions(-)
 
-diff --git a/src/vs/editor/common/services/editorSimpleWorker.esm.ts b/src/vs/editor/common/services/editorSimpleWorker.esm.ts
+diff --git a/src/vs/editor/common/services/editorSimpleWorkerMain.ts b/src/vs/editor/common/services/editorSimpleWorkerMain.ts
 index 8d0e18738f4..795f00d68c3 100644
---- a/src/vs/editor/common/services/editorSimpleWorker.esm.ts
-+++ b/src/vs/editor/common/services/editorSimpleWorker.esm.ts
+--- a/src/vs/editor/common/services/editorSimpleWorkerMain.ts
++++ b/src/vs/editor/common/services/editorSimpleWorkerMain.ts
 @@ -3,7 +3,4 @@
   *  Licensed under the MIT License. See License.txt in the project root for license information.
   *--------------------------------------------------------------------------------------------*/

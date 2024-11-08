@@ -1,1 +1,1 @@
-import 'vs/workbench/contrib/output/common/outputLinkComputer.esm.js'
+import 'vs/workbench/contrib/output/common/outputLinkComputerMain.js'

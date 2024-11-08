@@ -2,9 +2,11 @@ import { defineConfig } from 'vite'
 import importMetaUrlPlugin from '@codingame/esbuild-import-meta-url-plugin'
 import * as fs from 'fs'
 import path from 'path'
-import pkg from './package.json' assert { type: 'json' }
+const pkg = JSON.parse(
+  fs.readFileSync(new URL('./package.json', import.meta.url).pathname).toString()
+)
 
-const localDependencies = Object.entries(pkg.dependencies)
+const localDependencies = Object.entries(pkg.dependencies as Record<string, string>)
   .filter(([, version]) => version.startsWith('file:../'))
   .map(([name]) => name)
 export default defineConfig({

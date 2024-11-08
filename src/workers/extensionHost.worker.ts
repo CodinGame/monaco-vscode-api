@@ -1,1 +1,1 @@
-import 'vs/workbench/api/worker/extensionHostWorker.esm.js'
+import 'vs/workbench/api/worker/extensionHostWorkerMain.js'

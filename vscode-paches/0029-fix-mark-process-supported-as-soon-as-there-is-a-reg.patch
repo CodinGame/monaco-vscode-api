@@ -10,7 +10,7 @@ Subject: [PATCH] fix: mark process supported as soon as there is a registered
  2 files changed, 33 insertions(+), 11 deletions(-)
 
 diff --git a/src/vs/platform/terminal/common/terminal.ts b/src/vs/platform/terminal/common/terminal.ts
-index a821d841916..5b7f5226641 100644
+index 34195bc820d..87a033aeea1 100644
 --- a/src/vs/platform/terminal/common/terminal.ts
 +++ b/src/vs/platform/terminal/common/terminal.ts
 @@ -3,7 +3,7 @@
@@ -22,7 +22,7 @@ index a821d841916..5b7f5226641 100644
  import { IProcessEnvironment, OperatingSystem } from '../../../base/common/platform.js';
  import { URI, UriComponents } from '../../../base/common/uri.js';
  import { createDecorator } from '../../instantiation/common/instantiation.js';
-@@ -1055,12 +1055,27 @@ export const TerminalExtensions = {
+@@ -1070,12 +1070,27 @@ export const TerminalExtensions = {
  	Backend: 'workbench.contributions.terminal.processBackend'
  };
  
@@ -50,7 +50,7 @@ index a821d841916..5b7f5226641 100644
  	/**
  	 * Registers a terminal backend for a remote authority.
  	 */
-@@ -1077,21 +1092,20 @@ class TerminalBackendRegistry implements ITerminalBackendRegistry {
+@@ -1092,21 +1107,20 @@ class TerminalBackendRegistry implements ITerminalBackendRegistry {
  
  	get backends(): ReadonlyMap<string, ITerminalBackend> { return this._backends; }
  
@@ -79,10 +79,10 @@ index a821d841916..5b7f5226641 100644
  }
  Registry.add(TerminalExtensions.Backend, new TerminalBackendRegistry());
 diff --git a/src/vs/workbench/contrib/terminal/browser/terminalService.ts b/src/vs/workbench/contrib/terminal/browser/terminalService.ts
-index b1da8a45dd8..9ec62d935d7 100644
+index 028b6d9ddd2..49a15db0eb5 100644
 --- a/src/vs/workbench/contrib/terminal/browser/terminalService.ts
 +++ b/src/vs/workbench/contrib/terminal/browser/terminalService.ts
-@@ -19,7 +19,7 @@ import { IContextKey, IContextKeyService } from '../../../../platform/contextkey
+@@ -20,7 +20,7 @@ import { IContextKey, IContextKeyService } from '../../../../platform/contextkey
  import { IDialogService } from '../../../../platform/dialogs/common/dialogs.js';
  import { IInstantiationService } from '../../../../platform/instantiation/common/instantiation.js';
  import { INotificationService } from '../../../../platform/notification/common/notification.js';
@@ -91,7 +91,7 @@ index b1da8a45dd8..9ec62d935d7 100644
  import { formatMessageForTerminal } from '../../../../platform/terminal/common/terminalStrings.js';
  import { iconForeground } from '../../../../platform/theme/common/colorRegistry.js';
  import { getIconRegistry } from '../../../../platform/theme/common/iconRegistry.js';
-@@ -57,6 +57,7 @@ import { ITerminalCapabilityImplMap, TerminalCapability } from '../../../../plat
+@@ -58,6 +58,7 @@ import { ITerminalCapabilityImplMap, TerminalCapability } from '../../../../plat
  import { createInstanceCapabilityEventMultiplexer } from './terminalEvents.js';
  import { mainWindow } from '../../../../base/browser/window.js';
  import { GroupIdentifier } from '../../../common/editor.js';
@@ -99,7 +99,7 @@ index b1da8a45dd8..9ec62d935d7 100644
  
  export class TerminalService extends Disposable implements ITerminalService {
  	declare _serviceBrand: undefined;
-@@ -216,7 +217,14 @@ export class TerminalService extends Disposable implements ITerminalService {
+@@ -217,7 +218,14 @@ export class TerminalService extends Disposable implements ITerminalService {
  		this._handleInstanceContextKeys();
  		this._terminalShellTypeContextKey = TerminalContextKeys.shellType.bindTo(this._contextKeyService);
  		this._processSupportContextKey = TerminalContextKeys.processSupported.bindTo(this._contextKeyService);
@@ -115,7 +115,7 @@ index b1da8a45dd8..9ec62d935d7 100644
  		this._terminalHasBeenCreated = TerminalContextKeys.terminalHasBeenCreated.bindTo(this._contextKeyService);
  		this._terminalCountContextKey = TerminalContextKeys.count.bindTo(this._contextKeyService);
  		this._terminalEditorActive = TerminalContextKeys.terminalEditorActive.bindTo(this._contextKeyService);
-@@ -880,7 +888,7 @@ export class TerminalService extends Disposable implements ITerminalService {
+@@ -881,7 +889,7 @@ export class TerminalService extends Disposable implements ITerminalService {
  	}
  
  	registerProcessSupport(isSupported: boolean): void {

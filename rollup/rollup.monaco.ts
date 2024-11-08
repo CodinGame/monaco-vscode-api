@@ -4,8 +4,11 @@ import { PackageJson } from 'type-fest'
 import replace from '@rollup/plugin-replace'
 import glob from 'fast-glob'
 import * as path from 'path'
+import * as fs from 'fs'
 import { fileURLToPath } from 'url'
-import pkg from '../package.json' assert { type: 'json' }
+const pkg = JSON.parse(
+  fs.readFileSync(new URL('../package.json', import.meta.url).pathname).toString()
+)
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url))
 

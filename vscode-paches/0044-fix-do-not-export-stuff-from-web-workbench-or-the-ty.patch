@@ -10,7 +10,7 @@ Subject: [PATCH] fix: do not export stuff from web workbench or the typescript
  2 files changed, 2 insertions(+), 58 deletions(-)
 
 diff --git a/src/vs/workbench/services/treeSitter/browser/treeSitterTokenizationFeature.ts b/src/vs/workbench/services/treeSitter/browser/treeSitterTokenizationFeature.ts
-index 9bd32453f1e..1aca8d0cec4 100644
+index 0829476700c..f075ad5c39a 100644
 --- a/src/vs/workbench/services/treeSitter/browser/treeSitterTokenizationFeature.ts
 +++ b/src/vs/workbench/services/treeSitter/browser/treeSitterTokenizationFeature.ts
 @@ -29,7 +29,7 @@ export interface ITreeSitterTokenizationFeature {

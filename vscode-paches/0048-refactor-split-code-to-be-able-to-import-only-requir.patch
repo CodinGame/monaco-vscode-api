@@ -4,25 +4,26 @@ Date: Mon, 29 Apr 2024 17:16:21 +0200
 Subject: [PATCH] refactor: split code to be able to import only required part
 
 ---
- .../treeSitter/treeSitterParserService.ts     |   3 +-
+ .../treeSitter/treeSitterParserService.ts     |   4 +-
  .../common/extensionsScannerService.ts        | 294 +++++++++---------
  src/vs/platform/files/common/fileService.ts   | 111 ++++---
  .../localization/browser/localeService.ts     |  38 ++-
- 4 files changed, 237 insertions(+), 209 deletions(-)
+ 4 files changed, 238 insertions(+), 209 deletions(-)
 
 diff --git a/src/vs/editor/browser/services/treeSitter/treeSitterParserService.ts b/src/vs/editor/browser/services/treeSitter/treeSitterParserService.ts
-index a7eed4bdd12..dcf01b1b28e 100644
+index c865456f6a2..17e8430cdf0 100644
 --- a/src/vs/editor/browser/services/treeSitter/treeSitterParserService.ts
 +++ b/src/vs/editor/browser/services/treeSitter/treeSitterParserService.ts
-@@ -15,7 +15,6 @@ import { ITelemetryService } from '../../../../platform/telemetry/common/telemet
+@@ -15,7 +15,7 @@ import { ITelemetryService } from '../../../../platform/telemetry/common/telemet
  import { ILogService } from '../../../../platform/log/common/log.js';
  import { IConfigurationService } from '../../../../platform/configuration/common/configuration.js';
  import { setTimeout0 } from '../../../../base/common/platform.js';
--import { importAMDNodeModule } from '../../../../amdX.js';
+-import { canASAR, importAMDNodeModule } from '../../../../amdX.js';
++import { canASAR } from '../../../../amdX.js';
  import { Emitter, Event } from '../../../../base/common/event.js';
  import { CancellationToken, cancelOnDispose } from '../../../../base/common/cancellation.js';
  import { IEnvironmentService } from '../../../../platform/environment/common/environment.js';
-@@ -319,7 +318,7 @@ export class TreeSitterImporter {
+@@ -318,7 +318,7 @@ export class TreeSitterImporter {
  	private _treeSitterImport: typeof import('@vscode/tree-sitter-wasm') | undefined;
  	private async _getTreeSitterImport() {
  		if (!this._treeSitterImport) {
