@@ -11,7 +11,7 @@ Subject: [PATCH] fix: rollback typescript as the last version breaks the
  3 files changed, 6 insertions(+), 5 deletions(-)
 
 diff --git a/package-lock.json b/package-lock.json
-index 18b688d2243..2a94dd19504 100644
+index a8ced2d9734..f0f04be2250 100644
 --- a/package-lock.json
 +++ b/package-lock.json
 @@ -152,7 +152,7 @@
@@ -37,7 +37,7 @@ index 18b688d2243..2a94dd19504 100644
        "bin": {
          "tsc": "bin/tsc",
 diff --git a/package.json b/package.json
-index 96411955312..e1ed7f42159 100644
+index 78bebe05ee6..ac705353683 100644
 --- a/package.json
 +++ b/package.json
 @@ -210,7 +210,7 @@
