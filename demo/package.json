@@ -187,7 +187,6 @@
     "@codingame/monaco-vscode-xml-default-extension": "file:../dist/default-extension-xml",
     "@codingame/monaco-vscode-yaml-default-extension": "file:../dist/default-extension-yaml",
 
-    "@codingame/monaco-vscode-chat-extensions-notebook-terminal-common": "file:../dist/common-chat-extensions-notebook-terminal",
     "@codingame/monaco-vscode-chat-extensions-notebook-task-terminal-testing-common": "file:../dist/common-chat-extensions-notebook-task-terminal-testing",
     "@codingame/monaco-vscode-chat-interactive-notebook-search-common": "file:../dist/common-chat-interactive-notebook-search",
     "@codingame/monaco-vscode-chat-notebook-common": "file:../dist/common-chat-notebook",
@@ -199,8 +198,10 @@
     "@codingame/monaco-vscode-chat-comments-extensions-interactive-notebook-search-common": "file:../dist/common-chat-comments-extensions-interactive-notebook-search",
     "@codingame/monaco-vscode-chat-extensions-notebook-common": "file:../dist/common-chat-extensions-notebook",
     "@codingame/monaco-vscode-user-data-profile-user-data-sync-common": "file:../dist/common-user-data-profile-user-data-sync",
-    "@codingame/monaco-vscode-chat-extensions-notebook-terminal-testing-common": "file:../dist/common-chat-extensions-notebook-terminal-testing",
-    "@codingame/monaco-vscode-chat-extensions-interactive-notebook-quickaccess-search-terminal-common": "file:../dist/common-chat-extensions-interactive-notebook-quickaccess-search-terminal",
+    "@codingame/monaco-vscode-chat-extensions-interactive-notebook-search-terminal-common": "file:../dist/common-chat-extensions-interactive-notebook-search-terminal",
+    "@codingame/monaco-vscode-chat-notebook-terminal-testing-common": "file:../dist/common-chat-notebook-terminal-testing",
+    "@codingame/monaco-vscode-chat-interactive-notebook-search-terminal-common": "file:../dist/common-chat-interactive-notebook-search-terminal",
+    "@codingame/monaco-vscode-chat-notebook-terminal-common": "file:../dist/common-chat-notebook-terminal",
 
     "ansi-colors": "^4.1.3",
     "dockerode": "^4.0.2",
