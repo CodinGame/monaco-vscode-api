@@ -1,0 +1,260 @@
+From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
+From: =?UTF-8?q?Lo=C3=AFc=20Mangeonjean?= <loic@coderpad.io>
+Date: Thu, 31 Oct 2024 12:20:04 +0100
+Subject: [PATCH] fix: store activeChatController in another module
+
+---
+ .../contrib/chat/browser/chatWidget.ts        |  4 +--
+ .../actions/voiceChatActions.ts               |  4 +--
+ .../terminal/terminalContribChatExports.ts    |  2 ++
+ .../chat/browser/terminalChatActions.ts       | 25 ++++++++++---------
+ .../chat/browser/terminalChatController.ts    | 11 +++-----
+ .../browser/terminalChatControllerHolder.ts   | 15 +++++++++++
+ 6 files changed, 38 insertions(+), 23 deletions(-)
+ create mode 100644 src/vs/workbench/contrib/terminalContrib/chat/browser/terminalChatControllerHolder.ts
+
+diff --git a/src/vs/workbench/contrib/chat/browser/chatWidget.ts b/src/vs/workbench/contrib/chat/browser/chatWidget.ts
+index c3da00e0968..10457719c43 100644
+--- a/src/vs/workbench/contrib/chat/browser/chatWidget.ts
++++ b/src/vs/workbench/contrib/chat/browser/chatWidget.ts
+@@ -32,7 +32,7 @@ import { IStorageService, StorageScope, StorageTarget } from '../../../../platfo
+ import { buttonSecondaryBackground, buttonSecondaryForeground, buttonSecondaryHoverBackground } from '../../../../platform/theme/common/colorRegistry.js';
+ import { asCssVariable } from '../../../../platform/theme/common/colorUtils.js';
+ import { IThemeService } from '../../../../platform/theme/common/themeService.js';
+-import { TerminalChatController } from '../../terminal/terminalContribChatExports.js';
++import { activeChatController } from '../../terminal/terminalContribChatExports.js';
+ import { ChatAgentLocation, IChatAgentCommand, IChatAgentData, IChatAgentService, IChatWelcomeMessageContent, isChatWelcomeMessageContent } from '../common/chatAgents.js';
+ import { CONTEXT_CHAT_INPUT_HAS_AGENT, CONTEXT_CHAT_LOCATION, CONTEXT_CHAT_REQUEST_IN_PROGRESS, CONTEXT_IN_CHAT_SESSION, CONTEXT_IN_QUICK_CHAT, CONTEXT_LAST_ITEM_ID, CONTEXT_RESPONSE_FILTERED } from '../common/chatContextKeys.js';
+ import { ChatEditingSessionState, IChatEditingService, IChatEditingSession } from '../common/chatEditingService.js';
+@@ -1251,7 +1251,7 @@ export class ChatWidgetService extends Disposable implements IChatWidgetService
+ 	readonly onDidAddWidget: Event<IChatWidget> = this._onDidAddWidget.event;
+ 
+ 	get lastFocusedWidget(): IChatWidget | undefined {
+-		return TerminalChatController.activeChatController?.chatWidget ?? this._lastFocusedWidget;
++		return activeChatController?.chatWidget ?? this._lastFocusedWidget;
+ 	}
+ 
+ 	getAllWidgets(location: ChatAgentLocation): ReadonlyArray<IChatWidget> {
+diff --git a/src/vs/workbench/contrib/chat/electron-sandbox/actions/voiceChatActions.ts b/src/vs/workbench/contrib/chat/electron-sandbox/actions/voiceChatActions.ts
+index 3935d4ed235..9b2516c7c74 100644
+--- a/src/vs/workbench/contrib/chat/electron-sandbox/actions/voiceChatActions.ts
++++ b/src/vs/workbench/contrib/chat/electron-sandbox/actions/voiceChatActions.ts
+@@ -47,7 +47,7 @@ import { CTX_INLINE_CHAT_FOCUSED, MENU_INLINE_CHAT_WIDGET_SECONDARY } from '../.
+ import { NOTEBOOK_EDITOR_FOCUSED } from '../../../notebook/common/notebookContextKeys.js';
+ import { HasSpeechProvider, ISpeechService, KeywordRecognitionStatus, SpeechToTextInProgress, SpeechToTextStatus, TextToSpeechStatus, TextToSpeechInProgress as GlobalTextToSpeechInProgress } from '../../../speech/common/speechService.js';
+ import { ITerminalService } from '../../../terminal/browser/terminal.js';
+-import { TerminalChatContextKeys, TerminalChatController } from '../../../terminal/terminalContribChatExports.js';
++import { TerminalChatContextKeys, TerminalChatController, activeChatController } from '../../../terminal/terminalContribChatExports.js';
+ import { IEditorService } from '../../../../services/editor/common/editorService.js';
+ import { IHostService } from '../../../../services/host/browser/host.js';
+ import { IWorkbenchLayoutService, Parts } from '../../../../services/layout/browser/layoutService.js';
+@@ -148,7 +148,7 @@ class VoiceChatSessionControllerFactory {
+ 		// 1.) probe terminal chat which is not part of chat widget service
+ 		const activeInstance = terminalService.activeInstance;
+ 		if (activeInstance) {
+-			const terminalChat = TerminalChatController.activeChatController || TerminalChatController.get(activeInstance);
++			const terminalChat = activeChatController || TerminalChatController.get(activeInstance);
+ 			if (terminalChat?.hasFocus()) {
+ 				return VoiceChatSessionControllerFactory.doCreateForTerminalChat(terminalChat);
+ 			}
+diff --git a/src/vs/workbench/contrib/terminal/terminalContribChatExports.ts b/src/vs/workbench/contrib/terminal/terminalContribChatExports.ts
+index edd22bbfdc5..10e68ca6b62 100644
+--- a/src/vs/workbench/contrib/terminal/terminalContribChatExports.ts
++++ b/src/vs/workbench/contrib/terminal/terminalContribChatExports.ts
+@@ -3,8 +3,10 @@
+  *  Licensed under the MIT License. See License.txt in the project root for license information.
+  *--------------------------------------------------------------------------------------------*/
+ 
++
+ // HACK: Export chat parts as it's only partially encapsulated within the contrib. This file only
+ // exists because including it into terminalContribExports would cause a circular dependency on
+ // startup
+ export { TerminalChatContextKeys } from '../terminalContrib/chat/browser/terminalChat.js';
+ export { TerminalChatController } from '../terminalContrib/chat/browser/terminalChatController.js';
++export { activeChatController } from '../terminalContrib/chat/browser/terminalChatControllerHolder.js';
+diff --git a/src/vs/workbench/contrib/terminalContrib/chat/browser/terminalChatActions.ts b/src/vs/workbench/contrib/terminalContrib/chat/browser/terminalChatActions.ts
+index 885239c6009..23a46aa2556 100644
+--- a/src/vs/workbench/contrib/terminalContrib/chat/browser/terminalChatActions.ts
++++ b/src/vs/workbench/contrib/terminalContrib/chat/browser/terminalChatActions.ts
+@@ -16,6 +16,7 @@ import { registerActiveXtermAction } from '../../../terminal/browser/terminalAct
+ import { TerminalContextKeys } from '../../../terminal/common/terminalContextKey.js';
+ import { MENU_TERMINAL_CHAT_INPUT, MENU_TERMINAL_CHAT_WIDGET, MENU_TERMINAL_CHAT_WIDGET_STATUS, TerminalChatCommandId, TerminalChatContextKeys } from './terminalChat.js';
+ import { TerminalChatController } from './terminalChatController.js';
++import { activeChatController } from './terminalChatControllerHolder.js';
+ 
+ registerActiveXtermAction({
+ 	id: TerminalChatCommandId.Start,
+@@ -37,7 +38,7 @@ registerActiveXtermAction({
+ 			return;
+ 		}
+ 
+-		const contr = TerminalChatController.activeChatController || TerminalChatController.get(activeInstance);
++		const contr = activeChatController || TerminalChatController.get(activeInstance);
+ 
+ 		if (opts) {
+ 			opts = typeof opts === 'string' ? { query: opts } : opts;
+@@ -77,7 +78,7 @@ registerActiveXtermAction({
+ 		if (isDetachedTerminalInstance(activeInstance)) {
+ 			return;
+ 		}
+-		const contr = TerminalChatController.activeChatController || TerminalChatController.get(activeInstance);
++		const contr = activeChatController || TerminalChatController.get(activeInstance);
+ 		contr?.clear();
+ 	}
+ });
+@@ -105,7 +106,7 @@ registerActiveXtermAction({
+ 		if (isDetachedTerminalInstance(activeInstance)) {
+ 			return;
+ 		}
+-		const contr = TerminalChatController.activeChatController || TerminalChatController.get(activeInstance);
++		const contr = activeChatController || TerminalChatController.get(activeInstance);
+ 		contr?.clear();
+ 	}
+ });
+@@ -137,7 +138,7 @@ registerActiveXtermAction({
+ 		if (isDetachedTerminalInstance(activeInstance)) {
+ 			return;
+ 		}
+-		const contr = TerminalChatController.activeChatController || TerminalChatController.get(activeInstance);
++		const contr = activeChatController || TerminalChatController.get(activeInstance);
+ 		contr?.acceptCommand(true);
+ 	}
+ });
+@@ -167,7 +168,7 @@ registerActiveXtermAction({
+ 		if (isDetachedTerminalInstance(activeInstance)) {
+ 			return;
+ 		}
+-		const contr = TerminalChatController.activeChatController || TerminalChatController.get(activeInstance);
++		const contr = activeChatController || TerminalChatController.get(activeInstance);
+ 		contr?.acceptCommand(true);
+ 	}
+ });
+@@ -199,7 +200,7 @@ registerActiveXtermAction({
+ 		if (isDetachedTerminalInstance(activeInstance)) {
+ 			return;
+ 		}
+-		const contr = TerminalChatController.activeChatController || TerminalChatController.get(activeInstance);
++		const contr = activeChatController || TerminalChatController.get(activeInstance);
+ 		contr?.acceptCommand(false);
+ 	}
+ });
+@@ -229,7 +230,7 @@ registerActiveXtermAction({
+ 		if (isDetachedTerminalInstance(activeInstance)) {
+ 			return;
+ 		}
+-		const contr = TerminalChatController.activeChatController || TerminalChatController.get(activeInstance);
++		const contr = activeChatController || TerminalChatController.get(activeInstance);
+ 		contr?.acceptCommand(false);
+ 	}
+ });
+@@ -258,7 +259,7 @@ registerActiveXtermAction({
+ 		if (isDetachedTerminalInstance(activeInstance)) {
+ 			return;
+ 		}
+-		const contr = TerminalChatController.activeChatController || TerminalChatController.get(activeInstance);
++		const contr = activeChatController || TerminalChatController.get(activeInstance);
+ 		contr?.viewInChat();
+ 	}
+ });
+@@ -287,7 +288,7 @@ registerActiveXtermAction({
+ 		if (isDetachedTerminalInstance(activeInstance)) {
+ 			return;
+ 		}
+-		const contr = TerminalChatController.activeChatController || TerminalChatController.get(activeInstance);
++		const contr = activeChatController || TerminalChatController.get(activeInstance);
+ 		contr?.acceptInput();
+ 	}
+ });
+@@ -308,7 +309,7 @@ registerActiveXtermAction({
+ 		if (isDetachedTerminalInstance(activeInstance)) {
+ 			return;
+ 		}
+-		const contr = TerminalChatController.activeChatController || TerminalChatController.get(activeInstance);
++		const contr = activeChatController || TerminalChatController.get(activeInstance);
+ 		contr?.cancel();
+ 	}
+ });
+@@ -327,7 +328,7 @@ registerActiveXtermAction({
+ 		if (isDetachedTerminalInstance(activeInstance)) {
+ 			return;
+ 		}
+-		const contr = TerminalChatController.activeChatController || TerminalChatController.get(activeInstance);
++		const contr = activeChatController || TerminalChatController.get(activeInstance);
+ 		contr?.populateHistory(true);
+ 	}
+ });
+@@ -346,7 +347,7 @@ registerActiveXtermAction({
+ 		if (isDetachedTerminalInstance(activeInstance)) {
+ 			return;
+ 		}
+-		const contr = TerminalChatController.activeChatController || TerminalChatController.get(activeInstance);
++		const contr = activeChatController || TerminalChatController.get(activeInstance);
+ 		contr?.populateHistory(false);
+ 	}
+ });
+diff --git a/src/vs/workbench/contrib/terminalContrib/chat/browser/terminalChatController.ts b/src/vs/workbench/contrib/terminalContrib/chat/browser/terminalChatController.ts
+index 17e77a4a945..4a97d085595 100644
+--- a/src/vs/workbench/contrib/terminalContrib/chat/browser/terminalChatController.ts
++++ b/src/vs/workbench/contrib/terminalContrib/chat/browser/terminalChatController.ts
+@@ -23,6 +23,7 @@ import { ChatAgentLocation } from '../../../chat/common/chatAgents.js';
+ import { ChatModel, IChatResponseModel } from '../../../chat/common/chatModel.js';
+ import type { ITerminalContributionContext } from '../../../terminal/browser/terminalExtensions.js';
+ import { TerminalChatContextKeys } from './terminalChat.js';
++import { setActiveChatController } from './terminalChatControllerHolder.js';
+ 
+ const enum Message {
+ 	None = 0,
+@@ -37,15 +38,11 @@ const enum Message {
+ 
+ export class TerminalChatController extends Disposable implements ITerminalContribution {
+ 	static readonly ID = 'terminal.chat';
++	static activeChatController: TerminalChatController | null;
+ 
+ 	static get(instance: ITerminalInstance): TerminalChatController | null {
+ 		return instance.getContribution<TerminalChatController>(TerminalChatController.ID);
+ 	}
+-	/**
+-	 * The controller for the currently focused chat widget. This is used to track action context since 'active terminals'
+-	 * are only tracked for non-detached terminal instanecs.
+-	 */
+-	static activeChatController?: TerminalChatController;
+ 
+ 	private static _storageKey = 'terminal-inline-chat-history';
+ 	private static _promptHistory: string[] = [];
+@@ -145,13 +142,13 @@ export class TerminalChatController extends Disposable implements ITerminalContr
+ 		this._terminalChatWidget = new Lazy(() => {
+ 			const chatWidget = this._register(this._instantiationService.createInstance(TerminalChatWidget, this._ctx.instance.domElement!, this._ctx.instance, xterm));
+ 			this._register(chatWidget.focusTracker.onDidFocus(() => {
+-				TerminalChatController.activeChatController = this;
++				setActiveChatController(this);
+ 				if (!isDetachedTerminalInstance(this._ctx.instance)) {
+ 					this._terminalService.setActiveInstance(this._ctx.instance);
+ 				}
+ 			}));
+ 			this._register(chatWidget.focusTracker.onDidBlur(() => {
+-				TerminalChatController.activeChatController = undefined;
++				setActiveChatController(undefined);
+ 				this._ctx.instance.resetScrollbarVisibility();
+ 			}));
+ 			if (!this._ctx.instance.domElement) {
+diff --git a/src/vs/workbench/contrib/terminalContrib/chat/browser/terminalChatControllerHolder.ts b/src/vs/workbench/contrib/terminalContrib/chat/browser/terminalChatControllerHolder.ts
+new file mode 100644
+index 00000000000..bb67971614b
+--- /dev/null
++++ b/src/vs/workbench/contrib/terminalContrib/chat/browser/terminalChatControllerHolder.ts
+@@ -0,0 +1,15 @@
++/*---------------------------------------------------------------------------------------------
++ *  Copyright (c) Microsoft Corporation. All rights reserved.
++ *  Licensed under the MIT License. See License.txt in the project root for license information.
++ *--------------------------------------------------------------------------------------------*/
++import { TerminalChatController } from './terminalChatController.js';
++
++/**
++ * The controller for the currently focused chat widget. This is used to track action context since 'active terminals'
++ * are only tracked for non-detached terminal instanecs.
++ */
++export let activeChatController: TerminalChatController | undefined;
++
++export function setActiveChatController(_activeChatController: TerminalChatController | undefined) {
++	activeChatController = _activeChatController;
++}

@@ -1,6 +1,6 @@
 From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
 From: =?UTF-8?q?Lo=C3=AFc=20Mangeonjean?= <loic@coderpad.io>
-Date: Wed, 6 Nov 2024 19:49:31 +0100
+Date: Mon, 18 Nov 2024 14:04:14 +0100
 Subject: [PATCH] fix: rollback typescript as the last version breaks the
  extractServices script
 
