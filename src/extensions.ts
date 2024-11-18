@@ -45,31 +45,31 @@ export function registerLocalApiFactory(_apiFactory: ApiFactory): void {
   apiFactory = _apiFactory
 }
 
-interface RegisterExtensionParams {
+export interface RegisterExtensionParams {
   path?: string
   system?: boolean
   readmePath?: string
   changelogPath?: string
 }
 
-interface RegisterRemoteExtensionParams extends RegisterExtensionParams {
+export interface RegisterRemoteExtensionParams extends RegisterExtensionParams {
   path: string
 }
 
-interface RegisterExtensionResult {
+export interface RegisterExtensionResult {
   id: string
   dispose(): Promise<void>
   whenReady(): Promise<void>
   isEnabled(): Promise<boolean>
 }
 
-interface RegisterRemoteExtensionResult extends RegisterExtensionResult {}
+export interface RegisterRemoteExtensionResult extends RegisterExtensionResult {}
 
-interface RegisterLocalExtensionResult extends RegisterExtensionResult {
+export interface RegisterLocalExtensionResult extends RegisterExtensionResult {
   registerFileUrl: (path: string, url: string) => IDisposable
 }
 
-interface RegisterLocalProcessExtensionResult extends RegisterLocalExtensionResult {
+export interface RegisterLocalProcessExtensionResult extends RegisterLocalExtensionResult {
   getApi(): Promise<typeof vscode>
   setAsDefaultApi(): Promise<void>
 }
