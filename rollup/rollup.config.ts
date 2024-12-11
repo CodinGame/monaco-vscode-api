@@ -18,6 +18,7 @@ import * as fs from 'node:fs'
 import * as nodePath from 'node:path'
 import { fileURLToPath } from 'node:url'
 import metadataPlugin from './rollup-metadata-plugin'
+import subpackagePlugin from './rollup-subpackage-plugin'
 
 const pkg = JSON.parse(
   fs.readFileSync(new URL('../package.json', import.meta.url).pathname).toString()
@@ -804,21 +805,21 @@ export default (args: Record<string, string>): rollup.RollupOptions[] => {
             return code
           }
         },
-        {
-          name: 'externalize-service-overrides',
-          resolveId(source, importer) {
-            const importerDir = nodePath.dirname(nodePath.resolve(DIST_DIR_MAIN, importer ?? '/'))
-            const resolved = nodePath.resolve(importerDir, source)
-            if (nodePath.dirname(resolved) === DIST_SERVICE_OVERRIDE_DIR_MAIN && importer != null) {
-              const serviceOverride = nodePath.basename(resolved, '.js')
-              return {
-                external: true,
-                id: `@codingame/monaco-vscode-${paramCase(serviceOverride)}-service-override`
-              }
-            }
-            return undefined
-          }
-        },
+        // {
+        //   name: 'externalize-service-overrides',
+        //   resolveId(source, importer) {
+        //     const importerDir = nodePath.dirname(nodePath.resolve(DIST_DIR_MAIN, importer ?? '/'))
+        //     const resolved = nodePath.resolve(importerDir, source)
+        //     if (nodePath.dirname(resolved) === DIST_SERVICE_OVERRIDE_DIR_MAIN && importer != null) {
+        //       const serviceOverride = nodePath.basename(resolved, '.js')
+        //       return {
+        //         external: true,
+        //         id: `@codingame/monaco-vscode-${paramCase(serviceOverride)}-service-override`
+        //       }
+        //     }
+        //     return undefined
+        //   }
+        // },
         nodeResolve({
           extensions: EXTENSIONS
         }),
@@ -831,6 +832,37 @@ export default (args: Record<string, string>): rollup.RollupOptions[] => {
             }).code
           }
         },
+        subpackagePlugin({
+          getEntryGroups(entrypoints, options) {
+            const serviceOverrideDir = nodePath.resolve(options.dir!, 'service-override')
+            const workersDir = nodePath.resolve(options.dir!, 'workers')
+
+            const test = (id: string) => {
+              if (id.startsWith(serviceOverrideDir)) {
+                const name = paramCase(nodePath.basename(id, '.js'))
+                return `service-override:${name}`
+              }
+              if (id.startsWith(workersDir)) {
+                const name = workerGroups[nodePath.basename(id, '.worker.js')]
+                return name != null ? `service-override:${name}` : 'main'
+              }
+              if (id === nodePath.resolve(options.dir!, 'editor.api.js')) {
+                return 'editor.api'
+              }
+              return 'main'
+            }
+
+            const groupMaps = new Map<string, string[]>()
+            for (const entrypoint of entrypoints) {
+              const group = test(entrypoint)
+              groupMaps.set(group, [...(groupMaps.get(group) ?? []), entrypoint])
+            }
+
+            return Array.from(groupMaps.entries()).map(([group, entrypoints]) => {
+              return { name: group, entrypoints }
+            })
+          }
+        }),
         metadataPlugin({
           generateCombinationGroups: true,
           getCombinedGroup(names) {
@@ -984,19 +1016,6 @@ export default (args: Record<string, string>): rollup.RollupOptions[] => {
               }
 
             if (group.name === 'main') {
-              const dependencies = new Set([...group.directDependencies, ...otherDependencies])
-              const externalMainDependencies = Object.fromEntries(
-                Object.entries(pkg.dependencies).filter(([key]) => dependencies.has(key))
-              )
-              const notAllowedDependencies = Object.keys(externalMainDependencies).filter(
-                (d) => !ALLOWED_MAIN_DEPENDENCIES.has(d)
-              )
-              if (notAllowedDependencies.length > 0) {
-                this.warn(
-                  `Not allowed dependencies detected in main package: ${notAllowedDependencies.join(', ')}`
-                )
-              }
-
               // Generate package.json
               const packageJson: PackageJson = {
                 ...Object.fromEntries(
@@ -1079,22 +1098,8 @@ export default (args: Record<string, string>): rollup.RollupOptions[] => {
                     l10n: ['./l10n.d.ts'],
                     'vscode/*': ['./vscode/src/*.d.ts']
                   }
-                },
-                dependencies: {
-                  ...externalMainDependencies,
-                  ...Object.fromEntries(
-                    Array.from(dependencies)
-                      .filter((dep) => dep.startsWith('@codingame/monaco-vscode-'))
-                      .map((dep) => [dep, pkg.version])
-                  )
                 }
               }
-              this.emitFile({
-                fileName: 'package.json',
-                needsCodeReference: false,
-                source: JSON.stringify(packageJson, null, 2),
-                type: 'asset'
-              })
 
               const groupBundle = await rollup.rollup({
                 input: Array.from([...group.exclusiveModules, ...otherModules]),
@@ -1112,7 +1117,62 @@ export default (args: Record<string, string>): rollup.RollupOptions[] => {
                     customLoad() {
                       return undefined
                     }
-                  })
+                  }),
+                  {
+                    name: 'bundle-generator',
+                    generateBundle() {
+                      const externalDependencies = Array.from(this.getModuleIds()).filter(
+                        (id) => this.getModuleInfo(id)!.isExternal
+                      )
+
+                      const uniqueExternalDependencies = new Set(
+                        externalDependencies.flatMap((dep) => {
+                          const match = /((?:@[^/]+?\/)?[^/]*)(?:\/.*)?/.exec(dep)
+                          if (match == null) {
+                            return []
+                          }
+                          return [match[1]!]
+                        })
+                      )
+
+                      // const notAllowedDependencies = Object.keys(uniqueExternalDependencies).filter(
+                      //   (d) => !ALLOWED_MAIN_DEPENDENCIES.has(d)
+                      // )
+                      // if (notAllowedDependencies.length > 0) {
+                      //   this.warn(
+                      //     `Not allowed dependencies detected in main package: ${notAllowedDependencies.join(', ')}`
+                      //   )
+                      // }
+
+                      const externalMainDependencies = Object.fromEntries(
+                        Object.entries(pkg.dependencies).filter(([key]) =>
+                          uniqueExternalDependencies.has(key)
+                        )
+                      )
+
+                      packageJson.dependencies = {
+                        ...externalMainDependencies,
+                        ...Object.fromEntries(
+                          Array.from(uniqueExternalDependencies)
+                            .filter((dep) => dep.startsWith('@codingame/monaco-vscode-'))
+                            .map((dep) => [dep, pkg.version])
+                        )
+                      }
+
+                      this.emitFile({
+                        fileName: 'empty.js',
+                        needsCodeReference: false,
+                        source: 'export {}',
+                        type: 'asset'
+                      })
+                      this.emitFile({
+                        fileName: 'package.json',
+                        needsCodeReference: false,
+                        source: JSON.stringify(packageJson, null, 2),
+                        type: 'asset'
+                      })
+                    }
+                  }
                 ]
               })
               const output = await groupBundle.generate({

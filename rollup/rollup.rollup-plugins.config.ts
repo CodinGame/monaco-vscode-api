@@ -7,7 +7,6 @@ import { PackageJson } from 'type-fest'
 import * as path from 'path'
 import { fileURLToPath } from 'url'
 import * as fs from 'fs'
-import metadataPlugin from './rollup-metadata-plugin'
 const pkg = JSON.parse(
   fs.readFileSync(new URL('../package.json', import.meta.url).pathname).toString()
 )
@@ -60,8 +59,13 @@ const config: rollup.RollupOptions[] = [
       namedExports: false,
       preferConst: false
     }),
-    metadataPlugin({
-      handle({ group: { directDependencies } }) {
+    {
+      name: 'bundleGenerator',
+      generateBundle() {
+        const externalDependencies = new Set(
+          Array.from(this.getModuleIds()).filter((id) => this.getModuleInfo(id)!.isExternal)
+        )
+
         const packageJson: PackageJson = {
           name: `@codingame/monaco-vscode-${path.basename(output)}`,
           ...Object.fromEntries(
@@ -77,7 +81,7 @@ const config: rollup.RollupOptions[] = [
           dependencies: {
             ...Object.fromEntries(
               Object.entries(pkg.dependencies as Record<string, string>).filter(([key]) =>
-                directDependencies.has(key)
+                externalDependencies.has(key)
               )
             )
           }
@@ -89,7 +93,7 @@ const config: rollup.RollupOptions[] = [
           type: 'asset'
         })
       }
-    })
+    }
   ]
 }))
 

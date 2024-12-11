@@ -6,7 +6,6 @@ import { pascalCase } from 'pascal-case'
 import * as fs from 'fs'
 import * as path from 'path'
 import { fileURLToPath } from 'url'
-import metadataPlugin from './rollup-metadata-plugin'
 import extensionDirectoryPlugin from '../dist/rollup-extension-directory-plugin/rollup-extension-directory-plugin.js'
 const pkg = JSON.parse(
   fs.readFileSync(new URL('../package.json', import.meta.url).pathname).toString()
@@ -102,11 +101,17 @@ export default rollup.defineConfig([
               }
             }
           }),
-          metadataPlugin({
-            handle({ group: { directDependencies }, bundle }) {
+          {
+            name: 'bundleGenerator',
+            generateBundle(options, bundle) {
+              const externalDependencies = new Set(
+                Array.from(this.getModuleIds()).filter((id) => this.getModuleInfo(id)!.isExternal)
+              )
+
               const entrypoint = Object.values(bundle).filter(
                 (v) => (v as rollup.OutputChunk).isEntry
               )[0]!.fileName
+
               const packageJson: PackageJson = {
                 name: `@codingame/monaco-vscode-${name}-default-extension`,
                 ...Object.fromEntries(
@@ -122,7 +127,9 @@ export default rollup.defineConfig([
                 dependencies: {
                   vscode: `npm:${pkg.name}@^${pkg.version}`,
                   ...Object.fromEntries(
-                    Object.entries(pkg.dependencies).filter(([key]) => directDependencies.has(key))
+                    Object.entries(pkg.dependencies).filter(([key]) =>
+                      externalDependencies.has(key)
+                    )
                   )
                 }
               }
@@ -141,7 +148,7 @@ export default rollup.defineConfig([
                 type: 'asset'
               })
             }
-          })
+          }
         ]
       }
   ),
@@ -190,8 +197,13 @@ ${extensions.map((name) => `  whenReady${pascalCase(name)}()`).join(',\n')}
         `
             }
           },
-          metadataPlugin({
-            handle({ group: { directDependencies }, bundle }) {
+          {
+            name: 'bundleGenerator',
+            generateBundle(options, bundle) {
+              const externalDependencies = new Set(
+                Array.from(this.getModuleIds()).filter((id) => this.getModuleInfo(id)!.isExternal)
+              )
+
               const entrypoint = Object.values(bundle).filter(
                 (v) => (v as rollup.OutputChunk).isEntry
               )[0]!.fileName
@@ -208,7 +220,7 @@ ${extensions.map((name) => `  whenReady${pascalCase(name)}()`).join(',\n')}
                 module: entrypoint,
                 types: 'index.d.ts',
                 dependencies: Object.fromEntries(
-                  Array.from(directDependencies).map((name) => [name, pkg.version])
+                  Array.from(externalDependencies).map((name) => [name, pkg.version])
                 )
               }
 
@@ -226,7 +238,7 @@ ${extensions.map((name) => `  whenReady${pascalCase(name)}()`).join(',\n')}
                 type: 'asset'
               })
             }
-          })
+          }
         ]
       }
   )

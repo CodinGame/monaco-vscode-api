@@ -190,12 +190,48 @@ export default ({
           .map((d) => groupByPublicName.get(d)?.name)
           .filter((g): g is string => g != null)
       )
+      // console.log('group.groupDependencies', group.name, group.groupDependencies)
     }
 
+    const directMainDependencies = new Set(
+      Array.from(groups.get('main')!.modules).flatMap((module) =>
+        Array.from(moduleExternalDependencies.get(module) ?? new Set<string>())
+      )
+    )
+
+    const shouldBeKept = (group: Group) => {
+      if (group.modules.size >= minCompinedGroupSize) {
+        return true
+      }
+      const directDependencies = new Set(
+        Array.from(group.modules).flatMap((module) =>
+          Array.from(moduleExternalDependencies.get(module) ?? new Set<string>())
+        )
+      )
+      // console.log('FORCE INCLUDING', group.name, Array.from(directDependencies))
+      if (directDependencies.size > 0) {
+        return true
+      }
+      return false
+    }
     for (const [id, group] of combinedModuleGroup) {
-      if (group.modules.size < minCompinedGroupSize) {
+      if (!shouldBeKept(group)) {
         // if the combined group is too small and if it doesn't have direct dependencies, remove it
         groups.delete(group.name)
+
+        const directDependencies = new Set(
+          Array.from(group.modules).flatMap((module) =>
+            Array.from(moduleExternalDependencies.get(module) ?? new Set<string>())
+          )
+        )
+
+        // console.log(
+        //   'REMOVE_GROUP',
+        //   group.name,
+        //   group.dependencies,
+        //   group.groupDependencies,
+        //   group.modules
+        // )
       } else {
         moduleGroup.set(id, group)
 
