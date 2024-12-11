@@ -158,7 +158,7 @@ export function registerExtension(
 export function registerExtension(
   manifest: IExtensionManifest,
   extHostKind?: ExtensionHostKind,
-  { path = '/', system = false, readmePath, changelogPath }: RegisterExtensionParams = {}
+  { path = '/extension', system = false, readmePath, changelogPath }: RegisterExtensionParams = {}
 ): RegisterExtensionResult {
   const id = getExtensionId(manifest.publisher, manifest.name)
   const location = URI.from({ scheme: CustomSchemas.extensionFile, authority: id, path })
