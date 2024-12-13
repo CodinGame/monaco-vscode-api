@@ -96,6 +96,7 @@ const EDITOR_API_EXPOSE_MODULES = [
   'vs/editor/contrib/inlineCompletions/browser/inlineCompletions.contribution',
   'vs/editor/contrib/format/browser/formatActions',
   'vs/editor/contrib/bracketMatching/browser/bracketMatching',
+  'vs/editor/contrib/hover/browser/contentHoverController',
   'vs/editor/browser/coreCommands',
   'vs/editor/contrib/clipboard/browser/clipboard',
   'vs/editor/contrib/cursorUndo/browser/cursorUndo',
