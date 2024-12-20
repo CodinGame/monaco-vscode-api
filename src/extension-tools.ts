@@ -220,7 +220,7 @@ export async function getExtensionResources(
   fs: typeof nodeFs,
   cwd: string
 ): Promise<ExtensionResource[]> {
-  if (manifest.browser != null || manifest.contributes?.typescriptServerPlugins != null) {
+  if (manifest.main != null || manifest.browser != null || manifest.contributes?.typescriptServerPlugins != null) {
     // there is some js in the extension, it's impossible to predict which file will be used, bundle everything
     return (
       await glob('**/*', {
