@@ -1,9 +1,9 @@
 /**
  * This script was inspired by https://dev.to/antongolub/you-don-t-need-semantic-release-sometimes-3k6k
  */
-import semanticRelease, { Options as SemanticReleaseOptions } from 'semantic-release'
+import semanticRelease, { type Options as SemanticReleaseOptions } from 'semantic-release'
 import { $ } from 'zx'
-import yargs, { Options } from 'yargs'
+import yargs, { type Options } from 'yargs'
 import semanticReleaseConfig from '@codingame/semantic-release-config-github'
 import path from 'path'
 import fs from 'fs/promises'
