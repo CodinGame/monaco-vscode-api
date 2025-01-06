@@ -391,15 +391,6 @@ function resolveVscode(importee: string, importer?: string) {
     importee = nodePath.resolve(nodePath.dirname(importer), importee)
   }
 
-  // import weak so that AbstractTextEditor is not imported just to do an instanceof on it
-  if (
-    importer != null &&
-    importer.includes('vs/workbench/api/browser/mainThreadDocumentsAndEditors') &&
-    importee.includes('browser/parts/editor/textEditor')
-  ) {
-    importee = importee.replace('textEditor', 'textEditor.weak')
-  }
-
   if (importee.startsWith('vscode/')) {
     return resolve(nodePath.relative('vscode', importee), [VSCODE_DIR])
   }
