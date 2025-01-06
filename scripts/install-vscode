@@ -45,6 +45,10 @@ cd ..
 echo "Extracting service identifiers"
 node build/lib/extractServices.js
 
+# convertToTypeOnlyImport is used so that type-only modules still emit a .js file, so we can keep track of the d.ts using the js file in the rollup configuration
+echo "Applying convertToTypeOnlyImport"
+node build/lib/convertToTypeOnlyImport.js
+
 ## Change shake level from ClassMembers to Files to speed up build
 sed -i'' -e 's/shakeLevel: 2/shakeLevel: 0/g' build/gulpfile.editor.js
 ## build editor just to get the editor.api.d.ts file compiled
@@ -87,7 +91,7 @@ cd src
 mkdir -p $output_directory
 
 echo "Building vscode..."
-NODE_OPTIONS=--max-old-space-size=8192 npx tsc --declaration --importHelpers --module es2020 --preserveConstEnums --outDir "$output_directory/src" --rootDir .
+NODE_OPTIONS=--max-old-space-size=8192 npx tsc --declaration --importHelpers --module es2020 --preserveConstEnums --verbatimModuleSyntax --outDir "$output_directory/src" --rootDir .
 # Copy files that are already built and assets
 find ./ \( -name '*.js' -o -name '*.d.ts' -o -name '*.ttf' -o -name '*.css' -o -name '*.mp3' -o -name '*.scm' -o -name '*.svg' -o -name '*.png' -o -name '*.html' -o -name '*.sh' -o -name '*.zsh' -o -name '*.ps1' \) -exec rsync -R \{\} "$output_directory/src" \;
 
