@@ -170,9 +170,5 @@ export default function getServiceOverride({
   }
 }
 
-export {
-  defaultUserKeybindindsFile,
-  initUserKeybindings,
-  updateUserKeybindings,
-  IUserFriendlyKeybinding
-}
+export { defaultUserKeybindindsFile, initUserKeybindings, updateUserKeybindings }
+export type { IUserFriendlyKeybinding }

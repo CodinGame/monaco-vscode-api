@@ -528,15 +528,12 @@ export {
   Registry,
   CommandsRegistry,
   Extensions,
-  IJSONContributionRegistry,
-  IJSONSchema,
   MenuRegistry,
   MenuId,
   KeybindingsRegistry,
   ContextKeyExpr,
   RawContextKey,
   registerColor,
-  IReference,
-  ITextFileEditorModel,
   setUnexpectedErrorHandler
 }
+export type { IJSONContributionRegistry, IJSONSchema, IReference, ITextFileEditorModel }

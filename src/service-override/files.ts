@@ -1291,17 +1291,10 @@ export function registerFileSystemOverlay(
 }
 
 export {
-  IFileSystemProviderWithFileReadWriteCapability,
   FileSystemProviderCapabilities,
   FileType,
-  IStat,
-  IWatchOptions,
-  IFileWriteOptions,
-  IFileDeleteOptions,
-  IFileOverwriteOptions,
   FileSystemProviderError,
   FileSystemProviderErrorCode,
-  IFileChange,
   FileChangeType,
   FilePermission,
   HTMLFileSystemProvider,
@@ -1316,4 +1309,13 @@ export {
   DelegateFileSystemProvider,
   OverlayFileSystemProvider,
   EmptyFileSystemProvider
+}
+export type {
+  IFileSystemProviderWithFileReadWriteCapability,
+  IStat,
+  IWatchOptions,
+  IFileWriteOptions,
+  IFileDeleteOptions,
+  IFileOverwriteOptions,
+  IFileChange
 }

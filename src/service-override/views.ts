@@ -852,8 +852,6 @@ function getServiceOverride(
 export default getServiceOverride
 
 export {
-  ILayoutInitializationState,
-  InitializationStateTransformer,
   GroupOrientation,
   renderPart,
   renderSidebarPart,
@@ -866,12 +864,16 @@ export {
   attachPart,
   onPartVisibilityChange,
   Position,
-  OpenEditor,
-  IEditorOptions,
-  IResolvedTextEditorModel,
-  IReference,
   ActivityService,
   SidebarPart,
   ActivitybarPart,
   PanelPart
+}
+export type {
+  ILayoutInitializationState,
+  InitializationStateTransformer,
+  OpenEditor,
+  IEditorOptions,
+  IResolvedTextEditorModel,
+  IReference
 }

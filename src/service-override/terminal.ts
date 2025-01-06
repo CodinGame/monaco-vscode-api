@@ -200,4 +200,5 @@ export default function getServiceOverride(backend?: ITerminalBackend): IEditorO
   }
 }
 
-export { ITerminalBackend, ITerminalChildProcess, SimpleTerminalBackend, SimpleTerminalProcess }
+export { SimpleTerminalBackend, SimpleTerminalProcess }
+export type { ITerminalBackend, ITerminalChildProcess }

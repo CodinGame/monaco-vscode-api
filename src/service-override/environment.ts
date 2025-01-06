@@ -38,4 +38,4 @@ function getServiceOverride(options?: IWorkbenchConstructionOptions): IEditorOve
 
 export default getServiceOverride
 
-export { IWorkbenchConstructionOptions }
+export type { IWorkbenchConstructionOptions }

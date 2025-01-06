@@ -2,7 +2,7 @@ import { createFilter, type FilterPattern } from '@rollup/pluginutils'
 import type { Plugin } from 'rollup'
 import * as yauzl from 'yauzl'
 import type { IExtensionManifest } from 'vs/platform/extensions/common/extensions'
-import type { IFs, createFsFromVolume, Volume } from 'memfs'
+import { type IFs, createFsFromVolume, Volume } from 'memfs'
 import { Readable } from 'stream'
 import * as path from 'path'
 import type nodeFs from 'node:fs'
@@ -144,4 +144,4 @@ export { whenReady }
   }
 }
 
-export { IExtensionManifest }
+export type { IExtensionManifest }

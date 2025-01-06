@@ -33,4 +33,4 @@ export default function getServiceOverride(): IEditorOverrideServices {
   }
 }
 
-export { ISnippetsExtensionPoint }
+export type { ISnippetsExtensionPoint }

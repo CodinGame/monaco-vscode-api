@@ -44,4 +44,4 @@ export default function getServiceOverride(): IEditorOverrideServices {
   }
 }
 
-export { PartialIThemeExtensionPoint as IThemeExtensionPoint }
+export type { PartialIThemeExtensionPoint as IThemeExtensionPoint }

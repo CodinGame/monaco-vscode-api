@@ -1,4 +1,6 @@
 /// <reference path="./types.d.ts" />
+/// <reference path="../vscode/src/vscode-dts/vscode.proposed.d.ts" />
+
 import * as extHostTypes from 'vs/workbench/api/common/extHostTypes'
 import * as errors from 'vs/base/common/errors'
 import * as files from 'vs/platform/files/common/files'

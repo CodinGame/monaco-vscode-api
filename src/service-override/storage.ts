@@ -321,8 +321,5 @@ export default function getStorageServiceOverride({
   }
 }
 
-export {
-  IStorageItemsChangeEvent,
-  ExternalStorageService,
-  InjectedBrowserStorageService as BrowserStorageService
-}
+export { ExternalStorageService, InjectedBrowserStorageService as BrowserStorageService }
+export type { IStorageItemsChangeEvent }

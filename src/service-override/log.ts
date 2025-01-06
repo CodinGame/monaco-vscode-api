@@ -70,4 +70,5 @@ export function registerAdditionalLogger(logger: ILogger): IDisposable {
   })
 }
 
-export { ILogger, ConsoleLogger }
+export { ConsoleLogger }
+export type { ILogger }

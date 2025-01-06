@@ -9,7 +9,7 @@ import { IEditorService } from 'vs/workbench/services/editor/common/editorServic
 import {
   EditorCloseContext,
   type EditorInputWithOptions,
-  type GroupModelChangeKind,
+  GroupModelChangeKind,
   type IActiveEditorChangeEvent,
   type IEditorCloseEvent,
   type IEditorControl,

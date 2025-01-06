@@ -116,4 +116,4 @@ export { whenReady }
   }
 }
 
-export { IExtensionManifest }
+export type { IExtensionManifest }

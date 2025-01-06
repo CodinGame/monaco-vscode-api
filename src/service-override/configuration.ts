@@ -248,6 +248,14 @@ export default getServiceOverride
 
 export {
   ConfigurationScope,
+  configurationRegistry,
+  defaultUserConfigurationFile,
+  getUserConfiguration,
+  initUserConfiguration,
+  onUserConfigurationChange,
+  updateUserConfiguration
+}
+export type {
   IAnyWorkspaceIdentifier,
   IColorCustomizations,
   IConfigurationDefaults,
@@ -257,11 +265,5 @@ export {
   IStoredWorkspace,
   IThemeScopedColorCustomizations,
   IWorkspaceFolderCreationData,
-  IWorkspaceIdentifier,
-  configurationRegistry,
-  defaultUserConfigurationFile,
-  getUserConfiguration,
-  initUserConfiguration,
-  onUserConfigurationChange,
-  updateUserConfiguration
+  IWorkspaceIdentifier
 }
