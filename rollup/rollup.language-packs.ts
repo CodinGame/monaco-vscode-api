@@ -1,6 +1,6 @@
 import nodeResolve from '@rollup/plugin-node-resolve'
 import * as rollup from 'rollup'
-import { type IExtensionManifest } from 'vs/platform/extensions/common/extensions'
+import type { IExtensionManifest } from 'vs/platform/extensions/common/extensions'
 import { dataToEsm } from '@rollup/pluginutils'
 import type { PackageJson } from 'type-fest'
 import * as fs from 'fs'

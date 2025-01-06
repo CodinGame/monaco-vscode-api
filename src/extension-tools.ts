@@ -11,7 +11,7 @@ import type {
 } from 'vs/platform/extensions/common/extensions'
 import { type ParseError, parse } from 'vs/base/common/json.js'
 import { getParseErrorMessage } from 'vs/base/common/jsonErrorMessages'
-import { type IUserFriendlyViewsContainerDescriptor } from 'vs/workbench/api/browser/viewsExtensionPoint'
+import type { IUserFriendlyViewsContainerDescriptor } from 'vs/workbench/api/browser/viewsExtensionPoint'
 // @ts-ignore
 import parseCssUrl from 'css-url-parser'
 import * as mime from 'mime-types'
