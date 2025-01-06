@@ -1,0 +1,93 @@
+From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
+From: =?UTF-8?q?Lo=C3=AFc=20Mangeonjean?= <loic@coderpad.io>
+Date: Fri, 3 Jan 2025 23:28:05 +0100
+Subject: [PATCH] fix: transform d.ts to ts
+
+---
+ .../{xterm-private.d.ts => xterm-private.ts}       |  9 +++++----
+ .../{webviewMessages.d.ts => webviewMessages.ts}   | 14 +++++++-------
+ 2 files changed, 12 insertions(+), 11 deletions(-)
+ rename src/vs/workbench/contrib/terminal/browser/{xterm-private.d.ts => xterm-private.ts} (85%)
+ rename src/vs/workbench/contrib/webview/browser/{webviewMessages.d.ts => webviewMessages.ts} (92%)
+
+diff --git a/src/vs/workbench/contrib/terminal/browser/xterm-private.d.ts b/src/vs/workbench/contrib/terminal/browser/xterm-private.ts
+similarity index 85%
+rename from src/vs/workbench/contrib/terminal/browser/xterm-private.d.ts
+rename to src/vs/workbench/contrib/terminal/browser/xterm-private.ts
+index 23729e0c8d1..c2d81224a76 100644
+--- a/src/vs/workbench/contrib/terminal/browser/xterm-private.d.ts
++++ b/src/vs/workbench/contrib/terminal/browser/xterm-private.ts
+@@ -3,13 +3,14 @@
+  *  Licensed under the MIT License. See License.txt in the project root for license information.
+  *--------------------------------------------------------------------------------------------*/
+ 
+-import { IBufferCell } from '@xterm/xterm';
++import type { IBufferCell } from '@xterm/xterm';
+ 
+ export type XtermAttributes = Omit<IBufferCell, 'getWidth' | 'getChars' | 'getCode'> & { clone?(): XtermAttributes };
+ 
+ export interface IXtermCore {
+ 	viewport?: {
+ 		readonly scrollBarWidth: number;
++		// eslint-disable-next-line @typescript-eslint/naming-convention
+ 		_innerRefresh(): void;
+ 	};
+ 
+@@ -23,9 +24,9 @@ export interface IXtermCore {
+ 				cell: {
+ 					width: number;
+ 					height: number;
+-				}
+-			}
+-		},
++				};
++			};
++		};
+ 		_renderer: {
+ 			value?: unknown;
+ 		};
+diff --git a/src/vs/workbench/contrib/webview/browser/webviewMessages.d.ts b/src/vs/workbench/contrib/webview/browser/webviewMessages.ts
+similarity index 92%
+rename from src/vs/workbench/contrib/webview/browser/webviewMessages.d.ts
+rename to src/vs/workbench/contrib/webview/browser/webviewMessages.ts
+index dde553ec057..84779fbdeb9 100644
+--- a/src/vs/workbench/contrib/webview/browser/webviewMessages.d.ts
++++ b/src/vs/workbench/contrib/webview/browser/webviewMessages.ts
+@@ -3,10 +3,10 @@
+  *  Licensed under the MIT License. See License.txt in the project root for license information.
+  *--------------------------------------------------------------------------------------------*/
+ 
+-import type { IMouseWheelEvent } from 'vs/base/browser/mouseEvent';
+-import type { WebviewStyles } from 'vs/workbench/contrib/webview/browser/webview';
++import type { IMouseWheelEvent } from '../../../../base/browser/mouseEvent.js';
++import { WebviewStyles } from './webview.js';
+ 
+-type KeyEvent = {
++export type KeyEvent = {
+ 	key: string;
+ 	keyCode: number;
+ 	code: string;
+@@ -15,11 +15,11 @@ type KeyEvent = {
+ 	ctrlKey: boolean;
+ 	metaKey: boolean;
+ 	repeat: boolean;
+-}
++};
+ 
+-type WebViewDragEvent = {
++export type WebViewDragEvent = {
+ 	shiftKey: boolean;
+-}
++};
+ 
+ export type FromWebviewMessage = {
+ 	'onmessage': { message: any; transfer?: ArrayBuffer[] };
+@@ -40,7 +40,7 @@ export type FromWebviewMessage = {
+ 	'did-keyup': KeyEvent;
+ 	'did-context-menu': { clientX: number; clientY: number; context: { [key: string]: unknown } };
+ 	'drag-start': void;
+-	'drag': WebViewDragEvent
++	'drag': WebViewDragEvent;
+ };
+ 
+ interface UpdateContentEvent {
