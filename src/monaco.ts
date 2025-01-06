@@ -5,17 +5,17 @@ import {
 import { ITextResourceConfigurationService } from 'vs/editor/common/services/textResourceConfiguration'
 import {
   IInstantiationService,
-  ServicesAccessor
+  type ServicesAccessor
 } from 'vs/platform/instantiation/common/instantiation'
 import {
-  IStandaloneDiffEditorConstructionOptions,
-  IStandaloneEditorConstructionOptions,
+  type IStandaloneDiffEditorConstructionOptions,
+  type IStandaloneEditorConstructionOptions,
   StandaloneCodeEditor,
   StandaloneDiffEditor2,
   StandaloneEditor
 } from 'vs/editor/standalone/browser/standaloneCodeEditor'
-import { IDiffEditorOptions, IEditorOptions } from 'vs/editor/common/config/editorOptions'
-import { IEditorConfiguration } from 'vs/workbench/browser/parts/editor/textEditor'
+import type { IDiffEditorOptions, IEditorOptions } from 'vs/editor/common/config/editorOptions'
+import type { IEditorConfiguration } from 'vs/workbench/browser/parts/editor/textEditor'
 import { isObject } from 'vs/base/common/types'
 import { deepClone, distinct } from 'vs/base/common/objects'
 import { CodeEditorWidget } from 'vs/editor/browser/widget/codeEditor/codeEditorWidget'
@@ -29,30 +29,30 @@ import {
   setCollapseStateForMatchingLines
 } from 'vs/editor/contrib/folding/browser/foldingModel'
 import { FoldingController } from 'vs/editor/contrib/folding/browser/folding'
-import { DisposableStore, IDisposable, IReference } from 'vs/base/common/lifecycle'
+import { DisposableStore, type IDisposable, type IReference } from 'vs/base/common/lifecycle'
 import { Registry } from 'vs/platform/registry/common/platform'
 import {
-  IJSONContributionRegistry,
+  type IJSONContributionRegistry,
   Extensions as JsonExtensions
 } from 'vs/platform/jsonschemas/common/jsonContributionRegistry'
 import { CommandsRegistry } from 'vs/platform/commands/common/commands'
 import { MenuRegistry, MenuId } from 'vs/platform/actions/common/actions'
 import { KeybindingsRegistry } from 'vs/platform/keybinding/common/keybindingsRegistry'
-import { IJSONSchema } from 'vs/base/common/jsonSchema'
+import type { IJSONSchema } from 'vs/base/common/jsonSchema'
 import { Extensions as ConfigurationExtensions } from 'vs/platform/configuration/common/configurationRegistry'
 import { EditorOptionsUtil } from 'vscode/src/vs/editor/browser/config/editorConfiguration'
 import { registerColor } from 'vs/platform/theme/common/colorRegistry'
 import { URI } from 'vs/base/common/uri'
 import { ITextModelService } from 'vs/editor/common/services/resolverService'
-import { IFileDeleteOptions } from 'vs/platform/files/common/files'
+import type { IFileDeleteOptions } from 'vs/platform/files/common/files'
 import { VSBuffer } from 'vs/base/common/buffer'
-import { ITextFileEditorModel } from 'vs/workbench/services/textfile/common/textfiles'
+import type { ITextFileEditorModel } from 'vs/workbench/services/textfile/common/textfiles'
 import { ServiceCollection } from 'vs/platform/instantiation/common/serviceCollection'
 import { StandaloneQuickInputService } from 'vs/editor/standalone/browser/quickInput/standaloneQuickInputService'
 import { SyncDescriptor } from 'vs/platform/instantiation/common/descriptors'
 import { ContextKeyExpr, RawContextKey } from 'vs/platform/contextkey/common/contextkey'
 import { ICodeEditorService } from 'vs/editor/browser/services/codeEditorService'
-import {
+import type {
   IKeyboardEvent,
   KeybindingsSchemaContribution
 } from 'vs/platform/keybinding/common/keybinding'
@@ -80,7 +80,7 @@ export {
   EditorAction,
   EditorCommand
 } from 'vs/editor/browser/editorExtensions'
-export { IEditorContribution, IDiffEditorContribution } from 'vs/editor/common/editorCommon'
+export type { IEditorContribution, IDiffEditorContribution } from 'vs/editor/common/editorCommon'
 
 function computeConfiguration(
   configuration: IEditorConfiguration,
@@ -528,15 +528,12 @@ export {
   Registry,
   CommandsRegistry,
   Extensions,
-  IJSONContributionRegistry,
-  IJSONSchema,
   MenuRegistry,
   MenuId,
   KeybindingsRegistry,
   ContextKeyExpr,
   RawContextKey,
   registerColor,
-  IReference,
-  ITextFileEditorModel,
   setUnexpectedErrorHandler
 }
+export type { IJSONContributionRegistry, IJSONSchema, IReference, ITextFileEditorModel }

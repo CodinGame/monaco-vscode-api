@@ -1,5 +1,5 @@
 import {
-  IEditorOverrideServices,
+  type IEditorOverrideServices,
   StandaloneServices
 } from 'vs/editor/standalone/browser/standaloneServices'
 import { SyncDescriptor } from 'vs/platform/instantiation/common/descriptors'
@@ -14,34 +14,39 @@ import {
   FilePermission,
   FileSystemProviderCapabilities,
   FileType,
-  IFileSystemProvider,
+  type IFileSystemProvider,
   createFileSystemProviderError,
   FileSystemProviderError,
   FileSystemProviderErrorCode,
-  IFileChange,
-  IFileDeleteOptions,
-  IFileOverwriteOptions,
-  IFileSystemProviderWithFileReadWriteCapability,
-  IFileWriteOptions,
-  IStat,
-  IWatchOptions,
-  IFileSystemProviderWithOpenReadWriteCloseCapability,
-  IFileSystemProviderWithFileReadStreamCapability,
-  IFileReadStreamOptions,
-  IFileSystemProviderWithFileAtomicReadCapability,
-  IFileSystemProviderWithFileAtomicWriteCapability,
-  IFileSystemProviderWithFileAtomicDeleteCapability,
+  type IFileChange,
+  type IFileDeleteOptions,
+  type IFileOverwriteOptions,
+  type IFileSystemProviderWithFileReadWriteCapability,
+  type IFileWriteOptions,
+  type IStat,
+  type IWatchOptions,
+  type IFileSystemProviderWithOpenReadWriteCloseCapability,
+  type IFileSystemProviderWithFileReadStreamCapability,
+  type IFileReadStreamOptions,
+  type IFileSystemProviderWithFileAtomicReadCapability,
+  type IFileSystemProviderWithFileAtomicWriteCapability,
+  type IFileSystemProviderWithFileAtomicDeleteCapability,
   hasFileReadStreamCapability
 } from 'vs/platform/files/common/files'
-import { DisposableStore, IDisposable, Disposable, toDisposable } from 'vs/base/common/lifecycle'
+import {
+  DisposableStore,
+  type IDisposable,
+  Disposable,
+  toDisposable
+} from 'vs/base/common/lifecycle'
 import { extUri } from 'vs/base/common/resources'
 import { Emitter, Event } from 'vs/base/common/event'
 import { HTMLFileSystemProvider } from 'vs/platform/files/browser/htmlFileSystemProvider'
 import { Schemas } from 'vs/base/common/network'
 import {
   IndexedDBFileSystemProvider,
-  IndexedDBFileSystemProviderErrorData,
-  IndexedDBFileSystemProviderErrorDataClassification
+  type IndexedDBFileSystemProviderErrorData,
+  type IndexedDBFileSystemProviderErrorDataClassification
 } from 'vs/platform/files/browser/indexedDBFileSystemProvider'
 import { IndexedDB } from 'vs/base/browser/indexedDB'
 import { ITelemetryService } from 'vs/platform/telemetry/common/telemetry.service'
@@ -54,7 +59,7 @@ import { BrowserElevatedFileService } from 'vs/workbench/services/files/browser/
 import { IElevatedFileService } from 'vs/workbench/services/files/common/elevatedFileService.service'
 import * as resources from 'vs/base/common/resources'
 import { VSBuffer } from 'vs/base/common/buffer'
-import { ReadableStreamEvents, listenStream, newWriteableStream } from 'vs/base/common/stream'
+import { type ReadableStreamEvents, listenStream, newWriteableStream } from 'vs/base/common/stream'
 import { CancellationToken } from 'vs/base/common/cancellation'
 import { checkServicesNotInitialized, registerServiceInitializePreParticipant } from '../lifecycle'
 import { logsPath } from '../workbench'
@@ -1286,17 +1291,10 @@ export function registerFileSystemOverlay(
 }
 
 export {
-  IFileSystemProviderWithFileReadWriteCapability,
   FileSystemProviderCapabilities,
   FileType,
-  IStat,
-  IWatchOptions,
-  IFileWriteOptions,
-  IFileDeleteOptions,
-  IFileOverwriteOptions,
   FileSystemProviderError,
   FileSystemProviderErrorCode,
-  IFileChange,
   FileChangeType,
   FilePermission,
   HTMLFileSystemProvider,
@@ -1311,4 +1309,13 @@ export {
   DelegateFileSystemProvider,
   OverlayFileSystemProvider,
   EmptyFileSystemProvider
+}
+export type {
+  IFileSystemProviderWithFileReadWriteCapability,
+  IStat,
+  IWatchOptions,
+  IFileWriteOptions,
+  IFileDeleteOptions,
+  IFileOverwriteOptions,
+  IFileChange
 }

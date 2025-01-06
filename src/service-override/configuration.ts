@@ -1,5 +1,5 @@
 import { VSBuffer } from 'vs/base/common/buffer'
-import { IDisposable } from 'vs/base/common/lifecycle'
+import type { IDisposable } from 'vs/base/common/lifecycle'
 import { Schemas } from 'vs/base/common/network'
 import { URI } from 'vs/base/common/uri'
 import { generateUuid } from 'vs/base/common/uuid'
@@ -8,16 +8,16 @@ import {
   ITextResourcePropertiesService
 } from 'vs/editor/common/services/textResourceConfiguration'
 import { TextResourceConfigurationService } from 'vs/editor/common/services/textResourceConfigurationService'
-import { IEditorOverrideServices } from 'vs/editor/standalone/browser/standaloneServices'
+import type { IEditorOverrideServices } from 'vs/editor/standalone/browser/standaloneServices'
 import { IConfigurationService } from 'vs/platform/configuration/common/configuration.service'
 import {
   Extensions as ConfigurationExtensions,
   ConfigurationScope,
-  IConfigurationDefaults,
-  IConfigurationNode,
-  IConfigurationRegistry
+  type IConfigurationDefaults,
+  type IConfigurationNode,
+  type IConfigurationRegistry
 } from 'vs/platform/configuration/common/configurationRegistry'
-import { IFileWriteOptions } from 'vs/platform/files/common/files'
+import type { IFileWriteOptions } from 'vs/platform/files/common/files'
 import { IFileService } from 'vs/platform/files/common/files.service'
 import { SyncDescriptor } from 'vs/platform/instantiation/common/descriptors'
 import { IInstantiationService } from 'vs/platform/instantiation/common/instantiation'
@@ -26,14 +26,14 @@ import { IPolicyService } from 'vs/platform/policy/common/policy.service'
 import { Registry } from 'vs/platform/registry/common/platform'
 import { IUriIdentityService } from 'vs/platform/uriIdentity/common/uriIdentity.service'
 import { IUserDataProfilesService } from 'vs/platform/userDataProfile/common/userDataProfile.service'
-import {
+import type {
   IAnyWorkspaceIdentifier,
   IEmptyWorkspaceIdentifier,
   ISingleFolderWorkspaceIdentifier,
   IWorkspaceIdentifier
 } from 'vs/platform/workspace/common/workspace'
 import { IWorkspaceContextService } from 'vs/platform/workspace/common/workspace.service'
-import {
+import type {
   IStoredWorkspace,
   IWorkspaceFolderCreationData
 } from 'vs/platform/workspaces/common/workspaces'
@@ -46,7 +46,7 @@ import { IBrowserWorkbenchEnvironmentService } from 'vs/workbench/services/envir
 import { IWorkbenchEnvironmentService } from 'vs/workbench/services/environment/common/environmentService.service'
 import { IRemoteAgentService } from 'vs/workbench/services/remote/common/remoteAgentService.service'
 import { TextResourcePropertiesService } from 'vs/workbench/services/textresourceProperties/common/textResourcePropertiesService'
-import {
+import type {
   IColorCustomizations,
   IThemeScopedColorCustomizations
 } from 'vs/workbench/services/themes/common/workbenchThemeService'
@@ -248,6 +248,14 @@ export default getServiceOverride
 
 export {
   ConfigurationScope,
+  configurationRegistry,
+  defaultUserConfigurationFile,
+  getUserConfiguration,
+  initUserConfiguration,
+  onUserConfigurationChange,
+  updateUserConfiguration
+}
+export type {
   IAnyWorkspaceIdentifier,
   IColorCustomizations,
   IConfigurationDefaults,
@@ -257,11 +265,5 @@ export {
   IStoredWorkspace,
   IThemeScopedColorCustomizations,
   IWorkspaceFolderCreationData,
-  IWorkspaceIdentifier,
-  configurationRegistry,
-  defaultUserConfigurationFile,
-  getUserConfiguration,
-  initUserConfiguration,
-  onUserConfigurationChange,
-  updateUserConfiguration
+  IWorkspaceIdentifier
 }

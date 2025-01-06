@@ -1,4 +1,4 @@
-import { IEditorOverrideServices } from 'vs/editor/standalone/browser/standaloneServices'
+import type { IEditorOverrideServices } from 'vs/editor/standalone/browser/standaloneServices'
 import { SyncDescriptor } from 'vs/platform/instantiation/common/descriptors'
 import { IPreferencesService } from 'vs/workbench/services/preferences/common/preferences.service'
 import { PreferencesService } from 'vs/workbench/services/preferences/browser/preferencesService'

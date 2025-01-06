@@ -1,13 +1,13 @@
-import { createFilter, FilterPattern } from '@rollup/pluginutils'
-import { Plugin } from 'rollup'
+import { createFilter, type FilterPattern } from '@rollup/pluginutils'
+import type { Plugin } from 'rollup'
 import * as yauzl from 'yauzl'
 import type { IExtensionManifest } from 'vs/platform/extensions/common/extensions'
-import { IFs, createFsFromVolume, Volume } from 'memfs'
+import { type IFs, createFsFromVolume, Volume } from 'memfs'
 import { Readable } from 'stream'
 import * as path from 'path'
 import type nodeFs from 'node:fs'
 import { getExtensionResources, parseJson } from './extension-tools.js'
-import { ExtensionFileMetadata } from './extensions.js'
+import type { ExtensionFileMetadata } from './extensions.js'
 
 interface Options {
   include?: FilterPattern
@@ -144,4 +144,4 @@ export { whenReady }
   }
 }
 
-export { IExtensionManifest }
+export type { IExtensionManifest }

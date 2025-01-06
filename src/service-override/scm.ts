@@ -1,4 +1,4 @@
-import { IEditorOverrideServices } from 'vs/editor/standalone/browser/standaloneServices'
+import { type IEditorOverrideServices } from 'vs/editor/standalone/browser/standaloneServices'
 import { ISCMService, ISCMViewService } from 'vs/workbench/contrib/scm/common/scm.service'
 import { SCMService } from 'vs/workbench/contrib/scm/common/scmService'
 import { SCMViewService } from 'vs/workbench/contrib/scm/browser/scmViewService'

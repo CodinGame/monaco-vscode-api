@@ -1,4 +1,4 @@
-import { IEditorOverrideServices } from 'vs/editor/standalone/browser/standaloneServices'
+import { type IEditorOverrideServices } from 'vs/editor/standalone/browser/standaloneServices'
 import { SyncDescriptor } from 'vs/platform/instantiation/common/descriptors'
 import { IRequestService } from 'vs/platform/request/common/request.service'
 import { IDecorationsService } from 'vs/workbench/services/decorations/common/decorations.service'

@@ -1,17 +1,17 @@
-import { IEditorOverrideServices } from 'vs/editor/standalone/browser/standaloneServices'
+import type { IEditorOverrideServices } from 'vs/editor/standalone/browser/standaloneServices'
 import { Event } from 'vs/base/common/event'
-import { IResolvedTextEditorModel } from 'vs/editor/common/services/resolverService'
+import type { IResolvedTextEditorModel } from 'vs/editor/common/services/resolverService'
 import { ICodeEditorService } from 'vs/editor/browser/services/codeEditorService'
 import { CodeEditorService } from 'vs/workbench/services/editor/browser/codeEditorService'
 import { IEditorService } from 'vs/workbench/services/editor/common/editorService.service'
-import { IEditorOptions } from 'vs/platform/editor/common/editor'
+import type { IEditorOptions } from 'vs/platform/editor/common/editor'
 import { SyncDescriptor } from 'vs/platform/instantiation/common/descriptors'
-import { IReference } from 'vs/base/common/lifecycle'
+import type { IReference } from 'vs/base/common/lifecycle'
 import { TextEditorService } from 'vs/workbench/services/textfile/common/textEditorService'
 import { ITextEditorService } from 'vs/workbench/services/textfile/common/textEditorService.service'
 import {
   GroupOrientation,
-  IEditorPart
+  type IEditorPart
 } from 'vs/workbench/services/editor/common/editorGroupsService'
 import { IEditorGroupsService } from 'vs/workbench/services/editor/common/editorGroupsService.service'
 import { IInstantiationService } from 'vs/platform/instantiation/common/instantiation'
@@ -20,7 +20,7 @@ import { mainWindow } from 'vs/base/browser/window'
 import {
   MonacoDelegateEditorGroupsService,
   MonacoEditorService,
-  OpenEditor,
+  type OpenEditor,
   fakeActiveGroup
 } from './tools/editor'
 import { unsupported } from '../tools'
@@ -173,4 +173,5 @@ export default function getServiceOverride(openEditor: OpenEditor): IEditorOverr
   }
 }
 
-export { OpenEditor, IEditorOptions, IResolvedTextEditorModel, IReference, MonacoEditorService }
+export { MonacoEditorService }
+export type { OpenEditor, IEditorOptions, IResolvedTextEditorModel, IReference }

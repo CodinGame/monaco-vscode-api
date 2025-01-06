@@ -1,17 +1,17 @@
 import { Registry } from 'vs/platform/registry/common/platform'
 import {
-  IWorkbenchContributionsRegistry,
+  type IWorkbenchContributionsRegistry,
   Extensions as WorkbenchExtensions
 } from 'vs/workbench/common/contributions'
 import { LifecyclePhase } from 'vs/workbench/services/lifecycle/common/lifecycle'
 import { ILifecycleService } from 'vs/workbench/services/lifecycle/common/lifecycle.service'
 import {
   IInstantiationService,
-  ServicesAccessor
+  type ServicesAccessor
 } from 'vs/platform/instantiation/common/instantiation'
 import { Barrier, RunOnceScheduler, _runWhenIdle, timeout } from 'vs/base/common/async'
 import { Emitter } from 'vs/base/common/event'
-import { EditorExtensions, IEditorFactoryRegistry } from 'vs/workbench/common/editor'
+import { EditorExtensions, type IEditorFactoryRegistry } from 'vs/workbench/common/editor'
 import { StandaloneServices } from 'vs/editor/standalone/browser/standaloneServices'
 import { Disposable } from 'vs/base/common/lifecycle'
 import { IWorkbenchLayoutService } from 'vs/workbench/services/layout/browser/layoutService.service'

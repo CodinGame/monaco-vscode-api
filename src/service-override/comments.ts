@@ -1,4 +1,4 @@
-import { IEditorOverrideServices } from 'vs/editor/standalone/browser/standaloneServices'
+import { type IEditorOverrideServices } from 'vs/editor/standalone/browser/standaloneServices'
 import { SyncDescriptor } from 'vs/platform/instantiation/common/descriptors'
 import { ICommentService } from 'vs/workbench/contrib/comments/browser/commentService.service'
 import { CommentService } from 'vs/workbench/contrib/comments/browser/commentService'

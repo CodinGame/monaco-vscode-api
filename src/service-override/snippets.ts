@@ -1,5 +1,5 @@
 import {
-  IEditorOverrideServices,
+  type IEditorOverrideServices,
   StandaloneServices
 } from 'vs/editor/standalone/browser/standaloneServices'
 import { SyncDescriptor } from 'vs/platform/instantiation/common/descriptors'
@@ -33,4 +33,4 @@ export default function getServiceOverride(): IEditorOverrideServices {
   }
 }
 
-export { ISnippetsExtensionPoint }
+export type { ISnippetsExtensionPoint }

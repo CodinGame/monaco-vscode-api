@@ -9,13 +9,13 @@ import type {
   ILanguage,
   ISnippet
 } from 'vs/platform/extensions/common/extensions'
-import { ParseError, parse } from 'vs/base/common/json.js'
+import { type ParseError, parse } from 'vs/base/common/json.js'
 import { getParseErrorMessage } from 'vs/base/common/jsonErrorMessages'
-import { IUserFriendlyViewsContainerDescriptor } from 'vs/workbench/api/browser/viewsExtensionPoint'
+import type { IUserFriendlyViewsContainerDescriptor } from 'vs/workbench/api/browser/viewsExtensionPoint'
 // @ts-ignore
 import parseCssUrl from 'css-url-parser'
 import * as mime from 'mime-types'
-import { FileSystemAdapter, glob } from 'fast-glob'
+import { type FileSystemAdapter, glob } from 'fast-glob'
 import * as path from 'path'
 import type nodeFs from 'node:fs'
 
