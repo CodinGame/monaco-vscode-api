@@ -1,4 +1,4 @@
-import { IEditorOverrideServices } from 'vs/editor/standalone/browser/standaloneServices'
+import { type IEditorOverrideServices } from 'vs/editor/standalone/browser/standaloneServices'
 import { SyncDescriptor } from 'vs/platform/instantiation/common/descriptors'
 import { AccessibleViewService } from 'vs/workbench/contrib/accessibility/browser/accessibleView'
 import { AccessibilitySignalService } from 'vs/platform/accessibilitySignal/browser/accessibilitySignalService'

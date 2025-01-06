@@ -2,9 +2,9 @@ import { mainWindow } from 'vs/base/browser/window'
 import {
   DynamicListEventMultiplexer,
   Event,
-  IDynamicListEventMultiplexer
+  type IDynamicListEventMultiplexer
 } from 'vs/base/common/event'
-import { Disposable, IDisposable } from 'vs/base/common/lifecycle'
+import { Disposable, type IDisposable } from 'vs/base/common/lifecycle'
 import { ResourceSet } from 'vs/base/common/map'
 import { OS } from 'vs/base/common/platform'
 import { joinPath } from 'vs/base/common/resources'
@@ -21,7 +21,7 @@ import { IFileDialogService } from 'vs/platform/dialogs/common/dialogs.service'
 import { IDownloadService } from 'vs/platform/download/common/download.service'
 import { IEncryptionService } from 'vs/platform/encryption/common/encryptionService.service'
 import { IEnvironmentService } from 'vs/platform/environment/common/environment.service'
-import { ILocalExtension } from 'vs/platform/extensionManagement/common/extensionManagement'
+import type { ILocalExtension } from 'vs/platform/extensionManagement/common/extensionManagement'
 import {
   IExtensionGalleryService,
   IExtensionTipsService,
@@ -32,14 +32,22 @@ import { IExtensionsProfileScannerService } from 'vs/platform/extensionManagemen
 import { IExtensionsScannerService } from 'vs/platform/extensionManagement/common/extensionsScannerService.service'
 import { IExtensionRecommendationNotificationService } from 'vs/platform/extensionRecommendations/common/extensionRecommendations.service'
 import { IExtensionResourceLoaderService } from 'vs/platform/extensionResourceLoader/common/extensionResourceLoader.service'
-import { IExtension, IRelaxedExtensionDescription } from 'vs/platform/extensions/common/extensions'
+import type {
+  IExtension,
+  IRelaxedExtensionDescription
+} from 'vs/platform/extensions/common/extensions'
 import { IBuiltinExtensionsScannerService } from 'vs/platform/extensions/common/extensions.service'
 import { IFileService } from 'vs/platform/files/common/files.service'
 import { InstantiationType, registerSingleton } from 'vs/platform/instantiation/common/extensions'
 import { IKeyboardLayoutService } from 'vs/platform/keyboardLayout/common/keyboardLayout.service'
-import { ILanguagePackItem } from 'vs/platform/languagePacks/common/languagePacks'
+import type { ILanguagePackItem } from 'vs/platform/languagePacks/common/languagePacks'
 import { ILanguagePackService } from 'vs/platform/languagePacks/common/languagePacks.service'
-import { ILogger, LogLevel, AbstractLoggerService, NullLogger } from 'vs/platform/log/common/log'
+import {
+  type ILogger,
+  LogLevel,
+  AbstractLoggerService,
+  NullLogger
+} from 'vs/platform/log/common/log'
 import { ILoggerService } from 'vs/platform/log/common/log.service'
 import { NullPolicyService } from 'vs/platform/policy/common/policy'
 import { IPolicyService } from 'vs/platform/policy/common/policy.service'
@@ -50,7 +58,7 @@ import { IRemoteSocketFactoryService } from 'vs/platform/remote/common/remoteSoc
 import { IRequestService } from 'vs/platform/request/common/request.service'
 import { ISecretStorageService } from 'vs/platform/secrets/common/secrets.service'
 import { ISignService } from 'vs/platform/sign/common/sign.service'
-import { IMessage } from 'vs/platform/sign/common/sign'
+import type { IMessage } from 'vs/platform/sign/common/sign'
 import { ICustomEndpointTelemetryService } from 'vs/platform/telemetry/common/telemetry.service'
 import { NullEndpointTelemetryService } from 'vs/platform/telemetry/common/telemetryUtils'
 import { TerminalLocation } from 'vs/platform/terminal/common/terminal'
@@ -86,14 +94,14 @@ import {
 } from 'vs/platform/workspace/common/workspaceTrust.service'
 import { IWorkspacesService } from 'vs/platform/workspaces/common/workspaces.service'
 import {
-  ExtensionStatusBarEntry,
+  type ExtensionStatusBarEntry,
   IExtensionStatusBarItemService,
   StatusBarUpdateKind
 } from 'vs/workbench/api/browser/statusBarService'
 import { IBreadcrumbsService } from 'vs/workbench/browser/parts/editor/breadcrumbs.service'
 import {
   DEFAULT_EDITOR_PART_OPTIONS,
-  IEditorGroupView
+  type IEditorGroupView
 } from 'vs/workbench/browser/parts/editor/editor'
 import { IViewDescriptorService } from 'vs/workbench/common/views.service'
 import { IAccessibleViewService } from 'vs/platform/accessibility/browser/accessibleView.service'
@@ -271,11 +279,11 @@ import {
 import { UserDataProfileService } from 'vs/workbench/services/userDataProfile/common/userDataProfileService'
 import { IUserDataSyncWorkbenchService } from 'vs/workbench/services/userDataSync/common/userDataSync.service'
 import { IViewsService } from 'vs/workbench/services/views/common/viewsService.service'
-import {
+import type {
   IWorkingCopyBackupMeta,
   IWorkingCopyIdentifier
 } from 'vs/workbench/services/workingCopy/common/workingCopy'
-import { IResolvedWorkingCopyBackup } from 'vs/workbench/services/workingCopy/common/workingCopyBackup'
+import type { IResolvedWorkingCopyBackup } from 'vs/workbench/services/workingCopy/common/workingCopyBackup'
 import { IWorkingCopyBackupService } from 'vs/workbench/services/workingCopy/common/workingCopyBackup.service'
 import { IWorkingCopyEditorService } from 'vs/workbench/services/workingCopy/common/workingCopyEditorService.service'
 import { IWorkingCopyFileService } from 'vs/workbench/services/workingCopy/common/workingCopyFileService.service'
@@ -284,31 +292,35 @@ import { IWorkingCopyService } from 'vs/workbench/services/workingCopy/common/wo
 import { IWorkspaceEditingService } from 'vs/workbench/services/workspaces/common/workspaceEditing.service'
 import { IWorkspaceIdentityService } from 'vs/workbench/services/workspaces/common/workspaceIdentityService.service'
 import {
-  IEditorGroup,
+  type IEditorGroup,
   GroupOrientation,
-  IEditorPart
+  type IEditorPart
 } from 'vs/workbench/services/editor/common/editorGroupsService'
 import { NullExtensionService } from 'vs/workbench/services/extensions/common/extensions'
 import { toUserDataProfile } from 'vs/platform/userDataProfile/common/userDataProfile'
-import { IAdapterManager, IDebugModel, IViewModel } from 'vs/workbench/contrib/debug/common/debug'
-import { IViewContainerModel } from 'vs/workbench/common/views'
-import { ISearchComplete } from 'vs/workbench/services/search/common/search'
-import {
+import type {
+  IAdapterManager,
+  IDebugModel,
+  IViewModel
+} from 'vs/workbench/contrib/debug/common/debug'
+import type { IViewContainerModel } from 'vs/workbench/common/views'
+import type { ISearchComplete } from 'vs/workbench/services/search/common/search'
+import type {
   IOutputChannel,
   IOutputChannelDescriptor
 } from 'vs/workbench/services/output/common/output'
 import {
-  ITerminalInstance,
+  type ITerminalInstance,
   TerminalConnectionState
 } from 'vs/workbench/contrib/terminal/browser/terminal'
 import { AccountStatus } from 'vs/workbench/services/userDataSync/common/userDataSync'
-import { IWebview } from 'vs/workbench/contrib/webview/browser/webview'
-import { SyncResource } from 'vs/workbench/contrib/editSessions/common/editSessions'
+import type { IWebview } from 'vs/workbench/contrib/webview/browser/webview'
+import type { SyncResource } from 'vs/workbench/contrib/editSessions/common/editSessions'
 import { ILanguageModelStatsService } from 'vs/workbench/contrib/chat/common/languageModelStats.service'
 import { IAccessibleViewInformationService } from 'vs/workbench/services/accessibility/common/accessibleViewInformationService.service'
 import { IUserDataProfileStorageService } from 'vs/platform/userDataProfile/common/userDataProfileStorageService.service'
 import { IIntegrityService } from 'vs/workbench/services/integrity/common/integrity.service'
-import { IntegrityTestResult } from 'vs/workbench/services/integrity/common/integrity'
+import type { IntegrityTestResult } from 'vs/workbench/services/integrity/common/integrity'
 import { ITrustedDomainService } from 'vs/workbench/contrib/url/browser/trustedDomainService.service'
 import { ILanguageModelToolsService } from 'vs/workbench/contrib/chat/common/languageModelToolsService.service'
 import { PortsEnablement } from 'vs/workbench/services/remote/common/remoteExplorerService'

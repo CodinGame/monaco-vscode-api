@@ -1,4 +1,4 @@
-import { IEditorOverrideServices } from 'vs/editor/standalone/browser/standaloneServices'
+import type { IEditorOverrideServices } from 'vs/editor/standalone/browser/standaloneServices'
 import 'vs/workbench/contrib/performance/browser/performance.contribution'
 import 'vs/workbench/contrib/performance/browser/performance.web.contribution'
 

@@ -3,35 +3,35 @@ import './contributions'
 import 'vs/editor/editor.all'
 import 'vs/editor/standalone/browser/iPadShowKeyboard/iPadShowKeyboard'
 import Severity from 'vs/base/common/severity'
-import { ITextModelContentProvider } from 'vs/editor/common/services/resolverService'
+import type { ITextModelContentProvider } from 'vs/editor/common/services/resolverService'
 import { StorageScope, StorageTarget } from 'vs/platform/storage/common/storage'
 import {
-  IEditorOverrideServices,
+  type IEditorOverrideServices,
   StandaloneServices
 } from 'vs/editor/standalone/browser/standaloneServices'
 import { mixin } from 'vs/base/common/objects'
 import {
-  GetLeadingNonServiceArgs,
+  type GetLeadingNonServiceArgs,
   IInstantiationService,
-  ServiceIdentifier,
-  ServicesAccessor
+  type ServiceIdentifier,
+  type ServicesAccessor
 } from 'vs/platform/instantiation/common/instantiation'
-import { IAction } from 'vs/base/common/actions'
-import { DisposableStore, IDisposable } from 'vs/base/common/lifecycle'
-import { IWorkbenchConstructionOptions } from 'vs/workbench/browser/web.api'
-import { IProductConfiguration } from 'vs/base/common/product'
+import type { IAction } from 'vs/base/common/actions'
+import { DisposableStore, type IDisposable } from 'vs/base/common/lifecycle'
+import type { IWorkbenchConstructionOptions } from 'vs/workbench/browser/web.api'
+import type { IProductConfiguration } from 'vs/base/common/product'
 import {
-  ILazyWorkbenchContributionInstantiation,
-  IOnEditorWorkbenchContributionInstantiation,
-  IWorkbenchContribution,
-  WorkbenchContributionInstantiation,
+  type ILazyWorkbenchContributionInstantiation,
+  type IOnEditorWorkbenchContributionInstantiation,
+  type IWorkbenchContribution,
+  type WorkbenchContributionInstantiation,
   WorkbenchPhase,
   registerWorkbenchContribution2
 } from 'vs/workbench/common/contributions'
 import { IProductService } from 'vs/platform/product/common/productService.service'
-import { IConfigurationChangeEvent } from 'vs/platform/configuration/common/configuration'
-import { IColorTheme } from 'vs/platform/theme/common/themeService'
-import { EnvironmentOverride, initialize as initializeWorkbench } from './workbench'
+import type { IConfigurationChangeEvent } from 'vs/platform/configuration/common/configuration'
+import type { IColorTheme } from 'vs/platform/theme/common/themeService'
+import { type EnvironmentOverride, initialize as initializeWorkbench } from './workbench'
 import {
   checkServicesNotInitialized,
   checkServicesReady,

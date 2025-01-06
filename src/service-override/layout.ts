@@ -1,18 +1,18 @@
 import {
-  IEditorOverrideServices,
+  type IEditorOverrideServices,
   StandaloneServices
 } from 'vs/editor/standalone/browser/standaloneServices'
 import {
   ActivityBarPosition,
   LayoutSettings,
-  PanelAlignment,
+  type PanelAlignment,
   Parts,
   Position,
   positionFromString,
   positionToString
 } from 'vs/workbench/services/layout/browser/layoutService'
 import { IWorkbenchLayoutService } from 'vs/workbench/services/layout/browser/layoutService.service'
-import { ILayoutOffsetInfo } from 'vs/platform/layout/browser/layoutService'
+import type { ILayoutOffsetInfo } from 'vs/platform/layout/browser/layoutService'
 import { ILayoutService } from 'vs/platform/layout/browser/layoutService.service'
 import { Emitter, Event } from 'vs/base/common/event'
 import * as dom from 'vs/base/browser/dom'
@@ -20,14 +20,14 @@ import { SyncDescriptor } from 'vs/platform/instantiation/common/descriptors'
 import { Part } from 'vs/workbench/browser/part'
 import { isAncestorUsingFlowTo } from 'vs/base/browser/dom'
 import { IPaneCompositePartService } from 'vs/workbench/services/panecomposite/browser/panecomposite.service'
-import { IViewContainerModel, ViewContainerLocation } from 'vs/workbench/common/views'
+import { type IViewContainerModel, ViewContainerLocation } from 'vs/workbench/common/views'
 import { IViewDescriptorService } from 'vs/workbench/common/views.service'
 import { isChrome, isFirefox, isLinux, isSafari, isWindows } from 'vs/base/common/platform'
 import { coalesce } from 'vs/base/common/arrays'
 import { ActivitybarPart } from 'vs/workbench/browser/parts/activitybar/activitybarPart'
 import { IEditorGroupsService } from 'vs/workbench/services/editor/common/editorGroupsService.service'
 import { IStatusbarService } from 'vs/workbench/services/statusbar/browser/statusbar.service'
-import { ServicesAccessor } from 'vs/platform/instantiation/common/instantiation'
+import type { ServicesAccessor } from 'vs/platform/instantiation/common/instantiation'
 import { IConfigurationService } from 'vs/platform/configuration/common/configuration.service'
 import { Disposable, DisposableStore, toDisposable } from 'vs/base/common/lifecycle'
 import { IAuxiliaryWindowService } from 'vs/workbench/services/auxiliaryWindow/browser/auxiliaryWindowService.service'
@@ -35,7 +35,7 @@ import { StandaloneCodeEditor } from 'vs/editor/standalone/browser/standaloneCod
 import { IHostService } from 'vs/workbench/services/host/browser/host.service'
 import { ICodeEditorService } from 'vs/editor/browser/services/codeEditorService'
 import { getMenuBarVisibility, getTitleBarStyle } from 'vs/platform/window/common/window'
-import { IDisposable } from '@xterm/headless'
+import type { IDisposable } from '@xterm/headless'
 import { onRenderWorkbench } from '../lifecycle'
 import { getWorkbenchContainer } from '../workbench'
 

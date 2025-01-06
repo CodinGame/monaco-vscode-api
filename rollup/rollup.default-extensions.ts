@@ -1,7 +1,7 @@
 import nodeResolve from '@rollup/plugin-node-resolve'
 import * as rollup from 'rollup'
 import { importMetaAssets } from '@web/rollup-plugin-import-meta-assets'
-import { PackageJson } from 'type-fest'
+import type { PackageJson } from 'type-fest'
 import { pascalCase } from 'pascal-case'
 import * as fs from 'fs'
 import * as path from 'path'

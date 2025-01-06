@@ -1,4 +1,4 @@
-import { IEditorOverrideServices } from 'vs/editor/standalone/browser/standaloneServices'
+import { type IEditorOverrideServices } from 'vs/editor/standalone/browser/standaloneServices'
 import { SyncDescriptor } from 'vs/platform/instantiation/common/descriptors'
 import { TestProfileService } from 'vs/workbench/contrib/testing/common/testProfileService'
 import { ITestProfileService } from 'vs/workbench/contrib/testing/common/testProfileService.service'

@@ -1,10 +1,10 @@
-import { createFilter, FilterPattern, dataToEsm } from '@rollup/pluginutils'
-import { Plugin } from 'rollup'
+import { createFilter, type FilterPattern, dataToEsm } from '@rollup/pluginutils'
+import type { Plugin } from 'rollup'
 import type { IExtensionManifest } from 'vs/platform/extensions/common/extensions'
 import * as path from 'path'
 import * as fs from 'fs'
 import { getExtensionResources, parseJson } from './extension-tools.js'
-import { ExtensionFileMetadata } from './extensions.js'
+import type { ExtensionFileMetadata } from './extensions.js'
 
 interface Options {
   include?: FilterPattern

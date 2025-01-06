@@ -1,4 +1,4 @@
-import { IEditorOverrideServices } from 'vs/editor/standalone/browser/standaloneServices'
+import type { IEditorOverrideServices } from 'vs/editor/standalone/browser/standaloneServices'
 import { SyncDescriptor } from 'vs/platform/instantiation/common/descriptors'
 import { ISpeechService } from 'vs/workbench/contrib/speech/common/speechService.service'
 import { SpeechService } from 'vs/workbench/contrib/speech/browser/speechService'

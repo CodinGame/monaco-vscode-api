@@ -1,4 +1,4 @@
-import { IEditorOverrideServices } from 'vs/editor/standalone/browser/standaloneServices'
+import { type IEditorOverrideServices } from 'vs/editor/standalone/browser/standaloneServices'
 import { SyncDescriptor } from 'vs/platform/instantiation/common/descriptors'
 import 'vs/workbench/contrib/timeline/browser/timeline.contribution'
 import 'vs/workbench/contrib/localHistory/browser/localHistory.contribution'

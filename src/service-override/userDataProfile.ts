@@ -1,4 +1,4 @@
-import { IEditorOverrideServices } from 'vs/editor/standalone/browser/standaloneServices'
+import type { IEditorOverrideServices } from 'vs/editor/standalone/browser/standaloneServices'
 import { SyncDescriptor } from 'vs/platform/instantiation/common/descriptors'
 import {
   IUserDataSyncStoreManagementService,
@@ -7,7 +7,7 @@ import {
 import { BrowserUserDataProfilesService } from 'vs/platform/userDataProfile/browser/userDataProfile'
 import { IUserDataProfilesService } from 'vs/platform/userDataProfile/common/userDataProfile.service'
 import {
-  IUserDataInitializer,
+  type IUserDataInitializer,
   UserDataInitializationService
 } from 'vs/workbench/services/userData/browser/userDataInit'
 import { IUserDataInitializationService } from 'vs/workbench/services/userData/browser/userDataInit.service'
@@ -35,8 +35,8 @@ import { UserDataProfileManagementService } from 'vs/workbench/services/userData
 import { IUserDataProfileStorageService } from 'vs/platform/userDataProfile/common/userDataProfileStorageService.service'
 import { UserDataProfileStorageService } from 'vs/workbench/services/userDataProfile/browser/userDataProfileStorageService'
 import { UserDataProfileService } from 'vs/workbench/services/userDataProfile/common/userDataProfileService'
-import { IAnyWorkspaceIdentifier } from 'vs/platform/workspace/common/workspace'
-import { IUserDataProfile } from 'vs/platform/userDataProfile/common/userDataProfile'
+import type { IAnyWorkspaceIdentifier } from 'vs/platform/workspace/common/workspace'
+import type { IUserDataProfile } from 'vs/platform/userDataProfile/common/userDataProfile'
 import { UserDataSyncUtilService } from 'vs/workbench/services/userDataSync/common/userDataSyncUtil'
 import { registerServiceInitializePostParticipant } from '../lifecycle'
 import { getWorkspaceIdentifier } from '../workbench'

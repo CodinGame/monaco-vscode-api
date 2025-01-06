@@ -2,16 +2,16 @@
 import type * as vscode from 'vscode'
 import {
   ExtensionType,
-  IExtension,
-  IExtensionContributions,
-  IExtensionManifest,
+  type IExtension,
+  type IExtensionContributions,
+  type IExtensionManifest,
   TargetPlatform
 } from 'vs/platform/extensions/common/extensions'
 import { IExtensionService } from 'vs/workbench/services/extensions/common/extensions.service'
 import { URI } from 'vs/base/common/uri'
 import { getExtensionId } from 'vs/platform/extensionManagement/common/extensionManagementUtil'
-import { DisposableStore, IDisposable } from 'vs/base/common/lifecycle'
-import { ITranslations } from 'vs/platform/extensionManagement/common/extensionNls'
+import { DisposableStore, type IDisposable } from 'vs/base/common/lifecycle'
+import type { ITranslations } from 'vs/platform/extensionManagement/common/extensionNls'
 import { joinPath } from 'vs/base/common/resources'
 import { FileAccess, Schemas } from 'vs/base/common/network'
 import { ExtensionHostKind } from 'vs/workbench/services/extensions/common/extensionHostKind'
@@ -23,13 +23,16 @@ import { IWorkbenchExtensionEnablementService } from 'vs/workbench/services/exte
 import { StandaloneServices } from 'vs/editor/standalone/browser/standaloneServices'
 import {
   ExtensionManifestTranslator,
-  NlsConfiguration
+  type NlsConfiguration
 } from 'vs/platform/extensionManagement/common/extensionsScannerService'
 import * as platform from 'vs/base/common/platform'
-import { IExtensionWithExtHostKind, ExtensionServiceOverride } from './service-override/extensions'
+import {
+  type IExtensionWithExtHostKind,
+  ExtensionServiceOverride
+} from './service-override/extensions'
 import {
   CustomSchemas,
-  ExtensionFileMetadata,
+  type ExtensionFileMetadata,
   RegisteredUriFile,
   registerExtensionFile
 } from './service-override/files'
@@ -279,10 +282,5 @@ export function registerExtension(
   return api
 }
 
-export {
-  IExtensionManifest,
-  ITranslations,
-  IExtensionContributions,
-  ExtensionHostKind,
-  ExtensionFileMetadata
-}
+export { ExtensionHostKind }
+export type { IExtensionManifest, ITranslations, IExtensionContributions, ExtensionFileMetadata }

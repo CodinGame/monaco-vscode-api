@@ -1,5 +1,5 @@
 import {
-  IEditorOverrideServices,
+  type IEditorOverrideServices,
   StandaloneServices
 } from 'vs/editor/standalone/browser/standaloneServices'
 import { SyncDescriptor } from 'vs/platform/instantiation/common/descriptors'

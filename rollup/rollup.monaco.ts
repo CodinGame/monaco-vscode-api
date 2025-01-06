@@ -1,6 +1,6 @@
 import nodeResolve from '@rollup/plugin-node-resolve'
 import * as rollup from 'rollup'
-import { PackageJson } from 'type-fest'
+import type { PackageJson } from 'type-fest'
 import replace from '@rollup/plugin-replace'
 import glob from 'fast-glob'
 import * as path from 'path'

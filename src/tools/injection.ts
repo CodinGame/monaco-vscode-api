@@ -1,5 +1,5 @@
 import {
-  BrandedService,
+  type BrandedService,
   IInstantiationService,
   _util
 } from 'vs/platform/instantiation/common/instantiation'
