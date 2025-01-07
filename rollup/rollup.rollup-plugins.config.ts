@@ -7,7 +7,6 @@ import type { PackageJson } from 'type-fest'
 import * as path from 'path'
 import { fileURLToPath } from 'url'
 import * as fs from 'fs'
-import metadataPlugin from './rollup-metadata-plugin'
 const pkg = JSON.parse(
   fs.readFileSync(new URL('../package.json', import.meta.url).pathname).toString()
 )
@@ -20,12 +19,12 @@ const TSCONFIG = path.resolve(BASE_DIR, 'tsconfig.rollup.json')
 const config: rollup.RollupOptions[] = [
   {
     input: 'src/rollup-vsix-plugin.ts',
-    output: 'dist/rollup-vsix-plugin',
+    output: 'dist/packages/monaco-vscode-rollup-vsix-plugin',
     description: `Rollup plugin used to load VSCode extension files (VSIX), designed to be used with ${pkg.name}`
   },
   {
     input: 'src/rollup-extension-directory-plugin.ts',
-    output: 'dist/rollup-extension-directory-plugin',
+    output: 'dist/packages/monaco-vscode-rollup-extension-directory-plugin',
     description: `Rollup plugin used to load VSCode extension already extracted inside a directory, designed to be used with ${pkg.name}`
   }
 ].map(({ input, output, description }) => ({
@@ -60,10 +59,17 @@ const config: rollup.RollupOptions[] = [
       namedExports: false,
       preferConst: false
     }),
-    metadataPlugin({
-      handle({ group: { directDependencies } }) {
+    {
+      name: 'bundleGenerator',
+      generateBundle(options, bundle) {
+        const outputFile = Object.values(bundle).find((i) => i.type === 'chunk' && i.isEntry)!.name
+
+        const externalDependencies = new Set(
+          Array.from(this.getModuleIds()).filter((id) => this.getModuleInfo(id)!.isExternal)
+        )
+
         const packageJson: PackageJson = {
-          name: `@codingame/monaco-vscode-${path.basename(output)}`,
+          name: `@codingame/${path.basename(output)}`,
           ...Object.fromEntries(
             Object.entries(pkg).filter(([key]) =>
               ['version', 'keywords', 'author', 'license', 'repository', 'type'].includes(key)
@@ -71,13 +77,13 @@ const config: rollup.RollupOptions[] = [
           ),
           private: false,
           description,
-          main: `${path.basename(output)}.js`,
-          module: `${path.basename(output)}.js`,
-          types: `${path.basename(output)}.d.ts`,
+          main: `${outputFile}.js`,
+          module: `${outputFile}.js`,
+          types: `${outputFile}.d.ts`,
           dependencies: {
             ...Object.fromEntries(
               Object.entries(pkg.dependencies as Record<string, string>).filter(([key]) =>
-                directDependencies.has(key)
+                externalDependencies.has(key)
               )
             )
           }
@@ -89,7 +95,7 @@ const config: rollup.RollupOptions[] = [
           type: 'asset'
         })
       }
-    })
+    }
   ]
 }))
 

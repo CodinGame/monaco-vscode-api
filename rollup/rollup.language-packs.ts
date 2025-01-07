@@ -41,7 +41,7 @@ export default rollup.defineConfig([
             preserveModules: true,
             assetFileNames: '[name][extname]',
             format: 'esm',
-            dir: `dist/${name}`,
+            dir: `dist/packages/monaco-${name}`,
             entryFileNames: '[name].js',
             hoistTransitiveImports: false
           }

@@ -7,7 +7,7 @@ const pkg = JSON.parse(
 )
 
 const localDependencies = Object.entries(pkg.dependencies as Record<string, string>)
-  .filter(([, version]) => version.startsWith('file:../'))
+  .filter(([name, version]) => version.startsWith('file:../') && !name.includes('rollup'))
   .map(([name]) => name)
 export default defineConfig({
   build: {

@@ -18,7 +18,7 @@ if (NPM_TOKEN == null) {
 }
 
 async function publishNpm(version: string, tag: string) {
-  const distDir = path.resolve(__dirname, 'dist')
+  const distDir = path.resolve(__dirname, 'dist/packages')
   for (const dirName of await fs.readdir(distDir)) {
     const libDir = path.resolve(distDir, dirName)
     const packageJsonFile = path.resolve(libDir, 'package.json')

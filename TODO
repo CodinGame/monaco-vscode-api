@@ -1,0 +1,24 @@
+- [x] remove 2nd step
+- [x] rollup config as parameter
+- [x] check editor types
+- [x] check dependencies without aliases
+- [x] remove dist/main at the end (rename to tmp?)
+- [X] do not merge default service override with main
+- [x] update extensions/types directories
+- [x] parallelize rollup?
+- [x] delete main at the end
+- [x] create MR on VSCode with d.ts => .ts
+- [ ] issues with css files
+- [ ] rollup plugin types
+- [ ] update vscode typescript version?
+- [x] fix types
+- [ ] check build is deterministic
+- [ ] no xterm from main, even transitively
+- [ ] fix "paches" typo
+- [x] types: do not use subpackage plugin bug multiple rollup configs (and remove plugin flag)
+- [x] remove empty.js from service override
+- [x] prevent too small packages with too many groups? (remove XXXmore hack?)
+- [P] make sure all modules are used, including assets
+- [ ] update dependencies
+- [ ] update to 1.97
+- [ ] replace ts-node by tsx?
