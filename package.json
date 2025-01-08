@@ -85,6 +85,7 @@
     "recast": "^0.23.9",
     "rollup": "^4.24.4",
     "rollup-plugin-copy": "^3.5.0",
+    "rollup-plugin-dts": "^6.1.1",
     "rollup-plugin-styles": "^4.0.0",
     "semantic-release": "23.1.1",
     "semver": "^7.6.3",

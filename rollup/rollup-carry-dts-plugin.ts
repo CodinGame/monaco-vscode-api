@@ -8,30 +8,13 @@ import ts from 'typescript'
 import type * as estree from 'estree'
 import * as nodePath from 'node:path'
 import * as fs from 'node:fs'
-
 const printer = ts.createPrinter()
 
-async function extractDtsImports(fileName: string, content: string) {
-  const sourceFile = ts.createSourceFile(fileName, content, ts.ScriptTarget.Latest, true)
-
-  const imports: string[] = []
-
-  const visit = (node: ts.Node) => {
-    if (ts.isImportDeclaration(node)) {
-      const moduleSpecifier = node.moduleSpecifier
-      if (ts.isStringLiteral(moduleSpecifier)) {
-        imports.push(moduleSpecifier.text)
-      }
-    }
-    ts.forEachChild(node, visit)
-  }
-
-  visit(sourceFile)
-
-  return imports
+export interface PluginConfig {
+  external?: (source: string, importer: string | undefined) => boolean
 }
 
-export default (): Plugin => ({
+export default ({ external = () => false }: PluginConfig = {}): Plugin => ({
   name: 'carry-dts',
   async transform(code, id) {
     // Make module import their own dts if it exists
@@ -50,7 +33,37 @@ export default (): Plugin => ({
 
     // load d.ts files by replacing them by a modules importing everything the .d.ts imports
     const content = (await fs.promises.readFile(id)).toString()
-    const imports = await extractDtsImports(id, content)
+
+    const sourceFile = ts.createSourceFile(id, content, ts.ScriptTarget.Latest, true)
+
+    const imports: string[] = []
+
+    function transformer(context: ts.TransformationContext) {
+      return (rootNode: ts.Node): ts.Node | undefined => {
+        function visit(node: ts.Node): ts.Node | undefined {
+          if (ts.isImportDeclaration(node) && node.importClause == null) {
+            return undefined
+          }
+          if (ts.isImportDeclaration(node) || ts.isExportDeclaration(node)) {
+            if (node.moduleSpecifier != null && ts.isStringLiteral(node.moduleSpecifier)) {
+              imports.push(node.moduleSpecifier.text)
+            }
+          }
+          if (
+            ts.isImportTypeNode(node) &&
+            ts.isLiteralTypeNode(node.argument) &&
+            ts.isStringLiteral(node.argument.literal)
+          ) {
+            imports.push(node.argument.literal.text)
+          }
+          return ts.visitEachChild(node, visit, context)
+        }
+        return ts.visitNode(rootNode, visit)
+      }
+    }
+
+    // Transformer le fichier source
+    const result = ts.transform(sourceFile, [transformer as ts.TransformerFactory<ts.Node>])
 
     return {
       code: (
@@ -60,9 +73,7 @@ export default (): Plugin => ({
               // Do not transform asset imports
               return imp
             }
-
-            const resolved = await this.resolve(imp, id)
-            if (resolved != null && resolved.external !== false) {
+            if (external(imp, id)) {
               return imp
             }
 
@@ -80,9 +91,20 @@ export default (): Plugin => ({
         .join('\n'),
       moduleSideEffects: 'no-treeshake',
       meta: {
-        dts: content
+        dts: printer.printFile(result.transformed[0] as ts.SourceFile)
       }
     }
+  },
+  onLog(level, log) {
+    if (
+      level === 'warn' &&
+      log.code === 'CIRCULAR_DEPENDENCY' &&
+      log.ids!.every((id) => id.endsWith('.d.ts'))
+    ) {
+      return false
+    }
+
+    return true
   },
   outputOptions(options) {
     // update entryFileNames so that d.ts files aren't renamed
@@ -145,21 +167,36 @@ export default (): Plugin => ({
       return undefined
     }
 
-    const sourceFile = ts.createSourceFile(chunk.fileName, dtsSource, ts.ScriptTarget.Latest)
+    let sourceFile = ts.createSourceFile(chunk.fileName, dtsSource, ts.ScriptTarget.Latest)
 
     const dtsImports: ts.StringLiteral[] = []
-    for (const child of sourceFile.getChildren()[0]!.getChildren()) {
-      if (ts.isImportDeclaration(child) && ts.isStringLiteral(child.moduleSpecifier)) {
+
+    function visit(child: ts.Node): ts.Node {
+      if (
+        (ts.isImportDeclaration(child) || ts.isExportDeclaration(child)) &&
+        child.moduleSpecifier != null &&
+        ts.isStringLiteral(child.moduleSpecifier)
+      ) {
         dtsImports.push(child.moduleSpecifier)
       }
+      if (
+        ts.isImportTypeNode(child) &&
+        ts.isLiteralTypeNode(child.argument) &&
+        ts.isStringLiteral(child.argument.literal)
+      ) {
+        dtsImports.push(child.argument.literal)
+      }
+      return ts.visitEachChild(child, visit, undefined)
     }
+
+    ts.visitNode(sourceFile, visit)
 
     const originalImports = Array.from(new Set(dtsImports.map((i) => i.text)))
     const transformedImports = Array.from(
       new Set(
         this.parse(code)
           .body.filter((node) => node.type === 'ImportDeclaration')
-          .map((node) => node.source.value!.toString().replace(/\.d\.ts/, '.js'))
+          .map((node) => node.source.value!.toString().replace(/\.d\.ts$/, '.js'))
       )
     )
 
@@ -175,6 +212,46 @@ export default (): Plugin => ({
     for (let i = 0; i < dtsImports.length; ++i) {
       dtsImports[i]!.text = transformedImportMapping.get(dtsImports[i]!.text)!
     }
+
+    // Also transform `declare module '...' and `import(...)`
+    const transformer: ts.TransformerFactory<ts.Node> = (context) => (rootNode) => {
+      function visit(node: ts.Node): ts.Node {
+        if (ts.isModuleDeclaration(node) && ts.isStringLiteral(node.name)) {
+          node = ts.factory.updateModuleDeclaration(
+            node,
+            node.modifiers,
+            ts.factory.createStringLiteral(
+              transformedImportMapping.get(node.name.text) ?? node.name.text
+            ),
+            node.body
+          )
+        }
+        if (
+          ts.isImportTypeNode(node) &&
+          ts.isLiteralTypeNode(node.argument) &&
+          ts.isStringLiteral(node.argument.literal)
+        ) {
+          node = ts.factory.updateImportTypeNode(
+            node,
+            ts.factory.updateLiteralTypeNode(
+              node.argument,
+              ts.factory.createStringLiteral(
+                transformedImportMapping.get(node.argument.literal.text) ??
+                  node.argument.literal.text
+              )
+            ),
+            node.attributes,
+            node.qualifier,
+            node.typeArguments
+          )
+        }
+        return ts.visitEachChild(node, visit, context)
+      }
+
+      return ts.visitNode(rootNode, visit)
+    }
+
+    sourceFile = ts.transform(sourceFile, [transformer]).transformed[0] as ts.SourceFile
 
     return printer.printFile(sourceFile)
   }

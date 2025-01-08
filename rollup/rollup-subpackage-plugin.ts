@@ -345,11 +345,7 @@ export default ({
       promises.push(
         (async () => {
           const subPackageOptions = getRollupOptions(packageName, groupSet.groups, {
-            // if there are multiple groups, it means it's a common package
-            // A common package doesn't have entrypoints, so define all its modules as entrypoint to make sure they are bundled
-            input: Array.from(groupSet.modules)
-              .filter((m) => groupSet.groups.size > 1 || m.isEntry)
-              .map((module) => module.id),
+            input: Array.from(groupSet.modules).map((module) => module.id),
             output: {
               preserveModules: true,
               preserveModulesRoot: options.dir!,

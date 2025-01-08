@@ -20,6 +20,41 @@ import { fileURLToPath } from 'node:url'
 import subpackagePlugin, { type EntryGroup, type Manifest } from './rollup-subpackage-plugin.js'
 import carryDtsPlugin from './rollup-carry-dts-plugin.js'
 
+const interfaceOverride = new Map<string, string>()
+interfaceOverride.set('Event<T>', 'vscode.Event<T>')
+interfaceOverride.set(
+  'IActionDescriptor',
+  "import('vs/editor/editor.api').editor.IActionDescriptor"
+)
+interfaceOverride.set('ICodeEditor', "import('vs/editor/editor.api').editor.ICodeEditor")
+interfaceOverride.set('IEditor', "import('vs/editor/editor.api').editor.IEditor")
+interfaceOverride.set('URI', "import('vs/editor/editor.api').Uri")
+interfaceOverride.set('ITextModel', "import('vs/editor/editor.api').editor.ITextModel")
+interfaceOverride.set(
+  'vs/editor/common/config/editorOptions:IEditorOptions',
+  "import('vs/editor/editor.api').editor.IEditorOptions"
+)
+interfaceOverride.set(
+  'IEditorOverrideServices',
+  "import('vs/editor/editor.api').editor.IEditorOverrideServices"
+)
+interfaceOverride.set(
+  'IStandaloneCodeEditor',
+  "import('vs/editor/editor.api').editor.IStandaloneCodeEditor"
+)
+interfaceOverride.set(
+  'IStandaloneDiffEditor',
+  "import('vs/editor/editor.api').editor.IStandaloneDiffEditor"
+)
+interfaceOverride.set(
+  'IStandaloneEditorConstructionOptions',
+  "import('vs/editor/editor.api').editor.IStandaloneEditorConstructionOptions"
+)
+interfaceOverride.set(
+  'IStandaloneDiffEditorConstructionOptions',
+  "import('vs/editor/editor.api').editor.IStandaloneDiffEditorConstructionOptions"
+)
+
 const COMMON_PACKAGE_NAME_UUID_NAMESPACE = '251b3eab-b5c9-4930-9c6c-6b38f697d291'
 
 const pkg = JSON.parse(
@@ -438,7 +473,7 @@ const workerGroups: Record<string, string> = {
 }
 
 const externals = Object.keys({ ...pkg.dependencies })
-const external: rollup.ExternalOption = (source, importer) => {
+const external = (source: string, importer?: string) => {
   if (importer != null && importer.startsWith(VSCODE_DIR) && source === 'vscode') {
     // if vscode is imported from vscode code itself, mark it as external
     return true
@@ -475,7 +510,9 @@ const COMMON_PLUGINS: rollup.InputPluginOption = [
   nodeResolve({
     extensions: EXTENSIONS
   }),
-  carryDtsPlugin()
+  carryDtsPlugin({
+    external
+  })
 ]
 
 export default (args: Record<string, string>): rollup.RollupOptions[] => {
@@ -526,6 +563,25 @@ export default (args: Record<string, string>): rollup.RollupOptions[] => {
       input,
       plugins: [
         COMMON_PLUGINS,
+        {
+          name: 'replace-editor-types',
+          transform(code, id) {
+            if (id.endsWith('.d.ts') && !id.endsWith('editor.api.d.ts')) {
+              console.log('REPLACE IN ', id)
+              interfaceOverride.forEach((value, key) => {
+                const [, path, name] = /(?:(.*):)?(.*)/.exec(key)!
+                if (path == null || path === id) {
+                  code = code.replace(
+                    `interface ${name} `,
+                    `type ${name} = ${value}\ninterface _${name} `
+                  )
+                }
+              })
+              return code
+            }
+            return undefined
+          }
+        },
         {
           name: 'resolve-vscode',
           resolveId: (importeeUrl, importer) => {
@@ -594,20 +650,62 @@ export default (args: Record<string, string>): rollup.RollupOptions[] => {
                     return file
                   }
                   const visitor: ts.Visitor = (node): ts.Node => {
-                    if (ts.isImportDeclaration(node) && ts.isStringLiteral(node.moduleSpecifier)) {
+                    if (
+                      (ts.isImportDeclaration(node) || ts.isExportDeclaration(node)) &&
+                      node.moduleSpecifier != null &&
+                      ts.isStringLiteral(node.moduleSpecifier)
+                    ) {
                       const importPath = node.moduleSpecifier.text
                       const rewritten = rewrite(importPath, file.fileName)
 
                       if (importPath !== rewritten) {
-                        const updatedImport = ts.factory.updateImportDeclaration(
-                          node,
-                          node.modifiers,
-                          node.importClause,
-                          ts.factory.createStringLiteral(rewritten),
-                          node.attributes
-                        )
-                        return updatedImport
+                        if (ts.isImportDeclaration(node)) {
+                          node = ts.factory.updateImportDeclaration(
+                            node,
+                            node.modifiers,
+                            node.importClause,
+                            ts.factory.createStringLiteral(rewritten),
+                            node.attributes
+                          )
+                        } else {
+                          node = ts.factory.updateExportDeclaration(
+                            node,
+                            node.modifiers,
+                            node.isTypeOnly,
+                            node.exportClause,
+                            ts.factory.createStringLiteral(rewritten),
+                            node.attributes
+                          )
+                        }
                       }
+                    }
+
+                    if (ts.isModuleDeclaration(node) && ts.isStringLiteral(node.name)) {
+                      const rewritten = rewrite(node.name.text, file.fileName)
+                      node = ts.factory.updateModuleDeclaration(
+                        node,
+                        node.modifiers,
+                        ts.factory.createStringLiteral(rewritten),
+                        node.body
+                      )
+                    }
+
+                    if (
+                      ts.isImportTypeNode(node) &&
+                      ts.isLiteralTypeNode(node.argument) &&
+                      ts.isStringLiteral(node.argument.literal)
+                    ) {
+                      const rewritten = rewrite(node.argument.literal.text, file.fileName)
+                      node = ts.factory.updateImportTypeNode(
+                        node,
+                        ts.factory.updateLiteralTypeNode(
+                          node.argument,
+                          ts.factory.createStringLiteral(rewritten)
+                        ),
+                        node.attributes,
+                        node.qualifier,
+                        node.typeArguments
+                      )
                     }
 
                     return ts.visitEachChild(node, visitor, context)
@@ -885,15 +983,34 @@ export default (args: Record<string, string>): rollup.RollupOptions[] => {
               ]
             }
 
+            if (packageName === '@codingame/monaco-vscode-api') {
+              rollupOptions.plugins = [
+                rollupOptions.plugins,
+                {
+                  name: 'reference-proposed-types',
+                  renderChunk(code, chunk) {
+                    if (chunk.fileName.endsWith('extensions.d.ts')) {
+                      return `/// <reference path="./vscode-dts/vscode.proposed.d.ts" />\n${code}`
+                    }
+                    return undefined
+                  }
+                }
+              ]
+            }
+
             if (packageName === '@codingame/monaco-vscode-editor-api') {
               rollupOptions.input = {
-                'esm/vs/editor/editor.api': (rollupOptions.input as string[])[0]!
+                'esm/vs/editor/editor.api': (rollupOptions.input as string[])[0]!,
+                'esm/vs/editor/editor.api.d': (rollupOptions.input as string[])[0]!.replace(
+                  /\.js$/,
+                  '.d.ts'
+                )
               }
               rollupOptions.plugins = [
                 rollupOptions.plugins,
                 {
                   name: 'editor-api-expose-modules',
-                  generateBundle() {
+                  async generateBundle(options, bundle) {
                     for (const modulePath of EDITOR_API_EXPOSE_MODULES) {
                       // make sure file exists
                       fs.statSync(nodePath.resolve(VSCODE_SRC_DIR, `${modulePath}.js`))
@@ -910,6 +1027,11 @@ export default (args: Record<string, string>): rollup.RollupOptions[] => {
                       source: "export * from 'vscode/workers/editor.worker'",
                       type: 'asset'
                     })
+                    ;(bundle['vscode/src/vs/editor/editor.api.d.ts'] as rollup.OutputChunk).code = (
+                      await fs.promises.readFile(
+                        nodePath.resolve(BASE_DIR, 'monaco-editor/editor.api.d.ts')
+                      )
+                    ).toString()
                   }
                 }
               ]
@@ -929,6 +1051,7 @@ export default (args: Record<string, string>): rollup.RollupOptions[] => {
 
               rollupOptions.input = {
                 index: serviceOverrideEntryPoint,
+                'index.d': serviceOverrideEntryPoint.replace(/\.js$/, '.d.ts'),
                 ...(workerEntryPoint != null
                   ? {
                       worker: workerEntryPoint
@@ -940,11 +1063,11 @@ export default (args: Record<string, string>): rollup.RollupOptions[] => {
             return rollupOptions
           },
           getInterPackageImport(path, groupSetName) {
-            if (/service-override\/[a-zA-Z]+\.js$/.exec(path) != null) {
+            if (/service-override\/[a-zA-Z]+\.(js|d\.ts)$/.exec(path) != null) {
               // reference the package entrypoint
               return groupSetName.alias ?? groupSetName.name
             }
-            return `${groupSetName.alias ?? groupSetName.name}/${path.replace(/vscode\/src\//, 'vscode/').replace(/\.js$/, '')}`
+            return `${groupSetName.alias ?? groupSetName.name}/${path.replace(/vscode\/src\//, 'vscode/').replace(/\.(js|d\.ts)$/, '')}`
           },
           getManifest(packageName, groups, entrypoints, manifest) {
             const baseManifest: Manifest = {
@@ -985,7 +1108,8 @@ export default (args: Record<string, string>): rollup.RollupOptions[] => {
                       default: './api.js'
                     },
                     './vscode/*': {
-                      default: './vscode/src/*.js'
+                      default: './vscode/src/*.js',
+                      types: './vscode/src/*.d.ts'
                     },
                     './*': {
                       default: './*.js',
@@ -1041,7 +1165,8 @@ export default (args: Record<string, string>): rollup.RollupOptions[] => {
                         default: './empty.js'
                       },
                       './vscode/*': {
-                        default: './vscode/src/*.js'
+                        default: './vscode/src/*.js',
+                        types: './vscode/src/*.d.ts'
                       },
                       './*': {
                         default: './*.js',
@@ -1061,7 +1186,8 @@ export default (args: Record<string, string>): rollup.RollupOptions[] => {
                         default: './index.js'
                       },
                       './vscode/*': {
-                        default: './vscode/src/*.js'
+                        default: './vscode/src/*.js',
+                        types: './vscode/src/*.d.ts'
                       },
                       ...(entrypoints.has('worker.js')
                         ? {
@@ -1098,12 +1224,12 @@ export default (args: Record<string, string>): rollup.RollupOptions[] => {
           targets: [
             { src: ['README.md'], dest: 'dist/packages/monaco-vscode-api' },
             {
-              src: 'monaco-editor/editor.api.d.ts',
-              dest: 'dist/packages/monaco-vscode-editor-api/esm/vs/editor/'
-            },
-            {
               src: 'vscode/src/vs/workbench/contrib/debug/common/debugProtocol.d.ts',
               dest: 'dist/packages/monaco-vscode-api/'
+            },
+            {
+              src: 'vscode/src/vscode-dts/*.d.ts',
+              dest: 'dist/packages/monaco-vscode-api/vscode-dts'
             }
           ]
         })
