@@ -18,15 +18,16 @@
 - [x] make sure all modules are used, including assets
 - [x] wrong import path for d.ts
 - [X] `import('../../../../platform/contextkey/common/contextkey.js')`, `import("../../instantiation/common/instantiation.js")` not transformed
-- [ ] restore interfaceOverride (https://github.com/CodinGame/monaco-vscode-api/blob/c228c61f6dbcfebeeffa6769373ff356abacc0e3/rollup/rollup.types.config.ts#L84) AND improve it using typescript api?
+- [x] restore interfaceOverride (https://github.com/CodinGame/monaco-vscode-api/blob/c228c61f6dbcfebeeffa6769373ff356abacc0e3/rollup/rollup.types.config.ts#L84) AND improve it using typescript api?
+- [x] check demo build
+- [x] check build is deterministic
 - [ ] editor.d.ts/files.d.ts duplicated (entrypoint of service-override)
 - [ ] why is monaco-vscode-api referencing common packages and service overrides?
 - [x] remove .js extension in d.ts files
-- [ ] uncomment cleaning
+- [x] uncomment cleaning
 
 - [ ] no xterm from main or editor-api, even transitively
 - [ ] update vscode typescript version?
-- [ ] check build is deterministic
 - [ ] fix "paches" typo
 - [ ] update dependencies
 - [ ] update to 1.97

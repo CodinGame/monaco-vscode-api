@@ -11,10 +11,11 @@ import * as fs from 'node:fs'
 const printer = ts.createPrinter()
 
 export interface PluginConfig {
+  transformers?: ts.TransformerFactory<ts.Node>[]
   external?: (source: string, importer: string | undefined) => boolean
 }
 
-export default ({ external = () => false }: PluginConfig = {}): Plugin => ({
+export default ({ external = () => false, transformers }: PluginConfig = {}): Plugin => ({
   name: 'carry-dts',
   async transform(code, id) {
     // Make module import their own dts if it exists
@@ -34,27 +35,13 @@ export default ({ external = () => false }: PluginConfig = {}): Plugin => ({
     // load d.ts files by replacing them by a modules importing everything the .d.ts imports
     const content = (await fs.promises.readFile(id)).toString()
 
-    const sourceFile = ts.createSourceFile(id, content, ts.ScriptTarget.Latest, true)
+    let sourceFile = ts.createSourceFile(id, content, ts.ScriptTarget.Latest, true)
 
-    const imports: string[] = []
-
-    function transformer(context: ts.TransformationContext) {
+    function removeEmptyImportsTransformer(context: ts.TransformationContext) {
       return (rootNode: ts.Node): ts.Node | undefined => {
         function visit(node: ts.Node): ts.Node | undefined {
           if (ts.isImportDeclaration(node) && node.importClause == null) {
             return undefined
-          }
-          if (ts.isImportDeclaration(node) || ts.isExportDeclaration(node)) {
-            if (node.moduleSpecifier != null && ts.isStringLiteral(node.moduleSpecifier)) {
-              imports.push(node.moduleSpecifier.text)
-            }
-          }
-          if (
-            ts.isImportTypeNode(node) &&
-            ts.isLiteralTypeNode(node.argument) &&
-            ts.isStringLiteral(node.argument.literal)
-          ) {
-            imports.push(node.argument.literal.text)
           }
           return ts.visitEachChild(node, visit, context)
         }
@@ -62,8 +49,31 @@ export default ({ external = () => false }: PluginConfig = {}): Plugin => ({
       }
     }
 
-    // Transformer le fichier source
-    const result = ts.transform(sourceFile, [transformer as ts.TransformerFactory<ts.Node>])
+    if (transformers != null) {
+      sourceFile = ts.transform(sourceFile, transformers).transformed[0] as ts.SourceFile
+    }
+
+    sourceFile = ts.transform(sourceFile, [
+      removeEmptyImportsTransformer as ts.TransformerFactory<ts.Node>
+    ]).transformed[0] as ts.SourceFile
+
+    const imports: string[] = []
+    function visit(node: ts.Node): ts.Node | undefined {
+      if (ts.isImportDeclaration(node) || ts.isExportDeclaration(node)) {
+        if (node.moduleSpecifier != null && ts.isStringLiteral(node.moduleSpecifier)) {
+          imports.push(node.moduleSpecifier.text)
+        }
+      }
+      if (
+        ts.isImportTypeNode(node) &&
+        ts.isLiteralTypeNode(node.argument) &&
+        ts.isStringLiteral(node.argument.literal)
+      ) {
+        imports.push(node.argument.literal.text)
+      }
+      return ts.visitEachChild(node, visit, undefined)
+    }
+    ts.visitNode(sourceFile, visit)
 
     return {
       code: (
@@ -91,7 +101,7 @@ export default ({ external = () => false }: PluginConfig = {}): Plugin => ({
         .join('\n'),
       moduleSideEffects: 'no-treeshake',
       meta: {
-        dts: printer.printFile(result.transformed[0] as ts.SourceFile)
+        dts: printer.printFile(sourceFile)
       }
     }
   },
@@ -136,7 +146,12 @@ export default ({ external = () => false }: PluginConfig = {}): Plugin => ({
 
       for (const node of ast.body) {
         if (node.type === 'ImportDeclaration' && node.specifiers.length === 0) {
-          if (node.source.value != null && node.source.value.toString().endsWith('.d.ts')) {
+          const name = node.source.value?.toString()
+
+          if (
+            name != null &&
+            (name.endsWith('.d.ts') || name.endsWith(nodePath.basename(chunk.fileName, '.js')))
+          ) {
             const fixedNode = node as estree.ImportDeclaration & { start: number; end: number }
             const range: [number, number] = [fixedNode.start, fixedNode.end]
             importRangesToRemove.push(range)

@@ -20,39 +20,72 @@ import { fileURLToPath } from 'node:url'
 import subpackagePlugin, { type EntryGroup, type Manifest } from './rollup-subpackage-plugin.js'
 import carryDtsPlugin from './rollup-carry-dts-plugin.js'
 
-const interfaceOverride = new Map<string, string>()
-interfaceOverride.set('Event<T>', 'vscode.Event<T>')
+function createEntityName(names: string[]): ts.EntityName {
+  if (names.length === 1) {
+    return ts.factory.createIdentifier(names[0]!)
+  }
+  const identifiers = names.map((name) => ts.factory.createIdentifier(name))
+
+  let qualifiedName = ts.factory.createQualifiedName(identifiers.shift()!, identifiers.shift()!)
+  while (identifiers.length > 0) {
+    qualifiedName = ts.factory.createQualifiedName(qualifiedName, identifiers.shift()!)
+  }
+
+  return qualifiedName
+}
+function replaceInterface(int: ts.InterfaceDeclaration, from: string, entityName: string[]) {
+  const importType = ts.factory.createImportTypeNode(
+    ts.factory.createLiteralTypeNode(ts.factory.createStringLiteral(from)),
+    undefined,
+    createEntityName(entityName),
+    int.typeParameters?.map((param) => ts.factory.createTypeReferenceNode(param.name)),
+    false
+  )
+
+  return ts.factory.createTypeAliasDeclaration(undefined, int.name, int.typeParameters, importType)
+}
+function createReplacer(from: string, names: string[]): (int: ts.InterfaceDeclaration) => ts.Node {
+  return (int: ts.InterfaceDeclaration) => replaceInterface(int, from, names)
+}
+
+const interfaceOverride = new Map<string, (int: ts.InterfaceDeclaration) => ts.Node>()
+interfaceOverride.set('Event', createReplacer('vscode', ['Event']))
 interfaceOverride.set(
   'IActionDescriptor',
-  "import('vs/editor/editor.api').editor.IActionDescriptor"
+  createReplacer('vs/editor/editor.api', ['editor', 'IActionDescriptor'])
 )
-interfaceOverride.set('ICodeEditor', "import('vs/editor/editor.api').editor.ICodeEditor")
-interfaceOverride.set('IEditor', "import('vs/editor/editor.api').editor.IEditor")
-interfaceOverride.set('URI', "import('vs/editor/editor.api').Uri")
-interfaceOverride.set('ITextModel', "import('vs/editor/editor.api').editor.ITextModel")
 interfaceOverride.set(
-  'vs/editor/common/config/editorOptions:IEditorOptions',
-  "import('vs/editor/editor.api').editor.IEditorOptions"
+  'ICodeEditor',
+  createReplacer('vs/editor/editor.api', ['editor', 'ICodeEditor'])
+)
+interfaceOverride.set('IEditor', createReplacer('vs/editor/editor.api', ['editor', 'IEditor']))
+interfaceOverride.set(
+  'ITextModel',
+  createReplacer('vs/editor/editor.api', ['editor', 'ITextModel'])
+)
+interfaceOverride.set(
+  'IEditorOptions',
+  createReplacer('vs/editor/editor.api', ['editor', 'IEditorOptions'])
 )
 interfaceOverride.set(
   'IEditorOverrideServices',
-  "import('vs/editor/editor.api').editor.IEditorOverrideServices"
+  createReplacer('vs/editor/editor.api', ['editor', 'IEditorOverrideServices'])
 )
 interfaceOverride.set(
   'IStandaloneCodeEditor',
-  "import('vs/editor/editor.api').editor.IStandaloneCodeEditor"
+  createReplacer('vs/editor/editor.api', ['editor', 'IStandaloneCodeEditor'])
 )
 interfaceOverride.set(
   'IStandaloneDiffEditor',
-  "import('vs/editor/editor.api').editor.IStandaloneDiffEditor"
+  createReplacer('vs/editor/editor.api', ['editor', 'IStandaloneDiffEditor'])
 )
 interfaceOverride.set(
   'IStandaloneEditorConstructionOptions',
-  "import('vs/editor/editor.api').editor.IStandaloneEditorConstructionOptions"
+  createReplacer('vs/editor/editor.api', ['editor', 'IStandaloneEditorConstructionOptions'])
 )
 interfaceOverride.set(
   'IStandaloneDiffEditorConstructionOptions',
-  "import('vs/editor/editor.api').editor.IStandaloneDiffEditorConstructionOptions"
+  createReplacer('vs/editor/editor.api', ['editor', 'IStandaloneDiffEditorConstructionOptions'])
 )
 
 const COMMON_PACKAGE_NAME_UUID_NAMESPACE = '251b3eab-b5c9-4930-9c6c-6b38f697d291'
@@ -509,9 +542,6 @@ const COMMON_PLUGINS: rollup.InputPluginOption = [
   },
   nodeResolve({
     extensions: EXTENSIONS
-  }),
-  carryDtsPlugin({
-    external
   })
 ]
 
@@ -563,25 +593,33 @@ export default (args: Record<string, string>): rollup.RollupOptions[] => {
       input,
       plugins: [
         COMMON_PLUGINS,
-        {
-          name: 'replace-editor-types',
-          transform(code, id) {
-            if (id.endsWith('.d.ts') && !id.endsWith('editor.api.d.ts')) {
-              console.log('REPLACE IN ', id)
-              interfaceOverride.forEach((value, key) => {
-                const [, path, name] = /(?:(.*):)?(.*)/.exec(key)!
-                if (path == null || path === id) {
-                  code = code.replace(
-                    `interface ${name} `,
-                    `type ${name} = ${value}\ninterface _${name} `
-                  )
+        carryDtsPlugin({
+          external,
+          transformers: [
+            (context) => (rootNode) => {
+              const sourceFile = rootNode.getSourceFile()
+              const fileName = sourceFile.fileName
+              if (!fileName.includes('vs/editor') && !fileName.includes('vs/base')) {
+                return rootNode
+              }
+              if (fileName.endsWith('editor.api.d.ts')) {
+                return rootNode
+              }
+              function visit(node: ts.Node): ts.Node {
+                if (ts.isInterfaceDeclaration(node)) {
+                  const name = node.name.text
+                  const replacement = interfaceOverride.get(name)
+                  if (replacement != null) {
+                    const nodeReplacement = replacement(node)
+                    return nodeReplacement
+                  }
                 }
-              })
-              return code
+                return ts.visitEachChild(node, visit, context)
+              }
+              return ts.visitNode(rootNode, visit)
             }
-            return undefined
-          }
-        },
+          ]
+        }),
         {
           name: 'resolve-vscode',
           resolveId: (importeeUrl, importer) => {
@@ -955,6 +993,9 @@ export default (args: Record<string, string>): rollup.RollupOptions[] => {
               plugins: [
                 options.plugins,
                 COMMON_PLUGINS,
+                carryDtsPlugin({
+                  external
+                }),
                 {
                   name: 'resolve-vscode',
                   resolveId(source) {
@@ -988,9 +1029,22 @@ export default (args: Record<string, string>): rollup.RollupOptions[] => {
                 rollupOptions.plugins,
                 {
                   name: 'reference-proposed-types',
-                  renderChunk(code, chunk) {
+                  async renderChunk(code, chunk) {
                     if (chunk.fileName.endsWith('extensions.d.ts')) {
                       return `/// <reference path="./vscode-dts/vscode.proposed.d.ts" />\n${code}`
+                    }
+                    return undefined
+                  }
+                },
+                {
+                  name: 'replace-editor-types',
+                  async renderChunk(code, chunk) {
+                    if (chunk.fileName.endsWith('vscode/src/vs/editor/editor.api.d.ts')) {
+                      return (
+                        await fs.promises.readFile(
+                          nodePath.resolve(BASE_DIR, 'monaco-editor/editor.api.d.ts')
+                        )
+                      ).toString()
                     }
                     return undefined
                   }
@@ -1010,7 +1064,7 @@ export default (args: Record<string, string>): rollup.RollupOptions[] => {
                 rollupOptions.plugins,
                 {
                   name: 'editor-api-expose-modules',
-                  async generateBundle(options, bundle) {
+                  async generateBundle() {
                     for (const modulePath of EDITOR_API_EXPOSE_MODULES) {
                       // make sure file exists
                       fs.statSync(nodePath.resolve(VSCODE_SRC_DIR, `${modulePath}.js`))
@@ -1027,11 +1081,6 @@ export default (args: Record<string, string>): rollup.RollupOptions[] => {
                       source: "export * from 'vscode/workers/editor.worker'",
                       type: 'asset'
                     })
-                    ;(bundle['vscode/src/vs/editor/editor.api.d.ts'] as rollup.OutputChunk).code = (
-                      await fs.promises.readFile(
-                        nodePath.resolve(BASE_DIR, 'monaco-editor/editor.api.d.ts')
-                      )
-                    ).toString()
                   }
                 }
               ]
@@ -1207,18 +1256,18 @@ export default (args: Record<string, string>): rollup.RollupOptions[] => {
             }
           }
         }),
-        // {
-        //   name: 'clean',
-        //   async closeBundle() {
-        //     try {
-        //       await fs.promises.rm(DIST_DIR_MAIN, {
-        //         recursive: true
-        //       })
-        //     } catch (err) {
-        //       // ignore, may not exists
-        //     }
-        //   }
-        // },
+        {
+          name: 'clean',
+          async closeBundle() {
+            try {
+              await fs.promises.rm(DIST_DIR_MAIN, {
+                recursive: true
+              })
+            } catch (err) {
+              // ignore, may not exists
+            }
+          }
+        },
         copy({
           hook: 'writeBundle',
           targets: [
