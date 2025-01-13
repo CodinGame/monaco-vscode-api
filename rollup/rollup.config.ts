@@ -17,7 +17,11 @@ import { v5 as uuidv5 } from 'uuid'
 import * as fs from 'node:fs'
 import * as nodePath from 'node:path'
 import { fileURLToPath } from 'node:url'
-import subpackagePlugin, { type EntryGroup, type Manifest } from './rollup-subpackage-plugin.js'
+import subpackagePlugin, {
+  type EntryGroup,
+  type Manifest,
+  type SubPackage
+} from './rollup-subpackage-plugin.js'
 import carryDtsPlugin from './rollup-carry-dts-plugin.js'
 
 function createEntityName(names: string[]): ts.EntityName {
@@ -925,6 +929,11 @@ export default (args: Record<string, string>): rollup.RollupOptions[] => {
               }
               groupMaps.set(name, group)
               group.entrypoints.push(entrypoint)
+              const dts = entrypoint.replace(/\.js$/, '.d.ts')
+              if (fs.existsSync(dts)) {
+                // console.log('ADDING DTS', entrypoint, dts)
+                group.entrypoints.push(dts)
+              }
             }
 
             return Array.from(groupMaps.values())
@@ -976,6 +985,10 @@ export default (args: Record<string, string>): rollup.RollupOptions[] => {
               version: '0.0.0-semantic-release',
               description: `${pkg.description} - common package (${name})`
             }
+          },
+          getMainModule(id) {
+            // attach .d.ts files to their .js file
+            return id.replace(/\.d\.ts$/, '.js')
           },
           getRollupOptions(packageName, groups, options) {
             const isCommonPackage = groups.size > 1
@@ -1074,6 +1087,12 @@ export default (args: Record<string, string>): rollup.RollupOptions[] => {
                         source: `export * from 'vscode/vscode/${modulePath}'`,
                         type: 'asset'
                       })
+                      this.emitFile({
+                        fileName: `esm/${modulePath}.d.ts`,
+                        needsCodeReference: false,
+                        source: `export * from 'vscode/vscode/${modulePath}'`,
+                        type: 'asset'
+                      })
                     }
                     this.emitFile({
                       fileName: 'esm/vs/editor/editor.worker.js',
@@ -1118,7 +1137,7 @@ export default (args: Record<string, string>): rollup.RollupOptions[] => {
             }
             return `${groupSetName.alias ?? groupSetName.name}/${path.replace(/vscode\/src\//, 'vscode/').replace(/\.(js|d\.ts)$/, '')}`
           },
-          getManifest(packageName, groups, entrypoints, manifest) {
+          getManifest(packageName, groups, entrypoints, manifest, externalDependencies) {
             const baseManifest: Manifest = {
               ...Object.fromEntries(
                 Object.entries(pkg).filter(([key]) =>
@@ -1136,7 +1155,17 @@ export default (args: Record<string, string>): rollup.RollupOptions[] => {
                 )
               ),
               private: false,
-              ...manifest
+              ...manifest,
+              dependencies: Object.fromEntries(
+                externalDependencies
+                  // Remove external dependencies importer from d.ts files
+                  .filter((d) =>
+                    Array.from(d.importers).some((importer) => !importer.endsWith('.d.ts'))
+                  )
+                  .map((d) => {
+                    return [d.name, d.version]
+                  })
+              )
             }
             switch (manifest.name!) {
               case '@codingame/monaco-vscode-api': {
@@ -1254,6 +1283,40 @@ export default (args: Record<string, string>): rollup.RollupOptions[] => {
                 }
               }
             }
+          },
+          async finalize(subpackages) {
+            const mainDependendentPackages = new Set<SubPackage>()
+
+            const propagate = (mainPackage: SubPackage) => {
+              for (const dependency of mainPackage.packageDependencies) {
+                if (
+                  !mainDependendentPackages.has(dependency) &&
+                  Array.from(dependency.importers).some((importer) => !importer.endsWith('.d.ts'))
+                ) {
+                  mainDependendentPackages.add(dependency)
+                  propagate(dependency)
+                }
+              }
+            }
+            propagate(subpackages.find((p) => p.name === '@codingame/monaco-vscode-api')!)
+
+            for (const subpackage of mainDependendentPackages) {
+              console.log(subpackage.name, subpackage.externalDependencies)
+            }
+
+            const allMainDependencies = new Set(
+              Array.from(mainDependendentPackages).flatMap((p) => {
+                return p.externalDependencies
+                  .filter((d) =>
+                    Array.from(d.importers).some((importer) => !importer.endsWith('.d.ts'))
+                  )
+                  .map((ed) => {
+                    return ed.name
+                  })
+              })
+            )
+
+            console.log(allMainDependencies)
           }
         }),
         {

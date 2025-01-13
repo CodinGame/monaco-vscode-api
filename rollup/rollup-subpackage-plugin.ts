@@ -16,6 +16,24 @@ import * as nodePath from 'node:path'
 import { builtinModules } from 'module'
 import { createRequire } from 'node:module'
 
+export interface SubPackageExternalDependency {
+  name: string
+  version: string
+  importers: Set<string>
+}
+
+export interface SubPackage {
+  name: string
+  groups: Set<string>
+  entrypoints: Set<string>
+  externalDependencies: SubPackageExternalDependency[]
+  packageDependencies: SubPackageDependency[]
+}
+
+export interface SubPackageDependency extends SubPackage {
+  importers: Set<string>
+}
+
 const { firstBy } = thenby
 const require = createRequire(import.meta.url)
 
@@ -81,24 +99,43 @@ export interface GroupSetName {
 }
 export interface Options {
   stage?: 'generateBundle' | 'writeBundle'
+  /**
+   * Move entrypoint into several groups
+   */
   getEntryGroups(this: PluginContext, entrypoints: string[], options: OutputOptions): EntryGroup[]
   getGroupSetName(this: PluginContext, groups: Set<string>): GroupSetName
+  /**
+   * Override rollup configuration for subpackage
+   */
   getRollupOptions?: (
     packageName: string,
     groups: Set<string>,
     options: rollup.RollupOptions
   ) => rollup.RollupOptions
+  /**
+   * For each module, refer to its configured main module to compute groups
+   */
+  getMainModule?: (id: string) => string | undefined
+  /**
+   * Override subpackage manifest
+   */
   getManifest?: (
     this: PluginContext,
     packageName: string,
     groups: Set<string>,
     entrypoints: Set<string>,
-    manifest: Manifest
+    manifest: Manifest,
+    externalDependencies: SubPackageExternalDependency[]
   ) => Manifest
   /**
    * How a file should be import from a subpackage to another subpackage
    */
   getInterPackageImport?: (path: string, groupSetName: GroupSetName) => string
+
+  /**
+   * Final step, provided with the subpackage tree and their dependencies
+   */
+  finalize?: (subpackages: SubPackage[]) => Promise<void>
 }
 
 interface GroupSet {
@@ -108,7 +145,7 @@ interface GroupSet {
 
 interface Module {
   id: string
-  output: rollup.OutputAsset | rollup.OutputChunk
+  dependencyIds: string[]
   /**
    * groups referencing the module
    */
@@ -125,9 +162,11 @@ function computeGroupListKey(groupIds: Set<string>) {
 export default ({
   getEntryGroups,
   getGroupSetName,
+  getMainModule,
   getRollupOptions = (packageName, groups, options) => options,
   getManifest,
   getInterPackageImport = (path, groupName) => `${groupName.alias ?? groupName.name}/${path}`,
+  finalize,
   stage = 'writeBundle'
 }: Options): Plugin => ({
   name: 'subpackages',
@@ -136,36 +175,56 @@ export default ({
     options: OutputOptions,
     bundle: rollup.OutputBundle
   ) {
-    const allModulesIds = Object.keys(bundle)
+    const allChunkIds = Object.keys(bundle)
     const allModules: Module[] = []
 
-    const entryModules: Module[] = []
+    const entryChunkIds: string[] = allChunkIds.filter((chunkId) => {
+      const output = bundle[chunkId]!
+      return output.type === 'chunk' && output.isEntry
+    })
+
+    const groups = getEntryGroups.call(
+      this,
+      entryChunkIds.map((chunkId) => nodePath.resolve(options.dir!, chunkId)),
+      options
+    )
+
+    const declaredEntryChunkIds = new Set(
+      groups
+        .flatMap((g) => g.entrypoints)
+        .map((entrypoint) => nodePath.relative(options.dir!, entrypoint))
+    )
+
+    const allEntryChunkIds = new Set([...declaredEntryChunkIds, ...allChunkIds])
 
     // create a Module instance for each module absolute path
     const moduleMap = new Map<string, Module>()
-    for (const moduleId of allModulesIds) {
-      const output = bundle[moduleId]!
-      if (output.type === 'asset') {
+    for (const moduleId of allEntryChunkIds) {
+      const output = bundle[moduleId]
+
+      if ((output == null || output.type !== 'chunk') && !declaredEntryChunkIds.has(moduleId)) {
         continue
       }
+      const chunk = output != null && output.type === 'chunk' ? output : undefined
 
-      const hasExternalDependency = output.moduleIds.some((moduleId) => {
-        const moduleInfo = this.getModuleInfo(moduleId)!
-        const importedModules = [...moduleInfo.importedIds, ...moduleInfo.dynamicallyImportedIds]
-        return importedModules.some((importedId) => this.getModuleInfo(importedId)!.isExternal)
-      })
+      const hasExternalDependency =
+        chunk?.moduleIds.some((moduleId) => {
+          const moduleInfo = this.getModuleInfo(moduleId)!
+          const importedModules = [...moduleInfo.importedIds, ...moduleInfo.dynamicallyImportedIds]
+          return importedModules.some((importedId) => this.getModuleInfo(importedId)!.isExternal)
+        }) ?? false
 
       const path = nodePath.resolve(options.dir!, moduleId)
       const module: Module = {
         id: path,
         groups: new Set(),
-        output,
+        dependencyIds:
+          chunk != null
+            ? [...chunk.imports, ...chunk.dynamicImports, ...chunk.referencedFiles]
+            : [],
         dependencies: [],
         hasExternalDependency,
         isEntry: false
-      }
-      if (output.isEntry) {
-        entryModules.push(module)
       }
       allModules.push(module)
       moduleMap.set(path, module)
@@ -173,25 +232,12 @@ export default ({
 
     // Now that all module objects are created, create links between them
     for (const module of allModules) {
-      module.dependencies = (
-        module.output.type === 'chunk'
-          ? [
-              ...module.output.imports,
-              ...module.output.dynamicImports,
-              ...module.output.referencedFiles
-            ]
-          : []
-      )
+      module.dependencies = module.dependencyIds
         .map((moduleId) => moduleMap.get(nodePath.resolve(options.dir!, moduleId)))
         .filter((m) => m != null)
     }
 
     // group related entrypoint into groups
-    const groups = getEntryGroups.call(
-      this,
-      entryModules.map((module) => module.id),
-      options
-    )
     const mainGroups = groups.filter((g) => g.main ?? false)
     const mainGroupNames = new Set(mainGroups.map((g) => g.name))
     const entryModuleGroups = new Map<string, string>()
@@ -210,7 +256,10 @@ export default ({
 
       for (const dependency of module.dependencies) {
         // if this if the entry module of another subpackage, stop propagating
-        const entryModuleGroup = entryModuleGroups.get(dependency.id)
+        const mainModule = getMainModule?.(dependency.id)
+        const entryModuleGroup =
+          entryModuleGroups.get(mainModule ?? dependency.id) ?? entryModuleGroups.get(dependency.id)
+
         if (entryModuleGroup != null && entryModuleGroup !== group) {
           continue
         }
@@ -234,7 +283,13 @@ export default ({
         return moduleMainGroups.size === 1 ? moduleMainGroups : undefined
       }
 
-      const groups = getSingleMainGroup(module.groups) ?? module.groups
+      let mainModule = module
+      const mainModuleId = getMainModule?.(module.id)
+      if (mainModuleId != null) {
+        mainModule = moduleMap.get(mainModuleId) ?? module
+      }
+
+      const groups = getSingleMainGroup(mainModule.groups) ?? mainModule.groups
       const groupSetKey = computeGroupListKey(
         // if the module is referenced from the main package, just ignore the other ones
         groups
@@ -320,6 +375,7 @@ export default ({
       finalGroupSets.flatMap((groupSet) => Array.from(groupSet.modules).map((m) => [m, groupSet]))
     )
 
+    const subpackages: SubPackage[] = []
     const ownPackageAliases = new Map<string, { name: string; version?: string }>()
     const promises: Promise<void>[] = []
     for (const groupSet of finalGroupSets) {
@@ -393,17 +449,55 @@ export default ({
                   if (getManifest == null) {
                     return
                   }
-                  const externalDependencies = Array.from(this.getModuleIds())
-                    .filter((id) => this.getModuleInfo(id)!.isExternal)
-                    .sort()
-                    .flatMap((dependency) => {
-                      const match = /^(?:@[^/]*\/)?[^/]*/.exec(dependency)
-                      if (match != null && !builtinModules.includes(match[0])) {
-                        return [match[0]]
-                      } else {
-                        return []
-                      }
-                    })
+                  const externalDependencies: SubPackageExternalDependency[] = Array.from(
+                    Array.from(this.getModuleIds())
+                      .map((id) => this.getModuleInfo(id)!)
+                      .filter((infos) => infos.isExternal)
+                      .sort()
+                      .flatMap((infos): SubPackageExternalDependency[] => {
+                        const match = /^(?:@[^/]*\/)?[^/]*/.exec(infos.id)
+                        if (match != null && !builtinModules.includes(match[0])) {
+                          const name = match[0]
+                          let version = '*'
+                          if (ownPackageAliases.has(name)) {
+                            const packageDetails = ownPackageAliases.get(name)!
+                            if (packageDetails.name !== name) {
+                              version = `npm:${packageDetails.name}@${packageDetails.version ?? '*'}`
+                            } else if (packageDetails.version != null) {
+                              version = packageDetails.version
+                            }
+                          } else {
+                            try {
+                              version = require(`${name}/package.json`).version
+                            } catch (err) {
+                              this.error(`Unable to find version of ${name}`)
+                            }
+                          }
+
+                          return [
+                            {
+                              name,
+                              version,
+                              importers: new Set([...infos.importers, ...infos.dynamicImporters])
+                            }
+                          ]
+                        } else {
+                          return []
+                        }
+                      })
+                      .reduce<Map<string, SubPackageExternalDependency>>((map, dependency) => {
+                        const existing = map.get(dependency.name)
+                        if (existing == null) {
+                          map.set(dependency.name, { ...dependency })
+                        } else {
+                          for (const importer of dependency.importers) {
+                            existing.importers.add(importer)
+                          }
+                        }
+                        return map
+                      }, new Map<string, SubPackageExternalDependency>())
+                      .values()
+                  )
 
                   const entrypoints = new Set(
                     groupSet.groups.size === 1
@@ -412,6 +506,14 @@ export default ({
                           .map((c) => c.fileName)
                       : []
                   )
+
+                  subpackages.push({
+                    name: packageName,
+                    groups: groupSet.groups,
+                    entrypoints,
+                    externalDependencies,
+                    packageDependencies: []
+                  })
 
                   const manifest = getManifest.call(
                     this,
@@ -425,26 +527,11 @@ export default ({
                       type: 'module',
                       dependencies: Object.fromEntries(
                         externalDependencies.map((d) => {
-                          let version = '*'
-                          if (ownPackageAliases.has(d)) {
-                            const packageDetails = ownPackageAliases.get(d)!
-                            if (packageDetails.name !== d) {
-                              version = `npm:${packageDetails.name}@${packageDetails.version ?? '*'}`
-                            } else if (packageDetails.version != null) {
-                              version = packageDetails.version
-                            }
-                          } else {
-                            try {
-                              version = require(`${d}/package.json`).version
-                            } catch (err) {
-                              this.error(`Unable to find version of ${d}`)
-                            }
-                          }
-
-                          return [d, version]
+                          return [d.name, d.version]
                         })
                       )
-                    }
+                    },
+                    externalDependencies
                   )
                   this.emitFile({
                     fileName: 'package.json',
@@ -471,5 +558,28 @@ export default ({
     }
 
     await Promise.all(promises)
+
+    const subpackageMap = new Map<string, SubPackage>(subpackages.map((p) => [p.name, p]))
+
+    // transform dependencies => externalDependencies + packageDependencies
+    for (const subpackage of subpackages) {
+      const dependencies = subpackage.externalDependencies
+      subpackage.externalDependencies = []
+      for (const dependency of dependencies) {
+        const packageDependency = subpackageMap.get(
+          ownPackageAliases.get(dependency.name)?.name ?? dependency.name
+        )
+        if (packageDependency != null) {
+          subpackage.packageDependencies.push({
+            ...packageDependency,
+            importers: dependency.importers
+          })
+        } else {
+          subpackage.externalDependencies.push(dependency)
+        }
+      }
+    }
+
+    await finalize?.(subpackages)
   }
 })
