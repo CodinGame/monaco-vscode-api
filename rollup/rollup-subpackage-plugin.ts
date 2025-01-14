@@ -16,6 +16,12 @@ import * as nodePath from 'node:path'
 import { builtinModules } from 'module'
 import { createRequire } from 'node:module'
 
+export interface SubPackageModule {
+  id: string
+  imported: Set<string>
+  importers: Set<string>
+  isEntry: boolean
+}
 export interface SubPackageExternalDependency {
   name: string
   version: string
@@ -26,11 +32,13 @@ export interface SubPackage {
   name: string
   groups: Set<string>
   entrypoints: Set<string>
+  modules: Set<string>
   externalDependencies: SubPackageExternalDependency[]
   packageDependencies: SubPackageDependency[]
 }
 
-export interface SubPackageDependency extends SubPackage {
+export interface SubPackageDependency {
+  package: SubPackage
   importers: Set<string>
 }
 
@@ -135,7 +143,11 @@ export interface Options {
   /**
    * Final step, provided with the subpackage tree and their dependencies
    */
-  finalize?: (subpackages: SubPackage[]) => Promise<void>
+  finalize?: (
+    this: PluginContext,
+    subpackages: SubPackage[],
+    getModule: (path: string) => SubPackageModule | undefined
+  ) => Promise<void>
 }
 
 interface GroupSet {
@@ -145,7 +157,8 @@ interface GroupSet {
 
 interface Module {
   id: string
-  dependencyIds: string[]
+  dependencyIds: Set<string>
+  importers: Set<string>
   /**
    * groups referencing the module
    */
@@ -197,6 +210,14 @@ export default ({
 
     const allEntryChunkIds = new Set([...declaredEntryChunkIds, ...allChunkIds])
 
+    const moduleToChunk = new Map(
+      Object.values(bundle)
+        .filter((chunk) => chunk.type === 'chunk')
+        .flatMap((chunk) =>
+          chunk.moduleIds.map((moduleId) => <[string, rollup.OutputChunk]>[moduleId, chunk])
+        )
+    )
+
     // create a Module instance for each module absolute path
     const moduleMap = new Map<string, Module>()
     for (const moduleId of allEntryChunkIds) {
@@ -215,13 +236,26 @@ export default ({
         }) ?? false
 
       const path = nodePath.resolve(options.dir!, moduleId)
+
+      const getImporters = (moduleId: string): string[] => {
+        const chunk = moduleToChunk.get(moduleId)
+        if (chunk != null) {
+          return [nodePath.resolve(options.dir!, chunk.fileName)]
+        }
+        // if the chunk doesn't exist, it's because the module only contains imports/exports, to continue to importers
+        return this.getModuleInfo(moduleId)!.importers.flatMap(getImporters)
+      }
       const module: Module = {
         id: path,
         groups: new Set(),
-        dependencyIds:
-          chunk != null
-            ? [...chunk.imports, ...chunk.dynamicImports, ...chunk.referencedFiles]
-            : [],
+        dependencyIds: new Set(
+          chunk != null ? [...chunk.imports, ...chunk.dynamicImports, ...chunk.referencedFiles] : []
+        ),
+        importers: new Set(
+          chunk?.moduleIds
+            .flatMap((moduleId) => this.getModuleInfo(moduleId)!.importers)
+            .flatMap(getImporters)
+        ),
         dependencies: [],
         hasExternalDependency,
         isEntry: false
@@ -232,7 +266,7 @@ export default ({
 
     // Now that all module objects are created, create links between them
     for (const module of allModules) {
-      module.dependencies = module.dependencyIds
+      module.dependencies = Array.from(module.dependencyIds)
         .map((moduleId) => moduleMap.get(nodePath.resolve(options.dir!, moduleId)))
         .filter((m) => m != null)
     }
@@ -510,6 +544,7 @@ export default ({
                   subpackages.push({
                     name: packageName,
                     groups: groupSet.groups,
+                    modules: new Set(this.getModuleIds()),
                     entrypoints,
                     externalDependencies,
                     packageDependencies: []
@@ -571,7 +606,7 @@ export default ({
         )
         if (packageDependency != null) {
           subpackage.packageDependencies.push({
-            ...packageDependency,
+            package: packageDependency,
             importers: dependency.importers
           })
         } else {
@@ -580,6 +615,17 @@ export default ({
       }
     }
 
-    await finalize?.(subpackages)
+    await finalize?.call(this, subpackages, (moduleId) => {
+      const module = moduleMap.get(moduleId)
+      if (module != null) {
+        return {
+          id: moduleId,
+          imported: module.dependencyIds,
+          importers: module.importers,
+          isEntry: module.isEntry
+        }
+      }
+      return undefined
+    })
   }
 })

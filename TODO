@@ -33,8 +33,8 @@ pros:
 - proper dependency graph
 
 - [ ] no xterm from main or editor-api, even transitively
+- [ ] replace ts-node by tsx?
 - [ ] update vscode typescript version?
 - [ ] fix "paches" typo
 - [ ] update dependencies
 - [ ] update to 1.97
-- [ ] replace ts-node by tsx?

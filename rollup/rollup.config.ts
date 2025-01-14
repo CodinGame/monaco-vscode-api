@@ -1169,14 +1169,6 @@ export default (args: Record<string, string>): rollup.RollupOptions[] => {
             }
             switch (manifest.name!) {
               case '@codingame/monaco-vscode-api': {
-                const notAllowedDependencies = Object.keys(baseManifest.dependencies ?? {}).filter(
-                  (d) => !ALLOWED_MAIN_DEPENDENCIES.has(d)
-                )
-                if (notAllowedDependencies.length > 0) {
-                  this.warn(
-                    `Not allowed dependencies detected in main package: ${notAllowedDependencies.join(', ')}`
-                  )
-                }
                 return <Manifest>{
                   ...baseManifest,
                   main: 'api.js',
@@ -1284,39 +1276,106 @@ export default (args: Record<string, string>): rollup.RollupOptions[] => {
               }
             }
           },
-          async finalize(subpackages) {
-            const mainDependendentPackages = new Set<SubPackage>()
+          async finalize(subpackages, getModule) {
+            const seenPackages = new Set<SubPackage>()
 
-            const propagate = (mainPackage: SubPackage) => {
-              for (const dependency of mainPackage.packageDependencies) {
-                if (
-                  !mainDependendentPackages.has(dependency) &&
-                  Array.from(dependency.importers).some((importer) => !importer.endsWith('.d.ts'))
-                ) {
-                  mainDependendentPackages.add(dependency)
-                  propagate(dependency)
+            interface DependencyImporter {
+              packagePath: string[]
+              importers: Set<string>
+            }
+            interface Dependency {
+              name: string
+              importers: DependencyImporter[]
+            }
+
+            const mainDependenciesMap = new Map<string, Dependency>()
+
+            const propagate = (subpackage: SubPackage, path: string[]) => {
+              if (seenPackages.has(subpackage)) {
+                return
+              }
+              seenPackages.add(subpackage)
+
+              for (const dependency of subpackage.externalDependencies) {
+                const importers = new Set(
+                  Array.from(dependency.importers).filter((importer) => !importer.endsWith('.d.ts'))
+                )
+                if (importers.size === 0) {
+                  continue
                 }
+
+                let existing = mainDependenciesMap.get(dependency.name)
+                if (existing == null) {
+                  existing = {
+                    name: dependency.name,
+                    importers: []
+                  }
+                  mainDependenciesMap.set(dependency.name, existing)
+                }
+
+                existing.importers.push({
+                  importers,
+                  packagePath: [...path, subpackage.name]
+                })
+              }
+
+              for (const dependency of subpackage.packageDependencies) {
+                if (
+                  Array.from(dependency.importers).every((importer) => importer.endsWith('.d.ts'))
+                ) {
+                  continue
+                }
+                propagate(dependency.package, [...path, subpackage.name])
               }
             }
-            propagate(subpackages.find((p) => p.name === '@codingame/monaco-vscode-api')!)
+            propagate(subpackages.find((p) => p.name === '@codingame/monaco-vscode-api')!, [])
 
-            for (const subpackage of mainDependendentPackages) {
-              console.log(subpackage.name, subpackage.externalDependencies)
+            const mainDependencies = Array.from(mainDependenciesMap.values())
+
+            const notAllowedDependencies = mainDependencies.filter(
+              (d) => !ALLOWED_MAIN_DEPENDENCIES.has(d.name)
+            )
+            if (notAllowedDependencies.length > 0) {
+              this.warn(
+                `Not allowed dependencies detected in main package: ${notAllowedDependencies.map((d) => d.name).join(', ')}`
+              )
             }
 
-            const allMainDependencies = new Set(
-              Array.from(mainDependendentPackages).flatMap((p) => {
-                return p.externalDependencies
-                  .filter((d) =>
-                    Array.from(d.importers).some((importer) => !importer.endsWith('.d.ts'))
-                  )
-                  .map((ed) => {
-                    return ed.name
-                  })
-              })
-            )
+            interface Node {
+              module: string
+              subpackage?: string
+              importers: Node[]
+            }
 
-            console.log(allMainDependencies)
+            function tree(moduleId: string, seen: Set<String> = new Set<string>()): Node {
+              if (seen.has(moduleId)) {
+                return {
+                  module: moduleId,
+                  subpackage: subpackages.find((p) => p.modules.has(moduleId))?.name,
+                  importers: []
+                }
+              }
+              seen.add(moduleId)
+              const module = getModule(moduleId)
+              return {
+                module: moduleId,
+                subpackage: subpackages.find((p) => p.modules.has(moduleId))?.name,
+                importers: Array.from(module!.importers).map((module) => tree(module, seen))
+              }
+            }
+
+            for (const notAllowedDependency of notAllowedDependencies) {
+              const importers = notAllowedDependency.importers.flatMap((pack) =>
+                Array.from(pack.importers)
+              )
+
+              const test = importers.map((module) => tree(module))
+
+              console.log(notAllowedDependency.name)
+              console.dir(test, { depth: 10 })
+            }
+
+            // console.dir(notAllowedDependencies, { depth: 10 })
           }
         }),
         {
