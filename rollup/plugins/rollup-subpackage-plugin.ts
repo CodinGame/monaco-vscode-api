@@ -15,6 +15,7 @@ import type { PackageJson } from 'type-fest'
 import * as nodePath from 'node:path'
 import { builtinModules } from 'module'
 import { createRequire } from 'node:module'
+import * as fs from 'node:fs'
 
 export interface SubPackageModule {
   id: string
@@ -627,5 +628,14 @@ export default ({
       }
       return undefined
     })
+
+    // Remove tmp directory
+    try {
+      await fs.promises.rm(options.dir!, {
+        recursive: true
+      })
+    } catch (err) {
+      // ignore, may not exists
+    }
   }
 })

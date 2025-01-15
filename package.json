@@ -66,6 +66,7 @@
     "@typescript-eslint/eslint-plugin": "^7.12.0",
     "@typescript-eslint/parser": "^7.12.0",
     "@web/rollup-plugin-import-meta-assets": "^2.2.1",
+    "chalk": "^5.4.1",
     "change-package-name": "^1.0.5",
     "eslint": "^8.57.0",
     "eslint-config-prettier": "^9.1.0",

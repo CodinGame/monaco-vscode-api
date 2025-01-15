@@ -7,6 +7,9 @@ import * as fs from 'fs'
 import * as path from 'path'
 import { fileURLToPath } from 'url'
 import extensionDirectoryPlugin from '../dist/packages/monaco-vscode-rollup-extension-directory-plugin/rollup-extension-directory-plugin.js'
+import dynamicImportPolyfillPlugin from './plugins/dynamic-import-polyfill-plugin.js'
+import resolveAssetUrlPlugin from './plugins/resolve-asset-url-plugin.js'
+
 const pkg = JSON.parse(
   fs.readFileSync(new URL('../package.json', import.meta.url).pathname).toString()
 )
@@ -69,29 +72,12 @@ export default rollup.defineConfig([
           return source === 'vscode/extensions'
         },
         plugins: [
-          {
-            name: 'resolve-asset-url',
-            resolveFileUrl(options) {
-              let relativePath = options.relativePath
-              if (!relativePath.startsWith('.')) {
-                relativePath = `./${options.relativePath}`
-              }
-              return `'${relativePath}'`
-            }
-          },
+          resolveAssetUrlPlugin(),
           nodeResolve({
             extensions: EXTENSIONS
           }),
           importMetaAssets(),
-          {
-            name: 'dynamic-import-polyfill',
-            renderDynamicImport(): { left: string; right: string } {
-              return {
-                left: 'import(',
-                right: ').then(module => module.default ?? module)'
-              }
-            }
-          },
+          dynamicImportPolyfillPlugin(),
           extensionDirectoryPlugin({
             include: `${DEFAULT_EXTENSIONS_PATH}/**/*`,
             transformManifest(manifest) {
