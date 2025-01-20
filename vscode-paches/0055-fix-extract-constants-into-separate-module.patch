@@ -12,7 +12,8 @@ so that only the constant is pulled from the root instead of the whole module gr
  .../chat/browser/contrib/chatDynamicVariables.ts       |  3 ++-
  .../browser/contrib/chatDynamicVariablesConstant.ts    |  6 ++++++
  .../contrib/quickaccess/browser/commandsQuickAccess.ts |  3 +--
- 7 files changed, 26 insertions(+), 9 deletions(-)
+ .../contrib/search/browser/anythingQuickAccess.ts      |  2 +-
+ 8 files changed, 27 insertions(+), 10 deletions(-)
  create mode 100644 src/vs/workbench/contrib/chat/browser/actions/chatConstants.ts
  create mode 100644 src/vs/workbench/contrib/chat/browser/contrib/chatDynamicVariablesConstant.ts
 
@@ -140,3 +141,16 @@ index 3ab1684b9ac..a91549c6daf 100644
  import { ChatAgentLocation, IChatAgentService } from '../../chat/common/chatAgents.js';
  import { CommandInformationResult, IAiRelatedInformationService, RelatedInformationType } from '../../../services/aiRelatedInformation/common/aiRelatedInformation.js';
  import { IEditorGroupsService } from '../../../services/editor/common/editorGroupsService.js';
+diff --git a/src/vs/workbench/contrib/search/browser/anythingQuickAccess.ts b/src/vs/workbench/contrib/search/browser/anythingQuickAccess.ts
+index 9d50072998d..efb5d55d18c 100644
+--- a/src/vs/workbench/contrib/search/browser/anythingQuickAccess.ts
++++ b/src/vs/workbench/contrib/search/browser/anythingQuickAccess.ts
+@@ -53,7 +53,7 @@ import { stripIcons } from '../../../../base/common/iconLabels.js';
+ import { Lazy } from '../../../../base/common/lazy.js';
+ import { IKeybindingService } from '../../../../platform/keybinding/common/keybinding.js';
+ import { Registry } from '../../../../platform/registry/common/platform.js';
+-import { ASK_QUICK_QUESTION_ACTION_ID } from '../../chat/browser/actions/chatQuickInputActions.js';
++import { ASK_QUICK_QUESTION_ACTION_ID } from '../../chat/browser/actions/chatConstants.js';
+ import { IQuickChatService } from '../../chat/browser/chat.js';
+ import { ILogService } from '../../../../platform/log/common/log.js';
+ import { ICustomEditorLabelService } from '../../../services/editor/common/customEditorLabelService.js';
