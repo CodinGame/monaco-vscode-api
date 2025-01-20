@@ -14,9 +14,7 @@ import './tools/debugAssets'
 import 'vs/workbench/contrib/debug/browser/debug.contribution'
 
 // remove "Open 'launch.json'" button
-// eslint-disable-next-line dot-notation
 const original = DebugService.prototype['showError']
-// eslint-disable-next-line dot-notation
 DebugService.prototype['showError'] = function (
   message: string,
   errorActions?: ReadonlyArray<IAction>

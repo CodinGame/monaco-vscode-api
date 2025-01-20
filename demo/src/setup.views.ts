@@ -94,7 +94,6 @@ await initializeMonacoService(
 )
 
 setUnexpectedErrorHandler((e) => {
-  // eslint-disable-next-line no-console
   console.info('Unexpected error', e)
 })
 

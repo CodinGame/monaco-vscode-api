@@ -517,7 +517,7 @@ export function configuredSubpackagePlugin(): rollup.Plugin {
         importers: Node[]
       }
 
-      function createTree(moduleId: string, seen: Set<String> = new Set<string>()): Node[] {
+      function createTree(moduleId: string, seen: Set<string> = new Set<string>()): Node[] {
         const subpackage = subpackages.find((p) => p.modules.has(moduleId))
 
         if (subpackage != null && !mainSubpackageDependencies.has(subpackage)) {

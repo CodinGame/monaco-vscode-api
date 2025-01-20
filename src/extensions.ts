@@ -1,3 +1,4 @@
+// eslint-disable-next-line @typescript-eslint/triple-slash-reference
 /// <reference path="../vscode/src/vscode-dts/vscode.proposed.d.ts" />
 
 import type * as vscode from 'vscode'
@@ -67,7 +68,7 @@ export interface RegisterExtensionResult {
   isEnabled(): Promise<boolean>
 }
 
-export interface RegisterRemoteExtensionResult extends RegisterExtensionResult {}
+export type RegisterRemoteExtensionResult = RegisterExtensionResult
 
 export interface RegisterLocalExtensionResult extends RegisterExtensionResult {
   registerFileUrl: (path: string, url: string) => IDisposable

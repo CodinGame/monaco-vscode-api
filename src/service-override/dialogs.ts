@@ -11,7 +11,6 @@ import 'vs/workbench/contrib/welcomeDialog/browser/welcomeDialog.contribution'
 function isHTMLFileSystemProvider(
   provider: IFileSystemProvider
 ): provider is HTMLFileSystemProvider {
-  // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
   return (provider as HTMLFileSystemProvider).directories != null
 }
 

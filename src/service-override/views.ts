@@ -174,7 +174,6 @@ function isElementVisible(el: HTMLElement) {
   if (!el.isConnected) {
     return false
   }
-  // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
   if (el.checkVisibility != null) {
     // not defined in Safari
     return el.checkVisibility({

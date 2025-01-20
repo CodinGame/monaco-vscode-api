@@ -37,16 +37,14 @@ import type { ICodeEditor } from 'vs/editor/browser/editorBrowser'
 let isKeybindingConfigurationVisible = () => {
   return false
 }
-let shouldUseGlobalPicker = (
-  _activeCodeEditor: ICodeEditor,
-  _activeCodeEditorStandalone: boolean
-) => {
+let shouldUseGlobalPicker: (
+  activeCodeEditor: ICodeEditor | null,
+  activeCodeEditorStandalone: boolean
+) => boolean = () => {
   return false
 }
 
-// eslint-disable-next-line dot-notation
 const original = CommandsQuickAccessProvider.prototype['getCommandPicks']
-// eslint-disable-next-line dot-notation
 CommandsQuickAccessProvider.prototype['getCommandPicks'] = async function (
   this: CommandsQuickAccessProvider,
   token: CancellationToken

@@ -1,4 +1,6 @@
+// eslint-disable-next-line @typescript-eslint/triple-slash-reference
 /// <reference path="./types.d.ts" />
+// eslint-disable-next-line @typescript-eslint/triple-slash-reference
 /// <reference path="../vscode/src/vscode-dts/vscode.proposed.d.ts" />
 
 import * as extHostTypes from 'vs/workbench/api/common/extHostTypes'
@@ -338,5 +340,5 @@ const api: typeof vscode = {
   TextSearchContext2: searchExtTypes.TextSearchContext2
 }
 
-// @ts-ignore the syntax will be transformed by a typescript transformer in the rollup config
+// @ts-expect-error the syntax will be transformed by a typescript transformer in the rollup config
 export = api

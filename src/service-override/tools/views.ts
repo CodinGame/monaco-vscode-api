@@ -261,6 +261,7 @@ function registerEditorPane<Services extends BrandedService[]>(
   typeId: string,
   name: string,
   ctor: new (group: IEditorGroup, ...services: Services) => EditorPane,
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   inputCtors: (new (...args: any[]) => EditorInput)[]
 ): IDisposable {
   return Registry.as<IEditorPaneRegistry>(EditorExtensions.EditorPane).registerEditorPane(

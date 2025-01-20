@@ -30,7 +30,6 @@ export class TerminalBackend extends SimpleTerminalBackend {
       override onDidChangeProperty = propertyEmitter.event
 
       override shutdown(immediate: boolean): void {
-        // eslint-disable-next-line no-console
         console.log('shutdown', immediate)
       }
 
@@ -52,7 +51,6 @@ export class TerminalBackend extends SimpleTerminalBackend {
       }
 
       resize(cols: number, rows: number): void {
-        // eslint-disable-next-line no-console
         console.log('resize', cols, rows)
       }
 

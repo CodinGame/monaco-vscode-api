@@ -70,7 +70,6 @@ async function run(options: SemanticReleaseOptions) {
     return
   }
 
-  // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
   await publishNpm(result.nextRelease.version, result.nextRelease.channel ?? 'latest')
 }
 

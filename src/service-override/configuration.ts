@@ -175,7 +175,7 @@ registerServiceInitializePreParticipant(async (accessor) => {
           })
         )
       )
-    } catch (err) {
+    } catch {
       // ignore
     }
 

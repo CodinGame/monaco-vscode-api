@@ -120,7 +120,7 @@ const hostUtil = new (class implements IHostUtils {
   public readonly pid = undefined
   exit = unsupported
 
-  async exists(_path: string): Promise<boolean> {
+  async exists(): Promise<boolean> {
     return true
   }
 

@@ -340,7 +340,7 @@ import { ITerminalCompletionService } from 'vs/workbench/contrib/terminalContrib
 import { getBuiltInExtensionTranslationsUris, getExtensionIdProvidingCurrentLocale } from './l10n'
 import { unsupported } from './tools'
 
-function Unsupported(target: Object, propertyKey: string, descriptor: PropertyDescriptor) {
+function Unsupported(target: object, propertyKey: string, descriptor: PropertyDescriptor) {
   function unsupported() {
     throw new Error(
       `Unsupported: ${target.constructor.name}.${propertyKey} is not supported. You are using a feature without registering the corresponding service override.`
@@ -6428,7 +6428,7 @@ registerSingleton(ITestService, TestService, InstantiationType.Delayed)
 class SecretStorageService implements ISecretStorageService {
   _serviceBrand: undefined
   onDidChangeSecret = Event.None
-  type: 'in-memory' = 'in-memory'
+  type = 'in-memory' as const
   get = async () => undefined
   @Unsupported
   set(): never {

@@ -14,8 +14,6 @@ import {
   StorageScope as VSStorageScope
 } from 'vs/platform/storage/common/storage'
 import { IStorageService } from 'vs/platform/storage/common/storage.service'
-import type { IUserDataProfile } from 'vs/platform/userDataProfile/common/userDataProfile'
-import type { IAnyWorkspaceIdentifier } from 'vs/platform/workspace/common/workspace'
 import { BrowserStorageService } from 'vs/workbench/services/storage/browser/storageService'
 import { ILogService } from 'vs/platform/log/common/log.service'
 import { IUserDataProfileService } from 'vs/workbench/services/userDataProfile/common/userDataProfile.service'
@@ -160,7 +158,7 @@ class ExternalStorageService extends AbstractStorageService {
     // no-op
   }
 
-  hasScope(_scope: IAnyWorkspaceIdentifier | IUserDataProfile): boolean {
+  hasScope(): boolean {
     return false
   }
 

@@ -577,7 +577,6 @@ class RegisteredFileSystemProvider
 
             await stream.write(res.value)
 
-            // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
             if (token.isCancellationRequested) {
               break
             }
@@ -921,7 +920,7 @@ class OverlayFileSystemProvider
       let stats: IStat | undefined
       try {
         stats = await delegate.stat(resource)
-      } catch (err) {
+      } catch {
         // ignore
       }
       if (stats != null && ((stats.permissions ?? 0) & FilePermission.Readonly) > 0) {
@@ -1074,6 +1073,7 @@ const userDataFileSystemProvider = new InMemoryFileSystemProvider()
 // The `mkdirp` logic is inside the service, and the provider will just fail if asked to write a file in a non-existent directory
 void userDataFileSystemProvider.mkdir(URI.from({ scheme: Schemas.vscodeUserData, path: '/User/' }))
 
+// eslint-disable-next-line @typescript-eslint/no-namespace
 export namespace CustomSchemas {
   /**
    * A schema that is used for models that exist in memory
@@ -1234,23 +1234,23 @@ export function registerHTMLFileSystemProvider(): void {
       StandaloneServices.get(ILogService).setLevel(level)
     }
 
-    trace(message: string, ...args: any[]): void {
+    trace(message: string, ...args: unknown[]): void {
       StandaloneServices.get(ILogService).trace(message, ...args)
     }
 
-    debug(message: string, ...args: any[]): void {
+    debug(message: string, ...args: unknown[]): void {
       StandaloneServices.get(ILogService).debug(message, ...args)
     }
 
-    info(message: string, ...args: any[]): void {
+    info(message: string, ...args: unknown[]): void {
       StandaloneServices.get(ILogService).info(message, ...args)
     }
 
-    warn(message: string, ...args: any[]): void {
+    warn(message: string, ...args: unknown[]): void {
       StandaloneServices.get(ILogService).warn(message, ...args)
     }
 
-    error(message: string | Error, ...args: any[]): void {
+    error(message: string | Error, ...args: unknown[]): void {
       StandaloneServices.get(ILogService).error(message, ...args)
     }
 

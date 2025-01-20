@@ -206,7 +206,6 @@ function createConfiguredEditorClass(
      * This method is widely inspired from vs/workbench/browser/parts/editor/textEditor
      */
     private updateEditorConfiguration(): void {
-      // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
       if (!this.hasModel() || this.textResourceConfigurationService == null) {
         // textResourceConfigurationService can be null if this method is called by the constructor of StandaloneEditor
         return
@@ -238,7 +237,6 @@ function createConfiguredEditorClass(
 
     override updateOptions(newOptions: Readonly<IEditorOptions>): void {
       // it can be null if this method is called by the constructor of StandaloneEditor
-      // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
       this.optionsOverrides ??= {}
       const didChange = EditorOptionsUtil.applyUpdate(this.optionsOverrides, newOptions)
       if (!didChange) {
@@ -319,7 +317,6 @@ class ConfiguredStandaloneDiffEditor extends createInjectedClass(StandaloneDiffE
    * This method is widely inspired from vs/workbench/browser/parts/editor/textEditor
    */
   private updateEditorConfiguration(): void {
-    // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
     if (this.getModel() == null || this.textResourceConfigurationService == null) {
       // textResourceConfigurationService can be null if this method is called by the constructor of StandaloneEditor
       return
@@ -351,7 +348,6 @@ class ConfiguredStandaloneDiffEditor extends createInjectedClass(StandaloneDiffE
 
   override updateOptions(newOptions: Readonly<IEditorOptions>): void {
     // it can be null if this method is called by the constructor of StandaloneEditor
-    // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
     this.optionsOverrides ??= {}
 
     this.optionsOverrides = {
@@ -403,7 +399,6 @@ export interface DynamicKeybindingService extends IKeybindingService {
 }
 
 function isDynamicKeybindingService(keybindingService: IKeybindingService) {
-  // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
   return (keybindingService as DynamicKeybindingService).registerKeybindingProvider != null
 }
 
