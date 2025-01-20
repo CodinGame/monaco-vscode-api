@@ -1,4 +1,5 @@
-/** PROPOSED-type-references */
+/// <reference path="../vscode/src/vscode-dts/vscode.proposed.d.ts" />
+
 import type * as vscode from 'vscode'
 import {
   ExtensionType,

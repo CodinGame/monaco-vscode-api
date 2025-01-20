@@ -2,6 +2,7 @@
 	"extends": "./tsconfig.json",
 	"include": [
 		"./src/**/*",
-		"./vscode/**/*"
+		"./vscode/**/*",
+		"./vscode/src/vscode-dts/vscode.proposed.*.d.ts",
 	]
 }
