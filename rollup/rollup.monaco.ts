@@ -48,7 +48,7 @@ export default rollup.defineConfig([
           preserveModules: true,
           assetFileNames: '[name][extname]',
           format: 'esm',
-          dir: `dist/standalone-language-feature-${language}`,
+          dir: `dist/packages/monaco-vscode-standalone-${language}-language-features`,
           entryFileNames: '[name].js',
           hoistTransitiveImports: false
         },
@@ -122,7 +122,7 @@ export default rollup.defineConfig([
       preserveModules: true,
       assetFileNames: '[name][extname]',
       format: 'esm',
-      dir: 'dist/monarch-basic-languages',
+      dir: 'dist/packages/monaco-vscode-standalone-languages',
       entryFileNames: '[name].js',
       hoistTransitiveImports: false
     },

@@ -1,33 +1,25 @@
 {
-	"extends": "@codingame/tsconfig",
-	"compilerOptions": {
-		"declaration": false,
-		"verbatimModuleSyntax": true,
-		"experimentalDecorators": true,
-		"resolveJsonModule": true,
-		"target": "es2020",
-		"module": "esnext",
-		"lib": [
-			"es2021",
-			"DOM"
-		],
-		"outDir": "dist",
-		"rootDir": "./",
-		"paths": {
-			"vs/*": [
-				"./vscode/src/vs/*"
-			],
-			"vscode/*": [
-				"./vscode/*"
-			]
-		},
-		"preserveConstEnums": true
-	},
-	"include": [
-		"./vscode/src/vscode-dts/vscode.proposed.*.d.ts",
-		"./src/**/*",
-		"./rollup/*.ts",
-		"./release.ts",
-		"./scripts/*.ts"
-	]
+  "extends": "@codingame/tsconfig",
+  "compilerOptions": {
+    "declaration": false,
+    "verbatimModuleSyntax": true,
+    "experimentalDecorators": true,
+    "resolveJsonModule": true,
+    "target": "es2020",
+    "module": "esnext",
+    "lib": ["es2021", "DOM"],
+    "outDir": "dist",
+    "rootDir": "./",
+    "paths": {
+      "vs/*": ["./vscode/src/vs/*"],
+      "vscode/*": ["./vscode/*"]
+    }
+  },
+  "include": [
+    "./vscode/src/vscode-dts/vscode.proposed.*.d.ts",
+    "./src/**/*",
+    "./rollup/**/*.ts",
+    "./release.ts",
+    "./scripts/*.ts"
+  ]
 }
