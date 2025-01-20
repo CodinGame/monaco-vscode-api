@@ -23,6 +23,7 @@ import { IEncryptionService } from 'vs/platform/encryption/common/encryptionServ
 import { IEnvironmentService } from 'vs/platform/environment/common/environment.service'
 import type { ILocalExtension } from 'vs/platform/extensionManagement/common/extensionManagement'
 import {
+  IAllowedExtensionsService,
   IExtensionGalleryService,
   IExtensionTipsService,
   IGlobalExtensionEnablementService
@@ -329,6 +330,13 @@ import { IChatEditingService } from 'vs/workbench/contrib/chat/common/chatEditin
 import { IActionViewItemService } from 'vs/platform/actions/browser/actionViewItemService.service'
 import { ITreeSitterTokenizationFeature } from 'vs/workbench/services/treeSitter/browser/treeSitterTokenizationFeature.service'
 import { ILanguageModelIgnoredFilesService } from 'vs/workbench/contrib/chat/common/ignoredFiles.service'
+import { IChatQuotasService } from 'vs/workbench/contrib/chat/browser/chatQuotasService.service'
+import { INotebookSynchronizerService } from 'vs/workbench/contrib/notebook/common/notebookSynchronizerService.service'
+import { INotebookOriginalCellModelFactory } from 'vs/workbench/contrib/notebook/browser/contrib/chatEdit/notebookOriginalCellModelFactory.service'
+import { INotebookOriginalModelReferenceFactory } from 'vs/workbench/contrib/notebook/browser/contrib/chatEdit/notebookOriginalModelRefFactory.service'
+import { INotebookModelSynchronizerFactory } from 'vs/workbench/contrib/notebook/browser/contrib/chatEdit/notebookSynchronizer.service'
+import { IDirtyDiffModelService } from 'vs/workbench/contrib/scm/browser/diff.service'
+import { ITerminalCompletionService } from 'vs/workbench/contrib/terminalContrib/suggest/browser/terminalCompletionService.service'
 import { getBuiltInExtensionTranslationsUris, getExtensionIdProvidingCurrentLocale } from './l10n'
 import { unsupported } from './tools'
 
@@ -362,6 +370,7 @@ registerSingleton(
 class EditorService implements IEditorService {
   readonly _serviceBrand = undefined
 
+  getVisibleTextEditorControls = () => []
   onWillOpenEditor = Event.None
   onDidActiveEditorChange = Event.None
   onDidVisibleEditorsChange = Event.None
@@ -1274,6 +1283,8 @@ registerSingleton(ILanguageStatusService, LanguageStatusService, InstantiationTy
 
 class HostService implements IHostService {
   _serviceBrand: undefined
+
+  getNativeWindowHandle = async () => undefined
   getScreenshot = async () => undefined
   getPathForFile = () => undefined
   onDidChangeFullScreen = Event.None
@@ -2044,6 +2055,8 @@ registerSingleton(IExtensionHostDebugService, ExtensionHostDebugService, Instant
 
 class ViewsService implements IViewsService {
   _serviceBrand: undefined
+
+  getFocusedView = () => null
   isViewContainerActive = () => false
   @Unsupported
   getFocusedViewName(): never {
@@ -2508,6 +2521,12 @@ registerSingleton(ITimerService, TimerService, InstantiationType.Eager)
 
 class ExtensionsWorkbenchService implements IExtensionsWorkbenchService {
   _serviceBrand: undefined
+
+  @Unsupported
+  downloadVSIX(): never {
+    unsupported()
+  }
+
   @Unsupported
   updateAutoUpdateForAllExtensions(): never {
     unsupported()
@@ -3631,6 +3650,11 @@ registerSingleton(IUpdateService, UpdateService, InstantiationType.Eager)
 class StatusbarService implements IStatusbarService {
   _serviceBrand: undefined
   @Unsupported
+  overrideEntry(): never {
+    unsupported()
+  }
+
+  @Unsupported
   getPart(): never {
     unsupported()
   }
@@ -4583,6 +4607,21 @@ registerSingleton(IPreferencesSearchService, PreferencesSearchService, Instantia
 
 class NotebookService implements INotebookService {
   _serviceBrand: undefined
+  @Unsupported
+  createNotebookTextDocumentSnapshot(): never {
+    unsupported()
+  }
+
+  @Unsupported
+  restoreNotebookTextModelFromSnapshot(): never {
+    unsupported()
+  }
+
+  @Unsupported
+  hasSupportedNotebooks(): never {
+    unsupported()
+  }
+
   tryGetDataProviderSync = () => undefined
   canResolve = async () => false
   onAddViewType = Event.None
@@ -4707,6 +4746,11 @@ registerSingleton(ISearchHistoryService, SearchHistoryService, InstantiationType
 
 class NotebookEditorService implements INotebookEditorService {
   _serviceBrand: undefined
+  @Unsupported
+  updateReplContextKey(): never {
+    unsupported()
+  }
+
   @Unsupported
   retrieveWidget(): never {
     unsupported()
@@ -6044,6 +6088,7 @@ registerSingleton(IUserDataSyncAccountService, UserDataSyncAccountService, Insta
 
 class ChatWidgetService implements IChatWidgetService {
   _serviceBrand: undefined
+  getWidgetsByLocations = () => []
   onDidAddWidget = Event.None
   getAllWidgets = () => []
   getWidgetByLocation = () => []
@@ -6533,6 +6578,8 @@ registerSingleton(ISCMViewService, SCMViewService, InstantiationType.Delayed)
 
 class NotebookExecutionStateService implements INotebookExecutionStateService {
   _serviceBrand: undefined
+  getLastCompletedCellForNotebook = () => undefined
+
   onDidChangeExecution = Event.None
   onDidChangeLastRunFailState = Event.None
   @Unsupported
@@ -6918,6 +6965,16 @@ registerSingleton(ISignService, SignService, InstantiationType.Delayed)
 
 class TestingContinuousRunService implements ITestingContinuousRunService {
   _serviceBrand: undefined
+  @Unsupported
+  isEnabledForProfile(): never {
+    unsupported()
+  }
+
+  @Unsupported
+  stopProfile(): never {
+    unsupported()
+  }
+
   lastRunProfileIds = new Set<number>()
   onDidChange = Event.None
   isSpecificallyEnabledFor = () => false
@@ -7931,6 +7988,8 @@ registerSingleton(IWorkspaceTagsService, NoOpWorkspaceTagsService, Instantiation
 
 class ExtensionFeaturesManagementService implements IExtensionFeaturesManagementService {
   _serviceBrand: undefined
+  getAllAccessDataForExtension = () => new Map()
+
   onDidChangeEnablement = Event.None
   isEnabled = () => true
   @Unsupported
@@ -8121,6 +8180,15 @@ registerSingleton(ICodeMapperService, CodeMapperService, InstantiationType.Delay
 
 class ChatEditingService implements IChatEditingService {
   _serviceBrand: undefined
+  getOrRestoreEditingSession = async () => null
+  hasRelatedFilesProviders = () => false
+  @Unsupported
+  registerRelatedFilesProvider() {
+    return unsupported()
+  }
+
+  getRelatedFiles = async () => undefined
+
   onDidChangeEditingSession = Event.None
 
   @Unsupported
@@ -8198,3 +8266,115 @@ registerSingleton(
   LanguageModelIgnoredFilesService,
   InstantiationType.Delayed
 )
+
+class AllowedExtensionsService implements IAllowedExtensionsService {
+  _serviceBrand: undefined
+  onDidChangeAllowedExtensions = Event.None
+  isAllowed = (): true => true
+}
+registerSingleton(IAllowedExtensionsService, AllowedExtensionsService, InstantiationType.Delayed)
+
+class ChatQuotasService implements IChatQuotasService {
+  _serviceBrand: undefined
+
+  onDidChangeQuotas = Event.None
+
+  @Unsupported
+  get quotas() {
+    return unsupported()
+  }
+
+  @Unsupported
+  acceptQuotas(): never {
+    unsupported()
+  }
+
+  @Unsupported
+  clearQuotas(): never {
+    unsupported()
+  }
+}
+registerSingleton(IChatQuotasService, ChatQuotasService, InstantiationType.Delayed)
+
+class NotebookSynchronizerService implements INotebookSynchronizerService {
+  _serviceBrand: undefined
+
+  @Unsupported
+  revert(): never {
+    unsupported()
+  }
+}
+registerSingleton(
+  INotebookSynchronizerService,
+  NotebookSynchronizerService,
+  InstantiationType.Delayed
+)
+
+class NotebookOriginalCellModelFactory implements INotebookOriginalCellModelFactory {
+  _serviceBrand: undefined
+
+  @Unsupported
+  getOrCreate(): never {
+    unsupported()
+  }
+}
+registerSingleton(
+  INotebookOriginalCellModelFactory,
+  NotebookOriginalCellModelFactory,
+  InstantiationType.Delayed
+)
+
+class NotebookOriginalModelReferenceFactory implements INotebookOriginalModelReferenceFactory {
+  _serviceBrand: undefined
+
+  @Unsupported
+  getOrCreate(): never {
+    unsupported()
+  }
+}
+registerSingleton(
+  INotebookOriginalModelReferenceFactory,
+  NotebookOriginalModelReferenceFactory,
+  InstantiationType.Delayed
+)
+
+class NotebookModelSynchronizerFactory implements INotebookModelSynchronizerFactory {
+  _serviceBrand: undefined
+
+  @Unsupported
+  getOrCreate(): never {
+    unsupported()
+  }
+}
+registerSingleton(
+  INotebookModelSynchronizerFactory,
+  NotebookModelSynchronizerFactory,
+  InstantiationType.Delayed
+)
+
+class DirtyDiffModelService implements IDirtyDiffModelService {
+  _serviceBrand: undefined
+  getDirtyDiffModel = () => undefined
+  getDiffModel = () => undefined
+}
+registerSingleton(IDirtyDiffModelService, DirtyDiffModelService, InstantiationType.Delayed)
+
+class TerminalCompletionService implements ITerminalCompletionService {
+  _serviceBrand: undefined
+
+  @Unsupported
+  get providers(): never {
+    return unsupported()
+  }
+
+  @Unsupported
+  registerTerminalCompletionProvider(): never {
+    unsupported()
+  }
+
+  @Unsupported
+  provideCompletions(): never {
+    unsupported()
+  }
+}
+registerSingleton(ITerminalCompletionService, TerminalCompletionService, InstantiationType.Delayed)

@@ -203,7 +203,8 @@ const api: typeof vscode = {
   TextDocumentChangeReason: extHostTypes.TextDocumentChangeReason,
   ThemeColor: extHostTypes.ThemeColor,
   ThemeIcon: extHostTypes.ThemeIcon,
-  TreeItem: extHostTypes.TreeItem,
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  TreeItem: <any>extHostTypes.TreeItem,
   TreeItemCheckboxState: extHostTypes.TreeItemCheckboxState,
   TreeItemCollapsibleState: extHostTypes.TreeItemCollapsibleState,
   TypeHierarchyItem: extHostTypes.TypeHierarchyItem,
@@ -259,7 +260,6 @@ const api: typeof vscode = {
   DataTransferItem: extHostTypes.DataTransferItem,
   TestCoverageCount: extHostTypes.TestCoverageCount,
   FileCoverage: extHostTypes.FileCoverage,
-  FileCoverage2: extHostTypes.FileCoverage,
   StatementCoverage: extHostTypes.StatementCoverage,
   BranchCoverage: extHostTypes.BranchCoverage,
   DeclarationCoverage: extHostTypes.DeclarationCoverage,
@@ -321,8 +321,6 @@ const api: typeof vscode = {
   InlineEdit: extHostTypes.InlineEdit,
   InlineEditTriggerKind: extHostTypes.InlineEditTriggerKind,
   ExcludeSettingOptions: searchExtTypes.ExcludeSettingOptions,
-  TextSearchContextNew: searchExtTypes.TextSearchContextNew,
-  TextSearchMatchNew: searchExtTypes.TextSearchMatchNew,
   ChatResponseCodeblockUriPart: extHostTypes.ChatResponseCodeblockUriPart,
   ChatEditingSessionActionOutcome: extHostTypes.ChatEditingSessionActionOutcome,
   LanguageModelChatToolMode: extHostTypes.LanguageModelChatToolMode,
@@ -331,7 +329,13 @@ const api: typeof vscode = {
   LanguageModelTextPart: extHostTypes.LanguageModelTextPart,
   LanguageModelPromptTsxPart: extHostTypes.LanguageModelPromptTsxPart,
   LanguageModelToolResult: extHostTypes.LanguageModelToolResult,
-  ChatReferenceBinaryData: extHostTypes.ChatReferenceBinaryData
+  ChatReferenceBinaryData: extHostTypes.ChatReferenceBinaryData,
+  CellErrorStackFrame: extHostTypes.CellErrorStackFrame,
+  TerminalCompletionItemKind: extHostTypes.TerminalCompletionItemKind,
+  TerminalCompletionList: extHostTypes.TerminalCompletionList,
+  TextEditorChangeKind: extHostTypes.TextEditorChangeKind,
+  TextSearchMatch2: searchExtTypes.TextSearchMatch2,
+  TextSearchContext2: searchExtTypes.TextSearchContext2
 }
 
 // @ts-ignore the syntax will be transformed by a typescript transformer in the rollup config

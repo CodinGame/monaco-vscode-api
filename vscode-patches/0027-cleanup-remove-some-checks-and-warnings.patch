@@ -53,10 +53,10 @@ index 1b66babea28..44b1733ff0e 100644
  		if (this.element && this._messagePort) {
  			this._messagePort.postMessage({ channel, args: data }, transferable);
 diff --git a/src/vs/workbench/services/auxiliaryWindow/browser/auxiliaryWindowService.ts b/src/vs/workbench/services/auxiliaryWindow/browser/auxiliaryWindowService.ts
-index c7fe91bfe1e..608ca8f7ce2 100644
+index ee504955a5a..3c8462db1a7 100644
 --- a/src/vs/workbench/services/auxiliaryWindow/browser/auxiliaryWindowService.ts
 +++ b/src/vs/workbench/services/auxiliaryWindow/browser/auxiliaryWindowService.ts
-@@ -364,13 +364,6 @@ export class BrowserAuxiliaryWindowService extends Disposable implements IAuxili
+@@ -365,13 +365,6 @@ export class BrowserAuxiliaryWindowService extends Disposable implements IAuxili
  	}
  
  	protected createContainer(auxiliaryWindow: CodeWindow, disposables: DisposableStore, options?: IAuxiliaryWindowOpenOptions): { stylesLoaded: Barrier; container: HTMLElement } {

@@ -6,11 +6,14 @@ import { IQuickDiffService } from 'vs/workbench/contrib/scm/common/quickDiff.ser
 import { QuickDiffService } from 'vs/workbench/contrib/scm/common/quickDiffService'
 import 'vs/workbench/contrib/scm/browser/scm.contribution'
 import { SyncDescriptor } from 'vs/platform/instantiation/common/descriptors'
+import { IDirtyDiffModelService } from 'vs/workbench/contrib/scm/browser/diff.service'
+import { DirtyDiffModelService } from 'vs/workbench/contrib/scm/browser/diff'
 
 export default function getServiceOverride(): IEditorOverrideServices {
   return {
     [ISCMService.toString()]: new SyncDescriptor(SCMService, [], true),
     [ISCMViewService.toString()]: new SyncDescriptor(SCMViewService, [], true),
-    [IQuickDiffService.toString()]: new SyncDescriptor(QuickDiffService, [], true)
+    [IQuickDiffService.toString()]: new SyncDescriptor(QuickDiffService, [], true),
+    [IDirtyDiffModelService.toString()]: new SyncDescriptor(DirtyDiffModelService, [], true)
   }
 }

@@ -84,7 +84,7 @@ index 00000000000..3fc81fe28fc
 +	}
 +});
 diff --git a/src/vs/workbench/contrib/welcomeGettingStarted/browser/gettingStartedService.ts b/src/vs/workbench/contrib/welcomeGettingStarted/browser/gettingStartedService.ts
-index 2780c01bc15..b0f9475c895 100644
+index 93050cde3d9..743e9055c4f 100644
 --- a/src/vs/workbench/contrib/welcomeGettingStarted/browser/gettingStartedService.ts
 +++ b/src/vs/workbench/contrib/welcomeGettingStarted/browser/gettingStartedService.ts
 @@ -3,11 +3,10 @@

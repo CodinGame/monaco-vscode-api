@@ -1,6 +1,7 @@
 import type { IEditorOverrideServices } from 'vs/editor/standalone/browser/standaloneServices'
 import { SyncDescriptor } from 'vs/platform/instantiation/common/descriptors'
 import {
+  IAllowedExtensionsService,
   IExtensionGalleryService,
   IExtensionTipsService,
   IGlobalExtensionEnablementService
@@ -51,9 +52,10 @@ import { IExtensionsProfileScannerService } from 'vs/platform/extensionManagemen
 import { ILabelService } from 'vs/platform/label/common/label.service'
 import { IExtensionFeaturesManagementService } from 'vs/workbench/services/extensionManagement/common/extensionFeatures.service'
 import { ExtensionFeaturesManagementService } from 'vs/workbench/services/extensionManagement/common/extensionFeaturesManagemetService'
-import { registerAssets } from '../assets'
-import { getExtensionManifests } from '../extensions'
-import { isLocaleAvailable } from '../l10n'
+import { AllowedExtensionsService } from 'vs/platform/extensionManagement/common/allowedExtensionsService'
+import { registerAssets } from '../assets.js'
+import { getExtensionManifests } from '../extensions.js'
+import { isLocaleAvailable } from '../l10n.js'
 import 'vs/workbench/contrib/extensions/browser/extensions.contribution'
 import 'vs/workbench/contrib/extensions/browser/extensions.web.contribution'
 import { unsupported } from '../tools'
@@ -219,6 +221,7 @@ export default function getServiceOverride(
       ExtensionsProfileScannerService,
       [],
       true
-    )
+    ),
+    [IAllowedExtensionsService.toString()]: new SyncDescriptor(AllowedExtensionsService, [], true)
   }
 }

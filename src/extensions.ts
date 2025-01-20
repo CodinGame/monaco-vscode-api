@@ -201,7 +201,8 @@ export function registerExtension(
       validations: [],
       extHostKind,
       readmeUrl: readmePath != null ? URI.joinPath(realLocation, readmePath) : undefined,
-      changelogUrl: changelogPath != null ? URI.joinPath(realLocation, changelogPath) : undefined
+      changelogUrl: changelogPath != null ? URI.joinPath(realLocation, changelogPath) : undefined,
+      preRelease: false
     }
 
     if (extHostKind != null) {

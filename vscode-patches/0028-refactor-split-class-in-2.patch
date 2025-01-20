@@ -8,11 +8,11 @@ Subject: [PATCH] refactor: split class in 2
  1 file changed, 76 insertions(+), 18 deletions(-)
 
 diff --git a/src/vs/workbench/services/extensions/browser/extensionService.ts b/src/vs/workbench/services/extensions/browser/extensionService.ts
-index b232937c792..e48e1d79a07 100644
+index a06dcd516bd..cea72fd2225 100644
 --- a/src/vs/workbench/services/extensions/browser/extensionService.ts
 +++ b/src/vs/workbench/services/extensions/browser/extensionService.ts
-@@ -43,8 +43,10 @@ import { IUserDataInitializationService } from '../../userData/browser/userDataI
- import { IUserDataProfileService } from '../../userDataProfile/common/userDataProfile.js';
+@@ -44,8 +44,10 @@ import { IUserDataProfileService } from '../../userDataProfile/common/userDataPr
+ import { AsyncIterableEmitter, AsyncIterableObject } from '../../../../base/common/async.js';
  
  export class ExtensionService extends AbstractExtensionService implements IExtensionService {
 -
@@ -23,7 +23,7 @@ index b232937c792..e48e1d79a07 100644
  		@IInstantiationService instantiationService: IInstantiationService,
  		@INotificationService notificationService: INotificationService,
  		@IBrowserWorkbenchEnvironmentService private readonly _browserEnvironmentService: IBrowserWorkbenchEnvironmentService,
-@@ -68,21 +70,10 @@ export class ExtensionService extends AbstractExtensionService implements IExten
+@@ -69,22 +71,11 @@ export class ExtensionService extends AbstractExtensionService implements IExten
  		@IRemoteExplorerService private readonly _remoteExplorerService: IRemoteExplorerService,
  		@IDialogService dialogService: IDialogService,
  	) {
@@ -39,6 +39,7 @@ index b232937c792..e48e1d79a07 100644
 -			logService
 -		);
  		super(
+ 			{ hasLocalProcess: false, allowRemoteExtensionsInLocalWebWorker: true },
  			extensionsProposedApi,
  			extensionHostFactory,
 -			new BrowserExtensionHostKindPicker(logService),
@@ -46,7 +47,7 @@ index b232937c792..e48e1d79a07 100644
  			instantiationService,
  			notificationService,
  			_browserEnvironmentService,
-@@ -206,10 +197,10 @@ export class BrowserExtensionHostFactory implements IExtensionHostFactory {
+@@ -226,10 +217,10 @@ export class BrowserExtensionHostFactory implements IExtensionHostFactory {
  		private readonly _extensionsProposedApi: ExtensionsProposedApi,
  		private readonly _scanWebExtensions: () => Promise<IExtensionDescription[]>,
  		private readonly _getExtensionRegistrySnapshotWhenReady: () => Promise<ExtensionDescriptionRegistrySnapshot>,
@@ -61,7 +62,7 @@ index b232937c792..e48e1d79a07 100644
  		@ILogService private readonly _logService: ILogService,
  	) { }
  
-@@ -333,4 +324,71 @@ export class BrowserExtensionHostKindPicker implements IExtensionHostKindPicker
+@@ -353,4 +344,71 @@ export class BrowserExtensionHostKindPicker implements IExtensionHostKindPicker
  	}
  }
  

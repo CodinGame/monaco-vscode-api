@@ -46,11 +46,13 @@ import { DeferredPromise } from 'vs/base/common/async'
 import { EmbedderTerminalService } from 'vs/workbench/services/terminal/common/embedderTerminalService'
 import { IEmbedderTerminalService } from 'vs/workbench/services/terminal/common/embedderTerminalService.service'
 import { TerminalConfigurationService } from 'vs/workbench/contrib/terminal/browser/terminalConfigurationService'
-import { unsupported } from '../tools'
 import 'vs/workbench/contrib/terminal/browser/terminal.contribution'
 import 'vs/workbench/contrib/terminal/terminal.all'
 import 'vs/workbench/contrib/externalTerminal/browser/externalTerminal.contribution'
 import 'vs/workbench/contrib/terminal/browser/terminal.web.contribution'
+import { ITerminalCompletionService } from 'vs/workbench/contrib/terminalContrib/suggest/browser/terminalCompletionService.service'
+import { TerminalCompletionService } from 'vs/workbench/contrib/terminalContrib/suggest/browser/terminalCompletionService'
+import { unsupported } from '../tools.js'
 export {
   ITerminalService,
   ITerminalInstanceService
@@ -196,7 +198,8 @@ export default function getServiceOverride(backend?: ITerminalBackend): IEditorO
       TerminalConfigurationService,
       [],
       true
-    )
+    ),
+    [ITerminalCompletionService.toString()]: new SyncDescriptor(TerminalCompletionService, [], true)
   }
 }
 

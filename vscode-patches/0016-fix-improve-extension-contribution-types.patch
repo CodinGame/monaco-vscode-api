@@ -11,7 +11,7 @@ Subject: [PATCH] fix: improve extension contribution types
  4 files changed, 1432 insertions(+), 76 deletions(-)
 
 diff --git a/src/vs/platform/extensions/common/extensions.ts b/src/vs/platform/extensions/common/extensions.ts
-index 5973d4dcf12..d0cc0b03bcd 100644
+index cee0043bad6..1c76dd5506a 100644
 --- a/src/vs/platform/extensions/common/extensions.ts
 +++ b/src/vs/platform/extensions/common/extensions.ts
 @@ -3,6 +3,7 @@
@@ -1627,7 +1627,7 @@ index 5973d4dcf12..d0cc0b03bcd 100644
  
  export interface IExtensionCapabilities {
 diff --git a/src/vs/workbench/services/search/common/queryBuilder.ts b/src/vs/workbench/services/search/common/queryBuilder.ts
-index 4b712c6be50..2d68500db7a 100644
+index feaaf16c7f4..dd8c82bbe43 100644
 --- a/src/vs/workbench/services/search/common/queryBuilder.ts
 +++ b/src/vs/workbench/services/search/common/queryBuilder.ts
 @@ -613,10 +613,10 @@ export class QueryBuilder {

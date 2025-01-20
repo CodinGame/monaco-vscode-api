@@ -13,7 +13,7 @@ to be able to register the file before
  4 files changed, 8 insertions(+), 8 deletions(-)
 
 diff --git a/src/vs/workbench/contrib/extensions/browser/abstractRuntimeExtensionsEditor.ts b/src/vs/workbench/contrib/extensions/browser/abstractRuntimeExtensionsEditor.ts
-index f6873bf5524..b653ac57a36 100644
+index dddffbe2517..2b029c86520 100644
 --- a/src/vs/workbench/contrib/extensions/browser/abstractRuntimeExtensionsEditor.ts
 +++ b/src/vs/workbench/contrib/extensions/browser/abstractRuntimeExtensionsEditor.ts
 @@ -38,7 +38,7 @@ import { IEditorGroup } from '../../../services/editor/common/editorGroupsServic
@@ -37,19 +37,19 @@ index f6873bf5524..b653ac57a36 100644
  				if (!data.icon.complete) {
  					data.icon.style.visibility = 'hidden';
 diff --git a/src/vs/workbench/contrib/extensions/browser/extensionsWorkbenchService.ts b/src/vs/workbench/contrib/extensions/browser/extensionsWorkbenchService.ts
-index 1575be24d0d..2a239ae2620 100644
+index 56161211c9b..f40fbbadfa6 100644
 --- a/src/vs/workbench/contrib/extensions/browser/extensionsWorkbenchService.ts
 +++ b/src/vs/workbench/contrib/extensions/browser/extensionsWorkbenchService.ts
-@@ -19,7 +19,7 @@ import {
- 	InstallOptions, IProductVersion,
- 	UninstallExtensionInfo
+@@ -22,7 +22,7 @@ import {
+ 	IAllowedExtensionsService,
+ 	AllowedExtensionsConfigKey
  } from '../../../../platform/extensionManagement/common/extensionManagement.js';
--import { IWorkbenchExtensionEnablementService, EnablementState, IExtensionManagementServerService, IExtensionManagementServer, IWorkbenchExtensionManagementService, DefaultIconPath, IResourceExtension, extensionsConfigurationNodeBase } from '../../../services/extensionManagement/common/extensionManagement.js';
-+import { IWorkbenchExtensionEnablementService, EnablementState, IExtensionManagementServerService, IExtensionManagementServer, IWorkbenchExtensionManagementService, getDefaultIconPath, IResourceExtension, extensionsConfigurationNodeBase } from '../../../services/extensionManagement/common/extensionManagement.js';
+-import { IWorkbenchExtensionEnablementService, EnablementState, IExtensionManagementServerService, IExtensionManagementServer, IWorkbenchExtensionManagementService, DefaultIconPath, IResourceExtension } from '../../../services/extensionManagement/common/extensionManagement.js';
++import { IWorkbenchExtensionEnablementService, EnablementState, IExtensionManagementServerService, IExtensionManagementServer, IWorkbenchExtensionManagementService, getDefaultIconPath, IResourceExtension } from '../../../services/extensionManagement/common/extensionManagement.js';
  import { getGalleryExtensionTelemetryData, getLocalExtensionTelemetryData, areSameExtensions, groupByExtension, getGalleryExtensionId } from '../../../../platform/extensionManagement/common/extensionManagementUtil.js';
  import { IInstantiationService } from '../../../../platform/instantiation/common/instantiation.js';
  import { IConfigurationService } from '../../../../platform/configuration/common/configuration.js';
-@@ -272,7 +272,7 @@ export class Extension implements IExtension {
+@@ -277,7 +277,7 @@ export class Extension implements IExtension {
  				}
  			}
  		}
@@ -59,7 +59,7 @@ index 1575be24d0d..2a239ae2620 100644
  
  	get repository(): string | undefined {
 diff --git a/src/vs/workbench/contrib/welcomeGettingStarted/browser/gettingStartedService.ts b/src/vs/workbench/contrib/welcomeGettingStarted/browser/gettingStartedService.ts
-index 0c7f3750cf3..2780c01bc15 100644
+index 01a8fe3692b..93050cde3d9 100644
 --- a/src/vs/workbench/contrib/welcomeGettingStarted/browser/gettingStartedService.ts
 +++ b/src/vs/workbench/contrib/welcomeGettingStarted/browser/gettingStartedService.ts
 @@ -33,7 +33,7 @@ import { ITelemetryService } from '../../../../platform/telemetry/common/telemet
@@ -81,7 +81,7 @@ index 0c7f3750cf3..2780c01bc15 100644
  				when: ContextKeyExpr.deserialize(override ?? walkthrough.when) ?? ContextKeyExpr.true(),
  			} as const;
 diff --git a/src/vs/workbench/services/extensionManagement/common/extensionManagement.ts b/src/vs/workbench/services/extensionManagement/common/extensionManagement.ts
-index 0244e0aa381..5bd87b4b5ab 100644
+index 2bc9bc6e793..0e4d8f3e098 100644
 --- a/src/vs/workbench/services/extensionManagement/common/extensionManagement.ts
 +++ b/src/vs/workbench/services/extensionManagement/common/extensionManagement.ts
 @@ -43,7 +43,7 @@ export interface IExtensionManagementServerService {

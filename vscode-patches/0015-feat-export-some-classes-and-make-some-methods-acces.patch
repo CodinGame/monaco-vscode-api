@@ -72,7 +72,7 @@ index bae2812c5f3..022b7ff6e54 100644
  	declare readonly _serviceBrand: undefined;
  
 diff --git a/src/vs/workbench/browser/layout.ts b/src/vs/workbench/browser/layout.ts
-index 38a594c7d2f..64a254cfc51 100644
+index eb8657fba82..ae515f42921 100644
 --- a/src/vs/workbench/browser/layout.ts
 +++ b/src/vs/workbench/browser/layout.ts
 @@ -51,7 +51,7 @@ import { CodeWindow, mainWindow } from '../../base/browser/window.js';
@@ -194,7 +194,7 @@ index 4cd6bb2b089..31330c7b15f 100644
  	private static readonly LAST_EXTENSION_DEVELOPMENT_WORKSPACE_KEY = 'debug.lastExtensionDevelopmentWorkspace';
  
 diff --git a/src/vs/workbench/contrib/issue/browser/issueTroubleshoot.ts b/src/vs/workbench/contrib/issue/browser/issueTroubleshoot.ts
-index facb8ee9d9f..e3d80d62340 100644
+index 5b019f38d09..24e9f6cceec 100644
 --- a/src/vs/workbench/contrib/issue/browser/issueTroubleshoot.ts
 +++ b/src/vs/workbench/contrib/issue/browser/issueTroubleshoot.ts
 @@ -30,9 +30,9 @@ import { URI } from '../../../../base/common/uri.js';
@@ -280,7 +280,7 @@ index 940a4e0ce46..881aebdeb5c 100644
  	declare readonly _serviceBrand: undefined;
  
 diff --git a/src/vs/workbench/services/extensionManagement/common/extensionFeaturesManagemetService.ts b/src/vs/workbench/services/extensionManagement/common/extensionFeaturesManagemetService.ts
-index 4eeb0851a4d..29592880548 100644
+index 172241857f4..50e16a749d1 100644
 --- a/src/vs/workbench/services/extensionManagement/common/extensionFeaturesManagemetService.ts
 +++ b/src/vs/workbench/services/extensionManagement/common/extensionFeaturesManagemetService.ts
 @@ -27,7 +27,7 @@ interface IExtensionFeatureState {
@@ -293,19 +293,19 @@ index 4eeb0851a4d..29592880548 100644
  
  	private readonly _onDidChangeEnablement = this._register(new Emitter<{ extension: ExtensionIdentifier; featureId: string; enabled: boolean }>());
 diff --git a/src/vs/workbench/services/extensions/browser/extensionService.ts b/src/vs/workbench/services/extensions/browser/extensionService.ts
-index 818514fdd22..b232937c792 100644
+index 69aad42da57..a06dcd516bd 100644
 --- a/src/vs/workbench/services/extensions/browser/extensionService.ts
 +++ b/src/vs/workbench/services/extensions/browser/extensionService.ts
-@@ -117,7 +117,7 @@ export class ExtensionService extends AbstractExtensionService implements IExten
- 		this._register(this._fileService.registerProvider(Schemas.https, provider));
+@@ -120,7 +120,7 @@ export class ExtensionService extends AbstractExtensionService implements IExten
  	}
  
+ 	private _scanWebExtensionsPromise: Promise<IExtensionDescription[]> | undefined;
 -	private async _scanWebExtensions(): Promise<IExtensionDescription[]> {
 +	protected async _scanWebExtensions(): Promise<IExtensionDescription[]> {
- 		const system: IExtensionDescription[] = [], user: IExtensionDescription[] = [], development: IExtensionDescription[] = [];
- 		try {
- 			await Promise.all([
-@@ -200,7 +200,7 @@ export class ExtensionService extends AbstractExtensionService implements IExten
+ 		if (!this._scanWebExtensionsPromise) {
+ 			this._scanWebExtensionsPromise = (async () => {
+ 				const system: IExtensionDescription[] = [], user: IExtensionDescription[] = [], development: IExtensionDescription[] = [];
+@@ -220,7 +220,7 @@ export class ExtensionService extends AbstractExtensionService implements IExten
  	}
  }
  
@@ -314,7 +314,7 @@ index 818514fdd22..b232937c792 100644
  
  	constructor(
  		private readonly _extensionsProposedApi: ExtensionsProposedApi,
-@@ -236,7 +236,7 @@ class BrowserExtensionHostFactory implements IExtensionHostFactory {
+@@ -256,7 +256,7 @@ class BrowserExtensionHostFactory implements IExtensionHostFactory {
  		}
  	}
  
@@ -350,13 +350,13 @@ index 54fc51bb873..5754f65d0c5 100644
  		if (this._environmentService.debugExtensionHost && this._environmentService.debugRenderer) {
  			suffixSearchParams.set('debugged', '1');
 diff --git a/src/vs/workbench/services/extensions/common/abstractExtensionService.ts b/src/vs/workbench/services/extensions/common/abstractExtensionService.ts
-index b14b72523de..633a24cee32 100644
+index 68b71d7ce1b..ae32e66fd21 100644
 --- a/src/vs/workbench/services/extensions/common/abstractExtensionService.ts
 +++ b/src/vs/workbench/services/extensions/common/abstractExtensionService.ts
-@@ -95,9 +95,9 @@ export abstract class AbstractExtensionService extends Disposable implements IEx
- 	private _resolveAuthorityAttempt: number = 0;
+@@ -99,9 +99,9 @@ export abstract class AbstractExtensionService extends Disposable implements IEx
  
  	constructor(
+ 		options: { hasLocalProcess: boolean; allowRemoteExtensionsInLocalWebWorker: boolean },
 -		private readonly _extensionsProposedApi: ExtensionsProposedApi,
 -		private readonly _extensionHostFactory: IExtensionHostFactory,
 -		private readonly _extensionHostKindPicker: IExtensionHostKindPicker,
@@ -366,7 +366,7 @@ index b14b72523de..633a24cee32 100644
  		@IInstantiationService protected readonly _instantiationService: IInstantiationService,
  		@INotificationService protected readonly _notificationService: INotificationService,
  		@IWorkbenchEnvironmentService protected readonly _environmentService: IWorkbenchEnvironmentService,
-@@ -228,7 +228,7 @@ export abstract class AbstractExtensionService extends Disposable implements IEx
+@@ -235,7 +235,7 @@ export abstract class AbstractExtensionService extends Disposable implements IEx
  
  	//#region deltaExtensions
  
@@ -375,7 +375,7 @@ index b14b72523de..633a24cee32 100644
  		this._deltaExtensionsQueue.push(item);
  		if (this._inHandleDeltaExtensions) {
  			// Let the current item finish, the new one will be picked up
-@@ -1293,7 +1293,7 @@ export interface IExtensionHostFactory {
+@@ -1336,7 +1336,7 @@ export interface IExtensionHostFactory {
  	createExtensionHost(runningLocations: ExtensionRunningLocationTracker, runningLocation: ExtensionRunningLocation, isInitialStart: boolean): IExtensionHost | null;
  }
  

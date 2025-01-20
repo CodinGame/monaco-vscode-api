@@ -30,6 +30,14 @@ import { INotebookSearchService } from 'vs/workbench/contrib/search/common/noteb
 import { NotebookSearchService } from 'vs/workbench/contrib/search/browser/notebookSearch/notebookSearchService'
 import { NotebookDocumentWorkbenchService } from 'vs/workbench/services/notebook/common/notebookDocumentService'
 import { INotebookDocumentService } from 'vs/workbench/services/notebook/common/notebookDocumentService.service'
+import { INotebookSynchronizerService } from 'vs/workbench/contrib/notebook/common/notebookSynchronizerService.service'
+import { NotebookSynchronizerService } from 'vs/workbench/contrib/notebook/browser/contrib/chatEdit/notebookSynchronizerService'
+import { INotebookOriginalCellModelFactory } from 'vs/workbench/contrib/notebook/browser/contrib/chatEdit/notebookOriginalCellModelFactory.service'
+import { INotebookOriginalModelReferenceFactory } from 'vs/workbench/contrib/notebook/browser/contrib/chatEdit/notebookOriginalModelRefFactory.service'
+import { NotebookOriginalModelReferenceFactory } from 'vs/workbench/contrib/notebook/browser/contrib/chatEdit/notebookOriginalModelRefFactory'
+import { INotebookModelSynchronizerFactory } from 'vs/workbench/contrib/notebook/browser/contrib/chatEdit/notebookSynchronizer.service'
+import { NotebookModelSynchronizerFactory } from 'vs/workbench/contrib/notebook/browser/contrib/chatEdit/notebookSynchronizer'
+import { OriginalNotebookCellModelFactory } from 'vs/workbench/contrib/notebook/browser/contrib/chatEdit/notebookOriginalCellModelFactory'
 import 'vs/workbench/contrib/notebook/browser/notebook.contribution'
 
 export default function getServiceOverride(): IEditorOverrideServices {
@@ -73,6 +81,26 @@ export default function getServiceOverride(): IEditorOverrideServices {
     [INotebookSearchService.toString()]: new SyncDescriptor(NotebookSearchService, [], true),
     [INotebookDocumentService.toString()]: new SyncDescriptor(
       NotebookDocumentWorkbenchService,
+      [],
+      true
+    ),
+    [INotebookSynchronizerService.toString()]: new SyncDescriptor(
+      NotebookSynchronizerService,
+      [],
+      true
+    ),
+    [INotebookOriginalCellModelFactory.toString()]: new SyncDescriptor(
+      OriginalNotebookCellModelFactory,
+      [],
+      true
+    ),
+    [INotebookOriginalModelReferenceFactory.toString()]: new SyncDescriptor(
+      NotebookOriginalModelReferenceFactory,
+      [],
+      true
+    ),
+    [INotebookModelSynchronizerFactory.toString()]: new SyncDescriptor(
+      NotebookModelSynchronizerFactory,
       [],
       true
     )

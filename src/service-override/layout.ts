@@ -36,8 +36,10 @@ import { IHostService } from 'vs/workbench/services/host/browser/host.service'
 import { ICodeEditorService } from 'vs/editor/browser/services/codeEditorService'
 import { getMenuBarVisibility, getTitleBarStyle } from 'vs/platform/window/common/window'
 import type { IDisposable } from '@xterm/headless'
+import type { IViewSize } from 'vs/base/browser/ui/grid/gridview'
 import { onRenderWorkbench } from '../lifecycle'
 import { getWorkbenchContainer } from '../workbench'
+import { unsupported } from '../tools'
 
 export class LayoutService extends Disposable implements ILayoutService, IWorkbenchLayoutService {
   declare readonly _serviceBrand: undefined
@@ -71,6 +73,17 @@ export class LayoutService extends Disposable implements ILayoutService, IWorkbe
     document.body.classList.add(platformClass)
     document.body.classList.add('web')
   }
+
+  getSize(part: Parts): IViewSize {
+    return (
+      this.getPart(part)?.dimension ?? {
+        height: 0,
+        width: 0
+      }
+    )
+  }
+
+  setSize = unsupported
 
   whenContainerStylesLoaded(): undefined {
     return undefined

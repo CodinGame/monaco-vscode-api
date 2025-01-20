@@ -41,6 +41,8 @@ import { IChatEditingService } from 'vs/workbench/contrib/chat/common/chatEditin
 import { ChatEditingService } from 'vs/workbench/contrib/chat/browser/chatEditing/chatEditingService'
 import { LanguageModelIgnoredFilesService } from 'vs/workbench/contrib/chat/common/ignoredFiles'
 import { ILanguageModelIgnoredFilesService } from 'vs/workbench/contrib/chat/common/ignoredFiles.service'
+import { IChatQuotasService } from 'vs/workbench/contrib/chat/browser/chatQuotasService.service'
+import { ChatQuotasService } from 'vs/workbench/contrib/chat/browser/chatQuotasService'
 export default function getServiceOverride(): IEditorOverrideServices {
   return {
     [IChatService.toString()]: new SyncDescriptor(ChatService, [], true),
@@ -84,6 +86,7 @@ export default function getServiceOverride(): IEditorOverrideServices {
       true
     ),
     [ICodeMapperService.toString()]: new SyncDescriptor(CodeMapperService, [], true),
-    [IChatEditingService.toString()]: new SyncDescriptor(ChatEditingService, [], true)
+    [IChatEditingService.toString()]: new SyncDescriptor(ChatEditingService, [], true),
+    [IChatQuotasService.toString()]: new SyncDescriptor(ChatQuotasService, [], true)
   }
 }
