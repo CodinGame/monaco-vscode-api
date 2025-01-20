@@ -175,14 +175,6 @@ export function transformVSCodeCode(id: string, code: string): string {
         }
       } else if (node.callee.type === 'Identifier' && isCallPure(id, node.callee.name, node)) {
         path.replace(addComment(node))
-      } else if (node.callee.type === 'FunctionExpression') {
-        const lastInstruction = node.callee.body.body[node.callee.body.body.length - 1]
-        const lastInstructionIsReturn =
-          lastInstruction?.type === 'ReturnStatement' && lastInstruction.argument != null
-        if (node.arguments.length > 0 || lastInstructionIsReturn) {
-          // heuristic: mark IIFE with parameters or with a return as pure, because typescript compile enums as IIFE
-          path.replace(addComment(node))
-        }
       }
       this.traverse(path)
     },
