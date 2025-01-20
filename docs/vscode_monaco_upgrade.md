@@ -8,11 +8,11 @@
 
 - Get The tag of the VSCode version from the [VSCode github](https://github.com/microsoft/vscode/tags)
 - Go to the VSCode repo directory, reset to the previous VSCode tag (`config.vscode.ref` from monaco-vscode-api `package.json`)
-- Apply the current patch: `git am ../monaco-vscode-api/vscode-paches/*.patch`
+- Apply the current patch: `git am ../monaco-vscode-api/vscode-patches/*.patch`
 - Fetch the new tag: `git fetch origin <tag>`
 - rebase on the new tag: `git rebase <tag>`
 - Resolve conflicts / update code (e.g. broken imports)
-- Generate new patch: `rm -rf ../monaco-vscode-api/vscode-paches && git format-patch --zero-commit --no-numbered --no-signature <tag>.. -o '../monaco-vscode-api/vscode-paches'`
+- Generate new patch: `rm -rf ../monaco-vscode-api/vscode-patches && git format-patch --zero-commit --no-numbered --no-signature <tag>.. -o '../monaco-vscode-api/vscode-patches'`
 
 ## monaco-vscode-api repository
 

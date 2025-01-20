@@ -8,7 +8,7 @@ package_json="`pwd`/package.json"
 output_directory="`pwd`/vscode"
 loc_output_directory="`pwd`/vscode-loc"
 extension_output_directory="`pwd`/vscode-default-extensions"
-patch_directory="`pwd`/vscode-paches"
+patch_directory="`pwd`/vscode-patches"
 version_info=$output_directory/version.info
 
 if [[ -e $version_info && $(cat $version_info) == $vscodeRef ]]; then
