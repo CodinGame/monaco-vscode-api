@@ -321,7 +321,6 @@
     "esbuild": "^0.24.0"
   },
   "volta": {
-    "node": "20.18.0",
-    "npm": "10.9.0"
+    "extends": "../package.json"
   }
 }
