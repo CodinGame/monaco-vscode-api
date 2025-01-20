@@ -4,6 +4,7 @@
   "version": "0.0.0",
   "type": "module",
   "scripts": {
+    "update-local-dependencies": "node --loader ts-node/esm update-local-dependencies.ts",
     "clean": "tsc -b -c",
     "start": "vite --config vite.config.ts",
     "start:debug": "vite --config vite.config.ts --debug --force",

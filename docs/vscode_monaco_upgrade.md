@@ -31,6 +31,11 @@
   - Implement improvements dependening on the new features available from vscode (optional)
   - Don't forget to check the `Window` output (in the `OUTPUT` panel tab) to check for errors
 
+## monaco-vscode-api demo
+
+- In the demo, run `npm run update-local-dependencies`
+- Then make sure to install the new versions of the dependencies: `rm -rf node_modules package-lock.json && npm install`
+
 ## Hints
 
 Use repo log viewers and check the last update branch when in doubt
