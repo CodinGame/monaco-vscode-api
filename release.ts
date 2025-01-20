@@ -5,6 +5,7 @@ import semanticRelease, { type Options as SemanticReleaseOptions } from 'semanti
 import { $ } from 'zx'
 import yargs, { type Options } from 'yargs'
 import semanticReleaseConfig from '@codingame/semantic-release-config-github'
+import type { PackageJson } from 'type-fest'
 import path from 'path'
 import fs from 'fs/promises'
 import syncFs from 'fs'
@@ -17,24 +18,29 @@ if (NPM_TOKEN == null) {
   throw new Error('env.NPM_TOKEN must be set')
 }
 
+const ALIASES: Record<string, string> = {
+  vscode: '@codingame/monaco-vscode-api',
+  'monaco-editor': '@codingame/monaco-vscode-editor-api'
+}
+
 async function publishNpm(version: string, tag: string) {
   const distDir = path.resolve(__dirname, 'dist/packages')
   for (const dirName of await fs.readdir(distDir)) {
     const libDir = path.resolve(distDir, dirName)
     const packageJsonFile = path.resolve(libDir, 'package.json')
     if (syncFs.existsSync(packageJsonFile)) {
-      const packageJson = JSON.parse((await fs.readFile(packageJsonFile)).toString())
+      const packageJson: PackageJson = JSON.parse((await fs.readFile(packageJsonFile)).toString())
       packageJson.version = version
-      if (packageJson.dependencies?.vscode != null) {
-        packageJson.dependencies.vscode = `npm:@codingame/monaco-vscode-api@${version}`
-      }
-      if (packageJson.dependencies?.['monaco-editor'] != null) {
-        packageJson.dependencies['monaco-editor'] =
-          `npm:@codingame/monaco-vscode-editor-api@${version}`
-      }
-      for (const dependency in packageJson.dependencies) {
-        if (dependency.startsWith('@codingame/monaco-vscode-')) {
-          packageJson.dependencies[dependency] = version
+
+      for (const dependencies of [
+        packageJson.dependencies,
+        packageJson.peerDependencies,
+        packageJson.optionalDependencies
+      ]) {
+        for (const dependency in dependencies) {
+          const alias = ALIASES[dependency]
+          const packageVersion = alias != null ? `npm:${alias}@${version}` : version
+          dependencies[dependency] = packageVersion
         }
       }
       await fs.writeFile(
