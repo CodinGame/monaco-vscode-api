@@ -2,6 +2,7 @@ import * as rollup from 'rollup'
 import * as babylonParser from 'recast/parsers/babylon.js'
 import * as recast from 'recast'
 import ts from 'typescript'
+import thenby from 'thenby'
 import * as fs from 'node:fs'
 import * as nodePath from 'node:path'
 import {
@@ -12,6 +13,8 @@ import {
   VSCODE_DIR,
   VSCODE_SRC_DIR
 } from './config.js'
+
+const { firstBy } = thenby
 
 const PURE_ANNO = '#__PURE__'
 const PURE_FUNCTIONS = new Set([
@@ -113,14 +116,7 @@ function getMemberExpressionPath(
   return null
 }
 
-const nlsKeys: [moduleId: string, keys: string[]][] = []
-let nlsIndex = 0
 export function transformVSCodeCode(id: string, code: string): string {
-  const translationPath = nodePath
-    .relative(id.startsWith(OVERRIDE_PATH) ? OVERRIDE_PATH : VSCODE_SRC_DIR, id)
-    .slice(0, -3) // remove extension
-    .replace(/\._[^/.]*/g, '') // remove own refactor module suffixes
-
   // HACK: assign typescript decorator result to a decorated class field so rollup doesn't remove them
   // before:
   // __decorate([
@@ -136,8 +132,6 @@ export function transformVSCodeCode(id: string, code: string): string {
     /(^__decorate\(\[\n.*\n\], (.*).prototype)/gm,
     '$2.__decorator = $1'
   )
-
-  const moduleNlsKeys: string[] = []
 
   const ast = recast.parse(patchedCode, {
     parser: babylonParser
@@ -169,47 +163,7 @@ export function transformVSCodeCode(id: string, code: string): string {
           ? getMemberExpressionPath(node.callee)
           : null
 
-      if (name != null && (name.endsWith('localize') || name.endsWith('localize2'))) {
-        let localizationKey: string
-        if (path.node.arguments[0]?.type === 'StringLiteral') {
-          localizationKey = path.node.arguments[0].value
-        } else if (path.node.arguments[0]?.type === 'ObjectExpression') {
-          const properties = path.node.arguments[0].properties
-          const keyProperty = properties.find<recast.types.namedTypes.ObjectProperty>(
-            (prop): prop is recast.types.namedTypes.ObjectProperty =>
-              prop.type === 'ObjectProperty' &&
-              prop.key.type === 'Identifier' &&
-              prop.key.name === 'key'
-          )
-          if (keyProperty == null) {
-            throw new Error('No key property')
-          }
-          if (keyProperty.value.type !== 'StringLiteral') {
-            throw new Error('Key property is not literal')
-          }
-          localizationKey = keyProperty.value.value
-        } else if (
-          path.node.arguments[0]?.type === 'TemplateLiteral' &&
-          path.node.arguments[0].expressions.length === 0 &&
-          path.node.arguments[0].quasis.length === 1
-        ) {
-          localizationKey = path.node.arguments[0].quasis[0]!.value.raw
-        } else {
-          throw new Error('Unable to extract translation key')
-        }
-
-        let moduleNlsIndex = moduleNlsKeys.indexOf(localizationKey)
-        if (moduleNlsIndex === -1) {
-          moduleNlsIndex = moduleNlsKeys.push(localizationKey) - 1
-        }
-        path.replace(
-          recast.types.builders.callExpression(path.node.callee, [
-            recast.types.builders.numericLiteral(nlsIndex + moduleNlsIndex),
-            ...path.node.arguments.slice(1)
-          ])
-        )
-        transformed = true
-      } else if (node.callee.type === 'MemberExpression') {
+      if (node.callee.type === 'MemberExpression') {
         if (node.callee.property.type === 'Identifier') {
           const names: string[] = [node.callee.property.name]
           if (name != null) {
@@ -315,11 +269,6 @@ export function transformVSCodeCode(id: string, code: string): string {
     patchedCode = patchedCode.replace(/\/\*#__PURE__\*\/\s+/g, '/*#__PURE__*/ ') // Remove space after PURE comment
   }
 
-  if (moduleNlsKeys.length > 0) {
-    nlsKeys.push([translationPath, moduleNlsKeys])
-    nlsIndex += moduleNlsKeys.length
-  }
-
   return patchedCode
 }
 
@@ -374,6 +323,96 @@ export function resolveVscodePlugin(): rollup.Plugin {
 
       const content = (await fs.promises.readFile(id)).toString('utf-8')
       return transformVSCodeCode(id, content)
+    }
+  }
+}
+
+export function vscodeLocalizationPlugin(): rollup.Plugin {
+  const nlsKeys: [moduleId: string, keys: string[]][] = []
+  let nlsIndex = 0
+
+  return {
+    name: 'transform-localization',
+    async generateBundle(options, bundle) {
+      const orderedChunks = Object.values(bundle)
+        .filter(
+          (chunk): chunk is rollup.OutputChunk =>
+            chunk.type === 'chunk' && chunk.fileName.endsWith('.js') && chunk.moduleIds.length === 1
+        )
+        .sort(firstBy((chunk) => chunk.fileName))
+
+      for (const chunk of orderedChunks) {
+        const id = chunk.moduleIds[0]!
+        const translationPath = nodePath
+          .relative(id.startsWith(OVERRIDE_PATH) ? OVERRIDE_PATH : VSCODE_SRC_DIR, id)
+          .slice(0, -3) // remove extension
+          .replace(/\._[^/.]*/g, '') // remove own refactor module suffixes
+
+        const moduleNlsKeys: string[] = []
+        const ast = recast.parse(chunk.code, {
+          parser: babylonParser
+        })
+        recast.visit(ast.program.body, {
+          visitCallExpression(path) {
+            const node = path.node
+            const name =
+              node.callee.type === 'MemberExpression' || node.callee.type === 'Identifier'
+                ? getMemberExpressionPath(node.callee)
+                : null
+
+            if (name != null && (name.endsWith('localize') || name.endsWith('localize2'))) {
+              let localizationKey: string
+              if (path.node.arguments[0]?.type === 'StringLiteral') {
+                localizationKey = path.node.arguments[0].value
+              } else if (path.node.arguments[0]?.type === 'ObjectExpression') {
+                const properties = path.node.arguments[0].properties
+                const keyProperty = properties.find<recast.types.namedTypes.ObjectProperty>(
+                  (prop): prop is recast.types.namedTypes.ObjectProperty =>
+                    prop.type === 'ObjectProperty' &&
+                    prop.key.type === 'Identifier' &&
+                    prop.key.name === 'key'
+                )
+                if (keyProperty == null) {
+                  throw new Error('No key property')
+                }
+                if (keyProperty.value.type !== 'StringLiteral') {
+                  throw new Error('Key property is not literal')
+                }
+                localizationKey = keyProperty.value.value
+              } else if (
+                path.node.arguments[0]?.type === 'TemplateLiteral' &&
+                path.node.arguments[0].expressions.length === 0 &&
+                path.node.arguments[0].quasis.length === 1
+              ) {
+                localizationKey = path.node.arguments[0].quasis[0]!.value.raw
+              } else {
+                throw new Error('Unable to extract translation key')
+              }
+
+              let moduleNlsIndex = moduleNlsKeys.indexOf(localizationKey)
+              if (moduleNlsIndex === -1) {
+                moduleNlsIndex = moduleNlsKeys.push(localizationKey) - 1
+              }
+              path.replace(
+                recast.types.builders.callExpression(path.node.callee, [
+                  recast.types.builders.numericLiteral(nlsIndex + moduleNlsIndex),
+                  ...path.node.arguments.slice(1)
+                ])
+              )
+            }
+            this.traverse(path)
+          }
+        })
+
+        if (moduleNlsKeys.length > 0) {
+          chunk.code = recast.print(ast).code
+
+          nlsKeys.push([translationPath, moduleNlsKeys])
+          nlsIndex += moduleNlsKeys.length
+        }
+      }
+
+      nlsKeys.sort(firstBy(([moduleId]) => moduleId))
     },
     async writeBundle() {
       await fs.promises.writeFile(

@@ -134,7 +134,7 @@ export function configuredSubpackagePlugin(): rollup.Plugin {
         })
         .join(', ')
       return {
-        name: `@codingame/monaco-vscode-${uuidv5(Array.from(groups.values()).join('-'), COMMON_PACKAGE_NAME_UUID_NAMESPACE)}-common`,
+        name: `@codingame/monaco-vscode-${uuidv5(Array.from(groups.values()).sort().join('-'), COMMON_PACKAGE_NAME_UUID_NAMESPACE)}-common`,
         version: '0.0.0-semantic-release',
         description: `${pkg.description} - common package (${name})`
       }

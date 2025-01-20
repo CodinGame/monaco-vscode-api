@@ -12,7 +12,11 @@ import * as fs from 'node:fs'
 import * as nodePath from 'node:path'
 import carryDtsPlugin from './plugins/rollup-carry-dts-plugin.js'
 import { configuredSubpackagePlugin } from './tools/configuredSubpackagePlugin.js'
-import { relativizeVscodeImportsTransformer, resolveVscodePlugin } from './tools/vscode.js'
+import {
+  relativizeVscodeImportsTransformer,
+  resolveVscodePlugin,
+  vscodeLocalizationPlugin
+} from './tools/vscode.js'
 import vscodeAssetGlobMetaUrl from './plugins/vscode-asset-glob-meta-url-plugin.js'
 import dynamicImportPolyfillPlugin from './plugins/dynamic-import-polyfill-plugin.js'
 import resolveAssetUrlPlugin from './plugins/resolve-asset-url-plugin.js'
@@ -121,6 +125,7 @@ export default (args: Record<string, string>): rollup.RollupOptions[] => {
           transformers: [typeDedupReplaceTransformer]
         }),
         resolveVscodePlugin(),
+        vscodeLocalizationPlugin(),
         typescript({
           noEmitOnError: true,
           tsconfig: TSCONFIG,

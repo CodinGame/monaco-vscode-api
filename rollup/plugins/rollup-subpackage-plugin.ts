@@ -488,7 +488,6 @@ export default ({
                     Array.from(this.getModuleIds())
                       .map((id) => this.getModuleInfo(id)!)
                       .filter((infos) => infos.isExternal)
-                      .sort()
                       .flatMap((infos): SubPackageExternalDependency[] => {
                         const match = /^(?:@[^/]*\/)?[^/]*/.exec(infos.id)
                         if (match != null && !builtinModules.includes(match[0])) {
@@ -532,7 +531,7 @@ export default ({
                         return map
                       }, new Map<string, SubPackageExternalDependency>())
                       .values()
-                  )
+                  ).sort(firstBy((d) => d.name))
 
                   const entrypoints = new Set(
                     groupSet.groups.size === 1
