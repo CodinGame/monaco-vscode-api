@@ -6,21 +6,20 @@ Subject: [PATCH] fix: change syntax that language service refactor doesn't
 
 the re-exports source are removed during "Move to new file" refactor
 ---
- src/vs/workbench/contrib/tasks/common/taskService.ts | 4 +++-
- 1 file changed, 3 insertions(+), 1 deletion(-)
+ src/vs/workbench/contrib/tasks/common/taskService.ts | 3 ++-
+ 1 file changed, 2 insertions(+), 1 deletion(-)
 
 diff --git a/src/vs/workbench/contrib/tasks/common/taskService.ts b/src/vs/workbench/contrib/tasks/common/taskService.ts
-index 37cb20ffba3..cc2d2ffd6f0 100644
+index 37cb20ffba3..33181863c94 100644
 --- a/src/vs/workbench/contrib/tasks/common/taskService.ts
 +++ b/src/vs/workbench/contrib/tasks/common/taskService.ts
-@@ -15,7 +15,9 @@ import { ITaskSummary, ITaskTerminateResponse, ITaskSystemInfo } from './taskSys
+@@ -15,7 +15,8 @@ import { ITaskSummary, ITaskTerminateResponse, ITaskSystemInfo } from './taskSys
  import { IStringDictionary } from '../../../../base/common/collections.js';
  import { RawContextKey, ContextKeyExpr } from '../../../../platform/contextkey/common/contextkey.js';
  
 -export type { ITaskSummary, Task, ITaskTerminateResponse as TaskTerminateResponse };
-+export type { ITaskSummary } from 'vs/workbench/contrib/tasks/common/taskSystem';
-+export type { Task } from 'vs/workbench/contrib/tasks/common/tasks';
-+export type { ITaskTerminateResponse as TaskTerminateResponse } from 'vs/workbench/contrib/tasks/common/taskSystem';
++export type { Task } from './tasks.js';
++export type { ITaskSummary, ITaskTerminateResponse as TaskTerminateResponse } from './taskSystem.js';
  
  export const CustomExecutionSupportedContext = new RawContextKey<boolean>('customExecutionSupported', false, nls.localize('tasks.customExecutionSupported', "Whether CustomExecution tasks are supported. Consider using in the when clause of a \'taskDefinition\' contribution."));
  export const ShellExecutionSupportedContext = new RawContextKey<boolean>('shellExecutionSupported', false, nls.localize('tasks.shellExecutionSupported', "Whether ShellExecution tasks are supported. Consider using in the when clause of a \'taskDefinition\' contribution."));
