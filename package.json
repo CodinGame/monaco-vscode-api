@@ -24,8 +24,8 @@
     "compile-rollup-plugins": "rollup --config rollup/rollup.rollup-plugins.config.ts --configPlugin 'typescript={tsconfig: `tsconfig.rollup-config-plugins.json`, include: [`./rollup/rollup.rollup-plugins.config.ts`, `./rollup/rollup-metadata-plugin.ts`]}'",
     "preprepare": "patch-package && ./scripts/install-vscode && ./scripts/install-monaco-editor",
     "lint": "eslint '{src/**/*.ts,rollup/*.ts,*.ts}'",
-    "update-vscode-dependencies": "node --loader ts-node/esm scripts/update-vscode-dependencies.ts",
-    "release": "node --loader ts-node/esm release.ts",
+    "update-vscode-dependencies": "tsx scripts/update-vscode-dependencies.ts",
+    "release": "tsx release.ts",
     "reset:repo": "git clean -f -X -d"
   },
   "config": {
@@ -90,7 +90,7 @@
     "rollup-plugin-styles": "^4.0.0",
     "semantic-release": "23.1.1",
     "semver": "^7.6.3",
-    "ts-node": "^10.9.2",
+    "tsx": "^4.19.2",
     "type-fest": "^4.32.0",
     "typescript": "^5.7.3",
     "uuid": "^11.0.5",

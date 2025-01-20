@@ -4,7 +4,7 @@
   "version": "0.0.0",
   "type": "module",
   "scripts": {
-    "update-local-dependencies": "node --loader ts-node/esm update-local-dependencies.ts",
+    "update-local-dependencies": "tsx update-local-dependencies.ts",
     "clean": "tsc -b -c",
     "start": "vite --config vite.config.ts",
     "start:debug": "vite --config vite.config.ts --debug --force",
@@ -13,26 +13,21 @@
     "check-build": "npm run lint && npm run typecheck",
     "build": "npm run check-build && vite --config vite.config.ts build",
     "build:netlify": "npm run check-build && vite --config vite.netlify.config.ts build",
-    "start:debugServer": "node --loader ts-node/esm src/debugServer.ts"
+    "start:debugServer": "tsx src/debugServer.ts"
   },
   "devDependencies": {
     "@codingame/esbuild-import-meta-url-plugin": "^1.0.2",
+    "@codingame/monaco-vscode-rollup-extension-directory-plugin": "file:../dist/packages/monaco-vscode-rollup-extension-directory-plugin",
+    "@codingame/monaco-vscode-rollup-vsix-plugin": "file:../dist/packages/monaco-vscode-rollup-vsix-plugin",
     "@types/dockerode": "^3.3.34",
     "@types/express": "^5.0.0",
     "@types/node": "^20.11.4",
     "@types/wicg-file-system-access": "^2023.10.5",
     "@types/ws": "^8.5.13",
-    "ts-node": "^10.9.2",
     "typescript": "~5.7.3",
-    "vite": "~6.0.9",
-    "@codingame/monaco-vscode-rollup-extension-directory-plugin": "file:../dist/packages/monaco-vscode-rollup-extension-directory-plugin",
-    "@codingame/monaco-vscode-rollup-vsix-plugin": "file:../dist/packages/monaco-vscode-rollup-vsix-plugin"
+    "vite": "~6.0.9"
   },
   "dependencies": {
-    "ansi-colors": "^4.1.3",
-    "dockerode": "^4.0.4",
-    "express": "^4.21.2",
-    "ws": "^8.18.0",
     "@codingame/monaco-vscode-0139c6af-2375-559c-af57-b738f2fd6d8e-common": "file:../dist/packages/monaco-vscode-0139c6af-2375-559c-af57-b738f2fd6d8e-common",
     "@codingame/monaco-vscode-039b5553-0838-562a-97c2-30d6e54a7b42-common": "file:../dist/packages/monaco-vscode-039b5553-0838-562a-97c2-30d6e54a7b42-common",
     "@codingame/monaco-vscode-0c06bfba-d24d-5c4d-90cd-b40cefb7f811-common": "file:../dist/packages/monaco-vscode-0c06bfba-d24d-5c4d-90cd-b40cefb7f811-common",
@@ -114,7 +109,6 @@
     "@codingame/monaco-vscode-all-default-extensions": "file:../dist/packages/monaco-vscode-all-default-extensions",
     "@codingame/monaco-vscode-all-language-default-extensions": "file:../dist/packages/monaco-vscode-all-language-default-extensions",
     "@codingame/monaco-vscode-all-language-feature-default-extensions": "file:../dist/packages/monaco-vscode-all-language-feature-default-extensions",
-    "vscode": "file:../dist/packages/monaco-vscode-api",
     "@codingame/monaco-vscode-authentication-service-override": "file:../dist/packages/monaco-vscode-authentication-service-override",
     "@codingame/monaco-vscode-b8988f79-16c1-5bff-b0e7-699bab3431da-common": "file:../dist/packages/monaco-vscode-b8988f79-16c1-5bff-b0e7-699bab3431da-common",
     "@codingame/monaco-vscode-b99aef83-0d60-5e8c-a62e-9908b6256f35-common": "file:../dist/packages/monaco-vscode-b99aef83-0d60-5e8c-a62e-9908b6256f35-common",
@@ -163,7 +157,6 @@
     "@codingame/monaco-vscode-eba0b9b3-174c-5dae-9867-a37810ca1808-common": "file:../dist/packages/monaco-vscode-eba0b9b3-174c-5dae-9867-a37810ca1808-common",
     "@codingame/monaco-vscode-ec8bccd1-de68-51de-8c50-96b0da4a712f-common": "file:../dist/packages/monaco-vscode-ec8bccd1-de68-51de-8c50-96b0da4a712f-common",
     "@codingame/monaco-vscode-edit-sessions-service-override": "file:../dist/packages/monaco-vscode-edit-sessions-service-override",
-    "monaco-editor": "file:../dist/packages/monaco-vscode-editor-api",
     "@codingame/monaco-vscode-editor-service-override": "file:../dist/packages/monaco-vscode-editor-service-override",
     "@codingame/monaco-vscode-emmet-default-extension": "file:../dist/packages/monaco-vscode-emmet-default-extension",
     "@codingame/monaco-vscode-emmet-service-override": "file:../dist/packages/monaco-vscode-emmet-service-override",
@@ -315,7 +308,13 @@
     "@codingame/monaco-vscode-working-copy-service-override": "file:../dist/packages/monaco-vscode-working-copy-service-override",
     "@codingame/monaco-vscode-workspace-trust-service-override": "file:../dist/packages/monaco-vscode-workspace-trust-service-override",
     "@codingame/monaco-vscode-xml-default-extension": "file:../dist/packages/monaco-vscode-xml-default-extension",
-    "@codingame/monaco-vscode-yaml-default-extension": "file:../dist/packages/monaco-vscode-yaml-default-extension"
+    "@codingame/monaco-vscode-yaml-default-extension": "file:../dist/packages/monaco-vscode-yaml-default-extension",
+    "ansi-colors": "^4.1.3",
+    "dockerode": "^4.0.4",
+    "express": "^4.21.2",
+    "monaco-editor": "file:../dist/packages/monaco-vscode-editor-api",
+    "vscode": "file:../dist/packages/monaco-vscode-api",
+    "ws": "^8.18.0"
   },
   "overrides": {
     "esbuild": "^0.24.0"
