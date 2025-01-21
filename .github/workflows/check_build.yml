@@ -27,7 +27,7 @@ jobs:
     - name: Install build dependencies
       run: |
         sudo apt-get update
-        sudo apt-get install libkrb5-dev
+        sudo apt-get install libkrb5-dev libxkbfile-dev libx11-6
     - name: Volta
       uses: volta-cli/action@v4
     - name: Install dependencies

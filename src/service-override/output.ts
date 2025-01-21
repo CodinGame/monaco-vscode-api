@@ -1,4 +1,4 @@
-import { IEditorOverrideServices } from 'vs/editor/standalone/browser/standaloneServices'
+import type { IEditorOverrideServices } from 'vs/editor/standalone/browser/standaloneServices'
 import { LogLevel } from 'vs/platform/log/common/log'
 import { SyncDescriptor } from 'vs/platform/instantiation/common/descriptors'
 import { OutputService } from 'vs/workbench/contrib/output/browser/outputServices'

@@ -1,21 +1,19 @@
 import { Event } from 'vs/base/common/event'
-import { IDisposable } from 'vs/base/common/lifecycle'
+import type { IDisposable } from 'vs/base/common/lifecycle'
 import {
-  IStorage,
-  IStorageDatabase,
-  IStorageItemsChangeEvent,
-  IUpdateRequest,
+  type IStorage,
+  type IStorageDatabase,
+  type IStorageItemsChangeEvent,
+  type IUpdateRequest,
   Storage
 } from 'vs/base/parts/storage/common/storage'
-import { IEditorOverrideServices } from 'vs/editor/standalone/browser/standaloneServices'
+import type { IEditorOverrideServices } from 'vs/editor/standalone/browser/standaloneServices'
 import { SyncDescriptor } from 'vs/platform/instantiation/common/descriptors'
 import {
   AbstractStorageService,
   StorageScope as VSStorageScope
 } from 'vs/platform/storage/common/storage'
 import { IStorageService } from 'vs/platform/storage/common/storage.service'
-import { IUserDataProfile } from 'vs/platform/userDataProfile/common/userDataProfile'
-import { IAnyWorkspaceIdentifier } from 'vs/platform/workspace/common/workspace'
 import { BrowserStorageService } from 'vs/workbench/services/storage/browser/storageService'
 import { ILogService } from 'vs/platform/log/common/log.service'
 import { IUserDataProfileService } from 'vs/workbench/services/userDataProfile/common/userDataProfile.service'
@@ -160,7 +158,7 @@ class ExternalStorageService extends AbstractStorageService {
     // no-op
   }
 
-  hasScope(_scope: IAnyWorkspaceIdentifier | IUserDataProfile): boolean {
+  hasScope(): boolean {
     return false
   }
 
@@ -321,8 +319,5 @@ export default function getStorageServiceOverride({
   }
 }
 
-export {
-  IStorageItemsChangeEvent,
-  ExternalStorageService,
-  InjectedBrowserStorageService as BrowserStorageService
-}
+export { ExternalStorageService, InjectedBrowserStorageService as BrowserStorageService }
+export type { IStorageItemsChangeEvent }

@@ -1,5 +1,5 @@
 import { NotificationsToasts } from 'vs/workbench/browser/parts/notifications/notificationsToasts'
-import { IEditorOverrideServices } from 'vs/editor/standalone/browser/standaloneServices'
+import { type IEditorOverrideServices } from 'vs/editor/standalone/browser/standaloneServices'
 import { IInstantiationService } from 'vs/platform/instantiation/common/instantiation'
 import { NotificationService } from 'vs/workbench/services/notification/common/notificationService'
 import { INotificationService } from 'vs/platform/notification/common/notification.service'

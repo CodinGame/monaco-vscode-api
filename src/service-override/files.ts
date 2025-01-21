@@ -1,5 +1,5 @@
 import {
-  IEditorOverrideServices,
+  type IEditorOverrideServices,
   StandaloneServices
 } from 'vs/editor/standalone/browser/standaloneServices'
 import { SyncDescriptor } from 'vs/platform/instantiation/common/descriptors'
@@ -14,34 +14,39 @@ import {
   FilePermission,
   FileSystemProviderCapabilities,
   FileType,
-  IFileSystemProvider,
+  type IFileSystemProvider,
   createFileSystemProviderError,
   FileSystemProviderError,
   FileSystemProviderErrorCode,
-  IFileChange,
-  IFileDeleteOptions,
-  IFileOverwriteOptions,
-  IFileSystemProviderWithFileReadWriteCapability,
-  IFileWriteOptions,
-  IStat,
-  IWatchOptions,
-  IFileSystemProviderWithOpenReadWriteCloseCapability,
-  IFileSystemProviderWithFileReadStreamCapability,
-  IFileReadStreamOptions,
-  IFileSystemProviderWithFileAtomicReadCapability,
-  IFileSystemProviderWithFileAtomicWriteCapability,
-  IFileSystemProviderWithFileAtomicDeleteCapability,
+  type IFileChange,
+  type IFileDeleteOptions,
+  type IFileOverwriteOptions,
+  type IFileSystemProviderWithFileReadWriteCapability,
+  type IFileWriteOptions,
+  type IStat,
+  type IWatchOptions,
+  type IFileSystemProviderWithOpenReadWriteCloseCapability,
+  type IFileSystemProviderWithFileReadStreamCapability,
+  type IFileReadStreamOptions,
+  type IFileSystemProviderWithFileAtomicReadCapability,
+  type IFileSystemProviderWithFileAtomicWriteCapability,
+  type IFileSystemProviderWithFileAtomicDeleteCapability,
   hasFileReadStreamCapability
 } from 'vs/platform/files/common/files'
-import { DisposableStore, IDisposable, Disposable, toDisposable } from 'vs/base/common/lifecycle'
+import {
+  DisposableStore,
+  type IDisposable,
+  Disposable,
+  toDisposable
+} from 'vs/base/common/lifecycle'
 import { extUri } from 'vs/base/common/resources'
 import { Emitter, Event } from 'vs/base/common/event'
 import { HTMLFileSystemProvider } from 'vs/platform/files/browser/htmlFileSystemProvider'
 import { Schemas } from 'vs/base/common/network'
 import {
   IndexedDBFileSystemProvider,
-  IndexedDBFileSystemProviderErrorData,
-  IndexedDBFileSystemProviderErrorDataClassification
+  type IndexedDBFileSystemProviderErrorData,
+  type IndexedDBFileSystemProviderErrorDataClassification
 } from 'vs/platform/files/browser/indexedDBFileSystemProvider'
 import { IndexedDB } from 'vs/base/browser/indexedDB'
 import { ITelemetryService } from 'vs/platform/telemetry/common/telemetry.service'
@@ -54,7 +59,7 @@ import { BrowserElevatedFileService } from 'vs/workbench/services/files/browser/
 import { IElevatedFileService } from 'vs/workbench/services/files/common/elevatedFileService.service'
 import * as resources from 'vs/base/common/resources'
 import { VSBuffer } from 'vs/base/common/buffer'
-import { ReadableStreamEvents, listenStream, newWriteableStream } from 'vs/base/common/stream'
+import { type ReadableStreamEvents, listenStream, newWriteableStream } from 'vs/base/common/stream'
 import { CancellationToken } from 'vs/base/common/cancellation'
 import { checkServicesNotInitialized, registerServiceInitializePreParticipant } from '../lifecycle'
 import { logsPath } from '../workbench'
@@ -572,7 +577,6 @@ class RegisteredFileSystemProvider
 
             await stream.write(res.value)
 
-            // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
             if (token.isCancellationRequested) {
               break
             }
@@ -916,7 +920,7 @@ class OverlayFileSystemProvider
       let stats: IStat | undefined
       try {
         stats = await delegate.stat(resource)
-      } catch (err) {
+      } catch {
         // ignore
       }
       if (stats != null && ((stats.permissions ?? 0) & FilePermission.Readonly) > 0) {
@@ -1069,6 +1073,7 @@ const userDataFileSystemProvider = new InMemoryFileSystemProvider()
 // The `mkdirp` logic is inside the service, and the provider will just fail if asked to write a file in a non-existent directory
 void userDataFileSystemProvider.mkdir(URI.from({ scheme: Schemas.vscodeUserData, path: '/User/' }))
 
+// eslint-disable-next-line @typescript-eslint/no-namespace
 export namespace CustomSchemas {
   /**
    * A schema that is used for models that exist in memory
@@ -1229,23 +1234,23 @@ export function registerHTMLFileSystemProvider(): void {
       StandaloneServices.get(ILogService).setLevel(level)
     }
 
-    trace(message: string, ...args: any[]): void {
+    trace(message: string, ...args: unknown[]): void {
       StandaloneServices.get(ILogService).trace(message, ...args)
     }
 
-    debug(message: string, ...args: any[]): void {
+    debug(message: string, ...args: unknown[]): void {
       StandaloneServices.get(ILogService).debug(message, ...args)
     }
 
-    info(message: string, ...args: any[]): void {
+    info(message: string, ...args: unknown[]): void {
       StandaloneServices.get(ILogService).info(message, ...args)
     }
 
-    warn(message: string, ...args: any[]): void {
+    warn(message: string, ...args: unknown[]): void {
       StandaloneServices.get(ILogService).warn(message, ...args)
     }
 
-    error(message: string | Error, ...args: any[]): void {
+    error(message: string | Error, ...args: unknown[]): void {
       StandaloneServices.get(ILogService).error(message, ...args)
     }
 
@@ -1286,17 +1291,10 @@ export function registerFileSystemOverlay(
 }
 
 export {
-  IFileSystemProviderWithFileReadWriteCapability,
   FileSystemProviderCapabilities,
   FileType,
-  IStat,
-  IWatchOptions,
-  IFileWriteOptions,
-  IFileDeleteOptions,
-  IFileOverwriteOptions,
   FileSystemProviderError,
   FileSystemProviderErrorCode,
-  IFileChange,
   FileChangeType,
   FilePermission,
   HTMLFileSystemProvider,
@@ -1311,4 +1309,13 @@ export {
   DelegateFileSystemProvider,
   OverlayFileSystemProvider,
   EmptyFileSystemProvider
+}
+export type {
+  IFileSystemProviderWithFileReadWriteCapability,
+  IStat,
+  IWatchOptions,
+  IFileWriteOptions,
+  IFileDeleteOptions,
+  IFileOverwriteOptions,
+  IFileChange
 }

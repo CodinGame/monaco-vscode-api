@@ -9,6 +9,7 @@ import { withReadyServices } from './services'
 export * from 'vs/editor/editor.api'
 
 declare module 'vs/editor/editor.api' {
+  // eslint-disable-next-line @typescript-eslint/no-namespace
   export namespace editor {
     export { createModelReference, writeFile }
   }

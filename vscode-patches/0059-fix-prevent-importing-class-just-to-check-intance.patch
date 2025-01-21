@@ -1,0 +1,30 @@
+From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
+From: =?UTF-8?q?Lo=C3=AFc=20Mangeonjean?= <loic@coderpad.io>
+Date: Mon, 6 Jan 2025 16:03:30 +0100
+Subject: [PATCH] fix: prevent importing class just to check intance
+
+---
+ src/vs/workbench/api/browser/mainThreadDocumentsAndEditors.ts | 3 +--
+ 1 file changed, 1 insertion(+), 2 deletions(-)
+
+diff --git a/src/vs/workbench/api/browser/mainThreadDocumentsAndEditors.ts b/src/vs/workbench/api/browser/mainThreadDocumentsAndEditors.ts
+index 4f5e72a58f7..a25b8d472dc 100644
+--- a/src/vs/workbench/api/browser/mainThreadDocumentsAndEditors.ts
++++ b/src/vs/workbench/api/browser/mainThreadDocumentsAndEditors.ts
+@@ -17,7 +17,6 @@ import { MainThreadDocuments } from './mainThreadDocuments.js';
+ import { MainThreadTextEditor } from './mainThreadEditor.js';
+ import { MainThreadTextEditors } from './mainThreadEditors.js';
+ import { ExtHostContext, ExtHostDocumentsAndEditorsShape, IDocumentsAndEditorsDelta, IModelAddedData, ITextEditorAddData, MainContext } from '../common/extHost.protocol.js';
+-import { AbstractTextEditor } from '../../browser/parts/editor/textEditor.js';
+ import { IEditorPane } from '../../common/editor.js';
+ import { EditorGroupColumn, editorGroupToColumn } from '../../services/editor/common/editorGroupColumn.js';
+ import { IEditorService } from '../../services/editor/common/editorService.js';
+@@ -254,7 +253,7 @@ class MainThreadDocumentAndEditorStateComputer {
+ 
+ 	private _getActiveEditorFromPanel(): IEditor | undefined {
+ 		const panel = this._paneCompositeService.getActivePaneComposite(ViewContainerLocation.Panel);
+-		if (panel instanceof AbstractTextEditor) {
++		if (panel !== undefined) {
+ 			const control = panel.getControl();
+ 			if (isCodeEditor(control)) {
+ 				return control;

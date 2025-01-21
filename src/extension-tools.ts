@@ -1,3 +1,6 @@
+// eslint-disable-next-line @typescript-eslint/triple-slash-reference
+/// <reference path="./types/css-url-parser.d.ts" />
+
 import type {
   IColorTheme,
   ICommand,
@@ -9,13 +12,12 @@ import type {
   ILanguage,
   ISnippet
 } from 'vs/platform/extensions/common/extensions'
-import { ParseError, parse } from 'vs/base/common/json.js'
+import { type ParseError, parse } from 'vs/base/common/json.js'
 import { getParseErrorMessage } from 'vs/base/common/jsonErrorMessages'
-import { IUserFriendlyViewsContainerDescriptor } from 'vs/workbench/api/browser/viewsExtensionPoint'
-// @ts-ignore
+import type { IUserFriendlyViewsContainerDescriptor } from 'vs/workbench/api/browser/viewsExtensionPoint'
 import parseCssUrl from 'css-url-parser'
 import * as mime from 'mime-types'
-import { FileSystemAdapter, glob } from 'fast-glob'
+import { type FileSystemAdapter, glob } from 'fast-glob'
 import * as path from 'path'
 import type nodeFs from 'node:fs'
 
@@ -297,7 +299,7 @@ async function extractResources(
       try {
         await fs.promises.access(path.join(cwd, assetPath))
         resources.push(assetPath)
-      } catch (err) {
+      } catch {
         // ignore, the file doesn't exist
         // It happens for the markdown-math extension without consequences
       }

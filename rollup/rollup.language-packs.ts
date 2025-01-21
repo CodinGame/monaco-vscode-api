@@ -1,12 +1,14 @@
 import nodeResolve from '@rollup/plugin-node-resolve'
 import * as rollup from 'rollup'
-import { IExtensionManifest } from 'vs/platform/extensions/common/extensions'
+import type { IExtensionManifest } from 'vs/platform/extensions/common/extensions'
 import { dataToEsm } from '@rollup/pluginutils'
-import { PackageJson } from 'type-fest'
+import type { PackageJson } from 'type-fest'
 import * as fs from 'fs'
 import * as path from 'path'
 import { fileURLToPath } from 'url'
 import * as fsPromise from 'fs/promises'
+import resolveAssetUrlPlugin from './plugins/resolve-asset-url-plugin.js'
+
 const pkg = JSON.parse(
   fs.readFileSync(new URL('../package.json', import.meta.url).pathname).toString()
 )
@@ -41,7 +43,7 @@ export default rollup.defineConfig([
             preserveModules: true,
             assetFileNames: '[name][extname]',
             format: 'esm',
-            dir: `dist/${name}`,
+            dir: `dist/packages/monaco-${name}`,
             entryFileNames: '[name].js',
             hoistTransitiveImports: false
           }
@@ -50,16 +52,7 @@ export default rollup.defineConfig([
           return source === 'vscode/l10n'
         },
         plugins: [
-          {
-            name: 'resolve-asset-url',
-            resolveFileUrl(options) {
-              let relativePath = options.relativePath
-              if (!relativePath.startsWith('.')) {
-                relativePath = `./${options.relativePath}`
-              }
-              return `'${relativePath}'`
-            }
-          },
+          resolveAssetUrlPlugin(),
           {
             name: 'loader',
             resolveId(source) {

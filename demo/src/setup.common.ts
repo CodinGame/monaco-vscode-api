@@ -342,7 +342,6 @@ export const constructOptions: IWorkbenchConstructionOptions = {
     logLevel: LogLevel.Info // Default value
   },
   configurationDefaults: {
-    // eslint-disable-next-line no-template-curly-in-string
     'window.title': 'Monaco-Vscode-Api${separator}${dirty}${activeEditorShort}'
   },
   defaultLayout: {
@@ -383,6 +382,7 @@ export const constructOptions: IWorkbenchConstructionOptions = {
       serviceUrl: 'https://open-vsx.org/vscode/gallery',
       itemUrl: 'https://open-vsx.org/vscode/item',
       resourceUrlTemplate: 'https://open-vsx.org/vscode/unpkg/{publisher}/{name}/{version}/{path}',
+      extensionUrlTemplate: '',
       controlUrl: '',
       nlsBaseUrl: '',
       publisherUrl: ''

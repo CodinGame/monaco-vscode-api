@@ -1,11 +1,11 @@
 import { WorkbenchThemeService } from 'vs/workbench/services/themes/browser/workbenchThemeService'
-import { IThemeExtensionPoint } from 'vs/workbench/services/themes/common/workbenchThemeService'
-import { IEditorOverrideServices } from 'vs/editor/standalone/browser/standaloneServices'
+import type { IThemeExtensionPoint } from 'vs/workbench/services/themes/common/workbenchThemeService'
+import type { IEditorOverrideServices } from 'vs/editor/standalone/browser/standaloneServices'
 import { IThemeService } from 'vs/platform/theme/common/themeService.service'
 import { SyncDescriptor } from 'vs/platform/instantiation/common/descriptors'
 import type { StandaloneThemeService } from 'vs/editor/standalone/browser/standaloneThemeService'
 import { ConfigurationTarget } from 'vs/platform/configuration/common/configuration'
-import { IDisposable } from 'vs/base/common/lifecycle'
+import type { IDisposable } from 'vs/base/common/lifecycle'
 import getFileServiceOverride from './files'
 import 'vs/workbench/contrib/themes/browser/themes.contribution'
 
@@ -44,4 +44,4 @@ export default function getServiceOverride(): IEditorOverrideServices {
   }
 }
 
-export { PartialIThemeExtensionPoint as IThemeExtensionPoint }
+export type { PartialIThemeExtensionPoint as IThemeExtensionPoint }

@@ -8,11 +8,11 @@
 
 - Get The tag of the VSCode version from the [VSCode github](https://github.com/microsoft/vscode/tags)
 - Go to the VSCode repo directory, reset to the previous VSCode tag (`config.vscode.ref` from monaco-vscode-api `package.json`)
-- Apply the current patch: `git am ../monaco-vscode-api/vscode-paches/*.patch`
+- Apply the current patch: `git am ../monaco-vscode-api/vscode-patches/*.patch`
 - Fetch the new tag: `git fetch origin <tag>`
 - rebase on the new tag: `git rebase <tag>`
 - Resolve conflicts / update code (e.g. broken imports)
-- Generate new patch: `rm -rf ../monaco-vscode-api/vscode-paches && git format-patch --zero-commit --no-numbered --no-signature <tag>.. -o '../monaco-vscode-api/vscode-paches'`
+- Generate new patch: `rm -rf ../monaco-vscode-api/vscode-patches && git format-patch --zero-commit --no-numbered --no-signature <tag>.. -o '../monaco-vscode-api/vscode-patches'`
 
 ## monaco-vscode-api repository
 
@@ -25,10 +25,16 @@
 - Fix errors, adapt code, build, include the `vscode-patches` directory into this commit
   - Do not hesitate to run the eslint autofix, it gets rid of the majority of your errors
   - Implement missing services. This is easily observable seem when running the demo (see next point)
+  - Make sure slightly transformed duplicated files are up to date with VSCode (in `src/assets`)
 - Update demo
   - Update dependencies
   - Implement improvements dependening on the new features available from vscode (optional)
   - Don't forget to check the `Window` output (in the `OUTPUT` panel tab) to check for errors
+
+## monaco-vscode-api demo
+
+- In the demo, run `npm run update-local-dependencies`
+- Then make sure to install the new versions of the dependencies: `rm -rf node_modules package-lock.json && npm install`
 
 ## Hints
 

@@ -1,13 +1,14 @@
-import { IEditorOverrideServices } from 'vs/editor/standalone/browser/standaloneServices'
+import type { IEditorOverrideServices } from 'vs/editor/standalone/browser/standaloneServices'
 import { SyncDescriptor } from 'vs/platform/instantiation/common/descriptors'
 import {
+  IAllowedExtensionsService,
   IExtensionGalleryService,
   IExtensionTipsService,
   IGlobalExtensionEnablementService
 } from 'vs/platform/extensionManagement/common/extensionManagement.service'
 import { ExtensionGalleryService } from 'vs/platform/extensionManagement/common/extensionGalleryService'
 import { GlobalExtensionEnablementService } from 'vs/platform/extensionManagement/common/extensionEnablementService'
-import { IExtension as IContribExtension } from 'vs/workbench/contrib/extensions/common/extensions'
+import type { IExtension as IContribExtension } from 'vs/workbench/contrib/extensions/common/extensions'
 import { IExtensionsWorkbenchService } from 'vs/workbench/contrib/extensions/common/extensions.service'
 import { getLocale } from 'vs/platform/languagePacks/common/languagePacks'
 import { ExtensionsWorkbenchService } from 'vs/workbench/contrib/extensions/browser/extensionsWorkbenchService'
@@ -29,7 +30,7 @@ import { IgnoredExtensionsManagementService } from 'vs/platform/userDataSync/com
 import { IIgnoredExtensionsManagementService } from 'vs/platform/userDataSync/common/ignoredExtensions.service'
 import { ExtensionManifestPropertiesService } from 'vs/workbench/services/extensions/common/extensionManifestPropertiesService'
 import { IExtensionManifestPropertiesService } from 'vs/workbench/services/extensions/common/extensionManifestPropertiesService.service'
-import { IExtension } from 'vs/platform/extensions/common/extensions'
+import type { IExtension } from 'vs/platform/extensions/common/extensions'
 import { IBuiltinExtensionsScannerService } from 'vs/platform/extensions/common/extensions.service'
 import { ExtensionIgnoredRecommendationsService } from 'vs/workbench/services/extensionRecommendations/common/extensionIgnoredRecommendationsService'
 import { WorkspaceExtensionsConfigService } from 'vs/workbench/services/extensionRecommendations/common/workspaceExtensionsConfig'
@@ -51,9 +52,10 @@ import { IExtensionsProfileScannerService } from 'vs/platform/extensionManagemen
 import { ILabelService } from 'vs/platform/label/common/label.service'
 import { IExtensionFeaturesManagementService } from 'vs/workbench/services/extensionManagement/common/extensionFeatures.service'
 import { ExtensionFeaturesManagementService } from 'vs/workbench/services/extensionManagement/common/extensionFeaturesManagemetService'
-import { registerAssets } from '../assets'
-import { getExtensionManifests } from '../extensions'
-import { isLocaleAvailable } from '../l10n'
+import { AllowedExtensionsService } from 'vs/platform/extensionManagement/common/allowedExtensionsService'
+import { registerAssets } from '../assets.js'
+import { getExtensionManifests } from '../extensions.js'
+import { isLocaleAvailable } from '../l10n.js'
 import 'vs/workbench/contrib/extensions/browser/extensions.contribution'
 import 'vs/workbench/contrib/extensions/browser/extensions.web.contribution'
 import { unsupported } from '../tools'
@@ -219,6 +221,7 @@ export default function getServiceOverride(
       ExtensionsProfileScannerService,
       [],
       true
-    )
+    ),
+    [IAllowedExtensionsService.toString()]: new SyncDescriptor(AllowedExtensionsService, [], true)
   }
 }

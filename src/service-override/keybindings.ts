@@ -1,19 +1,22 @@
-import { IEditorOverrideServices } from 'vs/editor/standalone/browser/standaloneServices'
+import type { IEditorOverrideServices } from 'vs/editor/standalone/browser/standaloneServices'
 import { SyncDescriptor } from 'vs/platform/instantiation/common/descriptors'
 import { WorkbenchKeybindingService } from 'vs/workbench/services/keybinding/browser/keybindingService'
-import { IKeyboardEvent, IUserFriendlyKeybinding } from 'vs/platform/keybinding/common/keybinding'
+import type {
+  IKeyboardEvent,
+  IUserFriendlyKeybinding
+} from 'vs/platform/keybinding/common/keybinding'
 import { IKeybindingService } from 'vs/platform/keybinding/common/keybinding.service'
 import { VSBuffer } from 'vs/base/common/buffer'
 import { IUserDataProfilesService } from 'vs/platform/userDataProfile/common/userDataProfile.service'
 import { IKeyboardLayoutService } from 'vs/platform/keyboardLayout/common/keyboardLayout.service'
 import { BrowserKeyboardLayoutService } from 'vs/workbench/services/keybinding/browser/keyboardLayoutService'
-import { IFileWriteOptions } from 'vs/platform/files/common/files'
+import type { IFileWriteOptions } from 'vs/platform/files/common/files'
 import { IFileService } from 'vs/platform/files/common/files.service'
 import { ICommandService } from 'vs/platform/commands/common/commands.service'
 import { CommandService } from 'vs/workbench/services/commands/common/commandService'
 import { DisposableStore, toDisposable } from 'vs/base/common/lifecycle'
 import { KeybindingResolver } from 'vs/platform/keybinding/common/keybindingResolver'
-import { IContextKeyServiceTarget } from 'vs/platform/contextkey/common/contextkey'
+import type { IContextKeyServiceTarget } from 'vs/platform/contextkey/common/contextkey'
 import { IContextKeyService } from 'vs/platform/contextkey/common/contextkey.service'
 import { IUriIdentityService } from 'vs/platform/uriIdentity/common/uriIdentity.service'
 import { ITelemetryService } from 'vs/platform/telemetry/common/telemetry.service'
@@ -167,9 +170,5 @@ export default function getServiceOverride({
   }
 }
 
-export {
-  defaultUserKeybindindsFile,
-  initUserKeybindings,
-  updateUserKeybindings,
-  IUserFriendlyKeybinding
-}
+export { defaultUserKeybindindsFile, initUserKeybindings, updateUserKeybindings }
+export type { IUserFriendlyKeybinding }

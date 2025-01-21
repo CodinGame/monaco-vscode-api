@@ -1,5 +1,5 @@
 import {
-  IEditorOverrideServices,
+  type IEditorOverrideServices,
   StandaloneServices
 } from 'vs/editor/standalone/browser/standaloneServices'
 import { SyncDescriptor } from 'vs/platform/instantiation/common/descriptors'
@@ -10,7 +10,7 @@ import { SidebarPart } from 'vs/workbench/browser/parts/sidebar/sidebarPart'
 import { ActivityService } from 'vs/workbench/services/activity/browser/activityService'
 import { IPaneCompositePartService } from 'vs/workbench/services/panecomposite/browser/panecomposite.service'
 import { ActivitybarPart } from 'vs/workbench/browser/parts/activitybar/activitybarPart'
-import { IDisposable, IReference } from 'vs/base/common/lifecycle'
+import type { IDisposable, IReference } from 'vs/base/common/lifecycle'
 import { PanelPart } from 'vs/workbench/browser/parts/panel/panelPart'
 import { URI } from 'vs/base/common/uri'
 import { Part } from 'vs/workbench/browser/part'
@@ -22,13 +22,13 @@ import {
 import { IEditorGroupsService } from 'vs/workbench/services/editor/common/editorGroupsService.service'
 import { IEditorService } from 'vs/workbench/services/editor/common/editorService.service'
 import {
-  GroupIdentifier,
-  IUntypedEditorInput,
+  type GroupIdentifier,
+  type IUntypedEditorInput,
   isResourceEditorInput,
   pathsToEditors
 } from 'vs/workbench/common/editor'
-import { IEditorOptions } from 'vs/platform/editor/common/editor'
-import { IResolvedTextEditorModel } from 'vs/editor/common/services/resolverService'
+import type { IEditorOptions } from 'vs/platform/editor/common/editor'
+import type { IResolvedTextEditorModel } from 'vs/editor/common/services/resolverService'
 import {
   Parts,
   Position,
@@ -47,7 +47,7 @@ import { IExtensionService } from 'vs/workbench/services/extensions/common/exten
 import { Promises } from 'vs/base/common/async'
 import { isWeb } from 'vs/base/common/platform'
 import { IEnvironmentService } from 'vs/platform/environment/common/environment.service'
-import {
+import type {
   IEditorToOpen,
   IInitialEditorsState,
   ILayoutInitializationState
@@ -59,9 +59,13 @@ import { IConfigurationService } from 'vs/platform/configuration/common/configur
 import { coalesce } from 'vs/base/common/arrays'
 import { IWorkingCopyBackupService } from 'vs/workbench/services/workingCopy/common/workingCopyBackup.service'
 import { EditorParts } from 'vs/workbench/browser/parts/editor/editorParts'
-import { ContextKeyValue, IContextKey } from 'vs/platform/contextkey/common/contextkey'
-import { IEditorGroupView } from 'vs/workbench/browser/parts/editor/editor'
-import { MonacoDelegateEditorGroupsService, MonacoEditorService, OpenEditor } from './tools/editor'
+import type { ContextKeyValue, IContextKey } from 'vs/platform/contextkey/common/contextkey'
+import type { IEditorGroupView } from 'vs/workbench/browser/parts/editor/editor'
+import {
+  MonacoDelegateEditorGroupsService,
+  MonacoEditorService,
+  type OpenEditor
+} from './tools/editor'
 import { LayoutService } from './layout'
 import getQuickAccessOverride from './quickaccess'
 import getKeybindingsOverride from './keybindings'
@@ -170,7 +174,6 @@ function isElementVisible(el: HTMLElement) {
   if (!el.isConnected) {
     return false
   }
-  // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
   if (el.checkVisibility != null) {
     // not defined in Safari
     return el.checkVisibility({
@@ -848,8 +851,6 @@ function getServiceOverride(
 export default getServiceOverride
 
 export {
-  ILayoutInitializationState,
-  InitializationStateTransformer,
   GroupOrientation,
   renderPart,
   renderSidebarPart,
@@ -862,12 +863,16 @@ export {
   attachPart,
   onPartVisibilityChange,
   Position,
-  OpenEditor,
-  IEditorOptions,
-  IResolvedTextEditorModel,
-  IReference,
   ActivityService,
   SidebarPart,
   ActivitybarPart,
   PanelPart
+}
+export type {
+  ILayoutInitializationState,
+  InitializationStateTransformer,
+  OpenEditor,
+  IEditorOptions,
+  IResolvedTextEditorModel,
+  IReference
 }

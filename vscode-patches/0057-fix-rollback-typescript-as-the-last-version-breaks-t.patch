@@ -1,0 +1,65 @@
+From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
+From: =?UTF-8?q?Lo=C3=AFc=20Mangeonjean?= <loic@coderpad.io>
+Date: Mon, 18 Nov 2024 14:04:14 +0100
+Subject: [PATCH] fix: rollback typescript as the last version breaks the
+ extractServices script
+
+---
+ package-lock.json                               | 9 ++++-----
+ package.json                                    | 2 +-
+ src/vs/base/parts/request/common/requestImpl.ts | 1 +
+ 3 files changed, 6 insertions(+), 6 deletions(-)
+
+diff --git a/package-lock.json b/package-lock.json
+index c986bfd1ecc..e6f6c027e9a 100644
+--- a/package-lock.json
++++ b/package-lock.json
+@@ -153,7 +153,7 @@
+         "ts-node": "^10.9.1",
+         "tsec": "0.2.7",
+         "tslib": "^2.6.3",
+-        "typescript": "^5.8.0-dev.20241202",
++        "typescript": "5.5.0-dev.20240408",
+         "typescript-eslint": "^8.8.0",
+         "util": "^0.12.4",
+         "webpack": "^5.94.0",
+@@ -17321,11 +17321,10 @@
+       "dev": true
+     },
+     "node_modules/typescript": {
+-      "version": "5.8.0-dev.20241202",
+-      "resolved": "https://registry.npmjs.org/typescript/-/typescript-5.8.0-dev.20241202.tgz",
+-      "integrity": "sha512-4b4+FbKk5Wp51uwCztSyh68rdK1rv4afoC/P/g8HOmWmfHIdCgZNxzLS6TvjBU7e8XVzmW3jE/CJl1n59lcIhg==",
++      "version": "5.5.0-dev.20240408",
++      "resolved": "https://registry.npmjs.org/typescript/-/typescript-5.5.0-dev.20240408.tgz",
++      "integrity": "sha512-WCqFA68PbE0+khOu6x2LPxePy0tKdWuNO2m2K4A/L+OPqua1Qmck9OXUQ/5nUd4B/8UlBuhkhuulQbr2LHO9vA==",
+       "dev": true,
+-      "license": "Apache-2.0",
+       "bin": {
+         "tsc": "bin/tsc",
+         "tsserver": "bin/tsserver"
+diff --git a/package.json b/package.json
+index 3f43a926318..a33c2c84e1a 100644
+--- a/package.json
++++ b/package.json
+@@ -211,7 +211,7 @@
+     "ts-node": "^10.9.1",
+     "tsec": "0.2.7",
+     "tslib": "^2.6.3",
+-    "typescript": "^5.8.0-dev.20241202",
++    "typescript": "5.5.0-dev.20240408",
+     "typescript-eslint": "^8.8.0",
+     "util": "^0.12.4",
+     "webpack": "^5.94.0",
+diff --git a/src/vs/base/parts/request/common/requestImpl.ts b/src/vs/base/parts/request/common/requestImpl.ts
+index 17f80575ef5..994930f1bbd 100644
+--- a/src/vs/base/parts/request/common/requestImpl.ts
++++ b/src/vs/base/parts/request/common/requestImpl.ts
+@@ -15,6 +15,7 @@ export async function request(options: IRequestOptions, token: CancellationToken
+ 
+ 	const cancellation = new AbortController();
+ 	const disposable = token.onCancellationRequested(() => cancellation.abort());
++	// @ts-ignore
+ 	const signal = options.timeout ? AbortSignal.any([
+ 		cancellation.signal,
+ 		AbortSignal.timeout(options.timeout),

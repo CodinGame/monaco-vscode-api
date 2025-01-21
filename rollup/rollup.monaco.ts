@@ -1,6 +1,6 @@
 import nodeResolve from '@rollup/plugin-node-resolve'
 import * as rollup from 'rollup'
-import { PackageJson } from 'type-fest'
+import type { PackageJson } from 'type-fest'
 import replace from '@rollup/plugin-replace'
 import glob from 'fast-glob'
 import * as path from 'path'
@@ -48,7 +48,7 @@ export default rollup.defineConfig([
           preserveModules: true,
           assetFileNames: '[name][extname]',
           format: 'esm',
-          dir: `dist/standalone-language-feature-${language}`,
+          dir: `dist/packages/monaco-vscode-standalone-${language}-language-features`,
           entryFileNames: '[name].js',
           hoistTransitiveImports: false
         },
@@ -122,7 +122,7 @@ export default rollup.defineConfig([
       preserveModules: true,
       assetFileNames: '[name][extname]',
       format: 'esm',
-      dir: 'dist/monarch-basic-languages',
+      dir: 'dist/packages/monaco-vscode-standalone-languages',
       entryFileNames: '[name].js',
       hoistTransitiveImports: false
     },

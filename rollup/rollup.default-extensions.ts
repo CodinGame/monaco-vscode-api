@@ -1,13 +1,15 @@
 import nodeResolve from '@rollup/plugin-node-resolve'
 import * as rollup from 'rollup'
 import { importMetaAssets } from '@web/rollup-plugin-import-meta-assets'
-import { PackageJson } from 'type-fest'
+import type { PackageJson } from 'type-fest'
 import { pascalCase } from 'pascal-case'
 import * as fs from 'fs'
 import * as path from 'path'
 import { fileURLToPath } from 'url'
-import metadataPlugin from './rollup-metadata-plugin'
-import extensionDirectoryPlugin from '../dist/rollup-extension-directory-plugin/rollup-extension-directory-plugin.js'
+import dynamicImportPolyfillPlugin from './plugins/dynamic-import-polyfill-plugin.js'
+import resolveAssetUrlPlugin from './plugins/resolve-asset-url-plugin.js'
+import extensionDirectoryPlugin from '../dist/packages/monaco-vscode-rollup-extension-directory-plugin/rollup-extension-directory-plugin.js'
+
 const pkg = JSON.parse(
   fs.readFileSync(new URL('../package.json', import.meta.url).pathname).toString()
 )
@@ -60,7 +62,7 @@ export default rollup.defineConfig([
               return 'resources/[name][extname]'
             },
             format: 'esm',
-            dir: `dist/default-extension-${name}`,
+            dir: `dist/packages/monaco-vscode-${name}-default-extension`,
             entryFileNames: 'index.js',
             chunkFileNames: '[name].js',
             hoistTransitiveImports: false
@@ -70,29 +72,12 @@ export default rollup.defineConfig([
           return source === 'vscode/extensions'
         },
         plugins: [
-          {
-            name: 'resolve-asset-url',
-            resolveFileUrl(options) {
-              let relativePath = options.relativePath
-              if (!relativePath.startsWith('.')) {
-                relativePath = `./${options.relativePath}`
-              }
-              return `'${relativePath}'`
-            }
-          },
+          resolveAssetUrlPlugin(),
           nodeResolve({
             extensions: EXTENSIONS
           }),
           importMetaAssets(),
-          {
-            name: 'dynamic-import-polyfill',
-            renderDynamicImport(): { left: string; right: string } {
-              return {
-                left: 'import(',
-                right: ').then(module => module.default ?? module)'
-              }
-            }
-          },
+          dynamicImportPolyfillPlugin(),
           extensionDirectoryPlugin({
             include: `${DEFAULT_EXTENSIONS_PATH}/**/*`,
             transformManifest(manifest) {
@@ -102,11 +87,17 @@ export default rollup.defineConfig([
               }
             }
           }),
-          metadataPlugin({
-            handle({ group: { directDependencies }, bundle }) {
+          {
+            name: 'bundleGenerator',
+            generateBundle(options, bundle) {
+              const externalDependencies = new Set(
+                Array.from(this.getModuleIds()).filter((id) => this.getModuleInfo(id)!.isExternal)
+              )
+
               const entrypoint = Object.values(bundle).filter(
                 (v) => (v as rollup.OutputChunk).isEntry
               )[0]!.fileName
+
               const packageJson: PackageJson = {
                 name: `@codingame/monaco-vscode-${name}-default-extension`,
                 ...Object.fromEntries(
@@ -122,7 +113,9 @@ export default rollup.defineConfig([
                 dependencies: {
                   vscode: `npm:${pkg.name}@^${pkg.version}`,
                   ...Object.fromEntries(
-                    Object.entries(pkg.dependencies).filter(([key]) => directDependencies.has(key))
+                    Object.entries(pkg.dependencies).filter(([key]) =>
+                      externalDependencies.has(key)
+                    )
                   )
                 }
               }
@@ -141,24 +134,24 @@ export default rollup.defineConfig([
                 type: 'asset'
               })
             }
-          })
+          }
         ]
       }
   ),
   ...[
     {
       name: '@codingame/monaco-vscode-all-default-extensions',
-      directory: 'default-extension-all',
+      directory: 'packages/monaco-vscode-all-default-extensions',
       extensions: defaultExtensions
     },
     {
       name: '@codingame/monaco-vscode-all-language-default-extensions',
-      directory: 'default-extension-all-languages',
+      directory: 'packages/monaco-vscode-all-language-default-extensions',
       extensions: languageGrammarExtensions
     },
     {
       name: '@codingame/monaco-vscode-all-language-feature-default-extensions',
-      directory: 'default-extension-all-language-features',
+      directory: 'packages/monaco-vscode-all-language-feature-default-extensions',
       extensions: languageFeatureExtensions
     }
   ].map(
@@ -190,8 +183,13 @@ ${extensions.map((name) => `  whenReady${pascalCase(name)}()`).join(',\n')}
         `
             }
           },
-          metadataPlugin({
-            handle({ group: { directDependencies }, bundle }) {
+          {
+            name: 'bundleGenerator',
+            generateBundle(options, bundle) {
+              const externalDependencies = new Set(
+                Array.from(this.getModuleIds()).filter((id) => this.getModuleInfo(id)!.isExternal)
+              )
+
               const entrypoint = Object.values(bundle).filter(
                 (v) => (v as rollup.OutputChunk).isEntry
               )[0]!.fileName
@@ -208,7 +206,7 @@ ${extensions.map((name) => `  whenReady${pascalCase(name)}()`).join(',\n')}
                 module: entrypoint,
                 types: 'index.d.ts',
                 dependencies: Object.fromEntries(
-                  Array.from(directDependencies).map((name) => [name, pkg.version])
+                  Array.from(externalDependencies).map((name) => [name, pkg.version])
                 )
               }
 
@@ -226,7 +224,7 @@ ${extensions.map((name) => `  whenReady${pascalCase(name)}()`).join(',\n')}
                 type: 'asset'
               })
             }
-          })
+          }
         ]
       }
   )

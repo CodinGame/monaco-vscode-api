@@ -2,14 +2,14 @@ import { IFileService } from 'vs/platform/files/common/files.service'
 import { ILifecycleService } from 'vs/workbench/services/lifecycle/common/lifecycle.service'
 import {
   ExtensionHostStartup,
-  IExtensionHost
+  type IExtensionHost
 } from 'vs/workbench/services/extensions/common/extensions'
 import { IExtensionService } from 'vs/workbench/services/extensions/common/extensions.service'
 import { ILogService } from 'vs/platform/log/common/log.service'
 import {
   ExtensionIdentifier,
-  IExtension,
-  IExtensionDescription
+  type IExtension,
+  type IExtensionDescription
 } from 'vs/platform/extensions/common/extensions'
 import { IWorkspaceContextService } from 'vs/platform/workspace/common/workspace.service'
 import { IInstantiationService } from 'vs/platform/instantiation/common/instantiation'
@@ -30,7 +30,7 @@ import { IExtensionManifestPropertiesService } from 'vs/workbench/services/exten
 import { IConfigurationService } from 'vs/platform/configuration/common/configuration.service'
 import { IProductService } from 'vs/platform/product/common/productService.service'
 import { IBrowserWorkbenchEnvironmentService } from 'vs/workbench/services/environment/browser/environmentService.service'
-import { IEditorOverrideServices } from 'vs/editor/standalone/browser/standaloneServices'
+import type { IEditorOverrideServices } from 'vs/editor/standalone/browser/standaloneServices'
 import { SyncDescriptor } from 'vs/platform/instantiation/common/descriptors'
 import { IUserDataInitializationService } from 'vs/workbench/services/userData/browser/userDataInit.service'
 import { ExtensionsProposedApi } from 'vs/workbench/services/extensions/common/extensionsProposedApi'
@@ -43,11 +43,11 @@ import {
   ExtensionHostKind,
   ExtensionRunningPreference
 } from 'vs/workbench/services/extensions/common/extensionHostKind'
-import { ExtensionRunningLocation } from 'vs/workbench/services/extensions/common/extensionRunningLocation'
+import type { ExtensionRunningLocation } from 'vs/workbench/services/extensions/common/extensionRunningLocation'
 import { ExtensionRunningLocationTracker } from 'vs/workbench/services/extensions/common/extensionRunningLocationTracker'
 import { URI } from 'vs/base/common/uri'
 import { WebWorkerExtensionHost } from 'vs/workbench/services/extensions/browser/webWorkerExtensionHost'
-import { ExtensionKind } from 'vs/platform/environment/common/environment'
+import type { ExtensionKind } from 'vs/platform/environment/common/environment'
 import { IUserDataProfileService } from 'vs/workbench/services/userDataProfile/common/userDataProfile.service'
 import { IWorkspaceTrustManagementService } from 'vs/platform/workspace/common/workspaceTrust.service'
 import { IRemoteExplorerService } from 'vs/workbench/services/remote/common/remoteExplorerService.service'

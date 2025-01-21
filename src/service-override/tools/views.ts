@@ -1,15 +1,18 @@
 import { SyncDescriptor } from 'vs/platform/instantiation/common/descriptors'
 import {
-  IViewContainerDescriptor,
-  IViewContainersRegistry,
-  IViewDescriptor,
-  IViewsRegistry,
-  ViewContainer,
+  type IViewContainerDescriptor,
+  type IViewContainersRegistry,
+  type IViewDescriptor,
+  type IViewsRegistry,
+  type ViewContainer,
   ViewContainerLocation,
   Extensions as ViewExtensions
 } from 'vs/workbench/common/views'
-import { BrandedService, ServicesAccessor } from 'vs/platform/instantiation/common/instantiation'
-import { DisposableStore, IDisposable, MutableDisposable } from 'vs/base/common/lifecycle'
+import type {
+  BrandedService,
+  ServicesAccessor
+} from 'vs/platform/instantiation/common/instantiation'
+import { DisposableStore, type IDisposable, MutableDisposable } from 'vs/base/common/lifecycle'
 import { $, Dimension, size } from 'vs/base/browser/dom'
 import { ViewPane } from 'vs/workbench/browser/parts/views/viewPane'
 import { Registry } from 'vs/platform/registry/common/platform'
@@ -17,29 +20,29 @@ import { ViewPaneContainer } from 'vs/workbench/browser/parts/views/viewPaneCont
 import { URI } from 'vs/base/common/uri'
 import { Codicon } from 'vs/base/common/codicons'
 import {
-  EditorInputFactoryObject,
-  RegisteredEditorInfo,
-  RegisteredEditorOptions,
+  type EditorInputFactoryObject,
+  type RegisteredEditorInfo,
+  type RegisteredEditorOptions,
   RegisteredEditorPriority
 } from 'vs/workbench/services/editor/common/editorResolverService'
 import { IEditorResolverService } from 'vs/workbench/services/editor/common/editorResolverService.service'
-import { EditorInput, IEditorCloseHandler } from 'vs/workbench/common/editor/editorInput'
+import { EditorInput, type IEditorCloseHandler } from 'vs/workbench/common/editor/editorInput'
 import {
   EditorExtensions,
   EditorInputCapabilities,
-  IEditorFactoryRegistry,
-  IEditorOpenContext,
-  IEditorSerializer,
+  type IEditorFactoryRegistry,
+  type IEditorOpenContext,
+  type IEditorSerializer,
   Verbosity
 } from 'vs/workbench/common/editor'
-import { IEditorOptions, IResourceEditorInput } from 'vs/platform/editor/common/editor'
+import type { IEditorOptions, IResourceEditorInput } from 'vs/platform/editor/common/editor'
 import { Action2, MenuId, registerAction2 } from 'vs/platform/actions/common/actions'
 import { Categories } from 'vs/platform/action/common/actionCommonCategories'
 import { ContextKeyExpr } from 'vs/platform/contextkey/common/contextkey'
-import { IDropdownMenuActionViewItemOptions } from 'vs/base/browser/ui/dropdown/dropdownActionViewItem'
-import { IAction } from 'vs/base/common/actions'
+import type { IDropdownMenuActionViewItemOptions } from 'vs/base/browser/ui/dropdown/dropdownActionViewItem'
+import type { IAction } from 'vs/base/common/actions'
 import { BaseActionViewItem } from 'vs/base/browser/ui/actionbar/actionViewItems'
-import { EditorPaneDescriptor, IEditorPaneRegistry } from 'vs/workbench/browser/editor'
+import { EditorPaneDescriptor, type IEditorPaneRegistry } from 'vs/workbench/browser/editor'
 import { EditorPane } from 'vs/workbench/browser/parts/editor/editorPane'
 import { ITelemetryService } from 'vs/platform/telemetry/common/telemetry.service'
 import { IStorageService } from 'vs/platform/storage/common/storage.service'
@@ -55,9 +58,9 @@ import { Parts, Position } from 'vs/workbench/services/layout/browser/layoutServ
 import { IWorkbenchLayoutService } from 'vs/workbench/services/layout/browser/layoutService.service'
 import { StandaloneServices } from 'vs/editor/standalone/browser/standaloneServices'
 import { Event } from 'vs/base/common/event'
-import { IView, SplitView } from 'vs/base/browser/ui/splitview/splitview'
+import { type IView, SplitView } from 'vs/base/browser/ui/splitview/splitview'
 import type { LayoutService } from '../layout'
-import { IEditorGroup, withReadyServices } from '../../services'
+import { type IEditorGroup, withReadyServices } from '../../services'
 
 type Label =
   | string
@@ -258,6 +261,7 @@ function registerEditorPane<Services extends BrandedService[]>(
   typeId: string,
   name: string,
   ctor: new (group: IEditorGroup, ...services: Services) => EditorPane,
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   inputCtors: (new (...args: any[]) => EditorInput)[]
 ): IDisposable {
   return Registry.as<IEditorPaneRegistry>(EditorExtensions.EditorPane).registerEditorPane(
@@ -504,10 +508,8 @@ export function getSideBarPosition(): Position {
 
 export {
   ViewContainerLocation,
-  CustomViewOption,
   registerCustomView,
   ViewPaneContainer,
-  IEditorCloseHandler,
   ConfirmResult,
   registerEditorPane,
   RegisteredEditorPriority,
@@ -518,19 +520,23 @@ export {
   AbstractTextResourceEditorInput,
   EditorInput,
   registerEditor,
-  IEditorSerializer,
   registerEditorSerializer,
-  RegisteredEditorInfo,
-  RegisteredEditorOptions,
-  EditorInputFactoryObject,
   EditorInputCapabilities,
   Parts,
   SplitView,
-  IView,
   viewRegistry,
   viewContainerRegistry,
+  DomScrollableElement
+}
+export type {
+  IEditorSerializer,
+  CustomViewOption,
+  IEditorCloseHandler,
+  RegisteredEditorInfo,
+  RegisteredEditorOptions,
+  EditorInputFactoryObject,
+  IView,
   IViewContainerDescriptor,
   ViewContainer,
-  IViewDescriptor,
-  DomScrollableElement
+  IViewDescriptor
 }

@@ -2,60 +2,60 @@ import { StandaloneServices } from 'vs/editor/standalone/browser/standaloneServi
 import { ICodeEditorService } from 'vs/editor/browser/services/codeEditorService'
 import {
   isPreferredGroup,
-  PreferredGroup,
+  type PreferredGroup,
   SIDE_GROUP
 } from 'vs/workbench/services/editor/common/editorService'
 import { IEditorService } from 'vs/workbench/services/editor/common/editorService.service'
 import {
   EditorCloseContext,
-  EditorInputWithOptions,
+  type EditorInputWithOptions,
   GroupModelChangeKind,
-  IActiveEditorChangeEvent,
-  IEditorCloseEvent,
-  IEditorControl,
-  IEditorPane,
-  IEditorWillOpenEvent,
-  IResourceDiffEditorInput,
+  type IActiveEditorChangeEvent,
+  type IEditorCloseEvent,
+  type IEditorControl,
+  type IEditorPane,
+  type IEditorWillOpenEvent,
+  type IResourceDiffEditorInput,
   isEditorInput,
   isResourceEditorInput,
-  ITextDiffEditorPane,
-  IUntitledTextResourceEditorInput,
-  IUntypedEditorInput,
-  IVisibleEditorPane
+  type ITextDiffEditorPane,
+  type IUntitledTextResourceEditorInput,
+  type IUntypedEditorInput,
+  type IVisibleEditorPane
 } from 'vs/workbench/common/editor'
 import { EditorInput } from 'vs/workbench/common/editor/editorInput'
-import {
+import type {
   IEditorOptions,
   IResourceEditorInput,
   ITextResourceEditorInput
 } from 'vs/platform/editor/common/editor'
 import { applyTextEditorOptions } from 'vs/workbench/common/editor/editorOptions'
 import { ScrollType } from 'vs/editor/common/editorCommon'
-import { ICodeEditor, IDiffEditor } from 'vs/editor/browser/editorBrowser'
+import type { ICodeEditor, IDiffEditor } from 'vs/editor/browser/editorBrowser'
 import {
-  IEditorGroupView,
+  type IEditorGroupView,
   DEFAULT_EDITOR_MAX_DIMENSIONS,
   DEFAULT_EDITOR_MIN_DIMENSIONS
 } from 'vs/workbench/browser/parts/editor/editor'
 import {
-  IResolvedTextEditorModel,
+  type IResolvedTextEditorModel,
   ITextModelService
 } from 'vs/editor/common/services/resolverService'
 import {
-  IStandaloneCodeEditor,
+  type IStandaloneCodeEditor,
   StandaloneCodeEditor,
   StandaloneEditor
 } from 'vs/editor/standalone/browser/standaloneCodeEditor'
-import { Disposable, IDisposable, IReference } from 'vs/base/common/lifecycle'
+import { Disposable, type IDisposable, type IReference } from 'vs/base/common/lifecycle'
 import { EditorService } from 'vs/workbench/services/editor/browser/editorService'
 import {
-  IAuxiliaryEditorPart,
-  IEditorDropTargetDelegate,
-  IEditorPart,
-  IActiveEditorActions,
-  IEditorGroup,
-  IEditorWorkingSet,
-  IEditorGroupContextKeyProvider
+  type IAuxiliaryEditorPart,
+  type IEditorDropTargetDelegate,
+  type IEditorPart,
+  type IActiveEditorActions,
+  type IEditorGroup,
+  type IEditorWorkingSet,
+  type IEditorGroupContextKeyProvider
 } from 'vs/workbench/services/editor/common/editorGroupsService'
 import { IEditorGroupsService } from 'vs/workbench/services/editor/common/editorGroupsService.service'
 import { IInstantiationService } from 'vs/platform/instantiation/common/instantiation'
@@ -71,11 +71,11 @@ import { Emitter, Event } from 'vs/base/common/event'
 import { TextResourceEditorInput } from 'vs/workbench/common/editor/textResourceEditorInput'
 import { IContextKeyService } from 'vs/platform/contextkey/common/contextkey.service'
 import { URI } from 'vs/base/common/uri'
-import { IGroupModelChangeEvent } from 'vs/workbench/common/editor/editorGroupModel'
-import { EditorLayoutInfo } from 'vs/editor/common/config/editorOptions'
-import { IRectangle } from 'vs/platform/window/common/window'
+import type { IGroupModelChangeEvent } from 'vs/workbench/common/editor/editorGroupModel'
+import type { EditorLayoutInfo } from 'vs/editor/common/config/editorOptions'
+import type { IRectangle } from 'vs/platform/window/common/window'
 import { mainWindow } from 'vs/base/browser/window'
-import { ContextKeyValue } from 'vs/platform/contextkey/common/contextkey'
+import type { ContextKeyValue } from 'vs/platform/contextkey/common/contextkey'
 import { unsupported } from '../../tools'
 
 export type OpenEditor = (

@@ -1,4 +1,4 @@
-import { IEditorOverrideServices } from 'vs/editor/standalone/browser/standaloneServices'
+import { type IEditorOverrideServices } from 'vs/editor/standalone/browser/standaloneServices'
 import { IEncryptionService } from 'vs/platform/encryption/common/encryptionService.service'
 import { SyncDescriptor } from 'vs/platform/instantiation/common/descriptors'
 import { ISecretStorageService } from 'vs/platform/secrets/common/secrets.service'

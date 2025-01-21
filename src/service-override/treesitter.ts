@@ -1,4 +1,4 @@
-import { IEditorOverrideServices } from 'vs/editor/standalone/browser/standaloneServices'
+import type { IEditorOverrideServices } from 'vs/editor/standalone/browser/standaloneServices'
 import { SyncDescriptor } from 'vs/platform/instantiation/common/descriptors'
 import { ITreeSitterParserService } from 'vs/editor/common/services/treeSitterParserService'
 import { TreeSitterTextModelService } from 'vs/editor/browser/services/treeSitter/treeSitterParserService'

@@ -46,7 +46,7 @@ await initializeMonacoService(
     ...getWorkbenchServiceOverride(),
     ...getQuickAccessServiceOverride({
       isKeybindingConfigurationVisible: () => true,
-      shouldUseGlobalPicker: (_editor) => true
+      shouldUseGlobalPicker: () => true
     })
   },
   container,

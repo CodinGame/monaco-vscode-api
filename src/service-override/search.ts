@@ -1,5 +1,5 @@
 import { SyncDescriptor } from 'vs/platform/instantiation/common/descriptors'
-import { IEditorOverrideServices } from 'vs/editor/standalone/browser/standaloneServices'
+import type { IEditorOverrideServices } from 'vs/editor/standalone/browser/standaloneServices'
 import { ISearchService } from 'vs/workbench/services/search/common/search.service'
 import { SearchService } from 'vs/workbench/services/search/common/searchService'
 import { SearchViewModelWorkbenchService } from 'vs/workbench/contrib/search/browser/searchTreeModel/searchModel'
@@ -21,13 +21,12 @@ import { IFileService } from 'vs/platform/files/common/files.service'
 import { ILogService } from 'vs/platform/log/common/log.service'
 import { SearchProviderType } from 'vs/workbench/services/search/common/search'
 import { Schemas } from 'vs/base/common/network'
-import { IFileSystemProvider } from 'vs/platform/files/common/files'
+import type { IFileSystemProvider } from 'vs/platform/files/common/files'
 import { HTMLFileSystemProvider } from 'vs/platform/files/browser/htmlFileSystemProvider'
 
 function isHTMLFileSystemProvider(
   provider: IFileSystemProvider
 ): provider is HTMLFileSystemProvider {
-  // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
   return (provider as HTMLFileSystemProvider).directories != null
 }
 

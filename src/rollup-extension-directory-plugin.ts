@@ -1,11 +1,12 @@
-import { createFilter, FilterPattern, dataToEsm } from '@rollup/pluginutils'
-import { Plugin } from 'rollup'
+import { createFilter, type FilterPattern, dataToEsm } from '@rollup/pluginutils'
+import type { Plugin } from 'rollup'
 import type { IExtensionManifest } from 'vs/platform/extensions/common/extensions'
+import thenby from 'thenby'
 import * as path from 'path'
 import * as fs from 'fs'
 import { getExtensionResources, parseJson } from './extension-tools.js'
-import { ExtensionFileMetadata } from './extensions.js'
-
+import type { ExtensionFileMetadata } from './extensions.js'
+const { firstBy } = thenby
 interface Options {
   include?: FilterPattern
   exclude?: FilterPattern
@@ -83,24 +84,26 @@ export default function plugin({
             )})`
           }
 
+          const pathMapping = resources
+            .flatMap((resource) =>
+              resource.extensionPaths.map((pathInExtension) => ({
+                pathInExtension,
+                url: path.resolve(id, resource.path),
+                mimeType: resource.mimeType,
+                size: resource.size
+              }))
+            )
+            .sort(firstBy('pathInExtension'))
+
           return `
 import manifest from '${manifestPath}'
 import { registerExtension } from 'vscode/extensions'
 
 const { registerFileUrl, whenReady } = registerExtension(manifest, undefined, ${JSON.stringify({ system: true, readmePath, changelogPath })})
-${resources
-  .map((resource) => {
-    const lines: string[] = resource.extensionPaths.map((extensionPath) =>
-      generateFileRegistrationInstruction(
-        extensionPath,
-        path.resolve(id, resource.path),
-        resource.mimeType,
-        resource.size
-      )
-    )
-
-    return lines.join('\n')
-  })
+${pathMapping
+  .map(({ pathInExtension, url, mimeType, size }) =>
+    generateFileRegistrationInstruction(pathInExtension, url, mimeType, size)
+  )
   .join('\n')}
 
 export { whenReady }
@@ -116,4 +119,4 @@ export { whenReady }
   }
 }
 
-export { IExtensionManifest }
+export type { IExtensionManifest }

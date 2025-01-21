@@ -2,9 +2,9 @@ import { mainWindow } from 'vs/base/browser/window'
 import {
   DynamicListEventMultiplexer,
   Event,
-  IDynamicListEventMultiplexer
+  type IDynamicListEventMultiplexer
 } from 'vs/base/common/event'
-import { Disposable, IDisposable } from 'vs/base/common/lifecycle'
+import { Disposable, type IDisposable } from 'vs/base/common/lifecycle'
 import { ResourceSet } from 'vs/base/common/map'
 import { OS } from 'vs/base/common/platform'
 import { joinPath } from 'vs/base/common/resources'
@@ -21,8 +21,9 @@ import { IFileDialogService } from 'vs/platform/dialogs/common/dialogs.service'
 import { IDownloadService } from 'vs/platform/download/common/download.service'
 import { IEncryptionService } from 'vs/platform/encryption/common/encryptionService.service'
 import { IEnvironmentService } from 'vs/platform/environment/common/environment.service'
-import { ILocalExtension } from 'vs/platform/extensionManagement/common/extensionManagement'
+import type { ILocalExtension } from 'vs/platform/extensionManagement/common/extensionManagement'
 import {
+  IAllowedExtensionsService,
   IExtensionGalleryService,
   IExtensionTipsService,
   IGlobalExtensionEnablementService
@@ -32,14 +33,22 @@ import { IExtensionsProfileScannerService } from 'vs/platform/extensionManagemen
 import { IExtensionsScannerService } from 'vs/platform/extensionManagement/common/extensionsScannerService.service'
 import { IExtensionRecommendationNotificationService } from 'vs/platform/extensionRecommendations/common/extensionRecommendations.service'
 import { IExtensionResourceLoaderService } from 'vs/platform/extensionResourceLoader/common/extensionResourceLoader.service'
-import { IExtension, IRelaxedExtensionDescription } from 'vs/platform/extensions/common/extensions'
+import type {
+  IExtension,
+  IRelaxedExtensionDescription
+} from 'vs/platform/extensions/common/extensions'
 import { IBuiltinExtensionsScannerService } from 'vs/platform/extensions/common/extensions.service'
 import { IFileService } from 'vs/platform/files/common/files.service'
 import { InstantiationType, registerSingleton } from 'vs/platform/instantiation/common/extensions'
 import { IKeyboardLayoutService } from 'vs/platform/keyboardLayout/common/keyboardLayout.service'
-import { ILanguagePackItem } from 'vs/platform/languagePacks/common/languagePacks'
+import type { ILanguagePackItem } from 'vs/platform/languagePacks/common/languagePacks'
 import { ILanguagePackService } from 'vs/platform/languagePacks/common/languagePacks.service'
-import { ILogger, LogLevel, AbstractLoggerService, NullLogger } from 'vs/platform/log/common/log'
+import {
+  type ILogger,
+  LogLevel,
+  AbstractLoggerService,
+  NullLogger
+} from 'vs/platform/log/common/log'
 import { ILoggerService } from 'vs/platform/log/common/log.service'
 import { NullPolicyService } from 'vs/platform/policy/common/policy'
 import { IPolicyService } from 'vs/platform/policy/common/policy.service'
@@ -50,7 +59,7 @@ import { IRemoteSocketFactoryService } from 'vs/platform/remote/common/remoteSoc
 import { IRequestService } from 'vs/platform/request/common/request.service'
 import { ISecretStorageService } from 'vs/platform/secrets/common/secrets.service'
 import { ISignService } from 'vs/platform/sign/common/sign.service'
-import { IMessage } from 'vs/platform/sign/common/sign'
+import type { IMessage } from 'vs/platform/sign/common/sign'
 import { ICustomEndpointTelemetryService } from 'vs/platform/telemetry/common/telemetry.service'
 import { NullEndpointTelemetryService } from 'vs/platform/telemetry/common/telemetryUtils'
 import { TerminalLocation } from 'vs/platform/terminal/common/terminal'
@@ -86,14 +95,14 @@ import {
 } from 'vs/platform/workspace/common/workspaceTrust.service'
 import { IWorkspacesService } from 'vs/platform/workspaces/common/workspaces.service'
 import {
-  ExtensionStatusBarEntry,
+  type ExtensionStatusBarEntry,
   IExtensionStatusBarItemService,
   StatusBarUpdateKind
 } from 'vs/workbench/api/browser/statusBarService'
 import { IBreadcrumbsService } from 'vs/workbench/browser/parts/editor/breadcrumbs.service'
 import {
   DEFAULT_EDITOR_PART_OPTIONS,
-  IEditorGroupView
+  type IEditorGroupView
 } from 'vs/workbench/browser/parts/editor/editor'
 import { IViewDescriptorService } from 'vs/workbench/common/views.service'
 import { IAccessibleViewService } from 'vs/platform/accessibility/browser/accessibleView.service'
@@ -271,11 +280,11 @@ import {
 import { UserDataProfileService } from 'vs/workbench/services/userDataProfile/common/userDataProfileService'
 import { IUserDataSyncWorkbenchService } from 'vs/workbench/services/userDataSync/common/userDataSync.service'
 import { IViewsService } from 'vs/workbench/services/views/common/viewsService.service'
-import {
+import type {
   IWorkingCopyBackupMeta,
   IWorkingCopyIdentifier
 } from 'vs/workbench/services/workingCopy/common/workingCopy'
-import { IResolvedWorkingCopyBackup } from 'vs/workbench/services/workingCopy/common/workingCopyBackup'
+import type { IResolvedWorkingCopyBackup } from 'vs/workbench/services/workingCopy/common/workingCopyBackup'
 import { IWorkingCopyBackupService } from 'vs/workbench/services/workingCopy/common/workingCopyBackup.service'
 import { IWorkingCopyEditorService } from 'vs/workbench/services/workingCopy/common/workingCopyEditorService.service'
 import { IWorkingCopyFileService } from 'vs/workbench/services/workingCopy/common/workingCopyFileService.service'
@@ -284,31 +293,35 @@ import { IWorkingCopyService } from 'vs/workbench/services/workingCopy/common/wo
 import { IWorkspaceEditingService } from 'vs/workbench/services/workspaces/common/workspaceEditing.service'
 import { IWorkspaceIdentityService } from 'vs/workbench/services/workspaces/common/workspaceIdentityService.service'
 import {
-  IEditorGroup,
+  type IEditorGroup,
   GroupOrientation,
-  IEditorPart
+  type IEditorPart
 } from 'vs/workbench/services/editor/common/editorGroupsService'
 import { NullExtensionService } from 'vs/workbench/services/extensions/common/extensions'
 import { toUserDataProfile } from 'vs/platform/userDataProfile/common/userDataProfile'
-import { IAdapterManager, IDebugModel, IViewModel } from 'vs/workbench/contrib/debug/common/debug'
-import { IViewContainerModel } from 'vs/workbench/common/views'
-import { ISearchComplete } from 'vs/workbench/services/search/common/search'
-import {
+import type {
+  IAdapterManager,
+  IDebugModel,
+  IViewModel
+} from 'vs/workbench/contrib/debug/common/debug'
+import type { IViewContainerModel } from 'vs/workbench/common/views'
+import type { ISearchComplete } from 'vs/workbench/services/search/common/search'
+import type {
   IOutputChannel,
   IOutputChannelDescriptor
 } from 'vs/workbench/services/output/common/output'
 import {
-  ITerminalInstance,
+  type ITerminalInstance,
   TerminalConnectionState
 } from 'vs/workbench/contrib/terminal/browser/terminal'
 import { AccountStatus } from 'vs/workbench/services/userDataSync/common/userDataSync'
-import { IWebview } from 'vs/workbench/contrib/webview/browser/webview'
-import { SyncResource } from 'vs/workbench/contrib/editSessions/common/editSessions'
+import type { IWebview } from 'vs/workbench/contrib/webview/browser/webview'
+import type { SyncResource } from 'vs/workbench/contrib/editSessions/common/editSessions'
 import { ILanguageModelStatsService } from 'vs/workbench/contrib/chat/common/languageModelStats.service'
 import { IAccessibleViewInformationService } from 'vs/workbench/services/accessibility/common/accessibleViewInformationService.service'
 import { IUserDataProfileStorageService } from 'vs/platform/userDataProfile/common/userDataProfileStorageService.service'
 import { IIntegrityService } from 'vs/workbench/services/integrity/common/integrity.service'
-import { IntegrityTestResult } from 'vs/workbench/services/integrity/common/integrity'
+import type { IntegrityTestResult } from 'vs/workbench/services/integrity/common/integrity'
 import { ITrustedDomainService } from 'vs/workbench/contrib/url/browser/trustedDomainService.service'
 import { ILanguageModelToolsService } from 'vs/workbench/contrib/chat/common/languageModelToolsService.service'
 import { PortsEnablement } from 'vs/workbench/services/remote/common/remoteExplorerService'
@@ -317,10 +330,17 @@ import { IChatEditingService } from 'vs/workbench/contrib/chat/common/chatEditin
 import { IActionViewItemService } from 'vs/platform/actions/browser/actionViewItemService.service'
 import { ITreeSitterTokenizationFeature } from 'vs/workbench/services/treeSitter/browser/treeSitterTokenizationFeature.service'
 import { ILanguageModelIgnoredFilesService } from 'vs/workbench/contrib/chat/common/ignoredFiles.service'
+import { IChatQuotasService } from 'vs/workbench/contrib/chat/browser/chatQuotasService.service'
+import { INotebookSynchronizerService } from 'vs/workbench/contrib/notebook/common/notebookSynchronizerService.service'
+import { INotebookOriginalCellModelFactory } from 'vs/workbench/contrib/notebook/browser/contrib/chatEdit/notebookOriginalCellModelFactory.service'
+import { INotebookOriginalModelReferenceFactory } from 'vs/workbench/contrib/notebook/browser/contrib/chatEdit/notebookOriginalModelRefFactory.service'
+import { INotebookModelSynchronizerFactory } from 'vs/workbench/contrib/notebook/browser/contrib/chatEdit/notebookSynchronizer.service'
+import { IDirtyDiffModelService } from 'vs/workbench/contrib/scm/browser/diff.service'
+import { ITerminalCompletionService } from 'vs/workbench/contrib/terminalContrib/suggest/browser/terminalCompletionService.service'
 import { getBuiltInExtensionTranslationsUris, getExtensionIdProvidingCurrentLocale } from './l10n'
 import { unsupported } from './tools'
 
-function Unsupported(target: Object, propertyKey: string, descriptor: PropertyDescriptor) {
+function Unsupported(target: object, propertyKey: string, descriptor: PropertyDescriptor) {
   function unsupported() {
     throw new Error(
       `Unsupported: ${target.constructor.name}.${propertyKey} is not supported. You are using a feature without registering the corresponding service override.`
@@ -350,6 +370,7 @@ registerSingleton(
 class EditorService implements IEditorService {
   readonly _serviceBrand = undefined
 
+  getVisibleTextEditorControls = () => []
   onWillOpenEditor = Event.None
   onDidActiveEditorChange = Event.None
   onDidVisibleEditorsChange = Event.None
@@ -1262,6 +1283,8 @@ registerSingleton(ILanguageStatusService, LanguageStatusService, InstantiationTy
 
 class HostService implements IHostService {
   _serviceBrand: undefined
+
+  getNativeWindowHandle = async () => undefined
   getScreenshot = async () => undefined
   getPathForFile = () => undefined
   onDidChangeFullScreen = Event.None
@@ -2032,6 +2055,8 @@ registerSingleton(IExtensionHostDebugService, ExtensionHostDebugService, Instant
 
 class ViewsService implements IViewsService {
   _serviceBrand: undefined
+
+  getFocusedView = () => null
   isViewContainerActive = () => false
   @Unsupported
   getFocusedViewName(): never {
@@ -2496,6 +2521,12 @@ registerSingleton(ITimerService, TimerService, InstantiationType.Eager)
 
 class ExtensionsWorkbenchService implements IExtensionsWorkbenchService {
   _serviceBrand: undefined
+
+  @Unsupported
+  downloadVSIX(): never {
+    unsupported()
+  }
+
   @Unsupported
   updateAutoUpdateForAllExtensions(): never {
     unsupported()
@@ -3619,6 +3650,11 @@ registerSingleton(IUpdateService, UpdateService, InstantiationType.Eager)
 class StatusbarService implements IStatusbarService {
   _serviceBrand: undefined
   @Unsupported
+  overrideEntry(): never {
+    unsupported()
+  }
+
+  @Unsupported
   getPart(): never {
     unsupported()
   }
@@ -4571,6 +4607,21 @@ registerSingleton(IPreferencesSearchService, PreferencesSearchService, Instantia
 
 class NotebookService implements INotebookService {
   _serviceBrand: undefined
+  @Unsupported
+  createNotebookTextDocumentSnapshot(): never {
+    unsupported()
+  }
+
+  @Unsupported
+  restoreNotebookTextModelFromSnapshot(): never {
+    unsupported()
+  }
+
+  @Unsupported
+  hasSupportedNotebooks(): never {
+    unsupported()
+  }
+
   tryGetDataProviderSync = () => undefined
   canResolve = async () => false
   onAddViewType = Event.None
@@ -4695,6 +4746,11 @@ registerSingleton(ISearchHistoryService, SearchHistoryService, InstantiationType
 
 class NotebookEditorService implements INotebookEditorService {
   _serviceBrand: undefined
+  @Unsupported
+  updateReplContextKey(): never {
+    unsupported()
+  }
+
   @Unsupported
   retrieveWidget(): never {
     unsupported()
@@ -6032,6 +6088,7 @@ registerSingleton(IUserDataSyncAccountService, UserDataSyncAccountService, Insta
 
 class ChatWidgetService implements IChatWidgetService {
   _serviceBrand: undefined
+  getWidgetsByLocations = () => []
   onDidAddWidget = Event.None
   getAllWidgets = () => []
   getWidgetByLocation = () => []
@@ -6371,7 +6428,7 @@ registerSingleton(ITestService, TestService, InstantiationType.Delayed)
 class SecretStorageService implements ISecretStorageService {
   _serviceBrand: undefined
   onDidChangeSecret = Event.None
-  type: 'in-memory' = 'in-memory'
+  type = 'in-memory' as const
   get = async () => undefined
   @Unsupported
   set(): never {
@@ -6521,6 +6578,8 @@ registerSingleton(ISCMViewService, SCMViewService, InstantiationType.Delayed)
 
 class NotebookExecutionStateService implements INotebookExecutionStateService {
   _serviceBrand: undefined
+  getLastCompletedCellForNotebook = () => undefined
+
   onDidChangeExecution = Event.None
   onDidChangeLastRunFailState = Event.None
   @Unsupported
@@ -6906,6 +6965,16 @@ registerSingleton(ISignService, SignService, InstantiationType.Delayed)
 
 class TestingContinuousRunService implements ITestingContinuousRunService {
   _serviceBrand: undefined
+  @Unsupported
+  isEnabledForProfile(): never {
+    unsupported()
+  }
+
+  @Unsupported
+  stopProfile(): never {
+    unsupported()
+  }
+
   lastRunProfileIds = new Set<number>()
   onDidChange = Event.None
   isSpecificallyEnabledFor = () => false
@@ -7919,6 +7988,8 @@ registerSingleton(IWorkspaceTagsService, NoOpWorkspaceTagsService, Instantiation
 
 class ExtensionFeaturesManagementService implements IExtensionFeaturesManagementService {
   _serviceBrand: undefined
+  getAllAccessDataForExtension = () => new Map()
+
   onDidChangeEnablement = Event.None
   isEnabled = () => true
   @Unsupported
@@ -8109,6 +8180,15 @@ registerSingleton(ICodeMapperService, CodeMapperService, InstantiationType.Delay
 
 class ChatEditingService implements IChatEditingService {
   _serviceBrand: undefined
+  getOrRestoreEditingSession = async () => null
+  hasRelatedFilesProviders = () => false
+  @Unsupported
+  registerRelatedFilesProvider() {
+    return unsupported()
+  }
+
+  getRelatedFiles = async () => undefined
+
   onDidChangeEditingSession = Event.None
 
   @Unsupported
@@ -8186,3 +8266,115 @@ registerSingleton(
   LanguageModelIgnoredFilesService,
   InstantiationType.Delayed
 )
+
+class AllowedExtensionsService implements IAllowedExtensionsService {
+  _serviceBrand: undefined
+  onDidChangeAllowedExtensions = Event.None
+  isAllowed = (): true => true
+}
+registerSingleton(IAllowedExtensionsService, AllowedExtensionsService, InstantiationType.Delayed)
+
+class ChatQuotasService implements IChatQuotasService {
+  _serviceBrand: undefined
+
+  onDidChangeQuotas = Event.None
+
+  @Unsupported
+  get quotas() {
+    return unsupported()
+  }
+
+  @Unsupported
+  acceptQuotas(): never {
+    unsupported()
+  }
+
+  @Unsupported
+  clearQuotas(): never {
+    unsupported()
+  }
+}
+registerSingleton(IChatQuotasService, ChatQuotasService, InstantiationType.Delayed)
+
+class NotebookSynchronizerService implements INotebookSynchronizerService {
+  _serviceBrand: undefined
+
+  @Unsupported
+  revert(): never {
+    unsupported()
+  }
+}
+registerSingleton(
+  INotebookSynchronizerService,
+  NotebookSynchronizerService,
+  InstantiationType.Delayed
+)
+
+class NotebookOriginalCellModelFactory implements INotebookOriginalCellModelFactory {
+  _serviceBrand: undefined
+
+  @Unsupported
+  getOrCreate(): never {
+    unsupported()
+  }
+}
+registerSingleton(
+  INotebookOriginalCellModelFactory,
+  NotebookOriginalCellModelFactory,
+  InstantiationType.Delayed
+)
+
+class NotebookOriginalModelReferenceFactory implements INotebookOriginalModelReferenceFactory {
+  _serviceBrand: undefined
+
+  @Unsupported
+  getOrCreate(): never {
+    unsupported()
+  }
+}
+registerSingleton(
+  INotebookOriginalModelReferenceFactory,
+  NotebookOriginalModelReferenceFactory,
+  InstantiationType.Delayed
+)
+
+class NotebookModelSynchronizerFactory implements INotebookModelSynchronizerFactory {
+  _serviceBrand: undefined
+
+  @Unsupported
+  getOrCreate(): never {
+    unsupported()
+  }
+}
+registerSingleton(
+  INotebookModelSynchronizerFactory,
+  NotebookModelSynchronizerFactory,
+  InstantiationType.Delayed
+)
+
+class DirtyDiffModelService implements IDirtyDiffModelService {
+  _serviceBrand: undefined
+  getDirtyDiffModel = () => undefined
+  getDiffModel = () => undefined
+}
+registerSingleton(IDirtyDiffModelService, DirtyDiffModelService, InstantiationType.Delayed)
+
+class TerminalCompletionService implements ITerminalCompletionService {
+  _serviceBrand: undefined
+
+  @Unsupported
+  get providers(): never {
+    return unsupported()
+  }
+
+  @Unsupported
+  registerTerminalCompletionProvider(): never {
+    unsupported()
+  }
+
+  @Unsupported
+  provideCompletions(): never {
+    unsupported()
+  }
+}
+registerSingleton(ITerminalCompletionService, TerminalCompletionService, InstantiationType.Delayed)

@@ -8,7 +8,7 @@ package_json="`pwd`/package.json"
 output_directory="`pwd`/vscode"
 loc_output_directory="`pwd`/vscode-loc"
 extension_output_directory="`pwd`/vscode-default-extensions"
-patch_directory="`pwd`/vscode-paches"
+patch_directory="`pwd`/vscode-patches"
 version_info=$output_directory/version.info
 
 if [[ -e $version_info && $(cat $version_info) == $vscodeRef ]]; then
@@ -45,13 +45,16 @@ cd ..
 echo "Extracting service identifiers"
 node build/lib/extractServices.js
 
+echo "Applying transformConstEnums"
+node build/lib/transformConstEnums.js
+
 ## Change shake level from ClassMembers to Files to speed up build
 sed -i'' -e 's/shakeLevel: 2/shakeLevel: 0/g' build/gulpfile.editor.js
 ## build editor just to get the editor.api.d.ts file compiled
-yarn gulp editor-distro
+npx gulp editor-distro
 
 # build and copy default extensions
-BUILD_SOURCEVERSION=$vscodeRef NODE_OPTIONS=--max-old-space-size=8192 yarn gulp compile-web-extensions-build
+BUILD_SOURCEVERSION=$vscodeRef NODE_OPTIONS=--max-old-space-size=8192 npx gulp compile-web-extensions-build
 rm -rf $extension_output_directory
 cp -R .build/web/extensions "$extension_output_directory"
 
@@ -83,6 +86,15 @@ rsync -R $(find . -name \*.js) ../src/
 cd ..
 
 cd src
+
+# generate vscode.proposed.d.ts
+cd vscode-dts
+echo "" > vscode.proposed.d.ts
+
+for file in vscode.proposed.*.d.ts; do
+	echo "/// <reference path=\"./$file\" />" >> vscode.proposed.d.ts
+done
+cd ..
 
 mkdir -p $output_directory
 

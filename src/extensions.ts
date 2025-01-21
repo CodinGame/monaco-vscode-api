@@ -1,17 +1,19 @@
-/** PROPOSED-type-references */
+// eslint-disable-next-line @typescript-eslint/triple-slash-reference
+/// <reference path="../vscode/src/vscode-dts/vscode.proposed.d.ts" />
+
 import type * as vscode from 'vscode'
 import {
   ExtensionType,
-  IExtension,
-  IExtensionContributions,
-  IExtensionManifest,
+  type IExtension,
+  type IExtensionContributions,
+  type IExtensionManifest,
   TargetPlatform
 } from 'vs/platform/extensions/common/extensions'
 import { IExtensionService } from 'vs/workbench/services/extensions/common/extensions.service'
 import { URI } from 'vs/base/common/uri'
 import { getExtensionId } from 'vs/platform/extensionManagement/common/extensionManagementUtil'
-import { DisposableStore, IDisposable } from 'vs/base/common/lifecycle'
-import { ITranslations } from 'vs/platform/extensionManagement/common/extensionNls'
+import { DisposableStore, type IDisposable } from 'vs/base/common/lifecycle'
+import type { ITranslations } from 'vs/platform/extensionManagement/common/extensionNls'
 import { joinPath } from 'vs/base/common/resources'
 import { FileAccess, Schemas } from 'vs/base/common/network'
 import { ExtensionHostKind } from 'vs/workbench/services/extensions/common/extensionHostKind'
@@ -23,13 +25,16 @@ import { IWorkbenchExtensionEnablementService } from 'vs/workbench/services/exte
 import { StandaloneServices } from 'vs/editor/standalone/browser/standaloneServices'
 import {
   ExtensionManifestTranslator,
-  NlsConfiguration
+  type NlsConfiguration
 } from 'vs/platform/extensionManagement/common/extensionsScannerService'
 import * as platform from 'vs/base/common/platform'
-import { IExtensionWithExtHostKind, ExtensionServiceOverride } from './service-override/extensions'
+import {
+  type IExtensionWithExtHostKind,
+  ExtensionServiceOverride
+} from './service-override/extensions'
 import {
   CustomSchemas,
-  ExtensionFileMetadata,
+  type ExtensionFileMetadata,
   RegisteredUriFile,
   registerExtensionFile
 } from './service-override/files'
@@ -63,7 +68,7 @@ export interface RegisterExtensionResult {
   isEnabled(): Promise<boolean>
 }
 
-export interface RegisterRemoteExtensionResult extends RegisterExtensionResult {}
+export type RegisterRemoteExtensionResult = RegisterExtensionResult
 
 export interface RegisterLocalExtensionResult extends RegisterExtensionResult {
   registerFileUrl: (path: string, url: string) => IDisposable
@@ -197,7 +202,8 @@ export function registerExtension(
       validations: [],
       extHostKind,
       readmeUrl: readmePath != null ? URI.joinPath(realLocation, readmePath) : undefined,
-      changelogUrl: changelogPath != null ? URI.joinPath(realLocation, changelogPath) : undefined
+      changelogUrl: changelogPath != null ? URI.joinPath(realLocation, changelogPath) : undefined,
+      preRelease: false
     }
 
     if (extHostKind != null) {
@@ -279,10 +285,5 @@ export function registerExtension(
   return api
 }
 
-export {
-  IExtensionManifest,
-  ITranslations,
-  IExtensionContributions,
-  ExtensionHostKind,
-  ExtensionFileMetadata
-}
+export { ExtensionHostKind }
+export type { IExtensionManifest, ITranslations, IExtensionContributions, ExtensionFileMetadata }

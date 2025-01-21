@@ -1,10 +1,10 @@
-import { IEditorOverrideServices } from 'vs/editor/standalone/browser/standaloneServices'
+import type { IEditorOverrideServices } from 'vs/editor/standalone/browser/standaloneServices'
 import { SyncDescriptor } from 'vs/platform/instantiation/common/descriptors'
 import { BrowserWorkbenchEnvironmentService } from 'vs/workbench/services/environment/browser/environmentService'
 import { IEnvironmentService } from 'vs/platform/environment/common/environment.service'
 import { IBrowserWorkbenchEnvironmentService } from 'vs/workbench/services/environment/browser/environmentService.service'
 import { IProductService } from 'vs/platform/product/common/productService.service'
-import { IWorkbenchConstructionOptions } from 'vs/workbench/browser/web.api'
+import type { IWorkbenchConstructionOptions } from 'vs/workbench/browser/web.api'
 import { getWorkbenchConstructionOptions, getWorkspaceIdentifier, logsPath } from '../workbench'
 
 class InjectedBrowserWorkbenchEnvironmentService
@@ -38,4 +38,4 @@ function getServiceOverride(options?: IWorkbenchConstructionOptions): IEditorOve
 
 export default getServiceOverride
 
-export { IWorkbenchConstructionOptions }
+export type { IWorkbenchConstructionOptions }

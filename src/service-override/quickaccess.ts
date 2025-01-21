@@ -1,6 +1,6 @@
 import { SyncDescriptor } from 'vs/platform/instantiation/common/descriptors'
 import { IQuickInputService } from 'vs/platform/quickinput/common/quickInput.service'
-import {
+import type {
   IInputBox,
   IInputOptions,
   IPickOptions,
@@ -15,12 +15,12 @@ import {
 import { CancellationToken } from 'vs/base/common/cancellation'
 import { StandaloneQuickInputService } from 'vs/editor/standalone/browser/quickInput/standaloneQuickInputService'
 import {
-  IEditorOverrideServices,
+  type IEditorOverrideServices,
   StandaloneServices
 } from 'vs/editor/standalone/browser/standaloneServices'
 import { IInstantiationService } from 'vs/platform/instantiation/common/instantiation'
 import { QuickInputController } from 'vs/platform/quickinput/browser/quickInputController'
-import { IQuickAccessController } from 'vs/platform/quickinput/common/quickAccess'
+import type { IQuickAccessController } from 'vs/platform/quickinput/common/quickAccess'
 import { QuickInputService } from 'vs/workbench/services/quickinput/browser/quickInputService'
 import { ICodeEditorService } from 'vs/editor/browser/services/codeEditorService'
 import { StandaloneCodeEditor } from 'vs/editor/standalone/browser/standaloneCodeEditor'
@@ -32,21 +32,19 @@ import 'vs/workbench/contrib/quickaccess/browser/quickAccess.contribution'
 import 'vs/workbench/contrib/url/browser/url.contribution'
 // required for the workbench.commandPalette.preserveInput config key
 import 'vs/workbench/browser/workbench.contribution'
-import { ICodeEditor } from 'vs/editor/browser/editorBrowser'
+import type { ICodeEditor } from 'vs/editor/browser/editorBrowser'
 
 let isKeybindingConfigurationVisible = () => {
   return false
 }
-let shouldUseGlobalPicker = (
-  _activeCodeEditor: ICodeEditor,
-  _activeCodeEditorStandalone: boolean
-) => {
+let shouldUseGlobalPicker: (
+  activeCodeEditor: ICodeEditor | null,
+  activeCodeEditorStandalone: boolean
+) => boolean = () => {
   return false
 }
 
-// eslint-disable-next-line dot-notation
 const original = CommandsQuickAccessProvider.prototype['getCommandPicks']
-// eslint-disable-next-line dot-notation
 CommandsQuickAccessProvider.prototype['getCommandPicks'] = async function (
   this: CommandsQuickAccessProvider,
   token: CancellationToken

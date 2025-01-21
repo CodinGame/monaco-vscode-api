@@ -3,35 +3,35 @@ import './contributions'
 import 'vs/editor/editor.all'
 import 'vs/editor/standalone/browser/iPadShowKeyboard/iPadShowKeyboard'
 import Severity from 'vs/base/common/severity'
-import { ITextModelContentProvider } from 'vs/editor/common/services/resolverService'
+import type { ITextModelContentProvider } from 'vs/editor/common/services/resolverService'
 import { StorageScope, StorageTarget } from 'vs/platform/storage/common/storage'
 import {
-  IEditorOverrideServices,
+  type IEditorOverrideServices,
   StandaloneServices
 } from 'vs/editor/standalone/browser/standaloneServices'
 import { mixin } from 'vs/base/common/objects'
 import {
-  GetLeadingNonServiceArgs,
+  type GetLeadingNonServiceArgs,
   IInstantiationService,
-  ServiceIdentifier,
-  ServicesAccessor
+  type ServiceIdentifier,
+  type ServicesAccessor
 } from 'vs/platform/instantiation/common/instantiation'
-import { IAction } from 'vs/base/common/actions'
-import { DisposableStore, IDisposable } from 'vs/base/common/lifecycle'
-import { IWorkbenchConstructionOptions } from 'vs/workbench/browser/web.api'
-import { IProductConfiguration } from 'vs/base/common/product'
+import type { IAction } from 'vs/base/common/actions'
+import { DisposableStore, type IDisposable } from 'vs/base/common/lifecycle'
+import type { IWorkbenchConstructionOptions } from 'vs/workbench/browser/web.api'
+import type { IProductConfiguration } from 'vs/base/common/product'
 import {
-  ILazyWorkbenchContributionInstantiation,
-  IOnEditorWorkbenchContributionInstantiation,
-  IWorkbenchContribution,
-  WorkbenchContributionInstantiation,
+  type ILazyWorkbenchContributionInstantiation,
+  type IOnEditorWorkbenchContributionInstantiation,
+  type IWorkbenchContribution,
+  type WorkbenchContributionInstantiation,
   WorkbenchPhase,
   registerWorkbenchContribution2
 } from 'vs/workbench/common/contributions'
 import { IProductService } from 'vs/platform/product/common/productService.service'
-import { IConfigurationChangeEvent } from 'vs/platform/configuration/common/configuration'
-import { IColorTheme } from 'vs/platform/theme/common/themeService'
-import { EnvironmentOverride, initialize as initializeWorkbench } from './workbench'
+import type { IConfigurationChangeEvent } from 'vs/platform/configuration/common/configuration'
+import type { IColorTheme } from 'vs/platform/theme/common/themeService'
+import { type EnvironmentOverride, initialize as initializeWorkbench } from './workbench'
 import {
   checkServicesNotInitialized,
   checkServicesReady,
@@ -174,31 +174,32 @@ export { IUriIdentityService } from 'vs/platform/uriIdentity/common/uriIdentity.
 export { IBreadcrumbsService } from 'vs/workbench/browser/parts/editor/breadcrumbs.service'
 export { IEditorGroupsService } from 'vs/workbench/services/editor/common/editorGroupsService.service'
 export {
-  IEditorGroup,
   GroupDirection,
   GroupOrientation,
   GroupLocation,
-  IFindGroupScope,
   GroupsArrangement,
+  MergeGroupMode,
+  GroupsOrder
+} from 'vs/workbench/services/editor/common/editorGroupsService'
+export type {
+  IEditorGroup,
+  IFindGroupScope,
   GroupLayoutArgument,
   EditorGroupLayout,
-  MergeGroupMode,
   IMergeGroupOptions,
   ICloseEditorOptions,
   ICloseEditorsFilter,
   ICloseAllEditorsOptions,
   IEditorReplacement,
-  GroupsOrder,
   IEditorSideGroup
 } from 'vs/workbench/services/editor/common/editorGroupsService'
-export {
+export { CloseDirection, EditorsOrder } from 'vs/workbench/common/editor'
+export type {
   IEditorPane,
   GroupIdentifier,
   EditorInputWithOptions,
-  CloseDirection,
   IEditorPartOptions,
   IEditorPartOptionsChangeEvent,
-  EditorsOrder,
   IVisibleEditorPane,
   IEditorCloseEvent,
   IUntypedEditorInput,
@@ -209,14 +210,14 @@ export {
   IFindEditorOptions,
   IEditorControl
 } from 'vs/workbench/common/editor'
-export { IDimension } from 'vs/editor/common/core/dimension'
-export {
+export type { IDimension } from 'vs/editor/common/core/dimension'
+export type {
   IEditorOptions,
   ITextEditorOptions,
   IResourceEditorInput
 } from 'vs/platform/editor/common/editor'
 export { EditorInput } from 'vs/workbench/common/editor/editorInput'
-export { IGroupModelChangeEvent } from 'vs/workbench/common/editor/editorGroupModel'
+export type { IGroupModelChangeEvent } from 'vs/workbench/common/editor/editorGroupModel'
 export { IEditorService } from 'vs/workbench/services/editor/common/editorService.service'
 export { IEditorResolverService } from 'vs/workbench/services/editor/common/editorResolverService.service'
 export { ITextEditorService } from 'vs/workbench/services/textfile/common/textEditorService.service'
@@ -260,10 +261,12 @@ export { ILocaleService } from 'vs/workbench/services/localization/common/locale
 export { NoOpNotification, NoOpProgress } from 'vs/platform/notification/common/notification'
 export {
   NotificationsFilter,
-  NotificationMessage,
   NotificationPriority,
+  NeverShowAgainScope
+} from 'vs/platform/notification/common/notification'
+export type {
+  NotificationMessage,
   INotificationProperties,
-  NeverShowAgainScope,
   INeverShowAgainOptions,
   INotification,
   INotificationActions,
@@ -277,7 +280,7 @@ export {
 } from 'vs/platform/notification/common/notification'
 
 // Export all Dialog service parts
-export {
+export type {
   IDialogArgs,
   DialogType,
   IDialogResult,
@@ -301,14 +304,14 @@ export {
   IPromptWithCustomCancel,
   IPromptWithDefaultCancel
 } from 'vs/platform/dialogs/common/dialogs'
-export {
+export type {
   IDialogHandler,
   ICustomDialogOptions,
   ICustomDialogMarkdown
 } from 'vs/platform/dialogs/common/dialogs'
-export { IMarkdownString, MarkdownStringTrustedOptions } from 'vs/base/common/htmlContent'
+export type { IMarkdownString, MarkdownStringTrustedOptions } from 'vs/base/common/htmlContent'
 export { IActivityService } from 'vs/workbench/services/activity/common/activity.service'
-export { IBadge } from 'vs/workbench/services/activity/common/activity'
+export type { IBadge } from 'vs/workbench/services/activity/common/activity'
 export { IHoverService } from 'vs/platform/hover/browser/hover.service'
 export { IExplorerService } from 'vs/workbench/contrib/files/browser/files.service'
 export { IStatusbarService } from 'vs/workbench/services/statusbar/browser/statusbar.service'
@@ -319,25 +322,21 @@ export {
   IWorkspaceTrustRequestService,
   IWorkspaceTrustEnablementService
 } from 'vs/platform/workspace/common/workspaceTrust.service'
-export { IWorkspaceTrustUriInfo } from 'vs/platform/workspace/common/workspaceTrust'
+export type { IWorkspaceTrustUriInfo } from 'vs/platform/workspace/common/workspaceTrust'
 export { IKeybindingService } from 'vs/platform/keybinding/common/keybinding.service'
 export { ISecretStorageService } from 'vs/platform/secrets/common/secrets.service'
-export { ISecretStorageProvider } from 'vs/platform/secrets/common/secrets'
-export { IProductConfiguration } from 'vs/base/common/product'
+export type { ISecretStorageProvider } from 'vs/platform/secrets/common/secrets'
+export type { IProductConfiguration } from 'vs/base/common/product'
 
-export {
+export { StorageScope, StorageTarget, Severity, IProductService, WorkbenchPhase }
+export type {
   IAction,
   IConfigurationChangeEvent,
   ITextModelContentProvider,
   IColorTheme,
-  StorageScope,
-  StorageTarget,
-  Severity,
   IWorkbenchConstructionOptions,
-  IProductService,
   IEditorOverrideServices,
   WorkbenchContributionInstantiation,
-  WorkbenchPhase,
   ILazyWorkbenchContributionInstantiation,
   IOnEditorWorkbenchContributionInstantiation,
   ServicesAccessor

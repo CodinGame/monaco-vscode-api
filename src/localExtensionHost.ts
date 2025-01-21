@@ -9,11 +9,11 @@ import { VSBuffer } from 'vs/base/common/buffer'
 import { isLoggingOnly } from 'vs/platform/telemetry/common/telemetryUtils'
 import { joinPath } from 'vs/base/common/resources'
 import {
-  IExtensionHostInitData,
+  type IExtensionHostInitData,
   UIKind
 } from 'vs/workbench/services/extensions/common/extensionHostProtocol'
 import * as platform from 'vs/base/common/platform'
-import { IMessagePassingProtocol } from 'vs/base/parts/ipc/common/ipc'
+import type { IMessagePassingProtocol } from 'vs/base/parts/ipc/common/ipc'
 import { LocalProcessRunningLocation } from 'vs/workbench/services/extensions/common/extensionRunningLocation'
 import {
   IExtHostExtensionService,
@@ -22,11 +22,11 @@ import {
 import {
   ExtensionHostExtensions,
   ExtensionHostStartup,
-  IExtensionHost,
+  type IExtensionHost,
   nullExtensionDescription
 } from 'vs/workbench/services/extensions/common/extensions'
 import { IExtensionService } from 'vs/workbench/services/extensions/common/extensions.service'
-import { IWebWorkerExtensionHostDataProvider } from 'vs/workbench/services/extensions/browser/webWorkerExtensionHost'
+import type { IWebWorkerExtensionHostDataProvider } from 'vs/workbench/services/extensions/browser/webWorkerExtensionHost'
 import { ITelemetryService } from 'vs/platform/telemetry/common/telemetry.service'
 import { WorkbenchState } from 'vs/platform/workspace/common/workspace'
 import { IWorkspaceContextService } from 'vs/platform/workspace/common/workspace.service'
@@ -47,7 +47,7 @@ import { ExtensionIdentifierMap } from 'vs/platform/extensions/common/extensions
 import { DeferredPromise } from 'vs/base/common/async'
 import { setLocalExtensionHost } from './service-override/extensions'
 import { unsupported } from './tools'
-import { ApiFactory, registerLocalApiFactory } from './extensions'
+import { type ApiFactory, registerLocalApiFactory } from './extensions'
 import { setDefaultApi } from './extension.api'
 import { registerServiceInitializePostParticipant } from './lifecycle'
 
@@ -120,7 +120,7 @@ const hostUtil = new (class implements IHostUtils {
   public readonly pid = undefined
   exit = unsupported
 
-  async exists(_path: string): Promise<boolean> {
+  async exists(): Promise<boolean> {
     return true
   }
 

@@ -14,7 +14,10 @@ export function memoized<A extends unknown[], T>(fct: (...args: A) => T): (...ar
   }
 }
 
-export function memoizedConstructor<T>(ctor: new (...args: any[]) => T): new (...args: any[]) => T {
+export function memoizedConstructor<T>(
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  ctor: new (...args: any[]) => T
+): new (...args: unknown[]) => T {
   return new Proxy(ctor, {
     construct: memoized((target, args) => {
       return Reflect.construct(ctor, args) as object

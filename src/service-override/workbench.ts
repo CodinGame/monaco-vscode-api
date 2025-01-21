@@ -1,5 +1,5 @@
-import { IEditorOverrideServices } from 'vs/editor/standalone/browser/standaloneServices'
-import { IWorkbenchOptions, Workbench } from 'vs/workbench/browser/workbench'
+import type { IEditorOverrideServices } from 'vs/editor/standalone/browser/standaloneServices'
+import { type IWorkbenchOptions, Workbench } from 'vs/workbench/browser/workbench'
 import { ILogService } from 'vs/platform/log/common/log.service'
 import { ServiceCollection } from 'vs/platform/instantiation/common/serviceCollection'
 import { IInstantiationService } from 'vs/platform/instantiation/common/instantiation'
