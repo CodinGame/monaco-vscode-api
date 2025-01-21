@@ -51,10 +51,10 @@ node build/lib/transformConstEnums.js
 ## Change shake level from ClassMembers to Files to speed up build
 sed -i'' -e 's/shakeLevel: 2/shakeLevel: 0/g' build/gulpfile.editor.js
 ## build editor just to get the editor.api.d.ts file compiled
-yarn gulp editor-distro
+npx gulp editor-distro
 
 # build and copy default extensions
-BUILD_SOURCEVERSION=$vscodeRef NODE_OPTIONS=--max-old-space-size=8192 yarn gulp compile-web-extensions-build
+BUILD_SOURCEVERSION=$vscodeRef NODE_OPTIONS=--max-old-space-size=8192 npx gulp compile-web-extensions-build
 rm -rf $extension_output_directory
 cp -R .build/web/extensions "$extension_output_directory"
 

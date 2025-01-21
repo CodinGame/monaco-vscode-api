@@ -10,6 +10,5 @@ ENV VOLTA_FEATURE_PNPM=1
 ENV VOLTA_HOME "/root/.volta"
 ENV PATH "$VOLTA_HOME/bin:$PATH"
 
-RUN volta install node@20 \
-    && volta install yarn@1
+RUN volta install node@22
 
