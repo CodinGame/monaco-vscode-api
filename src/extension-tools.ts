@@ -1,3 +1,6 @@
+// eslint-disable-next-line @typescript-eslint/triple-slash-reference
+/// <reference path="./types/css-url-parser.d.ts" />
+
 import type {
   IColorTheme,
   ICommand,
