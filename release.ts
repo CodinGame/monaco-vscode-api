@@ -38,9 +38,12 @@ async function publishNpm(version: string, tag: string) {
         packageJson.optionalDependencies
       ]) {
         for (const dependency in dependencies) {
-          const alias = ALIASES[dependency]
-          const packageVersion = alias != null ? `npm:${alias}@${version}` : version
-          dependencies[dependency] = packageVersion
+          if (dependency.startsWith('@codingame/monaco-vscode-') || dependency in ALIASES) {
+            const alias = ALIASES[dependency]
+            const packageVersion = alias != null ? `npm:${alias}@${version}` : version
+            dependencies[dependency] = packageVersion
+          }
+
         }
       }
       await fs.writeFile(
