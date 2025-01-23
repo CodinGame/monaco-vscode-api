@@ -491,7 +491,7 @@ export default ({
                       .filter((infos) => infos.isExternal)
                       .flatMap((infos): SubPackageExternalDependency[] => {
                         const match = /^(?:@[^/]*\/)?[^/]*/.exec(infos.id)
-                        if (match != null && !builtinModules.includes(match[0])) {
+                        if (match != null && !builtinModules.includes(match[0]) && match[0] !== (packageAlias ?? packageName)) {
                           const name = match[0]
                           let version = '*'
                           if (ownPackageAliases.has(name)) {
