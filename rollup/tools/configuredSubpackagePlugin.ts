@@ -129,8 +129,7 @@ export function configuredSubpackagePlugin(): rollup.Plugin {
           if (match == null) {
             return groupName
           }
-          const [_, _category, name] = match
-          return name
+          return match[2]
         })
         .join(', ')
       return {

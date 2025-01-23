@@ -341,6 +341,7 @@ export default ({
     }
     const allGroupSets = Array.from(groupSetMap.values())
 
+    // eslint-disable-next-line prefer-const
     let { filtered: entryGroupSets, removed: combinationGroupSets } = splitArray(
       allGroupSets,
       (groupSet) => groupSet.groups.size === 1
@@ -503,7 +504,7 @@ export default ({
                           } else {
                             try {
                               version = require(`${name}/package.json`).version
-                            } catch (err) {
+                            } catch {
                               this.error(`Unable to find version of ${name}`)
                             }
                           }
@@ -633,7 +634,7 @@ export default ({
       await fs.promises.rm(options.dir!, {
         recursive: true
       })
-    } catch (err) {
+    } catch {
       // ignore, may not exists
     }
   }

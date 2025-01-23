@@ -255,7 +255,6 @@ export function transformVSCodeCode(id: string, code: string): string {
       this.traverse(path)
     }
   })
-  // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
   if (transformed) {
     patchedCode = recast.print(ast).code
     patchedCode = patchedCode.replace(/\/\*#__PURE__\*\/\s+/g, '/*#__PURE__*/ ') // Remove space after PURE comment
