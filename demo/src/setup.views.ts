@@ -3,11 +3,11 @@ import {
   IWorkbenchLayoutService,
   getService,
   initialize as initializeMonacoService
-} from 'vscode/services'
+} from '@codingame/monaco-vscode-api'
 import getQuickAccessServiceOverride from '@codingame/monaco-vscode-quickaccess-service-override'
 import { BrowserStorageService } from '@codingame/monaco-vscode-storage-service-override'
 import { ExtensionHostKind } from '@codingame/monaco-vscode-extensions-service-override'
-import { registerExtension } from 'vscode/extensions'
+import { registerExtension } from '@codingame/monaco-vscode-api/extensions'
 import getViewsServiceOverride, {
   isEditorPartVisible,
   Parts,
@@ -18,7 +18,7 @@ import getViewsServiceOverride, {
   onDidChangeSideBarPosition,
   Position
 } from '@codingame/monaco-vscode-views-service-override'
-import { setUnexpectedErrorHandler } from 'vscode/monaco'
+import { setUnexpectedErrorHandler } from '@codingame/monaco-vscode-api/monaco'
 import { openNewCodeEditor } from './features/editor'
 import './features/customView.views'
 import {

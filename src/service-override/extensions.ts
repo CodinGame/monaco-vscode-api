@@ -56,11 +56,11 @@ import { ExtensionResourceLoaderService } from 'vs/platform/extensionResourceLoa
 import { IExtensionResourceLoaderService } from 'vs/platform/extensionResourceLoader/common/extensionResourceLoader.service'
 import { ExtensionBisectService } from 'vs/workbench/services/extensionManagement/browser/extensionBisect'
 import { IExtensionBisectService } from 'vs/workbench/services/extensionManagement/browser/extensionBisect.service'
-import { changeUrlDomain } from './tools/url'
-import { CustomSchemas } from './files'
-import type { LocalExtensionHost } from '../localExtensionHost'
-import { registerAssets } from '../assets'
-import { getForcedExtensionHostKind } from '../extensions'
+import { changeUrlDomain } from './tools/url.js'
+import { CustomSchemas } from './files.js'
+import type { LocalExtensionHost } from '../localExtensionHost.js'
+import { registerAssets } from '../assets.js'
+import { getForcedExtensionHostKind } from '../extensions.js'
 import 'vs/workbench/api/browser/extensionHost.contribution'
 
 export interface WorkerConfig {

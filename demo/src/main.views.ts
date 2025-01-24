@@ -5,7 +5,7 @@ import {
   StandaloneServices,
   createInstance,
   getService
-} from 'vscode/services'
+} from '@codingame/monaco-vscode-api'
 import * as monaco from 'monaco-editor'
 import {
   defaultUserConfigurationFile,

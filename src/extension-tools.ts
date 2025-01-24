@@ -18,7 +18,7 @@ import type { IUserFriendlyViewsContainerDescriptor } from 'vs/workbench/api/bro
 import parseCssUrl from 'css-url-parser'
 import * as mime from 'mime-types'
 import { type FileSystemAdapter, glob } from 'fast-glob'
-import * as path from 'path'
+import * as path from 'node:path'
 import type nodeFs from 'node:fs'
 
 export interface ExtensionResource {

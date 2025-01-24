@@ -1,4 +1,4 @@
-import { IEditorService, StandaloneServices, createInstance } from 'vscode/services'
+import { IEditorService, StandaloneServices, createInstance } from '@codingame/monaco-vscode-api'
 import { clearStorage, remoteAuthority } from './setup.workbench'
 import { CustomEditorInput } from './features/customView.workbench'
 import './main.common'

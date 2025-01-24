@@ -1,4 +1,4 @@
-import { ExtensionHostKind, registerExtension } from 'vscode/extensions'
+import { ExtensionHostKind, registerExtension } from '@codingame/monaco-vscode-api/extensions'
 import * as monaco from 'monaco-editor'
 import { useHtmlFileSystemProvider } from '../setup.common'
 

@@ -1,12 +1,17 @@
 import { fileURLToPath } from 'node:url'
 import * as fs from 'node:fs'
 import * as nodePath from 'node:path'
+import type { PackageJson } from 'type-fest'
 
-export const pkg = JSON.parse(
+export const pkg: PackageJson = JSON.parse(
   fs.readFileSync(new URL('../../package.json', import.meta.url).pathname).toString()
 )
 
 const __dirname = nodePath.dirname(fileURLToPath(import.meta.url))
+
+export const MAIN_PACKAGE_NAME = '@codingame/monaco-vscode-api'
+export const EDITOR_API_PACKAGE_NAME = '@codingame/monaco-vscode-editor-api'
+export const EXTENSION_API_PACKAGE_NAME = '@codingame/monaco-vscode-extension-api'
 
 export const EXTENSIONS = ['', '.ts', '.js']
 

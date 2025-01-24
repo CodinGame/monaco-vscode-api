@@ -3,14 +3,14 @@ import {
   IWorkbenchLayoutService,
   getService,
   initialize as initializeMonacoService
-} from 'vscode/services'
+} from '@codingame/monaco-vscode-api'
 import getWorkbenchServiceOverride, {
   Parts
 } from '@codingame/monaco-vscode-workbench-service-override'
 import getQuickAccessServiceOverride from '@codingame/monaco-vscode-quickaccess-service-override'
 import { BrowserStorageService } from '@codingame/monaco-vscode-storage-service-override'
 import { ExtensionHostKind } from '@codingame/monaco-vscode-extensions-service-override'
-import { registerExtension } from 'vscode/extensions'
+import { registerExtension } from '@codingame/monaco-vscode-api/extensions'
 import './features/customView.workbench'
 import {
   commonServices,

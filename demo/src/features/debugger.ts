@@ -1,4 +1,4 @@
-import { ExtensionHostKind, registerExtension } from 'vscode/extensions'
+import { ExtensionHostKind, registerExtension } from '@codingame/monaco-vscode-api/extensions'
 import type * as vscode from 'vscode'
 
 const { getApi, registerFileUrl } = registerExtension(

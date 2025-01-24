@@ -7,7 +7,17 @@ import commonjs from '@rollup/plugin-commonjs'
 import { importMetaAssets } from '@web/rollup-plugin-import-meta-assets'
 import * as fs from 'node:fs'
 import * as nodePath from 'node:path'
-import { BASE_DIR, EXTENSIONS, pkg, external, VSCODE_SRC_DIR, DIST_DIR } from './config.js'
+import {
+  BASE_DIR,
+  EXTENSIONS,
+  pkg,
+  external,
+  VSCODE_SRC_DIR,
+  DIST_DIR,
+  MAIN_PACKAGE_NAME,
+  EDITOR_API_PACKAGE_NAME,
+  EXTENSION_API_PACKAGE_NAME
+} from './config.js'
 import carryDtsPlugin from '../plugins/rollup-carry-dts-plugin.js'
 import subpackagePlugin, {
   type EntryGroup,
@@ -43,11 +53,11 @@ const EDITOR_API_EXPOSE_MODULES = [
 const ALLOWED_MAIN_DEPENDENCIES = new Set(['@vscode/iconv-lite-umd', 'jschardet', 'marked'])
 
 const workerGroups: Record<string, string> = {
-  languageDetection: 'language-detection-worker',
-  outputLinkComputer: 'output',
-  textmate: 'textmate',
-  notebook: 'notebook',
-  localFileSearch: 'search'
+  languageDetection: 'service-override:language-detection-worker',
+  outputLinkComputer: 'service-override:output',
+  textmate: 'service-override:textmate',
+  notebook: 'service-override:notebook',
+  localFileSearch: 'service-override:search'
 }
 
 export function configuredSubpackagePlugin(): rollup.Plugin {
@@ -61,12 +71,18 @@ export function configuredSubpackagePlugin(): rollup.Plugin {
           const name = paramCase(nodePath.basename(id, '.js'))
           return `service-override:${name}`
         }
-        if (id.startsWith(workersDir)) {
-          const name = workerGroups[nodePath.basename(id, '.worker.js')]
-          return name != null ? `service-override:${name}` : 'main'
-        }
         if (id === nodePath.resolve(options.dir!, 'editor.api.js')) {
           return 'editor.api'
+        }
+        if (
+          id === nodePath.resolve(options.dir!, 'extension.api.js') ||
+          id === nodePath.resolve(options.dir!, 'localExtensionHost.js')
+        ) {
+          return 'extension.api'
+        }
+        if (id.startsWith(workersDir)) {
+          const name = workerGroups[nodePath.basename(id, '.worker.js')]
+          return name != null ? name : 'main'
         }
         return 'main'
       }
@@ -84,7 +100,6 @@ export function configuredSubpackagePlugin(): rollup.Plugin {
         group.entrypoints.push(entrypoint)
         const dts = entrypoint.replace(/\.js$/, '.d.ts')
         if (fs.existsSync(dts)) {
-          // console.log('ADDING DTS', entrypoint, dts)
           group.entrypoints.push(dts)
         }
       }
@@ -97,21 +112,30 @@ export function configuredSubpackagePlugin(): rollup.Plugin {
         switch (uniqueGroup) {
           case 'main':
             return {
-              name: '@codingame/monaco-vscode-api',
-              alias: 'vscode',
+              name: MAIN_PACKAGE_NAME,
               version: '0.0.0-semantic-release',
               description: pkg.description
             }
           case 'editor.api':
             return {
-              name: '@codingame/monaco-vscode-editor-api',
+              name: EDITOR_API_PACKAGE_NAME,
               alias: 'monaco-editor',
               version: '0.0.0-semantic-release',
               description: `${pkg.description} - monaco-editor compatible api`
             }
+          case 'extension.api':
+            return {
+              name: EXTENSION_API_PACKAGE_NAME,
+              alias: 'vscode',
+              version: '0.0.0-semantic-release',
+              description: `${pkg.description} - VSCode extension compatible api`
+            }
           default: {
-            const match = /^(.*):(.*)$/.exec(uniqueGroup)!
-            const [_, category, name] = match
+            const match = /^(.*):(.*)$/.exec(uniqueGroup)
+            if (match == null) {
+              throw new Error(`Unable to parse group "${uniqueGroup}"`)
+            }
+            const [, category, name] = match
             return {
               name: `@codingame/monaco-vscode-${paramCase(name!)}-${category}`,
               version: '0.0.0-semantic-release',
@@ -129,8 +153,7 @@ export function configuredSubpackagePlugin(): rollup.Plugin {
           if (match == null) {
             return groupName
           }
-          const [_, _category, name] = match
-          return name
+          return match[2]
         })
         .join(', ')
       return {
@@ -145,7 +168,7 @@ export function configuredSubpackagePlugin(): rollup.Plugin {
     },
     getRollupOptions(packageName, groups, options) {
       const isCommonPackage = groups.size > 1
-      const isEditorApi = packageName === '@codingame/monaco-vscode-editor-api'
+      const isEditorApi = packageName === EDITOR_API_PACKAGE_NAME
       const needsEmptyModule = isCommonPackage || isEditorApi
 
       const rollupOptions: rollup.RollupOptions = {
@@ -199,7 +222,7 @@ export function configuredSubpackagePlugin(): rollup.Plugin {
         ]
       }
 
-      if (packageName === '@codingame/monaco-vscode-api') {
+      if (packageName === MAIN_PACKAGE_NAME) {
         rollupOptions.plugins = [
           rollupOptions.plugins,
           {
@@ -214,7 +237,7 @@ export function configuredSubpackagePlugin(): rollup.Plugin {
         ]
       }
 
-      if (packageName === '@codingame/monaco-vscode-editor-api') {
+      if (packageName === EDITOR_API_PACKAGE_NAME) {
         rollupOptions.input = {
           'esm/vs/editor/editor.api': (rollupOptions.input as string[])[0]!,
           'esm/vs/editor/editor.api.d': (rollupOptions.input as string[])[0]!.replace(
@@ -259,7 +282,7 @@ export function configuredSubpackagePlugin(): rollup.Plugin {
               this.emitFile({
                 fileName: 'esm/vs/editor/editor.worker.js',
                 needsCodeReference: false,
-                source: "export * from 'vscode/workers/editor.worker'",
+                source: `export * from '${MAIN_PACKAGE_NAME}/workers/editor.worker'`,
                 type: 'asset'
               })
             }
@@ -309,6 +332,10 @@ export function configuredSubpackagePlugin(): rollup.Plugin {
         }
       }
 
+      const dependencies = externalDependencies.filter((d) => d.name !== MAIN_PACKAGE_NAME)
+      const peerDependencies = externalDependencies.filter((d) => d.name === MAIN_PACKAGE_NAME)
+      const optionalPeerDependencies = externalTypeOnlyDependencies
+
       const baseManifest: Manifest = {
         ...Object.fromEntries(
           Object.entries(pkg).filter(([key]) =>
@@ -328,30 +355,31 @@ export function configuredSubpackagePlugin(): rollup.Plugin {
         private: false,
         ...manifest,
         dependencies: Object.fromEntries(
-          externalDependencies.map((d) => {
+          dependencies.map((d) => {
             return [d.name, d.version]
           })
         ),
         peerDependencies: Object.fromEntries(
-          externalTypeOnlyDependencies.map((d) => {
+          [...peerDependencies, ...optionalPeerDependencies].map((d) => {
             return [d.name, d.version]
           })
         ),
         peerDependenciesMeta: Object.fromEntries(
-          externalTypeOnlyDependencies.map((d) => {
+          optionalPeerDependencies.map((d) => {
             return [d.name, { optional: true }]
           })
         )
       }
       switch (manifest.name!) {
-        case '@codingame/monaco-vscode-api': {
+        case MAIN_PACKAGE_NAME: {
           return <Manifest>{
             ...baseManifest,
-            main: 'api.js',
-            module: 'api.js',
+            main: 'services.js',
+            module: 'services.js',
             exports: {
               '.': {
-                default: './api.js'
+                default: './services.js',
+                services: './services.d.ts'
               },
               './vscode/*': {
                 default: './vscode/src/*.js',
@@ -376,7 +404,36 @@ export function configuredSubpackagePlugin(): rollup.Plugin {
             }
           }
         }
-        case '@codingame/monaco-vscode-editor-api': {
+        case EXTENSION_API_PACKAGE_NAME: {
+          return <Manifest>{
+            ...baseManifest,
+            main: 'extension.api.js',
+            module: 'extension.api.js',
+            exports: {
+              '.': {
+                default: './extension.api.js'
+              },
+              './vscode/*': {
+                default: './vscode/src/*.js',
+                types: './vscode/src/*.d.ts'
+              },
+              './*': {
+                default: './*.js',
+                types: './*.d.ts'
+              }
+            },
+            peerDependencies: {
+              ...baseManifest.peerDependencies,
+              '@types/vscode': pkg.devDependencies!['@types/vscode']
+            },
+            typesVersions: {
+              '*': {
+                'vscode/*': ['./vscode/src/*.d.ts']
+              }
+            }
+          }
+        }
+        case EDITOR_API_PACKAGE_NAME: {
           return <Manifest>{
             ...baseManifest,
             exports: {
@@ -502,7 +559,7 @@ export function configuredSubpackagePlugin(): rollup.Plugin {
           propagate(dependency.package, [...path, subpackage.name])
         }
       }
-      const mainPackage = subpackages.find((p) => p.name === '@codingame/monaco-vscode-api')!
+      const mainPackage = subpackages.find((p) => p.name === MAIN_PACKAGE_NAME)!
       propagate(mainPackage, [])
 
       const mainDependencies = Array.from(mainDependenciesMap.values())

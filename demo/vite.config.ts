@@ -62,9 +62,9 @@ export default defineConfig({
       // add all local dependencies...
       ...localDependencies,
       // and their exports
-      'vscode/extensions',
-      'vscode/services',
-      'vscode/monaco',
+      '@codingame/monaco-vscode-api/extensions',
+      '@codingame/monaco-vscode-api',
+      '@codingame/monaco-vscode-api/monaco',
       'vscode/localExtensionHost',
 
       // These 2 lines prevent vite from reloading the whole page when starting a worker (so 2 times in a row after cleaning the vite cache - for the editor then the textmate workers)

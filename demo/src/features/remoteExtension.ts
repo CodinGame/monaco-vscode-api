@@ -1,4 +1,4 @@
-import { registerRemoteExtension } from 'vscode/extensions'
+import { registerRemoteExtension } from '@codingame/monaco-vscode-api/extensions'
 
 declare global {
   interface Window {

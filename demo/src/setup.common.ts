@@ -15,7 +15,11 @@ import {
   initFile
 } from '@codingame/monaco-vscode-files-service-override'
 import * as monaco from 'monaco-editor'
-import { IWorkbenchConstructionOptions, LogLevel, IEditorOverrideServices } from 'vscode/services'
+import {
+  IWorkbenchConstructionOptions,
+  LogLevel,
+  IEditorOverrideServices
+} from '@codingame/monaco-vscode-api'
 import * as vscode from 'vscode'
 import getModelServiceOverride from '@codingame/monaco-vscode-model-service-override'
 import getNotificationServiceOverride from '@codingame/monaco-vscode-notifications-service-override'
@@ -73,7 +77,7 @@ import getUpdateServiceOverride from '@codingame/monaco-vscode-update-service-ov
 import getExplorerServiceOverride from '@codingame/monaco-vscode-explorer-service-override'
 import getLocalizationServiceOverride from '@codingame/monaco-vscode-localization-service-override'
 import getTreeSitterServiceOverride from '@codingame/monaco-vscode-treesitter-service-override'
-import { EnvironmentOverride } from 'vscode/workbench'
+import { EnvironmentOverride } from '@codingame/monaco-vscode-api/workbench'
 import { Worker } from './tools/crossOriginWorker'
 import defaultKeybindings from './user/keybindings.json?raw'
 import defaultConfiguration from './user/configuration.json?raw'
@@ -379,13 +383,14 @@ export const constructOptions: IWorkbenchConstructionOptions = {
     nameShort: 'monaco-vscode-api',
     nameLong: 'monaco-vscode-api',
     extensionsGallery: {
-      serviceUrl: 'https://open-vsx.org/vscode/gallery',
-      itemUrl: 'https://open-vsx.org/vscode/item',
-      resourceUrlTemplate: 'https://open-vsx.org/vscode/unpkg/{publisher}/{name}/{version}/{path}',
-      extensionUrlTemplate: '',
-      controlUrl: '',
-      nlsBaseUrl: '',
-      publisherUrl: ''
+      nlsBaseUrl: 'https://www.vscode-unpkg.net/_lp/',
+      serviceUrl: 'https://marketplace.visualstudio.com/_apis/public/gallery',
+      itemUrl: 'https://marketplace.visualstudio.com/items',
+      publisherUrl: 'https://marketplace.visualstudio.com/publishers',
+      resourceUrlTemplate:
+        'https://{publisher}.vscode-unpkg.net/{publisher}/{name}/{version}/{path}',
+      extensionUrlTemplate: 'https://www.vscode-unpkg.net/_gallery/{publisher}/{name}/latest',
+      controlUrl: 'https://main.vscode-cdn.net/extensions/marketplace.json'
     }
   }
 }

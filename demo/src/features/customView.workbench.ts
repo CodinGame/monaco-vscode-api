@@ -4,7 +4,7 @@ import {
   createInstance,
   IInstantiationService,
   IEditorGroup
-} from 'vscode/services'
+} from '@codingame/monaco-vscode-api'
 import {
   IEditorCloseHandler,
   IEditorSerializer,

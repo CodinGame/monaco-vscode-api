@@ -50,7 +50,6 @@ export function transformImportEqualsTransformerFactory(
           return node
         }
         const transformed = ts.visitEachChild(sourceFile, visitor, context)
-        // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
         if (!exportEqualsFound) {
           throw new Error('`export =` not found in api.ts')
         }

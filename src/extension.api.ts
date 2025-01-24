@@ -20,12 +20,8 @@ import * as editSessions from 'vs/platform/workspace/common/editSessions'
 import * as editorOptions from 'vs/editor/common/config/editorOptions'
 import * as uri from 'vs/base/common/uri'
 import * as telemetry from 'vs/platform/telemetry/common/telemetryUtils'
+import { defaultApi } from './localExtensionHost.js'
 
-let defaultApi: typeof vscode | undefined
-
-export function setDefaultApi(api: typeof vscode): void {
-  defaultApi = api
-}
 
 function createProxy<T extends keyof typeof vscode>(key: T): (typeof vscode)[T] {
   return new Proxy(

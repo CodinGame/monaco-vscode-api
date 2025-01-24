@@ -4,8 +4,8 @@ import * as yauzl from 'yauzl'
 import type { IExtensionManifest } from 'vs/platform/extensions/common/extensions'
 import { type IFs, createFsFromVolume, Volume } from 'memfs'
 import thenby from 'thenby'
-import { Readable } from 'stream'
-import * as path from 'path'
+import { Readable } from 'node:stream'
+import * as path from 'node:path'
 import type nodeFs from 'node:fs'
 import { getExtensionResources, parseJson } from './extension-tools.js'
 import type { ExtensionFileMetadata } from './extensions.js'
@@ -126,7 +126,7 @@ export default function plugin({
         .sort(firstBy('pathInExtension'))
 
       return `
-import { registerExtension } from 'vscode/extensions'
+import { registerExtension } from '@codingame/monaco-vscode-api/extensions'
 
 const manifest = ${JSON.stringify(manifest)}
 
