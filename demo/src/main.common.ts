@@ -1,6 +1,6 @@
 import './style.css'
 import * as monaco from 'monaco-editor'
-import { ExtensionHostKind, registerExtension } from 'vscode/extensions'
+import { ExtensionHostKind, registerExtension } from '@codingame/monaco-vscode-api/extensions'
 import { useHtmlFileSystemProvider } from './setup.common'
 import './features/output'
 import './features/debugger'

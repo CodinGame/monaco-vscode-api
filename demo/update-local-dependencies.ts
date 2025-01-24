@@ -10,7 +10,7 @@ const packageJson: PackageJson = JSON.parse(
 const packagesUrl = new URL('../dist/packages', import.meta.url)
 
 const aliases: Record<string, string> = {
-  '@codingame/monaco-vscode-api': 'vscode',
+  '@codingame/monaco-vscode-extension-api': 'vscode',
   '@codingame/monaco-vscode-editor-api': 'monaco-editor'
 }
 

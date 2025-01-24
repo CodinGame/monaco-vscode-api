@@ -1,5 +1,5 @@
 import type { Uri } from 'vscode'
-import { ExtensionHostKind, registerExtension } from 'vscode/extensions'
+import { ExtensionHostKind, registerExtension } from '@codingame/monaco-vscode-api/extensions'
 import { remoteAuthority } from '../setup.common'
 
 if (remoteAuthority == null) {

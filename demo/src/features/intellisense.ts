@@ -5,7 +5,7 @@ import '@codingame/monaco-vscode-html-language-features-default-extension'
 import '@codingame/monaco-vscode-css-language-features-default-extension'
 import '@codingame/monaco-vscode-markdown-language-features-default-extension'
 import '@codingame/monaco-vscode-emmet-default-extension'
-import { ExtensionHostKind, registerExtension } from 'vscode/extensions'
+import { ExtensionHostKind, registerExtension } from '@codingame/monaco-vscode-api/extensions'
 
 const { getApi } = registerExtension(
   {
