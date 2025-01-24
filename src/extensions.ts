@@ -1,4 +1,6 @@
 // eslint-disable-next-line @typescript-eslint/triple-slash-reference
+/// <reference path="./types.d.ts" />
+// eslint-disable-next-line @typescript-eslint/triple-slash-reference
 /// <reference path="../vscode/src/vscode-dts/vscode.proposed.d.ts" />
 
 import type * as vscode from 'vscode'
@@ -40,7 +42,6 @@ import {
 } from './service-override/files'
 import { waitServicesReady } from './lifecycle'
 import { throttle } from './tools'
-import { setDefaultApi } from './extension.api'
 import { getBuiltInExtensionTranslationsUris } from './l10n'
 
 export type ApiFactory = (extensionId?: string) => Promise<typeof vscode>
@@ -48,6 +49,11 @@ export type ApiFactory = (extensionId?: string) => Promise<typeof vscode>
 let apiFactory: ApiFactory | undefined
 export function registerLocalApiFactory(_apiFactory: ApiFactory): void {
   apiFactory = _apiFactory
+}
+
+let defaultApiHandler: ((api: typeof vscode) => void) | undefined
+export function registerDefaultApiHandler(handler: (api: typeof vscode) => void): void {
+  defaultApiHandler = handler
 }
 
 export interface RegisterExtensionParams {
@@ -277,7 +283,7 @@ export function registerExtension(
       ...api,
       getApi,
       async setAsDefaultApi() {
-        setDefaultApi(await getApi())
+        defaultApiHandler?.(await getApi())
       }
     }
   }

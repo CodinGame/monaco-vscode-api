@@ -47,8 +47,7 @@ import { ExtensionIdentifierMap } from 'vs/platform/extensions/common/extensions
 import { DeferredPromise } from 'vs/base/common/async'
 import { setLocalExtensionHost } from './service-override/extensions'
 import { unsupported } from './tools'
-import { type ApiFactory, registerLocalApiFactory } from './extensions'
-import { setDefaultApi } from './extension.api'
+import { type ApiFactory, registerDefaultApiHandler, registerLocalApiFactory } from './extensions'
 import { registerServiceInitializePostParticipant } from './lifecycle'
 
 const apiFactoryDeferred = new DeferredPromise<ApiFactory>()
@@ -277,8 +276,13 @@ async function createLocalApi(extensionId?: string): Promise<typeof vscode> {
 setLocalExtensionHost(LocalExtensionHost)
 registerLocalApiFactory(createLocalApi)
 
+export let defaultApi: typeof vscode | undefined
+registerDefaultApiHandler(api => {
+  defaultApi = api
+})
+
 registerServiceInitializePostParticipant(async (accessor) => {
   // Make sure the extension service is loaded
   accessor.get(IExtensionService)
-  setDefaultApi(await createLocalApi())
+  defaultApi = await createLocalApi()
 })
