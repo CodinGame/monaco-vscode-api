@@ -2,8 +2,8 @@ import { createFilter, type FilterPattern, dataToEsm } from '@rollup/pluginutils
 import type { Plugin } from 'rollup'
 import type { IExtensionManifest } from 'vs/platform/extensions/common/extensions'
 import thenby from 'thenby'
-import * as path from 'path'
-import * as fs from 'fs'
+import * as path from 'node:path'
+import * as fs from 'node:fs'
 import { getExtensionResources, parseJson } from './extension-tools.js'
 import type { ExtensionFileMetadata } from './extensions.js'
 const { firstBy } = thenby
