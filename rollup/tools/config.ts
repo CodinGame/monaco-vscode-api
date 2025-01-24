@@ -1,8 +1,9 @@
 import { fileURLToPath } from 'node:url'
 import * as fs from 'node:fs'
 import * as nodePath from 'node:path'
+import type { PackageJson } from 'type-fest'
 
-export const pkg = JSON.parse(
+export const pkg: PackageJson = JSON.parse(
   fs.readFileSync(new URL('../../package.json', import.meta.url).pathname).toString()
 )
 
