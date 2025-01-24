@@ -32,7 +32,7 @@ import {
 import { transformImportEqualsTransformerFactory } from './tools/typescript.js'
 
 const input = {
-  api: './src/extension.api.ts',
+  'extension.api': './src/extension.api.ts',
   'editor.api': './src/editor.api.ts',
   localExtensionHost: './src/localExtensionHost.ts',
   extensions: './src/extensions.ts',

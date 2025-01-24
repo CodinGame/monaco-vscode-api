@@ -9,6 +9,10 @@ export const pkg: PackageJson = JSON.parse(
 
 const __dirname = nodePath.dirname(fileURLToPath(import.meta.url))
 
+export const MAIN_PACKAGE_NAME = '@codingame/monaco-vscode-api'
+export const EDITOR_API_PACKAGE_NAME = '@codingame/monaco-vscode-editor-api'
+export const EXTENSION_API_PACKAGE_NAME = '@codingame/monaco-vscode-extension-api'
+
 export const EXTENSIONS = ['', '.ts', '.js']
 
 export const BASE_DIR = nodePath.resolve(__dirname, '../..')

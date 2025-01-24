@@ -126,7 +126,7 @@ export default function plugin({
         .sort(firstBy('pathInExtension'))
 
       return `
-import { registerExtension } from 'vscode/extensions'
+import { registerExtension } from '@codingame/monaco-vscode-api/extensions'
 
 const manifest = ${JSON.stringify(manifest)}
 

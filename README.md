@@ -36,7 +36,7 @@ import * as monaco from 'monaco-editor';
 import editorWorker from 'monaco-editor/esm/vs/editor/editor.worker?worker';
 
 // utilities to override Monaco services
-import { initialize } from 'vscode/services'
+import { initialize } from '@codingame/monaco-vscode-api'
 import getConfigurationServiceOverride, { updateUserConfiguration } from '@codingame/monaco-vscode-configuration-service-override'
 
 window.MonacoEnvironment = {
@@ -110,7 +110,7 @@ import * as monaco from 'monaco-editor';
 import editorWorker from 'monaco-editor/esm/vs/editor/editor.worker?worker';
 
 // utilities to override Monaco services
-import { initialize } from 'vscode/services'
+import { initialize } from '@codingame/monaco-vscode-api'
 import getThemeServiceOverride from "@codingame/monaco-vscode-theme-service-override";
 
 window.MonacoEnvironment = {
@@ -256,7 +256,7 @@ vscode.languages.registerCompletionItemProvider(...)
 You can also register a new extension from its manifest:
 
 ```typescript
-import { registerExtension, initialize, ExtensionHostKind } from 'vscode/extensions'
+import { registerExtension, initialize, ExtensionHostKind } from '@codingame/monaco-vscode-api/extensions'
 
 await initialize()
 

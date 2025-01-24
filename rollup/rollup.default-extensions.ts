@@ -9,6 +9,7 @@ import { fileURLToPath } from 'url'
 import dynamicImportPolyfillPlugin from './plugins/dynamic-import-polyfill-plugin.js'
 import resolveAssetUrlPlugin from './plugins/resolve-asset-url-plugin.js'
 import extensionDirectoryPlugin from '../dist/packages/monaco-vscode-rollup-extension-directory-plugin/rollup-extension-directory-plugin.js'
+import { MAIN_PACKAGE_NAME } from './tools/config.js'
 
 const pkg = JSON.parse(
   fs.readFileSync(new URL('../package.json', import.meta.url).pathname).toString()
@@ -69,7 +70,7 @@ export default rollup.defineConfig([
           }
         ],
         external(source) {
-          return source === 'vscode/extensions'
+          return source.startsWith(MAIN_PACKAGE_NAME)
         },
         plugins: [
           resolveAssetUrlPlugin(),

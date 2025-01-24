@@ -6,6 +6,7 @@ import glob from 'fast-glob'
 import * as path from 'path'
 import * as fs from 'fs'
 import { fileURLToPath } from 'url'
+import { EDITOR_API_PACKAGE_NAME } from './tools/config'
 const pkg = JSON.parse(
   fs.readFileSync(new URL('../package.json', import.meta.url).pathname).toString()
 )
@@ -95,7 +96,7 @@ export default rollup.defineConfig([
                 main: 'index.js',
                 module: 'index.js',
                 dependencies: {
-                  'monaco-editor': `npm:@codingame/monaco-vscode-editor-api@^${pkg.version}`
+                  'monaco-editor': `npm:${EDITOR_API_PACKAGE_NAME}@^${pkg.version}`
                 }
               }
               this.emitFile({
@@ -156,7 +157,7 @@ export default rollup.defineConfig([
             module: 'index.js',
             types: 'index.d.ts',
             dependencies: {
-              'monaco-editor': `npm:@codingame/monaco-vscode-editor-api@^${pkg.version}`
+              'monaco-editor': `npm:${EDITOR_API_PACKAGE_NAME}@^${pkg.version}`
             }
           }
           this.emitFile({

@@ -97,7 +97,7 @@ export default function plugin({
 
           return `
 import manifest from '${manifestPath}'
-import { registerExtension } from 'vscode/extensions'
+import { registerExtension } from '@codingame/monaco-vscode-api/extensions'
 
 const { registerFileUrl, whenReady } = registerExtension(manifest, undefined, ${JSON.stringify({ system: true, readmePath, changelogPath })})
 ${pathMapping

@@ -8,6 +8,7 @@ import * as path from 'path'
 import { fileURLToPath } from 'url'
 import * as fsPromise from 'fs/promises'
 import resolveAssetUrlPlugin from './plugins/resolve-asset-url-plugin.js'
+import { MAIN_PACKAGE_NAME } from './tools/config.js'
 
 const pkg = JSON.parse(
   fs.readFileSync(new URL('../package.json', import.meta.url).pathname).toString()
@@ -49,7 +50,7 @@ export default rollup.defineConfig([
           }
         ],
         external(source) {
-          return source === 'vscode/l10n'
+          return source.startsWith(MAIN_PACKAGE_NAME)
         },
         plugins: [
           resolveAssetUrlPlugin(),
@@ -86,7 +87,7 @@ export default rollup.defineConfig([
                 )
 
                 return `
-import { registerLocalization } from 'vscode/l10n'
+import { registerLocalization } from '${MAIN_PACKAGE_NAME}/l10n'
 import content from '${path.resolve(id, mainTranslation.path)}'
 registerLocalization('${packageJson.publisher}.${packageJson.name}', '${mainLocalization.languageId}', content, {
 ${Object.entries(translationAssets)
