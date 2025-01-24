@@ -332,6 +332,10 @@ export function configuredSubpackagePlugin(): rollup.Plugin {
         }
       }
 
+      const dependencies = externalDependencies.filter((d) => d.name !== MAIN_PACKAGE_NAME)
+      const peerDependencies = externalDependencies.filter((d) => d.name === MAIN_PACKAGE_NAME)
+      const optionalPeerDependencies = externalTypeOnlyDependencies
+
       const baseManifest: Manifest = {
         ...Object.fromEntries(
           Object.entries(pkg).filter(([key]) =>
@@ -351,17 +355,17 @@ export function configuredSubpackagePlugin(): rollup.Plugin {
         private: false,
         ...manifest,
         dependencies: Object.fromEntries(
-          externalDependencies.map((d) => {
+          dependencies.map((d) => {
             return [d.name, d.version]
           })
         ),
         peerDependencies: Object.fromEntries(
-          externalTypeOnlyDependencies.map((d) => {
+          [...peerDependencies, ...optionalPeerDependencies].map((d) => {
             return [d.name, d.version]
           })
         ),
         peerDependenciesMeta: Object.fromEntries(
-          externalTypeOnlyDependencies.map((d) => {
+          optionalPeerDependencies.map((d) => {
             return [d.name, { optional: true }]
           })
         )
