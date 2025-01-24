@@ -383,13 +383,14 @@ export const constructOptions: IWorkbenchConstructionOptions = {
     nameShort: 'monaco-vscode-api',
     nameLong: 'monaco-vscode-api',
     extensionsGallery: {
-      serviceUrl: 'https://open-vsx.org/vscode/gallery',
-      itemUrl: 'https://open-vsx.org/vscode/item',
-      resourceUrlTemplate: 'https://open-vsx.org/vscode/unpkg/{publisher}/{name}/{version}/{path}',
-      extensionUrlTemplate: '',
-      controlUrl: '',
-      nlsBaseUrl: '',
-      publisherUrl: ''
+      nlsBaseUrl: 'https://www.vscode-unpkg.net/_lp/',
+      serviceUrl: 'https://marketplace.visualstudio.com/_apis/public/gallery',
+      itemUrl: 'https://marketplace.visualstudio.com/items',
+      publisherUrl: 'https://marketplace.visualstudio.com/publishers',
+      resourceUrlTemplate:
+        'https://{publisher}.vscode-unpkg.net/{publisher}/{name}/{version}/{path}',
+      extensionUrlTemplate: 'https://www.vscode-unpkg.net/_gallery/{publisher}/{name}/latest',
+      controlUrl: 'https://main.vscode-cdn.net/extensions/marketplace.json'
     }
   }
 }
