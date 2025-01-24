@@ -110,8 +110,11 @@ export function configuredSubpackagePlugin(): rollup.Plugin {
               description: `${pkg.description} - monaco-editor compatible api`
             }
           default: {
-            const match = /^(.*):(.*)$/.exec(uniqueGroup)!
-            const [_, category, name] = match
+            const match = /^(.*):(.*)$/.exec(uniqueGroup)
+            if (match == null) {
+              throw new Error(`Unable to parse group "${uniqueGroup}"`)
+            }
+            const [, category, name] = match
             return {
               name: `@codingame/monaco-vscode-${paramCase(name!)}-${category}`,
               version: '0.0.0-semantic-release',
