@@ -48,6 +48,18 @@ import getLayoutServiceOverride from './service-override/layout'
 import getHostServiceOverride from './service-override/host'
 import getBaseServiceOverride from './service-override/base'
 
+declare global {
+  interface Window {
+    monacoVscodeApiInitialized?: boolean
+  }
+}
+
+if (window.monacoVscodeApiInitialized ?? false) {
+  throw new Error('Another version of monaco-vscode-api has already been loaded.')
+}
+
+window.monacoVscodeApiInitialized = true
+
 export async function initialize(
   overrides: IEditorOverrideServices,
   container: HTMLElement = document.body,
