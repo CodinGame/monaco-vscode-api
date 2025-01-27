@@ -77,6 +77,7 @@ import getUpdateServiceOverride from '@codingame/monaco-vscode-update-service-ov
 import getExplorerServiceOverride from '@codingame/monaco-vscode-explorer-service-override'
 import getLocalizationServiceOverride from '@codingame/monaco-vscode-localization-service-override'
 import getTreeSitterServiceOverride from '@codingame/monaco-vscode-treesitter-service-override'
+import getTelemetryServiceOverride from '@codingame/monaco-vscode-telemetry-service-override'
 import { EnvironmentOverride } from '@codingame/monaco-vscode-api/workbench'
 import { Worker } from './tools/crossOriginWorker'
 import defaultKeybindings from './user/keybindings.json?raw'
@@ -540,5 +541,6 @@ export const commonServices: IEditorOverrideServices = {
       }
     ]
   }),
-  ...getSecretStorageServiceOverride()
+  ...getSecretStorageServiceOverride(),
+  ...getTelemetryServiceOverride()
 }
