@@ -229,7 +229,7 @@ export function configuredSubpackagePlugin(): rollup.Plugin {
             name: 'reference-proposed-types',
             async renderChunk(code, chunk) {
               if (chunk.fileName.endsWith('extensions.d.ts')) {
-                return `/// <reference path="./vscode-dts/vscode.proposed.d.ts" />\n${code}`
+                return `/// <reference path="./vscode-dts/vscode.proposed.d.ts" />\n/// <reference path="./vscode-dts/vscode.d.ts" />\n${code}`
               }
               return undefined
             }
@@ -321,20 +321,13 @@ export function configuredSubpackagePlugin(): rollup.Plugin {
     },
     getManifest(packageName, groups, entrypoints, manifest, allExternalDependencies) {
       const externalDependencies: SubPackageExternalDependency[] = []
-      const externalTypeOnlyDependencies: SubPackageExternalDependency[] = []
       for (const externalDependency of allExternalDependencies) {
         if (
           Array.from(externalDependency.importers).some((importer) => !importer.endsWith('.d.ts'))
         ) {
           externalDependencies.push(externalDependency)
-        } else {
-          externalTypeOnlyDependencies.push(externalDependency)
         }
       }
-
-      const dependencies = externalDependencies.filter((d) => d.name !== MAIN_PACKAGE_NAME)
-      const peerDependencies = externalDependencies.filter((d) => d.name === MAIN_PACKAGE_NAME)
-      const optionalPeerDependencies = externalTypeOnlyDependencies
 
       const baseManifest: Manifest = {
         ...Object.fromEntries(
@@ -355,18 +348,8 @@ export function configuredSubpackagePlugin(): rollup.Plugin {
         private: false,
         ...manifest,
         dependencies: Object.fromEntries(
-          dependencies.map((d) => {
+          externalDependencies.map((d) => {
             return [d.name, d.version]
-          })
-        ),
-        peerDependencies: Object.fromEntries(
-          [...peerDependencies, ...optionalPeerDependencies].map((d) => {
-            return [d.name, d.version]
-          })
-        ),
-        peerDependenciesMeta: Object.fromEntries(
-          optionalPeerDependencies.map((d) => {
-            return [d.name, { optional: true }]
           })
         )
       }
@@ -421,10 +404,6 @@ export function configuredSubpackagePlugin(): rollup.Plugin {
                 default: './*.js',
                 types: './*.d.ts'
               }
-            },
-            peerDependencies: {
-              ...baseManifest.peerDependencies,
-              '@types/vscode': pkg.devDependencies!['@types/vscode']
             },
             typesVersions: {
               '*': {

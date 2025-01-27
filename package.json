@@ -58,7 +58,6 @@
     "@types/mime-types": "^2.1.4",
     "@types/node": "18.19.8",
     "@types/semver": "^7.5.8",
-    "@types/vscode": "~1.96.0",
     "@types/vscode-semver": "npm:@types/semver@=5.5.0",
     "@types/yargs": "^17.0.33",
     "@types/yauzl": "^2.10.3",

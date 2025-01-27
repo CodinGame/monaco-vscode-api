@@ -9,7 +9,6 @@ For more information, please checkout the project's [wiki](https://github.com/Co
 ```bash
 npm install vscode@npm:@codingame/monaco-vscode-api
 npm install monaco-editor@npm:@codingame/monaco-vscode-editor-api
-npm install -D @types/vscode
 ```
 
 `@codingame/monaco-vscode-api` is installed as an alias to `vscode` to be able to run `import * as vscode from 'vscode'`, similar to what is done inside a VSCode extension

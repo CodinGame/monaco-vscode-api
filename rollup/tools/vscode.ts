@@ -421,6 +421,13 @@ function resolve(_path: string, fromPaths: string[]) {
       if (fs.existsSync(outputPath) && fs.lstatSync(outputPath).isFile()) {
         return outputPath
       }
+      const directoryIndexOutputPath = nodePath.resolve(fromPath, `${_path}/index${extension}`)
+      if (
+        fs.existsSync(directoryIndexOutputPath) &&
+        fs.lstatSync(directoryIndexOutputPath).isFile()
+      ) {
+        return directoryIndexOutputPath
+      }
     }
   }
   return undefined

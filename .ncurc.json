@@ -4,7 +4,6 @@
     "@microsoft/1ds-post-js",
     "@parcel/watcher",
     "@types/node",
-    "@types/vscode",
     "@types/vscode-semver",
     "@vscode/iconv-lite-umd",
     "@vscode/proxy-agent",

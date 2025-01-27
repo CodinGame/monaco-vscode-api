@@ -2,6 +2,8 @@
 /// <reference path="./types.d.ts" />
 // eslint-disable-next-line @typescript-eslint/triple-slash-reference
 /// <reference path="../vscode/src/vscode-dts/vscode.proposed.d.ts" />
+// eslint-disable-next-line @typescript-eslint/triple-slash-reference
+/// <reference path="../vscode/src/vscode-dts/vscode.d.ts" />
 
 import * as extHostTypes from 'vs/workbench/api/common/extHostTypes'
 import * as errors from 'vs/base/common/errors'
@@ -21,7 +23,6 @@ import * as editorOptions from 'vs/editor/common/config/editorOptions'
 import * as uri from 'vs/base/common/uri'
 import * as telemetry from 'vs/platform/telemetry/common/telemetryUtils'
 import { defaultApi } from './localExtensionHost.js'
-
 
 function createProxy<T extends keyof typeof vscode>(key: T): (typeof vscode)[T] {
   return new Proxy(

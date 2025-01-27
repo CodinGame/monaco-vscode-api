@@ -4,18 +4,18 @@ Date: Thu, 25 Apr 2024 19:34:56 +0200
 Subject: [PATCH] feat: add build tool to extract service identifiers
 
 ---
- build/lib/extractServices.js | 209 ++++++++++++++++++++++++++++++
- build/lib/extractServices.ts | 239 +++++++++++++++++++++++++++++++++++
- 2 files changed, 448 insertions(+)
+ build/lib/extractServices.js | 215 ++++++++++++++++++++++++++++++
+ build/lib/extractServices.ts | 246 +++++++++++++++++++++++++++++++++++
+ 2 files changed, 461 insertions(+)
  create mode 100644 build/lib/extractServices.js
  create mode 100644 build/lib/extractServices.ts
 
 diff --git a/build/lib/extractServices.js b/build/lib/extractServices.js
 new file mode 100644
-index 00000000000..e0f9ad3724e
+index 00000000000..d127acf45ec
 --- /dev/null
 +++ b/build/lib/extractServices.js
-@@ -0,0 +1,209 @@
+@@ -0,0 +1,215 @@
 +"use strict";
 +/*---------------------------------------------------------------------------------------------
 + *  Copyright (c) Microsoft Corporation. All rights reserved.
@@ -173,6 +173,12 @@ index 00000000000..e0f9ad3724e
 +            }, {
 +                targetFile: path.resolve(path.dirname(fileName), `${path.basename(fileName, '.ts')}.service.ts`)
 +            });
++            // Workaround for typescript bug: it tends to use `import type` when both types and value are imported
++            edits.edits.forEach((change) => {
++                change.textChanges.forEach(textChange => {
++                    textChange.newText = textChange.newText.replace(/import type/g, 'import');
++                });
++            });
 +            applyEdits(edits.edits);
 +            edits.edits.forEach(e => changedFiles.add(e.fileName));
 +        }
@@ -228,10 +234,10 @@ index 00000000000..e0f9ad3724e
 \ No newline at end of file
 diff --git a/build/lib/extractServices.ts b/build/lib/extractServices.ts
 new file mode 100644
-index 00000000000..b340f10812d
+index 00000000000..8900bf6bbe9
 --- /dev/null
 +++ b/build/lib/extractServices.ts
-@@ -0,0 +1,239 @@
+@@ -0,0 +1,246 @@
 +/*---------------------------------------------------------------------------------------------
 + *  Copyright (c) Microsoft Corporation. All rights reserved.
 + *  Licensed under the MIT License. See License.txt in the project root for license information.
@@ -410,6 +416,13 @@ index 00000000000..b340f10812d
 +			}, {
 +				targetFile: path.resolve(path.dirname(fileName), `${path.basename(fileName, '.ts')}.service.ts`)
 +			})!;
++
++			// Workaround for typescript bug: it tends to use `import type` when both types and value are imported
++			edits.edits.forEach((change) => {
++				change.textChanges.forEach(textChange => {
++					textChange.newText = textChange.newText.replace(/import type/g, 'import');
++				});
++			});
 +
 +			applyEdits(edits.edits);
 +			edits.edits.forEach(e => changedFiles.add(e.fileName));

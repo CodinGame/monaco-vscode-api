@@ -1091,7 +1091,7 @@ const providers: Record<string, IFileSystemProvider> = {
 }
 
 class FileServiceOverride extends FileService {
-  constructor(logService: ILogService, @ITelemetryService telemetryService: ITelemetryService) {
+  constructor(logService: ILogService) {
     super(logService)
 
     for (const [scheme, provider] of Object.entries(providers)) {
@@ -1102,7 +1102,18 @@ class FileServiceOverride extends FileService {
           disposable = this.registerProvider(scheme, provider)
         })
       }
+    }
+  }
 
+  /**
+   * Hack: the parent class has dependencies, we don't, dependencies are stored in a static field
+   * Having no dependencies mean the field won't be overriden, so we'll inherit dependencies from the parent
+   */
+  static $di$dependencies = []
+
+  public async initialize(telemetryService: ITelemetryService) {
+    for (const { scheme } of this.listCapabilities()) {
+      const provider = this.getProvider(scheme)
       if (provider instanceof IndexedDBFileSystemProvider) {
         this._register(
           provider.onReportError((e) =>
@@ -1122,6 +1133,11 @@ class FileServiceOverride extends FileService {
 const fileLogger = new BufferLogger()
 registerServiceInitializePreParticipant(async (accessor) => {
   fileLogger.logger = accessor.get(ILogService)
+
+  const fileService = accessor.get(IFileService)
+  if (fileService instanceof FileServiceOverride) {
+    fileService.initialize(accessor.get(ITelemetryService))
+  }
 })
 
 export default function getServiceOverride(): IEditorOverrideServices {
