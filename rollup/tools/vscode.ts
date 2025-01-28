@@ -402,8 +402,6 @@ export function vscodeLocalizationPlugin(): rollup.Plugin {
           nlsIndex += moduleNlsKeys.length
         }
       }
-
-      nlsKeys.sort(firstBy(([moduleId]) => moduleId))
     },
     async writeBundle() {
       await fs.promises.writeFile(
