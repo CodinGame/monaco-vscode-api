@@ -18,7 +18,10 @@ import {
 } from 'vs/platform/instantiation/common/instantiation'
 import type { IAction } from 'vs/base/common/actions'
 import { DisposableStore, type IDisposable } from 'vs/base/common/lifecycle'
-import type { IWorkbenchConstructionOptions } from 'vs/workbench/browser/web.api'
+import type {
+  IWorkbenchConstructionOptions,
+  IWorkspaceProvider
+} from 'vs/workbench/browser/web.api'
 import type { IProductConfiguration } from 'vs/base/common/product'
 import {
   type ILazyWorkbenchContributionInstantiation,
@@ -347,6 +350,7 @@ export type {
   ITextModelContentProvider,
   IColorTheme,
   IWorkbenchConstructionOptions,
+  IWorkspaceProvider,
   IEditorOverrideServices,
   WorkbenchContributionInstantiation,
   ILazyWorkbenchContributionInstantiation,
