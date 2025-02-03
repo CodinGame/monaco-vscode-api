@@ -132,7 +132,7 @@ ${Object.entries(translationAssets)
                 module: 'index.js',
                 types: 'index.d.ts',
                 dependencies: {
-                  vscode: `npm:${pkg.name}@^${pkg.version}`
+                  [pkg.name]: pkg.version
                 }
               }
               this.emitFile({

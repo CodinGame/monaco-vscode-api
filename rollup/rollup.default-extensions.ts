@@ -112,7 +112,7 @@ export default rollup.defineConfig([
                 module: entrypoint,
                 types: 'index.d.ts',
                 dependencies: {
-                  vscode: `npm:${pkg.name}@^${pkg.version}`,
+                  [pkg.name]: pkg.version,
                   ...Object.fromEntries(
                     Object.entries(pkg.dependencies).filter(([key]) =>
                       externalDependencies.has(key)

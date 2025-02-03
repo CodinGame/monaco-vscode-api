@@ -19,7 +19,7 @@ if (NPM_TOKEN == null) {
 }
 
 const ALIASES: Record<string, string> = {
-  vscode: '@codingame/monaco-vscode-api',
+  vscode: '@codingame/monaco-vscode-extension-api',
   'monaco-editor': '@codingame/monaco-vscode-editor-api'
 }
 
@@ -43,7 +43,6 @@ async function publishNpm(version: string, tag: string) {
             const packageVersion = alias != null ? `npm:${alias}@${version}` : version
             dependencies[dependency] = packageVersion
           }
-
         }
       }
       await fs.writeFile(

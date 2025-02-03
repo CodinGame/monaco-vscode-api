@@ -7,11 +7,13 @@ For more information, please checkout the project's [wiki](https://github.com/Co
 ## Installation
 
 ```bash
-npm install vscode@npm:@codingame/monaco-vscode-api
+npm install @codingame/monaco-vscode-api
+# Optionally install the extension api and the editor api
+npm install vscode@npm:@codingame/monaco-vscode-extension-api
 npm install monaco-editor@npm:@codingame/monaco-vscode-editor-api
 ```
 
-`@codingame/monaco-vscode-api` is installed as an alias to `vscode` to be able to run `import * as vscode from 'vscode'`, similar to what is done inside a VSCode extension
+`@codingame/monaco-vscode-extension-api` is installed as an alias to `vscode` to be able to run `import * as vscode from 'vscode'`, similar to what is done inside a VSCode extension
 
 `@codingame/monaco-vscode-editor-api` is installed as an alias to `monaco-editor` because it provides the same api as the official `monaco-editor`
 
