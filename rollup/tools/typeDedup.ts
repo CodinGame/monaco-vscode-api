@@ -22,7 +22,12 @@ function replaceInterface(int: ts.InterfaceDeclaration, from: string, entityName
     false
   )
 
-  return ts.factory.createTypeAliasDeclaration(undefined, int.name, int.typeParameters, importType)
+  return ts.factory.createTypeAliasDeclaration(
+    int.modifiers,
+    int.name,
+    int.typeParameters,
+    importType
+  )
 }
 function createReplacer(from: string, names: string[]): (int: ts.InterfaceDeclaration) => ts.Node {
   return (int: ts.InterfaceDeclaration) => replaceInterface(int, from, names)
@@ -32,40 +37,34 @@ const interfaceOverride = new Map<string, (int: ts.InterfaceDeclaration) => ts.N
 interfaceOverride.set('Event', createReplacer('vscode', ['Event']))
 interfaceOverride.set(
   'IActionDescriptor',
-  createReplacer('vs/editor/editor.api', ['editor', 'IActionDescriptor'])
+  createReplacer('monaco-editor', ['editor', 'IActionDescriptor'])
 )
-interfaceOverride.set(
-  'ICodeEditor',
-  createReplacer('vs/editor/editor.api', ['editor', 'ICodeEditor'])
-)
-interfaceOverride.set('IEditor', createReplacer('vs/editor/editor.api', ['editor', 'IEditor']))
-interfaceOverride.set(
-  'ITextModel',
-  createReplacer('vs/editor/editor.api', ['editor', 'ITextModel'])
-)
+interfaceOverride.set('ICodeEditor', createReplacer('monaco-editor', ['editor', 'ICodeEditor']))
+interfaceOverride.set('IEditor', createReplacer('monaco-editor', ['editor', 'IEditor']))
+interfaceOverride.set('ITextModel', createReplacer('monaco-editor', ['editor', 'ITextModel']))
 interfaceOverride.set(
   'IEditorOptions',
-  createReplacer('vs/editor/editor.api', ['editor', 'IEditorOptions'])
+  createReplacer('monaco-editor', ['editor', 'IEditorOptions'])
 )
 interfaceOverride.set(
   'IEditorOverrideServices',
-  createReplacer('vs/editor/editor.api', ['editor', 'IEditorOverrideServices'])
+  createReplacer('monaco-editor', ['editor', 'IEditorOverrideServices'])
 )
 interfaceOverride.set(
   'IStandaloneCodeEditor',
-  createReplacer('vs/editor/editor.api', ['editor', 'IStandaloneCodeEditor'])
+  createReplacer('monaco-editor', ['editor', 'IStandaloneCodeEditor'])
 )
 interfaceOverride.set(
   'IStandaloneDiffEditor',
-  createReplacer('vs/editor/editor.api', ['editor', 'IStandaloneDiffEditor'])
+  createReplacer('monaco-editor', ['editor', 'IStandaloneDiffEditor'])
 )
 interfaceOverride.set(
   'IStandaloneEditorConstructionOptions',
-  createReplacer('vs/editor/editor.api', ['editor', 'IStandaloneEditorConstructionOptions'])
+  createReplacer('monaco-editor', ['editor', 'IStandaloneEditorConstructionOptions'])
 )
 interfaceOverride.set(
   'IStandaloneDiffEditorConstructionOptions',
-  createReplacer('vs/editor/editor.api', ['editor', 'IStandaloneDiffEditorConstructionOptions'])
+  createReplacer('monaco-editor', ['editor', 'IStandaloneDiffEditorConstructionOptions'])
 )
 
 export function typeDedupReplaceTransformer(context: ts.TransformationContext) {
@@ -84,8 +83,7 @@ export function typeDedupReplaceTransformer(context: ts.TransformationContext) {
         const name = node.name.text
         const replacement = interfaceOverride.get(name)
         if (replacement != null) {
-          const nodeReplacement = replacement(node)
-          return nodeReplacement
+          return replacement(node)
         }
       }
       return ts.visitEachChild(node, typeDedupReplaceVisitor, context)
