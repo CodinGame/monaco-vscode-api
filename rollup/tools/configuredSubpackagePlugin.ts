@@ -454,6 +454,11 @@ export function configuredSubpackagePlugin(): rollup.Plugin {
                   default: './*.js',
                   types: './*.d.ts'
                 }
+              },
+              typesVersions: {
+                '*': {
+                  'vscode/*': ['./vscode/src/*.d.ts']
+                }
               }
             }
           } else {
@@ -481,6 +486,11 @@ export function configuredSubpackagePlugin(): rollup.Plugin {
                 './*': {
                   default: './*.js',
                   types: './*.d.ts'
+                }
+              },
+              typesVersions: {
+                '*': {
+                  'vscode/*': ['./vscode/src/*.d.ts']
                 }
               }
             }
