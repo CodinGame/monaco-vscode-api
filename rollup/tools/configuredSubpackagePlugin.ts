@@ -197,10 +197,10 @@ export function configuredSubpackagePlugin(): rollup.Plugin {
           {
             name: 'resolve-vscode',
             resolveId(source) {
-              if (source === 'vscode') {
+              if (source === 'vscode' || source === 'monaco-editor') {
                 return {
                   external: true,
-                  id: 'vscode'
+                  id: source
                 }
               }
               return undefined
