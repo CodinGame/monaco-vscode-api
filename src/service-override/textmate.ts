@@ -9,15 +9,8 @@ import { LifecyclePhase } from 'vs/workbench/services/lifecycle/common/lifecycle
 import { ILifecycleService } from 'vs/workbench/services/lifecycle/common/lifecycle.service'
 import getFileServiceOverride from './files'
 import { registerServiceInitializeParticipant } from '../lifecycle'
-import { registerAssets } from '../assets'
 import 'vs/workbench/services/themes/common/tokenClassificationExtensionPoint'
 import 'vs/workbench/contrib/codeEditor/browser/inspectEditorTokens/inspectEditorTokens'
-
-const _onigWasm = new URL('vscode-oniguruma/release/onig.wasm', import.meta.url).href
-registerAssets({
-  'vscode-oniguruma/../onig.wasm': _onigWasm, // Path used inside service
-  'vs/../../node_modules/vscode-oniguruma/release/onig.wasm': _onigWasm // Path used inside worker
-})
 
 registerServiceInitializeParticipant(async (accessor) => {
   void accessor

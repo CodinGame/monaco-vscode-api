@@ -325,6 +325,10 @@ export default ({
       }
 
       const groups = getSingleMainGroup(mainModule.groups) ?? mainModule.groups
+
+      if (groups.size === 0) {
+        continue
+      }
       const groupSetKey = computeGroupListKey(
         // if the module is referenced from the main package, just ignore the other ones
         groups

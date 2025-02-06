@@ -1,4 +1,4 @@
-import { paramCase } from 'param-case'
+import * as changeCase from 'change-case'
 import { v5 as uuidv5 } from 'uuid'
 import chalk from 'chalk'
 import * as rollup from 'rollup'
@@ -68,7 +68,7 @@ export function configuredSubpackagePlugin(): rollup.Plugin {
 
       const getGroupName = (id: string) => {
         if (id.startsWith(serviceOverrideDir)) {
-          const name = paramCase(nodePath.basename(id, '.js'))
+          const name = changeCase.kebabCase(nodePath.basename(id, '.js'))
           return `service-override:${name}`
         }
         if (id === nodePath.resolve(options.dir!, 'editor.api.js')) {
@@ -137,7 +137,7 @@ export function configuredSubpackagePlugin(): rollup.Plugin {
             }
             const [, category, name] = match
             return {
-              name: `@codingame/monaco-vscode-${paramCase(name!)}-${category}`,
+              name: `@codingame/monaco-vscode-${changeCase.kebabCase(name!)}-${category}`,
               version: '0.0.0-semantic-release',
               description: `${pkg.description} - ${name} ${category}`
             }
@@ -197,10 +197,10 @@ export function configuredSubpackagePlugin(): rollup.Plugin {
           {
             name: 'resolve-vscode',
             resolveId(source) {
-              if (source === 'vscode') {
+              if (source === 'vscode' || source === 'monaco-editor') {
                 return {
                   external: true,
-                  id: 'vscode'
+                  id: source
                 }
               }
               return undefined

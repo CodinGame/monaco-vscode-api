@@ -2,7 +2,7 @@ import nodeResolve from '@rollup/plugin-node-resolve'
 import * as rollup from 'rollup'
 import { importMetaAssets } from '@web/rollup-plugin-import-meta-assets'
 import type { PackageJson } from 'type-fest'
-import { pascalCase } from 'pascal-case'
+import * as changeCase from 'change-case'
 import * as fs from 'fs'
 import * as path from 'path'
 import { fileURLToPath } from 'url'
@@ -177,9 +177,9 @@ export default rollup.defineConfig([
             },
             load() {
               return `
-${extensions.map((name) => `import { whenReady as whenReady${pascalCase(name)} } from '@codingame/monaco-vscode-${name}-default-extension'`).join('\n')}
+${extensions.map((name) => `import { whenReady as whenReady${changeCase.pascalCase(name)} } from '@codingame/monaco-vscode-${name}-default-extension'`).join('\n')}
 const whenReady = Promise.all([
-${extensions.map((name) => `  whenReady${pascalCase(name)}()`).join(',\n')}
+${extensions.map((name) => `  whenReady${changeCase.pascalCase(name)}()`).join(',\n')}
 ])
         `
             }
