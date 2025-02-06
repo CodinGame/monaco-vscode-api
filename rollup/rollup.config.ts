@@ -79,7 +79,7 @@ export default (args: Record<string, string>): rollup.RollupOptions => {
       annotations: true,
       preset: 'smallest',
       moduleSideEffects(id) {
-        if (id.includes('terminalContribExports')) {
+        if (id.includes('terminalContribExports') || id.includes('amdX')) {
           return false
         }
         return true
