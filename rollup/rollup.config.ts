@@ -63,7 +63,7 @@ const input = {
   )
 }
 
-export default (args: Record<string, string>): rollup.RollupOptions[] => {
+export default (args: Record<string, string>): rollup.RollupOptions => {
   const vscodeVersion = args['vscode-version']
   delete args['vscode-version']
   const vscodeCommit = args['vscode-commit']
@@ -73,120 +73,118 @@ export default (args: Record<string, string>): rollup.RollupOptions[] => {
   if (vscodeVersion == null) {
     throw new Error('Vscode version is mandatory')
   }
-  return rollup.defineConfig([
-    {
-      cache: false,
-      treeshake: {
-        annotations: true,
-        preset: 'smallest',
-        moduleSideEffects(id) {
-          if (id.includes('terminalContribExports')) {
-            return false
-          }
-          return true
-        },
-        tryCatchDeoptimization: true
-      },
-      external,
-      output: [
-        {
-          preserveModules: true,
-          preserveModulesRoot: 'src',
-          minifyInternalExports: false,
-          assetFileNames: 'assets/[name][extname]',
-          format: 'esm',
-          dir: DIST_DIR_MAIN,
-          entryFileNames: (chunkInfo) => {
-            // Rename node_modules to external so it's not removed while publishing the package
-            // tslib and rollup-plugin-styles are bundled
-            if (chunkInfo.name.includes('node_modules')) {
-              return chunkInfo.name.replace('node_modules', 'external') + '.js'
-            }
-
-            return '[name].js'
-          },
-          hoistTransitiveImports: false
+  return rollup.defineConfig({
+    cache: false,
+    treeshake: {
+      annotations: true,
+      preset: 'smallest',
+      moduleSideEffects(id) {
+        if (id.includes('terminalContribExports')) {
+          return false
         }
-      ],
-      input,
-      plugins: [
-        importMetaAssets({
-          include: ['**/*.ts', '**/*.js']
-        }),
-        commonjs({
-          include: '**/vscode-semver/**/*'
-        }),
-        resolveAssetUrlPlugin(),
-        nodeResolve({
-          extensions: EXTENSIONS
-        }),
-        carryDtsPlugin({
-          external,
-          transformers: [typeDedupReplaceTransformer]
-        }),
-        resolveVscodePlugin(),
-        vscodeLocalizationPlugin(),
-        typescript({
-          noEmitOnError: true,
-          tsconfig: TSCONFIG,
-          compilerOptions: {
-            rootDir: SRC_DIR,
-            declaration: true,
-            declarationDir: DIST_DIR_MAIN,
-            outDir: DIST_DIR_MAIN,
-            allowJs: true
-          },
-          transformers: {
-            afterDeclarations: [relativizeVscodeImportsTransformer],
-            before: [
-              {
-                type: 'program',
-                factory: transformImportEqualsTransformerFactory
-              }
-            ]
+        return true
+      },
+      tryCatchDeoptimization: true
+    },
+    external,
+    output: [
+      {
+        preserveModules: true,
+        preserveModulesRoot: 'src',
+        minifyInternalExports: false,
+        assetFileNames: 'assets/[name][extname]',
+        format: 'esm',
+        dir: DIST_DIR_MAIN,
+        entryFileNames: (chunkInfo) => {
+          // Rename node_modules to external so it's not removed while publishing the package
+          // tslib and rollup-plugin-styles are bundled
+          if (chunkInfo.name.includes('node_modules')) {
+            return chunkInfo.name.replace('node_modules', 'external') + '.js'
           }
-        }),
-        replace({
-          VSCODE_VERSION: JSON.stringify(vscodeVersion),
-          VSCODE_REF: JSON.stringify(vscodeRef),
-          VSCODE_COMMIT: JSON.stringify(vscodeCommit),
-          'globalThis.require': 'undefined',
-          preventAssignment: true
-        }),
-        vscodeAssetGlobMetaUrl({ vscodeSrcDir: VSCODE_SRC_DIR }),
-        styles({
-          mode: 'inject',
-          minimize: true
-        }),
-        dynamicImportPolyfillPlugin(),
-        dynamicImportVars({
-          exclude: ['**/amdX.js']
-        }),
-        {
-          name: 'cleanup',
-          renderChunk(code) {
-            return cleanup(code, null, {
-              comments: 'none',
-              sourcemap: false
-            }).code
-          }
+
+          return '[name].js'
         },
-        configuredSubpackagePlugin(),
-        copy({
-          hook: 'writeBundle',
-          targets: [
-            { src: ['README.md'], dest: 'dist/packages/monaco-vscode-api' },
+        hoistTransitiveImports: false
+      }
+    ],
+    input,
+    plugins: [
+      importMetaAssets({
+        include: ['**/*.ts', '**/*.js']
+      }),
+      commonjs({
+        include: '**/vscode-semver/**/*'
+      }),
+      resolveAssetUrlPlugin(),
+      nodeResolve({
+        extensions: EXTENSIONS
+      }),
+      carryDtsPlugin({
+        external,
+        transformers: [typeDedupReplaceTransformer]
+      }),
+      resolveVscodePlugin(),
+      vscodeLocalizationPlugin(),
+      typescript({
+        noEmitOnError: true,
+        tsconfig: TSCONFIG,
+        compilerOptions: {
+          rootDir: SRC_DIR,
+          declaration: true,
+          declarationDir: DIST_DIR_MAIN,
+          outDir: DIST_DIR_MAIN,
+          allowJs: true
+        },
+        transformers: {
+          afterDeclarations: [relativizeVscodeImportsTransformer],
+          before: [
             {
-              src: 'vscode/src/vs/workbench/contrib/debug/common/debugProtocol.d.ts',
-              dest: 'dist/packages/monaco-vscode-api/'
-            },
-            {
-              src: 'vscode/src/vscode-dts/*.d.ts',
-              dest: 'dist/packages/monaco-vscode-api/vscode-dts'
+              type: 'program',
+              factory: transformImportEqualsTransformerFactory
             }
           ]
-        })
-      ]
-    }
-  ])
+        }
+      }),
+      replace({
+        VSCODE_VERSION: JSON.stringify(vscodeVersion),
+        VSCODE_REF: JSON.stringify(vscodeRef),
+        VSCODE_COMMIT: JSON.stringify(vscodeCommit),
+        'globalThis.require': 'undefined',
+        preventAssignment: true
+      }),
+      vscodeAssetGlobMetaUrl({ vscodeSrcDir: VSCODE_SRC_DIR }),
+      styles({
+        mode: 'inject',
+        minimize: true
+      }),
+      dynamicImportPolyfillPlugin(),
+      dynamicImportVars({
+        exclude: ['**/amdX.js']
+      }),
+      {
+        name: 'cleanup',
+        renderChunk(code) {
+          return cleanup(code, null, {
+            comments: 'none',
+            sourcemap: false
+          }).code
+        }
+      },
+      configuredSubpackagePlugin(),
+      copy({
+        hook: 'writeBundle',
+        targets: [
+          { src: ['README.md'], dest: 'dist/packages/monaco-vscode-api' },
+          {
+            src: 'vscode/src/vs/workbench/contrib/debug/common/debugProtocol.d.ts',
+            dest: 'dist/packages/monaco-vscode-api/'
+          },
+          {
+            src: 'vscode/src/vscode-dts/*.d.ts',
+            dest: 'dist/packages/monaco-vscode-api/vscode-dts'
+          }
+        ]
+      })
+    ]
+  })
 }
