@@ -269,13 +269,13 @@ export function configuredSubpackagePlugin(): rollup.Plugin {
                 this.emitFile({
                   fileName: `esm/${modulePath}.js`,
                   needsCodeReference: false,
-                  source: `export * from 'vscode/vscode/${modulePath}'`,
+                  source: `export * from '@codingame/monaco-vscode-api/vscode/${modulePath}'`,
                   type: 'asset'
                 })
                 this.emitFile({
                   fileName: `esm/${modulePath}.d.ts`,
                   needsCodeReference: false,
-                  source: `export * from 'vscode/vscode/${modulePath}'`,
+                  source: `export * from '@codingame/monaco-vscode-api/vscode/${modulePath}'`,
                   type: 'asset'
                 })
               }
