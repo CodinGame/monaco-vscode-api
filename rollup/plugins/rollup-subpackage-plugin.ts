@@ -511,7 +511,12 @@ export default ({
                             }
                           } else {
                             try {
-                              version = require(`${name}/package.json`).version
+                              const packageJson: PackageJson = require(`${name}/package.json`)
+                              if (packageJson.name !== name) {
+                                version = `npm:${packageJson.name}@${packageJson.version ?? '*'}`
+                              } else {
+                                version = packageJson.version!
+                              }
                             } catch {
                               this.error(`Unable to find version of ${name}`)
                             }
