@@ -1,0 +1,29 @@
+From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
+From: =?UTF-8?q?Lo=C3=AFc=20Mangeonjean?= <loic@coderpad.io>
+Date: Tue, 11 Feb 2025 19:59:40 +0100
+Subject: [PATCH] fix: always set parent origin
+
+---
+ .../services/extensions/browser/webWorkerExtensionHost.ts       | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+
+diff --git a/src/vs/workbench/services/extensions/browser/webWorkerExtensionHost.ts b/src/vs/workbench/services/extensions/browser/webWorkerExtensionHost.ts
+index eade34150d1..95106926e93 100644
+--- a/src/vs/workbench/services/extensions/browser/webWorkerExtensionHost.ts
++++ b/src/vs/workbench/services/extensions/browser/webWorkerExtensionHost.ts
+@@ -85,6 +85,7 @@ export class WebWorkerExtensionHost extends Disposable implements IExtensionHost
+ 			suffixSearchParams.set('debugged', '1');
+ 		}
+ 		COI.addSearchParam(suffixSearchParams, true, true);
++		suffixSearchParams.set('parentOrigin', mainWindow.origin);
+ 
+ 		const suffix = `?${suffixSearchParams.toString()}`;
+ 
+@@ -110,7 +111,6 @@ export class WebWorkerExtensionHost extends Disposable implements IExtensionHost
+ 				);
+ 
+ 				const res = new URL(`${baseUrl}/out/${iframeModulePath}${suffix}`);
+-				res.searchParams.set('parentOrigin', mainWindow.origin);
+ 				res.searchParams.set('salt', stableOriginUUID);
+ 				return res.toString();
+ 			}
