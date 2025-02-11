@@ -26,13 +26,9 @@ import { IChatWidgetHistoryService } from 'vs/workbench/contrib/chat/common/chat
 import { ILanguageModelStatsService } from 'vs/workbench/contrib/chat/common/languageModelStats.service'
 import { LanguageModelsService } from 'vs/workbench/contrib/chat/common/languageModels'
 import { ILanguageModelsService } from 'vs/workbench/contrib/chat/common/languageModels.service'
-import { IInlineChatSavingService } from 'vs/workbench/contrib/inlineChat/browser/inlineChatSavingService.service'
-import { InlineChatSavingServiceImpl } from 'vs/workbench/contrib/inlineChat/browser/inlineChatSavingServiceImpl'
 import { IInlineChatSessionService } from 'vs/workbench/contrib/inlineChat/browser/inlineChatSessionService.service'
 import { InlineChatSessionServiceImpl } from 'vs/workbench/contrib/inlineChat/browser/inlineChatSessionServiceImpl'
 import { LanguageModelStatsService } from 'vs/workbench/contrib/chat/common/languageModelStats'
-import 'vs/workbench/contrib/chat/browser/chat.contribution'
-import 'vs/workbench/contrib/inlineChat/browser/inlineChat.contribution'
 import { ILanguageModelToolsService } from 'vs/workbench/contrib/chat/common/languageModelToolsService.service'
 import { LanguageModelToolsService } from 'vs/workbench/contrib/chat/browser/languageModelToolsService'
 import { ICodeMapperService } from 'vs/workbench/contrib/chat/common/chatCodeMapperService.service'
@@ -43,6 +39,11 @@ import { LanguageModelIgnoredFilesService } from 'vs/workbench/contrib/chat/comm
 import { ILanguageModelIgnoredFilesService } from 'vs/workbench/contrib/chat/common/ignoredFiles.service'
 import { IChatQuotasService } from 'vs/workbench/contrib/chat/browser/chatQuotasService.service'
 import { ChatQuotasService } from 'vs/workbench/contrib/chat/browser/chatQuotasService'
+import { IChatMarkdownAnchorService } from 'vs/workbench/contrib/chat/browser/chatContentParts/chatMarkdownAnchorService.service'
+import { ChatMarkdownAnchorService } from 'vs/workbench/contrib/chat/browser/chatContentParts/chatMarkdownAnchorService'
+import 'vs/workbench/contrib/chat/browser/chat.contribution'
+import 'vs/workbench/contrib/inlineChat/browser/inlineChat.contribution'
+
 export default function getServiceOverride(): IEditorOverrideServices {
   return {
     [IChatService.toString()]: new SyncDescriptor(ChatService, [], true),
@@ -56,11 +57,6 @@ export default function getServiceOverride(): IEditorOverrideServices {
     [IChatVariablesService.toString()]: new SyncDescriptor(ChatVariablesService, [], true),
     [IInlineChatSessionService.toString()]: new SyncDescriptor(
       InlineChatSessionServiceImpl,
-      [],
-      true
-    ),
-    [IInlineChatSavingService.toString()]: new SyncDescriptor(
-      InlineChatSavingServiceImpl,
       [],
       true
     ),
@@ -87,6 +83,7 @@ export default function getServiceOverride(): IEditorOverrideServices {
     ),
     [ICodeMapperService.toString()]: new SyncDescriptor(CodeMapperService, [], true),
     [IChatEditingService.toString()]: new SyncDescriptor(ChatEditingService, [], true),
-    [IChatQuotasService.toString()]: new SyncDescriptor(ChatQuotasService, [], true)
+    [IChatQuotasService.toString()]: new SyncDescriptor(ChatQuotasService, [], true),
+    [IChatMarkdownAnchorService.toString()]: new SyncDescriptor(ChatMarkdownAnchorService, [], true)
   }
 }

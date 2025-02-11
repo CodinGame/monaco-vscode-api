@@ -334,7 +334,8 @@ const api: typeof vscode = {
   TerminalCompletionList: extHostTypes.TerminalCompletionList,
   TextEditorChangeKind: extHostTypes.TextEditorChangeKind,
   TextSearchMatch2: searchExtTypes.TextSearchMatch2,
-  TextSearchContext2: searchExtTypes.TextSearchContext2
+  TextSearchContext2: searchExtTypes.TextSearchContext2,
+  TerminalShellType: extHostTypes.TerminalShellType
 }
 
 // @ts-expect-error the syntax will be transformed by a typescript transformer in the rollup config

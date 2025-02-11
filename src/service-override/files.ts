@@ -43,13 +43,8 @@ import { extUri } from 'vs/base/common/resources'
 import { Emitter, Event } from 'vs/base/common/event'
 import { HTMLFileSystemProvider } from 'vs/platform/files/browser/htmlFileSystemProvider'
 import { Schemas } from 'vs/base/common/network'
-import {
-  IndexedDBFileSystemProvider,
-  type IndexedDBFileSystemProviderErrorData,
-  type IndexedDBFileSystemProviderErrorDataClassification
-} from 'vs/platform/files/browser/indexedDBFileSystemProvider'
+import { IndexedDBFileSystemProvider } from 'vs/platform/files/browser/indexedDBFileSystemProvider'
 import { IndexedDB } from 'vs/base/browser/indexedDB'
-import { ITelemetryService } from 'vs/platform/telemetry/common/telemetry.service'
 import { BufferLogger } from 'vs/platform/log/common/bufferLog'
 import { ITextFileService } from 'vs/workbench/services/textfile/common/textfiles.service'
 import { BrowserTextFileService } from 'vs/workbench/services/textfile/browser/browserTextFileService'
@@ -1110,22 +1105,6 @@ class FileServiceOverride extends FileService {
    * Having no dependencies mean the field won't be overriden, so we'll inherit dependencies from the parent
    */
   static $di$dependencies = []
-
-  public async initialize(telemetryService: ITelemetryService) {
-    for (const { scheme } of this.listCapabilities()) {
-      const provider = this.getProvider(scheme)
-      if (provider instanceof IndexedDBFileSystemProvider) {
-        this._register(
-          provider.onReportError((e) =>
-            telemetryService.publicLog2<
-              IndexedDBFileSystemProviderErrorData,
-              IndexedDBFileSystemProviderErrorDataClassification
-            >('indexedDBFileSystemProviderError', e)
-          )
-        )
-      }
-    }
-  }
 }
 
 // Set the logger of the fileLogger after the log service is ready.
@@ -1133,11 +1112,6 @@ class FileServiceOverride extends FileService {
 const fileLogger = new BufferLogger()
 registerServiceInitializePreParticipant(async (accessor) => {
   fileLogger.logger = accessor.get(ILogService)
-
-  const fileService = accessor.get(IFileService)
-  if (fileService instanceof FileServiceOverride) {
-    fileService.initialize(accessor.get(ITelemetryService))
-  }
 })
 
 export default function getServiceOverride(): IEditorOverrideServices {

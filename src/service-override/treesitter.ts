@@ -1,10 +1,12 @@
 import type { IEditorOverrideServices } from 'vs/editor/standalone/browser/standaloneServices'
 import { SyncDescriptor } from 'vs/platform/instantiation/common/descriptors'
 import { ITreeSitterParserService } from 'vs/editor/common/services/treeSitterParserService'
-import { TreeSitterTextModelService } from 'vs/editor/browser/services/treeSitter/treeSitterParserService'
+import { TreeSitterTextModelService } from 'vs/editor/common/services/treeSitter/treeSitterParserService'
 import { ITreeSitterTokenizationFeature } from 'vs/workbench/services/treeSitter/browser/treeSitterTokenizationFeature.service'
 import { TreeSitterTokenizationFeature } from 'vs/workbench/services/treeSitter/browser/treeSitterTokenizationFeature'
 import { registerAssets } from '../assets'
+import { ITreeSitterTokenizationStoreService } from 'vs/editor/common/model/treeSitterTokenStoreService'
+import { TreeSitterTokenizationStoreService } from 'vs/editor/common/model/treeSitterTokenStoreService'
 import 'vs/workbench/services/treeSitter/browser/treeSitterTokenizationFeature.contribution'
 
 registerAssets({
@@ -31,6 +33,11 @@ export default function getServiceOverride(): IEditorOverrideServices {
     ),
     [ITreeSitterTokenizationFeature.toString()]: new SyncDescriptor(
       TreeSitterTokenizationFeature,
+      [],
+      false
+    ),
+    [ITreeSitterTokenizationStoreService.toString()]: new SyncDescriptor(
+      TreeSitterTokenizationStoreService,
       [],
       false
     )
