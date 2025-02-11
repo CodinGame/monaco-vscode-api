@@ -63,29 +63,6 @@ cd src
 rm -rf `find . -name '*.test.ts' -o -name 'test' -o -name 'electron-browser'`
 rm -f bootstrap*.ts *main.ts *cli.ts
 rm -rf vs/code
-cd ..
-
-# transform to relative imports, replace ESM comments and vs/css! imports
-cat << EOF | node -
-	require('./build/lib/standalone').createESMSourcesAndResources2({
-		srcFolder: './src',
-		outFolder: './src',
-		outResourcesFolder: './resources',
-		ignores: [
-			'inlineEntryPoint:0.ts',
-			'inlineEntryPoint:1.ts',
-			'vs/loader.js',
-			'vs/base/worker/workerMain.ts',
-		],
-		renames: {
-		}
-	});
-EOF
-cd resources
-rsync -R $(find . -name \*.js) ../src/
-cd ..
-
-cd src
 
 # generate vscode.proposed.d.ts
 cd vscode-dts
@@ -99,7 +76,7 @@ cd ..
 mkdir -p $output_directory
 
 echo "Building vscode..."
-NODE_OPTIONS=--max-old-space-size=8192 npx tsc --declaration --importHelpers --module es2020 --preserveConstEnums --outDir "$output_directory/src" --rootDir .
+NODE_OPTIONS=--max-old-space-size=8192 npx tsc --declaration --importHelpers --outDir "$output_directory/src" --rootDir .
 # Copy files that are already built and assets
 find ./ \( -name '*.js' -o -name '*.d.ts' -o -name '*.ttf' -o -name '*.css' -o -name '*.mp3' -o -name '*.scm' -o -name '*.svg' -o -name '*.png' -o -name '*.html' -o -name '*.sh' -o -name '*.zsh' -o -name '*.ps1' \) -exec rsync -R \{\} "$output_directory/src" \;
 
