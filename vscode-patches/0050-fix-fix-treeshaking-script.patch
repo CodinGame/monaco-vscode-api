@@ -9,19 +9,19 @@ Subject: [PATCH] fix: fix treeshaking script
  2 files changed, 2 insertions(+)
 
 diff --git a/build/lib/treeshaking.js b/build/lib/treeshaking.js
-index af06f4e3ec5..323603d8bfa 100644
+index d51eee91f1e..dd3ab5ad43b 100644
 --- a/build/lib/treeshaking.js
 +++ b/build/lib/treeshaking.js
-@@ -104,6 +104,7 @@ function discoverAndReadFiles(ts, options) {
+@@ -107,6 +107,7 @@ function discoverAndReadFiles(ts, options) {
          if (options.redirects[moduleId]) {
              redirectedModuleId = options.redirects[moduleId];
          }
 +        redirectedModuleId = moduleId.replace(/.js$/, '');
-         const dts_filename = path.join(options.sourcesRoot, redirectedModuleId + '.d.ts');
-         if (fs.existsSync(dts_filename)) {
-             const dts_filecontents = fs.readFileSync(dts_filename).toString();
+         const dts_filename = path_1.default.join(options.sourcesRoot, redirectedModuleId + '.d.ts');
+         if (fs_1.default.existsSync(dts_filename)) {
+             const dts_filecontents = fs_1.default.readFileSync(dts_filename).toString();
 diff --git a/build/lib/treeshaking.ts b/build/lib/treeshaking.ts
-index cd17c5f0278..bbb9abf8169 100644
+index ac71bb205da..ee4e6c386df 100644
 --- a/build/lib/treeshaking.ts
 +++ b/build/lib/treeshaking.ts
 @@ -159,6 +159,7 @@ function discoverAndReadFiles(ts: typeof import('typescript'), options: ITreeSha

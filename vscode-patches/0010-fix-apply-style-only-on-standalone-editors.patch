@@ -80,7 +80,7 @@ index 701c940c736..ca380d0119c 100644
  	public static validateOptions(options: IEditorOptions): ValidatedEditorOptions {
  		const result = new ValidatedEditorOptions();
 diff --git a/src/vs/editor/browser/widget/codeEditor/codeEditorWidget.ts b/src/vs/editor/browser/widget/codeEditor/codeEditorWidget.ts
-index ed20f95580a..d6a487f611e 100644
+index 3bd2f0a903e..5ea575e9897 100644
 --- a/src/vs/editor/browser/widget/codeEditor/codeEditorWidget.ts
 +++ b/src/vs/editor/browser/widget/codeEditor/codeEditorWidget.ts
 @@ -278,6 +278,7 @@ export class CodeEditorWidget extends Disposable implements editorBrowser.ICodeE
@@ -91,7 +91,7 @@ index ed20f95580a..d6a487f611e 100644
  			options, accessibilityService));
  		this._register(this._configuration.onDidChange((e) => {
  			this._onDidChangeConfiguration.fire(e);
-@@ -386,8 +387,8 @@ export class CodeEditorWidget extends Disposable implements editorBrowser.ICodeE
+@@ -391,8 +392,8 @@ export class CodeEditorWidget extends Disposable implements editorBrowser.ICodeE
  		this._modelData?.view.writeScreenReaderContent(reason);
  	}
  
@@ -102,7 +102,7 @@ index ed20f95580a..d6a487f611e 100644
  	}
  
  	public getId(): string {
-@@ -1969,6 +1970,12 @@ export interface ICodeEditorWidgetOptions {
+@@ -1974,6 +1975,12 @@ export interface ICodeEditorWidgetOptions {
  	 */
  	isSimpleWidget?: boolean;
  

@@ -4,14 +4,14 @@ Date: Mon, 11 Mar 2024 17:38:30 +0100
 Subject: [PATCH] fix: improve extension contribution types
 
 ---
- .../platform/extensions/common/extensions.ts  | 1497 ++++++++++++++++-
+ .../platform/extensions/common/extensions.ts  | 1440 ++++++++++++++++-
  .../services/search/common/queryBuilder.ts    |    8 +-
  .../themes/common/colorExtensionPoint.ts      |    2 +-
  .../tokenClassificationExtensionPoint.ts      |    1 +
- 4 files changed, 1432 insertions(+), 76 deletions(-)
+ 4 files changed, 1381 insertions(+), 70 deletions(-)
 
 diff --git a/src/vs/platform/extensions/common/extensions.ts b/src/vs/platform/extensions/common/extensions.ts
-index cee0043bad6..1c76dd5506a 100644
+index b2d6194419a..94f2402cf48 100644
 --- a/src/vs/platform/extensions/common/extensions.ts
 +++ b/src/vs/platform/extensions/common/extensions.ts
 @@ -3,6 +3,7 @@
@@ -22,7 +22,7 @@ index cee0043bad6..1c76dd5506a 100644
  import Severity from '../../../base/common/severity.js';
  import * as strings from '../../../base/common/strings.js';
  import { URI } from '../../../base/common/uri.js';
-@@ -16,118 +17,593 @@ export const BUILTIN_MANIFEST_CACHE_FILE = 'extensions.builtin.cache';
+@@ -16,119 +17,547 @@ export const BUILTIN_MANIFEST_CACHE_FILE = 'extensions.builtin.cache';
  export const UNDEFINED_PUBLISHER = 'undefined_publisher';
  
  export interface ICommand {
@@ -544,10 +544,6 @@ index cee0043bad6..1c76dd5506a 100644
 +	 */
  	readonly title: string;
 -	readonly description: string | undefined;
--	readonly media:
--	| { image: string | { dark: string; light: string; hc: string }; altText: string; markdown?: never; svg?: never }
--	| { markdown: string; image?: never; svg?: never }
--	| { svg: string; altText: string; markdown?: never; image?: never };
 +	/**
 +	 * Description of step. Supports ``preformatted``, __italic__, and **bold** text. Use markdown-style links for commands or external links: [Title](command:myext.command), [Title](command:toSide:myext.command), or [Title](https://aka.ms). Links on their own line will be rendered as buttons.
 +	 */
@@ -558,59 +554,13 @@ index cee0043bad6..1c76dd5506a 100644
 +	/**
 +	 * Media to show alongside this step, either an image or markdown content.
 +	 */
-+	readonly media: {
-+		readonly path?: {
-+			[k: string]: unknown;
-+		};
-+		/**
-+		 * Path to an image - or object consisting of paths to light, dark, and hc images - relative to extension directory. Depending on context, the image will be displayed from 400px to 800px wide, with similar bounds on height. To support HIDPI displays, the image will be rendered at 1.5x scaling, for example a 900 physical pixels wide image will be displayed as 600 logical pixels wide.
-+		 */
-+		readonly image: string | {
-+			/**
-+			 * Path to the image for dark themes, relative to extension directory.
-+			 */
-+			readonly dark: string;
-+			/**
-+			 * Path to the image for light themes, relative to extension directory.
-+			 */
-+			readonly light: string;
-+			/**
-+			 * Path to the image for hc themes, relative to extension directory.
-+			 */
-+			readonly hc: string;
-+			/**
-+			 * Path to the image for hc light themes, relative to extension directory.
-+			 */
-+			readonly hcLight: string;
-+		};
-+		/**
-+		 * Alternate text to display when the image cannot be loaded or in screen readers.
-+		 */
-+		readonly altText: string;
-+		readonly markdown?: never;
-+		readonly svg?: never;
-+	} | {
-+		/**
-+		 * Path to an svg, color tokens are supported in variables to support theming to match the workbench.
-+		 */
-+		readonly svg: string;
-+		/**
-+		 * Alternate text to display when the image cannot be loaded or in screen readers.
-+		 */
-+		readonly altText: string;
-+		readonly image?: never;
-+		readonly markdown?: never;
-+	} | {
-+		readonly path?: {
-+			[k: string]: unknown;
-+		};
-+		/**
-+		 * Path to the markdown document, relative to extension directory.
-+		 */
-+		readonly markdown: string;
-+		readonly image?: never;
-+		readonly svg?: never;
-+	};
+ 	readonly media:
+ 	| { image: string | { dark: string; light: string; hc: string }; altText: string; markdown?: never; svg?: never; video?: never }
+ 	| { markdown: string; image?: never; svg?: never; video?: never }
+ 	| { svg: string; altText: string; markdown?: never; image?: never; video?: never }
+ 	| { video: string | { dark: string; light: string; hc: string }; poster: string | { dark: string; light: string; hc: string }; altText: string; markdown?: never; image?: never; svg?: never };
++
++
 +	/**
 +	 * Events that should trigger this step to become checked off. If empty or not defined, the step will check off when any of the step's buttons or links are clicked; if the step has no buttons or links it will check on when it is selected.
 +	 */
@@ -658,7 +608,7 @@ index cee0043bad6..1c76dd5506a 100644
  }
  
  export interface IStartEntry {
-@@ -139,14 +615,53 @@ export interface IStartEntry {
+@@ -140,14 +569,53 @@ export interface IStartEntry {
  }
  
  export interface INotebookEntry {
@@ -712,7 +662,7 @@ index cee0043bad6..1c76dd5506a 100644
  }
  
  export interface IDebugVisualizationContribution {
-@@ -155,44 +670,884 @@ export interface IDebugVisualizationContribution {
+@@ -156,16 +624,706 @@ export interface IDebugVisualizationContribution {
  }
  
  export interface ITranslation {
@@ -720,12 +670,6 @@ index cee0043bad6..1c76dd5506a 100644
 -	path: string;
 -}
 -
--export interface ILocalizationContribution {
--	languageId: string;
--	languageName?: string;
--	localizedLanguageName?: string;
--	translations: ITranslation[];
--	minimalTranslations?: { [key: string]: string };
 +	/**
 +	 * Id of VS Code or Extension for which this translation is contributed to. Id of VS Code is always `vscode` and of extension should be in format `publisherId.extensionName`.
 +	 */
@@ -736,7 +680,7 @@ index cee0043bad6..1c76dd5506a 100644
 +	readonly path: string;
 +}
 +
-+export interface ILocalizationContribution {
+ export interface ILocalizationContribution {
 +	/**
 +	 * Id of the language into which the display strings are translated.
 +	 */
@@ -1421,11 +1365,19 @@ index cee0043bad6..1c76dd5506a 100644
 +	/**
 +	 * The id of the language that participates with HTML language server.
 +	 */
-+	languageId: string;
+ 	languageId: string;
+-	languageName?: string;
+-	localizedLanguageName?: string;
+-	translations: ITranslation[];
+-	minimalTranslations?: { [key: string]: string };
 +	/**
 +	 * Whether the language participates with HTML auto insertions. If not specified, defaults to <code>true</code>.
 +	 */
 +	autoInsert: boolean;
+ }
+ 
+ export interface IChatParticipantContribution {
+@@ -185,32 +1343,184 @@ export interface IToolContribution {
  }
  
  export interface IExtensionContributions {
@@ -1547,7 +1499,10 @@ index cee0043bad6..1c76dd5506a 100644
 +	 */
  	readonly notebookRenderer?: INotebookRendererContribution[];
  	readonly debugVisualizers?: IDebugVisualizationContribution[];
- 	readonly chatParticipants?: ReadonlyArray<{ id: string }>;
++
+ 	readonly chatParticipants?: ReadonlyArray<IChatParticipantContribution>;
+ 	readonly languageModelTools?: ReadonlyArray<IToolContribution>;
++
 +	/**
 +	 * Contributes notebook preloads.
 +	 */

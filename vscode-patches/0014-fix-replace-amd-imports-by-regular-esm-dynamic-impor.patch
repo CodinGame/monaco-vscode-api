@@ -4,16 +4,16 @@ Date: Mon, 11 Mar 2024 17:22:31 +0100
 Subject: [PATCH] fix: replace amd imports by regular esm dynamic imports
 
 ---
- .../assignment/common/assignmentService.ts        |  3 +--
- src/vs/platform/telemetry/common/1dsAppender.ts   |  9 ++-------
- .../contrib/terminal/browser/terminalInstance.ts  |  3 +--
- .../terminal/browser/xterm/xtermAddonImporter.ts  | 15 +++++++--------
- .../textMateWorkerTokenizerController.ts          |  3 +--
- .../worker/textMateTokenizationWorker.worker.ts   |  5 ++---
- .../worker/textMateWorkerTokenizer.ts             |  3 +--
- .../browser/textMateTokenizationFeatureImpl.ts    |  6 +++---
- .../services/textfile/common/encoding.ts          |  9 ++++-----
- 9 files changed, 22 insertions(+), 34 deletions(-)
+ .../assignment/common/assignmentService.ts      |  3 +--
+ src/vs/platform/telemetry/common/1dsAppender.ts |  9 ++-------
+ .../terminal/browser/terminalInstance.ts        |  3 +--
+ .../browser/xterm/xtermAddonImporter.ts         | 17 ++++++++---------
+ .../textMateWorkerTokenizerController.ts        |  3 +--
+ .../worker/textMateTokenizationWorker.worker.ts |  5 ++---
+ .../worker/textMateWorkerTokenizer.ts           |  3 +--
+ .../browser/textMateTokenizationFeatureImpl.ts  |  6 +++---
+ .../services/textfile/common/encoding.ts        |  9 ++++-----
+ 9 files changed, 23 insertions(+), 35 deletions(-)
 
 diff --git a/src/vs/platform/assignment/common/assignmentService.ts b/src/vs/platform/assignment/common/assignmentService.ts
 index 413bd60f7ff..2e7fcb3d31c 100644
@@ -37,7 +37,7 @@ index 413bd60f7ff..2e7fcb3d31c 100644
  			telemetry: this.telemetry,
  			storageKey: ASSIGNMENT_STORAGE_KEY,
 diff --git a/src/vs/platform/telemetry/common/1dsAppender.ts b/src/vs/platform/telemetry/common/1dsAppender.ts
-index 7efb786c763..e25b981dc45 100644
+index 59a0dadcb7d..f39a10d515f 100644
 --- a/src/vs/platform/telemetry/common/1dsAppender.ts
 +++ b/src/vs/platform/telemetry/common/1dsAppender.ts
 @@ -5,10 +5,8 @@
@@ -66,7 +66,7 @@ index 7efb786c763..e25b981dc45 100644
  	const collectorChannelPlugin: PostChannel = new postPlugin.PostChannel();
  	// Configure the app insights core to send to collector++ and disable logging of debug info
 diff --git a/src/vs/workbench/contrib/terminal/browser/terminalInstance.ts b/src/vs/workbench/contrib/terminal/browser/terminalInstance.ts
-index 6c11d5d3ccd..67131faaf60 100644
+index 35f316a4bd0..35a9e493d33 100644
 --- a/src/vs/workbench/contrib/terminal/browser/terminalInstance.ts
 +++ b/src/vs/workbench/contrib/terminal/browser/terminalInstance.ts
 @@ -79,7 +79,6 @@ import { IHistoryService } from '../../../services/history/common/history.js';
@@ -77,7 +77,7 @@ index 6c11d5d3ccd..67131faaf60 100644
  import type { IMarker, Terminal as XTermTerminal } from '@xterm/xterm';
  import { AccessibilityCommandId } from '../../accessibility/common/accessibilityCommands.js';
  import { terminalStrings } from '../common/terminalStrings.js';
-@@ -744,7 +743,7 @@ export class TerminalInstance extends Disposable implements ITerminalInstance {
+@@ -753,7 +752,7 @@ export class TerminalInstance extends Disposable implements ITerminalInstance {
  			return xtermConstructor;
  		}
  		xtermConstructor = Promises.withAsyncBody<typeof XTermTerminal>(async (resolve) => {
@@ -87,10 +87,10 @@ index 6c11d5d3ccd..67131faaf60 100644
  			Terminal.strings.promptLabel = nls.localize('terminal.integrated.a11yPromptLabel', 'Terminal input');
  			Terminal.strings.tooMuchOutput = keybinding ? nls.localize('terminal.integrated.useAccessibleBuffer', 'Use the accessible buffer {0} to manually review output', keybinding.getLabel()) : nls.localize('terminal.integrated.useAccessibleBufferNoKb', 'Use the Terminal: Focus Accessible Buffer command to manually review output');
 diff --git a/src/vs/workbench/contrib/terminal/browser/xterm/xtermAddonImporter.ts b/src/vs/workbench/contrib/terminal/browser/xterm/xtermAddonImporter.ts
-index 753ba6f9e79..d9cf6a16d43 100644
+index 30e6bd1905b..d54aed4b473 100644
 --- a/src/vs/workbench/contrib/terminal/browser/xterm/xtermAddonImporter.ts
 +++ b/src/vs/workbench/contrib/terminal/browser/xterm/xtermAddonImporter.ts
-@@ -10,7 +10,6 @@ import type { SearchAddon as SearchAddonType } from '@xterm/addon-search';
+@@ -11,7 +11,6 @@ import type { SearchAddon as SearchAddonType } from '@xterm/addon-search';
  import type { SerializeAddon as SerializeAddonType } from '@xterm/addon-serialize';
  import type { Unicode11Addon as Unicode11AddonType } from '@xterm/addon-unicode11';
  import type { WebglAddon as WebglAddonType } from '@xterm/addon-webgl';
@@ -98,13 +98,14 @@ index 753ba6f9e79..d9cf6a16d43 100644
  
  export interface IXtermAddonNameToCtor {
  	clipboard: typeof ClipboardAddonType;
-@@ -39,13 +38,13 @@ export class XtermAddonImporter {
+@@ -41,14 +40,14 @@ export class XtermAddonImporter {
  		let addon = importedAddons.get(name);
  		if (!addon) {
  			switch (name) {
 -				case 'clipboard': addon = (await importAMDNodeModule<typeof import('@xterm/addon-clipboard')>('@xterm/addon-clipboard', 'lib/addon-clipboard.js')).ClipboardAddon as IXtermAddonNameToCtor[T]; break;
 -				case 'image': addon = (await importAMDNodeModule<typeof import('@xterm/addon-image')>('@xterm/addon-image', 'lib/addon-image.js')).ImageAddon as IXtermAddonNameToCtor[T]; break;
 -				case 'ligatures': addon = (await importAMDNodeModule<typeof import('@xterm/addon-ligatures')>('@xterm/addon-ligatures', 'lib/addon-ligatures.js')).LigaturesAddon as IXtermAddonNameToCtor[T]; break;
+-				case 'progress': addon = (await importAMDNodeModule<typeof import('@xterm/addon-progress')>('@xterm/addon-progress', 'lib/addon-progress.js')).ProgressAddon as IXtermAddonNameToCtor[T]; break;
 -				case 'search': addon = (await importAMDNodeModule<typeof import('@xterm/addon-search')>('@xterm/addon-search', 'lib/addon-search.js')).SearchAddon as IXtermAddonNameToCtor[T]; break;
 -				case 'serialize': addon = (await importAMDNodeModule<typeof import('@xterm/addon-serialize')>('@xterm/addon-serialize', 'lib/addon-serialize.js')).SerializeAddon as IXtermAddonNameToCtor[T]; break;
 -				case 'unicode11': addon = (await importAMDNodeModule<typeof import('@xterm/addon-unicode11')>('@xterm/addon-unicode11', 'lib/addon-unicode11.js')).Unicode11Addon as IXtermAddonNameToCtor[T]; break;
@@ -112,6 +113,7 @@ index 753ba6f9e79..d9cf6a16d43 100644
 +				case 'clipboard': addon = (await import('@xterm/addon-clipboard')).ClipboardAddon as IXtermAddonNameToCtor[T]; break;
 +				case 'image': addon = (await import('@xterm/addon-image')).ImageAddon as IXtermAddonNameToCtor[T]; break;
 +				case 'ligatures': addon = (await import('@xterm/addon-ligatures')).LigaturesAddon as IXtermAddonNameToCtor[T]; break;
++				case 'progress': addon = (await import('@xterm/addon-progress')).ProgressAddon as IXtermAddonNameToCtor[T]; break;
 +				case 'search': addon = (await import('@xterm/addon-search')).SearchAddon as IXtermAddonNameToCtor[T]; break;
 +				case 'serialize': addon = (await import('@xterm/addon-serialize')).SerializeAddon as IXtermAddonNameToCtor[T]; break;
 +				case 'unicode11': addon = (await import('@xterm/addon-unicode11')).Unicode11Addon as IXtermAddonNameToCtor[T]; break;
@@ -217,7 +219,7 @@ index 2620e9a4200..fad4bc095fc 100644
  					data: wasm,
  					print: (str: string) => {
 diff --git a/src/vs/workbench/services/textfile/common/encoding.ts b/src/vs/workbench/services/textfile/common/encoding.ts
-index b653dd7a847..647cb01f9c0 100644
+index 599f2309e6a..f26c09c0da0 100644
 --- a/src/vs/workbench/services/textfile/common/encoding.ts
 +++ b/src/vs/workbench/services/textfile/common/encoding.ts
 @@ -5,7 +5,6 @@

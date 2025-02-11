@@ -4,31 +4,64 @@ Date: Thu, 25 Apr 2024 19:34:56 +0200
 Subject: [PATCH] feat: add build tool to extract service identifiers
 
 ---
- build/lib/extractServices.js | 215 ++++++++++++++++++++++++++++++
- build/lib/extractServices.ts | 246 +++++++++++++++++++++++++++++++++++
- 2 files changed, 461 insertions(+)
+ build/lib/extractServices.js | 241 +++++++++++++++++++++++++++++++++++
+ build/lib/extractServices.ts | 238 ++++++++++++++++++++++++++++++++++
+ 2 files changed, 479 insertions(+)
  create mode 100644 build/lib/extractServices.js
  create mode 100644 build/lib/extractServices.ts
 
 diff --git a/build/lib/extractServices.js b/build/lib/extractServices.js
 new file mode 100644
-index 00000000000..d127acf45ec
+index 00000000000..6fc74ba1ab2
 --- /dev/null
 +++ b/build/lib/extractServices.js
-@@ -0,0 +1,215 @@
+@@ -0,0 +1,241 @@
 +"use strict";
 +/*---------------------------------------------------------------------------------------------
 + *  Copyright (c) Microsoft Corporation. All rights reserved.
 + *  Licensed under the MIT License. See License.txt in the project root for license information.
 + *--------------------------------------------------------------------------------------------*/
++var __createBinding = (this && this.__createBinding) || (Object.create ? (function(o, m, k, k2) {
++    if (k2 === undefined) k2 = k;
++    var desc = Object.getOwnPropertyDescriptor(m, k);
++    if (!desc || ("get" in desc ? !m.__esModule : desc.writable || desc.configurable)) {
++      desc = { enumerable: true, get: function() { return m[k]; } };
++    }
++    Object.defineProperty(o, k2, desc);
++}) : (function(o, m, k, k2) {
++    if (k2 === undefined) k2 = k;
++    o[k2] = m[k];
++}));
++var __setModuleDefault = (this && this.__setModuleDefault) || (Object.create ? (function(o, v) {
++    Object.defineProperty(o, "default", { enumerable: true, value: v });
++}) : function(o, v) {
++    o["default"] = v;
++});
++var __importStar = (this && this.__importStar) || (function () {
++    var ownKeys = function(o) {
++        ownKeys = Object.getOwnPropertyNames || function (o) {
++            var ar = [];
++            for (var k in o) if (Object.prototype.hasOwnProperty.call(o, k)) ar[ar.length] = k;
++            return ar;
++        };
++        return ownKeys(o);
++    };
++    return function (mod) {
++        if (mod && mod.__esModule) return mod;
++        var result = {};
++        if (mod != null) for (var k = ownKeys(mod), i = 0; i < k.length; i++) if (k[i] !== "default") __createBinding(result, mod, k[i]);
++        __setModuleDefault(result, mod);
++        return result;
++    };
++})();
 +Object.defineProperty(exports, "__esModule", { value: true });
 +/**
 + * The point of this file is to extract the service identifier to be able to import them without importing everything from the module
 + * It prevent importing useless classes when we just want to register a mocked implementation of the service
 + */
-+const ts = require("typescript");
-+const fs = require("fs");
-+const path = require("path");
++const ts = __importStar(require("typescript"));
++const fs = __importStar(require("fs"));
++const path = __importStar(require("path"));
 +const REPO_ROOT = path.join(__dirname, '../../');
 +const SRC_DIR = path.join(REPO_ROOT, 'src');
 +/**
@@ -125,12 +158,8 @@ index 00000000000..d127acf45ec
 +        },
 +        getCurrentDirectory: () => SRC_DIR,
 +        getCompilationSettings: () => ({
-+            'paths': {
-+                'vs/*': [
-+                    './vs/*'
-+                ]
-+            },
-+            forceConsistentCasingInFileNames: true
++            forceConsistentCasingInFileNames: true,
++            moduleResolution: ts.ModuleResolutionKind.NodeNext
 +        }),
 +        getDefaultLibFileName: options => ts.getDefaultLibFilePath(options),
 +        fileExists: ts.sys.fileExists,
@@ -159,19 +188,16 @@ index 00000000000..d127acf45ec
 +        if (service.getProgram().getSourceFile(fileName) === undefined) {
 +            throw new Error(`${fileName} not found`);
 +        }
++        const preferences = {
++            allowTextChangesInNewFiles: true,
++            allowRenameOfImportPath: true,
++            preferTypeOnlyAutoImports: true
++        };
 +        function moveToNewFile(range) {
-+            const refactors = service.getApplicableRefactors(fileName, range, {
-+                allowTextChangesInNewFiles: true,
-+                allowRenameOfImportPath: true,
-+                preferTypeOnlyAutoImports: true
-+            }, undefined, undefined, true);
++            const refactors = service.getApplicableRefactors(fileName, range, preferences, 'invoked', undefined, true);
 +            const moveToFileRefactor = refactors.find(r => r.name === 'Move to file');
-+            const edits = service.getEditsForRefactor(fileName, {}, range, moveToFileRefactor.name, moveToFileRefactor.actions[0].name, {
-+                allowTextChangesInNewFiles: true,
-+                allowRenameOfImportPath: true,
-+                preferTypeOnlyAutoImports: true
-+            }, {
-+                targetFile: path.resolve(path.dirname(fileName), `${path.basename(fileName, '.ts')}.service.ts`)
++            const edits = service.getEditsForRefactor(fileName, {}, range, moveToFileRefactor.name, moveToFileRefactor.actions[0].name, preferences, {
++                targetFile: path.resolve(path.dirname(fileName), `${path.basename(fileName, '.ts')}.service.ts`),
 +            });
 +            // Workaround for typescript bug: it tends to use `import type` when both types and value are imported
 +            edits.edits.forEach((change) => {
@@ -234,10 +260,10 @@ index 00000000000..d127acf45ec
 \ No newline at end of file
 diff --git a/build/lib/extractServices.ts b/build/lib/extractServices.ts
 new file mode 100644
-index 00000000000..8900bf6bbe9
+index 00000000000..82b5f68b30c
 --- /dev/null
 +++ b/build/lib/extractServices.ts
-@@ -0,0 +1,246 @@
+@@ -0,0 +1,238 @@
 +/*---------------------------------------------------------------------------------------------
 + *  Copyright (c) Microsoft Corporation. All rights reserved.
 + *  Licensed under the MIT License. See License.txt in the project root for license information.
@@ -363,12 +389,8 @@ index 00000000000..8900bf6bbe9
 +		},
 +		getCurrentDirectory: () => SRC_DIR,
 +		getCompilationSettings: () => ({
-+			'paths': {
-+				'vs/*': [
-+					'./vs/*'
-+				]
-+			},
-+			forceConsistentCasingInFileNames: true
++			forceConsistentCasingInFileNames: true,
++			moduleResolution: ts.ModuleResolutionKind.NodeNext
 +		}),
 +		getDefaultLibFileName: options => ts.getDefaultLibFilePath(options),
 +		fileExists: ts.sys.fileExists,
@@ -400,21 +422,17 @@ index 00000000000..8900bf6bbe9
 +			throw new Error(`${fileName} not found`);
 +		}
 +
++		const preferences: ts.UserPreferences = {
++			allowTextChangesInNewFiles: true,
++			allowRenameOfImportPath: true,
++			preferTypeOnlyAutoImports: true
++		};
 +		function moveToNewFile(range: ts.TextRange) {
-+			const refactors = service.getApplicableRefactors(fileName, range, {
-+				allowTextChangesInNewFiles: true,
-+				allowRenameOfImportPath: true,
-+				preferTypeOnlyAutoImports: true
-+			}, undefined, undefined, true);
++			const refactors = service.getApplicableRefactors(fileName, range, preferences, 'invoked', undefined, true);
 +			const moveToFileRefactor = refactors.find(r => r.name === 'Move to file')!;
 +			const edits = service.getEditsForRefactor(fileName, {
-+
-+			}, range, moveToFileRefactor.name, moveToFileRefactor.actions[0].name, {
-+				allowTextChangesInNewFiles: true,
-+				allowRenameOfImportPath: true,
-+				preferTypeOnlyAutoImports: true
-+			}, {
-+				targetFile: path.resolve(path.dirname(fileName), `${path.basename(fileName, '.ts')}.service.ts`)
++			}, range, moveToFileRefactor.name, moveToFileRefactor.actions[0].name, preferences, {
++				targetFile: path.resolve(path.dirname(fileName), `${path.basename(fileName, '.ts')}.service.ts`),
 +			})!;
 +
 +			// Workaround for typescript bug: it tends to use `import type` when both types and value are imported

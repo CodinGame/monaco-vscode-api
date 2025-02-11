@@ -9,13 +9,13 @@ Subject: [PATCH] fix: override log services even in main thread
  2 files changed, 6 insertions(+), 5 deletions(-)
 
 diff --git a/src/vs/workbench/api/common/extensionHostMain.ts b/src/vs/workbench/api/common/extensionHostMain.ts
-index 3089e188325..41fa0fa3ca9 100644
+index 8a90c5c9b34..b1f3e40f6ee 100644
 --- a/src/vs/workbench/api/common/extensionHostMain.ts
 +++ b/src/vs/workbench/api/common/extensionHostMain.ts
 @@ -12,7 +12,7 @@ import { MainContext, MainThreadConsoleShape } from './extHost.protocol.js';
  import { IExtensionHostInitData } from '../../services/extensions/common/extensionHostProtocol.js';
  import { RPCProtocol } from '../../services/extensions/common/rpcProtocol.js';
- import { ExtensionIdentifier, IExtensionDescription } from '../../../platform/extensions/common/extensions.js';
+ import { ExtensionError, ExtensionIdentifier, IExtensionDescription } from '../../../platform/extensions/common/extensions.js';
 -import { ILogService } from '../../../platform/log/common/log.js';
 +import { ILoggerService, ILogService } from '../../../platform/log/common/log.js';
  import { getSingletonServiceDescriptors } from '../../../platform/instantiation/common/extensions.js';
@@ -31,7 +31,7 @@ index 3089e188325..41fa0fa3ca9 100644
  
  export interface IExitFn {
  	(code?: number): any;
-@@ -159,6 +162,8 @@ export class ExtensionHostMain {
+@@ -168,6 +171,8 @@ export class ExtensionHostMain {
  		services.set(IExtHostRpcService, new ExtHostRpcService(this._rpcProtocol));
  		services.set(IURITransformerService, new URITransformerService(uriTransformer));
  		services.set(IHostUtils, hostUtils);

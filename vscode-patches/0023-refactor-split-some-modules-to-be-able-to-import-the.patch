@@ -12,9 +12,9 @@ Subject: [PATCH] refactor: split some modules to be able to import them
  .../files.contribution._configuration.ts      | 297 ++++++++
  .../browser/files.contribution._editorPane.ts |  93 +++
  .../browser/files.contribution._explorer.ts   | 280 ++++++++
- .../files.contribution._fileEditorFactory.ts  |  23 +
+ .../files.contribution._fileEditorFactory.ts  |  24 +
  .../files/browser/files.contribution.ts       | 659 +-----------------
- 9 files changed, 939 insertions(+), 870 deletions(-)
+ 9 files changed, 940 insertions(+), 870 deletions(-)
  create mode 100644 src/vs/workbench/browser/parts/editor/editor.contribution._autosave.ts
  create mode 100644 src/vs/workbench/contrib/files/browser/fileCommands._save.ts
  create mode 100644 src/vs/workbench/contrib/files/browser/files.contribution._configuration.ts
@@ -24,7 +24,7 @@ Subject: [PATCH] refactor: split some modules to be able to import them
 
 diff --git a/src/vs/workbench/browser/parts/editor/editor.contribution._autosave.ts b/src/vs/workbench/browser/parts/editor/editor.contribution._autosave.ts
 new file mode 100644
-index 00000000000..c7416d68719
+index 00000000000..185a77baafb
 --- /dev/null
 +++ b/src/vs/workbench/browser/parts/editor/editor.contribution._autosave.ts
 @@ -0,0 +1,9 @@
@@ -33,8 +33,8 @@ index 00000000000..c7416d68719
 + *  Licensed under the MIT License. See License.txt in the project root for license information.
 + *--------------------------------------------------------------------------------------------*/
 +
-+import { EditorAutoSave } from 'vs/workbench/browser/parts/editor/editorAutoSave';
-+import { WorkbenchPhase, registerWorkbenchContribution2 } from 'vs/workbench/common/contributions';
++import { registerWorkbenchContribution2, WorkbenchPhase } from '../../../common/contributions.js';
++import { EditorAutoSave } from './editorAutoSave.js';
 +
 +registerWorkbenchContribution2(EditorAutoSave.ID, EditorAutoSave, WorkbenchPhase.BlockRestore);
 diff --git a/src/vs/workbench/browser/parts/editor/editor.contribution.ts b/src/vs/workbench/browser/parts/editor/editor.contribution.ts
@@ -67,7 +67,7 @@ index 8c75858d981..83927374b28 100644
  registerWorkbenchContribution2(DynamicEditorConfigurations.ID, DynamicEditorConfigurations, WorkbenchPhase.BlockRestore);
 diff --git a/src/vs/workbench/contrib/files/browser/fileCommands._save.ts b/src/vs/workbench/contrib/files/browser/fileCommands._save.ts
 new file mode 100644
-index 00000000000..00d9d64137d
+index 00000000000..91219398705
 --- /dev/null
 +++ b/src/vs/workbench/contrib/files/browser/fileCommands._save.ts
 @@ -0,0 +1,225 @@
@@ -76,29 +76,29 @@ index 00000000000..00d9d64137d
 + *  Licensed under the MIT License. See License.txt in the project root for license information.
 + *--------------------------------------------------------------------------------------------*/
 +
-+import * as nls from 'vs/nls';
-+import { URI } from 'vs/base/common/uri';
-+import { EditorResourceAccessor, IEditorCommandsContext, SideBySideEditor, IEditorIdentifier, SaveReason, EditorsOrder, EditorInputCapabilities } from 'vs/workbench/common/editor';
-+import { SideBySideEditorInput } from 'vs/workbench/common/editor/sideBySideEditorInput';
-+import { ServicesAccessor, IInstantiationService } from 'vs/platform/instantiation/common/instantiation';
-+import { toErrorMessage } from 'vs/base/common/errorMessage';
-+import { CommandsRegistry } from 'vs/platform/commands/common/commands';
-+import { KeybindingsRegistry, KeybindingWeight } from 'vs/platform/keybinding/common/keybindingsRegistry';
-+import { KeyMod, KeyCode, KeyChord } from 'vs/base/common/keyCodes';
-+import { getOpenEditorsViewMultiSelection } from 'vs/workbench/contrib/files/browser/files';
-+import { resolveCommandsContext } from 'vs/workbench/browser/parts/editor/editorCommandsContext';
-+import { INotificationService, Severity } from 'vs/platform/notification/common/notification';
-+import { IEditorService, ISaveEditorsOptions } from 'vs/workbench/services/editor/common/editorService';
-+import { IEditorGroupsService, GroupsOrder, IEditorGroup } from 'vs/workbench/services/editor/common/editorGroupsService';
-+import { isEqual } from 'vs/base/common/resources';
-+import { ICodeEditorService } from 'vs/editor/browser/services/codeEditorService';
-+import { EmbeddedCodeEditorWidget } from 'vs/editor/browser/widget/codeEditor/embeddedCodeEditorWidget';
-+import { ITextFileService } from 'vs/workbench/services/textfile/common/textfiles';
-+import { isCancellationError } from 'vs/base/common/errors';
-+import { toAction, IAction } from 'vs/base/common/actions';
-+import { hash } from 'vs/base/common/hash';
-+import { SAVE_FILE_COMMAND_ID, SAVE_FILE_WITHOUT_FORMATTING_COMMAND_ID, SAVE_FILE_AS_COMMAND_ID, SAVE_ALL_COMMAND_ID, SAVE_ALL_IN_GROUP_COMMAND_ID, SAVE_FILES_COMMAND_ID, REVERT_FILE_COMMAND_ID } from './fileConstants';
-+import { IListService } from 'vs/platform/list/browser/listService';
++import * as nls from '../../../../nls.js';
++import { IAction, toAction } from '../../../../base/common/actions.js';
++import { isCancellationError } from '../../../../base/common/errors.js';
++import { hash } from '../../../../base/common/hash.js';
++import { KeyChord, KeyCode, KeyMod } from '../../../../base/common/keyCodes.js';
++import { URI } from '../../../../base/common/uri.js';
++import { ICodeEditorService } from '../../../../editor/browser/services/codeEditorService.js';
++import { EmbeddedCodeEditorWidget } from '../../../../editor/browser/widget/codeEditor/embeddedCodeEditorWidget.js';
++import { CommandsRegistry } from '../../../../platform/commands/common/commands.js';
++import { IInstantiationService, ServicesAccessor } from '../../../../platform/instantiation/common/instantiation.js';
++import { KeybindingsRegistry, KeybindingWeight } from '../../../../platform/keybinding/common/keybindingsRegistry.js';
++import { IListService } from '../../../../platform/list/browser/listService.js';
++import { INotificationService, Severity } from '../../../../platform/notification/common/notification.js';
++import { resolveCommandsContext } from '../../../browser/parts/editor/editorCommandsContext.js';
++import { EditorInputCapabilities, EditorResourceAccessor, EditorsOrder, IEditorCommandsContext, IEditorIdentifier, SaveReason, SideBySideEditor } from '../../../common/editor.js';
++import { SideBySideEditorInput } from '../../../common/editor/sideBySideEditorInput.js';
++import { GroupsOrder, IEditorGroup, IEditorGroupsService } from '../../../services/editor/common/editorGroupsService.js';
++import { IEditorService, ISaveEditorsOptions } from '../../../services/editor/common/editorService.js';
++import { ITextFileService } from '../../../services/textfile/common/textfiles.js';
++import { REVERT_FILE_COMMAND_ID, SAVE_ALL_COMMAND_ID, SAVE_ALL_IN_GROUP_COMMAND_ID, SAVE_FILE_AS_COMMAND_ID, SAVE_FILE_COMMAND_ID, SAVE_FILE_WITHOUT_FORMATTING_COMMAND_ID, SAVE_FILES_COMMAND_ID } from './fileConstants.js';
++import { getOpenEditorsViewMultiSelection } from './files.js';
++import { isEqual } from '../../../../base/common/resources.js';
++import { toErrorMessage } from '../../../../base/common/errorMessage.js';
 +
 +async function saveSelectedEditors(accessor: ServicesAccessor, options?: ISaveEditorsOptions): Promise<void> {
 +	const editorGroupService = accessor.get(IEditorGroupsService);
@@ -567,7 +567,7 @@ index 69cfd27a424..484b77a02f7 100644
  	handler: (accessor, resource: URI | object) => {
 diff --git a/src/vs/workbench/contrib/files/browser/files.contribution._configuration.ts b/src/vs/workbench/contrib/files/browser/files.contribution._configuration.ts
 new file mode 100644
-index 00000000000..0b73d701664
+index 00000000000..76cf9a17146
 --- /dev/null
 +++ b/src/vs/workbench/contrib/files/browser/files.contribution._configuration.ts
 @@ -0,0 +1,297 @@
@@ -576,13 +576,13 @@ index 00000000000..0b73d701664
 + *  Licensed under the MIT License. See License.txt in the project root for license information.
 + *--------------------------------------------------------------------------------------------*/
 +
-+import { isNative, isWeb } from 'vs/base/common/platform';
-+import { editorConfigurationBaseNode } from 'vs/editor/common/config/editorConfigurationSchema';
-+import * as nls from 'vs/nls';
-+import { Extensions as ConfigurationExtensions, ConfigurationScope, IConfigurationPropertySchema, IConfigurationRegistry } from 'vs/platform/configuration/common/configurationRegistry';
-+import { AutoSaveConfiguration, FILES_ASSOCIATIONS_CONFIG, FILES_EXCLUDE_CONFIG, FILES_READONLY_EXCLUDE_CONFIG, FILES_READONLY_FROM_PERMISSIONS_CONFIG, FILES_READONLY_INCLUDE_CONFIG, HotExitConfiguration } from 'vs/platform/files/common/files';
-+import { Registry } from 'vs/platform/registry/common/platform';
-+import { GUESSABLE_ENCODINGS, SUPPORTED_ENCODINGS } from 'vs/workbench/services/textfile/common/encoding';
++import { isNative, isWeb } from '../../../../base/common/platform.js';
++import { editorConfigurationBaseNode } from '../../../../editor/common/config/editorConfigurationSchema.js';
++import * as nls from '../../../../nls.js';
++import { Extensions as ConfigurationExtensions, ConfigurationScope, IConfigurationPropertySchema, IConfigurationRegistry } from '../../../../platform/configuration/common/configurationRegistry.js';
++import { AutoSaveConfiguration, FILES_ASSOCIATIONS_CONFIG, FILES_EXCLUDE_CONFIG, FILES_READONLY_EXCLUDE_CONFIG, FILES_READONLY_FROM_PERMISSIONS_CONFIG, FILES_READONLY_INCLUDE_CONFIG, HotExitConfiguration } from '../../../../platform/files/common/files.js';
++import { Registry } from '../../../../platform/registry/common/platform.js';
++import { GUESSABLE_ENCODINGS, SUPPORTED_ENCODINGS } from '../../../services/textfile/common/encoding.js';
 +
 +// Configuration
 +const configurationRegistry = Registry.as<IConfigurationRegistry>(ConfigurationExtensions.Configuration);
@@ -870,7 +870,7 @@ index 00000000000..0b73d701664
 +});
 diff --git a/src/vs/workbench/contrib/files/browser/files.contribution._editorPane.ts b/src/vs/workbench/contrib/files/browser/files.contribution._editorPane.ts
 new file mode 100644
-index 00000000000..27601da294a
+index 00000000000..757eaf5009e
 --- /dev/null
 +++ b/src/vs/workbench/contrib/files/browser/files.contribution._editorPane.ts
 @@ -0,0 +1,93 @@
@@ -879,27 +879,27 @@ index 00000000000..27601da294a
 + *  Licensed under the MIT License. See License.txt in the project root for license information.
 + *--------------------------------------------------------------------------------------------*/
 +
-+import { Schemas } from 'vs/base/common/network';
-+import { sep } from 'vs/base/common/path';
-+import { isWindows } from 'vs/base/common/platform';
-+import { ModesRegistry } from 'vs/editor/common/languages/modesRegistry';
-+import * as nls from 'vs/nls';
-+import { SyncDescriptor } from 'vs/platform/instantiation/common/descriptors';
-+import { ILabelService } from 'vs/platform/label/common/label';
-+import { Registry } from 'vs/platform/registry/common/platform';
-+import { EditorPaneDescriptor, IEditorPaneRegistry } from 'vs/workbench/browser/editor';
-+import { IWorkbenchContribution, WorkbenchPhase, registerWorkbenchContribution2 } from 'vs/workbench/common/contributions';
-+import { EditorExtensions, IEditorFactoryRegistry } from 'vs/workbench/common/editor';
-+import { BinaryFileEditor } from 'vs/workbench/contrib/files/browser/editors/binaryFileEditor';
-+import { FileEditorInputSerializer, FileEditorWorkingCopyEditorHandler } from 'vs/workbench/contrib/files/browser/editors/fileEditorHandler';
-+import { FileEditorInput } from 'vs/workbench/contrib/files/browser/editors/fileEditorInput';
-+import { TextFileEditor } from 'vs/workbench/contrib/files/browser/editors/textFileEditor';
-+import { TextFileEditorTracker } from 'vs/workbench/contrib/files/browser/editors/textFileEditorTracker';
-+import { TextFileSaveErrorHandler } from 'vs/workbench/contrib/files/browser/editors/textFileSaveErrorHandler';
-+import { WorkspaceWatcher } from 'vs/workbench/contrib/files/browser/workspaceWatcher';
-+import { DirtyFilesIndicator } from 'vs/workbench/contrib/files/common/dirtyFilesIndicator';
-+import { BINARY_TEXT_FILE_MODE, FILE_EDITOR_INPUT_ID } from 'vs/workbench/contrib/files/common/files';
-+import './files.contribution._fileEditorFactory';
++import { Schemas } from '../../../../base/common/network.js';
++import { sep } from '../../../../base/common/path.js';
++import { isWindows } from '../../../../base/common/platform.js';
++import { ModesRegistry } from '../../../../editor/common/languages/modesRegistry.js';
++import * as nls from '../../../../nls.js';
++import { SyncDescriptor } from '../../../../platform/instantiation/common/descriptors.js';
++import { ILabelService } from '../../../../platform/label/common/label.js';
++import { Registry } from '../../../../platform/registry/common/platform.js';
++import { EditorPaneDescriptor, IEditorPaneRegistry } from '../../../browser/editor.js';
++import { IWorkbenchContribution, registerWorkbenchContribution2, WorkbenchPhase } from '../../../common/contributions.js';
++import { EditorExtensions, IEditorFactoryRegistry } from '../../../common/editor.js';
++import { DirtyFilesIndicator } from '../common/dirtyFilesIndicator.js';
++import { BINARY_TEXT_FILE_MODE, FILE_EDITOR_INPUT_ID } from '../common/files.js';
++import { BinaryFileEditor } from './editors/binaryFileEditor.js';
++import { FileEditorInputSerializer, FileEditorWorkingCopyEditorHandler } from './editors/fileEditorHandler.js';
++import { FileEditorInput } from './editors/fileEditorInput.js';
++import { TextFileEditor } from './editors/textFileEditor.js';
++import { TextFileEditorTracker } from './editors/textFileEditorTracker.js';
++import { TextFileSaveErrorHandler } from './editors/textFileSaveErrorHandler.js';
++import './files.contribution._fileEditorFactory.js';
++import { WorkspaceWatcher } from './workspaceWatcher.js';
 +
 +class FileUriLabelContribution implements IWorkbenchContribution {
 +
@@ -969,7 +969,7 @@ index 00000000000..27601da294a
 +});
 diff --git a/src/vs/workbench/contrib/files/browser/files.contribution._explorer.ts b/src/vs/workbench/contrib/files/browser/files.contribution._explorer.ts
 new file mode 100644
-index 00000000000..6a76fd36387
+index 00000000000..a0382bc30c6
 --- /dev/null
 +++ b/src/vs/workbench/contrib/files/browser/files.contribution._explorer.ts
 @@ -0,0 +1,280 @@
@@ -978,22 +978,22 @@ index 00000000000..6a76fd36387
 + *  Licensed under the MIT License. See License.txt in the project root for license information.
 + *--------------------------------------------------------------------------------------------*/
 +
-+import { RedoCommand, UndoCommand } from 'vs/editor/browser/editorExtensions';
-+import * as nls from 'vs/nls';
-+import { IConfigurationService } from 'vs/platform/configuration/common/configuration';
-+import { Extensions as ConfigurationExtensions, ConfigurationScope, IConfigurationRegistry } from 'vs/platform/configuration/common/configurationRegistry';
-+import { InstantiationType, registerSingleton } from 'vs/platform/instantiation/common/extensions';
-+import { ServicesAccessor } from 'vs/platform/instantiation/common/instantiation';
-+import { Registry } from 'vs/platform/registry/common/platform';
-+import { IUndoRedoService } from 'vs/platform/undoRedo/common/undoRedo';
-+import { WorkbenchPhase, registerWorkbenchContribution2 } from 'vs/workbench/common/contributions';
-+import { ExplorerService, UNDO_REDO_SOURCE } from 'vs/workbench/contrib/files/browser/explorerService';
-+import { ExplorerViewletViewsContribution } from 'vs/workbench/contrib/files/browser/explorerViewlet';
-+import { IExplorerService } from 'vs/workbench/contrib/files/browser/files';
-+import { IFilesConfiguration, LexicographicOptions, SortOrder, UndoConfirmLevel } from 'vs/workbench/contrib/files/common/files';
-+import './files.contribution._configuration';
-+import './files.contribution._editorPane';
-+import './files.contribution._fileEditorFactory';
++import { RedoCommand, UndoCommand } from '../../../../editor/browser/editorExtensions.js';
++import * as nls from '../../../../nls.js';
++import { IConfigurationService } from '../../../../platform/configuration/common/configuration.js';
++import { Extensions as ConfigurationExtensions, ConfigurationScope, IConfigurationRegistry } from '../../../../platform/configuration/common/configurationRegistry.js';
++import { InstantiationType, registerSingleton } from '../../../../platform/instantiation/common/extensions.js';
++import { ServicesAccessor } from '../../../../platform/instantiation/common/instantiation.js';
++import { Registry } from '../../../../platform/registry/common/platform.js';
++import { IUndoRedoService } from '../../../../platform/undoRedo/common/undoRedo.js';
++import { registerWorkbenchContribution2, WorkbenchPhase } from '../../../common/contributions.js';
++import { IFilesConfiguration, LexicographicOptions, SortOrder, UndoConfirmLevel } from '../common/files.js';
++import { ExplorerService, UNDO_REDO_SOURCE } from './explorerService.js';
++import { ExplorerViewletViewsContribution } from './explorerViewlet.js';
++import './files.contribution._configuration.js';
++import './files.contribution._editorPane.js';
++import './files.contribution._fileEditorFactory.js';
++import { IExplorerService } from './files.js';
 +
 +registerSingleton(IExplorerService, ExplorerService, InstantiationType.Delayed);
 +
@@ -1220,7 +1220,7 @@ index 00000000000..6a76fd36387
 +				'*.jsx': '${capture}.js',
 +				'*.tsx': '${capture}.ts',
 +				'tsconfig.json': 'tsconfig.*.json',
-+				'package.json': 'package-lock.json, yarn.lock, pnpm-lock.yaml, bun.lockb',
++				'package.json': 'package-lock.json, yarn.lock, pnpm-lock.yaml, bun.lockb, bun.lock',
 +			}
 +		}
 +	}
@@ -1255,19 +1255,20 @@ index 00000000000..6a76fd36387
 +});
 diff --git a/src/vs/workbench/contrib/files/browser/files.contribution._fileEditorFactory.ts b/src/vs/workbench/contrib/files/browser/files.contribution._fileEditorFactory.ts
 new file mode 100644
-index 00000000000..2f31d6a7984
+index 00000000000..8064ddc028c
 --- /dev/null
 +++ b/src/vs/workbench/contrib/files/browser/files.contribution._fileEditorFactory.ts
-@@ -0,0 +1,23 @@
+@@ -0,0 +1,24 @@
 +/*---------------------------------------------------------------------------------------------
 + *  Copyright (c) Microsoft Corporation. All rights reserved.
 + *  Licensed under the MIT License. See License.txt in the project root for license information.
 + *--------------------------------------------------------------------------------------------*/
 +
-+import { Registry } from 'vs/platform/registry/common/platform';
-+import { EditorExtensions, IEditorFactoryRegistry, IFileEditorInput } from 'vs/workbench/common/editor';
-+import { FileEditorInput } from 'vs/workbench/contrib/files/browser/editors/fileEditorInput';
-+import { FILE_EDITOR_INPUT_ID } from 'vs/workbench/contrib/files/common/files';
++import { Registry } from '../../../../platform/registry/common/platform.js';
++import { EditorExtensions, IEditorFactoryRegistry, IFileEditorInput } from '../../../common/editor.js';
++import { FILE_EDITOR_INPUT_ID } from '../common/files.js';
++import { FileEditorInput } from './editors/fileEditorInput.js';
++
 +
 +// Register default file input factory
 +Registry.as<IEditorFactoryRegistry>(EditorExtensions.EditorFactory).registerFileEditorFactory({
@@ -1283,7 +1284,7 @@ index 00000000000..2f31d6a7984
 +	}
 +});
 diff --git a/src/vs/workbench/contrib/files/browser/files.contribution.ts b/src/vs/workbench/contrib/files/browser/files.contribution.ts
-index 266995ddc6d..269fb34cadb 100644
+index 689be82dc16..269fb34cadb 100644
 --- a/src/vs/workbench/contrib/files/browser/files.contribution.ts
 +++ b/src/vs/workbench/contrib/files/browser/files.contribution.ts
 @@ -3,658 +3,7 @@
@@ -1906,7 +1907,7 @@ index 266995ddc6d..269fb34cadb 100644
 -				'*.jsx': '${capture}.js',
 -				'*.tsx': '${capture}.ts',
 -				'tsconfig.json': 'tsconfig.*.json',
--				'package.json': 'package-lock.json, yarn.lock, pnpm-lock.yaml, bun.lockb',
+-				'package.json': 'package-lock.json, yarn.lock, pnpm-lock.yaml, bun.lockb, bun.lock',
 -			}
 -		}
 -	}

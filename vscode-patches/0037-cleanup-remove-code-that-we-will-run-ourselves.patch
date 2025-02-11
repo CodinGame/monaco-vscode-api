@@ -8,7 +8,7 @@ Subject: [PATCH] cleanup: remove code that we will run ourselves
  1 file changed, 20 deletions(-)
 
 diff --git a/src/vs/workbench/browser/workbench.ts b/src/vs/workbench/browser/workbench.ts
-index c6cefac928f..76cb744c11a 100644
+index 5d4ac8661b1..dbcc71e6427 100644
 --- a/src/vs/workbench/browser/workbench.ts
 +++ b/src/vs/workbench/browser/workbench.ts
 @@ -10,10 +10,7 @@ import { RunOnceScheduler, timeout } from '../../base/common/async.js';
@@ -22,7 +22,7 @@ index c6cefac928f..76cb744c11a 100644
  import { getSingletonServiceDescriptors } from '../../platform/instantiation/common/extensions.js';
  import { Position, Parts, IWorkbenchLayoutService, positionToString } from '../services/layout/browser/layoutService.js';
  import { IStorageService, WillSaveStateReason, StorageScope, StorageTarget } from '../../platform/storage/common/storage.js';
-@@ -34,7 +31,6 @@ import { FontMeasurements } from '../../editor/browser/config/fontMeasurements.j
+@@ -33,7 +30,6 @@ import { FontMeasurements } from '../../editor/browser/config/fontMeasurements.j
  import { BareFontInfo } from '../../editor/common/config/fontInfo.js';
  import { ILogService } from '../../platform/log/common/log.js';
  import { toErrorMessage } from '../../base/common/errorMessage.js';
@@ -30,7 +30,7 @@ index c6cefac928f..76cb744c11a 100644
  import { coalesce } from '../../base/common/arrays.js';
  import { InstantiationService } from '../../platform/instantiation/common/instantiationService.js';
  import { Layout } from './layout.js';
-@@ -42,9 +38,6 @@ import { IHostService } from '../services/host/browser/host.js';
+@@ -41,9 +37,6 @@ import { IHostService } from '../services/host/browser/host.js';
  import { IDialogService } from '../../platform/dialogs/common/dialogs.js';
  import { mainWindow } from '../../base/browser/window.js';
  import { PixelRatio } from '../../base/browser/pixelRatio.js';
@@ -40,7 +40,7 @@ index c6cefac928f..76cb744c11a 100644
  import { AccessibilityProgressSignalScheduler } from '../../platform/accessibilitySignal/browser/progressAccessibilitySignalScheduler.js';
  import { setProgressAcccessibilitySignalScheduler } from '../../base/browser/ui/progressbar/progressAccessibilitySignal.js';
  import { AccessibleViewRegistry } from '../../platform/accessibility/browser/accessibleViewRegistry.js';
-@@ -131,25 +124,12 @@ export class Workbench extends Layout {
+@@ -130,25 +123,12 @@ export class Workbench extends Layout {
  				const storageService = accessor.get(IStorageService);
  				const configurationService = accessor.get(IConfigurationService);
  				const hostService = accessor.get(IHostService);

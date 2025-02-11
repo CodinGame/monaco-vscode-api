@@ -18,7 +18,7 @@ so that only the constant is pulled from the root instead of the whole module gr
  create mode 100644 src/vs/workbench/contrib/chat/browser/contrib/chatDynamicVariablesConstant.ts
 
 diff --git a/src/vs/workbench/api/browser/mainThreadChatAgents2.ts b/src/vs/workbench/api/browser/mainThreadChatAgents2.ts
-index cf451338375..933d17ba2f7 100644
+index eb2d7e2a9fd..5f46176cb1f 100644
 --- a/src/vs/workbench/api/browser/mainThreadChatAgents2.ts
 +++ b/src/vs/workbench/api/browser/mainThreadChatAgents2.ts
 @@ -23,7 +23,7 @@ import { IInstantiationService } from '../../../platform/instantiation/common/in
@@ -38,7 +38,7 @@ index cf451338375..933d17ba2f7 100644
  
  interface AgentData {
  	dispose: () => void;
-@@ -319,7 +320,7 @@ export class MainThreadChatAgents2 extends Disposable implements MainThreadChatA
+@@ -322,7 +323,7 @@ export class MainThreadChatAgents2 extends Disposable implements MainThreadChatA
  						kind: CompletionItemKind.Text,
  						detail: v.detail,
  						documentation: v.documentation,
@@ -48,7 +48,7 @@ index cf451338375..933d17ba2f7 100644
  				});
  
 diff --git a/src/vs/workbench/contrib/chat/browser/actions/chatActions.ts b/src/vs/workbench/contrib/chat/browser/actions/chatActions.ts
-index de160c8c263..1505705344e 100644
+index d7532a3514b..0566f286ee7 100644
 --- a/src/vs/workbench/contrib/chat/browser/actions/chatActions.ts
 +++ b/src/vs/workbench/contrib/chat/browser/actions/chatActions.ts
 @@ -49,7 +49,6 @@ import { ChatEditorInput } from '../chatEditorInput.js';
@@ -91,18 +91,18 @@ index 3c75e0c503c..7b9b05ab66b 100644
  	registerAction2(QuickChatGlobalAction);
  	registerAction2(AskQuickChatAction);
 diff --git a/src/vs/workbench/contrib/chat/browser/contrib/chatDynamicVariables.ts b/src/vs/workbench/contrib/chat/browser/contrib/chatDynamicVariables.ts
-index 9d1a1e19450..94376118d30 100644
+index e25bcbb6c82..cb71ec5d825 100644
 --- a/src/vs/workbench/contrib/chat/browser/contrib/chatDynamicVariables.ts
 +++ b/src/vs/workbench/contrib/chat/browser/contrib/chatDynamicVariables.ts
-@@ -24,6 +24,7 @@ import { IChatWidget } from '../chat.js';
- import { ChatWidget, IChatWidgetContrib } from '../chatWidget.js';
- import { IChatRequestVariableValue, IChatVariablesService, IDynamicVariable } from '../../common/chatVariables.js';
- import { ISymbolQuickPickItem } from '../../../search/browser/symbolsQuickAccess.js';
+@@ -27,6 +27,7 @@ import { ISymbolQuickPickItem } from '../../../search/browser/symbolsQuickAccess
+ import { ChatFileReference } from './chatDynamicVariables/chatFileReference.js';
+ import { IConfigurationService } from '../../../../../platform/configuration/common/configuration.js';
+ import { PromptFilesConfig } from '../../common/promptSyntax/config.js';
 +import { addDynamicVariableActionId } from './chatDynamicVariablesConstant.js';
  
  export const dynamicVariableDecorationType = 'chat-dynamic-variable';
  
-@@ -312,7 +313,7 @@ function isAddDynamicVariableContext(context: any): context is IAddDynamicVariab
+@@ -378,7 +379,7 @@ function isAddDynamicVariableContext(context: any): context is IAddDynamicVariab
  }
  
  export class AddDynamicVariableAction extends Action2 {
@@ -138,7 +138,7 @@ index 3ab1684b9ac..a91549c6daf 100644
  import { CommandInformationResult, IAiRelatedInformationService, RelatedInformationType } from '../../../services/aiRelatedInformation/common/aiRelatedInformation.js';
  import { IEditorGroupsService } from '../../../services/editor/common/editorGroupsService.js';
 diff --git a/src/vs/workbench/contrib/search/browser/anythingQuickAccess.ts b/src/vs/workbench/contrib/search/browser/anythingQuickAccess.ts
-index 9d50072998d..efb5d55d18c 100644
+index bcb65cdddfd..fa06b31586c 100644
 --- a/src/vs/workbench/contrib/search/browser/anythingQuickAccess.ts
 +++ b/src/vs/workbench/contrib/search/browser/anythingQuickAccess.ts
 @@ -53,7 +53,7 @@ import { stripIcons } from '../../../../base/common/iconLabels.js';

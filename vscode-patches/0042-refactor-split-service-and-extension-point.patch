@@ -5,30 +5,32 @@ Subject: [PATCH] refactor: split service and extension point
 
 ---
  .../api/browser/mainThreadStatusBar.ts        |   2 +-
- .../api/browser/statusBarExtensionPoint.ts    | 160 +-----------------
- .../workbench/api/browser/statusBarService.ts | 159 +++++++++++++++++
- 3 files changed, 164 insertions(+), 157 deletions(-)
+ .../api/browser/statusBarExtensionPoint.ts    | 161 +-----------------
+ .../workbench/api/browser/statusBarService.ts | 158 +++++++++++++++++
+ 3 files changed, 162 insertions(+), 159 deletions(-)
  create mode 100644 src/vs/workbench/api/browser/statusBarService.ts
 
 diff --git a/src/vs/workbench/api/browser/mainThreadStatusBar.ts b/src/vs/workbench/api/browser/mainThreadStatusBar.ts
-index 4988e519f39..d57f2ada2ba 100644
+index 96059861a79..dfe4b56fb85 100644
 --- a/src/vs/workbench/api/browser/mainThreadStatusBar.ts
 +++ b/src/vs/workbench/api/browser/mainThreadStatusBar.ts
-@@ -10,8 +10,8 @@ import { DisposableStore, toDisposable } from '../../../base/common/lifecycle.js
+@@ -10,10 +10,10 @@ import { DisposableStore, toDisposable } from '../../../base/common/lifecycle.js
  import { Command } from '../../../editor/common/languages.js';
  import { IAccessibilityInformation } from '../../../platform/accessibility/common/accessibility.js';
  import { IMarkdownString } from '../../../base/common/htmlContent.js';
 -import { IExtensionStatusBarItemService, StatusBarUpdateKind } from './statusBarExtensionPoint.js';
  import { IStatusbarEntry, StatusbarAlignment } from '../../services/statusbar/browser/statusbar.js';
+ import { IManagedHoverTooltipMarkdownString } from '../../../base/browser/ui/hover/hover.js';
+ import { CancellationToken } from '../../../base/common/cancellation.js';
 +import { IExtensionStatusBarItemService, StatusBarUpdateKind } from './statusBarService.js';
  
  @extHostNamedCustomer(MainContext.MainThreadStatusBar)
  export class MainThreadStatusBar implements MainThreadStatusBarShape {
 diff --git a/src/vs/workbench/api/browser/statusBarExtensionPoint.ts b/src/vs/workbench/api/browser/statusBarExtensionPoint.ts
-index 9e5c057b1fe..695a7c69617 100644
+index 25a91b5eaff..59a3f92fafa 100644
 --- a/src/vs/workbench/api/browser/statusBarExtensionPoint.ts
 +++ b/src/vs/workbench/api/browser/statusBarExtensionPoint.ts
-@@ -4,171 +4,19 @@
+@@ -4,172 +4,17 @@
   *--------------------------------------------------------------------------------------------*/
  
  import { IJSONSchema } from '../../../base/common/jsonSchema.js';
@@ -43,7 +45,7 @@ index 9e5c057b1fe..695a7c69617 100644
 -import { ThemeColor } from '../../../base/common/themables.js';
 -import { Command } from '../../../editor/common/languages.js';
  import { IAccessibilityInformation, isAccessibilityInformation } from '../../../platform/accessibility/common/accessibility.js';
--import { IMarkdownString } from '../../../base/common/htmlContent.js';
+-import { IMarkdownString, isMarkdownString } from '../../../base/common/htmlContent.js';
 -import { getCodiconAriaLabel } from '../../../base/common/iconLabels.js';
 -import { hash } from '../../../base/common/hash.js';
 -import { Event, Emitter } from '../../../base/common/event.js';
@@ -52,11 +54,10 @@ index 9e5c057b1fe..695a7c69617 100644
  import { ExtensionIdentifier } from '../../../platform/extensions/common/extensions.js';
  import { asStatusBarItemIdentifier } from '../common/extHostTypes.js';
 -import { STATUS_BAR_ERROR_ITEM_BACKGROUND, STATUS_BAR_WARNING_ITEM_BACKGROUND } from '../../common/theme.js';
--import { IWorkbenchContribution, registerWorkbenchContribution2 } from '../../common/contributions.js';
-+import { IWorkbenchContribution, registerWorkbenchContribution2, WorkbenchPhase } from '../../common/contributions.js';
-+import { IExtensionStatusBarItemService, StatusBarUpdateKind } from './statusBarService.js';
- 
- 
+-import { IManagedHoverTooltipMarkdownString } from '../../../base/browser/ui/hover/hover.js';
+ import { IWorkbenchContribution, registerWorkbenchContribution2, WorkbenchPhase } from '../../common/contributions.js';
+-
+-
 -// --- service
 -
 -export const IExtensionStatusBarItemService = createDecorator<IExtensionStatusBarItemService>('IExtensionStatusBarItemService');
@@ -82,7 +83,7 @@ index 9e5c057b1fe..695a7c69617 100644
 -
 -	onDidChange: Event<IExtensionStatusBarItemChangeEvent>;
 -
--	setOrUpdateEntry(id: string, statusId: string, extensionId: string | undefined, name: string, text: string, tooltip: IMarkdownString | string | undefined, command: Command | undefined, color: string | ThemeColor | undefined, backgroundColor: ThemeColor | undefined, alignLeft: boolean, priority: number | undefined, accessibilityInformation: IAccessibilityInformation | undefined): StatusBarUpdateKind;
+-	setOrUpdateEntry(id: string, statusId: string, extensionId: string | undefined, name: string, text: string, tooltip: IMarkdownString | string | undefined | IManagedHoverTooltipMarkdownString, command: Command | undefined, color: string | ThemeColor | undefined, backgroundColor: ThemeColor | undefined, alignLeft: boolean, priority: number | undefined, accessibilityInformation: IAccessibilityInformation | undefined): StatusBarUpdateKind;
 -
 -	unsetEntry(id: string): void;
 -
@@ -108,7 +109,8 @@ index 9e5c057b1fe..695a7c69617 100644
 -	}
 -
 -	setOrUpdateEntry(entryId: string,
--		id: string, extensionId: string | undefined, name: string, text: string, tooltip: IMarkdownString | string | undefined,
+-		id: string, extensionId: string | undefined, name: string, text: string,
+-		tooltip: IMarkdownString | string | undefined | IManagedHoverTooltipMarkdownString,
 -		command: Command | undefined, color: string | ThemeColor | undefined, backgroundColor: ThemeColor | undefined,
 -		alignLeft: boolean, priority: number | undefined, accessibilityInformation: IAccessibilityInformation | undefined
 -	): StatusBarUpdateKind {
@@ -120,7 +122,7 @@ index 9e5c057b1fe..695a7c69617 100644
 -			role = accessibilityInformation.role;
 -		} else {
 -			ariaLabel = getCodiconAriaLabel(text);
--			if (tooltip) {
+-			if (typeof tooltip === 'string' || isMarkdownString(tooltip)) {
 -				const tooltipString = typeof tooltip === 'string' ? tooltip : tooltip.value;
 -				ariaLabel += `, ${tooltipString}`;
 -			}
@@ -134,7 +136,7 @@ index 9e5c057b1fe..695a7c69617 100644
 -				color = undefined;
 -				backgroundColor = undefined;
 -		}
--		const entry: IStatusbarEntry = { name, text, tooltip, command, color, backgroundColor, ariaLabel, role, kind };
+-		const entry: IStatusbarEntry = { name, text, tooltip, command, color, backgroundColor, ariaLabel, role, kind, extensionId };
 -
 -		if (typeof priority === 'undefined') {
 -			priority = 0;
@@ -200,16 +202,16 @@ index 9e5c057b1fe..695a7c69617 100644
 -registerSingleton(IExtensionStatusBarItemService, ExtensionStatusBarItemService, InstantiationType.Delayed);
 -
 -// --- extension point and reading of it
--
++import { IExtensionStatusBarItemService, StatusBarUpdateKind } from './statusBarService.js';
+ 
  interface IUserFriendlyStatusItemEntry {
  	id: string;
- 	name: string;
 diff --git a/src/vs/workbench/api/browser/statusBarService.ts b/src/vs/workbench/api/browser/statusBarService.ts
 new file mode 100644
-index 00000000000..2dcf5005a86
+index 00000000000..e674b205d52
 --- /dev/null
 +++ b/src/vs/workbench/api/browser/statusBarService.ts
-@@ -0,0 +1,159 @@
+@@ -0,0 +1,158 @@
 +/*---------------------------------------------------------------------------------------------
 + *  Copyright (c) Microsoft Corporation. All rights reserved.
 + *  Licensed under the MIT License. See License.txt in the project root for license information.
@@ -221,14 +223,13 @@ index 00000000000..2dcf5005a86
 +import { ThemeColor } from '../../../base/common/themables.js';
 +import { Command } from '../../../editor/common/languages.js';
 +import { IAccessibilityInformation } from '../../../platform/accessibility/common/accessibility.js';
-+import { IMarkdownString } from '../../../base/common/htmlContent.js';
++import { IMarkdownString, isMarkdownString } from '../../../base/common/htmlContent.js';
 +import { getCodiconAriaLabel } from '../../../base/common/iconLabels.js';
 +import { hash } from '../../../base/common/hash.js';
 +import { Event, Emitter } from '../../../base/common/event.js';
 +import { InstantiationType, registerSingleton } from '../../../platform/instantiation/common/extensions.js';
 +import { STATUS_BAR_ERROR_ITEM_BACKGROUND, STATUS_BAR_WARNING_ITEM_BACKGROUND } from '../../common/theme.js';
-+
-+// --- service
++import { IManagedHoverTooltipMarkdownString } from '../../../base/browser/ui/hover/hover.js';
 +
 +export const IExtensionStatusBarItemService = createDecorator<IExtensionStatusBarItemService>('IExtensionStatusBarItemService');
 +
@@ -253,7 +254,7 @@ index 00000000000..2dcf5005a86
 +
 +	onDidChange: Event<IExtensionStatusBarItemChangeEvent>;
 +
-+	setOrUpdateEntry(id: string, statusId: string, extensionId: string | undefined, name: string, text: string, tooltip: IMarkdownString | string | undefined, command: Command | undefined, color: string | ThemeColor | undefined, backgroundColor: ThemeColor | undefined, alignLeft: boolean, priority: number | undefined, accessibilityInformation: IAccessibilityInformation | undefined): StatusBarUpdateKind;
++	setOrUpdateEntry(id: string, statusId: string, extensionId: string | undefined, name: string, text: string, tooltip: IMarkdownString | string | undefined | IManagedHoverTooltipMarkdownString, command: Command | undefined, color: string | ThemeColor | undefined, backgroundColor: ThemeColor | undefined, alignLeft: boolean, priority: number | undefined, accessibilityInformation: IAccessibilityInformation | undefined): StatusBarUpdateKind;
 +
 +	unsetEntry(id: string): void;
 +
@@ -279,7 +280,7 @@ index 00000000000..2dcf5005a86
 +	}
 +
 +	setOrUpdateEntry(entryId: string,
-+		id: string, extensionId: string | undefined, name: string, text: string, tooltip: IMarkdownString | string | undefined,
++		id: string, extensionId: string | undefined, name: string, text: string, tooltip: IMarkdownString | string | undefined | IManagedHoverTooltipMarkdownString,
 +		command: Command | undefined, color: string | ThemeColor | undefined, backgroundColor: ThemeColor | undefined,
 +		alignLeft: boolean, priority: number | undefined, accessibilityInformation: IAccessibilityInformation | undefined
 +	): StatusBarUpdateKind {
@@ -291,7 +292,7 @@ index 00000000000..2dcf5005a86
 +			role = accessibilityInformation.role;
 +		} else {
 +			ariaLabel = getCodiconAriaLabel(text);
-+			if (tooltip) {
++			if (typeof tooltip === 'string' || isMarkdownString(tooltip)) {
 +				const tooltipString = typeof tooltip === 'string' ? tooltip : tooltip.value;
 +				ariaLabel += `, ${tooltipString}`;
 +			}
@@ -305,7 +306,7 @@ index 00000000000..2dcf5005a86
 +				color = undefined;
 +				backgroundColor = undefined;
 +		}
-+		const entry: IStatusbarEntry = { name, text, tooltip, command, color, backgroundColor, ariaLabel, role, kind };
++		const entry: IStatusbarEntry = { name, text, tooltip, command, color, backgroundColor, ariaLabel, role, kind, extensionId };
 +
 +		if (typeof priority === 'undefined') {
 +			priority = 0;

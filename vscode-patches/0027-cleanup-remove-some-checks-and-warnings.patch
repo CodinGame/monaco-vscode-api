@@ -53,7 +53,7 @@ index 1b66babea28..44b1733ff0e 100644
  		if (this.element && this._messagePort) {
  			this._messagePort.postMessage({ channel, args: data }, transferable);
 diff --git a/src/vs/workbench/services/auxiliaryWindow/browser/auxiliaryWindowService.ts b/src/vs/workbench/services/auxiliaryWindow/browser/auxiliaryWindowService.ts
-index ee504955a5a..3c8462db1a7 100644
+index e716f2af8d8..b41f70ff77e 100644
 --- a/src/vs/workbench/services/auxiliaryWindow/browser/auxiliaryWindowService.ts
 +++ b/src/vs/workbench/services/auxiliaryWindow/browser/auxiliaryWindowService.ts
 @@ -365,13 +365,6 @@ export class BrowserAuxiliaryWindowService extends Disposable implements IAuxili
