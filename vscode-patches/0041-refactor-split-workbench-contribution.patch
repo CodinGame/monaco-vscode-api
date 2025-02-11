@@ -60,7 +60,7 @@ index 2764905f82f..342930c504d 100644
 -
 -registerWorkbenchContribution2(ExtensionPoints.ID, ExtensionPoints, WorkbenchPhase.BlockStartup);
 diff --git a/src/vs/workbench/api/browser/statusBarExtensionPoint.ts b/src/vs/workbench/api/browser/statusBarExtensionPoint.ts
-index 022b7ff6e54..9e5c057b1fe 100644
+index 46a8443e46a..25a91b5eaff 100644
 --- a/src/vs/workbench/api/browser/statusBarExtensionPoint.ts
 +++ b/src/vs/workbench/api/browser/statusBarExtensionPoint.ts
 @@ -6,7 +6,7 @@
@@ -72,15 +72,15 @@ index 022b7ff6e54..9e5c057b1fe 100644
  import { isProposedApiEnabled } from '../../services/extensions/common/extensions.js';
  import { ExtensionsRegistry } from '../../services/extensions/common/extensionsRegistry.js';
  import { IStatusbarService, StatusbarAlignment as MainThreadStatusBarAlignment, IStatusbarEntryAccessor, IStatusbarEntry, StatusbarAlignment, IStatusbarEntryPriority, StatusbarEntryKind } from '../../services/statusbar/browser/statusbar.js';
-@@ -22,6 +22,7 @@ import { Iterable } from '../../../base/common/iterator.js';
- import { ExtensionIdentifier } from '../../../platform/extensions/common/extensions.js';
+@@ -23,6 +23,7 @@ import { ExtensionIdentifier } from '../../../platform/extensions/common/extensi
  import { asStatusBarItemIdentifier } from '../common/extHostTypes.js';
  import { STATUS_BAR_ERROR_ITEM_BACKGROUND, STATUS_BAR_WARNING_ITEM_BACKGROUND } from '../../common/theme.js';
-+import { IWorkbenchContribution, registerWorkbenchContribution2 } from '../../common/contributions.js';
+ import { IManagedHoverTooltipMarkdownString } from '../../../base/browser/ui/hover/hover.js';
++import { IWorkbenchContribution, registerWorkbenchContribution2, WorkbenchPhase } from '../../common/contributions.js';
  
  
  // --- service
-@@ -307,3 +308,16 @@ export class StatusBarItemsExtensionPoint {
+@@ -309,3 +310,16 @@ export class StatusBarItemsExtensionPoint {
  		});
  	}
  }
@@ -188,19 +188,19 @@ index b392cc8614f..bc4df0624f8 100644
 +
 +registerWorkbenchContribution2(ColorExtensionPointWorkbenchContribution.ID, ColorExtensionPointWorkbenchContribution, WorkbenchPhase.BlockStartup);
 diff --git a/src/vs/workbench/services/themes/common/iconExtensionPoint.ts b/src/vs/workbench/services/themes/common/iconExtensionPoint.ts
-index 36bcc80283e..d1cf948abc8 100644
+index e8715a898c5..36e7829c435 100644
 --- a/src/vs/workbench/services/themes/common/iconExtensionPoint.ts
 +++ b/src/vs/workbench/services/themes/common/iconExtensionPoint.ts
-@@ -12,6 +12,8 @@ import * as resources from '../../../../base/common/resources.js';
+@@ -11,6 +11,8 @@ import { ThemeIcon } from '../../../../base/common/themables.js';
+ import * as resources from '../../../../base/common/resources.js';
  import { IExtensionDescription } from '../../../../platform/extensions/common/extensions.js';
  import { extname, posix } from '../../../../base/common/path.js';
- import { fontCharacterRegex } from './productIconThemeSchema.js';
 +import { IWorkbenchContribution, registerWorkbenchContribution2, WorkbenchPhase } from '../../../common/contributions.js';
 +import { IInstantiationService } from '../../../../platform/instantiation/common/instantiation.js';
  
  interface IIconExtensionPoint {
  	[id: string]: {
-@@ -145,3 +147,16 @@ const formatMap: Record<string, string> = {
+@@ -142,3 +144,16 @@ const formatMap: Record<string, string> = {
  function getFontId(description: IExtensionDescription, fontPath: string) {
  	return posix.join(description.identifier.value, fontPath);
  }
@@ -247,7 +247,7 @@ index d78e65afc3f..56bd057fb3e 100644
 +
 +registerWorkbenchContribution2(TokenClassificationExtensionPointWorkbenchContribution.ID, TokenClassificationExtensionPointWorkbenchContribution, WorkbenchPhase.BlockStartup);
 diff --git a/src/vs/workbench/workbench.common.main.ts b/src/vs/workbench/workbench.common.main.ts
-index 054f3e75a6d..1b72daeba17 100644
+index f43004533d7..a6a2ef03ca5 100644
 --- a/src/vs/workbench/workbench.common.main.ts
 +++ b/src/vs/workbench/workbench.common.main.ts
 @@ -32,9 +32,15 @@ import './browser/actions/widgetNavigationCommands.js';

@@ -8,10 +8,10 @@ Subject: [PATCH] fix: stop expecting a git context
  1 file changed, 2 insertions(+), 2 deletions(-)
 
 diff --git a/build/npm/postinstall.js b/build/npm/postinstall.js
-index 88e3c9eb1bb..1cf3bbde24e 100644
+index c1f22aa5002..47892666dd7 100644
 --- a/build/npm/postinstall.js
 +++ b/build/npm/postinstall.js
-@@ -171,5 +171,5 @@ for (let dir of dirs) {
+@@ -188,5 +188,5 @@ for (let dir of dirs) {
  	npmInstall(dir, opts);
  }
  

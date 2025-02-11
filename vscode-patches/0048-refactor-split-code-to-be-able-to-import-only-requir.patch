@@ -10,10 +10,10 @@ Subject: [PATCH] refactor: split code to be able to import only required part
  .../localization/browser/localeService.ts     |  38 ++-
  4 files changed, 238 insertions(+), 209 deletions(-)
 
-diff --git a/src/vs/editor/browser/services/treeSitter/treeSitterParserService.ts b/src/vs/editor/browser/services/treeSitter/treeSitterParserService.ts
-index 81d1736d775..14808129a71 100644
---- a/src/vs/editor/browser/services/treeSitter/treeSitterParserService.ts
-+++ b/src/vs/editor/browser/services/treeSitter/treeSitterParserService.ts
+diff --git a/src/vs/editor/common/services/treeSitter/treeSitterParserService.ts b/src/vs/editor/common/services/treeSitter/treeSitterParserService.ts
+index 4ca0e3396de..f3447c3f0f6 100644
+--- a/src/vs/editor/common/services/treeSitter/treeSitterParserService.ts
++++ b/src/vs/editor/common/services/treeSitter/treeSitterParserService.ts
 @@ -15,7 +15,7 @@ import { ITelemetryService } from '../../../../platform/telemetry/common/telemet
  import { ILogService } from '../../../../platform/log/common/log.js';
  import { IConfigurationService } from '../../../../platform/configuration/common/configuration.js';
@@ -23,7 +23,7 @@ index 81d1736d775..14808129a71 100644
  import { Emitter, Event } from '../../../../base/common/event.js';
  import { CancellationToken, cancelOnDispose } from '../../../../base/common/cancellation.js';
  import { IEnvironmentService } from '../../../../platform/environment/common/environment.js';
-@@ -328,7 +328,7 @@ export class TreeSitterImporter {
+@@ -531,7 +531,7 @@ export class TreeSitterImporter {
  	private _treeSitterImport: typeof import('@vscode/tree-sitter-wasm') | undefined;
  	private async _getTreeSitterImport() {
  		if (!this._treeSitterImport) {
@@ -33,10 +33,10 @@ index 81d1736d775..14808129a71 100644
  		return this._treeSitterImport;
  	}
 diff --git a/src/vs/platform/extensionManagement/common/extensionsScannerService.ts b/src/vs/platform/extensionManagement/common/extensionsScannerService.ts
-index 99868cddb5d..1e4b4b4936f 100644
+index c613e0669b4..4f665f2f41d 100644
 --- a/src/vs/platform/extensionManagement/common/extensionsScannerService.ts
 +++ b/src/vs/platform/extensionManagement/common/extensionsScannerService.ts
-@@ -546,14 +546,160 @@ export class ExtensionScannerInput {
+@@ -543,26 +543,172 @@ export class ExtensionScannerInput {
  	}
  }
  
@@ -199,8 +199,7 @@ index 99868cddb5d..1e4b4b4936f 100644
  
  	private readonly extensionsEnabledWithApiProposalVersion: string[];
  
-@@ -561,12 +707,12 @@ class ExtensionsScanner extends Disposable {
- 		private readonly obsoleteFile: URI,
+ 	constructor(
  		@IExtensionsProfileScannerService protected readonly extensionsProfileScannerService: IExtensionsProfileScannerService,
  		@IUriIdentityService protected readonly uriIdentityService: IUriIdentityService,
 -		@IFileService protected readonly fileService: IFileService,
@@ -215,7 +214,7 @@ index 99868cddb5d..1e4b4b4936f 100644
  		this.extensionsEnabledWithApiProposalVersion = productService.extensionsEnabledWithApiProposalVersion?.map(id => id.toLowerCase()) ?? [];
  	}
  
-@@ -736,144 +882,6 @@ class ExtensionsScanner extends Disposable {
+@@ -747,144 +893,6 @@ class ExtensionsScanner extends Disposable {
  		}
  		return manifest;
  	}

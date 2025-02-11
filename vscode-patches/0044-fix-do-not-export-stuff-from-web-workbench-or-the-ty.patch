@@ -5,23 +5,9 @@ Subject: [PATCH] fix: do not export stuff from web workbench or the typescript
  language service is trying to import from it
 
 ---
- .../browser/treeSitterTokenizationFeature.ts  |  2 +-
  .../workbench/workbench.web.main.internal.ts  | 58 +------------------
- 2 files changed, 2 insertions(+), 58 deletions(-)
+ 1 file changed, 1 insertion(+), 57 deletions(-)
 
-diff --git a/src/vs/workbench/services/treeSitter/browser/treeSitterTokenizationFeature.ts b/src/vs/workbench/services/treeSitter/browser/treeSitterTokenizationFeature.ts
-index 0fa967c6b26..992fa207fce 100644
---- a/src/vs/workbench/services/treeSitter/browser/treeSitterTokenizationFeature.ts
-+++ b/src/vs/workbench/services/treeSitter/browser/treeSitterTokenizationFeature.ts
-@@ -30,7 +30,7 @@ export interface ITreeSitterTokenizationFeature {
- 	_serviceBrand: undefined;
- }
- 
--class TreeSitterTokenizationFeature extends Disposable implements ITreeSitterTokenizationFeature {
-+export class TreeSitterTokenizationFeature extends Disposable implements ITreeSitterTokenizationFeature {
- 	public _serviceBrand: undefined;
- 	private readonly _tokenizersRegistrations: DisposableMap<string, DisposableStore> = new DisposableMap();
- 
 diff --git a/src/vs/workbench/workbench.web.main.internal.ts b/src/vs/workbench/workbench.web.main.internal.ts
 index 402696a4a83..e87a4db290c 100644
 --- a/src/vs/workbench/workbench.web.main.internal.ts

@@ -4,12 +4,12 @@ Date: Thu, 31 Oct 2024 12:20:04 +0100
 Subject: [PATCH] fix: store activeChatController in another module
 
 ---
- .../terminal/terminalContribChatExports.ts        |  2 ++
- .../chat/browser/terminalChatAccessibleView.ts    |  3 ++-
- .../chat/browser/terminalChatActions.ts           | 15 ++++++++-------
- .../chat/browser/terminalChatController.ts        | 10 +++-------
- .../chat/browser/terminalChatControllerHolder.ts  | 15 +++++++++++++++
- 5 files changed, 30 insertions(+), 15 deletions(-)
+ .../terminal/terminalContribChatExports.ts      |  2 ++
+ .../chat/browser/terminalChatAccessibleView.ts  |  3 ++-
+ .../chat/browser/terminalChatActions.ts         | 17 +++++++++--------
+ .../chat/browser/terminalChatController.ts      | 10 +++-------
+ .../browser/terminalChatControllerHolder.ts     | 15 +++++++++++++++
+ 5 files changed, 31 insertions(+), 16 deletions(-)
  create mode 100644 src/vs/workbench/contrib/terminalContrib/chat/browser/terminalChatControllerHolder.ts
 
 diff --git a/src/vs/workbench/contrib/terminal/terminalContribChatExports.ts b/src/vs/workbench/contrib/terminal/terminalContribChatExports.ts
@@ -28,7 +28,7 @@ index edd22bbfdc5..10e68ca6b62 100644
  export { TerminalChatController } from '../terminalContrib/chat/browser/terminalChatController.js';
 +export { activeChatController } from '../terminalContrib/chat/browser/terminalChatControllerHolder.js';
 diff --git a/src/vs/workbench/contrib/terminalContrib/chat/browser/terminalChatAccessibleView.ts b/src/vs/workbench/contrib/terminalContrib/chat/browser/terminalChatAccessibleView.ts
-index d864fcbd0bf..d3dbe90bd44 100644
+index 734ac7e62a6..8dc5b8133db 100644
 --- a/src/vs/workbench/contrib/terminalContrib/chat/browser/terminalChatAccessibleView.ts
 +++ b/src/vs/workbench/contrib/terminalContrib/chat/browser/terminalChatAccessibleView.ts
 @@ -12,6 +12,7 @@ import { ServicesAccessor } from '../../../../../platform/instantiation/common/i
@@ -37,9 +37,9 @@ index d864fcbd0bf..d3dbe90bd44 100644
  import { IAction } from '../../../../../base/common/actions.js';
 +import { activeChatController } from './terminalChatControllerHolder.js';
  
- export class TerminalInlineChatAccessibleView implements IAccessibleViewImplentation {
+ export class TerminalInlineChatAccessibleView implements IAccessibleViewImplementation {
  	readonly priority = 105;
-@@ -23,7 +24,7 @@ export class TerminalInlineChatAccessibleView implements IAccessibleViewImplenta
+@@ -23,7 +24,7 @@ export class TerminalInlineChatAccessibleView implements IAccessibleViewImplemen
  		const terminalService = accessor.get(ITerminalService);
  		const menuService = accessor.get(IMenuService);
  		const actions: IAction[] = [];
@@ -49,10 +49,10 @@ index d864fcbd0bf..d3dbe90bd44 100644
  			const menuActions = menuService.getMenuActions(MENU_TERMINAL_CHAT_WIDGET_STATUS, contextKeyService);
  			for (const action of menuActions) {
 diff --git a/src/vs/workbench/contrib/terminalContrib/chat/browser/terminalChatActions.ts b/src/vs/workbench/contrib/terminalContrib/chat/browser/terminalChatActions.ts
-index 38bb507fe3b..362f6de2a21 100644
+index 0d6fdd35361..4061f75526a 100644
 --- a/src/vs/workbench/contrib/terminalContrib/chat/browser/terminalChatActions.ts
 +++ b/src/vs/workbench/contrib/terminalContrib/chat/browser/terminalChatActions.ts
-@@ -14,6 +14,7 @@ import { registerActiveXtermAction } from '../../../terminal/browser/terminalAct
+@@ -17,6 +17,7 @@ import { registerActiveXtermAction } from '../../../terminal/browser/terminalAct
  import { TerminalContextKeys } from '../../../terminal/common/terminalContextKey.js';
  import { MENU_TERMINAL_CHAT_WIDGET_STATUS, TerminalChatCommandId, TerminalChatContextKeys } from './terminalChat.js';
  import { TerminalChatController } from './terminalChatController.js';
@@ -60,7 +60,7 @@ index 38bb507fe3b..362f6de2a21 100644
  
  registerActiveXtermAction({
  	id: TerminalChatCommandId.Start,
-@@ -35,7 +36,7 @@ registerActiveXtermAction({
+@@ -38,7 +39,7 @@ registerActiveXtermAction({
  			return;
  		}
  
@@ -69,7 +69,7 @@ index 38bb507fe3b..362f6de2a21 100644
  
  		if (opts) {
  			opts = typeof opts === 'string' ? { query: opts } : opts;
-@@ -77,7 +78,7 @@ registerActiveXtermAction({
+@@ -80,7 +81,7 @@ registerActiveXtermAction({
  		if (isDetachedTerminalInstance(activeInstance)) {
  			return;
  		}
@@ -78,7 +78,7 @@ index 38bb507fe3b..362f6de2a21 100644
  		contr?.terminalChatWidget?.clear();
  	}
  });
-@@ -109,7 +110,7 @@ registerActiveXtermAction({
+@@ -112,7 +113,7 @@ registerActiveXtermAction({
  		if (isDetachedTerminalInstance(activeInstance)) {
  			return;
  		}
@@ -87,7 +87,7 @@ index 38bb507fe3b..362f6de2a21 100644
  		contr?.terminalChatWidget?.acceptCommand(true);
  	}
  });
-@@ -140,7 +141,7 @@ registerActiveXtermAction({
+@@ -143,7 +144,7 @@ registerActiveXtermAction({
  		if (isDetachedTerminalInstance(activeInstance)) {
  			return;
  		}
@@ -96,7 +96,7 @@ index 38bb507fe3b..362f6de2a21 100644
  		contr?.terminalChatWidget?.acceptCommand(true);
  	}
  });
-@@ -173,7 +174,7 @@ registerActiveXtermAction({
+@@ -176,7 +177,7 @@ registerActiveXtermAction({
  		if (isDetachedTerminalInstance(activeInstance)) {
  			return;
  		}
@@ -105,7 +105,7 @@ index 38bb507fe3b..362f6de2a21 100644
  		contr?.terminalChatWidget?.acceptCommand(false);
  	}
  });
-@@ -204,7 +205,7 @@ registerActiveXtermAction({
+@@ -207,7 +208,7 @@ registerActiveXtermAction({
  		if (isDetachedTerminalInstance(activeInstance)) {
  			return;
  		}
@@ -114,7 +114,16 @@ index 38bb507fe3b..362f6de2a21 100644
  		contr?.terminalChatWidget?.acceptCommand(false);
  	}
  });
-@@ -229,7 +230,7 @@ registerActiveXtermAction({
+@@ -236,7 +237,7 @@ registerActiveXtermAction({
+ 	run: async (_xterm, _accessor, activeInstance) => {
+ 		const chatService = _accessor.get(IChatService);
+ 		const chatWidgetService = _accessor.get(IChatWidgetService);
+-		const contr = TerminalChatController.activeChatController;
++		const contr = activeChatController;
+ 		const model = contr?.terminalChatWidget?.inlineChatWidget.chatWidget.viewModel?.model;
+ 		if (!model) {
+ 			return;
+@@ -275,7 +276,7 @@ registerActiveXtermAction({
  		if (isDetachedTerminalInstance(activeInstance)) {
  			return;
  		}

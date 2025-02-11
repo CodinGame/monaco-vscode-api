@@ -8,7 +8,7 @@ Subject: [PATCH] fix: prevent importing class just to check intance
  1 file changed, 1 insertion(+), 2 deletions(-)
 
 diff --git a/src/vs/workbench/api/browser/mainThreadDocumentsAndEditors.ts b/src/vs/workbench/api/browser/mainThreadDocumentsAndEditors.ts
-index 4f5e72a58f7..a25b8d472dc 100644
+index 66ae21fb2f8..5b58d79fa20 100644
 --- a/src/vs/workbench/api/browser/mainThreadDocumentsAndEditors.ts
 +++ b/src/vs/workbench/api/browser/mainThreadDocumentsAndEditors.ts
 @@ -17,7 +17,6 @@ import { MainThreadDocuments } from './mainThreadDocuments.js';

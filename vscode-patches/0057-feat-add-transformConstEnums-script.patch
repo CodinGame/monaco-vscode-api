@@ -4,27 +4,60 @@ Date: Mon, 6 Jan 2025 11:43:30 +0100
 Subject: [PATCH] feat: add transformConstEnums script
 
 ---
- build/lib/transformConstEnums.js | 87 ++++++++++++++++++++++++++++
- build/lib/transformConstEnums.ts | 97 ++++++++++++++++++++++++++++++++
- 2 files changed, 184 insertions(+)
+ build/lib/transformConstEnums.js | 115 +++++++++++++++++++++++++++++++
+ build/lib/transformConstEnums.ts |  92 +++++++++++++++++++++++++
+ 2 files changed, 207 insertions(+)
  create mode 100644 build/lib/transformConstEnums.js
  create mode 100644 build/lib/transformConstEnums.ts
 
 diff --git a/build/lib/transformConstEnums.js b/build/lib/transformConstEnums.js
 new file mode 100644
-index 00000000000..a0da20e6725
+index 00000000000..102262264b3
 --- /dev/null
 +++ b/build/lib/transformConstEnums.js
-@@ -0,0 +1,87 @@
+@@ -0,0 +1,115 @@
 +"use strict";
++var __createBinding = (this && this.__createBinding) || (Object.create ? (function(o, m, k, k2) {
++    if (k2 === undefined) k2 = k;
++    var desc = Object.getOwnPropertyDescriptor(m, k);
++    if (!desc || ("get" in desc ? !m.__esModule : desc.writable || desc.configurable)) {
++      desc = { enumerable: true, get: function() { return m[k]; } };
++    }
++    Object.defineProperty(o, k2, desc);
++}) : (function(o, m, k, k2) {
++    if (k2 === undefined) k2 = k;
++    o[k2] = m[k];
++}));
++var __setModuleDefault = (this && this.__setModuleDefault) || (Object.create ? (function(o, v) {
++    Object.defineProperty(o, "default", { enumerable: true, value: v });
++}) : function(o, v) {
++    o["default"] = v;
++});
++var __importStar = (this && this.__importStar) || (function () {
++    var ownKeys = function(o) {
++        ownKeys = Object.getOwnPropertyNames || function (o) {
++            var ar = [];
++            for (var k in o) if (Object.prototype.hasOwnProperty.call(o, k)) ar[ar.length] = k;
++            return ar;
++        };
++        return ownKeys(o);
++    };
++    return function (mod) {
++        if (mod && mod.__esModule) return mod;
++        var result = {};
++        if (mod != null) for (var k = ownKeys(mod), i = 0; i < k.length; i++) if (k[i] !== "default") __createBinding(result, mod, k[i]);
++        __setModuleDefault(result, mod);
++        return result;
++    };
++})();
 +Object.defineProperty(exports, "__esModule", { value: true });
 +/*---------------------------------------------------------------------------------------------
 + *  Copyright (c) Microsoft Corporation. All rights reserved.
 + *  Licensed under the MIT License. See License.txt in the project root for license information.
 + *--------------------------------------------------------------------------------------------*/
-+const ts = require("typescript");
-+const fs = require("fs");
-+const path = require("path");
++const ts = __importStar(require("typescript"));
++const fs = __importStar(require("fs"));
++const path = __importStar(require("path"));
 +const REPO_ROOT = path.join(__dirname, '../../');
 +const SRC_DIR = path.join(REPO_ROOT, 'src');
 +function applyFixes(sourceFile) {
@@ -74,11 +107,6 @@ index 00000000000..a0da20e6725
 +        getCompilationSettings: () => ({
 +            ...parsedConfig.options,
 +            verbatimModuleSyntax: true,
-+            'paths': {
-+                'vs/*': [
-+                    './vs/*'
-+                ]
-+            },
 +            forceConsistentCasingInFileNames: true
 +        }),
 +        getDefaultLibFileName: options => ts.getDefaultLibFilePath(options),
@@ -106,10 +134,10 @@ index 00000000000..a0da20e6725
 \ No newline at end of file
 diff --git a/build/lib/transformConstEnums.ts b/build/lib/transformConstEnums.ts
 new file mode 100644
-index 00000000000..c2f2ab551a6
+index 00000000000..66809b41d48
 --- /dev/null
 +++ b/build/lib/transformConstEnums.ts
-@@ -0,0 +1,97 @@
+@@ -0,0 +1,92 @@
 +/*---------------------------------------------------------------------------------------------
 + *  Copyright (c) Microsoft Corporation. All rights reserved.
 + *  Licensed under the MIT License. See License.txt in the project root for license information.
@@ -175,11 +203,6 @@ index 00000000000..c2f2ab551a6
 +		getCompilationSettings: () => ({
 +			...parsedConfig.options,
 +			verbatimModuleSyntax: true,
-+			'paths': {
-+				'vs/*': [
-+					'./vs/*'
-+				]
-+			},
 +			forceConsistentCasingInFileNames: true
 +		}),
 +		getDefaultLibFileName: options => ts.getDefaultLibFilePath(options),

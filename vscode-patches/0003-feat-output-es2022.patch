@@ -4,21 +4,9 @@ Date: Mon, 11 Mar 2024 16:44:35 +0100
 Subject: [PATCH] feat: output es2022
 
 ---
- src/tsconfig.base.json   | 2 +-
  src/tsconfig.monaco.json | 4 ++--
- 2 files changed, 3 insertions(+), 3 deletions(-)
+ 1 file changed, 2 insertions(+), 2 deletions(-)
 
-diff --git a/src/tsconfig.base.json b/src/tsconfig.base.json
-index 9c7aacd4f11..9f6858a7801 100644
---- a/src/tsconfig.base.json
-+++ b/src/tsconfig.base.json
-@@ -27,4 +27,4 @@
- 		],
- 		"allowSyntheticDefaultImports": true
- 	}
--}
-\ No newline at end of file
-+}
 diff --git a/src/tsconfig.monaco.json b/src/tsconfig.monaco.json
 index d64d6bd8c8e..5d44f2b2e7c 100644
 --- a/src/tsconfig.monaco.json

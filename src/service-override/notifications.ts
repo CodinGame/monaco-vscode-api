@@ -8,7 +8,6 @@ import { registerNotificationCommands } from 'vs/workbench/browser/parts/notific
 import { SyncDescriptor } from 'vs/platform/instantiation/common/descriptors'
 import { NotificationsCenter } from 'vs/workbench/browser/parts/notifications/notificationsCenter'
 import { NotificationsAlerts } from 'vs/workbench/browser/parts/notifications/notificationsAlerts'
-import { NotificationsTelemetry } from 'vs/workbench/browser/parts/notifications/notificationsTelemetry'
 import { ILayoutService } from 'vs/platform/layout/browser/layoutService.service'
 import { NotificationsStatus } from 'vs/workbench/browser/parts/notifications/notificationsStatus'
 import { onRenderWorkbench } from '../lifecycle'
@@ -32,7 +31,6 @@ onRenderWorkbench(async (accessor) => {
     )
     instantiationService.createInstance(NotificationsAlerts, model)
     const notificationsStatus = instantiationService.createInstance(NotificationsStatus, model)
-    instantiationService.createInstance(NotificationsTelemetry)
 
     // Visibility
     notificationsCenter.onDidChangeVisibility(() => {

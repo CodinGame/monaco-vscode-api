@@ -10,18 +10,24 @@ import { OS } from 'vs/base/common/platform'
 import { joinPath } from 'vs/base/common/resources'
 import { URI } from 'vs/base/common/uri'
 import { ICodeEditorService } from 'vs/editor/browser/services/codeEditorService'
+import { ITreeSitterTokenizationStoreService } from 'vs/editor/common/model/treeSitterTokenStoreService'
 import { IModelService } from 'vs/editor/common/services/model'
 import { ITreeViewsDnDService } from 'vs/editor/common/services/treeViewsDndService'
 import { StandaloneServices } from 'vs/editor/standalone/browser/standaloneServices'
+import { IAccessibleViewService } from 'vs/platform/accessibility/browser/accessibleView.service'
+import { IActionViewItemService } from 'vs/platform/actions/browser/actionViewItemService.service'
 import { IContextKeyService } from 'vs/platform/contextkey/common/contextkey.service'
 import { IExtensionHostDebugService } from 'vs/platform/debug/common/extensionHostDebug.service'
-import { IDiagnosticsService } from 'vs/platform/diagnostics/common/diagnostics.service'
 import { NullDiagnosticsService } from 'vs/platform/diagnostics/common/diagnostics'
+import { IDiagnosticsService } from 'vs/platform/diagnostics/common/diagnostics.service'
 import { IFileDialogService } from 'vs/platform/dialogs/common/dialogs.service'
 import { IDownloadService } from 'vs/platform/download/common/download.service'
 import { IEncryptionService } from 'vs/platform/encryption/common/encryptionService.service'
 import { IEnvironmentService } from 'vs/platform/environment/common/environment.service'
-import type { ILocalExtension } from 'vs/platform/extensionManagement/common/extensionManagement'
+import type {
+  AllowedExtensionsConfigValueType,
+  ILocalExtension
+} from 'vs/platform/extensionManagement/common/extensionManagement'
 import {
   IAllowedExtensionsService,
   IExtensionGalleryService,
@@ -44,9 +50,9 @@ import { IKeyboardLayoutService } from 'vs/platform/keyboardLayout/common/keyboa
 import type { ILanguagePackItem } from 'vs/platform/languagePacks/common/languagePacks'
 import { ILanguagePackService } from 'vs/platform/languagePacks/common/languagePacks.service'
 import {
+  AbstractLoggerService,
   type ILogger,
   LogLevel,
-  AbstractLoggerService,
   NullLogger
 } from 'vs/platform/log/common/log'
 import { ILoggerService } from 'vs/platform/log/common/log.service'
@@ -58,8 +64,8 @@ import { IRemoteExtensionsScannerService } from 'vs/platform/remote/common/remot
 import { IRemoteSocketFactoryService } from 'vs/platform/remote/common/remoteSocketFactoryService.service'
 import { IRequestService } from 'vs/platform/request/common/request.service'
 import { ISecretStorageService } from 'vs/platform/secrets/common/secrets.service'
-import { ISignService } from 'vs/platform/sign/common/sign.service'
 import type { IMessage } from 'vs/platform/sign/common/sign'
+import { ISignService } from 'vs/platform/sign/common/sign.service'
 import { ICustomEndpointTelemetryService } from 'vs/platform/telemetry/common/telemetry.service'
 import { NullEndpointTelemetryService } from 'vs/platform/telemetry/common/telemetryUtils'
 import { TerminalLocation } from 'vs/platform/terminal/common/terminal'
@@ -70,7 +76,9 @@ import { IUpdateService } from 'vs/platform/update/common/update.service'
 import { IUriIdentityService } from 'vs/platform/uriIdentity/common/uriIdentity.service'
 import { UriIdentityService } from 'vs/platform/uriIdentity/common/uriIdentityService'
 import { IURLService } from 'vs/platform/url/common/url.service'
+import { toUserDataProfile } from 'vs/platform/userDataProfile/common/userDataProfile'
 import { IUserDataProfilesService } from 'vs/platform/userDataProfile/common/userDataProfile.service'
+import { IUserDataProfileStorageService } from 'vs/platform/userDataProfile/common/userDataProfileStorageService.service'
 import { IIgnoredExtensionsManagementService } from 'vs/platform/userDataSync/common/ignoredExtensions.service'
 import { SyncStatus } from 'vs/platform/userDataSync/common/userDataSync'
 import {
@@ -104,27 +112,39 @@ import {
   DEFAULT_EDITOR_PART_OPTIONS,
   type IEditorGroupView
 } from 'vs/workbench/browser/parts/editor/editor'
+import type { IViewContainerModel } from 'vs/workbench/common/views'
 import { IViewDescriptorService } from 'vs/workbench/common/views.service'
-import { IAccessibleViewService } from 'vs/platform/accessibility/browser/accessibleView.service'
 import {
   IChatAccessibilityService,
   IChatCodeBlockContextProviderService,
   IChatWidgetService,
   IQuickChatService
 } from 'vs/workbench/contrib/chat/browser/chat.service'
+import { IChatQuotasService } from 'vs/workbench/contrib/chat/browser/chatQuotasService.service'
 import {
   IChatAgentNameService,
   IChatAgentService
 } from 'vs/workbench/contrib/chat/common/chatAgents.service'
+import { ICodeMapperService } from 'vs/workbench/contrib/chat/common/chatCodeMapperService.service'
+import { IChatEditingService } from 'vs/workbench/contrib/chat/common/chatEditingService.service'
 import { IChatService } from 'vs/workbench/contrib/chat/common/chatService.service'
 import { IChatSlashCommandService } from 'vs/workbench/contrib/chat/common/chatSlashCommands.service'
 import { IChatVariablesService } from 'vs/workbench/contrib/chat/common/chatVariables.service'
 import { IChatWidgetHistoryService } from 'vs/workbench/contrib/chat/common/chatWidgetHistoryService.service'
+import { ILanguageModelIgnoredFilesService } from 'vs/workbench/contrib/chat/common/ignoredFiles.service'
+import { ILanguageModelStatsService } from 'vs/workbench/contrib/chat/common/languageModelStats.service'
+import { ILanguageModelToolsService } from 'vs/workbench/contrib/chat/common/languageModelToolsService.service'
 import { ILanguageModelsService } from 'vs/workbench/contrib/chat/common/languageModels.service'
 import { ICommentService } from 'vs/workbench/contrib/comments/browser/commentService.service'
 import { ICustomEditorService } from 'vs/workbench/contrib/customEditor/common/customEditor.service'
+import type {
+  IAdapterManager,
+  IDebugModel,
+  IViewModel
+} from 'vs/workbench/contrib/debug/common/debug'
 import { IDebugService } from 'vs/workbench/contrib/debug/common/debug.service'
 import { IDebugVisualizerService } from 'vs/workbench/contrib/debug/common/debugVisualizers.service'
+import type { SyncResource } from 'vs/workbench/contrib/editSessions/common/editSessions'
 import {
   IEditSessionsLogService,
   IEditSessionsStorageService
@@ -132,12 +152,19 @@ import {
 import { IExtensionsWorkbenchService } from 'vs/workbench/contrib/extensions/common/extensions.service'
 import { IExternalUriOpenerService } from 'vs/workbench/contrib/externalUriOpener/common/externalUriOpenerService.service'
 import { IExplorerService } from 'vs/workbench/contrib/files/browser/files.service'
-import { IInlineChatSavingService } from 'vs/workbench/contrib/inlineChat/browser/inlineChatSavingService.service'
 import { IInlineChatSessionService } from 'vs/workbench/contrib/inlineChat/browser/inlineChatSessionService.service'
 import { IInteractiveDocumentService } from 'vs/workbench/contrib/interactive/browser/interactiveDocumentService.service'
 import { IInteractiveHistoryService } from 'vs/workbench/contrib/interactive/browser/interactiveHistoryService.service'
+import { ITroubleshootIssueService } from 'vs/workbench/contrib/issue/browser/issueTroubleshoot.service'
+import {
+  IIssueFormService,
+  IWorkbenchIssueService
+} from 'vs/workbench/contrib/issue/common/issue.service'
 import { IDefaultLogLevelsService } from 'vs/workbench/contrib/logs/common/defaultLogLevels.service'
 import { IMultiDiffSourceResolverService } from 'vs/workbench/contrib/multiDiffEditor/browser/multiDiffSourceResolverService.service'
+import { INotebookOriginalCellModelFactory } from 'vs/workbench/contrib/notebook/browser/contrib/chatEdit/notebookOriginalCellModelFactory.service'
+import { INotebookOriginalModelReferenceFactory } from 'vs/workbench/contrib/notebook/browser/contrib/chatEdit/notebookOriginalModelRefFactory.service'
+import { INotebookModelSynchronizerFactory } from 'vs/workbench/contrib/notebook/browser/contrib/chatEdit/notebookSynchronizer.service'
 import { INotebookEditorService } from 'vs/workbench/contrib/notebook/browser/services/notebookEditorService.service'
 import { INotebookCellStatusBarService } from 'vs/workbench/contrib/notebook/common/notebookCellStatusBarService.service'
 import { INotebookEditorModelResolverService } from 'vs/workbench/contrib/notebook/common/notebookEditorModelResolverService.service'
@@ -151,9 +178,10 @@ import { INotebookKeymapService } from 'vs/workbench/contrib/notebook/common/not
 import { INotebookLoggingService } from 'vs/workbench/contrib/notebook/common/notebookLoggingService.service'
 import { INotebookRendererMessagingService } from 'vs/workbench/contrib/notebook/common/notebookRendererMessagingService.service'
 import { INotebookService } from 'vs/workbench/contrib/notebook/common/notebookService.service'
+import { INotebookSynchronizerService } from 'vs/workbench/contrib/notebook/common/notebookSynchronizerService.service'
 import { INotebookEditorWorkerService } from 'vs/workbench/contrib/notebook/common/services/notebookWorkerService.service'
-import { IOutputChannelModelService } from 'vs/workbench/contrib/output/common/outputChannelModelService.service'
 import { IPreferencesSearchService } from 'vs/workbench/contrib/preferences/common/preferences.service'
+import { IQuickDiffModelService } from 'vs/workbench/contrib/scm/browser/quickDiffModel.service'
 import { IQuickDiffService } from 'vs/workbench/contrib/scm/common/quickDiff.service'
 import { ISCMService, ISCMViewService } from 'vs/workbench/contrib/scm/common/scm.service'
 import { IReplaceService } from 'vs/workbench/contrib/search/browser/replace.service'
@@ -166,6 +194,10 @@ import { ISpeechService } from 'vs/workbench/contrib/speech/common/speechService
 import { NoOpWorkspaceTagsService } from 'vs/workbench/contrib/tags/browser/workspaceTagsService'
 import { IWorkspaceTagsService } from 'vs/workbench/contrib/tags/common/workspaceTags.service'
 import { ITaskService } from 'vs/workbench/contrib/tasks/common/taskService.service'
+import {
+  type ITerminalInstance,
+  TerminalConnectionState
+} from 'vs/workbench/contrib/terminal/browser/terminal'
 import {
   ITerminalConfigurationService,
   ITerminalEditorService,
@@ -181,6 +213,7 @@ import {
 import { ITerminalContributionService } from 'vs/workbench/contrib/terminal/common/terminalExtensionPoints.service'
 import { ITerminalLinkProviderService } from 'vs/workbench/contrib/terminalContrib/links/browser/links.service'
 import { ITerminalQuickFixService } from 'vs/workbench/contrib/terminalContrib/quickFix/browser/quickFix.service'
+import { ITerminalCompletionService } from 'vs/workbench/contrib/terminalContrib/suggest/browser/terminalCompletionService.service'
 import { ITestCoverageService } from 'vs/workbench/contrib/testing/common/testCoverageService.service'
 import { ITestExplorerFilterState } from 'vs/workbench/contrib/testing/common/testExplorerFilterState.service'
 import { ITestProfileService } from 'vs/workbench/contrib/testing/common/testProfileService.service'
@@ -191,10 +224,13 @@ import { ITestingContinuousRunService } from 'vs/workbench/contrib/testing/commo
 import { ITestingDecorationsService } from 'vs/workbench/contrib/testing/common/testingDecorations.service'
 import { ITestingPeekOpener } from 'vs/workbench/contrib/testing/common/testingPeekOpener.service'
 import { ITimelineService } from 'vs/workbench/contrib/timeline/common/timeline.service'
+import { ITrustedDomainService } from 'vs/workbench/contrib/url/browser/trustedDomainService.service'
+import type { IWebview } from 'vs/workbench/contrib/webview/browser/webview'
 import { IWebviewService } from 'vs/workbench/contrib/webview/browser/webview.service'
 import { IWebviewWorkbenchService } from 'vs/workbench/contrib/webviewPanel/browser/webviewWorkbenchService.service'
 import { IWebviewViewService } from 'vs/workbench/contrib/webviewView/browser/webviewViewService.service'
 import { IWalkthroughsService } from 'vs/workbench/contrib/welcomeGettingStarted/browser/gettingStartedService.service'
+import { IAccessibleViewInformationService } from 'vs/workbench/services/accessibility/common/accessibleViewInformationService.service'
 import { IActivityService } from 'vs/workbench/services/activity/common/activity.service'
 import { IAiEmbeddingVectorService } from 'vs/workbench/services/aiEmbeddingVector/common/aiEmbeddingVectorService.service'
 import { IAiRelatedInformationService } from 'vs/workbench/services/aiRelatedInformation/common/aiRelatedInformation.service'
@@ -211,6 +247,11 @@ import { IJSONEditingService } from 'vs/workbench/services/configuration/common/
 import { IConfigurationResolverService } from 'vs/workbench/services/configurationResolver/common/configurationResolver.service'
 import { IDecorationsService } from 'vs/workbench/services/decorations/common/decorations.service'
 import { ICustomEditorLabelService } from 'vs/workbench/services/editor/common/customEditorLabelService.service'
+import {
+  GroupOrientation,
+  type IEditorGroup,
+  type IEditorPart
+} from 'vs/workbench/services/editor/common/editorGroupsService'
 import { IEditorGroupsService } from 'vs/workbench/services/editor/common/editorGroupsService.service'
 import { IEditorPaneService } from 'vs/workbench/services/editor/common/editorPaneService.service'
 import { IEditorResolverService } from 'vs/workbench/services/editor/common/editorResolverService.service'
@@ -231,16 +272,14 @@ import {
 import { IWorkspaceExtensionsConfigService } from 'vs/workbench/services/extensionRecommendations/common/workspaceExtensionsConfig.service'
 import { IExtensionUrlHandler } from 'vs/workbench/services/extensions/browser/extensionUrlHandler.service'
 import { IExtensionManifestPropertiesService } from 'vs/workbench/services/extensions/common/extensionManifestPropertiesService.service'
+import { NullExtensionService } from 'vs/workbench/services/extensions/common/extensions'
 import { IExtensionService } from 'vs/workbench/services/extensions/common/extensions.service'
 import { IElevatedFileService } from 'vs/workbench/services/files/common/elevatedFileService.service'
 import { IFilesConfigurationService } from 'vs/workbench/services/filesConfiguration/common/filesConfigurationService.service'
 import { IHistoryService } from 'vs/workbench/services/history/common/history.service'
 import { IHostService } from 'vs/workbench/services/host/browser/host.service'
-import { ITroubleshootIssueService } from 'vs/workbench/contrib/issue/browser/issueTroubleshoot.service'
-import {
-  IIssueFormService,
-  IWorkbenchIssueService
-} from 'vs/workbench/contrib/issue/common/issue.service'
+import type { IntegrityTestResult } from 'vs/workbench/services/integrity/common/integrity'
+import { IIntegrityService } from 'vs/workbench/services/integrity/common/integrity.service'
 import { FallbackKeyboardMapper } from 'vs/workbench/services/keybinding/common/fallbackKeyboardMapper'
 import { IKeybindingEditingService } from 'vs/workbench/services/keybinding/common/keybindingEditing.service'
 import { ILanguageDetectionService } from 'vs/workbench/services/languageDetection/common/languageDetectionWorkerService.service'
@@ -253,12 +292,18 @@ import {
 } from 'vs/workbench/services/localization/common/locale.service'
 import { INotebookDocumentService } from 'vs/workbench/services/notebook/common/notebookDocumentService.service'
 import { IOutlineService } from 'vs/workbench/services/outline/browser/outline.service'
+import type {
+  IOutputChannel,
+  IOutputChannelDescriptor
+} from 'vs/workbench/services/output/common/output'
 import { IOutputService } from 'vs/workbench/services/output/common/output.service'
 import { IPaneCompositePartService } from 'vs/workbench/services/panecomposite/browser/panecomposite.service'
 import { IPathService } from 'vs/workbench/services/path/common/pathService.service'
 import { IPreferencesService } from 'vs/workbench/services/preferences/common/preferences.service'
 import { IRemoteAgentService } from 'vs/workbench/services/remote/common/remoteAgentService.service'
+import { PortsEnablement } from 'vs/workbench/services/remote/common/remoteExplorerService'
 import { IRemoteExplorerService } from 'vs/workbench/services/remote/common/remoteExplorerService.service'
+import type { ISearchComplete } from 'vs/workbench/services/search/common/search'
 import { ISearchService } from 'vs/workbench/services/search/common/search.service'
 import { IStatusbarService } from 'vs/workbench/services/statusbar/browser/statusbar.service'
 import { IEmbedderTerminalService } from 'vs/workbench/services/terminal/common/embedderTerminalService.service'
@@ -268,6 +313,7 @@ import { ITextFileService } from 'vs/workbench/services/textfile/common/textfile
 import { IHostColorSchemeService } from 'vs/workbench/services/themes/common/hostColorSchemeService.service'
 import { ITimerService } from 'vs/workbench/services/timer/browser/timerService.service'
 import { ITitleService } from 'vs/workbench/services/title/browser/titleService.service'
+import { ITreeSitterTokenizationFeature } from 'vs/workbench/services/treeSitter/browser/treeSitterTokenizationFeature.service'
 import { IUntitledTextEditorService } from 'vs/workbench/services/untitled/common/untitledTextEditorService.service'
 import { IUserActivityService } from 'vs/workbench/services/userActivity/common/userActivityService.service'
 import { IUserDataInitializationService } from 'vs/workbench/services/userData/browser/userDataInit.service'
@@ -278,6 +324,7 @@ import {
   IUserDataProfileService
 } from 'vs/workbench/services/userDataProfile/common/userDataProfile.service'
 import { UserDataProfileService } from 'vs/workbench/services/userDataProfile/common/userDataProfileService'
+import { AccountStatus } from 'vs/workbench/services/userDataSync/common/userDataSync'
 import { IUserDataSyncWorkbenchService } from 'vs/workbench/services/userDataSync/common/userDataSync.service'
 import { IViewsService } from 'vs/workbench/services/views/common/viewsService.service'
 import type {
@@ -292,51 +339,7 @@ import { IWorkingCopyHistoryService } from 'vs/workbench/services/workingCopy/co
 import { IWorkingCopyService } from 'vs/workbench/services/workingCopy/common/workingCopyService.service'
 import { IWorkspaceEditingService } from 'vs/workbench/services/workspaces/common/workspaceEditing.service'
 import { IWorkspaceIdentityService } from 'vs/workbench/services/workspaces/common/workspaceIdentityService.service'
-import {
-  type IEditorGroup,
-  GroupOrientation,
-  type IEditorPart
-} from 'vs/workbench/services/editor/common/editorGroupsService'
-import { NullExtensionService } from 'vs/workbench/services/extensions/common/extensions'
-import { toUserDataProfile } from 'vs/platform/userDataProfile/common/userDataProfile'
-import type {
-  IAdapterManager,
-  IDebugModel,
-  IViewModel
-} from 'vs/workbench/contrib/debug/common/debug'
-import type { IViewContainerModel } from 'vs/workbench/common/views'
-import type { ISearchComplete } from 'vs/workbench/services/search/common/search'
-import type {
-  IOutputChannel,
-  IOutputChannelDescriptor
-} from 'vs/workbench/services/output/common/output'
-import {
-  type ITerminalInstance,
-  TerminalConnectionState
-} from 'vs/workbench/contrib/terminal/browser/terminal'
-import { AccountStatus } from 'vs/workbench/services/userDataSync/common/userDataSync'
-import type { IWebview } from 'vs/workbench/contrib/webview/browser/webview'
-import type { SyncResource } from 'vs/workbench/contrib/editSessions/common/editSessions'
-import { ILanguageModelStatsService } from 'vs/workbench/contrib/chat/common/languageModelStats.service'
-import { IAccessibleViewInformationService } from 'vs/workbench/services/accessibility/common/accessibleViewInformationService.service'
-import { IUserDataProfileStorageService } from 'vs/platform/userDataProfile/common/userDataProfileStorageService.service'
-import { IIntegrityService } from 'vs/workbench/services/integrity/common/integrity.service'
-import type { IntegrityTestResult } from 'vs/workbench/services/integrity/common/integrity'
-import { ITrustedDomainService } from 'vs/workbench/contrib/url/browser/trustedDomainService.service'
-import { ILanguageModelToolsService } from 'vs/workbench/contrib/chat/common/languageModelToolsService.service'
-import { PortsEnablement } from 'vs/workbench/services/remote/common/remoteExplorerService'
-import { ICodeMapperService } from 'vs/workbench/contrib/chat/common/chatCodeMapperService.service'
-import { IChatEditingService } from 'vs/workbench/contrib/chat/common/chatEditingService.service'
-import { IActionViewItemService } from 'vs/platform/actions/browser/actionViewItemService.service'
-import { ITreeSitterTokenizationFeature } from 'vs/workbench/services/treeSitter/browser/treeSitterTokenizationFeature.service'
-import { ILanguageModelIgnoredFilesService } from 'vs/workbench/contrib/chat/common/ignoredFiles.service'
-import { IChatQuotasService } from 'vs/workbench/contrib/chat/browser/chatQuotasService.service'
-import { INotebookSynchronizerService } from 'vs/workbench/contrib/notebook/common/notebookSynchronizerService.service'
-import { INotebookOriginalCellModelFactory } from 'vs/workbench/contrib/notebook/browser/contrib/chatEdit/notebookOriginalCellModelFactory.service'
-import { INotebookOriginalModelReferenceFactory } from 'vs/workbench/contrib/notebook/browser/contrib/chatEdit/notebookOriginalModelRefFactory.service'
-import { INotebookModelSynchronizerFactory } from 'vs/workbench/contrib/notebook/browser/contrib/chatEdit/notebookSynchronizer.service'
-import { IDirtyDiffModelService } from 'vs/workbench/contrib/scm/browser/diff.service'
-import { ITerminalCompletionService } from 'vs/workbench/contrib/terminalContrib/suggest/browser/terminalCompletionService.service'
+import { IChatMarkdownAnchorService } from 'vs/workbench/contrib/chat/browser/chatContentParts/chatMarkdownAnchorService.service'
 import { getBuiltInExtensionTranslationsUris, getExtensionIdProvidingCurrentLocale } from './l10n'
 import { unsupported } from './tools'
 
@@ -2880,6 +2883,11 @@ class ExtensionsScannerService implements IExtensionsScannerService {
   }
 
   @Unsupported
+  scanAllUserExtensions(): never {
+    unsupported()
+  }
+
+  @Unsupported
   scanMetadata(): never {
     unsupported()
   }
@@ -2919,6 +2927,10 @@ class ExtensionsProfileScannerService implements IExtensionsProfileScannerServic
 
   @Unsupported
   removeExtensionFromProfile(): never {
+    unsupported()
+  }
+  @Unsupported
+  removeExtensionsFromProfile(): never {
     unsupported()
   }
 }
@@ -3101,6 +3113,7 @@ registerSingleton(IFilesConfigurationService, FilesConfigurationService, Instant
 
 class UntitledTextEditorService implements IUntitledTextEditorService {
   _serviceBrand: undefined
+  onDidSave = Event.None
   onDidCreate = Event.None
   canDispose = (): true | Promise<true> => true
   isUntitledWithAssociatedResource = () => false
@@ -3371,8 +3384,28 @@ registerSingleton(IEditorResolverService, EditorResolverService, InstantiationTy
 
 class OutputService implements IOutputService {
   _serviceBrand: undefined
+
+  @Unsupported
+  get filters() {
+    return unsupported()
+  }
+
+  canSetLogLevel = () => false
+  getLogLevel = () => undefined
+  setLogLevel = () => {}
+
   getChannel(): IOutputChannel | undefined {
     return undefined
+  }
+
+  @Unsupported
+  registerCompoundLogChannel(): never {
+    unsupported()
+  }
+
+  @Unsupported
+  saveOutputAs(): never {
+    unsupported()
   }
 
   getChannelDescriptor(): IOutputChannelDescriptor | undefined {
@@ -3395,14 +3428,6 @@ class OutputService implements IOutputService {
 }
 registerSingleton(IOutputService, OutputService, InstantiationType.Delayed)
 
-class OutputChannelModelService implements IOutputChannelModelService {
-  _serviceBrand: undefined
-  @Unsupported
-  createOutputChannelModel(): never {
-    unsupported()
-  }
-}
-registerSingleton(IOutputChannelModelService, OutputChannelModelService, InstantiationType.Delayed)
 class ExtensionResourceLoaderService implements IExtensionResourceLoaderService {
   _serviceBrand: undefined
   @Unsupported
@@ -3774,6 +3799,8 @@ registerSingleton(IExtensionGalleryService, ExtensionGalleryService, Instantiati
 
 class TerminalService implements ITerminalService {
   _serviceBrand: undefined
+
+  onAnyInstanceShellTypeChanged = Event.None
 
   @Unsupported
   revealTerminal(): never {
@@ -4681,10 +4708,7 @@ class NotebookService implements INotebookService {
     unsupported()
   }
 
-  @Unsupported
-  getContributedNotebookType(): never {
-    unsupported()
-  }
+  getContributedNotebookType = () => undefined
 
   getContributedNotebookTypes = () => []
   getNotebookProviderResourceRoots = () => []
@@ -4972,6 +4996,17 @@ class ChatService implements IChatService {
 }
 registerSingleton(IChatService, ChatService, InstantiationType.Delayed)
 
+class ChatMarkdownAnchorService implements IChatMarkdownAnchorService {
+  _serviceBrand: undefined
+  lastFocusedAnchor = undefined
+  @Unsupported
+  register(): never {
+    unsupported()
+  }
+}
+
+registerSingleton(IChatMarkdownAnchorService, ChatMarkdownAnchorService, InstantiationType.Delayed)
+
 class LanguageModelStatsService implements ILanguageModelStatsService {
   _serviceBrand: undefined
   @Unsupported
@@ -5015,6 +5050,20 @@ registerSingleton(IQuickChatService, QuickChatService, InstantiationType.Delayed
 
 class QuickChatAgentService implements IChatAgentService {
   _serviceBrand = undefined
+
+  onDidChangeToolsAgentModeEnabled = Event.None
+  toolsAgentModeEnabled = false
+
+  @Unsupported
+  toggleToolsAgentMode(): never {
+    unsupported()
+  }
+
+  @Unsupported
+  setRequestPaused(): never {
+    unsupported()
+  }
+
   @Unsupported
   registerChatParticipantDetectionProvider(): never {
     unsupported()
@@ -5065,10 +5114,7 @@ class QuickChatAgentService implements IChatAgentService {
     unsupported()
   }
 
-  @Unsupported
-  getDefaultAgent(): never {
-    unsupported()
-  }
+  getDefaultAgent = () => undefined
 
   @Unsupported
   getSecondaryAgent(): never {
@@ -5524,6 +5570,24 @@ class WorkbenchExtensionManagementService implements IWorkbenchExtensionManageme
 
   @Unsupported
   cleanUp(): never {
+    unsupported()
+  }
+
+  getInstallableServers = async () => []
+
+  isPublisherTrusted = () => false
+  getTrustedPublishers = () => []
+
+  @Unsupported
+  requestPublisherTrust(): never {
+    unsupported()
+  }
+  @Unsupported
+  trustPublishers(): never {
+    unsupported()
+  }
+  @Unsupported
+  untrustPublishers(): never {
     unsupported()
   }
 }
@@ -7255,6 +7319,14 @@ class InlineChatSessionService implements IInlineChatSessionService {
   dispose(): never {
     unsupported()
   }
+
+  @Unsupported
+  createSession2(): never {
+    unsupported()
+  }
+
+  getSession2 = () => undefined
+  onDidChangeSessions = Event.None
 }
 registerSingleton(IInlineChatSessionService, InlineChatSessionService, InstantiationType.Delayed)
 
@@ -7820,15 +7892,6 @@ class WorkingCopyHistoryService implements IWorkingCopyHistoryService {
 }
 registerSingleton(IWorkingCopyHistoryService, WorkingCopyHistoryService, InstantiationType.Delayed)
 
-class InlineChatSavingService implements IInlineChatSavingService {
-  _serviceBrand: undefined
-  @Unsupported
-  markChanged(): never {
-    unsupported()
-  }
-}
-registerSingleton(IInlineChatSavingService, InlineChatSavingService, InstantiationType.Delayed)
-
 class NotebookDocumentService implements INotebookDocumentService {
   _serviceBrand: undefined
   getNotebook = () => undefined
@@ -8128,6 +8191,11 @@ class LanguageModelToolsService implements ILanguageModelToolsService {
   invokeTool(): never {
     unsupported()
   }
+
+  @Unsupported
+  cancelToolCallsForRequest(): never {
+    unsupported()
+  }
 }
 registerSingleton(ILanguageModelToolsService, LanguageModelToolsService, InstantiationType.Delayed)
 
@@ -8167,6 +8235,8 @@ registerSingleton(IIssueFormService, IssueFormService, InstantiationType.Delayed
 
 class CodeMapperService implements ICodeMapperService {
   _serviceBrand: undefined
+
+  providers = []
   mapCodeFromResponse = async () => undefined
 
   @Unsupported
@@ -8180,6 +8250,17 @@ registerSingleton(ICodeMapperService, CodeMapperService, InstantiationType.Delay
 
 class ChatEditingService implements IChatEditingService {
   _serviceBrand: undefined
+
+  @Unsupported
+  get editingSessionsObs() {
+    return unsupported()
+  }
+
+  @Unsupported
+  get createAdhocEditingSession() {
+    return unsupported()
+  }
+
   getOrRestoreEditingSession = async () => null
   hasRelatedFilesProviders = () => false
   @Unsupported
@@ -8251,6 +8332,39 @@ registerSingleton(
   InstantiationType.Delayed
 )
 
+class TreeSitterTokenizationStoreService implements ITreeSitterTokenizationStoreService {
+  _serviceBrand: undefined
+
+  @Unsupported
+  setTokens(): never {
+    unsupported()
+  }
+
+  @Unsupported
+  updateTokens(): never {
+    unsupported()
+  }
+
+  @Unsupported
+  markForRefresh(): never {
+    unsupported()
+  }
+
+  @Unsupported
+  getNeedsRefresh(): never {
+    unsupported()
+  }
+
+  hasTokens = () => false
+  getTokens = () => undefined
+}
+
+registerSingleton(
+  ITreeSitterTokenizationStoreService,
+  TreeSitterTokenizationStoreService,
+  InstantiationType.Delayed
+)
+
 class LanguageModelIgnoredFilesService implements ILanguageModelIgnoredFilesService {
   _serviceBrand: undefined
 
@@ -8269,6 +8383,8 @@ registerSingleton(
 
 class AllowedExtensionsService implements IAllowedExtensionsService {
   _serviceBrand: undefined
+  allowedExtensionsConfigValue: AllowedExtensionsConfigValueType | undefined
+  onDidChangeAllowedExtensionsConfigValue = Event.None
   onDidChangeAllowedExtensions = Event.None
   isAllowed = (): true => true
 }
@@ -8352,12 +8468,15 @@ registerSingleton(
   InstantiationType.Delayed
 )
 
-class DirtyDiffModelService implements IDirtyDiffModelService {
+class QuickDiffModelService implements IQuickDiffModelService {
   _serviceBrand: undefined
+
+  createQuickDiffModelReference = () => undefined
+
   getDirtyDiffModel = () => undefined
   getDiffModel = () => undefined
 }
-registerSingleton(IDirtyDiffModelService, DirtyDiffModelService, InstantiationType.Delayed)
+registerSingleton(IQuickDiffModelService, QuickDiffModelService, InstantiationType.Delayed)
 
 class TerminalCompletionService implements ITerminalCompletionService {
   _serviceBrand: undefined

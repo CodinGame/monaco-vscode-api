@@ -12,7 +12,7 @@ Subject: [PATCH] feat: add static asset url mechanism
  5 files changed, 208 insertions(+), 59 deletions(-)
 
 diff --git a/src/vs/base/common/network.ts b/src/vs/base/common/network.ts
-index f220611a722..1fb5fca2b8a 100644
+index e77c500097a..6bca08fee72 100644
 --- a/src/vs/base/common/network.ts
 +++ b/src/vs/base/common/network.ts
 @@ -8,6 +8,8 @@ import * as platform from './platform.js';
@@ -111,10 +111,10 @@ index faf19a0dce2..e83837db2db 100644
  
  class ExtensionHostProxy implements IExtensionHostProxy {
 diff --git a/src/vs/workbench/api/common/extHost.protocol.ts b/src/vs/workbench/api/common/extHost.protocol.ts
-index 36e385c3e6e..78da13524d2 100644
+index 5072aac5a20..d61128652c7 100644
 --- a/src/vs/workbench/api/common/extHost.protocol.ts
 +++ b/src/vs/workbench/api/common/extHost.protocol.ts
-@@ -1537,6 +1537,7 @@ export interface MainThreadExtensionServiceShape extends IDisposable {
+@@ -1538,6 +1538,7 @@ export interface MainThreadExtensionServiceShape extends IDisposable {
  	$onExtensionRuntimeError(extensionId: ExtensionIdentifier, error: SerializedError): void;
  	$setPerformanceMarks(marks: performance.PerformanceMark[]): Promise<void>;
  	$asBrowserUri(uri: UriComponents): Promise<UriComponents>;
@@ -123,10 +123,10 @@ index 36e385c3e6e..78da13524d2 100644
  
  export interface SCMProviderFeatures {
 diff --git a/src/vs/workbench/api/common/extensionHostMain.ts b/src/vs/workbench/api/common/extensionHostMain.ts
-index 6c93b88e428..065479ba269 100644
+index d0180c1a081..7ffbe5c528f 100644
 --- a/src/vs/workbench/api/common/extensionHostMain.ts
 +++ b/src/vs/workbench/api/common/extensionHostMain.ts
-@@ -189,6 +189,11 @@ export class ExtensionHostMain {
+@@ -198,6 +198,11 @@ export class ExtensionHostMain {
  		return URI.revive(await mainThreadExtensionsProxy.$asBrowserUri(uri));
  	}
  

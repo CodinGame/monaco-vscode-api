@@ -4,6 +4,7 @@ Date: Mon, 11 Mar 2024 17:32:31 +0100
 Subject: [PATCH] feat: export some classes and make some methods accessible
 
 ---
+ .../common/model/treeSitterTokenStoreService.ts    |  2 +-
  .../actions/browser/actionViewItemService.ts       |  2 +-
  .../browser/extensionResourceLoaderService.ts      |  2 +-
  .../api/browser/statusBarExtensionPoint.ts         |  2 +-
@@ -30,8 +31,21 @@ Subject: [PATCH] feat: export some classes and make some methods accessible
  .../terminal/common/embedderTerminalService.ts     |  2 +-
  .../common/remoteUserDataProfiles.ts               |  2 +-
  .../userDataSync/common/userDataSyncUtil.ts        |  2 +-
- 26 files changed, 45 insertions(+), 45 deletions(-)
+ 27 files changed, 46 insertions(+), 46 deletions(-)
 
+diff --git a/src/vs/editor/common/model/treeSitterTokenStoreService.ts b/src/vs/editor/common/model/treeSitterTokenStoreService.ts
+index 9a2de36707e..f83b4aa86d7 100644
+--- a/src/vs/editor/common/model/treeSitterTokenStoreService.ts
++++ b/src/vs/editor/common/model/treeSitterTokenStoreService.ts
+@@ -27,7 +27,7 @@ export interface TokenInformation {
+ 	needsRefresh?: boolean;
+ }
+ 
+-class TreeSitterTokenizationStoreService implements ITreeSitterTokenizationStoreService, IDisposable {
++export class TreeSitterTokenizationStoreService implements ITreeSitterTokenizationStoreService, IDisposable {
+ 	readonly _serviceBrand: undefined;
+ 
+ 	private readonly tokens = new Map<ITextModel, { store: TokenStore; accurateVersion: number; guessVersion: number; readonly disposables: DisposableStore }>();
 diff --git a/src/vs/platform/actions/browser/actionViewItemService.ts b/src/vs/platform/actions/browser/actionViewItemService.ts
 index 851b6c9117e..99c9030692f 100644
 --- a/src/vs/platform/actions/browser/actionViewItemService.ts
@@ -59,10 +73,10 @@ index 974a3061346..2dd39f783b0 100644
  	declare readonly _serviceBrand: undefined;
  
 diff --git a/src/vs/workbench/api/browser/statusBarExtensionPoint.ts b/src/vs/workbench/api/browser/statusBarExtensionPoint.ts
-index bae2812c5f3..022b7ff6e54 100644
+index fa0d7fd2307..46a8443e46a 100644
 --- a/src/vs/workbench/api/browser/statusBarExtensionPoint.ts
 +++ b/src/vs/workbench/api/browser/statusBarExtensionPoint.ts
-@@ -57,7 +57,7 @@ export interface IExtensionStatusBarItemService {
+@@ -58,7 +58,7 @@ export interface IExtensionStatusBarItemService {
  }
  
  
@@ -72,7 +86,7 @@ index bae2812c5f3..022b7ff6e54 100644
  	declare readonly _serviceBrand: undefined;
  
 diff --git a/src/vs/workbench/browser/layout.ts b/src/vs/workbench/browser/layout.ts
-index eb8657fba82..ae515f42921 100644
+index 1c566bf0f45..caab14d98c3 100644
 --- a/src/vs/workbench/browser/layout.ts
 +++ b/src/vs/workbench/browser/layout.ts
 @@ -51,7 +51,7 @@ import { CodeWindow, mainWindow } from '../../base/browser/window.js';
@@ -114,10 +128,10 @@ index eb8657fba82..ae515f42921 100644
  	readonly filesToDiff?: IPathToOpen[];
  	readonly filesToMerge?: IPathToOpen[];
 diff --git a/src/vs/workbench/browser/workbench.ts b/src/vs/workbench/browser/workbench.ts
-index b40c9fa73a9..c6cefac928f 100644
+index fd795d5ad61..5d4ac8661b1 100644
 --- a/src/vs/workbench/browser/workbench.ts
 +++ b/src/vs/workbench/browser/workbench.ts
-@@ -80,7 +80,7 @@ export class Workbench extends Layout {
+@@ -79,7 +79,7 @@ export class Workbench extends Layout {
  		this.registerErrorHandler(logService);
  	}
  
@@ -126,7 +140,7 @@ index b40c9fa73a9..c6cefac928f 100644
  
  		// Listen on unhandled rejection events
  		// Note: intentionally not registered as disposable to handle
-@@ -99,7 +99,7 @@ export class Workbench extends Layout {
+@@ -98,7 +98,7 @@ export class Workbench extends Layout {
  	}
  
  	private previousUnexpectedError: { message: string | undefined; time: number } = { message: undefined, time: 0 };
@@ -135,7 +149,7 @@ index b40c9fa73a9..c6cefac928f 100644
  		const message = toErrorMessage(error, true);
  		if (!message) {
  			return;
-@@ -174,7 +174,7 @@ export class Workbench extends Layout {
+@@ -173,7 +173,7 @@ export class Workbench extends Layout {
  		}
  	}
  
@@ -144,7 +158,7 @@ index b40c9fa73a9..c6cefac928f 100644
  
  		// Layout Service
  		serviceCollection.set(IWorkbenchLayoutService, this);
-@@ -213,7 +213,7 @@ export class Workbench extends Layout {
+@@ -212,7 +212,7 @@ export class Workbench extends Layout {
  		return instantiationService;
  	}
  
@@ -153,7 +167,7 @@ index b40c9fa73a9..c6cefac928f 100644
  
  		// Configuration changes
  		this._register(configurationService.onDidChangeConfiguration(e => this.updateFontAliasing(e, configurationService)));
-@@ -302,7 +302,7 @@ export class Workbench extends Layout {
+@@ -301,7 +301,7 @@ export class Workbench extends Layout {
  		}
  	}
  
@@ -162,7 +176,7 @@ index b40c9fa73a9..c6cefac928f 100644
  
  		// ARIA & Signals
  		setARIAContainer(this.mainContainer);
-@@ -369,7 +369,7 @@ export class Workbench extends Layout {
+@@ -368,7 +368,7 @@ export class Workbench extends Layout {
  		return part;
  	}
  
@@ -171,7 +185,7 @@ index b40c9fa73a9..c6cefac928f 100644
  
  		// Instantiate Notification components
  		const notificationsCenter = this._register(instantiationService.createInstance(NotificationsCenter, this.mainContainer, notificationService.model));
-@@ -400,7 +400,7 @@ export class Workbench extends Layout {
+@@ -398,7 +398,7 @@ export class Workbench extends Layout {
  		});
  	}
  
@@ -219,11 +233,11 @@ index 5b019f38d09..24e9f6cceec 100644
  	readonly _serviceBrand: undefined;
  
 diff --git a/src/vs/workbench/contrib/logs/common/defaultLogLevels.ts b/src/vs/workbench/contrib/logs/common/defaultLogLevels.ts
-index 1302428ebdf..670089148d4 100644
+index 4d6ba9f5e01..053cbfd13a8 100644
 --- a/src/vs/workbench/contrib/logs/common/defaultLogLevels.ts
 +++ b/src/vs/workbench/contrib/logs/common/defaultLogLevels.ts
-@@ -42,7 +42,7 @@ export interface IDefaultLogLevelsService {
- 	migrateLogLevels(): void;
+@@ -40,7 +40,7 @@ export interface IDefaultLogLevelsService {
+ 	setDefaultLogLevel(logLevel: LogLevel, extensionId?: string): Promise<void>;
  }
  
 -class DefaultLogLevelsService extends Disposable implements IDefaultLogLevelsService {
@@ -232,7 +246,7 @@ index 1302428ebdf..670089148d4 100644
  	_serviceBrand: undefined;
  
 diff --git a/src/vs/workbench/services/dialogs/browser/abstractFileDialogService.ts b/src/vs/workbench/services/dialogs/browser/abstractFileDialogService.ts
-index c7e890fce1d..9c993aea259 100644
+index 7223babe5ef..e80620c35ac 100644
 --- a/src/vs/workbench/services/dialogs/browser/abstractFileDialogService.ts
 +++ b/src/vs/workbench/services/dialogs/browser/abstractFileDialogService.ts
 @@ -54,7 +54,7 @@ export abstract class AbstractFileDialogService implements IFileDialogService {
@@ -324,10 +338,10 @@ index 69aad42da57..a06dcd516bd 100644
  			getInitData: async (): Promise<IWebWorkerExtensionHostInitData> => {
  				if (isInitialStart) {
 diff --git a/src/vs/workbench/services/extensions/browser/extensionUrlHandler.ts b/src/vs/workbench/services/extensions/browser/extensionUrlHandler.ts
-index ac3c7ed5006..94663c3cde9 100644
+index d1a25424a4e..d234065106c 100644
 --- a/src/vs/workbench/services/extensions/browser/extensionUrlHandler.ts
 +++ b/src/vs/workbench/services/extensions/browser/extensionUrlHandler.ts
-@@ -108,7 +108,7 @@ type ExtensionUrlReloadHandlerClassification = {
+@@ -121,7 +121,7 @@ export class ExtensionUrlHandlerOverrideRegistry {
   *
   * It also makes sure the user confirms opening URLs directed towards extensions.
   */
@@ -350,7 +364,7 @@ index 54fc51bb873..5754f65d0c5 100644
  		if (this._environmentService.debugExtensionHost && this._environmentService.debugRenderer) {
  			suffixSearchParams.set('debugged', '1');
 diff --git a/src/vs/workbench/services/extensions/common/abstractExtensionService.ts b/src/vs/workbench/services/extensions/common/abstractExtensionService.ts
-index 68b71d7ce1b..ae32e66fd21 100644
+index 382683f3cf7..f844bf35379 100644
 --- a/src/vs/workbench/services/extensions/common/abstractExtensionService.ts
 +++ b/src/vs/workbench/services/extensions/common/abstractExtensionService.ts
 @@ -99,9 +99,9 @@ export abstract class AbstractExtensionService extends Disposable implements IEx
@@ -375,7 +389,7 @@ index 68b71d7ce1b..ae32e66fd21 100644
  		this._deltaExtensionsQueue.push(item);
  		if (this._inHandleDeltaExtensions) {
  			// Let the current item finish, the new one will be picked up
-@@ -1336,7 +1336,7 @@ export interface IExtensionHostFactory {
+@@ -1343,7 +1343,7 @@ export interface IExtensionHostFactory {
  	createExtensionHost(runningLocations: ExtensionRunningLocationTracker, runningLocation: ExtensionRunningLocation, isInitialStart: boolean): IExtensionHost | null;
  }
  
@@ -489,10 +503,10 @@ index e976a8617ca..b855f41710f 100644
  
  	private readonly _onDidCreateTerminal = new Emitter<IShellLaunchConfig>();
 diff --git a/src/vs/workbench/services/userDataProfile/common/remoteUserDataProfiles.ts b/src/vs/workbench/services/userDataProfile/common/remoteUserDataProfiles.ts
-index 1281d1f717b..96356254354 100644
+index 5c9ca3c72cc..6d04ccd92a0 100644
 --- a/src/vs/workbench/services/userDataProfile/common/remoteUserDataProfiles.ts
 +++ b/src/vs/workbench/services/userDataProfile/common/remoteUserDataProfiles.ts
-@@ -25,7 +25,7 @@ export interface IRemoteUserDataProfilesService {
+@@ -26,7 +26,7 @@ export interface IRemoteUserDataProfilesService {
  	getRemoteProfile(localProfile: IUserDataProfile): Promise<IUserDataProfile>;
  }
  

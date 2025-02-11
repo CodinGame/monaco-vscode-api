@@ -462,7 +462,7 @@ onRenderWorkbench(async (accessor) => {
     // Auxiliary Panel to restore
     if (layoutService.isVisible(Parts.AUXILIARYBAR_PART)) {
       const viewContainerToRestore = storageService.get(
-        AuxiliaryBarPart.activePanelSettingsKey,
+        AuxiliaryBarPart.activeViewSettingsKey,
         StorageScope.WORKSPACE,
         getDefaultViewContainer(ViewContainerLocation.AuxiliaryBar)?.id
       )

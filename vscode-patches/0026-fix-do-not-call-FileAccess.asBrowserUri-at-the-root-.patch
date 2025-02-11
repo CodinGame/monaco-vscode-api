@@ -37,19 +37,19 @@ index dddffbe2517..2b029c86520 100644
  				if (!data.icon.complete) {
  					data.icon.style.visibility = 'hidden';
 diff --git a/src/vs/workbench/contrib/extensions/browser/extensionsWorkbenchService.ts b/src/vs/workbench/contrib/extensions/browser/extensionsWorkbenchService.ts
-index 56161211c9b..f40fbbadfa6 100644
+index 41bcd531cfa..80e6bade00d 100644
 --- a/src/vs/workbench/contrib/extensions/browser/extensionsWorkbenchService.ts
 +++ b/src/vs/workbench/contrib/extensions/browser/extensionsWorkbenchService.ts
-@@ -22,7 +22,7 @@ import {
- 	IAllowedExtensionsService,
- 	AllowedExtensionsConfigKey
+@@ -23,7 +23,7 @@ import {
+ 	AllowedExtensionsConfigKey,
+ 	EXTENSION_INSTALL_SKIP_PUBLISHER_TRUST_CONTEXT
  } from '../../../../platform/extensionManagement/common/extensionManagement.js';
 -import { IWorkbenchExtensionEnablementService, EnablementState, IExtensionManagementServerService, IExtensionManagementServer, IWorkbenchExtensionManagementService, DefaultIconPath, IResourceExtension } from '../../../services/extensionManagement/common/extensionManagement.js';
 +import { IWorkbenchExtensionEnablementService, EnablementState, IExtensionManagementServerService, IExtensionManagementServer, IWorkbenchExtensionManagementService, getDefaultIconPath, IResourceExtension } from '../../../services/extensionManagement/common/extensionManagement.js';
- import { getGalleryExtensionTelemetryData, getLocalExtensionTelemetryData, areSameExtensions, groupByExtension, getGalleryExtensionId } from '../../../../platform/extensionManagement/common/extensionManagementUtil.js';
+ import { getGalleryExtensionTelemetryData, getLocalExtensionTelemetryData, areSameExtensions, groupByExtension, getGalleryExtensionId, isMalicious } from '../../../../platform/extensionManagement/common/extensionManagementUtil.js';
  import { IInstantiationService } from '../../../../platform/instantiation/common/instantiation.js';
  import { IConfigurationService } from '../../../../platform/configuration/common/configuration.js';
-@@ -277,7 +277,7 @@ export class Extension implements IExtension {
+@@ -278,7 +278,7 @@ export class Extension implements IExtension {
  				}
  			}
  		}
@@ -59,7 +59,7 @@ index 56161211c9b..f40fbbadfa6 100644
  
  	get repository(): string | undefined {
 diff --git a/src/vs/workbench/contrib/welcomeGettingStarted/browser/gettingStartedService.ts b/src/vs/workbench/contrib/welcomeGettingStarted/browser/gettingStartedService.ts
-index 01a8fe3692b..93050cde3d9 100644
+index 4b2800fe031..3324652142b 100644
 --- a/src/vs/workbench/contrib/welcomeGettingStarted/browser/gettingStartedService.ts
 +++ b/src/vs/workbench/contrib/welcomeGettingStarted/browser/gettingStartedService.ts
 @@ -33,7 +33,7 @@ import { ITelemetryService } from '../../../../platform/telemetry/common/telemet
@@ -69,9 +69,9 @@ index 01a8fe3692b..93050cde3d9 100644
 -import { DefaultIconPath } from '../../../services/extensionManagement/common/extensionManagement.js';
 +import { getDefaultIconPath } from '../../../services/extensionManagement/common/extensionManagement.js';
  import { IProductService } from '../../../../platform/product/common/productService.js';
+ import { asWebviewUri } from '../../webview/common/webview.js';
  
- export const HasMultipleNewFileEntries = new RawContextKey<boolean>('hasMultipleNewFileEntries', false);
-@@ -408,7 +408,7 @@ export class WalkthroughsService extends Disposable implements IWalkthroughsServ
+@@ -428,7 +428,7 @@ export class WalkthroughsService extends Disposable implements IWalkthroughsServ
  					type: 'image',
  					path: iconStr
  						? FileAccess.uriToBrowserUri(joinPath(extension.extensionLocation, iconStr)).toString(true)
@@ -81,7 +81,7 @@ index 01a8fe3692b..93050cde3d9 100644
  				when: ContextKeyExpr.deserialize(override ?? walkthrough.when) ?? ContextKeyExpr.true(),
  			} as const;
 diff --git a/src/vs/workbench/services/extensionManagement/common/extensionManagement.ts b/src/vs/workbench/services/extensionManagement/common/extensionManagement.ts
-index 2bc9bc6e793..0e4d8f3e098 100644
+index 9c6c53338b1..1ef353c5e91 100644
 --- a/src/vs/workbench/services/extensionManagement/common/extensionManagement.ts
 +++ b/src/vs/workbench/services/extensionManagement/common/extensionManagement.ts
 @@ -43,7 +43,7 @@ export interface IExtensionManagementServerService {

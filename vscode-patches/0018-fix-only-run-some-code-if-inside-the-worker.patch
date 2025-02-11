@@ -38,7 +38,7 @@ index e6af1f781be..07017a784d4 100644
  		// Invalidate all proxies
  		this._extHostContext.dispose();
 diff --git a/src/vs/workbench/api/common/extensionHostMain.ts b/src/vs/workbench/api/common/extensionHostMain.ts
-index 065479ba269..3089e188325 100644
+index 7ffbe5c528f..8a90c5c9b34 100644
 --- a/src/vs/workbench/api/common/extensionHostMain.ts
 +++ b/src/vs/workbench/api/common/extensionHostMain.ts
 @@ -23,6 +23,7 @@ import { IURITransformerService, URITransformerService } from './extHostUriTrans
@@ -49,7 +49,7 @@ index 065479ba269..3089e188325 100644
  
  export interface IExitFn {
  	(code?: number): any;
-@@ -161,7 +162,9 @@ export class ExtensionHostMain {
+@@ -170,7 +171,9 @@ export class ExtensionHostMain {
  
  		const instaService: IInstantiationService = new InstantiationService(services, true);
  
@@ -60,7 +60,7 @@ index 065479ba269..3089e188325 100644
  
  		// ugly self - inject
  		this._logService = instaService.invokeFunction(accessor => accessor.get(ILogService));
-@@ -180,8 +183,10 @@ export class ExtensionHostMain {
+@@ -189,8 +192,10 @@ export class ExtensionHostMain {
  		this._extensionService = instaService.invokeFunction(accessor => accessor.get(IExtHostExtensionService));
  		this._extensionService.initialize();
  
