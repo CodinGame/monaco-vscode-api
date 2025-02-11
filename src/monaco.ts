@@ -81,6 +81,7 @@ export {
   EditorCommand
 } from 'vs/editor/browser/editorExtensions'
 export type { IEditorContribution, IDiffEditorContribution } from 'vs/editor/common/editorCommon'
+export type { ITextFileEditorModelSaveEvent } from 'vs/workbench/services/textfile/common/textfiles'
 
 function computeConfiguration(
   configuration: IEditorConfiguration,
