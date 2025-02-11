@@ -291,7 +291,7 @@ class ExtensionResourceLoaderServiceOverride extends ExtensionResourceLoaderServ
   }
 }
 
-let iframeAlternateDomains: string | undefined
+let iframeAlternateDomain: string | undefined
 registerAssets({
   'vs/workbench/services/extensions/worker/webWorkerExtensionHostIframe.html': () =>
     changeUrlDomain(
@@ -299,22 +299,22 @@ registerAssets({
         '../../vscode/src/vs/workbench/services/extensions/worker/webWorkerExtensionHostIframe.html',
         import.meta.url
       ).href,
-      iframeAlternateDomains
+      iframeAlternateDomain
     )
 })
 
 export default function getServiceOverride(
   workerConfig?: WorkerConfig,
-  _iframeAlternateDomains?: string
+  _iframeAlternateDomain?: string
 ): IEditorOverrideServices {
-  if (_iframeAlternateDomains != null) {
-    iframeAlternateDomains = _iframeAlternateDomains
+  if (_iframeAlternateDomain != null) {
+    iframeAlternateDomain = _iframeAlternateDomain
   }
   const _workerConfig =
     workerConfig != null
       ? {
           ...workerConfig,
-          url: changeUrlDomain(workerConfig.url, iframeAlternateDomains)
+          url: changeUrlDomain(workerConfig.url, iframeAlternateDomain ?? globalThis.location?.href ?? import.meta.url)
         }
       : undefined
 
