@@ -10,7 +10,6 @@
     "@vscode/ripgrep",
     "@vscode/spdlog",
     "@vscode/tree-sitter-wasm",
-    "@vscode/vscode-languagedetection",
     "@vscode/windows-process-tree",
     "@vscode/windows-registry",
     "@xterm/addon-clipboard",

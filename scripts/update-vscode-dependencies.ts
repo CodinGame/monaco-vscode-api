@@ -5,7 +5,11 @@ import { fileURLToPath } from 'url'
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url))
 
-const EXCLUDE_VSCODE_DEPENDENCIES = new Set(['typescript', 'eslint'])
+const EXCLUDE_VSCODE_DEPENDENCIES = new Set([
+  'typescript',
+  'eslint',
+  '@vscode/vscode-languagedetection'
+])
 
 function getAbsolutePackageJsonPath (relativePath: string) {
   return path.join(__dirname, relativePath, 'package.json')
