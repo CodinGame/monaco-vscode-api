@@ -57,18 +57,12 @@ async function updateVSCodeDependencies() {
   const ncuRc = await readJson(ncuRcPath)
   ncuRc.reject = [
     '@types/node',
-    '@types/vscode',
     'vscode-semver',
     'marked',
     '@types/vscode-semver',
     ...vscodeDependencies
   ].sort()
   await writeFile(ncuRcPath, JSON.stringify(ncuRc, null, 2))
-
-  // update the dev dependency @types/vscode version to the same as config.version in the package.json
-  const version = semver.parse(vsCodePackageJson.version)!
-  version.patch = 0
-  apiPackageJson.devDependencies['@types/vscode'] = `~${version.format()}`
 
   console.debug('Writing monaco-vscode-api package.json...')
   await writeFile(apiPackageJsonPath, `${JSON.stringify(apiPackageJson, null, 2)}\n`)
