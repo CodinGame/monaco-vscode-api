@@ -69,7 +69,7 @@ cd vscode-dts
 echo "" > vscode.proposed.d.ts
 
 for file in vscode.proposed.*.d.ts; do
-	echo "/// <reference path=\"./$file\" />" >> vscode.proposed.d.ts
+	echo "import \"./$file\"" >> vscode.proposed.d.ts
 done
 cd ..
 

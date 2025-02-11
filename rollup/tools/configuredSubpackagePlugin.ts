@@ -222,20 +222,30 @@ export function configuredSubpackagePlugin(): rollup.Plugin {
         ]
       }
 
-      if (packageName === MAIN_PACKAGE_NAME) {
-        rollupOptions.plugins = [
-          rollupOptions.plugins,
-          {
-            name: 'reference-proposed-types',
-            async renderChunk(code, chunk) {
-              if (chunk.fileName.endsWith('extensions.d.ts')) {
-                return `/// <reference path="./vscode-dts/vscode.proposed.d.ts" />\n/// <reference path="./vscode-dts/vscode.d.ts" />\n${code}`
-              }
-              return undefined
+      rollupOptions.plugins = [
+        rollupOptions.plugins,
+        {
+          name: 'reference-proposed-types',
+          async renderChunk(code, chunk) {
+            if (packageName === MAIN_PACKAGE_NAME && chunk.fileName.endsWith('extensions.d.ts')) {
+              return `
+import './vscode-dts/vscode.proposed.d.ts'
+import './vscode-dts/vscode.d.ts'
+${code}`
             }
+            if (
+              packageName === EXTENSION_API_PACKAGE_NAME &&
+              chunk.fileName.endsWith('extension.api.d.ts')
+            ) {
+              return `
+import '@codingame/monaco-vscode-api/vscode-dts/vscode'
+import '@codingame/monaco-vscode-api/vscode-dts/vscode.proposed'
+${code}`
+            }
+            return undefined
           }
-        ]
-      }
+        }
+      ]
 
       if (packageName === EDITOR_API_PACKAGE_NAME) {
         rollupOptions.input = {
