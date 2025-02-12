@@ -70,8 +70,6 @@ export class LayoutService extends Disposable implements ILayoutService, IWorkbe
     ])
 
     mainContainer.classList.add(...workbenchClasses)
-    document.body.classList.add(platformClass)
-    document.body.classList.add('web')
   }
 
   getSize(part: Parts): IViewSize {
