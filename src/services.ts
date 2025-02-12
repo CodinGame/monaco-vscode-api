@@ -58,7 +58,9 @@ declare global {
 }
 
 if (window.monacoVscodeApiBuildId != null && window.monacoVscodeApiBuildId !== BUILD_ID) {
-  throw new Error('Another version of monaco-vscode-api has already been loaded.')
+  throw new Error(
+    `Another version of monaco-vscode-api has already been loaded. Trying to load ${BUILD_ID}, ${window.monacoVscodeApiBuildId} is already loaded`
+  )
 }
 
 window.monacoVscodeApiBuildId = BUILD_ID
