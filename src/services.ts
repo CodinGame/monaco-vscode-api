@@ -53,15 +53,15 @@ import getBaseServiceOverride from './service-override/base'
 
 declare global {
   interface Window {
-    monacoVscodeApiInitialized?: boolean
+    monacoVscodeApiBuildId?: string
   }
 }
 
-if (window.monacoVscodeApiInitialized ?? false) {
+if (window.monacoVscodeApiBuildId != null && window.monacoVscodeApiBuildId !== BUILD_ID) {
   throw new Error('Another version of monaco-vscode-api has already been loaded.')
 }
 
-window.monacoVscodeApiInitialized = true
+window.monacoVscodeApiBuildId = BUILD_ID
 
 export async function initialize(
   overrides: IEditorOverrideServices,

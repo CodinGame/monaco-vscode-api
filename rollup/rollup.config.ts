@@ -149,6 +149,7 @@ export default (args: Record<string, string>): rollup.RollupOptions => {
         VSCODE_VERSION: JSON.stringify(vscodeVersion),
         VSCODE_REF: JSON.stringify(vscodeRef),
         VSCODE_COMMIT: JSON.stringify(vscodeCommit),
+        BUILD_ID: JSON.stringify(crypto.randomUUID()),
         'globalThis.require': 'undefined',
         preventAssignment: true
       }),
