@@ -314,7 +314,7 @@ export default function getServiceOverride(
     workerConfig != null
       ? {
           ...workerConfig,
-          url: changeUrlDomain(workerConfig.url, iframeAlternateDomain ?? globalThis.location?.href ?? import.meta.url)
+          url: changeUrlDomain(new URL(workerConfig.url, globalThis.location?.href ?? import.meta.url), iframeAlternateDomain)
         }
       : undefined
 
