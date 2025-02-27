@@ -371,16 +371,16 @@ ${code}`
             module: 'services.js',
             exports: {
               '.': {
-                default: './services.js',
-                services: './services.d.ts'
+                services: './services.d.ts',
+                default: './services.js'
               },
               './vscode/*': {
-                default: './vscode/src/*.js',
-                types: './vscode/src/*.d.ts'
+                types: './vscode/src/*.d.ts',
+                default: './vscode/src/*.js'
               },
               './*': {
-                default: './*.js',
-                types: './*.d.ts'
+                types: './*.d.ts',
+                default: './*.js'
               }
             },
             typesVersions: {
@@ -407,12 +407,12 @@ ${code}`
                 default: './extension.api.js'
               },
               './vscode/*': {
-                default: './vscode/src/*.js',
-                types: './vscode/src/*.d.ts'
+                types: './vscode/src/*.d.ts',
+                default: './vscode/src/*.js'
               },
               './*': {
-                default: './*.js',
-                types: './*.d.ts'
+                types: './*.d.ts',
+                default: './*.js'
               }
             },
             typesVersions: {
@@ -457,12 +457,12 @@ ${code}`
                   default: './empty.js'
                 },
                 './vscode/*': {
-                  default: './vscode/src/*.js',
-                  types: './vscode/src/*.d.ts'
+                  types: './vscode/src/*.d.ts',
+                  default: './vscode/src/*.js'
                 },
                 './*': {
-                  default: './*.js',
-                  types: './*.d.ts'
+                  types: './*.d.ts',
+                  default: './*.js'
                 }
               },
               typesVersions: {
@@ -483,8 +483,8 @@ ${code}`
                   default: './index.js'
                 },
                 './vscode/*': {
-                  default: './vscode/src/*.js',
-                  types: './vscode/src/*.d.ts'
+                  types: './vscode/src/*.d.ts',
+                  default: './vscode/src/*.js'
                 },
                 ...(entrypoints.has('worker.js')
                   ? {
@@ -494,8 +494,8 @@ ${code}`
                     }
                   : {}),
                 './*': {
-                  default: './*.js',
-                  types: './*.d.ts'
+                  types: './*.d.ts',
+                  default: './*.js'
                 }
               },
               typesVersions: {
