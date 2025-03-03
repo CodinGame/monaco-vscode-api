@@ -371,7 +371,7 @@ ${code}`
             module: 'services.js',
             exports: {
               '.': {
-                services: './services.d.ts',
+                types: './services.d.ts',
                 default: './services.js'
               },
               './vscode/*': {
