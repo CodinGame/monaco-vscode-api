@@ -8,7 +8,7 @@ Subject: [PATCH] fix: make editor types build until it's fixed by MS
  1 file changed, 14 insertions(+), 14 deletions(-)
 
 diff --git a/build/gulpfile.editor.js b/build/gulpfile.editor.js
-index 34576643c7d..54fcbc79d69 100644
+index e0265d14f50..d0d72a3136b 100644
 --- a/build/gulpfile.editor.js
 +++ b/build/gulpfile.editor.js
 @@ -77,7 +77,7 @@ const extractEditorSrcTask = task.define('extract-editor-src', () => {
@@ -19,7 +19,7 @@ index 34576643c7d..54fcbc79d69 100644
 +		importIgnorePattern: /\.css$|^@vscode\//,
  		destRoot: path.join(root, 'out-editor-src'),
  		redirects: {
- 			'@vscode/tree-sitter-wasm': '../node_modules/@vscode/tree-sitter-wasm/wasm/tree-sitter-web',
+ 			'@vscode/tree-sitter-wasm': '../node_modules/@vscode/tree-sitter-wasm/wasm/web-tree-sitter',
 @@ -356,19 +356,19 @@ gulp.task('extract-editor-src',
  
  gulp.task('editor-distro',

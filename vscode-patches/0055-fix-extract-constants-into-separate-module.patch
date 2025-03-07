@@ -17,7 +17,7 @@ so that only the constant is pulled from the root instead of the whole module gr
  create mode 100644 src/vs/workbench/contrib/chat/browser/contrib/chatDynamicVariablesConstant.ts
 
 diff --git a/src/vs/workbench/api/browser/mainThreadChatAgents2.ts b/src/vs/workbench/api/browser/mainThreadChatAgents2.ts
-index eb2d7e2a9fd..5f46176cb1f 100644
+index 510f26d520a..09ecafde701 100644
 --- a/src/vs/workbench/api/browser/mainThreadChatAgents2.ts
 +++ b/src/vs/workbench/api/browser/mainThreadChatAgents2.ts
 @@ -23,7 +23,7 @@ import { IInstantiationService } from '../../../platform/instantiation/common/in
@@ -29,15 +29,15 @@ index eb2d7e2a9fd..5f46176cb1f 100644
  import { ChatAgentLocation, IChatAgentHistoryEntry, IChatAgentImplementation, IChatAgentRequest, IChatAgentService } from '../../contrib/chat/common/chatAgents.js';
  import { IChatEditingService, IChatRelatedFileProviderMetadata } from '../../contrib/chat/common/chatEditingService.js';
  import { ChatRequestAgentPart } from '../../contrib/chat/common/chatParserTypes.js';
-@@ -33,6 +33,7 @@ import { IExtHostContext, extHostNamedCustomer } from '../../services/extensions
- import { IExtensionService } from '../../services/extensions/common/extensions.js';
+@@ -34,6 +34,7 @@ import { IExtensionService } from '../../services/extensions/common/extensions.j
  import { Dto } from '../../services/extensions/common/proxyIdentifier.js';
- import { ExtHostChatAgentsShape2, ExtHostContext, IChatParticipantMetadata, IChatProgressDto, IDynamicChatAgentProps, IExtensionChatAgentMetadata, MainContext, MainThreadChatAgentsShape2 } from '../common/extHost.protocol.js';
+ import { ExtHostChatAgentsShape2, ExtHostContext, IChatNotebookEditDto, IChatParticipantMetadata, IChatProgressDto, IDynamicChatAgentProps, IExtensionChatAgentMetadata, MainContext, MainThreadChatAgentsShape2 } from '../common/extHost.protocol.js';
+ import { NotebookDto } from './mainThreadNotebookDto.js';
 +import { addDynamicVariableActionId } from '../../contrib/chat/browser/contrib/chatDynamicVariablesConstant.js';
  
  interface AgentData {
  	dispose: () => void;
-@@ -322,7 +323,7 @@ export class MainThreadChatAgents2 extends Disposable implements MainThreadChatA
+@@ -325,7 +326,7 @@ export class MainThreadChatAgents2 extends Disposable implements MainThreadChatA
  						kind: CompletionItemKind.Text,
  						detail: v.detail,
  						documentation: v.documentation,
@@ -63,13 +63,13 @@ index 00000000000..6ce67486a58
 +export const ASK_QUICK_QUESTION_ACTION_ID = 'workbench.action.quickchat.toggle';
 +
 diff --git a/src/vs/workbench/contrib/chat/browser/actions/chatQuickInputActions.ts b/src/vs/workbench/contrib/chat/browser/actions/chatQuickInputActions.ts
-index 3c75e0c503c..7b9b05ab66b 100644
+index 7d59054a9d1..1131014b31e 100644
 --- a/src/vs/workbench/contrib/chat/browser/actions/chatQuickInputActions.ts
 +++ b/src/vs/workbench/contrib/chat/browser/actions/chatQuickInputActions.ts
-@@ -15,8 +15,9 @@ import { CHAT_CATEGORY } from './chatActions.js';
+@@ -13,8 +13,9 @@ import { KeybindingWeight } from '../../../../../platform/keybinding/common/keyb
+ import { CHAT_CATEGORY } from './chatActions.js';
  import { IQuickChatOpenOptions, IQuickChatService } from '../chat.js';
  import { ChatContextKeys } from '../../common/chatContextKeys.js';
- import { InlineChatController } from '../../../inlineChat/browser/inlineChatController.js';
 +import { ASK_QUICK_QUESTION_ACTION_ID } from './chatConstants.js';
 +export { ASK_QUICK_QUESTION_ACTION_ID } from './chatConstants.js';
  
@@ -78,18 +78,18 @@ index 3c75e0c503c..7b9b05ab66b 100644
  	registerAction2(QuickChatGlobalAction);
  	registerAction2(AskQuickChatAction);
 diff --git a/src/vs/workbench/contrib/chat/browser/contrib/chatDynamicVariables.ts b/src/vs/workbench/contrib/chat/browser/contrib/chatDynamicVariables.ts
-index e25bcbb6c82..cb71ec5d825 100644
+index 7d2709132c6..33dbae39157 100644
 --- a/src/vs/workbench/contrib/chat/browser/contrib/chatDynamicVariables.ts
 +++ b/src/vs/workbench/contrib/chat/browser/contrib/chatDynamicVariables.ts
-@@ -27,6 +27,7 @@ import { ISymbolQuickPickItem } from '../../../search/browser/symbolsQuickAccess
+@@ -40,6 +40,7 @@ import { IChatRequestProblemsVariable, IChatRequestVariableValue, IDynamicVariab
+ import { IChatWidget } from '../chat.js';
+ import { ChatWidget, IChatWidgetContrib } from '../chatWidget.js';
  import { ChatFileReference } from './chatDynamicVariables/chatFileReference.js';
- import { IConfigurationService } from '../../../../../platform/configuration/common/configuration.js';
- import { PromptFilesConfig } from '../../common/promptSyntax/config.js';
 +import { addDynamicVariableActionId } from './chatDynamicVariablesConstant.js';
  
  export const dynamicVariableDecorationType = 'chat-dynamic-variable';
  
-@@ -378,7 +379,7 @@ function isAddDynamicVariableContext(context: any): context is IAddDynamicVariab
+@@ -627,7 +628,7 @@ function isAddDynamicVariableContext(context: any): context is IAddDynamicVariab
  }
  
  export class AddDynamicVariableAction extends Action2 {

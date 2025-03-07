@@ -40,7 +40,7 @@ index cea72fd2225..c2aa0d65072 100644
  			case ExtensionHostKind.Remote: {
  				const remoteAgentConnection = this._remoteAgentService.getConnection();
 diff --git a/src/vs/workbench/services/extensions/browser/webWorkerExtensionHost.ts b/src/vs/workbench/services/extensions/browser/webWorkerExtensionHost.ts
-index fb3c8cbfb57..eade34150d1 100644
+index 9fcd381cc72..dddd45d101f 100644
 --- a/src/vs/workbench/services/extensions/browser/webWorkerExtensionHost.ts
 +++ b/src/vs/workbench/services/extensions/browser/webWorkerExtensionHost.ts
 @@ -59,6 +59,8 @@ export class WebWorkerExtensionHost extends Disposable implements IExtensionHost

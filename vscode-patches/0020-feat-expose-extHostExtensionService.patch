@@ -8,7 +8,7 @@ Subject: [PATCH] feat: expose extHostExtensionService
  1 file changed, 4 insertions(+)
 
 diff --git a/src/vs/workbench/api/common/extensionHostMain.ts b/src/vs/workbench/api/common/extensionHostMain.ts
-index b1f3e40f6ee..12526a6b8c6 100644
+index 279ba32a63b..2899a56dc59 100644
 --- a/src/vs/workbench/api/common/extensionHostMain.ts
 +++ b/src/vs/workbench/api/common/extensionHostMain.ts
 @@ -217,6 +217,10 @@ export class ExtensionHostMain {
