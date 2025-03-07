@@ -58,7 +58,7 @@ export async function startup(instantiationService: IInstantiationService): Prom
 
   await instantiationService.invokeFunction(async (accessor) => {
     setHoverDelegateFactory((placement, enableInstantHover) =>
-      instantiationService.createInstance(WorkbenchHoverDelegate, placement, enableInstantHover, {})
+      instantiationService.createInstance(WorkbenchHoverDelegate, placement, { instantHover: enableInstantHover }, {})
     )
     setBaseLayerHoverDelegate(accessor.get(IHoverService))
   })

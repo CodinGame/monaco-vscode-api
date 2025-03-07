@@ -189,8 +189,7 @@ const api: typeof vscode = {
   TerminalLocation: extHostTypes.TerminalLocation,
   TerminalProfile: extHostTypes.TerminalProfile,
   TerminalExitReason: extHostTypes.TerminalExitReason,
-  TerminalShellExecutionCommandLineConfidence:
-    extHostTypes.TerminalShellExecutionCommandLineConfidence,
+  TerminalShellExecutionCommandLineConfidence: extHostTypes.TerminalShellExecutionCommandLineConfidence,
   TextDocumentSaveReason: extHostTypes.TextDocumentSaveReason,
   TextEdit: extHostTypes.TextEdit,
   SnippetTextEdit: extHostTypes.SnippetTextEdit,
@@ -298,10 +297,8 @@ const api: typeof vscode = {
   ChatResponseCodeCitationPart: extHostTypes.ChatResponseCodeCitationPart,
   ChatResponseWarningPart: extHostTypes.ChatResponseWarningPart,
   ChatResponseTextEditPart: extHostTypes.ChatResponseTextEditPart,
-  ChatResponseMarkdownWithVulnerabilitiesPart:
-    extHostTypes.ChatResponseMarkdownWithVulnerabilitiesPart,
+  ChatResponseMarkdownWithVulnerabilitiesPart: extHostTypes.ChatResponseMarkdownWithVulnerabilitiesPart,
   ChatResponseCommandButtonPart: extHostTypes.ChatResponseCommandButtonPart,
-  ChatResponseDetectedParticipantPart: extHostTypes.ChatResponseDetectedParticipantPart,
   ChatResponseConfirmationPart: extHostTypes.ChatResponseConfirmationPart,
   ChatResponseReferencePartStatusKind: extHostTypes.ChatResponseReferencePartStatusKind,
   ChatRequestTurn: extHostTypes.ChatRequestTurn,
@@ -335,7 +332,12 @@ const api: typeof vscode = {
   TextEditorChangeKind: extHostTypes.TextEditorChangeKind,
   TextSearchMatch2: searchExtTypes.TextSearchMatch2,
   TextSearchContext2: searchExtTypes.TextSearchContext2,
-  TerminalShellType: extHostTypes.TerminalShellType
+  TerminalShellType: extHostTypes.TerminalShellType,
+  ChatResponseNotebookEditPart: extHostTypes.ChatResponseNotebookEditPart,
+  ChatErrorLevel: extHostTypes.ChatErrorLevel,
+  PreparedTerminalToolInvocation: extHostTypes.PreparedTerminalToolInvocation,
+  ExtendedLanguageModelToolResult: extHostTypes.ExtendedLanguageModelToolResult,
+  ChatReferenceDiagnostic: extHostTypes.ChatReferenceDiagnostic
 }
 
 // @ts-expect-error the syntax will be transformed by a typescript transformer in the rollup config

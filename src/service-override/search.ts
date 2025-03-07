@@ -11,7 +11,7 @@ import { ReplaceService } from 'vs/workbench/contrib/search/browser/replaceServi
 import { LocalFileSearchWorkerClient } from 'vs/workbench/services/search/browser/searchService'
 import 'vs/workbench/contrib/search/browser/search.contribution'
 import 'vs/workbench/contrib/searchEditor/browser/searchEditor.contribution'
-import { IModelService } from 'vs/editor/common/services/model'
+import { IModelService } from 'vs/editor/common/services/model.service'
 import { IEditorService } from 'vs/workbench/services/editor/common/editorService.service'
 import { ITelemetryService } from 'vs/platform/telemetry/common/telemetry.service'
 import { IExtensionService } from 'vs/workbench/services/extensions/common/extensions.service'

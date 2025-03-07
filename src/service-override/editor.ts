@@ -1,7 +1,7 @@
 import type { IEditorOverrideServices } from 'vs/editor/standalone/browser/standaloneServices'
 import { Event } from 'vs/base/common/event'
 import type { IResolvedTextEditorModel } from 'vs/editor/common/services/resolverService'
-import { ICodeEditorService } from 'vs/editor/browser/services/codeEditorService'
+import { ICodeEditorService } from 'vs/editor/browser/services/codeEditorService.service'
 import { CodeEditorService } from 'vs/workbench/services/editor/browser/codeEditorService'
 import { IEditorService } from 'vs/workbench/services/editor/common/editorService.service'
 import type { IEditorOptions } from 'vs/platform/editor/common/editor'

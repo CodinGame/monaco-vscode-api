@@ -33,7 +33,7 @@ import { Disposable, DisposableStore, toDisposable } from 'vs/base/common/lifecy
 import { IAuxiliaryWindowService } from 'vs/workbench/services/auxiliaryWindow/browser/auxiliaryWindowService.service'
 import { StandaloneCodeEditor } from 'vs/editor/standalone/browser/standaloneCodeEditor'
 import { IHostService } from 'vs/workbench/services/host/browser/host.service'
-import { ICodeEditorService } from 'vs/editor/browser/services/codeEditorService'
+import { ICodeEditorService } from 'vs/editor/browser/services/codeEditorService.service'
 import { getMenuBarVisibility, getTitleBarStyle } from 'vs/platform/window/common/window'
 import type { IDisposable } from '@xterm/headless'
 import type { IViewSize } from 'vs/base/browser/ui/grid/gridview'
