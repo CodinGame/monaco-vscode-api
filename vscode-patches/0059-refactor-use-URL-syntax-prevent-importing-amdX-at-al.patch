@@ -57,7 +57,7 @@ index ea3939b7b91..906004db498 100644
  		const worker = this._worker = createWebWorker<TextMateTokenizationWorker>(
  			'vs/workbench/services/textMate/browser/backgroundTokenization/worker/textMateTokenizationWorker.worker',
 diff --git a/src/vs/workbench/services/textMate/browser/textMateTokenizationFeatureImpl.ts b/src/vs/workbench/services/textMate/browser/textMateTokenizationFeatureImpl.ts
-index fad4bc095fc..94f39848613 100644
+index 86d36458fd5..9ee8a058737 100644
 --- a/src/vs/workbench/services/textMate/browser/textMateTokenizationFeatureImpl.ts
 +++ b/src/vs/workbench/services/textMate/browser/textMateTokenizationFeatureImpl.ts
 @@ -4,7 +4,7 @@
@@ -69,7 +69,7 @@ index fad4bc095fc..94f39848613 100644
  import { equals as equalArray } from '../../../../base/common/arrays.js';
  import { Color } from '../../../../base/common/color.js';
  import { onUnexpectedError } from '../../../../base/common/errors.js';
-@@ -371,7 +371,7 @@ export class TextMateTokenizationFeature extends Disposable implements ITextMate
+@@ -373,7 +373,7 @@ export class TextMateTokenizationFeature extends Disposable implements ITextMate
  
  	private async _loadVSCodeOnigurumaWASM(): Promise<Response | ArrayBuffer> {
  		if (isWeb) {

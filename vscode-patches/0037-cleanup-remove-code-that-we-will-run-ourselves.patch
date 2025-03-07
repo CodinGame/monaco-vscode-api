@@ -8,7 +8,7 @@ Subject: [PATCH] cleanup: remove code that we will run ourselves
  1 file changed, 20 deletions(-)
 
 diff --git a/src/vs/workbench/browser/workbench.ts b/src/vs/workbench/browser/workbench.ts
-index 5d4ac8661b1..dbcc71e6427 100644
+index 8b0c59fd496..e112acb5e7e 100644
 --- a/src/vs/workbench/browser/workbench.ts
 +++ b/src/vs/workbench/browser/workbench.ts
 @@ -10,10 +10,7 @@ import { RunOnceScheduler, timeout } from '../../base/common/async.js';
@@ -50,7 +50,7 @@ index 5d4ac8661b1..dbcc71e6427 100644
  
 -				// Default Hover Delegate must be registered before creating any workbench/layout components
 -				// as these possibly will use the default hover delegate
--				setHoverDelegateFactory((placement, enableInstantHover) => instantiationService.createInstance(WorkbenchHoverDelegate, placement, enableInstantHover, {}));
+-				setHoverDelegateFactory((placement, enableInstantHover) => instantiationService.createInstance(WorkbenchHoverDelegate, placement, { instantHover: enableInstantHover }, {}));
 -				setBaseLayerHoverDelegate(hoverService);
 -
  				// Layout

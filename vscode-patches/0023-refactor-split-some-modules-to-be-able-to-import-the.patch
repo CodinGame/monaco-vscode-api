@@ -38,10 +38,10 @@ index 00000000000..185a77baafb
 +
 +registerWorkbenchContribution2(EditorAutoSave.ID, EditorAutoSave, WorkbenchPhase.BlockRestore);
 diff --git a/src/vs/workbench/browser/parts/editor/editor.contribution.ts b/src/vs/workbench/browser/parts/editor/editor.contribution.ts
-index 8c75858d981..83927374b28 100644
+index 1c777faacaf..6977ff73214 100644
 --- a/src/vs/workbench/browser/parts/editor/editor.contribution.ts
 +++ b/src/vs/workbench/browser/parts/editor/editor.contribution.ts
-@@ -62,7 +62,6 @@ import { isMacintosh } from '../../../../base/common/platform.js';
+@@ -61,7 +61,6 @@ import { isMacintosh } from '../../../../base/common/platform.js';
  import { EditorContributionInstantiation, registerEditorContribution } from '../../../../editor/browser/editorExtensions.js';
  import { FloatingEditorClickMenu } from '../../codeeditor.js';
  import { WorkbenchPhase, registerWorkbenchContribution2 } from '../../../common/contributions.js';
@@ -49,7 +49,7 @@ index 8c75858d981..83927374b28 100644
  import { IQuickAccessRegistry, Extensions as QuickAccessExtensions } from '../../../../platform/quickinput/common/quickAccess.js';
  import { ActiveGroupEditorsByMostRecentlyUsedQuickAccess, AllEditorsByAppearanceQuickAccess, AllEditorsByMostRecentlyUsedQuickAccess } from './editorQuickAccess.js';
  import { FileAccess } from '../../../../base/common/network.js';
-@@ -73,6 +72,7 @@ import { DynamicEditorConfigurations } from './editorConfiguration.js';
+@@ -72,6 +71,7 @@ import { DynamicEditorConfigurations } from './editorConfiguration.js';
  import { ConfigureEditorAction, ConfigureEditorTabsAction, EditorActionsDefaultAction, EditorActionsTitleBarAction, HideEditorActionsAction, HideEditorTabsAction, ShowMultipleEditorTabsAction, ShowSingleEditorTabAction, ZenHideEditorTabsAction, ZenShowMultipleEditorTabsAction, ZenShowSingleEditorTabAction } from '../../actions/layoutActions.js';
  import { ICommandAction } from '../../../../platform/action/common/action.js';
  import { EditorContextKeys } from '../../../../editor/common/editorContextKeys.js';
@@ -57,7 +57,7 @@ index 8c75858d981..83927374b28 100644
  
  //#region Editor Registrations
  
-@@ -129,7 +129,6 @@ Registry.as<IEditorFactoryRegistry>(EditorExtensions.EditorFactory).registerEdit
+@@ -128,7 +128,6 @@ Registry.as<IEditorFactoryRegistry>(EditorExtensions.EditorFactory).registerEdit
  
  //#region Workbench Contributions
  
@@ -567,7 +567,7 @@ index 69cfd27a424..484b77a02f7 100644
  	handler: (accessor, resource: URI | object) => {
 diff --git a/src/vs/workbench/contrib/files/browser/files.contribution._configuration.ts b/src/vs/workbench/contrib/files/browser/files.contribution._configuration.ts
 new file mode 100644
-index 00000000000..76cf9a17146
+index 00000000000..705ec9a58ed
 --- /dev/null
 +++ b/src/vs/workbench/contrib/files/browser/files.contribution._configuration.ts
 @@ -0,0 +1,297 @@
@@ -621,7 +621,7 @@ index 00000000000..76cf9a17146
 +			'type': 'object',
 +			'markdownDescription': nls.localize('exclude', "Configure [glob patterns](https://aka.ms/vscode-glob-patterns) for excluding files and folders. For example, the File Explorer decides which files and folders to show or hide based on this setting. Refer to the `#search.exclude#` setting to define search-specific excludes. Refer to the `#explorer.excludeGitIgnore#` setting for ignoring files based on your `.gitignore`."),
 +			'default': {
-+				...{ '**/.git': true, '**/.svn': true, '**/.hg': true, '**/CVS': true, '**/.DS_Store': true, '**/Thumbs.db': true },
++				...{ '**/.git': true, '**/.svn': true, '**/.hg': true, '**/.DS_Store': true, '**/Thumbs.db': true },
 +				...(isWeb ? { '**/*.crswap': true /* filter out swap files used for local file access */ } : undefined)
 +			},
 +			'scope': ConfigurationScope.RESOURCE,
@@ -1284,7 +1284,7 @@ index 00000000000..8064ddc028c
 +	}
 +});
 diff --git a/src/vs/workbench/contrib/files/browser/files.contribution.ts b/src/vs/workbench/contrib/files/browser/files.contribution.ts
-index 689be82dc16..269fb34cadb 100644
+index 606dcf8ebce..269fb34cadb 100644
 --- a/src/vs/workbench/contrib/files/browser/files.contribution.ts
 +++ b/src/vs/workbench/contrib/files/browser/files.contribution.ts
 @@ -3,658 +3,7 @@
@@ -1442,7 +1442,7 @@ index 689be82dc16..269fb34cadb 100644
 -			'type': 'object',
 -			'markdownDescription': nls.localize('exclude', "Configure [glob patterns](https://aka.ms/vscode-glob-patterns) for excluding files and folders. For example, the File Explorer decides which files and folders to show or hide based on this setting. Refer to the `#search.exclude#` setting to define search-specific excludes. Refer to the `#explorer.excludeGitIgnore#` setting for ignoring files based on your `.gitignore`."),
 -			'default': {
--				...{ '**/.git': true, '**/.svn': true, '**/.hg': true, '**/CVS': true, '**/.DS_Store': true, '**/Thumbs.db': true },
+-				...{ '**/.git': true, '**/.svn': true, '**/.hg': true, '**/.DS_Store': true, '**/Thumbs.db': true },
 -				...(isWeb ? { '**/*.crswap': true /* filter out swap files used for local file access */ } : undefined)
 -			},
 -			'scope': ConfigurationScope.RESOURCE,

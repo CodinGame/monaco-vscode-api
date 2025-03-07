@@ -2,7 +2,7 @@ import {
   StandaloneKeybindingService,
   StandaloneServices
 } from 'vs/editor/standalone/browser/standaloneServices'
-import { ITextResourceConfigurationService } from 'vs/editor/common/services/textResourceConfiguration'
+import { ITextResourceConfigurationService } from 'vs/editor/common/services/textResourceConfiguration.service'
 import {
   IInstantiationService,
   type ServicesAccessor
@@ -43,7 +43,7 @@ import { Extensions as ConfigurationExtensions } from 'vs/platform/configuration
 import { EditorOptionsUtil } from 'vscode/src/vs/editor/browser/config/editorConfiguration'
 import { registerColor } from 'vs/platform/theme/common/colorRegistry'
 import { URI } from 'vs/base/common/uri'
-import { ITextModelService } from 'vs/editor/common/services/resolverService'
+import { ITextModelService } from 'vs/editor/common/services/resolverService.service'
 import type { IFileDeleteOptions } from 'vs/platform/files/common/files'
 import { VSBuffer } from 'vs/base/common/buffer'
 import type { ITextFileEditorModel } from 'vs/workbench/services/textfile/common/textfiles'
@@ -51,7 +51,7 @@ import { ServiceCollection } from 'vs/platform/instantiation/common/serviceColle
 import { StandaloneQuickInputService } from 'vs/editor/standalone/browser/quickInput/standaloneQuickInputService'
 import { SyncDescriptor } from 'vs/platform/instantiation/common/descriptors'
 import { ContextKeyExpr, RawContextKey } from 'vs/platform/contextkey/common/contextkey'
-import { ICodeEditorService } from 'vs/editor/browser/services/codeEditorService'
+import { ICodeEditorService } from 'vs/editor/browser/services/codeEditorService.service'
 import type {
   IKeyboardEvent,
   KeybindingsSchemaContribution

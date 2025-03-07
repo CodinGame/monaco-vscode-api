@@ -1,0 +1,29 @@
+From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
+From: =?UTF-8?q?Lo=C3=AFc=20Mangeonjean?= <loic@coderpad.io>
+Date: Fri, 7 Mar 2025 10:01:00 +0100
+Subject: [PATCH] fix: remove weird type reference to fix the build
+
+---
+ src/vs/editor/common/services/editorWorker.ts | 2 --
+ 1 file changed, 2 deletions(-)
+
+diff --git a/src/vs/editor/common/services/editorWorker.ts b/src/vs/editor/common/services/editorWorker.ts
+index c7b03cd784c..bf88fdaebf6 100644
+--- a/src/vs/editor/common/services/editorWorker.ts
++++ b/src/vs/editor/common/services/editorWorker.ts
+@@ -10,7 +10,6 @@ import { IChange } from '../diff/legacyLinesDiffComputer.js';
+ import { IColorInformation, IInplaceReplaceSupportResult, TextEdit } from '../languages.js';
+ import { UnicodeHighlighterOptions } from './unicodeTextModelHighlighter.js';
+ import { createDecorator } from '../../../platform/instantiation/common/instantiation.js';
+-import type { BaseEditorSimpleWorker } from './editorSimpleWorker.js';
+ import { SectionHeader, FindSectionHeaderOptions } from './findSectionHeaders.js';
+ 
+ export const IEditorWorkerService = createDecorator<IEditorWorkerService>('editorWorkerService');
+@@ -23,7 +22,6 @@ export interface IEditorWorkerService {
+ 	canComputeUnicodeHighlights(uri: URI): boolean;
+ 	computedUnicodeHighlights(uri: URI, options: UnicodeHighlighterOptions, range?: IRange): Promise<IUnicodeHighlightsResult>;
+ 
+-	/** Implementation in {@link BaseEditorSimpleWorker.computeDiff} */
+ 	computeDiff(original: URI, modified: URI, options: IDocumentDiffProviderOptions, algorithm: DiffAlgorithmName): Promise<IDocumentDiff | null>;
+ 
+ 	canComputeDirtyDiff(original: URI, modified: URI): boolean;

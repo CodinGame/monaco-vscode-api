@@ -80,7 +80,7 @@ index 701c940c736..ca380d0119c 100644
  	public static validateOptions(options: IEditorOptions): ValidatedEditorOptions {
  		const result = new ValidatedEditorOptions();
 diff --git a/src/vs/editor/browser/widget/codeEditor/codeEditorWidget.ts b/src/vs/editor/browser/widget/codeEditor/codeEditorWidget.ts
-index 3bd2f0a903e..5ea575e9897 100644
+index 7e325a7f888..30f019880f9 100644
 --- a/src/vs/editor/browser/widget/codeEditor/codeEditorWidget.ts
 +++ b/src/vs/editor/browser/widget/codeEditor/codeEditorWidget.ts
 @@ -278,6 +278,7 @@ export class CodeEditorWidget extends Disposable implements editorBrowser.ICodeE
@@ -195,7 +195,7 @@ index 1fc85078f9e..c74aca00541 100644
  	outline-style: solid;
  	outline-offset: -1px;
 diff --git a/src/vs/editor/standalone/browser/standaloneCodeEditor.ts b/src/vs/editor/standalone/browser/standaloneCodeEditor.ts
-index 2b7abea38c1..15917f7df1b 100644
+index dffab646d2b..ca9736c46f1 100644
 --- a/src/vs/editor/standalone/browser/standaloneCodeEditor.ts
 +++ b/src/vs/editor/standalone/browser/standaloneCodeEditor.ts
 @@ -283,7 +283,7 @@ export class StandaloneCodeEditor extends CodeEditorWidget implements IStandalon
@@ -243,13 +243,13 @@ index 72da1933953..c27b2879421 100644
  	}
  	protected override _createView(viewModel: ViewModel): [View, boolean] {
 diff --git a/src/vs/workbench/contrib/notebook/browser/contrib/multicursor/notebookMulticursor.ts b/src/vs/workbench/contrib/notebook/browser/contrib/multicursor/notebookMulticursor.ts
-index c8706e4aeb5..50af7333585 100644
+index 8ce231cbd24..6426c7e58f5 100644
 --- a/src/vs/workbench/contrib/notebook/browser/contrib/multicursor/notebookMulticursor.ts
 +++ b/src/vs/workbench/contrib/notebook/browser/contrib/multicursor/notebookMulticursor.ts
 @@ -811,7 +811,7 @@ export class NotebookMultiCursorController extends Disposable implements INotebo
- 	private constructCellEditorOptions(cell: ICellViewModel): EditorConfiguration {
  		const cellEditorOptions = new CellEditorOptions(this.notebookEditor.getBaseCellEditorOptions(cell.language), this.notebookEditor.notebookOptions, this.configurationService);
  		const options = cellEditorOptions.getUpdatedValue(cell.internalMetadata, cell.uri);
+ 		cellEditorOptions.dispose();
 -		return new EditorConfiguration(false, MenuId.EditorContent, options, null, this.accessibilityService);
 +		return new EditorConfiguration(false, MenuId.EditorContent, false, options, null, this.accessibilityService);
  	}

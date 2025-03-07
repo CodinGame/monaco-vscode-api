@@ -34,10 +34,10 @@ Subject: [PATCH] feat: export some classes and make some methods accessible
  27 files changed, 46 insertions(+), 46 deletions(-)
 
 diff --git a/src/vs/editor/common/model/treeSitterTokenStoreService.ts b/src/vs/editor/common/model/treeSitterTokenStoreService.ts
-index 9a2de36707e..f83b4aa86d7 100644
+index 8c544cdb416..f0e5cdad532 100644
 --- a/src/vs/editor/common/model/treeSitterTokenStoreService.ts
 +++ b/src/vs/editor/common/model/treeSitterTokenStoreService.ts
-@@ -27,7 +27,7 @@ export interface TokenInformation {
+@@ -28,7 +28,7 @@ export interface TokenInformation {
  	needsRefresh?: boolean;
  }
  
@@ -86,7 +86,7 @@ index fa0d7fd2307..46a8443e46a 100644
  	declare readonly _serviceBrand: undefined;
  
 diff --git a/src/vs/workbench/browser/layout.ts b/src/vs/workbench/browser/layout.ts
-index 1c566bf0f45..caab14d98c3 100644
+index fc33edf3294..3ccd16cee10 100644
 --- a/src/vs/workbench/browser/layout.ts
 +++ b/src/vs/workbench/browser/layout.ts
 @@ -51,7 +51,7 @@ import { CodeWindow, mainWindow } from '../../base/browser/window.js';
@@ -128,7 +128,7 @@ index 1c566bf0f45..caab14d98c3 100644
  	readonly filesToDiff?: IPathToOpen[];
  	readonly filesToMerge?: IPathToOpen[];
 diff --git a/src/vs/workbench/browser/workbench.ts b/src/vs/workbench/browser/workbench.ts
-index fd795d5ad61..5d4ac8661b1 100644
+index 267da8cf7db..8b0c59fd496 100644
 --- a/src/vs/workbench/browser/workbench.ts
 +++ b/src/vs/workbench/browser/workbench.ts
 @@ -79,7 +79,7 @@ export class Workbench extends Layout {
@@ -176,7 +176,7 @@ index fd795d5ad61..5d4ac8661b1 100644
  
  		// ARIA & Signals
  		setARIAContainer(this.mainContainer);
-@@ -368,7 +368,7 @@ export class Workbench extends Layout {
+@@ -363,7 +363,7 @@ export class Workbench extends Layout {
  		return part;
  	}
  
@@ -185,7 +185,7 @@ index fd795d5ad61..5d4ac8661b1 100644
  
  		// Instantiate Notification components
  		const notificationsCenter = this._register(instantiationService.createInstance(NotificationsCenter, this.mainContainer, notificationService.model));
-@@ -398,7 +398,7 @@ export class Workbench extends Layout {
+@@ -393,7 +393,7 @@ export class Workbench extends Layout {
  		});
  	}
  
@@ -338,10 +338,10 @@ index 69aad42da57..a06dcd516bd 100644
  			getInitData: async (): Promise<IWebWorkerExtensionHostInitData> => {
  				if (isInitialStart) {
 diff --git a/src/vs/workbench/services/extensions/browser/extensionUrlHandler.ts b/src/vs/workbench/services/extensions/browser/extensionUrlHandler.ts
-index d1a25424a4e..d234065106c 100644
+index b5123044a0a..b985da4efd3 100644
 --- a/src/vs/workbench/services/extensions/browser/extensionUrlHandler.ts
 +++ b/src/vs/workbench/services/extensions/browser/extensionUrlHandler.ts
-@@ -121,7 +121,7 @@ export class ExtensionUrlHandlerOverrideRegistry {
+@@ -111,7 +111,7 @@ export class ExtensionUrlHandlerOverrideRegistry {
   *
   * It also makes sure the user confirms opening URLs directed towards extensions.
   */
@@ -351,7 +351,7 @@ index d1a25424a4e..d234065106c 100644
  	readonly _serviceBrand: undefined;
  
 diff --git a/src/vs/workbench/services/extensions/browser/webWorkerExtensionHost.ts b/src/vs/workbench/services/extensions/browser/webWorkerExtensionHost.ts
-index 54fc51bb873..5754f65d0c5 100644
+index b89db8a06f0..2c6fbf876ac 100644
 --- a/src/vs/workbench/services/extensions/browser/webWorkerExtensionHost.ts
 +++ b/src/vs/workbench/services/extensions/browser/webWorkerExtensionHost.ts
 @@ -77,7 +77,7 @@ export class WebWorkerExtensionHost extends Disposable implements IExtensionHost
@@ -477,12 +477,12 @@ index cbf78719a20..2b6fb4c4f05 100644
  	private _targetType: string[] = [];
  	private readonly _onDidChangeTargetType: Emitter<string[]> = new Emitter<string[]>();
 diff --git a/src/vs/workbench/services/remote/common/remoteExtensionsScanner.ts b/src/vs/workbench/services/remote/common/remoteExtensionsScanner.ts
-index 0a54b54e489..85428cc7600 100644
+index fe3e69fb843..899d84dda0c 100644
 --- a/src/vs/workbench/services/remote/common/remoteExtensionsScanner.ts
 +++ b/src/vs/workbench/services/remote/common/remoteExtensionsScanner.ts
-@@ -18,7 +18,7 @@ import { IActiveLanguagePackService } from '../../localization/common/locale.js'
- import { IWorkbenchExtensionManagementService } from '../../extensionManagement/common/extensionManagement.js';
+@@ -19,7 +19,7 @@ import { IWorkbenchExtensionManagementService } from '../../extensionManagement/
  import { Mutable } from '../../../../base/common/types.js';
+ import { InstallExtensionSummary } from '../../../../platform/extensionManagement/common/extensionManagement.js';
  
 -class RemoteExtensionsScannerService implements IRemoteExtensionsScannerService {
 +export class RemoteExtensionsScannerService implements IRemoteExtensionsScannerService {

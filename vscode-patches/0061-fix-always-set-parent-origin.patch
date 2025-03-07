@@ -8,7 +8,7 @@ Subject: [PATCH] fix: always set parent origin
  1 file changed, 1 insertion(+), 1 deletion(-)
 
 diff --git a/src/vs/workbench/services/extensions/browser/webWorkerExtensionHost.ts b/src/vs/workbench/services/extensions/browser/webWorkerExtensionHost.ts
-index eade34150d1..95106926e93 100644
+index dddd45d101f..4aaf033c125 100644
 --- a/src/vs/workbench/services/extensions/browser/webWorkerExtensionHost.ts
 +++ b/src/vs/workbench/services/extensions/browser/webWorkerExtensionHost.ts
 @@ -85,6 +85,7 @@ export class WebWorkerExtensionHost extends Disposable implements IExtensionHost

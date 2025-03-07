@@ -208,7 +208,6 @@ class LocalExtensionHost implements IExtensionHost {
         appHost: this._productService.embedderIdentifier ?? (platform.isWeb ? 'web' : 'desktop'),
         appUriScheme: this._productService.urlProtocol,
         appLanguage: platform.language,
-        extensionTelemetryLogResource: this._environmentService.extHostTelemetryLogFile,
         isExtensionTelemetryLoggingOnly: isLoggingOnly(
           this._productService,
           this._environmentService

@@ -1,0 +1,274 @@
+From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
+From: =?UTF-8?q?Lo=C3=AFc=20Mangeonjean?= <loic@coderpad.io>
+Date: Fri, 7 Mar 2025 09:58:17 +0100
+Subject: [PATCH] fix: change imort style to help extractService script
+
+---
+ .../browser/peek/referencesWidget.ts          | 16 ++++----
+ .../browser/callHierarchyPeek.ts              | 40 +++++++++----------
+ .../browser/typeHierarchyPeek.ts              | 18 ++++-----
+ 3 files changed, 37 insertions(+), 37 deletions(-)
+
+diff --git a/src/vs/editor/contrib/gotoSymbol/browser/peek/referencesWidget.ts b/src/vs/editor/contrib/gotoSymbol/browser/peek/referencesWidget.ts
+index 6c7da6476db..279102368e7 100644
+--- a/src/vs/editor/contrib/gotoSymbol/browser/peek/referencesWidget.ts
++++ b/src/vs/editor/contrib/gotoSymbol/browser/peek/referencesWidget.ts
+@@ -26,7 +26,6 @@ import { Location } from '../../../../common/languages.js';
+ import { PLAINTEXT_LANGUAGE_ID } from '../../../../common/languages/modesRegistry.js';
+ import { ITextEditorModel, ITextModelService } from '../../../../common/services/resolverService.js';
+ import { AccessibilityProvider, DataSource, Delegate, FileReferencesRenderer, IdentityProvider, OneReferenceRenderer, StringRepresentationProvider, TreeElement } from './referencesTree.js';
+-import * as peekView from '../../../peekView/browser/peekView.js';
+ import * as nls from '../../../../../nls.js';
+ import { IInstantiationService } from '../../../../../platform/instantiation/common/instantiation.js';
+ import { IKeybindingService } from '../../../../../platform/keybinding/common/keybinding.js';
+@@ -38,6 +37,7 @@ import { ITreeDragAndDrop, ITreeDragOverReaction } from '../../../../../base/bro
+ import { DataTransfers, IDragAndDropData } from '../../../../../base/browser/dnd.js';
+ import { ElementsDragAndDropData } from '../../../../../base/browser/ui/list/listView.js';
+ import { withSelection } from '../../../../../platform/opener/common/opener.js';
++import { IPeekViewService, peekViewBorder, peekViewResultsBackground, peekViewTitleBackground, peekViewTitleForeground, peekViewTitleInfoForeground, PeekViewWidget } from '../../../peekView/browser/peekView.js';
+ 
+ class DecorationsManager implements IDisposable {
+ 
+@@ -240,7 +240,7 @@ class ReferencesDragAndDrop implements ITreeDragAndDrop<TreeElement> {
+ /**
+  * ZoneWidget that is shown inside the editor
+  */
+-export class ReferenceWidget extends peekView.PeekViewWidget {
++export class ReferenceWidget extends PeekViewWidget {
+ 
+ 	private _model?: ReferencesModel;
+ 	private _decorationsManager?: DecorationsManager;
+@@ -269,7 +269,7 @@ export class ReferenceWidget extends peekView.PeekViewWidget {
+ 		@IThemeService themeService: IThemeService,
+ 		@ITextModelService private readonly _textModelResolverService: ITextModelService,
+ 		@IInstantiationService private readonly _instantiationService: IInstantiationService,
+-		@peekView.IPeekViewService private readonly _peekViewService: peekView.IPeekViewService,
++		@IPeekViewService private readonly _peekViewService: IPeekViewService,
+ 		@ILabelService private readonly _uriLabel: ILabelService,
+ 		@IKeybindingService private readonly _keybindingService: IKeybindingService,
+ 	) {
+@@ -303,13 +303,13 @@ export class ReferenceWidget extends peekView.PeekViewWidget {
+ 	}
+ 
+ 	private _applyTheme(theme: IColorTheme) {
+-		const borderColor = theme.getColor(peekView.peekViewBorder) || Color.transparent;
++		const borderColor = theme.getColor(peekViewBorder) || Color.transparent;
+ 		this.style({
+ 			arrowColor: borderColor,
+ 			frameColor: borderColor,
+-			headerBackgroundColor: theme.getColor(peekView.peekViewTitleBackground) || Color.transparent,
+-			primaryHeadingColor: theme.getColor(peekView.peekViewTitleForeground),
+-			secondaryHeadingColor: theme.getColor(peekView.peekViewTitleInfoForeground)
++			headerBackgroundColor: theme.getColor(peekViewTitleBackground) || Color.transparent,
++			primaryHeadingColor: theme.getColor(peekViewTitleForeground),
++			secondaryHeadingColor: theme.getColor(peekViewTitleInfoForeground)
+ 		});
+ 	}
+ 
+@@ -380,7 +380,7 @@ export class ReferenceWidget extends peekView.PeekViewWidget {
+ 			openOnSingleClick: true,
+ 			selectionNavigation: true,
+ 			overrideStyles: {
+-				listBackground: peekView.peekViewResultsBackground
++				listBackground: peekViewResultsBackground
+ 			},
+ 			dnd: this._instantiationService.createInstance(ReferencesDragAndDrop)
+ 		};
+diff --git a/src/vs/workbench/contrib/callHierarchy/browser/callHierarchyPeek.ts b/src/vs/workbench/contrib/callHierarchy/browser/callHierarchyPeek.ts
+index 0afedce845a..445287b20a6 100644
+--- a/src/vs/workbench/contrib/callHierarchy/browser/callHierarchyPeek.ts
++++ b/src/vs/workbench/contrib/callHierarchy/browser/callHierarchyPeek.ts
+@@ -4,13 +4,11 @@
+  *--------------------------------------------------------------------------------------------*/
+ 
+ import './media/callHierarchy.css';
+-import * as peekView from '../../../../editor/contrib/peekView/browser/peekView.js';
+ import { ICodeEditor } from '../../../../editor/browser/editorBrowser.js';
+ import { IInstantiationService } from '../../../../platform/instantiation/common/instantiation.js';
+ import { CallHierarchyDirection, CallHierarchyModel } from '../common/callHierarchy.js';
+ import { WorkbenchAsyncDataTree, IWorkbenchAsyncDataTreeOptions } from '../../../../platform/list/browser/listService.js';
+ import { FuzzyScore } from '../../../../base/common/filters.js';
+-import * as callHTree from './callHierarchyTree.js';
+ import { IAsyncDataTreeViewState } from '../../../../base/browser/ui/tree/asyncDataTree.js';
+ import { localize } from '../../../../nls.js';
+ import { ScrollType } from '../../../../editor/common/editorCommon.js';
+@@ -33,6 +31,8 @@ import { URI } from '../../../../base/common/uri.js';
+ import { MenuId, IMenuService } from '../../../../platform/actions/common/actions.js';
+ import { IContextKeyService } from '../../../../platform/contextkey/common/contextkey.js';
+ import { getFlatActionBarActions } from '../../../../platform/actions/browser/menuEntryActionViewItem.js';
++import { AccessibilityProvider, Call, CallRenderer, DataSource, IdentityProvider, Sorter, VirtualDelegate } from './callHierarchyTree.js';
++import { IPeekViewService, peekViewBorder, peekViewEditorMatchHighlight, peekViewResultsBackground, peekViewTitleBackground, peekViewTitleForeground, peekViewTitleInfoForeground, PeekViewWidget } from '../../../../editor/contrib/peekView/browser/peekView.js';
+ 
+ const enum State {
+ 	Loading = 'loading',
+@@ -62,9 +62,9 @@ class LayoutInfo {
+ 	) { }
+ }
+ 
+-class CallHierarchyTree extends WorkbenchAsyncDataTree<CallHierarchyModel, callHTree.Call, FuzzyScore> { }
++class CallHierarchyTree extends WorkbenchAsyncDataTree<CallHierarchyModel, Call, FuzzyScore> { }
+ 
+-export class CallHierarchyTreePeekWidget extends peekView.PeekViewWidget {
++export class CallHierarchyTreePeekWidget extends PeekViewWidget {
+ 
+ 	static readonly TitleMenu = new MenuId('callhierarchy/title');
+ 
+@@ -84,7 +84,7 @@ export class CallHierarchyTreePeekWidget extends peekView.PeekViewWidget {
+ 		private readonly _where: IPosition,
+ 		private _direction: CallHierarchyDirection,
+ 		@IThemeService themeService: IThemeService,
+-		@peekView.IPeekViewService private readonly _peekViewService: peekView.IPeekViewService,
++		@IPeekViewService private readonly _peekViewService: IPeekViewService,
+ 		@IEditorService private readonly _editorService: IEditorService,
+ 		@ITextModelService private readonly _textModelService: ITextModelService,
+ 		@IStorageService private readonly _storageService: IStorageService,
+@@ -113,13 +113,13 @@ export class CallHierarchyTreePeekWidget extends peekView.PeekViewWidget {
+ 	}
+ 
+ 	private _applyTheme(theme: IColorTheme) {
+-		const borderColor = theme.getColor(peekView.peekViewBorder) || Color.transparent;
++		const borderColor = theme.getColor(peekViewBorder) || Color.transparent;
+ 		this.style({
+ 			arrowColor: borderColor,
+ 			frameColor: borderColor,
+-			headerBackgroundColor: theme.getColor(peekView.peekViewTitleBackground) || Color.transparent,
+-			primaryHeadingColor: theme.getColor(peekView.peekViewTitleForeground),
+-			secondaryHeadingColor: theme.getColor(peekView.peekViewTitleInfoForeground)
++			headerBackgroundColor: theme.getColor(peekViewTitleBackground) || Color.transparent,
++			primaryHeadingColor: theme.getColor(peekViewTitleForeground),
++			secondaryHeadingColor: theme.getColor(peekViewTitleInfoForeground)
+ 		});
+ 	}
+ 
+@@ -189,22 +189,22 @@ export class CallHierarchyTreePeekWidget extends peekView.PeekViewWidget {
+ 		const treeContainer = document.createElement('div');
+ 		treeContainer.classList.add('tree');
+ 		container.appendChild(treeContainer);
+-		const options: IWorkbenchAsyncDataTreeOptions<callHTree.Call, FuzzyScore> = {
+-			sorter: new callHTree.Sorter(),
+-			accessibilityProvider: new callHTree.AccessibilityProvider(() => this._direction),
+-			identityProvider: new callHTree.IdentityProvider(() => this._direction),
++		const options: IWorkbenchAsyncDataTreeOptions<Call, FuzzyScore> = {
++			sorter: new Sorter(),
++			accessibilityProvider: new AccessibilityProvider(() => this._direction),
++			identityProvider: new IdentityProvider(() => this._direction),
+ 			expandOnlyOnTwistieClick: true,
+ 			overrideStyles: {
+-				listBackground: peekView.peekViewResultsBackground
++				listBackground: peekViewResultsBackground
+ 			}
+ 		};
+ 		this._tree = this._instantiationService.createInstance(
+ 			CallHierarchyTree,
+ 			'CallHierarchyPeek',
+ 			treeContainer,
+-			new callHTree.VirtualDelegate(),
+-			[this._instantiationService.createInstance(callHTree.CallRenderer)],
+-			this._instantiationService.createInstance(callHTree.DataSource, () => this._direction),
++			new VirtualDelegate(),
++			[this._instantiationService.createInstance(CallRenderer)],
++			this._instantiationService.createInstance(DataSource, () => this._direction),
+ 			options
+ 		);
+ 
+@@ -300,7 +300,7 @@ export class CallHierarchyTreePeekWidget extends peekView.PeekViewWidget {
+ 			stickiness: TrackedRangeStickiness.NeverGrowsWhenTypingAtEdges,
+ 			className: 'call-decoration',
+ 			overviewRuler: {
+-				color: themeColorFromId(peekView.peekViewEditorMatchHighlight),
++				color: themeColorFromId(peekViewEditorMatchHighlight),
+ 				position: OverviewRulerLane.Center
+ 			},
+ 		};
+@@ -367,7 +367,7 @@ export class CallHierarchyTreePeekWidget extends peekView.PeekViewWidget {
+ 
+ 		await this._tree.setInput(model, viewState);
+ 
+-		const root = <ITreeNode<callHTree.Call, FuzzyScore>>this._tree.getNode(model).children[0];
++		const root = <ITreeNode<Call, FuzzyScore>>this._tree.getNode(model).children[0];
+ 		await this._tree.expand(root.element);
+ 
+ 		if (root.children.length === 0) {
+@@ -390,7 +390,7 @@ export class CallHierarchyTreePeekWidget extends peekView.PeekViewWidget {
+ 		return this._tree.getInput();
+ 	}
+ 
+-	getFocused(): callHTree.Call | undefined {
++	getFocused(): Call | undefined {
+ 		return this._tree.getFocus()[0];
+ 	}
+ 
+diff --git a/src/vs/workbench/contrib/typeHierarchy/browser/typeHierarchyPeek.ts b/src/vs/workbench/contrib/typeHierarchy/browser/typeHierarchyPeek.ts
+index df75f745155..c58ec1cef28 100644
+--- a/src/vs/workbench/contrib/typeHierarchy/browser/typeHierarchyPeek.ts
++++ b/src/vs/workbench/contrib/typeHierarchy/browser/typeHierarchyPeek.ts
+@@ -21,7 +21,6 @@ import { IRange, Range } from '../../../../editor/common/core/range.js';
+ import { ScrollType } from '../../../../editor/common/editorCommon.js';
+ import { IModelDecorationOptions, TrackedRangeStickiness, IModelDeltaDecoration, OverviewRulerLane } from '../../../../editor/common/model.js';
+ import { ITextModelService } from '../../../../editor/common/services/resolverService.js';
+-import * as peekView from '../../../../editor/contrib/peekView/browser/peekView.js';
+ import { localize } from '../../../../nls.js';
+ import { getFlatActionBarActions } from '../../../../platform/actions/browser/menuEntryActionViewItem.js';
+ import { IMenuService, MenuId } from '../../../../platform/actions/common/actions.js';
+@@ -33,6 +32,7 @@ import { IColorTheme, IThemeService, themeColorFromId } from '../../../../platfo
+ import * as typeHTree from './typeHierarchyTree.js';
+ import { TypeHierarchyDirection, TypeHierarchyModel } from '../common/typeHierarchy.js';
+ import { IEditorService } from '../../../services/editor/common/editorService.js';
++import { IPeekViewService, peekViewBorder, peekViewEditorMatchHighlight, peekViewResultsBackground, peekViewTitleBackground, peekViewTitleForeground, peekViewTitleInfoForeground, PeekViewWidget } from '../../../../editor/contrib/peekView/browser/peekView.js';
+ 
+ // Todo: copied from call hierarchy, to extract
+ const enum State {
+@@ -65,7 +65,7 @@ class LayoutInfo {
+ 
+ class TypeHierarchyTree extends WorkbenchAsyncDataTree<TypeHierarchyModel, typeHTree.Type, FuzzyScore> { }
+ 
+-export class TypeHierarchyTreePeekWidget extends peekView.PeekViewWidget {
++export class TypeHierarchyTreePeekWidget extends PeekViewWidget {
+ 
+ 	static readonly TitleMenu = new MenuId('typehierarchy/title');
+ 
+@@ -85,7 +85,7 @@ export class TypeHierarchyTreePeekWidget extends peekView.PeekViewWidget {
+ 		private readonly _where: IPosition,
+ 		private _direction: TypeHierarchyDirection,
+ 		@IThemeService themeService: IThemeService,
+-		@peekView.IPeekViewService private readonly _peekViewService: peekView.IPeekViewService,
++		@IPeekViewService private readonly _peekViewService: IPeekViewService,
+ 		@IEditorService private readonly _editorService: IEditorService,
+ 		@ITextModelService private readonly _textModelService: ITextModelService,
+ 		@IStorageService private readonly _storageService: IStorageService,
+@@ -114,13 +114,13 @@ export class TypeHierarchyTreePeekWidget extends peekView.PeekViewWidget {
+ 	}
+ 
+ 	private _applyTheme(theme: IColorTheme) {
+-		const borderColor = theme.getColor(peekView.peekViewBorder) || Color.transparent;
++		const borderColor = theme.getColor(peekViewBorder) || Color.transparent;
+ 		this.style({
+ 			arrowColor: borderColor,
+ 			frameColor: borderColor,
+-			headerBackgroundColor: theme.getColor(peekView.peekViewTitleBackground) || Color.transparent,
+-			primaryHeadingColor: theme.getColor(peekView.peekViewTitleForeground),
+-			secondaryHeadingColor: theme.getColor(peekView.peekViewTitleInfoForeground)
++			headerBackgroundColor: theme.getColor(peekViewTitleBackground) || Color.transparent,
++			primaryHeadingColor: theme.getColor(peekViewTitleForeground),
++			secondaryHeadingColor: theme.getColor(peekViewTitleInfoForeground)
+ 		});
+ 	}
+ 
+@@ -196,7 +196,7 @@ export class TypeHierarchyTreePeekWidget extends peekView.PeekViewWidget {
+ 			identityProvider: new typeHTree.IdentityProvider(() => this._direction),
+ 			expandOnlyOnTwistieClick: true,
+ 			overrideStyles: {
+-				listBackground: peekView.peekViewResultsBackground
++				listBackground: peekViewResultsBackground
+ 			}
+ 		};
+ 		this._tree = this._instantiationService.createInstance(
+@@ -301,7 +301,7 @@ export class TypeHierarchyTreePeekWidget extends peekView.PeekViewWidget {
+ 			stickiness: TrackedRangeStickiness.NeverGrowsWhenTypingAtEdges,
+ 			className: 'type-decoration',
+ 			overviewRuler: {
+-				color: themeColorFromId(peekView.peekViewEditorMatchHighlight),
++				color: themeColorFromId(peekViewEditorMatchHighlight),
+ 				position: OverviewRulerLane.Center
+ 			},
+ 		};

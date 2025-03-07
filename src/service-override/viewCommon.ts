@@ -11,7 +11,7 @@ import { BreadcrumbsService } from 'vs/workbench/browser/parts/editor/breadcrumb
 import { IBreadcrumbsService } from 'vs/workbench/browser/parts/editor/breadcrumbs.service'
 import { IContextViewService } from 'vs/platform/contextview/browser/contextView.service'
 import { ContextViewService } from 'vs/platform/contextview/browser/contextViewService'
-import { ICodeEditorService } from 'vs/editor/browser/services/codeEditorService'
+import { ICodeEditorService } from 'vs/editor/browser/services/codeEditorService.service'
 import { TextEditorService } from 'vs/workbench/services/textfile/common/textEditorService'
 import { ITextEditorService } from 'vs/workbench/services/textfile/common/textEditorService.service'
 import { CodeEditorService } from 'vs/workbench/services/editor/browser/codeEditorService'

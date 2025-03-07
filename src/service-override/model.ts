@@ -1,5 +1,5 @@
 import { type IEditorOverrideServices } from 'vs/editor/standalone/browser/standaloneServices'
-import { ITextModelService } from 'vs/editor/common/services/resolverService'
+import { ITextModelService } from 'vs/editor/common/services/resolverService.service'
 import { TextModelResolverService } from 'vs/workbench/services/textmodelResolver/common/textModelResolverService'
 import { SyncDescriptor } from 'vs/platform/instantiation/common/descriptors'
 

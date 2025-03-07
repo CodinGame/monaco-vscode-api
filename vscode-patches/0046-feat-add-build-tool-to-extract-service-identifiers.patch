@@ -4,18 +4,18 @@ Date: Thu, 25 Apr 2024 19:34:56 +0200
 Subject: [PATCH] feat: add build tool to extract service identifiers
 
 ---
- build/lib/extractServices.js | 241 +++++++++++++++++++++++++++++++++++
- build/lib/extractServices.ts | 238 ++++++++++++++++++++++++++++++++++
- 2 files changed, 479 insertions(+)
+ build/lib/extractServices.js | 239 +++++++++++++++++++++++++++++++++++
+ build/lib/extractServices.ts | 236 ++++++++++++++++++++++++++++++++++
+ 2 files changed, 475 insertions(+)
  create mode 100644 build/lib/extractServices.js
  create mode 100644 build/lib/extractServices.ts
 
 diff --git a/build/lib/extractServices.js b/build/lib/extractServices.js
 new file mode 100644
-index 00000000000..6fc74ba1ab2
+index 00000000000..6aa80e3701d
 --- /dev/null
 +++ b/build/lib/extractServices.js
-@@ -0,0 +1,241 @@
+@@ -0,0 +1,239 @@
 +"use strict";
 +/*---------------------------------------------------------------------------------------------
 + *  Copyright (c) Microsoft Corporation. All rights reserved.
@@ -75,6 +75,7 @@ index 00000000000..6fc74ba1ab2
 +    'vs/platform/markers/common/markers.service.ts',
 +    'vs/platform/userDataSync/common/userDataSync.service.ts',
 +    'vs/workbench/contrib/chat/common/chatAgents.service.ts',
++    'vs/editor/common/services/treeSitterParserService.service.ts',
 +    'vs/workbench/contrib/tasks/common/taskService.ts',
 +    'vs/workbench/workbench.web.main.ts'
 +];
@@ -82,10 +83,7 @@ index 00000000000..6fc74ba1ab2
 +const IGNORE = [
 +    'vs/platform/instantiation/common/instantiation',
 +    // Editor services
-+    'vs/editor/',
-+    'vs/platform/actionWidget/browser/actionWidget',
-+    'vs/platform/undoRedo/common/undoRedoService',
-+    'vs/platform/instantiation/common/extensions',
++    'vs/editor/standalone/browser/standaloneServices',
 +    // The extension api, not modular anyway
 +    'vs/workbench/api/'
 +];
@@ -260,10 +258,10 @@ index 00000000000..6fc74ba1ab2
 \ No newline at end of file
 diff --git a/build/lib/extractServices.ts b/build/lib/extractServices.ts
 new file mode 100644
-index 00000000000..82b5f68b30c
+index 00000000000..7c45e31807e
 --- /dev/null
 +++ b/build/lib/extractServices.ts
-@@ -0,0 +1,238 @@
+@@ -0,0 +1,236 @@
 +/*---------------------------------------------------------------------------------------------
 + *  Copyright (c) Microsoft Corporation. All rights reserved.
 + *  Licensed under the MIT License. See License.txt in the project root for license information.
@@ -292,6 +290,7 @@ index 00000000000..82b5f68b30c
 +	'vs/platform/markers/common/markers.service.ts',
 +	'vs/platform/userDataSync/common/userDataSync.service.ts',
 +	'vs/workbench/contrib/chat/common/chatAgents.service.ts',
++	'vs/editor/common/services/treeSitterParserService.service.ts',
 +	'vs/workbench/contrib/tasks/common/taskService.ts',
 +	'vs/workbench/workbench.web.main.ts'
 +];
@@ -301,10 +300,7 @@ index 00000000000..82b5f68b30c
 +	'vs/platform/instantiation/common/instantiation',
 +
 +	// Editor services
-+	'vs/editor/',
-+	'vs/platform/actionWidget/browser/actionWidget',
-+	'vs/platform/undoRedo/common/undoRedoService',
-+	'vs/platform/instantiation/common/extensions',
++	'vs/editor/standalone/browser/standaloneServices',
 +
 +	// The extension api, not modular anyway
 +	'vs/workbench/api/'

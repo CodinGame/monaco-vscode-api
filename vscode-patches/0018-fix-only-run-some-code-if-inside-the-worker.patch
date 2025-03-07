@@ -38,7 +38,7 @@ index e6af1f781be..07017a784d4 100644
  		// Invalidate all proxies
  		this._extHostContext.dispose();
 diff --git a/src/vs/workbench/api/common/extensionHostMain.ts b/src/vs/workbench/api/common/extensionHostMain.ts
-index 7ffbe5c528f..8a90c5c9b34 100644
+index 910647acb2e..23807ec1b5c 100644
 --- a/src/vs/workbench/api/common/extensionHostMain.ts
 +++ b/src/vs/workbench/api/common/extensionHostMain.ts
 @@ -23,6 +23,7 @@ import { IURITransformerService, URITransformerService } from './extHostUriTrans
