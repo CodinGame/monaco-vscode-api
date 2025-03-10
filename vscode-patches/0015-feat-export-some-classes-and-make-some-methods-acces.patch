@@ -5,6 +5,12 @@ Subject: [PATCH] feat: export some classes and make some methods accessible
 
 ---
  .../common/model/treeSitterTokenStoreService.ts    |  2 +-
+ .../editorState/browser/keybindingCancellation.ts  |  6 ++++--
+ .../gotoError/browser/markerNavigationService.ts   |  2 +-
+ .../contrib/gotoSymbol/browser/symbolNavigation.ts |  2 +-
+ .../inlayHints/browser/inlayHintsController.ts     |  2 +-
+ src/vs/editor/contrib/peekView/browser/peekView.ts |  6 ++++--
+ .../platform/actionWidget/browser/actionWidget.ts  |  2 +-
  .../actions/browser/actionViewItemService.ts       |  2 +-
  .../browser/extensionResourceLoaderService.ts      |  2 +-
  .../api/browser/statusBarExtensionPoint.ts         |  2 +-
@@ -31,7 +37,7 @@ Subject: [PATCH] feat: export some classes and make some methods accessible
  .../terminal/common/embedderTerminalService.ts     |  2 +-
  .../common/remoteUserDataProfiles.ts               |  2 +-
  .../userDataSync/common/userDataSyncUtil.ts        |  2 +-
- 27 files changed, 46 insertions(+), 46 deletions(-)
+ 33 files changed, 58 insertions(+), 54 deletions(-)
 
 diff --git a/src/vs/editor/common/model/treeSitterTokenStoreService.ts b/src/vs/editor/common/model/treeSitterTokenStoreService.ts
 index 8c544cdb416..f0e5cdad532 100644
@@ -46,6 +52,106 @@ index 8c544cdb416..f0e5cdad532 100644
  	readonly _serviceBrand: undefined;
  
  	private readonly tokens = new Map<ITextModel, { store: TokenStore; accurateVersion: number; guessVersion: number; readonly disposables: DisposableStore }>();
+diff --git a/src/vs/editor/contrib/editorState/browser/keybindingCancellation.ts b/src/vs/editor/contrib/editorState/browser/keybindingCancellation.ts
+index 94020ce96b9..de1e9af237e 100644
+--- a/src/vs/editor/contrib/editorState/browser/keybindingCancellation.ts
++++ b/src/vs/editor/contrib/editorState/browser/keybindingCancellation.ts
+@@ -25,7 +25,7 @@ interface IEditorCancellationTokens {
+ 
+ const ctxCancellableOperation = new RawContextKey('cancellableOperation', false, localize('cancellableOperation', 'Whether the editor runs a cancellable operation, e.g. like \'Peek References\''));
+ 
+-registerSingleton(IEditorCancellationTokens, class implements IEditorCancellationTokens {
++export class EditorCancellationTokens implements IEditorCancellationTokens {
+ 
+ 	declare readonly _serviceBrand: undefined;
+ 
+@@ -70,7 +70,9 @@ registerSingleton(IEditorCancellationTokens, class implements IEditorCancellatio
+ 		}
+ 	}
+ 
+-}, InstantiationType.Delayed);
++}
++
++registerSingleton(IEditorCancellationTokens, EditorCancellationTokens, InstantiationType.Delayed);
+ 
+ export class EditorKeybindingCancellationTokenSource extends CancellationTokenSource {
+ 
+diff --git a/src/vs/editor/contrib/gotoError/browser/markerNavigationService.ts b/src/vs/editor/contrib/gotoError/browser/markerNavigationService.ts
+index bc02d0a62fa..60738979a66 100644
+--- a/src/vs/editor/contrib/gotoError/browser/markerNavigationService.ts
++++ b/src/vs/editor/contrib/gotoError/browser/markerNavigationService.ts
+@@ -223,7 +223,7 @@ export interface IMarkerListProvider {
+ 	getMarkerList(resource: URI | undefined): MarkerList | undefined;
+ }
+ 
+-class MarkerNavigationService implements IMarkerNavigationService, IMarkerListProvider {
++export class MarkerNavigationService implements IMarkerNavigationService, IMarkerListProvider {
+ 
+ 	readonly _serviceBrand: undefined;
+ 
+diff --git a/src/vs/editor/contrib/gotoSymbol/browser/symbolNavigation.ts b/src/vs/editor/contrib/gotoSymbol/browser/symbolNavigation.ts
+index e02392bdad9..e522f8a2a82 100644
+--- a/src/vs/editor/contrib/gotoSymbol/browser/symbolNavigation.ts
++++ b/src/vs/editor/contrib/gotoSymbol/browser/symbolNavigation.ts
+@@ -32,7 +32,7 @@ export interface ISymbolNavigationService {
+ 	revealNext(source: ICodeEditor): Promise<any>;
+ }
+ 
+-class SymbolNavigationService implements ISymbolNavigationService {
++export class SymbolNavigationService implements ISymbolNavigationService {
+ 
+ 	declare readonly _serviceBrand: undefined;
+ 
+diff --git a/src/vs/editor/contrib/inlayHints/browser/inlayHintsController.ts b/src/vs/editor/contrib/inlayHints/browser/inlayHintsController.ts
+index 913e8075b3c..e5608c2319d 100644
+--- a/src/vs/editor/contrib/inlayHints/browser/inlayHintsController.ts
++++ b/src/vs/editor/contrib/inlayHints/browser/inlayHintsController.ts
+@@ -39,7 +39,7 @@ import { Position } from '../../../common/core/position.js';
+ 
+ // --- hint caching service (per session)
+ 
+-class InlayHintsCache {
++export class InlayHintsCache {
+ 
+ 	declare readonly _serviceBrand: undefined;
+ 
+diff --git a/src/vs/editor/contrib/peekView/browser/peekView.ts b/src/vs/editor/contrib/peekView/browser/peekView.ts
+index 946f5ec0ecc..33b913b66f8 100644
+--- a/src/vs/editor/contrib/peekView/browser/peekView.ts
++++ b/src/vs/editor/contrib/peekView/browser/peekView.ts
+@@ -34,7 +34,7 @@ export interface IPeekViewService {
+ 	addExclusiveWidget(editor: ICodeEditor, widget: PeekViewWidget): void;
+ }
+ 
+-registerSingleton(IPeekViewService, class implements IPeekViewService {
++export class PeekViewService implements IPeekViewService {
+ 	declare readonly _serviceBrand: undefined;
+ 
+ 	private readonly _widgets = new Map<ICodeEditor, { widget: PeekViewWidget; listener: IDisposable }>();
+@@ -54,7 +54,9 @@ registerSingleton(IPeekViewService, class implements IPeekViewService {
+ 		};
+ 		this._widgets.set(editor, { widget, listener: widget.onDidClose(remove) });
+ 	}
+-}, InstantiationType.Delayed);
++}
++
++registerSingleton(IPeekViewService, PeekViewService, InstantiationType.Delayed);
+ 
+ export namespace PeekContext {
+ 	export const inPeekEditor = new RawContextKey<boolean>('inReferenceSearchEditor', true, nls.localize('inReferenceSearchEditor', "Whether the current code editor is embedded inside peek"));
+diff --git a/src/vs/platform/actionWidget/browser/actionWidget.ts b/src/vs/platform/actionWidget/browser/actionWidget.ts
+index 450126a0f27..c0165a548ac 100644
+--- a/src/vs/platform/actionWidget/browser/actionWidget.ts
++++ b/src/vs/platform/actionWidget/browser/actionWidget.ts
+@@ -41,7 +41,7 @@ export interface IActionWidgetService {
+ 	readonly isVisible: boolean;
+ }
+ 
+-class ActionWidgetService extends Disposable implements IActionWidgetService {
++export class ActionWidgetService extends Disposable implements IActionWidgetService {
+ 	declare readonly _serviceBrand: undefined;
+ 
+ 	get isVisible() {
 diff --git a/src/vs/platform/actions/browser/actionViewItemService.ts b/src/vs/platform/actions/browser/actionViewItemService.ts
 index 851b6c9117e..99c9030692f 100644
 --- a/src/vs/platform/actions/browser/actionViewItemService.ts

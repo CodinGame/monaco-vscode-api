@@ -345,6 +345,39 @@ import { unsupported } from './tools'
 import { ITreeSitterImporter } from 'vs/editor/common/services/treeSitterParserService.service'
 import { IChatEntitlementsService } from 'vs/workbench/contrib/chat/common/chatEntitlementsService.service'
 import { IPromptsService } from 'vs/workbench/contrib/chat/common/promptSyntax/service/types.service'
+import { ISuggestMemoryService } from 'vs/editor/contrib/suggest/browser/suggestMemory.service'
+import { LanguageConfigurationService } from 'vs/editor/common/languages/languageConfigurationRegistry'
+import { ILanguageConfigurationService } from 'vs/editor/common/languages/languageConfigurationRegistry.service'
+import { ISemanticTokensStylingService } from 'vs/editor/common/services/semanticTokensStyling.service'
+import { ILanguageFeatureDebounceService } from 'vs/editor/common/services/languageFeatureDebounce.service'
+import { ILanguageFeaturesService } from 'vs/editor/common/services/languageFeatures.service'
+import { IDiffProviderFactoryService } from 'vs/editor/browser/widget/diffEditor/diffProviderFactoryService.service'
+import { IOutlineModelService } from 'vs/editor/contrib/documentSymbols/browser/outlineModel.service'
+import { IMarkerNavigationService } from 'vs/editor/contrib/gotoError/browser/markerNavigationService.service'
+import { ICodeLensCache } from 'vs/editor/contrib/codelens/browser/codeLensCache.service'
+import { IInlayHintsCache } from 'vs/editor/contrib/inlayHints/browser/inlayHintsController.service'
+import { ISymbolNavigationService } from 'vs/editor/contrib/gotoSymbol/browser/symbolNavigation.service'
+import { IEditorCancellationTokens } from 'vs/editor/contrib/editorState/browser/keybindingCancellation.service'
+import { IPeekViewService } from 'vs/editor/contrib/peekView/browser/peekView.service'
+import { SemanticTokensStylingService } from 'vs/editor/common/services/semanticTokensStylingService'
+import { LanguageFeatureDebounceService } from 'vs/editor/common/services/languageFeatureDebounce'
+import { CodeEditorService } from 'vs/workbench/services/editor/browser/codeEditorService'
+import { LanguageFeaturesService } from 'vs/editor/common/services/languageFeaturesService'
+import { WorkerBasedDiffProviderFactoryService } from 'vs/editor/browser/widget/diffEditor/diffProviderFactoryService'
+import { OutlineModelService } from 'vs/editor/contrib/documentSymbols/browser/outlineModel'
+import { SuggestMemoryService } from 'vs/editor/contrib/suggest/browser/suggestMemory'
+import { CodeLensCache } from 'vs/editor/contrib/codelens/browser/codeLensCache'
+import { PeekViewService } from 'vs/editor/contrib/peekView/browser/peekView'
+import { MarkerNavigationService } from 'vs/editor/contrib/gotoError/browser/markerNavigationService'
+import { InlayHintsCache } from 'vs/editor/contrib/inlayHints/browser/inlayHintsController'
+import { IUndoRedoService } from 'vs/platform/undoRedo/common/undoRedo.service'
+import { UndoRedoService } from 'vs/platform/undoRedo/common/undoRedoService'
+import { ActionWidgetService } from 'vs/platform/actionWidget/browser/actionWidget'
+import { IActionWidgetService } from 'vs/platform/actionWidget/browser/actionWidget.service'
+import { EditorCancellationTokens } from 'vs/editor/contrib/editorState/browser/keybindingCancellation'
+import { SymbolNavigationService } from 'vs/editor/contrib/gotoSymbol/browser/symbolNavigation'
+import { IHoverService } from 'vs/platform/hover/browser/hover.service'
+import { HoverService } from 'vs/editor/browser/services/hoverService/hoverService'
 
 function Unsupported(target: object, propertyKey: string, descriptor: PropertyDescriptor) {
   function unsupported() {
@@ -358,6 +391,47 @@ function Unsupported(target: object, propertyKey: string, descriptor: PropertyDe
     descriptor.get = unsupported
   }
 }
+
+/**
+ * Editor services: all editor service that are not defined in vs/editor/standalone/
+ */
+
+registerSingleton(
+  ILanguageConfigurationService,
+  LanguageConfigurationService,
+  InstantiationType.Delayed
+)
+registerSingleton(
+  ISemanticTokensStylingService,
+  SemanticTokensStylingService,
+  InstantiationType.Delayed
+)
+registerSingleton(
+  ILanguageFeatureDebounceService,
+  LanguageFeatureDebounceService,
+  InstantiationType.Delayed
+)
+registerSingleton(ILanguageFeaturesService, LanguageFeaturesService, InstantiationType.Delayed)
+registerSingleton(ICodeEditorService, CodeEditorService, InstantiationType.Delayed)
+registerSingleton(
+  IDiffProviderFactoryService,
+  WorkerBasedDiffProviderFactoryService,
+  InstantiationType.Delayed
+)
+registerSingleton(ISymbolNavigationService, SymbolNavigationService, InstantiationType.Delayed)
+registerSingleton(IEditorCancellationTokens, EditorCancellationTokens, InstantiationType.Delayed)
+registerSingleton(IPeekViewService, PeekViewService, InstantiationType.Delayed)
+registerSingleton(IOutlineModelService, OutlineModelService, InstantiationType.Delayed)
+registerSingleton(IMarkerNavigationService, MarkerNavigationService, InstantiationType.Delayed)
+registerSingleton(ISuggestMemoryService, SuggestMemoryService, InstantiationType.Delayed)
+registerSingleton(ICodeLensCache, CodeLensCache, InstantiationType.Delayed)
+registerSingleton(IHoverService, HoverService, InstantiationType.Delayed)
+registerSingleton(IInlayHintsCache, InlayHintsCache, InstantiationType.Delayed)
+registerSingleton(IActionWidgetService, ActionWidgetService, InstantiationType.Delayed)
+registerSingleton(IUndoRedoService, UndoRedoService, InstantiationType.Delayed)
+/**
+ * End editor services
+ */
 
 registerSingleton(
   ILoggerService,
@@ -8394,7 +8468,6 @@ class TreeSitterTokenizationStoreService implements ITreeSitterTokenizationStore
   hasTokens = () => false
   getTokens = () => undefined
 
-
   @Unsupported
   rangeHasTokens(): never {
     unsupported()
@@ -8559,14 +8632,14 @@ class TreeSitterImporter implements ITreeSitterImporter {
     unsupported()
   }
 }
-registerSingleton(ITreeSitterImporter, TreeSitterImporter, InstantiationType.Eager);
+registerSingleton(ITreeSitterImporter, TreeSitterImporter, InstantiationType.Eager)
 
 class ChatEntitlementsService implements IChatEntitlementsService {
   _serviceBrand: undefined
 
   resolve = async () => undefined
 }
-registerSingleton(IChatEntitlementsService, ChatEntitlementsService, InstantiationType.Eager);
+registerSingleton(IChatEntitlementsService, ChatEntitlementsService, InstantiationType.Eager)
 class PromptsService implements IPromptsService {
   _serviceBrand: undefined
 
@@ -8576,7 +8649,6 @@ class PromptsService implements IPromptsService {
   }
   listPromptFiles = async () => []
   getSourceFolders = () => []
-  dispose(): void {
-  }
+  dispose(): void {}
 }
-registerSingleton(IPromptsService, PromptsService, InstantiationType.Eager);
+registerSingleton(IPromptsService, PromptsService, InstantiationType.Eager)

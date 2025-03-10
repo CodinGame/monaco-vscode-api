@@ -49,6 +49,8 @@ import { setLocalExtensionHost } from './service-override/extensions'
 import { unsupported } from './tools'
 import { type ApiFactory, registerDefaultApiHandler, registerLocalApiFactory } from './extensions'
 import { registerServiceInitializePostParticipant } from './lifecycle'
+import { ExtHostTelemetry, IExtHostTelemetry } from 'vs/workbench/api/common/extHostTelemetry'
+import { SyncDescriptor } from 'vs/platform/instantiation/common/descriptors'
 
 const apiFactoryDeferred = new DeferredPromise<ApiFactory>()
 
@@ -90,6 +92,7 @@ class LocalExtHostExtensionService extends ExtHostExtensionService {
 
 registerSingleton(IExtHostExtensionService, LocalExtHostExtensionService, InstantiationType.Eager)
 registerSingleton(IExtensionStoragePaths, ExtensionStoragePaths, InstantiationType.Eager)
+registerSingleton(IExtHostTelemetry, new SyncDescriptor(ExtHostTelemetry, [true], true))
 
 function createMessagePassingProtocolPair(): [IMessagePassingProtocol, IMessagePassingProtocol] {
   const emitterA = new BufferedEmitter<VSBuffer>()
@@ -276,7 +279,7 @@ setLocalExtensionHost(LocalExtensionHost)
 registerLocalApiFactory(createLocalApi)
 
 export let defaultApi: typeof vscode | undefined
-registerDefaultApiHandler(api => {
+registerDefaultApiHandler((api) => {
   defaultApi = api
 })
 
