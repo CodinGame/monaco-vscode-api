@@ -34,13 +34,17 @@ import { LanguageModelToolsService } from 'vs/workbench/contrib/chat/browser/lan
 import { ICodeMapperService } from 'vs/workbench/contrib/chat/common/chatCodeMapperService.service'
 import { CodeMapperService } from 'vs/workbench/contrib/chat/common/chatCodeMapperService'
 import { IChatEditingService } from 'vs/workbench/contrib/chat/common/chatEditingService.service'
-import { ChatEditingService } from 'vs/workbench/contrib/chat/browser/chatEditing/chatEditingService'
 import { LanguageModelIgnoredFilesService } from 'vs/workbench/contrib/chat/common/ignoredFiles'
 import { ILanguageModelIgnoredFilesService } from 'vs/workbench/contrib/chat/common/ignoredFiles.service'
-import { IChatQuotasService } from 'vs/workbench/contrib/chat/browser/chatQuotasService.service'
-import { ChatQuotasService } from 'vs/workbench/contrib/chat/browser/chatQuotasService'
 import { IChatMarkdownAnchorService } from 'vs/workbench/contrib/chat/browser/chatContentParts/chatMarkdownAnchorService.service'
 import { ChatMarkdownAnchorService } from 'vs/workbench/contrib/chat/browser/chatContentParts/chatMarkdownAnchorService'
+import { IChatQuotasService } from 'vs/workbench/contrib/chat/common/chatQuotasService.service'
+import { ChatQuotasService } from 'vs/workbench/contrib/chat/common/chatQuotasService'
+import {ChatEditingService } from 'vs/workbench/contrib/chat/browser/chatEditing/chatEditingServiceImpl'
+import { ChatEntitlementsService } from 'vs/workbench/contrib/chat/browser/chatSetup'
+import { PromptsService } from 'vs/workbench/contrib/chat/common/promptSyntax/service/promptsService'
+import { IChatEntitlementsService } from 'vs/workbench/contrib/chat/common/chatEntitlementsService.service'
+import { IPromptsService } from 'vs/workbench/contrib/chat/common/promptSyntax/service/types.service'
 import 'vs/workbench/contrib/chat/browser/chat.contribution'
 import 'vs/workbench/contrib/inlineChat/browser/inlineChat.contribution'
 
@@ -84,6 +88,9 @@ export default function getServiceOverride(): IEditorOverrideServices {
     [ICodeMapperService.toString()]: new SyncDescriptor(CodeMapperService, [], true),
     [IChatEditingService.toString()]: new SyncDescriptor(ChatEditingService, [], true),
     [IChatQuotasService.toString()]: new SyncDescriptor(ChatQuotasService, [], true),
-    [IChatMarkdownAnchorService.toString()]: new SyncDescriptor(ChatMarkdownAnchorService, [], true)
+    [IChatMarkdownAnchorService.toString()]: new SyncDescriptor(ChatMarkdownAnchorService, [], true),
+    [IChatEntitlementsService.toString()]: new SyncDescriptor(ChatEntitlementsService, [], true),
+    [IPromptsService.toString()]: new SyncDescriptor(PromptsService, [], true)
   }
 }
+

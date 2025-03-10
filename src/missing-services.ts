@@ -9,10 +9,10 @@ import { ResourceSet } from 'vs/base/common/map'
 import { OS } from 'vs/base/common/platform'
 import { joinPath } from 'vs/base/common/resources'
 import { URI } from 'vs/base/common/uri'
-import { ICodeEditorService } from 'vs/editor/browser/services/codeEditorService'
-import { ITreeSitterTokenizationStoreService } from 'vs/editor/common/model/treeSitterTokenStoreService'
-import { IModelService } from 'vs/editor/common/services/model'
-import { ITreeViewsDnDService } from 'vs/editor/common/services/treeViewsDndService'
+import { ICodeEditorService } from 'vs/editor/browser/services/codeEditorService.service'
+import { ITreeSitterTokenizationStoreService } from 'vs/editor/common/model/treeSitterTokenStoreService.service'
+import { IModelService } from 'vs/editor/common/services/model.service'
+import { ITreeViewsDnDService } from 'vs/editor/common/services/treeViewsDndService.service'
 import { StandaloneServices } from 'vs/editor/standalone/browser/standaloneServices'
 import { IAccessibleViewService } from 'vs/platform/accessibility/browser/accessibleView.service'
 import { IActionViewItemService } from 'vs/platform/actions/browser/actionViewItemService.service'
@@ -120,7 +120,7 @@ import {
   IChatWidgetService,
   IQuickChatService
 } from 'vs/workbench/contrib/chat/browser/chat.service'
-import { IChatQuotasService } from 'vs/workbench/contrib/chat/browser/chatQuotasService.service'
+import { IChatQuotasService } from 'vs/workbench/contrib/chat/common/chatQuotasService.service'
 import {
   IChatAgentNameService,
   IChatAgentService
@@ -342,6 +342,9 @@ import { IWorkspaceIdentityService } from 'vs/workbench/services/workspaces/comm
 import { IChatMarkdownAnchorService } from 'vs/workbench/contrib/chat/browser/chatContentParts/chatMarkdownAnchorService.service'
 import { getBuiltInExtensionTranslationsUris, getExtensionIdProvidingCurrentLocale } from './l10n'
 import { unsupported } from './tools'
+import { ITreeSitterImporter } from 'vs/editor/common/services/treeSitterParserService.service'
+import { IChatEntitlementsService } from 'vs/workbench/contrib/chat/common/chatEntitlementsService.service'
+import { IPromptsService } from 'vs/workbench/contrib/chat/common/promptSyntax/service/types.service'
 
 function Unsupported(target: object, propertyKey: string, descriptor: PropertyDescriptor) {
   function unsupported() {
@@ -446,6 +449,12 @@ registerSingleton(IUriIdentityService, UriIdentityService, InstantiationType.Del
 
 class TextFileService implements ITextFileService {
   _serviceBrand: undefined
+
+  @Unsupported
+  getEncoding(): never {
+    unsupported()
+  }
+
   @Unsupported
   get files() {
     return unsupported()
@@ -2220,14 +2229,21 @@ class HistoryService implements IHistoryService {
 registerSingleton(IHistoryService, HistoryService, InstantiationType.Eager)
 
 class TaskService implements ITaskService {
+  _serviceBrand: undefined
+
   onDidChangeTaskProviders = Event.None
   getKnownTasks = async () => []
-  _serviceBrand: undefined
+
   onDidChangeTaskConfig = Event.None
   onDidStateChange = Event.None
   supportsMultipleTaskExecutions = false
   @Unsupported
   configureAction(): never {
+    unsupported()
+  }
+
+  @Unsupported
+  rerun(): never {
     unsupported()
   }
 
@@ -2899,6 +2915,11 @@ class ExtensionsScannerService implements IExtensionsScannerService {
 
   @Unsupported
   initializeDefaultProfileExtensions(): never {
+    unsupported()
+  }
+
+  @Unsupported
+  updateManifestMetadata(): never {
     unsupported()
   }
 }
@@ -3800,6 +3821,7 @@ registerSingleton(IExtensionGalleryService, ExtensionGalleryService, Instantiati
 class TerminalService implements ITerminalService {
   _serviceBrand: undefined
 
+  onAnyInstanceAddedCapabilityType = Event.None
   onAnyInstanceShellTypeChanged = Event.None
 
   @Unsupported
@@ -4993,6 +5015,8 @@ class ChatService implements IChatService {
   notifyUserAction(): never {
     unsupported()
   }
+
+  onDidSubmitRequest = Event.None
 }
 registerSingleton(IChatService, ChatService, InstantiationType.Delayed)
 
@@ -5669,8 +5693,10 @@ registerSingleton(
 
 class RemoteExtensionsScannerService implements IRemoteExtensionsScannerService {
   _serviceBrand: undefined
-  whenExtensionsReady(): Promise<void> {
-    throw new Error('Method not implemented.')
+
+  @Unsupported
+  whenExtensionsReady(): never {
+    unsupported()
   }
 
   async scanExtensions(): Promise<Readonly<IRelaxedExtensionDescription>[]> {
@@ -8285,7 +8311,7 @@ class ChatEditingService implements IChatEditingService {
     unsupported()
   }
 
-  getEditingSession = () => null
+  getEditingSession = () => undefined
 
   @Unsupported
   createSnapshot(): never {
@@ -8304,8 +8330,18 @@ class ChatEditingService implements IChatEditingService {
 
   onDidCreateEditingSession = Event.None
   currentEditingSession = null
+
   @Unsupported
   startOrContinueEditingSession(): never {
+    unsupported()
+  }
+
+  @Unsupported
+  startOrContinueGlobalEditingSession(): never {
+    unsupported()
+  }
+  @Unsupported
+  createEditingSession(): never {
     unsupported()
   }
 }
@@ -8357,6 +8393,12 @@ class TreeSitterTokenizationStoreService implements ITreeSitterTokenizationStore
 
   hasTokens = () => false
   getTokens = () => undefined
+
+
+  @Unsupported
+  rangeHasTokens(): never {
+    unsupported()
+  }
 }
 
 registerSingleton(
@@ -8394,6 +8436,8 @@ class ChatQuotasService implements IChatQuotasService {
   _serviceBrand: undefined
 
   onDidChangeQuotas = Event.None
+  onDidChangeQuotaExceeded = Event.None
+  onDidChangeQuotaRemaining = Event.None
 
   @Unsupported
   get quotas() {
@@ -8497,3 +8541,42 @@ class TerminalCompletionService implements ITerminalCompletionService {
   }
 }
 registerSingleton(ITerminalCompletionService, TerminalCompletionService, InstantiationType.Delayed)
+
+class TreeSitterImporter implements ITreeSitterImporter {
+  _serviceBrand: undefined
+  parserClass = undefined
+
+  @Unsupported
+  getParserClass(): never {
+    unsupported()
+  }
+  @Unsupported
+  getLanguageClass(): never {
+    unsupported()
+  }
+  @Unsupported
+  getQueryClass(): never {
+    unsupported()
+  }
+}
+registerSingleton(ITreeSitterImporter, TreeSitterImporter, InstantiationType.Eager);
+
+class ChatEntitlementsService implements IChatEntitlementsService {
+  _serviceBrand: undefined
+
+  resolve = async () => undefined
+}
+registerSingleton(IChatEntitlementsService, ChatEntitlementsService, InstantiationType.Eager);
+class PromptsService implements IPromptsService {
+  _serviceBrand: undefined
+
+  @Unsupported
+  getSyntaxParserFor(): never {
+    unsupported()
+  }
+  listPromptFiles = async () => []
+  getSourceFolders = () => []
+  dispose(): void {
+  }
+}
+registerSingleton(IPromptsService, PromptsService, InstantiationType.Eager);

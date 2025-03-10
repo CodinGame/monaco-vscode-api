@@ -8,7 +8,7 @@ Subject: [PATCH] fix: fix editor api types
  1 file changed, 10 insertions(+), 1 deletion(-)
 
 diff --git a/build/gulpfile.editor.js b/build/gulpfile.editor.js
-index 739c37fc677..ea10e2c1586 100644
+index 9f7ea57465b..52612a72c07 100644
 --- a/build/gulpfile.editor.js
 +++ b/build/gulpfile.editor.js
 @@ -229,7 +229,16 @@ function toExternalDTS(contents) {

@@ -6,7 +6,7 @@ import { generateUuid } from 'vs/base/common/uuid'
 import {
   ITextResourceConfigurationService,
   ITextResourcePropertiesService
-} from 'vs/editor/common/services/textResourceConfiguration'
+} from 'vs/editor/common/services/textResourceConfiguration.service'
 import { TextResourceConfigurationService } from 'vs/editor/common/services/textResourceConfigurationService'
 import type { IEditorOverrideServices } from 'vs/editor/standalone/browser/standaloneServices'
 import { IConfigurationService } from 'vs/platform/configuration/common/configuration.service'

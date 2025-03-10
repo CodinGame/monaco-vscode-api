@@ -39,9 +39,6 @@ import type { IEditorOptions, IResourceEditorInput } from 'vs/platform/editor/co
 import { Action2, MenuId, registerAction2 } from 'vs/platform/actions/common/actions'
 import { Categories } from 'vs/platform/action/common/actionCommonCategories'
 import { ContextKeyExpr } from 'vs/platform/contextkey/common/contextkey'
-import type { IDropdownMenuActionViewItemOptions } from 'vs/base/browser/ui/dropdown/dropdownActionViewItem'
-import type { IAction } from 'vs/base/common/actions'
-import { BaseActionViewItem } from 'vs/base/browser/ui/actionbar/actionViewItems'
 import { EditorPaneDescriptor, type IEditorPaneRegistry } from 'vs/workbench/browser/editor'
 import { EditorPane } from 'vs/workbench/browser/parts/editor/editorPane'
 import { ITelemetryService } from 'vs/platform/telemetry/common/telemetry.service'
@@ -389,25 +386,6 @@ function registerCustomView(options: CustomViewOption): IDisposable {
                 observer.disconnect()
               }
             })
-          }
-
-          public override getActionViewItem(
-            action: IAction,
-            actionOptions?: IDropdownMenuActionViewItemOptions
-          ) {
-            const customAction = (options.actions ?? []).find(
-              (customAction) => customAction.id === action.id
-            )
-            if (customAction?.render != null) {
-              return new (class extends BaseActionViewItem {
-                constructor() {
-                  super(null, action)
-                }
-
-                override render = customAction!.render!
-              })()
-            }
-            return super.getActionViewItem(action, actionOptions)
           }
 
           protected override layoutBody(height: number, width: number): void {

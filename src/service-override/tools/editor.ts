@@ -1,5 +1,5 @@
 import { StandaloneServices } from 'vs/editor/standalone/browser/standaloneServices'
-import { ICodeEditorService } from 'vs/editor/browser/services/codeEditorService'
+import { ICodeEditorService } from 'vs/editor/browser/services/codeEditorService.service'
 import {
   isPreferredGroup,
   type PreferredGroup,
@@ -39,8 +39,11 @@ import {
 } from 'vs/workbench/browser/parts/editor/editor'
 import {
   type IResolvedTextEditorModel,
-  ITextModelService
 } from 'vs/editor/common/services/resolverService'
+
+import {
+  ITextModelService
+} from 'vs/editor/common/services/resolverService.service'
 import {
   type IStandaloneCodeEditor,
   StandaloneCodeEditor,

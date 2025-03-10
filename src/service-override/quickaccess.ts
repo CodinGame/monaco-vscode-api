@@ -22,7 +22,7 @@ import { IInstantiationService } from 'vs/platform/instantiation/common/instanti
 import { QuickInputController } from 'vs/platform/quickinput/browser/quickInputController'
 import type { IQuickAccessController } from 'vs/platform/quickinput/common/quickAccess'
 import { QuickInputService } from 'vs/workbench/services/quickinput/browser/quickInputService'
-import { ICodeEditorService } from 'vs/editor/browser/services/codeEditorService'
+import { ICodeEditorService } from 'vs/editor/browser/services/codeEditorService.service'
 import { StandaloneCodeEditor } from 'vs/editor/standalone/browser/standaloneCodeEditor'
 import { CommandsQuickAccessProvider } from 'vs/workbench/contrib/quickaccess/browser/commandsQuickAccess'
 import 'vs/workbench/contrib/codeEditor/browser/quickaccess/gotoLineQuickAccess'
@@ -66,6 +66,10 @@ class DelegateQuickInputService implements IQuickInputService {
   private standaloneQuickInputService?: StandaloneQuickInputService
   constructor(@IInstantiationService private instantiationService: IInstantiationService) {
     this.workbenchQuickInputService = instantiationService.createInstance(QuickInputService)
+  }
+
+  toggleHover(): void {
+    return this.activeService.toggleHover()
   }
 
   private get activeService(): IQuickInputService {
