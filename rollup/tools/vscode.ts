@@ -82,12 +82,7 @@ function isCallPure(
   }
 
   if (functionName === 'registerSingleton') {
-    if (
-      file.includes('vs/workbench/api/') ||
-      file.includes('vs/editor') ||
-      file.includes('vs/platform/undoRedo/common/undoRedoService') ||
-      file.includes('vs/platform/actionWidget/browser/actionWidget')
-    ) {
+    if (file.includes('vs/workbench/api/') || file.includes('vs/editor/standalone/')) {
       return false
     }
     return true
