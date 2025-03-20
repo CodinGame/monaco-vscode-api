@@ -30,9 +30,9 @@
   },
   "config": {
     "vscode": {
-      "version": "1.98.1",
-      "ref": "1.98.1",
-      "commit": "2fc07b811f760549dab9be9d2bedd06c51dfcb9a"
+      "version": "1.98.2",
+      "ref": "1.98.2",
+      "commit": "ddc367ed5c8936efe395cffeec279b04ffd7db78"
     },
     "monaco": {
       "ref": "v0.52.2",
@@ -119,7 +119,7 @@
     "marked": "~14.0.0",
     "memfs": "^4.17.0",
     "mime-types": "^2.1.35",
-    "node-pty": "1.1.0-beta30",
+    "node-pty": "1.1.0-beta31",
     "tas-client-umd": "0.2.0",
     "thenby": "^1.3.4",
     "vscode-oniguruma": "1.7.0",
