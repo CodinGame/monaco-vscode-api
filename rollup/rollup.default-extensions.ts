@@ -1,6 +1,6 @@
 import nodeResolve from '@rollup/plugin-node-resolve'
 import * as rollup from 'rollup'
-import { importMetaAssets } from '@web/rollup-plugin-import-meta-assets'
+import importMetaAssets from './plugins/import-meta-assets-plugin.js'
 import type { PackageJson } from 'type-fest'
 import * as changeCase from 'change-case'
 import * as fs from 'fs'
