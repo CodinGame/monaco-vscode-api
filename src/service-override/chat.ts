@@ -38,13 +38,15 @@ import { LanguageModelIgnoredFilesService } from 'vs/workbench/contrib/chat/comm
 import { ILanguageModelIgnoredFilesService } from 'vs/workbench/contrib/chat/common/ignoredFiles.service'
 import { IChatMarkdownAnchorService } from 'vs/workbench/contrib/chat/browser/chatContentParts/chatMarkdownAnchorService.service'
 import { ChatMarkdownAnchorService } from 'vs/workbench/contrib/chat/browser/chatContentParts/chatMarkdownAnchorService'
-import { IChatQuotasService } from 'vs/workbench/contrib/chat/common/chatQuotasService.service'
-import { ChatQuotasService } from 'vs/workbench/contrib/chat/common/chatQuotasService'
-import {ChatEditingService } from 'vs/workbench/contrib/chat/browser/chatEditing/chatEditingServiceImpl'
-import { ChatEntitlementsService } from 'vs/workbench/contrib/chat/browser/chatSetup'
+import { ChatEditingService } from 'vs/workbench/contrib/chat/browser/chatEditing/chatEditingServiceImpl'
+import { ChatEntitlementService } from 'vs/workbench/contrib/chat/common/chatEntitlementService'
 import { PromptsService } from 'vs/workbench/contrib/chat/common/promptSyntax/service/promptsService'
-import { IChatEntitlementsService } from 'vs/workbench/contrib/chat/common/chatEntitlementsService.service'
+import { IChatEntitlementService } from 'vs/workbench/contrib/chat/common/chatEntitlementService.service'
 import { IPromptsService } from 'vs/workbench/contrib/chat/common/promptSyntax/service/types.service'
+import { IChatTransferService } from 'vs/workbench/contrib/chat/common/chatTransferService.service'
+import { ChatTransferService } from 'vs/workbench/contrib/chat/common/chatTransferService'
+import { IChatStatusItemService } from 'vs/workbench/contrib/chat/browser/chatStatusItemService.service'
+import { ChatStatusItemService } from 'vs/workbench/contrib/chat/browser/chatStatusItemService'
 import 'vs/workbench/contrib/chat/browser/chat.contribution'
 import 'vs/workbench/contrib/inlineChat/browser/inlineChat.contribution'
 
@@ -87,10 +89,14 @@ export default function getServiceOverride(): IEditorOverrideServices {
     ),
     [ICodeMapperService.toString()]: new SyncDescriptor(CodeMapperService, [], true),
     [IChatEditingService.toString()]: new SyncDescriptor(ChatEditingService, [], true),
-    [IChatQuotasService.toString()]: new SyncDescriptor(ChatQuotasService, [], true),
-    [IChatMarkdownAnchorService.toString()]: new SyncDescriptor(ChatMarkdownAnchorService, [], true),
-    [IChatEntitlementsService.toString()]: new SyncDescriptor(ChatEntitlementsService, [], true),
-    [IPromptsService.toString()]: new SyncDescriptor(PromptsService, [], true)
+    [IChatTransferService.toString()]: new SyncDescriptor(ChatTransferService, [], true),
+    [IChatMarkdownAnchorService.toString()]: new SyncDescriptor(
+      ChatMarkdownAnchorService,
+      [],
+      true
+    ),
+    [IChatEntitlementService.toString()]: new SyncDescriptor(ChatEntitlementService, [], true),
+    [IPromptsService.toString()]: new SyncDescriptor(PromptsService, [], true),
+    [IChatStatusItemService.toString()]: new SyncDescriptor(ChatStatusItemService, [], true)
   }
 }
-

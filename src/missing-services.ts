@@ -120,7 +120,6 @@ import {
   IChatWidgetService,
   IQuickChatService
 } from 'vs/workbench/contrib/chat/browser/chat.service'
-import { IChatQuotasService } from 'vs/workbench/contrib/chat/common/chatQuotasService.service'
 import {
   IChatAgentNameService,
   IChatAgentService
@@ -162,9 +161,8 @@ import {
 } from 'vs/workbench/contrib/issue/common/issue.service'
 import { IDefaultLogLevelsService } from 'vs/workbench/contrib/logs/common/defaultLogLevels.service'
 import { IMultiDiffSourceResolverService } from 'vs/workbench/contrib/multiDiffEditor/browser/multiDiffSourceResolverService.service'
-import { INotebookOriginalCellModelFactory } from 'vs/workbench/contrib/notebook/browser/contrib/chatEdit/notebookOriginalCellModelFactory.service'
-import { INotebookOriginalModelReferenceFactory } from 'vs/workbench/contrib/notebook/browser/contrib/chatEdit/notebookOriginalModelRefFactory.service'
-import { INotebookModelSynchronizerFactory } from 'vs/workbench/contrib/notebook/browser/contrib/chatEdit/notebookSynchronizer.service'
+import { INotebookOriginalCellModelFactory } from 'vs/workbench/contrib/notebook/browser/diff/inlineDiff/notebookOriginalCellModelFactory.service'
+import { INotebookOriginalModelReferenceFactory } from 'vs/workbench/contrib/notebook/browser/diff/inlineDiff/notebookOriginalModelRefFactory.service'
 import { INotebookEditorService } from 'vs/workbench/contrib/notebook/browser/services/notebookEditorService.service'
 import { INotebookCellStatusBarService } from 'vs/workbench/contrib/notebook/common/notebookCellStatusBarService.service'
 import { INotebookEditorModelResolverService } from 'vs/workbench/contrib/notebook/common/notebookEditorModelResolverService.service'
@@ -178,7 +176,6 @@ import { INotebookKeymapService } from 'vs/workbench/contrib/notebook/common/not
 import { INotebookLoggingService } from 'vs/workbench/contrib/notebook/common/notebookLoggingService.service'
 import { INotebookRendererMessagingService } from 'vs/workbench/contrib/notebook/common/notebookRendererMessagingService.service'
 import { INotebookService } from 'vs/workbench/contrib/notebook/common/notebookService.service'
-import { INotebookSynchronizerService } from 'vs/workbench/contrib/notebook/common/notebookSynchronizerService.service'
 import { INotebookEditorWorkerService } from 'vs/workbench/contrib/notebook/common/services/notebookWorkerService.service'
 import { IPreferencesSearchService } from 'vs/workbench/contrib/preferences/common/preferences.service'
 import { IQuickDiffModelService } from 'vs/workbench/contrib/scm/browser/quickDiffModel.service'
@@ -343,7 +340,7 @@ import { IChatMarkdownAnchorService } from 'vs/workbench/contrib/chat/browser/ch
 import { getBuiltInExtensionTranslationsUris, getExtensionIdProvidingCurrentLocale } from './l10n'
 import { unsupported } from './tools'
 import { ITreeSitterImporter } from 'vs/editor/common/services/treeSitterParserService.service'
-import { IChatEntitlementsService } from 'vs/workbench/contrib/chat/common/chatEntitlementsService.service'
+import { IChatEntitlementService } from 'vs/workbench/contrib/chat/common/chatEntitlementService.service'
 import { IPromptsService } from 'vs/workbench/contrib/chat/common/promptSyntax/service/types.service'
 import { ISuggestMemoryService } from 'vs/editor/contrib/suggest/browser/suggestMemory.service'
 import { LanguageConfigurationService } from 'vs/editor/common/languages/languageConfigurationRegistry'
@@ -378,6 +375,22 @@ import { EditorCancellationTokens } from 'vs/editor/contrib/editorState/browser/
 import { SymbolNavigationService } from 'vs/editor/contrib/gotoSymbol/browser/symbolNavigation'
 import { IHoverService } from 'vs/platform/hover/browser/hover.service'
 import { HoverService } from 'vs/editor/browser/services/hoverService/hoverService'
+import { IMcpService } from 'vs/workbench/contrib/mcp/common/mcpTypes.service'
+import { IMcpConfigPathsService } from 'vs/workbench/contrib/mcp/common/mcpConfigPathsService.service'
+import { IMcpRegistry } from 'vs/workbench/contrib/mcp/common/mcpRegistryTypes.service'
+import { IExtensionGalleryManifestService } from 'vs/platform/extensionManagement/common/extensionGalleryManifest.service'
+import {
+  ISharedWebContentExtractorService,
+  IWebContentExtractorService
+} from 'vs/platform/webContentExtractor/common/webContentExtractor.service'
+import { IDefaultAccountService } from 'vs/workbench/services/accounts/common/defaultAccount.service'
+import {
+  NullSharedWebContentExtractorService,
+  NullWebContentExtractorService
+} from 'vs/platform/webContentExtractor/common/webContentExtractor'
+import { NullDefaultAccountService } from 'vs/workbench/services/accounts/common/defaultAccount'
+import { IChatTransferService } from 'vs/workbench/contrib/chat/common/chatTransferService.service'
+import { IChatStatusItemService } from 'vs/workbench/contrib/chat/browser/chatStatusItemService.service'
 
 function Unsupported(target: object, propertyKey: string, descriptor: PropertyDescriptor) {
   function unsupported() {
@@ -2414,6 +2427,9 @@ registerSingleton(ITaskService, TaskService, InstantiationType.Eager)
 
 class ConfigurationResolverService implements IConfigurationResolverService {
   _serviceBrand: undefined
+
+  resolvableVariables = new Set<string>()
+
   @Unsupported
   resolveWithEnvironment(): never {
     unsupported()
@@ -3167,6 +3183,11 @@ class FilesConfigurationService implements IFilesConfigurationService {
     unsupported()
   }
 
+  @Unsupported
+  enableAutoSaveAfterShortDelay(): never {
+    unsupported()
+  }
+
   onDidChangeReadonly = Event.None
   onDidChangeFilesAssociation = Event.None
   onAutoSaveConfigurationChange = Event.None
@@ -3530,8 +3551,8 @@ class ExtensionResourceLoaderService implements IExtensionResourceLoaderService 
     unsupported()
   }
 
-  supportsExtensionGalleryResources = false
-  isExtensionGalleryResource = () => false
+  supportsExtensionGalleryResources = async () => false
+  isExtensionGalleryResource = async () => false
   @Unsupported
   getExtensionGalleryResourceURL(): never {
     unsupported()
@@ -4675,6 +4696,7 @@ class UserDataSyncEnablementService implements IUserDataSyncEnablementService {
     unsupported()
   }
 
+  isResourceEnablementConfigured = () => false
   onDidChangeResourceEnablement = Event.None
   isResourceEnabled = () => false
   @Unsupported
@@ -4991,6 +5013,19 @@ registerSingleton(
 
 class ChatService implements IChatService {
   _serviceBrand: undefined
+
+  isPersistedSessionEmpty = () => true
+  @Unsupported
+  getChatStorageFolder(): never {
+    unsupported()
+  }
+  @Unsupported
+  logChatIndex(): never {
+    unsupported()
+  }
+  unifiedViewEnabled = false
+  isEditingLocation = () => false
+
   @Unsupported
   setChatSessionTitle(): never {
     unsupported()
@@ -5036,7 +5071,7 @@ class ChatService implements IChatService {
   }
 
   getSession = () => undefined
-  getOrRestoreSession = () => undefined
+  getOrRestoreSession = async () => undefined
   loadSessionFromContent = () => undefined
   @Unsupported
   sendRequest(): never {
@@ -5078,7 +5113,7 @@ class ChatService implements IChatService {
     unsupported()
   }
 
-  getHistory = () => []
+  getHistory = async () => []
   @Unsupported
   removeHistoryEntry(): never {
     unsupported()
@@ -5148,6 +5183,8 @@ registerSingleton(IQuickChatService, QuickChatService, InstantiationType.Delayed
 
 class QuickChatAgentService implements IChatAgentService {
   _serviceBrand = undefined
+
+  hasToolsAgent = false
 
   onDidChangeToolsAgentModeEnabled = Event.None
   toolsAgentModeEnabled = false
@@ -5891,6 +5928,7 @@ class CommentService implements ICommentService {
   _serviceBrand: undefined
   lastActiveCommentcontroller = undefined
 
+  onResourceHasCommentingRanges = Event.None
   @Unsupported
   get commentsModel() {
     return unsupported()
@@ -6735,6 +6773,11 @@ class SCMViewService implements ISCMViewService {
   onDidFocusRepository = Event.None
   @Unsupported
   focus(): never {
+    unsupported()
+  }
+
+  @Unsupported
+  pinActiveRepository(): never {
     unsupported()
   }
 }
@@ -8265,6 +8308,8 @@ registerSingleton(IIntegrityService, IntegrityService, InstantiationType.Delayed
 
 class TrustedDomainService implements ITrustedDomainService {
   _serviceBrand: undefined
+
+  onDidChangeTrustedDomains = Event.None
   isValid(): boolean {
     return false
   }
@@ -8294,6 +8339,16 @@ class LanguageModelToolsService implements ILanguageModelToolsService {
 
   @Unsupported
   cancelToolCallsForRequest(): never {
+    unsupported()
+  }
+
+  @Unsupported
+  setToolAutoConfirmation(): never {
+    unsupported()
+  }
+
+  @Unsupported
+  resetToolAutoConfirmation(): never {
     unsupported()
   }
 }
@@ -8472,6 +8527,16 @@ class TreeSitterTokenizationStoreService implements ITreeSitterTokenizationStore
   rangeHasTokens(): never {
     unsupported()
   }
+
+  @Unsupported
+  handleContentChanged(): never {
+    unsupported()
+  }
+
+  @Unsupported
+  delete(): never {
+    unsupported()
+  }
 }
 
 registerSingleton(
@@ -8505,43 +8570,35 @@ class AllowedExtensionsService implements IAllowedExtensionsService {
 }
 registerSingleton(IAllowedExtensionsService, AllowedExtensionsService, InstantiationType.Delayed)
 
-class ChatQuotasService implements IChatQuotasService {
-  _serviceBrand: undefined
-
-  onDidChangeQuotas = Event.None
-  onDidChangeQuotaExceeded = Event.None
-  onDidChangeQuotaRemaining = Event.None
-
-  @Unsupported
-  get quotas() {
-    return unsupported()
-  }
-
-  @Unsupported
-  acceptQuotas(): never {
-    unsupported()
-  }
-
-  @Unsupported
-  clearQuotas(): never {
-    unsupported()
-  }
-}
-registerSingleton(IChatQuotasService, ChatQuotasService, InstantiationType.Delayed)
-
-class NotebookSynchronizerService implements INotebookSynchronizerService {
+class ChatTransferService implements IChatTransferService {
   _serviceBrand: undefined
 
   @Unsupported
-  revert(): never {
+  checkAndSetWorkspaceTrust(): never {
     unsupported()
   }
 }
-registerSingleton(
-  INotebookSynchronizerService,
-  NotebookSynchronizerService,
-  InstantiationType.Delayed
-)
+registerSingleton(IChatTransferService, ChatTransferService, InstantiationType.Delayed)
+
+class ChatStatusItemService implements IChatStatusItemService {
+  _serviceBrand: undefined
+
+  onDidChange = Event.None
+
+  @Unsupported
+  setOrUpdateEntry(): never {
+    unsupported()
+  }
+  @Unsupported
+  deleteEntry(): never {
+    unsupported()
+  }
+  @Unsupported
+  getEntries(): never {
+    unsupported()
+  }
+}
+registerSingleton(IChatStatusItemService, ChatStatusItemService, InstantiationType.Delayed)
 
 class NotebookOriginalCellModelFactory implements INotebookOriginalCellModelFactory {
   _serviceBrand: undefined
@@ -8568,20 +8625,6 @@ class NotebookOriginalModelReferenceFactory implements INotebookOriginalModelRef
 registerSingleton(
   INotebookOriginalModelReferenceFactory,
   NotebookOriginalModelReferenceFactory,
-  InstantiationType.Delayed
-)
-
-class NotebookModelSynchronizerFactory implements INotebookModelSynchronizerFactory {
-  _serviceBrand: undefined
-
-  @Unsupported
-  getOrCreate(): never {
-    unsupported()
-  }
-}
-registerSingleton(
-  INotebookModelSynchronizerFactory,
-  NotebookModelSynchronizerFactory,
   InstantiationType.Delayed
 )
 
@@ -8634,12 +8677,37 @@ class TreeSitterImporter implements ITreeSitterImporter {
 }
 registerSingleton(ITreeSitterImporter, TreeSitterImporter, InstantiationType.Eager)
 
-class ChatEntitlementsService implements IChatEntitlementsService {
+class ChatEntitlementsService implements IChatEntitlementService {
   _serviceBrand: undefined
+
+  onDidChangeEntitlement = Event.None
+  onDidChangeQuotaExceeded = Event.None
+  onDidChangeQuotaRemaining = Event.None
+  onDidChangeSentiment = Event.None
+
+  @Unsupported
+  get entitlement() {
+    return unsupported()
+  }
+
+  @Unsupported
+  get quotas() {
+    return unsupported()
+  }
+
+  @Unsupported
+  get sentiment() {
+    return unsupported()
+  }
+
+  @Unsupported
+  update(): never {
+    unsupported()
+  }
 
   resolve = async () => undefined
 }
-registerSingleton(IChatEntitlementsService, ChatEntitlementsService, InstantiationType.Eager)
+registerSingleton(IChatEntitlementService, ChatEntitlementsService, InstantiationType.Eager)
 class PromptsService implements IPromptsService {
   _serviceBrand: undefined
 
@@ -8652,3 +8720,122 @@ class PromptsService implements IPromptsService {
   dispose(): void {}
 }
 registerSingleton(IPromptsService, PromptsService, InstantiationType.Eager)
+
+class McpRegistry implements IMcpRegistry {
+  _serviceBrand: undefined
+
+  onDidChangeInputs = Event.None
+
+  @Unsupported
+  get collections() {
+    return unsupported()
+  }
+
+  @Unsupported
+  get lazyCollectionState() {
+    return unsupported()
+  }
+
+  @Unsupported
+  collectionToolPrefix(): never {
+    unsupported()
+  }
+
+  delegates = []
+
+  discoverCollections = async () => []
+
+  @Unsupported
+  registerCollection(): never {
+    unsupported()
+  }
+  @Unsupported
+  resetTrust(): never {
+    unsupported()
+  }
+
+  @Unsupported
+  getTrust(): never {
+    unsupported()
+  }
+
+  @Unsupported
+  clearSavedInputs(): never {
+    unsupported()
+  }
+  @Unsupported
+  editSavedInput(): never {
+    unsupported()
+  }
+  @Unsupported
+  getSavedInputs(): never {
+    unsupported()
+  }
+  @Unsupported
+  resolveConnection(): never {
+    unsupported()
+  }
+  registerDelegate(): IDisposable {
+    return Disposable.None
+  }
+}
+registerSingleton(IMcpRegistry, McpRegistry, InstantiationType.Eager)
+
+class McpService implements IMcpService {
+  _serviceBrand: undefined
+
+  @Unsupported
+  get servers() {
+    return unsupported()
+  }
+  @Unsupported
+  get lazyCollectionState() {
+    return unsupported()
+  }
+
+  @Unsupported
+  resetCaches(): never {
+    unsupported()
+  }
+
+  @Unsupported
+  activateCollections(): never {
+    unsupported()
+  }
+}
+registerSingleton(IMcpService, McpService, InstantiationType.Eager)
+
+class McpConfigPathsService implements IMcpConfigPathsService {
+  _serviceBrand: undefined
+
+  @Unsupported
+  get paths() {
+    return unsupported()
+  }
+}
+registerSingleton(IMcpConfigPathsService, McpConfigPathsService, InstantiationType.Eager)
+
+class ExtensionGalleryManifestService implements IExtensionGalleryManifestService {
+  _serviceBrand: undefined
+  onDidChangeExtensionGalleryManifest = Event.None
+
+  isEnabled = () => false
+  getExtensionGalleryManifest = async () => null
+}
+registerSingleton(
+  IExtensionGalleryManifestService,
+  ExtensionGalleryManifestService,
+  InstantiationType.Eager
+)
+
+registerSingleton(
+  IWebContentExtractorService,
+  NullWebContentExtractorService,
+  InstantiationType.Delayed
+)
+registerSingleton(
+  ISharedWebContentExtractorService,
+  NullSharedWebContentExtractorService,
+  InstantiationType.Delayed
+)
+registerSingleton(IDefaultAccountService, NullDefaultAccountService, InstantiationType.Delayed)

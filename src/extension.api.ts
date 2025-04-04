@@ -189,7 +189,8 @@ const api: typeof vscode = {
   TerminalLocation: extHostTypes.TerminalLocation,
   TerminalProfile: extHostTypes.TerminalProfile,
   TerminalExitReason: extHostTypes.TerminalExitReason,
-  TerminalShellExecutionCommandLineConfidence: extHostTypes.TerminalShellExecutionCommandLineConfidence,
+  TerminalShellExecutionCommandLineConfidence:
+    extHostTypes.TerminalShellExecutionCommandLineConfidence,
   TextDocumentSaveReason: extHostTypes.TextDocumentSaveReason,
   TextEdit: extHostTypes.TextEdit,
   SnippetTextEdit: extHostTypes.SnippetTextEdit,
@@ -297,7 +298,8 @@ const api: typeof vscode = {
   ChatResponseCodeCitationPart: extHostTypes.ChatResponseCodeCitationPart,
   ChatResponseWarningPart: extHostTypes.ChatResponseWarningPart,
   ChatResponseTextEditPart: extHostTypes.ChatResponseTextEditPart,
-  ChatResponseMarkdownWithVulnerabilitiesPart: extHostTypes.ChatResponseMarkdownWithVulnerabilitiesPart,
+  ChatResponseMarkdownWithVulnerabilitiesPart:
+    extHostTypes.ChatResponseMarkdownWithVulnerabilitiesPart,
   ChatResponseCommandButtonPart: extHostTypes.ChatResponseCommandButtonPart,
   ChatResponseConfirmationPart: extHostTypes.ChatResponseConfirmationPart,
   ChatResponseReferencePartStatusKind: extHostTypes.ChatResponseReferencePartStatusKind,
@@ -332,12 +334,17 @@ const api: typeof vscode = {
   TextEditorChangeKind: extHostTypes.TextEditorChangeKind,
   TextSearchMatch2: searchExtTypes.TextSearchMatch2,
   TextSearchContext2: searchExtTypes.TextSearchContext2,
-  TerminalShellType: extHostTypes.TerminalShellType,
   ChatResponseNotebookEditPart: extHostTypes.ChatResponseNotebookEditPart,
   ChatErrorLevel: extHostTypes.ChatErrorLevel,
   PreparedTerminalToolInvocation: extHostTypes.PreparedTerminalToolInvocation,
   ExtendedLanguageModelToolResult: extHostTypes.ExtendedLanguageModelToolResult,
-  ChatReferenceDiagnostic: extHostTypes.ChatReferenceDiagnostic
+  ChatReferenceDiagnostic: extHostTypes.ChatReferenceDiagnostic,
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  LanguageModelChatMessage2: <any>extHostTypes.LanguageModelChatMessage2,
+  LanguageModelDataPart: extHostTypes.LanguageModelDataPart,
+  ChatImageMimeType: extHostTypes.ChatImageMimeType,
+  McpStdioServerDefinition: extHostTypes.McpStdioServerDefinition,
+  McpSSEServerDefinition: extHostTypes.McpSSEServerDefinition
 }
 
 // @ts-expect-error the syntax will be transformed by a typescript transformer in the rollup config
