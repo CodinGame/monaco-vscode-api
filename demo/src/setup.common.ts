@@ -386,12 +386,10 @@ export const constructOptions: IWorkbenchConstructionOptions = {
     nameLong: 'monaco-vscode-api',
     extensionsGallery: {
       serviceUrl: 'https://open-vsx.org/vscode/gallery',
-      itemUrl: 'https://open-vsx.org/vscode/item',
       resourceUrlTemplate: 'https://open-vsx.org/vscode/unpkg/{publisher}/{name}/{version}/{path}',
       extensionUrlTemplate: 'https://open-vsx.org/vscode/gallery/{publisher}/{name}/latest', // https://github.com/eclipse/openvsx/issues/1036#issuecomment-2476449435
       controlUrl: '',
-      nlsBaseUrl: '',
-      publisherUrl: ''
+      nlsBaseUrl: ''
     }
   }
 }
