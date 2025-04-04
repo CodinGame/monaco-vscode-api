@@ -1,0 +1,56 @@
+From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
+From: =?UTF-8?q?Lo=C3=AFc=20Mangeonjean?= <loic@coderpad.io>
+Date: Mon, 11 Mar 2024 17:14:56 +0100
+Subject: [PATCH] refactor: split code
+
+---
+ src/vs/editor/standalone/browser/standaloneServices.ts    | 8 ++++++--
+ .../services/keybinding/browser/keybindingService.ts      | 6 +++++-
+ 2 files changed, 11 insertions(+), 3 deletions(-)
+
+diff --git a/src/vs/editor/standalone/browser/standaloneServices.ts b/src/vs/editor/standalone/browser/standaloneServices.ts
+index 7d8d9c1128c..b5372f9cf2c 100644
+--- a/src/vs/editor/standalone/browser/standaloneServices.ts
++++ b/src/vs/editor/standalone/browser/standaloneServices.ts
+@@ -530,15 +530,19 @@ export class StandaloneKeybindingService extends AbstractKeybindingService {
+ 		});
+ 	}
+ 
+-	private updateResolver(): void {
++	protected updateResolver(): void {
+ 		this._cachedResolver = null;
+ 		this._onDidUpdateKeybindings.fire();
+ 	}
+ 
++	protected getUserKeybindingItems() {
++		return this._toNormalizedKeybindingItems(this._dynamicKeybindings, false);
++	}
++
+ 	protected _getResolver(): KeybindingResolver {
+ 		if (!this._cachedResolver) {
+ 			const defaults = this._toNormalizedKeybindingItems(KeybindingsRegistry.getDefaultKeybindings(), true);
+-			const overrides = this._toNormalizedKeybindingItems(this._dynamicKeybindings, false);
++			const overrides = this.getUserKeybindingItems();
+ 			this._cachedResolver = new KeybindingResolver(defaults, overrides, (str) => this._log(str));
+ 		}
+ 		return this._cachedResolver;
+diff --git a/src/vs/workbench/services/keybinding/browser/keybindingService.ts b/src/vs/workbench/services/keybinding/browser/keybindingService.ts
+index bb41a6d5705..04c5e87def0 100644
+--- a/src/vs/workbench/services/keybinding/browser/keybindingService.ts
++++ b/src/vs/workbench/services/keybinding/browser/keybindingService.ts
+@@ -428,10 +428,14 @@ export class WorkbenchKeybindingService extends AbstractKeybindingService {
+ 		this._onDidUpdateKeybindings.fire();
+ 	}
+ 
++	protected getUserKeybindingItems() {
++		return this._resolveUserKeybindingItems(this.userKeybindings.keybindings, false);
++	}
++
+ 	protected _getResolver(): KeybindingResolver {
+ 		if (!this._cachedResolver) {
+ 			const defaults = this._resolveKeybindingItems(KeybindingsRegistry.getDefaultKeybindings(), true);
+-			const overrides = this._resolveUserKeybindingItems(this.userKeybindings.keybindings, false);
++			const overrides = this.getUserKeybindingItems();
+ 			this._cachedResolver = new KeybindingResolver(defaults, overrides, (str) => this._log(str));
+ 		}
+ 		return this._cachedResolver;

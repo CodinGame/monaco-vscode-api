@@ -1,0 +1,24 @@
+From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
+From: =?UTF-8?q?Lo=C3=AFc=20Mangeonjean?= <loic@coderpad.io>
+Date: Fri, 4 Apr 2025 16:21:01 +0200
+Subject: [PATCH] feat: add new task that only export editor types
+
+---
+ build/gulpfile.editor.js | 4 ++++
+ 1 file changed, 4 insertions(+)
+
+diff --git a/build/gulpfile.editor.js b/build/gulpfile.editor.js
+index 929d9bf26c2..e2044a19397 100644
+--- a/build/gulpfile.editor.js
++++ b/build/gulpfile.editor.js
+@@ -206,6 +206,10 @@ gulp.task('editor-distro',
+ 	)
+ );
+ 
++gulp.task('editor-distro-resources',
++	task.series(finalEditorResourcesTask)
++);
++
+ gulp.task('monacodts', task.define('monacodts', () => {
+ 	const result = monacoapi.execute();
+ 	fs.writeFileSync(result.filePath, result.content);

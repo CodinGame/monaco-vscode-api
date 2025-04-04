@@ -1,0 +1,271 @@
+From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
+From: =?UTF-8?q?Lo=C3=AFc=20Mangeonjean?= <loic@coderpad.io>
+Date: Tue, 16 Apr 2024 15:06:48 +0200
+Subject: [PATCH] refactor: split workbench contribution
+
+---
+ .../api/browser/extensionHost.contribution.ts | 30 -------------------
+ .../api/browser/statusBarExtensionPoint.ts    | 16 +++++++++-
+ .../common/jsonValidationExtensionPoint.ts    | 15 ++++++++++
+ .../languageConfigurationExtensionPoint.ts    | 15 ++++++++++
+ .../themes/common/colorExtensionPoint.ts      | 15 ++++++++++
+ .../themes/common/iconExtensionPoint.ts       | 15 ++++++++++
+ .../tokenClassificationExtensionPoint.ts      | 12 ++++++++
+ src/vs/workbench/workbench.common.main.ts     | 12 ++++++--
+ 8 files changed, 96 insertions(+), 34 deletions(-)
+
+diff --git a/src/vs/workbench/api/browser/extensionHost.contribution.ts b/src/vs/workbench/api/browser/extensionHost.contribution.ts
+index 7a778aa030b..70bb3c5fe77 100644
+--- a/src/vs/workbench/api/browser/extensionHost.contribution.ts
++++ b/src/vs/workbench/api/browser/extensionHost.contribution.ts
+@@ -3,17 +3,6 @@
+  *  Licensed under the MIT License. See License.txt in the project root for license information.
+  *--------------------------------------------------------------------------------------------*/
+ 
+-import { IWorkbenchContribution, WorkbenchPhase, registerWorkbenchContribution2 } from '../../common/contributions.js';
+-import { IInstantiationService } from '../../../platform/instantiation/common/instantiation.js';
+-
+-// --- other interested parties
+-import { JSONValidationExtensionPoint } from '../common/jsonValidationExtensionPoint.js';
+-import { ColorExtensionPoint } from '../../services/themes/common/colorExtensionPoint.js';
+-import { IconExtensionPoint } from '../../services/themes/common/iconExtensionPoint.js';
+-import { TokenClassificationExtensionPoints } from '../../services/themes/common/tokenClassificationExtensionPoint.js';
+-import { LanguageConfigurationFileHandler } from '../../contrib/codeEditor/common/languageConfigurationExtensionPoint.js';
+-import { StatusBarItemsExtensionPoint } from './statusBarExtensionPoint.js';
+-
+ // --- mainThread participants
+ import './mainThreadLocalization.js';
+ import './mainThreadBulkEdits.js';
+@@ -90,22 +79,3 @@ import './mainThreadAiRelatedInformation.js';
+ import './mainThreadAiEmbeddingVector.js';
+ import './mainThreadMcp.js';
+ import './mainThreadChatStatus.js';
+-
+-export class ExtensionPoints implements IWorkbenchContribution {
+-
+-	static readonly ID = 'workbench.contrib.extensionPoints';
+-
+-	constructor(
+-		@IInstantiationService private readonly instantiationService: IInstantiationService
+-	) {
+-		// Classes that handle extension points...
+-		this.instantiationService.createInstance(JSONValidationExtensionPoint);
+-		this.instantiationService.createInstance(ColorExtensionPoint);
+-		this.instantiationService.createInstance(IconExtensionPoint);
+-		this.instantiationService.createInstance(TokenClassificationExtensionPoints);
+-		this.instantiationService.createInstance(LanguageConfigurationFileHandler);
+-		this.instantiationService.createInstance(StatusBarItemsExtensionPoint);
+-	}
+-}
+-
+-registerWorkbenchContribution2(ExtensionPoints.ID, ExtensionPoints, WorkbenchPhase.BlockStartup);
+diff --git a/src/vs/workbench/api/browser/statusBarExtensionPoint.ts b/src/vs/workbench/api/browser/statusBarExtensionPoint.ts
+index 46a8443e46a..25a91b5eaff 100644
+--- a/src/vs/workbench/api/browser/statusBarExtensionPoint.ts
++++ b/src/vs/workbench/api/browser/statusBarExtensionPoint.ts
+@@ -6,7 +6,7 @@
+ import { IJSONSchema } from '../../../base/common/jsonSchema.js';
+ import { DisposableStore, IDisposable, toDisposable } from '../../../base/common/lifecycle.js';
+ import { localize } from '../../../nls.js';
+-import { createDecorator } from '../../../platform/instantiation/common/instantiation.js';
++import { createDecorator, IInstantiationService } from '../../../platform/instantiation/common/instantiation.js';
+ import { isProposedApiEnabled } from '../../services/extensions/common/extensions.js';
+ import { ExtensionsRegistry } from '../../services/extensions/common/extensionsRegistry.js';
+ import { IStatusbarService, StatusbarAlignment as MainThreadStatusBarAlignment, IStatusbarEntryAccessor, IStatusbarEntry, StatusbarAlignment, IStatusbarEntryPriority, StatusbarEntryKind } from '../../services/statusbar/browser/statusbar.js';
+@@ -23,6 +23,7 @@ import { ExtensionIdentifier } from '../../../platform/extensions/common/extensi
+ import { asStatusBarItemIdentifier } from '../common/extHostTypes.js';
+ import { STATUS_BAR_ERROR_ITEM_BACKGROUND, STATUS_BAR_WARNING_ITEM_BACKGROUND } from '../../common/theme.js';
+ import { IManagedHoverTooltipMarkdownString } from '../../../base/browser/ui/hover/hover.js';
++import { IWorkbenchContribution, registerWorkbenchContribution2, WorkbenchPhase } from '../../common/contributions.js';
+ 
+ 
+ // --- service
+@@ -309,3 +310,16 @@ export class StatusBarItemsExtensionPoint {
+ 		});
+ 	}
+ }
++
++class StatusBarItemsExtensionPointWorkbenchContribution implements IWorkbenchContribution {
++
++	static readonly ID = 'workbench.contrib.statusBarItemsExtensionPoint';
++
++	constructor(
++		@IInstantiationService private readonly instantiationService: IInstantiationService
++	) {
++		this.instantiationService.createInstance(StatusBarItemsExtensionPoint);
++	}
++}
++
++registerWorkbenchContribution2(StatusBarItemsExtensionPointWorkbenchContribution.ID, StatusBarItemsExtensionPointWorkbenchContribution, WorkbenchPhase.BlockStartup);
+diff --git a/src/vs/workbench/api/common/jsonValidationExtensionPoint.ts b/src/vs/workbench/api/common/jsonValidationExtensionPoint.ts
+index 24559bee3f8..574f4f8cb44 100644
+--- a/src/vs/workbench/api/common/jsonValidationExtensionPoint.ts
++++ b/src/vs/workbench/api/common/jsonValidationExtensionPoint.ts
+@@ -13,6 +13,8 @@ import { IExtensionManifest } from '../../../platform/extensions/common/extensio
+ import { Registry } from '../../../platform/registry/common/platform.js';
+ import { SyncDescriptor } from '../../../platform/instantiation/common/descriptors.js';
+ import { MarkdownString } from '../../../base/common/htmlContent.js';
++import { IWorkbenchContribution, registerWorkbenchContribution2, WorkbenchPhase } from '../../common/contributions.js';
++import { IInstantiationService } from '../../../platform/instantiation/common/instantiation.js';
+ 
+ interface IJSONValidationExtensionPoint {
+ 	fileMatch: string | string[];
+@@ -133,3 +135,16 @@ Registry.as<IExtensionFeaturesRegistry>(Extensions.ExtensionFeaturesRegistry).re
+ 	},
+ 	renderer: new SyncDescriptor(JSONValidationDataRenderer),
+ });
++
++class JSONValidationExtensionPointWorkbenchContribution implements IWorkbenchContribution {
++
++	static readonly ID = 'workbench.contrib.jsonValidationExtensionPoint';
++
++	constructor(
++		@IInstantiationService private readonly instantiationService: IInstantiationService
++	) {
++		this.instantiationService.createInstance(JSONValidationExtensionPoint);
++	}
++}
++
++registerWorkbenchContribution2(JSONValidationExtensionPointWorkbenchContribution.ID, JSONValidationExtensionPointWorkbenchContribution, WorkbenchPhase.BlockStartup);
+diff --git a/src/vs/workbench/contrib/codeEditor/common/languageConfigurationExtensionPoint.ts b/src/vs/workbench/contrib/codeEditor/common/languageConfigurationExtensionPoint.ts
+index 80aa77d2019..9af7e9a1e4a 100644
+--- a/src/vs/workbench/contrib/codeEditor/common/languageConfigurationExtensionPoint.ts
++++ b/src/vs/workbench/contrib/codeEditor/common/languageConfigurationExtensionPoint.ts
+@@ -18,6 +18,8 @@ import { getParseErrorMessage } from '../../../../base/common/jsonErrorMessages.
+ import { IExtensionResourceLoaderService } from '../../../../platform/extensionResourceLoader/common/extensionResourceLoader.js';
+ import { hash } from '../../../../base/common/hash.js';
+ import { Disposable } from '../../../../base/common/lifecycle.js';
++import { IWorkbenchContribution, registerWorkbenchContribution2, WorkbenchPhase } from '../../../common/contributions.js';
++import { IInstantiationService } from '../../../../platform/instantiation/common/instantiation.js';
+ 
+ interface IRegExp {
+ 	pattern: string;
+@@ -834,3 +836,16 @@ const schema: IJSONSchema = {
+ };
+ const schemaRegistry = Registry.as<IJSONContributionRegistry>(Extensions.JSONContribution);
+ schemaRegistry.registerSchema(schemaId, schema);
++
++class LanguageConfigurationWorkbenchContribution implements IWorkbenchContribution {
++
++	static readonly ID = 'workbench.contrib.languageConfigurationExtensionPoint';
++
++	constructor(
++		@IInstantiationService private readonly instantiationService: IInstantiationService
++	) {
++		this.instantiationService.createInstance(LanguageConfigurationFileHandler);
++	}
++}
++
++registerWorkbenchContribution2(LanguageConfigurationWorkbenchContribution.ID, LanguageConfigurationWorkbenchContribution, WorkbenchPhase.BlockStartup);
+diff --git a/src/vs/workbench/services/themes/common/colorExtensionPoint.ts b/src/vs/workbench/services/themes/common/colorExtensionPoint.ts
+index b392cc8614f..bc4df0624f8 100644
+--- a/src/vs/workbench/services/themes/common/colorExtensionPoint.ts
++++ b/src/vs/workbench/services/themes/common/colorExtensionPoint.ts
+@@ -13,6 +13,8 @@ import { Extensions, IExtensionFeatureTableRenderer, IExtensionFeaturesRegistry,
+ import { SyncDescriptor } from '../../../../platform/instantiation/common/descriptors.js';
+ import { IExtensionManifest } from '../../../../platform/extensions/common/extensions.js';
+ import { MarkdownString } from '../../../../base/common/htmlContent.js';
++import { IWorkbenchContribution, registerWorkbenchContribution2, WorkbenchPhase } from '../../../common/contributions.js';
++import { IInstantiationService } from '../../../../platform/instantiation/common/instantiation.js';
+ 
+ interface IColorExtensionPoint {
+ 	id: string;
+@@ -208,3 +210,16 @@ Registry.as<IExtensionFeaturesRegistry>(Extensions.ExtensionFeaturesRegistry).re
+ 	},
+ 	renderer: new SyncDescriptor(ColorDataRenderer),
+ });
++
++class ColorExtensionPointWorkbenchContribution implements IWorkbenchContribution {
++
++	static readonly ID = 'workbench.contrib.colorExtensionPoint';
++
++	constructor(
++		@IInstantiationService private readonly instantiationService: IInstantiationService
++	) {
++		this.instantiationService.createInstance(ColorExtensionPoint);
++	}
++}
++
++registerWorkbenchContribution2(ColorExtensionPointWorkbenchContribution.ID, ColorExtensionPointWorkbenchContribution, WorkbenchPhase.BlockStartup);
+diff --git a/src/vs/workbench/services/themes/common/iconExtensionPoint.ts b/src/vs/workbench/services/themes/common/iconExtensionPoint.ts
+index e8715a898c5..36e7829c435 100644
+--- a/src/vs/workbench/services/themes/common/iconExtensionPoint.ts
++++ b/src/vs/workbench/services/themes/common/iconExtensionPoint.ts
+@@ -11,6 +11,8 @@ import { ThemeIcon } from '../../../../base/common/themables.js';
+ import * as resources from '../../../../base/common/resources.js';
+ import { IExtensionDescription } from '../../../../platform/extensions/common/extensions.js';
+ import { extname, posix } from '../../../../base/common/path.js';
++import { IWorkbenchContribution, registerWorkbenchContribution2, WorkbenchPhase } from '../../../common/contributions.js';
++import { IInstantiationService } from '../../../../platform/instantiation/common/instantiation.js';
+ 
+ interface IIconExtensionPoint {
+ 	[id: string]: {
+@@ -142,3 +144,16 @@ const formatMap: Record<string, string> = {
+ function getFontId(description: IExtensionDescription, fontPath: string) {
+ 	return posix.join(description.identifier.value, fontPath);
+ }
++
++class ColorExtensionPointWorkbenchContribution implements IWorkbenchContribution {
++
++	static readonly ID = 'workbench.contrib.iconExtensionPoint';
++
++	constructor(
++		@IInstantiationService private readonly instantiationService: IInstantiationService
++	) {
++		this.instantiationService.createInstance(IconExtensionPoint);
++	}
++}
++
++registerWorkbenchContribution2(ColorExtensionPointWorkbenchContribution.ID, ColorExtensionPointWorkbenchContribution, WorkbenchPhase.BlockStartup);
+diff --git a/src/vs/workbench/services/themes/common/tokenClassificationExtensionPoint.ts b/src/vs/workbench/services/themes/common/tokenClassificationExtensionPoint.ts
+index d78e65afc3f..56bd057fb3e 100644
+--- a/src/vs/workbench/services/themes/common/tokenClassificationExtensionPoint.ts
++++ b/src/vs/workbench/services/themes/common/tokenClassificationExtensionPoint.ts
+@@ -6,6 +6,8 @@
+ import * as nls from '../../../../nls.js';
+ import { ExtensionsRegistry, ExtensionMessageCollector } from '../../extensions/common/extensionsRegistry.js';
+ import { getTokenClassificationRegistry, ITokenClassificationRegistry, typeAndModifierIdPattern } from '../../../../platform/theme/common/tokenClassificationRegistry.js';
++import { IWorkbenchContribution, registerWorkbenchContribution2, WorkbenchPhase } from '../../../common/contributions.js';
++import { IInstantiationService } from '../../../../platform/instantiation/common/instantiation.js';
+ 
+ interface ITokenTypeExtensionPoint {
+ 	id: string;
+@@ -225,5 +227,15 @@ export class TokenClassificationExtensionPoints {
+ 	}
+ }
+ 
++class TokenClassificationExtensionPointWorkbenchContribution implements IWorkbenchContribution {
+ 
++	static readonly ID = 'workbench.contrib.tokenClassificationExtensionPoint';
+ 
++	constructor(
++		@IInstantiationService private readonly instantiationService: IInstantiationService
++	) {
++		this.instantiationService.createInstance(TokenClassificationExtensionPoints);
++	}
++}
++
++registerWorkbenchContribution2(TokenClassificationExtensionPointWorkbenchContribution.ID, TokenClassificationExtensionPointWorkbenchContribution, WorkbenchPhase.BlockStartup);
+diff --git a/src/vs/workbench/workbench.common.main.ts b/src/vs/workbench/workbench.common.main.ts
+index 248d6b07c73..6800341fcbf 100644
+--- a/src/vs/workbench/workbench.common.main.ts
++++ b/src/vs/workbench/workbench.common.main.ts
+@@ -32,9 +32,15 @@ import './browser/actions/widgetNavigationCommands.js';
+ 
+ //#region --- API Extension Points
+ 
+-import './services/actions/common/menusExtensionPoint.js';
+-import './api/common/configurationExtensionPoint.js';
+-import './api/browser/viewsExtensionPoint.js';
++import 'vs/workbench/services/actions/common/menusExtensionPoint.js';
++import 'vs/workbench/api/common/configurationExtensionPoint.js';
++import 'vs/workbench/api/browser/viewsExtensionPoint.js';
++import 'vs/workbench/contrib/codeEditor/common/languageConfigurationExtensionPoint.js';
++import 'vs/workbench/api/common/jsonValidationExtensionPoint.js';
++import 'vs/workbench/services/themes/common/colorExtensionPoint.js';
++import 'vs/workbench/services/themes/common/iconExtensionPoint.js';
++import 'vs/workbench/services/themes/common/tokenClassificationExtensionPoint.js';
++import 'vs/workbench/api/browser/statusBarExtensionPoint.js';
+ 
+ //#endregion
+ 

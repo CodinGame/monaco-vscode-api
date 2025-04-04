@@ -1,0 +1,68 @@
+From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
+From: =?UTF-8?q?Lo=C3=AFc=20Mangeonjean?= <loic@coderpad.io>
+Date: Mon, 10 Mar 2025 12:28:15 +0100
+Subject: [PATCH] fix: break cyclic dependency
+
+---
+ src/vs/workbench/contrib/tasks/browser/constants.ts    | 10 ++++++++++
+ .../contrib/tasks/browser/task.contribution.ts         |  5 +----
+ .../contrib/tasks/browser/terminalTaskSystem.ts        |  2 +-
+ 3 files changed, 12 insertions(+), 5 deletions(-)
+ create mode 100644 src/vs/workbench/contrib/tasks/browser/constants.ts
+
+diff --git a/src/vs/workbench/contrib/tasks/browser/constants.ts b/src/vs/workbench/contrib/tasks/browser/constants.ts
+new file mode 100644
+index 00000000000..78cd079f0ed
+--- /dev/null
++++ b/src/vs/workbench/contrib/tasks/browser/constants.ts
+@@ -0,0 +1,10 @@
++/*---------------------------------------------------------------------------------------------
++ *  Copyright (c) Microsoft Corporation. All rights reserved.
++ *  Licensed under the MIT License. See License.txt in the project root for license information.
++ *--------------------------------------------------------------------------------------------*/
++import { Codicon } from '../../../../base/common/codicons.js';
++import * as nls from '../../../../nls.js';
++import { registerIcon } from '../../../../platform/theme/common/iconRegistry.js';
++
++export const rerunTaskIcon = registerIcon('rerun-task', Codicon.refresh, nls.localize('rerunTaskIcon', 'View icon of the rerun task.'));
++export const RerunForActiveTerminalCommandId = 'workbench.action.tasks.rerunForActiveTerminal';
+diff --git a/src/vs/workbench/contrib/tasks/browser/task.contribution.ts b/src/vs/workbench/contrib/tasks/browser/task.contribution.ts
+index 8629aa38b0f..315217dc55f 100644
+--- a/src/vs/workbench/contrib/tasks/browser/task.contribution.ts
++++ b/src/vs/workbench/contrib/tasks/browser/task.contribution.ts
+@@ -40,12 +40,11 @@ import { TaskDefinitionRegistry } from '../common/taskDefinitionRegistry.js';
+ import { TerminalMenuBarGroup } from '../../terminal/browser/terminalMenus.js';
+ import { isString } from '../../../../base/common/types.js';
+ import { promiseWithResolvers } from '../../../../base/common/async.js';
+-import { Codicon } from '../../../../base/common/codicons.js';
+-import { registerIcon } from '../../../../platform/theme/common/iconRegistry.js';
+ 
+ import { TerminalContextKeys } from '../../terminal/common/terminalContextKey.js';
+ import { ServicesAccessor } from '../../../../editor/browser/editorExtensions.js';
+ import { ITerminalInstance, ITerminalService } from '../../terminal/browser/terminal.js';
++import { RerunForActiveTerminalCommandId, rerunTaskIcon } from './constants.js';
+ 
+ const workbenchRegistry = Registry.as<IWorkbenchContributionsRegistry>(WorkbenchExtensions.Workbench);
+ workbenchRegistry.registerWorkbenchContribution(RunAutomaticTasks, LifecyclePhase.Eventually);
+@@ -566,8 +565,6 @@ configurationRegistry.registerConfiguration({
+ 	}
+ });
+ 
+-export const rerunTaskIcon = registerIcon('rerun-task', Codicon.refresh, nls.localize('rerunTaskIcon', 'View icon of the rerun task.'));
+-export const RerunForActiveTerminalCommandId = 'workbench.action.tasks.rerunForActiveTerminal';
+ registerAction2(class extends Action2 {
+ 	constructor() {
+ 		super({
+diff --git a/src/vs/workbench/contrib/tasks/browser/terminalTaskSystem.ts b/src/vs/workbench/contrib/tasks/browser/terminalTaskSystem.ts
+index 2fcb98375e2..70c14d42957 100644
+--- a/src/vs/workbench/contrib/tasks/browser/terminalTaskSystem.ts
++++ b/src/vs/workbench/contrib/tasks/browser/terminalTaskSystem.ts
+@@ -50,7 +50,7 @@ import { IWorkbenchEnvironmentService } from '../../../services/environment/comm
+ import { IOutputService } from '../../../services/output/common/output.js';
+ import { IPaneCompositePartService } from '../../../services/panecomposite/browser/panecomposite.js';
+ import { IPathService } from '../../../services/path/common/pathService.js';
+-import { RerunForActiveTerminalCommandId, rerunTaskIcon } from './task.contribution.js';
++import { RerunForActiveTerminalCommandId, rerunTaskIcon } from './constants.js';
+ import { IContextKey, IContextKeyService } from '../../../../platform/contextkey/common/contextkey.js';
+ 
+ interface ITerminalData {

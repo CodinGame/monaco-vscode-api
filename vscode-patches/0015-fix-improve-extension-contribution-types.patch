@@ -1,0 +1,1629 @@
+From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
+From: =?UTF-8?q?Lo=C3=AFc=20Mangeonjean?= <loic@coderpad.io>
+Date: Mon, 11 Mar 2024 17:38:30 +0100
+Subject: [PATCH] fix: improve extension contribution types
+
+---
+ .../platform/extensions/common/extensions.ts  | 1441 ++++++++++++++++-
+ .../services/search/common/queryBuilder.ts    |    8 +-
+ .../themes/common/colorExtensionPoint.ts      |    2 +-
+ .../tokenClassificationExtensionPoint.ts      |    1 +
+ 4 files changed, 1382 insertions(+), 70 deletions(-)
+
+diff --git a/src/vs/platform/extensions/common/extensions.ts b/src/vs/platform/extensions/common/extensions.ts
+index b38ba82a1d9..87802c023e3 100644
+--- a/src/vs/platform/extensions/common/extensions.ts
++++ b/src/vs/platform/extensions/common/extensions.ts
+@@ -3,6 +3,7 @@
+  *  Licensed under the MIT License. See License.txt in the project root for license information.
+  *--------------------------------------------------------------------------------------------*/
+ 
++import { IJSONSchema } from '../../../base/common/jsonSchema.js';
+ import Severity from '../../../base/common/severity.js';
+ import * as strings from '../../../base/common/strings.js';
+ import { URI } from '../../../base/common/uri.js';
+@@ -16,119 +17,547 @@ export const BUILTIN_MANIFEST_CACHE_FILE = 'extensions.builtin.cache';
+ export const UNDEFINED_PUBLISHER = 'undefined_publisher';
+ 
+ export interface ICommand {
+-	command: string;
+-	title: string | ILocalizedString;
+-	category?: string | ILocalizedString;
++	/**
++	 * Identifier of the command to execute
++	 */
++	readonly command: string;
++	/**
++	 * Title by which the command is represented in the UI
++	 */
++	readonly title: string | ILocalizedString;
++	readonly shortTitle?: string;
++	/**
++	 * (Optional) Category string by which the command is grouped in the UI
++	 */
++	readonly category?: string | ILocalizedString;
++	/**
++	 * (Optional) Condition which must be true to enable the command in the UI (menu and keybindings). Does not prevent executing the command by other means, like the `executeCommand`-api.
++	 */
++	readonly enablement?: string;
++	/**
++	 * (Optional) Icon which is used to represent the command in the UI. Either a file path, an object with file paths for dark and light themes, or a theme icon references, like `\$(zap)`
++	 */
++	readonly icon?:
++	| string
++	| {
++		/**
++		 * Icon path when a light theme is used
++		 */
++		readonly light?: string;
++		/**
++		 * Icon path when a dark theme is used
++		 */
++		readonly dark?: string;
++	};
+ }
+ 
+ export interface IDebugger {
+-	label?: string;
+-	type: string;
+-	runtime?: string;
++	/**
++	 * Unique identifier for this debug adapter.
++	 */
++	readonly type: string;
++	/**
++	 * Display name for this debug adapter.
++	 */
++	readonly label?: string;
++	/**
++	 * Path to the debug adapter program. Path is either absolute or relative to the extension folder.
++	 */
++	readonly program?: string;
++	/**
++	 * Optional arguments to pass to the adapter.
++	 */
++	readonly args?: unknown[];
++	/**
++	 * Optional runtime in case the program attribute is not an executable but requires a runtime.
++	 */
++	readonly runtime?: string;
++	/**
++	 * Optional runtime arguments.
++	 */
++	readonly runtimeArgs?: unknown[];
++	/**
++	 * Mapping from interactive variables (e.g. ${action.pickProcess}) in `launch.json` to a command.
++	 */
++	readonly variables?: {};
++	/**
++	 * Configurations for generating the initial 'launch.json'.
++	 */
++	readonly initialConfigurations?: unknown[] | string;
++	/**
++	 * List of languages for which the debug extension could be considered the "default debugger".
++	 */
++	readonly languages?: unknown[];
++	/**
++	 * Snippets for adding new configurations in 'launch.json'.
++	 */
++	readonly configurationSnippets?: unknown[];
++	/**
++	 * JSON schema configurations for validating 'launch.json'.
++	 */
++	readonly configurationAttributes?: {};
++	/**
++	 * Condition which must be true to enable this type of debugger. Consider using 'shellExecutionSupported', 'virtualWorkspace', 'resourceScheme' or an extension-defined context key as appropriate for this.
++	 */
++	readonly when?: string;
++	/**
++	 * When this condition is true, this debugger type is hidden from the debugger list, but is still enabled.
++	 */
++	readonly hiddenWhen?: string;
++	/**
++	 * Optional message to mark this debug type as being deprecated.
++	 */
++	readonly deprecated?: string;
++	/**
++	 * Windows specific settings.
++	 */
++	readonly windows?: {
++		/**
++		 * Runtime used for Windows.
++		 */
++		runtime?: string;
++	};
++	/**
++	 * macOS specific settings.
++	 */
++	readonly osx?: {
++		/**
++		 * Runtime used for macOS.
++		 */
++		runtime?: string;
++	};
++	/**
++	 * Linux specific settings.
++	 */
++	readonly linux?: {
++		/**
++		 * Runtime used for Linux.
++		 */
++		readonly runtime?: string;
++	};
++	/**
++	 * UI strings contributed by this debug adapter.
++	 */
++	readonly strings?: {
++		/**
++		 * When there are unverified breakpoints in a language supported by this debug adapter, this message will appear on the breakpoint hover and in the breakpoints view. Markdown and command links are supported.
++		 */
++		readonly unverifiedBreakpoints?: string;
++	};
+ }
+ 
+ export interface IGrammar {
+-	language?: string;
++	/**
++	 * Language identifier for which this syntax is contributed to.
++	 */
++	readonly language?: string;
++	/**
++	 * Textmate scope name used by the tmLanguage file.
++	 */
++	readonly scopeName: string;
++	/**
++	 * Path of the tmLanguage file. The path is relative to the extension folder and typically starts with './syntaxes/'.
++	 */
++	readonly path: string;
++	/**
++	 * A map of scope name to language id if this grammar contains embedded languages.
++	 */
++	readonly embeddedLanguages?: {};
++	/**
++	 * A map of scope name to token types.
++	 */
++	readonly tokenTypes?: {
++		[k: string]: 'string' | 'comment' | 'other';
++	};
++	/**
++	 * List of language scope names to which this grammar is injected to.
++	 */
++	readonly injectTo?: string[];
++	/**
++	 * Defines which scope names contain balanced brackets.
++	 */
++	readonly balancedBracketScopes?: string[];
++	/**
++	 * Defines which scope names do not contain balanced brackets.
++	 */
++	readonly unbalancedBracketScopes?: string[];
+ }
+ 
+ export interface IJSONValidation {
+-	fileMatch: string | string[];
+-	url: string;
++	/**
++	 * The file pattern (or an array of patterns) to match, for example "package.json" or "*.launch". Exclusion patterns start with '!'
++	 */
++	readonly fileMatch?: string | string[];
++	/**
++	 * A schema URL ('http:', 'https:') or relative path to the extension folder ('./').
++	 */
++	readonly url: string;
+ }
+ 
+ export interface IKeyBinding {
+-	command: string;
+-	key: string;
+-	when?: string;
+-	mac?: string;
+-	linux?: string;
+-	win?: string;
++	/**
++	 * Identifier of the command to run when keybinding is triggered.
++	 */
++	readonly command: string;
++	/**
++	 * Arguments to pass to the command to execute.
++	 */
++	readonly args?: {
++		[k: string]: unknown;
++	};
++	/**
++	 * Key or key sequence (separate keys with plus-sign and sequences with space, e.g. Ctrl+O and Ctrl+L L for a chord).
++	 */
++	readonly key: string;
++	/**
++	 * Mac specific key or key sequence.
++	 */
++	readonly mac?: string;
++	/**
++	 * Linux specific key or key sequence.
++	 */
++	readonly linux?: string;
++	/**
++	 * Windows specific key or key sequence.
++	 */
++	readonly win?: string;
++	/**
++	 * Condition when the key is active.
++	 */
++	readonly when?: string;
+ }
+ 
+ export interface ILanguage {
+-	id: string;
+-	extensions: string[];
+-	aliases: string[];
++	/**
++	 * ID of the language.
++	 */
++	readonly id: string;
++	/**
++	 * Name aliases for the language.
++	 */
++	readonly aliases?: string[];
++	/**
++	 * File extensions associated to the language.
++	 */
++	readonly extensions?: string[];
++	/**
++	 * File names associated to the language.
++	 */
++	readonly filenames?: string[];
++	/**
++	 * File name glob patterns associated to the language.
++	 */
++	readonly filenamePatterns?: string[];
++	/**
++	 * Mime types associated to the language.
++	 */
++	readonly mimetypes?: string[];
++	/**
++	 * A regular expression matching the first line of a file of the language.
++	 */
++	readonly firstLine?: string;
++	/**
++	 * A relative path to a file containing configuration options for the language.
++	 */
++	readonly configuration?: string;
++	/**
++	 * A icon to use as file icon, if no icon theme provides one for the language.
++	 */
++	readonly icon?: {
++		/**
++		 * Icon path when a light theme is used
++		 */
++		readonly light?: string;
++		/**
++		 * Icon path when a dark theme is used
++		 */
++		readonly dark?: string;
++	};
+ }
+ 
+ export interface IMenu {
+-	command: string;
+-	alt?: string;
+-	when?: string;
+-	group?: string;
++	/**
++	 * Identifier of the command to execute. The command must be declared in the 'commands'-section
++	 */
++	readonly command: string;
++	/**
++	 * Identifier of an alternative command to execute. The command must be declared in the 'commands'-section
++	 */
++	readonly alt?: string;
++	/**
++	 * Condition which must be true to show this item
++	 */
++	readonly when?: string;
++	/**
++	 * Group into which this item belongs
++	 */
++	readonly group?: string;
++}
++
++export interface ISubMenu {
++	/**
++	 * Identifier of the submenu to display in this item.
++	 */
++	readonly submenu: string;
++	/**
++	 * Condition which must be true to show this item
++	 */
++	readonly when?: string;
++	/**
++	 * Group into which this item belongs
++	 */
++	readonly group?: string;
+ }
+ 
+ export interface ISnippet {
+-	language: string;
++	/**
++	 * Language identifier for which this snippet is contributed to.
++	 */
++	readonly language: string;
++	/**
++	 * Path of the snippets file. The path is relative to the extension folder and typically starts with './snippets/'.
++	 */
++	readonly path: string;
++}
++
++export interface IColorTheme {
++	/**
++	 * Id of the color theme as used in the user settings.
++	 */
++	readonly id: string;
++	/**
++	 * Label of the color theme as shown in the UI.
++	 */
++	readonly label: string;
++	/**
++	 * Base theme defining the colors around the editor: 'vs' is the light color theme, 'vs-dark' is the dark color theme. 'hc-black' is the dark high contrast theme, 'hc-light' is the light high contrast theme.
++	 */
++	readonly uiTheme: 'vs' | 'vs-dark' | 'hc-black' | 'hc-light';
++	/**
++	 * Path of the tmTheme file. The path is relative to the extension folder and is typically './colorthemes/awesome-color-theme.json'.
++	 */
++	readonly path: string;
++}
++
++export interface IIconTheme {
++	/**
++	 * Id of the file icon theme as used in the user settings.
++	 */
++	readonly id: string;
++	/**
++	 * Label of the file icon theme as shown in the UI.
++	 */
++	readonly label: string;
++	/**
++	 * Path of the file icon theme definition file. The path is relative to the extension folder and is typically './fileicons/awesome-icon-theme.json'.
++	 */
++	readonly path: string;
+ }
+ 
+-export interface ITheme {
+-	label: string;
++export interface IProductTheme {
++	/**
++	 * Id of the product icon theme as used in the user settings.
++	 */
++	readonly id: string;
++	/**
++	 * Label of the product icon theme as shown in the UI.
++	 */
++	readonly label: string;
++	/**
++	 * Path of the product icon theme definition file. The path is relative to the extension folder and is typically './producticons/awesome-product-icon-theme.json'.
++	 */
++	readonly path: string;
+ }
+ 
+ export interface IViewContainer {
+-	id: string;
+-	title: string;
++	/**
++	 * Unique id used to identify the container in which views can be contributed using 'views' contribution point
++	 */
++	readonly id: string;
++	/**
++	 * Human readable string used to render the container
++	 */
++	readonly title: string;
++	/**
++	 * Path to the container icon. Icons are 24x24 centered on a 50x40 block and have a fill color of 'rgb(215, 218, 224)' or '#d7dae0'. It is recommended that icons be in SVG, though any image file type is accepted.
++	 */
++	readonly icon: string;
+ }
+ 
+ export interface IView {
+-	id: string;
+-	name: string;
++	readonly type?: 'tree' | 'webview';
++	readonly id: string;
++	/**
++	 * The human-readable name of the view. Will be shown
++	 */
++	readonly name: string;
++	/**
++	 * Condition which must be true to show this view
++	 */
++	readonly when?: string;
++	/**
++	 * Path to the view icon. View icons are displayed when the name of the view cannot be shown. It is recommended that icons be in SVG, though any image file type is accepted.
++	 */
++	readonly icon?: string;
++	/**
++	 * Human-readable context for when the view is moved out of its original location. By default, the view's container name will be used.
++	 */
++	readonly contextualTitle?: string;
++	/**
++	 * Initial state of the view when the extension is first installed. Once the user has changed the view state by collapsing, moving, or hiding the view, the initial state will not be used again.
++	 */
++	readonly visibility?: 'visible' | 'hidden' | 'collapsed';
++	/**
++	 * The initial size of the view. The size will behave like the css 'flex' property, and will set the initial size when the view is first shown. In the side bar, this is the height of the view. This value is only respected when the same extension owns both the view and the view container.
++	 */
++	readonly initialSize?: number;
+ }
+ 
+ export interface IColor {
+-	id: string;
+-	description: string;
+-	defaults: { light: string; dark: string; highContrast: string };
++	/**
++	 * The identifier of the themable color
++	 */
++	readonly id: string;
++	/**
++	 * The description of the themable color
++	 */
++	readonly description: string;
++	readonly defaults: {
++		/**
++		 * The default color for light themes. Either a color value in hex (#RRGGBB[AA]) or the identifier of a themable color which provides the default.
++		 */
++		readonly light: string;
++		/**
++		 * The default color for dark themes. Either a color value in hex (#RRGGBB[AA]) or the identifier of a themable color which provides the default.
++		 */
++		readonly dark: string;
++		/**
++		 * The default color for high contrast dark themes. Either a color value in hex (#RRGGBB[AA]) or the identifier of a themable color which provides the default. If not provided, the `dark` color is used as default for high contrast dark themes.
++		 */
++		readonly highContrast?: string;
++		/**
++		 * The default color for high contrast light themes. Either a color value in hex (#RRGGBB[AA]) or the identifier of a themable color which provides the default. If not provided, the `light` color is used as default for high contrast light themes.
++		 */
++		readonly highContrastLight?: string;
++	};
+ }
+ 
+ interface IWebviewEditor {
+ 	readonly viewType: string;
+ 	readonly priority: string;
+-	readonly selector: readonly {
++	/**
++	 * Human readable name of the custom editor. This is displayed to users when selecting which editor to use.
++	 */
++	readonly displayName: string;
++	/**
++	 * Set of globs that the custom editor is enabled for.
++	 */
++	readonly selector: {
++		/**
++		 * Glob that the custom editor is enabled for.
++		 */
+ 		readonly filenamePattern?: string;
+ 	}[];
+ }
+ 
+ export interface ICodeActionContributionAction {
+ 	readonly kind: string;
++	/**
++	 * Label for the code action used in the UI.
++	 */
+ 	readonly title: string;
++	/**
++	 * Description of what the code action does.
++	 */
+ 	readonly description?: string;
+ }
+ 
+ export interface ICodeActionContribution {
+-	readonly languages: readonly string[];
++	/**
++	 * Language modes that the code actions are enabled for.
++	 */
++	readonly languages: string[];
+ 	readonly actions: readonly ICodeActionContributionAction[];
+ }
+ 
+ export interface IAuthenticationContribution {
++	/**
++	 * The id of the authentication provider.
++	 */
+ 	readonly id: string;
++	/**
++	 * The human readable name of the authentication provider.
++	 */
+ 	readonly label: string;
+ }
+ 
+ export interface IWalkthroughStep {
++	/**
++	 * Unique identifier for this step. This is used to keep track of which steps have been completed.
++	 */
+ 	readonly id: string;
++	/**
++	 * Title of step.
++	 */
+ 	readonly title: string;
+-	readonly description: string | undefined;
++	/**
++	 * Description of step. Supports ``preformatted``, __italic__, and **bold** text. Use markdown-style links for commands or external links: [Title](command:myext.command), [Title](command:toSide:myext.command), or [Title](https://aka.ms). Links on their own line will be rendered as buttons.
++	 */
++	readonly description?: string;
++	readonly button?: {
++		[k: string]: unknown;
++	};
++	/**
++	 * Media to show alongside this step, either an image or markdown content.
++	 */
+ 	readonly media:
+ 	| { image: string | { dark: string; light: string; hc: string }; altText: string; markdown?: never; svg?: never; video?: never }
+ 	| { markdown: string; image?: never; svg?: never; video?: never }
+ 	| { svg: string; altText: string; markdown?: never; image?: never; video?: never }
+ 	| { video: string | { dark: string; light: string; hc: string }; poster: string | { dark: string; light: string; hc: string }; altText: string; markdown?: never; image?: never; svg?: never };
++
++
++	/**
++	 * Events that should trigger this step to become checked off. If empty or not defined, the step will check off when any of the step's buttons or links are clicked; if the step has no buttons or links it will check on when it is selected.
++	 */
+ 	readonly completionEvents?: string[];
+-	/** @deprecated use `completionEvents: 'onCommand:...'` */
++	/**
++	 * Signal to mark step as complete.
++	 * @deprecated use `completionEvents: 'onCommand:...'`
++	 **/
+ 	readonly doneOn?: { command: string };
++	/**
++	 * Context key expression to control the visibility of this step.
++	 */
+ 	readonly when?: string;
+ }
+ 
+ export interface IWalkthrough {
++	/**
++	 * Unique identifier for this walkthrough.
++	 */
+ 	readonly id: string;
++	/**
++	 * Title of walkthrough.
++	 */
+ 	readonly title: string;
++	/**
++	 * Relative path to the icon of the walkthrough. The path is relative to the extension location. If not specified, the icon defaults to the extension icon if available.
++	 */
+ 	readonly icon?: string;
++	/**
++	 * Description of walkthrough.
++	 */
+ 	readonly description: string;
+-	readonly steps: IWalkthroughStep[];
+-	readonly featuredFor: string[] | undefined;
++	/**
++	 * Walkthroughs that match one of these glob patterns appear as 'featured' in workspaces with the specified files. For example, a walkthrough for TypeScript projects might specify `tsconfig.json` here.
++	 */
++	readonly featuredFor?: string[];
++	/**
++	 * Context key expression to control the visibility of this walkthrough.
++	 */
+ 	readonly when?: string;
++	readonly steps: IWalkthroughStep[];
+ }
+ 
+ export interface IStartEntry {
+@@ -140,14 +569,53 @@ export interface IStartEntry {
+ }
+ 
+ export interface INotebookEntry {
++	/**
++	 * Type of the notebook.
++	 */
+ 	readonly type: string;
++	/**
++	 * Human readable name of the notebook.
++	 */
+ 	readonly displayName: string;
++	/**
++	 * Set of globs that the notebook is for.
++	 */
++	readonly selector: {
++		/**
++		 * Glob that the notebook is enabled for.
++		 */
++		readonly filenamePattern?: string;
++		/**
++		 * Glob that the notebook is disabled for.
++		 */
++		readonly excludeFileNamePattern?: string;
++	}[];
++	readonly priority?: 'default' | 'option';
+ }
+ 
+ export interface INotebookRendererContribution {
++	/**
++	 * Unique identifier of the notebook output renderer.
++	 */
+ 	readonly id: string;
++	/**
++	 * Human readable name of the notebook output renderer.
++	 */
+ 	readonly displayName: string;
++	readonly dependencies?: string[];
++	readonly optionalDependencies?: string[];
++	/**
++	 * Defines how and if the renderer needs to communicate with an extension host, via `createRendererMessaging`. Renderers with stronger messaging requirements may not work in all environments.
++	 */
++	readonly requiresMessaging?: 'always' | 'optional' | 'never';
++	/**
++	 * Set of globs that the notebook is for.
++	 */
+ 	readonly mimeTypes: string[];
++	readonly entrypoint: string | {
++		readonly extends: string;
++		readonly path: string;
++	};
+ }
+ 
+ export interface IDebugVisualizationContribution {
+@@ -156,16 +624,706 @@ export interface IDebugVisualizationContribution {
+ }
+ 
+ export interface ITranslation {
+-	id: string;
+-	path: string;
+-}
+-
++	/**
++	 * Id of VS Code or Extension for which this translation is contributed to. Id of VS Code is always `vscode` and of extension should be in format `publisherId.extensionName`.
++	 */
++	readonly id: string;
++	/**
++	 * A relative path to a file containing translations for the language.
++	 */
++	readonly path: string;
++}
++
+ export interface ILocalizationContribution {
++	/**
++	 * Id of the language into which the display strings are translated.
++	 */
++	readonly languageId: string;
++	/**
++	 * Name of the language in English.
++	 */
++	readonly languageName?: string;
++	/**
++	 * Name of the language in contributed language.
++	 */
++	readonly localizedLanguageName?: string;
++	/**
++	 *
++	 */
++	readonly translations: ITranslation[];
++}
++
++export interface ITerminal {
++	readonly profiles?: {
++		readonly id: string;
++		readonly title: string;
++		readonly icon?: (string | {
++			/**
++			 * Icon path when a light theme is used
++			 */
++			readonly light?: string;
++			/**
++			 * Icon path when a dark theme is used
++			 */
++			readonly dark?: string;
++			[k: string]: unknown;
++		});
++	}[];
++}
++
++export interface IStatusBarItem {
++	readonly id: string;
++	/**
++	 * The name of the entry, like 'Python Language Indicator', 'Git Status' etc. Try to keep the length of the name short, yet descriptive enough that users can understand what the status bar item is about.
++	 */
++	readonly name: string;
++	/**
++	 * The text to show for the entry. You can embed icons in the text by leveraging the `$(<name>)`-syntax, like 'Hello $(globe)!'
++	 */
++	readonly text: string;
++	/**
++	 * The tooltip text for the entry.
++	 */
++	readonly tooltip?: string;
++	/**
++	 * The command to execute when the status bar entry is clicked.
++	 */
++	readonly command?: string;
++	/**
++	 * The alignment of the status bar entry.
++	 */
++	readonly alignment: 'left' | 'right';
++	/**
++	 * The priority of the status bar entry. Higher value means the item should be shown more to the left.
++	 */
++	readonly priority?: number;
++	/**
++	 * Defines the role and aria label to be used when the status bar entry is focused.
++	 */
++	readonly accessibilityInformation?: {
++		/**
++		 * The role of the status bar entry which defines how a screen reader interacts with it. More about aria roles can be found here https://w3c.github.io/aria/#widget_roles
++		 */
++		readonly role?: string;
++		/**
++		 * The aria label of the status bar entry. Defaults to the entry's text.
++		 */
++		readonly label?: string;
++	};
++}
++
++export interface IRemoteHelp {
++	/**
++	 * The url, or a command that returns the url, to your project's Getting Started page, or a walkthrough ID contributed by your project's extension
++	 */
++	readonly getStarted?: string | {
++		/**
++		 * The ID of a Get Started walkthrough to open.
++		 */
++		id: string;
++	};
++	/**
++	 * The url, or a command that returns the url, to your project's documentation page
++	 */
++	readonly documentation?: string;
++	/**
++	 * The url, or a command that returns the url, to your project's feedback reporter
++	 */
++	readonly feedback?: string;
++	/**
++	 * The url, or a command that returns the url, to your project's issue reporter
++	 */
++	readonly reportIssue?: string;
++	/**
++	 * The url, or a command that returns the url, to your project's issues list
++	 */
++	readonly issues?: string;
++}
++
++export interface ITaskDefinitions {
++	/**
++	 * The actual task type. Please note that types starting with a '$' are reserved for internal usage.
++	 */
++	readonly type?: string;
++	readonly required?: string[];
++	/**
++	 * Additional properties of the task type
++	 */
++	readonly properties?: {
++		[k: string]: IJSONSchema;
++	};
++	readonly when?: string;
++}
++
++export interface IIcon {
++	/**
++	 * The description of the themable icon
++	 */
++	readonly description: string;
++	/**
++	 * The default of the icon. Either a reference to an extisting ThemeIcon or an icon in an icon font.
++	 */
++	readonly default: string | {
++		/**
++		 * The path of the icon font that defines the icon.
++		 */
++		readonly fontPath: string;
++		/**
++		 * The character for the icon in the icon font.
++		 */
++		readonly fontCharacter: string;
++	};
++}
++
++export interface IDocumentationRefactoring {
++	/**
++	 * Label for the documentation used in the UI.
++	 */
++	readonly title: string;
++	/**
++	 * When clause.
++	 */
++	readonly when: string;
++	/**
++	 * Command executed.
++	 */
++	readonly command: string;
++}
++
++export interface IDocumentation {
++	/**
++	 * Contributed documentation for refactorings.
++	 */
++	readonly refactoring?: IDocumentationRefactoring[];
++}
++
++export interface ISubMenu {
++	/**
++	 * Identifier of the menu to display as a submenu.
++	 */
++	readonly id: string;
++	/**
++	 * The label of the menu item which leads to this submenu.
++	 */
++	readonly label: string;
++	/**
++	 * (Optional) Icon which is used to represent the submenu in the UI. Either a file path, an object with file paths for dark and light themes, or a theme icon references, like `\$(zap)`
++	 */
++	readonly icon?:
++	| string
++	| {
++		/**
++		 * Icon path when a light theme is used
++		 */
++		readonly light?: string;
++		/**
++		 * Icon path when a dark theme is used
++		 */
++		readonly dark?: string;
++	};
++}
++
++interface IResourceLabelFormatters {
++	/**
++	 * URI scheme on which to match the formatter on. For example "file". Simple glob patterns are supported.
++	 */
++	readonly scheme: string;
++	/**
++	 * URI authority on which to match the formatter on. Simple glob patterns are supported.
++	 */
++	readonly authority?: string;
++	/**
++	 * Rules for formatting uri resource labels.
++	 */
++	readonly formatting: {
++		/**
++		 * Label rules to display. For example: myLabel:/${path}. ${path}, ${scheme}, ${authority} and ${authoritySuffix} are supported as variables.
++		 */
++		readonly label?: string;
++		/**
++		 * Separator to be used in the uri label display. '/' or '' as an example.
++		 */
++		readonly separator?: string;
++		/**
++		 * Controls whether `${path}` substitutions should have starting separator characters stripped.
++		 */
++		readonly stripPathStartingSeparator?: boolean;
++		/**
++		 * Controls if the start of the uri label should be tildified when possible.
++		 */
++		readonly tildify?: boolean;
++		/**
++		 * Suffix appended to the workspace label.
++		 */
++		readonly workspaceSuffix?: string;
++	};
++}
++
++export interface ISemanticTokenTypes {
++	/**
++	 * The identifier of the semantic token type
++	 */
++	readonly id?: string;
++	/**
++	 * The super type of the semantic token type
++	 */
++	readonly superType?: string;
++	/**
++	 * The description of the semantic token type
++	 */
++	readonly description?: string;
++}
++
++export interface ISemanticTokenModifiers {
++	/**
++	 * The identifier of the semantic token modifier
++	 */
++	readonly id?: string;
++	/**
++	 * The description of the semantic token modifier
++	 */
++	readonly description?: string;
++}
++
++export interface ISemanticTokenScopes {
++	/**
++	 * Lists the languge for which the defaults are.
++	 */
++	readonly language?: string;
++	/**
++	 * Maps a semantic token (described by semantic token selector) to one or more textMate scopes used to represent that token.
++	 */
++	readonly scopes?: {
++		[k: string]: string[];
++	};
++}
++
++export interface IBreakpoint {
++	/**
++	 * Allow breakpoints for this language.
++	 */
++	readonly language?: string;
++	/**
++	 * Condition which must be true to enable breakpoints in this language. Consider matching this to the debugger when clause as appropriate.
++	 */
++	readonly when?: string;
++}
++
++export interface ITerminalQuickFix {
++	/**
++	 * The ID of the quick fix provider
++	 */
++	readonly id: string;
++	/**
++	 * A regular expression or string to test the command line against
++	 */
++	readonly commandLineMatcher: string;
++	readonly outputMatcher: {
++		/**
++		 * A regular expression or string to test the command line against
++		 */
++		readonly lineMatcher: string;
++		/**
++		 * Where the search should begin in the buffer
++		 */
++		readonly anchor: 'top' | 'bottom';
++		/**
++		 * The number of lines vertically from the anchor in the buffer to start matching against
++		 */
++		readonly offset: number;
++		/**
++		 * The number of rows to match against, this should be as small as possible for performance reasons
++		 */
++		readonly length: number;
++	};
++	/**
++	 * The command exit result to match on
++	 */
++	readonly commandExitResult: 'success' | 'error';
++	/**
++	 * The kind of the resulting quick fix. This changes how the quick fix is presented. Defaults to `"fix"`.
++	 */
++	readonly kind?: 'default' | 'explain';
++}
++
++export interface IInteractiveSession {
++	/**
++	 * Unique identifier for this Interactive Session provider.
++	 */
++	readonly id: string;
++	/**
++	 * Display name for this Interactive Session provider.
++	 */
++	readonly label: string;
++	/**
++	 * An icon for this Interactive Session provider.
++	 */
++	readonly icon?: string;
++	/**
++	 * A condition which must be true to enable this Interactive Session provider.
++	 */
++	readonly when?: string;
++}
++
++export interface INotebook {
++	/**
++	 * Type of the notebook.
++	 */
++	readonly type: string;
++	/**
++	 * Human readable name of the notebook.
++	 */
++	readonly displayName: string;
++	/**
++	 * Set of globs that the notebook is for.
++	 */
++	readonly selector: {
++		/**
++		 * Glob that the notebook is enabled for.
++		 */
++		readonly filenamePattern?: string;
++		/**
++		 * Glob that the notebook is disabled for.
++		 */
++		readonly excludeFileNamePattern?: string;
++	}[];
++	readonly priority?: 'default' | 'option';
++}
++
++export interface NotebookPreload {
++	/**
++	 * Type of the notebook.
++	 */
++	readonly type: string;
++	/**
++	 * Path to file loaded in the webview.
++	 */
++	readonly entrypoint: string;
++	/**
++	 * Paths to additional resources that should be allowed in the webview.
++	 */
++	readonly localResourceRoots?: string[];
++}
++
++export interface IViewsWelcome {
++	readonly view: string;
++	/**
++	 * Welcome content to be displayed. The format of the contents is a subset of Markdown, with support for links only.
++	 */
++	readonly contents: string;
++	/**
++	 * Condition when the welcome content should be displayed.
++	 */
++	readonly when?: string;
++	/**
++	 * Group to which this welcome content belongs. Proposed API.
++	 */
++	readonly group?: string;
++	/**
++	 * Condition when the welcome content buttons and command links should be enabled.
++	 */
++	readonly enablement?: string;
++}
++
++
++export interface INamedProblemPattern extends IProblemPattern {
++	/**
++	 * The name of the problem pattern.
++	 */
++	name: string;
++
++	/**
++	 * A human readable label
++	 */
++	label?: string;
++}
++
++export interface ICheckedProblemPattern extends IProblemPattern {
++	/**
++	* The regular expression to find a problem in the console output of an
++	* executed task.
++	*/
++	regexp: string;
++}
++
++export type MultiLineCheckedProblemPattern = ICheckedProblemPattern[];
++
++export interface INamedMultiLineCheckedProblemPattern {
++	/**
++	 * The name of the problem pattern.
++	 */
++	name: string;
++
++	/**
++	 * A human readable label
++	 */
++	label?: string;
++
++	/**
++	 * The actual patterns
++	 */
++	patterns: MultiLineCheckedProblemPattern;
++}
++
++export type NamedProblemPatterns = (INamedProblemPattern | INamedMultiLineCheckedProblemPattern)[];
++
++export interface IProblemPattern {
++
++	/**
++	* The regular expression to find a problem in the console output of an
++	* executed task.
++	*/
++	regexp?: string;
++
++	/**
++	* Whether the pattern matches a whole file, or a location (file/line)
++	*
++	* The default is to match for a location. Only valid on the
++	* first problem pattern in a multi line problem matcher.
++	*/
++	kind?: string;
++
++	/**
++	* The match group index of the filename.
++	* If omitted 1 is used.
++	*/
++	file?: number;
++
++	/**
++	* The match group index of the problem's location. Valid location
++	* patterns are: (line), (line,column) and (startLine,startColumn,endLine,endColumn).
++	* If omitted the line and column properties are used.
++	*/
++	location?: number;
++
++	/**
++	* The match group index of the problem's line in the source file.
++	*
++	* Defaults to 2.
++	*/
++	line?: number;
++
++	/**
++	* The match group index of the problem's column in the source file.
++	*
++	* Defaults to 3.
++	*/
++	column?: number;
++
++	/**
++	* The match group index of the problem's end line in the source file.
++	*
++	* Defaults to undefined. No end line is captured.
++	*/
++	endLine?: number;
++
++	/**
++	* The match group index of the problem's end column in the source file.
++	*
++	* Defaults to undefined. No end column is captured.
++	*/
++	endColumn?: number;
++
++	/**
++	* The match group index of the problem's severity.
++	*
++	* Defaults to undefined. In this case the problem matcher's severity
++	* is used.
++	*/
++	severity?: number;
++
++	/**
++	* The match group index of the problem's code.
++	*
++	* Defaults to undefined. No code is captured.
++	*/
++	code?: number;
++
++	/**
++	* The match group index of the message. If omitted it defaults
++	* to 4 if location is specified. Otherwise it defaults to 5.
++	*/
++	message?: number;
++
++	/**
++	* Specifies if the last pattern in a multi line problem matcher should
++	* loop as long as it does match a line consequently. Only valid on the
++	* last problem pattern in a multi line problem matcher.
++	*/
++	loop?: boolean;
++}
++
++/**
++* A watching pattern
++*/
++export interface IWatchingPattern {
++	/**
++	* The actual regular expression
++	*/
++	regexp?: string;
++
++	/**
++	* The match group index of the filename. If provided the expression
++	* is matched for that file only.
++	*/
++	file?: number;
++}
++
++/**
++* A description to track the start and end of a watching task.
++*/
++export interface IBackgroundMonitor {
++
++	/**
++	* If set to true the watcher is in active mode when the task
++	* starts. This is equals of issuing a line that matches the
++	* beginsPattern.
++	*/
++	activeOnStart?: boolean;
++
++	/**
++	* If matched in the output the start of a watching task is signaled.
++	*/
++	beginsPattern?: string | IWatchingPattern;
++
++	/**
++	* If matched in the output the end of a watching task is signaled.
++	*/
++	endsPattern?: string | IWatchingPattern;
++}
++
++export interface INamedProblemMatcher {
++	/**
++	* This name can be used to refer to the
++	* problem matcher from within a task.
++	*/
++	name: string;
++
++	/**
++	 * A human readable label.
++	 */
++	label?: string;
++
++	/**
++	 * The name of a base problem matcher to use. If specified the
++	 * base problem matcher will be used as a template and properties
++	 * specified here will replace properties of the base problem
++	 * matcher
++	 */
++	base?: string;
++
++	/**
++	 * The owner of the produced VSCode problem. This is typically
++	 * the identifier of a VSCode language service if the problems are
++	 * to be merged with the one produced by the language service
++	 * or a generated internal id. Defaults to the generated internal id.
++	 */
++	owner?: string;
++
++	/**
++	 * A human-readable string describing the source of this problem.
++	 * E.g. 'typescript' or 'super lint'.
++	 */
++	source?: string;
++
++	/**
++	* Specifies to which kind of documents the problems found by this
++	* matcher are applied. Valid values are:
++	*
++	*   "allDocuments": problems found in all documents are applied.
++	*   "openDocuments": problems found in documents that are open
++	*   are applied.
++	*   "closedDocuments": problems found in closed documents are
++	*   applied.
++	*/
++	applyTo?: string;
++
++	/**
++	* The severity of the VSCode problem produced by this problem matcher.
++	*
++	* Valid values are:
++	*   "error": to produce errors.
++	*   "warning": to produce warnings.
++	*   "info": to produce infos.
++	*
++	* The value is used if a pattern doesn't specify a severity match group.
++	* Defaults to "error" if omitted.
++	*/
++	severity?: string;
++
++	/**
++	* Defines how filename reported in a problem pattern
++	* should be read. Valid values are:
++	*  - "absolute": the filename is always treated absolute.
++	*  - "relative": the filename is always treated relative to
++	*    the current working directory. This is the default.
++	*  - ["relative", "path value"]: the filename is always
++	*    treated relative to the given path value.
++	*  - "autodetect": the filename is treated relative to
++	*    the current workspace directory, and if the file
++	*    does not exist, it is treated as absolute.
++	*  - ["autodetect", "path value"]: the filename is treated
++	*    relative to the given path value, and if it does not
++	*    exist, it is treated as absolute.
++	*  - ["search", { include?: "" | []; exclude?: "" | [] }]: The filename
++	*    needs to be searched under the directories named by the "include"
++	*    property and their nested subdirectories. With "exclude" property
++	*    present, the directories should be removed from the search. When
++	*    `include` is not unprovided, the current workspace directory should
++	*    be used as the default.
++	*/
++	fileLocation?: string | string[] | ['search', ISearchFileLocationArgs];
++
++	/**
++	* The name of a predefined problem pattern, the inline definition
++	* of a problem pattern or an array of problem patterns to match
++	* problems spread over multiple lines.
++	*/
++	pattern?: string | IProblemPattern | IProblemPattern[];
++
++	/**
++	* A regular expression signaling that a watched tasks begins executing
++	* triggered through file watching.
++	*/
++	watchedTaskBeginsRegExp?: string;
++
++	/**
++	* A regular expression signaling that a watched tasks ends executing.
++	*/
++	watchedTaskEndsRegExp?: string;
++
++	/**
++	 * @deprecated Use background instead.
++	 */
++	watching?: IBackgroundMonitor;
++	background?: IBackgroundMonitor;
++}
++
++export type ISearchFileLocationArgs = {
++	include?: string | string[];
++	exclude?: string | string[];
++};
++
++export interface ITypescriptServerPlugin {
++	/**
++	 * Name of the plugin as listed in the package.json.
++	 */
++	name: string;
++	/**
++	 * Should the plugin be loaded when using workspace versions of TypeScript?
++	 */
++	enableForWorkspaceTypeScriptVersions: boolean;
++}
++
++export interface IHtmlLanguageParticipant {
++	/**
++	 * The id of the language that participates with HTML language server.
++	 */
+ 	languageId: string;
+-	languageName?: string;
+-	localizedLanguageName?: string;
+-	translations: ITranslation[];
+-	minimalTranslations?: { [key: string]: string };
++	/**
++	 * Whether the language participates with HTML auto insertions. If not specified, defaults to <code>true</code>.
++	 */
++	autoInsert: boolean;
+ }
+ 
+ export interface IChatParticipantContribution {
+@@ -190,33 +1348,186 @@ export interface IMcpCollectionContribution {
+ }
+ 
+ export interface IExtensionContributions {
+-	commands?: ICommand[];
+-	configuration?: any;
+-	debuggers?: IDebugger[];
+-	grammars?: IGrammar[];
+-	jsonValidation?: IJSONValidation[];
+-	keybindings?: IKeyBinding[];
+-	languages?: ILanguage[];
+-	menus?: { [context: string]: IMenu[] };
+-	snippets?: ISnippet[];
+-	themes?: ITheme[];
+-	iconThemes?: ITheme[];
+-	productIconThemes?: ITheme[];
+-	viewsContainers?: { [location: string]: IViewContainer[] };
+-	views?: { [location: string]: IView[] };
+-	colors?: IColor[];
+-	localizations?: ILocalizationContribution[];
++	/**
++	 * Contributes terminal functionality.
++	 */
++	readonly terminal?: ITerminal;
++	/**
++	 * Contributes commands to the command palette.
++	 */
++	readonly commands?: ICommand[];
++	/**
++	 * Contributes configuration settings.
++	 */
++	readonly configuration?: any;
++	/**
++	 * Contributes debug adapters.
++	 */
++	readonly debuggers?: IDebugger[];
++	/**
++	 * Contributes breakpoints.
++	 */
++	readonly breakpoints?: IBreakpoint[];
++	/**
++	 * Contributes textmate tokenizers.
++	 */
++	readonly grammars?: IGrammar[];
++	/**
++	 * Contributes json schema configuration.
++	 */
++	readonly jsonValidation?: IJSONValidation[];
++	/**
++	 * Contributes keybindings.
++	 */
++	readonly keybindings?: IKeyBinding[];
++	/**
++	 * Contributes language declarations.
++	 */
++	readonly languages?: ILanguage[];
++	/**
++	 * Contributes menu items to the editor
++	 */
++	readonly menus?: { [context: string]: IMenu[] };
++	/**
++	 * Contributes submenu items to the editor
++	 */
++	readonly submenus?: ISubMenu[];
++	/**
++	 * Contributes snippets.
++	 */
++	readonly snippets?: ISnippet[];
++	/**
++	 * Contributes textmate color themes.
++	 */
++	readonly themes?: IColorTheme[];
++	/**
++	 * Contributes file icon themes.
++	 */
++	readonly iconThemes?: IIconTheme[];
++	/**
++	 * Contributes product icon themes.
++	 */
++	readonly productIconThemes?: IProductTheme[];
++	/**
++	 * Contributes views containers to the editor
++	 */
++	readonly viewsContainers?: { [location: string]: IViewContainer[] };
++	/**
++	 * Contributes views to the editor
++	 */
++	readonly views?: { [location: string]: IView[] };
++	/**
++	 * Contributes extension defined themable colors
++	 */
++	readonly colors?: IColor[];
++	/**
++	 * Contributes localizations to the editor
++	 */
++	readonly localizations?: ILocalizationContribution[];
++	/**
++	 * Contributed custom editors.
++	 */
+ 	readonly customEditors?: readonly IWebviewEditor[];
+ 	readonly codeActions?: readonly ICodeActionContribution[];
+-	authentication?: IAuthenticationContribution[];
+-	walkthroughs?: IWalkthrough[];
+-	startEntries?: IStartEntry[];
++	/**
++	 * Contributes authentication
++	 */
++	readonly authentication?: IAuthenticationContribution[];
++	/**
++	 * Contribute walkthroughs to help users getting started with your extension.
++	 */
++	readonly walkthroughs?: IWalkthrough[];
++	readonly startEntries?: IStartEntry[];
++	/**
++	 * Contributes notebook document provider.
++	 */
+ 	readonly notebooks?: INotebookEntry[];
++	/**
++	 * Contributes notebook output renderer provider.
++	 */
+ 	readonly notebookRenderer?: INotebookRendererContribution[];
+ 	readonly debugVisualizers?: IDebugVisualizationContribution[];
++
+ 	readonly chatParticipants?: ReadonlyArray<IChatParticipantContribution>;
+ 	readonly languageModelTools?: ReadonlyArray<IToolContribution>;
+ 	readonly modelContextServerCollections?: ReadonlyArray<IMcpCollectionContribution>;
++
++
++	/**
++	 * Contributes notebook preloads.
++	 */
++	readonly notebookPreload?: NotebookPreload[];
++	/**
++	 * Contributes items to the status bar.
++	 */
++	readonly statusBarItems?: IStatusBarItem[];
++	/**
++	 * Contributes help information for Remote
++	 */
++	readonly remoteHelp?: IRemoteHelp;
++	/**
++	 * Contributes task kinds
++	 */
++	readonly taskDefinitions?: ITaskDefinitions[];
++	/**
++	 * Contributes extension defined themable icons
++	 */
++	readonly icons?: { [id: string]: IIcon };
++	/**
++	 * Contributed documentation.
++	 */
++	readonly documentation?: IDocumentation;
++	/**
++	 * Contributes resource label formatting rules.
++	 */
++	readonly resourceLabelFormatters?: IResourceLabelFormatters[];
++	readonly configurationDefaults?: { [id: string]: any };
++	/**
++	 * Contributes semantic token types.
++	 */
++	readonly semanticTokenTypes?: ISemanticTokenTypes[];
++	/**
++	 * Contributes semantic token modifiers.
++	 */
++	readonly semanticTokenModifiers?: ISemanticTokenModifiers[];
++	/**
++	 * Contributes semantic token scope maps.
++	 */
++	readonly semanticTokenScopes?: ISemanticTokenScopes[];
++	/**
++	 * Contributes terminal quick fixes.
++	 */
++	readonly terminalQuickFixes?: ITerminalQuickFix[];
++	/**
++	 * Contributes an Interactive Session provider
++	 */
++	readonly interactiveSession?: IInteractiveSession[];
++	/**
++	 * Contributed views welcome content. Welcome content will be rendered in tree based views whenever they have no meaningful content to display, ie. the File Explorer when no folder is open. Such content is useful as in-product documentation to drive users to use certain features before they are available. A good example would be a `Clone Repository` button in the File Explorer welcome view.
++	 */
++	readonly viewsWelcome?: IViewsWelcome[];
++	/**
++	 * Contributes problem matchers
++	 */
++	readonly problemMatchers?: INamedProblemMatcher[];
++	/**
++	 * Contributes problem patterns
++	 */
++	readonly problemPatterns?: NamedProblemPatterns;
++	/**
++	 * Contributed TypeScript server plugins.
++	 */
++	readonly typescriptServerPlugins?: ITypescriptServerPlugin[];
++	/**
++	 * A list of languages that participate with the HTML language server.
++	 */
++	readonly htmlLanguageParticipants?: IHtmlLanguageParticipant[];
++	readonly html?: {
++		customData?: string[];
++	};
++	readonly css?: {
++		customData?: string[];
++	};
+ }
+ 
+ export interface IExtensionCapabilities {
+diff --git a/src/vs/workbench/services/search/common/queryBuilder.ts b/src/vs/workbench/services/search/common/queryBuilder.ts
+index feaaf16c7f4..dd8c82bbe43 100644
+--- a/src/vs/workbench/services/search/common/queryBuilder.ts
++++ b/src/vs/workbench/services/search/common/queryBuilder.ts
+@@ -613,10 +613,10 @@ export class QueryBuilder {
+ 			folderName: includeFolderName ? folderName : undefined,
+ 			excludePattern: excludePatternRet,
+ 			fileEncoding: folderConfig.files && folderConfig.files.encoding,
+-			disregardIgnoreFiles: typeof options.disregardIgnoreFiles === 'boolean' ? options.disregardIgnoreFiles : !folderConfig.search.useIgnoreFiles,
+-			disregardGlobalIgnoreFiles: typeof options.disregardGlobalIgnoreFiles === 'boolean' ? options.disregardGlobalIgnoreFiles : !folderConfig.search.useGlobalIgnoreFiles,
+-			disregardParentIgnoreFiles: typeof options.disregardParentIgnoreFiles === 'boolean' ? options.disregardParentIgnoreFiles : !folderConfig.search.useParentIgnoreFiles,
+-			ignoreSymlinks: typeof options.ignoreSymlinks === 'boolean' ? options.ignoreSymlinks : !folderConfig.search.followSymlinks,
++			disregardIgnoreFiles: typeof options.disregardIgnoreFiles === 'boolean' ? options.disregardIgnoreFiles : !folderConfig.search?.useIgnoreFiles,
++			disregardGlobalIgnoreFiles: typeof options.disregardGlobalIgnoreFiles === 'boolean' ? options.disregardGlobalIgnoreFiles : !folderConfig.search?.useGlobalIgnoreFiles,
++			disregardParentIgnoreFiles: typeof options.disregardParentIgnoreFiles === 'boolean' ? options.disregardParentIgnoreFiles : !folderConfig.search?.useParentIgnoreFiles,
++			ignoreSymlinks: typeof options.ignoreSymlinks === 'boolean' ? options.ignoreSymlinks : !folderConfig.search?.followSymlinks,
+ 		};
+ 	}
+ }
+diff --git a/src/vs/workbench/services/themes/common/colorExtensionPoint.ts b/src/vs/workbench/services/themes/common/colorExtensionPoint.ts
+index 889c61bb08c..b392cc8614f 100644
+--- a/src/vs/workbench/services/themes/common/colorExtensionPoint.ts
++++ b/src/vs/workbench/services/themes/common/colorExtensionPoint.ts
+@@ -186,7 +186,7 @@ class ColorDataRenderer extends Disposable implements IExtensionFeatureTableRend
+ 					color.description,
+ 					toColor(color.defaults.dark) ?? new MarkdownString().appendMarkdown(`\`${color.defaults.dark}\``),
+ 					toColor(color.defaults.light) ?? new MarkdownString().appendMarkdown(`\`${color.defaults.light}\``),
+-					toColor(color.defaults.highContrast) ?? new MarkdownString().appendMarkdown(`\`${color.defaults.highContrast}\``),
++					toColor(color.defaults.highContrast!) ?? new MarkdownString().appendMarkdown(`\`${color.defaults.highContrast}\``),
+ 				];
+ 			});
+ 
+diff --git a/src/vs/workbench/services/themes/common/tokenClassificationExtensionPoint.ts b/src/vs/workbench/services/themes/common/tokenClassificationExtensionPoint.ts
+index e10bf30175f..d78e65afc3f 100644
+--- a/src/vs/workbench/services/themes/common/tokenClassificationExtensionPoint.ts
++++ b/src/vs/workbench/services/themes/common/tokenClassificationExtensionPoint.ts
+@@ -69,6 +69,7 @@ const tokenModifierExtPoint = ExtensionsRegistry.registerExtensionPoint<ITokenMo
+ 					patternErrorMessage: nls.localize('contributes.semanticTokenModifiers.id.format', 'Identifiers should be in the form letterOrDigit[_-letterOrDigit]*')
+ 				},
+ 				description: {
++					type: 'string',
+ 					description: nls.localize('contributes.semanticTokenModifiers.description', 'The description of the semantic token modifier')
+ 				}
+ 			}

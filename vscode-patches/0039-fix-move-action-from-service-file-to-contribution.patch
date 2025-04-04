@@ -1,0 +1,161 @@
+From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
+From: =?UTF-8?q?Lo=C3=AFc=20Mangeonjean?= <loic@coderpad.io>
+Date: Mon, 15 Apr 2024 10:52:20 +0200
+Subject: [PATCH] fix: move action from service file to contribution
+
+---
+ .../browser/gettingStarted.contribution.ts    |  1 +
+ .../gettingStartedService._contribution.ts    | 55 +++++++++++++++++++
+ .../browser/gettingStartedService.ts          | 50 +----------------
+ 3 files changed, 58 insertions(+), 48 deletions(-)
+ create mode 100644 src/vs/workbench/contrib/welcomeGettingStarted/browser/gettingStartedService._contribution.ts
+
+diff --git a/src/vs/workbench/contrib/welcomeGettingStarted/browser/gettingStarted.contribution.ts b/src/vs/workbench/contrib/welcomeGettingStarted/browser/gettingStarted.contribution.ts
+index a57f9c15dd7..6bade0ed9d7 100644
+--- a/src/vs/workbench/contrib/welcomeGettingStarted/browser/gettingStarted.contribution.ts
++++ b/src/vs/workbench/contrib/welcomeGettingStarted/browser/gettingStarted.contribution.ts
+@@ -33,6 +33,7 @@ import { Categories } from '../../../../platform/action/common/actionCommonCateg
+ import { DisposableStore } from '../../../../base/common/lifecycle.js';
+ import { AccessibleViewRegistry } from '../../../../platform/accessibility/browser/accessibleViewRegistry.js';
+ import { GettingStartedAccessibleView } from './gettingStartedAccessibleView.js';
++import 'vs/workbench/contrib/welcomeGettingStarted/browser/gettingStartedService._contribution.js';
+ 
+ export * as icons from './gettingStartedIcons.js';
+ 
+diff --git a/src/vs/workbench/contrib/welcomeGettingStarted/browser/gettingStartedService._contribution.ts b/src/vs/workbench/contrib/welcomeGettingStarted/browser/gettingStartedService._contribution.ts
+new file mode 100644
+index 00000000000..827c6eac860
+--- /dev/null
++++ b/src/vs/workbench/contrib/welcomeGettingStarted/browser/gettingStartedService._contribution.ts
+@@ -0,0 +1,55 @@
++/*---------------------------------------------------------------------------------------------
++ *  Copyright (c) Microsoft Corporation. All rights reserved.
++ *  Licensed under the MIT License. See License.txt in the project root for license information.
++ *--------------------------------------------------------------------------------------------*/
++
++import { localize2 } from '../../../../nls.js';
++import { Action2, registerAction2 } from '../../../../platform/actions/common/actions.js';
++import { ServicesAccessor } from '../../../../platform/instantiation/common/instantiation.js';
++import { IStorageService, StorageScope, StorageTarget } from '../../../../platform/storage/common/storage.js';
++import { Memento } from '../../../common/memento.js';
++import { hiddenEntriesConfigurationKey, IWalkthroughsService, walkthroughMetadataConfigurationKey } from './gettingStartedService.js';
++
++registerAction2(class extends Action2 {
++	constructor() {
++		super({
++			id: 'resetGettingStartedProgress',
++			category: localize2('developer', "Developer"),
++			title: localize2('resetWelcomePageWalkthroughProgress', "Reset Welcome Page Walkthrough Progress"),
++			f1: true,
++			metadata: {
++				description: localize2('resetGettingStartedProgressDescription', 'Reset the progress of all Walkthrough steps on the Welcome Page to make them appear as if they are being viewed for the first time, providing a fresh start to the getting started experience.'),
++			}
++		});
++	}
++
++	run(accessor: ServicesAccessor) {
++		const gettingStartedService = accessor.get(IWalkthroughsService);
++		const storageService = accessor.get(IStorageService);
++
++		storageService.store(
++			hiddenEntriesConfigurationKey,
++			JSON.stringify([]),
++			StorageScope.PROFILE,
++			StorageTarget.USER);
++
++		storageService.store(
++			walkthroughMetadataConfigurationKey,
++			JSON.stringify([]),
++			StorageScope.PROFILE,
++			StorageTarget.USER);
++
++		const memento = new Memento('gettingStartedService', accessor.get(IStorageService));
++		const record = memento.getMemento(StorageScope.PROFILE, StorageTarget.USER);
++		for (const key in record) {
++			if (Object.prototype.hasOwnProperty.call(record, key)) {
++				try {
++					gettingStartedService.deprogressStep(key);
++				} catch (e) {
++					console.error(e);
++				}
++			}
++		}
++		memento.saveMemento();
++	}
++});
+diff --git a/src/vs/workbench/contrib/welcomeGettingStarted/browser/gettingStartedService.ts b/src/vs/workbench/contrib/welcomeGettingStarted/browser/gettingStartedService.ts
+index 6c37361d04c..df0920e1306 100644
+--- a/src/vs/workbench/contrib/welcomeGettingStarted/browser/gettingStartedService.ts
++++ b/src/vs/workbench/contrib/welcomeGettingStarted/browser/gettingStartedService.ts
+@@ -3,11 +3,10 @@
+  *  Licensed under the MIT License. See License.txt in the project root for license information.
+  *--------------------------------------------------------------------------------------------*/
+ 
+-import { createDecorator, IInstantiationService, ServicesAccessor } from '../../../../platform/instantiation/common/instantiation.js';
++import { createDecorator, IInstantiationService } from '../../../../platform/instantiation/common/instantiation.js';
+ import { Emitter, Event } from '../../../../base/common/event.js';
+ import { IStorageService, StorageScope, StorageTarget } from '../../../../platform/storage/common/storage.js';
+ import { Memento } from '../../../common/memento.js';
+-import { Action2, registerAction2 } from '../../../../platform/actions/common/actions.js';
+ import { ICommandService } from '../../../../platform/commands/common/commands.js';
+ import { ContextKeyExpr, ContextKeyExpression, IContextKeyService, RawContextKey } from '../../../../platform/contextkey/common/contextkey.js';
+ import { Disposable } from '../../../../base/common/lifecycle.js';
+@@ -28,7 +27,7 @@ import { InstantiationType, registerSingleton } from '../../../../platform/insta
+ import { dirname } from '../../../../base/common/path.js';
+ import { coalesce } from '../../../../base/common/arrays.js';
+ import { IViewsService } from '../../../services/views/common/viewsService.js';
+-import { localize, localize2 } from '../../../../nls.js';
++import { localize } from '../../../../nls.js';
+ import { ITelemetryService } from '../../../../platform/telemetry/common/telemetry.js';
+ import { checkGlobFileExists } from '../../../services/extensions/common/workspaceContains.js';
+ import { IWorkspaceContextService } from '../../../../platform/workspace/common/workspace.js';
+@@ -723,49 +722,4 @@ const convertRelativeMediaPathsToWebviewURIs = (basePath: URI, path: string | {
+ 	}
+ };
+ 
+-
+-registerAction2(class extends Action2 {
+-	constructor() {
+-		super({
+-			id: 'resetGettingStartedProgress',
+-			category: localize2('developer', "Developer"),
+-			title: localize2('resetWelcomePageWalkthroughProgress', "Reset Welcome Page Walkthrough Progress"),
+-			f1: true,
+-			metadata: {
+-				description: localize2('resetGettingStartedProgressDescription', 'Reset the progress of all Walkthrough steps on the Welcome Page to make them appear as if they are being viewed for the first time, providing a fresh start to the getting started experience.'),
+-			}
+-		});
+-	}
+-
+-	run(accessor: ServicesAccessor) {
+-		const gettingStartedService = accessor.get(IWalkthroughsService);
+-		const storageService = accessor.get(IStorageService);
+-
+-		storageService.store(
+-			hiddenEntriesConfigurationKey,
+-			JSON.stringify([]),
+-			StorageScope.PROFILE,
+-			StorageTarget.USER);
+-
+-		storageService.store(
+-			walkthroughMetadataConfigurationKey,
+-			JSON.stringify([]),
+-			StorageScope.PROFILE,
+-			StorageTarget.USER);
+-
+-		const memento = new Memento('gettingStartedService', accessor.get(IStorageService));
+-		const record = memento.getMemento(StorageScope.PROFILE, StorageTarget.USER);
+-		for (const key in record) {
+-			if (Object.prototype.hasOwnProperty.call(record, key)) {
+-				try {
+-					gettingStartedService.deprogressStep(key);
+-				} catch (e) {
+-					console.error(e);
+-				}
+-			}
+-		}
+-		memento.saveMemento();
+-	}
+-});
+-
+ registerSingleton(IWalkthroughsService, WalkthroughsService, InstantiationType.Delayed);

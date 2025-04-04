@@ -1,0 +1,88 @@
+From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
+From: =?UTF-8?q?Lo=C3=AFc=20Mangeonjean?= <loic@coderpad.io>
+Date: Wed, 5 Feb 2025 16:00:22 +0100
+Subject: [PATCH] refactor: use URL syntax, prevent importing amdX at all
+
+---
+ .../threadedBackgroundTokenizerFactory.ts         | 15 ++-------------
+ .../browser/textMateTokenizationFeatureImpl.ts    |  4 ++--
+ 2 files changed, 4 insertions(+), 15 deletions(-)
+
+diff --git a/src/vs/workbench/services/textMate/browser/backgroundTokenization/threadedBackgroundTokenizerFactory.ts b/src/vs/workbench/services/textMate/browser/backgroundTokenization/threadedBackgroundTokenizerFactory.ts
+index 59502ab69cc..fe37ec334d6 100644
+--- a/src/vs/workbench/services/textMate/browser/backgroundTokenization/threadedBackgroundTokenizerFactory.ts
++++ b/src/vs/workbench/services/textMate/browser/backgroundTokenization/threadedBackgroundTokenizerFactory.ts
+@@ -3,17 +3,13 @@
+  *  Licensed under the MIT License. See License.txt in the project root for license information.
+  *--------------------------------------------------------------------------------------------*/
+ 
+-import { canASAR } from '../../../../../amdX.js';
+ import { DisposableStore, IDisposable, toDisposable } from '../../../../../base/common/lifecycle.js';
+-import { AppResourcePath, FileAccess, nodeModulesAsarPath, nodeModulesPath } from '../../../../../base/common/network.js';
+ import { IObservable } from '../../../../../base/common/observable.js';
+-import { isWeb } from '../../../../../base/common/platform.js';
+ import { URI, UriComponents } from '../../../../../base/common/uri.js';
+ import { IBackgroundTokenizationStore, IBackgroundTokenizer } from '../../../../../editor/common/languages.js';
+ import { ILanguageService } from '../../../../../editor/common/languages/language.js';
+ import { ITextModel } from '../../../../../editor/common/model.js';
+ import { IConfigurationService } from '../../../../../platform/configuration/common/configuration.js';
+-import { IEnvironmentService } from '../../../../../platform/environment/common/environment.js';
+ import { IExtensionResourceLoaderService } from '../../../../../platform/extensionResourceLoader/common/extensionResourceLoader.js';
+ import { INotificationService } from '../../../../../platform/notification/common/notification.js';
+ import { ITelemetryService } from '../../../../../platform/telemetry/common/telemetry.js';
+@@ -24,6 +20,7 @@ import { IValidGrammarDefinition } from '../../common/TMScopeRegistry.js';
+ import type { IRawTheme } from 'vscode-textmate';
+ import { createWebWorker } from '../../../../../base/browser/webWorkerFactory.js';
+ import { IWebWorkerClient, Proxied } from '../../../../../base/common/worker/webWorker.js';
++import { FileAccess } from '../../../../../base/common/network.js';
+ 
+ export class ThreadedBackgroundTokenizerFactory implements IDisposable {
+ 	private static _reportedMismatchingTokens = false;
+@@ -43,7 +40,6 @@ export class ThreadedBackgroundTokenizerFactory implements IDisposable {
+ 		@IExtensionResourceLoaderService private readonly _extensionResourceLoaderService: IExtensionResourceLoaderService,
+ 		@IConfigurationService private readonly _configurationService: IConfigurationService,
+ 		@ILanguageService private readonly _languageService: ILanguageService,
+-		@IEnvironmentService private readonly _environmentService: IEnvironmentService,
+ 		@INotificationService private readonly _notificationService: INotificationService,
+ 		@ITelemetryService private readonly _telemetryService: ITelemetryService,
+ 	) {
+@@ -126,16 +122,9 @@ export class ThreadedBackgroundTokenizerFactory implements IDisposable {
+ 	}
+ 
+ 	private async _createWorkerProxy(): Promise<Proxied<TextMateTokenizationWorker> | null> {
+-		const onigurumaModuleLocation: AppResourcePath = `${nodeModulesPath}/vscode-oniguruma`;
+-		const onigurumaModuleLocationAsar: AppResourcePath = `${nodeModulesAsarPath}/vscode-oniguruma`;
+-
+-		const useAsar = canASAR && this._environmentService.isBuilt && !isWeb;
+-		const onigurumaLocation: AppResourcePath = useAsar ? onigurumaModuleLocationAsar : onigurumaModuleLocation;
+-		const onigurumaWASM: AppResourcePath = `${onigurumaLocation}/release/onig.wasm`;
+-
+ 		const createData: ICreateData = {
+ 			grammarDefinitions: this._grammarDefinitions,
+-			onigurumaWASMUri: FileAccess.asBrowserUri(onigurumaWASM).toString(true),
++			onigurumaWASMUri: new URL('vscode-oniguruma/release/onig.wasm', import.meta.url).href,
+ 		};
+ 		const worker = this._worker = createWebWorker<TextMateTokenizationWorker>(
+ 			FileAccess.asBrowserUri('vs/workbench/services/textMate/browser/backgroundTokenization/worker/textMateTokenizationWorker.workerMain.js'),
+diff --git a/src/vs/workbench/services/textMate/browser/textMateTokenizationFeatureImpl.ts b/src/vs/workbench/services/textMate/browser/textMateTokenizationFeatureImpl.ts
+index 86d36458fd5..9ee8a058737 100644
+--- a/src/vs/workbench/services/textMate/browser/textMateTokenizationFeatureImpl.ts
++++ b/src/vs/workbench/services/textMate/browser/textMateTokenizationFeatureImpl.ts
+@@ -4,7 +4,7 @@
+  *--------------------------------------------------------------------------------------------*/
+ 
+ import * as domStylesheets from '../../../../base/browser/domStylesheets.js';
+-import { canASAR, resolveAmdNodeModulePath } from '../../../../amdX.js';
++import { canASAR } from '../../../../amdX.js';
+ import { equals as equalArray } from '../../../../base/common/arrays.js';
+ import { Color } from '../../../../base/common/color.js';
+ import { onUnexpectedError } from '../../../../base/common/errors.js';
+@@ -373,7 +373,7 @@ export class TextMateTokenizationFeature extends Disposable implements ITextMate
+ 
+ 	private async _loadVSCodeOnigurumaWASM(): Promise<Response | ArrayBuffer> {
+ 		if (isWeb) {
+-			const response = await fetch(resolveAmdNodeModulePath('vscode-oniguruma', 'release/onig.wasm'));
++			const response = await fetch(new URL('vscode-oniguruma/release/onig.wasm', import.meta.url).href);
+ 			// Using the response directly only works if the server sets the MIME type 'application/wasm'.
+ 			// Otherwise, a TypeError is thrown when using the streaming compiler.
+ 			// We therefore use the non-streaming compiler :(.
