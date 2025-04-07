@@ -4,7 +4,7 @@ import chalk from 'chalk'
 import * as rollup from 'rollup'
 import nodeResolve from '@rollup/plugin-node-resolve'
 import commonjs from '@rollup/plugin-commonjs'
-import { importMetaAssets } from '@web/rollup-plugin-import-meta-assets'
+import importMetaAssets from '../plugins/import-meta-assets-plugin.js'
 import * as fs from 'node:fs'
 import * as nodePath from 'node:path'
 import {
@@ -16,7 +16,8 @@ import {
   DIST_DIR,
   MAIN_PACKAGE_NAME,
   EDITOR_API_PACKAGE_NAME,
-  EXTENSION_API_PACKAGE_NAME
+  EXTENSION_API_PACKAGE_NAME,
+  DIST_DIR_MAIN
 } from './config.js'
 import carryDtsPlugin from '../plugins/rollup-carry-dts-plugin.js'
 import subpackagePlugin, {
@@ -26,6 +27,7 @@ import subpackagePlugin, {
   type SubPackageExternalDependency
 } from '../plugins/rollup-subpackage-plugin.js'
 import resolveAssetUrlPlugin from '../plugins/resolve-asset-url-plugin.js'
+import css from '../plugins/css-import-plugin.js'
 
 const COMMON_PACKAGE_NAME_UUID_NAMESPACE = '251b3eab-b5c9-4930-9c6c-6b38f697d291'
 
@@ -182,7 +184,11 @@ export function configuredSubpackagePlugin(): rollup.Plugin {
         plugins: [
           options.plugins,
           importMetaAssets({
-            include: ['**/*.ts', '**/*.js']
+            include: ['**/*.ts', '**/*.js'],
+            preserveAssetsRoot: DIST_DIR_MAIN
+          }),
+          css({
+            preserveAssetsRoot: DIST_DIR_MAIN
           }),
           commonjs({
             include: '**/vscode-semver/**/*'
@@ -374,6 +380,9 @@ ${code}`
                 types: './services.d.ts',
                 default: './services.js'
               },
+              './vscode/*.css': {
+                default: './vscode/src/*.css'
+              },
               './vscode/*': {
                 types: './vscode/src/*.d.ts',
                 default: './vscode/src/*.js'
@@ -405,6 +414,9 @@ ${code}`
             exports: {
               '.': {
                 default: './extension.api.js'
+              },
+              './vscode/*.css': {
+                default: './vscode/src/*.css'
               },
               './vscode/*': {
                 types: './vscode/src/*.d.ts',
@@ -456,6 +468,9 @@ ${code}`
                 '.': {
                   default: './empty.js'
                 },
+                './vscode/*.css': {
+                  default: './vscode/src/*.css'
+                },
                 './vscode/*': {
                   types: './vscode/src/*.d.ts',
                   default: './vscode/src/*.js'
@@ -481,6 +496,9 @@ ${code}`
               exports: {
                 '.': {
                   default: './index.js'
+                },
+                './vscode/*.css': {
+                  default: './vscode/src/*.css'
                 },
                 './vscode/*': {
                   types: './vscode/src/*.d.ts',

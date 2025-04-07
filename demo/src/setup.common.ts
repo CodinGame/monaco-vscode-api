@@ -78,6 +78,7 @@ import getExplorerServiceOverride from '@codingame/monaco-vscode-explorer-servic
 import getLocalizationServiceOverride from '@codingame/monaco-vscode-localization-service-override'
 import getTreeSitterServiceOverride from '@codingame/monaco-vscode-treesitter-service-override'
 import getTelemetryServiceOverride from '@codingame/monaco-vscode-telemetry-service-override'
+import getMcpServiceOverride from '@codingame/monaco-vscode-mcp-service-override'
 import { EnvironmentOverride } from '@codingame/monaco-vscode-api/workbench'
 import { Worker } from './tools/crossOriginWorker'
 import defaultKeybindings from './user/keybindings.json?raw'
@@ -385,12 +386,10 @@ export const constructOptions: IWorkbenchConstructionOptions = {
     nameLong: 'monaco-vscode-api',
     extensionsGallery: {
       serviceUrl: 'https://open-vsx.org/vscode/gallery',
-      itemUrl: 'https://open-vsx.org/vscode/item',
       resourceUrlTemplate: 'https://open-vsx.org/vscode/unpkg/{publisher}/{name}/{version}/{path}',
       extensionUrlTemplate: 'https://open-vsx.org/vscode/gallery/{publisher}/{name}/latest', // https://github.com/eclipse/openvsx/issues/1036#issuecomment-2476449435
       controlUrl: '',
-      nlsBaseUrl: '',
-      publisherUrl: ''
+      nlsBaseUrl: ''
     }
   }
 }
@@ -541,5 +540,6 @@ export const commonServices: IEditorOverrideServices = {
     ]
   }),
   ...getSecretStorageServiceOverride(),
-  ...getTelemetryServiceOverride()
+  ...getTelemetryServiceOverride(),
+  ...getMcpServiceOverride()
 }

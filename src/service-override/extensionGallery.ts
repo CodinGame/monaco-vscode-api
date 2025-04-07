@@ -6,7 +6,6 @@ import {
   IExtensionTipsService,
   IGlobalExtensionEnablementService
 } from 'vs/platform/extensionManagement/common/extensionManagement.service'
-import { ExtensionGalleryService } from 'vs/platform/extensionManagement/common/extensionGalleryService'
 import { GlobalExtensionEnablementService } from 'vs/platform/extensionManagement/common/extensionEnablementService'
 import type { IExtension as IContribExtension } from 'vs/workbench/contrib/extensions/common/extensions'
 import { IExtensionsWorkbenchService } from 'vs/workbench/contrib/extensions/common/extensions.service'
@@ -56,9 +55,12 @@ import { AllowedExtensionsService } from 'vs/platform/extensionManagement/common
 import { registerAssets } from '../assets.js'
 import { getExtensionManifests } from '../extensions.js'
 import { isLocaleAvailable } from '../l10n.js'
+import { unsupported } from '../tools'
+import { IExtensionGalleryManifestService } from 'vs/platform/extensionManagement/common/extensionGalleryManifest.service.js'
+import { WebExtensionGalleryManifestService } from 'vs/workbench/services/extensionManagement/browser/extensionGalleryManifestService'
+import { WorkbenchExtensionGalleryService } from 'vs/workbench/services/extensionManagement/common/extensionGalleryService'
 import 'vs/workbench/contrib/extensions/browser/extensions.contribution'
 import 'vs/workbench/contrib/extensions/browser/extensions.web.contribution'
-import { unsupported } from '../tools'
 
 // plugin-import-meta-asset only allows relative paths
 registerAssets({
@@ -138,7 +140,11 @@ export default function getServiceOverride(
   options: ExtensionGalleryOptions = { webOnly: false }
 ): IEditorOverrideServices {
   return {
-    [IExtensionGalleryService.toString()]: new SyncDescriptor(ExtensionGalleryService, [], true),
+    [IExtensionGalleryService.toString()]: new SyncDescriptor(
+      WorkbenchExtensionGalleryService,
+      [],
+      true
+    ),
     [IGlobalExtensionEnablementService.toString()]: new SyncDescriptor(
       GlobalExtensionEnablementService,
       [],
@@ -222,6 +228,11 @@ export default function getServiceOverride(
       [],
       true
     ),
-    [IAllowedExtensionsService.toString()]: new SyncDescriptor(AllowedExtensionsService, [], true)
+    [IAllowedExtensionsService.toString()]: new SyncDescriptor(AllowedExtensionsService, [], true),
+    [IExtensionGalleryManifestService.toString()]: new SyncDescriptor(
+      WebExtensionGalleryManifestService,
+      [],
+      true
+    )
   }
 }

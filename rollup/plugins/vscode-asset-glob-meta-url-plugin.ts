@@ -30,7 +30,8 @@ export default ({ vscodeSrcDir }: { vscodeSrcDir: string }): Plugin => {
           const ref = this.emitFile({
             type: 'asset',
             name: nodePath.basename(file),
-            source: await fs.promises.readFile(filePath)
+            source: await fs.promises.readFile(filePath),
+            fileName: nodePath.join('vscode/src', file)
           })
           return { file, ref }
         })

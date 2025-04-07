@@ -5,13 +5,13 @@ import cleanup from 'js-cleanup'
 import commonjs from '@rollup/plugin-commonjs'
 import replace from '@rollup/plugin-replace'
 import dynamicImportVars from '@rollup/plugin-dynamic-import-vars'
-import styles from 'rollup-plugin-styles'
-import { importMetaAssets } from '@web/rollup-plugin-import-meta-assets'
+import importMetaAssetsPlugin from './plugins/import-meta-assets-plugin.js'
 import copy from 'rollup-plugin-copy'
 import * as fs from 'node:fs'
 import * as nodePath from 'node:path'
 import carryDtsPlugin from './plugins/rollup-carry-dts-plugin.js'
 import { configuredSubpackagePlugin } from './tools/configuredSubpackagePlugin.js'
+import css from './plugins/css-import-plugin.js'
 import {
   relativizeVscodeImportsTransformer,
   resolveVscodePlugin,
@@ -90,11 +90,11 @@ export default (args: Record<string, string>): rollup.RollupOptions => {
     output: [
       {
         preserveModules: true,
-        preserveModulesRoot: 'src',
+        preserveModulesRoot: SRC_DIR,
         minifyInternalExports: false,
         assetFileNames: 'assets/[name][extname]',
         format: 'esm',
-        dir: DIST_DIR_MAIN,
+        dir: 'dist/tmp',
         entryFileNames: (chunkInfo) => {
           // Rename node_modules to external so it's not removed while publishing the package
           // tslib and rollup-plugin-styles are bundled
@@ -109,8 +109,9 @@ export default (args: Record<string, string>): rollup.RollupOptions => {
     ],
     input,
     plugins: [
-      importMetaAssets({
-        include: ['**/*.ts', '**/*.js']
+      importMetaAssetsPlugin({
+        include: ['**/*.ts', '**/*.js'],
+        preserveAssetsRoot: SRC_DIR
       }),
       commonjs({
         include: '**/vscode-semver/**/*'
@@ -154,9 +155,8 @@ export default (args: Record<string, string>): rollup.RollupOptions => {
         preventAssignment: true
       }),
       vscodeAssetGlobMetaUrl({ vscodeSrcDir: VSCODE_SRC_DIR }),
-      styles({
-        mode: 'inject',
-        minimize: true
+      css({
+        preserveAssetsRoot: SRC_DIR
       }),
       dynamicImportPolyfillPlugin(),
       dynamicImportVars({

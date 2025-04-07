@@ -1,0 +1,268 @@
+From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
+From: =?UTF-8?q?Lo=C3=AFc=20Mangeonjean?= <loic@coderpad.io>
+Date: Mon, 11 Mar 2024 17:22:31 +0100
+Subject: [PATCH] fix: replace amd imports by regular esm dynamic imports
+
+---
+ .../assignment/common/assignmentService.ts      |  3 +--
+ src/vs/platform/telemetry/common/1dsAppender.ts |  9 ++-------
+ .../terminal/browser/terminalInstance.ts        |  3 +--
+ .../browser/xterm/xtermAddonImporter.ts         | 17 ++++++++---------
+ .../textMateWorkerTokenizerController.ts        |  3 +--
+ .../worker/textMateTokenizationWorker.worker.ts |  5 ++---
+ .../worker/textMateWorkerTokenizer.ts           |  3 +--
+ .../browser/textMateTokenizationFeatureImpl.ts  |  6 +++---
+ .../services/textfile/common/encoding.ts        |  9 ++++-----
+ 9 files changed, 23 insertions(+), 35 deletions(-)
+
+diff --git a/src/vs/platform/assignment/common/assignmentService.ts b/src/vs/platform/assignment/common/assignmentService.ts
+index 413bd60f7ff..2e7fcb3d31c 100644
+--- a/src/vs/platform/assignment/common/assignmentService.ts
++++ b/src/vs/platform/assignment/common/assignmentService.ts
+@@ -9,7 +9,6 @@ import { IConfigurationService } from '../../configuration/common/configuration.
+ import { IProductService } from '../../product/common/productService.js';
+ import { getTelemetryLevel } from '../../telemetry/common/telemetryUtils.js';
+ import { AssignmentFilterProvider, ASSIGNMENT_REFETCH_INTERVAL, ASSIGNMENT_STORAGE_KEY, IAssignmentService, TargetPopulation } from './assignment.js';
+-import { importAMDNodeModule } from '../../../amdX.js';
+ import { IEnvironmentService } from '../../environment/common/environment.js';
+ 
+ export abstract class BaseAssignmentService implements IAssignmentService {
+@@ -88,7 +87,7 @@ export abstract class BaseAssignmentService implements IAssignmentService {
+ 		);
+ 
+ 		const tasConfig = this.productService.tasConfig!;
+-		const tasClient = new (await importAMDNodeModule<typeof import('tas-client-umd')>('tas-client-umd', 'lib/tas-client-umd.js')).ExperimentationService({
++		const tasClient = new (await import('tas-client-umd')).ExperimentationService({
+ 			filterProviders: [filterProvider],
+ 			telemetry: this.telemetry,
+ 			storageKey: ASSIGNMENT_STORAGE_KEY,
+diff --git a/src/vs/platform/telemetry/common/1dsAppender.ts b/src/vs/platform/telemetry/common/1dsAppender.ts
+index 59a0dadcb7d..f39a10d515f 100644
+--- a/src/vs/platform/telemetry/common/1dsAppender.ts
++++ b/src/vs/platform/telemetry/common/1dsAppender.ts
+@@ -5,10 +5,8 @@
+ 
+ import type { IExtendedConfiguration, IExtendedTelemetryItem, ITelemetryItem, ITelemetryUnloadState } from '@microsoft/1ds-core-js';
+ import type { IChannelConfiguration, IXHROverride, PostChannel } from '@microsoft/1ds-post-js';
+-import { importAMDNodeModule } from '../../../amdX.js';
+ import { onUnexpectedError } from '../../../base/common/errors.js';
+ import { mixin } from '../../../base/common/objects.js';
+-import { isWeb } from '../../../base/common/platform.js';
+ import { ITelemetryAppender, validateTelemetryData } from './telemetryUtils.js';
+ 
+ // Interface type which is a subset of @microsoft/1ds-core-js AppInsightsCore.
+@@ -23,11 +21,8 @@ const endpointUrl = 'https://mobile.events.data.microsoft.com/OneCollector/1.0';
+ const endpointHealthUrl = 'https://mobile.events.data.microsoft.com/ping';
+ 
+ async function getClient(instrumentationKey: string, addInternalFlag?: boolean, xhrOverride?: IXHROverride): Promise<IAppInsightsCore> {
+-	// eslint-disable-next-line local/code-amd-node-module
+-	const oneDs = isWeb ? await importAMDNodeModule<typeof import('@microsoft/1ds-core-js')>('@microsoft/1ds-core-js', 'bundle/ms.core.min.js') : await import('@microsoft/1ds-core-js');
+-	// eslint-disable-next-line local/code-amd-node-module
+-	const postPlugin = isWeb ? await importAMDNodeModule<typeof import('@microsoft/1ds-post-js')>('@microsoft/1ds-post-js', 'bundle/ms.post.min.js') : await import('@microsoft/1ds-post-js');
+-
++	const oneDs = await import('@microsoft/1ds-core-js');
++	const postPlugin = await import('@microsoft/1ds-post-js');
+ 	const appInsightsCore = new oneDs.AppInsightsCore();
+ 	const collectorChannelPlugin: PostChannel = new postPlugin.PostChannel();
+ 	// Configure the app insights core to send to collector++ and disable logging of debug info
+diff --git a/src/vs/workbench/contrib/terminal/browser/terminalInstance.ts b/src/vs/workbench/contrib/terminal/browser/terminalInstance.ts
+index 8149a20e575..828e8b4e614 100644
+--- a/src/vs/workbench/contrib/terminal/browser/terminalInstance.ts
++++ b/src/vs/workbench/contrib/terminal/browser/terminalInstance.ts
+@@ -79,7 +79,6 @@ import { IHistoryService } from '../../../services/history/common/history.js';
+ import { isHorizontal, IWorkbenchLayoutService } from '../../../services/layout/browser/layoutService.js';
+ import { IPathService } from '../../../services/path/common/pathService.js';
+ import { IPreferencesService } from '../../../services/preferences/common/preferences.js';
+-import { importAMDNodeModule } from '../../../../amdX.js';
+ import type { IMarker, Terminal as XTermTerminal } from '@xterm/xterm';
+ import { AccessibilityCommandId } from '../../accessibility/common/accessibilityCommands.js';
+ import { terminalStrings } from '../common/terminalStrings.js';
+@@ -763,7 +762,7 @@ export class TerminalInstance extends Disposable implements ITerminalInstance {
+ 			return xtermConstructor;
+ 		}
+ 		xtermConstructor = Promises.withAsyncBody<typeof XTermTerminal>(async (resolve) => {
+-			const Terminal = (await importAMDNodeModule<typeof import('@xterm/xterm')>('@xterm/xterm', 'lib/xterm.js')).Terminal;
++			const Terminal = (await import('@xterm/xterm')).Terminal;
+ 			// Localize strings
+ 			Terminal.strings.promptLabel = nls.localize('terminal.integrated.a11yPromptLabel', 'Terminal input');
+ 			Terminal.strings.tooMuchOutput = keybinding ? nls.localize('terminal.integrated.useAccessibleBuffer', 'Use the accessible buffer {0} to manually review output', keybinding.getLabel()) : nls.localize('terminal.integrated.useAccessibleBufferNoKb', 'Use the Terminal: Focus Accessible Buffer command to manually review output');
+diff --git a/src/vs/workbench/contrib/terminal/browser/xterm/xtermAddonImporter.ts b/src/vs/workbench/contrib/terminal/browser/xterm/xtermAddonImporter.ts
+index 30e6bd1905b..d54aed4b473 100644
+--- a/src/vs/workbench/contrib/terminal/browser/xterm/xtermAddonImporter.ts
++++ b/src/vs/workbench/contrib/terminal/browser/xterm/xtermAddonImporter.ts
+@@ -11,7 +11,6 @@ import type { SearchAddon as SearchAddonType } from '@xterm/addon-search';
+ import type { SerializeAddon as SerializeAddonType } from '@xterm/addon-serialize';
+ import type { Unicode11Addon as Unicode11AddonType } from '@xterm/addon-unicode11';
+ import type { WebglAddon as WebglAddonType } from '@xterm/addon-webgl';
+-import { importAMDNodeModule } from '../../../../../amdX.js';
+ 
+ export interface IXtermAddonNameToCtor {
+ 	clipboard: typeof ClipboardAddonType;
+@@ -41,14 +40,14 @@ export class XtermAddonImporter {
+ 		let addon = importedAddons.get(name);
+ 		if (!addon) {
+ 			switch (name) {
+-				case 'clipboard': addon = (await importAMDNodeModule<typeof import('@xterm/addon-clipboard')>('@xterm/addon-clipboard', 'lib/addon-clipboard.js')).ClipboardAddon as IXtermAddonNameToCtor[T]; break;
+-				case 'image': addon = (await importAMDNodeModule<typeof import('@xterm/addon-image')>('@xterm/addon-image', 'lib/addon-image.js')).ImageAddon as IXtermAddonNameToCtor[T]; break;
+-				case 'ligatures': addon = (await importAMDNodeModule<typeof import('@xterm/addon-ligatures')>('@xterm/addon-ligatures', 'lib/addon-ligatures.js')).LigaturesAddon as IXtermAddonNameToCtor[T]; break;
+-				case 'progress': addon = (await importAMDNodeModule<typeof import('@xterm/addon-progress')>('@xterm/addon-progress', 'lib/addon-progress.js')).ProgressAddon as IXtermAddonNameToCtor[T]; break;
+-				case 'search': addon = (await importAMDNodeModule<typeof import('@xterm/addon-search')>('@xterm/addon-search', 'lib/addon-search.js')).SearchAddon as IXtermAddonNameToCtor[T]; break;
+-				case 'serialize': addon = (await importAMDNodeModule<typeof import('@xterm/addon-serialize')>('@xterm/addon-serialize', 'lib/addon-serialize.js')).SerializeAddon as IXtermAddonNameToCtor[T]; break;
+-				case 'unicode11': addon = (await importAMDNodeModule<typeof import('@xterm/addon-unicode11')>('@xterm/addon-unicode11', 'lib/addon-unicode11.js')).Unicode11Addon as IXtermAddonNameToCtor[T]; break;
+-				case 'webgl': addon = (await importAMDNodeModule<typeof import('@xterm/addon-webgl')>('@xterm/addon-webgl', 'lib/addon-webgl.js')).WebglAddon as IXtermAddonNameToCtor[T]; break;
++				case 'clipboard': addon = (await import('@xterm/addon-clipboard')).ClipboardAddon as IXtermAddonNameToCtor[T]; break;
++				case 'image': addon = (await import('@xterm/addon-image')).ImageAddon as IXtermAddonNameToCtor[T]; break;
++				case 'ligatures': addon = (await import('@xterm/addon-ligatures')).LigaturesAddon as IXtermAddonNameToCtor[T]; break;
++				case 'progress': addon = (await import('@xterm/addon-progress')).ProgressAddon as IXtermAddonNameToCtor[T]; break;
++				case 'search': addon = (await import('@xterm/addon-search')).SearchAddon as IXtermAddonNameToCtor[T]; break;
++				case 'serialize': addon = (await import('@xterm/addon-serialize')).SerializeAddon as IXtermAddonNameToCtor[T]; break;
++				case 'unicode11': addon = (await import('@xterm/addon-unicode11')).Unicode11Addon as IXtermAddonNameToCtor[T]; break;
++				case 'webgl': addon = (await import('@xterm/addon-webgl')).WebglAddon as IXtermAddonNameToCtor[T]; break;
+ 			}
+ 			if (!addon) {
+ 				throw new Error(`Could not load addon ${name}`);
+diff --git a/src/vs/workbench/services/textMate/browser/backgroundTokenization/textMateWorkerTokenizerController.ts b/src/vs/workbench/services/textMate/browser/backgroundTokenization/textMateWorkerTokenizerController.ts
+index 701579d3626..4f285c7e309 100644
+--- a/src/vs/workbench/services/textMate/browser/backgroundTokenization/textMateWorkerTokenizerController.ts
++++ b/src/vs/workbench/services/textMate/browser/backgroundTokenization/textMateWorkerTokenizerController.ts
+@@ -3,7 +3,6 @@
+  *  Licensed under the MIT License. See License.txt in the project root for license information.
+  *--------------------------------------------------------------------------------------------*/
+ 
+-import { importAMDNodeModule } from '../../../../../amdX.js';
+ import { Disposable } from '../../../../../base/common/lifecycle.js';
+ import { IObservable, autorun, keepObserved } from '../../../../../base/common/observable.js';
+ import { Proxied } from '../../../../../base/common/worker/webWorker.js';
+@@ -180,7 +179,7 @@ export class TextMateWorkerTokenizerController extends Disposable {
+ 		);
+ 
+ 		if (!this._applyStateStackDiffFn || !this._initialState) {
+-			const { applyStateStackDiff, INITIAL } = await importAMDNodeModule<typeof import('vscode-textmate')>('vscode-textmate', 'release/main.js');
++			const { applyStateStackDiff, INITIAL } = await import('vscode-textmate');
+ 			this._applyStateStackDiffFn = applyStateStackDiff;
+ 			this._initialState = INITIAL;
+ 		}
+diff --git a/src/vs/workbench/services/textMate/browser/backgroundTokenization/worker/textMateTokenizationWorker.worker.ts b/src/vs/workbench/services/textMate/browser/backgroundTokenization/worker/textMateTokenizationWorker.worker.ts
+index 036b2a3e292..116820d86fb 100644
+--- a/src/vs/workbench/services/textMate/browser/backgroundTokenization/worker/textMateTokenizationWorker.worker.ts
++++ b/src/vs/workbench/services/textMate/browser/backgroundTokenization/worker/textMateTokenizationWorker.worker.ts
+@@ -10,7 +10,6 @@ import { ICreateGrammarResult, TMGrammarFactory } from '../../../common/TMGramma
+ import { IValidEmbeddedLanguagesMap, IValidGrammarDefinition, IValidTokenTypeMap } from '../../../common/TMScopeRegistry.js';
+ import type { IOnigLib, IRawTheme, StackDiff } from 'vscode-textmate';
+ import { TextMateWorkerTokenizer } from './textMateWorkerTokenizer.js';
+-import { importAMDNodeModule } from '../../../../../../amdX.js';
+ import { IWebWorkerServerRequestHandler, IWebWorkerServer } from '../../../../../../base/common/worker/webWorker.js';
+ import { TextMateWorkerHost } from './textMateWorkerHost.js';
+ 
+@@ -71,8 +70,8 @@ export class TextMateTokenizationWorker implements IWebWorkerServerRequestHandle
+ 	}
+ 
+ 	private async _loadTMGrammarFactory(grammarDefinitions: IValidGrammarDefinition[], onigurumaWASMUri: string): Promise<TMGrammarFactory> {
+-		const vscodeTextmate = await importAMDNodeModule<typeof import('vscode-textmate')>('vscode-textmate', 'release/main.js');
+-		const vscodeOniguruma = await importAMDNodeModule<typeof import('vscode-oniguruma')>('vscode-oniguruma', 'release/main.js');
++		const vscodeTextmate = await import('vscode-textmate');
++		const vscodeOniguruma = await import('vscode-oniguruma');
+ 		const response = await fetch(onigurumaWASMUri);
+ 
+ 		// Using the response directly only works if the server sets the MIME type 'application/wasm'.
+diff --git a/src/vs/workbench/services/textMate/browser/backgroundTokenization/worker/textMateWorkerTokenizer.ts b/src/vs/workbench/services/textMate/browser/backgroundTokenization/worker/textMateWorkerTokenizer.ts
+index f3945c5e8fa..72ffd7ccb06 100644
+--- a/src/vs/workbench/services/textMate/browser/backgroundTokenization/worker/textMateWorkerTokenizer.ts
++++ b/src/vs/workbench/services/textMate/browser/backgroundTokenization/worker/textMateWorkerTokenizer.ts
+@@ -3,7 +3,6 @@
+  *  Licensed under the MIT License. See License.txt in the project root for license information.
+  *--------------------------------------------------------------------------------------------*/
+ 
+-import { importAMDNodeModule } from '../../../../../../amdX.js';
+ import { RunOnceScheduler } from '../../../../../../base/common/async.js';
+ import { observableValue } from '../../../../../../base/common/observable.js';
+ import { setTimeout0 } from '../../../../../../base/common/platform.js';
+@@ -115,7 +114,7 @@ export class TextMateWorkerTokenizer extends MirrorTextModel {
+ 		}
+ 
+ 		if (!this._diffStateStacksRefEqFn) {
+-			const { diffStateStacksRefEq } = await importAMDNodeModule<typeof import('vscode-textmate')>('vscode-textmate', 'release/main.js');
++			const { diffStateStacksRefEq } = await import('vscode-textmate');
+ 			this._diffStateStacksRefEqFn = diffStateStacksRefEq;
+ 		}
+ 
+diff --git a/src/vs/workbench/services/textMate/browser/textMateTokenizationFeatureImpl.ts b/src/vs/workbench/services/textMate/browser/textMateTokenizationFeatureImpl.ts
+index 844f240bddb..86d36458fd5 100644
+--- a/src/vs/workbench/services/textMate/browser/textMateTokenizationFeatureImpl.ts
++++ b/src/vs/workbench/services/textMate/browser/textMateTokenizationFeatureImpl.ts
+@@ -3,8 +3,8 @@
+  *  Licensed under the MIT License. See License.txt in the project root for license information.
+  *--------------------------------------------------------------------------------------------*/
+ 
+-import { canASAR, importAMDNodeModule, resolveAmdNodeModulePath } from '../../../../amdX.js';
+ import * as domStylesheets from '../../../../base/browser/domStylesheets.js';
++import { canASAR, resolveAmdNodeModulePath } from '../../../../amdX.js';
+ import { equals as equalArray } from '../../../../base/common/arrays.js';
+ import { Color } from '../../../../base/common/color.js';
+ import { onUnexpectedError } from '../../../../base/common/errors.js';
+@@ -245,7 +245,7 @@ export class TextMateTokenizationFeature extends Disposable implements ITextMate
+ 			return this._grammarFactory;
+ 		}
+ 
+-		const [vscodeTextmate, vscodeOniguruma] = await Promise.all([importAMDNodeModule<typeof import('vscode-textmate')>('vscode-textmate', 'release/main.js'), this._getVSCodeOniguruma()]);
++		const [vscodeTextmate, vscodeOniguruma] = await Promise.all([import('vscode-textmate'), this._getVSCodeOniguruma()]);
+ 		const onigLib: Promise<IOnigLib> = Promise.resolve({
+ 			createOnigScanner: (sources: string[]) => vscodeOniguruma.createOnigScanner(sources),
+ 			createOnigString: (str: string) => vscodeOniguruma.createOnigString(str)
+@@ -358,7 +358,7 @@ export class TextMateTokenizationFeature extends Disposable implements ITextMate
+ 	private _getVSCodeOniguruma(): Promise<typeof import('vscode-oniguruma')> {
+ 		if (!this._vscodeOniguruma) {
+ 			this._vscodeOniguruma = (async () => {
+-				const [vscodeOniguruma, wasm] = await Promise.all([importAMDNodeModule<typeof import('vscode-oniguruma')>('vscode-oniguruma', 'release/main.js'), this._loadVSCodeOnigurumaWASM()]);
++				const [vscodeOniguruma, wasm] = await Promise.all([import('vscode-oniguruma'), this._loadVSCodeOnigurumaWASM()]);
+ 				await vscodeOniguruma.loadWASM({
+ 					data: wasm,
+ 					print: (str: string) => {
+diff --git a/src/vs/workbench/services/textfile/common/encoding.ts b/src/vs/workbench/services/textfile/common/encoding.ts
+index 4fee9c55420..ce8370c3a48 100644
+--- a/src/vs/workbench/services/textfile/common/encoding.ts
++++ b/src/vs/workbench/services/textfile/common/encoding.ts
+@@ -5,7 +5,6 @@
+ 
+ import { Readable, ReadableStream, newWriteableStream, listenStream } from '../../../../base/common/stream.js';
+ import { VSBuffer, VSBufferReadable, VSBufferReadableStream } from '../../../../base/common/buffer.js';
+-import { importAMDNodeModule } from '../../../../amdX.js';
+ import { CancellationTokenSource } from '../../../../base/common/cancellation.js';
+ import { coalesce } from '../../../../base/common/arrays.js';
+ 
+@@ -82,7 +81,7 @@ class DecoderStream implements IDecoderStream {
+ 	static async create(encoding: string): Promise<DecoderStream> {
+ 		let decoder: IDecoderStream | undefined = undefined;
+ 		if (encoding !== UTF8) {
+-			const iconv = await importAMDNodeModule<typeof import('@vscode/iconv-lite-umd')>('@vscode/iconv-lite-umd', 'lib/iconv-lite-umd.js');
++			const iconv = await import('@vscode/iconv-lite-umd');
+ 			decoder = iconv.getDecoder(toNodeEncoding(encoding));
+ 		} else {
+ 			const utf8TextDecoder = new TextDecoder();
+@@ -215,7 +214,7 @@ export function toDecodeStream(source: VSBufferReadableStream, options: IDecodeS
+ }
+ 
+ export async function toEncodeReadable(readable: Readable<string>, encoding: string, options?: { addBOM?: boolean }): Promise<VSBufferReadable> {
+-	const iconv = await importAMDNodeModule<typeof import('@vscode/iconv-lite-umd')>('@vscode/iconv-lite-umd', 'lib/iconv-lite-umd.js');
++	const iconv = await import('@vscode/iconv-lite-umd');
+ 	const encoder = iconv.getEncoder(toNodeEncoding(encoding), options);
+ 
+ 	let bytesWritten = false;
+@@ -264,7 +263,7 @@ export async function toEncodeReadable(readable: Readable<string>, encoding: str
+ }
+ 
+ export async function encodingExists(encoding: string): Promise<boolean> {
+-	const iconv = await importAMDNodeModule<typeof import('@vscode/iconv-lite-umd')>('@vscode/iconv-lite-umd', 'lib/iconv-lite-umd.js');
++	const iconv = await import('@vscode/iconv-lite-umd');
+ 
+ 	return iconv.encodingExists(toNodeEncoding(encoding));
+ }
+@@ -320,7 +319,7 @@ const IGNORE_ENCODINGS = ['ascii', 'utf-16', 'utf-32'];
+  * Guesses the encoding from buffer.
+  */
+ async function guessEncodingByBuffer(buffer: VSBuffer, candidateGuessEncodings?: string[]): Promise<string | null> {
+-	const jschardet = await importAMDNodeModule<typeof import('jschardet')>('jschardet', 'dist/jschardet.min.js');
++	const jschardet = await import('jschardet');
+ 
+ 	// ensure to limit buffer for guessing due to https://github.com/aadsm/jschardet/issues/53
+ 	const limitedBuffer = buffer.slice(0, AUTO_ENCODING_GUESS_MAX_BYTES);

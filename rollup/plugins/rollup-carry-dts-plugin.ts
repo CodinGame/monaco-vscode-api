@@ -138,7 +138,7 @@ export default ({ external = () => false, transformers }: PluginConfig = {}): Pl
       return undefined
     }
     const module = chunk.moduleIds[0]!
-    if (!module.endsWith('d.ts')) {
+    if (!module.endsWith('d.ts') && !module.endsWith('.css')) {
       // remove injected d.ts imports
       const ast = this.parse(code)
 
