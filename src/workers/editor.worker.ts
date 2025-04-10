@@ -1,1 +1,1 @@
-export * from 'vs/editor/common/services/editorWebWorkerMain.js'
+export * from 'vs/base/common/worker/webWorkerBootstrap.js'
