@@ -52,7 +52,12 @@ const EDITOR_API_EXPOSE_MODULES = [
   'vs/editor/contrib/find/browser/findController'
 ]
 
-const ALLOWED_MAIN_DEPENDENCIES = new Set(['@vscode/iconv-lite-umd', 'jschardet', 'marked'])
+const ALLOWED_MAIN_DEPENDENCIES = new Set([
+  '@c4312/eventsource-umd',
+  '@vscode/iconv-lite-umd',
+  'jschardet',
+  'marked'
+])
 
 const workerGroups: Record<string, string> = {
   languageDetection: 'service-override:language-detection-worker',
