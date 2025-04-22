@@ -6,6 +6,7 @@ Subject: [PATCH] fix: replace amd imports by regular esm dynamic imports
 ---
  .../assignment/common/assignmentService.ts      |  3 +--
  src/vs/platform/telemetry/common/1dsAppender.ts |  9 ++-------
+ src/vs/workbench/api/common/extHostMcp.ts       |  3 +--
  .../terminal/browser/terminalInstance.ts        |  3 +--
  .../browser/xterm/xtermAddonImporter.ts         | 17 ++++++++---------
  .../textMateWorkerTokenizerController.ts        |  3 +--
@@ -13,7 +14,7 @@ Subject: [PATCH] fix: replace amd imports by regular esm dynamic imports
  .../worker/textMateWorkerTokenizer.ts           |  3 +--
  .../browser/textMateTokenizationFeatureImpl.ts  |  6 +++---
  .../services/textfile/common/encoding.ts        |  9 ++++-----
- 9 files changed, 23 insertions(+), 35 deletions(-)
+ 10 files changed, 24 insertions(+), 37 deletions(-)
 
 diff --git a/src/vs/platform/assignment/common/assignmentService.ts b/src/vs/platform/assignment/common/assignmentService.ts
 index 413bd60f7ff..2e7fcb3d31c 100644
@@ -65,6 +66,27 @@ index 59a0dadcb7d..f39a10d515f 100644
  	const appInsightsCore = new oneDs.AppInsightsCore();
  	const collectorChannelPlugin: PostChannel = new postPlugin.PostChannel();
  	// Configure the app insights core to send to collector++ and disable logging of debug info
+diff --git a/src/vs/workbench/api/common/extHostMcp.ts b/src/vs/workbench/api/common/extHostMcp.ts
+index ed7e5023e71..2d3f0892642 100644
+--- a/src/vs/workbench/api/common/extHostMcp.ts
++++ b/src/vs/workbench/api/common/extHostMcp.ts
+@@ -5,7 +5,6 @@
+ 
+ import type * as ES from '@c4312/eventsource-umd';
+ import * as vscode from 'vscode';
+-import { importAMDNodeModule } from '../../../amdX.js';
+ import { DeferredPromise, Sequencer } from '../../../base/common/async.js';
+ import { CancellationToken } from '../../../base/common/cancellation.js';
+ import { Lazy } from '../../../base/common/lazy.js';
+@@ -29,7 +28,7 @@ export class ExtHostMcpService extends Disposable implements IExtHostMpcService
+ 	private readonly _initialProviderPromises = new Set<Promise<void>>();
+ 	private readonly _sseEventSources = this._register(new DisposableMap<number, McpSSEHandle>());
+ 	private readonly _eventSource = new Lazy(async () => {
+-		const es = await importAMDNodeModule<typeof ES>('@c4312/eventsource-umd', 'dist/index.umd.js');
++		const es = await import('@c4312/eventsource-umd');
+ 		return es.EventSource;
+ 	});
+ 
 diff --git a/src/vs/workbench/contrib/terminal/browser/terminalInstance.ts b/src/vs/workbench/contrib/terminal/browser/terminalInstance.ts
 index 8149a20e575..828e8b4e614 100644
 --- a/src/vs/workbench/contrib/terminal/browser/terminalInstance.ts
