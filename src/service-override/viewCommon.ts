@@ -74,28 +74,22 @@ let webviewIframeAlternateDomains: string | undefined
 registerAssets({
   'vs/workbench/contrib/webview/browser/pre/service-worker.js': () =>
     changeUrlDomain(
-      new URL(
-        '../../vscode/src/vs/workbench/contrib/webview/browser/pre/service-worker.js',
-        import.meta.url
-      ).href,
+      new URL('vs/workbench/contrib/webview/browser/pre/service-worker.js', import.meta.url).href,
       webviewIframeAlternateDomains
     ),
   'vs/workbench/contrib/webview/browser/pre/index.html': () =>
     changeUrlDomain(
-      new URL('../assets/webview/index.html', import.meta.url).href,
+      new URL('vs/workbench/contrib/webview/browser/pre/index.html', import.meta.url).href,
       webviewIframeAlternateDomains
     ),
   'vs/workbench/contrib/webview/browser/pre/index-no-csp.html': () =>
     changeUrlDomain(
-      new URL('../assets/webview/index-no-csp.html', import.meta.url).href,
+      new URL('vs/workbench/contrib/webview/browser/pre/index-no-csp.html', import.meta.url).href,
       webviewIframeAlternateDomains
     ),
   'vs/workbench/contrib/webview/browser/pre/fake.html': () =>
     changeUrlDomain(
-      new URL(
-        '../../vscode/src/vs/workbench/contrib/webview/browser/pre/fake.html',
-        import.meta.url
-      ).href,
+      new URL('vs/workbench/contrib/webview/browser/pre/fake.html', import.meta.url).href,
       webviewIframeAlternateDomains
     )
 })
