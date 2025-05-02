@@ -23,7 +23,7 @@
     "@types/wicg-file-system-access": "^2023.10.6",
     "@types/ws": "^8.18.1",
     "typescript": "~5.8.3",
-    "vite": "~6.3.3",
+    "vite": "~6.3.4",
     "@codingame/monaco-vscode-rollup-extension-directory-plugin": "file:../dist/packages/monaco-vscode-rollup-extension-directory-plugin",
     "@codingame/monaco-vscode-rollup-vsix-plugin": "file:../dist/packages/monaco-vscode-rollup-vsix-plugin"
   },
