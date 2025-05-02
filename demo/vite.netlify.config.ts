@@ -13,6 +13,26 @@ export default defineConfig({
     target: 'esnext',
     assetsInlineLimit: 0
   },
+  plugins: [
+    {
+      name: 'load-vscode-css-as-string',
+      enforce: 'pre',
+      async resolveId(source, importer, options) {
+        const resolved = (await this.resolve(source, importer, options))!
+        if (
+          resolved.id.match(
+            /node_modules\/(@codingame\/monaco-vscode|vscode|monaco-editor).*\.css$/
+          )
+        ) {
+          return {
+            ...resolved,
+            id: resolved.id + '?inline'
+          }
+        }
+        return undefined
+      }
+    }
+  ],
   worker: {
     format: 'es'
   },

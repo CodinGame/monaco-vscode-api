@@ -95,6 +95,7 @@ export const remotePath =
   remoteAuthority != null ? (params.get('remotePath') ?? undefined) : undefined
 export const resetLayout = params.has('resetLayout')
 export const useHtmlFileSystemProvider = params.has('htmlFileSystemProvider')
+export const disableShadowDom = params.has('disableShadowDom')
 params.delete('resetLayout')
 
 window.history.replaceState({}, document.title, url.href)
