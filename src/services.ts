@@ -50,6 +50,7 @@ import getEnvironmentServiceOverride from './service-override/environment'
 import getLayoutServiceOverride from './service-override/layout'
 import getHostServiceOverride from './service-override/host'
 import getBaseServiceOverride from './service-override/base'
+import { injectCss } from './css'
 
 declare global {
   interface Window {
@@ -73,6 +74,7 @@ export async function initialize(
 ): Promise<void> {
   checkServicesNotInitialized()
 
+  injectCss(container)
   initializeWorkbench(container, configuration, env)
 
   const instantiationService = StandaloneServices.initialize({

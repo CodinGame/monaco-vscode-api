@@ -53,7 +53,7 @@ export default ({
       styles[id] = code
 
       return {
-        code: `renderCSS(${JSON.stringify(code)})`
+        code: `renderCSS(${JSON.stringify(code)}); export default 'fakeExport'`
       }
     },
 
