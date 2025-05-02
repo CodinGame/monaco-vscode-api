@@ -323,6 +323,75 @@ npm run start:debugServer
 
 See the [VSCode Server](https://github.com/CodinGame/monaco-vscode-api/wiki/How-to-install-and-use-VSCode-server-with-monaco‐vscode‐api) wiki page.
 
+## Shadow dom (⚠️ beta ⚠️)
+
+The library supports shadow-dom.
+
+⚠️ VSCode itself does support shadow dom, and there are multiple parts that needed to be patched in order for it to work.
+
+There are multiple benefits of using it:
+- Your custom global style won't impact the VSCode workbench style (for instance if you did override the default [box-sizing](https://developer.mozilla.org/en-US/docs/Web/CSS/box-sizing))
+- The VSCode styles won't impact other parts of your app
+- You page head won't be polluted with dozen of css files from VSCode
+
+### How to use it
+
+If the provided container element is a child of a shadow dom element, the styles will be injected in both the main page and the shadow root. That's it.
+
+### Prerequisites
+
+In order to be able to load the static css files in the shadow dom as well. Your bundler configuration needs to be adapted so that importing css files doesn't load their content in the page head, but instead just returns the file content as default (either as a string or a `CSSStyleSheet`). It can be achieved with most bundlers with some configurations.
+
+Note that the bundler should still resolve references assets in the css files, so you can just the `raw` loader, on the `assets/source` webpack module type.
+
+#### Webpack
+
+Add this rule in your configuration:
+
+```typescript
+{
+  test: /node_modules\/(@codingame\/monaco-vscode|vscode|monaco-editor).*\.css$/,
+  use: [
+    {
+      loader: 'css-loader',
+      options: {
+        esModule: false,
+        exportType: 'css-style-sheet', // or 'string', both are working
+        url: true,
+        import: true
+      }
+    }
+  ]
+}
+```
+
+You should also make sure that no other loader is interfering with it, by either use a `oneOf` or exclusing those files in the other css loaders.
+
+#### Vite
+
+Add this plugin in your configuration:
+
+```typescript
+{
+  name: 'load-vscode-css-as-string',
+  enforce: 'pre',
+  async resolveId(source, importer, options) {
+    const resolved = (await this.resolve(source, importer, options))!
+    if (
+      resolved.id.match(
+        /node_modules\/(@codingame\/monaco-vscode|vscode|monaco-editor).*\.css$/
+      )
+    ) {
+      return {
+        ...resolved,
+        id: resolved.id + '?inline'
+      }
+    }
+    return undefined
+  }
+}
+```
+
 ## Troubleshooting
 
 If something doesn't work, make sure to check out the [Troubleshooting](https://github.com/CodinGame/monaco-vscode-api/wiki/Troubleshooting) wiki page.
