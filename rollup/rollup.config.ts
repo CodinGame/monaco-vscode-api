@@ -44,6 +44,7 @@ const input = {
   'missing-services': './src/missing-services.ts',
   tools: './src/tools.ts',
   monaco: './src/monaco.ts',
+  css: './src/css.ts',
   ...Object.fromEntries(
     fs
       .readdirSync(nodePath.resolve(SRC_DIR, 'service-override'), { withFileTypes: true })

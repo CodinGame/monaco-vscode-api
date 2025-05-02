@@ -8,6 +8,7 @@ import * as nodePath from 'node:path'
 import {
   DIST_DIR,
   DIST_DIR_MAIN,
+  MAIN_PACKAGE_NAME,
   OVERRIDE_PATH,
   SRC_DIR,
   VSCODE_DIR,
@@ -128,10 +129,12 @@ export function transformVSCodeCode(id: string, code: string): string {
     '$2.__decorator = $1'
   )
 
+  let cssImportCounter = 0
   const ast = recast.parse(patchedCode, {
     parser: babylonParser
   })
   let transformed: boolean = false
+  let cssImported: boolean = false
   function addComment(
     node: recast.types.namedTypes.NewExpression | recast.types.namedTypes.CallExpression
   ) {
@@ -171,6 +174,30 @@ export function transformVSCodeCode(id: string, code: string): string {
       } else if (node.callee.type === 'Identifier' && isCallPure(id, node.callee.name, node)) {
         path.replace(addComment(node))
       }
+      this.traverse(path)
+    },
+    visitImportDeclaration(path) {
+      const node = path.node
+
+      if (
+        (node.specifiers == null || node.specifiers.length === 0) &&
+        (node.source.value as string).endsWith('.css')
+      ) {
+        const varName = `css${cssImportCounter++}`
+        node.specifiers = [
+          recast.types.builders.importNamespaceSpecifier(recast.types.builders.identifier(varName))
+        ]
+        const injectCall = recast.types.builders.expressionStatement(
+          recast.types.builders.callExpression(recast.types.builders.identifier('registerCss'), [
+            recast.types.builders.identifier(varName)
+          ])
+        )
+
+        path.insertAfter(injectCall)
+        transformed = true
+        cssImported = true
+      }
+
       this.traverse(path)
     },
     visitClassDeclaration(path) {
@@ -250,6 +277,16 @@ export function transformVSCodeCode(id: string, code: string): string {
       this.traverse(path)
     }
   })
+
+  if (cssImported) {
+    ast.program.body.unshift(
+      recast.types.builders.importDeclaration(
+        [recast.types.builders.importSpecifier(recast.types.builders.identifier('registerCss'))],
+        recast.types.builders.literal(`${MAIN_PACKAGE_NAME}/css`)
+      )
+    )
+  }
+
   if (transformed) {
     patchedCode = recast.print(ast).code
     patchedCode = patchedCode.replace(/\/\*#__PURE__\*\/\s+/g, '/*#__PURE__*/ ') // Remove space after PURE comment
