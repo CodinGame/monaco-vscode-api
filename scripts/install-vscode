@@ -81,7 +81,7 @@ NODE_OPTIONS=--max-old-space-size=8192 npx tsc --declaration --importHelpers --o
 find ./ \( -name '*.js' -o -name '*.d.ts' -o -name '*.ttf' -o -name '*.css' -o -name '*.mp3' -o -name '*.scm' -o -name '*.svg' -o -name '*.png' -o -name '*.html' -o -name '*.sh' -o -name '*.zsh' -o -name '*.ps1' \) -exec rsync -R \{\} "$output_directory/src" \;
 
 cd ..
-cp package.json $output_directory
+cp package.json product.json $output_directory
 # Copy editor types
 cp out-monaco-editor-core/esm/vs/editor/editor.api.d.ts $output_directory/src/vs/editor/editor.api.d.ts
 

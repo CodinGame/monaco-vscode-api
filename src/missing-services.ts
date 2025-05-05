@@ -1342,8 +1342,8 @@ registerSingleton(IPathService, PathService, InstantiationType.Delayed)
 class ProductService implements IProductService {
   readonly _serviceBrand = undefined
 
-  version = VSCODE_VERSION
-  commit = VSCODE_COMMIT
+  version = 'unknown'
+  commit = 'unknown'
   quality = 'oss'
   nameShort = 'Code - OSS Dev'
   nameLong = 'Code - OSS Dev'

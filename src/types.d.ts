@@ -1,6 +1,3 @@
-declare const VSCODE_VERSION: string
-declare const VSCODE_REF: string
-declare const VSCODE_COMMIT: string
 declare const BUILD_ID: string
 
 declare module 'vs/platform/accessibilitySignal/browser/media/*.mp3' {
