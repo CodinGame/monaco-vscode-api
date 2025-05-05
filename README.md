@@ -327,7 +327,7 @@ See the [VSCode Server](https://github.com/CodinGame/monaco-vscode-api/wiki/How-
 
 The library supports shadow-dom.
 
-⚠️ VSCode itself does support shadow dom, and there are multiple parts that needed to be patched in order for it to work.
+⚠️ VSCode itself doesn't support shadow dom, and there are multiple parts that needed to be patched in order for it to work.
 
 There are multiple benefits of using it:
 - Your custom global style won't impact the VSCode workbench style (for instance if you did override the default [box-sizing](https://developer.mozilla.org/en-US/docs/Web/CSS/box-sizing))
@@ -342,7 +342,7 @@ If the provided container element is a child of a shadow dom element, the styles
 
 In order to be able to load the static css files in the shadow dom as well. Your bundler configuration needs to be adapted so that importing css files doesn't load their content in the page head, but instead just returns the file content as default (either as a string or a `CSSStyleSheet`). It can be achieved with most bundlers with some configurations.
 
-Note that the bundler should still resolve references assets in the css files, so you can just the `raw` loader, on the `assets/source` webpack module type.
+Note that the bundler should still resolve referenced assets in the css files, so you can't just use the `raw` loader, or the `assets/source` webpack module type.
 
 #### Webpack
 
