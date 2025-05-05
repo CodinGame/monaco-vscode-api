@@ -338,6 +338,11 @@ There are multiple benefits of using it:
 
 If the provided container element is a child of a shadow dom element, the styles will be injected in both the main page and the shadow root. That's it.
 
+### ⚠️ Xterm notice ⚠️
+
+The webgl renderer of xterm, which VSCode is using, doesn't support being used inside a shadom dom (see https://github.com/xtermjs/xterm.js/pull/5334).
+Until it's fixed and deployed, either do not use the terminal service override, or apply the patch on your side (using [patch-package](https://www.npmjs.com/package/patch-package) for instance).
+
 ### Prerequisites
 
 In order to be able to load the static css files in the shadow dom as well. Your bundler configuration needs to be adapted so that importing css files doesn't load their content in the page head, but instead just returns the file content as default (either as a string or a `CSSStyleSheet`). It can be achieved with most bundlers with some configurations.
