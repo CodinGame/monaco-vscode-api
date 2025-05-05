@@ -30,6 +30,12 @@
   - Update dependencies
   - Implement improvements dependening on the new features available from vscode (optional)
   - Don't forget to check the `Window` output (in the `OUTPUT` panel tab) to check for errors
+  - Check all possible combinations
+    - Full workbench mode or not
+    - Shadow dom mode or not
+    - Using VSCode server
+    - Using HTML file system provider
+    - ...
 
 ## monaco-vscode-api demo
 

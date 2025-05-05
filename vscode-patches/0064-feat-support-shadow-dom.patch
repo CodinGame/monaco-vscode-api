@@ -1,0 +1,191 @@
+From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
+From: =?UTF-8?q?Lo=C3=AFc=20Mangeonjean?= <loic@coderpad.io>
+Date: Fri, 2 May 2025 10:13:06 +0200
+Subject: [PATCH] feat: support shadow dom
+
+---
+ src/vs/base/browser/domStylesheets.ts         | 21 +++++++++++++++----
+ .../editor/browser/controller/mouseHandler.ts |  2 +-
+ src/vs/workbench/browser/layout.ts            |  3 +++
+ src/vs/workbench/browser/workbench.ts         |  6 +++---
+ .../keybinding/browser/keybindingService.ts   | 10 ++++++---
+ .../themes/browser/workbenchThemeService.ts   |  4 ++--
+ 6 files changed, 33 insertions(+), 13 deletions(-)
+
+diff --git a/src/vs/base/browser/domStylesheets.ts b/src/vs/base/browser/domStylesheets.ts
+index ebc249c6608..5f5da69f73b 100644
+--- a/src/vs/base/browser/domStylesheets.ts
++++ b/src/vs/base/browser/domStylesheets.ts
+@@ -45,6 +45,14 @@ class WrappedStyleElement {
+ 	}
+ }
+ 
++export let shadowRootContainer: ShadowRoot | undefined;
++export function setContainerElement(container: HTMLElement) {
++	const root = container.getRootNode();
++	if (root instanceof ShadowRoot) {
++		shadowRootContainer = root;
++	}
++}
++
+ export function createStyleSheet(container: HTMLElement = mainWindow.document.head, beforeAppend?: (style: HTMLStyleElement) => void, disposableStore?: DisposableStore): HTMLStyleElement {
+ 	const style = document.createElement('style');
+ 	style.type = 'text/css';
+@@ -67,7 +75,12 @@ export function createStyleSheet(container: HTMLElement = mainWindow.document.he
+ 				continue; // main window is already tracked
+ 			}
+ 
+-			const cloneDisposable = disposables.add(cloneGlobalStyleSheet(style, globalStylesheetClones, targetWindow));
++			const cloneDisposable = disposables.add(cloneGlobalStyleSheet(style, globalStylesheetClones, targetWindow.document.head));
++			disposableStore?.add(cloneDisposable);
++		}
++
++		if (shadowRootContainer !== undefined) {
++			const cloneDisposable = cloneGlobalStyleSheet(style, globalStylesheetClones, shadowRootContainer);
+ 			disposableStore?.add(cloneDisposable);
+ 		}
+ 	}
+@@ -79,17 +92,17 @@ export function cloneGlobalStylesheets(targetWindow: Window): IDisposable {
+ 	const disposables = new DisposableStore();
+ 
+ 	for (const [globalStylesheet, clonedGlobalStylesheets] of globalStylesheets) {
+-		disposables.add(cloneGlobalStyleSheet(globalStylesheet, clonedGlobalStylesheets, targetWindow));
++		disposables.add(cloneGlobalStyleSheet(globalStylesheet, clonedGlobalStylesheets, targetWindow.document.head));
+ 	}
+ 
+ 	return disposables;
+ }
+ 
+-function cloneGlobalStyleSheet(globalStylesheet: HTMLStyleElement, globalStylesheetClones: Set<HTMLStyleElement>, targetWindow: Window): IDisposable {
++function cloneGlobalStyleSheet(globalStylesheet: HTMLStyleElement, globalStylesheetClones: Set<HTMLStyleElement>, windowElement: HTMLElement | ShadowRoot): IDisposable {
+ 	const disposables = new DisposableStore();
+ 
+ 	const clone = globalStylesheet.cloneNode(true) as HTMLStyleElement;
+-	targetWindow.document.head.appendChild(clone);
++	windowElement.appendChild(clone);
+ 	disposables.add(toDisposable(() => clone.remove()));
+ 
+ 	for (const rule of getDynamicStyleSheetRules(globalStylesheet)) {
+diff --git a/src/vs/editor/browser/controller/mouseHandler.ts b/src/vs/editor/browser/controller/mouseHandler.ts
+index b1e326d835a..3e4f84e209d 100644
+--- a/src/vs/editor/browser/controller/mouseHandler.ts
++++ b/src/vs/editor/browser/controller/mouseHandler.ts
+@@ -100,7 +100,7 @@ export class MouseHandler extends ViewEventHandler {
+ 			// remove this listener
+ 
+ 			if (!this._mouseLeaveMonitor) {
+-				this._mouseLeaveMonitor = dom.addDisposableListener(this.viewHelper.viewDomNode.ownerDocument, 'mousemove', (e) => {
++				this._mouseLeaveMonitor = dom.addDisposableListener(this.viewHelper.viewDomNode.getRootNode(), 'mousemove', (e) => {
+ 					if (!this.viewHelper.viewDomNode.contains(e.target as Node | null)) {
+ 						// went outside the editor!
+ 						this._onMouseLeave(new EditorMouseEvent(e, false, this.viewHelper.viewDomNode));
+diff --git a/src/vs/workbench/browser/layout.ts b/src/vs/workbench/browser/layout.ts
+index b3464af2ed7..08dd03921ae 100644
+--- a/src/vs/workbench/browser/layout.ts
++++ b/src/vs/workbench/browser/layout.ts
+@@ -48,6 +48,7 @@ import { AuxiliaryBarPart } from './parts/auxiliarybar/auxiliaryBarPart.js';
+ import { ITelemetryService } from '../../platform/telemetry/common/telemetry.js';
+ import { IAuxiliaryWindowService } from '../services/auxiliaryWindow/browser/auxiliaryWindowService.js';
+ import { CodeWindow, mainWindow } from '../../base/browser/window.js';
++import { setContainerElement } from '../../base/browser/domStylesheets.js';
+ 
+ //#region Layout Implementation
+ 
+@@ -300,6 +301,8 @@ export abstract class Layout extends Disposable implements IWorkbenchLayoutServi
+ 		protected readonly parent: HTMLElement
+ 	) {
+ 		super();
++
++		setContainerElement(parent);
+ 	}
+ 
+ 	protected initLayout(accessor: ServicesAccessor): void {
+diff --git a/src/vs/workbench/browser/workbench.ts b/src/vs/workbench/browser/workbench.ts
+index e112acb5e7e..6b332f5fa11 100644
+--- a/src/vs/workbench/browser/workbench.ts
++++ b/src/vs/workbench/browser/workbench.ts
+@@ -70,6 +70,9 @@ export class Workbench extends Layout {
+ 		mark('code/willStartWorkbench');
+ 
+ 		this.registerErrorHandler(logService);
++
++		// Add Workbench to DOM
++		this.parent.appendChild(this.mainContainer);
+ 	}
+ 
+ 	protected registerErrorHandler(logService: ILogService): void {
+@@ -326,9 +329,6 @@ export class Workbench extends Layout {
+ 
+ 		// Notification Handlers
+ 		this.createNotificationsHandlers(instantiationService, notificationService);
+-
+-		// Add Workbench to DOM
+-		this.parent.appendChild(this.mainContainer);
+ 	}
+ 
+ 	private createPart(id: string, role: string, classes: string[]): HTMLElement {
+diff --git a/src/vs/workbench/services/keybinding/browser/keybindingService.ts b/src/vs/workbench/services/keybinding/browser/keybindingService.ts
+index f10b332d8e2..96b173622ca 100644
+--- a/src/vs/workbench/services/keybinding/browser/keybindingService.ts
++++ b/src/vs/workbench/services/keybinding/browser/keybindingService.ts
+@@ -55,6 +55,7 @@ import { IKeyboard, INavigatorWithKeyboard } from './navigatorKeyboard.js';
+ import { getAllUnboundCommands } from './unboundCommands.js';
+ import { IUserKeybindingItem, KeybindingIO, OutputBuilder } from '../common/keybindingIO.js';
+ import { IUserDataProfileService } from '../../userDataProfile/common/userDataProfile.js';
++import { ILayoutService } from '../../../../platform/layout/browser/layoutService.js';
+ 
+ interface ContributedKeyBinding {
+ 	command: string;
+@@ -198,7 +199,8 @@ export class WorkbenchKeybindingService extends AbstractKeybindingService {
+ 		@IFileService fileService: IFileService,
+ 		@IUriIdentityService uriIdentityService: IUriIdentityService,
+ 		@ILogService logService: ILogService,
+-		@IKeyboardLayoutService private readonly keyboardLayoutService: IKeyboardLayoutService
++		@IKeyboardLayoutService private readonly keyboardLayoutService: IKeyboardLayoutService,
++		@ILayoutService private readonly layoutService: ILayoutService
+ 	) {
+ 		super(contextKeyService, commandService, telemetryService, notificationService, logService);
+ 
+@@ -269,8 +271,10 @@ export class WorkbenchKeybindingService extends AbstractKeybindingService {
+ 	private _registerKeyListeners(window: Window): IDisposable {
+ 		const disposables = new DisposableStore();
+ 
++		const container = this.layoutService.getContainer(window);
++
+ 		// for standard keybindings
+-		disposables.add(dom.addDisposableListener(window, dom.EventType.KEY_DOWN, (e: KeyboardEvent) => {
++		disposables.add(dom.addDisposableListener(container, dom.EventType.KEY_DOWN, (e: KeyboardEvent) => {
+ 			if (this._keybindingHoldMode) {
+ 				return;
+ 			}
+@@ -286,7 +290,7 @@ export class WorkbenchKeybindingService extends AbstractKeybindingService {
+ 		}));
+ 
+ 		// for single modifier chord keybindings (e.g. shift shift)
+-		disposables.add(dom.addDisposableListener(window, dom.EventType.KEY_UP, (e: KeyboardEvent) => {
++		disposables.add(dom.addDisposableListener(container, dom.EventType.KEY_UP, (e: KeyboardEvent) => {
+ 			this._resetKeybindingHoldMode();
+ 			this.isComposingGlobalContextKey.set(e.isComposing);
+ 			const keyEvent = new StandardKeyboardEvent(e);
+diff --git a/src/vs/workbench/services/themes/browser/workbenchThemeService.ts b/src/vs/workbench/services/themes/browser/workbenchThemeService.ts
+index 56a3b2d8f18..99d592b37cc 100644
+--- a/src/vs/workbench/services/themes/browser/workbenchThemeService.ts
++++ b/src/vs/workbench/services/themes/browser/workbenchThemeService.ts
+@@ -18,7 +18,7 @@ import { Event, Emitter } from '../../../../base/common/event.js';
+ import { registerFileIconThemeSchemas } from '../common/fileIconThemeSchema.js';
+ import { IDisposable, dispose, Disposable } from '../../../../base/common/lifecycle.js';
+ import { FileIconThemeData, FileIconThemeLoader } from './fileIconThemeData.js';
+-import { createStyleSheet } from '../../../../base/browser/domStylesheets.js';
++import { createStyleSheet, shadowRootContainer } from '../../../../base/browser/domStylesheets.js';
+ import { IBrowserWorkbenchEnvironmentService } from '../../environment/browser/environmentService.js';
+ import { IFileService, FileChangeType } from '../../../../platform/files/common/files.js';
+ import { URI } from '../../../../base/common/uri.js';
+@@ -790,7 +790,7 @@ class ThemeFileWatcher {
+ }
+ 
+ function _applyRules(styleSheetContent: string, rulesClassName: string) {
+-	const themeStyles = mainWindow.document.head.getElementsByClassName(rulesClassName);
++	const themeStyles = (shadowRootContainer ?? mainWindow.document.head).querySelectorAll(`.${rulesClassName}`);
+ 	if (themeStyles.length === 0) {
+ 		const elStyle = createStyleSheet();
+ 		elStyle.className = rulesClassName;

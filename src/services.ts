@@ -9,7 +9,6 @@ import {
   type IEditorOverrideServices,
   StandaloneServices
 } from 'vs/editor/standalone/browser/standaloneServices'
-import { mixin } from 'vs/base/common/objects'
 import {
   type GetLeadingNonServiceArgs,
   IInstantiationService,
@@ -50,6 +49,7 @@ import getEnvironmentServiceOverride from './service-override/environment'
 import getLayoutServiceOverride from './service-override/layout'
 import getHostServiceOverride from './service-override/host'
 import getBaseServiceOverride from './service-override/base'
+import { injectCss } from './css'
 
 declare global {
   interface Window {
@@ -73,26 +73,25 @@ export async function initialize(
 ): Promise<void> {
   checkServicesNotInitialized()
 
+  injectCss(container)
   initializeWorkbench(container, configuration, env)
 
   const instantiationService = StandaloneServices.initialize({
-    [IProductService.toString()]: mixin(
-      <Partial<IProductConfiguration>>{
-        version: VSCODE_VERSION,
-        quality: 'stable',
-        commit: VSCODE_COMMIT,
-        nameShort: 'Code - OSS',
-        nameLong: 'Code - OSS',
-        applicationName: 'code-oss',
-        dataFolderName: '.vscode-oss',
-        urlProtocol: 'code-oss',
-        reportIssueUrl: 'https://github.com/microsoft/vscode/issues/new',
-        licenseName: 'MIT',
-        licenseUrl: 'https://github.com/microsoft/vscode/blob/main/LICENSE.txt',
-        serverApplicationName: 'code-server-oss'
-      },
-      configuration.productConfiguration ?? {}
-    ),
+    [IProductService.toString()]: <Partial<IProductConfiguration>>{
+      version: VSCODE_VERSION,
+      quality: 'stable',
+      commit: VSCODE_COMMIT,
+      nameShort: 'Code - OSS',
+      nameLong: 'Code - OSS',
+      applicationName: 'code-oss',
+      dataFolderName: '.vscode-oss',
+      urlProtocol: 'code-oss',
+      reportIssueUrl: 'https://github.com/microsoft/vscode/issues/new',
+      licenseName: 'MIT',
+      licenseUrl: 'https://github.com/microsoft/vscode/blob/main/LICENSE.txt',
+      serverApplicationName: 'code-server-oss',
+      ...(configuration.productConfiguration ?? {})
+    },
     ...getLayoutServiceOverride(), // Always override layout service to break cyclic dependency with ICodeEditorService
     ...getEnvironmentServiceOverride(),
     ...getExtensionsServiceOverride(),

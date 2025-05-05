@@ -17,17 +17,30 @@ import {
   constructOptions,
   envOptions,
   remoteAuthority,
-  userDataProvider
+  userDataProvider,
+  disableShadowDom
 } from './setup.common'
 
-const container = document.createElement('div')
+let container = document.createElement('div')
 container.style.height = '100vh'
 
 document.body.replaceChildren(container)
 
+if (!disableShadowDom) {
+  const shadowRoot = container.attachShadow({
+    mode: 'open'
+  })
+
+  const workbenchElement = document.createElement('div')
+  workbenchElement.style.height = '100vh'
+  shadowRoot.appendChild(workbenchElement)
+  container = workbenchElement
+}
+
 const buttons = document.createElement('div')
 buttons.innerHTML = `
 <button id="toggleHTMLFileSystemProvider">Toggle HTML filesystem provider</button>
+<button id="toggleShadowDom">Toggle Shadow Dom usage</button>
 <button id="customEditorPanel">Open custom editor panel</button>
 <button id="clearStorage">Clear user data</button>
 <button id="resetLayout">Reset layout</button>

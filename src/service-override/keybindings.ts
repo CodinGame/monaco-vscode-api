@@ -37,6 +37,7 @@ import 'vs/workbench/contrib/keybindings/browser/keybindings.contribution'
 import 'vs/workbench/contrib/preferences/browser/keybindingsEditorContribution'
 import 'vs/workbench/contrib/commands/common/commands.contribution'
 import { getService } from '../services'
+import { ILayoutService } from 'vs/platform/layout/browser/layoutService.service'
 
 // This is the default value, but can be overriden by overriding the Environment or UserDataProfileService service
 const defaultUserKeybindindsFile = URI.from({
@@ -87,7 +88,8 @@ class DynamicWorkbenchKeybindingService
     @IFileService fileService: IFileService,
     @IUriIdentityService uriIdentityService: IUriIdentityService,
     @ILogService logService: ILogService,
-    @IKeyboardLayoutService keyboardLayoutService: IKeyboardLayoutService
+    @IKeyboardLayoutService keyboardLayoutService: IKeyboardLayoutService,
+    @ILayoutService layoutService: ILayoutService
   ) {
     super(
       contextKeyService,
@@ -100,7 +102,8 @@ class DynamicWorkbenchKeybindingService
       fileService,
       uriIdentityService,
       logService,
-      keyboardLayoutService
+      keyboardLayoutService,
+      layoutService
     )
   }
 
