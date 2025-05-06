@@ -125,7 +125,7 @@ export default (args: Record<string, string>): rollup.RollupOptions => {
         external,
         transformers: [typeDedupReplaceTransformer]
       }),
-      resolveVscodePlugin(),
+      resolveVscodePlugin(vscodeVersion, vscodeCommit),
       vscodeLocalizationPlugin(),
       typescript({
         noEmitOnError: true,
@@ -148,9 +148,6 @@ export default (args: Record<string, string>): rollup.RollupOptions => {
         }
       }),
       replace({
-        VSCODE_VERSION: JSON.stringify(vscodeVersion),
-        VSCODE_REF: JSON.stringify(vscodeRef),
-        VSCODE_COMMIT: JSON.stringify(vscodeCommit),
         BUILD_ID: JSON.stringify(`${vscodeRef}-${crypto.randomUUID()}`),
         'globalThis.require': 'undefined',
         preventAssignment: true

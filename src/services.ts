@@ -21,7 +21,6 @@ import type {
   IWorkbenchConstructionOptions,
   IWorkspaceProvider
 } from 'vs/workbench/browser/web.api'
-import type { IProductConfiguration } from 'vs/base/common/product'
 import {
   type ILazyWorkbenchContributionInstantiation,
   type IOnEditorWorkbenchContributionInstantiation,
@@ -50,6 +49,8 @@ import getLayoutServiceOverride from './service-override/layout'
 import getHostServiceOverride from './service-override/host'
 import getBaseServiceOverride from './service-override/base'
 import { injectCss } from './css'
+import deprecatedProduct from 'vs/platform/product/common/product'
+import { mixin } from 'vs/base/common/objects'
 
 declare global {
   interface Window {
@@ -76,22 +77,13 @@ export async function initialize(
   injectCss(container)
   initializeWorkbench(container, configuration, env)
 
+  const productService: IProductService = mixin(
+    { _serviceBrand: undefined, ...deprecatedProduct },
+    configuration.productConfiguration
+  )
+
   const instantiationService = StandaloneServices.initialize({
-    [IProductService.toString()]: <Partial<IProductConfiguration>>{
-      version: VSCODE_VERSION,
-      quality: 'stable',
-      commit: VSCODE_COMMIT,
-      nameShort: 'Code - OSS',
-      nameLong: 'Code - OSS',
-      applicationName: 'code-oss',
-      dataFolderName: '.vscode-oss',
-      urlProtocol: 'code-oss',
-      reportIssueUrl: 'https://github.com/microsoft/vscode/issues/new',
-      licenseName: 'MIT',
-      licenseUrl: 'https://github.com/microsoft/vscode/blob/main/LICENSE.txt',
-      serverApplicationName: 'code-server-oss',
-      ...(configuration.productConfiguration ?? {})
-    },
+    [IProductService.toString()]: productService,
     ...getLayoutServiceOverride(), // Always override layout service to break cyclic dependency with ICodeEditorService
     ...getEnvironmentServiceOverride(),
     ...getExtensionsServiceOverride(),

@@ -23,6 +23,7 @@ import * as editorOptions from 'vs/editor/common/config/editorOptions'
 import * as uri from 'vs/base/common/uri'
 import * as telemetry from 'vs/platform/telemetry/common/telemetryUtils'
 import { defaultApi } from './localExtensionHost.js'
+import deprecatedProduct from 'vs/platform/product/common/product'
 
 function createProxy<T extends keyof typeof vscode>(key: T): (typeof vscode)[T] {
   return new Proxy(
@@ -42,7 +43,7 @@ function createProxy<T extends keyof typeof vscode>(key: T): (typeof vscode)[T] 
 }
 
 const api: typeof vscode = {
-  version: VSCODE_VERSION,
+  version: deprecatedProduct.version,
   tasks: createProxy('tasks'),
   notebooks: createProxy('notebooks'),
   scm: createProxy('scm'),
