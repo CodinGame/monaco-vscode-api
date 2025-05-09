@@ -190,8 +190,7 @@ const api: typeof vscode = {
   TerminalLocation: extHostTypes.TerminalLocation,
   TerminalProfile: extHostTypes.TerminalProfile,
   TerminalExitReason: extHostTypes.TerminalExitReason,
-  TerminalShellExecutionCommandLineConfidence:
-    extHostTypes.TerminalShellExecutionCommandLineConfidence,
+  TerminalShellExecutionCommandLineConfidence: extHostTypes.TerminalShellExecutionCommandLineConfidence,
   TextDocumentSaveReason: extHostTypes.TextDocumentSaveReason,
   TextEdit: extHostTypes.TextEdit,
   SnippetTextEdit: extHostTypes.SnippetTextEdit,
@@ -299,8 +298,7 @@ const api: typeof vscode = {
   ChatResponseCodeCitationPart: extHostTypes.ChatResponseCodeCitationPart,
   ChatResponseWarningPart: extHostTypes.ChatResponseWarningPart,
   ChatResponseTextEditPart: extHostTypes.ChatResponseTextEditPart,
-  ChatResponseMarkdownWithVulnerabilitiesPart:
-    extHostTypes.ChatResponseMarkdownWithVulnerabilitiesPart,
+  ChatResponseMarkdownWithVulnerabilitiesPart: extHostTypes.ChatResponseMarkdownWithVulnerabilitiesPart,
   ChatResponseCommandButtonPart: extHostTypes.ChatResponseCommandButtonPart,
   ChatResponseConfirmationPart: extHostTypes.ChatResponseConfirmationPart,
   ChatResponseReferencePartStatusKind: extHostTypes.ChatResponseReferencePartStatusKind,
@@ -345,7 +343,16 @@ const api: typeof vscode = {
   LanguageModelDataPart: extHostTypes.LanguageModelDataPart,
   ChatImageMimeType: extHostTypes.ChatImageMimeType,
   McpStdioServerDefinition: extHostTypes.McpStdioServerDefinition,
-  McpSSEServerDefinition: extHostTypes.McpSSEServerDefinition
+  SettingsSearchResultKind: extHostTypes.SettingsSearchResultKind,
+  ChatResponseExtensionsPart: extHostTypes.ChatResponseExtensionsPart,
+  ChatRequestEditedFileEventKind: extHostTypes.ChatRequestEditedFileEventKind,
+  ChatRequestTurn2: extHostTypes.ChatRequestTurn,
+  InlineCompletionEndOfLifeReasonKind: extHostTypes.InlineCompletionEndOfLifeReasonKind,
+  LanguageModelExtraDataPart: extHostTypes.LanguageModelExtraDataPart,
+  LanguageModelToolResultPart2: extHostTypes.LanguageModelToolResultPart2,
+  LanguageModelToolResult2: extHostTypes.LanguageModelToolResult2,
+  McpHttpServerDefinition: extHostTypes.McpHttpServerDefinition,
+  AISearchKeyword: searchExtTypes.AISearchKeyword,
 }
 
 // @ts-expect-error the syntax will be transformed by a typescript transformer in the rollup config
