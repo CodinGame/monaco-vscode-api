@@ -32,10 +32,10 @@ index a362e68f809..f37d40be096 100644
  		return this._treeSitterImport;
  	}
 diff --git a/src/vs/platform/extensionManagement/common/extensionsScannerService.ts b/src/vs/platform/extensionManagement/common/extensionsScannerService.ts
-index 2186e8d1d10..6517b086fae 100644
+index a15e92a42ab..5e252fac3da 100644
 --- a/src/vs/platform/extensionManagement/common/extensionsScannerService.ts
 +++ b/src/vs/platform/extensionManagement/common/extensionsScannerService.ts
-@@ -541,26 +541,172 @@ export class ExtensionScannerInput {
+@@ -545,26 +545,172 @@ export class ExtensionScannerInput {
  	}
  }
  
@@ -213,7 +213,7 @@ index 2186e8d1d10..6517b086fae 100644
  		this.extensionsEnabledWithApiProposalVersion = productService.extensionsEnabledWithApiProposalVersion?.map(id => id.toLowerCase()) ?? [];
  	}
  
-@@ -756,144 +902,6 @@ class ExtensionsScanner extends Disposable {
+@@ -760,144 +906,6 @@ class ExtensionsScanner extends Disposable {
  		}
  		return manifest;
  	}

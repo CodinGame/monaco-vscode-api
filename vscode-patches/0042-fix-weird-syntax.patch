@@ -8,13 +8,13 @@ Subject: [PATCH] fix: weird syntax
  1 file changed, 4 insertions(+), 2 deletions(-)
 
 diff --git a/src/vs/platform/notification/common/notification.ts b/src/vs/platform/notification/common/notification.ts
-index f573e788fb3..2245a1ef63b 100644
+index a3b59ab038e..3fdd005cdbb 100644
 --- a/src/vs/platform/notification/common/notification.ts
 +++ b/src/vs/platform/notification/common/notification.ts
-@@ -6,10 +6,12 @@
+@@ -5,10 +5,12 @@
+ 
  import { IAction } from '../../../base/common/actions.js';
  import { Event } from '../../../base/common/event.js';
- import { IDisposable } from '../../../base/common/lifecycle.js';
 -import BaseSeverity from '../../../base/common/severity.js';
 +import Severity from '../../../base/common/severity.js';
  import { createDecorator } from '../../instantiation/common/instantiation.js';
