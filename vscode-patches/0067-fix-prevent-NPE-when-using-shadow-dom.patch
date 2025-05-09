@@ -1,0 +1,24 @@
+From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
+From: =?UTF-8?q?Lo=C3=AFc=20Mangeonjean?= <loic@coderpad.io>
+Date: Fri, 9 May 2025 21:04:30 +0200
+Subject: [PATCH] fix: prevent NPE when using shadow dom
+
+---
+ src/vs/editor/browser/controller/mouseTarget.ts | 4 ++--
+ 1 file changed, 2 insertions(+), 2 deletions(-)
+
+diff --git a/src/vs/editor/browser/controller/mouseTarget.ts b/src/vs/editor/browser/controller/mouseTarget.ts
+index 28b39952393..3e3420b7180 100644
+--- a/src/vs/editor/browser/controller/mouseTarget.ts
++++ b/src/vs/editor/browser/controller/mouseTarget.ts
+@@ -1147,8 +1147,8 @@ function shadowCaretRangeFromPoint(shadowRoot: ShadowRoot, x: number, y: number)
+ 		}
+ 
+ 		// Creates a range with the text node of the element and set the offset found
+-		range.setStart(el.firstChild!, offset);
+-		range.setEnd(el.firstChild!, offset);
++		range.setStart(el.firstChild ?? el, offset);
++		range.setEnd(el.firstChild ?? el, offset);
+ 	}
+ 
+ 	return range;
