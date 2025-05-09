@@ -1,6 +1,6 @@
 From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
 From: =?UTF-8?q?Lo=C3=AFc=20Mangeonjean?= <loic@coderpad.io>
-Date: Mon, 11 Mar 2024 16:41:55 +0100
+Date: Fri, 9 May 2025 11:16:13 +0200
 Subject: [PATCH] fix: fix editor api types
 
 ---

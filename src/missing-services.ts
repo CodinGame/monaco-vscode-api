@@ -391,6 +391,7 @@ import {
 import { NullDefaultAccountService } from 'vs/workbench/services/accounts/common/defaultAccount'
 import { IChatTransferService } from 'vs/workbench/contrib/chat/common/chatTransferService.service'
 import { IChatStatusItemService } from 'vs/workbench/contrib/chat/browser/chatStatusItemService.service'
+import { IAiSettingsSearchService } from 'vscode/src/vs/workbench/services/aiSettingsSearch/common/aiSettingsSearch.service'
 
 function Unsupported(target: object, propertyKey: string, descriptor: PropertyDescriptor) {
   function unsupported() {
@@ -536,6 +537,19 @@ registerSingleton(IUriIdentityService, UriIdentityService, InstantiationType.Del
 
 class TextFileService implements ITextFileService {
   _serviceBrand: undefined
+
+  @Unsupported
+  resolveDecoding(): never {
+    unsupported()
+  }
+  @Unsupported
+  resolveEncoding(): never {
+    unsupported()
+  }
+  @Unsupported
+  validateDetectedEncoding(): never {
+    unsupported()
+  }
 
   @Unsupported
   getEncoding(): never {
@@ -1354,6 +1368,7 @@ class ProductService implements IProductService {
   licenseName = 'MIT'
   licenseUrl = 'https://github.com/microsoft/vscode/blob/main/LICENSE.txt'
   serverApplicationName = 'code-server-oss'
+  extensionProperties = {}
 }
 registerSingleton(IProductService, ProductService, InstantiationType.Eager)
 
@@ -1383,6 +1398,7 @@ registerSingleton(ILanguageStatusService, LanguageStatusService, InstantiationTy
 class HostService implements IHostService {
   _serviceBrand: undefined
 
+  getElementData = async () => undefined
   getNativeWindowHandle = async () => undefined
   getScreenshot = async () => undefined
   getPathForFile = () => undefined
@@ -5012,9 +5028,17 @@ registerSingleton(
 )
 
 class ChatService implements IChatService {
+
+  edits2Enabled = false
   _serviceBrand: undefined
 
   isPersistedSessionEmpty = () => true
+
+  @Unsupported
+  activateDefaultAgent(): never {
+    unsupported()
+  }
+
   @Unsupported
   getChatStorageFolder(): never {
     unsupported()
@@ -5576,10 +5600,18 @@ registerSingleton(
 )
 
 class WorkbenchExtensionManagementService implements IWorkbenchExtensionManagementService {
+  preferPreReleases = false
+
   _serviceBrand: undefined
   onProfileAwareDidInstallExtensions = Event.None
   onProfileAwareDidUninstallExtension = Event.None
   onProfileAwareDidUpdateExtensionMetadata = Event.None
+
+  @Unsupported
+  toggleApplicationScope(): never {
+    unsupported()
+  }
+
   @Unsupported
   uninstallExtensions(): never {
     unsupported()
@@ -5860,8 +5892,15 @@ registerSingleton(
 class QuickDiffService implements IQuickDiffService {
   _serviceBrand: undefined
   onDidChangeQuickDiffProviders = Event.None
+  providers = []
+  isQuickDiffProviderVisible = () => false
   @Unsupported
   addQuickDiffProvider(): never {
+    unsupported()
+  }
+
+  @Unsupported
+  toggleQuickDiffProviderVisibility(): never {
     unsupported()
   }
 
@@ -7110,6 +7149,11 @@ class ChatVariablesService implements IChatVariablesService {
   hasVariable(): never {
     unsupported()
   }
+
+  @Unsupported
+  getSelectedTools(): never {
+    unsupported()
+  }
 }
 registerSingleton(IChatVariablesService, ChatVariablesService, InstantiationType.Delayed)
 
@@ -7147,6 +7191,27 @@ class AiEmbeddingVectorService implements IAiEmbeddingVectorService {
   }
 }
 registerSingleton(IAiEmbeddingVectorService, AiEmbeddingVectorService, InstantiationType.Delayed)
+
+class AiSettingsSearchService implements IAiSettingsSearchService {
+  _serviceBrand: undefined
+  isEnabled = () => false
+
+  @Unsupported
+  startSearch(): never {
+    unsupported()
+  }
+  getEmbeddingsResults = async () => []
+  getLLMRankedResults = async () => []
+  @Unsupported
+  registerSettingsSearchProvider(): never {
+    unsupported()
+  }
+  @Unsupported
+  handleSearchResult(): never {
+    unsupported()
+  }
+}
+registerSingleton(IAiSettingsSearchService, AiSettingsSearchService, InstantiationType.Delayed)
 
 class SignService implements ISignService {
   _serviceBrand: undefined
@@ -7420,6 +7485,12 @@ class InlineChatSessionService implements IInlineChatSessionService {
   onDidMoveSession = Event.None
   onDidMoveSessio = Event.None
   onDidStashSession = Event.None
+
+  @Unsupported
+  get hideOnRequest() {
+    return unsupported()
+  }
+
   @Unsupported
   moveSession(): never {
     unsupported()
@@ -8574,6 +8645,16 @@ class ChatTransferService implements IChatTransferService {
   _serviceBrand: undefined
 
   @Unsupported
+  checkAndSetTransferredWorkspaceTrust(): never {
+    unsupported()
+  }
+
+  @Unsupported
+  addWorkspaceToTransferred(): never {
+    unsupported()
+  }
+
+  @Unsupported
   checkAndSetWorkspaceTrust(): never {
     unsupported()
   }
@@ -8718,6 +8799,12 @@ class PromptsService implements IPromptsService {
   listPromptFiles = async () => []
   getSourceFolders = () => []
   dispose(): void {}
+  asPromptSlashCommand = () => undefined
+  resolvePromptSlashCommand = async () => undefined
+  findPromptSlashCommands = async () => []
+  findInstructionFilesFor = async () => []
+  getAllMetadata = async () => []
+  getCombinedToolsMetadata = async () => null
 }
 registerSingleton(IPromptsService, PromptsService, InstantiationType.Eager)
 
@@ -8777,6 +8864,11 @@ class McpRegistry implements IMcpRegistry {
   }
   registerDelegate(): IDisposable {
     return Disposable.None
+  }
+
+  @Unsupported
+  setSavedInput(): never {
+    unsupported()
   }
 }
 registerSingleton(IMcpRegistry, McpRegistry, InstantiationType.Eager)

@@ -133,7 +133,7 @@ index 5e19dbde312..8cef45bbf85 100644
  	}
  });
 diff --git a/src/vs/workbench/contrib/terminalContrib/chat/browser/terminalChatController.ts b/src/vs/workbench/contrib/terminalContrib/chat/browser/terminalChatController.ts
-index 7e67399b2d6..278bf8152cf 100644
+index fbf6c29bf3b..35641f673f6 100644
 --- a/src/vs/workbench/contrib/terminalContrib/chat/browser/terminalChatController.ts
 +++ b/src/vs/workbench/contrib/terminalContrib/chat/browser/terminalChatController.ts
 @@ -16,6 +16,7 @@ import { TerminalChatWidget } from './terminalChatWidget.js';
@@ -156,7 +156,7 @@ index 7e67399b2d6..278bf8152cf 100644
  
  	/**
  	 * The chat widget for the controller, this is lazy as we don't want to instantiate it until
-@@ -78,13 +74,13 @@ export class TerminalChatController extends Disposable implements ITerminalContr
+@@ -79,13 +75,13 @@ export class TerminalChatController extends Disposable implements ITerminalContr
  		this._terminalChatWidget = new Lazy(() => {
  			const chatWidget = this._register(this._instantiationService.createInstance(TerminalChatWidget, this._ctx.instance.domElement!, this._ctx.instance, xterm));
  			this._register(chatWidget.focusTracker.onDidFocus(() => {

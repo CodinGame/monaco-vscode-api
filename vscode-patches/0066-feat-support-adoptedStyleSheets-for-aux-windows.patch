@@ -1,0 +1,37 @@
+From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
+From: =?UTF-8?q?Lo=C3=AFc=20Mangeonjean?= <loic@coderpad.io>
+Date: Fri, 9 May 2025 19:46:58 +0200
+Subject: [PATCH] feat: support adoptedStyleSheets for aux windows
+
+---
+ .../auxiliaryWindow/browser/auxiliaryWindowService.ts  | 10 +++++++++-
+ 1 file changed, 9 insertions(+), 1 deletion(-)
+
+diff --git a/src/vs/workbench/services/auxiliaryWindow/browser/auxiliaryWindowService.ts b/src/vs/workbench/services/auxiliaryWindow/browser/auxiliaryWindowService.ts
+index 764a63d0159..a632c3a325e 100644
+--- a/src/vs/workbench/services/auxiliaryWindow/browser/auxiliaryWindowService.ts
++++ b/src/vs/workbench/services/auxiliaryWindow/browser/auxiliaryWindowService.ts
+@@ -5,7 +5,7 @@
+ 
+ import { getZoomLevel } from '../../../../base/browser/browser.js';
+ import { $, Dimension, EventHelper, EventType, ModifierKeyEmitter, addDisposableListener, copyAttributes, createLinkElement, createMetaElement, getActiveWindow, getClientArea, getWindowId, isHTMLElement, position, registerWindow, sharedMutationObserver, trackAttributes } from '../../../../base/browser/dom.js';
+-import { cloneGlobalStylesheets, isGlobalStylesheet } from '../../../../base/browser/domStylesheets.js';
++import { cloneGlobalStylesheets, isGlobalStylesheet, shadowRootContainer } from '../../../../base/browser/domStylesheets.js';
+ import { CodeWindow, ensureCodeWindow, mainWindow } from '../../../../base/browser/window.js';
+ import { coalesce } from '../../../../base/common/arrays.js';
+ import { Barrier } from '../../../../base/common/async.js';
+@@ -413,6 +413,14 @@ export class BrowserAuxiliaryWindowService extends Disposable implements IAuxili
+ 	private applyCSS(auxiliaryWindow: CodeWindow, disposables: DisposableStore) {
+ 		mark('code/auxiliaryWindow/willApplyCSS');
+ 
++		auxiliaryWindow.document.adoptedStyleSheets = [...auxiliaryWindow.document.adoptedStyleSheets, ...(shadowRootContainer ?? mainWindow.document).adoptedStyleSheets.map(ss => {
++			const newss = new auxiliaryWindow.CSSStyleSheet();
++			for (const rule of ss.cssRules) {
++				newss.insertRule(rule.cssText);
++			}
++			return newss;
++		})];
++
+ 		const mapOriginalToClone = new Map<Node /* original */, Node /* clone */>();
+ 
+ 		const stylesLoaded = new Barrier();

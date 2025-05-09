@@ -54,7 +54,7 @@ index 8629aa38b0f..315217dc55f 100644
  	constructor() {
  		super({
 diff --git a/src/vs/workbench/contrib/tasks/browser/terminalTaskSystem.ts b/src/vs/workbench/contrib/tasks/browser/terminalTaskSystem.ts
-index 2fcb98375e2..70c14d42957 100644
+index 96bd7ef8e9a..85d742cf019 100644
 --- a/src/vs/workbench/contrib/tasks/browser/terminalTaskSystem.ts
 +++ b/src/vs/workbench/contrib/tasks/browser/terminalTaskSystem.ts
 @@ -50,7 +50,7 @@ import { IWorkbenchEnvironmentService } from '../../../services/environment/comm

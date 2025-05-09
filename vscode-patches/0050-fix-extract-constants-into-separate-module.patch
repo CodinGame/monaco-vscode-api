@@ -5,23 +5,23 @@ Subject: [PATCH] fix: extract constants into separate module
 
 so that only the constant is pulled from the root instead of the whole module graph
 ---
- src/vs/workbench/api/browser/mainThreadChatAgents2.ts  |  7 ++++---
+ src/vs/workbench/api/browser/mainThreadChatAgents2.ts  |  5 +++--
  .../contrib/chat/browser/actions/chatConstants.ts      | 10 ++++++++++
  .../chat/browser/actions/chatQuickInputActions.ts      |  3 ++-
  .../chat/browser/contrib/chatDynamicVariables.ts       |  3 ++-
  .../browser/contrib/chatDynamicVariablesConstant.ts    |  6 ++++++
  .../contrib/quickaccess/browser/commandsQuickAccess.ts |  3 +--
  .../contrib/search/browser/anythingQuickAccess.ts      |  2 +-
- 7 files changed, 26 insertions(+), 8 deletions(-)
+ 7 files changed, 25 insertions(+), 7 deletions(-)
  create mode 100644 src/vs/workbench/contrib/chat/browser/actions/chatConstants.ts
  create mode 100644 src/vs/workbench/contrib/chat/browser/contrib/chatDynamicVariablesConstant.ts
 
 diff --git a/src/vs/workbench/api/browser/mainThreadChatAgents2.ts b/src/vs/workbench/api/browser/mainThreadChatAgents2.ts
-index 0da8d2a09f1..e04162d5e33 100644
+index 4560cc6026f..e67d1562042 100644
 --- a/src/vs/workbench/api/browser/mainThreadChatAgents2.ts
 +++ b/src/vs/workbench/api/browser/mainThreadChatAgents2.ts
-@@ -23,18 +23,19 @@ import { IInstantiationService } from '../../../platform/instantiation/common/in
- import { ILogService } from '../../../platform/log/common/log.js';
+@@ -24,7 +24,7 @@ import { ILogService } from '../../../platform/log/common/log.js';
+ import { IUriIdentityService } from '../../../platform/uriIdentity/common/uriIdentity.js';
  import { IChatWidgetService } from '../../contrib/chat/browser/chat.js';
  import { ChatInputPart } from '../../contrib/chat/browser/chatInputPart.js';
 -import { AddDynamicVariableAction, IAddDynamicVariableContext } from '../../contrib/chat/browser/contrib/chatDynamicVariables.js';
@@ -29,20 +29,15 @@ index 0da8d2a09f1..e04162d5e33 100644
  import { IChatAgentHistoryEntry, IChatAgentImplementation, IChatAgentRequest, IChatAgentService } from '../../contrib/chat/common/chatAgents.js';
  import { IChatEditingService, IChatRelatedFileProviderMetadata } from '../../contrib/chat/common/chatEditingService.js';
  import { ChatRequestAgentPart } from '../../contrib/chat/common/chatParserTypes.js';
- import { ChatRequestParser } from '../../contrib/chat/common/chatRequestParser.js';
- import { IChatContentInlineReference, IChatContentReference, IChatFollowup, IChatNotebookEdit, IChatProgress, IChatService, IChatTask, IChatWarningMessage } from '../../contrib/chat/common/chatService.js';
--import { ChatAgentLocation } from '../../contrib/chat/common/constants.js';
- import { IExtHostContext, extHostNamedCustomer } from '../../services/extensions/common/extHostCustomers.js';
- import { IExtensionService } from '../../services/extensions/common/extensions.js';
+@@ -36,6 +36,7 @@ import { IExtensionService } from '../../services/extensions/common/extensions.j
  import { Dto } from '../../services/extensions/common/proxyIdentifier.js';
  import { ExtHostChatAgentsShape2, ExtHostContext, IChatNotebookEditDto, IChatParticipantMetadata, IChatProgressDto, IDynamicChatAgentProps, IExtensionChatAgentMetadata, MainContext, MainThreadChatAgentsShape2 } from '../common/extHost.protocol.js';
  import { NotebookDto } from './mainThreadNotebookDto.js';
 +import { addDynamicVariableActionId } from '../../contrib/chat/browser/contrib/chatDynamicVariablesConstant.js';
-+import { ChatAgentLocation } from '../../contrib/chat/common/constants.js';
  
  interface AgentData {
  	dispose: () => void;
-@@ -323,7 +324,7 @@ export class MainThreadChatAgents2 extends Disposable implements MainThreadChatA
+@@ -338,7 +339,7 @@ export class MainThreadChatAgents2 extends Disposable implements MainThreadChatA
  						kind: CompletionItemKind.Text,
  						detail: v.detail,
  						documentation: v.documentation,
@@ -83,10 +78,10 @@ index f5f9343bed8..4e8c13725a3 100644
  	registerAction2(QuickChatGlobalAction);
  	registerAction2(AskQuickChatAction);
 diff --git a/src/vs/workbench/contrib/chat/browser/contrib/chatDynamicVariables.ts b/src/vs/workbench/contrib/chat/browser/contrib/chatDynamicVariables.ts
-index 48ba9a62047..7b92ab911bd 100644
+index 9423d3b995e..3127544e993 100644
 --- a/src/vs/workbench/contrib/chat/browser/contrib/chatDynamicVariables.ts
 +++ b/src/vs/workbench/contrib/chat/browser/contrib/chatDynamicVariables.ts
-@@ -40,6 +40,7 @@ import { IChatRequestProblemsVariable, IChatRequestVariableValue, IDynamicVariab
+@@ -35,6 +35,7 @@ import { IChatRequestVariableValue, IDynamicVariable } from '../../common/chatVa
  import { IChatWidget } from '../chat.js';
  import { ChatWidget, IChatWidgetContrib } from '../chatWidget.js';
  import { ChatFileReference } from './chatDynamicVariables/chatFileReference.js';
@@ -94,7 +89,7 @@ index 48ba9a62047..7b92ab911bd 100644
  
  export const dynamicVariableDecorationType = 'chat-dynamic-variable';
  
-@@ -627,7 +628,7 @@ function isAddDynamicVariableContext(context: any): context is IAddDynamicVariab
+@@ -466,7 +467,7 @@ function isAddDynamicVariableContext(context: any): context is IAddDynamicVariab
  }
  
  export class AddDynamicVariableAction extends Action2 {
@@ -116,7 +111,7 @@ index 00000000000..df0794493a8
 +
 +export const addDynamicVariableActionId = 'workbench.action.chat.addDynamicVariable';
 diff --git a/src/vs/workbench/contrib/quickaccess/browser/commandsQuickAccess.ts b/src/vs/workbench/contrib/quickaccess/browser/commandsQuickAccess.ts
-index 3ae6694f964..3168b63205c 100644
+index 2de14ff31ee..dcb5cb6636b 100644
 --- a/src/vs/workbench/contrib/quickaccess/browser/commandsQuickAccess.ts
 +++ b/src/vs/workbench/contrib/quickaccess/browser/commandsQuickAccess.ts
 @@ -30,10 +30,9 @@ import { IQuickInputService, IQuickPickSeparator } from '../../../../platform/qu
@@ -132,7 +127,7 @@ index 3ae6694f964..3168b63205c 100644
  import { IEditorGroupsService } from '../../../services/editor/common/editorGroupsService.js';
  import { IEditorService } from '../../../services/editor/common/editorService.js';
 diff --git a/src/vs/workbench/contrib/search/browser/anythingQuickAccess.ts b/src/vs/workbench/contrib/search/browser/anythingQuickAccess.ts
-index bcb65cdddfd..fa06b31586c 100644
+index acbecc9773b..a73c21c25ad 100644
 --- a/src/vs/workbench/contrib/search/browser/anythingQuickAccess.ts
 +++ b/src/vs/workbench/contrib/search/browser/anythingQuickAccess.ts
 @@ -53,7 +53,7 @@ import { stripIcons } from '../../../../base/common/iconLabels.js';

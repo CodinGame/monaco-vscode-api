@@ -92,7 +92,7 @@ index bc02d0a62fa..60738979a66 100644
  	readonly _serviceBrand: undefined;
  
 diff --git a/src/vs/editor/contrib/gotoSymbol/browser/symbolNavigation.ts b/src/vs/editor/contrib/gotoSymbol/browser/symbolNavigation.ts
-index e02392bdad9..e522f8a2a82 100644
+index c1cd8f14db4..b2673e43eca 100644
 --- a/src/vs/editor/contrib/gotoSymbol/browser/symbolNavigation.ts
 +++ b/src/vs/editor/contrib/gotoSymbol/browser/symbolNavigation.ts
 @@ -32,7 +32,7 @@ export interface ISymbolNavigationService {
@@ -142,10 +142,10 @@ index 946f5ec0ecc..33b913b66f8 100644
  export namespace PeekContext {
  	export const inPeekEditor = new RawContextKey<boolean>('inReferenceSearchEditor', true, nls.localize('inReferenceSearchEditor', "Whether the current code editor is embedded inside peek"));
 diff --git a/src/vs/platform/actionWidget/browser/actionWidget.ts b/src/vs/platform/actionWidget/browser/actionWidget.ts
-index 450126a0f27..c0165a548ac 100644
+index 43179ddc230..2d28b9bafd9 100644
 --- a/src/vs/platform/actionWidget/browser/actionWidget.ts
 +++ b/src/vs/platform/actionWidget/browser/actionWidget.ts
-@@ -41,7 +41,7 @@ export interface IActionWidgetService {
+@@ -42,7 +42,7 @@ export interface IActionWidgetService {
  	readonly isVisible: boolean;
  }
  
@@ -194,7 +194,7 @@ index fa0d7fd2307..46a8443e46a 100644
  	declare readonly _serviceBrand: undefined;
  
 diff --git a/src/vs/workbench/browser/layout.ts b/src/vs/workbench/browser/layout.ts
-index bd0a9496f84..b3464af2ed7 100644
+index 0c3fbf7525b..f8c95a099bc 100644
 --- a/src/vs/workbench/browser/layout.ts
 +++ b/src/vs/workbench/browser/layout.ts
 @@ -51,7 +51,7 @@ import { CodeWindow, mainWindow } from '../../base/browser/window.js';
@@ -303,7 +303,7 @@ index 267da8cf7db..8b0c59fd496 100644
  		// Ask each part to restore
  		try {
 diff --git a/src/vs/workbench/contrib/chat/browser/chatStatusItemService.ts b/src/vs/workbench/contrib/chat/browser/chatStatusItemService.ts
-index 3f009e58eb0..8d05d7bd2f1 100644
+index 91697c5cf83..62f98885642 100644
 --- a/src/vs/workbench/contrib/chat/browser/chatStatusItemService.ts
 +++ b/src/vs/workbench/contrib/chat/browser/chatStatusItemService.ts
 @@ -34,7 +34,7 @@ export type ChatStatusEntry = {

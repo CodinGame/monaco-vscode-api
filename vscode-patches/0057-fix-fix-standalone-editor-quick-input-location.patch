@@ -8,7 +8,7 @@ Subject: [PATCH] fix: fix standalone editor quick input location
  1 file changed, 2 insertions(+), 2 deletions(-)
 
 diff --git a/src/vs/editor/standalone/browser/quickInput/standaloneQuickInputService.ts b/src/vs/editor/standalone/browser/quickInput/standaloneQuickInputService.ts
-index 03a2821ce51..96231656524 100644
+index 0b0da3e8e37..4a06e551636 100644
 --- a/src/vs/editor/standalone/browser/quickInput/standaloneQuickInputService.ts
 +++ b/src/vs/editor/standalone/browser/quickInput/standaloneQuickInputService.ts
 @@ -5,7 +5,7 @@
@@ -20,7 +20,7 @@ index 03a2821ce51..96231656524 100644
  import { EditorContributionInstantiation, registerEditorContribution } from '../../../browser/editorExtensions.js';
  import { IEditorContribution } from '../../../common/editorCommon.js';
  import { IThemeService } from '../../../../platform/theme/common/themeService.js';
-@@ -204,7 +204,7 @@ export class QuickInputEditorWidget implements IOverlayWidget {
+@@ -206,7 +206,7 @@ export class QuickInputEditorWidget implements IOverlayWidget {
  	}
  
  	getPosition(): IOverlayWidgetPosition | null {

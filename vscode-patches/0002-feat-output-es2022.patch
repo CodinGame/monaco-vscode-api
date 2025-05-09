@@ -1,6 +1,6 @@
 From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
 From: =?UTF-8?q?Lo=C3=AFc=20Mangeonjean?= <loic@coderpad.io>
-Date: Mon, 11 Mar 2024 16:44:35 +0100
+Date: Fri, 9 May 2025 11:15:41 +0200
 Subject: [PATCH] feat: output es2022
 
 ---
@@ -8,7 +8,7 @@ Subject: [PATCH] feat: output es2022
  1 file changed, 2 insertions(+), 2 deletions(-)
 
 diff --git a/src/tsconfig.monaco.json b/src/tsconfig.monaco.json
-index d64d6bd8c8e..5d44f2b2e7c 100644
+index cad1e06383d..83f3e469c6e 100644
 --- a/src/tsconfig.monaco.json
 +++ b/src/tsconfig.monaco.json
 @@ -8,8 +8,8 @@

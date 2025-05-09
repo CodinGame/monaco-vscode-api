@@ -53,7 +53,6 @@ const EDITOR_API_EXPOSE_MODULES = [
 ]
 
 const ALLOWED_MAIN_DEPENDENCIES = new Set([
-  '@c4312/eventsource-umd',
   '@vscode/iconv-lite-umd',
   'jschardet',
   'marked'

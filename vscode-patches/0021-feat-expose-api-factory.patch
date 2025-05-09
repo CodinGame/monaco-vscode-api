@@ -8,7 +8,7 @@ Subject: [PATCH] feat: expose api factory
  1 file changed, 4 insertions(+), 3 deletions(-)
 
 diff --git a/src/vs/workbench/api/worker/extHostExtensionService.ts b/src/vs/workbench/api/worker/extHostExtensionService.ts
-index 71c42330bd1..093049532e8 100644
+index 9221a062841..60c1fa6a8df 100644
 --- a/src/vs/workbench/api/worker/extHostExtensionService.ts
 +++ b/src/vs/workbench/api/worker/extHostExtensionService.ts
 @@ -3,7 +3,7 @@

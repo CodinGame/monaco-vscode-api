@@ -15,7 +15,7 @@ Subject: [PATCH] fix: apply style only on standalone editors
  8 files changed, 45 insertions(+), 24 deletions(-)
 
 diff --git a/src/vs/editor/browser/config/editorConfiguration.ts b/src/vs/editor/browser/config/editorConfiguration.ts
-index 701c940c736..ca380d0119c 100644
+index 1bf70f155d7..3fa06ccc70c 100644
 --- a/src/vs/editor/browser/config/editorConfiguration.ts
 +++ b/src/vs/editor/browser/config/editorConfiguration.ts
 @@ -46,6 +46,7 @@ export class EditorConfiguration extends Disposable implements IEditorConfigurat
@@ -42,7 +42,7 @@ index 701c940c736..ca380d0119c 100644
  		this._containerObserver = this._register(new ElementSizeObserver(container, options.dimension));
  		this._targetWindowId = getWindow(container).vscodeWindowId;
  
-@@ -137,7 +140,7 @@ export class EditorConfiguration extends Disposable implements IEditorConfigurat
+@@ -138,7 +141,7 @@ export class EditorConfiguration extends Disposable implements IEditorConfigurat
  
  	protected _readEnvConfiguration(): IEnvConfiguration {
  		return {
@@ -51,7 +51,7 @@ index 701c940c736..ca380d0119c 100644
  			outerWidth: this._containerObserver.getWidth(),
  			outerHeight: this._containerObserver.getHeight(),
  			emptySelectionClipboard: browser.isWebKit || browser.isFirefox,
-@@ -225,7 +228,7 @@ function digitCount(n: number): number {
+@@ -227,7 +230,7 @@ function digitCount(n: number): number {
  	return r ? r : 1;
  }
  
@@ -60,7 +60,7 @@ index 701c940c736..ca380d0119c 100644
  	let extra = '';
  	if (!browser.isSafari && !browser.isWebkitWebView) {
  		// Use user-select: none in all browsers except Safari and native macOS WebView
-@@ -239,6 +242,9 @@ function getExtraEditorClassName(): string {
+@@ -241,6 +244,9 @@ function getExtraEditorClassName(): string {
  	if (platform.isMacintosh) {
  		extra += 'mac ';
  	}
@@ -70,7 +70,7 @@ index 701c940c736..ca380d0119c 100644
  	return extra;
  }
  
-@@ -280,7 +286,7 @@ export class ComputedEditorOptions implements IComputedEditorOptions {
+@@ -283,7 +289,7 @@ export class ComputedEditorOptions implements IComputedEditorOptions {
  	}
  }
  
@@ -80,10 +80,10 @@ index 701c940c736..ca380d0119c 100644
  	public static validateOptions(options: IEditorOptions): ValidatedEditorOptions {
  		const result = new ValidatedEditorOptions();
 diff --git a/src/vs/editor/browser/widget/codeEditor/codeEditorWidget.ts b/src/vs/editor/browser/widget/codeEditor/codeEditorWidget.ts
-index fc0a05c5ede..9e2e1b886a9 100644
+index f2a45afad39..2f0e1425895 100644
 --- a/src/vs/editor/browser/widget/codeEditor/codeEditorWidget.ts
 +++ b/src/vs/editor/browser/widget/codeEditor/codeEditorWidget.ts
-@@ -276,6 +276,7 @@ export class CodeEditorWidget extends Disposable implements editorBrowser.ICodeE
+@@ -279,6 +279,7 @@ export class CodeEditorWidget extends Disposable implements editorBrowser.ICodeE
  
  		this._configuration = this._register(this._createConfiguration(codeEditorWidgetOptions.isSimpleWidget || false,
  			codeEditorWidgetOptions.contextMenuId ?? (codeEditorWidgetOptions.isSimpleWidget ? MenuId.SimpleEditorContext : MenuId.EditorContext),
@@ -91,7 +91,7 @@ index fc0a05c5ede..9e2e1b886a9 100644
  			options, accessibilityService));
  		this._register(this._configuration.onDidChange((e) => {
  			this._onDidChangeConfiguration.fire(e);
-@@ -384,8 +385,8 @@ export class CodeEditorWidget extends Disposable implements editorBrowser.ICodeE
+@@ -387,8 +388,8 @@ export class CodeEditorWidget extends Disposable implements editorBrowser.ICodeE
  		this._modelData?.view.writeScreenReaderContent(reason);
  	}
  
@@ -102,7 +102,7 @@ index fc0a05c5ede..9e2e1b886a9 100644
  	}
  
  	public getId(): string {
-@@ -1980,6 +1981,12 @@ export interface ICodeEditorWidgetOptions {
+@@ -1995,6 +1996,12 @@ export interface ICodeEditorWidgetOptions {
  	 */
  	isSimpleWidget?: boolean;
  
@@ -217,7 +217,7 @@ index dffab646d2b..ca9736c46f1 100644
  			instantiationService,
  			codeEditorService,
 diff --git a/src/vs/editor/test/browser/config/testConfiguration.ts b/src/vs/editor/test/browser/config/testConfiguration.ts
-index 3c1862c967d..2d565b57506 100644
+index ece0400a78c..5f70126b20f 100644
 --- a/src/vs/editor/test/browser/config/testConfiguration.ts
 +++ b/src/vs/editor/test/browser/config/testConfiguration.ts
 @@ -14,7 +14,7 @@ import { MenuId } from '../../../../platform/actions/common/actions.js';
