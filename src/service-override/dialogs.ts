@@ -6,7 +6,6 @@ import { FileDialogService } from 'vs/workbench/services/dialogs/browser/fileDia
 import type { IFileSystemProvider } from 'vs/platform/files/common/files'
 import { HTMLFileSystemProvider } from 'vs/platform/files/browser/htmlFileSystemProvider'
 import 'vs/workbench/browser/parts/dialogs/dialog.web.contribution'
-import 'vs/workbench/contrib/welcomeDialog/browser/welcomeDialog.contribution'
 
 function isHTMLFileSystemProvider(
   provider: IFileSystemProvider

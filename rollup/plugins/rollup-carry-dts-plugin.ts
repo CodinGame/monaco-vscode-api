@@ -61,7 +61,7 @@ export default ({ external = () => false, transformers }: PluginConfig = {}): Pl
     function visit(node: ts.Node): ts.Node | undefined {
       if (ts.isImportDeclaration(node) || ts.isExportDeclaration(node)) {
         if (node.moduleSpecifier != null && ts.isStringLiteral(node.moduleSpecifier)) {
-          imports.push(node.moduleSpecifier.text)
+          imports.push(node.moduleSpecifier.text.replace(/(\.d)?\.ts$/, '.js'))
         }
       }
       if (

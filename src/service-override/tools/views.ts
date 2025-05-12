@@ -463,7 +463,7 @@ export function setPartVisibility(
   part: Exclude<Parts, Parts.STATUSBAR_PART | Parts.TITLEBAR_PART>,
   visible: boolean
 ): void {
-  StandaloneServices.get(IWorkbenchLayoutService).setPartHidden(!visible, part, window)
+  StandaloneServices.get(IWorkbenchLayoutService).setPartHidden(!visible, part)
 }
 
 export const onDidChangePanelPosition: Event<string> = (listener) => {

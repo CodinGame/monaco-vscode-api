@@ -10,7 +10,7 @@ Subject: [PATCH] fix: mark process supported as soon as there is a registered
  2 files changed, 33 insertions(+), 11 deletions(-)
 
 diff --git a/src/vs/platform/terminal/common/terminal.ts b/src/vs/platform/terminal/common/terminal.ts
-index 3f326233dc7..0273b9a2601 100644
+index a380ed4089e..580c1337ffc 100644
 --- a/src/vs/platform/terminal/common/terminal.ts
 +++ b/src/vs/platform/terminal/common/terminal.ts
 @@ -3,7 +3,7 @@
@@ -22,7 +22,7 @@ index 3f326233dc7..0273b9a2601 100644
  import { IProcessEnvironment, OperatingSystem } from '../../../base/common/platform.js';
  import { URI, UriComponents } from '../../../base/common/uri.js';
  import { createDecorator } from '../../instantiation/common/instantiation.js';
-@@ -1103,12 +1103,27 @@ export const TerminalExtensions = {
+@@ -1150,12 +1150,27 @@ export const TerminalExtensions = {
  	Backend: 'workbench.contributions.terminal.processBackend'
  };
  
@@ -50,7 +50,7 @@ index 3f326233dc7..0273b9a2601 100644
  	/**
  	 * Registers a terminal backend for a remote authority.
  	 */
-@@ -1125,21 +1140,20 @@ class TerminalBackendRegistry implements ITerminalBackendRegistry {
+@@ -1172,21 +1187,20 @@ class TerminalBackendRegistry implements ITerminalBackendRegistry {
  
  	get backends(): ReadonlyMap<string, ITerminalBackend> { return this._backends; }
  

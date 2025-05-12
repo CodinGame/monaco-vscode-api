@@ -9,7 +9,7 @@ Subject: [PATCH] fix: do not export stuff from web workbench or the typescript
  1 file changed, 1 insertion(+), 57 deletions(-)
 
 diff --git a/src/vs/workbench/workbench.web.main.internal.ts b/src/vs/workbench/workbench.web.main.internal.ts
-index 59a19ef5c0a..46f7ffa96b5 100644
+index ca91b124d63..747d9474441 100644
 --- a/src/vs/workbench/workbench.web.main.internal.ts
 +++ b/src/vs/workbench/workbench.web.main.internal.ts
 @@ -76,7 +76,6 @@ import { IExtensionTipsService } from '../platform/extensionManagement/common/ex
@@ -20,7 +20,7 @@ index 59a19ef5c0a..46f7ffa96b5 100644
  import { UserDataSyncMachinesService, IUserDataSyncMachinesService } from '../platform/userDataSync/common/userDataSyncMachines.js';
  import { IUserDataSyncStoreService, IUserDataSyncService, IUserDataAutoSyncService, IUserDataSyncLocalStoreService, IUserDataSyncResourceProviderService } from '../platform/userDataSync/common/userDataSync.js';
  import { UserDataSyncStoreService } from '../platform/userDataSync/common/userDataSyncStoreService.js';
-@@ -181,66 +180,11 @@ import './contrib/remote/browser/remoteStartEntry.contribution.js';
+@@ -178,66 +177,11 @@ import './contrib/remote/browser/remoteStartEntry.contribution.js';
  //
  // !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
  

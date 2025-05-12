@@ -8,7 +8,7 @@ Subject: [PATCH] feat: add some parameter to webview iframes
  1 file changed, 4 insertions(+), 1 deletion(-)
 
 diff --git a/src/vs/workbench/contrib/webview/browser/webviewElement.ts b/src/vs/workbench/contrib/webview/browser/webviewElement.ts
-index cb774d951eb..721f8b00c68 100644
+index 753a41f7d56..33fdaac3ad4 100644
 --- a/src/vs/workbench/contrib/webview/browser/webviewElement.ts
 +++ b/src/vs/workbench/contrib/webview/browser/webviewElement.ts
 @@ -13,7 +13,7 @@ import { streamToBuffer, VSBufferReadableStream } from '../../../../base/common/
@@ -20,7 +20,7 @@ index cb774d951eb..721f8b00c68 100644
  import { URI } from '../../../../base/common/uri.js';
  import { generateUuid } from '../../../../base/common/uuid.js';
  import { localize } from '../../../../nls.js';
-@@ -439,6 +439,9 @@ export class WebviewElement extends Disposable implements IWebview, WebviewFindD
+@@ -440,6 +440,9 @@ export class WebviewElement extends Disposable implements IWebview, WebviewFindD
  			params.purpose = options.purpose;
  		}
  

@@ -10,7 +10,7 @@ Subject: [PATCH] fix: only run some code if inside the worker
  3 files changed, 19 insertions(+), 9 deletions(-)
 
 diff --git a/src/vs/workbench/api/common/extHostExtensionService.ts b/src/vs/workbench/api/common/extHostExtensionService.ts
-index e6af1f781be..07017a784d4 100644
+index 5b14b6d5a37..c6cd621af6e 100644
 --- a/src/vs/workbench/api/common/extHostExtensionService.ts
 +++ b/src/vs/workbench/api/common/extHostExtensionService.ts
 @@ -45,7 +45,7 @@ import { Schemas } from '../../../base/common/network.js';
@@ -74,7 +74,7 @@ index 910647acb2e..23807ec1b5c 100644
  
  	async asBrowserUri(uri: URI): Promise<URI> {
 diff --git a/src/vs/workbench/api/worker/extHostExtensionService.ts b/src/vs/workbench/api/worker/extHostExtensionService.ts
-index 6f3384ab89c..71c42330bd1 100644
+index 46bb2a0970f..9221a062841 100644
 --- a/src/vs/workbench/api/worker/extHostExtensionService.ts
 +++ b/src/vs/workbench/api/worker/extHostExtensionService.ts
 @@ -12,6 +12,7 @@ import { IExtensionDescription } from '../../../platform/extensions/common/exten
