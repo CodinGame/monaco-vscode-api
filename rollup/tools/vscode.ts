@@ -14,11 +14,6 @@ import {
   VSCODE_DIR,
   VSCODE_SRC_DIR
 } from './config.js'
-import { dataToEsm } from '@rollup/pluginutils'
-
-const product = JSON.parse(
-  fs.readFileSync(new URL('../../vscode/product.json', import.meta.url).pathname).toString()
-)
 
 const { firstBy } = thenby
 
@@ -123,6 +118,24 @@ export function transformVSCodeCode(
   vscodeVersion?: string,
   vscodeCommit?: string
 ): string {
+    /**
+   * Replace default product file by product.json file content
+   */
+  if (id.endsWith('vs/platform/product/common/product.js')) {
+    return `
+import productJson from 'vscode/product.json'
+
+export default {
+  ...productJson,
+  quality: 'stable',
+  version: '${vscodeVersion}',
+  commit: '${vscodeCommit}',
+  date: '${new Date().toISOString()}',
+  ...(globalThis._VSCODE_PRODUCT_JSON ?? {})
+}
+`
+  }
+
   // HACK: assign typescript decorator result to a decorated class field so rollup doesn't remove them
   // before:
   // __decorate([
@@ -138,26 +151,6 @@ export function transformVSCodeCode(
     /(^__decorate\(\[\n.*\n\], (.*).prototype)/gm,
     '$2.__decorator = $1'
   )
-
-  /**
-   * Replace default product file by product.json file content
-   */
-  if (id.endsWith('vs/platform/product/common/product.js')) {
-    patchedCode = dataToEsm(
-      {
-        ...product,
-        quality: 'stable',
-        version: vscodeVersion,
-        commit: vscodeCommit,
-        date: new Date().toISOString()
-      },
-      {
-        compact: false,
-        namedExports: false,
-        preferConst: false
-      }
-    )
-  }
 
   let cssImportCounter = 0
   const ast = recast.parse(patchedCode, {

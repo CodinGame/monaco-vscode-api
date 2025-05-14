@@ -30,6 +30,7 @@ import {
   VSCODE_SRC_DIR
 } from './tools/config.js'
 import { transformImportEqualsTransformerFactory } from './tools/typescript.js'
+import json from '@rollup/plugin-json'
 
 const input = {
   'extension.api': './src/extension.api.ts',
@@ -158,7 +159,13 @@ export default (args: Record<string, string>): rollup.RollupOptions => {
       }),
       dynamicImportPolyfillPlugin(),
       dynamicImportVars({
+        include: ['**/*.ts', '**/*.js'],
         exclude: ['**/amdX.js']
+      }),
+      json({
+        compact: true,
+        namedExports: false,
+        preferConst: false
       }),
       {
         name: 'cleanup',
