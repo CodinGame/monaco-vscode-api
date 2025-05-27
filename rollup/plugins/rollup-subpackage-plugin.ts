@@ -14,8 +14,8 @@ import thenby from 'thenby'
 import type { PackageJson } from 'type-fest'
 import * as nodePath from 'node:path'
 import { builtinModules } from 'module'
-import { createRequire } from 'node:module'
 import * as fs from 'node:fs'
+import { execSync } from 'node:child_process'
 
 export interface SubPackageModule {
   id: string
@@ -44,7 +44,16 @@ export interface SubPackageDependency {
 }
 
 const { firstBy } = thenby
-const require = createRequire(import.meta.url)
+
+function getInstalledVersion(libName: string) {
+  const output = execSync(`npm ls ${libName} --json --depth 1 --long`).toString();
+  const parsed: {
+    dependencies: Record<string, { name: string, version: string }>
+  } = JSON.parse(output);
+  const details = parsed.dependencies[libName]
+
+  return details
+}
 
 /**
  * Maximum number of modules of a group to be eligible for merging
@@ -511,14 +520,18 @@ export default ({
                             }
                           } else {
                             try {
-                              const packageJson: PackageJson = require(`${name}/package.json`)
-                              if (packageJson.name !== name) {
-                                version = `npm:${packageJson.name}@${packageJson.version ?? '*'}`
-                              } else {
-                                version = packageJson.version!
+                              const installedVersion = getInstalledVersion(name)
+                              if (installedVersion == null) {
+                                this.error({ message: `Unable to find version of ${name}` })
                               }
-                            } catch {
-                              this.error(`Unable to find version of ${name}`)
+                              if (installedVersion.name !== name) {
+                                version = `npm:${installedVersion.name}@${installedVersion.version ?? '*'}`
+                              } else {
+                                version = installedVersion.version!
+                              }
+                            } catch (err) {
+                              console.error(err)
+                              this.error({ message: `Unable to find version of ${name}`, stack: (err as Error).stack })
                             }
                           }
 
@@ -550,8 +563,8 @@ export default ({
                   const entrypoints = new Set(
                     groupSet.groups.size === 1
                       ? Object.values(bundle)
-                          .filter((c) => c.type === 'chunk' && c.isEntry)
-                          .map((c) => c.fileName)
+                        .filter((c) => c.type === 'chunk' && c.isEntry)
+                        .map((c) => c.fileName)
                       : []
                   )
 
