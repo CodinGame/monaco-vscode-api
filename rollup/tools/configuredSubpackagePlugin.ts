@@ -55,7 +55,8 @@ const EDITOR_API_EXPOSE_MODULES = [
 const ALLOWED_MAIN_DEPENDENCIES = new Set([
   '@vscode/iconv-lite-umd',
   'jschardet',
-  'marked'
+  'marked',
+  'dompurify'
 ])
 
 const workerGroups: Record<string, string> = {

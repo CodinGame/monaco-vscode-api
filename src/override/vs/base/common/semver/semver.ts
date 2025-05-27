@@ -1,1 +1,1 @@
-export { gte, gt, lt, lte, valid, eq, rcompare } from 'vscode-semver'
+export * from 'vscode-semver'
