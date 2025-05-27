@@ -20,7 +20,12 @@ export function initialize<D, R extends object>(createFn: CreateFunction<D, R>) 
             }
           }
         }
-        return requestHandler?.[propKey as keyof R]
+        const value = requestHandler?.[propKey as keyof R]
+
+        if (typeof value === 'function') {
+          return value.bind(requestHandler);
+        }
+        return value
       }
     }
   )
