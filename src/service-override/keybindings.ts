@@ -25,13 +25,10 @@ import { IUserDataProfileService } from 'vs/workbench/services/userDataProfile/c
 import { IHostService } from 'vs/workbench/services/host/browser/host.service'
 import { IExtensionService } from 'vs/workbench/services/extensions/common/extensions.service'
 import { ILogService } from 'vs/platform/log/common/log.service'
-import { WorkbenchContextKeysHandler } from 'vs/workbench/browser/contextkeys'
 import { Schemas } from 'vs/base/common/network'
 import { URI } from 'vs/base/common/uri'
-import { IInstantiationService } from 'vs/platform/instantiation/common/instantiation'
 import getFileServiceOverride, { initFile } from './files'
 import type { DynamicKeybindingService, KeybindingProvider } from '../monaco'
-import { onRenderWorkbench } from '../lifecycle'
 import 'vs/workbench/browser/workbench.contribution'
 import 'vs/workbench/contrib/keybindings/browser/keybindings.contribution'
 import 'vs/workbench/contrib/preferences/browser/keybindingsEditorContribution'
@@ -153,10 +150,6 @@ class DynamicWorkbenchKeybindingService
 interface KeybindingsProps {
   shouldUseGlobalKeybindings?: () => boolean
 }
-
-onRenderWorkbench((accessor) => {
-  accessor.get(IInstantiationService).createInstance(WorkbenchContextKeysHandler)
-})
 
 export default function getServiceOverride({
   shouldUseGlobalKeybindings = () => false

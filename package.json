@@ -30,9 +30,9 @@
   },
   "config": {
     "vscode": {
-      "version": "1.100.2",
-      "ref": "1.100.2",
-      "commit": "848b80aeb52026648a8ff9f7c45a9b0a80641e2e"
+      "version": "1.100.3",
+      "ref": "1.100.3",
+      "commit": "258e40fedc6cb8edf399a463ce3a9d32e7e1f6f3"
     },
     "monaco": {
       "ref": "v0.52.2",
@@ -40,13 +40,13 @@
     }
   },
   "devDependencies": {
-    "@babel/core": "^7.27.1",
+    "@babel/core": "^7.27.4",
     "@babel/plugin-proposal-class-properties": "^7.18.6",
     "@babel/plugin-proposal-decorators": "^7.27.1",
     "@babel/preset-env": "^7.27.2",
     "@babel/preset-typescript": "^7.27.1",
     "@codingame/commitlint-config-codingame": "^1.1.1",
-    "@codingame/semantic-release-config-github": "^2.0.0",
+    "@codingame/semantic-release-config-github": "^2.1.0",
     "@codingame/tsconfig": "^1.1.1",
     "@commitlint/cli": "^19.8.1",
     "@rollup/plugin-commonjs": "^28.0.3",
@@ -55,7 +55,7 @@
     "@rollup/plugin-node-resolve": "^16.0.1",
     "@rollup/plugin-replace": "^6.0.2",
     "@rollup/plugin-typescript": "^12.1.2",
-    "@types/mime-types": "^2.1.4",
+    "@types/mime-types": "^3.0.0",
     "@types/node": "18.19.8",
     "@types/postcss-url": "^10.0.4",
     "@types/semver": "^7.7.0",
@@ -66,7 +66,7 @@
     "chalk": "^5.4.1",
     "change-case": "^5.4.4",
     "change-package-name": "^1.0.5",
-    "eslint": "^9.26.0",
+    "eslint": "^9.28.0",
     "fast-glob": "^3.3.3",
     "graceful-fs": "^4.2.11",
     "js-cleanup": "^1.2.0",
@@ -75,19 +75,19 @@
     "postcss-url": "^10.1.3",
     "prettier": "^3.5.3",
     "recast": "^0.23.11",
-    "rollup": "^4.40.2",
+    "rollup": "^4.41.1",
     "rollup-plugin-copy": "^3.5.0",
     "rollup-plugin-dts": "^6.2.1",
-    "semantic-release": "24.2.3",
-    "semver": "^7.7.1",
+    "semantic-release": "24.2.5",
+    "semver": "^5.7.2",
     "tsx": "^4.19.4",
     "type-fest": "^4.41.0",
     "typescript": "^5.8.3",
-    "typescript-eslint": "^8.32.0",
+    "typescript-eslint": "^8.33.1",
     "uuid": "^11.1.0",
     "vscode-semver": "npm:semver@=5.5.0",
-    "yargs": "^17.7.2",
-    "zx": "^8.5.4"
+    "yargs": "^18.0.0",
+    "zx": "^8.5.5"
   },
   "dependencies": {
     "@microsoft/1ds-core-js": "^3.2.13",
@@ -119,7 +119,7 @@
     "kerberos": "2.1.1",
     "keytar": "^7.9.0",
     "marked": "~14.0.0",
-    "memfs": "^4.17.1",
+    "memfs": "^4.17.2",
     "mime-types": "^3.0.1",
     "node-pty": "^1.1.0-beta33",
     "tas-client-umd": "0.2.0",

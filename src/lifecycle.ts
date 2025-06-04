@@ -19,6 +19,7 @@ import { setHoverDelegateFactory } from 'vs/base/browser/ui/hover/hoverDelegateF
 import { setBaseLayerHoverDelegate } from 'vs/base/browser/ui/hover/hoverDelegate2'
 import { WorkbenchHoverDelegate } from 'vs/platform/hover/browser/hover'
 import { IHoverService } from 'vs/platform/hover/browser/hover.service'
+import { WorkbenchContextKeysHandler } from 'vs/workbench/browser/contextkeys'
 
 const layoutEmitter = new Emitter<ServicesAccessor>()
 export const onLayout = layoutEmitter.event
@@ -58,7 +59,12 @@ export async function startup(instantiationService: IInstantiationService): Prom
 
   await instantiationService.invokeFunction(async (accessor) => {
     setHoverDelegateFactory((placement, enableInstantHover) =>
-      instantiationService.createInstance(WorkbenchHoverDelegate, placement, { instantHover: enableInstantHover }, {})
+      instantiationService.createInstance(
+        WorkbenchHoverDelegate,
+        placement,
+        { instantHover: enableInstantHover },
+        {}
+      )
     )
     setBaseLayerHoverDelegate(accessor.get(IHoverService))
   })
@@ -84,6 +90,7 @@ export async function startup(instantiationService: IInstantiationService): Prom
 
     Registry.as<IWorkbenchContributionsRegistry>(WorkbenchExtensions.Workbench).start(accessor)
     Registry.as<IEditorFactoryRegistry>(EditorExtensions.EditorFactory).start(accessor)
+    accessor.get(IInstantiationService).createInstance(WorkbenchContextKeysHandler)
 
     layoutEmitter.fire(accessor)
     renderWorkbenchEmitter.fire(accessor)
