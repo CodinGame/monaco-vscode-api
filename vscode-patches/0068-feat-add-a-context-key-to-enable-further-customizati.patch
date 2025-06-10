@@ -1,0 +1,135 @@
+From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
+From: Jean-Damien Thevenoux <jean-damien.thevenoux@codingame.com>
+Date: Tue, 10 Jun 2025 19:02:16 +0200
+Subject: [PATCH] feat: add a context key to enable further customization
+
+---
+ src/vs/workbench/browser/actions/windowActions.ts | 15 ++++++++++-----
+ src/vs/workbench/browser/contextkeys.ts           |  5 ++++-
+ src/vs/workbench/common/contextkeys.ts            |  2 ++
+ .../files/browser/fileActions.contribution.ts     |  6 +++---
+ 4 files changed, 19 insertions(+), 9 deletions(-)
+
+diff --git a/src/vs/workbench/browser/actions/windowActions.ts b/src/vs/workbench/browser/actions/windowActions.ts
+index 2fb9c8edbb3..c2084859922 100644
+--- a/src/vs/workbench/browser/actions/windowActions.ts
++++ b/src/vs/workbench/browser/actions/windowActions.ts
+@@ -8,7 +8,7 @@ import { IWindowOpenable } from '../../../platform/window/common/window.js';
+ import { IDialogService } from '../../../platform/dialogs/common/dialogs.js';
+ import { MenuRegistry, MenuId, Action2, registerAction2, IAction2Options } from '../../../platform/actions/common/actions.js';
+ import { KeyChord, KeyCode, KeyMod } from '../../../base/common/keyCodes.js';
+-import { IsMainWindowFullscreenContext } from '../../common/contextkeys.js';
++import { IsMainWindowFullscreenContext, IsSandboxWorkspaceContext } from '../../common/contextkeys.js';
+ import { IsMacNativeContext, IsDevelopmentContext, IsWebContext, IsIOSContext } from '../../../platform/contextkey/common/contextkeys.js';
+ import { Categories } from '../../../platform/action/common/actionCommonCategories.js';
+ import { KeybindingsRegistry, KeybindingWeight } from '../../../platform/keybinding/common/keybindingsRegistry.js';
+@@ -247,10 +247,12 @@ export class OpenRecentAction extends BaseOpenRecentAction {
+ 				primary: KeyMod.CtrlCmd | KeyCode.KeyR,
+ 				mac: { primary: KeyMod.WinCtrl | KeyCode.KeyR }
+ 			},
++			precondition: IsSandboxWorkspaceContext.toNegated(),
+ 			menu: {
+ 				id: MenuId.MenubarRecentMenu,
+ 				group: 'y_more',
+-				order: 1
++				order: 1,
++				when: IsSandboxWorkspaceContext.toNegated()
+ 			}
+ 		});
+ 	}
+@@ -378,10 +380,12 @@ class NewWindowAction extends Action2 {
+ 				primary: isWeb ? (isWindows ? KeyChord(KeyMod.CtrlCmd | KeyCode.KeyK, KeyMod.Shift | KeyCode.KeyN) : KeyMod.CtrlCmd | KeyMod.Alt | KeyMod.Shift | KeyCode.KeyN) : KeyMod.CtrlCmd | KeyMod.Shift | KeyCode.KeyN,
+ 				secondary: isWeb ? [KeyMod.CtrlCmd | KeyMod.Shift | KeyCode.KeyN] : undefined
+ 			},
++			precondition: IsSandboxWorkspaceContext.toNegated(),
+ 			menu: {
+ 				id: MenuId.MenubarFileMenu,
+ 				group: '1_new',
+-				order: 3
++				order: 3,
++				when: IsSandboxWorkspaceContext.toNegated()
+ 			}
+ 		});
+ 	}
+@@ -461,12 +465,13 @@ MenuRegistry.appendMenuItem(MenuId.MenubarFileMenu, {
+ 		toggled: ContextKeyExpr.notEquals('config.window.confirmBeforeClose', 'never')
+ 	},
+ 	order: 1,
+-	when: IsWebContext
++	when: ContextKeyExpr.and(IsSandboxWorkspaceContext.toNegated(), IsWebContext)
+ });
+ 
+ MenuRegistry.appendMenuItem(MenuId.MenubarFileMenu, {
+ 	title: localize({ key: 'miOpenRecent', comment: ['&& denotes a mnemonic'] }, "Open &&Recent"),
+ 	submenu: MenuId.MenubarRecentMenu,
+ 	group: '2_open',
+-	order: 4
++	order: 4,
++	when: IsSandboxWorkspaceContext.toNegated()
+ });
+diff --git a/src/vs/workbench/browser/contextkeys.ts b/src/vs/workbench/browser/contextkeys.ts
+index 840174189ee..c6a076d0295 100644
+--- a/src/vs/workbench/browser/contextkeys.ts
++++ b/src/vs/workbench/browser/contextkeys.ts
+@@ -7,7 +7,7 @@ import { Event } from '../../base/common/event.js';
+ import { Disposable, DisposableStore } from '../../base/common/lifecycle.js';
+ import { IContextKeyService, IContextKey, setConstant as setConstantContextKey } from '../../platform/contextkey/common/contextkey.js';
+ import { InputFocusedContext, IsMacContext, IsLinuxContext, IsWindowsContext, IsWebContext, IsMacNativeContext, IsDevelopmentContext, IsIOSContext, ProductQualityContext, IsMobileContext } from '../../platform/contextkey/common/contextkeys.js';
+-import { SplitEditorsVertically, InEditorZenModeContext, AuxiliaryBarVisibleContext, SideBarVisibleContext, PanelAlignmentContext, PanelMaximizedContext, PanelVisibleContext, EmbedderIdentifierContext, EditorTabsVisibleContext, IsMainEditorCenteredLayoutContext, MainEditorAreaVisibleContext, DirtyWorkingCopiesContext, EmptyWorkspaceSupportContext, EnterMultiRootWorkspaceSupportContext, HasWebFileSystemAccess, IsMainWindowFullscreenContext, OpenFolderWorkspaceSupportContext, RemoteNameContext, VirtualWorkspaceContext, WorkbenchStateContext, WorkspaceFolderCountContext, PanelPositionContext, TemporaryWorkspaceContext, TitleBarVisibleContext, TitleBarStyleContext, IsAuxiliaryWindowFocusedContext, ActiveEditorGroupEmptyContext, ActiveEditorGroupIndexContext, ActiveEditorGroupLastContext, ActiveEditorGroupLockedContext, MultipleEditorGroupsContext, EditorsVisibleContext } from '../common/contextkeys.js';
++import { SplitEditorsVertically, InEditorZenModeContext, AuxiliaryBarVisibleContext, SideBarVisibleContext, PanelAlignmentContext, PanelMaximizedContext, PanelVisibleContext, EmbedderIdentifierContext, EditorTabsVisibleContext, IsMainEditorCenteredLayoutContext, MainEditorAreaVisibleContext, DirtyWorkingCopiesContext, EmptyWorkspaceSupportContext, EnterMultiRootWorkspaceSupportContext, HasWebFileSystemAccess, IsMainWindowFullscreenContext, OpenFolderWorkspaceSupportContext, RemoteNameContext, VirtualWorkspaceContext, WorkbenchStateContext, WorkspaceFolderCountContext, PanelPositionContext, TemporaryWorkspaceContext, TitleBarVisibleContext, TitleBarStyleContext, IsAuxiliaryWindowFocusedContext, ActiveEditorGroupEmptyContext, ActiveEditorGroupIndexContext, ActiveEditorGroupLastContext, ActiveEditorGroupLockedContext, MultipleEditorGroupsContext, EditorsVisibleContext, IsSandboxWorkspaceContext } from '../common/contextkeys.js';
+ import { trackFocus, addDisposableListener, EventType, onDidRegisterWindow, getActiveWindow, isEditableElement } from '../../base/browser/dom.js';
+ import { preferredSideBySideGroupDirection, GroupDirection, IEditorGroupsService } from '../services/editor/common/editorGroupsService.js';
+ import { IConfigurationService } from '../../platform/configuration/common/configuration.js';
+@@ -197,6 +197,9 @@ export class WorkbenchContextKeysHandler extends Disposable {
+ 		this.auxiliaryBarVisibleContext = AuxiliaryBarVisibleContext.bindTo(this.contextKeyService);
+ 		this.auxiliaryBarVisibleContext.set(this.layoutService.isVisible(Parts.AUXILIARYBAR_PART));
+ 
++		// Environment
++		IsSandboxWorkspaceContext.bindTo(this.contextKeyService);
++
+ 		this.registerListeners();
+ 	}
+ 
+diff --git a/src/vs/workbench/common/contextkeys.ts b/src/vs/workbench/common/contextkeys.ts
+index 548fe41ac89..4c1ec4b3f87 100644
+--- a/src/vs/workbench/common/contextkeys.ts
++++ b/src/vs/workbench/common/contextkeys.ts
+@@ -40,6 +40,8 @@ export const HasWebFileSystemAccess = new RawContextKey<boolean>('hasWebFileSyst
+ 
+ export const EmbedderIdentifierContext = new RawContextKey<string | undefined>('embedderIdentifier', undefined, localize('embedderIdentifier', 'The identifier of the embedder according to the product service, if one is defined'));
+ 
++export const IsSandboxWorkspaceContext = new RawContextKey<boolean>('isSandboxWorkspace', false, true);
++
+ //#endregion
+ 
+ 
+diff --git a/src/vs/workbench/contrib/files/browser/fileActions.contribution.ts b/src/vs/workbench/contrib/files/browser/fileActions.contribution.ts
+index 6cd04336cfb..d9469ae6123 100644
+--- a/src/vs/workbench/contrib/files/browser/fileActions.contribution.ts
++++ b/src/vs/workbench/contrib/files/browser/fileActions.contribution.ts
+@@ -20,7 +20,7 @@ import { CLOSE_SAVED_EDITORS_COMMAND_ID, CLOSE_EDITORS_IN_GROUP_COMMAND_ID, CLOS
+ import { AutoSaveAfterShortDelayContext } from '../../../services/filesConfiguration/common/filesConfigurationService.js';
+ import { WorkbenchListDoubleSelection } from '../../../../platform/list/browser/listService.js';
+ import { Schemas } from '../../../../base/common/network.js';
+-import { DirtyWorkingCopiesContext, EnterMultiRootWorkspaceSupportContext, HasWebFileSystemAccess, WorkbenchStateContext, WorkspaceFolderCountContext, SidebarFocusContext, ActiveEditorCanRevertContext, ActiveEditorContext, ResourceContextKey, ActiveEditorAvailableEditorIdsContext, MultipleEditorsSelectedInGroupContext, TwoEditorsSelectedInGroupContext, SelectedEditorsInGroupFileOrUntitledResourceContextKey } from '../../../common/contextkeys.js';
++import { DirtyWorkingCopiesContext, EnterMultiRootWorkspaceSupportContext, HasWebFileSystemAccess, WorkbenchStateContext, WorkspaceFolderCountContext, SidebarFocusContext, ActiveEditorCanRevertContext, ActiveEditorContext, ResourceContextKey, ActiveEditorAvailableEditorIdsContext, MultipleEditorsSelectedInGroupContext, TwoEditorsSelectedInGroupContext, SelectedEditorsInGroupFileOrUntitledResourceContextKey, IsSandboxWorkspaceContext } from '../../../common/contextkeys.js';
+ import { IsWebContext } from '../../../../platform/contextkey/common/contextkeys.js';
+ import { ServicesAccessor } from '../../../../platform/instantiation/common/instantiation.js';
+ import { ThemeIcon } from '../../../../base/common/themables.js';
+@@ -571,14 +571,14 @@ MenuRegistry.appendMenuItem(MenuId.ExplorerContext, ({
+ 		id: DOWNLOAD_COMMAND_ID,
+ 		title: DOWNLOAD_LABEL
+ 	},
+-	when: ContextKeyExpr.or(
++	when: ContextKeyExpr.and(IsSandboxWorkspaceContext.toNegated(), ContextKeyExpr.or(
+ 		// native: for any remote resource
+ 		ContextKeyExpr.and(IsWebContext.toNegated(), ResourceContextKey.Scheme.notEqualsTo(Schemas.file)),
+ 		// web: for any files
+ 		ContextKeyExpr.and(IsWebContext, ExplorerFolderContext.toNegated(), ExplorerRootContext.toNegated()),
+ 		// web: for any folders if file system API support is provided
+ 		ContextKeyExpr.and(IsWebContext, HasWebFileSystemAccess)
+-	)
++	))
+ }));
+ 
+ MenuRegistry.appendMenuItem(MenuId.ExplorerContext, ({
