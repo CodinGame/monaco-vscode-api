@@ -90,7 +90,9 @@ export async function startup(instantiationService: IInstantiationService): Prom
 
     Registry.as<IWorkbenchContributionsRegistry>(WorkbenchExtensions.Workbench).start(accessor)
     Registry.as<IEditorFactoryRegistry>(EditorExtensions.EditorFactory).start(accessor)
-    accessor.get(IInstantiationService).createInstance(WorkbenchContextKeysHandler)
+    onRenderWorkbench((accessor) => {
+      accessor.get(IInstantiationService).createInstance(WorkbenchContextKeysHandler)
+    })
 
     layoutEmitter.fire(accessor)
     renderWorkbenchEmitter.fire(accessor)
