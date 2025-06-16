@@ -8,7 +8,7 @@ Subject: [PATCH] feat: expose api factory
  1 file changed, 4 insertions(+), 3 deletions(-)
 
 diff --git a/src/vs/workbench/api/worker/extHostExtensionService.ts b/src/vs/workbench/api/worker/extHostExtensionService.ts
-index 9221a062841..60c1fa6a8df 100644
+index c4af59adb80..224dd1a27b3 100644
 --- a/src/vs/workbench/api/worker/extHostExtensionService.ts
 +++ b/src/vs/workbench/api/worker/extHostExtensionService.ts
 @@ -3,7 +3,7 @@
@@ -20,7 +20,7 @@ index 9221a062841..60c1fa6a8df 100644
  import { ExtensionActivationTimesBuilder } from '../common/extHostExtensionActivator.js';
  import { AbstractExtHostExtensionService } from '../common/extHostExtensionService.js';
  import { URI } from '../../../base/common/uri.js';
-@@ -38,6 +38,7 @@ export class ExtHostExtensionService extends AbstractExtHostExtensionService {
+@@ -39,6 +39,7 @@ export class ExtHostExtensionService extends AbstractExtHostExtensionService {
  	readonly extensionRuntime = ExtensionRuntime.Webworker;
  
  	private _fakeModules?: WorkerRequireInterceptor;
@@ -28,7 +28,7 @@ index 9221a062841..60c1fa6a8df 100644
  
  	protected async _beforeAlmostReadyToRunExtensions(): Promise<void> {
  		if (isWebWorker) {
-@@ -46,8 +47,8 @@ export class ExtHostExtensionService extends AbstractExtHostExtensionService {
+@@ -47,8 +48,8 @@ export class ExtHostExtensionService extends AbstractExtHostExtensionService {
  		}
  
  		// initialize API and register actors

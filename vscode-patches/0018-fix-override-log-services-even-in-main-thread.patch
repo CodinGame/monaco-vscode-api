@@ -9,7 +9,7 @@ Subject: [PATCH] fix: override log services even in main thread
  2 files changed, 6 insertions(+), 4 deletions(-)
 
 diff --git a/src/vs/workbench/api/common/extensionHostMain.ts b/src/vs/workbench/api/common/extensionHostMain.ts
-index 23807ec1b5c..279ba32a63b 100644
+index 7f37bac543b..bf3689abb6b 100644
 --- a/src/vs/workbench/api/common/extensionHostMain.ts
 +++ b/src/vs/workbench/api/common/extensionHostMain.ts
 @@ -12,7 +12,7 @@ import { MainContext, MainThreadConsoleShape } from './extHost.protocol.js';
@@ -21,9 +21,9 @@ index 23807ec1b5c..279ba32a63b 100644
  import { getSingletonServiceDescriptors } from '../../../platform/instantiation/common/extensions.js';
  import { ServiceCollection } from '../../../platform/instantiation/common/serviceCollection.js';
  import { IExtHostInitDataService } from './extHostInitDataService.js';
-@@ -24,6 +24,9 @@ import { IExtHostExtensionService, IHostUtils } from './extHostExtensionService.
- import { IExtHostTelemetry } from './extHostTelemetry.js';
+@@ -25,6 +25,9 @@ import { IExtHostTelemetry } from './extHostTelemetry.js';
  import { Mutable } from '../../../base/common/types.js';
+ import { IExtHostApiDeprecationService } from './extHostApiDeprecationService.js';
  import { isWebWorker } from '../../../base/common/platform.js';
 +import { SyncDescriptor } from '../../../platform/instantiation/common/descriptors.js';
 +import { ExtHostLoggerService } from './extHostLoggerService.js';
@@ -31,7 +31,7 @@ index 23807ec1b5c..279ba32a63b 100644
  
  export interface IExitFn {
  	(code?: number): any;
-@@ -168,6 +171,8 @@ export class ExtensionHostMain {
+@@ -185,6 +188,8 @@ export class ExtensionHostMain {
  		services.set(IExtHostRpcService, new ExtHostRpcService(this._rpcProtocol));
  		services.set(IURITransformerService, new URITransformerService(uriTransformer));
  		services.set(IHostUtils, hostUtils);
@@ -41,24 +41,25 @@ index 23807ec1b5c..279ba32a63b 100644
  		const instaService: IInstantiationService = new InstantiationService(services, true);
  
 diff --git a/src/vs/workbench/api/worker/extHost.worker.services.ts b/src/vs/workbench/api/worker/extHost.worker.services.ts
-index 797ebc4a065..8b414666da5 100644
+index d6055bcf0f6..0492a6c479c 100644
 --- a/src/vs/workbench/api/worker/extHost.worker.services.ts
 +++ b/src/vs/workbench/api/worker/extHost.worker.services.ts
-@@ -5,9 +5,7 @@
+@@ -5,10 +5,8 @@
  
  import { SyncDescriptor } from '../../../platform/instantiation/common/descriptors.js';
  import { InstantiationType, registerSingleton } from '../../../platform/instantiation/common/extensions.js';
 -import { ILogService } from '../../../platform/log/common/log.js';
+ import { ExtHostAuthentication, IExtHostAuthentication } from '../common/extHostAuthentication.js';
  import { IExtHostExtensionService } from '../common/extHostExtensionService.js';
 -import { ExtHostLogService } from '../common/extHostLogService.js';
  import { ExtensionStoragePaths, IExtensionStoragePaths } from '../common/extHostStoragePaths.js';
  import { ExtHostTelemetry, IExtHostTelemetry } from '../common/extHostTelemetry.js';
  import { ExtHostExtensionService } from './extHostExtensionService.js';
-@@ -18,7 +16,6 @@ import { ExtHostExtensionService } from './extHostExtensionService.js';
+@@ -19,7 +17,6 @@ import { ExtHostExtensionService } from './extHostExtensionService.js';
  // ###                                                                   ###
  // #########################################################################
  
 -registerSingleton(ILogService, new SyncDescriptor(ExtHostLogService, [true], true));
+ registerSingleton(IExtHostAuthentication, ExtHostAuthentication, InstantiationType.Eager);
  registerSingleton(IExtHostExtensionService, ExtHostExtensionService, InstantiationType.Eager);
  registerSingleton(IExtensionStoragePaths, ExtensionStoragePaths, InstantiationType.Eager);
- registerSingleton(IExtHostTelemetry, new SyncDescriptor(ExtHostTelemetry, [true], true));

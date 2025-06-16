@@ -4,14 +4,14 @@ Date: Mon, 11 Mar 2024 17:38:30 +0100
 Subject: [PATCH] fix: improve extension contribution types
 
 ---
- .../platform/extensions/common/extensions.ts  | 1441 ++++++++++++++++-
+ .../platform/extensions/common/extensions.ts  | 1440 ++++++++++++++++-
  .../services/search/common/queryBuilder.ts    |    8 +-
  .../themes/common/colorExtensionPoint.ts      |    2 +-
  .../tokenClassificationExtensionPoint.ts      |    1 +
- 4 files changed, 1382 insertions(+), 70 deletions(-)
+ 4 files changed, 1382 insertions(+), 69 deletions(-)
 
 diff --git a/src/vs/platform/extensions/common/extensions.ts b/src/vs/platform/extensions/common/extensions.ts
-index 8e68cbe06d1..6509ca9ab45 100644
+index bf4bb318095..77f5c7c114b 100644
 --- a/src/vs/platform/extensions/common/extensions.ts
 +++ b/src/vs/platform/extensions/common/extensions.ts
 @@ -3,6 +3,7 @@
@@ -22,7 +22,7 @@ index 8e68cbe06d1..6509ca9ab45 100644
  import Severity from '../../../base/common/severity.js';
  import * as strings from '../../../base/common/strings.js';
  import { URI } from '../../../base/common/uri.js';
-@@ -16,119 +17,547 @@ export const BUILTIN_MANIFEST_CACHE_FILE = 'extensions.builtin.cache';
+@@ -16,120 +17,548 @@ export const BUILTIN_MANIFEST_CACHE_FILE = 'extensions.builtin.cache';
  export const UNDEFINED_PUBLISHER = 'undefined_publisher';
  
  export interface ICommand {
@@ -532,6 +532,7 @@ index 8e68cbe06d1..6509ca9ab45 100644
 +	 * The human readable name of the authentication provider.
 +	 */
  	readonly label: string;
+ 	readonly authorizationServerGlobs?: string[];
  }
  
  export interface IWalkthroughStep {
@@ -608,7 +609,7 @@ index 8e68cbe06d1..6509ca9ab45 100644
  }
  
  export interface IStartEntry {
-@@ -140,14 +569,53 @@ export interface IStartEntry {
+@@ -141,14 +570,53 @@ export interface IStartEntry {
  }
  
  export interface INotebookEntry {
@@ -662,14 +663,13 @@ index 8e68cbe06d1..6509ca9ab45 100644
  }
  
  export interface IDebugVisualizationContribution {
-@@ -156,16 +624,706 @@ export interface IDebugVisualizationContribution {
+@@ -157,16 +625,706 @@ export interface IDebugVisualizationContribution {
  }
  
  export interface ITranslation {
 -	id: string;
 -	path: string;
 -}
--
 +	/**
 +	 * Id of VS Code or Extension for which this translation is contributed to. Id of VS Code is always `vscode` and of extension should be in format `publisherId.extensionName`.
 +	 */
@@ -679,7 +679,7 @@ index 8e68cbe06d1..6509ca9ab45 100644
 +	 */
 +	readonly path: string;
 +}
-+
+ 
  export interface ILocalizationContribution {
 +	/**
 +	 * Id of the language into which the display strings are translated.
@@ -1377,7 +1377,7 @@ index 8e68cbe06d1..6509ca9ab45 100644
  }
  
  export interface IChatParticipantContribution {
-@@ -190,33 +1348,186 @@ export interface IMcpCollectionContribution {
+@@ -199,34 +1357,188 @@ export interface IMcpCollectionContribution {
  }
  
  export interface IExtensionContributions {
@@ -1502,7 +1502,9 @@ index 8e68cbe06d1..6509ca9ab45 100644
 +
  	readonly chatParticipants?: ReadonlyArray<IChatParticipantContribution>;
  	readonly languageModelTools?: ReadonlyArray<IToolContribution>;
- 	readonly modelContextServerCollections?: ReadonlyArray<IMcpCollectionContribution>;
+ 	readonly languageModelToolSets?: ReadonlyArray<IToolSetContribution>;
+ 	readonly mcpServerDefinitionProviders?: ReadonlyArray<IMcpCollectionContribution>;
++	readonly modelContextServerCollections?: ReadonlyArray<IMcpCollectionContribution>;
 +
 +
 +	/**

@@ -8,7 +8,7 @@ Subject: [PATCH] feat: support adoptedStyleSheets for aux windows
  1 file changed, 9 insertions(+), 1 deletion(-)
 
 diff --git a/src/vs/workbench/services/auxiliaryWindow/browser/auxiliaryWindowService.ts b/src/vs/workbench/services/auxiliaryWindow/browser/auxiliaryWindowService.ts
-index 764a63d0159..a632c3a325e 100644
+index 7f26b282427..45e9720dceb 100644
 --- a/src/vs/workbench/services/auxiliaryWindow/browser/auxiliaryWindowService.ts
 +++ b/src/vs/workbench/services/auxiliaryWindow/browser/auxiliaryWindowService.ts
 @@ -5,7 +5,7 @@
@@ -20,7 +20,7 @@ index 764a63d0159..a632c3a325e 100644
  import { CodeWindow, ensureCodeWindow, mainWindow } from '../../../../base/browser/window.js';
  import { coalesce } from '../../../../base/common/arrays.js';
  import { Barrier } from '../../../../base/common/async.js';
-@@ -413,6 +413,14 @@ export class BrowserAuxiliaryWindowService extends Disposable implements IAuxili
+@@ -416,6 +416,14 @@ export class BrowserAuxiliaryWindowService extends Disposable implements IAuxili
  	private applyCSS(auxiliaryWindow: CodeWindow, disposables: DisposableStore) {
  		mark('code/auxiliaryWindow/willApplyCSS');
  
