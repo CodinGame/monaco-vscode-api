@@ -792,6 +792,7 @@ class OverlayFileSystemProvider
   }
 
   private async writeToDelegates(
+    resource: URI,
     caller: (delegate: IFileSystemProviderWithFileReadWriteCapability) => Promise<void>
   ): Promise<void> {
     if (this.delegates.length === 0) {
@@ -802,6 +803,7 @@ class OverlayFileSystemProvider
         continue
       }
       try {
+        await mkdirp(extUri, provider, extUri.dirname(resource))
         return await caller(provider)
       } catch (err) {
         if (
@@ -911,7 +913,7 @@ class OverlayFileSystemProvider
   }
 
   async writeFile(resource: URI, content: Uint8Array, opts: IFileWriteOptions): Promise<void> {
-    await this.writeToDelegates(async (delegate) => {
+    await this.writeToDelegates(resource, async (delegate) => {
       let stats: IStat | undefined
       try {
         stats = await delegate.stat(resource)
@@ -929,15 +931,15 @@ class OverlayFileSystemProvider
   }
 
   async mkdir(resource: URI): Promise<void> {
-    await this.writeToDelegates((delegate) => delegate.mkdir(resource))
+    await this.writeToDelegates(resource, (delegate) => delegate.mkdir(resource))
   }
 
   async delete(resource: URI, opts: IFileDeleteOptions): Promise<void> {
-    await this.writeToDelegates((delegate) => delegate.delete(resource, opts))
+    await this.writeToDelegates(resource, (delegate) => delegate.delete(resource, opts))
   }
 
   async rename(from: URI, to: URI, opts: IFileOverwriteOptions): Promise<void> {
-    await this.writeToDelegates((delegate) => delegate.rename(from, to, opts))
+    await this.writeToDelegates(to, (delegate) => delegate.rename(from, to, opts))
   }
 }
 
