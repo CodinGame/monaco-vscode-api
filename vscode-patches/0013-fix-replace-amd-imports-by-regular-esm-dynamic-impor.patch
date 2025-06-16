@@ -66,7 +66,7 @@ index 59a0dadcb7d..f39a10d515f 100644
  	const collectorChannelPlugin: PostChannel = new postPlugin.PostChannel();
  	// Configure the app insights core to send to collector++ and disable logging of debug info
 diff --git a/src/vs/workbench/contrib/terminal/browser/terminalInstance.ts b/src/vs/workbench/contrib/terminal/browser/terminalInstance.ts
-index 498535ab9c0..eb41ccd6460 100644
+index 165c6c2c346..dbb2908725a 100644
 --- a/src/vs/workbench/contrib/terminal/browser/terminalInstance.ts
 +++ b/src/vs/workbench/contrib/terminal/browser/terminalInstance.ts
 @@ -79,7 +79,6 @@ import { IHistoryService } from '../../../services/history/common/history.js';
@@ -122,7 +122,7 @@ index 30e6bd1905b..d54aed4b473 100644
  			if (!addon) {
  				throw new Error(`Could not load addon ${name}`);
 diff --git a/src/vs/workbench/services/textMate/browser/backgroundTokenization/textMateWorkerTokenizerController.ts b/src/vs/workbench/services/textMate/browser/backgroundTokenization/textMateWorkerTokenizerController.ts
-index b42fdfdaf3d..1f79f217f17 100644
+index 943bd396c03..dbbdd255156 100644
 --- a/src/vs/workbench/services/textMate/browser/backgroundTokenization/textMateWorkerTokenizerController.ts
 +++ b/src/vs/workbench/services/textMate/browser/backgroundTokenization/textMateWorkerTokenizerController.ts
 @@ -3,7 +3,6 @@
@@ -133,7 +133,7 @@ index b42fdfdaf3d..1f79f217f17 100644
  import { Disposable } from '../../../../../base/common/lifecycle.js';
  import { IObservable, autorun, keepObserved } from '../../../../../base/common/observable.js';
  import { Proxied } from '../../../../../base/common/worker/webWorker.js';
-@@ -180,7 +179,7 @@ export class TextMateWorkerTokenizerController extends Disposable {
+@@ -184,7 +183,7 @@ export class TextMateWorkerTokenizerController extends Disposable {
  		);
  
  		if (!this._applyStateStackDiffFn || !this._initialState) {
@@ -166,7 +166,7 @@ index 036b2a3e292..116820d86fb 100644
  
  		// Using the response directly only works if the server sets the MIME type 'application/wasm'.
 diff --git a/src/vs/workbench/services/textMate/browser/backgroundTokenization/worker/textMateWorkerTokenizer.ts b/src/vs/workbench/services/textMate/browser/backgroundTokenization/worker/textMateWorkerTokenizer.ts
-index f3945c5e8fa..72ffd7ccb06 100644
+index fee62cac570..ffb5230c1c2 100644
 --- a/src/vs/workbench/services/textMate/browser/backgroundTokenization/worker/textMateWorkerTokenizer.ts
 +++ b/src/vs/workbench/services/textMate/browser/backgroundTokenization/worker/textMateWorkerTokenizer.ts
 @@ -3,7 +3,6 @@
@@ -187,7 +187,7 @@ index f3945c5e8fa..72ffd7ccb06 100644
  		}
  
 diff --git a/src/vs/workbench/services/textMate/browser/textMateTokenizationFeatureImpl.ts b/src/vs/workbench/services/textMate/browser/textMateTokenizationFeatureImpl.ts
-index 844f240bddb..86d36458fd5 100644
+index 304c7c18d0b..338b88b9100 100644
 --- a/src/vs/workbench/services/textMate/browser/textMateTokenizationFeatureImpl.ts
 +++ b/src/vs/workbench/services/textMate/browser/textMateTokenizationFeatureImpl.ts
 @@ -3,8 +3,8 @@
@@ -200,7 +200,7 @@ index 844f240bddb..86d36458fd5 100644
  import { equals as equalArray } from '../../../../base/common/arrays.js';
  import { Color } from '../../../../base/common/color.js';
  import { onUnexpectedError } from '../../../../base/common/errors.js';
-@@ -245,7 +245,7 @@ export class TextMateTokenizationFeature extends Disposable implements ITextMate
+@@ -256,7 +256,7 @@ export class TextMateTokenizationFeature extends Disposable implements ITextMate
  			return this._grammarFactory;
  		}
  
@@ -209,7 +209,7 @@ index 844f240bddb..86d36458fd5 100644
  		const onigLib: Promise<IOnigLib> = Promise.resolve({
  			createOnigScanner: (sources: string[]) => vscodeOniguruma.createOnigScanner(sources),
  			createOnigString: (str: string) => vscodeOniguruma.createOnigString(str)
-@@ -358,7 +358,7 @@ export class TextMateTokenizationFeature extends Disposable implements ITextMate
+@@ -369,7 +369,7 @@ export class TextMateTokenizationFeature extends Disposable implements ITextMate
  	private _getVSCodeOniguruma(): Promise<typeof import('vscode-oniguruma')> {
  		if (!this._vscodeOniguruma) {
  			this._vscodeOniguruma = (async () => {

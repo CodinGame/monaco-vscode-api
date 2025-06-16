@@ -10,7 +10,7 @@ Subject: [PATCH] fix: only run some code if inside the worker
  3 files changed, 19 insertions(+), 9 deletions(-)
 
 diff --git a/src/vs/workbench/api/common/extHostExtensionService.ts b/src/vs/workbench/api/common/extHostExtensionService.ts
-index 5b14b6d5a37..c6cd621af6e 100644
+index dbaf5bbb595..5f0d9654bf1 100644
 --- a/src/vs/workbench/api/common/extHostExtensionService.ts
 +++ b/src/vs/workbench/api/common/extHostExtensionService.ts
 @@ -45,7 +45,7 @@ import { Schemas } from '../../../base/common/network.js';
@@ -38,18 +38,18 @@ index 5b14b6d5a37..c6cd621af6e 100644
  		// Invalidate all proxies
  		this._extHostContext.dispose();
 diff --git a/src/vs/workbench/api/common/extensionHostMain.ts b/src/vs/workbench/api/common/extensionHostMain.ts
-index 910647acb2e..23807ec1b5c 100644
+index 2d9c02c9a1d..7f37bac543b 100644
 --- a/src/vs/workbench/api/common/extensionHostMain.ts
 +++ b/src/vs/workbench/api/common/extensionHostMain.ts
-@@ -23,6 +23,7 @@ import { IURITransformerService, URITransformerService } from './extHostUriTrans
- import { IExtHostExtensionService, IHostUtils } from './extHostExtensionService.js';
+@@ -24,6 +24,7 @@ import { IExtHostExtensionService, IHostUtils } from './extHostExtensionService.
  import { IExtHostTelemetry } from './extHostTelemetry.js';
  import { Mutable } from '../../../base/common/types.js';
+ import { IExtHostApiDeprecationService } from './extHostApiDeprecationService.js';
 +import { isWebWorker } from '../../../base/common/platform.js';
  
  export interface IExitFn {
  	(code?: number): any;
-@@ -170,7 +171,9 @@ export class ExtensionHostMain {
+@@ -187,7 +188,9 @@ export class ExtensionHostMain {
  
  		const instaService: IInstantiationService = new InstantiationService(services, true);
  
@@ -60,7 +60,7 @@ index 910647acb2e..23807ec1b5c 100644
  
  		// ugly self - inject
  		this._logService = instaService.invokeFunction(accessor => accessor.get(ILogService));
-@@ -189,8 +192,10 @@ export class ExtensionHostMain {
+@@ -206,8 +209,10 @@ export class ExtensionHostMain {
  		this._extensionService = instaService.invokeFunction(accessor => accessor.get(IExtHostExtensionService));
  		this._extensionService.initialize();
  
@@ -74,18 +74,18 @@ index 910647acb2e..23807ec1b5c 100644
  
  	async asBrowserUri(uri: URI): Promise<URI> {
 diff --git a/src/vs/workbench/api/worker/extHostExtensionService.ts b/src/vs/workbench/api/worker/extHostExtensionService.ts
-index 46bb2a0970f..9221a062841 100644
+index 60584ef78a9..c4af59adb80 100644
 --- a/src/vs/workbench/api/worker/extHostExtensionService.ts
 +++ b/src/vs/workbench/api/worker/extHostExtensionService.ts
-@@ -12,6 +12,7 @@ import { IExtensionDescription } from '../../../platform/extensions/common/exten
- import { ExtensionRuntime } from '../common/extHostTypes.js';
+@@ -13,6 +13,7 @@ import { ExtensionRuntime } from '../common/extHostTypes.js';
  import { timeout } from '../../../base/common/async.js';
  import { ExtHostConsoleForwarder } from './extHostConsoleForwarder.js';
+ import { extname } from '../../../base/common/path.js';
 +import { isWebWorker } from '../../../base/common/platform.js';
  
  class WorkerRequireInterceptor extends RequireInterceptor {
  
-@@ -39,8 +40,10 @@ export class ExtHostExtensionService extends AbstractExtHostExtensionService {
+@@ -40,8 +41,10 @@ export class ExtHostExtensionService extends AbstractExtHostExtensionService {
  	private _fakeModules?: WorkerRequireInterceptor;
  
  	protected async _beforeAlmostReadyToRunExtensions(): Promise<void> {

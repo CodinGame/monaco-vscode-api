@@ -95,10 +95,10 @@ index faf19a0dce2..e83837db2db 100644
  
  class ExtensionHostProxy implements IExtensionHostProxy {
 diff --git a/src/vs/workbench/api/common/extHost.protocol.ts b/src/vs/workbench/api/common/extHost.protocol.ts
-index cd387657765..1f6202d0d28 100644
+index a4e53cbd021..b4868ca6a56 100644
 --- a/src/vs/workbench/api/common/extHost.protocol.ts
 +++ b/src/vs/workbench/api/common/extHost.protocol.ts
-@@ -1557,6 +1557,7 @@ export interface MainThreadExtensionServiceShape extends IDisposable {
+@@ -1571,6 +1571,7 @@ export interface MainThreadExtensionServiceShape extends IDisposable {
  	$onExtensionRuntimeError(extensionId: ExtensionIdentifier, error: SerializedError): void;
  	$setPerformanceMarks(marks: performance.PerformanceMark[]): Promise<void>;
  	$asBrowserUri(uri: UriComponents): Promise<UriComponents>;
@@ -107,10 +107,10 @@ index cd387657765..1f6202d0d28 100644
  
  export interface SCMProviderFeatures {
 diff --git a/src/vs/workbench/api/common/extensionHostMain.ts b/src/vs/workbench/api/common/extensionHostMain.ts
-index 11980f9aafe..910647acb2e 100644
+index 26408fdbe5f..2d9c02c9a1d 100644
 --- a/src/vs/workbench/api/common/extensionHostMain.ts
 +++ b/src/vs/workbench/api/common/extensionHostMain.ts
-@@ -198,6 +198,11 @@ export class ExtensionHostMain {
+@@ -215,6 +215,11 @@ export class ExtensionHostMain {
  		return URI.revive(await mainThreadExtensionsProxy.$asBrowserUri(uri));
  	}
  
