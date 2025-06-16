@@ -64,6 +64,18 @@ rm -rf `find . -name '*.test.ts' -o -name 'test' -o -name 'electron-browser'`
 rm -f bootstrap*.ts *main.ts *cli.ts
 rm -rf vs/code
 
+# There's a really weird issue in the vscode codebase that when this import isn't present,
+# nodeJS's `setTimeout` type is used instead of the one defined in `src/typings/base-common.d.ts`
+# and this causes type issues between the variable type and the return type of `setTimeout`
+cat << EOF > main.ts
+/*---------------------------------------------------------------------------------------------
+ *  Copyright (c) Microsoft Corporation. All rights reserved.
+ *  Licensed under the MIT License. See License.txt in the project root for license information.
+ *--------------------------------------------------------------------------------------------*/
+
+import { } from 'electron';
+EOF
+
 # generate vscode.proposed.d.ts
 cd vscode-dts
 echo "" > vscode.proposed.d.ts
