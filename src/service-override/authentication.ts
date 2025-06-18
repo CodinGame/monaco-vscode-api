@@ -10,6 +10,8 @@ import { AuthenticationUsageService } from 'vs/workbench/services/authentication
 import { AuthenticationExtensionsService } from 'vs/workbench/services/authentication/browser/authenticationExtensionsService'
 import { IAuthenticationAccessService } from 'vs/workbench/services/authentication/browser/authenticationAccessService.service'
 import { IAuthenticationUsageService } from 'vs/workbench/services/authentication/browser/authenticationUsageService.service'
+import { IDynamicAuthenticationProviderStorageService } from 'vs/workbench/services/authentication/common/dynamicAuthenticationProviderStorage.service'
+import { DynamicAuthenticationProviderStorageService } from 'vs/workbench/services/authentication/browser/dynamicAuthenticationProviderStorageService'
 
 export default function getServiceOverride(): IEditorOverrideServices {
   return {
@@ -26,6 +28,11 @@ export default function getServiceOverride(): IEditorOverrideServices {
     ),
     [IAuthenticationUsageService.toString()]: new SyncDescriptor(
       AuthenticationUsageService,
+      [],
+      true
+    ),
+    [IDynamicAuthenticationProviderStorageService.toString()]: new SyncDescriptor(
+      DynamicAuthenticationProviderStorageService,
       [],
       true
     )

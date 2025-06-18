@@ -51,6 +51,10 @@ import { type ApiFactory, registerDefaultApiHandler, registerLocalApiFactory } f
 import { registerServiceInitializePostParticipant } from './lifecycle'
 import { ExtHostTelemetry, IExtHostTelemetry } from 'vs/workbench/api/common/extHostTelemetry'
 import { SyncDescriptor } from 'vs/platform/instantiation/common/descriptors'
+import {
+  ExtHostAuthentication,
+  IExtHostAuthentication
+} from 'vs/workbench/api/common/extHostAuthentication'
 
 const apiFactoryDeferred = new DeferredPromise<ApiFactory>()
 
@@ -90,6 +94,7 @@ class LocalExtHostExtensionService extends ExtHostExtensionService {
   }
 }
 
+registerSingleton(IExtHostAuthentication, ExtHostAuthentication, InstantiationType.Eager)
 registerSingleton(IExtHostExtensionService, LocalExtHostExtensionService, InstantiationType.Eager)
 registerSingleton(IExtensionStoragePaths, ExtensionStoragePaths, InstantiationType.Eager)
 registerSingleton(IExtHostTelemetry, new SyncDescriptor(ExtHostTelemetry, [true], true))
