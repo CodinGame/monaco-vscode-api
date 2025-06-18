@@ -64,10 +64,6 @@ import 'vs/workbench/contrib/extensions/browser/extensions.web.contribution'
 
 // plugin-import-meta-asset only allows relative paths
 registerAssets({
-  'vs/workbench/services/extensionManagement/common/media/defaultIcon.png': new URL(
-    '../../vscode/src/vs/workbench/services/extensionManagement/common/media/defaultIcon.png',
-    import.meta.url
-  ).toString(),
   'vs/workbench/contrib/extensions/browser/media/theme-icon.png': new URL(
     '../../vscode/src/vs/workbench/contrib/extensions/browser/media/theme-icon.png',
     import.meta.url
