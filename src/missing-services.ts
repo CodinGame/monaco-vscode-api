@@ -404,6 +404,8 @@ import {
   IMcpGalleryService,
   IMcpManagementService
 } from 'vs/platform/mcp/common/mcpManagement.service'
+import { ITreeSitterThemeService } from 'vs/editor/common/services/treeSitter/treeSitterThemeService.service'
+import { ITreeSitterLibraryService } from 'vs/editor/common/services/treeSitter/treeSitterLibraryService.service'
 
 function Unsupported(target: object, propertyKey: string, descriptor: PropertyDescriptor) {
   function unsupported() {
@@ -9115,3 +9117,35 @@ registerSingleton(
   GettingStartedExperimentService,
   InstantiationType.Eager
 )
+
+class TreeSitterThemeService implements ITreeSitterThemeService {
+  _serviceBrand: undefined
+
+  @Unsupported
+  get onChange() {
+    return unsupported()
+  }
+
+  @Unsupported
+  findMetadata(): never {
+    unsupported()
+  }
+}
+
+registerSingleton(ITreeSitterThemeService, TreeSitterThemeService, InstantiationType.Eager)
+
+class TreeSitterLibraryService implements ITreeSitterLibraryService {
+  _serviceBrand: undefined
+
+  @Unsupported
+  getParserClass(): never {
+    unsupported()
+  }
+
+  supportsLanguage = () => false
+  getLanguage = () => undefined
+  getInjectionQueries = () => undefined
+  getHighlightingQueries = () => undefined
+}
+
+registerSingleton(ITreeSitterLibraryService, TreeSitterLibraryService, InstantiationType.Eager)
