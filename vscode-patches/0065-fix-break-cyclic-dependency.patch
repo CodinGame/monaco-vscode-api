@@ -8,7 +8,7 @@ Subject: [PATCH] fix: break cyclic dependency
  1 file changed, 2 insertions(+), 3 deletions(-)
 
 diff --git a/src/vs/workbench/contrib/notebook/browser/notebookBrowser.ts b/src/vs/workbench/contrib/notebook/browser/notebookBrowser.ts
-index cf385680dfc..18a30ae4479 100644
+index 531e14d8c8f..4c79dad2047 100644
 --- a/src/vs/workbench/contrib/notebook/browser/notebookBrowser.ts
 +++ b/src/vs/workbench/contrib/notebook/browser/notebookBrowser.ts
 @@ -22,7 +22,7 @@ import { IEditorPane, IEditorPaneWithSelection } from '../../../common/editor.js
@@ -28,7 +28,7 @@ index cf385680dfc..18a30ae4479 100644
  import { INotebookTextDiffEditor } from './diff/notebookDiffEditorBrowser.js';
  
  //#region Shared commands
-@@ -930,7 +929,7 @@ export function getNotebookEditorFromEditorPane(editorPane?: IEditorPane): INote
+@@ -931,7 +930,7 @@ export function getNotebookEditorFromEditorPane(editorPane?: IEditorPane): INote
  		return editorPane.getControl() as INotebookEditor | undefined;
  	}
  

@@ -91,10 +91,10 @@ index 840174189ee..c6a076d0295 100644
  	}
  
 diff --git a/src/vs/workbench/common/contextkeys.ts b/src/vs/workbench/common/contextkeys.ts
-index 548fe41ac89..4c1ec4b3f87 100644
+index f10760ef087..b005c7a9021 100644
 --- a/src/vs/workbench/common/contextkeys.ts
 +++ b/src/vs/workbench/common/contextkeys.ts
-@@ -40,6 +40,8 @@ export const HasWebFileSystemAccess = new RawContextKey<boolean>('hasWebFileSyst
+@@ -36,6 +36,8 @@ export const HasWebFileSystemAccess = new RawContextKey<boolean>('hasWebFileSyst
  
  export const EmbedderIdentifierContext = new RawContextKey<string | undefined>('embedderIdentifier', undefined, localize('embedderIdentifier', 'The identifier of the embedder according to the product service, if one is defined'));
  
@@ -102,7 +102,7 @@ index 548fe41ac89..4c1ec4b3f87 100644
 +
  //#endregion
  
- 
+ //#region < --- Window --- >
 diff --git a/src/vs/workbench/contrib/files/browser/fileActions.contribution.ts b/src/vs/workbench/contrib/files/browser/fileActions.contribution.ts
 index 6cd04336cfb..d9469ae6123 100644
 --- a/src/vs/workbench/contrib/files/browser/fileActions.contribution.ts

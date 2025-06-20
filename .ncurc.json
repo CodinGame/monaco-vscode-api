@@ -23,7 +23,6 @@
     "@xterm/headless",
     "@xterm/xterm",
     "cookie",
-    "dompurify",
     "jschardet",
     "kerberos",
     "marked",

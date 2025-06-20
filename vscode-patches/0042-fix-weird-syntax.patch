@@ -8,7 +8,7 @@ Subject: [PATCH] fix: weird syntax
  1 file changed, 4 insertions(+), 2 deletions(-)
 
 diff --git a/src/vs/platform/notification/common/notification.ts b/src/vs/platform/notification/common/notification.ts
-index a3b59ab038e..3fdd005cdbb 100644
+index f1101520856..3ac1ae57279 100644
 --- a/src/vs/platform/notification/common/notification.ts
 +++ b/src/vs/platform/notification/common/notification.ts
 @@ -5,10 +5,12 @@

@@ -49,6 +49,8 @@ import { IChatStatusItemService } from 'vs/workbench/contrib/chat/browser/chatSt
 import { ChatStatusItemService } from 'vs/workbench/contrib/chat/browser/chatStatusItemService'
 import 'vs/workbench/contrib/chat/browser/chat.contribution'
 import 'vs/workbench/contrib/inlineChat/browser/inlineChat.contribution'
+import { IChatContextPickService } from 'vs/workbench/contrib/chat/browser/chatContextPickService.service'
+import { ChatContextPickService } from 'vs/workbench/contrib/chat/browser/chatContextPickService'
 
 export default function getServiceOverride(): IEditorOverrideServices {
   return {
@@ -97,6 +99,7 @@ export default function getServiceOverride(): IEditorOverrideServices {
     ),
     [IChatEntitlementService.toString()]: new SyncDescriptor(ChatEntitlementService, [], true),
     [IPromptsService.toString()]: new SyncDescriptor(PromptsService, [], true),
-    [IChatStatusItemService.toString()]: new SyncDescriptor(ChatStatusItemService, [], true)
+    [IChatStatusItemService.toString()]: new SyncDescriptor(ChatStatusItemService, [], true),
+    [IChatContextPickService.toString()]: new SyncDescriptor(ChatContextPickService, [], true)
   }
 }

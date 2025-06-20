@@ -8,7 +8,7 @@ Subject: [PATCH] feat: output es2022
  1 file changed, 2 insertions(+), 2 deletions(-)
 
 diff --git a/src/tsconfig.monaco.json b/src/tsconfig.monaco.json
-index cad1e06383d..83f3e469c6e 100644
+index 95952c1c2ee..2f7dbac4798 100644
 --- a/src/tsconfig.monaco.json
 +++ b/src/tsconfig.monaco.json
 @@ -8,8 +8,8 @@

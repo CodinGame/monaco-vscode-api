@@ -17,7 +17,7 @@ so that only the constant is pulled from the root instead of the whole module gr
  create mode 100644 src/vs/workbench/contrib/chat/browser/contrib/chatDynamicVariablesConstant.ts
 
 diff --git a/src/vs/workbench/api/browser/mainThreadChatAgents2.ts b/src/vs/workbench/api/browser/mainThreadChatAgents2.ts
-index 4560cc6026f..e67d1562042 100644
+index a43107d7502..c37d6c40c7d 100644
 --- a/src/vs/workbench/api/browser/mainThreadChatAgents2.ts
 +++ b/src/vs/workbench/api/browser/mainThreadChatAgents2.ts
 @@ -24,7 +24,7 @@ import { ILogService } from '../../../platform/log/common/log.js';
@@ -37,7 +37,7 @@ index 4560cc6026f..e67d1562042 100644
  
  interface AgentData {
  	dispose: () => void;
-@@ -338,7 +339,7 @@ export class MainThreadChatAgents2 extends Disposable implements MainThreadChatA
+@@ -353,7 +354,7 @@ export class MainThreadChatAgents2 extends Disposable implements MainThreadChatA
  						kind: CompletionItemKind.Text,
  						detail: v.detail,
  						documentation: v.documentation,
@@ -78,10 +78,10 @@ index f5f9343bed8..4e8c13725a3 100644
  	registerAction2(QuickChatGlobalAction);
  	registerAction2(AskQuickChatAction);
 diff --git a/src/vs/workbench/contrib/chat/browser/contrib/chatDynamicVariables.ts b/src/vs/workbench/contrib/chat/browser/contrib/chatDynamicVariables.ts
-index 9423d3b995e..3127544e993 100644
+index 8c3f93517f1..b23cefdad61 100644
 --- a/src/vs/workbench/contrib/chat/browser/contrib/chatDynamicVariables.ts
 +++ b/src/vs/workbench/contrib/chat/browser/contrib/chatDynamicVariables.ts
-@@ -35,6 +35,7 @@ import { IChatRequestVariableValue, IDynamicVariable } from '../../common/chatVa
+@@ -20,6 +20,7 @@ import { IChatRequestVariableValue, IDynamicVariable } from '../../common/chatVa
  import { IChatWidget } from '../chat.js';
  import { ChatWidget, IChatWidgetContrib } from '../chatWidget.js';
  import { ChatFileReference } from './chatDynamicVariables/chatFileReference.js';
@@ -89,7 +89,7 @@ index 9423d3b995e..3127544e993 100644
  
  export const dynamicVariableDecorationType = 'chat-dynamic-variable';
  
-@@ -466,7 +467,7 @@ function isAddDynamicVariableContext(context: any): context is IAddDynamicVariab
+@@ -241,7 +242,7 @@ function isAddDynamicVariableContext(context: any): context is IAddDynamicVariab
  }
  
  export class AddDynamicVariableAction extends Action2 {

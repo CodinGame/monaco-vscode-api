@@ -37,13 +37,9 @@ import {
   DEFAULT_EDITOR_MAX_DIMENSIONS,
   DEFAULT_EDITOR_MIN_DIMENSIONS
 } from 'vs/workbench/browser/parts/editor/editor'
-import {
-  type IResolvedTextEditorModel,
-} from 'vs/editor/common/services/resolverService'
+import { type IResolvedTextEditorModel } from 'vs/editor/common/services/resolverService'
 
-import {
-  ITextModelService
-} from 'vs/editor/common/services/resolverService.service'
+import { ITextModelService } from 'vs/editor/common/services/resolverService.service'
 import {
   type IStandaloneCodeEditor,
   StandaloneCodeEditor,
@@ -984,4 +980,8 @@ export class MonacoDelegateEditorGroupsService<D extends IEditorGroupsService>
   }
 
   onDidChangeEditorPartOptions = this.delegate.onDidChangeEditorPartOptions
+
+  enforcePartOptions: IEditorGroupsService['enforcePartOptions'] = (...args) => {
+    return this.delegate.enforcePartOptions(...args)
+  }
 }
