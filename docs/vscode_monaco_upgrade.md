@@ -36,6 +36,7 @@
     - Using VSCode server
     - Using HTML file system provider
     - ...
+- Make the commit that updates the vscode version a breaking change commit: by adding `!` before the `:` in the commit message
 
 ## monaco-vscode-api demo
 
