@@ -15,7 +15,7 @@ Subject: [PATCH] fix: apply style only on standalone editors
  8 files changed, 45 insertions(+), 24 deletions(-)
 
 diff --git a/src/vs/editor/browser/config/editorConfiguration.ts b/src/vs/editor/browser/config/editorConfiguration.ts
-index 1bf70f155d7..3fa06ccc70c 100644
+index 56b9d0083ef..c13c5ec710e 100644
 --- a/src/vs/editor/browser/config/editorConfiguration.ts
 +++ b/src/vs/editor/browser/config/editorConfiguration.ts
 @@ -46,6 +46,7 @@ export class EditorConfiguration extends Disposable implements IEditorConfigurat
@@ -80,7 +80,7 @@ index 1bf70f155d7..3fa06ccc70c 100644
  	public static validateOptions(options: IEditorOptions): ValidatedEditorOptions {
  		const result = new ValidatedEditorOptions();
 diff --git a/src/vs/editor/browser/widget/codeEditor/codeEditorWidget.ts b/src/vs/editor/browser/widget/codeEditor/codeEditorWidget.ts
-index f2a45afad39..2f0e1425895 100644
+index dc5ee78a9da..cd282007373 100644
 --- a/src/vs/editor/browser/widget/codeEditor/codeEditorWidget.ts
 +++ b/src/vs/editor/browser/widget/codeEditor/codeEditorWidget.ts
 @@ -279,6 +279,7 @@ export class CodeEditorWidget extends Disposable implements editorBrowser.ICodeE
@@ -102,7 +102,7 @@ index f2a45afad39..2f0e1425895 100644
  	}
  
  	public getId(): string {
-@@ -1995,6 +1996,12 @@ export interface ICodeEditorWidgetOptions {
+@@ -1998,6 +1999,12 @@ export interface ICodeEditorWidgetOptions {
  	 */
  	isSimpleWidget?: boolean;
  
@@ -116,7 +116,7 @@ index f2a45afad39..2f0e1425895 100644
  	 * Contributions to instantiate.
  	 * When provided, only the contributions included will be instantiated.
 diff --git a/src/vs/editor/browser/widget/diffEditor/diffEditorWidget.ts b/src/vs/editor/browser/widget/diffEditor/diffEditorWidget.ts
-index 046f825dfe8..bd3510ea19a 100644
+index 9e19a590a16..b0502dcac09 100644
 --- a/src/vs/editor/browser/widget/diffEditor/diffEditorWidget.ts
 +++ b/src/vs/editor/browser/widget/diffEditor/diffEditorWidget.ts
 @@ -51,6 +51,12 @@ import { CSSStyle, ObservableElementSizeObserver, RefCounted, applyStyle, applyV
@@ -132,7 +132,7 @@ index 046f825dfe8..bd3510ea19a 100644
  }
  
  export class DiffEditorWidget extends DelegatingEditor implements IDiffEditor {
-@@ -110,6 +116,8 @@ export class DiffEditorWidget extends DelegatingEditor implements IDiffEditor {
+@@ -183,6 +189,8 @@ export class DiffEditorWidget extends DelegatingEditor implements IDiffEditor {
  
  		this._contextKeyService.createKey('isInDiffEditor', true);
  
@@ -230,7 +230,7 @@ index ece0400a78c..5f70126b20f 100644
  
  	protected override _readEnvConfiguration(): IEnvConfiguration {
 diff --git a/src/vs/editor/test/browser/testCodeEditor.ts b/src/vs/editor/test/browser/testCodeEditor.ts
-index 72da1933953..c27b2879421 100644
+index f63c6445b13..fbe7573cdc9 100644
 --- a/src/vs/editor/test/browser/testCodeEditor.ts
 +++ b/src/vs/editor/test/browser/testCodeEditor.ts
 @@ -71,7 +71,7 @@ export interface ITestCodeEditor extends IActiveCodeEditor {
@@ -243,10 +243,10 @@ index 72da1933953..c27b2879421 100644
  	}
  	protected override _createView(viewModel: ViewModel): [View, boolean] {
 diff --git a/src/vs/workbench/contrib/notebook/browser/contrib/multicursor/notebookMulticursor.ts b/src/vs/workbench/contrib/notebook/browser/contrib/multicursor/notebookMulticursor.ts
-index 116d5d3fab9..7e6ed01a3a5 100644
+index 9a0390c9a41..aee22d77ab9 100644
 --- a/src/vs/workbench/contrib/notebook/browser/contrib/multicursor/notebookMulticursor.ts
 +++ b/src/vs/workbench/contrib/notebook/browser/contrib/multicursor/notebookMulticursor.ts
-@@ -811,7 +811,7 @@ export class NotebookMultiCursorController extends Disposable implements INotebo
+@@ -821,7 +821,7 @@ export class NotebookMultiCursorController extends Disposable implements INotebo
  		const cellEditorOptions = new CellEditorOptions(this.notebookEditor.getBaseCellEditorOptions(cell.language), this.notebookEditor.notebookOptions, this.configurationService);
  		const options = cellEditorOptions.getUpdatedValue(cell.internalMetadata, cell.uri);
  		cellEditorOptions.dispose();

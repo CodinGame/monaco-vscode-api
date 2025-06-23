@@ -4,38 +4,16 @@ Date: Mon, 29 Apr 2024 17:16:21 +0200
 Subject: [PATCH] refactor: split code to be able to import only required part
 
 ---
- .../services/treeSitterParserService.ts       |   3 +-
  .../common/extensionsScannerService.ts        | 294 +++++++++---------
  src/vs/platform/files/common/fileService.ts   | 111 ++++---
  .../localization/browser/localeService.ts     |  38 ++-
- 4 files changed, 237 insertions(+), 209 deletions(-)
+ 3 files changed, 236 insertions(+), 207 deletions(-)
 
-diff --git a/src/vs/editor/common/services/treeSitterParserService.ts b/src/vs/editor/common/services/treeSitterParserService.ts
-index a362e68f809..f37d40be096 100644
---- a/src/vs/editor/common/services/treeSitterParserService.ts
-+++ b/src/vs/editor/common/services/treeSitterParserService.ts
-@@ -8,7 +8,6 @@ import { Event } from '../../../base/common/event.js';
- import { ITextModel } from '../model.js';
- import { createDecorator } from '../../../platform/instantiation/common/instantiation.js';
- import { Range } from '../core/range.js';
--import { importAMDNodeModule } from '../../../amdX.js';
- import { IModelContentChangedEvent } from '../textModelEvents.js';
- 
- export const EDITOR_EXPERIMENTAL_PREFER_TREESITTER = 'editor.experimental.preferTreeSitter';
-@@ -100,7 +99,7 @@ export class TreeSitterImporter implements ITreeSitterImporter {
- 
- 	private async _getTreeSitterImport() {
- 		if (!this._treeSitterImport) {
--			this._treeSitterImport = await importAMDNodeModule<typeof import('@vscode/tree-sitter-wasm')>('@vscode/tree-sitter-wasm', 'wasm/tree-sitter.js');
-+			this._treeSitterImport = await import('@vscode/tree-sitter-wasm');
- 		}
- 		return this._treeSitterImport;
- 	}
 diff --git a/src/vs/platform/extensionManagement/common/extensionsScannerService.ts b/src/vs/platform/extensionManagement/common/extensionsScannerService.ts
-index a15e92a42ab..5e252fac3da 100644
+index 8697dcb34d4..5d7426ab0db 100644
 --- a/src/vs/platform/extensionManagement/common/extensionsScannerService.ts
 +++ b/src/vs/platform/extensionManagement/common/extensionsScannerService.ts
-@@ -545,26 +545,172 @@ export class ExtensionScannerInput {
+@@ -553,26 +553,172 @@ export class ExtensionScannerInput {
  	}
  }
  
@@ -213,7 +191,7 @@ index a15e92a42ab..5e252fac3da 100644
  		this.extensionsEnabledWithApiProposalVersion = productService.extensionsEnabledWithApiProposalVersion?.map(id => id.toLowerCase()) ?? [];
  	}
  
-@@ -760,144 +906,6 @@ class ExtensionsScanner extends Disposable {
+@@ -768,144 +914,6 @@ class ExtensionsScanner extends Disposable {
  		}
  		return manifest;
  	}

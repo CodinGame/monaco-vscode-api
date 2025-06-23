@@ -218,7 +218,6 @@ export type {
   IFindEditorOptions,
   IEditorControl
 } from 'vs/workbench/common/editor'
-export type { IDimension } from 'vs/editor/common/core/dimension'
 export type {
   IEditorOptions,
   ITextEditorOptions,

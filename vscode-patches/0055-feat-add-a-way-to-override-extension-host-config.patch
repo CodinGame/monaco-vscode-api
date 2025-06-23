@@ -40,7 +40,7 @@ index cea72fd2225..c2aa0d65072 100644
  			case ExtensionHostKind.Remote: {
  				const remoteAgentConnection = this._remoteAgentService.getConnection();
 diff --git a/src/vs/workbench/services/extensions/browser/webWorkerExtensionHost.ts b/src/vs/workbench/services/extensions/browser/webWorkerExtensionHost.ts
-index 9fcd381cc72..dddd45d101f 100644
+index 5c9057ec6c0..a59ca65bf41 100644
 --- a/src/vs/workbench/services/extensions/browser/webWorkerExtensionHost.ts
 +++ b/src/vs/workbench/services/extensions/browser/webWorkerExtensionHost.ts
 @@ -59,6 +59,8 @@ export class WebWorkerExtensionHost extends Disposable implements IExtensionHost
@@ -63,7 +63,7 @@ index 9fcd381cc72..dddd45d101f 100644
  						nls: {
  							messages: getNLSMessages(),
 diff --git a/src/vs/workbench/services/extensions/electron-sandbox/nativeExtensionService.ts b/src/vs/workbench/services/extensions/electron-sandbox/nativeExtensionService.ts
-index d38ab6b10ae..2dd06f6eef0 100644
+index 0506fdcc411..e3fbfb7bb29 100644
 --- a/src/vs/workbench/services/extensions/electron-sandbox/nativeExtensionService.ts
 +++ b/src/vs/workbench/services/extensions/electron-sandbox/nativeExtensionService.ts
 @@ -6,7 +6,7 @@

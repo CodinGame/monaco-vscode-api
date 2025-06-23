@@ -4,18 +4,18 @@ Date: Thu, 25 Apr 2024 19:34:56 +0200
 Subject: [PATCH] feat: add build tool to extract service identifiers
 
 ---
- build/lib/extractServices.js | 239 +++++++++++++++++++++++++++++++++++
- build/lib/extractServices.ts | 236 ++++++++++++++++++++++++++++++++++
- 2 files changed, 475 insertions(+)
+ build/lib/extractServices.js | 238 +++++++++++++++++++++++++++++++++++
+ build/lib/extractServices.ts | 235 ++++++++++++++++++++++++++++++++++
+ 2 files changed, 473 insertions(+)
  create mode 100644 build/lib/extractServices.js
  create mode 100644 build/lib/extractServices.ts
 
 diff --git a/build/lib/extractServices.js b/build/lib/extractServices.js
 new file mode 100644
-index 00000000000..6aa80e3701d
+index 00000000000..ecd4306f4d3
 --- /dev/null
 +++ b/build/lib/extractServices.js
-@@ -0,0 +1,239 @@
+@@ -0,0 +1,238 @@
 +"use strict";
 +/*---------------------------------------------------------------------------------------------
 + *  Copyright (c) Microsoft Corporation. All rights reserved.
@@ -75,7 +75,6 @@ index 00000000000..6aa80e3701d
 +    'vs/platform/markers/common/markers.service.ts',
 +    'vs/platform/userDataSync/common/userDataSync.service.ts',
 +    'vs/workbench/contrib/chat/common/chatAgents.service.ts',
-+    'vs/editor/common/services/treeSitterParserService.service.ts',
 +    'vs/workbench/contrib/tasks/common/taskService.ts',
 +    'vs/workbench/workbench.web.main.ts'
 +];
@@ -258,10 +257,10 @@ index 00000000000..6aa80e3701d
 \ No newline at end of file
 diff --git a/build/lib/extractServices.ts b/build/lib/extractServices.ts
 new file mode 100644
-index 00000000000..7c45e31807e
+index 00000000000..4ed9200cef7
 --- /dev/null
 +++ b/build/lib/extractServices.ts
-@@ -0,0 +1,236 @@
+@@ -0,0 +1,235 @@
 +/*---------------------------------------------------------------------------------------------
 + *  Copyright (c) Microsoft Corporation. All rights reserved.
 + *  Licensed under the MIT License. See License.txt in the project root for license information.
@@ -290,7 +289,6 @@ index 00000000000..7c45e31807e
 +	'vs/platform/markers/common/markers.service.ts',
 +	'vs/platform/userDataSync/common/userDataSync.service.ts',
 +	'vs/workbench/contrib/chat/common/chatAgents.service.ts',
-+	'vs/editor/common/services/treeSitterParserService.service.ts',
 +	'vs/workbench/contrib/tasks/common/taskService.ts',
 +	'vs/workbench/workbench.web.main.ts'
 +];

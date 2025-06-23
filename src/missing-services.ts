@@ -10,7 +10,6 @@ import { OS } from 'vs/base/common/platform'
 import { joinPath } from 'vs/base/common/resources'
 import { URI } from 'vs/base/common/uri'
 import { ICodeEditorService } from 'vs/editor/browser/services/codeEditorService.service'
-import { ITreeSitterTokenizationStoreService } from 'vs/editor/common/model/treeSitterTokenStoreService.service'
 import { IModelService } from 'vs/editor/common/services/model.service'
 import { ITreeViewsDnDService } from 'vs/editor/common/services/treeViewsDndService.service'
 import { StandaloneServices } from 'vs/editor/standalone/browser/standaloneServices'
@@ -310,7 +309,6 @@ import { ITextFileService } from 'vs/workbench/services/textfile/common/textfile
 import { IHostColorSchemeService } from 'vs/workbench/services/themes/common/hostColorSchemeService.service'
 import { ITimerService } from 'vs/workbench/services/timer/browser/timerService.service'
 import { ITitleService } from 'vs/workbench/services/title/browser/titleService.service'
-import { ITreeSitterTokenizationFeature } from 'vs/workbench/services/treeSitter/browser/treeSitterTokenizationFeature.service'
 import { IUntitledTextEditorService } from 'vs/workbench/services/untitled/common/untitledTextEditorService.service'
 import { IUserActivityService } from 'vs/workbench/services/userActivity/common/userActivityService.service'
 import { IUserDataInitializationService } from 'vs/workbench/services/userData/browser/userDataInit.service'
@@ -339,7 +337,6 @@ import { IWorkspaceIdentityService } from 'vs/workbench/services/workspaces/comm
 import { IChatMarkdownAnchorService } from 'vs/workbench/contrib/chat/browser/chatContentParts/chatMarkdownAnchorService.service'
 import { getBuiltInExtensionTranslationsUris, getExtensionIdProvidingCurrentLocale } from './l10n'
 import { unsupported } from './tools'
-import { ITreeSitterImporter } from 'vs/editor/common/services/treeSitterParserService.service'
 import { IChatEntitlementService } from 'vs/workbench/contrib/chat/common/chatEntitlementService.service'
 import { IPromptsService } from 'vs/workbench/contrib/chat/common/promptSyntax/service/types.service'
 import { ISuggestMemoryService } from 'vs/editor/contrib/suggest/browser/suggestMemory.service'
@@ -375,7 +372,11 @@ import { EditorCancellationTokens } from 'vs/editor/contrib/editorState/browser/
 import { SymbolNavigationService } from 'vs/editor/contrib/gotoSymbol/browser/symbolNavigation'
 import { IHoverService } from 'vs/platform/hover/browser/hover.service'
 import { HoverService } from 'vs/editor/browser/services/hoverService/hoverService'
-import { IMcpService } from 'vs/workbench/contrib/mcp/common/mcpTypes.service'
+import {
+  IMcpSamplingService,
+  IMcpService,
+  IMcpWorkbenchService
+} from 'vs/workbench/contrib/mcp/common/mcpTypes.service'
 import { IMcpConfigPathsService } from 'vs/workbench/contrib/mcp/common/mcpConfigPathsService.service'
 import { IMcpRegistry } from 'vs/workbench/contrib/mcp/common/mcpRegistryTypes.service'
 import { IExtensionGalleryManifestService } from 'vs/platform/extensionManagement/common/extensionGalleryManifest.service'
@@ -392,6 +393,19 @@ import { NullDefaultAccountService } from 'vs/workbench/services/accounts/common
 import { IChatTransferService } from 'vs/workbench/contrib/chat/common/chatTransferService.service'
 import { IChatStatusItemService } from 'vs/workbench/contrib/chat/browser/chatStatusItemService.service'
 import { IAiSettingsSearchService } from 'vscode/src/vs/workbench/services/aiSettingsSearch/common/aiSettingsSearch.service'
+import { IDynamicAuthenticationProviderStorageService } from 'vs/workbench/services/authentication/common/dynamicAuthenticationProviderStorage.service'
+import { IAuthenticationMcpService } from 'vs/workbench/services/authentication/browser/authenticationMcpService.service'
+import { IAuthenticationMcpAccessService } from 'vs/workbench/services/authentication/browser/authenticationMcpAccessService.service'
+import { IAuthenticationMcpUsageService } from 'vs/workbench/services/authentication/browser/authenticationMcpUsageService.service'
+import { IBrowserElementsService } from 'vs/workbench/services/browserElements/browser/browserElementsService.service'
+import { IGettingStartedExperimentService } from 'vs/workbench/contrib/welcomeGettingStarted/browser/gettingStartedExpService.service'
+import { IChatContextPickService } from 'vs/workbench/contrib/chat/browser/chatContextPickService.service'
+import {
+  IMcpGalleryService,
+  IMcpManagementService
+} from 'vs/platform/mcp/common/mcpManagement.service'
+import { ITreeSitterThemeService } from 'vs/editor/common/services/treeSitter/treeSitterThemeService.service'
+import { ITreeSitterLibraryService } from 'vs/editor/common/services/treeSitter/treeSitterLibraryService.service'
 
 function Unsupported(target: object, propertyKey: string, descriptor: PropertyDescriptor) {
   function unsupported() {
@@ -1604,6 +1618,11 @@ class PreferencesService implements IPreferencesService {
 
   @Unsupported
   openLanguageSpecificSettings(): never {
+    unsupported()
+  }
+
+  @Unsupported
+  openPreferences(): never {
     unsupported()
   }
 }
@@ -3926,6 +3945,11 @@ class ExtensionGalleryService implements IExtensionGalleryService {
   getExtensionsControlManifest(): never {
     unsupported()
   }
+
+  @Unsupported
+  getAllVersions(): never {
+    unsupported()
+  }
 }
 registerSingleton(IExtensionGalleryService, ExtensionGalleryService, InstantiationType.Eager)
 
@@ -4763,6 +4787,11 @@ class PreferencesSearchService implements IPreferencesSearchService {
   getRemoteSearchProvider(): never {
     unsupported()
   }
+
+  @Unsupported
+  getAiSearchProvider(): never {
+    unsupported()
+  }
 }
 registerSingleton(IPreferencesSearchService, PreferencesSearchService, InstantiationType.Delayed)
 
@@ -5028,7 +5057,6 @@ registerSingleton(
 )
 
 class ChatService implements IChatService {
-
   edits2Enabled = false
   _serviceBrand: undefined
 
@@ -6463,6 +6491,21 @@ class AuthenticationService implements IAuthenticationService {
   removeSession(): never {
     unsupported()
   }
+
+  @Unsupported
+  getOrActivateProviderIdForServer(): never {
+    unsupported()
+  }
+
+  @Unsupported
+  registerAuthenticationProviderHostDelegate(): never {
+    unsupported()
+  }
+
+  @Unsupported
+  createDynamicAuthenticationProvider(): never {
+    unsupported()
+  }
 }
 registerSingleton(IAuthenticationService, AuthenticationService, InstantiationType.Delayed)
 
@@ -7154,6 +7197,11 @@ class ChatVariablesService implements IChatVariablesService {
   getSelectedTools(): never {
     unsupported()
   }
+
+  @Unsupported
+  getSelectedToolSets(): never {
+    unsupported()
+  }
 }
 registerSingleton(IChatVariablesService, ChatVariablesService, InstantiationType.Delayed)
 
@@ -7208,6 +7256,10 @@ class AiSettingsSearchService implements IAiSettingsSearchService {
   }
   @Unsupported
   handleSearchResult(): never {
+    unsupported()
+  }
+
+  onProviderRegistered(): never {
     unsupported()
   }
 }
@@ -8392,6 +8444,7 @@ class LanguageModelToolsService implements ILanguageModelToolsService {
   getTool = () => undefined
   getToolByName = () => undefined
   onDidChangeTools = Event.None
+
   @Unsupported
   registerToolData(): never {
     unsupported()
@@ -8421,6 +8474,26 @@ class LanguageModelToolsService implements ILanguageModelToolsService {
   @Unsupported
   resetToolAutoConfirmation(): never {
     unsupported()
+  }
+
+  @Unsupported
+  toEnablementMap(): never {
+    unsupported()
+  }
+
+  @Unsupported
+  getToolSetByName(): never {
+    unsupported()
+  }
+
+  @Unsupported
+  createToolSet(): never {
+    unsupported()
+  }
+
+  @Unsupported
+  get toolSets(): never {
+    return unsupported()
   }
 }
 registerSingleton(ILanguageModelToolsService, LanguageModelToolsService, InstantiationType.Delayed)
@@ -8559,63 +8632,6 @@ class ActionViewItemService implements IActionViewItemService {
 }
 registerSingleton(IActionViewItemService, ActionViewItemService, InstantiationType.Delayed)
 
-class TreeSitterTokenizationFeature implements ITreeSitterTokenizationFeature {
-  _serviceBrand: undefined
-}
-registerSingleton(
-  ITreeSitterTokenizationFeature,
-  TreeSitterTokenizationFeature,
-  InstantiationType.Delayed
-)
-
-class TreeSitterTokenizationStoreService implements ITreeSitterTokenizationStoreService {
-  _serviceBrand: undefined
-
-  @Unsupported
-  setTokens(): never {
-    unsupported()
-  }
-
-  @Unsupported
-  updateTokens(): never {
-    unsupported()
-  }
-
-  @Unsupported
-  markForRefresh(): never {
-    unsupported()
-  }
-
-  @Unsupported
-  getNeedsRefresh(): never {
-    unsupported()
-  }
-
-  hasTokens = () => false
-  getTokens = () => undefined
-
-  @Unsupported
-  rangeHasTokens(): never {
-    unsupported()
-  }
-
-  @Unsupported
-  handleContentChanged(): never {
-    unsupported()
-  }
-
-  @Unsupported
-  delete(): never {
-    unsupported()
-  }
-}
-
-registerSingleton(
-  ITreeSitterTokenizationStoreService,
-  TreeSitterTokenizationStoreService,
-  InstantiationType.Delayed
-)
-
 class LanguageModelIgnoredFilesService implements ILanguageModelIgnoredFilesService {
   _serviceBrand: undefined
 
@@ -8739,25 +8755,6 @@ class TerminalCompletionService implements ITerminalCompletionService {
 }
 registerSingleton(ITerminalCompletionService, TerminalCompletionService, InstantiationType.Delayed)
 
-class TreeSitterImporter implements ITreeSitterImporter {
-  _serviceBrand: undefined
-  parserClass = undefined
-
-  @Unsupported
-  getParserClass(): never {
-    unsupported()
-  }
-  @Unsupported
-  getLanguageClass(): never {
-    unsupported()
-  }
-  @Unsupported
-  getQueryClass(): never {
-    unsupported()
-  }
-}
-registerSingleton(ITreeSitterImporter, TreeSitterImporter, InstantiationType.Eager)
-
 class ChatEntitlementsService implements IChatEntitlementService {
   _serviceBrand: undefined
 
@@ -8805,6 +8802,13 @@ class PromptsService implements IPromptsService {
   findInstructionFilesFor = async () => []
   getAllMetadata = async () => []
   getCombinedToolsMetadata = async () => null
+  onDidChangeCustomChatModes = Event.None
+  getCustomChatModes = async () => []
+
+  @Unsupported
+  getMetadata(): never {
+    unsupported()
+  }
 }
 registerSingleton(IPromptsService, PromptsService, InstantiationType.Eager)
 
@@ -8828,7 +8832,10 @@ class McpRegistry implements IMcpRegistry {
     unsupported()
   }
 
-  delegates = []
+  @Unsupported
+  get delegates(): never {
+    return unsupported()
+  }
 
   discoverCollections = async () => []
 
@@ -8868,6 +8875,11 @@ class McpRegistry implements IMcpRegistry {
 
   @Unsupported
   setSavedInput(): never {
+    unsupported()
+  }
+
+  @Unsupported
+  getServerDefinition(): never {
     unsupported()
   }
 }
@@ -8931,3 +8943,209 @@ registerSingleton(
   InstantiationType.Delayed
 )
 registerSingleton(IDefaultAccountService, NullDefaultAccountService, InstantiationType.Delayed)
+
+class DynamicAuthenticationProviderStorageService
+  implements IDynamicAuthenticationProviderStorageService
+{
+  _serviceBrand: undefined
+  onDidChange = Event.None
+  getClientId = () => undefined
+  storeClientId = () => undefined
+  getInteractedProviders = () => []
+  removeDynamicProvider = async () => undefined
+  getSessionsForDynamicAuthProvider = async () => undefined
+  setSessionsForDynamicAuthProvider = async () => undefined
+  onDidChangeTokens = Event.None
+}
+
+registerSingleton(
+  IDynamicAuthenticationProviderStorageService,
+  DynamicAuthenticationProviderStorageService,
+  InstantiationType.Eager
+)
+
+class AuthenticationMcpService implements IAuthenticationMcpService {
+  _serviceBrand: undefined
+  onDidChangeAccountPreference = Event.None
+  getAccountPreference = () => undefined
+  updateAccountPreference = () => undefined
+  removeAccountPreference = () => undefined
+  updateSessionPreference = () => undefined
+  getSessionPreference = () => undefined
+  removeSessionPreference = () => undefined
+  requestSessionAccess = () => undefined
+  requestNewSession = async () => undefined
+
+  @Unsupported
+  selectSession(): never {
+    unsupported()
+  }
+}
+
+registerSingleton(IAuthenticationMcpService, AuthenticationMcpService, InstantiationType.Eager)
+
+class AuthenticationMcpAccessService implements IAuthenticationMcpAccessService {
+  _serviceBrand: undefined
+  onDidChangeMcpSessionAccess = Event.None
+  isAccessAllowed = () => undefined
+  readAllowedMcpServers = () => []
+  updateAllowedMcpServers = () => undefined
+  removeAllowedMcpServers = () => undefined
+}
+
+registerSingleton(
+  IAuthenticationMcpAccessService,
+  AuthenticationMcpAccessService,
+  InstantiationType.Eager
+)
+
+class AuthenticationMcpUsageService implements IAuthenticationMcpUsageService {
+  _serviceBrand: undefined
+  initializeUsageCache = async () => undefined
+  hasUsedAuth = async () => false
+  readAccountUsages = () => []
+  removeAccountUsage = () => undefined
+  addAccountUsage = () => undefined
+}
+
+registerSingleton(
+  IAuthenticationMcpUsageService,
+  AuthenticationMcpUsageService,
+  InstantiationType.Eager
+)
+
+class McpWorkbenchService implements IMcpWorkbenchService {
+  _serviceBrand: undefined
+  onChange = Event.None
+  local = []
+  queryLocal = async () => []
+  queryGallery = async () => []
+  install = async () => undefined
+  uninstall = async () => undefined
+  update = async () => undefined
+  open = async () => undefined
+}
+
+registerSingleton(IMcpWorkbenchService, McpWorkbenchService, InstantiationType.Eager)
+
+class McpGalleryService implements IMcpGalleryService {
+  _serviceBrand: undefined
+  isEnabled = () => false
+  query = async () => []
+
+  @Unsupported
+  getManifest(): never {
+    unsupported()
+  }
+
+  @Unsupported
+  getReadme(): never {
+    unsupported()
+  }
+}
+
+registerSingleton(IMcpGalleryService, McpGalleryService, InstantiationType.Eager)
+
+class McpManagementService implements IMcpManagementService {
+  _serviceBrand: undefined
+  onInstallMcpServer = Event.None
+  onDidInstallMcpServers = Event.None
+  onUninstallMcpServer = Event.None
+  onDidUninstallMcpServer = Event.None
+  getInstalled = async () => []
+  installFromGallery = async () => undefined
+  uninstall = async () => undefined
+}
+
+registerSingleton(IMcpManagementService, McpManagementService, InstantiationType.Eager)
+
+class McpSamplingService implements IMcpSamplingService {
+  _serviceBrand: undefined
+
+  @Unsupported
+  sample(): never {
+    unsupported()
+  }
+
+  hasLogs = () => false
+
+  @Unsupported
+  getLogText(): never {
+    unsupported()
+  }
+
+  @Unsupported
+  getConfig(): never {
+    unsupported()
+  }
+
+  @Unsupported
+  updateConfig(): never {
+    unsupported()
+  }
+}
+
+registerSingleton(IMcpSamplingService, McpSamplingService, InstantiationType.Eager)
+
+class ChatContextPickService implements IChatContextPickService {
+  _serviceBrand: undefined
+  items = []
+
+  @Unsupported
+  registerChatContextItem(): never {
+    unsupported()
+  }
+}
+
+registerSingleton(IChatContextPickService, ChatContextPickService, InstantiationType.Eager)
+
+class BrowserElementsService implements IBrowserElementsService {
+  _serviceBrand: undefined
+  getElementData = async () => undefined
+  startDebugSession = async () => undefined
+}
+
+registerSingleton(IBrowserElementsService, BrowserElementsService, InstantiationType.Eager)
+
+class GettingStartedExperimentService implements IGettingStartedExperimentService {
+  _serviceBrand: undefined
+  getCurrentExperiment = () => undefined
+}
+
+registerSingleton(
+  IGettingStartedExperimentService,
+  GettingStartedExperimentService,
+  InstantiationType.Eager
+)
+
+class TreeSitterThemeService implements ITreeSitterThemeService {
+  _serviceBrand: undefined
+
+  @Unsupported
+  get onChange() {
+    return unsupported()
+  }
+
+  @Unsupported
+  findMetadata(): never {
+    unsupported()
+  }
+}
+
+registerSingleton(ITreeSitterThemeService, TreeSitterThemeService, InstantiationType.Eager)
+
+class TreeSitterLibraryService implements ITreeSitterLibraryService {
+  _serviceBrand: undefined
+
+  @Unsupported
+  getParserClass(): never {
+    unsupported()
+  }
+
+  supportsLanguage = () => false
+  getLanguage = () => undefined
+  getInjectionQueries = () => undefined
+  getHighlightingQueries = () => undefined
+}
+
+registerSingleton(ITreeSitterLibraryService, TreeSitterLibraryService, InstantiationType.Eager)

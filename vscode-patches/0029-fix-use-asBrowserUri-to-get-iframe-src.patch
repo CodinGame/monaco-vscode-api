@@ -4,18 +4,31 @@ Date: Mon, 11 Mar 2024 18:21:20 +0100
 Subject: [PATCH] fix: use asBrowserUri to get iframe src
 
 ---
- src/vs/workbench/contrib/webview/browser/webviewElement.ts | 3 ++-
- 1 file changed, 2 insertions(+), 1 deletion(-)
+ .../workbench/contrib/webview/browser/webviewElement.ts  | 9 ++++++---
+ 1 file changed, 6 insertions(+), 3 deletions(-)
 
 diff --git a/src/vs/workbench/contrib/webview/browser/webviewElement.ts b/src/vs/workbench/contrib/webview/browser/webviewElement.ts
-index e5aeb78ff29..753a41f7d56 100644
+index e463e7a3444..8014b6610a6 100644
 --- a/src/vs/workbench/contrib/webview/browser/webviewElement.ts
 +++ b/src/vs/workbench/contrib/webview/browser/webviewElement.ts
-@@ -447,7 +447,8 @@ export class WebviewElement extends Disposable implements IWebview, WebviewFindD
- 		// Workaround for https://bugzilla.mozilla.org/show_bug.cgi?id=1754872
- 		const fileName = isFirefox ? 'index-no-csp.html' : 'index.html';
+@@ -13,7 +13,7 @@ import { streamToBuffer, VSBufferReadableStream } from '../../../../base/common/
+ import { CancellationTokenSource } from '../../../../base/common/cancellation.js';
+ import { Emitter, Event } from '../../../../base/common/event.js';
+ import { Disposable, IDisposable, toDisposable } from '../../../../base/common/lifecycle.js';
+-import { COI } from '../../../../base/common/network.js';
++import { COI, FileAccess } from '../../../../base/common/network.js';
+ import { URI } from '../../../../base/common/uri.js';
+ import { generateUuid } from '../../../../base/common/uuid.js';
+ import { localize } from '../../../../nls.js';
+@@ -444,8 +444,11 @@ export class WebviewElement extends Disposable implements IWebview, WebviewFindD
  
+ 		const queryString = new URLSearchParams(params).toString();
+ 
+-		const fileName = 'index.html';
 -		this.element!.setAttribute('src', `${this.webviewContentEndpoint(encodedWebviewOrigin)}/${fileName}?${queryString}`);
++		// Workaround for https://bugzilla.mozilla.org/show_bug.cgi?id=1754872
++		const fileName = isFirefox ? 'index-no-csp.html' : 'index.html';
++
 +		const relativeIframeSrc = FileAccess.asBrowserUri(`vs/workbench/contrib/webview/browser/pre/${fileName}`);
 +		this.element!.setAttribute('src', `${relativeIframeSrc.toString(true)}?${queryString}`);
  	}

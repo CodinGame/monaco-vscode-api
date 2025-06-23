@@ -80,7 +80,7 @@ index b1e326d835a..3e4f84e209d 100644
  						// went outside the editor!
  						this._onMouseLeave(new EditorMouseEvent(e, false, this.viewHelper.viewDomNode));
 diff --git a/src/vs/workbench/browser/layout.ts b/src/vs/workbench/browser/layout.ts
-index f8c95a099bc..f20f655d365 100644
+index 3265f51ae24..976954b2150 100644
 --- a/src/vs/workbench/browser/layout.ts
 +++ b/src/vs/workbench/browser/layout.ts
 @@ -48,6 +48,7 @@ import { AuxiliaryBarPart } from './parts/auxiliarybar/auxiliaryBarPart.js';
