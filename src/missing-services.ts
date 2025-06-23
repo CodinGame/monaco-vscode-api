@@ -1621,10 +1621,7 @@ class PreferencesService implements IPreferencesService {
     unsupported()
   }
 
-  @Unsupported
-  openPreferences(): never {
-    unsupported()
-  }
+  openPreferences = async () => undefined
 }
 
 registerSingleton(IPreferencesService, PreferencesService, InstantiationType.Eager)
@@ -3946,10 +3943,7 @@ class ExtensionGalleryService implements IExtensionGalleryService {
     unsupported()
   }
 
-  @Unsupported
-  getAllVersions(): never {
-    unsupported()
-  }
+  getAllVersions = async () => []
 }
 registerSingleton(IExtensionGalleryService, ExtensionGalleryService, InstantiationType.Eager)
 
@@ -6492,20 +6486,11 @@ class AuthenticationService implements IAuthenticationService {
     unsupported()
   }
 
-  @Unsupported
-  getOrActivateProviderIdForServer(): never {
-    unsupported()
-  }
+  getOrActivateProviderIdForServer = async () => undefined
 
-  @Unsupported
-  registerAuthenticationProviderHostDelegate(): never {
-    unsupported()
-  }
+  registerAuthenticationProviderHostDelegate = () => Disposable.None
 
-  @Unsupported
-  createDynamicAuthenticationProvider(): never {
-    unsupported()
-  }
+  createDynamicAuthenticationProvider = async () => undefined
 }
 registerSingleton(IAuthenticationService, AuthenticationService, InstantiationType.Delayed)
 
@@ -7259,9 +7244,7 @@ class AiSettingsSearchService implements IAiSettingsSearchService {
     unsupported()
   }
 
-  onProviderRegistered(): never {
-    unsupported()
-  }
+  onProviderRegistered = Event.None
 }
 registerSingleton(IAiSettingsSearchService, AiSettingsSearchService, InstantiationType.Delayed)
 
@@ -8481,10 +8464,7 @@ class LanguageModelToolsService implements ILanguageModelToolsService {
     unsupported()
   }
 
-  @Unsupported
-  getToolSetByName(): never {
-    unsupported()
-  }
+  getToolSetByName = () => undefined
 
   @Unsupported
   createToolSet(): never {
@@ -9091,10 +9071,7 @@ class ChatContextPickService implements IChatContextPickService {
   _serviceBrand: undefined
   items = []
 
-  @Unsupported
-  registerChatContextItem(): never {
-    unsupported()
-  }
+  registerChatContextItem = () => Disposable.None
 }
 
 registerSingleton(IChatContextPickService, ChatContextPickService, InstantiationType.Eager)
