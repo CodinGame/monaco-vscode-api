@@ -802,8 +802,14 @@ class OverlayFileSystemProvider
       if ((provider.capabilities & FileSystemProviderCapabilities.Readonly) > 0) {
         continue
       }
+
       try {
         await mkdirp(extUri, provider, extUri.dirname(resource))
+      } catch {
+        // ignore errors
+      }
+
+      try {
         return await caller(provider)
       } catch (err) {
         if (
