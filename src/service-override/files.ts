@@ -943,20 +943,6 @@ class OverlayFileSystemProvider
   }
 }
 
-class MkdirpOnWriteInMemoryFileSystemProvider extends InMemoryFileSystemProvider {
-  override async writeFile(
-    resource: URI,
-    content: Uint8Array,
-    opts: IFileWriteOptions
-  ): Promise<void> {
-    // when using overlay providers, the fileservice won't be able to detect that the parent directory doesn't exist
-    // if another provider has this directory. So it won't create the parent directories on this memory file system.
-    await mkdirp(extUri, this, extUri.dirname(resource))
-
-    return await super.writeFile(resource, content, opts)
-  }
-}
-
 class DelegateFileSystemProvider implements IFileSystemProvider {
   constructor(
     private options: {
@@ -1061,7 +1047,7 @@ class EmptyFileSystemProvider implements IFileSystemProviderWithFileReadWriteCap
 }
 
 const overlayFileSystemProvider = new OverlayFileSystemProvider()
-overlayFileSystemProvider.register(0, new MkdirpOnWriteInMemoryFileSystemProvider())
+overlayFileSystemProvider.register(0, new InMemoryFileSystemProvider())
 
 const extensionFileSystemProvider = new RegisteredFileSystemProvider(true)
 const userDataFileSystemProvider = new InMemoryFileSystemProvider()
