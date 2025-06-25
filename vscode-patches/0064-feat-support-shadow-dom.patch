@@ -4,14 +4,119 @@ Date: Fri, 2 May 2025 10:13:06 +0200
 Subject: [PATCH] feat: support shadow dom
 
 ---
- src/vs/base/browser/domStylesheets.ts         | 21 +++++++++++++++----
+ src/vs/base/browser/dom.ts                    | 23 ++++++++++++-------
+ src/vs/base/browser/domStylesheets.ts         | 21 +++++++++++++----
+ src/vs/base/browser/ui/dialog/dialog.ts       |  6 ++---
+ src/vs/base/browser/ui/dnd/dnd.ts             |  4 ++--
+ src/vs/base/browser/ui/findinput/findInput.ts |  3 ++-
+ .../base/browser/ui/findinput/replaceInput.ts |  3 ++-
+ src/vs/base/browser/ui/inputbox/inputBox.ts   |  2 +-
+ src/vs/base/browser/ui/sash/sash.ts           |  2 +-
+ src/vs/base/browser/ui/splitview/paneview.ts  |  6 ++---
+ src/vs/base/browser/ui/splitview/splitview.ts |  6 ++---
  .../editor/browser/controller/mouseHandler.ts |  2 +-
+ .../editor/browser/controller/mouseTarget.ts  |  2 +-
+ .../services/hoverService/hoverWidget.ts      |  2 +-
+ src/vs/editor/browser/view/viewPart.ts        |  3 ++-
+ .../contentWidgets/contentWidgets.ts          |  2 +-
+ .../hover/browser/contentHoverWidget.ts       |  2 +-
+ .../actionWidget/browser/actionList.ts        |  2 +-
+ src/vs/workbench/browser/contextkeys.ts       |  9 ++++----
  src/vs/workbench/browser/layout.ts            |  3 +++
- src/vs/workbench/browser/workbench.ts         |  6 +++---
- .../keybinding/browser/keybindingService.ts   | 10 ++++++---
+ .../browser/parts/editor/editorGroupView.ts   |  4 ++--
+ src/vs/workbench/browser/workbench.ts         |  6 ++---
+ .../files/browser/views/explorerViewer.ts     |  4 +++-
+ .../notebook/browser/notebookEditorWidget.ts  |  6 ++---
+ .../browser/view/cellParts/cellStatusPart.ts  |  6 +++--
+ .../browser/view/cellParts/codeCell.ts        |  5 ++--
+ .../browser/view/cellParts/markupCell.ts      |  6 ++---
+ .../notebook/browser/view/notebookCellList.ts |  5 ++--
+ .../browser/preferences.contribution.ts       |  3 ++-
+ .../preferences/browser/settingsEditor2.ts    |  6 ++---
+ .../terminal/browser/terminalTabbedView.ts    |  2 +-
+ .../contrib/terminal/browser/terminalView.ts  |  2 +-
+ .../browser/gettingStarted.ts                 |  4 ++--
+ .../browser/walkThroughPart.ts                |  6 ++---
+ .../keybinding/browser/keybindingService.ts   | 10 +++++---
  .../themes/browser/workbenchThemeService.ts   |  4 ++--
- 6 files changed, 33 insertions(+), 13 deletions(-)
+ 35 files changed, 110 insertions(+), 72 deletions(-)
 
+diff --git a/src/vs/base/browser/dom.ts b/src/vs/base/browser/dom.ts
+index 553c584a63d..49549236908 100644
+--- a/src/vs/base/browser/dom.ts
++++ b/src/vs/base/browser/dom.ts
+@@ -621,8 +621,7 @@ export function getTopLeftOffset(element: HTMLElement): IDomPosition {
+ 
+ 	while (
+ 		(element = <HTMLElement>element.parentNode) !== null
+-		&& element !== element.ownerDocument.body
+-		&& element !== element.ownerDocument.documentElement
++		&& element !== element.getRootNode()
+ 	) {
+ 		top -= element.scrollTop;
+ 		const c = isShadowRoot(element) ? null : getComputedStyle(element);
+@@ -723,7 +722,7 @@ export function getDomNodeZoomLevel(domNode: HTMLElement): number {
+ 		}
+ 
+ 		testElement = testElement.parentElement;
+-	} while (testElement !== null && testElement !== testElement.ownerDocument.documentElement);
++	} while (testElement !== null && testElement !== testElement.getRootNode());
+ 
+ 	return zoom;
+ }
+@@ -800,7 +799,7 @@ export function setParentFlowTo(fromChildElement: HTMLElement, toParentElement:
+ function getParentFlowToElement(node: HTMLElement): HTMLElement | null {
+ 	const flowToParentId = node.dataset[parentFlowToDataKey];
+ 	if (typeof flowToParentId === 'string') {
+-		return node.ownerDocument.getElementById(flowToParentId);
++		return (node.getRootNode() as Document | ShadowRoot).getElementById(flowToParentId);
+ 	}
+ 	return null;
+ }
+@@ -883,8 +882,8 @@ export function getShadowRoot(domNode: Node): ShadowRoot | null {
+  * based on document focus. Falls back to the main
+  * window if no window has focus.
+  */
+-export function getActiveElement(): Element | null {
+-	let result = getActiveDocument().activeElement;
++export function getActiveElement(_document = getActiveDocument()): Element | null {
++	let result = _document.activeElement;
+ 
+ 	while (result?.shadowRoot) {
+ 		result = result.shadowRoot.activeElement;
+@@ -893,6 +892,14 @@ export function getActiveElement(): Element | null {
+ 	return result;
+ }
+ 
++export function getRootContainer(element: Element) {
++	let container: Node = element.getRootNode();
++	if (container instanceof Document) {
++		container = container.body;
++	}
++	return container;
++}
++
+ /**
+  * Returns true if the focused window active element matches
+  * the provided element. Falls back to the main window if no
+@@ -1189,7 +1196,7 @@ class FocusTracker extends Disposable implements IFocusTracker {
+ 	private static hasFocusWithin(element: HTMLElement | Window): boolean {
+ 		if (isHTMLElement(element)) {
+ 			const shadowRoot = getShadowRoot(element);
+-			const activeElement = (shadowRoot ? shadowRoot.activeElement : element.ownerDocument.activeElement);
++			const activeElement = (shadowRoot ? shadowRoot.activeElement : (element.getRootNode() as Document | ShadowRoot).activeElement);
+ 			return isAncestor(activeElement, element);
+ 		} else {
+ 			const window = element;
+@@ -1408,7 +1415,7 @@ export function removeTabIndexAndUpdateFocus(node: HTMLElement): void {
+ 	// standard DOM behavior is to move focus to the <body> element. We
+ 	// typically never want that, rather put focus to the closest element
+ 	// in the hierarchy of the parent DOM nodes.
+-	if (node.ownerDocument.activeElement === node) {
++	if ((node.getRootNode() as Document | ShadowRoot).activeElement === node) {
+ 		const parentFocusable = findParentWithAttribute(node.parentElement, 'tabIndex');
+ 		parentFocusable?.focus();
+ 	}
 diff --git a/src/vs/base/browser/domStylesheets.ts b/src/vs/base/browser/domStylesheets.ts
 index ebc249c6608..5f5da69f73b 100644
 --- a/src/vs/base/browser/domStylesheets.ts
@@ -66,6 +171,182 @@ index ebc249c6608..5f5da69f73b 100644
  	disposables.add(toDisposable(() => clone.remove()));
  
  	for (const rule of getDynamicStyleSheetRules(globalStylesheet)) {
+diff --git a/src/vs/base/browser/ui/dialog/dialog.ts b/src/vs/base/browser/ui/dialog/dialog.ts
+index b569359a06c..ba8f9063610 100644
+--- a/src/vs/base/browser/ui/dialog/dialog.ts
++++ b/src/vs/base/browser/ui/dialog/dialog.ts
+@@ -5,7 +5,7 @@
+ 
+ import './dialog.css';
+ import { localize } from '../../../../nls.js';
+-import { $, addDisposableListener, addStandardDisposableListener, clearNode, EventHelper, EventType, getWindow, hide, isActiveElement, isAncestor, show } from '../../dom.js';
++import { $, addDisposableListener, addStandardDisposableListener, clearNode, EventHelper, EventType, getActiveElement, getWindow, hide, isActiveElement, isAncestor, show } from '../../dom.js';
+ import { StandardKeyboardEvent } from '../../keyboardEvent.js';
+ import { ActionBar } from '../actionbar/actionbar.js';
+ import { ButtonBar, ButtonBarAlignment, ButtonWithDescription, ButtonWithDropdown, IButton, IButtonStyles, IButtonWithDropdownOptions } from '../button/button.js';
+@@ -252,7 +252,7 @@ export class Dialog extends Disposable {
+ 	}
+ 
+ 	async show(): Promise<IDialogResult> {
+-		this.focusToReturn = this.container.ownerDocument.activeElement as HTMLElement;
++		this.focusToReturn = getActiveElement(this.container.ownerDocument) as HTMLElement;
+ 
+ 		return new Promise<IDialogResult>(resolve => {
+ 			clearNode(this.buttonsContainer);
+@@ -594,7 +594,7 @@ export class Dialog extends Disposable {
+ 			this.modalElement = undefined;
+ 		}
+ 
+-		if (this.focusToReturn && isAncestor(this.focusToReturn, this.container.ownerDocument.body)) {
++		if (this.focusToReturn && isAncestor(this.focusToReturn, this.container.getRootNode())) {
+ 			this.focusToReturn.focus();
+ 			this.focusToReturn = undefined;
+ 		}
+diff --git a/src/vs/base/browser/ui/dnd/dnd.ts b/src/vs/base/browser/ui/dnd/dnd.ts
+index 39ce04a13a8..06cdc96e51d 100644
+--- a/src/vs/base/browser/ui/dnd/dnd.ts
++++ b/src/vs/base/browser/ui/dnd/dnd.ts
+@@ -3,7 +3,7 @@
+  *  Licensed under the MIT License. See License.txt in the project root for license information.
+  *--------------------------------------------------------------------------------------------*/
+ 
+-import { $ } from '../../dom.js';
++import { $, getRootContainer } from '../../dom.js';
+ import './dnd.css';
+ 
+ export function applyDragImage(event: DragEvent, container: HTMLElement, label: string, extraClasses: string[] = []): void {
+@@ -19,7 +19,7 @@ export function applyDragImage(event: DragEvent, container: HTMLElement, label:
+ 		while (e && !e.classList.contains('monaco-workbench')) {
+ 			e = e.parentElement;
+ 		}
+-		return e || container.ownerDocument.body;
++		return e || getRootContainer(container);
+ 	};
+ 
+ 	const dragContainer = getDragImageContainer(container);
+diff --git a/src/vs/base/browser/ui/findinput/findInput.ts b/src/vs/base/browser/ui/findinput/findInput.ts
+index 7546053dd64..5c05c7cb755 100644
+--- a/src/vs/base/browser/ui/findinput/findInput.ts
++++ b/src/vs/base/browser/ui/findinput/findInput.ts
+@@ -18,6 +18,7 @@ import * as nls from '../../../../nls.js';
+ import { DisposableStore, MutableDisposable } from '../../../common/lifecycle.js';
+ import { createInstantHoverDelegate } from '../hover/hoverDelegateFactory.js';
+ import { IHistory } from '../../../common/history.js';
++import { getActiveElement } from '../../dom.js';
+ 
+ 
+ export interface IFindInputOptions {
+@@ -169,7 +170,7 @@ export class FindInput extends Widget {
+ 			const indexes = [this.caseSensitive.domNode, this.wholeWords.domNode, this.regex.domNode];
+ 			this.onkeydown(this.domNode, (event: IKeyboardEvent) => {
+ 				if (event.equals(KeyCode.LeftArrow) || event.equals(KeyCode.RightArrow) || event.equals(KeyCode.Escape)) {
+-					const index = indexes.indexOf(<HTMLElement>this.domNode.ownerDocument.activeElement);
++					const index = indexes.indexOf(<HTMLElement>getActiveElement(this.domNode.ownerDocument));
+ 					if (index >= 0) {
+ 						let newIndex: number = -1;
+ 						if (event.equals(KeyCode.RightArrow)) {
+diff --git a/src/vs/base/browser/ui/findinput/replaceInput.ts b/src/vs/base/browser/ui/findinput/replaceInput.ts
+index 11c3c04a8cc..73cc5e71a50 100644
+--- a/src/vs/base/browser/ui/findinput/replaceInput.ts
++++ b/src/vs/base/browser/ui/findinput/replaceInput.ts
+@@ -18,6 +18,7 @@ import './findInput.css';
+ import * as nls from '../../../../nls.js';
+ import { getDefaultHoverDelegate } from '../hover/hoverDelegateFactory.js';
+ import { IHistory } from '../../../common/history.js';
++import { getActiveElement } from '../../dom.js';
+ 
+ 
+ export interface IReplaceInputOptions {
+@@ -143,7 +144,7 @@ export class ReplaceInput extends Widget {
+ 		const indexes = [this.preserveCase.domNode];
+ 		this.onkeydown(this.domNode, (event: IKeyboardEvent) => {
+ 			if (event.equals(KeyCode.LeftArrow) || event.equals(KeyCode.RightArrow) || event.equals(KeyCode.Escape)) {
+-				const index = indexes.indexOf(<HTMLElement>this.domNode.ownerDocument.activeElement);
++				const index = indexes.indexOf(<HTMLElement>getActiveElement(this.domNode.ownerDocument));
+ 				if (index >= 0) {
+ 					let newIndex: number = -1;
+ 					if (event.equals(KeyCode.RightArrow)) {
+diff --git a/src/vs/base/browser/ui/inputbox/inputBox.ts b/src/vs/base/browser/ui/inputbox/inputBox.ts
+index 4081c2f28b2..97966324b05 100644
+--- a/src/vs/base/browser/ui/inputbox/inputBox.ts
++++ b/src/vs/base/browser/ui/inputbox/inputBox.ts
+@@ -173,7 +173,7 @@ export class InputBox extends Widget {
+ 
+ 			const onSelectionChange = this._register(new DomEmitter(container.ownerDocument, 'selectionchange'));
+ 			const onAnchoredSelectionChange = Event.filter(onSelectionChange.event, () => {
+-				const selection = container.ownerDocument.getSelection();
++				const selection = (container.getRootNode() as Document).getSelection();
+ 				return selection?.anchorNode === wrapper;
+ 			});
+ 
+diff --git a/src/vs/base/browser/ui/sash/sash.ts b/src/vs/base/browser/ui/sash/sash.ts
+index fb2c226175a..069a8e38100 100644
+--- a/src/vs/base/browser/ui/sash/sash.ts
++++ b/src/vs/base/browser/ui/sash/sash.ts
+@@ -517,7 +517,7 @@ export class Sash extends Disposable {
+ 			return;
+ 		}
+ 
+-		const iframes = this.el.ownerDocument.getElementsByTagName('iframe');
++		const iframes = (this.el.getRootNode() as Document | ShadowRoot).querySelectorAll('iframe');
+ 		for (const iframe of iframes) {
+ 			iframe.classList.add(PointerEventsDisabledCssClass); // disable mouse events on iframes as long as we drag the sash
+ 		}
+diff --git a/src/vs/base/browser/ui/splitview/paneview.ts b/src/vs/base/browser/ui/splitview/paneview.ts
+index 42d2234a131..1d5f4129639 100644
+--- a/src/vs/base/browser/ui/splitview/paneview.ts
++++ b/src/vs/base/browser/ui/splitview/paneview.ts
+@@ -5,7 +5,7 @@
+ 
+ import { isFirefox } from '../../browser.js';
+ import { DataTransfers } from '../../dnd.js';
+-import { $, addDisposableListener, append, clearNode, EventHelper, EventType, getWindow, isHTMLElement, trackFocus } from '../../dom.js';
++import { $, addDisposableListener, append, clearNode, EventHelper, EventType, getActiveElement, getWindow, isHTMLElement, trackFocus } from '../../dom.js';
+ import { DomEmitter } from '../../event.js';
+ import { StandardKeyboardEvent } from '../../keyboardEvent.js';
+ import { Gesture, EventType as TouchEventType } from '../../touch.js';
+@@ -662,7 +662,7 @@ export class PaneView extends Disposable {
+ 
+ 	private focusPrevious(): void {
+ 		const headers = this.getPaneHeaderElements();
+-		const index = headers.indexOf(this.element.ownerDocument.activeElement as HTMLElement);
++		const index = headers.indexOf(getActiveElement(this.element.ownerDocument) as HTMLElement);
+ 
+ 		if (index === -1) {
+ 			return;
+@@ -673,7 +673,7 @@ export class PaneView extends Disposable {
+ 
+ 	private focusNext(): void {
+ 		const headers = this.getPaneHeaderElements();
+-		const index = headers.indexOf(this.element.ownerDocument.activeElement as HTMLElement);
++		const index = headers.indexOf(getActiveElement(this.element.ownerDocument) as HTMLElement);
+ 
+ 		if (index === -1) {
+ 			return;
+diff --git a/src/vs/base/browser/ui/splitview/splitview.ts b/src/vs/base/browser/ui/splitview/splitview.ts
+index 35f2724c1a8..0da8fa62431 100644
+--- a/src/vs/base/browser/ui/splitview/splitview.ts
++++ b/src/vs/base/browser/ui/splitview/splitview.ts
+@@ -3,7 +3,7 @@
+  *  Licensed under the MIT License. See License.txt in the project root for license information.
+  *--------------------------------------------------------------------------------------------*/
+ 
+-import { $, addDisposableListener, append, getWindow, scheduleAtNextAnimationFrame } from '../../dom.js';
++import { $, addDisposableListener, append, getRootContainer, getWindow, scheduleAtNextAnimationFrame } from '../../dom.js';
+ import { DomEmitter } from '../../event.js';
+ import { ISashEvent as IBaseSashEvent, Orientation, Sash, SashState } from '../sash/sash.js';
+ import { SmoothScrollableElement } from '../scrollbar/scrollableElement.js';
+@@ -892,8 +892,8 @@ export class SplitView<TLayoutContext = undefined, TView extends IView<TLayoutCo
+ 
+ 		// This way, we can press Alt while we resize a sash, macOS style!
+ 		const disposable = combinedDisposable(
+-			addDisposableListener(this.el.ownerDocument.body, 'keydown', e => resetSashDragState(this.sashDragState!.current, e.altKey)),
+-			addDisposableListener(this.el.ownerDocument.body, 'keyup', () => resetSashDragState(this.sashDragState!.current, false))
++			addDisposableListener(getRootContainer(this.el), 'keydown', e => resetSashDragState(this.sashDragState!.current, e.altKey)),
++			addDisposableListener(getRootContainer(this.el), 'keyup', () => resetSashDragState(this.sashDragState!.current, false))
+ 		);
+ 
+ 		const resetSashDragState = (start: number, alt: boolean) => {
 diff --git a/src/vs/editor/browser/controller/mouseHandler.ts b/src/vs/editor/browser/controller/mouseHandler.ts
 index b1e326d835a..3e4f84e209d 100644
 --- a/src/vs/editor/browser/controller/mouseHandler.ts
@@ -79,6 +360,125 @@ index b1e326d835a..3e4f84e209d 100644
  					if (!this.viewHelper.viewDomNode.contains(e.target as Node | null)) {
  						// went outside the editor!
  						this._onMouseLeave(new EditorMouseEvent(e, false, this.viewHelper.viewDomNode));
+diff --git a/src/vs/editor/browser/controller/mouseTarget.ts b/src/vs/editor/browser/controller/mouseTarget.ts
+index 28b39952393..89d816af8b9 100644
+--- a/src/vs/editor/browser/controller/mouseTarget.ts
++++ b/src/vs/editor/browser/controller/mouseTarget.ts
+@@ -351,7 +351,7 @@ export class HitTestContext {
+ 	}
+ 
+ 	private static _findAttribute(element: Element, attr: string, stopAt: Element): string | null {
+-		while (element && element !== element.ownerDocument.body) {
++		while (element && element !== dom.getRootContainer(element)) {
+ 			if (element.hasAttribute && element.hasAttribute(attr)) {
+ 				return element.getAttribute(attr);
+ 			}
+diff --git a/src/vs/editor/browser/services/hoverService/hoverWidget.ts b/src/vs/editor/browser/services/hoverService/hoverWidget.ts
+index 9635e03c818..23c3b739a87 100644
+--- a/src/vs/editor/browser/services/hoverService/hoverWidget.ts
++++ b/src/vs/editor/browser/services/hoverService/hoverWidget.ts
+@@ -314,7 +314,7 @@ export class HoverWidget extends Widget implements IHoverWidget {
+ 
+ 	public render(container: HTMLElement): void {
+ 		container.appendChild(this._hoverContainer);
+-		const hoverFocused = this._hoverContainer.contains(this._hoverContainer.ownerDocument.activeElement);
++		const hoverFocused = this._hoverContainer.contains(dom.getActiveElement(this._hoverContainer.ownerDocument));
+ 		const accessibleViewHint = hoverFocused && getHoverAccessibleViewHint(this._configurationService.getValue('accessibility.verbosity.hover') === true && this._accessibilityService.isScreenReaderOptimized(), this._keybindingService.lookupKeybinding('editor.action.accessibleView')?.getAriaLabel());
+ 		if (accessibleViewHint) {
+ 
+diff --git a/src/vs/editor/browser/view/viewPart.ts b/src/vs/editor/browser/view/viewPart.ts
+index a23bcb11b59..d750b8f2f03 100644
+--- a/src/vs/editor/browser/view/viewPart.ts
++++ b/src/vs/editor/browser/view/viewPart.ts
+@@ -7,6 +7,7 @@ import { FastDomNode } from '../../../base/browser/fastDomNode.js';
+ import { RenderingContext, RestrictedRenderingContext } from './renderingContext.js';
+ import { ViewContext } from '../../common/viewModel/viewContext.js';
+ import { ViewEventHandler } from '../../common/viewEventHandler.js';
++import { getRootContainer } from '../../../base/browser/dom.js';
+ 
+ export abstract class ViewPart extends ViewEventHandler {
+ 
+@@ -59,7 +60,7 @@ export class PartFingerprints {
+ 		const result: PartFingerprint[] = [];
+ 		let resultLen = 0;
+ 
+-		while (child && child !== child.ownerDocument.body) {
++		while (child && child !== getRootContainer(child)) {
+ 			if (child === stopAt) {
+ 				break;
+ 			}
+diff --git a/src/vs/editor/browser/viewParts/contentWidgets/contentWidgets.ts b/src/vs/editor/browser/viewParts/contentWidgets/contentWidgets.ts
+index 974c98bbc3d..ed496acc9c6 100644
+--- a/src/vs/editor/browser/viewParts/contentWidgets/contentWidgets.ts
++++ b/src/vs/editor/browser/viewParts/contentWidgets/contentWidgets.ts
+@@ -448,7 +448,7 @@ class Widget {
+ 		if (!primary) {
+ 			return {
+ 				kind: 'offViewport',
+-				preserveFocus: this.domNode.domNode.contains(this.domNode.domNode.ownerDocument.activeElement)
++				preserveFocus: this.domNode.domNode.contains(dom.getActiveElement(this.domNode.domNode.ownerDocument))
+ 			};
+ 			// return null;
+ 		}
+diff --git a/src/vs/editor/contrib/hover/browser/contentHoverWidget.ts b/src/vs/editor/contrib/hover/browser/contentHoverWidget.ts
+index 1b30ad9357a..c2e7ba16f6f 100644
+--- a/src/vs/editor/contrib/hover/browser/contentHoverWidget.ts
++++ b/src/vs/editor/contrib/hover/browser/contentHoverWidget.ts
+@@ -346,7 +346,7 @@ export class ContentHoverWidget extends ResizableContentWidget {
+ 		}
+ 		this._onDidResize.fire();
+ 		// The aria label overrides the label, so if we add to it, add the contents of the hover
+-		const hoverFocused = this._hover.containerDomNode.ownerDocument.activeElement === this._hover.containerDomNode;
++		const hoverFocused = dom.getActiveElement(this._hover.containerDomNode.ownerDocument) === this._hover.containerDomNode;
+ 		const accessibleViewHint = hoverFocused && getHoverAccessibleViewHint(
+ 			this._configurationService.getValue('accessibility.verbosity.hover') === true && this._accessibilityService.isScreenReaderOptimized(),
+ 			this._keybindingService.lookupKeybinding('editor.action.accessibleView')?.getAriaLabel() ?? ''
+diff --git a/src/vs/platform/actionWidget/browser/actionList.ts b/src/vs/platform/actionWidget/browser/actionList.ts
+index 0ea03901b42..87cd115f124 100644
+--- a/src/vs/platform/actionWidget/browser/actionList.ts
++++ b/src/vs/platform/actionWidget/browser/actionList.ts
+@@ -278,7 +278,7 @@ export class ActionList<T> extends Disposable {
+ 		} else {
+ 			// For finding width dynamically (not using resize observer)
+ 			const itemWidths: number[] = this._allMenuItems.map((_, index): number => {
+-				const element = this.domNode.ownerDocument.getElementById(this._list.getElementID(index));
++				const element = (this.domNode.getRootNode() as Document | ShadowRoot).getElementById(this._list.getElementID(index));
+ 				if (element) {
+ 					element.style.width = 'auto';
+ 					const width = element.getBoundingClientRect().width;
+diff --git a/src/vs/workbench/browser/contextkeys.ts b/src/vs/workbench/browser/contextkeys.ts
+index 840174189ee..64c5fff00b3 100644
+--- a/src/vs/workbench/browser/contextkeys.ts
++++ b/src/vs/workbench/browser/contextkeys.ts
+@@ -7,8 +7,8 @@ import { Event } from '../../base/common/event.js';
+ import { Disposable, DisposableStore } from '../../base/common/lifecycle.js';
+ import { IContextKeyService, IContextKey, setConstant as setConstantContextKey } from '../../platform/contextkey/common/contextkey.js';
+ import { InputFocusedContext, IsMacContext, IsLinuxContext, IsWindowsContext, IsWebContext, IsMacNativeContext, IsDevelopmentContext, IsIOSContext, ProductQualityContext, IsMobileContext } from '../../platform/contextkey/common/contextkeys.js';
+-import { SplitEditorsVertically, InEditorZenModeContext, AuxiliaryBarVisibleContext, SideBarVisibleContext, PanelAlignmentContext, PanelMaximizedContext, PanelVisibleContext, EmbedderIdentifierContext, EditorTabsVisibleContext, IsMainEditorCenteredLayoutContext, MainEditorAreaVisibleContext, DirtyWorkingCopiesContext, EmptyWorkspaceSupportContext, EnterMultiRootWorkspaceSupportContext, HasWebFileSystemAccess, IsMainWindowFullscreenContext, OpenFolderWorkspaceSupportContext, RemoteNameContext, VirtualWorkspaceContext, WorkbenchStateContext, WorkspaceFolderCountContext, PanelPositionContext, TemporaryWorkspaceContext, TitleBarVisibleContext, TitleBarStyleContext, IsAuxiliaryWindowFocusedContext, ActiveEditorGroupEmptyContext, ActiveEditorGroupIndexContext, ActiveEditorGroupLastContext, ActiveEditorGroupLockedContext, MultipleEditorGroupsContext, EditorsVisibleContext } from '../common/contextkeys.js';
+-import { trackFocus, addDisposableListener, EventType, onDidRegisterWindow, getActiveWindow, isEditableElement } from '../../base/browser/dom.js';
++import { trackFocus, addDisposableListener, EventType, onDidRegisterWindow, getActiveWindow, isEditableElement, getActiveElement } from '../../base/browser/dom.js';
++import { SplitEditorsVertically, InEditorZenModeContext, AuxiliaryBarVisibleContext, SideBarVisibleContext, PanelAlignmentContext, PanelMaximizedContext, PanelVisibleContext, EmbedderIdentifierContext, EditorTabsVisibleContext, IsMainEditorCenteredLayoutContext, MainEditorAreaVisibleContext, DirtyWorkingCopiesContext, EmptyWorkspaceSupportContext, EnterMultiRootWorkspaceSupportContext, HasWebFileSystemAccess, IsMainWindowFullscreenContext, OpenFolderWorkspaceSupportContext, RemoteNameContext, VirtualWorkspaceContext, WorkbenchStateContext, WorkspaceFolderCountContext, PanelPositionContext, TemporaryWorkspaceContext, TitleBarVisibleContext, TitleBarStyleContext, IsAuxiliaryWindowFocusedContext, ActiveEditorGroupEmptyContext, ActiveEditorGroupIndexContext, ActiveEditorGroupLastContext, ActiveEditorGroupLockedContext, MultipleEditorGroupsContext, EditorsVisibleContext, IsSandboxWorkspaceContext } from '../common/contextkeys.js';
+ import { preferredSideBySideGroupDirection, GroupDirection, IEditorGroupsService } from '../services/editor/common/editorGroupsService.js';
+ import { IConfigurationService } from '../../platform/configuration/common/configuration.js';
+ import { IWorkbenchEnvironmentService } from '../services/environment/common/environmentService.js';
+@@ -300,14 +300,15 @@ export class WorkbenchContextKeysHandler extends Disposable {
+ 	private updateInputContextKeys(ownerDocument: Document, disposables: DisposableStore): void {
+ 
+ 		function activeElementIsInput(): boolean {
+-			return !!ownerDocument.activeElement && isEditableElement(ownerDocument.activeElement);
++			const activeElement = getActiveElement(ownerDocument);
++			return !!activeElement && isEditableElement(activeElement);
+ 		}
+ 
+ 		const isInputFocused = activeElementIsInput();
+ 		this.inputFocusedContext.set(isInputFocused);
+ 
+ 		if (isInputFocused) {
+-			const tracker = disposables.add(trackFocus(ownerDocument.activeElement as HTMLElement));
++			const tracker = disposables.add(trackFocus(getActiveElement(ownerDocument) as HTMLElement));
+ 			Event.once(tracker.onDidBlur)(() => {
+ 
+ 				// Ensure we are only updating the context key if we are
 diff --git a/src/vs/workbench/browser/layout.ts b/src/vs/workbench/browser/layout.ts
 index 3265f51ae24..976954b2150 100644
 --- a/src/vs/workbench/browser/layout.ts
@@ -100,6 +500,28 @@ index 3265f51ae24..976954b2150 100644
  	}
  
  	protected initLayout(accessor: ServicesAccessor): void {
+diff --git a/src/vs/workbench/browser/parts/editor/editorGroupView.ts b/src/vs/workbench/browser/parts/editor/editorGroupView.ts
+index db36961d502..2ac798b6b85 100644
+--- a/src/vs/workbench/browser/parts/editor/editorGroupView.ts
++++ b/src/vs/workbench/browser/parts/editor/editorGroupView.ts
+@@ -11,7 +11,7 @@ import { EditorInput } from '../../../common/editor/editorInput.js';
+ import { SideBySideEditorInput } from '../../../common/editor/sideBySideEditorInput.js';
+ import { Emitter, Event, Relay } from '../../../../base/common/event.js';
+ import { IInstantiationService } from '../../../../platform/instantiation/common/instantiation.js';
+-import { Dimension, trackFocus, addDisposableListener, EventType, EventHelper, findParentWithClass, isAncestor, IDomNodePagePosition, isMouseEvent, isActiveElement, getWindow, getActiveElement, $ } from '../../../../base/browser/dom.js';
++import { Dimension, trackFocus, addDisposableListener, EventType, EventHelper, findParentWithClass, isAncestor, IDomNodePagePosition, isMouseEvent, isActiveElement, getWindow, getActiveElement, $, getRootContainer } from '../../../../base/browser/dom.js';
+ import { ServiceCollection } from '../../../../platform/instantiation/common/serviceCollection.js';
+ import { IContextKeyService } from '../../../../platform/contextkey/common/contextkey.js';
+ import { ProgressBar } from '../../../../base/browser/ui/progressbar/progressbar.js';
+@@ -1651,7 +1651,7 @@ export class EditorGroupView extends Themable implements IEditorGroupView {
+ 
+ 	private shouldRestoreFocus(target: Element): boolean {
+ 		const activeElement = getActiveElement();
+-		if (activeElement === target.ownerDocument.body) {
++		if (activeElement === getRootContainer(target)) {
+ 			return true; // always restore focus if nothing is focused currently
+ 		}
+ 
 diff --git a/src/vs/workbench/browser/workbench.ts b/src/vs/workbench/browser/workbench.ts
 index e112acb5e7e..6b332f5fa11 100644
 --- a/src/vs/workbench/browser/workbench.ts
@@ -124,6 +546,301 @@ index e112acb5e7e..6b332f5fa11 100644
  	}
  
  	private createPart(id: string, role: string, classes: string[]): HTMLElement {
+diff --git a/src/vs/workbench/contrib/files/browser/views/explorerViewer.ts b/src/vs/workbench/contrib/files/browser/views/explorerViewer.ts
+index cf13074b632..e0ecbc06b8b 100644
+--- a/src/vs/workbench/contrib/files/browser/views/explorerViewer.ts
++++ b/src/vs/workbench/contrib/files/browser/views/explorerViewer.ts
+@@ -74,6 +74,7 @@ import { IContextKey, IContextKeyService } from '../../../../../platform/context
+ import { CountBadge } from '../../../../../base/browser/ui/countBadge/countBadge.js';
+ import { listFilterMatchHighlight, listFilterMatchHighlightBorder } from '../../../../../platform/theme/common/colorRegistry.js';
+ import { asCssVariable } from '../../../../../platform/theme/common/colorUtils.js';
++import { getActiveElement } from '../../../../../base/browser/dom.js';
+ 
+ export class ExplorerDelegate implements IListVirtualDelegate<ExplorerItem> {
+ 
+@@ -1162,11 +1163,12 @@ export class FilesRenderer implements ICompressibleTreeRenderer<ExplorerItem, Fu
+ 					await timeout(0);
+ 
+ 					const ownerDocument = inputBox.inputElement.ownerDocument;
++					const activeElement = getActiveElement(ownerDocument);
+ 					if (!ownerDocument.hasFocus()) {
+ 						break;
+ 					} if (DOM.isActiveElement(inputBox.inputElement)) {
+ 						return;
+-					} else if (DOM.isHTMLElement(ownerDocument.activeElement) && DOM.hasParentWithClass(ownerDocument.activeElement, 'context-view')) {
++					} else if (DOM.isHTMLElement(activeElement) && DOM.hasParentWithClass(activeElement, 'context-view')) {
+ 						await Event.toPromise(this.contextMenuService.onDidHideContextMenu);
+ 					} else {
+ 						break;
+diff --git a/src/vs/workbench/contrib/notebook/browser/notebookEditorWidget.ts b/src/vs/workbench/contrib/notebook/browser/notebookEditorWidget.ts
+index 3a946890acf..f587ed2ed6f 100644
+--- a/src/vs/workbench/contrib/notebook/browser/notebookEditorWidget.ts
++++ b/src/vs/workbench/contrib/notebook/browser/notebookEditorWidget.ts
+@@ -1841,7 +1841,7 @@ export class NotebookEditorWidget extends Disposable implements INotebookEditorD
+ 				const element = this.viewModel.cellAt(focusRange.start);
+ 				if (element) {
+ 					const itemDOM = this._list.domElementOfElement(element);
+-					const editorFocused = element.getEditState() === CellEditState.Editing && !!(itemDOM && itemDOM.ownerDocument.activeElement && itemDOM.contains(itemDOM.ownerDocument.activeElement));
++					const editorFocused = element.getEditState() === CellEditState.Editing && !!(itemDOM && DOM.getActiveElement(itemDOM.ownerDocument) && itemDOM.contains(DOM.getActiveElement(itemDOM.ownerDocument)));
+ 
+ 					state.editorFocused = editorFocused;
+ 					state.focus = focusRange.start;
+@@ -2545,8 +2545,8 @@ export class NotebookEditorWidget extends Disposable implements INotebookEditorD
+ 		} else {
+ 			// focus container
+ 			const itemDOM = this._list.domElementOfElement(cell);
+-			if (itemDOM && itemDOM.ownerDocument.activeElement && itemDOM.contains(itemDOM.ownerDocument.activeElement)) {
+-				(itemDOM.ownerDocument.activeElement as HTMLElement).blur();
++			if (itemDOM && DOM.getActiveElement(itemDOM.ownerDocument) && itemDOM.contains(DOM.getActiveElement(itemDOM.ownerDocument))) {
++				(DOM.getActiveElement(itemDOM.ownerDocument) as HTMLElement).blur();
+ 			}
+ 
+ 			this._webview?.blurOutput();
+diff --git a/src/vs/workbench/contrib/notebook/browser/view/cellParts/cellStatusPart.ts b/src/vs/workbench/contrib/notebook/browser/view/cellParts/cellStatusPart.ts
+index a23d2f8b28e..6e98527bc7e 100644
+--- a/src/vs/workbench/contrib/notebook/browser/view/cellParts/cellStatusPart.ts
++++ b/src/vs/workbench/contrib/notebook/browser/view/cellParts/cellStatusPart.ts
+@@ -32,6 +32,7 @@ import { IHoverService } from '../../../../../../platform/hover/browser/hover.js
+ import { IConfigurationService } from '../../../../../../platform/configuration/common/configuration.js';
+ import { HoverPosition } from '../../../../../../base/browser/ui/hover/hoverWidget.js';
+ import type { IManagedHoverTooltipMarkdownString } from '../../../../../../base/browser/ui/hover/hover.js';
++import { getActiveElement } from '../../../../../../base/browser/dom.js';
+ 
+ const $ = DOM.$;
+ 
+@@ -146,7 +147,7 @@ export class CellEditorStatusBar extends CellContentPart {
+ 		if (this._editor) {
+ 			// Focus Mode
+ 			const updateFocusModeForEditorEvent = () => {
+-				if (this._editor && (this._editor.hasWidgetFocus() || (this.statusBarContainer.ownerDocument.activeElement && this.statusBarContainer.contains(this.statusBarContainer.ownerDocument.activeElement)))) {
++				if (this._editor && (this._editor.hasWidgetFocus() || (DOM.getActiveElement(this.statusBarContainer.ownerDocument) && this.statusBarContainer.contains(getActiveElement(this.statusBarContainer.ownerDocument))))) {
+ 					element.focusMode = CellFocusMode.Editor;
+ 				} else {
+ 					const currentMode = element.focusMode;
+@@ -167,9 +168,10 @@ export class CellEditorStatusBar extends CellContentPart {
+ 				// this is for a special case:
+ 				// users click the status bar empty space, which we will then focus the editor
+ 				// so we don't want to update the focus state too eagerly, it will be updated with onDidFocusEditorWidget
++				const activeElement = getActiveElement(this.statusBarContainer.ownerDocument);
+ 				if (
+ 					this._notebookEditor.hasEditorFocus() &&
+-					!(this.statusBarContainer.ownerDocument.activeElement && this.statusBarContainer.contains(this.statusBarContainer.ownerDocument.activeElement))) {
++					!(activeElement && this.statusBarContainer.contains(activeElement))) {
+ 					updateFocusModeForEditorEvent();
+ 				}
+ 			}));
+diff --git a/src/vs/workbench/contrib/notebook/browser/view/cellParts/codeCell.ts b/src/vs/workbench/contrib/notebook/browser/view/cellParts/codeCell.ts
+index 645c7b9a704..349a9bd301d 100644
+--- a/src/vs/workbench/contrib/notebook/browser/view/cellParts/codeCell.ts
++++ b/src/vs/workbench/contrib/notebook/browser/view/cellParts/codeCell.ts
+@@ -32,6 +32,7 @@ import { CodeCellRenderTemplate } from '../notebookRenderingCommon.js';
+ import { CellEditorOptions } from './cellEditorOptions.js';
+ import { CellOutputContainer } from './cellOutput.js';
+ import { CollapsedCodeCellExecutionIcon } from './codeCellExecutionIcon.js';
++import { getActiveElement } from '../../../../../../base/browser/dom.js';
+ 
+ export class CodeCell extends Disposable {
+ 	private _outputContainerRenderer: CellOutputContainer;
+@@ -225,7 +226,7 @@ export class CodeCell extends Disposable {
+ 					if (
+ 						this.notebookEditor.getActiveCell() === this.viewCell &&
+ 						this.viewCell.focusMode === CellFocusMode.Editor &&
+-						(this.notebookEditor.hasEditorFocus() || this.notebookEditor.getDomNode().ownerDocument.activeElement === this.notebookEditor.getDomNode().ownerDocument.body)) // Don't steal focus from other workbench parts, but if body has focus, we can take it
++						(this.notebookEditor.hasEditorFocus() || getActiveElement(this.notebookEditor.getDomNode().ownerDocument) === DOM.getRootContainer(this.notebookEditor.getDomNode()))) // Don't steal focus from other workbench parts, but if body has focus, we can take it
+ 					{
+ 						this.templateData.editor?.focus();
+ 					}
+@@ -383,7 +384,7 @@ export class CodeCell extends Disposable {
+ 		// the document active element is inside the notebook editor or the document body (cell editor being disposed previously)
+ 		return this.notebookEditor.getActiveCell() === this.viewCell
+ 			&& this.viewCell.focusMode === CellFocusMode.Editor
+-			&& (this.notebookEditor.hasEditorFocus() || this.notebookEditor.getDomNode().ownerDocument.activeElement === this.notebookEditor.getDomNode().ownerDocument.body);
++			&& (this.notebookEditor.hasEditorFocus() || getActiveElement(this.notebookEditor.getDomNode().ownerDocument) === DOM.getRootContainer(this.notebookEditor.getDomNode()));
+ 	}
+ 
+ 	private updateEditorForFocusModeChange(sync: boolean) {
+diff --git a/src/vs/workbench/contrib/notebook/browser/view/cellParts/markupCell.ts b/src/vs/workbench/contrib/notebook/browser/view/cellParts/markupCell.ts
+index 1797591072f..f4b5392d57a 100644
+--- a/src/vs/workbench/contrib/notebook/browser/view/cellParts/markupCell.ts
++++ b/src/vs/workbench/contrib/notebook/browser/view/cellParts/markupCell.ts
+@@ -225,7 +225,7 @@ export class MarkupCell extends Disposable {
+ 		this._isDisposed = true;
+ 
+ 		// move focus back to the cell list otherwise the focus goes to body
+-		if (this.notebookEditor.getActiveCell() === this.viewCell && this.viewCell.focusMode === CellFocusMode.Editor && (this.notebookEditor.hasEditorFocus() || this.notebookEditor.getDomNode().ownerDocument.activeElement === this.notebookEditor.getDomNode().ownerDocument.body)) {
++		if (this.notebookEditor.getActiveCell() === this.viewCell && this.viewCell.focusMode === CellFocusMode.Editor && (this.notebookEditor.hasEditorFocus() || DOM.getActiveElement(this.notebookEditor.getDomNode().ownerDocument) === DOM.getRootContainer(this.notebookEditor.getDomNode()))) {
+ 			this.notebookEditor.focusContainer();
+ 		}
+ 
+@@ -413,7 +413,7 @@ export class MarkupCell extends Disposable {
+ 
+ 	private focusEditorIfNeeded() {
+ 		if (this.viewCell.focusMode === CellFocusMode.Editor &&
+-			(this.notebookEditor.hasEditorFocus() || this.notebookEditor.getDomNode().ownerDocument.activeElement === this.notebookEditor.getDomNode().ownerDocument.body)
++			(this.notebookEditor.hasEditorFocus() || DOM.getActiveElement(this.notebookEditor.getDomNode().ownerDocument) === DOM.getRootContainer(this.notebookEditor.getDomNode()))
+ 		) { // Don't steal focus from other workbench parts, but if body has focus, we can take it
+ 			if (!this.editor) {
+ 				return;
+@@ -518,7 +518,7 @@ export class MarkupCell extends Disposable {
+ 			// this is for a special case:
+ 			// users click the status bar empty space, which we will then focus the editor
+ 			// so we don't want to update the focus state too eagerly
+-			if (this.templateData.container.ownerDocument.activeElement?.contains(this.templateData.container)) {
++			if (DOM.getActiveElement(this.templateData.container.ownerDocument)?.contains(this.templateData.container)) {
+ 				this.focusSwitchDisposable.value = disposableTimeout(() => updateFocusMode(), 300);
+ 			} else {
+ 				updateFocusMode();
+diff --git a/src/vs/workbench/contrib/notebook/browser/view/notebookCellList.ts b/src/vs/workbench/contrib/notebook/browser/view/notebookCellList.ts
+index 0c7a1eb0bb3..cafeb10ae42 100644
+--- a/src/vs/workbench/contrib/notebook/browser/view/notebookCellList.ts
++++ b/src/vs/workbench/contrib/notebook/browser/view/notebookCellList.ts
+@@ -1294,12 +1294,13 @@ export class NotebookCellList extends WorkbenchList<CellViewModel> implements ID
+ 		const focused = this.getFocusedElements()[0];
+ 		const focusedDomElement = focused && this.domElementOfElement(focused);
+ 
+-		if (this.view.domNode.ownerDocument.activeElement && focusedDomElement && focusedDomElement.contains(this.view.domNode.ownerDocument.activeElement)) {
++		const activeElement = DOM.getActiveElement(this.view.domNode.ownerDocument);
++		if (activeElement && focusedDomElement && focusedDomElement.contains(activeElement)) {
+ 			// for example, when focus goes into monaco editor, if we refocus the list view, the editor will lose focus.
+ 			return;
+ 		}
+ 
+-		if (!isMacintosh && this.view.domNode.ownerDocument.activeElement && !!DOM.findParentWithClass(<HTMLElement>this.view.domNode.ownerDocument.activeElement, 'context-view')) {
++		if (!isMacintosh && activeElement && !!DOM.findParentWithClass(<HTMLElement>activeElement, 'context-view')) {
+ 			return;
+ 		}
+ 
+diff --git a/src/vs/workbench/contrib/preferences/browser/preferences.contribution.ts b/src/vs/workbench/contrib/preferences/browser/preferences.contribution.ts
+index ef6c6cb679d..fa0a5b768d5 100644
+--- a/src/vs/workbench/contrib/preferences/browser/preferences.contribution.ts
++++ b/src/vs/workbench/contrib/preferences/browser/preferences.contribution.ts
+@@ -3,6 +3,7 @@
+  *  Licensed under the MIT License. See License.txt in the project root for license information.
+  *--------------------------------------------------------------------------------------------*/
+ 
++import { getActiveElement } from '../../../../base/browser/dom.js';
+ import { KeyChord, KeyCode, KeyMod } from '../../../../base/common/keyCodes.js';
+ import { Disposable, DisposableStore, MutableDisposable } from '../../../../base/common/lifecycle.js';
+ import { Schemas } from '../../../../base/common/network.js';
+@@ -747,7 +748,7 @@ class PreferencesActionsContribution extends Disposable implements IWorkbenchCon
+ 					return;
+ 				}
+ 
+-				const activeElement = preferencesEditor.getContainer()?.ownerDocument.activeElement;
++				const activeElement = getActiveElement(preferencesEditor.getContainer()?.ownerDocument);
+ 				if (activeElement?.classList.contains('monaco-list')) {
+ 					preferencesEditor.focusSettings(true);
+ 				}
+diff --git a/src/vs/workbench/contrib/preferences/browser/settingsEditor2.ts b/src/vs/workbench/contrib/preferences/browser/settingsEditor2.ts
+index 29b4bbb3b50..2cd6690739b 100644
+--- a/src/vs/workbench/contrib/preferences/browser/settingsEditor2.ts
++++ b/src/vs/workbench/contrib/preferences/browser/settingsEditor2.ts
+@@ -1057,7 +1057,7 @@ export class SettingsEditor2 extends EditorPane {
+ 		}));
+ 
+ 		this._register(this.settingsTree.onDidFocus(() => {
+-			const classList = container.ownerDocument.activeElement?.classList;
++			const classList = DOM.getActiveElement(container.ownerDocument)?.classList;
+ 			if (classList && classList.contains('monaco-list') && classList.contains('settings-editor-tree')) {
+ 				this._currentFocusContext = SettingsFocusContext.SettingTree;
+ 				this.settingRowFocused.set(true);
+@@ -1523,7 +1523,7 @@ export class SettingsEditor2 extends EditorPane {
+ 
+ 	private getActiveControlInSettingsTree(): HTMLElement | null {
+ 		const element = this.settingsTree.getHTMLElement();
+-		const activeElement = element.ownerDocument.activeElement;
++		const activeElement = DOM.getActiveElement(element.ownerDocument);
+ 		return (activeElement && DOM.isAncestorOfActiveElement(element)) ?
+ 			<HTMLElement>activeElement :
+ 			null;
+@@ -1586,7 +1586,7 @@ export class SettingsEditor2 extends EditorPane {
+ 	}
+ 
+ 	private contextViewFocused(): boolean {
+-		return !!DOM.findParentWithClass(<HTMLElement>this.rootElement.ownerDocument.activeElement, 'context-view');
++		return !!DOM.findParentWithClass(<HTMLElement>DOM.getActiveElement(this.rootElement.ownerDocument), 'context-view');
+ 	}
+ 
+ 	private refreshSingleElement(element: SettingsTreeSettingElement): void {
+diff --git a/src/vs/workbench/contrib/terminal/browser/terminalTabbedView.ts b/src/vs/workbench/contrib/terminal/browser/terminalTabbedView.ts
+index 3213dd89247..5fe7f6ab42c 100644
+--- a/src/vs/workbench/contrib/terminal/browser/terminalTabbedView.ts
++++ b/src/vs/workbench/contrib/terminal/browser/terminalTabbedView.ts
+@@ -436,7 +436,7 @@ export class TerminalTabbedView extends Disposable {
+ 
+ 		// If the terminal is waiting to reconnect to remote terminals, then there is no TerminalInstance yet that can
+ 		// be focused. So wait for connection to finish, then focus.
+-		const previousActiveElement = this._tabListElement.ownerDocument.activeElement;
++		const previousActiveElement = dom.getActiveElement(this._tabListElement.ownerDocument);
+ 		if (previousActiveElement) {
+ 			// TODO: Improve lifecycle management this event should be disposed after first fire
+ 			this._register(this._terminalService.onDidChangeConnectionState(() => {
+diff --git a/src/vs/workbench/contrib/terminal/browser/terminalView.ts b/src/vs/workbench/contrib/terminal/browser/terminalView.ts
+index 01cc528667a..4b8db8b91bc 100644
+--- a/src/vs/workbench/contrib/terminal/browser/terminalView.ts
++++ b/src/vs/workbench/contrib/terminal/browser/terminalView.ts
+@@ -334,7 +334,7 @@ export class TerminalViewPane extends ViewPane {
+ 
+ 		// If the terminal is waiting to reconnect to remote terminals, then there is no TerminalInstance yet that can
+ 		// be focused. So wait for connection to finish, then focus.
+-		const previousActiveElement = this.element.ownerDocument.activeElement;
++		const previousActiveElement = dom.getActiveElement(this.element.ownerDocument);
+ 		if (previousActiveElement) {
+ 			// TODO: Improve lifecycle management this event should be disposed after first fire
+ 			this._register(this._terminalService.onDidChangeConnectionState(() => {
+diff --git a/src/vs/workbench/contrib/welcomeGettingStarted/browser/gettingStarted.ts b/src/vs/workbench/contrib/welcomeGettingStarted/browser/gettingStarted.ts
+index 8d728275a51..c830c7f890e 100644
+--- a/src/vs/workbench/contrib/welcomeGettingStarted/browser/gettingStarted.ts
++++ b/src/vs/workbench/contrib/welcomeGettingStarted/browser/gettingStarted.ts
+@@ -3,7 +3,7 @@
+  *  Licensed under the MIT License. See License.txt in the project root for license information.
+  *--------------------------------------------------------------------------------------------*/
+ 
+-import { $, Dimension, addDisposableListener, append, clearNode, reset } from '../../../../base/browser/dom.js';
++import { $, Dimension, addDisposableListener, append, clearNode, getActiveElement, reset } from '../../../../base/browser/dom.js';
+ import { renderFormattedText } from '../../../../base/browser/formattedTextRenderer.js';
+ import { StandardKeyboardEvent } from '../../../../base/browser/keyboardEvent.js';
+ import { Button } from '../../../../base/browser/ui/button/button.js';
+@@ -2109,7 +2109,7 @@ export class GettingStartedPage extends EditorPane {
+ 	override focus() {
+ 		super.focus();
+ 
+-		const active = this.container.ownerDocument.activeElement;
++		const active = getActiveElement(this.container.ownerDocument);
+ 
+ 		let parent = this.container.parentElement;
+ 		while (parent && parent !== active) {
+diff --git a/src/vs/workbench/contrib/welcomeWalkthrough/browser/walkThroughPart.ts b/src/vs/workbench/contrib/welcomeWalkthrough/browser/walkThroughPart.ts
+index 27d04d09f01..61c2b58dfa4 100644
+--- a/src/vs/workbench/contrib/welcomeWalkthrough/browser/walkThroughPart.ts
++++ b/src/vs/workbench/contrib/welcomeWalkthrough/browser/walkThroughPart.ts
+@@ -32,7 +32,7 @@ import { UILabelProvider } from '../../../../base/common/keybindingLabels.js';
+ import { OS, OperatingSystem } from '../../../../base/common/platform.js';
+ import { deepClone } from '../../../../base/common/objects.js';
+ import { INotificationService } from '../../../../platform/notification/common/notification.js';
+-import { addDisposableListener, Dimension, isHTMLAnchorElement, isHTMLButtonElement, isHTMLElement, safeInnerHtml, size } from '../../../../base/browser/dom.js';
++import { addDisposableListener, Dimension, getActiveElement, isHTMLAnchorElement, isHTMLButtonElement, isHTMLElement, safeInnerHtml, size } from '../../../../base/browser/dom.js';
+ import { IEditorGroup, IEditorGroupsService } from '../../../services/editor/common/editorGroupsService.js';
+ import { CancellationToken } from '../../../../base/common/cancellation.js';
+ import { IExtensionService } from '../../../services/extensions/common/extensions.js';
+@@ -157,7 +157,7 @@ export class WalkThroughPart extends EditorPane {
+ 		this.content.addEventListener('click', event => {
+ 			for (let node = event.target as HTMLElement; node; node = node.parentNode as HTMLElement) {
+ 				if (isHTMLAnchorElement(node) && node.href) {
+-					const baseElement = node.ownerDocument.getElementsByTagName('base')[0] || this.window.location;
++					const baseElement = (node.getRootNode() as ShadowRoot | Document).querySelector('base') || this.window.location;
+ 					if (baseElement && node.href.indexOf(baseElement.href) >= 0 && node.hash) {
+ 						const scrollTarget = this.content.querySelector(node.hash);
+ 						const innerContent = this.content.firstElementChild;
+@@ -227,7 +227,7 @@ export class WalkThroughPart extends EditorPane {
+ 	override focus(): void {
+ 		super.focus();
+ 
+-		let active = this.content.ownerDocument.activeElement;
++		let active = getActiveElement(this.content.ownerDocument);
+ 		while (active && active !== this.content) {
+ 			active = active.parentElement;
+ 		}
 diff --git a/src/vs/workbench/services/keybinding/browser/keybindingService.ts b/src/vs/workbench/services/keybinding/browser/keybindingService.ts
 index f10b332d8e2..96b173622ca 100644
 --- a/src/vs/workbench/services/keybinding/browser/keybindingService.ts
