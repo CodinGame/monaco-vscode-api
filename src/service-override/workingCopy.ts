@@ -11,29 +11,18 @@ import { IWorkspaceContextService } from 'vs/platform/workspace/common/workspace
 import { IWorkbenchEnvironmentService } from 'vs/workbench/services/environment/common/environmentService.service'
 import { IFileService } from 'vs/platform/files/common/files.service'
 import { ILogService } from 'vs/platform/log/common/log.service'
-import { joinPath } from 'vs/base/common/resources'
 import { WorkingCopyBackupService } from 'vs/workbench/services/workingCopy/common/workingCopyBackupService'
+import { BrowserWorkingCopyBackupService } from 'vs/workbench/services/workingCopy/browser/workingCopyBackupService'
 import getFileServiceOverride from './files'
 
-class BrowserWorkingCopyBackupService extends WorkingCopyBackupService {
+class MemoryWorkingCopyBackupService extends WorkingCopyBackupService {
   constructor(
-    memory: boolean,
     @IWorkspaceContextService contextService: IWorkspaceContextService,
     @IWorkbenchEnvironmentService environmentService: IWorkbenchEnvironmentService,
     @IFileService fileService: IFileService,
     @ILogService logService: ILogService
   ) {
-    super(
-      memory
-        ? undefined
-        : joinPath(
-            environmentService.userRoamingDataHome,
-            'Backups',
-            contextService.getWorkspace().id
-          ),
-      fileService,
-      logService
-    )
+    super(undefined, fileService, logService)
   }
 }
 
@@ -49,9 +38,7 @@ export default function getServiceOverride({
     ...(storage != null
       ? {
           [IWorkingCopyBackupService.toString()]: new SyncDescriptor(
-            BrowserWorkingCopyBackupService,
-            [storage === 'memory'],
-            false
+            storage === 'memory' ? MemoryWorkingCopyBackupService : BrowserWorkingCopyBackupService
           )
         }
       : {}),
