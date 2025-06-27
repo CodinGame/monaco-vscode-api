@@ -57,3 +57,7 @@ body {
   flex: 2;
   min-height: 0
 }
+
+:root {
+  --product-icon: url(product-icon.png);
+}
