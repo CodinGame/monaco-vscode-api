@@ -36,7 +36,7 @@ registerCustomView({
     }
   },
   location: ViewContainerLocation.Panel,
-  icon: new URL('../Visual_Studio_Code_1.35_icon.svg', import.meta.url).toString(),
+  icon: new URL('../product-icon.png', import.meta.url).toString(),
   actions: [
     {
       id: 'custom-action',
