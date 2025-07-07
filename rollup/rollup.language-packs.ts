@@ -89,7 +89,9 @@ export default rollup.defineConfig([
                 return `
 import { registerLocalization } from '${MAIN_PACKAGE_NAME}/l10n'
 import content from '${path.resolve(id, mainTranslation.path)}'
-registerLocalization('${packageJson.publisher}.${packageJson.name}', '${mainLocalization.languageId}', content, {
+
+const manifest = ${JSON.stringify(packageJson)}
+registerLocalization(manifest, '${mainLocalization.languageId}', content, {
 ${Object.entries(translationAssets)
   .map(
     ([id, assetRef]) =>
