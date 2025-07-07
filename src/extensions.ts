@@ -44,7 +44,7 @@ import {
 } from './service-override/files'
 import { waitServicesReady } from './lifecycle'
 import { throttle } from './tools'
-import { getBuiltInExtensionTranslationsUris } from './l10n'
+import { getBuiltInExtensionTranslationsUris, getLocalizationManifest } from './l10n'
 
 export type ApiFactory = (extensionId?: string) => Promise<typeof vscode>
 
@@ -291,6 +291,11 @@ export function registerExtension(
   }
 
   return api
+}
+
+const localizationManifest = getLocalizationManifest()
+if (localizationManifest != null) {
+  registerExtension(localizationManifest, ExtensionHostKind.LocalWebWorker, { system: true })
 }
 
 export { ExtensionHostKind }
