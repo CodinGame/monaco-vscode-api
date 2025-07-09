@@ -406,6 +406,7 @@ import {
 } from 'vs/platform/mcp/common/mcpManagement.service'
 import { ITreeSitterThemeService } from 'vs/editor/common/services/treeSitter/treeSitterThemeService.service'
 import { ITreeSitterLibraryService } from 'vs/editor/common/services/treeSitter/treeSitterLibraryService.service'
+import { constObservable } from 'vs/base/common/observable'
 
 function Unsupported(target: object, propertyKey: string, descriptor: PropertyDescriptor) {
   function unsupported() {
@@ -8530,17 +8531,10 @@ registerSingleton(ICodeMapperService, CodeMapperService, InstantiationType.Delay
 class ChatEditingService implements IChatEditingService {
   _serviceBrand: undefined
 
-  @Unsupported
   get editingSessionsObs() {
-    return unsupported()
+    return constObservable([])
   }
 
-  @Unsupported
-  get createAdhocEditingSession() {
-    return unsupported()
-  }
-
-  getOrRestoreEditingSession = async () => null
   hasRelatedFilesProviders = () => false
   @Unsupported
   registerRelatedFilesProvider() {
@@ -8551,43 +8545,7 @@ class ChatEditingService implements IChatEditingService {
 
   onDidChangeEditingSession = Event.None
 
-  @Unsupported
-  get currentEditingSessionObs() {
-    return unsupported()
-  }
-
-  currentAutoApplyOperation = null
-  editingSessionFileLimit = 0
-
-  @Unsupported
-  triggerEditComputation(): never {
-    unsupported()
-  }
-
   getEditingSession = () => undefined
-
-  @Unsupported
-  createSnapshot(): never {
-    unsupported()
-  }
-
-  @Unsupported
-  getSnapshotUri(): never {
-    unsupported()
-  }
-
-  @Unsupported
-  restoreSnapshot(): never {
-    unsupported()
-  }
-
-  onDidCreateEditingSession = Event.None
-  currentEditingSession = null
-
-  @Unsupported
-  startOrContinueEditingSession(): never {
-    unsupported()
-  }
 
   @Unsupported
   startOrContinueGlobalEditingSession(): never {
