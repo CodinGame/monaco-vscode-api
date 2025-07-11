@@ -1,0 +1,76 @@
+From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
+From: Gaspar Chefdeville <gaspar.chefdeville@coderpad.io>
+Date: Wed, 9 Jul 2025 17:25:14 +0200
+Subject: [PATCH] feat: prevent IDE from entering fullscreen if not occupying
+ the entire screen
+
+---
+ src/vs/base/browser/dom.ts                           | 12 ++++++++----
+ src/vs/workbench/browser/web.main.ts                 |  2 +-
+ .../services/host/browser/browserHostService.ts      |  4 +-
+ 3 files changed, 10 insertions(+), 6 deletions(-)
+
+diff --git a/src/vs/base/browser/dom.ts b/src/vs/base/browser/dom.ts
+index 49549236908..af89a7f1e46 100644
+--- a/src/vs/base/browser/dom.ts
++++ b/src/vs/base/browser/dom.ts
+@@ -1626,10 +1626,12 @@ export interface IDetectedFullscreen {
+ 	guess: boolean;
+ }
+ 
+-export function detectFullscreen(targetWindow: Window): IDetectedFullscreen | null {
++export function detectFullscreen(targetWindow: Window, containerElement: Element): IDetectedFullscreen | null {
+ 
+ 	// Browser fullscreen: use DOM APIs to detect
+-	if (targetWindow.document.fullscreenElement || (<any>targetWindow.document).webkitFullscreenElement || (<any>targetWindow.document).webkitIsFullScreen) {
++	const fullscreenElement: Element | undefined =
++		targetWindow.document.fullscreenElement ?? (<any>targetWindow.document).webkitFullscreenElement ?? (<any>targetWindow.document).webkitIsFullScreen;
++	if (fullscreenElement === containerElement) {
+ 		return { mode: DetectedFullscreenMode.DOCUMENT, guess: false };
+ 	}
+ 
+@@ -1638,7 +1640,9 @@ export function detectFullscreen(targetWindow: Window): IDetectedFullscreen | nu
+ 	// height and comparing that to window height, we can guess
+ 	// it though.
+ 
+-	if (targetWindow.innerHeight === targetWindow.screen.height) {
++	const isContainerFullScreen = containerElement.getBoundingClientRect().height >= targetWindow.screen.height;
++
++	if (targetWindow.innerHeight === targetWindow.screen.height && isContainerFullScreen) {
+ 		// if the height of the window matches the screen height, we can
+ 		// safely assume that the browser is fullscreen because no browser
+ 		// chrome is taking height away (e.g. like toolbars).
+@@ -1647,7 +1651,7 @@ export function detectFullscreen(targetWindow: Window): IDetectedFullscreen | nu
+ 
+ 	if (platform.isMacintosh || platform.isLinux) {
+ 		// macOS and Linux do not properly report `innerHeight`, only Windows does
+-		if (targetWindow.outerHeight === targetWindow.screen.height && targetWindow.outerWidth === targetWindow.screen.width) {
++		if (targetWindow.outerHeight === targetWindow.screen.height && targetWindow.outerWidth === targetWindow.screen.width && isContainerFullScreen) {
+ 			// if the height of the browser matches the screen height, we can
+ 			// only guess that we are in fullscreen. It is also possible that
+ 			// the user has turned off taskbars in the OS and the browser is
+diff --git a/src/vs/workbench/browser/web.main.ts b/src/vs/workbench/browser/web.main.ts
+index 8aec734eb49..98b40d6603f 100644
+--- a/src/vs/workbench/browser/web.main.ts
++++ b/src/vs/workbench/browser/web.main.ts
+@@ -113,7 +113,7 @@ export class BrowserMain extends Disposable {
+ 	private init(): void {
+ 
+ 		// Browser config
+-		setFullscreen(!!detectFullscreen(mainWindow), mainWindow);
++		setFullscreen(!!detectFullscreen(mainWindow, this.domElement), mainWindow);
+ 	}
+ 
+ 	async open(): Promise<IWorkbench> {
+diff --git a/src/vs/workbench/services/host/browser/browserHostService.ts b/src/vs/workbench/services/host/browser/browserHostService.ts
+index 6f62f49b906..6e41a554052 100644
+--- a/src/vs/workbench/services/host/browser/browserHostService.ts
++++ b/src/vs/workbench/services/host/browser/browserHostService.ts
+@@ -218,7 +218,7 @@ export class BrowserHostService extends Disposable implements IHostService {
+ 			const viewport = isIOS && window.visualViewport ? window.visualViewport /** Visual viewport */ : window /** Layout viewport */;
+ 
+ 			const isFullScreen = () => {
+-				const fullScreen = detectFullscreen(window);
++				const fullScreen = detectFullscreen(window, this.layoutService.getContainer(window));
+ 				return fullScreen !== null && !fullScreen.guess;
+ 			};

@@ -59,10 +59,10 @@ class CustomWorkbench extends Workbench {
   }
 }
 
-const detectedFullScreen = detectFullscreen(mainWindow)
-setFullscreen(detectedFullScreen != null && !detectedFullScreen.guess, mainWindow)
 onLayout(async (accessor) => {
   ;(accessor.get(IWorkbenchLayoutService) as Workbench).startup()
+  const detectedFullScreen = detectFullscreen(mainWindow, getWorkbenchContainer())
+  setFullscreen(detectedFullScreen != null && !detectedFullScreen.guess, mainWindow)
 })
 onRenderWorkbench(async (accessor) => {
   accessor.get(IInstantiationService).createInstance(BrowserWindow)
