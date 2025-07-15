@@ -176,13 +176,15 @@ class EmptyEditorGroup implements IEditorGroup, IEditorGroupView {
 export const fakeActiveGroup = new EmptyEditorGroup()
 
 class SimpleEditorPane implements IEditorPane {
-  constructor(private editor?: ICodeEditor) {}
+  constructor(
+    public input: EditorInput | undefined,
+    private editor?: ICodeEditor
+  ) {}
 
   onDidChangeControl = Event.None
   onDidChangeSizeConstraints = Event.None
   onDidFocus = Event.None
   onDidBlur = Event.None
-  input = undefined
   options = undefined
   group = fakeActiveGroup
   scopedContextKeyService = undefined
@@ -311,7 +313,7 @@ export function wrapOpenEditor(
     }
 
     // Return a very simple editor pane, only the `getControl` method is used
-    return new SimpleEditorPane(modelEditor)
+    return new SimpleEditorPane(isEditorInput(editor) ? editor : undefined, modelEditor)
   }
 
   return openEditor
@@ -414,7 +416,7 @@ export class MonacoEditorService extends EditorService {
 
 class StandaloneEditorPane implements IVisibleEditorPane {
   constructor(
-    public readonly editor: IStandaloneCodeEditor,
+    public readonly editor: ICodeEditor,
     public input: TextResourceEditorInput,
     public group: IEditorGroup
   ) {}
@@ -466,8 +468,11 @@ class StandaloneEditorGroup extends Disposable implements IEditorGroup, IEditorG
   public active: boolean = false
   constructor(
     public editor: IStandaloneCodeEditor,
+    private openEditorFallback: OpenEditor | undefined,
     @IInstantiationService instantiationService: IInstantiationService,
-    @IContextKeyService public scopedContextKeyService: IContextKeyService
+    @IContextKeyService public scopedContextKeyService: IContextKeyService,
+    @IEditorService public editorService: IEditorService,
+    @ITextModelService private textModelService: ITextModelService
   ) {
     super()
     const onNewModel = (uri: URI) => {
@@ -656,17 +661,31 @@ class StandaloneEditorGroup extends Disposable implements IEditorGroup, IEditorG
   getIndexOfEditor = (editorInput: EditorInput) =>
     this.pane != null && this.pane.input === editorInput ? 0 : -1
 
-  openEditor = async (editor: EditorInput): Promise<IEditorPane | undefined> => {
+  openEditor = async (
+    editor: EditorInput,
+    options?: IEditorOptions
+  ): Promise<IEditorPane | undefined> => {
     if (editor.isDisposed()) {
       return undefined
     }
 
-    if (
-      editor instanceof TextResourceEditorInput &&
-      editor.resource.toString() === this.pane?.input.resource.toString()
-    ) {
-      this.focus()
-      return this.pane
+    if (editor instanceof TextResourceEditorInput) {
+      if (editor.resource.toString() === this.pane?.input.resource.toString()) {
+        this.focus()
+        return this.pane
+      }
+
+      if (this.openEditorFallback != null) {
+        const modelRef = await this.textModelService.createModelReference(editor.resource)
+        const modelEditor = await this.openEditorFallback(modelRef, options, false)
+        if (modelEditor == null) {
+          // Dispose the newly created model if `openEditor` wasn't able to open it
+          modelRef.dispose()
+          return undefined
+        }
+
+        return new SimpleEditorPane(editor, modelEditor)
+      }
     }
     return undefined
   }
@@ -718,6 +737,7 @@ export class MonacoDelegateEditorGroupsService<D extends IEditorGroupsService>
   constructor(
     protected delegate: D,
     emptyDelegate: boolean,
+    private openEditorFallback: OpenEditor | undefined,
     @IInstantiationService private instantiationService: IInstantiationService
   ) {
     super()
@@ -771,7 +791,11 @@ export class MonacoDelegateEditorGroupsService<D extends IEditorGroupsService>
             onEditorFocused()
           }
 
-          const newGroup = instantiationService.createInstance(StandaloneEditorGroup, editor)
+          const newGroup = instantiationService.createInstance(
+            StandaloneEditorGroup,
+            editor,
+            this.openEditorFallback
+          )
           this.additionalGroups.push(newGroup)
           this._onDidAddGroup.fire(newGroup)
         }

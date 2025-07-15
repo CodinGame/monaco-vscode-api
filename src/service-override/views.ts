@@ -197,8 +197,16 @@ class MonacoEditorParts
   extends MonacoDelegateEditorGroupsService<EditorParts>
   implements Omit<PublicInterface<EditorParts>, keyof IEditorGroupsService>
 {
-  constructor(@IInstantiationService instantiationService: IInstantiationService) {
-    super(instantiationService.createInstance(EditorParts), false, instantiationService)
+  constructor(
+    openEditorFallback: OpenEditor | undefined,
+    @IInstantiationService instantiationService: IInstantiationService
+  ) {
+    super(
+      instantiationService.createInstance(EditorParts),
+      false,
+      openEditorFallback,
+      instantiationService
+    )
   }
 
   getId(): string {
@@ -839,7 +847,11 @@ function getServiceOverride(
     ...getKeybindingsOverride({
       shouldUseGlobalKeybindings: isEditorPartVisible
     }),
-    [IEditorGroupsService.toString()]: new SyncDescriptor(MonacoEditorParts, [], false),
+    [IEditorGroupsService.toString()]: new SyncDescriptor(
+      MonacoEditorParts,
+      [openEditorFallback],
+      false
+    ),
     [IEditorService.toString()]: new SyncDescriptor(
       MonacoEditorService,
       [openEditorFallback, isEditorPartVisible],
