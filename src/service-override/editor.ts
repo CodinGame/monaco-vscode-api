@@ -155,8 +155,16 @@ class EmptyEditorGroupsService implements IEditorGroupsService {
 }
 
 class MonacoEditorGroupsService extends MonacoDelegateEditorGroupsService<EmptyEditorGroupsService> {
-  constructor(@IInstantiationService instantiationService: IInstantiationService) {
-    super(instantiationService.createInstance(EmptyEditorGroupsService), true, instantiationService)
+  constructor(
+    openEditor: OpenEditor,
+    @IInstantiationService instantiationService: IInstantiationService
+  ) {
+    super(
+      instantiationService.createInstance(EmptyEditorGroupsService),
+      true,
+      openEditor,
+      instantiationService
+    )
   }
 }
 
@@ -169,7 +177,7 @@ export default function getServiceOverride(openEditor: OpenEditor): IEditorOverr
       true
     ),
     [ITextEditorService.toString()]: new SyncDescriptor(TextEditorService, [], false),
-    [IEditorGroupsService.toString()]: new SyncDescriptor(MonacoEditorGroupsService)
+    [IEditorGroupsService.toString()]: new SyncDescriptor(MonacoEditorGroupsService, [openEditor])
   }
 }
 
