@@ -238,6 +238,7 @@ export { IWorkingCopyFileService } from 'vs/workbench/services/workingCopy/commo
 export { IConfigurationService } from 'vs/platform/configuration/common/configuration.service'
 export { IContextKeyService } from 'vs/platform/contextkey/common/contextkey.service'
 export { IThemeService } from 'vs/platform/theme/common/themeService.service'
+export { IWorkbenchThemeService } from 'vs/workbench/services/themes/common/workbenchThemeService.service'
 export { ISnippetsService } from 'vs/workbench/contrib/snippets/browser/snippets.service'
 export { IWorkspaceContextService } from 'vs/platform/workspace/common/workspace.service'
 export { IStorageService } from 'vs/platform/storage/common/storage.service'
