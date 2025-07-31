@@ -80,6 +80,7 @@ import getTreeSitterServiceOverride from '@codingame/monaco-vscode-treesitter-se
 import getTelemetryServiceOverride from '@codingame/monaco-vscode-telemetry-service-override'
 import getMcpServiceOverride from '@codingame/monaco-vscode-mcp-service-override'
 import getProcessControllerServiceOverride from '@codingame/monaco-vscode-process-explorer-service-override'
+import getExperimentationServiceOverride from '@codingame/monaco-vscode-experimentation-service-override'
 import { EnvironmentOverride } from '@codingame/monaco-vscode-api/workbench'
 import { Worker } from './tools/crossOriginWorker'
 import defaultKeybindings from './user/keybindings.json?raw'
@@ -545,5 +546,6 @@ export const commonServices: IEditorOverrideServices = {
   ...getSecretStorageServiceOverride(),
   ...getTelemetryServiceOverride(),
   ...getMcpServiceOverride(),
-  ...getProcessControllerServiceOverride()
+  ...getProcessControllerServiceOverride(),
+  ...getExperimentationServiceOverride()
 }
