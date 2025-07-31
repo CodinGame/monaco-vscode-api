@@ -37,9 +37,8 @@ Subject: [PATCH] feat: support shadow dom
  .../contrib/terminal/browser/terminalView.ts  |  2 +-
  .../browser/gettingStarted.ts                 |  4 ++--
  .../browser/walkThroughPart.ts                |  6 ++---
- .../keybinding/browser/keybindingService.ts   | 10 +++++---
  .../themes/browser/workbenchThemeService.ts   |  4 ++--
- 35 files changed, 109 insertions(+), 71 deletions(-)
+ 34 files changed, 102 insertions(+), 68 deletions(-)
 
 diff --git a/src/vs/base/browser/dom.ts b/src/vs/base/browser/dom.ts
 index 1c7c66f76aa..f414f2b07fd 100644
@@ -840,49 +839,6 @@ index 27d04d09f01..61c2b58dfa4 100644
  		while (active && active !== this.content) {
  			active = active.parentElement;
  		}
-diff --git a/src/vs/workbench/services/keybinding/browser/keybindingService.ts b/src/vs/workbench/services/keybinding/browser/keybindingService.ts
-index 2e4dbc935e2..7a2f32addfa 100644
---- a/src/vs/workbench/services/keybinding/browser/keybindingService.ts
-+++ b/src/vs/workbench/services/keybinding/browser/keybindingService.ts
-@@ -56,6 +56,7 @@ import { IUserDataProfileService } from '../../userDataProfile/common/userDataPr
- import { IUserKeybindingItem, KeybindingIO, OutputBuilder } from '../common/keybindingIO.js';
- import { IKeyboard, INavigatorWithKeyboard } from './navigatorKeyboard.js';
- import { getAllUnboundCommands } from './unboundCommands.js';
-+import { ILayoutService } from '../../../../platform/layout/browser/layoutService.js';
- 
- interface ContributedKeyBinding {
- 	command: string;
-@@ -202,7 +203,8 @@ export class WorkbenchKeybindingService extends AbstractKeybindingService {
- 		@IFileService fileService: IFileService,
- 		@IUriIdentityService uriIdentityService: IUriIdentityService,
- 		@ILogService logService: ILogService,
--		@IKeyboardLayoutService private readonly keyboardLayoutService: IKeyboardLayoutService
-+		@IKeyboardLayoutService private readonly keyboardLayoutService: IKeyboardLayoutService,
-+		@ILayoutService private readonly layoutService: ILayoutService
- 	) {
- 		super(contextKeyService, commandService, telemetryService, notificationService, logService);
- 
-@@ -280,8 +282,10 @@ export class WorkbenchKeybindingService extends AbstractKeybindingService {
- 	private _registerKeyListeners(window: Window): IDisposable {
- 		const disposables = new DisposableStore();
- 
-+		const container = this.layoutService.getContainer(window);
-+
- 		// for standard keybindings
--		disposables.add(dom.addDisposableListener(window, dom.EventType.KEY_DOWN, (e: KeyboardEvent) => {
-+		disposables.add(dom.addDisposableListener(container, dom.EventType.KEY_DOWN, (e: KeyboardEvent) => {
- 			if (this._keybindingHoldMode) {
- 				return;
- 			}
-@@ -297,7 +301,7 @@ export class WorkbenchKeybindingService extends AbstractKeybindingService {
- 		}));
- 
- 		// for single modifier chord keybindings (e.g. shift shift)
--		disposables.add(dom.addDisposableListener(window, dom.EventType.KEY_UP, (e: KeyboardEvent) => {
-+		disposables.add(dom.addDisposableListener(container, dom.EventType.KEY_UP, (e: KeyboardEvent) => {
- 			this._resetKeybindingHoldMode();
- 			this.isComposingGlobalContextKey.set(e.isComposing);
- 			const keyEvent = new StandardKeyboardEvent(e);
 diff --git a/src/vs/workbench/services/themes/browser/workbenchThemeService.ts b/src/vs/workbench/services/themes/browser/workbenchThemeService.ts
 index d85b23015f4..d7d186e8234 100644
 --- a/src/vs/workbench/services/themes/browser/workbenchThemeService.ts
