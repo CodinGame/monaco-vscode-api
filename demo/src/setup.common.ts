@@ -387,6 +387,7 @@ export const constructOptions: IWorkbenchConstructionOptions = {
     nameShort: 'monaco-vscode-api',
     nameLong: 'monaco-vscode-api',
     extensionsGallery: {
+      mcpUrl: '',
       serviceUrl: 'https://open-vsx.org/vscode/gallery',
       resourceUrlTemplate: 'https://open-vsx.org/vscode/unpkg/{publisher}/{name}/{version}/{path}',
       extensionUrlTemplate: 'https://open-vsx.org/vscode/gallery/{publisher}/{name}/latest', // https://github.com/eclipse/openvsx/issues/1036#issuecomment-2476449435
