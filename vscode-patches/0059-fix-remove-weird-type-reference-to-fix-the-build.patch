@@ -8,7 +8,7 @@ Subject: [PATCH] fix: remove weird type reference to fix the build
  1 file changed, 2 deletions(-)
 
 diff --git a/src/vs/editor/common/services/editorWorker.ts b/src/vs/editor/common/services/editorWorker.ts
-index fc0f44fa458..bf88fdaebf6 100644
+index 6b0720d60ff..1ce8edd852c 100644
 --- a/src/vs/editor/common/services/editorWorker.ts
 +++ b/src/vs/editor/common/services/editorWorker.ts
 @@ -10,7 +10,6 @@ import { IChange } from '../diff/legacyLinesDiffComputer.js';
@@ -17,9 +17,9 @@ index fc0f44fa458..bf88fdaebf6 100644
  import { createDecorator } from '../../../platform/instantiation/common/instantiation.js';
 -import type { EditorWorker } from './editorWebWorker.js';
  import { SectionHeader, FindSectionHeaderOptions } from './findSectionHeaders.js';
+ import { StringEdit } from '../core/edits/stringEdit.js';
  
- export const IEditorWorkerService = createDecorator<IEditorWorkerService>('editorWorkerService');
-@@ -23,7 +22,6 @@ export interface IEditorWorkerService {
+@@ -24,7 +23,6 @@ export interface IEditorWorkerService {
  	canComputeUnicodeHighlights(uri: URI): boolean;
  	computedUnicodeHighlights(uri: URI, options: UnicodeHighlighterOptions, range?: IRange): Promise<IUnicodeHighlightsResult>;
  

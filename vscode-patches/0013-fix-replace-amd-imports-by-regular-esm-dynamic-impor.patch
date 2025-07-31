@@ -66,7 +66,7 @@ index 59a0dadcb7d..f39a10d515f 100644
  	const collectorChannelPlugin: PostChannel = new postPlugin.PostChannel();
  	// Configure the app insights core to send to collector++ and disable logging of debug info
 diff --git a/src/vs/workbench/contrib/terminal/browser/terminalInstance.ts b/src/vs/workbench/contrib/terminal/browser/terminalInstance.ts
-index 165c6c2c346..dbb2908725a 100644
+index 7fb424f6eab..3e082238c48 100644
 --- a/src/vs/workbench/contrib/terminal/browser/terminalInstance.ts
 +++ b/src/vs/workbench/contrib/terminal/browser/terminalInstance.ts
 @@ -79,7 +79,6 @@ import { IHistoryService } from '../../../services/history/common/history.js';
@@ -77,7 +77,7 @@ index 165c6c2c346..dbb2908725a 100644
  import type { IMarker, Terminal as XTermTerminal } from '@xterm/xterm';
  import { AccessibilityCommandId } from '../../accessibility/common/accessibilityCommands.js';
  import { terminalStrings } from '../common/terminalStrings.js';
-@@ -766,7 +765,7 @@ export class TerminalInstance extends Disposable implements ITerminalInstance {
+@@ -770,7 +769,7 @@ export class TerminalInstance extends Disposable implements ITerminalInstance {
  			return xtermConstructor;
  		}
  		xtermConstructor = Promises.withAsyncBody<typeof XTermTerminal>(async (resolve) => {

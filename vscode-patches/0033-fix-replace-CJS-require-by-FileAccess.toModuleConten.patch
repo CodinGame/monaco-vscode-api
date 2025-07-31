@@ -8,7 +8,7 @@ Subject: [PATCH] fix: replace CJS require by FileAccess.toModuleContent
  1 file changed, 2 insertions(+), 1 deletion(-)
 
 diff --git a/src/vs/workbench/contrib/welcomeGettingStarted/browser/gettingStartedDetailsRenderer.ts b/src/vs/workbench/contrib/welcomeGettingStarted/browser/gettingStartedDetailsRenderer.ts
-index 1ca5db0b86b..6f41375904f 100644
+index c4e3637ca2c..bb81aa90313 100644
 --- a/src/vs/workbench/contrib/welcomeGettingStarted/browser/gettingStartedDetailsRenderer.ts
 +++ b/src/vs/workbench/contrib/welcomeGettingStarted/browser/gettingStartedDetailsRenderer.ts
 @@ -18,6 +18,7 @@ import { INotificationService } from '../../../../platform/notification/common/n

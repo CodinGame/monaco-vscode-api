@@ -80,10 +80,10 @@ index 56b9d0083ef..c13c5ec710e 100644
  	public static validateOptions(options: IEditorOptions): ValidatedEditorOptions {
  		const result = new ValidatedEditorOptions();
 diff --git a/src/vs/editor/browser/widget/codeEditor/codeEditorWidget.ts b/src/vs/editor/browser/widget/codeEditor/codeEditorWidget.ts
-index dc5ee78a9da..cd282007373 100644
+index 34333bc3f85..f8893bb7ddb 100644
 --- a/src/vs/editor/browser/widget/codeEditor/codeEditorWidget.ts
 +++ b/src/vs/editor/browser/widget/codeEditor/codeEditorWidget.ts
-@@ -279,6 +279,7 @@ export class CodeEditorWidget extends Disposable implements editorBrowser.ICodeE
+@@ -284,6 +284,7 @@ export class CodeEditorWidget extends Disposable implements editorBrowser.ICodeE
  
  		this._configuration = this._register(this._createConfiguration(codeEditorWidgetOptions.isSimpleWidget || false,
  			codeEditorWidgetOptions.contextMenuId ?? (codeEditorWidgetOptions.isSimpleWidget ? MenuId.SimpleEditorContext : MenuId.EditorContext),
@@ -91,7 +91,7 @@ index dc5ee78a9da..cd282007373 100644
  			options, accessibilityService));
  		this._register(this._configuration.onDidChange((e) => {
  			this._onDidChangeConfiguration.fire(e);
-@@ -387,8 +388,8 @@ export class CodeEditorWidget extends Disposable implements editorBrowser.ICodeE
+@@ -392,8 +393,8 @@ export class CodeEditorWidget extends Disposable implements editorBrowser.ICodeE
  		this._modelData?.view.writeScreenReaderContent(reason);
  	}
  
@@ -102,7 +102,7 @@ index dc5ee78a9da..cd282007373 100644
  	}
  
  	public getId(): string {
-@@ -1998,6 +1999,12 @@ export interface ICodeEditorWidgetOptions {
+@@ -2031,6 +2032,12 @@ export interface ICodeEditorWidgetOptions {
  	 */
  	isSimpleWidget?: boolean;
  
@@ -116,7 +116,7 @@ index dc5ee78a9da..cd282007373 100644
  	 * Contributions to instantiate.
  	 * When provided, only the contributions included will be instantiated.
 diff --git a/src/vs/editor/browser/widget/diffEditor/diffEditorWidget.ts b/src/vs/editor/browser/widget/diffEditor/diffEditorWidget.ts
-index 9e19a590a16..b0502dcac09 100644
+index a733efc443a..fbc898a0a10 100644
 --- a/src/vs/editor/browser/widget/diffEditor/diffEditorWidget.ts
 +++ b/src/vs/editor/browser/widget/diffEditor/diffEditorWidget.ts
 @@ -51,6 +51,12 @@ import { CSSStyle, ObservableElementSizeObserver, RefCounted, applyStyle, applyV
@@ -230,10 +230,10 @@ index ece0400a78c..5f70126b20f 100644
  
  	protected override _readEnvConfiguration(): IEnvConfiguration {
 diff --git a/src/vs/editor/test/browser/testCodeEditor.ts b/src/vs/editor/test/browser/testCodeEditor.ts
-index f63c6445b13..fbe7573cdc9 100644
+index 967bcfcf510..92f81fabd87 100644
 --- a/src/vs/editor/test/browser/testCodeEditor.ts
 +++ b/src/vs/editor/test/browser/testCodeEditor.ts
-@@ -71,7 +71,7 @@ export interface ITestCodeEditor extends IActiveCodeEditor {
+@@ -72,7 +72,7 @@ export interface ITestCodeEditor extends IActiveCodeEditor {
  export class TestCodeEditor extends CodeEditorWidget implements ICodeEditor {
  
  	//#region testing overrides
@@ -243,10 +243,10 @@ index f63c6445b13..fbe7573cdc9 100644
  	}
  	protected override _createView(viewModel: ViewModel): [View, boolean] {
 diff --git a/src/vs/workbench/contrib/notebook/browser/contrib/multicursor/notebookMulticursor.ts b/src/vs/workbench/contrib/notebook/browser/contrib/multicursor/notebookMulticursor.ts
-index 9a0390c9a41..aee22d77ab9 100644
+index 571248d12e4..e4d5efabfc5 100644
 --- a/src/vs/workbench/contrib/notebook/browser/contrib/multicursor/notebookMulticursor.ts
 +++ b/src/vs/workbench/contrib/notebook/browser/contrib/multicursor/notebookMulticursor.ts
-@@ -821,7 +821,7 @@ export class NotebookMultiCursorController extends Disposable implements INotebo
+@@ -839,7 +839,7 @@ export class NotebookMultiCursorController extends Disposable implements INotebo
  		const cellEditorOptions = new CellEditorOptions(this.notebookEditor.getBaseCellEditorOptions(cell.language), this.notebookEditor.notebookOptions, this.configurationService);
  		const options = cellEditorOptions.getUpdatedValue(cell.internalMetadata, cell.uri);
  		cellEditorOptions.dispose();

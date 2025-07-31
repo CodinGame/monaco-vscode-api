@@ -9,10 +9,10 @@ Subject: [PATCH] cleanup: remove code already done in
  1 file changed, 12 deletions(-)
 
 diff --git a/src/vs/editor/standalone/browser/standaloneServices.ts b/src/vs/editor/standalone/browser/standaloneServices.ts
-index 9710a6b2935..77cca03d08c 100644
+index 20de4bf2dff..8093d795a47 100644
 --- a/src/vs/editor/standalone/browser/standaloneServices.ts
 +++ b/src/vs/editor/standalone/browser/standaloneServices.ts
-@@ -91,8 +91,6 @@ import { AccessibilitySignal, AccessibilityModality, IAccessibilitySignalService
+@@ -92,8 +92,6 @@ import { AccessibilitySignal, AccessibilityModality, IAccessibilitySignalService
  import { ILanguageFeaturesService } from '../../common/services/languageFeatures.js';
  import { ILanguageConfigurationService } from '../../common/languages/languageConfigurationRegistry.js';
  import { LogService } from '../../../platform/log/common/logService.js';
@@ -21,7 +21,7 @@ index 9710a6b2935..77cca03d08c 100644
  import { ExtensionKind, IEnvironmentService, IExtensionHostDebugParams } from '../../../platform/environment/common/environment.js';
  import { mainWindow } from '../../../base/browser/window.js';
  import { ResourceMap } from '../../../base/common/map.js';
-@@ -1224,16 +1222,6 @@ export module StandaloneServices {
+@@ -1227,16 +1225,6 @@ export module StandaloneServices {
  			}
  		}
  

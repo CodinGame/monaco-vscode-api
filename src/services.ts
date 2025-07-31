@@ -586,7 +586,7 @@ export { IChatMarkdownAnchorService } from 'vs/workbench/contrib/chat/browser/ch
 export { getBuiltInExtensionTranslationsUris, getExtensionIdProvidingCurrentLocale } from './l10n'
 export { unsupported } from './tools'
 export { IChatEntitlementService } from 'vs/workbench/contrib/chat/common/chatEntitlementService.service'
-export { IPromptsService } from 'vs/workbench/contrib/chat/common/promptSyntax/service/types.service'
+export { IPromptsService } from 'vs/workbench/contrib/chat/common/promptSyntax/service/promptsService.service'
 export { ISuggestMemoryService } from 'vs/editor/contrib/suggest/browser/suggestMemory.service'
 export { LanguageConfigurationService } from 'vs/editor/common/languages/languageConfigurationRegistry'
 export { ISemanticTokensStylingService } from 'vs/editor/common/services/semanticTokensStyling.service'
@@ -602,11 +602,12 @@ export { IPeekViewService } from 'vs/editor/contrib/peekView/browser/peekView.se
 export { IUndoRedoService } from 'vs/platform/undoRedo/common/undoRedo.service'
 export { IActionWidgetService } from 'vs/platform/actionWidget/browser/actionWidget.service'
 export {
+  IMcpElicitationService,
   IMcpSamplingService,
   IMcpService,
   IMcpWorkbenchService
 } from 'vs/workbench/contrib/mcp/common/mcpTypes.service'
-export { IMcpConfigPathsService } from 'vs/workbench/contrib/mcp/common/mcpConfigPathsService.service'
+export { IMcpResourceScannerService } from 'vs/platform/mcp/common/mcpResourceScannerService.service'
 export { IMcpRegistry } from 'vs/workbench/contrib/mcp/common/mcpRegistryTypes.service'
 export { IExtensionGalleryManifestService } from 'vs/platform/extensionManagement/common/extensionGalleryManifest.service'
 export {
@@ -623,7 +624,6 @@ export { IAuthenticationMcpService } from 'vs/workbench/services/authentication/
 export { IAuthenticationMcpAccessService } from 'vs/workbench/services/authentication/browser/authenticationMcpAccessService.service'
 export { IAuthenticationMcpUsageService } from 'vs/workbench/services/authentication/browser/authenticationMcpUsageService.service'
 export { IBrowserElementsService } from 'vs/workbench/services/browserElements/browser/browserElementsService.service'
-export { IGettingStartedExperimentService } from 'vs/workbench/contrib/welcomeGettingStarted/browser/gettingStartedExpService.service'
 export { IChatContextPickService } from 'vs/workbench/contrib/chat/browser/chatContextPickService.service'
 export {
   IMcpGalleryService,
@@ -631,3 +631,8 @@ export {
 } from 'vs/platform/mcp/common/mcpManagement.service'
 export { ITreeSitterThemeService } from 'vs/editor/common/services/treeSitter/treeSitterThemeService.service'
 export { ITreeSitterLibraryService } from 'vs/editor/common/services/treeSitter/treeSitterLibraryService.service'
+export { IChatAttachmentResolveService } from 'vs/workbench/contrib/chat/browser/chatAttachmentResolveService.service'
+export { IRemoteCodingAgentsService } from 'vs/workbench/contrib/remoteCodingAgents/common/remoteCodingAgentsService.service'
+export { IAuthenticationQueryService } from 'vs/workbench/services/authentication/common/authenticationQuery.service'
+export { ICoreExperimentationService } from 'vs/workbench/services/coreExperimentation/common/coreExperimentationService.service'
+export { IWorkbenchMcpManagementService } from 'vs/workbench/services/mcp/common/mcpWorkbenchManagementService.service'

@@ -316,8 +316,6 @@ const api: typeof vscode = {
   NewSymbolName: extHostTypes.NewSymbolName,
   NewSymbolNameTag: extHostTypes.NewSymbolNameTag,
   NewSymbolNameTriggerKind: extHostTypes.NewSymbolNameTriggerKind,
-  InlineEdit: extHostTypes.InlineEdit,
-  InlineEditTriggerKind: extHostTypes.InlineEditTriggerKind,
   ExcludeSettingOptions: searchExtTypes.ExcludeSettingOptions,
   ChatResponseCodeblockUriPart: extHostTypes.ChatResponseCodeblockUriPart,
   ChatEditingSessionActionOutcome: extHostTypes.ChatEditingSessionActionOutcome,
@@ -353,7 +351,8 @@ const api: typeof vscode = {
   LanguageModelToolResult2: extHostTypes.LanguageModelToolResult2,
   McpHttpServerDefinition: extHostTypes.McpHttpServerDefinition,
   AISearchKeyword: searchExtTypes.AISearchKeyword,
-  ChatPrepareToolInvocationPart: extHostTypes.ChatPrepareToolInvocationPart
+  ChatPrepareToolInvocationPart: extHostTypes.ChatPrepareToolInvocationPart,
+  InlineCompletionsDisposeReasonKind: extHostTypes.InlineCompletionsDisposeReasonKind
 }
 
 // @ts-expect-error the syntax will be transformed by a typescript transformer in the rollup config

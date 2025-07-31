@@ -8,7 +8,7 @@ Subject: [PATCH] cleanup: remove code that we will run ourselves
  1 file changed, 20 deletions(-)
 
 diff --git a/src/vs/workbench/browser/workbench.ts b/src/vs/workbench/browser/workbench.ts
-index 8b0c59fd496..e112acb5e7e 100644
+index ca80622f19d..c8397135f1d 100644
 --- a/src/vs/workbench/browser/workbench.ts
 +++ b/src/vs/workbench/browser/workbench.ts
 @@ -10,10 +10,7 @@ import { RunOnceScheduler, timeout } from '../../base/common/async.js';
@@ -40,7 +40,7 @@ index 8b0c59fd496..e112acb5e7e 100644
  import { AccessibilityProgressSignalScheduler } from '../../platform/accessibilitySignal/browser/progressAccessibilitySignalScheduler.js';
  import { setProgressAcccessibilitySignalScheduler } from '../../base/browser/ui/progressbar/progressAccessibilitySignal.js';
  import { AccessibleViewRegistry } from '../../platform/accessibility/browser/accessibleViewRegistry.js';
-@@ -130,25 +123,12 @@ export class Workbench extends Layout {
+@@ -135,25 +128,12 @@ export class Workbench extends Layout {
  				const storageService = accessor.get(IStorageService);
  				const configurationService = accessor.get(IConfigurationService);
  				const hostService = accessor.get(IHostService);

@@ -71,6 +71,10 @@ export class LayoutService extends Disposable implements ILayoutService, IWorkbe
 
     mainContainer.classList.add(...workbenchClasses)
   }
+  onDidChangeAuxiliaryBarMaximized = Event.None
+  toggleMaximizedAuxiliaryBar = unsupported
+  setAuxiliaryBarMaximized = unsupported
+  isAuxiliaryBarMaximized = () => false
 
   getSize(part: Parts): IViewSize {
     return (

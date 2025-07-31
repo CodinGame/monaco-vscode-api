@@ -32,7 +32,7 @@ import { TerminalContributionService } from 'vs/workbench/contrib/terminal/commo
 import { ITerminalContributionService } from 'vs/workbench/contrib/terminal/common/terminalExtensionPoints.service'
 import { ITerminalLinkProviderService } from 'vs/workbench/contrib/terminalContrib/links/browser/links.service'
 import { TerminalLinkProviderService } from 'vs/workbench/contrib/terminalContrib/links/browser/terminalLinkProviderService'
-import { ElectronTerminalProfileResolverService } from 'vs/workbench/contrib/terminal/electron-sandbox/terminalProfileResolverService'
+import { ElectronTerminalProfileResolverService } from 'vs/workbench/contrib/terminal/electron-browser/terminalProfileResolverService'
 import { EnvironmentVariableService } from 'vs/workbench/contrib/terminal/common/environmentVariableService'
 import { IEnvironmentVariableService } from 'vs/workbench/contrib/terminal/common/environmentVariable.service'
 import { ITerminalQuickFixService } from 'vs/workbench/contrib/terminalContrib/quickFix/browser/quickFix.service'
@@ -53,6 +53,7 @@ import 'vs/workbench/contrib/terminal/browser/terminal.web.contribution'
 import { ITerminalCompletionService } from 'vs/workbench/contrib/terminalContrib/suggest/browser/terminalCompletionService.service'
 import { TerminalCompletionService } from 'vs/workbench/contrib/terminalContrib/suggest/browser/terminalCompletionService'
 import { unsupported } from '../tools.js'
+import type { ISerializedCommandDetectionCapability } from 'vs/platform/terminal/common/capabilities/capabilities.js'
 export {
   ITerminalService,
   ITerminalInstanceService
@@ -121,6 +122,10 @@ abstract class SimpleTerminalProcess implements ITerminalChildProcess {
       })
     })
   }
+  onProcessReplayComplete?: Event<void> | undefined
+  onRestoreCommands?: Event<ISerializedCommandDetectionCapability> | undefined
+
+  abstract sendSignal(signal: string): void
 
   abstract clearBuffer(): void | Promise<void>
 

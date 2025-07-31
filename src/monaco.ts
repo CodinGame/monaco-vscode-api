@@ -52,10 +52,7 @@ import { StandaloneQuickInputService } from 'vs/editor/standalone/browser/quickI
 import { SyncDescriptor } from 'vs/platform/instantiation/common/descriptors'
 import { ContextKeyExpr, RawContextKey } from 'vs/platform/contextkey/common/contextkey'
 import { ICodeEditorService } from 'vs/editor/browser/services/codeEditorService.service'
-import type {
-  IKeyboardEvent,
-  KeybindingsSchemaContribution
-} from 'vs/platform/keybinding/common/keybinding'
+import type { IKeyboardEvent } from 'vs/platform/keybinding/common/keybinding'
 import { KeybindingResolver } from 'vs/platform/keybinding/common/keybindingResolver'
 import { ResolvedKeybindingItem } from 'vs/platform/keybinding/common/resolvedKeybindingItem'
 import { Keybinding, ResolvedKeybinding } from 'vs/base/common/keybindings'
@@ -456,10 +453,6 @@ class DelegateStandaloneKeybindingService extends StandaloneKeybindingService {
 
   public override _dumpDebugInfoJSON(): string {
     return this.delegate._dumpDebugInfoJSON()
-  }
-
-  public override registerSchemaContribution(contribution: KeybindingsSchemaContribution): void {
-    return this.delegate.registerSchemaContribution(contribution)
   }
 
   public override enableKeybindingHoldMode(commandId: string): Promise<void> | undefined {

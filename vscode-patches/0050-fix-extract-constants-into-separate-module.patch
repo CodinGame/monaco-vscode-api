@@ -17,13 +17,13 @@ so that only the constant is pulled from the root instead of the whole module gr
  create mode 100644 src/vs/workbench/contrib/chat/browser/contrib/chatDynamicVariablesConstant.ts
 
 diff --git a/src/vs/workbench/api/browser/mainThreadChatAgents2.ts b/src/vs/workbench/api/browser/mainThreadChatAgents2.ts
-index a43107d7502..c37d6c40c7d 100644
+index 5e205a0772d..75818c18050 100644
 --- a/src/vs/workbench/api/browser/mainThreadChatAgents2.ts
 +++ b/src/vs/workbench/api/browser/mainThreadChatAgents2.ts
-@@ -24,7 +24,7 @@ import { ILogService } from '../../../platform/log/common/log.js';
+@@ -24,7 +24,7 @@ import { IInstantiationService } from '../../../platform/instantiation/common/in
+ import { ILogService } from '../../../platform/log/common/log.js';
  import { IUriIdentityService } from '../../../platform/uriIdentity/common/uriIdentity.js';
  import { IChatWidgetService } from '../../contrib/chat/browser/chat.js';
- import { ChatInputPart } from '../../contrib/chat/browser/chatInputPart.js';
 -import { AddDynamicVariableAction, IAddDynamicVariableContext } from '../../contrib/chat/browser/contrib/chatDynamicVariables.js';
 +import { IAddDynamicVariableContext } from '../../contrib/chat/browser/contrib/chatDynamicVariables.js';
  import { IChatAgentHistoryEntry, IChatAgentImplementation, IChatAgentRequest, IChatAgentService } from '../../contrib/chat/common/chatAgents.js';
@@ -37,7 +37,7 @@ index a43107d7502..c37d6c40c7d 100644
  
  interface AgentData {
  	dispose: () => void;
-@@ -353,7 +354,7 @@ export class MainThreadChatAgents2 extends Disposable implements MainThreadChatA
+@@ -356,7 +357,7 @@ export class MainThreadChatAgents2 extends Disposable implements MainThreadChatA
  						kind: CompletionItemKind.Text,
  						detail: v.detail,
  						documentation: v.documentation,
@@ -78,18 +78,18 @@ index f5f9343bed8..4e8c13725a3 100644
  	registerAction2(QuickChatGlobalAction);
  	registerAction2(AskQuickChatAction);
 diff --git a/src/vs/workbench/contrib/chat/browser/contrib/chatDynamicVariables.ts b/src/vs/workbench/contrib/chat/browser/contrib/chatDynamicVariables.ts
-index 8c3f93517f1..b23cefdad61 100644
+index 4ebdeae3f35..e16063bb035 100644
 --- a/src/vs/workbench/contrib/chat/browser/contrib/chatDynamicVariables.ts
 +++ b/src/vs/workbench/contrib/chat/browser/contrib/chatDynamicVariables.ts
-@@ -20,6 +20,7 @@ import { IChatRequestVariableValue, IDynamicVariable } from '../../common/chatVa
+@@ -17,6 +17,7 @@ import { ILabelService } from '../../../../../platform/label/common/label.js';
+ import { IChatRequestVariableValue, IDynamicVariable } from '../../common/chatVariables.js';
  import { IChatWidget } from '../chat.js';
- import { ChatWidget, IChatWidgetContrib } from '../chatWidget.js';
- import { ChatFileReference } from './chatDynamicVariables/chatFileReference.js';
+ import { IChatWidgetContrib } from '../chatWidget.js';
 +import { addDynamicVariableActionId } from './chatDynamicVariablesConstant.js';
  
  export const dynamicVariableDecorationType = 'chat-dynamic-variable';
  
-@@ -241,7 +242,7 @@ function isAddDynamicVariableContext(context: any): context is IAddDynamicVariab
+@@ -200,7 +201,7 @@ function isAddDynamicVariableContext(context: any): context is IAddDynamicVariab
  }
  
  export class AddDynamicVariableAction extends Action2 {

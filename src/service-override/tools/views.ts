@@ -46,7 +46,7 @@ import { IStorageService } from 'vs/platform/storage/common/storage.service'
 import { IThemeService } from 'vs/platform/theme/common/themeService.service'
 import { CancellationToken } from 'vs/base/common/cancellation'
 import { DomScrollableElement } from 'vs/base/browser/ui/scrollbar/scrollableElement'
-import { assertAllDefined, assertIsDefined } from 'vs/base/common/types'
+import { assertReturnsAllDefined, assertReturnsDefined } from 'vs/base/common/types'
 import { ScrollbarVisibility } from 'vs/base/common/scrollable'
 import { ConfirmResult } from 'vs/platform/dialogs/common/dialogs'
 import { AbstractResourceEditorInput } from 'vs/workbench/common/editor/resourceEditorInput'
@@ -101,7 +101,7 @@ abstract class SimpleEditorPane extends InjectedEditorPane {
     parent.appendChild(this.scrollbar.getDomNode())
 
     const observer = new ResizeObserver(() => {
-      assertIsDefined(this.scrollbar).scanDomNode()
+      assertReturnsDefined(this.scrollbar).scanDomNode()
     })
     observer.observe(this.container)
     this._register({
@@ -125,11 +125,11 @@ abstract class SimpleEditorPane extends InjectedEditorPane {
     }
 
     this.inputDisposable.value = await this.renderInput?.(input, editorOptions, context, token)
-    assertIsDefined(this.scrollbar).scanDomNode()
+    assertReturnsDefined(this.scrollbar).scanDomNode()
   }
 
   override layout(dimension: Dimension): void {
-    const [wrapper, scrollbar] = assertAllDefined(this.wrapper, this.scrollbar)
+    const [wrapper, scrollbar] = assertReturnsAllDefined(this.wrapper, this.scrollbar)
 
     // Pass on to Container
     size(wrapper, dimension.width, dimension.height)
@@ -139,7 +139,7 @@ abstract class SimpleEditorPane extends InjectedEditorPane {
   }
 
   override focus(): void {
-    const container = assertIsDefined(this.container)
+    const container = assertReturnsDefined(this.container)
 
     container.focus()
   }
@@ -378,7 +378,7 @@ function registerCustomView(options: CustomViewOption): IDisposable {
             container.appendChild(this.scrollbar.getDomNode())
 
             const observer = new ResizeObserver(() => {
-              assertIsDefined(this.scrollbar).scanDomNode()
+              assertReturnsDefined(this.scrollbar).scanDomNode()
             })
             observer.observe(this.container)
             this._register({
@@ -389,7 +389,7 @@ function registerCustomView(options: CustomViewOption): IDisposable {
           }
 
           protected override layoutBody(height: number, width: number): void {
-            const [wrapper, scrollbar] = assertAllDefined(this.wrapper, this.scrollbar)
+            const [wrapper, scrollbar] = assertReturnsAllDefined(this.wrapper, this.scrollbar)
 
             // Pass on to Container
             size(wrapper, width, height)
