@@ -1,4 +1,3 @@
-import semver from 'semver'
 import { readFile, writeFile } from 'fs/promises'
 import path from 'path'
 import { fileURLToPath } from 'url'
