@@ -13,10 +13,10 @@ Subject: [PATCH] feat: allow to override product icon
  6 files changed, 7 insertions(+), 6 deletions(-)
 
 diff --git a/build/lib/stylelint/vscode-known-variables.json b/build/lib/stylelint/vscode-known-variables.json
-index c2725753ec2..de24c828c10 100644
+index 1e75f451ea1..efc42256dce 100644
 --- a/build/lib/stylelint/vscode-known-variables.json
 +++ b/build/lib/stylelint/vscode-known-variables.json
-@@ -957,6 +957,7 @@
+@@ -960,6 +960,7 @@
  		"--vscode-action-item-auto-timeout",
  		"--monaco-editor-warning-decoration",
  		"--animation-opacity",
@@ -39,10 +39,10 @@ index a0de81f24eb..c71af404312 100644
  	padding: 0;
  	margin: 0 6px 0 10px;
 diff --git a/src/vs/workbench/browser/parts/titlebar/media/titlebarpart.css b/src/vs/workbench/browser/parts/titlebar/media/titlebarpart.css
-index e1a7a7e2f70..daa8028a3c4 100644
+index 0246cd2ad10..19b79a508a7 100644
 --- a/src/vs/workbench/browser/parts/titlebar/media/titlebarpart.css
 +++ b/src/vs/workbench/browser/parts/titlebar/media/titlebarpart.css
-@@ -257,7 +257,7 @@
+@@ -269,7 +269,7 @@
  }
  
  .monaco-workbench .part.titlebar > .titlebar-container > .titlebar-left > .window-appicon:not(.codicon) {
@@ -63,7 +63,7 @@ index 4210055bfeb..4f71897bb52 100644
 +	background-image: var(--product-icon, url('../../../../browser/media/code-icon.svg'));
  }
 diff --git a/src/vs/workbench/contrib/welcomeGettingStarted/browser/media/gettingStarted.css b/src/vs/workbench/contrib/welcomeGettingStarted/browser/media/gettingStarted.css
-index 24ee21cfc40..4243614a5a1 100644
+index c7c7fd8224c..ea06821f879 100644
 --- a/src/vs/workbench/contrib/welcomeGettingStarted/browser/media/gettingStarted.css
 +++ b/src/vs/workbench/contrib/welcomeGettingStarted/browser/media/gettingStarted.css
 @@ -5,7 +5,7 @@

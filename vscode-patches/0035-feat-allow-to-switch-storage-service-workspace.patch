@@ -8,7 +8,7 @@ Subject: [PATCH] feat: allow to switch storage service workspace
  1 file changed, 20 insertions(+), 5 deletions(-)
 
 diff --git a/src/vs/workbench/services/storage/browser/storageService.ts b/src/vs/workbench/services/storage/browser/storageService.ts
-index ca10b6f7d95..babb3a9f204 100644
+index 309033e3b9a..db1abe1dec4 100644
 --- a/src/vs/workbench/services/storage/browser/storageService.ts
 +++ b/src/vs/workbench/services/storage/browser/storageService.ts
 @@ -34,6 +34,7 @@ export class BrowserStorageService extends AbstractStorageService {
@@ -52,7 +52,7 @@ index ca10b6f7d95..babb3a9f204 100644
  
  	protected async switchToWorkspace(toWorkspace: IAnyWorkspaceIdentifier, preserveData: boolean): Promise<void> {
 -		throw new Error('Migrating storage is currently unsupported in Web');
-+		const oldWorkspaceStorage = assertIsDefined(this.workspaceStorage);
++		const oldWorkspaceStorage = assertReturnsDefined(this.workspaceStorage);
 +		const oldItems = preserveData ? oldWorkspaceStorage.items : new Map();
 +
 +		// Close old workpace storage
@@ -63,7 +63,7 @@ index ca10b6f7d95..babb3a9f204 100644
 +		await this.createWorkspaceStorage();
 +
 +		// Handle data switch and eventing
-+		this.switchData(oldItems, assertIsDefined(this.workspaceStorage), StorageScope.WORKSPACE);
++		this.switchData(oldItems, assertReturnsDefined(this.workspaceStorage), StorageScope.WORKSPACE);
  	}
  
  	protected override shouldFlushWhenIdle(): boolean {

@@ -72,7 +72,7 @@ index a20f7cee262..7f26b282427 100644
  		const { stylesLoaded } = this.applyCSS(auxiliaryWindow, disposables);
  		const container = this.applyHTML(auxiliaryWindow, disposables);
 diff --git a/src/vs/workbench/services/extensions/browser/webWorkerExtensionHost.ts b/src/vs/workbench/services/extensions/browser/webWorkerExtensionHost.ts
-index 6f7e16f41dd..5c9057ec6c0 100644
+index 0b053a473b7..d630f9c6ba1 100644
 --- a/src/vs/workbench/services/extensions/browser/webWorkerExtensionHost.ts
 +++ b/src/vs/workbench/services/extensions/browser/webWorkerExtensionHost.ts
 @@ -112,8 +112,6 @@ export class WebWorkerExtensionHost extends Disposable implements IExtensionHost

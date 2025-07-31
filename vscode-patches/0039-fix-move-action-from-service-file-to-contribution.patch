@@ -11,10 +11,10 @@ Subject: [PATCH] fix: move action from service file to contribution
  create mode 100644 src/vs/workbench/contrib/welcomeGettingStarted/browser/gettingStartedService._contribution.ts
 
 diff --git a/src/vs/workbench/contrib/welcomeGettingStarted/browser/gettingStarted.contribution.ts b/src/vs/workbench/contrib/welcomeGettingStarted/browser/gettingStarted.contribution.ts
-index 6aa706f7bf5..ee18cb10303 100644
+index ab7fcb47f2b..91f4a54eb3e 100644
 --- a/src/vs/workbench/contrib/welcomeGettingStarted/browser/gettingStarted.contribution.ts
 +++ b/src/vs/workbench/contrib/welcomeGettingStarted/browser/gettingStarted.contribution.ts
-@@ -33,6 +33,7 @@ import { Categories } from '../../../../platform/action/common/actionCommonCateg
+@@ -31,6 +31,7 @@ import { Categories } from '../../../../platform/action/common/actionCommonCateg
  import { DisposableStore } from '../../../../base/common/lifecycle.js';
  import { AccessibleViewRegistry } from '../../../../platform/accessibility/browser/accessibleViewRegistry.js';
  import { GettingStartedAccessibleView } from './gettingStartedAccessibleView.js';
@@ -84,7 +84,7 @@ index 00000000000..827c6eac860
 +	}
 +});
 diff --git a/src/vs/workbench/contrib/welcomeGettingStarted/browser/gettingStartedService.ts b/src/vs/workbench/contrib/welcomeGettingStarted/browser/gettingStartedService.ts
-index cc37ab45cad..be49c44df4e 100644
+index 183288a5a10..8b58c3448da 100644
 --- a/src/vs/workbench/contrib/welcomeGettingStarted/browser/gettingStartedService.ts
 +++ b/src/vs/workbench/contrib/welcomeGettingStarted/browser/gettingStartedService.ts
 @@ -3,11 +3,10 @@
@@ -109,7 +109,7 @@ index cc37ab45cad..be49c44df4e 100644
  import { ITelemetryService } from '../../../../platform/telemetry/common/telemetry.js';
  import { checkGlobFileExists } from '../../../services/extensions/common/workspaceContains.js';
  import { IWorkspaceContextService } from '../../../../platform/workspace/common/workspace.js';
-@@ -725,49 +724,4 @@ const convertRelativeMediaPathsToWebviewURIs = (basePath: URI, path: string | {
+@@ -732,49 +731,4 @@ const convertRelativeMediaPathsToWebviewURIs = (basePath: URI, path: string | {
  	}
  };
  

@@ -31,6 +31,7 @@ Subject: [PATCH] feat: export some classes and make some methods accessible
  .../keybinding/browser/keybindingService.ts        |  2 +-
  .../languageStatus/common/languageStatusService.ts |  2 +-
  .../services/localization/browser/localeService.ts |  2 +-
+ .../mcp/common/mcpWorkbenchManagementService.ts    |  2 +-
  .../services/outline/browser/outlineService.ts     |  2 +-
  .../workbench/services/path/browser/pathService.ts |  2 +-
  .../remote/common/remoteExplorerService.ts         |  2 +-
@@ -38,7 +39,7 @@ Subject: [PATCH] feat: export some classes and make some methods accessible
  .../terminal/common/embedderTerminalService.ts     |  2 +-
  .../common/remoteUserDataProfiles.ts               |  2 +-
  .../userDataSync/common/userDataSyncUtil.ts        |  2 +-
- 34 files changed, 59 insertions(+), 55 deletions(-)
+ 35 files changed, 60 insertions(+), 56 deletions(-)
 
 diff --git a/src/vs/editor/contrib/editorState/browser/keybindingCancellation.ts b/src/vs/editor/contrib/editorState/browser/keybindingCancellation.ts
 index 94020ce96b9..de1e9af237e 100644
@@ -104,7 +105,7 @@ index 0bcc5b3fe67..4c346ff829b 100644
  	declare readonly _serviceBrand: undefined;
  
 diff --git a/src/vs/editor/contrib/peekView/browser/peekView.ts b/src/vs/editor/contrib/peekView/browser/peekView.ts
-index ce8921b550f..3527b1576c6 100644
+index fe9cffb401e..e7799461337 100644
 --- a/src/vs/editor/contrib/peekView/browser/peekView.ts
 +++ b/src/vs/editor/contrib/peekView/browser/peekView.ts
 @@ -34,7 +34,7 @@ export interface IPeekViewService {
@@ -180,10 +181,10 @@ index fa0d7fd2307..46a8443e46a 100644
  	declare readonly _serviceBrand: undefined;
  
 diff --git a/src/vs/workbench/browser/layout.ts b/src/vs/workbench/browser/layout.ts
-index 208a96a34ef..3265f51ae24 100644
+index 051dc16d1e0..01d02a6c1fa 100644
 --- a/src/vs/workbench/browser/layout.ts
 +++ b/src/vs/workbench/browser/layout.ts
-@@ -51,7 +51,7 @@ import { CodeWindow, mainWindow } from '../../base/browser/window.js';
+@@ -53,7 +53,7 @@ import { Lazy } from '../../base/common/lazy.js';
  
  //#region Layout Implementation
  
@@ -192,7 +193,7 @@ index 208a96a34ef..3265f51ae24 100644
  	activeContainerId: number;
  	mainWindowFullscreen: boolean;
  	readonly maximized: Set<number>;
-@@ -65,12 +65,12 @@ interface ILayoutRuntimeState {
+@@ -67,12 +67,12 @@ interface ILayoutRuntimeState {
  	};
  }
  
@@ -207,7 +208,7 @@ index 208a96a34ef..3265f51ae24 100644
  	readonly views: {
  		readonly defaults: string[] | undefined;
  		readonly containerToRestore: {
-@@ -104,11 +104,11 @@ enum LayoutClasses {
+@@ -106,11 +106,11 @@ enum LayoutClasses {
  	WINDOW_BORDER = 'border'
  }
  
@@ -222,10 +223,10 @@ index 208a96a34ef..3265f51ae24 100644
  	readonly filesToDiff?: IPathToOpen[];
  	readonly filesToMerge?: IPathToOpen[];
 diff --git a/src/vs/workbench/browser/workbench.ts b/src/vs/workbench/browser/workbench.ts
-index 267da8cf7db..8b0c59fd496 100644
+index 3c056dad1c6..ca80622f19d 100644
 --- a/src/vs/workbench/browser/workbench.ts
 +++ b/src/vs/workbench/browser/workbench.ts
-@@ -79,7 +79,7 @@ export class Workbench extends Layout {
+@@ -84,7 +84,7 @@ export class Workbench extends Layout {
  		this.registerErrorHandler(logService);
  	}
  
@@ -234,7 +235,7 @@ index 267da8cf7db..8b0c59fd496 100644
  
  		// Listen on unhandled rejection events
  		// Note: intentionally not registered as disposable to handle
-@@ -98,7 +98,7 @@ export class Workbench extends Layout {
+@@ -103,7 +103,7 @@ export class Workbench extends Layout {
  	}
  
  	private previousUnexpectedError: { message: string | undefined; time: number } = { message: undefined, time: 0 };
@@ -243,7 +244,7 @@ index 267da8cf7db..8b0c59fd496 100644
  		const message = toErrorMessage(error, true);
  		if (!message) {
  			return;
-@@ -173,7 +173,7 @@ export class Workbench extends Layout {
+@@ -178,7 +178,7 @@ export class Workbench extends Layout {
  		}
  	}
  
@@ -252,7 +253,7 @@ index 267da8cf7db..8b0c59fd496 100644
  
  		// Layout Service
  		serviceCollection.set(IWorkbenchLayoutService, this);
-@@ -212,7 +212,7 @@ export class Workbench extends Layout {
+@@ -217,7 +217,7 @@ export class Workbench extends Layout {
  		return instantiationService;
  	}
  
@@ -261,7 +262,7 @@ index 267da8cf7db..8b0c59fd496 100644
  
  		// Configuration changes
  		this._register(configurationService.onDidChangeConfiguration(e => this.updateFontAliasing(e, configurationService)));
-@@ -301,7 +301,7 @@ export class Workbench extends Layout {
+@@ -306,7 +306,7 @@ export class Workbench extends Layout {
  		}
  	}
  
@@ -270,7 +271,7 @@ index 267da8cf7db..8b0c59fd496 100644
  
  		// ARIA & Signals
  		setARIAContainer(this.mainContainer);
-@@ -363,7 +363,7 @@ export class Workbench extends Layout {
+@@ -368,7 +368,7 @@ export class Workbench extends Layout {
  		return part;
  	}
  
@@ -279,7 +280,7 @@ index 267da8cf7db..8b0c59fd496 100644
  
  		// Instantiate Notification components
  		const notificationsCenter = this._register(instantiationService.createInstance(NotificationsCenter, this.mainContainer, notificationService.model));
-@@ -393,7 +393,7 @@ export class Workbench extends Layout {
+@@ -398,7 +398,7 @@ export class Workbench extends Layout {
  		});
  	}
  
@@ -458,10 +459,10 @@ index 69aad42da57..a06dcd516bd 100644
  			getInitData: async (): Promise<IWebWorkerExtensionHostInitData> => {
  				if (isInitialStart) {
 diff --git a/src/vs/workbench/services/extensions/browser/extensionUrlHandler.ts b/src/vs/workbench/services/extensions/browser/extensionUrlHandler.ts
-index b5123044a0a..b985da4efd3 100644
+index c1c1e01c961..781ba271fce 100644
 --- a/src/vs/workbench/services/extensions/browser/extensionUrlHandler.ts
 +++ b/src/vs/workbench/services/extensions/browser/extensionUrlHandler.ts
-@@ -111,7 +111,7 @@ export class ExtensionUrlHandlerOverrideRegistry {
+@@ -112,7 +112,7 @@ export class ExtensionUrlHandlerOverrideRegistry {
   *
   * It also makes sure the user confirms opening URLs directed towards extensions.
   */
@@ -471,7 +472,7 @@ index b5123044a0a..b985da4efd3 100644
  	readonly _serviceBrand: undefined;
  
 diff --git a/src/vs/workbench/services/extensions/browser/webWorkerExtensionHost.ts b/src/vs/workbench/services/extensions/browser/webWorkerExtensionHost.ts
-index 8d31dcb6a4b..6f7e16f41dd 100644
+index c16323e0f59..0b053a473b7 100644
 --- a/src/vs/workbench/services/extensions/browser/webWorkerExtensionHost.ts
 +++ b/src/vs/workbench/services/extensions/browser/webWorkerExtensionHost.ts
 @@ -77,7 +77,7 @@ export class WebWorkerExtensionHost extends Disposable implements IExtensionHost
@@ -519,10 +520,10 @@ index 382683f3cf7..f844bf35379 100644
  		public readonly toAdd: IExtension[],
  		public readonly toRemove: string[] | IExtension[]
 diff --git a/src/vs/workbench/services/keybinding/browser/keybindingService.ts b/src/vs/workbench/services/keybinding/browser/keybindingService.ts
-index 04c5e87def0..f10b332d8e2 100644
+index 7eee4efba9a..2e4dbc935e2 100644
 --- a/src/vs/workbench/services/keybinding/browser/keybindingService.ts
 +++ b/src/vs/workbench/services/keybinding/browser/keybindingService.ts
-@@ -423,7 +423,7 @@ export class WorkbenchKeybindingService extends AbstractKeybindingService {
+@@ -440,7 +440,7 @@ export class WorkbenchKeybindingService extends AbstractKeybindingService {
  		return this.userKeybindings.keybindings.length;
  	}
  
@@ -557,6 +558,19 @@ index 554ecb2bce9..63082ed6952 100644
  	_serviceBrand: undefined;
  
  	constructor(
+diff --git a/src/vs/workbench/services/mcp/common/mcpWorkbenchManagementService.ts b/src/vs/workbench/services/mcp/common/mcpWorkbenchManagementService.ts
+index 65133dbf92e..9feaca7e413 100644
+--- a/src/vs/workbench/services/mcp/common/mcpWorkbenchManagementService.ts
++++ b/src/vs/workbench/services/mcp/common/mcpWorkbenchManagementService.ts
+@@ -60,7 +60,7 @@ export interface IWorkbenchMcpManagementService extends IMcpManagementService {
+ 
+ export const IWorkbenchMcpManagementService = createDecorator<IWorkbenchMcpManagementService>('workbenchMcpManagementService');
+ 
+-class WorkbenchMcpManagementService extends Disposable implements IWorkbenchMcpManagementService {
++export class WorkbenchMcpManagementService extends Disposable implements IWorkbenchMcpManagementService {
+ 
+ 	readonly _serviceBrand: undefined;
+ 
 diff --git a/src/vs/workbench/services/outline/browser/outlineService.ts b/src/vs/workbench/services/outline/browser/outlineService.ts
 index e9077d5f226..fc31a3fab94 100644
 --- a/src/vs/workbench/services/outline/browser/outlineService.ts
@@ -610,7 +624,7 @@ index fe3e69fb843..899d84dda0c 100644
  	declare readonly _serviceBrand: undefined;
  
 diff --git a/src/vs/workbench/services/terminal/common/embedderTerminalService.ts b/src/vs/workbench/services/terminal/common/embedderTerminalService.ts
-index e976a8617ca..b855f41710f 100644
+index f1001facbc1..ae45f1c522e 100644
 --- a/src/vs/workbench/services/terminal/common/embedderTerminalService.ts
 +++ b/src/vs/workbench/services/terminal/common/embedderTerminalService.ts
 @@ -52,7 +52,7 @@ export interface IEmbedderTerminalPty {

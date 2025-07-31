@@ -6,7 +6,7 @@ Subject: [PATCH] feat: add a way to override extension host config
 ---
  .../services/extensions/browser/extensionService.ts   | 11 +++++++++--
  .../extensions/browser/webWorkerExtensionHost.ts      |  5 ++++-
- .../electron-sandbox/nativeExtensionService.ts        | 10 ++++++++--
+ .../electron-browser/nativeExtensionService.ts        | 10 ++++++++--
  .../worker/webWorkerExtensionHostIframe.html          | 10 +++++-----
  4 files changed, 26 insertions(+), 10 deletions(-)
 
@@ -40,7 +40,7 @@ index cea72fd2225..c2aa0d65072 100644
  			case ExtensionHostKind.Remote: {
  				const remoteAgentConnection = this._remoteAgentService.getConnection();
 diff --git a/src/vs/workbench/services/extensions/browser/webWorkerExtensionHost.ts b/src/vs/workbench/services/extensions/browser/webWorkerExtensionHost.ts
-index 5c9057ec6c0..a59ca65bf41 100644
+index d630f9c6ba1..c5f1f076f37 100644
 --- a/src/vs/workbench/services/extensions/browser/webWorkerExtensionHost.ts
 +++ b/src/vs/workbench/services/extensions/browser/webWorkerExtensionHost.ts
 @@ -59,6 +59,8 @@ export class WebWorkerExtensionHost extends Disposable implements IExtensionHost
@@ -62,10 +62,10 @@ index 5c9057ec6c0..a59ca65bf41 100644
  						fileRoot: globalThis._VSCODE_FILE_ROOT,
  						nls: {
  							messages: getNLSMessages(),
-diff --git a/src/vs/workbench/services/extensions/electron-sandbox/nativeExtensionService.ts b/src/vs/workbench/services/extensions/electron-sandbox/nativeExtensionService.ts
+diff --git a/src/vs/workbench/services/extensions/electron-browser/nativeExtensionService.ts b/src/vs/workbench/services/extensions/electron-browser/nativeExtensionService.ts
 index 0506fdcc411..e3fbfb7bb29 100644
---- a/src/vs/workbench/services/extensions/electron-sandbox/nativeExtensionService.ts
-+++ b/src/vs/workbench/services/extensions/electron-sandbox/nativeExtensionService.ts
+--- a/src/vs/workbench/services/extensions/electron-browser/nativeExtensionService.ts
++++ b/src/vs/workbench/services/extensions/electron-browser/nativeExtensionService.ts
 @@ -6,7 +6,7 @@
  import { runWhenWindowIdle } from '../../../../base/browser/dom.js';
  import { mainWindow } from '../../../../base/browser/window.js';

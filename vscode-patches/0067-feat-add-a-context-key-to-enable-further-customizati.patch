@@ -5,10 +5,10 @@ Subject: [PATCH] feat: add a context key to enable further customization
 
 ---
  src/vs/workbench/browser/actions/windowActions.ts | 15 ++++++++++-----
- src/vs/workbench/browser/contextkeys.ts           |  3 +++
+ src/vs/workbench/browser/contextkeys.ts           |  5 ++++-
  src/vs/workbench/common/contextkeys.ts            |  2 ++
  .../files/browser/fileActions.contribution.ts     |  6 +++---
- 4 files changed, 18 insertions(+), 8 deletions(-)
+ 4 files changed, 19 insertions(+), 9 deletions(-)
 
 diff --git a/src/vs/workbench/browser/actions/windowActions.ts b/src/vs/workbench/browser/actions/windowActions.ts
 index 2fb9c8edbb3..c2084859922 100644
@@ -68,12 +68,21 @@ index 2fb9c8edbb3..c2084859922 100644
 +	when: IsSandboxWorkspaceContext.toNegated()
  });
 diff --git a/src/vs/workbench/browser/contextkeys.ts b/src/vs/workbench/browser/contextkeys.ts
-index 64c5fff00b3..fe271e480f0 100644
+index b73c9341e90..d09e7dc1369 100644
 --- a/src/vs/workbench/browser/contextkeys.ts
 +++ b/src/vs/workbench/browser/contextkeys.ts
-@@ -197,6 +197,9 @@ export class WorkbenchContextKeysHandler extends Disposable {
- 		this.auxiliaryBarVisibleContext = AuxiliaryBarVisibleContext.bindTo(this.contextKeyService);
- 		this.auxiliaryBarVisibleContext.set(this.layoutService.isVisible(Parts.AUXILIARYBAR_PART));
+@@ -8,7 +8,7 @@ import { Disposable, DisposableStore } from '../../base/common/lifecycle.js';
+ import { IContextKeyService, IContextKey, setConstant as setConstantContextKey } from '../../platform/contextkey/common/contextkey.js';
+ import { InputFocusedContext, IsMacContext, IsLinuxContext, IsWindowsContext, IsWebContext, IsMacNativeContext, IsDevelopmentContext, IsIOSContext, ProductQualityContext, IsMobileContext } from '../../platform/contextkey/common/contextkeys.js';
+ import { trackFocus, addDisposableListener, EventType, onDidRegisterWindow, getActiveWindow, isEditableElement, getActiveElement } from '../../base/browser/dom.js';
+-import { SplitEditorsVertically, InEditorZenModeContext, AuxiliaryBarVisibleContext, SideBarVisibleContext, PanelAlignmentContext, PanelMaximizedContext, PanelVisibleContext, EmbedderIdentifierContext, EditorTabsVisibleContext, IsMainEditorCenteredLayoutContext, MainEditorAreaVisibleContext, DirtyWorkingCopiesContext, EmptyWorkspaceSupportContext, EnterMultiRootWorkspaceSupportContext, HasWebFileSystemAccess, IsMainWindowFullscreenContext, OpenFolderWorkspaceSupportContext, RemoteNameContext, VirtualWorkspaceContext, WorkbenchStateContext, WorkspaceFolderCountContext, PanelPositionContext, TemporaryWorkspaceContext, TitleBarVisibleContext, TitleBarStyleContext, IsAuxiliaryWindowFocusedContext, ActiveEditorGroupEmptyContext, ActiveEditorGroupIndexContext, ActiveEditorGroupLastContext, ActiveEditorGroupLockedContext, MultipleEditorGroupsContext, EditorsVisibleContext, AuxiliaryBarMaximizedContext } from '../common/contextkeys.js';
++import { SplitEditorsVertically, InEditorZenModeContext, AuxiliaryBarVisibleContext, SideBarVisibleContext, PanelAlignmentContext, PanelMaximizedContext, PanelVisibleContext, EmbedderIdentifierContext, EditorTabsVisibleContext, IsMainEditorCenteredLayoutContext, MainEditorAreaVisibleContext, DirtyWorkingCopiesContext, EmptyWorkspaceSupportContext, EnterMultiRootWorkspaceSupportContext, HasWebFileSystemAccess, IsMainWindowFullscreenContext, OpenFolderWorkspaceSupportContext, RemoteNameContext, VirtualWorkspaceContext, WorkbenchStateContext, WorkspaceFolderCountContext, PanelPositionContext, TemporaryWorkspaceContext, TitleBarVisibleContext, TitleBarStyleContext, IsAuxiliaryWindowFocusedContext, ActiveEditorGroupEmptyContext, ActiveEditorGroupIndexContext, ActiveEditorGroupLastContext, ActiveEditorGroupLockedContext, MultipleEditorGroupsContext, EditorsVisibleContext, AuxiliaryBarMaximizedContext, IsSandboxWorkspaceContext } from '../common/contextkeys.js';
+ import { preferredSideBySideGroupDirection, GroupDirection, IEditorGroupsService } from '../services/editor/common/editorGroupsService.js';
+ import { IConfigurationService } from '../../platform/configuration/common/configuration.js';
+ import { IWorkbenchEnvironmentService } from '../services/environment/common/environmentService.js';
+@@ -200,6 +200,9 @@ export class WorkbenchContextKeysHandler extends Disposable {
+ 		this.auxiliaryBarMaximizedContext = AuxiliaryBarMaximizedContext.bindTo(this.contextKeyService);
+ 		this.auxiliaryBarMaximizedContext.set(this.layoutService.isAuxiliaryBarMaximized());
  
 +		// Environment
 +		IsSandboxWorkspaceContext.bindTo(this.contextKeyService);
@@ -82,7 +91,7 @@ index 64c5fff00b3..fe271e480f0 100644
  	}
  
 diff --git a/src/vs/workbench/common/contextkeys.ts b/src/vs/workbench/common/contextkeys.ts
-index f10760ef087..b005c7a9021 100644
+index 55a0db1fc70..de72699fac3 100644
 --- a/src/vs/workbench/common/contextkeys.ts
 +++ b/src/vs/workbench/common/contextkeys.ts
 @@ -36,6 +36,8 @@ export const HasWebFileSystemAccess = new RawContextKey<boolean>('hasWebFileSyst

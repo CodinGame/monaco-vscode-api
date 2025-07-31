@@ -21,7 +21,7 @@ Subject: [PATCH] feat: support shadow dom
  .../contentWidgets/contentWidgets.ts          |  2 +-
  .../hover/browser/contentHoverWidget.ts       |  2 +-
  .../actionWidget/browser/actionList.ts        |  2 +-
- src/vs/workbench/browser/contextkeys.ts       |  9 ++++----
+ src/vs/workbench/browser/contextkeys.ts       |  7 +++---
  src/vs/workbench/browser/layout.ts            |  3 +++
  .../browser/parts/editor/editorGroupView.ts   |  4 ++--
  src/vs/workbench/browser/workbench.ts         |  6 ++---
@@ -39,13 +39,13 @@ Subject: [PATCH] feat: support shadow dom
  .../browser/walkThroughPart.ts                |  6 ++---
  .../keybinding/browser/keybindingService.ts   | 10 +++++---
  .../themes/browser/workbenchThemeService.ts   |  4 ++--
- 35 files changed, 110 insertions(+), 72 deletions(-)
+ 35 files changed, 109 insertions(+), 71 deletions(-)
 
 diff --git a/src/vs/base/browser/dom.ts b/src/vs/base/browser/dom.ts
-index 553c584a63d..49549236908 100644
+index 1c7c66f76aa..f414f2b07fd 100644
 --- a/src/vs/base/browser/dom.ts
 +++ b/src/vs/base/browser/dom.ts
-@@ -621,8 +621,7 @@ export function getTopLeftOffset(element: HTMLElement): IDomPosition {
+@@ -620,8 +620,7 @@ export function getTopLeftOffset(element: HTMLElement): IDomPosition {
  
  	while (
  		(element = <HTMLElement>element.parentNode) !== null
@@ -55,7 +55,7 @@ index 553c584a63d..49549236908 100644
  	) {
  		top -= element.scrollTop;
  		const c = isShadowRoot(element) ? null : getComputedStyle(element);
-@@ -723,7 +722,7 @@ export function getDomNodeZoomLevel(domNode: HTMLElement): number {
+@@ -722,7 +721,7 @@ export function getDomNodeZoomLevel(domNode: HTMLElement): number {
  		}
  
  		testElement = testElement.parentElement;
@@ -64,7 +64,7 @@ index 553c584a63d..49549236908 100644
  
  	return zoom;
  }
-@@ -800,7 +799,7 @@ export function setParentFlowTo(fromChildElement: HTMLElement, toParentElement:
+@@ -799,7 +798,7 @@ export function setParentFlowTo(fromChildElement: HTMLElement, toParentElement:
  function getParentFlowToElement(node: HTMLElement): HTMLElement | null {
  	const flowToParentId = node.dataset[parentFlowToDataKey];
  	if (typeof flowToParentId === 'string') {
@@ -73,7 +73,7 @@ index 553c584a63d..49549236908 100644
  	}
  	return null;
  }
-@@ -883,8 +882,8 @@ export function getShadowRoot(domNode: Node): ShadowRoot | null {
+@@ -882,8 +881,8 @@ export function getShadowRoot(domNode: Node): ShadowRoot | null {
   * based on document focus. Falls back to the main
   * window if no window has focus.
   */
@@ -84,7 +84,7 @@ index 553c584a63d..49549236908 100644
  
  	while (result?.shadowRoot) {
  		result = result.shadowRoot.activeElement;
-@@ -893,6 +892,14 @@ export function getActiveElement(): Element | null {
+@@ -892,6 +891,14 @@ export function getActiveElement(): Element | null {
  	return result;
  }
  
@@ -99,7 +99,7 @@ index 553c584a63d..49549236908 100644
  /**
   * Returns true if the focused window active element matches
   * the provided element. Falls back to the main window if no
-@@ -1189,7 +1196,7 @@ class FocusTracker extends Disposable implements IFocusTracker {
+@@ -1188,7 +1195,7 @@ class FocusTracker extends Disposable implements IFocusTracker {
  	private static hasFocusWithin(element: HTMLElement | Window): boolean {
  		if (isHTMLElement(element)) {
  			const shadowRoot = getShadowRoot(element);
@@ -108,7 +108,7 @@ index 553c584a63d..49549236908 100644
  			return isAncestor(activeElement, element);
  		} else {
  			const window = element;
-@@ -1408,7 +1415,7 @@ export function removeTabIndexAndUpdateFocus(node: HTMLElement): void {
+@@ -1407,7 +1414,7 @@ export function removeTabIndexAndUpdateFocus(node: HTMLElement): void {
  	// standard DOM behavior is to move focus to the <body> element. We
  	// typically never want that, rather put focus to the closest element
  	// in the hierarchy of the parent DOM nodes.
@@ -118,10 +118,10 @@ index 553c584a63d..49549236908 100644
  		parentFocusable?.focus();
  	}
 diff --git a/src/vs/base/browser/domStylesheets.ts b/src/vs/base/browser/domStylesheets.ts
-index ebc249c6608..5f5da69f73b 100644
+index 76a71c5402d..e07bd22315c 100644
 --- a/src/vs/base/browser/domStylesheets.ts
 +++ b/src/vs/base/browser/domStylesheets.ts
-@@ -45,6 +45,14 @@ class WrappedStyleElement {
+@@ -46,6 +46,14 @@ class WrappedStyleElement {
  	}
  }
  
@@ -136,7 +136,7 @@ index ebc249c6608..5f5da69f73b 100644
  export function createStyleSheet(container: HTMLElement = mainWindow.document.head, beforeAppend?: (style: HTMLStyleElement) => void, disposableStore?: DisposableStore): HTMLStyleElement {
  	const style = document.createElement('style');
  	style.type = 'text/css';
-@@ -67,7 +75,12 @@ export function createStyleSheet(container: HTMLElement = mainWindow.document.he
+@@ -68,7 +76,12 @@ export function createStyleSheet(container: HTMLElement = mainWindow.document.he
  				continue; // main window is already tracked
  			}
  
@@ -150,7 +150,7 @@ index ebc249c6608..5f5da69f73b 100644
  			disposableStore?.add(cloneDisposable);
  		}
  	}
-@@ -79,17 +92,17 @@ export function cloneGlobalStylesheets(targetWindow: Window): IDisposable {
+@@ -80,17 +93,17 @@ export function cloneGlobalStylesheets(targetWindow: Window): IDisposable {
  	const disposables = new DisposableStore();
  
  	for (const [globalStylesheet, clonedGlobalStylesheets] of globalStylesheets) {
@@ -447,21 +447,20 @@ index 0ea03901b42..87cd115f124 100644
  					element.style.width = 'auto';
  					const width = element.getBoundingClientRect().width;
 diff --git a/src/vs/workbench/browser/contextkeys.ts b/src/vs/workbench/browser/contextkeys.ts
-index 840174189ee..64c5fff00b3 100644
+index a1016714342..b73c9341e90 100644
 --- a/src/vs/workbench/browser/contextkeys.ts
 +++ b/src/vs/workbench/browser/contextkeys.ts
 @@ -7,8 +7,8 @@ import { Event } from '../../base/common/event.js';
  import { Disposable, DisposableStore } from '../../base/common/lifecycle.js';
  import { IContextKeyService, IContextKey, setConstant as setConstantContextKey } from '../../platform/contextkey/common/contextkey.js';
  import { InputFocusedContext, IsMacContext, IsLinuxContext, IsWindowsContext, IsWebContext, IsMacNativeContext, IsDevelopmentContext, IsIOSContext, ProductQualityContext, IsMobileContext } from '../../platform/contextkey/common/contextkeys.js';
--import { SplitEditorsVertically, InEditorZenModeContext, AuxiliaryBarVisibleContext, SideBarVisibleContext, PanelAlignmentContext, PanelMaximizedContext, PanelVisibleContext, EmbedderIdentifierContext, EditorTabsVisibleContext, IsMainEditorCenteredLayoutContext, MainEditorAreaVisibleContext, DirtyWorkingCopiesContext, EmptyWorkspaceSupportContext, EnterMultiRootWorkspaceSupportContext, HasWebFileSystemAccess, IsMainWindowFullscreenContext, OpenFolderWorkspaceSupportContext, RemoteNameContext, VirtualWorkspaceContext, WorkbenchStateContext, WorkspaceFolderCountContext, PanelPositionContext, TemporaryWorkspaceContext, TitleBarVisibleContext, TitleBarStyleContext, IsAuxiliaryWindowFocusedContext, ActiveEditorGroupEmptyContext, ActiveEditorGroupIndexContext, ActiveEditorGroupLastContext, ActiveEditorGroupLockedContext, MultipleEditorGroupsContext, EditorsVisibleContext } from '../common/contextkeys.js';
--import { trackFocus, addDisposableListener, EventType, onDidRegisterWindow, getActiveWindow, isEditableElement } from '../../base/browser/dom.js';
 +import { trackFocus, addDisposableListener, EventType, onDidRegisterWindow, getActiveWindow, isEditableElement, getActiveElement } from '../../base/browser/dom.js';
-+import { SplitEditorsVertically, InEditorZenModeContext, AuxiliaryBarVisibleContext, SideBarVisibleContext, PanelAlignmentContext, PanelMaximizedContext, PanelVisibleContext, EmbedderIdentifierContext, EditorTabsVisibleContext, IsMainEditorCenteredLayoutContext, MainEditorAreaVisibleContext, DirtyWorkingCopiesContext, EmptyWorkspaceSupportContext, EnterMultiRootWorkspaceSupportContext, HasWebFileSystemAccess, IsMainWindowFullscreenContext, OpenFolderWorkspaceSupportContext, RemoteNameContext, VirtualWorkspaceContext, WorkbenchStateContext, WorkspaceFolderCountContext, PanelPositionContext, TemporaryWorkspaceContext, TitleBarVisibleContext, TitleBarStyleContext, IsAuxiliaryWindowFocusedContext, ActiveEditorGroupEmptyContext, ActiveEditorGroupIndexContext, ActiveEditorGroupLastContext, ActiveEditorGroupLockedContext, MultipleEditorGroupsContext, EditorsVisibleContext, IsSandboxWorkspaceContext } from '../common/contextkeys.js';
+ import { SplitEditorsVertically, InEditorZenModeContext, AuxiliaryBarVisibleContext, SideBarVisibleContext, PanelAlignmentContext, PanelMaximizedContext, PanelVisibleContext, EmbedderIdentifierContext, EditorTabsVisibleContext, IsMainEditorCenteredLayoutContext, MainEditorAreaVisibleContext, DirtyWorkingCopiesContext, EmptyWorkspaceSupportContext, EnterMultiRootWorkspaceSupportContext, HasWebFileSystemAccess, IsMainWindowFullscreenContext, OpenFolderWorkspaceSupportContext, RemoteNameContext, VirtualWorkspaceContext, WorkbenchStateContext, WorkspaceFolderCountContext, PanelPositionContext, TemporaryWorkspaceContext, TitleBarVisibleContext, TitleBarStyleContext, IsAuxiliaryWindowFocusedContext, ActiveEditorGroupEmptyContext, ActiveEditorGroupIndexContext, ActiveEditorGroupLastContext, ActiveEditorGroupLockedContext, MultipleEditorGroupsContext, EditorsVisibleContext, AuxiliaryBarMaximizedContext } from '../common/contextkeys.js';
+-import { trackFocus, addDisposableListener, EventType, onDidRegisterWindow, getActiveWindow, isEditableElement } from '../../base/browser/dom.js';
  import { preferredSideBySideGroupDirection, GroupDirection, IEditorGroupsService } from '../services/editor/common/editorGroupsService.js';
  import { IConfigurationService } from '../../platform/configuration/common/configuration.js';
  import { IWorkbenchEnvironmentService } from '../services/environment/common/environmentService.js';
-@@ -300,14 +300,15 @@ export class WorkbenchContextKeysHandler extends Disposable {
+@@ -308,14 +308,15 @@ export class WorkbenchContextKeysHandler extends Disposable {
  	private updateInputContextKeys(ownerDocument: Document, disposables: DisposableStore): void {
  
  		function activeElementIsInput(): boolean {
@@ -480,19 +479,19 @@ index 840174189ee..64c5fff00b3 100644
  
  				// Ensure we are only updating the context key if we are
 diff --git a/src/vs/workbench/browser/layout.ts b/src/vs/workbench/browser/layout.ts
-index 3265f51ae24..976954b2150 100644
+index 01d02a6c1fa..4c9b67f9b0c 100644
 --- a/src/vs/workbench/browser/layout.ts
 +++ b/src/vs/workbench/browser/layout.ts
-@@ -48,6 +48,7 @@ import { AuxiliaryBarPart } from './parts/auxiliarybar/auxiliaryBarPart.js';
- import { ITelemetryService } from '../../platform/telemetry/common/telemetry.js';
- import { IAuxiliaryWindowService } from '../services/auxiliaryWindow/browser/auxiliaryWindowService.js';
+@@ -50,6 +50,7 @@ import { IAuxiliaryWindowService } from '../services/auxiliaryWindow/browser/aux
  import { CodeWindow, mainWindow } from '../../base/browser/window.js';
+ import { ICoreExperimentationService, StartupExperimentGroup } from '../services/coreExperimentation/common/coreExperimentationService.js';
+ import { Lazy } from '../../base/common/lazy.js';
 +import { setContainerElement } from '../../base/browser/domStylesheets.js';
  
  //#region Layout Implementation
  
-@@ -300,6 +301,8 @@ export abstract class Layout extends Disposable implements IWorkbenchLayoutServi
- 		protected readonly parent: HTMLElement
+@@ -304,6 +305,8 @@ export abstract class Layout extends Disposable implements IWorkbenchLayoutServi
+ 		private readonly layoutOptions?: { resetLayout: boolean }
  	) {
  		super();
 +
@@ -501,7 +500,7 @@ index 3265f51ae24..976954b2150 100644
  
  	protected initLayout(accessor: ServicesAccessor): void {
 diff --git a/src/vs/workbench/browser/parts/editor/editorGroupView.ts b/src/vs/workbench/browser/parts/editor/editorGroupView.ts
-index db36961d502..2ac798b6b85 100644
+index 1e8b15256e5..05ae209af37 100644
 --- a/src/vs/workbench/browser/parts/editor/editorGroupView.ts
 +++ b/src/vs/workbench/browser/parts/editor/editorGroupView.ts
 @@ -11,7 +11,7 @@ import { EditorInput } from '../../../common/editor/editorInput.js';
@@ -523,10 +522,10 @@ index db36961d502..2ac798b6b85 100644
  		}
  
 diff --git a/src/vs/workbench/browser/workbench.ts b/src/vs/workbench/browser/workbench.ts
-index e112acb5e7e..6b332f5fa11 100644
+index c8397135f1d..40238c1a6ec 100644
 --- a/src/vs/workbench/browser/workbench.ts
 +++ b/src/vs/workbench/browser/workbench.ts
-@@ -70,6 +70,9 @@ export class Workbench extends Layout {
+@@ -75,6 +75,9 @@ export class Workbench extends Layout {
  		mark('code/willStartWorkbench');
  
  		this.registerErrorHandler(logService);
@@ -536,7 +535,7 @@ index e112acb5e7e..6b332f5fa11 100644
  	}
  
  	protected registerErrorHandler(logService: ILogService): void {
-@@ -326,9 +329,6 @@ export class Workbench extends Layout {
+@@ -331,9 +334,6 @@ export class Workbench extends Layout {
  
  		// Notification Handlers
  		this.createNotificationsHandlers(instantiationService, notificationService);
@@ -573,7 +572,7 @@ index cf13074b632..e0ecbc06b8b 100644
  					} else {
  						break;
 diff --git a/src/vs/workbench/contrib/notebook/browser/notebookEditorWidget.ts b/src/vs/workbench/contrib/notebook/browser/notebookEditorWidget.ts
-index 3a946890acf..f587ed2ed6f 100644
+index e7b1965ac3e..28078a39457 100644
 --- a/src/vs/workbench/contrib/notebook/browser/notebookEditorWidget.ts
 +++ b/src/vs/workbench/contrib/notebook/browser/notebookEditorWidget.ts
 @@ -1841,7 +1841,7 @@ export class NotebookEditorWidget extends Disposable implements INotebookEditorD
@@ -660,7 +659,7 @@ index 645c7b9a704..349a9bd301d 100644
  
  	private updateEditorForFocusModeChange(sync: boolean) {
 diff --git a/src/vs/workbench/contrib/notebook/browser/view/cellParts/markupCell.ts b/src/vs/workbench/contrib/notebook/browser/view/cellParts/markupCell.ts
-index 1797591072f..f4b5392d57a 100644
+index 004ed1c4747..3e12573defc 100644
 --- a/src/vs/workbench/contrib/notebook/browser/view/cellParts/markupCell.ts
 +++ b/src/vs/workbench/contrib/notebook/browser/view/cellParts/markupCell.ts
 @@ -225,7 +225,7 @@ export class MarkupCell extends Disposable {
@@ -672,7 +671,7 @@ index 1797591072f..f4b5392d57a 100644
  			this.notebookEditor.focusContainer();
  		}
  
-@@ -413,7 +413,7 @@ export class MarkupCell extends Disposable {
+@@ -414,7 +414,7 @@ export class MarkupCell extends Disposable {
  
  	private focusEditorIfNeeded() {
  		if (this.viewCell.focusMode === CellFocusMode.Editor &&
@@ -681,7 +680,7 @@ index 1797591072f..f4b5392d57a 100644
  		) { // Don't steal focus from other workbench parts, but if body has focus, we can take it
  			if (!this.editor) {
  				return;
-@@ -518,7 +518,7 @@ export class MarkupCell extends Disposable {
+@@ -519,7 +519,7 @@ export class MarkupCell extends Disposable {
  			// this is for a special case:
  			// users click the status bar empty space, which we will then focus the editor
  			// so we don't want to update the focus state too eagerly
@@ -732,10 +731,10 @@ index ef6c6cb679d..fa0a5b768d5 100644
  					preferencesEditor.focusSettings(true);
  				}
 diff --git a/src/vs/workbench/contrib/preferences/browser/settingsEditor2.ts b/src/vs/workbench/contrib/preferences/browser/settingsEditor2.ts
-index 29b4bbb3b50..2cd6690739b 100644
+index ba962f968ca..9b180726047 100644
 --- a/src/vs/workbench/contrib/preferences/browser/settingsEditor2.ts
 +++ b/src/vs/workbench/contrib/preferences/browser/settingsEditor2.ts
-@@ -1057,7 +1057,7 @@ export class SettingsEditor2 extends EditorPane {
+@@ -1097,7 +1097,7 @@ export class SettingsEditor2 extends EditorPane {
  		}));
  
  		this._register(this.settingsTree.onDidFocus(() => {
@@ -744,7 +743,7 @@ index 29b4bbb3b50..2cd6690739b 100644
  			if (classList && classList.contains('monaco-list') && classList.contains('settings-editor-tree')) {
  				this._currentFocusContext = SettingsFocusContext.SettingTree;
  				this.settingRowFocused.set(true);
-@@ -1523,7 +1523,7 @@ export class SettingsEditor2 extends EditorPane {
+@@ -1563,7 +1563,7 @@ export class SettingsEditor2 extends EditorPane {
  
  	private getActiveControlInSettingsTree(): HTMLElement | null {
  		const element = this.settingsTree.getHTMLElement();
@@ -753,7 +752,7 @@ index 29b4bbb3b50..2cd6690739b 100644
  		return (activeElement && DOM.isAncestorOfActiveElement(element)) ?
  			<HTMLElement>activeElement :
  			null;
-@@ -1586,7 +1586,7 @@ export class SettingsEditor2 extends EditorPane {
+@@ -1626,7 +1626,7 @@ export class SettingsEditor2 extends EditorPane {
  	}
  
  	private contextViewFocused(): boolean {
@@ -789,7 +788,7 @@ index 01cc528667a..4b8db8b91bc 100644
  			// TODO: Improve lifecycle management this event should be disposed after first fire
  			this._register(this._terminalService.onDidChangeConnectionState(() => {
 diff --git a/src/vs/workbench/contrib/welcomeGettingStarted/browser/gettingStarted.ts b/src/vs/workbench/contrib/welcomeGettingStarted/browser/gettingStarted.ts
-index 8d728275a51..c830c7f890e 100644
+index 77a3a36c528..dcd3349c596 100644
 --- a/src/vs/workbench/contrib/welcomeGettingStarted/browser/gettingStarted.ts
 +++ b/src/vs/workbench/contrib/welcomeGettingStarted/browser/gettingStarted.ts
 @@ -3,7 +3,7 @@
@@ -801,7 +800,7 @@ index 8d728275a51..c830c7f890e 100644
  import { renderFormattedText } from '../../../../base/browser/formattedTextRenderer.js';
  import { StandardKeyboardEvent } from '../../../../base/browser/keyboardEvent.js';
  import { Button } from '../../../../base/browser/ui/button/button.js';
-@@ -2109,7 +2109,7 @@ export class GettingStartedPage extends EditorPane {
+@@ -2124,7 +2124,7 @@ export class GettingStartedPage extends EditorPane {
  	override focus() {
  		super.focus();
  
@@ -842,18 +841,18 @@ index 27d04d09f01..61c2b58dfa4 100644
  			active = active.parentElement;
  		}
 diff --git a/src/vs/workbench/services/keybinding/browser/keybindingService.ts b/src/vs/workbench/services/keybinding/browser/keybindingService.ts
-index f10b332d8e2..96b173622ca 100644
+index 2e4dbc935e2..7a2f32addfa 100644
 --- a/src/vs/workbench/services/keybinding/browser/keybindingService.ts
 +++ b/src/vs/workbench/services/keybinding/browser/keybindingService.ts
-@@ -55,6 +55,7 @@ import { IKeyboard, INavigatorWithKeyboard } from './navigatorKeyboard.js';
- import { getAllUnboundCommands } from './unboundCommands.js';
+@@ -56,6 +56,7 @@ import { IUserDataProfileService } from '../../userDataProfile/common/userDataPr
  import { IUserKeybindingItem, KeybindingIO, OutputBuilder } from '../common/keybindingIO.js';
- import { IUserDataProfileService } from '../../userDataProfile/common/userDataProfile.js';
+ import { IKeyboard, INavigatorWithKeyboard } from './navigatorKeyboard.js';
+ import { getAllUnboundCommands } from './unboundCommands.js';
 +import { ILayoutService } from '../../../../platform/layout/browser/layoutService.js';
  
  interface ContributedKeyBinding {
  	command: string;
-@@ -198,7 +199,8 @@ export class WorkbenchKeybindingService extends AbstractKeybindingService {
+@@ -202,7 +203,8 @@ export class WorkbenchKeybindingService extends AbstractKeybindingService {
  		@IFileService fileService: IFileService,
  		@IUriIdentityService uriIdentityService: IUriIdentityService,
  		@ILogService logService: ILogService,
@@ -863,7 +862,7 @@ index f10b332d8e2..96b173622ca 100644
  	) {
  		super(contextKeyService, commandService, telemetryService, notificationService, logService);
  
-@@ -269,8 +271,10 @@ export class WorkbenchKeybindingService extends AbstractKeybindingService {
+@@ -280,8 +282,10 @@ export class WorkbenchKeybindingService extends AbstractKeybindingService {
  	private _registerKeyListeners(window: Window): IDisposable {
  		const disposables = new DisposableStore();
  
@@ -875,7 +874,7 @@ index f10b332d8e2..96b173622ca 100644
  			if (this._keybindingHoldMode) {
  				return;
  			}
-@@ -286,7 +290,7 @@ export class WorkbenchKeybindingService extends AbstractKeybindingService {
+@@ -297,7 +301,7 @@ export class WorkbenchKeybindingService extends AbstractKeybindingService {
  		}));
  
  		// for single modifier chord keybindings (e.g. shift shift)
