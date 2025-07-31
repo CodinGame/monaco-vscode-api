@@ -6,14 +6,48 @@ import {
 } from 'vs/base/common/event'
 import { Disposable, type IDisposable } from 'vs/base/common/lifecycle'
 import { ResourceSet } from 'vs/base/common/map'
+import { constObservable } from 'vs/base/common/observable'
 import { OS } from 'vs/base/common/platform'
 import { joinPath } from 'vs/base/common/resources'
 import { URI } from 'vs/base/common/uri'
 import { ICodeEditorService } from 'vs/editor/browser/services/codeEditorService.service'
+import { HoverService } from 'vs/editor/browser/services/hoverService/hoverService'
+import { InlineCompletionsService } from 'vs/editor/browser/services/inlineCompletionsService'
+import { IInlineCompletionsService } from 'vs/editor/browser/services/inlineCompletionsService.service'
+import { WorkerBasedDiffProviderFactoryService } from 'vs/editor/browser/widget/diffEditor/diffProviderFactoryService'
+import { IDiffProviderFactoryService } from 'vs/editor/browser/widget/diffEditor/diffProviderFactoryService.service'
+import { LanguageConfigurationService } from 'vs/editor/common/languages/languageConfigurationRegistry'
+import { ILanguageConfigurationService } from 'vs/editor/common/languages/languageConfigurationRegistry.service'
+import { LanguageFeatureDebounceService } from 'vs/editor/common/services/languageFeatureDebounce'
+import { ILanguageFeatureDebounceService } from 'vs/editor/common/services/languageFeatureDebounce.service'
+import { ILanguageFeaturesService } from 'vs/editor/common/services/languageFeatures.service'
+import { LanguageFeaturesService } from 'vs/editor/common/services/languageFeaturesService'
 import { IModelService } from 'vs/editor/common/services/model.service'
+import { ISemanticTokensStylingService } from 'vs/editor/common/services/semanticTokensStyling.service'
+import { SemanticTokensStylingService } from 'vs/editor/common/services/semanticTokensStylingService'
+import { ITreeSitterLibraryService } from 'vs/editor/common/services/treeSitter/treeSitterLibraryService.service'
+import { ITreeSitterThemeService } from 'vs/editor/common/services/treeSitter/treeSitterThemeService.service'
 import { ITreeViewsDnDService } from 'vs/editor/common/services/treeViewsDndService.service'
+import { CodeLensCache } from 'vs/editor/contrib/codelens/browser/codeLensCache'
+import { ICodeLensCache } from 'vs/editor/contrib/codelens/browser/codeLensCache.service'
+import { OutlineModelService } from 'vs/editor/contrib/documentSymbols/browser/outlineModel'
+import { IOutlineModelService } from 'vs/editor/contrib/documentSymbols/browser/outlineModel.service'
+import { EditorCancellationTokens } from 'vs/editor/contrib/editorState/browser/keybindingCancellation'
+import { IEditorCancellationTokens } from 'vs/editor/contrib/editorState/browser/keybindingCancellation.service'
+import { MarkerNavigationService } from 'vs/editor/contrib/gotoError/browser/markerNavigationService'
+import { IMarkerNavigationService } from 'vs/editor/contrib/gotoError/browser/markerNavigationService.service'
+import { SymbolNavigationService } from 'vs/editor/contrib/gotoSymbol/browser/symbolNavigation'
+import { ISymbolNavigationService } from 'vs/editor/contrib/gotoSymbol/browser/symbolNavigation.service'
+import { InlayHintsCache } from 'vs/editor/contrib/inlayHints/browser/inlayHintsController'
+import { IInlayHintsCache } from 'vs/editor/contrib/inlayHints/browser/inlayHintsController.service'
+import { PeekViewService } from 'vs/editor/contrib/peekView/browser/peekView'
+import { IPeekViewService } from 'vs/editor/contrib/peekView/browser/peekView.service'
+import { SuggestMemoryService } from 'vs/editor/contrib/suggest/browser/suggestMemory'
+import { ISuggestMemoryService } from 'vs/editor/contrib/suggest/browser/suggestMemory.service'
 import { StandaloneServices } from 'vs/editor/standalone/browser/standaloneServices'
 import { IAccessibleViewService } from 'vs/platform/accessibility/browser/accessibleView.service'
+import { ActionWidgetService } from 'vs/platform/actionWidget/browser/actionWidget'
+import { IActionWidgetService } from 'vs/platform/actionWidget/browser/actionWidget.service'
 import { IActionViewItemService } from 'vs/platform/actions/browser/actionViewItemService.service'
 import { IContextKeyService } from 'vs/platform/contextkey/common/contextkey.service'
 import { IExtensionHostDebugService } from 'vs/platform/debug/common/extensionHostDebug.service'
@@ -23,6 +57,7 @@ import { IFileDialogService } from 'vs/platform/dialogs/common/dialogs.service'
 import { IDownloadService } from 'vs/platform/download/common/download.service'
 import { IEncryptionService } from 'vs/platform/encryption/common/encryptionService.service'
 import { IEnvironmentService } from 'vs/platform/environment/common/environment.service'
+import { IExtensionGalleryManifestService } from 'vs/platform/extensionManagement/common/extensionGalleryManifest.service'
 import type { AllowedExtensionsConfigValueType } from 'vs/platform/extensionManagement/common/extensionManagement'
 import {
   IAllowedExtensionsService,
@@ -41,6 +76,7 @@ import type {
 } from 'vs/platform/extensions/common/extensions'
 import { IBuiltinExtensionsScannerService } from 'vs/platform/extensions/common/extensions.service'
 import { IFileService } from 'vs/platform/files/common/files.service'
+import { IHoverService } from 'vs/platform/hover/browser/hover.service'
 import { InstantiationType, registerSingleton } from 'vs/platform/instantiation/common/extensions'
 import { IKeyboardLayoutService } from 'vs/platform/keyboardLayout/common/keyboardLayout.service'
 import type { ILanguagePackItem } from 'vs/platform/languagePacks/common/languagePacks'
@@ -52,6 +88,11 @@ import {
   NullLogger
 } from 'vs/platform/log/common/log'
 import { ILoggerService } from 'vs/platform/log/common/log.service'
+import {
+  IMcpGalleryService,
+  IMcpManagementService
+} from 'vs/platform/mcp/common/mcpManagement.service'
+import { IMcpResourceScannerService } from 'vs/platform/mcp/common/mcpResourceScannerService.service'
 import { NullPolicyService } from 'vs/platform/policy/common/policy'
 import { IPolicyService } from 'vs/platform/policy/common/policy.service'
 import { IProductService } from 'vs/platform/product/common/productService.service'
@@ -67,6 +108,8 @@ import { NullEndpointTelemetryService } from 'vs/platform/telemetry/common/telem
 import { TerminalLocation } from 'vs/platform/terminal/common/terminal'
 import { ITerminalLogService } from 'vs/platform/terminal/common/terminal.service'
 import { ITunnelService } from 'vs/platform/tunnel/common/tunnel.service'
+import { IUndoRedoService } from 'vs/platform/undoRedo/common/undoRedo.service'
+import { UndoRedoService } from 'vs/platform/undoRedo/common/undoRedoService'
 import { State } from 'vs/platform/update/common/update'
 import { IUpdateService } from 'vs/platform/update/common/update.service'
 import { IUriIdentityService } from 'vs/platform/uriIdentity/common/uriIdentity.service'
@@ -90,6 +133,14 @@ import {
 } from 'vs/platform/userDataSync/common/userDataSync.service'
 import { IUserDataSyncAccountService } from 'vs/platform/userDataSync/common/userDataSyncAccount.service'
 import { IUserDataSyncMachinesService } from 'vs/platform/userDataSync/common/userDataSyncMachines.service'
+import {
+  NullSharedWebContentExtractorService,
+  NullWebContentExtractorService
+} from 'vs/platform/webContentExtractor/common/webContentExtractor'
+import {
+  ISharedWebContentExtractorService,
+  IWebContentExtractorService
+} from 'vs/platform/webContentExtractor/common/webContentExtractor.service'
 import { ICanonicalUriService } from 'vs/platform/workspace/common/canonicalUri.service'
 import { IEditSessionIdentityService } from 'vs/platform/workspace/common/editSessions.service'
 import { WorkspaceTrustUriResponse } from 'vs/platform/workspace/common/workspaceTrust'
@@ -116,20 +167,27 @@ import {
   IChatWidgetService,
   IQuickChatService
 } from 'vs/workbench/contrib/chat/browser/chat.service'
+import { IChatAttachmentResolveService } from 'vs/workbench/contrib/chat/browser/chatAttachmentResolveService.service'
+import { IChatMarkdownAnchorService } from 'vs/workbench/contrib/chat/browser/chatContentParts/chatMarkdownAnchorService.service'
+import { IChatContextPickService } from 'vs/workbench/contrib/chat/browser/chatContextPickService.service'
+import { IChatStatusItemService } from 'vs/workbench/contrib/chat/browser/chatStatusItemService.service'
 import {
   IChatAgentNameService,
   IChatAgentService
 } from 'vs/workbench/contrib/chat/common/chatAgents.service'
 import { ICodeMapperService } from 'vs/workbench/contrib/chat/common/chatCodeMapperService.service'
 import { IChatEditingService } from 'vs/workbench/contrib/chat/common/chatEditingService.service'
+import { IChatEntitlementService } from 'vs/workbench/contrib/chat/common/chatEntitlementService.service'
 import { IChatService } from 'vs/workbench/contrib/chat/common/chatService.service'
 import { IChatSlashCommandService } from 'vs/workbench/contrib/chat/common/chatSlashCommands.service'
+import { IChatTransferService } from 'vs/workbench/contrib/chat/common/chatTransferService.service'
 import { IChatVariablesService } from 'vs/workbench/contrib/chat/common/chatVariables.service'
 import { IChatWidgetHistoryService } from 'vs/workbench/contrib/chat/common/chatWidgetHistoryService.service'
 import { ILanguageModelIgnoredFilesService } from 'vs/workbench/contrib/chat/common/ignoredFiles.service'
 import { ILanguageModelStatsService } from 'vs/workbench/contrib/chat/common/languageModelStats.service'
 import { ILanguageModelToolsService } from 'vs/workbench/contrib/chat/common/languageModelToolsService.service'
 import { ILanguageModelsService } from 'vs/workbench/contrib/chat/common/languageModels.service'
+import { IPromptsService } from 'vs/workbench/contrib/chat/common/promptSyntax/service/promptsService.service'
 import { ICommentService } from 'vs/workbench/contrib/comments/browser/commentService.service'
 import { ICustomEditorService } from 'vs/workbench/contrib/customEditor/common/customEditor.service'
 import type {
@@ -156,6 +214,13 @@ import {
   IWorkbenchIssueService
 } from 'vs/workbench/contrib/issue/common/issue.service'
 import { IDefaultLogLevelsService } from 'vs/workbench/contrib/logs/common/defaultLogLevels.service'
+import { IMcpRegistry } from 'vs/workbench/contrib/mcp/common/mcpRegistryTypes.service'
+import {
+  IMcpElicitationService,
+  IMcpSamplingService,
+  IMcpService,
+  IMcpWorkbenchService
+} from 'vs/workbench/contrib/mcp/common/mcpTypes.service'
 import { IMultiDiffSourceResolverService } from 'vs/workbench/contrib/multiDiffEditor/browser/multiDiffSourceResolverService.service'
 import { INotebookOriginalCellModelFactory } from 'vs/workbench/contrib/notebook/browser/diff/inlineDiff/notebookOriginalCellModelFactory.service'
 import { INotebookOriginalModelReferenceFactory } from 'vs/workbench/contrib/notebook/browser/diff/inlineDiff/notebookOriginalModelRefFactory.service'
@@ -174,6 +239,7 @@ import { INotebookRendererMessagingService } from 'vs/workbench/contrib/notebook
 import { INotebookService } from 'vs/workbench/contrib/notebook/common/notebookService.service'
 import { INotebookEditorWorkerService } from 'vs/workbench/contrib/notebook/common/services/notebookWorkerService.service'
 import { IPreferencesSearchService } from 'vs/workbench/contrib/preferences/common/preferences.service'
+import { IRemoteCodingAgentsService } from 'vs/workbench/contrib/remoteCodingAgents/common/remoteCodingAgentsService.service'
 import { IQuickDiffModelService } from 'vs/workbench/contrib/scm/browser/quickDiffModel.service'
 import { IQuickDiffService } from 'vs/workbench/contrib/scm/common/quickDiff.service'
 import { ISCMService, ISCMViewService } from 'vs/workbench/contrib/scm/common/scm.service'
@@ -224,21 +290,31 @@ import { IWebviewWorkbenchService } from 'vs/workbench/contrib/webviewPanel/brow
 import { IWebviewViewService } from 'vs/workbench/contrib/webviewView/browser/webviewViewService.service'
 import { IWalkthroughsService } from 'vs/workbench/contrib/welcomeGettingStarted/browser/gettingStartedService.service'
 import { IAccessibleViewInformationService } from 'vs/workbench/services/accessibility/common/accessibleViewInformationService.service'
+import { NullDefaultAccountService } from 'vs/workbench/services/accounts/common/defaultAccount'
+import { IDefaultAccountService } from 'vs/workbench/services/accounts/common/defaultAccount.service'
 import { IActivityService } from 'vs/workbench/services/activity/common/activity.service'
 import { IAiEmbeddingVectorService } from 'vs/workbench/services/aiEmbeddingVector/common/aiEmbeddingVectorService.service'
 import { IAiRelatedInformationService } from 'vs/workbench/services/aiRelatedInformation/common/aiRelatedInformation.service'
 import { IWorkbenchAssignmentService } from 'vs/workbench/services/assignment/common/assignmentService.service'
 import { IAuthenticationAccessService } from 'vs/workbench/services/authentication/browser/authenticationAccessService.service'
+import { IAuthenticationMcpAccessService } from 'vs/workbench/services/authentication/browser/authenticationMcpAccessService.service'
+import { IAuthenticationMcpService } from 'vs/workbench/services/authentication/browser/authenticationMcpService.service'
+import { IAuthenticationMcpUsageService } from 'vs/workbench/services/authentication/browser/authenticationMcpUsageService.service'
 import { IAuthenticationUsageService } from 'vs/workbench/services/authentication/browser/authenticationUsageService.service'
 import {
   IAuthenticationExtensionsService,
   IAuthenticationService
 } from 'vs/workbench/services/authentication/common/authentication.service'
+import { IAuthenticationQueryService } from 'vs/workbench/services/authentication/common/authenticationQuery.service'
+import { IDynamicAuthenticationProviderStorageService } from 'vs/workbench/services/authentication/common/dynamicAuthenticationProviderStorage.service'
 import { IAuxiliaryWindowService } from 'vs/workbench/services/auxiliaryWindow/browser/auxiliaryWindowService.service'
 import { IBannerService } from 'vs/workbench/services/banner/browser/bannerService.service'
+import { IBrowserElementsService } from 'vs/workbench/services/browserElements/browser/browserElementsService.service'
 import { IJSONEditingService } from 'vs/workbench/services/configuration/common/jsonEditing.service'
 import { IConfigurationResolverService } from 'vs/workbench/services/configurationResolver/common/configurationResolver.service'
+import { ICoreExperimentationService } from 'vs/workbench/services/coreExperimentation/common/coreExperimentationService.service'
 import { IDecorationsService } from 'vs/workbench/services/decorations/common/decorations.service'
+import { CodeEditorService } from 'vs/workbench/services/editor/browser/codeEditorService'
 import { ICustomEditorLabelService } from 'vs/workbench/services/editor/common/customEditorLabelService.service'
 import {
   GroupOrientation,
@@ -283,6 +359,7 @@ import {
   IActiveLanguagePackService,
   ILocaleService
 } from 'vs/workbench/services/localization/common/locale.service'
+import { IWorkbenchMcpManagementService } from 'vs/workbench/services/mcp/common/mcpWorkbenchManagementService.service'
 import { INotebookDocumentService } from 'vs/workbench/services/notebook/common/notebookDocumentService.service'
 import { IOutlineService } from 'vs/workbench/services/outline/browser/outline.service'
 import type {
@@ -331,79 +408,10 @@ import { IWorkingCopyHistoryService } from 'vs/workbench/services/workingCopy/co
 import { IWorkingCopyService } from 'vs/workbench/services/workingCopy/common/workingCopyService.service'
 import { IWorkspaceEditingService } from 'vs/workbench/services/workspaces/common/workspaceEditing.service'
 import { IWorkspaceIdentityService } from 'vs/workbench/services/workspaces/common/workspaceIdentityService.service'
-import { IChatMarkdownAnchorService } from 'vs/workbench/contrib/chat/browser/chatContentParts/chatMarkdownAnchorService.service'
+import { IAiSettingsSearchService } from 'vscode/src/vs/workbench/services/aiSettingsSearch/common/aiSettingsSearch.service'
 import { getBuiltInExtensionTranslationsUris, getExtensionIdProvidingCurrentLocale } from './l10n'
 import { unsupported } from './tools'
-import { IChatEntitlementService } from 'vs/workbench/contrib/chat/common/chatEntitlementService.service'
-import { IPromptsService } from 'vs/workbench/contrib/chat/common/promptSyntax/service/types.service'
-import { ISuggestMemoryService } from 'vs/editor/contrib/suggest/browser/suggestMemory.service'
-import { LanguageConfigurationService } from 'vs/editor/common/languages/languageConfigurationRegistry'
-import { ILanguageConfigurationService } from 'vs/editor/common/languages/languageConfigurationRegistry.service'
-import { ISemanticTokensStylingService } from 'vs/editor/common/services/semanticTokensStyling.service'
-import { ILanguageFeatureDebounceService } from 'vs/editor/common/services/languageFeatureDebounce.service'
-import { ILanguageFeaturesService } from 'vs/editor/common/services/languageFeatures.service'
-import { IDiffProviderFactoryService } from 'vs/editor/browser/widget/diffEditor/diffProviderFactoryService.service'
-import { IOutlineModelService } from 'vs/editor/contrib/documentSymbols/browser/outlineModel.service'
-import { IMarkerNavigationService } from 'vs/editor/contrib/gotoError/browser/markerNavigationService.service'
-import { ICodeLensCache } from 'vs/editor/contrib/codelens/browser/codeLensCache.service'
-import { IInlayHintsCache } from 'vs/editor/contrib/inlayHints/browser/inlayHintsController.service'
-import { ISymbolNavigationService } from 'vs/editor/contrib/gotoSymbol/browser/symbolNavigation.service'
-import { IEditorCancellationTokens } from 'vs/editor/contrib/editorState/browser/keybindingCancellation.service'
-import { IPeekViewService } from 'vs/editor/contrib/peekView/browser/peekView.service'
-import { SemanticTokensStylingService } from 'vs/editor/common/services/semanticTokensStylingService'
-import { LanguageFeatureDebounceService } from 'vs/editor/common/services/languageFeatureDebounce'
-import { CodeEditorService } from 'vs/workbench/services/editor/browser/codeEditorService'
-import { LanguageFeaturesService } from 'vs/editor/common/services/languageFeaturesService'
-import { WorkerBasedDiffProviderFactoryService } from 'vs/editor/browser/widget/diffEditor/diffProviderFactoryService'
-import { OutlineModelService } from 'vs/editor/contrib/documentSymbols/browser/outlineModel'
-import { SuggestMemoryService } from 'vs/editor/contrib/suggest/browser/suggestMemory'
-import { CodeLensCache } from 'vs/editor/contrib/codelens/browser/codeLensCache'
-import { PeekViewService } from 'vs/editor/contrib/peekView/browser/peekView'
-import { MarkerNavigationService } from 'vs/editor/contrib/gotoError/browser/markerNavigationService'
-import { InlayHintsCache } from 'vs/editor/contrib/inlayHints/browser/inlayHintsController'
-import { IUndoRedoService } from 'vs/platform/undoRedo/common/undoRedo.service'
-import { UndoRedoService } from 'vs/platform/undoRedo/common/undoRedoService'
-import { ActionWidgetService } from 'vs/platform/actionWidget/browser/actionWidget'
-import { IActionWidgetService } from 'vs/platform/actionWidget/browser/actionWidget.service'
-import { EditorCancellationTokens } from 'vs/editor/contrib/editorState/browser/keybindingCancellation'
-import { SymbolNavigationService } from 'vs/editor/contrib/gotoSymbol/browser/symbolNavigation'
-import { IHoverService } from 'vs/platform/hover/browser/hover.service'
-import { HoverService } from 'vs/editor/browser/services/hoverService/hoverService'
-import {
-  IMcpSamplingService,
-  IMcpService,
-  IMcpWorkbenchService
-} from 'vs/workbench/contrib/mcp/common/mcpTypes.service'
-import { IMcpConfigPathsService } from 'vs/workbench/contrib/mcp/common/mcpConfigPathsService.service'
-import { IMcpRegistry } from 'vs/workbench/contrib/mcp/common/mcpRegistryTypes.service'
-import { IExtensionGalleryManifestService } from 'vs/platform/extensionManagement/common/extensionGalleryManifest.service'
-import {
-  ISharedWebContentExtractorService,
-  IWebContentExtractorService
-} from 'vs/platform/webContentExtractor/common/webContentExtractor.service'
-import { IDefaultAccountService } from 'vs/workbench/services/accounts/common/defaultAccount.service'
-import {
-  NullSharedWebContentExtractorService,
-  NullWebContentExtractorService
-} from 'vs/platform/webContentExtractor/common/webContentExtractor'
-import { NullDefaultAccountService } from 'vs/workbench/services/accounts/common/defaultAccount'
-import { IChatTransferService } from 'vs/workbench/contrib/chat/common/chatTransferService.service'
-import { IChatStatusItemService } from 'vs/workbench/contrib/chat/browser/chatStatusItemService.service'
-import { IAiSettingsSearchService } from 'vscode/src/vs/workbench/services/aiSettingsSearch/common/aiSettingsSearch.service'
-import { IDynamicAuthenticationProviderStorageService } from 'vs/workbench/services/authentication/common/dynamicAuthenticationProviderStorage.service'
-import { IAuthenticationMcpService } from 'vs/workbench/services/authentication/browser/authenticationMcpService.service'
-import { IAuthenticationMcpAccessService } from 'vs/workbench/services/authentication/browser/authenticationMcpAccessService.service'
-import { IAuthenticationMcpUsageService } from 'vs/workbench/services/authentication/browser/authenticationMcpUsageService.service'
-import { IBrowserElementsService } from 'vs/workbench/services/browserElements/browser/browserElementsService.service'
-import { IGettingStartedExperimentService } from 'vs/workbench/contrib/welcomeGettingStarted/browser/gettingStartedExpService.service'
-import { IChatContextPickService } from 'vs/workbench/contrib/chat/browser/chatContextPickService.service'
-import {
-  IMcpGalleryService,
-  IMcpManagementService
-} from 'vs/platform/mcp/common/mcpManagement.service'
-import { ITreeSitterThemeService } from 'vs/editor/common/services/treeSitter/treeSitterThemeService.service'
-import { ITreeSitterLibraryService } from 'vs/editor/common/services/treeSitter/treeSitterLibraryService.service'
-import { constObservable } from 'vs/base/common/observable'
+
 function Unsupported(target: object, propertyKey: string, descriptor?: PropertyDescriptor) {
   function unsupported() {
     throw new Error(
@@ -463,6 +471,7 @@ registerSingleton(IHoverService, HoverService, InstantiationType.Delayed)
 registerSingleton(IInlayHintsCache, InlayHintsCache, InstantiationType.Delayed)
 registerSingleton(IActionWidgetService, ActionWidgetService, InstantiationType.Delayed)
 registerSingleton(IUndoRedoService, UndoRedoService, InstantiationType.Delayed)
+registerSingleton(IInlineCompletionsService, InlineCompletionsService, InstantiationType.Delayed)
 /**
  * End editor services
  */
@@ -499,13 +508,9 @@ class EditorService implements IEditorService {
   count: IEditorService['count'] = 0
   getEditors: IEditorService['getEditors'] = () => []
   @Unsupported
-  openEditor: IEditorService['openEditor'] = (): never => {
-    unsupported()
-  }
+  openEditor: IEditorService['openEditor'] = unsupported
   @Unsupported
-  openEditors: IEditorService['openEditors'] = (): never => {
-    unsupported()
-  }
+  openEditors: IEditorService['openEditors'] = unsupported
   replaceEditors: IEditorService['replaceEditors'] = async () => {}
   isOpened: IEditorService['isOpened'] = () => false
   isVisible: IEditorService['isVisible'] = () => false
@@ -545,21 +550,13 @@ registerSingleton(IUriIdentityService, UriIdentityService, InstantiationType.Del
 class TextFileService implements ITextFileService {
   _serviceBrand: undefined
   @Unsupported
-  resolveDecoding: ITextFileService['resolveDecoding'] = (): never => {
-    unsupported()
-  }
+  resolveDecoding: ITextFileService['resolveDecoding'] = unsupported
   @Unsupported
-  resolveEncoding: ITextFileService['resolveEncoding'] = (): never => {
-    unsupported()
-  }
+  resolveEncoding: ITextFileService['resolveEncoding'] = unsupported
   @Unsupported
-  validateDetectedEncoding: ITextFileService['validateDetectedEncoding'] = (): never => {
-    unsupported()
-  }
+  validateDetectedEncoding: ITextFileService['validateDetectedEncoding'] = unsupported
   @Unsupported
-  getEncoding: ITextFileService['getEncoding'] = (): never => {
-    unsupported()
-  }
+  getEncoding: ITextFileService['getEncoding'] = unsupported
   @Unsupported
   get files() {
     return unsupported()
@@ -573,49 +570,27 @@ class TextFileService implements ITextFileService {
     return unsupported()
   }
   @Unsupported
-  isDirty: ITextFileService['isDirty'] = (): never => {
-    unsupported()
-  }
+  isDirty: ITextFileService['isDirty'] = unsupported
   @Unsupported
-  save: ITextFileService['save'] = (): never => {
-    unsupported()
-  }
+  save: ITextFileService['save'] = unsupported
   @Unsupported
-  saveAs: ITextFileService['saveAs'] = (): never => {
-    unsupported()
-  }
+  saveAs: ITextFileService['saveAs'] = unsupported
   @Unsupported
-  revert: ITextFileService['revert'] = (): never => {
-    unsupported()
-  }
+  revert: ITextFileService['revert'] = unsupported
   @Unsupported
-  read: ITextFileService['read'] = (): never => {
-    unsupported()
-  }
+  read: ITextFileService['read'] = unsupported
   @Unsupported
-  readStream: ITextFileService['readStream'] = (): never => {
-    unsupported()
-  }
+  readStream: ITextFileService['readStream'] = unsupported
   @Unsupported
-  write: ITextFileService['write'] = (): never => {
-    unsupported()
-  }
+  write: ITextFileService['write'] = unsupported
   @Unsupported
-  create: ITextFileService['create'] = (): never => {
-    unsupported()
-  }
+  create: ITextFileService['create'] = unsupported
   @Unsupported
-  getEncodedReadable: ITextFileService['getEncodedReadable'] = (): never => {
-    unsupported()
-  }
+  getEncodedReadable: ITextFileService['getEncodedReadable'] = unsupported
   @Unsupported
-  getDecodedStream: ITextFileService['getDecodedStream'] = (): never => {
-    unsupported()
-  }
+  getDecodedStream: ITextFileService['getDecodedStream'] = unsupported
   @Unsupported
-  dispose: ITextFileService['dispose'] = (): never => {
-    unsupported()
-  }
+  dispose: ITextFileService['dispose'] = unsupported
 }
 
 registerSingleton(ITextFileService, TextFileService, InstantiationType.Eager)
@@ -627,9 +602,7 @@ class FileService implements IFileService {
     Event.None
   onWillActivateFileSystemProvider: IFileService['onWillActivateFileSystemProvider'] = Event.None
   @Unsupported
-  registerProvider: IFileService['registerProvider'] = (): never => {
-    unsupported()
-  }
+  registerProvider: IFileService['registerProvider'] = unsupported
   getProvider: IFileService['getProvider'] = function () {
     return undefined
   }
@@ -641,78 +614,45 @@ class FileService implements IFileService {
   onDidFilesChange: IFileService['onDidFilesChange'] = Event.None
   onDidRunOperation: IFileService['onDidRunOperation'] = Event.None
   @Unsupported
-  resolve: IFileService['resolve'] = (): never => {
-    unsupported()
-  }
+  resolve: IFileService['resolve'] = unsupported
   @Unsupported
-  resolveAll: IFileService['resolveAll'] = (): never => {
-    unsupported()
-  }
+  resolveAll: IFileService['resolveAll'] = unsupported
   @Unsupported
-  stat: IFileService['stat'] = (): never => {
-    unsupported()
-  }
+  stat: IFileService['stat'] = unsupported
   exists: IFileService['exists'] = async () => false
   @Unsupported
-  readFile: IFileService['readFile'] = (): never => {
-    unsupported()
-  }
+  readFile: IFileService['readFile'] = unsupported
   @Unsupported
-  readFileStream: IFileService['readFileStream'] = (): never => {
-    unsupported()
-  }
+  readFileStream: IFileService['readFileStream'] = unsupported
   @Unsupported
-  writeFile: IFileService['writeFile'] = (): never => {
-    unsupported()
-  }
+  writeFile: IFileService['writeFile'] = unsupported
   @Unsupported
-  move: IFileService['move'] = (): never => {
-    unsupported()
-  }
+  move: IFileService['move'] = unsupported
   @Unsupported
-  canMove: IFileService['canMove'] = (): never => {
-    unsupported()
-  }
+  canMove: IFileService['canMove'] = unsupported
   @Unsupported
-  copy: IFileService['copy'] = (): never => {
-    unsupported()
-  }
+  copy: IFileService['copy'] = unsupported
   @Unsupported
-  canCopy: IFileService['canCopy'] = (): never => {
-    unsupported()
-  }
+  canCopy: IFileService['canCopy'] = unsupported
   @Unsupported
-  cloneFile: IFileService['cloneFile'] = (): never => {
-    unsupported()
-  }
+  cloneFile: IFileService['cloneFile'] = unsupported
   @Unsupported
-  createFile: IFileService['createFile'] = (): never => {
-    unsupported()
-  }
+  createFile: IFileService['createFile'] = unsupported
   @Unsupported
-  canCreateFile: IFileService['canCreateFile'] = (): never => {
-    unsupported()
-  }
+  canCreateFile: IFileService['canCreateFile'] = unsupported
   @Unsupported
-  createFolder: IFileService['createFolder'] = (): never => {
-    unsupported()
-  }
+  createFolder: IFileService['createFolder'] = unsupported
   @Unsupported
-  del: IFileService['del'] = (): never => {
-    unsupported()
-  }
+  del: IFileService['del'] = unsupported
   @Unsupported
-  canDelete: IFileService['canDelete'] = (): never => {
-    unsupported()
-  }
+  canDelete: IFileService['canDelete'] = unsupported
   onDidWatchError: IFileService['onDidWatchError'] = Event.None
   @Unsupported
-  watch: IFileService['watch'] = (): never => {
-    unsupported()
-  }
+  watch: IFileService['watch'] = unsupported
   @Unsupported
-  createWatcher: IFileService['createWatcher'] = (): never => {
-    unsupported()
+  createWatcher: IFileService['createWatcher'] = unsupported
+  realpath: IFileService['realpath'] = async () => {
+    return undefined
   }
   dispose: IFileService['dispose'] = () => {
     // ignore
@@ -723,9 +663,7 @@ class EmptyEditorGroup implements IEditorGroup, IEditorGroupView {
   selectedEditors: IEditorGroup['selectedEditors'] = []
   isSelected: IEditorGroup['isSelected'] = () => false
   @Unsupported
-  setSelection: IEditorGroup['setSelection'] = (): never => {
-    unsupported()
-  }
+  setSelection: IEditorGroup['setSelection'] = unsupported
   isTransient: IEditorGroup['isTransient'] = () => false
   windowId: IEditorGroup['windowId'] = mainWindow.vscodeWindowId
   @Unsupported
@@ -734,9 +672,7 @@ class EmptyEditorGroup implements IEditorGroup, IEditorGroupView {
   }
   notifyLabelChanged: IEditorGroupView['notifyLabelChanged'] = (): void => {}
   @Unsupported
-  createEditorActions: IEditorGroup['createEditorActions'] = (): never => {
-    unsupported()
-  }
+  createEditorActions: IEditorGroup['createEditorActions'] = unsupported
   onDidFocus: IEditorGroupView['onDidFocus'] = Event.None
   onDidOpenEditorFail: IEditorGroupView['onDidOpenEditorFail'] = Event.None
   whenRestored: IEditorGroupView['whenRestored'] = Promise.resolve()
@@ -746,25 +682,15 @@ class EmptyEditorGroup implements IEditorGroup, IEditorGroupView {
   }
   disposed: IEditorGroupView['disposed'] = false
   @Unsupported
-  setActive: IEditorGroupView['setActive'] = (): never => {
-    unsupported()
-  }
+  setActive: IEditorGroupView['setActive'] = unsupported
   @Unsupported
-  notifyIndexChanged: IEditorGroupView['notifyIndexChanged'] = (): never => {
-    unsupported()
-  }
+  notifyIndexChanged: IEditorGroupView['notifyIndexChanged'] = unsupported
   @Unsupported
-  relayout: IEditorGroupView['relayout'] = (): never => {
-    unsupported()
-  }
+  relayout: IEditorGroupView['relayout'] = unsupported
   @Unsupported
-  dispose: IEditorGroupView['dispose'] = (): never => {
-    unsupported()
-  }
+  dispose: IEditorGroupView['dispose'] = unsupported
   @Unsupported
-  toJSON: IEditorGroupView['toJSON'] = (): never => {
-    unsupported()
-  }
+  toJSON: IEditorGroupView['toJSON'] = unsupported
   preferredWidth?: number | undefined
   preferredHeight?: number | undefined
   @Unsupported
@@ -777,9 +703,7 @@ class EmptyEditorGroup implements IEditorGroup, IEditorGroupView {
   maximumHeight: IEditorGroupView['maximumHeight'] = Number.POSITIVE_INFINITY
   onDidChange: IEditorGroupView['onDidChange'] = Event.None
   @Unsupported
-  layout: IEditorGroupView['layout'] = (): never => {
-    unsupported()
-  }
+  layout: IEditorGroupView['layout'] = unsupported
   onDidModelChange: IEditorGroup['onDidModelChange'] = Event.None
   onWillDispose: IEditorGroup['onWillDispose'] = Event.None
   onDidActiveEditorChange: IEditorGroup['onDidActiveEditorChange'] = Event.None
@@ -806,53 +730,31 @@ class EmptyEditorGroup implements IEditorGroup, IEditorGroupView {
   findEditors: IEditorGroup['findEditors'] = () => []
   getEditorByIndex: IEditorGroup['getEditorByIndex'] = () => undefined
   @Unsupported
-  getIndexOfEditor: IEditorGroup['getIndexOfEditor'] = (): never => {
-    unsupported()
-  }
+  getIndexOfEditor: IEditorGroup['getIndexOfEditor'] = unsupported
   @Unsupported
-  openEditor: IEditorGroup['openEditor'] = (): never => {
-    unsupported()
-  }
+  openEditor: IEditorGroup['openEditor'] = unsupported
   @Unsupported
-  openEditors: IEditorGroup['openEditors'] = (): never => {
-    unsupported()
-  }
+  openEditors: IEditorGroup['openEditors'] = unsupported
   isPinned: IEditorGroup['isPinned'] = () => false
   isSticky: IEditorGroup['isSticky'] = () => false
   isActive: IEditorGroup['isActive'] = () => false
   contains: IEditorGroup['contains'] = () => false
   @Unsupported
-  moveEditor: IEditorGroup['moveEditor'] = (): never => {
-    unsupported()
-  }
+  moveEditor: IEditorGroup['moveEditor'] = unsupported
   @Unsupported
-  moveEditors: IEditorGroup['moveEditors'] = (): never => {
-    unsupported()
-  }
+  moveEditors: IEditorGroup['moveEditors'] = unsupported
   @Unsupported
-  copyEditor: IEditorGroup['copyEditor'] = (): never => {
-    unsupported()
-  }
+  copyEditor: IEditorGroup['copyEditor'] = unsupported
   @Unsupported
-  copyEditors: IEditorGroup['copyEditors'] = (): never => {
-    unsupported()
-  }
+  copyEditors: IEditorGroup['copyEditors'] = unsupported
   @Unsupported
-  closeEditor: IEditorGroup['closeEditor'] = (): never => {
-    unsupported()
-  }
+  closeEditor: IEditorGroup['closeEditor'] = unsupported
   @Unsupported
-  closeEditors: IEditorGroup['closeEditors'] = (): never => {
-    unsupported()
-  }
+  closeEditors: IEditorGroup['closeEditors'] = unsupported
   @Unsupported
-  closeAllEditors: IEditorGroup['closeAllEditors'] = (): never => {
-    unsupported()
-  }
+  closeAllEditors: IEditorGroup['closeAllEditors'] = unsupported
   @Unsupported
-  replaceEditors: IEditorGroup['replaceEditors'] = (): never => {
-    unsupported()
-  }
+  replaceEditors: IEditorGroup['replaceEditors'] = unsupported
   pinEditor: IEditorGroup['pinEditor'] = () => {}
   stickEditor: IEditorGroup['stickEditor'] = () => {}
   unstickEditor: IEditorGroup['unstickEditor'] = () => {}
@@ -861,13 +763,9 @@ class EmptyEditorGroup implements IEditorGroup, IEditorGroupView {
     // ignore
   }
   @Unsupported
-  isFirst: IEditorGroup['isFirst'] = (): never => {
-    unsupported()
-  }
+  isFirst: IEditorGroup['isFirst'] = unsupported
   @Unsupported
-  isLast: IEditorGroup['isLast'] = (): never => {
-    unsupported()
-  }
+  isLast: IEditorGroup['isLast'] = unsupported
 }
 const fakeActiveGroup = new EmptyEditorGroup()
 class EmptyEditorPart implements IEditorPart {
@@ -885,17 +783,11 @@ class EmptyEditorPart implements IEditorPart {
   whenRestored: IEditorPart['whenRestored'] = Promise.resolve()
   hasRestorableState: IEditorPart['hasRestorableState'] = false
   @Unsupported
-  centerLayout: IEditorPart['centerLayout'] = (): never => {
-    unsupported()
-  }
+  centerLayout: IEditorPart['centerLayout'] = unsupported
   @Unsupported
-  isLayoutCentered: IEditorPart['isLayoutCentered'] = (): never => {
-    unsupported()
-  }
+  isLayoutCentered: IEditorPart['isLayoutCentered'] = unsupported
   @Unsupported
-  enforcePartOptions: IEditorPart['enforcePartOptions'] = (): never => {
-    unsupported()
-  }
+  enforcePartOptions: IEditorPart['enforcePartOptions'] = unsupported
   onDidChangeActiveGroup: IEditorPart['onDidChangeActiveGroup'] = Event.None
   onDidAddGroup: IEditorPart['onDidAddGroup'] = Event.None
   onDidRemoveGroup: IEditorPart['onDidRemoveGroup'] = Event.None
@@ -915,72 +807,40 @@ class EmptyEditorPart implements IEditorPart {
   getGroups: IEditorPart['getGroups'] = () => []
   getGroup: IEditorPart['getGroup'] = () => undefined
   @Unsupported
-  activateGroup: IEditorPart['activateGroup'] = (): never => {
-    unsupported()
-  }
+  activateGroup: IEditorPart['activateGroup'] = unsupported
   @Unsupported
-  getSize: IEditorPart['getSize'] = (): never => {
-    unsupported()
-  }
+  getSize: IEditorPart['getSize'] = unsupported
   @Unsupported
-  setSize: IEditorPart['setSize'] = (): never => {
-    unsupported()
-  }
+  setSize: IEditorPart['setSize'] = unsupported
   @Unsupported
-  arrangeGroups: IEditorPart['arrangeGroups'] = (): never => {
-    unsupported()
-  }
+  arrangeGroups: IEditorPart['arrangeGroups'] = unsupported
   @Unsupported
-  toggleMaximizeGroup: IEditorPart['toggleMaximizeGroup'] = (): never => {
-    unsupported()
-  }
+  toggleMaximizeGroup: IEditorPart['toggleMaximizeGroup'] = unsupported
   @Unsupported
-  toggleExpandGroup: IEditorPart['toggleExpandGroup'] = (): never => {
-    unsupported()
-  }
+  toggleExpandGroup: IEditorPart['toggleExpandGroup'] = unsupported
   @Unsupported
-  applyLayout: IEditorPart['applyLayout'] = (): never => {
-    unsupported()
-  }
+  applyLayout: IEditorPart['applyLayout'] = unsupported
   @Unsupported
-  getLayout: IEditorPart['getLayout'] = (): never => {
-    unsupported()
-  }
+  getLayout: IEditorPart['getLayout'] = unsupported
   @Unsupported
-  setGroupOrientation: IEditorPart['setGroupOrientation'] = (): never => {
-    unsupported()
-  }
+  setGroupOrientation: IEditorPart['setGroupOrientation'] = unsupported
   findGroup: IEditorPart['findGroup'] = () => undefined
   @Unsupported
-  addGroup: IEditorPart['addGroup'] = (): never => {
-    unsupported()
-  }
+  addGroup: IEditorPart['addGroup'] = unsupported
   @Unsupported
-  removeGroup: IEditorPart['removeGroup'] = (): never => {
-    unsupported()
-  }
+  removeGroup: IEditorPart['removeGroup'] = unsupported
   @Unsupported
-  moveGroup: IEditorPart['moveGroup'] = (): never => {
-    unsupported()
-  }
+  moveGroup: IEditorPart['moveGroup'] = unsupported
   @Unsupported
-  mergeGroup: IEditorPart['mergeGroup'] = (): never => {
-    unsupported()
-  }
+  mergeGroup: IEditorPart['mergeGroup'] = unsupported
   @Unsupported
-  mergeAllGroups: IEditorPart['mergeAllGroups'] = (): never => {
-    unsupported()
-  }
+  mergeAllGroups: IEditorPart['mergeAllGroups'] = unsupported
   @Unsupported
-  copyGroup: IEditorPart['copyGroup'] = (): never => {
-    unsupported()
-  }
+  copyGroup: IEditorPart['copyGroup'] = unsupported
   partOptions: IEditorPart['partOptions'] = DEFAULT_EDITOR_PART_OPTIONS
   onDidChangeEditorPartOptions: IEditorPart['onDidChangeEditorPartOptions'] = Event.None
   @Unsupported
-  createEditorDropTarget: IEditorPart['createEditorDropTarget'] = (): never => {
-    unsupported()
-  }
+  createEditorDropTarget: IEditorPart['createEditorDropTarget'] = unsupported
 }
 class EmptyEditorGroupsService implements IEditorGroupsService {
   @Unsupported
@@ -989,56 +849,34 @@ class EmptyEditorGroupsService implements IEditorGroupsService {
       unsupported()
     }
   @Unsupported
-  registerContextKeyProvider: IEditorGroupsService['registerContextKeyProvider'] = (): never => {
-    unsupported()
-  }
+  registerContextKeyProvider: IEditorGroupsService['registerContextKeyProvider'] = unsupported
   @Unsupported
-  saveWorkingSet: IEditorGroupsService['saveWorkingSet'] = (): never => {
-    unsupported()
-  }
+  saveWorkingSet: IEditorGroupsService['saveWorkingSet'] = unsupported
   @Unsupported
-  getWorkingSets: IEditorGroupsService['getWorkingSets'] = (): never => {
-    unsupported()
-  }
+  getWorkingSets: IEditorGroupsService['getWorkingSets'] = unsupported
   @Unsupported
-  applyWorkingSet: IEditorGroupsService['applyWorkingSet'] = (): never => {
-    unsupported()
-  }
+  applyWorkingSet: IEditorGroupsService['applyWorkingSet'] = unsupported
   @Unsupported
-  deleteWorkingSet: IEditorGroupsService['deleteWorkingSet'] = (): never => {
-    unsupported()
-  }
+  deleteWorkingSet: IEditorGroupsService['deleteWorkingSet'] = unsupported
   onDidCreateAuxiliaryEditorPart: IEditorGroupsService['onDidCreateAuxiliaryEditorPart'] =
     Event.None
   mainPart: IEditorGroupsService['mainPart'] = new EmptyEditorPart()
   parts: IEditorGroupsService['parts'] = [this.mainPart]
   @Unsupported
-  getPart: IEditorGroupsService['getPart'] = (): never => {
-    unsupported()
-  }
+  getPart: IEditorGroupsService['getPart'] = unsupported
   @Unsupported
-  createAuxiliaryEditorPart: IEditorGroupsService['createAuxiliaryEditorPart'] = (): never => {
-    unsupported()
-  }
+  createAuxiliaryEditorPart: IEditorGroupsService['createAuxiliaryEditorPart'] = unsupported
   onDidChangeGroupMaximized: IEditorGroupsService['onDidChangeGroupMaximized'] = Event.None
   @Unsupported
-  toggleMaximizeGroup: IEditorGroupsService['toggleMaximizeGroup'] = (): never => {
-    unsupported()
-  }
+  toggleMaximizeGroup: IEditorGroupsService['toggleMaximizeGroup'] = unsupported
   @Unsupported
-  toggleExpandGroup: IEditorGroupsService['toggleExpandGroup'] = (): never => {
-    unsupported()
-  }
+  toggleExpandGroup: IEditorGroupsService['toggleExpandGroup'] = unsupported
   partOptions: IEditorGroupsService['partOptions'] = DEFAULT_EDITOR_PART_OPTIONS
   @Unsupported
-  createEditorDropTarget: IEditorGroupsService['createEditorDropTarget'] = (): never => {
-    unsupported()
-  }
+  createEditorDropTarget: IEditorGroupsService['createEditorDropTarget'] = unsupported
   readonly _serviceBrand: IEditorGroupsService['_serviceBrand'] = undefined
   @Unsupported
-  getLayout: IEditorGroupsService['getLayout'] = (): never => {
-    unsupported()
-  }
+  getLayout: IEditorGroupsService['getLayout'] = unsupported
   onDidChangeActiveGroup: IEditorGroupsService['onDidChangeActiveGroup'] = Event.None
   onDidAddGroup: IEditorGroupsService['onDidAddGroup'] = Event.None
   onDidRemoveGroup: IEditorGroupsService['onDidRemoveGroup'] = Event.None
@@ -1065,59 +903,33 @@ class EmptyEditorGroupsService implements IEditorGroupsService {
   getGroups: IEditorGroupsService['getGroups'] = (): never[] => []
   getGroup: IEditorGroupsService['getGroup'] = (): undefined => undefined
   @Unsupported
-  activateGroup: IEditorGroupsService['activateGroup'] = (): never => {
-    unsupported()
-  }
+  activateGroup: IEditorGroupsService['activateGroup'] = unsupported
   @Unsupported
-  getSize: IEditorGroupsService['getSize'] = (): never => {
-    unsupported()
-  }
+  getSize: IEditorGroupsService['getSize'] = unsupported
   @Unsupported
-  setSize: IEditorGroupsService['setSize'] = (): never => {
-    unsupported()
-  }
+  setSize: IEditorGroupsService['setSize'] = unsupported
   @Unsupported
-  arrangeGroups: IEditorGroupsService['arrangeGroups'] = (): never => {
-    unsupported()
-  }
+  arrangeGroups: IEditorGroupsService['arrangeGroups'] = unsupported
   @Unsupported
-  applyLayout: IEditorGroupsService['applyLayout'] = (): never => {
-    unsupported()
-  }
+  applyLayout: IEditorGroupsService['applyLayout'] = unsupported
   @Unsupported
-  setGroupOrientation: IEditorGroupsService['setGroupOrientation'] = (): never => {
-    unsupported()
-  }
+  setGroupOrientation: IEditorGroupsService['setGroupOrientation'] = unsupported
   findGroup: IEditorGroupsService['findGroup'] = (): undefined => undefined
   @Unsupported
-  addGroup: IEditorGroupsService['addGroup'] = (): never => {
-    unsupported()
-  }
+  addGroup: IEditorGroupsService['addGroup'] = unsupported
   @Unsupported
-  removeGroup: IEditorGroupsService['removeGroup'] = (): never => {
-    unsupported()
-  }
+  removeGroup: IEditorGroupsService['removeGroup'] = unsupported
   @Unsupported
-  moveGroup: IEditorGroupsService['moveGroup'] = (): never => {
-    unsupported()
-  }
+  moveGroup: IEditorGroupsService['moveGroup'] = unsupported
   @Unsupported
-  mergeGroup: IEditorGroupsService['mergeGroup'] = (): never => {
-    unsupported()
-  }
+  mergeGroup: IEditorGroupsService['mergeGroup'] = unsupported
   @Unsupported
-  mergeAllGroups: IEditorGroupsService['mergeAllGroups'] = (): never => {
-    unsupported()
-  }
+  mergeAllGroups: IEditorGroupsService['mergeAllGroups'] = unsupported
   @Unsupported
-  copyGroup: IEditorGroupsService['copyGroup'] = (): never => {
-    unsupported()
-  }
+  copyGroup: IEditorGroupsService['copyGroup'] = unsupported
   onDidChangeEditorPartOptions: IEditorGroupsService['onDidChangeEditorPartOptions'] = Event.None
   @Unsupported
-  enforcePartOptions: IEditorGroupsService['enforcePartOptions'] = (): never => {
-    unsupported()
-  }
+  enforcePartOptions: IEditorGroupsService['enforcePartOptions'] = unsupported
 }
 registerSingleton(IEditorGroupsService, EmptyEditorGroupsService, InstantiationType.Eager)
 class BannerService implements IBannerService {
@@ -1132,17 +944,11 @@ registerSingleton(IBannerService, BannerService, InstantiationType.Eager)
 class TitleService implements ITitleService {
   _serviceBrand: undefined
   @Unsupported
-  getPart: ITitleService['getPart'] = (): never => {
-    unsupported()
-  }
+  getPart: ITitleService['getPart'] = unsupported
   @Unsupported
-  createAuxiliaryTitlebarPart: ITitleService['createAuxiliaryTitlebarPart'] = (): never => {
-    unsupported()
-  }
+  createAuxiliaryTitlebarPart: ITitleService['createAuxiliaryTitlebarPart'] = unsupported
   @Unsupported
-  dispose: ITitleService['dispose'] = (): never => {
-    unsupported()
-  }
+  dispose: ITitleService['dispose'] = unsupported
   onMenubarVisibilityChange: ITitleService['onMenubarVisibilityChange'] = Event.None
   updateProperties: ITitleService['updateProperties'] = (): void => {}
   registerVariables: ITitleService['registerVariables'] = () => {}
@@ -1163,33 +969,19 @@ class WorkingCopyFileService implements IWorkingCopyFileService {
     }
   hasSaveParticipants: IWorkingCopyFileService['hasSaveParticipants'] = false
   @Unsupported
-  addSaveParticipant: IWorkingCopyFileService['addSaveParticipant'] = (): never => {
-    unsupported()
-  }
+  addSaveParticipant: IWorkingCopyFileService['addSaveParticipant'] = unsupported
   @Unsupported
-  runSaveParticipants: IWorkingCopyFileService['runSaveParticipants'] = (): never => {
-    unsupported()
-  }
+  runSaveParticipants: IWorkingCopyFileService['runSaveParticipants'] = unsupported
   @Unsupported
-  create: IWorkingCopyFileService['create'] = (): never => {
-    unsupported()
-  }
+  create: IWorkingCopyFileService['create'] = unsupported
   @Unsupported
-  createFolder: IWorkingCopyFileService['createFolder'] = (): never => {
-    unsupported()
-  }
+  createFolder: IWorkingCopyFileService['createFolder'] = unsupported
   @Unsupported
-  move: IWorkingCopyFileService['move'] = (): never => {
-    unsupported()
-  }
+  move: IWorkingCopyFileService['move'] = unsupported
   @Unsupported
-  copy: IWorkingCopyFileService['copy'] = (): never => {
-    unsupported()
-  }
+  copy: IWorkingCopyFileService['copy'] = unsupported
   @Unsupported
-  delete: IWorkingCopyFileService['delete'] = (): never => {
-    unsupported()
-  }
+  delete: IWorkingCopyFileService['delete'] = unsupported
   @Unsupported
   registerWorkingCopyProvider: IWorkingCopyFileService['registerWorkingCopyProvider'] =
     (): never => {
@@ -1206,17 +998,11 @@ class PathService implements IPathService {
   }
   defaultUriScheme: IPathService['defaultUriScheme'] = 'file'
   @Unsupported
-  fileURI: IPathService['fileURI'] = (): never => {
-    unsupported()
-  }
+  fileURI: IPathService['fileURI'] = unsupported
   @Unsupported
-  userHome: IPathService['userHome'] = (): never => {
-    unsupported()
-  }
+  userHome: IPathService['userHome'] = unsupported
   @Unsupported
-  hasValidBasename: IPathService['hasValidBasename'] = (): never => {
-    unsupported()
-  }
+  hasValidBasename: IPathService['hasValidBasename'] = unsupported
   resolvedUserHome: IPathService['resolvedUserHome'] = undefined
 }
 registerSingleton(IPathService, PathService, InstantiationType.Delayed)
@@ -1250,13 +1036,9 @@ class LanguageStatusService implements ILanguageStatusService {
   _serviceBrand: undefined
   onDidChange: ILanguageStatusService['onDidChange'] = Event.None
   @Unsupported
-  addStatus: ILanguageStatusService['addStatus'] = (): never => {
-    unsupported()
-  }
+  addStatus: ILanguageStatusService['addStatus'] = unsupported
   @Unsupported
-  getLanguageStatus: ILanguageStatusService['getLanguageStatus'] = (): never => {
-    unsupported()
-  }
+  getLanguageStatus: ILanguageStatusService['getLanguageStatus'] = unsupported
 }
 registerSingleton(ILanguageStatusService, LanguageStatusService, InstantiationType.Delayed)
 class HostService implements IHostService {
@@ -1268,42 +1050,24 @@ class HostService implements IHostService {
   hasFocus: IHostService['hasFocus'] = false
   hadLastFocus: IHostService['hadLastFocus'] = async () => false
   @Unsupported
-  focus: IHostService['focus'] = (): never => {
-    unsupported()
-  }
+  focus: IHostService['focus'] = unsupported
   onDidChangeActiveWindow: IHostService['onDidChangeActiveWindow'] = Event.None
   @Unsupported
-  openWindow: IHostService['openWindow'] = (): never => {
-    unsupported()
-  }
+  openWindow: IHostService['openWindow'] = unsupported
   @Unsupported
-  toggleFullScreen: IHostService['toggleFullScreen'] = (): never => {
-    unsupported()
-  }
+  toggleFullScreen: IHostService['toggleFullScreen'] = unsupported
   @Unsupported
-  moveTop: IHostService['moveTop'] = (): never => {
-    unsupported()
-  }
+  moveTop: IHostService['moveTop'] = unsupported
   @Unsupported
-  getCursorScreenPoint: IHostService['getCursorScreenPoint'] = (): never => {
-    unsupported()
-  }
+  getCursorScreenPoint: IHostService['getCursorScreenPoint'] = unsupported
   @Unsupported
-  restart: IHostService['restart'] = (): never => {
-    unsupported()
-  }
+  restart: IHostService['restart'] = unsupported
   @Unsupported
-  reload: IHostService['reload'] = (): never => {
-    unsupported()
-  }
+  reload: IHostService['reload'] = unsupported
   @Unsupported
-  close: IHostService['close'] = (): never => {
-    unsupported()
-  }
+  close: IHostService['close'] = unsupported
   @Unsupported
-  withExpectedShutdown: IHostService['withExpectedShutdown'] = (): never => {
-    unsupported()
-  }
+  withExpectedShutdown: IHostService['withExpectedShutdown'] = unsupported
 }
 registerSingleton(IHostService, HostService, InstantiationType.Eager)
 class LifecycleService extends AbstractLifecycleService {
@@ -1380,78 +1144,44 @@ class PreferencesService implements IPreferencesService {
     this.profileService.currentProfile.settingsResource
   workspaceSettingsResource: IPreferencesService['workspaceSettingsResource'] = null
   @Unsupported
-  getFolderSettingsResource: IPreferencesService['getFolderSettingsResource'] = (): never => {
-    unsupported()
-  }
+  getFolderSettingsResource: IPreferencesService['getFolderSettingsResource'] = unsupported
   @Unsupported
-  createPreferencesEditorModel: IPreferencesService['createPreferencesEditorModel'] = (): never => {
-    unsupported()
-  }
+  createPreferencesEditorModel: IPreferencesService['createPreferencesEditorModel'] = unsupported
   @Unsupported
-  createSettings2EditorModel: IPreferencesService['createSettings2EditorModel'] = (): never => {
-    unsupported()
-  }
+  createSettings2EditorModel: IPreferencesService['createSettings2EditorModel'] = unsupported
   @Unsupported
-  openRawDefaultSettings: IPreferencesService['openRawDefaultSettings'] = (): never => {
-    unsupported()
-  }
+  openRawDefaultSettings: IPreferencesService['openRawDefaultSettings'] = unsupported
   @Unsupported
-  openSettings: IPreferencesService['openSettings'] = (): never => {
-    unsupported()
-  }
+  openSettings: IPreferencesService['openSettings'] = unsupported
   @Unsupported
-  openUserSettings: IPreferencesService['openUserSettings'] = (): never => {
-    unsupported()
-  }
+  openUserSettings: IPreferencesService['openUserSettings'] = unsupported
   @Unsupported
-  openRemoteSettings: IPreferencesService['openRemoteSettings'] = (): never => {
-    unsupported()
-  }
+  openRemoteSettings: IPreferencesService['openRemoteSettings'] = unsupported
   @Unsupported
-  openWorkspaceSettings: IPreferencesService['openWorkspaceSettings'] = (): never => {
-    unsupported()
-  }
+  openWorkspaceSettings: IPreferencesService['openWorkspaceSettings'] = unsupported
   @Unsupported
-  openFolderSettings: IPreferencesService['openFolderSettings'] = (): never => {
-    unsupported()
-  }
+  openFolderSettings: IPreferencesService['openFolderSettings'] = unsupported
   @Unsupported
-  openGlobalKeybindingSettings: IPreferencesService['openGlobalKeybindingSettings'] = (): never => {
-    unsupported()
-  }
+  openGlobalKeybindingSettings: IPreferencesService['openGlobalKeybindingSettings'] = unsupported
   @Unsupported
-  openDefaultKeybindingsFile: IPreferencesService['openDefaultKeybindingsFile'] = (): never => {
-    unsupported()
-  }
+  openDefaultKeybindingsFile: IPreferencesService['openDefaultKeybindingsFile'] = unsupported
   @Unsupported
-  getEditableSettingsURI: IPreferencesService['getEditableSettingsURI'] = (): never => {
-    unsupported()
-  }
+  getEditableSettingsURI: IPreferencesService['getEditableSettingsURI'] = unsupported
   @Unsupported
-  createSplitJsonEditorInput: IPreferencesService['createSplitJsonEditorInput'] = (): never => {
-    unsupported()
-  }
+  createSplitJsonEditorInput: IPreferencesService['createSplitJsonEditorInput'] = unsupported
   @Unsupported
-  openApplicationSettings: IPreferencesService['openApplicationSettings'] = (): never => {
-    unsupported()
-  }
+  openApplicationSettings: IPreferencesService['openApplicationSettings'] = unsupported
   @Unsupported
-  openLanguageSpecificSettings: IPreferencesService['openLanguageSpecificSettings'] = (): never => {
-    unsupported()
-  }
+  openLanguageSpecificSettings: IPreferencesService['openLanguageSpecificSettings'] = unsupported
   openPreferences: IPreferencesService['openPreferences'] = async () => undefined
 }
 registerSingleton(IPreferencesService, PreferencesService, InstantiationType.Eager)
 class NullTextMateService implements ITextMateTokenizationService {
   _serviceBrand: undefined
   @Unsupported
-  startDebugMode: ITextMateTokenizationService['startDebugMode'] = (): never => {
-    unsupported()
-  }
+  startDebugMode: ITextMateTokenizationService['startDebugMode'] = unsupported
   @Unsupported
-  createTokenizer: ITextMateTokenizationService['createTokenizer'] = (): never => {
-    unsupported()
-  }
+  createTokenizer: ITextMateTokenizationService['createTokenizer'] = unsupported
 }
 registerSingleton(ITextMateTokenizationService, NullTextMateService, InstantiationType.Eager)
 class UserDataProfilesService implements IUserDataProfilesService {
@@ -1462,25 +1192,15 @@ class UserDataProfilesService implements IUserDataProfilesService {
   _serviceBrand: undefined
   onDidResetWorkspaces: IUserDataProfilesService['onDidResetWorkspaces'] = Event.None
   @Unsupported
-  createNamedProfile: IUserDataProfilesService['createNamedProfile'] = (): never => {
-    unsupported()
-  }
+  createNamedProfile: IUserDataProfilesService['createNamedProfile'] = unsupported
   @Unsupported
-  createTransientProfile: IUserDataProfilesService['createTransientProfile'] = (): never => {
-    unsupported()
-  }
+  createTransientProfile: IUserDataProfilesService['createTransientProfile'] = unsupported
   @Unsupported
-  resetWorkspaces: IUserDataProfilesService['resetWorkspaces'] = (): never => {
-    unsupported()
-  }
+  resetWorkspaces: IUserDataProfilesService['resetWorkspaces'] = unsupported
   @Unsupported
-  cleanUp: IUserDataProfilesService['cleanUp'] = (): never => {
-    unsupported()
-  }
+  cleanUp: IUserDataProfilesService['cleanUp'] = unsupported
   @Unsupported
-  cleanUpTransientProfiles: IUserDataProfilesService['cleanUpTransientProfiles'] = (): never => {
-    unsupported()
-  }
+  cleanUpTransientProfiles: IUserDataProfilesService['cleanUpTransientProfiles'] = unsupported
   @Unsupported
   get profilesHome() {
     return unsupported()
@@ -1489,34 +1209,22 @@ class UserDataProfilesService implements IUserDataProfilesService {
   onDidChangeProfiles: IUserDataProfilesService['onDidChangeProfiles'] = Event.None
   profiles: IUserDataProfilesService['profiles'] = [this.profileService.currentProfile]
   @Unsupported
-  createProfile: IUserDataProfilesService['createProfile'] = (): never => {
-    unsupported()
-  }
+  createProfile: IUserDataProfilesService['createProfile'] = unsupported
   @Unsupported
-  updateProfile: IUserDataProfilesService['updateProfile'] = (): never => {
-    unsupported()
-  }
+  updateProfile: IUserDataProfilesService['updateProfile'] = unsupported
   @Unsupported
-  setProfileForWorkspace: IUserDataProfilesService['setProfileForWorkspace'] = (): never => {
-    unsupported()
-  }
+  setProfileForWorkspace: IUserDataProfilesService['setProfileForWorkspace'] = unsupported
   @Unsupported
-  removeProfile: IUserDataProfilesService['removeProfile'] = (): never => {
-    unsupported()
-  }
+  removeProfile: IUserDataProfilesService['removeProfile'] = unsupported
 }
 registerSingleton(IUserDataProfilesService, UserDataProfilesService, InstantiationType.Eager)
 class UserDataProfileStorageService implements IUserDataProfileStorageService {
   _serviceBrand: undefined
   onDidChange: IUserDataProfileStorageService['onDidChange'] = Event.None
   @Unsupported
-  readStorageData: IUserDataProfileStorageService['readStorageData'] = (): never => {
-    unsupported()
-  }
+  readStorageData: IUserDataProfileStorageService['readStorageData'] = unsupported
   @Unsupported
-  updateStorageData: IUserDataProfileStorageService['updateStorageData'] = (): never => {
-    unsupported()
-  }
+  updateStorageData: IUserDataProfileStorageService['updateStorageData'] = unsupported
   @Unsupported
   withProfileScopedStorageService: IUserDataProfileStorageService['withProfileScopedStorageService'] =
     (): never => {
@@ -1549,26 +1257,16 @@ registerSingleton(IPolicyService, NullPolicyService, InstantiationType.Eager)
 class SnippetsService implements ISnippetsService {
   _serviceBrand: undefined
   @Unsupported
-  getSnippetFiles: ISnippetsService['getSnippetFiles'] = (): never => {
-    unsupported()
-  }
+  getSnippetFiles: ISnippetsService['getSnippetFiles'] = unsupported
   @Unsupported
-  isEnabled: ISnippetsService['isEnabled'] = (): never => {
-    unsupported()
-  }
+  isEnabled: ISnippetsService['isEnabled'] = unsupported
   @Unsupported
-  updateEnablement: ISnippetsService['updateEnablement'] = (): never => {
-    unsupported()
-  }
+  updateEnablement: ISnippetsService['updateEnablement'] = unsupported
   @Unsupported
-  updateUsageTimestamp: ISnippetsService['updateUsageTimestamp'] = (): never => {
-    unsupported()
-  }
+  updateUsageTimestamp: ISnippetsService['updateUsageTimestamp'] = unsupported
   getSnippets: ISnippetsService['getSnippets'] = async () => []
   @Unsupported
-  getSnippetsSync: ISnippetsService['getSnippetsSync'] = (): never => {
-    unsupported()
-  }
+  getSnippetsSync: ISnippetsService['getSnippetsSync'] = unsupported
 }
 registerSingleton(ISnippetsService, SnippetsService, InstantiationType.Eager)
 const debugModel: IDebugModel = {
@@ -1593,34 +1291,22 @@ const debugModel: IDebugModel = {
 }
 class FakeViewModel implements IViewModel {
   @Unsupported
-  setVisualizedExpression: IViewModel['setVisualizedExpression'] = (): never => {
-    unsupported()
-  }
+  setVisualizedExpression: IViewModel['setVisualizedExpression'] = unsupported
   getVisualizedExpression: IViewModel['getVisualizedExpression'] = () => undefined
   onDidChangeVisualization: IViewModel['onDidChangeVisualization'] = Event.None
   @Unsupported
-  getId: IViewModel['getId'] = (): never => {
-    unsupported()
-  }
+  getId: IViewModel['getId'] = unsupported
   readonly focusedSession: IViewModel['focusedSession'] = undefined
   readonly focusedThread: IViewModel['focusedThread'] = undefined
   readonly focusedStackFrame: IViewModel['focusedStackFrame'] = undefined
   @Unsupported
-  getSelectedExpression: IViewModel['getSelectedExpression'] = (): never => {
-    unsupported()
-  }
+  getSelectedExpression: IViewModel['getSelectedExpression'] = unsupported
   @Unsupported
-  setSelectedExpression: IViewModel['setSelectedExpression'] = (): never => {
-    unsupported()
-  }
+  setSelectedExpression: IViewModel['setSelectedExpression'] = unsupported
   @Unsupported
-  updateViews: IViewModel['updateViews'] = (): never => {
-    unsupported()
-  }
+  updateViews: IViewModel['updateViews'] = unsupported
   @Unsupported
-  isMultiSessionView: IViewModel['isMultiSessionView'] = (): never => {
-    unsupported()
-  }
+  isMultiSessionView: IViewModel['isMultiSessionView'] = unsupported
   onDidFocusSession: IViewModel['onDidFocusSession'] = Event.None
   onDidFocusStackFrame: IViewModel['onDidFocusStackFrame'] = Event.None
   onDidSelectExpression: IViewModel['onDidSelectExpression'] = Event.None
@@ -1628,34 +1314,24 @@ class FakeViewModel implements IViewModel {
   onWillUpdateViews: IViewModel['onWillUpdateViews'] = Event.None
   onDidFocusThread: IViewModel['onDidFocusThread'] = Event.None
   @Unsupported
-  evaluateLazyExpression: IViewModel['evaluateLazyExpression'] = (): never => {
-    unsupported()
-  }
+  evaluateLazyExpression: IViewModel['evaluateLazyExpression'] = unsupported
 }
 class FakeAdapterManager implements IAdapterManager {
   onDidRegisterDebugger: IAdapterManager['onDidRegisterDebugger'] = Event.None
   hasEnabledDebuggers: IAdapterManager['hasEnabledDebuggers'] = () => false
   @Unsupported
-  getDebugAdapterDescriptor: IAdapterManager['getDebugAdapterDescriptor'] = (): never => {
-    unsupported()
-  }
+  getDebugAdapterDescriptor: IAdapterManager['getDebugAdapterDescriptor'] = unsupported
   @Unsupported
-  getDebuggerLabel: IAdapterManager['getDebuggerLabel'] = (): never => {
-    unsupported()
-  }
+  getDebuggerLabel: IAdapterManager['getDebuggerLabel'] = unsupported
   someDebuggerInterestedInLanguage: IAdapterManager['someDebuggerInterestedInLanguage'] = () =>
     false
   getDebugger: IAdapterManager['getDebugger'] = () => undefined
   @Unsupported
-  activateDebuggers: IAdapterManager['activateDebuggers'] = (): never => {
-    unsupported()
-  }
+  activateDebuggers: IAdapterManager['activateDebuggers'] = unsupported
   registerDebugAdapterFactory: IAdapterManager['registerDebugAdapterFactory'] = () =>
     Disposable.None
   @Unsupported
-  createDebugAdapter: IAdapterManager['createDebugAdapter'] = (): never => {
-    unsupported()
-  }
+  createDebugAdapter: IAdapterManager['createDebugAdapter'] = unsupported
   @Unsupported
   registerDebugAdapterDescriptorFactory: IAdapterManager['registerDebugAdapterDescriptorFactory'] =
     (): never => {
@@ -1667,34 +1343,22 @@ class FakeAdapterManager implements IAdapterManager {
       unsupported()
     }
   @Unsupported
-  substituteVariables: IAdapterManager['substituteVariables'] = (): never => {
-    unsupported()
-  }
+  substituteVariables: IAdapterManager['substituteVariables'] = unsupported
   @Unsupported
-  runInTerminal: IAdapterManager['runInTerminal'] = (): never => {
-    unsupported()
-  }
+  runInTerminal: IAdapterManager['runInTerminal'] = unsupported
   @Unsupported
-  getEnabledDebugger: IAdapterManager['getEnabledDebugger'] = (): never => {
-    unsupported()
-  }
+  getEnabledDebugger: IAdapterManager['getEnabledDebugger'] = unsupported
   @Unsupported
-  guessDebugger: IAdapterManager['guessDebugger'] = (): never => {
-    unsupported()
-  }
+  guessDebugger: IAdapterManager['guessDebugger'] = unsupported
   onDidDebuggersExtPointRead: IAdapterManager['onDidDebuggersExtPointRead'] = Event.None
 }
 class DebugService implements IDebugService {
   _serviceBrand: undefined
   initializingOptions: IDebugService['initializingOptions'] = undefined
   @Unsupported
-  sendBreakpoints: IDebugService['sendBreakpoints'] = (): never => {
-    unsupported()
-  }
+  sendBreakpoints: IDebugService['sendBreakpoints'] = unsupported
   @Unsupported
-  updateDataBreakpoint: IDebugService['updateDataBreakpoint'] = (): never => {
-    unsupported()
-  }
+  updateDataBreakpoint: IDebugService['updateDataBreakpoint'] = unsupported
   @Unsupported
   get state() {
     return unsupported()
@@ -1704,141 +1368,79 @@ class DebugService implements IDebugService {
   onWillNewSession: IDebugService['onWillNewSession'] = Event.None
   onDidEndSession: IDebugService['onDidEndSession'] = Event.None
   @Unsupported
-  getConfigurationManager: IDebugService['getConfigurationManager'] = (): never => {
-    unsupported()
-  }
+  getConfigurationManager: IDebugService['getConfigurationManager'] = unsupported
   getAdapterManager: IDebugService['getAdapterManager'] = () => new FakeAdapterManager()
   @Unsupported
-  focusStackFrame: IDebugService['focusStackFrame'] = (): never => {
-    unsupported()
-  }
+  focusStackFrame: IDebugService['focusStackFrame'] = unsupported
   @Unsupported
-  canSetBreakpointsIn: IDebugService['canSetBreakpointsIn'] = (): never => {
-    unsupported()
-  }
+  canSetBreakpointsIn: IDebugService['canSetBreakpointsIn'] = unsupported
   @Unsupported
-  addBreakpoints: IDebugService['addBreakpoints'] = (): never => {
-    unsupported()
-  }
+  addBreakpoints: IDebugService['addBreakpoints'] = unsupported
   @Unsupported
-  updateBreakpoints: IDebugService['updateBreakpoints'] = (): never => {
-    unsupported()
-  }
+  updateBreakpoints: IDebugService['updateBreakpoints'] = unsupported
   @Unsupported
-  enableOrDisableBreakpoints: IDebugService['enableOrDisableBreakpoints'] = (): never => {
-    unsupported()
-  }
+  enableOrDisableBreakpoints: IDebugService['enableOrDisableBreakpoints'] = unsupported
   @Unsupported
-  setBreakpointsActivated: IDebugService['setBreakpointsActivated'] = (): never => {
-    unsupported()
-  }
+  setBreakpointsActivated: IDebugService['setBreakpointsActivated'] = unsupported
   @Unsupported
-  removeBreakpoints: IDebugService['removeBreakpoints'] = (): never => {
-    unsupported()
-  }
+  removeBreakpoints: IDebugService['removeBreakpoints'] = unsupported
   @Unsupported
-  addFunctionBreakpoint: IDebugService['addFunctionBreakpoint'] = (): never => {
-    unsupported()
-  }
+  addFunctionBreakpoint: IDebugService['addFunctionBreakpoint'] = unsupported
   @Unsupported
-  updateFunctionBreakpoint: IDebugService['updateFunctionBreakpoint'] = (): never => {
-    unsupported()
-  }
+  updateFunctionBreakpoint: IDebugService['updateFunctionBreakpoint'] = unsupported
   @Unsupported
-  removeFunctionBreakpoints: IDebugService['removeFunctionBreakpoints'] = (): never => {
-    unsupported()
-  }
+  removeFunctionBreakpoints: IDebugService['removeFunctionBreakpoints'] = unsupported
   @Unsupported
-  addDataBreakpoint: IDebugService['addDataBreakpoint'] = (): never => {
-    unsupported()
-  }
+  addDataBreakpoint: IDebugService['addDataBreakpoint'] = unsupported
   @Unsupported
-  removeDataBreakpoints: IDebugService['removeDataBreakpoints'] = (): never => {
-    unsupported()
-  }
+  removeDataBreakpoints: IDebugService['removeDataBreakpoints'] = unsupported
   @Unsupported
-  addInstructionBreakpoint: IDebugService['addInstructionBreakpoint'] = (): never => {
-    unsupported()
-  }
+  addInstructionBreakpoint: IDebugService['addInstructionBreakpoint'] = unsupported
   @Unsupported
-  removeInstructionBreakpoints: IDebugService['removeInstructionBreakpoints'] = (): never => {
-    unsupported()
-  }
+  removeInstructionBreakpoints: IDebugService['removeInstructionBreakpoints'] = unsupported
   @Unsupported
-  setExceptionBreakpointCondition: IDebugService['setExceptionBreakpointCondition'] = (): never => {
-    unsupported()
-  }
+  setExceptionBreakpointCondition: IDebugService['setExceptionBreakpointCondition'] = unsupported
   @Unsupported
   setExceptionBreakpointsForSession: IDebugService['setExceptionBreakpointsForSession'] =
     (): never => {
       unsupported()
     }
   @Unsupported
-  sendAllBreakpoints: IDebugService['sendAllBreakpoints'] = (): never => {
-    unsupported()
-  }
+  sendAllBreakpoints: IDebugService['sendAllBreakpoints'] = unsupported
   @Unsupported
-  addWatchExpression: IDebugService['addWatchExpression'] = (): never => {
-    unsupported()
-  }
+  addWatchExpression: IDebugService['addWatchExpression'] = unsupported
   @Unsupported
-  renameWatchExpression: IDebugService['renameWatchExpression'] = (): never => {
-    unsupported()
-  }
+  renameWatchExpression: IDebugService['renameWatchExpression'] = unsupported
   @Unsupported
-  moveWatchExpression: IDebugService['moveWatchExpression'] = (): never => {
-    unsupported()
-  }
+  moveWatchExpression: IDebugService['moveWatchExpression'] = unsupported
   @Unsupported
-  removeWatchExpressions: IDebugService['removeWatchExpressions'] = (): never => {
-    unsupported()
-  }
+  removeWatchExpressions: IDebugService['removeWatchExpressions'] = unsupported
   @Unsupported
-  startDebugging: IDebugService['startDebugging'] = (): never => {
-    unsupported()
-  }
+  startDebugging: IDebugService['startDebugging'] = unsupported
   @Unsupported
-  restartSession: IDebugService['restartSession'] = (): never => {
-    unsupported()
-  }
+  restartSession: IDebugService['restartSession'] = unsupported
   @Unsupported
-  stopSession: IDebugService['stopSession'] = (): never => {
-    unsupported()
-  }
+  stopSession: IDebugService['stopSession'] = unsupported
   @Unsupported
-  sourceIsNotAvailable: IDebugService['sourceIsNotAvailable'] = (): never => {
-    unsupported()
-  }
+  sourceIsNotAvailable: IDebugService['sourceIsNotAvailable'] = unsupported
   getModel: IDebugService['getModel'] = () => debugModel
   getViewModel: IDebugService['getViewModel'] = () => new FakeViewModel()
   @Unsupported
-  runTo: IDebugService['runTo'] = (): never => {
-    unsupported()
-  }
+  runTo: IDebugService['runTo'] = unsupported
 }
 registerSingleton(IDebugService, DebugService, InstantiationType.Eager)
 class RequestService implements IRequestService {
   _serviceBrand: undefined
   @Unsupported
-  lookupAuthorization: IRequestService['lookupAuthorization'] = (): never => {
-    unsupported()
-  }
+  lookupAuthorization: IRequestService['lookupAuthorization'] = unsupported
   @Unsupported
-  lookupKerberosAuthorization: IRequestService['lookupKerberosAuthorization'] = (): never => {
-    unsupported()
-  }
+  lookupKerberosAuthorization: IRequestService['lookupKerberosAuthorization'] = unsupported
   @Unsupported
-  request: IRequestService['request'] = (): never => {
-    unsupported()
-  }
+  request: IRequestService['request'] = unsupported
   @Unsupported
-  resolveProxy: IRequestService['resolveProxy'] = (): never => {
-    unsupported()
-  }
+  resolveProxy: IRequestService['resolveProxy'] = unsupported
   @Unsupported
-  loadCertificates: IRequestService['loadCertificates'] = (): never => {
-    unsupported()
-  }
+  loadCertificates: IRequestService['loadCertificates'] = unsupported
 }
 registerSingleton(IRequestService, RequestService, InstantiationType.Eager)
 class WorkspaceTrustRequestService implements IWorkspaceTrustRequestService {
@@ -1879,13 +1481,9 @@ class ActivityService implements IActivityService {
   _serviceBrand: undefined
   onDidChangeActivity: IActivityService['onDidChangeActivity'] = Event.None
   @Unsupported
-  getViewContainerActivities: IActivityService['getViewContainerActivities'] = (): never => {
-    unsupported()
-  }
+  getViewContainerActivities: IActivityService['getViewContainerActivities'] = unsupported
   @Unsupported
-  getActivity: IActivityService['getActivity'] = (): never => {
-    unsupported()
-  }
+  getActivity: IActivityService['getActivity'] = unsupported
   showViewContainerActivity: IActivityService['showViewContainerActivity'] = () => Disposable.None
   showViewActivity: IActivityService['showViewActivity'] = () => Disposable.None
   showAccountsActivity: IActivityService['showAccountsActivity'] = () => Disposable.None
@@ -1895,24 +1493,16 @@ registerSingleton(IActivityService, ActivityService, InstantiationType.Eager)
 class ExtensionHostDebugService implements IExtensionHostDebugService {
   _serviceBrand: undefined
   @Unsupported
-  reload: IExtensionHostDebugService['reload'] = (): never => {
-    unsupported()
-  }
+  reload: IExtensionHostDebugService['reload'] = unsupported
   onReload: IExtensionHostDebugService['onReload'] = Event.None
   @Unsupported
-  close: IExtensionHostDebugService['close'] = (): never => {
-    unsupported()
-  }
+  close: IExtensionHostDebugService['close'] = unsupported
   onClose: IExtensionHostDebugService['onClose'] = Event.None
   @Unsupported
-  attachSession: IExtensionHostDebugService['attachSession'] = (): never => {
-    unsupported()
-  }
+  attachSession: IExtensionHostDebugService['attachSession'] = unsupported
   onAttachSession: IExtensionHostDebugService['onAttachSession'] = Event.None
   @Unsupported
-  terminateSession: IExtensionHostDebugService['terminateSession'] = (): never => {
-    unsupported()
-  }
+  terminateSession: IExtensionHostDebugService['terminateSession'] = unsupported
   onTerminateSession: IExtensionHostDebugService['onTerminateSession'] = Event.None
   @Unsupported
   openExtensionDevelopmentHostWindow: IExtensionHostDebugService['openExtensionDevelopmentHostWindow'] =
@@ -1926,33 +1516,23 @@ class ViewsService implements IViewsService {
   getFocusedView: IViewsService['getFocusedView'] = () => null
   isViewContainerActive: IViewsService['isViewContainerActive'] = () => false
   @Unsupported
-  getFocusedViewName: IViewsService['getFocusedViewName'] = (): never => {
-    unsupported()
-  }
+  getFocusedViewName: IViewsService['getFocusedViewName'] = unsupported
   onDidChangeFocusedView: IViewsService['onDidChangeFocusedView'] = Event.None
   onDidChangeViewContainerVisibility: IViewsService['onDidChangeViewContainerVisibility'] =
     Event.None
   isViewContainerVisible: IViewsService['isViewContainerVisible'] = () => false
   @Unsupported
-  openViewContainer: IViewsService['openViewContainer'] = (): never => {
-    unsupported()
-  }
+  openViewContainer: IViewsService['openViewContainer'] = unsupported
   @Unsupported
-  closeViewContainer: IViewsService['closeViewContainer'] = (): never => {
-    unsupported()
-  }
+  closeViewContainer: IViewsService['closeViewContainer'] = unsupported
   @Unsupported
-  getVisibleViewContainer: IViewsService['getVisibleViewContainer'] = (): never => {
-    unsupported()
-  }
+  getVisibleViewContainer: IViewsService['getVisibleViewContainer'] = unsupported
   getActiveViewPaneContainerWithId: IViewsService['getActiveViewPaneContainerWithId'] = () => null
   onDidChangeViewVisibility: IViewsService['onDidChangeViewVisibility'] = Event.None
   isViewVisible: IViewsService['isViewVisible'] = () => false
   openView: IViewsService['openView'] = async () => null
   @Unsupported
-  closeView: IViewsService['closeView'] = (): never => {
-    unsupported()
-  }
+  closeView: IViewsService['closeView'] = unsupported
   getActiveViewWithId: IViewsService['getActiveViewWithId'] = () => null
   getViewWithId: IViewsService['getViewWithId'] = () => null
   getViewProgressIndicator: IViewsService['getViewProgressIndicator'] = () => undefined
@@ -2007,9 +1587,7 @@ class ViewDescriptorService implements IViewDescriptorService {
   getViewLocationById: IViewDescriptorService['getViewLocationById'] = () => null
   onDidChangeContainer: IViewDescriptorService['onDidChangeContainer'] = Event.None
   @Unsupported
-  moveViewsToContainer: IViewDescriptorService['moveViewsToContainer'] = (): never => {
-    unsupported()
-  }
+  moveViewsToContainer: IViewDescriptorService['moveViewsToContainer'] = unsupported
   onDidChangeLocation: IViewDescriptorService['onDidChangeLocation'] = Event.None
   moveViewToLocation: IViewDescriptorService['moveViewToLocation'] = () => null
   reset: IViewDescriptorService['reset'] = () => null
@@ -2018,48 +1596,28 @@ registerSingleton(IViewDescriptorService, ViewDescriptorService, InstantiationTy
 class HistoryService implements IHistoryService {
   _serviceBrand: undefined
   @Unsupported
-  goForward: IHistoryService['goForward'] = (): never => {
-    unsupported()
-  }
+  goForward: IHistoryService['goForward'] = unsupported
   @Unsupported
-  goBack: IHistoryService['goBack'] = (): never => {
-    unsupported()
-  }
+  goBack: IHistoryService['goBack'] = unsupported
   @Unsupported
-  goPrevious: IHistoryService['goPrevious'] = (): never => {
-    unsupported()
-  }
+  goPrevious: IHistoryService['goPrevious'] = unsupported
   @Unsupported
-  goLast: IHistoryService['goLast'] = (): never => {
-    unsupported()
-  }
+  goLast: IHistoryService['goLast'] = unsupported
   @Unsupported
-  reopenLastClosedEditor: IHistoryService['reopenLastClosedEditor'] = (): never => {
-    unsupported()
-  }
+  reopenLastClosedEditor: IHistoryService['reopenLastClosedEditor'] = unsupported
   getHistory: IHistoryService['getHistory'] = () => []
   @Unsupported
-  removeFromHistory: IHistoryService['removeFromHistory'] = (): never => {
-    unsupported()
-  }
+  removeFromHistory: IHistoryService['removeFromHistory'] = unsupported
   getLastActiveWorkspaceRoot: IHistoryService['getLastActiveWorkspaceRoot'] = () => undefined
   getLastActiveFile: IHistoryService['getLastActiveFile'] = () => undefined
   @Unsupported
-  openNextRecentlyUsedEditor: IHistoryService['openNextRecentlyUsedEditor'] = (): never => {
-    unsupported()
-  }
+  openNextRecentlyUsedEditor: IHistoryService['openNextRecentlyUsedEditor'] = unsupported
   @Unsupported
-  openPreviouslyUsedEditor: IHistoryService['openPreviouslyUsedEditor'] = (): never => {
-    unsupported()
-  }
+  openPreviouslyUsedEditor: IHistoryService['openPreviouslyUsedEditor'] = unsupported
   @Unsupported
-  clear: IHistoryService['clear'] = (): never => {
-    unsupported()
-  }
+  clear: IHistoryService['clear'] = unsupported
   @Unsupported
-  clearRecentlyOpened: IHistoryService['clearRecentlyOpened'] = (): never => {
-    unsupported()
-  }
+  clearRecentlyOpened: IHistoryService['clearRecentlyOpened'] = unsupported
 }
 registerSingleton(IHistoryService, HistoryService, InstantiationType.Eager)
 class TaskService implements ITaskService {
@@ -2070,83 +1628,47 @@ class TaskService implements ITaskService {
   onDidStateChange: ITaskService['onDidStateChange'] = Event.None
   supportsMultipleTaskExecutions: ITaskService['supportsMultipleTaskExecutions'] = false
   @Unsupported
-  configureAction: ITaskService['configureAction'] = (): never => {
-    unsupported()
-  }
+  configureAction: ITaskService['configureAction'] = unsupported
   @Unsupported
-  rerun: ITaskService['rerun'] = (): never => {
-    unsupported()
-  }
+  rerun: ITaskService['rerun'] = unsupported
   @Unsupported
-  run: ITaskService['run'] = (): never => {
-    unsupported()
-  }
+  run: ITaskService['run'] = unsupported
   inTerminal: ITaskService['inTerminal'] = () => false
   getActiveTasks: ITaskService['getActiveTasks'] = async () => []
   @Unsupported
-  getBusyTasks: ITaskService['getBusyTasks'] = (): never => {
-    unsupported()
-  }
+  getBusyTasks: ITaskService['getBusyTasks'] = unsupported
   @Unsupported
-  terminate: ITaskService['terminate'] = (): never => {
-    unsupported()
-  }
+  terminate: ITaskService['terminate'] = unsupported
   @Unsupported
-  tasks: ITaskService['tasks'] = (): never => {
-    unsupported()
-  }
+  tasks: ITaskService['tasks'] = unsupported
   @Unsupported
-  taskTypes: ITaskService['taskTypes'] = (): never => {
-    unsupported()
-  }
+  taskTypes: ITaskService['taskTypes'] = unsupported
   @Unsupported
-  getWorkspaceTasks: ITaskService['getWorkspaceTasks'] = (): never => {
-    unsupported()
-  }
+  getWorkspaceTasks: ITaskService['getWorkspaceTasks'] = unsupported
   @Unsupported
-  getSavedTasks: ITaskService['getSavedTasks'] = (): never => {
-    unsupported()
-  }
+  getSavedTasks: ITaskService['getSavedTasks'] = unsupported
   @Unsupported
-  removeRecentlyUsedTask: ITaskService['removeRecentlyUsedTask'] = (): never => {
-    unsupported()
-  }
+  removeRecentlyUsedTask: ITaskService['removeRecentlyUsedTask'] = unsupported
   @Unsupported
-  getTask: ITaskService['getTask'] = (): never => {
-    unsupported()
-  }
+  getTask: ITaskService['getTask'] = unsupported
   @Unsupported
-  tryResolveTask: ITaskService['tryResolveTask'] = (): never => {
-    unsupported()
-  }
+  tryResolveTask: ITaskService['tryResolveTask'] = unsupported
   @Unsupported
-  createSorter: ITaskService['createSorter'] = (): never => {
-    unsupported()
-  }
+  createSorter: ITaskService['createSorter'] = unsupported
   @Unsupported
-  getTaskDescription: ITaskService['getTaskDescription'] = (): never => {
-    unsupported()
-  }
+  getTaskDescription: ITaskService['getTaskDescription'] = unsupported
   @Unsupported
-  customize: ITaskService['customize'] = (): never => {
-    unsupported()
-  }
+  customize: ITaskService['customize'] = unsupported
   @Unsupported
-  openConfig: ITaskService['openConfig'] = (): never => {
-    unsupported()
-  }
+  openConfig: ITaskService['openConfig'] = unsupported
   @Unsupported
-  registerTaskProvider: ITaskService['registerTaskProvider'] = (): never => {
-    unsupported()
-  }
+  registerTaskProvider: ITaskService['registerTaskProvider'] = unsupported
   registerTaskSystem: ITaskService['registerTaskSystem'] = () => {}
   onDidChangeTaskSystemInfo: ITaskService['onDidChangeTaskSystemInfo'] = Event.None
   hasTaskSystemInfo: ITaskService['hasTaskSystemInfo'] = false
   registerSupportedExecutions: ITaskService['registerSupportedExecutions'] = () => {}
   @Unsupported
-  extensionCallbackTaskComplete: ITaskService['extensionCallbackTaskComplete'] = (): never => {
-    unsupported()
-  }
+  extensionCallbackTaskComplete: ITaskService['extensionCallbackTaskComplete'] = unsupported
   isReconnected: ITaskService['isReconnected'] = false
   onDidReconnectToTasks: ITaskService['onDidReconnectToTasks'] = Event.None
 }
@@ -2155,26 +1677,18 @@ class ConfigurationResolverService implements IConfigurationResolverService {
   _serviceBrand: undefined
   resolvableVariables: IConfigurationResolverService['resolvableVariables'] = new Set<string>()
   @Unsupported
-  resolveWithEnvironment: IConfigurationResolverService['resolveWithEnvironment'] = (): never => {
-    unsupported()
-  }
+  resolveWithEnvironment: IConfigurationResolverService['resolveWithEnvironment'] = unsupported
   @Unsupported
-  resolveAsync: IConfigurationResolverService['resolveAsync'] = (): never => {
-    unsupported()
-  }
+  resolveAsync: IConfigurationResolverService['resolveAsync'] = unsupported
   @Unsupported
   resolveWithInteractionReplace: IConfigurationResolverService['resolveWithInteractionReplace'] =
     (): never => {
       unsupported()
     }
   @Unsupported
-  resolveWithInteraction: IConfigurationResolverService['resolveWithInteraction'] = (): never => {
-    unsupported()
-  }
+  resolveWithInteraction: IConfigurationResolverService['resolveWithInteraction'] = unsupported
   @Unsupported
-  contributeVariable: IConfigurationResolverService['contributeVariable'] = (): never => {
-    unsupported()
-  }
+  contributeVariable: IConfigurationResolverService['contributeVariable'] = unsupported
 }
 registerSingleton(
   IConfigurationResolverService,
@@ -2184,9 +1698,7 @@ registerSingleton(
 class RemoteAgentService implements IRemoteAgentService {
   _serviceBrand: undefined
   @Unsupported
-  endConnection: IRemoteAgentService['endConnection'] = (): never => {
-    unsupported()
-  }
+  endConnection: IRemoteAgentService['endConnection'] = unsupported
   getConnection: IRemoteAgentService['getConnection'] = () => null
   getEnvironment: IRemoteAgentService['getEnvironment'] = async () => null
   getRawEnvironment: IRemoteAgentService['getRawEnvironment'] = async () => null
@@ -2212,13 +1724,9 @@ class MonacoSearchService implements ISearchService {
   schemeHasFileSearchProvider: ISearchService['schemeHasFileSearchProvider'] = () => false
   getAIName: ISearchService['getAIName'] = async () => undefined
   @Unsupported
-  aiTextSearch: ISearchService['aiTextSearch'] = (): never => {
-    unsupported()
-  }
+  aiTextSearch: ISearchService['aiTextSearch'] = unsupported
   @Unsupported
-  textSearchSplitSyncAsync: ISearchService['textSearchSplitSyncAsync'] = (): never => {
-    unsupported()
-  }
+  textSearchSplitSyncAsync: ISearchService['textSearchSplitSyncAsync'] = unsupported
   textSearch: ISearchService['textSearch'] = async (): Promise<ISearchComplete> => {
     return {
       results: [],
@@ -2235,9 +1743,7 @@ class MonacoSearchService implements ISearchService {
   }
   clearCache: ISearchService['clearCache'] = async (): Promise<void> => {}
   @Unsupported
-  registerSearchResultProvider: ISearchService['registerSearchResultProvider'] = (): never => {
-    unsupported()
-  }
+  registerSearchResultProvider: ISearchService['registerSearchResultProvider'] = unsupported
 }
 registerSingleton(ISearchService, MonacoSearchService, InstantiationType.Eager)
 class EditSessionIdentityService implements IEditSessionIdentityService {
@@ -2257,49 +1763,29 @@ registerSingleton(IEditSessionIdentityService, EditSessionIdentityService, Insta
 class WorkspaceEditingService implements IWorkspaceEditingService {
   _serviceBrand: undefined
   @Unsupported
-  addFolders: IWorkspaceEditingService['addFolders'] = (): never => {
-    unsupported()
-  }
+  addFolders: IWorkspaceEditingService['addFolders'] = unsupported
   @Unsupported
-  removeFolders: IWorkspaceEditingService['removeFolders'] = (): never => {
-    unsupported()
-  }
+  removeFolders: IWorkspaceEditingService['removeFolders'] = unsupported
   @Unsupported
-  updateFolders: IWorkspaceEditingService['updateFolders'] = (): never => {
-    unsupported()
-  }
+  updateFolders: IWorkspaceEditingService['updateFolders'] = unsupported
   @Unsupported
-  enterWorkspace: IWorkspaceEditingService['enterWorkspace'] = (): never => {
-    unsupported()
-  }
+  enterWorkspace: IWorkspaceEditingService['enterWorkspace'] = unsupported
   @Unsupported
-  createAndEnterWorkspace: IWorkspaceEditingService['createAndEnterWorkspace'] = (): never => {
-    unsupported()
-  }
+  createAndEnterWorkspace: IWorkspaceEditingService['createAndEnterWorkspace'] = unsupported
   @Unsupported
-  saveAndEnterWorkspace: IWorkspaceEditingService['saveAndEnterWorkspace'] = (): never => {
-    unsupported()
-  }
+  saveAndEnterWorkspace: IWorkspaceEditingService['saveAndEnterWorkspace'] = unsupported
   @Unsupported
-  copyWorkspaceSettings: IWorkspaceEditingService['copyWorkspaceSettings'] = (): never => {
-    unsupported()
-  }
+  copyWorkspaceSettings: IWorkspaceEditingService['copyWorkspaceSettings'] = unsupported
   @Unsupported
-  pickNewWorkspacePath: IWorkspaceEditingService['pickNewWorkspacePath'] = (): never => {
-    unsupported()
-  }
+  pickNewWorkspacePath: IWorkspaceEditingService['pickNewWorkspacePath'] = unsupported
 }
 registerSingleton(IWorkspaceEditingService, WorkspaceEditingService, InstantiationType.Eager)
 class TimerService implements ITimerService {
   _serviceBrand: undefined
   @Unsupported
-  getStartTime: ITimerService['getStartTime'] = (): never => {
-    unsupported()
-  }
+  getStartTime: ITimerService['getStartTime'] = unsupported
   @Unsupported
-  whenReady: ITimerService['whenReady'] = (): never => {
-    unsupported()
-  }
+  whenReady: ITimerService['whenReady'] = unsupported
   @Unsupported
   get perfBaseline() {
     return unsupported()
@@ -2310,30 +1796,22 @@ class TimerService implements ITimerService {
   }
   setPerformanceMarks: ITimerService['setPerformanceMarks'] = () => {}
   @Unsupported
-  getPerformanceMarks: ITimerService['getPerformanceMarks'] = (): never => {
-    unsupported()
-  }
+  getPerformanceMarks: ITimerService['getPerformanceMarks'] = unsupported
   @Unsupported
-  getDuration: ITimerService['getDuration'] = (): never => {
-    unsupported()
-  }
+  getDuration: ITimerService['getDuration'] = unsupported
 }
 registerSingleton(ITimerService, TimerService, InstantiationType.Eager)
 class ExtensionsWorkbenchService implements IExtensionsWorkbenchService {
   _serviceBrand: undefined
   @Unsupported
-  downloadVSIX: IExtensionsWorkbenchService['downloadVSIX'] = (): never => {
-    unsupported()
-  }
+  downloadVSIX: IExtensionsWorkbenchService['downloadVSIX'] = unsupported
   @Unsupported
   updateAutoUpdateForAllExtensions: IExtensionsWorkbenchService['updateAutoUpdateForAllExtensions'] =
     (): never => {
       unsupported()
     }
   @Unsupported
-  openSearch: IExtensionsWorkbenchService['openSearch'] = (): never => {
-    unsupported()
-  }
+  openSearch: IExtensionsWorkbenchService['openSearch'] = unsupported
   getExtensionRuntimeStatus: IExtensionsWorkbenchService['getExtensionRuntimeStatus'] = () =>
     undefined
   onDidChangeExtensionsNotification: IExtensionsWorkbenchService['onDidChangeExtensionsNotification'] =
@@ -2343,34 +1821,22 @@ class ExtensionsWorkbenchService implements IExtensionsWorkbenchService {
   shouldRequireConsentToUpdate: IExtensionsWorkbenchService['shouldRequireConsentToUpdate'] =
     async () => undefined
   @Unsupported
-  getResourceExtensions: IExtensionsWorkbenchService['getResourceExtensions'] = (): never => {
-    unsupported()
-  }
+  getResourceExtensions: IExtensionsWorkbenchService['getResourceExtensions'] = unsupported
   @Unsupported
-  updateRunningExtensions: IExtensionsWorkbenchService['updateRunningExtensions'] = (): never => {
-    unsupported()
-  }
+  updateRunningExtensions: IExtensionsWorkbenchService['updateRunningExtensions'] = unsupported
   @Unsupported
-  togglePreRelease: IExtensionsWorkbenchService['togglePreRelease'] = (): never => {
-    unsupported()
-  }
+  togglePreRelease: IExtensionsWorkbenchService['togglePreRelease'] = unsupported
   @Unsupported
-  isAutoUpdateEnabledFor: IExtensionsWorkbenchService['isAutoUpdateEnabledFor'] = (): never => {
-    unsupported()
-  }
+  isAutoUpdateEnabledFor: IExtensionsWorkbenchService['isAutoUpdateEnabledFor'] = unsupported
   @Unsupported
   updateAutoUpdateEnablementFor: IExtensionsWorkbenchService['updateAutoUpdateEnablementFor'] =
     (): never => {
       unsupported()
     }
   @Unsupported
-  getAutoUpdateValue: IExtensionsWorkbenchService['getAutoUpdateValue'] = (): never => {
-    unsupported()
-  }
+  getAutoUpdateValue: IExtensionsWorkbenchService['getAutoUpdateValue'] = unsupported
   @Unsupported
-  updateAll: IExtensionsWorkbenchService['updateAll'] = (): never => {
-    unsupported()
-  }
+  updateAll: IExtensionsWorkbenchService['updateAll'] = unsupported
   @Unsupported
   toggleApplyExtensionToAllProfiles: IExtensionsWorkbenchService['toggleApplyExtensionToAllProfiles'] =
     (): never => {
@@ -2383,57 +1849,31 @@ class ExtensionsWorkbenchService implements IExtensionsWorkbenchService {
   installed: IExtensionsWorkbenchService['installed'] = []
   outdated: IExtensionsWorkbenchService['outdated'] = []
   @Unsupported
-  queryLocal: IExtensionsWorkbenchService['queryLocal'] = (): never => {
-    unsupported()
-  }
+  queryLocal: IExtensionsWorkbenchService['queryLocal'] = unsupported
   @Unsupported
-  queryGallery: IExtensionsWorkbenchService['queryGallery'] = (): never => {
-    unsupported()
-  }
+  queryGallery: IExtensionsWorkbenchService['queryGallery'] = unsupported
   @Unsupported
-  getExtensions: IExtensionsWorkbenchService['getExtensions'] = (): never => {
-    unsupported()
-  }
+  getExtensions: IExtensionsWorkbenchService['getExtensions'] = unsupported
   @Unsupported
-  canInstall: IExtensionsWorkbenchService['canInstall'] = (): never => {
-    unsupported()
-  }
+  canInstall: IExtensionsWorkbenchService['canInstall'] = unsupported
   @Unsupported
-  install: IExtensionsWorkbenchService['install'] = (): never => {
-    unsupported()
-  }
+  install: IExtensionsWorkbenchService['install'] = unsupported
   @Unsupported
-  installInServer: IExtensionsWorkbenchService['installInServer'] = (): never => {
-    unsupported()
-  }
+  installInServer: IExtensionsWorkbenchService['installInServer'] = unsupported
   @Unsupported
-  uninstall: IExtensionsWorkbenchService['uninstall'] = (): never => {
-    unsupported()
-  }
+  uninstall: IExtensionsWorkbenchService['uninstall'] = unsupported
   @Unsupported
-  canSetLanguage: IExtensionsWorkbenchService['canSetLanguage'] = (): never => {
-    unsupported()
-  }
+  canSetLanguage: IExtensionsWorkbenchService['canSetLanguage'] = unsupported
   @Unsupported
-  setLanguage: IExtensionsWorkbenchService['setLanguage'] = (): never => {
-    unsupported()
-  }
+  setLanguage: IExtensionsWorkbenchService['setLanguage'] = unsupported
   @Unsupported
-  setEnablement: IExtensionsWorkbenchService['setEnablement'] = (): never => {
-    unsupported()
-  }
+  setEnablement: IExtensionsWorkbenchService['setEnablement'] = unsupported
   @Unsupported
-  open: IExtensionsWorkbenchService['open'] = (): never => {
-    unsupported()
-  }
+  open: IExtensionsWorkbenchService['open'] = unsupported
   @Unsupported
-  checkForUpdates: IExtensionsWorkbenchService['checkForUpdates'] = (): never => {
-    unsupported()
-  }
+  checkForUpdates: IExtensionsWorkbenchService['checkForUpdates'] = unsupported
   @Unsupported
-  isExtensionIgnoredToSync: IExtensionsWorkbenchService['isExtensionIgnoredToSync'] = (): never => {
-    unsupported()
-  }
+  isExtensionIgnoredToSync: IExtensionsWorkbenchService['isExtensionIgnoredToSync'] = unsupported
   @Unsupported
   toggleExtensionIgnoredToSync: IExtensionsWorkbenchService['toggleExtensionIgnoredToSync'] =
     (): never => {
@@ -2497,17 +1937,11 @@ class UserDataAutoSyncService implements IUserDataAutoSyncService {
   _serviceBrand: undefined
   readonly onError: IUserDataAutoSyncService['onError'] = Event.None
   @Unsupported
-  turnOn: IUserDataAutoSyncService['turnOn'] = (): never => {
-    unsupported()
-  }
+  turnOn: IUserDataAutoSyncService['turnOn'] = unsupported
   @Unsupported
-  turnOff: IUserDataAutoSyncService['turnOff'] = (): never => {
-    unsupported()
-  }
+  turnOff: IUserDataAutoSyncService['turnOff'] = unsupported
   @Unsupported
-  triggerSync: IUserDataAutoSyncService['triggerSync'] = (): never => {
-    unsupported()
-  }
+  triggerSync: IUserDataAutoSyncService['triggerSync'] = unsupported
 }
 registerSingleton(IUserDataAutoSyncService, UserDataAutoSyncService, InstantiationType.Eager)
 class IgnoredExtensionsManagementService implements IIgnoredExtensionsManagementService {
@@ -2565,19 +1999,13 @@ class WebExtensionsScannerService implements IWebExtensionsScannerService {
     async () => []
   scanExistingExtension: IWebExtensionsScannerService['scanExistingExtension'] = async () => null
   @Unsupported
-  addExtension: IWebExtensionsScannerService['addExtension'] = (): never => {
-    unsupported()
-  }
+  addExtension: IWebExtensionsScannerService['addExtension'] = unsupported
   @Unsupported
-  addExtensionFromGallery: IWebExtensionsScannerService['addExtensionFromGallery'] = (): never => {
-    unsupported()
-  }
+  addExtensionFromGallery: IWebExtensionsScannerService['addExtensionFromGallery'] = unsupported
   removeExtension: IWebExtensionsScannerService['removeExtension'] = async () => {}
   copyExtensions: IWebExtensionsScannerService['copyExtensions'] = async () => {}
   @Unsupported
-  updateMetadata: IWebExtensionsScannerService['updateMetadata'] = (): never => {
-    unsupported()
-  }
+  updateMetadata: IWebExtensionsScannerService['updateMetadata'] = unsupported
   scanExtensionManifest: IWebExtensionsScannerService['scanExtensionManifest'] = async () => null
 }
 registerSingleton(
@@ -2597,48 +2025,34 @@ class ExtensionsScannerService implements IExtensionsScannerService {
   }
   onDidChangeCache: IExtensionsScannerService['onDidChangeCache'] = Event.None
   @Unsupported
-  scanAllExtensions: IExtensionsScannerService['scanAllExtensions'] = (): never => {
-    unsupported()
-  }
+  scanAllExtensions: IExtensionsScannerService['scanAllExtensions'] = unsupported
   @Unsupported
-  scanSystemExtensions: IExtensionsScannerService['scanSystemExtensions'] = (): never => {
-    unsupported()
-  }
+  scanSystemExtensions: IExtensionsScannerService['scanSystemExtensions'] = unsupported
   @Unsupported
-  scanUserExtensions: IExtensionsScannerService['scanUserExtensions'] = (): never => {
-    unsupported()
-  }
+  scanUserExtensions: IExtensionsScannerService['scanUserExtensions'] = unsupported
   @Unsupported
   scanExtensionsUnderDevelopment: IExtensionsScannerService['scanExtensionsUnderDevelopment'] =
     (): never => {
       unsupported()
     }
   @Unsupported
-  scanExistingExtension: IExtensionsScannerService['scanExistingExtension'] = (): never => {
-    unsupported()
-  }
+  scanExistingExtension: IExtensionsScannerService['scanExistingExtension'] = unsupported
   @Unsupported
   scanOneOrMultipleExtensions: IExtensionsScannerService['scanOneOrMultipleExtensions'] =
     (): never => {
       unsupported()
     }
   @Unsupported
-  scanMultipleExtensions: IExtensionsScannerService['scanMultipleExtensions'] = (): never => {
-    unsupported()
-  }
+  scanMultipleExtensions: IExtensionsScannerService['scanMultipleExtensions'] = unsupported
   @Unsupported
-  scanAllUserExtensions: IExtensionsScannerService['scanAllUserExtensions'] = (): never => {
-    unsupported()
-  }
+  scanAllUserExtensions: IExtensionsScannerService['scanAllUserExtensions'] = unsupported
   @Unsupported
   initializeDefaultProfileExtensions: IExtensionsScannerService['initializeDefaultProfileExtensions'] =
     (): never => {
       unsupported()
     }
   @Unsupported
-  updateManifestMetadata: IExtensionsScannerService['updateManifestMetadata'] = (): never => {
-    unsupported()
-  }
+  updateManifestMetadata: IExtensionsScannerService['updateManifestMetadata'] = unsupported
 }
 registerSingleton(IExtensionsScannerService, ExtensionsScannerService, InstantiationType.Eager)
 class ExtensionsProfileScannerService implements IExtensionsProfileScannerService {
@@ -2648,18 +2062,14 @@ class ExtensionsProfileScannerService implements IExtensionsProfileScannerServic
   onRemoveExtensions: IExtensionsProfileScannerService['onRemoveExtensions'] = Event.None
   onDidRemoveExtensions: IExtensionsProfileScannerService['onDidRemoveExtensions'] = Event.None
   @Unsupported
-  scanProfileExtensions: IExtensionsProfileScannerService['scanProfileExtensions'] = (): never => {
-    unsupported()
-  }
+  scanProfileExtensions: IExtensionsProfileScannerService['scanProfileExtensions'] = unsupported
   @Unsupported
   addExtensionsToProfile: IExtensionsProfileScannerService['addExtensionsToProfile'] =
     (): never => {
       unsupported()
     }
   @Unsupported
-  updateMetadata: IExtensionsProfileScannerService['updateMetadata'] = (): never => {
-    unsupported()
-  }
+  updateMetadata: IExtensionsProfileScannerService['updateMetadata'] = unsupported
   @Unsupported
   removeExtensionsFromProfile: IExtensionsProfileScannerService['removeExtensionsFromProfile'] =
     (): never => {
@@ -2696,22 +2106,16 @@ class WorkspaceExtensionsConfigService implements IWorkspaceExtensionsConfigServ
   onDidChangeExtensionsConfigs: IWorkspaceExtensionsConfigService['onDidChangeExtensionsConfigs'] =
     Event.None
   @Unsupported
-  getExtensionsConfigs: IWorkspaceExtensionsConfigService['getExtensionsConfigs'] = (): never => {
-    unsupported()
-  }
+  getExtensionsConfigs: IWorkspaceExtensionsConfigService['getExtensionsConfigs'] = unsupported
   @Unsupported
-  getRecommendations: IWorkspaceExtensionsConfigService['getRecommendations'] = (): never => {
-    unsupported()
-  }
+  getRecommendations: IWorkspaceExtensionsConfigService['getRecommendations'] = unsupported
   @Unsupported
   getUnwantedRecommendations: IWorkspaceExtensionsConfigService['getUnwantedRecommendations'] =
     (): never => {
       unsupported()
     }
   @Unsupported
-  toggleRecommendation: IWorkspaceExtensionsConfigService['toggleRecommendation'] = (): never => {
-    unsupported()
-  }
+  toggleRecommendation: IWorkspaceExtensionsConfigService['toggleRecommendation'] = unsupported
   @Unsupported
   toggleUnwantedRecommendation: IWorkspaceExtensionsConfigService['toggleUnwantedRecommendation'] =
     (): never => {
@@ -2741,9 +2145,7 @@ class WorkbenchExtensionEnablementService implements IWorkbenchExtensionEnableme
     true
   isDisabledGlobally: IWorkbenchExtensionEnablementService['isDisabledGlobally'] = () => false
   @Unsupported
-  setEnablement: IWorkbenchExtensionEnablementService['setEnablement'] = (): never => {
-    unsupported()
-  }
+  setEnablement: IWorkbenchExtensionEnablementService['setEnablement'] = unsupported
   @Unsupported
   updateExtensionsEnablementsWhenWorkspaceTrustChanges: IWorkbenchExtensionEnablementService['updateExtensionsEnablementsWhenWorkspaceTrustChanges'] =
     (): never => {
@@ -2768,26 +2170,16 @@ class TunnelService implements ITunnelService {
   onAddedTunnelProvider: ITunnelService['onAddedTunnelProvider'] = Event.None
   canTunnel: ITunnelService['canTunnel'] = () => false
   @Unsupported
-  openTunnel: ITunnelService['openTunnel'] = (): never => {
-    unsupported()
-  }
+  openTunnel: ITunnelService['openTunnel'] = unsupported
   getExistingTunnel: ITunnelService['getExistingTunnel'] = async () => undefined
   @Unsupported
-  setEnvironmentTunnel: ITunnelService['setEnvironmentTunnel'] = (): never => {
-    unsupported()
-  }
+  setEnvironmentTunnel: ITunnelService['setEnvironmentTunnel'] = unsupported
   @Unsupported
-  closeTunnel: ITunnelService['closeTunnel'] = (): never => {
-    unsupported()
-  }
+  closeTunnel: ITunnelService['closeTunnel'] = unsupported
   @Unsupported
-  setTunnelProvider: ITunnelService['setTunnelProvider'] = (): never => {
-    unsupported()
-  }
+  setTunnelProvider: ITunnelService['setTunnelProvider'] = unsupported
   @Unsupported
-  setTunnelFeatures: ITunnelService['setTunnelFeatures'] = (): never => {
-    unsupported()
-  }
+  setTunnelFeatures: ITunnelService['setTunnelFeatures'] = unsupported
   isPortPrivileged: ITunnelService['isPortPrivileged'] = () => false
 }
 registerSingleton(ITunnelService, TunnelService, InstantiationType.Eager)
@@ -2799,9 +2191,7 @@ class FilesConfigurationService implements IFilesConfigurationService {
     Event.None
   hasShortAutoSaveDelay: IFilesConfigurationService['hasShortAutoSaveDelay'] = () => false
   @Unsupported
-  disableAutoSave: IFilesConfigurationService['disableAutoSave'] = (): never => {
-    unsupported()
-  }
+  disableAutoSave: IFilesConfigurationService['disableAutoSave'] = unsupported
   @Unsupported
   enableAutoSaveAfterShortDelay: IFilesConfigurationService['enableAutoSaveAfterShortDelay'] =
     (): never => {
@@ -2811,31 +2201,19 @@ class FilesConfigurationService implements IFilesConfigurationService {
   onDidChangeFilesAssociation: IFilesConfigurationService['onDidChangeFilesAssociation'] =
     Event.None
   @Unsupported
-  getAutoSaveConfiguration: IFilesConfigurationService['getAutoSaveConfiguration'] = (): never => {
-    unsupported()
-  }
+  getAutoSaveConfiguration: IFilesConfigurationService['getAutoSaveConfiguration'] = unsupported
   @Unsupported
-  getAutoSaveMode: IFilesConfigurationService['getAutoSaveMode'] = (): never => {
-    unsupported()
-  }
+  getAutoSaveMode: IFilesConfigurationService['getAutoSaveMode'] = unsupported
   @Unsupported
-  toggleAutoSave: IFilesConfigurationService['toggleAutoSave'] = (): never => {
-    unsupported()
-  }
+  toggleAutoSave: IFilesConfigurationService['toggleAutoSave'] = unsupported
   @Unsupported
-  isReadonly: IFilesConfigurationService['isReadonly'] = (): never => {
-    unsupported()
-  }
+  isReadonly: IFilesConfigurationService['isReadonly'] = unsupported
   @Unsupported
-  updateReadonly: IFilesConfigurationService['updateReadonly'] = (): never => {
-    unsupported()
-  }
+  updateReadonly: IFilesConfigurationService['updateReadonly'] = unsupported
   isHotExitEnabled: IFilesConfigurationService['isHotExitEnabled'] = true
   hotExitConfiguration: IFilesConfigurationService['hotExitConfiguration'] = undefined
   @Unsupported
-  preventSaveConflicts: IFilesConfigurationService['preventSaveConflicts'] = (): never => {
-    unsupported()
-  }
+  preventSaveConflicts: IFilesConfigurationService['preventSaveConflicts'] = unsupported
 }
 registerSingleton(IFilesConfigurationService, FilesConfigurationService, InstantiationType.Eager)
 class UntitledTextEditorService implements IUntitledTextEditorService {
@@ -2850,15 +2228,11 @@ class UntitledTextEditorService implements IUntitledTextEditorService {
   onDidChangeLabel: IUntitledTextEditorService['onDidChangeLabel'] = Event.None
   onWillDispose: IUntitledTextEditorService['onWillDispose'] = Event.None
   @Unsupported
-  create: IUntitledTextEditorService['create'] = (): never => {
-    unsupported()
-  }
+  create: IUntitledTextEditorService['create'] = unsupported
   get: IUntitledTextEditorService['get'] = () => undefined
   getValue: IUntitledTextEditorService['getValue'] = () => undefined
   @Unsupported
-  resolve: IUntitledTextEditorService['resolve'] = (): never => {
-    unsupported()
-  }
+  resolve: IUntitledTextEditorService['resolve'] = unsupported
 }
 registerSingleton(IUntitledTextEditorService, UntitledTextEditorService, InstantiationType.Eager)
 class WorkingCopyBackupService implements IWorkingCopyBackupService {
@@ -2911,9 +2285,7 @@ class DecorationsService implements IDecorationsService {
   _serviceBrand: undefined
   onDidChangeDecorations: IDecorationsService['onDidChangeDecorations'] = Event.None
   @Unsupported
-  registerDecorationsProvider: IDecorationsService['registerDecorationsProvider'] = (): never => {
-    unsupported()
-  }
+  registerDecorationsProvider: IDecorationsService['registerDecorationsProvider'] = unsupported
   getDecoration: IDecorationsService['getDecoration'] = () => undefined
 }
 registerSingleton(IDecorationsService, DecorationsService, InstantiationType.Eager)
@@ -2921,144 +2293,86 @@ class ElevatedFileService implements IElevatedFileService {
   _serviceBrand: undefined
   isSupported: IElevatedFileService['isSupported'] = () => false
   @Unsupported
-  writeFileElevated: IElevatedFileService['writeFileElevated'] = (): never => {
-    unsupported()
-  }
+  writeFileElevated: IElevatedFileService['writeFileElevated'] = unsupported
 }
 registerSingleton(IElevatedFileService, ElevatedFileService, InstantiationType.Eager)
 class FileDialogService implements IFileDialogService {
   @Unsupported
-  preferredHome: IFileDialogService['preferredHome'] = (): never => {
-    unsupported()
-  }
+  preferredHome: IFileDialogService['preferredHome'] = unsupported
   _serviceBrand: undefined
   @Unsupported
-  defaultFilePath: IFileDialogService['defaultFilePath'] = (): never => {
-    unsupported()
-  }
+  defaultFilePath: IFileDialogService['defaultFilePath'] = unsupported
   @Unsupported
-  defaultFolderPath: IFileDialogService['defaultFolderPath'] = (): never => {
-    unsupported()
-  }
+  defaultFolderPath: IFileDialogService['defaultFolderPath'] = unsupported
   @Unsupported
-  defaultWorkspacePath: IFileDialogService['defaultWorkspacePath'] = (): never => {
-    unsupported()
-  }
+  defaultWorkspacePath: IFileDialogService['defaultWorkspacePath'] = unsupported
   @Unsupported
-  pickFileFolderAndOpen: IFileDialogService['pickFileFolderAndOpen'] = (): never => {
-    unsupported()
-  }
+  pickFileFolderAndOpen: IFileDialogService['pickFileFolderAndOpen'] = unsupported
   @Unsupported
-  pickFileAndOpen: IFileDialogService['pickFileAndOpen'] = (): never => {
-    unsupported()
-  }
+  pickFileAndOpen: IFileDialogService['pickFileAndOpen'] = unsupported
   @Unsupported
-  pickFolderAndOpen: IFileDialogService['pickFolderAndOpen'] = (): never => {
-    unsupported()
-  }
+  pickFolderAndOpen: IFileDialogService['pickFolderAndOpen'] = unsupported
   @Unsupported
-  pickWorkspaceAndOpen: IFileDialogService['pickWorkspaceAndOpen'] = (): never => {
-    unsupported()
-  }
+  pickWorkspaceAndOpen: IFileDialogService['pickWorkspaceAndOpen'] = unsupported
   @Unsupported
-  pickFileToSave: IFileDialogService['pickFileToSave'] = (): never => {
-    unsupported()
-  }
+  pickFileToSave: IFileDialogService['pickFileToSave'] = unsupported
   @Unsupported
-  showSaveDialog: IFileDialogService['showSaveDialog'] = (): never => {
-    unsupported()
-  }
+  showSaveDialog: IFileDialogService['showSaveDialog'] = unsupported
   @Unsupported
-  showSaveConfirm: IFileDialogService['showSaveConfirm'] = (): never => {
-    unsupported()
-  }
+  showSaveConfirm: IFileDialogService['showSaveConfirm'] = unsupported
   @Unsupported
-  showOpenDialog: IFileDialogService['showOpenDialog'] = (): never => {
-    unsupported()
-  }
+  showOpenDialog: IFileDialogService['showOpenDialog'] = unsupported
 }
 registerSingleton(IFileDialogService, FileDialogService, InstantiationType.Eager)
 class JSONEditingService implements IJSONEditingService {
   _serviceBrand: undefined
   @Unsupported
-  write: IJSONEditingService['write'] = (): never => {
-    unsupported()
-  }
+  write: IJSONEditingService['write'] = unsupported
 }
 registerSingleton(IJSONEditingService, JSONEditingService, InstantiationType.Delayed)
 class WorkspacesService implements IWorkspacesService {
   _serviceBrand: undefined
   @Unsupported
-  enterWorkspace: IWorkspacesService['enterWorkspace'] = (): never => {
-    unsupported()
-  }
+  enterWorkspace: IWorkspacesService['enterWorkspace'] = unsupported
   @Unsupported
-  createUntitledWorkspace: IWorkspacesService['createUntitledWorkspace'] = (): never => {
-    unsupported()
-  }
+  createUntitledWorkspace: IWorkspacesService['createUntitledWorkspace'] = unsupported
   @Unsupported
-  deleteUntitledWorkspace: IWorkspacesService['deleteUntitledWorkspace'] = (): never => {
-    unsupported()
-  }
+  deleteUntitledWorkspace: IWorkspacesService['deleteUntitledWorkspace'] = unsupported
   @Unsupported
-  getWorkspaceIdentifier: IWorkspacesService['getWorkspaceIdentifier'] = (): never => {
-    unsupported()
-  }
+  getWorkspaceIdentifier: IWorkspacesService['getWorkspaceIdentifier'] = unsupported
   onDidChangeRecentlyOpened: IWorkspacesService['onDidChangeRecentlyOpened'] = Event.None
   @Unsupported
-  addRecentlyOpened: IWorkspacesService['addRecentlyOpened'] = (): never => {
-    unsupported()
-  }
+  addRecentlyOpened: IWorkspacesService['addRecentlyOpened'] = unsupported
   @Unsupported
-  removeRecentlyOpened: IWorkspacesService['removeRecentlyOpened'] = (): never => {
-    unsupported()
-  }
+  removeRecentlyOpened: IWorkspacesService['removeRecentlyOpened'] = unsupported
   @Unsupported
-  clearRecentlyOpened: IWorkspacesService['clearRecentlyOpened'] = (): never => {
-    unsupported()
-  }
+  clearRecentlyOpened: IWorkspacesService['clearRecentlyOpened'] = unsupported
   @Unsupported
-  getRecentlyOpened: IWorkspacesService['getRecentlyOpened'] = (): never => {
-    unsupported()
-  }
+  getRecentlyOpened: IWorkspacesService['getRecentlyOpened'] = unsupported
   @Unsupported
-  getDirtyWorkspaces: IWorkspacesService['getDirtyWorkspaces'] = (): never => {
-    unsupported()
-  }
+  getDirtyWorkspaces: IWorkspacesService['getDirtyWorkspaces'] = unsupported
 }
 registerSingleton(IWorkspacesService, WorkspacesService, InstantiationType.Delayed)
 class TextEditorService implements ITextEditorService {
   _serviceBrand: undefined
   @Unsupported
-  createTextEditor: ITextEditorService['createTextEditor'] = (): never => {
-    unsupported()
-  }
+  createTextEditor: ITextEditorService['createTextEditor'] = unsupported
   @Unsupported
-  resolveTextEditor: ITextEditorService['resolveTextEditor'] = (): never => {
-    unsupported()
-  }
+  resolveTextEditor: ITextEditorService['resolveTextEditor'] = unsupported
 }
 registerSingleton(ITextEditorService, TextEditorService, InstantiationType.Eager)
 class EditorResolverService implements IEditorResolverService {
   @Unsupported
-  getAllUserAssociations: IEditorResolverService['getAllUserAssociations'] = (): never => {
-    unsupported()
-  }
+  getAllUserAssociations: IEditorResolverService['getAllUserAssociations'] = unsupported
   _serviceBrand: undefined
   @Unsupported
-  getAssociationsForResource: IEditorResolverService['getAssociationsForResource'] = (): never => {
-    unsupported()
-  }
+  getAssociationsForResource: IEditorResolverService['getAssociationsForResource'] = unsupported
   @Unsupported
-  updateUserAssociations: IEditorResolverService['updateUserAssociations'] = (): never => {
-    unsupported()
-  }
+  updateUserAssociations: IEditorResolverService['updateUserAssociations'] = unsupported
   onDidChangeEditorRegistrations: IEditorResolverService['onDidChangeEditorRegistrations'] =
     Event.None
   @Unsupported
-  bufferChangeEvents: IEditorResolverService['bufferChangeEvents'] = (): never => {
-    unsupported()
-  }
+  bufferChangeEvents: IEditorResolverService['bufferChangeEvents'] = unsupported
   registerEditor: IEditorResolverService['registerEditor'] = () => {
     // do nothing
     return {
@@ -3066,9 +2380,7 @@ class EditorResolverService implements IEditorResolverService {
     }
   }
   @Unsupported
-  resolveEditor: IEditorResolverService['resolveEditor'] = (): never => {
-    unsupported()
-  }
+  resolveEditor: IEditorResolverService['resolveEditor'] = unsupported
   getEditors: IEditorResolverService['getEditors'] = () => []
 }
 registerSingleton(IEditorResolverService, EditorResolverService, InstantiationType.Eager)
@@ -3085,13 +2397,9 @@ class OutputService implements IOutputService {
     return undefined
   }
   @Unsupported
-  registerCompoundLogChannel: IOutputService['registerCompoundLogChannel'] = (): never => {
-    unsupported()
-  }
+  registerCompoundLogChannel: IOutputService['registerCompoundLogChannel'] = unsupported
   @Unsupported
-  saveOutputAs: IOutputService['saveOutputAs'] = (): never => {
-    unsupported()
-  }
+  saveOutputAs: IOutputService['saveOutputAs'] = unsupported
   getChannelDescriptor: IOutputService['getChannelDescriptor'] = ():
     | IOutputChannelDescriptor
     | undefined => {
@@ -3113,9 +2421,7 @@ registerSingleton(IOutputService, OutputService, InstantiationType.Delayed)
 class ExtensionResourceLoaderService implements IExtensionResourceLoaderService {
   _serviceBrand: undefined
   @Unsupported
-  readExtensionResource: IExtensionResourceLoaderService['readExtensionResource'] = (): never => {
-    unsupported()
-  }
+  readExtensionResource: IExtensionResourceLoaderService['readExtensionResource'] = unsupported
   supportsExtensionGalleryResources: IExtensionResourceLoaderService['supportsExtensionGalleryResources'] =
     async () => false
   isExtensionGalleryResource: IExtensionResourceLoaderService['isExtensionGalleryResource'] =
@@ -3150,61 +2456,33 @@ class ExplorerService implements IExplorerService {
     return unsupported()
   }
   @Unsupported
-  getContext: IExplorerService['getContext'] = (): never => {
-    unsupported()
-  }
+  getContext: IExplorerService['getContext'] = unsupported
   @Unsupported
-  hasViewFocus: IExplorerService['hasViewFocus'] = (): never => {
-    unsupported()
-  }
+  hasViewFocus: IExplorerService['hasViewFocus'] = unsupported
   @Unsupported
-  setEditable: IExplorerService['setEditable'] = (): never => {
-    unsupported()
-  }
+  setEditable: IExplorerService['setEditable'] = unsupported
   @Unsupported
-  getEditable: IExplorerService['getEditable'] = (): never => {
-    unsupported()
-  }
+  getEditable: IExplorerService['getEditable'] = unsupported
   @Unsupported
-  getEditableData: IExplorerService['getEditableData'] = (): never => {
-    unsupported()
-  }
+  getEditableData: IExplorerService['getEditableData'] = unsupported
   @Unsupported
-  isEditable: IExplorerService['isEditable'] = (): never => {
-    unsupported()
-  }
+  isEditable: IExplorerService['isEditable'] = unsupported
   @Unsupported
-  findClosest: IExplorerService['findClosest'] = (): never => {
-    unsupported()
-  }
+  findClosest: IExplorerService['findClosest'] = unsupported
   @Unsupported
-  findClosestRoot: IExplorerService['findClosestRoot'] = (): never => {
-    unsupported()
-  }
+  findClosestRoot: IExplorerService['findClosestRoot'] = unsupported
   @Unsupported
-  refresh: IExplorerService['refresh'] = (): never => {
-    unsupported()
-  }
+  refresh: IExplorerService['refresh'] = unsupported
   @Unsupported
-  setToCopy: IExplorerService['setToCopy'] = (): never => {
-    unsupported()
-  }
+  setToCopy: IExplorerService['setToCopy'] = unsupported
   @Unsupported
-  isCut: IExplorerService['isCut'] = (): never => {
-    unsupported()
-  }
+  isCut: IExplorerService['isCut'] = unsupported
   @Unsupported
-  applyBulkEdit: IExplorerService['applyBulkEdit'] = (): never => {
-    unsupported()
-  }
+  applyBulkEdit: IExplorerService['applyBulkEdit'] = unsupported
   @Unsupported
-  select: IExplorerService['select'] = (): never => {
-    unsupported()
-  }
+  select: IExplorerService['select'] = unsupported
   @Unsupported
-  registerView: IExplorerService['registerView'] = (): never => {
-    unsupported()
-  }
+  registerView: IExplorerService['registerView'] = unsupported
 }
 registerSingleton(IExplorerService, ExplorerService, InstantiationType.Delayed)
 class ExtensionStorageService implements IExtensionStorageService {
@@ -3212,20 +2490,14 @@ class ExtensionStorageService implements IExtensionStorageService {
   getExtensionState: IExtensionStorageService['getExtensionState'] = () => undefined
   getExtensionStateRaw: IExtensionStorageService['getExtensionStateRaw'] = () => undefined
   @Unsupported
-  setExtensionState: IExtensionStorageService['setExtensionState'] = (): never => {
-    unsupported()
-  }
+  setExtensionState: IExtensionStorageService['setExtensionState'] = unsupported
   onDidChangeExtensionStorageToSync: IExtensionStorageService['onDidChangeExtensionStorageToSync'] =
     Event.None
   @Unsupported
-  setKeysForSync: IExtensionStorageService['setKeysForSync'] = (): never => {
-    unsupported()
-  }
+  setKeysForSync: IExtensionStorageService['setKeysForSync'] = unsupported
   getKeysForSync: IExtensionStorageService['getKeysForSync'] = () => undefined
   @Unsupported
-  addToMigrationList: IExtensionStorageService['addToMigrationList'] = (): never => {
-    unsupported()
-  }
+  addToMigrationList: IExtensionStorageService['addToMigrationList'] = unsupported
   getSourceExtensionToMigrate: IExtensionStorageService['getSourceExtensionToMigrate'] = () =>
     undefined
 }
@@ -3270,21 +2542,15 @@ registerSingleton(ILanguagePackService, LanguagePackService, InstantiationType.D
 class TreeViewsDnDService implements ITreeViewsDnDService {
   _serviceBrand: undefined
   @Unsupported
-  removeDragOperationTransfer: ITreeViewsDnDService['removeDragOperationTransfer'] = (): never => {
-    unsupported()
-  }
+  removeDragOperationTransfer: ITreeViewsDnDService['removeDragOperationTransfer'] = unsupported
   @Unsupported
-  addDragOperationTransfer: ITreeViewsDnDService['addDragOperationTransfer'] = (): never => {
-    unsupported()
-  }
+  addDragOperationTransfer: ITreeViewsDnDService['addDragOperationTransfer'] = unsupported
 }
 registerSingleton(ITreeViewsDnDService, TreeViewsDnDService, InstantiationType.Delayed)
 class BreadcrumbsService implements IBreadcrumbsService {
   _serviceBrand: undefined
   @Unsupported
-  register: IBreadcrumbsService['register'] = (): never => {
-    unsupported()
-  }
+  register: IBreadcrumbsService['register'] = unsupported
   getWidget: IBreadcrumbsService['getWidget'] = () => undefined
 }
 registerSingleton(IBreadcrumbsService, BreadcrumbsService, InstantiationType.Eager)
@@ -3294,9 +2560,7 @@ class OutlineService implements IOutlineService {
   canCreateOutline: IOutlineService['canCreateOutline'] = () => false
   createOutline: IOutlineService['createOutline'] = async () => undefined
   @Unsupported
-  registerOutlineCreator: IOutlineService['registerOutlineCreator'] = (): never => {
-    unsupported()
-  }
+  registerOutlineCreator: IOutlineService['registerOutlineCreator'] = unsupported
 }
 registerSingleton(IOutlineService, OutlineService, InstantiationType.Eager)
 class UpdateService implements IUpdateService {
@@ -3304,50 +2568,30 @@ class UpdateService implements IUpdateService {
   onStateChange: IUpdateService['onStateChange'] = Event.None
   state: IUpdateService['state'] = State.Uninitialized
   @Unsupported
-  checkForUpdates: IUpdateService['checkForUpdates'] = (): never => {
-    unsupported()
-  }
+  checkForUpdates: IUpdateService['checkForUpdates'] = unsupported
   @Unsupported
-  downloadUpdate: IUpdateService['downloadUpdate'] = (): never => {
-    unsupported()
-  }
+  downloadUpdate: IUpdateService['downloadUpdate'] = unsupported
   @Unsupported
-  applyUpdate: IUpdateService['applyUpdate'] = (): never => {
-    unsupported()
-  }
+  applyUpdate: IUpdateService['applyUpdate'] = unsupported
   @Unsupported
-  quitAndInstall: IUpdateService['quitAndInstall'] = (): never => {
-    unsupported()
-  }
+  quitAndInstall: IUpdateService['quitAndInstall'] = unsupported
   isLatestVersion: IUpdateService['isLatestVersion'] = async () => true
   @Unsupported
-  _applySpecificUpdate: IUpdateService['_applySpecificUpdate'] = (): never => {
-    unsupported()
-  }
+  _applySpecificUpdate: IUpdateService['_applySpecificUpdate'] = unsupported
 }
 registerSingleton(IUpdateService, UpdateService, InstantiationType.Eager)
 class StatusbarService implements IStatusbarService {
   _serviceBrand: undefined
   @Unsupported
-  overrideEntry: IStatusbarService['overrideEntry'] = (): never => {
-    unsupported()
-  }
+  overrideEntry: IStatusbarService['overrideEntry'] = unsupported
   @Unsupported
-  getPart: IStatusbarService['getPart'] = (): never => {
-    unsupported()
-  }
+  getPart: IStatusbarService['getPart'] = unsupported
   @Unsupported
-  createAuxiliaryStatusbarPart: IStatusbarService['createAuxiliaryStatusbarPart'] = (): never => {
-    unsupported()
-  }
+  createAuxiliaryStatusbarPart: IStatusbarService['createAuxiliaryStatusbarPart'] = unsupported
   @Unsupported
-  createScoped: IStatusbarService['createScoped'] = (): never => {
-    unsupported()
-  }
+  createScoped: IStatusbarService['createScoped'] = unsupported
   @Unsupported
-  dispose: IStatusbarService['dispose'] = (): never => {
-    unsupported()
-  }
+  dispose: IStatusbarService['dispose'] = unsupported
   onDidChangeEntryVisibility: IStatusbarService['onDidChangeEntryVisibility'] = Event.None
   addEntry: IStatusbarService['addEntry'] = () => ({
     dispose: () => {},
@@ -3374,53 +2618,29 @@ class ExtensionGalleryService implements IExtensionGalleryService {
   _serviceBrand: undefined
   isEnabled: IExtensionGalleryService['isEnabled'] = () => false
   @Unsupported
-  query: IExtensionGalleryService['query'] = (): never => {
-    unsupported()
-  }
+  query: IExtensionGalleryService['query'] = unsupported
   @Unsupported
-  getExtensions: IExtensionGalleryService['getExtensions'] = (): never => {
-    unsupported()
-  }
+  getExtensions: IExtensionGalleryService['getExtensions'] = unsupported
   @Unsupported
-  isExtensionCompatible: IExtensionGalleryService['isExtensionCompatible'] = (): never => {
-    unsupported()
-  }
+  isExtensionCompatible: IExtensionGalleryService['isExtensionCompatible'] = unsupported
   @Unsupported
-  getCompatibleExtension: IExtensionGalleryService['getCompatibleExtension'] = (): never => {
-    unsupported()
-  }
+  getCompatibleExtension: IExtensionGalleryService['getCompatibleExtension'] = unsupported
   @Unsupported
-  getAllCompatibleVersions: IExtensionGalleryService['getAllCompatibleVersions'] = (): never => {
-    unsupported()
-  }
+  getAllCompatibleVersions: IExtensionGalleryService['getAllCompatibleVersions'] = unsupported
   @Unsupported
-  download: IExtensionGalleryService['download'] = (): never => {
-    unsupported()
-  }
+  download: IExtensionGalleryService['download'] = unsupported
   @Unsupported
-  downloadSignatureArchive: IExtensionGalleryService['downloadSignatureArchive'] = (): never => {
-    unsupported()
-  }
+  downloadSignatureArchive: IExtensionGalleryService['downloadSignatureArchive'] = unsupported
   @Unsupported
-  reportStatistic: IExtensionGalleryService['reportStatistic'] = (): never => {
-    unsupported()
-  }
+  reportStatistic: IExtensionGalleryService['reportStatistic'] = unsupported
   @Unsupported
-  getReadme: IExtensionGalleryService['getReadme'] = (): never => {
-    unsupported()
-  }
+  getReadme: IExtensionGalleryService['getReadme'] = unsupported
   @Unsupported
-  getManifest: IExtensionGalleryService['getManifest'] = (): never => {
-    unsupported()
-  }
+  getManifest: IExtensionGalleryService['getManifest'] = unsupported
   @Unsupported
-  getChangelog: IExtensionGalleryService['getChangelog'] = (): never => {
-    unsupported()
-  }
+  getChangelog: IExtensionGalleryService['getChangelog'] = unsupported
   @Unsupported
-  getCoreTranslation: IExtensionGalleryService['getCoreTranslation'] = (): never => {
-    unsupported()
-  }
+  getCoreTranslation: IExtensionGalleryService['getCoreTranslation'] = unsupported
   @Unsupported
   getExtensionsControlManifest: IExtensionGalleryService['getExtensionsControlManifest'] =
     (): never => {
@@ -3435,13 +2655,9 @@ class TerminalService implements ITerminalService {
     Event.None
   onAnyInstanceShellTypeChanged: ITerminalService['onAnyInstanceShellTypeChanged'] = Event.None
   @Unsupported
-  revealTerminal: ITerminalService['revealTerminal'] = (): never => {
-    unsupported()
-  }
+  revealTerminal: ITerminalService['revealTerminal'] = unsupported
   @Unsupported
-  focusInstance: ITerminalService['focusInstance'] = (): never => {
-    unsupported()
-  }
+  focusInstance: ITerminalService['focusInstance'] = unsupported
   createOnInstanceCapabilityEvent: ITerminalService['createOnInstanceCapabilityEvent'] = <
     K
   >(): IDynamicListEventMultiplexer<{
@@ -3455,9 +2671,7 @@ class TerminalService implements ITerminalService {
   }
   onAnyInstanceData: ITerminalService['onAnyInstanceData'] = Event.None
   @Unsupported
-  moveIntoNewEditor: ITerminalService['moveIntoNewEditor'] = (): never => {
-    unsupported()
-  }
+  moveIntoNewEditor: ITerminalService['moveIntoNewEditor'] = unsupported
   detachedInstances: ITerminalService['detachedInstances'] = []
   onAnyInstanceDataInput: ITerminalService['onAnyInstanceDataInput'] = Event.None
   onAnyInstanceIconChange: ITerminalService['onAnyInstanceIconChange'] = Event.None
@@ -3479,9 +2693,7 @@ class TerminalService implements ITerminalService {
     )
   }
   @Unsupported
-  createDetachedTerminal: ITerminalService['createDetachedTerminal'] = (): never => {
-    unsupported()
-  }
+  createDetachedTerminal: ITerminalService['createDetachedTerminal'] = unsupported
   whenConnected: ITerminalService['whenConnected'] = Promise.resolve()
   restoredGroupCount: ITerminalService['restoredGroupCount'] = 0
   instances: ITerminalService['instances'] = []
@@ -3490,9 +2702,7 @@ class TerminalService implements ITerminalService {
     return unsupported()
   }
   @Unsupported
-  revealActiveTerminal: ITerminalService['revealActiveTerminal'] = (): never => {
-    unsupported()
-  }
+  revealActiveTerminal: ITerminalService['revealActiveTerminal'] = unsupported
   isProcessSupportRegistered: ITerminalService['isProcessSupportRegistered'] = false
   connectionState: ITerminalService['connectionState'] = TerminalConnectionState.Connected
   defaultLocation: ITerminalService['defaultLocation'] = TerminalLocation.Panel
@@ -3504,95 +2714,51 @@ class TerminalService implements ITerminalService {
   onDidRegisterProcessSupport: ITerminalService['onDidRegisterProcessSupport'] = Event.None
   onDidChangeConnectionState: ITerminalService['onDidChangeConnectionState'] = Event.None
   @Unsupported
-  createTerminal: ITerminalService['createTerminal'] = (): never => {
-    unsupported()
-  }
+  createTerminal: ITerminalService['createTerminal'] = unsupported
   @Unsupported
-  getInstanceFromId: ITerminalService['getInstanceFromId'] = (): never => {
-    unsupported()
-  }
+  getInstanceFromId: ITerminalService['getInstanceFromId'] = unsupported
   @Unsupported
-  getInstanceFromIndex: ITerminalService['getInstanceFromIndex'] = (): never => {
-    unsupported()
-  }
+  getInstanceFromIndex: ITerminalService['getInstanceFromIndex'] = unsupported
   getReconnectedTerminals: ITerminalService['getReconnectedTerminals'] = () => undefined
   @Unsupported
-  getActiveOrCreateInstance: ITerminalService['getActiveOrCreateInstance'] = (): never => {
-    unsupported()
-  }
+  getActiveOrCreateInstance: ITerminalService['getActiveOrCreateInstance'] = unsupported
   @Unsupported
-  moveToEditor: ITerminalService['moveToEditor'] = (): never => {
-    unsupported()
-  }
+  moveToEditor: ITerminalService['moveToEditor'] = unsupported
   @Unsupported
-  moveToTerminalView: ITerminalService['moveToTerminalView'] = (): never => {
-    unsupported()
-  }
+  moveToTerminalView: ITerminalService['moveToTerminalView'] = unsupported
   @Unsupported
-  getPrimaryBackend: ITerminalService['getPrimaryBackend'] = (): never => {
-    unsupported()
-  }
+  getPrimaryBackend: ITerminalService['getPrimaryBackend'] = unsupported
   @Unsupported
-  refreshActiveGroup: ITerminalService['refreshActiveGroup'] = (): never => {
-    unsupported()
-  }
+  refreshActiveGroup: ITerminalService['refreshActiveGroup'] = unsupported
   registerProcessSupport: ITerminalService['registerProcessSupport'] = () => {}
   @Unsupported
-  showProfileQuickPick: ITerminalService['showProfileQuickPick'] = (): never => {
-    unsupported()
-  }
+  showProfileQuickPick: ITerminalService['showProfileQuickPick'] = unsupported
   @Unsupported
-  setContainers: ITerminalService['setContainers'] = (): never => {
-    unsupported()
-  }
+  setContainers: ITerminalService['setContainers'] = unsupported
   @Unsupported
-  requestStartExtensionTerminal: ITerminalService['requestStartExtensionTerminal'] = (): never => {
-    unsupported()
-  }
+  requestStartExtensionTerminal: ITerminalService['requestStartExtensionTerminal'] = unsupported
   @Unsupported
-  isAttachedToTerminal: ITerminalService['isAttachedToTerminal'] = (): never => {
-    unsupported()
-  }
+  isAttachedToTerminal: ITerminalService['isAttachedToTerminal'] = unsupported
   @Unsupported
-  getEditableData: ITerminalService['getEditableData'] = (): never => {
-    unsupported()
-  }
+  getEditableData: ITerminalService['getEditableData'] = unsupported
   @Unsupported
-  setEditable: ITerminalService['setEditable'] = (): never => {
-    unsupported()
-  }
+  setEditable: ITerminalService['setEditable'] = unsupported
   @Unsupported
-  isEditable: ITerminalService['isEditable'] = (): never => {
-    unsupported()
-  }
+  isEditable: ITerminalService['isEditable'] = unsupported
   @Unsupported
-  safeDisposeTerminal: ITerminalService['safeDisposeTerminal'] = (): never => {
-    unsupported()
-  }
+  safeDisposeTerminal: ITerminalService['safeDisposeTerminal'] = unsupported
   @Unsupported
-  getDefaultInstanceHost: ITerminalService['getDefaultInstanceHost'] = (): never => {
-    unsupported()
-  }
+  getDefaultInstanceHost: ITerminalService['getDefaultInstanceHost'] = unsupported
   @Unsupported
-  getInstanceHost: ITerminalService['getInstanceHost'] = (): never => {
-    unsupported()
-  }
+  getInstanceHost: ITerminalService['getInstanceHost'] = unsupported
   @Unsupported
-  resolveLocation: ITerminalService['resolveLocation'] = (): never => {
-    unsupported()
-  }
+  resolveLocation: ITerminalService['resolveLocation'] = unsupported
   @Unsupported
-  setNativeDelegate: ITerminalService['setNativeDelegate'] = (): never => {
-    unsupported()
-  }
+  setNativeDelegate: ITerminalService['setNativeDelegate'] = unsupported
   @Unsupported
-  getEditingTerminal: ITerminalService['getEditingTerminal'] = (): never => {
-    unsupported()
-  }
+  getEditingTerminal: ITerminalService['getEditingTerminal'] = unsupported
   @Unsupported
-  setEditingTerminal: ITerminalService['setEditingTerminal'] = (): never => {
-    unsupported()
-  }
+  setEditingTerminal: ITerminalService['setEditingTerminal'] = unsupported
   activeInstance: ITerminalService['activeInstance'] = undefined
   onDidDisposeInstance: ITerminalService['onDidDisposeInstance'] = Event.None
   onDidFocusInstance: ITerminalService['onDidFocusInstance'] = Event.None
@@ -3600,17 +2766,11 @@ class TerminalService implements ITerminalService {
   onDidChangeInstances: ITerminalService['onDidChangeInstances'] = Event.None
   onDidChangeInstanceCapability: ITerminalService['onDidChangeInstanceCapability'] = Event.None
   @Unsupported
-  setActiveInstance: ITerminalService['setActiveInstance'] = (): never => {
-    unsupported()
-  }
+  setActiveInstance: ITerminalService['setActiveInstance'] = unsupported
   @Unsupported
-  focusActiveInstance: ITerminalService['focusActiveInstance'] = (): never => {
-    unsupported()
-  }
+  focusActiveInstance: ITerminalService['focusActiveInstance'] = unsupported
   @Unsupported
-  getInstanceFromResource: ITerminalService['getInstanceFromResource'] = (): never => {
-    unsupported()
-  }
+  getInstanceFromResource: ITerminalService['getInstanceFromResource'] = unsupported
 }
 registerSingleton(ITerminalService, TerminalService, InstantiationType.Delayed)
 class TerminalConfigurationService implements ITerminalConfigurationService {
@@ -3621,17 +2781,11 @@ class TerminalConfigurationService implements ITerminalConfigurationService {
   }
   onConfigChanged: ITerminalConfigurationService['onConfigChanged'] = Event.None
   @Unsupported
-  setPanelContainer: ITerminalConfigurationService['setPanelContainer'] = (): never => {
-    unsupported()
-  }
+  setPanelContainer: ITerminalConfigurationService['setPanelContainer'] = unsupported
   @Unsupported
-  configFontIsMonospace: ITerminalConfigurationService['configFontIsMonospace'] = (): never => {
-    unsupported()
-  }
+  configFontIsMonospace: ITerminalConfigurationService['configFontIsMonospace'] = unsupported
   @Unsupported
-  getFont: ITerminalConfigurationService['getFont'] = (): never => {
-    unsupported()
-  }
+  getFont: ITerminalConfigurationService['getFont'] = unsupported
 }
 registerSingleton(
   ITerminalConfigurationService,
@@ -3641,38 +2795,22 @@ registerSingleton(
 class TerminalEditorService implements ITerminalEditorService {
   _serviceBrand: undefined
   @Unsupported
-  focusInstance: ITerminalEditorService['focusInstance'] = (): never => {
-    unsupported()
-  }
+  focusInstance: ITerminalEditorService['focusInstance'] = unsupported
   instances: ITerminalEditorService['instances'] = []
   @Unsupported
-  openEditor: ITerminalEditorService['openEditor'] = (): never => {
-    unsupported()
-  }
+  openEditor: ITerminalEditorService['openEditor'] = unsupported
   @Unsupported
-  detachInstance: ITerminalEditorService['detachInstance'] = (): never => {
-    unsupported()
-  }
+  detachInstance: ITerminalEditorService['detachInstance'] = unsupported
   @Unsupported
-  splitInstance: ITerminalEditorService['splitInstance'] = (): never => {
-    unsupported()
-  }
+  splitInstance: ITerminalEditorService['splitInstance'] = unsupported
   @Unsupported
-  revealActiveEditor: ITerminalEditorService['revealActiveEditor'] = (): never => {
-    unsupported()
-  }
+  revealActiveEditor: ITerminalEditorService['revealActiveEditor'] = unsupported
   @Unsupported
-  resolveResource: ITerminalEditorService['resolveResource'] = (): never => {
-    unsupported()
-  }
+  resolveResource: ITerminalEditorService['resolveResource'] = unsupported
   @Unsupported
-  reviveInput: ITerminalEditorService['reviveInput'] = (): never => {
-    unsupported()
-  }
+  reviveInput: ITerminalEditorService['reviveInput'] = unsupported
   @Unsupported
-  getInputFromResource: ITerminalEditorService['getInputFromResource'] = (): never => {
-    unsupported()
-  }
+  getInputFromResource: ITerminalEditorService['getInputFromResource'] = unsupported
   activeInstance: ITerminalEditorService['activeInstance'] = undefined
   onDidDisposeInstance: ITerminalEditorService['onDidDisposeInstance'] = Event.None
   onDidFocusInstance: ITerminalEditorService['onDidFocusInstance'] = Event.None
@@ -3681,25 +2819,17 @@ class TerminalEditorService implements ITerminalEditorService {
   onDidChangeInstanceCapability: ITerminalEditorService['onDidChangeInstanceCapability'] =
     Event.None
   @Unsupported
-  setActiveInstance: ITerminalEditorService['setActiveInstance'] = (): never => {
-    unsupported()
-  }
+  setActiveInstance: ITerminalEditorService['setActiveInstance'] = unsupported
   @Unsupported
-  focusActiveInstance: ITerminalEditorService['focusActiveInstance'] = (): never => {
-    unsupported()
-  }
+  focusActiveInstance: ITerminalEditorService['focusActiveInstance'] = unsupported
   @Unsupported
-  getInstanceFromResource: ITerminalEditorService['getInstanceFromResource'] = (): never => {
-    unsupported()
-  }
+  getInstanceFromResource: ITerminalEditorService['getInstanceFromResource'] = unsupported
 }
 registerSingleton(ITerminalEditorService, TerminalEditorService, InstantiationType.Delayed)
 class TerminalGroupService implements ITerminalGroupService {
   _serviceBrand: undefined
   @Unsupported
-  focusInstance: ITerminalGroupService['focusInstance'] = (): never => {
-    unsupported()
-  }
+  focusInstance: ITerminalGroupService['focusInstance'] = unsupported
   lastAccessedMenu: ITerminalGroupService['lastAccessedMenu'] = 'inline-tab'
   instances: ITerminalGroupService['instances'] = []
   groups: ITerminalGroupService['groups'] = []
@@ -3711,81 +2841,43 @@ class TerminalGroupService implements ITerminalGroupService {
   onDidShow: ITerminalGroupService['onDidShow'] = Event.None
   onDidChangePanelOrientation: ITerminalGroupService['onDidChangePanelOrientation'] = Event.None
   @Unsupported
-  createGroup: ITerminalGroupService['createGroup'] = (): never => {
-    unsupported()
-  }
+  createGroup: ITerminalGroupService['createGroup'] = unsupported
   @Unsupported
-  getGroupForInstance: ITerminalGroupService['getGroupForInstance'] = (): never => {
-    unsupported()
-  }
+  getGroupForInstance: ITerminalGroupService['getGroupForInstance'] = unsupported
   @Unsupported
-  moveGroup: ITerminalGroupService['moveGroup'] = (): never => {
-    unsupported()
-  }
+  moveGroup: ITerminalGroupService['moveGroup'] = unsupported
   @Unsupported
-  moveGroupToEnd: ITerminalGroupService['moveGroupToEnd'] = (): never => {
-    unsupported()
-  }
+  moveGroupToEnd: ITerminalGroupService['moveGroupToEnd'] = unsupported
   @Unsupported
-  moveInstance: ITerminalGroupService['moveInstance'] = (): never => {
-    unsupported()
-  }
+  moveInstance: ITerminalGroupService['moveInstance'] = unsupported
   @Unsupported
-  unsplitInstance: ITerminalGroupService['unsplitInstance'] = (): never => {
-    unsupported()
-  }
+  unsplitInstance: ITerminalGroupService['unsplitInstance'] = unsupported
   @Unsupported
-  joinInstances: ITerminalGroupService['joinInstances'] = (): never => {
-    unsupported()
-  }
+  joinInstances: ITerminalGroupService['joinInstances'] = unsupported
   @Unsupported
-  instanceIsSplit: ITerminalGroupService['instanceIsSplit'] = (): never => {
-    unsupported()
-  }
+  instanceIsSplit: ITerminalGroupService['instanceIsSplit'] = unsupported
   @Unsupported
-  getGroupLabels: ITerminalGroupService['getGroupLabels'] = (): never => {
-    unsupported()
-  }
+  getGroupLabels: ITerminalGroupService['getGroupLabels'] = unsupported
   @Unsupported
-  setActiveGroupByIndex: ITerminalGroupService['setActiveGroupByIndex'] = (): never => {
-    unsupported()
-  }
+  setActiveGroupByIndex: ITerminalGroupService['setActiveGroupByIndex'] = unsupported
   @Unsupported
-  setActiveGroupToNext: ITerminalGroupService['setActiveGroupToNext'] = (): never => {
-    unsupported()
-  }
+  setActiveGroupToNext: ITerminalGroupService['setActiveGroupToNext'] = unsupported
   @Unsupported
-  setActiveGroupToPrevious: ITerminalGroupService['setActiveGroupToPrevious'] = (): never => {
-    unsupported()
-  }
+  setActiveGroupToPrevious: ITerminalGroupService['setActiveGroupToPrevious'] = unsupported
   @Unsupported
-  setActiveInstanceByIndex: ITerminalGroupService['setActiveInstanceByIndex'] = (): never => {
-    unsupported()
-  }
+  setActiveInstanceByIndex: ITerminalGroupService['setActiveInstanceByIndex'] = unsupported
   @Unsupported
-  setContainer: ITerminalGroupService['setContainer'] = (): never => {
-    unsupported()
-  }
+  setContainer: ITerminalGroupService['setContainer'] = unsupported
   @Unsupported
-  showPanel: ITerminalGroupService['showPanel'] = (): never => {
-    unsupported()
-  }
+  showPanel: ITerminalGroupService['showPanel'] = unsupported
   @Unsupported
-  hidePanel: ITerminalGroupService['hidePanel'] = (): never => {
-    unsupported()
-  }
+  hidePanel: ITerminalGroupService['hidePanel'] = unsupported
   @Unsupported
-  focusTabs: ITerminalGroupService['focusTabs'] = (): never => {
-    unsupported()
-  }
+  focusTabs: ITerminalGroupService['focusTabs'] = unsupported
   @Unsupported
-  focusHover: ITerminalGroupService['focusHover'] = (): never => {
-    unsupported()
-  }
+  focusHover: ITerminalGroupService['focusHover'] = unsupported
   @Unsupported
-  updateVisibility: ITerminalGroupService['updateVisibility'] = (): never => {
-    unsupported()
-  }
+  updateVisibility: ITerminalGroupService['updateVisibility'] = unsupported
   activeInstance: ITerminalInstance | undefined
   onDidDisposeInstance: ITerminalGroupService['onDidDisposeInstance'] = Event.None
   onDidFocusInstance: ITerminalGroupService['onDidFocusInstance'] = Event.None
@@ -3793,17 +2885,11 @@ class TerminalGroupService implements ITerminalGroupService {
   onDidChangeInstances: ITerminalGroupService['onDidChangeInstances'] = Event.None
   onDidChangeInstanceCapability: ITerminalGroupService['onDidChangeInstanceCapability'] = Event.None
   @Unsupported
-  setActiveInstance: ITerminalGroupService['setActiveInstance'] = (): never => {
-    unsupported()
-  }
+  setActiveInstance: ITerminalGroupService['setActiveInstance'] = unsupported
   @Unsupported
-  focusActiveInstance: ITerminalGroupService['focusActiveInstance'] = (): never => {
-    unsupported()
-  }
+  focusActiveInstance: ITerminalGroupService['focusActiveInstance'] = unsupported
   @Unsupported
-  getInstanceFromResource: ITerminalGroupService['getInstanceFromResource'] = (): never => {
-    unsupported()
-  }
+  getInstanceFromResource: ITerminalGroupService['getInstanceFromResource'] = unsupported
 }
 registerSingleton(ITerminalGroupService, TerminalGroupService, InstantiationType.Delayed)
 class TerminalInstanceService implements ITerminalInstanceService {
@@ -3817,17 +2903,11 @@ class TerminalInstanceService implements ITerminalInstanceService {
       unsupported()
     }
   @Unsupported
-  createInstance: ITerminalInstanceService['createInstance'] = (): never => {
-    unsupported()
-  }
+  createInstance: ITerminalInstanceService['createInstance'] = unsupported
   @Unsupported
-  getBackend: ITerminalInstanceService['getBackend'] = (): never => {
-    unsupported()
-  }
+  getBackend: ITerminalInstanceService['getBackend'] = unsupported
   @Unsupported
-  didRegisterBackend: ITerminalInstanceService['didRegisterBackend'] = (): never => {
-    unsupported()
-  }
+  didRegisterBackend: ITerminalInstanceService['didRegisterBackend'] = unsupported
 }
 registerSingleton(ITerminalInstanceService, TerminalInstanceService, InstantiationType.Delayed)
 class TerminalProfileService implements ITerminalProfileService {
@@ -3836,13 +2916,9 @@ class TerminalProfileService implements ITerminalProfileService {
   contributedProfiles: ITerminalProfileService['contributedProfiles'] = []
   profilesReady: ITerminalProfileService['profilesReady'] = Promise.resolve()
   @Unsupported
-  getPlatformKey: ITerminalProfileService['getPlatformKey'] = (): never => {
-    unsupported()
-  }
+  getPlatformKey: ITerminalProfileService['getPlatformKey'] = unsupported
   @Unsupported
-  refreshAvailableProfiles: ITerminalProfileService['refreshAvailableProfiles'] = (): never => {
-    unsupported()
-  }
+  refreshAvailableProfiles: ITerminalProfileService['refreshAvailableProfiles'] = unsupported
   getDefaultProfileName: ITerminalProfileService['getDefaultProfileName'] = () => undefined
   getDefaultProfile: ITerminalProfileService['getDefaultProfile'] = () => undefined
   onDidChangeAvailableProfiles: ITerminalProfileService['onDidChangeAvailableProfiles'] = Event.None
@@ -3852,9 +2928,7 @@ class TerminalProfileService implements ITerminalProfileService {
       unsupported()
     }
   @Unsupported
-  registerContributedProfile: ITerminalProfileService['registerContributedProfile'] = (): never => {
-    unsupported()
-  }
+  registerContributedProfile: ITerminalProfileService['registerContributedProfile'] = unsupported
   @Unsupported
   getContributedProfileProvider: ITerminalProfileService['getContributedProfileProvider'] =
     (): never => {
@@ -3872,41 +2946,23 @@ class TerminalLogService implements ITerminalLogService {
   _serviceBrand: undefined
   onDidChangeLogLevel: ITerminalLogService['onDidChangeLogLevel'] = Event.None
   @Unsupported
-  getLevel: ITerminalLogService['getLevel'] = (): never => {
-    unsupported()
-  }
+  getLevel: ITerminalLogService['getLevel'] = unsupported
   @Unsupported
-  setLevel: ITerminalLogService['setLevel'] = (): never => {
-    unsupported()
-  }
+  setLevel: ITerminalLogService['setLevel'] = unsupported
   @Unsupported
-  trace: ITerminalLogService['trace'] = (): never => {
-    unsupported()
-  }
+  trace: ITerminalLogService['trace'] = unsupported
   @Unsupported
-  debug: ITerminalLogService['debug'] = (): never => {
-    unsupported()
-  }
+  debug: ITerminalLogService['debug'] = unsupported
   @Unsupported
-  info: ITerminalLogService['info'] = (): never => {
-    unsupported()
-  }
+  info: ITerminalLogService['info'] = unsupported
   @Unsupported
-  warn: ITerminalLogService['warn'] = (): never => {
-    unsupported()
-  }
+  warn: ITerminalLogService['warn'] = unsupported
   @Unsupported
-  error: ITerminalLogService['error'] = (): never => {
-    unsupported()
-  }
+  error: ITerminalLogService['error'] = unsupported
   @Unsupported
-  flush: ITerminalLogService['flush'] = (): never => {
-    unsupported()
-  }
+  flush: ITerminalLogService['flush'] = unsupported
   @Unsupported
-  dispose: ITerminalLogService['dispose'] = (): never => {
-    unsupported()
-  }
+  dispose: ITerminalLogService['dispose'] = unsupported
 }
 registerSingleton(ITerminalLogService, TerminalLogService, InstantiationType.Delayed)
 class TerminalLinkProviderService implements ITerminalLinkProviderService {
@@ -3915,9 +2971,7 @@ class TerminalLinkProviderService implements ITerminalLinkProviderService {
   onDidAddLinkProvider: ITerminalLinkProviderService['onDidAddLinkProvider'] = Event.None
   onDidRemoveLinkProvider: ITerminalLinkProviderService['onDidRemoveLinkProvider'] = Event.None
   @Unsupported
-  registerLinkProvider: ITerminalLinkProviderService['registerLinkProvider'] = (): never => {
-    unsupported()
-  }
+  registerLinkProvider: ITerminalLinkProviderService['registerLinkProvider'] = unsupported
 }
 registerSingleton(
   ITerminalLinkProviderService,
@@ -3937,9 +2991,7 @@ class TerminalProfileResolverService implements ITerminalProfileResolverService 
   _serviceBrand: undefined
   defaultProfileName: string | undefined
   @Unsupported
-  resolveIcon: ITerminalProfileResolverService['resolveIcon'] = (): never => {
-    unsupported()
-  }
+  resolveIcon: ITerminalProfileResolverService['resolveIcon'] = unsupported
   @Unsupported
   resolveShellLaunchConfig: ITerminalProfileResolverService['resolveShellLaunchConfig'] =
     (): never => {
@@ -3951,21 +3003,13 @@ class TerminalProfileResolverService implements ITerminalProfileResolverService 
     isDefault: true
   })
   @Unsupported
-  getDefaultShell: ITerminalProfileResolverService['getDefaultShell'] = (): never => {
-    unsupported()
-  }
+  getDefaultShell: ITerminalProfileResolverService['getDefaultShell'] = unsupported
   @Unsupported
-  getDefaultShellArgs: ITerminalProfileResolverService['getDefaultShellArgs'] = (): never => {
-    unsupported()
-  }
+  getDefaultShellArgs: ITerminalProfileResolverService['getDefaultShellArgs'] = unsupported
   @Unsupported
-  getDefaultIcon: ITerminalProfileResolverService['getDefaultIcon'] = (): never => {
-    unsupported()
-  }
+  getDefaultIcon: ITerminalProfileResolverService['getDefaultIcon'] = unsupported
   @Unsupported
-  getEnvironment: ITerminalProfileResolverService['getEnvironment'] = (): never => {
-    unsupported()
-  }
+  getEnvironment: ITerminalProfileResolverService['getEnvironment'] = unsupported
 }
 registerSingleton(
   ITerminalProfileResolverService,
@@ -3997,13 +3041,9 @@ class TerminalQuickFixService implements ITerminalQuickFixService {
   extensionQuickFixes: ITerminalQuickFixService['extensionQuickFixes'] = Promise.resolve([])
   providers: ITerminalQuickFixService['providers'] = new Map()
   @Unsupported
-  registerQuickFixProvider: ITerminalQuickFixService['registerQuickFixProvider'] = (): never => {
-    unsupported()
-  }
+  registerQuickFixProvider: ITerminalQuickFixService['registerQuickFixProvider'] = unsupported
   @Unsupported
-  registerCommandSelector: ITerminalQuickFixService['registerCommandSelector'] = (): never => {
-    unsupported()
-  }
+  registerCommandSelector: ITerminalQuickFixService['registerCommandSelector'] = unsupported
 }
 registerSingleton(ITerminalQuickFixService, TerminalQuickFixService, InstantiationType.Delayed)
 class UserDataSyncWorkbenchService implements IUserDataSyncWorkbenchService {
@@ -4015,50 +3055,30 @@ class UserDataSyncWorkbenchService implements IUserDataSyncWorkbenchService {
   accountStatus: IUserDataSyncWorkbenchService['accountStatus'] = AccountStatus.Unavailable
   onDidChangeAccountStatus: IUserDataSyncWorkbenchService['onDidChangeAccountStatus'] = Event.None
   @Unsupported
-  turnOn: IUserDataSyncWorkbenchService['turnOn'] = (): never => {
-    unsupported()
-  }
+  turnOn: IUserDataSyncWorkbenchService['turnOn'] = unsupported
   @Unsupported
-  turnoff: IUserDataSyncWorkbenchService['turnoff'] = (): never => {
-    unsupported()
-  }
+  turnoff: IUserDataSyncWorkbenchService['turnoff'] = unsupported
   @Unsupported
-  signIn: IUserDataSyncWorkbenchService['signIn'] = (): never => {
-    unsupported()
-  }
+  signIn: IUserDataSyncWorkbenchService['signIn'] = unsupported
   @Unsupported
-  resetSyncedData: IUserDataSyncWorkbenchService['resetSyncedData'] = (): never => {
-    unsupported()
-  }
+  resetSyncedData: IUserDataSyncWorkbenchService['resetSyncedData'] = unsupported
   @Unsupported
-  showSyncActivity: IUserDataSyncWorkbenchService['showSyncActivity'] = (): never => {
-    unsupported()
-  }
+  showSyncActivity: IUserDataSyncWorkbenchService['showSyncActivity'] = unsupported
   @Unsupported
-  syncNow: IUserDataSyncWorkbenchService['syncNow'] = (): never => {
-    unsupported()
-  }
+  syncNow: IUserDataSyncWorkbenchService['syncNow'] = unsupported
   @Unsupported
   synchroniseUserDataSyncStoreType: IUserDataSyncWorkbenchService['synchroniseUserDataSyncStoreType'] =
     (): never => {
       unsupported()
     }
   @Unsupported
-  showConflicts: IUserDataSyncWorkbenchService['showConflicts'] = (): never => {
-    unsupported()
-  }
+  showConflicts: IUserDataSyncWorkbenchService['showConflicts'] = unsupported
   @Unsupported
-  accept: IUserDataSyncWorkbenchService['accept'] = (): never => {
-    unsupported()
-  }
+  accept: IUserDataSyncWorkbenchService['accept'] = unsupported
   @Unsupported
-  getAllLogResources: IUserDataSyncWorkbenchService['getAllLogResources'] = (): never => {
-    unsupported()
-  }
+  getAllLogResources: IUserDataSyncWorkbenchService['getAllLogResources'] = unsupported
   @Unsupported
-  downloadSyncActivity: IUserDataSyncWorkbenchService['downloadSyncActivity'] = (): never => {
-    unsupported()
-  }
+  downloadSyncActivity: IUserDataSyncWorkbenchService['downloadSyncActivity'] = unsupported
 }
 registerSingleton(
   IUserDataSyncWorkbenchService,
@@ -4071,18 +3091,14 @@ class UserDataSyncEnablementService implements IUserDataSyncEnablementService {
   isEnabled: IUserDataSyncEnablementService['isEnabled'] = () => false
   canToggleEnablement: IUserDataSyncEnablementService['canToggleEnablement'] = () => false
   @Unsupported
-  setEnablement: IUserDataSyncEnablementService['setEnablement'] = (): never => {
-    unsupported()
-  }
+  setEnablement: IUserDataSyncEnablementService['setEnablement'] = unsupported
   isResourceEnablementConfigured: IUserDataSyncEnablementService['isResourceEnablementConfigured'] =
     () => false
   onDidChangeResourceEnablement: IUserDataSyncEnablementService['onDidChangeResourceEnablement'] =
     Event.None
   isResourceEnabled: IUserDataSyncEnablementService['isResourceEnabled'] = () => false
   @Unsupported
-  setResourceEnablement: IUserDataSyncEnablementService['setResourceEnablement'] = (): never => {
-    unsupported()
-  }
+  setResourceEnablement: IUserDataSyncEnablementService['setResourceEnablement'] = unsupported
   getResourceSyncStateVersion: IUserDataSyncEnablementService['getResourceSyncStateVersion'] = () =>
     undefined
 }
@@ -4094,37 +3110,23 @@ registerSingleton(
 class KeybindingEditingService implements IKeybindingEditingService {
   _serviceBrand: undefined
   @Unsupported
-  addKeybinding: IKeybindingEditingService['addKeybinding'] = (): never => {
-    unsupported()
-  }
+  addKeybinding: IKeybindingEditingService['addKeybinding'] = unsupported
   @Unsupported
-  editKeybinding: IKeybindingEditingService['editKeybinding'] = (): never => {
-    unsupported()
-  }
+  editKeybinding: IKeybindingEditingService['editKeybinding'] = unsupported
   @Unsupported
-  removeKeybinding: IKeybindingEditingService['removeKeybinding'] = (): never => {
-    unsupported()
-  }
+  removeKeybinding: IKeybindingEditingService['removeKeybinding'] = unsupported
   @Unsupported
-  resetKeybinding: IKeybindingEditingService['resetKeybinding'] = (): never => {
-    unsupported()
-  }
+  resetKeybinding: IKeybindingEditingService['resetKeybinding'] = unsupported
 }
 registerSingleton(IKeybindingEditingService, KeybindingEditingService, InstantiationType.Delayed)
 class PreferencesSearchService implements IPreferencesSearchService {
   _serviceBrand: undefined
   @Unsupported
-  getLocalSearchProvider: IPreferencesSearchService['getLocalSearchProvider'] = (): never => {
-    unsupported()
-  }
+  getLocalSearchProvider: IPreferencesSearchService['getLocalSearchProvider'] = unsupported
   @Unsupported
-  getRemoteSearchProvider: IPreferencesSearchService['getRemoteSearchProvider'] = (): never => {
-    unsupported()
-  }
+  getRemoteSearchProvider: IPreferencesSearchService['getRemoteSearchProvider'] = unsupported
   @Unsupported
-  getAiSearchProvider: IPreferencesSearchService['getAiSearchProvider'] = (): never => {
-    unsupported()
-  }
+  getAiSearchProvider: IPreferencesSearchService['getAiSearchProvider'] = unsupported
 }
 registerSingleton(IPreferencesSearchService, PreferencesSearchService, InstantiationType.Delayed)
 class NotebookService implements INotebookService {
@@ -4140,9 +3142,7 @@ class NotebookService implements INotebookService {
       unsupported()
     }
   @Unsupported
-  hasSupportedNotebooks: INotebookService['hasSupportedNotebooks'] = (): never => {
-    unsupported()
-  }
+  hasSupportedNotebooks: INotebookService['hasSupportedNotebooks'] = unsupported
   tryGetDataProviderSync: INotebookService['tryGetDataProviderSync'] = () => undefined
   canResolve: INotebookService['canResolve'] = async () => false
   onAddViewType: INotebookService['onAddViewType'] = Event.None
@@ -4153,41 +3153,25 @@ class NotebookService implements INotebookService {
   onWillRemoveNotebookDocument: INotebookService['onWillRemoveNotebookDocument'] = Event.None
   onDidRemoveNotebookDocument: INotebookService['onDidRemoveNotebookDocument'] = Event.None
   @Unsupported
-  registerNotebookSerializer: INotebookService['registerNotebookSerializer'] = (): never => {
-    unsupported()
-  }
+  registerNotebookSerializer: INotebookService['registerNotebookSerializer'] = unsupported
   @Unsupported
-  withNotebookDataProvider: INotebookService['withNotebookDataProvider'] = (): never => {
-    unsupported()
-  }
+  withNotebookDataProvider: INotebookService['withNotebookDataProvider'] = unsupported
   @Unsupported
-  getOutputMimeTypeInfo: INotebookService['getOutputMimeTypeInfo'] = (): never => {
-    unsupported()
-  }
+  getOutputMimeTypeInfo: INotebookService['getOutputMimeTypeInfo'] = unsupported
   getViewTypeProvider: INotebookService['getViewTypeProvider'] = () => undefined
   getRendererInfo: INotebookService['getRendererInfo'] = () => undefined
   getRenderers: INotebookService['getRenderers'] = () => []
   @Unsupported
-  getStaticPreloads: INotebookService['getStaticPreloads'] = (): never => {
-    unsupported()
-  }
+  getStaticPreloads: INotebookService['getStaticPreloads'] = unsupported
   @Unsupported
-  updateMimePreferredRenderer: INotebookService['updateMimePreferredRenderer'] = (): never => {
-    unsupported()
-  }
+  updateMimePreferredRenderer: INotebookService['updateMimePreferredRenderer'] = unsupported
   @Unsupported
-  saveMimeDisplayOrder: INotebookService['saveMimeDisplayOrder'] = (): never => {
-    unsupported()
-  }
+  saveMimeDisplayOrder: INotebookService['saveMimeDisplayOrder'] = unsupported
   @Unsupported
-  createNotebookTextModel: INotebookService['createNotebookTextModel'] = (): never => {
-    unsupported()
-  }
+  createNotebookTextModel: INotebookService['createNotebookTextModel'] = unsupported
   getNotebookTextModel: INotebookService['getNotebookTextModel'] = () => undefined
   @Unsupported
-  getNotebookTextModels: INotebookService['getNotebookTextModels'] = (): never => {
-    unsupported()
-  }
+  getNotebookTextModels: INotebookService['getNotebookTextModels'] = unsupported
   listNotebookDocuments: INotebookService['listNotebookDocuments'] = () => []
   @Unsupported
   registerContributedNotebookType: INotebookService['registerContributedNotebookType'] =
@@ -4198,75 +3182,49 @@ class NotebookService implements INotebookService {
   getContributedNotebookTypes: INotebookService['getContributedNotebookTypes'] = () => []
   getNotebookProviderResourceRoots: INotebookService['getNotebookProviderResourceRoots'] = () => []
   @Unsupported
-  setToCopy: INotebookService['setToCopy'] = (): never => {
-    unsupported()
-  }
+  setToCopy: INotebookService['setToCopy'] = unsupported
   @Unsupported
-  getToCopy: INotebookService['getToCopy'] = (): never => {
-    unsupported()
-  }
+  getToCopy: INotebookService['getToCopy'] = unsupported
   @Unsupported
-  clearEditorCache: INotebookService['clearEditorCache'] = (): never => {
-    unsupported()
-  }
+  clearEditorCache: INotebookService['clearEditorCache'] = unsupported
 }
 registerSingleton(INotebookService, NotebookService, InstantiationType.Delayed)
 class ReplaceService implements IReplaceService {
   _serviceBrand: undefined
   @Unsupported
-  replace: IReplaceService['replace'] = (): never => {
-    unsupported()
-  }
+  replace: IReplaceService['replace'] = unsupported
   @Unsupported
-  openReplacePreview: IReplaceService['openReplacePreview'] = (): never => {
-    unsupported()
-  }
+  openReplacePreview: IReplaceService['openReplacePreview'] = unsupported
   @Unsupported
-  updateReplacePreview: IReplaceService['updateReplacePreview'] = (): never => {
-    unsupported()
-  }
+  updateReplacePreview: IReplaceService['updateReplacePreview'] = unsupported
 }
 registerSingleton(IReplaceService, ReplaceService, InstantiationType.Delayed)
 class SearchHistoryService implements ISearchHistoryService {
   _serviceBrand: undefined
   onDidClearHistory: ISearchHistoryService['onDidClearHistory'] = Event.None
   @Unsupported
-  clearHistory: ISearchHistoryService['clearHistory'] = (): never => {
-    unsupported()
-  }
+  clearHistory: ISearchHistoryService['clearHistory'] = unsupported
   @Unsupported
-  load: ISearchHistoryService['load'] = (): never => {
-    unsupported()
-  }
+  load: ISearchHistoryService['load'] = unsupported
   @Unsupported
-  save: ISearchHistoryService['save'] = (): never => {
-    unsupported()
-  }
+  save: ISearchHistoryService['save'] = unsupported
 }
 registerSingleton(ISearchHistoryService, SearchHistoryService, InstantiationType.Delayed)
 class NotebookEditorService implements INotebookEditorService {
   _serviceBrand: undefined
   @Unsupported
-  updateReplContextKey: INotebookEditorService['updateReplContextKey'] = (): never => {
-    unsupported()
-  }
+  updateReplContextKey: INotebookEditorService['updateReplContextKey'] = unsupported
   @Unsupported
-  retrieveWidget: INotebookEditorService['retrieveWidget'] = (): never => {
-    unsupported()
-  }
+  retrieveWidget: INotebookEditorService['retrieveWidget'] = unsupported
   retrieveExistingWidgetFromURI: INotebookEditorService['retrieveExistingWidgetFromURI'] = () =>
     undefined
   retrieveAllExistingWidgets: INotebookEditorService['retrieveAllExistingWidgets'] = () => []
   onDidAddNotebookEditor: INotebookEditorService['onDidAddNotebookEditor'] = Event.None
   onDidRemoveNotebookEditor: INotebookEditorService['onDidRemoveNotebookEditor'] = Event.None
   @Unsupported
-  addNotebookEditor: INotebookEditorService['addNotebookEditor'] = (): never => {
-    unsupported()
-  }
+  addNotebookEditor: INotebookEditorService['addNotebookEditor'] = unsupported
   @Unsupported
-  removeNotebookEditor: INotebookEditorService['removeNotebookEditor'] = (): never => {
-    unsupported()
-  }
+  removeNotebookEditor: INotebookEditorService['removeNotebookEditor'] = unsupported
   getNotebookEditor: INotebookEditorService['getNotebookEditor'] = () => undefined
   listNotebookEditors: INotebookEditorService['listNotebookEditors'] = () => []
 }
@@ -4294,13 +3252,9 @@ class NotebookEditorModelResolverService implements INotebookEditorModelResolver
   onDidChangeDirty: INotebookEditorModelResolverService['onDidChangeDirty'] = Event.None
   onWillFailWithConflict: INotebookEditorModelResolverService['onWillFailWithConflict'] = Event.None
   @Unsupported
-  isDirty: INotebookEditorModelResolverService['isDirty'] = (): never => {
-    unsupported()
-  }
+  isDirty: INotebookEditorModelResolverService['isDirty'] = unsupported
   @Unsupported
-  resolve: INotebookEditorModelResolverService['resolve'] = (): never => {
-    unsupported()
-  }
+  resolve: INotebookEditorModelResolverService['resolve'] = unsupported
 }
 registerSingleton(
   INotebookEditorModelResolverService,
@@ -4319,9 +3273,7 @@ class UserActivityService implements IUserActivityService {
   isActive: IUserActivityService['isActive'] = false
   onDidChangeIsActive: IUserActivityService['onDidChangeIsActive'] = Event.None
   @Unsupported
-  markActive: IUserActivityService['markActive'] = (): never => {
-    unsupported()
-  }
+  markActive: IUserActivityService['markActive'] = unsupported
 }
 registerSingleton(IUserActivityService, UserActivityService, InstantiationType.Delayed)
 class CanonicalUriService implements ICanonicalUriService {
@@ -4367,78 +3319,46 @@ class ChatService implements IChatService {
   _serviceBrand: undefined
   isPersistedSessionEmpty: IChatService['isPersistedSessionEmpty'] = () => true
   @Unsupported
-  activateDefaultAgent: IChatService['activateDefaultAgent'] = (): never => {
-    unsupported()
-  }
+  activateDefaultAgent: IChatService['activateDefaultAgent'] = unsupported
   @Unsupported
-  getChatStorageFolder: IChatService['getChatStorageFolder'] = (): never => {
-    unsupported()
-  }
+  getChatStorageFolder: IChatService['getChatStorageFolder'] = unsupported
   @Unsupported
-  logChatIndex: IChatService['logChatIndex'] = (): never => {
-    unsupported()
-  }
+  logChatIndex: IChatService['logChatIndex'] = unsupported
   @Unsupported
-  setChatSessionTitle: IChatService['setChatSessionTitle'] = (): never => {
-    unsupported()
-  }
+  setChatSessionTitle: IChatService['setChatSessionTitle'] = unsupported
   @Unsupported
-  adoptRequest: IChatService['adoptRequest'] = (): never => {
-    unsupported()
-  }
+  adoptRequest: IChatService['adoptRequest'] = unsupported
   isEnabled: IChatService['isEnabled'] = () => false
   @Unsupported
-  resendRequest: IChatService['resendRequest'] = (): never => {
-    unsupported()
-  }
+  resendRequest: IChatService['resendRequest'] = unsupported
   @Unsupported
-  clearAllHistoryEntries: IChatService['clearAllHistoryEntries'] = (): never => {
-    unsupported()
-  }
+  clearAllHistoryEntries: IChatService['clearAllHistoryEntries'] = unsupported
   hasSessions: IChatService['hasSessions'] = () => false
   onDidDisposeSession: IChatService['onDidDisposeSession'] = Event.None
   transferredSessionData: IChatService['transferredSessionData'] = undefined
   @Unsupported
-  transferChatSession: IChatService['transferChatSession'] = (): never => {
-    unsupported()
-  }
+  transferChatSession: IChatService['transferChatSession'] = unsupported
   @Unsupported
-  startSession: IChatService['startSession'] = (): never => {
-    unsupported()
-  }
+  startSession: IChatService['startSession'] = unsupported
   getSession: IChatService['getSession'] = () => undefined
   getOrRestoreSession: IChatService['getOrRestoreSession'] = async () => undefined
   loadSessionFromContent: IChatService['loadSessionFromContent'] = () => undefined
   @Unsupported
-  sendRequest: IChatService['sendRequest'] = (): never => {
-    unsupported()
-  }
+  sendRequest: IChatService['sendRequest'] = unsupported
   @Unsupported
-  removeRequest: IChatService['removeRequest'] = (): never => {
-    unsupported()
-  }
+  removeRequest: IChatService['removeRequest'] = unsupported
   @Unsupported
-  cancelCurrentRequestForSession: IChatService['cancelCurrentRequestForSession'] = (): never => {
-    unsupported()
-  }
+  cancelCurrentRequestForSession: IChatService['cancelCurrentRequestForSession'] = unsupported
   @Unsupported
-  clearSession: IChatService['clearSession'] = (): never => {
-    unsupported()
-  }
+  clearSession: IChatService['clearSession'] = unsupported
   @Unsupported
-  addCompleteRequest: IChatService['addCompleteRequest'] = (): never => {
-    unsupported()
-  }
+  addCompleteRequest: IChatService['addCompleteRequest'] = unsupported
   getHistory: IChatService['getHistory'] = async () => []
   @Unsupported
-  removeHistoryEntry: IChatService['removeHistoryEntry'] = (): never => {
-    unsupported()
-  }
+  removeHistoryEntry: IChatService['removeHistoryEntry'] = unsupported
   onDidPerformUserAction: IChatService['onDidPerformUserAction'] = Event.None
   @Unsupported
-  notifyUserAction: IChatService['notifyUserAction'] = (): never => {
-    unsupported()
-  }
+  notifyUserAction: IChatService['notifyUserAction'] = unsupported
   onDidSubmitRequest: IChatService['onDidSubmitRequest'] = Event.None
 }
 registerSingleton(IChatService, ChatService, InstantiationType.Delayed)
@@ -4446,17 +3366,13 @@ class ChatMarkdownAnchorService implements IChatMarkdownAnchorService {
   _serviceBrand: undefined
   lastFocusedAnchor: IChatMarkdownAnchorService['lastFocusedAnchor'] = undefined
   @Unsupported
-  register: IChatMarkdownAnchorService['register'] = (): never => {
-    unsupported()
-  }
+  register: IChatMarkdownAnchorService['register'] = unsupported
 }
 registerSingleton(IChatMarkdownAnchorService, ChatMarkdownAnchorService, InstantiationType.Delayed)
 class LanguageModelStatsService implements ILanguageModelStatsService {
   _serviceBrand: undefined
   @Unsupported
-  update: ILanguageModelStatsService['update'] = (): never => {
-    unsupported()
-  }
+  update: ILanguageModelStatsService['update'] = unsupported
 }
 registerSingleton(ILanguageModelStatsService, LanguageModelStatsService, InstantiationType.Delayed)
 class QuickChatService implements IQuickChatService {
@@ -4465,49 +3381,33 @@ class QuickChatService implements IQuickChatService {
   onDidClose: IQuickChatService['onDidClose'] = Event.None
   enabled: IQuickChatService['enabled'] = false
   @Unsupported
-  toggle: IQuickChatService['toggle'] = (): never => {
-    unsupported()
-  }
+  toggle: IQuickChatService['toggle'] = unsupported
   @Unsupported
-  focus: IQuickChatService['focus'] = (): never => {
-    unsupported()
-  }
+  focus: IQuickChatService['focus'] = unsupported
   @Unsupported
-  open: IQuickChatService['open'] = (): never => {
-    unsupported()
-  }
+  open: IQuickChatService['open'] = unsupported
   @Unsupported
-  close: IQuickChatService['close'] = (): never => {
-    unsupported()
-  }
+  close: IQuickChatService['close'] = unsupported
   @Unsupported
-  openInChatView: IQuickChatService['openInChatView'] = (): never => {
-    unsupported()
-  }
+  openInChatView: IQuickChatService['openInChatView'] = unsupported
 }
 registerSingleton(IQuickChatService, QuickChatService, InstantiationType.Delayed)
 class QuickChatAgentService implements IChatAgentService {
   _serviceBrand: IChatAgentService['_serviceBrand'] = undefined
   hasToolsAgent: IChatAgentService['hasToolsAgent'] = false
   @Unsupported
-  setRequestPaused: IChatAgentService['setRequestPaused'] = (): never => {
-    unsupported()
-  }
+  setRequestPaused: IChatAgentService['setRequestPaused'] = unsupported
   @Unsupported
   registerChatParticipantDetectionProvider: IChatAgentService['registerChatParticipantDetectionProvider'] =
     (): never => {
       unsupported()
     }
   @Unsupported
-  detectAgentOrCommand: IChatAgentService['detectAgentOrCommand'] = (): never => {
-    unsupported()
-  }
+  detectAgentOrCommand: IChatAgentService['detectAgentOrCommand'] = unsupported
   hasChatParticipantDetectionProviders: IChatAgentService['hasChatParticipantDetectionProviders'] =
     () => false
   @Unsupported
-  getChatTitle: IChatAgentService['getChatTitle'] = (): never => {
-    unsupported()
-  }
+  getChatTitle: IChatAgentService['getChatTitle'] = unsupported
   agentHasDupeName: IChatAgentService['agentHasDupeName'] = () => false
   @Unsupported
   registerAgentCompletionProvider: IChatAgentService['registerAgentCompletionProvider'] =
@@ -4515,49 +3415,33 @@ class QuickChatAgentService implements IChatAgentService {
       unsupported()
     }
   @Unsupported
-  getAgentCompletionItems: IChatAgentService['getAgentCompletionItems'] = (): never => {
-    unsupported()
-  }
+  getAgentCompletionItems: IChatAgentService['getAgentCompletionItems'] = unsupported
   @Unsupported
-  getAgentByFullyQualifiedId: IChatAgentService['getAgentByFullyQualifiedId'] = (): never => {
-    unsupported()
-  }
+  getAgentByFullyQualifiedId: IChatAgentService['getAgentByFullyQualifiedId'] = unsupported
   getContributedDefaultAgent: IChatAgentService['getContributedDefaultAgent'] = () => undefined
   @Unsupported
-  registerAgentImplementation: IChatAgentService['registerAgentImplementation'] = (): never => {
-    unsupported()
-  }
+  registerAgentImplementation: IChatAgentService['registerAgentImplementation'] = unsupported
   @Unsupported
-  registerDynamicAgent: IChatAgentService['registerDynamicAgent'] = (): never => {
-    unsupported()
-  }
+  registerDynamicAgent: IChatAgentService['registerDynamicAgent'] = unsupported
   getActivatedAgents: IChatAgentService['getActivatedAgents'] = () => []
   getAgentsByName: IChatAgentService['getAgentsByName'] = () => []
   @Unsupported
-  getFollowups: IChatAgentService['getFollowups'] = (): never => {
-    unsupported()
-  }
+  getFollowups: IChatAgentService['getFollowups'] = unsupported
   getDefaultAgent: IChatAgentService['getDefaultAgent'] = () => undefined
   @Unsupported
-  updateAgent: IChatAgentService['updateAgent'] = (): never => {
-    unsupported()
-  }
+  updateAgent: IChatAgentService['updateAgent'] = unsupported
   onDidChangeAgents: IChatAgentService['onDidChangeAgents'] = Event.None
   @Unsupported
-  registerAgent: IChatAgentService['registerAgent'] = (): never => {
-    unsupported()
-  }
+  registerAgent: IChatAgentService['registerAgent'] = unsupported
   @Unsupported
-  invokeAgent: IChatAgentService['invokeAgent'] = (): never => {
-    unsupported()
-  }
+  invokeAgent: IChatAgentService['invokeAgent'] = unsupported
   @Unsupported
-  getAgents: IChatAgentService['getAgents'] = (): never => {
-    unsupported()
-  }
+  getAgents: IChatAgentService['getAgents'] = unsupported
   @Unsupported
-  getAgent: IChatAgentService['getAgent'] = (): never => {
-    unsupported()
+  getAgent: IChatAgentService['getAgent'] = unsupported
+
+  getChatSummary: IChatAgentService['getChatSummary'] = async () => {
+    return undefined
   }
 }
 registerSingleton(IChatAgentService, QuickChatAgentService, InstantiationType.Delayed)
@@ -4572,9 +3456,7 @@ class EmbedderTerminalService implements IEmbedderTerminalService {
   _serviceBrand: undefined
   onDidCreateTerminal: IEmbedderTerminalService['onDidCreateTerminal'] = Event.None
   @Unsupported
-  createTerminal: IEmbedderTerminalService['createTerminal'] = (): never => {
-    unsupported()
-  }
+  createTerminal: IEmbedderTerminalService['createTerminal'] = unsupported
 }
 registerSingleton(IEmbedderTerminalService, EmbedderTerminalService, InstantiationType.Delayed)
 class CustomEditorService implements ICustomEditorService {
@@ -4584,17 +3466,11 @@ class CustomEditorService implements ICustomEditorService {
     return unsupported()
   }
   @Unsupported
-  getCustomEditor: ICustomEditorService['getCustomEditor'] = (): never => {
-    unsupported()
-  }
+  getCustomEditor: ICustomEditorService['getCustomEditor'] = unsupported
   @Unsupported
-  getAllCustomEditors: ICustomEditorService['getAllCustomEditors'] = (): never => {
-    unsupported()
-  }
+  getAllCustomEditors: ICustomEditorService['getAllCustomEditors'] = unsupported
   @Unsupported
-  getContributedCustomEditors: ICustomEditorService['getContributedCustomEditors'] = (): never => {
-    unsupported()
-  }
+  getContributedCustomEditors: ICustomEditorService['getContributedCustomEditors'] = unsupported
   @Unsupported
   getUserConfiguredCustomEditors: ICustomEditorService['getUserConfiguredCustomEditors'] =
     (): never => {
@@ -4611,34 +3487,24 @@ class WebviewService implements IWebviewService {
   webviews: IWebviewService['webviews'] = []
   onDidChangeActiveWebview: IWebviewService['onDidChangeActiveWebview'] = Event.None
   @Unsupported
-  createWebviewElement: IWebviewService['createWebviewElement'] = (): never => {
-    unsupported()
-  }
+  createWebviewElement: IWebviewService['createWebviewElement'] = unsupported
   @Unsupported
-  createWebviewOverlay: IWebviewService['createWebviewOverlay'] = (): never => {
-    unsupported()
-  }
+  createWebviewOverlay: IWebviewService['createWebviewOverlay'] = unsupported
 }
 registerSingleton(IWebviewService, WebviewService, InstantiationType.Delayed)
 class WebviewViewService implements IWebviewViewService {
   _serviceBrand: undefined
   onNewResolverRegistered: IWebviewViewService['onNewResolverRegistered'] = Event.None
   @Unsupported
-  register: IWebviewViewService['register'] = (): never => {
-    unsupported()
-  }
+  register: IWebviewViewService['register'] = unsupported
   @Unsupported
-  resolve: IWebviewViewService['resolve'] = (): never => {
-    unsupported()
-  }
+  resolve: IWebviewViewService['resolve'] = unsupported
 }
 registerSingleton(IWebviewViewService, WebviewViewService, InstantiationType.Delayed)
 class LocaleService implements ILocaleService {
   _serviceBrand: undefined
   @Unsupported
-  setLocale: ILocaleService['setLocale'] = (): never => {
-    unsupported()
-  }
+  setLocale: ILocaleService['setLocale'] = unsupported
   clearLocalePreference: ILocaleService['clearLocalePreference'] = () => {
     return Promise.resolve()
   }
@@ -4653,26 +3519,16 @@ class WebviewWorkbenchService implements IWebviewWorkbenchService {
   onDidChangeActiveWebviewEditor: IWebviewWorkbenchService['onDidChangeActiveWebviewEditor'] =
     Event.None
   @Unsupported
-  openWebview: IWebviewWorkbenchService['openWebview'] = (): never => {
-    unsupported()
-  }
+  openWebview: IWebviewWorkbenchService['openWebview'] = unsupported
   @Unsupported
-  openRevivedWebview: IWebviewWorkbenchService['openRevivedWebview'] = (): never => {
-    unsupported()
-  }
+  openRevivedWebview: IWebviewWorkbenchService['openRevivedWebview'] = unsupported
   @Unsupported
-  revealWebview: IWebviewWorkbenchService['revealWebview'] = (): never => {
-    unsupported()
-  }
+  revealWebview: IWebviewWorkbenchService['revealWebview'] = unsupported
   registerResolver: IWebviewWorkbenchService['registerResolver'] = () => Disposable.None
   @Unsupported
-  shouldPersist: IWebviewWorkbenchService['shouldPersist'] = (): never => {
-    unsupported()
-  }
+  shouldPersist: IWebviewWorkbenchService['shouldPersist'] = unsupported
   @Unsupported
-  resolveWebview: IWebviewWorkbenchService['resolveWebview'] = (): never => {
-    unsupported()
-  }
+  resolveWebview: IWebviewWorkbenchService['resolveWebview'] = unsupported
 }
 registerSingleton(IWebviewWorkbenchService, WebviewWorkbenchService, InstantiationType.Delayed)
 class RemoteAuthorityResolverService implements IRemoteAuthorityResolverService {
@@ -4680,26 +3536,18 @@ class RemoteAuthorityResolverService implements IRemoteAuthorityResolverService 
   onDidChangeConnectionData: IRemoteAuthorityResolverService['onDidChangeConnectionData'] =
     Event.None
   @Unsupported
-  resolveAuthority: IRemoteAuthorityResolverService['resolveAuthority'] = (): never => {
-    unsupported()
-  }
+  resolveAuthority: IRemoteAuthorityResolverService['resolveAuthority'] = unsupported
   @Unsupported
-  getConnectionData: IRemoteAuthorityResolverService['getConnectionData'] = (): never => {
-    unsupported()
-  }
+  getConnectionData: IRemoteAuthorityResolverService['getConnectionData'] = unsupported
   @Unsupported
-  getCanonicalURI: IRemoteAuthorityResolverService['getCanonicalURI'] = (): never => {
-    unsupported()
-  }
+  getCanonicalURI: IRemoteAuthorityResolverService['getCanonicalURI'] = unsupported
   @Unsupported
   _clearResolvedAuthority: IRemoteAuthorityResolverService['_clearResolvedAuthority'] =
     (): never => {
       unsupported()
     }
   @Unsupported
-  _setResolvedAuthority: IRemoteAuthorityResolverService['_setResolvedAuthority'] = (): never => {
-    unsupported()
-  }
+  _setResolvedAuthority: IRemoteAuthorityResolverService['_setResolvedAuthority'] = unsupported
   @Unsupported
   _setResolvedAuthorityError: IRemoteAuthorityResolverService['_setResolvedAuthorityError'] =
     (): never => {
@@ -4731,62 +3579,34 @@ registerSingleton(IExternalUriOpenerService, ExternalUriOpenerService, Instantia
 class AccessibleViewService implements IAccessibleViewService {
   _serviceBrand: undefined
   @Unsupported
-  configureKeybindings: IAccessibleViewService['configureKeybindings'] = (): never => {
-    unsupported()
-  }
+  configureKeybindings: IAccessibleViewService['configureKeybindings'] = unsupported
   @Unsupported
-  openHelpLink: IAccessibleViewService['openHelpLink'] = (): never => {
-    unsupported()
-  }
+  openHelpLink: IAccessibleViewService['openHelpLink'] = unsupported
   @Unsupported
-  navigateToCodeBlock: IAccessibleViewService['navigateToCodeBlock'] = (): never => {
-    unsupported()
-  }
+  navigateToCodeBlock: IAccessibleViewService['navigateToCodeBlock'] = unsupported
   getCodeBlockContext: IAccessibleViewService['getCodeBlockContext'] = () => undefined
   @Unsupported
-  showLastProvider: IAccessibleViewService['showLastProvider'] = (): never => {
-    unsupported()
-  }
+  showLastProvider: IAccessibleViewService['showLastProvider'] = unsupported
   @Unsupported
-  showAccessibleViewHelp: IAccessibleViewService['showAccessibleViewHelp'] = (): never => {
-    unsupported()
-  }
+  showAccessibleViewHelp: IAccessibleViewService['showAccessibleViewHelp'] = unsupported
   @Unsupported
-  goToSymbol: IAccessibleViewService['goToSymbol'] = (): never => {
-    unsupported()
-  }
+  goToSymbol: IAccessibleViewService['goToSymbol'] = unsupported
   @Unsupported
-  disableHint: IAccessibleViewService['disableHint'] = (): never => {
-    unsupported()
-  }
+  disableHint: IAccessibleViewService['disableHint'] = unsupported
   @Unsupported
-  next: IAccessibleViewService['next'] = (): never => {
-    unsupported()
-  }
+  next: IAccessibleViewService['next'] = unsupported
   @Unsupported
-  previous: IAccessibleViewService['previous'] = (): never => {
-    unsupported()
-  }
+  previous: IAccessibleViewService['previous'] = unsupported
   @Unsupported
-  getOpenAriaHint: IAccessibleViewService['getOpenAriaHint'] = (): never => {
-    unsupported()
-  }
+  getOpenAriaHint: IAccessibleViewService['getOpenAriaHint'] = unsupported
   @Unsupported
-  show: IAccessibleViewService['show'] = (): never => {
-    unsupported()
-  }
+  show: IAccessibleViewService['show'] = unsupported
   @Unsupported
-  getPosition: IAccessibleViewService['getPosition'] = (): never => {
-    unsupported()
-  }
+  getPosition: IAccessibleViewService['getPosition'] = unsupported
   @Unsupported
-  setPosition: IAccessibleViewService['setPosition'] = (): never => {
-    unsupported()
-  }
+  setPosition: IAccessibleViewService['setPosition'] = unsupported
   @Unsupported
-  getLastPosition: IAccessibleViewService['getLastPosition'] = (): never => {
-    unsupported()
-  }
+  getLastPosition: IAccessibleViewService['getLastPosition'] = unsupported
 }
 registerSingleton(IAccessibleViewService, AccessibleViewService, InstantiationType.Delayed)
 class AccessibleViewInformationService implements IAccessibleViewInformationService {
@@ -4813,9 +3633,7 @@ class WorkbenchExtensionManagementService implements IWorkbenchExtensionManageme
       unsupported()
     }
   @Unsupported
-  uninstallExtensions: IWorkbenchExtensionManagementService['uninstallExtensions'] = (): never => {
-    unsupported()
-  }
+  uninstallExtensions: IWorkbenchExtensionManagementService['uninstallExtensions'] = unsupported
   @Unsupported
   resetPinnedStateForAllUserExtensions: IWorkbenchExtensionManagementService['resetPinnedStateForAllUserExtensions'] =
     (): never => {
@@ -4840,39 +3658,23 @@ class WorkbenchExtensionManagementService implements IWorkbenchExtensionManageme
     Event.None
   onDidChangeProfile: IWorkbenchExtensionManagementService['onDidChangeProfile'] = Event.None
   @Unsupported
-  installVSIX: IWorkbenchExtensionManagementService['installVSIX'] = (): never => {
-    unsupported()
-  }
+  installVSIX: IWorkbenchExtensionManagementService['installVSIX'] = unsupported
   @Unsupported
-  installFromLocation: IWorkbenchExtensionManagementService['installFromLocation'] = (): never => {
-    unsupported()
-  }
+  installFromLocation: IWorkbenchExtensionManagementService['installFromLocation'] = unsupported
   @Unsupported
-  updateFromGallery: IWorkbenchExtensionManagementService['updateFromGallery'] = (): never => {
-    unsupported()
-  }
+  updateFromGallery: IWorkbenchExtensionManagementService['updateFromGallery'] = unsupported
   onDidUpdateExtensionMetadata: IWorkbenchExtensionManagementService['onDidUpdateExtensionMetadata'] =
     Event.None
   @Unsupported
-  zip: IWorkbenchExtensionManagementService['zip'] = (): never => {
-    unsupported()
-  }
+  zip: IWorkbenchExtensionManagementService['zip'] = unsupported
   @Unsupported
-  getManifest: IWorkbenchExtensionManagementService['getManifest'] = (): never => {
-    unsupported()
-  }
+  getManifest: IWorkbenchExtensionManagementService['getManifest'] = unsupported
   @Unsupported
-  install: IWorkbenchExtensionManagementService['install'] = (): never => {
-    unsupported()
-  }
+  install: IWorkbenchExtensionManagementService['install'] = unsupported
   @Unsupported
-  canInstall: IWorkbenchExtensionManagementService['canInstall'] = (): never => {
-    unsupported()
-  }
+  canInstall: IWorkbenchExtensionManagementService['canInstall'] = unsupported
   @Unsupported
-  installFromGallery: IWorkbenchExtensionManagementService['installFromGallery'] = (): never => {
-    unsupported()
-  }
+  installFromGallery: IWorkbenchExtensionManagementService['installFromGallery'] = unsupported
   @Unsupported
   installGalleryExtensions: IWorkbenchExtensionManagementService['installGalleryExtensions'] =
     (): never => {
@@ -4884,9 +3686,7 @@ class WorkbenchExtensionManagementService implements IWorkbenchExtensionManageme
       unsupported()
     }
   @Unsupported
-  uninstall: IWorkbenchExtensionManagementService['uninstall'] = (): never => {
-    unsupported()
-  }
+  uninstall: IWorkbenchExtensionManagementService['uninstall'] = unsupported
   getInstalled: IWorkbenchExtensionManagementService['getInstalled'] = async () => []
   @Unsupported
   getExtensionsControlManifest: IWorkbenchExtensionManagementService['getExtensionsControlManifest'] =
@@ -4894,29 +3694,17 @@ class WorkbenchExtensionManagementService implements IWorkbenchExtensionManageme
       unsupported()
     }
   @Unsupported
-  copyExtensions: IWorkbenchExtensionManagementService['copyExtensions'] = (): never => {
-    unsupported()
-  }
+  copyExtensions: IWorkbenchExtensionManagementService['copyExtensions'] = unsupported
   @Unsupported
-  updateMetadata: IWorkbenchExtensionManagementService['updateMetadata'] = (): never => {
-    unsupported()
-  }
+  updateMetadata: IWorkbenchExtensionManagementService['updateMetadata'] = unsupported
   @Unsupported
-  download: IWorkbenchExtensionManagementService['download'] = (): never => {
-    unsupported()
-  }
+  download: IWorkbenchExtensionManagementService['download'] = unsupported
   @Unsupported
-  registerParticipant: IWorkbenchExtensionManagementService['registerParticipant'] = (): never => {
-    unsupported()
-  }
+  registerParticipant: IWorkbenchExtensionManagementService['registerParticipant'] = unsupported
   @Unsupported
-  getTargetPlatform: IWorkbenchExtensionManagementService['getTargetPlatform'] = (): never => {
-    unsupported()
-  }
+  getTargetPlatform: IWorkbenchExtensionManagementService['getTargetPlatform'] = unsupported
   @Unsupported
-  cleanUp: IWorkbenchExtensionManagementService['cleanUp'] = (): never => {
-    unsupported()
-  }
+  cleanUp: IWorkbenchExtensionManagementService['cleanUp'] = unsupported
   getInstallableServers: IWorkbenchExtensionManagementService['getInstallableServers'] =
     async () => []
   isPublisherTrusted: IWorkbenchExtensionManagementService['isPublisherTrusted'] = () => false
@@ -4927,13 +3715,9 @@ class WorkbenchExtensionManagementService implements IWorkbenchExtensionManageme
       unsupported()
     }
   @Unsupported
-  trustPublishers: IWorkbenchExtensionManagementService['trustPublishers'] = (): never => {
-    unsupported()
-  }
+  trustPublishers: IWorkbenchExtensionManagementService['trustPublishers'] = unsupported
   @Unsupported
-  untrustPublishers: IWorkbenchExtensionManagementService['untrustPublishers'] = (): never => {
-    unsupported()
-  }
+  untrustPublishers: IWorkbenchExtensionManagementService['untrustPublishers'] = unsupported
 }
 registerSingleton(
   IWorkbenchExtensionManagementService,
@@ -4943,35 +3727,25 @@ registerSingleton(
 class ExtensionManifestPropertiesService implements IExtensionManifestPropertiesService {
   _serviceBrand: undefined
   @Unsupported
-  prefersExecuteOnUI: IExtensionManifestPropertiesService['prefersExecuteOnUI'] = (): never => {
-    unsupported()
-  }
+  prefersExecuteOnUI: IExtensionManifestPropertiesService['prefersExecuteOnUI'] = unsupported
   @Unsupported
   prefersExecuteOnWorkspace: IExtensionManifestPropertiesService['prefersExecuteOnWorkspace'] =
     (): never => {
       unsupported()
     }
   @Unsupported
-  prefersExecuteOnWeb: IExtensionManifestPropertiesService['prefersExecuteOnWeb'] = (): never => {
-    unsupported()
-  }
+  prefersExecuteOnWeb: IExtensionManifestPropertiesService['prefersExecuteOnWeb'] = unsupported
   @Unsupported
-  canExecuteOnUI: IExtensionManifestPropertiesService['canExecuteOnUI'] = (): never => {
-    unsupported()
-  }
+  canExecuteOnUI: IExtensionManifestPropertiesService['canExecuteOnUI'] = unsupported
   @Unsupported
   canExecuteOnWorkspace: IExtensionManifestPropertiesService['canExecuteOnWorkspace'] =
     (): never => {
       unsupported()
     }
   @Unsupported
-  canExecuteOnWeb: IExtensionManifestPropertiesService['canExecuteOnWeb'] = (): never => {
-    unsupported()
-  }
+  canExecuteOnWeb: IExtensionManifestPropertiesService['canExecuteOnWeb'] = unsupported
   @Unsupported
-  getExtensionKind: IExtensionManifestPropertiesService['getExtensionKind'] = (): never => {
-    unsupported()
-  }
+  getExtensionKind: IExtensionManifestPropertiesService['getExtensionKind'] = unsupported
   @Unsupported
   getUserConfiguredExtensionKind: IExtensionManifestPropertiesService['getUserConfiguredExtensionKind'] =
     (): never => {
@@ -5008,9 +3782,7 @@ registerSingleton(
 class RemoteExtensionsScannerService implements IRemoteExtensionsScannerService {
   _serviceBrand: undefined
   @Unsupported
-  whenExtensionsReady: IRemoteExtensionsScannerService['whenExtensionsReady'] = (): never => {
-    unsupported()
-  }
+  whenExtensionsReady: IRemoteExtensionsScannerService['whenExtensionsReady'] = unsupported
   scanExtensions: IRemoteExtensionsScannerService['scanExtensions'] = async (): Promise<
     Readonly<IRelaxedExtensionDescription>[]
   > => {
@@ -5025,26 +3797,18 @@ registerSingleton(
 class URLService implements IURLService {
   _serviceBrand: undefined
   @Unsupported
-  create: IURLService['create'] = (): never => {
-    unsupported()
-  }
+  create: IURLService['create'] = unsupported
   open: IURLService['open'] = async () => false
   @Unsupported
-  registerHandler: IURLService['registerHandler'] = (): never => {
-    unsupported()
-  }
+  registerHandler: IURLService['registerHandler'] = unsupported
 }
 registerSingleton(IURLService, URLService, InstantiationType.Delayed)
 class RemoteSocketFactoryService implements IRemoteSocketFactoryService {
   _serviceBrand: undefined
   @Unsupported
-  register: IRemoteSocketFactoryService['register'] = (): never => {
-    unsupported()
-  }
+  register: IRemoteSocketFactoryService['register'] = unsupported
   @Unsupported
-  connect: IRemoteSocketFactoryService['connect'] = (): never => {
-    unsupported()
-  }
+  connect: IRemoteSocketFactoryService['connect'] = unsupported
 }
 registerSingleton(
   IRemoteSocketFactoryService,
@@ -5057,18 +3821,14 @@ class QuickDiffService implements IQuickDiffService {
   providers: IQuickDiffService['providers'] = []
   isQuickDiffProviderVisible: IQuickDiffService['isQuickDiffProviderVisible'] = () => false
   @Unsupported
-  addQuickDiffProvider: IQuickDiffService['addQuickDiffProvider'] = (): never => {
-    unsupported()
-  }
+  addQuickDiffProvider: IQuickDiffService['addQuickDiffProvider'] = unsupported
   @Unsupported
   toggleQuickDiffProviderVisibility: IQuickDiffService['toggleQuickDiffProviderVisibility'] =
     (): never => {
       unsupported()
     }
   @Unsupported
-  getQuickDiffs: IQuickDiffService['getQuickDiffs'] = (): never => {
-    unsupported()
-  }
+  getQuickDiffs: IQuickDiffService['getQuickDiffs'] = unsupported
 }
 registerSingleton(IQuickDiffService, QuickDiffService, InstantiationType.Delayed)
 class SCMService implements ISCMService {
@@ -5078,33 +3838,23 @@ class SCMService implements ISCMService {
   repositories: ISCMService['repositories'] = []
   repositoryCount: ISCMService['repositoryCount'] = 0
   @Unsupported
-  registerSCMProvider: ISCMService['registerSCMProvider'] = (): never => {
-    unsupported()
-  }
+  registerSCMProvider: ISCMService['registerSCMProvider'] = unsupported
   @Unsupported
-  getRepository: ISCMService['getRepository'] = (): never => {
-    unsupported()
-  }
+  getRepository: ISCMService['getRepository'] = unsupported
 }
 registerSingleton(ISCMService, SCMService, InstantiationType.Delayed)
 class DownloadService implements IDownloadService {
   _serviceBrand: undefined
   @Unsupported
-  download: IDownloadService['download'] = (): never => {
-    unsupported()
-  }
+  download: IDownloadService['download'] = unsupported
 }
 registerSingleton(IDownloadService, DownloadService, InstantiationType.Delayed)
 class ExtensionUrlHandler implements IExtensionUrlHandler {
   _serviceBrand: undefined
   @Unsupported
-  registerExtensionHandler: IExtensionUrlHandler['registerExtensionHandler'] = (): never => {
-    unsupported()
-  }
+  registerExtensionHandler: IExtensionUrlHandler['registerExtensionHandler'] = unsupported
   @Unsupported
-  unregisterExtensionHandler: IExtensionUrlHandler['unregisterExtensionHandler'] = (): never => {
-    unsupported()
-  }
+  unregisterExtensionHandler: IExtensionUrlHandler['unregisterExtensionHandler'] = unsupported
 }
 registerSingleton(IExtensionUrlHandler, ExtensionUrlHandler, InstantiationType.Delayed)
 class CommentService implements ICommentService {
@@ -5119,13 +3869,9 @@ class CommentService implements ICommentService {
   onDidChangeActiveEditingCommentThread: ICommentService['onDidChangeActiveEditingCommentThread'] =
     Event.None
   @Unsupported
-  setActiveEditingCommentThread: ICommentService['setActiveEditingCommentThread'] = (): never => {
-    unsupported()
-  }
+  setActiveEditingCommentThread: ICommentService['setActiveEditingCommentThread'] = unsupported
   @Unsupported
-  setActiveCommentAndThread: ICommentService['setActiveCommentAndThread'] = (): never => {
-    unsupported()
-  }
+  setActiveCommentAndThread: ICommentService['setActiveCommentAndThread'] = unsupported
   onDidSetResourceCommentInfos: ICommentService['onDidSetResourceCommentInfos'] = Event.None
   onDidSetAllCommentThreads: ICommentService['onDidSetAllCommentThreads'] = Event.None
   onDidUpdateCommentThreads: ICommentService['onDidUpdateCommentThreads'] = Event.None
@@ -5139,81 +3885,47 @@ class CommentService implements ICommentService {
   onDidChangeCommentingEnabled: ICommentService['onDidChangeCommentingEnabled'] = Event.None
   isCommentingEnabled: ICommentService['isCommentingEnabled'] = false
   @Unsupported
-  setDocumentComments: ICommentService['setDocumentComments'] = (): never => {
-    unsupported()
-  }
+  setDocumentComments: ICommentService['setDocumentComments'] = unsupported
   @Unsupported
-  setWorkspaceComments: ICommentService['setWorkspaceComments'] = (): never => {
-    unsupported()
-  }
+  setWorkspaceComments: ICommentService['setWorkspaceComments'] = unsupported
   @Unsupported
-  removeWorkspaceComments: ICommentService['removeWorkspaceComments'] = (): never => {
-    unsupported()
-  }
+  removeWorkspaceComments: ICommentService['removeWorkspaceComments'] = unsupported
   @Unsupported
-  registerCommentController: ICommentService['registerCommentController'] = (): never => {
-    unsupported()
-  }
+  registerCommentController: ICommentService['registerCommentController'] = unsupported
   unregisterCommentController: ICommentService['unregisterCommentController'] = () => {}
   @Unsupported
-  getCommentController: ICommentService['getCommentController'] = (): never => {
-    unsupported()
-  }
+  getCommentController: ICommentService['getCommentController'] = unsupported
   @Unsupported
-  createCommentThreadTemplate: ICommentService['createCommentThreadTemplate'] = (): never => {
-    unsupported()
-  }
+  createCommentThreadTemplate: ICommentService['createCommentThreadTemplate'] = unsupported
   @Unsupported
-  updateCommentThreadTemplate: ICommentService['updateCommentThreadTemplate'] = (): never => {
-    unsupported()
-  }
+  updateCommentThreadTemplate: ICommentService['updateCommentThreadTemplate'] = unsupported
   @Unsupported
-  getCommentMenus: ICommentService['getCommentMenus'] = (): never => {
-    unsupported()
-  }
+  getCommentMenus: ICommentService['getCommentMenus'] = unsupported
   @Unsupported
-  updateComments: ICommentService['updateComments'] = (): never => {
-    unsupported()
-  }
+  updateComments: ICommentService['updateComments'] = unsupported
   @Unsupported
-  updateNotebookComments: ICommentService['updateNotebookComments'] = (): never => {
-    unsupported()
-  }
+  updateNotebookComments: ICommentService['updateNotebookComments'] = unsupported
   @Unsupported
-  disposeCommentThread: ICommentService['disposeCommentThread'] = (): never => {
-    unsupported()
-  }
+  disposeCommentThread: ICommentService['disposeCommentThread'] = unsupported
   getDocumentComments: ICommentService['getDocumentComments'] = async () => []
   getNotebookComments: ICommentService['getNotebookComments'] = async () => []
   @Unsupported
-  updateCommentingRanges: ICommentService['updateCommentingRanges'] = (): never => {
-    unsupported()
-  }
+  updateCommentingRanges: ICommentService['updateCommentingRanges'] = unsupported
   @Unsupported
-  hasReactionHandler: ICommentService['hasReactionHandler'] = (): never => {
-    unsupported()
-  }
+  hasReactionHandler: ICommentService['hasReactionHandler'] = unsupported
   @Unsupported
-  toggleReaction: ICommentService['toggleReaction'] = (): never => {
-    unsupported()
-  }
+  toggleReaction: ICommentService['toggleReaction'] = unsupported
   @Unsupported
-  setCurrentCommentThread: ICommentService['setCurrentCommentThread'] = (): never => {
-    unsupported()
-  }
+  setCurrentCommentThread: ICommentService['setCurrentCommentThread'] = unsupported
   @Unsupported
-  enableCommenting: ICommentService['enableCommenting'] = (): never => {
-    unsupported()
-  }
+  enableCommenting: ICommentService['enableCommenting'] = unsupported
   @Unsupported
   registerContinueOnCommentProvider: ICommentService['registerContinueOnCommentProvider'] =
     (): never => {
       unsupported()
     }
   @Unsupported
-  removeContinueOnComment: ICommentService['removeContinueOnComment'] = (): never => {
-    unsupported()
-  }
+  removeContinueOnComment: ICommentService['removeContinueOnComment'] = unsupported
 }
 registerSingleton(ICommentService, CommentService, InstantiationType.Delayed)
 class NotebookCellStatusBarService implements INotebookCellStatusBarService {
@@ -5240,34 +3952,24 @@ class NotebookKernelService implements INotebookKernelService {
   _serviceBrand: undefined
   onDidNotebookVariablesUpdate: INotebookKernelService['onDidNotebookVariablesUpdate'] = Event.None
   @Unsupported
-  notifyVariablesChange: INotebookKernelService['notifyVariablesChange'] = (): never => {
-    unsupported()
-  }
+  notifyVariablesChange: INotebookKernelService['notifyVariablesChange'] = unsupported
   onDidAddKernel: INotebookKernelService['onDidAddKernel'] = Event.None
   onDidRemoveKernel: INotebookKernelService['onDidRemoveKernel'] = Event.None
   onDidChangeSelectedNotebooks: INotebookKernelService['onDidChangeSelectedNotebooks'] = Event.None
   onDidChangeNotebookAffinity: INotebookKernelService['onDidChangeNotebookAffinity'] = Event.None
   @Unsupported
-  registerKernel: INotebookKernelService['registerKernel'] = (): never => {
-    unsupported()
-  }
+  registerKernel: INotebookKernelService['registerKernel'] = unsupported
   @Unsupported
-  getMatchingKernel: INotebookKernelService['getMatchingKernel'] = (): never => {
-    unsupported()
-  }
+  getMatchingKernel: INotebookKernelService['getMatchingKernel'] = unsupported
   @Unsupported
   getSelectedOrSuggestedKernel: INotebookKernelService['getSelectedOrSuggestedKernel'] =
     (): never => {
       unsupported()
     }
   @Unsupported
-  selectKernelForNotebook: INotebookKernelService['selectKernelForNotebook'] = (): never => {
-    unsupported()
-  }
+  selectKernelForNotebook: INotebookKernelService['selectKernelForNotebook'] = unsupported
   @Unsupported
-  preselectKernelForNotebook: INotebookKernelService['preselectKernelForNotebook'] = (): never => {
-    unsupported()
-  }
+  preselectKernelForNotebook: INotebookKernelService['preselectKernelForNotebook'] = unsupported
   @Unsupported
   updateKernelNotebookAffinity: INotebookKernelService['updateKernelNotebookAffinity'] =
     (): never => {
@@ -5281,44 +3983,30 @@ class NotebookKernelService implements INotebookKernelService {
       unsupported()
     }
   @Unsupported
-  getKernelDetectionTasks: INotebookKernelService['getKernelDetectionTasks'] = (): never => {
-    unsupported()
-  }
+  getKernelDetectionTasks: INotebookKernelService['getKernelDetectionTasks'] = unsupported
   onDidChangeSourceActions: INotebookKernelService['onDidChangeSourceActions'] = Event.None
   @Unsupported
-  getSourceActions: INotebookKernelService['getSourceActions'] = (): never => {
-    unsupported()
-  }
+  getSourceActions: INotebookKernelService['getSourceActions'] = unsupported
   @Unsupported
-  getRunningSourceActions: INotebookKernelService['getRunningSourceActions'] = (): never => {
-    unsupported()
-  }
+  getRunningSourceActions: INotebookKernelService['getRunningSourceActions'] = unsupported
   @Unsupported
   registerKernelSourceActionProvider: INotebookKernelService['registerKernelSourceActionProvider'] =
     (): never => {
       unsupported()
     }
   @Unsupported
-  getKernelSourceActions2: INotebookKernelService['getKernelSourceActions2'] = (): never => {
-    unsupported()
-  }
+  getKernelSourceActions2: INotebookKernelService['getKernelSourceActions2'] = unsupported
 }
 registerSingleton(INotebookKernelService, NotebookKernelService, InstantiationType.Delayed)
 class NotebookRendererMessagingService implements INotebookRendererMessagingService {
   _serviceBrand: undefined
   onShouldPostMessage: INotebookRendererMessagingService['onShouldPostMessage'] = Event.None
   @Unsupported
-  prepare: INotebookRendererMessagingService['prepare'] = (): never => {
-    unsupported()
-  }
+  prepare: INotebookRendererMessagingService['prepare'] = unsupported
   @Unsupported
-  getScoped: INotebookRendererMessagingService['getScoped'] = (): never => {
-    unsupported()
-  }
+  getScoped: INotebookRendererMessagingService['getScoped'] = unsupported
   @Unsupported
-  receiveMessage: INotebookRendererMessagingService['receiveMessage'] = (): never => {
-    unsupported()
-  }
+  receiveMessage: INotebookRendererMessagingService['receiveMessage'] = unsupported
 }
 registerSingleton(
   INotebookRendererMessagingService,
@@ -5329,29 +4017,17 @@ class InteractiveHistoryService implements IInteractiveHistoryService {
   _serviceBrand: undefined
   matchesCurrent: IInteractiveHistoryService['matchesCurrent'] = () => false
   @Unsupported
-  addToHistory: IInteractiveHistoryService['addToHistory'] = (): never => {
-    unsupported()
-  }
+  addToHistory: IInteractiveHistoryService['addToHistory'] = unsupported
   @Unsupported
-  getPreviousValue: IInteractiveHistoryService['getPreviousValue'] = (): never => {
-    unsupported()
-  }
+  getPreviousValue: IInteractiveHistoryService['getPreviousValue'] = unsupported
   @Unsupported
-  getNextValue: IInteractiveHistoryService['getNextValue'] = (): never => {
-    unsupported()
-  }
+  getNextValue: IInteractiveHistoryService['getNextValue'] = unsupported
   @Unsupported
-  replaceLast: IInteractiveHistoryService['replaceLast'] = (): never => {
-    unsupported()
-  }
+  replaceLast: IInteractiveHistoryService['replaceLast'] = unsupported
   @Unsupported
-  clearHistory: IInteractiveHistoryService['clearHistory'] = (): never => {
-    unsupported()
-  }
+  clearHistory: IInteractiveHistoryService['clearHistory'] = unsupported
   @Unsupported
-  has: IInteractiveHistoryService['has'] = (): never => {
-    unsupported()
-  }
+  has: IInteractiveHistoryService['has'] = unsupported
 }
 registerSingleton(IInteractiveHistoryService, InteractiveHistoryService, InstantiationType.Delayed)
 class InteractiveDocumentService implements IInteractiveDocumentService {
@@ -5388,9 +4064,7 @@ class RemoteUserDataProfilesService implements IRemoteUserDataProfilesService {
   _serviceBrand: undefined
   getRemoteProfiles: IRemoteUserDataProfilesService['getRemoteProfiles'] = async () => []
   @Unsupported
-  getRemoteProfile: IRemoteUserDataProfilesService['getRemoteProfile'] = (): never => {
-    unsupported()
-  }
+  getRemoteProfile: IRemoteUserDataProfilesService['getRemoteProfile'] = unsupported
 }
 registerSingleton(
   IRemoteUserDataProfilesService,
@@ -5403,17 +4077,11 @@ class ExtensionBisectService implements IExtensionBisectService {
   isActive: IExtensionBisectService['isActive'] = false
   disabledCount: IExtensionBisectService['disabledCount'] = 0
   @Unsupported
-  start: IExtensionBisectService['start'] = (): never => {
-    unsupported()
-  }
+  start: IExtensionBisectService['start'] = unsupported
   @Unsupported
-  next: IExtensionBisectService['next'] = (): never => {
-    unsupported()
-  }
+  next: IExtensionBisectService['next'] = unsupported
   @Unsupported
-  reset: IExtensionBisectService['reset'] = (): never => {
-    unsupported()
-  }
+  reset: IExtensionBisectService['reset'] = unsupported
 }
 registerSingleton(IExtensionBisectService, ExtensionBisectService, InstantiationType.Eager)
 class UserDataSyncAccountService implements IUserDataSyncAccountService {
@@ -5434,9 +4102,7 @@ class ChatWidgetService implements IChatWidgetService {
   getWidgetBySessionId: IChatWidgetService['getWidgetBySessionId'] = () => undefined
   lastFocusedWidget: IChatWidgetService['lastFocusedWidget'] = undefined
   @Unsupported
-  getWidgetByInputUri: IChatWidgetService['getWidgetByInputUri'] = (): never => {
-    unsupported()
-  }
+  getWidgetByInputUri: IChatWidgetService['getWidgetByInputUri'] = unsupported
 }
 registerSingleton(IChatWidgetService, ChatWidgetService, InstantiationType.Delayed)
 class RemoteExplorerService implements IRemoteExplorerService {
@@ -5454,41 +4120,23 @@ class RemoteExplorerService implements IRemoteExplorerService {
   }
   onDidChangeEditable: IRemoteExplorerService['onDidChangeEditable'] = Event.None
   @Unsupported
-  setEditable: IRemoteExplorerService['setEditable'] = (): never => {
-    unsupported()
-  }
+  setEditable: IRemoteExplorerService['setEditable'] = unsupported
   @Unsupported
-  getEditableData: IRemoteExplorerService['getEditableData'] = (): never => {
-    unsupported()
-  }
+  getEditableData: IRemoteExplorerService['getEditableData'] = unsupported
   @Unsupported
-  forward: IRemoteExplorerService['forward'] = (): never => {
-    unsupported()
-  }
+  forward: IRemoteExplorerService['forward'] = unsupported
   @Unsupported
-  close: IRemoteExplorerService['close'] = (): never => {
-    unsupported()
-  }
+  close: IRemoteExplorerService['close'] = unsupported
   @Unsupported
-  setTunnelInformation: IRemoteExplorerService['setTunnelInformation'] = (): never => {
-    unsupported()
-  }
+  setTunnelInformation: IRemoteExplorerService['setTunnelInformation'] = unsupported
   @Unsupported
-  setCandidateFilter: IRemoteExplorerService['setCandidateFilter'] = (): never => {
-    unsupported()
-  }
+  setCandidateFilter: IRemoteExplorerService['setCandidateFilter'] = unsupported
   @Unsupported
-  onFoundNewCandidates: IRemoteExplorerService['onFoundNewCandidates'] = (): never => {
-    unsupported()
-  }
+  onFoundNewCandidates: IRemoteExplorerService['onFoundNewCandidates'] = unsupported
   @Unsupported
-  restore: IRemoteExplorerService['restore'] = (): never => {
-    unsupported()
-  }
+  restore: IRemoteExplorerService['restore'] = unsupported
   @Unsupported
-  enablePortsFeatures: IRemoteExplorerService['enablePortsFeatures'] = (): never => {
-    unsupported()
-  }
+  enablePortsFeatures: IRemoteExplorerService['enablePortsFeatures'] = unsupported
   onEnabledPortsFeatures: IRemoteExplorerService['onEnabledPortsFeatures'] = Event.None
   portsFeaturesEnabled: IRemoteExplorerService['portsFeaturesEnabled'] = PortsEnablement.Disabled
   namedProcesses: IRemoteExplorerService['namedProcesses'] = new Map()
@@ -5528,27 +4176,22 @@ class AuthenticationService implements IAuthenticationService {
     }
   getProviderIds: IAuthenticationService['getProviderIds'] = () => []
   @Unsupported
-  getProvider: IAuthenticationService['getProvider'] = (): never => {
-    unsupported()
-  }
+  getProvider: IAuthenticationService['getProvider'] = unsupported
   @Unsupported
-  getSessions: IAuthenticationService['getSessions'] = (): never => {
-    unsupported()
-  }
+  getSessions: IAuthenticationService['getSessions'] = unsupported
   @Unsupported
-  createSession: IAuthenticationService['createSession'] = (): never => {
-    unsupported()
-  }
+  createSession: IAuthenticationService['createSession'] = unsupported
   @Unsupported
-  removeSession: IAuthenticationService['removeSession'] = (): never => {
-    unsupported()
-  }
+  removeSession: IAuthenticationService['removeSession'] = unsupported
   getOrActivateProviderIdForServer: IAuthenticationService['getOrActivateProviderIdForServer'] =
     async () => undefined
   registerAuthenticationProviderHostDelegate: IAuthenticationService['registerAuthenticationProviderHostDelegate'] =
     () => Disposable.None
   createDynamicAuthenticationProvider: IAuthenticationService['createDynamicAuthenticationProvider'] =
     async () => undefined
+
+  isDynamicAuthenticationProvider: IAuthenticationService['isDynamicAuthenticationProvider'] = () =>
+    false
 }
 registerSingleton(IAuthenticationService, AuthenticationService, InstantiationType.Delayed)
 class AuthenticationAccessService implements IAuthenticationAccessService {
@@ -5558,13 +4201,9 @@ class AuthenticationAccessService implements IAuthenticationAccessService {
   isAccessAllowed: IAuthenticationAccessService['isAccessAllowed'] = () => false
   readAllowedExtensions: IAuthenticationAccessService['readAllowedExtensions'] = () => []
   @Unsupported
-  updateAllowedExtensions: IAuthenticationAccessService['updateAllowedExtensions'] = (): never => {
-    unsupported()
-  }
+  updateAllowedExtensions: IAuthenticationAccessService['updateAllowedExtensions'] = unsupported
   @Unsupported
-  removeAllowedExtensions: IAuthenticationAccessService['removeAllowedExtensions'] = (): never => {
-    unsupported()
-  }
+  removeAllowedExtensions: IAuthenticationAccessService['removeAllowedExtensions'] = unsupported
 }
 registerSingleton(
   IAuthenticationAccessService,
@@ -5598,17 +4237,11 @@ class AuthenticationExtensionsService implements IAuthenticationExtensionsServic
       unsupported()
     }
   @Unsupported
-  selectSession: IAuthenticationExtensionsService['selectSession'] = (): never => {
-    unsupported()
-  }
+  selectSession: IAuthenticationExtensionsService['selectSession'] = unsupported
   @Unsupported
-  requestSessionAccess: IAuthenticationExtensionsService['requestSessionAccess'] = (): never => {
-    unsupported()
-  }
+  requestSessionAccess: IAuthenticationExtensionsService['requestSessionAccess'] = unsupported
   @Unsupported
-  requestNewSession: IAuthenticationExtensionsService['requestNewSession'] = (): never => {
-    unsupported()
-  }
+  requestNewSession: IAuthenticationExtensionsService['requestNewSession'] = unsupported
 }
 registerSingleton(
   IAuthenticationExtensionsService,
@@ -5624,17 +4257,11 @@ class AuthenticationUsageService implements IAuthenticationUsageService {
     }
   extensionUsesAuth: IAuthenticationUsageService['extensionUsesAuth'] = async () => false
   @Unsupported
-  readAccountUsages: IAuthenticationUsageService['readAccountUsages'] = (): never => {
-    unsupported()
-  }
+  readAccountUsages: IAuthenticationUsageService['readAccountUsages'] = unsupported
   @Unsupported
-  removeAccountUsage: IAuthenticationUsageService['removeAccountUsage'] = (): never => {
-    unsupported()
-  }
+  removeAccountUsage: IAuthenticationUsageService['removeAccountUsage'] = unsupported
   @Unsupported
-  addAccountUsage: IAuthenticationUsageService['addAccountUsage'] = (): never => {
-    unsupported()
-  }
+  addAccountUsage: IAuthenticationUsageService['addAccountUsage'] = unsupported
 }
 registerSingleton(
   IAuthenticationUsageService,
@@ -5647,22 +4274,14 @@ class TimelineService implements ITimelineService {
   onDidChangeTimeline: ITimelineService['onDidChangeTimeline'] = Event.None
   onDidChangeUri: ITimelineService['onDidChangeUri'] = Event.None
   @Unsupported
-  registerTimelineProvider: ITimelineService['registerTimelineProvider'] = (): never => {
-    unsupported()
-  }
+  registerTimelineProvider: ITimelineService['registerTimelineProvider'] = unsupported
   @Unsupported
-  unregisterTimelineProvider: ITimelineService['unregisterTimelineProvider'] = (): never => {
-    unsupported()
-  }
+  unregisterTimelineProvider: ITimelineService['unregisterTimelineProvider'] = unsupported
   getSources: ITimelineService['getSources'] = () => []
   @Unsupported
-  getTimeline: ITimelineService['getTimeline'] = (): never => {
-    unsupported()
-  }
+  getTimeline: ITimelineService['getTimeline'] = unsupported
   @Unsupported
-  setUri: ITimelineService['setUri'] = (): never => {
-    unsupported()
-  }
+  setUri: ITimelineService['setUri'] = unsupported
 }
 registerSingleton(ITimelineService, TimelineService, InstantiationType.Delayed)
 class TestService implements ITestService {
@@ -5671,9 +4290,7 @@ class TestService implements ITestService {
   getCodeRelatedToTest: ITestService['getCodeRelatedToTest'] = async () => []
   registerExtHost: ITestService['registerExtHost'] = () => Disposable.None
   @Unsupported
-  provideTestFollowups: ITestService['provideTestFollowups'] = (): never => {
-    unsupported()
-  }
+  provideTestFollowups: ITestService['provideTestFollowups'] = unsupported
   onDidCancelTestRun: ITestService['onDidCancelTestRun'] = Event.None
   @Unsupported
   get excluded() {
@@ -5690,42 +4307,24 @@ class TestService implements ITestService {
     return unsupported()
   }
   @Unsupported
-  registerTestController: ITestService['registerTestController'] = (): never => {
-    unsupported()
-  }
+  registerTestController: ITestService['registerTestController'] = unsupported
   getTestController: ITestService['getTestController'] = () => undefined
   @Unsupported
-  refreshTests: ITestService['refreshTests'] = (): never => {
-    unsupported()
-  }
+  refreshTests: ITestService['refreshTests'] = unsupported
   @Unsupported
-  cancelRefreshTests: ITestService['cancelRefreshTests'] = (): never => {
-    unsupported()
-  }
+  cancelRefreshTests: ITestService['cancelRefreshTests'] = unsupported
   @Unsupported
-  startContinuousRun: ITestService['startContinuousRun'] = (): never => {
-    unsupported()
-  }
+  startContinuousRun: ITestService['startContinuousRun'] = unsupported
   @Unsupported
-  runTests: ITestService['runTests'] = (): never => {
-    unsupported()
-  }
+  runTests: ITestService['runTests'] = unsupported
   @Unsupported
-  runResolvedTests: ITestService['runResolvedTests'] = (): never => {
-    unsupported()
-  }
+  runResolvedTests: ITestService['runResolvedTests'] = unsupported
   @Unsupported
-  syncTests: ITestService['syncTests'] = (): never => {
-    unsupported()
-  }
+  syncTests: ITestService['syncTests'] = unsupported
   @Unsupported
-  cancelTestRun: ITestService['cancelTestRun'] = (): never => {
-    unsupported()
-  }
+  cancelTestRun: ITestService['cancelTestRun'] = unsupported
   @Unsupported
-  publishDiff: ITestService['publishDiff'] = (): never => {
-    unsupported()
-  }
+  publishDiff: ITestService['publishDiff'] = unsupported
 }
 registerSingleton(ITestService, TestService, InstantiationType.Delayed)
 class SecretStorageService implements ISecretStorageService {
@@ -5734,21 +4333,15 @@ class SecretStorageService implements ISecretStorageService {
   type: ISecretStorageService['type'] = 'in-memory' as const
   get: ISecretStorageService['get'] = async () => undefined
   @Unsupported
-  set: ISecretStorageService['set'] = (): never => {
-    unsupported()
-  }
+  set: ISecretStorageService['set'] = unsupported
   @Unsupported
-  delete: ISecretStorageService['delete'] = (): never => {
-    unsupported()
-  }
+  delete: ISecretStorageService['delete'] = unsupported
 }
 registerSingleton(ISecretStorageService, SecretStorageService, InstantiationType.Delayed)
 class ShareService implements IShareService {
   _serviceBrand: undefined
   @Unsupported
-  registerShareProvider: IShareService['registerShareProvider'] = (): never => {
-    unsupported()
-  }
+  registerShareProvider: IShareService['registerShareProvider'] = unsupported
   getShareActions: IShareService['getShareActions'] = () => []
   provideShare: IShareService['provideShare'] = async () => undefined
 }
@@ -5760,17 +4353,13 @@ class UserDataProfileImportExportService implements IUserDataProfileImportExport
   resolveProfileTemplate: IUserDataProfileImportExportService['resolveProfileTemplate'] =
     async () => null
   @Unsupported
-  createFromProfile: IUserDataProfileImportExportService['createFromProfile'] = (): never => {
-    unsupported()
-  }
+  createFromProfile: IUserDataProfileImportExportService['createFromProfile'] = unsupported
   registerProfileContentHandler: IUserDataProfileImportExportService['registerProfileContentHandler'] =
     () => Disposable.None
   unregisterProfileContentHandler: IUserDataProfileImportExportService['unregisterProfileContentHandler'] =
     () => {}
   @Unsupported
-  exportProfile: IUserDataProfileImportExportService['exportProfile'] = (): never => {
-    unsupported()
-  }
+  exportProfile: IUserDataProfileImportExportService['exportProfile'] = unsupported
   @Unsupported
   createTroubleshootProfile: IUserDataProfileImportExportService['createTroubleshootProfile'] =
     (): never => {
@@ -5785,9 +4374,7 @@ registerSingleton(
 class WorkbenchIssueService implements IWorkbenchIssueService {
   _serviceBrand: undefined
   @Unsupported
-  openReporter: IWorkbenchIssueService['openReporter'] = (): never => {
-    unsupported()
-  }
+  openReporter: IWorkbenchIssueService['openReporter'] = unsupported
 }
 registerSingleton(IWorkbenchIssueService, WorkbenchIssueService, InstantiationType.Delayed)
 class SCMViewService implements ISCMViewService {
@@ -5806,23 +4393,15 @@ class SCMViewService implements ISCMViewService {
   onDidChangeVisibleRepositories: ISCMViewService['onDidChangeVisibleRepositories'] = Event.None
   isVisible: ISCMViewService['isVisible'] = () => false
   @Unsupported
-  toggleVisibility: ISCMViewService['toggleVisibility'] = (): never => {
-    unsupported()
-  }
+  toggleVisibility: ISCMViewService['toggleVisibility'] = unsupported
   @Unsupported
-  toggleSortKey: ISCMViewService['toggleSortKey'] = (): never => {
-    unsupported()
-  }
+  toggleSortKey: ISCMViewService['toggleSortKey'] = unsupported
   focusedRepository: ISCMViewService['focusedRepository'] = undefined
   onDidFocusRepository: ISCMViewService['onDidFocusRepository'] = Event.None
   @Unsupported
-  focus: ISCMViewService['focus'] = (): never => {
-    unsupported()
-  }
+  focus: ISCMViewService['focus'] = unsupported
   @Unsupported
-  pinActiveRepository: ISCMViewService['pinActiveRepository'] = (): never => {
-    unsupported()
-  }
+  pinActiveRepository: ISCMViewService['pinActiveRepository'] = unsupported
 }
 registerSingleton(ISCMViewService, SCMViewService, InstantiationType.Delayed)
 class NotebookExecutionStateService implements INotebookExecutionStateService {
@@ -5848,21 +4427,13 @@ class NotebookExecutionStateService implements INotebookExecutionStateService {
       unsupported()
     }
   @Unsupported
-  getCellExecution: INotebookExecutionStateService['getCellExecution'] = (): never => {
-    unsupported()
-  }
+  getCellExecution: INotebookExecutionStateService['getCellExecution'] = unsupported
   @Unsupported
-  createCellExecution: INotebookExecutionStateService['createCellExecution'] = (): never => {
-    unsupported()
-  }
+  createCellExecution: INotebookExecutionStateService['createCellExecution'] = unsupported
   @Unsupported
-  getExecution: INotebookExecutionStateService['getExecution'] = (): never => {
-    unsupported()
-  }
+  getExecution: INotebookExecutionStateService['getExecution'] = unsupported
   @Unsupported
-  createExecution: INotebookExecutionStateService['createExecution'] = (): never => {
-    unsupported()
-  }
+  createExecution: INotebookExecutionStateService['createExecution'] = unsupported
   @Unsupported
   getLastFailedCellForNotebook: INotebookExecutionStateService['getLastFailedCellForNotebook'] =
     (): never => {
@@ -5879,56 +4450,34 @@ class TestProfileService implements ITestProfileService {
   getDefaultProfileForTest: ITestProfileService['getDefaultProfileForTest'] = () => undefined
   onDidChange: ITestProfileService['onDidChange'] = Event.None
   @Unsupported
-  addProfile: ITestProfileService['addProfile'] = (): never => {
-    unsupported()
-  }
+  addProfile: ITestProfileService['addProfile'] = unsupported
   @Unsupported
-  updateProfile: ITestProfileService['updateProfile'] = (): never => {
-    unsupported()
-  }
+  updateProfile: ITestProfileService['updateProfile'] = unsupported
   @Unsupported
-  removeProfile: ITestProfileService['removeProfile'] = (): never => {
-    unsupported()
-  }
+  removeProfile: ITestProfileService['removeProfile'] = unsupported
   @Unsupported
-  capabilitiesForTest: ITestProfileService['capabilitiesForTest'] = (): never => {
-    unsupported()
-  }
+  capabilitiesForTest: ITestProfileService['capabilitiesForTest'] = unsupported
   @Unsupported
-  configure: ITestProfileService['configure'] = (): never => {
-    unsupported()
-  }
+  configure: ITestProfileService['configure'] = unsupported
   all: ITestProfileService['all'] = () => []
   getGroupDefaultProfiles: ITestProfileService['getGroupDefaultProfiles'] = () => []
   @Unsupported
-  setGroupDefaultProfiles: ITestProfileService['setGroupDefaultProfiles'] = (): never => {
-    unsupported()
-  }
+  setGroupDefaultProfiles: ITestProfileService['setGroupDefaultProfiles'] = unsupported
   getControllerProfiles: ITestProfileService['getControllerProfiles'] = () => []
 }
 registerSingleton(ITestProfileService, TestProfileService, InstantiationType.Delayed)
 class EncryptionService implements IEncryptionService {
   @Unsupported
-  setUsePlainTextEncryption: IEncryptionService['setUsePlainTextEncryption'] = (): never => {
-    unsupported()
-  }
+  setUsePlainTextEncryption: IEncryptionService['setUsePlainTextEncryption'] = unsupported
   @Unsupported
-  getKeyStorageProvider: IEncryptionService['getKeyStorageProvider'] = (): never => {
-    unsupported()
-  }
+  getKeyStorageProvider: IEncryptionService['getKeyStorageProvider'] = unsupported
   _serviceBrand: undefined
   @Unsupported
-  encrypt: IEncryptionService['encrypt'] = (): never => {
-    unsupported()
-  }
+  encrypt: IEncryptionService['encrypt'] = unsupported
   @Unsupported
-  decrypt: IEncryptionService['decrypt'] = (): never => {
-    unsupported()
-  }
+  decrypt: IEncryptionService['decrypt'] = unsupported
   @Unsupported
-  isEncryptionAvailable: IEncryptionService['isEncryptionAvailable'] = (): never => {
-    unsupported()
-  }
+  isEncryptionAvailable: IEncryptionService['isEncryptionAvailable'] = unsupported
 }
 registerSingleton(IEncryptionService, EncryptionService, InstantiationType.Delayed)
 class TestResultService implements ITestResultService {
@@ -5937,17 +4486,11 @@ class TestResultService implements ITestResultService {
   onTestChanged: ITestResultService['onTestChanged'] = Event.None
   results: ITestResultService['results'] = []
   @Unsupported
-  clear: ITestResultService['clear'] = (): never => {
-    unsupported()
-  }
+  clear: ITestResultService['clear'] = unsupported
   @Unsupported
-  createLiveResult: ITestResultService['createLiveResult'] = (): never => {
-    unsupported()
-  }
+  createLiveResult: ITestResultService['createLiveResult'] = unsupported
   @Unsupported
-  push: ITestResultService['push'] = (): never => {
-    unsupported()
-  }
+  push: ITestResultService['push'] = unsupported
   getResult: ITestResultService['getResult'] = () => undefined
   getStateById: ITestResultService['getStateById'] = () => undefined
 }
@@ -5955,13 +4498,9 @@ registerSingleton(ITestResultService, TestResultService, InstantiationType.Delay
 class TestResultStorage implements ITestResultStorage {
   _serviceBrand: undefined
   @Unsupported
-  read: ITestResultStorage['read'] = (): never => {
-    unsupported()
-  }
+  read: ITestResultStorage['read'] = unsupported
   @Unsupported
-  persist: ITestResultStorage['persist'] = (): never => {
-    unsupported()
-  }
+  persist: ITestResultStorage['persist'] = unsupported
 }
 registerSingleton(ITestResultStorage, TestResultStorage, InstantiationType.Delayed)
 class TestingDecorationsService implements ITestingDecorationsService {
@@ -5973,17 +4512,11 @@ class TestingDecorationsService implements ITestingDecorationsService {
     }
   onDidChange: ITestingDecorationsService['onDidChange'] = Event.None
   @Unsupported
-  invalidateResultMessage: ITestingDecorationsService['invalidateResultMessage'] = (): never => {
-    unsupported()
-  }
+  invalidateResultMessage: ITestingDecorationsService['invalidateResultMessage'] = unsupported
   @Unsupported
-  syncDecorations: ITestingDecorationsService['syncDecorations'] = (): never => {
-    unsupported()
-  }
+  syncDecorations: ITestingDecorationsService['syncDecorations'] = unsupported
   @Unsupported
-  getDecoratedTestPosition: ITestingDecorationsService['getDecoratedTestPosition'] = (): never => {
-    unsupported()
-  }
+  getDecoratedTestPosition: ITestingDecorationsService['getDecoratedTestPosition'] = unsupported
 }
 registerSingleton(ITestingDecorationsService, TestingDecorationsService, InstantiationType.Delayed)
 class UserDataInitializationService implements IUserDataInitializationService {
@@ -6022,72 +4555,46 @@ registerSingleton(INotebookSearchService, NotebookSearchService, InstantiationTy
 class LanguageModelsService implements ILanguageModelsService {
   _serviceBrand: undefined
   @Unsupported
-  sendChatRequest: ILanguageModelsService['sendChatRequest'] = (): never => {
-    unsupported()
-  }
+  sendChatRequest: ILanguageModelsService['sendChatRequest'] = unsupported
   @Unsupported
-  selectLanguageModels: ILanguageModelsService['selectLanguageModels'] = (): never => {
-    unsupported()
-  }
+  selectLanguageModels: ILanguageModelsService['selectLanguageModels'] = unsupported
   @Unsupported
-  computeTokenLength: ILanguageModelsService['computeTokenLength'] = (): never => {
-    unsupported()
-  }
+  computeTokenLength: ILanguageModelsService['computeTokenLength'] = unsupported
   onDidChangeLanguageModels: ILanguageModelsService['onDidChangeLanguageModels'] = Event.None
   getLanguageModelIds: ILanguageModelsService['getLanguageModelIds'] = () => []
   lookupLanguageModel: ILanguageModelsService['lookupLanguageModel'] = () => undefined
   @Unsupported
-  registerLanguageModelChat: ILanguageModelsService['registerLanguageModelChat'] = (): never => {
-    unsupported()
-  }
+  registerLanguageModelChat: ILanguageModelsService['registerLanguageModelChat'] = unsupported
 }
 registerSingleton(ILanguageModelsService, LanguageModelsService, InstantiationType.Delayed)
 class ChatSlashCommandService implements IChatSlashCommandService {
   @Unsupported
-  onDidChangeCommands: IChatSlashCommandService['onDidChangeCommands'] = (): never => {
-    unsupported()
-  }
+  onDidChangeCommands: IChatSlashCommandService['onDidChangeCommands'] = unsupported
   @Unsupported
-  registerSlashCommand: IChatSlashCommandService['registerSlashCommand'] = (): never => {
-    unsupported()
-  }
+  registerSlashCommand: IChatSlashCommandService['registerSlashCommand'] = unsupported
   @Unsupported
-  executeCommand: IChatSlashCommandService['executeCommand'] = (): never => {
-    unsupported()
-  }
+  executeCommand: IChatSlashCommandService['executeCommand'] = unsupported
   @Unsupported
-  getCommands: IChatSlashCommandService['getCommands'] = (): never => {
-    unsupported()
-  }
+  getCommands: IChatSlashCommandService['getCommands'] = unsupported
   @Unsupported
-  hasCommand: IChatSlashCommandService['hasCommand'] = (): never => {
-    unsupported()
-  }
+  hasCommand: IChatSlashCommandService['hasCommand'] = unsupported
   _serviceBrand: undefined
 }
 registerSingleton(IChatSlashCommandService, ChatSlashCommandService, InstantiationType.Delayed)
 class ChatVariablesService implements IChatVariablesService {
   _serviceBrand: undefined
   @Unsupported
-  getDynamicVariables: IChatVariablesService['getDynamicVariables'] = (): never => {
-    unsupported()
-  }
+  getDynamicVariables: IChatVariablesService['getDynamicVariables'] = unsupported
   @Unsupported
-  getSelectedTools: IChatVariablesService['getSelectedTools'] = (): never => {
-    unsupported()
-  }
+  getSelectedTools: IChatVariablesService['getSelectedTools'] = unsupported
   @Unsupported
-  getSelectedToolSets: IChatVariablesService['getSelectedToolSets'] = (): never => {
-    unsupported()
-  }
+  getSelectedToolSets: IChatVariablesService['getSelectedToolSets'] = unsupported
 }
 registerSingleton(IChatVariablesService, ChatVariablesService, InstantiationType.Delayed)
 class AiRelatedInformationService implements IAiRelatedInformationService {
   isEnabled: IAiRelatedInformationService['isEnabled'] = () => false
   @Unsupported
-  getRelatedInformation: IAiRelatedInformationService['getRelatedInformation'] = (): never => {
-    unsupported()
-  }
+  getRelatedInformation: IAiRelatedInformationService['getRelatedInformation'] = unsupported
   @Unsupported
   registerAiRelatedInformationProvider: IAiRelatedInformationService['registerAiRelatedInformationProvider'] =
     (): never => {
@@ -6104,9 +4611,7 @@ class AiEmbeddingVectorService implements IAiEmbeddingVectorService {
   _serviceBrand: undefined
   isEnabled: IAiEmbeddingVectorService['isEnabled'] = () => false
   @Unsupported
-  getEmbeddingVector: IAiEmbeddingVectorService['getEmbeddingVector'] = (): never => {
-    unsupported()
-  }
+  getEmbeddingVector: IAiEmbeddingVectorService['getEmbeddingVector'] = unsupported
   @Unsupported
   registerAiEmbeddingVectorProvider: IAiEmbeddingVectorService['registerAiEmbeddingVectorProvider'] =
     (): never => {
@@ -6118,9 +4623,7 @@ class AiSettingsSearchService implements IAiSettingsSearchService {
   _serviceBrand: undefined
   isEnabled: IAiSettingsSearchService['isEnabled'] = () => false
   @Unsupported
-  startSearch: IAiSettingsSearchService['startSearch'] = (): never => {
-    unsupported()
-  }
+  startSearch: IAiSettingsSearchService['startSearch'] = unsupported
   getEmbeddingsResults: IAiSettingsSearchService['getEmbeddingsResults'] = async () => []
   getLLMRankedResults: IAiSettingsSearchService['getLLMRankedResults'] = async () => []
   @Unsupported
@@ -6129,9 +4632,7 @@ class AiSettingsSearchService implements IAiSettingsSearchService {
       unsupported()
     }
   @Unsupported
-  handleSearchResult: IAiSettingsSearchService['handleSearchResult'] = (): never => {
-    unsupported()
-  }
+  handleSearchResult: IAiSettingsSearchService['handleSearchResult'] = unsupported
   onProviderRegistered: IAiSettingsSearchService['onProviderRegistered'] = Event.None
 }
 registerSingleton(IAiSettingsSearchService, AiSettingsSearchService, InstantiationType.Delayed)
@@ -6156,13 +4657,9 @@ registerSingleton(ISignService, SignService, InstantiationType.Delayed)
 class TestingContinuousRunService implements ITestingContinuousRunService {
   _serviceBrand: undefined
   @Unsupported
-  isEnabledForProfile: ITestingContinuousRunService['isEnabledForProfile'] = (): never => {
-    unsupported()
-  }
+  isEnabledForProfile: ITestingContinuousRunService['isEnabledForProfile'] = unsupported
   @Unsupported
-  stopProfile: ITestingContinuousRunService['stopProfile'] = (): never => {
-    unsupported()
-  }
+  stopProfile: ITestingContinuousRunService['stopProfile'] = unsupported
   lastRunProfileIds: ITestingContinuousRunService['lastRunProfileIds'] = new Set<number>()
   onDidChange: ITestingContinuousRunService['onDidChange'] = Event.None
   isSpecificallyEnabledFor: ITestingContinuousRunService['isSpecificallyEnabledFor'] = () => false
@@ -6170,13 +4667,9 @@ class TestingContinuousRunService implements ITestingContinuousRunService {
   isEnabledForAChildOf: ITestingContinuousRunService['isEnabledForAChildOf'] = () => false
   isEnabled: ITestingContinuousRunService['isEnabled'] = () => false
   @Unsupported
-  start: ITestingContinuousRunService['start'] = (): never => {
-    unsupported()
-  }
+  start: ITestingContinuousRunService['start'] = unsupported
   @Unsupported
-  stop: ITestingContinuousRunService['stop'] = (): never => {
-    unsupported()
-  }
+  stop: ITestingContinuousRunService['stop'] = unsupported
 }
 registerSingleton(
   ITestingContinuousRunService,
@@ -6187,9 +4680,7 @@ class TestExplorerFilterState implements ITestExplorerFilterState {
   _serviceBrand: undefined
   onDidSelectTestInExplorer: ITestExplorerFilterState['onDidSelectTestInExplorer'] = Event.None
   @Unsupported
-  didSelectTestInExplorer: ITestExplorerFilterState['didSelectTestInExplorer'] = (): never => {
-    unsupported()
-  }
+  didSelectTestInExplorer: ITestExplorerFilterState['didSelectTestInExplorer'] = unsupported
   @Unsupported
   get text() {
     return unsupported()
@@ -6216,18 +4707,12 @@ class TestExplorerFilterState implements ITestExplorerFilterState {
     return unsupported()
   }
   @Unsupported
-  focusInput: ITestExplorerFilterState['focusInput'] = (): never => {
-    unsupported()
-  }
+  focusInput: ITestExplorerFilterState['focusInput'] = unsupported
   @Unsupported
-  setText: ITestExplorerFilterState['setText'] = (): never => {
-    unsupported()
-  }
+  setText: ITestExplorerFilterState['setText'] = unsupported
   isFilteringFor: ITestExplorerFilterState['isFilteringFor'] = () => false
   @Unsupported
-  toggleFilteringFor: ITestExplorerFilterState['toggleFilteringFor'] = (): never => {
-    unsupported()
-  }
+  toggleFilteringFor: ITestExplorerFilterState['toggleFilteringFor'] = unsupported
 }
 registerSingleton(ITestExplorerFilterState, TestExplorerFilterState, InstantiationType.Delayed)
 class TestingPeekOpener implements ITestingPeekOpener {
@@ -6237,25 +4722,15 @@ class TestingPeekOpener implements ITestingPeekOpener {
     return unsupported()
   }
   @Unsupported
-  tryPeekFirstError: ITestingPeekOpener['tryPeekFirstError'] = (): never => {
-    unsupported()
-  }
+  tryPeekFirstError: ITestingPeekOpener['tryPeekFirstError'] = unsupported
   @Unsupported
-  peekUri: ITestingPeekOpener['peekUri'] = (): never => {
-    unsupported()
-  }
+  peekUri: ITestingPeekOpener['peekUri'] = unsupported
   @Unsupported
-  openCurrentInEditor: ITestingPeekOpener['openCurrentInEditor'] = (): never => {
-    unsupported()
-  }
+  openCurrentInEditor: ITestingPeekOpener['openCurrentInEditor'] = unsupported
   @Unsupported
-  open: ITestingPeekOpener['open'] = (): never => {
-    unsupported()
-  }
+  open: ITestingPeekOpener['open'] = unsupported
   @Unsupported
-  closeAllPeeks: ITestingPeekOpener['closeAllPeeks'] = (): never => {
-    unsupported()
-  }
+  closeAllPeeks: ITestingPeekOpener['closeAllPeeks'] = unsupported
 }
 registerSingleton(ITestingPeekOpener, TestingPeekOpener, InstantiationType.Delayed)
 class AuxiliaryWindowService implements IAuxiliaryWindowService {
@@ -6263,9 +4738,7 @@ class AuxiliaryWindowService implements IAuxiliaryWindowService {
   getWindow: IAuxiliaryWindowService['getWindow'] = () => undefined
   onDidOpenAuxiliaryWindow: IAuxiliaryWindowService['onDidOpenAuxiliaryWindow'] = Event.None
   @Unsupported
-  open: IAuxiliaryWindowService['open'] = (): never => {
-    unsupported()
-  }
+  open: IAuxiliaryWindowService['open'] = unsupported
 }
 registerSingleton(IAuxiliaryWindowService, AuxiliaryWindowService, InstantiationType.Delayed)
 class SpeechService implements ISpeechService {
@@ -6274,9 +4747,7 @@ class SpeechService implements ISpeechService {
   onDidEndTextToSpeechSession: ISpeechService['onDidEndTextToSpeechSession'] = Event.None
   hasActiveTextToSpeechSession: ISpeechService['hasActiveTextToSpeechSession'] = false
   @Unsupported
-  createTextToSpeechSession: ISpeechService['createTextToSpeechSession'] = (): never => {
-    unsupported()
-  }
+  createTextToSpeechSession: ISpeechService['createTextToSpeechSession'] = unsupported
   onDidChangeHasSpeechProvider: ISpeechService['onDidChangeHasSpeechProvider'] = Event.None
   onDidStartSpeechToTextSession: ISpeechService['onDidStartSpeechToTextSession'] = Event.None
   onDidEndSpeechToTextSession: ISpeechService['onDidEndSpeechToTextSession'] = Event.None
@@ -6285,18 +4756,12 @@ class SpeechService implements ISpeechService {
   onDidEndKeywordRecognition: ISpeechService['onDidEndKeywordRecognition'] = Event.None
   hasActiveKeywordRecognition: ISpeechService['hasActiveKeywordRecognition'] = false
   @Unsupported
-  recognizeKeyword: ISpeechService['recognizeKeyword'] = (): never => {
-    unsupported()
-  }
+  recognizeKeyword: ISpeechService['recognizeKeyword'] = unsupported
   hasSpeechProvider: ISpeechService['hasSpeechProvider'] = false
   @Unsupported
-  registerSpeechProvider: ISpeechService['registerSpeechProvider'] = (): never => {
-    unsupported()
-  }
+  registerSpeechProvider: ISpeechService['registerSpeechProvider'] = unsupported
   @Unsupported
-  createSpeechToTextSession: ISpeechService['createSpeechToTextSession'] = (): never => {
-    unsupported()
-  }
+  createSpeechToTextSession: ISpeechService['createSpeechToTextSession'] = unsupported
 }
 registerSingleton(ISpeechService, SpeechService, InstantiationType.Delayed)
 class TestCoverageService implements ITestCoverageService {
@@ -6314,39 +4779,27 @@ class TestCoverageService implements ITestCoverageService {
     return unsupported()
   }
   @Unsupported
-  openCoverage: ITestCoverageService['openCoverage'] = (): never => {
-    unsupported()
-  }
+  openCoverage: ITestCoverageService['openCoverage'] = unsupported
   @Unsupported
-  closeCoverage: ITestCoverageService['closeCoverage'] = (): never => {
-    unsupported()
-  }
+  closeCoverage: ITestCoverageService['closeCoverage'] = unsupported
 }
 registerSingleton(ITestCoverageService, TestCoverageService, InstantiationType.Delayed)
 class ChatAccessibilityService implements IChatAccessibilityService {
   _serviceBrand: undefined
   @Unsupported
-  acceptRequest: IChatAccessibilityService['acceptRequest'] = (): never => {
-    unsupported()
-  }
+  acceptRequest: IChatAccessibilityService['acceptRequest'] = unsupported
   @Unsupported
-  acceptResponse: IChatAccessibilityService['acceptResponse'] = (): never => {
-    unsupported()
-  }
+  acceptResponse: IChatAccessibilityService['acceptResponse'] = unsupported
 }
 registerSingleton(IChatAccessibilityService, ChatAccessibilityService, InstantiationType.Delayed)
 class ChatWidgetHistoryService implements IChatWidgetHistoryService {
   _serviceBrand: undefined
   onDidClearHistory: IChatWidgetHistoryService['onDidClearHistory'] = Event.None
   @Unsupported
-  clearHistory: IChatWidgetHistoryService['clearHistory'] = (): never => {
-    unsupported()
-  }
+  clearHistory: IChatWidgetHistoryService['clearHistory'] = unsupported
   getHistory: IChatWidgetHistoryService['getHistory'] = () => []
   @Unsupported
-  saveHistory: IChatWidgetHistoryService['saveHistory'] = (): never => {
-    unsupported()
-  }
+  saveHistory: IChatWidgetHistoryService['saveHistory'] = unsupported
 }
 registerSingleton(IChatWidgetHistoryService, ChatWidgetHistoryService, InstantiationType.Delayed)
 class ChatCodeBlockContextProviderService implements IChatCodeBlockContextProviderService {
@@ -6368,41 +4821,27 @@ class InlineChatSessionService implements IInlineChatSessionService {
     return unsupported()
   }
   @Unsupported
-  moveSession: IInlineChatSessionService['moveSession'] = (): never => {
-    unsupported()
-  }
+  moveSession: IInlineChatSessionService['moveSession'] = unsupported
   @Unsupported
-  getCodeEditor: IInlineChatSessionService['getCodeEditor'] = (): never => {
-    unsupported()
-  }
+  getCodeEditor: IInlineChatSessionService['getCodeEditor'] = unsupported
   @Unsupported
-  stashSession: IInlineChatSessionService['stashSession'] = (): never => {
-    unsupported()
-  }
+  stashSession: IInlineChatSessionService['stashSession'] = unsupported
   onWillStartSession: IInlineChatSessionService['onWillStartSession'] = Event.None
   onDidEndSession: IInlineChatSessionService['onDidEndSession'] = Event.None
   @Unsupported
-  createSession: IInlineChatSessionService['createSession'] = (): never => {
-    unsupported()
-  }
+  createSession: IInlineChatSessionService['createSession'] = unsupported
   getSession: IInlineChatSessionService['getSession'] = () => undefined
   @Unsupported
-  releaseSession: IInlineChatSessionService['releaseSession'] = (): never => {
-    unsupported()
-  }
+  releaseSession: IInlineChatSessionService['releaseSession'] = unsupported
   @Unsupported
   registerSessionKeyComputer: IInlineChatSessionService['registerSessionKeyComputer'] =
     (): never => {
       unsupported()
     }
   @Unsupported
-  dispose: IInlineChatSessionService['dispose'] = (): never => {
-    unsupported()
-  }
+  dispose: IInlineChatSessionService['dispose'] = unsupported
   @Unsupported
-  createSession2: IInlineChatSessionService['createSession2'] = (): never => {
-    unsupported()
-  }
+  createSession2: IInlineChatSessionService['createSession2'] = unsupported
   getSession2: IInlineChatSessionService['getSession2'] = () => undefined
   onDidChangeSessions = Event.None
 }
@@ -6411,9 +4850,7 @@ class NotebookEditorWorkerService implements INotebookEditorWorkerService {
   _serviceBrand: undefined
   canComputeDiff: INotebookEditorWorkerService['canComputeDiff'] = () => false
   @Unsupported
-  computeDiff: INotebookEditorWorkerService['computeDiff'] = (): never => {
-    unsupported()
-  }
+  computeDiff: INotebookEditorWorkerService['computeDiff'] = unsupported
   canPromptRecommendation: INotebookEditorWorkerService['canPromptRecommendation'] = async () =>
     false
 }
@@ -6425,13 +4862,9 @@ registerSingleton(
 class NotebookKernelHistoryService implements INotebookKernelHistoryService {
   _serviceBrand: undefined
   @Unsupported
-  getKernels: INotebookKernelHistoryService['getKernels'] = (): never => {
-    unsupported()
-  }
+  getKernels: INotebookKernelHistoryService['getKernels'] = unsupported
   @Unsupported
-  addMostRecentKernel: INotebookKernelHistoryService['addMostRecentKernel'] = (): never => {
-    unsupported()
-  }
+  addMostRecentKernel: INotebookKernelHistoryService['addMostRecentKernel'] = unsupported
 }
 registerSingleton(
   INotebookKernelHistoryService,
@@ -6441,17 +4874,11 @@ registerSingleton(
 class NotebookExecutionService implements INotebookExecutionService {
   _serviceBrand: undefined
   @Unsupported
-  executeNotebookCells: INotebookExecutionService['executeNotebookCells'] = (): never => {
-    unsupported()
-  }
+  executeNotebookCells: INotebookExecutionService['executeNotebookCells'] = unsupported
   @Unsupported
-  cancelNotebookCells: INotebookExecutionService['cancelNotebookCells'] = (): never => {
-    unsupported()
-  }
+  cancelNotebookCells: INotebookExecutionService['cancelNotebookCells'] = unsupported
   @Unsupported
-  cancelNotebookCellHandles: INotebookExecutionService['cancelNotebookCellHandles'] = (): never => {
-    unsupported()
-  }
+  cancelNotebookCellHandles: INotebookExecutionService['cancelNotebookCellHandles'] = unsupported
   @Unsupported
   registerExecutionParticipant: INotebookExecutionService['registerExecutionParticipant'] =
     (): never => {
@@ -6466,21 +4893,13 @@ registerSingleton(INotebookKeymapService, NotebookKeymapService, InstantiationTy
 class NotebookLoggingService implements INotebookLoggingService {
   _serviceBrand: undefined
   @Unsupported
-  info: INotebookLoggingService['info'] = (): never => {
-    unsupported()
-  }
+  info: INotebookLoggingService['info'] = unsupported
   @Unsupported
-  debug: INotebookLoggingService['debug'] = (): never => {
-    unsupported()
-  }
+  debug: INotebookLoggingService['debug'] = unsupported
   @Unsupported
-  warn: INotebookLoggingService['warn'] = (): never => {
-    unsupported()
-  }
+  warn: INotebookLoggingService['warn'] = unsupported
   @Unsupported
-  error: INotebookLoggingService['error'] = (): never => {
-    unsupported()
-  }
+  error: INotebookLoggingService['error'] = unsupported
 }
 registerSingleton(INotebookLoggingService, NotebookLoggingService, InstantiationType.Delayed)
 class WalkthroughsService implements IWalkthroughsService {
@@ -6490,33 +4909,19 @@ class WalkthroughsService implements IWalkthroughsService {
   onDidChangeWalkthrough: IWalkthroughsService['onDidChangeWalkthrough'] = Event.None
   onDidProgressStep: IWalkthroughsService['onDidProgressStep'] = Event.None
   @Unsupported
-  getWalkthroughs: IWalkthroughsService['getWalkthroughs'] = (): never => {
-    unsupported()
-  }
+  getWalkthroughs: IWalkthroughsService['getWalkthroughs'] = unsupported
   @Unsupported
-  getWalkthrough: IWalkthroughsService['getWalkthrough'] = (): never => {
-    unsupported()
-  }
+  getWalkthrough: IWalkthroughsService['getWalkthrough'] = unsupported
   @Unsupported
-  registerWalkthrough: IWalkthroughsService['registerWalkthrough'] = (): never => {
-    unsupported()
-  }
+  registerWalkthrough: IWalkthroughsService['registerWalkthrough'] = unsupported
   @Unsupported
-  progressByEvent: IWalkthroughsService['progressByEvent'] = (): never => {
-    unsupported()
-  }
+  progressByEvent: IWalkthroughsService['progressByEvent'] = unsupported
   @Unsupported
-  progressStep: IWalkthroughsService['progressStep'] = (): never => {
-    unsupported()
-  }
+  progressStep: IWalkthroughsService['progressStep'] = unsupported
   @Unsupported
-  deprogressStep: IWalkthroughsService['deprogressStep'] = (): never => {
-    unsupported()
-  }
+  deprogressStep: IWalkthroughsService['deprogressStep'] = unsupported
   @Unsupported
-  markWalkthroughOpened: IWalkthroughsService['markWalkthroughOpened'] = (): never => {
-    unsupported()
-  }
+  markWalkthroughOpened: IWalkthroughsService['markWalkthroughOpened'] = unsupported
 }
 registerSingleton(IWalkthroughsService, WalkthroughsService, InstantiationType.Delayed)
 class UserDataSyncStoreManagementService implements IUserDataSyncStoreManagementService {
@@ -6525,9 +4930,7 @@ class UserDataSyncStoreManagementService implements IUserDataSyncStoreManagement
     Event.None
   userDataSyncStore: IUserDataSyncStoreManagementService['userDataSyncStore'] = undefined
   @Unsupported
-  switch: IUserDataSyncStoreManagementService['switch'] = (): never => {
-    unsupported()
-  }
+  switch: IUserDataSyncStoreManagementService['switch'] = unsupported
   @Unsupported
   getPreviousUserDataSyncStore: IUserDataSyncStoreManagementService['getPreviousUserDataSyncStore'] =
     (): never => {
@@ -6547,94 +4950,52 @@ class UserDataSyncStoreService implements IUserDataSyncStoreService {
   onTokenFailed: IUserDataSyncStoreService['onTokenFailed'] = Event.None
   onTokenSucceed: IUserDataSyncStoreService['onTokenSucceed'] = Event.None
   @Unsupported
-  setAuthToken: IUserDataSyncStoreService['setAuthToken'] = (): never => {
-    unsupported()
-  }
+  setAuthToken: IUserDataSyncStoreService['setAuthToken'] = unsupported
   @Unsupported
-  manifest: IUserDataSyncStoreService['manifest'] = (): never => {
-    unsupported()
-  }
+  manifest: IUserDataSyncStoreService['manifest'] = unsupported
   @Unsupported
-  readResource: IUserDataSyncStoreService['readResource'] = (): never => {
-    unsupported()
-  }
+  readResource: IUserDataSyncStoreService['readResource'] = unsupported
   @Unsupported
-  writeResource: IUserDataSyncStoreService['writeResource'] = (): never => {
-    unsupported()
-  }
+  writeResource: IUserDataSyncStoreService['writeResource'] = unsupported
   @Unsupported
-  deleteResource: IUserDataSyncStoreService['deleteResource'] = (): never => {
-    unsupported()
-  }
+  deleteResource: IUserDataSyncStoreService['deleteResource'] = unsupported
   @Unsupported
-  getAllResourceRefs: IUserDataSyncStoreService['getAllResourceRefs'] = (): never => {
-    unsupported()
-  }
+  getAllResourceRefs: IUserDataSyncStoreService['getAllResourceRefs'] = unsupported
   @Unsupported
-  resolveResourceContent: IUserDataSyncStoreService['resolveResourceContent'] = (): never => {
-    unsupported()
-  }
+  resolveResourceContent: IUserDataSyncStoreService['resolveResourceContent'] = unsupported
   @Unsupported
-  getAllCollections: IUserDataSyncStoreService['getAllCollections'] = (): never => {
-    unsupported()
-  }
+  getAllCollections: IUserDataSyncStoreService['getAllCollections'] = unsupported
   @Unsupported
-  createCollection: IUserDataSyncStoreService['createCollection'] = (): never => {
-    unsupported()
-  }
+  createCollection: IUserDataSyncStoreService['createCollection'] = unsupported
   @Unsupported
-  deleteCollection: IUserDataSyncStoreService['deleteCollection'] = (): never => {
-    unsupported()
-  }
+  deleteCollection: IUserDataSyncStoreService['deleteCollection'] = unsupported
   @Unsupported
-  getActivityData: IUserDataSyncStoreService['getActivityData'] = (): never => {
-    unsupported()
-  }
+  getActivityData: IUserDataSyncStoreService['getActivityData'] = unsupported
   @Unsupported
-  clear: IUserDataSyncStoreService['clear'] = (): never => {
-    unsupported()
-  }
+  clear: IUserDataSyncStoreService['clear'] = unsupported
 }
 registerSingleton(IUserDataSyncStoreService, UserDataSyncStoreService, InstantiationType.Delayed)
 class UserDataSyncLogService implements IUserDataSyncLogService {
   _serviceBrand: undefined
   onDidChangeLogLevel: IUserDataSyncLogService['onDidChangeLogLevel'] = Event.None
   @Unsupported
-  getLevel: IUserDataSyncLogService['getLevel'] = (): never => {
-    unsupported()
-  }
+  getLevel: IUserDataSyncLogService['getLevel'] = unsupported
   @Unsupported
-  setLevel: IUserDataSyncLogService['setLevel'] = (): never => {
-    unsupported()
-  }
+  setLevel: IUserDataSyncLogService['setLevel'] = unsupported
   @Unsupported
-  trace: IUserDataSyncLogService['trace'] = (): never => {
-    unsupported()
-  }
+  trace: IUserDataSyncLogService['trace'] = unsupported
   @Unsupported
-  debug: IUserDataSyncLogService['debug'] = (): never => {
-    unsupported()
-  }
+  debug: IUserDataSyncLogService['debug'] = unsupported
   @Unsupported
-  info: IUserDataSyncLogService['info'] = (): never => {
-    unsupported()
-  }
+  info: IUserDataSyncLogService['info'] = unsupported
   @Unsupported
-  warn: IUserDataSyncLogService['warn'] = (): never => {
-    unsupported()
-  }
+  warn: IUserDataSyncLogService['warn'] = unsupported
   @Unsupported
-  error: IUserDataSyncLogService['error'] = (): never => {
-    unsupported()
-  }
+  error: IUserDataSyncLogService['error'] = unsupported
   @Unsupported
-  flush: IUserDataSyncLogService['flush'] = (): never => {
-    unsupported()
-  }
+  flush: IUserDataSyncLogService['flush'] = unsupported
   @Unsupported
-  dispose: IUserDataSyncLogService['dispose'] = (): never => {
-    unsupported()
-  }
+  dispose: IUserDataSyncLogService['dispose'] = unsupported
 }
 registerSingleton(IUserDataSyncLogService, UserDataSyncLogService, InstantiationType.Delayed)
 class UserDataSyncService implements IUserDataSyncService {
@@ -6650,82 +5011,46 @@ class UserDataSyncService implements IUserDataSyncService {
   onDidResetRemote: IUserDataSyncService['onDidResetRemote'] = Event.None
   onDidResetLocal: IUserDataSyncService['onDidResetLocal'] = Event.None
   @Unsupported
-  createSyncTask: IUserDataSyncService['createSyncTask'] = (): never => {
-    unsupported()
-  }
+  createSyncTask: IUserDataSyncService['createSyncTask'] = unsupported
   @Unsupported
-  createManualSyncTask: IUserDataSyncService['createManualSyncTask'] = (): never => {
-    unsupported()
-  }
+  createManualSyncTask: IUserDataSyncService['createManualSyncTask'] = unsupported
   @Unsupported
-  resolveContent: IUserDataSyncService['resolveContent'] = (): never => {
-    unsupported()
-  }
+  resolveContent: IUserDataSyncService['resolveContent'] = unsupported
   @Unsupported
-  accept: IUserDataSyncService['accept'] = (): never => {
-    unsupported()
-  }
+  accept: IUserDataSyncService['accept'] = unsupported
   @Unsupported
-  reset: IUserDataSyncService['reset'] = (): never => {
-    unsupported()
-  }
+  reset: IUserDataSyncService['reset'] = unsupported
   @Unsupported
-  resetRemote: IUserDataSyncService['resetRemote'] = (): never => {
-    unsupported()
-  }
+  resetRemote: IUserDataSyncService['resetRemote'] = unsupported
   @Unsupported
-  cleanUpRemoteData: IUserDataSyncService['cleanUpRemoteData'] = (): never => {
-    unsupported()
-  }
+  cleanUpRemoteData: IUserDataSyncService['cleanUpRemoteData'] = unsupported
   @Unsupported
-  resetLocal: IUserDataSyncService['resetLocal'] = (): never => {
-    unsupported()
-  }
+  resetLocal: IUserDataSyncService['resetLocal'] = unsupported
   @Unsupported
-  hasLocalData: IUserDataSyncService['hasLocalData'] = (): never => {
-    unsupported()
-  }
+  hasLocalData: IUserDataSyncService['hasLocalData'] = unsupported
   @Unsupported
-  hasPreviouslySynced: IUserDataSyncService['hasPreviouslySynced'] = (): never => {
-    unsupported()
-  }
+  hasPreviouslySynced: IUserDataSyncService['hasPreviouslySynced'] = unsupported
   @Unsupported
-  replace: IUserDataSyncService['replace'] = (): never => {
-    unsupported()
-  }
+  replace: IUserDataSyncService['replace'] = unsupported
   @Unsupported
-  saveRemoteActivityData: IUserDataSyncService['saveRemoteActivityData'] = (): never => {
-    unsupported()
-  }
+  saveRemoteActivityData: IUserDataSyncService['saveRemoteActivityData'] = unsupported
   @Unsupported
-  extractActivityData: IUserDataSyncService['extractActivityData'] = (): never => {
-    unsupported()
-  }
+  extractActivityData: IUserDataSyncService['extractActivityData'] = unsupported
 }
 registerSingleton(IUserDataSyncService, UserDataSyncService, InstantiationType.Delayed)
 class UserDataSyncMachinesService implements IUserDataSyncMachinesService {
   _serviceBrand: undefined
   onDidChange: IUserDataSyncMachinesService['onDidChange'] = Event.None
   @Unsupported
-  getMachines: IUserDataSyncMachinesService['getMachines'] = (): never => {
-    unsupported()
-  }
+  getMachines: IUserDataSyncMachinesService['getMachines'] = unsupported
   @Unsupported
-  addCurrentMachine: IUserDataSyncMachinesService['addCurrentMachine'] = (): never => {
-    unsupported()
-  }
+  addCurrentMachine: IUserDataSyncMachinesService['addCurrentMachine'] = unsupported
   @Unsupported
-  removeCurrentMachine: IUserDataSyncMachinesService['removeCurrentMachine'] = (): never => {
-    unsupported()
-  }
+  removeCurrentMachine: IUserDataSyncMachinesService['removeCurrentMachine'] = unsupported
   @Unsupported
-  renameMachine: IUserDataSyncMachinesService['renameMachine'] = (): never => {
-    unsupported()
-  }
+  renameMachine: IUserDataSyncMachinesService['renameMachine'] = unsupported
   @Unsupported
-  setEnablements: IUserDataSyncMachinesService['setEnablements'] = (): never => {
-    unsupported()
-  }
+  setEnablements: IUserDataSyncMachinesService['setEnablements'] = unsupported
 }
 registerSingleton(
   IUserDataSyncMachinesService,
@@ -6760,18 +5085,14 @@ class UserDataSyncResourceProviderService implements IUserDataSyncResourceProvid
       unsupported()
     }
   @Unsupported
-  getMachineId: IUserDataSyncResourceProviderService['getMachineId'] = (): never => {
-    unsupported()
-  }
+  getMachineId: IUserDataSyncResourceProviderService['getMachineId'] = unsupported
   @Unsupported
   getLocalSyncedMachines: IUserDataSyncResourceProviderService['getLocalSyncedMachines'] =
     (): never => {
       unsupported()
     }
   @Unsupported
-  resolveContent: IUserDataSyncResourceProviderService['resolveContent'] = (): never => {
-    unsupported()
-  }
+  resolveContent: IUserDataSyncResourceProviderService['resolveContent'] = unsupported
   @Unsupported
   resolveUserDataSyncResource: IUserDataSyncResourceProviderService['resolveUserDataSyncResource'] =
     (): never => {
@@ -6786,17 +5107,11 @@ registerSingleton(
 class UserDataSyncLocalStoreService implements IUserDataSyncLocalStoreService {
   _serviceBrand: undefined
   @Unsupported
-  writeResource: IUserDataSyncLocalStoreService['writeResource'] = (): never => {
-    unsupported()
-  }
+  writeResource: IUserDataSyncLocalStoreService['writeResource'] = unsupported
   @Unsupported
-  getAllResourceRefs: IUserDataSyncLocalStoreService['getAllResourceRefs'] = (): never => {
-    unsupported()
-  }
+  getAllResourceRefs: IUserDataSyncLocalStoreService['getAllResourceRefs'] = unsupported
   @Unsupported
-  resolveResourceContent: IUserDataSyncLocalStoreService['resolveResourceContent'] = (): never => {
-    unsupported()
-  }
+  resolveResourceContent: IUserDataSyncLocalStoreService['resolveResourceContent'] = unsupported
 }
 registerSingleton(
   IUserDataSyncLocalStoreService,
@@ -6808,13 +5123,9 @@ class UserDataSyncUtilService implements IUserDataSyncUtilService {
   resolveDefaultCoreIgnoredSettings: IUserDataSyncUtilService['resolveDefaultCoreIgnoredSettings'] =
     async () => []
   @Unsupported
-  resolveUserBindings: IUserDataSyncUtilService['resolveUserBindings'] = (): never => {
-    unsupported()
-  }
+  resolveUserBindings: IUserDataSyncUtilService['resolveUserBindings'] = unsupported
   @Unsupported
-  resolveFormattingOptions: IUserDataSyncUtilService['resolveFormattingOptions'] = (): never => {
-    unsupported()
-  }
+  resolveFormattingOptions: IUserDataSyncUtilService['resolveFormattingOptions'] = unsupported
 }
 registerSingleton(IUserDataSyncUtilService, UserDataSyncUtilService, InstantiationType.Delayed)
 class UserDataProfileManagementService implements IUserDataProfileManagementService {
@@ -6825,30 +5136,20 @@ class UserDataProfileManagementService implements IUserDataProfileManagementServ
       unsupported()
     }
   @Unsupported
-  createProfile: IUserDataProfileManagementService['createProfile'] = (): never => {
-    unsupported()
-  }
+  createProfile: IUserDataProfileManagementService['createProfile'] = unsupported
   @Unsupported
-  createAndEnterProfile: IUserDataProfileManagementService['createAndEnterProfile'] = (): never => {
-    unsupported()
-  }
+  createAndEnterProfile: IUserDataProfileManagementService['createAndEnterProfile'] = unsupported
   @Unsupported
   createAndEnterTransientProfile: IUserDataProfileManagementService['createAndEnterTransientProfile'] =
     (): never => {
       unsupported()
     }
   @Unsupported
-  removeProfile: IUserDataProfileManagementService['removeProfile'] = (): never => {
-    unsupported()
-  }
+  removeProfile: IUserDataProfileManagementService['removeProfile'] = unsupported
   @Unsupported
-  updateProfile: IUserDataProfileManagementService['updateProfile'] = (): never => {
-    unsupported()
-  }
+  updateProfile: IUserDataProfileManagementService['updateProfile'] = unsupported
   @Unsupported
-  switchProfile: IUserDataProfileManagementService['switchProfile'] = (): never => {
-    unsupported()
-  }
+  switchProfile: IUserDataProfileManagementService['switchProfile'] = unsupported
   @Unsupported
   getBuiltinProfileTemplates: IUserDataProfileManagementService['getBuiltinProfileTemplates'] =
     (): never => {
@@ -6869,109 +5170,65 @@ class WorkingCopyHistoryService implements IWorkingCopyHistoryService {
   onDidMoveEntries: IWorkingCopyHistoryService['onDidMoveEntries'] = Event.None
   onDidRemoveEntries: IWorkingCopyHistoryService['onDidRemoveEntries'] = Event.None
   @Unsupported
-  addEntry: IWorkingCopyHistoryService['addEntry'] = (): never => {
-    unsupported()
-  }
+  addEntry: IWorkingCopyHistoryService['addEntry'] = unsupported
   @Unsupported
-  updateEntry: IWorkingCopyHistoryService['updateEntry'] = (): never => {
-    unsupported()
-  }
+  updateEntry: IWorkingCopyHistoryService['updateEntry'] = unsupported
   @Unsupported
-  removeEntry: IWorkingCopyHistoryService['removeEntry'] = (): never => {
-    unsupported()
-  }
+  removeEntry: IWorkingCopyHistoryService['removeEntry'] = unsupported
   @Unsupported
-  moveEntries: IWorkingCopyHistoryService['moveEntries'] = (): never => {
-    unsupported()
-  }
+  moveEntries: IWorkingCopyHistoryService['moveEntries'] = unsupported
   getEntries: IWorkingCopyHistoryService['getEntries'] = async () => []
   getAll: IWorkingCopyHistoryService['getAll'] = async () => []
   @Unsupported
-  removeAll: IWorkingCopyHistoryService['removeAll'] = (): never => {
-    unsupported()
-  }
+  removeAll: IWorkingCopyHistoryService['removeAll'] = unsupported
 }
 registerSingleton(IWorkingCopyHistoryService, WorkingCopyHistoryService, InstantiationType.Delayed)
 class NotebookDocumentService implements INotebookDocumentService {
   _serviceBrand: undefined
   getNotebook: INotebookDocumentService['getNotebook'] = () => undefined
   @Unsupported
-  addNotebookDocument: INotebookDocumentService['addNotebookDocument'] = (): never => {
-    unsupported()
-  }
+  addNotebookDocument: INotebookDocumentService['addNotebookDocument'] = unsupported
   @Unsupported
-  removeNotebookDocument: INotebookDocumentService['removeNotebookDocument'] = (): never => {
-    unsupported()
-  }
+  removeNotebookDocument: INotebookDocumentService['removeNotebookDocument'] = unsupported
 }
 registerSingleton(INotebookDocumentService, NotebookDocumentService, InstantiationType.Delayed)
 class DebugVisualizerService implements IDebugVisualizerService {
   _serviceBrand: undefined
   @Unsupported
-  registerTree: IDebugVisualizerService['registerTree'] = (): never => {
-    unsupported()
-  }
+  registerTree: IDebugVisualizerService['registerTree'] = unsupported
   @Unsupported
-  getVisualizedNodeFor: IDebugVisualizerService['getVisualizedNodeFor'] = (): never => {
-    unsupported()
-  }
+  getVisualizedNodeFor: IDebugVisualizerService['getVisualizedNodeFor'] = unsupported
   @Unsupported
-  getVisualizedChildren: IDebugVisualizerService['getVisualizedChildren'] = (): never => {
-    unsupported()
-  }
+  getVisualizedChildren: IDebugVisualizerService['getVisualizedChildren'] = unsupported
   @Unsupported
-  editTreeItem: IDebugVisualizerService['editTreeItem'] = (): never => {
-    unsupported()
-  }
+  editTreeItem: IDebugVisualizerService['editTreeItem'] = unsupported
   @Unsupported
-  getApplicableFor: IDebugVisualizerService['getApplicableFor'] = (): never => {
-    unsupported()
-  }
+  getApplicableFor: IDebugVisualizerService['getApplicableFor'] = unsupported
   @Unsupported
-  register: IDebugVisualizerService['register'] = (): never => {
-    unsupported()
-  }
+  register: IDebugVisualizerService['register'] = unsupported
 }
 registerSingleton(IDebugVisualizerService, DebugVisualizerService, InstantiationType.Delayed)
 class EditSessionsLogService implements IEditSessionsLogService {
   _serviceBrand: undefined
   onDidChangeLogLevel: IEditSessionsLogService['onDidChangeLogLevel'] = Event.None
   @Unsupported
-  getLevel: IEditSessionsLogService['getLevel'] = (): never => {
-    unsupported()
-  }
+  getLevel: IEditSessionsLogService['getLevel'] = unsupported
   @Unsupported
-  setLevel: IEditSessionsLogService['setLevel'] = (): never => {
-    unsupported()
-  }
+  setLevel: IEditSessionsLogService['setLevel'] = unsupported
   @Unsupported
-  trace: IEditSessionsLogService['trace'] = (): never => {
-    unsupported()
-  }
+  trace: IEditSessionsLogService['trace'] = unsupported
   @Unsupported
-  debug: IEditSessionsLogService['debug'] = (): never => {
-    unsupported()
-  }
+  debug: IEditSessionsLogService['debug'] = unsupported
   @Unsupported
-  info: IEditSessionsLogService['info'] = (): never => {
-    unsupported()
-  }
+  info: IEditSessionsLogService['info'] = unsupported
   @Unsupported
-  warn: IEditSessionsLogService['warn'] = (): never => {
-    unsupported()
-  }
+  warn: IEditSessionsLogService['warn'] = unsupported
   @Unsupported
-  error: IEditSessionsLogService['error'] = (): never => {
-    unsupported()
-  }
+  error: IEditSessionsLogService['error'] = unsupported
   @Unsupported
-  flush: IEditSessionsLogService['flush'] = (): never => {
-    unsupported()
-  }
+  flush: IEditSessionsLogService['flush'] = unsupported
   @Unsupported
-  dispose: IEditSessionsLogService['dispose'] = (): never => {
-    unsupported()
-  }
+  dispose: IEditSessionsLogService['dispose'] = unsupported
 }
 registerSingleton(IEditSessionsLogService, EditSessionsLogService, InstantiationType.Delayed)
 class EditSessionsWorkbenchService implements IEditSessionsStorageService {
@@ -6996,29 +5253,17 @@ class EditSessionsWorkbenchService implements IEditSessionsStorageService {
     }
   >()
   @Unsupported
-  initialize: IEditSessionsStorageService['initialize'] = (): never => {
-    unsupported()
-  }
+  initialize: IEditSessionsStorageService['initialize'] = unsupported
   @Unsupported
-  read: IEditSessionsStorageService['read'] = (): never => {
-    unsupported()
-  }
+  read: IEditSessionsStorageService['read'] = unsupported
   @Unsupported
-  write: IEditSessionsStorageService['write'] = (): never => {
-    unsupported()
-  }
+  write: IEditSessionsStorageService['write'] = unsupported
   @Unsupported
-  delete: IEditSessionsStorageService['delete'] = (): never => {
-    unsupported()
-  }
+  delete: IEditSessionsStorageService['delete'] = unsupported
   @Unsupported
-  list: IEditSessionsStorageService['list'] = (): never => {
-    unsupported()
-  }
+  list: IEditSessionsStorageService['list'] = unsupported
   @Unsupported
-  getMachineById: IEditSessionsStorageService['getMachineById'] = (): never => {
-    unsupported()
-  }
+  getMachineById: IEditSessionsStorageService['getMachineById'] = unsupported
 }
 registerSingleton(
   IEditSessionsStorageService,
@@ -7043,23 +5288,15 @@ class ExtensionFeaturesManagementService implements IExtensionFeaturesManagement
   onDidChangeEnablement: IExtensionFeaturesManagementService['onDidChangeEnablement'] = Event.None
   isEnabled: IExtensionFeaturesManagementService['isEnabled'] = () => true
   @Unsupported
-  setEnablement: IExtensionFeaturesManagementService['setEnablement'] = (): never => {
-    unsupported()
-  }
+  setEnablement: IExtensionFeaturesManagementService['setEnablement'] = unsupported
   @Unsupported
-  getEnablementData: IExtensionFeaturesManagementService['getEnablementData'] = (): never => {
-    unsupported()
-  }
+  getEnablementData: IExtensionFeaturesManagementService['getEnablementData'] = unsupported
   @Unsupported
-  getAccess: IExtensionFeaturesManagementService['getAccess'] = (): never => {
-    unsupported()
-  }
+  getAccess: IExtensionFeaturesManagementService['getAccess'] = unsupported
   onDidChangeAccessData: IExtensionFeaturesManagementService['onDidChangeAccessData'] = Event.None
   getAccessData: IExtensionFeaturesManagementService['getAccessData'] = () => undefined
   @Unsupported
-  setStatus: IExtensionFeaturesManagementService['setStatus'] = (): never => {
-    unsupported()
-  }
+  setStatus: IExtensionFeaturesManagementService['setStatus'] = unsupported
 }
 registerSingleton(
   IExtensionFeaturesManagementService,
@@ -7075,13 +5312,9 @@ registerSingleton(IEditorPaneService, EditorPaneService, InstantiationType.Delay
 class WorkspaceIdentityService implements IWorkspaceIdentityService {
   _serviceBrand: undefined
   @Unsupported
-  matches: IWorkspaceIdentityService['matches'] = (): never => {
-    unsupported()
-  }
+  matches: IWorkspaceIdentityService['matches'] = unsupported
   @Unsupported
-  getWorkspaceStateFolders: IWorkspaceIdentityService['getWorkspaceStateFolders'] = (): never => {
-    unsupported()
-  }
+  getWorkspaceStateFolders: IWorkspaceIdentityService['getWorkspaceStateFolders'] = unsupported
 }
 registerSingleton(IWorkspaceIdentityService, WorkspaceIdentityService, InstantiationType.Delayed)
 class DefaultLogLevelsService implements IDefaultLogLevelsService {
@@ -7089,13 +5322,9 @@ class DefaultLogLevelsService implements IDefaultLogLevelsService {
   onDidChangeDefaultLogLevels: IDefaultLogLevelsService['onDidChangeDefaultLogLevels'] = Event.None
   getDefaultLogLevel: IDefaultLogLevelsService['getDefaultLogLevel'] = async () => LogLevel.Off
   @Unsupported
-  getDefaultLogLevels: IDefaultLogLevelsService['getDefaultLogLevels'] = (): never => {
-    unsupported()
-  }
+  getDefaultLogLevels: IDefaultLogLevelsService['getDefaultLogLevels'] = unsupported
   @Unsupported
-  setDefaultLogLevel: IDefaultLogLevelsService['setDefaultLogLevel'] = (): never => {
-    unsupported()
-  }
+  setDefaultLogLevel: IDefaultLogLevelsService['setDefaultLogLevel'] = unsupported
 }
 registerSingleton(IDefaultLogLevelsService, DefaultLogLevelsService, InstantiationType.Delayed)
 class CustomEditorLabelService implements ICustomEditorLabelService {
@@ -7108,17 +5337,11 @@ class TroubleshootIssueService implements ITroubleshootIssueService {
   _serviceBrand: undefined
   isActive: ITroubleshootIssueService['isActive'] = () => false
   @Unsupported
-  start: ITroubleshootIssueService['start'] = (): never => {
-    unsupported()
-  }
+  start: ITroubleshootIssueService['start'] = unsupported
   @Unsupported
-  resume: ITroubleshootIssueService['resume'] = (): never => {
-    unsupported()
-  }
+  resume: ITroubleshootIssueService['resume'] = unsupported
   @Unsupported
-  stop: ITroubleshootIssueService['stop'] = (): never => {
-    unsupported()
-  }
+  stop: ITroubleshootIssueService['stop'] = unsupported
 }
 registerSingleton(ITroubleshootIssueService, TroubleshootIssueService, InstantiationType.Delayed)
 class IntegrityService implements IIntegrityService {
@@ -7145,9 +5368,7 @@ class LanguageModelToolsService implements ILanguageModelToolsService {
   getToolByName: ILanguageModelToolsService['getToolByName'] = () => undefined
   onDidChangeTools: ILanguageModelToolsService['onDidChangeTools'] = Event.None
   @Unsupported
-  registerToolData: ILanguageModelToolsService['registerToolData'] = (): never => {
-    unsupported()
-  }
+  registerToolData: ILanguageModelToolsService['registerToolData'] = unsupported
   @Unsupported
   registerToolImplementation: ILanguageModelToolsService['registerToolImplementation'] =
     (): never => {
@@ -7155,73 +5376,60 @@ class LanguageModelToolsService implements ILanguageModelToolsService {
     }
   getTools: ILanguageModelToolsService['getTools'] = () => []
   @Unsupported
-  invokeTool: ILanguageModelToolsService['invokeTool'] = (): never => {
-    unsupported()
-  }
+  invokeTool: ILanguageModelToolsService['invokeTool'] = unsupported
   @Unsupported
   cancelToolCallsForRequest: ILanguageModelToolsService['cancelToolCallsForRequest'] =
     (): never => {
       unsupported()
     }
   @Unsupported
-  setToolAutoConfirmation: ILanguageModelToolsService['setToolAutoConfirmation'] = (): never => {
-    unsupported()
-  }
+  setToolAutoConfirmation: ILanguageModelToolsService['setToolAutoConfirmation'] = unsupported
   @Unsupported
   resetToolAutoConfirmation: ILanguageModelToolsService['resetToolAutoConfirmation'] =
     (): never => {
       unsupported()
     }
-  @Unsupported
-  toEnablementMap: ILanguageModelToolsService['toEnablementMap'] = (): never => {
-    unsupported()
-  }
   getToolSetByName: ILanguageModelToolsService['getToolSetByName'] = () => undefined
   @Unsupported
-  createToolSet: ILanguageModelToolsService['createToolSet'] = (): never => {
-    unsupported()
-  }
+  createToolSet: ILanguageModelToolsService['createToolSet'] = unsupported
   @Unsupported
   get toolSets(): never {
     return unsupported()
   }
+
+  @Unsupported
+  toToolEnablementMap: ILanguageModelToolsService['toToolEnablementMap'] = unsupported
+
+  @Unsupported
+  toToolAndToolSetEnablementMap: ILanguageModelToolsService['toToolAndToolSetEnablementMap'] =
+    (): never => {
+      unsupported()
+    }
+
+  getToolSet: ILanguageModelToolsService['getToolSet'] = () => undefined
 }
 registerSingleton(ILanguageModelToolsService, LanguageModelToolsService, InstantiationType.Delayed)
 class IssueFormService implements IIssueFormService {
   _serviceBrand: undefined
   @Unsupported
-  openReporter: IIssueFormService['openReporter'] = (): never => {
-    unsupported()
-  }
+  openReporter: IIssueFormService['openReporter'] = unsupported
   @Unsupported
-  reloadWithExtensionsDisabled: IIssueFormService['reloadWithExtensionsDisabled'] = (): never => {
-    unsupported()
-  }
+  reloadWithExtensionsDisabled: IIssueFormService['reloadWithExtensionsDisabled'] = unsupported
   @Unsupported
-  showConfirmCloseDialog: IIssueFormService['showConfirmCloseDialog'] = (): never => {
-    unsupported()
-  }
+  showConfirmCloseDialog: IIssueFormService['showConfirmCloseDialog'] = unsupported
   @Unsupported
-  showClipboardDialog: IIssueFormService['showClipboardDialog'] = (): never => {
-    unsupported()
-  }
+  showClipboardDialog: IIssueFormService['showClipboardDialog'] = unsupported
   @Unsupported
-  sendReporterMenu: IIssueFormService['sendReporterMenu'] = (): never => {
-    unsupported()
-  }
+  sendReporterMenu: IIssueFormService['sendReporterMenu'] = unsupported
   @Unsupported
-  closeReporter: IIssueFormService['closeReporter'] = (): never => {
-    unsupported()
-  }
+  closeReporter: IIssueFormService['closeReporter'] = unsupported
 }
 registerSingleton(IIssueFormService, IssueFormService, InstantiationType.Delayed)
 class CodeMapperService implements ICodeMapperService {
   _serviceBrand: undefined
   providers: ICodeMapperService['providers'] = []
   @Unsupported
-  registerCodeMapperProvider: ICodeMapperService['registerCodeMapperProvider'] = (): never => {
-    unsupported()
-  }
+  registerCodeMapperProvider: ICodeMapperService['registerCodeMapperProvider'] = unsupported
   mapCode: ICodeMapperService['mapCode'] = async () => undefined
 }
 registerSingleton(ICodeMapperService, CodeMapperService, InstantiationType.Delayed)
@@ -7243,18 +5451,14 @@ class ChatEditingService implements IChatEditingService {
       unsupported()
     }
   @Unsupported
-  createEditingSession: IChatEditingService['createEditingSession'] = (): never => {
-    unsupported()
-  }
+  createEditingSession: IChatEditingService['createEditingSession'] = unsupported
 }
 registerSingleton(IChatEditingService, ChatEditingService, InstantiationType.Delayed)
 class ActionViewItemService implements IActionViewItemService {
   _serviceBrand: undefined
   onDidChange: IActionViewItemService['onDidChange'] = Event.None
   @Unsupported
-  register: IActionViewItemService['register'] = (): never => {
-    unsupported()
-  }
+  register: IActionViewItemService['register'] = unsupported
   lookUp: IActionViewItemService['lookUp'] = () => undefined
 }
 registerSingleton(IActionViewItemService, ActionViewItemService, InstantiationType.Delayed)
@@ -7288,34 +5492,24 @@ class ChatTransferService implements IChatTransferService {
       unsupported()
     }
   @Unsupported
-  addWorkspaceToTransferred: IChatTransferService['addWorkspaceToTransferred'] = (): never => {
-    unsupported()
-  }
+  addWorkspaceToTransferred: IChatTransferService['addWorkspaceToTransferred'] = unsupported
 }
 registerSingleton(IChatTransferService, ChatTransferService, InstantiationType.Delayed)
 class ChatStatusItemService implements IChatStatusItemService {
   _serviceBrand: undefined
   onDidChange: IChatStatusItemService['onDidChange'] = Event.None
   @Unsupported
-  setOrUpdateEntry: IChatStatusItemService['setOrUpdateEntry'] = (): never => {
-    unsupported()
-  }
+  setOrUpdateEntry: IChatStatusItemService['setOrUpdateEntry'] = unsupported
   @Unsupported
-  deleteEntry: IChatStatusItemService['deleteEntry'] = (): never => {
-    unsupported()
-  }
+  deleteEntry: IChatStatusItemService['deleteEntry'] = unsupported
   @Unsupported
-  getEntries: IChatStatusItemService['getEntries'] = (): never => {
-    unsupported()
-  }
+  getEntries: IChatStatusItemService['getEntries'] = unsupported
 }
 registerSingleton(IChatStatusItemService, ChatStatusItemService, InstantiationType.Delayed)
 class NotebookOriginalCellModelFactory implements INotebookOriginalCellModelFactory {
   _serviceBrand: undefined
   @Unsupported
-  getOrCreate: INotebookOriginalCellModelFactory['getOrCreate'] = (): never => {
-    unsupported()
-  }
+  getOrCreate: INotebookOriginalCellModelFactory['getOrCreate'] = unsupported
 }
 registerSingleton(
   INotebookOriginalCellModelFactory,
@@ -7325,9 +5519,7 @@ registerSingleton(
 class NotebookOriginalModelReferenceFactory implements INotebookOriginalModelReferenceFactory {
   _serviceBrand: undefined
   @Unsupported
-  getOrCreate: INotebookOriginalModelReferenceFactory['getOrCreate'] = (): never => {
-    unsupported()
-  }
+  getOrCreate: INotebookOriginalModelReferenceFactory['getOrCreate'] = unsupported
 }
 registerSingleton(
   INotebookOriginalModelReferenceFactory,
@@ -7352,9 +5544,7 @@ class TerminalCompletionService implements ITerminalCompletionService {
       unsupported()
     }
   @Unsupported
-  provideCompletions: ITerminalCompletionService['provideCompletions'] = (): never => {
-    unsupported()
-  }
+  provideCompletions: ITerminalCompletionService['provideCompletions'] = unsupported
 }
 registerSingleton(ITerminalCompletionService, TerminalCompletionService, InstantiationType.Delayed)
 class ChatEntitlementsService implements IChatEntitlementService {
@@ -7376,33 +5566,27 @@ class ChatEntitlementsService implements IChatEntitlementService {
     return unsupported()
   }
   @Unsupported
-  update: IChatEntitlementService['update'] = (): never => {
-    unsupported()
-  }
+  update: IChatEntitlementService['update'] = unsupported
 }
 registerSingleton(IChatEntitlementService, ChatEntitlementsService, InstantiationType.Eager)
 class PromptsService implements IPromptsService {
   _serviceBrand: undefined
   @Unsupported
-  getSyntaxParserFor: IPromptsService['getSyntaxParserFor'] = (): never => {
-    unsupported()
-  }
+  getSyntaxParserFor: IPromptsService['getSyntaxParserFor'] = unsupported
   listPromptFiles: IPromptsService['listPromptFiles'] = async () => []
   getSourceFolders: IPromptsService['getSourceFolders'] = () => []
   dispose: IPromptsService['dispose'] = (): void => {}
   asPromptSlashCommand: IPromptsService['asPromptSlashCommand'] = () => undefined
   resolvePromptSlashCommand: IPromptsService['resolvePromptSlashCommand'] = async () => undefined
   findPromptSlashCommands: IPromptsService['findPromptSlashCommands'] = async () => []
-  findInstructionFilesFor: IPromptsService['findInstructionFilesFor'] = async () => []
-  getAllMetadata: IPromptsService['getAllMetadata'] = async () => []
   onDidChangeCustomChatModes: IPromptsService['onDidChangeCustomChatModes'] = Event.None
   getCustomChatModes: IPromptsService['getCustomChatModes'] = async () => []
   @Unsupported
-  getMetadata: IPromptsService['getMetadata'] = (): never => {
-    unsupported()
-  }
+  parse: IPromptsService['parse'] = unsupported
+  getPromptFileType: IPromptsService['getPromptFileType'] = () => undefined
 }
 registerSingleton(IPromptsService, PromptsService, InstantiationType.Eager)
+
 class McpRegistry implements IMcpRegistry {
   _serviceBrand: undefined
   onDidChangeInputs: IMcpRegistry['onDidChangeInputs'] = Event.None
@@ -7420,44 +5604,26 @@ class McpRegistry implements IMcpRegistry {
   }
   discoverCollections: IMcpRegistry['discoverCollections'] = async () => []
   @Unsupported
-  registerCollection: IMcpRegistry['registerCollection'] = (): never => {
-    unsupported()
-  }
+  registerCollection: IMcpRegistry['registerCollection'] = unsupported
   @Unsupported
-  resetTrust: IMcpRegistry['resetTrust'] = (): never => {
-    unsupported()
-  }
+  resetTrust: IMcpRegistry['resetTrust'] = unsupported
   @Unsupported
-  getTrust: IMcpRegistry['getTrust'] = (): never => {
-    unsupported()
-  }
+  getTrust: IMcpRegistry['getTrust'] = unsupported
   @Unsupported
-  clearSavedInputs: IMcpRegistry['clearSavedInputs'] = (): never => {
-    unsupported()
-  }
+  clearSavedInputs: IMcpRegistry['clearSavedInputs'] = unsupported
   @Unsupported
-  editSavedInput: IMcpRegistry['editSavedInput'] = (): never => {
-    unsupported()
-  }
+  editSavedInput: IMcpRegistry['editSavedInput'] = unsupported
   @Unsupported
-  getSavedInputs: IMcpRegistry['getSavedInputs'] = (): never => {
-    unsupported()
-  }
+  getSavedInputs: IMcpRegistry['getSavedInputs'] = unsupported
   @Unsupported
-  resolveConnection: IMcpRegistry['resolveConnection'] = (): never => {
-    unsupported()
-  }
+  resolveConnection: IMcpRegistry['resolveConnection'] = unsupported
   registerDelegate: IMcpRegistry['registerDelegate'] = (): IDisposable => {
     return Disposable.None
   }
   @Unsupported
-  setSavedInput: IMcpRegistry['setSavedInput'] = (): never => {
-    unsupported()
-  }
+  setSavedInput: IMcpRegistry['setSavedInput'] = unsupported
   @Unsupported
-  getServerDefinition: IMcpRegistry['getServerDefinition'] = (): never => {
-    unsupported()
-  }
+  getServerDefinition: IMcpRegistry['getServerDefinition'] = unsupported
 }
 registerSingleton(IMcpRegistry, McpRegistry, InstantiationType.Eager)
 class McpService implements IMcpService {
@@ -7471,23 +5637,11 @@ class McpService implements IMcpService {
     return unsupported()
   }
   @Unsupported
-  resetCaches: IMcpService['resetCaches'] = (): never => {
-    unsupported()
-  }
+  resetCaches: IMcpService['resetCaches'] = unsupported
   @Unsupported
-  activateCollections: IMcpService['activateCollections'] = (): never => {
-    unsupported()
-  }
+  activateCollections: IMcpService['activateCollections'] = unsupported
 }
 registerSingleton(IMcpService, McpService, InstantiationType.Eager)
-class McpConfigPathsService implements IMcpConfigPathsService {
-  _serviceBrand: undefined
-  @Unsupported
-  get paths() {
-    return unsupported()
-  }
-}
-registerSingleton(IMcpConfigPathsService, McpConfigPathsService, InstantiationType.Eager)
 class ExtensionGalleryManifestService implements IExtensionGalleryManifestService {
   _serviceBrand: undefined
   onDidChangeExtensionGalleryManifest: IExtensionGalleryManifestService['onDidChangeExtensionGalleryManifest'] =
@@ -7546,9 +5700,7 @@ class AuthenticationMcpService implements IAuthenticationMcpService {
   requestSessionAccess: IAuthenticationMcpService['requestSessionAccess'] = () => undefined
   requestNewSession: IAuthenticationMcpService['requestNewSession'] = async () => undefined
   @Unsupported
-  selectSession: IAuthenticationMcpService['selectSession'] = (): never => {
-    unsupported()
-  }
+  selectSession: IAuthenticationMcpService['selectSession'] = unsupported
 }
 registerSingleton(IAuthenticationMcpService, AuthenticationMcpService, InstantiationType.Eager)
 class AuthenticationMcpAccessService implements IAuthenticationMcpAccessService {
@@ -7587,9 +5739,14 @@ class McpWorkbenchService implements IMcpWorkbenchService {
   local: IMcpWorkbenchService['local'] = []
   queryLocal: IMcpWorkbenchService['queryLocal'] = async () => []
   queryGallery: IMcpWorkbenchService['queryGallery'] = async () => []
-  install: IMcpWorkbenchService['install'] = async () => undefined
+  @Unsupported
+  install: IMcpWorkbenchService['install'] = unsupported
   uninstall: IMcpWorkbenchService['uninstall'] = async () => undefined
   open: IMcpWorkbenchService['open'] = async () => undefined
+  onReset: IMcpWorkbenchService['onReset'] = Event.None
+
+  @Unsupported
+  getMcpConfigPath: IMcpWorkbenchService['getMcpConfigPath'] = unsupported
 }
 registerSingleton(IMcpWorkbenchService, McpWorkbenchService, InstantiationType.Eager)
 class McpGalleryService implements IMcpGalleryService {
@@ -7597,13 +5754,11 @@ class McpGalleryService implements IMcpGalleryService {
   isEnabled: IMcpGalleryService['isEnabled'] = () => false
   query: IMcpGalleryService['query'] = async () => []
   @Unsupported
-  getManifest: IMcpGalleryService['getManifest'] = (): never => {
-    unsupported()
-  }
+  getManifest: IMcpGalleryService['getManifest'] = unsupported
   @Unsupported
-  getReadme: IMcpGalleryService['getReadme'] = (): never => {
-    unsupported()
-  }
+  getReadme: IMcpGalleryService['getReadme'] = unsupported
+
+  getMcpServers: IMcpGalleryService['getMcpServers'] = async () => []
 }
 registerSingleton(IMcpGalleryService, McpGalleryService, InstantiationType.Eager)
 class McpManagementService implements IMcpManagementService {
@@ -7612,32 +5767,42 @@ class McpManagementService implements IMcpManagementService {
   onDidInstallMcpServers: IMcpManagementService['onDidInstallMcpServers'] = Event.None
   onUninstallMcpServer: IMcpManagementService['onUninstallMcpServer'] = Event.None
   onDidUninstallMcpServer: IMcpManagementService['onDidUninstallMcpServer'] = Event.None
+  onDidUpdateMcpServers: IMcpManagementService['onDidUpdateMcpServers'] = Event.None
   getInstalled: IMcpManagementService['getInstalled'] = async () => []
-  installFromGallery: IMcpManagementService['installFromGallery'] = async () => undefined
+  @Unsupported
+  installFromGallery: IMcpManagementService['installFromGallery'] = unsupported
+  @Unsupported
+  install: IMcpManagementService['install'] = unsupported
+  @Unsupported
+  updateMetadata: IMcpManagementService['updateMetadata'] = unsupported
   uninstall: IMcpManagementService['uninstall'] = async () => undefined
 }
 registerSingleton(IMcpManagementService, McpManagementService, InstantiationType.Eager)
 class McpSamplingService implements IMcpSamplingService {
   _serviceBrand: undefined
   @Unsupported
-  sample: IMcpSamplingService['sample'] = (): never => {
-    unsupported()
-  }
+  sample: IMcpSamplingService['sample'] = unsupported
   hasLogs: IMcpSamplingService['hasLogs'] = () => false
   @Unsupported
-  getLogText: IMcpSamplingService['getLogText'] = (): never => {
-    unsupported()
-  }
+  getLogText: IMcpSamplingService['getLogText'] = unsupported
   @Unsupported
-  getConfig: IMcpSamplingService['getConfig'] = (): never => {
-    unsupported()
-  }
+  getConfig: IMcpSamplingService['getConfig'] = unsupported
   @Unsupported
-  updateConfig: IMcpSamplingService['updateConfig'] = (): never => {
-    unsupported()
-  }
+  updateConfig: IMcpSamplingService['updateConfig'] = unsupported
 }
 registerSingleton(IMcpSamplingService, McpSamplingService, InstantiationType.Eager)
+
+class McpResourceScannerService implements IMcpResourceScannerService {
+  _serviceBrand: undefined
+  @Unsupported
+  scanMcpServers: IMcpResourceScannerService['scanMcpServers'] = unsupported
+  @Unsupported
+  addMcpServers: IMcpResourceScannerService['addMcpServers'] = unsupported
+  @Unsupported
+  removeMcpServers: IMcpResourceScannerService['removeMcpServers'] = unsupported
+}
+registerSingleton(IMcpResourceScannerService, McpResourceScannerService, InstantiationType.Eager)
+
 class ChatContextPickService implements IChatContextPickService {
   _serviceBrand: undefined
   items: IChatContextPickService['items'] = []
@@ -7651,15 +5816,6 @@ class BrowserElementsService implements IBrowserElementsService {
   startDebugSession: IBrowserElementsService['startDebugSession'] = async () => undefined
 }
 registerSingleton(IBrowserElementsService, BrowserElementsService, InstantiationType.Eager)
-class GettingStartedExperimentService implements IGettingStartedExperimentService {
-  _serviceBrand: undefined
-  getCurrentExperiment: IGettingStartedExperimentService['getCurrentExperiment'] = () => undefined
-}
-registerSingleton(
-  IGettingStartedExperimentService,
-  GettingStartedExperimentService,
-  InstantiationType.Eager
-)
 class TreeSitterThemeService implements ITreeSitterThemeService {
   _serviceBrand: undefined
   @Unsupported
@@ -7667,20 +5823,124 @@ class TreeSitterThemeService implements ITreeSitterThemeService {
     return unsupported()
   }
   @Unsupported
-  findMetadata: ITreeSitterThemeService['findMetadata'] = (): never => {
-    unsupported()
-  }
+  findMetadata: ITreeSitterThemeService['findMetadata'] = unsupported
 }
 registerSingleton(ITreeSitterThemeService, TreeSitterThemeService, InstantiationType.Eager)
 class TreeSitterLibraryService implements ITreeSitterLibraryService {
   _serviceBrand: undefined
   @Unsupported
-  getParserClass: ITreeSitterLibraryService['getParserClass'] = (): never => {
-    unsupported()
-  }
+  getParserClass: ITreeSitterLibraryService['getParserClass'] = unsupported
   supportsLanguage: ITreeSitterLibraryService['supportsLanguage'] = () => false
   getLanguage: ITreeSitterLibraryService['getLanguage'] = () => undefined
   getInjectionQueries: ITreeSitterLibraryService['getInjectionQueries'] = () => undefined
   getHighlightingQueries: ITreeSitterLibraryService['getHighlightingQueries'] = () => undefined
 }
 registerSingleton(ITreeSitterLibraryService, TreeSitterLibraryService, InstantiationType.Eager)
+
+class ChatAttachmentResolveService implements IChatAttachmentResolveService {
+  _serviceBrand: undefined
+  @Unsupported
+  resolveEditorAttachContext: IChatAttachmentResolveService['resolveEditorAttachContext'] =
+    unsupported
+  @Unsupported
+  resolveUntitledEditorAttachContext: IChatAttachmentResolveService['resolveUntitledEditorAttachContext'] =
+    unsupported
+  @Unsupported
+  resolveResourceAttachContext: IChatAttachmentResolveService['resolveResourceAttachContext'] =
+    unsupported
+  @Unsupported
+  resolveImageEditorAttachContext: IChatAttachmentResolveService['resolveImageEditorAttachContext'] =
+    unsupported
+  @Unsupported
+  resolveImageAttachContext: IChatAttachmentResolveService['resolveImageAttachContext'] =
+    unsupported
+  @Unsupported
+  resolveMarkerAttachContext: IChatAttachmentResolveService['resolveMarkerAttachContext'] =
+    unsupported
+  @Unsupported
+  resolveSymbolsAttachContext: IChatAttachmentResolveService['resolveSymbolsAttachContext'] =
+    unsupported
+  @Unsupported
+  resolveNotebookOutputAttachContext: IChatAttachmentResolveService['resolveNotebookOutputAttachContext'] =
+    unsupported
+}
+registerSingleton(
+  IChatAttachmentResolveService,
+  ChatAttachmentResolveService,
+  InstantiationType.Eager
+)
+
+class McpElicitationService implements IMcpElicitationService {
+  _serviceBrand: undefined
+  @Unsupported
+  elicit: IMcpElicitationService['elicit'] = unsupported
+}
+registerSingleton(IMcpElicitationService, McpElicitationService, InstantiationType.Eager)
+
+class RemoteCodingAgentsService implements IRemoteCodingAgentsService {
+  _serviceBrand: undefined
+  @Unsupported
+  registerAgent: IRemoteCodingAgentsService['registerAgent'] = unsupported
+
+  getRegisteredAgents: IRemoteCodingAgentsService['getRegisteredAgents'] = () => []
+  getAvailableAgents: IRemoteCodingAgentsService['getAvailableAgents'] = () => []
+}
+registerSingleton(IRemoteCodingAgentsService, RemoteCodingAgentsService, InstantiationType.Eager)
+
+class AuthenticationQueryService implements IAuthenticationQueryService {
+  _serviceBrand: undefined
+  onDidChangePreferences: IAuthenticationQueryService['onDidChangePreferences'] = Event.None
+  onDidChangeAccess: IAuthenticationQueryService['onDidChangeAccess'] = Event.None
+  @Unsupported
+  provider: IAuthenticationQueryService['provider'] = unsupported
+  @Unsupported
+  extension: IAuthenticationQueryService['extension'] = unsupported
+  @Unsupported
+  mcpServer: IAuthenticationQueryService['mcpServer'] = unsupported
+  @Unsupported
+  getProviderIds: IAuthenticationQueryService['getProviderIds'] = unsupported
+  @Unsupported
+  clearAllData: IAuthenticationQueryService['clearAllData'] = unsupported
+}
+registerSingleton(IAuthenticationQueryService, AuthenticationQueryService, InstantiationType.Eager)
+
+class CoreExperimentationService implements ICoreExperimentationService {
+  _serviceBrand: undefined
+  @Unsupported
+  getExperiment: ICoreExperimentationService['getExperiment'] = () => undefined
+}
+registerSingleton(ICoreExperimentationService, CoreExperimentationService, InstantiationType.Eager)
+
+class WorkbenchMcpManagementService implements IWorkbenchMcpManagementService {
+  _serviceBrand: undefined
+  onDidInstallMcpServers: IWorkbenchMcpManagementService['onDidInstallMcpServers'] = Event.None
+  onInstallMcpServerInCurrentProfile: IWorkbenchMcpManagementService['onInstallMcpServerInCurrentProfile'] =
+    Event.None
+  onDidInstallMcpServersInCurrentProfile: IWorkbenchMcpManagementService['onDidInstallMcpServersInCurrentProfile'] =
+    Event.None
+  onDidUpdateMcpServersInCurrentProfile: IWorkbenchMcpManagementService['onDidUpdateMcpServersInCurrentProfile'] =
+    Event.None
+  onUninstallMcpServerInCurrentProfile: IWorkbenchMcpManagementService['onUninstallMcpServerInCurrentProfile'] =
+    Event.None
+  onDidUninstallMcpServerInCurrentProfile: IWorkbenchMcpManagementService['onDidUninstallMcpServerInCurrentProfile'] =
+    Event.None
+  onDidChangeProfile: IWorkbenchMcpManagementService['onDidChangeProfile'] = Event.None
+  onInstallMcpServer: IWorkbenchMcpManagementService['onInstallMcpServer'] = Event.None
+  onDidUpdateMcpServers: IWorkbenchMcpManagementService['onDidUpdateMcpServers'] = Event.None
+  onUninstallMcpServer: IWorkbenchMcpManagementService['onUninstallMcpServer'] = Event.None
+  onDidUninstallMcpServer: IWorkbenchMcpManagementService['onDidUninstallMcpServer'] = Event.None
+  getInstalled: IWorkbenchMcpManagementService['getInstalled'] = async () => []
+  @Unsupported
+  install: IWorkbenchMcpManagementService['install'] = unsupported
+  @Unsupported
+  installFromGallery: IWorkbenchMcpManagementService['installFromGallery'] = unsupported
+  @Unsupported
+  updateMetadata: IWorkbenchMcpManagementService['updateMetadata'] = unsupported
+  @Unsupported
+  uninstall: IWorkbenchMcpManagementService['uninstall'] = unsupported
+}
+registerSingleton(
+  IWorkbenchMcpManagementService,
+  WorkbenchMcpManagementService,
+  InstantiationType.Eager
+)

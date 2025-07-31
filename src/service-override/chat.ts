@@ -40,17 +40,22 @@ import { IChatMarkdownAnchorService } from 'vs/workbench/contrib/chat/browser/ch
 import { ChatMarkdownAnchorService } from 'vs/workbench/contrib/chat/browser/chatContentParts/chatMarkdownAnchorService'
 import { ChatEditingService } from 'vs/workbench/contrib/chat/browser/chatEditing/chatEditingServiceImpl'
 import { ChatEntitlementService } from 'vs/workbench/contrib/chat/common/chatEntitlementService'
-import { PromptsService } from 'vs/workbench/contrib/chat/common/promptSyntax/service/promptsService'
+import { PromptsService } from 'vs/workbench/contrib/chat/common/promptSyntax/service/promptsServiceImpl'
 import { IChatEntitlementService } from 'vs/workbench/contrib/chat/common/chatEntitlementService.service'
-import { IPromptsService } from 'vs/workbench/contrib/chat/common/promptSyntax/service/types.service'
+import { IPromptsService } from 'vs/workbench/contrib/chat/common/promptSyntax/service/promptsService.service'
 import { IChatTransferService } from 'vs/workbench/contrib/chat/common/chatTransferService.service'
 import { ChatTransferService } from 'vs/workbench/contrib/chat/common/chatTransferService'
 import { IChatStatusItemService } from 'vs/workbench/contrib/chat/browser/chatStatusItemService.service'
 import { ChatStatusItemService } from 'vs/workbench/contrib/chat/browser/chatStatusItemService'
-import 'vs/workbench/contrib/chat/browser/chat.contribution'
-import 'vs/workbench/contrib/inlineChat/browser/inlineChat.contribution'
 import { IChatContextPickService } from 'vs/workbench/contrib/chat/browser/chatContextPickService.service'
 import { ChatContextPickService } from 'vs/workbench/contrib/chat/browser/chatContextPickService'
+import { IChatAttachmentResolveService } from 'vs/workbench/contrib/chat/browser/chatAttachmentResolveService.service'
+import { ChatAttachmentResolveService } from 'vs/workbench/contrib/chat/browser/chatAttachmentResolveService'
+import { IRemoteCodingAgentsService } from 'vs/workbench/contrib/remoteCodingAgents/common/remoteCodingAgentsService.service'
+import { RemoteCodingAgentsService } from 'vs/workbench/contrib/remoteCodingAgents/common/remoteCodingAgentsService'
+import 'vs/workbench/contrib/chat/browser/chat.contribution'
+import 'vs/workbench/contrib/inlineChat/browser/inlineChat.contribution'
+import 'vs/workbench/contrib/remoteCodingAgents/browser/remoteCodingAgents.contribution'
 
 export default function getServiceOverride(): IEditorOverrideServices {
   return {
@@ -100,6 +105,12 @@ export default function getServiceOverride(): IEditorOverrideServices {
     [IChatEntitlementService.toString()]: new SyncDescriptor(ChatEntitlementService, [], true),
     [IPromptsService.toString()]: new SyncDescriptor(PromptsService, [], true),
     [IChatStatusItemService.toString()]: new SyncDescriptor(ChatStatusItemService, [], true),
-    [IChatContextPickService.toString()]: new SyncDescriptor(ChatContextPickService, [], true)
+    [IChatContextPickService.toString()]: new SyncDescriptor(ChatContextPickService, [], true),
+    [IChatAttachmentResolveService.toString()]: new SyncDescriptor(
+      ChatAttachmentResolveService,
+      [],
+      true
+    ),
+    [IRemoteCodingAgentsService.toString()]: new SyncDescriptor(RemoteCodingAgentsService, [], true)
   }
 }
