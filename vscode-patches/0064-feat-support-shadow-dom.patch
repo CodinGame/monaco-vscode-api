@@ -6,6 +6,7 @@ Subject: [PATCH] feat: support shadow dom
 ---
  src/vs/base/browser/dom.ts                    | 23 ++++++++++++-------
  src/vs/base/browser/domStylesheets.ts         | 21 +++++++++++++----
+ src/vs/base/browser/keyboardEvent.ts          |  3 ++-
  src/vs/base/browser/ui/dialog/dialog.ts       |  6 ++---
  src/vs/base/browser/ui/dnd/dnd.ts             |  4 ++--
  src/vs/base/browser/ui/findinput/findInput.ts |  3 ++-
@@ -38,7 +39,7 @@ Subject: [PATCH] feat: support shadow dom
  .../browser/gettingStarted.ts                 |  4 ++--
  .../browser/walkThroughPart.ts                |  6 ++---
  .../themes/browser/workbenchThemeService.ts   |  2 +-
- 34 files changed, 101 insertions(+), 67 deletions(-)
+ 35 files changed, 103 insertions(+), 68 deletions(-)
 
 diff --git a/src/vs/base/browser/dom.ts b/src/vs/base/browser/dom.ts
 index 1c7c66f76aa..f414f2b07fd 100644
@@ -170,6 +171,20 @@ index 76a71c5402d..e07bd22315c 100644
  	disposables.add(toDisposable(() => clone.remove()));
  
  	for (const rule of getDynamicStyleSheetRules(globalStylesheet)) {
+diff --git a/src/vs/base/browser/keyboardEvent.ts b/src/vs/base/browser/keyboardEvent.ts
+index 4e98a3b12d8..ae9a72f97c6 100644
+--- a/src/vs/base/browser/keyboardEvent.ts
++++ b/src/vs/base/browser/keyboardEvent.ts
+@@ -136,7 +136,8 @@ export class StandardKeyboardEvent implements IKeyboardEvent {
+ 		const e = source;
+ 
+ 		this.browserEvent = e;
+-		this.target = <HTMLElement>e.target;
++		// composedPath allows to access the real target, even inside a shadow root
++		this.target = <HTMLElement>e.composedPath()[0] ?? e.target;
+ 
+ 		this.ctrlKey = e.ctrlKey;
+ 		this.shiftKey = e.shiftKey;
 diff --git a/src/vs/base/browser/ui/dialog/dialog.ts b/src/vs/base/browser/ui/dialog/dialog.ts
 index b569359a06c..ba8f9063610 100644
 --- a/src/vs/base/browser/ui/dialog/dialog.ts
