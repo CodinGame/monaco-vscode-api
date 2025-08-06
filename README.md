@@ -397,6 +397,32 @@ Add this plugin in your configuration:
 }
 ```
 
+## Sandbox mode (⚠️ beta ⚠️)
+
+One issue with VSCode is it's only designed to be initialized once. So the initialization options (workbench options, remote server authority...) can't be updated/reloaded. Also it's not possible to "unload" the services.
+
+To still be able to do it, a possibility is to run all VSCode code inside an iframe instead of in the main page. But then VSCode will render in the iframe only and won't be well integrated in the page.
+
+To better integrate it, it's also possible to run the code in the iframe, but make the code interact with the main page dom.
+
+This library supports that mode. To enable that, you should
+- have a secondary html entrypoint, that initialize the services
+- load that secondary html in an iframe
+- in the iframe, set `window.vscodeWindow` to the parent window, also initialize the service with a container mounted in that window
+- do not import any monaco-vscode-library from the top window, but you can declare functions on the iframe window to get objects to the top window
+
+To "unload" the workbench, you should:
+- remove the iframe element from the top frame
+- remove or empty the workbench container
+- cleanup the elements that VSCode has injected in the page head: `document.querySelectorAll('[data-vscode]').forEach((el) => el.remove())`
+
+⚠️ `window.vscodeWindow` should be set BEFORE any VSCode code is loaded
+
+
+Note: it can be used in combination with shadow dom
+
+It's demonstrated in the demo, by adding `?sandbox` query parameter to the demo url
+
 ## Troubleshooting
 
 If something doesn't work, make sure to check out the [Troubleshooting](https://github.com/CodinGame/monaco-vscode-api/wiki/Troubleshooting) wiki page.
