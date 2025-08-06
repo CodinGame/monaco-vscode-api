@@ -4,45 +4,45 @@ Date: Fri, 2 May 2025 10:13:06 +0200
 Subject: [PATCH] feat: support shadow dom
 
 ---
- src/vs/base/browser/dom.ts                    | 23 ++++++++++++-------
- src/vs/base/browser/domStylesheets.ts         | 21 +++++++++++++----
- src/vs/base/browser/keyboardEvent.ts          |  3 ++-
- src/vs/base/browser/ui/dialog/dialog.ts       |  6 ++---
- src/vs/base/browser/ui/dnd/dnd.ts             |  4 ++--
- src/vs/base/browser/ui/findinput/findInput.ts |  3 ++-
- .../base/browser/ui/findinput/replaceInput.ts |  3 ++-
+ src/vs/base/browser/dom.ts                    | 28 +++++++++++++------
+ src/vs/base/browser/domStylesheets.ts         | 21 +++++++++++---
+ src/vs/base/browser/keyboardEvent.ts          | 12 +++++++-
+ src/vs/base/browser/ui/dialog/dialog.ts       |  6 ++--
+ src/vs/base/browser/ui/dnd/dnd.ts             |  4 +--
+ src/vs/base/browser/ui/findinput/findInput.ts |  3 +-
+ .../base/browser/ui/findinput/replaceInput.ts |  3 +-
  src/vs/base/browser/ui/inputbox/inputBox.ts   |  2 +-
  src/vs/base/browser/ui/sash/sash.ts           |  2 +-
- src/vs/base/browser/ui/splitview/paneview.ts  |  6 ++---
- src/vs/base/browser/ui/splitview/splitview.ts |  6 ++---
+ src/vs/base/browser/ui/splitview/paneview.ts  |  6 ++--
+ src/vs/base/browser/ui/splitview/splitview.ts |  6 ++--
  .../editor/browser/controller/mouseHandler.ts |  2 +-
  .../editor/browser/controller/mouseTarget.ts  |  2 +-
  .../services/hoverService/hoverWidget.ts      |  2 +-
- src/vs/editor/browser/view/viewPart.ts        |  3 ++-
+ src/vs/editor/browser/view/viewPart.ts        |  3 +-
  .../contentWidgets/contentWidgets.ts          |  2 +-
  .../hover/browser/contentHoverWidget.ts       |  2 +-
  .../actionWidget/browser/actionList.ts        |  2 +-
- src/vs/workbench/browser/contextkeys.ts       |  7 +++---
- src/vs/workbench/browser/layout.ts            |  3 +++
- .../browser/parts/editor/editorGroupView.ts   |  4 ++--
- src/vs/workbench/browser/workbench.ts         |  6 ++---
- .../files/browser/views/explorerViewer.ts     |  4 +++-
- .../notebook/browser/notebookEditorWidget.ts  |  6 ++---
- .../browser/view/cellParts/cellStatusPart.ts  |  6 +++--
+ src/vs/workbench/browser/contextkeys.ts       |  7 +++--
+ src/vs/workbench/browser/layout.ts            |  3 ++
+ .../browser/parts/editor/editorGroupView.ts   |  4 +--
+ src/vs/workbench/browser/workbench.ts         |  6 ++--
+ .../files/browser/views/explorerViewer.ts     |  4 ++-
+ .../notebook/browser/notebookEditorWidget.ts  |  6 ++--
+ .../browser/view/cellParts/cellStatusPart.ts  |  6 ++--
  .../browser/view/cellParts/codeCell.ts        |  5 ++--
- .../browser/view/cellParts/markupCell.ts      |  6 ++---
+ .../browser/view/cellParts/markupCell.ts      |  6 ++--
  .../notebook/browser/view/notebookCellList.ts |  5 ++--
- .../browser/preferences.contribution.ts       |  3 ++-
- .../preferences/browser/settingsEditor2.ts    |  6 ++---
+ .../browser/preferences.contribution.ts       |  3 +-
+ .../preferences/browser/settingsEditor2.ts    |  6 ++--
  .../terminal/browser/terminalTabbedView.ts    |  2 +-
  .../contrib/terminal/browser/terminalView.ts  |  2 +-
- .../browser/gettingStarted.ts                 |  4 ++--
- .../browser/walkThroughPart.ts                |  6 ++---
+ .../browser/gettingStarted.ts                 |  4 +--
+ .../browser/walkThroughPart.ts                |  6 ++--
  .../themes/browser/workbenchThemeService.ts   |  2 +-
- 35 files changed, 103 insertions(+), 68 deletions(-)
+ 35 files changed, 117 insertions(+), 68 deletions(-)
 
 diff --git a/src/vs/base/browser/dom.ts b/src/vs/base/browser/dom.ts
-index 1c7c66f76aa..f414f2b07fd 100644
+index 1c7c66f76aa..90f89cab2e0 100644
 --- a/src/vs/base/browser/dom.ts
 +++ b/src/vs/base/browser/dom.ts
 @@ -620,8 +620,7 @@ export function getTopLeftOffset(element: HTMLElement): IDomPosition {
@@ -99,7 +99,19 @@ index 1c7c66f76aa..f414f2b07fd 100644
  /**
   * Returns true if the focused window active element matches
   * the provided element. Falls back to the main window if no
-@@ -1188,7 +1195,7 @@ class FocusTracker extends Disposable implements IFocusTracker {
+@@ -1043,6 +1050,11 @@ export function isHTMLDivElement(e: unknown): e is HTMLDivElement {
+ 	return e instanceof HTMLDivElement || e instanceof getWindow(e as Node).HTMLDivElement;
+ }
+ 
++export function isHTMLIframeElement(e: unknown): e is HTMLDivElement {
++	// eslint-disable-next-line no-restricted-syntax
++	return e instanceof HTMLIFrameElement || e instanceof getWindow(e as Node).HTMLIFrameElement;
++}
++
+ export function isSVGElement(e: unknown): e is SVGElement {
+ 	// eslint-disable-next-line no-restricted-syntax
+ 	return e instanceof SVGElement || e instanceof getWindow(e as Node).SVGElement;
+@@ -1188,7 +1200,7 @@ class FocusTracker extends Disposable implements IFocusTracker {
  	private static hasFocusWithin(element: HTMLElement | Window): boolean {
  		if (isHTMLElement(element)) {
  			const shadowRoot = getShadowRoot(element);
@@ -108,7 +120,7 @@ index 1c7c66f76aa..f414f2b07fd 100644
  			return isAncestor(activeElement, element);
  		} else {
  			const window = element;
-@@ -1407,7 +1414,7 @@ export function removeTabIndexAndUpdateFocus(node: HTMLElement): void {
+@@ -1407,7 +1419,7 @@ export function removeTabIndexAndUpdateFocus(node: HTMLElement): void {
  	// standard DOM behavior is to move focus to the <body> element. We
  	// typically never want that, rather put focus to the closest element
  	// in the hierarchy of the parent DOM nodes.
@@ -172,16 +184,39 @@ index 76a71c5402d..e07bd22315c 100644
  
  	for (const rule of getDynamicStyleSheetRules(globalStylesheet)) {
 diff --git a/src/vs/base/browser/keyboardEvent.ts b/src/vs/base/browser/keyboardEvent.ts
-index 4e98a3b12d8..ae9a72f97c6 100644
+index 4e98a3b12d8..1f244a7db0f 100644
 --- a/src/vs/base/browser/keyboardEvent.ts
 +++ b/src/vs/base/browser/keyboardEvent.ts
-@@ -136,7 +136,8 @@ export class StandardKeyboardEvent implements IKeyboardEvent {
+@@ -7,6 +7,7 @@ import * as browser from './browser.js';
+ import { EVENT_KEY_CODE_MAP, KeyCode, KeyCodeUtils, KeyMod } from '../common/keyCodes.js';
+ import { KeyCodeChord } from '../common/keybindings.js';
+ import * as platform from '../common/platform.js';
++import { isHTMLIframeElement } from './dom.js';
+ 
+ 
+ 
+@@ -114,6 +115,15 @@ export function printStandardKeyboardEvent(e: StandardKeyboardEvent): string {
+ 	return `modifiers: [${modifiers.join(',')}], code: ${e.code}, keyCode: ${e.keyCode} ('${KeyCodeUtils.toString(e.keyCode)}')`;
+ }
+ 
++function getTarget(source: KeyboardEvent) {
++	if (isHTMLIframeElement(source.target)) {
++		// If the target is an iframe, we return the iframe element itself because for some reasons, source.composedPath()[0] just returns the main window
++		return source.target;
++	}
++	// composedPath allows to access the real target, even inside a shadow root
++	return <HTMLElement>source.composedPath()[0] ?? source.target;
++}
++
+ export class StandardKeyboardEvent implements IKeyboardEvent {
+ 
+ 	readonly _standardKeyboardEventBrand = true;
+@@ -136,7 +146,7 @@ export class StandardKeyboardEvent implements IKeyboardEvent {
  		const e = source;
  
  		this.browserEvent = e;
 -		this.target = <HTMLElement>e.target;
-+		// composedPath allows to access the real target, even inside a shadow root
-+		this.target = <HTMLElement>e.composedPath()[0] ?? e.target;
++		this.target = getTarget(e);
  
  		this.ctrlKey = e.ctrlKey;
  		this.shiftKey = e.shiftKey;
