@@ -21,20 +21,24 @@ import {
   disableShadowDom
 } from './setup.common'
 
-let container = document.createElement('div')
-container.style.height = '100vh'
+let container = window.vscodeContainer
 
-document.body.replaceChildren(container)
+if (container == null) {
+  container = document.createElement('div')
+  container.style.height = '100vh'
 
-if (!disableShadowDom) {
-  const shadowRoot = container.attachShadow({
-    mode: 'open'
-  })
+  document.body.replaceChildren(container)
 
-  const workbenchElement = document.createElement('div')
-  workbenchElement.style.height = '100vh'
-  shadowRoot.appendChild(workbenchElement)
-  container = workbenchElement
+  if (!disableShadowDom) {
+    const shadowRoot = container.attachShadow({
+      mode: 'open'
+    })
+
+    const workbenchElement = document.createElement('div')
+    workbenchElement.style.height = '100vh'
+    shadowRoot.appendChild(workbenchElement)
+    container = workbenchElement
+  }
 }
 
 const buttons = document.createElement('div')

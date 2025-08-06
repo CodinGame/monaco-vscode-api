@@ -56,11 +56,26 @@ if (locale != null) {
 }
 
 const mode = searchParams.get('mode')
+const sandboxed = searchParams.has('sandboxed')
 
-if (mode === 'full-workbench') {
-  void import('./main.workbench')
-} else {
-  void import('./main.views')
+;(async () => {
+  if (sandboxed) {
+    window.vscodeContainer = await new Promise<HTMLElement>((resolve) => {
+      window.start = resolve
+      window.parent.postMessage('WAITING')
+    })
+    window.vscodeWindow = window.vscodeContainer.ownerDocument.defaultView!
+  }
+  if (mode === 'full-workbench') {
+    await import('./main.workbench')
+  } else {
+    await import('./main.views')
+  }
+})()
+
+declare global {
+  var vscodeContainer: HTMLElement
+  var start: (container: HTMLElement) => void
 }
 
 export {}
