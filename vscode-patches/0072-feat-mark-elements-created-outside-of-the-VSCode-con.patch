@@ -1,0 +1,34 @@
+From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
+From: =?UTF-8?q?Lo=C3=AFc=20Mangeonjean?= <loic@coderpad.io>
+Date: Tue, 5 Aug 2025 11:20:21 +0200
+Subject: [PATCH] feat: mark elements created outside of the VSCode container
+
+---
+ src/vs/base/browser/dom.ts            | 1 +
+ src/vs/base/browser/domStylesheets.ts | 1 +
+ 2 files changed, 2 insertions(+)
+
+diff --git a/src/vs/base/browser/dom.ts b/src/vs/base/browser/dom.ts
+index e654f642bab..51f6b14c9a9 100644
+--- a/src/vs/base/browser/dom.ts
++++ b/src/vs/base/browser/dom.ts
+@@ -1011,6 +1011,7 @@ export function createLinkElement(container: HTMLElement = mainWindow.document.h
+ 
+ function createHeadElement(tagName: string, container: HTMLElement = mainWindow.document.head): HTMLElement {
+ 	const element = document.createElement(tagName);
++	element.setAttribute('data-vscode', 'true');
+ 	container.appendChild(element);
+ 	return element;
+ }
+diff --git a/src/vs/base/browser/domStylesheets.ts b/src/vs/base/browser/domStylesheets.ts
+index f012a0afc85..ff98c148dfa 100644
+--- a/src/vs/base/browser/domStylesheets.ts
++++ b/src/vs/base/browser/domStylesheets.ts
+@@ -58,6 +58,7 @@ export function createStyleSheet(container: HTMLElement = mainWindow.document.he
+ 	const style = document.createElement('style');
+ 	style.type = 'text/css';
+ 	style.media = 'screen';
++	style.setAttribute('data-vscode', 'true');
+ 	beforeAppend?.(style);
+ 	container.appendChild(style);
+ 

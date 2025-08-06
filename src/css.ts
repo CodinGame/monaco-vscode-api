@@ -1,3 +1,5 @@
+import { mainWindow } from 'vs/base/browser/window'
+
 const sheets: CSSStyleSheet[] = []
 
 export function registerCss(module: unknown) {
@@ -5,37 +7,46 @@ export function registerCss(module: unknown) {
 
   let sheet = undefined
   if (typeof exportedValue === 'string') {
-    sheet = new CSSStyleSheet()
+    sheet = new mainWindow.CSSStyleSheet()
     sheet.replaceSync(exportedValue)
   } else if (exportedValue instanceof CSSStyleSheet) {
-    sheet = exportedValue
+    sheet = new mainWindow.CSSStyleSheet()
+    sheet.replaceSync(
+      Array.from(sheet.cssRules)
+        .map((r) => r.cssText)
+        .join('\n')
+    )
   }
   if (sheet != null) {
     // Font face rules should be added in the root of the page, they are ignored in shadow roots
     const fontFaces = Array.from(sheet.cssRules)
-      .filter((rule) => rule instanceof CSSFontFaceRule)
+      .filter((rule) => rule instanceof mainWindow.CSSFontFaceRule)
       .map((r) => r.cssText)
 
     if (fontFaces.length > 0) {
-      const fontFaceStyleSheet = new CSSStyleSheet()
+      const fontFaceStyleSheet = new mainWindow.CSSStyleSheet()
       for (const fontFace of fontFaces) {
         fontFaceStyleSheet.insertRule(fontFace)
       }
-      document.adoptedStyleSheets = [...document.adoptedStyleSheets, fontFaceStyleSheet]
+      mainWindow.document.adoptedStyleSheets = [
+        ...mainWindow.document.adoptedStyleSheets,
+        fontFaceStyleSheet
+      ]
     }
     sheets.push(sheet)
   }
 }
 function getInjectElement(target: HTMLElement) {
   const root = target.getRootNode()
-  if (root instanceof ShadowRoot) {
+  if (root instanceof mainWindow.ShadowRoot) {
     return root
   }
-  return document
+
+  return target.ownerDocument
 }
 export function injectCss(target: HTMLElement) {
   const root = getInjectElement(target)
-  if (root instanceof ShadowRoot && sheets.length === 0) {
+  if (root instanceof mainWindow.ShadowRoot && sheets.length === 0) {
     console.error(
       "@codingame/monaco-vscode-api was loaded inside a shadow dom, but it's unable to load the css into it because the bundler configuration wasn't applied properly: imported css files should export their content as default"
     )

@@ -1,0 +1,236 @@
+From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
+From: =?UTF-8?q?Lo=C3=AFc=20Mangeonjean?= <loic@coderpad.io>
+Date: Mon, 4 Aug 2025 19:03:44 +0200
+Subject: [PATCH] feat: support loading VSCode in an iframe
+
+---
+ src/vs/base/browser/dom.ts                    | 39 +++++++------------
+ src/vs/base/browser/domStylesheets.ts         |  4 +-
+ src/vs/base/browser/window.ts                 |  7 +++-
+ src/vs/workbench/browser/window.ts            | 17 ++++++--
+ .../browser/view/renderers/webviewPreloads.ts |  4 +-
+ .../browser/webWorkerExtensionHost.ts         |  6 +--
+ 6 files changed, 40 insertions(+), 37 deletions(-)
+
+diff --git a/src/vs/base/browser/dom.ts b/src/vs/base/browser/dom.ts
+index 6169e138aab..e654f642bab 100644
+--- a/src/vs/base/browser/dom.ts
++++ b/src/vs/base/browser/dom.ts
+@@ -1016,68 +1016,55 @@ function createHeadElement(tagName: string, container: HTMLElement = mainWindow.
+ }
+ 
+ export function isHTMLElement(e: unknown): e is HTMLElement {
+-	// eslint-disable-next-line no-restricted-syntax
+-	return e instanceof HTMLElement || e instanceof getWindow(e as Node).HTMLElement;
++	return e instanceof mainWindow.HTMLElement || e instanceof getWindow(e as Node).HTMLElement;
+ }
+ 
+ export function isHTMLAnchorElement(e: unknown): e is HTMLAnchorElement {
+-	// eslint-disable-next-line no-restricted-syntax
+-	return e instanceof HTMLAnchorElement || e instanceof getWindow(e as Node).HTMLAnchorElement;
++	return e instanceof mainWindow.HTMLAnchorElement || e instanceof getWindow(e as Node).HTMLAnchorElement;
+ }
+ 
+ export function isHTMLSpanElement(e: unknown): e is HTMLSpanElement {
+-	// eslint-disable-next-line no-restricted-syntax
+-	return e instanceof HTMLSpanElement || e instanceof getWindow(e as Node).HTMLSpanElement;
++	return e instanceof mainWindow.HTMLSpanElement || e instanceof getWindow(e as Node).HTMLSpanElement;
+ }
+ 
+ export function isHTMLTextAreaElement(e: unknown): e is HTMLTextAreaElement {
+-	// eslint-disable-next-line no-restricted-syntax
+-	return e instanceof HTMLTextAreaElement || e instanceof getWindow(e as Node).HTMLTextAreaElement;
++	return e instanceof mainWindow.HTMLTextAreaElement || e instanceof getWindow(e as Node).HTMLTextAreaElement;
+ }
+ 
+ export function isHTMLInputElement(e: unknown): e is HTMLInputElement {
+-	// eslint-disable-next-line no-restricted-syntax
+-	return e instanceof HTMLInputElement || e instanceof getWindow(e as Node).HTMLInputElement;
++	return e instanceof mainWindow.HTMLInputElement || e instanceof getWindow(e as Node).HTMLInputElement;
+ }
+ 
+ export function isHTMLButtonElement(e: unknown): e is HTMLButtonElement {
+-	// eslint-disable-next-line no-restricted-syntax
+-	return e instanceof HTMLButtonElement || e instanceof getWindow(e as Node).HTMLButtonElement;
++	return e instanceof mainWindow.HTMLButtonElement || e instanceof getWindow(e as Node).HTMLButtonElement;
+ }
+ 
+ export function isHTMLDivElement(e: unknown): e is HTMLDivElement {
+-	// eslint-disable-next-line no-restricted-syntax
+-	return e instanceof HTMLDivElement || e instanceof getWindow(e as Node).HTMLDivElement;
++	return e instanceof mainWindow.HTMLDivElement || e instanceof getWindow(e as Node).HTMLDivElement;
+ }
+ 
+ export function isHTMLIframeElement(e: unknown): e is HTMLDivElement {
+-	// eslint-disable-next-line no-restricted-syntax
+-	return e instanceof HTMLIFrameElement || e instanceof getWindow(e as Node).HTMLIFrameElement;
++	return e instanceof mainWindow.HTMLIFrameElement || e instanceof getWindow(e as Node).HTMLIFrameElement;
+ }
+ 
+ export function isSVGElement(e: unknown): e is SVGElement {
+-	// eslint-disable-next-line no-restricted-syntax
+-	return e instanceof SVGElement || e instanceof getWindow(e as Node).SVGElement;
++	return e instanceof mainWindow.SVGElement || e instanceof getWindow(e as Node).SVGElement;
+ }
+ 
+ export function isMouseEvent(e: unknown): e is MouseEvent {
+-	// eslint-disable-next-line no-restricted-syntax
+-	return e instanceof MouseEvent || e instanceof getWindow(e as UIEvent).MouseEvent;
++	return e instanceof mainWindow.MouseEvent || e instanceof getWindow(e as UIEvent).MouseEvent;
+ }
+ 
+ export function isKeyboardEvent(e: unknown): e is KeyboardEvent {
+-	// eslint-disable-next-line no-restricted-syntax
+-	return e instanceof KeyboardEvent || e instanceof getWindow(e as UIEvent).KeyboardEvent;
++	return e instanceof mainWindow.KeyboardEvent || e instanceof getWindow(e as UIEvent).KeyboardEvent;
+ }
+ 
+ export function isPointerEvent(e: unknown): e is PointerEvent {
+-	// eslint-disable-next-line no-restricted-syntax
+-	return e instanceof PointerEvent || e instanceof getWindow(e as UIEvent).PointerEvent;
++	return e instanceof mainWindow.PointerEvent || e instanceof getWindow(e as UIEvent).PointerEvent;
+ }
+ 
+ export function isDragEvent(e: unknown): e is DragEvent {
+-	// eslint-disable-next-line no-restricted-syntax
+-	return e instanceof DragEvent || e instanceof getWindow(e as UIEvent).DragEvent;
++	return e instanceof mainWindow.DragEvent || e instanceof getWindow(e as UIEvent).DragEvent;
+ }
+ 
+ export const EventType = {
+diff --git a/src/vs/base/browser/domStylesheets.ts b/src/vs/base/browser/domStylesheets.ts
+index e07bd22315c..f012a0afc85 100644
+--- a/src/vs/base/browser/domStylesheets.ts
++++ b/src/vs/base/browser/domStylesheets.ts
+@@ -5,7 +5,7 @@
+ 
+ import { DisposableStore, toDisposable, IDisposable } from '../common/lifecycle.js';
+ import { autorun, IObservable } from '../common/observable.js';
+-import { getWindows, sharedMutationObserver } from './dom.js';
++import { getWindows, isShadowRoot, sharedMutationObserver } from './dom.js';
+ import { mainWindow } from './window.js';
+ 
+ const globalStylesheets = new Map<HTMLStyleElement /* main stylesheet */, Set<HTMLStyleElement /* aux window clones that track the main stylesheet */>>();
+@@ -49,7 +49,7 @@ class WrappedStyleElement {
+ export let shadowRootContainer: ShadowRoot | undefined;
+ export function setContainerElement(container: HTMLElement) {
+ 	const root = container.getRootNode();
+-	if (root instanceof ShadowRoot) {
++	if (isShadowRoot(root)) {
+ 		shadowRootContainer = root;
+ 	}
+ }
+diff --git a/src/vs/base/browser/window.ts b/src/vs/base/browser/window.ts
+index ab920e18349..c4a02c5ca47 100644
+--- a/src/vs/base/browser/window.ts
++++ b/src/vs/base/browser/window.ts
+@@ -17,8 +17,13 @@ export function ensureCodeWindow(targetWindow: Window, fallbackWindowId: number)
+ 	}
+ }
+ 
++declare global {
++	// eslint-disable-next-line no-var
++	var vscodeWindow: Window | undefined;
++}
++
+ // eslint-disable-next-line no-restricted-globals
+-export const mainWindow = window as CodeWindow;
++export const mainWindow = (window.vscodeWindow ?? window) as CodeWindow;
+ 
+ export function isAuxiliaryWindow(obj: Window): obj is CodeWindow {
+ 	if (obj === mainWindow) {
+diff --git a/src/vs/workbench/browser/window.ts b/src/vs/workbench/browser/window.ts
+index 70e83ad4396..d32117f12b7 100644
+--- a/src/vs/workbench/browser/window.ts
++++ b/src/vs/workbench/browser/window.ts
+@@ -109,11 +109,20 @@ export abstract class BaseWindow extends Disposable {
+ 		// to throttle timeouts in minimized windows, so with this we can ensure the
+ 		// timeout is scheduled without being throttled (unless all windows are minimized).
+ 
++		function getOverridenWindow(targetWindow: Window) {
++			if (targetWindow === mainWindow) {
++				// If running inside an iframe, do not override the `setTimeout` function on the
++				// eslint-disable-next-line no-restricted-globals
++				return window;
++			}
++			return targetWindow;
++		}
++
+ 		const originalSetTimeout = targetWindow.setTimeout;
+-		Object.defineProperty(targetWindow, 'vscodeOriginalSetTimeout', { get: () => originalSetTimeout });
++		Object.defineProperty(getOverridenWindow(targetWindow), 'vscodeOriginalSetTimeout', { get: () => originalSetTimeout });
+ 
+ 		const originalClearTimeout = targetWindow.clearTimeout;
+-		Object.defineProperty(targetWindow, 'vscodeOriginalClearTimeout', { get: () => originalClearTimeout });
++		Object.defineProperty(getOverridenWindow(targetWindow), 'vscodeOriginalClearTimeout', { get: () => originalClearTimeout });
+ 
+ 		targetWindow.setTimeout = function (this: unknown, handler: TimerHandler, timeout = 0, ...args: unknown[]): number {
+ 			if (dom.getWindowsCount() === 1 || typeof handler === 'string' || timeout === 0 /* immediates are never throttled */) {
+@@ -138,7 +147,7 @@ export abstract class BaseWindow extends Disposable {
+ 				// this can happen for timeouts on unfocused windows
+ 				let didClear = false;
+ 
+-				const handle = (window as any).vscodeOriginalSetTimeout.apply(this, [(...args: unknown[]) => {
++				const handle = (getOverridenWindow(targetWindow) as any).vscodeOriginalSetTimeout.apply(this, [(...args: unknown[]) => {
+ 					if (didClear) {
+ 						return;
+ 					}
+@@ -147,7 +156,7 @@ export abstract class BaseWindow extends Disposable {
+ 
+ 				const timeoutDisposable = toDisposable(() => {
+ 					didClear = true;
+-					(window as any).vscodeOriginalClearTimeout(handle);
++					(getOverridenWindow(targetWindow) as any).vscodeOriginalClearTimeout(handle);
+ 					timeoutDisposables.delete(timeoutDisposable);
+ 				});
+ 
+diff --git a/src/vs/workbench/contrib/notebook/browser/view/renderers/webviewPreloads.ts b/src/vs/workbench/contrib/notebook/browser/view/renderers/webviewPreloads.ts
+index 2aa027c29ba..b9753110764 100644
+--- a/src/vs/workbench/contrib/notebook/browser/view/renderers/webviewPreloads.ts
++++ b/src/vs/workbench/contrib/notebook/browser/view/renderers/webviewPreloads.ts
+@@ -9,6 +9,8 @@ import type * as webviewMessages from './webviewMessages.js';
+ import type { NotebookCellMetadata } from '../../../common/notebookCommon.js';
+ import type * as rendererApi from 'vscode-notebook-renderer';
+ import type { NotebookCellOutputTransferData } from '../../../../../../platform/dnd/browser/dnd.js';
++// eslint-disable-next-line local/code-no-runtime-import
++import { isShadowRoot } from '../../../../../../base/browser/dom.js';
+ 
+ // !! IMPORTANT !! ----------------------------------------------------------------------------------
+ // import { RenderOutputType } from 'vs/workbench/contrib/notebook/browser/notebookBrowser';
+@@ -2457,7 +2459,7 @@ async function webviewPreloads(ctx: PreloadContext) {
+ 			const trustedHtml = ttPolicy?.createHTML(html) ?? html;
+ 			el.innerHTML = trustedHtml as string; // CodeQL [SM03712] The rendered content comes from VS Code's tokenizer and is considered safe
+ 			const root = el.getRootNode();
+-			if (root instanceof ShadowRoot) {
++			if (isShadowRoot(root)) {
+ 				if (!root.adoptedStyleSheets.includes(tokenizationStyle)) {
+ 					root.adoptedStyleSheets.push(tokenizationStyle);
+ 				}
+diff --git a/src/vs/workbench/services/extensions/browser/webWorkerExtensionHost.ts b/src/vs/workbench/services/extensions/browser/webWorkerExtensionHost.ts
+index 8d0d24f5a84..e992bf29499 100644
+--- a/src/vs/workbench/services/extensions/browser/webWorkerExtensionHost.ts
++++ b/src/vs/workbench/services/extensions/browser/webWorkerExtensionHost.ts
+@@ -198,7 +198,7 @@ export class WebWorkerExtensionHost extends Disposable implements IExtensionHost
+ 				return;
+ 			}
+ 			const { data } = event.data;
+-			if (barrier.isOpen() || !(data instanceof MessagePort)) {
++			if (barrier.isOpen() || !(data instanceof mainWindow.MessagePort)) {
+ 				console.warn('UNEXPECTED message', event);
+ 				const err = new Error('UNEXPECTED message');
+ 				return rejectBarrier(ExtensionHostExitCode.UnexpectedError, err);
+@@ -223,12 +223,12 @@ export class WebWorkerExtensionHost extends Disposable implements IExtensionHost
+ 
+ 		port.onmessage = (event) => {
+ 			const { data } = event;
+-			if (!(data instanceof ArrayBuffer)) {
++			if (!(data instanceof mainWindow.ArrayBuffer)) {
+ 				console.warn('UNKNOWN data received', data);
+ 				this._onDidExit.fire([77, 'UNKNOWN data received']);
+ 				return;
+ 			}
+-			emitter.fire(VSBuffer.wrap(new Uint8Array(data, 0, data.byteLength)));
++			emitter.fire(VSBuffer.wrap(new mainWindow.Uint8Array(data, 0, data.byteLength)));
+ 		};
+ 
+ 		const protocol: IMessagePassingProtocol = {
