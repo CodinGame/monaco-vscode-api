@@ -52,7 +52,7 @@ buttons.innerHTML = `
 <br />
 <button id="togglePanel">Toggle Panel</button>
 <button id="toggleAuxiliary">Toggle Secondary Panel</button>
-</div>
+<button id="toggleSandbox">Switch to sandbox rendering mode</button>
 `
 document.body.append(buttons)
 
@@ -81,6 +81,13 @@ document.querySelector('#toggleAuxiliary')!.addEventListener('click', async () =
     layoutService.isVisible(Parts.AUXILIARYBAR_PART, window),
     Parts.AUXILIARYBAR_PART
   )
+})
+
+document.querySelector('#toggleSandbox')!.addEventListener('click', async () => {
+  const url = new URL(window.location.href)
+  url.search = ''
+  url.searchParams.append('sandbox', '')
+  window.location.href = url.toString()
 })
 
 export async function clearStorage(): Promise<void> {
