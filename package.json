@@ -62,7 +62,7 @@
     "@types/yargs": "^17.0.33",
     "@types/yauzl": "^2.10.3",
     "acorn": "^8.15.0",
-    "chalk": "^5.4.1",
+    "chalk": "^5.5.0",
     "change-case": "^5.4.4",
     "change-package-name": "^1.0.5",
     "eslint": "^9.32.0",
@@ -85,7 +85,7 @@
     "uuid": "^11.1.0",
     "vscode-semver": "npm:semver@=5.5.0",
     "yargs": "^18.0.0",
-    "zx": "^8.7.2"
+    "zx": "^8.8.0"
   },
   "dependencies": {
     "@microsoft/1ds-core-js": "^3.2.13",
@@ -117,7 +117,7 @@
     "kerberos": "2.1.1",
     "keytar": "^7.9.0",
     "marked": "~14.0.0",
-    "memfs": "^4.25.0",
+    "memfs": "^4.36.0",
     "mime-types": "^3.0.1",
     "node-pty": "^1.1.0-beta33",
     "tas-client-umd": "0.2.0",
