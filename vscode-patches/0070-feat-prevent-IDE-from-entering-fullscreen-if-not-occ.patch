@@ -11,10 +11,10 @@ Subject: [PATCH] feat: prevent IDE from entering fullscreen if not occupying
  3 files changed, 10 insertions(+), 6 deletions(-)
 
 diff --git a/src/vs/base/browser/dom.ts b/src/vs/base/browser/dom.ts
-index f414f2b07fd..aacb7c013f1 100644
+index 90f89cab2e0..6169e138aab 100644
 --- a/src/vs/base/browser/dom.ts
 +++ b/src/vs/base/browser/dom.ts
-@@ -1625,10 +1625,12 @@ export interface IDetectedFullscreen {
+@@ -1630,10 +1630,12 @@ export interface IDetectedFullscreen {
  	guess: boolean;
  }
  
@@ -29,7 +29,7 @@ index f414f2b07fd..aacb7c013f1 100644
  		return { mode: DetectedFullscreenMode.DOCUMENT, guess: false };
  	}
  
-@@ -1637,7 +1639,9 @@ export function detectFullscreen(targetWindow: Window): IDetectedFullscreen | nu
+@@ -1642,7 +1644,9 @@ export function detectFullscreen(targetWindow: Window): IDetectedFullscreen | nu
  	// height and comparing that to window height, we can guess
  	// it though.
  
@@ -40,7 +40,7 @@ index f414f2b07fd..aacb7c013f1 100644
  		// if the height of the window matches the screen height, we can
  		// safely assume that the browser is fullscreen because no browser
  		// chrome is taking height away (e.g. like toolbars).
-@@ -1646,7 +1650,7 @@ export function detectFullscreen(targetWindow: Window): IDetectedFullscreen | nu
+@@ -1651,7 +1655,7 @@ export function detectFullscreen(targetWindow: Window): IDetectedFullscreen | nu
  
  	if (platform.isMacintosh || platform.isLinux) {
  		// macOS and Linux do not properly report `innerHeight`, only Windows does

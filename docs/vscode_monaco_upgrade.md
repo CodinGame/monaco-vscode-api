@@ -35,6 +35,7 @@
     - Shadow dom mode or not
     - Using VSCode server
     - Using HTML file system provider
+    - Sandbox mode
     - ...
 - Make the commit that updates the vscode version a breaking change commit: by adding `!` before the `:` in the commit message
 

@@ -21,20 +21,24 @@ import {
   disableShadowDom
 } from './setup.common'
 
-let container = document.createElement('div')
-container.style.height = '100vh'
+let container = window.vscodeContainer
 
-document.body.replaceChildren(container)
+if (container == null) {
+  container = document.createElement('div')
+  container.style.height = '100vh'
 
-if (!disableShadowDom) {
-  const shadowRoot = container.attachShadow({
-    mode: 'open'
-  })
+  document.body.replaceChildren(container)
 
-  const workbenchElement = document.createElement('div')
-  workbenchElement.style.height = '100vh'
-  shadowRoot.appendChild(workbenchElement)
-  container = workbenchElement
+  if (!disableShadowDom) {
+    const shadowRoot = container.attachShadow({
+      mode: 'open'
+    })
+
+    const workbenchElement = document.createElement('div')
+    workbenchElement.style.height = '100vh'
+    shadowRoot.appendChild(workbenchElement)
+    container = workbenchElement
+  }
 }
 
 const buttons = document.createElement('div')
@@ -48,7 +52,7 @@ buttons.innerHTML = `
 <br />
 <button id="togglePanel">Toggle Panel</button>
 <button id="toggleAuxiliary">Toggle Secondary Panel</button>
-</div>
+<button id="toggleSandbox">Switch to sandbox rendering mode</button>
 `
 document.body.append(buttons)
 
@@ -77,6 +81,13 @@ document.querySelector('#toggleAuxiliary')!.addEventListener('click', async () =
     layoutService.isVisible(Parts.AUXILIARYBAR_PART, window),
     Parts.AUXILIARYBAR_PART
   )
+})
+
+document.querySelector('#toggleSandbox')!.addEventListener('click', async () => {
+  const url = new URL(window.location.href)
+  url.search = ''
+  url.searchParams.append('sandbox', '')
+  window.location.href = url.toString()
 })
 
 export async function clearStorage(): Promise<void> {

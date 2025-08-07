@@ -1,0 +1,82 @@
+From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
+From: =?UTF-8?q?Lo=C3=AFc=20Mangeonjean?= <loic@coderpad.io>
+Date: Wed, 6 Aug 2025 10:39:21 +0200
+Subject: [PATCH] fix: update style id attribute when the content changes
+
+so it can be watched in firefox
+---
+ src/vs/base/browser/domStylesheets.ts         | 12 +++++++++-
+ .../themes/browser/workbenchThemeService.ts   | 23 ++++++++++++-------
+ 2 files changed, 26 insertions(+), 9 deletions(-)
+
+diff --git a/src/vs/base/browser/domStylesheets.ts b/src/vs/base/browser/domStylesheets.ts
+index 3a50b50630e..2f84e538601 100644
+--- a/src/vs/base/browser/domStylesheets.ts
++++ b/src/vs/base/browser/domStylesheets.ts
+@@ -6,6 +6,7 @@
+ import { DisposableStore, toDisposable, IDisposable } from '../common/lifecycle.js';
+ import { autorun, IObservable } from '../common/observable.js';
+ import { createElement, getWindows, isShadowRoot, sharedMutationObserver } from './dom.js';
++import { isFirefox } from './browser.js';
+ import { mainWindow } from './window.js';
+ 
+ const globalStylesheets = new Map<HTMLStyleElement /* main stylesheet */, Set<HTMLStyleElement /* aux window clones that track the main stylesheet */>>();
+@@ -111,7 +112,16 @@ function cloneGlobalStyleSheet(globalStylesheet: HTMLStyleElement, globalStylesh
+ 		clone.sheet?.insertRule(rule.cssText, clone.sheet?.cssRules.length);
+ 	}
+ 
+-	disposables.add(sharedMutationObserver.observe(globalStylesheet, disposables, { childList: true })(() => {
++	let observeInit: MutationObserverInit = {
++		childList: true
++	};
++	if (isFirefox) {
++		// Firefox doesn't support observing style tag contents
++		// As a workaround, also observe the data-version attribute that is updated when the content is updated
++		observeInit = { ...observeInit, attributes: true, attributeFilter: ['data-version'] };
++	}
++
++	disposables.add(sharedMutationObserver.observe(globalStylesheet, disposables, observeInit)(() => {
+ 		clone.textContent = globalStylesheet.textContent;
+ 	}));
+ 
+diff --git a/src/vs/workbench/services/themes/browser/workbenchThemeService.ts b/src/vs/workbench/services/themes/browser/workbenchThemeService.ts
+index a9dc7c145e0..1f1dc89e3a2 100644
+--- a/src/vs/workbench/services/themes/browser/workbenchThemeService.ts
++++ b/src/vs/workbench/services/themes/browser/workbenchThemeService.ts
+@@ -33,7 +33,7 @@ import { updateColorThemeConfigurationSchemas, updateFileIconThemeConfigurationS
+ import { ProductIconThemeData, DEFAULT_PRODUCT_ICON_THEME_ID } from './productIconThemeData.js';
+ import { registerProductIconThemeSchemas } from '../common/productIconThemeSchema.js';
+ import { ILogService } from '../../../../platform/log/common/log.js';
+-import { isWeb } from '../../../../base/common/platform.js';
++import { isFirefox, isWeb } from '../../../../base/common/platform.js';
+ import { ColorScheme, ThemeTypeSelector } from '../../../../platform/theme/common/theme.js';
+ import { IHostColorSchemeService } from '../common/hostColorSchemeService.js';
+ import { RunOnceScheduler, Sequencer } from '../../../../base/common/async.js';
+@@ -793,13 +793,20 @@ class ThemeFileWatcher {
+ }
+ 
+ function _applyRules(styleSheetContent: string, rulesClassName: string) {
+-	const themeStyles = mainWindow.document.head.querySelectorAll(`.${rulesClassName}`);
+-	if (themeStyles.length === 0) {
+-		const elStyle = createStyleSheet();
+-		elStyle.className = rulesClassName;
+-		elStyle.textContent = styleSheetContent;
+-	} else {
+-		(<HTMLStyleElement>themeStyles[0]).textContent = styleSheetContent;
++	let themeStyle = mainWindow.document.head.querySelector(`.${rulesClassName}`);
++	if (!themeStyle) {
++		themeStyle = createStyleSheet();
++		themeStyle.className = rulesClassName;
++	}
++
++	if (themeStyle.textContent !== styleSheetContent) {
++		themeStyle.textContent = styleSheetContent;
++
++		if (isFirefox) {
++			// Firefox doesn't support observing style tag contents
++			// As a workaround, also update the data-version attribute when it changes so it can be observed
++			themeStyle.setAttribute('data-version', crypto.randomUUID());
++		}
+ 	}
+ }
+ 
