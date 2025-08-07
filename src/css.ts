@@ -10,9 +10,12 @@ export function registerCss(module: unknown) {
     sheet = new mainWindow.CSSStyleSheet()
     sheet.replaceSync(exportedValue)
   } else if (exportedValue instanceof CSSStyleSheet) {
+    // Duplicate the CSSStyleSheet for the mainWindow
+    // CSSStyleSheet can't be shared between different windows
+    // (mainWindow is different from window when using the sandbox mode)
     sheet = new mainWindow.CSSStyleSheet()
     sheet.replaceSync(
-      Array.from(sheet.cssRules)
+      Array.from(exportedValue.cssRules)
         .map((r) => r.cssText)
         .join('\n')
     )
