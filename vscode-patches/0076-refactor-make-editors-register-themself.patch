@@ -1,0 +1,321 @@
+From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
+From: =?UTF-8?q?Lo=C3=AFc=20Mangeonjean?= <loic@coderpad.io>
+Date: Wed, 6 Aug 2025 18:38:26 +0200
+Subject: [PATCH] refactor: make editors register themself
+
+instead of scanning them in the keybinding service
+---
+ .../widget/codeEditor/codeEditorWidget.ts     |  6 ++
+ .../codeEditor/embeddedCodeEditorWidget.ts    |  6 +-
+ .../widget/diffEditor/diffEditorWidget.ts     |  4 +
+ .../diffEditor/embeddedDiffEditorWidget.ts    |  6 +-
+ .../browser/standaloneCodeEditor.ts           |  4 +-
+ .../standalone/browser/standaloneServices.ts  | 79 +++++++------------
+ .../common/abstractKeybindingService.ts       |  4 +
+ .../platform/keybinding/common/keybinding.ts  |  2 +
+ .../comments/browser/simpleCommentEditor.ts   |  4 +-
+ 9 files changed, 57 insertions(+), 58 deletions(-)
+
+diff --git a/src/vs/editor/browser/widget/codeEditor/codeEditorWidget.ts b/src/vs/editor/browser/widget/codeEditor/codeEditorWidget.ts
+index f8893bb7ddb..3defd1d0f35 100644
+--- a/src/vs/editor/browser/widget/codeEditor/codeEditorWidget.ts
++++ b/src/vs/editor/browser/widget/codeEditor/codeEditorWidget.ts
+@@ -62,6 +62,7 @@ import { IThemeService, registerThemingParticipant } from '../../../../platform/
+ import { MenuId } from '../../../../platform/actions/common/actions.js';
+ import { TextModelEditReason, EditReasons } from '../../../common/textModelEditReason.js';
+ import { TextEdit } from '../../../common/core/edits/textEdit.js';
++import { IKeybindingService } from '../../../../platform/keybinding/common/keybinding.js';
+ 
+ export class CodeEditorWidget extends Disposable implements editorBrowser.ICodeEditor {
+ 
+@@ -268,6 +269,7 @@ export class CodeEditorWidget extends Disposable implements editorBrowser.ICodeE
+ 		@IAccessibilityService accessibilityService: IAccessibilityService,
+ 		@ILanguageConfigurationService private readonly languageConfigurationService: ILanguageConfigurationService,
+ 		@ILanguageFeaturesService languageFeaturesService: ILanguageFeaturesService,
++		@IKeybindingService private readonly keybindingService: IKeybindingService,
+ 	) {
+ 		super();
+ 		codeEditorService.willCreateCodeEditor();
+@@ -387,6 +389,10 @@ export class CodeEditorWidget extends Disposable implements editorBrowser.ICodeE
+ 		}));
+ 
+ 		this._codeEditorService.addCodeEditor(this);
++
++		if (!this.getOption(EditorOption.inDiffEditor)) {
++			this._register(this.keybindingService.registerContainer(this.getContainerDomNode()));
++		}
+ 	}
+ 
+ 	public writeScreenReaderContent(reason: string): void {
+diff --git a/src/vs/editor/browser/widget/codeEditor/embeddedCodeEditorWidget.ts b/src/vs/editor/browser/widget/codeEditor/embeddedCodeEditorWidget.ts
+index 3852374d394..bdcb4ff9fd4 100644
+--- a/src/vs/editor/browser/widget/codeEditor/embeddedCodeEditorWidget.ts
++++ b/src/vs/editor/browser/widget/codeEditor/embeddedCodeEditorWidget.ts
+@@ -16,6 +16,7 @@ import { IContextKeyService } from '../../../../platform/contextkey/common/conte
+ import { IInstantiationService, ServicesAccessor } from '../../../../platform/instantiation/common/instantiation.js';
+ import { INotificationService } from '../../../../platform/notification/common/notification.js';
+ import { IThemeService } from '../../../../platform/theme/common/themeService.js';
++import { IKeybindingService } from '../../../../platform/keybinding/common/keybinding.js';
+ 
+ export class EmbeddedCodeEditorWidget extends CodeEditorWidget {
+ 	private readonly _parentEditor: ICodeEditor;
+@@ -34,9 +35,10 @@ export class EmbeddedCodeEditorWidget extends CodeEditorWidget {
+ 		@INotificationService notificationService: INotificationService,
+ 		@IAccessibilityService accessibilityService: IAccessibilityService,
+ 		@ILanguageConfigurationService languageConfigurationService: ILanguageConfigurationService,
+-		@ILanguageFeaturesService languageFeaturesService: ILanguageFeaturesService
++		@ILanguageFeaturesService languageFeaturesService: ILanguageFeaturesService,
++		@IKeybindingService keybindingService: IKeybindingService,
+ 	) {
+-		super(domElement, { ...parentEditor.getRawOptions(), overflowWidgetsDomNode: parentEditor.getOverflowWidgetsDomNode() }, codeEditorWidgetOptions, instantiationService, codeEditorService, commandService, contextKeyService, themeService, notificationService, accessibilityService, languageConfigurationService, languageFeaturesService);
++		super(domElement, { ...parentEditor.getRawOptions(), overflowWidgetsDomNode: parentEditor.getOverflowWidgetsDomNode() }, codeEditorWidgetOptions, instantiationService, codeEditorService, commandService, contextKeyService, themeService, notificationService, accessibilityService, languageConfigurationService, languageFeaturesService, keybindingService);
+ 
+ 		this._parentEditor = parentEditor;
+ 		this._overwriteOptions = options;
+diff --git a/src/vs/editor/browser/widget/diffEditor/diffEditorWidget.ts b/src/vs/editor/browser/widget/diffEditor/diffEditorWidget.ts
+index fbc898a0a10..d7cae92af87 100644
+--- a/src/vs/editor/browser/widget/diffEditor/diffEditorWidget.ts
++++ b/src/vs/editor/browser/widget/diffEditor/diffEditorWidget.ts
+@@ -14,6 +14,7 @@ import { AccessibilitySignal, IAccessibilitySignalService } from '../../../../pl
+ import { IContextKeyService } from '../../../../platform/contextkey/common/contextkey.js';
+ import { IInstantiationService } from '../../../../platform/instantiation/common/instantiation.js';
+ import { ServiceCollection } from '../../../../platform/instantiation/common/serviceCollection.js';
++import { IKeybindingService } from '../../../../platform/keybinding/common/keybinding.js';
+ import { bindContextKey } from '../../../../platform/observable/common/platformObservableUtils.js';
+ import { IEditorProgressService } from '../../../../platform/progress/common/progress.js';
+ import { IDiffEditorOptions } from '../../../common/config/editorOptions.js';
+@@ -100,6 +101,7 @@ export class DiffEditorWidget extends DelegatingEditor implements IDiffEditor {
+ 		@ICodeEditorService codeEditorService: ICodeEditorService,
+ 		@IAccessibilitySignalService private readonly _accessibilitySignalService: IAccessibilitySignalService,
+ 		@IEditorProgressService private readonly _editorProgressService: IEditorProgressService,
++		@IKeybindingService private readonly keybindingService: IKeybindingService,
+ 	) {
+ 		super();
+ 		this.elements = h('div.monaco-diff-editor.side-by-side', { style: { position: 'relative', height: '100%' } }, [
+@@ -416,6 +418,8 @@ export class DiffEditorWidget extends DelegatingEditor implements IDiffEditor {
+ 		this._register(autorun(reader => {
+ 			this._options.setModel(this._diffModel.read(reader));
+ 		}));
++
++		this._register(this.keybindingService.registerContainer(this.getContainerDomNode()));
+ 	}
+ 
+ 	public getViewWidth(): number {
+diff --git a/src/vs/editor/browser/widget/diffEditor/embeddedDiffEditorWidget.ts b/src/vs/editor/browser/widget/diffEditor/embeddedDiffEditorWidget.ts
+index ce41de7bc70..916c923585c 100644
+--- a/src/vs/editor/browser/widget/diffEditor/embeddedDiffEditorWidget.ts
++++ b/src/vs/editor/browser/widget/diffEditor/embeddedDiffEditorWidget.ts
+@@ -12,6 +12,7 @@ import { IAccessibilitySignalService } from '../../../../platform/accessibilityS
+ import { IContextKeyService } from '../../../../platform/contextkey/common/contextkey.js';
+ import { IInstantiationService } from '../../../../platform/instantiation/common/instantiation.js';
+ import { IEditorProgressService } from '../../../../platform/progress/common/progress.js';
++import { IKeybindingService } from '../../../../platform/keybinding/common/keybinding.js';
+ export class EmbeddedDiffEditorWidget extends DiffEditorWidget {
+ 
+ 	private readonly _parentEditor: ICodeEditor;
+@@ -26,9 +27,10 @@ export class EmbeddedDiffEditorWidget extends DiffEditorWidget {
+ 		@IInstantiationService instantiationService: IInstantiationService,
+ 		@ICodeEditorService codeEditorService: ICodeEditorService,
+ 		@IAccessibilitySignalService accessibilitySignalService: IAccessibilitySignalService,
+-		@IEditorProgressService editorProgressService: IEditorProgressService
++		@IEditorProgressService editorProgressService: IEditorProgressService,
++		@IKeybindingService keybindingService: IKeybindingService,
+ 	) {
+-		super(domElement, parentEditor.getRawOptions(), codeEditorWidgetOptions, contextKeyService, instantiationService, codeEditorService, accessibilitySignalService, editorProgressService);
++		super(domElement, parentEditor.getRawOptions(), codeEditorWidgetOptions, contextKeyService, instantiationService, codeEditorService, accessibilitySignalService, editorProgressService, keybindingService);
+ 
+ 		this._parentEditor = parentEditor;
+ 		this._overwriteOptions = options;
+diff --git a/src/vs/editor/standalone/browser/standaloneCodeEditor.ts b/src/vs/editor/standalone/browser/standaloneCodeEditor.ts
+index ca9736c46f1..cab8bb8a1a1 100644
+--- a/src/vs/editor/standalone/browser/standaloneCodeEditor.ts
++++ b/src/vs/editor/standalone/browser/standaloneCodeEditor.ts
+@@ -283,7 +283,7 @@ export class StandaloneCodeEditor extends CodeEditorWidget implements IStandalon
+ 	) {
+ 		const options = { ..._options };
+ 		options.ariaLabel = options.ariaLabel || StandaloneCodeEditorNLS.editorViewAccessibleLabel;
+-		super(domElement, options, { isStandaloneEditor: true }, instantiationService, codeEditorService, commandService, contextKeyService, themeService, notificationService, accessibilityService, languageConfigurationService, languageFeaturesService);
++		super(domElement, options, { isStandaloneEditor: true }, instantiationService, codeEditorService, commandService, contextKeyService, themeService, notificationService, accessibilityService, languageConfigurationService, languageFeaturesService, keybindingService);
+ 
+ 		if (keybindingService instanceof StandaloneKeybindingService) {
+ 			this._standaloneKeybindingService = keybindingService;
+@@ -507,6 +507,7 @@ export class StandaloneDiffEditor2 extends DiffEditorWidget implements IStandalo
+ 		@IEditorProgressService editorProgressService: IEditorProgressService,
+ 		@IClipboardService clipboardService: IClipboardService,
+ 		@IAccessibilitySignalService accessibilitySignalService: IAccessibilitySignalService,
++		@IKeybindingService keybindingService: IKeybindingService,
+ 	) {
+ 		const options = { ..._options };
+ 		updateConfigurationService(configurationService, options, true);
+@@ -527,6 +528,7 @@ export class StandaloneDiffEditor2 extends DiffEditorWidget implements IStandalo
+ 			codeEditorService,
+ 			accessibilitySignalService,
+ 			editorProgressService,
++			keybindingService,
+ 		);
+ 
+ 		this._configurationService = configurationService;
+diff --git a/src/vs/editor/standalone/browser/standaloneServices.ts b/src/vs/editor/standalone/browser/standaloneServices.ts
+index 8093d795a47..48013c189bd 100644
+--- a/src/vs/editor/standalone/browser/standaloneServices.ts
++++ b/src/vs/editor/standalone/browser/standaloneServices.ts
+@@ -53,8 +53,6 @@ import { basename } from '../../../base/common/resources.js';
+ import { ICodeEditorService } from '../../browser/services/codeEditorService.js';
+ import { ConsoleLogger, ILoggerService, ILogService, NullLoggerService } from '../../../platform/log/common/log.js';
+ import { IWorkspaceTrustManagementService, IWorkspaceTrustTransitionParticipant, IWorkspaceTrustUriInfo } from '../../../platform/workspace/common/workspaceTrust.js';
+-import { EditorOption } from '../../common/config/editorOptions.js';
+-import { ICodeEditor, IDiffEditor } from '../../browser/editorBrowser.js';
+ import { IContextMenuService, IContextViewDelegate, IContextViewService, IOpenContextView } from '../../../platform/contextview/browser/contextView.js';
+ import { ContextViewService } from '../../../platform/contextview/browser/contextViewService.js';
+ import { LanguageService } from '../../common/services/languageService.js';
+@@ -421,66 +419,43 @@ export class StandaloneKeybindingService extends AbstractKeybindingService {
+ 		this._cachedResolver = null;
+ 		this._dynamicKeybindings = [];
+ 		this._domNodeListeners = [];
++	}
+ 
+-		const addContainer = (domNode: HTMLElement) => {
+-			const disposables = new DisposableStore();
++	override registerContainer(container: HTMLElement): IDisposable {
++		const disposables = new DisposableStore();
+ 
+-			// for standard keybindings
+-			disposables.add(dom.addDisposableListener(domNode, dom.EventType.KEY_DOWN, (e: KeyboardEvent) => {
+-				const keyEvent = new StandardKeyboardEvent(e);
+-				const shouldPreventDefault = this._dispatch(keyEvent, keyEvent.target);
+-				if (shouldPreventDefault) {
+-					keyEvent.preventDefault();
+-					keyEvent.stopPropagation();
+-				}
+-			}));
+-
+-			// for single modifier chord keybindings (e.g. shift shift)
+-			disposables.add(dom.addDisposableListener(domNode, dom.EventType.KEY_UP, (e: KeyboardEvent) => {
+-				const keyEvent = new StandardKeyboardEvent(e);
+-				const shouldPreventDefault = this._singleModifierDispatch(keyEvent, keyEvent.target);
+-				if (shouldPreventDefault) {
+-					keyEvent.preventDefault();
+-				}
+-			}));
++		// for standard keybindings
++		disposables.add(dom.addDisposableListener(container, dom.EventType.KEY_DOWN, (e: KeyboardEvent) => {
++			const keyEvent = new StandardKeyboardEvent(e);
++			const shouldPreventDefault = this._dispatch(keyEvent, keyEvent.target);
++			if (shouldPreventDefault) {
++				keyEvent.preventDefault();
++				keyEvent.stopPropagation();
++			}
++		}));
+ 
+-			this._domNodeListeners.push(new DomNodeListeners(domNode, disposables));
+-		};
+-		const removeContainer = (domNode: HTMLElement) => {
++		// for single modifier chord keybindings (e.g. shift shift)
++		disposables.add(dom.addDisposableListener(container, dom.EventType.KEY_UP, (e: KeyboardEvent) => {
++			const keyEvent = new StandardKeyboardEvent(e);
++			const shouldPreventDefault = this._singleModifierDispatch(keyEvent, keyEvent.target);
++			if (shouldPreventDefault) {
++				keyEvent.preventDefault();
++			}
++		}));
++
++		this._domNodeListeners.push(new DomNodeListeners(container, disposables));
++
++		disposables.add(toDisposable(() => {
+ 			for (let i = 0; i < this._domNodeListeners.length; i++) {
+ 				const domNodeListeners = this._domNodeListeners[i];
+-				if (domNodeListeners.domNode === domNode) {
++				if (domNodeListeners.domNode === container) {
+ 					this._domNodeListeners.splice(i, 1);
+ 					domNodeListeners.dispose();
+ 				}
+ 			}
+-		};
+-
+-		const addCodeEditor = (codeEditor: ICodeEditor) => {
+-			if (codeEditor.getOption(EditorOption.inDiffEditor)) {
+-				return;
+-			}
+-			addContainer(codeEditor.getContainerDomNode());
+-		};
+-		const removeCodeEditor = (codeEditor: ICodeEditor) => {
+-			if (codeEditor.getOption(EditorOption.inDiffEditor)) {
+-				return;
+-			}
+-			removeContainer(codeEditor.getContainerDomNode());
+-		};
+-		this._register(codeEditorService.onCodeEditorAdd(addCodeEditor));
+-		this._register(codeEditorService.onCodeEditorRemove(removeCodeEditor));
+-		codeEditorService.listCodeEditors().forEach(addCodeEditor);
++		}));
+ 
+-		const addDiffEditor = (diffEditor: IDiffEditor) => {
+-			addContainer(diffEditor.getContainerDomNode());
+-		};
+-		const removeDiffEditor = (diffEditor: IDiffEditor) => {
+-			removeContainer(diffEditor.getContainerDomNode());
+-		};
+-		this._register(codeEditorService.onDiffEditorAdd(addDiffEditor));
+-		this._register(codeEditorService.onDiffEditorRemove(removeDiffEditor));
+-		codeEditorService.listDiffEditors().forEach(addDiffEditor);
++		return disposables;
+ 	}
+ 
+ 	public addDynamicKeybinding(command: string, keybinding: number, handler: ICommandHandler, when: ContextKeyExpression | undefined): IDisposable {
+diff --git a/src/vs/platform/keybinding/common/abstractKeybindingService.ts b/src/vs/platform/keybinding/common/abstractKeybindingService.ts
+index 7678f6c893f..3859431103c 100644
+--- a/src/vs/platform/keybinding/common/abstractKeybindingService.ts
++++ b/src/vs/platform/keybinding/common/abstractKeybindingService.ts
+@@ -80,6 +80,10 @@ export abstract class AbstractKeybindingService extends Disposable implements IK
+ 		this._logging = false;
+ 	}
+ 
++	registerContainer(container: HTMLElement): IDisposable {
++		return Disposable.None;
++	}
++
+ 	public override dispose(): void {
+ 		super.dispose();
+ 	}
+diff --git a/src/vs/platform/keybinding/common/keybinding.ts b/src/vs/platform/keybinding/common/keybinding.ts
+index 72f0d6c9640..a5e37dc4885 100644
+--- a/src/vs/platform/keybinding/common/keybinding.ts
++++ b/src/vs/platform/keybinding/common/keybinding.ts
+@@ -45,6 +45,8 @@ export interface IKeybindingService {
+ 
+ 	readonly inChordMode: boolean;
+ 
++	registerContainer(container: HTMLElement): IDisposable;
++
+ 	onDidUpdateKeybindings: Event<void>;
+ 
+ 	/**
+diff --git a/src/vs/workbench/contrib/comments/browser/simpleCommentEditor.ts b/src/vs/workbench/contrib/comments/browser/simpleCommentEditor.ts
+index f11377c917a..62338521f52 100644
+--- a/src/vs/workbench/contrib/comments/browser/simpleCommentEditor.ts
++++ b/src/vs/workbench/contrib/comments/browser/simpleCommentEditor.ts
+@@ -39,6 +39,7 @@ import { MenuId } from '../../../../platform/actions/common/actions.js';
+ import { ContentHoverController } from '../../../../editor/contrib/hover/browser/contentHoverController.js';
+ import { GlyphHoverController } from '../../../../editor/contrib/hover/browser/glyphHoverController.js';
+ import { PlaceholderTextContribution } from '../../../../editor/contrib/placeholderText/browser/placeholderTextContribution.js';
++import { IKeybindingService } from '../../../../platform/keybinding/common/keybinding.js';
+ 
+ export const ctxCommentEditorFocused = new RawContextKey<boolean>('commentEditorFocused', false);
+ export const MIN_EDITOR_HEIGHT = 5 * 18;
+@@ -66,6 +67,7 @@ export class SimpleCommentEditor extends CodeEditorWidget {
+ 		@IAccessibilityService accessibilityService: IAccessibilityService,
+ 		@ILanguageConfigurationService languageConfigurationService: ILanguageConfigurationService,
+ 		@ILanguageFeaturesService languageFeaturesService: ILanguageFeaturesService,
++		@IKeybindingService keybindingService: IKeybindingService,
+ 	) {
+ 		const codeEditorWidgetOptions: ICodeEditorWidgetOptions = {
+ 			contributions: <IEditorContributionDescription[]>[
+@@ -91,7 +93,7 @@ export class SimpleCommentEditor extends CodeEditorWidget {
+ 			contextMenuId: MenuId.SimpleEditorContext
+ 		};
+ 
+-		super(domElement, options, codeEditorWidgetOptions, instantiationService, codeEditorService, commandService, scopedContextKeyService, themeService, notificationService, accessibilityService, languageConfigurationService, languageFeaturesService);
++		super(domElement, options, codeEditorWidgetOptions, instantiationService, codeEditorService, commandService, scopedContextKeyService, themeService, notificationService, accessibilityService, languageConfigurationService, languageFeaturesService, keybindingService);
+ 
+ 		this._commentEditorFocused = ctxCommentEditorFocused.bindTo(scopedContextKeyService);
+ 		this._commentEditorEmpty = CommentContextKeys.commentIsEmpty.bindTo(scopedContextKeyService);

@@ -1,0 +1,40 @@
+From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
+From: =?UTF-8?q?Lo=C3=AFc=20Mangeonjean?= <loic@coderpad.io>
+Date: Wed, 6 Aug 2025 18:38:44 +0200
+Subject: [PATCH] fix: also register the quickinput container
+
+---
+ src/vs/platform/quickinput/browser/quickInputController.ts | 6 +++++-
+ 1 file changed, 5 insertions(+), 1 deletion(-)
+
+diff --git a/src/vs/platform/quickinput/browser/quickInputController.ts b/src/vs/platform/quickinput/browser/quickInputController.ts
+index 68dc9d95089..ad0b19ee6a7 100644
+--- a/src/vs/platform/quickinput/browser/quickInputController.ts
++++ b/src/vs/platform/quickinput/browser/quickInputController.ts
+@@ -35,6 +35,7 @@ import { getWindowControlsStyle, WindowControlsStyle } from '../../window/common
+ import { getZoomFactor } from '../../../base/browser/browser.js';
+ import { Checkbox } from '../../../base/browser/ui/toggle/toggle.js';
+ import { defaultCheckboxStyles } from '../../theme/browser/defaultStyles.js';
++import { IKeybindingService } from '../../keybinding/common/keybinding.js';
+ 
+ const $ = dom.$;
+ 
+@@ -86,7 +87,8 @@ export class QuickInputController extends Disposable {
+ 		@ILayoutService private readonly layoutService: ILayoutService,
+ 		@IInstantiationService private readonly instantiationService: IInstantiationService,
+ 		@IContextKeyService contextKeyService: IContextKeyService,
+-		@IStorageService private readonly storageService: IStorageService
++		@IStorageService private readonly storageService: IStorageService,
++		@IKeybindingService private readonly keybindingService: IKeybindingService,
+ 	) {
+ 		super();
+ 
+@@ -137,6 +139,8 @@ export class QuickInputController extends Disposable {
+ 		}
+ 
+ 		const container = dom.append(this._container, $('.quick-input-widget.show-file-icons'));
++		this._register(this.keybindingService.registerContainer(container));
++
+ 		container.tabIndex = -1;
+ 		container.style.display = 'none';
+ 
