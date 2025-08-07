@@ -7,10 +7,10 @@ Subject: [PATCH] feat: support loading VSCode in an iframe
  src/vs/base/browser/dom.ts                    | 39 +++++++------------
  src/vs/base/browser/domStylesheets.ts         |  4 +-
  src/vs/base/browser/window.ts                 |  7 +++-
- src/vs/workbench/browser/window.ts            | 17 ++++++--
+ src/vs/workbench/browser/window.ts            | 23 +++++++----
  .../browser/view/renderers/webviewPreloads.ts |  4 +-
  .../browser/webWorkerExtensionHost.ts         |  6 +--
- 6 files changed, 40 insertions(+), 37 deletions(-)
+ 6 files changed, 43 insertions(+), 40 deletions(-)
 
 diff --git a/src/vs/base/browser/dom.ts b/src/vs/base/browser/dom.ts
 index 6169e138aab..e654f642bab 100644
@@ -140,13 +140,15 @@ index ab920e18349..c4a02c5ca47 100644
  export function isAuxiliaryWindow(obj: Window): obj is CodeWindow {
  	if (obj === mainWindow) {
 diff --git a/src/vs/workbench/browser/window.ts b/src/vs/workbench/browser/window.ts
-index 70e83ad4396..d32117f12b7 100644
+index 70e83ad4396..74ed21bbfeb 100644
 --- a/src/vs/workbench/browser/window.ts
 +++ b/src/vs/workbench/browser/window.ts
-@@ -109,11 +109,20 @@ export abstract class BaseWindow extends Disposable {
+@@ -109,13 +109,22 @@ export abstract class BaseWindow extends Disposable {
  		// to throttle timeouts in minimized windows, so with this we can ensure the
  		// timeout is scheduled without being throttled (unless all windows are minimized).
  
+-		const originalSetTimeout = targetWindow.setTimeout;
+-		Object.defineProperty(targetWindow, 'vscodeOriginalSetTimeout', { get: () => originalSetTimeout });
 +		function getOverridenWindow(targetWindow: Window) {
 +			if (targetWindow === mainWindow) {
 +				// If running inside an iframe, do not override the `setTimeout` function on the
@@ -156,16 +158,19 @@ index 70e83ad4396..d32117f12b7 100644
 +			return targetWindow;
 +		}
 +
- 		const originalSetTimeout = targetWindow.setTimeout;
--		Object.defineProperty(targetWindow, 'vscodeOriginalSetTimeout', { get: () => originalSetTimeout });
++		const originalSetTimeout = getOverridenWindow(targetWindow).setTimeout;
 +		Object.defineProperty(getOverridenWindow(targetWindow), 'vscodeOriginalSetTimeout', { get: () => originalSetTimeout });
  
- 		const originalClearTimeout = targetWindow.clearTimeout;
+-		const originalClearTimeout = targetWindow.clearTimeout;
 -		Object.defineProperty(targetWindow, 'vscodeOriginalClearTimeout', { get: () => originalClearTimeout });
++		const originalClearTimeout = getOverridenWindow(targetWindow).clearTimeout;
 +		Object.defineProperty(getOverridenWindow(targetWindow), 'vscodeOriginalClearTimeout', { get: () => originalClearTimeout });
  
- 		targetWindow.setTimeout = function (this: unknown, handler: TimerHandler, timeout = 0, ...args: unknown[]): number {
+-		targetWindow.setTimeout = function (this: unknown, handler: TimerHandler, timeout = 0, ...args: unknown[]): number {
++		getOverridenWindow(targetWindow).setTimeout = function (this: unknown, handler: TimerHandler, timeout = 0, ...args: unknown[]): number {
  			if (dom.getWindowsCount() === 1 || typeof handler === 'string' || timeout === 0 /* immediates are never throttled */) {
+ 				return originalSetTimeout.apply(this, [handler, timeout, ...args]);
+ 			}
 @@ -138,7 +147,7 @@ export abstract class BaseWindow extends Disposable {
  				// this can happen for timeouts on unfocused windows
  				let didClear = false;
