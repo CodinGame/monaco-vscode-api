@@ -1,10 +1,7 @@
 import type { IEditorOverrideServices } from 'vs/editor/standalone/browser/standaloneServices'
 import { SyncDescriptor } from 'vs/platform/instantiation/common/descriptors'
 import { WorkbenchKeybindingService } from 'vs/workbench/services/keybinding/browser/keybindingService'
-import type {
-  IKeyboardEvent,
-  IUserFriendlyKeybinding
-} from 'vs/platform/keybinding/common/keybinding'
+import type { IUserFriendlyKeybinding } from 'vs/platform/keybinding/common/keybinding'
 import { IKeybindingService } from 'vs/platform/keybinding/common/keybinding.service'
 import { VSBuffer } from 'vs/base/common/buffer'
 import { IUserDataProfilesService } from 'vs/platform/userDataProfile/common/userDataProfile.service'
@@ -14,7 +11,7 @@ import type { IFileWriteOptions } from 'vs/platform/files/common/files'
 import { IFileService } from 'vs/platform/files/common/files.service'
 import { ICommandService } from 'vs/platform/commands/common/commands.service'
 import { CommandService } from 'vs/workbench/services/commands/common/commandService'
-import { DisposableStore, toDisposable } from 'vs/base/common/lifecycle'
+import { DisposableStore, toDisposable, type IDisposable } from 'vs/base/common/lifecycle'
 import { KeybindingResolver } from 'vs/platform/keybinding/common/keybindingResolver'
 import type { IContextKeyServiceTarget } from 'vs/platform/contextkey/common/contextkey'
 import { IContextKeyService } from 'vs/platform/contextkey/common/contextkey.service'
@@ -34,6 +31,7 @@ import 'vs/workbench/contrib/keybindings/browser/keybindings.contribution'
 import 'vs/workbench/contrib/preferences/browser/keybindingsEditorContribution'
 import 'vs/workbench/contrib/commands/common/commands.contribution'
 import { getService } from '../services'
+import type { IKeyboardEvent } from 'vs/base/browser/keyboardEvent'
 
 // This is the default value, but can be overriden by overriding the Environment or UserDataProfileService service
 const defaultUserKeybindindsFile = URI.from({
@@ -129,8 +127,25 @@ class DynamicWorkbenchKeybindingService
     return super._getResolver()
   }
 
+  private authorizedContainers: HTMLElement[] = []
+  override registerContainer(container: HTMLElement): IDisposable {
+    const disposableStore = new DisposableStore()
+    disposableStore.add(super.registerContainer(container))
+    this.authorizedContainers.push(container)
+    disposableStore.add(
+      toDisposable(() => {
+        this.authorizedContainers = this.authorizedContainers.filter((c) => c != container)
+      })
+    )
+
+    return disposableStore
+  }
+
   protected override _dispatch(e: IKeyboardEvent, target: IContextKeyServiceTarget): boolean {
-    if (!this.shouldUseGlobalKeybindings()) {
+    if (
+      !this.shouldUseGlobalKeybindings() &&
+      this.authorizedContainers.every((container) => !container.contains(e.target))
+    ) {
       return false
     }
     return super._dispatch(e, target)
