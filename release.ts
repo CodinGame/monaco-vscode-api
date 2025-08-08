@@ -2,7 +2,7 @@
  * This script was inspired by https://dev.to/antongolub/you-don-t-need-semantic-release-sometimes-3k6k
  */
 import semanticRelease, { type Options as SemanticReleaseOptions } from 'semantic-release'
-import { $ } from 'zx'
+import { $, ProcessOutput } from 'zx'
 import yargs, { type Options } from 'yargs'
 import semanticReleaseConfig from '@codingame/semantic-release-config-github'
 import type { PackageJson } from 'type-fest'
@@ -52,7 +52,19 @@ async function publishNpm(version: string, tag: string) {
       await fs.writeFile(packageJsonFile, JSON.stringify(packageJson, null, 2))
 
       $.cwd = libDir
-      await $`npm publish --tag "${tag}" --access public`
+
+      try {
+        await $`npm publish --tag "${tag}" --access public`
+      } catch (err) {
+        if (
+          err instanceof ProcessOutput &&
+          err.stderr.includes('You cannot publish over the previously published versions')
+        ) {
+          // ignore, it's an internal retry from npm that fails
+        } else {
+          throw err
+        }
+      }
     }
   }
 }
