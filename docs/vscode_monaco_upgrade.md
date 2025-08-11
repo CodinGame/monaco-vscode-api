@@ -25,6 +25,7 @@
 - Fix errors, adapt code, build, include the `vscode-patches` directory into this commit
   - Do not hesitate to run the eslint autofix, it gets rid of the majority of your errors
   - Implement missing services. This is easily observable seem when running the demo (see next point)
+    - you can also use the commmand `git diff <previousTag> <newTag> -G'registerSingleton\('` in the vscode repo to list the changes to the services
   - Make sure slightly transformed duplicated files are up to date with VSCode (in `src/assets`)
 - Update demo
   - Update dependencies

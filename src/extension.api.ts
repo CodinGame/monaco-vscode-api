@@ -334,7 +334,6 @@ const api: typeof vscode = {
   TextSearchContext2: searchExtTypes.TextSearchContext2,
   ChatResponseNotebookEditPart: extHostTypes.ChatResponseNotebookEditPart,
   ChatErrorLevel: extHostTypes.ChatErrorLevel,
-  PreparedTerminalToolInvocation: extHostTypes.PreparedTerminalToolInvocation,
   ExtendedLanguageModelToolResult: extHostTypes.ExtendedLanguageModelToolResult,
   ChatReferenceDiagnostic: extHostTypes.ChatReferenceDiagnostic,
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -352,7 +351,18 @@ const api: typeof vscode = {
   McpHttpServerDefinition: extHostTypes.McpHttpServerDefinition,
   AISearchKeyword: searchExtTypes.AISearchKeyword,
   ChatPrepareToolInvocationPart: extHostTypes.ChatPrepareToolInvocationPart,
-  InlineCompletionsDisposeReasonKind: extHostTypes.InlineCompletionsDisposeReasonKind
+  InlineCompletionsDisposeReasonKind: extHostTypes.InlineCompletionsDisposeReasonKind,
+  ChatToolInvocationPart: extHostTypes.ChatToolInvocationPart,
+  ChatResponseMultiDiffPart: extHostTypes.ChatResponseMultiDiffPart,
+  ChatResponsePullRequestPart: extHostTypes.ChatResponsePullRequestPart,
+  ChatResponseClearToPreviousToolInvocationReason:
+    extHostTypes.ChatResponseClearToPreviousToolInvocationReason,
+  LanguageModelToolExtensionSource: extHostTypes.LanguageModelToolExtensionSource,
+  LanguageModelToolMCPSource: extHostTypes.LanguageModelToolMCPSource,
+  ChatResponseTurn2: extHostTypes.ChatResponseTurn2,
+  ToolResultAudience: extHostTypes.ToolResultAudience,
+  LanguageModelTextPart2: extHostTypes.LanguageModelTextPart,
+  LanguageModelDataPart2: extHostTypes.LanguageModelDataPart
 }
 
 // @ts-expect-error the syntax will be transformed by a typescript transformer in the rollup config

@@ -9,6 +9,8 @@ import type {
   IQuickNavigateConfiguration,
   IQuickPick,
   IQuickPickItem,
+  IQuickTree,
+  IQuickTreeItem,
   IQuickWidget,
   QuickPickInput
 } from 'vs/platform/quickinput/common/quickInput'
@@ -140,6 +142,10 @@ class DelegateQuickInputService implements IQuickInputService {
     options: { useSeparators: boolean } = { useSeparators: false }
   ): IQuickPick<T, { useSeparators: boolean }> {
     return this.activeService.createQuickPick(options)
+  }
+
+  createQuickTree<T extends IQuickTreeItem>(): IQuickTree<T> {
+    return this.activeService.createQuickTree()
   }
 
   createInputBox(): IInputBox {

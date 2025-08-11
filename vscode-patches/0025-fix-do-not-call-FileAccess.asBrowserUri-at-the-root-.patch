@@ -6,14 +6,14 @@ Subject: [PATCH] fix: do not call FileAccess.asBrowserUri at the root of the
 
 to be able to register the file before
 ---
- .../browser/extensionsWorkbenchService.ts     | 110 ++++++++++--------
- 1 file changed, 61 insertions(+), 49 deletions(-)
+ .../browser/extensionsWorkbenchService.ts     | 108 ++++++++++--------
+ 1 file changed, 60 insertions(+), 48 deletions(-)
 
 diff --git a/src/vs/workbench/contrib/extensions/browser/extensionsWorkbenchService.ts b/src/vs/workbench/contrib/extensions/browser/extensionsWorkbenchService.ts
-index 752dcc3196f..1acbd95455e 100644
+index 9927c1417e2..9be6eed2499 100644
 --- a/src/vs/workbench/contrib/extensions/browser/extensionsWorkbenchService.ts
 +++ b/src/vs/workbench/contrib/extensions/browser/extensionsWorkbenchService.ts
-@@ -3,76 +3,88 @@
+@@ -3,77 +3,89 @@
   *  Licensed under the MIT License. See License.txt in the project root for license information.
   *--------------------------------------------------------------------------------------------*/
  
@@ -22,11 +22,10 @@ index 752dcc3196f..1acbd95455e 100644
 -import { Event, Emitter } from '../../../../base/common/event.js';
 +import { mainWindow } from '../../../../base/browser/window.js';
  import { index } from '../../../../base/common/arrays.js';
--import { CancelablePromise, Promises, ThrottledDelayer, createCancelablePromise } from '../../../../base/common/async.js';
-+import { CancelablePromise, createCancelablePromise, Promises, ThrottledDelayer } from '../../../../base/common/async.js';
+ import { CancelablePromise, Promises, ThrottledDelayer, createCancelablePromise } from '../../../../base/common/async.js';
+ import { CancellationError, getErrorMessage, isCancellationError } from '../../../../base/common/errors.js';
 +import { CancellationToken } from '../../../../base/common/cancellation.js';
 +import { fromNow } from '../../../../base/common/date.js';
- import { CancellationError, isCancellationError } from '../../../../base/common/errors.js';
 +import { Emitter, Event } from '../../../../base/common/event.js';
 +import { IMarkdownString, MarkdownString } from '../../../../base/common/htmlContent.js';
  import { Disposable, MutableDisposable, toDisposable } from '../../../../base/common/lifecycle.js';
@@ -73,11 +72,12 @@ index 752dcc3196f..1acbd95455e 100644
 +	IQueryOptions,
 +	isTargetPlatformCompatible,
  	MaliciousExtensionInfo,
--	shouldRequireRepositorySignatureFor
-+	shouldRequireRepositorySignatureFor,
+ 	shouldRequireRepositorySignatureFor,
+-	IGalleryExtensionVersion
++	IGalleryExtensionVersion,
++	WEB_EXTENSION_TAG,
 +	TargetPlatformToString,
-+	UninstallExtensionInfo,
-+	WEB_EXTENSION_TAG
++	UninstallExtensionInfo
  } from '../../../../platform/extensionManagement/common/extensionManagement.js';
 -import { IWorkbenchExtensionEnablementService, EnablementState, IExtensionManagementServerService, IExtensionManagementServer, IWorkbenchExtensionManagementService, IResourceExtension } from '../../../services/extensionManagement/common/extensionManagement.js';
 -import { getGalleryExtensionTelemetryData, getLocalExtensionTelemetryData, areSameExtensions, groupByExtension, getGalleryExtensionId, findMatchingMaliciousEntry } from '../../../../platform/extensionManagement/common/extensionManagementUtil.js';

@@ -18,17 +18,17 @@ import { IAuthenticationMcpUsageService } from 'vs/workbench/services/authentica
 import { AuthenticationMcpUsageService } from 'vs/workbench/services/authentication/browser/authenticationMcpUsageService'
 import { McpWorkbenchService } from 'vs/workbench/contrib/mcp/browser/mcpWorkbenchService'
 import {
-  IMcpGalleryService,
-  IMcpManagementService
+  IAllowedMcpServersService,
+  IMcpGalleryService
 } from 'vs/platform/mcp/common/mcpManagement.service'
 import { McpGalleryService } from 'vs/platform/mcp/common/mcpGalleryService'
-import { McpManagementService } from 'vs/platform/mcp/common/mcpManagementService'
 import { McpSamplingService } from 'vs/workbench/contrib/mcp/common/mcpSamplingService'
 import { IMcpResourceScannerService } from 'vs/platform/mcp/common/mcpResourceScannerService.service'
 import { McpResourceScannerService } from 'vs/platform/mcp/common/mcpResourceScannerService'
 import { McpElicitationService } from 'vs/workbench/contrib/mcp/browser/mcpElicitationService'
 import { IWorkbenchMcpManagementService } from 'vs/workbench/services/mcp/common/mcpWorkbenchManagementService.service'
-import { WorkbenchMcpManagementService } from 'vs/workbench/services/mcp/common/mcpWorkbenchManagementService'
+import { WorkbenchMcpManagementService } from 'vs/workbench/services/mcp/browser/mcpWorkbenchManagementService'
+import { AllowedMcpServersService } from 'vs/platform/mcp/common/allowedMcpServersService'
 
 export default function getServiceOverride(): IEditorOverrideServices {
   return {
@@ -52,13 +52,13 @@ export default function getServiceOverride(): IEditorOverrideServices {
     ),
     [IMcpWorkbenchService.toString()]: new SyncDescriptor(McpWorkbenchService, [], true),
     [IMcpGalleryService.toString()]: new SyncDescriptor(McpGalleryService, [], true),
-    [IMcpManagementService.toString()]: new SyncDescriptor(McpManagementService, [], true),
     [IMcpSamplingService.toString()]: new SyncDescriptor(McpSamplingService, [], true),
     [IMcpElicitationService.toString()]: new SyncDescriptor(McpElicitationService, [], true),
     [IWorkbenchMcpManagementService.toString()]: new SyncDescriptor(
       WorkbenchMcpManagementService,
       [],
       true
-    )
+    ),
+    [IAllowedMcpServersService.toString()]: new SyncDescriptor(AllowedMcpServersService, [], true)
   }
 }

@@ -42,10 +42,10 @@ index 8ad0b634488..727001aa53d 100644
  
  
 diff --git a/src/vs/workbench/contrib/chat/browser/actions/chatToolActions.ts b/src/vs/workbench/contrib/chat/browser/actions/chatToolActions.ts
-index a837db3ef68..ff9a6b18e56 100644
+index a36d58c9996..41b57220bfd 100644
 --- a/src/vs/workbench/contrib/chat/browser/actions/chatToolActions.ts
 +++ b/src/vs/workbench/contrib/chat/browser/actions/chatToolActions.ts
-@@ -20,6 +20,7 @@ import { IToolData, ToolSet } from '../../common/languageModelToolsService.js';
+@@ -26,6 +26,7 @@ import { IToolData, ToolSet } from '../../common/languageModelToolsService.js';
  import { IChatWidget, IChatWidgetService } from '../chat.js';
  import { ToolsScope } from '../chatSelectedTools.js';
  import { CHAT_CATEGORY } from './chatActions.js';
@@ -53,7 +53,7 @@ index a837db3ef68..ff9a6b18e56 100644
  import { showToolsPicker } from './chatToolPicker.js';
  
  
-@@ -34,8 +35,6 @@ type SelectedToolClassification = {
+@@ -40,8 +41,6 @@ type SelectedToolClassification = {
  	total: { classification: 'SystemMetaData'; purpose: 'FeatureInsight'; comment: 'Number of total chat tools' };
  };
  
@@ -63,10 +63,10 @@ index a837db3ef68..ff9a6b18e56 100644
  	constructor() {
  		super({
 diff --git a/src/vs/workbench/contrib/chat/browser/chatAccessibilityProvider.ts b/src/vs/workbench/contrib/chat/browser/chatAccessibilityProvider.ts
-index 8a9468f6ccd..d08923c4163 100644
+index 54716f8822b..0ab86578e09 100644
 --- a/src/vs/workbench/contrib/chat/browser/chatAccessibilityProvider.ts
 +++ b/src/vs/workbench/contrib/chat/browser/chatAccessibilityProvider.ts
-@@ -13,10 +13,10 @@ import { ChatTreeItem } from './chat.js';
+@@ -13,11 +13,11 @@ import { ChatTreeItem } from './chat.js';
  import { isRequestVM, isResponseVM, IChatResponseViewModel } from '../common/chatViewModel.js';
  import { IKeybindingService } from '../../../../platform/keybinding/common/keybinding.js';
  import { IContextKeyService } from '../../../../platform/contextkey/common/contextkey.js';
@@ -74,17 +74,18 @@ index 8a9468f6ccd..d08923c4163 100644
  import { CancelChatActionId } from './actions/chatExecuteActions.js';
  import { IInstantiationService, ServicesAccessor } from '../../../../platform/instantiation/common/instantiation.js';
  import { IChatToolInvocation } from '../common/chatService.js';
+ import { migrateLegacyTerminalToolSpecificData } from '../common/chat.js';
 +import { AcceptToolConfirmationActionId } from './actions/chatConstants.js';
  
  export const getToolConfirmationAlert = (accessor: ServicesAccessor, toolInvocation: IChatToolInvocation[]) => {
  	const keybindingService = accessor.get(IKeybindingService);
 diff --git a/src/vs/workbench/contrib/chat/browser/chatAttachmentResolveService.ts b/src/vs/workbench/contrib/chat/browser/chatAttachmentResolveService.ts
-index 6e63ea0c643..eac66285d6e 100644
+index ceac2129e16..99427ed231b 100644
 --- a/src/vs/workbench/contrib/chat/browser/chatAttachmentResolveService.ts
 +++ b/src/vs/workbench/contrib/chat/browser/chatAttachmentResolveService.ts
-@@ -28,8 +28,7 @@ import { getNotebookEditorFromEditorPane } from '../../notebook/browser/notebook
+@@ -29,8 +29,7 @@ import { SCMHistoryItemTransferData } from '../../scm/browser/scmHistoryChatCont
  import { CHAT_ATTACHABLE_IMAGE_MIME_TYPES, getAttachableImageExtension } from '../common/chatModel.js';
- import { IChatRequestVariableEntry, OmittedState, IDiagnosticVariableEntry, IDiagnosticVariableEntryFilterData, ISymbolVariableEntry, toPromptFileVariableEntry, PromptFileVariableKind } from '../common/chatVariableEntries.js';
+ import { IChatRequestVariableEntry, OmittedState, IDiagnosticVariableEntry, IDiagnosticVariableEntryFilterData, ISymbolVariableEntry, toPromptFileVariableEntry, PromptFileVariableKind, ISCMHistoryItemVariableEntry } from '../common/chatVariableEntries.js';
  import { getPromptsTypeForLanguageId, PromptsType } from '../common/promptSyntax/promptTypes.js';
 -import { imageToHash } from './chatPasteProviders.js';
 -import { resizeImage } from './imageUtils.js';
@@ -107,13 +108,13 @@ index f30c7cb9dec..2eb26547f51 100644
  import { ChatConfirmationWidget, IChatConfirmationButton } from '../chatConfirmationWidget.js';
  import { IChatContentPartRenderContext } from '../chatContentParts.js';
 diff --git a/src/vs/workbench/contrib/chat/browser/chatContentParts/toolInvocationParts/chatTerminalToolSubPart.ts b/src/vs/workbench/contrib/chat/browser/chatContentParts/toolInvocationParts/chatTerminalToolSubPart.ts
-index 94b0bc69c03..8697ece5f13 100644
+index be5c66f1158..02d50459ef2 100644
 --- a/src/vs/workbench/contrib/chat/browser/chatContentParts/toolInvocationParts/chatTerminalToolSubPart.ts
 +++ b/src/vs/workbench/contrib/chat/browser/chatContentParts/toolInvocationParts/chatTerminalToolSubPart.ts
-@@ -15,8 +15,8 @@ import { IInstantiationService } from '../../../../../../platform/instantiation/
- import { IKeybindingService } from '../../../../../../platform/keybinding/common/keybinding.js';
+@@ -19,8 +19,8 @@ import { IKeybindingService } from '../../../../../../platform/keybinding/common
+ import { migrateLegacyTerminalToolSpecificData } from '../../../common/chat.js';
  import { ChatContextKeys } from '../../../common/chatContextKeys.js';
- import { IChatTerminalToolInvocationData, IChatToolInvocation } from '../../../common/chatService.js';
+ import { IChatToolInvocation, type IChatTerminalToolInvocationData, type ILegacyChatTerminalToolInvocationData } from '../../../common/chatService.js';
 +import { AcceptToolConfirmationActionId } from '../../actions/chatConstants.js';
  import { CancelChatActionId } from '../../actions/chatExecuteActions.js';
 -import { AcceptToolConfirmationActionId } from '../../actions/chatToolActions.js';
@@ -121,7 +122,7 @@ index 94b0bc69c03..8697ece5f13 100644
  import { ICodeBlockRenderOptions } from '../../codeBlockPart.js';
  import { ChatCustomConfirmationWidget, IChatConfirmationButton } from '../chatConfirmationWidget.js';
 diff --git a/src/vs/workbench/contrib/chat/browser/chatContentParts/toolInvocationParts/chatToolConfirmationSubPart.ts b/src/vs/workbench/contrib/chat/browser/chatContentParts/toolInvocationParts/chatToolConfirmationSubPart.ts
-index da36386ccaa..ba9a030d903 100644
+index e002e7999e6..d14e513b600 100644
 --- a/src/vs/workbench/contrib/chat/browser/chatContentParts/toolInvocationParts/chatToolConfirmationSubPart.ts
 +++ b/src/vs/workbench/contrib/chat/browser/chatContentParts/toolInvocationParts/chatToolConfirmationSubPart.ts
 @@ -24,8 +24,8 @@ import { ChatContextKeys } from '../../../common/chatContextKeys.js';
@@ -161,10 +162,10 @@ index c06fc723962..2408380e46f 100644
  	if (array.length < 4) {
  		return false;
 diff --git a/src/vs/workbench/contrib/chat/browser/imageUtils.ts b/src/vs/workbench/contrib/chat/browser/imageUtils.ts
-index 2dbfd747907..73cc3642c88 100644
+index 89f1ecb1225..2876ed9e929 100644
 --- a/src/vs/workbench/contrib/chat/browser/imageUtils.ts
 +++ b/src/vs/workbench/contrib/chat/browser/imageUtils.ts
-@@ -156,3 +156,9 @@ function getTimestampFromFilename(filename: string): number | undefined {
+@@ -160,3 +160,9 @@ function getTimestampFromFilename(filename: string): number | undefined {
  	}
  	return undefined;
  }

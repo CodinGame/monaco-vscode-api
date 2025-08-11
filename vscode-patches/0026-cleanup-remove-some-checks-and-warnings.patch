@@ -4,18 +4,18 @@ Date: Mon, 11 Mar 2024 18:16:29 +0100
 Subject: [PATCH] cleanup: remove some checks and warnings
 
 ---
- .../contrib/webview/browser/pre/service-worker.ts     |  3 +--
+ .../contrib/webview/browser/pre/service-worker.js     |  3 +--
  .../contrib/webview/browser/webviewElement.ts         | 10 ----------
  .../auxiliaryWindow/browser/auxiliaryWindowService.ts |  7 -------
  .../extensions/browser/webWorkerExtensionHost.ts      |  2 --
  .../services/textMate/common/TMScopeRegistry.ts       | 11 -----------
  5 files changed, 1 insertion(+), 32 deletions(-)
 
-diff --git a/src/vs/workbench/contrib/webview/browser/pre/service-worker.ts b/src/vs/workbench/contrib/webview/browser/pre/service-worker.ts
-index 11c1acb9652..243c9004938 100644
---- a/src/vs/workbench/contrib/webview/browser/pre/service-worker.ts
-+++ b/src/vs/workbench/contrib/webview/browser/pre/service-worker.ts
-@@ -441,8 +441,7 @@ async function getOuterIframeClient(webviewId: string): Promise<Client[]> {
+diff --git a/src/vs/workbench/contrib/webview/browser/pre/service-worker.js b/src/vs/workbench/contrib/webview/browser/pre/service-worker.js
+index 81cff0feb89..5b9200c5593 100644
+--- a/src/vs/workbench/contrib/webview/browser/pre/service-worker.js
++++ b/src/vs/workbench/contrib/webview/browser/pre/service-worker.js
+@@ -495,8 +495,7 @@ async function getOuterIframeClient(webviewId) {
  	const allClients = await sw.clients.matchAll({ includeUncontrolled: true });
  	return allClients.filter(client => {
  		const clientUrl = new URL(client.url);
@@ -26,10 +26,10 @@ index 11c1acb9652..243c9004938 100644
  }
  
 diff --git a/src/vs/workbench/contrib/webview/browser/webviewElement.ts b/src/vs/workbench/contrib/webview/browser/webviewElement.ts
-index 1e1834d6a76..e463e7a3444 100644
+index 073dc2208ae..1f819a96093 100644
 --- a/src/vs/workbench/contrib/webview/browser/webviewElement.ts
 +++ b/src/vs/workbench/contrib/webview/browser/webviewElement.ts
-@@ -489,11 +489,6 @@ export class WebviewElement extends Disposable implements IWebview, WebviewFindD
+@@ -493,11 +493,6 @@ export class WebviewElement extends Disposable implements IWebview, WebviewFindD
  				return;
  			}
  
@@ -41,7 +41,7 @@ index 1e1834d6a76..e463e7a3444 100644
  			if (e.data.channel === 'webview-ready') {
  				if (this._messagePort) {
  					return;
-@@ -548,11 +543,6 @@ export class WebviewElement extends Disposable implements IWebview, WebviewFindD
+@@ -552,11 +547,6 @@ export class WebviewElement extends Disposable implements IWebview, WebviewFindD
  		return endpoint;
  	}
  
@@ -72,7 +72,7 @@ index a20f7cee262..7f26b282427 100644
  		const { stylesLoaded } = this.applyCSS(auxiliaryWindow, disposables);
  		const container = this.applyHTML(auxiliaryWindow, disposables);
 diff --git a/src/vs/workbench/services/extensions/browser/webWorkerExtensionHost.ts b/src/vs/workbench/services/extensions/browser/webWorkerExtensionHost.ts
-index 0b053a473b7..d630f9c6ba1 100644
+index 331e0d5cb3d..00429f19d82 100644
 --- a/src/vs/workbench/services/extensions/browser/webWorkerExtensionHost.ts
 +++ b/src/vs/workbench/services/extensions/browser/webWorkerExtensionHost.ts
 @@ -112,8 +112,6 @@ export class WebWorkerExtensionHost extends Disposable implements IExtensionHost

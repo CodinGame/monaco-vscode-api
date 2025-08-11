@@ -12,7 +12,7 @@ Subject: [PATCH] feat: add static asset url mechanism
  5 files changed, 207 insertions(+), 58 deletions(-)
 
 diff --git a/src/vs/base/common/network.ts b/src/vs/base/common/network.ts
-index f640014499e..da43e2de7ff 100644
+index 33b80f7ebfb..c50ad01cf5f 100644
 --- a/src/vs/base/common/network.ts
 +++ b/src/vs/base/common/network.ts
 @@ -8,6 +8,8 @@ import * as platform from './platform.js';
@@ -24,7 +24,7 @@ index f640014499e..da43e2de7ff 100644
  
  export namespace Schemas {
  
-@@ -256,6 +258,20 @@ export const VSCODE_AUTHORITY = 'vscode-app';
+@@ -259,6 +261,20 @@ export const VSCODE_AUTHORITY = 'vscode-app';
  class FileAccessImpl {
  
  	private static readonly FALLBACK_AUTHORITY = VSCODE_AUTHORITY;
@@ -45,7 +45,7 @@ index f640014499e..da43e2de7ff 100644
  
  	/**
  	 * Returns a URI to use in contexts where the browser is responsible
-@@ -303,7 +319,7 @@ class FileAccessImpl {
+@@ -306,7 +322,7 @@ class FileAccessImpl {
  			});
  		}
  
@@ -54,7 +54,7 @@ index f640014499e..da43e2de7ff 100644
  	}
  
  	/**
-@@ -354,7 +370,20 @@ class FileAccessImpl {
+@@ -357,7 +373,20 @@ class FileAccessImpl {
  			return URI.file(modulePath);
  		}
  
@@ -95,10 +95,10 @@ index faf19a0dce2..e83837db2db 100644
  
  class ExtensionHostProxy implements IExtensionHostProxy {
 diff --git a/src/vs/workbench/api/common/extHost.protocol.ts b/src/vs/workbench/api/common/extHost.protocol.ts
-index 24c0472ee97..1158c53da0a 100644
+index dc563c8a958..4e631fce8c2 100644
 --- a/src/vs/workbench/api/common/extHost.protocol.ts
 +++ b/src/vs/workbench/api/common/extHost.protocol.ts
-@@ -1569,6 +1569,7 @@ export interface MainThreadExtensionServiceShape extends IDisposable {
+@@ -1570,6 +1570,7 @@ export interface MainThreadExtensionServiceShape extends IDisposable {
  	$onExtensionRuntimeError(extensionId: ExtensionIdentifier, error: SerializedError): void;
  	$setPerformanceMarks(marks: performance.PerformanceMark[]): Promise<void>;
  	$asBrowserUri(uri: UriComponents): Promise<UriComponents>;

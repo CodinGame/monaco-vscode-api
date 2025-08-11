@@ -53,9 +53,16 @@ import { IChatAttachmentResolveService } from 'vs/workbench/contrib/chat/browser
 import { ChatAttachmentResolveService } from 'vs/workbench/contrib/chat/browser/chatAttachmentResolveService'
 import { IRemoteCodingAgentsService } from 'vs/workbench/contrib/remoteCodingAgents/common/remoteCodingAgentsService.service'
 import { RemoteCodingAgentsService } from 'vs/workbench/contrib/remoteCodingAgents/common/remoteCodingAgentsService'
+import { IChatSessionsService } from 'vs/workbench/contrib/chat/common/chatSessionsService.service'
 import 'vs/workbench/contrib/chat/browser/chat.contribution'
+import 'vs/workbench/contrib/terminal/terminal.chat.contribution'
 import 'vs/workbench/contrib/inlineChat/browser/inlineChat.contribution'
 import 'vs/workbench/contrib/remoteCodingAgents/browser/remoteCodingAgents.contribution'
+import { ChatSessionsService } from 'vs/workbench/contrib/chat/browser/chatSessions.contribution'
+import { ChatOutputRendererService } from 'vs/workbench/contrib/chat/browser/chatOutputItemRenderer'
+import { IChatOutputRendererService } from 'vs/workbench/contrib/chat/browser/chatOutputItemRenderer.service'
+import { IChatTodoListService } from 'vs/workbench/contrib/chat/common/chatTodoListService.service'
+import { ChatTodoListService } from 'vs/workbench/contrib/chat/common/chatTodoListService'
 
 export default function getServiceOverride(): IEditorOverrideServices {
   return {
@@ -111,6 +118,17 @@ export default function getServiceOverride(): IEditorOverrideServices {
       [],
       true
     ),
-    [IRemoteCodingAgentsService.toString()]: new SyncDescriptor(RemoteCodingAgentsService, [], true)
+    [IRemoteCodingAgentsService.toString()]: new SyncDescriptor(
+      RemoteCodingAgentsService,
+      [],
+      true
+    ),
+    [IChatSessionsService.toString()]: new SyncDescriptor(ChatSessionsService, [], true),
+    [IChatOutputRendererService.toString()]: new SyncDescriptor(
+      ChatOutputRendererService,
+      [],
+      true
+    ),
+    [IChatTodoListService.toString()]: new SyncDescriptor(ChatTodoListService, [], true)
   }
 }
