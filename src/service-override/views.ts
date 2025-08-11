@@ -1,77 +1,76 @@
+import { coalesce } from 'vs/base/common/arrays'
+import { Promises } from 'vs/base/common/async'
+import type { IDisposable, IReference } from 'vs/base/common/lifecycle'
+import { mark } from 'vs/base/common/performance'
+import { isWeb } from 'vs/base/common/platform'
+import { URI } from 'vs/base/common/uri'
+import type { IResolvedTextEditorModel } from 'vs/editor/common/services/resolverService'
 import {
   type IEditorOverrideServices,
   StandaloneServices
 } from 'vs/editor/standalone/browser/standaloneServices'
+import { IConfigurationService } from 'vs/platform/configuration/common/configuration.service'
+import type { ContextKeyValue, IContextKey } from 'vs/platform/contextkey/common/contextkey'
+import type { IEditorOptions } from 'vs/platform/editor/common/editor'
+import { IEnvironmentService } from 'vs/platform/environment/common/environment.service'
+import { IFileService } from 'vs/platform/files/common/files.service'
 import { SyncDescriptor } from 'vs/platform/instantiation/common/descriptors'
-import { ViewContainerLocation } from 'vs/workbench/common/views'
-import { IViewDescriptorService } from 'vs/workbench/common/views.service'
 import { IInstantiationService } from 'vs/platform/instantiation/common/instantiation'
-import { SidebarPart } from 'vs/workbench/browser/parts/sidebar/sidebarPart'
-import { ActivityService } from 'vs/workbench/services/activity/browser/activityService'
-import { IPaneCompositePartService } from 'vs/workbench/services/panecomposite/browser/panecomposite.service'
-import { ActivitybarPart } from 'vs/workbench/browser/parts/activitybar/activitybarPart'
-import type { IDisposable, IReference } from 'vs/base/common/lifecycle'
-import { PanelPart } from 'vs/workbench/browser/parts/panel/panelPart'
-import { URI } from 'vs/base/common/uri'
+import { ILayoutService } from 'vs/platform/layout/browser/layoutService.service'
+import { ILogService } from 'vs/platform/log/common/log.service'
+import { StorageScope } from 'vs/platform/storage/common/storage'
+import { IStorageService } from 'vs/platform/storage/common/storage.service'
+import { WorkbenchState, isTemporaryWorkspace } from 'vs/platform/workspace/common/workspace'
+import { IWorkspaceContextService } from 'vs/platform/workspace/common/workspace.service'
+import type {
+  IEditorToOpen,
+  IInitialEditorsState,
+  ILayoutInitializationState
+} from 'vs/workbench/browser/layout'
 import { Part } from 'vs/workbench/browser/part'
+import { ActivitybarPart } from 'vs/workbench/browser/parts/activitybar/activitybarPart'
+import { AuxiliaryBarPart } from 'vs/workbench/browser/parts/auxiliarybar/auxiliaryBarPart'
+import type { IEditorGroupView } from 'vs/workbench/browser/parts/editor/editor'
 import { EditorPart } from 'vs/workbench/browser/parts/editor/editorPart'
-import {
-  GroupOrientation,
-  GroupsOrder
-} from 'vs/workbench/services/editor/common/editorGroupsService'
-import { IEditorGroupsService } from 'vs/workbench/services/editor/common/editorGroupsService.service'
-import { IEditorService } from 'vs/workbench/services/editor/common/editorService.service'
+import { EditorParts } from 'vs/workbench/browser/parts/editor/editorParts'
+import { PanelPart } from 'vs/workbench/browser/parts/panel/panelPart'
+import { SidebarPart } from 'vs/workbench/browser/parts/sidebar/sidebarPart'
 import {
   type GroupIdentifier,
   type IUntypedEditorInput,
   isResourceEditorInput,
   pathsToEditors
 } from 'vs/workbench/common/editor'
-import type { IEditorOptions } from 'vs/platform/editor/common/editor'
-import type { IResolvedTextEditorModel } from 'vs/editor/common/services/resolverService'
+import { ViewContainerLocation } from 'vs/workbench/common/views'
+import { IViewDescriptorService } from 'vs/workbench/common/views.service'
+import { ActivityService } from 'vs/workbench/services/activity/browser/activityService'
+import {
+  GroupOrientation,
+  GroupsOrder
+} from 'vs/workbench/services/editor/common/editorGroupsService'
+import { IEditorGroupsService } from 'vs/workbench/services/editor/common/editorGroupsService.service'
+import { IEditorService } from 'vs/workbench/services/editor/common/editorService.service'
+import { IBrowserWorkbenchEnvironmentService } from 'vs/workbench/services/environment/browser/environmentService.service'
+import { IExtensionService } from 'vs/workbench/services/extensions/common/extensions.service'
 import {
   Parts,
   Position,
   positionToString
 } from 'vs/workbench/services/layout/browser/layoutService'
-import { StorageScope } from 'vs/platform/storage/common/storage'
-import { IStorageService } from 'vs/platform/storage/common/storage.service'
-import { IFileService } from 'vs/platform/files/common/files.service'
-import { ILayoutService } from 'vs/platform/layout/browser/layoutService.service'
 import { StartupKind } from 'vs/workbench/services/lifecycle/common/lifecycle'
 import { ILifecycleService } from 'vs/workbench/services/lifecycle/common/lifecycle.service'
-import { AuxiliaryBarPart } from 'vs/workbench/browser/parts/auxiliarybar/auxiliaryBarPart'
-import { ILogService } from 'vs/platform/log/common/log.service'
-import { mark } from 'vs/base/common/performance'
-import { IExtensionService } from 'vs/workbench/services/extensions/common/extensions.service'
-import { Promises } from 'vs/base/common/async'
-import { isWeb } from 'vs/base/common/platform'
-import { IEnvironmentService } from 'vs/platform/environment/common/environment.service'
-import type {
-  IEditorToOpen,
-  IInitialEditorsState,
-  ILayoutInitializationState
-} from 'vs/workbench/browser/layout'
-import { IBrowserWorkbenchEnvironmentService } from 'vs/workbench/services/environment/browser/environmentService.service'
-import { WorkbenchState, isTemporaryWorkspace } from 'vs/platform/workspace/common/workspace'
-import { IWorkspaceContextService } from 'vs/platform/workspace/common/workspace.service'
-import { IConfigurationService } from 'vs/platform/configuration/common/configuration.service'
-import { coalesce } from 'vs/base/common/arrays'
-import { IWorkingCopyBackupService } from 'vs/workbench/services/workingCopy/common/workingCopyBackup.service'
-import { EditorParts } from 'vs/workbench/browser/parts/editor/editorParts'
-import type { ContextKeyValue, IContextKey } from 'vs/platform/contextkey/common/contextkey'
-import type { IEditorGroupView } from 'vs/workbench/browser/parts/editor/editor'
+import { IPaneCompositePartService } from 'vs/workbench/services/panecomposite/browser/panecomposite.service'
+import { onRenderWorkbench } from '../lifecycle'
+import { RawContextKey } from '../monaco'
+import getKeybindingsOverride from './keybindings'
+import { LayoutService } from './layout'
+import getQuickAccessOverride from './quickaccess'
 import {
   MonacoDelegateEditorGroupsService,
   MonacoEditorService,
   type OpenEditor
 } from './tools/editor'
-import { LayoutService } from './layout'
-import getQuickAccessOverride from './quickaccess'
-import getKeybindingsOverride from './keybindings'
 import getViewCommonServiceOverride from './viewCommon'
-import { onRenderWorkbench } from '../lifecycle'
-import { RawContextKey } from '../monaco'
 export * from './tools/views'
 
 function createPart(id: string, role: string, classes: string[]): HTMLElement {
@@ -255,7 +254,6 @@ onRenderWorkbench(async (accessor) => {
   const contextService = accessor.get(IWorkspaceContextService)
   const configurationService = accessor.get(IConfigurationService)
   const fileService = accessor.get(IFileService)
-  const workingCopyBackupService = accessor.get(IWorkingCopyBackupService)
 
   // force service instantiation
   const layoutService = accessor.get(ILayoutService) as LayoutService
@@ -393,11 +391,6 @@ onRenderWorkbench(async (accessor) => {
     ) {
       if (editorGroupService.mainPart.hasRestorableState) {
         return [] // do not open any empty untitled file if we restored groups/editors from previous session
-      }
-
-      const hasBackups = await workingCopyBackupService.hasBackups()
-      if (hasBackups) {
-        return [] // do not open any empty untitled file if we have backups to restore
       }
 
       return [
@@ -863,28 +856,28 @@ function getServiceOverride(
 export default getServiceOverride
 
 export {
+  ActivityService,
+  ActivitybarPart,
   GroupOrientation,
-  renderPart,
-  renderSidebarPart,
+  PanelPart,
+  Position,
+  SidebarPart,
+  attachPart,
+  isEditorPartVisible,
+  onPartVisibilityChange,
   renderActivitybarPar,
   renderAuxiliaryPart,
-  renderPanelPart,
   renderEditorPart,
-  renderStatusBarPart,
-  isEditorPartVisible,
-  attachPart,
-  onPartVisibilityChange,
-  Position,
-  ActivityService,
-  SidebarPart,
-  ActivitybarPart,
-  PanelPart
+  renderPanelPart,
+  renderPart,
+  renderSidebarPart,
+  renderStatusBarPart
 }
 export type {
-  ILayoutInitializationState,
-  InitializationStateTransformer,
-  OpenEditor,
   IEditorOptions,
+  ILayoutInitializationState,
+  IReference,
   IResolvedTextEditorModel,
-  IReference
+  InitializationStateTransformer,
+  OpenEditor
 }
