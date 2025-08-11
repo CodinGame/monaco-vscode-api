@@ -30,9 +30,9 @@
   },
   "config": {
     "vscode": {
-      "version": "1.102.3",
-      "ref": "1.102.3",
-      "commit": "488a1f239235055e34e673291fb8d8c810886f81"
+      "version": "1.103.0",
+      "ref": "1.103.0",
+      "commit": "e3550cfac4b63ca4eafca7b601f0d2885817fd1f"
     },
     "monaco": {
       "ref": "v0.52.2",
@@ -114,6 +114,7 @@
     "css-url-parser": "^1.1.4",
     "dompurify": "^3.2.6",
     "jschardet": "3.1.4",
+    "katex": "^0.16.22",
     "kerberos": "2.1.1",
     "keytar": "^7.9.0",
     "marked": "~14.0.0",

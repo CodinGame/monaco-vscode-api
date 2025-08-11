@@ -24,6 +24,7 @@
     "@xterm/xterm",
     "cookie",
     "jschardet",
+    "katex",
     "kerberos",
     "marked",
     "node-pty",
