@@ -55,6 +55,7 @@ import { IRemoteCodingAgentsService } from 'vs/workbench/contrib/remoteCodingAge
 import { RemoteCodingAgentsService } from 'vs/workbench/contrib/remoteCodingAgents/common/remoteCodingAgentsService'
 import { IChatSessionsService } from 'vs/workbench/contrib/chat/common/chatSessionsService.service'
 import 'vs/workbench/contrib/chat/browser/chat.contribution'
+import 'vs/workbench/contrib/terminal/terminal.chat.contribution'
 import 'vs/workbench/contrib/inlineChat/browser/inlineChat.contribution'
 import 'vs/workbench/contrib/remoteCodingAgents/browser/remoteCodingAgents.contribution'
 import { ChatSessionsService } from 'vs/workbench/contrib/chat/browser/chatSessions.contribution'
