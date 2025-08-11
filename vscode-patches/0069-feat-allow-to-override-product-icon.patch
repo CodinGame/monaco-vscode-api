@@ -13,10 +13,10 @@ Subject: [PATCH] feat: allow to override product icon
  6 files changed, 7 insertions(+), 6 deletions(-)
 
 diff --git a/build/lib/stylelint/vscode-known-variables.json b/build/lib/stylelint/vscode-known-variables.json
-index 1e75f451ea1..efc42256dce 100644
+index ecc408c0447..a8687f86da6 100644
 --- a/build/lib/stylelint/vscode-known-variables.json
 +++ b/build/lib/stylelint/vscode-known-variables.json
-@@ -960,6 +960,7 @@
+@@ -963,6 +963,7 @@
  		"--vscode-action-item-auto-timeout",
  		"--monaco-editor-warning-decoration",
  		"--animation-opacity",
@@ -25,6 +25,7 @@ index 1e75f451ea1..efc42256dce 100644
 +		"--product-icon"
  	]
  }
+\ No newline at end of file
 diff --git a/src/vs/workbench/browser/parts/banner/media/bannerpart.css b/src/vs/workbench/browser/parts/banner/media/bannerpart.css
 index a0de81f24eb..c71af404312 100644
 --- a/src/vs/workbench/browser/parts/banner/media/bannerpart.css

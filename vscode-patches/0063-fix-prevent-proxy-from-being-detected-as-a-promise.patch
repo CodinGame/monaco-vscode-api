@@ -8,10 +8,10 @@ Subject: [PATCH] fix: prevent proxy from being detected as a promise
  1 file changed, 4 insertions(+)
 
 diff --git a/src/vs/editor/standalone/browser/standaloneWebWorker.ts b/src/vs/editor/standalone/browser/standaloneWebWorker.ts
-index f8aa5966d51..cc2307dc4e8 100644
+index 4cdd6cf5477..467697cf68a 100644
 --- a/src/vs/editor/standalone/browser/standaloneWebWorker.ts
 +++ b/src/vs/editor/standalone/browser/standaloneWebWorker.ts
-@@ -64,6 +64,10 @@ class MonacoWebWorkerImpl<T extends object> extends EditorWorkerClient implement
+@@ -68,6 +68,10 @@ class MonacoWebWorkerImpl<T extends object> extends EditorWorkerClient implement
  					if (typeof prop !== 'string') {
  						throw new Error(`Not supported`);
  					}

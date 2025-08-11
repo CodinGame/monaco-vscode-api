@@ -8,18 +8,18 @@ Subject: [PATCH] fix: also register the quickinput container
  1 file changed, 5 insertions(+), 1 deletion(-)
 
 diff --git a/src/vs/platform/quickinput/browser/quickInputController.ts b/src/vs/platform/quickinput/browser/quickInputController.ts
-index 68dc9d95089..ad0b19ee6a7 100644
+index 277de015ac4..a7217b171f6 100644
 --- a/src/vs/platform/quickinput/browser/quickInputController.ts
 +++ b/src/vs/platform/quickinput/browser/quickInputController.ts
-@@ -35,6 +35,7 @@ import { getWindowControlsStyle, WindowControlsStyle } from '../../window/common
- import { getZoomFactor } from '../../../base/browser/browser.js';
- import { Checkbox } from '../../../base/browser/ui/toggle/toggle.js';
+@@ -37,6 +37,7 @@ import { TriStateCheckbox } from '../../../base/browser/ui/toggle/toggle.js';
  import { defaultCheckboxStyles } from '../../theme/browser/defaultStyles.js';
+ import { QuickInputTreeController } from './tree/quickInputTreeController.js';
+ import { QuickTree } from './tree/quickTree.js';
 +import { IKeybindingService } from '../../keybinding/common/keybinding.js';
  
  const $ = dom.$;
  
-@@ -86,7 +87,8 @@ export class QuickInputController extends Disposable {
+@@ -88,7 +89,8 @@ export class QuickInputController extends Disposable {
  		@ILayoutService private readonly layoutService: ILayoutService,
  		@IInstantiationService private readonly instantiationService: IInstantiationService,
  		@IContextKeyService contextKeyService: IContextKeyService,
@@ -29,7 +29,7 @@ index 68dc9d95089..ad0b19ee6a7 100644
  	) {
  		super();
  
-@@ -137,6 +139,8 @@ export class QuickInputController extends Disposable {
+@@ -139,6 +141,8 @@ export class QuickInputController extends Disposable {
  		}
  
  		const container = dom.append(this._container, $('.quick-input-widget.show-file-icons'));

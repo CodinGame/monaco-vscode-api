@@ -22,7 +22,7 @@ Subject: [PATCH] feat: support shadow dom
  .../contentWidgets/contentWidgets.ts          |  2 +-
  .../hover/browser/contentHoverWidget.ts       |  2 +-
  .../actionWidget/browser/actionList.ts        |  2 +-
- src/vs/workbench/browser/contextkeys.ts       |  7 +++--
+ src/vs/workbench/browser/contextkeys.ts       |  8 +++---
  src/vs/workbench/browser/layout.ts            |  3 ++
  .../browser/parts/editor/editorGroupView.ts   |  4 +--
  src/vs/workbench/browser/workbench.ts         |  6 ++--
@@ -39,13 +39,13 @@ Subject: [PATCH] feat: support shadow dom
  .../browser/gettingStarted.ts                 |  4 +--
  .../browser/walkThroughPart.ts                |  6 ++--
  .../themes/browser/workbenchThemeService.ts   |  2 +-
- 35 files changed, 117 insertions(+), 68 deletions(-)
+ 35 files changed, 117 insertions(+), 69 deletions(-)
 
 diff --git a/src/vs/base/browser/dom.ts b/src/vs/base/browser/dom.ts
-index 1c7c66f76aa..90f89cab2e0 100644
+index d6168ffdcf1..98a4b93e3a9 100644
 --- a/src/vs/base/browser/dom.ts
 +++ b/src/vs/base/browser/dom.ts
-@@ -620,8 +620,7 @@ export function getTopLeftOffset(element: HTMLElement): IDomPosition {
+@@ -619,8 +619,7 @@ export function getTopLeftOffset(element: HTMLElement): IDomPosition {
  
  	while (
  		(element = <HTMLElement>element.parentNode) !== null
@@ -55,7 +55,7 @@ index 1c7c66f76aa..90f89cab2e0 100644
  	) {
  		top -= element.scrollTop;
  		const c = isShadowRoot(element) ? null : getComputedStyle(element);
-@@ -722,7 +721,7 @@ export function getDomNodeZoomLevel(domNode: HTMLElement): number {
+@@ -721,7 +720,7 @@ export function getDomNodeZoomLevel(domNode: HTMLElement): number {
  		}
  
  		testElement = testElement.parentElement;
@@ -64,7 +64,7 @@ index 1c7c66f76aa..90f89cab2e0 100644
  
  	return zoom;
  }
-@@ -799,7 +798,7 @@ export function setParentFlowTo(fromChildElement: HTMLElement, toParentElement:
+@@ -798,7 +797,7 @@ export function setParentFlowTo(fromChildElement: HTMLElement, toParentElement:
  function getParentFlowToElement(node: HTMLElement): HTMLElement | null {
  	const flowToParentId = node.dataset[parentFlowToDataKey];
  	if (typeof flowToParentId === 'string') {
@@ -73,7 +73,7 @@ index 1c7c66f76aa..90f89cab2e0 100644
  	}
  	return null;
  }
-@@ -882,8 +881,8 @@ export function getShadowRoot(domNode: Node): ShadowRoot | null {
+@@ -881,8 +880,8 @@ export function getShadowRoot(domNode: Node): ShadowRoot | null {
   * based on document focus. Falls back to the main
   * window if no window has focus.
   */
@@ -84,7 +84,7 @@ index 1c7c66f76aa..90f89cab2e0 100644
  
  	while (result?.shadowRoot) {
  		result = result.shadowRoot.activeElement;
-@@ -892,6 +891,14 @@ export function getActiveElement(): Element | null {
+@@ -891,6 +890,14 @@ export function getActiveElement(): Element | null {
  	return result;
  }
  
@@ -99,7 +99,7 @@ index 1c7c66f76aa..90f89cab2e0 100644
  /**
   * Returns true if the focused window active element matches
   * the provided element. Falls back to the main window if no
-@@ -1043,6 +1050,11 @@ export function isHTMLDivElement(e: unknown): e is HTMLDivElement {
+@@ -1042,6 +1049,11 @@ export function isHTMLDivElement(e: unknown): e is HTMLDivElement {
  	return e instanceof HTMLDivElement || e instanceof getWindow(e as Node).HTMLDivElement;
  }
  
@@ -111,7 +111,7 @@ index 1c7c66f76aa..90f89cab2e0 100644
  export function isSVGElement(e: unknown): e is SVGElement {
  	// eslint-disable-next-line no-restricted-syntax
  	return e instanceof SVGElement || e instanceof getWindow(e as Node).SVGElement;
-@@ -1188,7 +1200,7 @@ class FocusTracker extends Disposable implements IFocusTracker {
+@@ -1187,7 +1199,7 @@ class FocusTracker extends Disposable implements IFocusTracker {
  	private static hasFocusWithin(element: HTMLElement | Window): boolean {
  		if (isHTMLElement(element)) {
  			const shadowRoot = getShadowRoot(element);
@@ -120,7 +120,7 @@ index 1c7c66f76aa..90f89cab2e0 100644
  			return isAncestor(activeElement, element);
  		} else {
  			const window = element;
-@@ -1407,7 +1419,7 @@ export function removeTabIndexAndUpdateFocus(node: HTMLElement): void {
+@@ -1406,7 +1418,7 @@ export function removeTabIndexAndUpdateFocus(node: HTMLElement): void {
  	// standard DOM behavior is to move focus to the <body> element. We
  	// typically never want that, rather put focus to the closest element
  	// in the hierarchy of the parent DOM nodes.
@@ -316,10 +316,10 @@ index 11c3c04a8cc..73cc5e71a50 100644
  					let newIndex: number = -1;
  					if (event.equals(KeyCode.RightArrow)) {
 diff --git a/src/vs/base/browser/ui/inputbox/inputBox.ts b/src/vs/base/browser/ui/inputbox/inputBox.ts
-index 4081c2f28b2..97966324b05 100644
+index b1c6eae5279..485d3a339bd 100644
 --- a/src/vs/base/browser/ui/inputbox/inputBox.ts
 +++ b/src/vs/base/browser/ui/inputbox/inputBox.ts
-@@ -173,7 +173,7 @@ export class InputBox extends Widget {
+@@ -172,7 +172,7 @@ export class InputBox extends Widget {
  
  			const onSelectionChange = this._register(new DomEmitter(container.ownerDocument, 'selectionchange'));
  			const onAnchoredSelectionChange = Event.filter(onSelectionChange.event, () => {
@@ -397,10 +397,10 @@ index 35f2724c1a8..0da8fa62431 100644
  
  		const resetSashDragState = (start: number, alt: boolean) => {
 diff --git a/src/vs/editor/browser/controller/mouseHandler.ts b/src/vs/editor/browser/controller/mouseHandler.ts
-index b1e326d835a..3e4f84e209d 100644
+index 23ffda0bbd4..61c6fcaddd4 100644
 --- a/src/vs/editor/browser/controller/mouseHandler.ts
 +++ b/src/vs/editor/browser/controller/mouseHandler.ts
-@@ -100,7 +100,7 @@ export class MouseHandler extends ViewEventHandler {
+@@ -101,7 +101,7 @@ export class MouseHandler extends ViewEventHandler {
  			// remove this listener
  
  			if (!this._mouseLeaveMonitor) {
@@ -410,7 +410,7 @@ index b1e326d835a..3e4f84e209d 100644
  						// went outside the editor!
  						this._onMouseLeave(new EditorMouseEvent(e, false, this.viewHelper.viewDomNode));
 diff --git a/src/vs/editor/browser/controller/mouseTarget.ts b/src/vs/editor/browser/controller/mouseTarget.ts
-index 28b39952393..89d816af8b9 100644
+index db133ec98c6..468175ef975 100644
 --- a/src/vs/editor/browser/controller/mouseTarget.ts
 +++ b/src/vs/editor/browser/controller/mouseTarget.ts
 @@ -351,7 +351,7 @@ export class HitTestContext {
@@ -457,10 +457,10 @@ index a23bcb11b59..d750b8f2f03 100644
  				break;
  			}
 diff --git a/src/vs/editor/browser/viewParts/contentWidgets/contentWidgets.ts b/src/vs/editor/browser/viewParts/contentWidgets/contentWidgets.ts
-index 974c98bbc3d..ed496acc9c6 100644
+index f6bd3004c86..424b2a536d6 100644
 --- a/src/vs/editor/browser/viewParts/contentWidgets/contentWidgets.ts
 +++ b/src/vs/editor/browser/viewParts/contentWidgets/contentWidgets.ts
-@@ -448,7 +448,7 @@ class Widget {
+@@ -449,7 +449,7 @@ class Widget {
  		if (!primary) {
  			return {
  				kind: 'offViewport',
@@ -470,10 +470,10 @@ index 974c98bbc3d..ed496acc9c6 100644
  			// return null;
  		}
 diff --git a/src/vs/editor/contrib/hover/browser/contentHoverWidget.ts b/src/vs/editor/contrib/hover/browser/contentHoverWidget.ts
-index 1b30ad9357a..c2e7ba16f6f 100644
+index 526651513c4..b2bcd067439 100644
 --- a/src/vs/editor/contrib/hover/browser/contentHoverWidget.ts
 +++ b/src/vs/editor/contrib/hover/browser/contentHoverWidget.ts
-@@ -346,7 +346,7 @@ export class ContentHoverWidget extends ResizableContentWidget {
+@@ -349,7 +349,7 @@ export class ContentHoverWidget extends ResizableContentWidget {
  		}
  		this._onDidResize.fire();
  		// The aria label overrides the label, so if we add to it, add the contents of the hover
@@ -483,10 +483,10 @@ index 1b30ad9357a..c2e7ba16f6f 100644
  			this._configurationService.getValue('accessibility.verbosity.hover') === true && this._accessibilityService.isScreenReaderOptimized(),
  			this._keybindingService.lookupKeybinding('editor.action.accessibleView')?.getAriaLabel() ?? ''
 diff --git a/src/vs/platform/actionWidget/browser/actionList.ts b/src/vs/platform/actionWidget/browser/actionList.ts
-index 0ea03901b42..87cd115f124 100644
+index c6729423c65..5af8a44cb05 100644
 --- a/src/vs/platform/actionWidget/browser/actionList.ts
 +++ b/src/vs/platform/actionWidget/browser/actionList.ts
-@@ -278,7 +278,7 @@ export class ActionList<T> extends Disposable {
+@@ -328,7 +328,7 @@ export class ActionList<T> extends Disposable {
  		} else {
  			// For finding width dynamically (not using resize observer)
  			const itemWidths: number[] = this._allMenuItems.map((_, index): number => {
@@ -496,11 +496,11 @@ index 0ea03901b42..87cd115f124 100644
  					element.style.width = 'auto';
  					const width = element.getBoundingClientRect().width;
 diff --git a/src/vs/workbench/browser/contextkeys.ts b/src/vs/workbench/browser/contextkeys.ts
-index a1016714342..b73c9341e90 100644
+index d36a59de1d9..dc6b3da3bd4 100644
 --- a/src/vs/workbench/browser/contextkeys.ts
 +++ b/src/vs/workbench/browser/contextkeys.ts
 @@ -7,8 +7,8 @@ import { Event } from '../../base/common/event.js';
- import { Disposable, DisposableStore } from '../../base/common/lifecycle.js';
+ import { Disposable, DisposableStore, MutableDisposable } from '../../base/common/lifecycle.js';
  import { IContextKeyService, IContextKey, setConstant as setConstantContextKey } from '../../platform/contextkey/common/contextkey.js';
  import { InputFocusedContext, IsMacContext, IsLinuxContext, IsWindowsContext, IsWebContext, IsMacNativeContext, IsDevelopmentContext, IsIOSContext, ProductQualityContext, IsMobileContext } from '../../platform/contextkey/common/contextkeys.js';
 +import { trackFocus, addDisposableListener, EventType, onDidRegisterWindow, getActiveWindow, isEditableElement, getActiveElement } from '../../base/browser/dom.js';
@@ -509,8 +509,8 @@ index a1016714342..b73c9341e90 100644
  import { preferredSideBySideGroupDirection, GroupDirection, IEditorGroupsService } from '../services/editor/common/editorGroupsService.js';
  import { IConfigurationService } from '../../platform/configuration/common/configuration.js';
  import { IWorkbenchEnvironmentService } from '../services/environment/common/environmentService.js';
-@@ -308,14 +308,15 @@ export class WorkbenchContextKeysHandler extends Disposable {
- 	private updateInputContextKeys(ownerDocument: Document, disposables: DisposableStore): void {
+@@ -312,7 +312,8 @@ export class WorkbenchContextKeysHandler extends Disposable {
+ 	private updateInputContextKeys(ownerDocument: Document, mutableDisposable: MutableDisposable<any>): void {
  
  		function activeElementIsInput(): boolean {
 -			return !!ownerDocument.activeElement && isEditableElement(ownerDocument.activeElement);
@@ -519,19 +519,21 @@ index a1016714342..b73c9341e90 100644
  		}
  
  		const isInputFocused = activeElementIsInput();
- 		this.inputFocusedContext.set(isInputFocused);
+@@ -324,8 +325,7 @@ export class WorkbenchContextKeysHandler extends Disposable {
+ 
  
  		if (isInputFocused) {
--			const tracker = disposables.add(trackFocus(ownerDocument.activeElement as HTMLElement));
-+			const tracker = disposables.add(trackFocus(getActiveElement(ownerDocument) as HTMLElement));
+-
+-			const tracker = store.add(trackFocus(ownerDocument.activeElement as HTMLElement));
++			const tracker = store.add(trackFocus(getActiveElement(ownerDocument) as HTMLElement));
  			Event.once(tracker.onDidBlur)(() => {
  
  				// Ensure we are only updating the context key if we are
 diff --git a/src/vs/workbench/browser/layout.ts b/src/vs/workbench/browser/layout.ts
-index 01d02a6c1fa..4c9b67f9b0c 100644
+index 021a8665da0..0891a4983dc 100644
 --- a/src/vs/workbench/browser/layout.ts
 +++ b/src/vs/workbench/browser/layout.ts
-@@ -50,6 +50,7 @@ import { IAuxiliaryWindowService } from '../services/auxiliaryWindow/browser/aux
+@@ -49,6 +49,7 @@ import { IAuxiliaryWindowService } from '../services/auxiliaryWindow/browser/aux
  import { CodeWindow, mainWindow } from '../../base/browser/window.js';
  import { ICoreExperimentationService, StartupExperimentGroup } from '../services/coreExperimentation/common/coreExperimentationService.js';
  import { Lazy } from '../../base/common/lazy.js';
@@ -539,7 +541,7 @@ index 01d02a6c1fa..4c9b67f9b0c 100644
  
  //#region Layout Implementation
  
-@@ -304,6 +305,8 @@ export abstract class Layout extends Disposable implements IWorkbenchLayoutServi
+@@ -302,6 +303,8 @@ export abstract class Layout extends Disposable implements IWorkbenchLayoutServi
  		private readonly layoutOptions?: { resetLayout: boolean }
  	) {
  		super();
@@ -621,10 +623,10 @@ index cf13074b632..e0ecbc06b8b 100644
  					} else {
  						break;
 diff --git a/src/vs/workbench/contrib/notebook/browser/notebookEditorWidget.ts b/src/vs/workbench/contrib/notebook/browser/notebookEditorWidget.ts
-index e7b1965ac3e..28078a39457 100644
+index 4158b0e5842..e55aff7f703 100644
 --- a/src/vs/workbench/contrib/notebook/browser/notebookEditorWidget.ts
 +++ b/src/vs/workbench/contrib/notebook/browser/notebookEditorWidget.ts
-@@ -1841,7 +1841,7 @@ export class NotebookEditorWidget extends Disposable implements INotebookEditorD
+@@ -1844,7 +1844,7 @@ export class NotebookEditorWidget extends Disposable implements INotebookEditorD
  				const element = this.viewModel.cellAt(focusRange.start);
  				if (element) {
  					const itemDOM = this._list.domElementOfElement(element);
@@ -633,7 +635,7 @@ index e7b1965ac3e..28078a39457 100644
  
  					state.editorFocused = editorFocused;
  					state.focus = focusRange.start;
-@@ -2545,8 +2545,8 @@ export class NotebookEditorWidget extends Disposable implements INotebookEditorD
+@@ -2476,8 +2476,8 @@ export class NotebookEditorWidget extends Disposable implements INotebookEditorD
  		} else {
  			// focus container
  			const itemDOM = this._list.domElementOfElement(cell);
@@ -678,10 +680,10 @@ index a23d2f8b28e..6e98527bc7e 100644
  				}
  			}));
 diff --git a/src/vs/workbench/contrib/notebook/browser/view/cellParts/codeCell.ts b/src/vs/workbench/contrib/notebook/browser/view/cellParts/codeCell.ts
-index 645c7b9a704..349a9bd301d 100644
+index 4c3ba9e0d84..c775ce638e7 100644
 --- a/src/vs/workbench/contrib/notebook/browser/view/cellParts/codeCell.ts
 +++ b/src/vs/workbench/contrib/notebook/browser/view/cellParts/codeCell.ts
-@@ -32,6 +32,7 @@ import { CodeCellRenderTemplate } from '../notebookRenderingCommon.js';
+@@ -33,6 +33,7 @@ import { CodeCellRenderTemplate } from '../notebookRenderingCommon.js';
  import { CellEditorOptions } from './cellEditorOptions.js';
  import { CellOutputContainer } from './cellOutput.js';
  import { CollapsedCodeCellExecutionIcon } from './codeCellExecutionIcon.js';
@@ -689,7 +691,7 @@ index 645c7b9a704..349a9bd301d 100644
  
  export class CodeCell extends Disposable {
  	private _outputContainerRenderer: CellOutputContainer;
-@@ -225,7 +226,7 @@ export class CodeCell extends Disposable {
+@@ -226,7 +227,7 @@ export class CodeCell extends Disposable {
  					if (
  						this.notebookEditor.getActiveCell() === this.viewCell &&
  						this.viewCell.focusMode === CellFocusMode.Editor &&
@@ -698,7 +700,7 @@ index 645c7b9a704..349a9bd301d 100644
  					{
  						this.templateData.editor?.focus();
  					}
-@@ -383,7 +384,7 @@ export class CodeCell extends Disposable {
+@@ -388,7 +389,7 @@ export class CodeCell extends Disposable {
  		// the document active element is inside the notebook editor or the document body (cell editor being disposed previously)
  		return this.notebookEditor.getActiveCell() === this.viewCell
  			&& this.viewCell.focusMode === CellFocusMode.Editor
@@ -708,10 +710,10 @@ index 645c7b9a704..349a9bd301d 100644
  
  	private updateEditorForFocusModeChange(sync: boolean) {
 diff --git a/src/vs/workbench/contrib/notebook/browser/view/cellParts/markupCell.ts b/src/vs/workbench/contrib/notebook/browser/view/cellParts/markupCell.ts
-index 004ed1c4747..3e12573defc 100644
+index 972126349d6..979f15a287e 100644
 --- a/src/vs/workbench/contrib/notebook/browser/view/cellParts/markupCell.ts
 +++ b/src/vs/workbench/contrib/notebook/browser/view/cellParts/markupCell.ts
-@@ -225,7 +225,7 @@ export class MarkupCell extends Disposable {
+@@ -226,7 +226,7 @@ export class MarkupCell extends Disposable {
  		this._isDisposed = true;
  
  		// move focus back to the cell list otherwise the focus goes to body
@@ -720,7 +722,7 @@ index 004ed1c4747..3e12573defc 100644
  			this.notebookEditor.focusContainer();
  		}
  
-@@ -414,7 +414,7 @@ export class MarkupCell extends Disposable {
+@@ -415,7 +415,7 @@ export class MarkupCell extends Disposable {
  
  	private focusEditorIfNeeded() {
  		if (this.viewCell.focusMode === CellFocusMode.Editor &&
@@ -729,7 +731,7 @@ index 004ed1c4747..3e12573defc 100644
  		) { // Don't steal focus from other workbench parts, but if body has focus, we can take it
  			if (!this.editor) {
  				return;
-@@ -519,7 +519,7 @@ export class MarkupCell extends Disposable {
+@@ -520,7 +520,7 @@ export class MarkupCell extends Disposable {
  			// this is for a special case:
  			// users click the status bar empty space, which we will then focus the editor
  			// so we don't want to update the focus state too eagerly
@@ -780,10 +782,10 @@ index ef6c6cb679d..fa0a5b768d5 100644
  					preferencesEditor.focusSettings(true);
  				}
 diff --git a/src/vs/workbench/contrib/preferences/browser/settingsEditor2.ts b/src/vs/workbench/contrib/preferences/browser/settingsEditor2.ts
-index ba962f968ca..9b180726047 100644
+index 2d178105f87..07fe6197c0f 100644
 --- a/src/vs/workbench/contrib/preferences/browser/settingsEditor2.ts
 +++ b/src/vs/workbench/contrib/preferences/browser/settingsEditor2.ts
-@@ -1097,7 +1097,7 @@ export class SettingsEditor2 extends EditorPane {
+@@ -1101,7 +1101,7 @@ export class SettingsEditor2 extends EditorPane {
  		}));
  
  		this._register(this.settingsTree.onDidFocus(() => {
@@ -792,7 +794,7 @@ index ba962f968ca..9b180726047 100644
  			if (classList && classList.contains('monaco-list') && classList.contains('settings-editor-tree')) {
  				this._currentFocusContext = SettingsFocusContext.SettingTree;
  				this.settingRowFocused.set(true);
-@@ -1563,7 +1563,7 @@ export class SettingsEditor2 extends EditorPane {
+@@ -1567,7 +1567,7 @@ export class SettingsEditor2 extends EditorPane {
  
  	private getActiveControlInSettingsTree(): HTMLElement | null {
  		const element = this.settingsTree.getHTMLElement();
@@ -801,7 +803,7 @@ index ba962f968ca..9b180726047 100644
  		return (activeElement && DOM.isAncestorOfActiveElement(element)) ?
  			<HTMLElement>activeElement :
  			null;
-@@ -1626,7 +1626,7 @@ export class SettingsEditor2 extends EditorPane {
+@@ -1630,7 +1630,7 @@ export class SettingsEditor2 extends EditorPane {
  	}
  
  	private contextViewFocused(): boolean {
@@ -837,7 +839,7 @@ index 01cc528667a..4b8db8b91bc 100644
  			// TODO: Improve lifecycle management this event should be disposed after first fire
  			this._register(this._terminalService.onDidChangeConnectionState(() => {
 diff --git a/src/vs/workbench/contrib/welcomeGettingStarted/browser/gettingStarted.ts b/src/vs/workbench/contrib/welcomeGettingStarted/browser/gettingStarted.ts
-index 77a3a36c528..dcd3349c596 100644
+index 61c0a568216..07bbc007e30 100644
 --- a/src/vs/workbench/contrib/welcomeGettingStarted/browser/gettingStarted.ts
 +++ b/src/vs/workbench/contrib/welcomeGettingStarted/browser/gettingStarted.ts
 @@ -3,7 +3,7 @@
@@ -859,19 +861,20 @@ index 77a3a36c528..dcd3349c596 100644
  		let parent = this.container.parentElement;
  		while (parent && parent !== active) {
 diff --git a/src/vs/workbench/contrib/welcomeWalkthrough/browser/walkThroughPart.ts b/src/vs/workbench/contrib/welcomeWalkthrough/browser/walkThroughPart.ts
-index 27d04d09f01..61c2b58dfa4 100644
+index 808820829a4..cf37179d839 100644
 --- a/src/vs/workbench/contrib/welcomeWalkthrough/browser/walkThroughPart.ts
 +++ b/src/vs/workbench/contrib/welcomeWalkthrough/browser/walkThroughPart.ts
-@@ -32,7 +32,7 @@ import { UILabelProvider } from '../../../../base/common/keybindingLabels.js';
+@@ -32,8 +32,8 @@ import { UILabelProvider } from '../../../../base/common/keybindingLabels.js';
  import { OS, OperatingSystem } from '../../../../base/common/platform.js';
  import { deepClone } from '../../../../base/common/objects.js';
  import { INotificationService } from '../../../../platform/notification/common/notification.js';
--import { addDisposableListener, Dimension, isHTMLAnchorElement, isHTMLButtonElement, isHTMLElement, safeInnerHtml, size } from '../../../../base/browser/dom.js';
-+import { addDisposableListener, Dimension, getActiveElement, isHTMLAnchorElement, isHTMLButtonElement, isHTMLElement, safeInnerHtml, size } from '../../../../base/browser/dom.js';
+-import { addDisposableListener, Dimension, isHTMLAnchorElement, isHTMLButtonElement, isHTMLElement, size } from '../../../../base/browser/dom.js';
+ import * as domSanitize from '../../../../base/browser/domSanitize.js';
++import { addDisposableListener, Dimension, getActiveElement, isHTMLAnchorElement, isHTMLButtonElement, isHTMLElement, size } from '../../../../base/browser/dom.js';
  import { IEditorGroup, IEditorGroupsService } from '../../../services/editor/common/editorGroupsService.js';
  import { CancellationToken } from '../../../../base/common/cancellation.js';
  import { IExtensionService } from '../../../services/extensions/common/extensions.js';
-@@ -157,7 +157,7 @@ export class WalkThroughPart extends EditorPane {
+@@ -158,7 +158,7 @@ export class WalkThroughPart extends EditorPane {
  		this.content.addEventListener('click', event => {
  			for (let node = event.target as HTMLElement; node; node = node.parentNode as HTMLElement) {
  				if (isHTMLAnchorElement(node) && node.href) {
@@ -880,7 +883,7 @@ index 27d04d09f01..61c2b58dfa4 100644
  					if (baseElement && node.href.indexOf(baseElement.href) >= 0 && node.hash) {
  						const scrollTarget = this.content.querySelector(node.hash);
  						const innerContent = this.content.firstElementChild;
-@@ -227,7 +227,7 @@ export class WalkThroughPart extends EditorPane {
+@@ -228,7 +228,7 @@ export class WalkThroughPart extends EditorPane {
  	override focus(): void {
  		super.focus();
  

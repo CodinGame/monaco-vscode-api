@@ -4,7 +4,7 @@ Date: Tue, 16 Apr 2024 15:06:48 +0200
 Subject: [PATCH] refactor: split workbench contribution
 
 ---
- .../api/browser/extensionHost.contribution.ts | 30 -------------------
+ .../api/browser/extensionHost.contribution.ts | 29 -------------------
  .../api/browser/statusBarExtensionPoint.ts    | 16 +++++++++-
  .../common/jsonValidationExtensionPoint.ts    | 15 ++++++++++
  .../languageConfigurationExtensionPoint.ts    | 15 ++++++++++
@@ -12,10 +12,10 @@ Subject: [PATCH] refactor: split workbench contribution
  .../themes/common/iconExtensionPoint.ts       | 15 ++++++++++
  .../tokenClassificationExtensionPoint.ts      | 12 ++++++++
  src/vs/workbench/workbench.common.main.ts     |  6 ++++
- 8 files changed, 93 insertions(+), 31 deletions(-)
+ 8 files changed, 93 insertions(+), 30 deletions(-)
 
 diff --git a/src/vs/workbench/api/browser/extensionHost.contribution.ts b/src/vs/workbench/api/browser/extensionHost.contribution.ts
-index d5430634469..5eed5a1c237 100644
+index 683f1f100d7..ed9bc85df99 100644
 --- a/src/vs/workbench/api/browser/extensionHost.contribution.ts
 +++ b/src/vs/workbench/api/browser/extensionHost.contribution.ts
 @@ -3,17 +3,6 @@
@@ -36,11 +36,10 @@ index d5430634469..5eed5a1c237 100644
  // --- mainThread participants
  import './mainThreadLocalization.js';
  import './mainThreadBulkEdits.js';
-@@ -91,22 +80,3 @@ import './mainThreadAiEmbeddingVector.js';
- import './mainThreadAiSettingsSearch.js';
- import './mainThreadMcp.js';
- import './mainThreadChatStatus.js';
--
+@@ -95,21 +84,3 @@ import './mainThreadChatOutputRenderer.js';
+ import './mainThreadChatSessions.js';
+ import './mainThreadDataChannels.js';
+ 
 -export class ExtensionPoints implements IWorkbenchContribution {
 -
 -	static readonly ID = 'workbench.contrib.extensionPoints';
@@ -247,7 +246,7 @@ index d78e65afc3f..56bd057fb3e 100644
 +
 +registerWorkbenchContribution2(TokenClassificationExtensionPointWorkbenchContribution.ID, TokenClassificationExtensionPointWorkbenchContribution, WorkbenchPhase.BlockStartup);
 diff --git a/src/vs/workbench/workbench.common.main.ts b/src/vs/workbench/workbench.common.main.ts
-index 750087f2e72..88c00d502bb 100644
+index f5f0451b0e1..fe2aa86fab5 100644
 --- a/src/vs/workbench/workbench.common.main.ts
 +++ b/src/vs/workbench/workbench.common.main.ts
 @@ -35,6 +35,12 @@ import './browser/actions/widgetNavigationCommands.js';

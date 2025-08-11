@@ -8,10 +8,10 @@ Subject: [PATCH] feat: add some parameter to webview iframes
  1 file changed, 3 insertions(+)
 
 diff --git a/src/vs/workbench/contrib/webview/browser/webviewElement.ts b/src/vs/workbench/contrib/webview/browser/webviewElement.ts
-index 8014b6610a6..33fdaac3ad4 100644
+index de9ae2caae2..80623cce590 100644
 --- a/src/vs/workbench/contrib/webview/browser/webviewElement.ts
 +++ b/src/vs/workbench/contrib/webview/browser/webviewElement.ts
-@@ -440,6 +440,9 @@ export class WebviewElement extends Disposable implements IWebview, WebviewFindD
+@@ -444,6 +444,9 @@ export class WebviewElement extends Disposable implements IWebview, WebviewFindD
  			params.purpose = options.purpose;
  		}
  

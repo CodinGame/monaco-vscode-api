@@ -15,7 +15,7 @@ Subject: [PATCH] fix: apply style only on standalone editors
  8 files changed, 45 insertions(+), 24 deletions(-)
 
 diff --git a/src/vs/editor/browser/config/editorConfiguration.ts b/src/vs/editor/browser/config/editorConfiguration.ts
-index 56b9d0083ef..c13c5ec710e 100644
+index 8b936dd220c..7966ec2b353 100644
 --- a/src/vs/editor/browser/config/editorConfiguration.ts
 +++ b/src/vs/editor/browser/config/editorConfiguration.ts
 @@ -46,6 +46,7 @@ export class EditorConfiguration extends Disposable implements IEditorConfigurat
@@ -58,9 +58,9 @@ index 56b9d0083ef..c13c5ec710e 100644
 -function getExtraEditorClassName(): string {
 +function getExtraEditorClassName(isStandaloneEditor: boolean): string {
  	let extra = '';
- 	if (!browser.isSafari && !browser.isWebkitWebView) {
- 		// Use user-select: none in all browsers except Safari and native macOS WebView
-@@ -241,6 +244,9 @@ function getExtraEditorClassName(): string {
+ 	if (browser.isSafari || browser.isWebkitWebView) {
+ 		// See https://github.com/microsoft/vscode/issues/108822
+@@ -240,6 +243,9 @@ function getExtraEditorClassName(): string {
  	if (platform.isMacintosh) {
  		extra += 'mac ';
  	}
@@ -70,7 +70,7 @@ index 56b9d0083ef..c13c5ec710e 100644
  	return extra;
  }
  
-@@ -283,7 +289,7 @@ export class ComputedEditorOptions implements IComputedEditorOptions {
+@@ -282,7 +288,7 @@ export class ComputedEditorOptions implements IComputedEditorOptions {
  	}
  }
  
@@ -80,7 +80,7 @@ index 56b9d0083ef..c13c5ec710e 100644
  	public static validateOptions(options: IEditorOptions): ValidatedEditorOptions {
  		const result = new ValidatedEditorOptions();
 diff --git a/src/vs/editor/browser/widget/codeEditor/codeEditorWidget.ts b/src/vs/editor/browser/widget/codeEditor/codeEditorWidget.ts
-index 34333bc3f85..f8893bb7ddb 100644
+index a770f47d708..985d6e217e6 100644
 --- a/src/vs/editor/browser/widget/codeEditor/codeEditorWidget.ts
 +++ b/src/vs/editor/browser/widget/codeEditor/codeEditorWidget.ts
 @@ -284,6 +284,7 @@ export class CodeEditorWidget extends Disposable implements editorBrowser.ICodeE
@@ -230,10 +230,10 @@ index ece0400a78c..5f70126b20f 100644
  
  	protected override _readEnvConfiguration(): IEnvConfiguration {
 diff --git a/src/vs/editor/test/browser/testCodeEditor.ts b/src/vs/editor/test/browser/testCodeEditor.ts
-index 967bcfcf510..92f81fabd87 100644
+index a19ec667647..21148c0e193 100644
 --- a/src/vs/editor/test/browser/testCodeEditor.ts
 +++ b/src/vs/editor/test/browser/testCodeEditor.ts
-@@ -72,7 +72,7 @@ export interface ITestCodeEditor extends IActiveCodeEditor {
+@@ -83,7 +83,7 @@ export interface ITestEditorAction {
  export class TestCodeEditor extends CodeEditorWidget implements ICodeEditor {
  
  	//#region testing overrides
@@ -243,7 +243,7 @@ index 967bcfcf510..92f81fabd87 100644
  	}
  	protected override _createView(viewModel: ViewModel): [View, boolean] {
 diff --git a/src/vs/workbench/contrib/notebook/browser/contrib/multicursor/notebookMulticursor.ts b/src/vs/workbench/contrib/notebook/browser/contrib/multicursor/notebookMulticursor.ts
-index 571248d12e4..e4d5efabfc5 100644
+index 237326159ff..f6ffd9b1cae 100644
 --- a/src/vs/workbench/contrib/notebook/browser/contrib/multicursor/notebookMulticursor.ts
 +++ b/src/vs/workbench/contrib/notebook/browser/contrib/multicursor/notebookMulticursor.ts
 @@ -839,7 +839,7 @@ export class NotebookMultiCursorController extends Disposable implements INotebo

@@ -8,7 +8,7 @@ Subject: [PATCH] fix(typescript): missing default value
  1 file changed, 1 insertion(+), 1 deletion(-)
 
 diff --git a/extensions/typescript-language-features/web/src/pathMapper.ts b/extensions/typescript-language-features/web/src/pathMapper.ts
-index b24ba5155d3..a0c2c248f96 100644
+index 9e73a17bd60..7fdee4f0891 100644
 --- a/extensions/typescript-language-features/web/src/pathMapper.ts
 +++ b/extensions/typescript-language-features/web/src/pathMapper.ts
 @@ -76,7 +76,7 @@ export function fromResource(extensionUri: URI, uri: URI) {
