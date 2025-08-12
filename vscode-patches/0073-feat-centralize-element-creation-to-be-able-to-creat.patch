@@ -4021,18 +4021,18 @@ index 329707002d5..f6fe593a719 100644
  		element.appendChild(right);
  
 diff --git a/src/vs/workbench/contrib/markdown/browser/markedKatexSupport.ts b/src/vs/workbench/contrib/markdown/browser/markedKatexSupport.ts
-index ff0e3541933..b62931d76e9 100644
+index 884c662b800..447c009d223 100644
 --- a/src/vs/workbench/contrib/markdown/browser/markedKatexSupport.ts
 +++ b/src/vs/workbench/contrib/markdown/browser/markedKatexSupport.ts
-@@ -4,6 +4,7 @@
+@@ -3,6 +3,7 @@
+  *  Licensed under the MIT License. See License.txt in the project root for license information.
   *--------------------------------------------------------------------------------------------*/
  
- import { importAMDNodeModule, resolveAmdNodeModulePath } from '../../../../amdX.js';
 +import { createElement } from '../../../../base/browser/dom.js';
  import { MarkdownSanitizerConfig } from '../../../../base/browser/markdownRenderer.js';
  import { CodeWindow } from '../../../../base/browser/window.js';
  import { Lazy } from '../../../../base/common/lazy.js';
-@@ -135,7 +136,7 @@ export class MarkedKatexSupport {
+@@ -134,7 +135,7 @@ export class MarkedKatexSupport {
  	public static ensureKatexStyles(window: CodeWindow) {
  		const doc = window.document;
  		if (!doc.querySelector('link.katex')) {
@@ -4040,7 +4040,7 @@ index ff0e3541933..b62931d76e9 100644
 +			const katexStyle = createElement('link');
  			katexStyle.classList.add('katex');
  			katexStyle.rel = 'stylesheet';
- 			katexStyle.href = resolveAmdNodeModulePath('katex', 'dist/katex.min.css');
+ 			katexStyle.href = new URL('katex/dist/katex.min.css', import.meta.url).href;
 diff --git a/src/vs/workbench/contrib/mergeEditor/browser/view/editorGutter.ts b/src/vs/workbench/contrib/mergeEditor/browser/view/editorGutter.ts
 index 7f92d3f354c..369847caa0d 100644
 --- a/src/vs/workbench/contrib/mergeEditor/browser/view/editorGutter.ts

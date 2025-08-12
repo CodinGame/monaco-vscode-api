@@ -5,6 +5,7 @@ Subject: [PATCH] fix: replace amd imports by regular esm dynamic imports
 
 ---
  src/vs/platform/telemetry/common/1dsAppender.ts |  9 ++-------
+ .../markdown/browser/markedKatexSupport.ts      |  5 ++---
  .../terminal/browser/terminalInstance.ts        |  3 +--
  .../browser/xterm/xtermAddonImporter.ts         | 17 ++++++++---------
  .../assignment/common/assignmentService.ts      |  3 +--
@@ -13,7 +14,8 @@ Subject: [PATCH] fix: replace amd imports by regular esm dynamic imports
  .../worker/textMateWorkerTokenizer.ts           |  3 +--
  .../browser/textMateTokenizationFeatureImpl.ts  |  6 +++---
  .../services/textfile/common/encoding.ts        |  9 ++++-----
- 9 files changed, 23 insertions(+), 35 deletions(-)
+ .../browser/treeSitterLibraryService.ts         |  4 ++--
+ 11 files changed, 27 insertions(+), 40 deletions(-)
 
 diff --git a/src/vs/platform/telemetry/common/1dsAppender.ts b/src/vs/platform/telemetry/common/1dsAppender.ts
 index 59a0dadcb7d..f39a10d515f 100644
@@ -44,6 +46,36 @@ index 59a0dadcb7d..f39a10d515f 100644
  	const appInsightsCore = new oneDs.AppInsightsCore();
  	const collectorChannelPlugin: PostChannel = new postPlugin.PostChannel();
  	// Configure the app insights core to send to collector++ and disable logging of debug info
+diff --git a/src/vs/workbench/contrib/markdown/browser/markedKatexSupport.ts b/src/vs/workbench/contrib/markdown/browser/markedKatexSupport.ts
+index ff0e3541933..884c662b800 100644
+--- a/src/vs/workbench/contrib/markdown/browser/markedKatexSupport.ts
++++ b/src/vs/workbench/contrib/markdown/browser/markedKatexSupport.ts
+@@ -3,7 +3,6 @@
+  *  Licensed under the MIT License. See License.txt in the project root for license information.
+  *--------------------------------------------------------------------------------------------*/
+ 
+-import { importAMDNodeModule, resolveAmdNodeModulePath } from '../../../../amdX.js';
+ import { MarkdownSanitizerConfig } from '../../../../base/browser/markdownRenderer.js';
+ import { CodeWindow } from '../../../../base/browser/window.js';
+ import { Lazy } from '../../../../base/common/lazy.js';
+@@ -113,7 +112,7 @@ export class MarkedKatexSupport {
+ 
+ 	private static _katex?: typeof import('katex').default;
+ 	private static _katexPromise = new Lazy(async () => {
+-		this._katex = await importAMDNodeModule('katex', 'dist/katex.min.js');
++		this._katex = (await import('katex')).default;
+ 		return this._katex;
+ 	});
+ 
+@@ -138,7 +137,7 @@ export class MarkedKatexSupport {
+ 			const katexStyle = document.createElement('link');
+ 			katexStyle.classList.add('katex');
+ 			katexStyle.rel = 'stylesheet';
+-			katexStyle.href = resolveAmdNodeModulePath('katex', 'dist/katex.min.css');
++			katexStyle.href = new URL('katex/dist/katex.min.css', import.meta.url).href;
+ 			doc.head.appendChild(katexStyle);
+ 		}
+ 	}
 diff --git a/src/vs/workbench/contrib/terminal/browser/terminalInstance.ts b/src/vs/workbench/contrib/terminal/browser/terminalInstance.ts
 index 9a0bee23d92..f9754bbf43a 100644
 --- a/src/vs/workbench/contrib/terminal/browser/terminalInstance.ts
@@ -266,3 +298,25 @@ index 4fee9c55420..ce8370c3a48 100644
  
  	// ensure to limit buffer for guessing due to https://github.com/aadsm/jschardet/issues/53
  	const limitedBuffer = buffer.slice(0, AUTO_ENCODING_GUESS_MAX_BYTES);
+diff --git a/src/vs/workbench/services/treeSitter/browser/treeSitterLibraryService.ts b/src/vs/workbench/services/treeSitter/browser/treeSitterLibraryService.ts
+index 6302e6c322c..87a440920e9 100644
+--- a/src/vs/workbench/services/treeSitter/browser/treeSitterLibraryService.ts
++++ b/src/vs/workbench/services/treeSitter/browser/treeSitterLibraryService.ts
+@@ -7,7 +7,7 @@
+ import type { Parser, Language, Query } from '@vscode/tree-sitter-wasm';
+ import { IReader, ObservablePromise } from '../../../../base/common/observable.js';
+ import { ITreeSitterLibraryService } from '../../../../editor/common/services/treeSitter/treeSitterLibraryService.js';
+-import { canASAR, importAMDNodeModule } from '../../../../amdX.js';
++import { canASAR } from '../../../../amdX.js';
+ import { Lazy } from '../../../../base/common/lazy.js';
+ import { IConfigurationService } from '../../../../platform/configuration/common/configuration.js';
+ import { FileOperationResult, IFileContent, IFileService, toFileOperationResult } from '../../../../platform/files/common/files.js';
+@@ -33,7 +33,7 @@ export class TreeSitterLibraryService extends Disposable implements ITreeSitterL
+ 	isTest: boolean = false;
+ 
+ 	private readonly _treeSitterImport = new Lazy(async () => {
+-		const TreeSitter = await importAMDNodeModule<typeof import('@vscode/tree-sitter-wasm')>('@vscode/tree-sitter-wasm', 'wasm/tree-sitter.js');
++		const TreeSitter = await import('@vscode/tree-sitter-wasm');
+ 		const environmentService = this._environmentService;
+ 		const isTest = this.isTest;
+ 		await TreeSitter.Parser.init({
