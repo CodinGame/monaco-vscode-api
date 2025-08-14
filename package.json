@@ -32,7 +32,7 @@
     "vscode": {
       "version": "1.103.1",
       "ref": "360a4e4fd251bfce169a4ddf857c7d25d1ad40da",
-      "commit": "null"
+      "commit": "360a4e4fd251bfce169a4ddf857c7d25d1ad40da"
     },
     "monaco": {
       "ref": "v0.52.2",
