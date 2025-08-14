@@ -5380,13 +5380,9 @@ class LanguageModelToolsService implements ILanguageModelToolsService {
   getTool: ILanguageModelToolsService['getTool'] = () => undefined
   getToolByName: ILanguageModelToolsService['getToolByName'] = () => undefined
   onDidChangeTools: ILanguageModelToolsService['onDidChangeTools'] = Event.None
-  @Unsupported
-  registerToolData: ILanguageModelToolsService['registerToolData'] = unsupported
-  @Unsupported
-  registerToolImplementation: ILanguageModelToolsService['registerToolImplementation'] =
-    (): never => {
-      unsupported()
-    }
+  registerToolData: ILanguageModelToolsService['registerToolData'] = () => Disposable.None
+  registerToolImplementation: ILanguageModelToolsService['registerToolImplementation'] = () =>
+    Disposable.None
   getTools: ILanguageModelToolsService['getTools'] = () => []
   @Unsupported
   invokeTool: ILanguageModelToolsService['invokeTool'] = unsupported
@@ -5405,10 +5401,7 @@ class LanguageModelToolsService implements ILanguageModelToolsService {
   getToolSetByName: ILanguageModelToolsService['getToolSetByName'] = () => undefined
   @Unsupported
   createToolSet: ILanguageModelToolsService['createToolSet'] = unsupported
-  @Unsupported
-  get toolSets(): never {
-    return unsupported()
-  }
+  toolSets: ILanguageModelToolsService['toolSets'] = constObservable([])
 
   @Unsupported
   toToolEnablementMap: ILanguageModelToolsService['toToolEnablementMap'] = unsupported
