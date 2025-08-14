@@ -136,7 +136,7 @@ Subject: [PATCH] feat: centralize element creation, to be able to create them
  .../issue/browser/baseIssueReporterService.ts |  8 ++--
  .../contrib/issue/browser/issueFormService.ts |  3 +-
  .../languageStatus/browser/languageStatus.ts  | 12 +++---
- .../markdown/browser/markedKatexSupport.ts    |  3 +-
+ .../markdown/browser/markedKatexSupport.ts    |  4 +-
  .../mergeEditor/browser/view/editorGutter.ts  |  4 +-
  .../browser/view/fixedZoneWidget.ts           |  4 +-
  .../contrib/find/notebookFindReplaceWidget.ts |  8 ++--
@@ -185,7 +185,7 @@ Subject: [PATCH] feat: centralize element creation, to be able to create them
  .../browser/walkThroughPart.ts                |  6 +--
  .../browser/webWorkerExtensionHost.ts         |  2 +-
  .../host/browser/browserHostService.ts        |  6 +--
- 180 files changed, 547 insertions(+), 481 deletions(-)
+ 180 files changed, 547 insertions(+), 482 deletions(-)
 
 diff --git a/src/vs/base/browser/dom.ts b/src/vs/base/browser/dom.ts
 index 1471d7d7a94..a2f2ed0ebae 100644
@@ -4021,26 +4021,30 @@ index 329707002d5..f6fe593a719 100644
  		element.appendChild(right);
  
 diff --git a/src/vs/workbench/contrib/markdown/browser/markedKatexSupport.ts b/src/vs/workbench/contrib/markdown/browser/markedKatexSupport.ts
-index 884c662b800..447c009d223 100644
+index 884c662b800..e3e6dd37042 100644
 --- a/src/vs/workbench/contrib/markdown/browser/markedKatexSupport.ts
 +++ b/src/vs/workbench/contrib/markdown/browser/markedKatexSupport.ts
 @@ -3,6 +3,7 @@
   *  Licensed under the MIT License. See License.txt in the project root for license information.
   *--------------------------------------------------------------------------------------------*/
  
-+import { createElement } from '../../../../base/browser/dom.js';
++import { createLinkElement } from '../../../../base/browser/dom.js';
  import { MarkdownSanitizerConfig } from '../../../../base/browser/markdownRenderer.js';
  import { CodeWindow } from '../../../../base/browser/window.js';
  import { Lazy } from '../../../../base/common/lazy.js';
-@@ -134,7 +135,7 @@ export class MarkedKatexSupport {
+@@ -134,11 +135,10 @@ export class MarkedKatexSupport {
  	public static ensureKatexStyles(window: CodeWindow) {
  		const doc = window.document;
  		if (!doc.querySelector('link.katex')) {
 -			const katexStyle = document.createElement('link');
-+			const katexStyle = createElement('link');
++			const katexStyle = createLinkElement();
  			katexStyle.classList.add('katex');
  			katexStyle.rel = 'stylesheet';
  			katexStyle.href = new URL('katex/dist/katex.min.css', import.meta.url).href;
+-			doc.head.appendChild(katexStyle);
+ 		}
+ 	}
+ }
 diff --git a/src/vs/workbench/contrib/mergeEditor/browser/view/editorGutter.ts b/src/vs/workbench/contrib/mergeEditor/browser/view/editorGutter.ts
 index 7f92d3f354c..369847caa0d 100644
 --- a/src/vs/workbench/contrib/mergeEditor/browser/view/editorGutter.ts
