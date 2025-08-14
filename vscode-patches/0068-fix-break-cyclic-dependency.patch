@@ -108,10 +108,10 @@ index f30c7cb9dec..2eb26547f51 100644
  import { ChatConfirmationWidget, IChatConfirmationButton } from '../chatConfirmationWidget.js';
  import { IChatContentPartRenderContext } from '../chatContentParts.js';
 diff --git a/src/vs/workbench/contrib/chat/browser/chatContentParts/toolInvocationParts/chatTerminalToolSubPart.ts b/src/vs/workbench/contrib/chat/browser/chatContentParts/toolInvocationParts/chatTerminalToolSubPart.ts
-index be5c66f1158..02d50459ef2 100644
+index cf7c76e6d5a..aa57ad0930b 100644
 --- a/src/vs/workbench/contrib/chat/browser/chatContentParts/toolInvocationParts/chatTerminalToolSubPart.ts
 +++ b/src/vs/workbench/contrib/chat/browser/chatContentParts/toolInvocationParts/chatTerminalToolSubPart.ts
-@@ -19,8 +19,8 @@ import { IKeybindingService } from '../../../../../../platform/keybinding/common
+@@ -20,8 +20,8 @@ import { IKeybindingService } from '../../../../../../platform/keybinding/common
  import { migrateLegacyTerminalToolSpecificData } from '../../../common/chat.js';
  import { ChatContextKeys } from '../../../common/chatContextKeys.js';
  import { IChatToolInvocation, type IChatTerminalToolInvocationData, type ILegacyChatTerminalToolInvocationData } from '../../../common/chatService.js';

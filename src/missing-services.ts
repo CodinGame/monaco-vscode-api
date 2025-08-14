@@ -547,9 +547,7 @@ class PaneCompositePartService implements IPaneCompositePartService {
   hideActivePaneComposite: IPaneCompositePartService['hideActivePaneComposite'] = () => {}
   @Unsupported
   getLastActivePaneCompositeId: IPaneCompositePartService['getLastActivePaneCompositeId'] =
-    (): never => {
-      unsupported()
-    }
+    unsupported
 }
 registerSingleton(IPaneCompositePartService, PaneCompositePartService, InstantiationType.Eager)
 registerSingleton(IUriIdentityService, UriIdentityService, InstantiationType.Delayed)
@@ -850,10 +848,7 @@ class EmptyEditorPart implements IEditorPart {
 }
 class EmptyEditorGroupsService implements IEditorGroupsService {
   @Unsupported
-  getScopedInstantiationService: IEditorGroupsService['getScopedInstantiationService'] =
-    (): never => {
-      unsupported()
-    }
+  getScopedInstantiationService: IEditorGroupsService['getScopedInstantiationService'] = unsupported
   @Unsupported
   registerContextKeyProvider: IEditorGroupsService['registerContextKeyProvider'] = unsupported
   @Unsupported
@@ -969,10 +964,7 @@ class WorkingCopyFileService implements IWorkingCopyFileService {
   onDidRunWorkingCopyFileOperation: IWorkingCopyFileService['onDidRunWorkingCopyFileOperation'] =
     Event.None
   @Unsupported
-  addFileOperationParticipant: IWorkingCopyFileService['addFileOperationParticipant'] =
-    (): never => {
-      unsupported()
-    }
+  addFileOperationParticipant: IWorkingCopyFileService['addFileOperationParticipant'] = unsupported
   hasSaveParticipants: IWorkingCopyFileService['hasSaveParticipants'] = false
   @Unsupported
   addSaveParticipant: IWorkingCopyFileService['addSaveParticipant'] = unsupported
@@ -989,10 +981,7 @@ class WorkingCopyFileService implements IWorkingCopyFileService {
   @Unsupported
   delete: IWorkingCopyFileService['delete'] = unsupported
   @Unsupported
-  registerWorkingCopyProvider: IWorkingCopyFileService['registerWorkingCopyProvider'] =
-    (): never => {
-      unsupported()
-    }
+  registerWorkingCopyProvider: IWorkingCopyFileService['registerWorkingCopyProvider'] = unsupported
   getDirty: IWorkingCopyFileService['getDirty'] = () => []
 }
 registerSingleton(IWorkingCopyFileService, WorkingCopyFileService, InstantiationType.Eager)
@@ -1233,9 +1222,7 @@ class UserDataProfileStorageService implements IUserDataProfileStorageService {
   updateStorageData: IUserDataProfileStorageService['updateStorageData'] = unsupported
   @Unsupported
   withProfileScopedStorageService: IUserDataProfileStorageService['withProfileScopedStorageService'] =
-    (): never => {
-      unsupported()
-    }
+    unsupported
 }
 registerSingleton(
   IUserDataProfileStorageService,
@@ -1340,14 +1327,10 @@ class FakeAdapterManager implements IAdapterManager {
   createDebugAdapter: IAdapterManager['createDebugAdapter'] = unsupported
   @Unsupported
   registerDebugAdapterDescriptorFactory: IAdapterManager['registerDebugAdapterDescriptorFactory'] =
-    (): never => {
-      unsupported()
-    }
+    unsupported
   @Unsupported
   unregisterDebugAdapterDescriptorFactory: IAdapterManager['unregisterDebugAdapterDescriptorFactory'] =
-    (): never => {
-      unsupported()
-    }
+    unsupported
   @Unsupported
   substituteVariables: IAdapterManager['substituteVariables'] = unsupported
   @Unsupported
@@ -1408,9 +1391,7 @@ class DebugService implements IDebugService {
   setExceptionBreakpointCondition: IDebugService['setExceptionBreakpointCondition'] = unsupported
   @Unsupported
   setExceptionBreakpointsForSession: IDebugService['setExceptionBreakpointsForSession'] =
-    (): never => {
-      unsupported()
-    }
+    unsupported
   @Unsupported
   sendAllBreakpoints: IDebugService['sendAllBreakpoints'] = unsupported
   @Unsupported
@@ -1459,21 +1440,15 @@ class WorkspaceTrustRequestService implements IWorkspaceTrustRequestService {
     Event.None
   @Unsupported
   completeOpenFilesTrustRequest: IWorkspaceTrustRequestService['completeOpenFilesTrustRequest'] =
-    (): never => {
-      unsupported()
-    }
+    unsupported
   requestOpenFilesTrust: IWorkspaceTrustRequestService['requestOpenFilesTrust'] = async () =>
     WorkspaceTrustUriResponse.Open
   @Unsupported
   cancelWorkspaceTrustRequest: IWorkspaceTrustRequestService['cancelWorkspaceTrustRequest'] =
-    (): never => {
-      unsupported()
-    }
+    unsupported
   @Unsupported
   completeWorkspaceTrustRequest: IWorkspaceTrustRequestService['completeWorkspaceTrustRequest'] =
-    (): never => {
-      unsupported()
-    }
+    unsupported
   requestWorkspaceTrust: IWorkspaceTrustRequestService['requestWorkspaceTrust'] = async () => true
   requestWorkspaceTrustOnStartup: IWorkspaceTrustRequestService['requestWorkspaceTrustOnStartup'] =
     () => null
@@ -1512,9 +1487,7 @@ class ExtensionHostDebugService implements IExtensionHostDebugService {
   onTerminateSession: IExtensionHostDebugService['onTerminateSession'] = Event.None
   @Unsupported
   openExtensionDevelopmentHostWindow: IExtensionHostDebugService['openExtensionDevelopmentHostWindow'] =
-    (): never => {
-      unsupported()
-    }
+    unsupported
 }
 registerSingleton(IExtensionHostDebugService, ExtensionHostDebugService, InstantiationType.Eager)
 class ViewsService implements IViewsService {
@@ -1552,17 +1525,12 @@ class ViewDescriptorService implements IViewDescriptorService {
   getViewContainerById: IViewDescriptorService['getViewContainerById'] = () => null
   @Unsupported
   isViewContainerRemovedPermanently: IViewDescriptorService['isViewContainerRemovedPermanently'] =
-    (): never => {
-      unsupported()
-    }
+    unsupported
   getDefaultViewContainerLocation: IViewDescriptorService['getDefaultViewContainerLocation'] = () =>
     null
   getViewContainerLocation: IViewDescriptorService['getViewContainerLocation'] = () => null
   @Unsupported
-  getViewContainersByLocation: IViewDescriptorService['getViewContainersByLocation'] =
-    (): never => {
-      unsupported()
-    }
+  getViewContainersByLocation: IViewDescriptorService['getViewContainersByLocation'] = unsupported
   getViewContainerModel: IViewDescriptorService['getViewContainerModel'] = () =>
     ({
       onDidChangeAllViewDescriptors: Event.None,
@@ -1573,20 +1541,13 @@ class ViewDescriptorService implements IViewDescriptorService {
     > as IViewContainerModel
   onDidChangeContainerLocation: IViewDescriptorService['onDidChangeContainerLocation'] = Event.None
   @Unsupported
-  moveViewContainerToLocation: IViewDescriptorService['moveViewContainerToLocation'] =
-    (): never => {
-      unsupported()
-    }
+  moveViewContainerToLocation: IViewDescriptorService['moveViewContainerToLocation'] = unsupported
   @Unsupported
   getViewContainerBadgeEnablementState: IViewDescriptorService['getViewContainerBadgeEnablementState'] =
-    (): never => {
-      unsupported()
-    }
+    unsupported
   @Unsupported
   setViewContainerBadgeEnablementState: IViewDescriptorService['setViewContainerBadgeEnablementState'] =
-    (): never => {
-      unsupported()
-    }
+    unsupported
   getViewDescriptorById: IViewDescriptorService['getViewDescriptorById'] = () => null
   getViewContainerByViewId: IViewDescriptorService['getViewContainerByViewId'] = () => null
   getDefaultContainerById: IViewDescriptorService['getDefaultContainerById'] = () => null
@@ -1689,9 +1650,7 @@ class ConfigurationResolverService implements IConfigurationResolverService {
   resolveAsync: IConfigurationResolverService['resolveAsync'] = unsupported
   @Unsupported
   resolveWithInteractionReplace: IConfigurationResolverService['resolveWithInteractionReplace'] =
-    (): never => {
-      unsupported()
-    }
+    unsupported
   @Unsupported
   resolveWithInteraction: IConfigurationResolverService['resolveWithInteraction'] = unsupported
   @Unsupported
@@ -1814,9 +1773,7 @@ class ExtensionsWorkbenchService implements IExtensionsWorkbenchService {
   downloadVSIX: IExtensionsWorkbenchService['downloadVSIX'] = unsupported
   @Unsupported
   updateAutoUpdateForAllExtensions: IExtensionsWorkbenchService['updateAutoUpdateForAllExtensions'] =
-    (): never => {
-      unsupported()
-    }
+    unsupported
   @Unsupported
   openSearch: IExtensionsWorkbenchService['openSearch'] = unsupported
   getExtensionRuntimeStatus: IExtensionsWorkbenchService['getExtensionRuntimeStatus'] = () =>
@@ -1837,18 +1794,14 @@ class ExtensionsWorkbenchService implements IExtensionsWorkbenchService {
   isAutoUpdateEnabledFor: IExtensionsWorkbenchService['isAutoUpdateEnabledFor'] = unsupported
   @Unsupported
   updateAutoUpdateEnablementFor: IExtensionsWorkbenchService['updateAutoUpdateEnablementFor'] =
-    (): never => {
-      unsupported()
-    }
+    unsupported
   @Unsupported
   getAutoUpdateValue: IExtensionsWorkbenchService['getAutoUpdateValue'] = unsupported
   @Unsupported
   updateAll: IExtensionsWorkbenchService['updateAll'] = unsupported
   @Unsupported
   toggleApplyExtensionToAllProfiles: IExtensionsWorkbenchService['toggleApplyExtensionToAllProfiles'] =
-    (): never => {
-      unsupported()
-    }
+    unsupported
   whenInitialized: IExtensionsWorkbenchService['whenInitialized'] = Promise.resolve()
   onChange: IExtensionsWorkbenchService['onChange'] = Event.None
   onReset: IExtensionsWorkbenchService['onReset'] = Event.None
@@ -1883,9 +1836,7 @@ class ExtensionsWorkbenchService implements IExtensionsWorkbenchService {
   isExtensionIgnoredToSync: IExtensionsWorkbenchService['isExtensionIgnoredToSync'] = unsupported
   @Unsupported
   toggleExtensionIgnoredToSync: IExtensionsWorkbenchService['toggleExtensionIgnoredToSync'] =
-    (): never => {
-      unsupported()
-    }
+    unsupported
 }
 registerSingleton(IExtensionsWorkbenchService, ExtensionsWorkbenchService, InstantiationType.Eager)
 class ExtensionManagementServerService implements IExtensionManagementServerService {
@@ -1898,14 +1849,10 @@ class ExtensionManagementServerService implements IExtensionManagementServerServ
     null
   @Unsupported
   getExtensionManagementServer: IExtensionManagementServerService['getExtensionManagementServer'] =
-    (): never => {
-      unsupported()
-    }
+    unsupported
   @Unsupported
   getExtensionInstallLocation: IExtensionManagementServerService['getExtensionInstallLocation'] =
-    (): never => {
-      unsupported()
-    }
+    unsupported
 }
 registerSingleton(
   IExtensionManagementServerService,
@@ -1960,14 +1907,10 @@ class IgnoredExtensionsManagementService implements IIgnoredExtensionsManagement
     false
   @Unsupported
   updateIgnoredExtensions: IIgnoredExtensionsManagementService['updateIgnoredExtensions'] =
-    (): never => {
-      unsupported()
-    }
+    unsupported
   @Unsupported
   updateSynchronizedExtensions: IIgnoredExtensionsManagementService['updateSynchronizedExtensions'] =
-    (): never => {
-      unsupported()
-    }
+    unsupported
 }
 registerSingleton(
   IIgnoredExtensionsManagementService,
@@ -1984,14 +1927,10 @@ class ExtensionRecommendationNotificationService
     () => false
   @Unsupported
   promptImportantExtensionsInstallNotification: IExtensionRecommendationNotificationService['promptImportantExtensionsInstallNotification'] =
-    (): never => {
-      unsupported()
-    }
+    unsupported
   @Unsupported
   promptWorkspaceRecommendations: IExtensionRecommendationNotificationService['promptWorkspaceRecommendations'] =
-    (): never => {
-      unsupported()
-    }
+    unsupported
 }
 registerSingleton(
   IExtensionRecommendationNotificationService,
@@ -2039,25 +1978,19 @@ class ExtensionsScannerService implements IExtensionsScannerService {
   scanUserExtensions: IExtensionsScannerService['scanUserExtensions'] = unsupported
   @Unsupported
   scanExtensionsUnderDevelopment: IExtensionsScannerService['scanExtensionsUnderDevelopment'] =
-    (): never => {
-      unsupported()
-    }
+    unsupported
   @Unsupported
   scanExistingExtension: IExtensionsScannerService['scanExistingExtension'] = unsupported
   @Unsupported
   scanOneOrMultipleExtensions: IExtensionsScannerService['scanOneOrMultipleExtensions'] =
-    (): never => {
-      unsupported()
-    }
+    unsupported
   @Unsupported
   scanMultipleExtensions: IExtensionsScannerService['scanMultipleExtensions'] = unsupported
   @Unsupported
   scanAllUserExtensions: IExtensionsScannerService['scanAllUserExtensions'] = unsupported
   @Unsupported
   initializeDefaultProfileExtensions: IExtensionsScannerService['initializeDefaultProfileExtensions'] =
-    (): never => {
-      unsupported()
-    }
+    unsupported
   @Unsupported
   updateManifestMetadata: IExtensionsScannerService['updateManifestMetadata'] = unsupported
 }
@@ -2071,17 +2004,12 @@ class ExtensionsProfileScannerService implements IExtensionsProfileScannerServic
   @Unsupported
   scanProfileExtensions: IExtensionsProfileScannerService['scanProfileExtensions'] = unsupported
   @Unsupported
-  addExtensionsToProfile: IExtensionsProfileScannerService['addExtensionsToProfile'] =
-    (): never => {
-      unsupported()
-    }
+  addExtensionsToProfile: IExtensionsProfileScannerService['addExtensionsToProfile'] = unsupported
   @Unsupported
   updateMetadata: IExtensionsProfileScannerService['updateMetadata'] = unsupported
   @Unsupported
   removeExtensionsFromProfile: IExtensionsProfileScannerService['removeExtensionsFromProfile'] =
-    (): never => {
-      unsupported()
-    }
+    unsupported
 }
 registerSingleton(
   IExtensionsProfileScannerService,
@@ -2099,9 +2027,7 @@ class ExtensionIgnoredRecommendationsService implements IExtensionIgnoredRecomme
     []
   @Unsupported
   toggleGlobalIgnoredRecommendation: IExtensionIgnoredRecommendationsService['toggleGlobalIgnoredRecommendation'] =
-    (): never => {
-      unsupported()
-    }
+    unsupported
 }
 registerSingleton(
   IExtensionIgnoredRecommendationsService,
@@ -2118,16 +2044,12 @@ class WorkspaceExtensionsConfigService implements IWorkspaceExtensionsConfigServ
   getRecommendations: IWorkspaceExtensionsConfigService['getRecommendations'] = unsupported
   @Unsupported
   getUnwantedRecommendations: IWorkspaceExtensionsConfigService['getUnwantedRecommendations'] =
-    (): never => {
-      unsupported()
-    }
+    unsupported
   @Unsupported
   toggleRecommendation: IWorkspaceExtensionsConfigService['toggleRecommendation'] = unsupported
   @Unsupported
   toggleUnwantedRecommendation: IWorkspaceExtensionsConfigService['toggleUnwantedRecommendation'] =
-    (): never => {
-      unsupported()
-    }
+    unsupported
 }
 registerSingleton(
   IWorkspaceExtensionsConfigService,
@@ -2155,9 +2077,7 @@ class WorkbenchExtensionEnablementService implements IWorkbenchExtensionEnableme
   setEnablement: IWorkbenchExtensionEnablementService['setEnablement'] = unsupported
   @Unsupported
   updateExtensionsEnablementsWhenWorkspaceTrustChanges: IWorkbenchExtensionEnablementService['updateExtensionsEnablementsWhenWorkspaceTrustChanges'] =
-    (): never => {
-      unsupported()
-    }
+    unsupported
 }
 registerSingleton(
   IWorkbenchExtensionEnablementService,
@@ -2201,9 +2121,7 @@ class FilesConfigurationService implements IFilesConfigurationService {
   disableAutoSave: IFilesConfigurationService['disableAutoSave'] = unsupported
   @Unsupported
   enableAutoSaveAfterShortDelay: IFilesConfigurationService['enableAutoSaveAfterShortDelay'] =
-    (): never => {
-      unsupported()
-    }
+    unsupported
   onDidChangeReadonly: IFilesConfigurationService['onDidChangeReadonly'] = Event.None
   onDidChangeFilesAssociation: IFilesConfigurationService['onDidChangeFilesAssociation'] =
     Event.None
@@ -2432,9 +2350,7 @@ class ExtensionResourceLoaderService implements IExtensionResourceLoaderService 
     async () => false
   @Unsupported
   getExtensionGalleryResourceURL: IExtensionResourceLoaderService['getExtensionGalleryResourceURL'] =
-    (): never => {
-      unsupported()
-    }
+    unsupported
 }
 registerSingleton(
   IExtensionResourceLoaderService,
@@ -2647,9 +2563,7 @@ class ExtensionGalleryService implements IExtensionGalleryService {
   getCoreTranslation: IExtensionGalleryService['getCoreTranslation'] = unsupported
   @Unsupported
   getExtensionsControlManifest: IExtensionGalleryService['getExtensionsControlManifest'] =
-    (): never => {
-      unsupported()
-    }
+    unsupported
   getAllVersions: IExtensionGalleryService['getAllVersions'] = async () => []
 }
 registerSingleton(IExtensionGalleryService, ExtensionGalleryService, InstantiationType.Eager)
@@ -2903,9 +2817,7 @@ class TerminalInstanceService implements ITerminalInstanceService {
   onDidCreateInstance: ITerminalInstanceService['onDidCreateInstance'] = Event.None
   @Unsupported
   convertProfileToShellLaunchConfig: ITerminalInstanceService['convertProfileToShellLaunchConfig'] =
-    (): never => {
-      unsupported()
-    }
+    unsupported
   @Unsupported
   createInstance: ITerminalInstanceService['createInstance'] = unsupported
   @Unsupported
@@ -2928,21 +2840,15 @@ class TerminalProfileService implements ITerminalProfileService {
   onDidChangeAvailableProfiles: ITerminalProfileService['onDidChangeAvailableProfiles'] = Event.None
   @Unsupported
   getContributedDefaultProfile: ITerminalProfileService['getContributedDefaultProfile'] =
-    (): never => {
-      unsupported()
-    }
+    unsupported
   @Unsupported
   registerContributedProfile: ITerminalProfileService['registerContributedProfile'] = unsupported
   @Unsupported
   getContributedProfileProvider: ITerminalProfileService['getContributedProfileProvider'] =
-    (): never => {
-      unsupported()
-    }
+    unsupported
   @Unsupported
   registerTerminalProfileProvider: ITerminalProfileService['registerTerminalProfileProvider'] =
-    (): never => {
-      unsupported()
-    }
+    unsupported
 }
 registerSingleton(ITerminalProfileService, TerminalProfileService, InstantiationType.Delayed)
 class TerminalLogService implements ITerminalLogService {
@@ -2998,9 +2904,7 @@ class TerminalProfileResolverService implements ITerminalProfileResolverService 
   resolveIcon: ITerminalProfileResolverService['resolveIcon'] = unsupported
   @Unsupported
   resolveShellLaunchConfig: ITerminalProfileResolverService['resolveShellLaunchConfig'] =
-    (): never => {
-      unsupported()
-    }
+    unsupported
   getDefaultProfile: ITerminalProfileResolverService['getDefaultProfile'] = async () => ({
     profileName: 'bash',
     path: '/bin/bash',
@@ -3072,9 +2976,7 @@ class UserDataSyncWorkbenchService implements IUserDataSyncWorkbenchService {
   syncNow: IUserDataSyncWorkbenchService['syncNow'] = unsupported
   @Unsupported
   synchroniseUserDataSyncStoreType: IUserDataSyncWorkbenchService['synchroniseUserDataSyncStoreType'] =
-    (): never => {
-      unsupported()
-    }
+    unsupported
   @Unsupported
   showConflicts: IUserDataSyncWorkbenchService['showConflicts'] = unsupported
   @Unsupported
@@ -3137,14 +3039,10 @@ class NotebookService implements INotebookService {
   _serviceBrand: undefined
   @Unsupported
   createNotebookTextDocumentSnapshot: INotebookService['createNotebookTextDocumentSnapshot'] =
-    (): never => {
-      unsupported()
-    }
+    unsupported
   @Unsupported
   restoreNotebookTextModelFromSnapshot: INotebookService['restoreNotebookTextModelFromSnapshot'] =
-    (): never => {
-      unsupported()
-    }
+    unsupported
   @Unsupported
   hasSupportedNotebooks: INotebookService['hasSupportedNotebooks'] = unsupported
   tryGetDataProviderSync: INotebookService['tryGetDataProviderSync'] = () => undefined
@@ -3178,10 +3076,7 @@ class NotebookService implements INotebookService {
   getNotebookTextModels: INotebookService['getNotebookTextModels'] = unsupported
   listNotebookDocuments: INotebookService['listNotebookDocuments'] = () => []
   @Unsupported
-  registerContributedNotebookType: INotebookService['registerContributedNotebookType'] =
-    (): never => {
-      unsupported()
-    }
+  registerContributedNotebookType: INotebookService['registerContributedNotebookType'] = unsupported
   getContributedNotebookType: INotebookService['getContributedNotebookType'] = () => undefined
   getContributedNotebookTypes: INotebookService['getContributedNotebookTypes'] = () => []
   getNotebookProviderResourceRoots: INotebookService['getNotebookProviderResourceRoots'] = () => []
@@ -3249,9 +3144,7 @@ class NotebookEditorModelResolverService implements INotebookEditorModelResolver
   _serviceBrand: undefined
   @Unsupported
   createUntitledNotebookTextModel: INotebookEditorModelResolverService['createUntitledNotebookTextModel'] =
-    (): never => {
-      unsupported()
-    }
+    unsupported
   onDidSaveNotebook: INotebookEditorModelResolverService['onDidSaveNotebook'] = Event.None
   onDidChangeDirty: INotebookEditorModelResolverService['onDidChangeDirty'] = Event.None
   onWillFailWithConflict: INotebookEditorModelResolverService['onWillFailWithConflict'] = Event.None
@@ -3283,10 +3176,7 @@ registerSingleton(IUserActivityService, UserActivityService, InstantiationType.D
 class CanonicalUriService implements ICanonicalUriService {
   _serviceBrand: undefined
   @Unsupported
-  registerCanonicalUriProvider: ICanonicalUriService['registerCanonicalUriProvider'] =
-    (): never => {
-      unsupported()
-    }
+  registerCanonicalUriProvider: ICanonicalUriService['registerCanonicalUriProvider'] = unsupported
 }
 registerSingleton(ICanonicalUriService, CanonicalUriService, InstantiationType.Delayed)
 class ExtensionStatusBarItemService implements IExtensionStatusBarItemService {
@@ -3406,9 +3296,7 @@ class QuickChatAgentService implements IChatAgentService {
   setRequestPaused: IChatAgentService['setRequestPaused'] = unsupported
   @Unsupported
   registerChatParticipantDetectionProvider: IChatAgentService['registerChatParticipantDetectionProvider'] =
-    (): never => {
-      unsupported()
-    }
+    unsupported
   @Unsupported
   detectAgentOrCommand: IChatAgentService['detectAgentOrCommand'] = unsupported
   hasChatParticipantDetectionProviders: IChatAgentService['hasChatParticipantDetectionProviders'] =
@@ -3418,9 +3306,7 @@ class QuickChatAgentService implements IChatAgentService {
   agentHasDupeName: IChatAgentService['agentHasDupeName'] = () => false
   @Unsupported
   registerAgentCompletionProvider: IChatAgentService['registerAgentCompletionProvider'] =
-    (): never => {
-      unsupported()
-    }
+    unsupported
   @Unsupported
   getAgentCompletionItems: IChatAgentService['getAgentCompletionItems'] = unsupported
   @Unsupported
@@ -3480,9 +3366,7 @@ class CustomEditorService implements ICustomEditorService {
   getContributedCustomEditors: ICustomEditorService['getContributedCustomEditors'] = unsupported
   @Unsupported
   getUserConfiguredCustomEditors: ICustomEditorService['getUserConfiguredCustomEditors'] =
-    (): never => {
-      unsupported()
-    }
+    unsupported
   registerCustomEditorCapabilities: ICustomEditorService['registerCustomEditorCapabilities'] = () =>
     Disposable.None
   getCustomEditorCapabilities: ICustomEditorService['getCustomEditorCapabilities'] = () => undefined
@@ -3549,27 +3433,18 @@ class RemoteAuthorityResolverService implements IRemoteAuthorityResolverService 
   @Unsupported
   getCanonicalURI: IRemoteAuthorityResolverService['getCanonicalURI'] = unsupported
   @Unsupported
-  _clearResolvedAuthority: IRemoteAuthorityResolverService['_clearResolvedAuthority'] =
-    (): never => {
-      unsupported()
-    }
+  _clearResolvedAuthority: IRemoteAuthorityResolverService['_clearResolvedAuthority'] = unsupported
   @Unsupported
   _setResolvedAuthority: IRemoteAuthorityResolverService['_setResolvedAuthority'] = unsupported
   @Unsupported
   _setResolvedAuthorityError: IRemoteAuthorityResolverService['_setResolvedAuthorityError'] =
-    (): never => {
-      unsupported()
-    }
+    unsupported
   @Unsupported
   _setAuthorityConnectionToken: IRemoteAuthorityResolverService['_setAuthorityConnectionToken'] =
-    (): never => {
-      unsupported()
-    }
+    unsupported
   @Unsupported
   _setCanonicalURIProvider: IRemoteAuthorityResolverService['_setCanonicalURIProvider'] =
-    (): never => {
-      unsupported()
-    }
+    unsupported
 }
 registerSingleton(
   IRemoteAuthorityResolverService,
@@ -3636,16 +3511,12 @@ class WorkbenchExtensionManagementService implements IWorkbenchExtensionManageme
     Event.None
   @Unsupported
   toggleApplicationScope: IWorkbenchExtensionManagementService['toggleApplicationScope'] =
-    (): never => {
-      unsupported()
-    }
+    unsupported
   @Unsupported
   uninstallExtensions: IWorkbenchExtensionManagementService['uninstallExtensions'] = unsupported
   @Unsupported
   resetPinnedStateForAllUserExtensions: IWorkbenchExtensionManagementService['resetPinnedStateForAllUserExtensions'] =
-    (): never => {
-      unsupported()
-    }
+    unsupported
   getInstalledWorkspaceExtensionLocations: IWorkbenchExtensionManagementService['getInstalledWorkspaceExtensionLocations'] =
     () => []
   onDidEnableExtensions: IWorkbenchExtensionManagementService['onDidEnableExtensions'] = Event.None
@@ -3654,9 +3525,7 @@ class WorkbenchExtensionManagementService implements IWorkbenchExtensionManageme
     async () => []
   @Unsupported
   installResourceExtension: IWorkbenchExtensionManagementService['installResourceExtension'] =
-    (): never => {
-      unsupported()
-    }
+    unsupported
   onInstallExtension: IWorkbenchExtensionManagementService['onInstallExtension'] = Event.None
   onDidInstallExtensions: IWorkbenchExtensionManagementService['onDidInstallExtensions'] =
     Event.None
@@ -3684,22 +3553,16 @@ class WorkbenchExtensionManagementService implements IWorkbenchExtensionManageme
   installFromGallery: IWorkbenchExtensionManagementService['installFromGallery'] = unsupported
   @Unsupported
   installGalleryExtensions: IWorkbenchExtensionManagementService['installGalleryExtensions'] =
-    (): never => {
-      unsupported()
-    }
+    unsupported
   @Unsupported
   installExtensionsFromProfile: IWorkbenchExtensionManagementService['installExtensionsFromProfile'] =
-    (): never => {
-      unsupported()
-    }
+    unsupported
   @Unsupported
   uninstall: IWorkbenchExtensionManagementService['uninstall'] = unsupported
   getInstalled: IWorkbenchExtensionManagementService['getInstalled'] = async () => []
   @Unsupported
   getExtensionsControlManifest: IWorkbenchExtensionManagementService['getExtensionsControlManifest'] =
-    (): never => {
-      unsupported()
-    }
+    unsupported
   @Unsupported
   copyExtensions: IWorkbenchExtensionManagementService['copyExtensions'] = unsupported
   @Unsupported
@@ -3717,10 +3580,7 @@ class WorkbenchExtensionManagementService implements IWorkbenchExtensionManageme
   isPublisherTrusted: IWorkbenchExtensionManagementService['isPublisherTrusted'] = () => false
   getTrustedPublishers: IWorkbenchExtensionManagementService['getTrustedPublishers'] = () => []
   @Unsupported
-  requestPublisherTrust: IWorkbenchExtensionManagementService['requestPublisherTrust'] =
-    (): never => {
-      unsupported()
-    }
+  requestPublisherTrust: IWorkbenchExtensionManagementService['requestPublisherTrust'] = unsupported
   @Unsupported
   trustPublishers: IWorkbenchExtensionManagementService['trustPublishers'] = unsupported
   @Unsupported
@@ -3737,37 +3597,26 @@ class ExtensionManifestPropertiesService implements IExtensionManifestProperties
   prefersExecuteOnUI: IExtensionManifestPropertiesService['prefersExecuteOnUI'] = unsupported
   @Unsupported
   prefersExecuteOnWorkspace: IExtensionManifestPropertiesService['prefersExecuteOnWorkspace'] =
-    (): never => {
-      unsupported()
-    }
+    unsupported
   @Unsupported
   prefersExecuteOnWeb: IExtensionManifestPropertiesService['prefersExecuteOnWeb'] = unsupported
   @Unsupported
   canExecuteOnUI: IExtensionManifestPropertiesService['canExecuteOnUI'] = unsupported
   @Unsupported
-  canExecuteOnWorkspace: IExtensionManifestPropertiesService['canExecuteOnWorkspace'] =
-    (): never => {
-      unsupported()
-    }
+  canExecuteOnWorkspace: IExtensionManifestPropertiesService['canExecuteOnWorkspace'] = unsupported
   @Unsupported
   canExecuteOnWeb: IExtensionManifestPropertiesService['canExecuteOnWeb'] = unsupported
   @Unsupported
   getExtensionKind: IExtensionManifestPropertiesService['getExtensionKind'] = unsupported
   @Unsupported
   getUserConfiguredExtensionKind: IExtensionManifestPropertiesService['getUserConfiguredExtensionKind'] =
-    (): never => {
-      unsupported()
-    }
+    unsupported
   @Unsupported
   getExtensionUntrustedWorkspaceSupportType: IExtensionManifestPropertiesService['getExtensionUntrustedWorkspaceSupportType'] =
-    (): never => {
-      unsupported()
-    }
+    unsupported
   @Unsupported
   getExtensionVirtualWorkspaceSupportType: IExtensionManifestPropertiesService['getExtensionVirtualWorkspaceSupportType'] =
-    (): never => {
-      unsupported()
-    }
+    unsupported
 }
 registerSingleton(
   IExtensionManifestPropertiesService,
@@ -3831,9 +3680,7 @@ class QuickDiffService implements IQuickDiffService {
   addQuickDiffProvider: IQuickDiffService['addQuickDiffProvider'] = unsupported
   @Unsupported
   toggleQuickDiffProviderVisibility: IQuickDiffService['toggleQuickDiffProviderVisibility'] =
-    (): never => {
-      unsupported()
-    }
+    unsupported
   @Unsupported
   getQuickDiffs: IQuickDiffService['getQuickDiffs'] = unsupported
 }
@@ -3928,9 +3775,7 @@ class CommentService implements ICommentService {
   enableCommenting: ICommentService['enableCommenting'] = unsupported
   @Unsupported
   registerContinueOnCommentProvider: ICommentService['registerContinueOnCommentProvider'] =
-    (): never => {
-      unsupported()
-    }
+    unsupported
   @Unsupported
   removeContinueOnComment: ICommentService['removeContinueOnComment'] = unsupported
 }
@@ -3941,14 +3786,9 @@ class NotebookCellStatusBarService implements INotebookCellStatusBarService {
   onDidChangeItems: INotebookCellStatusBarService['onDidChangeItems'] = Event.None
   @Unsupported
   registerCellStatusBarItemProvider: INotebookCellStatusBarService['registerCellStatusBarItemProvider'] =
-    (): never => {
-      unsupported()
-    }
+    unsupported
   @Unsupported
-  getStatusBarItemsForCell: INotebookCellStatusBarService['getStatusBarItemsForCell'] =
-    (): never => {
-      unsupported()
-    }
+  getStatusBarItemsForCell: INotebookCellStatusBarService['getStatusBarItemsForCell'] = unsupported
 }
 registerSingleton(
   INotebookCellStatusBarService,
@@ -3969,26 +3809,18 @@ class NotebookKernelService implements INotebookKernelService {
   @Unsupported
   getMatchingKernel: INotebookKernelService['getMatchingKernel'] = unsupported
   @Unsupported
-  getSelectedOrSuggestedKernel: INotebookKernelService['getSelectedOrSuggestedKernel'] =
-    (): never => {
-      unsupported()
-    }
+  getSelectedOrSuggestedKernel: INotebookKernelService['getSelectedOrSuggestedKernel'] = unsupported
   @Unsupported
   selectKernelForNotebook: INotebookKernelService['selectKernelForNotebook'] = unsupported
   @Unsupported
   preselectKernelForNotebook: INotebookKernelService['preselectKernelForNotebook'] = unsupported
   @Unsupported
-  updateKernelNotebookAffinity: INotebookKernelService['updateKernelNotebookAffinity'] =
-    (): never => {
-      unsupported()
-    }
+  updateKernelNotebookAffinity: INotebookKernelService['updateKernelNotebookAffinity'] = unsupported
   onDidChangeKernelDetectionTasks: INotebookKernelService['onDidChangeKernelDetectionTasks'] =
     Event.None
   @Unsupported
   registerNotebookKernelDetectionTask: INotebookKernelService['registerNotebookKernelDetectionTask'] =
-    (): never => {
-      unsupported()
-    }
+    unsupported
   @Unsupported
   getKernelDetectionTasks: INotebookKernelService['getKernelDetectionTasks'] = unsupported
   onDidChangeSourceActions: INotebookKernelService['onDidChangeSourceActions'] = Event.None
@@ -3998,9 +3830,7 @@ class NotebookKernelService implements INotebookKernelService {
   getRunningSourceActions: INotebookKernelService['getRunningSourceActions'] = unsupported
   @Unsupported
   registerKernelSourceActionProvider: INotebookKernelService['registerKernelSourceActionProvider'] =
-    (): never => {
-      unsupported()
-    }
+    unsupported
   @Unsupported
   getKernelSourceActions2: INotebookKernelService['getKernelSourceActions2'] = unsupported
 }
@@ -4045,14 +3875,10 @@ class InteractiveDocumentService implements IInteractiveDocumentService {
     Event.None
   @Unsupported
   willCreateInteractiveDocument: IInteractiveDocumentService['willCreateInteractiveDocument'] =
-    (): never => {
-      unsupported()
-    }
+    unsupported
   @Unsupported
   willRemoveInteractiveDocument: IInteractiveDocumentService['willRemoveInteractiveDocument'] =
-    (): never => {
-      unsupported()
-    }
+    unsupported
 }
 registerSingleton(
   IInteractiveDocumentService,
@@ -4161,26 +3987,18 @@ class AuthenticationService implements IAuthenticationService {
   declaredProviders: IAuthenticationService['declaredProviders'] = []
   @Unsupported
   registerDeclaredAuthenticationProvider: IAuthenticationService['registerDeclaredAuthenticationProvider'] =
-    (): never => {
-      unsupported()
-    }
+    unsupported
   @Unsupported
   unregisterDeclaredAuthenticationProvider: IAuthenticationService['unregisterDeclaredAuthenticationProvider'] =
-    (): never => {
-      unsupported()
-    }
+    unsupported
   isAuthenticationProviderRegistered: IAuthenticationService['isAuthenticationProviderRegistered'] =
     () => false
   @Unsupported
   registerAuthenticationProvider: IAuthenticationService['registerAuthenticationProvider'] =
-    (): never => {
-      unsupported()
-    }
+    unsupported
   @Unsupported
   unregisterAuthenticationProvider: IAuthenticationService['unregisterAuthenticationProvider'] =
-    (): never => {
-      unsupported()
-    }
+    unsupported
   getProviderIds: IAuthenticationService['getProviderIds'] = () => []
   @Unsupported
   getProvider: IAuthenticationService['getProvider'] = unsupported
@@ -4223,26 +4041,14 @@ class AuthenticationExtensionsService implements IAuthenticationExtensionsServic
     Event.None
   getAccountPreference: IAuthenticationExtensionsService['getAccountPreference'] = () => undefined
   @Unsupported
-  updateAccountPreference: IAuthenticationExtensionsService['updateAccountPreference'] =
-    (): never => {
-      unsupported()
-    }
+  updateAccountPreference: IAuthenticationExtensionsService['updateAccountPreference'] = unsupported
   @Unsupported
-  removeAccountPreference: IAuthenticationExtensionsService['removeAccountPreference'] =
-    (): never => {
-      unsupported()
-    }
+  removeAccountPreference: IAuthenticationExtensionsService['removeAccountPreference'] = unsupported
   @Unsupported
-  updateSessionPreference: IAuthenticationExtensionsService['updateSessionPreference'] =
-    (): never => {
-      unsupported()
-    }
+  updateSessionPreference: IAuthenticationExtensionsService['updateSessionPreference'] = unsupported
   getSessionPreference: IAuthenticationExtensionsService['getSessionPreference'] = () => undefined
   @Unsupported
-  removeSessionPreference: IAuthenticationExtensionsService['removeSessionPreference'] =
-    (): never => {
-      unsupported()
-    }
+  removeSessionPreference: IAuthenticationExtensionsService['removeSessionPreference'] = unsupported
   @Unsupported
   selectSession: IAuthenticationExtensionsService['selectSession'] = unsupported
   @Unsupported
@@ -4259,9 +4065,7 @@ class AuthenticationUsageService implements IAuthenticationUsageService {
   _serviceBrand: undefined
   @Unsupported
   initializeExtensionUsageCache: IAuthenticationUsageService['initializeExtensionUsageCache'] =
-    (): never => {
-      unsupported()
-    }
+    unsupported
   extensionUsesAuth: IAuthenticationUsageService['extensionUsesAuth'] = async () => false
   @Unsupported
   readAccountUsages: IAuthenticationUsageService['readAccountUsages'] = unsupported
@@ -4369,9 +4173,7 @@ class UserDataProfileImportExportService implements IUserDataProfileImportExport
   exportProfile: IUserDataProfileImportExportService['exportProfile'] = unsupported
   @Unsupported
   createTroubleshootProfile: IUserDataProfileImportExportService['createTroubleshootProfile'] =
-    (): never => {
-      unsupported()
-    }
+    unsupported
 }
 registerSingleton(
   IUserDataProfileImportExportService,
@@ -4420,19 +4222,13 @@ class NotebookExecutionStateService implements INotebookExecutionStateService {
     Event.None
   @Unsupported
   forceCancelNotebookExecutions: INotebookExecutionStateService['forceCancelNotebookExecutions'] =
-    (): never => {
-      unsupported()
-    }
+    unsupported
   @Unsupported
   getCellExecutionsForNotebook: INotebookExecutionStateService['getCellExecutionsForNotebook'] =
-    (): never => {
-      unsupported()
-    }
+    unsupported
   @Unsupported
   getCellExecutionsByHandleForNotebook: INotebookExecutionStateService['getCellExecutionsByHandleForNotebook'] =
-    (): never => {
-      unsupported()
-    }
+    unsupported
   @Unsupported
   getCellExecution: INotebookExecutionStateService['getCellExecution'] = unsupported
   @Unsupported
@@ -4443,9 +4239,7 @@ class NotebookExecutionStateService implements INotebookExecutionStateService {
   createExecution: INotebookExecutionStateService['createExecution'] = unsupported
   @Unsupported
   getLastFailedCellForNotebook: INotebookExecutionStateService['getLastFailedCellForNotebook'] =
-    (): never => {
-      unsupported()
-    }
+    unsupported
 }
 registerSingleton(
   INotebookExecutionStateService,
@@ -4514,9 +4308,7 @@ class TestingDecorationsService implements ITestingDecorationsService {
   _serviceBrand: undefined
   @Unsupported
   updateDecorationsAlternateAction: ITestingDecorationsService['updateDecorationsAlternateAction'] =
-    (): never => {
-      unsupported()
-    }
+    unsupported
   onDidChange: ITestingDecorationsService['onDidChange'] = Event.None
   @Unsupported
   invalidateResultMessage: ITestingDecorationsService['invalidateResultMessage'] = unsupported
@@ -4607,9 +4399,7 @@ class AiRelatedInformationService implements IAiRelatedInformationService {
   getRelatedInformation: IAiRelatedInformationService['getRelatedInformation'] = unsupported
   @Unsupported
   registerAiRelatedInformationProvider: IAiRelatedInformationService['registerAiRelatedInformationProvider'] =
-    (): never => {
-      unsupported()
-    }
+    unsupported
   _serviceBrand: undefined
 }
 registerSingleton(
@@ -4624,9 +4414,7 @@ class AiEmbeddingVectorService implements IAiEmbeddingVectorService {
   getEmbeddingVector: IAiEmbeddingVectorService['getEmbeddingVector'] = unsupported
   @Unsupported
   registerAiEmbeddingVectorProvider: IAiEmbeddingVectorService['registerAiEmbeddingVectorProvider'] =
-    (): never => {
-      unsupported()
-    }
+    unsupported
 }
 registerSingleton(IAiEmbeddingVectorService, AiEmbeddingVectorService, InstantiationType.Delayed)
 class AiSettingsSearchService implements IAiSettingsSearchService {
@@ -4638,9 +4426,7 @@ class AiSettingsSearchService implements IAiSettingsSearchService {
   getLLMRankedResults: IAiSettingsSearchService['getLLMRankedResults'] = async () => []
   @Unsupported
   registerSettingsSearchProvider: IAiSettingsSearchService['registerSettingsSearchProvider'] =
-    (): never => {
-      unsupported()
-    }
+    unsupported
   @Unsupported
   handleSearchResult: IAiSettingsSearchService['handleSearchResult'] = unsupported
   onProviderRegistered: IAiSettingsSearchService['onProviderRegistered'] = Event.None
@@ -4846,10 +4632,7 @@ class InlineChatSessionService implements IInlineChatSessionService {
   @Unsupported
   releaseSession: IInlineChatSessionService['releaseSession'] = unsupported
   @Unsupported
-  registerSessionKeyComputer: IInlineChatSessionService['registerSessionKeyComputer'] =
-    (): never => {
-      unsupported()
-    }
+  registerSessionKeyComputer: IInlineChatSessionService['registerSessionKeyComputer'] = unsupported
   @Unsupported
   dispose: IInlineChatSessionService['dispose'] = unsupported
   @Unsupported
@@ -4893,9 +4676,7 @@ class NotebookExecutionService implements INotebookExecutionService {
   cancelNotebookCellHandles: INotebookExecutionService['cancelNotebookCellHandles'] = unsupported
   @Unsupported
   registerExecutionParticipant: INotebookExecutionService['registerExecutionParticipant'] =
-    (): never => {
-      unsupported()
-    }
+    unsupported
 }
 registerSingleton(INotebookExecutionService, NotebookExecutionService, InstantiationType.Delayed)
 class NotebookKeymapService implements INotebookKeymapService {
@@ -4945,9 +4726,7 @@ class UserDataSyncStoreManagementService implements IUserDataSyncStoreManagement
   switch: IUserDataSyncStoreManagementService['switch'] = unsupported
   @Unsupported
   getPreviousUserDataSyncStore: IUserDataSyncStoreManagementService['getPreviousUserDataSyncStore'] =
-    (): never => {
-      unsupported()
-    }
+    unsupported
 }
 registerSingleton(
   IUserDataSyncStoreManagementService,
@@ -5074,43 +4853,29 @@ class UserDataSyncResourceProviderService implements IUserDataSyncResourceProvid
   _serviceBrand: undefined
   @Unsupported
   getRemoteSyncedProfiles: IUserDataSyncResourceProviderService['getRemoteSyncedProfiles'] =
-    (): never => {
-      unsupported()
-    }
+    unsupported
   @Unsupported
   getLocalSyncedProfiles: IUserDataSyncResourceProviderService['getLocalSyncedProfiles'] =
-    (): never => {
-      unsupported()
-    }
+    unsupported
   @Unsupported
   getRemoteSyncResourceHandles: IUserDataSyncResourceProviderService['getRemoteSyncResourceHandles'] =
-    (): never => {
-      unsupported()
-    }
+    unsupported
   @Unsupported
   getLocalSyncResourceHandles: IUserDataSyncResourceProviderService['getLocalSyncResourceHandles'] =
-    (): never => {
-      unsupported()
-    }
+    unsupported
   @Unsupported
   getAssociatedResources: IUserDataSyncResourceProviderService['getAssociatedResources'] =
-    (): never => {
-      unsupported()
-    }
+    unsupported
   @Unsupported
   getMachineId: IUserDataSyncResourceProviderService['getMachineId'] = unsupported
   @Unsupported
   getLocalSyncedMachines: IUserDataSyncResourceProviderService['getLocalSyncedMachines'] =
-    (): never => {
-      unsupported()
-    }
+    unsupported
   @Unsupported
   resolveContent: IUserDataSyncResourceProviderService['resolveContent'] = unsupported
   @Unsupported
   resolveUserDataSyncResource: IUserDataSyncResourceProviderService['resolveUserDataSyncResource'] =
-    (): never => {
-      unsupported()
-    }
+    unsupported
 }
 registerSingleton(
   IUserDataSyncResourceProviderService,
@@ -5144,19 +4909,14 @@ registerSingleton(IUserDataSyncUtilService, UserDataSyncUtilService, Instantiati
 class UserDataProfileManagementService implements IUserDataProfileManagementService {
   _serviceBrand: undefined
   @Unsupported
-  getDefaultProfileToUse: IUserDataProfileManagementService['getDefaultProfileToUse'] =
-    (): never => {
-      unsupported()
-    }
+  getDefaultProfileToUse: IUserDataProfileManagementService['getDefaultProfileToUse'] = unsupported
   @Unsupported
   createProfile: IUserDataProfileManagementService['createProfile'] = unsupported
   @Unsupported
   createAndEnterProfile: IUserDataProfileManagementService['createAndEnterProfile'] = unsupported
   @Unsupported
   createAndEnterTransientProfile: IUserDataProfileManagementService['createAndEnterTransientProfile'] =
-    (): never => {
-      unsupported()
-    }
+    unsupported
   @Unsupported
   removeProfile: IUserDataProfileManagementService['removeProfile'] = unsupported
   @Unsupported
@@ -5165,9 +4925,7 @@ class UserDataProfileManagementService implements IUserDataProfileManagementServ
   switchProfile: IUserDataProfileManagementService['switchProfile'] = unsupported
   @Unsupported
   getBuiltinProfileTemplates: IUserDataProfileManagementService['getBuiltinProfileTemplates'] =
-    (): never => {
-      unsupported()
-    }
+    unsupported
 }
 registerSingleton(
   IUserDataProfileManagementService,
@@ -5380,46 +5138,31 @@ class LanguageModelToolsService implements ILanguageModelToolsService {
   getTool: ILanguageModelToolsService['getTool'] = () => undefined
   getToolByName: ILanguageModelToolsService['getToolByName'] = () => undefined
   onDidChangeTools: ILanguageModelToolsService['onDidChangeTools'] = Event.None
-  @Unsupported
-  registerToolData: ILanguageModelToolsService['registerToolData'] = unsupported
-  @Unsupported
-  registerToolImplementation: ILanguageModelToolsService['registerToolImplementation'] =
-    (): never => {
-      unsupported()
-    }
+  registerToolData: ILanguageModelToolsService['registerToolData'] = () => Disposable.None
+  registerToolImplementation: ILanguageModelToolsService['registerToolImplementation'] = () =>
+    Disposable.None
   getTools: ILanguageModelToolsService['getTools'] = () => []
   @Unsupported
   invokeTool: ILanguageModelToolsService['invokeTool'] = unsupported
   @Unsupported
-  cancelToolCallsForRequest: ILanguageModelToolsService['cancelToolCallsForRequest'] =
-    (): never => {
-      unsupported()
-    }
+  cancelToolCallsForRequest: ILanguageModelToolsService['cancelToolCallsForRequest'] = unsupported
   @Unsupported
   setToolAutoConfirmation: ILanguageModelToolsService['setToolAutoConfirmation'] = unsupported
   @Unsupported
-  resetToolAutoConfirmation: ILanguageModelToolsService['resetToolAutoConfirmation'] =
-    (): never => {
-      unsupported()
-    }
+  resetToolAutoConfirmation: ILanguageModelToolsService['resetToolAutoConfirmation'] = unsupported
   getToolSetByName: ILanguageModelToolsService['getToolSetByName'] = () => undefined
   @Unsupported
   createToolSet: ILanguageModelToolsService['createToolSet'] = unsupported
-  @Unsupported
-  get toolSets(): never {
-    return unsupported()
-  }
+  toolSets: ILanguageModelToolsService['toolSets'] = constObservable([])
 
   @Unsupported
   toToolEnablementMap: ILanguageModelToolsService['toToolEnablementMap'] = unsupported
 
   @Unsupported
   toToolAndToolSetEnablementMap: ILanguageModelToolsService['toToolAndToolSetEnablementMap'] =
-    (): never => {
-      unsupported()
-    }
+    unsupported
   @Unsupported
-  flushToolChanges: ILanguageModelToolsService['flushToolChanges'] = (): never => {
+  flushToolChanges: ILanguageModelToolsService['flushToolChanges'] = () => {
     unsupported()
   }
 
@@ -5462,9 +5205,7 @@ class ChatEditingService implements IChatEditingService {
   getEditingSession: IChatEditingService['getEditingSession'] = () => undefined
   @Unsupported
   startOrContinueGlobalEditingSession: IChatEditingService['startOrContinueGlobalEditingSession'] =
-    (): never => {
-      unsupported()
-    }
+    unsupported
   @Unsupported
   createEditingSession: IChatEditingService['createEditingSession'] = unsupported
 }
@@ -5482,9 +5223,7 @@ class LanguageModelIgnoredFilesService implements ILanguageModelIgnoredFilesServ
   fileIsIgnored: ILanguageModelIgnoredFilesService['fileIsIgnored'] = async () => false
   @Unsupported
   registerIgnoredFileProvider: ILanguageModelIgnoredFilesService['registerIgnoredFileProvider'] =
-    (): never => {
-      unsupported()
-    }
+    unsupported
 }
 registerSingleton(
   ILanguageModelIgnoredFilesService,
@@ -5503,9 +5242,7 @@ class ChatTransferService implements IChatTransferService {
   _serviceBrand: undefined
   @Unsupported
   checkAndSetTransferredWorkspaceTrust: IChatTransferService['checkAndSetTransferredWorkspaceTrust'] =
-    (): never => {
-      unsupported()
-    }
+    unsupported
   @Unsupported
   addWorkspaceToTransferred: IChatTransferService['addWorkspaceToTransferred'] = unsupported
 }
@@ -5556,9 +5293,7 @@ class TerminalCompletionService implements ITerminalCompletionService {
   }
   @Unsupported
   registerTerminalCompletionProvider: ITerminalCompletionService['registerTerminalCompletionProvider'] =
-    (): never => {
-      unsupported()
-    }
+    unsupported
   @Unsupported
   provideCompletions: ITerminalCompletionService['provideCompletions'] = unsupported
 }
