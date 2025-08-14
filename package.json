@@ -30,9 +30,9 @@
   },
   "config": {
     "vscode": {
-      "version": "1.103.0",
-      "ref": "1.103.0",
-      "commit": "e3550cfac4b63ca4eafca7b601f0d2885817fd1f"
+      "version": "1.103.1",
+      "ref": "360a4e4fd251bfce169a4ddf857c7d25d1ad40da",
+      "commit": "null"
     },
     "monaco": {
       "ref": "v0.52.2",
