@@ -46,10 +46,10 @@ export interface SubPackageDependency {
 const { firstBy } = thenby
 
 function getInstalledVersion(libName: string) {
-  const output = execSync(`npm ls ${libName} --json --depth 1 --long`).toString();
+  const output = execSync(`npm ls ${libName} --json --depth 1 --long`).toString()
   const parsed: {
-    dependencies: Record<string, { name: string, version: string }>
-  } = JSON.parse(output);
+    dependencies: Record<string, { name: string; version: string }>
+  } = JSON.parse(output)
   const details = parsed.dependencies[libName]
 
   return details
@@ -531,7 +531,10 @@ export default ({
                               }
                             } catch (err) {
                               console.error(err)
-                              this.error({ message: `Unable to find version of ${name}`, stack: (err as Error).stack })
+                              this.error({
+                                message: `Unable to find version of ${name}`,
+                                stack: (err as Error).stack
+                              })
                             }
                           }
 
@@ -563,8 +566,8 @@ export default ({
                   const entrypoints = new Set(
                     groupSet.groups.size === 1
                       ? Object.values(bundle)
-                        .filter((c) => c.type === 'chunk' && c.isEntry)
-                        .map((c) => c.fileName)
+                          .filter((c) => c.type === 'chunk' && c.isEntry)
+                          .map((c) => c.fileName)
                       : []
                   )
 
