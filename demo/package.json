@@ -117,6 +117,7 @@
     "@codingame/monaco-vscode-all-language-default-extensions": "file:../dist/packages/monaco-vscode-all-language-default-extensions",
     "@codingame/monaco-vscode-all-language-feature-default-extensions": "file:../dist/packages/monaco-vscode-all-language-feature-default-extensions",
     "@codingame/monaco-vscode-api": "file:../dist/packages/monaco-vscode-api",
+    "@codingame/monaco-vscode-assignment-service-override": "file:../dist/packages/monaco-vscode-assignment-service-override",
     "@codingame/monaco-vscode-authentication-service-override": "file:../dist/packages/monaco-vscode-authentication-service-override",
     "@codingame/monaco-vscode-b71b5434-ce96-5581-8993-e8da380bd63f-common": "file:../dist/packages/monaco-vscode-b71b5434-ce96-5581-8993-e8da380bd63f-common",
     "@codingame/monaco-vscode-b994942c-360d-5b68-8a33-77d4bde6b714-common": "file:../dist/packages/monaco-vscode-b994942c-360d-5b68-8a33-77d4bde6b714-common",
