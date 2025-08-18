@@ -169,11 +169,14 @@ export default (args: Record<string, string>): rollup.RollupOptions => {
       }),
       {
         name: 'cleanup',
-        renderChunk(code) {
-          return cleanup(code, null, {
-            comments: 'none',
-            sourcemap: false
-          }).code
+        renderChunk(code, chunk) {
+          if (chunk.fileName.endsWith('.js')) {
+            return cleanup(code, null, {
+              comments: 'none',
+              sourcemap: false
+            }).code
+          }
+          return undefined
         }
       },
       configuredSubpackagePlugin(),
