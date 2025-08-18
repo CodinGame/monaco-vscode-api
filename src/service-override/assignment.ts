@@ -27,10 +27,7 @@ class AssignmentService implements IWorkbenchAssignmentService {
     @IConfigurationService private configurationService: IConfigurationService,
     @IEnvironmentService environmentService: IEnvironmentService
   ) {
-    this.experimentsEnabled =
-      !environmentService.disableExperiments &&
-      !environmentService.extensionTestsLocationURI &&
-      configurationService.getValue('workbench.enableExperiments') === true
+    this.experimentsEnabled = !environmentService.disableExperiments
   }
 
   async getCurrentExperiments(): Promise<string[] | undefined> {
