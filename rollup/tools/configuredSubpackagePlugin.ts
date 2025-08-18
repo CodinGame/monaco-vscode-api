@@ -272,11 +272,19 @@ ${code}`
             name: 'replace-editor-types',
             async renderChunk(code, chunk) {
               if (chunk.fileName.endsWith('vscode/src/vs/editor/editor.api.d.ts')) {
-                return (
+                const monacoEditorTypes = (
                   await fs.promises.readFile(
                     nodePath.resolve(BASE_DIR, 'monaco-editor/editor.api.d.ts')
                   )
                 ).toString()
+
+                const monacoWorkerTypes = Array.from(
+                  monacoEditorTypes.matchAll(/export namespace languages\..*?^}/gms)
+                )
+                  .map((match) => match[0])
+                  .join('\n')
+
+                return `${code}\n${monacoWorkerTypes}`
               }
               return undefined
             }
