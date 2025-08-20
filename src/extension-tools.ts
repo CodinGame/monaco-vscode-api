@@ -148,12 +148,22 @@ function extractViewsContainerResources(viewContainers: {
   )
 }
 
+function extractIconResources(icons: NonNullable<IExtensionContributions['icons']>): string[] {
+  return Object.values(icons).flatMap((icon) => {
+    if (typeof icon.default === 'object') {
+      return [icon.default.fontPath]
+    }
+    return []
+  })
+}
+
 async function extractResourcesFromExtensionManifestContribute(
   contribute: IExtensionContributions & { [customKey: string]: unknown },
   fs: typeof nodeFs,
   cwd: string
 ): Promise<string[]> {
   const resources: string[] = []
+  if (contribute.icons != null) resources.push(...extractIconResources(contribute.icons))
   if (contribute.commands != null) resources.push(...extractCommandResources(contribute.commands))
   if (contribute.grammars != null)
     resources.push(...contribute.grammars.flatMap(extractGrammarResources))
