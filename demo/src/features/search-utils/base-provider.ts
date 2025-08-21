@@ -4,6 +4,7 @@ import {
   IFileStat
 } from '@codingame/monaco-vscode-api/vscode/vs/platform/files/common/files'
 import * as vscode from 'vscode'
+import * as glob from '@codingame/monaco-vscode-api/vscode/vs/base/common/glob'
 import {
   SearchConfig,
   FileChange,
@@ -11,7 +12,6 @@ import {
   MAX_CACHED_FILES,
   MAX_DIRECTORY_DEPTH
 } from './types'
-import { PatternMatcher } from './pattern-matcher'
 
 /**
  * Base class for common functionality shared between search providers
@@ -141,7 +141,7 @@ export abstract class BaseWorkspaceSearchProvider {
         return
       }
 
-      if (PatternMatcher.shouldExclude(entry.resource.fsPath, this.config.excludePatterns)) {
+      if (this.shouldExclude(entry.resource.fsPath, this.config.excludePatterns)) {
         return
       }
 
@@ -260,7 +260,7 @@ export abstract class BaseWorkspaceSearchProvider {
       case FileChangeType.UPDATED:
         if (
           this.cachedFiles.has(change.resource) &&
-          PatternMatcher.shouldExclude(change.resource.fsPath, this.config.excludePatterns)
+          this.shouldExclude(change.resource.fsPath, this.config.excludePatterns)
         ) {
           this.cachedFiles.delete(change.resource)
         }
@@ -275,5 +275,9 @@ export abstract class BaseWorkspaceSearchProvider {
     } catch {
       return false
     }
+  }
+
+  protected shouldExclude(path: string, excludePatterns: string[]): boolean {
+    return excludePatterns.some((pattern) => glob.match(pattern, path))
   }
 }
