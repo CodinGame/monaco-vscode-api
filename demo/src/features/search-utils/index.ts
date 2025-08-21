@@ -3,6 +3,5 @@
  */
 
 export * from './pattern-matcher'
-export * from './types'
-export * from './errors'
 export * from './base-provider'
+export * from './types'
