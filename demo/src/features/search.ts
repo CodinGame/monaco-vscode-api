@@ -1,9 +1,13 @@
 import { ExtensionHostKind, registerExtension } from '@codingame/monaco-vscode-api/extensions'
+import { fuzzyContains } from '@codingame/monaco-vscode-api/vscode/vs/base/common/strings'
 import { IFileService, ILogService, getService } from '@codingame/monaco-vscode-api'
-import * as vscode from 'vscode'
-import * as glob from '@codingame/monaco-vscode-api/base/common/glob'
-
+import * as glob from '@codingame/monaco-vscode-api/vscode/vs/base/common/glob'
 import { BaseWorkspaceSearchProvider } from './search-utils/base-provider'
+import * as vscode from 'vscode'
+
+function isFilePatternMatch(path: string, filePatternToUse: string, fuzzy = true): boolean {
+  return fuzzy ? fuzzyContains(path, filePatternToUse) : glob.match(filePatternToUse, path)
+}
 
 export class WorkspaceFileSearchProvider
   extends BaseWorkspaceSearchProvider
@@ -31,7 +35,7 @@ export class WorkspaceFileSearchProvider
       }
 
       try {
-        const matches = this.matchesFilePattern(uri, searchPattern)
+        const matches = this.matchesFilePattern(uri.fsPath, searchPattern)
 
         if (matches) {
           // Validate URI before adding to results
@@ -76,21 +80,12 @@ export class WorkspaceFileSearchProvider
     return filteredResults
   }
 
-  private matchesFilePattern(uri: vscode.Uri, pattern: string): boolean {
+  private matchesFilePattern(path: string, pattern: string): boolean {
     if (!pattern) {
       return true
     }
 
-    // Convert the pattern to a glob pattern
-    const globPattern =
-      pattern.includes('*') ||
-      pattern.includes('?') ||
-      pattern.includes('{') ||
-      pattern.includes('}')
-        ? pattern
-        : `**/*${pattern}*`
-
-    return glob.match(globPattern, uri.fsPath)
+    return isFilePatternMatch(path, pattern)
   }
 }
 

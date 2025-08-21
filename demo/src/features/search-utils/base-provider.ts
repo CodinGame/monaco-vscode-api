@@ -1,17 +1,13 @@
 import { IFileService, ILogService } from '@codingame/monaco-vscode-api'
 import {
   FileChangeType,
-  IFileStat
+  IFileStat,
+  IFileChange
 } from '@codingame/monaco-vscode-api/vscode/vs/platform/files/common/files'
-import * as vscode from 'vscode'
 import * as glob from '@codingame/monaco-vscode-api/vscode/vs/base/common/glob'
-import {
-  SearchConfig,
-  FileChange,
-  DEFAULT_CONFIG,
-  MAX_CACHED_FILES,
-  MAX_DIRECTORY_DEPTH
-} from './types'
+import { URI } from '@codingame/monaco-vscode-api/vscode/vs/base/common/uri'
+import * as vscode from 'vscode'
+import { SearchConfig, DEFAULT_CONFIG, MAX_CACHED_FILES, MAX_DIRECTORY_DEPTH } from './types'
 
 /**
  * Base class for common functionality shared between search providers
@@ -21,7 +17,7 @@ export abstract class BaseWorkspaceSearchProvider {
   protected cachedFiles: Set<vscode.Uri> = new Set()
   protected fileService: IFileService
   protected isInitialized = false
-  protected changeBuffer: FileChange[] = []
+  protected changeBuffer: IFileChange[] = []
   protected debounceTimer?: NodeJS.Timeout
 
   constructor(
@@ -156,9 +152,7 @@ export abstract class BaseWorkspaceSearchProvider {
           this.logger.warn(`Skipping invalid file URI:`, entry.resource)
         }
       } else {
-        if (entry.resource && entry.resource.fsPath && entry.resource.scheme && !entry.isFile) {
-          this.cachedFiles.add(entry.resource)
-        } else if (!entry.resource) {
+        if (!entry.resource) {
           this.logger.warn('Directory entry without resource:', entry)
         }
 
@@ -178,7 +172,7 @@ export abstract class BaseWorkspaceSearchProvider {
     }
   }
 
-  protected isHiddenFile(uri: vscode.Uri): boolean {
+  protected isHiddenFile(uri: URI): boolean {
     const pathParts = uri.fsPath.split(/[/\\]/)
     const fileName = pathParts[pathParts.length - 1]
 
@@ -210,15 +204,15 @@ export abstract class BaseWorkspaceSearchProvider {
     rawDeleted?: vscode.Uri[]
   }): void {
     e.rawAdded?.forEach((uri: vscode.Uri) => {
-      this.changeBuffer.push({ type: FileChangeType.ADDED, resource: uri })
+      this.changeBuffer.push({ type: FileChangeType.ADDED, resource: URI.parse(uri.toString()) })
     })
 
     e.rawUpdated?.forEach((uri: vscode.Uri) => {
-      this.changeBuffer.push({ type: FileChangeType.UPDATED, resource: uri })
+      this.changeBuffer.push({ type: FileChangeType.UPDATED, resource: URI.parse(uri.toString()) })
     })
 
     e.rawDeleted?.forEach((uri: vscode.Uri) => {
-      this.changeBuffer.push({ type: FileChangeType.DELETED, resource: uri })
+      this.changeBuffer.push({ type: FileChangeType.DELETED, resource: URI.parse(uri.toString()) })
     })
   }
 
@@ -242,33 +236,35 @@ export abstract class BaseWorkspaceSearchProvider {
     this.logger.debug(`File cache updated. Total files: ${this.cachedFiles.size}`)
   }
 
-  protected applyFileChange(change: FileChange): void {
+  protected applyFileChange(change: IFileChange): void {
     switch (change.type) {
       case FileChangeType.ADDED:
         if (
-          !PatternMatcher.shouldExclude(change.resource.fsPath, this.config.excludePatterns) &&
+          !this.shouldExclude(change.resource.fsPath, this.config.excludePatterns) &&
           (this.config.includeHiddenFiles || !this.isHiddenFile(change.resource))
         ) {
-          this.cachedFiles.add(change.resource)
+          this.cachedFiles.add(vscode.Uri.parse(change.resource.toString()))
         }
         break
 
       case FileChangeType.DELETED:
-        this.cachedFiles.delete(change.resource)
+        this.cachedFiles.delete(vscode.Uri.parse(change.resource.toString()))
         break
 
-      case FileChangeType.UPDATED:
+      case FileChangeType.UPDATED: {
+        const updatedUri = vscode.Uri.parse(change.resource.toString())
         if (
-          this.cachedFiles.has(change.resource) &&
+          this.cachedFiles.has(updatedUri) &&
           this.shouldExclude(change.resource.fsPath, this.config.excludePatterns)
         ) {
-          this.cachedFiles.delete(change.resource)
+          this.cachedFiles.delete(updatedUri)
         }
         break
+      }
     }
   }
 
-  protected async isWithinSizeLimit(uri: vscode.Uri): Promise<boolean> {
+  protected async isWithinSizeLimit(uri: URI): Promise<boolean> {
     try {
       const stats = await this.fileService.resolve(uri)
       return (stats.size ?? 0) <= this.config.maxFileSize
