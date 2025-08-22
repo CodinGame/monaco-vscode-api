@@ -1,13 +1,9 @@
 import { IFileService, ILogService } from '@codingame/monaco-vscode-api'
-import {
-  FileChangeType,
-  IFileStat,
-  IFileChange
-} from '@codingame/monaco-vscode-api/vscode/vs/platform/files/common/files'
+import { IFileStat } from '@codingame/monaco-vscode-api/vscode/vs/platform/files/common/files'
+import { SearchConfig, DEFAULT_CONFIG, MAX_CACHED_FILES, MAX_DIRECTORY_DEPTH } from './types'
 import * as glob from '@codingame/monaco-vscode-api/vscode/vs/base/common/glob'
 import { URI } from '@codingame/monaco-vscode-api/vscode/vs/base/common/uri'
 import * as vscode from 'vscode'
-import { SearchConfig, DEFAULT_CONFIG, MAX_CACHED_FILES, MAX_DIRECTORY_DEPTH } from './types'
 
 /**
  * Base class for common functionality shared between search providers
@@ -17,8 +13,6 @@ export abstract class BaseWorkspaceSearchProvider {
   protected cachedFiles: Set<vscode.Uri> = new Set()
   protected fileService: IFileService
   protected isInitialized = false
-  protected changeBuffer: IFileChange[] = []
-  protected debounceTimer?: NodeJS.Timeout
 
   constructor(
     fileService: IFileService,
@@ -187,81 +181,78 @@ export abstract class BaseWorkspaceSearchProvider {
     rawUpdated?: vscode.Uri[]
     rawDeleted?: vscode.Uri[]
   }): void => {
-    this.bufferChanges(e)
-
-    if (this.debounceTimer) {
-      clearTimeout(this.debounceTimer)
-    }
-
-    this.debounceTimer = setTimeout(() => {
-      this.processBufferedChanges()
-    }, this.config.debounceDelay)
+    this.processFileChanges(e)
   }
 
-  protected bufferChanges(e: {
+  protected processFileChanges(e: {
     rawAdded?: vscode.Uri[]
     rawUpdated?: vscode.Uri[]
     rawDeleted?: vscode.Uri[]
   }): void {
-    e.rawAdded?.forEach((uri: vscode.Uri) => {
-      this.changeBuffer.push({ type: FileChangeType.ADDED, resource: URI.parse(uri.toString()) })
-    })
+    const totalChanges = this.getTotalChanges(e)
+    if (totalChanges === 0) return
 
-    e.rawUpdated?.forEach((uri: vscode.Uri) => {
-      this.changeBuffer.push({ type: FileChangeType.UPDATED, resource: URI.parse(uri.toString()) })
-    })
+    this.logger.debug(`Processing ${totalChanges} file changes`)
 
-    e.rawDeleted?.forEach((uri: vscode.Uri) => {
-      this.changeBuffer.push({ type: FileChangeType.DELETED, resource: URI.parse(uri.toString()) })
-    })
-  }
+    this.processAddedFiles(e.rawAdded)
+    this.processUpdatedFiles(e.rawUpdated)
+    this.processDeletedFiles(e.rawDeleted)
 
-  protected processBufferedChanges(): void {
-    if (this.changeBuffer.length === 0) return
-
-    this.logger.debug(`Processing ${this.changeBuffer.length} file changes`)
-
-    for (const change of this.changeBuffer) {
-      try {
-        this.applyFileChange(change)
-      } catch (error) {
-        this.logger.error(
-          `Error processing file change for ${change.resource.fsPath}`,
-          error as Error
-        )
-      }
-    }
-
-    this.changeBuffer.length = 0 // Clear buffer
     this.logger.debug(`File cache updated. Total files: ${this.cachedFiles.size}`)
   }
 
-  protected applyFileChange(change: IFileChange): void {
-    switch (change.type) {
-      case FileChangeType.ADDED:
-        if (
-          !this.shouldExclude(change.resource.fsPath, this.config.excludePatterns) &&
-          (this.config.includeHiddenFiles || !this.isHiddenFile(change.resource))
-        ) {
-          this.cachedFiles.add(vscode.Uri.parse(change.resource.toString()))
-        }
-        break
+  private getTotalChanges(e: {
+    rawAdded?: vscode.Uri[]
+    rawUpdated?: vscode.Uri[]
+    rawDeleted?: vscode.Uri[]
+  }): number {
+    return (e.rawAdded?.length || 0) + (e.rawUpdated?.length || 0) + (e.rawDeleted?.length || 0)
+  }
 
-      case FileChangeType.DELETED:
-        this.cachedFiles.delete(vscode.Uri.parse(change.resource.toString()))
-        break
-
-      case FileChangeType.UPDATED: {
-        const updatedUri = vscode.Uri.parse(change.resource.toString())
-        if (
-          this.cachedFiles.has(updatedUri) &&
-          this.shouldExclude(change.resource.fsPath, this.config.excludePatterns)
-        ) {
-          this.cachedFiles.delete(updatedUri)
+  private processAddedFiles(uris?: vscode.Uri[]): void {
+    uris?.forEach((uri) => {
+      this.handleFileOperation(uri, 'add', () => {
+        if (this.shouldIncludeFile(uri)) {
+          this.cachedFiles.add(uri)
         }
-        break
-      }
+      })
+    })
+  }
+
+  private processUpdatedFiles(uris?: vscode.Uri[]): void {
+    uris?.forEach((uri) => {
+      this.handleFileOperation(uri, 'update', () => {
+        if (
+          this.cachedFiles.has(uri) &&
+          this.shouldExclude(uri.fsPath, this.config.excludePatterns)
+        ) {
+          this.cachedFiles.delete(uri)
+        }
+      })
+    })
+  }
+
+  private processDeletedFiles(uris?: vscode.Uri[]): void {
+    uris?.forEach((uri) => {
+      this.handleFileOperation(uri, 'delete', () => {
+        this.cachedFiles.delete(uri)
+      })
+    })
+  }
+
+  private handleFileOperation(uri: vscode.Uri, operation: string, action: () => void): void {
+    try {
+      action()
+    } catch (error) {
+      this.logger.error(`Error processing ${operation} file ${uri.fsPath}`, error as Error)
     }
+  }
+
+  private shouldIncludeFile(uri: vscode.Uri): boolean {
+    return (
+      !this.shouldExclude(uri.fsPath, this.config.excludePatterns) &&
+      (this.config.includeHiddenFiles || !this.isHiddenFile(URI.parse(uri.toString())))
+    )
   }
 
   protected async isWithinSizeLimit(uri: URI): Promise<boolean> {
