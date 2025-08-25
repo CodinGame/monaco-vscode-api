@@ -47,6 +47,10 @@ export default rollup.defineConfig([
         output: {
           minifyInternalExports: false,
           preserveModules: true,
+          sanitizeFileName(fileName) {
+            // Remove spaces in name to prevent creating any issues
+            return fileName.replace(/\s+/g, '_')
+          },
           assetFileNames: '[name][extname]',
           format: 'esm',
           dir: `dist/packages/monaco-vscode-standalone-${language}-language-features`,
@@ -121,6 +125,10 @@ export default rollup.defineConfig([
     output: {
       minifyInternalExports: false,
       preserveModules: true,
+      sanitizeFileName(fileName) {
+        // Remove spaces in name to prevent creating any issues
+        return fileName.replace(/\s+/g, '_')
+      },
       assetFileNames: '[name][extname]',
       format: 'esm',
       dir: 'dist/packages/monaco-vscode-standalone-languages',
