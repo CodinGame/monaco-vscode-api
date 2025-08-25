@@ -1,6 +1,6 @@
 # @codingame/monaco-vscode-api &middot; [![monthly downloads](https://img.shields.io/npm/dm/@codingame/monaco-vscode-api)](https://www.npmjs.com/package/@codingame/monaco-vscode-api) [![npm version](https://img.shields.io/npm/v/@codingame/monaco-vscode-api.svg?style=flat)](https://www.npmjs.com/package/@codingame/monaco-vscode-api) [![PRs welcome](https://img.shields.io/badge/PRs-welcome-brightgreen.svg)](https://github.com/codingame/monaco-vscode-api/pulls)
 
-This [NPM module](https://www.npmjs.com/) allows to integrate full VSCode functionality into your `monaco-editor`. 
+This [NPM module](https://www.npmjs.com/) allows to integrate full VSCode functionality into your `monaco-editor`.
 
 For more information, please checkout the project's [wiki](https://github.com/CodinGame/monaco-vscode-api/wiki).
 
@@ -18,27 +18,34 @@ npm install monaco-editor@npm:@codingame/monaco-vscode-editor-api
 `@codingame/monaco-vscode-editor-api` is installed as an alias to `monaco-editor` because it provides the same api as the official `monaco-editor`
 
 # Usage
+
 If you are just starting with `monaco-editor` and `monaco-vscode-api` you may find helpful the [Getting Started Guide](https://github.com/CodinGame/monaco-vscode-api/wiki/Getting-started-guide) in the wiki.
+
 ## Monaco service override
 
-Most of VSCode functionality implemented as "services", e.g. 
+Most of VSCode functionality implemented as "services", e.g.
+
 - theme service, providing support for VSCode themes
 - languages service, providing support for different language features.
 
-By default, Monaco uses a simplified versions of the VSCode services, called `standalone` services. 
-This package allows to 
-1) override them with fully-functional alternatives from VSCode
-2) add new services that were not included in Monaco
+By default, Monaco uses a simplified versions of the VSCode services, called `standalone` services.
+This package allows to
+
+1. override them with fully-functional alternatives from VSCode
+2. add new services that were not included in Monaco
 
 Here is an example usage that overrides Monaco default configuration with VSCode json-based settings:
+
 ```typescript
 // default monaco-editor imports
-import * as monaco from 'monaco-editor';
-import editorWorker from 'monaco-editor/esm/vs/editor/editor.worker?worker';
+import * as monaco from 'monaco-editor'
+import editorWorker from 'monaco-editor/esm/vs/editor/editor.worker?worker'
 
 // utilities to override Monaco services
 import { initialize } from '@codingame/monaco-vscode-api'
-import getConfigurationServiceOverride, { updateUserConfiguration } from '@codingame/monaco-vscode-configuration-service-override'
+import getConfigurationServiceOverride, {
+  updateUserConfiguration
+} from '@codingame/monaco-vscode-configuration-service-override'
 
 window.MonacoEnvironment = {
   getWorker: (_moduleId, _label) => new editorWorker()
@@ -46,8 +53,8 @@ window.MonacoEnvironment = {
 
 // overriding Monaco service with VSCode
 await initialize({
-    ...getConfigurationServiceOverride(),
-});
+  ...getConfigurationServiceOverride()
+})
 
 // json config like in vscode settings.json
 updateUserConfiguration(`{
@@ -60,17 +67,19 @@ updateUserConfiguration(`{
 
 // creating an editor with VSCode configuration
 monaco.editor.create(document.getElementById('editor')!, {
-    value: "Editor with VSCode config and large bold fonts",
-});
+  value: 'Editor with VSCode config and large bold fonts'
+})
 ```
+
 > [!NOTE]
 > `initialize` can only be called once (and it should be called BEFORE creating your first editor).
-
 
 Each `get<service-name>ServiceOverride` contains the service and some glue to make VSCode service work with Monaco.
 
 ### List of service overrides
+
 Some basic service overrides are coming with this package as dependencies:
+
 - **Base**: `@codingame/monaco-vscode-base-service-override`
   - Contains some general-use services that are mandatory to most of the other features
 - **Host**: `@codingame/monaco-vscode-host-service-override`
@@ -84,9 +93,11 @@ Some basic service overrides are coming with this package as dependencies:
   - It supports adding overlay filesystems for `file://` files
 - **QuickAccess**: `@codingame/monaco-vscode-quickaccess-service-override`
   - Enables the quickaccess menu in the editor (press F1 or ctrl+shift+p)
+- **Search**: `@codingame/monaco-vscode-search-service-override`
+  - Provides workspace search functionality for both Command Palette file search (Ctrl+P) and Search panel (Ctrl+Shift+F)
+  - Enables searching through files and text content within your workspace
 
 However, most of the services are separated into different modules, so they can be imported as required. You can find a full list of services in the [corresponding wiki page](https://github.com/CodinGame/monaco-vscode-api/wiki/List-of-service-overrides).
-
 
 ### Default vscode extensions
 
@@ -104,31 +115,31 @@ Here is an example of usage of default VSCode theme extension with theme service
 
 ```typescript
 // importing default VSCode theme extension
-import "@codingame/monaco-vscode-theme-defaults-default-extension";	
+import '@codingame/monaco-vscode-theme-defaults-default-extension'
 
 // default monaco-editor imports
-import * as monaco from 'monaco-editor';
-import editorWorker from 'monaco-editor/esm/vs/editor/editor.worker?worker';
+import * as monaco from 'monaco-editor'
+import editorWorker from 'monaco-editor/esm/vs/editor/editor.worker?worker'
 
 // utilities to override Monaco services
 import { initialize } from '@codingame/monaco-vscode-api'
-import getThemeServiceOverride from "@codingame/monaco-vscode-theme-service-override";
+import getThemeServiceOverride from '@codingame/monaco-vscode-theme-service-override'
 
 window.MonacoEnvironment = {
   getWorker: function (_moduleId, _label) {
-	return new editorWorker();
+    return new editorWorker()
   }
 }
 
 // overriding Monaco service with VSCode
 await initialize({
-    ...getThemeServiceOverride(),
-});
+  ...getThemeServiceOverride()
+})
 
 // creating an editor with VSCode theme
 monaco.editor.create(document.getElementById('editor')!, {
-    value: "Editor with VSCode Theme Support",
-});
+  value: 'Editor with VSCode Theme Support'
+})
 ```
 
 See [the full list of ported default extensions](https://www.npmjs.com/search?q=%40codingame%2Fmonaco-vscode-*-default-extension)
@@ -176,7 +187,6 @@ This library also offers the possibility to localize vscode and the extensions i
 
 ⚠️ The language pack should be imported and loaded BEFORE anything else from this library is loaded. Otherwise, some translations would be missing and an error would be displayed in the console. ⚠️
 
-
 ## Model creation
 
 The official `monaco-editor` package provides a function to create models: `monaco.editor.createModel`.
@@ -192,6 +202,7 @@ It has some pros:
 - It is possible to call the method multiple times on the same file to get multiple references. The model is disposed when there is no reference left
 
 To work, it needs the file to exist on the virtual filesystem. It can be achieved either by:
+
 - using the `registerFileSystemOverlay` from the files service override, which can be cleaned when not needed anymore (recommended)
 - by using the second argument of the `createModelReference` function, which writes the file content to the virtual filesystem before creating the model
 
@@ -286,6 +297,7 @@ Try it out on <https://monaco-vscode-api.netlify.app/>
 
 There is a demo that showcases the service-override features.
 It includes:
+
 - Languages
 - VSCode themes
 - Textmate grammars (requires VSCode themes)
@@ -330,6 +342,7 @@ The library supports shadow-dom.
 ⚠️ VSCode itself doesn't support shadow dom, and there are multiple parts that needed to be patched in order for it to work.
 
 There are multiple benefits of using it:
+
 - Your custom global style won't impact the VSCode workbench style (for instance if you did override the default [box-sizing](https://developer.mozilla.org/en-US/docs/Web/CSS/box-sizing))
 - The VSCode styles won't impact other parts of your app
 - You page head won't be polluted with dozen of css files from VSCode
@@ -406,18 +419,19 @@ To still be able to do it, a possibility is to run all VSCode code inside an ifr
 To better integrate it, it's also possible to run the code in the iframe, but make the code interact with the main page dom.
 
 This library supports that mode. To enable that, you should
+
 - have a secondary html entrypoint, that initialize the services
 - load that secondary html in an iframe
 - in the iframe, set `window.vscodeWindow` to the parent window, also initialize the service with a container mounted in that window
 - do not import any monaco-vscode-library from the top window, but you can declare functions on the iframe window to get objects to the top window
 
 To "unload" the workbench, you should:
+
 - remove the iframe element from the top frame
 - remove or empty the workbench container
 - cleanup the elements that VSCode has injected in the page head: `document.querySelectorAll('[data-vscode]').forEach((el) => el.remove())`
 
 ⚠️ `window.vscodeWindow` should be set BEFORE any VSCode code is loaded
-
 
 Note: it can be used in combination with shadow dom
 
