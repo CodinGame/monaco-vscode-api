@@ -455,6 +455,10 @@ export default ({
               preserveModules: true,
               preserveModulesRoot: options.dir!,
               minifyInternalExports: false,
+              sanitizeFileName(fileName) {
+                // Remove spaces in name to prevent creating any issues
+                return fileName.replace(/\s+/g, '_')
+              },
               assetFileNames: 'assets/[name][extname]',
               format: 'esm',
               dir: nodePath.resolve(options.dir!, `packages/${getPackageDirectory(packageName)}`),
