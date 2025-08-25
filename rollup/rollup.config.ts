@@ -94,6 +94,10 @@ export default (args: Record<string, string>): rollup.RollupOptions => {
         preserveModules: true,
         preserveModulesRoot: SRC_DIR,
         minifyInternalExports: false,
+        sanitizeFileName(fileName) {
+          // Remove spaces in name to prevent creating any issues
+          return fileName.replace(/\s+/g, '_')
+        },
         assetFileNames: 'assets/[name][extname]',
         format: 'esm',
         dir: 'dist/tmp',

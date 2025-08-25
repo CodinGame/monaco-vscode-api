@@ -30,9 +30,9 @@
   },
   "config": {
     "vscode": {
-      "version": "1.103.1",
-      "ref": "360a4e4fd251bfce169a4ddf857c7d25d1ad40da",
-      "commit": "360a4e4fd251bfce169a4ddf857c7d25d1ad40da"
+      "version": "1.103.2",
+      "ref": "1.103.2",
+      "commit": "6f17636121051a53c88d3e605c491d22af2ba755"
     },
     "monaco": {
       "ref": "v0.52.2",
@@ -56,7 +56,7 @@
     "@rollup/plugin-replace": "^6.0.2",
     "@rollup/plugin-typescript": "^12.1.4",
     "@types/mime-types": "^3.0.1",
-    "@types/node": "18.19.8",
+    "@types/node": "22.x",
     "@types/postcss-url": "^10.0.4",
     "@types/vscode-semver": "npm:@types/semver@=5.5.0",
     "@types/yargs": "^17.0.33",
@@ -65,7 +65,7 @@
     "chalk": "^5.6.0",
     "change-case": "^5.4.4",
     "change-package-name": "^1.0.5",
-    "eslint": "^9.33.0",
+    "eslint": "^9.34.0",
     "fast-glob": "^3.3.3",
     "graceful-fs": "^4.2.11",
     "js-cleanup": "^1.2.0",
@@ -74,18 +74,18 @@
     "postcss-url": "^10.1.3",
     "prettier": "^3.6.2",
     "recast": "^0.23.11",
-    "rollup": "^4.46.3",
+    "rollup": "^4.48.1",
     "rollup-plugin-copy": "^3.5.0",
     "rollup-plugin-dts": "^6.2.3",
     "semantic-release": "24.2.7",
-    "tsx": "^4.20.4",
+    "tsx": "^4.20.5",
     "type-fest": "^4.41.0",
-    "typescript": "^5.8.3",
-    "typescript-eslint": "^8.39.1",
+    "typescript": "^5.9.2",
+    "typescript-eslint": "^8.40.0",
     "uuid": "^11.1.0",
     "vscode-semver": "npm:semver@=5.5.0",
     "yargs": "^18.0.0",
-    "zx": "^8.8.0"
+    "zx": "^8.8.1"
   },
   "dependencies": {
     "@microsoft/1ds-core-js": "^3.2.13",
@@ -118,7 +118,7 @@
     "kerberos": "2.1.1",
     "keytar": "^7.9.0",
     "marked": "~14.0.0",
-    "memfs": "^4.36.0",
+    "memfs": "^4.38.1",
     "mime-types": "^3.0.1",
     "node-pty": "^1.1.0-beta33",
     "tas-client-umd": "0.2.0",
