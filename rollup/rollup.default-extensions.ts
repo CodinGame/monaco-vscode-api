@@ -56,10 +56,10 @@ export default rollup.defineConfig([
               // Remove spaces in name to prevent creating any issues
               return fileName.replace(/\s+/g, '_')
             },
-            assetFileNames: (chunkInfo) => {
+            assetFileNames: (asset) => {
               if (
-                chunkInfo.name != null &&
-                (chunkInfo.name.endsWith('d.ts') || chunkInfo.name.endsWith('.css'))
+                asset.names.length > 0 &&
+                (asset.names[0]!.endsWith('d.ts') || asset.names[0]!.endsWith('.css'))
               ) {
                 // append .txt at the end of d.ts and css files: those file are expected to be loaded as simple text while some bundlers like vite tries to transform them
                 return 'resources/[name][extname].txt'
