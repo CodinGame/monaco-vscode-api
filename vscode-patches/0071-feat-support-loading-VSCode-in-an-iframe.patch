@@ -9,8 +9,11 @@ Subject: [PATCH] feat: support loading VSCode in an iframe
  src/vs/base/browser/window.ts                 |  7 +++-
  src/vs/workbench/browser/window.ts            | 25 ++++++++----
  .../browser/view/renderers/webviewPreloads.ts |  4 +-
+ .../performance/browser/perfviewEditor.ts     |  3 +-
+ .../performance/browser/startupTimings.ts     |  3 +-
  .../browser/webWorkerExtensionHost.ts         |  6 +--
- 6 files changed, 44 insertions(+), 41 deletions(-)
+ .../lifecycle/browser/lifecycleService.ts     |  2 +-
+ 9 files changed, 49 insertions(+), 44 deletions(-)
 
 diff --git a/src/vs/base/browser/dom.ts b/src/vs/base/browser/dom.ts
 index 0ee97e64713..7162381400e 100644
@@ -220,6 +223,48 @@ index 2aa027c29ba..b9753110764 100644
  				if (!root.adoptedStyleSheets.includes(tokenizationStyle)) {
  					root.adoptedStyleSheets.push(tokenizationStyle);
  				}
+diff --git a/src/vs/workbench/contrib/performance/browser/perfviewEditor.ts b/src/vs/workbench/contrib/performance/browser/perfviewEditor.ts
+index 3f45789a32f..f05c8cc3c4e 100644
+--- a/src/vs/workbench/contrib/performance/browser/perfviewEditor.ts
++++ b/src/vs/workbench/contrib/performance/browser/perfviewEditor.ts
+@@ -31,6 +31,7 @@ import { Registry } from '../../../../platform/registry/common/platform.js';
+ import { IWorkbenchContributionsRegistry, Extensions as WorkbenchExtensions, getWorkbenchContribution } from '../../../common/contributions.js';
+ import { ICustomEditorLabelService } from '../../../services/editor/common/customEditorLabelService.js';
+ import { IRemoteAgentService } from '../../../services/remote/common/remoteAgentService.js';
++import { mainWindow } from '../../../../base/browser/window.js';
+ 
+ export class PerfviewContrib {
+ 
+@@ -308,7 +309,7 @@ class PerfModelContentProvider implements ITextModelContentProvider {
+ 	}
+ 
+ 	private _addResourceTimingStats(md: MarkdownBuilder) {
+-		const stats = performance.getEntriesByType('resource').map(entry => {
++		const stats = mainWindow.performance.getEntriesByType('resource').map(entry => {
+ 			return [entry.name, entry.duration];
+ 		});
+ 		if (!stats.length) {
+diff --git a/src/vs/workbench/contrib/performance/browser/startupTimings.ts b/src/vs/workbench/contrib/performance/browser/startupTimings.ts
+index eb0a9ffbc42..b6a71a21ce4 100644
+--- a/src/vs/workbench/contrib/performance/browser/startupTimings.ts
++++ b/src/vs/workbench/contrib/performance/browser/startupTimings.ts
+@@ -19,6 +19,7 @@ import { ITimerService } from '../../../services/timer/browser/timerService.js';
+ import { IWorkbenchContribution } from '../../../common/contributions.js';
+ import { posix } from '../../../../base/common/path.js';
+ import { hash } from '../../../../base/common/hash.js';
++import { mainWindow } from '../../../../base/browser/window.js';
+ 
+ export abstract class StartupTimings {
+ 
+@@ -121,7 +122,7 @@ export class BrowserResourcePerformanceMarks {
+ 			name: { classification: 'SystemMetaData'; purpose: 'PerformanceAndHealth'; comment: 'Resource basename' };
+ 			duration: { classification: 'SystemMetaData'; purpose: 'PerformanceAndHealth'; comment: 'Resource duration' };
+ 		};
+-		for (const item of performance.getEntriesByType('resource')) {
++		for (const item of mainWindow.performance.getEntriesByType('resource')) {
+ 
+ 			try {
+ 				const url = new URL(item.name);
 diff --git a/src/vs/workbench/services/extensions/browser/webWorkerExtensionHost.ts b/src/vs/workbench/services/extensions/browser/webWorkerExtensionHost.ts
 index d42138bea2e..24068d0cd76 100644
 --- a/src/vs/workbench/services/extensions/browser/webWorkerExtensionHost.ts
@@ -248,3 +293,16 @@ index d42138bea2e..24068d0cd76 100644
  		};
  
  		const protocol: IMessagePassingProtocol = {
+diff --git a/src/vs/workbench/services/lifecycle/browser/lifecycleService.ts b/src/vs/workbench/services/lifecycle/browser/lifecycleService.ts
+index 5bacc9fad6b..36f6d7776ed 100644
+--- a/src/vs/workbench/services/lifecycle/browser/lifecycleService.ts
++++ b/src/vs/workbench/services/lifecycle/browser/lifecycleService.ts
+@@ -208,7 +208,7 @@ export class BrowserLifecycleService extends AbstractLifecycleService {
+ 	protected override doResolveStartupKind(): StartupKind | undefined {
+ 		let startupKind = super.doResolveStartupKind();
+ 		if (typeof startupKind !== 'number') {
+-			const timing = performance.getEntriesByType('navigation').at(0) as PerformanceNavigationTiming | undefined;
++			const timing = mainWindow.performance.getEntriesByType('navigation').at(0) as PerformanceNavigationTiming | undefined;
+ 			if (timing?.type === 'reload') {
+ 				// MDN: https://developer.mozilla.org/en-US/docs/Web/API/PerformanceNavigationTiming/type#value
+ 				startupKind = StartupKind.ReloadedWindow;
