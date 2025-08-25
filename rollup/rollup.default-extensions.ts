@@ -52,6 +52,10 @@ export default rollup.defineConfig([
         output: [
           {
             minifyInternalExports: false,
+            sanitizeFileName(fileName) {
+              // Remove spaces in name to prevent creating any issues
+              return fileName.replace(/\s+/g, '_')
+            },
             assetFileNames: (chunkInfo) => {
               if (
                 chunkInfo.name != null &&
