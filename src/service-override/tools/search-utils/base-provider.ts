@@ -1,5 +1,12 @@
-import { DEFAULT_CONFIG, MAX_CACHED_FILES, MAX_DIRECTORY_DEPTH, type SearchConfig } from './types'
+import {
+  DEFAULT_CONFIG,
+  MAX_CACHED_FILES,
+  MAX_DIRECTORY_DEPTH,
+  type SearchConfig,
+  getSearchConfigFromVSCode
+} from './config'
 import type { IFileService, ILogService, IWorkspaceContextService } from '../../../services'
+import { IConfigurationService } from 'vs/platform/configuration/common/configuration.service'
 import type { FileChangesEvent, IFileStat } from 'vs/platform/files/common/files'
 import * as glob from 'vs/base/common/glob'
 import { URI } from 'vs/base/common/uri'
@@ -22,17 +29,31 @@ export abstract class BaseWorkspaceSearchProvider {
    * @param logger - Logger service for diagnostic messages
    * @param workspaceContextService - Optional workspace context service
    * @param config - Optional partial configuration to override defaults
+   * @param configurationService - Optional VS Code configuration service for getting exclude patterns
    */
   constructor(
     fileService: IFileService,
     logger: ILogService,
     workspaceContextService?: IWorkspaceContextService,
-    config?: Partial<SearchConfig>
+    config?: Partial<SearchConfig>,
+    configurationService?: IConfigurationService
   ) {
     this.fileService = fileService
     this.logger = logger
-    this.config = { ...DEFAULT_CONFIG, ...config }
+
+    // Extract workspace folders first
     this.workspaceFolders = this.extractWorkspaceFolders(workspaceContextService)
+
+    // Get configuration from VS Code where available
+    const resource = this.workspaceFolders.length > 0 ? this.workspaceFolders[0] : undefined
+    const vscodeConfig = getSearchConfigFromVSCode(configurationService, resource)
+
+    this.config = {
+      ...DEFAULT_CONFIG,
+      ...vscodeConfig, // Apply VS Code configuration first
+      ...config // Then apply any explicit overrides
+    }
+
     this.initializeProvider()
   }
 

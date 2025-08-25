@@ -25,6 +25,8 @@ import type { IFileSystemProvider } from 'vs/platform/files/common/files'
 import { HTMLFileSystemProvider } from 'vs/platform/files/browser/htmlFileSystemProvider'
 import { WorkspaceSearchProvider } from './tools/search-providers/workspace-search-provider'
 import { IWorkspaceContextService } from '../services'
+import { IRemoteAgentService } from 'vs/workbench/services/remote/common/remoteAgentService.service'
+import { IConfigurationService } from 'vs/platform/configuration/common/configuration.service'
 
 function isHTMLFileSystemProvider(
   provider: IFileSystemProvider
@@ -32,7 +34,7 @@ function isHTMLFileSystemProvider(
   return (provider as HTMLFileSystemProvider).directories != null
 }
 
-// Duplicated from RemoteSearchService, with a check on the file system provider being an HTMLFileSystemProvider
+// Custom search service that handles different file system types and remote connections
 class CustomSearchService extends SearchService {
   constructor(
     @IModelService modelService: IModelService,
@@ -43,7 +45,9 @@ class CustomSearchService extends SearchService {
     @IFileService fileService: IFileService,
     @IInstantiationService private readonly instantiationService: IInstantiationService,
     @IUriIdentityService uriIdentityService: IUriIdentityService,
-    @IWorkspaceContextService workspaceContextService: IWorkspaceContextService
+    @IWorkspaceContextService workspaceContextService: IWorkspaceContextService,
+    @IRemoteAgentService remoteAgentService: IRemoteAgentService,
+    @IConfigurationService configurationService: IConfigurationService
   ) {
     super(
       modelService,
@@ -54,6 +58,14 @@ class CustomSearchService extends SearchService {
       fileService,
       uriIdentityService
     )
+
+    const hasRemoteConnection = remoteAgentService.getConnection() !== null
+    if (hasRemoteConnection) {
+      // Don't register custom providers to avoid conflicts
+      return
+    }
+
+    // For local scenarios, choose the appropriate search provider
     if (isHTMLFileSystemProvider(fileService.getProvider(Schemas.file)!)) {
       const searchProvider = this.instantiationService.createInstance(LocalFileSearchWorkerClient)
       this.registerSearchResultProvider(Schemas.file, SearchProviderType.file, searchProvider)
@@ -62,7 +74,9 @@ class CustomSearchService extends SearchService {
       const workspaceSearchProvider = new WorkspaceSearchProvider(
         fileService,
         logService,
-        workspaceContextService
+        workspaceContextService,
+        undefined,
+        configurationService
       )
 
       this.registerSearchResultProvider(
