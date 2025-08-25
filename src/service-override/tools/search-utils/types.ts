@@ -11,7 +11,19 @@ export const DEFAULT_CONFIG: SearchConfig = {
   maxResults: 1000,
   caseSensitive: false,
   includeHiddenFiles: true,
-  excludePatterns: ['**/node_modules/**', '**/.git/**', '**/dist/**', '**/build/**', '**/out/**'],
+  excludePatterns: [
+    '**/node_modules/**',
+    '**/.git/**',
+    '**/dist/**',
+    '**/build/**',
+    '**/out/**',
+    '**/*.tsbuildinfo',
+    '**/*.code-workspace',
+    '**/.DS_Store',
+    '**/*.tmp',
+    '**/*.temp',
+    '**/*.log'
+  ],
   maxFileSize: 1024 * 1024 * 10,
   debounceDelay: 300
 }

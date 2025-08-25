@@ -23,6 +23,8 @@ import { SearchProviderType } from 'vs/workbench/services/search/common/search'
 import { Schemas } from 'vs/base/common/network'
 import type { IFileSystemProvider } from 'vs/platform/files/common/files'
 import { HTMLFileSystemProvider } from 'vs/platform/files/browser/htmlFileSystemProvider'
+import { WorkspaceSearchProvider } from './tools/search-providers/workspace-search-provider'
+import { IWorkspaceContextService } from '../services'
 
 function isHTMLFileSystemProvider(
   provider: IFileSystemProvider
@@ -40,7 +42,8 @@ class CustomSearchService extends SearchService {
     @IExtensionService extensionService: IExtensionService,
     @IFileService fileService: IFileService,
     @IInstantiationService private readonly instantiationService: IInstantiationService,
-    @IUriIdentityService uriIdentityService: IUriIdentityService
+    @IUriIdentityService uriIdentityService: IUriIdentityService,
+    @IWorkspaceContextService workspaceContextService: IWorkspaceContextService
   ) {
     super(
       modelService,
@@ -55,6 +58,23 @@ class CustomSearchService extends SearchService {
       const searchProvider = this.instantiationService.createInstance(LocalFileSearchWorkerClient)
       this.registerSearchResultProvider(Schemas.file, SearchProviderType.file, searchProvider)
       this.registerSearchResultProvider(Schemas.file, SearchProviderType.text, searchProvider)
+    } else {
+      const workspaceSearchProvider = new WorkspaceSearchProvider(
+        fileService,
+        logService,
+        workspaceContextService
+      )
+
+      this.registerSearchResultProvider(
+        Schemas.file,
+        SearchProviderType.file,
+        workspaceSearchProvider
+      )
+      this.registerSearchResultProvider(
+        Schemas.file,
+        SearchProviderType.text,
+        workspaceSearchProvider
+      )
     }
   }
 }
