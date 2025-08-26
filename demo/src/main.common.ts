@@ -4,7 +4,6 @@ import { ExtensionHostKind, registerExtension } from '@codingame/monaco-vscode-a
 import { useHtmlFileSystemProvider } from './setup.common'
 import './features/output'
 import './features/debugger'
-import './features/search'
 import './features/intellisense'
 import './features/notifications'
 import './features/terminal'
