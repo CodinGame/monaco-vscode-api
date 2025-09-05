@@ -1094,6 +1094,16 @@ class FileServiceOverride extends FileService {
     }
   }
 
+  override async withProvider(resource: URI) {
+    if (resource.scheme === 'data') {
+      const httpProvider = this.getProvider('http')
+      if (httpProvider != null) {
+        return httpProvider
+      }
+    }
+    return super.withProvider(resource)
+  }
+
   /**
    * Hack: the parent class has dependencies, we don't, dependencies are stored in a static field
    * Having no dependencies mean the field won't be overriden, so we'll inherit dependencies from the parent
