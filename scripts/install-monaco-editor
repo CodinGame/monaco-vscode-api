@@ -26,7 +26,7 @@ cd $monaco_build_directory
 npm ci
 
 # Copy editor types
-npm run build-monaco-editor
+npm run build
 cp out/monaco-editor/esm/vs/editor/editor.api.d.ts $output_directory/editor.api.d.ts
 cp -R out/monaco-editor/esm/vs/basic-languages $output_directory/basic-languages
 cp -R out/monaco-editor/esm/vs/language $output_directory/language
