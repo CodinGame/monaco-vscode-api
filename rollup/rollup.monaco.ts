@@ -71,9 +71,9 @@ export default rollup.defineConfig([
                   external: true
                 }
               }
-              if (source.endsWith('editor/editor.worker.js')) {
+              if (source.endsWith('editor.worker.start.js')) {
                 return {
-                  id: 'monaco-editor/esm/vs/editor/editor.worker.js',
+                  id: 'monaco-editor/esm/vs/editor/editor.worker.start.js',
                   external: true
                 }
               }

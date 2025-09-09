@@ -35,8 +35,8 @@
       "commit": "6f17636121051a53c88d3e605c491d22af2ba755"
     },
     "monaco": {
-      "ref": "v0.52.2",
-      "version": "0.52.2"
+      "ref": "v0.53.0",
+      "version": "0.53.0"
     }
   },
   "devDependencies": {

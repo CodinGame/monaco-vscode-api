@@ -36,6 +36,9 @@ const COMMON_PACKAGE_NAME_UUID_NAMESPACE = '251b3eab-b5c9-4930-9c6c-6b38f697d291
  * for compability with libraries that import internal monaco-editor modules
  */
 const EDITOR_API_EXPOSE_MODULES = [
+  // language workers
+  'vs/editor/editor.worker.start',
+
   // use by monaco-vim
   'vs/editor/common/commands/shiftCommand',
   'vs/editor/browser/config/tabFocus',
@@ -249,8 +252,8 @@ ${code}`
               chunk.fileName.endsWith('extension.api.d.ts')
             ) {
               return `
-import '@codingame/monaco-vscode-api/vscode-dts/vscode'
-import '@codingame/monaco-vscode-api/vscode-dts/vscode.proposed'
+import '${MAIN_PACKAGE_NAME}/vscode-dts/vscode'
+import '${MAIN_PACKAGE_NAME}/vscode-dts/vscode.proposed'
 ${code}`
             }
             return undefined
@@ -298,13 +301,13 @@ ${code}`
                 this.emitFile({
                   fileName: `esm/${modulePath}.js`,
                   needsCodeReference: false,
-                  source: `export * from '@codingame/monaco-vscode-api/vscode/${modulePath}'`,
+                  source: `export * from '${MAIN_PACKAGE_NAME}/vscode/${modulePath}'`,
                   type: 'asset'
                 })
                 this.emitFile({
                   fileName: `esm/${modulePath}.d.ts`,
                   needsCodeReference: false,
-                  source: `export * from '@codingame/monaco-vscode-api/vscode/${modulePath}'`,
+                  source: `export * from '${MAIN_PACKAGE_NAME}/vscode/${modulePath}'`,
                   type: 'asset'
                 })
               }
