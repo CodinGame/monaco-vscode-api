@@ -360,9 +360,13 @@ const api: typeof vscode = {
   LanguageModelToolExtensionSource: extHostTypes.LanguageModelToolExtensionSource,
   LanguageModelToolMCPSource: extHostTypes.LanguageModelToolMCPSource,
   ChatResponseTurn2: extHostTypes.ChatResponseTurn2,
-  ToolResultAudience: extHostTypes.ToolResultAudience,
   LanguageModelTextPart2: extHostTypes.LanguageModelTextPart,
-  LanguageModelDataPart2: extHostTypes.LanguageModelDataPart
+  LanguageModelDataPart2: extHostTypes.LanguageModelDataPart,
+  ChatResponseThinkingProgressPart: extHostTypes.ChatResponseThinkingProgressPart,
+  ChatSessionStatus: extHostTypes.ChatSessionStatus,
+  InlineCompletionDisplayLocationKind: extHostTypes.InlineCompletionDisplayLocationKind,
+  LanguageModelThinkingPart: extHostTypes.LanguageModelThinkingPart,
+  LanguageModelPartAudience: extHostTypes.LanguageModelPartAudience
 }
 
 // @ts-expect-error the syntax will be transformed by a typescript transformer in the rollup config

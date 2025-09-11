@@ -54,15 +54,21 @@ import { ChatAttachmentResolveService } from 'vs/workbench/contrib/chat/browser/
 import { IRemoteCodingAgentsService } from 'vs/workbench/contrib/remoteCodingAgents/common/remoteCodingAgentsService.service'
 import { RemoteCodingAgentsService } from 'vs/workbench/contrib/remoteCodingAgents/common/remoteCodingAgentsService'
 import { IChatSessionsService } from 'vs/workbench/contrib/chat/common/chatSessionsService.service'
-import 'vs/workbench/contrib/chat/browser/chat.contribution'
-import 'vs/workbench/contrib/terminal/terminal.chat.contribution'
-import 'vs/workbench/contrib/inlineChat/browser/inlineChat.contribution'
-import 'vs/workbench/contrib/remoteCodingAgents/browser/remoteCodingAgents.contribution'
 import { ChatSessionsService } from 'vs/workbench/contrib/chat/browser/chatSessions.contribution'
 import { ChatOutputRendererService } from 'vs/workbench/contrib/chat/browser/chatOutputItemRenderer'
 import { IChatOutputRendererService } from 'vs/workbench/contrib/chat/browser/chatOutputItemRenderer.service'
 import { IChatTodoListService } from 'vs/workbench/contrib/chat/common/chatTodoListService.service'
 import { ChatTodoListService } from 'vs/workbench/contrib/chat/common/chatTodoListService'
+import { IChatLayoutService } from 'vs/workbench/contrib/chat/common/chatLayoutService.service'
+import { ChatLayoutService } from 'vs/workbench/contrib/chat/browser/chatLayoutService'
+import { IAiEditTelemetryService } from 'vs/workbench/contrib/editTelemetry/browser/telemetry/aiEditTelemetry/aiEditTelemetryService.service'
+import { AiEditTelemetryServiceImpl } from 'vs/workbench/contrib/editTelemetry/browser/telemetry/aiEditTelemetry/aiEditTelemetryServiceImpl'
+import { IChatModeService } from 'vs/workbench/contrib/chat/common/chatModes.service'
+import { ChatModeService } from 'vs/workbench/contrib/chat/common/chatModes'
+import 'vs/workbench/contrib/chat/browser/chat.contribution'
+import 'vs/workbench/contrib/terminal/terminal.chat.contribution'
+import 'vs/workbench/contrib/inlineChat/browser/inlineChat.contribution'
+import 'vs/workbench/contrib/remoteCodingAgents/browser/remoteCodingAgents.contribution'
 
 export default function getServiceOverride(): IEditorOverrideServices {
   return {
@@ -129,6 +135,9 @@ export default function getServiceOverride(): IEditorOverrideServices {
       [],
       true
     ),
-    [IChatTodoListService.toString()]: new SyncDescriptor(ChatTodoListService, [], true)
+    [IChatTodoListService.toString()]: new SyncDescriptor(ChatTodoListService, [], true),
+    [IChatLayoutService.toString()]: new SyncDescriptor(ChatLayoutService, [], true),
+    [IAiEditTelemetryService.toString()]: new SyncDescriptor(AiEditTelemetryServiceImpl, [], true),
+    [IChatModeService.toString()]: new SyncDescriptor(ChatModeService, [], true)
   }
 }

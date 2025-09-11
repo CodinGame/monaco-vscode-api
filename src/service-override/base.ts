@@ -31,6 +31,8 @@ import { ILabelService } from 'vs/platform/label/common/label.service'
 import { IEditorWorkerService } from 'vs/editor/common/services/editorWorker.service'
 import { WorkbenchEditorWorkerService } from 'vs/workbench/contrib/codeEditor/browser/workbenchEditorWorkerService'
 import { getEnvironmentOverride } from '../workbench'
+import { IInlineCompletionsUnificationService } from 'vs/workbench/services/inlineCompletions/common/inlineCompletionsUnification.service'
+import { InlineCompletionsUnificationImpl } from 'vs/workbench/services/inlineCompletions/common/inlineCompletionsUnification'
 
 class BrowserPathServiceOverride extends AbstractPathService {
   constructor(
@@ -61,6 +63,11 @@ export default function getServiceOverride(): IEditorOverrideServices {
     [IPathService.toString()]: new SyncDescriptor(BrowserPathServiceOverride, [], true),
     [ITrustedDomainService.toString()]: new SyncDescriptor(TrustedDomainService, [], true),
     [ILabelService.toString()]: new SyncDescriptor(LabelService, [], true),
-    [IEditorWorkerService.toString()]: new SyncDescriptor(WorkbenchEditorWorkerService, [], true)
+    [IEditorWorkerService.toString()]: new SyncDescriptor(WorkbenchEditorWorkerService, [], true),
+    [IInlineCompletionsUnificationService.toString()]: new SyncDescriptor(
+      InlineCompletionsUnificationImpl,
+      [],
+      true
+    )
   }
 }
