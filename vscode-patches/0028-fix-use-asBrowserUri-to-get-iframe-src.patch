@@ -1,0 +1,35 @@
+From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
+From: =?UTF-8?q?Lo=C3=AFc=20Mangeonjean?= <loic@coderpad.io>
+Date: Mon, 11 Mar 2024 18:21:20 +0100
+Subject: [PATCH] fix: use asBrowserUri to get iframe src
+
+---
+ src/vs/workbench/contrib/webview/browser/webviewElement.ts | 7 ++++---
+ 1 file changed, 4 insertions(+), 3 deletions(-)
+
+diff --git a/src/vs/workbench/contrib/webview/browser/webviewElement.ts b/src/vs/workbench/contrib/webview/browser/webviewElement.ts
+index 4d62baca53c..66b956fb986 100644
+--- a/src/vs/workbench/contrib/webview/browser/webviewElement.ts
++++ b/src/vs/workbench/contrib/webview/browser/webviewElement.ts
+@@ -13,8 +13,8 @@ import { streamToBuffer, VSBufferReadableStream } from '../../../../base/common/
+ import { CancellationTokenSource } from '../../../../base/common/cancellation.js';
+ import { Emitter, Event } from '../../../../base/common/event.js';
+ import { Disposable, IDisposable, toDisposable } from '../../../../base/common/lifecycle.js';
+-import { COI } from '../../../../base/common/network.js';
+ import { observableValue } from '../../../../base/common/observable.js';
++import { COI, FileAccess } from '../../../../base/common/network.js';
+ import { URI } from '../../../../base/common/uri.js';
+ import { generateUuid } from '../../../../base/common/uuid.js';
+ import { localize } from '../../../../nls.js';
+@@ -449,8 +449,9 @@ export class WebviewElement extends Disposable implements IWebviewElement, Webvi
+ 		const queryString = new URLSearchParams(params).toString();
+ 
+ 		this.perfMark('init/set-src');
+-		const fileName = 'index.html';
+-		this.element!.setAttribute('src', `${this.webviewContentEndpoint(encodedWebviewOrigin)}/${fileName}?${queryString}`);
++
++		const relativeIframeSrc = FileAccess.asBrowserUri(`vs/workbench/contrib/webview/browser/pre/index.html`);
++		this.element!.setAttribute('src', `${relativeIframeSrc.toString(true)}?${queryString}`);
+ 	}
+ 
+ 	public mountTo(element: HTMLElement, targetWindow: CodeWindow) {
