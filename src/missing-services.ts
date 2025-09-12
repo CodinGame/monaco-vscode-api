@@ -315,7 +315,6 @@ import { IBannerService } from 'vs/workbench/services/banner/browser/bannerServi
 import { IBrowserElementsService } from 'vs/workbench/services/browserElements/browser/browserElementsService.service'
 import { IJSONEditingService } from 'vs/workbench/services/configuration/common/jsonEditing.service'
 import { IConfigurationResolverService } from 'vs/workbench/services/configurationResolver/common/configurationResolver.service'
-import { ICoreExperimentationService } from 'vs/workbench/services/coreExperimentation/common/coreExperimentationService.service'
 import { IDecorationsService } from 'vs/workbench/services/decorations/common/decorations.service'
 import { CodeEditorService } from 'vs/workbench/services/editor/browser/codeEditorService'
 import { ICustomEditorLabelService } from 'vs/workbench/services/editor/common/customEditorLabelService.service'
@@ -413,10 +412,18 @@ import { IWorkspaceEditingService } from 'vs/workbench/services/workspaces/commo
 import { IWorkspaceIdentityService } from 'vs/workbench/services/workspaces/common/workspaceIdentityService.service'
 import { IAiSettingsSearchService } from 'vscode/src/vs/workbench/services/aiSettingsSearch/common/aiSettingsSearch.service'
 
+import { NullDataChannelService } from 'vs/platform/dataChannel/common/dataChannel'
+import { IDataChannelService } from 'vs/platform/dataChannel/common/dataChannel.service'
 import { IImageResizeService } from 'vs/platform/imageResize/common/imageResizeService.service'
-import { IDataChannelService } from 'vs/workbench/services/dataChannel/common/dataChannel.service'
+import { McpGalleryManifestStatus } from 'vs/platform/mcp/common/mcpGalleryManifest'
+import { IMcpGalleryManifestService } from 'vs/platform/mcp/common/mcpGalleryManifest.service'
+import { IChatLayoutService } from 'vs/workbench/contrib/chat/common/chatLayoutService.service'
+import { IAiEditTelemetryService } from 'vs/workbench/contrib/editTelemetry/browser/telemetry/aiEditTelemetry/aiEditTelemetryService.service'
+import type { IInlineCompletionsUnificationState } from 'vs/workbench/services/inlineCompletions/common/inlineCompletionsUnification'
+import { IInlineCompletionsUnificationService } from 'vs/workbench/services/inlineCompletions/common/inlineCompletionsUnification.service'
 import { getBuiltInExtensionTranslationsUris, getExtensionIdProvidingCurrentLocale } from './l10n'
 import { unsupported } from './tools'
+import { IChatModeService } from 'vs/workbench/contrib/chat/common/chatModes.service'
 
 function Unsupported(target: object, propertyKey: string, descriptor?: PropertyDescriptor) {
   function unsupported() {
@@ -1488,6 +1495,10 @@ class ExtensionHostDebugService implements IExtensionHostDebugService {
   @Unsupported
   openExtensionDevelopmentHostWindow: IExtensionHostDebugService['openExtensionDevelopmentHostWindow'] =
     unsupported
+
+  @Unsupported
+  attachToCurrentWindowRenderer: IExtensionHostDebugService['attachToCurrentWindowRenderer'] =
+    unsupported
 }
 registerSingleton(IExtensionHostDebugService, ExtensionHostDebugService, InstantiationType.Eager)
 class ViewsService implements IViewsService {
@@ -1638,7 +1649,9 @@ class TaskService implements ITaskService {
   extensionCallbackTaskComplete: ITaskService['extensionCallbackTaskComplete'] = unsupported
   isReconnected: ITaskService['isReconnected'] = false
   onDidReconnectToTasks: ITaskService['onDidReconnectToTasks'] = Event.None
-  getTerminalForTask: ITaskService['getTerminalForTask'] = () => undefined
+
+  getTerminalsForTasks: ITaskService['getTerminalsForTasks'] = () => undefined
+  getTaskProblems: ITaskService['getTaskProblems'] = () => undefined
 }
 registerSingleton(ITaskService, TaskService, InstantiationType.Eager)
 class ConfigurationResolverService implements IConfigurationResolverService {
@@ -2689,6 +2702,9 @@ class TerminalService implements ITerminalService {
   focusActiveInstance: ITerminalService['focusActiveInstance'] = unsupported
   @Unsupported
   getInstanceFromResource: ITerminalService['getInstanceFromResource'] = unsupported
+
+  @Unsupported
+  createAndFocusTerminal: ITerminalService['createAndFocusTerminal'] = unsupported
 }
 registerSingleton(ITerminalService, TerminalService, InstantiationType.Delayed)
 class TerminalConfigurationService implements ITerminalConfigurationService {
@@ -3200,6 +3216,7 @@ registerSingleton(
 )
 class WorkbenchAssignmentService implements IWorkbenchAssignmentService {
   _serviceBrand: undefined
+  onDidRefetchAssignments: IWorkbenchAssignmentService['onDidRefetchAssignments'] = Event.None
   getCurrentExperiments: IWorkbenchAssignmentService['getCurrentExperiments'] = async () => []
   getTreatment: IWorkbenchAssignmentService['getTreatment'] = async () => undefined
 }
@@ -3257,6 +3274,7 @@ class ChatService implements IChatService {
   loadSessionForResource: IChatService['loadSessionForResource'] = unsupported
   requestInProgressObs: IChatService['requestInProgressObs'] = constObservable(false)
   edits2Enabled: IChatService['edits2Enabled'] = false
+  getPersistedSessionTitle: IChatService['getPersistedSessionTitle'] = () => undefined
 }
 registerSingleton(IChatService, ChatService, InstantiationType.Delayed)
 class ChatMarkdownAnchorService implements IChatMarkdownAnchorService {
@@ -3292,8 +3310,6 @@ registerSingleton(IQuickChatService, QuickChatService, InstantiationType.Delayed
 class QuickChatAgentService implements IChatAgentService {
   _serviceBrand: IChatAgentService['_serviceBrand'] = undefined
   hasToolsAgent: IChatAgentService['hasToolsAgent'] = false
-  @Unsupported
-  setRequestPaused: IChatAgentService['setRequestPaused'] = unsupported
   @Unsupported
   registerChatParticipantDetectionProvider: IChatAgentService['registerChatParticipantDetectionProvider'] =
     unsupported
@@ -4055,6 +4071,10 @@ class AuthenticationExtensionsService implements IAuthenticationExtensionsServic
   requestSessionAccess: IAuthenticationExtensionsService['requestSessionAccess'] = unsupported
   @Unsupported
   requestNewSession: IAuthenticationExtensionsService['requestNewSession'] = unsupported
+
+  @Unsupported
+  updateNewSessionRequests: IAuthenticationExtensionsService['updateNewSessionRequests'] =
+    unsupported
 }
 registerSingleton(
   IAuthenticationExtensionsService,
@@ -4388,9 +4408,7 @@ class ChatVariablesService implements IChatVariablesService {
   @Unsupported
   getDynamicVariables: IChatVariablesService['getDynamicVariables'] = unsupported
   @Unsupported
-  getSelectedTools: IChatVariablesService['getSelectedTools'] = unsupported
-  @Unsupported
-  getSelectedToolSets: IChatVariablesService['getSelectedToolSets'] = unsupported
+  getSelectedToolAndToolSets: IChatVariablesService['getSelectedToolAndToolSets'] = unsupported
 }
 registerSingleton(IChatVariablesService, ChatVariablesService, InstantiationType.Delayed)
 class AiRelatedInformationService implements IAiRelatedInformationService {
@@ -5162,9 +5180,9 @@ class LanguageModelToolsService implements ILanguageModelToolsService {
   toToolAndToolSetEnablementMap: ILanguageModelToolsService['toToolAndToolSetEnablementMap'] =
     unsupported
   @Unsupported
-  flushToolChanges: ILanguageModelToolsService['flushToolChanges'] = () => {
-    unsupported()
-  }
+  registerTool: ILanguageModelToolsService['registerTool'] = unsupported
+  @Unsupported
+  getToolAutoConfirmation: ILanguageModelToolsService['getToolAutoConfirmation'] = unsupported
 
   getToolSet: ILanguageModelToolsService['getToolSet'] = () => undefined
 }
@@ -5300,20 +5318,23 @@ class TerminalCompletionService implements ITerminalCompletionService {
 registerSingleton(ITerminalCompletionService, TerminalCompletionService, InstantiationType.Delayed)
 class ChatEntitlementsService implements IChatEntitlementService {
   _serviceBrand: undefined
+  organisations: IChatEntitlementService['organisations'] = undefined
+  isInternal: IChatEntitlementService['isInternal'] = false
+  sku: IChatEntitlementService['sku'] = undefined
   onDidChangeEntitlement: IChatEntitlementService['onDidChangeEntitlement'] = Event.None
   onDidChangeQuotaExceeded: IChatEntitlementService['onDidChangeQuotaExceeded'] = Event.None
   onDidChangeQuotaRemaining: IChatEntitlementService['onDidChangeQuotaRemaining'] = Event.None
   onDidChangeSentiment: IChatEntitlementService['onDidChangeSentiment'] = Event.None
   @Unsupported
-  get entitlement() {
+  get entitlement(): IChatEntitlementService['entitlement'] {
     return unsupported()
   }
   @Unsupported
-  get quotas() {
+  get quotas(): IChatEntitlementService['quotas'] {
     return unsupported()
   }
   @Unsupported
-  get sentiment() {
+  get sentiment(): IChatEntitlementService['sentiment'] {
     return unsupported()
   }
   @Unsupported
@@ -5499,7 +5520,8 @@ class McpWorkbenchService implements IMcpWorkbenchService {
   onChange: IMcpWorkbenchService['onChange'] = Event.None
   local: IMcpWorkbenchService['local'] = []
   queryLocal: IMcpWorkbenchService['queryLocal'] = async () => []
-  queryGallery: IMcpWorkbenchService['queryGallery'] = async () => []
+  @Unsupported
+  queryGallery: IMcpWorkbenchService['queryGallery'] = unsupported
   @Unsupported
   install: IMcpWorkbenchService['install'] = unsupported
   uninstall: IMcpWorkbenchService['uninstall'] = async () => undefined
@@ -5518,13 +5540,20 @@ registerSingleton(IMcpWorkbenchService, McpWorkbenchService, InstantiationType.E
 class McpGalleryService implements IMcpGalleryService {
   _serviceBrand: undefined
   isEnabled: IMcpGalleryService['isEnabled'] = () => false
-  query: IMcpGalleryService['query'] = async () => []
   @Unsupported
-  getManifest: IMcpGalleryService['getManifest'] = unsupported
+  query: IMcpGalleryService['query'] = unsupported
   @Unsupported
   getReadme: IMcpGalleryService['getReadme'] = unsupported
 
-  getMcpServers: IMcpGalleryService['getMcpServers'] = async () => []
+  getMcpServersFromVSCodeGallery: IMcpGalleryService['getMcpServersFromVSCodeGallery'] =
+    async () => []
+
+  getMcpServersFromGallery: IMcpGalleryService['getMcpServersFromGallery'] = async () => []
+
+  getMcpServer: IMcpGalleryService['getMcpServer'] = async () => undefined
+
+  @Unsupported
+  getMcpServerConfiguration: IMcpGalleryService['getMcpServerConfiguration'] = unsupported
 }
 registerSingleton(IMcpGalleryService, McpGalleryService, InstantiationType.Eager)
 class McpSamplingService implements IMcpSamplingService {
@@ -5654,13 +5683,6 @@ class AuthenticationQueryService implements IAuthenticationQueryService {
 }
 registerSingleton(IAuthenticationQueryService, AuthenticationQueryService, InstantiationType.Eager)
 
-class CoreExperimentationService implements ICoreExperimentationService {
-  _serviceBrand: undefined
-  @Unsupported
-  getExperiment: ICoreExperimentationService['getExperiment'] = () => undefined
-}
-registerSingleton(ICoreExperimentationService, CoreExperimentationService, InstantiationType.Eager)
-
 class WorkbenchMcpManagementService implements IWorkbenchMcpManagementService {
   _serviceBrand: undefined
   onDidInstallMcpServers: IWorkbenchMcpManagementService['onDidInstallMcpServers'] = Event.None
@@ -5690,6 +5712,9 @@ class WorkbenchMcpManagementService implements IWorkbenchMcpManagementService {
   uninstall: IWorkbenchMcpManagementService['uninstall'] = unsupported
   @Unsupported
   canInstall: IWorkbenchMcpManagementService['canInstall'] = unsupported
+  @Unsupported
+  getMcpServerConfigurationFromManifest: IWorkbenchMcpManagementService['getMcpServerConfigurationFromManifest'] =
+    unsupported
 }
 registerSingleton(
   IWorkbenchMcpManagementService,
@@ -5700,7 +5725,9 @@ registerSingleton(
 class ChatTodoListService implements IChatTodoListService {
   _serviceBrand: undefined
   @Unsupported
-  getChatTodoListStorage: IChatTodoListService['getChatTodoListStorage'] = unsupported
+  setTodos: IChatTodoListService['setTodos'] = unsupported
+
+  getTodos: IChatTodoListService['getTodos'] = () => []
 }
 registerSingleton(IChatTodoListService, ChatTodoListService, InstantiationType.Delayed)
 
@@ -5715,22 +5742,36 @@ registerSingleton(IChatOutputRendererService, ChatOutputRendererService, Instant
 
 class ChatSessionsService implements IChatSessionsService {
   _serviceBrand: undefined
+  onDidChangeInProgress: IChatSessionsService['onDidChangeInProgress'] = Event.None
+  getAllChatSessionContributions: IChatSessionsService['getAllChatSessionContributions'] = () => []
+  getAllChatSessionItemProviders: IChatSessionsService['getAllChatSessionItemProviders'] = () => []
+
+  @Unsupported
+  provideNewChatSessionItem: IChatSessionsService['provideNewChatSessionItem'] = unsupported
+
+  @Unsupported
+  reportInProgress: IChatSessionsService['reportInProgress'] = unsupported
+
+  @Unsupported
+  setEditableSession: IChatSessionsService['setEditableSession'] = unsupported
+
+  @Unsupported
+  notifySessionItemsChanged: IChatSessionsService['notifySessionItemsChanged'] = unsupported
+
+  getInProgress: IChatSessionsService['getInProgress'] = () => []
+  getEditableData: IChatSessionsService['getEditableData'] = () => undefined
+  isEditable: IChatSessionsService['isEditable'] = () => false
 
   onDidChangeItemsProviders: IChatSessionsService['onDidChangeItemsProviders'] = Event.None
   onDidChangeSessionItems: IChatSessionsService['onDidChangeSessionItems'] = Event.None
   onDidChangeAvailability: IChatSessionsService['onDidChangeAvailability'] = Event.None
-  registerContribution: IChatSessionsService['registerContribution'] = () => Disposable.None
-  getChatSessionContributions: IChatSessionsService['getChatSessionContributions'] = () => []
   canResolveItemProvider: IChatSessionsService['canResolveItemProvider'] = async () => false
   canResolveContentProvider: IChatSessionsService['canResolveContentProvider'] = async () => false
-  getChatSessionItemProviders: IChatSessionsService['getChatSessionItemProviders'] = () => []
   registerChatSessionItemProvider: IChatSessionsService['registerChatSessionItemProvider'] = () =>
     Disposable.None
   registerChatSessionContentProvider: IChatSessionsService['registerChatSessionContentProvider'] =
     () => Disposable.None
-  hasChatSessionItemProviders: IChatSessionsService['hasChatSessionItemProviders'] = false
   provideChatSessionItems: IChatSessionsService['provideChatSessionItems'] = async () => []
-  notifySessionItemsChange: IChatSessionsService['notifySessionItemsChange'] = () => {}
 
   @Unsupported
   provideChatSessionContent: IChatSessionsService['provideChatSessionContent'] = unsupported
@@ -5745,16 +5786,7 @@ class ImageResizeService implements IImageResizeService {
 }
 registerSingleton(IImageResizeService, ImageResizeService, InstantiationType.Delayed)
 
-class DataChannelService implements IDataChannelService {
-  _serviceBrand: undefined
-  onDidSendData: IDataChannelService['onDidSendData'] = Event.None
-
-  @Unsupported
-  getDataChannel: IDataChannelService['getDataChannel'] = () => ({
-    sendData() {}
-  })
-}
-registerSingleton(IDataChannelService, DataChannelService, InstantiationType.Delayed)
+registerSingleton(IDataChannelService, NullDataChannelService, InstantiationType.Delayed)
 
 class AllowedMcpServersService implements IAllowedMcpServersService {
   _serviceBrand: undefined
@@ -5765,3 +5797,63 @@ class AllowedMcpServersService implements IAllowedMcpServersService {
   isAllowed: IAllowedMcpServersService['isAllowed'] = unsupported
 }
 registerSingleton(IAllowedMcpServersService, AllowedMcpServersService, InstantiationType.Delayed)
+
+class ChatLayoutService implements IChatLayoutService {
+  _serviceBrand: undefined
+
+  @Unsupported
+  get fontFamily(): IChatLayoutService['fontFamily'] {
+    return unsupported()
+  }
+
+  @Unsupported
+  get fontSize(): IChatLayoutService['fontSize'] {
+    return unsupported()
+  }
+}
+registerSingleton(IChatLayoutService, ChatLayoutService, InstantiationType.Delayed)
+
+class AiEditTelemetryService implements IAiEditTelemetryService {
+  _serviceBrand: undefined
+  @Unsupported
+  createSuggestionId: IAiEditTelemetryService['createSuggestionId'] = unsupported
+  handleCodeAccepted: IAiEditTelemetryService['handleCodeAccepted'] = () => {}
+}
+registerSingleton(IAiEditTelemetryService, AiEditTelemetryService, InstantiationType.Delayed)
+
+class InlineCompletionsUnificationService implements IInlineCompletionsUnificationService {
+  @Unsupported
+  get state(): IInlineCompletionsUnificationState {
+    return unsupported()
+  }
+  onDidStateChange: IInlineCompletionsUnificationService['onDidStateChange'] = Event.None
+  _serviceBrand: undefined
+}
+registerSingleton(
+  IInlineCompletionsUnificationService,
+  InlineCompletionsUnificationService,
+  InstantiationType.Delayed
+)
+
+class McpGalleryManifestService implements IMcpGalleryManifestService {
+  mcpGalleryManifestStatus = McpGalleryManifestStatus.Unavailable
+  onDidChangeMcpGalleryManifestStatus: IMcpGalleryManifestService['onDidChangeMcpGalleryManifestStatus'] =
+    Event.None
+  onDidChangeMcpGalleryManifest: IMcpGalleryManifestService['onDidChangeMcpGalleryManifest'] =
+    Event.None
+  getMcpGalleryManifest: IMcpGalleryManifestService['getMcpGalleryManifest'] = async () => null
+  _serviceBrand: undefined
+}
+registerSingleton(IMcpGalleryManifestService, McpGalleryManifestService, InstantiationType.Delayed)
+
+class ChatModeService implements IChatModeService {
+  _serviceBrand: undefined
+  onDidChangeChatModes: IChatModeService['onDidChangeChatModes'] = Event.None
+
+  @Unsupported
+  getModes: IChatModeService['getModes'] = unsupported
+
+  findModeById: IChatModeService['findModeById'] = () => undefined
+  findModeByName: IChatModeService['findModeByName'] = () => undefined
+}
+registerSingleton(IChatModeService, ChatModeService, InstantiationType.Delayed)

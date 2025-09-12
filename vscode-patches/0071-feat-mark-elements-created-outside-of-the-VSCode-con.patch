@@ -1,0 +1,47 @@
+From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
+From: =?UTF-8?q?Lo=C3=AFc=20Mangeonjean?= <loic@coderpad.io>
+Date: Tue, 5 Aug 2025 11:20:21 +0200
+Subject: [PATCH] feat: mark elements created outside of the VSCode container
+
+---
+ src/vs/base/browser/dom.ts                            | 1 +
+ src/vs/base/browser/domStylesheets.ts                 | 1 +
+ src/vs/workbench/contrib/chat/browser/chatSessions.ts | 1 +
+ 3 files changed, 3 insertions(+)
+
+diff --git a/src/vs/base/browser/dom.ts b/src/vs/base/browser/dom.ts
+index 007b2fa0e33..143b05ea0b5 100644
+--- a/src/vs/base/browser/dom.ts
++++ b/src/vs/base/browser/dom.ts
+@@ -1010,6 +1010,7 @@ export function createLinkElement(container: HTMLElement = mainWindow.document.h
+ 
+ function createHeadElement(tagName: string, container: HTMLElement = mainWindow.document.head): HTMLElement {
+ 	const element = document.createElement(tagName);
++	element.setAttribute('data-vscode', 'true');
+ 	container.appendChild(element);
+ 	return element;
+ }
+diff --git a/src/vs/base/browser/domStylesheets.ts b/src/vs/base/browser/domStylesheets.ts
+index 357dd598fb3..1ca4e8a7647 100644
+--- a/src/vs/base/browser/domStylesheets.ts
++++ b/src/vs/base/browser/domStylesheets.ts
+@@ -58,6 +58,7 @@ export function createStyleSheet(container: HTMLElement = mainWindow.document.he
+ 	const style = document.createElement('style');
+ 	style.type = 'text/css';
+ 	style.media = 'screen';
++	style.setAttribute('data-vscode', 'true');
+ 	beforeAppend?.(style);
+ 	container.appendChild(style);
+ 
+diff --git a/src/vs/workbench/contrib/chat/browser/chatSessions.ts b/src/vs/workbench/contrib/chat/browser/chatSessions.ts
+index 6d455fc5387..2ae1d8b2e27 100644
+--- a/src/vs/workbench/contrib/chat/browser/chatSessions.ts
++++ b/src/vs/workbench/contrib/chat/browser/chatSessions.ts
+@@ -981,6 +981,7 @@ class SessionsRenderer extends Disposable implements ITreeRenderer<IChatSessionI
+ 				existingStyle.textContent = css;
+ 			} else {
+ 				const styleElement = activeWindow.document.createElement('style');
++				styleElement.setAttribute('data-vscode', 'true');
+ 				styleElement.id = styleId;
+ 				styleElement.textContent = css;
+ 				activeWindow.document.head.appendChild(styleElement);

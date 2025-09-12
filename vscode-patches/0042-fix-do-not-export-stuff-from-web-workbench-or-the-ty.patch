@@ -1,0 +1,90 @@
+From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
+From: =?UTF-8?q?Lo=C3=AFc=20Mangeonjean?= <loic@coderpad.io>
+Date: Thu, 25 Apr 2024 18:13:11 +0200
+Subject: [PATCH] fix: do not export stuff from web workbench or the typescript
+ language service is trying to import from it
+
+---
+ .../workbench/workbench.web.main.internal.ts  | 58 +------------------
+ 1 file changed, 1 insertion(+), 57 deletions(-)
+
+diff --git a/src/vs/workbench/workbench.web.main.internal.ts b/src/vs/workbench/workbench.web.main.internal.ts
+index 011e1cbe462..50c6a1ee55d 100644
+--- a/src/vs/workbench/workbench.web.main.internal.ts
++++ b/src/vs/workbench/workbench.web.main.internal.ts
+@@ -80,7 +80,6 @@ import { IExtensionTipsService } from '../platform/extensionManagement/common/ex
+ import { ExtensionTipsService } from '../platform/extensionManagement/common/extensionTipsService.js';
+ import { IWorkbenchExtensionManagementService } from './services/extensionManagement/common/extensionManagement.js';
+ import { ExtensionManagementService } from './services/extensionManagement/common/extensionManagementService.js';
+-import { LogLevel } from '../platform/log/common/log.js';
+ import { UserDataSyncMachinesService, IUserDataSyncMachinesService } from '../platform/userDataSync/common/userDataSyncMachines.js';
+ import { IUserDataSyncStoreService, IUserDataSyncService, IUserDataAutoSyncService, IUserDataSyncLocalStoreService, IUserDataSyncResourceProviderService } from '../platform/userDataSync/common/userDataSync.js';
+ import { UserDataSyncStoreService } from '../platform/userDataSync/common/userDataSyncStoreService.js';
+@@ -185,66 +184,11 @@ import './contrib/processExplorer/browser/processExplorer.web.contribution.js';
+ //
+ // !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+ 
+-import { create, commands, env, window, workspace, logger } from './browser/web.factory.js';
+-import { Menu } from './browser/web.api.js';
+-import { URI } from '../base/common/uri.js';
+-import { Event, Emitter } from '../base/common/event.js';
+-import { Disposable } from '../base/common/lifecycle.js';
+-import { GroupOrientation } from './services/editor/common/editorGroupsService.js';
++import { create } from './browser/web.factory.js';
+ import { UserDataSyncResourceProviderService } from '../platform/userDataSync/common/userDataSyncResourceProvider.js';
+-import { RemoteAuthorityResolverError, RemoteAuthorityResolverErrorCode } from '../platform/remote/common/remoteAuthorityResolver.js';
+-
+-// TODO@esm remove me once we stop supporting our web-esm-bridge
+-if ((globalThis as any).__VSCODE_WEB_ESM_PROMISE) {
+-	const exports = {
+-
+-		// Factory
+-		create: create,
+-
+-		// Basic Types
+-		URI: URI,
+-		Event: Event,
+-		Emitter: Emitter,
+-		Disposable: Disposable,
+-		// GroupOrientation,
+-		LogLevel: LogLevel,
+-		RemoteAuthorityResolverError: RemoteAuthorityResolverError,
+-		RemoteAuthorityResolverErrorCode: RemoteAuthorityResolverErrorCode,
+-
+-		// Facade API
+-		env: env,
+-		window: window,
+-		workspace: workspace,
+-		commands: commands,
+-		logger: logger,
+-		Menu: Menu
+-	};
+-	(globalThis as any).__VSCODE_WEB_ESM_PROMISE(exports);
+-	delete (globalThis as any).__VSCODE_WEB_ESM_PROMISE;
+-}
+ 
+ export {
+-
+-	// Factory
+ 	create,
+-
+-	// Basic Types
+-	URI,
+-	Event,
+-	Emitter,
+-	Disposable,
+-	GroupOrientation,
+-	LogLevel,
+-	RemoteAuthorityResolverError,
+-	RemoteAuthorityResolverErrorCode,
+-
+-	// Facade API
+-	env,
+-	window,
+-	workspace,
+-	commands,
+-	logger,
+-	Menu
+ };
+ 
+ //#endregion

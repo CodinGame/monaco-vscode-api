@@ -1,0 +1,90 @@
+From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
+From: =?UTF-8?q?Lo=C3=AFc=20Mangeonjean?= <loic@coderpad.io>
+Date: Mon, 23 Jun 2025 18:27:34 +0200
+Subject: [PATCH] feat: allow to override product icon
+
+---
+ build/lib/stylelint/vscode-known-variables.json                | 3 ++-
+ src/vs/workbench/browser/parts/banner/media/bannerpart.css     | 2 +-
+ src/vs/workbench/browser/parts/titlebar/media/titlebarpart.css | 2 +-
+ .../contrib/update/browser/media/releasenoteseditor.css        | 2 +-
+ .../welcomeGettingStarted/browser/media/gettingStarted.css     | 2 +-
+ .../welcomeWalkthrough/browser/media/walkThroughPart.css       | 2 +-
+ 6 files changed, 7 insertions(+), 6 deletions(-)
+
+diff --git a/build/lib/stylelint/vscode-known-variables.json b/build/lib/stylelint/vscode-known-variables.json
+index ad3a5d26e92..6fd7ba541d9 100644
+--- a/build/lib/stylelint/vscode-known-variables.json
++++ b/build/lib/stylelint/vscode-known-variables.json
+@@ -978,6 +978,7 @@
+ 		"--vscode-action-item-auto-timeout",
+ 		"--monaco-editor-warning-decoration",
+ 		"--animation-opacity",
+-		"--chat-setup-dialog-glow-angle"
++		"--chat-setup-dialog-glow-angle",
++		"--product-icon"
+ 	]
+ }
+diff --git a/src/vs/workbench/browser/parts/banner/media/bannerpart.css b/src/vs/workbench/browser/parts/banner/media/bannerpart.css
+index a0de81f24eb..c71af404312 100644
+--- a/src/vs/workbench/browser/parts/banner/media/bannerpart.css
++++ b/src/vs/workbench/browser/parts/banner/media/bannerpart.css
+@@ -30,7 +30,7 @@
+ 	background-repeat: no-repeat;
+ 	background-position: center center;
+ 	background-size: 16px;
+-	background-image: url('../../../../browser/media/code-icon.svg');
++	background-image: var(--product-icon, url('../../../../browser/media/code-icon.svg'));
+ 	width: 16px;
+ 	padding: 0;
+ 	margin: 0 6px 0 10px;
+diff --git a/src/vs/workbench/browser/parts/titlebar/media/titlebarpart.css b/src/vs/workbench/browser/parts/titlebar/media/titlebarpart.css
+index 0246cd2ad10..19b79a508a7 100644
+--- a/src/vs/workbench/browser/parts/titlebar/media/titlebarpart.css
++++ b/src/vs/workbench/browser/parts/titlebar/media/titlebarpart.css
+@@ -269,7 +269,7 @@
+ }
+ 
+ .monaco-workbench .part.titlebar > .titlebar-container > .titlebar-left > .window-appicon:not(.codicon) {
+-	background-image: url('../../../media/code-icon.svg');
++	background-image: var(--product-icon, url('../../../media/code-icon.svg'));
+ 	background-repeat: no-repeat;
+ 	background-position: center center;
+ 	background-size: 16px;
+diff --git a/src/vs/workbench/contrib/update/browser/media/releasenoteseditor.css b/src/vs/workbench/contrib/update/browser/media/releasenoteseditor.css
+index 4210055bfeb..4f71897bb52 100644
+--- a/src/vs/workbench/contrib/update/browser/media/releasenoteseditor.css
++++ b/src/vs/workbench/contrib/update/browser/media/releasenoteseditor.css
+@@ -5,5 +5,5 @@
+ 
+ .file-icons-enabled .show-file-icons .webview-vs_code_release_notes-name-file-icon.file-icon::before {
+ 	content: ' ';
+-	background-image: url('../../../../browser/media/code-icon.svg');
++	background-image: var(--product-icon, url('../../../../browser/media/code-icon.svg'));
+ }
+diff --git a/src/vs/workbench/contrib/welcomeGettingStarted/browser/media/gettingStarted.css b/src/vs/workbench/contrib/welcomeGettingStarted/browser/media/gettingStarted.css
+index 692952e1dcb..2c9a29c7b9f 100644
+--- a/src/vs/workbench/contrib/welcomeGettingStarted/browser/media/gettingStarted.css
++++ b/src/vs/workbench/contrib/welcomeGettingStarted/browser/media/gettingStarted.css
+@@ -5,7 +5,7 @@
+ 
+ .file-icons-enabled .show-file-icons .vscode_getting_started_page-name-file-icon.file-icon::before {
+ 	content: ' ';
+-	background-image: url('../../../../browser/media/code-icon.svg');
++	background-image: var(--product-icon, url('../../../../browser/media/code-icon.svg'));
+ }
+ 
+ .monaco-workbench .part.editor > .content .gettingStartedContainer {
+diff --git a/src/vs/workbench/contrib/welcomeWalkthrough/browser/media/walkThroughPart.css b/src/vs/workbench/contrib/welcomeWalkthrough/browser/media/walkThroughPart.css
+index 7ab127eaab4..1008cf82b62 100644
+--- a/src/vs/workbench/contrib/welcomeWalkthrough/browser/media/walkThroughPart.css
++++ b/src/vs/workbench/contrib/welcomeWalkthrough/browser/media/walkThroughPart.css
+@@ -113,7 +113,7 @@
+ 
+ .file-icons-enabled .show-file-icons .vs_code_editor_walkthrough\.md-name-file-icon.md-ext-file-icon.ext-file-icon.markdown-lang-file-icon.file-icon::before {
+ 	content: ' ';
+-	background-image: url('../../../../browser/media/code-icon.svg');
++	background-image: var(--product-icon, url('../../../../browser/media/code-icon.svg'));
+ }
+ 
+ .monaco-workbench .part.editor > .content .walkThroughContent .mac-only,

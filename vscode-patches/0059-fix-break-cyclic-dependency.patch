@@ -1,0 +1,96 @@
+From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
+From: =?UTF-8?q?Lo=C3=AFc=20Mangeonjean?= <loic@coderpad.io>
+Date: Mon, 10 Mar 2025 12:28:15 +0100
+Subject: [PATCH] fix: break cyclic dependency
+
+---
+ .../contrib/tasks/browser/task.contribution.ts        |  3 ++-
+ .../contrib/tasks/browser/terminalTaskSystem.ts       |  3 ++-
+ src/vs/workbench/contrib/tasks/common/constants.ts    | 11 +++++++++++
+ src/vs/workbench/contrib/tasks/common/tasks.ts        |  9 +--------
+ 4 files changed, 16 insertions(+), 10 deletions(-)
+ create mode 100644 src/vs/workbench/contrib/tasks/common/constants.ts
+
+diff --git a/src/vs/workbench/contrib/tasks/browser/task.contribution.ts b/src/vs/workbench/contrib/tasks/browser/task.contribution.ts
+index d0eaf1bab34..ae89d912d87 100644
+--- a/src/vs/workbench/contrib/tasks/browser/task.contribution.ts
++++ b/src/vs/workbench/contrib/tasks/browser/task.contribution.ts
+@@ -20,7 +20,7 @@ import { StatusbarAlignment, IStatusbarService, IStatusbarEntryAccessor, IStatus
+ 
+ import { IOutputChannelRegistry, Extensions as OutputExt } from '../../../services/output/common/output.js';
+ 
+-import { ITaskEvent, TaskGroup, TaskSettingId, TASKS_CATEGORY, TASK_RUNNING_STATE, TASK_TERMINAL_ACTIVE, TaskEventKind, rerunTaskIcon, RerunForActiveTerminalCommandId, RerunAllRunningTasksCommandId } from '../common/tasks.js';
++import { ITaskEvent, TaskGroup, TaskSettingId, TASKS_CATEGORY, TASK_RUNNING_STATE, TASK_TERMINAL_ACTIVE, TaskEventKind } from '../common/tasks.js';
+ import { ITaskService, TaskCommandsRegistered, TaskExecutionSupportedContext } from '../common/taskService.js';
+ 
+ import { Extensions as WorkbenchExtensions, IWorkbenchContributionsRegistry, IWorkbenchContribution, WorkbenchPhase, registerWorkbenchContribution2 } from '../../../common/contributions.js';
+@@ -44,6 +44,7 @@ import { promiseWithResolvers } from '../../../../base/common/async.js';
+ import { TerminalContextKeys } from '../../terminal/common/terminalContextKey.js';
+ import { ServicesAccessor } from '../../../../editor/browser/editorExtensions.js';
+ import { ITerminalInstance, ITerminalService } from '../../terminal/browser/terminal.js';
++import { RerunForActiveTerminalCommandId, rerunTaskIcon, RerunAllRunningTasksCommandId } from '../common/constants.js';
+ 
+ const workbenchRegistry = Registry.as<IWorkbenchContributionsRegistry>(WorkbenchExtensions.Workbench);
+ workbenchRegistry.registerWorkbenchContribution(RunAutomaticTasks, LifecyclePhase.Eventually);
+diff --git a/src/vs/workbench/contrib/tasks/browser/terminalTaskSystem.ts b/src/vs/workbench/contrib/tasks/browser/terminalTaskSystem.ts
+index 198e433105a..0a9fd605205 100644
+--- a/src/vs/workbench/contrib/tasks/browser/terminalTaskSystem.ts
++++ b/src/vs/workbench/contrib/tasks/browser/terminalTaskSystem.ts
+@@ -40,7 +40,7 @@ import { TaskTerminalStatus } from './taskTerminalStatus.js';
+ import { ProblemCollectorEventKind, ProblemHandlingStrategy, StartStopProblemCollector, WatchingProblemCollector } from '../common/problemCollectors.js';
+ import { GroupKind } from '../common/taskConfiguration.js';
+ import { IResolveSet, IResolvedVariables, ITaskExecuteResult, ITaskResolver, ITaskSummary, ITaskSystem, ITaskSystemInfo, ITaskSystemInfoResolver, ITaskTerminateResponse, TaskError, TaskErrors, TaskExecuteKind, Triggers, VerifiedTask } from '../common/taskSystem.js';
+-import { CommandOptions, CommandString, ContributedTask, CustomTask, DependsOrder, ICommandConfiguration, IConfigurationProperties, IExtensionTaskSource, IPresentationOptions, IShellConfiguration, IShellQuotingOptions, ITaskEvent, InMemoryTask, PanelKind, RerunForActiveTerminalCommandId, RevealKind, RevealProblemKind, RuntimeType, ShellQuoting, TASK_TERMINAL_ACTIVE, Task, TaskEvent, TaskEventKind, TaskScope, TaskSourceKind, rerunTaskIcon } from '../common/tasks.js';
++import { CommandOptions, CommandString, ContributedTask, CustomTask, DependsOrder, ICommandConfiguration, IConfigurationProperties, IExtensionTaskSource, IPresentationOptions, IShellConfiguration, IShellQuotingOptions, ITaskEvent, InMemoryTask, PanelKind, RevealKind, RevealProblemKind, RuntimeType, ShellQuoting, TASK_TERMINAL_ACTIVE, Task, TaskEvent, TaskEventKind, TaskScope, TaskSourceKind } from '../common/tasks.js';
+ import { ITerminalGroupService, ITerminalInstance, ITerminalService } from '../../terminal/browser/terminal.js';
+ import { VSCodeOscProperty, VSCodeOscPt, VSCodeSequence } from '../../terminal/browser/terminalEscapeSequences.js';
+ import { TerminalProcessExtHostProxy } from '../../terminal/browser/terminalProcessExtHostProxy.js';
+@@ -50,6 +50,7 @@ import { IWorkbenchEnvironmentService } from '../../../services/environment/comm
+ import { IOutputService } from '../../../services/output/common/output.js';
+ import { IPaneCompositePartService } from '../../../services/panecomposite/browser/panecomposite.js';
+ import { IPathService } from '../../../services/path/common/pathService.js';
++import { RerunForActiveTerminalCommandId, rerunTaskIcon } from '../common/constants.js';
+ import { IContextKey, IContextKeyService } from '../../../../platform/contextkey/common/contextkey.js';
+ import { TaskProblemMonitor } from './taskProblemMonitor.js';
+ 
+diff --git a/src/vs/workbench/contrib/tasks/common/constants.ts b/src/vs/workbench/contrib/tasks/common/constants.ts
+new file mode 100644
+index 00000000000..7c92cd1b017
+--- /dev/null
++++ b/src/vs/workbench/contrib/tasks/common/constants.ts
+@@ -0,0 +1,11 @@
++/*---------------------------------------------------------------------------------------------
++ *  Copyright (c) Microsoft Corporation. All rights reserved.
++ *  Licensed under the MIT License. See License.txt in the project root for license information.
++ *--------------------------------------------------------------------------------------------*/
++import { Codicon } from '../../../../base/common/codicons.js';
++import * as nls from '../../../../nls.js';
++import { registerIcon } from '../../../../platform/theme/common/iconRegistry.js';
++
++export const rerunTaskIcon = registerIcon('rerun-task', Codicon.refresh, nls.localize('rerunTaskIcon', 'View icon of the rerun task.'));
++export const RerunForActiveTerminalCommandId = 'workbench.action.tasks.rerunForActiveTerminal';
++export const RerunAllRunningTasksCommandId = 'workbench.action.tasks.rerunAllRunningTasks';
+diff --git a/src/vs/workbench/contrib/tasks/common/tasks.ts b/src/vs/workbench/contrib/tasks/common/tasks.ts
+index 81877bc3f4a..be644340a29 100644
+--- a/src/vs/workbench/contrib/tasks/common/tasks.ts
++++ b/src/vs/workbench/contrib/tasks/common/tasks.ts
+@@ -17,10 +17,7 @@ import { TaskDefinitionRegistry } from './taskDefinitionRegistry.js';
+ import { IExtensionDescription } from '../../../../platform/extensions/common/extensions.js';
+ import { ConfigurationTarget } from '../../../../platform/configuration/common/configuration.js';
+ import { TerminalExitReason } from '../../../../platform/terminal/common/terminal.js';
+-import { Codicon } from '../../../../base/common/codicons.js';
+-import { registerIcon } from '../../../../platform/theme/common/iconRegistry.js';
+-
+-
++export * from './constants.js';
+ 
+ export const USER_TASKS_GROUP_KEY = 'settings';
+ 
+@@ -1391,7 +1388,3 @@ export namespace TaskDefinition {
+ 		return KeyedTaskIdentifier.create(literal);
+ 	}
+ }
+-
+-export const rerunTaskIcon = registerIcon('rerun-task', Codicon.refresh, nls.localize('rerunTaskIcon', 'View icon of the rerun task.'));
+-export const RerunForActiveTerminalCommandId = 'workbench.action.tasks.rerunForActiveTerminal';
+-export const RerunAllRunningTasksCommandId = 'workbench.action.tasks.rerunAllRunningTasks';

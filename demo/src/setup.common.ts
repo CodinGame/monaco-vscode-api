@@ -80,7 +80,6 @@ import getTreeSitterServiceOverride from '@codingame/monaco-vscode-treesitter-se
 import getTelemetryServiceOverride from '@codingame/monaco-vscode-telemetry-service-override'
 import getMcpServiceOverride from '@codingame/monaco-vscode-mcp-service-override'
 import getProcessControllerServiceOverride from '@codingame/monaco-vscode-process-explorer-service-override'
-import getExperimentationServiceOverride from '@codingame/monaco-vscode-experimentation-service-override'
 import getImageResizeServiceOverride from '@codingame/monaco-vscode-image-resize-service-override'
 import getAssignmentServiceOverride from '@codingame/monaco-vscode-assignment-service-override'
 import { EnvironmentOverride } from '@codingame/monaco-vscode-api/workbench'
@@ -549,7 +548,6 @@ export const commonServices: IEditorOverrideServices = {
   ...getTelemetryServiceOverride(),
   ...getMcpServiceOverride(),
   ...getProcessControllerServiceOverride(),
-  ...getExperimentationServiceOverride(),
   ...getImageResizeServiceOverride(),
   ...getAssignmentServiceOverride({
     treatments: {

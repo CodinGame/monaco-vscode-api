@@ -634,5 +634,10 @@ export { ITreeSitterLibraryService } from 'vs/editor/common/services/treeSitter/
 export { IChatAttachmentResolveService } from 'vs/workbench/contrib/chat/browser/chatAttachmentResolveService.service'
 export { IRemoteCodingAgentsService } from 'vs/workbench/contrib/remoteCodingAgents/common/remoteCodingAgentsService.service'
 export { IAuthenticationQueryService } from 'vs/workbench/services/authentication/common/authenticationQuery.service'
-export { ICoreExperimentationService } from 'vs/workbench/services/coreExperimentation/common/coreExperimentationService.service'
 export { IWorkbenchMcpManagementService } from 'vs/workbench/services/mcp/common/mcpWorkbenchManagementService.service'
+
+export { IChatLayoutService } from 'vs/workbench/contrib/chat/common/chatLayoutService.service'
+export { IAiEditTelemetryService } from 'vs/workbench/contrib/editTelemetry/browser/telemetry/aiEditTelemetry/aiEditTelemetryService.service'
+export { IInlineCompletionsUnificationService } from 'vs/workbench/services/inlineCompletions/common/inlineCompletionsUnification.service'
+export { IMcpGalleryManifestService } from 'vs/platform/mcp/common/mcpGalleryManifest.service'
+export { IDataChannelService } from 'vs/platform/dataChannel/common/dataChannel.service'

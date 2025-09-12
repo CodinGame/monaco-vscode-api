@@ -1,3 +1,4 @@
+import { Event } from 'vs/base/common/event'
 import { type IEditorOverrideServices } from 'vs/editor/standalone/browser/standaloneServices'
 import { IConfigurationService } from 'vs/platform/configuration/common/configuration.service'
 import { IEnvironmentService } from 'vs/platform/environment/common/environment.service'
@@ -20,6 +21,7 @@ export interface Treatments {
 class AssignmentService implements IWorkbenchAssignmentService {
   _serviceBrand: undefined
 
+  onDidRefetchAssignments = Event.None
   private experimentsEnabled: boolean
   constructor(
     private experiments: string[],

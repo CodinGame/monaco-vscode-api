@@ -29,6 +29,8 @@ import { McpElicitationService } from 'vs/workbench/contrib/mcp/browser/mcpElici
 import { IWorkbenchMcpManagementService } from 'vs/workbench/services/mcp/common/mcpWorkbenchManagementService.service'
 import { WorkbenchMcpManagementService } from 'vs/workbench/services/mcp/browser/mcpWorkbenchManagementService'
 import { AllowedMcpServersService } from 'vs/platform/mcp/common/allowedMcpServersService'
+import { IMcpGalleryManifestService } from 'vs/platform/mcp/common/mcpGalleryManifest.service'
+import { WebMcpGalleryManifestService } from 'vs/workbench/services/mcp/browser/mcpGalleryManifestService'
 
 export default function getServiceOverride(): IEditorOverrideServices {
   return {
@@ -59,6 +61,11 @@ export default function getServiceOverride(): IEditorOverrideServices {
       [],
       true
     ),
-    [IAllowedMcpServersService.toString()]: new SyncDescriptor(AllowedMcpServersService, [], true)
+    [IAllowedMcpServersService.toString()]: new SyncDescriptor(AllowedMcpServersService, [], true),
+    [IMcpGalleryManifestService.toString()]: new SyncDescriptor(
+      WebMcpGalleryManifestService,
+      [],
+      true
+    )
   }
 }
