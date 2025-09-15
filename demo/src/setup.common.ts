@@ -549,9 +549,5 @@ export const commonServices: IEditorOverrideServices = {
   ...getMcpServiceOverride(),
   ...getProcessControllerServiceOverride(),
   ...getImageResizeServiceOverride(),
-  ...getAssignmentServiceOverride({
-    treatments: {
-      'extensions.gallery.useResourceApi': 'unpkg' // Open vsix only supports the unpkg api
-    }
-  })
+  ...getAssignmentServiceOverride()
 }
