@@ -1984,11 +1984,11 @@ class ExtensionsScannerService implements IExtensionsScannerService {
   }
   onDidChangeCache: IExtensionsScannerService['onDidChangeCache'] = Event.None
   @Unsupported
-  scanAllExtensions: IExtensionsScannerService['scanAllExtensions'] = unsupported
+  scanAllExtensions: IExtensionsScannerService['scanAllExtensions'] = async () => []
   @Unsupported
-  scanSystemExtensions: IExtensionsScannerService['scanSystemExtensions'] = unsupported
+  scanSystemExtensions: IExtensionsScannerService['scanSystemExtensions'] = async () => []
   @Unsupported
-  scanUserExtensions: IExtensionsScannerService['scanUserExtensions'] = unsupported
+  scanUserExtensions: IExtensionsScannerService['scanUserExtensions'] = async () => []
   @Unsupported
   scanExtensionsUnderDevelopment: IExtensionsScannerService['scanExtensionsUnderDevelopment'] =
     unsupported
