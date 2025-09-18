@@ -115,7 +115,7 @@ export async function startup(instantiationService: IInstantiationService): Prom
   })
 }
 
-let servicesInitialized = false
+export let servicesInitialized = false
 StandaloneServices.withServices(() => {
   servicesInitialized = true
   return Disposable.None
