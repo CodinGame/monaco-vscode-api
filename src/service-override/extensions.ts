@@ -230,6 +230,7 @@ export class ExtensionServiceOverride extends ExtensionService implements IExten
       logService
     )
     super(
+      { hasLocalProcess: true, allowRemoteExtensionsInLocalWebWorker: true },
       extensionsProposedApi,
       extensionHostFactory,
       new LocalBrowserExtensionHostKindPicker(
