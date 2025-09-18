@@ -60,7 +60,15 @@ import { changeUrlDomain } from './tools/url.js'
 import { CustomSchemas } from './files.js'
 import type { LocalExtensionHost } from '../localExtensionHost.js'
 import { registerAssets } from '../assets.js'
-import { getForcedExtensionHostKind } from '../extensions.js'
+import { getBuiltinExtensions, getForcedExtensionHostKind } from '../extensions.js'
+import { WebExtensionsScannerService } from 'vs/workbench/services/extensionManagement/browser/webExtensionsScannerService'
+import { IBuiltinExtensionsScannerService } from 'vs/platform/extensions/common/extensions.service.js'
+import {
+  ExtensionManifestTranslator,
+  type NlsConfiguration
+} from 'vs/platform/extensionManagement/common/extensionsScannerService.js'
+import * as platform from 'vs/base/common/platform'
+import { getBuiltInExtensionTranslationsUris } from '../l10n.js'
 import 'vs/workbench/api/browser/extensionHost.contribution'
 
 export interface WorkerConfig {
@@ -180,10 +188,6 @@ class LocalBrowserExtensionHostKindPicker extends BrowserExtensionHostKindPicker
   }
 }
 
-export interface IExtensionWithExtHostKind extends IExtension {
-  extHostKind?: ExtensionHostKind
-}
-
 export class ExtensionServiceOverride extends ExtensionService implements IExtensionService {
   constructor(
     workerConfig: WorkerConfig,
@@ -230,6 +234,7 @@ export class ExtensionServiceOverride extends ExtensionService implements IExten
       logService
     )
     super(
+      { hasLocalProcess: true, allowRemoteExtensionsInLocalWebWorker: true },
       extensionsProposedApi,
       extensionHostFactory,
       new LocalBrowserExtensionHostKindPicker(
@@ -267,10 +272,7 @@ export class ExtensionServiceOverride extends ExtensionService implements IExten
     )
   }
 
-  public async deltaExtensions(
-    toAdd: IExtensionWithExtHostKind[],
-    toRemove: IExtension[]
-  ): Promise<void> {
+  public async deltaExtensions(toAdd: IExtension[], toRemove: IExtension[]): Promise<void> {
     await this._handleDeltaExtensions(new DeltaExtensionsQueueItem(toAdd, toRemove))
   }
 }
@@ -288,6 +290,41 @@ class ExtensionResourceLoaderServiceOverride extends ExtensionResourceLoaderServ
       return result.value.toString()
     }
     return await super.readExtensionResource(uri)
+  }
+}
+
+export class CustomBuiltinExtensionsScannerService
+  extends ExtensionManifestTranslator
+  implements IBuiltinExtensionsScannerService
+{
+  declare readonly _serviceBrand: undefined
+
+  private readonly builtinExtensionsPromises: Promise<IExtension>[] = []
+
+  constructor(
+    @IFileService fileService: IFileService,
+    @IExtensionResourceLoaderService
+    extensionResourceLoaderService: IExtensionResourceLoaderService,
+    @ILogService logService: ILogService
+  ) {
+    super(extensionResourceLoaderService, fileService, logService)
+    const nlsConfiguration: NlsConfiguration = {
+      devMode: false,
+      language: platform.language,
+      pseudo: platform.language === 'pseudo',
+      translations: getBuiltInExtensionTranslationsUris(platform.language) ?? {}
+    }
+
+    this.builtinExtensionsPromises = getBuiltinExtensions().map(async (e) => {
+      return {
+        ...e,
+        manifest: await this.translateManifest(e.location, e.manifest, nlsConfiguration)
+      }
+    })
+  }
+
+  async scanBuiltinExtensions(): Promise<IExtension[]> {
+    return [...(await Promise.all(this.builtinExtensionsPromises))]
   }
 }
 
@@ -314,7 +351,10 @@ export default function getServiceOverride(
     workerConfig != null
       ? {
           ...workerConfig,
-          url: changeUrlDomain(new URL(workerConfig.url, globalThis.location?.href ?? import.meta.url), iframeAlternateDomain)
+          url: changeUrlDomain(
+            new URL(workerConfig.url, globalThis.location?.href ?? import.meta.url),
+            iframeAlternateDomain
+          )
         }
       : undefined
 
@@ -334,7 +374,17 @@ export default function getServiceOverride(
       [],
       true
     ),
-    [IExtensionBisectService.toString()]: new SyncDescriptor(ExtensionBisectService, [], true)
+    [IExtensionBisectService.toString()]: new SyncDescriptor(ExtensionBisectService, [], true),
+    [IWebExtensionsScannerService.toString()]: new SyncDescriptor(
+      WebExtensionsScannerService,
+      [],
+      true
+    ),
+    [IBuiltinExtensionsScannerService.toString()]: new SyncDescriptor(
+      CustomBuiltinExtensionsScannerService,
+      [],
+      true
+    )
   }
 }
 

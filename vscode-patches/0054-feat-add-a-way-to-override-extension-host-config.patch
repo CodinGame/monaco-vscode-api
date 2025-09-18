@@ -11,7 +11,7 @@ Subject: [PATCH] feat: add a way to override extension host config
  4 files changed, 27 insertions(+), 10 deletions(-)
 
 diff --git a/src/vs/workbench/services/extensions/browser/extensionService.ts b/src/vs/workbench/services/extensions/browser/extensionService.ts
-index cea72fd2225..c2aa0d65072 100644
+index 88e8ff6d871..7a0f140ae36 100644
 --- a/src/vs/workbench/services/extensions/browser/extensionService.ts
 +++ b/src/vs/workbench/services/extensions/browser/extensionService.ts
 @@ -4,7 +4,7 @@
@@ -23,7 +23,7 @@ index cea72fd2225..c2aa0d65072 100644
  import { IConfigurationService } from '../../../../platform/configuration/common/configuration.js';
  import { IDialogService } from '../../../../platform/dialogs/common/dialogs.js';
  import { ExtensionKind } from '../../../../platform/environment/common/environment.js';
-@@ -235,7 +235,14 @@ export class BrowserExtensionHostFactory implements IExtensionHostFactory {
+@@ -236,7 +236,14 @@ export class BrowserExtensionHostFactory implements IExtensionHostFactory {
  						? ExtensionHostStartup.EagerManualStart
  						: ExtensionHostStartup.EagerAutoStart
  				);

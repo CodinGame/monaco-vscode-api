@@ -1,64 +1,59 @@
 import type { IEditorOverrideServices } from 'vs/editor/standalone/browser/standaloneServices'
-import { SyncDescriptor } from 'vs/platform/instantiation/common/descriptors'
+import { AllowedExtensionsService } from 'vs/platform/extensionManagement/common/allowedExtensionsService'
+import { GlobalExtensionEnablementService } from 'vs/platform/extensionManagement/common/extensionEnablementService'
+import { IExtensionGalleryManifestService } from 'vs/platform/extensionManagement/common/extensionGalleryManifest.service.js'
 import {
   IAllowedExtensionsService,
   IExtensionGalleryService,
   IExtensionTipsService,
   IGlobalExtensionEnablementService
 } from 'vs/platform/extensionManagement/common/extensionManagement.service'
-import { GlobalExtensionEnablementService } from 'vs/platform/extensionManagement/common/extensionEnablementService'
+import { IExtensionsProfileScannerService } from 'vs/platform/extensionManagement/common/extensionsProfileScannerService.service'
+import { IExtensionsScannerService } from 'vs/platform/extensionManagement/common/extensionsScannerService.service'
+import { ExtensionTipsService } from 'vs/platform/extensionManagement/common/extensionTipsService'
+import { IExtensionRecommendationNotificationService } from 'vs/platform/extensionRecommendations/common/extensionRecommendations.service'
+import { SyncDescriptor } from 'vs/platform/instantiation/common/descriptors'
+import { IInstantiationService } from 'vs/platform/instantiation/common/instantiation'
+import { ILabelService } from 'vs/platform/label/common/label.service'
+import { getLocale } from 'vs/platform/languagePacks/common/languagePacks'
+import { IgnoredExtensionsManagementService } from 'vs/platform/userDataSync/common/ignoredExtensions'
+import { IIgnoredExtensionsManagementService } from 'vs/platform/userDataSync/common/ignoredExtensions.service'
+import { ExtensionRecommendationNotificationService } from 'vs/workbench/contrib/extensions/browser/extensionRecommendationNotificationService'
+import { ExtensionRecommendationsService } from 'vs/workbench/contrib/extensions/browser/extensionRecommendationsService'
+import { ExtensionsWorkbenchService } from 'vs/workbench/contrib/extensions/browser/extensionsWorkbenchService'
 import type { IExtension as IContribExtension } from 'vs/workbench/contrib/extensions/common/extensions'
 import { IExtensionsWorkbenchService } from 'vs/workbench/contrib/extensions/common/extensions.service'
-import { getLocale } from 'vs/platform/languagePacks/common/languagePacks'
-import { ExtensionsWorkbenchService } from 'vs/workbench/contrib/extensions/browser/extensionsWorkbenchService'
+import { ExtensionEnablementService } from 'vs/workbench/services/extensionManagement/browser/extensionEnablementService'
+import { WebExtensionGalleryManifestService } from 'vs/workbench/services/extensionManagement/browser/extensionGalleryManifestService'
+import { ExtensionsProfileScannerService } from 'vs/workbench/services/extensionManagement/browser/extensionsProfileScannerService'
+import { IExtensionFeaturesManagementService } from 'vs/workbench/services/extensionManagement/common/extensionFeatures.service'
+import { ExtensionFeaturesManagementService } from 'vs/workbench/services/extensionManagement/common/extensionFeaturesManagemetService'
+import { WorkbenchExtensionGalleryService } from 'vs/workbench/services/extensionManagement/common/extensionGalleryService'
 import {
   IExtensionManagementServerService,
-  IWebExtensionsScannerService,
   IWorkbenchExtensionEnablementService,
   IWorkbenchExtensionManagementService
 } from 'vs/workbench/services/extensionManagement/common/extensionManagement.service'
 import { ExtensionManagementServerService } from 'vs/workbench/services/extensionManagement/common/extensionManagementServerService'
+import { ExtensionManagementService } from 'vs/workbench/services/extensionManagement/common/extensionManagementService'
+import { ExtensionIgnoredRecommendationsService } from 'vs/workbench/services/extensionRecommendations/common/extensionIgnoredRecommendationsService'
 import {
   IExtensionIgnoredRecommendationsService,
   IExtensionRecommendationsService
 } from 'vs/workbench/services/extensionRecommendations/common/extensionRecommendations.service'
-import { ExtensionRecommendationsService } from 'vs/workbench/contrib/extensions/browser/extensionRecommendationsService'
-import { WebExtensionsScannerService } from 'vs/workbench/services/extensionManagement/browser/webExtensionsScannerService'
-import { IExtensionRecommendationNotificationService } from 'vs/platform/extensionRecommendations/common/extensionRecommendations.service'
-import { IgnoredExtensionsManagementService } from 'vs/platform/userDataSync/common/ignoredExtensions'
-import { IIgnoredExtensionsManagementService } from 'vs/platform/userDataSync/common/ignoredExtensions.service'
-import { ExtensionManifestPropertiesService } from 'vs/workbench/services/extensions/common/extensionManifestPropertiesService'
-import { IExtensionManifestPropertiesService } from 'vs/workbench/services/extensions/common/extensionManifestPropertiesService.service'
-import type { IExtension } from 'vs/platform/extensions/common/extensions'
-import { IBuiltinExtensionsScannerService } from 'vs/platform/extensions/common/extensions.service'
-import { ExtensionIgnoredRecommendationsService } from 'vs/workbench/services/extensionRecommendations/common/extensionIgnoredRecommendationsService'
 import { WorkspaceExtensionsConfigService } from 'vs/workbench/services/extensionRecommendations/common/workspaceExtensionsConfig'
 import { IWorkspaceExtensionsConfigService } from 'vs/workbench/services/extensionRecommendations/common/workspaceExtensionsConfig.service'
-import { ExtensionRecommendationNotificationService } from 'vs/workbench/contrib/extensions/browser/extensionRecommendationNotificationService'
-import { ExtensionTipsService } from 'vs/platform/extensionManagement/common/extensionTipsService'
-import { ExtensionManagementService } from 'vs/workbench/services/extensionManagement/common/extensionManagementService'
-import { RemoteUserDataProfilesService } from 'vs/workbench/services/userDataProfile/common/remoteUserDataProfiles'
-import { IRemoteUserDataProfilesService } from 'vs/workbench/services/userDataProfile/common/remoteUserDataProfiles.service'
-import { ExtensionEnablementService } from 'vs/workbench/services/extensionManagement/browser/extensionEnablementService'
+import { ExtensionsScannerService } from 'vs/workbench/services/extensions/browser/extensionsScannerService'
 import { ExtensionUrlHandler } from 'vs/workbench/services/extensions/browser/extensionUrlHandler'
 import { IExtensionUrlHandler } from 'vs/workbench/services/extensions/browser/extensionUrlHandler.service'
+import { ExtensionManifestPropertiesService } from 'vs/workbench/services/extensions/common/extensionManifestPropertiesService'
+import { IExtensionManifestPropertiesService } from 'vs/workbench/services/extensions/common/extensionManifestPropertiesService.service'
 import { IRemoteAgentService } from 'vs/workbench/services/remote/common/remoteAgentService.service'
-import { IInstantiationService } from 'vs/platform/instantiation/common/instantiation'
-import { IExtensionsScannerService } from 'vs/platform/extensionManagement/common/extensionsScannerService.service'
-import { ExtensionsScannerService } from 'vs/workbench/services/extensions/browser/extensionsScannerService'
-import { ExtensionsProfileScannerService } from 'vs/workbench/services/extensionManagement/browser/extensionsProfileScannerService'
-import { IExtensionsProfileScannerService } from 'vs/platform/extensionManagement/common/extensionsProfileScannerService.service'
-import { ILabelService } from 'vs/platform/label/common/label.service'
-import { IExtensionFeaturesManagementService } from 'vs/workbench/services/extensionManagement/common/extensionFeatures.service'
-import { ExtensionFeaturesManagementService } from 'vs/workbench/services/extensionManagement/common/extensionFeaturesManagemetService'
-import { AllowedExtensionsService } from 'vs/platform/extensionManagement/common/allowedExtensionsService'
+import { RemoteUserDataProfilesService } from 'vs/workbench/services/userDataProfile/common/remoteUserDataProfiles'
+import { IRemoteUserDataProfilesService } from 'vs/workbench/services/userDataProfile/common/remoteUserDataProfiles.service'
 import { registerAssets } from '../assets.js'
-import { getExtensionManifests } from '../extensions.js'
 import { isLocaleAvailable } from '../l10n.js'
 import { unsupported } from '../tools'
-import { IExtensionGalleryManifestService } from 'vs/platform/extensionManagement/common/extensionGalleryManifest.service.js'
-import { WebExtensionGalleryManifestService } from 'vs/workbench/services/extensionManagement/browser/extensionGalleryManifestService'
-import { WorkbenchExtensionGalleryService } from 'vs/workbench/services/extensionManagement/common/extensionGalleryService'
 import 'vs/workbench/contrib/extensions/browser/extensions.contribution'
 import 'vs/workbench/contrib/extensions/browser/extensions.web.contribution'
 
@@ -103,14 +98,6 @@ class ExtensionManagementServerServiceOverride extends ExtensionManagementServer
       labelService,
       instantiationService
     )
-  }
-}
-
-class CustomBuiltinExtensionsScannerService implements IBuiltinExtensionsScannerService {
-  _serviceBrand: undefined
-
-  async scanBuiltinExtensions(): Promise<IExtension[]> {
-    return getExtensionManifests()
   }
 }
 
@@ -166,11 +153,6 @@ export default function getServiceOverride(
       [],
       true
     ),
-    [IWebExtensionsScannerService.toString()]: new SyncDescriptor(
-      WebExtensionsScannerService,
-      [],
-      true
-    ),
     [IExtensionIgnoredRecommendationsService.toString()]: new SyncDescriptor(
       ExtensionIgnoredRecommendationsService,
       [],
@@ -188,11 +170,6 @@ export default function getServiceOverride(
     ),
     [IWorkbenchExtensionManagementService.toString()]: new SyncDescriptor(
       ExtensionManagementService,
-      [],
-      true
-    ),
-    [IBuiltinExtensionsScannerService.toString()]: new SyncDescriptor(
-      CustomBuiltinExtensionsScannerService,
       [],
       true
     ),

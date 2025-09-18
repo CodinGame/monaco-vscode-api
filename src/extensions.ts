@@ -32,19 +32,17 @@ import {
   type NlsConfiguration
 } from 'vs/platform/extensionManagement/common/extensionsScannerService'
 import * as platform from 'vs/base/common/platform'
-import {
-  type IExtensionWithExtHostKind,
-  ExtensionServiceOverride
-} from './service-override/extensions'
+import { ExtensionServiceOverride } from './service-override/extensions'
 import {
   CustomSchemas,
   type ExtensionFileMetadata,
   RegisteredUriFile,
   registerExtensionFile
 } from './service-override/files'
-import { waitServicesReady } from './lifecycle'
+import { servicesInitialized, waitServicesReady } from './lifecycle'
 import { throttle } from './tools'
 import { getBuiltInExtensionTranslationsUris, getLocalizationManifest } from './l10n'
+import { toExtensionDescription } from 'vs/workbench/services/extensions/common/extensions'
 
 export type ApiFactory = (extensionId?: string) => Promise<typeof vscode>
 
@@ -109,7 +107,7 @@ function registerExtensionFileUrl(
 }
 
 interface ExtensionDelta {
-  toAdd: IExtensionWithExtHostKind[]
+  toAdd: IExtension[]
   toRemove: IExtension[]
 }
 const deltaExtensions = throttle(
@@ -140,9 +138,9 @@ export async function registerRemoteExtension(
 }
 
 const forcedExtensionHostKinds = new Map<string, ExtensionHostKind>()
-const extensions: IExtension[] = []
-export function getExtensionManifests(): IExtension[] {
-  return extensions
+const builtinExtensions: IExtension[] = []
+export function getBuiltinExtensions(): IExtension[] {
+  return builtinExtensions
 }
 export function getForcedExtensionHostKind(id: string): ExtensionHostKind | undefined {
   return forcedExtensionHostKinds.get(id)
@@ -176,59 +174,67 @@ export function registerExtension(
   const id = getExtensionId(manifest.publisher, manifest.name)
   const location = URI.from({ scheme: CustomSchemas.extensionFile, authority: id, path })
 
-  const addExtensionPromise = (async () => {
-    await waitServicesReady()
-    const remoteAuthority = StandaloneServices.get(IWorkbenchEnvironmentService).remoteAuthority
-    let realLocation = location
-    if (extHostKind === ExtensionHostKind.Remote) {
-      realLocation = URI.from({ scheme: Schemas.vscodeRemote, authority: remoteAuthority, path })
-    }
+  let addExtensionPromise = waitServicesReady()
 
-    const instantiationService = StandaloneServices.get(IInstantiationService)
-    const translator = instantiationService.createInstance(ExtensionManifestTranslator)
+  // First register the extension in the builtinExtensions that the BuiltinExtensionsScannerService will try to load
+  const extension: IExtension = {
+    manifest,
+    type: system ? ExtensionType.System : ExtensionType.User,
+    isBuiltin: true,
+    identifier: { id },
+    location,
+    targetPlatform: TargetPlatform.WEB,
+    isValid: true,
+    validations: [],
+    readmeUrl: readmePath != null ? URI.joinPath(location, readmePath) : undefined,
+    changelogUrl: changelogPath != null ? URI.joinPath(location, changelogPath) : undefined,
+    preRelease: false
+  }
 
-    const nlsConfiguration: NlsConfiguration = {
-      devMode: false,
-      language: platform.language,
-      pseudo: platform.language === 'pseudo',
-      translations: getBuiltInExtensionTranslationsUris(platform.language) ?? {}
-    }
-    const localizedManifest = await translator.translateManifest(
-      realLocation,
-      manifest,
-      nlsConfiguration
-    )
+  if (extHostKind != null) {
+    forcedExtensionHostKinds.set(id, extHostKind)
+  }
 
-    const extension: IExtensionWithExtHostKind = {
-      manifest: localizedManifest,
-      type: system ? ExtensionType.System : ExtensionType.User,
-      isBuiltin: true,
-      identifier: { id },
-      location: realLocation,
-      targetPlatform: TargetPlatform.WEB,
-      isValid: true,
-      validations: [],
-      extHostKind,
-      readmeUrl: readmePath != null ? URI.joinPath(realLocation, readmePath) : undefined,
-      changelogUrl: changelogPath != null ? URI.joinPath(realLocation, changelogPath) : undefined,
-      preRelease: false
-    }
+  if (!servicesInitialized && extHostKind !== ExtensionHostKind.Remote) {
+    builtinExtensions.push(extension)
+  } else {
+    // If the services were already initialized, BuiltinExtensionsScannerService won't load them, so do it outselves
+    addExtensionPromise = addExtensionPromise.then(async () => {
+      // Otherwise, register them now
+      const instantiationService = StandaloneServices.get(IInstantiationService)
+      const extensionEnablementService = StandaloneServices.get(
+        IWorkbenchExtensionEnablementService
+      )
+      const extensionService = StandaloneServices.get(IExtensionService)
+      if (
+        extensionEnablementService.isEnabled(extension) &&
+        extensionService.canAddExtension(toExtensionDescription(extension, false))
+      ) {
+        const remoteAuthority = StandaloneServices.get(IWorkbenchEnvironmentService).remoteAuthority
+        let realLocation = location
+        if (extHostKind === ExtensionHostKind.Remote) {
+          realLocation = URI.from({
+            scheme: Schemas.vscodeRemote,
+            authority: remoteAuthority,
+            path
+          })
+        }
 
-    if (extHostKind != null) {
-      forcedExtensionHostKinds.set(id, extHostKind)
-    }
-    if (extHostKind !== ExtensionHostKind.Remote) {
-      extensions.push(extension)
-    }
-
-    // Wait for extension to be enabled
-    const extensionEnablementService = StandaloneServices.get(IWorkbenchExtensionEnablementService)
-    if (extensionEnablementService.isEnabled(extension)) {
-      await deltaExtensions({ toAdd: [extension], toRemove: [] })
-    }
-
-    return extension
-  })()
+        const translator = instantiationService.createInstance(ExtensionManifestTranslator)
+        const nlsConfiguration: NlsConfiguration = {
+          devMode: false,
+          language: platform.language,
+          pseudo: platform.language === 'pseudo',
+          translations: getBuiltInExtensionTranslationsUris(platform.language) ?? {}
+        }
+        const localizedExtension: IExtension = {
+          ...extension,
+          manifest: await translator.translateManifest(realLocation, manifest, nlsConfiguration)
+        }
+        await deltaExtensions({ toAdd: [localizedExtension], toRemove: [] })
+      }
+    })
+  }
 
   let api: RegisterExtensionResult = {
     id,
@@ -240,15 +246,15 @@ export function registerExtension(
       const extensionEnablementService = StandaloneServices.get(
         IWorkbenchExtensionEnablementService
       )
-      const extension = await addExtensionPromise
+      await addExtensionPromise
       return extensionEnablementService.isEnabled(extension)
     },
     async dispose() {
-      const extension = await addExtensionPromise
+      await addExtensionPromise
 
-      const index = extensions.indexOf(extension)
+      const index = builtinExtensions.indexOf(extension)
       if (index >= 0) {
-        extensions.splice(extensions.indexOf(extension), 1)
+        builtinExtensions.splice(builtinExtensions.indexOf(extension), 1)
       }
       forcedExtensionHostKinds.delete(id)
 

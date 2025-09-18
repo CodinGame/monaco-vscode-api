@@ -1,0 +1,251 @@
+From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
+From: =?UTF-8?q?Lo=C3=AFc=20Mangeonjean?= <loic@coderpad.io>
+Date: Wed, 17 Sep 2025 11:51:26 +0200
+Subject: [PATCH] fix: properly use IExtensionResourceLoaderService instead of
+ fileService directly
+
+---
+ .../common/extensionsScannerService.ts        | 25 ++++++++++++-------
+ .../node/extensionsScannerService.ts          |  4 ++-
+ .../server/node/extensionsScannerService.ts   |  4 ++-
+ .../browser/extensionsScannerService.ts       |  4 ++-
+ .../extensionsScannerService.ts               |  4 ++-
+ 5 files changed, 28 insertions(+), 13 deletions(-)
+
+diff --git a/src/vs/platform/extensionManagement/common/extensionsScannerService.ts b/src/vs/platform/extensionManagement/common/extensionsScannerService.ts
+index 5d7426ab0db..00cca7d976b 100644
+--- a/src/vs/platform/extensionManagement/common/extensionsScannerService.ts
++++ b/src/vs/platform/extensionManagement/common/extensionsScannerService.ts
+@@ -34,6 +34,7 @@ import { ExtensionsProfileScanningError, ExtensionsProfileScanningErrorCode, IEx
+ import { IUserDataProfile, IUserDataProfilesService } from '../../userDataProfile/common/userDataProfile.js';
+ import { IUriIdentityService } from '../../uriIdentity/common/uriIdentity.js';
+ import { localizeManifest } from './extensionNls.js';
++import { IExtensionResourceLoaderService } from '../../extensionResourceLoader/common/extensionResourceLoader.js';
+ 
+ export type ManifestMetadata = Partial<{
+ 	targetPlatform: TargetPlatform;
+@@ -166,6 +167,7 @@ export abstract class AbstractExtensionsScannerService extends Disposable implem
+ 		currentProfile: IUserDataProfile,
+ 		@IUserDataProfilesService private readonly userDataProfilesService: IUserDataProfilesService,
+ 		@IExtensionsProfileScannerService protected readonly extensionsProfileScannerService: IExtensionsProfileScannerService,
++		@IExtensionResourceLoaderService protected readonly extensionResourceLoaderService: IExtensionResourceLoaderService,
+ 		@IFileService protected readonly fileService: IFileService,
+ 		@ILogService protected readonly logService: ILogService,
+ 		@IEnvironmentService private readonly environmentService: IEnvironmentService,
+@@ -282,7 +284,7 @@ export abstract class AbstractExtensionsScannerService extends Disposable implem
+ 
+ 	async updateManifestMetadata(extensionLocation: URI, metaData: ManifestMetadata): Promise<void> {
+ 		const manifestLocation = joinPath(extensionLocation, 'package.json');
+-		const content = (await this.fileService.readFile(manifestLocation)).value.toString();
++		const content = await this.extensionResourceLoaderService.readExtensionResource(manifestLocation);
+ 		const manifest: IScannedExtensionManifest = JSON.parse(content);
+ 		manifest.__metadata = { ...manifest.__metadata, ...metaData };
+ 
+@@ -562,6 +564,7 @@ export type NlsConfiguration = {
+ 
+ export class ExtensionManifestTranslator extends Disposable {
+ 	constructor(
++		@IExtensionResourceLoaderService protected readonly extensionResourceLoaderService: IExtensionResourceLoaderService,
+ 		@IFileService protected readonly fileService: IFileService,
+ 		@ILogService protected readonly logService: ILogService
+ 	) {
+@@ -585,7 +588,7 @@ export class ExtensionManifestTranslator extends Disposable {
+ 		if (translationPath) {
+ 			try {
+ 				const translationResource = URI.parse(translationPath);
+-				const content = (await this.fileService.readFile(translationResource)).value.toString();
++				const content = await this.extensionResourceLoaderService.readExtensionResource(translationResource);
+ 				const errors: ParseError[] = [];
+ 				const translationBundle: TranslationBundle = parse(content, errors);
+ 				if (errors.length > 0) {
+@@ -616,7 +619,7 @@ export class ExtensionManifestTranslator extends Disposable {
+ 				return { values: undefined, default: messageBundle.original };
+ 			}
+ 			try {
+-				const messageBundleContent = (await this.fileService.readFile(messageBundle.localized)).value.toString();
++				const messageBundleContent = (await this.extensionResourceLoaderService.readExtensionResource(messageBundle.localized));
+ 				const errors: ParseError[] = [];
+ 				const messages: MessageBag = parse(messageBundleContent, errors);
+ 				if (errors.length > 0) {
+@@ -664,7 +667,7 @@ export class ExtensionManifestTranslator extends Disposable {
+ 	private async resolveOriginalMessageBundle(originalMessageBundle: URI | null, errors: ParseError[]): Promise<{ [key: string]: string } | undefined> {
+ 		if (originalMessageBundle) {
+ 			try {
+-				const originalBundleContent = (await this.fileService.readFile(originalMessageBundle)).value.toString();
++				const originalBundleContent = await this.extensionResourceLoaderService.readExtensionResource(originalMessageBundle);
+ 				return parse(originalBundleContent, errors);
+ 			} catch (error) {
+ 				/* Ignore Error */
+@@ -713,12 +716,14 @@ class ExtensionsScanner extends ExtensionManifestTranslator {
+ 	constructor(
+ 		@IExtensionsProfileScannerService protected readonly extensionsProfileScannerService: IExtensionsProfileScannerService,
+ 		@IUriIdentityService protected readonly uriIdentityService: IUriIdentityService,
++		@IExtensionResourceLoaderService extensionResourceLoaderService: IExtensionResourceLoaderService,
+ 		@IFileService fileService: IFileService,
+ 		@IProductService productService: IProductService,
+ 		@IEnvironmentService private readonly environmentService: IEnvironmentService,
+-		@ILogService logService: ILogService
++		@ILogService logService: ILogService,
++
+ 	) {
+-		super(fileService, logService);
++		super(extensionResourceLoaderService, fileService, logService);
+ 		this.extensionsEnabledWithApiProposalVersion = productService.extensionsEnabledWithApiProposalVersion?.map(id => id.toLowerCase()) ?? [];
+ 	}
+ 
+@@ -888,7 +893,7 @@ class ExtensionsScanner extends ExtensionManifestTranslator {
+ 		const manifestLocation = joinPath(extensionLocation, 'package.json');
+ 		let content;
+ 		try {
+-			content = (await this.fileService.readFile(manifestLocation)).value.toString();
++			content = await this.extensionResourceLoaderService.readExtensionResource(manifestLocation);
+ 		} catch (error) {
+ 			if (toFileOperationResult(error) !== FileOperationResult.FILE_NOT_FOUND) {
+ 				this.logService.error(this.formatMessage(extensionLocation, localize('fileReadFail', "Cannot read file {0}: {1}.", manifestLocation.path, error.message)));
+@@ -934,12 +939,13 @@ class CachedExtensionsScanner extends ExtensionsScanner {
+ 		@IUserDataProfilesService private readonly userDataProfilesService: IUserDataProfilesService,
+ 		@IExtensionsProfileScannerService extensionsProfileScannerService: IExtensionsProfileScannerService,
+ 		@IUriIdentityService uriIdentityService: IUriIdentityService,
++		@IExtensionResourceLoaderService extensionResourceLoaderService: IExtensionResourceLoaderService,
+ 		@IFileService fileService: IFileService,
+ 		@IProductService productService: IProductService,
+ 		@IEnvironmentService environmentService: IEnvironmentService,
+ 		@ILogService logService: ILogService
+ 	) {
+-		super(extensionsProfileScannerService, uriIdentityService, fileService, productService, environmentService, logService);
++		super(extensionsProfileScannerService, uriIdentityService, extensionResourceLoaderService, fileService, productService, environmentService, logService);
+ 	}
+ 
+ 	override async scanExtensions(input: ExtensionScannerInput): Promise<IRelaxedScannedExtension[]> {
+@@ -1057,6 +1063,7 @@ export class NativeExtensionsScannerService extends AbstractExtensionsScannerSer
+ 		currentProfile: IUserDataProfile,
+ 		userDataProfilesService: IUserDataProfilesService,
+ 		extensionsProfileScannerService: IExtensionsProfileScannerService,
++		extensionResourceLoaderService: IExtensionResourceLoaderService,
+ 		fileService: IFileService,
+ 		logService: ILogService,
+ 		environmentService: IEnvironmentService,
+@@ -1069,7 +1076,7 @@ export class NativeExtensionsScannerService extends AbstractExtensionsScannerSer
+ 			userExtensionsLocation,
+ 			joinPath(userHome, '.vscode-oss-dev', 'extensions', 'control.json'),
+ 			currentProfile,
+-			userDataProfilesService, extensionsProfileScannerService, fileService, logService, environmentService, productService, uriIdentityService, instantiationService);
++			userDataProfilesService, extensionsProfileScannerService, extensionResourceLoaderService, fileService, logService, environmentService, productService, uriIdentityService, instantiationService);
+ 		this.translationsPromise = (async () => {
+ 			if (platform.translationsConfigFile) {
+ 				try {
+diff --git a/src/vs/platform/extensionManagement/node/extensionsScannerService.ts b/src/vs/platform/extensionManagement/node/extensionsScannerService.ts
+index 349dcef361e..b504ce26d5c 100644
+--- a/src/vs/platform/extensionManagement/node/extensionsScannerService.ts
++++ b/src/vs/platform/extensionManagement/node/extensionsScannerService.ts
+@@ -13,12 +13,14 @@ import { ILogService } from '../../log/common/log.js';
+ import { IProductService } from '../../product/common/productService.js';
+ import { IUriIdentityService } from '../../uriIdentity/common/uriIdentity.js';
+ import { IUserDataProfilesService } from '../../userDataProfile/common/userDataProfile.js';
++import { IExtensionResourceLoaderService } from '../../extensionResourceLoader/common/extensionResourceLoader.js';
+ 
+ export class ExtensionsScannerService extends NativeExtensionsScannerService implements IExtensionsScannerService {
+ 
+ 	constructor(
+ 		@IUserDataProfilesService userDataProfilesService: IUserDataProfilesService,
+ 		@IExtensionsProfileScannerService extensionsProfileScannerService: IExtensionsProfileScannerService,
++		@IExtensionResourceLoaderService extensionResourceLoaderService: IExtensionResourceLoaderService,
+ 		@IFileService fileService: IFileService,
+ 		@ILogService logService: ILogService,
+ 		@INativeEnvironmentService environmentService: INativeEnvironmentService,
+@@ -31,7 +33,7 @@ export class ExtensionsScannerService extends NativeExtensionsScannerService imp
+ 			URI.file(environmentService.extensionsPath),
+ 			environmentService.userHome,
+ 			userDataProfilesService.defaultProfile,
+-			userDataProfilesService, extensionsProfileScannerService, fileService, logService, environmentService, productService, uriIdentityService, instantiationService);
++			userDataProfilesService, extensionsProfileScannerService, extensionResourceLoaderService, fileService, logService, environmentService, productService, uriIdentityService, instantiationService);
+ 	}
+ 
+ }
+diff --git a/src/vs/server/node/extensionsScannerService.ts b/src/vs/server/node/extensionsScannerService.ts
+index 5a191557cc2..4d8270589bf 100644
+--- a/src/vs/server/node/extensionsScannerService.ts
++++ b/src/vs/server/node/extensionsScannerService.ts
+@@ -8,6 +8,7 @@ import { URI } from '../../base/common/uri.js';
+ import { INativeEnvironmentService } from '../../platform/environment/common/environment.js';
+ import { IExtensionsProfileScannerService } from '../../platform/extensionManagement/common/extensionsProfileScannerService.js';
+ import { AbstractExtensionsScannerService, IExtensionsScannerService, Translations } from '../../platform/extensionManagement/common/extensionsScannerService.js';
++import { IExtensionResourceLoaderService } from '../../platform/extensionResourceLoader/common/extensionResourceLoader.js';
+ import { IFileService } from '../../platform/files/common/files.js';
+ import { IInstantiationService } from '../../platform/instantiation/common/instantiation.js';
+ import { ILogService } from '../../platform/log/common/log.js';
+@@ -21,6 +22,7 @@ export class ExtensionsScannerService extends AbstractExtensionsScannerService i
+ 	constructor(
+ 		@IUserDataProfilesService userDataProfilesService: IUserDataProfilesService,
+ 		@IExtensionsProfileScannerService extensionsProfileScannerService: IExtensionsProfileScannerService,
++		@IExtensionResourceLoaderService extensionResourceLoaderService: IExtensionResourceLoaderService,
+ 		@IFileService fileService: IFileService,
+ 		@ILogService logService: ILogService,
+ 		@INativeEnvironmentService private readonly nativeEnvironmentService: INativeEnvironmentService,
+@@ -33,7 +35,7 @@ export class ExtensionsScannerService extends AbstractExtensionsScannerService i
+ 			URI.file(nativeEnvironmentService.extensionsPath),
+ 			joinPath(nativeEnvironmentService.userHome, '.vscode-oss-dev', 'extensions', 'control.json'),
+ 			userDataProfilesService.defaultProfile,
+-			userDataProfilesService, extensionsProfileScannerService, fileService, logService, nativeEnvironmentService, productService, uriIdentityService, instantiationService);
++			userDataProfilesService, extensionsProfileScannerService, extensionResourceLoaderService, fileService, logService, nativeEnvironmentService, productService, uriIdentityService, instantiationService);
+ 	}
+ 
+ 	protected async getTranslations(language: string): Promise<Translations> {
+diff --git a/src/vs/workbench/services/extensions/browser/extensionsScannerService.ts b/src/vs/workbench/services/extensions/browser/extensionsScannerService.ts
+index 596a40b93dd..ef3886f6b3c 100644
+--- a/src/vs/workbench/services/extensions/browser/extensionsScannerService.ts
++++ b/src/vs/workbench/services/extensions/browser/extensionsScannerService.ts
+@@ -5,6 +5,7 @@
+ 
+ import { IExtensionsProfileScannerService } from '../../../../platform/extensionManagement/common/extensionsProfileScannerService.js';
+ import { AbstractExtensionsScannerService, IExtensionsScannerService, Translations, } from '../../../../platform/extensionManagement/common/extensionsScannerService.js';
++import { IExtensionResourceLoaderService } from '../../../../platform/extensionResourceLoader/common/extensionResourceLoader.js';
+ import { IFileService } from '../../../../platform/files/common/files.js';
+ import { InstantiationType, registerSingleton } from '../../../../platform/instantiation/common/extensions.js';
+ import { IInstantiationService } from '../../../../platform/instantiation/common/instantiation.js';
+@@ -21,6 +22,7 @@ export class ExtensionsScannerService extends AbstractExtensionsScannerService i
+ 		@IUserDataProfileService userDataProfileService: IUserDataProfileService,
+ 		@IUserDataProfilesService userDataProfilesService: IUserDataProfilesService,
+ 		@IExtensionsProfileScannerService extensionsProfileScannerService: IExtensionsProfileScannerService,
++		@IExtensionResourceLoaderService extensionResourceLoaderService: IExtensionResourceLoaderService,
+ 		@IFileService fileService: IFileService,
+ 		@ILogService logService: ILogService,
+ 		@IWorkbenchEnvironmentService environmentService: IWorkbenchEnvironmentService,
+@@ -33,7 +35,7 @@ export class ExtensionsScannerService extends AbstractExtensionsScannerService i
+ 			uriIdentityService.extUri.joinPath(environmentService.userRoamingDataHome, 'userExtensions'),
+ 			uriIdentityService.extUri.joinPath(environmentService.userRoamingDataHome, 'userExtensions', 'control.json'),
+ 			userDataProfileService.currentProfile,
+-			userDataProfilesService, extensionsProfileScannerService, fileService, logService, environmentService, productService, uriIdentityService, instantiationService);
++			userDataProfilesService, extensionsProfileScannerService, extensionResourceLoaderService, fileService, logService, environmentService, productService, uriIdentityService, instantiationService);
+ 	}
+ 
+ 	protected async getTranslations(): Promise<Translations> {
+diff --git a/src/vs/workbench/services/extensions/electron-browser/extensionsScannerService.ts b/src/vs/workbench/services/extensions/electron-browser/extensionsScannerService.ts
+index cf85fe2573a..38dc078d5da 100644
+--- a/src/vs/workbench/services/extensions/electron-browser/extensionsScannerService.ts
++++ b/src/vs/workbench/services/extensions/electron-browser/extensionsScannerService.ts
+@@ -7,6 +7,7 @@ import { URI } from '../../../../base/common/uri.js';
+ import { INativeEnvironmentService } from '../../../../platform/environment/common/environment.js';
+ import { IExtensionsProfileScannerService } from '../../../../platform/extensionManagement/common/extensionsProfileScannerService.js';
+ import { IExtensionsScannerService, NativeExtensionsScannerService, } from '../../../../platform/extensionManagement/common/extensionsScannerService.js';
++import { IExtensionResourceLoaderService } from '../../../../platform/extensionResourceLoader/common/extensionResourceLoader.js';
+ import { IFileService } from '../../../../platform/files/common/files.js';
+ import { InstantiationType, registerSingleton } from '../../../../platform/instantiation/common/extensions.js';
+ import { IInstantiationService } from '../../../../platform/instantiation/common/instantiation.js';
+@@ -22,6 +23,7 @@ export class ExtensionsScannerService extends NativeExtensionsScannerService imp
+ 		@IUserDataProfileService userDataProfileService: IUserDataProfileService,
+ 		@IUserDataProfilesService userDataProfilesService: IUserDataProfilesService,
+ 		@IExtensionsProfileScannerService extensionsProfileScannerService: IExtensionsProfileScannerService,
++		@IExtensionResourceLoaderService extensionResourceLoaderService: IExtensionResourceLoaderService,
+ 		@IFileService fileService: IFileService,
+ 		@ILogService logService: ILogService,
+ 		@INativeEnvironmentService environmentService: INativeEnvironmentService,
+@@ -34,7 +36,7 @@ export class ExtensionsScannerService extends NativeExtensionsScannerService imp
+ 			URI.file(environmentService.extensionsPath),
+ 			environmentService.userHome,
+ 			userDataProfileService.currentProfile,
+-			userDataProfilesService, extensionsProfileScannerService, fileService, logService, environmentService, productService, uriIdentityService, instantiationService);
++			userDataProfilesService, extensionsProfileScannerService, extensionResourceLoaderService, fileService, logService, environmentService, productService, uriIdentityService, instantiationService);
+ 	}
+ 
+ }
