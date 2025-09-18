@@ -51,7 +51,10 @@ import getBaseServiceOverride from './service-override/base'
 import { injectCss } from './css'
 import deprecatedProduct from 'vs/platform/product/common/product'
 import { mixin } from 'vs/base/common/objects'
-
+import { CommandsRegistry } from 'vs/platform/commands/common/commands'
+import { asArray } from 'vs/base/common/arrays'
+import { MenuId, MenuRegistry } from 'vs/platform/actions/common/actions'
+import { Menu } from 'vs/workbench/browser/web.api'
 declare global {
   interface Window {
     monacoVscodeApiBuildId?: string
@@ -66,6 +69,40 @@ if (window.monacoVscodeApiBuildId != null && window.monacoVscodeApiBuildId !== B
 
 window.monacoVscodeApiBuildId = BUILD_ID
 
+/**
+ * This function comes from VSCode (vs/workbench/browser/web.factory.ts)
+ * It's duplicated here because it's not exported and used in a code we can't simply run
+ */
+function registerCommands(options: IWorkbenchConstructionOptions) {
+  function asMenuId(menu: Menu): MenuId {
+    switch (menu) {
+      case Menu.CommandPalette:
+        return MenuId.CommandPalette
+      case Menu.StatusBarWindowIndicatorMenu:
+        return MenuId.StatusBarWindowIndicatorMenu
+    }
+  }
+
+  if (Array.isArray(options.commands)) {
+    for (const command of options.commands) {
+      CommandsRegistry.registerCommand(command.id, (accessor, ...args) => {
+        // we currently only pass on the arguments but not the accessor
+        // to the command to reduce our exposure of internal API.
+        return command.handler(...args)
+      })
+
+      // Commands with labels appear in the command palette
+      if (command.label) {
+        for (const menu of asArray(command.menu ?? Menu.CommandPalette)) {
+          MenuRegistry.appendMenuItem(asMenuId(menu), {
+            command: { id: command.id, title: command.label }
+          })
+        }
+      }
+    }
+  }
+}
+
 export async function initialize(
   overrides: IEditorOverrideServices,
   container: HTMLElement = document.body,
@@ -75,6 +112,7 @@ export async function initialize(
   checkServicesNotInitialized()
 
   injectCss(container)
+  registerCommands(configuration)
   initializeWorkbench(container, configuration, env)
 
   const productService: IProductService = mixin(
