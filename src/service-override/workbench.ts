@@ -48,9 +48,9 @@ class CustomWorkbench extends Workbench {
     return this.instantiationService
   }
 
-  override restore(): void {
+  override restore(instantiationService: IInstantiationService): void {
     try {
-      this.restoreParts()
+      this.restoreParts(instantiationService)
     } catch (error) {
       onUnexpectedError(error)
     }
