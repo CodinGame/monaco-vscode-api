@@ -472,6 +472,7 @@ ${code}`
                 [
                   'vs/editor/editor.api',
                   'vs/editor/editor.worker',
+                  'vs/editor/edcore.main',
                   ...EDITOR_API_EXPOSE_MODULES
                 ].flatMap((module) => {
                   return Object.entries({
