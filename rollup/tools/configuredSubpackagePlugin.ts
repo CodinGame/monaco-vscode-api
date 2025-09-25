@@ -324,6 +324,12 @@ ${code}`
                 source: `export * from '${MAIN_PACKAGE_NAME}/workers/editor.worker'`,
                 type: 'asset'
               })
+              this.emitFile({
+                fileName: 'esm/vs/editor/edcore.main.js',
+                needsCodeReference: false,
+                source: `export * from './editor.api.js';`,
+                type: 'asset'
+              })
             }
           }
         ]
