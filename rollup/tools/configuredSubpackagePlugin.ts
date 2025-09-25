@@ -52,7 +52,14 @@ const EDITOR_API_EXPOSE_MODULES = [
   'vs/editor/contrib/clipboard/browser/clipboard',
   'vs/editor/contrib/cursorUndo/browser/cursorUndo',
   'vs/editor/contrib/contextmenu/browser/contextmenu',
-  'vs/editor/contrib/find/browser/findController'
+  'vs/editor/contrib/find/browser/findController',
+
+  // GraphiQL
+  'vs/base/common/uri',
+  'vs/editor/common/services/editorBaseApi',
+  'vs/editor/common/standalone/standaloneEnums',
+  'vs/editor/browser/controller/mouseTarget',
+  'vs/editor/common/core/range',
 ]
 
 const ALLOWED_MAIN_DEPENDENCIES = new Set([
