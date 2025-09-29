@@ -1,0 +1,22 @@
+From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
+From: =?UTF-8?q?Lo=C3=AFc=20Mangeonjean?= <loic@coderpad.io>
+Date: Mon, 29 Sep 2025 18:07:16 +0200
+Subject: [PATCH] fix: fix focus conflict
+
+when 2 focusTracers are focused in the same event loop iteration, the first one never receive the blur even, and continue to think it's focused
+---
+ .../controller/editContext/native/nativeEditContextUtils.ts      | 1 +
+ 1 file changed, 1 insertion(+)
+
+diff --git a/src/vs/editor/browser/controller/editContext/native/nativeEditContextUtils.ts b/src/vs/editor/browser/controller/editContext/native/nativeEditContextUtils.ts
+index b9504d9082a..d0ab9a1f150 100644
+--- a/src/vs/editor/browser/controller/editContext/native/nativeEditContextUtils.ts
++++ b/src/vs/editor/browser/controller/editContext/native/nativeEditContextUtils.ts
+@@ -63,6 +63,7 @@ export class FocusTracker extends Disposable {
+ 	public focus(): void {
+ 		this._domNode.focus();
+ 		this.refreshFocusState();
++		setTimeout(() => this.refreshFocusState(), 0);
+ 	}
+ 
+ 	public refreshFocusState(): void {
