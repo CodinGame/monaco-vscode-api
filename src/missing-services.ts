@@ -5159,6 +5159,7 @@ class LanguageModelToolsService implements ILanguageModelToolsService {
   registerToolData: ILanguageModelToolsService['registerToolData'] = () => Disposable.None
   registerToolImplementation: ILanguageModelToolsService['registerToolImplementation'] = () =>
     Disposable.None
+  registerTool: ILanguageModelToolsService['registerTool'] = () => Disposable.None
   getTools: ILanguageModelToolsService['getTools'] = () => []
   @Unsupported
   invokeTool: ILanguageModelToolsService['invokeTool'] = unsupported
@@ -5179,8 +5180,7 @@ class LanguageModelToolsService implements ILanguageModelToolsService {
   @Unsupported
   toToolAndToolSetEnablementMap: ILanguageModelToolsService['toToolAndToolSetEnablementMap'] =
     unsupported
-  @Unsupported
-  registerTool: ILanguageModelToolsService['registerTool'] = unsupported
+
   @Unsupported
   getToolAutoConfirmation: ILanguageModelToolsService['getToolAutoConfirmation'] = unsupported
 
