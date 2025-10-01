@@ -67,10 +67,10 @@ export async function startup(instantiationService: IInstantiationService): Prom
       )
     )
     setBaseLayerHoverDelegate(accessor.get(IHoverService))
-  })
 
-  await instantiationService.invokeFunction(async (accessor) => {
     const lifecycleService = accessor.get(ILifecycleService)
+    Registry.as<IWorkbenchContributionsRegistry>(WorkbenchExtensions.Workbench).start(accessor)
+    Registry.as<IEditorFactoryRegistry>(EditorExtensions.EditorFactory).start(accessor)
 
     await Promise.all(serviceInitializeParticipants.map((participant) => participant(accessor)))
 
@@ -88,8 +88,6 @@ export async function startup(instantiationService: IInstantiationService): Prom
   void instantiationService.invokeFunction(async (accessor) => {
     const lifecycleService = accessor.get(ILifecycleService)
 
-    Registry.as<IWorkbenchContributionsRegistry>(WorkbenchExtensions.Workbench).start(accessor)
-    Registry.as<IEditorFactoryRegistry>(EditorExtensions.EditorFactory).start(accessor)
     onRenderWorkbench((accessor) => {
       accessor.get(IInstantiationService).createInstance(WorkbenchContextKeysHandler)
     })
