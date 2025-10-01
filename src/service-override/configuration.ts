@@ -60,7 +60,7 @@ import getFileServiceOverride, { initFile } from './files'
 import { registerServiceInitializePreParticipant } from '../lifecycle'
 import { getService, withReadyServices } from '../services'
 import { memoizedConstructor, unsupported } from '../tools'
-import { getWorkspaceIdentifier } from '../workbench'
+import { getWorkbenchConstructionOptions, getWorkspaceIdentifier } from '../workbench'
 
 // This is the default value, but can be overriden by overriding the Environment or UserDataProfileService service
 const defaultUserConfigurationFile = URI.from({
@@ -131,7 +131,7 @@ class InjectedConfigurationService extends WorkspaceService {
       fileService
     )
     super(
-      { configurationCache },
+      { configurationCache, remoteAuthority: getWorkbenchConstructionOptions().remoteAuthority },
       workbenchEnvironmentService,
       userDataProfileService,
       userDataProfilesService,
