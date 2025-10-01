@@ -17,10 +17,6 @@ import {
 } from 'vs/platform/instantiation/common/instantiation'
 import type { IAction } from 'vs/base/common/actions'
 import { DisposableStore, type IDisposable } from 'vs/base/common/lifecycle'
-import type {
-  IWorkbenchConstructionOptions,
-  IWorkspaceProvider
-} from 'vs/workbench/browser/web.api'
 import {
   type ILazyWorkbenchContributionInstantiation,
   type IOnEditorWorkbenchContributionInstantiation,
@@ -54,7 +50,7 @@ import { mixin } from 'vs/base/common/objects'
 import { CommandsRegistry } from 'vs/platform/commands/common/commands'
 import { asArray } from 'vs/base/common/arrays'
 import { MenuId, MenuRegistry } from 'vs/platform/actions/common/actions'
-import { Menu } from 'vs/workbench/browser/web.api'
+import { Menu, type IWorkbenchConstructionOptions } from 'vs/workbench/browser/web.api'
 declare global {
   interface Window {
     monacoVscodeApiBuildId?: string
@@ -381,13 +377,13 @@ export type {
   ITextModelContentProvider,
   IColorTheme,
   IWorkbenchConstructionOptions,
-  IWorkspaceProvider,
   IEditorOverrideServices,
   WorkbenchContributionInstantiation,
   ILazyWorkbenchContributionInstantiation,
   IOnEditorWorkbenchContributionInstantiation,
   ServicesAccessor
 }
+export * from 'vs/workbench/browser/web.api'
 export { ConfigurationTarget } from 'vs/platform/configuration/common/configuration'
 export { IRemoteExplorerService } from 'vs/workbench/services/remote/common/remoteExplorerService.service'
 export { ITunnelService } from 'vs/platform/tunnel/common/tunnel.service'
