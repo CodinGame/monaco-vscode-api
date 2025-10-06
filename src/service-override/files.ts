@@ -31,7 +31,9 @@ import {
   type IFileSystemProviderWithFileAtomicReadCapability,
   type IFileSystemProviderWithFileAtomicWriteCapability,
   type IFileSystemProviderWithFileAtomicDeleteCapability,
-  hasFileReadStreamCapability
+  hasFileReadStreamCapability,
+  type IFileStat,
+  type IFileStatWithMetadata
 } from 'vs/platform/files/common/files'
 import {
   DisposableStore,
@@ -1079,8 +1081,15 @@ const providers: Record<string, IFileSystemProvider> = {
   [Schemas.file]: overlayFileSystemProvider
 }
 
+export interface FileServiceOptions {
+  statMiddleware?: (resource: URI, next: () => Promise<IFileStat>) => Promise<IFileStat>
+}
+
 class FileServiceOverride extends FileService {
-  constructor(logService: ILogService) {
+  constructor(
+    logService: ILogService,
+    private options: FileServiceOptions
+  ) {
     super(logService)
 
     for (const [scheme, provider] of Object.entries(providers)) {
@@ -1104,6 +1113,36 @@ class FileServiceOverride extends FileService {
     return super.withProvider(resource)
   }
 
+  protected override async toFileStat(
+    provider: IFileSystemProvider,
+    resource: URI,
+    stat: IStat | ({ type: FileType } & Partial<IStat>),
+    siblings: number | undefined,
+    resolveMetadata: boolean,
+    recurse: (stat: IFileStat, siblings?: number) => boolean
+  ): Promise<IFileStat>
+  protected override async toFileStat(
+    provider: IFileSystemProvider,
+    resource: URI,
+    stat: IStat,
+    siblings: number | undefined,
+    resolveMetadata: true,
+    recurse: (stat: IFileStat, siblings?: number) => boolean
+  ): Promise<IFileStatWithMetadata>
+  protected override async toFileStat(
+    provider: IFileSystemProvider,
+    resource: URI,
+    stat: IStat | ({ type: FileType } & Partial<IStat>),
+    siblings: number | undefined,
+    resolveMetadata: boolean,
+    recurse: (stat: IFileStat, siblings?: number) => boolean
+  ): Promise<IFileStat> {
+    const next = async () => {
+      return await super.toFileStat(provider, resource, stat, siblings, resolveMetadata, recurse)
+    }
+    return this.options.statMiddleware?.(resource, next) ?? next()
+  }
+
   /**
    * Hack: the parent class has dependencies, we don't, dependencies are stored in a static field
    * Having no dependencies mean the field won't be overriden, so we'll inherit dependencies from the parent
@@ -1118,9 +1157,11 @@ registerServiceInitializePreParticipant(async (accessor) => {
   fileLogger.logger = accessor.get(ILogService)
 })
 
-export default function getServiceOverride(): IEditorOverrideServices {
+export default function getServiceOverride(
+  options: FileServiceOptions = {}
+): IEditorOverrideServices {
   return {
-    [IFileService.toString()]: new SyncDescriptor(FileServiceOverride, [fileLogger], true),
+    [IFileService.toString()]: new SyncDescriptor(FileServiceOverride, [fileLogger, options], true),
     [ITextFileService.toString()]: new SyncDescriptor(BrowserTextFileService, [], true),
     [IFilesConfigurationService.toString()]: new SyncDescriptor(
       FilesConfigurationService,
@@ -1311,5 +1352,6 @@ export type {
   IFileWriteOptions,
   IFileDeleteOptions,
   IFileOverwriteOptions,
-  IFileChange
+  IFileChange,
+  IFileStat
 }
