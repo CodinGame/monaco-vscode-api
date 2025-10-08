@@ -20,27 +20,26 @@ export interface LifecycleServiceParams {
 
 const DEFAULT_RESOLVE_STARTUP_KIND: StartupKindResolver = (resolveDefault) => resolveDefault()
 
-class BrowserLifecycleServiceOverride extends BrowserLifecycleService {
-  constructor(
-    private params: LifecycleServiceParams,
-    @ILogService logService: ILogService,
-    @IStorageService storageService: IStorageService
-  ) {
-    super(logService, storageService)
-  }
-
-  protected override doResolveStartupKind(): StartupKind | undefined {
-    return (this.params.resolveStartupKind ?? DEFAULT_RESOLVE_STARTUP_KIND)(() =>
-      super.doResolveStartupKind()
-    )
-  }
-}
-
 export default function getServiceOverride(
-  options: LifecycleServiceParams = {}
+  params: LifecycleServiceParams = {}
 ): IEditorOverrideServices {
+  class BrowserLifecycleServiceOverride extends BrowserLifecycleService {
+    constructor(
+      @ILogService logService: ILogService,
+      @IStorageService storageService: IStorageService
+    ) {
+      super(logService, storageService)
+    }
+
+    protected override doResolveStartupKind(): StartupKind | undefined {
+      return (params.resolveStartupKind ?? DEFAULT_RESOLVE_STARTUP_KIND)(() =>
+        super.doResolveStartupKind()
+      )
+    }
+  }
+
   return {
-    [ILifecycleService.toString()]: new SyncDescriptor(BrowserLifecycleServiceOverride, [options]),
+    [ILifecycleService.toString()]: new SyncDescriptor(BrowserLifecycleServiceOverride),
     [ITimerService.toString()]: new SyncDescriptor(TimerService)
   }
 }
