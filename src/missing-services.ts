@@ -1648,6 +1648,7 @@ class TaskService implements ITaskService {
   @Unsupported
   extensionCallbackTaskComplete: ITaskService['extensionCallbackTaskComplete'] = unsupported
   isReconnected: ITaskService['isReconnected'] = false
+  shouldReattach: ITaskService['shouldReattach'] = false
   onDidReconnectToTasks: ITaskService['onDidReconnectToTasks'] = Event.None
 
   getTerminalsForTasks: ITaskService['getTerminalsForTasks'] = () => undefined
@@ -5159,6 +5160,7 @@ class LanguageModelToolsService implements ILanguageModelToolsService {
   registerToolData: ILanguageModelToolsService['registerToolData'] = () => Disposable.None
   registerToolImplementation: ILanguageModelToolsService['registerToolImplementation'] = () =>
     Disposable.None
+  registerTool: ILanguageModelToolsService['registerTool'] = () => Disposable.None
   getTools: ILanguageModelToolsService['getTools'] = () => []
   @Unsupported
   invokeTool: ILanguageModelToolsService['invokeTool'] = unsupported
@@ -5179,8 +5181,7 @@ class LanguageModelToolsService implements ILanguageModelToolsService {
   @Unsupported
   toToolAndToolSetEnablementMap: ILanguageModelToolsService['toToolAndToolSetEnablementMap'] =
     unsupported
-  @Unsupported
-  registerTool: ILanguageModelToolsService['registerTool'] = unsupported
+
   @Unsupported
   getToolAutoConfirmation: ILanguageModelToolsService['getToolAutoConfirmation'] = unsupported
 

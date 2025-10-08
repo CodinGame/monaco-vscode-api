@@ -3663,10 +3663,10 @@ index 25f96fc848c..3e58f2f9020 100644
  			group.appendChild(addButton.element);
  			group.appendChild(sep);
 diff --git a/src/vs/workbench/contrib/chat/browser/chatWidget.ts b/src/vs/workbench/contrib/chat/browser/chatWidget.ts
-index 50f48f1c405..55d5e841888 100644
+index f97ed90146a..85b0bf40b27 100644
 --- a/src/vs/workbench/contrib/chat/browser/chatWidget.ts
 +++ b/src/vs/workbench/contrib/chat/browser/chatWidget.ts
-@@ -1433,7 +1433,7 @@ export class ChatWidget extends Disposable implements IChatWidget {
+@@ -1430,7 +1430,7 @@ export class ChatWidget extends Disposable implements IChatWidget {
  		};
  
  		// Create a dom element to hold UI from editor widgets embedded in chat messages
