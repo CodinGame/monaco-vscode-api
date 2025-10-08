@@ -1648,6 +1648,7 @@ class TaskService implements ITaskService {
   @Unsupported
   extensionCallbackTaskComplete: ITaskService['extensionCallbackTaskComplete'] = unsupported
   isReconnected: ITaskService['isReconnected'] = false
+  shouldReattach: ITaskService['shouldReattach'] = false
   onDidReconnectToTasks: ITaskService['onDidReconnectToTasks'] = Event.None
 
   getTerminalsForTasks: ITaskService['getTerminalsForTasks'] = () => undefined
