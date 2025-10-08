@@ -46,28 +46,9 @@ import {
 import { IViewDescriptorService } from 'vs/workbench/common/views.service'
 import 'vs/workbench/contrib/tasks/browser/task.contribution'
 
-export interface ForcedSupportedExecutions {
-  custom?: boolean
-  shell?: boolean
-  process?: boolean
-}
-export interface TaskServiceOverrideParams {
-  /**
-   * By default, only custom tasks are supported
-   * When using the VSCode server, the server registers all the task types as supported
-   * But if the user has registered custom terminal backends, they may want to force support for other task types
-   */
-  forcedSupportedExecutions?: ForcedSupportedExecutions
-
-  /**
-   * Force task reattach, no matter the lifecycle startup kind
-   */
-  shouldReattach?: boolean
-}
-
 class CustomTaskService extends TaskService {
   constructor(
-    private params: TaskServiceOverrideParams,
+    forcedSupportedExecutions: ForcedSupportedExecutions | undefined,
     @IConfigurationService _configurationService: IConfigurationService,
     @IMarkerService _markerService: IMarkerService,
     @IOutputService _outputService: IOutputService,
@@ -150,24 +131,38 @@ class CustomTaskService extends TaskService {
       _chatAgentService
     )
 
-    if (params.forcedSupportedExecutions != null) {
+    if (forcedSupportedExecutions != null) {
       this.registerSupportedExecutions(
-        params.forcedSupportedExecutions.custom,
-        params.forcedSupportedExecutions.shell,
-        params.forcedSupportedExecutions.process
+        forcedSupportedExecutions.custom,
+        forcedSupportedExecutions.shell,
+        forcedSupportedExecutions.process
       )
     }
   }
-
-  override get shouldReattach(): boolean {
-    return this.params.shouldReattach ?? super.shouldReattach
-  }
 }
 
-export default function getServiceOverride(
-  params: TaskServiceOverrideParams = {}
-): IEditorOverrideServices {
+export interface ForcedSupportedExecutions {
+  custom?: boolean
+  shell?: boolean
+  process?: boolean
+}
+export interface TaskServiceOverrideParams {
+  /**
+   * By default, only custom tasks are supported
+   * When using the VSCode server, the server registers all the task types as supported
+   * But if the user has registered custom terminal backends, they may want to force support for other task types
+   */
+  forcedSupportedExecutions?: ForcedSupportedExecutions
+}
+
+export default function getServiceOverride({
+  forcedSupportedExecutions
+}: TaskServiceOverrideParams = {}): IEditorOverrideServices {
   return {
-    [ITaskService.toString()]: new SyncDescriptor(CustomTaskService, [params], true)
+    [ITaskService.toString()]: new SyncDescriptor(
+      CustomTaskService,
+      [forcedSupportedExecutions],
+      true
+    )
   }
 }
