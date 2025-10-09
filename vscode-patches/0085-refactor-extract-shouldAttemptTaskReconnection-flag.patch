@@ -1,0 +1,84 @@
+From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
+From: =?UTF-8?q?Lo=C3=AFc=20Mangeonjean?= <loic@coderpad.io>
+Date: Thu, 9 Oct 2025 10:09:30 +0200
+Subject: [PATCH] refactor: extract shouldAttemptTaskReconnection flag
+
+---
+ src/vs/workbench/contrib/tasks/browser/abstractTaskService.ts | 4 ++--
+ src/vs/workbench/contrib/terminal/browser/terminalService.ts  | 4 ++--
+ src/vs/workbench/services/lifecycle/common/lifecycle.ts       | 2 ++
+ .../workbench/services/lifecycle/common/lifecycleService.ts   | 4 ++++
+ 4 files changed, 10 insertions(+), 4 deletions(-)
+
+diff --git a/src/vs/workbench/contrib/tasks/browser/abstractTaskService.ts b/src/vs/workbench/contrib/tasks/browser/abstractTaskService.ts
+index 782478964be..3d0884293ce 100644
+--- a/src/vs/workbench/contrib/tasks/browser/abstractTaskService.ts
++++ b/src/vs/workbench/contrib/tasks/browser/abstractTaskService.ts
+@@ -78,7 +78,7 @@ import { IViewDescriptorService } from '../../../common/views.js';
+ import { IViewsService } from '../../../services/views/common/viewsService.js';
+ import { configureTaskIcon, isWorkspaceFolder, ITaskQuickPickEntry, QUICKOPEN_DETAIL_CONFIG, QUICKOPEN_SKIP_CONFIG, TaskQuickPick } from './taskQuickPick.js';
+ import { IWorkbenchEnvironmentService } from '../../../services/environment/common/environmentService.js';
+-import { ILifecycleService, ShutdownReason, StartupKind } from '../../../services/lifecycle/common/lifecycle.js';
++import { ILifecycleService, ShutdownReason } from '../../../services/lifecycle/common/lifecycle.js';
+ import { IPaneCompositePartService } from '../../../services/panecomposite/browser/panecomposite.js';
+ import { IPathService } from '../../../services/path/common/pathService.js';
+ import { IPreferencesService } from '../../../services/preferences/common/preferences.js';
+@@ -438,7 +438,7 @@ export abstract class AbstractTaskService extends Disposable implements ITaskSer
+ 	}
+ 
+ 	private _attemptTaskReconnection(): void {
+-		if (this._lifecycleService.startupKind !== StartupKind.ReloadedWindow) {
++		if (!this._lifecycleService.shouldAttemptTaskReconnection) {
+ 			this._log(nls.localize('TaskService.skippingReconnection', 'Startup kind not window reload, setting connected and removing persistent tasks'), true);
+ 			this._tasksReconnected = true;
+ 			this._storageService.remove(AbstractTaskService.PersistentTasks_Key, StorageScope.WORKSPACE);
+diff --git a/src/vs/workbench/contrib/terminal/browser/terminalService.ts b/src/vs/workbench/contrib/terminal/browser/terminalService.ts
+index f927f4a6830..ad4652f4725 100644
+--- a/src/vs/workbench/contrib/terminal/browser/terminalService.ts
++++ b/src/vs/workbench/contrib/terminal/browser/terminalService.ts
+@@ -45,7 +45,7 @@ import { IEditorGroupsService } from '../../../services/editor/common/editorGrou
+ import { ACTIVE_GROUP, ACTIVE_GROUP_TYPE, AUX_WINDOW_GROUP, AUX_WINDOW_GROUP_TYPE, IEditorService, SIDE_GROUP, SIDE_GROUP_TYPE } from '../../../services/editor/common/editorService.js';
+ import { IWorkbenchEnvironmentService } from '../../../services/environment/common/environmentService.js';
+ import { IExtensionService } from '../../../services/extensions/common/extensions.js';
+-import { ILifecycleService, ShutdownReason, StartupKind, WillShutdownEvent } from '../../../services/lifecycle/common/lifecycle.js';
++import { ILifecycleService, ShutdownReason, WillShutdownEvent } from '../../../services/lifecycle/common/lifecycle.js';
+ import { IRemoteAgentService } from '../../../services/remote/common/remoteAgentService.js';
+ import { XtermTerminal } from './xterm/xtermTerminal.js';
+ import { TerminalInstance } from './terminalInstance.js';
+@@ -525,7 +525,7 @@ export class TerminalService extends Disposable implements ITerminalService {
+ 		let lastInstance: Promise<ITerminalInstance> | undefined;
+ 		for (const terminalLayout of terminalLayouts) {
+ 			const attachPersistentProcess = terminalLayout.terminal!;
+-			if (this._lifecycleService.startupKind !== StartupKind.ReloadedWindow && attachPersistentProcess.type === 'Task') {
++			if (!this._lifecycleService.shouldAttemptTaskReconnection && attachPersistentProcess.type === 'Task') {
+ 				continue;
+ 			}
+ 			mark(`code/terminal/willRecreateTerminal/${attachPersistentProcess.id}-${attachPersistentProcess.pid}`);
+diff --git a/src/vs/workbench/services/lifecycle/common/lifecycle.ts b/src/vs/workbench/services/lifecycle/common/lifecycle.ts
+index de7ce214df8..bb586caef11 100644
+--- a/src/vs/workbench/services/lifecycle/common/lifecycle.ts
++++ b/src/vs/workbench/services/lifecycle/common/lifecycle.ts
+@@ -238,6 +238,8 @@ export interface ILifecycleService {
+ 	 */
+ 	readonly startupKind: StartupKind;
+ 
++	readonly shouldAttemptTaskReconnection: boolean;
++
+ 	/**
+ 	 * A flag indicating in what phase of the lifecycle we currently are.
+ 	 */
+diff --git a/src/vs/workbench/services/lifecycle/common/lifecycleService.ts b/src/vs/workbench/services/lifecycle/common/lifecycleService.ts
+index 684345132a0..91d7e737996 100644
+--- a/src/vs/workbench/services/lifecycle/common/lifecycleService.ts
++++ b/src/vs/workbench/services/lifecycle/common/lifecycleService.ts
+@@ -35,6 +35,10 @@ export abstract class AbstractLifecycleService extends Disposable implements ILi
+ 	private _startupKind: StartupKind;
+ 	get startupKind(): StartupKind { return this._startupKind; }
+ 
++	get shouldAttemptTaskReconnection(): boolean {
++		return this.startupKind === StartupKind.ReloadedWindow;
++	}
++
+ 	private _phase = LifecyclePhase.Starting;
+ 	get phase(): LifecyclePhase { return this._phase; }
+ 

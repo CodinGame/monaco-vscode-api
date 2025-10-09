@@ -16,6 +16,7 @@ export interface LifecycleServiceParams {
    * Allows to force the startup kind
    */
   resolveStartupKind?: StartupKindResolver
+  shouldAttemptTaskReconnection?: (startupKind: StartupKind) => boolean | undefined
 }
 
 const DEFAULT_RESOLVE_STARTUP_KIND: StartupKindResolver = (resolveDefault) => resolveDefault()
@@ -34,6 +35,13 @@ export default function getServiceOverride(
     protected override doResolveStartupKind(): StartupKind | undefined {
       return (params.resolveStartupKind ?? DEFAULT_RESOLVE_STARTUP_KIND)(() =>
         super.doResolveStartupKind()
+      )
+    }
+
+    override get shouldAttemptTaskReconnection(): boolean {
+      return (
+        params.shouldAttemptTaskReconnection?.(this.startupKind) ??
+        super.shouldAttemptTaskReconnection
       )
     }
   }
