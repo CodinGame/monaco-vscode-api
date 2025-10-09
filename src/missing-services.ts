@@ -424,6 +424,7 @@ import { IInlineCompletionsUnificationService } from 'vs/workbench/services/inli
 import { getBuiltInExtensionTranslationsUris, getExtensionIdProvidingCurrentLocale } from './l10n'
 import { unsupported } from './tools'
 import { IChatModeService } from 'vs/workbench/contrib/chat/common/chatModes.service'
+import { LazyCollectionState } from 'vs/workbench/contrib/mcp/common/mcpTypes'
 
 function Unsupported(target: object, propertyKey: string, descriptor?: PropertyDescriptor) {
   function unsupported() {
@@ -5354,18 +5355,12 @@ registerSingleton(IPromptsService, PromptsService, InstantiationType.Eager)
 class McpRegistry implements IMcpRegistry {
   _serviceBrand: undefined
   onDidChangeInputs: IMcpRegistry['onDidChangeInputs'] = Event.None
-  @Unsupported
-  get collections() {
-    return unsupported()
-  }
-  @Unsupported
-  get lazyCollectionState() {
-    return unsupported()
-  }
-  @Unsupported
-  get delegates(): never {
-    return unsupported()
-  }
+  collections: IMcpRegistry['collections'] = constObservable([])
+  lazyCollectionState: IMcpRegistry['lazyCollectionState'] = constObservable({
+    collections: [],
+    state: LazyCollectionState.AllKnown
+  })
+  delegates: IMcpRegistry['delegates'] = constObservable([])
   discoverCollections: IMcpRegistry['discoverCollections'] = async () => []
   registerCollection: IMcpRegistry['registerCollection'] = () => Disposable.None
   @Unsupported
@@ -5380,7 +5375,11 @@ class McpRegistry implements IMcpRegistry {
   @Unsupported
   setSavedInput: IMcpRegistry['setSavedInput'] = unsupported
   @Unsupported
-  getServerDefinition: IMcpRegistry['getServerDefinition'] = unsupported
+  getServerDefinition: IMcpRegistry['getServerDefinition'] = () =>
+    constObservable({
+      server: undefined,
+      collection: undefined
+    })
 }
 registerSingleton(IMcpRegistry, McpRegistry, InstantiationType.Eager)
 class McpService implements IMcpService {
