@@ -619,7 +619,7 @@ export { IWorkspaceIdentityService } from 'vs/workbench/services/workspaces/comm
 export { IChatMarkdownAnchorService } from 'vs/workbench/contrib/chat/browser/chatContentParts/chatMarkdownAnchorService.service'
 export { getBuiltInExtensionTranslationsUris, getExtensionIdProvidingCurrentLocale } from './l10n'
 export { unsupported } from './tools'
-export { IChatEntitlementService } from 'vs/workbench/contrib/chat/common/chatEntitlementService.service'
+export { IChatEntitlementService } from 'vs/workbench/services/chat/common/chatEntitlementService.service'
 export { IPromptsService } from 'vs/workbench/contrib/chat/common/promptSyntax/service/promptsService.service'
 export { ISuggestMemoryService } from 'vs/editor/contrib/suggest/browser/suggestMemory.service'
 export { LanguageConfigurationService } from 'vs/editor/common/languages/languageConfigurationRegistry'

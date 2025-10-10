@@ -178,7 +178,6 @@ import {
 } from 'vs/workbench/contrib/chat/common/chatAgents.service'
 import { ICodeMapperService } from 'vs/workbench/contrib/chat/common/chatCodeMapperService.service'
 import { IChatEditingService } from 'vs/workbench/contrib/chat/common/chatEditingService.service'
-import { IChatEntitlementService } from 'vs/workbench/contrib/chat/common/chatEntitlementService.service'
 import { IChatService } from 'vs/workbench/contrib/chat/common/chatService.service'
 import { IChatSessionsService } from 'vs/workbench/contrib/chat/common/chatSessionsService.service'
 import { IChatSlashCommandService } from 'vs/workbench/contrib/chat/common/chatSlashCommands.service'
@@ -262,6 +261,7 @@ import {
 } from 'vs/workbench/contrib/terminal/browser/terminal'
 import {
   ITerminalConfigurationService,
+  ITerminalEditingService,
   ITerminalEditorService,
   ITerminalGroupService,
   ITerminalInstanceService,
@@ -313,6 +313,7 @@ import { IDynamicAuthenticationProviderStorageService } from 'vs/workbench/servi
 import { IAuxiliaryWindowService } from 'vs/workbench/services/auxiliaryWindow/browser/auxiliaryWindowService.service'
 import { IBannerService } from 'vs/workbench/services/banner/browser/bannerService.service'
 import { IBrowserElementsService } from 'vs/workbench/services/browserElements/browser/browserElementsService.service'
+import { IChatEntitlementService } from 'vs/workbench/services/chat/common/chatEntitlementService.service'
 import { IJSONEditingService } from 'vs/workbench/services/configuration/common/jsonEditing.service'
 import { IConfigurationResolverService } from 'vs/workbench/services/configurationResolver/common/configurationResolver.service'
 import { IDecorationsService } from 'vs/workbench/services/decorations/common/decorations.service'
@@ -418,13 +419,14 @@ import { IImageResizeService } from 'vs/platform/imageResize/common/imageResizeS
 import { McpGalleryManifestStatus } from 'vs/platform/mcp/common/mcpGalleryManifest'
 import { IMcpGalleryManifestService } from 'vs/platform/mcp/common/mcpGalleryManifest.service'
 import { IChatLayoutService } from 'vs/workbench/contrib/chat/common/chatLayoutService.service'
+import { IChatModeService } from 'vs/workbench/contrib/chat/common/chatModes.service'
 import { IAiEditTelemetryService } from 'vs/workbench/contrib/editTelemetry/browser/telemetry/aiEditTelemetry/aiEditTelemetryService.service'
+import { LazyCollectionState } from 'vs/workbench/contrib/mcp/common/mcpTypes'
+import { ChatEntitlement } from 'vs/workbench/services/chat/common/chatEntitlementService'
 import type { IInlineCompletionsUnificationState } from 'vs/workbench/services/inlineCompletions/common/inlineCompletionsUnification'
 import { IInlineCompletionsUnificationService } from 'vs/workbench/services/inlineCompletions/common/inlineCompletionsUnification.service'
 import { getBuiltInExtensionTranslationsUris, getExtensionIdProvidingCurrentLocale } from './l10n'
 import { unsupported } from './tools'
-import { IChatModeService } from 'vs/workbench/contrib/chat/common/chatModes.service'
-import { LazyCollectionState } from 'vs/workbench/contrib/mcp/common/mcpTypes'
 
 function Unsupported(target: object, propertyKey: string, descriptor?: PropertyDescriptor) {
   function unsupported() {
@@ -2629,7 +2631,6 @@ class TerminalService implements ITerminalService {
   revealActiveTerminal: ITerminalService['revealActiveTerminal'] = unsupported
   isProcessSupportRegistered: ITerminalService['isProcessSupportRegistered'] = false
   connectionState: ITerminalService['connectionState'] = TerminalConnectionState.Connected
-  defaultLocation: ITerminalService['defaultLocation'] = TerminalLocation.Panel
   onDidChangeActiveGroup: ITerminalService['onDidChangeActiveGroup'] = Event.None
   onDidCreateInstance: ITerminalService['onDidCreateInstance'] = Event.None
   onDidChangeInstanceDimensions: ITerminalService['onDidChangeInstanceDimensions'] = Event.None
@@ -2642,7 +2643,6 @@ class TerminalService implements ITerminalService {
   @Unsupported
   getInstanceFromId: ITerminalService['getInstanceFromId'] = unsupported
   @Unsupported
-  getInstanceFromIndex: ITerminalService['getInstanceFromIndex'] = unsupported
   getReconnectedTerminals: ITerminalService['getReconnectedTerminals'] = () => undefined
   @Unsupported
   getActiveOrCreateInstance: ITerminalService['getActiveOrCreateInstance'] = unsupported
@@ -2664,12 +2664,6 @@ class TerminalService implements ITerminalService {
   @Unsupported
   isAttachedToTerminal: ITerminalService['isAttachedToTerminal'] = unsupported
   @Unsupported
-  getEditableData: ITerminalService['getEditableData'] = unsupported
-  @Unsupported
-  setEditable: ITerminalService['setEditable'] = unsupported
-  @Unsupported
-  isEditable: ITerminalService['isEditable'] = unsupported
-  @Unsupported
   safeDisposeTerminal: ITerminalService['safeDisposeTerminal'] = unsupported
   @Unsupported
   getDefaultInstanceHost: ITerminalService['getDefaultInstanceHost'] = unsupported
@@ -2679,10 +2673,6 @@ class TerminalService implements ITerminalService {
   resolveLocation: ITerminalService['resolveLocation'] = unsupported
   @Unsupported
   setNativeDelegate: ITerminalService['setNativeDelegate'] = unsupported
-  @Unsupported
-  getEditingTerminal: ITerminalService['getEditingTerminal'] = unsupported
-  @Unsupported
-  setEditingTerminal: ITerminalService['setEditingTerminal'] = unsupported
   activeInstance: ITerminalService['activeInstance'] = undefined
   onDidDisposeInstance: ITerminalService['onDidDisposeInstance'] = Event.None
   onDidFocusInstance: ITerminalService['onDidFocusInstance'] = Event.None
@@ -2702,6 +2692,7 @@ class TerminalService implements ITerminalService {
 registerSingleton(ITerminalService, TerminalService, InstantiationType.Delayed)
 class TerminalConfigurationService implements ITerminalConfigurationService {
   _serviceBrand: undefined
+  defaultLocation: ITerminalConfigurationService['defaultLocation'] = TerminalLocation.Panel
   @Unsupported
   get config(): ITerminalConfigurationService['config'] {
     return unsupported()
@@ -3268,6 +3259,8 @@ class ChatService implements IChatService {
   requestInProgressObs: IChatService['requestInProgressObs'] = constObservable(false)
   edits2Enabled: IChatService['edits2Enabled'] = false
   getPersistedSessionTitle: IChatService['getPersistedSessionTitle'] = () => undefined
+  editingSessions: IChatService['editingSessions'] = []
+  getChatSessionFromInternalId: IChatService['getChatSessionFromInternalId'] = () => undefined
 }
 registerSingleton(IChatService, ChatService, InstantiationType.Delayed)
 class ChatMarkdownAnchorService implements IChatMarkdownAnchorService {
@@ -5168,9 +5161,6 @@ class LanguageModelToolsService implements ILanguageModelToolsService {
   toolSets: ILanguageModelToolsService['toolSets'] = constObservable([])
 
   @Unsupported
-  toToolEnablementMap: ILanguageModelToolsService['toToolEnablementMap'] = unsupported
-
-  @Unsupported
   toToolAndToolSetEnablementMap: ILanguageModelToolsService['toToolAndToolSetEnablementMap'] =
     unsupported
 
@@ -5178,6 +5168,15 @@ class LanguageModelToolsService implements ILanguageModelToolsService {
   getToolAutoConfirmation: ILanguageModelToolsService['getToolAutoConfirmation'] = unsupported
 
   getToolSet: ILanguageModelToolsService['getToolSet'] = () => undefined
+
+  getQualifiedToolNames: ILanguageModelToolsService['getQualifiedToolNames'] = () => []
+  getToolByQualifiedName: ILanguageModelToolsService['getToolByQualifiedName'] = () => undefined
+  @Unsupported
+  getQualifiedToolName: ILanguageModelToolsService['getQualifiedToolName'] = unsupported
+  getDeprecatedQualifiedToolNames: ILanguageModelToolsService['getDeprecatedQualifiedToolNames'] =
+    () => new Map()
+  toQualifiedToolNames: ILanguageModelToolsService['toQualifiedToolNames'] = () => []
+  toToolReferences: ILanguageModelToolsService['toToolReferences'] = () => []
 }
 registerSingleton(ILanguageModelToolsService, LanguageModelToolsService, InstantiationType.Delayed)
 class IssueFormService implements IIssueFormService {
@@ -5309,6 +5308,18 @@ class TerminalCompletionService implements ITerminalCompletionService {
   provideCompletions: ITerminalCompletionService['provideCompletions'] = unsupported
 }
 registerSingleton(ITerminalCompletionService, TerminalCompletionService, InstantiationType.Delayed)
+class TerminalEditingService implements ITerminalEditingService {
+  _serviceBrand: undefined
+  getEditableData: ITerminalEditingService['getEditableData'] = () => undefined
+  @Unsupported
+  setEditable: ITerminalEditingService['setEditable'] = unsupported
+  isEditable: ITerminalEditingService['isEditable'] = () => false
+  getEditingTerminal: ITerminalEditingService['getEditingTerminal'] = () => undefined
+  @Unsupported
+  setEditingTerminal: ITerminalEditingService['setEditingTerminal'] = unsupported
+}
+registerSingleton(ITerminalEditingService, TerminalEditingService, InstantiationType.Delayed)
+
 class ChatEntitlementsService implements IChatEntitlementService {
   _serviceBrand: undefined
   organisations: IChatEntitlementService['organisations'] = undefined
@@ -5332,12 +5343,18 @@ class ChatEntitlementsService implements IChatEntitlementService {
   }
   @Unsupported
   update: IChatEntitlementService['update'] = unsupported
+
+  entitlementObs: IChatEntitlementService['entitlementObs'] = constObservable(
+    ChatEntitlement.Unknown
+  )
+  sentimentObs: IChatEntitlementService['sentimentObs'] = constObservable({})
+  onDidChangeAnonymous: IChatEntitlementService['onDidChangeAnonymous'] = Event.None
+  anonymous: IChatEntitlementService['anonymous'] = false
+  anonymousObs: IChatEntitlementService['anonymousObs'] = constObservable(false)
 }
 registerSingleton(IChatEntitlementService, ChatEntitlementsService, InstantiationType.Eager)
 class PromptsService implements IPromptsService {
   _serviceBrand: undefined
-  @Unsupported
-  getSyntaxParserFor: IPromptsService['getSyntaxParserFor'] = unsupported
   listPromptFiles: IPromptsService['listPromptFiles'] = async () => []
   getSourceFolders: IPromptsService['getSourceFolders'] = () => []
   dispose: IPromptsService['dispose'] = (): void => {}
@@ -5346,9 +5363,18 @@ class PromptsService implements IPromptsService {
   findPromptSlashCommands: IPromptsService['findPromptSlashCommands'] = async () => []
   onDidChangeCustomChatModes: IPromptsService['onDidChangeCustomChatModes'] = Event.None
   getCustomChatModes: IPromptsService['getCustomChatModes'] = async () => []
-  @Unsupported
-  parse: IPromptsService['parse'] = unsupported
   getPromptFileType: IPromptsService['getPromptFileType'] = () => undefined
+  @Unsupported
+  getParsedPromptFile: IPromptsService['getParsedPromptFile'] = unsupported
+  listPromptFilesForStorage: IPromptsService['listPromptFilesForStorage'] = async () => []
+  @Unsupported
+  getPromptCommandName: IPromptsService['getPromptCommandName'] = unsupported
+  @Unsupported
+  parseNew: IPromptsService['parseNew'] = unsupported
+  registerContributedFile: IPromptsService['registerContributedFile'] = () => Disposable.None
+  @Unsupported
+  getPromptLocationLabel: IPromptsService['getPromptLocationLabel'] = unsupported
+  findAgentMDsInWorkspace: IPromptsService['findAgentMDsInWorkspace'] = async () => []
 }
 registerSingleton(IPromptsService, PromptsService, InstantiationType.Eager)
 
@@ -5533,15 +5559,14 @@ class McpGalleryService implements IMcpGalleryService {
   @Unsupported
   getReadme: IMcpGalleryService['getReadme'] = unsupported
 
-  getMcpServersFromVSCodeGallery: IMcpGalleryService['getMcpServersFromVSCodeGallery'] =
-    async () => []
-
   getMcpServersFromGallery: IMcpGalleryService['getMcpServersFromGallery'] = async () => []
 
   getMcpServer: IMcpGalleryService['getMcpServer'] = async () => undefined
 
   @Unsupported
   getMcpServerConfiguration: IMcpGalleryService['getMcpServerConfiguration'] = unsupported
+
+  getMcpServerByName: IMcpGalleryService['getMcpServerByName'] = async () => undefined
 }
 registerSingleton(IMcpGalleryService, McpGalleryService, InstantiationType.Eager)
 class McpSamplingService implements IMcpSamplingService {

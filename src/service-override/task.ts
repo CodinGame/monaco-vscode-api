@@ -45,6 +45,7 @@ import {
 } from 'vs/platform/workspace/common/workspaceTrust.service'
 import { IViewDescriptorService } from 'vs/workbench/common/views.service'
 import 'vs/workbench/contrib/tasks/browser/task.contribution'
+import { IHostService } from 'vs/workbench/services/host/browser/host.service'
 
 class CustomTaskService extends TaskService {
   constructor(
@@ -88,7 +89,8 @@ class CustomTaskService extends TaskService {
     @IRemoteAgentService remoteAgentService: IRemoteAgentService,
     @IInstantiationService _instantiationService: IInstantiationService,
     @IChatService _chatService: IChatService,
-    @IChatAgentService _chatAgentService: IChatAgentService
+    @IChatAgentService _chatAgentService: IChatAgentService,
+    @IHostService _hostService: IHostService
   ) {
     super(
       _configurationService,
@@ -128,7 +130,8 @@ class CustomTaskService extends TaskService {
       remoteAgentService,
       _instantiationService,
       _chatService,
-      _chatAgentService
+      _chatAgentService,
+      _hostService
     )
 
     if (forcedSupportedExecutions != null) {

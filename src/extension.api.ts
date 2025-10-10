@@ -328,7 +328,8 @@ const api: typeof vscode = {
   ChatReferenceBinaryData: extHostTypes.ChatReferenceBinaryData,
   CellErrorStackFrame: extHostTypes.CellErrorStackFrame,
   TerminalCompletionItemKind: extHostTypes.TerminalCompletionItemKind,
-  TerminalCompletionList: extHostTypes.TerminalCompletionList,
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  TerminalCompletionList: <any>extHostTypes.TerminalCompletionList,
   TextEditorChangeKind: extHostTypes.TextEditorChangeKind,
   TextSearchMatch2: searchExtTypes.TextSearchMatch2,
   TextSearchContext2: searchExtTypes.TextSearchContext2,

@@ -18,6 +18,7 @@ import {
 } from 'vs/workbench/contrib/terminal/common/terminal.service'
 import {
   ITerminalConfigurationService,
+  ITerminalEditingService,
   ITerminalEditorService,
   ITerminalGroupService,
   ITerminalInstanceService,
@@ -46,17 +47,18 @@ import { DeferredPromise } from 'vs/base/common/async'
 import { EmbedderTerminalService } from 'vs/workbench/services/terminal/common/embedderTerminalService'
 import { IEmbedderTerminalService } from 'vs/workbench/services/terminal/common/embedderTerminalService.service'
 import { TerminalConfigurationService } from 'vs/workbench/contrib/terminal/browser/terminalConfigurationService'
-import 'vs/workbench/contrib/terminal/terminal.contribution'
-import 'vs/workbench/contrib/externalTerminal/browser/externalTerminal.contribution'
-import 'vs/workbench/contrib/terminal/browser/terminal.web.contribution'
 import { ITerminalCompletionService } from 'vs/workbench/contrib/terminalContrib/suggest/browser/terminalCompletionService.service'
 import { TerminalCompletionService } from 'vs/workbench/contrib/terminalContrib/suggest/browser/terminalCompletionService'
 import { unsupported } from '../tools.js'
-import type { ISerializedCommandDetectionCapability } from 'vs/platform/terminal/common/capabilities/capabilities.js'
+import type { ISerializedCommandDetectionCapability } from 'vs/platform/terminal/common/capabilities/capabilities'
+import { TerminalEditingService } from 'vs/workbench/contrib/terminal/browser/terminalEditingService'
 export {
   ITerminalService,
   ITerminalInstanceService
 } from 'vs/workbench/contrib/terminal/browser/terminal.service'
+import 'vs/workbench/contrib/terminal/terminal.contribution'
+import 'vs/workbench/contrib/externalTerminal/browser/externalTerminal.contribution'
+import 'vs/workbench/contrib/terminal/browser/terminal.web.contribution'
 
 abstract class SimpleTerminalBackend implements ITerminalBackend {
   installAutoReply = async (): Promise<void> => {}
@@ -203,7 +205,12 @@ export default function getServiceOverride(backend?: ITerminalBackend): IEditorO
       [],
       true
     ),
-    [ITerminalCompletionService.toString()]: new SyncDescriptor(TerminalCompletionService, [], true)
+    [ITerminalCompletionService.toString()]: new SyncDescriptor(
+      TerminalCompletionService,
+      [],
+      true
+    ),
+    [ITerminalEditingService.toString()]: new SyncDescriptor(TerminalEditingService, [], true)
   }
 }
 
