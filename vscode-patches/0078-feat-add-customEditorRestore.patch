@@ -1,0 +1,110 @@
+From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
+From: =?UTF-8?q?Lo=C3=AFc=20Mangeonjean?= <loic@coderpad.io>
+Date: Tue, 23 Sep 2025 11:13:34 +0200
+Subject: [PATCH] feat: add customEditorRestore
+
+---
+ src/vs/workbench/browser/layout.ts    |  9 ++++++---
+ src/vs/workbench/browser/workbench.ts | 12 +++++++-----
+ 2 files changed, 13 insertions(+), 8 deletions(-)
+
+diff --git a/src/vs/workbench/browser/layout.ts b/src/vs/workbench/browser/layout.ts
+index 4dfbd24e8d3..a5dc7eb3c50 100644
+--- a/src/vs/workbench/browser/layout.ts
++++ b/src/vs/workbench/browser/layout.ts
+@@ -20,7 +20,7 @@ import { isCodeEditor } from '../../editor/browser/editorBrowser.js';
+ import { LineNumbersType } from '../../editor/common/config/editorOptions.js';
+ import { IConfigurationChangeEvent, IConfigurationService, isConfigured } from '../../platform/configuration/common/configuration.js';
+ import { IFileService } from '../../platform/files/common/files.js';
+-import { ServicesAccessor } from '../../platform/instantiation/common/instantiation.js';
++import { IInstantiationService, ServicesAccessor } from '../../platform/instantiation/common/instantiation.js';
+ import { ILogService } from '../../platform/log/common/log.js';
+ import { INotificationService, NotificationsFilter } from '../../platform/notification/common/notification.js';
+ import { IStorageService, StorageScope, StorageTarget } from '../../platform/storage/common/storage.js';
+@@ -299,7 +299,7 @@ export abstract class Layout extends Disposable implements IWorkbenchLayoutServi
+ 
+ 	constructor(
+ 		protected readonly parent: HTMLElement,
+-		private readonly layoutOptions?: { resetLayout: boolean }
++		private readonly layoutOptions?: { resetLayout?: boolean, customEditorRestore?: (accessor: ServicesAccessor, defaultLayout: boolean) => Promise<void> }
+ 	) {
+ 		super();
+ 
+@@ -892,7 +892,7 @@ export abstract class Layout extends Disposable implements IWorkbenchLayoutServi
+ 		return this.restored;
+ 	}
+ 
+-	protected restoreParts(): void {
++	protected restoreParts(instantiationService: IInstantiationService): void {
+ 
+ 		// distinguish long running restore operations that
+ 		// are required for the layout to be ready from those
+@@ -956,11 +956,14 @@ export abstract class Layout extends Disposable implements IWorkbenchLayoutServi
+ 				}));
+ 			}
+ 
++			const customEditorRestorePromise = instantiationService.invokeFunction(this.layoutOptions?.customEditorRestore ?? (async () => { }), this.state.initialization.layout?.editors != null)
++
+ 			// do not block the overall layout ready flow from potentially
+ 			// slow editors to resolve on startup
+ 			layoutRestoredPromises.push(
+ 				Promise.all([
+ 					openEditorsPromise?.finally(() => mark('code/restoreEditors/editorsOpened')),
++					customEditorRestorePromise?.finally(() => mark('code/restoreEditors/customEditorsOpened')),
+ 					this.editorGroupService.whenRestored.finally(() => mark('code/restoreEditors/editorGroupsRestored'))
+ 				]).finally(() => {
+ 					// the `code/didRestoreEditors` perf mark is specifically
+diff --git a/src/vs/workbench/browser/workbench.ts b/src/vs/workbench/browser/workbench.ts
+index 591299041ab..3d1d703d927 100644
+--- a/src/vs/workbench/browser/workbench.ts
++++ b/src/vs/workbench/browser/workbench.ts
+@@ -15,7 +15,7 @@ import { getSingletonServiceDescriptors } from '../../platform/instantiation/com
+ import { Position, Parts, IWorkbenchLayoutService, positionToString } from '../services/layout/browser/layoutService.js';
+ import { IStorageService, WillSaveStateReason, StorageScope, StorageTarget } from '../../platform/storage/common/storage.js';
+ import { IConfigurationChangeEvent, IConfigurationService } from '../../platform/configuration/common/configuration.js';
+-import { IInstantiationService } from '../../platform/instantiation/common/instantiation.js';
++import { IInstantiationService, ServicesAccessor } from '../../platform/instantiation/common/instantiation.js';
+ import { ServiceCollection } from '../../platform/instantiation/common/serviceCollection.js';
+ import { LifecyclePhase, ILifecycleService, WillShutdownEvent } from '../services/lifecycle/common/lifecycle.js';
+ import { INotificationService } from '../../platform/notification/common/notification.js';
+@@ -53,6 +53,8 @@ export interface IWorkbenchOptions {
+ 	 * Whether to reset the workbench parts layout on startup.
+ 	 */
+ 	resetLayout?: boolean;
++
++	customEditorRestore?: (accessor: ServicesAccessor, defaultLayout: boolean) => Promise<void>
+ }
+ 
+ export class Workbench extends Layout {
+@@ -69,7 +71,7 @@ export class Workbench extends Layout {
+ 		private readonly serviceCollection: ServiceCollection,
+ 		logService: ILogService
+ 	) {
+-		super(parent, { resetLayout: Boolean(options?.resetLayout) });
++		super(parent, { resetLayout: options?.resetLayout, customEditorRestore: options?.customEditorRestore });
+ 
+ 		// Perf: measure workbench startup time
+ 		mark('code/willStartWorkbench');
+@@ -150,7 +152,7 @@ export class Workbench extends Layout {
+ 				this.layout();
+ 
+ 				// Restore
+-				this.restore(lifecycleService);
++				this.restore(instantiationService, lifecycleService);
+ 			});
+ 
+ 			return instantiationService;
+@@ -378,11 +380,11 @@ export class Workbench extends Layout {
+ 		});
+ 	}
+ 
+-	protected restore(lifecycleService: ILifecycleService): void {
++	protected restore(instantiationService: IInstantiationService, lifecycleService: ILifecycleService): void {
+ 
+ 		// Ask each part to restore
+ 		try {
+-			this.restoreParts();
++			this.restoreParts(instantiationService);
+ 		} catch (error) {
+ 			onUnexpectedError(error);
+ 		}

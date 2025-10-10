@@ -1,0 +1,257 @@
+From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
+From: =?UTF-8?q?Lo=C3=AFc=20Mangeonjean?= <loic@coderpad.io>
+Date: Mon, 11 Mar 2024 17:13:49 +0100
+Subject: [PATCH] fix: apply style only on standalone editors
+
+---
+ .../browser/config/editorConfiguration.ts     | 12 ++++++--
+ .../widget/codeEditor/codeEditorWidget.ts     | 11 ++++++--
+ .../widget/diffEditor/diffEditorWidget.ts     |  8 ++++++
+ .../standalone/browser/standalone-tokens.css  | 28 +++++++++----------
+ .../browser/standaloneCodeEditor.ts           |  4 +--
+ .../test/browser/config/testConfiguration.ts  |  2 +-
+ src/vs/editor/test/browser/testCodeEditor.ts  |  2 +-
+ .../multicursor/notebookMulticursor.ts        |  2 +-
+ 8 files changed, 45 insertions(+), 24 deletions(-)
+
+diff --git a/src/vs/editor/browser/config/editorConfiguration.ts b/src/vs/editor/browser/config/editorConfiguration.ts
+index 8b936dd220c..7966ec2b353 100644
+--- a/src/vs/editor/browser/config/editorConfiguration.ts
++++ b/src/vs/editor/browser/config/editorConfiguration.ts
+@@ -46,6 +46,7 @@ export class EditorConfiguration extends Disposable implements IEditorConfigurat
+ 
+ 	public readonly isSimpleWidget: boolean;
+ 	public readonly contextMenuId: MenuId;
++	public readonly isStandaloneEditor: boolean;
+ 	private readonly _containerObserver: ElementSizeObserver;
+ 
+ 	private _isDominatedByLongLines: boolean = false;
+@@ -72,6 +73,7 @@ export class EditorConfiguration extends Disposable implements IEditorConfigurat
+ 	constructor(
+ 		isSimpleWidget: boolean,
+ 		contextMenuId: MenuId,
++		isStandaloneEditor: boolean,
+ 		options: Readonly<IEditorConstructionOptions>,
+ 		container: HTMLElement | null,
+ 		@IAccessibilityService private readonly _accessibilityService: IAccessibilityService
+@@ -79,6 +81,7 @@ export class EditorConfiguration extends Disposable implements IEditorConfigurat
+ 		super();
+ 		this.isSimpleWidget = isSimpleWidget;
+ 		this.contextMenuId = contextMenuId;
++		this.isStandaloneEditor = isStandaloneEditor;
+ 		this._containerObserver = this._register(new ElementSizeObserver(container, options.dimension));
+ 		this._targetWindowId = getWindow(container).vscodeWindowId;
+ 
+@@ -138,7 +141,7 @@ export class EditorConfiguration extends Disposable implements IEditorConfigurat
+ 
+ 	protected _readEnvConfiguration(): IEnvConfiguration {
+ 		return {
+-			extraEditorClassName: getExtraEditorClassName(),
++			extraEditorClassName: getExtraEditorClassName(this.isStandaloneEditor),
+ 			outerWidth: this._containerObserver.getWidth(),
+ 			outerHeight: this._containerObserver.getHeight(),
+ 			emptySelectionClipboard: browser.isWebKit || browser.isFirefox,
+@@ -227,7 +230,7 @@ function digitCount(n: number): number {
+ 	return r ? r : 1;
+ }
+ 
+-function getExtraEditorClassName(): string {
++function getExtraEditorClassName(isStandaloneEditor: boolean): string {
+ 	let extra = '';
+ 	if (browser.isSafari || browser.isWebkitWebView) {
+ 		// See https://github.com/microsoft/vscode/issues/108822
+@@ -240,6 +243,9 @@ function getExtraEditorClassName(): string {
+ 	if (platform.isMacintosh) {
+ 		extra += 'mac ';
+ 	}
++	if (isStandaloneEditor) {
++		extra += 'standalone ';
++	}
+ 	return extra;
+ }
+ 
+@@ -282,7 +288,7 @@ export class ComputedEditorOptions implements IComputedEditorOptions {
+ 	}
+ }
+ 
+-class EditorOptionsUtil {
++export class EditorOptionsUtil {
+ 
+ 	public static validateOptions(options: IEditorOptions): ValidatedEditorOptions {
+ 		const result = new ValidatedEditorOptions();
+diff --git a/src/vs/editor/browser/widget/codeEditor/codeEditorWidget.ts b/src/vs/editor/browser/widget/codeEditor/codeEditorWidget.ts
+index a770f47d708..985d6e217e6 100644
+--- a/src/vs/editor/browser/widget/codeEditor/codeEditorWidget.ts
++++ b/src/vs/editor/browser/widget/codeEditor/codeEditorWidget.ts
+@@ -284,6 +284,7 @@ export class CodeEditorWidget extends Disposable implements editorBrowser.ICodeE
+ 
+ 		this._configuration = this._register(this._createConfiguration(codeEditorWidgetOptions.isSimpleWidget || false,
+ 			codeEditorWidgetOptions.contextMenuId ?? (codeEditorWidgetOptions.isSimpleWidget ? MenuId.SimpleEditorContext : MenuId.EditorContext),
++			codeEditorWidgetOptions.isStandaloneEditor || false,
+ 			options, accessibilityService));
+ 		this._register(this._configuration.onDidChange((e) => {
+ 			this._onDidChangeConfiguration.fire(e);
+@@ -392,8 +393,8 @@ export class CodeEditorWidget extends Disposable implements editorBrowser.ICodeE
+ 		this._modelData?.view.writeScreenReaderContent(reason);
+ 	}
+ 
+-	protected _createConfiguration(isSimpleWidget: boolean, contextMenuId: MenuId, options: Readonly<IEditorConstructionOptions>, accessibilityService: IAccessibilityService): EditorConfiguration {
+-		return new EditorConfiguration(isSimpleWidget, contextMenuId, options, this._domElement, accessibilityService);
++	protected _createConfiguration(isSimpleWidget: boolean, contextMenuId: MenuId, isStandaloneEditor: boolean, options: Readonly<IEditorConstructionOptions>, accessibilityService: IAccessibilityService): EditorConfiguration {
++		return new EditorConfiguration(isSimpleWidget, contextMenuId, isStandaloneEditor, options, this._domElement, accessibilityService);
+ 	}
+ 
+ 	public getId(): string {
+@@ -2031,6 +2032,12 @@ export interface ICodeEditorWidgetOptions {
+ 	 */
+ 	isSimpleWidget?: boolean;
+ 
++	/**
++	 * Is this a standalone editor
++	 * Defaults to false.
++	 */
++	isStandaloneEditor?: boolean;
++
+ 	/**
+ 	 * Contributions to instantiate.
+ 	 * When provided, only the contributions included will be instantiated.
+diff --git a/src/vs/editor/browser/widget/diffEditor/diffEditorWidget.ts b/src/vs/editor/browser/widget/diffEditor/diffEditorWidget.ts
+index 8fd39f2945d..ce453f45816 100644
+--- a/src/vs/editor/browser/widget/diffEditor/diffEditorWidget.ts
++++ b/src/vs/editor/browser/widget/diffEditor/diffEditorWidget.ts
+@@ -52,6 +52,12 @@ import { CSSStyle, ObservableElementSizeObserver, RefCounted, applyStyle, applyV
+ export interface IDiffCodeEditorWidgetOptions {
+ 	originalEditor?: ICodeEditorWidgetOptions;
+ 	modifiedEditor?: ICodeEditorWidgetOptions;
++
++	/**
++	 * Is this a standalone editor
++	 * Defaults to false.
++	 */
++	isStandaloneEditor?: boolean;
+ }
+ 
+ export class DiffEditorWidget extends DelegatingEditor implements IDiffEditor {
+@@ -184,6 +190,8 @@ export class DiffEditorWidget extends DelegatingEditor implements IDiffEditor {
+ 
+ 		this._contextKeyService.createKey('isInDiffEditor', true);
+ 
++		this.elements.root.classList.toggle('standalone', codeEditorWidgetOptions.isStandaloneEditor || false);
++
+ 		this._domElement.appendChild(this.elements.root);
+ 		this._register(toDisposable(() => this.elements.root.remove()));
+ 
+diff --git a/src/vs/editor/standalone/browser/standalone-tokens.css b/src/vs/editor/standalone/browser/standalone-tokens.css
+index 1d65e13d69c..a47a00a7aff 100644
+--- a/src/vs/editor/standalone/browser/standalone-tokens.css
++++ b/src/vs/editor/standalone/browser/standalone-tokens.css
+@@ -5,7 +5,7 @@
+ 
+ 
+ /* Default standalone editor fonts */
+-.monaco-editor {
++.monaco-editor.standalone {
+ 	font-family: -apple-system, BlinkMacSystemFont, "Segoe WPC", "Segoe UI", "HelveticaNeue-Light", system-ui, "Ubuntu", "Droid Sans", sans-serif;
+ 	--monaco-monospace-font: "SF Mono", Monaco, Menlo, Consolas, "Ubuntu Mono", "Liberation Mono", "DejaVu Sans Mono", "Courier New", monospace;
+ }
+@@ -14,9 +14,9 @@
+ 	stroke-width: 1.2px;
+ }
+ 
+-.monaco-editor.vs-dark .monaco-menu .monaco-action-bar.vertical .action-menu-item:focus .action-label,
+-.monaco-editor.hc-black .monaco-menu .monaco-action-bar.vertical .action-menu-item:focus .action-label,
+-.monaco-editor.hc-light .monaco-menu .monaco-action-bar.vertical .action-menu-item:focus .action-label {
++.monaco-editor.standalone.vs-dark .monaco-menu .monaco-action-bar.vertical .action-menu-item:focus .action-label,
++.monaco-editor.standalone.hc-black .monaco-menu .monaco-action-bar.vertical .action-menu-item:focus .action-label,
++.monaco-editor.standalone.hc-light .monaco-menu .monaco-action-bar.vertical .action-menu-item:focus .action-label {
+ 	stroke-width: 1.2px;
+ }
+ 
+@@ -37,16 +37,16 @@
+ 	clip-path: inset(50%);
+ }
+ 
+-.monaco-editor .synthetic-focus, .monaco-diff-editor .synthetic-focus,
+-.monaco-editor [tabindex="0"]:focus, .monaco-diff-editor [tabindex="0"]:focus,
+-.monaco-editor [tabindex="-1"]:focus, .monaco-diff-editor [tabindex="-1"]:focus,
+-.monaco-editor button:focus, .monaco-diff-editor button:focus,
+-.monaco-editor input[type=button]:focus, .monaco-diff-editor input[type=button]:focus,
+-.monaco-editor input[type=checkbox]:focus, .monaco-diff-editor input[type=checkbox]:focus,
+-.monaco-editor input[type=search]:focus, .monaco-diff-editor input[type=search]:focus,
+-.monaco-editor input[type=text]:focus, .monaco-diff-editor input[type=text]:focus,
+-.monaco-editor select:focus, .monaco-diff-editor select:focus,
+-.monaco-editor textarea:focus, .monaco-diff-editor textarea:focus {
++.monaco-editor.standalone .synthetic-focus, .monaco-diff-editor.standalone .synthetic-focus,
++.monaco-editor.standalone [tabindex="0"]:focus, .monaco-diff-editor.standalone [tabindex="0"]:focus,
++.monaco-editor.standalone [tabindex="-1"]:focus, .monaco-diff-editor.standalone [tabindex="-1"]:focus,
++.monaco-editor.standalone button:focus, .monaco-diff-editor.standalone button:focus,
++.monaco-editor.standalone input[type=button]:focus, .monaco-diff-editor.standalone input[type=button]:focus,
++.monaco-editor.standalone input[type=checkbox]:focus, .monaco-diff-editor.standalone input[type=checkbox]:focus,
++.monaco-editor.standalone input[type=search]:focus, .monaco-diff-editor.standalone input[type=search]:focus,
++.monaco-editor.standalone input[type=text]:focus, .monaco-diff-editor.standalone input[type=text]:focus,
++.monaco-editor.standalone select:focus, .monaco-diff-editor.standalone select:focus,
++.monaco-editor.standalone textarea:focus, .monaco-diff-editor.standalone textarea:focus {
+ 	outline-width: 1px;
+ 	outline-style: solid;
+ 	outline-offset: -1px;
+diff --git a/src/vs/editor/standalone/browser/standaloneCodeEditor.ts b/src/vs/editor/standalone/browser/standaloneCodeEditor.ts
+index dffab646d2b..ca9736c46f1 100644
+--- a/src/vs/editor/standalone/browser/standaloneCodeEditor.ts
++++ b/src/vs/editor/standalone/browser/standaloneCodeEditor.ts
+@@ -283,7 +283,7 @@ export class StandaloneCodeEditor extends CodeEditorWidget implements IStandalon
+ 	) {
+ 		const options = { ..._options };
+ 		options.ariaLabel = options.ariaLabel || StandaloneCodeEditorNLS.editorViewAccessibleLabel;
+-		super(domElement, options, {}, instantiationService, codeEditorService, commandService, contextKeyService, themeService, notificationService, accessibilityService, languageConfigurationService, languageFeaturesService);
++		super(domElement, options, { isStandaloneEditor: true }, instantiationService, codeEditorService, commandService, contextKeyService, themeService, notificationService, accessibilityService, languageConfigurationService, languageFeaturesService);
+ 
+ 		if (keybindingService instanceof StandaloneKeybindingService) {
+ 			this._standaloneKeybindingService = keybindingService;
+@@ -521,7 +521,7 @@ export class StandaloneDiffEditor2 extends DiffEditorWidget implements IStandalo
+ 		super(
+ 			domElement,
+ 			options,
+-			{},
++			{ isStandaloneEditor: true },
+ 			contextKeyService,
+ 			instantiationService,
+ 			codeEditorService,
+diff --git a/src/vs/editor/test/browser/config/testConfiguration.ts b/src/vs/editor/test/browser/config/testConfiguration.ts
+index ece0400a78c..5f70126b20f 100644
+--- a/src/vs/editor/test/browser/config/testConfiguration.ts
++++ b/src/vs/editor/test/browser/config/testConfiguration.ts
+@@ -14,7 +14,7 @@ import { MenuId } from '../../../../platform/actions/common/actions.js';
+ export class TestConfiguration extends EditorConfiguration {
+ 
+ 	constructor(opts: Readonly<TestCodeEditorCreationOptions>) {
+-		super(false, MenuId.EditorContext, opts, null, new TestAccessibilityService());
++		super(false, MenuId.EditorContext, false, opts, null, new TestAccessibilityService());
+ 	}
+ 
+ 	protected override _readEnvConfiguration(): IEnvConfiguration {
+diff --git a/src/vs/editor/test/browser/testCodeEditor.ts b/src/vs/editor/test/browser/testCodeEditor.ts
+index 570749e69d7..79fbffc303a 100644
+--- a/src/vs/editor/test/browser/testCodeEditor.ts
++++ b/src/vs/editor/test/browser/testCodeEditor.ts
+@@ -84,7 +84,7 @@ export interface ITestEditorAction {
+ export class TestCodeEditor extends CodeEditorWidget implements ICodeEditor {
+ 
+ 	//#region testing overrides
+-	protected override _createConfiguration(isSimpleWidget: boolean, contextMenuId: MenuId, options: Readonly<TestCodeEditorCreationOptions>): EditorConfiguration {
++	protected override _createConfiguration(isSimpleWidget: boolean, contextMenuId: MenuId, isStandaloneEditor: boolean, options: Readonly<TestCodeEditorCreationOptions>): EditorConfiguration {
+ 		return new TestConfiguration(options);
+ 	}
+ 	protected override _createView(viewModel: ViewModel): [View, boolean] {
+diff --git a/src/vs/workbench/contrib/notebook/browser/contrib/multicursor/notebookMulticursor.ts b/src/vs/workbench/contrib/notebook/browser/contrib/multicursor/notebookMulticursor.ts
+index 237326159ff..f6ffd9b1cae 100644
+--- a/src/vs/workbench/contrib/notebook/browser/contrib/multicursor/notebookMulticursor.ts
++++ b/src/vs/workbench/contrib/notebook/browser/contrib/multicursor/notebookMulticursor.ts
+@@ -839,7 +839,7 @@ export class NotebookMultiCursorController extends Disposable implements INotebo
+ 		const cellEditorOptions = new CellEditorOptions(this.notebookEditor.getBaseCellEditorOptions(cell.language), this.notebookEditor.notebookOptions, this.configurationService);
+ 		const options = cellEditorOptions.getUpdatedValue(cell.internalMetadata, cell.uri);
+ 		cellEditorOptions.dispose();
+-		return new EditorConfiguration(false, MenuId.EditorContent, options, null, this.accessibilityService);
++		return new EditorConfiguration(false, MenuId.EditorContent, false, options, null, this.accessibilityService);
+ 	}
+ 
+ 	/**
