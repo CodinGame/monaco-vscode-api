@@ -1,0 +1,38 @@
+From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
+From: =?UTF-8?q?Lo=C3=AFc=20Mangeonjean?= <loic@coderpad.io>
+Date: Mon, 11 Mar 2024 17:48:09 +0100
+Subject: [PATCH] cleanup: remove non-ESM compatible code
+
+---
+ .../workbench/api/node/extensionHostProcess.ts | 18 ------------------
+ 1 file changed, 18 deletions(-)
+
+diff --git a/src/vs/workbench/api/node/extensionHostProcess.ts b/src/vs/workbench/api/node/extensionHostProcess.ts
+index 4dfcfbe3b3d..55350f5c9a2 100644
+--- a/src/vs/workbench/api/node/extensionHostProcess.ts
++++ b/src/vs/workbench/api/node/extensionHostProcess.ts
+@@ -72,24 +72,6 @@ const args = minimist(process.argv.slice(2), {
+ 	]
+ }) as ParsedExtHostArgs;
+ 
+-// With Electron 2.x and node.js 8.x the "natives" module
+-// can cause a native crash (see https://github.com/nodejs/node/issues/19891 and
+-// https://github.com/electron/electron/issues/10905). To prevent this from
+-// happening we essentially blocklist this module from getting loaded in any
+-// extension by patching the node require() function.
+-(function () {
+-	const Module = require('module');
+-	const originalLoad = Module._load;
+-
+-	Module._load = function (request: string) {
+-		if (request === 'natives') {
+-			throw new Error('Either the extension or an NPM dependency is using the [unsupported "natives" node module](https://go.microsoft.com/fwlink/?linkid=871887).');
+-		}
+-
+-		return originalLoad.apply(this, arguments);
+-	};
+-})();
+-
+ // custom process.exit logic...
+ const nativeExit: IExitFn = process.exit.bind(process);
+ const nativeOn = process.on.bind(process);

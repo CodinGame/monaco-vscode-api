@@ -1,0 +1,41 @@
+From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
+From: =?UTF-8?q?Lo=C3=AFc=20Mangeonjean?= <loic@coderpad.io>
+Date: Fri, 22 Aug 2025 12:12:28 +0200
+Subject: [PATCH] fix: make field optional, as sometime openvsix doesn't
+ provide it
+
+---
+ .../extensionManagement/common/extensionGalleryService.ts   | 6 +++---
+ 1 file changed, 3 insertions(+), 3 deletions(-)
+
+diff --git a/src/vs/platform/extensionManagement/common/extensionGalleryService.ts b/src/vs/platform/extensionManagement/common/extensionGalleryService.ts
+index 042423f7987..afd03e8c0a9 100644
+--- a/src/vs/platform/extensionManagement/common/extensionGalleryService.ts
++++ b/src/vs/platform/extensionManagement/common/extensionGalleryService.ts
+@@ -55,7 +55,7 @@ export interface IRawGalleryExtensionVersion {
+ 	readonly lastUpdated: string;
+ 	readonly assetUri: string;
+ 	readonly fallbackAssetUri: string;
+-	readonly files: IRawGalleryExtensionFile[];
++	readonly files?: IRawGalleryExtensionFile[];
+ 	readonly properties?: IRawGalleryExtensionProperty[];
+ 	readonly targetPlatform?: string;
+ }
+@@ -302,7 +302,7 @@ function getStatistic(statistics: IRawGalleryExtensionStatistics[], name: string
+ 
+ function getCoreTranslationAssets(version: IRawGalleryExtensionVersion): [string, IGalleryExtensionAsset][] {
+ 	const coreTranslationAssetPrefix = 'Microsoft.VisualStudio.Code.Translation.';
+-	const result = version.files.filter(f => f.assetType.indexOf(coreTranslationAssetPrefix) === 0);
++	const result = (version.files ?? []).filter(f => f.assetType.indexOf(coreTranslationAssetPrefix) === 0);
+ 	return result.reduce<[string, IGalleryExtensionAsset][]>((result, file) => {
+ 		const asset = getVersionAsset(version, file.assetType);
+ 		if (asset) {
+@@ -332,7 +332,7 @@ function getDownloadAsset(version: IRawGalleryExtensionVersion): IGalleryExtensi
+ }
+ 
+ function getVersionAsset(version: IRawGalleryExtensionVersion, type: string): IGalleryExtensionAsset | null {
+-	const result = version.files.filter(f => f.assetType === type)[0];
++	const result = version.files?.filter(f => f.assetType === type)[0];
+ 	return result ? {
+ 		uri: `${version.assetUri}/${type}${version.targetPlatform ? `?targetPlatform=${version.targetPlatform}` : ''}`,
+ 		fallbackUri: `${version.fallbackAssetUri}/${type}${version.targetPlatform ? `?targetPlatform=${version.targetPlatform}` : ''}`
