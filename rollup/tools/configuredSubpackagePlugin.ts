@@ -52,7 +52,14 @@ const EDITOR_API_EXPOSE_MODULES = [
   'vs/editor/contrib/clipboard/browser/clipboard',
   'vs/editor/contrib/cursorUndo/browser/cursorUndo',
   'vs/editor/contrib/contextmenu/browser/contextmenu',
-  'vs/editor/contrib/find/browser/findController'
+  'vs/editor/contrib/find/browser/findController',
+
+  // GraphiQL
+  'vs/base/common/uri',
+  'vs/editor/common/services/editorBaseApi',
+  'vs/editor/common/standalone/standaloneEnums',
+  'vs/editor/browser/controller/mouseTarget',
+  'vs/editor/common/core/range',
 ]
 
 const ALLOWED_MAIN_DEPENDENCIES = new Set([
@@ -317,6 +324,12 @@ ${code}`
                 source: `export * from '${MAIN_PACKAGE_NAME}/workers/editor.worker'`,
                 type: 'asset'
               })
+              this.emitFile({
+                fileName: 'esm/vs/editor/edcore.main.js',
+                needsCodeReference: false,
+                source: `export * from './editor.api.js';`,
+                type: 'asset'
+              })
             }
           }
         ]
@@ -459,6 +472,7 @@ ${code}`
                 [
                   'vs/editor/editor.api',
                   'vs/editor/editor.worker',
+                  'vs/editor/edcore.main',
                   ...EDITOR_API_EXPOSE_MODULES
                 ].flatMap((module) => {
                   return Object.entries({
