@@ -5329,25 +5329,25 @@ class ChatEntitlementsService implements IChatEntitlementService {
   onDidChangeQuotaExceeded: IChatEntitlementService['onDidChangeQuotaExceeded'] = Event.None
   onDidChangeQuotaRemaining: IChatEntitlementService['onDidChangeQuotaRemaining'] = Event.None
   onDidChangeSentiment: IChatEntitlementService['onDidChangeSentiment'] = Event.None
-  @Unsupported
-  get entitlement(): IChatEntitlementService['entitlement'] {
-    return unsupported()
+
+  entitlement: IChatEntitlementService['entitlement'] = ChatEntitlement.Unknown
+  quotas: IChatEntitlementService['quotas'] = {}
+  sentiment: IChatEntitlementService['sentiment'] = {
+    installed: false,
+    hidden: true,
+    disabled: true,
+    untrusted: false,
+    later: false,
+    registered: false
   }
-  @Unsupported
-  get quotas(): IChatEntitlementService['quotas'] {
-    return unsupported()
-  }
-  @Unsupported
-  get sentiment(): IChatEntitlementService['sentiment'] {
-    return unsupported()
-  }
+
   @Unsupported
   update: IChatEntitlementService['update'] = unsupported
 
   entitlementObs: IChatEntitlementService['entitlementObs'] = constObservable(
-    ChatEntitlement.Unknown
+    this.entitlement
   )
-  sentimentObs: IChatEntitlementService['sentimentObs'] = constObservable({})
+  sentimentObs: IChatEntitlementService['sentimentObs'] = constObservable(this.sentiment)
   onDidChangeAnonymous: IChatEntitlementService['onDidChangeAnonymous'] = Event.None
   anonymous: IChatEntitlementService['anonymous'] = false
   anonymousObs: IChatEntitlementService['anonymousObs'] = constObservable(false)
