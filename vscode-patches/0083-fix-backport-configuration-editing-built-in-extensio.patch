@@ -25,7 +25,7 @@ index ba1c33e7845..bafc4ef36a0 100644
  		if (knownExtensionProposals.length) {
  			return knownExtensionProposals.map(e => {
 diff --git a/src/vs/workbench/api/common/extHostExtensionService.ts b/src/vs/workbench/api/common/extHostExtensionService.ts
-index 61b03cc7ae9..2fc7b0d1922 100644
+index 61b03cc7ae9..5025f5b37de 100644
 --- a/src/vs/workbench/api/common/extHostExtensionService.ts
 +++ b/src/vs/workbench/api/common/extHostExtensionService.ts
 @@ -1177,12 +1177,14 @@ export class Extension<T extends object | null | undefined> implements vscode.Ex
@@ -39,7 +39,7 @@ index 61b03cc7ae9..2fc7b0d1922 100644
  		this.#originExtensionId = originExtensionId;
  		this.#identifier = description.identifier;
  		this.id = description.identifier.value;
-+		this.isBuiltin = description.isBuiltin;
++		this.isBuiltin = description.isBuiltin || description.isUserBuiltin;
  		this.extensionUri = description.extensionLocation;
  		this.extensionPath = path.normalize(originalFSPath(description.extensionLocation));
  		this.packageJSON = description;
