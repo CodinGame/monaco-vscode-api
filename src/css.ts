@@ -2,8 +2,8 @@ import { mainWindow } from 'vs/base/browser/window'
 
 const sheets: CSSStyleSheet[] = []
 
-export function registerCss(module: unknown) {
-  const exportedValue = (module as { default?: string | CSSStyleSheet }).default
+export function registerCss(module: { default?: string | CSSStyleSheet } | undefined) {
+  const exportedValue = module?.default
 
   let sheet = undefined
   if (typeof exportedValue === 'string') {
