@@ -6,6 +6,7 @@ Subject: [PATCH] feat: centralize element creation, to be able to create them
 
 ---
  src/vs/base/browser/dom.ts                    | 38 +++++++---
+ src/vs/base/browser/domSanitize.ts            | 15 ++--
  src/vs/base/browser/domStylesheets.ts         |  4 +-
  src/vs/base/browser/formattedTextRenderer.ts  | 14 ++--
  src/vs/base/browser/markdownRenderer.ts       |  2 +-
@@ -185,7 +186,7 @@ Subject: [PATCH] feat: centralize element creation, to be able to create them
  .../browser/walkThroughPart.ts                |  6 +-
  .../browser/webWorkerExtensionHost.ts         |  2 +-
  .../host/browser/browserHostService.ts        |  6 +-
- 180 files changed, 604 insertions(+), 538 deletions(-)
+ 181 files changed, 613 insertions(+), 544 deletions(-)
 
 diff --git a/src/vs/base/browser/dom.ts b/src/vs/base/browser/dom.ts
 index 4a327189baa..8536885086c 100644
@@ -284,6 +285,65 @@ index 4a327189baa..8536885086c 100644
  		if (ref) {
  			ref(this._element);
  		}
+diff --git a/src/vs/base/browser/domSanitize.ts b/src/vs/base/browser/domSanitize.ts
+index 9b88e3c0dfa..fe5c564dfc6 100644
+--- a/src/vs/base/browser/domSanitize.ts
++++ b/src/vs/base/browser/domSanitize.ts
+@@ -7,6 +7,9 @@ import { Schemas } from '../common/network.js';
+ import { reset } from './dom.js';
+ // eslint-disable-next-line no-restricted-imports
+ import dompurify from './dompurify/dompurify.js';
++import { mainWindow } from './window.js';
++
++const mainWindowDompurify = dompurify(mainWindow);
+ 
+ /**
+  * List of safe, non-input html tags.
+@@ -139,7 +142,7 @@ function validateLink(value: string, allowedProtocols: AllowedLinksConfig): bool
+  * attributes are valid.
+  */
+ function hookDomPurifyHrefAndSrcSanitizer(allowedLinkProtocols: AllowedLinksConfig, allowedMediaProtocols: AllowedLinksConfig) {
+-	dompurify.addHook('afterSanitizeAttributes', (node) => {
++	mainWindowDompurify.addHook('afterSanitizeAttributes', (node) => {
+ 		// check all href/src attributes for validity
+ 		for (const attr of ['href', 'src']) {
+ 			if (node.hasAttribute(attr)) {
+@@ -301,11 +304,11 @@ function doSanitizeHtml(untrusted: string, config: DomSanitizerConfig | undefine
+ 			});
+ 
+ 		if (config?.replaceWithPlaintext) {
+-			dompurify.addHook('uponSanitizeElement', replaceWithPlainTextHook);
++			mainWindowDompurify.addHook('uponSanitizeElement', replaceWithPlainTextHook);
+ 		}
+ 
+ 		if (allowedAttrPredicates.size) {
+-			dompurify.addHook('uponSanitizeAttribute', (node, e) => {
++			mainWindowDompurify.addHook('uponSanitizeAttribute', (node, e) => {
+ 				const predicate = allowedAttrPredicates.get(e.attrName);
+ 				if (predicate) {
+ 					const result = predicate.shouldKeep(node, e);
+@@ -322,18 +325,18 @@ function doSanitizeHtml(untrusted: string, config: DomSanitizerConfig | undefine
+ 		}
+ 
+ 		if (outputType === 'dom') {
+-			return dompurify.sanitize(untrusted, {
++			return mainWindowDompurify.sanitize(untrusted, {
+ 				...resolvedConfig,
+ 				RETURN_DOM_FRAGMENT: true
+ 			});
+ 		} else {
+-			return dompurify.sanitize(untrusted, {
++			return mainWindowDompurify.sanitize(untrusted, {
+ 				...resolvedConfig,
+ 				RETURN_TRUSTED_TYPE: true
+ 			});
+ 		}
+ 	} finally {
+-		dompurify.removeAllHooks();
++		mainWindowDompurify.removeAllHooks();
+ 	}
+ }
+ 
 diff --git a/src/vs/base/browser/domStylesheets.ts b/src/vs/base/browser/domStylesheets.ts
 index 106c74fcb5d..d5caf0b3e24 100644
 --- a/src/vs/base/browser/domStylesheets.ts
