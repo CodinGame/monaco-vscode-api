@@ -39,7 +39,7 @@ Subject: [PATCH] feat: support shadow dom
  .../browser/view/cellParts/codeCell.ts        |  5 ++--
  .../browser/view/cellParts/markupCell.ts      |  6 ++--
  .../notebook/browser/view/notebookCellList.ts |  5 ++--
- .../browser/view/renderers/webviewPreloads.ts | 19 +++++++------
+ .../view/renderers/backLayerWebView.ts        |  3 +-
  .../browser/preferences.contribution.ts       |  3 +-
  .../preferences/browser/settingsEditor2.ts    |  6 ++--
  .../terminal/browser/terminalTabbedView.ts    |  2 +-
@@ -49,7 +49,7 @@ Subject: [PATCH] feat: support shadow dom
  .../browser/walkThroughPart.ts                |  6 ++--
  .../suggest/browser/simpleSuggestWidget.ts    |  4 +--
  .../themes/browser/workbenchThemeService.ts   |  2 +-
- 45 files changed, 152 insertions(+), 95 deletions(-)
+ 45 files changed, 143 insertions(+), 88 deletions(-)
 
 diff --git a/src/vs/base/browser/dom.ts b/src/vs/base/browser/dom.ts
 index 4681d190ae7..d014d87fb7e 100644
@@ -918,82 +918,26 @@ index 0c7a1eb0bb3..cafeb10ae42 100644
  			return;
  		}
  
-diff --git a/src/vs/workbench/contrib/notebook/browser/view/renderers/webviewPreloads.ts b/src/vs/workbench/contrib/notebook/browser/view/renderers/webviewPreloads.ts
-index 0453909aa0a..0b025108a88 100644
---- a/src/vs/workbench/contrib/notebook/browser/view/renderers/webviewPreloads.ts
-+++ b/src/vs/workbench/contrib/notebook/browser/view/renderers/webviewPreloads.ts
-@@ -9,6 +9,7 @@ import type * as webviewMessages from './webviewMessages.js';
- import type { NotebookCellMetadata } from '../../../common/notebookCommon.js';
- import type * as rendererApi from 'vscode-notebook-renderer';
- import type { NotebookCellOutputTransferData } from '../../../../../../platform/dnd/browser/dnd.js';
-+import { getActiveElement } from '../../../../../../base/browser/dom.js';
+diff --git a/src/vs/workbench/contrib/notebook/browser/view/renderers/backLayerWebView.ts b/src/vs/workbench/contrib/notebook/browser/view/renderers/backLayerWebView.ts
+index d3c4ea3f178..ff3d9c4b33a 100644
+--- a/src/vs/workbench/contrib/notebook/browser/view/renderers/backLayerWebView.ts
++++ b/src/vs/workbench/contrib/notebook/browser/view/renderers/backLayerWebView.ts
+@@ -3,7 +3,6 @@
+  *  Licensed under the MIT License. See License.txt in the project root for license information.
+  *--------------------------------------------------------------------------------------------*/
  
- // !! IMPORTANT !! ----------------------------------------------------------------------------------
- // import { RenderOutputType } from 'vs/workbench/contrib/notebook/browser/notebookBrowser';
-@@ -190,7 +191,7 @@ async function webviewPreloads(ctx: PreloadContext) {
+-import { getWindow } from '../../../../../../base/browser/dom.js';
+ import { IMouseWheelEvent } from '../../../../../../base/browser/mouseEvent.js';
+ import { CodeWindow } from '../../../../../../base/browser/window.js';
+ import { WorkbenchActionExecutedClassification, WorkbenchActionExecutedEvent } from '../../../../../../base/common/actions.js';
+@@ -586,7 +585,7 @@ export class BackLayerWebView<T extends ICommonCellInfo> extends Themable {
+ 	}
  
- 	const hasActiveEditableElement = (
- 		parent: Node | DocumentFragment,
--		root: ShadowRoot | Document = document
-+		root: ShadowRoot | Document = parent.getRootNode() as ShadowRoot | Document
- 	): boolean => {
- 		const element = root.activeElement;
- 		return !!(element && parent.contains(element)
-@@ -202,13 +203,13 @@ async function webviewPreloads(ctx: PreloadContext) {
- 	// check if an input element is focused within the output element
- 	const checkOutputInputFocus = (e: FocusEvent) => {
- 		lastFocusedOutput = getOutputContainer(e);
--		const activeElement = window.document.activeElement;
-+		const activeElement = getActiveElement();
- 		if (!activeElement) {
- 			return;
+ 	private _initialize(content: string, targetWindow: CodeWindow): Promise<void> {
+-		if (!getWindow(this.element).document.body.contains(this.element)) {
++		if (!this.element.isConnected) {
+ 			throw new Error('Element is already detached from the DOM tree');
  		}
- 
- 		const id = lastFocusedOutput?.id;
--		if (id && (hasActiveEditableElement(activeElement, window.document))) {
-+		if (id && (hasActiveEditableElement(activeElement, activeElement.getRootNode() as ShadowRoot | Document))) {
- 			postNotebookMessage<webviewMessages.IOutputInputFocusMessage>('outputInputFocus', { inputFocused: true, id });
- 
- 			activeElement.addEventListener('blur', () => {
-@@ -314,8 +315,8 @@ async function webviewPreloads(ctx: PreloadContext) {
- 		if (!cellOutputContainer) {
- 			return;
- 		}
--		const activeElement = window.document.activeElement;
--		if (activeElement && hasActiveEditableElement(activeElement, window.document)) {
-+		const activeElement = getActiveElement();
-+		if (activeElement && hasActiveEditableElement(activeElement)) {
- 			(activeElement as HTMLInputElement).select();
- 		}
- 	};
-@@ -340,8 +341,8 @@ async function webviewPreloads(ctx: PreloadContext) {
- 		if (!outputContainer || !selection?.anchorNode) {
- 			return;
- 		}
--		const activeElement = window.document.activeElement;
--		if (activeElement && hasActiveEditableElement(activeElement, window.document)) {
-+		const activeElement = getActiveElement();
-+		if (activeElement && hasActiveEditableElement(activeElement)) {
- 			// Leave for default behavior.
- 			return;
- 		}
-@@ -369,7 +370,7 @@ async function webviewPreloads(ctx: PreloadContext) {
- 			return;
- 		}
- 		const activeElement = window.document.activeElement;
--		if (activeElement && hasActiveEditableElement(activeElement, window.document)) {
-+		if (activeElement && hasActiveEditableElement(activeElement)) {
- 			// The input element will handle this.
- 			return;
- 		}
-@@ -708,7 +709,7 @@ async function webviewPreloads(ctx: PreloadContext) {
- 				focusableElement.tabIndex = -1;
- 				postNotebookMessage<webviewMessages.IOutputInputFocusMessage>('outputInputFocus', { inputFocused: false, id });
- 			} else {
--				const inputFocused = hasActiveEditableElement(focusableElement, focusableElement.ownerDocument);
-+				const inputFocused = hasActiveEditableElement(focusableElement);
- 				postNotebookMessage<webviewMessages.IOutputInputFocusMessage>('outputInputFocus', { inputFocused, id });
- 			}
  
 diff --git a/src/vs/workbench/contrib/preferences/browser/preferences.contribution.ts b/src/vs/workbench/contrib/preferences/browser/preferences.contribution.ts
 index 2b32a1538da..f98290ca06b 100644
