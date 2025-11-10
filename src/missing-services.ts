@@ -3300,20 +3300,16 @@ class QuickChatAgentService implements IChatAgentService {
   @Unsupported
   registerChatParticipantDetectionProvider: IChatAgentService['registerChatParticipantDetectionProvider'] =
     unsupported
-  @Unsupported
-  detectAgentOrCommand: IChatAgentService['detectAgentOrCommand'] = unsupported
+  detectAgentOrCommand: IChatAgentService['detectAgentOrCommand'] = async () => undefined
   hasChatParticipantDetectionProviders: IChatAgentService['hasChatParticipantDetectionProviders'] =
     () => false
-  @Unsupported
-  getChatTitle: IChatAgentService['getChatTitle'] = unsupported
+  getChatTitle: IChatAgentService['getChatTitle'] = async () => undefined
   agentHasDupeName: IChatAgentService['agentHasDupeName'] = () => false
   @Unsupported
   registerAgentCompletionProvider: IChatAgentService['registerAgentCompletionProvider'] =
     unsupported
-  @Unsupported
-  getAgentCompletionItems: IChatAgentService['getAgentCompletionItems'] = unsupported
-  @Unsupported
-  getAgentByFullyQualifiedId: IChatAgentService['getAgentByFullyQualifiedId'] = unsupported
+  getAgentCompletionItems: IChatAgentService['getAgentCompletionItems'] = async () => []
+  getAgentByFullyQualifiedId: IChatAgentService['getAgentByFullyQualifiedId'] = () => undefined
   getContributedDefaultAgent: IChatAgentService['getContributedDefaultAgent'] = () => undefined
   @Unsupported
   registerAgentImplementation: IChatAgentService['registerAgentImplementation'] = unsupported
@@ -3321,8 +3317,7 @@ class QuickChatAgentService implements IChatAgentService {
   registerDynamicAgent: IChatAgentService['registerDynamicAgent'] = unsupported
   getActivatedAgents: IChatAgentService['getActivatedAgents'] = () => []
   getAgentsByName: IChatAgentService['getAgentsByName'] = () => []
-  @Unsupported
-  getFollowups: IChatAgentService['getFollowups'] = unsupported
+  getFollowups: IChatAgentService['getFollowups'] = async () => []
   getDefaultAgent: IChatAgentService['getDefaultAgent'] = () => undefined
   @Unsupported
   updateAgent: IChatAgentService['updateAgent'] = unsupported
@@ -3331,10 +3326,8 @@ class QuickChatAgentService implements IChatAgentService {
   registerAgent: IChatAgentService['registerAgent'] = unsupported
   @Unsupported
   invokeAgent: IChatAgentService['invokeAgent'] = unsupported
-  @Unsupported
-  getAgents: IChatAgentService['getAgents'] = unsupported
-  @Unsupported
-  getAgent: IChatAgentService['getAgent'] = unsupported
+  getAgents: IChatAgentService['getAgents'] = () => []
+  getAgent: IChatAgentService['getAgent'] = () => undefined
 
   getChatSummary: IChatAgentService['getChatSummary'] = async () => undefined
   @Unsupported
