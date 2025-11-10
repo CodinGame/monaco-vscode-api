@@ -34,6 +34,8 @@ import { INotebookOriginalCellModelFactory } from 'vs/workbench/contrib/notebook
 import { INotebookOriginalModelReferenceFactory } from 'vs/workbench/contrib/notebook/browser/diff/inlineDiff/notebookOriginalModelRefFactory.service'
 import { OriginalNotebookCellModelFactory } from 'vs/workbench/contrib/notebook/browser/diff/inlineDiff/notebookOriginalCellModelFactory'
 import { NotebookOriginalModelReferenceFactory } from 'vs/workbench/contrib/notebook/browser/diff/inlineDiff/notebookOriginalModelRefFactory'
+import { INotebookCellOutlineDataSourceFactory } from 'vs/workbench/contrib/notebook/browser/viewModel/notebookOutlineDataSourceFactory.service'
+import { NotebookCellOutlineDataSourceFactory } from 'vs/workbench/contrib/notebook/browser/viewModel/notebookOutlineDataSourceFactory'
 import 'vs/workbench/contrib/notebook/browser/notebook.contribution'
 
 export default function getServiceOverride(): IEditorOverrideServices {
@@ -89,6 +91,13 @@ export default function getServiceOverride(): IEditorOverrideServices {
       NotebookOriginalModelReferenceFactory,
       [],
       true
-    )
+    ),
+    [INotebookCellOutlineDataSourceFactory.toString()]: new SyncDescriptor(
+      NotebookCellOutlineDataSourceFactory,
+      [],
+      true
+    ),
+
+    
   }
 }

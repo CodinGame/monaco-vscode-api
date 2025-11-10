@@ -226,6 +226,7 @@ import {
 import { IMultiDiffSourceResolverService } from 'vs/workbench/contrib/multiDiffEditor/browser/multiDiffSourceResolverService.service'
 import { INotebookOriginalCellModelFactory } from 'vs/workbench/contrib/notebook/browser/diff/inlineDiff/notebookOriginalCellModelFactory.service'
 import { INotebookOriginalModelReferenceFactory } from 'vs/workbench/contrib/notebook/browser/diff/inlineDiff/notebookOriginalModelRefFactory.service'
+import { INotebookCellOutlineDataSourceFactory } from 'vs/workbench/contrib/notebook/browser/viewModel/notebookOutlineDataSourceFactory.service'
 import { INotebookEditorService } from 'vs/workbench/contrib/notebook/browser/services/notebookEditorService.service'
 import { INotebookCellStatusBarService } from 'vs/workbench/contrib/notebook/common/notebookCellStatusBarService.service'
 import { INotebookEditorModelResolverService } from 'vs/workbench/contrib/notebook/common/notebookEditorModelResolverService.service'
@@ -5286,6 +5287,17 @@ class NotebookOriginalModelReferenceFactory implements INotebookOriginalModelRef
 registerSingleton(
   INotebookOriginalModelReferenceFactory,
   NotebookOriginalModelReferenceFactory,
+  InstantiationType.Delayed
+)
+
+class NotebookCellOutlineDataSourceFactory implements INotebookCellOutlineDataSourceFactory {
+  _serviceBrand: undefined
+  @Unsupported
+  getOrCreate: INotebookCellOutlineDataSourceFactory['getOrCreate'] = unsupported
+}
+registerSingleton(
+  INotebookCellOutlineDataSourceFactory,
+  NotebookCellOutlineDataSourceFactory,
   InstantiationType.Delayed
 )
 class QuickDiffModelService implements IQuickDiffModelService {
