@@ -27,7 +27,7 @@ Subject: [PATCH] feat: support shadow dom
  .../hover/browser/contentHoverWidget.ts       |  2 +-
  .../actionWidget/browser/actionList.ts        |  2 +-
  .../clipboard/browser/clipboardService.ts     |  4 +--
- .../contextkey/browser/contextKeyService.ts   |  8 ++++--
+ .../contextkey/browser/contextKeyService.ts   | 15 ++++++----
  src/vs/workbench/browser/layout.ts            |  3 ++
  .../browser/parts/editor/editorGroupView.ts   |  4 +--
  src/vs/workbench/browser/workbench.ts         |  6 ++--
@@ -35,7 +35,7 @@ Subject: [PATCH] feat: support shadow dom
  .../chatSessions/view/sessionsTreeRenderer.ts |  3 +-
  .../files/browser/views/explorerViewer.ts     |  4 ++-
  .../notebook/browser/notebookEditorWidget.ts  |  6 ++--
- .../browser/view/cellParts/cellStatusPart.ts  |  6 ++--
+ .../browser/view/cellParts/cellStatusPart.ts  |  5 ++--
  .../browser/view/cellParts/codeCell.ts        |  5 ++--
  .../browser/view/cellParts/markupCell.ts      |  6 ++--
  .../notebook/browser/view/notebookCellList.ts |  5 ++--
@@ -49,7 +49,7 @@ Subject: [PATCH] feat: support shadow dom
  .../browser/walkThroughPart.ts                |  6 ++--
  .../suggest/browser/simpleSuggestWidget.ts    |  4 +--
  .../themes/browser/workbenchThemeService.ts   |  2 +-
- 45 files changed, 143 insertions(+), 88 deletions(-)
+ 45 files changed, 146 insertions(+), 91 deletions(-)
 
 diff --git a/src/vs/base/browser/dom.ts b/src/vs/base/browser/dom.ts
 index 4681d190ae7..d014d87fb7e 100644
@@ -624,24 +624,43 @@ index 6e0a6e018d0..358aa682cda 100644
  		const textArea: HTMLTextAreaElement = activeDocument.body.appendChild($('textarea', { 'aria-hidden': true }));
  		textArea.style.height = '1px';
 diff --git a/src/vs/platform/contextkey/browser/contextKeyService.ts b/src/vs/platform/contextkey/browser/contextKeyService.ts
-index 7f749b68489..224b4bbb255 100644
+index 7f749b68489..53629be4418 100644
 --- a/src/vs/platform/contextkey/browser/contextKeyService.ts
 +++ b/src/vs/platform/contextkey/browser/contextKeyService.ts
-@@ -18,7 +18,7 @@ import { ContextKeyExpression, ContextKeyInfo, ContextKeyValue, IContext, IConte
+@@ -18,7 +18,8 @@ import { ContextKeyExpression, ContextKeyInfo, ContextKeyValue, IContext, IConte
  import { ServicesAccessor } from '../../instantiation/common/instantiation.js';
  import { InputFocusedContext } from '../common/contextkeys.js';
  import { mainWindow } from '../../../base/browser/window.js';
 -import { addDisposableListener, EventType, getActiveWindow, isEditableElement, onDidRegisterWindow, trackFocus } from '../../../base/browser/dom.js';
-+import { addDisposableListener, EventType, getActiveElement, getActiveWindow, isEditableElement, onDidRegisterWindow, trackFocus } from '../../../base/browser/dom.js';
++import { addDisposableListener, EventType, getActiveDocument, getActiveElement, isEditableElement, onDidRegisterWindow, trackFocus } from '../../../base/browser/dom.js';
++import { ILayoutService } from '../../layout/browser/layoutService.js';
  
  const KEYBINDING_CONTEXT_ATTR = 'data-keybinding-context';
  
-@@ -414,14 +414,16 @@ export class ContextKeyService extends AbstractContextKeyService implements ICon
+@@ -383,7 +384,7 @@ export class ContextKeyService extends AbstractContextKeyService implements ICon
+ 
+ 	private inputFocusedContext: IContextKey<boolean>;
+ 
+-	constructor(@IConfigurationService configurationService: IConfigurationService) {
++	constructor(@IConfigurationService configurationService: IConfigurationService, @ILayoutService layoutService: ILayoutService) {
+ 		super(0);
+ 		this._lastContextId = 0;
+ 		this.inputFocusedContext = InputFocusedContext.bindTo(this);
+@@ -404,7 +405,7 @@ export class ContextKeyService extends AbstractContextKeyService implements ICon
+ 
+ 		this._register(Event.runAndSubscribe(onDidRegisterWindow, ({ window, disposables }) => {
+ 			const onFocusDisposables = disposables.add(new MutableDisposable<DisposableStore>());
+-			disposables.add(addDisposableListener(window, EventType.FOCUS_IN, () => {
++			disposables.add(addDisposableListener(layoutService.getContainer(window), EventType.FOCUS_IN, () => {
+ 				onFocusDisposables.value = new DisposableStore();
+ 				this.updateInputContextKeys(window.document, onFocusDisposables.value);
+ 			}, true));
+@@ -414,14 +415,16 @@ export class ContextKeyService extends AbstractContextKeyService implements ICon
  	private updateInputContextKeys(ownerDocument: Document, disposables: DisposableStore): void {
  
  		function activeElementIsInput(): boolean {
 -			return !!ownerDocument.activeElement && isEditableElement(ownerDocument.activeElement);
-+			const activeElement = getActiveElement(ownerDocument)
++			const activeElement = getActiveElement(ownerDocument);
 +			return !!activeElement && isEditableElement(activeElement);
  		}
  
@@ -650,11 +669,20 @@ index 7f749b68489..224b4bbb255 100644
  
  		if (isInputFocused) {
 -			const tracker = disposables.add(trackFocus(ownerDocument.activeElement as HTMLElement));
-+			const activeElement = getActiveElement(ownerDocument)
++			const activeElement = getActiveElement(ownerDocument);
 +			const tracker = disposables.add(trackFocus(activeElement as HTMLElement));
  			Event.once(tracker.onDidBlur)(() => {
  
  				// Ensure we are only updating the context key if we are
+@@ -432,7 +435,7 @@ export class ContextKeyService extends AbstractContextKeyService implements ICon
+ 				// blur events from the focus tracker are emitted with a
+ 				// timeout of 0.
+ 
+-				if (getActiveWindow().document === ownerDocument) {
++				if (getActiveDocument() === ownerDocument) {
+ 					this.inputFocusedContext.set(activeElementIsInput());
+ 				}
+ 
 diff --git a/src/vs/workbench/browser/layout.ts b/src/vs/workbench/browser/layout.ts
 index 668450c90ec..0d38acdef02 100644
 --- a/src/vs/workbench/browser/layout.ts
@@ -805,31 +833,23 @@ index 2f3fe9d654d..6b153251b34 100644
  
  			this._webview?.blurOutput();
 diff --git a/src/vs/workbench/contrib/notebook/browser/view/cellParts/cellStatusPart.ts b/src/vs/workbench/contrib/notebook/browser/view/cellParts/cellStatusPart.ts
-index a23d2f8b28e..6e98527bc7e 100644
+index a23d2f8b28e..3f9739cf607 100644
 --- a/src/vs/workbench/contrib/notebook/browser/view/cellParts/cellStatusPart.ts
 +++ b/src/vs/workbench/contrib/notebook/browser/view/cellParts/cellStatusPart.ts
-@@ -32,6 +32,7 @@ import { IHoverService } from '../../../../../../platform/hover/browser/hover.js
- import { IConfigurationService } from '../../../../../../platform/configuration/common/configuration.js';
- import { HoverPosition } from '../../../../../../base/browser/ui/hover/hoverWidget.js';
- import type { IManagedHoverTooltipMarkdownString } from '../../../../../../base/browser/ui/hover/hover.js';
-+import { getActiveElement } from '../../../../../../base/browser/dom.js';
- 
- const $ = DOM.$;
- 
-@@ -146,7 +147,7 @@ export class CellEditorStatusBar extends CellContentPart {
+@@ -146,7 +146,7 @@ export class CellEditorStatusBar extends CellContentPart {
  		if (this._editor) {
  			// Focus Mode
  			const updateFocusModeForEditorEvent = () => {
 -				if (this._editor && (this._editor.hasWidgetFocus() || (this.statusBarContainer.ownerDocument.activeElement && this.statusBarContainer.contains(this.statusBarContainer.ownerDocument.activeElement)))) {
-+				if (this._editor && (this._editor.hasWidgetFocus() || (DOM.getActiveElement(this.statusBarContainer.ownerDocument) && this.statusBarContainer.contains(getActiveElement(this.statusBarContainer.ownerDocument))))) {
++				if (this._editor && (this._editor.hasWidgetFocus() || (DOM.getActiveElement(this.statusBarContainer.ownerDocument) && this.statusBarContainer.contains(DOM.getActiveElement(this.statusBarContainer.ownerDocument))))) {
  					element.focusMode = CellFocusMode.Editor;
  				} else {
  					const currentMode = element.focusMode;
-@@ -167,9 +168,10 @@ export class CellEditorStatusBar extends CellContentPart {
+@@ -167,9 +167,10 @@ export class CellEditorStatusBar extends CellContentPart {
  				// this is for a special case:
  				// users click the status bar empty space, which we will then focus the editor
  				// so we don't want to update the focus state too eagerly, it will be updated with onDidFocusEditorWidget
-+				const activeElement = getActiveElement(this.statusBarContainer.ownerDocument);
++				const activeElement = DOM.getActiveElement(this.statusBarContainer.ownerDocument);
  				if (
  					this._notebookEditor.hasEditorFocus() &&
 -					!(this.statusBarContainer.ownerDocument.activeElement && this.statusBarContainer.contains(this.statusBarContainer.ownerDocument.activeElement))) {
