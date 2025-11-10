@@ -153,8 +153,7 @@ Subject: [PATCH] feat: centralize element creation, to be able to create them
  .../browser/view/cellParts/cellActionView.ts  |  4 +-
  .../view/cellParts/cellDragRenderer.ts        |  2 +-
  .../view/cellParts/codeCellRunToolbar.ts      |  3 +-
- .../view/renderers/backLayerWebView.ts        |  4 +-
- .../browser/view/renderers/webviewPreloads.ts | 40 +++++------
+ .../view/renderers/backLayerWebView.ts        |  3 +-
  .../browser/viewParts/notebookCellOverlays.ts |  3 +-
  .../viewParts/notebookEditorStickyScroll.ts   |  6 +-
  .../viewParts/notebookEditorToolbar.ts        |  4 +-
@@ -186,7 +185,7 @@ Subject: [PATCH] feat: centralize element creation, to be able to create them
  .../browser/walkThroughPart.ts                |  6 +-
  .../browser/webWorkerExtensionHost.ts         |  2 +-
  .../host/browser/browserHostService.ts        |  6 +-
- 181 files changed, 613 insertions(+), 544 deletions(-)
+ 180 files changed, 593 insertions(+), 523 deletions(-)
 
 diff --git a/src/vs/base/browser/dom.ts b/src/vs/base/browser/dom.ts
 index 4a327189baa..8536885086c 100644
@@ -4736,19 +4735,18 @@ index e5cb2273734..13578a3c497 100644
  	EditorContextKeys.editorTextFocus.bindTo(executionContextKeyService).set(true);
  	EditorContextKeys.focus.bindTo(executionContextKeyService).set(true);
 diff --git a/src/vs/workbench/contrib/notebook/browser/view/renderers/backLayerWebView.ts b/src/vs/workbench/contrib/notebook/browser/view/renderers/backLayerWebView.ts
-index d3c4ea3f178..6bf7c94e464 100644
+index ff3d9c4b33a..89ce6d5ed2f 100644
 --- a/src/vs/workbench/contrib/notebook/browser/view/renderers/backLayerWebView.ts
 +++ b/src/vs/workbench/contrib/notebook/browser/view/renderers/backLayerWebView.ts
-@@ -3,7 +3,7 @@
+@@ -3,6 +3,7 @@
   *  Licensed under the MIT License. See License.txt in the project root for license information.
   *--------------------------------------------------------------------------------------------*/
  
--import { getWindow } from '../../../../../../base/browser/dom.js';
-+import { createElement, getWindow } from '../../../../../../base/browser/dom.js';
++import { createElement } from '../../../../../../base/browser/dom.js';
  import { IMouseWheelEvent } from '../../../../../../base/browser/mouseEvent.js';
  import { CodeWindow } from '../../../../../../base/browser/window.js';
  import { WorkbenchActionExecutedClassification, WorkbenchActionExecutedEvent } from '../../../../../../base/common/actions.js';
-@@ -188,7 +188,7 @@ export class BackLayerWebView<T extends ICommonCellInfo> extends Themable {
+@@ -187,7 +188,7 @@ export class BackLayerWebView<T extends ICommonCellInfo> extends Themable {
  
  		this._logRendererDebugMessage('Creating backlayer webview for notebook');
  
@@ -4757,155 +4755,6 @@ index d3c4ea3f178..6bf7c94e464 100644
  
  		this.element.style.height = '1400px';
  		this.element.style.position = 'absolute';
-diff --git a/src/vs/workbench/contrib/notebook/browser/view/renderers/webviewPreloads.ts b/src/vs/workbench/contrib/notebook/browser/view/renderers/webviewPreloads.ts
-index e1d10bc65d3..fc29ba554b8 100644
---- a/src/vs/workbench/contrib/notebook/browser/view/renderers/webviewPreloads.ts
-+++ b/src/vs/workbench/contrib/notebook/browser/view/renderers/webviewPreloads.ts
-@@ -3,14 +3,14 @@
-  *  Licensed under the MIT License. See License.txt in the project root for license information.
-  *--------------------------------------------------------------------------------------------*/
- 
-+import type * as rendererApi from 'vscode-notebook-renderer';
- import type { Event } from '../../../../../../base/common/event.js';
- import type { IDisposable } from '../../../../../../base/common/lifecycle.js';
--import type * as webviewMessages from './webviewMessages.js';
--import type { NotebookCellMetadata } from '../../../common/notebookCommon.js';
--import type * as rendererApi from 'vscode-notebook-renderer';
- import type { NotebookCellOutputTransferData } from '../../../../../../platform/dnd/browser/dnd.js';
-+import type { NotebookCellMetadata } from '../../../common/notebookCommon.js';
-+import type * as webviewMessages from './webviewMessages.js';
- // eslint-disable-next-line local/code-no-runtime-import
--import { isShadowRoot, getActiveElement } from '../../../../../../base/browser/dom.js';
-+import { createElement, getActiveElement, isElement, isHTMLElement, isShadowRoot } from '../../../../../../base/browser/dom.js';
- 
- // !! IMPORTANT !! ----------------------------------------------------------------------------------
- // import { RenderOutputType } from 'vs/workbench/contrib/notebook/browser/notebookBrowser';
-@@ -165,7 +165,7 @@ async function webviewPreloads(ctx: PreloadContext) {
- 		};
- 	function getOutputContainer(event: FocusEvent | MouseEvent) {
- 		for (const node of event.composedPath()) {
--			if (node instanceof HTMLElement && node.classList.contains('output')) {
-+			if (isHTMLElement(node) && node.classList.contains('output')) {
- 				return {
- 					id: node.id
- 				};
-@@ -638,7 +638,7 @@ async function webviewPreloads(ctx: PreloadContext) {
- 
- 	function eventTargetShouldHandleScroll(event: WheelEvent) {
- 		for (let node = event.target as Node | null; node; node = node.parentNode) {
--			if (!(node instanceof Element) || node.id === 'container' || node.classList.contains('cell_container') || node.classList.contains('markup') || node.classList.contains('output_container')) {
-+			if (!isElement(node) || node.id === 'container' || node.classList.contains('cell_container') || node.classList.contains('markup') || node.classList.contains('output_container')) {
- 				return false;
- 			}
- 
-@@ -721,7 +721,7 @@ async function webviewPreloads(ctx: PreloadContext) {
- 	}
- 
- 	function createFocusSink(cellId: string, focusNext?: boolean) {
--		const element = document.createElement('div');
-+		const element = createElement('div');
- 		element.id = `focus-sink-${cellId}`;
- 		element.tabIndex = 0;
- 		element.addEventListener('focus', () => {
-@@ -990,10 +990,10 @@ async function webviewPreloads(ctx: PreloadContext) {
- 
- 	function showRenderError(errorText: string, outputNode: HTMLElement, errors: readonly Error[]) {
- 		outputNode.innerText = errorText;
--		const errList = document.createElement('ul');
-+		const errList = createElement('ul');
- 		for (const result of errors) {
- 			console.error(result);
--			const item = document.createElement('li');
-+			const item = createElement('li');
- 			item.innerText = result.message;
- 			errList.appendChild(item);
- 		}
-@@ -1536,7 +1536,7 @@ async function webviewPreloads(ctx: PreloadContext) {
- 						} else {
- 							// Traverse up the DOM to find the container
- 							for (let node = anchorNode as Element | null; node; node = node.parentElement) {
--								if (!(node instanceof Element)) {
-+								if (!isElement(node)) {
- 									break;
- 								}
- 
-@@ -1634,7 +1634,7 @@ async function webviewPreloads(ctx: PreloadContext) {
- 				// Build clipboard data with both image and text formats
- 				const clipboardData: Record<string, any> = {
- 					'image/png': new Promise((resolve) => {
--						const canvas = document.createElement('canvas');
-+						const canvas = createElement('canvas');
- 						canvas.width = imageToCopy.naturalWidth;
- 						canvas.height = imageToCopy.naturalHeight;
- 						const context = canvas.getContext('2d');
-@@ -2285,13 +2285,13 @@ async function webviewPreloads(ctx: PreloadContext) {
- 		}
- 
- 		private showRenderError(info: rendererApi.OutputItem, element: HTMLElement, errorMessage: string) {
--			const errorContainer = document.createElement('div');
-+			const errorContainer = createElement('div');
- 
--			const error = document.createElement('div');
-+			const error = createElement('div');
- 			error.className = 'no-renderer-error';
- 			error.innerText = errorMessage;
- 
--			const cellText = document.createElement('div');
-+			const cellText = createElement('div');
- 			cellText.innerText = info.text();
- 
- 			errorContainer.appendChild(error);
-@@ -2560,12 +2560,12 @@ async function webviewPreloads(ctx: PreloadContext) {
- 			});
- 
- 			const root = window.document.getElementById('container')!;
--			const markupCell = document.createElement('div');
-+			const markupCell = createElement('div');
- 			markupCell.className = 'markup';
- 			markupCell.style.position = 'absolute';
- 			markupCell.style.width = '100%';
- 
--			this.element = document.createElement('div');
-+			this.element = createElement('div');
- 			this.element.id = this.id;
- 			this.element.classList.add('preview');
- 			this.element.style.position = 'absolute';
-@@ -2732,7 +2732,7 @@ async function webviewPreloads(ctx: PreloadContext) {
- 			const upperWrapperElement = createFocusSink(cellId);
- 			container.appendChild(upperWrapperElement);
- 
--			this.element = document.createElement('div');
-+			this.element = createElement('div');
- 			this.element.style.position = 'absolute';
- 			this.element.style.outline = '0';
- 
-@@ -2853,7 +2853,7 @@ async function webviewPreloads(ctx: PreloadContext) {
- 		constructor(
- 			private readonly outputId: string,
- 		) {
--			this.element = document.createElement('div');
-+			this.element = createElement('div');
- 			this.element.classList.add('output_container');
- 			this.element.setAttribute('data-vscode-context', JSON.stringify({ 'preventDefaultContextMenuItems': true }));
- 			this.element.style.position = 'absolute';
-@@ -2932,7 +2932,7 @@ async function webviewPreloads(ctx: PreloadContext) {
- 			left: number,
- 			public readonly cellId: string
- 		) {
--			this.element = document.createElement('div');
-+			this.element = createElement('div');
- 			this.element.id = outputId;
- 			this.element.classList.add('output');
- 			this.element.style.position = 'absolute';
-@@ -3112,7 +3112,7 @@ async function webviewPreloads(ctx: PreloadContext) {
- 
- 			const overlayZIndex = 9999;
- 			if (!this.dragOverlay) {
--				this.dragOverlay = document.createElement('div');
-+				this.dragOverlay = createElement('div');
- 				this.dragOverlay.style.position = 'absolute';
- 				this.dragOverlay.style.top = '0';
- 				this.dragOverlay.style.left = '0';
 diff --git a/src/vs/workbench/contrib/notebook/browser/viewParts/notebookCellOverlays.ts b/src/vs/workbench/contrib/notebook/browser/viewParts/notebookCellOverlays.ts
 index ebaa07e37dd..5516707f620 100644
 --- a/src/vs/workbench/contrib/notebook/browser/viewParts/notebookCellOverlays.ts

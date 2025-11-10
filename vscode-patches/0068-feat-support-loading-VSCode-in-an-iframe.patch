@@ -8,12 +8,11 @@ Subject: [PATCH] feat: support loading VSCode in an iframe
  src/vs/base/browser/domStylesheets.ts         |  4 +-
  src/vs/base/browser/window.ts                 |  7 +++-
  src/vs/workbench/browser/window.ts            | 25 ++++++++----
- .../browser/view/renderers/webviewPreloads.ts |  5 ++-
  .../performance/browser/perfviewEditor.ts     |  3 +-
  .../performance/browser/startupTimings.ts     |  3 +-
  .../browser/webWorkerExtensionHost.ts         |  6 +--
  .../lifecycle/browser/lifecycleService.ts     |  2 +-
- 9 files changed, 49 insertions(+), 45 deletions(-)
+ 8 files changed, 46 insertions(+), 43 deletions(-)
 
 diff --git a/src/vs/base/browser/dom.ts b/src/vs/base/browser/dom.ts
 index 956cedf2b55..8c26bcd1fa1 100644
@@ -201,29 +200,6 @@ index 70e83ad4396..44678fae826 100644
  			const timeoutDisposables = typeof timeoutHandle === 'number' ? BaseWindow.TIMEOUT_DISPOSABLES.get(timeoutHandle) : undefined;
  			if (timeoutDisposables) {
  				dispose(timeoutDisposables);
-diff --git a/src/vs/workbench/contrib/notebook/browser/view/renderers/webviewPreloads.ts b/src/vs/workbench/contrib/notebook/browser/view/renderers/webviewPreloads.ts
-index 0b025108a88..e1d10bc65d3 100644
---- a/src/vs/workbench/contrib/notebook/browser/view/renderers/webviewPreloads.ts
-+++ b/src/vs/workbench/contrib/notebook/browser/view/renderers/webviewPreloads.ts
-@@ -9,7 +9,8 @@ import type * as webviewMessages from './webviewMessages.js';
- import type { NotebookCellMetadata } from '../../../common/notebookCommon.js';
- import type * as rendererApi from 'vscode-notebook-renderer';
- import type { NotebookCellOutputTransferData } from '../../../../../../platform/dnd/browser/dnd.js';
--import { getActiveElement } from '../../../../../../base/browser/dom.js';
-+// eslint-disable-next-line local/code-no-runtime-import
-+import { isShadowRoot, getActiveElement } from '../../../../../../base/browser/dom.js';
- 
- // !! IMPORTANT !! ----------------------------------------------------------------------------------
- // import { RenderOutputType } from 'vs/workbench/contrib/notebook/browser/notebookBrowser';
-@@ -2475,7 +2476,7 @@ async function webviewPreloads(ctx: PreloadContext) {
- 			const trustedHtml = ttPolicy?.createHTML(html) ?? html;
- 			el.innerHTML = trustedHtml as string; // CodeQL [SM03712] The rendered content comes from VS Code's tokenizer and is considered safe
- 			const root = el.getRootNode();
--			if (root instanceof ShadowRoot) {
-+			if (isShadowRoot(root)) {
- 				if (!root.adoptedStyleSheets.includes(tokenizationStyle)) {
- 					root.adoptedStyleSheets.push(tokenizationStyle);
- 				}
 diff --git a/src/vs/workbench/contrib/performance/browser/perfviewEditor.ts b/src/vs/workbench/contrib/performance/browser/perfviewEditor.ts
 index b56d0efeeb9..cf0c8248890 100644
 --- a/src/vs/workbench/contrib/performance/browser/perfviewEditor.ts
