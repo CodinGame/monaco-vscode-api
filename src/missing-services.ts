@@ -226,8 +226,8 @@ import {
 import { IMultiDiffSourceResolverService } from 'vs/workbench/contrib/multiDiffEditor/browser/multiDiffSourceResolverService.service'
 import { INotebookOriginalCellModelFactory } from 'vs/workbench/contrib/notebook/browser/diff/inlineDiff/notebookOriginalCellModelFactory.service'
 import { INotebookOriginalModelReferenceFactory } from 'vs/workbench/contrib/notebook/browser/diff/inlineDiff/notebookOriginalModelRefFactory.service'
-import { INotebookCellOutlineDataSourceFactory } from 'vs/workbench/contrib/notebook/browser/viewModel/notebookOutlineDataSourceFactory.service'
 import { INotebookEditorService } from 'vs/workbench/contrib/notebook/browser/services/notebookEditorService.service'
+import { INotebookCellOutlineDataSourceFactory } from 'vs/workbench/contrib/notebook/browser/viewModel/notebookOutlineDataSourceFactory.service'
 import { INotebookCellStatusBarService } from 'vs/workbench/contrib/notebook/common/notebookCellStatusBarService.service'
 import { INotebookEditorModelResolverService } from 'vs/workbench/contrib/notebook/common/notebookEditorModelResolverService.service'
 import { INotebookExecutionService } from 'vs/workbench/contrib/notebook/common/notebookExecutionService.service'
@@ -423,6 +423,7 @@ import { IChatLayoutService } from 'vs/workbench/contrib/chat/common/chatLayoutS
 import { IChatModeService } from 'vs/workbench/contrib/chat/common/chatModes.service'
 import { IAiEditTelemetryService } from 'vs/workbench/contrib/editTelemetry/browser/telemetry/aiEditTelemetry/aiEditTelemetryService.service'
 import { LazyCollectionState } from 'vs/workbench/contrib/mcp/common/mcpTypes'
+import { INotebookOutlineEntryFactory } from 'vs/workbench/contrib/notebook/browser/viewModel/notebookOutlineEntryFactory.service'
 import { ChatEntitlement } from 'vs/workbench/services/chat/common/chatEntitlementService'
 import type { IInlineCompletionsUnificationState } from 'vs/workbench/services/inlineCompletions/common/inlineCompletionsUnification'
 import { IInlineCompletionsUnificationService } from 'vs/workbench/services/inlineCompletions/common/inlineCompletionsUnification.service'
@@ -5293,6 +5294,19 @@ registerSingleton(
   NotebookCellOutlineDataSourceFactory,
   InstantiationType.Delayed
 )
+
+class NotebookOutlineEntryFactory implements INotebookOutlineEntryFactory {
+  _serviceBrand: undefined
+  getOutlineEntries = () => []
+  @Unsupported
+  cacheSymbols: INotebookOutlineEntryFactory['cacheSymbols'] = unsupported
+}
+registerSingleton(
+  INotebookOutlineEntryFactory,
+  NotebookOutlineEntryFactory,
+  InstantiationType.Delayed
+)
+
 class QuickDiffModelService implements IQuickDiffModelService {
   _serviceBrand: undefined
   createQuickDiffModelReference: IQuickDiffModelService['createQuickDiffModelReference'] = () =>
