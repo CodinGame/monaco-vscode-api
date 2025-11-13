@@ -8,15 +8,15 @@ Subject: [PATCH] fix: ignore @vscode/tree-sitter-wasm until MS fixes it
  1 file changed, 1 insertion(+), 1 deletion(-)
 
 diff --git a/build/gulpfile.editor.js b/build/gulpfile.editor.js
-index 39f83320051..5ee51cddf69 100644
+index 5d8d47677a6..8363930e38c 100644
 --- a/build/gulpfile.editor.js
 +++ b/build/gulpfile.editor.js
-@@ -51,7 +51,7 @@ const extractEditorSrcTask = task.define('extract-editor-src', () => {
+@@ -55,7 +55,7 @@ const extractEditorSrcTask = task.define('extract-editor-src', () => {
+ 			'vs/base/common/marked/marked.js',
  		],
- 		typings: [],
  		shakeLevel: 2, // 0-Files, 1-InnerFile, 2-ClassMembers
 -		importIgnorePattern: /\.css$/,
 +		importIgnorePattern: /\.css$|^@vscode\//,
  		destRoot: path.join(root, 'out-editor-src'),
  		tsOutDir: '../out-monaco-editor-core/esm/vs',
- 		redirects: {
+ 	});

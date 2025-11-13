@@ -11,7 +11,7 @@ Subject: [PATCH] fix: move action from service file to contribution
  create mode 100644 src/vs/workbench/contrib/welcomeGettingStarted/browser/gettingStartedService._contribution.ts
 
 diff --git a/src/vs/workbench/contrib/welcomeGettingStarted/browser/gettingStarted.contribution.ts b/src/vs/workbench/contrib/welcomeGettingStarted/browser/gettingStarted.contribution.ts
-index 7df25f006a0..c0e27d4fbc9 100644
+index 17258bd180f..b3467f68ab1 100644
 --- a/src/vs/workbench/contrib/welcomeGettingStarted/browser/gettingStarted.contribution.ts
 +++ b/src/vs/workbench/contrib/welcomeGettingStarted/browser/gettingStarted.contribution.ts
 @@ -31,6 +31,7 @@ import { Categories } from '../../../../platform/action/common/actionCommonCateg
@@ -84,7 +84,7 @@ index 00000000000..827c6eac860
 +	}
 +});
 diff --git a/src/vs/workbench/contrib/welcomeGettingStarted/browser/gettingStartedService.ts b/src/vs/workbench/contrib/welcomeGettingStarted/browser/gettingStartedService.ts
-index 05d3cd36aa8..c0891aef4be 100644
+index d672ea7b95e..88e31019260 100644
 --- a/src/vs/workbench/contrib/welcomeGettingStarted/browser/gettingStartedService.ts
 +++ b/src/vs/workbench/contrib/welcomeGettingStarted/browser/gettingStartedService.ts
 @@ -3,11 +3,10 @@
@@ -109,7 +109,7 @@ index 05d3cd36aa8..c0891aef4be 100644
  import { ITelemetryService } from '../../../../platform/telemetry/common/telemetry.js';
  import { checkGlobFileExists } from '../../../services/extensions/common/workspaceContains.js';
  import { IWorkspaceContextService } from '../../../../platform/workspace/common/workspace.js';
-@@ -722,49 +721,4 @@ const convertRelativeMediaPathsToWebviewURIs = (basePath: URI, path: string | {
+@@ -723,49 +722,4 @@ const convertRelativeMediaPathsToWebviewURIs = (basePath: URI, path: string | {
  	}
  };
  

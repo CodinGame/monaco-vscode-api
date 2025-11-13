@@ -8,7 +8,7 @@ Subject: [PATCH] fix: just use regular dynamic import
  1 file changed, 1 insertion(+), 2 deletions(-)
 
 diff --git a/src/vs/workbench/services/keybinding/browser/keyboardLayoutService.ts b/src/vs/workbench/services/keybinding/browser/keyboardLayoutService.ts
-index 8807b7ef370..0ab2ac0cdc0 100644
+index 2fa44d2bbc5..d68f3b241a7 100644
 --- a/src/vs/workbench/services/keybinding/browser/keyboardLayoutService.ts
 +++ b/src/vs/workbench/services/keybinding/browser/keyboardLayoutService.ts
 @@ -5,7 +5,6 @@

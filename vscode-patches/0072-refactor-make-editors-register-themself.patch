@@ -17,18 +17,18 @@ instead of scanning them in the keybinding service
  9 files changed, 57 insertions(+), 58 deletions(-)
 
 diff --git a/src/vs/editor/browser/widget/codeEditor/codeEditorWidget.ts b/src/vs/editor/browser/widget/codeEditor/codeEditorWidget.ts
-index 985d6e217e6..e9967aa4c83 100644
+index 2e7aacb8297..d549cf5d34d 100644
 --- a/src/vs/editor/browser/widget/codeEditor/codeEditorWidget.ts
 +++ b/src/vs/editor/browser/widget/codeEditor/codeEditorWidget.ts
-@@ -62,6 +62,7 @@ import { IThemeService, registerThemingParticipant } from '../../../../platform/
- import { MenuId } from '../../../../platform/actions/common/actions.js';
+@@ -63,6 +63,7 @@ import { MenuId } from '../../../../platform/actions/common/actions.js';
  import { TextModelEditSource, EditSources } from '../../../common/textModelEditSource.js';
  import { TextEdit } from '../../../common/core/edits/textEdit.js';
+ import { isObject } from '../../../../base/common/types.js';
 +import { IKeybindingService } from '../../../../platform/keybinding/common/keybinding.js';
  
  export class CodeEditorWidget extends Disposable implements editorBrowser.ICodeEditor {
  
-@@ -268,6 +269,7 @@ export class CodeEditorWidget extends Disposable implements editorBrowser.ICodeE
+@@ -269,6 +270,7 @@ export class CodeEditorWidget extends Disposable implements editorBrowser.ICodeE
  		@IAccessibilityService accessibilityService: IAccessibilityService,
  		@ILanguageConfigurationService private readonly languageConfigurationService: ILanguageConfigurationService,
  		@ILanguageFeaturesService languageFeaturesService: ILanguageFeaturesService,
@@ -36,7 +36,7 @@ index 985d6e217e6..e9967aa4c83 100644
  	) {
  		super();
  		codeEditorService.willCreateCodeEditor();
-@@ -387,6 +389,10 @@ export class CodeEditorWidget extends Disposable implements editorBrowser.ICodeE
+@@ -388,6 +390,10 @@ export class CodeEditorWidget extends Disposable implements editorBrowser.ICodeE
  		}));
  
  		this._codeEditorService.addCodeEditor(this);
@@ -73,7 +73,7 @@ index 3852374d394..bdcb4ff9fd4 100644
  		this._parentEditor = parentEditor;
  		this._overwriteOptions = options;
 diff --git a/src/vs/editor/browser/widget/diffEditor/diffEditorWidget.ts b/src/vs/editor/browser/widget/diffEditor/diffEditorWidget.ts
-index ce453f45816..6ddef3ee680 100644
+index f4ea78b3b22..01e941c0f20 100644
 --- a/src/vs/editor/browser/widget/diffEditor/diffEditorWidget.ts
 +++ b/src/vs/editor/browser/widget/diffEditor/diffEditorWidget.ts
 @@ -14,6 +14,7 @@ import { AccessibilitySignal, IAccessibilitySignalService } from '../../../../pl
@@ -85,14 +85,14 @@ index ce453f45816..6ddef3ee680 100644
  import { IEditorProgressService } from '../../../../platform/progress/common/progress.js';
  import { IDiffEditorOptions } from '../../../common/config/editorOptions.js';
 @@ -101,6 +102,7 @@ export class DiffEditorWidget extends DelegatingEditor implements IDiffEditor {
- 		@ICodeEditorService codeEditorService: ICodeEditorService,
+ 		@ICodeEditorService private readonly _codeEditorService: ICodeEditorService,
  		@IAccessibilitySignalService private readonly _accessibilitySignalService: IAccessibilitySignalService,
  		@IEditorProgressService private readonly _editorProgressService: IEditorProgressService,
 +		@IKeybindingService private readonly keybindingService: IKeybindingService,
  	) {
  		super();
  		this.elements = h('div.monaco-diff-editor.side-by-side', { style: { position: 'relative', height: '100%' } }, [
-@@ -417,6 +419,8 @@ export class DiffEditorWidget extends DelegatingEditor implements IDiffEditor {
+@@ -420,6 +422,8 @@ export class DiffEditorWidget extends DelegatingEditor implements IDiffEditor {
  		this._register(autorun(reader => {
  			this._options.setModel(this._diffModel.read(reader));
  		}));
@@ -127,10 +127,10 @@ index ce41de7bc70..916c923585c 100644
  		this._parentEditor = parentEditor;
  		this._overwriteOptions = options;
 diff --git a/src/vs/editor/standalone/browser/standaloneCodeEditor.ts b/src/vs/editor/standalone/browser/standaloneCodeEditor.ts
-index ca9736c46f1..cab8bb8a1a1 100644
+index 69e271c1879..74e473d55f8 100644
 --- a/src/vs/editor/standalone/browser/standaloneCodeEditor.ts
 +++ b/src/vs/editor/standalone/browser/standaloneCodeEditor.ts
-@@ -283,7 +283,7 @@ export class StandaloneCodeEditor extends CodeEditorWidget implements IStandalon
+@@ -286,7 +286,7 @@ export class StandaloneCodeEditor extends CodeEditorWidget implements IStandalon
  	) {
  		const options = { ..._options };
  		options.ariaLabel = options.ariaLabel || StandaloneCodeEditorNLS.editorViewAccessibleLabel;
@@ -139,7 +139,7 @@ index ca9736c46f1..cab8bb8a1a1 100644
  
  		if (keybindingService instanceof StandaloneKeybindingService) {
  			this._standaloneKeybindingService = keybindingService;
-@@ -507,6 +507,7 @@ export class StandaloneDiffEditor2 extends DiffEditorWidget implements IStandalo
+@@ -513,6 +513,7 @@ export class StandaloneDiffEditor2 extends DiffEditorWidget implements IStandalo
  		@IEditorProgressService editorProgressService: IEditorProgressService,
  		@IClipboardService clipboardService: IClipboardService,
  		@IAccessibilitySignalService accessibilitySignalService: IAccessibilitySignalService,
@@ -147,7 +147,7 @@ index ca9736c46f1..cab8bb8a1a1 100644
  	) {
  		const options = { ..._options };
  		updateConfigurationService(configurationService, options, true);
-@@ -527,6 +528,7 @@ export class StandaloneDiffEditor2 extends DiffEditorWidget implements IStandalo
+@@ -533,6 +534,7 @@ export class StandaloneDiffEditor2 extends DiffEditorWidget implements IStandalo
  			codeEditorService,
  			accessibilitySignalService,
  			editorProgressService,
@@ -156,7 +156,7 @@ index ca9736c46f1..cab8bb8a1a1 100644
  
  		this._configurationService = configurationService;
 diff --git a/src/vs/editor/standalone/browser/standaloneServices.ts b/src/vs/editor/standalone/browser/standaloneServices.ts
-index df9fd251425..d84f33648dc 100644
+index cbb6dea770e..07c8c716191 100644
 --- a/src/vs/editor/standalone/browser/standaloneServices.ts
 +++ b/src/vs/editor/standalone/browser/standaloneServices.ts
 @@ -53,8 +53,6 @@ import { basename } from '../../../base/common/resources.js';
@@ -278,18 +278,18 @@ index 7678f6c893f..3859431103c 100644
  		super.dispose();
  	}
 diff --git a/src/vs/platform/keybinding/common/keybinding.ts b/src/vs/platform/keybinding/common/keybinding.ts
-index 72f0d6c9640..a5e37dc4885 100644
+index 401691890b2..5cc10e3ef20 100644
 --- a/src/vs/platform/keybinding/common/keybinding.ts
 +++ b/src/vs/platform/keybinding/common/keybinding.ts
-@@ -45,6 +45,8 @@ export interface IKeybindingService {
+@@ -47,6 +47,8 @@ export interface IKeybindingService {
  
- 	readonly inChordMode: boolean;
+ 	readonly onDidUpdateKeybindings: Event<void>;
  
 +	registerContainer(container: HTMLElement): IDisposable;
 +
- 	onDidUpdateKeybindings: Event<void>;
- 
  	/**
+ 	 * Returns none, one or many (depending on keyboard layout)!
+ 	 */
 diff --git a/src/vs/workbench/contrib/comments/browser/simpleCommentEditor.ts b/src/vs/workbench/contrib/comments/browser/simpleCommentEditor.ts
 index 7be817e3592..4388722c6e0 100644
 --- a/src/vs/workbench/contrib/comments/browser/simpleCommentEditor.ts

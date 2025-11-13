@@ -8,11 +8,11 @@ Subject: [PATCH] refactor: split class in 2
  1 file changed, 79 insertions(+), 19 deletions(-)
 
 diff --git a/src/vs/workbench/services/extensions/browser/extensionService.ts b/src/vs/workbench/services/extensions/browser/extensionService.ts
-index a06dcd516bd..88e8ff6d871 100644
+index 1bafa65025a..27feb43c394 100644
 --- a/src/vs/workbench/services/extensions/browser/extensionService.ts
 +++ b/src/vs/workbench/services/extensions/browser/extensionService.ts
 @@ -44,8 +44,11 @@ import { IUserDataProfileService } from '../../userDataProfile/common/userDataPr
- import { AsyncIterableEmitter, AsyncIterableObject } from '../../../../base/common/async.js';
+ import { AsyncIterableEmitter, AsyncIterableProducer } from '../../../../base/common/async.js';
  
  export class ExtensionService extends AbstractExtensionService implements IExtensionService {
 -

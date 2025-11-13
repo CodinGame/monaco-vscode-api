@@ -9,7 +9,7 @@ Subject: [PATCH] refactor: split code
  2 files changed, 11 insertions(+), 3 deletions(-)
 
 diff --git a/src/vs/editor/standalone/browser/standaloneServices.ts b/src/vs/editor/standalone/browser/standaloneServices.ts
-index 47364bdd034..dacb77f29fa 100644
+index 2edbb5ff54f..1d3e3e5e0d6 100644
 --- a/src/vs/editor/standalone/browser/standaloneServices.ts
 +++ b/src/vs/editor/standalone/browser/standaloneServices.ts
 @@ -528,15 +528,19 @@ export class StandaloneKeybindingService extends AbstractKeybindingService {
@@ -35,10 +35,10 @@ index 47364bdd034..dacb77f29fa 100644
  		}
  		return this._cachedResolver;
 diff --git a/src/vs/workbench/services/keybinding/browser/keybindingService.ts b/src/vs/workbench/services/keybinding/browser/keybindingService.ts
-index c5a78e509f1..7eee4efba9a 100644
+index aa62f865df0..e19d172e7a9 100644
 --- a/src/vs/workbench/services/keybinding/browser/keybindingService.ts
 +++ b/src/vs/workbench/services/keybinding/browser/keybindingService.ts
-@@ -445,10 +445,14 @@ export class WorkbenchKeybindingService extends AbstractKeybindingService {
+@@ -438,10 +438,14 @@ export class WorkbenchKeybindingService extends AbstractKeybindingService {
  		this._onDidUpdateKeybindings.fire();
  	}
  

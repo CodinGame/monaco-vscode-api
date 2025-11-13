@@ -5,9 +5,9 @@ Subject: [PATCH] refactor: split service and extension point
 
 ---
  .../api/browser/mainThreadStatusBar.ts        |   2 +-
- .../api/browser/statusBarExtensionPoint.ts    | 161 +-----------------
+ .../api/browser/statusBarExtensionPoint.ts    | 163 +-----------------
  .../workbench/api/browser/statusBarService.ts | 158 +++++++++++++++++
- 3 files changed, 162 insertions(+), 159 deletions(-)
+ 3 files changed, 163 insertions(+), 160 deletions(-)
  create mode 100644 src/vs/workbench/api/browser/statusBarService.ts
 
 diff --git a/src/vs/workbench/api/browser/mainThreadStatusBar.ts b/src/vs/workbench/api/browser/mainThreadStatusBar.ts
@@ -27,13 +27,13 @@ index 96059861a79..dfe4b56fb85 100644
  @extHostNamedCustomer(MainContext.MainThreadStatusBar)
  export class MainThreadStatusBar implements MainThreadStatusBarShape {
 diff --git a/src/vs/workbench/api/browser/statusBarExtensionPoint.ts b/src/vs/workbench/api/browser/statusBarExtensionPoint.ts
-index 25a91b5eaff..59a3f92fafa 100644
+index 0bdbb98e138..dcd73e5fdbc 100644
 --- a/src/vs/workbench/api/browser/statusBarExtensionPoint.ts
 +++ b/src/vs/workbench/api/browser/statusBarExtensionPoint.ts
 @@ -4,172 +4,17 @@
   *--------------------------------------------------------------------------------------------*/
  
- import { IJSONSchema } from '../../../base/common/jsonSchema.js';
+ import { IJSONSchema, TypeFromJsonSchema } from '../../../base/common/jsonSchema.js';
 -import { DisposableStore, IDisposable, toDisposable } from '../../../base/common/lifecycle.js';
 +import { DisposableStore, toDisposable } from '../../../base/common/lifecycle.js';
  import { localize } from '../../../nls.js';
@@ -44,12 +44,13 @@ index 25a91b5eaff..59a3f92fafa 100644
 -import { IStatusbarService, StatusbarAlignment as MainThreadStatusBarAlignment, IStatusbarEntryAccessor, IStatusbarEntry, StatusbarAlignment, IStatusbarEntryPriority, StatusbarEntryKind } from '../../services/statusbar/browser/statusbar.js';
 -import { ThemeColor } from '../../../base/common/themables.js';
 -import { Command } from '../../../editor/common/languages.js';
- import { IAccessibilityInformation, isAccessibilityInformation } from '../../../platform/accessibility/common/accessibility.js';
+-import { IAccessibilityInformation, isAccessibilityInformation } from '../../../platform/accessibility/common/accessibility.js';
 -import { IMarkdownString, isMarkdownString } from '../../../base/common/htmlContent.js';
 -import { getCodiconAriaLabel } from '../../../base/common/iconLabels.js';
 -import { hash } from '../../../base/common/hash.js';
 -import { Event, Emitter } from '../../../base/common/event.js';
 -import { InstantiationType, registerSingleton } from '../../../platform/instantiation/common/extensions.js';
++import { isAccessibilityInformation } from '../../../platform/accessibility/common/accessibility.js';
  import { Iterable } from '../../../base/common/iterator.js';
  import { ExtensionIdentifier } from '../../../platform/extensions/common/extensions.js';
  import { asStatusBarItemIdentifier } from '../common/extHostTypes.js';
@@ -81,7 +82,7 @@ index 25a91b5eaff..59a3f92fafa 100644
 -export interface IExtensionStatusBarItemService {
 -	readonly _serviceBrand: undefined;
 -
--	onDidChange: Event<IExtensionStatusBarItemChangeEvent>;
+-	readonly onDidChange: Event<IExtensionStatusBarItemChangeEvent>;
 -
 -	setOrUpdateEntry(id: string, statusId: string, extensionId: string | undefined, name: string, text: string, tooltip: IMarkdownString | string | undefined | IManagedHoverTooltipMarkdownString, command: Command | undefined, color: string | ThemeColor | undefined, backgroundColor: ThemeColor | undefined, alignLeft: boolean, priority: number | undefined, accessibilityInformation: IAccessibilityInformation | undefined): StatusBarUpdateKind;
 -
@@ -204,11 +205,11 @@ index 25a91b5eaff..59a3f92fafa 100644
 -// --- extension point and reading of it
 +import { IExtensionStatusBarItemService, StatusBarUpdateKind } from './statusBarService.js';
  
- interface IUserFriendlyStatusItemEntry {
- 	id: string;
+ type IUserFriendlyStatusItemEntry = TypeFromJsonSchema<typeof statusBarItemSchema>;
+ 
 diff --git a/src/vs/workbench/api/browser/statusBarService.ts b/src/vs/workbench/api/browser/statusBarService.ts
 new file mode 100644
-index 00000000000..e674b205d52
+index 00000000000..7a07718071b
 --- /dev/null
 +++ b/src/vs/workbench/api/browser/statusBarService.ts
 @@ -0,0 +1,158 @@
@@ -252,7 +253,7 @@ index 00000000000..e674b205d52
 +export interface IExtensionStatusBarItemService {
 +	readonly _serviceBrand: undefined;
 +
-+	onDidChange: Event<IExtensionStatusBarItemChangeEvent>;
++	readonly onDidChange: Event<IExtensionStatusBarItemChangeEvent>;
 +
 +	setOrUpdateEntry(id: string, statusId: string, extensionId: string | undefined, name: string, text: string, tooltip: IMarkdownString | string | undefined | IManagedHoverTooltipMarkdownString, command: Command | undefined, color: string | ThemeColor | undefined, backgroundColor: ThemeColor | undefined, alignLeft: boolean, priority: number | undefined, accessibilityInformation: IAccessibilityInformation | undefined): StatusBarUpdateKind;
 +

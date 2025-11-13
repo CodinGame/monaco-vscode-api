@@ -41,7 +41,7 @@ index 7826f48490b..eec4af12748 100644
  					includeContent: !!build,
  					// note: trailing slash is important, else the source URLs in V8's file coverage are incorrect
 diff --git a/build/gulpfile.vscode.js b/build/gulpfile.vscode.js
-index ed06b6a5aa8..72bab050f5e 100644
+index 027b2d34487..2f5c789d6a0 100644
 --- a/build/gulpfile.vscode.js
 +++ b/build/gulpfile.vscode.js
 @@ -293,7 +293,6 @@ function packageTask(platform, arch, sourceFolderName, destinationFolderName, op
@@ -53,7 +53,7 @@ index ed06b6a5aa8..72bab050f5e 100644
  			.pipe(createAsar(path.join(process.cwd(), 'node_modules'), [
  				'**/*.node',
 diff --git a/build/lib/extensions.js b/build/lib/extensions.js
-index c80a1be1a84..d5696c6ecc7 100644
+index e3736888924..7d75babd8e6 100644
 --- a/build/lib/extensions.js
 +++ b/build/lib/extensions.js
 @@ -69,12 +69,9 @@ const gulp_buffer_1 = __importDefault(require("gulp-buffer"));
@@ -94,7 +94,7 @@ index c80a1be1a84..d5696c6ecc7 100644
                  }));
              });
 diff --git a/build/lib/extensions.ts b/build/lib/extensions.ts
-index 9e7cf9f954a..c43eba4019e 100644
+index 4779ddba03a..2ec420d9818 100644
 --- a/build/lib/extensions.ts
 +++ b/build/lib/extensions.ts
 @@ -23,13 +23,10 @@ import * as jsoncParser from 'jsonc-parser';

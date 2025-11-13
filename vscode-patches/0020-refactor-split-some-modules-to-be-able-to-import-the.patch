@@ -297,7 +297,7 @@ index 00000000000..91219398705
 +	}
 +});
 diff --git a/src/vs/workbench/contrib/files/browser/fileCommands.ts b/src/vs/workbench/contrib/files/browser/fileCommands.ts
-index 267b609b778..e86b6b9033f 100644
+index c8fc8aa2dd2..1ea10370c97 100644
 --- a/src/vs/workbench/contrib/files/browser/fileCommands.ts
 +++ b/src/vs/workbench/contrib/files/browser/fileCommands.ts
 @@ -5,8 +5,7 @@

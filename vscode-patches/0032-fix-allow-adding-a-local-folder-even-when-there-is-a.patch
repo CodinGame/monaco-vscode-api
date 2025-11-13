@@ -9,7 +9,7 @@ Subject: [PATCH] fix: allow adding a local folder even when there is a remote
  1 file changed, 1 insertion(+), 6 deletions(-)
 
 diff --git a/src/vs/workbench/services/workspaces/browser/abstractWorkspaceEditingService.ts b/src/vs/workbench/services/workspaces/browser/abstractWorkspaceEditingService.ts
-index be885f55a7d..6f5495a8a09 100644
+index edc7e02d6f4..6e230b5a7ee 100644
 --- a/src/vs/workbench/services/workspaces/browser/abstractWorkspaceEditingService.ts
 +++ b/src/vs/workbench/services/workspaces/browser/abstractWorkspaceEditingService.ts
 @@ -14,7 +14,7 @@ import { ConfigurationScope, IConfigurationRegistry, Extensions as Configuration
@@ -23,7 +23,7 @@ index be885f55a7d..6f5495a8a09 100644
  import { IWorkbenchEnvironmentService } from '../../environment/common/environmentService.js';
 @@ -171,11 +171,6 @@ export abstract class AbstractWorkspaceEditingService extends Disposable impleme
  
- 	private async doAddFolders(foldersToAdd: IWorkspaceFolderCreationData[], index?: number, donotNotifyError: boolean = false): Promise<void> {
+ 	private async doAddFolders(foldersToAdd: IWorkspaceFolderCreationData[], index?: number, donotNotifyError = false): Promise<void> {
  		const state = this.contextService.getWorkbenchState();
 -		const remoteAuthority = this.environmentService.remoteAuthority;
 -		if (remoteAuthority) {

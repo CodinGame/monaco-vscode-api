@@ -25,10 +25,10 @@ index ba1c33e7845..bafc4ef36a0 100644
  		if (knownExtensionProposals.length) {
  			return knownExtensionProposals.map(e => {
 diff --git a/src/vs/workbench/api/common/extHostExtensionService.ts b/src/vs/workbench/api/common/extHostExtensionService.ts
-index 61b03cc7ae9..5025f5b37de 100644
+index 4838ce72d32..34d09025ced 100644
 --- a/src/vs/workbench/api/common/extHostExtensionService.ts
 +++ b/src/vs/workbench/api/common/extHostExtensionService.ts
-@@ -1177,12 +1177,14 @@ export class Extension<T extends object | null | undefined> implements vscode.Ex
+@@ -1180,12 +1180,14 @@ export class Extension<T extends object | null | undefined> implements vscode.Ex
  	readonly packageJSON: IExtensionDescription;
  	readonly extensionKind: vscode.ExtensionKind;
  	readonly isFromDifferentExtensionHost: boolean;
@@ -44,10 +44,10 @@ index 61b03cc7ae9..5025f5b37de 100644
  		this.extensionPath = path.normalize(originalFSPath(description.extensionLocation));
  		this.packageJSON = description;
 diff --git a/src/vscode-dts/vscode.d.ts b/src/vscode-dts/vscode.d.ts
-index 7bb1c69f7f9..d457207627d 100644
+index a548e005049..6a1a87e03ca 100644
 --- a/src/vscode-dts/vscode.d.ts
 +++ b/src/vscode-dts/vscode.d.ts
-@@ -8311,6 +8311,11 @@ declare module 'vscode' {
+@@ -8319,6 +8319,11 @@ declare module 'vscode' {
  		 */
  		extensionKind: ExtensionKind;
  

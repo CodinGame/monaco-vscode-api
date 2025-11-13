@@ -5,16 +5,16 @@ Subject: [PATCH] feat: prevent IDE from entering fullscreen if not occupying
  the entire screen
 
 ---
- src/vs/base/browser/dom.ts                           | 12 ++++++++----
- src/vs/workbench/browser/web.main.ts                 |  2 +-
- .../services/host/browser/browserHostService.ts      |  2 +-
- 3 files changed, 10 insertions(+), 6 deletions(-)
+ src/vs/base/browser/dom.ts                         | 14 +++++++++-----
+ src/vs/workbench/browser/web.main.ts               |  2 +-
+ .../services/host/browser/browserHostService.ts    |  2 +-
+ 3 files changed, 11 insertions(+), 7 deletions(-)
 
 diff --git a/src/vs/base/browser/dom.ts b/src/vs/base/browser/dom.ts
-index d014d87fb7e..956cedf2b55 100644
+index f181ffdea9f..8be3c97a212 100644
 --- a/src/vs/base/browser/dom.ts
 +++ b/src/vs/base/browser/dom.ts
-@@ -1662,10 +1662,12 @@ export interface IDetectedFullscreen {
+@@ -1666,11 +1666,13 @@ export interface IDetectedFullscreen {
  	guess: boolean;
  }
  
@@ -22,14 +22,16 @@ index d014d87fb7e..956cedf2b55 100644
 +export function detectFullscreen(targetWindow: Window, containerElement: Element): IDetectedFullscreen | null {
  
  	// Browser fullscreen: use DOM APIs to detect
+-	// eslint-disable-next-line local/code-no-any-casts
 -	if (targetWindow.document.fullscreenElement || (<any>targetWindow.document).webkitFullscreenElement || (<any>targetWindow.document).webkitIsFullScreen) {
 +	const fullscreenElement: Element | undefined =
++		// eslint-disable-next-line local/code-no-any-casts
 +		targetWindow.document.fullscreenElement ?? (<any>targetWindow.document).webkitFullscreenElement ?? (<any>targetWindow.document).webkitIsFullScreen;
 +	if (fullscreenElement === containerElement) {
  		return { mode: DetectedFullscreenMode.DOCUMENT, guess: false };
  	}
  
-@@ -1674,7 +1676,9 @@ export function detectFullscreen(targetWindow: Window): IDetectedFullscreen | nu
+@@ -1679,7 +1681,9 @@ export function detectFullscreen(targetWindow: Window): IDetectedFullscreen | nu
  	// height and comparing that to window height, we can guess
  	// it though.
  
@@ -40,7 +42,7 @@ index d014d87fb7e..956cedf2b55 100644
  		// if the height of the window matches the screen height, we can
  		// safely assume that the browser is fullscreen because no browser
  		// chrome is taking height away (e.g. like toolbars).
-@@ -1683,7 +1687,7 @@ export function detectFullscreen(targetWindow: Window): IDetectedFullscreen | nu
+@@ -1688,7 +1692,7 @@ export function detectFullscreen(targetWindow: Window): IDetectedFullscreen | nu
  
  	if (platform.isMacintosh || platform.isLinux) {
  		// macOS and Linux do not properly report `innerHeight`, only Windows does
@@ -50,7 +52,7 @@ index d014d87fb7e..956cedf2b55 100644
  			// only guess that we are in fullscreen. It is also possible that
  			// the user has turned off taskbars in the OS and the browser is
 diff --git a/src/vs/workbench/browser/web.main.ts b/src/vs/workbench/browser/web.main.ts
-index 6d42eeaa3d4..f92f8f04f60 100644
+index fedadefc0b3..98275b2829b 100644
 --- a/src/vs/workbench/browser/web.main.ts
 +++ b/src/vs/workbench/browser/web.main.ts
 @@ -113,7 +113,7 @@ export class BrowserMain extends Disposable {
@@ -63,7 +65,7 @@ index 6d42eeaa3d4..f92f8f04f60 100644
  
  	async open(): Promise<IWorkbench> {
 diff --git a/src/vs/workbench/services/host/browser/browserHostService.ts b/src/vs/workbench/services/host/browser/browserHostService.ts
-index 6f62f49b906..d34518a241e 100644
+index 43aaec01f84..81419568733 100644
 --- a/src/vs/workbench/services/host/browser/browserHostService.ts
 +++ b/src/vs/workbench/services/host/browser/browserHostService.ts
 @@ -218,7 +218,7 @@ export class BrowserHostService extends Disposable implements IHostService {

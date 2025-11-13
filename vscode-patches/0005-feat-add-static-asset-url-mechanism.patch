@@ -4,15 +4,28 @@ Date: Mon, 11 Mar 2024 17:11:14 +0100
 Subject: [PATCH] feat: add static asset url mechanism
 
 ---
+ src/tsec.exemptions.json                      |   1 +
  src/vs/base/common/network.ts                 |  33 ++-
  .../api/browser/mainThreadExtensionService.ts |   7 +
  .../workbench/api/common/extHost.protocol.ts  |   1 +
  .../workbench/api/common/extensionHostMain.ts |   5 +
- .../api/worker/extensionHostWorker.ts         | 219 +++++++++++++-----
- 5 files changed, 207 insertions(+), 58 deletions(-)
+ .../api/worker/extensionHostWorker.ts         | 222 +++++++++++++-----
+ 6 files changed, 208 insertions(+), 61 deletions(-)
 
+diff --git a/src/tsec.exemptions.json b/src/tsec.exemptions.json
+index f913df5e7da..896f42898a8 100644
+--- a/src/tsec.exemptions.json
++++ b/src/tsec.exemptions.json
+@@ -7,6 +7,7 @@
+ 		"vs/workbench/api/worker/extHostExtensionService.ts"
+ 	],
+ 	"ban-function-calls": [
++		"vs/workbench/api/worker/extensionHostWorker.ts",
+ 		"vs/workbench/api/worker/extHostExtensionService.ts",
+ 		"vs/workbench/contrib/notebook/browser/view/renderers/webviewPreloads.ts",
+ 		"vs/workbench/services/keybinding/test/node/keyboardMapperTestUtils.ts"
 diff --git a/src/vs/base/common/network.ts b/src/vs/base/common/network.ts
-index ee9564eed86..7b0ef6cd993 100644
+index 5a9ba7fd940..ed4bb57382c 100644
 --- a/src/vs/base/common/network.ts
 +++ b/src/vs/base/common/network.ts
 @@ -8,6 +8,8 @@ import * as platform from './platform.js';
@@ -24,7 +37,7 @@ index ee9564eed86..7b0ef6cd993 100644
  
  export namespace Schemas {
  
-@@ -265,6 +267,20 @@ export const VSCODE_AUTHORITY = 'vscode-app';
+@@ -270,6 +272,20 @@ export const VSCODE_AUTHORITY = 'vscode-app';
  class FileAccessImpl {
  
  	private static readonly FALLBACK_AUTHORITY = VSCODE_AUTHORITY;
@@ -45,7 +58,7 @@ index ee9564eed86..7b0ef6cd993 100644
  
  	/**
  	 * Returns a URI to use in contexts where the browser is responsible
-@@ -312,7 +328,7 @@ class FileAccessImpl {
+@@ -317,7 +333,7 @@ class FileAccessImpl {
  			});
  		}
  
@@ -54,7 +67,7 @@ index ee9564eed86..7b0ef6cd993 100644
  	}
  
  	/**
-@@ -363,7 +379,20 @@ class FileAccessImpl {
+@@ -368,7 +384,20 @@ class FileAccessImpl {
  			return URI.file(modulePath);
  		}
  
@@ -77,10 +90,10 @@ index ee9564eed86..7b0ef6cd993 100644
  }
  
 diff --git a/src/vs/workbench/api/browser/mainThreadExtensionService.ts b/src/vs/workbench/api/browser/mainThreadExtensionService.ts
-index faf19a0dce2..e83837db2db 100644
+index 4cfaf6a58cb..b7f63a0d276 100644
 --- a/src/vs/workbench/api/browser/mainThreadExtensionService.ts
 +++ b/src/vs/workbench/api/browser/mainThreadExtensionService.ts
-@@ -187,6 +187,13 @@ export class MainThreadExtensionService implements MainThreadExtensionServiceSha
+@@ -192,6 +192,13 @@ export class MainThreadExtensionService implements MainThreadExtensionServiceSha
  	async $asBrowserUri(uri: UriComponents): Promise<UriComponents> {
  		return FileAccess.uriToBrowserUri(URI.revive(uri));
  	}
@@ -95,10 +108,10 @@ index faf19a0dce2..e83837db2db 100644
  
  class ExtensionHostProxy implements IExtensionHostProxy {
 diff --git a/src/vs/workbench/api/common/extHost.protocol.ts b/src/vs/workbench/api/common/extHost.protocol.ts
-index 2359a09ee3d..d8f64f815af 100644
+index 3b69e426e1d..a682f3af476 100644
 --- a/src/vs/workbench/api/common/extHost.protocol.ts
 +++ b/src/vs/workbench/api/common/extHost.protocol.ts
-@@ -1575,6 +1575,7 @@ export interface MainThreadExtensionServiceShape extends IDisposable {
+@@ -1613,6 +1613,7 @@ export interface MainThreadExtensionServiceShape extends IDisposable {
  	$onExtensionRuntimeError(extensionId: ExtensionIdentifier, error: SerializedError): void;
  	$setPerformanceMarks(marks: performance.PerformanceMark[]): Promise<void>;
  	$asBrowserUri(uri: UriComponents): Promise<UriComponents>;
@@ -123,7 +136,7 @@ index 26408fdbe5f..2d9c02c9a1d 100644
  		this._extensionService.terminate(reason);
  	}
 diff --git a/src/vs/workbench/api/worker/extensionHostWorker.ts b/src/vs/workbench/api/worker/extensionHostWorker.ts
-index ef9b56b6951..afd12f61a9b 100644
+index 7df83c7fba6..c89d0ac164c 100644
 --- a/src/vs/workbench/api/worker/extensionHostWorker.ts
 +++ b/src/vs/workbench/api/worker/extensionHostWorker.ts
 @@ -15,7 +15,6 @@ import * as performance from '../../../base/common/performance.js';
@@ -151,14 +164,18 @@ index ef9b56b6951..afd12f61a9b 100644
  }
  
  const nativeFetch = fetch.bind(self);
-@@ -89,66 +89,172 @@ self.addEventListener = () => console.trace(`'addEventListener' has been blocked
- (<any>self)['webkitResolveLocalFileSystemSyncURL'] = undefined;
+@@ -97,70 +97,173 @@ self.addEventListener = () => console.trace(`'addEventListener' has been blocked
+ // eslint-disable-next-line local/code-no-any-casts
  (<any>self)['webkitResolveLocalFileSystemURL'] = undefined;
  
+-// eslint-disable-next-line local/code-no-any-casts
 -if ((<any>self).Worker) {
 -
 -	// make sure new Worker(...) always uses blob: (to maintain current origin)
+-	// eslint-disable-next-line local/code-no-any-casts
 -	const _Worker = (<any>self).Worker;
++function patchWorker(asBrowserUri: (uri: URI) => Promise<URI>, getAllStaticBrowserUris: () => Promise<[URI, URI][]>) {
+ 	// eslint-disable-next-line local/code-no-any-casts
 -	Worker = <any>function (stringUrl: string | URL, options?: WorkerOptions) {
 -		if (/^file:/i.test(stringUrl.toString())) {
 -			stringUrl = FileAccess.uriToBrowserUri(URI.parse(stringUrl.toString())).toString(true);
@@ -168,11 +185,12 @@ index ef9b56b6951..afd12f61a9b 100644
 -			// to use templating instead of a function in the web api (`resourceUriProvider`)
 -			throw new Error(`Creating workers from remote extensions is currently not supported.`);
 -		}
-+function patchWorker(asBrowserUri: (uri: URI) => Promise<URI>, getAllStaticBrowserUris: () => Promise<[URI, URI][]>) {
 +	if ((<any>self).Worker) {
 +
 +		// make sure new Worker(...) always uses blob: (to maintain current origin)
++		// eslint-disable-next-line local/code-no-any-casts
 +		const _Worker = (<any>self).Worker;
++		// eslint-disable-next-line local/code-no-any-casts
 +		Worker = <any>function (stringUrl: string | URL, options?: WorkerOptions) {
 +			if (/^vscode-remote:/i.test(stringUrl.toString())) {
 +				// Supporting transformation of vscode-remote URIs requires an async call to the main thread,
@@ -298,6 +316,7 @@ index ef9b56b6951..afd12f61a9b 100644
 -	};
  
 -} else {
+-	// eslint-disable-next-line local/code-no-any-casts
 -	(<any>self).Worker = class extends NestedWorker {
 -		constructor(stringOrUrl: string | URL, options?: WorkerOptions) {
 -			super(nativePostMessage, stringOrUrl, { name: path.basename(stringOrUrl.toString()), ...options });
@@ -331,7 +350,6 @@ index ef9b56b6951..afd12f61a9b 100644
 +					return this._onerror;
 +				}
 +
-+				// eslint-disable-next-line @typescript-eslint/no-explicit-any
 +				postMessage(message: unknown, options?: any): void {
 +					this.workerPromise.then(worker => {
 +						worker.postMessage(message, options);
@@ -344,14 +362,12 @@ index ef9b56b6951..afd12f61a9b 100644
 +					}, console.error);
 +				}
 +
-+				// eslint-disable-next-line @typescript-eslint/no-explicit-any
 +				addEventListener(type: any, listener: any, options?: any): void {
 +					this.workerPromise.then(worker => {
 +						worker.addEventListener(type, listener, options);
 +					}, console.error);
 +				}
 +
-+				// eslint-disable-next-line @typescript-eslint/no-explicit-any
 +				removeEventListener(type: any, listener: any, options?: any): void {
 +					this.workerPromise.then(worker => {
 +						worker.removeEventListener(type, listener, options);
@@ -369,6 +385,7 @@ index ef9b56b6951..afd12f61a9b 100644
 +		};
 +
 +	} else {
++		// eslint-disable-next-line local/code-no-any-casts
 +		(<any>self).Worker = class extends NestedWorker {
 +			constructor(stringOrUrl: string | URL, options?: WorkerOptions) {
 +				super(nativePostMessage, stringOrUrl, { name: path.basename(stringOrUrl.toString()), ...options });
@@ -378,7 +395,7 @@ index ef9b56b6951..afd12f61a9b 100644
  }
  
  //#endregion ---
-@@ -255,6 +361,7 @@ export function create(): { onmessage: (message: any) => void } {
+@@ -267,6 +370,7 @@ export function create(): { onmessage: (message: any) => void } {
  				);
  
  				patchFetching(uri => extHostMain.asBrowserUri(uri));

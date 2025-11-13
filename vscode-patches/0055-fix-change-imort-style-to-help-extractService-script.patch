@@ -10,7 +10,7 @@ Subject: [PATCH] fix: change imort style to help extractService script
  3 files changed, 37 insertions(+), 37 deletions(-)
 
 diff --git a/src/vs/editor/contrib/gotoSymbol/browser/peek/referencesWidget.ts b/src/vs/editor/contrib/gotoSymbol/browser/peek/referencesWidget.ts
-index 9581b5cf6ff..cd16c2d923d 100644
+index f7330a59080..a695bf80e01 100644
 --- a/src/vs/editor/contrib/gotoSymbol/browser/peek/referencesWidget.ts
 +++ b/src/vs/editor/contrib/gotoSymbol/browser/peek/referencesWidget.ts
 @@ -26,7 +26,6 @@ import { Location } from '../../../../common/languages.js';
