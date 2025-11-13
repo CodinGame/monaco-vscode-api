@@ -158,6 +158,8 @@ export interface Options {
     subpackages: SubPackage[],
     getModule: (path: string) => SubPackageModule | undefined
   ) => Promise<void>
+
+  ignoreDependencies?: string[]
 }
 
 interface GroupSet {
@@ -190,7 +192,8 @@ export default ({
   getManifest,
   getInterPackageImport = (path, groupName) => `${groupName.alias ?? groupName.name}/${path}`,
   finalize,
-  stage = 'writeBundle'
+  stage = 'writeBundle',
+  ignoreDependencies
 }: Options): Plugin => ({
   name: 'subpackages',
   [stage]: async function (
@@ -523,6 +526,9 @@ export default ({
                               version = packageDetails.version
                             }
                           } else {
+                            if (ignoreDependencies != null && ignoreDependencies.includes(name)) {
+                              return []
+                            }
                             try {
                               const installedVersion = getInstalledVersion(name)
                               if (installedVersion == null) {
