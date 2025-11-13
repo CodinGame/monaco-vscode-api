@@ -32,6 +32,8 @@ class AssignmentService implements IWorkbenchAssignmentService {
     this.experimentsEnabled = !environmentService.disableExperiments
   }
 
+  addTelemetryAssignmentFilter = () => {}
+
   async getCurrentExperiments(): Promise<string[] | undefined> {
     if (!this.experimentsEnabled) {
       return undefined

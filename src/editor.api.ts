@@ -53,7 +53,8 @@ export interface IWebWorkerOptions {
   /**
    * An object that can be used by the web worker to make calls back to the main thread.
    */
-  host?: unknown
+  // eslint-disable-next-line @typescript-eslint/no-unsafe-function-type
+  host?: Record<string, Function>
   /**
    * Keep idle models.
    * Defaults to false, which means that idle models will stop syncing after a while.

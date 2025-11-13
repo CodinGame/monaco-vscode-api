@@ -123,6 +123,9 @@ abstract class SimpleTerminalProcess implements ITerminalChildProcess {
       })
     })
   }
+
+  setNextCommandId: ITerminalChildProcess['setNextCommandId'] = async () => {}
+
   onProcessReplayComplete?: Event<void> | undefined
   onRestoreCommands?: Event<ISerializedCommandDetectionCapability> | undefined
 

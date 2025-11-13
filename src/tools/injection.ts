@@ -11,7 +11,7 @@ function getInjectedParameters<Ctor extends abstract new (...args: any[]) => Ins
 ) {
   return instantiationService.invokeFunction((accessor) => {
     return _util
-      .getServiceDependencies(ctor)
+      .getServiceDependencies(ctor as unknown as _util.DI_TARGET_OBJ)
       .sort((a, b) => a.index - b.index)
       .map((d) => accessor.get(d.id))
   })
