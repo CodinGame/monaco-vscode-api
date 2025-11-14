@@ -8,10 +8,10 @@ Subject: [PATCH] fix: close auxiliary window when the context is unloaded
  1 file changed, 6 insertions(+)
 
 diff --git a/src/vs/workbench/services/auxiliaryWindow/browser/auxiliaryWindowService.ts b/src/vs/workbench/services/auxiliaryWindow/browser/auxiliaryWindowService.ts
-index 45e9720dceb..91b7d863838 100644
+index c91907ed1e3..0e9a11a29fc 100644
 --- a/src/vs/workbench/services/auxiliaryWindow/browser/auxiliaryWindowService.ts
 +++ b/src/vs/workbench/services/auxiliaryWindow/browser/auxiliaryWindowService.ts
-@@ -151,6 +151,12 @@ export class AuxiliaryWindow extends BaseWindow implements IAuxiliaryWindow {
+@@ -154,6 +154,12 @@ export class AuxiliaryWindow extends BaseWindow implements IAuxiliaryWindow {
  			this._register(addDisposableListener(this.window.document.body, EventType.DRAG_OVER, (e: DragEvent) => EventHelper.stop(e)));	// Prevent drag feedback on <body>
  			this._register(addDisposableListener(this.window.document.body, EventType.DROP, (e: DragEvent) => EventHelper.stop(e)));		// Prevent default navigation on drop
  		}

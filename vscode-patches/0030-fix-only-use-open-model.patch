@@ -8,7 +8,7 @@ Subject: [PATCH] fix: only use open model
  1 file changed, 3 insertions(+), 58 deletions(-)
 
 diff --git a/src/vs/workbench/services/languageDetection/browser/languageDetectionWebWorker.ts b/src/vs/workbench/services/languageDetection/browser/languageDetectionWebWorker.ts
-index 0624f7cc767..24ec7b638b4 100644
+index 98e439e194c..fa538c9d179 100644
 --- a/src/vs/workbench/services/languageDetection/browser/languageDetectionWebWorker.ts
 +++ b/src/vs/workbench/services/languageDetection/browser/languageDetectionWebWorker.ts
 @@ -3,15 +3,12 @@

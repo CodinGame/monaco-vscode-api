@@ -33,7 +33,7 @@ index 73cd4c58597..d0fb13e5fe5 100644
  const workbenchRegistry = Registry.as<IWorkbenchContributionsRegistry>(WorkbenchExtensions.Workbench);
  workbenchRegistry.registerWorkbenchContribution(RunAutomaticTasks, LifecyclePhase.Eventually);
 diff --git a/src/vs/workbench/contrib/tasks/browser/terminalTaskSystem.ts b/src/vs/workbench/contrib/tasks/browser/terminalTaskSystem.ts
-index 26b6147d098..7ac62a5db73 100644
+index c43128578f4..03e7a6cbc86 100644
 --- a/src/vs/workbench/contrib/tasks/browser/terminalTaskSystem.ts
 +++ b/src/vs/workbench/contrib/tasks/browser/terminalTaskSystem.ts
 @@ -40,7 +40,7 @@ import { TaskTerminalStatus } from './taskTerminalStatus.js';
@@ -52,7 +52,7 @@ index 26b6147d098..7ac62a5db73 100644
 +import { RerunForActiveTerminalCommandId, rerunTaskIcon } from '../common/constants.js';
  import { IContextKey, IContextKeyService } from '../../../../platform/contextkey/common/contextkey.js';
  import { TaskProblemMonitor } from './taskProblemMonitor.js';
- 
+ import { generateUuid } from '../../../../base/common/uuid.js';
 diff --git a/src/vs/workbench/contrib/tasks/common/constants.ts b/src/vs/workbench/contrib/tasks/common/constants.ts
 new file mode 100644
 index 00000000000..7c92cd1b017
@@ -71,7 +71,7 @@ index 00000000000..7c92cd1b017
 +export const RerunForActiveTerminalCommandId = 'workbench.action.tasks.rerunForActiveTerminal';
 +export const RerunAllRunningTasksCommandId = 'workbench.action.tasks.rerunAllRunningTasks';
 diff --git a/src/vs/workbench/contrib/tasks/common/tasks.ts b/src/vs/workbench/contrib/tasks/common/tasks.ts
-index e109f97ddf4..86f55ce3450 100644
+index 623a81a275f..d108cd32cef 100644
 --- a/src/vs/workbench/contrib/tasks/common/tasks.ts
 +++ b/src/vs/workbench/contrib/tasks/common/tasks.ts
 @@ -17,10 +17,7 @@ import { TaskDefinitionRegistry } from './taskDefinitionRegistry.js';
@@ -86,7 +86,7 @@ index e109f97ddf4..86f55ce3450 100644
  
  export const USER_TASKS_GROUP_KEY = 'settings';
  
-@@ -1415,7 +1412,3 @@ export namespace TaskDefinition {
+@@ -1429,7 +1426,3 @@ export namespace TaskDefinition {
  		return KeyedTaskIdentifier.create(literal);
  	}
  }

@@ -121,20 +121,22 @@ const deltaExtensions = throttle(
 )
 
 export async function registerRemoteExtension(
-  directory: string
+  options: RegisterRemoteExtensionParams | string
 ): Promise<RegisterRemoteExtensionResult> {
+  options = typeof options === 'string' ? { path: options } : options
+
   await waitServicesReady()
   const fileService = StandaloneServices.get(IFileService)
   const remoteAuthority = StandaloneServices.get(IWorkbenchEnvironmentService).remoteAuthority
   const content = await fileService.readFile(
     joinPath(
-      URI.from({ scheme: Schemas.vscodeRemote, authority: remoteAuthority, path: directory }),
+      URI.from({ scheme: Schemas.vscodeRemote, authority: remoteAuthority, path: options.path }),
       'package.json'
     )
   )
   const manifest: IExtensionManifest = parse(content.value.toString())
 
-  return registerExtension(manifest, ExtensionHostKind.Remote, { path: directory })
+  return registerExtension(manifest, ExtensionHostKind.Remote, options)
 }
 
 const forcedExtensionHostKinds = new Map<string, ExtensionHostKind>()

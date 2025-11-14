@@ -8,10 +8,10 @@ Subject: [PATCH] feat: add new task that only export editor types
  1 file changed, 4 insertions(+)
 
 diff --git a/build/gulpfile.editor.js b/build/gulpfile.editor.js
-index 5ee51cddf69..100ee6cfc92 100644
+index 8363930e38c..625f834bd87 100644
 --- a/build/gulpfile.editor.js
 +++ b/build/gulpfile.editor.js
-@@ -218,6 +218,10 @@ gulp.task('editor-distro',
+@@ -219,6 +219,10 @@ gulp.task('editor-distro',
  	)
  );
  

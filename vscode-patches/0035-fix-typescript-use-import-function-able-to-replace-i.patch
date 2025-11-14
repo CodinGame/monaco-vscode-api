@@ -9,10 +9,10 @@ Subject: [PATCH] fix(typescript): use import function able to replace imported
  1 file changed, 1 insertion(+), 1 deletion(-)
 
 diff --git a/extensions/typescript-language-features/web/src/serverHost.ts b/extensions/typescript-language-features/web/src/serverHost.ts
-index d746501682a..12f1859d7f6 100644
+index fdc617868b5..0092ef33d91 100644
 --- a/extensions/typescript-language-features/web/src/serverHost.ts
 +++ b/extensions/typescript-language-features/web/src/serverHost.ts
-@@ -89,7 +89,7 @@ function createServerHost(
+@@ -104,7 +104,7 @@ function createServerHost(
  
  			const scriptPath = combinePaths(packageRoot, browser);
  			try {

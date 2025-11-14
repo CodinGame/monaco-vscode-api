@@ -9,7 +9,7 @@ when 2 focusTracers are focused in the same event loop iteration, the first one 
  1 file changed, 1 insertion(+)
 
 diff --git a/src/vs/editor/browser/controller/editContext/native/nativeEditContextUtils.ts b/src/vs/editor/browser/controller/editContext/native/nativeEditContextUtils.ts
-index b9504d9082a..d0ab9a1f150 100644
+index 86436a376ec..ce84affb698 100644
 --- a/src/vs/editor/browser/controller/editContext/native/nativeEditContextUtils.ts
 +++ b/src/vs/editor/browser/controller/editContext/native/nativeEditContextUtils.ts
 @@ -63,6 +63,7 @@ export class FocusTracker extends Disposable {

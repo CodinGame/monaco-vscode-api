@@ -9,7 +9,7 @@ Subject: [PATCH] fix: replace map by forEach
  2 files changed, 2 insertions(+), 2 deletions(-)
 
 diff --git a/src/vs/workbench/browser/parts/compositeBar.ts b/src/vs/workbench/browser/parts/compositeBar.ts
-index cbc65f19067..1c35d43fa7b 100644
+index 420ccfbcd5d..ce89087f4db 100644
 --- a/src/vs/workbench/browser/parts/compositeBar.ts
 +++ b/src/vs/workbench/browser/parts/compositeBar.ts
 @@ -508,7 +508,7 @@ export class CompositeBar extends Widget implements ICompositeBar {
@@ -22,10 +22,10 @@ index cbc65f19067..1c35d43fa7b 100644
  					: compositeSwitcherBar.getWidth(currentItemsLength + index)
  				));
 diff --git a/src/vs/workbench/browser/parts/views/viewPaneContainer.ts b/src/vs/workbench/browser/parts/views/viewPaneContainer.ts
-index c87738f78b1..9c74a7fbd1d 100644
+index 399cfb59391..92fa6effa5c 100644
 --- a/src/vs/workbench/browser/parts/views/viewPaneContainer.ts
 +++ b/src/vs/workbench/browser/parts/views/viewPaneContainer.ts
-@@ -672,7 +672,7 @@ export class ViewPaneContainer extends Component implements IViewPaneContainer {
+@@ -672,7 +672,7 @@ export class ViewPaneContainer<MementoType extends object = object> extends Comp
  		}
  
  		this.panes.filter(view => view.isVisible() !== visible)

@@ -8,7 +8,7 @@ Subject: [PATCH] fix: prevent proxy from being detected as a promise
  1 file changed, 4 insertions(+)
 
 diff --git a/src/vs/editor/standalone/browser/standaloneWebWorker.ts b/src/vs/editor/standalone/browser/standaloneWebWorker.ts
-index 4cdd6cf5477..467697cf68a 100644
+index a34425aa444..27eb6e98e10 100644
 --- a/src/vs/editor/standalone/browser/standaloneWebWorker.ts
 +++ b/src/vs/editor/standalone/browser/standaloneWebWorker.ts
 @@ -68,6 +68,10 @@ class MonacoWebWorkerImpl<T extends object> extends EditorWorkerClient implement
@@ -19,6 +19,6 @@ index 4cdd6cf5477..467697cf68a 100644
 +					if (prop === 'then') {
 +						return undefined;
 +					}
- 					return (...args: any[]) => {
+ 					return (...args: unknown[]) => {
  						return proxy.$fmr(prop, args);
  					};

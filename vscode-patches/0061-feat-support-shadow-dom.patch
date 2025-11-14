@@ -20,7 +20,6 @@ Subject: [PATCH] feat: support shadow dom
  .../native/screenReaderContentSimple.ts       |  6 ++--
  .../editor/browser/controller/mouseHandler.ts |  2 +-
  .../editor/browser/controller/mouseTarget.ts  |  2 +-
- .../services/hoverService/hoverWidget.ts      |  2 +-
  src/vs/editor/browser/view/viewPart.ts        |  3 +-
  .../contentWidgets/contentWidgets.ts          |  2 +-
  .../hover/browser/contentHoverController.ts   |  3 +-
@@ -28,6 +27,8 @@ Subject: [PATCH] feat: support shadow dom
  .../actionWidget/browser/actionList.ts        |  2 +-
  .../clipboard/browser/clipboardService.ts     |  4 +--
  .../contextkey/browser/contextKeyService.ts   | 15 ++++++----
+ src/vs/platform/hover/browser/hoverWidget.ts  |  2 +-
+ .../browser/actions/developerActions.ts       |  4 +--
  src/vs/workbench/browser/layout.ts            |  3 ++
  .../browser/parts/editor/editorGroupView.ts   |  4 +--
  src/vs/workbench/browser/workbench.ts         |  6 ++--
@@ -36,7 +37,7 @@ Subject: [PATCH] feat: support shadow dom
  .../files/browser/views/explorerViewer.ts     |  4 ++-
  .../notebook/browser/notebookEditorWidget.ts  |  6 ++--
  .../browser/view/cellParts/cellStatusPart.ts  |  5 ++--
- .../browser/view/cellParts/codeCell.ts        |  5 ++--
+ .../browser/view/cellParts/codeCell.ts        |  6 ++--
  .../browser/view/cellParts/markupCell.ts      |  6 ++--
  .../notebook/browser/view/notebookCellList.ts |  5 ++--
  .../view/renderers/backLayerWebView.ts        |  3 +-
@@ -49,10 +50,10 @@ Subject: [PATCH] feat: support shadow dom
  .../browser/walkThroughPart.ts                |  6 ++--
  .../suggest/browser/simpleSuggestWidget.ts    |  4 +--
  .../themes/browser/workbenchThemeService.ts   |  2 +-
- 45 files changed, 146 insertions(+), 91 deletions(-)
+ 46 files changed, 148 insertions(+), 94 deletions(-)
 
 diff --git a/src/vs/base/browser/dom.ts b/src/vs/base/browser/dom.ts
-index 4681d190ae7..d014d87fb7e 100644
+index be401204e06..f181ffdea9f 100644
 --- a/src/vs/base/browser/dom.ts
 +++ b/src/vs/base/browser/dom.ts
 @@ -619,8 +619,7 @@ export function getTopLeftOffset(element: HTMLElement): IDomPosition {
@@ -65,7 +66,7 @@ index 4681d190ae7..d014d87fb7e 100644
  	) {
  		top -= element.scrollTop;
  		const c = isShadowRoot(element) ? null : getComputedStyle(element);
-@@ -721,7 +720,7 @@ export function getDomNodeZoomLevel(domNode: HTMLElement): number {
+@@ -722,7 +721,7 @@ export function getDomNodeZoomLevel(domNode: HTMLElement): number {
  		}
  
  		testElement = testElement.parentElement;
@@ -74,16 +75,16 @@ index 4681d190ae7..d014d87fb7e 100644
  
  	return zoom;
  }
-@@ -798,7 +797,7 @@ export function setParentFlowTo(fromChildElement: HTMLElement, toParentElement:
- function getParentFlowToElement(node: HTMLElement): HTMLElement | null {
+@@ -800,7 +799,7 @@ function getParentFlowToElement(node: HTMLElement): HTMLElement | null {
  	const flowToParentId = node.dataset[parentFlowToDataKey];
  	if (typeof flowToParentId === 'string') {
+ 		// eslint-disable-next-line no-restricted-syntax
 -		return node.ownerDocument.getElementById(flowToParentId);
 +		return (node.getRootNode() as Document | ShadowRoot).getElementById(flowToParentId);
  	}
  	return null;
  }
-@@ -881,8 +880,8 @@ export function getShadowRoot(domNode: Node): ShadowRoot | null {
+@@ -883,8 +882,8 @@ export function getShadowRoot(domNode: Node): ShadowRoot | null {
   * based on document focus. Falls back to the main
   * window if no window has focus.
   */
@@ -94,7 +95,7 @@ index 4681d190ae7..d014d87fb7e 100644
  
  	while (result?.shadowRoot) {
  		result = result.shadowRoot.activeElement;
-@@ -891,6 +890,14 @@ export function getActiveElement(): Element | null {
+@@ -893,6 +892,14 @@ export function getActiveElement(): Element | null {
  	return result;
  }
  
@@ -109,7 +110,7 @@ index 4681d190ae7..d014d87fb7e 100644
  /**
   * Returns true if the focused window active element matches
   * the provided element. Falls back to the main window if no
-@@ -1042,6 +1049,11 @@ export function isHTMLDivElement(e: unknown): e is HTMLDivElement {
+@@ -1044,6 +1051,11 @@ export function isHTMLDivElement(e: unknown): e is HTMLDivElement {
  	return e instanceof HTMLDivElement || e instanceof getWindow(e as Node).HTMLDivElement;
  }
  
@@ -121,7 +122,7 @@ index 4681d190ae7..d014d87fb7e 100644
  export function isSVGElement(e: unknown): e is SVGElement {
  	// eslint-disable-next-line no-restricted-syntax
  	return e instanceof SVGElement || e instanceof getWindow(e as Node).SVGElement;
-@@ -1187,7 +1199,7 @@ class FocusTracker extends Disposable implements IFocusTracker {
+@@ -1189,7 +1201,7 @@ class FocusTracker extends Disposable implements IFocusTracker {
  	private static hasFocusWithin(element: HTMLElement | Window): boolean {
  		if (isHTMLElement(element)) {
  			const shadowRoot = getShadowRoot(element);
@@ -130,7 +131,7 @@ index 4681d190ae7..d014d87fb7e 100644
  			return isAncestor(activeElement, element);
  		} else {
  			const window = element;
-@@ -1406,7 +1418,7 @@ export function removeTabIndexAndUpdateFocus(node: HTMLElement): void {
+@@ -1409,7 +1421,7 @@ export function removeTabIndexAndUpdateFocus(node: HTMLElement): void {
  	// standard DOM behavior is to move focus to the <body> element. We
  	// typically never want that, rather put focus to the closest element
  	// in the hierarchy of the parent DOM nodes.
@@ -194,7 +195,7 @@ index 1e34173680e..0782c211144 100644
  
  	for (const rule of getDynamicStyleSheetRules(globalStylesheet)) {
 diff --git a/src/vs/base/browser/keyboardEvent.ts b/src/vs/base/browser/keyboardEvent.ts
-index 4e98a3b12d8..1f244a7db0f 100644
+index b0ba04a66f5..151740739d7 100644
 --- a/src/vs/base/browser/keyboardEvent.ts
 +++ b/src/vs/base/browser/keyboardEvent.ts
 @@ -7,6 +7,7 @@ import * as browser from './browser.js';
@@ -205,8 +206,8 @@ index 4e98a3b12d8..1f244a7db0f 100644
  
  
  
-@@ -114,6 +115,15 @@ export function printStandardKeyboardEvent(e: StandardKeyboardEvent): string {
- 	return `modifiers: [${modifiers.join(',')}], code: ${e.code}, keyCode: ${e.keyCode} ('${KeyCodeUtils.toString(e.keyCode)}')`;
+@@ -123,6 +124,15 @@ export function hasModifierKeys(keyStatus: {
+ 	return keyStatus.ctrlKey || keyStatus.shiftKey || keyStatus.altKey || keyStatus.metaKey;
  }
  
 +function getTarget(source: KeyboardEvent) {
@@ -221,7 +222,7 @@ index 4e98a3b12d8..1f244a7db0f 100644
  export class StandardKeyboardEvent implements IKeyboardEvent {
  
  	readonly _standardKeyboardEventBrand = true;
-@@ -136,7 +146,7 @@ export class StandardKeyboardEvent implements IKeyboardEvent {
+@@ -145,7 +155,7 @@ export class StandardKeyboardEvent implements IKeyboardEvent {
  		const e = source;
  
  		this.browserEvent = e;
@@ -244,7 +245,7 @@ index 2da6a90f283..c605560c870 100644
  				this.hide();
  			}
 diff --git a/src/vs/base/browser/ui/dialog/dialog.ts b/src/vs/base/browser/ui/dialog/dialog.ts
-index b569359a06c..ba8f9063610 100644
+index 6c972e7866b..4e7872e78ad 100644
 --- a/src/vs/base/browser/ui/dialog/dialog.ts
 +++ b/src/vs/base/browser/ui/dialog/dialog.ts
 @@ -5,7 +5,7 @@
@@ -256,7 +257,7 @@ index b569359a06c..ba8f9063610 100644
  import { StandardKeyboardEvent } from '../../keyboardEvent.js';
  import { ActionBar } from '../actionbar/actionbar.js';
  import { ButtonBar, ButtonBarAlignment, ButtonWithDescription, ButtonWithDropdown, IButton, IButtonStyles, IButtonWithDropdownOptions } from '../button/button.js';
-@@ -252,7 +252,7 @@ export class Dialog extends Disposable {
+@@ -254,7 +254,7 @@ export class Dialog extends Disposable {
  	}
  
  	async show(): Promise<IDialogResult> {
@@ -265,7 +266,7 @@ index b569359a06c..ba8f9063610 100644
  
  		return new Promise<IDialogResult>(resolve => {
  			clearNode(this.buttonsContainer);
-@@ -594,7 +594,7 @@ export class Dialog extends Disposable {
+@@ -599,7 +599,7 @@ export class Dialog extends Disposable {
  			this.modalElement = undefined;
  		}
  
@@ -297,13 +298,13 @@ index 39ce04a13a8..06cdc96e51d 100644
  
  	const dragContainer = getDragImageContainer(container);
 diff --git a/src/vs/base/browser/ui/findinput/findInput.ts b/src/vs/base/browser/ui/findinput/findInput.ts
-index 2182b0bd2cb..379cda278f9 100644
+index 2c9c47f4d5e..aee74cd57d4 100644
 --- a/src/vs/base/browser/ui/findinput/findInput.ts
 +++ b/src/vs/base/browser/ui/findinput/findInput.ts
 @@ -18,6 +18,7 @@ import * as nls from '../../../../nls.js';
  import { DisposableStore, MutableDisposable } from '../../../common/lifecycle.js';
- import { createInstantHoverDelegate } from '../hover/hoverDelegateFactory.js';
  import { IHistory } from '../../../common/history.js';
+ import type { IHoverLifecycleOptions } from '../hover/hover.js';
 +import { getActiveElement } from '../../dom.js';
  
  
@@ -318,18 +319,18 @@ index 2182b0bd2cb..379cda278f9 100644
  						let newIndex: number = -1;
  						if (event.equals(KeyCode.RightArrow)) {
 diff --git a/src/vs/base/browser/ui/findinput/replaceInput.ts b/src/vs/base/browser/ui/findinput/replaceInput.ts
-index 018a26fc1bd..7f019027841 100644
+index 10c5b47b653..6dd9e205c71 100644
 --- a/src/vs/base/browser/ui/findinput/replaceInput.ts
 +++ b/src/vs/base/browser/ui/findinput/replaceInput.ts
 @@ -18,6 +18,7 @@ import './findInput.css';
  import * as nls from '../../../../nls.js';
- import { getDefaultHoverDelegate } from '../hover/hoverDelegateFactory.js';
  import { IHistory } from '../../../common/history.js';
+ import { type IHoverLifecycleOptions } from '../hover/hover.js';
 +import { getActiveElement } from '../../dom.js';
  
  
  export interface IReplaceInputOptions {
-@@ -143,7 +144,7 @@ export class ReplaceInput extends Widget {
+@@ -145,7 +146,7 @@ export class ReplaceInput extends Widget {
  		const indexes = [this.preserveCase.domNode];
  		this.onkeydown(this.domNode, (event: IKeyboardEvent) => {
  			if (event.equals(KeyCode.LeftArrow) || event.equals(KeyCode.RightArrow) || event.equals(KeyCode.Escape)) {
@@ -352,20 +353,20 @@ index 44af8e92aee..2d6168d6908 100644
  			});
  
 diff --git a/src/vs/base/browser/ui/sash/sash.ts b/src/vs/base/browser/ui/sash/sash.ts
-index acd80856a72..671fdcc3e45 100644
+index 6f2fcb52276..0f9594a7d77 100644
 --- a/src/vs/base/browser/ui/sash/sash.ts
 +++ b/src/vs/base/browser/ui/sash/sash.ts
-@@ -507,7 +507,7 @@ export class Sash extends Disposable {
- 			return;
+@@ -512,7 +512,7 @@ export class Sash extends Disposable {
  		}
  
+ 		// eslint-disable-next-line no-restricted-syntax
 -		const iframes = this.el.ownerDocument.getElementsByTagName('iframe');
 +		const iframes = (this.el.getRootNode() as Document | ShadowRoot).querySelectorAll('iframe');
  		for (const iframe of iframes) {
  			iframe.classList.add(PointerEventsDisabledCssClass); // disable mouse events on iframes as long as we drag the sash
  		}
 diff --git a/src/vs/base/browser/ui/splitview/paneview.ts b/src/vs/base/browser/ui/splitview/paneview.ts
-index 42d2234a131..1d5f4129639 100644
+index fb2e1f406ae..6a3a3d9b045 100644
 --- a/src/vs/base/browser/ui/splitview/paneview.ts
 +++ b/src/vs/base/browser/ui/splitview/paneview.ts
 @@ -5,7 +5,7 @@
@@ -377,7 +378,7 @@ index 42d2234a131..1d5f4129639 100644
  import { DomEmitter } from '../../event.js';
  import { StandardKeyboardEvent } from '../../keyboardEvent.js';
  import { Gesture, EventType as TouchEventType } from '../../touch.js';
-@@ -662,7 +662,7 @@ export class PaneView extends Disposable {
+@@ -663,7 +663,7 @@ export class PaneView extends Disposable {
  
  	private focusPrevious(): void {
  		const headers = this.getPaneHeaderElements();
@@ -386,7 +387,7 @@ index 42d2234a131..1d5f4129639 100644
  
  		if (index === -1) {
  			return;
-@@ -673,7 +673,7 @@ export class PaneView extends Disposable {
+@@ -674,7 +674,7 @@ export class PaneView extends Disposable {
  
  	private focusNext(): void {
  		const headers = this.getPaneHeaderElements();
@@ -482,7 +483,7 @@ index 308d252fcf7..24cf7baaff5 100644
  			if (!isFocused) {
  				return;
 diff --git a/src/vs/editor/browser/controller/mouseHandler.ts b/src/vs/editor/browser/controller/mouseHandler.ts
-index cdfc280ec5e..6d05a03cb9b 100644
+index 9c9b398eb37..a126a71366e 100644
 --- a/src/vs/editor/browser/controller/mouseHandler.ts
 +++ b/src/vs/editor/browser/controller/mouseHandler.ts
 @@ -101,7 +101,7 @@ export class MouseHandler extends ViewEventHandler {
@@ -495,7 +496,7 @@ index cdfc280ec5e..6d05a03cb9b 100644
  						// went outside the editor!
  						this._onMouseLeave(new EditorMouseEvent(e, false, this.viewHelper.viewDomNode));
 diff --git a/src/vs/editor/browser/controller/mouseTarget.ts b/src/vs/editor/browser/controller/mouseTarget.ts
-index db133ec98c6..468175ef975 100644
+index 8256f6b487c..6bc03be79e1 100644
 --- a/src/vs/editor/browser/controller/mouseTarget.ts
 +++ b/src/vs/editor/browser/controller/mouseTarget.ts
 @@ -351,7 +351,7 @@ export class HitTestContext {
@@ -507,19 +508,6 @@ index db133ec98c6..468175ef975 100644
  			if (element.hasAttribute && element.hasAttribute(attr)) {
  				return element.getAttribute(attr);
  			}
-diff --git a/src/vs/editor/browser/services/hoverService/hoverWidget.ts b/src/vs/editor/browser/services/hoverService/hoverWidget.ts
-index eb40d1dec05..6948fe21c14 100644
---- a/src/vs/editor/browser/services/hoverService/hoverWidget.ts
-+++ b/src/vs/editor/browser/services/hoverService/hoverWidget.ts
-@@ -311,7 +311,7 @@ export class HoverWidget extends Widget implements IHoverWidget {
- 
- 	public render(container: HTMLElement): void {
- 		container.appendChild(this._hoverContainer);
--		const hoverFocused = this._hoverContainer.contains(this._hoverContainer.ownerDocument.activeElement);
-+		const hoverFocused = this._hoverContainer.contains(dom.getActiveElement(this._hoverContainer.ownerDocument));
- 		const accessibleViewHint = hoverFocused && getHoverAccessibleViewHint(this._configurationService.getValue('accessibility.verbosity.hover') === true && this._accessibilityService.isScreenReaderOptimized(), this._keybindingService.lookupKeybinding('editor.action.accessibleView')?.getAriaLabel());
- 		if (accessibleViewHint) {
- 
 diff --git a/src/vs/editor/browser/view/viewPart.ts b/src/vs/editor/browser/view/viewPart.ts
 index a23bcb11b59..d750b8f2f03 100644
 --- a/src/vs/editor/browser/view/viewPart.ts
@@ -542,7 +530,7 @@ index a23bcb11b59..d750b8f2f03 100644
  				break;
  			}
 diff --git a/src/vs/editor/browser/viewParts/contentWidgets/contentWidgets.ts b/src/vs/editor/browser/viewParts/contentWidgets/contentWidgets.ts
-index f6bd3004c86..424b2a536d6 100644
+index 2c9595382e0..16f597963ff 100644
 --- a/src/vs/editor/browser/viewParts/contentWidgets/contentWidgets.ts
 +++ b/src/vs/editor/browser/viewParts/contentWidgets/contentWidgets.ts
 @@ -449,7 +449,7 @@ class Widget {
@@ -576,10 +564,10 @@ index 0cf939159b7..1415ab3940a 100644
  		const isFocused = contentWidget.isFocused;
  		const isResizing = contentWidget.isResizing;
 diff --git a/src/vs/editor/contrib/hover/browser/contentHoverWidget.ts b/src/vs/editor/contrib/hover/browser/contentHoverWidget.ts
-index 526651513c4..b2bcd067439 100644
+index c5226cb273f..08f5ace9b37 100644
 --- a/src/vs/editor/contrib/hover/browser/contentHoverWidget.ts
 +++ b/src/vs/editor/contrib/hover/browser/contentHoverWidget.ts
-@@ -349,7 +349,7 @@ export class ContentHoverWidget extends ResizableContentWidget {
+@@ -350,7 +350,7 @@ export class ContentHoverWidget extends ResizableContentWidget {
  		}
  		this._onDidResize.fire();
  		// The aria label overrides the label, so if we add to it, add the contents of the hover
@@ -589,13 +577,13 @@ index 526651513c4..b2bcd067439 100644
  			this._configurationService.getValue('accessibility.verbosity.hover') === true && this._accessibilityService.isScreenReaderOptimized(),
  			this._keybindingService.lookupKeybinding('editor.action.accessibleView')?.getAriaLabel() ?? ''
 diff --git a/src/vs/platform/actionWidget/browser/actionList.ts b/src/vs/platform/actionWidget/browser/actionList.ts
-index 76ddb42ff5b..fb9fa853d29 100644
+index 7d48eaa295e..a9f5fa8b0e6 100644
 --- a/src/vs/platform/actionWidget/browser/actionList.ts
 +++ b/src/vs/platform/actionWidget/browser/actionList.ts
-@@ -331,7 +331,7 @@ export class ActionList<T> extends Disposable {
- 		} else {
+@@ -332,7 +332,7 @@ export class ActionList<T> extends Disposable {
  			// For finding width dynamically (not using resize observer)
  			const itemWidths: number[] = this._allMenuItems.map((_, index): number => {
+ 				// eslint-disable-next-line no-restricted-syntax
 -				const element = this.domNode.ownerDocument.getElementById(this._list.getElementID(index));
 +				const element = (this.domNode.getRootNode() as Document | ShadowRoot).getElementById(this._list.getElementID(index));
  				if (element) {
@@ -683,8 +671,43 @@ index 7f749b68489..53629be4418 100644
  					this.inputFocusedContext.set(activeElementIsInput());
  				}
  
+diff --git a/src/vs/platform/hover/browser/hoverWidget.ts b/src/vs/platform/hover/browser/hoverWidget.ts
+index f897c073bdb..2cd1ed79b7f 100644
+--- a/src/vs/platform/hover/browser/hoverWidget.ts
++++ b/src/vs/platform/hover/browser/hoverWidget.ts
+@@ -316,7 +316,7 @@ export class HoverWidget extends Widget implements IHoverWidget {
+ 
+ 	public render(container: HTMLElement): void {
+ 		container.appendChild(this._hoverContainer);
+-		const hoverFocused = this._hoverContainer.contains(this._hoverContainer.ownerDocument.activeElement);
++		const hoverFocused = this._hoverContainer.contains(dom.getActiveElement(this._hoverContainer.ownerDocument));
+ 		const accessibleViewHint = hoverFocused && getHoverAccessibleViewHint(this._configurationService.getValue('accessibility.verbosity.hover') === true && this._accessibilityService.isScreenReaderOptimized(), this._keybindingService.lookupKeybinding('editor.action.accessibleView')?.getAriaLabel());
+ 		if (accessibleViewHint) {
+ 
+diff --git a/src/vs/workbench/browser/actions/developerActions.ts b/src/vs/workbench/browser/actions/developerActions.ts
+index 055d2df357d..93d0b4cc089 100644
+--- a/src/vs/workbench/browser/actions/developerActions.ts
++++ b/src/vs/workbench/browser/actions/developerActions.ts
+@@ -78,7 +78,7 @@ class InspectContextKeysAction extends Action2 {
+ 
+ 		const onMouseMove = disposables.add(new DomEmitter(activeDocument, 'mousemove', true));
+ 		disposables.add(onMouseMove.event(e => {
+-			const target = e.target as HTMLElement;
++			const target = e.composedPath()[0] as HTMLElement;
+ 			const position = getDomNodePagePosition(target);
+ 
+ 			hoverFeedback.style.top = `${position.top}px`;
+@@ -95,7 +95,7 @@ class InspectContextKeysAction extends Action2 {
+ 			e.preventDefault();
+ 			e.stopPropagation();
+ 
+-			const context = contextKeyService.getContext(e.target as HTMLElement) as Context;
++			const context = contextKeyService.getContext(e.composedPath()[0] as HTMLElement) as Context;
+ 			console.log(context.collectAllValues());
+ 
+ 			dispose(disposables);
 diff --git a/src/vs/workbench/browser/layout.ts b/src/vs/workbench/browser/layout.ts
-index 668450c90ec..0d38acdef02 100644
+index c3c87b7beea..057bfdb82c9 100644
 --- a/src/vs/workbench/browser/layout.ts
 +++ b/src/vs/workbench/browser/layout.ts
 @@ -47,6 +47,7 @@ import { AuxiliaryBarPart } from './parts/auxiliarybar/auxiliaryBarPart.js';
@@ -695,7 +718,7 @@ index 668450c90ec..0d38acdef02 100644
  
  //#region Layout Implementation
  
-@@ -301,6 +302,8 @@ export abstract class Layout extends Disposable implements IWorkbenchLayoutServi
+@@ -302,6 +303,8 @@ export abstract class Layout extends Disposable implements IWorkbenchLayoutServi
  		private readonly layoutOptions?: { resetLayout: boolean }
  	) {
  		super();
@@ -705,7 +728,7 @@ index 668450c90ec..0d38acdef02 100644
  
  	protected initLayout(accessor: ServicesAccessor): void {
 diff --git a/src/vs/workbench/browser/parts/editor/editorGroupView.ts b/src/vs/workbench/browser/parts/editor/editorGroupView.ts
-index 1e8b15256e5..05ae209af37 100644
+index db09725746a..3d111eeab35 100644
 --- a/src/vs/workbench/browser/parts/editor/editorGroupView.ts
 +++ b/src/vs/workbench/browser/parts/editor/editorGroupView.ts
 @@ -11,7 +11,7 @@ import { EditorInput } from '../../../common/editor/editorInput.js';
@@ -717,7 +740,7 @@ index 1e8b15256e5..05ae209af37 100644
  import { ServiceCollection } from '../../../../platform/instantiation/common/serviceCollection.js';
  import { IContextKeyService } from '../../../../platform/contextkey/common/contextkey.js';
  import { ProgressBar } from '../../../../base/browser/ui/progressbar/progressbar.js';
-@@ -1651,7 +1651,7 @@ export class EditorGroupView extends Themable implements IEditorGroupView {
+@@ -1652,7 +1652,7 @@ export class EditorGroupView extends Themable implements IEditorGroupView {
  
  	private shouldRestoreFocus(target: Element): boolean {
  		const activeElement = getActiveElement();
@@ -727,10 +750,10 @@ index 1e8b15256e5..05ae209af37 100644
  		}
  
 diff --git a/src/vs/workbench/browser/workbench.ts b/src/vs/workbench/browser/workbench.ts
-index c8397135f1d..40238c1a6ec 100644
+index fbff9375f73..5a53b5423a4 100644
 --- a/src/vs/workbench/browser/workbench.ts
 +++ b/src/vs/workbench/browser/workbench.ts
-@@ -75,6 +75,9 @@ export class Workbench extends Layout {
+@@ -77,6 +77,9 @@ export class Workbench extends Layout {
  		mark('code/willStartWorkbench');
  
  		this.registerErrorHandler(logService);
@@ -740,7 +763,7 @@ index c8397135f1d..40238c1a6ec 100644
  	}
  
  	protected registerErrorHandler(logService: ILogService): void {
-@@ -331,9 +334,6 @@ export class Workbench extends Layout {
+@@ -337,9 +340,6 @@ export class Workbench extends Layout {
  
  		// Notification Handlers
  		this.createNotificationsHandlers(instantiationService, notificationService);
@@ -751,10 +774,10 @@ index c8397135f1d..40238c1a6ec 100644
  
  	private createPart(id: string, role: string, classes: string[]): HTMLElement {
 diff --git a/src/vs/workbench/contrib/chat/browser/chatInputPart.ts b/src/vs/workbench/contrib/chat/browser/chatInputPart.ts
-index b7829a6a960..109f7764065 100644
+index d0f7768d352..53f6c722c0c 100644
 --- a/src/vs/workbench/contrib/chat/browser/chatInputPart.ts
 +++ b/src/vs/workbench/contrib/chat/browser/chatInputPart.ts
-@@ -1575,7 +1575,7 @@ export class ChatInputPart extends Disposable implements IHistoryNavigationWidge
+@@ -1775,7 +1775,7 @@ export class ChatInputPart extends Disposable implements IHistoryNavigationWidge
  
  		attachments.unshift(toolbar);
  
@@ -764,10 +787,10 @@ index b7829a6a960..109f7764065 100644
  		let newIndex = currentIndex;
  
 diff --git a/src/vs/workbench/contrib/chat/browser/chatSessions/view/sessionsTreeRenderer.ts b/src/vs/workbench/contrib/chat/browser/chatSessions/view/sessionsTreeRenderer.ts
-index 8fb06af78db..32a521d5447 100644
+index 7fc8b3409a7..1a481018b7e 100644
 --- a/src/vs/workbench/contrib/chat/browser/chatSessions/view/sessionsTreeRenderer.ts
 +++ b/src/vs/workbench/contrib/chat/browser/chatSessions/view/sessionsTreeRenderer.ts
-@@ -452,12 +452,13 @@ export class SessionsRenderer extends Disposable implements ITreeRenderer<IChatS
+@@ -480,12 +480,13 @@ export class SessionsRenderer extends Disposable implements ITreeRenderer<IChatS
  					await timeout(0);
  
  					const ownerDocument = inputBox.inputElement.ownerDocument;
@@ -783,7 +806,7 @@ index 8fb06af78db..32a521d5447 100644
  					} else {
  						break;
 diff --git a/src/vs/workbench/contrib/files/browser/views/explorerViewer.ts b/src/vs/workbench/contrib/files/browser/views/explorerViewer.ts
-index cf13074b632..e0ecbc06b8b 100644
+index cdd6404a505..76d93b6d41f 100644
 --- a/src/vs/workbench/contrib/files/browser/views/explorerViewer.ts
 +++ b/src/vs/workbench/contrib/files/browser/views/explorerViewer.ts
 @@ -74,6 +74,7 @@ import { IContextKey, IContextKeyService } from '../../../../../platform/context
@@ -794,7 +817,7 @@ index cf13074b632..e0ecbc06b8b 100644
  
  export class ExplorerDelegate implements IListVirtualDelegate<ExplorerItem> {
  
-@@ -1162,11 +1163,12 @@ export class FilesRenderer implements ICompressibleTreeRenderer<ExplorerItem, Fu
+@@ -1155,11 +1156,12 @@ export class FilesRenderer implements ICompressibleTreeRenderer<ExplorerItem, Fu
  					await timeout(0);
  
  					const ownerDocument = inputBox.inputElement.ownerDocument;
@@ -809,10 +832,10 @@ index cf13074b632..e0ecbc06b8b 100644
  					} else {
  						break;
 diff --git a/src/vs/workbench/contrib/notebook/browser/notebookEditorWidget.ts b/src/vs/workbench/contrib/notebook/browser/notebookEditorWidget.ts
-index 2f3fe9d654d..6b153251b34 100644
+index 189741c25c7..4491fcf96b8 100644
 --- a/src/vs/workbench/contrib/notebook/browser/notebookEditorWidget.ts
 +++ b/src/vs/workbench/contrib/notebook/browser/notebookEditorWidget.ts
-@@ -1846,7 +1846,7 @@ export class NotebookEditorWidget extends Disposable implements INotebookEditorD
+@@ -1847,7 +1847,7 @@ export class NotebookEditorWidget extends Disposable implements INotebookEditorD
  				const element = this.viewModel.cellAt(focusRange.start);
  				if (element) {
  					const itemDOM = this._list.domElementOfElement(element);
@@ -821,7 +844,7 @@ index 2f3fe9d654d..6b153251b34 100644
  
  					state.editorFocused = editorFocused;
  					state.focus = focusRange.start;
-@@ -2478,8 +2478,8 @@ export class NotebookEditorWidget extends Disposable implements INotebookEditorD
+@@ -2479,8 +2479,8 @@ export class NotebookEditorWidget extends Disposable implements INotebookEditorD
  		} else {
  			// focus container
  			const itemDOM = this._list.domElementOfElement(cell);
@@ -858,27 +881,28 @@ index a23d2f8b28e..3f9739cf607 100644
  				}
  			}));
 diff --git a/src/vs/workbench/contrib/notebook/browser/view/cellParts/codeCell.ts b/src/vs/workbench/contrib/notebook/browser/view/cellParts/codeCell.ts
-index 7694b7f4c44..ee5b674ae28 100644
+index 765aa0fe09d..c8d38fcd6ec 100644
 --- a/src/vs/workbench/contrib/notebook/browser/view/cellParts/codeCell.ts
 +++ b/src/vs/workbench/contrib/notebook/browser/view/cellParts/codeCell.ts
-@@ -32,6 +32,7 @@ import { CodeCellRenderTemplate, collapsedCellTTPolicy } from '../notebookRender
- import { CellEditorOptions } from './cellEditorOptions.js';
+@@ -34,7 +34,7 @@ import { CellEditorOptions } from './cellEditorOptions.js';
  import { CellOutputContainer } from './cellOutput.js';
  import { CollapsedCodeCellExecutionIcon } from './codeCellExecutionIcon.js';
+ import { INotebookLoggingService } from '../../../common/notebookLoggingService.js';
+-
 +import { getActiveElement } from '../../../../../../base/browser/dom.js';
  
  export class CodeCell extends Disposable {
  	private _outputContainerRenderer: CellOutputContainer;
-@@ -225,7 +226,7 @@ export class CodeCell extends Disposable {
+@@ -232,7 +232,7 @@ export class CodeCell extends Disposable {
  					if (
  						this.notebookEditor.getActiveCell() === this.viewCell &&
  						this.viewCell.focusMode === CellFocusMode.Editor &&
 -						(this.notebookEditor.hasEditorFocus() || this.notebookEditor.getDomNode().ownerDocument.activeElement === this.notebookEditor.getDomNode().ownerDocument.body)) // Don't steal focus from other workbench parts, but if body has focus, we can take it
 +						(this.notebookEditor.hasEditorFocus() || getActiveElement(this.notebookEditor.getDomNode().ownerDocument) === DOM.getRootContainer(this.notebookEditor.getDomNode()))) // Don't steal focus from other workbench parts, but if body has focus, we can take it
  					{
- 						this.templateData.editor?.focus();
+ 						this.templateData.editor.focus();
  					}
-@@ -387,7 +388,7 @@ export class CodeCell extends Disposable {
+@@ -432,7 +432,7 @@ export class CodeCell extends Disposable {
  		// the document active element is inside the notebook editor or the document body (cell editor being disposed previously)
  		return this.notebookEditor.getActiveCell() === this.viewCell
  			&& this.viewCell.focusMode === CellFocusMode.Editor
@@ -919,7 +943,7 @@ index c1b90d72e8a..c3f41ccb0c0 100644
  			} else {
  				updateFocusMode();
 diff --git a/src/vs/workbench/contrib/notebook/browser/view/notebookCellList.ts b/src/vs/workbench/contrib/notebook/browser/view/notebookCellList.ts
-index 0c7a1eb0bb3..cafeb10ae42 100644
+index c9d5a62989d..4ed8197a376 100644
 --- a/src/vs/workbench/contrib/notebook/browser/view/notebookCellList.ts
 +++ b/src/vs/workbench/contrib/notebook/browser/view/notebookCellList.ts
 @@ -1294,12 +1294,13 @@ export class NotebookCellList extends WorkbenchList<CellViewModel> implements ID
@@ -960,7 +984,7 @@ index d3c4ea3f178..ff3d9c4b33a 100644
  		}
  
 diff --git a/src/vs/workbench/contrib/preferences/browser/preferences.contribution.ts b/src/vs/workbench/contrib/preferences/browser/preferences.contribution.ts
-index 2b32a1538da..f98290ca06b 100644
+index ccf0c627bc1..0a266c9130e 100644
 --- a/src/vs/workbench/contrib/preferences/browser/preferences.contribution.ts
 +++ b/src/vs/workbench/contrib/preferences/browser/preferences.contribution.ts
 @@ -3,6 +3,7 @@
@@ -981,10 +1005,10 @@ index 2b32a1538da..f98290ca06b 100644
  					preferencesEditor.focusSettings(true);
  				}
 diff --git a/src/vs/workbench/contrib/preferences/browser/settingsEditor2.ts b/src/vs/workbench/contrib/preferences/browser/settingsEditor2.ts
-index 8090311b6d6..af06c0343e8 100644
+index 086580f3db6..6f1a92c8e10 100644
 --- a/src/vs/workbench/contrib/preferences/browser/settingsEditor2.ts
 +++ b/src/vs/workbench/contrib/preferences/browser/settingsEditor2.ts
-@@ -1112,7 +1112,7 @@ export class SettingsEditor2 extends EditorPane {
+@@ -1141,7 +1141,7 @@ export class SettingsEditor2 extends EditorPane {
  		}));
  
  		this._register(this.settingsTree.onDidFocus(() => {
@@ -993,7 +1017,7 @@ index 8090311b6d6..af06c0343e8 100644
  			if (classList && classList.contains('monaco-list') && classList.contains('settings-editor-tree')) {
  				this._currentFocusContext = SettingsFocusContext.SettingTree;
  				this.settingRowFocused.set(true);
-@@ -1578,7 +1578,7 @@ export class SettingsEditor2 extends EditorPane {
+@@ -1615,7 +1615,7 @@ export class SettingsEditor2 extends EditorPane {
  
  	private getActiveControlInSettingsTree(): HTMLElement | null {
  		const element = this.settingsTree.getHTMLElement();
@@ -1002,7 +1026,7 @@ index 8090311b6d6..af06c0343e8 100644
  		return (activeElement && DOM.isAncestorOfActiveElement(element)) ?
  			<HTMLElement>activeElement :
  			null;
-@@ -1641,7 +1641,7 @@ export class SettingsEditor2 extends EditorPane {
+@@ -1680,7 +1680,7 @@ export class SettingsEditor2 extends EditorPane {
  	}
  
  	private contextViewFocused(): boolean {
@@ -1012,10 +1036,10 @@ index 8090311b6d6..af06c0343e8 100644
  
  	private refreshSingleElement(element: SettingsTreeSettingElement): void {
 diff --git a/src/vs/workbench/contrib/terminal/browser/terminalTabbedView.ts b/src/vs/workbench/contrib/terminal/browser/terminalTabbedView.ts
-index 3213dd89247..5fe7f6ab42c 100644
+index 95b836afefb..69562b1cbfa 100644
 --- a/src/vs/workbench/contrib/terminal/browser/terminalTabbedView.ts
 +++ b/src/vs/workbench/contrib/terminal/browser/terminalTabbedView.ts
-@@ -436,7 +436,7 @@ export class TerminalTabbedView extends Disposable {
+@@ -597,7 +597,7 @@ export class TerminalTabbedView extends Disposable {
  
  		// If the terminal is waiting to reconnect to remote terminals, then there is no TerminalInstance yet that can
  		// be focused. So wait for connection to finish, then focus.
@@ -1025,10 +1049,10 @@ index 3213dd89247..5fe7f6ab42c 100644
  			// TODO: Improve lifecycle management this event should be disposed after first fire
  			this._register(this._terminalService.onDidChangeConnectionState(() => {
 diff --git a/src/vs/workbench/contrib/terminal/browser/terminalView.ts b/src/vs/workbench/contrib/terminal/browser/terminalView.ts
-index 50bfba8865a..b9e48d45079 100644
+index 5eed1d4f713..89efc6d5ac7 100644
 --- a/src/vs/workbench/contrib/terminal/browser/terminalView.ts
 +++ b/src/vs/workbench/contrib/terminal/browser/terminalView.ts
-@@ -335,7 +335,7 @@ export class TerminalViewPane extends ViewPane {
+@@ -334,7 +334,7 @@ export class TerminalViewPane extends ViewPane {
  
  		// If the terminal is waiting to reconnect to remote terminals, then there is no TerminalInstance yet that can
  		// be focused. So wait for connection to finish, then focus.
@@ -1075,7 +1099,7 @@ index d4a915881f3..bda9ff3309f 100644
  
  			// It is possible for the webview to be contained in another window
 diff --git a/src/vs/workbench/contrib/welcomeGettingStarted/browser/gettingStarted.ts b/src/vs/workbench/contrib/welcomeGettingStarted/browser/gettingStarted.ts
-index e18337a38d3..f776098301c 100644
+index 4801a2a06b5..e3d2663b5e9 100644
 --- a/src/vs/workbench/contrib/welcomeGettingStarted/browser/gettingStarted.ts
 +++ b/src/vs/workbench/contrib/welcomeGettingStarted/browser/gettingStarted.ts
 @@ -3,7 +3,7 @@
@@ -1087,7 +1111,7 @@ index e18337a38d3..f776098301c 100644
  import { renderFormattedText } from '../../../../base/browser/formattedTextRenderer.js';
  import { StandardKeyboardEvent } from '../../../../base/browser/keyboardEvent.js';
  import { Button } from '../../../../base/browser/ui/button/button.js';
-@@ -1633,7 +1633,7 @@ export class GettingStartedPage extends EditorPane {
+@@ -1673,7 +1673,7 @@ export class GettingStartedPage extends EditorPane {
  	override focus() {
  		super.focus();
  
@@ -1097,7 +1121,7 @@ index e18337a38d3..f776098301c 100644
  		let parent = this.container.parentElement;
  		while (parent && parent !== active) {
 diff --git a/src/vs/workbench/contrib/welcomeWalkthrough/browser/walkThroughPart.ts b/src/vs/workbench/contrib/welcomeWalkthrough/browser/walkThroughPart.ts
-index 0295214d7f7..398e8df68cc 100644
+index 27908c633b0..ef61127e428 100644
 --- a/src/vs/workbench/contrib/welcomeWalkthrough/browser/walkThroughPart.ts
 +++ b/src/vs/workbench/contrib/welcomeWalkthrough/browser/walkThroughPart.ts
 @@ -32,8 +32,8 @@ import { UILabelProvider } from '../../../../base/common/keybindingLabels.js';
@@ -1110,16 +1134,16 @@ index 0295214d7f7..398e8df68cc 100644
  import { IEditorGroup, IEditorGroupsService } from '../../../services/editor/common/editorGroupsService.js';
  import { CancellationToken } from '../../../../base/common/cancellation.js';
  import { IExtensionService } from '../../../services/extensions/common/extensions.js';
-@@ -158,7 +158,7 @@ export class WalkThroughPart extends EditorPane {
- 		this.content.addEventListener('click', event => {
+@@ -159,7 +159,7 @@ export class WalkThroughPart extends EditorPane {
  			for (let node = event.target as HTMLElement; node; node = node.parentNode as HTMLElement) {
  				if (isHTMLAnchorElement(node) && node.href) {
+ 					// eslint-disable-next-line no-restricted-syntax
 -					const baseElement = node.ownerDocument.getElementsByTagName('base')[0] || this.window.location;
 +					const baseElement = (node.getRootNode() as ShadowRoot | Document).querySelector('base') || this.window.location;
  					if (baseElement && node.href.indexOf(baseElement.href) >= 0 && node.hash) {
+ 						// eslint-disable-next-line no-restricted-syntax
  						const scrollTarget = this.content.querySelector(node.hash);
- 						const innerContent = this.content.firstElementChild;
-@@ -228,7 +228,7 @@ export class WalkThroughPart extends EditorPane {
+@@ -230,7 +230,7 @@ export class WalkThroughPart extends EditorPane {
  	override focus(): void {
  		super.focus();
  
@@ -1151,13 +1175,13 @@ index 8ac72998d7e..5a0dde6aeaa 100644
  			return;
  		}
 diff --git a/src/vs/workbench/services/themes/browser/workbenchThemeService.ts b/src/vs/workbench/services/themes/browser/workbenchThemeService.ts
-index d85b23015f4..a9dc7c145e0 100644
+index 6622617c120..d2ad5f7d168 100644
 --- a/src/vs/workbench/services/themes/browser/workbenchThemeService.ts
 +++ b/src/vs/workbench/services/themes/browser/workbenchThemeService.ts
-@@ -793,7 +793,7 @@ class ThemeFileWatcher {
- }
+@@ -794,7 +794,7 @@ class ThemeFileWatcher {
  
  function _applyRules(styleSheetContent: string, rulesClassName: string) {
+ 	// eslint-disable-next-line no-restricted-syntax
 -	const themeStyles = mainWindow.document.head.getElementsByClassName(rulesClassName);
 +	const themeStyles = mainWindow.document.head.querySelectorAll(`.${rulesClassName}`);
  	if (themeStyles.length === 0) {

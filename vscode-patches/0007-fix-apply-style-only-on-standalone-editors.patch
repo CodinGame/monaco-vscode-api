@@ -15,10 +15,10 @@ Subject: [PATCH] fix: apply style only on standalone editors
  8 files changed, 45 insertions(+), 24 deletions(-)
 
 diff --git a/src/vs/editor/browser/config/editorConfiguration.ts b/src/vs/editor/browser/config/editorConfiguration.ts
-index 8b936dd220c..7966ec2b353 100644
+index 8196bcd7174..d466efb1777 100644
 --- a/src/vs/editor/browser/config/editorConfiguration.ts
 +++ b/src/vs/editor/browser/config/editorConfiguration.ts
-@@ -46,6 +46,7 @@ export class EditorConfiguration extends Disposable implements IEditorConfigurat
+@@ -47,6 +47,7 @@ export class EditorConfiguration extends Disposable implements IEditorConfigurat
  
  	public readonly isSimpleWidget: boolean;
  	public readonly contextMenuId: MenuId;
@@ -26,7 +26,7 @@ index 8b936dd220c..7966ec2b353 100644
  	private readonly _containerObserver: ElementSizeObserver;
  
  	private _isDominatedByLongLines: boolean = false;
-@@ -72,6 +73,7 @@ export class EditorConfiguration extends Disposable implements IEditorConfigurat
+@@ -73,6 +74,7 @@ export class EditorConfiguration extends Disposable implements IEditorConfigurat
  	constructor(
  		isSimpleWidget: boolean,
  		contextMenuId: MenuId,
@@ -34,7 +34,7 @@ index 8b936dd220c..7966ec2b353 100644
  		options: Readonly<IEditorConstructionOptions>,
  		container: HTMLElement | null,
  		@IAccessibilityService private readonly _accessibilityService: IAccessibilityService
-@@ -79,6 +81,7 @@ export class EditorConfiguration extends Disposable implements IEditorConfigurat
+@@ -80,6 +82,7 @@ export class EditorConfiguration extends Disposable implements IEditorConfigurat
  		super();
  		this.isSimpleWidget = isSimpleWidget;
  		this.contextMenuId = contextMenuId;
@@ -42,7 +42,7 @@ index 8b936dd220c..7966ec2b353 100644
  		this._containerObserver = this._register(new ElementSizeObserver(container, options.dimension));
  		this._targetWindowId = getWindow(container).vscodeWindowId;
  
-@@ -138,7 +141,7 @@ export class EditorConfiguration extends Disposable implements IEditorConfigurat
+@@ -139,7 +142,7 @@ export class EditorConfiguration extends Disposable implements IEditorConfigurat
  
  	protected _readEnvConfiguration(): IEnvConfiguration {
  		return {
@@ -51,7 +51,7 @@ index 8b936dd220c..7966ec2b353 100644
  			outerWidth: this._containerObserver.getWidth(),
  			outerHeight: this._containerObserver.getHeight(),
  			emptySelectionClipboard: browser.isWebKit || browser.isFirefox,
-@@ -227,7 +230,7 @@ function digitCount(n: number): number {
+@@ -229,7 +232,7 @@ function digitCount(n: number): number {
  	return r ? r : 1;
  }
  
@@ -60,7 +60,7 @@ index 8b936dd220c..7966ec2b353 100644
  	let extra = '';
  	if (browser.isSafari || browser.isWebkitWebView) {
  		// See https://github.com/microsoft/vscode/issues/108822
-@@ -240,6 +243,9 @@ function getExtraEditorClassName(): string {
+@@ -242,6 +245,9 @@ function getExtraEditorClassName(): string {
  	if (platform.isMacintosh) {
  		extra += 'mac ';
  	}
@@ -70,7 +70,7 @@ index 8b936dd220c..7966ec2b353 100644
  	return extra;
  }
  
-@@ -282,7 +288,7 @@ export class ComputedEditorOptions implements IComputedEditorOptions {
+@@ -284,7 +290,7 @@ export class ComputedEditorOptions implements IComputedEditorOptions {
  	}
  }
  
@@ -80,10 +80,10 @@ index 8b936dd220c..7966ec2b353 100644
  	public static validateOptions(options: IEditorOptions): ValidatedEditorOptions {
  		const result = new ValidatedEditorOptions();
 diff --git a/src/vs/editor/browser/widget/codeEditor/codeEditorWidget.ts b/src/vs/editor/browser/widget/codeEditor/codeEditorWidget.ts
-index a770f47d708..985d6e217e6 100644
+index 91156fa9829..2e7aacb8297 100644
 --- a/src/vs/editor/browser/widget/codeEditor/codeEditorWidget.ts
 +++ b/src/vs/editor/browser/widget/codeEditor/codeEditorWidget.ts
-@@ -284,6 +284,7 @@ export class CodeEditorWidget extends Disposable implements editorBrowser.ICodeE
+@@ -285,6 +285,7 @@ export class CodeEditorWidget extends Disposable implements editorBrowser.ICodeE
  
  		this._configuration = this._register(this._createConfiguration(codeEditorWidgetOptions.isSimpleWidget || false,
  			codeEditorWidgetOptions.contextMenuId ?? (codeEditorWidgetOptions.isSimpleWidget ? MenuId.SimpleEditorContext : MenuId.EditorContext),
@@ -91,7 +91,7 @@ index a770f47d708..985d6e217e6 100644
  			options, accessibilityService));
  		this._register(this._configuration.onDidChange((e) => {
  			this._onDidChangeConfiguration.fire(e);
-@@ -392,8 +393,8 @@ export class CodeEditorWidget extends Disposable implements editorBrowser.ICodeE
+@@ -393,8 +394,8 @@ export class CodeEditorWidget extends Disposable implements editorBrowser.ICodeE
  		this._modelData?.view.writeScreenReaderContent(reason);
  	}
  
@@ -102,7 +102,7 @@ index a770f47d708..985d6e217e6 100644
  	}
  
  	public getId(): string {
-@@ -2031,6 +2032,12 @@ export interface ICodeEditorWidgetOptions {
+@@ -2035,6 +2036,12 @@ export interface ICodeEditorWidgetOptions {
  	 */
  	isSimpleWidget?: boolean;
  
@@ -116,7 +116,7 @@ index a770f47d708..985d6e217e6 100644
  	 * Contributions to instantiate.
  	 * When provided, only the contributions included will be instantiated.
 diff --git a/src/vs/editor/browser/widget/diffEditor/diffEditorWidget.ts b/src/vs/editor/browser/widget/diffEditor/diffEditorWidget.ts
-index 8fd39f2945d..ce453f45816 100644
+index bc5e4b7dcea..f4ea78b3b22 100644
 --- a/src/vs/editor/browser/widget/diffEditor/diffEditorWidget.ts
 +++ b/src/vs/editor/browser/widget/diffEditor/diffEditorWidget.ts
 @@ -52,6 +52,12 @@ import { CSSStyle, ObservableElementSizeObserver, RefCounted, applyStyle, applyV
@@ -195,10 +195,10 @@ index 1d65e13d69c..a47a00a7aff 100644
  	outline-style: solid;
  	outline-offset: -1px;
 diff --git a/src/vs/editor/standalone/browser/standaloneCodeEditor.ts b/src/vs/editor/standalone/browser/standaloneCodeEditor.ts
-index dffab646d2b..ca9736c46f1 100644
+index 6041f65a055..69e271c1879 100644
 --- a/src/vs/editor/standalone/browser/standaloneCodeEditor.ts
 +++ b/src/vs/editor/standalone/browser/standaloneCodeEditor.ts
-@@ -283,7 +283,7 @@ export class StandaloneCodeEditor extends CodeEditorWidget implements IStandalon
+@@ -286,7 +286,7 @@ export class StandaloneCodeEditor extends CodeEditorWidget implements IStandalon
  	) {
  		const options = { ..._options };
  		options.ariaLabel = options.ariaLabel || StandaloneCodeEditorNLS.editorViewAccessibleLabel;
@@ -207,7 +207,7 @@ index dffab646d2b..ca9736c46f1 100644
  
  		if (keybindingService instanceof StandaloneKeybindingService) {
  			this._standaloneKeybindingService = keybindingService;
-@@ -521,7 +521,7 @@ export class StandaloneDiffEditor2 extends DiffEditorWidget implements IStandalo
+@@ -527,7 +527,7 @@ export class StandaloneDiffEditor2 extends DiffEditorWidget implements IStandalo
  		super(
  			domElement,
  			options,
@@ -230,7 +230,7 @@ index ece0400a78c..5f70126b20f 100644
  
  	protected override _readEnvConfiguration(): IEnvConfiguration {
 diff --git a/src/vs/editor/test/browser/testCodeEditor.ts b/src/vs/editor/test/browser/testCodeEditor.ts
-index 570749e69d7..79fbffc303a 100644
+index db5de437a44..b6bcbcfc58f 100644
 --- a/src/vs/editor/test/browser/testCodeEditor.ts
 +++ b/src/vs/editor/test/browser/testCodeEditor.ts
 @@ -84,7 +84,7 @@ export interface ITestEditorAction {

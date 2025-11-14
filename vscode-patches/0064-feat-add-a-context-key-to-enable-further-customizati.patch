@@ -11,19 +11,19 @@ Subject: [PATCH] feat: add a context key to enable further customization
  4 files changed, 32 insertions(+), 22 deletions(-)
 
 diff --git a/src/vs/workbench/browser/actions/windowActions.ts b/src/vs/workbench/browser/actions/windowActions.ts
-index 2fb9c8edbb3..c2084859922 100644
+index 808d5e717ca..da47ef85359 100644
 --- a/src/vs/workbench/browser/actions/windowActions.ts
 +++ b/src/vs/workbench/browser/actions/windowActions.ts
 @@ -8,7 +8,7 @@ import { IWindowOpenable } from '../../../platform/window/common/window.js';
  import { IDialogService } from '../../../platform/dialogs/common/dialogs.js';
- import { MenuRegistry, MenuId, Action2, registerAction2, IAction2Options } from '../../../platform/actions/common/actions.js';
+ import { MenuRegistry, MenuId, Action2, registerAction2 } from '../../../platform/actions/common/actions.js';
  import { KeyChord, KeyCode, KeyMod } from '../../../base/common/keyCodes.js';
 -import { IsMainWindowFullscreenContext } from '../../common/contextkeys.js';
 +import { IsMainWindowFullscreenContext, IsSandboxWorkspaceContext } from '../../common/contextkeys.js';
  import { IsMacNativeContext, IsDevelopmentContext, IsWebContext, IsIOSContext } from '../../../platform/contextkey/common/contextkeys.js';
  import { Categories } from '../../../platform/action/common/actionCommonCategories.js';
  import { KeybindingsRegistry, KeybindingWeight } from '../../../platform/keybinding/common/keybindingsRegistry.js';
-@@ -247,10 +247,12 @@ export class OpenRecentAction extends BaseOpenRecentAction {
+@@ -244,10 +244,12 @@ export class OpenRecentAction extends BaseOpenRecentAction {
  				primary: KeyMod.CtrlCmd | KeyCode.KeyR,
  				mac: { primary: KeyMod.WinCtrl | KeyCode.KeyR }
  			},
@@ -37,7 +37,7 @@ index 2fb9c8edbb3..c2084859922 100644
  			}
  		});
  	}
-@@ -378,10 +380,12 @@ class NewWindowAction extends Action2 {
+@@ -375,10 +377,12 @@ class NewWindowAction extends Action2 {
  				primary: isWeb ? (isWindows ? KeyChord(KeyMod.CtrlCmd | KeyCode.KeyK, KeyMod.Shift | KeyCode.KeyN) : KeyMod.CtrlCmd | KeyMod.Alt | KeyMod.Shift | KeyCode.KeyN) : KeyMod.CtrlCmd | KeyMod.Shift | KeyCode.KeyN,
  				secondary: isWeb ? [KeyMod.CtrlCmd | KeyMod.Shift | KeyCode.KeyN] : undefined
  			},
@@ -51,7 +51,7 @@ index 2fb9c8edbb3..c2084859922 100644
  			}
  		});
  	}
-@@ -461,12 +465,13 @@ MenuRegistry.appendMenuItem(MenuId.MenubarFileMenu, {
+@@ -458,12 +462,13 @@ MenuRegistry.appendMenuItem(MenuId.MenubarFileMenu, {
  		toggled: ContextKeyExpr.notEquals('config.window.confirmBeforeClose', 'never')
  	},
  	order: 1,

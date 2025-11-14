@@ -11,7 +11,7 @@ Subject: [PATCH] feat: add a way to override extension host config
  4 files changed, 27 insertions(+), 10 deletions(-)
 
 diff --git a/src/vs/workbench/services/extensions/browser/extensionService.ts b/src/vs/workbench/services/extensions/browser/extensionService.ts
-index 88e8ff6d871..7a0f140ae36 100644
+index 27feb43c394..cb46b7bc158 100644
 --- a/src/vs/workbench/services/extensions/browser/extensionService.ts
 +++ b/src/vs/workbench/services/extensions/browser/extensionService.ts
 @@ -4,7 +4,7 @@
@@ -40,7 +40,7 @@ index 88e8ff6d871..7a0f140ae36 100644
  			case ExtensionHostKind.Remote: {
  				const remoteAgentConnection = this._remoteAgentService.getConnection();
 diff --git a/src/vs/workbench/services/extensions/browser/webWorkerExtensionHost.ts b/src/vs/workbench/services/extensions/browser/webWorkerExtensionHost.ts
-index 00429f19d82..9a3d8a9f0f5 100644
+index c2a28b8ca70..c6aff2ddf66 100644
 --- a/src/vs/workbench/services/extensions/browser/webWorkerExtensionHost.ts
 +++ b/src/vs/workbench/services/extensions/browser/webWorkerExtensionHost.ts
 @@ -59,6 +59,8 @@ export class WebWorkerExtensionHost extends Disposable implements IExtensionHost
@@ -63,7 +63,7 @@ index 00429f19d82..9a3d8a9f0f5 100644
  						nls: {
  							messages: getNLSMessages(),
 diff --git a/src/vs/workbench/services/extensions/electron-browser/nativeExtensionService.ts b/src/vs/workbench/services/extensions/electron-browser/nativeExtensionService.ts
-index a86ef714159..4afdd3582b8 100644
+index 3080657390a..f837cc14e2f 100644
 --- a/src/vs/workbench/services/extensions/electron-browser/nativeExtensionService.ts
 +++ b/src/vs/workbench/services/extensions/electron-browser/nativeExtensionService.ts
 @@ -6,7 +6,7 @@

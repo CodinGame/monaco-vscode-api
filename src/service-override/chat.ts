@@ -65,6 +65,12 @@ import { IAiEditTelemetryService } from 'vs/workbench/contrib/editTelemetry/brow
 import { AiEditTelemetryServiceImpl } from 'vs/workbench/contrib/editTelemetry/browser/telemetry/aiEditTelemetry/aiEditTelemetryServiceImpl'
 import { IChatModeService } from 'vs/workbench/contrib/chat/common/chatModes.service'
 import { ChatModeService } from 'vs/workbench/contrib/chat/common/chatModes'
+import { ILanguageModelToolsConfirmationService } from 'vs/workbench/contrib/chat/common/languageModelToolsConfirmationService.service'
+import { LanguageModelToolsConfirmationService } from 'vs/workbench/contrib/chat/browser/languageModelToolsConfirmationService'
+import { IChatContextService } from 'vs/workbench/contrib/chat/browser/chatContextService.service'
+import { ChatContextService } from 'vs/workbench/contrib/chat/browser/chatContextService'
+import { ITerminalChatService } from 'vs/workbench/contrib/terminal/browser/terminal.service'
+import { TerminalChatService } from 'vs/workbench/contrib/terminalContrib/chat/browser/terminalChatService'
 import 'vs/workbench/contrib/chat/browser/chat.contribution'
 import 'vs/workbench/contrib/terminal/terminal.chat.contribution'
 import 'vs/workbench/contrib/inlineChat/browser/inlineChat.contribution'
@@ -138,6 +144,13 @@ export default function getServiceOverride(): IEditorOverrideServices {
     [IChatTodoListService.toString()]: new SyncDescriptor(ChatTodoListService, [], true),
     [IChatLayoutService.toString()]: new SyncDescriptor(ChatLayoutService, [], true),
     [IAiEditTelemetryService.toString()]: new SyncDescriptor(AiEditTelemetryServiceImpl, [], true),
-    [IChatModeService.toString()]: new SyncDescriptor(ChatModeService, [], true)
+    [IChatModeService.toString()]: new SyncDescriptor(ChatModeService, [], true),
+    [ILanguageModelToolsConfirmationService.toString()]: new SyncDescriptor(
+      LanguageModelToolsConfirmationService,
+      [],
+      true
+    ),
+    [IChatContextService.toString()]: new SyncDescriptor(ChatContextService, [], true),
+    [ITerminalChatService.toString()]: new SyncDescriptor(TerminalChatService, [], true)
   }
 }

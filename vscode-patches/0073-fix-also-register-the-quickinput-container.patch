@@ -8,7 +8,7 @@ Subject: [PATCH] fix: also register the quickinput container
  1 file changed, 5 insertions(+), 1 deletion(-)
 
 diff --git a/src/vs/platform/quickinput/browser/quickInputController.ts b/src/vs/platform/quickinput/browser/quickInputController.ts
-index 12e5f0b11a3..21abfef7b6c 100644
+index 989a4995d5d..839d5a1fb58 100644
 --- a/src/vs/platform/quickinput/browser/quickInputController.ts
 +++ b/src/vs/platform/quickinput/browser/quickInputController.ts
 @@ -36,6 +36,7 @@ import { TriStateCheckbox } from '../../../base/browser/ui/toggle/toggle.js';

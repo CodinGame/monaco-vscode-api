@@ -9,7 +9,7 @@ Subject: [PATCH] feat: add customEditorRestore
  2 files changed, 13 insertions(+), 8 deletions(-)
 
 diff --git a/src/vs/workbench/browser/layout.ts b/src/vs/workbench/browser/layout.ts
-index 4dfbd24e8d3..a5dc7eb3c50 100644
+index e083fd0ccb9..f273af42391 100644
 --- a/src/vs/workbench/browser/layout.ts
 +++ b/src/vs/workbench/browser/layout.ts
 @@ -20,7 +20,7 @@ import { isCodeEditor } from '../../editor/browser/editorBrowser.js';
@@ -21,7 +21,7 @@ index 4dfbd24e8d3..a5dc7eb3c50 100644
  import { ILogService } from '../../platform/log/common/log.js';
  import { INotificationService, NotificationsFilter } from '../../platform/notification/common/notification.js';
  import { IStorageService, StorageScope, StorageTarget } from '../../platform/storage/common/storage.js';
-@@ -299,7 +299,7 @@ export abstract class Layout extends Disposable implements IWorkbenchLayoutServi
+@@ -300,7 +300,7 @@ export abstract class Layout extends Disposable implements IWorkbenchLayoutServi
  
  	constructor(
  		protected readonly parent: HTMLElement,
@@ -30,7 +30,7 @@ index 4dfbd24e8d3..a5dc7eb3c50 100644
  	) {
  		super();
  
-@@ -892,7 +892,7 @@ export abstract class Layout extends Disposable implements IWorkbenchLayoutServi
+@@ -893,7 +893,7 @@ export abstract class Layout extends Disposable implements IWorkbenchLayoutServi
  		return this.restored;
  	}
  
@@ -39,7 +39,7 @@ index 4dfbd24e8d3..a5dc7eb3c50 100644
  
  		// distinguish long running restore operations that
  		// are required for the layout to be ready from those
-@@ -956,11 +956,14 @@ export abstract class Layout extends Disposable implements IWorkbenchLayoutServi
+@@ -957,11 +957,14 @@ export abstract class Layout extends Disposable implements IWorkbenchLayoutServi
  				}));
  			}
  
@@ -55,7 +55,7 @@ index 4dfbd24e8d3..a5dc7eb3c50 100644
  				]).finally(() => {
  					// the `code/didRestoreEditors` perf mark is specifically
 diff --git a/src/vs/workbench/browser/workbench.ts b/src/vs/workbench/browser/workbench.ts
-index 591299041ab..3d1d703d927 100644
+index 57c88e3ab62..4ffb745c9de 100644
 --- a/src/vs/workbench/browser/workbench.ts
 +++ b/src/vs/workbench/browser/workbench.ts
 @@ -15,7 +15,7 @@ import { getSingletonServiceDescriptors } from '../../platform/instantiation/com
@@ -67,7 +67,7 @@ index 591299041ab..3d1d703d927 100644
  import { ServiceCollection } from '../../platform/instantiation/common/serviceCollection.js';
  import { LifecyclePhase, ILifecycleService, WillShutdownEvent } from '../services/lifecycle/common/lifecycle.js';
  import { INotificationService } from '../../platform/notification/common/notification.js';
-@@ -53,6 +53,8 @@ export interface IWorkbenchOptions {
+@@ -55,6 +55,8 @@ export interface IWorkbenchOptions {
  	 * Whether to reset the workbench parts layout on startup.
  	 */
  	resetLayout?: boolean;
@@ -76,7 +76,7 @@ index 591299041ab..3d1d703d927 100644
  }
  
  export class Workbench extends Layout {
-@@ -69,7 +71,7 @@ export class Workbench extends Layout {
+@@ -71,7 +73,7 @@ export class Workbench extends Layout {
  		private readonly serviceCollection: ServiceCollection,
  		logService: ILogService
  	) {
@@ -85,7 +85,7 @@ index 591299041ab..3d1d703d927 100644
  
  		// Perf: measure workbench startup time
  		mark('code/willStartWorkbench');
-@@ -150,7 +152,7 @@ export class Workbench extends Layout {
+@@ -156,7 +158,7 @@ export class Workbench extends Layout {
  				this.layout();
  
  				// Restore
@@ -94,7 +94,7 @@ index 591299041ab..3d1d703d927 100644
  			});
  
  			return instantiationService;
-@@ -378,11 +380,11 @@ export class Workbench extends Layout {
+@@ -384,11 +386,11 @@ export class Workbench extends Layout {
  		});
  	}
  

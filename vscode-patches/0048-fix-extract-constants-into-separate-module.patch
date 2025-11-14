@@ -17,7 +17,7 @@ so that only the constant is pulled from the root instead of the whole module gr
  create mode 100644 src/vs/workbench/contrib/chat/browser/contrib/chatDynamicVariablesConstant.ts
 
 diff --git a/src/vs/workbench/api/browser/mainThreadChatAgents2.ts b/src/vs/workbench/api/browser/mainThreadChatAgents2.ts
-index c7ee8e4650e..32821e8e0ab 100644
+index e2350c1ea0a..fb74fa3fa8e 100644
 --- a/src/vs/workbench/api/browser/mainThreadChatAgents2.ts
 +++ b/src/vs/workbench/api/browser/mainThreadChatAgents2.ts
 @@ -24,7 +24,7 @@ import { IInstantiationService } from '../../../platform/instantiation/common/in
@@ -28,8 +28,8 @@ index c7ee8e4650e..32821e8e0ab 100644
 +import { IAddDynamicVariableContext } from '../../contrib/chat/browser/contrib/chatDynamicVariables.js';
  import { IChatAgentHistoryEntry, IChatAgentImplementation, IChatAgentRequest, IChatAgentService } from '../../contrib/chat/common/chatAgents.js';
  import { IChatEditingService, IChatRelatedFileProviderMetadata } from '../../contrib/chat/common/chatEditingService.js';
- import { ChatRequestAgentPart } from '../../contrib/chat/common/chatParserTypes.js';
-@@ -36,6 +36,7 @@ import { IExtensionService } from '../../services/extensions/common/extensions.j
+ import { IChatModel } from '../../contrib/chat/common/chatModel.js';
+@@ -39,6 +39,7 @@ import { IExtensionService } from '../../services/extensions/common/extensions.j
  import { Dto } from '../../services/extensions/common/proxyIdentifier.js';
  import { ExtHostChatAgentsShape2, ExtHostContext, IChatNotebookEditDto, IChatParticipantMetadata, IChatProgressDto, IDynamicChatAgentProps, IExtensionChatAgentMetadata, MainContext, MainThreadChatAgentsShape2 } from '../common/extHost.protocol.js';
  import { NotebookDto } from './mainThreadNotebookDto.js';
@@ -37,12 +37,12 @@ index c7ee8e4650e..32821e8e0ab 100644
  
  interface AgentData {
  	dispose: () => void;
-@@ -358,7 +359,7 @@ export class MainThreadChatAgents2 extends Disposable implements MainThreadChatA
+@@ -388,7 +389,7 @@ export class MainThreadChatAgents2 extends Disposable implements MainThreadChatA
  						kind: CompletionItemKind.Text,
  						detail: v.detail,
  						documentation: v.documentation,
--						command: { id: AddDynamicVariableAction.ID, title: '', arguments: [{ id: v.id, widget, range: rangeAfterInsert, variableData: revive(v.value) as any, command: v.command } satisfies IAddDynamicVariableContext] }
-+						command: { id: addDynamicVariableActionId, title: '', arguments: [{ id: v.id, widget, range: rangeAfterInsert, variableData: revive(v.value) as any, command: v.command } satisfies IAddDynamicVariableContext] }
+-						command: { id: AddDynamicVariableAction.ID, title: '', arguments: [{ id: v.id, widget, range: rangeAfterInsert, variableData: revive(v.value), command: v.command } satisfies IAddDynamicVariableContext] }
++						command: { id: addDynamicVariableActionId, title: '', arguments: [{ id: v.id, widget, range: rangeAfterInsert, variableData: revive(v.value), command: v.command } satisfies IAddDynamicVariableContext] }
  					} satisfies CompletionItem;
  				});
  
@@ -78,7 +78,7 @@ index e3e1482b4b6..992a530ed2f 100644
  	registerAction2(QuickChatGlobalAction);
  	registerAction2(AskQuickChatAction);
 diff --git a/src/vs/workbench/contrib/chat/browser/contrib/chatDynamicVariables.ts b/src/vs/workbench/contrib/chat/browser/contrib/chatDynamicVariables.ts
-index 4ebdeae3f35..e16063bb035 100644
+index 5041b54718f..426e1a0f829 100644
 --- a/src/vs/workbench/contrib/chat/browser/contrib/chatDynamicVariables.ts
 +++ b/src/vs/workbench/contrib/chat/browser/contrib/chatDynamicVariables.ts
 @@ -17,6 +17,7 @@ import { ILabelService } from '../../../../../platform/label/common/label.js';
@@ -111,7 +111,7 @@ index 00000000000..df0794493a8
 +
 +export const addDynamicVariableActionId = 'workbench.action.chat.addDynamicVariable';
 diff --git a/src/vs/workbench/contrib/quickaccess/browser/commandsQuickAccess.ts b/src/vs/workbench/contrib/quickaccess/browser/commandsQuickAccess.ts
-index f2565eaec58..f8e269ba12f 100644
+index 71cabee0115..6dfef243824 100644
 --- a/src/vs/workbench/contrib/quickaccess/browser/commandsQuickAccess.ts
 +++ b/src/vs/workbench/contrib/quickaccess/browser/commandsQuickAccess.ts
 @@ -30,14 +30,13 @@ import { IQuickInputService, IQuickPickSeparator } from '../../../../platform/qu
@@ -131,7 +131,7 @@ index f2565eaec58..f8e269ba12f 100644
  import { ChatAgentLocation } from '../../chat/common/constants.js';
  
 diff --git a/src/vs/workbench/contrib/search/browser/anythingQuickAccess.ts b/src/vs/workbench/contrib/search/browser/anythingQuickAccess.ts
-index acbecc9773b..a73c21c25ad 100644
+index 7d451a4cf68..ff4b17bf9ac 100644
 --- a/src/vs/workbench/contrib/search/browser/anythingQuickAccess.ts
 +++ b/src/vs/workbench/contrib/search/browser/anythingQuickAccess.ts
 @@ -53,7 +53,7 @@ import { stripIcons } from '../../../../base/common/iconLabels.js';

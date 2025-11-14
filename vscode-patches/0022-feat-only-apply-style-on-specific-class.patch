@@ -4,15 +4,15 @@ Date: Mon, 11 Mar 2024 17:51:04 +0100
 Subject: [PATCH] feat: only apply style on specific class
 
 ---
- src/vs/workbench/browser/media/style.css | 181 +++++++++++------------
+ src/vs/workbench/browser/media/style.css | 182 +++++++++++------------
  src/vs/workbench/browser/style.ts        |  10 +-
- 2 files changed, 89 insertions(+), 102 deletions(-)
+ 2 files changed, 90 insertions(+), 102 deletions(-)
 
 diff --git a/src/vs/workbench/browser/media/style.css b/src/vs/workbench/browser/media/style.css
-index 923f442b2f4..f4b2593254c 100644
+index ba3e164a18a..396c6164dbe 100644
 --- a/src/vs/workbench/browser/media/style.css
 +++ b/src/vs/workbench/browser/media/style.css
-@@ -9,53 +9,39 @@
+@@ -9,53 +9,40 @@
  
  /* Font Families (with CJK support) */
  
@@ -80,6 +80,7 @@ index 923f442b2f4..f4b2593254c 100644
 -	z-index: 1;
 -	overflow: hidden;
  	color: var(--vscode-foreground);
++	position: relative;
  }
  
 -.monaco-workbench.web {
@@ -87,8 +88,8 @@ index 923f442b2f4..f4b2593254c 100644
  	touch-action: none; /* Disable browser handling of all panning and zooming gestures. Removes 300ms touch delay. */
  	overscroll-behavior: none; /* Prevent bounce effect */
  }
-@@ -73,55 +59,56 @@ body {
- 	border-radius: 10px; /* macOS Big Sur increased rounded corners size */
+@@ -77,55 +64,56 @@ body {
+ 	border-radius: 12px; /* macOS Tahoe increased rounded corners size even more */
  }
  
 -.monaco-workbench img {
@@ -158,7 +159,7 @@ index 923f442b2f4..f4b2593254c 100644
  	/*
  	 * Somehow this is required when tables show in floating windows
  	 * to override the user-agent style which sets a specific color
-@@ -131,48 +118,48 @@ body {
+@@ -135,48 +123,48 @@ body {
  	font-size: inherit;
  }
  
@@ -221,7 +222,7 @@ index 923f442b2f4..f4b2593254c 100644
  	width: 16px;
  	padding-left: 3px; /* width (16px) - font-size (13px) = padding-left (3px) */
  	padding-right: 3px;
-@@ -192,7 +179,7 @@ body {
+@@ -196,7 +184,7 @@ body {
  
  /* Custom Dropdown (select) Arrows */
  
@@ -230,7 +231,7 @@ index 923f442b2f4..f4b2593254c 100644
  	font-family: inherit;
  	appearance: none;
  	-webkit-appearance: none;
-@@ -201,11 +188,11 @@ body {
+@@ -205,11 +193,11 @@ body {
  	border: 1px solid;
  }
  
@@ -244,7 +245,7 @@ index 923f442b2f4..f4b2593254c 100644
  	content: var(--vscode-icon-chevron-down-content);
  	font-family: var(--vscode-icon-chevron-down-font-family);
  	font-size: 16px;
-@@ -222,16 +209,16 @@ body {
+@@ -226,16 +214,16 @@ body {
  
  /* Keyboard Focus Indication Styles */
  
@@ -271,7 +272,7 @@ index 923f442b2f4..f4b2593254c 100644
  	outline-width: 1px;
  	outline-style: solid;
  	outline-offset: -1px;
-@@ -244,19 +231,19 @@ body {
+@@ -248,19 +236,19 @@ body {
  	background: transparent; /* Search input focus fix when in high contrast */
  }
  
@@ -298,7 +299,7 @@ index 923f442b2f4..f4b2593254c 100644
  	border-color: transparent; /* outline is a square, but border has a radius, so we avoid this glitch when focused (https://github.com/microsoft/vscode/issues/26045) */
  }
  
-@@ -284,38 +271,38 @@ body {
+@@ -289,38 +277,38 @@ body {
  	color: var(--vscode-list-focusHighlightForeground);
  }
  
@@ -352,7 +353,7 @@ index 923f442b2f4..f4b2593254c 100644
  	outline-offset: -1px;
  }
 diff --git a/src/vs/workbench/browser/style.ts b/src/vs/workbench/browser/style.ts
-index 9f36f4a74eb..de1352c0fe2 100644
+index 9250ef3f280..b3cde1a1e14 100644
 --- a/src/vs/workbench/browser/style.ts
 +++ b/src/vs/workbench/browser/style.ts
 @@ -16,12 +16,12 @@ registerThemingParticipant((theme, collector) => {
@@ -370,7 +371,7 @@ index 9f36f4a74eb..de1352c0fe2 100644
  	}
  
  	// Update <meta name="theme-color" content=""> based on selected theme
-@@ -45,10 +45,10 @@ registerThemingParticipant((theme, collector) => {
+@@ -46,10 +46,10 @@ registerThemingParticipant((theme, collector) => {
  	// allow to select text in monaco editor instances.
  	if (isSafari) {
  		collector.addRule(`
@@ -383,7 +384,7 @@ index 9f36f4a74eb..de1352c0fe2 100644
  				user-select: text;
  				-webkit-user-select: text;
  			}
-@@ -57,6 +57,6 @@ registerThemingParticipant((theme, collector) => {
+@@ -58,6 +58,6 @@ registerThemingParticipant((theme, collector) => {
  
  	// Update body background color to ensure the home indicator area looks similar to the workbench
  	if (isIOS && isStandalone()) {

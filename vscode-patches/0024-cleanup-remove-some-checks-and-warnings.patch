@@ -54,10 +54,10 @@ index cabf4edbce7..4d62baca53c 100644
  		if (this.element && this._messagePort) {
  			this._messagePort.postMessage({ channel, args: data }, transferable);
 diff --git a/src/vs/workbench/services/auxiliaryWindow/browser/auxiliaryWindowService.ts b/src/vs/workbench/services/auxiliaryWindow/browser/auxiliaryWindowService.ts
-index a20f7cee262..7f26b282427 100644
+index 53bfb067b4e..5f385e07a71 100644
 --- a/src/vs/workbench/services/auxiliaryWindow/browser/auxiliaryWindowService.ts
 +++ b/src/vs/workbench/services/auxiliaryWindow/browser/auxiliaryWindowService.ts
-@@ -383,13 +383,6 @@ export class BrowserAuxiliaryWindowService extends Disposable implements IAuxili
+@@ -387,13 +387,6 @@ export class BrowserAuxiliaryWindowService extends Disposable implements IAuxili
  	}
  
  	protected createContainer(auxiliaryWindow: CodeWindow, disposables: DisposableStore, options?: IAuxiliaryWindowOpenOptions): { stylesLoaded: Barrier; container: HTMLElement } {
@@ -72,7 +72,7 @@ index a20f7cee262..7f26b282427 100644
  		const { stylesLoaded } = this.applyCSS(auxiliaryWindow, disposables);
  		const container = this.applyHTML(auxiliaryWindow, disposables);
 diff --git a/src/vs/workbench/services/extensions/browser/webWorkerExtensionHost.ts b/src/vs/workbench/services/extensions/browser/webWorkerExtensionHost.ts
-index 331e0d5cb3d..00429f19d82 100644
+index 43538afa862..c2a28b8ca70 100644
 --- a/src/vs/workbench/services/extensions/browser/webWorkerExtensionHost.ts
 +++ b/src/vs/workbench/services/extensions/browser/webWorkerExtensionHost.ts
 @@ -112,8 +112,6 @@ export class WebWorkerExtensionHost extends Disposable implements IExtensionHost

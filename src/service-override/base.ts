@@ -33,6 +33,8 @@ import { WorkbenchEditorWorkerService } from 'vs/workbench/contrib/codeEditor/br
 import { getEnvironmentOverride } from '../workbench'
 import { IInlineCompletionsUnificationService } from 'vs/workbench/services/inlineCompletions/common/inlineCompletionsUnification.service'
 import { InlineCompletionsUnificationImpl } from 'vs/workbench/services/inlineCompletions/common/inlineCompletionsUnification'
+import { IMarkdownRendererService } from 'vs/platform/markdown/browser/markdownRenderer.service'
+import { MarkdownRendererService } from 'vs/platform/markdown/browser/markdownRenderer'
 
 class BrowserPathServiceOverride extends AbstractPathService {
   constructor(
@@ -68,6 +70,7 @@ export default function getServiceOverride(): IEditorOverrideServices {
       InlineCompletionsUnificationImpl,
       [],
       true
-    )
+    ),
+    [IMarkdownRendererService.toString()]: new SyncDescriptor(MarkdownRendererService, [], true)
   }
 }

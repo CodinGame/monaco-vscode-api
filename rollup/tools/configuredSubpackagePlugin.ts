@@ -59,7 +59,7 @@ const EDITOR_API_EXPOSE_MODULES = [
   'vs/editor/common/services/editorBaseApi',
   'vs/editor/common/standalone/standaloneEnums',
   'vs/editor/browser/controller/mouseTarget',
-  'vs/editor/common/core/range',
+  'vs/editor/common/core/range'
 ]
 
 const ALLOWED_MAIN_DEPENDENCIES = new Set([
@@ -79,6 +79,7 @@ const workerGroups: Record<string, string> = {
 
 export function configuredSubpackagePlugin(): rollup.Plugin {
   return subpackagePlugin({
+    ignoreDependencies: ['trusted-types' /** only the types are used */],
     getEntryGroups(entrypoints, options) {
       const serviceOverrideDir = nodePath.resolve(options.dir!, 'service-override')
       const workersDir = nodePath.resolve(options.dir!, 'workers')

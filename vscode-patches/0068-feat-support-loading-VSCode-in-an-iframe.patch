@@ -15,10 +15,10 @@ Subject: [PATCH] feat: support loading VSCode in an iframe
  8 files changed, 46 insertions(+), 43 deletions(-)
 
 diff --git a/src/vs/base/browser/dom.ts b/src/vs/base/browser/dom.ts
-index 956cedf2b55..8c26bcd1fa1 100644
+index 8be3c97a212..1f8cb13a03d 100644
 --- a/src/vs/base/browser/dom.ts
 +++ b/src/vs/base/browser/dom.ts
-@@ -1015,68 +1015,55 @@ function createHeadElement(tagName: string, container: HTMLElement = mainWindow.
+@@ -1017,68 +1017,55 @@ function createHeadElement<K extends keyof HTMLElementTagNameMap>(tagName: K, co
  }
  
  export function isHTMLElement(e: unknown): e is HTMLElement {
@@ -142,10 +142,10 @@ index ab920e18349..c4a02c5ca47 100644
  export function isAuxiliaryWindow(obj: Window): obj is CodeWindow {
  	if (obj === mainWindow) {
 diff --git a/src/vs/workbench/browser/window.ts b/src/vs/workbench/browser/window.ts
-index 70e83ad4396..44678fae826 100644
+index 63dfbb43d35..d18dd762ba8 100644
 --- a/src/vs/workbench/browser/window.ts
 +++ b/src/vs/workbench/browser/window.ts
-@@ -109,13 +109,22 @@ export abstract class BaseWindow extends Disposable {
+@@ -113,13 +113,22 @@ export abstract class BaseWindow extends Disposable {
  		// to throttle timeouts in minimized windows, so with this we can ensure the
  		// timeout is scheduled without being throttled (unless all windows are minimized).
  
@@ -173,25 +173,25 @@ index 70e83ad4396..44678fae826 100644
  			if (dom.getWindowsCount() === 1 || typeof handler === 'string' || timeout === 0 /* immediates are never throttled */) {
  				return originalSetTimeout.apply(this, [handler, timeout, ...args]);
  			}
-@@ -138,7 +147,7 @@ export abstract class BaseWindow extends Disposable {
+@@ -142,7 +151,7 @@ export abstract class BaseWindow extends Disposable {
  				// this can happen for timeouts on unfocused windows
  				let didClear = false;
  
--				const handle = (window as any).vscodeOriginalSetTimeout.apply(this, [(...args: unknown[]) => {
-+				const handle = (getOverridenWindow(targetWindow) as any).vscodeOriginalSetTimeout.apply(this, [(...args: unknown[]) => {
+-				const handle = (window as { vscodeOriginalSetTimeout?: typeof window.setTimeout }).vscodeOriginalSetTimeout?.apply(this, [(...args: unknown[]) => {
++				const handle = (getOverridenWindow(targetWindow) as { vscodeOriginalSetTimeout?: typeof window.setTimeout }).vscodeOriginalSetTimeout?.apply(this, [(...args: unknown[]) => {
  					if (didClear) {
  						return;
  					}
-@@ -147,7 +156,7 @@ export abstract class BaseWindow extends Disposable {
+@@ -151,7 +160,7 @@ export abstract class BaseWindow extends Disposable {
  
  				const timeoutDisposable = toDisposable(() => {
  					didClear = true;
--					(window as any).vscodeOriginalClearTimeout(handle);
-+					(getOverridenWindow(targetWindow) as any).vscodeOriginalClearTimeout(handle);
+-					(window as { vscodeOriginalClearTimeout?: typeof window.clearTimeout }).vscodeOriginalClearTimeout?.apply(this, [handle]);
++					(getOverridenWindow(targetWindow) as { vscodeOriginalClearTimeout?: typeof window.clearTimeout }).vscodeOriginalClearTimeout?.apply(this, [handle]);
  					timeoutDisposables.delete(timeoutDisposable);
  				});
  
-@@ -158,7 +167,7 @@ export abstract class BaseWindow extends Disposable {
+@@ -162,7 +171,7 @@ export abstract class BaseWindow extends Disposable {
  			return timeoutHandle;
  		};
  
@@ -243,7 +243,7 @@ index eb0a9ffbc42..b6a71a21ce4 100644
  			try {
  				const url = new URL(item.name);
 diff --git a/src/vs/workbench/services/extensions/browser/webWorkerExtensionHost.ts b/src/vs/workbench/services/extensions/browser/webWorkerExtensionHost.ts
-index d42138bea2e..24068d0cd76 100644
+index c6fbb0f49ba..9ca075c4b19 100644
 --- a/src/vs/workbench/services/extensions/browser/webWorkerExtensionHost.ts
 +++ b/src/vs/workbench/services/extensions/browser/webWorkerExtensionHost.ts
 @@ -198,7 +198,7 @@ export class WebWorkerExtensionHost extends Disposable implements IExtensionHost
