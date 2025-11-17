@@ -13,7 +13,8 @@
     "check-build": "npm run lint && npm run typecheck",
     "build": "npm run check-build && vite --config vite.config.ts build",
     "build:netlify": "npm run check-build && vite --config vite.netlify.config.ts build",
-    "start:debugServer": "tsx src/debugServer.ts"
+    "start:debugServer": "tsx src/debugServer.ts",
+    "preprepare": "patch-package"
   },
   "devDependencies": {
     "@codingame/esbuild-import-meta-url-plugin": "^1.0.3",
