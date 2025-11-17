@@ -131,7 +131,6 @@ index ab920e18349..ab318ad411d 100644
  }
  
 +declare global {
-+	// eslint-disable-next-line no-var
 +	var vscodeWindow: Window | undefined;
 +}
 +
