@@ -53,7 +53,7 @@ Subject: [PATCH] feat: support shadow dom
  46 files changed, 186 insertions(+), 100 deletions(-)
 
 diff --git a/src/vs/base/browser/dom.ts b/src/vs/base/browser/dom.ts
-index be401204e06..b110cb2b742 100644
+index be401204e06..adfb9f657ae 100644
 --- a/src/vs/base/browser/dom.ts
 +++ b/src/vs/base/browser/dom.ts
 @@ -165,6 +165,39 @@ export function addDisposableListener(node: EventTarget, type: string, handler:
@@ -79,7 +79,7 @@ index be401204e06..b110cb2b742 100644
 +		this.activeElement = getActiveElement(this.window.document);
 +		this._onDidChangeActiveElement.fire(this.activeElement);
 +
-+		if (e.target instanceof Element && e.target.shadowRoot) {
++		if (isElement(e.target) && e.target.shadowRoot) {
 +			const disposableStore = new DisposableStore();
 +			disposableStore.add(addDisposableListener(e.target.shadowRoot, EventType.FOCUS_IN, this._onFocusIn));
 +			disposableStore.add(addDisposableListener(e.target, EventType.FOCUS_OUT, () => {

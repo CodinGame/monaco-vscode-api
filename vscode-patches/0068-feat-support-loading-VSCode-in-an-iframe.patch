@@ -15,7 +15,7 @@ Subject: [PATCH] feat: support loading VSCode in an iframe
  8 files changed, 45 insertions(+), 43 deletions(-)
 
 diff --git a/src/vs/base/browser/dom.ts b/src/vs/base/browser/dom.ts
-index 278424505eb..f3bb5a8352b 100644
+index 6195106e703..69a03f6a062 100644
 --- a/src/vs/base/browser/dom.ts
 +++ b/src/vs/base/browser/dom.ts
 @@ -1050,68 +1050,55 @@ function createHeadElement<K extends keyof HTMLElementTagNameMap>(tagName: K, co

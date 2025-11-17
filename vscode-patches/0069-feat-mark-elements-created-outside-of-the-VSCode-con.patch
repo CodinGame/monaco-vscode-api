@@ -9,7 +9,7 @@ Subject: [PATCH] feat: mark elements created outside of the VSCode container
  2 files changed, 2 insertions(+)
 
 diff --git a/src/vs/base/browser/dom.ts b/src/vs/base/browser/dom.ts
-index f3bb5a8352b..0a22d593f8c 100644
+index 69a03f6a062..53fc806dcda 100644
 --- a/src/vs/base/browser/dom.ts
 +++ b/src/vs/base/browser/dom.ts
 @@ -1045,6 +1045,7 @@ export function createLinkElement(container: HTMLElement = mainWindow.document.h

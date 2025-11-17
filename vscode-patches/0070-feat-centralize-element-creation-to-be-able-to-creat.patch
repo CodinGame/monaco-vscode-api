@@ -198,7 +198,7 @@ Subject: [PATCH] feat: centralize element creation, to be able to create them
  190 files changed, 648 insertions(+), 570 deletions(-)
 
 diff --git a/src/vs/base/browser/dom.ts b/src/vs/base/browser/dom.ts
-index 0a22d593f8c..d7f1d8a5d1b 100644
+index 53fc806dcda..9932da557fa 100644
 --- a/src/vs/base/browser/dom.ts
 +++ b/src/vs/base/browser/dom.ts
 @@ -1043,13 +1043,43 @@ export function createLinkElement(container: HTMLElement = mainWindow.document.h
