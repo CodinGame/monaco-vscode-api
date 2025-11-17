@@ -4,20 +4,20 @@ Date: Fri, 2 May 2025 10:13:06 +0200
 Subject: [PATCH] feat: support shadow dom
 
 ---
- src/vs/base/browser/dom.ts                    | 28 +++++++++++++------
- src/vs/base/browser/domStylesheets.ts         | 21 +++++++++++---
- src/vs/base/browser/keyboardEvent.ts          | 12 +++++++-
+ src/vs/base/browser/dom.ts                    | 61 ++++++++++++++++---
+ src/vs/base/browser/domStylesheets.ts         | 21 +++++--
+ src/vs/base/browser/keyboardEvent.ts          | 12 +++-
  .../browser/ui/contextview/contextview.ts     |  2 +-
- src/vs/base/browser/ui/dialog/dialog.ts       |  6 ++--
- src/vs/base/browser/ui/dnd/dnd.ts             |  4 +--
+ src/vs/base/browser/ui/dialog/dialog.ts       |  6 +-
+ src/vs/base/browser/ui/dnd/dnd.ts             |  4 +-
  src/vs/base/browser/ui/findinput/findInput.ts |  3 +-
  .../base/browser/ui/findinput/replaceInput.ts |  3 +-
  src/vs/base/browser/ui/inputbox/inputBox.ts   |  2 +-
  src/vs/base/browser/ui/sash/sash.ts           |  2 +-
- src/vs/base/browser/ui/splitview/paneview.ts  |  6 ++--
- src/vs/base/browser/ui/splitview/splitview.ts |  6 ++--
- .../native/screenReaderContentRich.ts         |  6 ++--
- .../native/screenReaderContentSimple.ts       |  6 ++--
+ src/vs/base/browser/ui/splitview/paneview.ts  |  6 +-
+ src/vs/base/browser/ui/splitview/splitview.ts |  6 +-
+ .../native/screenReaderContentRich.ts         |  6 +-
+ .../native/screenReaderContentSimple.ts       |  6 +-
  .../editor/browser/controller/mouseHandler.ts |  2 +-
  .../editor/browser/controller/mouseTarget.ts  |  2 +-
  src/vs/editor/browser/view/viewPart.ts        |  3 +-
@@ -25,38 +25,78 @@ Subject: [PATCH] feat: support shadow dom
  .../hover/browser/contentHoverController.ts   |  3 +-
  .../hover/browser/contentHoverWidget.ts       |  2 +-
  .../actionWidget/browser/actionList.ts        |  2 +-
- .../clipboard/browser/clipboardService.ts     |  4 +--
- .../contextkey/browser/contextKeyService.ts   | 15 ++++++----
+ .../clipboard/browser/clipboardService.ts     |  4 +-
+ .../contextkey/browser/contextKeyService.ts   | 26 ++++----
  src/vs/platform/hover/browser/hoverWidget.ts  |  2 +-
- .../browser/actions/developerActions.ts       |  4 +--
- src/vs/workbench/browser/layout.ts            |  3 ++
- .../browser/parts/editor/editorGroupView.ts   |  4 +--
- src/vs/workbench/browser/workbench.ts         |  6 ++--
+ .../browser/actions/developerActions.ts       |  4 +-
+ src/vs/workbench/browser/layout.ts            |  3 +
+ .../browser/parts/editor/editorGroupView.ts   |  4 +-
+ src/vs/workbench/browser/workbench.ts         |  6 +-
  .../contrib/chat/browser/chatInputPart.ts     |  2 +-
  .../chatSessions/view/sessionsTreeRenderer.ts |  3 +-
- .../files/browser/views/explorerViewer.ts     |  4 ++-
- .../notebook/browser/notebookEditorWidget.ts  |  6 ++--
- .../browser/view/cellParts/cellStatusPart.ts  |  5 ++--
- .../browser/view/cellParts/codeCell.ts        |  6 ++--
- .../browser/view/cellParts/markupCell.ts      |  6 ++--
- .../notebook/browser/view/notebookCellList.ts |  5 ++--
+ .../files/browser/views/explorerViewer.ts     |  4 +-
+ .../notebook/browser/notebookEditorWidget.ts  |  6 +-
+ .../browser/view/cellParts/cellStatusPart.ts  |  5 +-
+ .../browser/view/cellParts/codeCell.ts        |  6 +-
+ .../browser/view/cellParts/markupCell.ts      |  6 +-
+ .../notebook/browser/view/notebookCellList.ts |  5 +-
  .../view/renderers/backLayerWebView.ts        |  3 +-
  .../browser/preferences.contribution.ts       |  3 +-
- .../preferences/browser/settingsEditor2.ts    |  6 ++--
+ .../preferences/browser/settingsEditor2.ts    |  6 +-
  .../terminal/browser/terminalTabbedView.ts    |  2 +-
  .../contrib/terminal/browser/terminalView.ts  |  2 +-
- .../contrib/webview/browser/webviewElement.ts | 12 +++++---
- .../browser/gettingStarted.ts                 |  4 +--
- .../browser/walkThroughPart.ts                |  6 ++--
- .../suggest/browser/simpleSuggestWidget.ts    |  4 +--
+ .../contrib/webview/browser/webviewElement.ts | 12 ++--
+ .../browser/gettingStarted.ts                 |  4 +-
+ .../browser/walkThroughPart.ts                |  6 +-
+ .../suggest/browser/simpleSuggestWidget.ts    |  4 +-
  .../themes/browser/workbenchThemeService.ts   |  2 +-
- 46 files changed, 148 insertions(+), 94 deletions(-)
+ 46 files changed, 186 insertions(+), 100 deletions(-)
 
 diff --git a/src/vs/base/browser/dom.ts b/src/vs/base/browser/dom.ts
-index be401204e06..f181ffdea9f 100644
+index be401204e06..b110cb2b742 100644
 --- a/src/vs/base/browser/dom.ts
 +++ b/src/vs/base/browser/dom.ts
-@@ -619,8 +619,7 @@ export function getTopLeftOffset(element: HTMLElement): IDomPosition {
+@@ -165,6 +165,39 @@ export function addDisposableListener(node: EventTarget, type: string, handler:
+ 	return new DomListener(node, type, handler, useCaptureOrOptions);
+ }
+ 
++export interface IActiveElementTracker extends Disposable {
++	readonly onDidChangeActiveElement: event.Event<Element | null>;
++	activeElement: Element | null;
++}
++
++class ActiveElementTracker extends Disposable implements IActiveElementTracker {
++	activeElement: Element | null = null;
++	private readonly _onDidChangeActiveElement = this._register(new event.Emitter<Element | null>());
++	get onDidChangeActiveElement() { return this._onDidChangeActiveElement.event; }
++
++	constructor(private window: CodeWindow) {
++		super();
++		this._register(addDisposableListener(this.window, EventType.FOCUS_IN, this._onFocusIn));
++	}
++
++	private _onFocusIn = (e: FocusEvent) => {
++		this.activeElement = getActiveElement(this.window.document);
++		this._onDidChangeActiveElement.fire(this.activeElement);
++
++		if (e.target instanceof Element && e.target.shadowRoot) {
++			const disposableStore = new DisposableStore();
++			disposableStore.add(addDisposableListener(e.target.shadowRoot, EventType.FOCUS_IN, this._onFocusIn));
++			disposableStore.add(addDisposableListener(e.target, EventType.FOCUS_OUT, () => {
++				disposableStore.dispose();
++			}));
++		}
++	};
++}
++
++export function trackActiveElement(window: CodeWindow): IActiveElementTracker {
++	return new ActiveElementTracker(window);
++}
++
+ export interface IAddStandardDisposableListenerSignature {
+ 	(node: HTMLElement | Element | Document, type: 'click', handler: (event: IMouseEvent) => void, useCapture?: boolean): IDisposable;
+ 	(node: HTMLElement | Element | Document, type: 'mousedown', handler: (event: IMouseEvent) => void, useCapture?: boolean): IDisposable;
+@@ -619,8 +652,7 @@ export function getTopLeftOffset(element: HTMLElement): IDomPosition {
  
  	while (
  		(element = <HTMLElement>element.parentNode) !== null
@@ -66,7 +106,7 @@ index be401204e06..f181ffdea9f 100644
  	) {
  		top -= element.scrollTop;
  		const c = isShadowRoot(element) ? null : getComputedStyle(element);
-@@ -722,7 +721,7 @@ export function getDomNodeZoomLevel(domNode: HTMLElement): number {
+@@ -722,7 +754,7 @@ export function getDomNodeZoomLevel(domNode: HTMLElement): number {
  		}
  
  		testElement = testElement.parentElement;
@@ -75,7 +115,7 @@ index be401204e06..f181ffdea9f 100644
  
  	return zoom;
  }
-@@ -800,7 +799,7 @@ function getParentFlowToElement(node: HTMLElement): HTMLElement | null {
+@@ -800,7 +832,7 @@ function getParentFlowToElement(node: HTMLElement): HTMLElement | null {
  	const flowToParentId = node.dataset[parentFlowToDataKey];
  	if (typeof flowToParentId === 'string') {
  		// eslint-disable-next-line no-restricted-syntax
@@ -84,7 +124,7 @@ index be401204e06..f181ffdea9f 100644
  	}
  	return null;
  }
-@@ -883,8 +882,8 @@ export function getShadowRoot(domNode: Node): ShadowRoot | null {
+@@ -883,8 +915,8 @@ export function getShadowRoot(domNode: Node): ShadowRoot | null {
   * based on document focus. Falls back to the main
   * window if no window has focus.
   */
@@ -95,7 +135,7 @@ index be401204e06..f181ffdea9f 100644
  
  	while (result?.shadowRoot) {
  		result = result.shadowRoot.activeElement;
-@@ -893,6 +892,14 @@ export function getActiveElement(): Element | null {
+@@ -893,6 +925,14 @@ export function getActiveElement(): Element | null {
  	return result;
  }
  
@@ -110,7 +150,7 @@ index be401204e06..f181ffdea9f 100644
  /**
   * Returns true if the focused window active element matches
   * the provided element. Falls back to the main window if no
-@@ -1044,6 +1051,11 @@ export function isHTMLDivElement(e: unknown): e is HTMLDivElement {
+@@ -1044,6 +1084,11 @@ export function isHTMLDivElement(e: unknown): e is HTMLDivElement {
  	return e instanceof HTMLDivElement || e instanceof getWindow(e as Node).HTMLDivElement;
  }
  
@@ -122,7 +162,7 @@ index be401204e06..f181ffdea9f 100644
  export function isSVGElement(e: unknown): e is SVGElement {
  	// eslint-disable-next-line no-restricted-syntax
  	return e instanceof SVGElement || e instanceof getWindow(e as Node).SVGElement;
-@@ -1189,7 +1201,7 @@ class FocusTracker extends Disposable implements IFocusTracker {
+@@ -1189,7 +1234,7 @@ class FocusTracker extends Disposable implements IFocusTracker {
  	private static hasFocusWithin(element: HTMLElement | Window): boolean {
  		if (isHTMLElement(element)) {
  			const shadowRoot = getShadowRoot(element);
@@ -131,7 +171,7 @@ index be401204e06..f181ffdea9f 100644
  			return isAncestor(activeElement, element);
  		} else {
  			const window = element;
-@@ -1409,7 +1421,7 @@ export function removeTabIndexAndUpdateFocus(node: HTMLElement): void {
+@@ -1409,7 +1454,7 @@ export function removeTabIndexAndUpdateFocus(node: HTMLElement): void {
  	// standard DOM behavior is to move focus to the <body> element. We
  	// typically never want that, rather put focus to the closest element
  	// in the hierarchy of the parent DOM nodes.
@@ -612,57 +652,67 @@ index 6e0a6e018d0..358aa682cda 100644
  		const textArea: HTMLTextAreaElement = activeDocument.body.appendChild($('textarea', { 'aria-hidden': true }));
  		textArea.style.height = '1px';
 diff --git a/src/vs/platform/contextkey/browser/contextKeyService.ts b/src/vs/platform/contextkey/browser/contextKeyService.ts
-index 7f749b68489..53629be4418 100644
+index 7f749b68489..93362cb86a6 100644
 --- a/src/vs/platform/contextkey/browser/contextKeyService.ts
 +++ b/src/vs/platform/contextkey/browser/contextKeyService.ts
-@@ -18,7 +18,8 @@ import { ContextKeyExpression, ContextKeyInfo, ContextKeyValue, IContext, IConte
+@@ -3,6 +3,8 @@
+  *  Licensed under the MIT License. See License.txt in the project root for license information.
+  *--------------------------------------------------------------------------------------------*/
+ 
++import { getActiveDocument, getActiveElement, isEditableElement, onDidRegisterWindow, trackActiveElement, trackFocus } from '../../../base/browser/dom.js';
++import { mainWindow } from '../../../base/browser/window.js';
+ import { Emitter, Event, PauseableEmitter } from '../../../base/common/event.js';
+ import { Iterable } from '../../../base/common/iterator.js';
+ import { Disposable, DisposableStore, IDisposable, MutableDisposable } from '../../../base/common/lifecycle.js';
+@@ -14,11 +16,9 @@ import { URI } from '../../../base/common/uri.js';
+ import { localize } from '../../../nls.js';
+ import { CommandsRegistry } from '../../commands/common/commands.js';
+ import { ConfigurationTarget, IConfigurationService } from '../../configuration/common/configuration.js';
+-import { ContextKeyExpression, ContextKeyInfo, ContextKeyValue, IContext, IContextKey, IContextKeyChangeEvent, IContextKeyService, IContextKeyServiceTarget, IReadableSet, IScopedContextKeyService, RawContextKey } from '../common/contextkey.js';
  import { ServicesAccessor } from '../../instantiation/common/instantiation.js';
++import { ContextKeyExpression, ContextKeyInfo, ContextKeyValue, IContext, IContextKey, IContextKeyChangeEvent, IContextKeyService, IContextKeyServiceTarget, IReadableSet, IScopedContextKeyService, RawContextKey } from '../common/contextkey.js';
  import { InputFocusedContext } from '../common/contextkeys.js';
- import { mainWindow } from '../../../base/browser/window.js';
+-import { mainWindow } from '../../../base/browser/window.js';
 -import { addDisposableListener, EventType, getActiveWindow, isEditableElement, onDidRegisterWindow, trackFocus } from '../../../base/browser/dom.js';
-+import { addDisposableListener, EventType, getActiveDocument, getActiveElement, isEditableElement, onDidRegisterWindow, trackFocus } from '../../../base/browser/dom.js';
-+import { ILayoutService } from '../../layout/browser/layoutService.js';
  
  const KEYBINDING_CONTEXT_ATTR = 'data-keybinding-context';
  
-@@ -383,7 +384,7 @@ export class ContextKeyService extends AbstractContextKeyService implements ICon
- 
- 	private inputFocusedContext: IContextKey<boolean>;
- 
--	constructor(@IConfigurationService configurationService: IConfigurationService) {
-+	constructor(@IConfigurationService configurationService: IConfigurationService, @ILayoutService layoutService: ILayoutService) {
- 		super(0);
- 		this._lastContextId = 0;
- 		this.inputFocusedContext = InputFocusedContext.bindTo(this);
-@@ -404,7 +405,7 @@ export class ContextKeyService extends AbstractContextKeyService implements ICon
+@@ -404,24 +404,26 @@ export class ContextKeyService extends AbstractContextKeyService implements ICon
  
  		this._register(Event.runAndSubscribe(onDidRegisterWindow, ({ window, disposables }) => {
  			const onFocusDisposables = disposables.add(new MutableDisposable<DisposableStore>());
 -			disposables.add(addDisposableListener(window, EventType.FOCUS_IN, () => {
-+			disposables.add(addDisposableListener(layoutService.getContainer(window), EventType.FOCUS_IN, () => {
++
++			const activeElementTracker = disposables.add(trackActiveElement(window));
++			activeElementTracker.onDidChangeActiveElement((activeElement) => {
  				onFocusDisposables.value = new DisposableStore();
- 				this.updateInputContextKeys(window.document, onFocusDisposables.value);
- 			}, true));
-@@ -414,14 +415,16 @@ export class ContextKeyService extends AbstractContextKeyService implements ICon
- 	private updateInputContextKeys(ownerDocument: Document, disposables: DisposableStore): void {
+-				this.updateInputContextKeys(window.document, onFocusDisposables.value);
+-			}, true));
++				this.updateInputContextKeys(window.document, activeElement, onFocusDisposables.value);
++			});
+ 		}, { window: mainWindow, disposables: this._store }));
+ 	}
  
- 		function activeElementIsInput(): boolean {
+-	private updateInputContextKeys(ownerDocument: Document, disposables: DisposableStore): void {
++	private updateInputContextKeys(ownerDocument: Document, activeElement: Element | null, disposables: DisposableStore): void {
+ 
+-		function activeElementIsInput(): boolean {
 -			return !!ownerDocument.activeElement && isEditableElement(ownerDocument.activeElement);
-+			const activeElement = getActiveElement(ownerDocument);
++		function activeElementIsInput(activeElement: Element | null = getActiveElement(ownerDocument)): boolean {
 +			return !!activeElement && isEditableElement(activeElement);
  		}
  
- 		const isInputFocused = activeElementIsInput();
+-		const isInputFocused = activeElementIsInput();
++		const isInputFocused = activeElementIsInput(activeElement);
  		this.inputFocusedContext.set(isInputFocused);
  
  		if (isInputFocused) {
 -			const tracker = disposables.add(trackFocus(ownerDocument.activeElement as HTMLElement));
-+			const activeElement = getActiveElement(ownerDocument);
 +			const tracker = disposables.add(trackFocus(activeElement as HTMLElement));
  			Event.once(tracker.onDidBlur)(() => {
  
  				// Ensure we are only updating the context key if we are
-@@ -432,7 +435,7 @@ export class ContextKeyService extends AbstractContextKeyService implements ICon
+@@ -432,7 +434,7 @@ export class ContextKeyService extends AbstractContextKeyService implements ICon
  				// blur events from the focus tracker are emitted with a
  				// timeout of 0.
  

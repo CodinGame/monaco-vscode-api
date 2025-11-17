@@ -6,19 +6,19 @@ Subject: [PATCH] feat: support loading VSCode in an iframe
 ---
  src/vs/base/browser/dom.ts                    | 39 +++++++------------
  src/vs/base/browser/domStylesheets.ts         |  4 +-
- src/vs/base/browser/window.ts                 |  7 +++-
+ src/vs/base/browser/window.ts                 |  6 ++-
  src/vs/workbench/browser/window.ts            | 25 ++++++++----
  .../performance/browser/perfviewEditor.ts     |  3 +-
  .../performance/browser/startupTimings.ts     |  3 +-
  .../browser/webWorkerExtensionHost.ts         |  6 +--
  .../lifecycle/browser/lifecycleService.ts     |  2 +-
- 8 files changed, 46 insertions(+), 43 deletions(-)
+ 8 files changed, 45 insertions(+), 43 deletions(-)
 
 diff --git a/src/vs/base/browser/dom.ts b/src/vs/base/browser/dom.ts
-index 8be3c97a212..1f8cb13a03d 100644
+index 278424505eb..f3bb5a8352b 100644
 --- a/src/vs/base/browser/dom.ts
 +++ b/src/vs/base/browser/dom.ts
-@@ -1017,68 +1017,55 @@ function createHeadElement<K extends keyof HTMLElementTagNameMap>(tagName: K, co
+@@ -1050,68 +1050,55 @@ function createHeadElement<K extends keyof HTMLElementTagNameMap>(tagName: K, co
  }
  
  export function isHTMLElement(e: unknown): e is HTMLElement {
@@ -123,10 +123,10 @@ index 0782c211144..61e4c36505d 100644
  	}
  }
 diff --git a/src/vs/base/browser/window.ts b/src/vs/base/browser/window.ts
-index ab920e18349..c4a02c5ca47 100644
+index ab920e18349..ab318ad411d 100644
 --- a/src/vs/base/browser/window.ts
 +++ b/src/vs/base/browser/window.ts
-@@ -17,8 +17,13 @@ export function ensureCodeWindow(targetWindow: Window, fallbackWindowId: number)
+@@ -17,8 +17,12 @@ export function ensureCodeWindow(targetWindow: Window, fallbackWindowId: number)
  	}
  }
  

@@ -198,10 +198,10 @@ Subject: [PATCH] feat: centralize element creation, to be able to create them
  190 files changed, 648 insertions(+), 570 deletions(-)
 
 diff --git a/src/vs/base/browser/dom.ts b/src/vs/base/browser/dom.ts
-index b5a908504f7..08bc8122248 100644
+index 0a22d593f8c..d7f1d8a5d1b 100644
 --- a/src/vs/base/browser/dom.ts
 +++ b/src/vs/base/browser/dom.ts
-@@ -1010,13 +1010,43 @@ export function createLinkElement(container: HTMLElement = mainWindow.document.h
+@@ -1043,13 +1043,43 @@ export function createLinkElement(container: HTMLElement = mainWindow.document.h
  	return createHeadElement('link', container);
  }
  
@@ -246,7 +246,7 @@ index b5a908504f7..08bc8122248 100644
  export function isHTMLElement(e: unknown): e is HTMLElement {
  	return e instanceof mainWindow.HTMLElement || e instanceof getWindow(e as Node).HTMLElement;
  }
-@@ -1303,9 +1333,9 @@ function _$<T extends Element>(namespace: Namespace, description: string, attrs?
+@@ -1336,9 +1366,9 @@ function _$<T extends Element>(namespace: Namespace, description: string, attrs?
  	let result: T;
  
  	if (namespace !== Namespace.HTML) {
@@ -258,7 +258,7 @@ index b5a908504f7..08bc8122248 100644
  	}
  
  	if (match[3]) {
-@@ -1356,7 +1386,7 @@ export function join(nodes: Node[], separator: Node | string): Node[] {
+@@ -1389,7 +1419,7 @@ export function join(nodes: Node[], separator: Node | string): Node[] {
  			if (separator instanceof Node) {
  				result.push(separator.cloneNode());
  			} else {
@@ -267,7 +267,7 @@ index b5a908504f7..08bc8122248 100644
  			}
  		}
  
-@@ -1558,7 +1588,7 @@ export function triggerDownload(dataOrUri: Uint8Array | URI, name: string): void
+@@ -1591,7 +1621,7 @@ export function triggerDownload(dataOrUri: Uint8Array | URI, name: string): void
  	// points to the file to download.
  	// See also https://developers.google.com/web/updates/2011/08/Downloading-resources-in-HTML5-a-download
  	const activeWindow = getActiveWindow();
@@ -276,7 +276,7 @@ index b5a908504f7..08bc8122248 100644
  	activeWindow.document.body.appendChild(anchor);
  	anchor.download = name;
  	anchor.href = url;
-@@ -1575,7 +1605,7 @@ export function triggerUpload(): Promise<FileList | undefined> {
+@@ -1608,7 +1638,7 @@ export function triggerUpload(): Promise<FileList | undefined> {
  		// input element of type `file` and click it
  		// to gather the selected files
  		const activeWindow = getActiveWindow();
@@ -285,7 +285,7 @@ index b5a908504f7..08bc8122248 100644
  		activeWindow.document.body.appendChild(input);
  		input.type = 'file';
  		input.multiple = true;
-@@ -2026,7 +2056,7 @@ export function h(tag: string, ...args: [] | [attributes: { $: string } & Partia
+@@ -2059,7 +2089,7 @@ export function h(tag: string, ...args: [] | [attributes: { $: string } & Partia
  	}
  
  	const tagName = match.groups['tag'] || 'div';
@@ -294,7 +294,7 @@ index b5a908504f7..08bc8122248 100644
  
  	if (match.groups['id']) {
  		el.id = match.groups['id'];
-@@ -2130,7 +2160,7 @@ export function svgElem(tag: string, ...args: [] | [attributes: { $: string } &
+@@ -2163,7 +2193,7 @@ export function svgElem(tag: string, ...args: [] | [attributes: { $: string } &
  
  	const tagName = match.groups['tag'] || 'div';
  	// eslint-disable-next-line local/code-no-any-casts
@@ -303,7 +303,7 @@ index b5a908504f7..08bc8122248 100644
  
  	if (match.groups['id']) {
  		el.id = match.groups['id'];
-@@ -2396,7 +2426,7 @@ export abstract class ObserverNode<T extends HTMLOrSVGElement = HTMLOrSVGElement
+@@ -2429,7 +2459,7 @@ export abstract class ObserverNode<T extends HTMLOrSVGElement = HTMLOrSVGElement
  		attributes: ElementAttributeKeys<T>,
  		children: ChildNode
  	) {
