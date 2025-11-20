@@ -3906,7 +3906,7 @@ index d35f2434ad6..be30ab99d17 100644
  			note.textContent = localize('chat.terminalOutputTruncated', 'Output truncated to first {0} characters.', CHAT_TERMINAL_OUTPUT_MAX_PREVIEW_LINES);
  			container.appendChild(note);
 diff --git a/src/vs/workbench/contrib/chat/browser/chatContentParts/toolInvocationParts/chatToolConfirmationSubPart.ts b/src/vs/workbench/contrib/chat/browser/chatContentParts/toolInvocationParts/chatToolConfirmationSubPart.ts
-index 8f294a2350e..b268326a399 100644
+index 221b1f748be..09ebd082862 100644
 --- a/src/vs/workbench/contrib/chat/browser/chatContentParts/toolInvocationParts/chatToolConfirmationSubPart.ts
 +++ b/src/vs/workbench/contrib/chat/browser/chatContentParts/toolInvocationParts/chatToolConfirmationSubPart.ts
 @@ -155,7 +155,7 @@ export class ToolConfirmationSubPart extends AbstractToolConfirmationSubPart {
@@ -4823,10 +4823,10 @@ index 5f3ae5f09cd..ec6fb8450cb 100644
  				const result = renderLines(source, renderOptions, decorations, domNode);
  
 diff --git a/src/vs/workbench/contrib/notebook/browser/diff/inlineDiff/notebookDeletedCellDecorator.ts b/src/vs/workbench/contrib/notebook/browser/diff/inlineDiff/notebookDeletedCellDecorator.ts
-index 9666f98016a..3014ca5ef3c 100644
+index 5467d4cf9c6..045b2649a2c 100644
 --- a/src/vs/workbench/contrib/notebook/browser/diff/inlineDiff/notebookDeletedCellDecorator.ts
 +++ b/src/vs/workbench/contrib/notebook/browser/diff/inlineDiff/notebookDeletedCellDecorator.ts
-@@ -112,7 +112,7 @@ export class NotebookDeletedCellDecorator extends Disposable implements INoteboo
+@@ -113,7 +113,7 @@ export class NotebookDeletedCellDecorator extends Disposable implements INoteboo
  		this._createWidgetImpl(index, cells);
  	}
  	private async _createWidgetImpl(index: number, cells: { cell: NotebookCellTextModel; originalIndex: number; previousIndex: number }[]) {
@@ -4835,7 +4835,7 @@ index 9666f98016a..3014ca5ef3c 100644
  		const widgets: NotebookDeletedCellWidget[] = [];
  		const heights = await Promise.all(cells.map(async cell => {
  			const widget = new NotebookDeletedCellWidget(this._notebookEditor, this.toolbar, cell.cell.getValue(), cell.cell.language, rootContainer, cell.originalIndex, this.languageService, this.instantiationService);
-@@ -187,7 +187,7 @@ export class NotebookDeletedCellWidget extends Disposable {
+@@ -188,7 +188,7 @@ export class NotebookDeletedCellWidget extends Disposable {
  		@IInstantiationService private readonly instantiationService: IInstantiationService,
  	) {
  		super();
@@ -4844,7 +4844,7 @@ index 9666f98016a..3014ca5ef3c 100644
  		this._register(toDisposable(() => {
  			container.removeChild(this.container);
  		}));
-@@ -219,7 +219,7 @@ export class NotebookDeletedCellWidget extends Disposable {
+@@ -220,7 +220,7 @@ export class NotebookDeletedCellWidget extends Disposable {
  		rootContainer.classList.add('code-cell-row');
  
  		if (this._toolbarOptions) {
@@ -5405,10 +5405,10 @@ index 7f80ccf5e95..df18556406a 100644
  		}
  
 diff --git a/src/vs/workbench/contrib/terminal/browser/terminalTabbedView.ts b/src/vs/workbench/contrib/terminal/browser/terminalTabbedView.ts
-index 69562b1cbfa..8a160c4f292 100644
+index f94c072156c..22c9d9bb747 100644
 --- a/src/vs/workbench/contrib/terminal/browser/terminalTabbedView.ts
 +++ b/src/vs/workbench/contrib/terminal/browser/terminalTabbedView.ts
-@@ -236,7 +236,7 @@ export class TerminalTabbedView extends Disposable {
+@@ -234,7 +234,7 @@ export class TerminalTabbedView extends Disposable {
  	private _handleOnDidSashReset(): void {
  		// Calculate ideal size of list to display all text based on its contents
  		let idealWidth = TerminalTabsListSizes.WideViewMinimumWidth;

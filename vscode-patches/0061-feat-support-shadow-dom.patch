@@ -1086,10 +1086,10 @@ index 086580f3db6..6f1a92c8e10 100644
  
  	private refreshSingleElement(element: SettingsTreeSettingElement): void {
 diff --git a/src/vs/workbench/contrib/terminal/browser/terminalTabbedView.ts b/src/vs/workbench/contrib/terminal/browser/terminalTabbedView.ts
-index 95b836afefb..69562b1cbfa 100644
+index 6346712e164..f94c072156c 100644
 --- a/src/vs/workbench/contrib/terminal/browser/terminalTabbedView.ts
 +++ b/src/vs/workbench/contrib/terminal/browser/terminalTabbedView.ts
-@@ -597,7 +597,7 @@ export class TerminalTabbedView extends Disposable {
+@@ -595,7 +595,7 @@ export class TerminalTabbedView extends Disposable {
  
  		// If the terminal is waiting to reconnect to remote terminals, then there is no TerminalInstance yet that can
  		// be focused. So wait for connection to finish, then focus.
