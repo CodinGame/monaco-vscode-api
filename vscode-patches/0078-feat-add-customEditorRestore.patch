@@ -9,7 +9,7 @@ Subject: [PATCH] feat: add customEditorRestore
  2 files changed, 13 insertions(+), 8 deletions(-)
 
 diff --git a/src/vs/workbench/browser/layout.ts b/src/vs/workbench/browser/layout.ts
-index e083fd0ccb9..f273af42391 100644
+index 7bd4c09ebf7..5bd0bad173a 100644
 --- a/src/vs/workbench/browser/layout.ts
 +++ b/src/vs/workbench/browser/layout.ts
 @@ -20,7 +20,7 @@ import { isCodeEditor } from '../../editor/browser/editorBrowser.js';
