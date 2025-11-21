@@ -17,10 +17,14 @@ import type { BrowserLifecycleService } from 'vs/workbench/services/lifecycle/br
 import { ILifecycleService } from 'vs/workbench/services/lifecycle/common/lifecycle.service'
 import { BrowserHostColorSchemeService } from 'vs/workbench/services/themes/browser/browserHostColorSchemeService'
 import { IHostColorSchemeService } from 'vs/workbench/services/themes/common/hostColorSchemeService.service'
+import { Emitter, Event } from 'vs/base/common/event'
+import { getWindowId } from 'vs/base/browser/dom'
 
 class CustomBrowserHostService extends BrowserHostService {
+  private _onDidChangeFullScreen: Event<{ windowId: number; fullscreen: boolean }>
   constructor(
     private _toggleFullScreen: () => Promise<void> | undefined,
+    _onDidChangeFullScreen: Event<boolean> | undefined,
     @ILayoutService layoutService: ILayoutService,
     @IConfigurationService configurationService: IConfigurationService,
     @IFileService fileService: IFileService,
@@ -46,6 +50,29 @@ class CustomBrowserHostService extends BrowserHostService {
       contextService,
       userDataProfilesService
     )
+
+    this._onDidChangeFullScreen = (() => {
+      const mainWindowId = getWindowId(mainWindow)
+
+      const emitter = new Emitter<{ windowId: number; fullscreen: boolean }>()
+      _onDidChangeFullScreen?.((fullscreen) => {
+        emitter.fire({
+          windowId: mainWindowId,
+          fullscreen
+        })
+      })
+
+      super.onDidChangeFullScreen((event) => {
+        // Forward the original fullscreen event only when there is no custom handler
+        // or when the event is for a window other than the main one.
+        // This prevents double-handling of fullscreen changes for the main window
+        // when a custom handler is already managing it.
+        if (_onDidChangeFullScreen == null || event.windowId !== mainWindowId) {
+          emitter.fire(event)
+        }
+      })
+      return emitter.event
+    })()
   }
 
   override async toggleFullScreen(targetWindow: Window): Promise<void> {
@@ -55,19 +82,25 @@ class CustomBrowserHostService extends BrowserHostService {
       await super.toggleFullScreen(targetWindow)
     }
   }
+
+  override get onDidChangeFullScreen() {
+    return this._onDidChangeFullScreen
+  }
 }
 
 interface BrowserHostServiceOverrideParams {
   toggleFullScreen?: () => Promise<void>
+  onDidChangeFullScreen?: Event<boolean>
 }
 
 export default function getServiceOverride({
-  toggleFullScreen
+  toggleFullScreen,
+  onDidChangeFullScreen
 }: BrowserHostServiceOverrideParams = {}): IEditorOverrideServices {
   return {
     [IHostService.toString()]: new SyncDescriptor(
       CustomBrowserHostService,
-      [toggleFullScreen],
+      [toggleFullScreen, onDidChangeFullScreen],
       true
     ),
     [IHostColorSchemeService.toString()]: new SyncDescriptor(
