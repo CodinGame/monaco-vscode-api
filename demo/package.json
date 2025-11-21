@@ -262,6 +262,7 @@
     "@codingame/monaco-vscode-performance-service-override": "file:../dist/packages/monaco-vscode-performance-service-override",
     "@codingame/monaco-vscode-perl-default-extension": "file:../dist/packages/monaco-vscode-perl-default-extension",
     "@codingame/monaco-vscode-php-default-extension": "file:../dist/packages/monaco-vscode-php-default-extension",
+    "@codingame/monaco-vscode-policy-service-override": "file:../dist/packages/monaco-vscode-policy-service-override",
     "@codingame/monaco-vscode-powershell-default-extension": "file:../dist/packages/monaco-vscode-powershell-default-extension",
     "@codingame/monaco-vscode-preferences-service-override": "file:../dist/packages/monaco-vscode-preferences-service-override",
     "@codingame/monaco-vscode-process-explorer-service-override": "file:../dist/packages/monaco-vscode-process-explorer-service-override",
