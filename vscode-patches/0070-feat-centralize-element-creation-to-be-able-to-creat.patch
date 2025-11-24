@@ -198,10 +198,10 @@ Subject: [PATCH] feat: centralize element creation, to be able to create them
  190 files changed, 648 insertions(+), 570 deletions(-)
 
 diff --git a/src/vs/base/browser/dom.ts b/src/vs/base/browser/dom.ts
-index 53fc806dcda..9932da557fa 100644
+index 0a34cb15839..fa02fea7607 100644
 --- a/src/vs/base/browser/dom.ts
 +++ b/src/vs/base/browser/dom.ts
-@@ -1043,13 +1043,43 @@ export function createLinkElement(container: HTMLElement = mainWindow.document.h
+@@ -1063,13 +1063,43 @@ export function createLinkElement(container: HTMLElement = mainWindow.document.h
  	return createHeadElement('link', container);
  }
  
@@ -246,7 +246,7 @@ index 53fc806dcda..9932da557fa 100644
  export function isHTMLElement(e: unknown): e is HTMLElement {
  	return e instanceof mainWindow.HTMLElement || e instanceof getWindow(e as Node).HTMLElement;
  }
-@@ -1336,9 +1366,9 @@ function _$<T extends Element>(namespace: Namespace, description: string, attrs?
+@@ -1356,9 +1386,9 @@ function _$<T extends Element>(namespace: Namespace, description: string, attrs?
  	let result: T;
  
  	if (namespace !== Namespace.HTML) {
@@ -258,7 +258,7 @@ index 53fc806dcda..9932da557fa 100644
  	}
  
  	if (match[3]) {
-@@ -1389,7 +1419,7 @@ export function join(nodes: Node[], separator: Node | string): Node[] {
+@@ -1409,7 +1439,7 @@ export function join(nodes: Node[], separator: Node | string): Node[] {
  			if (separator instanceof Node) {
  				result.push(separator.cloneNode());
  			} else {
@@ -267,7 +267,7 @@ index 53fc806dcda..9932da557fa 100644
  			}
  		}
  
-@@ -1591,7 +1621,7 @@ export function triggerDownload(dataOrUri: Uint8Array | URI, name: string): void
+@@ -1611,7 +1641,7 @@ export function triggerDownload(dataOrUri: Uint8Array | URI, name: string): void
  	// points to the file to download.
  	// See also https://developers.google.com/web/updates/2011/08/Downloading-resources-in-HTML5-a-download
  	const activeWindow = getActiveWindow();
@@ -276,7 +276,7 @@ index 53fc806dcda..9932da557fa 100644
  	activeWindow.document.body.appendChild(anchor);
  	anchor.download = name;
  	anchor.href = url;
-@@ -1608,7 +1638,7 @@ export function triggerUpload(): Promise<FileList | undefined> {
+@@ -1628,7 +1658,7 @@ export function triggerUpload(): Promise<FileList | undefined> {
  		// input element of type `file` and click it
  		// to gather the selected files
  		const activeWindow = getActiveWindow();
@@ -285,7 +285,7 @@ index 53fc806dcda..9932da557fa 100644
  		activeWindow.document.body.appendChild(input);
  		input.type = 'file';
  		input.multiple = true;
-@@ -2059,7 +2089,7 @@ export function h(tag: string, ...args: [] | [attributes: { $: string } & Partia
+@@ -2077,7 +2107,7 @@ export function h(tag: string, ...args: [] | [attributes: { $: string } & Partia
  	}
  
  	const tagName = match.groups['tag'] || 'div';
@@ -294,7 +294,7 @@ index 53fc806dcda..9932da557fa 100644
  
  	if (match.groups['id']) {
  		el.id = match.groups['id'];
-@@ -2163,7 +2193,7 @@ export function svgElem(tag: string, ...args: [] | [attributes: { $: string } &
+@@ -2181,7 +2211,7 @@ export function svgElem(tag: string, ...args: [] | [attributes: { $: string } &
  
  	const tagName = match.groups['tag'] || 'div';
  	// eslint-disable-next-line local/code-no-any-casts
@@ -303,7 +303,7 @@ index 53fc806dcda..9932da557fa 100644
  
  	if (match.groups['id']) {
  		el.id = match.groups['id'];
-@@ -2429,7 +2459,7 @@ export abstract class ObserverNode<T extends HTMLOrSVGElement = HTMLOrSVGElement
+@@ -2447,7 +2477,7 @@ export abstract class ObserverNode<T extends HTMLOrSVGElement = HTMLOrSVGElement
  		attributes: ElementAttributeKeys<T>,
  		children: ChildNode
  	) {
@@ -3369,7 +3369,7 @@ index 93d0b4cc089..fd0751d3ebf 100644
  		activeDocument.body.appendChild(hoverFeedback);
  		disposables.add(toDisposable(() => hoverFeedback.remove()));
 diff --git a/src/vs/workbench/browser/layout.ts b/src/vs/workbench/browser/layout.ts
-index 057bfdb82c9..e083fd0ccb9 100644
+index 99aa6df59fa..7bd4c09ebf7 100644
 --- a/src/vs/workbench/browser/layout.ts
 +++ b/src/vs/workbench/browser/layout.ts
 @@ -3,51 +3,51 @@
@@ -3377,7 +3377,7 @@ index 057bfdb82c9..e083fd0ccb9 100644
   *--------------------------------------------------------------------------------------------*/
  
 +import { isFullscreen, isWCOEnabled, onDidChangeFullscreen } from '../../base/browser/browser.js';
-+import { addDisposableListener, computeScreenAwareSize, createElement, Dimension, EventType, getActiveDocument, getActiveElement, getActiveWindow, getClientArea, getWindow, getWindowId, getWindows, IDimension, isActiveDocument, isAncestorUsingFlowTo, size } from '../../base/browser/dom.js';
++import { addDisposableListener, computeScreenAwareSize, createElement, Dimension, EventType, getActiveDocument, getActiveElement, getActiveWindow, getClientArea, getWindow, getWindowId, getWindows, IDimension, isActiveDocument, isAncestorUsingFlowTo, size, getFullscreenElement } from '../../base/browser/dom.js';
 +import { setContainerElement } from '../../base/browser/domStylesheets.js';
 +import { Direction, ISerializableView, ISerializedGrid, ISerializedLeafNode, ISerializedNode, IViewSize, Orientation, SerializableGrid, Sizing } from '../../base/browser/ui/grid/grid.js';
 +import { CodeWindow, mainWindow } from '../../base/browser/window.js';
@@ -3386,7 +3386,7 @@ index 057bfdb82c9..e083fd0ccb9 100644
 +import { Emitter, Event } from '../../base/common/event.js';
  import { Disposable, DisposableMap, DisposableStore, IDisposable, toDisposable } from '../../base/common/lifecycle.js';
 -import { Event, Emitter } from '../../base/common/event.js';
--import { EventType, addDisposableListener, getClientArea, size, IDimension, isAncestorUsingFlowTo, computeScreenAwareSize, getActiveDocument, getWindows, getActiveWindow, isActiveDocument, getWindow, getWindowId, getActiveElement, Dimension } from '../../base/browser/dom.js';
+-import { EventType, addDisposableListener, getClientArea, size, IDimension, isAncestorUsingFlowTo, computeScreenAwareSize, getActiveDocument, getWindows, getActiveWindow, isActiveDocument, getWindow, getWindowId, getActiveElement, Dimension, getFullscreenElement } from '../../base/browser/dom.js';
 -import { onDidChangeFullscreen, isFullscreen, isWCOEnabled } from '../../base/browser/browser.js';
 -import { isWindows, isLinux, isMacintosh, isWeb, isIOS } from '../../base/common/platform.js';
 -import { EditorInputCapabilities, GroupIdentifier, isResourceEditorInput, IUntypedEditorInput, pathsToEditors } from '../common/editor.js';
