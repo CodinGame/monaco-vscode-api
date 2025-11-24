@@ -26,6 +26,7 @@ async function updateVSCodeDependencies() {
 
   console.debug('Reading vscode package.json...')
   const vsCodePackageJson = await readJson(getAbsolutePackageJsonPath('../vscode'))
+  const monacoEditorPackageJson = await readJson(getAbsolutePackageJsonPath('../monaco-editor'))
 
   console.debug('Updating monaco-vscode-api dependencies with vscode dependencies versions...')
   const vscodeDependencies: string[] = []
@@ -35,7 +36,9 @@ async function updateVSCodeDependencies() {
       continue
     }
     const vscodeDependencyVersion =
-      vsCodePackageJson.dependencies[dependency] ?? vsCodePackageJson.devDependencies[dependency]
+      vsCodePackageJson.dependencies[dependency] ??
+      vsCodePackageJson.devDependencies[dependency] ??
+      monacoEditorPackageJson.devDependencies[dependency]
     if (vscodeDependencyVersion != null) {
       apiPackageJson.dependencies[dependency] = vscodeDependencyVersion
       vscodeDependencies.push(dependency)
