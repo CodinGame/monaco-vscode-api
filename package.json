@@ -35,8 +35,8 @@
       "commit": "1e3c50d64110be466c0b4a45222e81d2c9352888"
     },
     "monaco": {
-      "ref": "v0.54.0",
-      "version": "0.54.0"
+      "ref": "v0.55.1",
+      "version": "0.55.1"
     }
   },
   "devDependencies": {
@@ -128,7 +128,12 @@
     "vscode-regexpp": "^3.1.0",
     "vscode-textmate": "^9.2.1",
     "yauzl": "^3.0.0",
-    "yazl": "^2.4.3"
+    "yazl": "^2.4.3",
+    "vscode-css-languageservice": "6.2.14",
+    "vscode-html-languageservice": "5.2.0",
+    "vscode-json-languageservice": "5.3.11",
+    "vscode-uri": "3.0.8",
+    "jsonc-parser": "^3.0.0"
   },
   "overrides": {
     "typescript": "$typescript",
