@@ -66,6 +66,7 @@ import 'vs/workbench/contrib/files/browser/fileCommands._save.js'
 import 'vs/workbench/browser/actions/navigationActions'
 import 'vs/workbench/browser/style'
 import 'vs/workbench/contrib/scrollLocking/browser/scrollLocking.contribution'
+import 'vs/workbench/browser/actions/textInputActions'
 import './tools/editorAssets.js'
 
 // Import it from here to force the bundler to put it in this service-override package
