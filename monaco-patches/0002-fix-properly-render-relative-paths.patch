@@ -1,0 +1,27 @@
+From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
+From: =?UTF-8?q?Lo=C3=AFc=20Mangeonjean?= <loic@coderpad.io>
+Date: Tue, 25 Nov 2025 15:53:32 +0100
+Subject: [PATCH] fix: properly render relative paths
+
+---
+ build/esm/rollup-url-to-module-plugin/index.mjs | 7 +++++++
+ 1 file changed, 7 insertions(+)
+
+diff --git a/build/esm/rollup-url-to-module-plugin/index.mjs b/build/esm/rollup-url-to-module-plugin/index.mjs
+index 8a0168bd..cb21f92a 100644
+--- a/build/esm/rollup-url-to-module-plugin/index.mjs
++++ b/build/esm/rollup-url-to-module-plugin/index.mjs
+@@ -9,6 +9,13 @@
+ export function urlToEsmPlugin() {
+ 	return {
+ 		name: 'import-meta-url',
++		resolveFileUrl(options) {
++			let relativePath = options.relativePath
++			if (!relativePath.startsWith('.')) {
++				relativePath = `./${options.relativePath}`
++			}
++			return `'${relativePath}'`
++		},
+ 		async transform(code, id) {
+ 			if (this.environment?.mode === 'dev') {
+ 				return;
