@@ -8,7 +8,7 @@ import * as fs from 'fs'
 import { fileURLToPath } from 'url'
 import { EDITOR_API_PACKAGE_NAME } from './tools/config'
 import { execSync } from 'child_process'
-import importMetaAssets from './plugins/import-meta-assets-plugin.js'
+import carryDtsPlugin from './plugins/rollup-carry-dts-plugin.js'
 
 const pkg = JSON.parse(
   fs.readFileSync(new URL('../package.json', import.meta.url).pathname).toString()
@@ -112,9 +112,9 @@ export default rollup.defineConfig([
       const dirname = path.dirname(contributionFile)
       const language = path.basename(dirname)
       return <rollup.RollupOptions>{
-        input: {
-          index: contributionFile,
-          worker: path.resolve(
+        input: [
+          contributionFile,
+          path.resolve(
             dirname,
             (
               await glob('*.worker.js', {
@@ -122,7 +122,7 @@ export default rollup.defineConfig([
               })
             )[0]!
           )
-        },
+        ],
         treeshake: {
           preset: 'smallest'
         },
@@ -144,11 +144,21 @@ export default rollup.defineConfig([
             AMD: false,
             preventAssignment: true
           }),
-          importMetaAssets(),
           resolver,
+          carryDtsPlugin(),
           {
             name: 'loader',
-            generateBundle() {
+            generateBundle(options, bundle) {
+              const allChunkIds = Object.keys(bundle)
+
+              const entryChunkIds: string[] = allChunkIds.filter((chunkId) => {
+                const output = bundle[chunkId]!
+                return output.type === 'chunk' && output.isEntry
+              })
+
+              const main = entryChunkIds.find((m) => m.includes('monaco.contribution'))!
+              const worker = entryChunkIds.find((m) => m.includes('worker'))!
+
               const dependencies = Object.fromEntries(
                 Array.from(this.getModuleIds())
                   .map((id) => this.getModuleInfo(id)!)
@@ -178,10 +188,10 @@ export default rollup.defineConfig([
                 description: `monaco-editor ${language} language features bundled to work with ${pkg.name}`,
                 exports: {
                   '.': {
-                    default: './index.js'
+                    default: './' + main
                   },
                   './worker': {
-                    default: './worker.js'
+                    default: './' + worker
                   }
                 },
                 main: 'index.js',
@@ -231,7 +241,6 @@ export default rollup.defineConfig([
         AMD: false,
         preventAssignment: true
       }),
-      importMetaAssets(),
       resolver,
       {
         name: 'loader',

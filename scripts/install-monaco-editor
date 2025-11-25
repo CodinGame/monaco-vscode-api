@@ -6,6 +6,7 @@ monacoRef=$(cat package.json | jq -r '.config.monaco.ref')
 package_json="`pwd`/package.json"
 output_directory="`pwd`/monaco-editor"
 version_info=$output_directory/version.info
+patch_directory="`pwd`/monaco-patches"
 
 if [[ -e $version_info && $(cat $version_info) == $monacoRef ]]; then
     echo "monaco-editor version $monacoRef is already installed. Aborting..."
@@ -23,6 +24,10 @@ monacoVersion=$(cat "$monaco_build_directory/package.json" | jq -r '.["version"]
 cat <<< "$(jq ".config.monaco.version = \"$monacoVersion\"" $package_json)" > $package_json
 
 cd $monaco_build_directory
+
+echo "Patching monaco-editor..."
+find "$patch_directory" -type f -name '*.patch' -print0 | sort -z | xargs -t -0 -n 1 patch -p1 -i
+
 npm ci
 
 # Copy editor types

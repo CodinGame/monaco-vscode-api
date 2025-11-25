@@ -8,7 +8,6 @@ import importMetaAssets from '../plugins/import-meta-assets-plugin.js'
 import * as fs from 'node:fs'
 import * as nodePath from 'node:path'
 import {
-  BASE_DIR,
   EXTENSIONS,
   pkg,
   external,
@@ -279,27 +278,6 @@ ${code}`
         }
         rollupOptions.plugins = [
           rollupOptions.plugins,
-          {
-            name: 'replace-editor-types',
-            async renderChunk(code, chunk) {
-              if (chunk.fileName.endsWith('vscode/src/vs/editor/editor.api.d.ts')) {
-                const monacoEditorTypes = (
-                  await fs.promises.readFile(
-                    nodePath.resolve(BASE_DIR, 'monaco-editor/editor.api.d.ts')
-                  )
-                ).toString()
-
-                const monacoWorkerTypes = Array.from(
-                  monacoEditorTypes.matchAll(/export namespace languages\..*?^}/gms)
-                )
-                  .map((match) => match[0])
-                  .join('\n')
-
-                return `${code}\n${monacoWorkerTypes}`
-              }
-              return undefined
-            }
-          },
           {
             name: 'editor-api-expose-modules',
             async generateBundle() {

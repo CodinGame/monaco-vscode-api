@@ -1,0 +1,65 @@
+From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
+From: =?UTF-8?q?Lo=C3=AFc=20Mangeonjean?= <loic@coderpad.io>
+Date: Tue, 25 Nov 2025 14:07:33 +0100
+Subject: [PATCH] fix: preserve modules
+
+---
+ build/esm/rollup-types.config.mjs | 5 ++---
+ build/releaseMetadata.ts          | 9 ---------
+ build/shared.mjs                  | 3 +++
+ 3 files changed, 5 insertions(+), 12 deletions(-)
+
+diff --git a/build/esm/rollup-types.config.mjs b/build/esm/rollup-types.config.mjs
+index 5043188b..c20573b2 100644
+--- a/build/esm/rollup-types.config.mjs
++++ b/build/esm/rollup-types.config.mjs
+@@ -15,13 +15,12 @@ const root = join(import.meta.dirname, '../../');
+ 
+ export default defineConfig({
+ 	input: {
+-		entry: join(root, './src/editor/editor.main.ts'),
+-		editorApi: join(root, './src/editor/editor.api.ts'),
++		entry: join(root, './src/editor/editor.main.ts')
+ 	},
+ 	output: {
+ 		dir: join(root, './out/monaco-editor/esm'),
+ 		format: 'es',
+-		preserveModules: false,
++		preserveModules: true,
+ 		entryFileNames: function (chunkInfo) {
+ 			const moduleId = chunkInfo.facadeModuleId;
+ 			if (moduleId) {
+diff --git a/build/releaseMetadata.ts b/build/releaseMetadata.ts
+index d25ceb76..542aa232 100644
+--- a/build/releaseMetadata.ts
++++ b/build/releaseMetadata.ts
+@@ -185,15 +185,6 @@ exports.languages = ${JSON.stringify(languages, null, '  ')};
+ 			const jsDestination = path.join(REPO_ROOT, 'out/monaco-editor/esm/metadata.js');
+ 			ensureDir(path.dirname(jsDestination));
+ 			fs.writeFileSync(jsDestination, jsContents.replace(/\r\n/g, '\n'));
+-
+-			for (const feature of [...features, ...languages]) {
+-				const entries = [].concat(feature.entry);
+-				for (const entry of entries) {
+-					const dtsDestination = path.join(REPO_ROOT, 'out/monaco-editor/esm', entry) + '.d.ts';
+-					ensureDir(path.dirname(dtsDestination));
+-					fs.writeFileSync(dtsDestination, 'export {}\n');
+-				}
+-			}
+ 		}
+ 	);
+ }
+diff --git a/build/shared.mjs b/build/shared.mjs
+index dc471455..24c43647 100644
+--- a/build/shared.mjs
++++ b/build/shared.mjs
+@@ -14,6 +14,9 @@ import { readdirSync } from 'fs';
+  * @param {string} newExt
+  */
+ export function changeExt(filePath, newExt) {
++	if (filePath.endsWith(newExt)) {
++		return filePath
++	}
+ 	const idx = filePath.lastIndexOf('.');
+ 	if (idx === -1) {
+ 		return filePath + newExt;
