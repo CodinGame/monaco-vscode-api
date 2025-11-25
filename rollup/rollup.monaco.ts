@@ -194,8 +194,8 @@ export default rollup.defineConfig([
                     default: './' + worker
                   }
                 },
-                main: 'index.js',
-                module: 'index.js',
+                main: './' + main,
+                module: './' + main,
                 dependencies: {
                   'monaco-editor': `npm:${EDITOR_API_PACKAGE_NAME}@^${pkg.version}`,
                   ...dependencies
