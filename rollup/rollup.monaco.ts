@@ -215,13 +215,9 @@ export default rollup.defineConfig([
         ]
       }
     })
-  )),
-  {
+  )), {
     input: {
-      index: path.resolve(BASIC_LANGUAGE_DIR, '_.contribution.js')
-    },
-    treeshake: {
-      preset: 'smallest'
+      index: path.resolve(BASIC_LANGUAGE_DIR, 'monaco.contribution.js')
     },
     output: {
       minifyInternalExports: false,
