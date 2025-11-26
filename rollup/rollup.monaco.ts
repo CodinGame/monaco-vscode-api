@@ -194,8 +194,8 @@ export default rollup.defineConfig([
                     default: './' + worker
                   }
                 },
-                main: 'index.js',
-                module: 'index.js',
+                main: './' + main,
+                module: './' + main,
                 dependencies: {
                   'monaco-editor': `npm:${EDITOR_API_PACKAGE_NAME}@^${pkg.version}`,
                   ...dependencies
@@ -215,13 +215,9 @@ export default rollup.defineConfig([
         ]
       }
     })
-  )),
-  {
+  )), {
     input: {
-      index: path.resolve(BASIC_LANGUAGE_DIR, '_.contribution.js')
-    },
-    treeshake: {
-      preset: 'smallest'
+      index: path.resolve(BASIC_LANGUAGE_DIR, 'monaco.contribution.js')
     },
     output: {
       minifyInternalExports: false,

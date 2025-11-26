@@ -1,0 +1,22 @@
+From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
+From: =?UTF-8?q?Lo=C3=AFc=20Mangeonjean?= <loic@coderpad.io>
+Date: Tue, 25 Nov 2025 19:06:58 +0100
+Subject: [PATCH] fix: add basic language contribution as entry
+
+to make sure it exists in the output
+---
+ build/esm/rollup.config.mjs | 1 +
+ 1 file changed, 1 insertion(+)
+
+diff --git a/build/esm/rollup.config.mjs b/build/esm/rollup.config.mjs
+index 37b08bd5..1e18bb2f 100644
+--- a/build/esm/rollup.config.mjs
++++ b/build/esm/rollup.config.mjs
+@@ -27,6 +27,7 @@ export default defineConfig({
+ 		edcoreMain: join(root, './src/editor/edcore.main.ts'),
+ 		editorApi: join(root, './src/editor/editor.api.ts'),
+ 		editorWorker: join(root, './src/editor/editor.worker.ts'),
++		basiclanguages: join(root, './src/basic-languages/monaco.contribution.ts'),
+ 		...getNlsEntryPoints(),
+ 	},
+ 
