@@ -64,6 +64,10 @@ async function updateUserKeybindings(keybindingsJson: string): Promise<void> {
   )
 }
 
+export interface LockKeyCodesOverride {
+  (keyCodes: string[], next: (keyCodes: string[]) => void): void
+}
+
 class DynamicWorkbenchKeybindingService
   extends WorkbenchKeybindingService
   implements DynamicKeybindingService
@@ -72,6 +76,7 @@ class DynamicWorkbenchKeybindingService
 
   constructor(
     private shouldUseGlobalKeybindings: () => boolean,
+    private _lockKeyCodesOverride: LockKeyCodesOverride,
     @IContextKeyService contextKeyService: IContextKeyService,
     @ICommandService commandService: ICommandService,
     @ITelemetryService telemetryService: ITelemetryService,
@@ -157,20 +162,31 @@ class DynamicWorkbenchKeybindingService
       ...this.keybindingProviders.flatMap((provider) => provider.provideKeybindings())
     ]
   }
+
+  protected override lockKeyCodes(keyCodes: string[]): void {
+    this._lockKeyCodesOverride(keyCodes, (keyCodes) => super.lockKeyCodes(keyCodes))
+  }
 }
 
-interface KeybindingsProps {
+export interface KeybindingsProps {
   shouldUseGlobalKeybindings?: () => boolean
+  /**
+   * Allows to override the key code lock (for instance, ['Escape'] during full screen)
+   */
+  lockKeyCodesOverride?: LockKeyCodesOverride
 }
 
 export default function getServiceOverride({
-  shouldUseGlobalKeybindings = () => false
+  shouldUseGlobalKeybindings = () => false,
+  lockKeyCodesOverride = (keyCodes, next) => {
+    next(keyCodes)
+  }
 }: KeybindingsProps = {}): IEditorOverrideServices {
   return {
     ...getFileServiceOverride(),
     [IKeybindingService.toString()]: new SyncDescriptor(
       DynamicWorkbenchKeybindingService,
-      [shouldUseGlobalKeybindings],
+      [shouldUseGlobalKeybindings, lockKeyCodesOverride],
       false
     ),
     [IKeyboardLayoutService.toString()]: new SyncDescriptor(BrowserKeyboardLayoutService, [], true),
