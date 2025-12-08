@@ -5,52 +5,52 @@ Subject: [PATCH] feat: centralize element creation, to be able to create them
  on the proper document
 
 ---
- src/vs/base/browser/dom.ts                    | 48 ++++++++++---
- src/vs/base/browser/domSanitize.ts            | 19 ++---
+ src/vs/base/browser/dom.ts                    | 48 +++++++++++++++----
+ src/vs/base/browser/domSanitize.ts            | 19 ++++----
  src/vs/base/browser/domStylesheets.ts         |  4 +-
- src/vs/base/browser/formattedTextRenderer.ts  | 16 ++---
+ src/vs/base/browser/formattedTextRenderer.ts  | 16 +++----
  src/vs/base/browser/markdownRenderer.ts       |  2 +-
  src/vs/base/browser/pixelRatio.ts             |  4 +-
- .../browser/ui/actionbar/actionViewItems.ts   |  6 +-
- src/vs/base/browser/ui/actionbar/actionbar.ts |  7 +-
- src/vs/base/browser/ui/aria/aria.ts           |  6 +-
+ .../browser/ui/actionbar/actionViewItems.ts   |  6 +--
+ src/vs/base/browser/ui/actionbar/actionbar.ts |  7 +--
+ src/vs/base/browser/ui/aria/aria.ts           |  6 +--
  .../ui/breadcrumbs/breadcrumbsWidget.ts       |  4 +-
- src/vs/base/browser/ui/button/button.ts       | 24 +++----
+ src/vs/base/browser/ui/button/button.ts       | 24 +++++-----
  .../browser/ui/contextview/contextview.ts     |  2 +-
  src/vs/base/browser/ui/findinput/findInput.ts |  4 +-
  .../base/browser/ui/findinput/replaceInput.ts |  4 +-
  src/vs/base/browser/ui/hover/hoverWidget.ts   |  4 +-
- src/vs/base/browser/ui/list/listView.ts       |  6 +-
+ src/vs/base/browser/ui/list/listView.ts       |  6 +--
  src/vs/base/browser/ui/menu/menu.ts           |  4 +-
- .../browser/ui/progressbar/progressbar.ts     |  6 +-
+ .../browser/ui/progressbar/progressbar.ts     |  6 +--
  src/vs/base/browser/ui/resizable/resizable.ts |  4 +-
- .../browser/ui/scrollbar/abstractScrollbar.ts |  6 +-
- .../browser/ui/scrollbar/scrollableElement.ts |  8 +--
- .../browser/ui/scrollbar/scrollbarArrow.ts    |  6 +-
- .../browser/ui/selectBox/selectBoxCustom.ts   |  6 +-
+ .../browser/ui/scrollbar/abstractScrollbar.ts |  6 +--
+ .../browser/ui/scrollbar/scrollableElement.ts |  8 ++--
+ .../browser/ui/scrollbar/scrollbarArrow.ts    |  6 +--
+ .../browser/ui/selectBox/selectBoxCustom.ts   |  6 +--
  .../browser/ui/selectBox/selectBoxNative.ts   |  4 +-
  src/vs/base/browser/ui/splitview/splitview.ts |  4 +-
  src/vs/base/browser/ui/toggle/toggle.ts       |  4 +-
  src/vs/base/browser/ui/toolbar/toolbar.ts     |  3 +-
  src/vs/base/browser/ui/tree/abstractTree.ts   |  4 +-
  src/vs/base/test/browser/ui/grid/util.ts      |  3 +-
- .../electron-browser/workbench/workbench.ts   | 34 ++++-----
- .../editor/browser/config/charWidthReader.ts  | 13 ++--
- .../editContext/native/debugEditContext.ts    | 13 ++--
- .../editContext/native/nativeEditContext.ts   |  6 +-
+ .../electron-browser/workbench/workbench.ts   | 34 ++++++-------
+ .../editor/browser/config/charWidthReader.ts  | 13 ++---
+ .../editContext/native/debugEditContext.ts    | 13 ++---
+ .../editContext/native/nativeEditContext.ts   |  6 +--
  .../native/screenReaderContentRich.ts         |  4 +-
  .../textArea/textAreaEditContext.ts           |  5 +-
  .../editor/browser/controller/mouseTarget.ts  |  2 +-
  src/vs/editor/browser/gpu/viewGpuContext.ts   |  4 +-
  src/vs/editor/browser/observableCodeEditor.ts |  3 +-
- src/vs/editor/browser/view.ts                 |  6 +-
+ src/vs/editor/browser/view.ts                 |  6 +--
  .../browser/view/domLineBreaksComputer.ts     |  3 +-
  src/vs/editor/browser/view/viewLayer.ts       |  5 +-
  .../blockDecorations/blockDecorations.ts      |  5 +-
  .../contentWidgets/contentWidgets.ts          |  4 +-
  .../viewParts/glyphMargin/glyphMargin.ts      |  5 +-
  .../editor/browser/viewParts/margin/margin.ts |  5 +-
- .../browser/viewParts/minimap/minimap.ts      | 14 ++--
+ .../browser/viewParts/minimap/minimap.ts      | 14 +++---
  .../minimap/minimapCharRendererFactory.ts     |  3 +-
  .../overlayWidgets/overlayWidgets.ts          |  4 +-
  .../overviewRuler/decorationsOverviewRuler.ts |  3 +-
@@ -61,14 +61,14 @@ Subject: [PATCH] feat: centralize element creation, to be able to create them
  .../viewParts/viewCursors/viewCursors.ts      |  4 +-
  .../browser/viewParts/viewLines/viewLines.ts  |  3 +-
  .../browser/viewParts/viewZones/viewZones.ts  |  5 +-
- .../components/accessibleDiffViewer.ts        | 30 ++++----
- .../diffEditorViewZones.ts                    | 18 ++---
+ .../components/accessibleDiffViewer.ts        | 30 ++++++------
+ .../diffEditorViewZones.ts                    | 18 +++----
  .../inlineDiffDeletedCodeMargin.ts            |  4 +-
- .../features/movedBlocksLinesFeature.ts       | 12 ++--
+ .../features/movedBlocksLinesFeature.ts       | 12 ++---
  .../features/overviewRulerFeature.ts          |  4 +-
  .../editor/browser/widget/diffEditor/utils.ts |  4 +-
  .../widget/diffEditor/utils/editorGutter.ts   |  4 +-
- .../editorMarkdownCodeBlockRenderer.ts        |  6 +-
+ .../editorMarkdownCodeBlockRenderer.ts        |  6 +--
  .../codelens/browser/codelensWidget.ts        |  4 +-
  .../colorPickerCloseButton.ts                 |  4 +-
  .../colorPickerParts/colorPickerHeader.ts     |  2 +-
@@ -77,8 +77,8 @@ Subject: [PATCH] feat: centralize element creation, to be able to create them
  .../colorPickerParts/colorPickerStrip.ts      |  2 +-
  .../standaloneColorPickerWidget.ts            |  4 +-
  .../contrib/find/browser/findOptionsWidget.ts |  2 +-
- .../editor/contrib/find/browser/findWidget.ts | 18 ++---
- .../gotoError/browser/gotoErrorWidget.ts      | 24 +++----
+ .../editor/contrib/find/browser/findWidget.ts | 18 +++----
+ .../gotoError/browser/gotoErrorWidget.ts      | 24 +++++-----
  .../gotoSymbol/browser/peek/referencesTree.ts |  2 +-
  .../hover/browser/contentHoverRendered.ts     |  2 +-
  .../contrib/hover/browser/glyphHoverWidget.ts |  2 +-
@@ -88,92 +88,92 @@ Subject: [PATCH] feat: centralize element creation, to be able to create them
  .../inlineEditsViews/inlineEditsCustomView.ts |  4 +-
  .../inlineEditsLineReplacementView.ts         |  4 +-
  .../inlineEditsWordReplacementView.ts         |  4 +-
- .../message/browser/messageController.ts      |  8 +--
- .../browser/parameterHintsWidget.ts           |  6 +-
- .../contrib/rename/browser/renameWidget.ts    | 18 ++---
- .../browser/stickyScrollWidget.ts             | 16 ++---
- .../contrib/zoneWidget/browser/zoneWidget.ts  |  6 +-
+ .../message/browser/messageController.ts      |  8 ++--
+ .../browser/parameterHintsWidget.ts           |  6 +--
+ .../contrib/rename/browser/renameWidget.ts    | 18 +++----
+ .../browser/stickyScrollWidget.ts             | 16 +++----
+ .../contrib/zoneWidget/browser/zoneWidget.ts  |  6 +--
  .../iPadShowKeyboard/iPadShowKeyboard.ts      |  2 +-
  .../browser/inspectTokens/inspectTokens.ts    |  4 +-
  .../quickInput/standaloneQuickInputService.ts |  3 +-
  .../test/browser/controller/imeRecorder.ts    |  3 +-
- .../test/browser/controller/imeTester.ts      | 22 +++---
- .../actionWidget/browser/actionList.ts        | 12 ++--
- .../actionWidget/browser/actionWidget.ts      |  6 +-
+ .../test/browser/controller/imeTester.ts      | 22 ++++-----
+ .../actionWidget/browser/actionList.ts        | 12 ++---
+ .../actionWidget/browser/actionWidget.ts      |  6 +--
  .../imageResize/browser/imageResizeService.ts |  3 +-
  .../markdown/browser/markdownRenderer.ts      |  3 +-
  .../api/browser/mainThreadCodeInsets.ts       |  4 +-
  .../browser/actions/developerActions.ts       |  4 +-
- src/vs/workbench/browser/layout.ts            | 72 +++++++++----------
+ src/vs/workbench/browser/layout.ts            |  4 +-
  .../parts/editor/breadcrumbsControl.ts        |  2 +-
- .../browser/parts/editor/breadcrumbsPicker.ts |  7 +-
+ .../browser/parts/editor/breadcrumbsPicker.ts |  7 +--
  .../notifications/notificationsViewer.ts      |  4 +-
- .../parts/titlebar/commandCenterControl.ts    |  8 +--
+ .../parts/titlebar/commandCenterControl.ts    |  8 ++--
  .../workbench/browser/parts/views/treeView.ts |  4 +-
  src/vs/workbench/browser/workbench.ts         |  4 +-
- .../accessibility/browser/accessibleView.ts   | 10 +--
- .../bulkEdit/browser/preview/bulkEditPane.ts  |  9 +--
- .../bulkEdit/browser/preview/bulkEditTree.ts  | 10 +--
- .../browser/callHierarchyPeek.ts              | 10 +--
+ .../accessibility/browser/accessibleView.ts   | 10 ++--
+ .../bulkEdit/browser/preview/bulkEditPane.ts  |  9 ++--
+ .../bulkEdit/browser/preview/bulkEditTree.ts  | 10 ++--
+ .../browser/callHierarchyPeek.ts              | 10 ++--
  .../browser/callHierarchyTree.ts              |  3 +-
  .../chatAgentCommandContentPart.ts            |  5 +-
  .../chatConfirmationWidget.ts                 |  2 +-
  .../chatToolInputOutputContentPart.ts         |  2 +-
- .../chatTerminalToolProgressPart.ts           |  8 +--
+ .../chatTerminalToolProgressPart.ts           |  8 ++--
  .../chatToolConfirmationSubPart.ts            |  2 +-
  .../chatToolProgressPart.ts                   |  2 +-
  .../contrib/chat/browser/chatDragAndDrop.ts   |  4 +-
- .../chatEditingCodeEditorIntegration.ts       |  8 +--
- .../chatEditing/chatEditingEditorOverlay.ts   | 10 +--
+ .../chatEditingCodeEditorIntegration.ts       |  8 ++--
+ .../chatEditing/chatEditingEditorOverlay.ts   | 10 ++--
  .../notebook/overlayToolbarDecorator.ts       |  5 +-
- .../chatEditing/simpleBrowserEditorOverlay.ts | 14 ++--
+ .../chatEditing/simpleBrowserEditorOverlay.ts | 14 +++---
  .../contrib/chat/browser/chatInputPart.ts     |  4 +-
  .../contrib/chat/browser/chatWidget.ts        |  2 +-
  .../contrib/chat/browser/imageUtils.ts        |  3 +-
  .../browser/dictation/editorDictation.ts      |  4 +-
- .../browser/find/simpleFindWidget.ts          |  8 +--
+ .../browser/find/simpleFindWidget.ts          |  8 ++--
  .../inspectEditorTokens.ts                    |  4 +-
  .../contrib/comments/browser/commentNode.ts   |  2 +-
  .../comments/browser/commentsTreeViewer.ts    |  4 +-
  .../debug/browser/debugANSIHandling.ts        |  3 +-
- .../contrib/debug/browser/linkDetector.ts     | 20 +++---
+ .../contrib/debug/browser/linkDetector.ts     | 20 ++++----
  .../browser/inlayHintsAccessibilty.ts         |  4 +-
  .../browser/inlineChatStrategies.ts           |  4 +-
- .../issue/browser/baseIssueReporterService.ts | 18 ++---
+ .../issue/browser/baseIssueReporterService.ts | 18 +++----
  .../contrib/issue/browser/issueFormService.ts |  3 +-
- .../languageStatus/browser/languageStatus.ts  | 12 ++--
+ .../languageStatus/browser/languageStatus.ts  | 12 ++---
  .../markdown/browser/markedKatexSupport.ts    |  4 +-
  .../mergeEditor/browser/view/editorGutter.ts  |  4 +-
  .../browser/view/fixedZoneWidget.ts           |  4 +-
- .../contrib/find/notebookFindReplaceWidget.ts |  8 +--
+ .../contrib/find/notebookFindReplaceWidget.ts |  8 ++--
  .../contrib/find/notebookFindWidget.ts        |  2 +-
- .../contrib/outline/notebookOutline.ts        |  6 +-
- .../browser/contrib/troubleshoot/layout.ts    |  8 +--
+ .../contrib/outline/notebookOutline.ts        |  6 +--
+ .../browser/contrib/troubleshoot/layout.ts    |  8 ++--
  .../browser/diff/diffElementOutputs.ts        |  2 +-
  .../inlineDiff/notebookCellDiffDecorator.ts   |  3 +-
- .../notebookDeletedCellDecorator.ts           |  6 +-
+ .../notebookDeletedCellDecorator.ts           |  6 +--
  .../browser/diff/notebookDiffEditor.ts        |  4 +-
  .../browser/diff/notebookDiffOverviewRuler.ts |  4 +-
- .../notebook/browser/notebookEditorWidget.ts  | 12 ++--
+ .../notebook/browser/notebookEditorWidget.ts  | 12 ++---
  .../browser/view/cellParts/cellActionView.ts  |  4 +-
  .../view/cellParts/cellDragRenderer.ts        |  2 +-
  .../view/cellParts/codeCellRunToolbar.ts      |  3 +-
  .../view/renderers/backLayerWebView.ts        |  3 +-
  .../browser/viewParts/notebookCellOverlays.ts |  3 +-
- .../viewParts/notebookEditorStickyScroll.ts   |  6 +-
+ .../viewParts/notebookEditorStickyScroll.ts   |  6 +--
  .../viewParts/notebookEditorToolbar.ts        |  4 +-
  .../browser/viewParts/notebookKernelView.ts   |  3 +-
  .../viewParts/notebookOverviewRuler.ts        |  4 +-
  .../browser/viewParts/notebookViewZones.ts    |  5 +-
- .../preferences/browser/keybindingWidgets.ts  |  6 +-
+ .../preferences/browser/keybindingWidgets.ts  |  6 +--
  .../contrib/remote/browser/remote.ts          |  2 +-
- .../contrib/scm/browser/scmHistory.ts         | 10 +--
+ .../contrib/scm/browser/scmHistory.ts         | 10 ++--
  src/vs/workbench/contrib/scm/browser/util.ts  |  4 +-
  .../search/browser/patternInputWidget.ts      |  4 +-
  .../contrib/search/browser/searchMessage.ts   |  2 +-
  .../browser/terminalConfigurationService.ts   |  3 +-
- .../contrib/terminal/browser/terminalGroup.ts |  6 +-
- .../terminal/browser/terminalInstance.ts      |  6 +-
+ .../contrib/terminal/browser/terminalGroup.ts |  6 +--
+ .../terminal/browser/terminalInstance.ts      |  6 +--
  .../terminal/browser/terminalTabbedView.ts    |  2 +-
  .../terminal/browser/widgets/widgetManager.ts |  3 +-
  .../shellIntegrationAddon.integrationTest.ts  |  4 +-
@@ -181,27 +181,27 @@ Subject: [PATCH] feat: centralize element creation, to be able to create them
  .../terminal.developer.contribution.ts        |  3 +-
  .../browser/codeCoverageDecorations.ts        |  2 +-
  .../testResultsView/testResultsViewContent.ts |  2 +-
- .../testing/browser/testingDecorations.ts     |  6 +-
+ .../testing/browser/testingDecorations.ts     |  6 +--
  .../testing/browser/testingExplorerView.ts    |  2 +-
  .../testing/test/browser/testObjectTree.ts    |  3 +-
  .../contrib/timeline/browser/timelinePane.ts  |  2 +-
- .../browser/typeHierarchyPeek.ts              | 10 +--
+ .../browser/typeHierarchyPeek.ts              | 10 ++--
  .../browser/typeHierarchyTree.ts              |  3 +-
  .../contrib/webview/browser/overlayWebview.ts |  4 +-
- .../contrib/webview/browser/webviewElement.ts |  6 +-
+ .../contrib/webview/browser/webviewElement.ts |  6 +--
  .../webviewPanel/browser/webviewEditor.ts     |  2 +-
- .../browser/walkThroughPart.ts                | 10 +--
- .../workspace/browser/workspaceTrustEditor.ts |  6 +-
+ .../browser/walkThroughPart.ts                | 10 ++--
+ .../workspace/browser/workspaceTrustEditor.ts |  6 +--
  .../browser/webWorkerExtensionHost.ts         |  2 +-
- .../host/browser/browserHostService.ts        |  6 +-
+ .../host/browser/browserHostService.ts        |  6 +--
  .../test/browser/workbenchTestServices.ts     |  4 +-
- 190 files changed, 648 insertions(+), 570 deletions(-)
+ 190 files changed, 614 insertions(+), 536 deletions(-)
 
 diff --git a/src/vs/base/browser/dom.ts b/src/vs/base/browser/dom.ts
-index 0a34cb15839..fa02fea7607 100644
+index ae9584b1630..f70bce1d0d0 100644
 --- a/src/vs/base/browser/dom.ts
 +++ b/src/vs/base/browser/dom.ts
-@@ -1063,13 +1063,43 @@ export function createLinkElement(container: HTMLElement = mainWindow.document.h
+@@ -1065,13 +1065,43 @@ export function createLinkElement(container: HTMLElement = mainWindow.document.h
  	return createHeadElement('link', container);
  }
  
@@ -246,7 +246,7 @@ index 0a34cb15839..fa02fea7607 100644
  export function isHTMLElement(e: unknown): e is HTMLElement {
  	return e instanceof mainWindow.HTMLElement || e instanceof getWindow(e as Node).HTMLElement;
  }
-@@ -1356,9 +1386,9 @@ function _$<T extends Element>(namespace: Namespace, description: string, attrs?
+@@ -1358,9 +1388,9 @@ function _$<T extends Element>(namespace: Namespace, description: string, attrs?
  	let result: T;
  
  	if (namespace !== Namespace.HTML) {
@@ -258,7 +258,7 @@ index 0a34cb15839..fa02fea7607 100644
  	}
  
  	if (match[3]) {
-@@ -1409,7 +1439,7 @@ export function join(nodes: Node[], separator: Node | string): Node[] {
+@@ -1411,7 +1441,7 @@ export function join(nodes: Node[], separator: Node | string): Node[] {
  			if (separator instanceof Node) {
  				result.push(separator.cloneNode());
  			} else {
@@ -267,7 +267,7 @@ index 0a34cb15839..fa02fea7607 100644
  			}
  		}
  
-@@ -1611,7 +1641,7 @@ export function triggerDownload(dataOrUri: Uint8Array | URI, name: string): void
+@@ -1613,7 +1643,7 @@ export function triggerDownload(dataOrUri: Uint8Array | URI, name: string): void
  	// points to the file to download.
  	// See also https://developers.google.com/web/updates/2011/08/Downloading-resources-in-HTML5-a-download
  	const activeWindow = getActiveWindow();
@@ -276,7 +276,7 @@ index 0a34cb15839..fa02fea7607 100644
  	activeWindow.document.body.appendChild(anchor);
  	anchor.download = name;
  	anchor.href = url;
-@@ -1628,7 +1658,7 @@ export function triggerUpload(): Promise<FileList | undefined> {
+@@ -1630,7 +1660,7 @@ export function triggerUpload(): Promise<FileList | undefined> {
  		// input element of type `file` and click it
  		// to gather the selected files
  		const activeWindow = getActiveWindow();
@@ -285,7 +285,7 @@ index 0a34cb15839..fa02fea7607 100644
  		activeWindow.document.body.appendChild(input);
  		input.type = 'file';
  		input.multiple = true;
-@@ -2077,7 +2107,7 @@ export function h(tag: string, ...args: [] | [attributes: { $: string } & Partia
+@@ -2079,7 +2109,7 @@ export function h(tag: string, ...args: [] | [attributes: { $: string } & Partia
  	}
  
  	const tagName = match.groups['tag'] || 'div';
@@ -294,7 +294,7 @@ index 0a34cb15839..fa02fea7607 100644
  
  	if (match.groups['id']) {
  		el.id = match.groups['id'];
-@@ -2181,7 +2211,7 @@ export function svgElem(tag: string, ...args: [] | [attributes: { $: string } &
+@@ -2183,7 +2213,7 @@ export function svgElem(tag: string, ...args: [] | [attributes: { $: string } &
  
  	const tagName = match.groups['tag'] || 'div';
  	// eslint-disable-next-line local/code-no-any-casts
@@ -303,7 +303,7 @@ index 0a34cb15839..fa02fea7607 100644
  
  	if (match.groups['id']) {
  		el.id = match.groups['id'];
-@@ -2447,7 +2477,7 @@ export abstract class ObserverNode<T extends HTMLOrSVGElement = HTMLOrSVGElement
+@@ -2449,7 +2479,7 @@ export abstract class ObserverNode<T extends HTMLOrSVGElement = HTMLOrSVGElement
  		attributes: ElementAttributeKeys<T>,
  		children: ChildNode
  	) {
@@ -3369,96 +3369,18 @@ index 93d0b4cc089..fd0751d3ebf 100644
  		activeDocument.body.appendChild(hoverFeedback);
  		disposables.add(toDisposable(() => hoverFeedback.remove()));
 diff --git a/src/vs/workbench/browser/layout.ts b/src/vs/workbench/browser/layout.ts
-index 99aa6df59fa..7bd4c09ebf7 100644
+index 990f04d8acd..7260c7a7f63 100644
 --- a/src/vs/workbench/browser/layout.ts
 +++ b/src/vs/workbench/browser/layout.ts
-@@ -3,51 +3,51 @@
-  *  Licensed under the MIT License. See License.txt in the project root for license information.
+@@ -4,7 +4,7 @@
   *--------------------------------------------------------------------------------------------*/
  
-+import { isFullscreen, isWCOEnabled, onDidChangeFullscreen } from '../../base/browser/browser.js';
-+import { addDisposableListener, computeScreenAwareSize, createElement, Dimension, EventType, getActiveDocument, getActiveElement, getActiveWindow, getClientArea, getWindow, getWindowId, getWindows, IDimension, isActiveDocument, isAncestorUsingFlowTo, size, getFullscreenElement } from '../../base/browser/dom.js';
-+import { setContainerElement } from '../../base/browser/domStylesheets.js';
-+import { Direction, ISerializableView, ISerializedGrid, ISerializedLeafNode, ISerializedNode, IViewSize, Orientation, SerializableGrid, Sizing } from '../../base/browser/ui/grid/grid.js';
-+import { CodeWindow, mainWindow } from '../../base/browser/window.js';
-+import { coalesce } from '../../base/common/arrays.js';
-+import { DeferredPromise, Promises } from '../../base/common/async.js';
-+import { Emitter, Event } from '../../base/common/event.js';
- import { Disposable, DisposableMap, DisposableStore, IDisposable, toDisposable } from '../../base/common/lifecycle.js';
--import { Event, Emitter } from '../../base/common/event.js';
--import { EventType, addDisposableListener, getClientArea, size, IDimension, isAncestorUsingFlowTo, computeScreenAwareSize, getActiveDocument, getWindows, getActiveWindow, isActiveDocument, getWindow, getWindowId, getActiveElement, Dimension, getFullscreenElement } from '../../base/browser/dom.js';
--import { onDidChangeFullscreen, isFullscreen, isWCOEnabled } from '../../base/browser/browser.js';
--import { isWindows, isLinux, isMacintosh, isWeb, isIOS } from '../../base/common/platform.js';
--import { EditorInputCapabilities, GroupIdentifier, isResourceEditorInput, IUntypedEditorInput, pathsToEditors } from '../common/editor.js';
--import { SidebarPart } from './parts/sidebar/sidebarPart.js';
--import { PanelPart } from './parts/panel/panelPart.js';
--import { Position, Parts, PartOpensMaximizedOptions, IWorkbenchLayoutService, positionFromString, positionToString, partOpensMaximizedFromString, PanelAlignment, ActivityBarPosition, LayoutSettings, MULTI_WINDOW_PARTS, SINGLE_WINDOW_PARTS, ZenModeSettings, EditorTabsMode, EditorActionsLocation, shouldShowCustomTitleBar, isHorizontal, isMultiWindowPart } from '../services/layout/browser/layoutService.js';
--import { isTemporaryWorkspace, IWorkspaceContextService, WorkbenchState } from '../../platform/workspace/common/workspace.js';
--import { IStorageService, StorageScope, StorageTarget } from '../../platform/storage/common/storage.js';
-+import { mark } from '../../base/common/performance.js';
-+import { isIOS, isLinux, isMacintosh, isWeb, isWindows } from '../../base/common/platform.js';
-+import { assertReturnsDefined } from '../../base/common/types.js';
-+import { URI } from '../../base/common/uri.js';
-+import { isCodeEditor } from '../../editor/browser/editorBrowser.js';
-+import { LineNumbersType } from '../../editor/common/config/editorOptions.js';
- import { IConfigurationChangeEvent, IConfigurationService, isConfigured } from '../../platform/configuration/common/configuration.js';
--import { ITitleService } from '../services/title/browser/titleService.js';
--import { ServicesAccessor } from '../../platform/instantiation/common/instantiation.js';
--import { StartupKind, ILifecycleService } from '../services/lifecycle/common/lifecycle.js';
--import { getMenuBarVisibility, IPath, hasNativeTitlebar, hasCustomTitlebar, TitleBarSetting, CustomTitleBarVisibility, useWindowControlsOverlay, DEFAULT_EMPTY_WINDOW_SIZE, DEFAULT_WORKSPACE_WINDOW_SIZE, hasNativeMenu, MenuSettings } from '../../platform/window/common/window.js';
--import { IHostService } from '../services/host/browser/host.js';
--import { IBrowserWorkbenchEnvironmentService } from '../services/environment/browser/environmentService.js';
--import { IEditorService } from '../services/editor/common/editorService.js';
--import { EditorGroupLayout, GroupOrientation, GroupsOrder, IEditorGroupsService } from '../services/editor/common/editorGroupsService.js';
--import { SerializableGrid, ISerializableView, ISerializedGrid, Orientation, ISerializedNode, ISerializedLeafNode, Direction, IViewSize, Sizing } from '../../base/browser/ui/grid/grid.js';
--import { Part } from './part.js';
--import { IStatusbarService } from '../services/statusbar/browser/statusbar.js';
- import { IFileService } from '../../platform/files/common/files.js';
--import { isCodeEditor } from '../../editor/browser/editorBrowser.js';
--import { coalesce } from '../../base/common/arrays.js';
--import { assertReturnsDefined } from '../../base/common/types.js';
-+import { ServicesAccessor } from '../../platform/instantiation/common/instantiation.js';
-+import { ILogService } from '../../platform/log/common/log.js';
- import { INotificationService, NotificationsFilter } from '../../platform/notification/common/notification.js';
-+import { IStorageService, StorageScope, StorageTarget } from '../../platform/storage/common/storage.js';
-+import { ITelemetryService } from '../../platform/telemetry/common/telemetry.js';
- import { IThemeService } from '../../platform/theme/common/themeService.js';
-+import { CustomTitleBarVisibility, DEFAULT_EMPTY_WINDOW_SIZE, DEFAULT_WORKSPACE_WINDOW_SIZE, getMenuBarVisibility, hasCustomTitlebar, hasNativeMenu, hasNativeTitlebar, IPath, MenuSettings, TitleBarSetting, useWindowControlsOverlay } from '../../platform/window/common/window.js';
-+import { isTemporaryWorkspace, IWorkspaceContextService, WorkbenchState } from '../../platform/workspace/common/workspace.js';
-+import { EditorInputCapabilities, GroupIdentifier, isResourceEditorInput, IUntypedEditorInput, pathsToEditors } from '../common/editor.js';
-+import { DiffEditorInput } from '../common/editor/diffEditorInput.js';
- import { WINDOW_ACTIVE_BORDER, WINDOW_INACTIVE_BORDER } from '../common/theme.js';
--import { LineNumbersType } from '../../editor/common/config/editorOptions.js';
--import { URI } from '../../base/common/uri.js';
- import { IViewDescriptorService, ViewContainerLocation } from '../common/views.js';
--import { DiffEditorInput } from '../common/editor/diffEditorInput.js';
--import { mark } from '../../base/common/performance.js';
--import { IExtensionService } from '../services/extensions/common/extensions.js';
--import { ILogService } from '../../platform/log/common/log.js';
--import { DeferredPromise, Promises } from '../../base/common/async.js';
-+import { IAuxiliaryWindowService } from '../services/auxiliaryWindow/browser/auxiliaryWindowService.js';
- import { IBannerService } from '../services/banner/browser/bannerService.js';
-+import { EditorGroupLayout, GroupOrientation, GroupsOrder, IEditorGroupsService } from '../services/editor/common/editorGroupsService.js';
-+import { IEditorService } from '../services/editor/common/editorService.js';
-+import { IBrowserWorkbenchEnvironmentService } from '../services/environment/browser/environmentService.js';
-+import { IExtensionService } from '../services/extensions/common/extensions.js';
-+import { IHostService } from '../services/host/browser/host.js';
-+import { ActivityBarPosition, EditorActionsLocation, EditorTabsMode, isHorizontal, isMultiWindowPart, IWorkbenchLayoutService, LayoutSettings, MULTI_WINDOW_PARTS, PanelAlignment, partOpensMaximizedFromString, PartOpensMaximizedOptions, Parts, Position, positionFromString, positionToString, shouldShowCustomTitleBar, SINGLE_WINDOW_PARTS, ZenModeSettings } from '../services/layout/browser/layoutService.js';
-+import { ILifecycleService, StartupKind } from '../services/lifecycle/common/lifecycle.js';
- import { IPaneCompositePartService } from '../services/panecomposite/browser/panecomposite.js';
-+import { IStatusbarService } from '../services/statusbar/browser/statusbar.js';
-+import { ITitleService } from '../services/title/browser/titleService.js';
-+import { Part } from './part.js';
- import { AuxiliaryBarPart } from './parts/auxiliarybar/auxiliaryBarPart.js';
--import { ITelemetryService } from '../../platform/telemetry/common/telemetry.js';
--import { IAuxiliaryWindowService } from '../services/auxiliaryWindow/browser/auxiliaryWindowService.js';
--import { CodeWindow, mainWindow } from '../../base/browser/window.js';
--import { setContainerElement } from '../../base/browser/domStylesheets.js';
-+import { PanelPart } from './parts/panel/panelPart.js';
-+import { SidebarPart } from './parts/sidebar/sidebarPart.js';
- 
- //#region Layout Implementation
- 
+ import { isFullscreen, isWCOEnabled, onDidChangeFullscreen } from '../../base/browser/browser.js';
+-import { addDisposableListener, computeScreenAwareSize, Dimension, EventType, getActiveDocument, getActiveElement, getActiveWindow, getClientArea, getFullscreenElement, getWindow, getWindowId, getWindows, IDimension, isActiveDocument, isAncestorUsingFlowTo, size } from '../../base/browser/dom.js';
++import { addDisposableListener, computeScreenAwareSize, createElement, Dimension, EventType, getActiveDocument, getActiveElement, getActiveWindow, getClientArea, getFullscreenElement, getWindow, getWindowId, getWindows, IDimension, isActiveDocument, isAncestorUsingFlowTo, size } from '../../base/browser/dom.js';
+ import { setContainerElement } from '../../base/browser/domStylesheets.js';
+ import { Direction, ISerializableView, ISerializedGrid, ISerializedLeafNode, ISerializedNode, IViewSize, Orientation, SerializableGrid, Sizing } from '../../base/browser/ui/grid/grid.js';
+ import { CodeWindow, mainWindow } from '../../base/browser/window.js';
 @@ -185,7 +185,7 @@ export abstract class Layout extends Disposable implements IWorkbenchLayoutServi
  
  	//#region Properties
@@ -5829,7 +5751,7 @@ index 9ca075c4b19..b347a592987 100644
  		iframe.setAttribute('sandbox', 'allow-scripts allow-same-origin');
  		iframe.setAttribute('allow', 'usb; serial; hid; cross-origin-isolated;');
 diff --git a/src/vs/workbench/services/host/browser/browserHostService.ts b/src/vs/workbench/services/host/browser/browserHostService.ts
-index 81419568733..d111f985169 100644
+index cf225505060..426c2de798f 100644
 --- a/src/vs/workbench/services/host/browser/browserHostService.ts
 +++ b/src/vs/workbench/services/host/browser/browserHostService.ts
 @@ -15,7 +15,7 @@ import { whenEditorClosed } from '../../../browser/editor.js';

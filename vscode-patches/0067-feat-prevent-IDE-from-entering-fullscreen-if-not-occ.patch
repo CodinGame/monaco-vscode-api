@@ -1,21 +1,21 @@
 From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
-From: Jean-Damien Thevenoux <jean-damien.thevenoux@codingame.com>
-Date: Fri, 21 Nov 2025 18:15:16 +0100
+From: Gaspar Chefdeville <gaspar.chefdeville@coderpad.io>
+Date: Wed, 9 Jul 2025 17:25:14 +0200
 Subject: [PATCH] feat: prevent IDE from entering fullscreen if not occupying
  the entire screen
 
 ---
- src/vs/base/browser/dom.ts                    | 32 ++++++++++++++++---
- src/vs/workbench/browser/layout.ts            |  5 +--
+ src/vs/base/browser/dom.ts                    | 34 ++++++++++++++++---
+ src/vs/workbench/browser/layout.ts            | 19 ++++++-----
  src/vs/workbench/browser/web.main.ts          |  2 +-
  .../host/browser/browserHostService.ts        |  2 +-
- 4 files changed, 32 insertions(+), 9 deletions(-)
+ 4 files changed, 41 insertions(+), 16 deletions(-)
 
 diff --git a/src/vs/base/browser/dom.ts b/src/vs/base/browser/dom.ts
-index adfb9f657ae..98cfab3ae62 100644
+index adfb9f657ae..4604c6e7aaf 100644
 --- a/src/vs/base/browser/dom.ts
 +++ b/src/vs/base/browser/dom.ts
-@@ -925,6 +925,26 @@ export function getActiveElement(_document = getActiveDocument()): Element | nul
+@@ -925,6 +925,28 @@ export function getActiveElement(_document = getActiveDocument()): Element | nul
  	return result;
  }
  
@@ -27,8 +27,10 @@ index adfb9f657ae..98cfab3ae62 100644
 +export function getFullscreenElement(_document = getActiveDocument()): Element | null {
 +	const _getFullscreenElement = (node: Document | ShadowRoot): Element | null =>
 +		node.fullscreenElement ??
++		// eslint-disable-next-line local/code-no-any-casts
 +		(<any>node).webkitFullscreenElement ??
-+		null
++		null;
++
 +
 +	let result = _getFullscreenElement(_document);
 +
@@ -42,7 +44,7 @@ index adfb9f657ae..98cfab3ae62 100644
  export function getRootContainer(element: Element) {
  	let container: Node = element.getRootNode();
  	if (container instanceof Document) {
-@@ -1699,11 +1719,11 @@ export interface IDetectedFullscreen {
+@@ -1699,11 +1721,11 @@ export interface IDetectedFullscreen {
  	guess: boolean;
  }
  
@@ -52,12 +54,12 @@ index adfb9f657ae..98cfab3ae62 100644
  	// Browser fullscreen: use DOM APIs to detect
 -	// eslint-disable-next-line local/code-no-any-casts
 -	if (targetWindow.document.fullscreenElement || (<any>targetWindow.document).webkitFullscreenElement || (<any>targetWindow.document).webkitIsFullScreen) {
-+	const fullscreenElement = getFullscreenElement(targetWindow.document)
++	const fullscreenElement = getFullscreenElement(targetWindow.document);
 +	if (fullscreenElement === containerElement) {
  		return { mode: DetectedFullscreenMode.DOCUMENT, guess: false };
  	}
  
-@@ -1712,7 +1732,9 @@ export function detectFullscreen(targetWindow: Window): IDetectedFullscreen | nu
+@@ -1712,7 +1734,9 @@ export function detectFullscreen(targetWindow: Window): IDetectedFullscreen | nu
  	// height and comparing that to window height, we can guess
  	// it though.
  
@@ -68,7 +70,7 @@ index adfb9f657ae..98cfab3ae62 100644
  		// if the height of the window matches the screen height, we can
  		// safely assume that the browser is fullscreen because no browser
  		// chrome is taking height away (e.g. like toolbars).
-@@ -1721,7 +1743,7 @@ export function detectFullscreen(targetWindow: Window): IDetectedFullscreen | nu
+@@ -1721,7 +1745,7 @@ export function detectFullscreen(targetWindow: Window): IDetectedFullscreen | nu
  
  	if (platform.isMacintosh || platform.isLinux) {
  		// macOS and Linux do not properly report `innerHeight`, only Windows does
@@ -78,24 +80,62 @@ index adfb9f657ae..98cfab3ae62 100644
  			// only guess that we are in fullscreen. It is also possible that
  			// the user has turned off taskbars in the OS and the browser is
 diff --git a/src/vs/workbench/browser/layout.ts b/src/vs/workbench/browser/layout.ts
-index 057bfdb82c9..99aa6df59fa 100644
+index 057bfdb82c9..990f04d8acd 100644
 --- a/src/vs/workbench/browser/layout.ts
 +++ b/src/vs/workbench/browser/layout.ts
-@@ -5,7 +5,7 @@
+@@ -3,10 +3,15 @@
+  *  Licensed under the MIT License. See License.txt in the project root for license information.
+  *--------------------------------------------------------------------------------------------*/
  
++import { isFullscreen, isWCOEnabled, onDidChangeFullscreen } from '../../base/browser/browser.js';
++import { addDisposableListener, computeScreenAwareSize, Dimension, EventType, getActiveDocument, getActiveElement, getActiveWindow, getClientArea, getFullscreenElement, getWindow, getWindowId, getWindows, IDimension, isActiveDocument, isAncestorUsingFlowTo, size } from '../../base/browser/dom.js';
++import { setContainerElement } from '../../base/browser/domStylesheets.js';
++import { Direction, ISerializableView, ISerializedGrid, ISerializedLeafNode, ISerializedNode, IViewSize, Orientation, SerializableGrid, Sizing } from '../../base/browser/ui/grid/grid.js';
++import { CodeWindow, mainWindow } from '../../base/browser/window.js';
++import { coalesce } from '../../base/common/arrays.js';
++import { DeferredPromise, Promises } from '../../base/common/async.js';
++import { Emitter, Event } from '../../base/common/event.js';
  import { Disposable, DisposableMap, DisposableStore, IDisposable, toDisposable } from '../../base/common/lifecycle.js';
- import { Event, Emitter } from '../../base/common/event.js';
+-import { Event, Emitter } from '../../base/common/event.js';
 -import { EventType, addDisposableListener, getClientArea, size, IDimension, isAncestorUsingFlowTo, computeScreenAwareSize, getActiveDocument, getWindows, getActiveWindow, isActiveDocument, getWindow, getWindowId, getActiveElement, Dimension } from '../../base/browser/dom.js';
-+import { EventType, addDisposableListener, getClientArea, size, IDimension, isAncestorUsingFlowTo, computeScreenAwareSize, getActiveDocument, getWindows, getActiveWindow, isActiveDocument, getWindow, getWindowId, getActiveElement, Dimension, getFullscreenElement } from '../../base/browser/dom.js';
- import { onDidChangeFullscreen, isFullscreen, isWCOEnabled } from '../../base/browser/browser.js';
+-import { onDidChangeFullscreen, isFullscreen, isWCOEnabled } from '../../base/browser/browser.js';
  import { isWindows, isLinux, isMacintosh, isWeb, isIOS } from '../../base/common/platform.js';
  import { EditorInputCapabilities, GroupIdentifier, isResourceEditorInput, IUntypedEditorInput, pathsToEditors } from '../common/editor.js';
+ import { SidebarPart } from './parts/sidebar/sidebarPart.js';
+@@ -23,12 +28,10 @@ import { IHostService } from '../services/host/browser/host.js';
+ import { IBrowserWorkbenchEnvironmentService } from '../services/environment/browser/environmentService.js';
+ import { IEditorService } from '../services/editor/common/editorService.js';
+ import { EditorGroupLayout, GroupOrientation, GroupsOrder, IEditorGroupsService } from '../services/editor/common/editorGroupsService.js';
+-import { SerializableGrid, ISerializableView, ISerializedGrid, Orientation, ISerializedNode, ISerializedLeafNode, Direction, IViewSize, Sizing } from '../../base/browser/ui/grid/grid.js';
+ import { Part } from './part.js';
+ import { IStatusbarService } from '../services/statusbar/browser/statusbar.js';
+ import { IFileService } from '../../platform/files/common/files.js';
+ import { isCodeEditor } from '../../editor/browser/editorBrowser.js';
+-import { coalesce } from '../../base/common/arrays.js';
+ import { assertReturnsDefined } from '../../base/common/types.js';
+ import { INotificationService, NotificationsFilter } from '../../platform/notification/common/notification.js';
+ import { IThemeService } from '../../platform/theme/common/themeService.js';
+@@ -40,14 +43,11 @@ import { DiffEditorInput } from '../common/editor/diffEditorInput.js';
+ import { mark } from '../../base/common/performance.js';
+ import { IExtensionService } from '../services/extensions/common/extensions.js';
+ import { ILogService } from '../../platform/log/common/log.js';
+-import { DeferredPromise, Promises } from '../../base/common/async.js';
+ import { IBannerService } from '../services/banner/browser/bannerService.js';
+ import { IPaneCompositePartService } from '../services/panecomposite/browser/panecomposite.js';
+ import { AuxiliaryBarPart } from './parts/auxiliarybar/auxiliaryBarPart.js';
+ import { ITelemetryService } from '../../platform/telemetry/common/telemetry.js';
+ import { IAuxiliaryWindowService } from '../services/auxiliaryWindow/browser/auxiliaryWindowService.js';
+-import { CodeWindow, mainWindow } from '../../base/browser/window.js';
+-import { setContainerElement } from '../../base/browser/domStylesheets.js';
+ 
+ //#region Layout Implementation
+ 
 @@ -1633,7 +1633,8 @@ export abstract class Layout extends Disposable implements IWorkbenchLayoutServi
  
  	layout(): void {
  		if (!this.disposed) {
 -			this._mainContainerDimension = getClientArea(this.state.runtime.mainWindowFullscreen ?
-+			const fullscreenElement = getFullscreenElement(mainWindow.document)
++			const fullscreenElement = getFullscreenElement(mainWindow.document);
 +			this._mainContainerDimension = getClientArea(this.state.runtime.mainWindowFullscreen && this.mainContainer === fullscreenElement ?
  				mainWindow.document.body : 	// in fullscreen mode, make sure to use <body> element because
  				this.parent,				// in that case the workbench will span the entire site
