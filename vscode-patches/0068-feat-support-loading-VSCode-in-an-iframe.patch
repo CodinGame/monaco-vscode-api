@@ -4,21 +4,90 @@ Date: Mon, 4 Aug 2025 19:03:44 +0200
 Subject: [PATCH] feat: support loading VSCode in an iframe
 
 ---
+ src/vs/base/browser/browser.ts                |  2 +-
+ src/vs/base/browser/canIUse.ts                | 12 +++---
  src/vs/base/browser/dom.ts                    | 39 +++++++------------
  src/vs/base/browser/domStylesheets.ts         |  4 +-
+ src/vs/base/browser/mouseEvent.ts             |  3 +-
+ src/vs/base/browser/touch.ts                  |  2 +-
  src/vs/base/browser/window.ts                 |  6 ++-
+ src/vs/editor/browser/gpu/gpuDisposable.ts    |  5 ++-
+ .../editor/browser/gpu/rectangleRenderer.ts   |  3 +-
+ .../viewParts/viewLinesGpu/viewLinesGpu.ts    |  3 +-
+ .../contrib/clipboard/browser/clipboard.ts    |  3 +-
+ .../clipboard/browser/clipboardService.ts     |  2 +-
+ src/vs/platform/dialogs/browser/dialog.ts     |  3 +-
+ .../remote/browser/browserSocketFactory.ts    |  2 +-
  src/vs/workbench/browser/window.ts            | 25 ++++++++----
  .../performance/browser/perfviewEditor.ts     |  3 +-
  .../performance/browser/startupTimings.ts     |  3 +-
+ .../contrib/remote/browser/remoteIndicator.ts |  2 +-
  .../browser/webWorkerExtensionHost.ts         |  6 +--
+ .../host/browser/browserHostService.ts        |  2 +-
+ .../keybinding/browser/keybindingService.ts   |  2 +-
  .../lifecycle/browser/lifecycleService.ts     |  2 +-
- 8 files changed, 45 insertions(+), 43 deletions(-)
+ .../localization/browser/localeService.ts     |  5 ++-
+ .../request/browser/requestService.ts         |  3 +-
+ .../electron-browser/requestService.ts        |  3 +-
+ .../services/timer/browser/timerService.ts    |  5 ++-
+ 26 files changed, 81 insertions(+), 69 deletions(-)
 
+diff --git a/src/vs/base/browser/browser.ts b/src/vs/base/browser/browser.ts
+index b6e9ec09fff..d8a6166878a 100644
+--- a/src/vs/base/browser/browser.ts
++++ b/src/vs/base/browser/browser.ts
+@@ -98,7 +98,7 @@ export function isFullscreen(targetWindow: Window): boolean {
+ }
+ export const onDidChangeFullscreen = WindowManager.INSTANCE.onDidChangeFullscreen;
+ 
+-const userAgent = navigator.userAgent;
++const userAgent = mainWindow.navigator.userAgent;
+ 
+ export const isFirefox = (userAgent.indexOf('Firefox') >= 0);
+ export const isWebKit = (userAgent.indexOf('AppleWebKit') >= 0);
+diff --git a/src/vs/base/browser/canIUse.ts b/src/vs/base/browser/canIUse.ts
+index d7c129abb27..a2895879194 100644
+--- a/src/vs/base/browser/canIUse.ts
++++ b/src/vs/base/browser/canIUse.ts
+@@ -20,12 +20,12 @@ export const BrowserFeatures = {
+ 	clipboard: {
+ 		writeText: (
+ 			platform.isNative
+-			|| (document.queryCommandSupported && document.queryCommandSupported('copy'))
+-			|| !!(navigator && navigator.clipboard && navigator.clipboard.writeText)
++			|| (mainWindow.document.queryCommandSupported && mainWindow.document.queryCommandSupported('copy'))
++			|| !!(mainWindow.navigator && mainWindow.navigator.clipboard && mainWindow.navigator.clipboard.writeText)
+ 		),
+ 		readText: (
+ 			platform.isNative
+-			|| !!(navigator && navigator.clipboard && navigator.clipboard.readText)
++			|| !!(mainWindow.navigator && mainWindow.navigator.clipboard && mainWindow.navigator.clipboard.readText)
+ 		)
+ 	},
+ 	keyboard: (() => {
+@@ -33,7 +33,7 @@ export const BrowserFeatures = {
+ 			return KeyboardSupport.Always;
+ 		}
+ 
+-		if ((navigator as Navigator & { keyboard?: unknown }).keyboard || browser.isSafari) {
++		if ((mainWindow.navigator as Navigator & { keyboard?: unknown }).keyboard || browser.isSafari) {
+ 			return KeyboardSupport.FullScreen;
+ 		}
+ 
+@@ -42,6 +42,6 @@ export const BrowserFeatures = {
+ 
+ 	// 'ontouchstart' in window always evaluates to true with typescript's modern typings. This causes `window` to be
+ 	// `never` later in `window.navigator`. That's why we need the explicit `window as Window` cast
+-	touch: 'ontouchstart' in mainWindow || navigator.maxTouchPoints > 0,
+-	pointerEvents: mainWindow.PointerEvent && ('ontouchstart' in mainWindow || navigator.maxTouchPoints > 0)
++	touch: 'ontouchstart' in mainWindow || mainWindow.navigator.maxTouchPoints > 0,
++	pointerEvents: mainWindow.PointerEvent && ('ontouchstart' in mainWindow || mainWindow.navigator.maxTouchPoints > 0)
+ };
 diff --git a/src/vs/base/browser/dom.ts b/src/vs/base/browser/dom.ts
-index 98cfab3ae62..100ddac2639 100644
+index 4604c6e7aaf..f38d1d306c3 100644
 --- a/src/vs/base/browser/dom.ts
 +++ b/src/vs/base/browser/dom.ts
-@@ -1070,68 +1070,55 @@ function createHeadElement<K extends keyof HTMLElementTagNameMap>(tagName: K, co
+@@ -1072,68 +1072,55 @@ function createHeadElement<K extends keyof HTMLElementTagNameMap>(tagName: K, co
  }
  
  export function isHTMLElement(e: unknown): e is HTMLElement {
@@ -122,6 +191,40 @@ index 0782c211144..61e4c36505d 100644
  		shadowRootContainer = root;
  	}
  }
+diff --git a/src/vs/base/browser/mouseEvent.ts b/src/vs/base/browser/mouseEvent.ts
+index 2f8c99ff327..f061a5f93ef 100644
+--- a/src/vs/base/browser/mouseEvent.ts
++++ b/src/vs/base/browser/mouseEvent.ts
+@@ -6,6 +6,7 @@
+ import * as browser from './browser.js';
+ import { IframeUtils } from './iframe.js';
+ import * as platform from '../common/platform.js';
++import { mainWindow } from './window.js';
+ 
+ export interface IMouseEvent {
+ 	readonly browserEvent: MouseEvent;
+@@ -145,7 +146,7 @@ export class StandardWheelEvent {
+ 		if (browser.isChrome) {
+ 			// Chrome version >= 123 contains the fix to factor devicePixelRatio into the wheel event.
+ 			// See https://chromium.googlesource.com/chromium/src.git/+/be51b448441ff0c9d1f17e0f25c4bf1ab3f11f61
+-			const chromeVersionMatch = navigator.userAgent.match(/Chrome\/(\d+)/);
++			const chromeVersionMatch = mainWindow.navigator.userAgent.match(/Chrome\/(\d+)/);
+ 			const chromeMajorVersion = chromeVersionMatch ? parseInt(chromeVersionMatch[1]) : 123;
+ 			shouldFactorDPR = chromeMajorVersion <= 122;
+ 		}
+diff --git a/src/vs/base/browser/touch.ts b/src/vs/base/browser/touch.ts
+index ac526347c90..b71cc9c348a 100644
+--- a/src/vs/base/browser/touch.ts
++++ b/src/vs/base/browser/touch.ts
+@@ -126,7 +126,7 @@ export class Gesture extends Disposable {
+ 	static isTouchDevice(): boolean {
+ 		// `'ontouchstart' in window` always evaluates to true with typescript's modern typings. This causes `window` to be
+ 		// `never` later in `window.navigator`. That's why we need the explicit `window as Window` cast
+-		return 'ontouchstart' in mainWindow || navigator.maxTouchPoints > 0;
++		return 'ontouchstart' in mainWindow || mainWindow.navigator.maxTouchPoints > 0;
+ 	}
+ 
+ 	public override dispose(): void {
 diff --git a/src/vs/base/browser/window.ts b/src/vs/base/browser/window.ts
 index ab920e18349..ab318ad411d 100644
 --- a/src/vs/base/browser/window.ts
@@ -140,6 +243,140 @@ index ab920e18349..ab318ad411d 100644
  
  export function isAuxiliaryWindow(obj: Window): obj is CodeWindow {
  	if (obj === mainWindow) {
+diff --git a/src/vs/editor/browser/gpu/gpuDisposable.ts b/src/vs/editor/browser/gpu/gpuDisposable.ts
+index 875525be3ee..c19493b0f65 100644
+--- a/src/vs/editor/browser/gpu/gpuDisposable.ts
++++ b/src/vs/editor/browser/gpu/gpuDisposable.ts
+@@ -3,16 +3,17 @@
+  *  Licensed under the MIT License. See License.txt in the project root for license information.
+  *--------------------------------------------------------------------------------------------*/
+ 
++import { mainWindow } from '../../../base/browser/window.js';
+ import type { IReference } from '../../../base/common/lifecycle.js';
+ import { isFunction } from '../../../base/common/types.js';
+ 
+ export namespace GPULifecycle {
+ 	export async function requestDevice(fallback?: (message: string) => void): Promise<IReference<GPUDevice>> {
+ 		try {
+-			if (!navigator.gpu) {
++			if (!mainWindow.navigator.gpu) {
+ 				throw new Error('This browser does not support WebGPU');
+ 			}
+-			const adapter = (await navigator.gpu.requestAdapter())!;
++			const adapter = (await mainWindow.navigator.gpu.requestAdapter())!;
+ 			if (!adapter) {
+ 				throw new Error('This browser supports WebGPU but it appears to be disabled');
+ 			}
+diff --git a/src/vs/editor/browser/gpu/rectangleRenderer.ts b/src/vs/editor/browser/gpu/rectangleRenderer.ts
+index 09e68a80be8..789609790c9 100644
+--- a/src/vs/editor/browser/gpu/rectangleRenderer.ts
++++ b/src/vs/editor/browser/gpu/rectangleRenderer.ts
+@@ -4,6 +4,7 @@
+  *--------------------------------------------------------------------------------------------*/
+ 
+ import { getActiveWindow } from '../../../base/browser/dom.js';
++import { mainWindow } from '../../../base/browser/window.js';
+ import { Event } from '../../../base/common/event.js';
+ import { IReference, MutableDisposable } from '../../../base/common/lifecycle.js';
+ import type { IObservable } from '../../../base/common/observable.js';
+@@ -80,7 +81,7 @@ export class RectangleRenderer extends ViewEventHandler {
+ 			return;
+ 		}
+ 
+-		const presentationFormat = navigator.gpu.getPreferredCanvasFormat();
++		const presentationFormat = mainWindow.navigator.gpu.getPreferredCanvasFormat();
+ 		this._ctx.configure({
+ 			device: this._device,
+ 			format: presentationFormat,
+diff --git a/src/vs/editor/browser/viewParts/viewLinesGpu/viewLinesGpu.ts b/src/vs/editor/browser/viewParts/viewLinesGpu/viewLinesGpu.ts
+index 55ddb01f83d..7272069d931 100644
+--- a/src/vs/editor/browser/viewParts/viewLinesGpu/viewLinesGpu.ts
++++ b/src/vs/editor/browser/viewParts/viewLinesGpu/viewLinesGpu.ts
+@@ -30,6 +30,7 @@ import { FullFileRenderStrategy } from '../../gpu/renderStrategy/fullFileRenderS
+ import { MutableDisposable } from '../../../../base/common/lifecycle.js';
+ import type { ViewLineRenderingData } from '../../../common/viewModel.js';
+ import { GlyphRasterizer } from '../../gpu/raster/glyphRasterizer.js';
++import { mainWindow } from '../../../../base/browser/window.js';
+ 
+ const enum GlyphStorageBufferInfo {
+ 	FloatsPerEntry = 2 + 2 + 2,
+@@ -114,7 +115,7 @@ export class ViewLinesGpu extends ViewPart implements IViewLines {
+ 			this._renderStrategy.value!.reset();
+ 		}));
+ 
+-		const presentationFormat = navigator.gpu.getPreferredCanvasFormat();
++		const presentationFormat = mainWindow.navigator.gpu.getPreferredCanvasFormat();
+ 		this._viewGpuContext.ctx.configure({
+ 			device: this._device,
+ 			format: presentationFormat,
+diff --git a/src/vs/editor/contrib/clipboard/browser/clipboard.ts b/src/vs/editor/contrib/clipboard/browser/clipboard.ts
+index f795302fae8..c66d262a777 100644
+--- a/src/vs/editor/contrib/clipboard/browser/clipboard.ts
++++ b/src/vs/editor/contrib/clipboard/browser/clipboard.ts
+@@ -5,6 +5,7 @@
+ 
+ import * as browser from '../../../../base/browser/browser.js';
+ import { getActiveDocument, getActiveWindow } from '../../../../base/browser/dom.js';
++import { mainWindow } from '../../../../base/browser/window.js';
+ import { KeyCode, KeyMod } from '../../../../base/common/keyCodes.js';
+ import * as platform from '../../../../base/common/platform.js';
+ import { StopWatch } from '../../../../base/common/stopwatch.js';
+@@ -34,7 +35,7 @@ const supportsCopy = (platform.isNative || document.queryCommandSupported('copy'
+ // Firefox only supports navigator.clipboard.readText() in browser extensions.
+ // See https://developer.mozilla.org/en-US/docs/Web/API/Clipboard/readText#Browser_compatibility
+ // When loading over http, navigator.clipboard can be undefined. See https://github.com/microsoft/monaco-editor/issues/2313
+-const supportsPaste = (typeof navigator.clipboard === 'undefined' || browser.isFirefox) ? document.queryCommandSupported('paste') : true;
++const supportsPaste = (typeof mainWindow.navigator.clipboard === 'undefined' || browser.isFirefox) ? document.queryCommandSupported('paste') : true;
+ 
+ function registerCommand<T extends Command>(command: T): T {
+ 	command.register();
+diff --git a/src/vs/platform/clipboard/browser/clipboardService.ts b/src/vs/platform/clipboard/browser/clipboardService.ts
+index 358aa682cda..b41a1f1346b 100644
+--- a/src/vs/platform/clipboard/browser/clipboardService.ts
++++ b/src/vs/platform/clipboard/browser/clipboardService.ts
+@@ -52,7 +52,7 @@ export class BrowserClipboardService extends Disposable implements IClipboardSer
+ 
+ 	async readImage(): Promise<Uint8Array> {
+ 		try {
+-			const clipboardItems = await navigator.clipboard.read();
++			const clipboardItems = await mainWindow.navigator.clipboard.read();
+ 			const clipboardItem = clipboardItems[0];
+ 
+ 			const supportedImageTypes = ['image/png', 'image/jpeg', 'image/gif', 'image/tiff', 'image/bmp'];
+diff --git a/src/vs/platform/dialogs/browser/dialog.ts b/src/vs/platform/dialogs/browser/dialog.ts
+index ec0ab5aa54b..becd33e226d 100644
+--- a/src/vs/platform/dialogs/browser/dialog.ts
++++ b/src/vs/platform/dialogs/browser/dialog.ts
+@@ -6,6 +6,7 @@
+ import { EventHelper } from '../../../base/browser/dom.js';
+ import { StandardKeyboardEvent } from '../../../base/browser/keyboardEvent.js';
+ import { IDialogOptions } from '../../../base/browser/ui/dialog/dialog.js';
++import { mainWindow } from '../../../base/browser/window.js';
+ import { fromNow } from '../../../base/common/date.js';
+ import { localize } from '../../../nls.js';
+ import { IKeybindingService } from '../../keybinding/common/keybinding.js';
+@@ -50,7 +51,7 @@ export function createBrowserAboutDialogDetails(productService: IProductService)
+ 			productService.version || 'Unknown',
+ 			productService.commit || 'Unknown',
+ 			productService.date ? `${productService.date}${useAgo ? ' (' + fromNow(new Date(productService.date), true) + ')' : ''}` : 'Unknown',
+-			navigator.userAgent
++			mainWindow.navigator.userAgent
+ 		);
+ 	};
+ 
+diff --git a/src/vs/platform/remote/browser/browserSocketFactory.ts b/src/vs/platform/remote/browser/browserSocketFactory.ts
+index cad70612060..0c9266f2b8e 100644
+--- a/src/vs/platform/remote/browser/browserSocketFactory.ts
++++ b/src/vs/platform/remote/browser/browserSocketFactory.ts
+@@ -156,7 +156,7 @@ class BrowserWebSocket extends Disposable implements IWebSocket {
+ 			this._isClosed = true;
+ 
+ 			if (pendingErrorEvent) {
+-				if (!navigator.onLine) {
++				if (!mainWindow.navigator.onLine) {
+ 					// The browser is offline => this is a temporary error which might resolve itself
+ 					sendErrorNow(new RemoteAuthorityResolverError('Browser is offline', RemoteAuthorityResolverErrorCode.TemporarilyNotAvailable, e));
+ 				} else {
 diff --git a/src/vs/workbench/browser/window.ts b/src/vs/workbench/browser/window.ts
 index 63dfbb43d35..d18dd762ba8 100644
 --- a/src/vs/workbench/browser/window.ts
@@ -241,6 +478,19 @@ index eb0a9ffbc42..b6a71a21ce4 100644
  
  			try {
  				const url = new URL(item.name);
+diff --git a/src/vs/workbench/contrib/remote/browser/remoteIndicator.ts b/src/vs/workbench/contrib/remote/browser/remoteIndicator.ts
+index 66108502b91..f90c7df5714 100644
+--- a/src/vs/workbench/contrib/remote/browser/remoteIndicator.ts
++++ b/src/vs/workbench/contrib/remote/browser/remoteIndicator.ts
+@@ -300,7 +300,7 @@ export class RemoteStatusIndicator extends Disposable implements IWorkbenchContr
+ 			this._register(Event.any(
+ 				this._register(new DomEmitter(mainWindow, 'online')).event,
+ 				this._register(new DomEmitter(mainWindow, 'offline')).event
+-			)(() => this.setNetworkState(navigator.onLine ? 'online' : 'offline')));
++			)(() => this.setNetworkState(mainWindow.navigator.onLine ? 'online' : 'offline')));
+ 		}
+ 
+ 		this._register(this.extensionService.onDidChangeExtensions(async (result) => {
 diff --git a/src/vs/workbench/services/extensions/browser/webWorkerExtensionHost.ts b/src/vs/workbench/services/extensions/browser/webWorkerExtensionHost.ts
 index c6fbb0f49ba..9ca075c4b19 100644
 --- a/src/vs/workbench/services/extensions/browser/webWorkerExtensionHost.ts
@@ -269,6 +519,32 @@ index c6fbb0f49ba..9ca075c4b19 100644
  		};
  
  		const protocol: IMessagePassingProtocol = {
+diff --git a/src/vs/workbench/services/host/browser/browserHostService.ts b/src/vs/workbench/services/host/browser/browserHostService.ts
+index 81419568733..cf225505060 100644
+--- a/src/vs/workbench/services/host/browser/browserHostService.ts
++++ b/src/vs/workbench/services/host/browser/browserHostService.ts
+@@ -635,7 +635,7 @@ export class BrowserHostService extends Disposable implements IHostService {
+ 		let stream: MediaStream | undefined;
+ 		try {
+ 			// Create a stream from the screen source (capture screen without audio)
+-			stream = await navigator.mediaDevices.getDisplayMedia({
++			stream = await mainWindow.navigator.mediaDevices.getDisplayMedia({
+ 				audio: false,
+ 				video: true
+ 			});
+diff --git a/src/vs/workbench/services/keybinding/browser/keybindingService.ts b/src/vs/workbench/services/keybinding/browser/keybindingService.ts
+index cc2e76c3994..6929b00e4bd 100644
+--- a/src/vs/workbench/services/keybinding/browser/keybindingService.ts
++++ b/src/vs/workbench/services/keybinding/browser/keybindingService.ts
+@@ -245,7 +245,7 @@ export class WorkbenchKeybindingService extends AbstractKeybindingService {
+ 				return;
+ 			}
+ 
+-			const keyboard: IKeyboard | null = (<INavigatorWithKeyboard>navigator).keyboard;
++			const keyboard: IKeyboard | null = (<INavigatorWithKeyboard>mainWindow.navigator).keyboard;
+ 
+ 			if (BrowserFeatures.keyboard === KeyboardSupport.None) {
+ 				return;
 diff --git a/src/vs/workbench/services/lifecycle/browser/lifecycleService.ts b/src/vs/workbench/services/lifecycle/browser/lifecycleService.ts
 index 5bacc9fad6b..36f6d7776ed 100644
 --- a/src/vs/workbench/services/lifecycle/browser/lifecycleService.ts
@@ -282,3 +558,97 @@ index 5bacc9fad6b..36f6d7776ed 100644
  			if (timing?.type === 'reload') {
  				// MDN: https://developer.mozilla.org/en-US/docs/Web/API/PerformanceNavigationTiming/type#value
  				startupKind = StartupKind.ReloadedWindow;
+diff --git a/src/vs/workbench/services/localization/browser/localeService.ts b/src/vs/workbench/services/localization/browser/localeService.ts
+index a107a2f8695..57c79e02676 100644
+--- a/src/vs/workbench/services/localization/browser/localeService.ts
++++ b/src/vs/workbench/services/localization/browser/localeService.ts
+@@ -14,6 +14,7 @@ import { InstantiationType, registerSingleton } from '../../../../platform/insta
+ import { CancellationToken } from '../../../../base/common/cancellation.js';
+ import { IExtensionGalleryService } from '../../../../platform/extensionManagement/common/extensionManagement.js';
+ import { ILogService } from '../../../../platform/log/common/log.js';
++import { mainWindow } from '../../../../base/browser/window.js';
+ 
+ const localeStorage = new class LocaleStorage {
+ 
+@@ -65,7 +66,7 @@ export abstract class AbstractLocaleService implements ILocaleService {
+ 
+ 	async setLocale(languagePackItem: ILanguagePackItem, _skipDialog = false): Promise<void> {
+ 		const locale = languagePackItem.id;
+-		if (locale === Language.value() || (!locale && Language.value() === navigator.language.toLowerCase())) {
++		if (locale === Language.value() || (!locale && Language.value() === mainWindow.navigator.language.toLowerCase())) {
+ 			return;
+ 		}
+ 		this.storeLocale(locale, languagePackItem.extensionId);
+@@ -85,7 +86,7 @@ export abstract class AbstractLocaleService implements ILocaleService {
+ 	async clearLocalePreference(): Promise<void> {
+ 		this.clearLocale();
+ 
+-		if (Language.value() === navigator.language.toLowerCase()) {
++		if (Language.value() === mainWindow.navigator.language.toLowerCase()) {
+ 			return;
+ 		}
+ 
+diff --git a/src/vs/workbench/services/request/browser/requestService.ts b/src/vs/workbench/services/request/browser/requestService.ts
+index b7fd8daa969..9f2b2b7191b 100644
+--- a/src/vs/workbench/services/request/browser/requestService.ts
++++ b/src/vs/workbench/services/request/browser/requestService.ts
+@@ -16,6 +16,7 @@ import { ILoggerService } from '../../../../platform/log/common/log.js';
+ import { localize } from '../../../../nls.js';
+ import { LogService } from '../../../../platform/log/common/logService.js';
+ import { windowLogGroup } from '../../log/common/logConstants.js';
++import { mainWindow } from '../../../../base/browser/window.js';
+ 
+ export class BrowserRequestService extends AbstractRequestService implements IRequestService {
+ 
+@@ -38,7 +39,7 @@ export class BrowserRequestService extends AbstractRequestService implements IRe
+ 			if (!options.proxyAuthorization) {
+ 				options.proxyAuthorization = this.configurationService.inspect<string>('http.proxyAuthorization').userLocalValue;
+ 			}
+-			const context = await this.logAndRequest(options, () => request(options, token, () => navigator.onLine));
++			const context = await this.logAndRequest(options, () => request(options, token, () => mainWindow.navigator.onLine));
+ 
+ 			const connection = this.remoteAgentService.getConnection();
+ 			if (connection && context.res.statusCode === 405) {
+diff --git a/src/vs/workbench/services/request/electron-browser/requestService.ts b/src/vs/workbench/services/request/electron-browser/requestService.ts
+index 5f6960784ee..fb555497336 100644
+--- a/src/vs/workbench/services/request/electron-browser/requestService.ts
++++ b/src/vs/workbench/services/request/electron-browser/requestService.ts
+@@ -14,6 +14,7 @@ import { ILoggerService } from '../../../../platform/log/common/log.js';
+ import { localize } from '../../../../nls.js';
+ import { windowLogGroup } from '../../log/common/logConstants.js';
+ import { LogService } from '../../../../platform/log/common/logService.js';
++import { mainWindow } from '../../../../base/browser/window.js';
+ 
+ export class NativeRequestService extends AbstractRequestService implements IRequestService {
+ 
+@@ -35,7 +36,7 @@ export class NativeRequestService extends AbstractRequestService implements IReq
+ 		if (!options.proxyAuthorization) {
+ 			options.proxyAuthorization = this.configurationService.inspect<string>('http.proxyAuthorization').userLocalValue;
+ 		}
+-		return this.logAndRequest(options, () => request(options, token, () => navigator.onLine));
++		return this.logAndRequest(options, () => request(options, token, () => mainWindow.navigator.onLine));
+ 	}
+ 
+ 	async resolveProxy(url: string): Promise<string | undefined> {
+diff --git a/src/vs/workbench/services/timer/browser/timerService.ts b/src/vs/workbench/services/timer/browser/timerService.ts
+index dd80dce0eb4..ac4229906a2 100644
+--- a/src/vs/workbench/services/timer/browser/timerService.ts
++++ b/src/vs/workbench/services/timer/browser/timerService.ts
+@@ -21,6 +21,7 @@ import { isWeb } from '../../../../base/common/platform.js';
+ import { createBlobWorker } from '../../../../base/browser/webWorkerFactory.js';
+ import { Registry } from '../../../../platform/registry/common/platform.js';
+ import { ITerminalBackendRegistry, TerminalExtensions } from '../../../../platform/terminal/common/terminal.js';
++import { mainWindow } from '../../../../base/browser/window.js';
+ 
+ /* __GDPR__FRAGMENT__
+ 	"IMemoryInfo" : {
+@@ -783,7 +784,7 @@ export class TimerService extends AbstractTimerService {
+ 	protected async _extendStartupInfo(info: Writeable<IStartupMetrics>): Promise<void> {
+ 		info.isVMLikelyhood = 0;
+ 		info.isARM64Emulated = false;
+-		info.platform = navigator.userAgent;
+-		info.release = navigator.appVersion;
++		info.platform = mainWindow.navigator.userAgent;
++		info.release = mainWindow.navigator.appVersion;
+ 	}
+ }
