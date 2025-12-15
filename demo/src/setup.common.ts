@@ -83,11 +83,10 @@ import getProcessControllerServiceOverride from '@codingame/monaco-vscode-proces
 import getImageResizeServiceOverride from '@codingame/monaco-vscode-image-resize-service-override'
 import getAssignmentServiceOverride from '@codingame/monaco-vscode-assignment-service-override'
 import { EnvironmentOverride } from '@codingame/monaco-vscode-api/workbench'
-import { Worker } from './tools/crossOriginWorker'
+import { Worker } from './tools/fakeWorker.js'
 import defaultKeybindings from './user/keybindings.json?raw'
 import defaultConfiguration from './user/configuration.json?raw'
-import { TerminalBackend } from './features/terminal'
-import { workerConfig } from './tools/extHostWorker'
+import { TerminalBackend } from './features/terminal.js'
 import 'vscode/localExtensionHost'
 
 const url = new URL(document.location.href)
@@ -269,48 +268,46 @@ h1 {
 }
 
 // Workers
-export type WorkerLoader = () => Worker
-const workerLoaders: Partial<Record<string, WorkerLoader>> = {
-  TextEditorWorker: () =>
-    new Worker(new URL('monaco-editor/esm/vs/editor/editor.worker.js', import.meta.url), {
-      type: 'module'
-    }),
-  TextMateWorker: () =>
-    new Worker(
-      new URL('@codingame/monaco-vscode-textmate-service-override/worker', import.meta.url),
-      { type: 'module' }
+const workers: Partial<Record<string, Worker>> = {
+  editorWorkerService: new Worker(
+    new URL('monaco-editor/esm/vs/editor/editor.worker.js', import.meta.url),
+    { type: 'module' }
+  ),
+  extensionHostWorkerMain: new Worker(
+    new URL('@codingame/monaco-vscode-api/workers/extensionHost.worker', import.meta.url),
+    { type: 'module' }
+  ),
+  TextMateWorker: new Worker(
+    new URL('@codingame/monaco-vscode-textmate-service-override/worker', import.meta.url),
+    { type: 'module' }
+  ),
+  OutputLinkDetectionWorker: new Worker(
+    new URL('@codingame/monaco-vscode-output-service-override/worker', import.meta.url),
+    { type: 'module' }
+  ),
+  LanguageDetectionWorker: new Worker(
+    new URL(
+      '@codingame/monaco-vscode-language-detection-worker-service-override/worker',
+      import.meta.url
     ),
-  OutputLinkDetectionWorker: () =>
-    new Worker(
-      new URL('@codingame/monaco-vscode-output-service-override/worker', import.meta.url),
-      { type: 'module' }
-    ),
-  LanguageDetectionWorker: () =>
-    new Worker(
-      new URL(
-        '@codingame/monaco-vscode-language-detection-worker-service-override/worker',
-        import.meta.url
-      ),
-      { type: 'module' }
-    ),
-  NotebookEditorWorker: () =>
-    new Worker(
-      new URL('@codingame/monaco-vscode-notebook-service-override/worker', import.meta.url),
-      { type: 'module' }
-    ),
-  LocalFileSearchWorker: () =>
-    new Worker(
-      new URL('@codingame/monaco-vscode-search-service-override/worker', import.meta.url),
-      { type: 'module' }
-    )
+    { type: 'module' }
+  ),
+  NotebookEditorWorker: new Worker(
+    new URL('@codingame/monaco-vscode-notebook-service-override/worker', import.meta.url),
+    { type: 'module' }
+  ),
+  LocalFileSearchWorker: new Worker(
+    new URL('@codingame/monaco-vscode-search-service-override/worker', import.meta.url),
+    { type: 'module' }
+  )
 }
+
 window.MonacoEnvironment = {
-  getWorker: function (moduleId, label) {
-    const workerFactory = workerLoaders[label]
-    if (workerFactory != null) {
-      return workerFactory()
-    }
-    throw new Error(`Unimplemented worker ${label} (${moduleId})`)
+  getWorkerUrl(_, label) {
+    return workers[label]?.url.toString()
+  },
+  getWorkerOptions(_, label) {
+    return workers[label]?.options
   }
 }
 
@@ -407,7 +404,9 @@ export const envOptions: EnvironmentOverride = {
 export const commonServices: IEditorOverrideServices = {
   ...getAuthenticationServiceOverride(),
   ...getLogServiceOverride(),
-  ...getExtensionServiceOverride(workerConfig),
+  ...getExtensionServiceOverride({
+    enableWorkerExtensionHost: true
+  }),
   ...getExtensionGalleryServiceOverride({ webOnly: false }),
   ...getModelServiceOverride(),
   ...getNotificationServiceOverride(),
