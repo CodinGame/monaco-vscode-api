@@ -117,7 +117,8 @@ export default (args: Record<string, string>): rollup.RollupOptions => {
     plugins: [
       importMetaAssetsPlugin({
         include: ['**/*.ts', '**/*.js'],
-        preserveAssetsRoot: SRC_DIR
+        preserveAssetsRoot: SRC_DIR,
+        exclude: ['**/editorWorkerService.js', '**/webWorkerExtensionHost.js']
       }),
       commonjs({
         include: '**/vscode-semver/**/*'
