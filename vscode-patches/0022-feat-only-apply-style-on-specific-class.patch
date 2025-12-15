@@ -4,9 +4,10 @@ Date: Mon, 11 Mar 2024 17:51:04 +0100
 Subject: [PATCH] feat: only apply style on specific class
 
 ---
- src/vs/workbench/browser/media/style.css | 182 +++++++++++------------
- src/vs/workbench/browser/style.ts        |  10 +-
- 2 files changed, 90 insertions(+), 102 deletions(-)
+ src/vs/workbench/browser/media/style.css      | 182 ++++++++----------
+ src/vs/workbench/browser/style.ts             |  10 +-
+ .../browser/auxiliaryWindowService.ts         |  16 ++
+ 3 files changed, 106 insertions(+), 102 deletions(-)
 
 diff --git a/src/vs/workbench/browser/media/style.css b/src/vs/workbench/browser/media/style.css
 index 13ff7948e88..2970ec6e57f 100644
@@ -392,3 +393,30 @@ index 9250ef3f280..b3cde1a1e14 100644
 +		collector.addRule(`.monaco-workbench-part { background-color: ${workbenchBackground}; }`);
  	}
  });
+diff --git a/src/vs/workbench/services/auxiliaryWindow/browser/auxiliaryWindowService.ts b/src/vs/workbench/services/auxiliaryWindow/browser/auxiliaryWindowService.ts
+index 53bfb067b4e..6e201931269 100644
+--- a/src/vs/workbench/services/auxiliaryWindow/browser/auxiliaryWindowService.ts
++++ b/src/vs/workbench/services/auxiliaryWindow/browser/auxiliaryWindowService.ts
+@@ -429,6 +429,22 @@ export class BrowserAuxiliaryWindowService extends Disposable implements IAuxili
+ 	private applyCSS(auxiliaryWindow: CodeWindow, disposables: DisposableStore) {
+ 		mark('code/auxiliaryWindow/willApplyCSS');
+ 
++		const globalStyle = new auxiliaryWindow.CSSStyleSheet();
++		globalStyle.insertRule(`body {
++	height: 100%;
++	width: 100%;
++	margin: 0;
++	padding: 0;
++	overflow: hidden;
++	font-size: 11px;
++	user-select: none;
++	-webkit-user-select: none;
++}`);
++		auxiliaryWindow.document.adoptedStyleSheets = [
++			...auxiliaryWindow.document.adoptedStyleSheets,
++			globalStyle,
++		];
++
+ 		const mapOriginalToClone = new Map<Node /* original */, Node /* clone */>();
+ 
+ 		const stylesLoaded = new Barrier();

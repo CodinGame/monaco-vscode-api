@@ -4,11 +4,11 @@ Date: Fri, 9 May 2025 19:46:58 +0200
 Subject: [PATCH] feat: support adoptedStyleSheets for aux windows
 
 ---
- .../auxiliaryWindow/browser/auxiliaryWindowService.ts  | 10 +++++++++-
- 1 file changed, 9 insertions(+), 1 deletion(-)
+ .../auxiliaryWindow/browser/auxiliaryWindowService.ts  | 10 ++++++++--
+ 1 file changed, 8 insertions(+), 2 deletions(-)
 
 diff --git a/src/vs/workbench/services/auxiliaryWindow/browser/auxiliaryWindowService.ts b/src/vs/workbench/services/auxiliaryWindow/browser/auxiliaryWindowService.ts
-index 5f385e07a71..c91907ed1e3 100644
+index 15b221bafb8..3adc42984d0 100644
 --- a/src/vs/workbench/services/auxiliaryWindow/browser/auxiliaryWindowService.ts
 +++ b/src/vs/workbench/services/auxiliaryWindow/browser/auxiliaryWindowService.ts
 @@ -5,7 +5,7 @@
@@ -20,18 +20,18 @@ index 5f385e07a71..c91907ed1e3 100644
  import { CodeWindow, ensureCodeWindow, mainWindow } from '../../../../base/browser/window.js';
  import { coalesce } from '../../../../base/common/arrays.js';
  import { Barrier } from '../../../../base/common/async.js';
-@@ -422,6 +422,14 @@ export class BrowserAuxiliaryWindowService extends Disposable implements IAuxili
- 	private applyCSS(auxiliaryWindow: CodeWindow, disposables: DisposableStore) {
- 		mark('code/auxiliaryWindow/willApplyCSS');
+@@ -436,7 +436,13 @@ export class BrowserAuxiliaryWindowService extends Disposable implements IAuxili
+ 		auxiliaryWindow.document.adoptedStyleSheets = [
+ 			...auxiliaryWindow.document.adoptedStyleSheets,
+ 			globalStyle,
+-		];
++			...(shadowRootContainer ?? mainWindow.document).adoptedStyleSheets.map(ss => {
++				const newss = new auxiliaryWindow.CSSStyleSheet();
++				for (const rule of ss.cssRules) {
++					newss.insertRule(rule.cssText);
++				}
++				return newss;
++			})];
  
-+		auxiliaryWindow.document.adoptedStyleSheets = [...auxiliaryWindow.document.adoptedStyleSheets, ...(shadowRootContainer ?? mainWindow.document).adoptedStyleSheets.map(ss => {
-+			const newss = new auxiliaryWindow.CSSStyleSheet();
-+			for (const rule of ss.cssRules) {
-+				newss.insertRule(rule.cssText);
-+			}
-+			return newss;
-+		})];
-+
  		const mapOriginalToClone = new Map<Node /* original */, Node /* clone */>();
  
- 		const stylesLoaded = new Barrier();
