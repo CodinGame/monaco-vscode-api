@@ -105,6 +105,8 @@ abstract class SimpleTerminalBackend implements ITerminalBackend {
 
   abstract getDefaultSystemShell: ITerminalBackend['getDefaultSystemShell']
   abstract createProcess: ITerminalBackend['createProcess']
+
+  setNextCommandId: ITerminalBackend['setNextCommandId'] = async () => {}
 }
 
 abstract class SimpleTerminalProcess implements ITerminalChildProcess {
@@ -123,8 +125,6 @@ abstract class SimpleTerminalProcess implements ITerminalChildProcess {
       })
     })
   }
-
-  setNextCommandId: ITerminalChildProcess['setNextCommandId'] = async () => {}
 
   onProcessReplayComplete?: Event<void> | undefined
   onRestoreCommands?: Event<ISerializedCommandDetectionCapability> | undefined

@@ -371,7 +371,8 @@ const api: typeof vscode = {
   McpToolAvailability: extHostTypes.McpToolAvailability,
   McpStdioServerDefinition2: extHostTypes.McpStdioServerDefinition,
   McpHttpServerDefinition2: extHostTypes.McpHttpServerDefinition,
-  TerminalCompletionItem: extHostTypes.TerminalCompletionItem
+  TerminalCompletionItem: extHostTypes.TerminalCompletionItem,
+  ChatSessionChangedFile: extHostTypes.ChatSessionChangedFile
 }
 
 // @ts-expect-error the syntax will be transformed by a typescript transformer in the rollup config
