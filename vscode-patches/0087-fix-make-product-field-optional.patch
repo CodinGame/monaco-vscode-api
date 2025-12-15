@@ -1,0 +1,80 @@
+From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
+From: =?UTF-8?q?Lo=C3=AFc=20Mangeonjean?= <loic@coderpad.io>
+Date: Mon, 15 Dec 2025 11:02:29 +0100
+Subject: [PATCH] fix: make product field optional
+
+---
+ src/vs/base/common/product.ts                                 | 2 +-
+ .../workbench/contrib/chat/browser/chatStatus/chatStatus.ts   | 2 +-
+ .../contrib/chat/browser/chatStatus/chatStatusDashboard.ts    | 2 +-
+ .../contrib/chat/browser/chatStatus/chatStatusEntry.ts        | 2 +-
+ src/vs/workbench/contrib/chat/browser/chatWidget.ts           | 4 ++--
+ 5 files changed, 6 insertions(+), 6 deletions(-)
+
+diff --git a/src/vs/base/common/product.ts b/src/vs/base/common/product.ts
+index 2dc76e8c7ce..cc6c895bc01 100644
+--- a/src/vs/base/common/product.ts
++++ b/src/vs/base/common/product.ts
+@@ -232,7 +232,7 @@ export interface IProductConfiguration {
+ 	readonly commonlyUsedSettings?: string[];
+ 	readonly aiGeneratedWorkspaceTrust?: IAiGeneratedWorkspaceTrust;
+ 
+-	readonly defaultChatAgent: IDefaultChatAgent;
++	readonly defaultChatAgent?: IDefaultChatAgent;
+ 	readonly chatParticipantRegistry?: string;
+ 	readonly chatSessionRecommendations?: IChatSessionRecommendation[];
+ 	readonly emergencyAlertUrl?: string;
+diff --git a/src/vs/workbench/contrib/chat/browser/chatStatus/chatStatus.ts b/src/vs/workbench/contrib/chat/browser/chatStatus/chatStatus.ts
+index ef3e5989e8c..dbc886eae7a 100644
+--- a/src/vs/workbench/contrib/chat/browser/chatStatus/chatStatus.ts
++++ b/src/vs/workbench/contrib/chat/browser/chatStatus/chatStatus.ts
+@@ -14,7 +14,7 @@ export function isNewUser(chatEntitlementService: IChatEntitlementService): bool
+ }
+ 
+ export function isCompletionsEnabled(configurationService: IConfigurationService, modeId: string = '*'): boolean {
+-	const result = configurationService.getValue<Record<string, boolean>>(product.defaultChatAgent.completionsEnablementSetting);
++	const result = configurationService.getValue<Record<string, boolean>>(product.defaultChatAgent!.completionsEnablementSetting);
+ 	if (!isObject(result)) {
+ 		return false;
+ 	}
+diff --git a/src/vs/workbench/contrib/chat/browser/chatStatus/chatStatusDashboard.ts b/src/vs/workbench/contrib/chat/browser/chatStatus/chatStatusDashboard.ts
+index ec7ec0af9e8..bbe43eb47a0 100644
+--- a/src/vs/workbench/contrib/chat/browser/chatStatus/chatStatusDashboard.ts
++++ b/src/vs/workbench/contrib/chat/browser/chatStatus/chatStatusDashboard.ts
+@@ -48,7 +48,7 @@ import { contrastBorder, inputValidationErrorBorder, inputValidationInfoBorder,
+ import { Color } from '../../../../../base/common/color.js';
+ import { IInstantiationService } from '../../../../../platform/instantiation/common/instantiation.js';
+ 
+-const defaultChat = product.defaultChatAgent;
++const defaultChat = product.defaultChatAgent!;
+ 
+ interface ISettingsAccessor {
+ 	readSetting: () => boolean;
+diff --git a/src/vs/workbench/contrib/chat/browser/chatStatus/chatStatusEntry.ts b/src/vs/workbench/contrib/chat/browser/chatStatus/chatStatusEntry.ts
+index fe94a56a87e..a2d93026f40 100644
+--- a/src/vs/workbench/contrib/chat/browser/chatStatus/chatStatusEntry.ts
++++ b/src/vs/workbench/contrib/chat/browser/chatStatus/chatStatusEntry.ts
+@@ -83,7 +83,7 @@ export class ChatStatusBarEntry extends Disposable implements IWorkbenchContribu
+ 		this._register(this.editorService.onDidActiveEditorChange(() => this.onDidActiveEditorChange()));
+ 
+ 		this._register(this.configurationService.onDidChangeConfiguration(e => {
+-			if (e.affectsConfiguration(product.defaultChatAgent.completionsEnablementSetting)) {
++			if (e.affectsConfiguration(product.defaultChatAgent!.completionsEnablementSetting)) {
+ 				this.update();
+ 			}
+ 		}));
+diff --git a/src/vs/workbench/contrib/chat/browser/chatWidget.ts b/src/vs/workbench/contrib/chat/browser/chatWidget.ts
+index cecd432942e..f59f7fbaebb 100644
+--- a/src/vs/workbench/contrib/chat/browser/chatWidget.ts
++++ b/src/vs/workbench/contrib/chat/browser/chatWidget.ts
+@@ -895,8 +895,8 @@ export class ChatWidget extends Disposable implements IChatWidget {
+ 				const defaultAgent = this.chatAgentService.getDefaultAgent(this.location, this.input.currentModeKind);
+ 				let additionalMessage: string | IMarkdownString | undefined;
+ 				if (this.chatEntitlementService.anonymous && !this.chatEntitlementService.sentiment.installed) {
+-					const providers = product.defaultChatAgent.provider;
+-					additionalMessage = new MarkdownString(localize({ key: 'settings', comment: ['{Locked="]({2})"}', '{Locked="]({3})"}'] }, "By continuing with {0} Copilot, you agree to {1}'s [Terms]({2}) and [Privacy Statement]({3}).", providers.default.name, providers.default.name, product.defaultChatAgent.termsStatementUrl, product.defaultChatAgent.privacyStatementUrl), { isTrusted: true });
++					const providers = product.defaultChatAgent!.provider;
++					additionalMessage = new MarkdownString(localize({ key: 'settings', comment: ['{Locked="]({2})"}', '{Locked="]({3})"}'] }, "By continuing with {0} Copilot, you agree to {1}'s [Terms]({2}) and [Privacy Statement]({3}).", providers.default.name, providers.default.name, product.defaultChatAgent!.termsStatementUrl, product.defaultChatAgent!.privacyStatementUrl), { isTrusted: true });
+ 				} else {
+ 					additionalMessage = defaultAgent?.metadata.additionalWelcomeMessage;
+ 				}
