@@ -11,7 +11,7 @@ Subject: [PATCH] refactor: extract shouldAttemptTaskReconnection flag
  4 files changed, 10 insertions(+), 4 deletions(-)
 
 diff --git a/src/vs/workbench/contrib/tasks/browser/abstractTaskService.ts b/src/vs/workbench/contrib/tasks/browser/abstractTaskService.ts
-index b8372a961fe..4f9e4e77df3 100644
+index 30fce10b2d2..0b8c3da3c20 100644
 --- a/src/vs/workbench/contrib/tasks/browser/abstractTaskService.ts
 +++ b/src/vs/workbench/contrib/tasks/browser/abstractTaskService.ts
 @@ -79,7 +79,7 @@ import { VirtualWorkspaceContext } from '../../../common/contextkeys.js';
@@ -33,7 +33,7 @@ index b8372a961fe..4f9e4e77df3 100644
  			this._tasksReconnected = true;
  			this._storageService.remove(AbstractTaskService.PersistentTasks_Key, StorageScope.WORKSPACE);
 diff --git a/src/vs/workbench/contrib/terminal/browser/terminalService.ts b/src/vs/workbench/contrib/terminal/browser/terminalService.ts
-index b2f39551376..f602db5b55b 100644
+index ca8ccd9b861..a58f6cd5ae8 100644
 --- a/src/vs/workbench/contrib/terminal/browser/terminalService.ts
 +++ b/src/vs/workbench/contrib/terminal/browser/terminalService.ts
 @@ -42,7 +42,7 @@ import { IEditorGroupsService } from '../../../services/editor/common/editorGrou
@@ -45,7 +45,7 @@ index b2f39551376..f602db5b55b 100644
  import { IRemoteAgentService } from '../../../services/remote/common/remoteAgentService.js';
  import { XtermTerminal } from './xterm/xtermTerminal.js';
  import { TerminalInstance } from './terminalInstance.js';
-@@ -536,7 +536,7 @@ export class TerminalService extends Disposable implements ITerminalService {
+@@ -544,7 +544,7 @@ export class TerminalService extends Disposable implements ITerminalService {
  		let lastInstance: Promise<ITerminalInstance> | undefined;
  		for (const terminalLayout of terminalLayouts) {
  			const attachPersistentProcess = terminalLayout.terminal!;

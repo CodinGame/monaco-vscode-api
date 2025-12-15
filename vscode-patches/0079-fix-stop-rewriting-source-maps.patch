@@ -4,114 +4,75 @@ Date: Mon, 29 Sep 2025 12:24:50 +0200
 Subject: [PATCH] fix: stop rewriting source maps
 
 ---
- build/gulpfile.extensions.js |  5 +----
- build/gulpfile.vscode.js     |  1 -
- build/lib/extensions.js      | 13 -------------
+ build/gulpfile.extensions.ts |  5 +----
+ build/gulpfile.vscode.ts     |  1 -
  build/lib/extensions.ts      | 14 --------------
- 4 files changed, 1 insertion(+), 32 deletions(-)
+ 3 files changed, 1 insertion(+), 19 deletions(-)
 
-diff --git a/build/gulpfile.extensions.js b/build/gulpfile.extensions.js
-index 7826f48490b..eec4af12748 100644
---- a/build/gulpfile.extensions.js
-+++ b/build/gulpfile.extensions.js
-@@ -72,8 +72,6 @@ const compilations = [
+diff --git a/build/gulpfile.extensions.ts b/build/gulpfile.extensions.ts
+index 6f5cf0d25d8..dce870fcc09 100644
+--- a/build/gulpfile.extensions.ts
++++ b/build/gulpfile.extensions.ts
+@@ -76,8 +76,6 @@ const compilations = [
  	'.vscode/extensions/vscode-selfhost-import-aid/tsconfig.json',
  ];
  
--const getBaseUrl = out => `https://main.vscode-cdn.net/sourcemaps/${commit}/${out}`;
+-const getBaseUrl = (out: string) => `https://main.vscode-cdn.net/sourcemaps/${commit}/${out}`;
 -
  const tasks = compilations.map(function (tsconfigFile) {
  	const absolutePath = path.join(root, tsconfigFile);
  	const relativeDirname = path.dirname(tsconfigFile.replace(/^(.*\/)?extensions\//i, ''));
-@@ -89,7 +87,6 @@ const tasks = compilations.map(function (tsconfigFile) {
+@@ -93,7 +91,6 @@ const tasks = compilations.map(function (tsconfigFile) {
  	const srcOpts = { cwd: root, base: srcBase, dot: true };
  
  	const out = path.join(srcRoot, 'out');
 -	const baseUrl = getBaseUrl(out);
  
- 	function createPipeline(build, emitError, transpileOnly) {
- 		const tsb = require('./lib/tsb');
-@@ -118,7 +115,7 @@ const tasks = compilations.map(function (tsconfigFile) {
+ 	function createPipeline(build: boolean, emitError?: boolean, transpileOnly?: boolean) {
+ 		const reporter = createReporter('extensions');
+@@ -119,7 +116,7 @@ const tasks = compilations.map(function (tsconfigFile) {
  				.pipe(compilation())
  				.pipe(build ? util.stripSourceMappingURL() : es.through())
  				.pipe(sourcemaps.write('.', {
--					sourceMappingURL: !build ? null : f => `${baseUrl}/${f.relative}.map`,
+-					sourceMappingURL: !build ? undefined : f => `${baseUrl}/${f.relative}.map`,
 +					sourceMappingURL: null,
  					addComment: !!build,
  					includeContent: !!build,
  					// note: trailing slash is important, else the source URLs in V8's file coverage are incorrect
-diff --git a/build/gulpfile.vscode.js b/build/gulpfile.vscode.js
-index 027b2d34487..2f5c789d6a0 100644
---- a/build/gulpfile.vscode.js
-+++ b/build/gulpfile.vscode.js
-@@ -293,7 +293,6 @@ function packageTask(platform, arch, sourceFolderName, destinationFolderName, op
- 			.pipe(util.cleanNodeModules(path.join(__dirname, '.moduleignore')))
- 			.pipe(util.cleanNodeModules(path.join(__dirname, `.moduleignore.${process.platform}`)))
+diff --git a/build/gulpfile.vscode.ts b/build/gulpfile.vscode.ts
+index d3ab651ef2e..4850cf372cb 100644
+--- a/build/gulpfile.vscode.ts
++++ b/build/gulpfile.vscode.ts
+@@ -293,7 +293,6 @@ function packageTask(platform: string, arch: string, sourceFolderName: string, d
+ 			.pipe(util.cleanNodeModules(path.join(import.meta.dirname, '.moduleignore')))
+ 			.pipe(util.cleanNodeModules(path.join(import.meta.dirname, `.moduleignore.${process.platform}`)))
  			.pipe(jsFilter)
 -			.pipe(util.rewriteSourceMappingURL(sourceMappingURLBase))
  			.pipe(jsFilter.restore)
  			.pipe(createAsar(path.join(process.cwd(), 'node_modules'), [
  				'**/*.node',
-diff --git a/build/lib/extensions.js b/build/lib/extensions.js
-index e3736888924..7d75babd8e6 100644
---- a/build/lib/extensions.js
-+++ b/build/lib/extensions.js
-@@ -69,12 +69,9 @@ const gulp_buffer_1 = __importDefault(require("gulp-buffer"));
- const jsoncParser = __importStar(require("jsonc-parser"));
- const dependencies_1 = require("./dependencies");
- const builtInExtensions_1 = require("./builtInExtensions");
--const getVersion_1 = require("./getVersion");
- const fetch_1 = require("./fetch");
- const vzip = require('gulp-vinyl-zip');
- const root = path_1.default.dirname(path_1.default.dirname(__dirname));
--const commit = (0, getVersion_1.getVersion)(root);
--const sourceMappingURLBase = `https://main.vscode-cdn.net/sourcemaps/${commit}`;
- function minifyExtensionResources(input) {
-     const jsonFilter = (0, gulp_filter_1.default)(['**/*.json', '**/*.code-snippets'], { restore: true });
-     return input
-@@ -189,7 +186,6 @@ function fromLocalWebpack(extensionPath, webpackConfigFileName, disableMangle) {
-                         }
-                     }
-                 }
--                const relativeOutputPath = path_1.default.relative(extensionPath, webpackConfig.output.path);
-                 return webpackGulp(webpackConfig, webpack, webpackDone)
-                     .pipe(event_stream_1.default.through(function (data) {
-                     data.stat = data.stat || {};
-@@ -197,15 +193,6 @@ function fromLocalWebpack(extensionPath, webpackConfigFileName, disableMangle) {
-                     this.emit('data', data);
-                 }))
-                     .pipe(event_stream_1.default.through(function (data) {
--                    // source map handling:
--                    // * rewrite sourceMappingURL
--                    // * save to disk so that upload-task picks this up
--                    if (path_1.default.extname(data.basename) === '.js') {
--                        const contents = data.contents.toString('utf8');
--                        data.contents = Buffer.from(contents.replace(/\n\/\/# sourceMappingURL=(.*)$/gm, function (_m, g1) {
--                            return `\n//# sourceMappingURL=${sourceMappingURLBase}/extensions/${path_1.default.basename(extensionPath)}/${relativeOutputPath}/${g1}`;
--                        }), 'utf8');
--                    }
-                     this.emit('data', data);
-                 }));
-             });
 diff --git a/build/lib/extensions.ts b/build/lib/extensions.ts
-index 4779ddba03a..2ec420d9818 100644
+index 24462a3b26e..cb733cde061 100644
 --- a/build/lib/extensions.ts
 +++ b/build/lib/extensions.ts
-@@ -23,13 +23,10 @@ import * as jsoncParser from 'jsonc-parser';
+@@ -23,7 +23,6 @@ import * as jsoncParser from 'jsonc-parser';
  import webpack from 'webpack';
- import { getProductionDependencies } from './dependencies';
- import { IExtensionDefinition, getExtensionStream } from './builtInExtensions';
--import { getVersion } from './getVersion';
- import { fetchUrls, fetchGithub } from './fetch';
- const vzip = require('gulp-vinyl-zip');
+ import { getProductionDependencies } from './dependencies.ts';
+ import { type IExtensionDefinition, getExtensionStream } from './builtInExtensions.ts';
+-import { getVersion } from './getVersion.ts';
+ import { fetchUrls, fetchGithub } from './fetch.ts';
+ import vzip from 'gulp-vinyl-zip';
  
- const root = path.dirname(path.dirname(__dirname));
+@@ -31,8 +30,6 @@ import { createRequire } from 'module';
+ const require = createRequire(import.meta.url);
+ 
+ const root = path.dirname(path.dirname(import.meta.dirname));
 -const commit = getVersion(root);
 -const sourceMappingURLBase = `https://main.vscode-cdn.net/sourcemaps/${commit}`;
  
  function minifyExtensionResources(input: Stream): Stream {
  	const jsonFilter = filter(['**/*.json', '**/*.code-snippets'], { restore: true });
-@@ -162,7 +159,6 @@ function fromLocalWebpack(extensionPath: string, webpackConfigFileName: string,
+@@ -164,7 +161,6 @@ function fromLocalWebpack(extensionPath: string, webpackConfigFileName: string,
  						}
  					}
  				}
@@ -119,7 +80,7 @@ index 4779ddba03a..2ec420d9818 100644
  
  				return webpackGulp(webpackConfig, webpack, webpackDone)
  					.pipe(es.through(function (data) {
-@@ -171,16 +167,6 @@ function fromLocalWebpack(extensionPath: string, webpackConfigFileName: string,
+@@ -173,16 +169,6 @@ function fromLocalWebpack(extensionPath: string, webpackConfigFileName: string,
  						this.emit('data', data);
  					}))
  					.pipe(es.through(function (data: File) {
@@ -127,7 +88,7 @@ index 4779ddba03a..2ec420d9818 100644
 -						// * rewrite sourceMappingURL
 -						// * save to disk so that upload-task picks this up
 -						if (path.extname(data.basename) === '.js') {
--							const contents = (<Buffer>data.contents).toString('utf8');
+-							const contents = (data.contents as Buffer).toString('utf8');
 -							data.contents = Buffer.from(contents.replace(/\n\/\/# sourceMappingURL=(.*)$/gm, function (_m, g1) {
 -								return `\n//# sourceMappingURL=${sourceMappingURLBase}/extensions/${path.basename(extensionPath)}/${relativeOutputPath}/${g1}`;
 -							}), 'utf8');

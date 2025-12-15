@@ -1,0 +1,247 @@
+From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
+From: =?UTF-8?q?Lo=C3=AFc=20Mangeonjean?= <loic@coderpad.io>
+Date: Tue, 11 Feb 2025 16:33:43 +0100
+Subject: [PATCH] feat: support configuring worker options
+
+---
+ build/monaco/monaco.d.ts.recipe                     |  8 ++++++--
+ src/vs/base/browser/browser.ts                      |  6 ++++--
+ .../browser/services/standaloneWebWorkerService.ts  |  6 ++++++
+ src/vs/monaco.d.ts                                  |  8 ++++++--
+ .../platform/webWorker/browser/webWorkerService.ts  |  2 ++
+ .../webWorker/browser/webWorkerServiceImpl.ts       | 13 +++++++++----
+ .../services/extensions/browser/extensionService.ts |  7 ++++++-
+ .../extensions/browser/webWorkerExtensionHost.ts    |  1 +
+ .../electron-browser/nativeExtensionService.ts      |  7 ++++++-
+ .../worker/webWorkerExtensionHostIframe.html        | 10 +++++-----
+ 10 files changed, 51 insertions(+), 17 deletions(-)
+
+diff --git a/build/monaco/monaco.d.ts.recipe b/build/monaco/monaco.d.ts.recipe
+index b1f676796af..7b40b6ed32f 100644
+--- a/build/monaco/monaco.d.ts.recipe
++++ b/build/monaco/monaco.d.ts.recipe
+@@ -24,12 +24,16 @@ declare namespace monaco {
+ 		 * A web worker factory.
+ 		 * NOTE: If `getWorker` is defined, `getWorkerUrl` is not invoked.
+ 		 */
+-		getWorker?(workerId: string, label: string): Promise<Worker> | Worker;
++		getWorker?(workerId: string, label: string): Promise<Worker> | Worker | undefined;
+ 		/**
+ 		 * Return the location for web worker scripts.
+ 		 * NOTE: If `getWorker` is defined, `getWorkerUrl` is not invoked.
+ 		 */
+-		getWorkerUrl?(workerId: string, label: string): string;
++		getWorkerUrl?(workerId: string, label: string): string | undefined;
++		/**
++		 * Return the options for web worker scripts.
++		 */
++		getWorkerOptions?(moduleId: string, label: string): WorkerOptions | undefined;
+ 		/**
+ 		 * Create a trusted types policy (same API as window.trustedTypes.createPolicy)
+ 		 */
+diff --git a/src/vs/base/browser/browser.ts b/src/vs/base/browser/browser.ts
+index b6e9ec09fff..9da1be69d7c 100644
+--- a/src/vs/base/browser/browser.ts
++++ b/src/vs/base/browser/browser.ts
+@@ -147,9 +147,11 @@ export interface IMonacoEnvironment {
+ 		policyOptions?: Options,
+ 	): undefined | Pick<TrustedTypePolicy, 'name' | Extract<keyof Options, keyof TrustedTypePolicyOptions>>;
+ 
+-	getWorker?(moduleId: string, label: string): Worker | Promise<Worker>;
++	getWorker?(moduleId: string, label: string): Worker | Promise<Worker> | undefined;
+ 
+-	getWorkerUrl?(moduleId: string, label: string): string;
++	getWorkerUrl?(moduleId: string, label: string): string | undefined;
++
++	getWorkerOptions?(moduleId: string, label: string): WorkerOptions | undefined;
+ 
+ 	globalAPI?: boolean;
+ 
+diff --git a/src/vs/editor/standalone/browser/services/standaloneWebWorkerService.ts b/src/vs/editor/standalone/browser/services/standaloneWebWorkerService.ts
+index 9e60c93dfde..d4eae033ab1 100644
+--- a/src/vs/editor/standalone/browser/services/standaloneWebWorkerService.ts
++++ b/src/vs/editor/standalone/browser/services/standaloneWebWorkerService.ts
+@@ -42,4 +42,10 @@ export class StandaloneWebWorkerService extends WebWorkerService {
+ 		const urlStr = url.toString();
+ 		return urlStr;
+ 	}
++
++	override getWorkerOptions(descriptor: WebWorkerDescriptor): WorkerOptions | undefined {
++		const monacoEnvironment = getMonacoEnvironment();
++
++		return monacoEnvironment?.getWorkerOptions?.('workerMain.js', descriptor.label);
++	}
+ }
+diff --git a/src/vs/monaco.d.ts b/src/vs/monaco.d.ts
+index 9c322084310..167213ef91e 100644
+--- a/src/vs/monaco.d.ts
++++ b/src/vs/monaco.d.ts
+@@ -24,12 +24,16 @@ declare namespace monaco {
+ 		 * A web worker factory.
+ 		 * NOTE: If `getWorker` is defined, `getWorkerUrl` is not invoked.
+ 		 */
+-		getWorker?(workerId: string, label: string): Promise<Worker> | Worker;
++		getWorker?(workerId: string, label: string): Promise<Worker> | Worker | undefined;
+ 		/**
+ 		 * Return the location for web worker scripts.
+ 		 * NOTE: If `getWorker` is defined, `getWorkerUrl` is not invoked.
+ 		 */
+-		getWorkerUrl?(workerId: string, label: string): string;
++		getWorkerUrl?(workerId: string, label: string): string | undefined;
++		/**
++		 * Return the options for web worker scripts.
++		 */
++		getWorkerOptions?(moduleId: string, label: string): WorkerOptions | undefined;
+ 		/**
+ 		 * Create a trusted types policy (same API as window.trustedTypes.createPolicy)
+ 		 */
+diff --git a/src/vs/platform/webWorker/browser/webWorkerService.ts b/src/vs/platform/webWorker/browser/webWorkerService.ts
+index fd5150435af..e8d736fa762 100644
+--- a/src/vs/platform/webWorker/browser/webWorkerService.ts
++++ b/src/vs/platform/webWorker/browser/webWorkerService.ts
+@@ -15,4 +15,6 @@ export interface IWebWorkerService {
+ 	createWorkerClient<T extends object>(workerDescriptor: WebWorkerDescriptor | Worker | Promise<Worker>): IWebWorkerClient<T>;
+ 
+ 	getWorkerUrl(descriptor: WebWorkerDescriptor): string;
++
++	getWorkerOptions(descriptor: WebWorkerDescriptor): WorkerOptions | undefined;
+ }
+diff --git a/src/vs/platform/webWorker/browser/webWorkerServiceImpl.ts b/src/vs/platform/webWorker/browser/webWorkerServiceImpl.ts
+index 376e45857db..9741c1973ff 100644
+--- a/src/vs/platform/webWorker/browser/webWorkerServiceImpl.ts
++++ b/src/vs/platform/webWorker/browser/webWorkerServiceImpl.ts
+@@ -32,9 +32,10 @@ export class WebWorkerService implements IWebWorkerService {
+ 
+ 	protected _createWorker(descriptor: WebWorkerDescriptor): Promise<Worker> {
+ 		const workerRunnerUrl = this.getWorkerUrl(descriptor);
++		const workerRunnerOptions: WorkerOptions = { name: descriptor.label, type: 'module', ...this.getWorkerOptions(descriptor) };
+ 
+-		const workerUrlWithNls = getWorkerBootstrapUrl(descriptor.label, workerRunnerUrl);
+-		const worker = new Worker(ttPolicy ? ttPolicy.createScriptURL(workerUrlWithNls) as unknown as string : workerUrlWithNls, { name: descriptor.label, type: 'module' });
++		const workerUrlWithNls = getWorkerBootstrapUrl(descriptor.label, workerRunnerUrl, workerRunnerOptions);
++		const worker = new Worker(ttPolicy ? ttPolicy.createScriptURL(workerUrlWithNls) as unknown as string : workerUrlWithNls, workerRunnerOptions);
+ 		return whenESMWorkerReady(worker);
+ 	}
+ 
+@@ -46,6 +47,10 @@ export class WebWorkerService implements IWebWorkerService {
+ 		const urlStr = uri.toString(true);
+ 		return urlStr;
+ 	}
++
++	getWorkerOptions(descriptor: WebWorkerDescriptor): WorkerOptions | undefined {
++		return undefined;
++	}
+ }
+ 
+ const ttPolicy = ((): ReturnType<typeof createTrustedTypesPolicy> => {
+@@ -71,7 +76,7 @@ export function createBlobWorker(blobUrl: string, options?: WorkerOptions): Work
+ 	return new Worker(ttPolicy ? ttPolicy.createScriptURL(blobUrl) as unknown as string : blobUrl, { ...options, type: 'module' });
+ }
+ 
+-function getWorkerBootstrapUrl(label: string, workerScriptUrl: string): string {
++function getWorkerBootstrapUrl(label: string, workerScriptUrl: string, workerOptions: WorkerOptions): string {
+ 	if (/^((http:)|(https:)|(file:))/.test(workerScriptUrl) && workerScriptUrl.substring(0, globalThis.origin.length) !== globalThis.origin) {
+ 		// this is the cross-origin case
+ 		// i.e. the webpage is running at a different origin than where the scripts are loaded from
+@@ -101,7 +106,7 @@ function getWorkerBootstrapUrl(label: string, workerScriptUrl: string): string {
+ 		`globalThis._VSCODE_FILE_ROOT = ${JSON.stringify(globalThis._VSCODE_FILE_ROOT)};`,
+ 		`const ttPolicy = globalThis.trustedTypes?.createPolicy('defaultWorkerFactory', { createScriptURL: value => value });`,
+ 		`globalThis.workerttPolicy = ttPolicy;`,
+-		`await import(ttPolicy?.createScriptURL(${JSON.stringify(workerScriptUrl)}) ?? ${JSON.stringify(workerScriptUrl)});`,
++		`${workerOptions.type === 'module' ? 'await import' : 'importScripts'}(ttPolicy?.createScriptURL(${JSON.stringify(workerScriptUrl)}) ?? ${JSON.stringify(workerScriptUrl)});`,
+ 		`globalThis.postMessage({ type: 'vscode-worker-ready' });`,
+ 		`/*${label}*/`
+ 	]).join('')], { type: 'application/javascript' });
+diff --git a/src/vs/workbench/services/extensions/browser/extensionService.ts b/src/vs/workbench/services/extensions/browser/extensionService.ts
+index 27feb43c394..2c1136bb022 100644
+--- a/src/vs/workbench/services/extensions/browser/extensionService.ts
++++ b/src/vs/workbench/services/extensions/browser/extensionService.ts
+@@ -236,7 +236,12 @@ export class BrowserExtensionHostFactory implements IExtensionHostFactory {
+ 						? ExtensionHostStartup.EagerManualStart
+ 						: ExtensionHostStartup.EagerAutoStart
+ 				);
+-				return this._instantiationService.createInstance(WebWorkerExtensionHost, runningLocation, startup, this._createLocalExtensionHostDataProvider(runningLocations, runningLocation, isInitialStart));
++				return this._instantiationService.createInstance(
++					WebWorkerExtensionHost,
++					runningLocation,
++					startup,
++					this._createLocalExtensionHostDataProvider(runningLocations, runningLocation, isInitialStart)
++				);
+ 			}
+ 			case ExtensionHostKind.Remote: {
+ 				const remoteAgentConnection = this._remoteAgentService.getConnection();
+diff --git a/src/vs/workbench/services/extensions/browser/webWorkerExtensionHost.ts b/src/vs/workbench/services/extensions/browser/webWorkerExtensionHost.ts
+index 180fdc9e539..fd6d16b6d72 100644
+--- a/src/vs/workbench/services/extensions/browser/webWorkerExtensionHost.ts
++++ b/src/vs/workbench/services/extensions/browser/webWorkerExtensionHost.ts
+@@ -193,6 +193,7 @@ export class WebWorkerExtensionHost extends Disposable implements IExtensionHost
+ 					type: event.data.type,
+ 					data: {
+ 						workerUrl: this._webWorkerService.getWorkerUrl(extensionHostWorkerMainDescriptor),
++						workerOptions: this._webWorkerService.getWorkerOptions(extensionHostWorkerMainDescriptor),
+ 						fileRoot: globalThis._VSCODE_FILE_ROOT,
+ 						nls: {
+ 							messages: getNLSMessages(),
+diff --git a/src/vs/workbench/services/extensions/electron-browser/nativeExtensionService.ts b/src/vs/workbench/services/extensions/electron-browser/nativeExtensionService.ts
+index 3080657390a..071eb5817fa 100644
+--- a/src/vs/workbench/services/extensions/electron-browser/nativeExtensionService.ts
++++ b/src/vs/workbench/services/extensions/electron-browser/nativeExtensionService.ts
+@@ -548,7 +548,12 @@ class NativeExtensionHostFactory implements IExtensionHostFactory {
+ 			case ExtensionHostKind.LocalWebWorker: {
+ 				if (this._webWorkerExtHostEnablement !== LocalWebWorkerExtHostEnablement.Disabled) {
+ 					const startup = this._webWorkerExtHostEnablement === LocalWebWorkerExtHostEnablement.Lazy ? ExtensionHostStartup.LazyAutoStart : ExtensionHostStartup.EagerManualStart;
+-					return this._instantiationService.createInstance(WebWorkerExtensionHost, runningLocation, startup, this._createWebWorkerExtensionHostDataProvider(runningLocations, runningLocation));
++					return this._instantiationService.createInstance(
++						WebWorkerExtensionHost,
++						runningLocation,
++						startup,
++						this._createWebWorkerExtensionHostDataProvider(runningLocations, runningLocation)
++					);
+ 				}
+ 				return null;
+ 			}
+diff --git a/src/vs/workbench/services/extensions/worker/webWorkerExtensionHostIframe.html b/src/vs/workbench/services/extensions/worker/webWorkerExtensionHostIframe.html
+index eff43dcde6c..269342a45e2 100644
+--- a/src/vs/workbench/services/extensions/worker/webWorkerExtensionHostIframe.html
++++ b/src/vs/workbench/services/extensions/worker/webWorkerExtensionHostIframe.html
+@@ -4,7 +4,7 @@
+ 		<meta http-equiv="Content-Security-Policy" content="
+ 			default-src 'none';
+ 			child-src 'self' data: blob:;
+-			script-src 'self' 'unsafe-eval' 'sha256-xM2KVDKIoeb8vVxk4ezEUsxdTZh5wFnKO3YmFhy9tkk=' data: extension-file: https: http://localhost:* blob:;
++			script-src 'self' 'unsafe-eval' 'sha256-YenIR0w2uOJMq12UhbL15PlQWd7gf4v3ThVTe/nvZZE=' data: extension-file: https: http://localhost:* blob:;
+ 			connect-src 'self' data: extension-file: https: wss: http://localhost:* http://127.0.0.1:* ws://localhost:* ws://127.0.0.1:*;"/>
+ 	</head>
+ 	<body>
+@@ -78,7 +78,7 @@
+ 				return;
+ 			}
+ 			const { data } = event.data;
+-			createWorker(data.workerUrl, data.fileRoot, data.nls.messages, data.nls.language);
++			createWorker(data.workerUrl, data.workerOptions, data.fileRoot, data.nls.messages, data.nls.language);
+ 		};
+ 
+ 		window.parent.postMessage({
+@@ -87,7 +87,7 @@
+ 		}, '*');
+ 	}
+ 
+-	function createWorker(workerUrl, fileRoot, nlsMessages, nlsLanguage) {
++	function createWorker(workerUrl, workerOptions, fileRoot, nlsMessages, nlsLanguage) {
+ 		try {
+ 			if (globalThis.crossOriginIsolated) {
+ 				workerUrl += '?vscode-coi=2'; // COEP
+@@ -102,11 +102,11 @@
+ 				`globalThis._VSCODE_NLS_MESSAGES = ${JSON.stringify(nlsMessages)};`,
+ 				`globalThis._VSCODE_NLS_LANGUAGE = ${JSON.stringify(nlsLanguage)};`,
+ 				`globalThis._VSCODE_FILE_ROOT = ${JSON.stringify(fileRoot)};`,
+-				`await import(${JSON.stringify(workerUrl)});`,
++				(workerOptions?.type === 'module') ? `await import('${workerUrl}');` : `importScripts('${workerUrl}');`,
+ 				`/*extensionHostWorker*/`
+ 			].join('')], { type: 'application/javascript' });
+ 
+-			const worker = new Worker(URL.createObjectURL(blob), { name, type: 'module' });
++			const worker = new Worker(URL.createObjectURL(blob), { name, ...workerOptions });
+ 			const nestedWorkers = new Map();
+ 
+ 			worker.onmessage = (event) => {

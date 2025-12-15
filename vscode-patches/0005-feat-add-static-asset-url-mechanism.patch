@@ -13,7 +13,7 @@ Subject: [PATCH] feat: add static asset url mechanism
  6 files changed, 208 insertions(+), 61 deletions(-)
 
 diff --git a/src/tsec.exemptions.json b/src/tsec.exemptions.json
-index f913df5e7da..896f42898a8 100644
+index 83691e2de5a..359518360b6 100644
 --- a/src/tsec.exemptions.json
 +++ b/src/tsec.exemptions.json
 @@ -7,6 +7,7 @@
@@ -25,7 +25,7 @@ index f913df5e7da..896f42898a8 100644
  		"vs/workbench/contrib/notebook/browser/view/renderers/webviewPreloads.ts",
  		"vs/workbench/services/keybinding/test/node/keyboardMapperTestUtils.ts"
 diff --git a/src/vs/base/common/network.ts b/src/vs/base/common/network.ts
-index 5a9ba7fd940..ed4bb57382c 100644
+index e47b42672fb..b6b16332f5f 100644
 --- a/src/vs/base/common/network.ts
 +++ b/src/vs/base/common/network.ts
 @@ -8,6 +8,8 @@ import * as platform from './platform.js';
@@ -108,10 +108,10 @@ index 4cfaf6a58cb..b7f63a0d276 100644
  
  class ExtensionHostProxy implements IExtensionHostProxy {
 diff --git a/src/vs/workbench/api/common/extHost.protocol.ts b/src/vs/workbench/api/common/extHost.protocol.ts
-index 3b69e426e1d..a682f3af476 100644
+index 4a90eb970b9..1d66567d0da 100644
 --- a/src/vs/workbench/api/common/extHost.protocol.ts
 +++ b/src/vs/workbench/api/common/extHost.protocol.ts
-@@ -1613,6 +1613,7 @@ export interface MainThreadExtensionServiceShape extends IDisposable {
+@@ -1661,6 +1661,7 @@ export interface MainThreadExtensionServiceShape extends IDisposable {
  	$onExtensionRuntimeError(extensionId: ExtensionIdentifier, error: SerializedError): void;
  	$setPerformanceMarks(marks: performance.PerformanceMark[]): Promise<void>;
  	$asBrowserUri(uri: UriComponents): Promise<UriComponents>;

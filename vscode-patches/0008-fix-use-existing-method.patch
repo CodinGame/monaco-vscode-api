@@ -8,10 +8,10 @@ Subject: [PATCH] fix: use existing method
  1 file changed, 1 insertion(+), 1 deletion(-)
 
 diff --git a/src/vs/editor/standalone/browser/standaloneServices.ts b/src/vs/editor/standalone/browser/standaloneServices.ts
-index 9ffecaa15ec..2edbb5ff54f 100644
+index dc4318454c4..adfc0550179 100644
 --- a/src/vs/editor/standalone/browser/standaloneServices.ts
 +++ b/src/vs/editor/standalone/browser/standaloneServices.ts
-@@ -557,7 +557,7 @@ export class StandaloneKeybindingService extends AbstractKeybindingService {
+@@ -556,7 +556,7 @@ export class StandaloneKeybindingService extends AbstractKeybindingService {
  				// This might be a removal keybinding item in user settings => accept it
  				result[resultLen++] = new ResolvedKeybindingItem(undefined, item.command, item.commandArgs, when, isDefault, null, false);
  			} else {

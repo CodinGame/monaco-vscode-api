@@ -4,140 +4,16 @@ Date: Mon, 6 Jan 2025 11:43:30 +0100
 Subject: [PATCH] feat: add transformConstEnums script
 
 ---
- build/lib/transformConstEnums.js | 115 +++++++++++++++++++++++++++++++
- build/lib/transformConstEnums.ts |  92 +++++++++++++++++++++++++
- 2 files changed, 207 insertions(+)
- create mode 100644 build/lib/transformConstEnums.js
+ build/lib/transformConstEnums.ts | 94 ++++++++++++++++++++++++++++++++
+ 1 file changed, 94 insertions(+)
  create mode 100644 build/lib/transformConstEnums.ts
 
-diff --git a/build/lib/transformConstEnums.js b/build/lib/transformConstEnums.js
-new file mode 100644
-index 00000000000..102262264b3
---- /dev/null
-+++ b/build/lib/transformConstEnums.js
-@@ -0,0 +1,115 @@
-+"use strict";
-+var __createBinding = (this && this.__createBinding) || (Object.create ? (function(o, m, k, k2) {
-+    if (k2 === undefined) k2 = k;
-+    var desc = Object.getOwnPropertyDescriptor(m, k);
-+    if (!desc || ("get" in desc ? !m.__esModule : desc.writable || desc.configurable)) {
-+      desc = { enumerable: true, get: function() { return m[k]; } };
-+    }
-+    Object.defineProperty(o, k2, desc);
-+}) : (function(o, m, k, k2) {
-+    if (k2 === undefined) k2 = k;
-+    o[k2] = m[k];
-+}));
-+var __setModuleDefault = (this && this.__setModuleDefault) || (Object.create ? (function(o, v) {
-+    Object.defineProperty(o, "default", { enumerable: true, value: v });
-+}) : function(o, v) {
-+    o["default"] = v;
-+});
-+var __importStar = (this && this.__importStar) || (function () {
-+    var ownKeys = function(o) {
-+        ownKeys = Object.getOwnPropertyNames || function (o) {
-+            var ar = [];
-+            for (var k in o) if (Object.prototype.hasOwnProperty.call(o, k)) ar[ar.length] = k;
-+            return ar;
-+        };
-+        return ownKeys(o);
-+    };
-+    return function (mod) {
-+        if (mod && mod.__esModule) return mod;
-+        var result = {};
-+        if (mod != null) for (var k = ownKeys(mod), i = 0; i < k.length; i++) if (k[i] !== "default") __createBinding(result, mod, k[i]);
-+        __setModuleDefault(result, mod);
-+        return result;
-+    };
-+})();
-+Object.defineProperty(exports, "__esModule", { value: true });
-+/*---------------------------------------------------------------------------------------------
-+ *  Copyright (c) Microsoft Corporation. All rights reserved.
-+ *  Licensed under the MIT License. See License.txt in the project root for license information.
-+ *--------------------------------------------------------------------------------------------*/
-+const ts = __importStar(require("typescript"));
-+const fs = __importStar(require("fs"));
-+const path = __importStar(require("path"));
-+const REPO_ROOT = path.join(__dirname, '../../');
-+const SRC_DIR = path.join(REPO_ROOT, 'src');
-+function applyFixes(sourceFile) {
-+    const edits = [];
-+    function visit(node) {
-+        if (ts.isEnumDeclaration(node) && node.modifiers?.some(mod => mod.kind === ts.SyntaxKind.ConstKeyword)) {
-+            const constModifier = node.modifiers.find(mod => mod.kind === ts.SyntaxKind.ConstKeyword);
-+            if (constModifier) {
-+                edits.push({
-+                    start: constModifier.getStart(),
-+                    end: constModifier.getEnd() + 1,
-+                    replacement: '',
-+                });
-+            }
-+        }
-+        ts.forEachChild(node, visit);
-+    }
-+    visit(sourceFile);
-+    let transformedCode = sourceFile.text;
-+    for (let i = edits.length - 1; i >= 0; i--) {
-+        const { start, end, replacement } = edits[i];
-+        transformedCode = transformedCode.slice(0, start) + replacement + transformedCode.slice(end);
-+    }
-+    fs.writeFileSync(sourceFile.fileName, transformedCode);
-+    incrementScriptVersion(sourceFile.fileName);
-+}
-+const sourceFileVersion = new Map();
-+function incrementScriptVersion(script) {
-+    const newVersion = (sourceFileVersion.get(script) ?? 1) + 1;
-+    sourceFileVersion.set(script, newVersion);
-+    return newVersion.toString();
-+}
-+function run() {
-+    const configPath = ts.findConfigFile(SRC_DIR, ts.sys.fileExists, 'tsconfig.json');
-+    const configFile = ts.readConfigFile(configPath, ts.sys.readFile);
-+    const parsedConfig = ts.parseJsonConfigFileContent(configFile.config, ts.sys, path.dirname(configPath));
-+    const servicesHost = {
-+        getScriptFileNames: () => parsedConfig.fileNames.filter(f => !f.endsWith('.test.ts')),
-+        getScriptVersion: fileName => sourceFileVersion.get(fileName)?.toString() ?? '1',
-+        getScriptSnapshot: fileName => {
-+            if (!fs.existsSync(fileName)) {
-+                return undefined;
-+            }
-+            return ts.ScriptSnapshot.fromString(fs.readFileSync(fileName).toString());
-+        },
-+        getCurrentDirectory: () => SRC_DIR,
-+        getCompilationSettings: () => ({
-+            ...parsedConfig.options,
-+            verbatimModuleSyntax: true,
-+            forceConsistentCasingInFileNames: true
-+        }),
-+        getDefaultLibFileName: options => ts.getDefaultLibFilePath(options),
-+        fileExists: ts.sys.fileExists,
-+        readFile: ts.sys.readFile,
-+        readDirectory: ts.sys.readDirectory,
-+        directoryExists: ts.sys.directoryExists,
-+        getDirectories: ts.sys.getDirectories,
-+        writeFile: ts.sys.writeFile,
-+        useCaseSensitiveFileNames() {
-+            return true;
-+        }
-+    };
-+    const service = ts.createLanguageService(servicesHost, ts.createDocumentRegistry(true));
-+    const sourceFiles = service.getProgram().getSourceFiles().filter(sourceFile => sourceFile.fileName.startsWith(SRC_DIR));
-+    let index = 0;
-+    for (const sourceFile of sourceFiles) {
-+        index++;
-+        console.log(Math.round(index * 100 / sourceFiles.length) + '%', sourceFile.fileName);
-+        applyFixes(sourceFile);
-+    }
-+}
-+run();
-+//# sourceMappingURL=transformConstEnums.js.map
-\ No newline at end of file
 diff --git a/build/lib/transformConstEnums.ts b/build/lib/transformConstEnums.ts
 new file mode 100644
-index 00000000000..66809b41d48
+index 00000000000..ebcb9c91a4c
 --- /dev/null
 +++ b/build/lib/transformConstEnums.ts
-@@ -0,0 +1,92 @@
+@@ -0,0 +1,94 @@
 +/*---------------------------------------------------------------------------------------------
 + *  Copyright (c) Microsoft Corporation. All rights reserved.
 + *  Licensed under the MIT License. See License.txt in the project root for license information.
@@ -146,7 +22,7 @@ index 00000000000..66809b41d48
 +import * as fs from 'fs';
 +import * as path from 'path';
 +
-+const REPO_ROOT = path.join(__dirname, '../../');
++const REPO_ROOT = path.normalize(path.join(import.meta.dirname, '../../'));
 +const SRC_DIR = path.join(REPO_ROOT, 'src');
 +
 +function applyFixes(sourceFile: ts.SourceFile) {
@@ -162,8 +38,10 @@ index 00000000000..66809b41d48
 +					replacement: '',
 +				});
 +			}
++		} else if (!ts.isFunctionDeclaration(node)) {
++			// an enum declared in a function is not exported, so no reason to transform it
++			ts.forEachChild(node, visit);
 +		}
-+		ts.forEachChild(node, visit);
 +	}
 +
 +	visit(sourceFile);

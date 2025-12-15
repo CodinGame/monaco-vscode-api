@@ -8,7 +8,7 @@ Subject: [PATCH] fix: stop leaking unhandled errors
  1 file changed, 9 insertions(+), 3 deletions(-)
 
 diff --git a/src/vs/editor/contrib/wordHighlighter/browser/wordHighlighter.ts b/src/vs/editor/contrib/wordHighlighter/browser/wordHighlighter.ts
-index a0d0dac11e6..c717a5b2259 100644
+index ff6059b61d6..be9070977e5 100644
 --- a/src/vs/editor/contrib/wordHighlighter/browser/wordHighlighter.ts
 +++ b/src/vs/editor/contrib/wordHighlighter/browser/wordHighlighter.ts
 @@ -272,7 +272,9 @@ class WordHighlighter {

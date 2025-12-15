@@ -17,7 +17,7 @@ instead of scanning them in the keybinding service
  9 files changed, 57 insertions(+), 58 deletions(-)
 
 diff --git a/src/vs/editor/browser/widget/codeEditor/codeEditorWidget.ts b/src/vs/editor/browser/widget/codeEditor/codeEditorWidget.ts
-index 2e7aacb8297..d549cf5d34d 100644
+index 603d3ae12bd..7e7e69e79da 100644
 --- a/src/vs/editor/browser/widget/codeEditor/codeEditorWidget.ts
 +++ b/src/vs/editor/browser/widget/codeEditor/codeEditorWidget.ts
 @@ -63,6 +63,7 @@ import { MenuId } from '../../../../platform/actions/common/actions.js';
@@ -156,7 +156,7 @@ index 69e271c1879..74e473d55f8 100644
  
  		this._configurationService = configurationService;
 diff --git a/src/vs/editor/standalone/browser/standaloneServices.ts b/src/vs/editor/standalone/browser/standaloneServices.ts
-index cbb6dea770e..07c8c716191 100644
+index e39eb9cba91..f56e9c15408 100644
 --- a/src/vs/editor/standalone/browser/standaloneServices.ts
 +++ b/src/vs/editor/standalone/browser/standaloneServices.ts
 @@ -53,8 +53,6 @@ import { basename } from '../../../base/common/resources.js';
@@ -168,7 +168,7 @@ index cbb6dea770e..07c8c716191 100644
  import { IContextMenuService, IContextViewDelegate, IContextViewService, IOpenContextView } from '../../../platform/contextview/browser/contextView.js';
  import { ContextViewService } from '../../../platform/contextview/browser/contextViewService.js';
  import { LanguageService } from '../../common/services/languageService.js';
-@@ -423,66 +421,43 @@ export class StandaloneKeybindingService extends AbstractKeybindingService {
+@@ -422,66 +420,43 @@ export class StandaloneKeybindingService extends AbstractKeybindingService {
  		this._cachedResolver = null;
  		this._dynamicKeybindings = [];
  		this._domNodeListeners = [];

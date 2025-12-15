@@ -9,10 +9,10 @@ Subject: [PATCH] fix: do not export stuff from web workbench or the typescript
  1 file changed, 1 insertion(+), 60 deletions(-)
 
 diff --git a/src/vs/workbench/workbench.web.main.internal.ts b/src/vs/workbench/workbench.web.main.internal.ts
-index 35a2b3748a5..50c6a1ee55d 100644
+index 40dcb51abe6..14a634a0af8 100644
 --- a/src/vs/workbench/workbench.web.main.internal.ts
 +++ b/src/vs/workbench/workbench.web.main.internal.ts
-@@ -80,7 +80,6 @@ import { IExtensionTipsService } from '../platform/extensionManagement/common/ex
+@@ -79,7 +79,6 @@ import { IExtensionTipsService } from '../platform/extensionManagement/common/ex
  import { ExtensionTipsService } from '../platform/extensionManagement/common/extensionTipsService.js';
  import { IWorkbenchExtensionManagementService } from './services/extensionManagement/common/extensionManagement.js';
  import { ExtensionManagementService } from './services/extensionManagement/common/extensionManagementService.js';

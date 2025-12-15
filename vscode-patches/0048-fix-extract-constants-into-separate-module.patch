@@ -17,7 +17,7 @@ so that only the constant is pulled from the root instead of the whole module gr
  create mode 100644 src/vs/workbench/contrib/chat/browser/contrib/chatDynamicVariablesConstant.ts
 
 diff --git a/src/vs/workbench/api/browser/mainThreadChatAgents2.ts b/src/vs/workbench/api/browser/mainThreadChatAgents2.ts
-index e2350c1ea0a..fb74fa3fa8e 100644
+index ecaa0cc50aa..767915f3b4d 100644
 --- a/src/vs/workbench/api/browser/mainThreadChatAgents2.ts
 +++ b/src/vs/workbench/api/browser/mainThreadChatAgents2.ts
 @@ -24,7 +24,7 @@ import { IInstantiationService } from '../../../platform/instantiation/common/in
@@ -27,8 +27,8 @@ index e2350c1ea0a..fb74fa3fa8e 100644
 -import { AddDynamicVariableAction, IAddDynamicVariableContext } from '../../contrib/chat/browser/contrib/chatDynamicVariables.js';
 +import { IAddDynamicVariableContext } from '../../contrib/chat/browser/contrib/chatDynamicVariables.js';
  import { IChatAgentHistoryEntry, IChatAgentImplementation, IChatAgentRequest, IChatAgentService } from '../../contrib/chat/common/chatAgents.js';
+ import { ICustomAgentQueryOptions, IPromptsService } from '../../contrib/chat/common/promptSyntax/service/promptsService.js';
  import { IChatEditingService, IChatRelatedFileProviderMetadata } from '../../contrib/chat/common/chatEditingService.js';
- import { IChatModel } from '../../contrib/chat/common/chatModel.js';
 @@ -39,6 +39,7 @@ import { IExtensionService } from '../../services/extensions/common/extensions.j
  import { Dto } from '../../services/extensions/common/proxyIdentifier.js';
  import { ExtHostChatAgentsShape2, ExtHostContext, IChatNotebookEditDto, IChatParticipantMetadata, IChatProgressDto, IDynamicChatAgentProps, IExtensionChatAgentMetadata, MainContext, MainThreadChatAgentsShape2 } from '../common/extHost.protocol.js';
@@ -37,7 +37,7 @@ index e2350c1ea0a..fb74fa3fa8e 100644
  
  interface AgentData {
  	dispose: () => void;
-@@ -388,7 +389,7 @@ export class MainThreadChatAgents2 extends Disposable implements MainThreadChatA
+@@ -386,7 +387,7 @@ export class MainThreadChatAgents2 extends Disposable implements MainThreadChatA
  						kind: CompletionItemKind.Text,
  						detail: v.detail,
  						documentation: v.documentation,
@@ -78,7 +78,7 @@ index e3e1482b4b6..992a530ed2f 100644
  	registerAction2(QuickChatGlobalAction);
  	registerAction2(AskQuickChatAction);
 diff --git a/src/vs/workbench/contrib/chat/browser/contrib/chatDynamicVariables.ts b/src/vs/workbench/contrib/chat/browser/contrib/chatDynamicVariables.ts
-index 5041b54718f..426e1a0f829 100644
+index d20d09279b2..36aa3c3a8f5 100644
 --- a/src/vs/workbench/contrib/chat/browser/contrib/chatDynamicVariables.ts
 +++ b/src/vs/workbench/contrib/chat/browser/contrib/chatDynamicVariables.ts
 @@ -17,6 +17,7 @@ import { ILabelService } from '../../../../../platform/label/common/label.js';
@@ -89,7 +89,7 @@ index 5041b54718f..426e1a0f829 100644
  
  export const dynamicVariableDecorationType = 'chat-dynamic-variable';
  
-@@ -200,7 +201,7 @@ function isAddDynamicVariableContext(context: any): context is IAddDynamicVariab
+@@ -203,7 +204,7 @@ function isAddDynamicVariableContext(context: any): context is IAddDynamicVariab
  }
  
  export class AddDynamicVariableAction extends Action2 {

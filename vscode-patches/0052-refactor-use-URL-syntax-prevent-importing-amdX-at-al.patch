@@ -9,7 +9,7 @@ Subject: [PATCH] refactor: use URL syntax, prevent importing amdX at all
  2 files changed, 4 insertions(+), 15 deletions(-)
 
 diff --git a/src/vs/workbench/services/textMate/browser/backgroundTokenization/threadedBackgroundTokenizerFactory.ts b/src/vs/workbench/services/textMate/browser/backgroundTokenization/threadedBackgroundTokenizerFactory.ts
-index 59502ab69cc..fe37ec334d6 100644
+index 3662b13b377..4df64ee448a 100644
 --- a/src/vs/workbench/services/textMate/browser/backgroundTokenization/threadedBackgroundTokenizerFactory.ts
 +++ b/src/vs/workbench/services/textMate/browser/backgroundTokenization/threadedBackgroundTokenizerFactory.ts
 @@ -3,17 +3,13 @@
@@ -30,23 +30,23 @@ index 59502ab69cc..fe37ec334d6 100644
  import { IExtensionResourceLoaderService } from '../../../../../platform/extensionResourceLoader/common/extensionResourceLoader.js';
  import { INotificationService } from '../../../../../platform/notification/common/notification.js';
  import { ITelemetryService } from '../../../../../platform/telemetry/common/telemetry.js';
-@@ -24,6 +20,7 @@ import { IValidGrammarDefinition } from '../../common/TMScopeRegistry.js';
- import type { IRawTheme } from 'vscode-textmate';
- import { createWebWorker } from '../../../../../base/browser/webWorkerFactory.js';
+@@ -25,6 +21,7 @@ import type { IRawTheme } from 'vscode-textmate';
+ import { WebWorkerDescriptor } from '../../../../../platform/webWorker/browser/webWorkerDescriptor.js';
+ import { IWebWorkerService } from '../../../../../platform/webWorker/browser/webWorkerService.js';
  import { IWebWorkerClient, Proxied } from '../../../../../base/common/worker/webWorker.js';
 +import { FileAccess } from '../../../../../base/common/network.js';
  
  export class ThreadedBackgroundTokenizerFactory implements IDisposable {
  	private static _reportedMismatchingTokens = false;
-@@ -43,7 +40,6 @@ export class ThreadedBackgroundTokenizerFactory implements IDisposable {
+@@ -44,7 +41,6 @@ export class ThreadedBackgroundTokenizerFactory implements IDisposable {
  		@IExtensionResourceLoaderService private readonly _extensionResourceLoaderService: IExtensionResourceLoaderService,
  		@IConfigurationService private readonly _configurationService: IConfigurationService,
  		@ILanguageService private readonly _languageService: ILanguageService,
 -		@IEnvironmentService private readonly _environmentService: IEnvironmentService,
  		@INotificationService private readonly _notificationService: INotificationService,
  		@ITelemetryService private readonly _telemetryService: ITelemetryService,
- 	) {
-@@ -126,16 +122,9 @@ export class ThreadedBackgroundTokenizerFactory implements IDisposable {
+ 		@IWebWorkerService private readonly _webWorkerService: IWebWorkerService,
+@@ -128,16 +124,9 @@ export class ThreadedBackgroundTokenizerFactory implements IDisposable {
  	}
  
  	private async _createWorkerProxy(): Promise<Proxied<TextMateTokenizationWorker> | null> {
@@ -62,10 +62,10 @@ index 59502ab69cc..fe37ec334d6 100644
 -			onigurumaWASMUri: FileAccess.asBrowserUri(onigurumaWASM).toString(true),
 +			onigurumaWASMUri: new URL('vscode-oniguruma/release/onig.wasm', import.meta.url).href,
  		};
- 		const worker = this._worker = createWebWorker<TextMateTokenizationWorker>(
- 			FileAccess.asBrowserUri('vs/workbench/services/textMate/browser/backgroundTokenization/worker/textMateTokenizationWorker.workerMain.js'),
+ 		const worker = this._worker = this._webWorkerService.createWorkerClient<TextMateTokenizationWorker>(
+ 			new WebWorkerDescriptor({
 diff --git a/src/vs/workbench/services/textMate/browser/textMateTokenizationFeatureImpl.ts b/src/vs/workbench/services/textMate/browser/textMateTokenizationFeatureImpl.ts
-index 338b88b9100..9b451a7158c 100644
+index 1c576db95db..1acb3ef3dbf 100644
 --- a/src/vs/workbench/services/textMate/browser/textMateTokenizationFeatureImpl.ts
 +++ b/src/vs/workbench/services/textMate/browser/textMateTokenizationFeatureImpl.ts
 @@ -4,7 +4,7 @@

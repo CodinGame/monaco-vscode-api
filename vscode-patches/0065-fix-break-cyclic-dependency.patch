@@ -46,7 +46,7 @@ index 80d3960d635..0a69d3f1df6 100644
  import { ITerminalService } from '../../../terminal/browser/terminal.js';
  import { URI } from '../../../../../base/common/uri.js';
 diff --git a/src/vs/workbench/contrib/chat/browser/actions/chatToolActions.ts b/src/vs/workbench/contrib/chat/browser/actions/chatToolActions.ts
-index f8d2e5110de..75f6e9c9678 100644
+index 351fbb86479..e8425ed36a4 100644
 --- a/src/vs/workbench/contrib/chat/browser/actions/chatToolActions.ts
 +++ b/src/vs/workbench/contrib/chat/browser/actions/chatToolActions.ts
 @@ -26,6 +26,7 @@ import { ChatModeKind } from '../../common/constants.js';
@@ -69,7 +69,7 @@ index f8d2e5110de..75f6e9c9678 100644
  abstract class ToolConfirmationAction extends Action2 {
  	protected abstract getReason(): ConfirmedReason;
 diff --git a/src/vs/workbench/contrib/chat/browser/chatAccessibilityProvider.ts b/src/vs/workbench/contrib/chat/browser/chatAccessibilityProvider.ts
-index da5e8e0cc3d..e0889ec1a2b 100644
+index 6a970d45271..059859843be 100644
 --- a/src/vs/workbench/contrib/chat/browser/chatAccessibilityProvider.ts
 +++ b/src/vs/workbench/contrib/chat/browser/chatAccessibilityProvider.ts
 @@ -18,7 +18,7 @@ import { IChatToolInvocation } from '../common/chatService.js';
@@ -96,7 +96,7 @@ index ceac2129e16..99427ed231b 100644
  export const IChatAttachmentResolveService = createDecorator<IChatAttachmentResolveService>('IChatAttachmentResolveService');
  
 diff --git a/src/vs/workbench/contrib/chat/browser/chatContentParts/toolInvocationParts/chatExtensionsInstallToolSubPart.ts b/src/vs/workbench/contrib/chat/browser/chatContentParts/toolInvocationParts/chatExtensionsInstallToolSubPart.ts
-index 7736c50548e..6e1019eb68b 100644
+index 7f19ecc763a..06b40cdd53a 100644
 --- a/src/vs/workbench/contrib/chat/browser/chatContentParts/toolInvocationParts/chatExtensionsInstallToolSubPart.ts
 +++ b/src/vs/workbench/contrib/chat/browser/chatContentParts/toolInvocationParts/chatExtensionsInstallToolSubPart.ts
 @@ -14,8 +14,8 @@ import { IInstantiationService } from '../../../../../../platform/instantiation/
@@ -106,14 +106,14 @@ index 7736c50548e..6e1019eb68b 100644
 +import { AcceptToolConfirmationActionId } from '../../actions/chatConstants.js';
  import { CancelChatActionId } from '../../actions/chatExecuteActions.js';
 -import { AcceptToolConfirmationActionId } from '../../actions/chatToolActions.js';
- import { IChatCodeBlockInfo, IChatWidgetService } from '../../chat.js';
+ import { IChatWidgetService } from '../../chat.js';
  import { ChatConfirmationWidget, IChatConfirmationButton } from '../chatConfirmationWidget.js';
  import { IChatContentPartRenderContext } from '../chatContentParts.js';
 diff --git a/src/vs/workbench/contrib/chat/browser/chatContentParts/toolInvocationParts/chatTerminalToolConfirmationSubPart.ts b/src/vs/workbench/contrib/chat/browser/chatContentParts/toolInvocationParts/chatTerminalToolConfirmationSubPart.ts
-index a3d8966df20..66f8ddce4e7 100644
+index ffd78ae9466..f8326d89d5c 100644
 --- a/src/vs/workbench/contrib/chat/browser/chatContentParts/toolInvocationParts/chatTerminalToolConfirmationSubPart.ts
 +++ b/src/vs/workbench/contrib/chat/browser/chatContentParts/toolInvocationParts/chatTerminalToolConfirmationSubPart.ts
-@@ -35,7 +35,7 @@ import { migrateLegacyTerminalToolSpecificData } from '../../../common/chat.js';
+@@ -36,7 +36,7 @@ import { migrateLegacyTerminalToolSpecificData } from '../../../common/chat.js';
  import { ChatContextKeys } from '../../../common/chatContextKeys.js';
  import { IChatToolInvocation, ToolConfirmKind, type IChatTerminalToolInvocationData, type ILegacyChatTerminalToolInvocationData } from '../../../common/chatService.js';
  import type { CodeBlockModelCollection } from '../../../common/codeBlockModelCollection.js';
@@ -123,7 +123,7 @@ index a3d8966df20..66f8ddce4e7 100644
  import { ICodeBlockRenderOptions } from '../../codeBlockPart.js';
  import { ChatCustomConfirmationWidget, IChatConfirmationButton } from '../chatConfirmationWidget.js';
 diff --git a/src/vs/workbench/contrib/chat/browser/chatContentParts/toolInvocationParts/chatToolConfirmationSubPart.ts b/src/vs/workbench/contrib/chat/browser/chatContentParts/toolInvocationParts/chatToolConfirmationSubPart.ts
-index 425399a1ef4..221b1f748be 100644
+index 2cb1ebe91f5..701cf0c8139 100644
 --- a/src/vs/workbench/contrib/chat/browser/chatContentParts/toolInvocationParts/chatToolConfirmationSubPart.ts
 +++ b/src/vs/workbench/contrib/chat/browser/chatContentParts/toolInvocationParts/chatToolConfirmationSubPart.ts
 @@ -25,7 +25,7 @@ import { IChatToolInvocation, ToolConfirmKind } from '../../../common/chatServic
@@ -136,7 +136,7 @@ index 425399a1ef4..221b1f748be 100644
  import { renderFileWidgets } from '../../chatInlineAnchorWidget.js';
  import { ICodeBlockRenderOptions } from '../../codeBlockPart.js';
 diff --git a/src/vs/workbench/contrib/chat/browser/chatContentParts/toolInvocationParts/chatToolPostExecuteConfirmationPart.ts b/src/vs/workbench/contrib/chat/browser/chatContentParts/toolInvocationParts/chatToolPostExecuteConfirmationPart.ts
-index 8c7b3560910..44c7d2499fb 100644
+index 89e0c04609a..662f690981f 100644
 --- a/src/vs/workbench/contrib/chat/browser/chatContentParts/toolInvocationParts/chatToolPostExecuteConfirmationPart.ts
 +++ b/src/vs/workbench/contrib/chat/browser/chatContentParts/toolInvocationParts/chatToolPostExecuteConfirmationPart.ts
 @@ -16,7 +16,7 @@ import { ChatResponseResource } from '../../../common/chatModel.js';
@@ -147,7 +147,7 @@ index 8c7b3560910..44c7d2499fb 100644
 +import { AcceptToolPostConfirmationActionId, SkipToolPostConfirmationActionId } from '../../actions/chatConstants.js';
  import { IChatCodeBlockInfo, IChatWidgetService } from '../../chat.js';
  import { IChatContentPartRenderContext } from '../chatContentParts.js';
- import { EditorPool } from '../chatMarkdownContentPart.js';
+ import { ChatCollapsibleIOPart } from '../chatToolInputOutputContentPart.js';
 diff --git a/src/vs/workbench/contrib/chat/browser/chatPasteProviders.ts b/src/vs/workbench/contrib/chat/browser/chatPasteProviders.ts
 index 6ea16686299..43124ee4d27 100644
 --- a/src/vs/workbench/contrib/chat/browser/chatPasteProviders.ts

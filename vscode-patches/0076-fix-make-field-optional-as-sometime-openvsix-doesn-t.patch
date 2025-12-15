@@ -9,7 +9,7 @@ Subject: [PATCH] fix: make field optional, as sometime openvsix doesn't
  1 file changed, 3 insertions(+), 3 deletions(-)
 
 diff --git a/src/vs/platform/extensionManagement/common/extensionGalleryService.ts b/src/vs/platform/extensionManagement/common/extensionGalleryService.ts
-index 786af9e1db1..784295861eb 100644
+index 594412ff657..ff0d6bfb5d8 100644
 --- a/src/vs/platform/extensionManagement/common/extensionGalleryService.ts
 +++ b/src/vs/platform/extensionManagement/common/extensionGalleryService.ts
 @@ -53,7 +53,7 @@ export interface IRawGalleryExtensionVersion {

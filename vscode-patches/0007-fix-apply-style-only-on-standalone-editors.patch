@@ -80,7 +80,7 @@ index 8196bcd7174..d466efb1777 100644
  	public static validateOptions(options: IEditorOptions): ValidatedEditorOptions {
  		const result = new ValidatedEditorOptions();
 diff --git a/src/vs/editor/browser/widget/codeEditor/codeEditorWidget.ts b/src/vs/editor/browser/widget/codeEditor/codeEditorWidget.ts
-index 91156fa9829..2e7aacb8297 100644
+index 6687e50593d..603d3ae12bd 100644
 --- a/src/vs/editor/browser/widget/codeEditor/codeEditorWidget.ts
 +++ b/src/vs/editor/browser/widget/codeEditor/codeEditorWidget.ts
 @@ -285,6 +285,7 @@ export class CodeEditorWidget extends Disposable implements editorBrowser.ICodeE
@@ -102,7 +102,7 @@ index 91156fa9829..2e7aacb8297 100644
  	}
  
  	public getId(): string {
-@@ -2035,6 +2036,12 @@ export interface ICodeEditorWidgetOptions {
+@@ -2053,6 +2054,12 @@ export interface ICodeEditorWidgetOptions {
  	 */
  	isSimpleWidget?: boolean;
  
@@ -243,7 +243,7 @@ index db5de437a44..b6bcbcfc58f 100644
  	}
  	protected override _createView(viewModel: ViewModel): [View, boolean] {
 diff --git a/src/vs/workbench/contrib/notebook/browser/contrib/multicursor/notebookMulticursor.ts b/src/vs/workbench/contrib/notebook/browser/contrib/multicursor/notebookMulticursor.ts
-index 237326159ff..f6ffd9b1cae 100644
+index 48532bfcff7..9cfd99f24c7 100644
 --- a/src/vs/workbench/contrib/notebook/browser/contrib/multicursor/notebookMulticursor.ts
 +++ b/src/vs/workbench/contrib/notebook/browser/contrib/multicursor/notebookMulticursor.ts
 @@ -839,7 +839,7 @@ export class NotebookMultiCursorController extends Disposable implements INotebo

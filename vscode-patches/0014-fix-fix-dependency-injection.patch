@@ -8,10 +8,10 @@ Subject: [PATCH] fix: fix dependency injection
  1 file changed, 3 insertions(+), 1 deletion(-)
 
 diff --git a/src/vs/platform/instantiation/common/instantiationService.ts b/src/vs/platform/instantiation/common/instantiationService.ts
-index d7af9d0428c..d48539ff7bc 100644
+index dd21805b88d..296ada9b6a7 100644
 --- a/src/vs/platform/instantiation/common/instantiationService.ts
 +++ b/src/vs/platform/instantiation/common/instantiationService.ts
-@@ -252,8 +252,10 @@ export class InstantiationService implements IInstantiationService {
+@@ -245,8 +245,10 @@ export class InstantiationService implements IInstantiationService {
  
  				if (instanceOrDesc instanceof SyncDescriptor) {
  					const d = { id: dependency.id, desc: instanceOrDesc, _trace: item._trace.branch(dependency.id, true) };

@@ -246,7 +246,7 @@ index d78e65afc3f..56bd057fb3e 100644
 +
 +registerWorkbenchContribution2(TokenClassificationExtensionPointWorkbenchContribution.ID, TokenClassificationExtensionPointWorkbenchContribution, WorkbenchPhase.BlockStartup);
 diff --git a/src/vs/workbench/workbench.common.main.ts b/src/vs/workbench/workbench.common.main.ts
-index b722503a8d9..14797b24793 100644
+index 07f6bf5c403..8a051bfb219 100644
 --- a/src/vs/workbench/workbench.common.main.ts
 +++ b/src/vs/workbench/workbench.common.main.ts
 @@ -35,6 +35,12 @@ import './browser/actions/widgetNavigationCommands.js';

@@ -10,7 +10,7 @@ Subject: [PATCH] fix: mark process supported as soon as there is a registered
  2 files changed, 33 insertions(+), 11 deletions(-)
 
 diff --git a/src/vs/platform/terminal/common/terminal.ts b/src/vs/platform/terminal/common/terminal.ts
-index 67b3a3d3a23..41b496aa6a1 100644
+index e4f056aee79..a57b1c10168 100644
 --- a/src/vs/platform/terminal/common/terminal.ts
 +++ b/src/vs/platform/terminal/common/terminal.ts
 @@ -3,7 +3,7 @@
@@ -22,7 +22,7 @@ index 67b3a3d3a23..41b496aa6a1 100644
  import { IProcessEnvironment, OperatingSystem } from '../../../base/common/platform.js';
  import { URI, UriComponents } from '../../../base/common/uri.js';
  import { createDecorator } from '../../instantiation/common/instantiation.js';
-@@ -1181,12 +1181,27 @@ export const TerminalExtensions = {
+@@ -1176,12 +1176,27 @@ export const TerminalExtensions = {
  	Backend: 'workbench.contributions.terminal.processBackend'
  };
  
@@ -50,7 +50,7 @@ index 67b3a3d3a23..41b496aa6a1 100644
  	/**
  	 * Registers a terminal backend for a remote authority.
  	 */
-@@ -1203,21 +1218,20 @@ class TerminalBackendRegistry implements ITerminalBackendRegistry {
+@@ -1198,21 +1213,20 @@ class TerminalBackendRegistry implements ITerminalBackendRegistry {
  
  	get backends(): ReadonlyMap<string, ITerminalBackend> { return this._backends; }
  
@@ -79,7 +79,7 @@ index 67b3a3d3a23..41b496aa6a1 100644
  }
  Registry.add(TerminalExtensions.Backend, new TerminalBackendRegistry());
 diff --git a/src/vs/workbench/contrib/terminal/browser/terminalService.ts b/src/vs/workbench/contrib/terminal/browser/terminalService.ts
-index f3c393fc2b4..b2f39551376 100644
+index 407af56e635..ca8ccd9b861 100644
 --- a/src/vs/workbench/contrib/terminal/browser/terminalService.ts
 +++ b/src/vs/workbench/contrib/terminal/browser/terminalService.ts
 @@ -20,7 +20,7 @@ import { IContextKey, IContextKeyService } from '../../../../platform/contextkey
@@ -91,15 +91,15 @@ index f3c393fc2b4..b2f39551376 100644
  import { formatMessageForTerminal } from '../../../../platform/terminal/common/terminalStrings.js';
  import { iconForeground } from '../../../../platform/theme/common/colorRegistry.js';
  import { getIconRegistry } from '../../../../platform/theme/common/iconRegistry.js';
-@@ -56,6 +56,7 @@ import { createInstanceCapabilityEventMultiplexer } from './terminalEvents.js';
- import { isAuxiliaryWindow, mainWindow } from '../../../../base/browser/window.js';
+@@ -57,6 +57,7 @@ import { isAuxiliaryWindow, mainWindow } from '../../../../base/browser/window.j
  import { GroupIdentifier } from '../../../common/editor.js';
  import { getActiveWindow } from '../../../../base/browser/dom.js';
+ import { hasKey, isString } from '../../../../base/common/types.js';
 +import { Registry } from '../../../../platform/registry/common/platform.js';
  
  interface IBackgroundTerminal {
  	instance: ITerminalInstance;
-@@ -218,7 +219,14 @@ export class TerminalService extends Disposable implements ITerminalService {
+@@ -219,7 +220,14 @@ export class TerminalService extends Disposable implements ITerminalService {
  		this._handleInstanceContextKeys();
  		this._terminalShellTypeContextKey = TerminalContextKeys.shellType.bindTo(this._contextKeyService);
  		this._processSupportContextKey = TerminalContextKeys.processSupported.bindTo(this._contextKeyService);
@@ -115,7 +115,7 @@ index f3c393fc2b4..b2f39551376 100644
  		this._terminalHasBeenCreated = TerminalContextKeys.terminalHasBeenCreated.bindTo(this._contextKeyService);
  		this._terminalCountContextKey = TerminalContextKeys.count.bindTo(this._contextKeyService);
  		this._terminalEditorActive = TerminalContextKeys.terminalEditorActive.bindTo(this._contextKeyService);
-@@ -902,7 +910,7 @@ export class TerminalService extends Disposable implements ITerminalService {
+@@ -910,7 +918,7 @@ export class TerminalService extends Disposable implements ITerminalService {
  	}
  
  	registerProcessSupport(isSupported: boolean): void {

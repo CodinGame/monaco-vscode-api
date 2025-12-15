@@ -9,10 +9,10 @@ Subject: [PATCH] fix: replace map by forEach
  2 files changed, 2 insertions(+), 2 deletions(-)
 
 diff --git a/src/vs/workbench/browser/parts/compositeBar.ts b/src/vs/workbench/browser/parts/compositeBar.ts
-index 420ccfbcd5d..ce89087f4db 100644
+index 8d1020b6621..97ffa755b24 100644
 --- a/src/vs/workbench/browser/parts/compositeBar.ts
 +++ b/src/vs/workbench/browser/parts/compositeBar.ts
-@@ -508,7 +508,7 @@ export class CompositeBar extends Widget implements ICompositeBar {
+@@ -509,7 +509,7 @@ export class CompositeBar extends Widget implements ICompositeBar {
  				// Compute sizes only if visible. Otherwise the size measurment would be computed wrongly.
  				const currentItemsLength = compositeSwitcherBar.viewItems.length;
  				compositeSwitcherBar.push(items.map(composite => composite.activityAction));
