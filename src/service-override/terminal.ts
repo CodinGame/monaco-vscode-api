@@ -9,7 +9,8 @@ import {
   type ITerminalLaunchError,
   type ITerminalProfile,
   TerminalExtensions,
-  type IPtyHostLatencyMeasurement
+  type IPtyHostLatencyMeasurement,
+  type IProcessProperty
 } from 'vs/platform/terminal/common/terminal'
 import { ITerminalLogService } from 'vs/platform/terminal/common/terminal.service'
 import {
@@ -218,4 +219,4 @@ export default function getServiceOverride(backend?: ITerminalBackend): IEditorO
 }
 
 export { SimpleTerminalBackend, SimpleTerminalProcess }
-export type { ITerminalBackend, ITerminalChildProcess }
+export type { ITerminalBackend, ITerminalChildProcess, IProcessProperty }
