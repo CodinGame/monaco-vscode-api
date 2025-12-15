@@ -10,10 +10,6 @@ export class TerminalBackend extends SimpleTerminalBackend {
   override getDefaultSystemShell = async (): Promise<string> => 'fake'
   override createProcess = async (): Promise<ITerminalChildProcess> => {
     const dataEmitter = new vscode.EventEmitter<string>()
-    const propertyEmitter = new vscode.EventEmitter<{
-      type: string
-      value: string
-    }>()
     class FakeTerminalProcess extends SimpleTerminalProcess {
       private column = 0
       async start(): Promise<undefined> {
@@ -26,8 +22,6 @@ export class TerminalBackend extends SimpleTerminalBackend {
 
         return undefined
       }
-
-      override onDidChangeProperty = propertyEmitter.event
 
       override shutdown(immediate: boolean): void {
         console.log('shutdown', immediate)
