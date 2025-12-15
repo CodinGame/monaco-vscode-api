@@ -43,13 +43,13 @@ npm ci
 cd ..
 
 echo "Extracting service identifiers"
-node build/lib/extractServices.js
+node build/lib/extractServices.ts
 
 echo "Applying transformConstEnums"
-node build/lib/transformConstEnums.js
+node build/lib/transformConstEnums.ts
 
 ## Change shake level from ClassMembers to Files to speed up build
-sed -i'' -e 's/shakeLevel: 2/shakeLevel: 0/g' build/gulpfile.editor.js
+sed -i'' -e 's/shakeLevel: 2/shakeLevel: 0/g' build/gulpfile.editor.ts
 ## build editor editor.api.d.ts
 npx gulp editor-distro-resources
 
