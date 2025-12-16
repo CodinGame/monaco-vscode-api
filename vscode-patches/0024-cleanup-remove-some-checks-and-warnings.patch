@@ -12,7 +12,7 @@ Subject: [PATCH] cleanup: remove some checks and warnings
  5 files changed, 1 insertion(+), 32 deletions(-)
 
 diff --git a/src/vs/workbench/contrib/webview/browser/pre/service-worker.js b/src/vs/workbench/contrib/webview/browser/pre/service-worker.js
-index a62111bf6ed..d9efda2809c 100644
+index 2ae1ee4bfa3..431c298404a 100644
 --- a/src/vs/workbench/contrib/webview/browser/pre/service-worker.js
 +++ b/src/vs/workbench/contrib/webview/browser/pre/service-worker.js
 @@ -515,8 +515,7 @@ async function getOuterIframeClient(webviewId) {
@@ -26,7 +26,7 @@ index a62111bf6ed..d9efda2809c 100644
  }
  
 diff --git a/src/vs/workbench/contrib/webview/browser/webviewElement.ts b/src/vs/workbench/contrib/webview/browser/webviewElement.ts
-index cabf4edbce7..4d62baca53c 100644
+index 7585cf01c22..b4a16a03b59 100644
 --- a/src/vs/workbench/contrib/webview/browser/webviewElement.ts
 +++ b/src/vs/workbench/contrib/webview/browser/webviewElement.ts
 @@ -495,11 +495,6 @@ export class WebviewElement extends Disposable implements IWebviewElement, Webvi
@@ -54,7 +54,7 @@ index cabf4edbce7..4d62baca53c 100644
  		if (this.element && this._messagePort) {
  			this._messagePort.postMessage({ channel, args: data }, transferable);
 diff --git a/src/vs/workbench/services/auxiliaryWindow/browser/auxiliaryWindowService.ts b/src/vs/workbench/services/auxiliaryWindow/browser/auxiliaryWindowService.ts
-index 53bfb067b4e..5f385e07a71 100644
+index 6e201931269..15b221bafb8 100644
 --- a/src/vs/workbench/services/auxiliaryWindow/browser/auxiliaryWindowService.ts
 +++ b/src/vs/workbench/services/auxiliaryWindow/browser/auxiliaryWindowService.ts
 @@ -387,13 +387,6 @@ export class BrowserAuxiliaryWindowService extends Disposable implements IAuxili
@@ -72,10 +72,10 @@ index 53bfb067b4e..5f385e07a71 100644
  		const { stylesLoaded } = this.applyCSS(auxiliaryWindow, disposables);
  		const container = this.applyHTML(auxiliaryWindow, disposables);
 diff --git a/src/vs/workbench/services/extensions/browser/webWorkerExtensionHost.ts b/src/vs/workbench/services/extensions/browser/webWorkerExtensionHost.ts
-index 43538afa862..c2a28b8ca70 100644
+index b8b3239795f..180fdc9e539 100644
 --- a/src/vs/workbench/services/extensions/browser/webWorkerExtensionHost.ts
 +++ b/src/vs/workbench/services/extensions/browser/webWorkerExtensionHost.ts
-@@ -112,8 +112,6 @@ export class WebWorkerExtensionHost extends Disposable implements IExtensionHost
+@@ -115,8 +115,6 @@ export class WebWorkerExtensionHost extends Disposable implements IExtensionHost
  				res.searchParams.set('salt', stableOriginUUID);
  				return res.toString();
  			}
@@ -83,7 +83,7 @@ index 43538afa862..c2a28b8ca70 100644
 -			console.warn(`The web worker extension host is started in a same-origin iframe!`);
  		}
  
- 		const relativeExtensionHostIframeSrc = FileAccess.asBrowserUri(iframeModulePath);
+ 		const relativeExtensionHostIframeSrc = this._webWorkerService.getWorkerUrl(new WebWorkerDescriptor({
 diff --git a/src/vs/workbench/services/textMate/common/TMScopeRegistry.ts b/src/vs/workbench/services/textMate/common/TMScopeRegistry.ts
 index ace5da0d59a..580cae23bdd 100644
 --- a/src/vs/workbench/services/textMate/common/TMScopeRegistry.ts

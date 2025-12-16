@@ -33,7 +33,7 @@ Subject: [PATCH] feat: support loading VSCode in an iframe
  26 files changed, 81 insertions(+), 69 deletions(-)
 
 diff --git a/src/vs/base/browser/browser.ts b/src/vs/base/browser/browser.ts
-index b6e9ec09fff..d8a6166878a 100644
+index 9da1be69d7c..08d8860ea36 100644
 --- a/src/vs/base/browser/browser.ts
 +++ b/src/vs/base/browser/browser.ts
 @@ -98,7 +98,7 @@ export function isFullscreen(targetWindow: Window): boolean {
@@ -84,7 +84,7 @@ index d7c129abb27..a2895879194 100644
 +	pointerEvents: mainWindow.PointerEvent && ('ontouchstart' in mainWindow || mainWindow.navigator.maxTouchPoints > 0)
  };
 diff --git a/src/vs/base/browser/dom.ts b/src/vs/base/browser/dom.ts
-index 4604c6e7aaf..f38d1d306c3 100644
+index d93fb73451c..1bb5078f1ff 100644
 --- a/src/vs/base/browser/dom.ts
 +++ b/src/vs/base/browser/dom.ts
 @@ -1072,68 +1072,55 @@ function createHeadElement<K extends keyof HTMLElementTagNameMap>(tagName: K, co
@@ -310,7 +310,7 @@ index 55ddb01f83d..7272069d931 100644
  			device: this._device,
  			format: presentationFormat,
 diff --git a/src/vs/editor/contrib/clipboard/browser/clipboard.ts b/src/vs/editor/contrib/clipboard/browser/clipboard.ts
-index f795302fae8..c66d262a777 100644
+index 2157be89da4..6e9a1d18f77 100644
 --- a/src/vs/editor/contrib/clipboard/browser/clipboard.ts
 +++ b/src/vs/editor/contrib/clipboard/browser/clipboard.ts
 @@ -5,6 +5,7 @@
@@ -492,10 +492,10 @@ index 66108502b91..f90c7df5714 100644
  
  		this._register(this.extensionService.onDidChangeExtensions(async (result) => {
 diff --git a/src/vs/workbench/services/extensions/browser/webWorkerExtensionHost.ts b/src/vs/workbench/services/extensions/browser/webWorkerExtensionHost.ts
-index c6fbb0f49ba..9ca075c4b19 100644
+index 972e28c008d..cd2cbea8ebe 100644
 --- a/src/vs/workbench/services/extensions/browser/webWorkerExtensionHost.ts
 +++ b/src/vs/workbench/services/extensions/browser/webWorkerExtensionHost.ts
-@@ -198,7 +198,7 @@ export class WebWorkerExtensionHost extends Disposable implements IExtensionHost
+@@ -204,7 +204,7 @@ export class WebWorkerExtensionHost extends Disposable implements IExtensionHost
  				return;
  			}
  			const { data } = event.data;
@@ -504,7 +504,7 @@ index c6fbb0f49ba..9ca075c4b19 100644
  				console.warn('UNEXPECTED message', event);
  				const err = new Error('UNEXPECTED message');
  				return rejectBarrier(ExtensionHostExitCode.UnexpectedError, err);
-@@ -223,12 +223,12 @@ export class WebWorkerExtensionHost extends Disposable implements IExtensionHost
+@@ -229,12 +229,12 @@ export class WebWorkerExtensionHost extends Disposable implements IExtensionHost
  
  		port.onmessage = (event) => {
  			const { data } = event;
@@ -520,10 +520,10 @@ index c6fbb0f49ba..9ca075c4b19 100644
  
  		const protocol: IMessagePassingProtocol = {
 diff --git a/src/vs/workbench/services/host/browser/browserHostService.ts b/src/vs/workbench/services/host/browser/browserHostService.ts
-index 81419568733..cf225505060 100644
+index c7a1701276f..d368ba0e6af 100644
 --- a/src/vs/workbench/services/host/browser/browserHostService.ts
 +++ b/src/vs/workbench/services/host/browser/browserHostService.ts
-@@ -635,7 +635,7 @@ export class BrowserHostService extends Disposable implements IHostService {
+@@ -666,7 +666,7 @@ export class BrowserHostService extends Disposable implements IHostService {
  		let stream: MediaStream | undefined;
  		try {
  			// Create a stream from the screen source (capture screen without audio)
@@ -631,11 +631,11 @@ index 5f6960784ee..fb555497336 100644
  
  	async resolveProxy(url: string): Promise<string | undefined> {
 diff --git a/src/vs/workbench/services/timer/browser/timerService.ts b/src/vs/workbench/services/timer/browser/timerService.ts
-index dd80dce0eb4..ac4229906a2 100644
+index 9a0db4c5de9..7344a21a1b3 100644
 --- a/src/vs/workbench/services/timer/browser/timerService.ts
 +++ b/src/vs/workbench/services/timer/browser/timerService.ts
 @@ -21,6 +21,7 @@ import { isWeb } from '../../../../base/common/platform.js';
- import { createBlobWorker } from '../../../../base/browser/webWorkerFactory.js';
+ import { createBlobWorker } from '../../../../platform/webWorker/browser/webWorkerServiceImpl.js';
  import { Registry } from '../../../../platform/registry/common/platform.js';
  import { ITerminalBackendRegistry, TerminalExtensions } from '../../../../platform/terminal/common/terminal.js';
 +import { mainWindow } from '../../../../base/browser/window.js';

@@ -4,13 +4,13 @@ Date: Fri, 4 Apr 2025 15:23:01 +0200
 Subject: [PATCH] fix: ignore @vscode/tree-sitter-wasm until MS fixes it
 
 ---
- build/gulpfile.editor.js | 2 +-
+ build/gulpfile.editor.ts | 2 +-
  1 file changed, 1 insertion(+), 1 deletion(-)
 
-diff --git a/build/gulpfile.editor.js b/build/gulpfile.editor.js
-index 5d8d47677a6..8363930e38c 100644
---- a/build/gulpfile.editor.js
-+++ b/build/gulpfile.editor.js
+diff --git a/build/gulpfile.editor.ts b/build/gulpfile.editor.ts
+index 447b76fa16c..2593f626646 100644
+--- a/build/gulpfile.editor.ts
++++ b/build/gulpfile.editor.ts
 @@ -55,7 +55,7 @@ const extractEditorSrcTask = task.define('extract-editor-src', () => {
  			'vs/base/common/marked/marked.js',
  		],

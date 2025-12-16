@@ -9,7 +9,6 @@ import {
 import { ChatAccessibilityService } from 'vs/workbench/contrib/chat/browser/chatAccessibilityService'
 import { QuickChatService } from 'vs/workbench/contrib/chat/browser/chatQuick'
 import { ChatVariablesService } from 'vs/workbench/contrib/chat/browser/chatVariables'
-import { ChatWidgetService } from 'vs/workbench/contrib/chat/browser/chatWidget'
 import { ChatCodeBlockContextProviderService } from 'vs/workbench/contrib/chat/browser/codeBlockContextProviderService'
 import { ChatAgentNameService, ChatAgentService } from 'vs/workbench/contrib/chat/common/chatAgents'
 import {
@@ -45,8 +44,6 @@ import { IChatEntitlementService } from 'vs/workbench/services/chat/common/chatE
 import { IPromptsService } from 'vs/workbench/contrib/chat/common/promptSyntax/service/promptsService.service'
 import { IChatTransferService } from 'vs/workbench/contrib/chat/common/chatTransferService.service'
 import { ChatTransferService } from 'vs/workbench/contrib/chat/common/chatTransferService'
-import { IChatStatusItemService } from 'vs/workbench/contrib/chat/browser/chatStatusItemService.service'
-import { ChatStatusItemService } from 'vs/workbench/contrib/chat/browser/chatStatusItemService'
 import { IChatContextPickService } from 'vs/workbench/contrib/chat/browser/chatContextPickService.service'
 import { ChatContextPickService } from 'vs/workbench/contrib/chat/browser/chatContextPickService'
 import { IChatAttachmentResolveService } from 'vs/workbench/contrib/chat/browser/chatAttachmentResolveService.service'
@@ -71,6 +68,11 @@ import { IChatContextService } from 'vs/workbench/contrib/chat/browser/chatConte
 import { ChatContextService } from 'vs/workbench/contrib/chat/browser/chatContextService'
 import { ITerminalChatService } from 'vs/workbench/contrib/terminal/browser/terminal.service'
 import { TerminalChatService } from 'vs/workbench/contrib/terminalContrib/chat/browser/terminalChatService'
+import { ChatStatusItemService } from 'vs/workbench/contrib/chat/browser/chatStatus/chatStatusItemService'
+import { IChatStatusItemService } from 'vs/workbench/contrib/chat/browser/chatStatus/chatStatusItemService.service'
+import { IAgentSessionsService } from 'vs/workbench/contrib/chat/browser/agentSessions/agentSessionsService.service'
+import { AgentSessionsService } from 'vs/workbench/contrib/chat/browser/agentSessions/agentSessionsService'
+import { ChatWidgetService } from 'vs/workbench/contrib/chat/browser/chatWidgetService'
 import 'vs/workbench/contrib/chat/browser/chat.contribution'
 import 'vs/workbench/contrib/terminal/terminal.chat.contribution'
 import 'vs/workbench/contrib/inlineChat/browser/inlineChat.contribution'
@@ -151,6 +153,7 @@ export default function getServiceOverride(): IEditorOverrideServices {
       true
     ),
     [IChatContextService.toString()]: new SyncDescriptor(ChatContextService, [], true),
-    [ITerminalChatService.toString()]: new SyncDescriptor(TerminalChatService, [], true)
+    [ITerminalChatService.toString()]: new SyncDescriptor(TerminalChatService, [], true),
+    [IAgentSessionsService.toString()]: new SyncDescriptor(AgentSessionsService, [], true)
   }
 }

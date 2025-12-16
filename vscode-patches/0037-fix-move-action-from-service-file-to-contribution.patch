@@ -11,7 +11,7 @@ Subject: [PATCH] fix: move action from service file to contribution
  create mode 100644 src/vs/workbench/contrib/welcomeGettingStarted/browser/gettingStartedService._contribution.ts
 
 diff --git a/src/vs/workbench/contrib/welcomeGettingStarted/browser/gettingStarted.contribution.ts b/src/vs/workbench/contrib/welcomeGettingStarted/browser/gettingStarted.contribution.ts
-index 17258bd180f..b3467f68ab1 100644
+index b63e894b1ea..85766da7eb3 100644
 --- a/src/vs/workbench/contrib/welcomeGettingStarted/browser/gettingStarted.contribution.ts
 +++ b/src/vs/workbench/contrib/welcomeGettingStarted/browser/gettingStarted.contribution.ts
 @@ -31,6 +31,7 @@ import { Categories } from '../../../../platform/action/common/actionCommonCateg

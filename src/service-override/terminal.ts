@@ -9,7 +9,8 @@ import {
   type ITerminalLaunchError,
   type ITerminalProfile,
   TerminalExtensions,
-  type IPtyHostLatencyMeasurement
+  type IPtyHostLatencyMeasurement,
+  type IProcessProperty
 } from 'vs/platform/terminal/common/terminal'
 import { ITerminalLogService } from 'vs/platform/terminal/common/terminal.service'
 import {
@@ -105,6 +106,8 @@ abstract class SimpleTerminalBackend implements ITerminalBackend {
 
   abstract getDefaultSystemShell: ITerminalBackend['getDefaultSystemShell']
   abstract createProcess: ITerminalBackend['createProcess']
+
+  setNextCommandId: ITerminalBackend['setNextCommandId'] = async () => {}
 }
 
 abstract class SimpleTerminalProcess implements ITerminalChildProcess {
@@ -123,8 +126,6 @@ abstract class SimpleTerminalProcess implements ITerminalChildProcess {
       })
     })
   }
-
-  setNextCommandId: ITerminalChildProcess['setNextCommandId'] = async () => {}
 
   onProcessReplayComplete?: Event<void> | undefined
   onRestoreCommands?: Event<ISerializedCommandDetectionCapability> | undefined
@@ -218,4 +219,4 @@ export default function getServiceOverride(backend?: ITerminalBackend): IEditorO
 }
 
 export { SimpleTerminalBackend, SimpleTerminalProcess }
-export type { ITerminalBackend, ITerminalChildProcess }
+export type { ITerminalBackend, ITerminalChildProcess, IProcessProperty }

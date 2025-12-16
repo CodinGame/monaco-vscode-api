@@ -29,12 +29,14 @@ import { TrustedDomainService } from 'vs/workbench/contrib/url/browser/trustedDo
 import { LabelService } from 'vs/workbench/services/label/common/labelService'
 import { ILabelService } from 'vs/platform/label/common/label.service'
 import { IEditorWorkerService } from 'vs/editor/common/services/editorWorker.service'
-import { WorkbenchEditorWorkerService } from 'vs/workbench/contrib/codeEditor/browser/workbenchEditorWorkerService'
 import { getEnvironmentOverride } from '../workbench'
 import { IInlineCompletionsUnificationService } from 'vs/workbench/services/inlineCompletions/common/inlineCompletionsUnification.service'
 import { InlineCompletionsUnificationImpl } from 'vs/workbench/services/inlineCompletions/common/inlineCompletionsUnification'
 import { IMarkdownRendererService } from 'vs/platform/markdown/browser/markdownRenderer.service'
 import { MarkdownRendererService } from 'vs/platform/markdown/browser/markdownRenderer'
+import { IUserAttentionService } from 'vs/workbench/services/userAttention/common/userAttentionService.service'
+import { UserAttentionService } from 'vs/workbench/services/userAttention/browser/userAttentionBrowser'
+import { EditorWorkerService } from 'vs/editor/browser/services/editorWorkerService'
 
 class BrowserPathServiceOverride extends AbstractPathService {
   constructor(
@@ -65,12 +67,13 @@ export default function getServiceOverride(): IEditorOverrideServices {
     [IPathService.toString()]: new SyncDescriptor(BrowserPathServiceOverride, [], true),
     [ITrustedDomainService.toString()]: new SyncDescriptor(TrustedDomainService, [], true),
     [ILabelService.toString()]: new SyncDescriptor(LabelService, [], true),
-    [IEditorWorkerService.toString()]: new SyncDescriptor(WorkbenchEditorWorkerService, [], true),
+    [IEditorWorkerService.toString()]: new SyncDescriptor(EditorWorkerService, [], true),
     [IInlineCompletionsUnificationService.toString()]: new SyncDescriptor(
       InlineCompletionsUnificationImpl,
       [],
       true
     ),
-    [IMarkdownRendererService.toString()]: new SyncDescriptor(MarkdownRendererService, [], true)
+    [IMarkdownRendererService.toString()]: new SyncDescriptor(MarkdownRendererService, [], true),
+    [IUserAttentionService.toString()]: new SyncDescriptor(UserAttentionService, [], true)
   }
 }

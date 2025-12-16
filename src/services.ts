@@ -648,10 +648,9 @@ export {
   ISharedWebContentExtractorService,
   IWebContentExtractorService
 } from 'vs/platform/webContentExtractor/common/webContentExtractor.service'
-export { IDefaultAccountService } from 'vs/workbench/services/accounts/common/defaultAccount.service'
-export { NullDefaultAccountService } from 'vs/workbench/services/accounts/common/defaultAccount'
+export { IDefaultAccountService } from 'vs/platform/defaultAccount/common/defaultAccount.service'
 export { IChatTransferService } from 'vs/workbench/contrib/chat/common/chatTransferService.service'
-export { IChatStatusItemService } from 'vs/workbench/contrib/chat/browser/chatStatusItemService.service'
+export { IChatStatusItemService } from 'vs/workbench/contrib/chat/browser/chatStatus/chatStatusItemService.service'
 export { IAiSettingsSearchService } from 'vscode/src/vs/workbench/services/aiSettingsSearch/common/aiSettingsSearch.service'
 export { IDynamicAuthenticationProviderStorageService } from 'vs/workbench/services/authentication/common/dynamicAuthenticationProviderStorage.service'
 export { IAuthenticationMcpService } from 'vs/workbench/services/authentication/browser/authenticationMcpService.service'
@@ -681,3 +680,6 @@ export { IChatContextService } from 'vs/workbench/contrib/chat/browser/chatConte
 export { ILanguageModelToolsConfirmationService } from 'vs/workbench/contrib/chat/common/languageModelToolsConfirmationService.service'
 export { IRandomService } from 'vs/workbench/contrib/editTelemetry/browser/randomService.service'
 export { ISCMRepositorySelectionMode } from 'vs/workbench/contrib/scm/common/scm'
+export { IAgentSessionsService } from 'vs/workbench/contrib/chat/browser/agentSessions/agentSessionsService.service'
+export { IUserAttentionService } from 'vs/workbench/services/userAttention/common/userAttentionService.service'
+export type { IAgentSessionsModel } from 'vs/workbench/contrib/chat/browser/agentSessions/agentSessionsModel'

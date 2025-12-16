@@ -8,12 +8,12 @@ Subject: [PATCH] fix: prevent importing class just to check intance
  1 file changed, 1 insertion(+), 2 deletions(-)
 
 diff --git a/src/vs/workbench/api/browser/mainThreadDocumentsAndEditors.ts b/src/vs/workbench/api/browser/mainThreadDocumentsAndEditors.ts
-index 69f487ee521..2da174fc7ee 100644
+index de8a7fa95e9..ebf7f4666e5 100644
 --- a/src/vs/workbench/api/browser/mainThreadDocumentsAndEditors.ts
 +++ b/src/vs/workbench/api/browser/mainThreadDocumentsAndEditors.ts
 @@ -17,7 +17,6 @@ import { MainThreadDocuments } from './mainThreadDocuments.js';
  import { MainThreadTextEditor } from './mainThreadEditor.js';
- import { MainThreadTextEditors } from './mainThreadEditors.js';
+ import { IMainThreadEditorLocator, MainThreadTextEditors } from './mainThreadEditors.js';
  import { ExtHostContext, ExtHostDocumentsAndEditorsShape, IDocumentsAndEditorsDelta, IModelAddedData, ITextEditorAddData, MainContext } from '../common/extHost.protocol.js';
 -import { AbstractTextEditor } from '../../browser/parts/editor/textEditor.js';
  import { IEditorPane } from '../../common/editor.js';

@@ -4,14 +4,14 @@ Date: Fri, 4 Apr 2025 16:21:01 +0200
 Subject: [PATCH] feat: add new task that only export editor types
 
 ---
- build/gulpfile.editor.js | 4 ++++
+ build/gulpfile.editor.ts | 4 ++++
  1 file changed, 4 insertions(+)
 
-diff --git a/build/gulpfile.editor.js b/build/gulpfile.editor.js
-index 8363930e38c..625f834bd87 100644
---- a/build/gulpfile.editor.js
-+++ b/build/gulpfile.editor.js
-@@ -219,6 +219,10 @@ gulp.task('editor-distro',
+diff --git a/build/gulpfile.editor.ts b/build/gulpfile.editor.ts
+index 2593f626646..b109d522d3e 100644
+--- a/build/gulpfile.editor.ts
++++ b/build/gulpfile.editor.ts
+@@ -216,6 +216,10 @@ gulp.task('editor-distro',
  	)
  );
  

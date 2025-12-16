@@ -4,18 +4,18 @@ Date: Wed, 30 Oct 2024 17:47:38 +0100
 Subject: [PATCH] fix: stop expecting a git context
 
 ---
- build/npm/postinstall.js | 4 ++--
+ build/npm/postinstall.ts | 4 ++--
  1 file changed, 2 insertions(+), 2 deletions(-)
 
-diff --git a/build/npm/postinstall.js b/build/npm/postinstall.js
-index fa8da7d08c6..d8cb7aada45 100644
---- a/build/npm/postinstall.js
-+++ b/build/npm/postinstall.js
-@@ -185,5 +185,5 @@ for (let dir of dirs) {
+diff --git a/build/npm/postinstall.ts b/build/npm/postinstall.ts
+index c4bbbf52960..b64973d20b9 100644
+--- a/build/npm/postinstall.ts
++++ b/build/npm/postinstall.ts
+@@ -182,5 +182,5 @@ for (const dir of dirs) {
  	npmInstall(dir, opts);
  }
  
--cp.execSync('git config pull.rebase merges');
--cp.execSync('git config blame.ignoreRevsFile .git-blame-ignore-revs');
-+// cp.execSync('git config pull.rebase merges');
-+// cp.execSync('git config blame.ignoreRevsFile .git-blame-ignore-revs');
+-child_process.execSync('git config pull.rebase merges');
+-child_process.execSync('git config blame.ignoreRevsFile .git-blame-ignore-revs');
++// child_process.execSync('git config pull.rebase merges');
++// child_process.execSync('git config blame.ignoreRevsFile .git-blame-ignore-revs');

@@ -1,36 +1,36 @@
 import { type IEditorOverrideServices } from 'vs/editor/standalone/browser/standaloneServices'
 import { SyncDescriptor } from 'vs/platform/instantiation/common/descriptors'
+import { AllowedMcpServersService } from 'vs/platform/mcp/common/allowedMcpServersService'
+import { IMcpGalleryManifestService } from 'vs/platform/mcp/common/mcpGalleryManifest.service'
+import { McpGalleryService } from 'vs/platform/mcp/common/mcpGalleryService'
+import {
+  IAllowedMcpServersService,
+  IMcpGalleryService
+} from 'vs/platform/mcp/common/mcpManagement.service'
+import { McpResourceScannerService } from 'vs/platform/mcp/common/mcpResourceScannerService'
+import { IMcpResourceScannerService } from 'vs/platform/mcp/common/mcpResourceScannerService.service'
+import 'vs/workbench/contrib/mcp/browser/mcp.contribution'
+import { McpElicitationService } from 'vs/workbench/contrib/mcp/browser/mcpElicitationService'
+import { McpWorkbenchService } from 'vs/workbench/contrib/mcp/browser/mcpWorkbenchService'
+import { McpRegistry } from 'vs/workbench/contrib/mcp/common/mcpRegistry'
+import { IMcpRegistry } from 'vs/workbench/contrib/mcp/common/mcpRegistryTypes.service'
+import { McpSamplingService } from 'vs/workbench/contrib/mcp/common/mcpSamplingService'
+import { McpService } from 'vs/workbench/contrib/mcp/common/mcpService'
 import {
   IMcpElicitationService,
   IMcpSamplingService,
   IMcpService,
   IMcpWorkbenchService
 } from 'vs/workbench/contrib/mcp/common/mcpTypes.service'
-import { IMcpRegistry } from 'vs/workbench/contrib/mcp/common/mcpRegistryTypes.service'
-import { McpService } from 'vs/workbench/contrib/mcp/common/mcpService'
-import { McpRegistry } from 'vs/workbench/contrib/mcp/common/mcpRegistry'
-import 'vs/workbench/contrib/mcp/browser/mcp.contribution'
-import { IAuthenticationMcpService } from 'vs/workbench/services/authentication/browser/authenticationMcpService.service'
-import { AuthenticationMcpService } from 'vs/workbench/services/authentication/browser/authenticationMcpService'
-import { IAuthenticationMcpAccessService } from 'vs/workbench/services/authentication/browser/authenticationMcpAccessService.service'
 import { AuthenticationMcpAccessService } from 'vs/workbench/services/authentication/browser/authenticationMcpAccessService'
-import { IAuthenticationMcpUsageService } from 'vs/workbench/services/authentication/browser/authenticationMcpUsageService.service'
+import { IAuthenticationMcpAccessService } from 'vs/workbench/services/authentication/browser/authenticationMcpAccessService.service'
+import { AuthenticationMcpService } from 'vs/workbench/services/authentication/browser/authenticationMcpService'
+import { IAuthenticationMcpService } from 'vs/workbench/services/authentication/browser/authenticationMcpService.service'
 import { AuthenticationMcpUsageService } from 'vs/workbench/services/authentication/browser/authenticationMcpUsageService'
-import { McpWorkbenchService } from 'vs/workbench/contrib/mcp/browser/mcpWorkbenchService'
-import {
-  IAllowedMcpServersService,
-  IMcpGalleryService
-} from 'vs/platform/mcp/common/mcpManagement.service'
-import { McpGalleryService } from 'vs/platform/mcp/common/mcpGalleryService'
-import { McpSamplingService } from 'vs/workbench/contrib/mcp/common/mcpSamplingService'
-import { IMcpResourceScannerService } from 'vs/platform/mcp/common/mcpResourceScannerService.service'
-import { McpResourceScannerService } from 'vs/platform/mcp/common/mcpResourceScannerService'
-import { McpElicitationService } from 'vs/workbench/contrib/mcp/browser/mcpElicitationService'
-import { IWorkbenchMcpManagementService } from 'vs/workbench/services/mcp/common/mcpWorkbenchManagementService.service'
+import { IAuthenticationMcpUsageService } from 'vs/workbench/services/authentication/browser/authenticationMcpUsageService.service'
+import { WorkbenchMcpGalleryManifestService } from 'vs/workbench/services/mcp/browser/mcpGalleryManifestService'
 import { WorkbenchMcpManagementService } from 'vs/workbench/services/mcp/browser/mcpWorkbenchManagementService'
-import { AllowedMcpServersService } from 'vs/platform/mcp/common/allowedMcpServersService'
-import { IMcpGalleryManifestService } from 'vs/platform/mcp/common/mcpGalleryManifest.service'
-import { WebMcpGalleryManifestService } from 'vs/workbench/services/mcp/browser/mcpGalleryManifestService'
+import { IWorkbenchMcpManagementService } from 'vs/workbench/services/mcp/common/mcpWorkbenchManagementService.service'
 
 export default function getServiceOverride(): IEditorOverrideServices {
   return {
@@ -63,7 +63,7 @@ export default function getServiceOverride(): IEditorOverrideServices {
     ),
     [IAllowedMcpServersService.toString()]: new SyncDescriptor(AllowedMcpServersService, [], true),
     [IMcpGalleryManifestService.toString()]: new SyncDescriptor(
-      WebMcpGalleryManifestService,
+      WorkbenchMcpGalleryManifestService,
       [],
       true
     )

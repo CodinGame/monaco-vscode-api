@@ -1,0 +1,23 @@
+From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
+From: =?UTF-8?q?Lo=C3=AFc=20Mangeonjean?= <loic@coderpad.io>
+Date: Wed, 10 Dec 2025 15:55:26 +0100
+Subject: [PATCH] fix: fix screencast mode mouse marker position
+
+when there is a header
+---
+ src/vs/workbench/browser/actions/media/actions.css | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+
+diff --git a/src/vs/workbench/browser/actions/media/actions.css b/src/vs/workbench/browser/actions/media/actions.css
+index 7c6dce32a59..efa1bc8f607 100644
+--- a/src/vs/workbench/browser/actions/media/actions.css
++++ b/src/vs/workbench/browser/actions/media/actions.css
+@@ -11,7 +11,7 @@
+ }
+ 
+ .monaco-workbench .screencast-mouse {
+-	position: absolute;
++	position: fixed;
+ 	border-width: 2px;
+ 	border-style: solid;
+ 	border-radius: 50%;

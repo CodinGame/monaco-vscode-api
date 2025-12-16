@@ -8,7 +8,7 @@ Subject: [PATCH] fix: close auxiliary window when the context is unloaded
  1 file changed, 6 insertions(+)
 
 diff --git a/src/vs/workbench/services/auxiliaryWindow/browser/auxiliaryWindowService.ts b/src/vs/workbench/services/auxiliaryWindow/browser/auxiliaryWindowService.ts
-index c91907ed1e3..0e9a11a29fc 100644
+index 3adc42984d0..412c22ccf9e 100644
 --- a/src/vs/workbench/services/auxiliaryWindow/browser/auxiliaryWindowService.ts
 +++ b/src/vs/workbench/services/auxiliaryWindow/browser/auxiliaryWindowService.ts
 @@ -154,6 +154,12 @@ export class AuxiliaryWindow extends BaseWindow implements IAuxiliaryWindow {

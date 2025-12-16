@@ -10,7 +10,7 @@ Subject: [PATCH] fix: fix notebook layout when there is a header on top of the
  2 files changed, 5 insertions(+), 6 deletions(-)
 
 diff --git a/src/vs/workbench/browser/media/style.css b/src/vs/workbench/browser/media/style.css
-index 396c6164dbe..1da3fa4cf70 100644
+index 2970ec6e57f..985e731754b 100644
 --- a/src/vs/workbench/browser/media/style.css
 +++ b/src/vs/workbench/browser/media/style.css
 @@ -39,7 +39,6 @@
@@ -22,7 +22,7 @@ index 396c6164dbe..1da3fa4cf70 100644
  
  .monaco-workbench.web .monaco-workbench-part, .monaco-workbench-part.web {
 diff --git a/src/vs/workbench/contrib/notebook/browser/notebookEditorWidget.ts b/src/vs/workbench/contrib/notebook/browser/notebookEditorWidget.ts
-index fcecc085601..70fee8aa612 100644
+index 2c05bed3ffc..6fa05e1e0be 100644
 --- a/src/vs/workbench/contrib/notebook/browser/notebookEditorWidget.ts
 +++ b/src/vs/workbench/contrib/notebook/browser/notebookEditorWidget.ts
 @@ -1959,11 +1959,12 @@ export class NotebookEditorWidget extends Disposable implements INotebookEditorD

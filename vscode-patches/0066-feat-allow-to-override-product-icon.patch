@@ -13,15 +13,15 @@ Subject: [PATCH] feat: allow to override product icon
  6 files changed, 7 insertions(+), 6 deletions(-)
 
 diff --git a/build/lib/stylelint/vscode-known-variables.json b/build/lib/stylelint/vscode-known-variables.json
-index 0476b5231b7..b8f28693d0f 100644
+index 57cce59fb49..2250370842a 100644
 --- a/build/lib/stylelint/vscode-known-variables.json
 +++ b/build/lib/stylelint/vscode-known-variables.json
-@@ -987,6 +987,7 @@
- 		"--vscode-chat-font-size-body-s",
- 		"--vscode-chat-font-size-body-xl",
- 		"--vscode-chat-font-size-body-xs",
--		"--vscode-chat-font-size-body-xxl"
-+		"--vscode-chat-font-size-body-xxl",
+@@ -991,6 +991,7 @@
+ 		"--comment-thread-editor-font-family",
+ 		"--comment-thread-editor-font-weight",
+ 		"--comment-thread-state-color",
+-		"--comment-thread-state-background-color"
++		"--comment-thread-state-background-color",
 +		"--product-icon"
  	]
  }

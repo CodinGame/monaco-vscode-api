@@ -83,7 +83,7 @@ function setLocalExtensionHost(_localExtensionHost: typeof LocalExtensionHost): 
 
 class BrowserExtensionHostFactoryOverride extends BrowserExtensionHostFactory {
   constructor(
-    private readonly workerConfig: WorkerConfig,
+    private enableWorkerExtensionHost: boolean,
     _extensionsProposedApi: ExtensionsProposedApi,
     _scanWebExtensions: () => Promise<IExtensionDescription[]>,
     _getExtensionRegistrySnapshotWhenReady: () => Promise<ExtensionDescriptionRegistrySnapshot>,
@@ -129,7 +129,7 @@ class BrowserExtensionHostFactoryOverride extends BrowserExtensionHostFactory {
         )
       }
       case ExtensionHostKind.LocalWebWorker: {
-        if (this.workerConfig == null) {
+        if (!this.enableWorkerExtensionHost) {
           return null
         }
         const startup = isInitialStart
@@ -143,9 +143,7 @@ class BrowserExtensionHostFactoryOverride extends BrowserExtensionHostFactory {
             runningLocations,
             runningLocation,
             isInitialStart
-          ),
-          this.workerConfig.url,
-          this.workerConfig.options
+          )
         )
       }
       case ExtensionHostKind.Remote: {
@@ -190,7 +188,7 @@ class LocalBrowserExtensionHostKindPicker extends BrowserExtensionHostKindPicker
 
 export class ExtensionServiceOverride extends ExtensionService implements IExtensionService {
   constructor(
-    workerConfig: WorkerConfig,
+    enableWorkerExtensionHost: boolean,
     @IInstantiationService instantiationService: IInstantiationService,
     @INotificationService notificationService: INotificationService,
     @IBrowserWorkbenchEnvironmentService
@@ -223,7 +221,7 @@ export class ExtensionServiceOverride extends ExtensionService implements IExten
   ) {
     const extensionsProposedApi = instantiationService.createInstance(ExtensionsProposedApi)
     const extensionHostFactory = new BrowserExtensionHostFactoryOverride(
-      workerConfig,
+      enableWorkerExtensionHost,
       extensionsProposedApi,
       async () => await this._scanWebExtensions(),
       () => this._getExtensionRegistrySnapshotWhenReady(),
@@ -238,7 +236,7 @@ export class ExtensionServiceOverride extends ExtensionService implements IExten
       extensionsProposedApi,
       extensionHostFactory,
       new LocalBrowserExtensionHostKindPicker(
-        workerConfig != null
+        enableWorkerExtensionHost
           ? [
               ExtensionHostKind.LocalWebWorker,
               ExtensionHostKind.LocalProcess,
@@ -340,28 +338,23 @@ registerAssets({
     )
 })
 
-export default function getServiceOverride(
-  workerConfig?: WorkerConfig,
-  _iframeAlternateDomain?: string
-): IEditorOverrideServices {
+export interface ExtensionServiceOverridesOptions {
+  enableWorkerExtensionHost?: boolean
+  iframeAlternateDomain?: string
+}
+
+export default function getServiceOverride({
+  enableWorkerExtensionHost,
+  iframeAlternateDomain: _iframeAlternateDomain
+}: ExtensionServiceOverridesOptions = {}): IEditorOverrideServices {
   if (_iframeAlternateDomain != null) {
     iframeAlternateDomain = _iframeAlternateDomain
   }
-  const _workerConfig =
-    workerConfig != null
-      ? {
-          ...workerConfig,
-          url: changeUrlDomain(
-            new URL(workerConfig.url, globalThis.location?.href ?? import.meta.url),
-            iframeAlternateDomain
-          )
-        }
-      : undefined
 
   return {
     [IExtensionService.toString()]: new SyncDescriptor(
       ExtensionServiceOverride,
-      [_workerConfig],
+      [enableWorkerExtensionHost],
       false
     ),
     [IExtensionManifestPropertiesService.toString()]: new SyncDescriptor(

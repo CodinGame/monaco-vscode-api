@@ -9,7 +9,7 @@ Subject: [PATCH] feat: add customEditorRestore
  2 files changed, 39 insertions(+), 34 deletions(-)
 
 diff --git a/src/vs/workbench/browser/layout.ts b/src/vs/workbench/browser/layout.ts
-index 7260c7a7f63..f7379482bd6 100644
+index 7c2fb6753bc..c05fbbda2ce 100644
 --- a/src/vs/workbench/browser/layout.ts
 +++ b/src/vs/workbench/browser/layout.ts
 @@ -12,42 +12,42 @@ import { coalesce } from '../../base/common/arrays.js';

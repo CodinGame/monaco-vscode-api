@@ -200,7 +200,8 @@ export function configuredSubpackagePlugin(): rollup.Plugin {
           options.plugins,
           importMetaAssets({
             include: ['**/*.ts', '**/*.js'],
-            preserveAssetsRoot: DIST_DIR_MAIN
+            preserveAssetsRoot: DIST_DIR_MAIN,
+            exclude: ['**/editorWorkerService.js', '**/webWorkerExtensionHost.js']
           }),
           css({
             preserveAssetsRoot: DIST_DIR_MAIN

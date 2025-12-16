@@ -8,10 +8,10 @@ Subject: [PATCH] fix: also register the quickinput container
  1 file changed, 5 insertions(+), 1 deletion(-)
 
 diff --git a/src/vs/platform/quickinput/browser/quickInputController.ts b/src/vs/platform/quickinput/browser/quickInputController.ts
-index 989a4995d5d..839d5a1fb58 100644
+index 4a8f8166eb6..638db354075 100644
 --- a/src/vs/platform/quickinput/browser/quickInputController.ts
 +++ b/src/vs/platform/quickinput/browser/quickInputController.ts
-@@ -36,6 +36,7 @@ import { TriStateCheckbox } from '../../../base/browser/ui/toggle/toggle.js';
+@@ -37,6 +37,7 @@ import { TriStateCheckbox } from '../../../base/browser/ui/toggle/toggle.js';
  import { defaultCheckboxStyles } from '../../theme/browser/defaultStyles.js';
  import { QuickInputTreeController } from './tree/quickInputTreeController.js';
  import { QuickTree } from './tree/quickTree.js';
@@ -19,7 +19,7 @@ index 989a4995d5d..839d5a1fb58 100644
  
  const $ = dom.$;
  
-@@ -87,7 +88,8 @@ export class QuickInputController extends Disposable {
+@@ -88,7 +89,8 @@ export class QuickInputController extends Disposable {
  		@ILayoutService private readonly layoutService: ILayoutService,
  		@IInstantiationService private readonly instantiationService: IInstantiationService,
  		@IContextKeyService contextKeyService: IContextKeyService,
@@ -29,7 +29,7 @@ index 989a4995d5d..839d5a1fb58 100644
  	) {
  		super();
  
-@@ -138,6 +140,8 @@ export class QuickInputController extends Disposable {
+@@ -139,6 +141,8 @@ export class QuickInputController extends Disposable {
  		}
  
  		const container = dom.append(this._container, $('.quick-input-widget.show-file-icons'));

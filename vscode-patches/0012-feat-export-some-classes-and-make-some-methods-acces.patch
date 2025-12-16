@@ -16,7 +16,7 @@ Subject: [PATCH] feat: export some classes and make some methods accessible
  .../api/browser/statusBarExtensionPoint.ts         |  2 +-
  src/vs/workbench/browser/layout.ts                 | 10 +++++-----
  src/vs/workbench/browser/workbench.ts              | 14 +++++++-------
- .../contrib/chat/browser/chatStatusItemService.ts  |  2 +-
+ .../browser/chatStatus/chatStatusItemService.ts    |  2 +-
  .../debug/browser/extensionHostDebugService.ts     |  2 +-
  .../contrib/issue/browser/issueTroubleshoot.ts     |  6 +++---
  .../contrib/logs/common/defaultLogLevels.ts        |  2 +-
@@ -32,7 +32,6 @@ Subject: [PATCH] feat: export some classes and make some methods accessible
  .../keybinding/browser/keybindingService.ts        |  2 +-
  .../languageStatus/common/languageStatusService.ts |  2 +-
  .../services/localization/browser/localeService.ts |  2 +-
- .../mcp/browser/mcpGalleryManifestService.ts       |  2 +-
  .../services/outline/browser/outlineService.ts     |  2 +-
  .../workbench/services/path/browser/pathService.ts |  2 +-
  .../remote/common/remoteExplorerService.ts         |  2 +-
@@ -40,7 +39,7 @@ Subject: [PATCH] feat: export some classes and make some methods accessible
  .../terminal/common/embedderTerminalService.ts     |  2 +-
  .../common/remoteUserDataProfiles.ts               |  2 +-
  .../userDataSync/common/userDataSyncUtil.ts        |  2 +-
- 36 files changed, 63 insertions(+), 59 deletions(-)
+ 35 files changed, 62 insertions(+), 58 deletions(-)
 
 diff --git a/src/vs/editor/contrib/editorState/browser/keybindingCancellation.ts b/src/vs/editor/contrib/editorState/browser/keybindingCancellation.ts
 index 94020ce96b9..de1e9af237e 100644
@@ -199,7 +198,7 @@ index 4da1f68eeb1..81de1362184 100644
  	declare readonly _serviceBrand: undefined;
  
 diff --git a/src/vs/workbench/browser/layout.ts b/src/vs/workbench/browser/layout.ts
-index 7d0fcca60ea..c3c87b7beea 100644
+index ae50ee7ab5d..5bb76e05e54 100644
 --- a/src/vs/workbench/browser/layout.ts
 +++ b/src/vs/workbench/browser/layout.ts
 @@ -50,7 +50,7 @@ import { CodeWindow, mainWindow } from '../../base/browser/window.js';
@@ -307,13 +306,13 @@ index afe48b84b2e..baae338937f 100644
  
  		// Ask each part to restore
  		try {
-diff --git a/src/vs/workbench/contrib/chat/browser/chatStatusItemService.ts b/src/vs/workbench/contrib/chat/browser/chatStatusItemService.ts
-index 91697c5cf83..62f98885642 100644
---- a/src/vs/workbench/contrib/chat/browser/chatStatusItemService.ts
-+++ b/src/vs/workbench/contrib/chat/browser/chatStatusItemService.ts
-@@ -34,7 +34,7 @@ export type ChatStatusEntry = {
+diff --git a/src/vs/workbench/contrib/chat/browser/chatStatus/chatStatusItemService.ts b/src/vs/workbench/contrib/chat/browser/chatStatus/chatStatusItemService.ts
+index b87135ccce6..dae96febb2b 100644
+--- a/src/vs/workbench/contrib/chat/browser/chatStatus/chatStatusItemService.ts
++++ b/src/vs/workbench/contrib/chat/browser/chatStatus/chatStatusItemService.ts
+@@ -32,7 +32,7 @@ export type ChatStatusEntry = {
+ 	detail: string | undefined;
  };
- 
  
 -class ChatStatusItemService implements IChatStatusItemService {
 +export class ChatStatusItemService implements IChatStatusItemService {
@@ -490,10 +489,10 @@ index a7b67f152e3..2e8f9e75f51 100644
  	readonly _serviceBrand: undefined;
  
 diff --git a/src/vs/workbench/services/extensions/browser/webWorkerExtensionHost.ts b/src/vs/workbench/services/extensions/browser/webWorkerExtensionHost.ts
-index c9600f72e66..43538afa862 100644
+index 6be0b6e027b..b8b3239795f 100644
 --- a/src/vs/workbench/services/extensions/browser/webWorkerExtensionHost.ts
 +++ b/src/vs/workbench/services/extensions/browser/webWorkerExtensionHost.ts
-@@ -77,7 +77,7 @@ export class WebWorkerExtensionHost extends Disposable implements IExtensionHost
+@@ -80,7 +80,7 @@ export class WebWorkerExtensionHost extends Disposable implements IExtensionHost
  		this._extensionHostLogsLocation = joinPath(this._environmentService.extHostLogsPath, 'webWorker');
  	}
  
@@ -576,19 +575,6 @@ index 554ecb2bce9..63082ed6952 100644
  	_serviceBrand: undefined;
  
  	constructor(
-diff --git a/src/vs/workbench/services/mcp/browser/mcpGalleryManifestService.ts b/src/vs/workbench/services/mcp/browser/mcpGalleryManifestService.ts
-index a15a7aa501f..a5e1f866d6a 100644
---- a/src/vs/workbench/services/mcp/browser/mcpGalleryManifestService.ts
-+++ b/src/vs/workbench/services/mcp/browser/mcpGalleryManifestService.ts
-@@ -11,7 +11,7 @@ import { IRemoteAgentService } from '../../remote/common/remoteAgentService.js';
- import { IRequestService } from '../../../../platform/request/common/request.js';
- import { ILogService } from '../../../../platform/log/common/log.js';
- 
--class WebMcpGalleryManifestService extends McpGalleryManifestService implements IMcpGalleryManifestService {
-+export class WebMcpGalleryManifestService extends McpGalleryManifestService implements IMcpGalleryManifestService {
- 
- 	constructor(
- 		@IProductService productService: IProductService,
 diff --git a/src/vs/workbench/services/outline/browser/outlineService.ts b/src/vs/workbench/services/outline/browser/outlineService.ts
 index e9077d5f226..fc31a3fab94 100644
 --- a/src/vs/workbench/services/outline/browser/outlineService.ts
@@ -642,7 +628,7 @@ index fe3e69fb843..899d84dda0c 100644
  	declare readonly _serviceBrand: undefined;
  
 diff --git a/src/vs/workbench/services/terminal/common/embedderTerminalService.ts b/src/vs/workbench/services/terminal/common/embedderTerminalService.ts
-index 5c1bb4361dc..cf15ce0194d 100644
+index 0d0bd4f349d..ecb2d74906c 100644
 --- a/src/vs/workbench/services/terminal/common/embedderTerminalService.ts
 +++ b/src/vs/workbench/services/terminal/common/embedderTerminalService.ts
 @@ -52,7 +52,7 @@ export interface IEmbedderTerminalPty {
