@@ -32,7 +32,7 @@ import {
   type NlsConfiguration
 } from 'vs/platform/extensionManagement/common/extensionsScannerService'
 import * as platform from 'vs/base/common/platform'
-import { ExtensionServiceOverride } from './service-override/extensions'
+import type { ExtensionServiceOverride } from './service-override/extensions'
 import {
   CustomSchemas,
   type ExtensionFileMetadata,
