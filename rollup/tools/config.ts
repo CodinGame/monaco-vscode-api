@@ -33,6 +33,6 @@ export const external = (source: string, importer?: string): boolean => {
     // if vscode is imported from vscode code itself, mark it as external
     return true
   }
-  if (source.includes('tas-client-umd')) return true
+  if (source.includes('tas-client')) return true
   return externals.some((external) => source === external || source.startsWith(`${external}/`))
 }
