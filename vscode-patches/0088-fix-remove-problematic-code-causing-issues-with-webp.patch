@@ -1,0 +1,45 @@
+From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
+From: =?UTF-8?q?Lo=C3=AFc=20Mangeonjean?= <loic@coderpad.io>
+Date: Thu, 18 Dec 2025 18:20:14 +0100
+Subject: [PATCH] fix: remove problematic code causing issues with webpack and
+ other bundlers
+
+---
+ src/vs/editor/browser/services/editorWorkerService.ts         | 3 ---
+ .../services/extensions/browser/webWorkerExtensionHost.ts     | 4 +---
+ 2 files changed, 1 insertion(+), 6 deletions(-)
+
+diff --git a/src/vs/editor/browser/services/editorWorkerService.ts b/src/vs/editor/browser/services/editorWorkerService.ts
+index 211ba9ccbfb..f02183a108a 100644
+--- a/src/vs/editor/browser/services/editorWorkerService.ts
++++ b/src/vs/editor/browser/services/editorWorkerService.ts
+@@ -36,7 +36,6 @@ import { WorkerTextModelSyncClient } from '../../common/services/textModelSync/t
+ import { EditorWorkerHost } from '../../common/services/editorWorkerHost.js';
+ import { StringEdit } from '../../common/core/edits/stringEdit.js';
+ import { OffsetRange } from '../../common/core/ranges/offsetRange.js';
+-import { FileAccess } from '../../../base/common/network.js';
+ 
+ /**
+  * Stop the worker if it was not needed for 5 min.
+@@ -74,8 +73,6 @@ export class EditorWorkerService extends Disposable implements IEditorWorkerServ
+ 		this._modelService = modelService;
+ 
+ 		const workerDescriptor = new WebWorkerDescriptor({
+-			esmModuleLocation: () => FileAccess.asBrowserUri('vs/editor/common/services/editorWebWorkerMain.js'),
+-			esmModuleLocationBundler: () => new URL('../../common/services/editorWebWorkerMain.ts?workerModule', import.meta.url),
+ 			label: 'editorWorkerService'
+ 		});
+ 
+diff --git a/src/vs/workbench/services/extensions/browser/webWorkerExtensionHost.ts b/src/vs/workbench/services/extensions/browser/webWorkerExtensionHost.ts
+index 4d142837f0b..8666cb0af57 100644
+--- a/src/vs/workbench/services/extensions/browser/webWorkerExtensionHost.ts
++++ b/src/vs/workbench/services/extensions/browser/webWorkerExtensionHost.ts
+@@ -351,7 +351,5 @@ export class WebWorkerExtensionHost extends Disposable implements IExtensionHost
+ }
+ 
+ const extensionHostWorkerMainDescriptor = new WebWorkerDescriptor({
+-	label: 'extensionHostWorkerMain',
+-	esmModuleLocation: () => FileAccess.asBrowserUri('vs/workbench/api/worker/extensionHostWorkerMain.js'),
+-	esmModuleLocationBundler: () => new URL('../../../api/worker/extensionHostWorkerMain.ts?workerModule', import.meta.url),
++	label: 'extensionHostWorkerMain'
+ });
