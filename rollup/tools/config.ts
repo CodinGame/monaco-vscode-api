@@ -26,13 +26,13 @@ export const OVERRIDE_PATH = nodePath.resolve(BASE_DIR, 'src/override')
 
 const externals = [...Object.keys({ ...pkg.dependencies }), 'trusted-types']
 export const external = (source: string, importer?: string): boolean => {
-  if (source === 'monaco-editor' || source === `${MAIN_PACKAGE_NAME}/css`) {
+  if (source === 'monaco-editor') {
     return true
   }
   if (importer != null && importer.startsWith(VSCODE_DIR) && source === 'vscode') {
     // if vscode is imported from vscode code itself, mark it as external
     return true
   }
-  if (source.includes('tas-client-umd')) return true
+  if (source.includes('tas-client')) return true
   return externals.some((external) => source === external || source.startsWith(`${external}/`))
 }

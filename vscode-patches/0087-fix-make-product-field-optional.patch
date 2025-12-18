@@ -64,7 +64,7 @@ index fe94a56a87e..a2d93026f40 100644
  			}
  		}));
 diff --git a/src/vs/workbench/contrib/chat/browser/chatWidget.ts b/src/vs/workbench/contrib/chat/browser/chatWidget.ts
-index cecd432942e..f59f7fbaebb 100644
+index 0cb088f13ee..c77adc4a568 100644
 --- a/src/vs/workbench/contrib/chat/browser/chatWidget.ts
 +++ b/src/vs/workbench/contrib/chat/browser/chatWidget.ts
 @@ -895,8 +895,8 @@ export class ChatWidget extends Disposable implements IChatWidget {

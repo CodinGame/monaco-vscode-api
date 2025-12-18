@@ -114,6 +114,11 @@ export default (args: Record<string, string>): rollup.RollupOptions => {
       }
     ],
     input,
+    onwarn: (warning, defaultHandler) => {
+      if (warning.code !== 'FILE_NAME_CONFLICT') {
+        defaultHandler(warning)
+      }
+    },
     plugins: [
       importMetaAssetsPlugin({
         include: ['**/*.ts', '**/*.js'],

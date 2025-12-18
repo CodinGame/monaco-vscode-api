@@ -30,9 +30,9 @@
   },
   "config": {
     "vscode": {
-      "version": "1.107.0",
-      "ref": "1.107.0",
-      "commit": "302ff6a2e235c95b88e587d4a4b6eeb1b6613297"
+      "version": "1.107.1",
+      "ref": "1.107.1",
+      "commit": "994fd12f8d3a5aa16f17d42c041e5809167e845a"
     },
     "monaco": {
       "ref": "v0.55.1",
@@ -82,7 +82,6 @@
     "type-fest": "^5.3.1",
     "typescript": "^5.9.3",
     "typescript-eslint": "^8.49.0",
-    "uuid": "^13.0.0",
     "vscode-semver": "npm:semver@=5.5.0",
     "yargs": "^18.0.0",
     "zx": "^8.8.5"

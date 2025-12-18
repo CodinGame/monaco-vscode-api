@@ -2850,7 +2850,7 @@ index c74949f8496..25aab9917cd 100644
  				const modLine = edit.modifiedLines[i].slice(maxPrefixTrim);
  
 diff --git a/src/vs/editor/contrib/inlineCompletions/browser/view/inlineEdits/inlineEditsViews/inlineEditsWordReplacementView.ts b/src/vs/editor/contrib/inlineCompletions/browser/view/inlineEdits/inlineEditsViews/inlineEditsWordReplacementView.ts
-index b557d104860..a56f9639fb0 100644
+index d98f14fc73c..d87a0debc98 100644
 --- a/src/vs/editor/contrib/inlineCompletions/browser/view/inlineEdits/inlineEditsViews/inlineEditsWordReplacementView.ts
 +++ b/src/vs/editor/contrib/inlineCompletions/browser/view/inlineEdits/inlineEditsViews/inlineEditsWordReplacementView.ts
 @@ -3,7 +3,7 @@
@@ -2862,7 +2862,7 @@ index b557d104860..a56f9639fb0 100644
  import { renderIcon } from '../../../../../../../base/browser/ui/iconLabel/iconLabels.js';
  import { KeybindingLabel, unthemedKeybindingLabelOptions } from '../../../../../../../base/browser/ui/keybindingLabel/keybindingLabel.js';
  import { Emitter } from '../../../../../../../base/common/event.js';
-@@ -76,7 +76,7 @@ export class InlineEditsWordReplacementView extends Disposable implements IInlin
+@@ -80,7 +80,7 @@ export class InlineEditsWordReplacementView extends Disposable implements IInlin
  		super();
  		this._start = this._editor.observePosition(constObservable(this._viewData.edit.range.getStartPosition()), this._store);
  		this._end = this._editor.observePosition(constObservable(this._viewData.edit.range.getEndPosition()), this._store);
@@ -2871,7 +2871,7 @@ index b557d104860..a56f9639fb0 100644
  		this._primaryElement = observableValue<ObserverNodeWithElement | null>(this, null);
  		this._secondaryElement = observableValue<ObserverNodeWithElement | null>(this, null);
  		this.isHovered = this._primaryElement.map((e, reader) => e?.didMouseMoveDuringHover.read(reader) ?? false);
-@@ -264,7 +264,7 @@ export class InlineEditsWordReplacementView extends Disposable implements IInlin
+@@ -271,7 +271,7 @@ export class InlineEditsWordReplacementView extends Disposable implements IInlin
  								if (!altAction) {
  									return undefined;
  								}
@@ -4102,10 +4102,10 @@ index f54a403e4e0..4ad93a478ae 100644
  
  
 diff --git a/src/vs/workbench/contrib/chat/browser/chatInputPart.ts b/src/vs/workbench/contrib/chat/browser/chatInputPart.ts
-index 566a2555a8d..48799f0e396 100644
+index 212cfc26197..eb33cf22fc4 100644
 --- a/src/vs/workbench/contrib/chat/browser/chatInputPart.ts
 +++ b/src/vs/workbench/contrib/chat/browser/chatInputPart.ts
-@@ -2323,10 +2323,10 @@ export class ChatInputPart extends Disposable implements IHistoryNavigationWidge
+@@ -2357,10 +2357,10 @@ export class ChatInputPart extends Disposable implements IHistoryNavigationWidge
  				this.relatedFiles?.remove(uri);
  			}));
  
@@ -4119,7 +4119,7 @@ index 566a2555a8d..48799f0e396 100644
  			group.appendChild(addButton.element);
  			group.appendChild(sep);
 diff --git a/src/vs/workbench/contrib/chat/browser/chatWidget.ts b/src/vs/workbench/contrib/chat/browser/chatWidget.ts
-index 0ba701eacb3..cecd432942e 100644
+index ddd89599bca..0cb088f13ee 100644
 --- a/src/vs/workbench/contrib/chat/browser/chatWidget.ts
 +++ b/src/vs/workbench/contrib/chat/browser/chatWidget.ts
 @@ -1458,7 +1458,7 @@ export class ChatWidget extends Disposable implements IChatWidget {

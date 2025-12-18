@@ -8,7 +8,6 @@ import * as nodePath from 'node:path'
 import {
   DIST_DIR,
   DIST_DIR_MAIN,
-  MAIN_PACKAGE_NAME,
   OVERRIDE_PATH,
   SRC_DIR,
   VSCODE_DIR,
@@ -118,7 +117,7 @@ export function transformVSCodeCode(
   vscodeVersion?: string,
   vscodeCommit?: string
 ): string {
-    /**
+  /**
    * Replace default product file by product.json file content
    */
   if (id.endsWith('vs/platform/product/common/product.js')) {
@@ -305,7 +304,7 @@ export default {
     ast.program.body.unshift(
       recast.types.builders.importDeclaration(
         [recast.types.builders.importSpecifier(recast.types.builders.identifier('registerCss'))],
-        recast.types.builders.literal(`${MAIN_PACKAGE_NAME}/css`)
+        recast.types.builders.literal(nodePath.resolve(SRC_DIR, 'css.ts'))
       )
     )
   }

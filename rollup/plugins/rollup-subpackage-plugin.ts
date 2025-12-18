@@ -55,25 +55,6 @@ function getInstalledVersion(libName: string) {
   return details
 }
 
-/**
- * Maximum number of modules of a group to be eligible for merging
- */
-const MERGEABLE_GROUP_MAX_SIZE = 10
-/**
- * Minimum similarity between 2 groups that allow to merge them
- */
-const MIN_MERGE_JACCARD_SIMILARITY = 0.5
-
-/**
- * jaccard similarity = intersectionSize / unionSize
- */
-function jaccardSimilarity(a: GroupSet, b: GroupSet) {
-  const intersectionSize = Array.from(a.groups).filter((x) => b.groups.has(x)).length
-  const unionSize = new Set([...a.groups, ...b.groups]).size
-
-  return intersectionSize / unionSize
-}
-
 function splitArray<T>(
   set: T[],
   isInFirstSet: (item: T) => boolean
@@ -121,7 +102,11 @@ export interface Options {
    * Move entrypoint into several groups
    */
   getEntryGroups(this: PluginContext, entrypoints: string[], options: OutputOptions): EntryGroup[]
-  getGroupSetName(this: PluginContext, groups: Set<string>): GroupSetName
+  getGroupSetName(
+    this: PluginContext,
+    groups: Set<string>,
+    externalDependencies: Set<string>
+  ): GroupSetName
   /**
    * Override rollup configuration for subpackage
    */
@@ -165,18 +150,23 @@ export interface Options {
 interface GroupSet {
   modules: Set<Module>
   groups: Set<string>
+  externalDependencies: Set<string>
+  transitiveExternalDependencies: Set<string>
 }
 
 interface Module {
   id: string
   dependencyIds: Set<string>
-  importers: Set<string>
+  importerIds: Set<string>
   /**
    * groups referencing the module
    */
   groups: Set<string>
   dependencies: Module[]
-  hasExternalDependency: boolean
+  importers: Module[]
+  externalDependencies: Set<string>
+  transitiveExternalDependencies: Set<string>
+
   isEntry: boolean
 }
 
@@ -241,12 +231,13 @@ export default ({
       }
       const chunk = output != null && output.type === 'chunk' ? output : undefined
 
-      const hasExternalDependency =
-        chunk?.moduleIds.some((moduleId) => {
+      const externalDependencies = new Set(
+        chunk?.moduleIds.flatMap((moduleId) => {
           const moduleInfo = this.getModuleInfo(moduleId)!
           const importedModules = [...moduleInfo.importedIds, ...moduleInfo.dynamicallyImportedIds]
-          return importedModules.some((importedId) => this.getModuleInfo(importedId)!.isExternal)
-        }) ?? false
+          return importedModules.filter((importedId) => this.getModuleInfo(importedId)!.isExternal)
+        }) ?? []
+      )
 
       const path = nodePath.resolve(options.dir!, moduleId)
 
@@ -264,13 +255,15 @@ export default ({
         dependencyIds: new Set(
           chunk != null ? [...chunk.imports, ...chunk.dynamicImports, ...chunk.referencedFiles] : []
         ),
-        importers: new Set(
+        importerIds: new Set(
           chunk?.moduleIds
             .flatMap((moduleId) => this.getModuleInfo(moduleId)!.importers)
             .flatMap(getImporters)
         ),
         dependencies: [],
-        hasExternalDependency,
+        importers: [],
+        externalDependencies,
+        transitiveExternalDependencies: new Set(),
         isEntry: false
       }
       allModules.push(module)
@@ -282,6 +275,40 @@ export default ({
       module.dependencies = Array.from(module.dependencyIds)
         .map((moduleId) => moduleMap.get(nodePath.resolve(options.dir!, moduleId)))
         .filter((m) => m != null)
+
+      module.importers = Array.from(module.importerIds)
+        .map((moduleId) => moduleMap.get(nodePath.resolve(options.dir!, moduleId)))
+        .filter((m) => m != null)
+    }
+
+    const getMainModuleIfExists = (module: Module) => {
+      const mainModuleId = getMainModule?.(module.id)
+      if (mainModuleId != null) {
+        return moduleMap.get(mainModuleId) ?? null
+      }
+      return null
+    }
+    // Compute transitive external dependencies
+    const propagateDependency = (module: Module, dependencies: string[]) => {
+      const sizeBefore = module.transitiveExternalDependencies.size
+      for (const dependency of dependencies) {
+        module.transitiveExternalDependencies.add(dependency)
+      }
+
+      if (module.transitiveExternalDependencies.size > sizeBefore) {
+        for (const importer of module.importers) {
+          const mainModule = getMainModuleIfExists(importer)
+          if (mainModule != null) {
+            propagateDependency(mainModule, dependencies)
+          }
+        }
+      }
+    }
+    for (const module of allModules) {
+      const mainModule = getMainModuleIfExists(module)
+      if (mainModule != null && mainModule.externalDependencies.size > 0) {
+        propagateDependency(mainModule, Array.from(mainModule.externalDependencies))
+      }
     }
 
     // group related entrypoint into groups
@@ -303,9 +330,9 @@ export default ({
 
       for (const dependency of module.dependencies) {
         // if this if the entry module of another subpackage, stop propagating
-        const mainModule = getMainModule?.(dependency.id)
+        const mainModule = getMainModule?.(dependency.id) ?? dependency.id
         const entryModuleGroup =
-          entryModuleGroups.get(mainModule ?? dependency.id) ?? entryModuleGroups.get(dependency.id)
+          entryModuleGroups.get(mainModule) ?? entryModuleGroups.get(dependency.id)
 
         if (entryModuleGroup != null && entryModuleGroup !== group) {
           continue
@@ -349,11 +376,19 @@ export default ({
       if (groupSet == null) {
         groupSet = {
           groups,
-          modules: new Set()
+          modules: new Set(),
+          externalDependencies: new Set(),
+          transitiveExternalDependencies: new Set()
         }
         groupSetMap.set(groupSetKey, groupSet)
       }
       groupSet.modules.add(module)
+      for (const externalDependency of mainModule.externalDependencies) {
+        groupSet.externalDependencies.add(externalDependency)
+      }
+      for (const externalDependency of mainModule.transitiveExternalDependencies!) {
+        groupSet.transitiveExternalDependencies.add(externalDependency)
+      }
     }
     const allGroupSets = Array.from(groupSetMap.values())
 
@@ -363,62 +398,75 @@ export default ({
       (groupSet) => groupSet.groups.size === 1
     )
 
-    // only keep those that we can merge
-    const isMergeable = (groupSet: GroupSet) => {
-      if (groupSet.modules.size > MERGEABLE_GROUP_MAX_SIZE) {
-        // do not merge groups that are already too big
-        return false
+    // Merge compatible common packages
+    const includesAll = <T>(set: Set<T>, included: Set<T>) => {
+      return Array.from(included).every((item) => set.has(item))
+    }
+    const setEquals = <T>(a: Set<T>, b: Set<T>) => {
+      return a.size === b.size && includesAll(a, b)
+    }
+    const isIncluded = (a: GroupSet, b: GroupSet) => {
+      return (
+        includesAll(a.groups, b.groups) &&
+        includesAll(a.transitiveExternalDependencies, b.transitiveExternalDependencies)
+      )
+    }
+    const areMergeable = (a: GroupSet, b: GroupSet) => {
+      if (setEquals(a.transitiveExternalDependencies, b.transitiveExternalDependencies)) return true
+      return isIncluded(a, b) || isIncluded(b, a)
+    }
+    const merge = (a: GroupSet, b: GroupSet): GroupSet => {
+      return {
+        externalDependencies: new Set([...a.externalDependencies, ...b.externalDependencies]),
+        transitiveExternalDependencies: new Set([
+          ...a.transitiveExternalDependencies,
+          ...b.transitiveExternalDependencies
+        ]),
+        groups: new Set([...a.groups, ...b.groups]),
+        modules: new Set([...a.modules, ...b.modules])
       }
+    }
+    loop: for (;;) {
+      for (let i = 0; i < combinationGroupSets.length; ++i) {
+        const a = combinationGroupSets[i]!
+        for (let j = i + 1; j < combinationGroupSets.length; ++j) {
+          const b = combinationGroupSets[j]!
+          if (areMergeable(a, b)) {
+            combinationGroupSets = combinationGroupSets.filter((gs) => gs != a && gs != b)
+            combinationGroupSets.push(merge(a, b))
+            continue loop
+          }
+        }
+      }
+      break
+    }
 
-      if (Array.from(groupSet.modules).some((module) => module.hasExternalDependency)) {
-        // do not merge groups referencing external modules
-        return false
+    // Merge groups with same dependencies as main package with it
+    const mainGroupSets = entryGroupSets.filter(
+      (gs) => gs.groups.size === 1 && mainGroupNames.has(Array.from(gs.groups)[0]!)
+    )
+    for (const mainGroupSet of mainGroupSets) {
+      for (let i = combinationGroupSets.length - 1; i >= 0; --i) {
+        const combinationGroupSet = combinationGroupSets[i]!
+        if (
+          includesAll(
+            mainGroupSet.transitiveExternalDependencies,
+            combinationGroupSet.transitiveExternalDependencies
+          )
+        ) {
+          mainGroupSet.modules = new Set([...mainGroupSet.modules, ...combinationGroupSet.modules])
+          mainGroupSet.externalDependencies = new Set([
+            ...mainGroupSet.externalDependencies,
+            ...combinationGroupSet.externalDependencies
+          ])
+          combinationGroupSets = combinationGroupSets.filter((gs) => gs !== combinationGroupSet)
+        }
       }
-      return true
     }
 
     const compareGroupSets = firstBy((groupset: GroupSet) => groupset.groups.size).thenBy(
       (groupset: GroupSet) => computeGroupListKey(groupset.groups)
     )
-
-    // try to merge mergeable groups
-    const getMergeableGroupSets = () =>
-      combinationGroupSets.filter(isMergeable).sort(compareGroupSets)
-
-    let mergeableGroupSets = getMergeableGroupSets()
-    do {
-      let bestSimilarity = -1
-      let bestSimililarityGroupSets: [GroupSet, GroupSet] | undefined
-      for (let i = 0; i < mergeableGroupSets.length; ++i) {
-        for (let j = i + 1; j < mergeableGroupSets.length; ++j) {
-          const a = mergeableGroupSets[i]!
-          const b = mergeableGroupSets[j]!
-          const similarity = jaccardSimilarity(a, b)
-          if (similarity > bestSimilarity) {
-            bestSimilarity = similarity
-            bestSimililarityGroupSets = [a, b]
-          }
-        }
-      }
-
-      if (bestSimilarity < MIN_MERGE_JACCARD_SIMILARITY) {
-        break
-      }
-
-      if (bestSimililarityGroupSets != null) {
-        // Merge the 2 groupSets
-        const [to, from] = bestSimililarityGroupSets
-        // remove 2nd group
-        combinationGroupSets = combinationGroupSets.filter((groupSet) => groupSet !== from)
-
-        // merge 2nd group into first one
-        from.groups.forEach((group) => to.groups.add(group))
-        from.modules.forEach((module) => to.modules.add(module))
-      }
-
-      // update
-      mergeableGroupSets = getMergeableGroupSets()
-    } while (mergeableGroupSets.length > 1)
 
     const finalGroupSets = [...entryGroupSets, ...combinationGroupSets].sort(compareGroupSets)
 
@@ -436,7 +484,7 @@ export default ({
         alias: packageAlias,
         version: packageVersion,
         description: packageDescription
-      } = getGroupSetName.call(this, groupSet.groups)
+      } = getGroupSetName.call(this, groupSet.groups, groupSet.transitiveExternalDependencies)
       ownPackageAliases.set(packageAlias ?? packageName, {
         name: packageName,
         version: packageVersion
@@ -488,7 +536,11 @@ export default ({
                     return undefined
                   } else {
                     // It's from another package, mark it as optional
-                    const groupName = getGroupSetName.call(this, moduleGroupSet.groups)
+                    const groupName = getGroupSetName.call(
+                      this,
+                      moduleGroupSet.groups,
+                      moduleGroupSet.transitiveExternalDependencies
+                    )
                     return {
                       id: getInterPackageImport(
                         nodePath.relative(options.dir!, resolved),
@@ -661,7 +713,7 @@ export default ({
         return {
           id: moduleId,
           imported: module.dependencyIds,
-          importers: module.importers,
+          importers: module.importerIds,
           isEntry: module.isEntry
         }
       }
