@@ -1954,9 +1954,7 @@ registerSingleton(
   IgnoredExtensionsManagementService,
   InstantiationType.Eager
 )
-class ExtensionRecommendationNotificationService
-  implements IExtensionRecommendationNotificationService
-{
+class ExtensionRecommendationNotificationService implements IExtensionRecommendationNotificationService {
   _serviceBrand: undefined
   readonly ignoredRecommendations: IExtensionRecommendationNotificationService['ignoredRecommendations'] =
     []
@@ -5592,9 +5590,7 @@ class NullDefaultAccountService extends Disposable implements IDefaultAccountSer
   setDefaultAccount: IDefaultAccountService['setDefaultAccount'] = () => {}
 }
 registerSingleton(IDefaultAccountService, NullDefaultAccountService, InstantiationType.Delayed)
-class DynamicAuthenticationProviderStorageService
-  implements IDynamicAuthenticationProviderStorageService
-{
+class DynamicAuthenticationProviderStorageService implements IDynamicAuthenticationProviderStorageService {
   _serviceBrand: undefined
   getClientRegistration: IDynamicAuthenticationProviderStorageService['getClientRegistration'] =
     async () => undefined
@@ -5966,6 +5962,9 @@ class ChatSessionsService implements IChatSessionsService {
     Disposable.None
   getInProgressSessionDescription: IChatSessionsService['getInProgressSessionDescription'] = () =>
     undefined
+
+  onDidChangeOptionGroups: IChatSessionsService['onDidChangeOptionGroups'] = Event.None
+  isChatSessionInProgressStatus: IChatSessionsService['isChatSessionInProgressStatus'] = () => false
 }
 registerSingleton(IChatSessionsService, ChatSessionsService, InstantiationType.Delayed)
 
