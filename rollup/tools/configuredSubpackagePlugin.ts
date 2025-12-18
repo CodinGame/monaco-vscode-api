@@ -196,6 +196,11 @@ export function configuredSubpackagePlugin(): rollup.Plugin {
           ...options.output,
           dir: `dist/packages/${packageName.replace(/^.*\//, '')}`
         },
+        onwarn: (warning, defaultHandler) => {
+          if (warning.code !== 'FILE_NAME_CONFLICT') {
+            defaultHandler(warning)
+          }
+        },
         plugins: [
           options.plugins,
           importMetaAssets({
