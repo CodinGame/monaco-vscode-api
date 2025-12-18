@@ -1,5 +1,4 @@
 import * as changeCase from 'change-case'
-import { v5 as uuidv5 } from 'uuid'
 import chalk from 'chalk'
 import * as rollup from 'rollup'
 import nodeResolve from '@rollup/plugin-node-resolve'
@@ -27,8 +26,6 @@ import subpackagePlugin, {
 } from '../plugins/rollup-subpackage-plugin.js'
 import resolveAssetUrlPlugin from '../plugins/resolve-asset-url-plugin.js'
 import css from '../plugins/css-import-plugin.js'
-
-const COMMON_PACKAGE_NAME_UUID_NAMESPACE = '251b3eab-b5c9-4930-9c6c-6b38f697d291'
 
 /**
  * Files to expose in the editor-api package (just exporting everyting from the corresponding VSCode file)
@@ -123,7 +120,7 @@ export function configuredSubpackagePlugin(): rollup.Plugin {
 
       return Array.from(groupMaps.values())
     },
-    getGroupSetName(groups) {
+    getGroupSetName(groups, externalDependencies) {
       if (groups.size === 1) {
         const uniqueGroup = groups.values().next().value!
         switch (uniqueGroup) {
@@ -162,22 +159,37 @@ export function configuredSubpackagePlugin(): rollup.Plugin {
         }
       }
 
-      const name = Array.from(groups.values())
-        .slice()
-        .sort()
-        .map((groupName) => {
-          const match = /^(.*):(.*)$/.exec(groupName)
-          if (match == null) {
-            return groupName
-          }
-          return match[2]
-        })
-        .join(', ')
-      return {
-        name: `@codingame/monaco-vscode-${uuidv5(Array.from(groups.values()).sort().join('-'), COMMON_PACKAGE_NAME_UUID_NAMESPACE)}-common`,
-        version: '0.0.0-semantic-release',
-        description: `${pkg.description} - common package (${name})`
+      // Common package
+      if (externalDependencies.has('katex')) {
+        return {
+          name: `@codingame/monaco-vscode-katex-common`,
+          version: '0.0.0-semantic-release',
+          description: `${pkg.description} - common package depending on katex`
+        }
       }
+      if (externalDependencies.has('@xterm/xterm')) {
+        return {
+          name: `@codingame/monaco-vscode-xterm-common`,
+          version: '0.0.0-semantic-release',
+          description: `${pkg.description} - common package depending on xterm`
+        }
+      }
+
+      if (
+        Array.from(externalDependencies).every((dependency) =>
+          dependency.match(/^@xterm\/addon-.*$/)
+        )
+      ) {
+        return {
+          name: `@codingame/monaco-vscode-xterm-addons-common`,
+          version: '0.0.0-semantic-release',
+          description: `${pkg.description} - common package depending on xterm addons`
+        }
+      }
+
+      throw new Error(
+        `Unable to name package with groups ${groups} and dependencies ${externalDependencies}`
+      )
     },
     getMainModule(id) {
       // attach .d.ts files to their .js file
@@ -609,7 +621,11 @@ ${code}`
       function createTree(moduleId: string, seen: Set<string> = new Set<string>()): Node[] {
         const subpackage = subpackages.find((p) => p.modules.has(moduleId))
 
-        if (subpackage != null && !mainSubpackageDependencies.has(subpackage)) {
+        if (
+          subpackage != null &&
+          subpackage !== mainPackage &&
+          !mainSubpackageDependencies.has(subpackage)
+        ) {
           return []
         }
 
