@@ -58,6 +58,7 @@ import 'vs/workbench/contrib/extensions/browser/extensions.contribution'
 import 'vs/workbench/contrib/extensions/browser/extensions.web.contribution'
 import type { IExtensionGalleryManifest } from 'vs/platform/extensionManagement/common/extensionGalleryManifest.js'
 import { IProductService } from 'vs/platform/product/common/productService.service.js'
+import { Emitter } from 'vs/base/common/event.js'
 
 // plugin-import-meta-asset only allows relative paths
 registerAssets({
@@ -80,10 +81,24 @@ class CustomExtensionGalleryManifestService extends WebExtensionGalleryManifestS
     @IRemoteAgentService remoteAgentService: IRemoteAgentService
   ) {
     super(productService, remoteAgentService)
+
+    // this.transform was only assigned after the super constructor was called
+    // so trigger a manifest update so getExtensionGalleryManifest is called again with the transform set
+    if (transform != null) {
+      this._onDidChangeExtensionGalleryManifest.fire()
+    }
   }
 
+  private _onDidChangeExtensionGalleryManifest = new Emitter<void>()
+  override onDidChangeExtensionGalleryManifest = this._onDidChangeExtensionGalleryManifest.event
+
   override async getExtensionGalleryManifest(): Promise<IExtensionGalleryManifest | null> {
-    return this.transform(await super.getExtensionGalleryManifest())!
+    const manifest = await super.getExtensionGalleryManifest()
+    if (this.transform != null) {
+      return this.transform(manifest)
+    } else {
+      return manifest
+    }
   }
 }
 
@@ -143,7 +158,7 @@ export interface ExtensionGalleryOptions {
 
 export default function getServiceOverride({
   webOnly = false,
-  transformExtensionGalleryManifest = (manifest) => manifest
+  transformExtensionGalleryManifest
 }: ExtensionGalleryOptions = {}): IEditorOverrideServices {
   return {
     [IExtensionGalleryService.toString()]: new SyncDescriptor(
