@@ -56,6 +56,8 @@ import { isLocaleAvailable } from '../l10n.js'
 import { unsupported } from '../tools'
 import 'vs/workbench/contrib/extensions/browser/extensions.contribution'
 import 'vs/workbench/contrib/extensions/browser/extensions.web.contribution'
+import type { IExtensionGalleryManifest } from 'vs/platform/extensionManagement/common/extensionGalleryManifest.js'
+import { IProductService } from 'vs/platform/product/common/productService.service.js'
 
 // plugin-import-meta-asset only allows relative paths
 registerAssets({
@@ -68,6 +70,22 @@ registerAssets({
     import.meta.url
   ).href
 })
+
+class CustomExtensionGalleryManifestService extends WebExtensionGalleryManifestService {
+  constructor(
+    private transform: (
+      manifest: IExtensionGalleryManifest | null
+    ) => IExtensionGalleryManifest | null,
+    @IProductService productService: IProductService,
+    @IRemoteAgentService remoteAgentService: IRemoteAgentService
+  ) {
+    super(productService, remoteAgentService)
+  }
+
+  override async getExtensionGalleryManifest(): Promise<IExtensionGalleryManifest | null> {
+    return this.transform(await super.getExtensionGalleryManifest())!
+  }
+}
 
 class EmptyRemoteAgentService implements IRemoteAgentService {
   _serviceBrand: undefined
@@ -116,12 +134,17 @@ export interface ExtensionGalleryOptions {
    * Whether we should only allow for web extensions to be installed, this is generally
    * true if there is no server part.
    */
-  webOnly: boolean
+  webOnly?: boolean
+
+  transformExtensionGalleryManifest?: (
+    manifest: IExtensionGalleryManifest | null
+  ) => IExtensionGalleryManifest | null
 }
 
-export default function getServiceOverride(
-  options: ExtensionGalleryOptions = { webOnly: false }
-): IEditorOverrideServices {
+export default function getServiceOverride({
+  webOnly = false,
+  transformExtensionGalleryManifest = (manifest) => manifest
+}: ExtensionGalleryOptions = {}): IEditorOverrideServices {
   return {
     [IExtensionGalleryService.toString()]: new SyncDescriptor(
       WorkbenchExtensionGalleryService,
@@ -140,7 +163,7 @@ export default function getServiceOverride(
     ),
     [IExtensionManagementServerService.toString()]: new SyncDescriptor(
       ExtensionManagementServerServiceOverride,
-      [options.webOnly],
+      [webOnly],
       true
     ),
     [IExtensionRecommendationsService.toString()]: new SyncDescriptor(
@@ -203,9 +226,11 @@ export default function getServiceOverride(
     ),
     [IAllowedExtensionsService.toString()]: new SyncDescriptor(AllowedExtensionsService, [], true),
     [IExtensionGalleryManifestService.toString()]: new SyncDescriptor(
-      WebExtensionGalleryManifestService,
-      [],
+      CustomExtensionGalleryManifestService,
+      [transformExtensionGalleryManifest],
       true
     )
   }
 }
+
+export type { IExtensionGalleryManifest }
