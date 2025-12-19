@@ -1,0 +1,102 @@
+From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
+From: =?UTF-8?q?Lo=C3=AFc=20Mangeonjean?= <loic@coderpad.io>
+Date: Fri, 19 Dec 2025 15:03:37 +0100
+Subject: [PATCH] feat: support disabling view containers
+
+---
+ src/vs/workbench/browser/parts/paneCompositeBar.ts    |  7 ++-----
+ src/vs/workbench/common/views.ts                      |  3 +++
+ .../workbench/services/views/browser/viewsService.ts  |  4 ++++
+ .../services/views/common/viewContainerModel.ts       | 11 +++++++++++
+ 4 files changed, 20 insertions(+), 5 deletions(-)
+
+diff --git a/src/vs/workbench/browser/parts/paneCompositeBar.ts b/src/vs/workbench/browser/parts/paneCompositeBar.ts
+index b26b6c55177..2b4d8a6bf96 100644
+--- a/src/vs/workbench/browser/parts/paneCompositeBar.ts
++++ b/src/vs/workbench/browser/parts/paneCompositeBar.ts
+@@ -359,6 +359,7 @@ export class PaneCompositeBar extends Disposable {
+ 			const disposables = new DisposableStore();
+ 			disposables.add(viewContainerModel.onDidChangeContainerInfo(() => this.updateCompositeBarActionItem(viewContainer, viewContainerModel)));
+ 			disposables.add(viewContainerModel.onDidChangeActiveViewDescriptors(() => this.showOrHideViewContainer(viewContainer)));
++			disposables.add(viewContainerModel.onDidChangeEnablement(() => this.showOrHideViewContainer(viewContainer)));
+ 
+ 			this.viewContainerDisposables.set(viewContainer.id, disposables);
+ 		}
+@@ -436,11 +437,7 @@ export class PaneCompositeBar extends Disposable {
+ 		const viewContainerId = isString(viewContainerOrId) ? viewContainerOrId : viewContainerOrId.id;
+ 
+ 		if (viewContainer) {
+-			if (viewContainer.hideIfEmpty) {
+-				if (this.viewService.isViewContainerActive(viewContainerId)) {
+-					return false;
+-				}
+-			} else {
++			if (this.viewService.isViewContainerActive(viewContainerId)) {
+ 				return false;
+ 			}
+ 		}
+diff --git a/src/vs/workbench/common/views.ts b/src/vs/workbench/common/views.ts
+index 9c60b15706c..5498bc9a0f5 100644
+--- a/src/vs/workbench/common/views.ts
++++ b/src/vs/workbench/common/views.ts
+@@ -121,6 +121,8 @@ export interface IViewContainerDescriptor {
+ 
+ 	readonly rejectAddedViews?: boolean;
+ 
++	readonly when?: ContextKeyExpression;
++
+ 	requestedIndex?: number;
+ }
+ 
+@@ -344,6 +346,7 @@ export interface IViewContainerModel {
+ 	readonly onDidAddVisibleViewDescriptors: Event<IAddedViewDescriptorRef[]>;
+ 	readonly onDidRemoveVisibleViewDescriptors: Event<IViewDescriptorRef[]>;
+ 	readonly onDidMoveVisibleViewDescriptors: Event<{ from: IViewDescriptorRef; to: IViewDescriptorRef }>;
++	readonly onDidChangeEnablement: Event<void>;
+ 
+ 	isVisible(id: string): boolean;
+ 	setVisible(id: string, visible: boolean): void;
+diff --git a/src/vs/workbench/services/views/browser/viewsService.ts b/src/vs/workbench/services/views/browser/viewsService.ts
+index 4938ebb966b..eef6628f853 100644
+--- a/src/vs/workbench/services/views/browser/viewsService.ts
++++ b/src/vs/workbench/services/views/browser/viewsService.ts
+@@ -221,6 +221,10 @@ export class ViewsService extends Disposable implements IViewsService {
+ 			return false;
+ 		}
+ 
++		if (!this.contextKeyService.contextMatchesRules(viewContainer.when)) {
++			return false;
++		}
++
+ 		if (!viewContainer.hideIfEmpty) {
+ 			return true;
+ 		}
+diff --git a/src/vs/workbench/services/views/common/viewContainerModel.ts b/src/vs/workbench/services/views/common/viewContainerModel.ts
+index fa24dca15c2..17a3e8c759b 100644
+--- a/src/vs/workbench/services/views/common/viewContainerModel.ts
++++ b/src/vs/workbench/services/views/common/viewContainerModel.ts
+@@ -324,6 +324,9 @@ export class ViewContainerModel extends Disposable implements IViewContainerMode
+ 	private _onDidMoveVisibleViewDescriptors = this._register(new Emitter<{ from: IViewDescriptorRef; to: IViewDescriptorRef }>());
+ 	readonly onDidMoveVisibleViewDescriptors: Event<{ from: IViewDescriptorRef; to: IViewDescriptorRef }> = this._onDidMoveVisibleViewDescriptors.event;
+ 
++	private _onDidChangeEnablement = this._register(new Emitter<void>());
++	readonly onDidChangeEnablement: Event<void> = this._onDidChangeEnablement.event;
++
+ 	private readonly logger: Lazy<ILogger>;
+ 
+ 	constructor(
+@@ -334,6 +337,14 @@ export class ViewContainerModel extends Disposable implements IViewContainerMode
+ 	) {
+ 		super();
+ 
++		if (viewContainer.when) {
++			const whenContextKeys = new CounterSet<string>();
++			for (const key of viewContainer.when.keys()) {
++				whenContextKeys.add(key);
++			}
++			this._register(Event.filter(contextKeyService.onDidChangeContext, e => e.affectsSome(whenContextKeys))(() => this._onDidChangeEnablement.fire()));
++		}
++
+ 		this.logger = new Lazy(() => loggerService.createLogger(VIEWS_LOG_ID, { name: VIEWS_LOG_NAME, group: windowLogGroup }));
+ 
+ 		this._register(Event.filter(contextKeyService.onDidChangeContext, e => e.affectsSome(this.contextKeys))(() => this.onDidChangeContext()));
