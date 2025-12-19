@@ -1,5 +1,5 @@
 import { BaseWorkspaceSearchProvider } from '../search-utils/base-provider'
-import { fuzzyContains, splitLines } from 'vs/base/common/strings'
+import { fuzzyContains, splitLines, createRegExp } from 'vs/base/common/strings'
 import type { URI } from 'vs/base/common/uri'
 import * as glob from 'vs/base/common/glob'
 import type {
@@ -270,12 +270,13 @@ export class WorkspaceSearchProvider
    */
   private createSearchRegex(contentPattern: ITextQuery['contentPattern']): RegExp {
     try {
-      return new RegExp(
-        contentPattern.pattern || '',
-        (contentPattern.isCaseSensitive ? 'g' : 'gi') +
-          (contentPattern.isMultiline ? 'm' : '') +
-          (contentPattern.isUnicode ? 'u' : '')
-      )
+      return createRegExp(contentPattern.pattern || '', !!contentPattern.isRegExp, {
+        wholeWord: contentPattern.isWordMatch,
+        global: true,
+        matchCase: contentPattern.isCaseSensitive,
+        multiline: contentPattern.isMultiline,
+        unicode: contentPattern.isUnicode
+      })
     } catch (regexError) {
       this.logger.error(`Invalid regex pattern: ${contentPattern.pattern}`, regexError as Error)
       const searchError = new SearchError(
