@@ -5,20 +5,32 @@ import { AbstractPolicyService, type PolicyValue } from 'vs/platform/policy/comm
 import { IPolicyService } from 'vs/platform/policy/common/policy.service'
 
 class PolicyService extends AbstractPolicyService {
-  constructor(policies: Map<PolicyName, PolicyValue>) {
+  constructor(defaultPolicies: Map<PolicyName, PolicyValue>) {
     super()
-    this.policies = policies
+    this.policies = new Map(defaultPolicies)
+
+    this._onDidChange.fire([])
+  }
+
+  public updatePolicy(name: PolicyName, value: PolicyValue | undefined): void {
+    if (value == null) {
+      this.policies.delete(name)
+    } else {
+      this.policies.set(name, value)
+    }
+
+    this._onDidChange.fire([name])
   }
 
   protected override async _updatePolicyDefinitions(): Promise<void> {}
 }
 
 export default function getServiceOverride(
-  policies: Map<PolicyName, PolicyValue>
+  defaultPolicies: Map<PolicyName, PolicyValue>
 ): IEditorOverrideServices {
   return {
-    [IPolicyService.toString()]: new SyncDescriptor(PolicyService, [policies], true)
+    [IPolicyService.toString()]: new SyncDescriptor(PolicyService, [defaultPolicies], true)
   }
 }
 
-export type { PolicyName, PolicyValue }
+export type { PolicyName, PolicyValue, PolicyService }
