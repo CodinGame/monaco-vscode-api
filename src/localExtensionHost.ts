@@ -55,6 +55,7 @@ import {
   ExtHostAuthentication,
   IExtHostAuthentication
 } from 'vs/workbench/api/common/extHostAuthentication'
+import { IDefaultLogLevelsService } from 'vs/workbench/services/log/common/defaultLogLevels.service'
 
 const apiFactoryDeferred = new DeferredPromise<ApiFactory>()
 
@@ -155,7 +156,8 @@ class LocalExtensionHost implements IExtensionHost {
     @IBrowserWorkbenchEnvironmentService
     private readonly _environmentService: IBrowserWorkbenchEnvironmentService,
     @IProductService private readonly _productService: IProductService,
-    @IUserDataProfilesService private readonly _userDataProfilesService: IUserDataProfilesService
+    @IUserDataProfilesService private readonly _userDataProfilesService: IUserDataProfilesService,
+    @IDefaultLogLevelsService private readonly _defaultLogLevelsService: IDefaultLogLevelsService
   ) {
     this._protocolPromise = null
     this._extensionHostLogsLocation = joinPath(this._environmentService.extHostLogsPath, 'local')
@@ -224,7 +226,7 @@ class LocalExtensionHost implements IExtensionHost {
         extensionTestsLocationURI: this._environmentService.extensionTestsLocationURI,
         globalStorageHome: this._userDataProfilesService.defaultProfile.globalStorageHome,
         workspaceStorageHome: this._environmentService.workspaceStorageHome,
-        extensionLogLevel: this._environmentService.extensionLogLevel
+        extensionLogLevel: this._defaultLogLevelsService.defaultLogLevels.extensions
       },
       workspace:
         this._contextService.getWorkbenchState() === WorkbenchState.EMPTY

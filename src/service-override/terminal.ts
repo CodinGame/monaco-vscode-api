@@ -94,7 +94,7 @@ abstract class SimpleTerminalBackend implements ITerminalBackend {
   getProfiles = async (): Promise<ITerminalProfile[]> => []
   getWslPath = unsupported
   getEnvironment = async (): Promise<IProcessEnvironment> => ({})
-  getShellEnvironment = async (): Promise<IProcessEnvironment | undefined> => undefined
+  getShellEnvironment = async (): Promise<IProcessEnvironment | undefined> => ({})
   setTerminalLayoutInfo = async (): Promise<void> => {}
   updateTitle = async (): Promise<void> => {}
   updateIcon = async (): Promise<void> => {}
