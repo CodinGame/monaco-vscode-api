@@ -8,7 +8,7 @@ Subject: [PATCH] fix: make product field optional
  .../workbench/contrib/chat/browser/chatStatus/chatStatus.ts   | 2 +-
  .../contrib/chat/browser/chatStatus/chatStatusDashboard.ts    | 2 +-
  .../contrib/chat/browser/chatStatus/chatStatusEntry.ts        | 2 +-
- src/vs/workbench/contrib/chat/browser/chatWidget.ts           | 4 ++--
+ src/vs/workbench/contrib/chat/browser/widget/chatWidget.ts    | 4 ++--
  5 files changed, 6 insertions(+), 6 deletions(-)
 
 diff --git a/src/vs/base/common/product.ts b/src/vs/base/common/product.ts
@@ -38,12 +38,12 @@ index ef3e5989e8c..dbc886eae7a 100644
  		return false;
  	}
 diff --git a/src/vs/workbench/contrib/chat/browser/chatStatus/chatStatusDashboard.ts b/src/vs/workbench/contrib/chat/browser/chatStatus/chatStatusDashboard.ts
-index ec7ec0af9e8..bbe43eb47a0 100644
+index 8eee4aa2652..82e29c15f99 100644
 --- a/src/vs/workbench/contrib/chat/browser/chatStatus/chatStatusDashboard.ts
 +++ b/src/vs/workbench/contrib/chat/browser/chatStatus/chatStatusDashboard.ts
-@@ -48,7 +48,7 @@ import { contrastBorder, inputValidationErrorBorder, inputValidationInfoBorder,
- import { Color } from '../../../../../base/common/color.js';
- import { IInstantiationService } from '../../../../../platform/instantiation/common/instantiation.js';
+@@ -48,7 +48,7 @@ import { Color } from '../../../../../base/common/color.js';
+ import { IViewsService } from '../../../../services/views/common/viewsService.js';
+ import { ChatViewId } from '../chat.js';
  
 -const defaultChat = product.defaultChatAgent;
 +const defaultChat = product.defaultChatAgent!;
@@ -63,11 +63,11 @@ index fe94a56a87e..a2d93026f40 100644
  				this.update();
  			}
  		}));
-diff --git a/src/vs/workbench/contrib/chat/browser/chatWidget.ts b/src/vs/workbench/contrib/chat/browser/chatWidget.ts
-index 0cb088f13ee..c77adc4a568 100644
---- a/src/vs/workbench/contrib/chat/browser/chatWidget.ts
-+++ b/src/vs/workbench/contrib/chat/browser/chatWidget.ts
-@@ -895,8 +895,8 @@ export class ChatWidget extends Disposable implements IChatWidget {
+diff --git a/src/vs/workbench/contrib/chat/browser/widget/chatWidget.ts b/src/vs/workbench/contrib/chat/browser/widget/chatWidget.ts
+index 4d63fc0d95e..a1f7804f9c4 100644
+--- a/src/vs/workbench/contrib/chat/browser/widget/chatWidget.ts
++++ b/src/vs/workbench/contrib/chat/browser/widget/chatWidget.ts
+@@ -898,8 +898,8 @@ export class ChatWidget extends Disposable implements IChatWidget {
  				const defaultAgent = this.chatAgentService.getDefaultAgent(this.location, this.input.currentModeKind);
  				let additionalMessage: string | IMarkdownString | undefined;
  				if (this.chatEntitlementService.anonymous && !this.chatEntitlementService.sentiment.installed) {

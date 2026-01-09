@@ -8,10 +8,10 @@ Subject: [PATCH] fix: also register the quickinput container
  1 file changed, 5 insertions(+), 1 deletion(-)
 
 diff --git a/src/vs/platform/quickinput/browser/quickInputController.ts b/src/vs/platform/quickinput/browser/quickInputController.ts
-index 4a8f8166eb6..638db354075 100644
+index a3a85e36a35..a1bba19c987 100644
 --- a/src/vs/platform/quickinput/browser/quickInputController.ts
 +++ b/src/vs/platform/quickinput/browser/quickInputController.ts
-@@ -37,6 +37,7 @@ import { TriStateCheckbox } from '../../../base/browser/ui/toggle/toggle.js';
+@@ -37,6 +37,7 @@ import { TriStateCheckbox, createToggleActionViewItemProvider } from '../../../b
  import { defaultCheckboxStyles } from '../../theme/browser/defaultStyles.js';
  import { QuickInputTreeController } from './tree/quickInputTreeController.js';
  import { QuickTree } from './tree/quickTree.js';
@@ -19,17 +19,17 @@ index 4a8f8166eb6..638db354075 100644
  
  const $ = dom.$;
  
-@@ -88,7 +89,8 @@ export class QuickInputController extends Disposable {
- 		@ILayoutService private readonly layoutService: ILayoutService,
+@@ -89,7 +90,8 @@ export class QuickInputController extends Disposable {
  		@IInstantiationService private readonly instantiationService: IInstantiationService,
  		@IContextKeyService contextKeyService: IContextKeyService,
--		@IStorageService private readonly storageService: IStorageService
-+		@IStorageService private readonly storageService: IStorageService,
+ 		@IStorageService private readonly storageService: IStorageService,
+-		@IContextMenuService private readonly contextMenuService: IContextMenuService
++		@IContextMenuService private readonly contextMenuService: IContextMenuService,
 +		@IKeybindingService private readonly keybindingService: IKeybindingService,
  	) {
  		super();
  
-@@ -139,6 +141,8 @@ export class QuickInputController extends Disposable {
+@@ -140,6 +142,8 @@ export class QuickInputController extends Disposable {
  		}
  
  		const container = dom.append(this._container, $('.quick-input-widget.show-file-icons'));

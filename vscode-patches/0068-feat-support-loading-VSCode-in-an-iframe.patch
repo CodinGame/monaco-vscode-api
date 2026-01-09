@@ -310,7 +310,7 @@ index 55ddb01f83d..7272069d931 100644
  			device: this._device,
  			format: presentationFormat,
 diff --git a/src/vs/editor/contrib/clipboard/browser/clipboard.ts b/src/vs/editor/contrib/clipboard/browser/clipboard.ts
-index 2157be89da4..6e9a1d18f77 100644
+index 59079079e51..8616a534479 100644
 --- a/src/vs/editor/contrib/clipboard/browser/clipboard.ts
 +++ b/src/vs/editor/contrib/clipboard/browser/clipboard.ts
 @@ -5,6 +5,7 @@
@@ -320,8 +320,8 @@ index 2157be89da4..6e9a1d18f77 100644
 +import { mainWindow } from '../../../../base/browser/window.js';
  import { KeyCode, KeyMod } from '../../../../base/common/keyCodes.js';
  import * as platform from '../../../../base/common/platform.js';
- import { StopWatch } from '../../../../base/common/stopwatch.js';
-@@ -34,7 +35,7 @@ const supportsCopy = (platform.isNative || document.queryCommandSupported('copy'
+ import * as nls from '../../../../nls.js';
+@@ -31,7 +32,7 @@ const supportsCopy = (platform.isNative || document.queryCommandSupported('copy'
  // Firefox only supports navigator.clipboard.readText() in browser extensions.
  // See https://developer.mozilla.org/en-US/docs/Web/API/Clipboard/readText#Browser_compatibility
  // When loading over http, navigator.clipboard can be undefined. See https://github.com/microsoft/monaco-editor/issues/2313
@@ -492,10 +492,10 @@ index 66108502b91..f90c7df5714 100644
  
  		this._register(this.extensionService.onDidChangeExtensions(async (result) => {
 diff --git a/src/vs/workbench/services/extensions/browser/webWorkerExtensionHost.ts b/src/vs/workbench/services/extensions/browser/webWorkerExtensionHost.ts
-index 972e28c008d..cd2cbea8ebe 100644
+index 8923f60df04..d5b9ba9dab5 100644
 --- a/src/vs/workbench/services/extensions/browser/webWorkerExtensionHost.ts
 +++ b/src/vs/workbench/services/extensions/browser/webWorkerExtensionHost.ts
-@@ -204,7 +204,7 @@ export class WebWorkerExtensionHost extends Disposable implements IExtensionHost
+@@ -206,7 +206,7 @@ export class WebWorkerExtensionHost extends Disposable implements IExtensionHost
  				return;
  			}
  			const { data } = event.data;
@@ -504,7 +504,7 @@ index 972e28c008d..cd2cbea8ebe 100644
  				console.warn('UNEXPECTED message', event);
  				const err = new Error('UNEXPECTED message');
  				return rejectBarrier(ExtensionHostExitCode.UnexpectedError, err);
-@@ -229,12 +229,12 @@ export class WebWorkerExtensionHost extends Disposable implements IExtensionHost
+@@ -231,12 +231,12 @@ export class WebWorkerExtensionHost extends Disposable implements IExtensionHost
  
  		port.onmessage = (event) => {
  			const { data } = event;

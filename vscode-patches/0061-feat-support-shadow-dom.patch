@@ -32,8 +32,7 @@ Subject: [PATCH] feat: support shadow dom
  src/vs/workbench/browser/layout.ts            |  3 +
  .../browser/parts/editor/editorGroupView.ts   |  4 +-
  src/vs/workbench/browser/workbench.ts         |  6 +-
- .../contrib/chat/browser/chatInputPart.ts     |  2 +-
- .../chatSessions/view/sessionsTreeRenderer.ts |  3 +-
+ .../browser/widget/input/chatInputPart.ts     |  2 +-
  .../files/browser/views/explorerViewer.ts     |  4 +-
  .../notebook/browser/notebookEditorWidget.ts  |  6 +-
  .../browser/view/cellParts/cellStatusPart.ts  |  5 +-
@@ -50,7 +49,7 @@ Subject: [PATCH] feat: support shadow dom
  .../browser/walkThroughPart.ts                |  6 +-
  .../suggest/browser/simpleSuggestWidget.ts    |  4 +-
  .../themes/browser/workbenchThemeService.ts   |  2 +-
- 46 files changed, 186 insertions(+), 100 deletions(-)
+ 45 files changed, 184 insertions(+), 99 deletions(-)
 
 diff --git a/src/vs/base/browser/dom.ts b/src/vs/base/browser/dom.ts
 index 0e792265805..60a773236eb 100644
@@ -338,10 +337,10 @@ index 39ce04a13a8..06cdc96e51d 100644
  
  	const dragContainer = getDragImageContainer(container);
 diff --git a/src/vs/base/browser/ui/findinput/findInput.ts b/src/vs/base/browser/ui/findinput/findInput.ts
-index 2c9c47f4d5e..aee74cd57d4 100644
+index 2518cf4250d..26b9df209a4 100644
 --- a/src/vs/base/browser/ui/findinput/findInput.ts
 +++ b/src/vs/base/browser/ui/findinput/findInput.ts
-@@ -18,6 +18,7 @@ import * as nls from '../../../../nls.js';
+@@ -20,6 +20,7 @@ import * as nls from '../../../../nls.js';
  import { DisposableStore, MutableDisposable } from '../../../common/lifecycle.js';
  import { IHistory } from '../../../common/history.js';
  import type { IHoverLifecycleOptions } from '../hover/hover.js';
@@ -349,7 +348,7 @@ index 2c9c47f4d5e..aee74cd57d4 100644
  
  
  export interface IFindInputOptions {
-@@ -169,7 +170,7 @@ export class FindInput extends Widget {
+@@ -175,7 +176,7 @@ export class FindInput extends Widget {
  			const indexes = [this.caseSensitive.domNode, this.wholeWords.domNode, this.regex.domNode];
  			this.onkeydown(this.domNode, (event: IKeyboardEvent) => {
  				if (event.equals(KeyCode.LeftArrow) || event.equals(KeyCode.RightArrow) || event.equals(KeyCode.Escape)) {
@@ -380,10 +379,10 @@ index 10c5b47b653..6dd9e205c71 100644
  					let newIndex: number = -1;
  					if (event.equals(KeyCode.RightArrow)) {
 diff --git a/src/vs/base/browser/ui/inputbox/inputBox.ts b/src/vs/base/browser/ui/inputbox/inputBox.ts
-index df93d742649..627cc2086ec 100644
+index 3438890dd23..998bb4ccf6b 100644
 --- a/src/vs/base/browser/ui/inputbox/inputBox.ts
 +++ b/src/vs/base/browser/ui/inputbox/inputBox.ts
-@@ -172,7 +172,7 @@ export class InputBox extends Widget {
+@@ -173,7 +173,7 @@ export class InputBox extends Widget {
  
  			const onSelectionChange = this._register(new DomEmitter(container.ownerDocument, 'selectionchange'));
  			const onAnchoredSelectionChange = Event.filter(onSelectionChange.event, () => {
@@ -523,10 +522,10 @@ index 308d252fcf7..24cf7baaff5 100644
  			if (!isFocused) {
  				return;
 diff --git a/src/vs/editor/browser/controller/mouseHandler.ts b/src/vs/editor/browser/controller/mouseHandler.ts
-index 9c9b398eb37..a126a71366e 100644
+index 4ad4ca9d817..8f3b1c77524 100644
 --- a/src/vs/editor/browser/controller/mouseHandler.ts
 +++ b/src/vs/editor/browser/controller/mouseHandler.ts
-@@ -101,7 +101,7 @@ export class MouseHandler extends ViewEventHandler {
+@@ -102,7 +102,7 @@ export class MouseHandler extends ViewEventHandler {
  			// remove this listener
  
  			if (!this._mouseLeaveMonitor) {
@@ -757,7 +756,7 @@ index 1fda3db0826..1fd3c6f6976 100644
  
  			dispose(disposables);
 diff --git a/src/vs/workbench/browser/layout.ts b/src/vs/workbench/browser/layout.ts
-index 5bb76e05e54..819aa769bec 100644
+index ff5708e1a86..5213358c5de 100644
 --- a/src/vs/workbench/browser/layout.ts
 +++ b/src/vs/workbench/browser/layout.ts
 @@ -47,6 +47,7 @@ import { AuxiliaryBarPart } from './parts/auxiliarybar/auxiliaryBarPart.js';
@@ -778,7 +777,7 @@ index 5bb76e05e54..819aa769bec 100644
  
  	protected initLayout(accessor: ServicesAccessor): void {
 diff --git a/src/vs/workbench/browser/parts/editor/editorGroupView.ts b/src/vs/workbench/browser/parts/editor/editorGroupView.ts
-index a1050be0194..79d1e45e4fb 100644
+index a2344eaf8f2..69f87e30afa 100644
 --- a/src/vs/workbench/browser/parts/editor/editorGroupView.ts
 +++ b/src/vs/workbench/browser/parts/editor/editorGroupView.ts
 @@ -11,7 +11,7 @@ import { EditorInput } from '../../../common/editor/editorInput.js';
@@ -823,11 +822,11 @@ index fbff9375f73..5a53b5423a4 100644
  	}
  
  	private createPart(id: string, role: string, classes: string[]): HTMLElement {
-diff --git a/src/vs/workbench/contrib/chat/browser/chatInputPart.ts b/src/vs/workbench/contrib/chat/browser/chatInputPart.ts
-index ea1cc2aaf86..212cfc26197 100644
---- a/src/vs/workbench/contrib/chat/browser/chatInputPart.ts
-+++ b/src/vs/workbench/contrib/chat/browser/chatInputPart.ts
-@@ -1962,7 +1962,7 @@ export class ChatInputPart extends Disposable implements IHistoryNavigationWidge
+diff --git a/src/vs/workbench/contrib/chat/browser/widget/input/chatInputPart.ts b/src/vs/workbench/contrib/chat/browser/widget/input/chatInputPart.ts
+index a7af6c250b8..09266263e7b 100644
+--- a/src/vs/workbench/contrib/chat/browser/widget/input/chatInputPart.ts
++++ b/src/vs/workbench/contrib/chat/browser/widget/input/chatInputPart.ts
+@@ -1980,7 +1980,7 @@ export class ChatInputPart extends Disposable implements IHistoryNavigationWidge
  
  		attachments.unshift(toolbar);
  
@@ -836,27 +835,8 @@ index ea1cc2aaf86..212cfc26197 100644
  		const currentIndex = attachments.findIndex(attachment => attachment === activeElement);
  		let newIndex = currentIndex;
  
-diff --git a/src/vs/workbench/contrib/chat/browser/chatSessions/view/sessionsTreeRenderer.ts b/src/vs/workbench/contrib/chat/browser/chatSessions/view/sessionsTreeRenderer.ts
-index 7bd794263dc..4f100d388c4 100644
---- a/src/vs/workbench/contrib/chat/browser/chatSessions/view/sessionsTreeRenderer.ts
-+++ b/src/vs/workbench/contrib/chat/browser/chatSessions/view/sessionsTreeRenderer.ts
-@@ -522,12 +522,13 @@ export class SessionsRenderer extends Disposable implements ITreeRenderer<IChatS
- 					await timeout(0);
- 
- 					const ownerDocument = inputBox.inputElement.ownerDocument;
-+					const activeElement = DOM.getActiveElement(ownerDocument)
- 					if (!ownerDocument.hasFocus()) {
- 						break;
- 					}
- 					if (DOM.isActiveElement(inputBox.inputElement)) {
- 						return;
--					} else if (DOM.isHTMLElement(ownerDocument.activeElement) && DOM.hasParentWithClass(ownerDocument.activeElement, 'context-view')) {
-+					} else if (DOM.isHTMLElement(activeElement) && DOM.hasParentWithClass(activeElement, 'context-view')) {
- 						// Do nothing - context menu is open
- 					} else {
- 						break;
 diff --git a/src/vs/workbench/contrib/files/browser/views/explorerViewer.ts b/src/vs/workbench/contrib/files/browser/views/explorerViewer.ts
-index cdd6404a505..76d93b6d41f 100644
+index 7fbfacc1959..a688ea28618 100644
 --- a/src/vs/workbench/contrib/files/browser/views/explorerViewer.ts
 +++ b/src/vs/workbench/contrib/files/browser/views/explorerViewer.ts
 @@ -74,6 +74,7 @@ import { IContextKey, IContextKeyService } from '../../../../../platform/context
@@ -867,7 +847,7 @@ index cdd6404a505..76d93b6d41f 100644
  
  export class ExplorerDelegate implements IListVirtualDelegate<ExplorerItem> {
  
-@@ -1155,11 +1156,12 @@ export class FilesRenderer implements ICompressibleTreeRenderer<ExplorerItem, Fu
+@@ -1158,11 +1159,12 @@ export class FilesRenderer implements ICompressibleTreeRenderer<ExplorerItem, Fu
  					await timeout(0);
  
  					const ownerDocument = inputBox.inputElement.ownerDocument;
@@ -931,7 +911,7 @@ index a23d2f8b28e..3f9739cf607 100644
  				}
  			}));
 diff --git a/src/vs/workbench/contrib/notebook/browser/view/cellParts/codeCell.ts b/src/vs/workbench/contrib/notebook/browser/view/cellParts/codeCell.ts
-index 7bcc620da4b..32f1830772c 100644
+index e828b4061fb..5f853cee926 100644
 --- a/src/vs/workbench/contrib/notebook/browser/view/cellParts/codeCell.ts
 +++ b/src/vs/workbench/contrib/notebook/browser/view/cellParts/codeCell.ts
 @@ -34,7 +34,7 @@ import { CellEditorOptions } from './cellEditorOptions.js';
@@ -943,7 +923,7 @@ index 7bcc620da4b..32f1830772c 100644
  
  export class CodeCell extends Disposable {
  	private _outputContainerRenderer: CellOutputContainer;
-@@ -233,7 +233,7 @@ export class CodeCell extends Disposable {
+@@ -234,7 +234,7 @@ export class CodeCell extends Disposable {
  					if (
  						this.notebookEditor.getActiveCell() === this.viewCell &&
  						this.viewCell.focusMode === CellFocusMode.Editor &&
@@ -952,7 +932,7 @@ index 7bcc620da4b..32f1830772c 100644
  					{
  						this.templateData.editor.focus();
  					}
-@@ -457,7 +457,7 @@ export class CodeCell extends Disposable {
+@@ -500,7 +500,7 @@ export class CodeCell extends Disposable {
  		// the document active element is inside the notebook editor or the document body (cell editor being disposed previously)
  		return this.notebookEditor.getActiveCell() === this.viewCell
  			&& this.viewCell.focusMode === CellFocusMode.Editor
@@ -1034,7 +1014,7 @@ index d3c4ea3f178..ff3d9c4b33a 100644
  		}
  
 diff --git a/src/vs/workbench/contrib/preferences/browser/preferences.contribution.ts b/src/vs/workbench/contrib/preferences/browser/preferences.contribution.ts
-index 4ca4c6d5c03..44496a4a14a 100644
+index dc4ed6e1f88..8f72885c81b 100644
 --- a/src/vs/workbench/contrib/preferences/browser/preferences.contribution.ts
 +++ b/src/vs/workbench/contrib/preferences/browser/preferences.contribution.ts
 @@ -3,6 +3,7 @@
@@ -1055,10 +1035,10 @@ index 4ca4c6d5c03..44496a4a14a 100644
  					preferencesEditor.focusSettings(true);
  				}
 diff --git a/src/vs/workbench/contrib/preferences/browser/settingsEditor2.ts b/src/vs/workbench/contrib/preferences/browser/settingsEditor2.ts
-index 3afe0b47d63..5d1d0918fc3 100644
+index 986b02a3bfd..66b6c4a10d8 100644
 --- a/src/vs/workbench/contrib/preferences/browser/settingsEditor2.ts
 +++ b/src/vs/workbench/contrib/preferences/browser/settingsEditor2.ts
-@@ -1145,7 +1145,7 @@ export class SettingsEditor2 extends EditorPane {
+@@ -1151,7 +1151,7 @@ export class SettingsEditor2 extends EditorPane {
  		}));
  
  		this._register(this.settingsTree.onDidFocus(() => {
@@ -1067,7 +1047,7 @@ index 3afe0b47d63..5d1d0918fc3 100644
  			if (classList && classList.contains('monaco-list') && classList.contains('settings-editor-tree')) {
  				this._currentFocusContext = SettingsFocusContext.SettingTree;
  				this.settingRowFocused.set(true);
-@@ -1617,7 +1617,7 @@ export class SettingsEditor2 extends EditorPane {
+@@ -1623,7 +1623,7 @@ export class SettingsEditor2 extends EditorPane {
  
  	private getActiveControlInSettingsTree(): HTMLElement | null {
  		const element = this.settingsTree.getHTMLElement();
@@ -1076,7 +1056,7 @@ index 3afe0b47d63..5d1d0918fc3 100644
  		return (activeElement && DOM.isAncestorOfActiveElement(element)) ?
  			<HTMLElement>activeElement :
  			null;
-@@ -1682,7 +1682,7 @@ export class SettingsEditor2 extends EditorPane {
+@@ -1688,7 +1688,7 @@ export class SettingsEditor2 extends EditorPane {
  	}
  
  	private contextViewFocused(): boolean {
@@ -1086,20 +1066,20 @@ index 3afe0b47d63..5d1d0918fc3 100644
  
  	private refreshSingleElement(element: SettingsTreeSettingElement): void {
 diff --git a/src/vs/workbench/contrib/terminal/browser/terminalTabbedView.ts b/src/vs/workbench/contrib/terminal/browser/terminalTabbedView.ts
-index 56a03cc03fb..8df602e3e66 100644
+index 1e6a52f9e04..5d62a732a26 100644
 --- a/src/vs/workbench/contrib/terminal/browser/terminalTabbedView.ts
 +++ b/src/vs/workbench/contrib/terminal/browser/terminalTabbedView.ts
-@@ -589,7 +589,7 @@ export class TerminalTabbedView extends Disposable {
+@@ -590,7 +590,7 @@ export class TerminalTabbedView extends Disposable {
  
  		// If the terminal is waiting to reconnect to remote terminals, then there is no TerminalInstance yet that can
  		// be focused. So wait for connection to finish, then focus.
 -		const previousActiveElement = this._tabListElement.ownerDocument.activeElement;
 +		const previousActiveElement = dom.getActiveElement(this._tabListElement.ownerDocument);
  		if (previousActiveElement) {
- 			// TODO: Improve lifecycle management this event should be disposed after first fire
- 			this._register(this._terminalService.onDidChangeConnectionState(() => {
+ 			const listener = this._register(Event.once(this._terminalService.onDidChangeConnectionState)(() => {
+ 				// Only focus the terminal if the activeElement has not changed since focus() was called
 diff --git a/src/vs/workbench/contrib/terminal/browser/terminalView.ts b/src/vs/workbench/contrib/terminal/browser/terminalView.ts
-index 628e1313ba5..dd546075c60 100644
+index 9a745727415..32b87509ab3 100644
 --- a/src/vs/workbench/contrib/terminal/browser/terminalView.ts
 +++ b/src/vs/workbench/contrib/terminal/browser/terminalView.ts
 @@ -335,7 +335,7 @@ export class TerminalViewPane extends ViewPane {
@@ -1109,8 +1089,8 @@ index 628e1313ba5..dd546075c60 100644
 -		const previousActiveElement = this.element.ownerDocument.activeElement;
 +		const previousActiveElement = dom.getActiveElement(this.element.ownerDocument);
  		if (previousActiveElement) {
- 			// TODO: Improve lifecycle management this event should be disposed after first fire
- 			this._register(this._terminalService.onDidChangeConnectionState(() => {
+ 			const listener = this._register(Event.once(this._terminalService.onDidChangeConnectionState)(() => {
+ 				// Only focus the terminal if the activeElement has not changed since focus() was called
 diff --git a/src/vs/workbench/contrib/webview/browser/webviewElement.ts b/src/vs/workbench/contrib/webview/browser/webviewElement.ts
 index f31b97b7089..73579fe797e 100644
 --- a/src/vs/workbench/contrib/webview/browser/webviewElement.ts
@@ -1149,7 +1129,7 @@ index f31b97b7089..73579fe797e 100644
  
  			// It is possible for the webview to be contained in another window
 diff --git a/src/vs/workbench/contrib/welcomeGettingStarted/browser/gettingStarted.ts b/src/vs/workbench/contrib/welcomeGettingStarted/browser/gettingStarted.ts
-index d184d32ed68..9be45bc8adc 100644
+index 8a6f2eae905..8a57f9c3a2d 100644
 --- a/src/vs/workbench/contrib/welcomeGettingStarted/browser/gettingStarted.ts
 +++ b/src/vs/workbench/contrib/welcomeGettingStarted/browser/gettingStarted.ts
 @@ -3,7 +3,7 @@
@@ -1159,9 +1139,9 @@ index d184d32ed68..9be45bc8adc 100644
 -import { $, Dimension, addDisposableListener, append, clearNode, reset } from '../../../../base/browser/dom.js';
 +import { $, Dimension, addDisposableListener, append, clearNode, getActiveElement, reset } from '../../../../base/browser/dom.js';
  import { renderFormattedText } from '../../../../base/browser/formattedTextRenderer.js';
+ import { status } from '../../../../base/browser/ui/aria/aria.js';
  import { StandardKeyboardEvent } from '../../../../base/browser/keyboardEvent.js';
- import { Button } from '../../../../base/browser/ui/button/button.js';
-@@ -1696,7 +1696,7 @@ export class GettingStartedPage extends EditorPane {
+@@ -1737,7 +1737,7 @@ export class GettingStartedPage extends EditorPane {
  	override focus() {
  		super.focus();
  
@@ -1203,7 +1183,7 @@ index 27908c633b0..ef61127e428 100644
  			active = active.parentElement;
  		}
 diff --git a/src/vs/workbench/services/suggest/browser/simpleSuggestWidget.ts b/src/vs/workbench/services/suggest/browser/simpleSuggestWidget.ts
-index 74f84e3bf14..a264a0488f0 100644
+index ad81bc1abca..c217fa5485f 100644
 --- a/src/vs/workbench/services/suggest/browser/simpleSuggestWidget.ts
 +++ b/src/vs/workbench/services/suggest/browser/simpleSuggestWidget.ts
 @@ -353,7 +353,7 @@ export class SimpleSuggestWidget<TModel extends SimpleCompletionModel<TItem>, TI
@@ -1225,10 +1205,10 @@ index 74f84e3bf14..a264a0488f0 100644
  			return;
  		}
 diff --git a/src/vs/workbench/services/themes/browser/workbenchThemeService.ts b/src/vs/workbench/services/themes/browser/workbenchThemeService.ts
-index 1440fbb3cce..7fa63c63709 100644
+index e286ec94d86..6e733d0fbb1 100644
 --- a/src/vs/workbench/services/themes/browser/workbenchThemeService.ts
 +++ b/src/vs/workbench/services/themes/browser/workbenchThemeService.ts
-@@ -794,7 +794,7 @@ class ThemeFileWatcher {
+@@ -804,7 +804,7 @@ class ThemeFileWatcher {
  
  function _applyRules(styleSheetContent: string, rulesClassName: string) {
  	// eslint-disable-next-line no-restricted-syntax

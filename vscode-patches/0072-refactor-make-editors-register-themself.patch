@@ -156,7 +156,7 @@ index 69e271c1879..74e473d55f8 100644
  
  		this._configurationService = configurationService;
 diff --git a/src/vs/editor/standalone/browser/standaloneServices.ts b/src/vs/editor/standalone/browser/standaloneServices.ts
-index e39eb9cba91..f56e9c15408 100644
+index 6ff655b013a..5e9a48686cc 100644
 --- a/src/vs/editor/standalone/browser/standaloneServices.ts
 +++ b/src/vs/editor/standalone/browser/standaloneServices.ts
 @@ -53,8 +53,6 @@ import { basename } from '../../../base/common/resources.js';

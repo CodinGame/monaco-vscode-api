@@ -40,7 +40,7 @@ index 6f5cf0d25d8..dce870fcc09 100644
  					includeContent: !!build,
  					// note: trailing slash is important, else the source URLs in V8's file coverage are incorrect
 diff --git a/build/gulpfile.vscode.ts b/build/gulpfile.vscode.ts
-index d3ab651ef2e..4850cf372cb 100644
+index ac70ecbd57f..25ebeb7a266 100644
 --- a/build/gulpfile.vscode.ts
 +++ b/build/gulpfile.vscode.ts
 @@ -293,7 +293,6 @@ function packageTask(platform: string, arch: string, sourceFolderName: string, d

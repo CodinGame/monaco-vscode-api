@@ -72,10 +72,10 @@ index 6e201931269..15b221bafb8 100644
  		const { stylesLoaded } = this.applyCSS(auxiliaryWindow, disposables);
  		const container = this.applyHTML(auxiliaryWindow, disposables);
 diff --git a/src/vs/workbench/services/extensions/browser/webWorkerExtensionHost.ts b/src/vs/workbench/services/extensions/browser/webWorkerExtensionHost.ts
-index b8b3239795f..180fdc9e539 100644
+index 26f98d97f25..af52ee0f93a 100644
 --- a/src/vs/workbench/services/extensions/browser/webWorkerExtensionHost.ts
 +++ b/src/vs/workbench/services/extensions/browser/webWorkerExtensionHost.ts
-@@ -115,8 +115,6 @@ export class WebWorkerExtensionHost extends Disposable implements IExtensionHost
+@@ -117,8 +117,6 @@ export class WebWorkerExtensionHost extends Disposable implements IExtensionHost
  				res.searchParams.set('salt', stableOriginUUID);
  				return res.toString();
  			}

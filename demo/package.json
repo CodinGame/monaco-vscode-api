@@ -13,8 +13,7 @@
     "check-build": "npm run lint && npm run typecheck",
     "build": "npm run check-build && vite --config vite.config.ts build",
     "build:netlify": "npm run check-build && vite --config vite.netlify.config.ts build",
-    "start:debugServer": "tsx src/debugServer.ts",
-    "preprepare": "patch-package"
+    "start:debugServer": "tsx src/debugServer.ts"
   },
   "devDependencies": {
     "@codingame/esbuild-import-meta-url-plugin": "^1.0.3",
@@ -24,7 +23,7 @@
     "@types/wicg-file-system-access": "^2023.10.7",
     "@types/ws": "^8.18.1",
     "typescript": "~5.9.3",
-    "vite": "~7.3.0",
+    "vite": "~7.3.1",
     "@codingame/monaco-vscode-rollup-extension-directory-plugin": "file:../dist/packages/monaco-vscode-rollup-extension-directory-plugin",
     "@codingame/monaco-vscode-rollup-vsix-plugin": "file:../dist/packages/monaco-vscode-rollup-vsix-plugin"
   },
@@ -32,7 +31,7 @@
     "ansi-colors": "^4.1.3",
     "dockerode": "^4.0.9",
     "express": "^5.2.1",
-    "ws": "^8.18.3",
+    "ws": "^8.19.0",
     "@codingame/monaco-vscode-accessibility-service-override": "file:../dist/packages/monaco-vscode-accessibility-service-override",
     "@codingame/monaco-vscode-ai-service-override": "file:../dist/packages/monaco-vscode-ai-service-override",
     "@codingame/monaco-vscode-all-default-extensions": "file:../dist/packages/monaco-vscode-all-default-extensions",
@@ -215,9 +214,6 @@
     "@codingame/monaco-vscode-xterm-addons-common": "file:../dist/packages/monaco-vscode-xterm-addons-common",
     "@codingame/monaco-vscode-xterm-common": "file:../dist/packages/monaco-vscode-xterm-common",
     "@codingame/monaco-vscode-yaml-default-extension": "file:../dist/packages/monaco-vscode-yaml-default-extension"
-  },
-  "overrides": {
-    "esbuild": "^0.24.0"
   },
   "volta": {
     "extends": "../package.json"

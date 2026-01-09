@@ -4,18 +4,18 @@ Date: Mon, 11 Aug 2025 15:29:03 +0200
 Subject: [PATCH] refactor: split contribution
 
 ---
- .../contrib/terminal/terminal.all.ts          | 33 ++----------------
+ .../contrib/terminal/terminal.all.ts          | 34 ++----------------
  .../terminal/terminal.chat.contribution.ts    |  7 ++++
- .../contrib/terminal/terminal.contribution.ts | 34 +++++++++++++++++++
- 3 files changed, 43 insertions(+), 31 deletions(-)
+ .../contrib/terminal/terminal.contribution.ts | 35 +++++++++++++++++++
+ 3 files changed, 44 insertions(+), 32 deletions(-)
  create mode 100644 src/vs/workbench/contrib/terminal/terminal.chat.contribution.ts
  create mode 100644 src/vs/workbench/contrib/terminal/terminal.contribution.ts
 
 diff --git a/src/vs/workbench/contrib/terminal/terminal.all.ts b/src/vs/workbench/contrib/terminal/terminal.all.ts
-index 9cbb67bd019..3a136958d5f 100644
+index 6f08c629347..3a136958d5f 100644
 --- a/src/vs/workbench/contrib/terminal/terminal.all.ts
 +++ b/src/vs/workbench/contrib/terminal/terminal.all.ts
-@@ -3,34 +3,5 @@
+@@ -3,35 +3,5 @@
   *  Licensed under the MIT License. See License.txt in the project root for license information.
   *--------------------------------------------------------------------------------------------*/
  
@@ -38,16 +38,17 @@ index 9cbb67bd019..3a136958d5f 100644
 -import '../terminalContrib/chat/browser/terminal.chat.contribution.js';
 -import '../terminalContrib/commandGuide/browser/terminal.commandGuide.contribution.js';
 -import '../terminalContrib/history/browser/terminal.history.contribution.js';
+-import '../terminalContrib/inlineHint/browser/terminal.initialHint.contribution.js';
 -import '../terminalContrib/links/browser/terminal.links.contribution.js';
 -import '../terminalContrib/zoom/browser/terminal.zoom.contribution.js';
 -import '../terminalContrib/stickyScroll/browser/terminal.stickyScroll.contribution.js';
 -import '../terminalContrib/quickAccess/browser/terminal.quickAccess.contribution.js';
 -import '../terminalContrib/quickFix/browser/terminal.quickFix.contribution.js';
 -import '../terminalContrib/typeAhead/browser/terminal.typeAhead.contribution.js';
+-import '../terminalContrib/resizeDimensionsOverlay/browser/terminal.resizeDimensionsOverlay.contribution.js';
 -import '../terminalContrib/sendSequence/browser/terminal.sendSequence.contribution.js';
 -import '../terminalContrib/sendSignal/browser/terminal.sendSignal.contribution.js';
 -import '../terminalContrib/suggest/browser/terminal.suggest.contribution.js';
--import '../terminalContrib/chat/browser/terminal.initialHint.contribution.js';
 -import '../terminalContrib/wslRecommendation/browser/terminal.wslRecommendation.contribution.js';
 -import '../terminalContrib/voice/browser/terminal.voice.contribution.js';
 +import './terminal.contribution.js';
@@ -67,10 +68,10 @@ index 00000000000..0ffba187fb8
 +import '../terminalContrib/chat/browser/terminal.chat.contribution.js';
 diff --git a/src/vs/workbench/contrib/terminal/terminal.contribution.ts b/src/vs/workbench/contrib/terminal/terminal.contribution.ts
 new file mode 100644
-index 00000000000..dfd9c1867c9
+index 00000000000..d49a69de3af
 --- /dev/null
 +++ b/src/vs/workbench/contrib/terminal/terminal.contribution.ts
-@@ -0,0 +1,34 @@
+@@ -0,0 +1,35 @@
 +/*---------------------------------------------------------------------------------------------
 + *  Copyright (c) Microsoft Corporation. All rights reserved.
 + *  Licensed under the MIT License. See License.txt in the project root for license information.
@@ -93,15 +94,16 @@ index 00000000000..dfd9c1867c9
 +import '../terminalContrib/find/browser/terminal.find.contribution.js';
 +import '../terminalContrib/commandGuide/browser/terminal.commandGuide.contribution.js';
 +import '../terminalContrib/history/browser/terminal.history.contribution.js';
++import '../terminalContrib/inlineHint/browser/terminal.initialHint.contribution.js';
 +import '../terminalContrib/links/browser/terminal.links.contribution.js';
 +import '../terminalContrib/zoom/browser/terminal.zoom.contribution.js';
 +import '../terminalContrib/stickyScroll/browser/terminal.stickyScroll.contribution.js';
 +import '../terminalContrib/quickAccess/browser/terminal.quickAccess.contribution.js';
 +import '../terminalContrib/quickFix/browser/terminal.quickFix.contribution.js';
 +import '../terminalContrib/typeAhead/browser/terminal.typeAhead.contribution.js';
++import '../terminalContrib/resizeDimensionsOverlay/browser/terminal.resizeDimensionsOverlay.contribution.js';
 +import '../terminalContrib/sendSequence/browser/terminal.sendSequence.contribution.js';
 +import '../terminalContrib/sendSignal/browser/terminal.sendSignal.contribution.js';
 +import '../terminalContrib/suggest/browser/terminal.suggest.contribution.js';
-+import '../terminalContrib/chat/browser/terminal.initialHint.contribution.js';
 +import '../terminalContrib/wslRecommendation/browser/terminal.wslRecommendation.contribution.js';
 +import '../terminalContrib/voice/browser/terminal.voice.contribution.js';

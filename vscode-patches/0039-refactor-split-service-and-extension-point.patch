@@ -11,10 +11,10 @@ Subject: [PATCH] refactor: split service and extension point
  create mode 100644 src/vs/workbench/api/browser/statusBarService.ts
 
 diff --git a/src/vs/workbench/api/browser/mainThreadStatusBar.ts b/src/vs/workbench/api/browser/mainThreadStatusBar.ts
-index 96059861a79..dfe4b56fb85 100644
+index 2350040756f..41f5d44d1f2 100644
 --- a/src/vs/workbench/api/browser/mainThreadStatusBar.ts
 +++ b/src/vs/workbench/api/browser/mainThreadStatusBar.ts
-@@ -10,10 +10,10 @@ import { DisposableStore, toDisposable } from '../../../base/common/lifecycle.js
+@@ -10,10 +10,10 @@ import { DisposableMap, toDisposable, Disposable } from '../../../base/common/li
  import { Command } from '../../../editor/common/languages.js';
  import { IAccessibilityInformation } from '../../../platform/accessibility/common/accessibility.js';
  import { IMarkdownString } from '../../../base/common/htmlContent.js';
@@ -25,7 +25,7 @@ index 96059861a79..dfe4b56fb85 100644
 +import { IExtensionStatusBarItemService, StatusBarUpdateKind } from './statusBarService.js';
  
  @extHostNamedCustomer(MainContext.MainThreadStatusBar)
- export class MainThreadStatusBar implements MainThreadStatusBarShape {
+ export class MainThreadStatusBar extends Disposable implements MainThreadStatusBarShape {
 diff --git a/src/vs/workbench/api/browser/statusBarExtensionPoint.ts b/src/vs/workbench/api/browser/statusBarExtensionPoint.ts
 index 0bdbb98e138..dcd73e5fdbc 100644
 --- a/src/vs/workbench/api/browser/statusBarExtensionPoint.ts

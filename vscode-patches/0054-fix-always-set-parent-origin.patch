@@ -8,10 +8,10 @@ Subject: [PATCH] fix: always set parent origin
  1 file changed, 1 insertion(+), 1 deletion(-)
 
 diff --git a/src/vs/workbench/services/extensions/browser/webWorkerExtensionHost.ts b/src/vs/workbench/services/extensions/browser/webWorkerExtensionHost.ts
-index fd6d16b6d72..972e28c008d 100644
+index e390743b942..8923f60df04 100644
 --- a/src/vs/workbench/services/extensions/browser/webWorkerExtensionHost.ts
 +++ b/src/vs/workbench/services/extensions/browser/webWorkerExtensionHost.ts
-@@ -86,6 +86,7 @@ export class WebWorkerExtensionHost extends Disposable implements IExtensionHost
+@@ -88,6 +88,7 @@ export class WebWorkerExtensionHost extends Disposable implements IExtensionHost
  			suffixSearchParams.set('debugged', '1');
  		}
  		COI.addSearchParam(suffixSearchParams, true, true);
@@ -19,7 +19,7 @@ index fd6d16b6d72..972e28c008d 100644
  
  		const suffix = `?${suffixSearchParams.toString()}`;
  
-@@ -111,7 +112,6 @@ export class WebWorkerExtensionHost extends Disposable implements IExtensionHost
+@@ -113,7 +114,6 @@ export class WebWorkerExtensionHost extends Disposable implements IExtensionHost
  				);
  
  				const res = new URL(`${baseUrl}/out/${iframeModulePath}${suffix}`);

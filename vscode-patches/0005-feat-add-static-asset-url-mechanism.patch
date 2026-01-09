@@ -108,7 +108,7 @@ index 4cfaf6a58cb..b7f63a0d276 100644
  
  class ExtensionHostProxy implements IExtensionHostProxy {
 diff --git a/src/vs/workbench/api/common/extHost.protocol.ts b/src/vs/workbench/api/common/extHost.protocol.ts
-index 4a90eb970b9..1d66567d0da 100644
+index fa015c3f912..f047d29b62b 100644
 --- a/src/vs/workbench/api/common/extHost.protocol.ts
 +++ b/src/vs/workbench/api/common/extHost.protocol.ts
 @@ -1661,6 +1661,7 @@ export interface MainThreadExtensionServiceShape extends IDisposable {
