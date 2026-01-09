@@ -13,18 +13,19 @@ Subject: [PATCH] feat: allow to override product icon
  6 files changed, 7 insertions(+), 6 deletions(-)
 
 diff --git a/build/lib/stylelint/vscode-known-variables.json b/build/lib/stylelint/vscode-known-variables.json
-index 57cce59fb49..2250370842a 100644
+index 8f6ce9b030d..68278f0a3ec 100644
 --- a/build/lib/stylelint/vscode-known-variables.json
 +++ b/build/lib/stylelint/vscode-known-variables.json
-@@ -991,6 +991,7 @@
- 		"--comment-thread-editor-font-family",
+@@ -995,7 +995,8 @@
  		"--comment-thread-editor-font-weight",
  		"--comment-thread-state-color",
--		"--comment-thread-state-background-color"
-+		"--comment-thread-state-background-color",
+ 		"--comment-thread-state-background-color",
+-		"--inline-edit-border-radius"
++		"--inline-edit-border-radius",
 +		"--product-icon"
- 	]
- }
+ 	],
+ 	"sizes": [
+ 		"--vscode-bodyFontSize",
 diff --git a/src/vs/workbench/browser/parts/banner/media/bannerpart.css b/src/vs/workbench/browser/parts/banner/media/bannerpart.css
 index a0de81f24eb..c71af404312 100644
 --- a/src/vs/workbench/browser/parts/banner/media/bannerpart.css
@@ -63,7 +64,7 @@ index 4210055bfeb..4f71897bb52 100644
 +	background-image: var(--product-icon, url('../../../../browser/media/code-icon.svg'));
  }
 diff --git a/src/vs/workbench/contrib/welcomeGettingStarted/browser/media/gettingStarted.css b/src/vs/workbench/contrib/welcomeGettingStarted/browser/media/gettingStarted.css
-index 4690c59ef3f..4620e330047 100644
+index 9b4448a62be..de332d1fded 100644
 --- a/src/vs/workbench/contrib/welcomeGettingStarted/browser/media/gettingStarted.css
 +++ b/src/vs/workbench/contrib/welcomeGettingStarted/browser/media/gettingStarted.css
 @@ -5,7 +5,7 @@
@@ -76,7 +77,7 @@ index 4690c59ef3f..4620e330047 100644
  
  .monaco-workbench .part.editor > .content .gettingStartedContainer {
 diff --git a/src/vs/workbench/contrib/welcomeWalkthrough/browser/media/walkThroughPart.css b/src/vs/workbench/contrib/welcomeWalkthrough/browser/media/walkThroughPart.css
-index 7ab127eaab4..1008cf82b62 100644
+index 997ed6e2df2..df00b43ad11 100644
 --- a/src/vs/workbench/contrib/welcomeWalkthrough/browser/media/walkThroughPart.css
 +++ b/src/vs/workbench/contrib/welcomeWalkthrough/browser/media/walkThroughPart.css
 @@ -113,7 +113,7 @@

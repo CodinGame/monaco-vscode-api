@@ -10,7 +10,7 @@ Subject: [PATCH] feat: add build tool to extract service identifiers
 
 diff --git a/build/lib/extractServices.ts b/build/lib/extractServices.ts
 new file mode 100644
-index 00000000000..d2e62bdf74a
+index 00000000000..34003a35e3e
 --- /dev/null
 +++ b/build/lib/extractServices.ts
 @@ -0,0 +1,235 @@
@@ -41,7 +41,7 @@ index 00000000000..d2e62bdf74a
 +	'vs/platform/update/common/update.service.ts',
 +	'vs/platform/markers/common/markers.service.ts',
 +	'vs/platform/userDataSync/common/userDataSync.service.ts',
-+	'vs/workbench/contrib/chat/common/chatAgents.service.ts',
++	'vs/workbench/contrib/chat/common/participants/chatAgents.service.ts',
 +	'vs/workbench/contrib/tasks/common/taskService.ts',
 +	'vs/workbench/workbench.web.main.ts'
 +];

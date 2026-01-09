@@ -9,7 +9,7 @@ Subject: [PATCH] refactor: use URL syntax, prevent importing amdX at all
  2 files changed, 4 insertions(+), 15 deletions(-)
 
 diff --git a/src/vs/workbench/services/textMate/browser/backgroundTokenization/threadedBackgroundTokenizerFactory.ts b/src/vs/workbench/services/textMate/browser/backgroundTokenization/threadedBackgroundTokenizerFactory.ts
-index 3662b13b377..4df64ee448a 100644
+index 9f8b2fdc9d3..387c010c6ea 100644
 --- a/src/vs/workbench/services/textMate/browser/backgroundTokenization/threadedBackgroundTokenizerFactory.ts
 +++ b/src/vs/workbench/services/textMate/browser/backgroundTokenization/threadedBackgroundTokenizerFactory.ts
 @@ -3,17 +3,13 @@
@@ -30,15 +30,15 @@ index 3662b13b377..4df64ee448a 100644
  import { IExtensionResourceLoaderService } from '../../../../../platform/extensionResourceLoader/common/extensionResourceLoader.js';
  import { INotificationService } from '../../../../../platform/notification/common/notification.js';
  import { ITelemetryService } from '../../../../../platform/telemetry/common/telemetry.js';
-@@ -25,6 +21,7 @@ import type { IRawTheme } from 'vscode-textmate';
- import { WebWorkerDescriptor } from '../../../../../platform/webWorker/browser/webWorkerDescriptor.js';
- import { IWebWorkerService } from '../../../../../platform/webWorker/browser/webWorkerService.js';
+@@ -27,6 +23,7 @@ import { IWebWorkerService } from '../../../../../platform/webWorker/browser/web
  import { IWebWorkerClient, Proxied } from '../../../../../base/common/worker/webWorker.js';
+ import { ISerializedAnnotation } from '../../../../../editor/common/model/tokens/annotations.js';
+ import { IFontTokenOption } from '../../../../../editor/common/textModelEvents.js';
 +import { FileAccess } from '../../../../../base/common/network.js';
  
  export class ThreadedBackgroundTokenizerFactory implements IDisposable {
  	private static _reportedMismatchingTokens = false;
-@@ -44,7 +41,6 @@ export class ThreadedBackgroundTokenizerFactory implements IDisposable {
+@@ -46,7 +43,6 @@ export class ThreadedBackgroundTokenizerFactory implements IDisposable {
  		@IExtensionResourceLoaderService private readonly _extensionResourceLoaderService: IExtensionResourceLoaderService,
  		@IConfigurationService private readonly _configurationService: IConfigurationService,
  		@ILanguageService private readonly _languageService: ILanguageService,
@@ -46,7 +46,7 @@ index 3662b13b377..4df64ee448a 100644
  		@INotificationService private readonly _notificationService: INotificationService,
  		@ITelemetryService private readonly _telemetryService: ITelemetryService,
  		@IWebWorkerService private readonly _webWorkerService: IWebWorkerService,
-@@ -128,16 +124,9 @@ export class ThreadedBackgroundTokenizerFactory implements IDisposable {
+@@ -130,16 +126,9 @@ export class ThreadedBackgroundTokenizerFactory implements IDisposable {
  	}
  
  	private async _createWorkerProxy(): Promise<Proxied<TextMateTokenizationWorker> | null> {
@@ -65,7 +65,7 @@ index 3662b13b377..4df64ee448a 100644
  		const worker = this._worker = this._webWorkerService.createWorkerClient<TextMateTokenizationWorker>(
  			new WebWorkerDescriptor({
 diff --git a/src/vs/workbench/services/textMate/browser/textMateTokenizationFeatureImpl.ts b/src/vs/workbench/services/textMate/browser/textMateTokenizationFeatureImpl.ts
-index 1c576db95db..1acb3ef3dbf 100644
+index ebe149c6047..3004780c531 100644
 --- a/src/vs/workbench/services/textMate/browser/textMateTokenizationFeatureImpl.ts
 +++ b/src/vs/workbench/services/textMate/browser/textMateTokenizationFeatureImpl.ts
 @@ -4,7 +4,7 @@
@@ -77,7 +77,7 @@ index 1c576db95db..1acb3ef3dbf 100644
  import { equals as equalArray } from '../../../../base/common/arrays.js';
  import { Color } from '../../../../base/common/color.js';
  import { onUnexpectedError } from '../../../../base/common/errors.js';
-@@ -384,7 +384,7 @@ export class TextMateTokenizationFeature extends Disposable implements ITextMate
+@@ -390,7 +390,7 @@ export class TextMateTokenizationFeature extends Disposable implements ITextMate
  
  	private async _loadVSCodeOnigurumaWASM(): Promise<Response | ArrayBuffer> {
  		if (isWeb) {

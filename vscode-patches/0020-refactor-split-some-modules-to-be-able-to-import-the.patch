@@ -38,7 +38,7 @@ index 00000000000..185a77baafb
 +
 +registerWorkbenchContribution2(EditorAutoSave.ID, EditorAutoSave, WorkbenchPhase.BlockRestore);
 diff --git a/src/vs/workbench/browser/parts/editor/editor.contribution.ts b/src/vs/workbench/browser/parts/editor/editor.contribution.ts
-index 7fdea24ffcd..b3949669ba3 100644
+index 14235489654..bd493ea39e3 100644
 --- a/src/vs/workbench/browser/parts/editor/editor.contribution.ts
 +++ b/src/vs/workbench/browser/parts/editor/editor.contribution.ts
 @@ -60,7 +60,6 @@ import { KeybindingsRegistry, KeybindingWeight } from '../../../../platform/keyb
@@ -567,7 +567,7 @@ index c8fc8aa2dd2..1ea10370c97 100644
  	handler: (accessor, resource: URI | object) => {
 diff --git a/src/vs/workbench/contrib/files/browser/files.contribution._configuration.ts b/src/vs/workbench/contrib/files/browser/files.contribution._configuration.ts
 new file mode 100644
-index 00000000000..705ec9a58ed
+index 00000000000..69cf99eaeb5
 --- /dev/null
 +++ b/src/vs/workbench/contrib/files/browser/files.contribution._configuration.ts
 @@ -0,0 +1,297 @@
@@ -860,8 +860,8 @@ index 00000000000..705ec9a58ed
 +			],
 +			'enumDescriptions': [
 +				nls.localize({ key: 'everything', comment: ['This is the description of an option'] }, "Format the whole file."),
-+				nls.localize({ key: 'modification', comment: ['This is the description of an option'] }, "Format modifications (requires source control)."),
-+				nls.localize({ key: 'modificationIfAvailable', comment: ['This is the description of an option'] }, "Will attempt to format modifications only (requires source control). If source control can't be used, then the whole file will be formatted."),
++				nls.localize({ key: 'modification', comment: ['This is the description of an option'] }, "Format modifications. Requires source control and a formatter that supports 'Format Selection'."),
++				nls.localize({ key: 'modificationIfAvailable', comment: ['This is the description of an option'] }, "Will attempt to format modifications only (requires source control and a formatter that supports 'Format Selection'). If source control can't be used, then the whole file will be formatted."),
 +			],
 +			'markdownDescription': nls.localize('formatOnSaveMode', "Controls if format on save formats the whole file or only modifications. Only applies when `#editor.formatOnSave#` is enabled."),
 +			'scope': ConfigurationScope.LANGUAGE_OVERRIDABLE,
@@ -969,7 +969,7 @@ index 00000000000..757eaf5009e
 +});
 diff --git a/src/vs/workbench/contrib/files/browser/files.contribution._explorer.ts b/src/vs/workbench/contrib/files/browser/files.contribution._explorer.ts
 new file mode 100644
-index 00000000000..5a6186e8790
+index 00000000000..6ec4c576737
 --- /dev/null
 +++ b/src/vs/workbench/contrib/files/browser/files.contribution._explorer.ts
 @@ -0,0 +1,295 @@
@@ -1084,7 +1084,7 @@ index 00000000000..5a6186e8790
 +		},
 +		'explorer.confirmDelete': {
 +			'type': 'boolean',
-+			'description': nls.localize('confirmDelete', "Controls whether the Explorer should ask for confirmation when deleting a file via the trash."),
++			'description': nls.localize('confirmDelete', "Controls whether the Explorer should ask for confirmation when deleting files and folders."),
 +			'default': true
 +		},
 +		'explorer.enableUndo': {
@@ -1299,7 +1299,7 @@ index 00000000000..8064ddc028c
 +	}
 +});
 diff --git a/src/vs/workbench/contrib/files/browser/files.contribution.ts b/src/vs/workbench/contrib/files/browser/files.contribution.ts
-index b15c9c52ce6..269fb34cadb 100644
+index 87030a89665..269fb34cadb 100644
 --- a/src/vs/workbench/contrib/files/browser/files.contribution.ts
 +++ b/src/vs/workbench/contrib/files/browser/files.contribution.ts
 @@ -3,673 +3,7 @@
@@ -1696,8 +1696,8 @@ index b15c9c52ce6..269fb34cadb 100644
 -			],
 -			'enumDescriptions': [
 -				nls.localize({ key: 'everything', comment: ['This is the description of an option'] }, "Format the whole file."),
--				nls.localize({ key: 'modification', comment: ['This is the description of an option'] }, "Format modifications (requires source control)."),
--				nls.localize({ key: 'modificationIfAvailable', comment: ['This is the description of an option'] }, "Will attempt to format modifications only (requires source control). If source control can't be used, then the whole file will be formatted."),
+-				nls.localize({ key: 'modification', comment: ['This is the description of an option'] }, "Format modifications. Requires source control and a formatter that supports 'Format Selection'."),
+-				nls.localize({ key: 'modificationIfAvailable', comment: ['This is the description of an option'] }, "Will attempt to format modifications only (requires source control and a formatter that supports 'Format Selection'). If source control can't be used, then the whole file will be formatted."),
 -			],
 -			'markdownDescription': nls.localize('formatOnSaveMode', "Controls if format on save formats the whole file or only modifications. Only applies when `#editor.formatOnSave#` is enabled."),
 -			'scope': ConfigurationScope.LANGUAGE_OVERRIDABLE,
@@ -1786,7 +1786,7 @@ index b15c9c52ce6..269fb34cadb 100644
 -		},
 -		'explorer.confirmDelete': {
 -			'type': 'boolean',
--			'description': nls.localize('confirmDelete', "Controls whether the Explorer should ask for confirmation when deleting a file via the trash."),
+-			'description': nls.localize('confirmDelete', "Controls whether the Explorer should ask for confirmation when deleting files and folders."),
 -			'default': true
 -		},
 -		'explorer.enableUndo': {

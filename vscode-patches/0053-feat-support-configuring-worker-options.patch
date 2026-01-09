@@ -73,7 +73,7 @@ index 9e60c93dfde..d4eae033ab1 100644
 +	}
  }
 diff --git a/src/vs/monaco.d.ts b/src/vs/monaco.d.ts
-index 9c322084310..167213ef91e 100644
+index bdd5231f202..48f9f66f550 100644
 --- a/src/vs/monaco.d.ts
 +++ b/src/vs/monaco.d.ts
 @@ -24,12 +24,16 @@ declare namespace monaco {
@@ -153,10 +153,10 @@ index 376e45857db..9741c1973ff 100644
  		`/*${label}*/`
  	]).join('')], { type: 'application/javascript' });
 diff --git a/src/vs/workbench/services/extensions/browser/extensionService.ts b/src/vs/workbench/services/extensions/browser/extensionService.ts
-index 27feb43c394..2c1136bb022 100644
+index 58429f40954..742bedab023 100644
 --- a/src/vs/workbench/services/extensions/browser/extensionService.ts
 +++ b/src/vs/workbench/services/extensions/browser/extensionService.ts
-@@ -236,7 +236,12 @@ export class BrowserExtensionHostFactory implements IExtensionHostFactory {
+@@ -240,7 +240,12 @@ export class BrowserExtensionHostFactory implements IExtensionHostFactory {
  						? ExtensionHostStartup.EagerManualStart
  						: ExtensionHostStartup.EagerAutoStart
  				);
@@ -171,10 +171,10 @@ index 27feb43c394..2c1136bb022 100644
  			case ExtensionHostKind.Remote: {
  				const remoteAgentConnection = this._remoteAgentService.getConnection();
 diff --git a/src/vs/workbench/services/extensions/browser/webWorkerExtensionHost.ts b/src/vs/workbench/services/extensions/browser/webWorkerExtensionHost.ts
-index 180fdc9e539..fd6d16b6d72 100644
+index af52ee0f93a..e390743b942 100644
 --- a/src/vs/workbench/services/extensions/browser/webWorkerExtensionHost.ts
 +++ b/src/vs/workbench/services/extensions/browser/webWorkerExtensionHost.ts
-@@ -193,6 +193,7 @@ export class WebWorkerExtensionHost extends Disposable implements IExtensionHost
+@@ -195,6 +195,7 @@ export class WebWorkerExtensionHost extends Disposable implements IExtensionHost
  					type: event.data.type,
  					data: {
  						workerUrl: this._webWorkerService.getWorkerUrl(extensionHostWorkerMainDescriptor),
@@ -183,7 +183,7 @@ index 180fdc9e539..fd6d16b6d72 100644
  						nls: {
  							messages: getNLSMessages(),
 diff --git a/src/vs/workbench/services/extensions/electron-browser/nativeExtensionService.ts b/src/vs/workbench/services/extensions/electron-browser/nativeExtensionService.ts
-index 3080657390a..071eb5817fa 100644
+index 2b6104a77d9..a04b23ea698 100644
 --- a/src/vs/workbench/services/extensions/electron-browser/nativeExtensionService.ts
 +++ b/src/vs/workbench/services/extensions/electron-browser/nativeExtensionService.ts
 @@ -548,7 +548,12 @@ class NativeExtensionHostFactory implements IExtensionHostFactory {

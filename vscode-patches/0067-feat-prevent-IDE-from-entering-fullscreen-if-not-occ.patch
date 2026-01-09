@@ -80,7 +80,7 @@ index 60a773236eb..d93fb73451c 100644
  			// only guess that we are in fullscreen. It is also possible that
  			// the user has turned off taskbars in the OS and the browser is
 diff --git a/src/vs/workbench/browser/layout.ts b/src/vs/workbench/browser/layout.ts
-index 819aa769bec..e5bca82c007 100644
+index 5213358c5de..f05561e6e50 100644
 --- a/src/vs/workbench/browser/layout.ts
 +++ b/src/vs/workbench/browser/layout.ts
 @@ -3,10 +3,15 @@
