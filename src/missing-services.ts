@@ -167,26 +167,26 @@ import {
   IChatWidgetService,
   IQuickChatService
 } from 'vs/workbench/contrib/chat/browser/chat.service'
-import { IChatAttachmentResolveService } from 'vs/workbench/contrib/chat/browser/chatAttachmentResolveService.service'
-import { IChatMarkdownAnchorService } from 'vs/workbench/contrib/chat/browser/chatContentParts/chatMarkdownAnchorService.service'
-import { IChatContextPickService } from 'vs/workbench/contrib/chat/browser/chatContextPickService.service'
+import { IChatAttachmentResolveService } from 'vs/workbench/contrib/chat/browser/attachments/chatAttachmentResolveService.service'
+import { IChatMarkdownAnchorService } from 'vs/workbench/contrib/chat/browser/widget/chatContentParts/chatMarkdownAnchorService.service'
+import { IChatContextPickService } from 'vs/workbench/contrib/chat/browser/attachments/chatContextPickService.service'
 import { IChatOutputRendererService } from 'vs/workbench/contrib/chat/browser/chatOutputItemRenderer.service'
 import {
   IChatAgentNameService,
   IChatAgentService
-} from 'vs/workbench/contrib/chat/common/chatAgents.service'
-import { ICodeMapperService } from 'vs/workbench/contrib/chat/common/chatCodeMapperService.service'
-import { IChatEditingService } from 'vs/workbench/contrib/chat/common/chatEditingService.service'
-import { IChatService } from 'vs/workbench/contrib/chat/common/chatService.service'
+} from 'vs/workbench/contrib/chat/common/participants/chatAgents.service'
+import { ICodeMapperService } from 'vs/workbench/contrib/chat/common/editing/chatCodeMapperService.service'
+import { IChatEditingService } from 'vs/workbench/contrib/chat/common/editing/chatEditingService.service'
+import { IChatService } from 'vs/workbench/contrib/chat/common/chatService/chatService.service'
 import { IChatSessionsService } from 'vs/workbench/contrib/chat/common/chatSessionsService.service'
-import { IChatSlashCommandService } from 'vs/workbench/contrib/chat/common/chatSlashCommands.service'
-import { IChatTodoListService } from 'vs/workbench/contrib/chat/common/chatTodoListService.service'
-import { IChatTransferService } from 'vs/workbench/contrib/chat/common/chatTransferService.service'
-import { IChatVariablesService } from 'vs/workbench/contrib/chat/common/chatVariables.service'
-import { IChatWidgetHistoryService } from 'vs/workbench/contrib/chat/common/chatWidgetHistoryService.service'
+import { IChatSlashCommandService } from 'vs/workbench/contrib/chat/common/participants/chatSlashCommands.service'
+import { IChatTodoListService } from 'vs/workbench/contrib/chat/common/tools/chatTodoListService.service'
+import { IChatTransferService } from 'vs/workbench/contrib/chat/common/model/chatTransferService.service'
+import { IChatVariablesService } from 'vs/workbench/contrib/chat/common/attachments/chatVariables.service'
+import { IChatWidgetHistoryService } from 'vs/workbench/contrib/chat/common/widget/chatWidgetHistoryService.service'
 import { ILanguageModelIgnoredFilesService } from 'vs/workbench/contrib/chat/common/ignoredFiles.service'
 import { ILanguageModelStatsService } from 'vs/workbench/contrib/chat/common/languageModelStats.service'
-import { ILanguageModelToolsService } from 'vs/workbench/contrib/chat/common/languageModelToolsService.service'
+import { ILanguageModelToolsService } from 'vs/workbench/contrib/chat/common/tools/languageModelToolsService.service'
 import { ILanguageModelsService } from 'vs/workbench/contrib/chat/common/languageModels.service'
 import { IPromptsService } from 'vs/workbench/contrib/chat/common/promptSyntax/service/promptsService.service'
 import { ICommentService } from 'vs/workbench/contrib/comments/browser/commentService.service'
@@ -214,7 +214,7 @@ import {
   IIssueFormService,
   IWorkbenchIssueService
 } from 'vs/workbench/contrib/issue/common/issue.service'
-import { IDefaultLogLevelsService } from 'vs/workbench/contrib/logs/common/defaultLogLevels.service'
+import { IDefaultLogLevelsService } from 'vs/workbench/services/log/common/defaultLogLevels.service'
 import { IMcpRegistry } from 'vs/workbench/contrib/mcp/common/mcpRegistryTypes.service'
 import {
   IMcpElicitationService,
@@ -420,16 +420,16 @@ import { IImageResizeService } from 'vs/platform/imageResize/common/imageResizeS
 import { IMarkdownRendererService } from 'vs/platform/markdown/browser/markdownRenderer.service'
 import { McpGalleryManifestStatus } from 'vs/platform/mcp/common/mcpGalleryManifest'
 import { IMcpGalleryManifestService } from 'vs/platform/mcp/common/mcpGalleryManifest.service'
-import { IChatContextService } from 'vs/workbench/contrib/chat/browser/chatContextService.service'
+import { IChatContextService } from 'vs/workbench/contrib/chat/browser/contextContrib/chatContextService.service'
 import { IChatStatusItemService } from 'vs/workbench/contrib/chat/browser/chatStatus/chatStatusItemService.service'
-import { IChatLayoutService } from 'vs/workbench/contrib/chat/common/chatLayoutService.service'
+import { IChatLayoutService } from 'vs/workbench/contrib/chat/common/widget/chatLayoutService.service'
 import { IChatModeService } from 'vs/workbench/contrib/chat/common/chatModes.service'
-import { ILanguageModelToolsConfirmationService } from 'vs/workbench/contrib/chat/common/languageModelToolsConfirmationService.service'
+import { ILanguageModelToolsConfirmationService } from 'vs/workbench/contrib/chat/common/tools/languageModelToolsConfirmationService.service'
 import {
   ToolDataSource,
   ToolSet,
   VSCodeToolReference
-} from 'vs/workbench/contrib/chat/common/languageModelToolsService'
+} from 'vs/workbench/contrib/chat/common/tools/languageModelToolsService'
 import { IRandomService } from 'vs/workbench/contrib/editTelemetry/browser/randomService.service'
 import { IAiEditTelemetryService } from 'vs/workbench/contrib/editTelemetry/browser/telemetry/aiEditTelemetry/aiEditTelemetryService.service'
 import { LazyCollectionState } from 'vs/workbench/contrib/mcp/common/mcpTypes'
@@ -3247,7 +3247,6 @@ registerSingleton(
 )
 class ChatService implements IChatService {
   _serviceBrand: undefined
-  isPersistedSessionEmpty: IChatService['isPersistedSessionEmpty'] = () => true
   @Unsupported
   activateDefaultAgent: IChatService['activateDefaultAgent'] = unsupported
   @Unsupported
@@ -3265,7 +3264,6 @@ class ChatService implements IChatService {
   clearAllHistoryEntries: IChatService['clearAllHistoryEntries'] = unsupported
   hasSessions: IChatService['hasSessions'] = () => false
   onDidDisposeSession: IChatService['onDidDisposeSession'] = Event.None
-  transferredSessionData: IChatService['transferredSessionData'] = undefined
   @Unsupported
   transferChatSession: IChatService['transferChatSession'] = unsupported
   @Unsupported
@@ -3291,7 +3289,6 @@ class ChatService implements IChatService {
   loadSessionForResource: IChatService['loadSessionForResource'] = unsupported
   requestInProgressObs: IChatService['requestInProgressObs'] = constObservable(false)
   edits2Enabled: IChatService['edits2Enabled'] = false
-  getPersistedSessionTitle: IChatService['getPersistedSessionTitle'] = () => undefined
   editingSessions: IChatService['editingSessions'] = []
   getChatSessionFromInternalUri: IChatService['getChatSessionFromInternalUri'] = () => undefined
   getLocalSessionHistory: IChatService['getLocalSessionHistory'] = async () => []
@@ -3310,6 +3307,8 @@ class ChatService implements IChatService {
 
   @Unsupported
   setTitle: IChatService['setTitle'] = unsupported
+  transferredSessionResource: IChatService['transferredSessionResource'] = undefined
+  getSessionTitle: IChatService['getSessionTitle'] = () => undefined
 }
 registerSingleton(IChatService, ChatService, InstantiationType.Delayed)
 class ChatMarkdownAnchorService implements IChatMarkdownAnchorService {
@@ -3971,6 +3970,7 @@ class ChatWidgetService implements IChatWidgetService {
   _serviceBrand: undefined
   getWidgetsByLocations: IChatWidgetService['getWidgetsByLocations'] = () => []
   onDidAddWidget: IChatWidgetService['onDidAddWidget'] = Event.None
+  onDidBackgroundSession: IChatWidgetService['onDidBackgroundSession'] = Event.None
   getAllWidgets: IChatWidgetService['getAllWidgets'] = () => []
   lastFocusedWidget: IChatWidgetService['lastFocusedWidget'] = undefined
   @Unsupported
@@ -5155,11 +5155,13 @@ registerSingleton(IWorkspaceIdentityService, WorkspaceIdentityService, Instantia
 class DefaultLogLevelsService implements IDefaultLogLevelsService {
   _serviceBrand: undefined
   onDidChangeDefaultLogLevels: IDefaultLogLevelsService['onDidChangeDefaultLogLevels'] = Event.None
-  getDefaultLogLevel: IDefaultLogLevelsService['getDefaultLogLevel'] = async () => LogLevel.Off
-  @Unsupported
-  getDefaultLogLevels: IDefaultLogLevelsService['getDefaultLogLevels'] = unsupported
+  getDefaultLogLevel: IDefaultLogLevelsService['getDefaultLogLevel'] = () => LogLevel.Off
   @Unsupported
   setDefaultLogLevel: IDefaultLogLevelsService['setDefaultLogLevel'] = unsupported
+  defaultLogLevels: IDefaultLogLevelsService['defaultLogLevels'] = {
+    default: LogLevel.Off,
+    extensions: []
+  }
 }
 registerSingleton(IDefaultLogLevelsService, DefaultLogLevelsService, InstantiationType.Delayed)
 class CustomEditorLabelService implements ICustomEditorLabelService {
@@ -5195,6 +5197,7 @@ class TrustedDomainService implements ITrustedDomainService {
   isValid: ITrustedDomainService['isValid'] = (): boolean => {
     return false
   }
+  trustedDomains: ITrustedDomainService['trustedDomains'] = []
 }
 registerSingleton(ITrustedDomainService, TrustedDomainService, InstantiationType.Delayed)
 class LanguageModelToolsService implements ILanguageModelToolsService {
@@ -5493,7 +5496,7 @@ class PromptsService implements IPromptsService {
   getPromptSlashCommandName: IPromptsService['getPromptSlashCommandName'] = unsupported
   registerCustomAgentsProvider: IPromptsService['registerCustomAgentsProvider'] = () =>
     Disposable.None
-  findClaudeSkills: IPromptsService['findClaudeSkills'] = async () => undefined
+  findAgentSkills: IPromptsService['findAgentSkills'] = async () => undefined
 }
 registerSingleton(IPromptsService, PromptsService, InstantiationType.Eager)
 
@@ -5898,14 +5901,9 @@ class ChatSessionsService implements IChatSessionsService {
   reportInProgress: IChatSessionsService['reportInProgress'] = unsupported
 
   @Unsupported
-  setEditableSession: IChatSessionsService['setEditableSession'] = unsupported
-
-  @Unsupported
   notifySessionItemsChanged: IChatSessionsService['notifySessionItemsChanged'] = unsupported
 
   getInProgress: IChatSessionsService['getInProgress'] = () => []
-  getEditableData: IChatSessionsService['getEditableData'] = () => undefined
-  isEditable: IChatSessionsService['isEditable'] = () => false
 
   onDidChangeItemsProviders: IChatSessionsService['onDidChangeItemsProviders'] = Event.None
   onDidChangeSessionItems: IChatSessionsService['onDidChangeSessionItems'] = Event.None
@@ -5964,7 +5962,6 @@ class ChatSessionsService implements IChatSessionsService {
     undefined
 
   onDidChangeOptionGroups: IChatSessionsService['onDidChangeOptionGroups'] = Event.None
-  isChatSessionInProgressStatus: IChatSessionsService['isChatSessionInProgressStatus'] = () => false
 }
 registerSingleton(IChatSessionsService, ChatSessionsService, InstantiationType.Delayed)
 
@@ -6154,6 +6151,8 @@ class TerminalChatService implements ITerminalChatService {
   getMostRecentProgressPart: ITerminalChatService['getMostRecentProgressPart'] = () => undefined
   setChatSessionAutoApproval: ITerminalChatService['setChatSessionAutoApproval'] = () => {}
   hasChatSessionAutoApproval: ITerminalChatService['hasChatSessionAutoApproval'] = () => false
+  addSessionAutoApproveRule: ITerminalChatService['addSessionAutoApproveRule'] = () => {}
+  getSessionAutoApproveRules: ITerminalChatService['getSessionAutoApproveRules'] = () => ({})
 }
 
 registerSingleton(ITerminalChatService, TerminalChatService, InstantiationType.Delayed)

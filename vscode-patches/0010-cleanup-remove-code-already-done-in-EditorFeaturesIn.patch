@@ -9,7 +9,7 @@ Subject: [PATCH] cleanup: remove code already done in
  1 file changed, 12 deletions(-)
 
 diff --git a/src/vs/editor/standalone/browser/standaloneServices.ts b/src/vs/editor/standalone/browser/standaloneServices.ts
-index ed52e63fe2b..e39eb9cba91 100644
+index b2c255d98da..6ff655b013a 100644
 --- a/src/vs/editor/standalone/browser/standaloneServices.ts
 +++ b/src/vs/editor/standalone/browser/standaloneServices.ts
 @@ -88,8 +88,6 @@ import { DefaultConfiguration } from '../../../platform/configuration/common/con
@@ -21,7 +21,7 @@ index ed52e63fe2b..e39eb9cba91 100644
  import { ExtensionKind, IEnvironmentService, IExtensionHostDebugParams } from '../../../platform/environment/common/environment.js';
  import { mainWindow } from '../../../base/browser/window.js';
  import { ResourceMap } from '../../../base/common/map.js';
-@@ -1227,16 +1225,6 @@ export module StandaloneServices {
+@@ -1227,16 +1225,6 @@ export namespace StandaloneServices {
  			}
  		}
  

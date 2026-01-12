@@ -10,7 +10,7 @@ Subject: [PATCH] refactor: split code to be able to import only required part
  3 files changed, 236 insertions(+), 207 deletions(-)
 
 diff --git a/src/vs/platform/extensionManagement/common/extensionsScannerService.ts b/src/vs/platform/extensionManagement/common/extensionsScannerService.ts
-index 8697dcb34d4..5d7426ab0db 100644
+index 37eac451a86..c6d27314835 100644
 --- a/src/vs/platform/extensionManagement/common/extensionsScannerService.ts
 +++ b/src/vs/platform/extensionManagement/common/extensionsScannerService.ts
 @@ -553,26 +553,172 @@ export class ExtensionScannerInput {
@@ -337,7 +337,7 @@ index 8697dcb34d4..5d7426ab0db 100644
  
  interface IExtensionCacheData {
 diff --git a/src/vs/platform/files/common/fileService.ts b/src/vs/platform/files/common/fileService.ts
-index 1220e0d5b6a..c1e984953dd 100644
+index 6bea97100b9..4c9aee6799a 100644
 --- a/src/vs/platform/files/common/fileService.ts
 +++ b/src/vs/platform/files/common/fileService.ts
 @@ -23,6 +23,64 @@ import { readFileIntoStream } from './io.js';
@@ -405,7 +405,7 @@ index 1220e0d5b6a..c1e984953dd 100644
  export class FileService extends Disposable implements IFileService {
  
  	declare readonly _serviceBrand: undefined;
-@@ -975,53 +1033,8 @@ export class FileService extends Disposable implements IFileService {
+@@ -976,53 +1034,8 @@ export class FileService extends Disposable implements IFileService {
  	}
  
  	private async mkdirp(provider: IFileSystemProvider, directory: URI): Promise<void> {
@@ -460,7 +460,7 @@ index 1220e0d5b6a..c1e984953dd 100644
  	}
  
  	async canDelete(resource: URI, options?: Partial<IFileDeleteOptions>): Promise<Error | true> {
-@@ -1474,11 +1487,7 @@ export class FileService extends Disposable implements IFileService {
+@@ -1475,11 +1488,7 @@ export class FileService extends Disposable implements IFileService {
  	}
  
  	private resourceForError(resource: URI): string {

@@ -19,7 +19,6 @@ Subject: [PATCH] feat: export some classes and make some methods accessible
  .../browser/chatStatus/chatStatusItemService.ts    |  2 +-
  .../debug/browser/extensionHostDebugService.ts     |  2 +-
  .../contrib/issue/browser/issueTroubleshoot.ts     |  6 +++---
- .../contrib/logs/common/defaultLogLevels.ts        |  2 +-
  .../dialogs/browser/abstractFileDialogService.ts   |  2 +-
  .../services/dialogs/browser/fileDialogService.ts  |  4 ++--
  .../extensionManagement/browser/extensionBisect.ts |  2 +-
@@ -32,6 +31,7 @@ Subject: [PATCH] feat: export some classes and make some methods accessible
  .../keybinding/browser/keybindingService.ts        |  2 +-
  .../languageStatus/common/languageStatusService.ts |  2 +-
  .../services/localization/browser/localeService.ts |  2 +-
+ .../services/log/common/defaultLogLevels.ts        |  2 +-
  .../services/outline/browser/outlineService.ts     |  2 +-
  .../workbench/services/path/browser/pathService.ts |  2 +-
  .../remote/common/remoteExplorerService.ts         |  2 +-
@@ -92,7 +92,7 @@ index c1cd8f14db4..b2673e43eca 100644
  	declare readonly _serviceBrand: undefined;
  
 diff --git a/src/vs/editor/contrib/inlayHints/browser/inlayHintsController.ts b/src/vs/editor/contrib/inlayHints/browser/inlayHintsController.ts
-index 29a814e2336..a9333f4fb67 100644
+index 6c1c58c4f8a..4afe1863c28 100644
 --- a/src/vs/editor/contrib/inlayHints/browser/inlayHintsController.ts
 +++ b/src/vs/editor/contrib/inlayHints/browser/inlayHintsController.ts
 @@ -40,7 +40,7 @@ import { Position } from '../../../common/core/position.js';
@@ -168,7 +168,7 @@ index 921674ef18e..00b83a75fcb 100644
  	declare readonly _serviceBrand: undefined;
  
 diff --git a/src/vs/platform/files/common/fileService.ts b/src/vs/platform/files/common/fileService.ts
-index a5f6dc5023a..1220e0d5b6a 100644
+index b775ea6cf10..6bea97100b9 100644
 --- a/src/vs/platform/files/common/fileService.ts
 +++ b/src/vs/platform/files/common/fileService.ts
 @@ -243,9 +243,9 @@ export class FileService extends Disposable implements IFileService {
@@ -198,7 +198,7 @@ index 4da1f68eeb1..81de1362184 100644
  	declare readonly _serviceBrand: undefined;
  
 diff --git a/src/vs/workbench/browser/layout.ts b/src/vs/workbench/browser/layout.ts
-index ae50ee7ab5d..5bb76e05e54 100644
+index a6b87ac6aec..ff5708e1a86 100644
 --- a/src/vs/workbench/browser/layout.ts
 +++ b/src/vs/workbench/browser/layout.ts
 @@ -50,7 +50,7 @@ import { CodeWindow, mainWindow } from '../../base/browser/window.js';
@@ -357,19 +357,6 @@ index 5b019f38d09..24e9f6cceec 100644
  
  	readonly _serviceBrand: undefined;
  
-diff --git a/src/vs/workbench/contrib/logs/common/defaultLogLevels.ts b/src/vs/workbench/contrib/logs/common/defaultLogLevels.ts
-index 4d6ba9f5e01..053cbfd13a8 100644
---- a/src/vs/workbench/contrib/logs/common/defaultLogLevels.ts
-+++ b/src/vs/workbench/contrib/logs/common/defaultLogLevels.ts
-@@ -40,7 +40,7 @@ export interface IDefaultLogLevelsService {
- 	setDefaultLogLevel(logLevel: LogLevel, extensionId?: string): Promise<void>;
- }
- 
--class DefaultLogLevelsService extends Disposable implements IDefaultLogLevelsService {
-+export class DefaultLogLevelsService extends Disposable implements IDefaultLogLevelsService {
- 
- 	_serviceBrand: undefined;
- 
 diff --git a/src/vs/workbench/services/dialogs/browser/abstractFileDialogService.ts b/src/vs/workbench/services/dialogs/browser/abstractFileDialogService.ts
 index 20fb991dde8..c0a130ce28e 100644
 --- a/src/vs/workbench/services/dialogs/browser/abstractFileDialogService.ts
@@ -445,10 +432,10 @@ index 172241857f4..50e16a749d1 100644
  
  	private readonly _onDidChangeEnablement = this._register(new Emitter<{ extension: ExtensionIdentifier; featureId: string; enabled: boolean }>());
 diff --git a/src/vs/workbench/services/extensions/browser/extensionService.ts b/src/vs/workbench/services/extensions/browser/extensionService.ts
-index 880beae0916..1bafa65025a 100644
+index b4f6cf16e7b..7222a9b6b89 100644
 --- a/src/vs/workbench/services/extensions/browser/extensionService.ts
 +++ b/src/vs/workbench/services/extensions/browser/extensionService.ts
-@@ -120,7 +120,7 @@ export class ExtensionService extends AbstractExtensionService implements IExten
+@@ -124,7 +124,7 @@ export class ExtensionService extends AbstractExtensionService implements IExten
  	}
  
  	private _scanWebExtensionsPromise: Promise<IExtensionDescription[]> | undefined;
@@ -457,7 +444,7 @@ index 880beae0916..1bafa65025a 100644
  		if (!this._scanWebExtensionsPromise) {
  			this._scanWebExtensionsPromise = (async () => {
  				const system: IExtensionDescription[] = [], user: IExtensionDescription[] = [], development: IExtensionDescription[] = [];
-@@ -220,7 +220,7 @@ export class ExtensionService extends AbstractExtensionService implements IExten
+@@ -224,7 +224,7 @@ export class ExtensionService extends AbstractExtensionService implements IExten
  	}
  }
  
@@ -466,7 +453,7 @@ index 880beae0916..1bafa65025a 100644
  
  	constructor(
  		private readonly _extensionsProposedApi: ExtensionsProposedApi,
-@@ -256,7 +256,7 @@ class BrowserExtensionHostFactory implements IExtensionHostFactory {
+@@ -260,7 +260,7 @@ class BrowserExtensionHostFactory implements IExtensionHostFactory {
  		}
  	}
  
@@ -489,10 +476,10 @@ index a7b67f152e3..2e8f9e75f51 100644
  	readonly _serviceBrand: undefined;
  
 diff --git a/src/vs/workbench/services/extensions/browser/webWorkerExtensionHost.ts b/src/vs/workbench/services/extensions/browser/webWorkerExtensionHost.ts
-index 6be0b6e027b..b8b3239795f 100644
+index 597e065ddfc..26f98d97f25 100644
 --- a/src/vs/workbench/services/extensions/browser/webWorkerExtensionHost.ts
 +++ b/src/vs/workbench/services/extensions/browser/webWorkerExtensionHost.ts
-@@ -80,7 +80,7 @@ export class WebWorkerExtensionHost extends Disposable implements IExtensionHost
+@@ -82,7 +82,7 @@ export class WebWorkerExtensionHost extends Disposable implements IExtensionHost
  		this._extensionHostLogsLocation = joinPath(this._environmentService.extHostLogsPath, 'webWorker');
  	}
  
@@ -502,7 +489,7 @@ index 6be0b6e027b..b8b3239795f 100644
  		if (this._environmentService.debugExtensionHost && this._environmentService.debugRenderer) {
  			suffixSearchParams.set('debugged', '1');
 diff --git a/src/vs/workbench/services/extensions/common/abstractExtensionService.ts b/src/vs/workbench/services/extensions/common/abstractExtensionService.ts
-index a643a470b75..6d39f39a5e0 100644
+index b207618675d..590f0b91995 100644
 --- a/src/vs/workbench/services/extensions/common/abstractExtensionService.ts
 +++ b/src/vs/workbench/services/extensions/common/abstractExtensionService.ts
 @@ -99,9 +99,9 @@ export abstract class AbstractExtensionService extends Disposable implements IEx
@@ -518,7 +505,7 @@ index a643a470b75..6d39f39a5e0 100644
  		@IInstantiationService protected readonly _instantiationService: IInstantiationService,
  		@INotificationService protected readonly _notificationService: INotificationService,
  		@IWorkbenchEnvironmentService protected readonly _environmentService: IWorkbenchEnvironmentService,
-@@ -235,7 +235,7 @@ export abstract class AbstractExtensionService extends Disposable implements IEx
+@@ -239,7 +239,7 @@ export abstract class AbstractExtensionService extends Disposable implements IEx
  
  	//#region deltaExtensions
  
@@ -527,7 +514,7 @@ index a643a470b75..6d39f39a5e0 100644
  		this._deltaExtensionsQueue.push(item);
  		if (this._inHandleDeltaExtensions) {
  			// Let the current item finish, the new one will be picked up
-@@ -1354,7 +1354,7 @@ export interface IExtensionHostFactory {
+@@ -1372,7 +1372,7 @@ export interface IExtensionHostFactory {
  	createExtensionHost(runningLocations: ExtensionRunningLocationTracker, runningLocation: ExtensionRunningLocation, isInitialStart: boolean): IExtensionHost | null;
  }
  
@@ -575,6 +562,19 @@ index 554ecb2bce9..63082ed6952 100644
  	_serviceBrand: undefined;
  
  	constructor(
+diff --git a/src/vs/workbench/services/log/common/defaultLogLevels.ts b/src/vs/workbench/services/log/common/defaultLogLevels.ts
+index e306ff3af41..55be335f30e 100644
+--- a/src/vs/workbench/services/log/common/defaultLogLevels.ts
++++ b/src/vs/workbench/services/log/common/defaultLogLevels.ts
+@@ -36,7 +36,7 @@ export interface IDefaultLogLevelsService {
+ 	setDefaultLogLevel(logLevel: LogLevel, extensionId?: string): Promise<void>;
+ }
+ 
+-class DefaultLogLevelsService extends Disposable implements IDefaultLogLevelsService {
++export class DefaultLogLevelsService extends Disposable implements IDefaultLogLevelsService {
+ 
+ 	_serviceBrand: undefined;
+ 
 diff --git a/src/vs/workbench/services/outline/browser/outlineService.ts b/src/vs/workbench/services/outline/browser/outlineService.ts
 index e9077d5f226..fc31a3fab94 100644
 --- a/src/vs/workbench/services/outline/browser/outlineService.ts

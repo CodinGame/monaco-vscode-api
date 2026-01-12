@@ -10,7 +10,7 @@ Subject: [PATCH] fix: remove problematic code causing issues with webpack and
  2 files changed, 1 insertion(+), 6 deletions(-)
 
 diff --git a/src/vs/editor/browser/services/editorWorkerService.ts b/src/vs/editor/browser/services/editorWorkerService.ts
-index 211ba9ccbfb..f02183a108a 100644
+index e60fcf56735..77dff0f082f 100644
 --- a/src/vs/editor/browser/services/editorWorkerService.ts
 +++ b/src/vs/editor/browser/services/editorWorkerService.ts
 @@ -36,7 +36,6 @@ import { WorkerTextModelSyncClient } from '../../common/services/textModelSync/t
@@ -31,10 +31,10 @@ index 211ba9ccbfb..f02183a108a 100644
  		});
  
 diff --git a/src/vs/workbench/services/extensions/browser/webWorkerExtensionHost.ts b/src/vs/workbench/services/extensions/browser/webWorkerExtensionHost.ts
-index 4d142837f0b..8666cb0af57 100644
+index 92f90a795b0..54042fbae7e 100644
 --- a/src/vs/workbench/services/extensions/browser/webWorkerExtensionHost.ts
 +++ b/src/vs/workbench/services/extensions/browser/webWorkerExtensionHost.ts
-@@ -351,7 +351,5 @@ export class WebWorkerExtensionHost extends Disposable implements IExtensionHost
+@@ -355,7 +355,5 @@ export class WebWorkerExtensionHost extends Disposable implements IExtensionHost
  }
  
  const extensionHostWorkerMainDescriptor = new WebWorkerDescriptor({

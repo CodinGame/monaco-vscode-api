@@ -4,14 +4,14 @@ Date: Mon, 11 Mar 2024 17:38:30 +0100
 Subject: [PATCH] fix: improve extension contribution types
 
 ---
- .../platform/extensions/common/extensions.ts  | 1440 ++++++++++++++++-
+ .../platform/extensions/common/extensions.ts  | 1441 ++++++++++++++++-
  .../services/search/common/queryBuilder.ts    |    8 +-
  .../themes/common/colorExtensionPoint.ts      |    2 +-
  .../tokenClassificationExtensionPoint.ts      |    1 +
- 4 files changed, 1382 insertions(+), 69 deletions(-)
+ 4 files changed, 1382 insertions(+), 70 deletions(-)
 
 diff --git a/src/vs/platform/extensions/common/extensions.ts b/src/vs/platform/extensions/common/extensions.ts
-index 4c5d20c9b13..5736958c790 100644
+index 8961b9011b3..5736958c790 100644
 --- a/src/vs/platform/extensions/common/extensions.ts
 +++ b/src/vs/platform/extensions/common/extensions.ts
 @@ -3,6 +3,7 @@
@@ -1377,12 +1377,13 @@ index 4c5d20c9b13..5736958c790 100644
  }
  
  export interface IChatParticipantContribution {
-@@ -200,34 +1358,188 @@ export interface IMcpCollectionContribution {
+@@ -200,35 +1358,188 @@ export interface IMcpCollectionContribution {
  }
  
  export interface IExtensionContributions {
 -	commands?: ICommand[];
 -	configuration?: any;
+-	configurationDefaults?: any;
 -	debuggers?: IDebugger[];
 -	grammars?: IGrammar[];
 -	jsonValidation?: IJSONValidation[];

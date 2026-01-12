@@ -8,7 +8,7 @@ Subject: [PATCH] fix: stop expecting a git context
  1 file changed, 2 insertions(+), 2 deletions(-)
 
 diff --git a/build/npm/postinstall.ts b/build/npm/postinstall.ts
-index c4bbbf52960..b64973d20b9 100644
+index 3e260853a53..e0370c4f2c7 100644
 --- a/build/npm/postinstall.ts
 +++ b/build/npm/postinstall.ts
 @@ -182,5 +182,5 @@ for (const dir of dirs) {

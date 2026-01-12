@@ -13,7 +13,7 @@ Subject: [PATCH] fix: properly use IExtensionResourceLoaderService instead of
  5 files changed, 28 insertions(+), 13 deletions(-)
 
 diff --git a/src/vs/platform/extensionManagement/common/extensionsScannerService.ts b/src/vs/platform/extensionManagement/common/extensionsScannerService.ts
-index 5d7426ab0db..00cca7d976b 100644
+index c6d27314835..c1b7140c5df 100644
 --- a/src/vs/platform/extensionManagement/common/extensionsScannerService.ts
 +++ b/src/vs/platform/extensionManagement/common/extensionsScannerService.ts
 @@ -34,6 +34,7 @@ import { ExtensionsProfileScanningError, ExtensionsProfileScanningErrorCode, IEx
@@ -117,7 +117,7 @@ index 5d7426ab0db..00cca7d976b 100644
  	}
  
  	override async scanExtensions(input: ExtensionScannerInput): Promise<IRelaxedScannedExtension[]> {
-@@ -1057,6 +1063,7 @@ export class NativeExtensionsScannerService extends AbstractExtensionsScannerSer
+@@ -1059,6 +1065,7 @@ export class NativeExtensionsScannerService extends AbstractExtensionsScannerSer
  		currentProfile: IUserDataProfile,
  		userDataProfilesService: IUserDataProfilesService,
  		extensionsProfileScannerService: IExtensionsProfileScannerService,
@@ -125,7 +125,7 @@ index 5d7426ab0db..00cca7d976b 100644
  		fileService: IFileService,
  		logService: ILogService,
  		environmentService: IEnvironmentService,
-@@ -1069,7 +1076,7 @@ export class NativeExtensionsScannerService extends AbstractExtensionsScannerSer
+@@ -1071,7 +1078,7 @@ export class NativeExtensionsScannerService extends AbstractExtensionsScannerSer
  			userExtensionsLocation,
  			joinPath(userHome, '.vscode-oss-dev', 'extensions', 'control.json'),
  			currentProfile,
