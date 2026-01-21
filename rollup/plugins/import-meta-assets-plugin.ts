@@ -123,7 +123,7 @@ export default function importMetaAssets({
               return
             }
 
-            const { globby } = await import('globby')
+            const { default: globby } = await import('globby')
             // execute the glob
             const result = await globby(glob, { cwd: path.dirname(id) })
             const paths = result.map((r) =>
