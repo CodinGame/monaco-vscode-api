@@ -3636,7 +3636,7 @@ index 5a53b5423a4..57c88e3ab62 100644
  		part.id = id;
  		part.setAttribute('role', role);
 diff --git a/src/vs/workbench/contrib/accessibility/browser/accessibleView.ts b/src/vs/workbench/contrib/accessibility/browser/accessibleView.ts
-index abd18da3a4e..d1175818998 100644
+index 376f1dda25e..7b8c2f1a30d 100644
 --- a/src/vs/workbench/contrib/accessibility/browser/accessibleView.ts
 +++ b/src/vs/workbench/contrib/accessibility/browser/accessibleView.ts
 @@ -3,7 +3,7 @@
