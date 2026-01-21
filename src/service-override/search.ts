@@ -24,7 +24,7 @@ import { Schemas } from 'vs/base/common/network'
 import type { IFileSystemProvider } from 'vs/platform/files/common/files'
 import { HTMLFileSystemProvider } from 'vs/platform/files/browser/htmlFileSystemProvider'
 import { WorkspaceSearchProvider } from './tools/search-providers/workspace-search-provider'
-import { IWorkspaceContextService } from '../services'
+import { IWorkspaceContextService } from 'vs/platform/workspace/common/workspace.service'
 import { IRemoteAgentService } from 'vs/workbench/services/remote/common/remoteAgentService.service'
 import { IConfigurationService } from 'vs/platform/configuration/common/configuration.service'
 
