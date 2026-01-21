@@ -1,6 +1,6 @@
 import { type IEditorOverrideServices } from 'vs/editor/standalone/browser/standaloneServices'
 import { SyncDescriptor } from 'vs/platform/instantiation/common/descriptors'
-import { ITelemetryService } from '../services'
+import { ITelemetryService } from 'vs/platform/telemetry/common/telemetry.service'
 import { TelemetryService } from 'vs/workbench/services/telemetry/browser/telemetryService'
 import { IDataChannelService } from 'vs/platform/dataChannel/common/dataChannel.service'
 export type { ITelemetryData, TelemetryLevel } from 'vs/platform/telemetry/common/telemetry'

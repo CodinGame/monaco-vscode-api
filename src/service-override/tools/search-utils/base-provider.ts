@@ -5,7 +5,9 @@ import {
   type SearchConfig,
   getSearchConfigFromVSCode
 } from './config'
-import type { IFileService, ILogService, IWorkspaceContextService } from '../../../services'
+import type { IFileService } from 'vs/platform/files/common/files.service'
+import type { ILogService } from 'vs/platform/log/common/log.service'
+import type { IWorkspaceContextService } from 'vs/platform/workspace/common/workspace.service'
 import { IConfigurationService } from 'vs/platform/configuration/common/configuration.service'
 import type { FileChangesEvent, IFileStat } from 'vs/platform/files/common/files'
 import * as glob from 'vs/base/common/glob'
