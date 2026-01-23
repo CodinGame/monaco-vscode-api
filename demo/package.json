@@ -19,7 +19,7 @@
     "@codingame/esbuild-import-meta-url-plugin": "^1.0.3",
     "@types/dockerode": "^3.3.47",
     "@types/express": "^5.0.6",
-    "@types/node": "^20.11.4",
+    "@types/node": "^22.19.7",
     "@types/wicg-file-system-access": "^2023.10.7",
     "@types/ws": "^8.18.1",
     "typescript": "~5.9.3",

@@ -24,9 +24,9 @@ jobs:
     - name: Install build dependencies
       run: |
         sudo apt-get update
-        sudo apt-get install libkrb5-dev libxkbfile-dev libx11-6
-    - name: Volta
-      uses: volta-cli/action@v4
+        sudo apt-get install libkrb5-dev libxkbfile-dev libx11-6 pkg-config
+    - name: mise-en-place
+      uses: jdx/mise-action@v2
     - name: Install dependencies
       run: npm ci
     - name: Build
