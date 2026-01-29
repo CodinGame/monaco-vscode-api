@@ -4144,10 +4144,10 @@ index bdc5faf1496..4d63fc0d95e 100644
  		listContainer.append(overflowWidgetsContainer);
  
 diff --git a/src/vs/workbench/contrib/chat/browser/widget/input/chatInputPart.ts b/src/vs/workbench/contrib/chat/browser/widget/input/chatInputPart.ts
-index 09266263e7b..1c733d8f314 100644
+index e7e7180bf44..2bb38ab1173 100644
 --- a/src/vs/workbench/contrib/chat/browser/widget/input/chatInputPart.ts
 +++ b/src/vs/workbench/contrib/chat/browser/widget/input/chatInputPart.ts
-@@ -2375,10 +2375,10 @@ export class ChatInputPart extends Disposable implements IHistoryNavigationWidge
+@@ -2490,10 +2490,10 @@ export class ChatInputPart extends Disposable implements IHistoryNavigationWidge
  				this.relatedFiles?.remove(uri);
  			}));
  

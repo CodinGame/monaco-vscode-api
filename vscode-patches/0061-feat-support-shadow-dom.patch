@@ -823,10 +823,10 @@ index fbff9375f73..5a53b5423a4 100644
  
  	private createPart(id: string, role: string, classes: string[]): HTMLElement {
 diff --git a/src/vs/workbench/contrib/chat/browser/widget/input/chatInputPart.ts b/src/vs/workbench/contrib/chat/browser/widget/input/chatInputPart.ts
-index a7af6c250b8..09266263e7b 100644
+index dd0f182a952..e7e7180bf44 100644
 --- a/src/vs/workbench/contrib/chat/browser/widget/input/chatInputPart.ts
 +++ b/src/vs/workbench/contrib/chat/browser/widget/input/chatInputPart.ts
-@@ -1980,7 +1980,7 @@ export class ChatInputPart extends Disposable implements IHistoryNavigationWidge
+@@ -2095,7 +2095,7 @@ export class ChatInputPart extends Disposable implements IHistoryNavigationWidge
  
  		attachments.unshift(toolbar);
  
