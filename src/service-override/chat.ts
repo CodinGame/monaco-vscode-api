@@ -76,6 +76,8 @@ import { IChatStatusItemService } from 'vs/workbench/contrib/chat/browser/chatSt
 import { IAgentSessionsService } from 'vs/workbench/contrib/chat/browser/agentSessions/agentSessionsService.service'
 import { AgentSessionsService } from 'vs/workbench/contrib/chat/browser/agentSessions/agentSessionsService'
 import { ChatWidgetService } from 'vs/workbench/contrib/chat/browser/widget/chatWidgetService'
+import { ICodeCompareModelService } from 'vs/workbench/contrib/chat/browser/widget/chatContentParts/chatTextEditContentPart.service'
+import { CodeCompareModelService } from 'vs/workbench/contrib/chat/browser/widget/chatContentParts/chatTextEditContentPart'
 import 'vs/workbench/contrib/chat/browser/chat.contribution'
 import 'vs/workbench/contrib/terminal/terminal.chat.contribution'
 import 'vs/workbench/contrib/inlineChat/browser/inlineChat.contribution'
@@ -157,6 +159,7 @@ export default function getServiceOverride(): IEditorOverrideServices {
     ),
     [IChatContextService.toString()]: new SyncDescriptor(ChatContextService, [], true),
     [ITerminalChatService.toString()]: new SyncDescriptor(TerminalChatService, [], true),
-    [IAgentSessionsService.toString()]: new SyncDescriptor(AgentSessionsService, [], true)
+    [IAgentSessionsService.toString()]: new SyncDescriptor(AgentSessionsService, [], true),
+    [ICodeCompareModelService.toString()]: new SyncDescriptor(CodeCompareModelService, [], true)
   }
 }

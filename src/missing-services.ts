@@ -441,6 +441,7 @@ import { IInlineCompletionsUnificationService } from 'vs/workbench/services/inli
 import { IAgentSessionsService } from 'vs/workbench/contrib/chat/browser/agentSessions/agentSessionsService.service'
 import type { IAgentSessionsModel } from 'vs/workbench/contrib/chat/browser/agentSessions/agentSessionsModel'
 import { IUserAttentionService } from 'vs/workbench/services/userAttention/common/userAttentionService.service'
+import { ICodeCompareModelService } from 'vs/workbench/contrib/chat/browser/widget/chatContentParts/chatTextEditContentPart.service'
 import { EditorWorkerService } from 'vs/editor/browser/services/editorWorkerService'
 import { IEditorWorkerService } from 'vs/editor/common/services/editorWorker.service'
 import {
@@ -6186,3 +6187,12 @@ class UserAttentionService implements IUserAttentionService {
 }
 
 registerSingleton(IUserAttentionService, UserAttentionService, InstantiationType.Delayed)
+
+class CodeCompareModelService implements ICodeCompareModelService {
+  _serviceBrand: undefined
+
+  @Unsupported
+  createModel: ICodeCompareModelService['createModel'] = unsupported
+}
+
+registerSingleton(ICodeCompareModelService, CodeCompareModelService, InstantiationType.Delayed)
