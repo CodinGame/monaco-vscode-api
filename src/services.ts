@@ -683,3 +683,4 @@ export { ISCMRepositorySelectionMode } from 'vs/workbench/contrib/scm/common/scm
 export { IAgentSessionsService } from 'vs/workbench/contrib/chat/browser/agentSessions/agentSessionsService.service'
 export { IUserAttentionService } from 'vs/workbench/services/userAttention/common/userAttentionService.service'
 export type { IAgentSessionsModel } from 'vs/workbench/contrib/chat/browser/agentSessions/agentSessionsModel'
+export { ICodeCompareModelService } from 'vs/workbench/contrib/chat/browser/widget/chatContentParts/chatTextEditContentPart.service'

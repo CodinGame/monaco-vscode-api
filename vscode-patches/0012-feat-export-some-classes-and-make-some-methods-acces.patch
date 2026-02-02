@@ -17,6 +17,7 @@ Subject: [PATCH] feat: export some classes and make some methods accessible
  src/vs/workbench/browser/layout.ts                 | 10 +++++-----
  src/vs/workbench/browser/workbench.ts              | 14 +++++++-------
  .../browser/chatStatus/chatStatusItemService.ts    |  2 +-
+ .../chatContentParts/chatTextEditContentPart.ts    |  6 +++---
  .../debug/browser/extensionHostDebugService.ts     |  2 +-
  .../contrib/issue/browser/issueTroubleshoot.ts     |  6 +++---
  .../dialogs/browser/abstractFileDialogService.ts   |  2 +-
@@ -39,7 +40,7 @@ Subject: [PATCH] feat: export some classes and make some methods accessible
  .../terminal/common/embedderTerminalService.ts     |  2 +-
  .../common/remoteUserDataProfiles.ts               |  2 +-
  .../userDataSync/common/userDataSyncUtil.ts        |  2 +-
- 35 files changed, 62 insertions(+), 58 deletions(-)
+ 36 files changed, 65 insertions(+), 61 deletions(-)
 
 diff --git a/src/vs/editor/contrib/editorState/browser/keybindingCancellation.ts b/src/vs/editor/contrib/editorState/browser/keybindingCancellation.ts
 index 94020ce96b9..de1e9af237e 100644
@@ -319,6 +320,31 @@ index b87135ccce6..dae96febb2b 100644
  	readonly _serviceBrand: undefined;
  
  	private readonly _entries = new Map<string, ChatStatusEntry>();
+diff --git a/src/vs/workbench/contrib/chat/browser/widget/chatContentParts/chatTextEditContentPart.ts b/src/vs/workbench/contrib/chat/browser/widget/chatContentParts/chatTextEditContentPart.ts
+index 959ef8b2347..a8977581578 100644
+--- a/src/vs/workbench/contrib/chat/browser/widget/chatContentParts/chatTextEditContentPart.ts
++++ b/src/vs/workbench/contrib/chat/browser/widget/chatContentParts/chatTextEditContentPart.ts
+@@ -32,9 +32,9 @@ import { IChatContentPart, IChatContentPartRenderContext } from './chatContentPa
+ 
+ const $ = dom.$;
+ 
+-const ICodeCompareModelService = createDecorator<ICodeCompareModelService>('ICodeCompareModelService');
++export const ICodeCompareModelService = createDecorator<ICodeCompareModelService>('ICodeCompareModelService');
+ 
+-interface ICodeCompareModelService {
++export interface ICodeCompareModelService {
+ 	_serviceBrand: undefined;
+ 	createModel(response: IChatResponseViewModel, chatTextEdit: IChatTextEditGroup): Promise<IReference<{ originalSha1: string; original: IResolvedTextEditorModel; modified: IResolvedTextEditorModel }>>;
+ }
+@@ -133,7 +133,7 @@ export class ChatTextEditContentPart extends Disposable implements IChatContentP
+ 	}
+ }
+ 
+-class CodeCompareModelService implements ICodeCompareModelService {
++export class CodeCompareModelService implements ICodeCompareModelService {
+ 
+ 	declare readonly _serviceBrand: undefined;
+ 
 diff --git a/src/vs/workbench/contrib/debug/browser/extensionHostDebugService.ts b/src/vs/workbench/contrib/debug/browser/extensionHostDebugService.ts
 index 1e48c939054..1be394d7a9b 100644
 --- a/src/vs/workbench/contrib/debug/browser/extensionHostDebugService.ts
