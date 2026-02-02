@@ -385,6 +385,10 @@ export const constructOptions: IWorkbenchConstructionOptions = {
   productConfiguration: {
     nameShort: 'monaco-vscode-api',
     nameLong: 'monaco-vscode-api',
+    defaultChatAgent: {
+      chatExtensionId: 'codingame.aiDemo',
+      extensionId: 'codingame.aiDemo'
+    },
     extensionsGallery: {
       serviceUrl: 'https://open-vsx.org/vscode/gallery',
       resourceUrlTemplate: 'https://open-vsx.org/vscode/unpkg/{publisher}/{name}/{version}/{path}',
