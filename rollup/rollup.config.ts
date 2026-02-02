@@ -126,7 +126,7 @@ export default (args: Record<string, string>): rollup.RollupOptions => {
         exclude: ['**/editorWorkerService.js', '**/webWorkerExtensionHost.js']
       }),
       commonjs({
-        include: '**/vscode-semver/**/*'
+        include: ['**/vscode-semver/**/*', '**/vscode-oniguruma/**/*', '**/vscode-textmate/**/*']
       }),
       resolveAssetUrlPlugin(),
       nodeResolve({
