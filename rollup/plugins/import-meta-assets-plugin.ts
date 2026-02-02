@@ -209,9 +209,13 @@ ${`    default: return new Promise(function(resolve, reject) {
 
               let fileName: string | undefined
               if (preserveAssetsRoot != null) {
-                fileName = path
-                  .relative(path.resolve(process.cwd(), preserveAssetsRoot), absoluteAssetPath)
-                  .replace(/^(\.\.\/)+/g, '')
+                if (resolved.id.includes('node_modules')) {
+                  fileName = path.join('external', relativeAssetPath)
+                } else {
+                  fileName = path
+                    .relative(path.resolve(process.cwd(), preserveAssetsRoot), absoluteAssetPath)
+                    .replace(/^(\.\.\/)+/g, '')
+                }
               }
 
               const ref = this.emitFile({
