@@ -130,8 +130,14 @@ export default rollup.defineConfig([
           minifyInternalExports: false,
           preserveModules: true,
           sanitizeFileName(fileName) {
-            // Remove spaces in name to prevent creating any issues
-            return fileName.replace(/\s+/g, '_')
+            return (
+              fileName
+                // default sanitize function
+                // eslint-disable-next-line no-control-regex
+                .replace(/[\u0000-\u001F"#$&*+,:;<=>?[\]^`{|}\u007F]/g, '_')
+                // Remove spaces in name to prevent creating any issues
+                .replace(/\s+/g, '_')
+            )
           },
           assetFileNames: '[name][extname]',
           format: 'esm',
@@ -215,7 +221,8 @@ export default rollup.defineConfig([
         ]
       }
     })
-  )), {
+  )),
+  {
     input: {
       index: path.resolve(BASIC_LANGUAGE_DIR, 'monaco.contribution.js')
     },
@@ -223,8 +230,14 @@ export default rollup.defineConfig([
       minifyInternalExports: false,
       preserveModules: true,
       sanitizeFileName(fileName) {
-        // Remove spaces in name to prevent creating any issues
-        return fileName.replace(/\s+/g, '_')
+        return (
+          fileName
+            // default sanitize function
+            // eslint-disable-next-line no-control-regex
+            .replace(/[\u0000-\u001F"#$&*+,:;<=>?[\]^`{|}\u007F]/g, '_')
+            // Remove spaces in name to prevent creating any issues
+            .replace(/\s+/g, '_')
+        )
       },
       assetFileNames: '[name][extname]',
       format: 'esm',

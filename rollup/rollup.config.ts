@@ -95,8 +95,14 @@ export default (args: Record<string, string>): rollup.RollupOptions => {
         preserveModulesRoot: SRC_DIR,
         minifyInternalExports: false,
         sanitizeFileName(fileName) {
-          // Remove spaces in name to prevent creating any issues
-          return fileName.replace(/\s+/g, '_')
+          return (
+            fileName
+              // default sanitize function
+              // eslint-disable-next-line no-control-regex
+              .replace(/[\u0000-\u001F"#$&*+,:;<=>?[\]^`{|}\u007F]/g, '_')
+              // Remove spaces in name to prevent creating any issues
+              .replace(/\s+/g, '_')
+          )
         },
         assetFileNames: 'assets/[name][extname]',
         format: 'esm',
