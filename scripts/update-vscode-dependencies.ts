@@ -4,11 +4,8 @@ import { fileURLToPath } from 'url'
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url))
 
-const EXCLUDE_VSCODE_DEPENDENCIES = new Set([
-  'typescript',
-  'eslint',
-  '@vscode/vscode-languagedetection'
-])
+const EXCLUDE_VSCODE_DEPENDENCIES =
+  /^(typescript.*|rollup.*|@rollup\/.*|eslint|@vscode\/vscode-languagedetection|@types\/.*|prettier|postcss.*|zx)$/
 
 function getAbsolutePackageJsonPath(relativePath: string) {
   return path.join(__dirname, relativePath, 'package.json')
@@ -29,19 +26,27 @@ async function updateVSCodeDependencies() {
   const monacoEditorPackageJson = await readJson(getAbsolutePackageJsonPath('../monaco-editor'))
 
   console.debug('Updating monaco-vscode-api dependencies with vscode dependencies versions...')
-  const vscodeDependencies: string[] = []
+  const vscodeDependencies = new Set<string>([
+    '@types/node',
+    'vscode-semver',
+    'marked',
+    '@types/vscode-semver'
+  ])
 
-  for (const dependency in apiPackageJson.dependencies) {
-    if (EXCLUDE_VSCODE_DEPENDENCIES.has(dependency)) {
-      continue
-    }
-    const vscodeDependencyVersion =
-      vsCodePackageJson.dependencies[dependency] ??
-      vsCodePackageJson.devDependencies[dependency] ??
-      monacoEditorPackageJson.devDependencies[dependency]
-    if (vscodeDependencyVersion != null) {
-      apiPackageJson.dependencies[dependency] = vscodeDependencyVersion
-      vscodeDependencies.push(dependency)
+  for (const dependencies of [apiPackageJson.devDependencies, apiPackageJson.dependencies]) {
+    for (const dependency in dependencies) {
+      if (EXCLUDE_VSCODE_DEPENDENCIES.exec(dependency) != null) {
+        continue
+      }
+      const vscodeDependencyVersion =
+        vsCodePackageJson.dependencies[dependency] ??
+        vsCodePackageJson.devDependencies[dependency] ??
+        monacoEditorPackageJson.devDependencies[dependency]
+
+      if (vscodeDependencyVersion != null) {
+        dependencies[dependency] = vscodeDependencyVersion
+        vscodeDependencies.add(dependency)
+      }
     }
   }
 
@@ -57,13 +62,7 @@ async function updateVSCodeDependencies() {
   )
   const ncuRcPath = path.join(__dirname, '../.ncurc.json')
   const ncuRc = await readJson(ncuRcPath)
-  ncuRc.reject = [
-    '@types/node',
-    'vscode-semver',
-    'marked',
-    '@types/vscode-semver',
-    ...vscodeDependencies
-  ].sort()
+  ncuRc.reject = [...vscodeDependencies].sort()
   await writeFile(ncuRcPath, JSON.stringify(ncuRc, null, 2))
 
   console.debug('Writing monaco-vscode-api package.json...')
