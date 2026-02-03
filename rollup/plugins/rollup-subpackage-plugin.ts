@@ -16,6 +16,7 @@ import * as nodePath from 'node:path'
 import { builtinModules } from 'module'
 import * as fs from 'node:fs'
 import { execSync } from 'node:child_process'
+import { sanitizeFileName } from '../tools/config'
 
 export interface SubPackageModule {
   id: string
@@ -506,16 +507,7 @@ export default ({
               preserveModules: true,
               preserveModulesRoot: options.dir!,
               minifyInternalExports: false,
-              sanitizeFileName(fileName) {
-                return (
-                  fileName
-                    // default sanitize function
-                    // eslint-disable-next-line no-control-regex
-                    .replace(/[\u0000-\u001F"#$&*+,:;<=>?[\]^`{|}\u007F]/g, '_')
-                    // Remove spaces in name to prevent creating any issues
-                    .replace(/\s+/g, '_')
-                )
-              },
+              sanitizeFileName,
               assetFileNames: 'assets/[name][extname]',
               format: 'esm',
               dir: nodePath.resolve(options.dir!, `packages/${getPackageDirectory(packageName)}`),

@@ -6,7 +6,7 @@ import glob from 'fast-glob'
 import * as path from 'path'
 import * as fs from 'fs'
 import { fileURLToPath } from 'url'
-import { EDITOR_API_PACKAGE_NAME } from './tools/config'
+import { EDITOR_API_PACKAGE_NAME, sanitizeFileName } from './tools/config'
 import { execSync } from 'child_process'
 import carryDtsPlugin from './plugins/rollup-carry-dts-plugin.js'
 
@@ -129,16 +129,7 @@ export default rollup.defineConfig([
         output: {
           minifyInternalExports: false,
           preserveModules: true,
-          sanitizeFileName(fileName) {
-            return (
-              fileName
-                // default sanitize function
-                // eslint-disable-next-line no-control-regex
-                .replace(/[\u0000-\u001F"#$&*+,:;<=>?[\]^`{|}\u007F]/g, '_')
-                // Remove spaces in name to prevent creating any issues
-                .replace(/\s+/g, '_')
-            )
-          },
+          sanitizeFileName,
           assetFileNames: '[name][extname]',
           format: 'esm',
           dir: `dist/packages/monaco-vscode-standalone-${language}-language-features`,
@@ -229,16 +220,7 @@ export default rollup.defineConfig([
     output: {
       minifyInternalExports: false,
       preserveModules: true,
-      sanitizeFileName(fileName) {
-        return (
-          fileName
-            // default sanitize function
-            // eslint-disable-next-line no-control-regex
-            .replace(/[\u0000-\u001F"#$&*+,:;<=>?[\]^`{|}\u007F]/g, '_')
-            // Remove spaces in name to prevent creating any issues
-            .replace(/\s+/g, '_')
-        )
-      },
+      sanitizeFileName,
       assetFileNames: '[name][extname]',
       format: 'esm',
       dir: 'dist/packages/monaco-vscode-standalone-languages',
