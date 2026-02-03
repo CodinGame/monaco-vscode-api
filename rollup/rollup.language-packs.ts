@@ -8,7 +8,7 @@ import * as path from 'path'
 import { fileURLToPath } from 'url'
 import * as fsPromise from 'fs/promises'
 import resolveAssetUrlPlugin from './plugins/resolve-asset-url-plugin.js'
-import { MAIN_PACKAGE_NAME } from './tools/config.js'
+import { MAIN_PACKAGE_NAME, sanitizeFileName } from './tools/config.js'
 
 const pkg = JSON.parse(
   fs.readFileSync(new URL('../package.json', import.meta.url).pathname).toString()
@@ -42,10 +42,7 @@ export default rollup.defineConfig([
           {
             minifyInternalExports: false,
             preserveModules: true,
-            sanitizeFileName(fileName) {
-              // Remove spaces in name to prevent creating any issues
-              return fileName.replace(/\s+/g, '_')
-            },
+            sanitizeFileName,
             assetFileNames: '[name][extname]',
             format: 'esm',
             dir: `dist/packages/monaco-${name}`,

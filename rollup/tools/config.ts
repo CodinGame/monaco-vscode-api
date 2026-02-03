@@ -36,3 +36,11 @@ export const external = (source: string, importer?: string): boolean => {
   if (source.includes('tas-client')) return true
   return externals.some((external) => source === external || source.startsWith(`${external}/`))
 }
+
+export const sanitizeFileName = (fileName: string) =>
+  fileName
+    // default sanitize function
+    // eslint-disable-next-line no-control-regex
+    .replace(/[\u0000-\u001F"#$&*+,:;<=>?[\]^`{|}\u007F]/g, '_')
+    // Remove spaces in name to prevent creating any issues
+    .replace(/\s+/g, '_')

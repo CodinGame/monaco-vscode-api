@@ -82,7 +82,9 @@
     "type-fest": "^5.4.2",
     "typescript": "^5.9.3",
     "typescript-eslint": "^8.54.0",
+    "vscode-oniguruma": "1.7.0",
     "vscode-semver": "npm:semver@=5.5.0",
+    "vscode-textmate": "^9.3.0",
     "yargs": "^18.0.0",
     "zx": "^8.8.5"
   },
@@ -125,9 +127,7 @@
     "vscode-css-languageservice": "6.2.14",
     "vscode-html-languageservice": "5.2.0",
     "vscode-json-languageservice": "5.3.11",
-    "vscode-oniguruma": "1.7.0",
     "vscode-regexpp": "^3.1.0",
-    "vscode-textmate": "^9.3.0",
     "vscode-uri": "3.0.8",
     "yauzl": "^3.0.0",
     "yazl": "^2.4.3"

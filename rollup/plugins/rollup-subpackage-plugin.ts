@@ -16,6 +16,7 @@ import * as nodePath from 'node:path'
 import { builtinModules } from 'module'
 import * as fs from 'node:fs'
 import { execSync } from 'node:child_process'
+import { sanitizeFileName } from '../tools/config'
 
 export interface SubPackageModule {
   id: string
@@ -506,10 +507,7 @@ export default ({
               preserveModules: true,
               preserveModulesRoot: options.dir!,
               minifyInternalExports: false,
-              sanitizeFileName(fileName) {
-                // Remove spaces in name to prevent creating any issues
-                return fileName.replace(/\s+/g, '_')
-              },
+              sanitizeFileName,
               assetFileNames: 'assets/[name][extname]',
               format: 'esm',
               dir: nodePath.resolve(options.dir!, `packages/${getPackageDirectory(packageName)}`),

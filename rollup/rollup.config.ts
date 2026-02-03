@@ -27,7 +27,8 @@ import {
   SRC_DIR,
   TSCONFIG,
   external,
-  VSCODE_SRC_DIR
+  VSCODE_SRC_DIR,
+  sanitizeFileName
 } from './tools/config.js'
 import { transformImportEqualsTransformerFactory } from './tools/typescript.js'
 import json from '@rollup/plugin-json'
@@ -94,10 +95,7 @@ export default (args: Record<string, string>): rollup.RollupOptions => {
         preserveModules: true,
         preserveModulesRoot: SRC_DIR,
         minifyInternalExports: false,
-        sanitizeFileName(fileName) {
-          // Remove spaces in name to prevent creating any issues
-          return fileName.replace(/\s+/g, '_')
-        },
+        sanitizeFileName,
         assetFileNames: 'assets/[name][extname]',
         format: 'esm',
         dir: 'dist/tmp',
@@ -126,7 +124,7 @@ export default (args: Record<string, string>): rollup.RollupOptions => {
         exclude: ['**/editorWorkerService.js', '**/webWorkerExtensionHost.js']
       }),
       commonjs({
-        include: '**/vscode-semver/**/*'
+        include: ['**/vscode-semver/**/*', '**/vscode-oniguruma/**/*', '**/vscode-textmate/**/*']
       }),
       resolveAssetUrlPlugin(),
       nodeResolve({
