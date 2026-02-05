@@ -65,7 +65,7 @@ index 9f8b2fdc9d3..387c010c6ea 100644
  		const worker = this._worker = this._webWorkerService.createWorkerClient<TextMateTokenizationWorker>(
  			new WebWorkerDescriptor({
 diff --git a/src/vs/workbench/services/textMate/browser/textMateTokenizationFeatureImpl.ts b/src/vs/workbench/services/textMate/browser/textMateTokenizationFeatureImpl.ts
-index ebe149c6047..3004780c531 100644
+index 557d07b936e..b7a2a90122f 100644
 --- a/src/vs/workbench/services/textMate/browser/textMateTokenizationFeatureImpl.ts
 +++ b/src/vs/workbench/services/textMate/browser/textMateTokenizationFeatureImpl.ts
 @@ -4,7 +4,7 @@

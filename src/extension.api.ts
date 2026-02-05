@@ -350,7 +350,6 @@ const api: typeof vscode = {
   LanguageModelToolResult2: extHostTypes.LanguageModelToolResult2,
   McpHttpServerDefinition: extHostTypes.McpHttpServerDefinition,
   AISearchKeyword: searchExtTypes.AISearchKeyword,
-  ChatPrepareToolInvocationPart: extHostTypes.ChatPrepareToolInvocationPart,
   InlineCompletionsDisposeReasonKind: extHostTypes.InlineCompletionsDisposeReasonKind,
   ChatToolInvocationPart: extHostTypes.ChatToolInvocationPart,
   ChatResponseMultiDiffPart: extHostTypes.ChatResponseMultiDiffPart,
@@ -372,7 +371,13 @@ const api: typeof vscode = {
   McpStdioServerDefinition2: extHostTypes.McpStdioServerDefinition,
   McpHttpServerDefinition2: extHostTypes.McpHttpServerDefinition,
   TerminalCompletionItem: extHostTypes.TerminalCompletionItem,
-  ChatSessionChangedFile: extHostTypes.ChatSessionChangedFile
+  ChatSessionChangedFile: extHostTypes.ChatSessionChangedFile,
+  ChatResponseWorkspaceEditPart: extHostTypes.ChatResponseWorkspaceEditPart,
+  ChatQuestionType: extHostTypes.ChatQuestionType,
+  ChatQuestion: extHostTypes.ChatQuestion,
+  ChatResponseQuestionCarouselPart: extHostTypes.ChatResponseQuestionCarouselPart,
+  McpToolInvocationContentData: extHostTypes.McpToolInvocationContentData,
+  ChatSessionChangedFile2: extHostTypes.ChatSessionChangedFile2
 }
 
 // @ts-expect-error the syntax will be transformed by a typescript transformer in the rollup config

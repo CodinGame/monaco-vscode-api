@@ -8,7 +8,7 @@ Subject: [PATCH] fix: use asBrowserUri to get iframe src
  1 file changed, 4 insertions(+), 3 deletions(-)
 
 diff --git a/src/vs/workbench/contrib/webview/browser/webviewElement.ts b/src/vs/workbench/contrib/webview/browser/webviewElement.ts
-index b4a16a03b59..f42132c7a38 100644
+index e7c70789526..87714cfbeec 100644
 --- a/src/vs/workbench/contrib/webview/browser/webviewElement.ts
 +++ b/src/vs/workbench/contrib/webview/browser/webviewElement.ts
 @@ -13,8 +13,8 @@ import { streamToBuffer, VSBufferReadableStream } from '../../../../base/common/

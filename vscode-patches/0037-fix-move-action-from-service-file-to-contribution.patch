@@ -11,13 +11,13 @@ Subject: [PATCH] fix: move action from service file to contribution
  create mode 100644 src/vs/workbench/contrib/welcomeGettingStarted/browser/gettingStartedService._contribution.ts
 
 diff --git a/src/vs/workbench/contrib/welcomeGettingStarted/browser/gettingStarted.contribution.ts b/src/vs/workbench/contrib/welcomeGettingStarted/browser/gettingStarted.contribution.ts
-index b63e894b1ea..85766da7eb3 100644
+index 2b50e71fab8..254a7412591 100644
 --- a/src/vs/workbench/contrib/welcomeGettingStarted/browser/gettingStarted.contribution.ts
 +++ b/src/vs/workbench/contrib/welcomeGettingStarted/browser/gettingStarted.contribution.ts
-@@ -31,6 +31,7 @@ import { Categories } from '../../../../platform/action/common/actionCommonCateg
- import { DisposableStore } from '../../../../base/common/lifecycle.js';
- import { AccessibleViewRegistry } from '../../../../platform/accessibility/browser/accessibleViewRegistry.js';
+@@ -34,6 +34,7 @@ import { AccessibleViewRegistry } from '../../../../platform/accessibility/brows
  import { GettingStartedAccessibleView } from './gettingStartedAccessibleView.js';
+ import { AgentSessionsWelcomePage } from '../../welcomeAgentSessions/browser/agentSessionsWelcome.js';
+ import { IChatEntitlementService } from '../../../services/chat/common/chatEntitlementService.js';
 +import './gettingStartedService._contribution.js';
  
  export * as icons from './gettingStartedIcons.js';
@@ -84,7 +84,7 @@ index 00000000000..827c6eac860
 +	}
 +});
 diff --git a/src/vs/workbench/contrib/welcomeGettingStarted/browser/gettingStartedService.ts b/src/vs/workbench/contrib/welcomeGettingStarted/browser/gettingStartedService.ts
-index d672ea7b95e..88e31019260 100644
+index 2ae37f9fd8f..fe57a94034f 100644
 --- a/src/vs/workbench/contrib/welcomeGettingStarted/browser/gettingStartedService.ts
 +++ b/src/vs/workbench/contrib/welcomeGettingStarted/browser/gettingStartedService.ts
 @@ -3,11 +3,10 @@
@@ -109,7 +109,7 @@ index d672ea7b95e..88e31019260 100644
  import { ITelemetryService } from '../../../../platform/telemetry/common/telemetry.js';
  import { checkGlobFileExists } from '../../../services/extensions/common/workspaceContains.js';
  import { IWorkspaceContextService } from '../../../../platform/workspace/common/workspace.js';
-@@ -723,49 +722,4 @@ const convertRelativeMediaPathsToWebviewURIs = (basePath: URI, path: string | {
+@@ -724,49 +723,4 @@ const convertRelativeMediaPathsToWebviewURIs = (basePath: URI, path: string | {
  	}
  };
  

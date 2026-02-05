@@ -19,6 +19,7 @@ Subject: [PATCH] feat: export some classes and make some methods accessible
  .../browser/chatStatus/chatStatusItemService.ts    |  2 +-
  .../chatContentParts/chatTextEditContentPart.ts    |  6 +++---
  .../debug/browser/extensionHostDebugService.ts     |  2 +-
+ .../browser/renameSymbolTrackerService.ts          |  2 +-
  .../contrib/issue/browser/issueTroubleshoot.ts     |  6 +++---
  .../dialogs/browser/abstractFileDialogService.ts   |  2 +-
  .../services/dialogs/browser/fileDialogService.ts  |  4 ++--
@@ -40,7 +41,7 @@ Subject: [PATCH] feat: export some classes and make some methods accessible
  .../terminal/common/embedderTerminalService.ts     |  2 +-
  .../common/remoteUserDataProfiles.ts               |  2 +-
  .../userDataSync/common/userDataSyncUtil.ts        |  2 +-
- 36 files changed, 65 insertions(+), 61 deletions(-)
+ 37 files changed, 66 insertions(+), 62 deletions(-)
 
 diff --git a/src/vs/editor/contrib/editorState/browser/keybindingCancellation.ts b/src/vs/editor/contrib/editorState/browser/keybindingCancellation.ts
 index 94020ce96b9..de1e9af237e 100644
@@ -130,7 +131,7 @@ index fe9cffb401e..e7799461337 100644
  export namespace PeekContext {
  	export const inPeekEditor = new RawContextKey<boolean>('inReferenceSearchEditor', true, nls.localize('inReferenceSearchEditor', "Whether the current code editor is embedded inside peek"));
 diff --git a/src/vs/platform/actionWidget/browser/actionWidget.ts b/src/vs/platform/actionWidget/browser/actionWidget.ts
-index 5ab460e6790..2e037dca7ba 100644
+index 21b49245beb..495b1c9fdfc 100644
 --- a/src/vs/platform/actionWidget/browser/actionWidget.ts
 +++ b/src/vs/platform/actionWidget/browser/actionWidget.ts
 @@ -43,7 +43,7 @@ export interface IActionWidgetService {
@@ -169,7 +170,7 @@ index 921674ef18e..00b83a75fcb 100644
  	declare readonly _serviceBrand: undefined;
  
 diff --git a/src/vs/platform/files/common/fileService.ts b/src/vs/platform/files/common/fileService.ts
-index b775ea6cf10..6bea97100b9 100644
+index 493471fe856..3a098814ba1 100644
 --- a/src/vs/platform/files/common/fileService.ts
 +++ b/src/vs/platform/files/common/fileService.ts
 @@ -243,9 +243,9 @@ export class FileService extends Disposable implements IFileService {
@@ -199,7 +200,7 @@ index 4da1f68eeb1..81de1362184 100644
  	declare readonly _serviceBrand: undefined;
  
 diff --git a/src/vs/workbench/browser/layout.ts b/src/vs/workbench/browser/layout.ts
-index a6b87ac6aec..ff5708e1a86 100644
+index da337f0d06e..a60b399fcf1 100644
 --- a/src/vs/workbench/browser/layout.ts
 +++ b/src/vs/workbench/browser/layout.ts
 @@ -50,7 +50,7 @@ import { CodeWindow, mainWindow } from '../../base/browser/window.js';
@@ -241,7 +242,7 @@ index a6b87ac6aec..ff5708e1a86 100644
  	readonly filesToDiff?: IPathToOpen[];
  	readonly filesToMerge?: IPathToOpen[];
 diff --git a/src/vs/workbench/browser/workbench.ts b/src/vs/workbench/browser/workbench.ts
-index afe48b84b2e..baae338937f 100644
+index 10e2c3edace..91ba0f472a6 100644
 --- a/src/vs/workbench/browser/workbench.ts
 +++ b/src/vs/workbench/browser/workbench.ts
 @@ -86,7 +86,7 @@ export class Workbench extends Layout {
@@ -251,9 +252,9 @@ index afe48b84b2e..baae338937f 100644
 -	private registerErrorHandler(logService: ILogService): void {
 +	protected registerErrorHandler(logService: ILogService): void {
  
- 		// Listen on unhandled rejection events
- 		// Note: intentionally not registered as disposable to handle
-@@ -105,7 +105,7 @@ export class Workbench extends Layout {
+ 		// Increase stack trace limit for better errors stacks
+ 		if (!isFirefox) {
+@@ -110,7 +110,7 @@ export class Workbench extends Layout {
  	}
  
  	private previousUnexpectedError: { message: string | undefined; time: number } = { message: undefined, time: 0 };
@@ -262,7 +263,7 @@ index afe48b84b2e..baae338937f 100644
  		const message = toErrorMessage(error, true);
  		if (!message) {
  			return;
-@@ -184,7 +184,7 @@ export class Workbench extends Layout {
+@@ -189,7 +189,7 @@ export class Workbench extends Layout {
  		}
  	}
  
@@ -271,7 +272,7 @@ index afe48b84b2e..baae338937f 100644
  
  		// Layout Service
  		serviceCollection.set(IWorkbenchLayoutService, this);
-@@ -223,7 +223,7 @@ export class Workbench extends Layout {
+@@ -228,7 +228,7 @@ export class Workbench extends Layout {
  		return instantiationService;
  	}
  
@@ -280,7 +281,7 @@ index afe48b84b2e..baae338937f 100644
  
  		// Configuration changes
  		this._register(configurationService.onDidChangeConfiguration(e => this.updateFontAliasing(e, configurationService)));
-@@ -312,7 +312,7 @@ export class Workbench extends Layout {
+@@ -317,7 +317,7 @@ export class Workbench extends Layout {
  		}
  	}
  
@@ -289,7 +290,7 @@ index afe48b84b2e..baae338937f 100644
  
  		// ARIA & Signals
  		setARIAContainer(this.mainContainer);
-@@ -374,7 +374,7 @@ export class Workbench extends Layout {
+@@ -379,7 +379,7 @@ export class Workbench extends Layout {
  		return part;
  	}
  
@@ -298,7 +299,7 @@ index afe48b84b2e..baae338937f 100644
  
  		// Instantiate Notification components
  		const notificationsCenter = this._register(instantiationService.createInstance(NotificationsCenter, this.mainContainer, notificationService.model));
-@@ -404,7 +404,7 @@ export class Workbench extends Layout {
+@@ -409,7 +409,7 @@ export class Workbench extends Layout {
  		});
  	}
  
@@ -321,7 +322,7 @@ index b87135ccce6..dae96febb2b 100644
  
  	private readonly _entries = new Map<string, ChatStatusEntry>();
 diff --git a/src/vs/workbench/contrib/chat/browser/widget/chatContentParts/chatTextEditContentPart.ts b/src/vs/workbench/contrib/chat/browser/widget/chatContentParts/chatTextEditContentPart.ts
-index 959ef8b2347..a8977581578 100644
+index 4305cc54d72..d4d363592a2 100644
 --- a/src/vs/workbench/contrib/chat/browser/widget/chatContentParts/chatTextEditContentPart.ts
 +++ b/src/vs/workbench/contrib/chat/browser/widget/chatContentParts/chatTextEditContentPart.ts
 @@ -32,9 +32,9 @@ import { IChatContentPart, IChatContentPartRenderContext } from './chatContentPa
@@ -336,7 +337,7 @@ index 959ef8b2347..a8977581578 100644
  	_serviceBrand: undefined;
  	createModel(response: IChatResponseViewModel, chatTextEdit: IChatTextEditGroup): Promise<IReference<{ originalSha1: string; original: IResolvedTextEditorModel; modified: IResolvedTextEditorModel }>>;
  }
-@@ -133,7 +133,7 @@ export class ChatTextEditContentPart extends Disposable implements IChatContentP
+@@ -124,7 +124,7 @@ export class ChatTextEditContentPart extends Disposable implements IChatContentP
  	}
  }
  
@@ -358,6 +359,19 @@ index 1e48c939054..1be394d7a9b 100644
  
  	private static readonly LAST_EXTENSION_DEVELOPMENT_WORKSPACE_KEY = 'debug.lastExtensionDevelopmentWorkspace';
  
+diff --git a/src/vs/workbench/contrib/inlineCompletions/browser/renameSymbolTrackerService.ts b/src/vs/workbench/contrib/inlineCompletions/browser/renameSymbolTrackerService.ts
+index 2ac90546d65..d7d382341f6 100644
+--- a/src/vs/workbench/contrib/inlineCompletions/browser/renameSymbolTrackerService.ts
++++ b/src/vs/workbench/contrib/inlineCompletions/browser/renameSymbolTrackerService.ts
+@@ -211,7 +211,7 @@ class ModelSymbolRenameTracker extends Disposable {
+ 	}
+ }
+ 
+-class RenameSymbolTrackerService extends Disposable implements IRenameSymbolTrackerService {
++export class RenameSymbolTrackerService extends Disposable implements IRenameSymbolTrackerService {
+ 	public _serviceBrand: undefined;
+ 
+ 	private readonly _modelTrackers = new Map<ITextModel, ModelSymbolRenameTracker>();
 diff --git a/src/vs/workbench/contrib/issue/browser/issueTroubleshoot.ts b/src/vs/workbench/contrib/issue/browser/issueTroubleshoot.ts
 index 5b019f38d09..24e9f6cceec 100644
 --- a/src/vs/workbench/contrib/issue/browser/issueTroubleshoot.ts
@@ -384,7 +398,7 @@ index 5b019f38d09..24e9f6cceec 100644
  	readonly _serviceBrand: undefined;
  
 diff --git a/src/vs/workbench/services/dialogs/browser/abstractFileDialogService.ts b/src/vs/workbench/services/dialogs/browser/abstractFileDialogService.ts
-index 20fb991dde8..c0a130ce28e 100644
+index bb082edfd8d..41cfefdb4b7 100644
 --- a/src/vs/workbench/services/dialogs/browser/abstractFileDialogService.ts
 +++ b/src/vs/workbench/services/dialogs/browser/abstractFileDialogService.ts
 @@ -54,7 +54,7 @@ export abstract class AbstractFileDialogService implements IFileDialogService {
@@ -432,7 +446,7 @@ index 940a4e0ce46..881aebdeb5c 100644
  	declare readonly _serviceBrand: undefined;
  
 diff --git a/src/vs/workbench/services/extensionManagement/browser/extensionGalleryManifestService.ts b/src/vs/workbench/services/extensionManagement/browser/extensionGalleryManifestService.ts
-index f79e5389edb..3c66b79c20a 100644
+index bb344df9567..e870a5c2886 100644
 --- a/src/vs/workbench/services/extensionManagement/browser/extensionGalleryManifestService.ts
 +++ b/src/vs/workbench/services/extensionManagement/browser/extensionGalleryManifestService.ts
 @@ -9,7 +9,7 @@ import { InstantiationType, registerSingleton } from '../../../../platform/insta
@@ -502,7 +516,7 @@ index a7b67f152e3..2e8f9e75f51 100644
  	readonly _serviceBrand: undefined;
  
 diff --git a/src/vs/workbench/services/extensions/browser/webWorkerExtensionHost.ts b/src/vs/workbench/services/extensions/browser/webWorkerExtensionHost.ts
-index 597e065ddfc..26f98d97f25 100644
+index a95e4ae1b50..12c89a55c89 100644
 --- a/src/vs/workbench/services/extensions/browser/webWorkerExtensionHost.ts
 +++ b/src/vs/workbench/services/extensions/browser/webWorkerExtensionHost.ts
 @@ -82,7 +82,7 @@ export class WebWorkerExtensionHost extends Disposable implements IExtensionHost
@@ -515,10 +529,10 @@ index 597e065ddfc..26f98d97f25 100644
  		if (this._environmentService.debugExtensionHost && this._environmentService.debugRenderer) {
  			suffixSearchParams.set('debugged', '1');
 diff --git a/src/vs/workbench/services/extensions/common/abstractExtensionService.ts b/src/vs/workbench/services/extensions/common/abstractExtensionService.ts
-index b207618675d..590f0b91995 100644
+index a0e599cd4b4..e669ffb1841 100644
 --- a/src/vs/workbench/services/extensions/common/abstractExtensionService.ts
 +++ b/src/vs/workbench/services/extensions/common/abstractExtensionService.ts
-@@ -99,9 +99,9 @@ export abstract class AbstractExtensionService extends Disposable implements IEx
+@@ -100,9 +100,9 @@ export abstract class AbstractExtensionService extends Disposable implements IEx
  
  	constructor(
  		options: { hasLocalProcess: boolean; allowRemoteExtensionsInLocalWebWorker: boolean },
@@ -531,7 +545,7 @@ index b207618675d..590f0b91995 100644
  		@IInstantiationService protected readonly _instantiationService: IInstantiationService,
  		@INotificationService protected readonly _notificationService: INotificationService,
  		@IWorkbenchEnvironmentService protected readonly _environmentService: IWorkbenchEnvironmentService,
-@@ -239,7 +239,7 @@ export abstract class AbstractExtensionService extends Disposable implements IEx
+@@ -240,7 +240,7 @@ export abstract class AbstractExtensionService extends Disposable implements IEx
  
  	//#region deltaExtensions
  
@@ -540,7 +554,7 @@ index b207618675d..590f0b91995 100644
  		this._deltaExtensionsQueue.push(item);
  		if (this._inHandleDeltaExtensions) {
  			// Let the current item finish, the new one will be picked up
-@@ -1372,7 +1372,7 @@ export interface IExtensionHostFactory {
+@@ -1415,7 +1415,7 @@ export interface IExtensionHostFactory {
  	createExtensionHost(runningLocations: ExtensionRunningLocationTracker, runningLocation: ExtensionRunningLocation, isInitialStart: boolean): IExtensionHost | null;
  }
  
@@ -550,10 +564,10 @@ index b207618675d..590f0b91995 100644
  		public readonly toAdd: IExtension[],
  		public readonly toRemove: string[] | IExtension[]
 diff --git a/src/vs/workbench/services/keybinding/browser/keybindingService.ts b/src/vs/workbench/services/keybinding/browser/keybindingService.ts
-index e19d172e7a9..cc2e76c3994 100644
+index 2af5fbeff0a..481d713f969 100644
 --- a/src/vs/workbench/services/keybinding/browser/keybindingService.ts
 +++ b/src/vs/workbench/services/keybinding/browser/keybindingService.ts
-@@ -433,7 +433,7 @@ export class WorkbenchKeybindingService extends AbstractKeybindingService {
+@@ -434,7 +434,7 @@ export class WorkbenchKeybindingService extends AbstractKeybindingService {
  		return this.userKeybindings.keybindings.length;
  	}
  

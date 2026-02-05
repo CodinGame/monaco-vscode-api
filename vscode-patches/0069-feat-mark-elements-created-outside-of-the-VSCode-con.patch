@@ -9,10 +9,10 @@ Subject: [PATCH] feat: mark elements created outside of the VSCode container
  2 files changed, 2 insertions(+)
 
 diff --git a/src/vs/base/browser/dom.ts b/src/vs/base/browser/dom.ts
-index 1bb5078f1ff..3ff29c981bf 100644
+index 094448447e4..81cd815c2d3 100644
 --- a/src/vs/base/browser/dom.ts
 +++ b/src/vs/base/browser/dom.ts
-@@ -1067,6 +1067,7 @@ export function createLinkElement(container: HTMLElement = mainWindow.document.h
+@@ -1221,6 +1221,7 @@ export function createLinkElement(container: HTMLElement = mainWindow.document.h
  
  function createHeadElement<K extends keyof HTMLElementTagNameMap>(tagName: K, container: HTMLElement = mainWindow.document.head): HTMLElementTagNameMap[K] {
  	const element = document.createElement(tagName);
@@ -21,10 +21,10 @@ index 1bb5078f1ff..3ff29c981bf 100644
  	return element;
  }
 diff --git a/src/vs/base/browser/domStylesheets.ts b/src/vs/base/browser/domStylesheets.ts
-index 61e4c36505d..106c74fcb5d 100644
+index e6434f61cfa..ac5a68bebe2 100644
 --- a/src/vs/base/browser/domStylesheets.ts
 +++ b/src/vs/base/browser/domStylesheets.ts
-@@ -59,6 +59,7 @@ export function createStyleSheet(container: HTMLElement = mainWindow.document.he
+@@ -51,6 +51,7 @@ export function createStyleSheet(container: HTMLElement = mainWindow.document.he
  	const style = document.createElement('style');
  	style.type = 'text/css';
  	style.media = 'screen';
