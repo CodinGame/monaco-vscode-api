@@ -70,7 +70,7 @@ export default ({
 
         await postcss([
           postcssUrl({
-            url: async (asset) => {
+            url: async (asset, dir) => {
               let fileName: string | undefined
               if (preserveAssetsRoot != null) {
                 fileName = path
@@ -78,12 +78,18 @@ export default ({
                   .replace(/^(\.\.\/)+/g, '')
               }
 
-              this.emitFile({
-                type: 'asset',
-                fileName,
-                source: await fs.promises.readFile(asset.absolutePath!),
-                needsCodeReference: false
-              })
+              const resolved = await this.resolve(
+                asset.url,
+                dir.file != null ? path.join(dir.file, 'unknownFile.css') : undefined
+              )
+              if (resolved != null && !resolved.external) {
+                this.emitFile({
+                  type: 'asset',
+                  fileName,
+                  source: await fs.promises.readFile(resolved.id),
+                  needsCodeReference: false
+                })
+              }
 
               return asset.url
             }

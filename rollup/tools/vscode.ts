@@ -346,10 +346,14 @@ function resolveVscode(importee: string, importer?: string) {
 export function resolveVscodePlugin(vscodeVersion?: string, vscodeCommit?: string): rollup.Plugin {
   return {
     name: 'resolve-vscode',
-    resolveId: (importeeUrl, importer) => {
+    resolveId(this: rollup.PluginContext, importeeUrl, importer) {
       const result = /^(.*?)(\?.*)?$/.exec(importeeUrl)!
       const importee = result[1]!
       const search = result[2] ?? ''
+
+      if (importee.endsWith('codicon.ttf')) {
+        return this.resolve('@vscode/codicons/dist/codicon.ttf')
+      }
 
       const resolved = resolveVscode(importee, importer)
 
