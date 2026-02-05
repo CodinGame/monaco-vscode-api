@@ -8,10 +8,10 @@ Subject: [PATCH] fix: ignore @vscode/tree-sitter-wasm until MS fixes it
  1 file changed, 1 insertion(+), 1 deletion(-)
 
 diff --git a/build/gulpfile.editor.ts b/build/gulpfile.editor.ts
-index 447b76fa16c..2593f626646 100644
+index 338c678b7de..4322e06aec5 100644
 --- a/build/gulpfile.editor.ts
 +++ b/build/gulpfile.editor.ts
-@@ -55,7 +55,7 @@ const extractEditorSrcTask = task.define('extract-editor-src', () => {
+@@ -63,7 +63,7 @@ const extractEditorSrcTask = task.define('extract-editor-src', () => {
  			'vs/base/common/marked/marked.js',
  		],
  		shakeLevel: 2, // 0-Files, 1-InnerFile, 2-ClassMembers

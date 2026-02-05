@@ -8,7 +8,7 @@ Subject: [PATCH] cleanup: remove code that we will run ourselves
  1 file changed, 20 deletions(-)
 
 diff --git a/src/vs/workbench/browser/workbench.ts b/src/vs/workbench/browser/workbench.ts
-index baae338937f..fbff9375f73 100644
+index 91ba0f472a6..7796aae8a15 100644
 --- a/src/vs/workbench/browser/workbench.ts
 +++ b/src/vs/workbench/browser/workbench.ts
 @@ -10,10 +10,7 @@ import { RunOnceScheduler, timeout } from '../../base/common/async.js';
@@ -40,7 +40,7 @@ index baae338937f..fbff9375f73 100644
  import { AccessibilityProgressSignalScheduler } from '../../platform/accessibilitySignal/browser/progressAccessibilitySignalScheduler.js';
  import { setProgressAccessibilitySignalScheduler } from '../../base/browser/ui/progressbar/progressAccessibilitySignal.js';
  import { AccessibleViewRegistry } from '../../platform/accessibility/browser/accessibleViewRegistry.js';
-@@ -137,7 +130,6 @@ export class Workbench extends Layout {
+@@ -142,7 +135,6 @@ export class Workbench extends Layout {
  				const storageService = accessor.get(IStorageService);
  				const configurationService = accessor.get(IConfigurationService);
  				const hostService = accessor.get(IHostService);
@@ -48,7 +48,7 @@ index baae338937f..fbff9375f73 100644
  				const dialogService = accessor.get(IDialogService);
  				const notificationService = accessor.get(INotificationService) as NotificationService;
  				const markdownRendererService = accessor.get(IMarkdownRendererService);
-@@ -145,21 +137,9 @@ export class Workbench extends Layout {
+@@ -150,21 +142,9 @@ export class Workbench extends Layout {
  				// Set code block renderer for markdown rendering
  				markdownRendererService.setDefaultCodeBlockRenderer(instantiationService.createInstance(EditorMarkdownCodeBlockRenderer));
  

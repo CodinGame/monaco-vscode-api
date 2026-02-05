@@ -4,6 +4,7 @@ import {
 } from 'vs/editor/standalone/browser/standaloneServices'
 import {
   ActivityBarPosition,
+  type IPartVisibilityChangeEvent,
   LayoutSettings,
   type PanelAlignment,
   Parts,
@@ -451,7 +452,7 @@ export class LayoutService extends Disposable implements ILayoutService, IWorkbe
     } else {
       this.hiddenParts.delete(part)
     }
-    this._onDidChangePartVisibility.fire()
+    this._onDidChangePartVisibility.fire({ partId: part, visible: !hidden })
 
     const location = (<Partial<Record<Parts, ViewContainerLocation>>>{
       [Parts.SIDEBAR_PART]: ViewContainerLocation.Sidebar,
@@ -521,7 +522,7 @@ export class LayoutService extends Disposable implements ILayoutService, IWorkbe
     return true
   }
 
-  private _onDidChangePartVisibility = new Emitter<void>()
+  private _onDidChangePartVisibility = new Emitter<IPartVisibilityChangeEvent>()
   onDidChangePartVisibility = this._onDidChangePartVisibility.event
 
   readonly offset: ILayoutOffsetInfo = { top: 0, quickPickTop: 0 }

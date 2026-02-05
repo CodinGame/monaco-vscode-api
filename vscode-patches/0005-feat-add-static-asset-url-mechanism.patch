@@ -25,7 +25,7 @@ index 83691e2de5a..359518360b6 100644
  		"vs/workbench/contrib/notebook/browser/view/renderers/webviewPreloads.ts",
  		"vs/workbench/services/keybinding/test/node/keyboardMapperTestUtils.ts"
 diff --git a/src/vs/base/common/network.ts b/src/vs/base/common/network.ts
-index e47b42672fb..b6b16332f5f 100644
+index 74cb106fd3c..9b53ba47e5f 100644
 --- a/src/vs/base/common/network.ts
 +++ b/src/vs/base/common/network.ts
 @@ -8,6 +8,8 @@ import * as platform from './platform.js';
@@ -37,7 +37,7 @@ index e47b42672fb..b6b16332f5f 100644
  
  export namespace Schemas {
  
-@@ -270,6 +272,20 @@ export const VSCODE_AUTHORITY = 'vscode-app';
+@@ -275,6 +277,20 @@ export const VSCODE_AUTHORITY = 'vscode-app';
  class FileAccessImpl {
  
  	private static readonly FALLBACK_AUTHORITY = VSCODE_AUTHORITY;
@@ -58,7 +58,7 @@ index e47b42672fb..b6b16332f5f 100644
  
  	/**
  	 * Returns a URI to use in contexts where the browser is responsible
-@@ -317,7 +333,7 @@ class FileAccessImpl {
+@@ -322,7 +338,7 @@ class FileAccessImpl {
  			});
  		}
  
@@ -67,7 +67,7 @@ index e47b42672fb..b6b16332f5f 100644
  	}
  
  	/**
-@@ -368,7 +384,20 @@ class FileAccessImpl {
+@@ -373,7 +389,20 @@ class FileAccessImpl {
  			return URI.file(modulePath);
  		}
  
@@ -108,10 +108,10 @@ index 4cfaf6a58cb..b7f63a0d276 100644
  
  class ExtensionHostProxy implements IExtensionHostProxy {
 diff --git a/src/vs/workbench/api/common/extHost.protocol.ts b/src/vs/workbench/api/common/extHost.protocol.ts
-index fa015c3f912..f047d29b62b 100644
+index 3ea06f3076a..4a47e80969d 100644
 --- a/src/vs/workbench/api/common/extHost.protocol.ts
 +++ b/src/vs/workbench/api/common/extHost.protocol.ts
-@@ -1661,6 +1661,7 @@ export interface MainThreadExtensionServiceShape extends IDisposable {
+@@ -1694,6 +1694,7 @@ export interface MainThreadExtensionServiceShape extends IDisposable {
  	$onExtensionRuntimeError(extensionId: ExtensionIdentifier, error: SerializedError): void;
  	$setPerformanceMarks(marks: performance.PerformanceMark[]): Promise<void>;
  	$asBrowserUri(uri: UriComponents): Promise<UriComponents>;

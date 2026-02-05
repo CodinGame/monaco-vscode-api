@@ -5,7 +5,7 @@ import {
   type IDynamicListEventMultiplexer
 } from 'vs/base/common/event'
 import { Disposable, type IDisposable } from 'vs/base/common/lifecycle'
-import { ResourceSet } from 'vs/base/common/map'
+import { ResourceMap, ResourceSet } from 'vs/base/common/map'
 import { constObservable } from 'vs/base/common/observable'
 import { OS } from 'vs/base/common/platform'
 import { joinPath } from 'vs/base/common/resources'
@@ -161,34 +161,34 @@ import {
 } from 'vs/workbench/browser/parts/editor/editor'
 import type { IViewContainerModel } from 'vs/workbench/common/views'
 import { IViewDescriptorService } from 'vs/workbench/common/views.service'
+import { IChatAttachmentResolveService } from 'vs/workbench/contrib/chat/browser/attachments/chatAttachmentResolveService.service'
+import { IChatContextPickService } from 'vs/workbench/contrib/chat/browser/attachments/chatContextPickService.service'
 import {
   IChatAccessibilityService,
   IChatCodeBlockContextProviderService,
   IChatWidgetService,
   IQuickChatService
 } from 'vs/workbench/contrib/chat/browser/chat.service'
-import { IChatAttachmentResolveService } from 'vs/workbench/contrib/chat/browser/attachments/chatAttachmentResolveService.service'
-import { IChatMarkdownAnchorService } from 'vs/workbench/contrib/chat/browser/widget/chatContentParts/chatMarkdownAnchorService.service'
-import { IChatContextPickService } from 'vs/workbench/contrib/chat/browser/attachments/chatContextPickService.service'
 import { IChatOutputRendererService } from 'vs/workbench/contrib/chat/browser/chatOutputItemRenderer.service'
+import { IChatMarkdownAnchorService } from 'vs/workbench/contrib/chat/browser/widget/chatContentParts/chatMarkdownAnchorService.service'
+import { IChatVariablesService } from 'vs/workbench/contrib/chat/common/attachments/chatVariables.service'
+import { IChatService } from 'vs/workbench/contrib/chat/common/chatService/chatService.service'
+import { IChatSessionsService } from 'vs/workbench/contrib/chat/common/chatSessionsService.service'
+import { ICodeMapperService } from 'vs/workbench/contrib/chat/common/editing/chatCodeMapperService.service'
+import { IChatEditingService } from 'vs/workbench/contrib/chat/common/editing/chatEditingService.service'
+import { ILanguageModelIgnoredFilesService } from 'vs/workbench/contrib/chat/common/ignoredFiles.service'
+import { ILanguageModelStatsService } from 'vs/workbench/contrib/chat/common/languageModelStats.service'
+import { ILanguageModelsService } from 'vs/workbench/contrib/chat/common/languageModels.service'
+import { IChatTransferService } from 'vs/workbench/contrib/chat/common/model/chatTransferService.service'
 import {
   IChatAgentNameService,
   IChatAgentService
 } from 'vs/workbench/contrib/chat/common/participants/chatAgents.service'
-import { ICodeMapperService } from 'vs/workbench/contrib/chat/common/editing/chatCodeMapperService.service'
-import { IChatEditingService } from 'vs/workbench/contrib/chat/common/editing/chatEditingService.service'
-import { IChatService } from 'vs/workbench/contrib/chat/common/chatService/chatService.service'
-import { IChatSessionsService } from 'vs/workbench/contrib/chat/common/chatSessionsService.service'
 import { IChatSlashCommandService } from 'vs/workbench/contrib/chat/common/participants/chatSlashCommands.service'
-import { IChatTodoListService } from 'vs/workbench/contrib/chat/common/tools/chatTodoListService.service'
-import { IChatTransferService } from 'vs/workbench/contrib/chat/common/model/chatTransferService.service'
-import { IChatVariablesService } from 'vs/workbench/contrib/chat/common/attachments/chatVariables.service'
-import { IChatWidgetHistoryService } from 'vs/workbench/contrib/chat/common/widget/chatWidgetHistoryService.service'
-import { ILanguageModelIgnoredFilesService } from 'vs/workbench/contrib/chat/common/ignoredFiles.service'
-import { ILanguageModelStatsService } from 'vs/workbench/contrib/chat/common/languageModelStats.service'
-import { ILanguageModelToolsService } from 'vs/workbench/contrib/chat/common/tools/languageModelToolsService.service'
-import { ILanguageModelsService } from 'vs/workbench/contrib/chat/common/languageModels.service'
 import { IPromptsService } from 'vs/workbench/contrib/chat/common/promptSyntax/service/promptsService.service'
+import { IChatTodoListService } from 'vs/workbench/contrib/chat/common/tools/chatTodoListService.service'
+import { ILanguageModelToolsService } from 'vs/workbench/contrib/chat/common/tools/languageModelToolsService.service'
+import { IChatWidgetHistoryService } from 'vs/workbench/contrib/chat/common/widget/chatWidgetHistoryService.service'
 import { ICommentService } from 'vs/workbench/contrib/comments/browser/commentService.service'
 import { ICustomEditorService } from 'vs/workbench/contrib/customEditor/common/customEditor.service'
 import type {
@@ -214,7 +214,6 @@ import {
   IIssueFormService,
   IWorkbenchIssueService
 } from 'vs/workbench/contrib/issue/common/issue.service'
-import { IDefaultLogLevelsService } from 'vs/workbench/services/log/common/defaultLogLevels.service'
 import { IMcpRegistry } from 'vs/workbench/contrib/mcp/common/mcpRegistryTypes.service'
 import {
   IMcpElicitationService,
@@ -361,6 +360,7 @@ import {
   IActiveLanguagePackService,
   ILocaleService
 } from 'vs/workbench/services/localization/common/locale.service'
+import { IDefaultLogLevelsService } from 'vs/workbench/services/log/common/defaultLogLevels.service'
 import { IWorkbenchMcpManagementService } from 'vs/workbench/services/mcp/common/mcpWorkbenchManagementService.service'
 import { INotebookDocumentService } from 'vs/workbench/services/notebook/common/notebookDocumentService.service'
 import { IOutlineService } from 'vs/workbench/services/outline/browser/outline.service'
@@ -413,6 +413,13 @@ import { IWorkspaceIdentityService } from 'vs/workbench/services/workspaces/comm
 import { IAiSettingsSearchService } from 'vscode/src/vs/workbench/services/aiSettingsSearch/common/aiSettingsSearch.service'
 
 import { Codicon } from 'vs/base/common/codicons'
+import { EditorWorkerService } from 'vs/editor/browser/services/editorWorkerService'
+import { IEditorWorkerService } from 'vs/editor/common/services/editorWorker.service'
+import type {
+  ContextKeyValue,
+  IContextKey,
+  IScopedContextKeyService
+} from 'vs/platform/contextkey/common/contextkey.js'
 import { NullDataChannelService } from 'vs/platform/dataChannel/common/dataChannel'
 import { IDataChannelService } from 'vs/platform/dataChannel/common/dataChannel.service'
 import { IDefaultAccountService } from 'vs/platform/defaultAccount/common/defaultAccount.service'
@@ -420,30 +427,35 @@ import { IImageResizeService } from 'vs/platform/imageResize/common/imageResizeS
 import { IMarkdownRendererService } from 'vs/platform/markdown/browser/markdownRenderer.service'
 import { McpGalleryManifestStatus } from 'vs/platform/mcp/common/mcpGalleryManifest'
 import { IMcpGalleryManifestService } from 'vs/platform/mcp/common/mcpGalleryManifest.service'
-import { IChatContextService } from 'vs/workbench/contrib/chat/browser/contextContrib/chatContextService.service'
+import type { IAgentSessionsModel } from 'vs/workbench/contrib/chat/browser/agentSessions/agentSessionsModel'
+import { IAgentSessionsService } from 'vs/workbench/contrib/chat/browser/agentSessions/agentSessionsService.service'
+import { IAgentSessionProjectionService } from 'vs/workbench/contrib/chat/browser/agentSessions/experiments/agentSessionProjectionService.service'
+import { AgentStatusMode } from 'vs/workbench/contrib/chat/browser/agentSessions/experiments/agentTitleBarStatusService.js'
+import { IAgentTitleBarStatusService } from 'vs/workbench/contrib/chat/browser/agentSessions/experiments/agentTitleBarStatusService.service'
+import { IChatEditingExplanationModelManager } from 'vs/workbench/contrib/chat/browser/chatEditing/chatEditingExplanationModelManager.service'
 import { IChatStatusItemService } from 'vs/workbench/contrib/chat/browser/chatStatus/chatStatusItemService.service'
-import { IChatLayoutService } from 'vs/workbench/contrib/chat/common/widget/chatLayoutService.service'
+import { IChatTipService } from 'vs/workbench/contrib/chat/browser/chatTipService.service.js'
+import { IChatContextService } from 'vs/workbench/contrib/chat/browser/contextContrib/chatContextService.service'
+import { IChatToolOutputStateCache } from 'vs/workbench/contrib/chat/browser/widget/chatContentParts/toolInvocationParts/chatToolOutputStateCache.service'
 import { IChatModeService } from 'vs/workbench/contrib/chat/common/chatModes.service'
+import { ILanguageModelsConfigurationService } from 'vs/workbench/contrib/chat/common/languageModelsConfiguration.service.js'
 import { ILanguageModelToolsConfirmationService } from 'vs/workbench/contrib/chat/common/tools/languageModelToolsConfirmationService.service'
 import {
   ToolDataSource,
   ToolSet,
   VSCodeToolReference
 } from 'vs/workbench/contrib/chat/common/tools/languageModelToolsService'
+import { IChatLayoutService } from 'vs/workbench/contrib/chat/common/widget/chatLayoutService.service'
 import { IRandomService } from 'vs/workbench/contrib/editTelemetry/browser/randomService.service'
 import { IAiEditTelemetryService } from 'vs/workbench/contrib/editTelemetry/browser/telemetry/aiEditTelemetry/aiEditTelemetryService.service'
 import { LazyCollectionState } from 'vs/workbench/contrib/mcp/common/mcpTypes'
 import { INotebookOutlineEntryFactory } from 'vs/workbench/contrib/notebook/browser/viewModel/notebookOutlineEntryFactory.service'
 import { ISCMRepositorySelectionMode } from 'vs/workbench/contrib/scm/common/scm'
 import { ChatEntitlement } from 'vs/workbench/services/chat/common/chatEntitlementService'
-import type { IInlineCompletionsUnificationState } from 'vs/workbench/services/inlineCompletions/common/inlineCompletionsUnification'
 import { IInlineCompletionsUnificationService } from 'vs/workbench/services/inlineCompletions/common/inlineCompletionsUnification.service'
-import { IAgentSessionsService } from 'vs/workbench/contrib/chat/browser/agentSessions/agentSessionsService.service'
-import type { IAgentSessionsModel } from 'vs/workbench/contrib/chat/browser/agentSessions/agentSessionsModel'
 import { IUserAttentionService } from 'vs/workbench/services/userAttention/common/userAttentionService.service'
 import { ICodeCompareModelService } from 'vs/workbench/contrib/chat/browser/widget/chatContentParts/chatTextEditContentPart.service'
-import { EditorWorkerService } from 'vs/editor/browser/services/editorWorkerService'
-import { IEditorWorkerService } from 'vs/editor/common/services/editorWorker.service'
+import { ITerminalSandboxService } from 'vs/workbench/contrib/terminalContrib/chatAgentTools/common/terminalSandboxService.service'
 import {
   getBuiltInExtensionTranslationsUris,
   getExtensionIdProvidingCurrentLocale
@@ -1484,6 +1496,14 @@ class WorkspaceTrustRequestService implements IWorkspaceTrustRequestService {
   requestWorkspaceTrust: IWorkspaceTrustRequestService['requestWorkspaceTrust'] = async () => true
   requestWorkspaceTrustOnStartup: IWorkspaceTrustRequestService['requestWorkspaceTrustOnStartup'] =
     () => null
+
+  onDidInitiateResourcesTrustRequest: IWorkspaceTrustRequestService['onDidInitiateResourcesTrustRequest'] =
+    Event.None
+  @Unsupported
+  completeResourcesTrustRequest: IWorkspaceTrustRequestService['completeResourcesTrustRequest'] =
+    unsupported
+  requestResourcesTrust: IWorkspaceTrustRequestService['requestResourcesTrust'] = async () =>
+    undefined
 }
 registerSingleton(
   IWorkspaceTrustRequestService,
@@ -2534,6 +2554,7 @@ class UpdateService implements IUpdateService {
   isLatestVersion: IUpdateService['isLatestVersion'] = async () => true
   @Unsupported
   _applySpecificUpdate: IUpdateService['_applySpecificUpdate'] = unsupported
+  disableProgressiveReleases: IUpdateService['disableProgressiveReleases'] = async () => {}
 }
 registerSingleton(IUpdateService, UpdateService, InstantiationType.Eager)
 class StatusbarService implements IStatusbarService {
@@ -3310,6 +3331,12 @@ class ChatService implements IChatService {
   setTitle: IChatService['setTitle'] = unsupported
   transferredSessionResource: IChatService['transferredSessionResource'] = undefined
   getSessionTitle: IChatService['getSessionTitle'] = () => undefined
+
+  onDidCreateModel: IChatService['onDidCreateModel'] = Event.None
+  onDidReceiveQuestionCarouselAnswer: IChatService['onDidReceiveQuestionCarouselAnswer'] =
+    Event.None
+  @Unsupported
+  notifyQuestionCarouselAnswer: IChatService['notifyQuestionCarouselAnswer'] = unsupported
 }
 registerSingleton(IChatService, ChatService, InstantiationType.Delayed)
 class ChatMarkdownAnchorService implements IChatMarkdownAnchorService {
@@ -4433,6 +4460,28 @@ class LanguageModelsService implements ILanguageModelsService {
   getVendors: ILanguageModelsService['getVendors'] = () => []
   registerLanguageModelProvider: ILanguageModelsService['registerLanguageModelProvider'] = () =>
     Disposable.None
+
+  onDidChangeLanguageModelVendors: ILanguageModelsService['onDidChangeLanguageModelVendors'] = () =>
+    Disposable.None
+  lookupLanguageModelByQualifiedName: ILanguageModelsService['lookupLanguageModelByQualifiedName'] =
+    () => undefined
+  getLanguageModelGroups: ILanguageModelsService['getLanguageModelGroups'] = () => []
+  @Unsupported
+  deltaLanguageModelChatProviderDescriptors: ILanguageModelsService['deltaLanguageModelChatProviderDescriptors'] =
+    unsupported
+
+  @Unsupported
+  addLanguageModelsProviderGroup: ILanguageModelsService['addLanguageModelsProviderGroup'] =
+    unsupported
+  @Unsupported
+  removeLanguageModelsProviderGroup: ILanguageModelsService['removeLanguageModelsProviderGroup'] =
+    unsupported
+  @Unsupported
+  configureLanguageModelsProviderGroup: ILanguageModelsService['configureLanguageModelsProviderGroup'] =
+    unsupported
+  @Unsupported
+  migrateLanguageModelsProviderGroup: ILanguageModelsService['migrateLanguageModelsProviderGroup'] =
+    unsupported
 }
 registerSingleton(ILanguageModelsService, LanguageModelsService, InstantiationType.Delayed)
 class ChatSlashCommandService implements IChatSlashCommandService {
@@ -4678,30 +4727,16 @@ registerSingleton(
 )
 class InlineChatSessionService implements IInlineChatSessionService {
   _serviceBrand: undefined
-  onDidMoveSession: IInlineChatSessionService['onDidMoveSession'] = Event.None
-  onDidStashSession: IInlineChatSessionService['onDidStashSession'] = Event.None
   @Unsupported
-  moveSession: IInlineChatSessionService['moveSession'] = unsupported
-  @Unsupported
-  getCodeEditor: IInlineChatSessionService['getCodeEditor'] = unsupported
-  @Unsupported
-  stashSession: IInlineChatSessionService['stashSession'] = unsupported
   onWillStartSession: IInlineChatSessionService['onWillStartSession'] = Event.None
-  onDidEndSession: IInlineChatSessionService['onDidEndSession'] = Event.None
   @Unsupported
   createSession: IInlineChatSessionService['createSession'] = unsupported
-  getSession: IInlineChatSessionService['getSession'] = () => undefined
-  @Unsupported
-  releaseSession: IInlineChatSessionService['releaseSession'] = unsupported
-  @Unsupported
-  registerSessionKeyComputer: IInlineChatSessionService['registerSessionKeyComputer'] = unsupported
   @Unsupported
   dispose: IInlineChatSessionService['dispose'] = unsupported
-  @Unsupported
-  createSession2: IInlineChatSessionService['createSession2'] = unsupported
-  getSession2: IInlineChatSessionService['getSession2'] = () => undefined
   onDidChangeSessions = Event.None
   getSessionBySessionUri: IInlineChatSessionService['getSessionBySessionUri'] = () => undefined
+
+  getSessionByTextModel: IInlineChatSessionService['getSessionBySessionUri'] = () => undefined
 }
 registerSingleton(IInlineChatSessionService, InlineChatSessionService, InstantiationType.Delayed)
 class NotebookEditorWorkerService implements INotebookEditorWorkerService {
@@ -5201,6 +5236,63 @@ class TrustedDomainService implements ITrustedDomainService {
   trustedDomains: ITrustedDomainService['trustedDomains'] = []
 }
 registerSingleton(ITrustedDomainService, TrustedDomainService, InstantiationType.Delayed)
+
+class FakeKeybindingContextKey<
+  T extends ContextKeyValue = ContextKeyValue
+> implements IContextKey<T> {
+  private _defaultValue: T | undefined
+  private _value: T | undefined
+
+  constructor(defaultValue: T | undefined) {
+    this._defaultValue = defaultValue
+    this._value = this._defaultValue
+  }
+
+  public set(value: T | undefined): void {
+    this._value = value
+  }
+
+  public reset(): void {
+    this._value = this._defaultValue
+  }
+
+  public get(): T | undefined {
+    return this._value
+  }
+}
+
+class FakeContextKeyService implements IContextKeyService, IScopedContextKeyService {
+  dispose: IScopedContextKeyService['dispose'] = () => {}
+
+  public _serviceBrand: undefined
+  private _keys = new Map<string, IContextKey>()
+
+  public createKey: IContextKeyService['createKey'] = <T extends ContextKeyValue = ContextKeyValue>(
+    key: string,
+    defaultValue: T | undefined
+  ): IContextKey<T> => {
+    const ret = new FakeKeybindingContextKey(defaultValue)
+    this._keys.set(key, ret)
+    return ret
+  }
+  public contextMatchesRules: IContextKeyService['contextMatchesRules'] = () => false
+  public onDidChangeContext: IContextKeyService['onDidChangeContext'] = Event.None
+  public bufferChangeEvents: IContextKeyService['bufferChangeEvents'] = (callback: () => void) => {
+    callback()
+  }
+  public getContextKeyValue: IContextKeyService['getContextKeyValue'] = <T>(key: string) => {
+    const value = this._keys.get(key)
+    if (value) {
+      return value.get() as T
+    }
+    return undefined
+  }
+  public getContext: IContextKeyService['getContext'] = () => ({ getValue: () => undefined })
+  public createScoped: IContextKeyService['createScoped'] = () => this
+  public createOverlay: IContextKeyService['createOverlay'] = () => this
+  updateParent: IContextKeyService['updateParent'] = () => {}
+}
+
 class LanguageModelToolsService implements ILanguageModelToolsService {
   _serviceBrand: undefined
   getTool: ILanguageModelToolsService['getTool'] = () => undefined
@@ -5237,22 +5329,40 @@ class LanguageModelToolsService implements ILanguageModelToolsService {
     'vscode',
     VSCodeToolReference.vscode,
     Codicon.tools,
-    ToolDataSource.Internal
+    ToolDataSource.Internal,
+    undefined,
+    undefined,
+    new FakeContextKeyService()
   )
 
   executeToolSet: ILanguageModelToolsService['executeToolSet'] = new ToolSet(
     'execute',
     VSCodeToolReference.vscode,
     Codicon.terminal,
-    ToolDataSource.Internal
+    ToolDataSource.Internal,
+    undefined,
+    undefined,
+    new FakeContextKeyService()
   )
   readToolSet: ILanguageModelToolsService['readToolSet'] = new ToolSet(
     'read',
     VSCodeToolReference.vscode,
     Codicon.eye,
-    ToolDataSource.Internal
+    ToolDataSource.Internal,
+    undefined,
+    undefined,
+    new FakeContextKeyService()
   )
-  toolsObservable: ILanguageModelToolsService['toolsObservable'] = constObservable([])
+  agentToolSet: ILanguageModelToolsService['agentToolSet'] = new ToolSet(
+    'read',
+    VSCodeToolReference.vscode,
+    Codicon.eye,
+    ToolDataSource.Internal,
+    undefined,
+    undefined,
+    new FakeContextKeyService()
+  )
+
   getFullReferenceNames: ILanguageModelToolsService['getFullReferenceNames'] = () => []
 
   getFullReferenceName: ILanguageModelToolsService['getFullReferenceName'] = (tool) =>
@@ -5263,6 +5373,16 @@ class LanguageModelToolsService implements ILanguageModelToolsService {
   getDeprecatedFullReferenceNames: ILanguageModelToolsService['getDeprecatedFullReferenceNames'] =
     () => new Map()
   toFullReferenceNames: ILanguageModelToolsService['toFullReferenceNames'] = () => []
+
+  onDidInvokeTool: ILanguageModelToolsService['onDidInvokeTool'] = Event.None
+  observeTools: ILanguageModelToolsService['observeTools'] = () => constObservable([])
+
+  getAllToolsIncludingDisabled: ILanguageModelToolsService['getAllToolsIncludingDisabled'] =
+    () => []
+  beginToolCall: ILanguageModelToolsService['beginToolCall'] = () => undefined
+  @Unsupported
+  updateToolStream: ILanguageModelToolsService['updateToolStream'] = unsupported
+  getToolSetsForModel: ILanguageModelToolsService['getToolSetsForModel'] = () => []
 }
 registerSingleton(ILanguageModelToolsService, LanguageModelToolsService, InstantiationType.Delayed)
 class IssueFormService implements IIssueFormService {
@@ -5292,12 +5412,6 @@ registerSingleton(ICodeMapperService, CodeMapperService, InstantiationType.Delay
 class ChatEditingService implements IChatEditingService {
   _serviceBrand: undefined
   editingSessionsObs: IChatEditingService['editingSessionsObs'] = constObservable([])
-  hasRelatedFilesProviders: IChatEditingService['hasRelatedFilesProviders'] = () => false
-  @Unsupported
-  registerRelatedFilesProvider: IChatEditingService['registerRelatedFilesProvider'] = () => {
-    return unsupported()
-  }
-  getRelatedFiles: IChatEditingService['getRelatedFiles'] = async () => undefined
   getEditingSession: IChatEditingService['getEditingSession'] = () => undefined
   @Unsupported
   startOrContinueGlobalEditingSession: IChatEditingService['startOrContinueGlobalEditingSession'] =
@@ -5466,7 +5580,7 @@ registerSingleton(IChatEntitlementService, ChatEntitlementsService, Instantiatio
 class PromptsService implements IPromptsService {
   _serviceBrand: undefined
   listPromptFiles: IPromptsService['listPromptFiles'] = async () => []
-  getSourceFolders: IPromptsService['getSourceFolders'] = () => []
+  getSourceFolders: IPromptsService['getSourceFolders'] = async () => []
   dispose: IPromptsService['dispose'] = (): void => {}
   resolvePromptSlashCommand: IPromptsService['resolvePromptSlashCommand'] = async () => undefined
   @Unsupported
@@ -5495,9 +5609,14 @@ class PromptsService implements IPromptsService {
 
   @Unsupported
   getPromptSlashCommandName: IPromptsService['getPromptSlashCommandName'] = unsupported
-  registerCustomAgentsProvider: IPromptsService['registerCustomAgentsProvider'] = () =>
-    Disposable.None
   findAgentSkills: IPromptsService['findAgentSkills'] = async () => undefined
+
+  getResolvedSourceFolders: IPromptsService['getResolvedSourceFolders'] = async () => []
+
+  @Unsupported
+  registerPromptFileProvider: IPromptsService['registerPromptFileProvider'] = unsupported
+  @Unsupported
+  getPromptDiscoveryInfo: IPromptsService['getPromptDiscoveryInfo'] = unsupported
 }
 registerSingleton(IPromptsService, PromptsService, InstantiationType.Eager)
 
@@ -5585,13 +5704,21 @@ registerSingleton(
 
 class NullDefaultAccountService extends Disposable implements IDefaultAccountService {
   declare _serviceBrand: undefined
+  onDidChangePolicyData: IDefaultAccountService['onDidChangePolicyData'] = Event.None
+  policyData: IDefaultAccountService['policyData'] = null
+  @Unsupported
+  getDefaultAccountAuthenticationProvider: IDefaultAccountService['getDefaultAccountAuthenticationProvider'] =
+    unsupported
+  @Unsupported
+  setDefaultAccountProvider: IDefaultAccountService['setDefaultAccountProvider'] = () => {}
+  refresh: IDefaultAccountService['refresh'] = async () => null
+  @Unsupported
+  signIn: IDefaultAccountService['signIn'] = unsupported
 
   readonly onDidChangeDefaultAccount: IDefaultAccountService['onDidChangeDefaultAccount'] =
     Event.None
 
   getDefaultAccount: IDefaultAccountService['getDefaultAccount'] = async () => null
-
-  setDefaultAccount: IDefaultAccountService['setDefaultAccount'] = () => {}
 }
 registerSingleton(IDefaultAccountService, NullDefaultAccountService, InstantiationType.Delayed)
 class DynamicAuthenticationProviderStorageService implements IDynamicAuthenticationProviderStorageService {
@@ -5896,7 +6023,6 @@ class ChatSessionsService implements IChatSessionsService {
   _serviceBrand: undefined
   onDidChangeInProgress: IChatSessionsService['onDidChangeInProgress'] = Event.None
   getAllChatSessionContributions: IChatSessionsService['getAllChatSessionContributions'] = () => []
-  getAllChatSessionItemProviders: IChatSessionsService['getAllChatSessionItemProviders'] = () => []
 
   @Unsupported
   reportInProgress: IChatSessionsService['reportInProgress'] = unsupported
@@ -5922,7 +6048,6 @@ class ChatSessionsService implements IChatSessionsService {
     undefined
   getInputPlaceholderForSessionType: IChatSessionsService['getInputPlaceholderForSessionType'] =
     () => undefined
-  getAllChatSessionItems: IChatSessionsService['getAllChatSessionItems'] = async () => []
 
   onDidChangeContentProviderSchemes: IChatSessionsService['onDidChangeContentProviderSchemes'] =
     Event.None
@@ -5948,8 +6073,6 @@ class ChatSessionsService implements IChatSessionsService {
   @Unsupported
   setOptionGroupsForSessionType: IChatSessionsService['setOptionGroupsForSessionType'] = unsupported
 
-  setOptionsChangeCallback: IChatSessionsService['setOptionsChangeCallback'] = () => {}
-
   @Unsupported
   notifySessionOptionsChange: IChatSessionsService['notifySessionOptionsChange'] = unsupported
 
@@ -5963,6 +6086,11 @@ class ChatSessionsService implements IChatSessionsService {
     undefined
 
   onDidChangeOptionGroups: IChatSessionsService['onDidChangeOptionGroups'] = Event.None
+
+  getChatSessionItems: IChatSessionsService['getChatSessionItems'] = async () => []
+  getCustomAgentTargetForSessionType: IChatSessionsService['getCustomAgentTargetForSessionType'] =
+    () => undefined
+  onRequestNotifyExtension: IChatSessionsService['onRequestNotifyExtension'] = Event.None
 }
 registerSingleton(IChatSessionsService, ChatSessionsService, InstantiationType.Delayed)
 
@@ -6011,7 +6139,7 @@ registerSingleton(IAiEditTelemetryService, AiEditTelemetryService, Instantiation
 
 class InlineCompletionsUnificationService implements IInlineCompletionsUnificationService {
   @Unsupported
-  get state(): IInlineCompletionsUnificationState {
+  get state(): IInlineCompletionsUnificationService['state'] {
     return unsupported()
   }
   onDidStateChange: IInlineCompletionsUnificationService['onDidStateChange'] = Event.None
@@ -6094,8 +6222,14 @@ class ChatContextService implements PublicMembers<IChatContextService> {
   _serviceBrand: undefined
 
   setChatContextProvider: IChatContextService['setChatContextProvider'] = () => {}
-  registerChatContextProvider: IChatContextService['registerChatContextProvider'] = () =>
-    Disposable.None
+  registerChatWorkspaceContextProvider: IChatContextService['registerChatWorkspaceContextProvider'] =
+    () => Disposable.None
+
+  registerChatExplicitContextProvider: IChatContextService['registerChatExplicitContextProvider'] =
+    () => Disposable.None
+
+  registerChatResourceContextProvider: IChatContextService['registerChatResourceContextProvider'] =
+    () => Disposable.None
 
   unregisterChatContextProvider: IChatContextService['unregisterChatContextProvider'] = () => {}
 
@@ -6106,6 +6240,11 @@ class ChatContextService implements PublicMembers<IChatContextService> {
   resolveChatContext: IChatContextService['resolveChatContext'] = async (context) => context
 
   dispose: IChatContextService['dispose'] = () => {}
+
+  setExecuteCommandCallback: IChatContextService['setExecuteCommandCallback'] = () => {}
+
+  @Unsupported
+  executeChatContextItemCommand: IChatContextService['executeChatContextItemCommand'] = unsupported
 }
 
 registerSingleton(IChatContextService, ChatContextService, InstantiationType.Delayed)
@@ -6154,11 +6293,19 @@ class TerminalChatService implements ITerminalChatService {
   hasChatSessionAutoApproval: ITerminalChatService['hasChatSessionAutoApproval'] = () => false
   addSessionAutoApproveRule: ITerminalChatService['addSessionAutoApproveRule'] = () => {}
   getSessionAutoApproveRules: ITerminalChatService['getSessionAutoApproveRules'] = () => ({})
+
+  getChatSessionResourceForInstance: ITerminalChatService['getChatSessionResourceForInstance'] =
+    () => undefined
+  continueInBackground: ITerminalChatService['continueInBackground'] = () => {}
+  onDidContinueInBackground: ITerminalChatService['onDidContinueInBackground'] = Event.None
 }
 
 registerSingleton(ITerminalChatService, TerminalChatService, InstantiationType.Delayed)
 
 class AgentSessionsModel implements IAgentSessionsModel {
+  onDidChangeSessionArchivedState: IAgentSessionsModel['onDidChangeSessionArchivedState'] =
+    Event.None
+  resolved: IAgentSessionsModel['resolved'] = false
   onWillResolve: IAgentSessionsModel['onWillResolve'] = Event.None
   onDidResolve: IAgentSessionsModel['onDidResolve'] = Event.None
   onDidChangeSessions: IAgentSessionsModel['onDidChangeSessions'] = Event.None
@@ -6196,3 +6343,127 @@ class CodeCompareModelService implements ICodeCompareModelService {
 }
 
 registerSingleton(ICodeCompareModelService, CodeCompareModelService, InstantiationType.Delayed)
+
+class AgentSessionProjectionService implements IAgentSessionProjectionService {
+  _serviceBrand: undefined
+
+  isActive: IAgentSessionProjectionService['isActive'] = false
+  activeSession: IAgentSessionProjectionService['activeSession'] = undefined
+  onDidChangeProjectionMode: IAgentSessionProjectionService['onDidChangeProjectionMode'] =
+    Event.None
+  onDidChangeActiveSession: IAgentSessionProjectionService['onDidChangeActiveSession'] = Event.None
+
+  @Unsupported
+  enterProjection: IAgentSessionProjectionService['enterProjection'] = unsupported
+
+  @Unsupported
+  exitProjection: IAgentSessionProjectionService['exitProjection'] = unsupported
+}
+
+registerSingleton(
+  IAgentSessionProjectionService,
+  AgentSessionProjectionService,
+  InstantiationType.Delayed
+)
+
+class AgentTitleBarStatusService implements IAgentTitleBarStatusService {
+  _serviceBrand: undefined
+  mode: IAgentTitleBarStatusService['mode'] = AgentStatusMode.Default
+  sessionInfo: IAgentTitleBarStatusService['sessionInfo'] = undefined
+  onDidChangeMode: IAgentTitleBarStatusService['onDidChangeMode'] = Event.None
+  onDidChangeSessionInfo: IAgentTitleBarStatusService['onDidChangeSessionInfo'] = Event.None
+  @Unsupported
+  enterSessionMode: IAgentTitleBarStatusService['enterSessionMode'] = unsupported
+  @Unsupported
+  enterSessionReadyMode: IAgentTitleBarStatusService['enterSessionReadyMode'] = unsupported
+  @Unsupported
+  exitSessionReadyMode: IAgentTitleBarStatusService['exitSessionReadyMode'] = unsupported
+  @Unsupported
+  exitSessionMode: IAgentTitleBarStatusService['exitSessionMode'] = unsupported
+  @Unsupported
+  updateSessionTitle: IAgentTitleBarStatusService['updateSessionTitle'] = unsupported
+}
+
+registerSingleton(
+  IAgentTitleBarStatusService,
+  AgentTitleBarStatusService,
+  InstantiationType.Delayed
+)
+
+class LanguageModelsConfigurationService implements ILanguageModelsConfigurationService {
+  _serviceBrand: undefined
+  @Unsupported
+  get configurationFile(): ILanguageModelsConfigurationService['configurationFile'] {
+    return unsupported()
+  }
+  onDidChangeLanguageModelGroups: ILanguageModelsConfigurationService['onDidChangeLanguageModelGroups'] =
+    Event.None
+
+  getLanguageModelsProviderGroups: ILanguageModelsConfigurationService['getLanguageModelsProviderGroups'] =
+    () => []
+  @Unsupported
+  addLanguageModelsProviderGroup: ILanguageModelsConfigurationService['addLanguageModelsProviderGroup'] =
+    unsupported
+  @Unsupported
+  updateLanguageModelsProviderGroup: ILanguageModelsConfigurationService['updateLanguageModelsProviderGroup'] =
+    unsupported
+  @Unsupported
+  removeLanguageModelsProviderGroup: ILanguageModelsConfigurationService['removeLanguageModelsProviderGroup'] =
+    unsupported
+  @Unsupported
+  configureLanguageModels: ILanguageModelsConfigurationService['configureLanguageModels'] =
+    unsupported
+}
+
+registerSingleton(
+  ILanguageModelsConfigurationService,
+  LanguageModelsConfigurationService,
+  InstantiationType.Delayed
+)
+
+class ChatTipService implements IChatTipService {
+  _serviceBrand: undefined
+
+  getNextTip: IChatTipService['getNextTip'] = () => undefined
+}
+
+registerSingleton(IChatTipService, ChatTipService, InstantiationType.Delayed)
+
+class ChatEditingExplanationModelManager implements IChatEditingExplanationModelManager {
+  _serviceBrand: undefined
+
+  state: IChatEditingExplanationModelManager['state'] = constObservable(new ResourceMap())
+
+  @Unsupported
+  generateExplanations: IChatEditingExplanationModelManager['generateExplanations'] = unsupported
+}
+
+registerSingleton(
+  IChatEditingExplanationModelManager,
+  ChatEditingExplanationModelManager,
+  InstantiationType.Delayed
+)
+
+class ChatToolOutputStateCache implements IChatToolOutputStateCache {
+  _serviceBrand: undefined
+  get: IChatToolOutputStateCache['get'] = () => undefined
+  set: IChatToolOutputStateCache['set'] = () => {}
+}
+
+registerSingleton(IChatToolOutputStateCache, ChatToolOutputStateCache, InstantiationType.Delayed)
+
+class TerminalSandboxService implements ITerminalSandboxService {
+  _serviceBrand: undefined
+  isEnabled: ITerminalSandboxService['isEnabled'] = async () => false
+  getSandboxConfigPath: ITerminalSandboxService['getSandboxConfigPath'] = async () => undefined
+  getTempDir: ITerminalSandboxService['getTempDir'] = () => undefined
+
+  @Unsupported
+  wrapCommand: ITerminalSandboxService['wrapCommand'] = unsupported
+
+  @Unsupported
+  setNeedsForceUpdateConfigFile: ITerminalSandboxService['setNeedsForceUpdateConfigFile'] =
+    unsupported
+}
+
+registerSingleton(ITerminalSandboxService, TerminalSandboxService, InstantiationType.Delayed)

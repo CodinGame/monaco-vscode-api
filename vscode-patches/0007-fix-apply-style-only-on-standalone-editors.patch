@@ -80,18 +80,18 @@ index 8196bcd7174..d466efb1777 100644
  	public static validateOptions(options: IEditorOptions): ValidatedEditorOptions {
  		const result = new ValidatedEditorOptions();
 diff --git a/src/vs/editor/browser/widget/codeEditor/codeEditorWidget.ts b/src/vs/editor/browser/widget/codeEditor/codeEditorWidget.ts
-index 6687e50593d..603d3ae12bd 100644
+index 174eea21c6a..28797d2feba 100644
 --- a/src/vs/editor/browser/widget/codeEditor/codeEditorWidget.ts
 +++ b/src/vs/editor/browser/widget/codeEditor/codeEditorWidget.ts
-@@ -285,6 +285,7 @@ export class CodeEditorWidget extends Disposable implements editorBrowser.ICodeE
+@@ -295,6 +295,7 @@ export class CodeEditorWidget extends Disposable implements editorBrowser.ICodeE
  
  		this._configuration = this._register(this._createConfiguration(codeEditorWidgetOptions.isSimpleWidget || false,
  			codeEditorWidgetOptions.contextMenuId ?? (codeEditorWidgetOptions.isSimpleWidget ? MenuId.SimpleEditorContext : MenuId.EditorContext),
 +			codeEditorWidgetOptions.isStandaloneEditor || false,
  			options, accessibilityService));
+ 		this._domElement.style?.setProperty('--editor-font-size', this._configuration.options.get(EditorOption.fontSize) + 'px');
  		this._register(this._configuration.onDidChange((e) => {
- 			this._onDidChangeConfiguration.fire(e);
-@@ -393,8 +394,8 @@ export class CodeEditorWidget extends Disposable implements editorBrowser.ICodeE
+@@ -407,8 +408,8 @@ export class CodeEditorWidget extends Disposable implements editorBrowser.ICodeE
  		this._modelData?.view.writeScreenReaderContent(reason);
  	}
  
@@ -102,7 +102,7 @@ index 6687e50593d..603d3ae12bd 100644
  	}
  
  	public getId(): string {
-@@ -2053,6 +2054,12 @@ export interface ICodeEditorWidgetOptions {
+@@ -2088,6 +2089,12 @@ export interface ICodeEditorWidgetOptions {
  	 */
  	isSimpleWidget?: boolean;
  

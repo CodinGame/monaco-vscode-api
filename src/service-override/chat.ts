@@ -78,6 +78,20 @@ import { AgentSessionsService } from 'vs/workbench/contrib/chat/browser/agentSes
 import { ChatWidgetService } from 'vs/workbench/contrib/chat/browser/widget/chatWidgetService'
 import { ICodeCompareModelService } from 'vs/workbench/contrib/chat/browser/widget/chatContentParts/chatTextEditContentPart.service'
 import { CodeCompareModelService } from 'vs/workbench/contrib/chat/browser/widget/chatContentParts/chatTextEditContentPart'
+import { IAgentSessionProjectionService } from 'vs/workbench/contrib/chat/browser/agentSessions/experiments/agentSessionProjectionService.service'
+import { IAgentTitleBarStatusService } from 'vs/workbench/contrib/chat/browser/agentSessions/experiments/agentTitleBarStatusService.service'
+import { ILanguageModelsConfigurationService } from 'vs/workbench/contrib/chat/common/languageModelsConfiguration.service'
+import { IChatTipService } from 'vs/workbench/contrib/chat/browser/chatTipService.service'
+import { IChatEditingExplanationModelManager } from 'vs/workbench/contrib/chat/browser/chatEditing/chatEditingExplanationModelManager.service'
+import { IChatToolOutputStateCache } from 'vs/workbench/contrib/chat/browser/widget/chatContentParts/toolInvocationParts/chatToolOutputStateCache.service'
+import { AgentSessionProjectionService } from 'vs/workbench/contrib/chat/browser/agentSessions/experiments/agentSessionProjectionService'
+import { AgentTitleBarStatusService } from 'vs/workbench/contrib/chat/browser/agentSessions/experiments/agentTitleBarStatusService'
+import { LanguageModelsConfigurationService } from 'vs/workbench/contrib/chat/browser/languageModelsConfigurationService'
+import { ChatTipService } from 'vs/workbench/contrib/chat/browser/chatTipService'
+import { ChatEditingExplanationModelManager } from 'vs/workbench/contrib/chat/browser/chatEditing/chatEditingExplanationModelManager'
+import { ChatToolOutputStateCache } from 'vs/workbench/contrib/chat/browser/widget/chatContentParts/toolInvocationParts/chatToolOutputStateCache'
+import { ITerminalSandboxService } from 'vs/workbench/contrib/terminalContrib/chatAgentTools/common/terminalSandboxService.service'
+import { TerminalSandboxService } from 'vs/workbench/contrib/terminalContrib/chatAgentTools/common/terminalSandboxService'
 import 'vs/workbench/contrib/chat/browser/chat.contribution'
 import 'vs/workbench/contrib/terminal/terminal.chat.contribution'
 import 'vs/workbench/contrib/inlineChat/browser/inlineChat.contribution'
@@ -160,6 +174,29 @@ export default function getServiceOverride(): IEditorOverrideServices {
     [IChatContextService.toString()]: new SyncDescriptor(ChatContextService, [], true),
     [ITerminalChatService.toString()]: new SyncDescriptor(TerminalChatService, [], true),
     [IAgentSessionsService.toString()]: new SyncDescriptor(AgentSessionsService, [], true),
-    [ICodeCompareModelService.toString()]: new SyncDescriptor(CodeCompareModelService, [], true)
+    [ICodeCompareModelService.toString()]: new SyncDescriptor(CodeCompareModelService, [], true),
+    [IAgentSessionProjectionService.toString()]: new SyncDescriptor(
+      AgentSessionProjectionService,
+      [],
+      true
+    ),
+    [IAgentTitleBarStatusService.toString()]: new SyncDescriptor(
+      AgentTitleBarStatusService,
+      [],
+      true
+    ),
+    [ILanguageModelsConfigurationService.toString()]: new SyncDescriptor(
+      LanguageModelsConfigurationService,
+      [],
+      true
+    ),
+    [IChatTipService.toString()]: new SyncDescriptor(ChatTipService, [], true),
+    [IChatEditingExplanationModelManager.toString()]: new SyncDescriptor(
+      ChatEditingExplanationModelManager,
+      [],
+      true
+    ),
+    [IChatToolOutputStateCache.toString()]: new SyncDescriptor(ChatToolOutputStateCache, [], true),
+    [ITerminalSandboxService.toString()]: new SyncDescriptor(TerminalSandboxService, [], true)
   }
 }

@@ -4,42 +4,51 @@ Date: Tue, 16 Apr 2024 15:06:48 +0200
 Subject: [PATCH] refactor: split workbench contribution
 
 ---
- .../api/browser/extensionHost.contribution.ts | 29 -------------------
- .../api/browser/statusBarExtensionPoint.ts    | 16 +++++++++-
- .../common/jsonValidationExtensionPoint.ts    | 15 ++++++++++
- .../languageConfigurationExtensionPoint.ts    | 15 ++++++++++
- .../themes/common/colorExtensionPoint.ts      | 15 ++++++++++
- .../themes/common/iconExtensionPoint.ts       | 15 ++++++++++
- .../tokenClassificationExtensionPoint.ts      | 12 ++++++++
+ .../api/browser/extensionHost.contribution.ts | 36 ++++---------------
+ .../api/browser/statusBarExtensionPoint.ts    | 16 ++++++++-
+ .../common/jsonValidationExtensionPoint.ts    | 15 ++++++++
+ .../languageConfigurationExtensionPoint.ts    | 15 ++++++++
+ .../themes/browser/cssExtensionPoint.ts       | 15 ++++++++
+ .../themes/common/colorExtensionPoint.ts      | 15 ++++++++
+ .../themes/common/iconExtensionPoint.ts       | 15 ++++++++
+ .../tokenClassificationExtensionPoint.ts      | 12 +++++++
  src/vs/workbench/workbench.common.main.ts     |  6 ++++
- 8 files changed, 93 insertions(+), 30 deletions(-)
+ 9 files changed, 115 insertions(+), 30 deletions(-)
 
 diff --git a/src/vs/workbench/api/browser/extensionHost.contribution.ts b/src/vs/workbench/api/browser/extensionHost.contribution.ts
-index 31f148f2024..1548e678c0b 100644
+index bfb284d9511..4e64e56391d 100644
 --- a/src/vs/workbench/api/browser/extensionHost.contribution.ts
 +++ b/src/vs/workbench/api/browser/extensionHost.contribution.ts
-@@ -3,17 +3,6 @@
+@@ -3,17 +3,15 @@
   *  Licensed under the MIT License. See License.txt in the project root for license information.
   *--------------------------------------------------------------------------------------------*/
  
 -import { IWorkbenchContribution, WorkbenchPhase, registerWorkbenchContribution2 } from '../../common/contributions.js';
 -import { IInstantiationService } from '../../../platform/instantiation/common/instantiation.js';
--
--// --- other interested parties
+ 
+ // --- other interested parties
 -import { JSONValidationExtensionPoint } from '../common/jsonValidationExtensionPoint.js';
 -import { ColorExtensionPoint } from '../../services/themes/common/colorExtensionPoint.js';
 -import { IconExtensionPoint } from '../../services/themes/common/iconExtensionPoint.js';
 -import { TokenClassificationExtensionPoints } from '../../services/themes/common/tokenClassificationExtensionPoint.js';
 -import { LanguageConfigurationFileHandler } from '../../contrib/codeEditor/common/languageConfigurationExtensionPoint.js';
 -import { StatusBarItemsExtensionPoint } from './statusBarExtensionPoint.js';
--
+-import { CSSExtensionPoint } from '../../services/themes/browser/cssExtensionPoint.js';
++import '../common/jsonValidationExtensionPoint.js';
++import '../../services/themes/common/colorExtensionPoint.js';
++import '../../services/themes/common/iconExtensionPoint.js';
++import '../../services/themes/common/tokenClassificationExtensionPoint.js';
++import '../../contrib/codeEditor/common/languageConfigurationExtensionPoint.js';
++import './statusBarExtensionPoint.js';
++import '../../services/themes/browser/cssExtensionPoint.js';
+ 
  // --- mainThread participants
  import './mainThreadLocalization.js';
- import './mainThreadBulkEdits.js';
-@@ -96,21 +85,3 @@ import './mainThreadChatOutputRenderer.js';
+@@ -96,23 +94,3 @@ import './mainThreadChatStatus.js';
+ import './mainThreadChatOutputRenderer.js';
  import './mainThreadChatSessions.js';
  import './mainThreadDataChannels.js';
- 
+-
 -export class ExtensionPoints implements IWorkbenchContribution {
 -
 -	static readonly ID = 'workbench.contrib.extensionPoints';
@@ -54,6 +63,7 @@ index 31f148f2024..1548e678c0b 100644
 -		this.instantiationService.createInstance(TokenClassificationExtensionPoints);
 -		this.instantiationService.createInstance(LanguageConfigurationFileHandler);
 -		this.instantiationService.createInstance(StatusBarItemsExtensionPoint);
+-		this.instantiationService.createInstance(CSSExtensionPoint);
 -	}
 -}
 -
@@ -156,6 +166,36 @@ index 9b12b00eb96..fb720cb8c0c 100644
 +}
 +
 +registerWorkbenchContribution2(LanguageConfigurationWorkbenchContribution.ID, LanguageConfigurationWorkbenchContribution, WorkbenchPhase.BlockStartup);
+diff --git a/src/vs/workbench/services/themes/browser/cssExtensionPoint.ts b/src/vs/workbench/services/themes/browser/cssExtensionPoint.ts
+index cdeca23bd2d..098f1357e6f 100644
+--- a/src/vs/workbench/services/themes/browser/cssExtensionPoint.ts
++++ b/src/vs/workbench/services/themes/browser/cssExtensionPoint.ts
+@@ -16,6 +16,8 @@ import { createLinkElement } from '../../../../base/browser/dom.js';
+ import { IWorkbenchThemeService } from '../common/workbenchThemeService.js';
+ import { IStorageService, StorageScope, StorageTarget } from '../../../../platform/storage/common/storage.js';
+ import { ExtensionIdentifier } from '../../../../platform/extensions/common/extensions.js';
++import { IWorkbenchContribution, registerWorkbenchContribution2, WorkbenchPhase } from '../../../common/contributions.js';
++import { IInstantiationService } from '../../../../platform/instantiation/common/instantiation.js';
+ 
+ interface ICSSExtensionPoint {
+ 	path: string;
+@@ -326,3 +328,16 @@ export class CSSExtensionPoint {
+ 		this.disposables.dispose();
+ 	}
+ }
++
++class TokenClassificationExtensionPointWorkbenchContribution implements IWorkbenchContribution {
++
++	static readonly ID = 'workbench.contrib.cssExtensionPoint';
++
++	constructor(
++		@IInstantiationService private readonly instantiationService: IInstantiationService
++	) {
++		this.instantiationService.createInstance(CSSExtensionPoint);
++	}
++}
++
++registerWorkbenchContribution2(TokenClassificationExtensionPointWorkbenchContribution.ID, TokenClassificationExtensionPointWorkbenchContribution, WorkbenchPhase.BlockStartup);
 diff --git a/src/vs/workbench/services/themes/common/colorExtensionPoint.ts b/src/vs/workbench/services/themes/common/colorExtensionPoint.ts
 index b392cc8614f..bc4df0624f8 100644
 --- a/src/vs/workbench/services/themes/common/colorExtensionPoint.ts
@@ -246,7 +286,7 @@ index d78e65afc3f..56bd057fb3e 100644
 +
 +registerWorkbenchContribution2(TokenClassificationExtensionPointWorkbenchContribution.ID, TokenClassificationExtensionPointWorkbenchContribution, WorkbenchPhase.BlockStartup);
 diff --git a/src/vs/workbench/workbench.common.main.ts b/src/vs/workbench/workbench.common.main.ts
-index e7c16a7de53..f5c09592125 100644
+index 928085d2f93..aa238ed1a4f 100644
 --- a/src/vs/workbench/workbench.common.main.ts
 +++ b/src/vs/workbench/workbench.common.main.ts
 @@ -35,6 +35,12 @@ import './browser/actions/widgetNavigationCommands.js';

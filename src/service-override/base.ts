@@ -37,6 +37,8 @@ import { MarkdownRendererService } from 'vs/platform/markdown/browser/markdownRe
 import { IUserAttentionService } from 'vs/workbench/services/userAttention/common/userAttentionService.service'
 import { UserAttentionService } from 'vs/workbench/services/userAttention/browser/userAttentionBrowser'
 import { EditorWorkerService } from 'vs/editor/browser/services/editorWorkerService'
+import { IRenameSymbolTrackerService } from 'vs/editor/browser/services/renameSymbolTrackerService.service'
+import { RenameSymbolTrackerService } from 'vs/workbench/contrib/inlineCompletions/browser/renameSymbolTrackerService'
 
 class BrowserPathServiceOverride extends AbstractPathService {
   constructor(
@@ -74,6 +76,11 @@ export default function getServiceOverride(): IEditorOverrideServices {
       true
     ),
     [IMarkdownRendererService.toString()]: new SyncDescriptor(MarkdownRendererService, [], true),
-    [IUserAttentionService.toString()]: new SyncDescriptor(UserAttentionService, [], true)
+    [IUserAttentionService.toString()]: new SyncDescriptor(UserAttentionService, [], true),
+    [IRenameSymbolTrackerService.toString()]: new SyncDescriptor(
+      RenameSymbolTrackerService,
+      [],
+      true
+    )
   }
 }

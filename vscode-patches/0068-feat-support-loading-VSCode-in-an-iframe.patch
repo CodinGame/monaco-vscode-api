@@ -84,10 +84,10 @@ index d7c129abb27..a2895879194 100644
 +	pointerEvents: mainWindow.PointerEvent && ('ontouchstart' in mainWindow || mainWindow.navigator.maxTouchPoints > 0)
  };
 diff --git a/src/vs/base/browser/dom.ts b/src/vs/base/browser/dom.ts
-index d93fb73451c..1bb5078f1ff 100644
+index 0e5f5c01565..094448447e4 100644
 --- a/src/vs/base/browser/dom.ts
 +++ b/src/vs/base/browser/dom.ts
-@@ -1072,68 +1072,55 @@ function createHeadElement<K extends keyof HTMLElementTagNameMap>(tagName: K, co
+@@ -1226,68 +1226,55 @@ function createHeadElement<K extends keyof HTMLElementTagNameMap>(tagName: K, co
  }
  
  export function isHTMLElement(e: unknown): e is HTMLElement {
@@ -170,11 +170,11 @@ index d93fb73451c..1bb5078f1ff 100644
  
  export const EventType = {
 diff --git a/src/vs/base/browser/domStylesheets.ts b/src/vs/base/browser/domStylesheets.ts
-index 0782c211144..61e4c36505d 100644
+index 3da2ba1f9dd..e6434f61cfa 100644
 --- a/src/vs/base/browser/domStylesheets.ts
 +++ b/src/vs/base/browser/domStylesheets.ts
 @@ -6,7 +6,7 @@
- import { DisposableStore, toDisposable, IDisposable } from '../common/lifecycle.js';
+ import { DisposableStore, toDisposable, IDisposable, Disposable } from '../common/lifecycle.js';
  import { autorun, IObservable } from '../common/observable.js';
  import { isFirefox } from './browser.js';
 -import { getWindows, sharedMutationObserver } from './dom.js';
@@ -182,7 +182,7 @@ index 0782c211144..61e4c36505d 100644
  import { mainWindow } from './window.js';
  
  const globalStylesheets = new Map<HTMLStyleElement /* main stylesheet */, Set<HTMLStyleElement /* aux window clones that track the main stylesheet */>>();
-@@ -50,7 +50,7 @@ class WrappedStyleElement {
+@@ -42,7 +42,7 @@ class WrappedStyleElement extends Disposable {
  export let shadowRootContainer: ShadowRoot | undefined;
  export function setContainerElement(container: HTMLElement) {
  	const root = container.getRootNode();
@@ -213,10 +213,10 @@ index 2f8c99ff327..f061a5f93ef 100644
  			shouldFactorDPR = chromeMajorVersion <= 122;
  		}
 diff --git a/src/vs/base/browser/touch.ts b/src/vs/base/browser/touch.ts
-index ac526347c90..b71cc9c348a 100644
+index 8e857e292df..721cd5fd2d7 100644
 --- a/src/vs/base/browser/touch.ts
 +++ b/src/vs/base/browser/touch.ts
-@@ -126,7 +126,7 @@ export class Gesture extends Disposable {
+@@ -129,7 +129,7 @@ export class Gesture extends Disposable {
  	static isTouchDevice(): boolean {
  		// `'ontouchstart' in window` always evaluates to true with typescript's modern typings. This causes `window` to be
  		// `never` later in `window.navigator`. That's why we need the explicit `window as Window` cast
@@ -224,7 +224,7 @@ index ac526347c90..b71cc9c348a 100644
 +		return 'ontouchstart' in mainWindow || mainWindow.navigator.maxTouchPoints > 0;
  	}
  
- 	public override dispose(): void {
+ 	/**
 diff --git a/src/vs/base/browser/window.ts b/src/vs/base/browser/window.ts
 index ab920e18349..ab318ad411d 100644
 --- a/src/vs/base/browser/window.ts
@@ -289,7 +289,7 @@ index 09e68a80be8..789609790c9 100644
  			device: this._device,
  			format: presentationFormat,
 diff --git a/src/vs/editor/browser/viewParts/viewLinesGpu/viewLinesGpu.ts b/src/vs/editor/browser/viewParts/viewLinesGpu/viewLinesGpu.ts
-index 55ddb01f83d..7272069d931 100644
+index 53d6115a495..bf76e9bccb1 100644
 --- a/src/vs/editor/browser/viewParts/viewLinesGpu/viewLinesGpu.ts
 +++ b/src/vs/editor/browser/viewParts/viewLinesGpu/viewLinesGpu.ts
 @@ -30,6 +30,7 @@ import { FullFileRenderStrategy } from '../../gpu/renderStrategy/fullFileRenderS
@@ -300,7 +300,7 @@ index 55ddb01f83d..7272069d931 100644
  
  const enum GlyphStorageBufferInfo {
  	FloatsPerEntry = 2 + 2 + 2,
-@@ -114,7 +115,7 @@ export class ViewLinesGpu extends ViewPart implements IViewLines {
+@@ -120,7 +121,7 @@ export class ViewLinesGpu extends ViewPart implements IViewLines {
  			this._renderStrategy.value!.reset();
  		}));
  
@@ -310,7 +310,7 @@ index 55ddb01f83d..7272069d931 100644
  			device: this._device,
  			format: presentationFormat,
 diff --git a/src/vs/editor/contrib/clipboard/browser/clipboard.ts b/src/vs/editor/contrib/clipboard/browser/clipboard.ts
-index 59079079e51..8616a534479 100644
+index 376399368a6..82d0d52c13a 100644
 --- a/src/vs/editor/contrib/clipboard/browser/clipboard.ts
 +++ b/src/vs/editor/contrib/clipboard/browser/clipboard.ts
 @@ -5,6 +5,7 @@
@@ -378,10 +378,10 @@ index cad70612060..0c9266f2b8e 100644
  					sendErrorNow(new RemoteAuthorityResolverError('Browser is offline', RemoteAuthorityResolverErrorCode.TemporarilyNotAvailable, e));
  				} else {
 diff --git a/src/vs/workbench/browser/window.ts b/src/vs/workbench/browser/window.ts
-index 63dfbb43d35..d18dd762ba8 100644
+index bff3f2cf1b0..3a62a16bdf2 100644
 --- a/src/vs/workbench/browser/window.ts
 +++ b/src/vs/workbench/browser/window.ts
-@@ -113,13 +113,22 @@ export abstract class BaseWindow extends Disposable {
+@@ -114,13 +114,22 @@ export abstract class BaseWindow extends Disposable {
  		// to throttle timeouts in minimized windows, so with this we can ensure the
  		// timeout is scheduled without being throttled (unless all windows are minimized).
  
@@ -409,7 +409,7 @@ index 63dfbb43d35..d18dd762ba8 100644
  			if (dom.getWindowsCount() === 1 || typeof handler === 'string' || timeout === 0 /* immediates are never throttled */) {
  				return originalSetTimeout.apply(this, [handler, timeout, ...args]);
  			}
-@@ -142,7 +151,7 @@ export abstract class BaseWindow extends Disposable {
+@@ -143,7 +152,7 @@ export abstract class BaseWindow extends Disposable {
  				// this can happen for timeouts on unfocused windows
  				let didClear = false;
  
@@ -418,7 +418,7 @@ index 63dfbb43d35..d18dd762ba8 100644
  					if (didClear) {
  						return;
  					}
-@@ -151,7 +160,7 @@ export abstract class BaseWindow extends Disposable {
+@@ -152,7 +161,7 @@ export abstract class BaseWindow extends Disposable {
  
  				const timeoutDisposable = toDisposable(() => {
  					didClear = true;
@@ -427,7 +427,7 @@ index 63dfbb43d35..d18dd762ba8 100644
  					timeoutDisposables.delete(timeoutDisposable);
  				});
  
-@@ -162,7 +171,7 @@ export abstract class BaseWindow extends Disposable {
+@@ -163,7 +172,7 @@ export abstract class BaseWindow extends Disposable {
  			return timeoutHandle;
  		};
  
@@ -492,7 +492,7 @@ index 66108502b91..f90c7df5714 100644
  
  		this._register(this.extensionService.onDidChangeExtensions(async (result) => {
 diff --git a/src/vs/workbench/services/extensions/browser/webWorkerExtensionHost.ts b/src/vs/workbench/services/extensions/browser/webWorkerExtensionHost.ts
-index 8923f60df04..d5b9ba9dab5 100644
+index 36d56e3a1b1..805d9468a52 100644
 --- a/src/vs/workbench/services/extensions/browser/webWorkerExtensionHost.ts
 +++ b/src/vs/workbench/services/extensions/browser/webWorkerExtensionHost.ts
 @@ -206,7 +206,7 @@ export class WebWorkerExtensionHost extends Disposable implements IExtensionHost
@@ -533,10 +533,10 @@ index c7a1701276f..d368ba0e6af 100644
  				video: true
  			});
 diff --git a/src/vs/workbench/services/keybinding/browser/keybindingService.ts b/src/vs/workbench/services/keybinding/browser/keybindingService.ts
-index cc2e76c3994..6929b00e4bd 100644
+index 481d713f969..9d9997d50de 100644
 --- a/src/vs/workbench/services/keybinding/browser/keybindingService.ts
 +++ b/src/vs/workbench/services/keybinding/browser/keybindingService.ts
-@@ -245,7 +245,7 @@ export class WorkbenchKeybindingService extends AbstractKeybindingService {
+@@ -246,7 +246,7 @@ export class WorkbenchKeybindingService extends AbstractKeybindingService {
  				return;
  			}
  

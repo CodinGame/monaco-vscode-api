@@ -6,8 +6,8 @@ Subject: [PATCH] fix: stop rewriting source maps
 ---
  build/gulpfile.extensions.ts |  5 +----
  build/gulpfile.vscode.ts     |  1 -
- build/lib/extensions.ts      | 14 --------------
- 3 files changed, 1 insertion(+), 19 deletions(-)
+ build/lib/extensions.ts      | 19 -------------------
+ 3 files changed, 1 insertion(+), 24 deletions(-)
 
 diff --git a/build/gulpfile.extensions.ts b/build/gulpfile.extensions.ts
 index 6f5cf0d25d8..dce870fcc09 100644
@@ -40,10 +40,10 @@ index 6f5cf0d25d8..dce870fcc09 100644
  					includeContent: !!build,
  					// note: trailing slash is important, else the source URLs in V8's file coverage are incorrect
 diff --git a/build/gulpfile.vscode.ts b/build/gulpfile.vscode.ts
-index ac70ecbd57f..25ebeb7a266 100644
+index 358bb3acad3..63a0895b54f 100644
 --- a/build/gulpfile.vscode.ts
 +++ b/build/gulpfile.vscode.ts
-@@ -293,7 +293,6 @@ function packageTask(platform: string, arch: string, sourceFolderName: string, d
+@@ -296,7 +296,6 @@ function packageTask(platform: string, arch: string, sourceFolderName: string, d
  			.pipe(util.cleanNodeModules(path.join(import.meta.dirname, '.moduleignore')))
  			.pipe(util.cleanNodeModules(path.join(import.meta.dirname, `.moduleignore.${process.platform}`)))
  			.pipe(jsFilter)
@@ -52,7 +52,7 @@ index ac70ecbd57f..25ebeb7a266 100644
  			.pipe(createAsar(path.join(process.cwd(), 'node_modules'), [
  				'**/*.node',
 diff --git a/build/lib/extensions.ts b/build/lib/extensions.ts
-index 24462a3b26e..cb733cde061 100644
+index e06f1510a66..c09cd0f461a 100644
 --- a/build/lib/extensions.ts
 +++ b/build/lib/extensions.ts
 @@ -23,7 +23,6 @@ import * as jsoncParser from 'jsonc-parser';
@@ -72,7 +72,7 @@ index 24462a3b26e..cb733cde061 100644
  
  function minifyExtensionResources(input: Stream): Stream {
  	const jsonFilter = filter(['**/*.json', '**/*.code-snippets'], { restore: true });
-@@ -164,7 +161,6 @@ function fromLocalWebpack(extensionPath: string, webpackConfigFileName: string,
+@@ -172,7 +169,6 @@ function fromLocalWebpack(extensionPath: string, webpackConfigFileName: string,
  						}
  					}
  				}
@@ -80,7 +80,7 @@ index 24462a3b26e..cb733cde061 100644
  
  				return webpackGulp(webpackConfig, webpack, webpackDone)
  					.pipe(es.through(function (data) {
-@@ -173,16 +169,6 @@ function fromLocalWebpack(extensionPath: string, webpackConfigFileName: string,
+@@ -181,21 +177,6 @@ function fromLocalWebpack(extensionPath: string, webpackConfigFileName: string,
  						this.emit('data', data);
  					}))
  					.pipe(es.through(function (data: File) {
@@ -88,10 +88,15 @@ index 24462a3b26e..cb733cde061 100644
 -						// * rewrite sourceMappingURL
 -						// * save to disk so that upload-task picks this up
 -						if (path.extname(data.basename) === '.js') {
--							const contents = (data.contents as Buffer).toString('utf8');
--							data.contents = Buffer.from(contents.replace(/\n\/\/# sourceMappingURL=(.*)$/gm, function (_m, g1) {
--								return `\n//# sourceMappingURL=${sourceMappingURLBase}/extensions/${path.basename(extensionPath)}/${relativeOutputPath}/${g1}`;
--							}), 'utf8');
+-							if (stripOutSourceMaps.indexOf(data.relative) >= 0) { // remove source map
+-								const contents = (data.contents as Buffer).toString('utf8');
+-								data.contents = Buffer.from(contents.replace(/\n\/\/# sourceMappingURL=(.*)$/gm, ''), 'utf8');
+-							} else {
+-								const contents = (data.contents as Buffer).toString('utf8');
+-								data.contents = Buffer.from(contents.replace(/\n\/\/# sourceMappingURL=(.*)$/gm, function (_m, g1) {
+-									return `\n//# sourceMappingURL=${sourceMappingURLBase}/extensions/${path.basename(extensionPath)}/${relativeOutputPath}/${g1}`;
+-								}), 'utf8');
+-							}
 -						}
 -
  						this.emit('data', data);

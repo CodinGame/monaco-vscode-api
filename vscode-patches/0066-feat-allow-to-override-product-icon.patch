@@ -13,15 +13,15 @@ Subject: [PATCH] feat: allow to override product icon
  6 files changed, 7 insertions(+), 6 deletions(-)
 
 diff --git a/build/lib/stylelint/vscode-known-variables.json b/build/lib/stylelint/vscode-known-variables.json
-index 8f6ce9b030d..68278f0a3ec 100644
+index 5dee2dcd04f..b308531a08c 100644
 --- a/build/lib/stylelint/vscode-known-variables.json
 +++ b/build/lib/stylelint/vscode-known-variables.json
-@@ -995,7 +995,8 @@
- 		"--comment-thread-editor-font-weight",
- 		"--comment-thread-state-color",
+@@ -1003,7 +1003,8 @@
  		"--comment-thread-state-background-color",
--		"--inline-edit-border-radius"
-+		"--inline-edit-border-radius",
+ 		"--inline-edit-border-radius",
+ 		"--chat-subagent-last-item-height",
+-		"--vscode-inline-chat-affordance-height"
++		"--vscode-inline-chat-affordance-height",
 +		"--product-icon"
  	],
  	"sizes": [
@@ -40,10 +40,10 @@ index a0de81f24eb..c71af404312 100644
  	padding: 0;
  	margin: 0 6px 0 10px;
 diff --git a/src/vs/workbench/browser/parts/titlebar/media/titlebarpart.css b/src/vs/workbench/browser/parts/titlebar/media/titlebarpart.css
-index 0246cd2ad10..19b79a508a7 100644
+index 982f5a620df..b4045cce398 100644
 --- a/src/vs/workbench/browser/parts/titlebar/media/titlebarpart.css
 +++ b/src/vs/workbench/browser/parts/titlebar/media/titlebarpart.css
-@@ -269,7 +269,7 @@
+@@ -266,7 +266,7 @@
  }
  
  .monaco-workbench .part.titlebar > .titlebar-container > .titlebar-left > .window-appicon:not(.codicon) {
@@ -64,7 +64,7 @@ index 4210055bfeb..4f71897bb52 100644
 +	background-image: var(--product-icon, url('../../../../browser/media/code-icon.svg'));
  }
 diff --git a/src/vs/workbench/contrib/welcomeGettingStarted/browser/media/gettingStarted.css b/src/vs/workbench/contrib/welcomeGettingStarted/browser/media/gettingStarted.css
-index 9b4448a62be..de332d1fded 100644
+index fefdf4c9dfe..28f32b5a218 100644
 --- a/src/vs/workbench/contrib/welcomeGettingStarted/browser/media/gettingStarted.css
 +++ b/src/vs/workbench/contrib/welcomeGettingStarted/browser/media/gettingStarted.css
 @@ -5,7 +5,7 @@

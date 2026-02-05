@@ -68,10 +68,10 @@ index 9e9423f8e4e..8d78e287842 100644
 +	when: IsSandboxWorkspaceContext.toNegated()
  });
 diff --git a/src/vs/workbench/browser/contextkeys.ts b/src/vs/workbench/browser/contextkeys.ts
-index 1da0210c75d..b0b448338a3 100644
+index 4be91f9e5fb..2bb8d850ef0 100644
 --- a/src/vs/workbench/browser/contextkeys.ts
 +++ b/src/vs/workbench/browser/contextkeys.ts
-@@ -3,26 +3,26 @@
+@@ -3,27 +3,27 @@
   *  Licensed under the MIT License. See License.txt in the project root for license information.
   *--------------------------------------------------------------------------------------------*/
  
@@ -80,7 +80,7 @@ index 1da0210c75d..b0b448338a3 100644
  import { Disposable } from '../../base/common/lifecycle.js';
 -import { IContextKeyService, IContextKey, setConstant as setConstantContextKey } from '../../platform/contextkey/common/contextkey.js';
 -import { IsMacContext, IsLinuxContext, IsWindowsContext, IsWebContext, IsMacNativeContext, IsDevelopmentContext, IsIOSContext, ProductQualityContext, IsMobileContext } from '../../platform/contextkey/common/contextkeys.js';
--import { SplitEditorsVertically, InEditorZenModeContext, AuxiliaryBarVisibleContext, SideBarVisibleContext, PanelAlignmentContext, PanelMaximizedContext, PanelVisibleContext, EmbedderIdentifierContext, EditorTabsVisibleContext, IsMainEditorCenteredLayoutContext, MainEditorAreaVisibleContext, DirtyWorkingCopiesContext, EmptyWorkspaceSupportContext, EnterMultiRootWorkspaceSupportContext, HasWebFileSystemAccess, IsMainWindowFullscreenContext, OpenFolderWorkspaceSupportContext, RemoteNameContext, VirtualWorkspaceContext, WorkbenchStateContext, WorkspaceFolderCountContext, PanelPositionContext, TemporaryWorkspaceContext, TitleBarVisibleContext, TitleBarStyleContext, IsAuxiliaryWindowFocusedContext, ActiveEditorGroupEmptyContext, ActiveEditorGroupIndexContext, ActiveEditorGroupLastContext, ActiveEditorGroupLockedContext, MultipleEditorGroupsContext, EditorsVisibleContext, AuxiliaryBarMaximizedContext, InAutomationContext } from '../common/contextkeys.js';
+-import { SplitEditorsVertically, InEditorZenModeContext, AuxiliaryBarVisibleContext, SideBarVisibleContext, PanelAlignmentContext, PanelMaximizedContext, PanelVisibleContext, EmbedderIdentifierContext, EditorTabsVisibleContext, IsMainEditorCenteredLayoutContext, MainEditorAreaVisibleContext, DirtyWorkingCopiesContext, EmptyWorkspaceSupportContext, EnterMultiRootWorkspaceSupportContext, HasWebFileSystemAccess, IsMainWindowFullscreenContext, OpenFolderWorkspaceSupportContext, RemoteNameContext, VirtualWorkspaceContext, WorkbenchStateContext, WorkspaceFolderCountContext, PanelPositionContext, TemporaryWorkspaceContext, TitleBarVisibleContext, TitleBarStyleContext, IsAuxiliaryWindowFocusedContext, ActiveEditorGroupEmptyContext, ActiveEditorGroupIndexContext, ActiveEditorGroupLastContext, ActiveEditorGroupLockedContext, MultipleEditorGroupsContext, EditorsVisibleContext, AuxiliaryBarMaximizedContext, InAutomationContext, IsAgentSessionsWorkspaceContext, WorkbenchModeContext } from '../common/contextkeys.js';
 -import { preferredSideBySideGroupDirection, GroupDirection, IEditorGroupsService } from '../services/editor/common/editorGroupsService.js';
 -import { IConfigurationService } from '../../platform/configuration/common/configuration.js';
 -import { IWorkbenchEnvironmentService } from '../services/environment/common/environmentService.js';
@@ -102,17 +102,18 @@ index 1da0210c75d..b0b448338a3 100644
 -import { isFullscreen, onDidChangeFullscreen } from '../../base/browser/browser.js';
 +import { getVirtualWorkspaceScheme } from '../../platform/workspace/common/virtualWorkspace.js';
 +import { isTemporaryWorkspace, IWorkspaceContextService, WorkbenchState } from '../../platform/workspace/common/workspace.js';
-+import { ActiveEditorGroupEmptyContext, ActiveEditorGroupIndexContext, ActiveEditorGroupLastContext, ActiveEditorGroupLockedContext, AuxiliaryBarMaximizedContext, AuxiliaryBarVisibleContext, DirtyWorkingCopiesContext, EditorsVisibleContext, EditorTabsVisibleContext, EmbedderIdentifierContext, EmptyWorkspaceSupportContext, EnterMultiRootWorkspaceSupportContext, HasWebFileSystemAccess, InAutomationContext, InEditorZenModeContext, IsAuxiliaryWindowFocusedContext, IsMainEditorCenteredLayoutContext, IsMainWindowFullscreenContext, IsSandboxWorkspaceContext, MainEditorAreaVisibleContext, MultipleEditorGroupsContext, OpenFolderWorkspaceSupportContext, PanelAlignmentContext, PanelMaximizedContext, PanelPositionContext, PanelVisibleContext, RemoteNameContext, SideBarVisibleContext, SplitEditorsVertically, TemporaryWorkspaceContext, TitleBarStyleContext, TitleBarVisibleContext, VirtualWorkspaceContext, WorkbenchStateContext, WorkspaceFolderCountContext } from '../common/contextkeys.js';
++import { ActiveEditorGroupEmptyContext, ActiveEditorGroupIndexContext, ActiveEditorGroupLastContext, ActiveEditorGroupLockedContext, AuxiliaryBarMaximizedContext, AuxiliaryBarVisibleContext, DirtyWorkingCopiesContext, EditorsVisibleContext, EditorTabsVisibleContext, EmbedderIdentifierContext, EmptyWorkspaceSupportContext, EnterMultiRootWorkspaceSupportContext, HasWebFileSystemAccess, InAutomationContext, InEditorZenModeContext, IsAgentSessionsWorkspaceContext, IsAuxiliaryWindowFocusedContext, IsMainEditorCenteredLayoutContext, IsMainWindowFullscreenContext, IsSandboxWorkspaceContext, MainEditorAreaVisibleContext, MultipleEditorGroupsContext, OpenFolderWorkspaceSupportContext, PanelAlignmentContext, PanelMaximizedContext, PanelPositionContext, PanelVisibleContext, RemoteNameContext, SideBarVisibleContext, SplitEditorsVertically, TemporaryWorkspaceContext, TitleBarStyleContext, TitleBarVisibleContext, VirtualWorkspaceContext, WorkbenchModeContext, WorkbenchStateContext, WorkspaceFolderCountContext } from '../common/contextkeys.js';
 +import { GroupDirection, IEditorGroupsService, preferredSideBySideGroupDirection } from '../services/editor/common/editorGroupsService.js';
  import { IEditorService } from '../services/editor/common/editorService.js';
 +import { IWorkbenchEnvironmentService } from '../services/environment/common/environmentService.js';
 +import { IWorkbenchLayoutService, Parts, positionToString } from '../services/layout/browser/layoutService.js';
+ import { IWorkbenchModeService } from '../services/layout/common/workbenchModeService.js';
 +import { IPaneCompositePartService } from '../services/panecomposite/browser/panecomposite.js';
 +import { IWorkingCopyService } from '../services/workingCopy/common/workingCopyService.js';
  
  export class WorkbenchContextKeysHandler extends Disposable {
  
-@@ -199,6 +199,9 @@ export class WorkbenchContextKeysHandler extends Disposable {
+@@ -207,6 +207,9 @@ export class WorkbenchContextKeysHandler extends Disposable {
  		this.auxiliaryBarMaximizedContext = AuxiliaryBarMaximizedContext.bindTo(this.contextKeyService);
  		this.auxiliaryBarMaximizedContext.set(this.layoutService.isAuxiliaryBarMaximized());
  
@@ -123,10 +124,10 @@ index 1da0210c75d..b0b448338a3 100644
  	}
  
 diff --git a/src/vs/workbench/common/contextkeys.ts b/src/vs/workbench/common/contextkeys.ts
-index c0528feb6d1..47121d47e90 100644
+index 3a27ea16cac..a21dfe6c65a 100644
 --- a/src/vs/workbench/common/contextkeys.ts
 +++ b/src/vs/workbench/common/contextkeys.ts
-@@ -39,6 +39,8 @@ export const EmbedderIdentifierContext = new RawContextKey<string | undefined>('
+@@ -43,6 +43,8 @@ export const EmbedderIdentifierContext = new RawContextKey<string | undefined>('
  
  export const InAutomationContext = new RawContextKey<boolean>('inAutomation', false, localize('inAutomation', "Whether VS Code is running under automation/smoke test"));
  

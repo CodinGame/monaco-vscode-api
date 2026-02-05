@@ -52,10 +52,10 @@ Subject: [PATCH] feat: support shadow dom
  45 files changed, 184 insertions(+), 99 deletions(-)
 
 diff --git a/src/vs/base/browser/dom.ts b/src/vs/base/browser/dom.ts
-index 0e792265805..60a773236eb 100644
+index df985c36c16..41fba15d553 100644
 --- a/src/vs/base/browser/dom.ts
 +++ b/src/vs/base/browser/dom.ts
-@@ -165,6 +165,39 @@ export function addDisposableListener(node: EventTarget, type: string, handler:
+@@ -257,6 +257,39 @@ export function addDisposableListener(node: EventTarget, type: string, handler:
  	return new DomListener(node, type, handler, useCaptureOrOptions);
  }
  
@@ -95,7 +95,7 @@ index 0e792265805..60a773236eb 100644
  export interface IAddStandardDisposableListenerSignature {
  	(node: HTMLElement | Element | Document, type: 'click', handler: (event: IMouseEvent) => void, useCapture?: boolean): IDisposable;
  	(node: HTMLElement | Element | Document, type: 'mousedown', handler: (event: IMouseEvent) => void, useCapture?: boolean): IDisposable;
-@@ -619,8 +652,7 @@ export function getTopLeftOffset(element: HTMLElement): IDomPosition {
+@@ -762,8 +795,7 @@ export function getTopLeftOffset(element: HTMLElement): IDomPosition {
  
  	while (
  		(element = <HTMLElement>element.parentNode) !== null
@@ -105,7 +105,7 @@ index 0e792265805..60a773236eb 100644
  	) {
  		top -= element.scrollTop;
  		const c = isShadowRoot(element) ? null : getComputedStyle(element);
-@@ -722,7 +754,7 @@ export function getDomNodeZoomLevel(domNode: HTMLElement): number {
+@@ -865,7 +897,7 @@ export function getDomNodeZoomLevel(domNode: HTMLElement): number {
  		}
  
  		testElement = testElement.parentElement;
@@ -114,7 +114,7 @@ index 0e792265805..60a773236eb 100644
  
  	return zoom;
  }
-@@ -800,7 +832,7 @@ function getParentFlowToElement(node: HTMLElement): HTMLElement | null {
+@@ -943,7 +975,7 @@ function getParentFlowToElement(node: HTMLElement): HTMLElement | null {
  	const flowToParentId = node.dataset[parentFlowToDataKey];
  	if (typeof flowToParentId === 'string') {
  		// eslint-disable-next-line no-restricted-syntax
@@ -123,7 +123,7 @@ index 0e792265805..60a773236eb 100644
  	}
  	return null;
  }
-@@ -883,8 +915,8 @@ export function getShadowRoot(domNode: Node): ShadowRoot | null {
+@@ -1026,8 +1058,8 @@ export function getShadowRoot(domNode: Node): ShadowRoot | null {
   * based on document focus. Falls back to the main
   * window if no window has focus.
   */
@@ -134,7 +134,7 @@ index 0e792265805..60a773236eb 100644
  
  	while (result?.shadowRoot) {
  		result = result.shadowRoot.activeElement;
-@@ -893,6 +925,14 @@ export function getActiveElement(): Element | null {
+@@ -1036,6 +1068,14 @@ export function getActiveElement(): Element | null {
  	return result;
  }
  
@@ -149,7 +149,7 @@ index 0e792265805..60a773236eb 100644
  /**
   * Returns true if the focused window active element matches
   * the provided element. Falls back to the main window if no
-@@ -1044,6 +1084,11 @@ export function isHTMLDivElement(e: unknown): e is HTMLDivElement {
+@@ -1198,6 +1238,11 @@ export function isHTMLDivElement(e: unknown): e is HTMLDivElement {
  	return e instanceof HTMLDivElement || e instanceof getWindow(e as Node).HTMLDivElement;
  }
  
@@ -161,7 +161,7 @@ index 0e792265805..60a773236eb 100644
  export function isSVGElement(e: unknown): e is SVGElement {
  	// eslint-disable-next-line no-restricted-syntax
  	return e instanceof SVGElement || e instanceof getWindow(e as Node).SVGElement;
-@@ -1189,7 +1234,7 @@ class FocusTracker extends Disposable implements IFocusTracker {
+@@ -1343,7 +1388,7 @@ class FocusTracker extends Disposable implements IFocusTracker {
  	private static hasFocusWithin(element: HTMLElement | Window): boolean {
  		if (isHTMLElement(element)) {
  			const shadowRoot = getShadowRoot(element);
@@ -170,7 +170,7 @@ index 0e792265805..60a773236eb 100644
  			return isAncestor(activeElement, element);
  		} else {
  			const window = element;
-@@ -1409,7 +1454,7 @@ export function removeTabIndexAndUpdateFocus(node: HTMLElement): void {
+@@ -1563,7 +1608,7 @@ export function removeTabIndexAndUpdateFocus(node: HTMLElement): void {
  	// standard DOM behavior is to move focus to the <body> element. We
  	// typically never want that, rather put focus to the closest element
  	// in the hierarchy of the parent DOM nodes.
@@ -180,10 +180,10 @@ index 0e792265805..60a773236eb 100644
  		parentFocusable?.focus();
  	}
 diff --git a/src/vs/base/browser/domStylesheets.ts b/src/vs/base/browser/domStylesheets.ts
-index 1e34173680e..0782c211144 100644
+index c338502d541..3da2ba1f9dd 100644
 --- a/src/vs/base/browser/domStylesheets.ts
 +++ b/src/vs/base/browser/domStylesheets.ts
-@@ -47,6 +47,14 @@ class WrappedStyleElement {
+@@ -39,6 +39,14 @@ class WrappedStyleElement extends Disposable {
  	}
  }
  
@@ -198,7 +198,7 @@ index 1e34173680e..0782c211144 100644
  export function createStyleSheet(container: HTMLElement = mainWindow.document.head, beforeAppend?: (style: HTMLStyleElement) => void, disposableStore?: DisposableStore): HTMLStyleElement {
  	const style = document.createElement('style');
  	style.type = 'text/css';
-@@ -72,7 +80,12 @@ export function createStyleSheet(container: HTMLElement = mainWindow.document.he
+@@ -64,7 +72,12 @@ export function createStyleSheet(container: HTMLElement = mainWindow.document.he
  				continue; // main window is already tracked
  			}
  
@@ -212,7 +212,7 @@ index 1e34173680e..0782c211144 100644
  			disposableStore?.add(cloneDisposable);
  		}
  	}
-@@ -84,17 +97,17 @@ export function cloneGlobalStylesheets(targetWindow: Window): IDisposable {
+@@ -76,17 +89,17 @@ export function cloneGlobalStylesheets(targetWindow: Window): IDisposable {
  	const disposables = new DisposableStore();
  
  	for (const [globalStylesheet, clonedGlobalStylesheets] of globalStylesheets) {
@@ -271,10 +271,10 @@ index 6b675d06535..672eeabd7b6 100644
  		this.ctrlKey = e.ctrlKey;
  		this.shiftKey = e.shiftKey;
 diff --git a/src/vs/base/browser/ui/contextview/contextview.ts b/src/vs/base/browser/ui/contextview/contextview.ts
-index 2da6a90f283..c605560c870 100644
+index 44c3c080e24..b56e1cf334e 100644
 --- a/src/vs/base/browser/ui/contextview/contextview.ts
 +++ b/src/vs/base/browser/ui/contextview/contextview.ts
-@@ -381,7 +381,7 @@ export class ContextView extends Disposable {
+@@ -383,7 +383,7 @@ export class ContextView extends Disposable {
  	private onDOMEvent(e: UIEvent, onCapture: boolean): void {
  		if (this.delegate) {
  			if (this.delegate.onDOMEvent) {
@@ -337,7 +337,7 @@ index 39ce04a13a8..06cdc96e51d 100644
  
  	const dragContainer = getDragImageContainer(container);
 diff --git a/src/vs/base/browser/ui/findinput/findInput.ts b/src/vs/base/browser/ui/findinput/findInput.ts
-index 2518cf4250d..26b9df209a4 100644
+index 80f9fea1f87..39eef0473c9 100644
 --- a/src/vs/base/browser/ui/findinput/findInput.ts
 +++ b/src/vs/base/browser/ui/findinput/findInput.ts
 @@ -20,6 +20,7 @@ import * as nls from '../../../../nls.js';
@@ -348,7 +348,7 @@ index 2518cf4250d..26b9df209a4 100644
  
  
  export interface IFindInputOptions {
-@@ -175,7 +176,7 @@ export class FindInput extends Widget {
+@@ -177,7 +178,7 @@ export class FindInput extends Widget {
  			const indexes = [this.caseSensitive.domNode, this.wholeWords.domNode, this.regex.domNode];
  			this.onkeydown(this.domNode, (event: IKeyboardEvent) => {
  				if (event.equals(KeyCode.LeftArrow) || event.equals(KeyCode.RightArrow) || event.equals(KeyCode.Escape)) {
@@ -379,10 +379,10 @@ index 10c5b47b653..6dd9e205c71 100644
  					let newIndex: number = -1;
  					if (event.equals(KeyCode.RightArrow)) {
 diff --git a/src/vs/base/browser/ui/inputbox/inputBox.ts b/src/vs/base/browser/ui/inputbox/inputBox.ts
-index 3438890dd23..998bb4ccf6b 100644
+index 9b55cd2ec68..a7606504872 100644
 --- a/src/vs/base/browser/ui/inputbox/inputBox.ts
 +++ b/src/vs/base/browser/ui/inputbox/inputBox.ts
-@@ -173,7 +173,7 @@ export class InputBox extends Widget {
+@@ -174,7 +174,7 @@ export class InputBox extends Widget {
  
  			const onSelectionChange = this._register(new DomEmitter(container.ownerDocument, 'selectionchange'));
  			const onAnchoredSelectionChange = Event.filter(onSelectionChange.event, () => {
@@ -548,18 +548,18 @@ index 8256f6b487c..6bc03be79e1 100644
  				return element.getAttribute(attr);
  			}
 diff --git a/src/vs/editor/browser/view/viewPart.ts b/src/vs/editor/browser/view/viewPart.ts
-index a23bcb11b59..d750b8f2f03 100644
+index 1009c8e7ca0..bf02d491fd3 100644
 --- a/src/vs/editor/browser/view/viewPart.ts
 +++ b/src/vs/editor/browser/view/viewPart.ts
-@@ -7,6 +7,7 @@ import { FastDomNode } from '../../../base/browser/fastDomNode.js';
- import { RenderingContext, RestrictedRenderingContext } from './renderingContext.js';
+@@ -8,6 +8,7 @@ import { RenderingContext, RestrictedRenderingContext } from './renderingContext
  import { ViewContext } from '../../common/viewModel/viewContext.js';
  import { ViewEventHandler } from '../../common/viewEventHandler.js';
+ import { ViewportData } from '../../common/viewLayout/viewLinesViewportData.js';
 +import { getRootContainer } from '../../../base/browser/dom.js';
  
  export abstract class ViewPart extends ViewEventHandler {
  
-@@ -59,7 +60,7 @@ export class PartFingerprints {
+@@ -63,7 +64,7 @@ export class PartFingerprints {
  		const result: PartFingerprint[] = [];
  		let resultLen = 0;
  
@@ -569,7 +569,7 @@ index a23bcb11b59..d750b8f2f03 100644
  				break;
  			}
 diff --git a/src/vs/editor/browser/viewParts/contentWidgets/contentWidgets.ts b/src/vs/editor/browser/viewParts/contentWidgets/contentWidgets.ts
-index 6653405c375..4681a470db4 100644
+index 1f43f7834f0..550be23f481 100644
 --- a/src/vs/editor/browser/viewParts/contentWidgets/contentWidgets.ts
 +++ b/src/vs/editor/browser/viewParts/contentWidgets/contentWidgets.ts
 @@ -453,7 +453,7 @@ class Widget {
@@ -582,7 +582,7 @@ index 6653405c375..4681a470db4 100644
  			// return null;
  		}
 diff --git a/src/vs/editor/contrib/hover/browser/contentHoverController.ts b/src/vs/editor/contrib/hover/browser/contentHoverController.ts
-index 8d7421d9906..72b2a1de61d 100644
+index ba0e7d0b161..5a4426465a5 100644
 --- a/src/vs/editor/contrib/hover/browser/contentHoverController.ts
 +++ b/src/vs/editor/contrib/hover/browser/contentHoverController.ts
 @@ -24,6 +24,7 @@ import { Emitter } from '../../../../base/common/event.js';
@@ -616,18 +616,18 @@ index c5226cb273f..08f5ace9b37 100644
  			this._configurationService.getValue('accessibility.verbosity.hover') === true && this._accessibilityService.isScreenReaderOptimized(),
  			this._keybindingService.lookupKeybinding('editor.action.accessibleView')?.getAriaLabel() ?? ''
 diff --git a/src/vs/platform/actionWidget/browser/actionList.ts b/src/vs/platform/actionWidget/browser/actionList.ts
-index 7d48eaa295e..a9f5fa8b0e6 100644
+index 3c12b59418e..0a55d553e77 100644
 --- a/src/vs/platform/actionWidget/browser/actionList.ts
 +++ b/src/vs/platform/actionWidget/browser/actionList.ts
-@@ -332,7 +332,7 @@ export class ActionList<T> extends Disposable {
- 			// For finding width dynamically (not using resize observer)
- 			const itemWidths: number[] = this._allMenuItems.map((_, index): number => {
- 				// eslint-disable-next-line no-restricted-syntax
--				const element = this.domNode.ownerDocument.getElementById(this._list.getElementID(index));
-+				const element = (this.domNode.getRootNode() as Document | ShadowRoot).getElementById(this._list.getElementID(index));
- 				if (element) {
- 					element.style.width = 'auto';
- 					const width = element.getBoundingClientRect().width;
+@@ -461,7 +461,7 @@ export class ActionList<T> extends Disposable {
+ 
+ 	private _getRowElement(index: number): HTMLElement | null {
+ 		// eslint-disable-next-line no-restricted-syntax
+-		return this.domNode.ownerDocument.getElementById(this._list.getElementID(index));
++		return (this.domNode.getRootNode() as Document | ShadowRoot).getElementById(this._list.getElementID(index))
+ 	}
+ 
+ 	private _showHoverForElement(element: IActionListItem<T>, index: number): void {
 diff --git a/src/vs/platform/clipboard/browser/clipboardService.ts b/src/vs/platform/clipboard/browser/clipboardService.ts
 index 6e0a6e018d0..358aa682cda 100644
 --- a/src/vs/platform/clipboard/browser/clipboardService.ts
@@ -721,10 +721,10 @@ index df8da89a047..0f9fca69091 100644
  				}
  
 diff --git a/src/vs/platform/hover/browser/hoverWidget.ts b/src/vs/platform/hover/browser/hoverWidget.ts
-index f897c073bdb..2cd1ed79b7f 100644
+index 41c8723608a..96297b1ddb8 100644
 --- a/src/vs/platform/hover/browser/hoverWidget.ts
 +++ b/src/vs/platform/hover/browser/hoverWidget.ts
-@@ -316,7 +316,7 @@ export class HoverWidget extends Widget implements IHoverWidget {
+@@ -326,7 +326,7 @@ export class HoverWidget extends Widget implements IHoverWidget {
  
  	public render(container: HTMLElement): void {
  		container.appendChild(this._hoverContainer);
@@ -734,7 +734,7 @@ index f897c073bdb..2cd1ed79b7f 100644
  		if (accessibleViewHint) {
  
 diff --git a/src/vs/workbench/browser/actions/developerActions.ts b/src/vs/workbench/browser/actions/developerActions.ts
-index 1fda3db0826..1fd3c6f6976 100644
+index 91f52f5d2c5..ca0140e4fb3 100644
 --- a/src/vs/workbench/browser/actions/developerActions.ts
 +++ b/src/vs/workbench/browser/actions/developerActions.ts
 @@ -78,7 +78,7 @@ class InspectContextKeysAction extends Action2 {
@@ -756,7 +756,7 @@ index 1fda3db0826..1fd3c6f6976 100644
  
  			dispose(disposables);
 diff --git a/src/vs/workbench/browser/layout.ts b/src/vs/workbench/browser/layout.ts
-index ff5708e1a86..5213358c5de 100644
+index a60b399fcf1..c622d53ae07 100644
 --- a/src/vs/workbench/browser/layout.ts
 +++ b/src/vs/workbench/browser/layout.ts
 @@ -47,6 +47,7 @@ import { AuxiliaryBarPart } from './parts/auxiliarybar/auxiliaryBarPart.js';
@@ -767,7 +767,7 @@ index ff5708e1a86..5213358c5de 100644
  
  //#region Layout Implementation
  
-@@ -302,6 +303,8 @@ export abstract class Layout extends Disposable implements IWorkbenchLayoutServi
+@@ -303,6 +304,8 @@ export abstract class Layout extends Disposable implements IWorkbenchLayoutServi
  		private readonly layoutOptions?: { resetLayout: boolean }
  	) {
  		super();
@@ -799,7 +799,7 @@ index a2344eaf8f2..69f87e30afa 100644
  		}
  
 diff --git a/src/vs/workbench/browser/workbench.ts b/src/vs/workbench/browser/workbench.ts
-index fbff9375f73..5a53b5423a4 100644
+index 7796aae8a15..1c304a11a9e 100644
 --- a/src/vs/workbench/browser/workbench.ts
 +++ b/src/vs/workbench/browser/workbench.ts
 @@ -77,6 +77,9 @@ export class Workbench extends Layout {
@@ -812,7 +812,7 @@ index fbff9375f73..5a53b5423a4 100644
  	}
  
  	protected registerErrorHandler(logService: ILogService): void {
-@@ -337,9 +340,6 @@ export class Workbench extends Layout {
+@@ -342,9 +345,6 @@ export class Workbench extends Layout {
  
  		// Notification Handlers
  		this.createNotificationsHandlers(instantiationService, notificationService);
@@ -823,10 +823,10 @@ index fbff9375f73..5a53b5423a4 100644
  
  	private createPart(id: string, role: string, classes: string[]): HTMLElement {
 diff --git a/src/vs/workbench/contrib/chat/browser/widget/input/chatInputPart.ts b/src/vs/workbench/contrib/chat/browser/widget/input/chatInputPart.ts
-index dd0f182a952..e7e7180bf44 100644
+index bcf805169da..2447a3ba087 100644
 --- a/src/vs/workbench/contrib/chat/browser/widget/input/chatInputPart.ts
 +++ b/src/vs/workbench/contrib/chat/browser/widget/input/chatInputPart.ts
-@@ -2095,7 +2095,7 @@ export class ChatInputPart extends Disposable implements IHistoryNavigationWidge
+@@ -2349,7 +2349,7 @@ export class ChatInputPart extends Disposable implements IHistoryNavigationWidge
  
  		attachments.unshift(toolbar);
  
@@ -836,7 +836,7 @@ index dd0f182a952..e7e7180bf44 100644
  		let newIndex = currentIndex;
  
 diff --git a/src/vs/workbench/contrib/files/browser/views/explorerViewer.ts b/src/vs/workbench/contrib/files/browser/views/explorerViewer.ts
-index 7fbfacc1959..a688ea28618 100644
+index a4a00dfa7ea..eb13a68974f 100644
 --- a/src/vs/workbench/contrib/files/browser/views/explorerViewer.ts
 +++ b/src/vs/workbench/contrib/files/browser/views/explorerViewer.ts
 @@ -74,6 +74,7 @@ import { IContextKey, IContextKeyService } from '../../../../../platform/context
@@ -847,7 +847,7 @@ index 7fbfacc1959..a688ea28618 100644
  
  export class ExplorerDelegate implements IListVirtualDelegate<ExplorerItem> {
  
-@@ -1158,11 +1159,12 @@ export class FilesRenderer implements ICompressibleTreeRenderer<ExplorerItem, Fu
+@@ -1146,11 +1147,12 @@ export class FilesRenderer implements ICompressibleTreeRenderer<ExplorerItem, Fu
  					await timeout(0);
  
  					const ownerDocument = inputBox.inputElement.ownerDocument;
@@ -862,10 +862,10 @@ index 7fbfacc1959..a688ea28618 100644
  					} else {
  						break;
 diff --git a/src/vs/workbench/contrib/notebook/browser/notebookEditorWidget.ts b/src/vs/workbench/contrib/notebook/browser/notebookEditorWidget.ts
-index 73a4877c05d..e963bb4691c 100644
+index 5b21ceec1d3..2419dc30101 100644
 --- a/src/vs/workbench/contrib/notebook/browser/notebookEditorWidget.ts
 +++ b/src/vs/workbench/contrib/notebook/browser/notebookEditorWidget.ts
-@@ -1847,7 +1847,7 @@ export class NotebookEditorWidget extends Disposable implements INotebookEditorD
+@@ -1848,7 +1848,7 @@ export class NotebookEditorWidget extends Disposable implements INotebookEditorD
  				const element = this.viewModel.cellAt(focusRange.start);
  				if (element) {
  					const itemDOM = this._list.domElementOfElement(element);
@@ -874,7 +874,7 @@ index 73a4877c05d..e963bb4691c 100644
  
  					state.editorFocused = editorFocused;
  					state.focus = focusRange.start;
-@@ -2479,8 +2479,8 @@ export class NotebookEditorWidget extends Disposable implements INotebookEditorD
+@@ -2480,8 +2480,8 @@ export class NotebookEditorWidget extends Disposable implements INotebookEditorD
  		} else {
  			// focus container
  			const itemDOM = this._list.domElementOfElement(cell);
@@ -1035,10 +1035,10 @@ index dc4ed6e1f88..8f72885c81b 100644
  					preferencesEditor.focusSettings(true);
  				}
 diff --git a/src/vs/workbench/contrib/preferences/browser/settingsEditor2.ts b/src/vs/workbench/contrib/preferences/browser/settingsEditor2.ts
-index 986b02a3bfd..66b6c4a10d8 100644
+index db818b43764..abe4e29b499 100644
 --- a/src/vs/workbench/contrib/preferences/browser/settingsEditor2.ts
 +++ b/src/vs/workbench/contrib/preferences/browser/settingsEditor2.ts
-@@ -1151,7 +1151,7 @@ export class SettingsEditor2 extends EditorPane {
+@@ -1189,7 +1189,7 @@ export class SettingsEditor2 extends EditorPane {
  		}));
  
  		this._register(this.settingsTree.onDidFocus(() => {
@@ -1047,7 +1047,7 @@ index 986b02a3bfd..66b6c4a10d8 100644
  			if (classList && classList.contains('monaco-list') && classList.contains('settings-editor-tree')) {
  				this._currentFocusContext = SettingsFocusContext.SettingTree;
  				this.settingRowFocused.set(true);
-@@ -1623,7 +1623,7 @@ export class SettingsEditor2 extends EditorPane {
+@@ -1709,7 +1709,7 @@ export class SettingsEditor2 extends EditorPane {
  
  	private getActiveControlInSettingsTree(): HTMLElement | null {
  		const element = this.settingsTree.getHTMLElement();
@@ -1056,7 +1056,7 @@ index 986b02a3bfd..66b6c4a10d8 100644
  		return (activeElement && DOM.isAncestorOfActiveElement(element)) ?
  			<HTMLElement>activeElement :
  			null;
-@@ -1688,7 +1688,7 @@ export class SettingsEditor2 extends EditorPane {
+@@ -1774,7 +1774,7 @@ export class SettingsEditor2 extends EditorPane {
  	}
  
  	private contextViewFocused(): boolean {
@@ -1066,7 +1066,7 @@ index 986b02a3bfd..66b6c4a10d8 100644
  
  	private refreshSingleElement(element: SettingsTreeSettingElement): void {
 diff --git a/src/vs/workbench/contrib/terminal/browser/terminalTabbedView.ts b/src/vs/workbench/contrib/terminal/browser/terminalTabbedView.ts
-index 1e6a52f9e04..5d62a732a26 100644
+index 7a3dd584458..b58e3170ff1 100644
 --- a/src/vs/workbench/contrib/terminal/browser/terminalTabbedView.ts
 +++ b/src/vs/workbench/contrib/terminal/browser/terminalTabbedView.ts
 @@ -590,7 +590,7 @@ export class TerminalTabbedView extends Disposable {
@@ -1092,7 +1092,7 @@ index 9a745727415..32b87509ab3 100644
  			const listener = this._register(Event.once(this._terminalService.onDidChangeConnectionState)(() => {
  				// Only focus the terminal if the activeElement has not changed since focus() was called
 diff --git a/src/vs/workbench/contrib/webview/browser/webviewElement.ts b/src/vs/workbench/contrib/webview/browser/webviewElement.ts
-index f31b97b7089..73579fe797e 100644
+index 32ade0b6580..60d01c4415c 100644
 --- a/src/vs/workbench/contrib/webview/browser/webviewElement.ts
 +++ b/src/vs/workbench/contrib/webview/browser/webviewElement.ts
 @@ -4,7 +4,7 @@
@@ -1114,7 +1114,7 @@ index f31b97b7089..73579fe797e 100644
  			// looks like https://github.com/microsoft/vscode/issues/132641
  			// where the focus is actually not in the `<iframe>`
  			return false;
-@@ -849,8 +850,11 @@ export class WebviewElement extends Disposable implements IWebviewElement, Webvi
+@@ -850,8 +851,11 @@ export class WebviewElement extends Disposable implements IWebviewElement, Webvi
  				return;
  			}
  
@@ -1129,7 +1129,7 @@ index f31b97b7089..73579fe797e 100644
  
  			// It is possible for the webview to be contained in another window
 diff --git a/src/vs/workbench/contrib/welcomeGettingStarted/browser/gettingStarted.ts b/src/vs/workbench/contrib/welcomeGettingStarted/browser/gettingStarted.ts
-index 8a6f2eae905..8a57f9c3a2d 100644
+index 6a70526e4c7..ac42ef8d2bf 100644
 --- a/src/vs/workbench/contrib/welcomeGettingStarted/browser/gettingStarted.ts
 +++ b/src/vs/workbench/contrib/welcomeGettingStarted/browser/gettingStarted.ts
 @@ -3,7 +3,7 @@
@@ -1141,7 +1141,7 @@ index 8a6f2eae905..8a57f9c3a2d 100644
  import { renderFormattedText } from '../../../../base/browser/formattedTextRenderer.js';
  import { status } from '../../../../base/browser/ui/aria/aria.js';
  import { StandardKeyboardEvent } from '../../../../base/browser/keyboardEvent.js';
-@@ -1737,7 +1737,7 @@ export class GettingStartedPage extends EditorPane {
+@@ -1745,7 +1745,7 @@ export class GettingStartedPage extends EditorPane {
  	override focus() {
  		super.focus();
  
@@ -1183,10 +1183,10 @@ index 27908c633b0..ef61127e428 100644
  			active = active.parentElement;
  		}
 diff --git a/src/vs/workbench/services/suggest/browser/simpleSuggestWidget.ts b/src/vs/workbench/services/suggest/browser/simpleSuggestWidget.ts
-index ad81bc1abca..c217fa5485f 100644
+index 1245acce54c..a2312b0d332 100644
 --- a/src/vs/workbench/services/suggest/browser/simpleSuggestWidget.ts
 +++ b/src/vs/workbench/services/suggest/browser/simpleSuggestWidget.ts
-@@ -353,7 +353,7 @@ export class SimpleSuggestWidget<TModel extends SimpleCompletionModel<TItem>, TI
+@@ -355,7 +355,7 @@ export class SimpleSuggestWidget<TModel extends SimpleCompletionModel<TItem>, TI
  			this._list.reveal(index);
  
  			const id = getAriaId(index);
@@ -1195,7 +1195,7 @@ index ad81bc1abca..c217fa5485f 100644
  			if (node && id) {
  				node.setAttribute('aria-haspopup', 'true');
  				node.setAttribute('aria-autocomplete', 'list');
-@@ -403,7 +403,7 @@ export class SimpleSuggestWidget<TModel extends SimpleCompletionModel<TItem>, TI
+@@ -405,7 +405,7 @@ export class SimpleSuggestWidget<TModel extends SimpleCompletionModel<TItem>, TI
  	}
  
  	private _clearAriaActiveDescendant(): void {

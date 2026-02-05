@@ -11,7 +11,7 @@ Subject: [PATCH] fix: improve extension contribution types
  4 files changed, 1382 insertions(+), 70 deletions(-)
 
 diff --git a/src/vs/platform/extensions/common/extensions.ts b/src/vs/platform/extensions/common/extensions.ts
-index 8961b9011b3..5736958c790 100644
+index 021ad016e02..a47aee5b9e3 100644
 --- a/src/vs/platform/extensions/common/extensions.ts
 +++ b/src/vs/platform/extensions/common/extensions.ts
 @@ -3,6 +3,7 @@
@@ -369,8 +369,10 @@ index 8961b9011b3..5736958c790 100644
 +	 * Path of the tmTheme file. The path is relative to the extension folder and is typically './colorthemes/awesome-color-theme.json'.
 +	 */
 +	readonly path: string;
-+}
-+
+ }
+ 
+-export interface ITheme {
+-	label: string;
 +export interface IIconTheme {
 +	/**
 +	 * Id of the file icon theme as used in the user settings.
@@ -384,10 +386,8 @@ index 8961b9011b3..5736958c790 100644
 +	 * Path of the file icon theme definition file. The path is relative to the extension folder and is typically './fileicons/awesome-icon-theme.json'.
 +	 */
 +	readonly path: string;
- }
- 
--export interface ITheme {
--	label: string;
++}
++
 +export interface IProductTheme {
 +	/**
 +	 * Id of the product icon theme as used in the user settings.
@@ -646,6 +646,7 @@ index 8961b9011b3..5736958c790 100644
 +	 * Human readable name of the notebook output renderer.
 +	 */
  	readonly displayName: string;
+-	readonly mimeTypes: string[];
 +	readonly dependencies?: string[];
 +	readonly optionalDependencies?: string[];
 +	/**
@@ -655,7 +656,7 @@ index 8961b9011b3..5736958c790 100644
 +	/**
 +	 * Set of globs that the notebook is for.
 +	 */
- 	readonly mimeTypes: string[];
++	readonly mimeTypes: string[];
 +	readonly entrypoint: string | {
 +		readonly extends: string;
 +		readonly path: string;
@@ -669,7 +670,6 @@ index 8961b9011b3..5736958c790 100644
  export interface ITranslation {
 -	id: string;
 -	path: string;
--}
 +	/**
 +	 * Id of VS Code or Extension for which this translation is contributed to. Id of VS Code is always `vscode` and of extension should be in format `publisherId.extensionName`.
 +	 */
@@ -678,7 +678,7 @@ index 8961b9011b3..5736958c790 100644
 +	 * A relative path to a file containing translations for the language.
 +	 */
 +	readonly path: string;
-+}
+ }
  
  export interface ILocalizationContribution {
 +	/**
@@ -1377,7 +1377,7 @@ index 8961b9011b3..5736958c790 100644
  }
  
  export interface IChatParticipantContribution {
-@@ -200,35 +1358,188 @@ export interface IMcpCollectionContribution {
+@@ -206,31 +1364,106 @@ export interface IChatFileContribution {
  }
  
  export interface IExtensionContributions {
@@ -1502,6 +1502,9 @@ index 8961b9011b3..5736958c790 100644
  	readonly debugVisualizers?: IDebugVisualizationContribution[];
 +
  	readonly chatParticipants?: ReadonlyArray<IChatParticipantContribution>;
+ 	readonly chatPromptFiles?: ReadonlyArray<IChatFileContribution>;
+ 	readonly chatInstructions?: ReadonlyArray<IChatFileContribution>;
+@@ -239,6 +1472,84 @@ export interface IExtensionContributions {
  	readonly languageModelTools?: ReadonlyArray<IToolContribution>;
  	readonly languageModelToolSets?: ReadonlyArray<IToolSetContribution>;
  	readonly mcpServerDefinitionProviders?: ReadonlyArray<IMcpCollectionContribution>;
@@ -1587,10 +1590,10 @@ index 8961b9011b3..5736958c790 100644
  
  export interface IExtensionCapabilities {
 diff --git a/src/vs/workbench/services/search/common/queryBuilder.ts b/src/vs/workbench/services/search/common/queryBuilder.ts
-index 68487ac7bf6..27dc4f72918 100644
+index e2beb5012b6..c0dacc7dc83 100644
 --- a/src/vs/workbench/services/search/common/queryBuilder.ts
 +++ b/src/vs/workbench/services/search/common/queryBuilder.ts
-@@ -613,10 +613,10 @@ export class QueryBuilder {
+@@ -615,10 +615,10 @@ export class QueryBuilder {
  			folderName: includeFolderName ? folderName : undefined,
  			excludePattern: excludePatternRet,
  			fileEncoding: folderConfig.files && folderConfig.files.encoding,
@@ -1602,9 +1605,9 @@ index 68487ac7bf6..27dc4f72918 100644
 +			disregardGlobalIgnoreFiles: typeof options.disregardGlobalIgnoreFiles === 'boolean' ? options.disregardGlobalIgnoreFiles : !folderConfig.search?.useGlobalIgnoreFiles,
 +			disregardParentIgnoreFiles: typeof options.disregardParentIgnoreFiles === 'boolean' ? options.disregardParentIgnoreFiles : !folderConfig.search?.useParentIgnoreFiles,
 +			ignoreSymlinks: typeof options.ignoreSymlinks === 'boolean' ? options.ignoreSymlinks : !folderConfig.search?.followSymlinks,
+ 			ignoreGlobCase: options.ignoreGlobCase,
  		};
  	}
- }
 diff --git a/src/vs/workbench/services/themes/common/colorExtensionPoint.ts b/src/vs/workbench/services/themes/common/colorExtensionPoint.ts
 index 889c61bb08c..b392cc8614f 100644
 --- a/src/vs/workbench/services/themes/common/colorExtensionPoint.ts

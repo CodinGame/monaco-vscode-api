@@ -96,9 +96,7 @@ Subject: [PATCH] feat: centralize element creation, to be able to create them
  .../iPadShowKeyboard/iPadShowKeyboard.ts      |  2 +-
  .../browser/inspectTokens/inspectTokens.ts    |  4 +-
  .../quickInput/standaloneQuickInputService.ts |  3 +-
- .../test/browser/controller/imeRecorder.ts    |  3 +-
- .../test/browser/controller/imeTester.ts      | 22 ++++-----
- .../actionWidget/browser/actionList.ts        | 12 ++---
+ .../actionWidget/browser/actionList.ts        | 14 +++---
  .../actionWidget/browser/actionWidget.ts      |  6 +--
  .../platform/domWidget/browser/domWidget.ts   |  5 +-
  .../imageResize/browser/imageResizeService.ts |  3 +-
@@ -125,11 +123,15 @@ Subject: [PATCH] feat: centralize element creation, to be able to create them
  .../chatAgentCommandContentPart.ts            |  5 +-
  .../chatConfirmationWidget.ts                 |  2 +-
  .../chatToolInputOutputContentPart.ts         |  2 +-
+ .../chatTerminalToolProgressPart.ts           |  4 +-
  .../chatToolConfirmationSubPart.ts            |  2 +-
- .../chatToolProgressPart.ts                   |  2 +-
+ .../chatToolInvocationPart.ts                 |  4 +-
+ .../chatToolProgressPart.ts                   |  4 +-
+ .../chatToolStreamingSubPart.ts               |  2 +-
  .../chat/browser/widget/chatDragAndDrop.ts    |  4 +-
+ .../chat/browser/widget/chatListRenderer.ts   |  2 +-
+ .../chat/browser/widget/chatListWidget.ts     |  2 +-
  .../contrib/chat/browser/widget/chatWidget.ts |  2 +-
- .../browser/widget/input/chatInputPart.ts     |  4 +-
  .../browser/dictation/editorDictation.ts      |  4 +-
  .../browser/find/simpleFindWidget.ts          |  8 ++--
  .../inspectEditorTokens.ts                    |  4 +-
@@ -138,7 +140,7 @@ Subject: [PATCH] feat: centralize element creation, to be able to create them
  .../debug/browser/debugANSIHandling.ts        |  3 +-
  .../contrib/debug/browser/linkDetector.ts     | 20 ++++----
  .../browser/inlayHintsAccessibilty.ts         |  4 +-
- .../browser/inlineChatStrategies.ts           |  4 +-
+ .../browser/inlineChatOverlayWidget.ts        |  8 ++--
  .../issue/browser/baseIssueReporterService.ts | 18 +++----
  .../contrib/issue/browser/issueFormService.ts |  3 +-
  .../languageStatus/browser/languageStatus.ts  | 12 ++---
@@ -195,13 +197,13 @@ Subject: [PATCH] feat: centralize element creation, to be able to create them
  .../browser/webWorkerExtensionHost.ts         |  2 +-
  .../host/browser/browserHostService.ts        |  6 +--
  .../test/browser/workbenchTestServices.ts     |  4 +-
- 190 files changed, 619 insertions(+), 541 deletions(-)
+ 192 files changed, 615 insertions(+), 538 deletions(-)
 
 diff --git a/src/vs/base/browser/dom.ts b/src/vs/base/browser/dom.ts
-index 3ff29c981bf..0e4b4406d26 100644
+index 81cd815c2d3..d13ffb1bba4 100644
 --- a/src/vs/base/browser/dom.ts
 +++ b/src/vs/base/browser/dom.ts
-@@ -1065,13 +1065,43 @@ export function createLinkElement(container: HTMLElement = mainWindow.document.h
+@@ -1219,13 +1219,43 @@ export function createLinkElement(container: HTMLElement = mainWindow.document.h
  	return createHeadElement('link', container);
  }
  
@@ -246,7 +248,7 @@ index 3ff29c981bf..0e4b4406d26 100644
  export function isHTMLElement(e: unknown): e is HTMLElement {
  	return e instanceof mainWindow.HTMLElement || e instanceof getWindow(e as Node).HTMLElement;
  }
-@@ -1358,9 +1388,9 @@ function _$<T extends Element>(namespace: Namespace, description: string, attrs?
+@@ -1512,9 +1542,9 @@ function _$<T extends Element>(namespace: Namespace, description: string, attrs?
  	let result: T;
  
  	if (namespace !== Namespace.HTML) {
@@ -258,7 +260,7 @@ index 3ff29c981bf..0e4b4406d26 100644
  	}
  
  	if (match[3]) {
-@@ -1411,7 +1441,7 @@ export function join(nodes: Node[], separator: Node | string): Node[] {
+@@ -1565,7 +1595,7 @@ export function join(nodes: Node[], separator: Node | string): Node[] {
  			if (separator instanceof Node) {
  				result.push(separator.cloneNode());
  			} else {
@@ -267,7 +269,7 @@ index 3ff29c981bf..0e4b4406d26 100644
  			}
  		}
  
-@@ -1613,7 +1643,7 @@ export function triggerDownload(dataOrUri: Uint8Array | URI, name: string): void
+@@ -1767,7 +1797,7 @@ export function triggerDownload(dataOrUri: Uint8Array | URI, name: string): void
  	// points to the file to download.
  	// See also https://developers.google.com/web/updates/2011/08/Downloading-resources-in-HTML5-a-download
  	const activeWindow = getActiveWindow();
@@ -276,7 +278,7 @@ index 3ff29c981bf..0e4b4406d26 100644
  	activeWindow.document.body.appendChild(anchor);
  	anchor.download = name;
  	anchor.href = url;
-@@ -1630,7 +1660,7 @@ export function triggerUpload(): Promise<FileList | undefined> {
+@@ -1784,7 +1814,7 @@ export function triggerUpload(): Promise<FileList | undefined> {
  		// input element of type `file` and click it
  		// to gather the selected files
  		const activeWindow = getActiveWindow();
@@ -285,7 +287,7 @@ index 3ff29c981bf..0e4b4406d26 100644
  		activeWindow.document.body.appendChild(input);
  		input.type = 'file';
  		input.multiple = true;
-@@ -2079,7 +2109,7 @@ export function h(tag: string, ...args: [] | [attributes: { $: string } & Partia
+@@ -2252,7 +2282,7 @@ export function h(tag: string, ...args: [] | [attributes: { $: string } & Partia
  	}
  
  	const tagName = match.groups['tag'] || 'div';
@@ -294,7 +296,7 @@ index 3ff29c981bf..0e4b4406d26 100644
  
  	if (match.groups['id']) {
  		el.id = match.groups['id'];
-@@ -2183,7 +2213,7 @@ export function svgElem(tag: string, ...args: [] | [attributes: { $: string } &
+@@ -2356,7 +2386,7 @@ export function svgElem(tag: string, ...args: [] | [attributes: { $: string } &
  
  	const tagName = match.groups['tag'] || 'div';
  	// eslint-disable-next-line local/code-no-any-casts
@@ -303,7 +305,7 @@ index 3ff29c981bf..0e4b4406d26 100644
  
  	if (match.groups['id']) {
  		el.id = match.groups['id'];
-@@ -2449,7 +2479,7 @@ export abstract class ObserverNode<T extends HTMLOrSVGElement = HTMLOrSVGElement
+@@ -2622,7 +2652,7 @@ export abstract class ObserverNode<T extends HTMLOrSVGElement = HTMLOrSVGElement
  		attributes: ElementAttributeKeys<T>,
  		children: ChildNode
  	) {
@@ -385,11 +387,11 @@ index 942bf6e8315..a3f602cbb4e 100644
  	fragment.appendChild(textNode);
  	while (node.firstChild) {
 diff --git a/src/vs/base/browser/domStylesheets.ts b/src/vs/base/browser/domStylesheets.ts
-index 106c74fcb5d..d5caf0b3e24 100644
+index ac5a68bebe2..66329bc37c1 100644
 --- a/src/vs/base/browser/domStylesheets.ts
 +++ b/src/vs/base/browser/domStylesheets.ts
 @@ -6,7 +6,7 @@
- import { DisposableStore, toDisposable, IDisposable } from '../common/lifecycle.js';
+ import { DisposableStore, toDisposable, IDisposable, Disposable } from '../common/lifecycle.js';
  import { autorun, IObservable } from '../common/observable.js';
  import { isFirefox } from './browser.js';
 -import { getWindows, isShadowRoot, sharedMutationObserver } from './dom.js';
@@ -397,7 +399,7 @@ index 106c74fcb5d..d5caf0b3e24 100644
  import { mainWindow } from './window.js';
  
  const globalStylesheets = new Map<HTMLStyleElement /* main stylesheet */, Set<HTMLStyleElement /* aux window clones that track the main stylesheet */>>();
-@@ -56,7 +56,7 @@ export function setContainerElement(container: HTMLElement) {
+@@ -48,7 +48,7 @@ export function setContainerElement(container: HTMLElement) {
  }
  
  export function createStyleSheet(container: HTMLElement = mainWindow.document.head, beforeAppend?: (style: HTMLStyleElement) => void, disposableStore?: DisposableStore): HTMLStyleElement {
@@ -491,7 +493,7 @@ index d2d93b66f30..04e455dbf4e 100644
  		const bsr = ctx?.webkitBackingStorePixelRatio ||
  			ctx?.mozBackingStorePixelRatio ||
 diff --git a/src/vs/base/browser/ui/actionbar/actionViewItems.ts b/src/vs/base/browser/ui/actionbar/actionViewItems.ts
-index ea705bcaa68..063e4010b79 100644
+index 5fed79fe771..3fe4459f71a 100644
 --- a/src/vs/base/browser/ui/actionbar/actionViewItems.ts
 +++ b/src/vs/base/browser/ui/actionbar/actionViewItems.ts
 @@ -5,7 +5,7 @@
@@ -522,7 +524,7 @@ index ea705bcaa68..063e4010b79 100644
  			kbLabel.textContent = this.options.keybinding;
  			this.element.appendChild(kbLabel);
 diff --git a/src/vs/base/browser/ui/actionbar/actionbar.ts b/src/vs/base/browser/ui/actionbar/actionbar.ts
-index 50f60127c44..56bb81fb853 100644
+index da20e27e040..f5a8113bb30 100644
 --- a/src/vs/base/browser/ui/actionbar/actionbar.ts
 +++ b/src/vs/base/browser/ui/actionbar/actionbar.ts
 @@ -14,6 +14,7 @@ import { KeyCode, KeyMod } from '../../../common/keyCodes.js';
@@ -610,7 +612,7 @@ index 6916063459f..c6d2d4db1fe 100644
  				this._renderItem(item, node);
  				this._domNode.appendChild(node);
 diff --git a/src/vs/base/browser/ui/button/button.ts b/src/vs/base/browser/ui/button/button.ts
-index 9b66a126cb9..5f492b42275 100644
+index 5b32ddc9d85..81ce0b90e6e 100644
 --- a/src/vs/base/browser/ui/button/button.ts
 +++ b/src/vs/base/browser/ui/button/button.ts
 @@ -4,7 +4,7 @@
@@ -622,7 +624,7 @@ index 9b66a126cb9..5f492b42275 100644
  import { StandardKeyboardEvent } from '../../keyboardEvent.js';
  import { renderMarkdown, renderAsPlaintext } from '../../markdownRenderer.js';
  import { Gesture, EventType as TouchEventType } from '../../touch.js';
-@@ -110,7 +110,7 @@ export class Button extends Disposable implements IButton {
+@@ -113,7 +113,7 @@ export class Button extends Disposable implements IButton {
  
  		this.options = options;
  
@@ -631,8 +633,8 @@ index 9b66a126cb9..5f492b42275 100644
  		this._element.classList.add('monaco-button');
  		this._element.tabIndex = 0;
  		this._element.setAttribute('role', 'button');
-@@ -123,11 +123,11 @@ export class Button extends Disposable implements IButton {
- 		this._element.style.backgroundColor = background || '';
+@@ -131,11 +131,11 @@ export class Button extends Disposable implements IButton {
+ 		}
  
  		if (options.supportShortLabel) {
 -			this._labelShortElement = document.createElement('div');
@@ -645,7 +647,7 @@ index 9b66a126cb9..5f492b42275 100644
  			this._labelElement.classList.add('monaco-button-label');
  			this._element.appendChild(this._labelElement);
  
-@@ -207,7 +207,7 @@ export class Button extends Disposable implements IButton {
+@@ -215,7 +215,7 @@ export class Button extends Disposable implements IButton {
  				}
  
  				// Convert string segments to <span> nodes
@@ -654,7 +656,7 @@ index 9b66a126cb9..5f492b42275 100644
  				node.textContent = segment;
  				elements.push(node);
  			} else {
-@@ -250,7 +250,7 @@ export class Button extends Disposable implements IButton {
+@@ -262,7 +262,7 @@ export class Button extends Disposable implements IButton {
  		const labelElement = this.options.supportShortLabel ? this._labelElement! : this._element;
  
  		if (isMarkdownString(value)) {
@@ -663,7 +665,7 @@ index 9b66a126cb9..5f492b42275 100644
  			rendered.dispose();
  
  			// Don't include outer `<p>`
-@@ -393,7 +393,7 @@ export class ButtonWithDropdown extends Disposable implements IButton {
+@@ -405,7 +405,7 @@ export class ButtonWithDropdown extends Disposable implements IButton {
  	constructor(container: HTMLElement, options: IButtonWithDropdownOptions) {
  		super();
  
@@ -672,7 +674,7 @@ index 9b66a126cb9..5f492b42275 100644
  		this.element.classList.add('monaco-button-dropdown');
  		container.appendChild(this.element);
  
-@@ -405,10 +405,10 @@ export class ButtonWithDropdown extends Disposable implements IButton {
+@@ -417,10 +417,10 @@ export class ButtonWithDropdown extends Disposable implements IButton {
  		this._register(this.primaryButton.onDidClick(e => this._onDidClick.fire(e)));
  		this.action = toAction({ id: 'primaryAction', label: renderAsPlaintext(this.primaryButton.label), run: async () => this._onDidClick.fire(undefined) });
  
@@ -685,7 +687,7 @@ index 9b66a126cb9..5f492b42275 100644
  		this.separatorContainer.appendChild(this.separator);
  		this.element.appendChild(this.separatorContainer);
  
-@@ -490,11 +490,11 @@ export class ButtonWithDescription implements IButtonWithDescription {
+@@ -502,11 +502,11 @@ export class ButtonWithDescription implements IButtonWithDescription {
  	private _descriptionElement: HTMLElement;
  
  	constructor(container: HTMLElement, private readonly options: IButtonOptions) {
@@ -699,7 +701,7 @@ index 9b66a126cb9..5f492b42275 100644
  		this._descriptionElement.classList.add('monaco-button-description');
  		this._element.appendChild(this._descriptionElement);
  
-@@ -661,7 +661,7 @@ export class ButtonWithIcon extends Button {
+@@ -673,7 +673,7 @@ export class ButtonWithIcon extends Button {
  
  		this._element.classList.add('monaco-text-button');
  		if (isMarkdownString(value)) {
@@ -709,10 +711,10 @@ index 9b66a126cb9..5f492b42275 100644
  
  			// eslint-disable-next-line no-restricted-syntax
 diff --git a/src/vs/base/browser/ui/contextview/contextview.ts b/src/vs/base/browser/ui/contextview/contextview.ts
-index c605560c870..3787dc5e71f 100644
+index b56e1cf334e..68721c5b434 100644
 --- a/src/vs/base/browser/ui/contextview/contextview.ts
 +++ b/src/vs/base/browser/ui/contextview/contextview.ts
-@@ -188,7 +188,7 @@ export class ContextView extends Disposable {
+@@ -190,7 +190,7 @@ export class ContextView extends Disposable {
  				this.shadowRootHostElement = DOM.$('.shadow-root-host');
  				this.container.appendChild(this.shadowRootHostElement);
  				this.shadowRoot = this.shadowRootHostElement.attachShadow({ mode: 'open' });
@@ -722,10 +724,10 @@ index c605560c870..3787dc5e71f 100644
  				this.shadowRoot.appendChild(style);
  				this.shadowRoot.appendChild(this.view);
 diff --git a/src/vs/base/browser/ui/findinput/findInput.ts b/src/vs/base/browser/ui/findinput/findInput.ts
-index 26b9df209a4..0f0f5c830db 100644
+index 39eef0473c9..9e243d5f47d 100644
 --- a/src/vs/base/browser/ui/findinput/findInput.ts
 +++ b/src/vs/base/browser/ui/findinput/findInput.ts
-@@ -103,7 +103,7 @@ export class FindInput extends Widget {
+@@ -104,7 +104,7 @@ export class FindInput extends Widget {
  		const flexibleWidth = !!options.flexibleWidth;
  		const flexibleMaxHeight = options.flexibleMaxHeight;
  
@@ -734,7 +736,7 @@ index 26b9df209a4..0f0f5c830db 100644
  		this.domNode.classList.add('monaco-findInput');
  
  		this.inputBox = this._register(new HistoryInputBox(this.domNode, contextViewProvider, {
-@@ -202,7 +202,7 @@ export class FindInput extends Widget {
+@@ -204,7 +204,7 @@ export class FindInput extends Widget {
  			});
  		}
  
@@ -786,7 +788,7 @@ index cafeb69f17a..67dd648738c 100644
  
  		this.scrollbar = this._register(new DomScrollableElement(this.contentsDomNode, {
 diff --git a/src/vs/base/browser/ui/list/listView.ts b/src/vs/base/browser/ui/list/listView.ts
-index 6f2a2349d5b..7ae7b8f09fa 100644
+index 512430ae805..bc47a62cd80 100644
 --- a/src/vs/base/browser/ui/list/listView.ts
 +++ b/src/vs/base/browser/ui/list/listView.ts
 @@ -4,7 +4,7 @@
@@ -1059,7 +1061,7 @@ index 0da8fa62431..fbeeb46868d 100644
  		this.el.classList.add(this.orientation === Orientation.VERTICAL ? 'vertical' : 'horizontal');
  		container.appendChild(this.el);
 diff --git a/src/vs/base/browser/ui/toggle/toggle.ts b/src/vs/base/browser/ui/toggle/toggle.ts
-index f310bff8965..ffd7deb65d9 100644
+index 0b2fcbbb274..9391bad5972 100644
 --- a/src/vs/base/browser/ui/toggle/toggle.ts
 +++ b/src/vs/base/browser/ui/toggle/toggle.ts
 @@ -10,7 +10,7 @@ import { IMarkdownString, isMarkdownString } from '../../../common/htmlContent.j
@@ -1081,7 +1083,7 @@ index f310bff8965..ffd7deb65d9 100644
  			content: !isMarkdownString(this._title) && !isHTMLElement(this._title) ? stripIcons(this._title) : this._title,
  			style: HoverStyle.Pointer,
 diff --git a/src/vs/base/browser/ui/toolbar/toolbar.ts b/src/vs/base/browser/ui/toolbar/toolbar.ts
-index 5146046fe99..65376c64c15 100644
+index 21696911bd1..27e9b1480cd 100644
 --- a/src/vs/base/browser/ui/toolbar/toolbar.ts
 +++ b/src/vs/base/browser/ui/toolbar/toolbar.ts
 @@ -17,6 +17,7 @@ import './toolbar.css';
@@ -1090,9 +1092,9 @@ index 5146046fe99..65376c64c15 100644
  import { createInstantHoverDelegate } from '../hover/hoverDelegateFactory.js';
 +import { createElement } from '../../dom.js';
  
- const ACTION_MIN_WIDTH = 24; /* 20px codicon + 4px left padding*/
- 
-@@ -85,7 +86,7 @@ export class ToolBar extends Disposable {
+ const ACTION_MIN_WIDTH = 20; /* 20px codicon */
+ const ACTION_PADDING = 4; /* 4px padding */
+@@ -91,7 +92,7 @@ export class ToolBar extends Disposable {
  
  		this.toggleMenuAction = this._register(new ToggleMenuAction(() => this.toggleMenuActionViewItem?.show(), options.toggleMenuTitle));
  
@@ -1102,7 +1104,7 @@ index 5146046fe99..65376c64c15 100644
  		container.appendChild(this.element);
  
 diff --git a/src/vs/base/browser/ui/tree/abstractTree.ts b/src/vs/base/browser/ui/tree/abstractTree.ts
-index 10c3bbfd304..f69a64565cf 100644
+index ece9f2d016c..0800a2f8f45 100644
 --- a/src/vs/base/browser/ui/tree/abstractTree.ts
 +++ b/src/vs/base/browser/ui/tree/abstractTree.ts
 @@ -4,7 +4,7 @@
@@ -1114,7 +1116,7 @@ index 10c3bbfd304..f69a64565cf 100644
  import { createStyleSheet } from '../../domStylesheets.js';
  import { asCssValueWithDefault } from '../../cssValue.js';
  import { DomEmitter } from '../../event.js';
-@@ -1773,7 +1773,7 @@ class StickyScrollWidget<T, TFilterData, TRef> implements IDisposable {
+@@ -1777,7 +1777,7 @@ class StickyScrollWidget<T, TFilterData, TRef> implements IDisposable {
  		const nodeIndex = stickyNode.startIndex;
  
  		// Sticky element container
@@ -1145,7 +1147,7 @@ index eeb080db29a..ae9ffb849d9 100644
  
  	private readonly _onDidGetElement = new Emitter<void>();
 diff --git a/src/vs/code/electron-browser/workbench/workbench.ts b/src/vs/code/electron-browser/workbench/workbench.ts
-index da8713718c7..91df1884822 100644
+index 767fbe08db3..83bd7930643 100644
 --- a/src/vs/code/electron-browser/workbench/workbench.ts
 +++ b/src/vs/code/electron-browser/workbench/workbench.ts
 @@ -3,6 +3,8 @@
@@ -1157,7 +1159,7 @@ index da8713718c7..91df1884822 100644
  /* eslint-disable no-restricted-globals */
  
  (async function () {
-@@ -73,7 +75,7 @@
+@@ -77,7 +79,7 @@
  			}
  		}
  
@@ -1166,7 +1168,7 @@ index da8713718c7..91df1884822 100644
  		style.className = 'initialShellColors';
  		window.document.head.appendChild(style);
  		style.textContent = `body {	background-color: ${shellBackground}; color: ${shellForeground}; margin: 0; padding: 0; }`;
-@@ -87,12 +89,12 @@
+@@ -91,12 +93,12 @@
  		if (data?.layoutInfo) {
  			const { layoutInfo, colorInfo } = data;
  
@@ -1181,7 +1183,7 @@ index da8713718c7..91df1884822 100644
  				borderElement.style.position = 'absolute';
  				borderElement.style.width = 'calc(100vw - 2px)';
  				borderElement.style.height = 'calc(100vh - 2px)';
-@@ -119,7 +121,7 @@
+@@ -123,7 +125,7 @@
  
  			// part: title
  			if (layoutInfo.titleBarHeight > 0) {
@@ -1190,7 +1192,7 @@ index da8713718c7..91df1884822 100644
  				titleDiv.style.position = 'absolute';
  				titleDiv.style.width = '100%';
  				titleDiv.style.height = `${layoutInfo.titleBarHeight}px`;
-@@ -130,7 +132,7 @@
+@@ -134,7 +136,7 @@
  				splash.appendChild(titleDiv);
  
  				if (colorInfo.titleBarBorder) {
@@ -1199,7 +1201,7 @@ index da8713718c7..91df1884822 100644
  					titleBorder.style.position = 'absolute';
  					titleBorder.style.width = '100%';
  					titleBorder.style.height = '1px';
-@@ -143,7 +145,7 @@
+@@ -147,7 +149,7 @@
  
  			// part: activity bar
  			if (layoutInfo.activityBarWidth > 0) {
@@ -1208,7 +1210,7 @@ index da8713718c7..91df1884822 100644
  				activityDiv.style.position = 'absolute';
  				activityDiv.style.width = `${layoutInfo.activityBarWidth}px`;
  				activityDiv.style.height = `calc(100% - ${layoutInfo.titleBarHeight + layoutInfo.statusBarHeight}px)`;
-@@ -157,7 +159,7 @@
+@@ -161,7 +163,7 @@
  				splash.appendChild(activityDiv);
  
  				if (colorInfo.activityBarBorder) {
@@ -1217,7 +1219,7 @@ index da8713718c7..91df1884822 100644
  					activityBorderDiv.style.position = 'absolute';
  					activityBorderDiv.style.width = '1px';
  					activityBorderDiv.style.height = '100%';
-@@ -175,7 +177,7 @@
+@@ -179,7 +181,7 @@
  
  			// part: side bar
  			if (layoutInfo.sideBarWidth > 0) {
@@ -1226,7 +1228,7 @@ index da8713718c7..91df1884822 100644
  				sideDiv.style.position = 'absolute';
  				sideDiv.style.width = `${layoutInfo.sideBarWidth}px`;
  				sideDiv.style.height = `calc(100% - ${layoutInfo.titleBarHeight + layoutInfo.statusBarHeight}px)`;
-@@ -189,7 +191,7 @@
+@@ -193,7 +195,7 @@
  				splash.appendChild(sideDiv);
  
  				if (colorInfo.sideBarBorder) {
@@ -1235,7 +1237,7 @@ index da8713718c7..91df1884822 100644
  					sideBorderDiv.style.position = 'absolute';
  					sideBorderDiv.style.width = '1px';
  					sideBorderDiv.style.height = '100%';
-@@ -207,7 +209,7 @@
+@@ -211,7 +213,7 @@
  
  			// part: auxiliary sidebar
  			if (layoutInfo.auxiliaryBarWidth > 0) {
@@ -1244,7 +1246,7 @@ index da8713718c7..91df1884822 100644
  				auxSideDiv.style.position = 'absolute';
  				auxSideDiv.style.width = `${layoutInfo.auxiliaryBarWidth}px`;
  				auxSideDiv.style.height = `calc(100% - ${layoutInfo.titleBarHeight + layoutInfo.statusBarHeight}px)`;
-@@ -221,7 +223,7 @@
+@@ -225,7 +227,7 @@
  				splash.appendChild(auxSideDiv);
  
  				if (colorInfo.sideBarBorder) {
@@ -1253,7 +1255,7 @@ index da8713718c7..91df1884822 100644
  					auxSideBorderDiv.style.position = 'absolute';
  					auxSideBorderDiv.style.width = '1px';
  					auxSideBorderDiv.style.height = '100%';
-@@ -239,7 +241,7 @@
+@@ -243,7 +245,7 @@
  
  			// part: statusbar
  			if (layoutInfo.statusBarHeight > 0) {
@@ -1262,7 +1264,7 @@ index da8713718c7..91df1884822 100644
  				statusDiv.style.position = 'absolute';
  				statusDiv.style.width = '100%';
  				statusDiv.style.height = `${layoutInfo.statusBarHeight}px`;
-@@ -253,7 +255,7 @@
+@@ -257,7 +259,7 @@
  				splash.appendChild(statusDiv);
  
  				if (colorInfo.statusBarBorder) {
@@ -1271,7 +1273,7 @@ index da8713718c7..91df1884822 100644
  					statusBorderDiv.style.position = 'absolute';
  					statusBorderDiv.style.width = '100%';
  					statusBorderDiv.style.height = '1px';
-@@ -463,7 +465,7 @@
+@@ -465,7 +467,7 @@
  			performance.mark('code/willAddCssLoader');
  
  			globalThis._VSCODE_CSS_LOAD = function (url) {
@@ -1280,7 +1282,7 @@ index da8713718c7..91df1884822 100644
  				link.setAttribute('rel', 'stylesheet');
  				link.setAttribute('type', 'text/css');
  				link.setAttribute('href', url);
-@@ -481,7 +483,7 @@
+@@ -483,7 +485,7 @@
  
  			const ttp = window.trustedTypes?.createPolicy('vscode-bootstrapImportMap', { createScript(value) { return value; }, });
  			const importMapSrc = JSON.stringify(importMap, undefined, 2);
@@ -1289,7 +1291,7 @@ index da8713718c7..91df1884822 100644
  			importMapScript.type = 'importmap';
  			importMapScript.setAttribute('nonce', '0c6a828f1297');
  			// @ts-expect-error
-@@ -523,7 +525,7 @@
+@@ -525,7 +527,7 @@
  				// initialize canvas when it is idle, right
  				// before we wait for the scripts to be loaded.
  				window.requestIdleCallback(() => {
@@ -1402,7 +1404,7 @@ index a04ad8ed1ca..b5e14b76c54 100644
  	ret.style.position = 'absolute';
  	ret.style.zIndex = '999999999';
 diff --git a/src/vs/editor/browser/controller/editContext/native/nativeEditContext.ts b/src/vs/editor/browser/controller/editContext/native/nativeEditContext.ts
-index 6334e8bdfe1..810c6be515d 100644
+index 88d97714e7c..c558b7efcaf 100644
 --- a/src/vs/editor/browser/controller/editContext/native/nativeEditContext.ts
 +++ b/src/vs/editor/browser/controller/editContext/native/nativeEditContext.ts
 @@ -5,7 +5,7 @@
@@ -1414,7 +1416,7 @@ index 6334e8bdfe1..810c6be515d 100644
  import { FastDomNode } from '../../../../../base/browser/fastDomNode.js';
  import { StandardKeyboardEvent } from '../../../../../base/browser/keyboardEvent.js';
  import { KeyCode } from '../../../../../base/common/keyCodes.js';
-@@ -82,9 +82,9 @@ export class NativeEditContext extends AbstractEditContext {
+@@ -84,9 +84,9 @@ export class NativeEditContext extends AbstractEditContext {
  	) {
  		super(context);
  
@@ -1449,7 +1451,7 @@ index 301af699ade..53626234f0c 100644
  		domNode.style.lineHeight = lineHeight;
  		domNode.style.height = lineHeight;
 diff --git a/src/vs/editor/browser/controller/editContext/textArea/textAreaEditContext.ts b/src/vs/editor/browser/controller/editContext/textArea/textAreaEditContext.ts
-index b1eab383d05..2d316d117ee 100644
+index f19cc424373..837e3ee23b7 100644
 --- a/src/vs/editor/browser/controller/editContext/textArea/textAreaEditContext.ts
 +++ b/src/vs/editor/browser/controller/editContext/textArea/textAreaEditContext.ts
 @@ -40,6 +40,7 @@ import { ariaLabelForScreenReaderContent, newlinecount, SimplePagedScreenReaderS
@@ -1492,7 +1494,7 @@ index 9ed4d1c0e2c..d022fdb0030 100644
  
  	public getCharWidth(char: string, font: string): number {
 diff --git a/src/vs/editor/browser/gpu/viewGpuContext.ts b/src/vs/editor/browser/gpu/viewGpuContext.ts
-index e3f24380846..603b50c8828 100644
+index 9d520abdb3b..959416124ea 100644
 --- a/src/vs/editor/browser/gpu/viewGpuContext.ts
 +++ b/src/vs/editor/browser/gpu/viewGpuContext.ts
 @@ -4,7 +4,7 @@
@@ -1504,7 +1506,7 @@ index e3f24380846..603b50c8828 100644
  import { createFastDomNode, type FastDomNode } from '../../../base/browser/fastDomNode.js';
  import { Color } from '../../../base/common/color.js';
  import { BugIndicatingError } from '../../../base/common/errors.js';
-@@ -85,7 +85,7 @@ export class ViewGpuContext extends Disposable {
+@@ -87,7 +87,7 @@ export class ViewGpuContext extends Disposable {
  	) {
  		super();
  
@@ -1514,7 +1516,7 @@ index e3f24380846..603b50c8828 100644
  
  		// Adjust the canvas size to avoid drawing under the scroll bar
 diff --git a/src/vs/editor/browser/observableCodeEditor.ts b/src/vs/editor/browser/observableCodeEditor.ts
-index 6c7f5cddaa0..bba99ecad50 100644
+index 4c415ec53dd..57d188ad474 100644
 --- a/src/vs/editor/browser/observableCodeEditor.ts
 +++ b/src/vs/editor/browser/observableCodeEditor.ts
 @@ -16,6 +16,7 @@ import { IModelDeltaDecoration, ITextModel } from '../common/model.js';
@@ -1535,10 +1537,10 @@ index 6c7f5cddaa0..bba99ecad50 100644
  			getDomNode: () => domNode,
  			getPosition: () => {
 diff --git a/src/vs/editor/browser/view.ts b/src/vs/editor/browser/view.ts
-index 913c7c970e2..d2769f82f77 100644
+index 9a544c6d28f..38d7345f256 100644
 --- a/src/vs/editor/browser/view.ts
 +++ b/src/vs/editor/browser/view.ts
-@@ -142,7 +142,7 @@ export class View extends ViewEventHandler {
+@@ -154,7 +154,7 @@ export class View extends ViewEventHandler {
  		this._selections = [new Selection(1, 1, 1, 1)];
  		this._renderAnimationFrame = null;
  
@@ -1547,7 +1549,7 @@ index 913c7c970e2..d2769f82f77 100644
  		PartFingerprints.write(this._overflowGuardContainer, PartFingerprint.OverflowGuard);
  		this._overflowGuardContainer.setClassName('overflow-guard');
  
-@@ -164,11 +164,11 @@ export class View extends ViewEventHandler {
+@@ -177,11 +177,11 @@ export class View extends ViewEventHandler {
  		this._viewParts.push(this._editContext);
  
  		// These two dom nodes must be constructed up front, since references are needed in the layout provider (scrolling & co.)
@@ -1643,7 +1645,7 @@ index 70fe366c06c..d9b40f4f473 100644
  			}
  
 diff --git a/src/vs/editor/browser/viewParts/contentWidgets/contentWidgets.ts b/src/vs/editor/browser/viewParts/contentWidgets/contentWidgets.ts
-index 4681a470db4..d8c0dd87c10 100644
+index 550be23f481..c6a9b55272b 100644
 --- a/src/vs/editor/browser/viewParts/contentWidgets/contentWidgets.ts
 +++ b/src/vs/editor/browser/viewParts/contentWidgets/contentWidgets.ts
 @@ -35,13 +35,13 @@ export class ViewContentWidgets extends ViewPart {
@@ -1858,7 +1860,7 @@ index 2c9deddd77c..81f1b5e0337 100644
  		this._domNode.setPosition('absolute');
  		this._domNode.setLayerHinting(true);
 diff --git a/src/vs/editor/browser/viewParts/rulers/rulers.ts b/src/vs/editor/browser/viewParts/rulers/rulers.ts
-index f34f20f43a9..0373b2ebc58 100644
+index ec1a5042e91..74891321d36 100644
 --- a/src/vs/editor/browser/viewParts/rulers/rulers.ts
 +++ b/src/vs/editor/browser/viewParts/rulers/rulers.ts
 @@ -10,6 +10,7 @@ import { RenderingContext, RestrictedRenderingContext } from '../../view/renderi
@@ -1885,7 +1887,7 @@ index f34f20f43a9..0373b2ebc58 100644
 -				const node = createFastDomNode(document.createElement('div'));
 +				const node = createFastDomNode(createElement('div'));
  				node.setClassName('view-ruler');
- 				node.setWidth('1px');
+ 				node.setWidth('1ch');
  				this.domNode.appendChild(node);
 diff --git a/src/vs/editor/browser/viewParts/scrollDecoration/scrollDecoration.ts b/src/vs/editor/browser/viewParts/scrollDecoration/scrollDecoration.ts
 index dc5dc300709..7fb462b952e 100644
@@ -1944,7 +1946,7 @@ index d3fd3861bb2..d4c49434612 100644
  		this._domNode.setAttribute('aria-hidden', 'true');
  		this._updateDomClassName();
 diff --git a/src/vs/editor/browser/viewParts/viewLines/viewLines.ts b/src/vs/editor/browser/viewParts/viewLines/viewLines.ts
-index f7086529469..6f727248eb0 100644
+index cb819821291..4d3f658c826 100644
 --- a/src/vs/editor/browser/viewParts/viewLines/viewLines.ts
 +++ b/src/vs/editor/browser/viewParts/viewLines/viewLines.ts
 @@ -27,6 +27,7 @@ import { ViewContext } from '../../../common/viewModel/viewContext.js';
@@ -2481,7 +2483,7 @@ index f15557441bd..42924dc54c7 100644
  
  		const context: IEditorHoverRenderContext = {
 diff --git a/src/vs/editor/contrib/find/browser/findOptionsWidget.ts b/src/vs/editor/contrib/find/browser/findOptionsWidget.ts
-index 57bb5c1c951..794d8bf4cdc 100644
+index dab491acd42..553087d6bd6 100644
 --- a/src/vs/editor/contrib/find/browser/findOptionsWidget.ts
 +++ b/src/vs/editor/contrib/find/browser/findOptionsWidget.ts
 @@ -39,7 +39,7 @@ export class FindOptionsWidget extends Widget implements IOverlayWidget {
@@ -2494,7 +2496,7 @@ index 57bb5c1c951..794d8bf4cdc 100644
  		this._domNode.style.display = 'none';
  		this._domNode.style.top = '10px';
 diff --git a/src/vs/editor/contrib/find/browser/findWidget.ts b/src/vs/editor/contrib/find/browser/findWidget.ts
-index b6724abfa60..70f6ef1c666 100644
+index 25efe745fe0..d7d5c8919d6 100644
 --- a/src/vs/editor/contrib/find/browser/findWidget.ts
 +++ b/src/vs/editor/contrib/find/browser/findWidget.ts
 @@ -97,7 +97,7 @@ export class FindWidgetViewZone implements IViewZone {
@@ -2515,7 +2517,7 @@ index b6724abfa60..70f6ef1c666 100644
  
  		alertFn(this._getAriaLabel(label, this._state.currentMatch, this._state.searchString));
  		MAX_MATCHES_COUNT_WIDTH = Math.max(MAX_MATCHES_COUNT_WIDTH, this._matchesCount.clientWidth);
-@@ -998,7 +998,7 @@ export class FindWidget extends Widget implements IOverlayWidget, IVerticalSashL
+@@ -994,7 +994,7 @@ export class FindWidget extends Widget implements IOverlayWidget, IVerticalSashL
  			this._register(this._findInput.onMouseDown((e) => this._onFindInputMouseDown(e)));
  		}
  
@@ -2524,7 +2526,7 @@ index b6724abfa60..70f6ef1c666 100644
  		this._matchesCount.className = 'matchesCount';
  		this._updateMatchesCount();
  
-@@ -1024,10 +1024,10 @@ export class FindWidget extends Widget implements IOverlayWidget, IVerticalSashL
+@@ -1020,10 +1020,10 @@ export class FindWidget extends Widget implements IOverlayWidget, IVerticalSashL
  			}
  		}, this._hoverService));
  
@@ -2537,7 +2539,7 @@ index b6724abfa60..70f6ef1c666 100644
  		actionsContainer.className = 'find-actions';
  		findPart.appendChild(actionsContainer);
  		actionsContainer.appendChild(this._matchesCount);
-@@ -1163,11 +1163,11 @@ export class FindWidget extends Widget implements IOverlayWidget, IVerticalSashL
+@@ -1159,11 +1159,11 @@ export class FindWidget extends Widget implements IOverlayWidget, IVerticalSashL
  			}
  		}, this._hoverService));
  
@@ -2551,7 +2553,7 @@ index b6724abfa60..70f6ef1c666 100644
  		replaceActionsContainer.className = 'replace-actions';
  		replacePart.appendChild(replaceActionsContainer);
  
-@@ -1190,7 +1190,7 @@ export class FindWidget extends Widget implements IOverlayWidget, IVerticalSashL
+@@ -1186,7 +1186,7 @@ export class FindWidget extends Widget implements IOverlayWidget, IVerticalSashL
  		this._toggleReplaceBtn.setExpanded(this._isReplaceVisible);
  
  		// Widget
@@ -2560,7 +2562,7 @@ index b6724abfa60..70f6ef1c666 100644
  		this._domNode.className = 'editor-widget find-widget';
  		this._domNode.setAttribute('aria-hidden', 'true');
  		this._domNode.ariaLabel = NLS_FIND_DIALOG_LABEL;
-@@ -1325,7 +1325,7 @@ export class SimpleButton extends Widget {
+@@ -1321,7 +1321,7 @@ export class SimpleButton extends Widget {
  			className = className + ' ' + ThemeIcon.asClassName(this._opts.icon);
  		}
  
@@ -2712,7 +2714,7 @@ index 7693d88fcfd..053e4fc5b6e 100644
  
  		disposables.add(autorunWithStore((reader, store) => {
 diff --git a/src/vs/editor/contrib/inlineCompletions/browser/view/ghostText/ghostTextView.ts b/src/vs/editor/contrib/inlineCompletions/browser/view/ghostText/ghostTextView.ts
-index e244d37aaf2..90b48a6f5fb 100644
+index 96053b4e19a..924dfd08423 100644
 --- a/src/vs/editor/contrib/inlineCompletions/browser/view/ghostText/ghostTextView.ts
 +++ b/src/vs/editor/contrib/inlineCompletions/browser/view/ghostText/ghostTextView.ts
 @@ -27,7 +27,7 @@ import { RenderLineInput, renderViewLine } from '../../../../../common/viewLayou
@@ -2724,7 +2726,7 @@ index e244d37aaf2..90b48a6f5fb 100644
  import './ghostTextView.css';
  import { IMouseEvent, StandardMouseEvent } from '../../../../../../base/browser/mouseEvent.js';
  import { CodeEditorWidget } from '../../../../../browser/widget/codeEditor/codeEditorWidget.js';
-@@ -531,7 +531,7 @@ export class AdditionalLinesWidget extends Disposable {
+@@ -550,7 +550,7 @@ export class AdditionalLinesWidget extends Disposable {
  
  				const heightInLines = Math.max(additionalLines.length, minReservedLineCount);
  				if (heightInLines > 0) {
@@ -3167,108 +3169,11 @@ index dddb6f8f059..49268f649d0 100644
  
  		this.codeEditor.addOverlayWidget(this);
  	}
-diff --git a/src/vs/editor/test/browser/controller/imeRecorder.ts b/src/vs/editor/test/browser/controller/imeRecorder.ts
-index 95bd1c5fd7c..a6c488488f9 100644
---- a/src/vs/editor/test/browser/controller/imeRecorder.ts
-+++ b/src/vs/editor/test/browser/controller/imeRecorder.ts
-@@ -9,6 +9,7 @@ import * as browser from '../../../../base/browser/browser.js';
- import * as platform from '../../../../base/common/platform.js';
- import { mainWindow } from '../../../../base/browser/window.js';
- import { TextAreaWrapper } from '../../../browser/controller/editContext/textArea/textAreaEditContextInput.js';
-+import { createElement } from '../../../../base/browser/dom.js';
- 
- (() => {
- 
-@@ -92,7 +93,7 @@ import { TextAreaWrapper } from '../../../browser/controller/editContext/textAre
- 	}
- 
- 	function startTest() {
--		inputarea = document.createElement('textarea');
-+		inputarea = createElement('textarea');
- 		mainWindow.document.body.appendChild(inputarea);
- 		inputarea.focus();
- 		disposables.add(toDisposable(() => {
-diff --git a/src/vs/editor/test/browser/controller/imeTester.ts b/src/vs/editor/test/browser/controller/imeTester.ts
-index da5deba4a5d..d445c673f07 100644
---- a/src/vs/editor/test/browser/controller/imeTester.ts
-+++ b/src/vs/editor/test/browser/controller/imeTester.ts
-@@ -73,9 +73,9 @@ class TestView {
- 	public paint(output: HTMLElement) {
- 		dom.clearNode(output);
- 		for (let i = 1; i <= this._model.getLineCount(); i++) {
--			const textNode = document.createTextNode(this._model.getModelLineContent(i));
-+			const textNode = dom.createTextNode(this._model.getModelLineContent(i));
- 			output.appendChild(textNode);
--			const br = document.createElement('br');
-+			const br = dom.createElement('br');
- 			output.appendChild(br);
- 		}
- 	}
-@@ -85,13 +85,13 @@ function doCreateTest(description: string, inputStr: string, expectedStr: string
- 	let cursorOffset: number = 0;
- 	let cursorLength: number = 0;
- 
--	const container = document.createElement('div');
-+	const container = dom.createElement('div');
- 	container.className = 'container';
- 
--	const title = document.createElement('div');
-+	const title = dom.createElement('div');
- 	title.className = 'title';
- 
--	const inputStrStrong = document.createElement('strong');
-+	const inputStrStrong = dom.createElement('strong');
- 	inputStrStrong.innerText = inputStr;
- 
- 	title.innerText = description + '. Type ';
-@@ -99,12 +99,12 @@ function doCreateTest(description: string, inputStr: string, expectedStr: string
- 
- 	container.appendChild(title);
- 
--	const startBtn = document.createElement('button');
-+	const startBtn = dom.createElement('button');
- 	startBtn.innerText = 'Start';
- 	container.appendChild(startBtn);
- 
- 
--	const input = document.createElement('textarea');
-+	const input = dom.createElement('textarea');
- 	input.setAttribute('rows', '10');
- 	input.setAttribute('cols', '40');
- 	container.appendChild(input);
-@@ -131,15 +131,15 @@ function doCreateTest(description: string, inputStr: string, expectedStr: string
- 		isSafari: browser.isSafari,
- 	}, new TestAccessibilityService(), new NullLogService());
- 
--	const output = document.createElement('pre');
-+	const output = dom.createElement('pre');
- 	output.className = 'output';
- 	container.appendChild(output);
- 
--	const check = document.createElement('pre');
-+	const check = dom.createElement('pre');
- 	check.className = 'check';
- 	container.appendChild(check);
- 
--	const br = document.createElement('br');
-+	const br = dom.createElement('br');
- 	br.style.clear = 'both';
- 	container.appendChild(br);
- 
-@@ -165,7 +165,7 @@ function doCreateTest(description: string, inputStr: string, expectedStr: string
- 			check.innerText = '[BAD]';
- 			check.className = 'check bad';
- 		}
--		check.appendChild(document.createTextNode(expected));
-+		check.appendChild(dom.createTextNode(expected));
- 	};
- 
- 	handler.onType((e) => {
 diff --git a/src/vs/platform/actionWidget/browser/actionList.ts b/src/vs/platform/actionWidget/browser/actionList.ts
-index a9f5fa8b0e6..c5b5b7d1ac8 100644
+index 0a55d553e77..81fc2bae18d 100644
 --- a/src/vs/platform/actionWidget/browser/actionList.ts
 +++ b/src/vs/platform/actionWidget/browser/actionList.ts
-@@ -69,7 +69,7 @@ class HeaderRenderer<T> implements IListRenderer<IActionListItem<T>, IHeaderTemp
+@@ -97,7 +97,7 @@ class HeaderRenderer<T> implements IListRenderer<IActionListItem<T>, IHeaderTemp
  	renderTemplate(container: HTMLElement): IHeaderTemplateData {
  		container.classList.add('group-header');
  
@@ -3277,7 +3182,7 @@ index a9f5fa8b0e6..c5b5b7d1ac8 100644
  		container.append(text);
  
  		return { container, text };
-@@ -96,7 +96,7 @@ class SeparatorRenderer<T> implements IListRenderer<IActionListItem<T>, ISeparat
+@@ -124,7 +124,7 @@ class SeparatorRenderer<T> implements IListRenderer<IActionListItem<T>, ISeparat
  	renderTemplate(container: HTMLElement): ISeparatorTemplateData {
  		container.classList.add('separator');
  
@@ -3286,7 +3191,7 @@ index a9f5fa8b0e6..c5b5b7d1ac8 100644
  		container.append(text);
  
  		return { container, text };
-@@ -123,15 +123,15 @@ class ActionItemRenderer<T> implements IListRenderer<IActionListItem<T>, IAction
+@@ -151,21 +151,21 @@ class ActionItemRenderer<T> implements IListRenderer<IActionListItem<T>, IAction
  	renderTemplate(container: HTMLElement): IActionMenuTemplateData {
  		container.classList.add(this.templateId);
  
@@ -3305,8 +3210,15 @@ index a9f5fa8b0e6..c5b5b7d1ac8 100644
  		description.className = 'description';
  		container.append(description);
  
-@@ -236,7 +236,7 @@ export class ActionList<T> extends Disposable {
- 		@ILayoutService private readonly _layoutService: ILayoutService,
+ 		const keybinding = new KeybindingLabel(container, OS);
+ 
+-		const toolbar = document.createElement('div');
++		const toolbar = dom.createElement('div');
+ 		toolbar.className = 'action-list-item-toolbar';
+ 		container.append(toolbar);
+ 
+@@ -289,7 +289,7 @@ export class ActionList<T> extends Disposable {
+ 		@IHoverService private readonly _hoverService: IHoverService,
  	) {
  		super();
 -		this.domNode = document.createElement('div');
@@ -3315,7 +3227,7 @@ index a9f5fa8b0e6..c5b5b7d1ac8 100644
  		const virtualDelegate: IListVirtualDelegate<IActionListItem<T>> = {
  			getHeight: element => {
 diff --git a/src/vs/platform/actionWidget/browser/actionWidget.ts b/src/vs/platform/actionWidget/browser/actionWidget.ts
-index 2e037dca7ba..00e19645faa 100644
+index 495b1c9fdfc..d92524debcd 100644
 --- a/src/vs/platform/actionWidget/browser/actionWidget.ts
 +++ b/src/vs/platform/actionWidget/browser/actionWidget.ts
 @@ -99,7 +99,7 @@ export class ActionWidgetService extends Disposable implements IActionWidgetServ
@@ -3438,7 +3350,7 @@ index ee7e9d98df6..5e622722dc5 100644
  		this.afterLineNumber = line;
  		this.afterColumn = 1;
 diff --git a/src/vs/workbench/browser/actions/developerActions.ts b/src/vs/workbench/browser/actions/developerActions.ts
-index 1fd3c6f6976..bfd95812263 100644
+index ca0140e4fb3..5932fe2e423 100644
 --- a/src/vs/workbench/browser/actions/developerActions.ts
 +++ b/src/vs/workbench/browser/actions/developerActions.ts
 @@ -11,7 +11,7 @@ import { DomEmitter } from '../../../base/browser/event.js';
@@ -3460,7 +3372,7 @@ index 1fd3c6f6976..bfd95812263 100644
  		activeDocument.body.appendChild(hoverFeedback);
  		disposables.add(toDisposable(() => hoverFeedback.remove()));
 diff --git a/src/vs/workbench/browser/layout.ts b/src/vs/workbench/browser/layout.ts
-index f05561e6e50..f2f26cafc0c 100644
+index 83754c6d1ec..8bb50e8aac2 100644
 --- a/src/vs/workbench/browser/layout.ts
 +++ b/src/vs/workbench/browser/layout.ts
 @@ -4,7 +4,7 @@
@@ -3472,7 +3384,7 @@ index f05561e6e50..f2f26cafc0c 100644
  import { setContainerElement } from '../../base/browser/domStylesheets.js';
  import { Direction, ISerializableView, ISerializedGrid, ISerializedLeafNode, ISerializedNode, IViewSize, Orientation, SerializableGrid, Sizing } from '../../base/browser/ui/grid/grid.js';
  import { CodeWindow, mainWindow } from '../../base/browser/window.js';
-@@ -185,7 +185,7 @@ export abstract class Layout extends Disposable implements IWorkbenchLayoutServi
+@@ -186,7 +186,7 @@ export abstract class Layout extends Disposable implements IWorkbenchLayoutServi
  
  	//#region Properties
  
@@ -3482,7 +3394,7 @@ index f05561e6e50..f2f26cafc0c 100644
  	get containers(): Iterable<HTMLElement> {
  		const containers: HTMLElement[] = [];
 diff --git a/src/vs/workbench/browser/parts/editor/breadcrumbsControl.ts b/src/vs/workbench/browser/parts/editor/breadcrumbsControl.ts
-index 094ee8995fa..d3c97b63539 100644
+index ba678499fec..3b28dfead7d 100644
 --- a/src/vs/workbench/browser/parts/editor/breadcrumbsControl.ts
 +++ b/src/vs/workbench/browser/parts/editor/breadcrumbsControl.ts
 @@ -276,7 +276,7 @@ export class BreadcrumbsControl {
@@ -3614,7 +3526,7 @@ index c971d405e21..4c983e4bf4c 100644
  		for (const child of result) {
  			if (DOM.isHTMLElement(child)) {
 diff --git a/src/vs/workbench/browser/workbench.ts b/src/vs/workbench/browser/workbench.ts
-index 5a53b5423a4..57c88e3ab62 100644
+index 1c304a11a9e..77c83d6dee7 100644
 --- a/src/vs/workbench/browser/workbench.ts
 +++ b/src/vs/workbench/browser/workbench.ts
 @@ -4,7 +4,7 @@
@@ -3626,7 +3538,7 @@ index 5a53b5423a4..57c88e3ab62 100644
  import { Event, Emitter, setGlobalLeakWarningThreshold } from '../../base/common/event.js';
  import { RunOnceScheduler, timeout } from '../../base/common/async.js';
  import { isFirefox, isSafari, isChrome } from '../../base/browser/browser.js';
-@@ -343,7 +343,7 @@ export class Workbench extends Layout {
+@@ -348,7 +348,7 @@ export class Workbench extends Layout {
  	}
  
  	private createPart(id: string, role: string, classes: string[]): HTMLElement {
@@ -3636,7 +3548,7 @@ index 5a53b5423a4..57c88e3ab62 100644
  		part.id = id;
  		part.setAttribute('role', role);
 diff --git a/src/vs/workbench/contrib/accessibility/browser/accessibleView.ts b/src/vs/workbench/contrib/accessibility/browser/accessibleView.ts
-index 376f1dda25e..7b8c2f1a30d 100644
+index 428c63041da..de43c0097e0 100644
 --- a/src/vs/workbench/contrib/accessibility/browser/accessibleView.ts
 +++ b/src/vs/workbench/contrib/accessibility/browser/accessibleView.ts
 @@ -3,7 +3,7 @@
@@ -3648,7 +3560,7 @@ index 376f1dda25e..7b8c2f1a30d 100644
  import { IKeyboardEvent, StandardKeyboardEvent } from '../../../../base/browser/keyboardEvent.js';
  import { ActionsOrientation } from '../../../../base/browser/ui/actionbar/actionbar.js';
  import { alert } from '../../../../base/browser/ui/aria/aria.js';
-@@ -129,7 +129,7 @@ export class AccessibleView extends Disposable implements ITextModelContentProvi
+@@ -128,7 +128,7 @@ export class AccessibleView extends Disposable {
  		this._hasUnassignedKeybindings = accessibleViewHasUnassignedKeybindings.bindTo(this._contextKeyService);
  		this._hasAssignedKeybindings = accessibleViewHasAssignedKeybindings.bindTo(this._contextKeyService);
  
@@ -3657,7 +3569,7 @@ index 376f1dda25e..7b8c2f1a30d 100644
  		this._container.classList.add('accessible-view');
  		if (this._configurationService.getValue(AccessibilityWorkbenchSettingId.HideAccessibleView)) {
  			this._container.classList.add('hide');
-@@ -138,12 +138,12 @@ export class AccessibleView extends Disposable implements ITextModelContentProvi
+@@ -137,12 +137,12 @@ export class AccessibleView extends Disposable {
  			contributions: EditorExtensionsRegistry.getEditorContributions()
  				.filter(c => c.id !== CodeActionController.ID && c.id !== FloatingEditorClickMenu.ID && c.id !== FloatingEditorToolbar.ID)
  		};
@@ -3833,10 +3745,10 @@ index 160d73e72b8..422719e1ff5 100644
  		const label = new IconLabel(container, { supportHighlights: true });
  		return new CallRenderingTemplate(icon, label);
 diff --git a/src/vs/workbench/contrib/chat/browser/attachments/simpleBrowserEditorOverlay.ts b/src/vs/workbench/contrib/chat/browser/attachments/simpleBrowserEditorOverlay.ts
-index ddd15d9dd8e..889ef76af87 100644
+index 8ef8c035627..0ff2a60403f 100644
 --- a/src/vs/workbench/contrib/chat/browser/attachments/simpleBrowserEditorOverlay.ts
 +++ b/src/vs/workbench/contrib/chat/browser/attachments/simpleBrowserEditorOverlay.ts
-@@ -23,7 +23,7 @@ import { IHostService } from '../../../../services/host/browser/host.js';
+@@ -22,7 +22,7 @@ import { IHostService } from '../../../../services/host/browser/host.js';
  import { IChatWidgetService } from '../chat.js';
  import { Button, ButtonWithDropdown } from '../../../../../base/browser/ui/button/button.js';
  import { defaultButtonStyles } from '../../../../../platform/theme/browser/defaultStyles.js';
@@ -3845,7 +3757,7 @@ index ddd15d9dd8e..889ef76af87 100644
  import { IConfigurationService } from '../../../../../platform/configuration/common/configuration.js';
  import { cleanupOldImages, createFileForMedia } from '../chatImageUtils.js';
  import { IFileService } from '../../../../../platform/files/common/files.js';
-@@ -75,13 +75,13 @@ class SimpleBrowserOverlayWidget {
+@@ -81,13 +81,13 @@ class SimpleBrowserOverlayWidget {
  		this.imagesFolder = joinPath(this.environmentService.workspaceStorageHome, 'vscode-chat-images');
  		cleanupOldImages(this.fileService, this.logService, this.imagesFolder);
  
@@ -3862,7 +3774,7 @@ index ddd15d9dd8e..889ef76af87 100644
  		const startSelectionMessage = localize('elementSelectionMessage', 'Add element to chat');
  		message.textContent = startSelectionMessage;
  		mainContent.appendChild(message);
-@@ -152,7 +152,7 @@ class SimpleBrowserOverlayWidget {
+@@ -158,7 +158,7 @@ class SimpleBrowserOverlayWidget {
  		nextSelection.element.classList.add('hidden');
  
  		// shown if the overlay is collapsed
@@ -3871,7 +3783,7 @@ index ddd15d9dd8e..889ef76af87 100644
  		expandContainer.className = 'element-expand-container hidden';
  		const expandOverlay = this._showStore.add(new Button(expandContainer, { supportIcons: true, title: localize('chat.expandOverlay', "Expand Overlay") }));
  		expandOverlay.icon = Codicon.layout;
-@@ -325,7 +325,7 @@ class SimpleBrowserOverlayController {
+@@ -358,7 +358,7 @@ class SimpleBrowserOverlayController {
  
  	private readonly _store = new DisposableStore();
  
@@ -3880,7 +3792,7 @@ index ddd15d9dd8e..889ef76af87 100644
  
  	constructor(
  		container: HTMLElement,
-@@ -350,7 +350,7 @@ class SimpleBrowserOverlayController {
+@@ -383,7 +383,7 @@ class SimpleBrowserOverlayController {
  		this._store.add(toDisposable(() => this._domNode.remove()));
  		this._store.add(widget);
  
@@ -3890,7 +3802,7 @@ index ddd15d9dd8e..889ef76af87 100644
  
  
 diff --git a/src/vs/workbench/contrib/chat/browser/chatEditing/chatEditingCodeEditorIntegration.ts b/src/vs/workbench/contrib/chat/browser/chatEditing/chatEditingCodeEditorIntegration.ts
-index bda048be301..82c5d170f19 100644
+index 2e43b458f3d..9d305673900 100644
 --- a/src/vs/workbench/contrib/chat/browser/chatEditing/chatEditingCodeEditorIntegration.ts
 +++ b/src/vs/workbench/contrib/chat/browser/chatEditing/chatEditingCodeEditorIntegration.ts
 @@ -5,7 +5,7 @@
@@ -3902,7 +3814,7 @@ index bda048be301..82c5d170f19 100644
  import { Event } from '../../../../../base/common/event.js';
  import { DisposableStore, dispose, IDisposable, toDisposable } from '../../../../../base/common/lifecycle.js';
  import { autorun, constObservable, derived, IObservable, observableFromEvent, observableValue } from '../../../../../base/common/observable.js';
-@@ -405,7 +405,7 @@ export class ChatEditingCodeEditorIntegration implements IModifiedFileEntryEdito
+@@ -422,7 +422,7 @@ export class ChatEditingCodeEditorIntegration implements IModifiedFileEntryEdito
  
  				let extraLines = 0;
  				if (reviewMode && !diffMode) {
@@ -3911,7 +3823,7 @@ index bda048be301..82c5d170f19 100644
  					domNode.className = 'chat-editing-original-zone view-lines line-delete monaco-mouse-cursor-text';
  					const result = renderLines(source, renderOptions, decorations, domNode);
  					extraLines = result.heightInLines;
-@@ -737,7 +737,7 @@ class DiffHunkWidget implements IOverlayWidget, IModifiedFileEntryChangeHunk {
+@@ -754,7 +754,7 @@ class DiffHunkWidget implements IOverlayWidget, IModifiedFileEntryChangeHunk {
  		private _lineDelta: number,
  		@IInstantiationService instaService: IInstantiationService,
  	) {
@@ -3920,7 +3832,7 @@ index bda048be301..82c5d170f19 100644
  		this._domNode.className = 'chat-diff-change-content-widget';
  
  		const toolbar = instaService.createInstance(MenuWorkbenchToolBar, this._domNode, MenuId.ChatEditingEditorHunk, {
-@@ -852,7 +852,7 @@ class AccessibleDiffViewContainer implements IOverlayWidget {
+@@ -876,7 +876,7 @@ class AccessibleDiffViewContainer implements IOverlayWidget {
  	private readonly _domNode: HTMLElement;
  
  	constructor() {
@@ -3930,19 +3842,19 @@ index bda048be301..82c5d170f19 100644
  		this._domNode.style.width = '100%';
  		this._domNode.style.position = 'absolute';
 diff --git a/src/vs/workbench/contrib/chat/browser/chatEditing/chatEditingEditorOverlay.ts b/src/vs/workbench/contrib/chat/browser/chatEditing/chatEditingEditorOverlay.ts
-index 9b38068939b..ce4fd00e90c 100644
+index cbaa0bc4753..006cb67340c 100644
 --- a/src/vs/workbench/contrib/chat/browser/chatEditing/chatEditingEditorOverlay.ts
 +++ b/src/vs/workbench/contrib/chat/browser/chatEditing/chatEditingEditorOverlay.ts
 @@ -12,7 +12,7 @@ import { IChatEditingService, IChatEditingSession, IModifiedFileEntry, ModifiedF
  import { MenuId } from '../../../../../platform/actions/common/actions.js';
- import { ActionViewItem } from '../../../../../base/browser/ui/actionbar/actionViewItems.js';
- import { IActionRunner } from '../../../../../base/common/actions.js';
+ import { ActionViewItem, IBaseActionViewItemOptions } from '../../../../../base/browser/ui/actionbar/actionViewItems.js';
+ import { IAction, IActionRunner } from '../../../../../base/common/actions.js';
 -import { $, addDisposableGenericMouseMoveListener, append } from '../../../../../base/browser/dom.js';
 +import { $, addDisposableGenericMouseMoveListener, append, createElement } from '../../../../../base/browser/dom.js';
  import { assertType } from '../../../../../base/common/types.js';
  import { localize } from '../../../../../nls.js';
  import { AcceptAction, navigationBearingFakeActionId, RejectAction } from './chatEditingEditorActions.js';
-@@ -54,7 +54,7 @@ class ChatEditorOverlayWidget extends Disposable {
+@@ -118,7 +118,7 @@ class ChatEditorOverlayWidget extends Disposable {
  		@IInstantiationService private readonly _instaService: IInstantiationService,
  	) {
  		super();
@@ -3951,7 +3863,7 @@ index 9b38068939b..ce4fd00e90c 100644
  		this._domNode.classList.add('chat-editor-overlay-widget');
  
  		this._isBusy = derived(r => {
-@@ -93,7 +93,7 @@ class ChatEditorOverlayWidget extends Disposable {
+@@ -127,7 +127,7 @@ class ChatEditorOverlayWidget extends Disposable {
  		});
  
  
@@ -3960,8 +3872,8 @@ index 9b38068939b..ce4fd00e90c 100644
  		progressNode.classList.add('chat-editor-overlay-progress');
  		append(progressNode, renderIcon(ThemeIcon.modify(Codicon.loading, 'spin')));
  		const textProgress = append(progressNode, $('span.progress-message'));
-@@ -112,7 +112,7 @@ class ChatEditorOverlayWidget extends Disposable {
- 			}
+@@ -140,7 +140,7 @@ class ChatEditorOverlayWidget extends Disposable {
+ 			textProgress.innerText = '';
  		}));
  
 -		this._toolbarNode = document.createElement('div');
@@ -3969,7 +3881,7 @@ index 9b38068939b..ce4fd00e90c 100644
  		this._toolbarNode.classList.add('chat-editor-overlay-toolbar');
  
  	}
-@@ -309,7 +309,7 @@ class ChatEditingOverlayController {
+@@ -278,7 +278,7 @@ class ChatEditingOverlayController {
  
  	private readonly _store = new DisposableStore();
  
@@ -4057,7 +3969,7 @@ index db60c25470c..bca72f33d21 100644
  		commandSpan.innerText = chatSubcommandLeader + cmd.name;
  		this._store.add(this._hoverService.setupDelayedHover(commandSpan, {
 diff --git a/src/vs/workbench/contrib/chat/browser/widget/chatContentParts/chatConfirmationWidget.ts b/src/vs/workbench/contrib/chat/browser/widget/chatContentParts/chatConfirmationWidget.ts
-index 1c0f34858a6..bd8430d60cc 100644
+index bc263ce4408..b8b309467d9 100644
 --- a/src/vs/workbench/contrib/chat/browser/widget/chatContentParts/chatConfirmationWidget.ts
 +++ b/src/vs/workbench/contrib/chat/browser/widget/chatContentParts/chatConfirmationWidget.ts
 @@ -89,7 +89,7 @@ export class ChatQueryTitlePart extends Disposable {
@@ -4070,23 +3982,38 @@ index 1c0f34858a6..bd8430d60cc 100644
  			element.append(wrapper);
  		}
 diff --git a/src/vs/workbench/contrib/chat/browser/widget/chatContentParts/chatToolInputOutputContentPart.ts b/src/vs/workbench/contrib/chat/browser/widget/chatContentParts/chatToolInputOutputContentPart.ts
-index 49b09d111fd..03faa7edbc7 100644
+index f537923198c..b0f7cb738f5 100644
 --- a/src/vs/workbench/contrib/chat/browser/widget/chatContentParts/chatToolInputOutputContentPart.ts
 +++ b/src/vs/workbench/contrib/chat/browser/widget/chatContentParts/chatToolInputOutputContentPart.ts
-@@ -114,7 +114,7 @@ export class ChatCollapsibleInputOutputContentPart extends Disposable {
+@@ -117,7 +117,7 @@ export class ChatCollapsibleInputOutputContentPart extends Disposable {
+ 			subtitle,
  		));
- 		this._register(titlePart.onDidChangeHeight(() => this._onDidChangeHeight.fire()));
- 
+ 		this._register(this._titlePart.onDidChangeHeight(() => this._onDidChangeHeight.fire()));
 -		const spacer = document.createElement('span');
 +		const spacer = dom.createElement('span');
  		spacer.style.flexGrow = '1';
  
  		const btn = this._register(new ButtonWithIcon(elements.root, {}));
+diff --git a/src/vs/workbench/contrib/chat/browser/widget/chatContentParts/toolInvocationParts/chatTerminalToolProgressPart.ts b/src/vs/workbench/contrib/chat/browser/widget/chatContentParts/toolInvocationParts/chatTerminalToolProgressPart.ts
+index c2e85e9e4d5..20a247cbee6 100644
+--- a/src/vs/workbench/contrib/chat/browser/widget/chatContentParts/toolInvocationParts/chatTerminalToolProgressPart.ts
++++ b/src/vs/workbench/contrib/chat/browser/widget/chatContentParts/toolInvocationParts/chatTerminalToolProgressPart.ts
+@@ -1563,8 +1563,8 @@ class ChatTerminalThinkingCollapsibleWrapper extends ChatCollapsibleContentPart
+ 		const prefixText = this._isComplete
+ 			? localize('chat.terminal.ran.prefix', "Ran ")
+ 			: localize('chat.terminal.running.prefix', "Running ");
+-		const ranText = document.createTextNode(prefixText);
+-		const codeElement = document.createElement('code');
++		const ranText = dom.createTextNode(prefixText);
++		const codeElement = dom.createElement('code');
+ 		codeElement.textContent = this._commandText;
+ 
+ 		labelElement.appendChild(ranText);
 diff --git a/src/vs/workbench/contrib/chat/browser/widget/chatContentParts/toolInvocationParts/chatToolConfirmationSubPart.ts b/src/vs/workbench/contrib/chat/browser/widget/chatContentParts/toolInvocationParts/chatToolConfirmationSubPart.ts
-index 658fae422dc..091cd7847b8 100644
+index 8d857959c86..796403f8821 100644
 --- a/src/vs/workbench/contrib/chat/browser/widget/chatContentParts/toolInvocationParts/chatToolConfirmationSubPart.ts
 +++ b/src/vs/workbench/contrib/chat/browser/widget/chatContentParts/toolInvocationParts/chatToolConfirmationSubPart.ts
-@@ -156,7 +156,7 @@ export class ToolConfirmationSubPart extends AbstractToolConfirmationSubPart {
+@@ -163,7 +163,7 @@ export class ToolConfirmationSubPart extends AbstractToolConfirmationSubPart {
  
  			if (toolInvocation.toolSpecificData?.kind === 'input' && toolInvocation.toolSpecificData.rawInput && !isEmptyObject(toolInvocation.toolSpecificData.rawInput)) {
  
@@ -4095,11 +4022,41 @@ index 658fae422dc..091cd7847b8 100644
  				titleEl.textContent = localize('chat.input', "Input");
  				elements.editor.appendChild(titleEl);
  
+diff --git a/src/vs/workbench/contrib/chat/browser/widget/chatContentParts/toolInvocationParts/chatToolInvocationPart.ts b/src/vs/workbench/contrib/chat/browser/widget/chatContentParts/toolInvocationParts/chatToolInvocationPart.ts
+index eaa071c1b8d..c9bfe4d88ef 100644
+--- a/src/vs/workbench/contrib/chat/browser/widget/chatContentParts/toolInvocationParts/chatToolInvocationPart.ts
++++ b/src/vs/workbench/contrib/chat/browser/widget/chatContentParts/toolInvocationParts/chatToolInvocationPart.ts
+@@ -83,7 +83,7 @@ export class ChatToolInvocationPart extends Disposable implements IChatContentPa
+ 		// when the model changes, or trying to make the model immutable and swap out one content part for a new one based on user actions in the view.
+ 		// Note that `node.replaceWith` is used to ensure order is preserved when an mpc app is present.
+ 		const partStore = this._register(new DisposableStore());
+-		let subPartDomNode: HTMLElement = document.createElement('div');
++		let subPartDomNode: HTMLElement = dom.createElement('div');
+ 		this.domNode.appendChild(subPartDomNode);
+ 
+ 		const render = () => {
+@@ -114,7 +114,7 @@ export class ChatToolInvocationPart extends Disposable implements IChatContentPa
+ 				return !!outcome && outcome.type !== ToolConfirmKind.Denied && outcome.type !== ToolConfirmKind.Skipped;
+ 			});
+ 
+-			let appDomNode: HTMLElement = document.createElement('div');
++			let appDomNode: HTMLElement = dom.createElement('div');
+ 			this.domNode.appendChild(appDomNode);
+ 
+ 			this._register(autorun(r => {
 diff --git a/src/vs/workbench/contrib/chat/browser/widget/chatContentParts/toolInvocationParts/chatToolProgressPart.ts b/src/vs/workbench/contrib/chat/browser/widget/chatContentParts/toolInvocationParts/chatToolProgressPart.ts
-index 94c0c5a3602..c501d6a562a 100644
+index 9e35ac04658..0731d25a19c 100644
 --- a/src/vs/workbench/contrib/chat/browser/widget/chatContentParts/toolInvocationParts/chatToolProgressPart.ts
 +++ b/src/vs/workbench/contrib/chat/browser/widget/chatContentParts/toolInvocationParts/chatToolProgressPart.ts
-@@ -44,7 +44,7 @@ export class ChatToolProgressSubPart extends BaseChatToolInvocationSubPart {
+@@ -45,14 +45,14 @@ export class ChatToolProgressSubPart extends BaseChatToolInvocationSubPart {
+ 			const completionContent = this.toolInvocation.pastTenseMessage ?? this.toolInvocation.invocationMessage;
+ 			// Don't render anything if there's no meaningful content
+ 			if (!this.hasMeaningfulContent(completionContent)) {
+-				return document.createElement('div');
++				return dom.createElement('div');
+ 			}
+ 			const shouldAnnounce = this.toolInvocation.kind === 'toolInvocation' && this.hasMeaningfulContent(completionContent) ? this.computeShouldAnnounce(key) : false;
+ 			const part = this.renderProgressContent(completionContent, shouldAnnounce);
  			this._register(part);
  			return part.domNode;
  		} else {
@@ -4108,6 +4065,19 @@ index 94c0c5a3602..c501d6a562a 100644
  			const progressObservable = this.toolInvocation.kind === 'toolInvocation' ? this.toolInvocation.state.map((s, r) => s.type === IChatToolInvocation.StateKind.Executing ? s.progress.read(r) : undefined) : undefined;
  			this._register(autorun(reader => {
  				const progress = progressObservable?.read(reader);
+diff --git a/src/vs/workbench/contrib/chat/browser/widget/chatContentParts/toolInvocationParts/chatToolStreamingSubPart.ts b/src/vs/workbench/contrib/chat/browser/widget/chatContentParts/toolInvocationParts/chatToolStreamingSubPart.ts
+index 3e3e3cc12d0..e2b64b5c160 100644
+--- a/src/vs/workbench/contrib/chat/browser/widget/chatContentParts/toolInvocationParts/chatToolStreamingSubPart.ts
++++ b/src/vs/workbench/contrib/chat/browser/widget/chatContentParts/toolInvocationParts/chatToolStreamingSubPart.ts
+@@ -35,7 +35,7 @@ export class ChatToolStreamingSubPart extends BaseChatToolInvocationSubPart {
+ 	}
+ 
+ 	private createStreamingPart(): HTMLElement {
+-		const container = document.createElement('div');
++		const container = dom.createElement('div');
+ 
+ 		if (this.toolInvocation.kind !== 'toolInvocation') {
+ 			return container;
 diff --git a/src/vs/workbench/contrib/chat/browser/widget/chatDragAndDrop.ts b/src/vs/workbench/contrib/chat/browser/widget/chatDragAndDrop.ts
 index fa166677003..6564efe8bcf 100644
 --- a/src/vs/workbench/contrib/chat/browser/widget/chatDragAndDrop.ts
@@ -4130,36 +4100,45 @@ index fa166677003..6564efe8bcf 100644
  		overlay.classList.add('chat-dnd-overlay');
  		this.updateOverlayStyles(overlay);
  		overlayContainer.appendChild(overlay);
+diff --git a/src/vs/workbench/contrib/chat/browser/widget/chatListRenderer.ts b/src/vs/workbench/contrib/chat/browser/widget/chatListRenderer.ts
+index 6e746f80622..a07bc354e8b 100644
+--- a/src/vs/workbench/contrib/chat/browser/widget/chatListRenderer.ts
++++ b/src/vs/workbench/contrib/chat/browser/widget/chatListRenderer.ts
+@@ -534,7 +534,7 @@ export class ChatListItemRenderer extends Disposable implements ITreeRenderer<Ch
+ 				this.hoverService.hideHover();
+ 			}
+ 		}));
+-		const connectionObserver = document.createElement('connection-observer') as dom.ConnectionObserverElement;
++		const connectionObserver = dom.createElement('connection-observer') as dom.ConnectionObserverElement;
+ 		dom.append(container, connectionObserver);
+ 		const template: IChatListItemTemplate = { header, avatarContainer, requestHover, username, detail, value, rowContainer, elementDisposables, templateDisposables, contextKeyService, instantiationService: scopedInstantiationService, agentHover, titleToolbar, footerToolbar, footerDetailsContainer, disabledOverlay, checkpointToolbar, checkpointRestoreToolbar, checkpointContainer, checkpointRestoreContainer };
+ 
+diff --git a/src/vs/workbench/contrib/chat/browser/widget/chatListWidget.ts b/src/vs/workbench/contrib/chat/browser/widget/chatListWidget.ts
+index 11d2b3e74c7..e0f4c0d1c0a 100644
+--- a/src/vs/workbench/contrib/chat/browser/widget/chatListWidget.ts
++++ b/src/vs/workbench/contrib/chat/browser/widget/chatListWidget.ts
+@@ -275,7 +275,7 @@ export class ChatListWidget extends Disposable {
+ 		this._renderStyle = options.renderStyle;
+ 
+ 		// Create overflow widgets container
+-		const overflowWidgetsContainer = options.overflowWidgetsDomNode ?? document.createElement('div');
++		const overflowWidgetsContainer = options.overflowWidgetsDomNode ?? dom.createElement('div');
+ 		if (!options.overflowWidgetsDomNode) {
+ 			overflowWidgetsContainer.classList.add('chat-overflow-widget-container', 'monaco-editor');
+ 			this._container.append(overflowWidgetsContainer);
 diff --git a/src/vs/workbench/contrib/chat/browser/widget/chatWidget.ts b/src/vs/workbench/contrib/chat/browser/widget/chatWidget.ts
-index bdc5faf1496..4d63fc0d95e 100644
+index 583ccb00c61..8238a6a0278 100644
 --- a/src/vs/workbench/contrib/chat/browser/widget/chatWidget.ts
 +++ b/src/vs/workbench/contrib/chat/browser/widget/chatWidget.ts
-@@ -1461,7 +1461,7 @@ export class ChatWidget extends Disposable implements IChatWidget {
- 		};
+@@ -1367,7 +1367,7 @@ export class ChatWidget extends Disposable implements IChatWidget {
  
+ 	private createList(listContainer: HTMLElement, options: IChatListItemRendererOptions): void {
  		// Create a dom element to hold UI from editor widgets embedded in chat messages
 -		const overflowWidgetsContainer = document.createElement('div');
 +		const overflowWidgetsContainer = dom.createElement('div');
  		overflowWidgetsContainer.classList.add('chat-overflow-widget-container', 'monaco-editor');
  		listContainer.append(overflowWidgetsContainer);
  
-diff --git a/src/vs/workbench/contrib/chat/browser/widget/input/chatInputPart.ts b/src/vs/workbench/contrib/chat/browser/widget/input/chatInputPart.ts
-index e7e7180bf44..2bb38ab1173 100644
---- a/src/vs/workbench/contrib/chat/browser/widget/input/chatInputPart.ts
-+++ b/src/vs/workbench/contrib/chat/browser/widget/input/chatInputPart.ts
-@@ -2490,10 +2490,10 @@ export class ChatInputPart extends Disposable implements IHistoryNavigationWidge
- 				this.relatedFiles?.remove(uri);
- 			}));
- 
--			const sep = document.createElement('div');
-+			const sep = dom.createElement('div');
- 			sep.classList.add('separator');
- 
--			const group = document.createElement('span');
-+			const group = dom.createElement('span');
- 			group.classList.add('monaco-button-dropdown', 'sidebyside-button');
- 			group.appendChild(addButton.element);
- 			group.appendChild(sep);
 diff --git a/src/vs/workbench/contrib/codeEditor/browser/dictation/editorDictation.ts b/src/vs/workbench/contrib/codeEditor/browser/dictation/editorDictation.ts
 index 12178f16a0f..d7d3df2aff8 100644
 --- a/src/vs/workbench/contrib/codeEditor/browser/dictation/editorDictation.ts
@@ -4183,7 +4162,7 @@ index 12178f16a0f..d7d3df2aff8 100644
  	constructor(private readonly editor: ICodeEditor, keybindingService: IKeybindingService) {
  		super();
 diff --git a/src/vs/workbench/contrib/codeEditor/browser/find/simpleFindWidget.ts b/src/vs/workbench/contrib/codeEditor/browser/find/simpleFindWidget.ts
-index eff5ea8254c..5dc0c7361bd 100644
+index a3c7b7d6ce5..4ab74966f56 100644
 --- a/src/vs/workbench/contrib/codeEditor/browser/find/simpleFindWidget.ts
 +++ b/src/vs/workbench/contrib/codeEditor/browser/find/simpleFindWidget.ts
 @@ -170,7 +170,7 @@ export abstract class SimpleFindWidget extends Widget implements IVerticalSashLa
@@ -4213,7 +4192,7 @@ index eff5ea8254c..5dc0c7361bd 100644
  			this._matchesCount.className = 'matchesCount';
  			this._findInput.domNode.insertAdjacentElement('afterend', this._matchesCount);
  			this._register(this._findInput.onDidChange(async () => {
-@@ -431,7 +431,7 @@ export abstract class SimpleFindWidget extends Widget implements IVerticalSashLa
+@@ -427,7 +427,7 @@ export abstract class SimpleFindWidget extends Widget implements IVerticalSashLa
  			label = NLS_NO_RESULTS;
  		}
  		status(this._announceSearchResults(label, this.inputValue));
@@ -4245,7 +4224,7 @@ index cc1baaf197a..77732f6f089 100644
  		Promise.all([grammar, semanticTokens]).then(([grammar, semanticTokens]) => {
  			if (this._isDisposed) {
 diff --git a/src/vs/workbench/contrib/comments/browser/commentNode.ts b/src/vs/workbench/contrib/comments/browser/commentNode.ts
-index 66ea363796f..62c517d23b7 100644
+index b4ded353a75..ca1d0bed6ec 100644
 --- a/src/vs/workbench/contrib/comments/browser/commentNode.ts
 +++ b/src/vs/workbench/contrib/comments/browser/commentNode.ts
 @@ -136,7 +136,7 @@ export class CommentNode<T extends IRange | ICellRange> extends Disposable {
@@ -4280,7 +4259,7 @@ index b5234b61404..f9aeb11fb67 100644
  		}
  		while ((renderedComment.element.children.length > 1) && (renderedComment.element.firstElementChild?.tagName === 'HR')) {
 diff --git a/src/vs/workbench/contrib/debug/browser/debugANSIHandling.ts b/src/vs/workbench/contrib/debug/browser/debugANSIHandling.ts
-index 4db2d7eb8c7..46dc1abef65 100644
+index 85c117bc202..c356a09e9b0 100644
 --- a/src/vs/workbench/contrib/debug/browser/debugANSIHandling.ts
 +++ b/src/vs/workbench/contrib/debug/browser/debugANSIHandling.ts
 @@ -3,6 +3,7 @@
@@ -4291,9 +4270,9 @@ index 4db2d7eb8c7..46dc1abef65 100644
  import { IHighlight } from '../../../../base/browser/ui/highlightedlabel/highlightedLabel.js';
  import { Color, RGBA } from '../../../../base/common/color.js';
  import { isDefined } from '../../../../base/common/types.js';
-@@ -19,7 +20,7 @@ import { ILinkDetector } from './linkDetector.js';
+@@ -19,7 +20,7 @@ import { DebugLinkHoverBehaviorTypeData, ILinkDetector } from './linkDetector.js
   */
- export function handleANSIOutput(text: string, linkDetector: ILinkDetector, workspaceFolder: IWorkspaceFolder | undefined, highlights: IHighlight[] | undefined): HTMLSpanElement {
+ export function handleANSIOutput(text: string, linkDetector: ILinkDetector, workspaceFolder: IWorkspaceFolder | undefined, highlights: IHighlight[] | undefined, hoverBehavior: DebugLinkHoverBehaviorTypeData): HTMLSpanElement {
  
 -	const root: HTMLSpanElement = document.createElement('span');
 +	const root: HTMLSpanElement = createElement('span');
@@ -4301,19 +4280,19 @@ index 4db2d7eb8c7..46dc1abef65 100644
  
  	let styleNames: string[] = [];
 diff --git a/src/vs/workbench/contrib/debug/browser/linkDetector.ts b/src/vs/workbench/contrib/debug/browser/linkDetector.ts
-index c3d6153fafd..f1f351f5582 100644
+index 70dcdb87bb4..0c19647a6f2 100644
 --- a/src/vs/workbench/contrib/debug/browser/linkDetector.ts
 +++ b/src/vs/workbench/contrib/debug/browser/linkDetector.ts
 @@ -3,7 +3,7 @@
   *  Licensed under the MIT License. See License.txt in the project root for license information.
   *--------------------------------------------------------------------------------------------*/
  
--import { getWindow, isHTMLElement, reset } from '../../../../base/browser/dom.js';
-+import { createElement, createTextNode, getWindow, isHTMLElement, reset } from '../../../../base/browser/dom.js';
+-import { addDisposableListener, getWindow, isHTMLElement, reset } from '../../../../base/browser/dom.js';
++import { addDisposableListener, createElement, createTextNode, getWindow, isHTMLElement, reset } from '../../../../base/browser/dom.js';
  import { StandardKeyboardEvent } from '../../../../base/browser/keyboardEvent.js';
  import { getDefaultHoverDelegate } from '../../../../base/browser/ui/hover/hoverDelegateFactory.js';
  import { KeyCode } from '../../../../base/common/keyCodes.js';
-@@ -111,18 +111,18 @@ export class LinkDetector implements ILinkDetector {
+@@ -114,18 +114,18 @@ export class LinkDetector implements ILinkDetector {
  				// Do not wrap single line with extra span.
  				return elements[0];
  			}
@@ -4335,7 +4314,7 @@ index c3d6153fafd..f1f351f5582 100644
  						break;
  					case 'web':
  						node = this.createWebLink(includeFulltext ? text : undefined, part.value, hoverBehavior);
-@@ -135,12 +135,12 @@ export class LinkDetector implements ILinkDetector {
+@@ -138,12 +138,12 @@ export class LinkDetector implements ILinkDetector {
  						break;
  					}
  					default:
@@ -4350,7 +4329,7 @@ index c3d6153fafd..f1f351f5582 100644
  			}
  		}
  		return container;
-@@ -163,7 +163,7 @@ export class LinkDetector implements ILinkDetector {
+@@ -166,7 +166,7 @@ export class LinkDetector implements ILinkDetector {
  
  			const highlightEnd = Math.min(highlight.end, endIndex);
  			const highlightedText = node.textContent!.substring(currentIndex - startIndex, highlightEnd - startIndex);
@@ -4359,8 +4338,8 @@ index c3d6153fafd..f1f351f5582 100644
  			highlightSpan.classList.add('highlight');
  			if (highlight.extraClasses) {
  				highlightSpan.classList.add(...highlight.extraClasses);
-@@ -267,7 +267,7 @@ export class LinkDetector implements ILinkDetector {
- 	private createPathLink(fulltext: string | undefined, text: string, path: string, lineNumber: number, columnNumber: number, workspaceFolder: IWorkspaceFolder | undefined, hoverBehavior?: DebugLinkHoverBehaviorTypeData): Node {
+@@ -270,7 +270,7 @@ export class LinkDetector implements ILinkDetector {
+ 	private createPathLink(fulltext: string | undefined, text: string, path: string, lineNumber: number, columnNumber: number, workspaceFolder: IWorkspaceFolder | undefined, hoverBehavior: DebugLinkHoverBehaviorTypeData): Node {
  		if (path[0] === '/' && path[1] === '/') {
  			// Most likely a url part which did not match, for example ftp://path.
 -			return document.createTextNode(text);
@@ -4368,7 +4347,7 @@ index c3d6153fafd..f1f351f5582 100644
  		}
  
  		// Only set selection if we have a valid line number (greater than 0)
-@@ -277,7 +277,7 @@ export class LinkDetector implements ILinkDetector {
+@@ -280,7 +280,7 @@ export class LinkDetector implements ILinkDetector {
  
  		if (path[0] === '.') {
  			if (!workspaceFolder) {
@@ -4377,7 +4356,7 @@ index c3d6153fafd..f1f351f5582 100644
  			}
  			const uri = workspaceFolder.toResource(path);
  			const link = this.createLink(text);
-@@ -307,7 +307,7 @@ export class LinkDetector implements ILinkDetector {
+@@ -310,7 +310,7 @@ export class LinkDetector implements ILinkDetector {
  	}
  
  	private createLink(text: string): HTMLElement {
@@ -4408,28 +4387,42 @@ index 2bed6276108..352925e667b 100644
  			const { label } = item.hint;
  			if (typeof label === 'string') {
  				em.innerText = label;
-diff --git a/src/vs/workbench/contrib/inlineChat/browser/inlineChatStrategies.ts b/src/vs/workbench/contrib/inlineChat/browser/inlineChatStrategies.ts
-index e273a6f436b..182374aecaa 100644
---- a/src/vs/workbench/contrib/inlineChat/browser/inlineChatStrategies.ts
-+++ b/src/vs/workbench/contrib/inlineChat/browser/inlineChatStrategies.ts
-@@ -3,7 +3,7 @@
-  *  Licensed under the MIT License. See License.txt in the project root for license information.
-  *--------------------------------------------------------------------------------------------*/
+diff --git a/src/vs/workbench/contrib/inlineChat/browser/inlineChatOverlayWidget.ts b/src/vs/workbench/contrib/inlineChat/browser/inlineChatOverlayWidget.ts
+index 0284206c2bf..17b30416e74 100644
+--- a/src/vs/workbench/contrib/inlineChat/browser/inlineChatOverlayWidget.ts
++++ b/src/vs/workbench/contrib/inlineChat/browser/inlineChatOverlayWidget.ts
+@@ -322,7 +322,7 @@ export class InlineChatInputWidget extends Disposable {
+  */
+ export class InlineChatSessionOverlayWidget extends Disposable {
  
--import { WindowIntervalTimer } from '../../../../base/browser/dom.js';
-+import { createElement, WindowIntervalTimer } from '../../../../base/browser/dom.js';
- import { CancellationToken } from '../../../../base/common/cancellation.js';
- import { Emitter, Event } from '../../../../base/common/event.js';
- import { DisposableStore } from '../../../../base/common/lifecycle.js';
-@@ -321,7 +321,7 @@ export class LiveStrategy {
- 							mightContainNonBasicASCII,
- 							mightContainRTL,
- 						);
--						const domNode = document.createElement('div');
-+						const domNode = createElement('div');
- 						domNode.className = 'inline-chat-original-zone2';
- 						const result = renderLines(source, renderOptions, [new InlineDecoration(new Range(originalRange.startLineNumber, 1, originalRange.startLineNumber, 1), '', InlineDecorationType.Regular)], domNode);
- 						const viewZoneData: IViewZone = {
+-	private readonly _domNode: HTMLElement = document.createElement('div');
++	private readonly _domNode: HTMLElement = dom.createElement('div');
+ 	private readonly _container: HTMLElement;
+ 	private readonly _statusNode: HTMLElement;
+ 	private readonly _icon: HTMLElement;
+@@ -344,19 +344,19 @@ export class InlineChatSessionOverlayWidget extends Disposable {
+ 
+ 		this._domNode.classList.add('inline-chat-session-overlay-widget');
+ 
+-		this._container = document.createElement('div');
++		this._container = dom.createElement('div');
+ 		this._domNode.appendChild(this._container);
+ 		this._container.classList.add('inline-chat-session-overlay-container');
+ 
+ 		// Create status node with icon and message
+-		this._statusNode = document.createElement('div');
++		this._statusNode = dom.createElement('div');
+ 		this._statusNode.classList.add('status');
+ 		this._icon = dom.append(this._statusNode, dom.$('span'));
+ 		this._message = dom.append(this._statusNode, dom.$('span.message'));
+ 		this._container.appendChild(this._statusNode);
+ 
+ 		// Create toolbar node
+-		this._toolbarNode = document.createElement('div');
++		this._toolbarNode = dom.createElement('div');
+ 		this._toolbarNode.classList.add('toolbar');
+ 
+ 		// Initialize sticky scroll height observable
 diff --git a/src/vs/workbench/contrib/issue/browser/baseIssueReporterService.ts b/src/vs/workbench/contrib/issue/browser/baseIssueReporterService.ts
 index d7d14153f59..335df52181a 100644
 --- a/src/vs/workbench/contrib/issue/browser/baseIssueReporterService.ts
@@ -4879,7 +4872,7 @@ index f24aabe73b4..87a87564d8c 100644
  		this._overviewViewportDomElement.setPosition('absolute');
  		this._overviewViewportDomElement.setWidth(width);
 diff --git a/src/vs/workbench/contrib/notebook/browser/notebookEditorWidget.ts b/src/vs/workbench/contrib/notebook/browser/notebookEditorWidget.ts
-index e963bb4691c..2c05bed3ffc 100644
+index 2419dc30101..494fff0e961 100644
 --- a/src/vs/workbench/contrib/notebook/browser/notebookEditorWidget.ts
 +++ b/src/vs/workbench/contrib/notebook/browser/notebookEditorWidget.ts
 @@ -331,7 +331,7 @@ export class NotebookEditorWidget extends Disposable implements INotebookEditorD
@@ -5267,7 +5260,7 @@ index 50670663afc..1d9b8cbda05 100644
  						return span;
  					}
 diff --git a/src/vs/workbench/contrib/search/browser/patternInputWidget.ts b/src/vs/workbench/contrib/search/browser/patternInputWidget.ts
-index 350fa0ad053..bfbfdf764e4 100644
+index 2383e0c60f5..b7d9de928bf 100644
 --- a/src/vs/workbench/contrib/search/browser/patternInputWidget.ts
 +++ b/src/vs/workbench/contrib/search/browser/patternInputWidget.ts
 @@ -137,7 +137,7 @@ export class PatternInputWidget extends Widget {
@@ -5354,10 +5347,10 @@ index bead415e2a7..cf05eb93302 100644
  		}
  
 diff --git a/src/vs/workbench/contrib/terminal/browser/terminalInstance.ts b/src/vs/workbench/contrib/terminal/browser/terminalInstance.ts
-index eb889235f1a..135ae83487a 100644
+index 1d2719e2fb7..528dc1c44bb 100644
 --- a/src/vs/workbench/contrib/terminal/browser/terminalInstance.ts
 +++ b/src/vs/workbench/contrib/terminal/browser/terminalInstance.ts
-@@ -395,7 +395,7 @@ export class TerminalInstance extends Disposable implements ITerminalInstance {
+@@ -394,7 +394,7 @@ export class TerminalInstance extends Disposable implements ITerminalInstance {
  	) {
  		super();
  
@@ -5366,7 +5359,7 @@ index eb889235f1a..135ae83487a 100644
  		this._wrapperElement.classList.add('terminal-wrapper');
  
  		this._widgetManager = this._register(instantiationService.createInstance(TerminalWidgetManager));
-@@ -1066,7 +1066,7 @@ export class TerminalInstance extends Disposable implements ITerminalInstance {
+@@ -1064,7 +1064,7 @@ export class TerminalInstance extends Disposable implements ITerminalInstance {
  			throw new Error('A container element needs to be set with `attachToElement` and be part of the DOM before calling `_open`');
  		}
  
@@ -5375,7 +5368,7 @@ index eb889235f1a..135ae83487a 100644
  		xtermHost.classList.add('terminal-xterm-host');
  		this._wrapperElement.appendChild(xtermHost);
  
-@@ -2509,7 +2509,7 @@ class TerminalInstanceDragAndDropController extends Disposable implements dom.ID
+@@ -2484,7 +2484,7 @@ class TerminalInstanceDragAndDropController extends Disposable implements dom.ID
  		}
  
  		if (!this._dropOverlay) {
@@ -5385,7 +5378,7 @@ index eb889235f1a..135ae83487a 100644
  		}
  
 diff --git a/src/vs/workbench/contrib/terminal/browser/terminalTabbedView.ts b/src/vs/workbench/contrib/terminal/browser/terminalTabbedView.ts
-index 5d62a732a26..70a929606ef 100644
+index b58e3170ff1..a4710f8ddfe 100644
 --- a/src/vs/workbench/contrib/terminal/browser/terminalTabbedView.ts
 +++ b/src/vs/workbench/contrib/terminal/browser/terminalTabbedView.ts
 @@ -229,7 +229,7 @@ export class TerminalTabbedView extends Disposable {
@@ -5441,7 +5434,7 @@ index 211eb8bbe9b..d6e241653d6 100644
  
  		xterm.open(testContainer);
 diff --git a/src/vs/workbench/contrib/terminalContrib/chat/browser/terminalChatWidget.ts b/src/vs/workbench/contrib/terminalContrib/chat/browser/terminalChatWidget.ts
-index 6ea0563ac8a..7f00322d410 100644
+index d08f85abbe2..d86098868b6 100644
 --- a/src/vs/workbench/contrib/terminalContrib/chat/browser/terminalChatWidget.ts
 +++ b/src/vs/workbench/contrib/terminalContrib/chat/browser/terminalChatWidget.ts
 @@ -4,7 +4,7 @@
@@ -5484,10 +5477,10 @@ index 239cfe8566d..0a26a5813a3 100644
  		canvas.height = bitmap.height;
  		const ctx = canvas.getContext('bitmaprenderer');
 diff --git a/src/vs/workbench/contrib/testing/browser/codeCoverageDecorations.ts b/src/vs/workbench/contrib/testing/browser/codeCoverageDecorations.ts
-index 8d31c1d7989..5cfd2c663d1 100644
+index 37fac8335cb..e5d161cd79f 100644
 --- a/src/vs/workbench/contrib/testing/browser/codeCoverageDecorations.ts
 +++ b/src/vs/workbench/contrib/testing/browser/codeCoverageDecorations.ts
-@@ -786,7 +786,7 @@ class CoverageToolbarWidget extends Disposable implements IOverlayWidget {
+@@ -783,7 +783,7 @@ class CoverageToolbarWidget extends Disposable implements IOverlayWidget {
  			viewZoneId = accessor.addZone({ // make space for the widget
  				afterLineNumber: 0,
  				afterColumn: 0,
@@ -5552,7 +5545,7 @@ index 6b371cab5c7..e02afa30fd0 100644
  		}
  		data.disposable.add(this.hoverService.setupManagedHover(getDefaultHoverDelegate('mouse'), data.label, element.description));
 diff --git a/src/vs/workbench/contrib/testing/test/browser/testObjectTree.ts b/src/vs/workbench/contrib/testing/test/browser/testObjectTree.ts
-index 0c369dc7df1..9910b73f8d2 100644
+index dd19fb50a49..32d983d2b87 100644
 --- a/src/vs/workbench/contrib/testing/test/browser/testObjectTree.ts
 +++ b/src/vs/workbench/contrib/testing/test/browser/testObjectTree.ts
 @@ -13,10 +13,11 @@ import { TestsDiff, TestsDiffOp } from '../../common/testTypes.js';
@@ -5671,7 +5664,7 @@ index 42293c78211..2dab34e7944 100644
  			node.style.overflow = 'hidden';
  			this._container = new FastDomNode(node);
 diff --git a/src/vs/workbench/contrib/webview/browser/webviewElement.ts b/src/vs/workbench/contrib/webview/browser/webviewElement.ts
-index 73579fe797e..66955946f4b 100644
+index 60d01c4415c..119761b7cf8 100644
 --- a/src/vs/workbench/contrib/webview/browser/webviewElement.ts
 +++ b/src/vs/workbench/contrib/webview/browser/webviewElement.ts
 @@ -4,7 +4,7 @@
@@ -5796,7 +5789,7 @@ index 95fa069646b..79b8f2286a1 100644
  					this.rerenderDisposables.add(this.instantiationService.createInstance(Link, text, { ...node, tabIndex: -1 }, {}));
  				}
 diff --git a/src/vs/workbench/services/extensions/browser/webWorkerExtensionHost.ts b/src/vs/workbench/services/extensions/browser/webWorkerExtensionHost.ts
-index d5b9ba9dab5..92f90a795b0 100644
+index 805d9468a52..3d30e364528 100644
 --- a/src/vs/workbench/services/extensions/browser/webWorkerExtensionHost.ts
 +++ b/src/vs/workbench/services/extensions/browser/webWorkerExtensionHost.ts
 @@ -140,7 +140,7 @@ export class WebWorkerExtensionHost extends Disposable implements IExtensionHost
@@ -5840,7 +5833,7 @@ index d368ba0e6af..44f068bb29b 100644
  			canvas.height = video.videoHeight;
  
 diff --git a/src/vs/workbench/test/browser/workbenchTestServices.ts b/src/vs/workbench/test/browser/workbenchTestServices.ts
-index 0f96e2407be..1935ca29289 100644
+index 81cd3af34f8..f86bbb59010 100644
 --- a/src/vs/workbench/test/browser/workbenchTestServices.ts
 +++ b/src/vs/workbench/test/browser/workbenchTestServices.ts
 @@ -4,7 +4,7 @@
@@ -5852,7 +5845,7 @@ index 0f96e2407be..1935ca29289 100644
  import { Direction, IViewSize } from '../../../base/browser/ui/grid/grid.js';
  import { mainWindow } from '../../../base/browser/window.js';
  import { timeout } from '../../../base/common/async.js';
-@@ -1683,7 +1683,7 @@ export class TestEditorParts extends EditorParts {
+@@ -1687,7 +1687,7 @@ export class TestEditorParts extends EditorParts {
  export async function createEditorParts(instantiationService: IInstantiationService, disposables: DisposableStore): Promise<TestEditorParts> {
  	const parts = instantiationService.createInstance(TestEditorParts);
  	const part = disposables.add(parts).testMainPart;

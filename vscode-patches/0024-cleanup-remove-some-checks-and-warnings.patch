@@ -26,7 +26,7 @@ index 2ae1ee4bfa3..431c298404a 100644
  }
  
 diff --git a/src/vs/workbench/contrib/webview/browser/webviewElement.ts b/src/vs/workbench/contrib/webview/browser/webviewElement.ts
-index 7585cf01c22..b4a16a03b59 100644
+index 2824da9bb28..e7c70789526 100644
 --- a/src/vs/workbench/contrib/webview/browser/webviewElement.ts
 +++ b/src/vs/workbench/contrib/webview/browser/webviewElement.ts
 @@ -495,11 +495,6 @@ export class WebviewElement extends Disposable implements IWebviewElement, Webvi
@@ -72,7 +72,7 @@ index 6e201931269..15b221bafb8 100644
  		const { stylesLoaded } = this.applyCSS(auxiliaryWindow, disposables);
  		const container = this.applyHTML(auxiliaryWindow, disposables);
 diff --git a/src/vs/workbench/services/extensions/browser/webWorkerExtensionHost.ts b/src/vs/workbench/services/extensions/browser/webWorkerExtensionHost.ts
-index 26f98d97f25..af52ee0f93a 100644
+index 12c89a55c89..a98eba9ef40 100644
 --- a/src/vs/workbench/services/extensions/browser/webWorkerExtensionHost.ts
 +++ b/src/vs/workbench/services/extensions/browser/webWorkerExtensionHost.ts
 @@ -117,8 +117,6 @@ export class WebWorkerExtensionHost extends Disposable implements IExtensionHost

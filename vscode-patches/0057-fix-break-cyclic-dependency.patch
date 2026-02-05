@@ -12,7 +12,7 @@ Subject: [PATCH] fix: break cyclic dependency
  create mode 100644 src/vs/workbench/contrib/tasks/common/constants.ts
 
 diff --git a/src/vs/workbench/contrib/tasks/browser/task.contribution.ts b/src/vs/workbench/contrib/tasks/browser/task.contribution.ts
-index 73cd4c58597..d0fb13e5fe5 100644
+index 19a537dd101..9e91aa13e1e 100644
 --- a/src/vs/workbench/contrib/tasks/browser/task.contribution.ts
 +++ b/src/vs/workbench/contrib/tasks/browser/task.contribution.ts
 @@ -20,7 +20,7 @@ import { StatusbarAlignment, IStatusbarService, IStatusbarEntryAccessor, IStatus

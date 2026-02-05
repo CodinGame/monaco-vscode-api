@@ -12,10 +12,10 @@ Subject: [PATCH] feat: prevent IDE from entering fullscreen if not occupying
  4 files changed, 41 insertions(+), 16 deletions(-)
 
 diff --git a/src/vs/base/browser/dom.ts b/src/vs/base/browser/dom.ts
-index 60a773236eb..d93fb73451c 100644
+index 41fba15d553..0e5f5c01565 100644
 --- a/src/vs/base/browser/dom.ts
 +++ b/src/vs/base/browser/dom.ts
-@@ -925,6 +925,28 @@ export function getActiveElement(_document = getActiveDocument()): Element | nul
+@@ -1068,6 +1068,28 @@ export function getActiveElement(_document = getActiveDocument()): Element | nul
  	return result;
  }
  
@@ -44,7 +44,7 @@ index 60a773236eb..d93fb73451c 100644
  export function getRootContainer(element: Element) {
  	let container: Node = element.getRootNode();
  	if (container instanceof Document) {
-@@ -1699,11 +1721,11 @@ export interface IDetectedFullscreen {
+@@ -1853,11 +1875,11 @@ export interface IDetectedFullscreen {
  	guess: boolean;
  }
  
@@ -59,7 +59,7 @@ index 60a773236eb..d93fb73451c 100644
  		return { mode: DetectedFullscreenMode.DOCUMENT, guess: false };
  	}
  
-@@ -1712,7 +1734,9 @@ export function detectFullscreen(targetWindow: Window): IDetectedFullscreen | nu
+@@ -1866,7 +1888,9 @@ export function detectFullscreen(targetWindow: Window): IDetectedFullscreen | nu
  	// height and comparing that to window height, we can guess
  	// it though.
  
@@ -70,7 +70,7 @@ index 60a773236eb..d93fb73451c 100644
  		// if the height of the window matches the screen height, we can
  		// safely assume that the browser is fullscreen because no browser
  		// chrome is taking height away (e.g. like toolbars).
-@@ -1721,7 +1745,7 @@ export function detectFullscreen(targetWindow: Window): IDetectedFullscreen | nu
+@@ -1875,7 +1899,7 @@ export function detectFullscreen(targetWindow: Window): IDetectedFullscreen | nu
  
  	if (platform.isMacintosh || platform.isLinux) {
  		// macOS and Linux do not properly report `innerHeight`, only Windows does
@@ -80,7 +80,7 @@ index 60a773236eb..d93fb73451c 100644
  			// only guess that we are in fullscreen. It is also possible that
  			// the user has turned off taskbars in the OS and the browser is
 diff --git a/src/vs/workbench/browser/layout.ts b/src/vs/workbench/browser/layout.ts
-index 5213358c5de..f05561e6e50 100644
+index c622d53ae07..83754c6d1ec 100644
 --- a/src/vs/workbench/browser/layout.ts
 +++ b/src/vs/workbench/browser/layout.ts
 @@ -3,10 +3,15 @@
@@ -130,7 +130,7 @@ index 5213358c5de..f05561e6e50 100644
  
  //#region Layout Implementation
  
-@@ -1633,7 +1633,8 @@ export abstract class Layout extends Disposable implements IWorkbenchLayoutServi
+@@ -1679,7 +1679,8 @@ export abstract class Layout extends Disposable implements IWorkbenchLayoutServi
  
  	layout(): void {
  		if (!this.disposed) {
@@ -141,10 +141,10 @@ index 5213358c5de..f05561e6e50 100644
  				this.parent,				// in that case the workbench will span the entire site
  				this.contextService.getWorkbenchState() === WorkbenchState.EMPTY ? DEFAULT_EMPTY_WINDOW_DIMENSIONS : DEFAULT_WORKSPACE_WINDOW_DIMENSIONS // running with fallback to ensure no error is thrown (https://github.com/microsoft/vscode/issues/240242)
 diff --git a/src/vs/workbench/browser/web.main.ts b/src/vs/workbench/browser/web.main.ts
-index 55929182a6b..60834fd82cd 100644
+index b9a2f073d8f..39fc24b9891 100644
 --- a/src/vs/workbench/browser/web.main.ts
 +++ b/src/vs/workbench/browser/web.main.ts
-@@ -116,7 +116,7 @@ export class BrowserMain extends Disposable {
+@@ -118,7 +118,7 @@ export class BrowserMain extends Disposable {
  	private init(): void {
  
  		// Browser config

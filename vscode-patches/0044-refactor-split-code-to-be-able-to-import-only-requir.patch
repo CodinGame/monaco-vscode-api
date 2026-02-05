@@ -337,7 +337,7 @@ index 37eac451a86..c6d27314835 100644
  
  interface IExtensionCacheData {
 diff --git a/src/vs/platform/files/common/fileService.ts b/src/vs/platform/files/common/fileService.ts
-index 6bea97100b9..4c9aee6799a 100644
+index 3a098814ba1..13af9475cdd 100644
 --- a/src/vs/platform/files/common/fileService.ts
 +++ b/src/vs/platform/files/common/fileService.ts
 @@ -23,6 +23,64 @@ import { readFileIntoStream } from './io.js';
@@ -405,7 +405,7 @@ index 6bea97100b9..4c9aee6799a 100644
  export class FileService extends Disposable implements IFileService {
  
  	declare readonly _serviceBrand: undefined;
-@@ -976,53 +1034,8 @@ export class FileService extends Disposable implements IFileService {
+@@ -981,53 +1039,8 @@ export class FileService extends Disposable implements IFileService {
  	}
  
  	private async mkdirp(provider: IFileSystemProvider, directory: URI): Promise<void> {
@@ -460,7 +460,7 @@ index 6bea97100b9..4c9aee6799a 100644
  	}
  
  	async canDelete(resource: URI, options?: Partial<IFileDeleteOptions>): Promise<Error | true> {
-@@ -1475,11 +1488,7 @@ export class FileService extends Disposable implements IFileService {
+@@ -1480,11 +1493,7 @@ export class FileService extends Disposable implements IFileService {
  	}
  
  	private resourceForError(resource: URI): string {

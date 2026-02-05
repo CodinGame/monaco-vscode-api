@@ -8,7 +8,7 @@ Subject: [PATCH] cleanup: remove non-ESM compatible code
  1 file changed, 18 deletions(-)
 
 diff --git a/src/vs/workbench/api/node/extensionHostProcess.ts b/src/vs/workbench/api/node/extensionHostProcess.ts
-index db779d8fd3f..fabd08cfe13 100644
+index bb0fb8eec64..4c45507aa82 100644
 --- a/src/vs/workbench/api/node/extensionHostProcess.ts
 +++ b/src/vs/workbench/api/node/extensionHostProcess.ts
 @@ -73,24 +73,6 @@ const args = minimist(process.argv.slice(2), {
