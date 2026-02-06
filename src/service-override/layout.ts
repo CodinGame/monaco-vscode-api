@@ -1,7 +1,30 @@
+import type { IDisposable } from '@xterm/headless'
+import * as dom from 'vs/base/browser/dom'
+import { isAncestorUsingFlowTo } from 'vs/base/browser/dom'
+import type { IViewSize } from 'vs/base/browser/ui/grid/gridview'
+import { coalesce } from 'vs/base/common/arrays'
+import { Emitter, Event } from 'vs/base/common/event'
+import { Disposable, DisposableStore, toDisposable } from 'vs/base/common/lifecycle'
+import { isChrome, isFirefox, isLinux, isSafari, isWindows } from 'vs/base/common/platform'
+import { ICodeEditorService } from 'vs/editor/browser/services/codeEditorService.service'
+import { StandaloneCodeEditor } from 'vs/editor/standalone/browser/standaloneCodeEditor'
 import {
   type IEditorOverrideServices,
   StandaloneServices
 } from 'vs/editor/standalone/browser/standaloneServices'
+import { IConfigurationService } from 'vs/platform/configuration/common/configuration.service'
+import { SyncDescriptor } from 'vs/platform/instantiation/common/descriptors'
+import type { ServicesAccessor } from 'vs/platform/instantiation/common/instantiation'
+import type { ILayoutOffsetInfo } from 'vs/platform/layout/browser/layoutService'
+import { ILayoutService } from 'vs/platform/layout/browser/layoutService.service'
+import { getMenuBarVisibility, getTitleBarStyle } from 'vs/platform/window/common/window'
+import { Part } from 'vs/workbench/browser/part'
+import { ActivitybarPart } from 'vs/workbench/browser/parts/activitybar/activitybarPart'
+import { type IViewContainerModel, ViewContainerLocation } from 'vs/workbench/common/views'
+import { IViewDescriptorService } from 'vs/workbench/common/views.service'
+import { IAuxiliaryWindowService } from 'vs/workbench/services/auxiliaryWindow/browser/auxiliaryWindowService.service'
+import { IEditorGroupsService } from 'vs/workbench/services/editor/common/editorGroupsService.service'
+import { IHostService } from 'vs/workbench/services/host/browser/host.service'
 import {
   ActivityBarPosition,
   type IPartVisibilityChangeEvent,
@@ -13,35 +36,13 @@ import {
   positionToString
 } from 'vs/workbench/services/layout/browser/layoutService'
 import { IWorkbenchLayoutService } from 'vs/workbench/services/layout/browser/layoutService.service'
-import type { ILayoutOffsetInfo } from 'vs/platform/layout/browser/layoutService'
-import { ILayoutService } from 'vs/platform/layout/browser/layoutService.service'
-import { Emitter, Event } from 'vs/base/common/event'
-import * as dom from 'vs/base/browser/dom'
-import { SyncDescriptor } from 'vs/platform/instantiation/common/descriptors'
-import { Part } from 'vs/workbench/browser/part'
-import { isAncestorUsingFlowTo } from 'vs/base/browser/dom'
+import { WorkbenchModeService } from 'vs/workbench/services/layout/browser/workbenchModeService'
+import { IWorkbenchModeService } from 'vs/workbench/services/layout/common/workbenchModeService.service'
 import { IPaneCompositePartService } from 'vs/workbench/services/panecomposite/browser/panecomposite.service'
-import { type IViewContainerModel, ViewContainerLocation } from 'vs/workbench/common/views'
-import { IViewDescriptorService } from 'vs/workbench/common/views.service'
-import { isChrome, isFirefox, isLinux, isSafari, isWindows } from 'vs/base/common/platform'
-import { coalesce } from 'vs/base/common/arrays'
-import { ActivitybarPart } from 'vs/workbench/browser/parts/activitybar/activitybarPart'
-import { IEditorGroupsService } from 'vs/workbench/services/editor/common/editorGroupsService.service'
 import { IStatusbarService } from 'vs/workbench/services/statusbar/browser/statusbar.service'
-import type { ServicesAccessor } from 'vs/platform/instantiation/common/instantiation'
-import { IConfigurationService } from 'vs/platform/configuration/common/configuration.service'
-import { Disposable, DisposableStore, toDisposable } from 'vs/base/common/lifecycle'
-import { IAuxiliaryWindowService } from 'vs/workbench/services/auxiliaryWindow/browser/auxiliaryWindowService.service'
-import { StandaloneCodeEditor } from 'vs/editor/standalone/browser/standaloneCodeEditor'
-import { IHostService } from 'vs/workbench/services/host/browser/host.service'
-import { ICodeEditorService } from 'vs/editor/browser/services/codeEditorService.service'
-import { getMenuBarVisibility, getTitleBarStyle } from 'vs/platform/window/common/window'
-import type { IDisposable } from '@xterm/headless'
-import type { IViewSize } from 'vs/base/browser/ui/grid/gridview'
 import { onRenderWorkbench } from '../lifecycle'
-import { getWorkbenchContainer } from '../workbench'
 import { unsupported } from '../tools'
-
+import { getWorkbenchContainer } from '../workbench'
 export class LayoutService extends Disposable implements ILayoutService, IWorkbenchLayoutService {
   declare readonly _serviceBrand: undefined
 
@@ -590,7 +591,8 @@ function getServiceOverride(container?: HTMLElement): IEditorOverrideServices
 
 function getServiceOverride(container?: HTMLElement): IEditorOverrideServices {
   return {
-    [ILayoutService.toString()]: new SyncDescriptor(LayoutService, [container], true)
+    [ILayoutService.toString()]: new SyncDescriptor(LayoutService, [container], true),
+    [IWorkbenchModeService.toString()]: new SyncDescriptor(WorkbenchModeService, [], true)
   }
 }
 

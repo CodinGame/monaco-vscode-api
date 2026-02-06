@@ -451,11 +451,13 @@ import { IAiEditTelemetryService } from 'vs/workbench/contrib/editTelemetry/brow
 import { LazyCollectionState } from 'vs/workbench/contrib/mcp/common/mcpTypes'
 import { INotebookOutlineEntryFactory } from 'vs/workbench/contrib/notebook/browser/viewModel/notebookOutlineEntryFactory.service'
 import { ISCMRepositorySelectionMode } from 'vs/workbench/contrib/scm/common/scm'
+import { ITerminalSandboxService } from 'vs/workbench/contrib/terminalContrib/chatAgentTools/common/terminalSandboxService.service'
 import { ChatEntitlement } from 'vs/workbench/services/chat/common/chatEntitlementService'
 import { IInlineCompletionsUnificationService } from 'vs/workbench/services/inlineCompletions/common/inlineCompletionsUnification.service'
+import { DefaultWorkbenchModeService } from 'vs/workbench/services/layout/common/workbenchModeService.js'
+import { IWorkbenchModeService } from 'vs/workbench/services/layout/common/workbenchModeService.service.js'
 import { IUserAttentionService } from 'vs/workbench/services/userAttention/common/userAttentionService.service'
 import { ICodeCompareModelService } from 'vs/workbench/contrib/chat/browser/widget/chatContentParts/chatTextEditContentPart.service'
-import { ITerminalSandboxService } from 'vs/workbench/contrib/terminalContrib/chatAgentTools/common/terminalSandboxService.service'
 import {
   getBuiltInExtensionTranslationsUris,
   getExtensionIdProvidingCurrentLocale
@@ -6467,3 +6469,5 @@ class TerminalSandboxService implements ITerminalSandboxService {
 }
 
 registerSingleton(ITerminalSandboxService, TerminalSandboxService, InstantiationType.Delayed)
+
+registerSingleton(IWorkbenchModeService, DefaultWorkbenchModeService, InstantiationType.Delayed)
