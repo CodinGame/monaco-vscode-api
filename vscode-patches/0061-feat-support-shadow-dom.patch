@@ -24,7 +24,7 @@ Subject: [PATCH] feat: support shadow dom
  .../contentWidgets/contentWidgets.ts          |  2 +-
  .../hover/browser/contentHoverController.ts   |  3 +-
  .../hover/browser/contentHoverWidget.ts       |  2 +-
- .../actionWidget/browser/actionList.ts        |  2 +-
+ .../actionWidget/browser/actionList.ts        |  5 +-
  .../clipboard/browser/clipboardService.ts     |  4 +-
  .../contextkey/browser/contextKeyService.ts   | 26 ++++----
  src/vs/platform/hover/browser/hoverWidget.ts  |  2 +-
@@ -49,7 +49,7 @@ Subject: [PATCH] feat: support shadow dom
  .../browser/walkThroughPart.ts                |  6 +-
  .../suggest/browser/simpleSuggestWidget.ts    |  4 +-
  .../themes/browser/workbenchThemeService.ts   |  2 +-
- 45 files changed, 184 insertions(+), 99 deletions(-)
+ 45 files changed, 187 insertions(+), 99 deletions(-)
 
 diff --git a/src/vs/base/browser/dom.ts b/src/vs/base/browser/dom.ts
 index df985c36c16..41fba15d553 100644
@@ -616,15 +616,19 @@ index c5226cb273f..08f5ace9b37 100644
  			this._configurationService.getValue('accessibility.verbosity.hover') === true && this._accessibilityService.isScreenReaderOptimized(),
  			this._keybindingService.lookupKeybinding('editor.action.accessibleView')?.getAriaLabel() ?? ''
 diff --git a/src/vs/platform/actionWidget/browser/actionList.ts b/src/vs/platform/actionWidget/browser/actionList.ts
-index 3c12b59418e..0a55d553e77 100644
+index 3c12b59418e..b8d48462193 100644
 --- a/src/vs/platform/actionWidget/browser/actionList.ts
 +++ b/src/vs/platform/actionWidget/browser/actionList.ts
-@@ -461,7 +461,7 @@ export class ActionList<T> extends Disposable {
+@@ -460,8 +460,11 @@ export class ActionList<T> extends Disposable {
+ 	}
  
  	private _getRowElement(index: number): HTMLElement | null {
++		if (this.domNode.isConnected) {
++			return null;
++		}
  		// eslint-disable-next-line no-restricted-syntax
 -		return this.domNode.ownerDocument.getElementById(this._list.getElementID(index));
-+		return (this.domNode.getRootNode() as Document | ShadowRoot).getElementById(this._list.getElementID(index))
++		return (this.domNode.getRootNode() as Document | ShadowRoot).getElementById(this._list.getElementID(index));
  	}
  
  	private _showHoverForElement(element: IActionListItem<T>, index: number): void {

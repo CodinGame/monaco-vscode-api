@@ -3170,7 +3170,7 @@ index dddb6f8f059..49268f649d0 100644
  		this.codeEditor.addOverlayWidget(this);
  	}
 diff --git a/src/vs/platform/actionWidget/browser/actionList.ts b/src/vs/platform/actionWidget/browser/actionList.ts
-index 0a55d553e77..81fc2bae18d 100644
+index b8d48462193..a2eb4e60904 100644
 --- a/src/vs/platform/actionWidget/browser/actionList.ts
 +++ b/src/vs/platform/actionWidget/browser/actionList.ts
 @@ -97,7 +97,7 @@ class HeaderRenderer<T> implements IListRenderer<IActionListItem<T>, IHeaderTemp
