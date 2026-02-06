@@ -4,7 +4,13 @@ import glob from 'fast-glob'
 import * as nodePath from 'node:path'
 import * as fs from 'node:fs'
 
-export default ({ vscodeSrcDir }: { vscodeSrcDir: string }): Plugin => {
+export default ({
+  vscodeSrcDir,
+  nodeModulesDir
+}: {
+  vscodeSrcDir: string
+  nodeModulesDir: string
+}): Plugin => {
   const realPaths = new Map<string, string>()
   return <rollup.Plugin>{
     name: 'vscode-asset-glob-meta-url',
@@ -13,7 +19,8 @@ export default ({ vscodeSrcDir }: { vscodeSrcDir: string }): Plugin => {
         return null
       }
 
-      const fakePath = nodePath.resolve(vscodeSrcDir, importee.replace(/\*/, 'all'))
+      const baseDir = importee.startsWith('vs') ? vscodeSrcDir : nodeModulesDir
+      const fakePath = nodePath.resolve(baseDir, importee.replace(/\*/, 'all'))
       realPaths.set(fakePath, importee)
       return fakePath
     },
@@ -22,11 +29,20 @@ export default ({ vscodeSrcDir }: { vscodeSrcDir: string }): Plugin => {
       if (realPath == null) {
         return undefined
       }
-      const files = await glob(realPath, { cwd: vscodeSrcDir })
+
+      const baseDir = realPath.startsWith('vs') ? vscodeSrcDir : nodeModulesDir
+      const files = await glob(realPath, {
+        cwd: baseDir
+      })
+
+      if (files.length === 0) {
+        this.warn(`No files found for glob ${realPath}`)
+        return `export default {}`
+      }
 
       const fileRefs = await Promise.all(
         files.map(async (file) => {
-          const filePath = nodePath.resolve(vscodeSrcDir, file)
+          const filePath = nodePath.resolve(baseDir, file)
           const ref = this.emitFile({
             type: 'asset',
             name: nodePath.basename(file),
