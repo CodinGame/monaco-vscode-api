@@ -355,6 +355,15 @@ export function resolveVscodePlugin(vscodeVersion?: string, vscodeCommit?: strin
         return this.resolve('@vscode/codicons/dist/codicon.ttf')
       }
 
+      // use web-tree-sitter directly instead of @vscode/tree-sitter-wasm, because the VSCode team transform the commonjs file to an UMD file only
+      if (importee === '@vscode/tree-sitter-wasm') {
+        return this.resolve('web-tree-sitter')
+      }
+      // redirect the asset reference from web-tree-sitter into the @vscode/tree-sitter-wasm wasm anyway
+      if (importee === 'tree-sitter.wasm') {
+        return this.resolve('@vscode/tree-sitter-wasm/wasm/tree-sitter.wasm')
+      }
+
       const resolved = resolveVscode(importee, importer)
 
       if (resolved != null) {

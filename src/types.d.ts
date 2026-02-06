@@ -5,6 +5,16 @@ declare module 'vs/platform/accessibilitySignal/browser/media/*.mp3' {
   export default assets
 }
 
+declare module '@vscode/tree-sitter-wasm/wasm/tree-sitter-*.wasm' {
+  const assets: Record<string, string>
+  export default assets
+}
+
+declare module 'vs/editor/common/languages/highlights/*.scm' {
+  const assets: Record<string, string>
+  export default assets
+}
+
 declare module 'vs/workbench/contrib/debug/browser/media/*.png' {
   const assets: Record<string, string>
   export default assets
