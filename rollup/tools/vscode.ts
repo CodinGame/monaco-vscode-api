@@ -310,7 +310,7 @@ export default {
   }
 
   if (transformed) {
-    patchedCode = recast.print(ast).code
+    patchedCode = recast.prettyPrint(ast).code
     patchedCode = patchedCode.replace(/\/\*#__PURE__\*\/\s+/g, '/*#__PURE__*/ ') // Remove space after PURE comment
   }
 
