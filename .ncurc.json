@@ -4,6 +4,7 @@
     "@microsoft/1ds-post-js",
     "@types/node",
     "@types/vscode-semver",
+    "@vscode/codicons",
     "@vscode/iconv-lite-umd",
     "@vscode/proxy-agent",
     "@vscode/ripgrep",
