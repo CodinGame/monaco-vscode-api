@@ -188,7 +188,7 @@ export function configuredSubpackagePlugin(): rollup.Plugin {
       }
 
       throw new Error(
-        `Unable to name package with groups ${groups} and dependencies ${externalDependencies}`
+        `Unable to name package with groups ${Array.from(groups)} and dependencies ${Array.from(externalDependencies)}`
       )
     },
     getMainModule(id) {
