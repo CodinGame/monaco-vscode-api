@@ -5,12 +5,12 @@ Subject: [PATCH] feat: add static asset url mechanism
 
 ---
  src/tsec.exemptions.json                      |   1 +
- src/vs/base/common/network.ts                 |  33 ++-
+ src/vs/base/common/network.ts                 |  44 +++-
  .../api/browser/mainThreadExtensionService.ts |   7 +
  .../workbench/api/common/extHost.protocol.ts  |   1 +
  .../workbench/api/common/extensionHostMain.ts |   5 +
  .../api/worker/extensionHostWorker.ts         | 222 +++++++++++++-----
- 6 files changed, 208 insertions(+), 61 deletions(-)
+ 6 files changed, 219 insertions(+), 61 deletions(-)
 
 diff --git a/src/tsec.exemptions.json b/src/tsec.exemptions.json
 index 83691e2de5a..359518360b6 100644
@@ -25,7 +25,7 @@ index 83691e2de5a..359518360b6 100644
  		"vs/workbench/contrib/notebook/browser/view/renderers/webviewPreloads.ts",
  		"vs/workbench/services/keybinding/test/node/keyboardMapperTestUtils.ts"
 diff --git a/src/vs/base/common/network.ts b/src/vs/base/common/network.ts
-index 74cb106fd3c..9b53ba47e5f 100644
+index 74cb106fd3c..bb963d537c8 100644
 --- a/src/vs/base/common/network.ts
 +++ b/src/vs/base/common/network.ts
 @@ -8,6 +8,8 @@ import * as platform from './platform.js';
@@ -37,15 +37,20 @@ index 74cb106fd3c..9b53ba47e5f 100644
  
  export namespace Schemas {
  
-@@ -275,6 +277,20 @@ export const VSCODE_AUTHORITY = 'vscode-app';
+@@ -275,6 +277,31 @@ export const VSCODE_AUTHORITY = 'vscode-app';
  class FileAccessImpl {
  
  	private static readonly FALLBACK_AUTHORITY = VSCODE_AUTHORITY;
 +	private staticBrowserUris = new ResourceMap<URI>();
 +	private appResourcePathUrls = new Map<string, string | (() => string)>();
++	private appResourceUrlMapper: ((moduleId: string) => string | undefined)[] = [];
 +
 +	public registerAppResourcePathUrl(moduleId: string, url: string | (() => string)): void {
 +		this.appResourcePathUrls.set(moduleId, url);
++	}
++
++	public registerAppResourceLoader(loader: (moduleId: string) => string | undefined): void {
++		this.appResourceUrlMapper.push(loader);
 +	}
 +
 +	private toUrl(moduleId: string): string {
@@ -53,12 +58,18 @@ index 74cb106fd3c..9b53ba47e5f 100644
 +		if (typeof url === 'function') {
 +			url = url();
 +		}
++		for (const mapper of this.appResourceUrlMapper) {
++			const result = mapper(moduleId);
++			if (result) {
++				return result;
++			}
++		}
 +		return new URL(url ?? moduleId, globalThis.location?.href ?? import.meta.url).toString();
 +	}
  
  	/**
  	 * Returns a URI to use in contexts where the browser is responsible
-@@ -322,7 +338,7 @@ class FileAccessImpl {
+@@ -322,7 +349,7 @@ class FileAccessImpl {
  			});
  		}
  
@@ -67,7 +78,7 @@ index 74cb106fd3c..9b53ba47e5f 100644
  	}
  
  	/**
-@@ -373,7 +389,20 @@ class FileAccessImpl {
+@@ -373,7 +400,20 @@ class FileAccessImpl {
  			return URI.file(modulePath);
  		}
  

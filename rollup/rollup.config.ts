@@ -28,7 +28,8 @@ import {
   TSCONFIG,
   external,
   VSCODE_SRC_DIR,
-  sanitizeFileName
+  sanitizeFileName,
+  BASE_DIR
 } from './tools/config.js'
 import { transformImportEqualsTransformerFactory } from './tools/typescript.js'
 import json from '@rollup/plugin-json'
@@ -161,7 +162,10 @@ export default (args: Record<string, string>): rollup.RollupOptions => {
         'globalThis.require': 'undefined',
         preventAssignment: true
       }),
-      vscodeAssetGlobMetaUrl({ vscodeSrcDir: VSCODE_SRC_DIR }),
+      vscodeAssetGlobMetaUrl({
+        vscodeSrcDir: VSCODE_SRC_DIR,
+        nodeModulesDir: nodePath.resolve(BASE_DIR, 'node_modules')
+      }),
       css({
         preserveAssetsRoot: SRC_DIR
       }),
