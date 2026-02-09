@@ -4,14 +4,14 @@ Date: Mon, 11 Mar 2024 17:38:30 +0100
 Subject: [PATCH] fix: improve extension contribution types
 
 ---
- .../platform/extensions/common/extensions.ts  | 1441 ++++++++++++++++-
+ .../platform/extensions/common/extensions.ts  | 1438 ++++++++++++++++-
  .../services/search/common/queryBuilder.ts    |    8 +-
  .../themes/common/colorExtensionPoint.ts      |    2 +-
  .../tokenClassificationExtensionPoint.ts      |    1 +
- 4 files changed, 1382 insertions(+), 70 deletions(-)
+ 4 files changed, 1379 insertions(+), 70 deletions(-)
 
 diff --git a/src/vs/platform/extensions/common/extensions.ts b/src/vs/platform/extensions/common/extensions.ts
-index 021ad016e02..a47aee5b9e3 100644
+index 021ad016e02..a9eab9384cf 100644
 --- a/src/vs/platform/extensions/common/extensions.ts
 +++ b/src/vs/platform/extensions/common/extensions.ts
 @@ -3,6 +3,7 @@
@@ -1504,7 +1504,7 @@ index 021ad016e02..a47aee5b9e3 100644
  	readonly chatParticipants?: ReadonlyArray<IChatParticipantContribution>;
  	readonly chatPromptFiles?: ReadonlyArray<IChatFileContribution>;
  	readonly chatInstructions?: ReadonlyArray<IChatFileContribution>;
-@@ -239,6 +1472,84 @@ export interface IExtensionContributions {
+@@ -239,6 +1472,81 @@ export interface IExtensionContributions {
  	readonly languageModelTools?: ReadonlyArray<IToolContribution>;
  	readonly languageModelToolSets?: ReadonlyArray<IToolSetContribution>;
  	readonly mcpServerDefinitionProviders?: ReadonlyArray<IMcpCollectionContribution>;
@@ -1580,12 +1580,9 @@ index 021ad016e02..a47aee5b9e3 100644
 +	 * A list of languages that participate with the HTML language server.
 +	 */
 +	readonly htmlLanguageParticipants?: IHtmlLanguageParticipant[];
-+	readonly html?: {
-+		customData?: string[];
-+	};
 +	readonly css?: {
-+		customData?: string[];
-+	};
++		path: string;
++	}[];
  }
  
  export interface IExtensionCapabilities {
