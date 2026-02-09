@@ -8,11 +8,11 @@ Subject: [PATCH] fix: stop expecting a git context
  1 file changed, 2 insertions(+), 2 deletions(-)
 
 diff --git a/build/npm/postinstall.ts b/build/npm/postinstall.ts
-index 3e260853a53..e0370c4f2c7 100644
+index b6a934f74b3..9a20e65d782 100644
 --- a/build/npm/postinstall.ts
 +++ b/build/npm/postinstall.ts
-@@ -182,5 +182,5 @@ for (const dir of dirs) {
- 	npmInstall(dir, opts);
+@@ -216,5 +216,5 @@ for (const dir of dirs) {
+ 	npmInstall(dir, { env });
  }
  
 -child_process.execSync('git config pull.rebase merges');

@@ -22,10 +22,10 @@ index 2970ec6e57f..985e731754b 100644
  
  .monaco-workbench.web .monaco-workbench-part, .monaco-workbench-part.web {
 diff --git a/src/vs/workbench/contrib/notebook/browser/notebookEditorWidget.ts b/src/vs/workbench/contrib/notebook/browser/notebookEditorWidget.ts
-index 2c05bed3ffc..6fa05e1e0be 100644
+index 494fff0e961..42522b793e8 100644
 --- a/src/vs/workbench/contrib/notebook/browser/notebookEditorWidget.ts
 +++ b/src/vs/workbench/contrib/notebook/browser/notebookEditorWidget.ts
-@@ -1959,11 +1959,12 @@ export class NotebookEditorWidget extends Disposable implements INotebookEditorD
+@@ -1960,11 +1960,12 @@ export class NotebookEditorWidget extends Disposable implements INotebookEditorD
  		} else {
  			// We have to recompute position and size ourselves (which is slow)
  			const containerRect = shadowElement.getBoundingClientRect();
@@ -40,7 +40,7 @@ index 2c05bed3ffc..6fa05e1e0be 100644
  			};
  		}
  	}
-@@ -1981,9 +1982,8 @@ export class NotebookEditorWidget extends Disposable implements INotebookEditorD
+@@ -1982,9 +1983,8 @@ export class NotebookEditorWidget extends Disposable implements INotebookEditorD
  			return;
  		}
  

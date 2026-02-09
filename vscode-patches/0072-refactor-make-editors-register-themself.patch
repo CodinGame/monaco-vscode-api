@@ -17,10 +17,10 @@ instead of scanning them in the keybinding service
  9 files changed, 57 insertions(+), 58 deletions(-)
 
 diff --git a/src/vs/editor/browser/widget/codeEditor/codeEditorWidget.ts b/src/vs/editor/browser/widget/codeEditor/codeEditorWidget.ts
-index 603d3ae12bd..7e7e69e79da 100644
+index 28797d2feba..fb0c6aebc05 100644
 --- a/src/vs/editor/browser/widget/codeEditor/codeEditorWidget.ts
 +++ b/src/vs/editor/browser/widget/codeEditor/codeEditorWidget.ts
-@@ -63,6 +63,7 @@ import { MenuId } from '../../../../platform/actions/common/actions.js';
+@@ -64,6 +64,7 @@ import { MenuId } from '../../../../platform/actions/common/actions.js';
  import { TextModelEditSource, EditSources } from '../../../common/textModelEditSource.js';
  import { TextEdit } from '../../../common/core/edits/textEdit.js';
  import { isObject } from '../../../../base/common/types.js';
@@ -28,7 +28,7 @@ index 603d3ae12bd..7e7e69e79da 100644
  
  export class CodeEditorWidget extends Disposable implements editorBrowser.ICodeEditor {
  
-@@ -269,6 +270,7 @@ export class CodeEditorWidget extends Disposable implements editorBrowser.ICodeE
+@@ -279,6 +280,7 @@ export class CodeEditorWidget extends Disposable implements editorBrowser.ICodeE
  		@IAccessibilityService accessibilityService: IAccessibilityService,
  		@ILanguageConfigurationService private readonly languageConfigurationService: ILanguageConfigurationService,
  		@ILanguageFeaturesService languageFeaturesService: ILanguageFeaturesService,
@@ -36,7 +36,7 @@ index 603d3ae12bd..7e7e69e79da 100644
  	) {
  		super();
  		codeEditorService.willCreateCodeEditor();
-@@ -388,6 +390,10 @@ export class CodeEditorWidget extends Disposable implements editorBrowser.ICodeE
+@@ -402,6 +404,10 @@ export class CodeEditorWidget extends Disposable implements editorBrowser.ICodeE
  		}));
  
  		this._codeEditorService.addCodeEditor(this);
@@ -156,10 +156,10 @@ index 69e271c1879..74e473d55f8 100644
  
  		this._configurationService = configurationService;
 diff --git a/src/vs/editor/standalone/browser/standaloneServices.ts b/src/vs/editor/standalone/browser/standaloneServices.ts
-index 6ff655b013a..5e9a48686cc 100644
+index 3b05d4d2460..e94952e913e 100644
 --- a/src/vs/editor/standalone/browser/standaloneServices.ts
 +++ b/src/vs/editor/standalone/browser/standaloneServices.ts
-@@ -53,8 +53,6 @@ import { basename } from '../../../base/common/resources.js';
+@@ -54,8 +54,6 @@ import { basename } from '../../../base/common/resources.js';
  import { ICodeEditorService } from '../../browser/services/codeEditorService.js';
  import { ConsoleLogger, ILoggerService, ILogService, NullLoggerService } from '../../../platform/log/common/log.js';
  import { IWorkspaceTrustManagementService, IWorkspaceTrustTransitionParticipant, IWorkspaceTrustUriInfo } from '../../../platform/workspace/common/workspaceTrust.js';
@@ -168,7 +168,7 @@ index 6ff655b013a..5e9a48686cc 100644
  import { IContextMenuService, IContextViewDelegate, IContextViewService, IOpenContextView } from '../../../platform/contextview/browser/contextView.js';
  import { ContextViewService } from '../../../platform/contextview/browser/contextViewService.js';
  import { LanguageService } from '../../common/services/languageService.js';
-@@ -422,66 +420,43 @@ export class StandaloneKeybindingService extends AbstractKeybindingService {
+@@ -424,66 +422,43 @@ export class StandaloneKeybindingService extends AbstractKeybindingService {
  		this._cachedResolver = null;
  		this._dynamicKeybindings = [];
  		this._domNodeListeners = [];
@@ -263,7 +263,7 @@ index 6ff655b013a..5e9a48686cc 100644
  
  	public addDynamicKeybinding(command: string, keybinding: number, handler: ICommandHandler, when: ContextKeyExpression | undefined): IDisposable {
 diff --git a/src/vs/platform/keybinding/common/abstractKeybindingService.ts b/src/vs/platform/keybinding/common/abstractKeybindingService.ts
-index 7678f6c893f..3859431103c 100644
+index 787e20858a2..126c8537907 100644
 --- a/src/vs/platform/keybinding/common/abstractKeybindingService.ts
 +++ b/src/vs/platform/keybinding/common/abstractKeybindingService.ts
 @@ -80,6 +80,10 @@ export abstract class AbstractKeybindingService extends Disposable implements IK
@@ -278,7 +278,7 @@ index 7678f6c893f..3859431103c 100644
  		super.dispose();
  	}
 diff --git a/src/vs/platform/keybinding/common/keybinding.ts b/src/vs/platform/keybinding/common/keybinding.ts
-index 401691890b2..5cc10e3ef20 100644
+index 6c4baf3a1de..ec5816f5b7f 100644
 --- a/src/vs/platform/keybinding/common/keybinding.ts
 +++ b/src/vs/platform/keybinding/common/keybinding.ts
 @@ -47,6 +47,8 @@ export interface IKeybindingService {

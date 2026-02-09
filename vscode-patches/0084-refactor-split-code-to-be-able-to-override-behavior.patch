@@ -8,10 +8,10 @@ Subject: [PATCH] refactor: split code to be able to override behavior
  1 file changed, 11 insertions(+), 7 deletions(-)
 
 diff --git a/src/vs/workbench/services/keybinding/browser/keybindingService.ts b/src/vs/workbench/services/keybinding/browser/keybindingService.ts
-index 6929b00e4bd..61a33210678 100644
+index 9d9997d50de..d773a5e530e 100644
 --- a/src/vs/workbench/services/keybinding/browser/keybindingService.ts
 +++ b/src/vs/workbench/services/keybinding/browser/keybindingService.ts
-@@ -245,17 +245,11 @@ export class WorkbenchKeybindingService extends AbstractKeybindingService {
+@@ -246,17 +246,11 @@ export class WorkbenchKeybindingService extends AbstractKeybindingService {
  				return;
  			}
  
@@ -30,7 +30,7 @@ index 6929b00e4bd..61a33210678 100644
  
  			// update resolver which will bring back all unbound keyboard shortcuts
  			this._cachedResolver = null;
-@@ -263,6 +257,16 @@ export class WorkbenchKeybindingService extends AbstractKeybindingService {
+@@ -264,6 +258,16 @@ export class WorkbenchKeybindingService extends AbstractKeybindingService {
  		}));
  	}
  

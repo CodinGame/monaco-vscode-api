@@ -310,7 +310,7 @@ export default {
   }
 
   if (transformed) {
-    patchedCode = recast.print(ast).code
+    patchedCode = recast.prettyPrint(ast).code
     patchedCode = patchedCode.replace(/\/\*#__PURE__\*\/\s+/g, '/*#__PURE__*/ ') // Remove space after PURE comment
   }
 
@@ -346,15 +346,46 @@ function resolveVscode(importee: string, importer?: string) {
 export function resolveVscodePlugin(vscodeVersion?: string, vscodeCommit?: string): rollup.Plugin {
   return {
     name: 'resolve-vscode',
-    resolveId: (importeeUrl, importer) => {
+    resolveId(this: rollup.PluginContext, importeeUrl, importer) {
       const result = /^(.*?)(\?.*)?$/.exec(importeeUrl)!
       const importee = result[1]!
       const search = result[2] ?? ''
+
+      if (importee.endsWith('codicon.ttf')) {
+        return this.resolve('@vscode/codicons/dist/codicon.ttf')
+      }
 
       const resolved = resolveVscode(importee, importer)
 
       if (resolved != null) {
         return `${resolved}${search}`
+      }
+      return undefined
+    },
+    async transform(code, id) {
+      if (id.endsWith('tree-sitter.js')) {
+        // Remove the UMD to commonjs wrapper around tree-sitter, because it prevent rollup to properly resolve the imports and tree-shake the code
+
+        // basically revert what is done in https://github.com/microsoft/vscode-tree-sitter-wasm/blob/f2b6e6f646aa32388a5c6d6ee960e85d294a26a9/build/compileTreeSitterWasm.ts#L74-L109
+        let cleanCode = code
+          .split('\n')
+          .slice(21, -1)
+          .join('\n')
+          .replaceAll('getCurrentScriptUrl()', 'import.meta.url')
+
+          // Remove dynamic imports of node built-in and other stuff to make it importable
+          .replaceAll('await import(', 'shouldNotBeUsed(')
+          .replaceAll('if (ENVIRONMENT_IS_NODE) {', 'if (false) {')
+          .replaceAll('new URL("tree-sitter.wasm", import.meta.url).href', 'undefined')
+
+        const moduleExportKey = 'return {'
+        const indexLastExport = cleanCode.lastIndexOf(moduleExportKey)
+        const exportsStart = indexLastExport + moduleExportKey.length
+        const exportsEnd = cleanCode.indexOf('}', exportsStart)
+        const exports = cleanCode.substring(exportsStart, exportsEnd)
+        cleanCode = `${cleanCode.substring(0, indexLastExport)}\nexport { ${exports} };`
+
+        return cleanCode
       }
       return undefined
     },

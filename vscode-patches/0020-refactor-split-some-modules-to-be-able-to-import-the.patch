@@ -567,7 +567,7 @@ index c8fc8aa2dd2..1ea10370c97 100644
  	handler: (accessor, resource: URI | object) => {
 diff --git a/src/vs/workbench/contrib/files/browser/files.contribution._configuration.ts b/src/vs/workbench/contrib/files/browser/files.contribution._configuration.ts
 new file mode 100644
-index 00000000000..69cf99eaeb5
+index 00000000000..e9173033499
 --- /dev/null
 +++ b/src/vs/workbench/contrib/files/browser/files.contribution._configuration.ts
 @@ -0,0 +1,297 @@
@@ -710,7 +710,7 @@ index 00000000000..69cf99eaeb5
 +		'files.trimTrailingWhitespaceInRegexAndStrings': {
 +			'type': 'boolean',
 +			'default': true,
-+			'description': nls.localize('trimTrailingWhitespaceInRegexAndStrings', "When enabled, trailing whitespace will be removed from multiline strings and regexes will be removed on save or when executing 'editor.action.trimTrailingWhitespace'. This can cause whitespace to not be trimmed from lines when there isn't up-to-date token information."),
++			'description': nls.localize('trimTrailingWhitespaceInRegexAndStrings', "When enabled, trailing whitespace will be removed from multiline strings and regexes on save or when executing 'editor.action.trimTrailingWhitespace'. This can cause whitespace to not be trimmed from lines when there isn't up-to-date token information."),
 +			'scope': ConfigurationScope.LANGUAGE_OVERRIDABLE
 +		},
 +		'files.insertFinalNewline': {
@@ -1299,7 +1299,7 @@ index 00000000000..8064ddc028c
 +	}
 +});
 diff --git a/src/vs/workbench/contrib/files/browser/files.contribution.ts b/src/vs/workbench/contrib/files/browser/files.contribution.ts
-index 87030a89665..269fb34cadb 100644
+index 53918c80b78..269fb34cadb 100644
 --- a/src/vs/workbench/contrib/files/browser/files.contribution.ts
 +++ b/src/vs/workbench/contrib/files/browser/files.contribution.ts
 @@ -3,673 +3,7 @@
@@ -1546,7 +1546,7 @@ index 87030a89665..269fb34cadb 100644
 -		'files.trimTrailingWhitespaceInRegexAndStrings': {
 -			'type': 'boolean',
 -			'default': true,
--			'description': nls.localize('trimTrailingWhitespaceInRegexAndStrings', "When enabled, trailing whitespace will be removed from multiline strings and regexes will be removed on save or when executing 'editor.action.trimTrailingWhitespace'. This can cause whitespace to not be trimmed from lines when there isn't up-to-date token information."),
+-			'description': nls.localize('trimTrailingWhitespaceInRegexAndStrings', "When enabled, trailing whitespace will be removed from multiline strings and regexes on save or when executing 'editor.action.trimTrailingWhitespace'. This can cause whitespace to not be trimmed from lines when there isn't up-to-date token information."),
 -			'scope': ConfigurationScope.LANGUAGE_OVERRIDABLE
 -		},
 -		'files.insertFinalNewline': {

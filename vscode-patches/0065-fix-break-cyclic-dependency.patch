@@ -18,7 +18,7 @@ Subject: [PATCH] fix: break cyclic dependency
  11 files changed, 20 insertions(+), 19 deletions(-)
 
 diff --git a/src/vs/workbench/contrib/chat/browser/accessibility/chatAccessibilityProvider.ts b/src/vs/workbench/contrib/chat/browser/accessibility/chatAccessibilityProvider.ts
-index e468b666365..b82937adf63 100644
+index 90397262b5d..4853acedb41 100644
 --- a/src/vs/workbench/contrib/chat/browser/accessibility/chatAccessibilityProvider.ts
 +++ b/src/vs/workbench/contrib/chat/browser/accessibility/chatAccessibilityProvider.ts
 @@ -18,7 +18,7 @@ import { IChatToolInvocation } from '../../common/chatService/chatService.js';
@@ -44,12 +44,12 @@ index 6ce67486a58..17e137b5eb0 100644
 +export const SkipToolPostConfirmationActionId = 'workbench.action.chat.skipToolPostExecution';
  
 diff --git a/src/vs/workbench/contrib/chat/browser/actions/chatContext.ts b/src/vs/workbench/contrib/chat/browser/actions/chatContext.ts
-index 6154a9e95ce..3d019538444 100644
+index fb17967129b..04e97d0bf2d 100644
 --- a/src/vs/workbench/contrib/chat/browser/actions/chatContext.ts
 +++ b/src/vs/workbench/contrib/chat/browser/actions/chatContext.ts
-@@ -26,12 +26,13 @@ import { IChatEditingService } from '../../common/editing/chatEditingService.js'
- import { IChatRequestToolEntry, IChatRequestToolSetEntry, IChatRequestVariableEntry, IImageVariableEntry, OmittedState, toToolSetVariableEntry, toToolVariableEntry } from '../../common/attachments/chatVariableEntries.js';
- import { ToolDataSource, ToolSet } from '../../common/tools/languageModelToolsService.js';
+@@ -23,12 +23,13 @@ import { IChatContextPickService, IChatContextValueItem, IChatContextPickerItem,
+ import { IChatRequestToolEntry, IChatRequestToolSetEntry, IChatRequestVariableEntry, IImageVariableEntry, toToolSetVariableEntry, toToolVariableEntry } from '../../common/attachments/chatVariableEntries.js';
+ import { isToolSet, ToolDataSource } from '../../common/tools/languageModelToolsService.js';
  import { IChatWidget } from '../chat.js';
 -import { imageToHash, isImage } from '../widget/input/editor/chatPasteProviders.js';
 +import { isImage } from '../widget/input/editor/chatPasteProviders.js';
@@ -63,10 +63,10 @@ index 6154a9e95ce..3d019538444 100644
  
  export class ChatContextContributions extends Disposable implements IWorkbenchContribution {
 diff --git a/src/vs/workbench/contrib/chat/browser/actions/chatToolActions.ts b/src/vs/workbench/contrib/chat/browser/actions/chatToolActions.ts
-index a8ad2887cac..5061f6937d2 100644
+index e341fb6f4c8..a80205e71b2 100644
 --- a/src/vs/workbench/contrib/chat/browser/actions/chatToolActions.ts
 +++ b/src/vs/workbench/contrib/chat/browser/actions/chatToolActions.ts
-@@ -28,6 +28,7 @@ import { ChatModeKind } from '../../common/constants.js';
+@@ -22,6 +22,7 @@ import { ChatConfiguration, ChatModeKind } from '../../common/constants.js';
  import { IChatWidget, IChatWidgetService } from '../chat.js';
  import { ToolsScope } from '../widget/input/chatSelectedTools.js';
  import { CHAT_CATEGORY } from './chatActions.js';
@@ -74,7 +74,7 @@ index a8ad2887cac..5061f6937d2 100644
  import { showToolsPicker } from './chatToolPicker.js';
  
  
-@@ -42,10 +43,6 @@ type SelectedToolClassification = {
+@@ -36,10 +37,6 @@ type SelectedToolClassification = {
  	total: { classification: 'SystemMetaData'; purpose: 'FeatureInsight'; comment: 'Number of total chat tools' };
  };
  
@@ -114,7 +114,7 @@ index 89f1ecb1225..2876ed9e929 100644
 +	return hashArray.map(b => b.toString(16).padStart(2, '0')).join('');
 +}
 diff --git a/src/vs/workbench/contrib/chat/browser/widget/chatContentParts/toolInvocationParts/chatExtensionsInstallToolSubPart.ts b/src/vs/workbench/contrib/chat/browser/widget/chatContentParts/toolInvocationParts/chatExtensionsInstallToolSubPart.ts
-index 726ce214681..238770697f8 100644
+index efbe69369f7..55323916621 100644
 --- a/src/vs/workbench/contrib/chat/browser/widget/chatContentParts/toolInvocationParts/chatExtensionsInstallToolSubPart.ts
 +++ b/src/vs/workbench/contrib/chat/browser/widget/chatContentParts/toolInvocationParts/chatExtensionsInstallToolSubPart.ts
 @@ -15,7 +15,7 @@ import { IKeybindingService } from '../../../../../../../platform/keybinding/com
@@ -127,25 +127,25 @@ index 726ce214681..238770697f8 100644
  import { ChatConfirmationWidget, IChatConfirmationButton } from '../chatConfirmationWidget.js';
  import { IChatContentPartRenderContext } from '../chatContentParts.js';
 diff --git a/src/vs/workbench/contrib/chat/browser/widget/chatContentParts/toolInvocationParts/chatTerminalToolConfirmationSubPart.ts b/src/vs/workbench/contrib/chat/browser/widget/chatContentParts/toolInvocationParts/chatTerminalToolConfirmationSubPart.ts
-index 868a9a84174..ef85432d97f 100644
+index d7826880faa..9789a541700 100644
 --- a/src/vs/workbench/contrib/chat/browser/widget/chatContentParts/toolInvocationParts/chatTerminalToolConfirmationSubPart.ts
 +++ b/src/vs/workbench/contrib/chat/browser/widget/chatContentParts/toolInvocationParts/chatTerminalToolConfirmationSubPart.ts
-@@ -36,7 +36,7 @@ import { migrateLegacyTerminalToolSpecificData } from '../../../../common/chat.j
- import { ChatContextKeys } from '../../../../common/actions/chatContextKeys.js';
+@@ -36,7 +36,7 @@ import { ChatContextKeys } from '../../../../common/actions/chatContextKeys.js';
+ import { migrateLegacyTerminalToolSpecificData } from '../../../../common/chat.js';
  import { IChatToolInvocation, ToolConfirmKind, type IChatTerminalToolInvocationData, type ILegacyChatTerminalToolInvocationData } from '../../../../common/chatService/chatService.js';
  import type { CodeBlockModelCollection } from '../../../../common/widget/codeBlockModelCollection.js';
 -import { AcceptToolConfirmationActionId, SkipToolConfirmationActionId } from '../../../actions/chatToolActions.js';
 +import { AcceptToolConfirmationActionId, SkipToolConfirmationActionId } from '../../../actions/chatConstants.js';
  import { IChatCodeBlockInfo, IChatWidgetService } from '../../../chat.js';
- import { ICodeBlockRenderOptions } from '../codeBlockPart.js';
  import { ChatCustomConfirmationWidget, IChatConfirmationButton } from '../chatConfirmationWidget.js';
+ import { EditorPool } from '../chatContentCodePools.js';
 diff --git a/src/vs/workbench/contrib/chat/browser/widget/chatContentParts/toolInvocationParts/chatToolConfirmationSubPart.ts b/src/vs/workbench/contrib/chat/browser/widget/chatContentParts/toolInvocationParts/chatToolConfirmationSubPart.ts
-index 859421939a0..658fae422dc 100644
+index a9993b6ef53..8d857959c86 100644
 --- a/src/vs/workbench/contrib/chat/browser/widget/chatContentParts/toolInvocationParts/chatToolConfirmationSubPart.ts
 +++ b/src/vs/workbench/contrib/chat/browser/widget/chatContentParts/toolInvocationParts/chatToolConfirmationSubPart.ts
 @@ -25,7 +25,7 @@ import { IChatToolInvocation, ToolConfirmKind } from '../../../../common/chatSer
  import { CodeBlockModelCollection } from '../../../../common/widget/codeBlockModelCollection.js';
- import { createToolInputUri, createToolSchemaUri, ILanguageModelToolsService } from '../../../../common/tools/languageModelToolsService.js';
+ import { createToolInputUri, createToolSchemaUri, ILanguageModelToolsService, IToolConfirmationMessages } from '../../../../common/tools/languageModelToolsService.js';
  import { ILanguageModelToolsConfirmationService } from '../../../../common/tools/languageModelToolsConfirmationService.js';
 -import { AcceptToolConfirmationActionId, SkipToolConfirmationActionId } from '../../../actions/chatToolActions.js';
 +import { AcceptToolConfirmationActionId, SkipToolConfirmationActionId } from '../../../actions/chatConstants.js';
@@ -153,10 +153,10 @@ index 859421939a0..658fae422dc 100644
  import { renderFileWidgets } from '../chatInlineAnchorWidget.js';
  import { ICodeBlockRenderOptions } from '../codeBlockPart.js';
 diff --git a/src/vs/workbench/contrib/chat/browser/widget/chatContentParts/toolInvocationParts/chatToolPostExecuteConfirmationPart.ts b/src/vs/workbench/contrib/chat/browser/widget/chatContentParts/toolInvocationParts/chatToolPostExecuteConfirmationPart.ts
-index 54ba1affb72..4b4bd885c92 100644
+index dfe354e2514..8b11f7d06f8 100644
 --- a/src/vs/workbench/contrib/chat/browser/widget/chatContentParts/toolInvocationParts/chatToolPostExecuteConfirmationPart.ts
 +++ b/src/vs/workbench/contrib/chat/browser/widget/chatContentParts/toolInvocationParts/chatToolPostExecuteConfirmationPart.ts
-@@ -16,7 +16,7 @@ import { ChatResponseResource } from '../../../../common/model/chatModel.js';
+@@ -14,7 +14,7 @@ import { ChatResponseResource } from '../../../../common/model/chatModel.js';
  import { IChatToolInvocation, ToolConfirmKind } from '../../../../common/chatService/chatService.js';
  import { ILanguageModelToolsConfirmationService } from '../../../../common/tools/languageModelToolsConfirmationService.js';
  import { ILanguageModelToolsService, IToolResultDataPart, IToolResultPromptTsxPart, IToolResultTextPart, stringifyPromptTsxPart } from '../../../../common/tools/languageModelToolsService.js';

@@ -17,20 +17,22 @@ so that only the constant is pulled from the root instead of the whole module gr
  create mode 100644 src/vs/workbench/contrib/chat/browser/widget/input/editor/chatDynamicVariablesConstant.ts
 
 diff --git a/src/vs/workbench/api/browser/mainThreadChatAgents2.ts b/src/vs/workbench/api/browser/mainThreadChatAgents2.ts
-index 1714bfacab9..b87f234ca14 100644
+index 9d81f730ba1..4069119c604 100644
 --- a/src/vs/workbench/api/browser/mainThreadChatAgents2.ts
 +++ b/src/vs/workbench/api/browser/mainThreadChatAgents2.ts
-@@ -24,8 +24,8 @@ import { IInstantiationService } from '../../../platform/instantiation/common/in
+@@ -24,10 +24,10 @@ import { IInstantiationService } from '../../../platform/instantiation/common/in
  import { ILogService } from '../../../platform/log/common/log.js';
  import { IUriIdentityService } from '../../../platform/uriIdentity/common/uriIdentity.js';
  import { IChatWidgetService } from '../../contrib/chat/browser/chat.js';
 -import { AddDynamicVariableAction, IAddDynamicVariableContext } from '../../contrib/chat/browser/attachments/chatDynamicVariables.js';
  import { IChatAgentHistoryEntry, IChatAgentImplementation, IChatAgentRequest, IChatAgentService } from '../../contrib/chat/common/participants/chatAgents.js';
+ import { IPromptFileContext, IPromptsService } from '../../contrib/chat/common/promptSyntax/service/promptsService.js';
+ import { isValidPromptType } from '../../contrib/chat/common/promptSyntax/promptTypes.js';
 +import { IAddDynamicVariableContext } from '../../contrib/chat/browser/attachments/chatDynamicVariables.js';
- import { ICustomAgentQueryOptions, IPromptsService } from '../../contrib/chat/common/promptSyntax/service/promptsService.js';
- import { IChatEditingService, IChatRelatedFileProviderMetadata } from '../../contrib/chat/common/editing/chatEditingService.js';
  import { IChatModel } from '../../contrib/chat/common/model/chatModel.js';
-@@ -39,6 +39,7 @@ import { IExtensionService } from '../../services/extensions/common/extensions.j
+ import { ChatRequestAgentPart } from '../../contrib/chat/common/requestParser/chatParserTypes.js';
+ import { ChatRequestParser } from '../../contrib/chat/common/requestParser/chatRequestParser.js';
+@@ -40,6 +40,7 @@ import { IExtensionService } from '../../services/extensions/common/extensions.j
  import { Dto } from '../../services/extensions/common/proxyIdentifier.js';
  import { ExtHostChatAgentsShape2, ExtHostContext, IChatNotebookEditDto, IChatParticipantMetadata, IChatProgressDto, IDynamicChatAgentProps, IExtensionChatAgentMetadata, MainContext, MainThreadChatAgentsShape2 } from '../common/extHost.protocol.js';
  import { NotebookDto } from './mainThreadNotebookDto.js';
@@ -38,7 +40,7 @@ index 1714bfacab9..b87f234ca14 100644
  
  interface AgentData {
  	dispose: () => void;
-@@ -392,7 +393,7 @@ export class MainThreadChatAgents2 extends Disposable implements MainThreadChatA
+@@ -413,7 +414,7 @@ export class MainThreadChatAgents2 extends Disposable implements MainThreadChatA
  						kind: CompletionItemKind.Text,
  						detail: v.detail,
  						documentation: v.documentation,
@@ -132,12 +134,12 @@ index e05b71bd72c..af8fcba33d5 100644
  import { ChatAgentLocation } from '../../chat/common/constants.js';
  
 diff --git a/src/vs/workbench/contrib/search/browser/anythingQuickAccess.ts b/src/vs/workbench/contrib/search/browser/anythingQuickAccess.ts
-index 7d451a4cf68..ff4b17bf9ac 100644
+index 8d449a07b3e..32caa44c218 100644
 --- a/src/vs/workbench/contrib/search/browser/anythingQuickAccess.ts
 +++ b/src/vs/workbench/contrib/search/browser/anythingQuickAccess.ts
-@@ -53,7 +53,7 @@ import { stripIcons } from '../../../../base/common/iconLabels.js';
- import { Lazy } from '../../../../base/common/lazy.js';
+@@ -54,7 +54,7 @@ import { Lazy } from '../../../../base/common/lazy.js';
  import { IKeybindingService } from '../../../../platform/keybinding/common/keybinding.js';
+ import { IContextKeyService } from '../../../../platform/contextkey/common/contextkey.js';
  import { Registry } from '../../../../platform/registry/common/platform.js';
 -import { ASK_QUICK_QUESTION_ACTION_ID } from '../../chat/browser/actions/chatQuickInputActions.js';
 +import { ASK_QUICK_QUESTION_ACTION_ID } from '../../chat/browser/actions/chatConstants.js';

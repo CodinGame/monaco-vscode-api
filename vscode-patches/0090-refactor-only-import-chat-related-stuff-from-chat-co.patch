@@ -1,0 +1,35 @@
+From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
+From: =?UTF-8?q?Lo=C3=AFc=20Mangeonjean?= <loic@coderpad.io>
+Date: Fri, 6 Feb 2026 16:27:29 +0100
+Subject: [PATCH] refactor: only import chat-related stuff from chat
+ contribution
+
+---
+ src/vs/workbench/contrib/chat/browser/chat.contribution.ts       | 1 +
+ .../workbench/contrib/notebook/browser/notebook.contribution.ts  | 1 -
+ 2 files changed, 1 insertion(+), 1 deletion(-)
+
+diff --git a/src/vs/workbench/contrib/chat/browser/chat.contribution.ts b/src/vs/workbench/contrib/chat/browser/chat.contribution.ts
+index d211a1d0929..6701ae6702e 100644
+--- a/src/vs/workbench/contrib/chat/browser/chat.contribution.ts
++++ b/src/vs/workbench/contrib/chat/browser/chat.contribution.ts
+@@ -137,6 +137,7 @@ import { ChatWindowNotifier } from './chatWindowNotifier.js';
+ import { ChatRepoInfoContribution } from './chatRepoInfo.js';
+ import { VALID_PROMPT_FOLDER_PATTERN } from '../common/promptSyntax/utils/promptFilesLocator.js';
+ import { ChatTipService, IChatTipService } from './chatTipService.js';
++import '../../notebook/browser/controller/chat/notebook.chat.contribution.js'
+ 
+ const toolReferenceNameEnumValues: string[] = [];
+ const toolReferenceNameEnumDescriptions: string[] = [];
+diff --git a/src/vs/workbench/contrib/notebook/browser/notebook.contribution.ts b/src/vs/workbench/contrib/notebook/browser/notebook.contribution.ts
+index a63b68b7d38..39e0dc54737 100644
+--- a/src/vs/workbench/contrib/notebook/browser/notebook.contribution.ts
++++ b/src/vs/workbench/contrib/notebook/browser/notebook.contribution.ts
+@@ -69,7 +69,6 @@ import './controller/editActions.js';
+ import './controller/cellOutputActions.js';
+ import './controller/apiActions.js';
+ import './controller/foldingController.js';
+-import './controller/chat/notebook.chat.contribution.js';
+ import './controller/variablesActions.js';
+ 
+ // Editor Contribution

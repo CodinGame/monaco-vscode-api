@@ -221,6 +221,9 @@ async function extractResourcesFromExtensionManifestContribute(
       ).flat()
     )
   }
+  if (contribute.css != null) {
+    resources.push(...contribute.css.map((css) => css.path))
+  }
   return resources.filter(
     (resource, index, list) =>
       !resource.startsWith('$(') && !list.slice(0, index).some((o) => o === resource)
