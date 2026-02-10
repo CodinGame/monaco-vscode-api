@@ -616,14 +616,14 @@ index c5226cb273f..08f5ace9b37 100644
  			this._configurationService.getValue('accessibility.verbosity.hover') === true && this._accessibilityService.isScreenReaderOptimized(),
  			this._keybindingService.lookupKeybinding('editor.action.accessibleView')?.getAriaLabel() ?? ''
 diff --git a/src/vs/platform/actionWidget/browser/actionList.ts b/src/vs/platform/actionWidget/browser/actionList.ts
-index 3c12b59418e..b8d48462193 100644
+index 3c12b59418e..767bcf9072c 100644
 --- a/src/vs/platform/actionWidget/browser/actionList.ts
 +++ b/src/vs/platform/actionWidget/browser/actionList.ts
 @@ -460,8 +460,11 @@ export class ActionList<T> extends Disposable {
  	}
  
  	private _getRowElement(index: number): HTMLElement | null {
-+		if (this.domNode.isConnected) {
++		if (!this.domNode.isConnected) {
 +			return null;
 +		}
  		// eslint-disable-next-line no-restricted-syntax
