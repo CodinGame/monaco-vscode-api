@@ -54,6 +54,9 @@ export default ({
       await postcss([
         postcssUrl({
           url: async (asset) => {
+            if (asset.url.startsWith('data:') || asset.url.startsWith('http')) {
+              return asset.url
+            }
             let fileName: string | undefined
             if (preserveAssetsRoot != null) {
               fileName = path
@@ -62,7 +65,11 @@ export default ({
             }
 
             const resolved = await this.resolve(asset.url, id)
-            if (resolved != null && !resolved.external) {
+            if (resolved == null) {
+              this.warn(`Could not resolve asset ${asset.url} from ${id}`)
+              return asset.url
+            }
+            if (!resolved.external) {
               const assetId = this.emitFile({
                 type: 'asset',
                 fileName,
