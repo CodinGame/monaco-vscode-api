@@ -321,7 +321,9 @@ function resolveVscode(importee: string, importer?: string) {
   if (importee.endsWith('.js')) {
     importee = importee.slice(0, -3)
   }
-  if (importer != null && importee.startsWith('.')) {
+  // For some reasons, some image references from css in VSCode don't have the "./" prefix, even if they are relative, so we need to resolve them as relative to the importer
+  const isRelative = importer != null && (importee.startsWith('.') || importer.endsWith('.css'))
+  if (isRelative) {
     importee = nodePath.resolve(nodePath.dirname(importer), importee)
   }
 
