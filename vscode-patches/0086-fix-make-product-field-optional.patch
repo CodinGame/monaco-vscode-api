@@ -135,7 +135,7 @@ index c890ef2216a..232ef4e7d93 100644
  				if (packExtension.local && !extensionsToUninstall.some(e => areSameExtensions(e.extension.identifier, packExtension.identifier))) {
  					extensionsToUninstall.push({ extension: packExtension.local });
 diff --git a/src/vs/workbench/services/accounts/browser/defaultAccount.ts b/src/vs/workbench/services/accounts/browser/defaultAccount.ts
-index f0a645aea45..1934513c605 100644
+index 0317ea570ac..89585c4d8f6 100644
 --- a/src/vs/workbench/services/accounts/browser/defaultAccount.ts
 +++ b/src/vs/workbench/services/accounts/browser/defaultAccount.ts
 @@ -121,14 +121,16 @@ export class DefaultAccountService extends Disposable implements IDefaultAccount
@@ -168,7 +168,7 @@ index f0a645aea45..1934513c605 100644
  		return {
  			...this.defaultAccountConfig.authenticationProvider.default,
  			enterprise: false
-@@ -786,8 +792,11 @@ class DefaultAccountProviderContribution extends Disposable implements IWorkbenc
+@@ -835,8 +841,11 @@ class DefaultAccountProviderContribution extends Disposable implements IWorkbenc
  		@IDefaultAccountService defaultAccountService: IDefaultAccountService,
  	) {
  		super();
