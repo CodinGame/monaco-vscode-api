@@ -4729,7 +4729,6 @@ registerSingleton(
 )
 class InlineChatSessionService implements IInlineChatSessionService {
   _serviceBrand: undefined
-  @Unsupported
   onWillStartSession: IInlineChatSessionService['onWillStartSession'] = Event.None
   @Unsupported
   createSession: IInlineChatSessionService['createSession'] = unsupported
