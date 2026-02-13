@@ -4023,7 +4023,7 @@ index 8d857959c86..796403f8821 100644
  				elements.editor.appendChild(titleEl);
  
 diff --git a/src/vs/workbench/contrib/chat/browser/widget/chatContentParts/toolInvocationParts/chatToolInvocationPart.ts b/src/vs/workbench/contrib/chat/browser/widget/chatContentParts/toolInvocationParts/chatToolInvocationPart.ts
-index eaa071c1b8d..c9bfe4d88ef 100644
+index 220ce16af33..e5a3d492cac 100644
 --- a/src/vs/workbench/contrib/chat/browser/widget/chatContentParts/toolInvocationParts/chatToolInvocationPart.ts
 +++ b/src/vs/workbench/contrib/chat/browser/widget/chatContentParts/toolInvocationParts/chatToolInvocationPart.ts
 @@ -83,7 +83,7 @@ export class ChatToolInvocationPart extends Disposable implements IChatContentPa
@@ -4035,7 +4035,7 @@ index eaa071c1b8d..c9bfe4d88ef 100644
  		this.domNode.appendChild(subPartDomNode);
  
  		const render = () => {
-@@ -114,7 +114,7 @@ export class ChatToolInvocationPart extends Disposable implements IChatContentPa
+@@ -116,7 +116,7 @@ export class ChatToolInvocationPart extends Disposable implements IChatContentPa
  				return !!outcome && outcome.type !== ToolConfirmKind.Denied && outcome.type !== ToolConfirmKind.Skipped;
  			});
  
@@ -4045,7 +4045,7 @@ index eaa071c1b8d..c9bfe4d88ef 100644
  
  			this._register(autorun(r => {
 diff --git a/src/vs/workbench/contrib/chat/browser/widget/chatContentParts/toolInvocationParts/chatToolProgressPart.ts b/src/vs/workbench/contrib/chat/browser/widget/chatContentParts/toolInvocationParts/chatToolProgressPart.ts
-index 9e35ac04658..0731d25a19c 100644
+index 96c8fd5f7c7..d6c18554182 100644
 --- a/src/vs/workbench/contrib/chat/browser/widget/chatContentParts/toolInvocationParts/chatToolProgressPart.ts
 +++ b/src/vs/workbench/contrib/chat/browser/widget/chatContentParts/toolInvocationParts/chatToolProgressPart.ts
 @@ -45,14 +45,14 @@ export class ChatToolProgressSubPart extends BaseChatToolInvocationSubPart {
@@ -4062,9 +4062,9 @@ index 9e35ac04658..0731d25a19c 100644
  		} else {
 -			const container = document.createElement('div');
 +			const container = dom.createElement('div');
- 			const progressObservable = this.toolInvocation.kind === 'toolInvocation' ? this.toolInvocation.state.map((s, r) => s.type === IChatToolInvocation.StateKind.Executing ? s.progress.read(r) : undefined) : undefined;
  			this._register(autorun(reader => {
- 				const progress = progressObservable?.read(reader);
+ 				let progressContent: IMarkdownString | string | undefined;
+ 				const key = this.getAnnouncementKey('progress');
 diff --git a/src/vs/workbench/contrib/chat/browser/widget/chatContentParts/toolInvocationParts/chatToolStreamingSubPart.ts b/src/vs/workbench/contrib/chat/browser/widget/chatContentParts/toolInvocationParts/chatToolStreamingSubPart.ts
 index 3e3e3cc12d0..e2b64b5c160 100644
 --- a/src/vs/workbench/contrib/chat/browser/widget/chatContentParts/toolInvocationParts/chatToolStreamingSubPart.ts
@@ -4101,10 +4101,10 @@ index fa166677003..6564efe8bcf 100644
  		this.updateOverlayStyles(overlay);
  		overlayContainer.appendChild(overlay);
 diff --git a/src/vs/workbench/contrib/chat/browser/widget/chatListRenderer.ts b/src/vs/workbench/contrib/chat/browser/widget/chatListRenderer.ts
-index 6e746f80622..a07bc354e8b 100644
+index 31da6c398a7..25a67354235 100644
 --- a/src/vs/workbench/contrib/chat/browser/widget/chatListRenderer.ts
 +++ b/src/vs/workbench/contrib/chat/browser/widget/chatListRenderer.ts
-@@ -534,7 +534,7 @@ export class ChatListItemRenderer extends Disposable implements ITreeRenderer<Ch
+@@ -547,7 +547,7 @@ export class ChatListItemRenderer extends Disposable implements ITreeRenderer<Ch
  				this.hoverService.hideHover();
  			}
  		}));
@@ -4114,10 +4114,10 @@ index 6e746f80622..a07bc354e8b 100644
  		const template: IChatListItemTemplate = { header, avatarContainer, requestHover, username, detail, value, rowContainer, elementDisposables, templateDisposables, contextKeyService, instantiationService: scopedInstantiationService, agentHover, titleToolbar, footerToolbar, footerDetailsContainer, disabledOverlay, checkpointToolbar, checkpointRestoreToolbar, checkpointContainer, checkpointRestoreContainer };
  
 diff --git a/src/vs/workbench/contrib/chat/browser/widget/chatListWidget.ts b/src/vs/workbench/contrib/chat/browser/widget/chatListWidget.ts
-index 11d2b3e74c7..e0f4c0d1c0a 100644
+index 009d3708cf0..a99d8ca65da 100644
 --- a/src/vs/workbench/contrib/chat/browser/widget/chatListWidget.ts
 +++ b/src/vs/workbench/contrib/chat/browser/widget/chatListWidget.ts
-@@ -275,7 +275,7 @@ export class ChatListWidget extends Disposable {
+@@ -276,7 +276,7 @@ export class ChatListWidget extends Disposable {
  		this._renderStyle = options.renderStyle;
  
  		// Create overflow widgets container
@@ -4127,10 +4127,10 @@ index 11d2b3e74c7..e0f4c0d1c0a 100644
  			overflowWidgetsContainer.classList.add('chat-overflow-widget-container', 'monaco-editor');
  			this._container.append(overflowWidgetsContainer);
 diff --git a/src/vs/workbench/contrib/chat/browser/widget/chatWidget.ts b/src/vs/workbench/contrib/chat/browser/widget/chatWidget.ts
-index 583ccb00c61..8238a6a0278 100644
+index 9ede2b135ef..58bda047774 100644
 --- a/src/vs/workbench/contrib/chat/browser/widget/chatWidget.ts
 +++ b/src/vs/workbench/contrib/chat/browser/widget/chatWidget.ts
-@@ -1367,7 +1367,7 @@ export class ChatWidget extends Disposable implements IChatWidget {
+@@ -1359,7 +1359,7 @@ export class ChatWidget extends Disposable implements IChatWidget {
  
  	private createList(listContainer: HTMLElement, options: IChatListItemRendererOptions): void {
  		// Create a dom element to hold UI from editor widgets embedded in chat messages

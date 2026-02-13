@@ -107,10 +107,10 @@ index 0e1160d71e4..62bf1facfe7 100644
  			}
  		}));
 diff --git a/src/vs/workbench/contrib/chat/browser/widget/chatWidget.ts b/src/vs/workbench/contrib/chat/browser/widget/chatWidget.ts
-index 8238a6a0278..7482298bba3 100644
+index 58bda047774..b33b399ad86 100644
 --- a/src/vs/workbench/contrib/chat/browser/widget/chatWidget.ts
 +++ b/src/vs/workbench/contrib/chat/browser/widget/chatWidget.ts
-@@ -816,8 +816,8 @@ export class ChatWidget extends Disposable implements IChatWidget {
+@@ -818,8 +818,8 @@ export class ChatWidget extends Disposable implements IChatWidget {
  				const defaultAgent = this.chatAgentService.getDefaultAgent(this.location, this.input.currentModeKind);
  				let additionalMessage: string | IMarkdownString | undefined;
  				if (this.chatEntitlementService.anonymous && !this.chatEntitlementService.sentiment.installed) {
