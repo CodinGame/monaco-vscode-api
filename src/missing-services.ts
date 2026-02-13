@@ -436,9 +436,11 @@ import { IChatEditingExplanationModelManager } from 'vs/workbench/contrib/chat/b
 import { IChatStatusItemService } from 'vs/workbench/contrib/chat/browser/chatStatus/chatStatusItemService.service'
 import { IChatTipService } from 'vs/workbench/contrib/chat/browser/chatTipService.service.js'
 import { IChatContextService } from 'vs/workbench/contrib/chat/browser/contextContrib/chatContextService.service'
+import { ICodeCompareModelService } from 'vs/workbench/contrib/chat/browser/widget/chatContentParts/chatTextEditContentPart.service'
 import { IChatToolOutputStateCache } from 'vs/workbench/contrib/chat/browser/widget/chatContentParts/toolInvocationParts/chatToolOutputStateCache.service'
 import { IChatModeService } from 'vs/workbench/contrib/chat/common/chatModes.service'
 import { ILanguageModelsConfigurationService } from 'vs/workbench/contrib/chat/common/languageModelsConfiguration.service.js'
+import { Target } from 'vs/workbench/contrib/chat/common/promptSyntax/service/promptsService.js'
 import { ILanguageModelToolsConfirmationService } from 'vs/workbench/contrib/chat/common/tools/languageModelToolsConfirmationService.service'
 import {
   ToolDataSource,
@@ -457,7 +459,6 @@ import { IInlineCompletionsUnificationService } from 'vs/workbench/services/inli
 import { DefaultWorkbenchModeService } from 'vs/workbench/services/layout/common/workbenchModeService.js'
 import { IWorkbenchModeService } from 'vs/workbench/services/layout/common/workbenchModeService.service.js'
 import { IUserAttentionService } from 'vs/workbench/services/userAttention/common/userAttentionService.service'
-import { ICodeCompareModelService } from 'vs/workbench/contrib/chat/browser/widget/chatContentParts/chatTextEditContentPart.service'
 import {
   getBuiltInExtensionTranslationsUris,
   getExtensionIdProvidingCurrentLocale
@@ -3339,6 +3340,15 @@ class ChatService implements IChatService {
     Event.None
   @Unsupported
   notifyQuestionCarouselAnswer: IChatService['notifyQuestionCarouselAnswer'] = unsupported
+
+  @Unsupported
+  setYieldRequested: IChatService['setYieldRequested'] = unsupported
+  @Unsupported
+  removePendingRequest: IChatService['removePendingRequest'] = unsupported
+  @Unsupported
+  setPendingRequests: IChatService['setPendingRequests'] = unsupported
+  @Unsupported
+  processPendingRequests: IChatService['processPendingRequests'] = unsupported
 }
 registerSingleton(IChatService, ChatService, InstantiationType.Delayed)
 class ChatMarkdownAnchorService implements IChatMarkdownAnchorService {
@@ -3409,6 +3419,8 @@ class QuickChatAgentService implements IChatAgentService {
   getChatSummary: IChatAgentService['getChatSummary'] = async () => undefined
   @Unsupported
   setRequestTools: IChatAgentService['setRequestTools'] = unsupported
+  @Unsupported
+  setYieldRequested: IChatAgentService['setYieldRequested'] = unsupported
 }
 registerSingleton(IChatAgentService, QuickChatAgentService, InstantiationType.Delayed)
 class ChatAgentNameService implements IChatAgentNameService {
@@ -5593,12 +5605,12 @@ class PromptsService implements IPromptsService {
   @Unsupported
   getPromptLocationLabel: IPromptsService['getPromptLocationLabel'] = unsupported
 
-  findAgentMDsInWorkspace: IPromptsService['findAgentMDsInWorkspace'] = async () => []
+  getHooks: IPromptsService['getHooks'] = async () => undefined
 
   onDidChangeCustomAgents: IPromptsService['onDidChangeCustomAgents'] = Event.None
   getCustomAgents: IPromptsService['getCustomAgents'] = async () => []
-  listAgentMDs: IPromptsService['listAgentMDs'] = async () => []
-  listCopilotInstructionsMDs: IPromptsService['listCopilotInstructionsMDs'] = async () => []
+  listNestedAgentMDs: IPromptsService['listNestedAgentMDs'] = async () => []
+  listAgentInstructions: IPromptsService['listAgentInstructions'] = async () => []
   getAgentFileURIFromModeFile: IPromptsService['getAgentFileURIFromModeFile'] = () => undefined
   getDisabledPromptFiles: IPromptsService['getDisabledPromptFiles'] = () => new ResourceSet()
   @Unsupported
@@ -6090,7 +6102,7 @@ class ChatSessionsService implements IChatSessionsService {
 
   getChatSessionItems: IChatSessionsService['getChatSessionItems'] = async () => []
   getCustomAgentTargetForSessionType: IChatSessionsService['getCustomAgentTargetForSessionType'] =
-    () => undefined
+    () => Target.Undefined
   onRequestNotifyExtension: IChatSessionsService['onRequestNotifyExtension'] = Event.None
 }
 registerSingleton(IChatSessionsService, ChatSessionsService, InstantiationType.Delayed)

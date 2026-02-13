@@ -17,7 +17,7 @@ so that only the constant is pulled from the root instead of the whole module gr
  create mode 100644 src/vs/workbench/contrib/chat/browser/widget/input/editor/chatDynamicVariablesConstant.ts
 
 diff --git a/src/vs/workbench/api/browser/mainThreadChatAgents2.ts b/src/vs/workbench/api/browser/mainThreadChatAgents2.ts
-index 9d81f730ba1..4069119c604 100644
+index cc26ee5bc09..8320b15ea44 100644
 --- a/src/vs/workbench/api/browser/mainThreadChatAgents2.ts
 +++ b/src/vs/workbench/api/browser/mainThreadChatAgents2.ts
 @@ -24,10 +24,10 @@ import { IInstantiationService } from '../../../platform/instantiation/common/in
@@ -40,7 +40,7 @@ index 9d81f730ba1..4069119c604 100644
  
  interface AgentData {
  	dispose: () => void;
-@@ -413,7 +414,7 @@ export class MainThreadChatAgents2 extends Disposable implements MainThreadChatA
+@@ -416,7 +417,7 @@ export class MainThreadChatAgents2 extends Disposable implements MainThreadChatA
  						kind: CompletionItemKind.Text,
  						detail: v.detail,
  						documentation: v.documentation,

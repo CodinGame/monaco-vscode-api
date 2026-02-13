@@ -10,14 +10,14 @@ Subject: [PATCH] refactor: only import chat-related stuff from chat
  2 files changed, 1 insertion(+), 1 deletion(-)
 
 diff --git a/src/vs/workbench/contrib/chat/browser/chat.contribution.ts b/src/vs/workbench/contrib/chat/browser/chat.contribution.ts
-index d211a1d0929..6701ae6702e 100644
+index 87d0a4ebb32..e88ed04c231 100644
 --- a/src/vs/workbench/contrib/chat/browser/chat.contribution.ts
 +++ b/src/vs/workbench/contrib/chat/browser/chat.contribution.ts
-@@ -137,6 +137,7 @@ import { ChatWindowNotifier } from './chatWindowNotifier.js';
- import { ChatRepoInfoContribution } from './chatRepoInfo.js';
+@@ -143,6 +143,7 @@ import { ChatRepoInfoContribution } from './chatRepoInfo.js';
  import { VALID_PROMPT_FOLDER_PATTERN } from '../common/promptSyntax/utils/promptFilesLocator.js';
  import { ChatTipService, IChatTipService } from './chatTipService.js';
-+import '../../notebook/browser/controller/chat/notebook.chat.contribution.js'
+ import { ChatQueuePickerRendering } from './widget/input/chatQueuePickerActionItem.js';
++import '../../notebook/browser/controller/chat/notebook.chat.contribution.js';
  
  const toolReferenceNameEnumValues: string[] = [];
  const toolReferenceNameEnumDescriptions: string[] = [];
