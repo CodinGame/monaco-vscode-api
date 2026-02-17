@@ -61,6 +61,8 @@ import { CancellationToken } from 'vs/base/common/cancellation'
 import { checkServicesNotInitialized, registerServiceInitializePreParticipant } from '../lifecycle'
 import { logsPath } from '../workbench'
 import 'vs/workbench/contrib/files/browser/files.contribution._configuration.js'
+import { IWorkspaceContextService } from 'vs/platform/workspace/common/workspace.service'
+import { IEnvironmentService } from 'vs/platform/environment/common/environment.service'
 
 interface _RegisteredNode {
   type: FileType
@@ -759,7 +761,8 @@ class OverlayFileSystemProvider
   capabilities =
     FileSystemProviderCapabilities.FileReadWrite |
     FileSystemProviderCapabilities.PathCaseSensitive |
-    FileSystemProviderCapabilities.FileReadStream
+    FileSystemProviderCapabilities.FileReadStream |
+    FileSystemProviderCapabilities.FileAppend
 
   private async readFromDelegates<T>(
     caller: (delegate: IFileSystemProviderWithFileReadWriteCapability) => Promise<T>,
@@ -768,7 +771,7 @@ class OverlayFileSystemProvider
     if (this.delegates.length === 0) {
       throw createFileSystemProviderError('No delegate', FileSystemProviderErrorCode.Unavailable)
     }
-    let firstError: unknown | undefined
+    const errors: unknown[] = []
     for (const delegate of this.delegates) {
       if (token != null && token.isCancellationRequested) {
         throw new Error('Cancelled')
@@ -776,21 +779,28 @@ class OverlayFileSystemProvider
       try {
         return await caller(delegate)
       } catch (err) {
-        firstError ??= err
-        if (
-          err instanceof FileSystemProviderError &&
-          [
-            FileSystemProviderErrorCode.NoPermissions,
-            FileSystemProviderErrorCode.FileNotFound,
-            FileSystemProviderErrorCode.Unavailable
-          ].includes(err.code)
-        ) {
-          continue
+        errors.push(err)
+        if (err instanceof FileSystemProviderError) {
+          if (
+            [
+              FileSystemProviderErrorCode.NoPermissions,
+              FileSystemProviderErrorCode.FileNotFound,
+              FileSystemProviderErrorCode.Unavailable
+            ].includes(err.code)
+          ) {
+            continue
+          }
         }
         throw err
       }
     }
-    throw firstError
+
+    const fileSystemErrors = errors?.filter((err) => err instanceof FileSystemProviderError)
+    const mostRelevantErrors =
+      fileSystemErrors.find((err) => err.code === FileSystemProviderErrorCode.FileNotFound) ??
+      fileSystemErrors[0] ??
+      errors[0]
+    throw mostRelevantErrors
   }
 
   private async writeToDelegates(
@@ -951,7 +961,7 @@ class OverlayFileSystemProvider
   }
 }
 
-class DelegateFileSystemProvider implements IFileSystemProvider {
+class DelegateFileSystemProvider implements IFileSystemProviderWithFileReadWriteCapability {
   constructor(
     private options: {
       delegate: IFileSystemProvider
@@ -977,17 +987,32 @@ class DelegateFileSystemProvider implements IFileSystemProvider {
       ? (resource: URI): Promise<Uint8Array> => {
           return this.options.delegate.readFile!(this.options.toDelegate(resource))
         }
-      : undefined
+      : () => {
+          throw createFileSystemProviderError(
+            'No delegate',
+            FileSystemProviderErrorCode.Unavailable
+          )
+        }
 
   writeFile =
     this.options.delegate.writeFile != null
       ? (resource: URI, content: Uint8Array, opts: IFileWriteOptions): Promise<void> => {
           return this.options.delegate.writeFile!(this.options.toDelegate(resource), content, opts)
         }
-      : undefined
+      : () => {
+          throw createFileSystemProviderError(
+            'No delegate',
+            FileSystemProviderErrorCode.Unavailable
+          )
+        }
 
   watch(resource: URI, opts: IWatchOptions): IDisposable {
-    return this.options.delegate.watch(this.options.toDelegate(resource), opts)
+    try {
+      return this.options.delegate.watch(this.options.toDelegate(resource), opts)
+    } catch {
+      // ignore watch error
+    }
+    return Disposable.None
   }
 
   stat(resource: URI): Promise<IStat> {
@@ -1064,6 +1089,9 @@ const userDataFileSystemProvider = new InMemoryFileSystemProvider()
 // The `mkdirp` logic is inside the service, and the provider will just fail if asked to write a file in a non-existent directory
 void userDataFileSystemProvider.mkdir(URI.from({ scheme: Schemas.vscodeUserData, path: '/User/' }))
 
+const userDataOverridableFileSystemProvider = new OverlayFileSystemProvider()
+userDataOverridableFileSystemProvider.register(0, userDataFileSystemProvider)
+
 // eslint-disable-next-line @typescript-eslint/no-namespace
 export namespace CustomSchemas {
   /**
@@ -1076,7 +1104,7 @@ export namespace CustomSchemas {
 const providers: Record<string, IFileSystemProvider> = {
   [CustomSchemas.extensionFile]: extensionFileSystemProvider,
   [logsPath.scheme]: new InMemoryFileSystemProvider(),
-  [Schemas.vscodeUserData]: userDataFileSystemProvider,
+  [Schemas.vscodeUserData]: userDataOverridableFileSystemProvider,
   [Schemas.tmp]: new InMemoryFileSystemProvider(),
   [Schemas.file]: overlayFileSystemProvider
 }
@@ -1245,7 +1273,8 @@ export async function createIndexedDBProviders(): Promise<IndexedDBFileSystemPro
     userDataStore,
     true
   )
-  registerCustomProvider(Schemas.vscodeUserData, userDataProvider)
+
+  userDataOverridableFileSystemProvider.register(1, userDataProvider)
 
   return userDataProvider
 }
@@ -1323,6 +1352,42 @@ export function registerFileSystemOverlay(
     throw new Error('The overlay filesystem provider was replaced')
   }
   return overlayProvider.register(priority, provider)
+}
+
+class WorkspaceUserDataFileSystemProvider extends DelegateFileSystemProvider {
+  constructor(delegate: IFileSystemProvider) {
+    super({
+      delegate,
+      toDelegate: (uri) => {
+        const root = this.getRoot()
+        if (extUri.isEqualOrParent(uri, root)) {
+          return uri.with({ path: uri.path.slice(root.path.length) })
+        }
+        throw createFileSystemProviderError('No delegate', FileSystemProviderErrorCode.Unavailable)
+      },
+      fromDeletate: (uri) => {
+        return extUri.joinPath(this.getRoot(), uri.path)
+      }
+    })
+  }
+
+  private getRoot() {
+    const environmentService = StandaloneServices.get(IEnvironmentService)
+    const workspaceContextService = StandaloneServices.get(IWorkspaceContextService)
+    return extUri.joinPath(
+      environmentService.workspaceStorageHome,
+      workspaceContextService.getWorkspace().id
+    )
+  }
+}
+
+export function registerWorkspaceUserDataFileSystemProvider(
+  provider: IFileSystemProviderWithFileReadWriteCapability
+): IDisposable {
+  return userDataOverridableFileSystemProvider.register(
+    2,
+    new WorkspaceUserDataFileSystemProvider(provider)
+  )
 }
 
 export {
