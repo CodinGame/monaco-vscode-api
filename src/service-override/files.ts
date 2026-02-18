@@ -769,7 +769,7 @@ class OverlayFileSystemProvider
     if (this.delegates.length === 0) {
       throw createFileSystemProviderError('No delegate', FileSystemProviderErrorCode.Unavailable)
     }
-    let firstError: unknown | undefined
+    const errors: unknown[] = []
     for (const delegate of this.delegates) {
       if (token != null && token.isCancellationRequested) {
         throw new Error('Cancelled')
@@ -777,21 +777,28 @@ class OverlayFileSystemProvider
       try {
         return await caller(delegate)
       } catch (err) {
-        firstError ??= err
-        if (
-          err instanceof FileSystemProviderError &&
-          [
-            FileSystemProviderErrorCode.NoPermissions,
-            FileSystemProviderErrorCode.FileNotFound,
-            FileSystemProviderErrorCode.Unavailable
-          ].includes(err.code)
-        ) {
-          continue
+        errors.push(err)
+        if (err instanceof FileSystemProviderError) {
+          if (
+            [
+              FileSystemProviderErrorCode.NoPermissions,
+              FileSystemProviderErrorCode.FileNotFound,
+              FileSystemProviderErrorCode.Unavailable
+            ].includes(err.code)
+          ) {
+            continue
+          }
         }
         throw err
       }
     }
-    throw firstError
+
+    const fileSystemErrors = errors?.filter((err) => err instanceof FileSystemProviderError)
+    const mostRelevantErrors =
+      fileSystemErrors.find((err) => err.code === FileSystemProviderErrorCode.FileNotFound) ??
+      fileSystemErrors[0] ??
+      errors[0]
+    throw mostRelevantErrors
   }
 
   private async writeToDelegates(
