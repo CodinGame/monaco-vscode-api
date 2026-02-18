@@ -759,7 +759,8 @@ class OverlayFileSystemProvider
   capabilities =
     FileSystemProviderCapabilities.FileReadWrite |
     FileSystemProviderCapabilities.PathCaseSensitive |
-    FileSystemProviderCapabilities.FileReadStream
+    FileSystemProviderCapabilities.FileReadStream |
+    FileSystemProviderCapabilities.FileAppend
 
   private async readFromDelegates<T>(
     caller: (delegate: IFileSystemProviderWithFileReadWriteCapability) => Promise<T>,
