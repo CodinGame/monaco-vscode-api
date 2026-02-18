@@ -6,6 +6,18 @@ import { IBrowserWorkbenchEnvironmentService } from 'vs/workbench/services/envir
 import { IProductService } from 'vs/platform/product/common/productService.service'
 import type { IWorkbenchConstructionOptions } from 'vs/workbench/browser/web.api'
 import { getWorkbenchConstructionOptions, getWorkspaceIdentifier, logsPath } from '../workbench'
+import type { URI } from 'vs/base/common/uri'
+
+export interface WorkbenchEnvironmentServiceOverrides {
+  windowLogsPath?: URI
+  logFile?: URI
+  userRoamingDataHome?: URI
+  argvResource?: URI
+  cacheHome?: URI
+  workspaceStorageHome?: URI
+  localHistoryHome?: URI
+  stateResource?: URI
+}
 
 class InjectedBrowserWorkbenchEnvironmentService
   extends BrowserWorkbenchEnvironmentService
@@ -13,24 +25,45 @@ class InjectedBrowserWorkbenchEnvironmentService
 {
   constructor(
     workspaceId: string = getWorkspaceIdentifier().id,
-    options: IWorkbenchConstructionOptions = getWorkbenchConstructionOptions(),
+    private overrides: WorkbenchEnvironmentServiceOverrides = {},
     @IProductService productService: IProductService
   ) {
-    super(workspaceId, logsPath, options, productService)
+    super(workspaceId, logsPath, getWorkbenchConstructionOptions(), productService)
+  }
+
+  override get windowLogsPath() {
+    return this.overrides.windowLogsPath ?? super.windowLogsPath
+  }
+  override get logFile() {
+    return this.overrides.logFile ?? super.logFile
+  }
+  override get userRoamingDataHome() {
+    return this.overrides.userRoamingDataHome ?? super.userRoamingDataHome
+  }
+  override get argvResource() {
+    return this.overrides.argvResource ?? super.argvResource
+  }
+  override get cacheHome() {
+    return this.overrides.cacheHome ?? super.cacheHome
+  }
+  override get workspaceStorageHome() {
+    return this.overrides.workspaceStorageHome ?? super.workspaceStorageHome
+  }
+  override get localHistoryHome() {
+    return this.overrides.localHistoryHome ?? super.localHistoryHome
+  }
+  override get stateResource() {
+    return this.overrides.stateResource ?? super.stateResource
   }
 }
 
-/**
- * @deprecated Provide construction option via the services `initialize` function `configuration` parameter
- */
-function getServiceOverride(options: IWorkbenchConstructionOptions): IEditorOverrideServices
-function getServiceOverride(): IEditorOverrideServices
-
-function getServiceOverride(options?: IWorkbenchConstructionOptions): IEditorOverrideServices {
+function getServiceOverride(
+  overrides?: WorkbenchEnvironmentServiceOverrides
+): IEditorOverrideServices {
   return {
     [IEnvironmentService.toString()]: new SyncDescriptor(
       InjectedBrowserWorkbenchEnvironmentService,
-      [undefined, options],
+      [undefined, overrides],
       true
     )
   }
