@@ -951,7 +951,7 @@ class OverlayFileSystemProvider
   }
 }
 
-class DelegateFileSystemProvider implements IFileSystemProvider {
+class DelegateFileSystemProvider implements IFileSystemProviderWithFileReadWriteCapability {
   constructor(
     private options: {
       delegate: IFileSystemProvider
@@ -977,17 +977,32 @@ class DelegateFileSystemProvider implements IFileSystemProvider {
       ? (resource: URI): Promise<Uint8Array> => {
           return this.options.delegate.readFile!(this.options.toDelegate(resource))
         }
-      : undefined
+      : () => {
+          throw createFileSystemProviderError(
+            'No delegate',
+            FileSystemProviderErrorCode.Unavailable
+          )
+        }
 
   writeFile =
     this.options.delegate.writeFile != null
       ? (resource: URI, content: Uint8Array, opts: IFileWriteOptions): Promise<void> => {
           return this.options.delegate.writeFile!(this.options.toDelegate(resource), content, opts)
         }
-      : undefined
+      : () => {
+          throw createFileSystemProviderError(
+            'No delegate',
+            FileSystemProviderErrorCode.Unavailable
+          )
+        }
 
   watch(resource: URI, opts: IWatchOptions): IDisposable {
-    return this.options.delegate.watch(this.options.toDelegate(resource), opts)
+    try {
+      return this.options.delegate.watch(this.options.toDelegate(resource), opts)
+    } catch {
+      // ignore watch error
+    }
+    return Disposable.None
   }
 
   stat(resource: URI): Promise<IStat> {
