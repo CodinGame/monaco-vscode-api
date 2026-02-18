@@ -9,10 +9,7 @@ import {
 } from 'vs/base/parts/storage/common/storage'
 import type { IEditorOverrideServices } from 'vs/editor/standalone/browser/standaloneServices'
 import { SyncDescriptor } from 'vs/platform/instantiation/common/descriptors'
-import {
-  AbstractStorageService,
-  StorageScope as VSStorageScope
-} from 'vs/platform/storage/common/storage'
+import { AbstractStorageService, StorageScope } from 'vs/platform/storage/common/storage'
 import { IStorageService } from 'vs/platform/storage/common/storage.service'
 import { BrowserStorageService } from 'vs/workbench/services/storage/browser/storageService'
 import { ILogService } from 'vs/platform/log/common/log.service'
@@ -25,12 +22,6 @@ import {
   registerServiceInitializePreParticipant
 } from '../lifecycle'
 import { getWorkspaceIdentifier } from '../workbench'
-
-export enum StorageScope {
-  APPLICATION = VSStorageScope.APPLICATION,
-  PROFILE = VSStorageScope.PROFILE,
-  WORKSPACE = VSStorageScope.WORKSPACE
-}
 
 export interface IStorageProvider {
   read(scope: StorageScope): Map<string, string> | undefined
@@ -237,20 +228,20 @@ class InjectedBrowserStorageService extends BrowserStorageService {
     super(getWorkspaceIdentifier(), userDataProfileService, logService)
   }
 
-  override get(key: string, scope: VSStorageScope, fallbackValue: string): string
-  override get(key: string, scope: VSStorageScope): string | undefined
-  override get(key: string, scope: VSStorageScope, fallbackValue?: string): string | undefined {
+  override get(key: string, scope: StorageScope, fallbackValue: string): string
+  override get(key: string, scope: StorageScope): string | undefined
+  override get(key: string, scope: StorageScope, fallbackValue?: string): string | undefined {
     return this.getStorage(scope)?.get(
       key,
       (this.fallbackOverride?.[key] as string | undefined) ?? fallbackValue
     )
   }
 
-  override getBoolean(key: string, scope: VSStorageScope, fallbackValue: boolean): boolean
-  override getBoolean(key: string, scope: VSStorageScope): boolean | undefined
+  override getBoolean(key: string, scope: StorageScope, fallbackValue: boolean): boolean
+  override getBoolean(key: string, scope: StorageScope): boolean | undefined
   override getBoolean(
     key: string,
-    scope: VSStorageScope,
+    scope: StorageScope,
     fallbackValue?: boolean
   ): boolean | undefined {
     return this.getStorage(scope)?.getBoolean(
@@ -259,26 +250,18 @@ class InjectedBrowserStorageService extends BrowserStorageService {
     )
   }
 
-  override getNumber(key: string, scope: VSStorageScope, fallbackValue: number): number
-  override getNumber(key: string, scope: VSStorageScope): number | undefined
-  override getNumber(
-    key: string,
-    scope: VSStorageScope,
-    fallbackValue?: number
-  ): number | undefined {
+  override getNumber(key: string, scope: StorageScope, fallbackValue: number): number
+  override getNumber(key: string, scope: StorageScope): number | undefined
+  override getNumber(key: string, scope: StorageScope, fallbackValue?: number): number | undefined {
     return this.getStorage(scope)?.getNumber(
       key,
       (this.fallbackOverride?.[key] as number | undefined) ?? fallbackValue
     )
   }
 
-  override getObject(key: string, scope: VSStorageScope, fallbackValue: object): object
-  override getObject(key: string, scope: VSStorageScope): object | undefined
-  override getObject(
-    key: string,
-    scope: VSStorageScope,
-    fallbackValue?: object
-  ): object | undefined {
+  override getObject(key: string, scope: StorageScope, fallbackValue: object): object
+  override getObject(key: string, scope: StorageScope): object | undefined
+  override getObject(key: string, scope: StorageScope, fallbackValue?: object): object | undefined {
     return this.getStorage(scope)?.getObject(
       key,
       (this.fallbackOverride?.[key] as object | undefined) ?? fallbackValue
