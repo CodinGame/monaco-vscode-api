@@ -47,12 +47,12 @@ function resolveWorkspace(configuration: IWorkbenchConstructionOptions): IAnyWor
 
   // Multi-root workspace
   if (workspace != null && isWorkspaceToOpen(workspace)) {
-    return getWorkspaceIdentifierFromUri(workspace.workspaceUri)
+    return getWorkspaceIdentifierFromUri(workspace.workspaceUri, workspace.id)
   }
 
   // Single-folder workspace
   if (workspace != null && isFolderToOpen(workspace)) {
-    return getSingleFolderWorkspaceIdentifier(workspace.folderUri)
+    return getSingleFolderWorkspaceIdentifier(workspace.folderUri, workspace.id)
   }
 
   // Empty window workspace
