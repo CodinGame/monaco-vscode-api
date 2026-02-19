@@ -1,0 +1,70 @@
+From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
+From: =?UTF-8?q?Lo=C3=AFc=20Mangeonjean?= <loic@coderpad.io>
+Date: Wed, 18 Feb 2026 16:48:57 +0100
+Subject: [PATCH] feat: allow defining the workspace id
+
+---
+ src/vs/platform/window/common/window.ts                   | 1 +
+ src/vs/workbench/browser/web.main.ts                      | 4 ++--
+ .../workbench/services/workspaces/browser/workspaces.ts   | 8 ++++----
+ 3 files changed, 7 insertions(+), 6 deletions(-)
+
+diff --git a/src/vs/platform/window/common/window.ts b/src/vs/platform/window/common/window.ts
+index 256c55eba50..f2fc4f0be3e 100644
+--- a/src/vs/platform/window/common/window.ts
++++ b/src/vs/platform/window/common/window.ts
+@@ -100,6 +100,7 @@ export interface IOpenEmptyWindowOptions extends IBaseOpenWindowsOptions { }
+ export type IWindowOpenable = IWorkspaceToOpen | IFolderToOpen | IFileToOpen;
+ 
+ export interface IBaseWindowOpenable {
++	id?: string;
+ 	label?: string;
+ }
+ 
+diff --git a/src/vs/workbench/browser/web.main.ts b/src/vs/workbench/browser/web.main.ts
+index 39fc24b9891..1b80d9e5a48 100644
+--- a/src/vs/workbench/browser/web.main.ts
++++ b/src/vs/workbench/browser/web.main.ts
+@@ -622,12 +622,12 @@ export class BrowserMain extends Disposable {
+ 
+ 		// Multi-root workspace
+ 		if (workspace && isWorkspaceToOpen(workspace)) {
+-			return getWorkspaceIdentifier(workspace.workspaceUri);
++			return getWorkspaceIdentifier(workspace.workspaceUri, workspace.id);
+ 		}
+ 
+ 		// Single-folder workspace
+ 		if (workspace && isFolderToOpen(workspace)) {
+-			return getSingleFolderWorkspaceIdentifier(workspace.folderUri);
++			return getSingleFolderWorkspaceIdentifier(workspace.folderUri, workspace.id);
+ 		}
+ 
+ 		// Empty window workspace
+diff --git a/src/vs/workbench/services/workspaces/browser/workspaces.ts b/src/vs/workbench/services/workspaces/browser/workspaces.ts
+index 27fa5abae82..276d5053db6 100644
+--- a/src/vs/workbench/services/workspaces/browser/workspaces.ts
++++ b/src/vs/workbench/services/workspaces/browser/workspaces.ts
+@@ -11,9 +11,9 @@ import { hash } from '../../../../base/common/hash.js';
+ // NOTE: DO NOT CHANGE. IDENTIFIERS HAVE TO REMAIN STABLE
+ // !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+ 
+-export function getWorkspaceIdentifier(workspaceUri: URI): IWorkspaceIdentifier {
++export function getWorkspaceIdentifier(workspaceUri: URI, id?: string): IWorkspaceIdentifier {
+ 	return {
+-		id: getWorkspaceId(workspaceUri),
++		id: id ?? getWorkspaceId(workspaceUri),
+ 		configPath: workspaceUri
+ 	};
+ }
+@@ -22,9 +22,9 @@ export function getWorkspaceIdentifier(workspaceUri: URI): IWorkspaceIdentifier
+ // NOTE: DO NOT CHANGE. IDENTIFIERS HAVE TO REMAIN STABLE
+ // !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+ 
+-export function getSingleFolderWorkspaceIdentifier(folderUri: URI): ISingleFolderWorkspaceIdentifier {
++export function getSingleFolderWorkspaceIdentifier(folderUri: URI, id?: string): ISingleFolderWorkspaceIdentifier {
+ 	return {
+-		id: getWorkspaceId(folderUri),
++		id: id ?? getWorkspaceId(folderUri),
+ 		uri: folderUri
+ 	};
+ }

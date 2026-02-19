@@ -759,7 +759,8 @@ class OverlayFileSystemProvider
   capabilities =
     FileSystemProviderCapabilities.FileReadWrite |
     FileSystemProviderCapabilities.PathCaseSensitive |
-    FileSystemProviderCapabilities.FileReadStream
+    FileSystemProviderCapabilities.FileReadStream |
+    FileSystemProviderCapabilities.FileAppend
 
   private async readFromDelegates<T>(
     caller: (delegate: IFileSystemProviderWithFileReadWriteCapability) => Promise<T>,
@@ -768,7 +769,7 @@ class OverlayFileSystemProvider
     if (this.delegates.length === 0) {
       throw createFileSystemProviderError('No delegate', FileSystemProviderErrorCode.Unavailable)
     }
-    let firstError: unknown | undefined
+    const errors: unknown[] = []
     for (const delegate of this.delegates) {
       if (token != null && token.isCancellationRequested) {
         throw new Error('Cancelled')
@@ -776,21 +777,28 @@ class OverlayFileSystemProvider
       try {
         return await caller(delegate)
       } catch (err) {
-        firstError ??= err
-        if (
-          err instanceof FileSystemProviderError &&
-          [
-            FileSystemProviderErrorCode.NoPermissions,
-            FileSystemProviderErrorCode.FileNotFound,
-            FileSystemProviderErrorCode.Unavailable
-          ].includes(err.code)
-        ) {
-          continue
+        errors.push(err)
+        if (err instanceof FileSystemProviderError) {
+          if (
+            [
+              FileSystemProviderErrorCode.NoPermissions,
+              FileSystemProviderErrorCode.FileNotFound,
+              FileSystemProviderErrorCode.Unavailable
+            ].includes(err.code)
+          ) {
+            continue
+          }
         }
         throw err
       }
     }
-    throw firstError
+
+    const fileSystemErrors = errors?.filter((err) => err instanceof FileSystemProviderError)
+    const mostRelevantErrors =
+      fileSystemErrors.find((err) => err.code === FileSystemProviderErrorCode.FileNotFound) ??
+      fileSystemErrors[0] ??
+      errors[0]
+    throw mostRelevantErrors
   }
 
   private async writeToDelegates(
@@ -951,7 +959,7 @@ class OverlayFileSystemProvider
   }
 }
 
-class DelegateFileSystemProvider implements IFileSystemProvider {
+class DelegateFileSystemProvider implements IFileSystemProviderWithFileReadWriteCapability {
   constructor(
     private options: {
       delegate: IFileSystemProvider
@@ -977,17 +985,32 @@ class DelegateFileSystemProvider implements IFileSystemProvider {
       ? (resource: URI): Promise<Uint8Array> => {
           return this.options.delegate.readFile!(this.options.toDelegate(resource))
         }
-      : undefined
+      : () => {
+          throw createFileSystemProviderError(
+            'No delegate',
+            FileSystemProviderErrorCode.Unavailable
+          )
+        }
 
   writeFile =
     this.options.delegate.writeFile != null
       ? (resource: URI, content: Uint8Array, opts: IFileWriteOptions): Promise<void> => {
           return this.options.delegate.writeFile!(this.options.toDelegate(resource), content, opts)
         }
-      : undefined
+      : () => {
+          throw createFileSystemProviderError(
+            'No delegate',
+            FileSystemProviderErrorCode.Unavailable
+          )
+        }
 
   watch(resource: URI, opts: IWatchOptions): IDisposable {
-    return this.options.delegate.watch(this.options.toDelegate(resource), opts)
+    try {
+      return this.options.delegate.watch(this.options.toDelegate(resource), opts)
+    } catch {
+      // ignore watch error
+    }
+    return Disposable.None
   }
 
   stat(resource: URI): Promise<IStat> {
