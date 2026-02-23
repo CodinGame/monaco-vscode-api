@@ -39,6 +39,9 @@ import { UserAttentionService } from 'vs/workbench/services/userAttention/browse
 import { EditorWorkerService } from 'vs/editor/browser/services/editorWorkerService'
 import { IRenameSymbolTrackerService } from 'vs/editor/browser/services/renameSymbolTrackerService.service'
 import { RenameSymbolTrackerService } from 'vs/workbench/contrib/inlineCompletions/browser/renameSymbolTrackerService'
+import { EditorMarkdownCodeBlockRenderer } from 'vs/editor/browser/widget/markdownRenderer/browser/editorMarkdownCodeBlockRenderer.js'
+import { registerServiceInitializeParticipant } from '../lifecycle'
+import { IInstantiationService } from 'vs/platform/instantiation/common/instantiation'
 
 class BrowserPathServiceOverride extends AbstractPathService {
   constructor(
@@ -54,6 +57,14 @@ class BrowserPathServiceOverride extends AbstractPathService {
     )
   }
 }
+
+registerServiceInitializeParticipant(async (accessor) => {
+  const markdownRendererService = accessor.get(IMarkdownRendererService)
+  const instantiationService = accessor.get(IInstantiationService)
+  markdownRendererService.setDefaultCodeBlockRenderer(
+    instantiationService.createInstance(EditorMarkdownCodeBlockRenderer)
+  )
+})
 
 export default function getServiceOverride(): IEditorOverrideServices {
   return {
