@@ -1,6 +1,8 @@
 import {
+  IInstantiationService,
   IStorageService,
   IWorkbenchLayoutService,
+  StorageScope,
   getService,
   initialize as initializeMonacoService
 } from '@codingame/monaco-vscode-api'
@@ -8,7 +10,10 @@ import getWorkbenchServiceOverride, {
   Parts
 } from '@codingame/monaco-vscode-workbench-service-override'
 import getQuickAccessServiceOverride from '@codingame/monaco-vscode-quickaccess-service-override'
-import { BrowserStorageService } from '@codingame/monaco-vscode-storage-service-override'
+import getStorageServiceOverride, {
+  BrowserStorageService,
+  JsonFileStorageDatabase
+} from '@codingame/monaco-vscode-storage-service-override'
 import { ExtensionHostKind } from '@codingame/monaco-vscode-extensions-service-override'
 import { registerExtension } from '@codingame/monaco-vscode-api/extensions'
 import './features/customView.workbench'
@@ -20,6 +25,9 @@ import {
   userDataProvider,
   disableShadowDom
 } from './setup.common'
+import getEnvironmentServiceOverride from '@codingame/monaco-vscode-environment-service-override'
+
+import * as vscode from 'vscode'
 
 let container = window.vscodeContainer
 
@@ -56,6 +64,7 @@ buttons.innerHTML = `
 `
 document.body.append(buttons)
 
+const workspaceStorageHome = vscode.Uri.file('/workspace/.workspace-storage')
 // Override services
 await initializeMonacoService(
   {
@@ -64,6 +73,24 @@ await initializeMonacoService(
     ...getQuickAccessServiceOverride({
       isKeybindingConfigurationVisible: () => true,
       shouldUseGlobalPicker: () => true
+    }),
+    ...getEnvironmentServiceOverride({
+      workspaceStorageHome: workspaceStorageHome
+    }),
+    ...getStorageServiceOverride({
+      fallbackOverride: {
+        'workbench.activity.showAccounts': false
+      },
+      databaseFactories: {
+        [StorageScope.WORKSPACE](accessor) {
+          return accessor
+            .get(IInstantiationService)
+            .createInstance(
+              JsonFileStorageDatabase,
+              vscode.Uri.joinPath(workspaceStorageHome, 'storage.json')
+            )
+        }
+      }
     })
   },
   container,

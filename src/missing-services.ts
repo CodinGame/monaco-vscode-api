@@ -1769,8 +1769,7 @@ class MonacoSearchService implements ISearchService {
     }
   }
   clearCache: ISearchService['clearCache'] = async (): Promise<void> => {}
-  @Unsupported
-  registerSearchResultProvider: ISearchService['registerSearchResultProvider'] = unsupported
+  registerSearchResultProvider: ISearchService['registerSearchResultProvider'] = () => Disposable.None
 }
 registerSingleton(ISearchService, MonacoSearchService, InstantiationType.Eager)
 class EditSessionIdentityService implements IEditSessionIdentityService {

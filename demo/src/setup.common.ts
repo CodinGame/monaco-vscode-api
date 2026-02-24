@@ -264,6 +264,18 @@ h1 {
     )
   )
 
+  const modules = import.meta.glob('./.workspace-storage/**/*', {
+    query: '?raw'
+  })
+  console.log({ modules })
+  for (const [name, load] of Object.entries(modules)) {
+    const content: string = (await load()).default
+    console.log(monaco.Uri.joinPath(monaco.Uri.file('/workspace/'), name), content)
+    fileSystemProvider.registerFile(
+      new RegisteredMemoryFile(monaco.Uri.joinPath(monaco.Uri.file('/workspace/'), name), content)
+    )
+  }
+
   registerFileSystemOverlay(1, fileSystemProvider)
 }
 
@@ -335,6 +347,7 @@ export const constructOptions: IWorkbenchConstructionOptions = {
     workspace:
       remotePath == null
         ? {
+            id: 'toto',
             workspaceUri: workspaceFile
           }
         : {
