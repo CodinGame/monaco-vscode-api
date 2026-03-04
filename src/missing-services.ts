@@ -654,8 +654,7 @@ class FileService implements IFileService {
   onDidChangeFileSystemProviderCapabilities: IFileService['onDidChangeFileSystemProviderCapabilities'] =
     Event.None
   onWillActivateFileSystemProvider: IFileService['onWillActivateFileSystemProvider'] = Event.None
-  @Unsupported
-  registerProvider: IFileService['registerProvider'] = unsupported
+  registerProvider: IFileService['registerProvider'] = () => Disposable.None
   getProvider: IFileService['getProvider'] = function () {
     return undefined
   }
@@ -898,8 +897,8 @@ class EmptyEditorPart implements IEditorPart {
 class EmptyEditorGroupsService implements IEditorGroupsService {
   @Unsupported
   getScopedInstantiationService: IEditorGroupsService['getScopedInstantiationService'] = unsupported
-  @Unsupported
-  registerContextKeyProvider: IEditorGroupsService['registerContextKeyProvider'] = unsupported
+  registerContextKeyProvider: IEditorGroupsService['registerContextKeyProvider'] = () =>
+    Disposable.None
   @Unsupported
   saveWorkingSet: IEditorGroupsService['saveWorkingSet'] = unsupported
   @Unsupported
@@ -1025,8 +1024,8 @@ class WorkingCopyFileService implements IWorkingCopyFileService {
   copy: IWorkingCopyFileService['copy'] = unsupported
   @Unsupported
   delete: IWorkingCopyFileService['delete'] = unsupported
-  @Unsupported
-  registerWorkingCopyProvider: IWorkingCopyFileService['registerWorkingCopyProvider'] = unsupported
+  registerWorkingCopyProvider: IWorkingCopyFileService['registerWorkingCopyProvider'] = () =>
+    Disposable.None
   getDirty: IWorkingCopyFileService['getDirty'] = () => []
 }
 registerSingleton(IWorkingCopyFileService, WorkingCopyFileService, InstantiationType.Eager)
@@ -1372,12 +1371,10 @@ class FakeAdapterManager implements IAdapterManager {
     Disposable.None
   @Unsupported
   createDebugAdapter: IAdapterManager['createDebugAdapter'] = unsupported
-  @Unsupported
   registerDebugAdapterDescriptorFactory: IAdapterManager['registerDebugAdapterDescriptorFactory'] =
-    unsupported
-  @Unsupported
+    () => Disposable.None
   unregisterDebugAdapterDescriptorFactory: IAdapterManager['unregisterDebugAdapterDescriptorFactory'] =
-    unsupported
+    () => {}
   @Unsupported
   substituteVariables: IAdapterManager['substituteVariables'] = unsupported
   @Unsupported
@@ -1687,8 +1684,7 @@ class TaskService implements ITaskService {
   customize: ITaskService['customize'] = unsupported
   @Unsupported
   openConfig: ITaskService['openConfig'] = unsupported
-  @Unsupported
-  registerTaskProvider: ITaskService['registerTaskProvider'] = unsupported
+  registerTaskProvider: ITaskService['registerTaskProvider'] = () => Disposable.None
   registerTaskSystem: ITaskService['registerTaskSystem'] = () => {}
   onDidChangeTaskSystemInfo: ITaskService['onDidChangeTaskSystemInfo'] = Event.None
   hasTaskSystemInfo: ITaskService['hasTaskSystemInfo'] = false
@@ -1769,8 +1765,8 @@ class MonacoSearchService implements ISearchService {
     }
   }
   clearCache: ISearchService['clearCache'] = async (): Promise<void> => {}
-  @Unsupported
-  registerSearchResultProvider: ISearchService['registerSearchResultProvider'] = unsupported
+  registerSearchResultProvider: ISearchService['registerSearchResultProvider'] = () =>
+    Disposable.None
 }
 registerSingleton(ISearchService, MonacoSearchService, InstantiationType.Eager)
 class EditSessionIdentityService implements IEditSessionIdentityService {
@@ -2265,8 +2261,8 @@ registerSingleton(IWorkingCopyService, WorkingCopyService, InstantiationType.Eag
 class DecorationsService implements IDecorationsService {
   _serviceBrand: undefined
   onDidChangeDecorations: IDecorationsService['onDidChangeDecorations'] = Event.None
-  @Unsupported
-  registerDecorationsProvider: IDecorationsService['registerDecorationsProvider'] = unsupported
+  registerDecorationsProvider: IDecorationsService['registerDecorationsProvider'] = () =>
+    Disposable.None
   getDecoration: IDecorationsService['getDecoration'] = () => undefined
 }
 registerSingleton(IDecorationsService, DecorationsService, InstantiationType.Eager)
@@ -2460,8 +2456,7 @@ class ExplorerService implements IExplorerService {
   applyBulkEdit: IExplorerService['applyBulkEdit'] = unsupported
   @Unsupported
   select: IExplorerService['select'] = unsupported
-  @Unsupported
-  registerView: IExplorerService['registerView'] = unsupported
+  registerView: IExplorerService['registerView'] = async () => {}
 }
 registerSingleton(IExplorerService, ExplorerService, InstantiationType.Delayed)
 class ExtensionStorageService implements IExtensionStorageService {
@@ -2528,8 +2523,7 @@ class TreeViewsDnDService implements ITreeViewsDnDService {
 registerSingleton(ITreeViewsDnDService, TreeViewsDnDService, InstantiationType.Delayed)
 class BreadcrumbsService implements IBreadcrumbsService {
   _serviceBrand: undefined
-  @Unsupported
-  register: IBreadcrumbsService['register'] = unsupported
+  register: IBreadcrumbsService['register'] = () => Disposable.None
   getWidget: IBreadcrumbsService['getWidget'] = () => undefined
 }
 registerSingleton(IBreadcrumbsService, BreadcrumbsService, InstantiationType.Eager)
@@ -2538,8 +2532,7 @@ class OutlineService implements IOutlineService {
   onDidChange: IOutlineService['onDidChange'] = Event.None
   canCreateOutline: IOutlineService['canCreateOutline'] = () => false
   createOutline: IOutlineService['createOutline'] = async () => undefined
-  @Unsupported
-  registerOutlineCreator: IOutlineService['registerOutlineCreator'] = unsupported
+  registerOutlineCreator: IOutlineService['registerOutlineCreator'] = () => Disposable.None
 }
 registerSingleton(IOutlineService, OutlineService, InstantiationType.Eager)
 class UpdateService implements IUpdateService {
@@ -2888,22 +2881,17 @@ class TerminalProfileService implements ITerminalProfileService {
   profilesReady: ITerminalProfileService['profilesReady'] = Promise.resolve()
   @Unsupported
   getPlatformKey: ITerminalProfileService['getPlatformKey'] = unsupported
-  @Unsupported
-  refreshAvailableProfiles: ITerminalProfileService['refreshAvailableProfiles'] = unsupported
+  refreshAvailableProfiles: ITerminalProfileService['refreshAvailableProfiles'] = () => {}
   getDefaultProfileName: ITerminalProfileService['getDefaultProfileName'] = () => undefined
   getDefaultProfile: ITerminalProfileService['getDefaultProfile'] = () => undefined
   onDidChangeAvailableProfiles: ITerminalProfileService['onDidChangeAvailableProfiles'] = Event.None
-  @Unsupported
   getContributedDefaultProfile: ITerminalProfileService['getContributedDefaultProfile'] =
-    unsupported
-  @Unsupported
-  registerContributedProfile: ITerminalProfileService['registerContributedProfile'] = unsupported
-  @Unsupported
-  getContributedProfileProvider: ITerminalProfileService['getContributedProfileProvider'] =
-    unsupported
-  @Unsupported
+    async () => undefined
+  registerContributedProfile: ITerminalProfileService['registerContributedProfile'] = async () => {}
+  getContributedProfileProvider: ITerminalProfileService['getContributedProfileProvider'] = () =>
+    undefined
   registerTerminalProfileProvider: ITerminalProfileService['registerTerminalProfileProvider'] =
-    unsupported
+    () => Disposable.None
 }
 registerSingleton(ITerminalProfileService, TerminalProfileService, InstantiationType.Delayed)
 class TerminalLogService implements ITerminalLogService {
@@ -2935,8 +2923,7 @@ class TerminalLinkProviderService implements ITerminalLinkProviderService {
   linkProviders: ITerminalLinkProviderService['linkProviders'] = new Set([])
   onDidAddLinkProvider: ITerminalLinkProviderService['onDidAddLinkProvider'] = Event.None
   onDidRemoveLinkProvider: ITerminalLinkProviderService['onDidRemoveLinkProvider'] = Event.None
-  @Unsupported
-  registerLinkProvider: ITerminalLinkProviderService['registerLinkProvider'] = unsupported
+  registerLinkProvider: ITerminalLinkProviderService['registerLinkProvider'] = () => Disposable.None
 }
 registerSingleton(
   ITerminalLinkProviderService,
@@ -3006,10 +2993,9 @@ class TerminalQuickFixService implements ITerminalQuickFixService {
   onDidUnregisterProvider: ITerminalQuickFixService['onDidUnregisterProvider'] = Event.None
   extensionQuickFixes: ITerminalQuickFixService['extensionQuickFixes'] = Promise.resolve([])
   providers: ITerminalQuickFixService['providers'] = new Map()
-  @Unsupported
-  registerQuickFixProvider: ITerminalQuickFixService['registerQuickFixProvider'] = unsupported
-  @Unsupported
-  registerCommandSelector: ITerminalQuickFixService['registerCommandSelector'] = unsupported
+  registerQuickFixProvider: ITerminalQuickFixService['registerQuickFixProvider'] = () =>
+    Disposable.None
+  registerCommandSelector: ITerminalQuickFixService['registerCommandSelector'] = () => {}
 }
 registerSingleton(ITerminalQuickFixService, TerminalQuickFixService, InstantiationType.Delayed)
 class UserDataSyncWorkbenchService implements IUserDataSyncWorkbenchService {
@@ -3112,8 +3098,7 @@ class NotebookService implements INotebookService {
   onDidAddNotebookDocument: INotebookService['onDidAddNotebookDocument'] = Event.None
   onWillRemoveNotebookDocument: INotebookService['onWillRemoveNotebookDocument'] = Event.None
   onDidRemoveNotebookDocument: INotebookService['onDidRemoveNotebookDocument'] = Event.None
-  @Unsupported
-  registerNotebookSerializer: INotebookService['registerNotebookSerializer'] = unsupported
+  registerNotebookSerializer: INotebookService['registerNotebookSerializer'] = () => Disposable.None
   @Unsupported
   withNotebookDataProvider: INotebookService['withNotebookDataProvider'] = unsupported
   @Unsupported
@@ -3121,8 +3106,7 @@ class NotebookService implements INotebookService {
   getViewTypeProvider: INotebookService['getViewTypeProvider'] = () => undefined
   getRendererInfo: INotebookService['getRendererInfo'] = () => undefined
   getRenderers: INotebookService['getRenderers'] = () => []
-  @Unsupported
-  getStaticPreloads: INotebookService['getStaticPreloads'] = unsupported
+  getStaticPreloads: INotebookService['getStaticPreloads'] = () => []
   @Unsupported
   updateMimePreferredRenderer: INotebookService['updateMimePreferredRenderer'] = unsupported
   @Unsupported
@@ -3130,11 +3114,10 @@ class NotebookService implements INotebookService {
   @Unsupported
   createNotebookTextModel: INotebookService['createNotebookTextModel'] = unsupported
   getNotebookTextModel: INotebookService['getNotebookTextModel'] = () => undefined
-  @Unsupported
-  getNotebookTextModels: INotebookService['getNotebookTextModels'] = unsupported
+  getNotebookTextModels: INotebookService['getNotebookTextModels'] = () => []
   listNotebookDocuments: INotebookService['listNotebookDocuments'] = () => []
-  @Unsupported
-  registerContributedNotebookType: INotebookService['registerContributedNotebookType'] = unsupported
+  registerContributedNotebookType: INotebookService['registerContributedNotebookType'] = () =>
+    Disposable.None
   getContributedNotebookType: INotebookService['getContributedNotebookType'] = () => undefined
   getContributedNotebookTypes: INotebookService['getContributedNotebookTypes'] = () => []
   getNotebookProviderResourceRoots: INotebookService['getNotebookProviderResourceRoots'] = () => []
@@ -3234,8 +3217,8 @@ class UserActivityService implements IUserActivityService {
 registerSingleton(IUserActivityService, UserActivityService, InstantiationType.Delayed)
 class CanonicalUriService implements ICanonicalUriService {
   _serviceBrand: undefined
-  @Unsupported
-  registerCanonicalUriProvider: ICanonicalUriService['registerCanonicalUriProvider'] = unsupported
+  registerCanonicalUriProvider: ICanonicalUriService['registerCanonicalUriProvider'] = () =>
+    Disposable.None
 }
 registerSingleton(ICanonicalUriService, CanonicalUriService, InstantiationType.Delayed)
 class ExtensionStatusBarItemService implements IExtensionStatusBarItemService {
@@ -3354,8 +3337,7 @@ registerSingleton(IChatService, ChatService, InstantiationType.Delayed)
 class ChatMarkdownAnchorService implements IChatMarkdownAnchorService {
   _serviceBrand: undefined
   lastFocusedAnchor: IChatMarkdownAnchorService['lastFocusedAnchor'] = undefined
-  @Unsupported
-  register: IChatMarkdownAnchorService['register'] = unsupported
+  register: IChatMarkdownAnchorService['register'] = () => Disposable.None
 }
 registerSingleton(IChatMarkdownAnchorService, ChatMarkdownAnchorService, InstantiationType.Delayed)
 class LanguageModelStatsService implements ILanguageModelStatsService {
@@ -3384,24 +3366,21 @@ registerSingleton(IQuickChatService, QuickChatService, InstantiationType.Delayed
 class QuickChatAgentService implements IChatAgentService {
   _serviceBrand: IChatAgentService['_serviceBrand'] = undefined
   hasToolsAgent: IChatAgentService['hasToolsAgent'] = false
-  @Unsupported
   registerChatParticipantDetectionProvider: IChatAgentService['registerChatParticipantDetectionProvider'] =
-    unsupported
+    () => Disposable.None
   detectAgentOrCommand: IChatAgentService['detectAgentOrCommand'] = async () => undefined
   hasChatParticipantDetectionProviders: IChatAgentService['hasChatParticipantDetectionProviders'] =
     () => false
   getChatTitle: IChatAgentService['getChatTitle'] = async () => undefined
   agentHasDupeName: IChatAgentService['agentHasDupeName'] = () => false
-  @Unsupported
-  registerAgentCompletionProvider: IChatAgentService['registerAgentCompletionProvider'] =
-    unsupported
+  registerAgentCompletionProvider: IChatAgentService['registerAgentCompletionProvider'] = () =>
+    Disposable.None
   getAgentCompletionItems: IChatAgentService['getAgentCompletionItems'] = async () => []
   getAgentByFullyQualifiedId: IChatAgentService['getAgentByFullyQualifiedId'] = () => undefined
   getContributedDefaultAgent: IChatAgentService['getContributedDefaultAgent'] = () => undefined
-  @Unsupported
-  registerAgentImplementation: IChatAgentService['registerAgentImplementation'] = unsupported
-  @Unsupported
-  registerDynamicAgent: IChatAgentService['registerDynamicAgent'] = unsupported
+  registerAgentImplementation: IChatAgentService['registerAgentImplementation'] = () =>
+    Disposable.None
+  registerDynamicAgent: IChatAgentService['registerDynamicAgent'] = () => Disposable.None
   getActivatedAgents: IChatAgentService['getActivatedAgents'] = () => []
   getAgentsByName: IChatAgentService['getAgentsByName'] = () => []
   getFollowups: IChatAgentService['getFollowups'] = async () => []
@@ -3409,8 +3388,7 @@ class QuickChatAgentService implements IChatAgentService {
   @Unsupported
   updateAgent: IChatAgentService['updateAgent'] = unsupported
   onDidChangeAgents: IChatAgentService['onDidChangeAgents'] = Event.None
-  @Unsupported
-  registerAgent: IChatAgentService['registerAgent'] = unsupported
+  registerAgent: IChatAgentService['registerAgent'] = () => Disposable.None
   @Unsupported
   invokeAgent: IChatAgentService['invokeAgent'] = unsupported
   getAgents: IChatAgentService['getAgents'] = () => []
@@ -3471,10 +3449,8 @@ registerSingleton(IWebviewService, WebviewService, InstantiationType.Delayed)
 class WebviewViewService implements IWebviewViewService {
   _serviceBrand: undefined
   onNewResolverRegistered: IWebviewViewService['onNewResolverRegistered'] = Event.None
-  @Unsupported
-  register: IWebviewViewService['register'] = unsupported
-  @Unsupported
-  resolve: IWebviewViewService['resolve'] = unsupported
+  register: IWebviewViewService['register'] = () => Disposable.None
+  resolve: IWebviewViewService['resolve'] = async () => {}
 }
 registerSingleton(IWebviewViewService, WebviewViewService, InstantiationType.Delayed)
 class LocaleService implements ILocaleService {
@@ -3650,8 +3626,7 @@ class WorkbenchExtensionManagementService implements IWorkbenchExtensionManageme
   updateMetadata: IWorkbenchExtensionManagementService['updateMetadata'] = unsupported
   @Unsupported
   download: IWorkbenchExtensionManagementService['download'] = unsupported
-  @Unsupported
-  registerParticipant: IWorkbenchExtensionManagementService['registerParticipant'] = unsupported
+  registerParticipant: IWorkbenchExtensionManagementService['registerParticipant'] = () => {}
   @Unsupported
   getTargetPlatform: IWorkbenchExtensionManagementService['getTargetPlatform'] = unsupported
   @Unsupported
@@ -3736,14 +3711,12 @@ class URLService implements IURLService {
   @Unsupported
   create: IURLService['create'] = unsupported
   open: IURLService['open'] = async () => false
-  @Unsupported
-  registerHandler: IURLService['registerHandler'] = unsupported
+  registerHandler: IURLService['registerHandler'] = () => Disposable.None
 }
 registerSingleton(IURLService, URLService, InstantiationType.Delayed)
 class RemoteSocketFactoryService implements IRemoteSocketFactoryService {
   _serviceBrand: undefined
-  @Unsupported
-  register: IRemoteSocketFactoryService['register'] = unsupported
+  register: IRemoteSocketFactoryService['register'] = () => Disposable.None
   @Unsupported
   connect: IRemoteSocketFactoryService['connect'] = unsupported
 }
@@ -3786,10 +3759,8 @@ class DownloadService implements IDownloadService {
 registerSingleton(IDownloadService, DownloadService, InstantiationType.Delayed)
 class ExtensionUrlHandler implements IExtensionUrlHandler {
   _serviceBrand: undefined
-  @Unsupported
-  registerExtensionHandler: IExtensionUrlHandler['registerExtensionHandler'] = unsupported
-  @Unsupported
-  unregisterExtensionHandler: IExtensionUrlHandler['unregisterExtensionHandler'] = unsupported
+  registerExtensionHandler: IExtensionUrlHandler['registerExtensionHandler'] = () => {}
+  unregisterExtensionHandler: IExtensionUrlHandler['unregisterExtensionHandler'] = () => {}
 }
 registerSingleton(IExtensionUrlHandler, ExtensionUrlHandler, InstantiationType.Delayed)
 class CommentService implements ICommentService {
@@ -3825,8 +3796,7 @@ class CommentService implements ICommentService {
   setWorkspaceComments: ICommentService['setWorkspaceComments'] = unsupported
   @Unsupported
   removeWorkspaceComments: ICommentService['removeWorkspaceComments'] = unsupported
-  @Unsupported
-  registerCommentController: ICommentService['registerCommentController'] = unsupported
+  registerCommentController: ICommentService['registerCommentController'] = () => {}
   unregisterCommentController: ICommentService['unregisterCommentController'] = () => {}
   @Unsupported
   getCommentController: ICommentService['getCommentController'] = unsupported
@@ -3854,9 +3824,8 @@ class CommentService implements ICommentService {
   setCurrentCommentThread: ICommentService['setCurrentCommentThread'] = unsupported
   @Unsupported
   enableCommenting: ICommentService['enableCommenting'] = unsupported
-  @Unsupported
-  registerContinueOnCommentProvider: ICommentService['registerContinueOnCommentProvider'] =
-    unsupported
+  registerContinueOnCommentProvider: ICommentService['registerContinueOnCommentProvider'] = () =>
+    Disposable.None
   @Unsupported
   removeContinueOnComment: ICommentService['removeContinueOnComment'] = unsupported
 }
@@ -3865,9 +3834,8 @@ class NotebookCellStatusBarService implements INotebookCellStatusBarService {
   _serviceBrand: undefined
   onDidChangeProviders: INotebookCellStatusBarService['onDidChangeProviders'] = Event.None
   onDidChangeItems: INotebookCellStatusBarService['onDidChangeItems'] = Event.None
-  @Unsupported
   registerCellStatusBarItemProvider: INotebookCellStatusBarService['registerCellStatusBarItemProvider'] =
-    unsupported
+    () => Disposable.None
   @Unsupported
   getStatusBarItemsForCell: INotebookCellStatusBarService['getStatusBarItemsForCell'] = unsupported
 }
@@ -3885,8 +3853,7 @@ class NotebookKernelService implements INotebookKernelService {
   onDidRemoveKernel: INotebookKernelService['onDidRemoveKernel'] = Event.None
   onDidChangeSelectedNotebooks: INotebookKernelService['onDidChangeSelectedNotebooks'] = Event.None
   onDidChangeNotebookAffinity: INotebookKernelService['onDidChangeNotebookAffinity'] = Event.None
-  @Unsupported
-  registerKernel: INotebookKernelService['registerKernel'] = unsupported
+  registerKernel: INotebookKernelService['registerKernel'] = () => Disposable.None
   @Unsupported
   getMatchingKernel: INotebookKernelService['getMatchingKernel'] = unsupported
   @Unsupported
@@ -3899,9 +3866,8 @@ class NotebookKernelService implements INotebookKernelService {
   updateKernelNotebookAffinity: INotebookKernelService['updateKernelNotebookAffinity'] = unsupported
   onDidChangeKernelDetectionTasks: INotebookKernelService['onDidChangeKernelDetectionTasks'] =
     Event.None
-  @Unsupported
   registerNotebookKernelDetectionTask: INotebookKernelService['registerNotebookKernelDetectionTask'] =
-    unsupported
+    () => Disposable.None
   @Unsupported
   getKernelDetectionTasks: INotebookKernelService['getKernelDetectionTasks'] = unsupported
   onDidChangeSourceActions: INotebookKernelService['onDidChangeSourceActions'] = Event.None
@@ -3909,9 +3875,8 @@ class NotebookKernelService implements INotebookKernelService {
   getSourceActions: INotebookKernelService['getSourceActions'] = unsupported
   @Unsupported
   getRunningSourceActions: INotebookKernelService['getRunningSourceActions'] = unsupported
-  @Unsupported
   registerKernelSourceActionProvider: INotebookKernelService['registerKernelSourceActionProvider'] =
-    unsupported
+    () => Disposable.None
   @Unsupported
   getKernelSourceActions2: INotebookKernelService['getKernelSourceActions2'] = unsupported
 }
@@ -4024,7 +3989,6 @@ class ChatWidgetService implements IChatWidgetService {
   revealWidget: IChatWidgetService['revealWidget'] = unsupported
   @Unsupported
   openSession: IChatWidgetService['openSession'] = unsupported
-  @Unsupported
   register: IChatWidgetService['register'] = () => Disposable.None
 }
 registerSingleton(IChatWidgetService, ChatWidgetService, InstantiationType.Delayed)
@@ -4075,25 +4039,21 @@ class AuthenticationService implements IAuthenticationService {
   onDidChangeSessions: IAuthenticationService['onDidChangeSessions'] = Event.None
   onDidChangeDeclaredProviders: IAuthenticationService['onDidChangeDeclaredProviders'] = Event.None
   declaredProviders: IAuthenticationService['declaredProviders'] = []
-  @Unsupported
   registerDeclaredAuthenticationProvider: IAuthenticationService['registerDeclaredAuthenticationProvider'] =
-    unsupported
-  @Unsupported
+    () => {}
   unregisterDeclaredAuthenticationProvider: IAuthenticationService['unregisterDeclaredAuthenticationProvider'] =
-    unsupported
+    () => {}
   isAuthenticationProviderRegistered: IAuthenticationService['isAuthenticationProviderRegistered'] =
     () => false
-  @Unsupported
   registerAuthenticationProvider: IAuthenticationService['registerAuthenticationProvider'] =
-    unsupported
-  @Unsupported
+    () => {}
   unregisterAuthenticationProvider: IAuthenticationService['unregisterAuthenticationProvider'] =
-    unsupported
+    () => {}
   getProviderIds: IAuthenticationService['getProviderIds'] = () => []
   @Unsupported
   getProvider: IAuthenticationService['getProvider'] = unsupported
   @Unsupported
-  getSessions: IAuthenticationService['getSessions'] = unsupported
+  getSessions: IAuthenticationService['getSessions'] = async () => []
   @Unsupported
   createSession: IAuthenticationService['createSession'] = unsupported
   @Unsupported
@@ -4178,10 +4138,8 @@ class TimelineService implements ITimelineService {
   onDidChangeProviders: ITimelineService['onDidChangeProviders'] = Event.None
   onDidChangeTimeline: ITimelineService['onDidChangeTimeline'] = Event.None
   onDidChangeUri: ITimelineService['onDidChangeUri'] = Event.None
-  @Unsupported
-  registerTimelineProvider: ITimelineService['registerTimelineProvider'] = unsupported
-  @Unsupported
-  unregisterTimelineProvider: ITimelineService['unregisterTimelineProvider'] = unsupported
+  registerTimelineProvider: ITimelineService['registerTimelineProvider'] = () => Disposable.None
+  unregisterTimelineProvider: ITimelineService['unregisterTimelineProvider'] = () => {}
   getSources: ITimelineService['getSources'] = () => []
   @Unsupported
   getTimeline: ITimelineService['getTimeline'] = unsupported
@@ -4211,8 +4169,7 @@ class TestService implements ITestService {
   get showInlineOutput(): ITestService['showInlineOutput'] {
     return unsupported()
   }
-  @Unsupported
-  registerTestController: ITestService['registerTestController'] = unsupported
+  registerTestController: ITestService['registerTestController'] = () => Disposable.None
   getTestController: ITestService['getTestController'] = () => undefined
   @Unsupported
   refreshTests: ITestService['refreshTests'] = unsupported
@@ -4245,8 +4202,7 @@ class SecretStorageService implements ISecretStorageService {
 registerSingleton(ISecretStorageService, SecretStorageService, InstantiationType.Delayed)
 class ShareService implements IShareService {
   _serviceBrand: undefined
-  @Unsupported
-  registerShareProvider: IShareService['registerShareProvider'] = unsupported
+  registerShareProvider: IShareService['registerShareProvider'] = () => Disposable.None
   getShareActions: IShareService['getShareActions'] = () => []
   provideShare: IShareService['provideShare'] = async () => undefined
 }
@@ -4499,10 +4455,8 @@ class LanguageModelsService implements ILanguageModelsService {
 }
 registerSingleton(ILanguageModelsService, LanguageModelsService, InstantiationType.Delayed)
 class ChatSlashCommandService implements IChatSlashCommandService {
-  @Unsupported
-  onDidChangeCommands: IChatSlashCommandService['onDidChangeCommands'] = unsupported
-  @Unsupported
-  registerSlashCommand: IChatSlashCommandService['registerSlashCommand'] = unsupported
+  onDidChangeCommands: IChatSlashCommandService['onDidChangeCommands'] = Event.None
+  registerSlashCommand: IChatSlashCommandService['registerSlashCommand'] = () => Disposable.None
   @Unsupported
   executeCommand: IChatSlashCommandService['executeCommand'] = unsupported
   @Unsupported
@@ -4524,9 +4478,8 @@ class AiRelatedInformationService implements IAiRelatedInformationService {
   isEnabled: IAiRelatedInformationService['isEnabled'] = () => false
   @Unsupported
   getRelatedInformation: IAiRelatedInformationService['getRelatedInformation'] = unsupported
-  @Unsupported
   registerAiRelatedInformationProvider: IAiRelatedInformationService['registerAiRelatedInformationProvider'] =
-    unsupported
+    () => Disposable.None
   _serviceBrand: undefined
 }
 registerSingleton(
@@ -4539,9 +4492,8 @@ class AiEmbeddingVectorService implements IAiEmbeddingVectorService {
   isEnabled: IAiEmbeddingVectorService['isEnabled'] = () => false
   @Unsupported
   getEmbeddingVector: IAiEmbeddingVectorService['getEmbeddingVector'] = unsupported
-  @Unsupported
   registerAiEmbeddingVectorProvider: IAiEmbeddingVectorService['registerAiEmbeddingVectorProvider'] =
-    unsupported
+    () => Disposable.None
 }
 registerSingleton(IAiEmbeddingVectorService, AiEmbeddingVectorService, InstantiationType.Delayed)
 class AiSettingsSearchService implements IAiSettingsSearchService {
@@ -4551,9 +4503,8 @@ class AiSettingsSearchService implements IAiSettingsSearchService {
   startSearch: IAiSettingsSearchService['startSearch'] = unsupported
   getEmbeddingsResults: IAiSettingsSearchService['getEmbeddingsResults'] = async () => []
   getLLMRankedResults: IAiSettingsSearchService['getLLMRankedResults'] = async () => []
-  @Unsupported
-  registerSettingsSearchProvider: IAiSettingsSearchService['registerSettingsSearchProvider'] =
-    unsupported
+  registerSettingsSearchProvider: IAiSettingsSearchService['registerSettingsSearchProvider'] = () =>
+    Disposable.None
   @Unsupported
   handleSearchResult: IAiSettingsSearchService['handleSearchResult'] = unsupported
   onProviderRegistered: IAiSettingsSearchService['onProviderRegistered'] = Event.None
@@ -4681,8 +4632,7 @@ class SpeechService implements ISpeechService {
   @Unsupported
   recognizeKeyword: ISpeechService['recognizeKeyword'] = unsupported
   hasSpeechProvider: ISpeechService['hasSpeechProvider'] = false
-  @Unsupported
-  registerSpeechProvider: ISpeechService['registerSpeechProvider'] = unsupported
+  registerSpeechProvider: ISpeechService['registerSpeechProvider'] = () => Disposable.None
   @Unsupported
   createSpeechToTextSession: ISpeechService['createSpeechToTextSession'] = unsupported
 }
@@ -4785,9 +4735,8 @@ class NotebookExecutionService implements INotebookExecutionService {
   cancelNotebookCells: INotebookExecutionService['cancelNotebookCells'] = unsupported
   @Unsupported
   cancelNotebookCellHandles: INotebookExecutionService['cancelNotebookCellHandles'] = unsupported
-  @Unsupported
-  registerExecutionParticipant: INotebookExecutionService['registerExecutionParticipant'] =
-    unsupported
+  registerExecutionParticipant: INotebookExecutionService['registerExecutionParticipant'] = () =>
+    Disposable.None
 }
 registerSingleton(INotebookExecutionService, NotebookExecutionService, InstantiationType.Delayed)
 class NotebookKeymapService implements INotebookKeymapService {
@@ -4814,12 +4763,10 @@ class WalkthroughsService implements IWalkthroughsService {
   onDidRemoveWalkthrough: IWalkthroughsService['onDidRemoveWalkthrough'] = Event.None
   onDidChangeWalkthrough: IWalkthroughsService['onDidChangeWalkthrough'] = Event.None
   onDidProgressStep: IWalkthroughsService['onDidProgressStep'] = Event.None
-  @Unsupported
-  getWalkthroughs: IWalkthroughsService['getWalkthroughs'] = unsupported
+  getWalkthroughs: IWalkthroughsService['getWalkthroughs'] = () => []
   @Unsupported
   getWalkthrough: IWalkthroughsService['getWalkthrough'] = unsupported
-  @Unsupported
-  registerWalkthrough: IWalkthroughsService['registerWalkthrough'] = unsupported
+  registerWalkthrough: IWalkthroughsService['registerWalkthrough'] = () => {}
   @Unsupported
   progressByEvent: IWalkthroughsService['progressByEvent'] = unsupported
   @Unsupported
@@ -5078,8 +5025,7 @@ class NotebookDocumentService implements INotebookDocumentService {
 registerSingleton(INotebookDocumentService, NotebookDocumentService, InstantiationType.Delayed)
 class DebugVisualizerService implements IDebugVisualizerService {
   _serviceBrand: undefined
-  @Unsupported
-  registerTree: IDebugVisualizerService['registerTree'] = unsupported
+  registerTree: IDebugVisualizerService['registerTree'] = () => Disposable.None
   @Unsupported
   getVisualizedNodeFor: IDebugVisualizerService['getVisualizedNodeFor'] = unsupported
   @Unsupported
@@ -5088,8 +5034,7 @@ class DebugVisualizerService implements IDebugVisualizerService {
   editTreeItem: IDebugVisualizerService['editTreeItem'] = unsupported
   @Unsupported
   getApplicableFor: IDebugVisualizerService['getApplicableFor'] = unsupported
-  @Unsupported
-  register: IDebugVisualizerService['register'] = unsupported
+  register: IDebugVisualizerService['register'] = () => Disposable.None
 }
 registerSingleton(IDebugVisualizerService, DebugVisualizerService, InstantiationType.Delayed)
 class EditSessionsLogService implements IEditSessionsLogService {
@@ -5417,8 +5362,8 @@ registerSingleton(IIssueFormService, IssueFormService, InstantiationType.Delayed
 class CodeMapperService implements ICodeMapperService {
   _serviceBrand: undefined
   providers: ICodeMapperService['providers'] = []
-  @Unsupported
-  registerCodeMapperProvider: ICodeMapperService['registerCodeMapperProvider'] = unsupported
+  registerCodeMapperProvider: ICodeMapperService['registerCodeMapperProvider'] = () =>
+    Disposable.None
   mapCode: ICodeMapperService['mapCode'] = async () => undefined
 }
 registerSingleton(ICodeMapperService, CodeMapperService, InstantiationType.Delayed)
@@ -5438,17 +5383,15 @@ registerSingleton(IChatEditingService, ChatEditingService, InstantiationType.Del
 class ActionViewItemService implements IActionViewItemService {
   _serviceBrand: undefined
   onDidChange: IActionViewItemService['onDidChange'] = Event.None
-  @Unsupported
-  register: IActionViewItemService['register'] = unsupported
+  register: IActionViewItemService['register'] = () => Disposable.None
   lookUp: IActionViewItemService['lookUp'] = () => undefined
 }
 registerSingleton(IActionViewItemService, ActionViewItemService, InstantiationType.Delayed)
 class LanguageModelIgnoredFilesService implements ILanguageModelIgnoredFilesService {
   _serviceBrand: undefined
   fileIsIgnored: ILanguageModelIgnoredFilesService['fileIsIgnored'] = async () => false
-  @Unsupported
   registerIgnoredFileProvider: ILanguageModelIgnoredFilesService['registerIgnoredFileProvider'] =
-    unsupported
+    () => Disposable.None
 }
 registerSingleton(
   ILanguageModelIgnoredFilesService,
@@ -5540,9 +5483,8 @@ class TerminalCompletionService implements ITerminalCompletionService {
   get providers(): ITerminalCompletionService['providers'] {
     return unsupported()
   }
-  @Unsupported
   registerTerminalCompletionProvider: ITerminalCompletionService['registerTerminalCompletionProvider'] =
-    unsupported
+    () => Disposable.None
   @Unsupported
   provideCompletions: ITerminalCompletionService['provideCompletions'] = unsupported
 }
@@ -5626,8 +5568,7 @@ class PromptsService implements IPromptsService {
 
   getResolvedSourceFolders: IPromptsService['getResolvedSourceFolders'] = async () => []
 
-  @Unsupported
-  registerPromptFileProvider: IPromptsService['registerPromptFileProvider'] = unsupported
+  registerPromptFileProvider: IPromptsService['registerPromptFileProvider'] = () => Disposable.None
   @Unsupported
   getPromptDiscoveryInfo: IPromptsService['getPromptDiscoveryInfo'] = unsupported
 }
@@ -5948,8 +5889,7 @@ registerSingleton(IMcpElicitationService, McpElicitationService, InstantiationTy
 
 class RemoteCodingAgentsService implements IRemoteCodingAgentsService {
   _serviceBrand: undefined
-  @Unsupported
-  registerAgent: IRemoteCodingAgentsService['registerAgent'] = unsupported
+  registerAgent: IRemoteCodingAgentsService['registerAgent'] = () => {}
 
   getRegisteredAgents: IRemoteCodingAgentsService['getRegisteredAgents'] = () => []
   getAvailableAgents: IRemoteCodingAgentsService['getAvailableAgents'] = () => []
