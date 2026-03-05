@@ -31,7 +31,7 @@ Subject: [PATCH] feat: centralize element creation, to be able to create them
  .../browser/ui/selectBox/selectBoxNative.ts   |  4 +-
  src/vs/base/browser/ui/splitview/splitview.ts |  4 +-
  src/vs/base/browser/ui/toggle/toggle.ts       |  4 +-
- src/vs/base/browser/ui/toolbar/toolbar.ts     |  3 +-
+ src/vs/base/browser/ui/toolbar/toolbar.ts     |  4 +-
  src/vs/base/browser/ui/tree/abstractTree.ts   |  4 +-
  src/vs/base/test/browser/ui/grid/util.ts      |  3 +-
  .../electron-browser/workbench/workbench.ts   | 34 ++++++-------
@@ -42,7 +42,7 @@ Subject: [PATCH] feat: centralize element creation, to be able to create them
  .../textArea/textAreaEditContext.ts           |  5 +-
  .../editor/browser/controller/mouseTarget.ts  |  2 +-
  src/vs/editor/browser/gpu/viewGpuContext.ts   |  4 +-
- src/vs/editor/browser/observableCodeEditor.ts |  3 +-
+ src/vs/editor/browser/observableCodeEditor.ts |  4 +-
  src/vs/editor/browser/view.ts                 |  6 +--
  .../browser/view/domLineBreaksComputer.ts     |  3 +-
  src/vs/editor/browser/view/viewLayer.ts       |  5 +-
@@ -197,10 +197,10 @@ Subject: [PATCH] feat: centralize element creation, to be able to create them
  .../browser/webWorkerExtensionHost.ts         |  2 +-
  .../host/browser/browserHostService.ts        |  6 +--
  .../test/browser/workbenchTestServices.ts     |  4 +-
- 192 files changed, 615 insertions(+), 538 deletions(-)
+ 192 files changed, 615 insertions(+), 540 deletions(-)
 
 diff --git a/src/vs/base/browser/dom.ts b/src/vs/base/browser/dom.ts
-index 81cd815c2d3..d13ffb1bba4 100644
+index 9edf6c82ec2..7ff44e49530 100644
 --- a/src/vs/base/browser/dom.ts
 +++ b/src/vs/base/browser/dom.ts
 @@ -1219,13 +1219,43 @@ export function createLinkElement(container: HTMLElement = mainWindow.document.h
@@ -1083,18 +1083,19 @@ index 0b2fcbbb274..9391bad5972 100644
  			content: !isMarkdownString(this._title) && !isHTMLElement(this._title) ? stripIcons(this._title) : this._title,
  			style: HoverStyle.Pointer,
 diff --git a/src/vs/base/browser/ui/toolbar/toolbar.ts b/src/vs/base/browser/ui/toolbar/toolbar.ts
-index 21696911bd1..27e9b1480cd 100644
+index 270f54836c9..474e1ded653 100644
 --- a/src/vs/base/browser/ui/toolbar/toolbar.ts
 +++ b/src/vs/base/browser/ui/toolbar/toolbar.ts
-@@ -17,6 +17,7 @@ import './toolbar.css';
+@@ -17,7 +17,7 @@ import './toolbar.css';
  import * as nls from '../../../../nls.js';
  import { IHoverDelegate } from '../hover/hoverDelegate.js';
  import { createInstantHoverDelegate } from '../hover/hoverDelegateFactory.js';
-+import { createElement } from '../../dom.js';
+-import { DisposableResizeObserver } from '../../dom.js';
++import { createElement, DisposableResizeObserver } from '../../dom.js';
  
  const ACTION_MIN_WIDTH = 20; /* 20px codicon */
  const ACTION_PADDING = 4; /* 4px padding */
-@@ -91,7 +92,7 @@ export class ToolBar extends Disposable {
+@@ -92,7 +92,7 @@ export class ToolBar extends Disposable {
  
  		this.toggleMenuAction = this._register(new ToggleMenuAction(() => this.toggleMenuActionViewItem?.show(), options.toggleMenuTitle));
  
@@ -1516,18 +1517,19 @@ index 9d520abdb3b..959416124ea 100644
  
  		// Adjust the canvas size to avoid drawing under the scroll bar
 diff --git a/src/vs/editor/browser/observableCodeEditor.ts b/src/vs/editor/browser/observableCodeEditor.ts
-index 4c415ec53dd..57d188ad474 100644
+index c7f48fa8569..24fdaec03f8 100644
 --- a/src/vs/editor/browser/observableCodeEditor.ts
 +++ b/src/vs/editor/browser/observableCodeEditor.ts
-@@ -16,6 +16,7 @@ import { IModelDeltaDecoration, ITextModel } from '../common/model.js';
+@@ -16,7 +16,7 @@ import { IModelDeltaDecoration, ITextModel } from '../common/model.js';
  import { IModelContentChangedEvent } from '../common/textModelEvents.js';
  import { ContentWidgetPositionPreference, ICodeEditor, IContentWidget, IContentWidgetPosition, IEditorMouseEvent, IOverlayWidget, IOverlayWidgetPosition, IPasteEvent } from './editorBrowser.js';
  import { Point } from '../common/core/2d/point.js';
-+import { createElement } from '../../base/browser/dom.js';
+-import { DisposableResizeObserver } from '../../base/browser/dom.js';
++import { createElement, DisposableResizeObserver } from '../../base/browser/dom.js';
  
  /**
   * Returns a facade for the code editor that provides observables for various states/events.
-@@ -404,7 +405,7 @@ export class ObservableCodeEditor extends Disposable {
+@@ -405,7 +405,7 @@ export class ObservableCodeEditor extends Disposable {
  		let pos = position.get();
  		const result = observableValueOpts<Point | null>({ owner: this, debugName: () => `topLeftOfPosition${pos?.toString()}`, equalsFn: equalsIfDefinedC(Point.equals) }, new Point(0, 0));
  		const contentWidgetId = `observablePositionWidget` + (this._widgetCounter++);
@@ -2310,19 +2312,19 @@ index a9601480ad5..d0ee7e99cd9 100644
  		this._actualHeight = observableValue<number | undefined>(this, undefined);
  		this.actualTop = this._actualTop;
 diff --git a/src/vs/editor/browser/widget/diffEditor/utils/editorGutter.ts b/src/vs/editor/browser/widget/diffEditor/utils/editorGutter.ts
-index 152c3d854a8..eda4f80cea7 100644
+index c0f69ab945d..d91d8028731 100644
 --- a/src/vs/editor/browser/widget/diffEditor/utils/editorGutter.ts
 +++ b/src/vs/editor/browser/widget/diffEditor/utils/editorGutter.ts
 @@ -3,7 +3,7 @@
   *  Licensed under the MIT License. See License.txt in the project root for license information.
   *--------------------------------------------------------------------------------------------*/
  
--import { h, reset } from '../../../../../base/browser/dom.js';
-+import { createElement, h, reset } from '../../../../../base/browser/dom.js';
- import { Disposable, DisposableMap, IDisposable, toDisposable } from '../../../../../base/common/lifecycle.js';
+-import { DisposableResizeObserver, h, reset } from '../../../../../base/browser/dom.js';
++import { createElement, DisposableResizeObserver, h, reset } from '../../../../../base/browser/dom.js';
+ import { Disposable, DisposableMap, IDisposable } from '../../../../../base/common/lifecycle.js';
  import { autorun, IObservable, IReader, ISettableObservable, observableFromEvent, observableSignal, observableSignalFromEvent, observableValue, transaction } from '../../../../../base/common/observable.js';
  import { CodeEditorWidget } from '../../codeEditor/codeEditorWidget.js';
-@@ -108,7 +108,7 @@ export class EditorGutter<T extends IGutterItemInfo = IGutterItemInfo> extends D
+@@ -107,7 +107,7 @@ export class EditorGutter<T extends IGutterItemInfo = IGutterItemInfo> extends D
  						unusedIds.delete(gutterItem.id);
  						let view = this.views.get(gutterItem.id);
  						if (!view) {
@@ -2736,18 +2738,18 @@ index 96053b4e19a..924dfd08423 100644
  
  					if (this._isClickable) {
 diff --git a/src/vs/editor/contrib/inlineCompletions/browser/view/inlineEdits/inlineEditsViews/debugVisualization.ts b/src/vs/editor/contrib/inlineCompletions/browser/view/inlineEdits/inlineEditsViews/debugVisualization.ts
-index a11ab53bb4d..157bae8f27c 100644
+index c12d5b3a82f..7936b110f19 100644
 --- a/src/vs/editor/contrib/inlineCompletions/browser/view/inlineEdits/inlineEditsViews/debugVisualization.ts
 +++ b/src/vs/editor/contrib/inlineCompletions/browser/view/inlineEdits/inlineEditsViews/debugVisualization.ts
-@@ -3,6 +3,7 @@
-  *  Licensed under the MIT License. See License.txt in the project root for license information.
+@@ -4,6 +4,7 @@
   *--------------------------------------------------------------------------------------------*/
  
+ import { mainWindow } from '../../../../../../../base/browser/window.js';
 +import { createElement } from '../../../../../../../base/browser/dom.js';
  import { IDisposable } from '../../../../../../../base/common/lifecycle.js';
  import { IReader, derived } from '../../../../../../../base/common/observable.js';
  import { Rect } from '../../../../../../common/core/2d/rect.js';
-@@ -107,13 +108,13 @@ class HtmlHorizontalOffsetRangeVisualizer implements IVisualizationEffect {
+@@ -108,13 +109,13 @@ class HtmlHorizontalOffsetRangeVisualizer implements IVisualizationEffect {
  	) { }
  
  	visualize(): IDisposable {
@@ -2763,7 +2765,7 @@ index a11ab53bb4d..157bae8f27c 100644
  		horizontalLine.style.position = 'absolute';
  		horizontalLine.style.height = '2px';
  		horizontalLine.style.backgroundColor = 'green';
-@@ -121,7 +122,7 @@ class HtmlHorizontalOffsetRangeVisualizer implements IVisualizationEffect {
+@@ -122,7 +123,7 @@ class HtmlHorizontalOffsetRangeVisualizer implements IVisualizationEffect {
  		horizontalLine.style.transform = 'translateY(-50%)';
  
  		// Create start vertical bar
@@ -2772,7 +2774,7 @@ index a11ab53bb4d..157bae8f27c 100644
  		startBar.style.position = 'absolute';
  		startBar.style.width = '2px';
  		startBar.style.height = '8px';
-@@ -131,7 +132,7 @@ class HtmlHorizontalOffsetRangeVisualizer implements IVisualizationEffect {
+@@ -132,7 +133,7 @@ class HtmlHorizontalOffsetRangeVisualizer implements IVisualizationEffect {
  		startBar.style.transform = 'translateY(-50%)';
  
  		// Create end vertical bar
@@ -2781,7 +2783,7 @@ index a11ab53bb4d..157bae8f27c 100644
  		endBar.style.position = 'absolute';
  		endBar.style.width = '2px';
  		endBar.style.height = '8px';
-@@ -141,7 +142,7 @@ class HtmlHorizontalOffsetRangeVisualizer implements IVisualizationEffect {
+@@ -142,7 +143,7 @@ class HtmlHorizontalOffsetRangeVisualizer implements IVisualizationEffect {
  		endBar.style.transform = 'translateY(-50%)';
  
  		// Create label
@@ -2790,7 +2792,7 @@ index a11ab53bb4d..157bae8f27c 100644
  		label.textContent = this._name;
  		label.style.position = 'absolute';
  
-@@ -207,14 +208,14 @@ class HtmlRectVisualizer implements IVisualizationEffect {
+@@ -208,14 +209,14 @@ class HtmlRectVisualizer implements IVisualizationEffect {
  	) { }
  
  	visualize(): IDisposable {
@@ -3995,10 +3997,10 @@ index f537923198c..b0f7cb738f5 100644
  
  		const btn = this._register(new ButtonWithIcon(elements.root, {}));
 diff --git a/src/vs/workbench/contrib/chat/browser/widget/chatContentParts/toolInvocationParts/chatTerminalToolProgressPart.ts b/src/vs/workbench/contrib/chat/browser/widget/chatContentParts/toolInvocationParts/chatTerminalToolProgressPart.ts
-index c2e85e9e4d5..20a247cbee6 100644
+index 0c007288303..a009ff0858d 100644
 --- a/src/vs/workbench/contrib/chat/browser/widget/chatContentParts/toolInvocationParts/chatTerminalToolProgressPart.ts
 +++ b/src/vs/workbench/contrib/chat/browser/widget/chatContentParts/toolInvocationParts/chatTerminalToolProgressPart.ts
-@@ -1563,8 +1563,8 @@ class ChatTerminalThinkingCollapsibleWrapper extends ChatCollapsibleContentPart
+@@ -1562,8 +1562,8 @@ class ChatTerminalThinkingCollapsibleWrapper extends ChatCollapsibleContentPart
  		const prefixText = this._isComplete
  			? localize('chat.terminal.ran.prefix', "Ran ")
  			: localize('chat.terminal.running.prefix', "Running ");
@@ -4530,10 +4532,10 @@ index b655bb773a8..f82e85f55a6 100644
  			auxiliaryWindow.window.document.body.appendChild(div);
  			safeSetInnerHtml(div, BaseHtml(), {
 diff --git a/src/vs/workbench/contrib/languageStatus/browser/languageStatus.ts b/src/vs/workbench/contrib/languageStatus/browser/languageStatus.ts
-index 386bde3c067..419e20459b2 100644
+index 3e7063fe231..7636cf1c6f5 100644
 --- a/src/vs/workbench/contrib/languageStatus/browser/languageStatus.ts
 +++ b/src/vs/workbench/contrib/languageStatus/browser/languageStatus.ts
-@@ -102,7 +102,7 @@ class LanguageStatus {
+@@ -103,7 +103,7 @@ class LanguageStatus {
  	private _dedicatedEntries = new Map<string, IStatusbarEntryAccessor>();
  	private readonly _renderDisposables = new DisposableStore();
  
@@ -4542,7 +4544,7 @@ index 386bde3c067..419e20459b2 100644
  
  	constructor(
  		@ILanguageStatusService private readonly _languageStatusService: ILanguageStatusService,
-@@ -290,24 +290,24 @@ class LanguageStatus {
+@@ -291,24 +291,24 @@ class LanguageStatus {
  
  	private _renderStatus(container: HTMLElement, status: ILanguageStatus, showSeverity: boolean, isPinned: boolean, store: DisposableStore): HTMLElement {
  
@@ -4571,7 +4573,7 @@ index 386bde3c067..419e20459b2 100644
  		left.classList.add('left');
  		element.appendChild(left);
  
-@@ -316,7 +316,7 @@ class LanguageStatus {
+@@ -317,7 +317,7 @@ class LanguageStatus {
  
  		this._renderTextPlus(left, status.detail, store);
  
@@ -4606,19 +4608,19 @@ index a80f0b9a7f2..a62fdcb866c 100644
  	}
  }
 diff --git a/src/vs/workbench/contrib/mergeEditor/browser/view/editorGutter.ts b/src/vs/workbench/contrib/mergeEditor/browser/view/editorGutter.ts
-index 7f92d3f354c..369847caa0d 100644
+index 575cc123246..d558ff69480 100644
 --- a/src/vs/workbench/contrib/mergeEditor/browser/view/editorGutter.ts
 +++ b/src/vs/workbench/contrib/mergeEditor/browser/view/editorGutter.ts
 @@ -3,7 +3,7 @@
   *  Licensed under the MIT License. See License.txt in the project root for license information.
   *--------------------------------------------------------------------------------------------*/
  
--import { h, reset } from '../../../../../base/browser/dom.js';
-+import { createElement, h, reset } from '../../../../../base/browser/dom.js';
- import { Disposable, IDisposable, toDisposable } from '../../../../../base/common/lifecycle.js';
+-import { DisposableResizeObserver, h, reset } from '../../../../../base/browser/dom.js';
++import { createElement, DisposableResizeObserver, h, reset } from '../../../../../base/browser/dom.js';
+ import { Disposable, IDisposable } from '../../../../../base/common/lifecycle.js';
  import { autorun, IReader, observableFromEvent, observableSignal, observableSignalFromEvent, transaction } from '../../../../../base/common/observable.js';
  import { CodeEditorWidget } from '../../../../../editor/browser/widget/codeEditor/codeEditorWidget.js';
-@@ -103,7 +103,7 @@ export class EditorGutter<T extends IGutterItemInfo = IGutterItemInfo> extends D
+@@ -102,7 +102,7 @@ export class EditorGutter<T extends IGutterItemInfo = IGutterItemInfo> extends D
  				unusedIds.delete(gutterItem.id);
  				let view = this.views.get(gutterItem.id);
  				if (!view) {
@@ -5434,15 +5436,15 @@ index 211eb8bbe9b..d6e241653d6 100644
  
  		xterm.open(testContainer);
 diff --git a/src/vs/workbench/contrib/terminalContrib/chat/browser/terminalChatWidget.ts b/src/vs/workbench/contrib/terminalContrib/chat/browser/terminalChatWidget.ts
-index d08f85abbe2..d86098868b6 100644
+index 2dfa42fe76d..ff549097ab9 100644
 --- a/src/vs/workbench/contrib/terminalContrib/chat/browser/terminalChatWidget.ts
 +++ b/src/vs/workbench/contrib/terminalContrib/chat/browser/terminalChatWidget.ts
 @@ -4,7 +4,7 @@
   *--------------------------------------------------------------------------------------------*/
  
  import type { Terminal as RawXtermTerminal } from '@xterm/xterm';
--import { Dimension, getActiveWindow, IFocusTracker, trackFocus } from '../../../../../base/browser/dom.js';
-+import { createElement, Dimension, getActiveWindow, IFocusTracker, trackFocus } from '../../../../../base/browser/dom.js';
+-import { Dimension, DisposableResizeObserver, getActiveWindow, IFocusTracker, trackFocus } from '../../../../../base/browser/dom.js';
++import { createElement, Dimension, DisposableResizeObserver, getActiveWindow, IFocusTracker, trackFocus } from '../../../../../base/browser/dom.js';
  import { CancelablePromise, createCancelablePromise, DeferredPromise } from '../../../../../base/common/async.js';
  import { CancellationTokenSource } from '../../../../../base/common/cancellation.js';
  import { Emitter, Event } from '../../../../../base/common/event.js';
