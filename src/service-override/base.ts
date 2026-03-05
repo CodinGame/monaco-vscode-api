@@ -40,6 +40,8 @@ import { EditorWorkerService } from 'vs/editor/browser/services/editorWorkerServ
 import { IRenameSymbolTrackerService } from 'vs/editor/browser/services/renameSymbolTrackerService.service'
 import { RenameSymbolTrackerService } from 'vs/workbench/contrib/inlineCompletions/browser/renameSymbolTrackerService'
 import { EditorMarkdownCodeBlockRenderer } from 'vs/editor/browser/widget/markdownRenderer/browser/editorMarkdownCodeBlockRenderer.js'
+import { IRandomService } from 'vs/workbench/contrib/editTelemetry/browser/randomService.service'
+import { RandomService } from 'vs/workbench/contrib/editTelemetry/browser/randomService'
 import { registerServiceInitializeParticipant } from '../lifecycle'
 import { IInstantiationService } from 'vs/platform/instantiation/common/instantiation'
 
@@ -92,6 +94,7 @@ export default function getServiceOverride(): IEditorOverrideServices {
       RenameSymbolTrackerService,
       [],
       true
-    )
+    ),
+    [IRandomService.toString()]: new SyncDescriptor(RandomService, [], true)
   }
 }
