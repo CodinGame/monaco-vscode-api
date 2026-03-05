@@ -13,7 +13,7 @@ Subject: [PATCH] feat: add static asset url mechanism
  6 files changed, 219 insertions(+), 61 deletions(-)
 
 diff --git a/src/tsec.exemptions.json b/src/tsec.exemptions.json
-index 83691e2de5a..359518360b6 100644
+index e290af37d5c..9a3995a691f 100644
 --- a/src/tsec.exemptions.json
 +++ b/src/tsec.exemptions.json
 @@ -7,6 +7,7 @@
@@ -119,10 +119,10 @@ index 4cfaf6a58cb..b7f63a0d276 100644
  
  class ExtensionHostProxy implements IExtensionHostProxy {
 diff --git a/src/vs/workbench/api/common/extHost.protocol.ts b/src/vs/workbench/api/common/extHost.protocol.ts
-index 7f7f3795aab..1d33ee29d44 100644
+index 8abfea0b8d3..871915ebd4a 100644
 --- a/src/vs/workbench/api/common/extHost.protocol.ts
 +++ b/src/vs/workbench/api/common/extHost.protocol.ts
-@@ -1695,6 +1695,7 @@ export interface MainThreadExtensionServiceShape extends IDisposable {
+@@ -1836,6 +1836,7 @@ export interface MainThreadExtensionServiceShape extends IDisposable {
  	$onExtensionRuntimeError(extensionId: ExtensionIdentifier, error: SerializedError): void;
  	$setPerformanceMarks(marks: performance.PerformanceMark[]): Promise<void>;
  	$asBrowserUri(uri: UriComponents): Promise<UriComponents>;

@@ -11,7 +11,8 @@ import { TextEditorService } from 'vs/workbench/services/textfile/common/textEdi
 import { ITextEditorService } from 'vs/workbench/services/textfile/common/textEditorService.service'
 import {
   GroupOrientation,
-  type IEditorPart
+  type IEditorPart,
+  type IModalEditorPart
 } from 'vs/workbench/services/editor/common/editorGroupsService'
 import { IEditorGroupsService } from 'vs/workbench/services/editor/common/editorGroupsService.service'
 import { IInstantiationService } from 'vs/platform/instantiation/common/instantiation'
@@ -86,6 +87,7 @@ class EmptyEditorPart implements IEditorPart {
 }
 
 class EmptyEditorGroupsService implements IEditorGroupsService {
+  activeModalEditorPart: IModalEditorPart | undefined
   getScopedInstantiationService = unsupported
   registerContextKeyProvider = unsupported
   saveWorkingSet = unsupported
@@ -152,6 +154,8 @@ class EmptyEditorGroupsService implements IEditorGroupsService {
   copyGroup = unsupported
   onDidChangeEditorPartOptions = Event.None
   enforcePartOptions = unsupported
+
+  createModalEditorPart = unsupported
 }
 
 class MonacoEditorGroupsService extends MonacoDelegateEditorGroupsService<EmptyEditorGroupsService> {

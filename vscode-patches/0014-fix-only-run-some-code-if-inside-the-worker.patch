@@ -1,0 +1,100 @@
+From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
+From: =?UTF-8?q?Lo=C3=AFc=20Mangeonjean?= <loic@coderpad.io>
+Date: Mon, 11 Mar 2024 17:42:28 +0100
+Subject: [PATCH] fix: only run some code if inside the worker
+
+---
+ .../workbench/api/common/extHostExtensionService.ts   | 10 ++++++----
+ src/vs/workbench/api/common/extensionHostMain.ts      | 11 ++++++++---
+ .../workbench/api/worker/extHostExtensionService.ts   |  7 +++++--
+ 3 files changed, 19 insertions(+), 9 deletions(-)
+
+diff --git a/src/vs/workbench/api/common/extHostExtensionService.ts b/src/vs/workbench/api/common/extHostExtensionService.ts
+index a0178f266d4..19f0c987d4f 100644
+--- a/src/vs/workbench/api/common/extHostExtensionService.ts
++++ b/src/vs/workbench/api/common/extHostExtensionService.ts
+@@ -43,7 +43,7 @@ import { Schemas } from '../../../base/common/network.js';
+ import { IResolveAuthorityResult } from '../../services/extensions/common/extensionHostProxy.js';
+ import { IExtHostLocalizationService } from './extHostLocalizationService.js';
+ import { StopWatch } from '../../../base/common/stopwatch.js';
+-import { isCI, setTimeout0 } from '../../../base/common/platform.js';
++import { isCI, isWebWorker, setTimeout0 } from '../../../base/common/platform.js';
+ import { IExtHostManagedSockets } from './extHostManagedSockets.js';
+ import { Dto } from '../../services/extensions/common/proxyIdentifier.js';
+ 
+@@ -257,9 +257,11 @@ export abstract class AbstractExtHostExtensionService extends Disposable impleme
+ 		this._extHostTerminalService.dispose();
+ 		this._activator.dispose();
+ 
+-		errors.setUnexpectedErrorHandler((err) => {
+-			this._logService.error(err);
+-		});
++		if (isWebWorker) {
++			errors.setUnexpectedErrorHandler((err) => {
++				this._logService.error(err);
++			});
++		}
+ 
+ 		// Invalidate all proxies
+ 		this._extHostContext.dispose();
+diff --git a/src/vs/workbench/api/common/extensionHostMain.ts b/src/vs/workbench/api/common/extensionHostMain.ts
+index 2d9c02c9a1d..7f37bac543b 100644
+--- a/src/vs/workbench/api/common/extensionHostMain.ts
++++ b/src/vs/workbench/api/common/extensionHostMain.ts
+@@ -24,6 +24,7 @@ import { IExtHostExtensionService, IHostUtils } from './extHostExtensionService.
+ import { IExtHostTelemetry } from './extHostTelemetry.js';
+ import { Mutable } from '../../../base/common/types.js';
+ import { IExtHostApiDeprecationService } from './extHostApiDeprecationService.js';
++import { isWebWorker } from '../../../base/common/platform.js';
+ 
+ export interface IExitFn {
+ 	(code?: number): any;
+@@ -187,7 +188,9 @@ export class ExtensionHostMain {
+ 
+ 		const instaService: IInstantiationService = new InstantiationService(services, true);
+ 
+-		instaService.invokeFunction(ErrorHandler.installEarlyHandler);
++		if (isWebWorker) {
++			instaService.invokeFunction(ErrorHandler.installEarlyHandler);
++		}
+ 
+ 		// ugly self - inject
+ 		this._logService = instaService.invokeFunction(accessor => accessor.get(ILogService));
+@@ -206,8 +209,10 @@ export class ExtensionHostMain {
+ 		this._extensionService = instaService.invokeFunction(accessor => accessor.get(IExtHostExtensionService));
+ 		this._extensionService.initialize();
+ 
+-		// install error handler that is extension-aware
+-		instaService.invokeFunction(ErrorHandler.installFullHandler);
++		if (isWebWorker) {
++			// install error handler that is extension-aware
++			instaService.invokeFunction(ErrorHandler.installFullHandler);
++		}
+ 	}
+ 
+ 	async asBrowserUri(uri: URI): Promise<URI> {
+diff --git a/src/vs/workbench/api/worker/extHostExtensionService.ts b/src/vs/workbench/api/worker/extHostExtensionService.ts
+index 60584ef78a9..c4af59adb80 100644
+--- a/src/vs/workbench/api/worker/extHostExtensionService.ts
++++ b/src/vs/workbench/api/worker/extHostExtensionService.ts
+@@ -13,6 +13,7 @@ import { ExtensionRuntime } from '../common/extHostTypes.js';
+ import { timeout } from '../../../base/common/async.js';
+ import { ExtHostConsoleForwarder } from './extHostConsoleForwarder.js';
+ import { extname } from '../../../base/common/path.js';
++import { isWebWorker } from '../../../base/common/platform.js';
+ 
+ class WorkerRequireInterceptor extends RequireInterceptor {
+ 
+@@ -40,8 +41,10 @@ export class ExtHostExtensionService extends AbstractExtHostExtensionService {
+ 	private _fakeModules?: WorkerRequireInterceptor;
+ 
+ 	protected async _beforeAlmostReadyToRunExtensions(): Promise<void> {
+-		// make sure console.log calls make it to the render
+-		this._instaService.createInstance(ExtHostConsoleForwarder);
++		if (isWebWorker) {
++			// make sure console.log calls make it to the render
++			this._instaService.createInstance(ExtHostConsoleForwarder);
++		}
+ 
+ 		// initialize API and register actors
+ 		const apiFactory = this._instaService.invokeFunction(createApiFactoryAndRegisterActors);

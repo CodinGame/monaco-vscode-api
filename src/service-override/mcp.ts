@@ -9,12 +9,12 @@ import {
 } from 'vs/platform/mcp/common/mcpManagement.service'
 import { McpResourceScannerService } from 'vs/platform/mcp/common/mcpResourceScannerService'
 import { IMcpResourceScannerService } from 'vs/platform/mcp/common/mcpResourceScannerService.service'
-import 'vs/workbench/contrib/mcp/browser/mcp.contribution'
 import { McpElicitationService } from 'vs/workbench/contrib/mcp/browser/mcpElicitationService'
 import { McpWorkbenchService } from 'vs/workbench/contrib/mcp/browser/mcpWorkbenchService'
 import { McpRegistry } from 'vs/workbench/contrib/mcp/common/mcpRegistry'
 import { IMcpRegistry } from 'vs/workbench/contrib/mcp/common/mcpRegistryTypes.service'
 import { McpSamplingService } from 'vs/workbench/contrib/mcp/common/mcpSamplingService'
+import { IMcpSandboxService } from 'vs/workbench/contrib/mcp/common/mcpSandboxService.service'
 import { McpService } from 'vs/workbench/contrib/mcp/common/mcpService'
 import {
   IMcpElicitationService,
@@ -31,6 +31,10 @@ import { IAuthenticationMcpUsageService } from 'vs/workbench/services/authentica
 import { WorkbenchMcpGalleryManifestService } from 'vs/workbench/services/mcp/browser/mcpGalleryManifestService'
 import { WorkbenchMcpManagementService } from 'vs/workbench/services/mcp/browser/mcpWorkbenchManagementService'
 import { IWorkbenchMcpManagementService } from 'vs/workbench/services/mcp/common/mcpWorkbenchManagementService.service'
+import { McpSandboxService } from 'vs/workbench/contrib/mcp/common/mcpSandboxService'
+import { IWorkbenchMcpGatewayService } from 'vs/workbench/contrib/mcp/common/mcpGatewayService.service'
+import { BrowserMcpGatewayService } from 'vs/workbench/contrib/mcp/browser/mcpGatewayService'
+import 'vs/workbench/contrib/mcp/browser/mcp.contribution'
 
 export default function getServiceOverride(): IEditorOverrideServices {
   return {
@@ -66,6 +70,8 @@ export default function getServiceOverride(): IEditorOverrideServices {
       WorkbenchMcpGalleryManifestService,
       [],
       true
-    )
+    ),
+    [IMcpSandboxService.toString()]: new SyncDescriptor(McpSandboxService, [], true),
+    [IWorkbenchMcpGatewayService.toString()]: new SyncDescriptor(BrowserMcpGatewayService, [], true)
   }
 }

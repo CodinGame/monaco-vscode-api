@@ -24,7 +24,7 @@ import { guessLocalUserHome } from 'vs/workbench/services/path/browser/pathServi
 import { AbstractPathService } from 'vs/workbench/services/path/common/pathService'
 import { UserActivityService } from 'vs/workbench/services/userActivity/common/userActivityService'
 import { WorkingCopyFileService } from 'vs/workbench/services/workingCopy/common/workingCopyFileService'
-import { ITrustedDomainService } from 'vs/workbench/contrib/url/browser/trustedDomainService.service'
+import { ITrustedDomainService } from 'vs/workbench/contrib/url/common/trustedDomainService.service'
 import { TrustedDomainService } from 'vs/workbench/contrib/url/browser/trustedDomainService'
 import { LabelService } from 'vs/workbench/services/label/common/labelService'
 import { ILabelService } from 'vs/platform/label/common/label.service'
@@ -44,6 +44,8 @@ import { IRandomService } from 'vs/workbench/contrib/editTelemetry/browser/rando
 import { RandomService } from 'vs/workbench/contrib/editTelemetry/browser/randomService'
 import { registerServiceInitializeParticipant } from '../lifecycle'
 import { IInstantiationService } from 'vs/platform/instantiation/common/instantiation'
+import { IMeteredConnectionService } from 'vs/platform/meteredConnection/common/meteredConnection.service'
+import { MeteredConnectionService } from 'vs/platform/meteredConnection/browser/meteredConnectionService'
 
 class BrowserPathServiceOverride extends AbstractPathService {
   constructor(
@@ -95,6 +97,7 @@ export default function getServiceOverride(): IEditorOverrideServices {
       [],
       true
     ),
-    [IRandomService.toString()]: new SyncDescriptor(RandomService, [], true)
+    [IRandomService.toString()]: new SyncDescriptor(RandomService, [], true),
+    [IMeteredConnectionService.toString()]: new SyncDescriptor(MeteredConnectionService, [], true)
   }
 }
