@@ -1,0 +1,1137 @@
+From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
+From: =?UTF-8?q?Lo=C3=AFc=20Mangeonjean?= <loic@coderpad.io>
+Date: Mon, 4 Aug 2025 19:03:44 +0200
+Subject: [PATCH] feat: support loading VSCode in an iframe
+
+---
+ src/vs/base/browser/browser.ts                |  2 +-
+ src/vs/base/browser/canIUse.ts                | 12 +++---
+ src/vs/base/browser/dom.ts                    | 43 +++++++------------
+ src/vs/base/browser/domStylesheets.ts         |  4 +-
+ src/vs/base/browser/mouseEvent.ts             |  3 +-
+ src/vs/base/browser/touch.ts                  |  2 +-
+ src/vs/base/browser/ui/inputbox/inputBox.ts   |  3 +-
+ src/vs/base/browser/ui/toolbar/toolbar.ts     |  8 ++--
+ src/vs/base/browser/window.ts                 |  6 ++-
+ .../browser/config/elementSizeObserver.ts     | 15 +++----
+ src/vs/editor/browser/gpu/gpuDisposable.ts    |  5 ++-
+ .../editor/browser/gpu/rectangleRenderer.ts   |  3 +-
+ src/vs/editor/browser/observableCodeEditor.ts |  5 ++-
+ .../viewParts/viewLinesGpu/viewLinesGpu.ts    |  3 +-
+ .../widget/diffEditor/utils/editorGutter.ts   |  9 ++--
+ .../contrib/clipboard/browser/clipboard.ts    |  3 +-
+ .../inlineEditsViews/debugVisualization.ts    |  5 ++-
+ .../browser/view/inlineEdits/utils/utils.ts   | 10 ++---
+ .../clipboard/browser/clipboardService.ts     |  2 +-
+ .../remote/browser/browserSocketFactory.ts    |  2 +-
+ .../workbench/browser/parts/dialogs/dialog.ts |  3 +-
+ src/vs/workbench/browser/window.ts            | 25 +++++++----
+ .../chatMarkdownContentPart.ts                |  6 +--
+ .../chatThinkingContentPart.ts                |  3 +-
+ .../chatTerminalToolProgressPart.ts           |  3 +-
+ .../comments/browser/commentThreadBody.ts     |  3 +-
+ .../languageStatus/browser/languageStatus.ts  |  3 +-
+ .../mergeEditor/browser/view/editorGutter.ts  |  9 ++--
+ .../performance/browser/perfviewEditor.ts     |  3 +-
+ .../performance/browser/startupTimings.ts     |  3 +-
+ .../contrib/remote/browser/remoteIndicator.ts |  2 +-
+ .../chat/browser/terminalChatWidget.ts        |  5 +--
+ .../webviewView/browser/webviewViewPane.ts    | 11 ++---
+ .../browser/webWorkerExtensionHost.ts         |  6 +--
+ .../host/browser/browserHostService.ts        |  2 +-
+ .../keybinding/browser/keybindingService.ts   |  2 +-
+ .../lifecycle/browser/lifecycleService.ts     |  2 +-
+ .../localization/browser/localeService.ts     |  5 ++-
+ .../request/browser/requestService.ts         |  3 +-
+ .../electron-browser/requestService.ts        |  3 +-
+ .../services/timer/browser/timerService.ts    |  5 ++-
+ 41 files changed, 128 insertions(+), 124 deletions(-)
+
+diff --git a/src/vs/base/browser/browser.ts b/src/vs/base/browser/browser.ts
+index 9da1be69d7c..08d8860ea36 100644
+--- a/src/vs/base/browser/browser.ts
++++ b/src/vs/base/browser/browser.ts
+@@ -98,7 +98,7 @@ export function isFullscreen(targetWindow: Window): boolean {
+ }
+ export const onDidChangeFullscreen = WindowManager.INSTANCE.onDidChangeFullscreen;
+ 
+-const userAgent = navigator.userAgent;
++const userAgent = mainWindow.navigator.userAgent;
+ 
+ export const isFirefox = (userAgent.indexOf('Firefox') >= 0);
+ export const isWebKit = (userAgent.indexOf('AppleWebKit') >= 0);
+diff --git a/src/vs/base/browser/canIUse.ts b/src/vs/base/browser/canIUse.ts
+index d7c129abb27..a2895879194 100644
+--- a/src/vs/base/browser/canIUse.ts
++++ b/src/vs/base/browser/canIUse.ts
+@@ -20,12 +20,12 @@ export const BrowserFeatures = {
+ 	clipboard: {
+ 		writeText: (
+ 			platform.isNative
+-			|| (document.queryCommandSupported && document.queryCommandSupported('copy'))
+-			|| !!(navigator && navigator.clipboard && navigator.clipboard.writeText)
++			|| (mainWindow.document.queryCommandSupported && mainWindow.document.queryCommandSupported('copy'))
++			|| !!(mainWindow.navigator && mainWindow.navigator.clipboard && mainWindow.navigator.clipboard.writeText)
+ 		),
+ 		readText: (
+ 			platform.isNative
+-			|| !!(navigator && navigator.clipboard && navigator.clipboard.readText)
++			|| !!(mainWindow.navigator && mainWindow.navigator.clipboard && mainWindow.navigator.clipboard.readText)
+ 		)
+ 	},
+ 	keyboard: (() => {
+@@ -33,7 +33,7 @@ export const BrowserFeatures = {
+ 			return KeyboardSupport.Always;
+ 		}
+ 
+-		if ((navigator as Navigator & { keyboard?: unknown }).keyboard || browser.isSafari) {
++		if ((mainWindow.navigator as Navigator & { keyboard?: unknown }).keyboard || browser.isSafari) {
+ 			return KeyboardSupport.FullScreen;
+ 		}
+ 
+@@ -42,6 +42,6 @@ export const BrowserFeatures = {
+ 
+ 	// 'ontouchstart' in window always evaluates to true with typescript's modern typings. This causes `window` to be
+ 	// `never` later in `window.navigator`. That's why we need the explicit `window as Window` cast
+-	touch: 'ontouchstart' in mainWindow || navigator.maxTouchPoints > 0,
+-	pointerEvents: mainWindow.PointerEvent && ('ontouchstart' in mainWindow || navigator.maxTouchPoints > 0)
++	touch: 'ontouchstart' in mainWindow || mainWindow.navigator.maxTouchPoints > 0,
++	pointerEvents: mainWindow.PointerEvent && ('ontouchstart' in mainWindow || mainWindow.navigator.maxTouchPoints > 0)
+ };
+diff --git a/src/vs/base/browser/dom.ts b/src/vs/base/browser/dom.ts
+index 8a50d421187..6d419172f5d 100644
+--- a/src/vs/base/browser/dom.ts
++++ b/src/vs/base/browser/dom.ts
+@@ -1165,7 +1165,7 @@ export const sharedMutationObserver = new class {
+ 		let mutationObserverPerOptions = mutationObserversPerTarget.get(optionsHash);
+ 		if (!mutationObserverPerOptions) {
+ 			const onDidMutate = new event.Emitter<MutationRecord[]>();
+-			const observer = new MutationObserver(mutations => onDidMutate.fire(mutations));
++			const observer = new mainWindow.MutationObserver(mutations => onDidMutate.fire(mutations));
+ 			observer.observe(target, options);
+ 
+ 			const resolvedMutationObserverPerOptions = mutationObserverPerOptions = {
+@@ -1212,68 +1212,55 @@ function createHeadElement<K extends keyof HTMLElementTagNameMap>(tagName: K, co
+ }
+ 
+ export function isHTMLElement(e: unknown): e is HTMLElement {
+-	// eslint-disable-next-line no-restricted-syntax
+-	return e instanceof HTMLElement || e instanceof getWindow(e as Node).HTMLElement;
++	return e instanceof mainWindow.HTMLElement || e instanceof getWindow(e as Node).HTMLElement;
+ }
+ 
+ export function isHTMLAnchorElement(e: unknown): e is HTMLAnchorElement {
+-	// eslint-disable-next-line no-restricted-syntax
+-	return e instanceof HTMLAnchorElement || e instanceof getWindow(e as Node).HTMLAnchorElement;
++	return e instanceof mainWindow.HTMLAnchorElement || e instanceof getWindow(e as Node).HTMLAnchorElement;
+ }
+ 
+ export function isHTMLSpanElement(e: unknown): e is HTMLSpanElement {
+-	// eslint-disable-next-line no-restricted-syntax
+-	return e instanceof HTMLSpanElement || e instanceof getWindow(e as Node).HTMLSpanElement;
++	return e instanceof mainWindow.HTMLSpanElement || e instanceof getWindow(e as Node).HTMLSpanElement;
+ }
+ 
+ export function isHTMLTextAreaElement(e: unknown): e is HTMLTextAreaElement {
+-	// eslint-disable-next-line no-restricted-syntax
+-	return e instanceof HTMLTextAreaElement || e instanceof getWindow(e as Node).HTMLTextAreaElement;
++	return e instanceof mainWindow.HTMLTextAreaElement || e instanceof getWindow(e as Node).HTMLTextAreaElement;
+ }
+ 
+ export function isHTMLInputElement(e: unknown): e is HTMLInputElement {
+-	// eslint-disable-next-line no-restricted-syntax
+-	return e instanceof HTMLInputElement || e instanceof getWindow(e as Node).HTMLInputElement;
++	return e instanceof mainWindow.HTMLInputElement || e instanceof getWindow(e as Node).HTMLInputElement;
+ }
+ 
+ export function isHTMLButtonElement(e: unknown): e is HTMLButtonElement {
+-	// eslint-disable-next-line no-restricted-syntax
+-	return e instanceof HTMLButtonElement || e instanceof getWindow(e as Node).HTMLButtonElement;
++	return e instanceof mainWindow.HTMLButtonElement || e instanceof getWindow(e as Node).HTMLButtonElement;
+ }
+ 
+ export function isHTMLDivElement(e: unknown): e is HTMLDivElement {
+-	// eslint-disable-next-line no-restricted-syntax
+-	return e instanceof HTMLDivElement || e instanceof getWindow(e as Node).HTMLDivElement;
++	return e instanceof mainWindow.HTMLDivElement || e instanceof getWindow(e as Node).HTMLDivElement;
+ }
+ 
+ export function isHTMLIframeElement(e: unknown): e is HTMLDivElement {
+-	// eslint-disable-next-line no-restricted-syntax
+-	return e instanceof HTMLIFrameElement || e instanceof getWindow(e as Node).HTMLIFrameElement;
++	return e instanceof mainWindow.HTMLIFrameElement || e instanceof getWindow(e as Node).HTMLIFrameElement;
+ }
+ 
+ export function isSVGElement(e: unknown): e is SVGElement {
+-	// eslint-disable-next-line no-restricted-syntax
+-	return e instanceof SVGElement || e instanceof getWindow(e as Node).SVGElement;
++	return e instanceof mainWindow.SVGElement || e instanceof getWindow(e as Node).SVGElement;
+ }
+ 
+ export function isMouseEvent(e: unknown): e is MouseEvent {
+-	// eslint-disable-next-line no-restricted-syntax
+-	return e instanceof MouseEvent || e instanceof getWindow(e as UIEvent).MouseEvent;
++	return e instanceof mainWindow.MouseEvent || e instanceof getWindow(e as UIEvent).MouseEvent;
+ }
+ 
+ export function isKeyboardEvent(e: unknown): e is KeyboardEvent {
+-	// eslint-disable-next-line no-restricted-syntax
+-	return e instanceof KeyboardEvent || e instanceof getWindow(e as UIEvent).KeyboardEvent;
++	return e instanceof mainWindow.KeyboardEvent || e instanceof getWindow(e as UIEvent).KeyboardEvent;
+ }
+ 
+ export function isPointerEvent(e: unknown): e is PointerEvent {
+-	// eslint-disable-next-line no-restricted-syntax
+-	return e instanceof PointerEvent || e instanceof getWindow(e as UIEvent).PointerEvent;
++	return e instanceof mainWindow.PointerEvent || e instanceof getWindow(e as UIEvent).PointerEvent;
+ }
+ 
+ export function isDragEvent(e: unknown): e is DragEvent {
+-	// eslint-disable-next-line no-restricted-syntax
+-	return e instanceof DragEvent || e instanceof getWindow(e as UIEvent).DragEvent;
++	return e instanceof mainWindow.DragEvent || e instanceof getWindow(e as UIEvent).DragEvent;
+ }
+ 
+ export const EventType = {
+@@ -2125,7 +2112,7 @@ export class DisposableResizeObserver extends Disposable {
+ 
+ 	constructor(callback: ResizeObserverCallback) {
+ 		super();
+-		this.observer = new ResizeObserver(callback);
++		this.observer = new mainWindow.ResizeObserver(callback);
+ 		this._register(toDisposable(() => this.observer.disconnect()));
+ 	}
+ 
+diff --git a/src/vs/base/browser/domStylesheets.ts b/src/vs/base/browser/domStylesheets.ts
+index 3da2ba1f9dd..e6434f61cfa 100644
+--- a/src/vs/base/browser/domStylesheets.ts
++++ b/src/vs/base/browser/domStylesheets.ts
+@@ -6,7 +6,7 @@
+ import { DisposableStore, toDisposable, IDisposable, Disposable } from '../common/lifecycle.js';
+ import { autorun, IObservable } from '../common/observable.js';
+ import { isFirefox } from './browser.js';
+-import { getWindows, sharedMutationObserver } from './dom.js';
++import { getWindows, isShadowRoot, sharedMutationObserver } from './dom.js';
+ import { mainWindow } from './window.js';
+ 
+ const globalStylesheets = new Map<HTMLStyleElement /* main stylesheet */, Set<HTMLStyleElement /* aux window clones that track the main stylesheet */>>();
+@@ -42,7 +42,7 @@ class WrappedStyleElement extends Disposable {
+ export let shadowRootContainer: ShadowRoot | undefined;
+ export function setContainerElement(container: HTMLElement) {
+ 	const root = container.getRootNode();
+-	if (root instanceof ShadowRoot) {
++	if (isShadowRoot(root)) {
+ 		shadowRootContainer = root;
+ 	}
+ }
+diff --git a/src/vs/base/browser/mouseEvent.ts b/src/vs/base/browser/mouseEvent.ts
+index 2f8c99ff327..f061a5f93ef 100644
+--- a/src/vs/base/browser/mouseEvent.ts
++++ b/src/vs/base/browser/mouseEvent.ts
+@@ -6,6 +6,7 @@
+ import * as browser from './browser.js';
+ import { IframeUtils } from './iframe.js';
+ import * as platform from '../common/platform.js';
++import { mainWindow } from './window.js';
+ 
+ export interface IMouseEvent {
+ 	readonly browserEvent: MouseEvent;
+@@ -145,7 +146,7 @@ export class StandardWheelEvent {
+ 		if (browser.isChrome) {
+ 			// Chrome version >= 123 contains the fix to factor devicePixelRatio into the wheel event.
+ 			// See https://chromium.googlesource.com/chromium/src.git/+/be51b448441ff0c9d1f17e0f25c4bf1ab3f11f61
+-			const chromeVersionMatch = navigator.userAgent.match(/Chrome\/(\d+)/);
++			const chromeVersionMatch = mainWindow.navigator.userAgent.match(/Chrome\/(\d+)/);
+ 			const chromeMajorVersion = chromeVersionMatch ? parseInt(chromeVersionMatch[1]) : 123;
+ 			shouldFactorDPR = chromeMajorVersion <= 122;
+ 		}
+diff --git a/src/vs/base/browser/touch.ts b/src/vs/base/browser/touch.ts
+index 8e857e292df..721cd5fd2d7 100644
+--- a/src/vs/base/browser/touch.ts
++++ b/src/vs/base/browser/touch.ts
+@@ -129,7 +129,7 @@ export class Gesture extends Disposable {
+ 	static isTouchDevice(): boolean {
+ 		// `'ontouchstart' in window` always evaluates to true with typescript's modern typings. This causes `window` to be
+ 		// `never` later in `window.navigator`. That's why we need the explicit `window as Window` cast
+-		return 'ontouchstart' in mainWindow || navigator.maxTouchPoints > 0;
++		return 'ontouchstart' in mainWindow || mainWindow.navigator.maxTouchPoints > 0;
+ 	}
+ 
+ 	/**
+diff --git a/src/vs/base/browser/ui/inputbox/inputBox.ts b/src/vs/base/browser/ui/inputbox/inputBox.ts
+index bdc8f7f689b..6abb8fe88d6 100644
+--- a/src/vs/base/browser/ui/inputbox/inputBox.ts
++++ b/src/vs/base/browser/ui/inputbox/inputBox.ts
+@@ -22,6 +22,7 @@ import { ScrollbarVisibility } from '../../../common/scrollable.js';
+ import './inputBox.css';
+ import * as nls from '../../../../nls.js';
+ import { MutableDisposable, type IDisposable } from '../../../common/lifecycle.js';
++import { mainWindow } from '../../window.js';
+ 
+ 
+ const $ = dom.$;
+@@ -703,7 +704,7 @@ export class HistoryInputBox extends InputBox implements IHistoryNavigationWidge
+ 
+ 		// Spot the change to the textarea class attribute which occurs when it changes between non-empty and empty,
+ 		// and add the history suffix to the placeholder if not yet present
+-		this.observer = new MutationObserver((mutationList: MutationRecord[], observer: MutationObserver) => {
++		this.observer = new mainWindow.MutationObserver((mutationList: MutationRecord[], observer: MutationObserver) => {
+ 			mutationList.forEach((mutation: MutationRecord) => {
+ 				if (!mutation.target.textContent) {
+ 					addSuffix();
+diff --git a/src/vs/base/browser/ui/toolbar/toolbar.ts b/src/vs/base/browser/ui/toolbar/toolbar.ts
+index 21696911bd1..270f54836c9 100644
+--- a/src/vs/base/browser/ui/toolbar/toolbar.ts
++++ b/src/vs/base/browser/ui/toolbar/toolbar.ts
+@@ -12,11 +12,12 @@ import { Codicon } from '../../../common/codicons.js';
+ import { ThemeIcon } from '../../../common/themables.js';
+ import { EventMultiplexer } from '../../../common/event.js';
+ import { ResolvedKeybinding } from '../../../common/keybindings.js';
+-import { Disposable, DisposableStore, toDisposable } from '../../../common/lifecycle.js';
++import { Disposable, DisposableStore } from '../../../common/lifecycle.js';
+ import './toolbar.css';
+ import * as nls from '../../../../nls.js';
+ import { IHoverDelegate } from '../hover/hoverDelegate.js';
+ import { createInstantHoverDelegate } from '../hover/hoverDelegateFactory.js';
++import { DisposableResizeObserver } from '../../dom.js';
+ 
+ const ACTION_MIN_WIDTH = 20; /* 20px codicon */
+ const ACTION_PADDING = 4; /* 4px padding */
+@@ -171,11 +172,10 @@ export class ToolBar extends Disposable {
+ 			this.element.classList.toggle('responsive-last', this.options.responsiveBehavior.kind === 'last');
+ 			this.element.style.setProperty(ACTION_MIN_WIDTH_VAR, `${this.actionMinWidth - ACTION_PADDING}px`);
+ 
+-			const observer = new ResizeObserver(() => {
++			const observer = this._store.add(new DisposableResizeObserver(() => {
+ 				this.updateActions(this.element.getBoundingClientRect().width);
+-			});
++			}));
+ 			observer.observe(this.element);
+-			this._store.add(toDisposable(() => observer.disconnect()));
+ 		}
+ 	}
+ 
+diff --git a/src/vs/base/browser/window.ts b/src/vs/base/browser/window.ts
+index ab920e18349..ab318ad411d 100644
+--- a/src/vs/base/browser/window.ts
++++ b/src/vs/base/browser/window.ts
+@@ -17,8 +17,12 @@ export function ensureCodeWindow(targetWindow: Window, fallbackWindowId: number)
+ 	}
+ }
+ 
++declare global {
++	var vscodeWindow: Window | undefined;
++}
++
+ // eslint-disable-next-line no-restricted-globals
+-export const mainWindow = window as CodeWindow;
++export const mainWindow = (window.vscodeWindow ?? window) as CodeWindow;
+ 
+ export function isAuxiliaryWindow(obj: Window): obj is CodeWindow {
+ 	if (obj === mainWindow) {
+diff --git a/src/vs/editor/browser/config/elementSizeObserver.ts b/src/vs/editor/browser/config/elementSizeObserver.ts
+index c1f886e2c35..8c5485350c5 100644
+--- a/src/vs/editor/browser/config/elementSizeObserver.ts
++++ b/src/vs/editor/browser/config/elementSizeObserver.ts
+@@ -6,7 +6,7 @@
+ import { Disposable } from '../../../base/common/lifecycle.js';
+ import { IDimension } from '../../common/core/2d/dimension.js';
+ import { Emitter, Event } from '../../../base/common/event.js';
+-import { getWindow, scheduleAtNextAnimationFrame } from '../../../base/browser/dom.js';
++import { DisposableResizeObserver, getWindow, scheduleAtNextAnimationFrame } from '../../../base/browser/dom.js';
+ 
+ export class ElementSizeObserver extends Disposable {
+ 
+@@ -16,7 +16,7 @@ export class ElementSizeObserver extends Disposable {
+ 	private readonly _referenceDomElement: HTMLElement | null;
+ 	private _width: number;
+ 	private _height: number;
+-	private _resizeObserver: ResizeObserver | null;
++	private _resizeObserver: DisposableResizeObserver | null;
+ 
+ 	constructor(referenceDomElement: HTMLElement | null, dimension: IDimension | undefined) {
+ 		super();
+@@ -27,11 +27,6 @@ export class ElementSizeObserver extends Disposable {
+ 		this.measureReferenceDomElement(false, dimension);
+ 	}
+ 
+-	public override dispose(): void {
+-		this.stopObserving();
+-		super.dispose();
+-	}
+-
+ 	public getWidth(): number {
+ 		return this._width;
+ 	}
+@@ -74,7 +69,7 @@ export class ElementSizeObserver extends Disposable {
+ 				}
+ 			};
+ 
+-			this._resizeObserver = new ResizeObserver((entries) => {
++			this._resizeObserver = this._register(new DisposableResizeObserver((entries) => {
+ 				if (entries && entries[0] && entries[0].contentRect) {
+ 					observedDimension = { width: entries[0].contentRect.width, height: entries[0].contentRect.height };
+ 				} else {
+@@ -82,14 +77,14 @@ export class ElementSizeObserver extends Disposable {
+ 				}
+ 				shouldObserve = true;
+ 				update();
+-			});
++			}));
+ 			this._resizeObserver.observe(this._referenceDomElement);
+ 		}
+ 	}
+ 
+ 	public stopObserving(): void {
+ 		if (this._resizeObserver) {
+-			this._resizeObserver.disconnect();
++			this._resizeObserver.dispose();
+ 			this._resizeObserver = null;
+ 		}
+ 	}
+diff --git a/src/vs/editor/browser/gpu/gpuDisposable.ts b/src/vs/editor/browser/gpu/gpuDisposable.ts
+index 875525be3ee..c19493b0f65 100644
+--- a/src/vs/editor/browser/gpu/gpuDisposable.ts
++++ b/src/vs/editor/browser/gpu/gpuDisposable.ts
+@@ -3,16 +3,17 @@
+  *  Licensed under the MIT License. See License.txt in the project root for license information.
+  *--------------------------------------------------------------------------------------------*/
+ 
++import { mainWindow } from '../../../base/browser/window.js';
+ import type { IReference } from '../../../base/common/lifecycle.js';
+ import { isFunction } from '../../../base/common/types.js';
+ 
+ export namespace GPULifecycle {
+ 	export async function requestDevice(fallback?: (message: string) => void): Promise<IReference<GPUDevice>> {
+ 		try {
+-			if (!navigator.gpu) {
++			if (!mainWindow.navigator.gpu) {
+ 				throw new Error('This browser does not support WebGPU');
+ 			}
+-			const adapter = (await navigator.gpu.requestAdapter())!;
++			const adapter = (await mainWindow.navigator.gpu.requestAdapter())!;
+ 			if (!adapter) {
+ 				throw new Error('This browser supports WebGPU but it appears to be disabled');
+ 			}
+diff --git a/src/vs/editor/browser/gpu/rectangleRenderer.ts b/src/vs/editor/browser/gpu/rectangleRenderer.ts
+index 09e68a80be8..789609790c9 100644
+--- a/src/vs/editor/browser/gpu/rectangleRenderer.ts
++++ b/src/vs/editor/browser/gpu/rectangleRenderer.ts
+@@ -4,6 +4,7 @@
+  *--------------------------------------------------------------------------------------------*/
+ 
+ import { getActiveWindow } from '../../../base/browser/dom.js';
++import { mainWindow } from '../../../base/browser/window.js';
+ import { Event } from '../../../base/common/event.js';
+ import { IReference, MutableDisposable } from '../../../base/common/lifecycle.js';
+ import type { IObservable } from '../../../base/common/observable.js';
+@@ -80,7 +81,7 @@ export class RectangleRenderer extends ViewEventHandler {
+ 			return;
+ 		}
+ 
+-		const presentationFormat = navigator.gpu.getPreferredCanvasFormat();
++		const presentationFormat = mainWindow.navigator.gpu.getPreferredCanvasFormat();
+ 		this._ctx.configure({
+ 			device: this._device,
+ 			format: presentationFormat,
+diff --git a/src/vs/editor/browser/observableCodeEditor.ts b/src/vs/editor/browser/observableCodeEditor.ts
+index 4c415ec53dd..c7f48fa8569 100644
+--- a/src/vs/editor/browser/observableCodeEditor.ts
++++ b/src/vs/editor/browser/observableCodeEditor.ts
+@@ -16,6 +16,7 @@ import { IModelDeltaDecoration, ITextModel } from '../common/model.js';
+ import { IModelContentChangedEvent } from '../common/textModelEvents.js';
+ import { ContentWidgetPositionPreference, ICodeEditor, IContentWidget, IContentWidgetPosition, IEditorMouseEvent, IOverlayWidget, IOverlayWidgetPosition, IPasteEvent } from './editorBrowser.js';
+ import { Point } from '../common/core/2d/point.js';
++import { DisposableResizeObserver } from '../../base/browser/dom.js';
+ 
+ /**
+  * Returns a facade for the code editor that provides observables for various states/events.
+@@ -512,7 +513,7 @@ export class ObservableCodeEditor extends Disposable {
+ 		{ owner: this, getTransaction: () => this._currentTransaction },
+ 		e => {
+ 			const container = this.editor.getContainerDomNode();
+-			const resizeObserver = new ResizeObserver(() => {
++			const resizeObserver = new DisposableResizeObserver(() => {
+ 				// If we previously saw a 0 width, the editor was likely hidden.
+ 				// Now that it resized (became visible), flush the cached widths.
+ 				if (this._sawZeroLineWidth) {
+@@ -522,7 +523,7 @@ export class ObservableCodeEditor extends Disposable {
+ 				e(undefined);
+ 			});
+ 			resizeObserver.observe(container);
+-			return { dispose: () => resizeObserver.disconnect() };
++			return resizeObserver;
+ 		},
+ 		() => ({}) // Return new object each time to ensure change detection
+ 	);
+diff --git a/src/vs/editor/browser/viewParts/viewLinesGpu/viewLinesGpu.ts b/src/vs/editor/browser/viewParts/viewLinesGpu/viewLinesGpu.ts
+index 53d6115a495..bf76e9bccb1 100644
+--- a/src/vs/editor/browser/viewParts/viewLinesGpu/viewLinesGpu.ts
++++ b/src/vs/editor/browser/viewParts/viewLinesGpu/viewLinesGpu.ts
+@@ -30,6 +30,7 @@ import { FullFileRenderStrategy } from '../../gpu/renderStrategy/fullFileRenderS
+ import { MutableDisposable } from '../../../../base/common/lifecycle.js';
+ import type { ViewLineRenderingData } from '../../../common/viewModel.js';
+ import { GlyphRasterizer } from '../../gpu/raster/glyphRasterizer.js';
++import { mainWindow } from '../../../../base/browser/window.js';
+ 
+ const enum GlyphStorageBufferInfo {
+ 	FloatsPerEntry = 2 + 2 + 2,
+@@ -120,7 +121,7 @@ export class ViewLinesGpu extends ViewPart implements IViewLines {
+ 			this._renderStrategy.value!.reset();
+ 		}));
+ 
+-		const presentationFormat = navigator.gpu.getPreferredCanvasFormat();
++		const presentationFormat = mainWindow.navigator.gpu.getPreferredCanvasFormat();
+ 		this._viewGpuContext.ctx.configure({
+ 			device: this._device,
+ 			format: presentationFormat,
+diff --git a/src/vs/editor/browser/widget/diffEditor/utils/editorGutter.ts b/src/vs/editor/browser/widget/diffEditor/utils/editorGutter.ts
+index 152c3d854a8..c0f69ab945d 100644
+--- a/src/vs/editor/browser/widget/diffEditor/utils/editorGutter.ts
++++ b/src/vs/editor/browser/widget/diffEditor/utils/editorGutter.ts
+@@ -3,8 +3,8 @@
+  *  Licensed under the MIT License. See License.txt in the project root for license information.
+  *--------------------------------------------------------------------------------------------*/
+ 
+-import { h, reset } from '../../../../../base/browser/dom.js';
+-import { Disposable, DisposableMap, IDisposable, toDisposable } from '../../../../../base/common/lifecycle.js';
++import { DisposableResizeObserver, h, reset } from '../../../../../base/browser/dom.js';
++import { Disposable, DisposableMap, IDisposable } from '../../../../../base/common/lifecycle.js';
+ import { autorun, IObservable, IReader, ISettableObservable, observableFromEvent, observableSignal, observableSignalFromEvent, observableValue, transaction } from '../../../../../base/common/observable.js';
+ import { CodeEditorWidget } from '../../codeEditor/codeEditorWidget.js';
+ import { LineRange } from '../../../../common/core/ranges/lineRange.js';
+@@ -44,14 +44,13 @@ export class EditorGutter<T extends IGutterItemInfo = IGutterItemInfo> extends D
+ 				.root
+ 		);
+ 
+-		const o = new ResizeObserver(() => {
++		const o = this._register(new DisposableResizeObserver(() => {
+ 			transaction(tx => {
+ 				/** @description ResizeObserver: size changed */
+ 				this.domNodeSizeChanged.trigger(tx);
+ 			});
+-		});
++		}));
+ 		o.observe(this._domNode);
+-		this._register(toDisposable(() => o.disconnect()));
+ 
+ 		this._register(autorun(reader => {
+ 			/** @description update scroll decoration */
+diff --git a/src/vs/editor/contrib/clipboard/browser/clipboard.ts b/src/vs/editor/contrib/clipboard/browser/clipboard.ts
+index 376399368a6..82d0d52c13a 100644
+--- a/src/vs/editor/contrib/clipboard/browser/clipboard.ts
++++ b/src/vs/editor/contrib/clipboard/browser/clipboard.ts
+@@ -5,6 +5,7 @@
+ 
+ import * as browser from '../../../../base/browser/browser.js';
+ import { getActiveDocument, getActiveWindow } from '../../../../base/browser/dom.js';
++import { mainWindow } from '../../../../base/browser/window.js';
+ import { KeyCode, KeyMod } from '../../../../base/common/keyCodes.js';
+ import * as platform from '../../../../base/common/platform.js';
+ import * as nls from '../../../../nls.js';
+@@ -31,7 +32,7 @@ const supportsCopy = (platform.isNative || document.queryCommandSupported('copy'
+ // Firefox only supports navigator.clipboard.readText() in browser extensions.
+ // See https://developer.mozilla.org/en-US/docs/Web/API/Clipboard/readText#Browser_compatibility
+ // When loading over http, navigator.clipboard can be undefined. See https://github.com/microsoft/monaco-editor/issues/2313
+-const supportsPaste = (typeof navigator.clipboard === 'undefined' || browser.isFirefox) ? document.queryCommandSupported('paste') : true;
++const supportsPaste = (typeof mainWindow.navigator.clipboard === 'undefined' || browser.isFirefox) ? document.queryCommandSupported('paste') : true;
+ 
+ function registerCommand<T extends Command>(command: T): T {
+ 	command.register();
+diff --git a/src/vs/editor/contrib/inlineCompletions/browser/view/inlineEdits/inlineEditsViews/debugVisualization.ts b/src/vs/editor/contrib/inlineCompletions/browser/view/inlineEdits/inlineEditsViews/debugVisualization.ts
+index a11ab53bb4d..c12d5b3a82f 100644
+--- a/src/vs/editor/contrib/inlineCompletions/browser/view/inlineEdits/inlineEditsViews/debugVisualization.ts
++++ b/src/vs/editor/contrib/inlineCompletions/browser/view/inlineEdits/inlineEditsViews/debugVisualization.ts
+@@ -3,6 +3,7 @@
+  *  Licensed under the MIT License. See License.txt in the project root for license information.
+  *--------------------------------------------------------------------------------------------*/
+ 
++import { mainWindow } from '../../../../../../../base/browser/window.js';
+ import { IDisposable } from '../../../../../../../base/common/lifecycle.js';
+ import { IReader, derived } from '../../../../../../../base/common/observable.js';
+ import { Rect } from '../../../../../../common/core/2d/rect.js';
+@@ -187,7 +188,7 @@ class HtmlHorizontalOffsetRangeVisualizer implements IVisualizationEffect {
+ 		document.body.appendChild(container);
+ 		updatePosition();
+ 
+-		const observer = new ResizeObserver(updatePosition);
++		const observer = new mainWindow.ResizeObserver(updatePosition);
+ 		observer.observe(this._elem);
+ 
+ 		return {
+@@ -238,7 +239,7 @@ class HtmlRectVisualizer implements IVisualizationEffect {
+ 		document.body.appendChild(div);
+ 		updatePosition();
+ 
+-		const observer = new ResizeObserver(updatePosition);
++		const observer = new mainWindow.ResizeObserver(updatePosition);
+ 		observer.observe(this._elem);
+ 
+ 		return {
+diff --git a/src/vs/editor/contrib/inlineCompletions/browser/view/inlineEdits/utils/utils.ts b/src/vs/editor/contrib/inlineCompletions/browser/view/inlineEdits/utils/utils.ts
+index aa935f23b64..bd0306fd65f 100644
+--- a/src/vs/editor/contrib/inlineCompletions/browser/view/inlineEdits/utils/utils.ts
++++ b/src/vs/editor/contrib/inlineCompletions/browser/view/inlineEdits/utils/utils.ts
+@@ -3,11 +3,11 @@
+  *  Licensed under the MIT License. See License.txt in the project root for license information.
+  *--------------------------------------------------------------------------------------------*/
+ 
+-import { getDomNodePagePosition, h } from '../../../../../../../base/browser/dom.js';
++import { DisposableResizeObserver, getDomNodePagePosition, h } from '../../../../../../../base/browser/dom.js';
+ import { KeybindingLabel, unthemedKeybindingLabelOptions } from '../../../../../../../base/browser/ui/keybindingLabel/keybindingLabel.js';
+ import { numberComparator } from '../../../../../../../base/common/arrays.js';
+ import { findFirstMin } from '../../../../../../../base/common/arraysFind.js';
+-import { DisposableStore, toDisposable } from '../../../../../../../base/common/lifecycle.js';
++import { DisposableStore } from '../../../../../../../base/common/lifecycle.js';
+ import { DebugLocation, derived, derivedObservableWithCache, derivedOpts, IObservable, IReader, observableSignalFromEvent, observableValue, transaction } from '../../../../../../../base/common/observable.js';
+ import { OS } from '../../../../../../../base/common/platform.js';
+ import { splitLines } from '../../../../../../../base/common/strings.js';
+@@ -394,18 +394,16 @@ export function observeElementPosition(element: HTMLElement, store: DisposableSt
+ 	const top = observableValue<number>('top', topLeft.top);
+ 	const left = observableValue<number>('left', topLeft.left);
+ 
+-	const resizeObserver = new ResizeObserver(() => {
++	const resizeObserver = store.add(new DisposableResizeObserver(() => {
+ 		transaction(tx => {
+ 			const topLeft = getDomNodePagePosition(element);
+ 			top.set(topLeft.top, tx);
+ 			left.set(topLeft.left, tx);
+ 		});
+-	});
++	}));
+ 
+ 	resizeObserver.observe(element);
+ 
+-	store.add(toDisposable(() => resizeObserver.disconnect()));
+-
+ 	return {
+ 		top,
+ 		left
+diff --git a/src/vs/platform/clipboard/browser/clipboardService.ts b/src/vs/platform/clipboard/browser/clipboardService.ts
+index 358aa682cda..b41a1f1346b 100644
+--- a/src/vs/platform/clipboard/browser/clipboardService.ts
++++ b/src/vs/platform/clipboard/browser/clipboardService.ts
+@@ -52,7 +52,7 @@ export class BrowserClipboardService extends Disposable implements IClipboardSer
+ 
+ 	async readImage(): Promise<Uint8Array> {
+ 		try {
+-			const clipboardItems = await navigator.clipboard.read();
++			const clipboardItems = await mainWindow.navigator.clipboard.read();
+ 			const clipboardItem = clipboardItems[0];
+ 
+ 			const supportedImageTypes = ['image/png', 'image/jpeg', 'image/gif', 'image/tiff', 'image/bmp'];
+diff --git a/src/vs/platform/remote/browser/browserSocketFactory.ts b/src/vs/platform/remote/browser/browserSocketFactory.ts
+index eafeef861a1..8859ceacf87 100644
+--- a/src/vs/platform/remote/browser/browserSocketFactory.ts
++++ b/src/vs/platform/remote/browser/browserSocketFactory.ts
+@@ -156,7 +156,7 @@ class BrowserWebSocket extends Disposable implements IWebSocket {
+ 			this._isClosed = true;
+ 
+ 			if (pendingErrorEvent) {
+-				if (!navigator.onLine) {
++				if (!mainWindow.navigator.onLine) {
+ 					// The browser is offline => this is a temporary error which might resolve itself
+ 					sendErrorNow(new RemoteAuthorityResolverError('Browser is offline', RemoteAuthorityResolverErrorCode.TemporarilyNotAvailable, e));
+ 				} else {
+diff --git a/src/vs/workbench/browser/parts/dialogs/dialog.ts b/src/vs/workbench/browser/parts/dialogs/dialog.ts
+index d2f18acdb50..170485fffda 100644
+--- a/src/vs/workbench/browser/parts/dialogs/dialog.ts
++++ b/src/vs/workbench/browser/parts/dialogs/dialog.ts
+@@ -14,6 +14,7 @@ import { ResultKind } from '../../../../platform/keybinding/common/keybindingRes
+ import { ILayoutService } from '../../../../platform/layout/browser/layoutService.js';
+ import { IProductService } from '../../../../platform/product/common/productService.js';
+ import { defaultButtonStyles, defaultCheckboxStyles, defaultInputBoxStyles, defaultDialogStyles } from '../../../../platform/theme/browser/defaultStyles.js';
++import { mainWindow } from '../../../../base/browser/window.js';
+ 
+ const defaultDialogAllowableCommands = new Set([
+ 	'workbench.action.quit',
+@@ -52,7 +53,7 @@ export function createBrowserAboutDialogDetails(productService: IProductService)
+ 			productService.version || 'Unknown',
+ 			productService.commit || 'Unknown',
+ 			productService.date ? `${productService.date}${useAgo ? ' (' + fromNow(new Date(productService.date), true) + ')' : ''}` : 'Unknown',
+-			navigator.userAgent
++			mainWindow.navigator.userAgent
+ 		);
+ 	};
+ 
+diff --git a/src/vs/workbench/browser/window.ts b/src/vs/workbench/browser/window.ts
+index bff3f2cf1b0..3a62a16bdf2 100644
+--- a/src/vs/workbench/browser/window.ts
++++ b/src/vs/workbench/browser/window.ts
+@@ -114,13 +114,22 @@ export abstract class BaseWindow extends Disposable {
+ 		// to throttle timeouts in minimized windows, so with this we can ensure the
+ 		// timeout is scheduled without being throttled (unless all windows are minimized).
+ 
+-		const originalSetTimeout = targetWindow.setTimeout;
+-		Object.defineProperty(targetWindow, 'vscodeOriginalSetTimeout', { get: () => originalSetTimeout });
++		function getOverridenWindow(targetWindow: Window) {
++			if (targetWindow === mainWindow) {
++				// If running inside an iframe, do not override the `setTimeout` function on the main frame
++				// eslint-disable-next-line no-restricted-globals
++				return window;
++			}
++			return targetWindow;
++		}
++
++		const originalSetTimeout = getOverridenWindow(targetWindow).setTimeout;
++		Object.defineProperty(getOverridenWindow(targetWindow), 'vscodeOriginalSetTimeout', { get: () => originalSetTimeout });
+ 
+-		const originalClearTimeout = targetWindow.clearTimeout;
+-		Object.defineProperty(targetWindow, 'vscodeOriginalClearTimeout', { get: () => originalClearTimeout });
++		const originalClearTimeout = getOverridenWindow(targetWindow).clearTimeout;
++		Object.defineProperty(getOverridenWindow(targetWindow), 'vscodeOriginalClearTimeout', { get: () => originalClearTimeout });
+ 
+-		targetWindow.setTimeout = function (this: unknown, handler: TimerHandler, timeout = 0, ...args: unknown[]): number {
++		getOverridenWindow(targetWindow).setTimeout = function (this: unknown, handler: TimerHandler, timeout = 0, ...args: unknown[]): number {
+ 			if (dom.getWindowsCount() === 1 || typeof handler === 'string' || timeout === 0 /* immediates are never throttled */) {
+ 				return originalSetTimeout.apply(this, [handler, timeout, ...args]);
+ 			}
+@@ -143,7 +152,7 @@ export abstract class BaseWindow extends Disposable {
+ 				// this can happen for timeouts on unfocused windows
+ 				let didClear = false;
+ 
+-				const handle = (window as { vscodeOriginalSetTimeout?: typeof window.setTimeout }).vscodeOriginalSetTimeout?.apply(this, [(...args: unknown[]) => {
++				const handle = (getOverridenWindow(targetWindow) as { vscodeOriginalSetTimeout?: typeof window.setTimeout }).vscodeOriginalSetTimeout?.apply(this, [(...args: unknown[]) => {
+ 					if (didClear) {
+ 						return;
+ 					}
+@@ -152,7 +161,7 @@ export abstract class BaseWindow extends Disposable {
+ 
+ 				const timeoutDisposable = toDisposable(() => {
+ 					didClear = true;
+-					(window as { vscodeOriginalClearTimeout?: typeof window.clearTimeout }).vscodeOriginalClearTimeout?.apply(this, [handle]);
++					(getOverridenWindow(targetWindow) as { vscodeOriginalClearTimeout?: typeof window.clearTimeout }).vscodeOriginalClearTimeout?.apply(this, [handle]);
+ 					timeoutDisposables.delete(timeoutDisposable);
+ 				});
+ 
+@@ -163,7 +172,7 @@ export abstract class BaseWindow extends Disposable {
+ 			return timeoutHandle;
+ 		};
+ 
+-		targetWindow.clearTimeout = function (this: unknown, timeoutHandle: number | undefined): void {
++		getOverridenWindow(targetWindow).clearTimeout = function (this: unknown, timeoutHandle: number | undefined): void {
+ 			const timeoutDisposables = typeof timeoutHandle === 'number' ? BaseWindow.TIMEOUT_DISPOSABLES.get(timeoutHandle) : undefined;
+ 			if (timeoutDisposables) {
+ 				dispose(timeoutDisposables);
+diff --git a/src/vs/workbench/contrib/chat/browser/widget/chatContentParts/chatMarkdownContentPart.ts b/src/vs/workbench/contrib/chat/browser/widget/chatContentParts/chatMarkdownContentPart.ts
+index 4255c82e1d1..0664da44aad 100644
+--- a/src/vs/workbench/contrib/chat/browser/widget/chatContentParts/chatMarkdownContentPart.ts
++++ b/src/vs/workbench/contrib/chat/browser/widget/chatContentParts/chatMarkdownContentPart.ts
+@@ -14,7 +14,7 @@ import { coalesce } from '../../../../../../base/common/arrays.js';
+ import { findLast } from '../../../../../../base/common/arraysFind.js';
+ import { Codicon } from '../../../../../../base/common/codicons.js';
+ import { Lazy } from '../../../../../../base/common/lazy.js';
+-import { Disposable, DisposableStore, IDisposable, MutableDisposable, toDisposable } from '../../../../../../base/common/lifecycle.js';
++import { Disposable, DisposableStore, IDisposable, MutableDisposable } from '../../../../../../base/common/lifecycle.js';
+ import { Emitter, Event } from '../../../../../../base/common/event.js';
+ import { autorun, autorunSelfDisposable, derived } from '../../../../../../base/common/observable.js';
+ import { ScrollbarVisibility } from '../../../../../../base/common/scrollable.js';
+@@ -62,6 +62,7 @@ import { IDisposableReference } from './chatCollections.js';
+ import { EditorPool } from './chatContentCodePools.js';
+ import { IChatContentPart, IChatContentPartRenderContext } from './chatContentParts.js';
+ import { ChatExtensionsContentPart } from './chatExtensionsContentPart.js';
++import { DisposableResizeObserver } from '../../../../../../base/browser/dom.js';
+ import './media/chatMarkdownPart.css';
+ 
+ const $ = dom.$;
+@@ -350,9 +351,8 @@ export class ChatMarkdownContentPart extends Disposable implements IChatContentP
+ 			store.add(markdownDecorationsRenderer.walkTreeAndAnnotateReferenceLinks(markdown, result.element));
+ 
+ 			const layoutParticipants = new Lazy(() => {
+-				const observer = new ResizeObserver(() => this.mathLayoutParticipants.forEach(layout => layout()));
++				const observer = store.add(new DisposableResizeObserver(() => this.mathLayoutParticipants.forEach(layout => layout())));
+ 				observer.observe(this.domNode);
+-				store.add(toDisposable(() => observer.disconnect()));
+ 				return this.mathLayoutParticipants;
+ 			});
+ 
+diff --git a/src/vs/workbench/contrib/chat/browser/widget/chatContentParts/chatThinkingContentPart.ts b/src/vs/workbench/contrib/chat/browser/widget/chatContentParts/chatThinkingContentPart.ts
+index b47f7312a4c..78ecce0e898 100644
+--- a/src/vs/workbench/contrib/chat/browser/widget/chatContentParts/chatThinkingContentPart.ts
++++ b/src/vs/workbench/contrib/chat/browser/widget/chatContentParts/chatThinkingContentPart.ts
+@@ -34,6 +34,7 @@ import { ChatMessageRole, ILanguageModelsService } from '../../../common/languag
+ import { ExtensionIdentifier } from '../../../../../../platform/extensions/common/extensions.js';
+ import './media/chatThinkingContent.css';
+ import { IHoverService } from '../../../../../../platform/hover/browser/hover.js';
++import { mainWindow } from '../../../../../../base/browser/window.js';
+ 
+ 
+ function extractTextFromPart(content: IChatThinkingPart): string {
+@@ -405,7 +406,7 @@ export class ChatThinkingContentPart extends ChatCollapsibleContentPart implemen
+ 			this._register(this.scrollableElement.onScroll(e => this.handleScroll(e.scrollTop)));
+ 
+ 			// check for content changes to update scroll dimensions
+-			const mutationObserver = new MutationObserver(() => {
++			const mutationObserver = new mainWindow.MutationObserver(() => {
+ 				if (!this.streamingCompleted) {
+ 					this.syncDimensionsAndScheduleScroll();
+ 				}
+diff --git a/src/vs/workbench/contrib/chat/browser/widget/chatContentParts/toolInvocationParts/chatTerminalToolProgressPart.ts b/src/vs/workbench/contrib/chat/browser/widget/chatContentParts/toolInvocationParts/chatTerminalToolProgressPart.ts
+index d864ae17d5a..b52213ed251 100644
+--- a/src/vs/workbench/contrib/chat/browser/widget/chatContentParts/toolInvocationParts/chatTerminalToolProgressPart.ts
++++ b/src/vs/workbench/contrib/chat/browser/widget/chatContentParts/toolInvocationParts/chatTerminalToolProgressPart.ts
+@@ -934,9 +934,8 @@ class ChatTerminalToolOutputSection extends Disposable {
+ 		this._register(dom.addDisposableListener(this.domNode, dom.EventType.FOCUS_IN, () => this._onDidFocusEmitter.fire()));
+ 		this._register(dom.addDisposableListener(this.domNode, dom.EventType.FOCUS_OUT, event => this._onDidBlurEmitter.fire(event)));
+ 
+-		const resizeObserver = new ResizeObserver(() => this._handleResize());
++		const resizeObserver = this._register(new dom.DisposableResizeObserver(() => this._handleResize()));
+ 		resizeObserver.observe(this.domNode);
+-		this._register(toDisposable(() => resizeObserver.disconnect()));
+ 
+ 		this._applyBackgroundColor();
+ 		this._register(this._themeService.onDidColorThemeChange(() => this._applyBackgroundColor()));
+diff --git a/src/vs/workbench/contrib/comments/browser/commentThreadBody.ts b/src/vs/workbench/contrib/comments/browser/commentThreadBody.ts
+index 7f3deff2eda..d6be9167b3b 100644
+--- a/src/vs/workbench/contrib/comments/browser/commentThreadBody.ts
++++ b/src/vs/workbench/contrib/comments/browser/commentThreadBody.ts
+@@ -19,6 +19,7 @@ import { IMarkdownRendererExtraOptions } from '../../../../platform/markdown/bro
+ import { ICellRange } from '../../notebook/common/notebookRange.js';
+ import { IRange } from '../../../../editor/common/core/range.js';
+ import { LayoutableEditor } from './simpleCommentEditor.js';
++import { mainWindow } from '../../../../base/browser/window.js';
+ 
+ export class CommentThreadBody<T extends IRange | ICellRange = IRange> extends Disposable {
+ 	private _commentsElement!: HTMLElement;
+@@ -113,7 +114,7 @@ export class CommentThreadBody<T extends IRange | ICellRange = IRange> extends D
+ 			}
+ 		}
+ 
+-		this._resizeObserver = new MutationObserver(this._refresh.bind(this));
++		this._resizeObserver = new mainWindow.MutationObserver(this._refresh.bind(this));
+ 
+ 		this._resizeObserver.observe(this.container, {
+ 			attributes: true,
+diff --git a/src/vs/workbench/contrib/languageStatus/browser/languageStatus.ts b/src/vs/workbench/contrib/languageStatus/browser/languageStatus.ts
+index 386bde3c067..3e7063fe231 100644
+--- a/src/vs/workbench/contrib/languageStatus/browser/languageStatus.ts
++++ b/src/vs/workbench/contrib/languageStatus/browser/languageStatus.ts
+@@ -33,6 +33,7 @@ import { IEditorGroupsService, IEditorPart } from '../../../services/editor/comm
+ import { IHoverService, nativeHoverDelegate } from '../../../../platform/hover/browser/hover.js';
+ import { Event } from '../../../../base/common/event.js';
+ import { joinStrings } from '../../../../base/common/strings.js';
++import { mainWindow } from '../../../../base/browser/window.js';
+ 
+ class LanguageStatusViewModel {
+ 
+@@ -259,7 +260,7 @@ class LanguageStatus {
+ 				// eslint-disable-next-line no-restricted-syntax
+ 				const hoverTarget = targetWindow.document.querySelector('.monaco-workbench .context-view');
+ 				if (dom.isHTMLElement(hoverTarget)) {
+-					const observer = new MutationObserver(() => {
++					const observer = new mainWindow.MutationObserver(() => {
+ 						if (targetWindow.document.contains(this._combinedEntryTooltip)) {
+ 							this._interactionCounter.increment();
+ 							observer.disconnect();
+diff --git a/src/vs/workbench/contrib/mergeEditor/browser/view/editorGutter.ts b/src/vs/workbench/contrib/mergeEditor/browser/view/editorGutter.ts
+index 7f92d3f354c..575cc123246 100644
+--- a/src/vs/workbench/contrib/mergeEditor/browser/view/editorGutter.ts
++++ b/src/vs/workbench/contrib/mergeEditor/browser/view/editorGutter.ts
+@@ -3,8 +3,8 @@
+  *  Licensed under the MIT License. See License.txt in the project root for license information.
+  *--------------------------------------------------------------------------------------------*/
+ 
+-import { h, reset } from '../../../../../base/browser/dom.js';
+-import { Disposable, IDisposable, toDisposable } from '../../../../../base/common/lifecycle.js';
++import { DisposableResizeObserver, h, reset } from '../../../../../base/browser/dom.js';
++import { Disposable, IDisposable } from '../../../../../base/common/lifecycle.js';
+ import { autorun, IReader, observableFromEvent, observableSignal, observableSignalFromEvent, transaction } from '../../../../../base/common/observable.js';
+ import { CodeEditorWidget } from '../../../../../editor/browser/widget/codeEditor/codeEditorWidget.js';
+ import { MergeEditorLineRange } from '../model/lineRange.js';
+@@ -43,14 +43,13 @@ export class EditorGutter<T extends IGutterItemInfo = IGutterItemInfo> extends D
+ 				.root
+ 		);
+ 
+-		const o = new ResizeObserver(() => {
++		const o = this._register(new DisposableResizeObserver(() => {
+ 			transaction(tx => {
+ 				/** @description ResizeObserver: size changed */
+ 				this.domNodeSizeChanged.trigger(tx);
+ 			});
+-		});
++		}));
+ 		o.observe(this._domNode);
+-		this._register(toDisposable(() => o.disconnect()));
+ 
+ 		this._register(autorun(reader => {
+ 			/** @description update scroll decoration */
+diff --git a/src/vs/workbench/contrib/performance/browser/perfviewEditor.ts b/src/vs/workbench/contrib/performance/browser/perfviewEditor.ts
+index b56d0efeeb9..cf0c8248890 100644
+--- a/src/vs/workbench/contrib/performance/browser/perfviewEditor.ts
++++ b/src/vs/workbench/contrib/performance/browser/perfviewEditor.ts
+@@ -31,6 +31,7 @@ import { Registry } from '../../../../platform/registry/common/platform.js';
+ import { IWorkbenchContributionsRegistry, Extensions as WorkbenchExtensions, getWorkbenchContribution } from '../../../common/contributions.js';
+ import { ICustomEditorLabelService } from '../../../services/editor/common/customEditorLabelService.js';
+ import { IRemoteAgentService } from '../../../services/remote/common/remoteAgentService.js';
++import { mainWindow } from '../../../../base/browser/window.js';
+ 
+ export class PerfviewContrib {
+ 
+@@ -308,7 +309,7 @@ class PerfModelContentProvider implements ITextModelContentProvider {
+ 	}
+ 
+ 	private _addResourceTimingStats(md: MarkdownBuilder) {
+-		const stats = performance.getEntriesByType('resource').map(entry => {
++		const stats = mainWindow.performance.getEntriesByType('resource').map(entry => {
+ 			return [entry.name, entry.duration];
+ 		});
+ 		if (!stats.length) {
+diff --git a/src/vs/workbench/contrib/performance/browser/startupTimings.ts b/src/vs/workbench/contrib/performance/browser/startupTimings.ts
+index eb0a9ffbc42..b6a71a21ce4 100644
+--- a/src/vs/workbench/contrib/performance/browser/startupTimings.ts
++++ b/src/vs/workbench/contrib/performance/browser/startupTimings.ts
+@@ -19,6 +19,7 @@ import { ITimerService } from '../../../services/timer/browser/timerService.js';
+ import { IWorkbenchContribution } from '../../../common/contributions.js';
+ import { posix } from '../../../../base/common/path.js';
+ import { hash } from '../../../../base/common/hash.js';
++import { mainWindow } from '../../../../base/browser/window.js';
+ 
+ export abstract class StartupTimings {
+ 
+@@ -121,7 +122,7 @@ export class BrowserResourcePerformanceMarks {
+ 			name: { classification: 'SystemMetaData'; purpose: 'PerformanceAndHealth'; comment: 'Resource basename' };
+ 			duration: { classification: 'SystemMetaData'; purpose: 'PerformanceAndHealth'; comment: 'Resource duration' };
+ 		};
+-		for (const item of performance.getEntriesByType('resource')) {
++		for (const item of mainWindow.performance.getEntriesByType('resource')) {
+ 
+ 			try {
+ 				const url = new URL(item.name);
+diff --git a/src/vs/workbench/contrib/remote/browser/remoteIndicator.ts b/src/vs/workbench/contrib/remote/browser/remoteIndicator.ts
+index 04ee77ccc8d..9caeb1dfb81 100644
+--- a/src/vs/workbench/contrib/remote/browser/remoteIndicator.ts
++++ b/src/vs/workbench/contrib/remote/browser/remoteIndicator.ts
+@@ -300,7 +300,7 @@ export class RemoteStatusIndicator extends Disposable implements IWorkbenchContr
+ 			this._register(Event.any(
+ 				this._register(new DomEmitter(mainWindow, 'online')).event,
+ 				this._register(new DomEmitter(mainWindow, 'offline')).event
+-			)(() => this.setNetworkState(navigator.onLine ? 'online' : 'offline')));
++			)(() => this.setNetworkState(mainWindow.navigator.onLine ? 'online' : 'offline')));
+ 		}
+ 
+ 		this._register(this.extensionService.onDidChangeExtensions(async (result) => {
+diff --git a/src/vs/workbench/contrib/terminalContrib/chat/browser/terminalChatWidget.ts b/src/vs/workbench/contrib/terminalContrib/chat/browser/terminalChatWidget.ts
+index 2be6c5d9e96..706091084ff 100644
+--- a/src/vs/workbench/contrib/terminalContrib/chat/browser/terminalChatWidget.ts
++++ b/src/vs/workbench/contrib/terminalContrib/chat/browser/terminalChatWidget.ts
+@@ -4,7 +4,7 @@
+  *--------------------------------------------------------------------------------------------*/
+ 
+ import type { Terminal as RawXtermTerminal } from '@xterm/xterm';
+-import { Dimension, getActiveWindow, IFocusTracker, trackFocus } from '../../../../../base/browser/dom.js';
++import { Dimension, DisposableResizeObserver, getActiveWindow, IFocusTracker, trackFocus } from '../../../../../base/browser/dom.js';
+ import { CancelablePromise, createCancelablePromise, DeferredPromise } from '../../../../../base/common/async.js';
+ import { CancellationTokenSource } from '../../../../../base/common/cancellation.js';
+ import { Emitter, Event } from '../../../../../base/common/event.js';
+@@ -155,9 +155,8 @@ export class TerminalChatWidget extends Disposable {
+ 			Event.debounce(this._xterm.raw.onCursorMove, () => void 0, MicrotaskDelay),
+ 		)(() => this._relayout()));
+ 
+-		const observer = new ResizeObserver(() => this._relayout());
++		const observer = this._register(new DisposableResizeObserver(() => this._relayout()));
+ 		observer.observe(this._terminalElement);
+-		this._register(toDisposable(() => observer.disconnect()));
+ 
+ 		this._resetPlaceholder();
+ 		this._container.appendChild(this._inlineChatWidget.domNode);
+diff --git a/src/vs/workbench/contrib/webviewView/browser/webviewViewPane.ts b/src/vs/workbench/contrib/webviewView/browser/webviewViewPane.ts
+index efa5a1b2b74..486ea0a9568 100644
+--- a/src/vs/workbench/contrib/webviewView/browser/webviewViewPane.ts
++++ b/src/vs/workbench/contrib/webviewView/browser/webviewViewPane.ts
+@@ -3,7 +3,7 @@
+  *  Licensed under the MIT License. See License.txt in the project root for license information.
+  *--------------------------------------------------------------------------------------------*/
+ 
+-import { addDisposableListener, Dimension, EventType, findParentWithClass, getWindow } from '../../../../base/browser/dom.js';
++import { addDisposableListener, Dimension, DisposableResizeObserver, EventType, findParentWithClass, getWindow } from '../../../../base/browser/dom.js';
+ import { CancellationTokenSource } from '../../../../base/common/cancellation.js';
+ import { Emitter } from '../../../../base/common/event.js';
+ import { DisposableStore, IDisposable, MutableDisposable, toDisposable } from '../../../../base/common/lifecycle.js';
+@@ -53,7 +53,7 @@ export class WebviewViewPane extends ViewPane {
+ 
+ 	private _container?: HTMLElement;
+ 	private _rootContainer?: HTMLElement;
+-	private _resizeObserver?: ResizeObserver;
++	private _resizeObserver?: DisposableResizeObserver;
+ 
+ 	private readonly defaultTitle: string;
+ 	private setTitle: string | undefined;
+@@ -131,15 +131,12 @@ export class WebviewViewPane extends ViewPane {
+ 		this._rootContainer = undefined;
+ 
+ 		if (!this._resizeObserver) {
+-			this._resizeObserver = new ResizeObserver(() => {
++			this._resizeObserver = this._register(new DisposableResizeObserver(() => {
+ 				setTimeout(() => {
+ 					this.layoutWebview();
+ 				}, 0);
+-			});
+-
+-			this._register(toDisposable(() => {
+-				this._resizeObserver?.disconnect();
+ 			}));
++
+ 			this._resizeObserver.observe(container);
+ 		}
+ 	}
+diff --git a/src/vs/workbench/services/extensions/browser/webWorkerExtensionHost.ts b/src/vs/workbench/services/extensions/browser/webWorkerExtensionHost.ts
+index b6895fbf5d8..c59cb859b56 100644
+--- a/src/vs/workbench/services/extensions/browser/webWorkerExtensionHost.ts
++++ b/src/vs/workbench/services/extensions/browser/webWorkerExtensionHost.ts
+@@ -206,7 +206,7 @@ export class WebWorkerExtensionHost extends Disposable implements IExtensionHost
+ 				return;
+ 			}
+ 			const { data } = event.data;
+-			if (barrier.isOpen() || !(data instanceof MessagePort)) {
++			if (barrier.isOpen() || !(data instanceof mainWindow.MessagePort)) {
+ 				console.warn('UNEXPECTED message', event);
+ 				const err = new Error('UNEXPECTED message');
+ 				return rejectBarrier(ExtensionHostExitCode.UnexpectedError, err);
+@@ -231,12 +231,12 @@ export class WebWorkerExtensionHost extends Disposable implements IExtensionHost
+ 
+ 		port.onmessage = (event) => {
+ 			const { data } = event;
+-			if (!(data instanceof ArrayBuffer)) {
++			if (!(data instanceof mainWindow.ArrayBuffer)) {
+ 				console.warn('UNKNOWN data received', data);
+ 				this._onDidExit.fire([77, 'UNKNOWN data received']);
+ 				return;
+ 			}
+-			emitter.fire(VSBuffer.wrap(new Uint8Array(data, 0, data.byteLength)));
++			emitter.fire(VSBuffer.wrap(new mainWindow.Uint8Array(data, 0, data.byteLength)));
+ 		};
+ 
+ 		const protocol: IMessagePassingProtocol = {
+diff --git a/src/vs/workbench/services/host/browser/browserHostService.ts b/src/vs/workbench/services/host/browser/browserHostService.ts
+index be7c5137c53..1cb50e596b8 100644
+--- a/src/vs/workbench/services/host/browser/browserHostService.ts
++++ b/src/vs/workbench/services/host/browser/browserHostService.ts
+@@ -679,7 +679,7 @@ export class BrowserHostService extends Disposable implements IHostService {
+ 		let stream: MediaStream | undefined;
+ 		try {
+ 			// Create a stream from the screen source (capture screen without audio)
+-			stream = await navigator.mediaDevices.getDisplayMedia({
++			stream = await mainWindow.navigator.mediaDevices.getDisplayMedia({
+ 				audio: false,
+ 				video: true
+ 			});
+diff --git a/src/vs/workbench/services/keybinding/browser/keybindingService.ts b/src/vs/workbench/services/keybinding/browser/keybindingService.ts
+index 481d713f969..9d9997d50de 100644
+--- a/src/vs/workbench/services/keybinding/browser/keybindingService.ts
++++ b/src/vs/workbench/services/keybinding/browser/keybindingService.ts
+@@ -246,7 +246,7 @@ export class WorkbenchKeybindingService extends AbstractKeybindingService {
+ 				return;
+ 			}
+ 
+-			const keyboard: IKeyboard | null = (<INavigatorWithKeyboard>navigator).keyboard;
++			const keyboard: IKeyboard | null = (<INavigatorWithKeyboard>mainWindow.navigator).keyboard;
+ 
+ 			if (BrowserFeatures.keyboard === KeyboardSupport.None) {
+ 				return;
+diff --git a/src/vs/workbench/services/lifecycle/browser/lifecycleService.ts b/src/vs/workbench/services/lifecycle/browser/lifecycleService.ts
+index 5bacc9fad6b..36f6d7776ed 100644
+--- a/src/vs/workbench/services/lifecycle/browser/lifecycleService.ts
++++ b/src/vs/workbench/services/lifecycle/browser/lifecycleService.ts
+@@ -208,7 +208,7 @@ export class BrowserLifecycleService extends AbstractLifecycleService {
+ 	protected override doResolveStartupKind(): StartupKind | undefined {
+ 		let startupKind = super.doResolveStartupKind();
+ 		if (typeof startupKind !== 'number') {
+-			const timing = performance.getEntriesByType('navigation').at(0) as PerformanceNavigationTiming | undefined;
++			const timing = mainWindow.performance.getEntriesByType('navigation').at(0) as PerformanceNavigationTiming | undefined;
+ 			if (timing?.type === 'reload') {
+ 				// MDN: https://developer.mozilla.org/en-US/docs/Web/API/PerformanceNavigationTiming/type#value
+ 				startupKind = StartupKind.ReloadedWindow;
+diff --git a/src/vs/workbench/services/localization/browser/localeService.ts b/src/vs/workbench/services/localization/browser/localeService.ts
+index a107a2f8695..57c79e02676 100644
+--- a/src/vs/workbench/services/localization/browser/localeService.ts
++++ b/src/vs/workbench/services/localization/browser/localeService.ts
+@@ -14,6 +14,7 @@ import { InstantiationType, registerSingleton } from '../../../../platform/insta
+ import { CancellationToken } from '../../../../base/common/cancellation.js';
+ import { IExtensionGalleryService } from '../../../../platform/extensionManagement/common/extensionManagement.js';
+ import { ILogService } from '../../../../platform/log/common/log.js';
++import { mainWindow } from '../../../../base/browser/window.js';
+ 
+ const localeStorage = new class LocaleStorage {
+ 
+@@ -65,7 +66,7 @@ export abstract class AbstractLocaleService implements ILocaleService {
+ 
+ 	async setLocale(languagePackItem: ILanguagePackItem, _skipDialog = false): Promise<void> {
+ 		const locale = languagePackItem.id;
+-		if (locale === Language.value() || (!locale && Language.value() === navigator.language.toLowerCase())) {
++		if (locale === Language.value() || (!locale && Language.value() === mainWindow.navigator.language.toLowerCase())) {
+ 			return;
+ 		}
+ 		this.storeLocale(locale, languagePackItem.extensionId);
+@@ -85,7 +86,7 @@ export abstract class AbstractLocaleService implements ILocaleService {
+ 	async clearLocalePreference(): Promise<void> {
+ 		this.clearLocale();
+ 
+-		if (Language.value() === navigator.language.toLowerCase()) {
++		if (Language.value() === mainWindow.navigator.language.toLowerCase()) {
+ 			return;
+ 		}
+ 
+diff --git a/src/vs/workbench/services/request/browser/requestService.ts b/src/vs/workbench/services/request/browser/requestService.ts
+index b7fd8daa969..9f2b2b7191b 100644
+--- a/src/vs/workbench/services/request/browser/requestService.ts
++++ b/src/vs/workbench/services/request/browser/requestService.ts
+@@ -16,6 +16,7 @@ import { ILoggerService } from '../../../../platform/log/common/log.js';
+ import { localize } from '../../../../nls.js';
+ import { LogService } from '../../../../platform/log/common/logService.js';
+ import { windowLogGroup } from '../../log/common/logConstants.js';
++import { mainWindow } from '../../../../base/browser/window.js';
+ 
+ export class BrowserRequestService extends AbstractRequestService implements IRequestService {
+ 
+@@ -38,7 +39,7 @@ export class BrowserRequestService extends AbstractRequestService implements IRe
+ 			if (!options.proxyAuthorization) {
+ 				options.proxyAuthorization = this.configurationService.inspect<string>('http.proxyAuthorization').userLocalValue;
+ 			}
+-			const context = await this.logAndRequest(options, () => request(options, token, () => navigator.onLine));
++			const context = await this.logAndRequest(options, () => request(options, token, () => mainWindow.navigator.onLine));
+ 
+ 			const connection = this.remoteAgentService.getConnection();
+ 			if (connection && context.res.statusCode === 405) {
+diff --git a/src/vs/workbench/services/request/electron-browser/requestService.ts b/src/vs/workbench/services/request/electron-browser/requestService.ts
+index 5f6960784ee..fb555497336 100644
+--- a/src/vs/workbench/services/request/electron-browser/requestService.ts
++++ b/src/vs/workbench/services/request/electron-browser/requestService.ts
+@@ -14,6 +14,7 @@ import { ILoggerService } from '../../../../platform/log/common/log.js';
+ import { localize } from '../../../../nls.js';
+ import { windowLogGroup } from '../../log/common/logConstants.js';
+ import { LogService } from '../../../../platform/log/common/logService.js';
++import { mainWindow } from '../../../../base/browser/window.js';
+ 
+ export class NativeRequestService extends AbstractRequestService implements IRequestService {
+ 
+@@ -35,7 +36,7 @@ export class NativeRequestService extends AbstractRequestService implements IReq
+ 		if (!options.proxyAuthorization) {
+ 			options.proxyAuthorization = this.configurationService.inspect<string>('http.proxyAuthorization').userLocalValue;
+ 		}
+-		return this.logAndRequest(options, () => request(options, token, () => navigator.onLine));
++		return this.logAndRequest(options, () => request(options, token, () => mainWindow.navigator.onLine));
+ 	}
+ 
+ 	async resolveProxy(url: string): Promise<string | undefined> {
+diff --git a/src/vs/workbench/services/timer/browser/timerService.ts b/src/vs/workbench/services/timer/browser/timerService.ts
+index 9a0db4c5de9..7344a21a1b3 100644
+--- a/src/vs/workbench/services/timer/browser/timerService.ts
++++ b/src/vs/workbench/services/timer/browser/timerService.ts
+@@ -21,6 +21,7 @@ import { isWeb } from '../../../../base/common/platform.js';
+ import { createBlobWorker } from '../../../../platform/webWorker/browser/webWorkerServiceImpl.js';
+ import { Registry } from '../../../../platform/registry/common/platform.js';
+ import { ITerminalBackendRegistry, TerminalExtensions } from '../../../../platform/terminal/common/terminal.js';
++import { mainWindow } from '../../../../base/browser/window.js';
+ 
+ /* __GDPR__FRAGMENT__
+ 	"IMemoryInfo" : {
+@@ -783,7 +784,7 @@ export class TimerService extends AbstractTimerService {
+ 	protected async _extendStartupInfo(info: Writeable<IStartupMetrics>): Promise<void> {
+ 		info.isVMLikelyhood = 0;
+ 		info.isARM64Emulated = false;
+-		info.platform = navigator.userAgent;
+-		info.release = navigator.appVersion;
++		info.platform = mainWindow.navigator.userAgent;
++		info.release = mainWindow.navigator.appVersion;
+ 	}
+ }

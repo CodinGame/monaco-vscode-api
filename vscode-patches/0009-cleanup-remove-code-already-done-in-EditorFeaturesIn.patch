@@ -1,0 +1,47 @@
+From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
+From: =?UTF-8?q?Lo=C3=AFc=20Mangeonjean?= <loic@coderpad.io>
+Date: Mon, 11 Mar 2024 17:15:40 +0100
+Subject: [PATCH] cleanup: remove code already done in
+ EditorFeaturesInstantiator
+
+---
+ .../editor/standalone/browser/standaloneServices.ts  | 12 ------------
+ 1 file changed, 12 deletions(-)
+
+diff --git a/src/vs/editor/standalone/browser/standaloneServices.ts b/src/vs/editor/standalone/browser/standaloneServices.ts
+index 9ccfb39b28e..75e920e6740 100644
+--- a/src/vs/editor/standalone/browser/standaloneServices.ts
++++ b/src/vs/editor/standalone/browser/standaloneServices.ts
+@@ -16,7 +16,6 @@ import * as dom from '../../../base/browser/dom.js';
+ import { StandardKeyboardEvent } from '../../../base/browser/keyboardEvent.js';
+ import { mainWindow } from '../../../base/browser/window.js';
+ import { IDefaultAccount, IDefaultAccountAuthenticationProvider, IPolicyData } from '../../../base/common/defaultAccount.js';
+-import { onUnexpectedError } from '../../../base/common/errors.js';
+ import { Emitter, Event, IValueWithChangeEvent, ValueWithChangeEvent } from '../../../base/common/event.js';
+ import { KeyCodeChord, Keybinding, ResolvedKeybinding, decodeKeybinding } from '../../../base/common/keybindings.js';
+ import { Disposable, DisposableStore, IDisposable, IReference, ImmortalReference, combinedDisposable, toDisposable } from '../../../base/common/lifecycle.js';
+@@ -85,7 +84,6 @@ import { EditorOption } from '../../common/config/editorOptions.js';
+ import { EditOperation, ISingleEditOperation } from '../../common/core/editOperation.js';
+ import { IPosition, Position as Pos } from '../../common/core/position.js';
+ import { Range } from '../../common/core/range.js';
+-import { getEditorFeatures } from '../../common/editorFeatures.js';
+ import { WorkspaceEdit } from '../../common/languages.js';
+ import { ILanguageService } from '../../common/languages/language.js';
+ import { ITextModel, ITextSnapshot } from '../../common/model.js';
+@@ -1253,16 +1251,6 @@ export namespace StandaloneServices {
+ 			}
+ 		}
+ 
+-		// Instantiate all editor features
+-		const editorFeatures = getEditorFeatures();
+-		for (const feature of editorFeatures) {
+-			try {
+-				instantiationService.createInstance(feature);
+-			} catch (err) {
+-				onUnexpectedError(err);
+-			}
+-		}
+-
+ 		onDidInitialize.fire();
+ 
+ 		return instantiationService;

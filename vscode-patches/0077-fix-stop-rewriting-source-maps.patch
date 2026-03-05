@@ -1,0 +1,147 @@
+From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
+From: =?UTF-8?q?Lo=C3=AFc=20Mangeonjean?= <loic@coderpad.io>
+Date: Mon, 29 Sep 2025 12:24:50 +0200
+Subject: [PATCH] fix: stop rewriting source maps
+
+---
+ build/gulpfile.extensions.ts | 14 ++++----------
+ build/gulpfile.vscode.ts     |  1 -
+ build/lib/extensions.ts      | 19 -------------------
+ 3 files changed, 4 insertions(+), 30 deletions(-)
+
+diff --git a/build/gulpfile.extensions.ts b/build/gulpfile.extensions.ts
+index a2eb47535f4..a90c5259f00 100644
+--- a/build/gulpfile.extensions.ts
++++ b/build/gulpfile.extensions.ts
+@@ -17,7 +17,6 @@ import sourcemaps from 'gulp-sourcemaps';
+ import * as path from 'path';
+ import * as nodeUtil from 'util';
+ import * as ext from './lib/extensions.ts';
+-import { getVersion } from './lib/getVersion.ts';
+ import { createReporter } from './lib/reporter.ts';
+ import * as task from './lib/task.ts';
+ import * as tsb from './lib/tsb/index.ts';
+@@ -26,7 +25,6 @@ import * as util from './lib/util.ts';
+ import watcher from './lib/watch/index.ts';
+ 
+ const root = path.dirname(import.meta.dirname);
+-const commit = getVersion(root);
+ 
+ // Tracks active extension compilations to emit aggregate
+ // "Starting compilation" / "Finished compilation" messages
+@@ -97,16 +95,13 @@ const compilations = [
+ 	'.vscode/extensions/vscode-selfhost-import-aid/tsconfig.json',
+ ];
+ 
+-const getBaseUrl = (out: string) => `https://main.vscode-cdn.net/sourcemaps/${commit}/${out}`;
+-
+-function rewriteTsgoSourceMappingUrlsIfNeeded(build: boolean, out: string, baseUrl: string): Promise<void> {
++function rewriteTsgoSourceMappingUrlsIfNeeded(build: boolean, out: string): Promise<void> {
+ 	if (!build) {
+ 		return Promise.resolve();
+ 	}
+ 
+ 	return util.streamToPromise(
+ 		gulp.src(path.join(out, '**', '*.js'), { base: out })
+-			.pipe(util.rewriteSourceMappingURL(baseUrl))
+ 			.pipe(gulp.dest(out))
+ 	);
+ }
+@@ -126,7 +121,6 @@ const tasks = compilations.map(function (tsconfigFile) {
+ 	const srcOpts = { cwd: root, base: srcBase, dot: true };
+ 
+ 	const out = path.join(srcRoot, 'out');
+-	const baseUrl = getBaseUrl(out);
+ 
+ 	function createPipeline(build: boolean, emitError?: boolean, transpileOnly?: boolean) {
+ 		const reporter = createReporter('extensions');
+@@ -152,7 +146,7 @@ const tasks = compilations.map(function (tsconfigFile) {
+ 				.pipe(compilation())
+ 				.pipe(build ? util.stripSourceMappingURL() : es.through())
+ 				.pipe(sourcemaps.write('.', {
+-					sourceMappingURL: !build ? undefined : f => `${baseUrl}/${f.relative}.map`,
++					sourceMappingURL: undefined,
+ 					addComment: !!build,
+ 					includeContent: !!build,
+ 					// note: trailing slash is important, else the source URLs in V8's file coverage are incorrect
+@@ -186,7 +180,7 @@ const tasks = compilations.map(function (tsconfigFile) {
+ 	const compileTask = task.define(`compile-extension:${name}`, task.series(cleanTask, async () => {
+ 		const nonts = gulp.src(src, srcOpts).pipe(filter(['**', '!**/*.ts'], { dot: true }));
+ 		const copyNonTs = util.streamToPromise(nonts.pipe(gulp.dest(out)));
+-		const tsgo = spawnTsgo(absolutePath, { taskName: 'extensions' }, () => rewriteTsgoSourceMappingUrlsIfNeeded(false, out, baseUrl));
++		const tsgo = spawnTsgo(absolutePath, { taskName: 'extensions' }, () => rewriteTsgoSourceMappingUrlsIfNeeded(false, out));
+ 
+ 		await Promise.all([copyNonTs, tsgo]);
+ 	}));
+@@ -197,7 +191,7 @@ const tasks = compilations.map(function (tsconfigFile) {
+ 		const watchNonTs = watchInput.pipe(filter(['**', '!**/*.ts'], { dot: true })).pipe(gulp.dest(out));
+ 		const tsgoStream = watchInput.pipe(util.debounce(() => {
+ 			onExtensionCompilationStart();
+-			const stream = createTsgoStream(absolutePath, { taskName: 'extensions' }, () => rewriteTsgoSourceMappingUrlsIfNeeded(false, out, baseUrl));
++			const stream = createTsgoStream(absolutePath, { taskName: 'extensions' }, () => rewriteTsgoSourceMappingUrlsIfNeeded(false, out));
+ 			// Wrap in a result stream that always emits 'end' (even on
+ 			// error) so the debounce resets to idle and can process future
+ 			// file changes. Errors from tsgo (e.g. type errors causing a
+diff --git a/build/gulpfile.vscode.ts b/build/gulpfile.vscode.ts
+index 8eb8c02b549..1f036425e7d 100644
+--- a/build/gulpfile.vscode.ts
++++ b/build/gulpfile.vscode.ts
+@@ -440,7 +440,6 @@ function packageTask(platform: string, arch: string, sourceFolderName: string, d
+ 			.pipe(util.cleanNodeModules(path.join(import.meta.dirname, '.moduleignore')))
+ 			.pipe(util.cleanNodeModules(path.join(import.meta.dirname, `.moduleignore.${process.platform}`)))
+ 			.pipe(jsFilter)
+-			.pipe(util.rewriteSourceMappingURL(sourceMappingURLBase))
+ 			.pipe(jsFilter.restore)
+ 			.pipe(createAsar(path.join(process.cwd(), 'node_modules'), [
+ 				'**/*.node',
+diff --git a/build/lib/extensions.ts b/build/lib/extensions.ts
+index 5710f4d6919..4353f901282 100644
+--- a/build/lib/extensions.ts
++++ b/build/lib/extensions.ts
+@@ -23,7 +23,6 @@ import * as jsoncParser from 'jsonc-parser';
+ import webpack from 'webpack';
+ import { getProductionDependencies } from './dependencies.ts';
+ import { type IExtensionDefinition, getExtensionStream } from './builtInExtensions.ts';
+-import { getVersion } from './getVersion.ts';
+ import { fetchUrls, fetchGithub } from './fetch.ts';
+ import { createTsgoStream, spawnTsgo } from './tsgo.ts';
+ import vzip from 'gulp-vinyl-zip';
+@@ -32,8 +31,6 @@ import { createRequire } from 'module';
+ const require = createRequire(import.meta.url);
+ 
+ const root = path.dirname(path.dirname(import.meta.dirname));
+-const commit = getVersion(root);
+-const sourceMappingURLBase = `https://main.vscode-cdn.net/sourcemaps/${commit}`;
+ 
+ function minifyExtensionResources(input: Stream): Stream {
+ 	const jsonFilter = filter(['**/*.json', '**/*.code-snippets'], { restore: true });
+@@ -203,7 +200,6 @@ function fromLocalWebpack(extensionPath: string, webpackConfigFileName: string,
+ 						}
+ 					}
+ 				}
+-				const relativeOutputPath = path.relative(extensionPath, webpackConfig.output.path);
+ 
+ 				return webpackGulp(webpackConfig, webpack, webpackDone)
+ 					.pipe(es.through(function (data) {
+@@ -212,21 +208,6 @@ function fromLocalWebpack(extensionPath: string, webpackConfigFileName: string,
+ 						this.emit('data', data);
+ 					}))
+ 					.pipe(es.through(function (data: File) {
+-						// source map handling:
+-						// * rewrite sourceMappingURL
+-						// * save to disk so that upload-task picks this up
+-						if (path.extname(data.basename) === '.js') {
+-							if (stripOutSourceMaps.indexOf(data.relative) >= 0) { // remove source map
+-								const contents = (data.contents as Buffer).toString('utf8');
+-								data.contents = Buffer.from(contents.replace(/\n\/\/# sourceMappingURL=(.*)$/gm, ''), 'utf8');
+-							} else {
+-								const contents = (data.contents as Buffer).toString('utf8');
+-								data.contents = Buffer.from(contents.replace(/\n\/\/# sourceMappingURL=(.*)$/gm, function (_m, g1) {
+-									return `\n//# sourceMappingURL=${sourceMappingURLBase}/extensions/${path.basename(extensionPath)}/${relativeOutputPath}/${g1}`;
+-								}), 'utf8');
+-							}
+-						}
+-
+ 						this.emit('data', data);
+ 					}));
+ 			});

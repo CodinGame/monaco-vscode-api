@@ -24,7 +24,7 @@ import { guessLocalUserHome } from 'vs/workbench/services/path/browser/pathServi
 import { AbstractPathService } from 'vs/workbench/services/path/common/pathService'
 import { UserActivityService } from 'vs/workbench/services/userActivity/common/userActivityService'
 import { WorkingCopyFileService } from 'vs/workbench/services/workingCopy/common/workingCopyFileService'
-import { ITrustedDomainService } from 'vs/workbench/contrib/url/browser/trustedDomainService.service'
+import { ITrustedDomainService } from 'vs/workbench/contrib/url/common/trustedDomainService.service'
 import { TrustedDomainService } from 'vs/workbench/contrib/url/browser/trustedDomainService'
 import { LabelService } from 'vs/workbench/services/label/common/labelService'
 import { ILabelService } from 'vs/platform/label/common/label.service'
@@ -40,8 +40,12 @@ import { EditorWorkerService } from 'vs/editor/browser/services/editorWorkerServ
 import { IRenameSymbolTrackerService } from 'vs/editor/browser/services/renameSymbolTrackerService.service'
 import { RenameSymbolTrackerService } from 'vs/workbench/contrib/inlineCompletions/browser/renameSymbolTrackerService'
 import { EditorMarkdownCodeBlockRenderer } from 'vs/editor/browser/widget/markdownRenderer/browser/editorMarkdownCodeBlockRenderer.js'
+import { IRandomService } from 'vs/workbench/contrib/editTelemetry/browser/randomService.service'
+import { RandomService } from 'vs/workbench/contrib/editTelemetry/browser/randomService'
 import { registerServiceInitializeParticipant } from '../lifecycle'
 import { IInstantiationService } from 'vs/platform/instantiation/common/instantiation'
+import { IMeteredConnectionService } from 'vs/platform/meteredConnection/common/meteredConnection.service'
+import { MeteredConnectionService } from 'vs/platform/meteredConnection/browser/meteredConnectionService'
 
 class BrowserPathServiceOverride extends AbstractPathService {
   constructor(
@@ -92,6 +96,8 @@ export default function getServiceOverride(): IEditorOverrideServices {
       RenameSymbolTrackerService,
       [],
       true
-    )
+    ),
+    [IRandomService.toString()]: new SyncDescriptor(RandomService, [], true),
+    [IMeteredConnectionService.toString()]: new SyncDescriptor(MeteredConnectionService, [], true)
   }
 }

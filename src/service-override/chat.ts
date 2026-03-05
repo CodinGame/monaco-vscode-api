@@ -92,6 +92,26 @@ import { ChatEditingExplanationModelManager } from 'vs/workbench/contrib/chat/br
 import { ChatToolOutputStateCache } from 'vs/workbench/contrib/chat/browser/widget/chatContentParts/toolInvocationParts/chatToolOutputStateCache'
 import { ITerminalSandboxService } from 'vs/workbench/contrib/terminalContrib/chatAgentTools/common/terminalSandboxService.service'
 import { TerminalSandboxService } from 'vs/workbench/contrib/terminalContrib/chatAgentTools/common/terminalSandboxService'
+import { IAgentFeedbackService } from 'vs/sessions/contrib/agentFeedback/browser/agentFeedbackService.service'
+import { AgentFeedbackService } from 'vs/sessions/contrib/agentFeedback/browser/agentFeedbackService'
+import { ISessionsConfigurationService } from 'vs/sessions/contrib/chat/browser/sessionsConfigurationService.service'
+import { SessionsConfigurationService } from 'vs/sessions/contrib/chat/browser/sessionsConfigurationService'
+import { IAICustomizationWorkspaceService } from 'vs/workbench/contrib/chat/common/aiCustomizationWorkspaceService.service'
+import { SessionsAICustomizationWorkspaceService } from 'vs/sessions/contrib/chat/browser/aiCustomizationWorkspaceService'
+import { ISessionsManagementService } from 'vs/sessions/contrib/sessions/browser/sessionsManagementService.service'
+import { SessionsManagementService } from 'vs/sessions/contrib/sessions/browser/sessionsManagementService'
+import { IAgentPluginService } from 'vs/workbench/contrib/chat/common/plugins/agentPluginService.service'
+import { AgentPluginService } from 'vs/workbench/contrib/chat/common/plugins/agentPluginServiceImpl'
+import { PluginMarketplaceService } from 'vs/workbench/contrib/chat/common/plugins/pluginMarketplaceService'
+import { IPluginMarketplaceService } from 'vs/workbench/contrib/chat/common/plugins/pluginMarketplaceService.service'
+import { IAgentPluginRepositoryService } from 'vs/workbench/contrib/chat/common/plugins/agentPluginRepositoryService.service'
+import { AgentPluginRepositoryService } from 'vs/workbench/contrib/chat/browser/agentPluginRepositoryService'
+import { IPluginInstallService } from 'vs/workbench/contrib/chat/common/plugins/pluginInstallService.service'
+import { PluginInstallService } from 'vs/workbench/contrib/chat/browser/pluginInstallService'
+import { IChatAttachmentWidgetRegistry } from 'vs/workbench/contrib/chat/browser/attachments/chatAttachmentWidgetRegistry.service'
+import { ChatAttachmentWidgetRegistry } from 'vs/workbench/contrib/chat/browser/attachments/chatAttachmentWidgetRegistry'
+import { IChatDebugService } from 'vs/workbench/contrib/chat/common/chatDebugService.service'
+import { ChatDebugServiceImpl } from 'vs/workbench/contrib/chat/common/chatDebugServiceImpl'
 import 'vs/workbench/contrib/chat/browser/chat.contribution'
 import 'vs/workbench/contrib/terminal/terminal.chat.contribution'
 import 'vs/workbench/contrib/inlineChat/browser/inlineChat.contribution'
@@ -197,6 +217,36 @@ export default function getServiceOverride(): IEditorOverrideServices {
       true
     ),
     [IChatToolOutputStateCache.toString()]: new SyncDescriptor(ChatToolOutputStateCache, [], true),
-    [ITerminalSandboxService.toString()]: new SyncDescriptor(TerminalSandboxService, [], true)
+    [ITerminalSandboxService.toString()]: new SyncDescriptor(TerminalSandboxService, [], true),
+    [IAgentFeedbackService.toString()]: new SyncDescriptor(AgentFeedbackService, [], true),
+    [ISessionsConfigurationService.toString()]: new SyncDescriptor(
+      SessionsConfigurationService,
+      [],
+      true
+    ),
+    [IAICustomizationWorkspaceService.toString()]: new SyncDescriptor(
+      SessionsAICustomizationWorkspaceService,
+      [],
+      true
+    ),
+    [ISessionsManagementService.toString()]: new SyncDescriptor(
+      SessionsManagementService,
+      [],
+      true
+    ),
+    [IAgentPluginService.toString()]: new SyncDescriptor(AgentPluginService, [], true),
+    [IPluginMarketplaceService.toString()]: new SyncDescriptor(PluginMarketplaceService, [], true),
+    [IAgentPluginRepositoryService.toString()]: new SyncDescriptor(
+      AgentPluginRepositoryService,
+      [],
+      true
+    ),
+    [IPluginInstallService.toString()]: new SyncDescriptor(PluginInstallService, [], true),
+    [IChatAttachmentWidgetRegistry.toString()]: new SyncDescriptor(
+      ChatAttachmentWidgetRegistry,
+      [],
+      true
+    ),
+    [IChatDebugService.toString()]: new SyncDescriptor(ChatDebugServiceImpl, [], true)
   }
 }

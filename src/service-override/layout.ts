@@ -36,8 +36,6 @@ import {
   positionToString
 } from 'vs/workbench/services/layout/browser/layoutService'
 import { IWorkbenchLayoutService } from 'vs/workbench/services/layout/browser/layoutService.service'
-import { WorkbenchModeService } from 'vs/workbench/services/layout/browser/workbenchModeService'
-import { IWorkbenchModeService } from 'vs/workbench/services/layout/common/workbenchModeService.service'
 import { IPaneCompositePartService } from 'vs/workbench/services/panecomposite/browser/panecomposite.service'
 import { IStatusbarService } from 'vs/workbench/services/statusbar/browser/statusbar.service'
 import { onRenderWorkbench } from '../lifecycle'
@@ -591,8 +589,7 @@ function getServiceOverride(container?: HTMLElement): IEditorOverrideServices
 
 function getServiceOverride(container?: HTMLElement): IEditorOverrideServices {
   return {
-    [ILayoutService.toString()]: new SyncDescriptor(LayoutService, [container], true),
-    [IWorkbenchModeService.toString()]: new SyncDescriptor(WorkbenchModeService, [], true)
+    [ILayoutService.toString()]: new SyncDescriptor(LayoutService, [container], true)
   }
 }
 

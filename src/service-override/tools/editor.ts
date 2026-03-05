@@ -54,7 +54,8 @@ import {
   type IActiveEditorActions,
   type IEditorGroup,
   type IEditorWorkingSet,
-  type IEditorGroupContextKeyProvider
+  type IEditorGroupContextKeyProvider,
+  type IModalEditorPart
 } from 'vs/workbench/services/editor/common/editorGroupsService'
 import { IEditorGroupsService } from 'vs/workbench/services/editor/common/editorGroupsService.service'
 import { IInstantiationService } from 'vs/platform/instantiation/common/instantiation'
@@ -819,6 +820,8 @@ export class MonacoDelegateEditorGroupsService<D extends IEditorGroupsService>
       codeEditorService.listCodeEditors().forEach(handleCodeEditor)
     })
   }
+  createModalEditorPart = unsupported
+  activeModalEditorPart: IModalEditorPart | undefined
 
   getScopedInstantiationService(): IInstantiationService {
     return this.instantiationService

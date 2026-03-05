@@ -378,7 +378,24 @@ const api: typeof vscode = {
   ChatResponseQuestionCarouselPart: extHostTypes.ChatResponseQuestionCarouselPart,
   McpToolInvocationContentData: extHostTypes.McpToolInvocationContentData,
   ChatSessionChangedFile2: extHostTypes.ChatSessionChangedFile2,
-  ChatResponseHookPart: extHostTypes.ChatResponseHookPart
+  ChatResponseHookPart: extHostTypes.ChatResponseHookPart,
+  ChatDebugLogLevel: extHostTypes.ChatDebugLogLevel,
+  ChatDebugToolCallResult: extHostTypes.ChatDebugToolCallResult,
+  ChatDebugToolCallEvent: extHostTypes.ChatDebugToolCallEvent,
+  ChatDebugModelTurnEvent: extHostTypes.ChatDebugModelTurnEvent,
+  ChatDebugGenericEvent: extHostTypes.ChatDebugGenericEvent,
+  ChatDebugSubagentStatus: extHostTypes.ChatDebugSubagentStatus,
+  ChatDebugSubagentInvocationEvent: extHostTypes.ChatDebugSubagentInvocationEvent,
+  ChatDebugUserMessageEvent: extHostTypes.ChatDebugUserMessageEvent,
+  ChatDebugAgentResponseEvent: extHostTypes.ChatDebugAgentResponseEvent,
+  ChatDebugMessageSection: extHostTypes.ChatDebugMessageSection,
+  ChatDebugEventTextContent: extHostTypes.ChatDebugEventTextContent,
+  ChatDebugMessageContentType: extHostTypes.ChatDebugMessageContentType,
+  ChatDebugEventMessageContent: extHostTypes.ChatDebugEventMessageContent,
+  ChatDebugEventToolCallContent: extHostTypes.ChatDebugEventToolCallContent,
+  ChatDebugEventModelTurnContent: extHostTypes.ChatDebugEventModelTurnContent,
+  ChatTodoStatus: extHostTypes.ChatTodoStatus,
+  ChatSubagentToolInvocationData: extHostTypes.ChatSubagentToolInvocationData
 }
 
 // @ts-expect-error the syntax will be transformed by a typescript transformer in the rollup config
