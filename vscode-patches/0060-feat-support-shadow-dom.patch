@@ -12,7 +12,7 @@ Subject: [PATCH] feat: support shadow dom
  src/vs/base/browser/ui/dnd/dnd.ts             |  4 +-
  src/vs/base/browser/ui/findinput/findInput.ts |  3 +-
  .../base/browser/ui/findinput/replaceInput.ts |  3 +-
- src/vs/base/browser/ui/inputbox/inputBox.ts   |  2 +-
+ src/vs/base/browser/ui/inputbox/inputBox.ts   |  7 ++-
  src/vs/base/browser/ui/sash/sash.ts           |  2 +-
  src/vs/base/browser/ui/splitview/paneview.ts  |  6 +-
  src/vs/base/browser/ui/splitview/splitview.ts |  6 +-
@@ -49,7 +49,7 @@ Subject: [PATCH] feat: support shadow dom
  .../browser/walkThroughPart.ts                |  6 +-
  .../suggest/browser/simpleSuggestWidget.ts    |  4 +-
  .../themes/browser/workbenchThemeService.ts   |  2 +-
- 45 files changed, 187 insertions(+), 99 deletions(-)
+ 45 files changed, 192 insertions(+), 99 deletions(-)
 
 diff --git a/src/vs/base/browser/dom.ts b/src/vs/base/browser/dom.ts
 index fe9d624543a..870041f35f2 100644
@@ -379,15 +379,20 @@ index 10c5b47b653..6dd9e205c71 100644
  					let newIndex: number = -1;
  					if (event.equals(KeyCode.RightArrow)) {
 diff --git a/src/vs/base/browser/ui/inputbox/inputBox.ts b/src/vs/base/browser/ui/inputbox/inputBox.ts
-index 9b55cd2ec68..a7606504872 100644
+index 9b55cd2ec68..bdc8f7f689b 100644
 --- a/src/vs/base/browser/ui/inputbox/inputBox.ts
 +++ b/src/vs/base/browser/ui/inputbox/inputBox.ts
-@@ -174,7 +174,7 @@ export class InputBox extends Widget {
+@@ -174,7 +174,12 @@ export class InputBox extends Widget {
  
  			const onSelectionChange = this._register(new DomEmitter(container.ownerDocument, 'selectionchange'));
  			const onAnchoredSelectionChange = Event.filter(onSelectionChange.event, () => {
 -				const selection = container.ownerDocument.getSelection();
-+				const selection = (container.getRootNode() as Document).getSelection();
++				let selection = container.ownerDocument.getSelection();
++				const rootNode = container.getRootNode();
++				if (dom.isShadowRoot(rootNode)) {
++					// Shadow root implements the getSelection method on chrome
++					selection = (rootNode as (ShadowRoot & { getSelection?: () => Selection | null })).getSelection?.() ?? selection;
++				}
  				return selection?.anchorNode === wrapper;
  			});
  

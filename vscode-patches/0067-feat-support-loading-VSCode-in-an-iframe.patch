@@ -259,7 +259,7 @@ index 8e857e292df..721cd5fd2d7 100644
  
  	/**
 diff --git a/src/vs/base/browser/ui/inputbox/inputBox.ts b/src/vs/base/browser/ui/inputbox/inputBox.ts
-index a7606504872..4cb8615eac9 100644
+index bdc8f7f689b..6abb8fe88d6 100644
 --- a/src/vs/base/browser/ui/inputbox/inputBox.ts
 +++ b/src/vs/base/browser/ui/inputbox/inputBox.ts
 @@ -22,6 +22,7 @@ import { ScrollbarVisibility } from '../../../common/scrollable.js';
@@ -270,7 +270,7 @@ index a7606504872..4cb8615eac9 100644
  
  
  const $ = dom.$;
-@@ -698,7 +699,7 @@ export class HistoryInputBox extends InputBox implements IHistoryNavigationWidge
+@@ -703,7 +704,7 @@ export class HistoryInputBox extends InputBox implements IHistoryNavigationWidge
  
  		// Spot the change to the textarea class attribute which occurs when it changes between non-empty and empty,
  		// and add the history suffix to the placeholder if not yet present
