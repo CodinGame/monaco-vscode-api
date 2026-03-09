@@ -49,7 +49,7 @@
     "@codingame/semantic-release-config-github": "^2.2.1",
     "@codingame/tsconfig": "^1.2.1",
     "@commitlint/cli": "^20.4.3",
-    "@rollup/plugin-commonjs": "^29.0.1",
+    "@rollup/plugin-commonjs": "^29.0.2",
     "@rollup/plugin-dynamic-import-vars": "^2.1.5",
     "@rollup/plugin-json": "^6.1.0",
     "@rollup/plugin-node-resolve": "^16.0.3",
