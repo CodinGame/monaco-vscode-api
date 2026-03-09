@@ -13,10 +13,10 @@ Subject: [PATCH] feat: allow to override product icon
  6 files changed, 7 insertions(+), 6 deletions(-)
 
 diff --git a/build/lib/stylelint/vscode-known-variables.json b/build/lib/stylelint/vscode-known-variables.json
-index 9e2eea3b858..e92476e4d31 100644
+index 29a3d47d232..67436a63397 100644
 --- a/build/lib/stylelint/vscode-known-variables.json
 +++ b/build/lib/stylelint/vscode-known-variables.json
-@@ -1020,7 +1020,8 @@
+@@ -1030,7 +1030,8 @@
  		"--vscode-inline-chat-affordance-height",
  		"--collapse-from-width",
  		"--slide-from-x",
@@ -40,10 +40,10 @@ index a0de81f24eb..c71af404312 100644
  	padding: 0;
  	margin: 0 6px 0 10px;
 diff --git a/src/vs/workbench/browser/parts/titlebar/media/titlebarpart.css b/src/vs/workbench/browser/parts/titlebar/media/titlebarpart.css
-index 454939c8afc..d599c0a1505 100644
+index a2c1090f9d1..f5234dd2f21 100644
 --- a/src/vs/workbench/browser/parts/titlebar/media/titlebarpart.css
 +++ b/src/vs/workbench/browser/parts/titlebar/media/titlebarpart.css
-@@ -270,7 +270,7 @@
+@@ -272,7 +272,7 @@
  }
  
  .monaco-workbench .part.titlebar > .titlebar-container > .titlebar-left > .window-appicon:not(.codicon) {

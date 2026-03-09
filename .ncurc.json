@@ -11,7 +11,6 @@
     "@vscode/spdlog",
     "@vscode/tree-sitter-wasm",
     "@vscode/windows-process-tree",
-    "@vscode/windows-registry",
     "@xterm/addon-clipboard",
     "@xterm/addon-image",
     "@xterm/addon-ligatures",

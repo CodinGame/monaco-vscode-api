@@ -8,7 +8,7 @@ Subject: [PATCH] fix: use existing method
  1 file changed, 1 insertion(+), 1 deletion(-)
 
 diff --git a/src/vs/editor/standalone/browser/standaloneServices.ts b/src/vs/editor/standalone/browser/standaloneServices.ts
-index fb5b0122e91..ee8f98634b9 100644
+index e12a15076e4..cfb4a46c367 100644
 --- a/src/vs/editor/standalone/browser/standaloneServices.ts
 +++ b/src/vs/editor/standalone/browser/standaloneServices.ts
 @@ -559,7 +559,7 @@ export class StandaloneKeybindingService extends AbstractKeybindingService {

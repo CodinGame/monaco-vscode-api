@@ -449,7 +449,7 @@ import { ILanguageModelsConfigurationService } from 'vs/workbench/contrib/chat/c
 import { IAgentPluginRepositoryService } from 'vs/workbench/contrib/chat/common/plugins/agentPluginRepositoryService.service.js'
 import { IAgentPluginService } from 'vs/workbench/contrib/chat/common/plugins/agentPluginService.service.js'
 import { IPluginMarketplaceService } from 'vs/workbench/contrib/chat/common/plugins/pluginMarketplaceService.service.js'
-import { Target } from 'vs/workbench/contrib/chat/common/promptSyntax/service/promptsService.js'
+import { Target } from 'vs/workbench/contrib/chat/common/promptSyntax/promptTypes.js'
 import { ILanguageModelToolsConfirmationService } from 'vs/workbench/contrib/chat/common/tools/languageModelToolsConfirmationService.service'
 import {
   ToolDataSource,
@@ -475,10 +475,12 @@ import { unsupported } from './tools.js'
 import { IChatAttachmentWidgetRegistry } from 'vs/workbench/contrib/chat/browser/attachments/chatAttachmentWidgetRegistry.service'
 import { IChatDebugService } from 'vs/workbench/contrib/chat/common/chatDebugService.service.js'
 import { IPluginInstallService } from 'vs/workbench/contrib/chat/common/plugins/pluginInstallService.service'
+import { IChatResponseResourceFileSystemProvider } from 'vs/workbench/contrib/chat/common/widget/chatResponseResourceFileSystemProvider.service.js'
 import { IGitService } from 'vs/workbench/contrib/git/common/gitService.service.js'
 import { IWorkbenchMcpGatewayService } from 'vs/workbench/contrib/mcp/common/mcpGatewayService.service.js'
 import { IMcpSandboxService } from 'vs/workbench/contrib/mcp/common/mcpSandboxService.service.js'
 import { IPowerService } from 'vs/workbench/services/power/common/powerService.service.js'
+import { FileSystemProviderCapabilities } from './service-override/files.js'
 
 function Unsupported(target: object, propertyKey: string, descriptor?: PropertyDescriptor) {
   function unsupported() {
@@ -2765,6 +2767,8 @@ class TerminalService implements ITerminalService {
   @Unsupported
   openResource: ITerminalService['openResource'] = unsupported
   setNextCommandId: ITerminalService['setNextCommandId'] = async () => {}
+  @Unsupported
+  moveToBackground: ITerminalService['moveToBackground'] = unsupported
 }
 registerSingleton(ITerminalService, TerminalService, InstantiationType.Delayed)
 class TerminalConfigurationService implements ITerminalConfigurationService {
@@ -3321,7 +3325,6 @@ class ChatService implements IChatService {
   notifyUserAction: IChatService['notifyUserAction'] = unsupported
   onDidSubmitRequest: IChatService['onDidSubmitRequest'] = Event.None
   requestInProgressObs: IChatService['requestInProgressObs'] = constObservable(false)
-  edits2Enabled: IChatService['edits2Enabled'] = false
   editingSessions: IChatService['editingSessions'] = []
   getChatSessionFromInternalUri: IChatService['getChatSessionFromInternalUri'] = () => undefined
   getLocalSessionHistory: IChatService['getLocalSessionHistory'] = async () => []
@@ -5580,6 +5583,8 @@ class ChatEntitlementsService implements IChatEntitlementService {
 registerSingleton(IChatEntitlementService, ChatEntitlementsService, InstantiationType.Eager)
 class PromptsService implements IPromptsService {
   _serviceBrand: undefined
+  onDidChangeInstructions: IPromptsService['onDidChangeInstructions'] = Event.None
+  onDidChangeSkills: IPromptsService['onDidChangeSkills'] = Event.None
   listPromptFiles: IPromptsService['listPromptFiles'] = async () => []
   getSourceFolders: IPromptsService['getSourceFolders'] = async () => []
   dispose: IPromptsService['dispose'] = (): void => {}
@@ -5857,6 +5862,8 @@ class McpResourceScannerService implements IMcpResourceScannerService {
   addMcpServers: IMcpResourceScannerService['addMcpServers'] = unsupported
   @Unsupported
   removeMcpServers: IMcpResourceScannerService['removeMcpServers'] = unsupported
+  @Unsupported
+  updateSandboxConfig: IMcpResourceScannerService['updateSandboxConfig'] = unsupported
 }
 registerSingleton(IMcpResourceScannerService, McpResourceScannerService, InstantiationType.Eager)
 
@@ -6231,6 +6238,9 @@ class LanguageModelToolsConfirmationService implements ILanguageModelToolsConfir
 
   getPreConfirmActions: ILanguageModelToolsConfirmationService['getPreConfirmActions'] = () => []
   getPostConfirmActions: ILanguageModelToolsConfirmationService['getPostConfirmActions'] = () => []
+
+  toolCanManageConfirmation: ILanguageModelToolsConfirmationService['toolCanManageConfirmation'] =
+    () => false
 }
 registerSingleton(
   ILanguageModelToolsConfirmationService,
@@ -6469,6 +6479,14 @@ class ChatTipService implements IChatTipService {
   hasMultipleTips: IChatTipService['hasMultipleTips'] = unsupported
   @Unsupported
   clearDismissedTips: IChatTipService['clearDismissedTips'] = unsupported
+  @Unsupported
+  dismissTipForSession: IChatTipService['dismissTipForSession'] = unsupported
+  @Unsupported
+  hideTipsForSession: IChatTipService['hideTipsForSession'] = unsupported
+  @Unsupported
+  getNextEligibleTip: IChatTipService['getNextEligibleTip'] = unsupported
+  @Unsupported
+  recordSlashCommandUsage: IChatTipService['recordSlashCommandUsage'] = unsupported
 }
 
 registerSingleton(IChatTipService, ChatTipService, InstantiationType.Delayed)
@@ -6584,6 +6602,18 @@ class AICustomizationWorkspaceService implements IAICustomizationWorkspaceServic
   commitFiles: IAICustomizationWorkspaceService['commitFiles'] = unsupported
   @Unsupported
   generateCustomization: IAICustomizationWorkspaceService['generateCustomization'] = unsupported
+
+  @Unsupported
+  deleteFiles: IAICustomizationWorkspaceService['deleteFiles'] = unsupported
+  hasOverrideProjectRoot: IAICustomizationWorkspaceService['hasOverrideProjectRoot'] =
+    constObservable(false)
+  @Unsupported
+  setOverrideProjectRoot: IAICustomizationWorkspaceService['setOverrideProjectRoot'] = unsupported
+  @Unsupported
+  clearOverrideProjectRoot: IAICustomizationWorkspaceService['clearOverrideProjectRoot'] =
+    unsupported
+  getFilteredPromptSlashCommands: IAICustomizationWorkspaceService['getFilteredPromptSlashCommands'] =
+    async () => []
 }
 
 registerSingleton(
@@ -6624,8 +6654,20 @@ class PluginMarketplaceService implements IPluginMarketplaceService {
   _serviceBrand: undefined
   onDidChangeMarketplaces: IPluginMarketplaceService['onDidChangeMarketplaces'] = Event.None
   fetchMarketplacePlugins: IPluginMarketplaceService['fetchMarketplacePlugins'] = async () => []
-  getMarketplacePluginMetadata: IPluginMarketplaceService['getMarketplacePluginMetadata'] =
-    async () => undefined
+  getMarketplacePluginMetadata: IPluginMarketplaceService['getMarketplacePluginMetadata'] = () =>
+    undefined
+
+  installedPlugins: IPluginMarketplaceService['installedPlugins'] = constObservable([])
+  @Unsupported
+  addInstalledPlugin: IPluginMarketplaceService['addInstalledPlugin'] = unsupported
+  @Unsupported
+  removeInstalledPlugin: IPluginMarketplaceService['removeInstalledPlugin'] = unsupported
+  @Unsupported
+  setInstalledPluginEnabled: IPluginMarketplaceService['setInstalledPluginEnabled'] = unsupported
+  @Unsupported
+  isMarketplaceTrusted: IPluginMarketplaceService['isMarketplaceTrusted'] = unsupported
+  @Unsupported
+  trustMarketplace: IPluginMarketplaceService['trustMarketplace'] = unsupported
 }
 
 registerSingleton(IPluginMarketplaceService, PluginMarketplaceService, InstantiationType.Delayed)
@@ -6641,6 +6683,17 @@ class AgentPluginRepositoryService implements IAgentPluginRepositoryService {
   ensureRepository: IAgentPluginRepositoryService['ensureRepository'] = unsupported
   @Unsupported
   pullRepository: IAgentPluginRepositoryService['pullRepository'] = unsupported
+  @Unsupported
+  getPluginSourceInstallUri: IAgentPluginRepositoryService['getPluginSourceInstallUri'] =
+    unsupported
+  @Unsupported
+  ensurePluginSource: IAgentPluginRepositoryService['ensurePluginSource'] = unsupported
+  @Unsupported
+  updatePluginSource: IAgentPluginRepositoryService['updatePluginSource'] = unsupported
+  @Unsupported
+  getPluginSource: IAgentPluginRepositoryService['getPluginSource'] = unsupported
+  @Unsupported
+  cleanupPluginSource: IAgentPluginRepositoryService['cleanupPluginSource'] = unsupported
 }
 
 registerSingleton(
@@ -6654,8 +6707,6 @@ class PluginInstallService implements IPluginInstallService {
 
   @Unsupported
   installPlugin: IPluginInstallService['installPlugin'] = unsupported
-  @Unsupported
-  uninstallPlugin: IPluginInstallService['uninstallPlugin'] = unsupported
   @Unsupported
   updatePlugin: IPluginInstallService['updatePlugin'] = unsupported
   @Unsupported
@@ -6698,6 +6749,12 @@ class ChatDebugService implements IChatDebugService {
   @Unsupported
   resolveEvent: IChatDebugService['resolveEvent'] = unsupported
   dispose: IChatDebugService['dispose'] = () => {}
+
+  onDidClearProviderEvents: IChatDebugService['onDidClearProviderEvents'] = Event.None
+  hasInvokedProviders: IChatDebugService['hasInvokedProviders'] = () => false
+  onDidAttachDebugData: IChatDebugService['onDidAttachDebugData'] = Event.None
+  markDebugDataAttached: IChatDebugService['markDebugDataAttached'] = () => {}
+  hasAttachedDebugData: IChatDebugService['hasAttachedDebugData'] = () => false
 }
 
 registerSingleton(IChatDebugService, ChatDebugService, InstantiationType.Delayed)
@@ -6717,6 +6774,11 @@ class McpSandboxService implements IMcpSandboxService {
   @Unsupported
   launchInSandboxIfEnabled: IMcpSandboxService['launchInSandboxIfEnabled'] = unsupported
   isEnabled: IMcpSandboxService['isEnabled'] = async () => false
+
+  getSandboxConfigSuggestionMessage: IMcpSandboxService['getSandboxConfigSuggestionMessage'] = () =>
+    undefined
+  applySandboxConfigSuggestion: IMcpSandboxService['applySandboxConfigSuggestion'] = async () =>
+    false
 }
 
 registerSingleton(IMcpSandboxService, McpSandboxService, InstantiationType.Delayed)
@@ -6754,3 +6816,33 @@ class PowerService implements IPowerService {
 }
 
 registerSingleton(IPowerService, PowerService, InstantiationType.Delayed)
+
+class ChatResponseResourceFileSystemProvider implements IChatResponseResourceFileSystemProvider {
+  _serviceBrand: undefined
+
+  @Unsupported
+  associate: IChatResponseResourceFileSystemProvider['associate'] = unsupported
+
+  capabilities: IChatResponseResourceFileSystemProvider['capabilities'] =
+    FileSystemProviderCapabilities.None
+  onDidChangeCapabilities: IChatResponseResourceFileSystemProvider['onDidChangeCapabilities'] =
+    Event.None
+  onDidChangeFile: IChatResponseResourceFileSystemProvider['onDidChangeFile'] = Event.None
+  watch: IChatResponseResourceFileSystemProvider['watch'] = () => Disposable.None
+  @Unsupported
+  stat: IChatResponseResourceFileSystemProvider['stat'] = unsupported
+  @Unsupported
+  mkdir: IChatResponseResourceFileSystemProvider['mkdir'] = unsupported
+  @Unsupported
+  readdir: IChatResponseResourceFileSystemProvider['readdir'] = unsupported
+  @Unsupported
+  delete: IChatResponseResourceFileSystemProvider['delete'] = unsupported
+  @Unsupported
+  rename: IChatResponseResourceFileSystemProvider['rename'] = unsupported
+}
+
+registerSingleton(
+  IChatResponseResourceFileSystemProvider,
+  ChatResponseResourceFileSystemProvider,
+  InstantiationType.Delayed
+)

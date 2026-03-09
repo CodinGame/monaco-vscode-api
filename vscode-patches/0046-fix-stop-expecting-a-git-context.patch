@@ -1,21 +1,32 @@
 From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
 From: =?UTF-8?q?Lo=C3=AFc=20Mangeonjean?= <loic@coderpad.io>
-Date: Wed, 30 Oct 2024 17:47:38 +0100
+Date: Mon, 9 Mar 2026 15:25:24 +0100
 Subject: [PATCH] fix: stop expecting a git context
 
 ---
- build/npm/postinstall.ts | 4 ++--
- 1 file changed, 2 insertions(+), 2 deletions(-)
+ build/npm/postinstall.ts | 5 -----
+ 1 file changed, 5 deletions(-)
 
 diff --git a/build/npm/postinstall.ts b/build/npm/postinstall.ts
-index b6a934f74b3..9a20e65d782 100644
+index ae2651cd188..dae90461c5f 100644
 --- a/build/npm/postinstall.ts
 +++ b/build/npm/postinstall.ts
-@@ -216,5 +216,5 @@ for (const dir of dirs) {
- 	npmInstall(dir, { env });
- }
+@@ -210,8 +210,6 @@ async function runWithConcurrency(tasks: (() => Promise<void>)[], concurrency: n
+ async function main() {
+ 	if (!process.env['VSCODE_FORCE_INSTALL'] && isUpToDate()) {
+ 		log('.', 'All dependencies up to date, skipping postinstall.');
+-		child_process.execSync('git config pull.rebase merges');
+-		child_process.execSync('git config blame.ignoreRevsFile .git-blame-ignore-revs');
+ 		return;
+ 	}
  
--child_process.execSync('git config pull.rebase merges');
--child_process.execSync('git config blame.ignoreRevsFile .git-blame-ignore-revs');
-+// child_process.execSync('git config pull.rebase merges');
-+// child_process.execSync('git config blame.ignoreRevsFile .git-blame-ignore-revs');
+@@ -283,9 +281,6 @@ async function main() {
+ 	log('.', `Running ${parallelTasks.length} npm installs with concurrency ${concurrency}...`);
+ 	await runWithConcurrency(parallelTasks, concurrency);
+ 
+-	child_process.execSync('git config pull.rebase merges');
+-	child_process.execSync('git config blame.ignoreRevsFile .git-blame-ignore-revs');
+-
+ 	fs.writeFileSync(stateFile, JSON.stringify(_state));
+ 	fs.writeFileSync(stateContentsFile, JSON.stringify(computeContents()));
+ }

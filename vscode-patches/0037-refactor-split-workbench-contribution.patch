@@ -167,7 +167,7 @@ index 9b12b00eb96..fb720cb8c0c 100644
 +
 +registerWorkbenchContribution2(LanguageConfigurationWorkbenchContribution.ID, LanguageConfigurationWorkbenchContribution, WorkbenchPhase.BlockStartup);
 diff --git a/src/vs/workbench/services/themes/browser/cssExtensionPoint.ts b/src/vs/workbench/services/themes/browser/cssExtensionPoint.ts
-index cdeca23bd2d..098f1357e6f 100644
+index 69b74111341..c9aa344ec35 100644
 --- a/src/vs/workbench/services/themes/browser/cssExtensionPoint.ts
 +++ b/src/vs/workbench/services/themes/browser/cssExtensionPoint.ts
 @@ -16,6 +16,8 @@ import { createLinkElement } from '../../../../base/browser/dom.js';
@@ -179,7 +179,7 @@ index cdeca23bd2d..098f1357e6f 100644
  
  interface ICSSExtensionPoint {
  	path: string;
-@@ -326,3 +328,16 @@ export class CSSExtensionPoint {
+@@ -333,3 +335,16 @@ export class CSSExtensionPoint {
  		this.disposables.dispose();
  	}
  }

@@ -668,7 +668,7 @@ index fe3e69fb843..899d84dda0c 100644
  	declare readonly _serviceBrand: undefined;
  
 diff --git a/src/vs/workbench/services/terminal/common/embedderTerminalService.ts b/src/vs/workbench/services/terminal/common/embedderTerminalService.ts
-index 0d0bd4f349d..ecb2d74906c 100644
+index 3665fe2bbe6..048e07d1380 100644
 --- a/src/vs/workbench/services/terminal/common/embedderTerminalService.ts
 +++ b/src/vs/workbench/services/terminal/common/embedderTerminalService.ts
 @@ -52,7 +52,7 @@ export interface IEmbedderTerminalPty {

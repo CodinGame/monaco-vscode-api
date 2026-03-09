@@ -73,7 +73,7 @@ index 1ff3fb838d9..6400775c42d 100644
 +	}
  }
 diff --git a/src/vs/monaco.d.ts b/src/vs/monaco.d.ts
-index ce6731adeb7..0959c675e1b 100644
+index fc9c2da70f5..f7007bbf78f 100644
 --- a/src/vs/monaco.d.ts
 +++ b/src/vs/monaco.d.ts
 @@ -24,12 +24,16 @@ declare namespace monaco {
