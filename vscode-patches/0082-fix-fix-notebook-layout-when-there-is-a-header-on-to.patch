@@ -10,7 +10,7 @@ Subject: [PATCH] fix: fix notebook layout when there is a header on top of the
  2 files changed, 5 insertions(+), 6 deletions(-)
 
 diff --git a/src/vs/workbench/browser/media/style.css b/src/vs/workbench/browser/media/style.css
-index 7450d3c463e..b1ad13a4944 100644
+index b08a3d0f3d1..a5f505aa146 100644
 --- a/src/vs/workbench/browser/media/style.css
 +++ b/src/vs/workbench/browser/media/style.css
 @@ -39,7 +39,6 @@
@@ -18,9 +18,9 @@ index 7450d3c463e..b1ad13a4944 100644
  	inset: 0;
  	color: var(--vscode-foreground);
 -	position: relative;
- }
  
- .monaco-workbench.web .monaco-workbench-part, .monaco-workbench-part.web {
+ 	/* Elevation shadows */
+ 	--vscode-shadow-sm: 0 0 4px rgba(0, 0, 0, 0.08);
 diff --git a/src/vs/workbench/contrib/notebook/browser/notebookEditorWidget.ts b/src/vs/workbench/contrib/notebook/browser/notebookEditorWidget.ts
 index 494fff0e961..42522b793e8 100644
 --- a/src/vs/workbench/contrib/notebook/browser/notebookEditorWidget.ts

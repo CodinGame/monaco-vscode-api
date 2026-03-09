@@ -10,7 +10,7 @@ Subject: [PATCH] fix: stop rewriting source maps
  3 files changed, 4 insertions(+), 30 deletions(-)
 
 diff --git a/build/gulpfile.extensions.ts b/build/gulpfile.extensions.ts
-index a2eb47535f4..a90c5259f00 100644
+index 8f9ac9b2b21..507edfd8939 100644
 --- a/build/gulpfile.extensions.ts
 +++ b/build/gulpfile.extensions.ts
 @@ -17,7 +17,6 @@ import sourcemaps from 'gulp-sourcemaps';
@@ -29,8 +29,8 @@ index a2eb47535f4..a90c5259f00 100644
  
  // Tracks active extension compilations to emit aggregate
  // "Starting compilation" / "Finished compilation" messages
-@@ -97,16 +95,13 @@ const compilations = [
- 	'.vscode/extensions/vscode-selfhost-import-aid/tsconfig.json',
+@@ -98,16 +96,13 @@ const compilations = [
+ 	'.vscode/extensions/vscode-extras/tsconfig.json',
  ];
  
 -const getBaseUrl = (out: string) => `https://main.vscode-cdn.net/sourcemaps/${commit}/${out}`;
@@ -47,7 +47,7 @@ index a2eb47535f4..a90c5259f00 100644
  			.pipe(gulp.dest(out))
  	);
  }
-@@ -126,7 +121,6 @@ const tasks = compilations.map(function (tsconfigFile) {
+@@ -127,7 +122,6 @@ const tasks = compilations.map(function (tsconfigFile) {
  	const srcOpts = { cwd: root, base: srcBase, dot: true };
  
  	const out = path.join(srcRoot, 'out');
@@ -55,7 +55,7 @@ index a2eb47535f4..a90c5259f00 100644
  
  	function createPipeline(build: boolean, emitError?: boolean, transpileOnly?: boolean) {
  		const reporter = createReporter('extensions');
-@@ -152,7 +146,7 @@ const tasks = compilations.map(function (tsconfigFile) {
+@@ -153,7 +147,7 @@ const tasks = compilations.map(function (tsconfigFile) {
  				.pipe(compilation())
  				.pipe(build ? util.stripSourceMappingURL() : es.through())
  				.pipe(sourcemaps.write('.', {
@@ -64,7 +64,7 @@ index a2eb47535f4..a90c5259f00 100644
  					addComment: !!build,
  					includeContent: !!build,
  					// note: trailing slash is important, else the source URLs in V8's file coverage are incorrect
-@@ -186,7 +180,7 @@ const tasks = compilations.map(function (tsconfigFile) {
+@@ -187,7 +181,7 @@ const tasks = compilations.map(function (tsconfigFile) {
  	const compileTask = task.define(`compile-extension:${name}`, task.series(cleanTask, async () => {
  		const nonts = gulp.src(src, srcOpts).pipe(filter(['**', '!**/*.ts'], { dot: true }));
  		const copyNonTs = util.streamToPromise(nonts.pipe(gulp.dest(out)));
@@ -73,7 +73,7 @@ index a2eb47535f4..a90c5259f00 100644
  
  		await Promise.all([copyNonTs, tsgo]);
  	}));
-@@ -197,7 +191,7 @@ const tasks = compilations.map(function (tsconfigFile) {
+@@ -198,7 +192,7 @@ const tasks = compilations.map(function (tsconfigFile) {
  		const watchNonTs = watchInput.pipe(filter(['**', '!**/*.ts'], { dot: true })).pipe(gulp.dest(out));
  		const tsgoStream = watchInput.pipe(util.debounce(() => {
  			onExtensionCompilationStart();
@@ -83,10 +83,10 @@ index a2eb47535f4..a90c5259f00 100644
  			// error) so the debounce resets to idle and can process future
  			// file changes. Errors from tsgo (e.g. type errors causing a
 diff --git a/build/gulpfile.vscode.ts b/build/gulpfile.vscode.ts
-index 8eb8c02b549..1f036425e7d 100644
+index ac4ee9cec7d..7d9a82d20dd 100644
 --- a/build/gulpfile.vscode.ts
 +++ b/build/gulpfile.vscode.ts
-@@ -440,7 +440,6 @@ function packageTask(platform: string, arch: string, sourceFolderName: string, d
+@@ -436,7 +436,6 @@ function packageTask(platform: string, arch: string, sourceFolderName: string, d
  			.pipe(util.cleanNodeModules(path.join(import.meta.dirname, '.moduleignore')))
  			.pipe(util.cleanNodeModules(path.join(import.meta.dirname, `.moduleignore.${process.platform}`)))
  			.pipe(jsFilter)

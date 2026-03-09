@@ -5,12 +5,11 @@ Subject: [PATCH] fix: break cyclic dependency
 
 ---
  .../contrib/chat/browser/newChatContextAttachments.ts |  4 ++--
- .../contrib/chat/browser/chatWindowNotifier.ts        |  3 ++-
  .../contrib/tasks/browser/task.contribution.ts        |  3 ++-
  .../contrib/tasks/browser/terminalTaskSystem.ts       |  3 ++-
  src/vs/workbench/contrib/tasks/common/constants.ts    | 11 +++++++++++
  src/vs/workbench/contrib/tasks/common/tasks.ts        |  9 +--------
- 6 files changed, 20 insertions(+), 13 deletions(-)
+ 5 files changed, 18 insertions(+), 12 deletions(-)
  create mode 100644 src/vs/workbench/contrib/tasks/common/constants.ts
 
 diff --git a/src/vs/sessions/contrib/chat/browser/newChatContextAttachments.ts b/src/vs/sessions/contrib/chat/browser/newChatContextAttachments.ts
@@ -28,20 +27,6 @@ index a7440dfc691..1f6674c7b74 100644
  import { CodeDataTransfers, containsDragType, extractEditorsDropData, getPathForFile } from '../../../../platform/dnd/browser/dnd.js';
  import { DataTransfers } from '../../../../base/browser/dnd.js';
  import { getExcludes, ISearchConfiguration, ISearchService, QueryType } from '../../../../workbench/services/search/common/search.js';
-diff --git a/src/vs/workbench/contrib/chat/browser/chatWindowNotifier.ts b/src/vs/workbench/contrib/chat/browser/chatWindowNotifier.ts
-index abece4b0a87..bd4006094da 100644
---- a/src/vs/workbench/contrib/chat/browser/chatWindowNotifier.ts
-+++ b/src/vs/workbench/contrib/chat/browser/chatWindowNotifier.ts
-@@ -19,7 +19,8 @@ import { IChatModel, IChatRequestNeedsInputInfo } from '../common/model/chatMode
- import { IChatService } from '../common/chatService/chatService.js';
- import { ChatConfiguration, ChatNotificationMode } from '../common/constants.js';
- import { IChatWidgetService } from './chat.js';
--import { AcceptToolConfirmationActionId, IToolConfirmationActionContext } from './actions/chatToolActions.js';
-+import { IToolConfirmationActionContext } from './actions/chatToolActions.js';
-+import { AcceptToolConfirmationActionId } from './actions/chatConstants.js';
- 
- /**
-  * Observes all live chat models and triggers OS notifications when any model
 diff --git a/src/vs/workbench/contrib/tasks/browser/task.contribution.ts b/src/vs/workbench/contrib/tasks/browser/task.contribution.ts
 index 4fa7237b82f..03e2d2bb6c9 100644
 --- a/src/vs/workbench/contrib/tasks/browser/task.contribution.ts

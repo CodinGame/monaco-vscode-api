@@ -112,6 +112,8 @@ import { IChatAttachmentWidgetRegistry } from 'vs/workbench/contrib/chat/browser
 import { ChatAttachmentWidgetRegistry } from 'vs/workbench/contrib/chat/browser/attachments/chatAttachmentWidgetRegistry'
 import { IChatDebugService } from 'vs/workbench/contrib/chat/common/chatDebugService.service'
 import { ChatDebugServiceImpl } from 'vs/workbench/contrib/chat/common/chatDebugServiceImpl'
+import { IChatResponseResourceFileSystemProvider } from 'vs/workbench/contrib/chat/common/widget/chatResponseResourceFileSystemProvider.service'
+import { ChatResponseResourceFileSystemProvider } from 'vs/workbench/contrib/chat/common/widget/chatResponseResourceFileSystemProvider'
 import 'vs/workbench/contrib/chat/browser/chat.contribution'
 import 'vs/workbench/contrib/terminal/terminal.chat.contribution'
 import 'vs/workbench/contrib/inlineChat/browser/inlineChat.contribution'
@@ -247,6 +249,11 @@ export default function getServiceOverride(): IEditorOverrideServices {
       [],
       true
     ),
-    [IChatDebugService.toString()]: new SyncDescriptor(ChatDebugServiceImpl, [], true)
+    [IChatDebugService.toString()]: new SyncDescriptor(ChatDebugServiceImpl, [], true),
+    [IChatResponseResourceFileSystemProvider.toString()]: new SyncDescriptor(
+      ChatResponseResourceFileSystemProvider,
+      [],
+      true
+    )
   }
 }

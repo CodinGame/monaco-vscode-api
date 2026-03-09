@@ -41,7 +41,7 @@ index e9595bd406a..c6bd9c1b58c 100644
  		}
  		checked.push(extension);
 diff --git a/src/vs/platform/extensionManagement/common/extensionGalleryService.ts b/src/vs/platform/extensionManagement/common/extensionGalleryService.ts
-index c0e3e68c906..544f107fe4b 100644
+index 5f3112363ed..d595105c3d9 100644
 --- a/src/vs/platform/extensionManagement/common/extensionGalleryService.ts
 +++ b/src/vs/platform/extensionManagement/common/extensionGalleryService.ts
 @@ -1163,7 +1163,7 @@ export abstract class AbstractExtensionGalleryService implements IExtensionGalle
@@ -107,10 +107,10 @@ index 0e1160d71e4..62bf1facfe7 100644
  			}
  		}));
 diff --git a/src/vs/workbench/contrib/chat/browser/widget/chatWidget.ts b/src/vs/workbench/contrib/chat/browser/widget/chatWidget.ts
-index 837e3949d69..411531f2d5b 100644
+index 7ebfe7ee548..98d77fa55a1 100644
 --- a/src/vs/workbench/contrib/chat/browser/widget/chatWidget.ts
 +++ b/src/vs/workbench/contrib/chat/browser/widget/chatWidget.ts
-@@ -986,8 +986,8 @@ export class ChatWidget extends Disposable implements IChatWidget {
+@@ -985,8 +985,8 @@ export class ChatWidget extends Disposable implements IChatWidget {
  				const defaultAgent = this.chatAgentService.getDefaultAgent(this.location, this.input.currentModeKind);
  				let additionalMessage: string | IMarkdownString | undefined;
  				if (this.chatEntitlementService.anonymous && !this.chatEntitlementService.sentiment.installed) {
