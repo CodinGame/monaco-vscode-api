@@ -546,7 +546,7 @@ export class LayoutService extends Disposable implements ILayoutService, IWorkbe
   }
 
   layout(): void {
-    this._mainContainerDimension = dom.getClientArea(window.document.body)
+    this._mainContainerDimension = dom.getClientArea(this.mainContainer)
 
     this._onDidLayout.fire(this._mainContainerDimension)
   }
