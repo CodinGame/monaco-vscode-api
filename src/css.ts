@@ -32,7 +32,7 @@ export function registerCss(module: { default?: string | CSSStyleSheet } | undef
         fontFaceStyleSheet.insertRule(fontFace)
       }
       mainWindow.document.adoptedStyleSheets = [
-        ...mainWindow.document.adoptedStyleSheets,
+        ...(mainWindow.document.adoptedStyleSheets ?? []),
         fontFaceStyleSheet
       ]
     }
@@ -55,5 +55,5 @@ export function injectCss(target: HTMLElement) {
     )
   }
 
-  root.adoptedStyleSheets = [...root.adoptedStyleSheets, ...sheets]
+  root.adoptedStyleSheets = [...(root.adoptedStyleSheets ?? []), ...sheets]
 }
