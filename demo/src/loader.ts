@@ -58,6 +58,37 @@ if (locale != null) {
 const mode = searchParams.get('mode')
 const sandboxed = searchParams.has('sandboxed')
 
+declare global {
+  interface Window {
+    _VSCODE_PRODUCT_JSON: object
+  }
+}
+
+window._VSCODE_PRODUCT_JSON = {
+  defaultChatAgent: {
+    chatExtensionId: 'codingame.aiDemo',
+    extensionId: 'codingame.aiDemo',
+    provider: {
+      default: {
+        id: 'codingame',
+        name: 'Codingame'
+      },
+      apple: {
+        id: 'codingame',
+        name: 'Codingame'
+      },
+      enterprise: {
+        id: 'codingame',
+        name: 'Codingame'
+      },
+      google: {
+        id: 'codingame',
+        name: 'Codingame'
+      }
+    }
+  }
+}
+
 ;(async () => {
   if (sandboxed) {
     window.vscodeContainer = await new Promise<HTMLElement>((resolve) => {
