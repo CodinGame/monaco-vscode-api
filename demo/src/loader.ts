@@ -67,7 +67,7 @@ declare global {
 window._VSCODE_PRODUCT_JSON = {
   defaultChatAgent: {
     chatExtensionId: 'codingame.aiDemo',
-    extensionId: 'codingame.aiDemo',
+    extensionId: '',
     provider: {
       default: {
         id: 'codingame',
