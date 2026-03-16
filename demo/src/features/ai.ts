@@ -10,6 +10,32 @@ const { getApi } = registerExtension(
       vscode: '*'
     },
     contributes: {
+      configuration: {
+        title: 'Codingame AI Demo',
+        properties: {
+          codingameAICompletionsEnabled: {
+            type: 'object',
+            scope: 'window',
+            default: {
+              '*': true,
+              plaintext: false,
+              markdown: false,
+              scminput: false
+            },
+            additionalProperties: {
+              type: 'boolean'
+            },
+            markdownDescription:
+              'Enable or disable auto triggering of Copilot completions for specified [languages](https://code.visualstudio.com/docs/languages/identifiers). You can still trigger suggestions manually using `Alt + \\`'
+          },
+          codingameNextEditSuggestionsEnabled: {
+            type: 'boolean',
+            default: true,
+            tags: ['nextEditSuggestions', 'onExp'],
+            scope: 'language-overridable'
+          }
+        }
+      },
       commands: [
         {
           command: 'aiSuggestedCommand',

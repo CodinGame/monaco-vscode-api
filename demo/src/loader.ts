@@ -68,6 +68,8 @@ window._VSCODE_PRODUCT_JSON = {
   defaultChatAgent: {
     chatExtensionId: 'codingame.aiDemo',
     extensionId: '',
+    completionsEnablementSetting: 'codingameAICompletionsEnabled',
+    nextEditSuggestionsSetting: 'codingameNextEditSuggestionsEnabled',
     provider: {
       default: {
         id: 'codingame',
