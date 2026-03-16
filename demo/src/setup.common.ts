@@ -52,7 +52,9 @@ import getWorkspaceTrustOverride from '@codingame/monaco-vscode-workspace-trust-
 import getLogServiceOverride from '@codingame/monaco-vscode-log-service-override'
 import getWorkingCopyServiceOverride from '@codingame/monaco-vscode-working-copy-service-override'
 import getTestingServiceOverride from '@codingame/monaco-vscode-testing-service-override'
-import getChatServiceOverride from '@codingame/monaco-vscode-chat-service-override'
+import getChatServiceOverride, {
+  ChatEntitlement
+} from '@codingame/monaco-vscode-chat-service-override'
 import getNotebookServiceOverride from '@codingame/monaco-vscode-notebook-service-override'
 import getWelcomeServiceOverride from '@codingame/monaco-vscode-welcome-service-override'
 import getWalkThroughServiceOverride from '@codingame/monaco-vscode-walkthrough-service-override'
@@ -443,7 +445,21 @@ export const commonServices: IEditorOverrideServices = {
   ...getWorkingCopyServiceOverride(),
   ...getScmServiceOverride(),
   ...getTestingServiceOverride(),
-  ...getChatServiceOverride(),
+  ...getChatServiceOverride({
+    customEntitlement: {
+      anonymous: false,
+      entitlement: ChatEntitlement.Enterprise,
+      previewFeaturesDisabled: false,
+      quotas: {},
+      sentiment: {
+        installed: true,
+        hidden: false,
+        disabled: false,
+        untrusted: false,
+        registered: false
+      }
+    }
+  }),
   ...getNotebookServiceOverride(),
   ...getWelcomeServiceOverride(),
   ...getWalkThroughServiceOverride(),
