@@ -75,17 +75,20 @@ void getApi().then(async (vscodeApi) => {
       modal: true
     })
   })
-  vscodeApi.ai.registerRelatedInformationProvider(vscodeApi.RelatedInformationType.CommandInformation, {
-    provideRelatedInformation() {
-      return [
-        {
-          type: vscode.RelatedInformationType.CommandInformation,
-          command: 'aiSuggestedCommand',
-          weight: 9999
-        }
-      ]
+  vscodeApi.ai.registerRelatedInformationProvider(
+    vscodeApi.RelatedInformationType.CommandInformation,
+    {
+      provideRelatedInformation() {
+        return [
+          {
+            type: vscode.RelatedInformationType.CommandInformation,
+            command: 'aiSuggestedCommand',
+            weight: 9999
+          }
+        ]
+      }
     }
-  })
+  )
 
   interface CodingameToolParameters {
     value: number
@@ -96,7 +99,7 @@ void getApi().then(async (vscodeApi) => {
       options: vscode.LanguageModelToolInvocationPrepareOptions<CodingameToolParameters>
     ) {
       return new vscode.LanguageModelToolResult([
-        new vscode.LanguageModelTextPart('The result is: ' + (options.input.value * 2))
+        new vscode.LanguageModelTextPart('The result is: ' + options.input.value * 2)
       ])
     }
 
@@ -105,19 +108,21 @@ void getApi().then(async (vscodeApi) => {
     ): Promise<vscode.PreparedToolInvocation> {
       const confirmationMessages = {
         title: vscode.l10n.t('Use Codingame tool'),
-        message: new vscode.MarkdownString('AI wants to get the double of `' + options.input.value + '`')
+        message: new vscode.MarkdownString(
+          'AI wants to get the double of `' + options.input.value + '`'
+        )
       }
 
       return {
-        invocationMessage: new vscode.MarkdownString('Doubling the value `' + options.input.value + '`'),
+        invocationMessage: new vscode.MarkdownString(
+          'Doubling the value `' + options.input.value + '`'
+        ),
         confirmationMessages
       }
     }
   }
 
-  vscodeApi.lm.registerTool('codingame-tool',
-    new CodingameTool()
-  )
+  vscodeApi.lm.registerTool('codingame-tool', new CodingameTool())
 
   const _onDidChangeLanguageModelChatInformation = new vscodeApi.EventEmitter<void>()
 
@@ -136,18 +141,25 @@ void getApi().then(async (vscodeApi) => {
           version: '1.0.0',
           isDefault: true,
           isUserSelectable: true
-        },
+        }
       ]
     },
     async provideTokenCount() {
       return 0
     },
-    async provideLanguageModelChatResponse(_model, _messages, _options, progress: vscode.Progress<vscode.LanguageModelResponsePart2>) {
+    async provideLanguageModelChatResponse(
+      _model,
+      _messages,
+      _options,
+      progress: vscode.Progress<vscode.LanguageModelResponsePart2>
+    ) {
       progress.report(new vscode.LanguageModelThinkingPart('Think', 'thinkId'))
       await new Promise((resolve) => setTimeout(resolve, 300))
       progress.report(new vscode.LanguageModelThinkingPart('ing...', 'thinkId'))
       await new Promise((resolve) => setTimeout(resolve, 1000))
-      progress.report(new vscode.LanguageModelToolCallPart('callId', 'codingame-tool', {value: 21}))
+      progress.report(
+        new vscode.LanguageModelToolCallPart('callId', 'codingame-tool', { value: 21 })
+      )
       await new Promise((resole) => setTimeout(resole, 2000))
       progress.report(new vscode.LanguageModelTextPart('Tool'))
       await new Promise((resole) => setTimeout(resole, 300))
@@ -178,13 +190,10 @@ void getApi().then(async (vscodeApi) => {
             metadata: part.metadata
           })
         } else if (part instanceof vscode.LanguageModelToolCallPart) {
-          const res = await vscode.lm.invokeTool(
-            part.name,
-            {
-              toolInvocationToken: request.toolInvocationToken,
-              input: part.input
-            },
-          )
+          const res = await vscode.lm.invokeTool(part.name, {
+            toolInvocationToken: request.toolInvocationToken,
+            input: part.input
+          })
           let toolResult = ''
           for (const toolPart of res.content) {
             if (toolPart instanceof vscode.LanguageModelTextPart) {
