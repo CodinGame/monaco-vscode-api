@@ -124,7 +124,11 @@ function getServiceOverride(_webviewIframeAlternateDomains?: string): IEditorOve
       true
     ),
     [IHistoryService.toString()]: new SyncDescriptor(HistoryService, [], false),
-    [ICustomEditorService.toString()]: new SyncDescriptor(CustomEditorService, [], true),
+    [ICustomEditorService.toString()]: new SyncDescriptor(
+      CustomEditorService,
+      [],
+      /** CustomEditorService registers the contribution point, so its instantiation can't be delayed */ false
+    ),
     [IWebviewService.toString()]: new SyncDescriptor(WebviewService, [], true),
     [IWebviewViewService.toString()]: new SyncDescriptor(WebviewViewService, [], true),
     [IWebviewWorkbenchService.toString()]: new SyncDescriptor(WebviewEditorService, [], true),
