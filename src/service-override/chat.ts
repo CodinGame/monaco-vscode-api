@@ -41,7 +41,12 @@ import { ILanguageModelIgnoredFilesService } from 'vs/workbench/contrib/chat/com
 import { IChatMarkdownAnchorService } from 'vs/workbench/contrib/chat/browser/widget/chatContentParts/chatMarkdownAnchorService.service'
 import { ChatMarkdownAnchorService } from 'vs/workbench/contrib/chat/browser/widget/chatContentParts/chatMarkdownAnchorService'
 import { ChatEditingService } from 'vs/workbench/contrib/chat/browser/chatEditing/chatEditingServiceImpl'
-import { ChatEntitlementService } from 'vs/workbench/services/chat/common/chatEntitlementService'
+import {
+  ChatEntitlement,
+  ChatEntitlementService,
+  type IChatSentiment,
+  type IQuotas
+} from 'vs/workbench/services/chat/common/chatEntitlementService'
 import { PromptsService } from 'vs/workbench/contrib/chat/common/promptSyntax/service/promptsServiceImpl'
 import { IChatEntitlementService } from 'vs/workbench/services/chat/common/chatEntitlementService.service'
 import { IPromptsService } from 'vs/workbench/contrib/chat/common/promptSyntax/service/promptsService.service'
@@ -114,12 +119,52 @@ import { IChatDebugService } from 'vs/workbench/contrib/chat/common/chatDebugSer
 import { ChatDebugServiceImpl } from 'vs/workbench/contrib/chat/common/chatDebugServiceImpl'
 import { IChatResponseResourceFileSystemProvider } from 'vs/workbench/contrib/chat/common/widget/chatResponseResourceFileSystemProvider.service'
 import { ChatResponseResourceFileSystemProvider } from 'vs/workbench/contrib/chat/common/widget/chatResponseResourceFileSystemProvider'
+import { Event } from 'vs/base/common/event'
+import { constObservable } from 'vs/base/common/observable'
 import 'vs/workbench/contrib/chat/browser/chat.contribution'
 import 'vs/workbench/contrib/terminal/terminal.chat.contribution'
 import 'vs/workbench/contrib/inlineChat/browser/inlineChat.contribution'
 import 'vs/workbench/contrib/remoteCodingAgents/browser/remoteCodingAgents.contribution'
 
-export default function getServiceOverride(): IEditorOverrideServices {
+export interface CustomEntitlement {
+  entitlement: ChatEntitlement
+  sentiment: IChatSentiment
+  anonymous: boolean
+  quotas: IQuotas
+  previewFeaturesDisabled: boolean
+}
+
+class CustomEntitlementService implements IChatEntitlementService {
+  constructor(private customEntitlement: CustomEntitlement) {}
+  _serviceBrand: undefined
+  onDidChangeEntitlement = Event.None
+  entitlement = this.customEntitlement.entitlement
+  entitlementObs = constObservable(this.entitlement)
+  previewFeaturesDisabled = this.customEntitlement.previewFeaturesDisabled
+  organisations = undefined
+  isInternal = true
+  sku = undefined
+  copilotTrackingId = undefined
+  onDidChangeQuotaExceeded = Event.None
+  onDidChangeQuotaRemaining = Event.None
+  quotas = this.customEntitlement.quotas
+  onDidChangeSentiment = Event.None
+  sentiment = this.customEntitlement.sentiment
+  sentimentObs = constObservable(this.sentiment)
+  onDidChangeAnonymous = Event.None
+  anonymous = this.customEntitlement.anonymous
+  anonymousObs = constObservable(this.anonymous)
+  markAnonymousRateLimited(): void {}
+  async update(): Promise<void> {}
+}
+
+export interface ChatServiceOverrideOptions {
+  customEntitlement?: CustomEntitlement
+}
+
+export default function getServiceOverride({
+  customEntitlement
+}: ChatServiceOverrideOptions = {}): IEditorOverrideServices {
   return {
     [IChatService.toString()]: new SyncDescriptor(ChatService, [], true),
     [IChatWidgetService.toString()]: new SyncDescriptor(ChatWidgetService, [], true),
@@ -164,7 +209,10 @@ export default function getServiceOverride(): IEditorOverrideServices {
       [],
       true
     ),
-    [IChatEntitlementService.toString()]: new SyncDescriptor(ChatEntitlementService, [], true),
+    [IChatEntitlementService.toString()]:
+      customEntitlement != null
+        ? new SyncDescriptor(CustomEntitlementService, [customEntitlement], true)
+        : new SyncDescriptor(ChatEntitlementService, [], true),
     [IPromptsService.toString()]: new SyncDescriptor(PromptsService, [], true),
     [IChatStatusItemService.toString()]: new SyncDescriptor(ChatStatusItemService, [], true),
     [IChatContextPickService.toString()]: new SyncDescriptor(ChatContextPickService, [], true),
@@ -257,3 +305,6 @@ export default function getServiceOverride(): IEditorOverrideServices {
     )
   }
 }
+
+export { ChatEntitlement }
+export type { IChatSentiment, IQuotas }
