@@ -23,6 +23,7 @@ Subject: [PATCH] feat: support loading VSCode in an iframe
  .../inlineEditsViews/debugVisualization.ts    |  5 ++-
  .../browser/view/inlineEdits/utils/utils.ts   | 10 ++---
  .../clipboard/browser/clipboardService.ts     |  2 +-
+ src/vs/platform/hover/browser/hoverService.ts |  2 +-
  .../remote/browser/browserSocketFactory.ts    |  2 +-
  .../workbench/browser/parts/dialogs/dialog.ts |  3 +-
  src/vs/workbench/browser/window.ts            | 25 +++++++----
@@ -45,7 +46,7 @@ Subject: [PATCH] feat: support loading VSCode in an iframe
  .../request/browser/requestService.ts         |  3 +-
  .../electron-browser/requestService.ts        |  3 +-
  .../services/timer/browser/timerService.ts    |  5 ++-
- 41 files changed, 128 insertions(+), 124 deletions(-)
+ 42 files changed, 129 insertions(+), 125 deletions(-)
 
 diff --git a/src/vs/base/browser/browser.ts b/src/vs/base/browser/browser.ts
 index 9da1be69d7c..08d8860ea36 100644
@@ -620,6 +621,19 @@ index 358aa682cda..b41a1f1346b 100644
  			const clipboardItem = clipboardItems[0];
  
  			const supportedImageTypes = ['image/png', 'image/jpeg', 'image/gif', 'image/tiff', 'image/bmp'];
+diff --git a/src/vs/platform/hover/browser/hoverService.ts b/src/vs/platform/hover/browser/hoverService.ts
+index cfb53e2e686..f23776d2d53 100644
+--- a/src/vs/platform/hover/browser/hoverService.ts
++++ b/src/vs/platform/hover/browser/hoverService.ts
+@@ -364,7 +364,7 @@ export class HoverService extends Disposable implements IHoverService {
+ 		}
+ 
+ 		if ('IntersectionObserver' in mainWindow) {
+-			const observer = new IntersectionObserver(e => this._intersectionChange(e, hover), { threshold: 0 });
++			const observer = new mainWindow.IntersectionObserver(e => this._intersectionChange(e, hover), { threshold: 0 });
+ 			const firstTargetElement = 'targetElements' in options.target ? options.target.targetElements[0] : options.target;
+ 			observer.observe(firstTargetElement);
+ 			hoverDisposables.add(toDisposable(() => observer.disconnect()));
 diff --git a/src/vs/platform/remote/browser/browserSocketFactory.ts b/src/vs/platform/remote/browser/browserSocketFactory.ts
 index eafeef861a1..8859ceacf87 100644
 --- a/src/vs/platform/remote/browser/browserSocketFactory.ts
