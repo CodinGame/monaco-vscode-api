@@ -4,14 +4,14 @@ Date: Mon, 11 Mar 2024 17:38:30 +0100
 Subject: [PATCH] fix: improve extension contribution types
 
 ---
- .../platform/extensions/common/extensions.ts  | 1438 ++++++++++++++++-
+ .../platform/extensions/common/extensions.ts  | 1448 ++++++++++++++++-
  .../services/search/common/queryBuilder.ts    |    8 +-
  .../themes/common/colorExtensionPoint.ts      |    2 +-
  .../tokenClassificationExtensionPoint.ts      |    1 +
- 4 files changed, 1379 insertions(+), 70 deletions(-)
+ 4 files changed, 1389 insertions(+), 70 deletions(-)
 
 diff --git a/src/vs/platform/extensions/common/extensions.ts b/src/vs/platform/extensions/common/extensions.ts
-index 3e5b309b826..ea81acadcb6 100644
+index 3e5b309b826..6e099d27098 100644
 --- a/src/vs/platform/extensions/common/extensions.ts
 +++ b/src/vs/platform/extensions/common/extensions.ts
 @@ -3,6 +3,7 @@
@@ -1377,9 +1377,33 @@ index 3e5b309b826..ea81acadcb6 100644
  }
  
  export interface IChatParticipantContribution {
-@@ -207,31 +1365,106 @@ export interface IChatFileContribution {
+@@ -176,6 +1334,7 @@ export interface IChatParticipantContribution {
+ 	description?: string;
+ 	isDefault?: boolean;
+ 	commands?: { name: string }[];
++	modes: string[]
  }
  
+ export interface IToolContribution {
+@@ -183,6 +1342,9 @@ export interface IToolContribution {
+ 	displayName: string;
+ 	modelDescription: string;
+ 	userDescription?: string;
++	toolReferenceName?: string;
++	canBeReferencedInPrompt?: boolean
++	inputSchema?: object
+ }
+ 
+ export interface IToolSetContribution {
+@@ -206,32 +1368,112 @@ export interface IChatFileContribution {
+ 	readonly when?: string;
+ }
+ 
++export interface ILanguageModelChatProvider {
++	vendor: string
++	displayName?: string
++}
++
  export interface IExtensionContributions {
 -	commands?: ICommand[];
 -	configuration?: any;
@@ -1504,11 +1528,12 @@ index 3e5b309b826..ea81acadcb6 100644
  	readonly chatParticipants?: ReadonlyArray<IChatParticipantContribution>;
  	readonly chatPromptFiles?: ReadonlyArray<IChatFileContribution>;
  	readonly chatInstructions?: ReadonlyArray<IChatFileContribution>;
-@@ -240,6 +1473,81 @@ export interface IExtensionContributions {
+@@ -240,6 +1482,82 @@ export interface IExtensionContributions {
  	readonly languageModelTools?: ReadonlyArray<IToolContribution>;
  	readonly languageModelToolSets?: ReadonlyArray<IToolSetContribution>;
  	readonly mcpServerDefinitionProviders?: ReadonlyArray<IMcpCollectionContribution>;
 +	readonly modelContextServerCollections?: ReadonlyArray<IMcpCollectionContribution>;
++	readonly languageModelChatProviders?: ReadonlyArray<ILanguageModelChatProvider>;
 +
 +
 +	/**
