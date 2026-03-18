@@ -56,7 +56,22 @@ const PURE_FUNCTIONS = new Set([
 ])
 
 const EXTENSIONS = ['', '.ts', '.js']
-const SIDE_EFFECT_CONSTRUCTORS = new Set(['DomListener'])
+const SIDE_EFFECT_CONSTRUCTORS = new Set([
+  'DomListener',
+  'TimeoutTimer',
+  'AbstractIdleValue',
+  'WindowIdleValue',
+  'GlobalIdleValue',
+  'AsyncIterableObject',
+  'AsyncIterableSource',
+  'AsyncIterableProducer',
+  'CancelableAsyncIterableProducer',
+  'ActiveElementTracker',
+  'WindowIdleValue',
+  'TimeoutThrottledDomListener',
+  'FocusTracker',
+  'DragAndDropObserver'
+])
 
 const PURE_OR_TO_REMOVE_FUNCTIONS = new Set([...PURE_FUNCTIONS])
 
