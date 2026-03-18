@@ -114,16 +114,44 @@ import { IChatDebugService } from 'vs/workbench/contrib/chat/common/chatDebugSer
 import { ChatDebugServiceImpl } from 'vs/workbench/contrib/chat/common/chatDebugServiceImpl'
 import { IChatResponseResourceFileSystemProvider } from 'vs/workbench/contrib/chat/common/widget/chatResponseResourceFileSystemProvider.service'
 import { ChatResponseResourceFileSystemProvider } from 'vs/workbench/contrib/chat/common/widget/chatResponseResourceFileSystemProvider'
+import { Event } from 'vs/base/common/event'
+import type { IDefaultAccount } from 'vs/base/common/defaultAccount'
+import { IDefaultAccountService } from 'vs/platform/defaultAccount/common/defaultAccount.service'
 import 'vs/workbench/contrib/chat/browser/chat.contribution'
 import 'vs/workbench/contrib/terminal/terminal.chat.contribution'
 import 'vs/workbench/contrib/inlineChat/browser/inlineChat.contribution'
 import 'vs/workbench/contrib/remoteCodingAgents/browser/remoteCodingAgents.contribution'
 
+class DefaultAccountService implements IDefaultAccountService {
+  declare _serviceBrand: undefined
+  constructor(private defaultAccount: IDefaultAccount | null) {}
 
-export interface ChatServiceOverrideOptions {
+  onDidChangePolicyData: IDefaultAccountService['onDidChangePolicyData'] = Event.None
+  policyData: IDefaultAccountService['policyData'] = null
+
+  getDefaultAccountAuthenticationProvider: IDefaultAccountService['getDefaultAccountAuthenticationProvider'] =
+    () => ({ id: 'default', name: 'Default', enterprise: false })
+  setDefaultAccountProvider: IDefaultAccountService['setDefaultAccountProvider'] = () => {}
+  refresh: IDefaultAccountService['refresh'] = async () => null
+  signIn: IDefaultAccountService['signIn'] = async () => null
+
+  readonly onDidChangeDefaultAccount: IDefaultAccountService['onDidChangeDefaultAccount'] =
+    Event.None
+
+  getDefaultAccount: IDefaultAccountService['getDefaultAccount'] = async () => this.defaultAccount
+
+  copilotTokenInfo: IDefaultAccountService['copilotTokenInfo'] = null
+  onDidChangeCopilotTokenInfo: IDefaultAccountService['onDidChangeCopilotTokenInfo'] = Event.None
+  signOut: IDefaultAccountService['signOut'] = async () => {}
 }
 
-export default function getServiceOverride({}: ChatServiceOverrideOptions = {}): IEditorOverrideServices {
+export interface ChatServiceOverrideOptions {
+  defaultAccount?: IDefaultAccount
+}
+
+export default function getServiceOverride({
+  defaultAccount
+}: ChatServiceOverrideOptions = {}): IEditorOverrideServices {
   return {
     [IChatService.toString()]: new SyncDescriptor(ChatService, [], true),
     [IChatWidgetService.toString()]: new SyncDescriptor(ChatWidgetService, [], true),
@@ -258,9 +286,13 @@ export default function getServiceOverride({}: ChatServiceOverrideOptions = {}):
       ChatResponseResourceFileSystemProvider,
       [],
       true
+    ),
+    [IDefaultAccountService.toString()]: new SyncDescriptor(
+      DefaultAccountService,
+      [defaultAccount],
+      true
     )
   }
 }
 
-export { ChatEntitlement }
-export type { IChatSentiment, IQuotas }
+export type { IDefaultAccount }
