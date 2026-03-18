@@ -135,7 +135,7 @@ index cc2445e006f..c61c32ec51d 100644
  				if (packExtension.local && !extensionsToUninstall.some(e => areSameExtensions(e.extension.identifier, packExtension.identifier))) {
  					extensionsToUninstall.push({ extension: packExtension.local });
 diff --git a/src/vs/workbench/services/accounts/browser/defaultAccount.ts b/src/vs/workbench/services/accounts/browser/defaultAccount.ts
-index 3e2724e96a5..294611c513e 100644
+index 3e2724e96a5..cf93bc4c6b8 100644
 --- a/src/vs/workbench/services/accounts/browser/defaultAccount.ts
 +++ b/src/vs/workbench/services/accounts/browser/defaultAccount.ts
 @@ -128,14 +128,16 @@ export class DefaultAccountService extends Disposable implements IDefaultAccount
@@ -163,7 +163,7 @@ index 3e2724e96a5..294611c513e 100644
  		}
 +
 +		if (!this.defaultAccountConfig) {
-+			throw new Error('Not default account configured')
++			throw new Error('Not default account configured');
 +		}
  		return {
  			...this.defaultAccountConfig.authenticationProvider.default,
@@ -175,7 +175,7 @@ index 3e2724e96a5..294611c513e 100644
 -		const defaultAccountProvider = this._register(instantiationService.createInstance(DefaultAccountProvider, toDefaultAccountConfig(productService.defaultChatAgent)));
 -		defaultAccountService.setDefaultAccountProvider(defaultAccountProvider);
 +
-+		if (productService.defaultChatAgent != null) {
++		if (productService.defaultChatAgent) {
 +			const defaultAccountProvider = this._register(instantiationService.createInstance(DefaultAccountProvider, toDefaultAccountConfig(productService.defaultChatAgent)));
 +			defaultAccountService.setDefaultAccountProvider(defaultAccountProvider);
 +		}

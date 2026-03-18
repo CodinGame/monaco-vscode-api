@@ -52,9 +52,7 @@ import getWorkspaceTrustOverride from '@codingame/monaco-vscode-workspace-trust-
 import getLogServiceOverride from '@codingame/monaco-vscode-log-service-override'
 import getWorkingCopyServiceOverride from '@codingame/monaco-vscode-working-copy-service-override'
 import getTestingServiceOverride from '@codingame/monaco-vscode-testing-service-override'
-import getChatServiceOverride, {
-  ChatEntitlement
-} from '@codingame/monaco-vscode-chat-service-override'
+import getChatServiceOverride from '@codingame/monaco-vscode-chat-service-override'
 import getNotebookServiceOverride from '@codingame/monaco-vscode-notebook-service-override'
 import getWelcomeServiceOverride from '@codingame/monaco-vscode-welcome-service-override'
 import getWalkThroughServiceOverride from '@codingame/monaco-vscode-walkthrough-service-override'
@@ -400,7 +398,7 @@ export const constructOptions: IWorkbenchConstructionOptions = {
 export const envOptions: EnvironmentOverride = {
   // Otherwise, VSCode detect it as the first open workspace folder
   // which make the search result extension fail as it's not able to know what was detected by VSCode
-  // userHome: vscode.Uri.file('/')
+  userHome: vscode.Uri.file('/')
 }
 
 export const commonServices: IEditorOverrideServices = {
@@ -446,18 +444,23 @@ export const commonServices: IEditorOverrideServices = {
   ...getScmServiceOverride(),
   ...getTestingServiceOverride(),
   ...getChatServiceOverride({
-    customEntitlement: {
-      anonymous: false,
-      entitlement: ChatEntitlement.Enterprise,
-      previewFeaturesDisabled: false,
-      quotas: {},
-      sentiment: {
-        installed: true,
-        hidden: false,
-        disabled: false,
-        untrusted: false,
-        registered: false
-      }
+    defaultAccount: {
+      entitlementsData: {
+        access_type_sku: 'unused',
+        assigned_date: 'unused',
+        can_signup_for_limited: false,
+        copilot_plan: 'enterprise',
+        organization_login_list: [],
+        analytics_tracking_id: 'unused'
+      },
+      accountName: 'unused',
+      authenticationProvider: {
+        id: 'unused',
+        name: 'unused',
+        enterprise: true
+      },
+      enterprise: true,
+      sessionId: 'unused'
     }
   }),
   ...getNotebookServiceOverride(),
