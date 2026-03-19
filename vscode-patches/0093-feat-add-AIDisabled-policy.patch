@@ -1,0 +1,33 @@
+From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
+From: =?UTF-8?q?Lo=C3=AFc=20Mangeonjean?= <loic@coderpad.io>
+Date: Thu, 19 Mar 2026 12:21:16 +0100
+Subject: [PATCH] feat: add AIDisabled policy
+
+---
+ .../contrib/chat/browser/chat.contribution.ts       | 13 ++++++++++++-
+ 1 file changed, 12 insertions(+), 1 deletion(-)
+
+diff --git a/src/vs/workbench/contrib/chat/browser/chat.contribution.ts b/src/vs/workbench/contrib/chat/browser/chat.contribution.ts
+index 2c7a0959c84..da0cf374a6c 100644
+--- a/src/vs/workbench/contrib/chat/browser/chat.contribution.ts
++++ b/src/vs/workbench/contrib/chat/browser/chat.contribution.ts
+@@ -1205,7 +1205,18 @@ configurationRegistry.registerConfiguration({
+ 			type: 'boolean',
+ 			description: nls.localize('chat.disableAIFeatures', "Disable and hide built-in AI features provided by GitHub Copilot, including chat and inline suggestions."),
+ 			default: false,
+-			scope: ConfigurationScope.WINDOW
++			scope: ConfigurationScope.WINDOW,
++			policy: {
++				name: 'ChatAIFeaturesDisabled',
++				category: PolicyCategory.InteractiveSession,
++				minimumVersion: '1.111',
++				localization: {
++					description: {
++						key: 'chat.disableAIFeatures',
++						value: nls.localize('chat.disableAIFeatures', "Disable and hide built-in AI features provided by GitHub Copilot, including chat and inline suggestions.",)
++					}
++				},
++			}
+ 		},
+ 		'chat.allowAnonymousAccess': { // TODO@bpasero remove me eventually
+ 			type: 'boolean',
