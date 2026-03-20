@@ -3,7 +3,7 @@ import type { IEditorOverrideServices } from 'vs/editor/standalone/browser/stand
 import { SyncDescriptor } from 'vs/platform/instantiation/common/descriptors'
 import { AbstractPolicyService, type PolicyValue } from 'vs/platform/policy/common/policy'
 import { IPolicyService } from 'vs/platform/policy/common/policy.service'
-
+import { PolicyCategory } from 'vs/base/common/policy'
 class PolicyService extends AbstractPolicyService {
   constructor(defaultPolicies: Map<PolicyName, PolicyValue>) {
     super()
@@ -33,4 +33,4 @@ export default function getServiceOverride(
   }
 }
 
-export type { PolicyName, PolicyValue, PolicyService }
+export type { PolicyName, PolicyValue, PolicyService, PolicyCategory }
