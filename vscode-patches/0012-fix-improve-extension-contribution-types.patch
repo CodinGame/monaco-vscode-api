@@ -4,14 +4,14 @@ Date: Mon, 11 Mar 2024 17:38:30 +0100
 Subject: [PATCH] fix: improve extension contribution types
 
 ---
- .../platform/extensions/common/extensions.ts  | 1448 ++++++++++++++++-
+ .../platform/extensions/common/extensions.ts  | 1457 ++++++++++++++++-
  .../services/search/common/queryBuilder.ts    |    8 +-
  .../themes/common/colorExtensionPoint.ts      |    2 +-
  .../tokenClassificationExtensionPoint.ts      |    1 +
- 4 files changed, 1389 insertions(+), 70 deletions(-)
+ 4 files changed, 1398 insertions(+), 70 deletions(-)
 
 diff --git a/src/vs/platform/extensions/common/extensions.ts b/src/vs/platform/extensions/common/extensions.ts
-index 3e5b309b826..6e099d27098 100644
+index 3e5b309b826..22328736cac 100644
 --- a/src/vs/platform/extensions/common/extensions.ts
 +++ b/src/vs/platform/extensions/common/extensions.ts
 @@ -3,6 +3,7 @@
@@ -369,10 +369,8 @@ index 3e5b309b826..6e099d27098 100644
 +	 * Path of the tmTheme file. The path is relative to the extension folder and is typically './colorthemes/awesome-color-theme.json'.
 +	 */
 +	readonly path: string;
- }
- 
--export interface ITheme {
--	label: string;
++}
++
 +export interface IIconTheme {
 +	/**
 +	 * Id of the file icon theme as used in the user settings.
@@ -386,8 +384,10 @@ index 3e5b309b826..6e099d27098 100644
 +	 * Path of the file icon theme definition file. The path is relative to the extension folder and is typically './fileicons/awesome-icon-theme.json'.
 +	 */
 +	readonly path: string;
-+}
-+
+ }
+ 
+-export interface ITheme {
+-	label: string;
 +export interface IProductTheme {
 +	/**
 +	 * Id of the product icon theme as used in the user settings.
@@ -642,11 +642,11 @@ index 3e5b309b826..6e099d27098 100644
 +	 * Unique identifier of the notebook output renderer.
 +	 */
  	readonly id: string;
+-	readonly displayName: string;
 +	/**
 +	 * Human readable name of the notebook output renderer.
 +	 */
- 	readonly displayName: string;
--	readonly mimeTypes: string[];
++	readonly displayName: string;
 +	readonly dependencies?: string[];
 +	readonly optionalDependencies?: string[];
 +	/**
@@ -656,7 +656,7 @@ index 3e5b309b826..6e099d27098 100644
 +	/**
 +	 * Set of globs that the notebook is for.
 +	 */
-+	readonly mimeTypes: string[];
+ 	readonly mimeTypes: string[];
 +	readonly entrypoint: string | {
 +		readonly extends: string;
 +		readonly path: string;
@@ -664,7 +664,7 @@ index 3e5b309b826..6e099d27098 100644
  }
  
  export interface IDebugVisualizationContribution {
-@@ -157,16 +625,706 @@ export interface IDebugVisualizationContribution {
+@@ -157,32 +625,735 @@ export interface IDebugVisualizationContribution {
  }
  
  export interface ITranslation {
@@ -1377,31 +1377,42 @@ index 3e5b309b826..6e099d27098 100644
  }
  
  export interface IChatParticipantContribution {
-@@ -176,6 +1334,7 @@ export interface IChatParticipantContribution {
+ 	id: string;
+ 	name: string;
+ 	fullName: string;
++	when?: string;
  	description?: string;
  	isDefault?: boolean;
++	isSticky?: boolean;
++	sampleRequest?: string;
  	commands?: { name: string }[];
-+	modes: string[]
++	locations?: string[];
++	modes: string[];
++	disambiguation?: { category: string; categoryName?: string /** Deprecated */; description: string; examples: string[] }[];
  }
  
  export interface IToolContribution {
-@@ -183,6 +1342,9 @@ export interface IToolContribution {
+ 	name: string;
  	displayName: string;
  	modelDescription: string;
- 	userDescription?: string;
 +	toolReferenceName?: string;
-+	canBeReferencedInPrompt?: boolean
-+	inputSchema?: object
++	legacyToolReferenceFullNames?: string[];
++	icon?: string | { light: string; dark: string };
++	when?: string;
++	tags?: string[];
+ 	userDescription?: string;
++	inputSchema?: IJSONSchema;
++	canBeReferencedInPrompt?: boolean;
  }
  
  export interface IToolSetContribution {
-@@ -206,32 +1368,112 @@ export interface IChatFileContribution {
+@@ -206,32 +1377,112 @@ export interface IChatFileContribution {
  	readonly when?: string;
  }
  
 +export interface ILanguageModelChatProvider {
-+	vendor: string
-+	displayName?: string
++	vendor: string;
++	displayName?: string;
 +}
 +
  export interface IExtensionContributions {
@@ -1528,7 +1539,7 @@ index 3e5b309b826..6e099d27098 100644
  	readonly chatParticipants?: ReadonlyArray<IChatParticipantContribution>;
  	readonly chatPromptFiles?: ReadonlyArray<IChatFileContribution>;
  	readonly chatInstructions?: ReadonlyArray<IChatFileContribution>;
-@@ -240,6 +1482,82 @@ export interface IExtensionContributions {
+@@ -240,6 +1491,82 @@ export interface IExtensionContributions {
  	readonly languageModelTools?: ReadonlyArray<IToolContribution>;
  	readonly languageModelToolSets?: ReadonlyArray<IToolSetContribution>;
  	readonly mcpServerDefinitionProviders?: ReadonlyArray<IMcpCollectionContribution>;
