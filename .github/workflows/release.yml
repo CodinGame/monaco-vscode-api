@@ -17,7 +17,7 @@ jobs:
 
     steps:
     - name: Checkout
-      uses: actions/checkout@v4
+      uses: actions/checkout@v6
       with:
         # get all tags for semantic release
         fetch-depth: 0
@@ -26,7 +26,7 @@ jobs:
         sudo apt-get update
         sudo apt-get install libkrb5-dev libxkbfile-dev libx11-6 pkg-config
     - name: mise-en-place
-      uses: jdx/mise-action@v2
+      uses: jdx/mise-action@v3
     - name: Install dependencies
       run: npm ci
     - name: Build
