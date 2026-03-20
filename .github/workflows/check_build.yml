@@ -9,7 +9,7 @@ jobs:
     name: Lint commits
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v6
         with:
           # we actually need "github.event.pull_request.commits + 1" commit
           fetch-depth: 0
@@ -23,13 +23,13 @@ jobs:
 
     steps:
     - name: Checkout
-      uses: actions/checkout@v4
+      uses: actions/checkout@v6
     - name: Install build dependencies
       run: |
         sudo apt-get update
         sudo apt-get install libkrb5-dev libxkbfile-dev libx11-6
     - name: mise-en-place
-      uses: jdx/mise-action@v2
+      uses: jdx/mise-action@v3
     - name: Install dependencies
       run: npm ci
     - name: Build

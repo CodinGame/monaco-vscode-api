@@ -48,12 +48,13 @@ const { getApi } = registerExtension(
           fullName: 'Codingame AI',
           name: 'codingame-ai',
           isDefault: true,
-          modes: ['agent']
+          modes: ['agent'],
+          locations: ['panel', 'terminal', 'editor']
         }
       ],
       languageModelChatProviders: [
         {
-          vendor: 'coddingame.aiDemo.modelProvider',
+          vendor: 'copilot',
           displayName: 'Codingame provider'
         }
       ],
@@ -85,7 +86,8 @@ const { getApi } = registerExtension(
       'defaultChatParticipant',
       'chatParticipantAdditions',
       'chatParticipantPrivate',
-      'languageModelThinkingPart'
+      'languageModelThinkingPart',
+      'chatProvider'
     ]
   },
   ExtensionHostKind.LocalProcess,
@@ -152,11 +154,11 @@ void getApi().then(async (vscodeApi) => {
 
   const _onDidChangeLanguageModelChatInformation = new vscodeApi.EventEmitter<void>()
 
-  vscodeApi.lm.registerLanguageModelChatProvider('coddingame.aiDemo.modelProvider', {
+  vscodeApi.lm.registerLanguageModelChatProvider('copilot', {
     provideLanguageModelChatInformation() {
       return [
         {
-          id: 'codingame',
+          id: 'auto',
           capabilities: {
             toolCalling: true
           },
