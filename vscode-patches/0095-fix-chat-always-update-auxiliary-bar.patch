@@ -1,0 +1,24 @@
+From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
+From: Onora Hubleur <onora.hubleur@coderpad.io>
+Date: Mon, 23 Mar 2026 16:22:31 +0100
+Subject: [PATCH] fix(chat): always update auxiliary bar
+
+---
+ .../contrib/chat/browser/chatSetup/chatSetupContributions.ts  | 4 +---
+ 1 file changed, 1 insertion(+), 3 deletions(-)
+
+diff --git a/src/vs/workbench/contrib/chat/browser/chatSetup/chatSetupContributions.ts b/src/vs/workbench/contrib/chat/browser/chatSetup/chatSetupContributions.ts
+index d110a659c91..948a17dad20 100644
+--- a/src/vs/workbench/contrib/chat/browser/chatSetup/chatSetupContributions.ts
++++ b/src/vs/workbench/contrib/chat/browser/chatSetup/chatSetupContributions.ts
+@@ -666,9 +666,7 @@ export class ChatTeardownContribution extends Disposable implements IWorkbenchCo
+ 		const chatDisabled = this.configurationService.inspect(ChatConfiguration.AIDisabled);
+ 		if (chatDisabled.value === true) {
+ 			this.maybeEnableOrDisableExtension(typeof chatDisabled.workspaceValue === 'boolean' ? EnablementState.DisabledWorkspace : EnablementState.DisabledGlobally);
+-			if (fromEvent) {
+-				this.maybeHideAuxiliaryBar();
+-			}
++			this.maybeHideAuxiliaryBar();
+ 		} else if (chatDisabled.value === false && fromEvent /* do not enable extensions unless its an explicit settings change */) {
+ 			this.maybeEnableOrDisableExtension(typeof chatDisabled.workspaceValue === 'boolean' ? EnablementState.EnabledWorkspace : EnablementState.EnabledGlobally);
+ 		}
