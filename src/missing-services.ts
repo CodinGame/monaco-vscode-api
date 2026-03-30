@@ -5695,6 +5695,7 @@ class McpService implements IMcpService {
   autostart: IMcpService['autostart'] = unsupported
   @Unsupported
   cancelAutostart: IMcpService['cancelAutostart'] = unsupported
+  @Unsupported
   get enablementModel(): IMcpService['enablementModel'] {
     return unsupported()
   }
@@ -6066,7 +6067,6 @@ class ChatSessionsService implements IChatSessionsService {
   onDidChangeInProgress: IChatSessionsService['onDidChangeInProgress'] = Event.None
   getAllChatSessionContributions: IChatSessionsService['getAllChatSessionContributions'] = () => []
 
-  @Unsupported
   getInProgress: IChatSessionsService['getInProgress'] = () => []
 
   onDidChangeItemsProviders: IChatSessionsService['onDidChangeItemsProviders'] = Event.None
@@ -6746,6 +6746,7 @@ class ChatDebugService implements IChatDebugService {
   @Unsupported
   setImportedSessionTitle: IChatDebugService['setImportedSessionTitle'] = unsupported
 
+  @Unsupported
   getImportedSessionTitle: IChatDebugService['getImportedSessionTitle'] = unsupported
 }
 
