@@ -42,6 +42,14 @@ cd build
 npm ci
 cd ..
 
+# Remove useless files
+cd src
+rm -rf `find . -name '*.test.ts' -o -name 'test' -o -name 'electron-main' -o -name 'electron-browser' -o -name 'electron-utility' -o -name 'node'`
+rm -f bootstrap*.ts *main.ts *cli.ts
+rm -f vs/workbench/workbench.desktop.main.ts
+rm -rf vs/code vs/sessions
+cd ..
+
 echo "Extracting service identifiers"
 node build/lib/extractServices.ts
 
@@ -58,12 +66,7 @@ BUILD_SOURCEVERSION=$vscodeRef NODE_OPTIONS=--max-old-space-size=8192 npx gulp c
 rm -rf $extension_output_directory
 cp -R .build/web/extensions "$extension_output_directory"
 
-# Remove useless files
 cd src
-rm -rf `find . -name '*.test.ts' -o -name 'test'`
-rm -f bootstrap*.ts *main.ts *cli.ts
-rm -f vs/workbench/workbench.desktop.main.ts
-rm -rf vs/code
 
 # There's a really weird issue in the vscode codebase that when this import isn't present,
 # nodeJS's `setTimeout` type is used instead of the one defined in `src/typings/base-common.d.ts`
