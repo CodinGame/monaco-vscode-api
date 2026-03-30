@@ -4,16 +4,16 @@ Date: Thu, 25 Apr 2024 19:34:56 +0200
 Subject: [PATCH] feat: add build tool to extract service identifiers
 
 ---
- build/lib/extractServices.ts | 235 +++++++++++++++++++++++++++++++++++
- 1 file changed, 235 insertions(+)
+ build/lib/extractServices.ts | 245 +++++++++++++++++++++++++++++++++++
+ 1 file changed, 245 insertions(+)
  create mode 100644 build/lib/extractServices.ts
 
 diff --git a/build/lib/extractServices.ts b/build/lib/extractServices.ts
 new file mode 100644
-index 00000000000..34003a35e3e
+index 00000000000..9870812fd05
 --- /dev/null
 +++ b/build/lib/extractServices.ts
-@@ -0,0 +1,235 @@
+@@ -0,0 +1,245 @@
 +/*---------------------------------------------------------------------------------------------
 + *  Copyright (c) Microsoft Corporation. All rights reserved.
 + *  Licensed under the MIT License. See License.txt in the project root for license information.
@@ -201,7 +201,17 @@ index 00000000000..34003a35e3e
 +		while ((call = findFirstFunctionCall(service.getProgram()!.getSourceFile(fileName)!, SERVICE_REGISTRATION_FUNCTIONS_NAMES)) !== undefined) {
 +			const serviceRegistrationNode = call!.parent.parent.parent as ts.ExportDeclaration;
 +
-+			const serviceName = ((call!.parent as ts.VariableDeclaration).name as ts.Identifier).text;
++			let serviceName: string;
++			const interfaceNode = call.typeArguments?.[(call.expression as ts.Identifier).text === 'refineServiceDecorator' ? 1 : 0];
++			if (interfaceNode != null) {
++				if (!ts.isTypeReferenceNode(interfaceNode) || !ts.isIdentifier(interfaceNode.typeName)) {
++					throw new Error(`Unable to parse service registration ${call.getText()}`);
++				}
++				serviceName = interfaceNode.typeName.text;
++			} else {
++				serviceName = ((call!.parent as ts.VariableDeclaration).name as ts.Identifier).text;
++			}
++
 +			console.log('service:', serviceName);
 +			serviceNames.push(serviceName);
 +
