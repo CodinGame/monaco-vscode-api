@@ -23,15 +23,15 @@
     "@types/wicg-file-system-access": "^2023.10.7",
     "@types/ws": "^8.18.1",
     "typescript": "~5.9.3",
-    "vite": "~8.0.0",
+    "vite": "~8.0.3",
     "@codingame/monaco-vscode-rollup-extension-directory-plugin": "file:../dist/packages/monaco-vscode-rollup-extension-directory-plugin",
     "@codingame/monaco-vscode-rollup-vsix-plugin": "file:../dist/packages/monaco-vscode-rollup-vsix-plugin"
   },
   "dependencies": {
     "ansi-colors": "^4.1.3",
-    "dockerode": "^4.0.9",
+    "dockerode": "^4.0.10",
     "express": "^5.2.1",
-    "ws": "^8.19.0",
+    "ws": "^8.20.0",
     "@codingame/monaco-vscode-accessibility-service-override": "file:../dist/packages/monaco-vscode-accessibility-service-override",
     "@codingame/monaco-vscode-ai-service-override": "file:../dist/packages/monaco-vscode-ai-service-override",
     "@codingame/monaco-vscode-all-default-extensions": "file:../dist/packages/monaco-vscode-all-default-extensions",
