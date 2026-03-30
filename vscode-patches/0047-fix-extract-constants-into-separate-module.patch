@@ -17,7 +17,7 @@ so that only the constant is pulled from the root instead of the whole module gr
  create mode 100644 src/vs/workbench/contrib/chat/browser/widget/input/editor/chatDynamicVariablesConstant.ts
 
 diff --git a/src/vs/workbench/api/browser/mainThreadChatAgents2.ts b/src/vs/workbench/api/browser/mainThreadChatAgents2.ts
-index 9459b611a98..bf7ed492b96 100644
+index 8ac37889384..a0b6b1b88f6 100644
 --- a/src/vs/workbench/api/browser/mainThreadChatAgents2.ts
 +++ b/src/vs/workbench/api/browser/mainThreadChatAgents2.ts
 @@ -24,11 +24,10 @@ import { IInstantiationService } from '../../../platform/instantiation/common/in
@@ -33,16 +33,16 @@ index 9459b611a98..bf7ed492b96 100644
  import { IChatModel } from '../../contrib/chat/common/model/chatModel.js';
  import { ChatRequestAgentPart } from '../../contrib/chat/common/requestParser/chatParserTypes.js';
  import { ChatRequestParser } from '../../contrib/chat/common/requestParser/chatRequestParser.js';
-@@ -42,6 +41,8 @@ import { IExtensionService } from '../../services/extensions/common/extensions.j
- import { Dto } from '../../services/extensions/common/proxyIdentifier.js';
+@@ -43,6 +42,8 @@ import { Dto } from '../../services/extensions/common/proxyIdentifier.js';
  import { ExtHostChatAgentsShape2, ExtHostContext, IChatNotebookEditDto, IChatParticipantMetadata, IChatProgressDto, IChatSessionContextDto, ICustomAgentDto, IDynamicChatAgentProps, IExtensionChatAgentMetadata, IInstructionDto, ISkillDto, MainContext, MainThreadChatAgentsShape2 } from '../common/extHost.protocol.js';
  import { NotebookDto } from './mainThreadNotebookDto.js';
+ import { isUntitledChatSession } from '../../contrib/chat/common/model/chatUri.js';
 +import { addDynamicVariableActionId } from '../../contrib/chat/browser/widget/input/editor/chatDynamicVariablesConstant.js';
 +import { AgentSessionProviders, getAgentSessionProvider } from '../../contrib/chat/browser/agentSessions/agentSessions.js';
  
  interface AgentData {
  	dispose: () => void;
-@@ -531,7 +532,7 @@ export class MainThreadChatAgents2 extends Disposable implements MainThreadChatA
+@@ -504,7 +505,7 @@ export class MainThreadChatAgents2 extends Disposable implements MainThreadChatA
  						kind: CompletionItemKind.Text,
  						detail: v.detail,
  						documentation: v.documentation,

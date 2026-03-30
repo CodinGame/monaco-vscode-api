@@ -4,20 +4,28 @@ Date: Tue, 23 Sep 2025 11:13:34 +0200
 Subject: [PATCH] feat: add customEditorRestore
 
 ---
- src/vs/workbench/browser/layout.ts    | 14 +++++++++-----
+ src/vs/workbench/browser/layout.ts    | 15 +++++++++------
  src/vs/workbench/browser/workbench.ts | 12 +++++++-----
- 2 files changed, 16 insertions(+), 10 deletions(-)
+ 2 files changed, 16 insertions(+), 11 deletions(-)
 
 diff --git a/src/vs/workbench/browser/layout.ts b/src/vs/workbench/browser/layout.ts
-index 95354ae97ee..f13e2152870 100644
+index cad9c7ce4b1..e2cc2b6276b 100644
 --- a/src/vs/workbench/browser/layout.ts
 +++ b/src/vs/workbench/browser/layout.ts
-@@ -41,13 +41,14 @@ import { URI } from '../../base/common/uri.js';
+@@ -21,7 +21,7 @@ import { isTemporaryWorkspace, IWorkspaceContextService, WorkbenchState } from '
+ import { IStorageService, StorageScope, StorageTarget } from '../../platform/storage/common/storage.js';
+ import { IConfigurationChangeEvent, IConfigurationService, isConfigured } from '../../platform/configuration/common/configuration.js';
+ import { ITitleService } from '../services/title/browser/titleService.js';
+-import { ServicesAccessor } from '../../platform/instantiation/common/instantiation.js';
++import { ServicesAccessor, IInstantiationService } from '../../platform/instantiation/common/instantiation.js';
+ import { StartupKind, ILifecycleService } from '../services/lifecycle/common/lifecycle.js';
+ import { getMenuBarVisibility, IPath, hasNativeTitlebar, hasCustomTitlebar, TitleBarSetting, CustomTitleBarVisibility, useWindowControlsOverlay, DEFAULT_EMPTY_WINDOW_SIZE, DEFAULT_WORKSPACE_WINDOW_SIZE, hasNativeMenu, MenuSettings } from '../../platform/window/common/window.js';
+ import { IHostService } from '../services/host/browser/host.js';
+@@ -41,13 +41,13 @@ import { URI } from '../../base/common/uri.js';
  import { IViewDescriptorService, ViewContainerLocation } from '../common/views.js';
  import { DiffEditorInput } from '../common/editor/diffEditorInput.js';
  import { mark } from '../../base/common/performance.js';
 -import { IExtensionService } from '../services/extensions/common/extensions.js';
-+import { IInstantiationService } from '../../platform/instantiation/common/instantiation.js';
  import { ILogService } from '../../platform/log/common/log.js';
 +import { ITelemetryService } from '../../platform/telemetry/common/telemetry.js';
 +import { IAuxiliaryWindowService } from '../services/auxiliaryWindow/browser/auxiliaryWindowService.js';
@@ -30,7 +38,7 @@ index 95354ae97ee..f13e2152870 100644
  
  //#region Layout Implementation
  
-@@ -301,7 +302,7 @@ export abstract class Layout extends Disposable implements IWorkbenchLayoutServi
+@@ -302,7 +302,7 @@ export abstract class Layout extends Disposable implements IWorkbenchLayoutServi
  
  	constructor(
  		protected readonly parent: HTMLElement,
@@ -39,7 +47,7 @@ index 95354ae97ee..f13e2152870 100644
  	) {
  		super();
  
-@@ -934,7 +935,7 @@ export abstract class Layout extends Disposable implements IWorkbenchLayoutServi
+@@ -952,7 +952,7 @@ export abstract class Layout extends Disposable implements IWorkbenchLayoutServi
  		return this.restored;
  	}
  
@@ -48,7 +56,7 @@ index 95354ae97ee..f13e2152870 100644
  
  		// distinguish long running restore operations that
  		// are required for the layout to be ready from those
-@@ -998,11 +999,14 @@ export abstract class Layout extends Disposable implements IWorkbenchLayoutServi
+@@ -1016,11 +1016,14 @@ export abstract class Layout extends Disposable implements IWorkbenchLayoutServi
  				}));
  			}
  

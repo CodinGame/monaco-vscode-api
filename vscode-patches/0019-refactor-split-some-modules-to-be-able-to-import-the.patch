@@ -38,7 +38,7 @@ index 00000000000..185a77baafb
 +
 +registerWorkbenchContribution2(EditorAutoSave.ID, EditorAutoSave, WorkbenchPhase.BlockRestore);
 diff --git a/src/vs/workbench/browser/parts/editor/editor.contribution.ts b/src/vs/workbench/browser/parts/editor/editor.contribution.ts
-index 14235489654..bd493ea39e3 100644
+index ffadc12ea96..053f3884b9b 100644
 --- a/src/vs/workbench/browser/parts/editor/editor.contribution.ts
 +++ b/src/vs/workbench/browser/parts/editor/editor.contribution.ts
 @@ -60,7 +60,6 @@ import { KeybindingsRegistry, KeybindingWeight } from '../../../../platform/keyb
@@ -969,7 +969,7 @@ index 00000000000..757eaf5009e
 +});
 diff --git a/src/vs/workbench/contrib/files/browser/files.contribution._explorer.ts b/src/vs/workbench/contrib/files/browser/files.contribution._explorer.ts
 new file mode 100644
-index 00000000000..6ec4c576737
+index 00000000000..ae322cde433
 --- /dev/null
 +++ b/src/vs/workbench/contrib/files/browser/files.contribution._explorer.ts
 @@ -0,0 +1,295 @@
@@ -1060,7 +1060,7 @@ index 00000000000..6ec4c576737
 +								type: 'string', // expression ({ "**/*.js": { "when": "$(basename).js" } })
 +								pattern: '\\w*\\$\\(basename\\)\\w*',
 +								default: '$(basename).ext',
-+								description: nls.localize('explorer.autoRevealExclude.when', 'Additional check on the siblings of a matching file. Use $(basename) as variable for the matching file name.')
++								description: nls.localize('explorer.autoRevealExclude.when', 'Additional check on the siblings of a matching file. Use {0} as variable for the matching file name.', '$(basename)')
 +							}
 +						}
 +					}
@@ -1299,7 +1299,7 @@ index 00000000000..8064ddc028c
 +	}
 +});
 diff --git a/src/vs/workbench/contrib/files/browser/files.contribution.ts b/src/vs/workbench/contrib/files/browser/files.contribution.ts
-index 53918c80b78..269fb34cadb 100644
+index 8f36c834a3a..269fb34cadb 100644
 --- a/src/vs/workbench/contrib/files/browser/files.contribution.ts
 +++ b/src/vs/workbench/contrib/files/browser/files.contribution.ts
 @@ -3,673 +3,7 @@
@@ -1762,7 +1762,7 @@ index 53918c80b78..269fb34cadb 100644
 -								type: 'string', // expression ({ "**/*.js": { "when": "$(basename).js" } })
 -								pattern: '\\w*\\$\\(basename\\)\\w*',
 -								default: '$(basename).ext',
--								description: nls.localize('explorer.autoRevealExclude.when', 'Additional check on the siblings of a matching file. Use $(basename) as variable for the matching file name.')
+-								description: nls.localize('explorer.autoRevealExclude.when', 'Additional check on the siblings of a matching file. Use {0} as variable for the matching file name.', '$(basename)')
 -							}
 -						}
 -					}

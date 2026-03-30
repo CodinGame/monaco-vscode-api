@@ -36,7 +36,7 @@ index bc6003e2f44..276849cac47 100644
  			}
  		}
 diff --git a/src/vs/workbench/common/views.ts b/src/vs/workbench/common/views.ts
-index b439e870035..24ba88e8ede 100644
+index 6bd3eab98cb..2846566c228 100644
 --- a/src/vs/workbench/common/views.ts
 +++ b/src/vs/workbench/common/views.ts
 @@ -145,6 +145,8 @@ export interface IViewContainerDescriptor {
@@ -48,7 +48,7 @@ index b439e870035..24ba88e8ede 100644
  	requestedIndex?: number;
  }
  
-@@ -374,6 +376,7 @@ export interface IViewContainerModel {
+@@ -381,6 +383,7 @@ export interface IViewContainerModel {
  	readonly onDidAddVisibleViewDescriptors: Event<IAddedViewDescriptorRef[]>;
  	readonly onDidRemoveVisibleViewDescriptors: Event<IViewDescriptorRef[]>;
  	readonly onDidMoveVisibleViewDescriptors: Event<{ from: IViewDescriptorRef; to: IViewDescriptorRef }>;
@@ -72,7 +72,7 @@ index 69c6c0c252a..74dbb7cb734 100644
  			return true;
  		}
 diff --git a/src/vs/workbench/services/views/common/viewContainerModel.ts b/src/vs/workbench/services/views/common/viewContainerModel.ts
-index fa24dca15c2..17a3e8c759b 100644
+index a6363627d1e..cdb2d310e52 100644
 --- a/src/vs/workbench/services/views/common/viewContainerModel.ts
 +++ b/src/vs/workbench/services/views/common/viewContainerModel.ts
 @@ -324,6 +324,9 @@ export class ViewContainerModel extends Disposable implements IViewContainerMode

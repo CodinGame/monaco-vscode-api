@@ -13,10 +13,10 @@ Subject: [PATCH] fix: break cyclic dependency
  create mode 100644 src/vs/workbench/contrib/tasks/common/constants.ts
 
 diff --git a/src/vs/sessions/contrib/chat/browser/newChatContextAttachments.ts b/src/vs/sessions/contrib/chat/browser/newChatContextAttachments.ts
-index a7440dfc691..1f6674c7b74 100644
+index 0c264d25f9a..5cc68b9efa5 100644
 --- a/src/vs/sessions/contrib/chat/browser/newChatContextAttachments.ts
 +++ b/src/vs/sessions/contrib/chat/browser/newChatContextAttachments.ts
-@@ -28,8 +28,8 @@ import { Schemas } from '../../../../base/common/network.js';
+@@ -36,8 +36,8 @@ import { DEFAULT_LABELS_CONTAINER, ResourceLabels } from '../../../../workbench/
  
  import { IChatRequestVariableEntry, OmittedState } from '../../../../workbench/contrib/chat/common/attachments/chatVariableEntries.js';
  import { isLocation } from '../../../../editor/common/languages.js';
@@ -87,7 +87,7 @@ index 00000000000..7c92cd1b017
 +export const RerunForActiveTerminalCommandId = 'workbench.action.tasks.rerunForActiveTerminal';
 +export const RerunAllRunningTasksCommandId = 'workbench.action.tasks.rerunAllRunningTasks';
 diff --git a/src/vs/workbench/contrib/tasks/common/tasks.ts b/src/vs/workbench/contrib/tasks/common/tasks.ts
-index c7b6427e551..96eabd56741 100644
+index 5e6ab552216..277022dfca6 100644
 --- a/src/vs/workbench/contrib/tasks/common/tasks.ts
 +++ b/src/vs/workbench/contrib/tasks/common/tasks.ts
 @@ -17,10 +17,7 @@ import { TaskDefinitionRegistry } from './taskDefinitionRegistry.js';
@@ -102,7 +102,7 @@ index c7b6427e551..96eabd56741 100644
  
  export const USER_TASKS_GROUP_KEY = 'settings';
  
-@@ -1435,7 +1432,3 @@ export namespace TaskDefinition {
+@@ -1436,7 +1433,3 @@ export namespace TaskDefinition {
  		return KeyedTaskIdentifier.create(literal);
  	}
  }

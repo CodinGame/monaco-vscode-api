@@ -80,7 +80,7 @@ index 870041f35f2..8a50d421187 100644
  			// only guess that we are in fullscreen. It is also possible that
  			// the user has turned off taskbars in the OS and the browser is
 diff --git a/src/vs/workbench/browser/layout.ts b/src/vs/workbench/browser/layout.ts
-index a8a77c84d5e..a5f2e43d4d9 100644
+index a180f1dfd68..93fde9d609c 100644
 --- a/src/vs/workbench/browser/layout.ts
 +++ b/src/vs/workbench/browser/layout.ts
 @@ -3,10 +3,15 @@
@@ -130,7 +130,7 @@ index a8a77c84d5e..a5f2e43d4d9 100644
  
  //#region Layout Implementation
  
-@@ -1683,7 +1683,8 @@ export abstract class Layout extends Disposable implements IWorkbenchLayoutServi
+@@ -1701,7 +1701,8 @@ export abstract class Layout extends Disposable implements IWorkbenchLayoutServi
  
  	layout(): void {
  		if (!this.disposed) {
@@ -141,10 +141,10 @@ index a8a77c84d5e..a5f2e43d4d9 100644
  				this.parent,				// in that case the workbench will span the entire site
  				this.contextService.getWorkbenchState() === WorkbenchState.EMPTY ? DEFAULT_EMPTY_WINDOW_DIMENSIONS : DEFAULT_WORKSPACE_WINDOW_DIMENSIONS // running with fallback to ensure no error is thrown (https://github.com/microsoft/vscode/issues/240242)
 diff --git a/src/vs/workbench/browser/web.main.ts b/src/vs/workbench/browser/web.main.ts
-index fce64b1f337..1dce2c03846 100644
+index a7ba65b8862..2121458ae70 100644
 --- a/src/vs/workbench/browser/web.main.ts
 +++ b/src/vs/workbench/browser/web.main.ts
-@@ -116,7 +116,7 @@ export class BrowserMain extends Disposable {
+@@ -123,7 +123,7 @@ export class BrowserMain extends Disposable {
  	private init(): void {
  
  		// Browser config

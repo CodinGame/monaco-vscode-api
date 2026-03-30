@@ -30,9 +30,9 @@
   },
   "config": {
     "vscode": {
-      "version": "1.111.0",
-      "ref": "1.111.0",
-      "commit": "ce099c1ed25d9eb3076c11e4a280f3eb52b4fbeb"
+      "version": "1.113.0",
+      "ref": "1.113.0",
+      "commit": "cfbea10c5ffb233ea9177d34726e6056e89913dc"
     },
     "monaco": {
       "ref": "v0.55.1",
@@ -133,7 +133,7 @@
     "yazl": "^2.4.3"
   },
   "volta": {
-    "node": "22.22.0",
+    "node": "22.22.1",
     "npm": "11.6.2"
   }
 }

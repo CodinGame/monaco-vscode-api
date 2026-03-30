@@ -621,10 +621,10 @@ index c5226cb273f..08f5ace9b37 100644
  			this._configurationService.getValue('accessibility.verbosity.hover') === true && this._accessibilityService.isScreenReaderOptimized(),
  			this._keybindingService.lookupKeybinding('editor.action.accessibleView')?.getAriaLabel() ?? ''
 diff --git a/src/vs/platform/actionWidget/browser/actionList.ts b/src/vs/platform/actionWidget/browser/actionList.ts
-index 71f8ee665a2..8603ee1915c 100644
+index 5e2c436e15d..81f958a4a0f 100644
 --- a/src/vs/platform/actionWidget/browser/actionList.ts
 +++ b/src/vs/platform/actionWidget/browser/actionList.ts
-@@ -1068,8 +1068,11 @@ export class ActionList<T> extends Disposable {
+@@ -1158,8 +1158,11 @@ export class ActionListWidget<T> extends Disposable {
  	}
  
  	private _getRowElement(index: number): HTMLElement | null {
@@ -730,10 +730,10 @@ index df8da89a047..0f9fca69091 100644
  				}
  
 diff --git a/src/vs/platform/hover/browser/hoverWidget.ts b/src/vs/platform/hover/browser/hoverWidget.ts
-index 41c8723608a..96297b1ddb8 100644
+index 28af860840d..4847f4dbcd0 100644
 --- a/src/vs/platform/hover/browser/hoverWidget.ts
 +++ b/src/vs/platform/hover/browser/hoverWidget.ts
-@@ -326,7 +326,7 @@ export class HoverWidget extends Widget implements IHoverWidget {
+@@ -329,7 +329,7 @@ export class HoverWidget extends Widget implements IHoverWidget {
  
  	public render(container: HTMLElement): void {
  		container.appendChild(this._hoverContainer);
@@ -765,7 +765,7 @@ index 91f52f5d2c5..ca0140e4fb3 100644
  
  			dispose(disposables);
 diff --git a/src/vs/workbench/browser/layout.ts b/src/vs/workbench/browser/layout.ts
-index 63fa5589c94..a8a77c84d5e 100644
+index 85b8dc24bf0..a180f1dfd68 100644
 --- a/src/vs/workbench/browser/layout.ts
 +++ b/src/vs/workbench/browser/layout.ts
 @@ -47,6 +47,7 @@ import { AuxiliaryBarPart } from './parts/auxiliarybar/auxiliaryBarPart.js';
@@ -776,7 +776,7 @@ index 63fa5589c94..a8a77c84d5e 100644
  
  //#region Layout Implementation
  
-@@ -303,6 +304,8 @@ export abstract class Layout extends Disposable implements IWorkbenchLayoutServi
+@@ -304,6 +305,8 @@ export abstract class Layout extends Disposable implements IWorkbenchLayoutServi
  		private readonly layoutOptions?: { resetLayout: boolean }
  	) {
  		super();
@@ -832,10 +832,10 @@ index 7796aae8a15..1c304a11a9e 100644
  
  	private createPart(id: string, role: string, classes: string[]): HTMLElement {
 diff --git a/src/vs/workbench/contrib/chat/browser/widget/input/chatInputPart.ts b/src/vs/workbench/contrib/chat/browser/widget/input/chatInputPart.ts
-index 9eb316cb94b..ccfa5bf52bf 100644
+index 55a40c0a6a2..ff4b5a440d5 100644
 --- a/src/vs/workbench/contrib/chat/browser/widget/input/chatInputPart.ts
 +++ b/src/vs/workbench/contrib/chat/browser/widget/input/chatInputPart.ts
-@@ -2623,7 +2623,7 @@ export class ChatInputPart extends Disposable implements IHistoryNavigationWidge
+@@ -2648,7 +2648,7 @@ export class ChatInputPart extends Disposable implements IHistoryNavigationWidge
  			return;
  		}
  
@@ -1023,7 +1023,7 @@ index d3c4ea3f178..ff3d9c4b33a 100644
  		}
  
 diff --git a/src/vs/workbench/contrib/preferences/browser/preferences.contribution.ts b/src/vs/workbench/contrib/preferences/browser/preferences.contribution.ts
-index c1bd907895e..15ccbe7740c 100644
+index 3f491f41b3a..dc864d0f45a 100644
 --- a/src/vs/workbench/contrib/preferences/browser/preferences.contribution.ts
 +++ b/src/vs/workbench/contrib/preferences/browser/preferences.contribution.ts
 @@ -3,6 +3,7 @@
@@ -1044,10 +1044,10 @@ index c1bd907895e..15ccbe7740c 100644
  					preferencesEditor.focusSettings(true);
  				}
 diff --git a/src/vs/workbench/contrib/preferences/browser/settingsEditor2.ts b/src/vs/workbench/contrib/preferences/browser/settingsEditor2.ts
-index 76b4bbb9c16..ac8e35c891c 100644
+index 17e5663deb8..d4df1b3d64c 100644
 --- a/src/vs/workbench/contrib/preferences/browser/settingsEditor2.ts
 +++ b/src/vs/workbench/contrib/preferences/browser/settingsEditor2.ts
-@@ -1153,7 +1153,7 @@ export class SettingsEditor2 extends EditorPane {
+@@ -1146,7 +1146,7 @@ export class SettingsEditor2 extends EditorPane {
  		}));
  
  		this._register(this.settingsTree.onDidFocus(() => {
@@ -1056,7 +1056,7 @@ index 76b4bbb9c16..ac8e35c891c 100644
  			if (classList && classList.contains('monaco-list') && classList.contains('settings-editor-tree')) {
  				this._currentFocusContext = SettingsFocusContext.SettingTree;
  				this.settingRowFocused.set(true);
-@@ -1623,7 +1623,7 @@ export class SettingsEditor2 extends EditorPane {
+@@ -1616,7 +1616,7 @@ export class SettingsEditor2 extends EditorPane {
  
  	private getActiveControlInSettingsTree(): HTMLElement | null {
  		const element = this.settingsTree.getHTMLElement();
@@ -1065,7 +1065,7 @@ index 76b4bbb9c16..ac8e35c891c 100644
  		return (activeElement && DOM.isAncestorOfActiveElement(element)) ?
  			<HTMLElement>activeElement :
  			null;
-@@ -1688,7 +1688,7 @@ export class SettingsEditor2 extends EditorPane {
+@@ -1681,7 +1681,7 @@ export class SettingsEditor2 extends EditorPane {
  	}
  
  	private contextViewFocused(): boolean {
@@ -1214,10 +1214,10 @@ index 1245acce54c..a2312b0d332 100644
  			return;
  		}
 diff --git a/src/vs/workbench/services/themes/browser/workbenchThemeService.ts b/src/vs/workbench/services/themes/browser/workbenchThemeService.ts
-index a7911a94161..9909ae36ce5 100644
+index 20d45050cfa..efc9a50a6fa 100644
 --- a/src/vs/workbench/services/themes/browser/workbenchThemeService.ts
 +++ b/src/vs/workbench/services/themes/browser/workbenchThemeService.ts
-@@ -781,7 +781,7 @@ class ThemeFileWatcher {
+@@ -866,7 +866,7 @@ class ThemeFileWatcher {
  
  function _applyRules(styleSheetContent: string, rulesClassName: string) {
  	// eslint-disable-next-line no-restricted-syntax

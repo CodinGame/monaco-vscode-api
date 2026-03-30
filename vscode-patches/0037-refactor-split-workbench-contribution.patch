@@ -16,7 +16,7 @@ Subject: [PATCH] refactor: split workbench contribution
  9 files changed, 115 insertions(+), 30 deletions(-)
 
 diff --git a/src/vs/workbench/api/browser/extensionHost.contribution.ts b/src/vs/workbench/api/browser/extensionHost.contribution.ts
-index 051a9f6f85d..b4a31bfedf7 100644
+index b8ad97532e2..a2349e43a0b 100644
 --- a/src/vs/workbench/api/browser/extensionHost.contribution.ts
 +++ b/src/vs/workbench/api/browser/extensionHost.contribution.ts
 @@ -3,17 +3,15 @@
@@ -44,10 +44,10 @@ index 051a9f6f85d..b4a31bfedf7 100644
  
  // --- mainThread participants
  import './mainThreadLocalization.js';
-@@ -100,23 +98,3 @@ import './mainThreadChatSessions.js';
- import './mainThreadDataChannels.js';
+@@ -101,23 +99,3 @@ import './mainThreadDataChannels.js';
  import './mainThreadMeteredConnection.js';
  import './mainThreadGitExtensionService.js';
+ import './mainThreadBrowsers.js';
 -
 -export class ExtensionPoints implements IWorkbenchContribution {
 -
@@ -69,7 +69,7 @@ index 051a9f6f85d..b4a31bfedf7 100644
 -
 -registerWorkbenchContribution2(ExtensionPoints.ID, ExtensionPoints, WorkbenchPhase.BlockStartup);
 diff --git a/src/vs/workbench/api/browser/statusBarExtensionPoint.ts b/src/vs/workbench/api/browser/statusBarExtensionPoint.ts
-index 81de1362184..0bdbb98e138 100644
+index 91d78dc1be0..75ea60405d5 100644
 --- a/src/vs/workbench/api/browser/statusBarExtensionPoint.ts
 +++ b/src/vs/workbench/api/browser/statusBarExtensionPoint.ts
 @@ -6,7 +6,7 @@
@@ -286,7 +286,7 @@ index d78e65afc3f..56bd057fb3e 100644
 +
 +registerWorkbenchContribution2(TokenClassificationExtensionPointWorkbenchContribution.ID, TokenClassificationExtensionPointWorkbenchContribution, WorkbenchPhase.BlockStartup);
 diff --git a/src/vs/workbench/workbench.common.main.ts b/src/vs/workbench/workbench.common.main.ts
-index be64fd940aa..93e01a69e72 100644
+index 1d89cb13a56..016b9d6aa45 100644
 --- a/src/vs/workbench/workbench.common.main.ts
 +++ b/src/vs/workbench/workbench.common.main.ts
 @@ -35,6 +35,12 @@ import './browser/actions/widgetNavigationCommands.js';

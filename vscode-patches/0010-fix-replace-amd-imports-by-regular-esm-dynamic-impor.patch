@@ -77,7 +77,7 @@ index 3d83476e176..a80f0b9a7f2 100644
  		}
  	}
 diff --git a/src/vs/workbench/contrib/terminal/browser/terminalInstance.ts b/src/vs/workbench/contrib/terminal/browser/terminalInstance.ts
-index 93a50146bc1..bd91ef3829c 100644
+index fb793b76ba8..0d9028f2fa3 100644
 --- a/src/vs/workbench/contrib/terminal/browser/terminalInstance.ts
 +++ b/src/vs/workbench/contrib/terminal/browser/terminalInstance.ts
 @@ -79,7 +79,6 @@ import { IHistoryService } from '../../../services/history/common/history.js';
