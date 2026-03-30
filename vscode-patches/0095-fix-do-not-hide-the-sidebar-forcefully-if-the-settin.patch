@@ -1,0 +1,58 @@
+From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
+From: =?UTF-8?q?Lo=C3=AFc=20Mangeonjean?= <loic@coderpad.io>
+Date: Mon, 30 Mar 2026 10:35:01 +0200
+Subject: [PATCH] fix: do not hide the sidebar forcefully if the setting
+ default value has been overriden
+
+---
+ src/vs/platform/configuration/common/configuration.ts | 6 ++++++
+ src/vs/workbench/browser/layout.ts                    | 4 ++--
+ 2 files changed, 8 insertions(+), 2 deletions(-)
+
+diff --git a/src/vs/platform/configuration/common/configuration.ts b/src/vs/platform/configuration/common/configuration.ts
+index e28c4a34a0a..b97be4a69c8 100644
+--- a/src/vs/platform/configuration/common/configuration.ts
++++ b/src/vs/platform/configuration/common/configuration.ts
+@@ -9,7 +9,9 @@ import { Event } from '../../../base/common/event.js';
+ import * as types from '../../../base/common/types.js';
+ import { URI, UriComponents } from '../../../base/common/uri.js';
+ import { createDecorator } from '../../instantiation/common/instantiation.js';
++import { Registry } from '../../registry/common/platform.js';
+ import { IWorkspaceFolder } from '../../workspace/common/workspace.js';
++import { Extensions, IConfigurationRegistry } from './configurationRegistry.js';
+ 
+ export const IConfigurationService = createDecorator<IConfigurationService>('configurationService');
+ 
+@@ -138,6 +140,10 @@ export function isConfigured<T>(configValue: IConfigurationValue<T>): configValu
+ 		configValue.workspaceFolderValue !== undefined;
+ }
+ 
++export function isDefaultOverriden(settingName: string) {
++	return Registry.as<IConfigurationRegistry>(Extensions.Configuration).getConfigurationDefaultsOverrides().has(settingName);
++}
++
+ export interface IConfigurationUpdateOptions {
+ 	/**
+ 	 * If `true`, do not notifies the error to user by showing the message box. Default is `false`.
+diff --git a/src/vs/workbench/browser/layout.ts b/src/vs/workbench/browser/layout.ts
+index e2cc2b6276b..26ea676098d 100644
+--- a/src/vs/workbench/browser/layout.ts
++++ b/src/vs/workbench/browser/layout.ts
+@@ -19,7 +19,7 @@ import { PanelPart } from './parts/panel/panelPart.js';
+ import { Position, Parts, PartOpensMaximizedOptions, IWorkbenchLayoutService, positionFromString, positionToString, partOpensMaximizedFromString, PanelAlignment, ActivityBarPosition, LayoutSettings, MULTI_WINDOW_PARTS, SINGLE_WINDOW_PARTS, ZenModeSettings, EditorTabsMode, EditorActionsLocation, shouldShowCustomTitleBar, isHorizontal, isMultiWindowPart, IPartVisibilityChangeEvent } from '../services/layout/browser/layoutService.js';
+ import { isTemporaryWorkspace, IWorkspaceContextService, WorkbenchState } from '../../platform/workspace/common/workspace.js';
+ import { IStorageService, StorageScope, StorageTarget } from '../../platform/storage/common/storage.js';
+-import { IConfigurationChangeEvent, IConfigurationService, isConfigured } from '../../platform/configuration/common/configuration.js';
++import { IConfigurationChangeEvent, IConfigurationService, isConfigured, isDefaultOverriden } from '../../platform/configuration/common/configuration.js';
+ import { ITitleService } from '../services/title/browser/titleService.js';
+ import { ServicesAccessor, IInstantiationService } from '../../platform/instantiation/common/instantiation.js';
+ import { StartupKind, ILifecycleService } from '../services/lifecycle/common/lifecycle.js';
+@@ -2956,7 +2956,7 @@ class LayoutStateModel extends Disposable {
+ 			// Unless auxiliary bar visibility is explicitly configured, make
+ 			// sure to not force open it in case we know it was empty before.
+ 			const configuration = this.configurationService.inspect(WorkbenchLayoutSettings.AUXILIARYBAR_DEFAULT_VISIBILITY);
+-			if (configuration.defaultValue !== 'hidden' && !isConfigured(configuration) && this.stateCache.get(LayoutStateKeys.AUXILIARYBAR_EMPTY.name)) {
++			if (configuration.defaultValue !== 'hidden' && !isConfigured(configuration) && !isDefaultOverriden(WorkbenchLayoutSettings.AUXILIARYBAR_DEFAULT_VISIBILITY) && this.stateCache.get(LayoutStateKeys.AUXILIARYBAR_EMPTY.name)) {
+ 				return true;
+ 			}
+ 

@@ -10,7 +10,7 @@ Subject: [PATCH] fix: fix notebook layout when there is a header on top of the
  2 files changed, 5 insertions(+), 6 deletions(-)
 
 diff --git a/src/vs/workbench/browser/media/style.css b/src/vs/workbench/browser/media/style.css
-index b08a3d0f3d1..a5f505aa146 100644
+index 0b2a6544e7b..a67fdbcfaf3 100644
 --- a/src/vs/workbench/browser/media/style.css
 +++ b/src/vs/workbench/browser/media/style.css
 @@ -39,7 +39,6 @@

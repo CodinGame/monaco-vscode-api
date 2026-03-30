@@ -92,14 +92,7 @@ import { ChatEditingExplanationModelManager } from 'vs/workbench/contrib/chat/br
 import { ChatToolOutputStateCache } from 'vs/workbench/contrib/chat/browser/widget/chatContentParts/toolInvocationParts/chatToolOutputStateCache'
 import { ITerminalSandboxService } from 'vs/workbench/contrib/terminalContrib/chatAgentTools/common/terminalSandboxService.service'
 import { TerminalSandboxService } from 'vs/workbench/contrib/terminalContrib/chatAgentTools/common/terminalSandboxService'
-import { IAgentFeedbackService } from 'vs/sessions/contrib/agentFeedback/browser/agentFeedbackService.service'
-import { AgentFeedbackService } from 'vs/sessions/contrib/agentFeedback/browser/agentFeedbackService'
-import { ISessionsConfigurationService } from 'vs/sessions/contrib/chat/browser/sessionsConfigurationService.service'
-import { SessionsConfigurationService } from 'vs/sessions/contrib/chat/browser/sessionsConfigurationService'
 import { IAICustomizationWorkspaceService } from 'vs/workbench/contrib/chat/common/aiCustomizationWorkspaceService.service'
-import { SessionsAICustomizationWorkspaceService } from 'vs/sessions/contrib/chat/browser/aiCustomizationWorkspaceService'
-import { ISessionsManagementService } from 'vs/sessions/contrib/sessions/browser/sessionsManagementService.service'
-import { SessionsManagementService } from 'vs/sessions/contrib/sessions/browser/sessionsManagementService'
 import { IAgentPluginService } from 'vs/workbench/contrib/chat/common/plugins/agentPluginService.service'
 import { AgentPluginService } from 'vs/workbench/contrib/chat/common/plugins/agentPluginServiceImpl'
 import { PluginMarketplaceService } from 'vs/workbench/contrib/chat/common/plugins/pluginMarketplaceService'
@@ -117,6 +110,17 @@ import { ChatResponseResourceFileSystemProvider } from 'vs/workbench/contrib/cha
 import { Event } from 'vs/base/common/event'
 import type { IDefaultAccount } from 'vs/base/common/defaultAccount'
 import { IDefaultAccountService } from 'vs/platform/defaultAccount/common/defaultAccount.service'
+import { ICustomizationHarnessService } from 'vs/workbench/contrib/chat/common/customizationHarnessService.service'
+import { CustomizationHarnessService } from 'vs/workbench/contrib/chat/browser/aiCustomization/customizationHarnessService'
+import { AICustomizationWorkspaceService } from 'vs/workbench/contrib/chat/browser/aiCustomization/aiCustomizationWorkspaceService'
+import { IChatArtifactsService } from 'vs/workbench/contrib/chat/common/tools/chatArtifactsService.service'
+import { ChatArtifactsService } from 'vs/workbench/contrib/chat/common/tools/chatArtifactsService'
+import { IWorkspacePluginSettingsService } from 'vs/workbench/contrib/chat/common/plugins/workspacePluginSettingsService.service'
+import { WorkspacePluginSettingsService } from 'vs/workbench/contrib/chat/common/plugins/workspacePluginSettingsService'
+import { IChatImageCarouselService } from 'vs/workbench/contrib/chat/browser/chatImageCarouselService.service'
+import { ChatImageCarouselService } from 'vs/workbench/contrib/chat/browser/chatImageCarouselService'
+import { IInlineChatHistoryService } from 'vs/workbench/contrib/inlineChat/browser/inlineChatHistoryService.service'
+import { InlineChatHistoryService } from 'vs/workbench/contrib/inlineChat/browser/inlineChatHistoryService'
 import 'vs/workbench/contrib/chat/browser/chat.contribution'
 import 'vs/workbench/contrib/terminal/terminal.chat.contribution'
 import 'vs/workbench/contrib/inlineChat/browser/inlineChat.contribution'
@@ -252,19 +256,8 @@ export default function getServiceOverride({
     ),
     [IChatToolOutputStateCache.toString()]: new SyncDescriptor(ChatToolOutputStateCache, [], true),
     [ITerminalSandboxService.toString()]: new SyncDescriptor(TerminalSandboxService, [], true),
-    [IAgentFeedbackService.toString()]: new SyncDescriptor(AgentFeedbackService, [], true),
-    [ISessionsConfigurationService.toString()]: new SyncDescriptor(
-      SessionsConfigurationService,
-      [],
-      true
-    ),
     [IAICustomizationWorkspaceService.toString()]: new SyncDescriptor(
-      SessionsAICustomizationWorkspaceService,
-      [],
-      true
-    ),
-    [ISessionsManagementService.toString()]: new SyncDescriptor(
-      SessionsManagementService,
+      AICustomizationWorkspaceService,
       [],
       true
     ),
@@ -291,7 +284,20 @@ export default function getServiceOverride({
       DefaultAccountService,
       [defaultAccount],
       true
-    )
+    ),
+    [ICustomizationHarnessService.toString()]: new SyncDescriptor(
+      CustomizationHarnessService,
+      [defaultAccount],
+      true
+    ),
+    [IChatArtifactsService.toString()]: new SyncDescriptor(ChatArtifactsService, [], true),
+    [IWorkspacePluginSettingsService.toString()]: new SyncDescriptor(
+      WorkspacePluginSettingsService,
+      [],
+      true
+    ),
+    [IChatImageCarouselService.toString()]: new SyncDescriptor(ChatImageCarouselService, [], true),
+    [IInlineChatHistoryService.toString()]: new SyncDescriptor(InlineChatHistoryService, [], true)
   }
 }
 

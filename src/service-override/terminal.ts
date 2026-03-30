@@ -34,7 +34,6 @@ import { TerminalContributionService } from 'vs/workbench/contrib/terminal/commo
 import { ITerminalContributionService } from 'vs/workbench/contrib/terminal/common/terminalExtensionPoints.service'
 import { ITerminalLinkProviderService } from 'vs/workbench/contrib/terminalContrib/links/browser/links.service'
 import { TerminalLinkProviderService } from 'vs/workbench/contrib/terminalContrib/links/browser/terminalLinkProviderService'
-import { ElectronTerminalProfileResolverService } from 'vs/workbench/contrib/terminal/electron-browser/terminalProfileResolverService'
 import { EnvironmentVariableService } from 'vs/workbench/contrib/terminal/common/environmentVariableService'
 import { IEnvironmentVariableService } from 'vs/workbench/contrib/terminal/common/environmentVariable.service'
 import { ITerminalQuickFixService } from 'vs/workbench/contrib/terminalContrib/quickFix/browser/quickFix.service'
@@ -57,6 +56,7 @@ export {
   ITerminalService,
   ITerminalInstanceService
 } from 'vs/workbench/contrib/terminal/browser/terminal.service'
+import { BrowserTerminalProfileResolverService } from 'vs/workbench/contrib/terminal/browser/terminalProfileResolverService'
 import 'vs/workbench/contrib/terminal/terminal.contribution'
 import 'vs/workbench/contrib/externalTerminal/browser/externalTerminal.contribution'
 import 'vs/workbench/contrib/terminal/browser/terminal.web.contribution'
@@ -193,7 +193,7 @@ export default function getServiceOverride(backend?: ITerminalBackend): IEditorO
       true
     ),
     [ITerminalProfileResolverService.toString()]: new SyncDescriptor(
-      ElectronTerminalProfileResolverService,
+      BrowserTerminalProfileResolverService,
       [],
       true
     ),

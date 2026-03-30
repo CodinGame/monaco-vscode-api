@@ -7,16 +7,15 @@ Subject: [PATCH] feat: allow to override product icon
  build/lib/stylelint/vscode-known-variables.json                | 3 ++-
  src/vs/workbench/browser/parts/banner/media/bannerpart.css     | 2 +-
  src/vs/workbench/browser/parts/titlebar/media/titlebarpart.css | 2 +-
- .../contrib/update/browser/media/releasenoteseditor.css        | 2 +-
  .../welcomeGettingStarted/browser/media/gettingStarted.css     | 2 +-
  .../welcomeWalkthrough/browser/media/walkThroughPart.css       | 2 +-
- 6 files changed, 7 insertions(+), 6 deletions(-)
+ 5 files changed, 6 insertions(+), 5 deletions(-)
 
 diff --git a/build/lib/stylelint/vscode-known-variables.json b/build/lib/stylelint/vscode-known-variables.json
-index 29a3d47d232..67436a63397 100644
+index 5b0fc9b6ad5..af312248f81 100644
 --- a/build/lib/stylelint/vscode-known-variables.json
 +++ b/build/lib/stylelint/vscode-known-variables.json
-@@ -1030,7 +1030,8 @@
+@@ -1031,7 +1031,8 @@
  		"--vscode-inline-chat-affordance-height",
  		"--collapse-from-width",
  		"--slide-from-x",
@@ -40,10 +39,10 @@ index a0de81f24eb..c71af404312 100644
  	padding: 0;
  	margin: 0 6px 0 10px;
 diff --git a/src/vs/workbench/browser/parts/titlebar/media/titlebarpart.css b/src/vs/workbench/browser/parts/titlebar/media/titlebarpart.css
-index a2c1090f9d1..f5234dd2f21 100644
+index 7a255b58d0f..814ba54050e 100644
 --- a/src/vs/workbench/browser/parts/titlebar/media/titlebarpart.css
 +++ b/src/vs/workbench/browser/parts/titlebar/media/titlebarpart.css
-@@ -272,7 +272,7 @@
+@@ -290,7 +290,7 @@
  }
  
  .monaco-workbench .part.titlebar > .titlebar-container > .titlebar-left > .window-appicon:not(.codicon) {
@@ -52,17 +51,6 @@ index a2c1090f9d1..f5234dd2f21 100644
  	background-repeat: no-repeat;
  	background-position: center center;
  	background-size: 16px;
-diff --git a/src/vs/workbench/contrib/update/browser/media/releasenoteseditor.css b/src/vs/workbench/contrib/update/browser/media/releasenoteseditor.css
-index 4210055bfeb..4f71897bb52 100644
---- a/src/vs/workbench/contrib/update/browser/media/releasenoteseditor.css
-+++ b/src/vs/workbench/contrib/update/browser/media/releasenoteseditor.css
-@@ -5,5 +5,5 @@
- 
- .file-icons-enabled .show-file-icons .webview-vs_code_release_notes-name-file-icon.file-icon::before {
- 	content: ' ';
--	background-image: url('../../../../browser/media/code-icon.svg');
-+	background-image: var(--product-icon, url('../../../../browser/media/code-icon.svg'));
- }
 diff --git a/src/vs/workbench/contrib/welcomeGettingStarted/browser/media/gettingStarted.css b/src/vs/workbench/contrib/welcomeGettingStarted/browser/media/gettingStarted.css
 index fefdf4c9dfe..28f32b5a218 100644
 --- a/src/vs/workbench/contrib/welcomeGettingStarted/browser/media/gettingStarted.css

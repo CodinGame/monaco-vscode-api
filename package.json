@@ -30,9 +30,9 @@
   },
   "config": {
     "vscode": {
-      "version": "1.111.0",
-      "ref": "1.111.0",
-      "commit": "ce099c1ed25d9eb3076c11e4a280f3eb52b4fbeb"
+      "version": "1.113.0",
+      "ref": "1.113.0",
+      "commit": "cfbea10c5ffb233ea9177d34726e6056e89913dc"
     },
     "monaco": {
       "ref": "v0.55.1",
@@ -76,14 +76,14 @@
     "postcss-url": "^10.1.3",
     "prettier": "^3.8.1",
     "recast": "^0.23.11",
-    "rollup": "^4.59.0",
+    "rollup": "^4.60.1",
     "rollup-plugin-copy": "^3.5.0",
-    "rollup-plugin-dts": "^6.4.0",
+    "rollup-plugin-dts": "^6.4.1",
     "semantic-release": "25.0.3",
     "tsx": "^4.21.0",
-    "type-fest": "^5.4.4",
+    "type-fest": "^5.5.0",
     "typescript": "^5.9.3",
-    "typescript-eslint": "^8.57.1",
+    "typescript-eslint": "^8.57.2",
     "vscode-oniguruma": "1.7.0",
     "vscode-semver": "npm:semver@=5.5.0",
     "vscode-textmate": "^9.3.2",
@@ -119,7 +119,7 @@
     "kerberos": "2.1.1",
     "keytar": "^7.9.0",
     "marked": "~14.0.0",
-    "memfs": "^4.56.11",
+    "memfs": "^4.57.1",
     "mime-types": "^3.0.2",
     "node-pty": "^1.2.0-beta.10",
     "tas-client": "0.3.1",
@@ -133,7 +133,7 @@
     "yazl": "^2.4.3"
   },
   "volta": {
-    "node": "22.22.0",
+    "node": "22.22.1",
     "npm": "11.6.2"
   }
 }

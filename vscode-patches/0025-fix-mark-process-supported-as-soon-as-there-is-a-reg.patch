@@ -79,7 +79,7 @@ index 44e53e09a64..af6e52c8e17 100644
  }
  Registry.add(TerminalExtensions.Backend, new TerminalBackendRegistry());
 diff --git a/src/vs/workbench/contrib/terminal/browser/terminalService.ts b/src/vs/workbench/contrib/terminal/browser/terminalService.ts
-index 1524e37ad3e..d42c56e737a 100644
+index 421ba3cb758..736a2e46ee7 100644
 --- a/src/vs/workbench/contrib/terminal/browser/terminalService.ts
 +++ b/src/vs/workbench/contrib/terminal/browser/terminalService.ts
 @@ -20,7 +20,7 @@ import { IContextKey, IContextKeyService } from '../../../../platform/contextkey

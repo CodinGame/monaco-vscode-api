@@ -10,13 +10,13 @@ Subject: [PATCH] refactor: only import chat-related stuff from chat
  2 files changed, 1 insertion(+), 1 deletion(-)
 
 diff --git a/src/vs/workbench/contrib/chat/browser/chat.contribution.ts b/src/vs/workbench/contrib/chat/browser/chat.contribution.ts
-index e37ca265b0b..2c7a0959c84 100644
+index d36f060c06f..169bd20cddd 100644
 --- a/src/vs/workbench/contrib/chat/browser/chat.contribution.ts
 +++ b/src/vs/workbench/contrib/chat/browser/chat.contribution.ts
-@@ -169,6 +169,7 @@ import { ChatTipService, IChatTipService } from './chatTipService.js';
- import { ChatQueuePickerRendering } from './widget/input/chatQueuePickerActionItem.js';
+@@ -177,6 +177,7 @@ import { ChatQueuePickerRendering } from './widget/input/chatQueuePickerActionIt
  import { ExploreAgentDefaultModel } from './exploreAgentDefaultModel.js';
  import { PlanAgentDefaultModel } from './planAgentDefaultModel.js';
+ import { ChatImageCarouselService, IChatImageCarouselService } from './chatImageCarouselService.js';
 +import '../../notebook/browser/controller/chat/notebook.chat.contribution.js';
  
  const toolReferenceNameEnumValues: string[] = [];

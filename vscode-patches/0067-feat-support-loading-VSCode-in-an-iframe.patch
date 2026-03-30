@@ -635,7 +635,7 @@ index cfb53e2e686..f23776d2d53 100644
  			observer.observe(firstTargetElement);
  			hoverDisposables.add(toDisposable(() => observer.disconnect()));
 diff --git a/src/vs/platform/remote/browser/browserSocketFactory.ts b/src/vs/platform/remote/browser/browserSocketFactory.ts
-index eafeef861a1..8859ceacf87 100644
+index d558e4eef58..ac207215fa7 100644
 --- a/src/vs/platform/remote/browser/browserSocketFactory.ts
 +++ b/src/vs/platform/remote/browser/browserSocketFactory.ts
 @@ -156,7 +156,7 @@ class BrowserWebSocket extends Disposable implements IWebSocket {
@@ -728,19 +728,19 @@ index bff3f2cf1b0..3a62a16bdf2 100644
  			if (timeoutDisposables) {
  				dispose(timeoutDisposables);
 diff --git a/src/vs/workbench/contrib/chat/browser/widget/chatContentParts/chatMarkdownContentPart.ts b/src/vs/workbench/contrib/chat/browser/widget/chatContentParts/chatMarkdownContentPart.ts
-index 8f388e7ebb5..5747d07071a 100644
+index 0ca080497f5..4460e651f9c 100644
 --- a/src/vs/workbench/contrib/chat/browser/widget/chatContentParts/chatMarkdownContentPart.ts
 +++ b/src/vs/workbench/contrib/chat/browser/widget/chatContentParts/chatMarkdownContentPart.ts
 @@ -15,7 +15,7 @@ import { coalesce } from '../../../../../../base/common/arrays.js';
  import { findLast } from '../../../../../../base/common/arraysFind.js';
  import { Codicon } from '../../../../../../base/common/codicons.js';
  import { Lazy } from '../../../../../../base/common/lazy.js';
--import { Disposable, DisposableStore, IDisposable, MutableDisposable, toDisposable } from '../../../../../../base/common/lifecycle.js';
-+import { Disposable, DisposableStore, IDisposable, MutableDisposable } from '../../../../../../base/common/lifecycle.js';
+-import { Disposable, DisposableStore, dispose, IDisposable, MutableDisposable, toDisposable } from '../../../../../../base/common/lifecycle.js';
++import { Disposable, DisposableStore, dispose, IDisposable, MutableDisposable } from '../../../../../../base/common/lifecycle.js';
  import { Emitter, Event } from '../../../../../../base/common/event.js';
  import { autorun, autorunSelfDisposable, derived } from '../../../../../../base/common/observable.js';
  import { ScrollbarVisibility } from '../../../../../../base/common/scrollable.js';
-@@ -63,6 +63,7 @@ import { IDisposableReference } from './chatCollections.js';
+@@ -64,6 +64,7 @@ import { IDisposableReference } from './chatCollections.js';
  import { EditorPool } from './chatContentCodePools.js';
  import { IChatContentPart, IChatContentPartRenderContext } from './chatContentParts.js';
  import { ChatExtensionsContentPart } from './chatExtensionsContentPart.js';
@@ -748,7 +748,7 @@ index 8f388e7ebb5..5747d07071a 100644
  import './media/chatMarkdownPart.css';
  
  const $ = dom.$;
-@@ -351,9 +352,8 @@ export class ChatMarkdownContentPart extends Disposable implements IChatContentP
+@@ -352,9 +353,8 @@ export class ChatMarkdownContentPart extends Disposable implements IChatContentP
  			store.add(markdownDecorationsRenderer.walkTreeAndAnnotateReferenceLinks(markdown, result.element));
  
  			const layoutParticipants = new Lazy(() => {
@@ -760,31 +760,31 @@ index 8f388e7ebb5..5747d07071a 100644
  			});
  
 diff --git a/src/vs/workbench/contrib/chat/browser/widget/chatContentParts/chatThinkingContentPart.ts b/src/vs/workbench/contrib/chat/browser/widget/chatContentParts/chatThinkingContentPart.ts
-index d695b515e88..8e0cf4c6659 100644
+index 8b780c2a924..9301c33eba7 100644
 --- a/src/vs/workbench/contrib/chat/browser/widget/chatContentParts/chatThinkingContentPart.ts
 +++ b/src/vs/workbench/contrib/chat/browser/widget/chatContentParts/chatThinkingContentPart.ts
-@@ -34,6 +34,7 @@ import { IChatMarkdownAnchorService } from './chatMarkdownAnchorService.js';
- import { ChatMessageRole, ILanguageModelsService } from '../../../common/languageModels.js';
- import './media/chatThinkingContent.css';
- import { IHoverService } from '../../../../../../platform/hover/browser/hover.js';
+@@ -37,6 +37,7 @@ import { IHoverService } from '../../../../../../platform/hover/browser/hover.js
+ import { extractImagesFromToolInvocationOutputDetails } from '../../../common/chatImageExtraction.js';
+ import { IChatCollapsibleIODataPart } from './chatToolInputOutputContentPart.js';
+ import { ChatThinkingExternalResourceWidget } from './chatThinkingExternalResourcesWidget.js';
 +import { mainWindow } from '../../../../../../base/browser/window.js';
  
  
  function extractTextFromPart(content: IChatThinkingPart): string {
-@@ -407,7 +408,7 @@ export class ChatThinkingContentPart extends ChatCollapsibleContentPart implemen
+@@ -465,7 +466,7 @@ export class ChatThinkingContentPart extends ChatCollapsibleContentPart implemen
  			this._register(this.scrollableElement.onScroll(e => this.handleScroll(e.scrollTop)));
  
  			// check for content changes to update scroll dimensions
 -			const mutationObserver = new MutationObserver(() => {
 +			const mutationObserver = new mainWindow.MutationObserver(() => {
- 				if (!this.streamingCompleted) {
+ 				if (!this.streamingCompleted && this.domNode.classList.contains('chat-used-context-collapsed')) {
  					this.syncDimensionsAndScheduleScroll();
  				}
 diff --git a/src/vs/workbench/contrib/chat/browser/widget/chatContentParts/toolInvocationParts/chatTerminalToolProgressPart.ts b/src/vs/workbench/contrib/chat/browser/widget/chatContentParts/toolInvocationParts/chatTerminalToolProgressPart.ts
-index 4fc2868f40f..23ebcb6239b 100644
+index da42cf8d77b..865c9b05b64 100644
 --- a/src/vs/workbench/contrib/chat/browser/widget/chatContentParts/toolInvocationParts/chatTerminalToolProgressPart.ts
 +++ b/src/vs/workbench/contrib/chat/browser/widget/chatContentParts/toolInvocationParts/chatTerminalToolProgressPart.ts
-@@ -1018,9 +1018,8 @@ class ChatTerminalToolOutputSection extends Disposable {
+@@ -1067,9 +1067,8 @@ class ChatTerminalToolOutputSection extends Disposable {
  		this._register(dom.addDisposableListener(this.domNode, dom.EventType.FOCUS_IN, () => this._onDidFocusEmitter.fire()));
  		this._register(dom.addDisposableListener(this.domNode, dom.EventType.FOCUS_OUT, event => this._onDidBlurEmitter.fire(event)));
  
@@ -925,7 +925,7 @@ index 04ee77ccc8d..9caeb1dfb81 100644
  
  		this._register(this.extensionService.onDidChangeExtensions(async (result) => {
 diff --git a/src/vs/workbench/contrib/terminalContrib/chat/browser/terminalChatWidget.ts b/src/vs/workbench/contrib/terminalContrib/chat/browser/terminalChatWidget.ts
-index 2be6c5d9e96..706091084ff 100644
+index be4f138c4ea..d3bfe8dde45 100644
 --- a/src/vs/workbench/contrib/terminalContrib/chat/browser/terminalChatWidget.ts
 +++ b/src/vs/workbench/contrib/terminalContrib/chat/browser/terminalChatWidget.ts
 @@ -4,7 +4,7 @@

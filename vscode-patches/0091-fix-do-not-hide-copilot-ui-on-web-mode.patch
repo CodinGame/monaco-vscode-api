@@ -8,7 +8,7 @@ Subject: [PATCH] fix: do not hide copilot ui on web mode
  1 file changed, 6 deletions(-)
 
 diff --git a/src/vs/workbench/services/chat/common/chatEntitlementService.ts b/src/vs/workbench/services/chat/common/chatEntitlementService.ts
-index 919d79dc291..34629458e1e 100644
+index 02c83ae04b9..c59e19f3d8e 100644
 --- a/src/vs/workbench/services/chat/common/chatEntitlementService.ts
 +++ b/src/vs/workbench/services/chat/common/chatEntitlementService.ts
 @@ -25,7 +25,6 @@ import { IOpenerService } from '../../../../platform/opener/common/opener.js';

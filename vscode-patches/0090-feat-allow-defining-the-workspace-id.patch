@@ -22,10 +22,10 @@ index 291648bca96..0093fc74684 100644
  }
  
 diff --git a/src/vs/workbench/browser/web.main.ts b/src/vs/workbench/browser/web.main.ts
-index 1dce2c03846..012b5841492 100644
+index 2121458ae70..cc7b78e9757 100644
 --- a/src/vs/workbench/browser/web.main.ts
 +++ b/src/vs/workbench/browser/web.main.ts
-@@ -611,12 +611,12 @@ export class BrowserMain extends Disposable {
+@@ -622,12 +622,12 @@ export class BrowserMain extends Disposable {
  
  		// Multi-root workspace
  		if (workspace && isWorkspaceToOpen(workspace)) {

@@ -1,7 +1,14 @@
 import type { IEditorOverrideServices } from 'vs/editor/standalone/browser/standaloneServices'
 import { SyncDescriptor } from 'vs/platform/instantiation/common/descriptors'
 import { IFileService } from 'vs/platform/files/common/files.service'
-import { type ILogger, LogLevel, ConsoleLogger, getLogLevel } from 'vs/platform/log/common/log'
+import {
+  type ILogger,
+  LogLevel,
+  ConsoleLogger,
+  getLogLevel,
+  AbstractLogger,
+  AbstractMessageLogger
+} from 'vs/platform/log/common/log'
 import { ILogService, ILoggerService } from 'vs/platform/log/common/log.service'
 import { FileLoggerService } from 'vs/platform/log/common/fileLog'
 import { LogService } from 'vs/platform/log/common/logService'
@@ -70,5 +77,5 @@ export function registerAdditionalLogger(logger: ILogger): IDisposable {
   })
 }
 
-export { ConsoleLogger }
+export { ConsoleLogger, AbstractLogger, AbstractMessageLogger }
 export type { ILogger }

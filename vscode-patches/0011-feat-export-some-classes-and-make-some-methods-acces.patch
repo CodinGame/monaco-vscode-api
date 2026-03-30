@@ -16,6 +16,8 @@ Subject: [PATCH] feat: export some classes and make some methods accessible
  .../api/browser/statusBarExtensionPoint.ts         |  2 +-
  src/vs/workbench/browser/layout.ts                 | 10 +++++-----
  src/vs/workbench/browser/workbench.ts              | 14 +++++++-------
+ .../aiCustomizationWorkspaceService.ts             |  2 +-
+ .../aiCustomization/customizationHarnessService.ts |  2 +-
  .../browser/chatStatus/chatStatusItemService.ts    |  2 +-
  .../chatContentParts/chatTextEditContentPart.ts    |  6 +++---
  .../debug/browser/extensionHostDebugService.ts     |  2 +-
@@ -41,7 +43,7 @@ Subject: [PATCH] feat: export some classes and make some methods accessible
  .../terminal/common/embedderTerminalService.ts     |  2 +-
  .../common/remoteUserDataProfiles.ts               |  2 +-
  .../userDataSync/common/userDataSyncUtil.ts        |  2 +-
- 37 files changed, 66 insertions(+), 62 deletions(-)
+ 39 files changed, 68 insertions(+), 64 deletions(-)
 
 diff --git a/src/vs/editor/contrib/editorState/browser/keybindingCancellation.ts b/src/vs/editor/contrib/editorState/browser/keybindingCancellation.ts
 index 94020ce96b9..de1e9af237e 100644
@@ -131,7 +133,7 @@ index c578441baa9..7b5909d6fac 100644
  export namespace PeekContext {
  	export const inPeekEditor = new RawContextKey<boolean>('inReferenceSearchEditor', true, nls.localize('inReferenceSearchEditor', "Whether the current code editor is embedded inside peek"));
 diff --git a/src/vs/platform/actionWidget/browser/actionWidget.ts b/src/vs/platform/actionWidget/browser/actionWidget.ts
-index 58792a384ff..32ed681fc1d 100644
+index 32af92b7733..cdbc998e353 100644
 --- a/src/vs/platform/actionWidget/browser/actionWidget.ts
 +++ b/src/vs/platform/actionWidget/browser/actionWidget.ts
 @@ -44,7 +44,7 @@ export interface IActionWidgetService {
@@ -187,7 +189,7 @@ index 493471fe856..3a098814ba1 100644
  
  		// convert to file stat
 diff --git a/src/vs/workbench/api/browser/statusBarExtensionPoint.ts b/src/vs/workbench/api/browser/statusBarExtensionPoint.ts
-index 4da1f68eeb1..81de1362184 100644
+index c8d1765a7ab..91d78dc1be0 100644
 --- a/src/vs/workbench/api/browser/statusBarExtensionPoint.ts
 +++ b/src/vs/workbench/api/browser/statusBarExtensionPoint.ts
 @@ -58,7 +58,7 @@ export interface IExtensionStatusBarItemService {
@@ -200,7 +202,7 @@ index 4da1f68eeb1..81de1362184 100644
  	declare readonly _serviceBrand: undefined;
  
 diff --git a/src/vs/workbench/browser/layout.ts b/src/vs/workbench/browser/layout.ts
-index 89f0b6d3b55..63fa5589c94 100644
+index c213b29de93..85b8dc24bf0 100644
 --- a/src/vs/workbench/browser/layout.ts
 +++ b/src/vs/workbench/browser/layout.ts
 @@ -50,7 +50,7 @@ import { CodeWindow, mainWindow } from '../../base/browser/window.js';
@@ -227,8 +229,8 @@ index 89f0b6d3b55..63fa5589c94 100644
  	readonly views: {
  		readonly defaults: string[] | undefined;
  		readonly containerToRestore: {
-@@ -103,11 +103,11 @@ enum LayoutClasses {
- 	WINDOW_BORDER = 'border'
+@@ -104,11 +104,11 @@ enum LayoutClasses {
+ 	NO_SHADOWS = 'no-shadows'
  }
  
 -interface IPathToOpen extends IPath {
@@ -308,6 +310,32 @@ index 10e2c3edace..91ba0f472a6 100644
  
  		// Ask each part to restore
  		try {
+diff --git a/src/vs/workbench/contrib/chat/browser/aiCustomization/aiCustomizationWorkspaceService.ts b/src/vs/workbench/contrib/chat/browser/aiCustomization/aiCustomizationWorkspaceService.ts
+index 8a64b0cddba..cb55ec98914 100644
+--- a/src/vs/workbench/contrib/chat/browser/aiCustomization/aiCustomizationWorkspaceService.ts
++++ b/src/vs/workbench/contrib/chat/browser/aiCustomization/aiCustomizationWorkspaceService.ts
+@@ -21,7 +21,7 @@ import {
+ 	GENERATE_SKILL_COMMAND_ID,
+ } from '../actions/chatActions.js';
+ 
+-class AICustomizationWorkspaceService implements IAICustomizationWorkspaceService {
++export class AICustomizationWorkspaceService implements IAICustomizationWorkspaceService {
+ 	declare readonly _serviceBrand: undefined;
+ 
+ 	readonly activeProjectRoot: IObservable<URI | undefined>;
+diff --git a/src/vs/workbench/contrib/chat/browser/aiCustomization/customizationHarnessService.ts b/src/vs/workbench/contrib/chat/browser/aiCustomization/customizationHarnessService.ts
+index 3f03253741d..01557589c81 100644
+--- a/src/vs/workbench/contrib/chat/browser/aiCustomization/customizationHarnessService.ts
++++ b/src/vs/workbench/contrib/chat/browser/aiCustomization/customizationHarnessService.ts
+@@ -26,7 +26,7 @@ import { IChatAgentService } from '../../common/participants/chatAgents.js';
+  * Exposes VS Code, CLI, and Claude harnesses for filtering customizations.
+  * CLI and Claude harnesses are only shown when their respective agents are registered.
+  */
+-class CustomizationHarnessService extends CustomizationHarnessServiceBase {
++export class CustomizationHarnessService extends CustomizationHarnessServiceBase {
+ 	constructor(
+ 		@IPathService pathService: IPathService,
+ 		@IChatAgentService chatAgentService: IChatAgentService,
 diff --git a/src/vs/workbench/contrib/chat/browser/chatStatus/chatStatusItemService.ts b/src/vs/workbench/contrib/chat/browser/chatStatus/chatStatusItemService.ts
 index b87135ccce6..dae96febb2b 100644
 --- a/src/vs/workbench/contrib/chat/browser/chatStatus/chatStatusItemService.ts
@@ -398,7 +426,7 @@ index 5b019f38d09..24e9f6cceec 100644
  	readonly _serviceBrand: undefined;
  
 diff --git a/src/vs/workbench/services/dialogs/browser/abstractFileDialogService.ts b/src/vs/workbench/services/dialogs/browser/abstractFileDialogService.ts
-index 6300496bd4e..7358927daeb 100644
+index 8786b4ed5f6..dbab19f2050 100644
 --- a/src/vs/workbench/services/dialogs/browser/abstractFileDialogService.ts
 +++ b/src/vs/workbench/services/dialogs/browser/abstractFileDialogService.ts
 @@ -55,7 +55,7 @@ export abstract class AbstractFileDialogService implements IFileDialogService {

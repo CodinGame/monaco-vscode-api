@@ -26,7 +26,7 @@ index dcb9af34371..c999bc5fb0b 100644
  	 * Additional domains allowed to open from the workbench without the
  	 * link protection popup.
 diff --git a/src/vs/workbench/services/environment/browser/environmentService.ts b/src/vs/workbench/services/environment/browser/environmentService.ts
-index e8d460f7967..53ebeefa560 100644
+index a42fb531bdf..a5fbc65ad9c 100644
 --- a/src/vs/workbench/services/environment/browser/environmentService.ts
 +++ b/src/vs/workbench/services/environment/browser/environmentService.ts
 @@ -213,7 +213,7 @@ export class BrowserWorkbenchEnvironmentService implements IBrowserWorkbenchEnvi

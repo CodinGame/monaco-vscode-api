@@ -429,9 +429,6 @@ import { IMarkdownRendererService } from 'vs/platform/markdown/browser/markdownR
 import { McpGalleryManifestStatus } from 'vs/platform/mcp/common/mcpGalleryManifest'
 import { IMcpGalleryManifestService } from 'vs/platform/mcp/common/mcpGalleryManifest.service'
 import { IMeteredConnectionService } from 'vs/platform/meteredConnection/common/meteredConnection.service.js'
-import { IAgentFeedbackService } from 'vs/sessions/contrib/agentFeedback/browser/agentFeedbackService.service'
-import { ISessionsConfigurationService } from 'vs/sessions/contrib/chat/browser/sessionsConfigurationService.service'
-import { ISessionsManagementService } from 'vs/sessions/contrib/sessions/browser/sessionsManagementService.service.js'
 import type { IAgentSessionsModel } from 'vs/workbench/contrib/chat/browser/agentSessions/agentSessionsModel'
 import { IAgentSessionsService } from 'vs/workbench/contrib/chat/browser/agentSessions/agentSessionsService.service'
 import { IAgentSessionProjectionService } from 'vs/workbench/contrib/chat/browser/agentSessions/experiments/agentSessionProjectionService.service'
@@ -472,11 +469,23 @@ import {
 } from './l10n.js'
 import { unsupported } from './tools.js'
 
+import {
+  IBrowserViewCDPService,
+  IBrowserViewWorkbenchService
+} from 'vs/workbench/contrib/browserView/common/browserView.service.js'
+import { IBrowserZoomService } from 'vs/workbench/contrib/browserView/common/browserZoomService.service.js'
 import { IChatAttachmentWidgetRegistry } from 'vs/workbench/contrib/chat/browser/attachments/chatAttachmentWidgetRegistry.service'
+import { IChatImageCarouselService } from 'vs/workbench/contrib/chat/browser/chatImageCarouselService.service.js'
 import { IChatDebugService } from 'vs/workbench/contrib/chat/common/chatDebugService.service.js'
+import { CustomizationHarness } from 'vs/workbench/contrib/chat/common/customizationHarnessService.js'
+import { ICustomizationHarnessService } from 'vs/workbench/contrib/chat/common/customizationHarnessService.service'
+import type { IEnablementModel } from 'vs/workbench/contrib/chat/common/enablement.js'
 import { IPluginInstallService } from 'vs/workbench/contrib/chat/common/plugins/pluginInstallService.service'
+import { IWorkspacePluginSettingsService } from 'vs/workbench/contrib/chat/common/plugins/workspacePluginSettingsService.service.js'
+import { IChatArtifactsService } from 'vs/workbench/contrib/chat/common/tools/chatArtifactsService.service.js'
 import { IChatResponseResourceFileSystemProvider } from 'vs/workbench/contrib/chat/common/widget/chatResponseResourceFileSystemProvider.service.js'
 import { IGitService } from 'vs/workbench/contrib/git/common/gitService.service.js'
+import { IInlineChatHistoryService } from 'vs/workbench/contrib/inlineChat/browser/inlineChatHistoryService.service.js'
 import { IWorkbenchMcpGatewayService } from 'vs/workbench/contrib/mcp/common/mcpGatewayService.service.js'
 import { IMcpSandboxService } from 'vs/workbench/contrib/mcp/common/mcpSandboxService.service.js'
 import { IPowerService } from 'vs/workbench/services/power/common/powerService.service.js'
@@ -1500,6 +1509,7 @@ class RequestService implements IRequestService {
   resolveProxy: IRequestService['resolveProxy'] = unsupported
   @Unsupported
   loadCertificates: IRequestService['loadCertificates'] = unsupported
+  onDidCompleteRequest: IRequestService['onDidCompleteRequest'] = Event.None
 }
 registerSingleton(IRequestService, RequestService, InstantiationType.Eager)
 class WorkspaceTrustRequestService implements IWorkspaceTrustRequestService {
@@ -3365,6 +3375,10 @@ class ChatService implements IChatService {
   loadSessionFromData: IChatService['loadSessionFromData'] = unsupported
   @Unsupported
   setSessionTitle: IChatService['setSessionTitle'] = unsupported
+  @Unsupported
+  migrateRequests: IChatService['migrateRequests'] = unsupported
+  registerChatModelChangeListeners: IChatService['registerChatModelChangeListeners'] = () =>
+    Disposable.None
 }
 registerSingleton(IChatService, ChatService, InstantiationType.Delayed)
 class ChatMarkdownAnchorService implements IChatMarkdownAnchorService {
@@ -4497,6 +4511,11 @@ class LanguageModelsService implements ILanguageModelsService {
     Event.None
   restrictedChatParticipants: ILanguageModelsService['restrictedChatParticipants'] =
     constObservable({})
+
+  getModelConfiguration: ILanguageModelsService['getModelConfiguration'] = () => undefined
+  setModelConfiguration: ILanguageModelsService['setModelConfiguration'] = async () => {}
+  getModelConfigurationActions: ILanguageModelsService['getModelConfigurationActions'] = () => []
+  configureModel: ILanguageModelsService['configureModel'] = async () => {}
 }
 registerSingleton(ILanguageModelsService, LanguageModelsService, InstantiationType.Delayed)
 class ChatSlashCommandService implements IChatSlashCommandService {
@@ -5620,8 +5639,6 @@ class PromptsService implements IPromptsService {
   getResolvedSourceFolders: IPromptsService['getResolvedSourceFolders'] = async () => []
 
   registerPromptFileProvider: IPromptsService['registerPromptFileProvider'] = () => Disposable.None
-  @Unsupported
-  getPromptDiscoveryInfo: IPromptsService['getPromptDiscoveryInfo'] = unsupported
 
   getInstructionFiles: IPromptsService['getInstructionFiles'] = async () => []
   onDidLogDiscovery: IPromptsService['onDidLogDiscovery'] = Event.None
@@ -5678,6 +5695,10 @@ class McpService implements IMcpService {
   autostart: IMcpService['autostart'] = unsupported
   @Unsupported
   cancelAutostart: IMcpService['cancelAutostart'] = unsupported
+  @Unsupported
+  get enablementModel(): IMcpService['enablementModel'] {
+    return unsupported()
+  }
 }
 registerSingleton(IMcpService, McpService, InstantiationType.Eager)
 class ExtensionGalleryManifestService implements IExtensionGalleryManifestService {
@@ -5881,6 +5902,7 @@ class BrowserElementsService implements IBrowserElementsService {
   @Unsupported
   startConsoleSession: IBrowserElementsService['startConsoleSession'] = unsupported
   getConsoleLogs: IBrowserElementsService['getConsoleLogs'] = async () => undefined
+  getFocusedElementData: IBrowserElementsService['getFocusedElementData'] = async () => undefined
 }
 registerSingleton(IBrowserElementsService, BrowserElementsService, InstantiationType.Eager)
 class TreeSitterThemeService implements ITreeSitterThemeService {
@@ -6045,9 +6067,6 @@ class ChatSessionsService implements IChatSessionsService {
   onDidChangeInProgress: IChatSessionsService['onDidChangeInProgress'] = Event.None
   getAllChatSessionContributions: IChatSessionsService['getAllChatSessionContributions'] = () => []
 
-  @Unsupported
-  reportInProgress: IChatSessionsService['reportInProgress'] = unsupported
-
   getInProgress: IChatSessionsService['getInProgress'] = () => []
 
   onDidChangeItemsProviders: IChatSessionsService['onDidChangeItemsProviders'] = Event.None
@@ -6055,15 +6074,6 @@ class ChatSessionsService implements IChatSessionsService {
   onDidChangeAvailability: IChatSessionsService['onDidChangeAvailability'] = Event.None
   registerChatSessionContentProvider: IChatSessionsService['registerChatSessionContentProvider'] =
     () => Disposable.None
-
-  getIconForSessionType: IChatSessionsService['getIconForSessionType'] = () => undefined
-
-  getWelcomeTitleForSessionType: IChatSessionsService['getWelcomeTitleForSessionType'] = () =>
-    undefined
-  getWelcomeMessageForSessionType: IChatSessionsService['getWelcomeMessageForSessionType'] = () =>
-    undefined
-  getInputPlaceholderForSessionType: IChatSessionsService['getInputPlaceholderForSessionType'] =
-    () => undefined
 
   onDidChangeContentProviderSchemes: IChatSessionsService['onDidChangeContentProviderSchemes'] =
     Event.None
@@ -6089,24 +6099,18 @@ class ChatSessionsService implements IChatSessionsService {
   @Unsupported
   setOptionGroupsForSessionType: IChatSessionsService['setOptionGroupsForSessionType'] = unsupported
 
-  @Unsupported
-  notifySessionOptionsChange: IChatSessionsService['notifySessionOptionsChange'] = unsupported
-
   getChatSessionContribution: IChatSessionsService['getChatSessionContribution'] = () => undefined
   activateChatSessionItemProvider: IChatSessionsService['activateChatSessionItemProvider'] =
     async () => undefined
   onDidChangeSessionOptions: IChatSessionsService['onDidChangeSessionOptions'] = Event.None
-  registerChatModelChangeListeners: IChatSessionsService['registerChatModelChangeListeners'] = () =>
-    Disposable.None
   getInProgressSessionDescription: IChatSessionsService['getInProgressSessionDescription'] = () =>
     undefined
 
   onDidChangeOptionGroups: IChatSessionsService['onDidChangeOptionGroups'] = Event.None
 
-  getChatSessionItems: IChatSessionsService['getChatSessionItems'] = async () => []
+  getChatSessionItems: IChatSessionsService['getChatSessionItems'] = async function* () {}
   getCustomAgentTargetForSessionType: IChatSessionsService['getCustomAgentTargetForSessionType'] =
     () => Target.Undefined
-  onRequestNotifyExtension: IChatSessionsService['onRequestNotifyExtension'] = Event.None
 
   registerChatSessionItemController: IChatSessionsService['registerChatSessionItemController'] =
     () => Disposable.None
@@ -6123,6 +6127,22 @@ class ChatSessionsService implements IChatSessionsService {
   createNewChatSessionItem: IChatSessionsService['createNewChatSessionItem'] = async () => undefined
   registerSessionResourceAlias: IChatSessionsService['registerSessionResourceAlias'] =
     async () => {}
+
+  registerChatSessionContribution: IChatSessionsService['registerChatSessionContribution'] = () =>
+    Disposable.None
+  getRegisteredChatSessionItemProviders: IChatSessionsService['getRegisteredChatSessionItemProviders'] =
+    () => []
+
+  @Unsupported
+  updateSessionOptions: IChatSessionsService['updateSessionOptions'] = unsupported
+  supportsDelegationForSessionType: IChatSessionsService['supportsDelegationForSessionType'] = () =>
+    false
+  sessionSupportsFork: IChatSessionsService['sessionSupportsFork'] = () => false
+
+  @Unsupported
+  forkChatSession: IChatSessionsService['forkChatSession'] = unsupported
+
+  getSessionOptions: IChatSessionsService['getSessionOptions'] = () => undefined
 }
 registerSingleton(IChatSessionsService, ChatSessionsService, InstantiationType.Delayed)
 
@@ -6352,6 +6372,8 @@ class AgentSessionsService implements IAgentSessionsService {
 
   model: IAgentSessionsService['model'] = new AgentSessionsModel()
   getSession: IAgentSessionsService['getSession'] = () => undefined
+  onDidChangeSessionArchivedState: IAgentSessionsService['onDidChangeSessionArchivedState'] =
+    Event.None
 }
 
 registerSingleton(IAgentSessionsService, AgentSessionsService, InstantiationType.Delayed)
@@ -6526,6 +6548,12 @@ class TerminalSandboxService implements ITerminalSandboxService {
   @Unsupported
   setNeedsForceUpdateConfigFile: ITerminalSandboxService['setNeedsForceUpdateConfigFile'] =
     unsupported
+
+  @Unsupported
+  getOS: ITerminalSandboxService['getOS'] = unsupported
+
+  @Unsupported
+  getResolvedNetworkDomains: ITerminalSandboxService['getResolvedNetworkDomains'] = unsupported
 }
 
 registerSingleton(ITerminalSandboxService, TerminalSandboxService, InstantiationType.Delayed)
@@ -6538,54 +6566,6 @@ class MeteredConnectionService implements IMeteredConnectionService {
 }
 
 registerSingleton(IMeteredConnectionService, MeteredConnectionService, InstantiationType.Delayed)
-
-class AgentFeedbackService implements IAgentFeedbackService {
-  _serviceBrand: undefined
-  onDidChangeFeedback: IAgentFeedbackService['onDidChangeFeedback'] = Event.None
-  onDidChangeNavigation: IAgentFeedbackService['onDidChangeNavigation'] = Event.None
-
-  @Unsupported
-  addFeedback: IAgentFeedbackService['addFeedback'] = unsupported
-  @Unsupported
-  removeFeedback: IAgentFeedbackService['removeFeedback'] = unsupported
-  @Unsupported
-  getFeedback: IAgentFeedbackService['getFeedback'] = unsupported
-  @Unsupported
-  getMostRecentSessionForResource: IAgentFeedbackService['getMostRecentSessionForResource'] =
-    unsupported
-  @Unsupported
-  revealFeedback: IAgentFeedbackService['revealFeedback'] = unsupported
-  @Unsupported
-  getNextFeedback: IAgentFeedbackService['getNextFeedback'] = unsupported
-  @Unsupported
-  getNavigationBearing: IAgentFeedbackService['getNavigationBearing'] = unsupported
-  @Unsupported
-  clearFeedback: IAgentFeedbackService['clearFeedback'] = unsupported
-  @Unsupported
-  addFeedbackAndSubmit: IAgentFeedbackService['addFeedbackAndSubmit'] = unsupported
-}
-
-registerSingleton(IAgentFeedbackService, AgentFeedbackService, InstantiationType.Delayed)
-
-class SessionsConfigurationService implements ISessionsConfigurationService {
-  _serviceBrand: undefined
-
-  getSessionTasks: ISessionsConfigurationService['getSessionTasks'] = () => constObservable([])
-  getNonSessionTasks: ISessionsConfigurationService['getNonSessionTasks'] = async () => []
-  addTaskToSessions: ISessionsConfigurationService['addTaskToSessions'] = async () => {}
-  @Unsupported
-  createAndAddTask: ISessionsConfigurationService['createAndAddTask'] = unsupported
-  @Unsupported
-  runTask: ISessionsConfigurationService['runTask'] = unsupported
-  getLastRunTaskLabel: ISessionsConfigurationService['getLastRunTaskLabel'] = () =>
-    constObservable(undefined)
-}
-
-registerSingleton(
-  ISessionsConfigurationService,
-  SessionsConfigurationService,
-  InstantiationType.Delayed
-)
 
 class AICustomizationWorkspaceService implements IAICustomizationWorkspaceService {
   _serviceBrand: undefined
@@ -6622,30 +6602,14 @@ registerSingleton(
   InstantiationType.Delayed
 )
 
-class SessionsManagementService implements ISessionsManagementService {
-  _serviceBrand: undefined
-  activeSession: ISessionsManagementService['activeSession'] = constObservable(undefined)
-  getActiveSession: ISessionsManagementService['getActiveSession'] = () => undefined
-  @Unsupported
-  openSession: ISessionsManagementService['openSession'] = unsupported
-  @Unsupported
-  openNewSessionView: ISessionsManagementService['openNewSessionView'] = unsupported
-  @Unsupported
-  createNewSessionForTarget: ISessionsManagementService['createNewSessionForTarget'] = unsupported
-  @Unsupported
-  sendRequestForNewSession: ISessionsManagementService['sendRequestForNewSession'] = unsupported
-  @Unsupported
-  commitWorktreeFiles: ISessionsManagementService['commitWorktreeFiles'] = unsupported
-}
-
-registerSingleton(ISessionsManagementService, SessionsManagementService, InstantiationType.Delayed)
-
 class AgentPluginService implements IAgentPluginService {
   _serviceBrand: undefined
   plugins: IAgentPluginService['plugins'] = constObservable([])
-  allPlugins: IAgentPluginService['allPlugins'] = constObservable([])
+
   @Unsupported
-  setPluginEnabled: IAgentPluginService['setPluginEnabled'] = unsupported
+  get enablementModel(): IEnablementModel {
+    return unsupported()
+  }
 }
 
 registerSingleton(IAgentPluginService, AgentPluginService, InstantiationType.Delayed)
@@ -6668,6 +6632,12 @@ class PluginMarketplaceService implements IPluginMarketplaceService {
   isMarketplaceTrusted: IPluginMarketplaceService['isMarketplaceTrusted'] = unsupported
   @Unsupported
   trustMarketplace: IPluginMarketplaceService['trustMarketplace'] = unsupported
+
+  hasUpdatesAvailable: IPluginMarketplaceService['hasUpdatesAvailable'] = constObservable(false)
+  lastFetchedPlugins: IPluginMarketplaceService['lastFetchedPlugins'] = constObservable([])
+  recommendedPlugins: IPluginMarketplaceService['recommendedPlugins'] = constObservable(new Set([]))
+  clearUpdatesAvailable: IPluginMarketplaceService['clearUpdatesAvailable'] = () => {}
+  readPluginsFromDirectory: IPluginMarketplaceService['readPluginsFromDirectory'] = async () => []
 }
 
 registerSingleton(IPluginMarketplaceService, PluginMarketplaceService, InstantiationType.Delayed)
@@ -6694,6 +6664,8 @@ class AgentPluginRepositoryService implements IAgentPluginRepositoryService {
   getPluginSource: IAgentPluginRepositoryService['getPluginSource'] = unsupported
   @Unsupported
   cleanupPluginSource: IAgentPluginRepositoryService['cleanupPluginSource'] = unsupported
+  @Unsupported
+  fetchRepository: IAgentPluginRepositoryService['fetchRepository'] = unsupported
 }
 
 registerSingleton(
@@ -6711,6 +6683,16 @@ class PluginInstallService implements IPluginInstallService {
   updatePlugin: IPluginInstallService['updatePlugin'] = unsupported
   @Unsupported
   getPluginInstallUri: IPluginInstallService['getPluginInstallUri'] = unsupported
+
+  @Unsupported
+  installPluginFromSource: IPluginInstallService['installPluginFromSource'] = unsupported
+  @Unsupported
+  validatePluginSource: IPluginInstallService['validatePluginSource'] = unsupported
+  @Unsupported
+  installPluginFromValidatedSource: IPluginInstallService['installPluginFromValidatedSource'] =
+    unsupported
+  @Unsupported
+  updateAllPlugins: IPluginInstallService['updateAllPlugins'] = unsupported
 }
 
 registerSingleton(IPluginInstallService, PluginInstallService, InstantiationType.Delayed)
@@ -6755,6 +6737,17 @@ class ChatDebugService implements IChatDebugService {
   onDidAttachDebugData: IChatDebugService['onDidAttachDebugData'] = Event.None
   markDebugDataAttached: IChatDebugService['markDebugDataAttached'] = () => {}
   hasAttachedDebugData: IChatDebugService['hasAttachedDebugData'] = () => false
+
+  exportLog: IChatDebugService['exportLog'] = async () => undefined
+  @Unsupported
+  importLog: IChatDebugService['importLog'] = unsupported
+  isCoreEvent = () => false
+
+  @Unsupported
+  setImportedSessionTitle: IChatDebugService['setImportedSessionTitle'] = unsupported
+
+  @Unsupported
+  getImportedSessionTitle: IChatDebugService['getImportedSessionTitle'] = unsupported
 }
 
 registerSingleton(IChatDebugService, ChatDebugService, InstantiationType.Delayed)
@@ -6846,3 +6839,137 @@ registerSingleton(
   ChatResponseResourceFileSystemProvider,
   InstantiationType.Delayed
 )
+
+class WebBrowserViewCDPService implements IBrowserViewCDPService {
+  _serviceBrand: undefined
+
+  createSessionGroup: IBrowserViewCDPService['createSessionGroup'] = async () => {
+    throw new Error('Integrated Browser is not available in web.')
+  }
+  destroySessionGroup: IBrowserViewCDPService['destroySessionGroup'] = async () => {}
+
+  sendCDPMessage: IBrowserViewCDPService['sendCDPMessage'] = async () => {}
+  onCDPMessage: IBrowserViewCDPService['onCDPMessage'] = () => Event.None
+  onDidDestroy: IBrowserViewCDPService['onDidDestroy'] = () => Event.None
+}
+
+registerSingleton(IBrowserViewCDPService, WebBrowserViewCDPService, InstantiationType.Delayed)
+
+class CustomizationHarnessService implements ICustomizationHarnessService {
+  _serviceBrand: undefined
+  activeHarness: ICustomizationHarnessService['activeHarness'] = constObservable(
+    CustomizationHarness.VSCode
+  )
+  availableHarnesses: ICustomizationHarnessService['availableHarnesses'] = constObservable([])
+  @Unsupported
+  setActiveHarness: ICustomizationHarnessService['setActiveHarness'] = unsupported
+  @Unsupported
+  getStorageSourceFilter: ICustomizationHarnessService['getStorageSourceFilter'] = unsupported
+  @Unsupported
+  getActiveDescriptor: ICustomizationHarnessService['getActiveDescriptor'] = unsupported
+}
+
+registerSingleton(
+  ICustomizationHarnessService,
+  CustomizationHarnessService,
+  InstantiationType.Delayed
+)
+
+class ChatArtifactsService implements IChatArtifactsService {
+  _serviceBrand: undefined
+  onDidUpdateArtifacts: IChatArtifactsService['onDidUpdateArtifacts'] = Event.None
+
+  getArtifacts: IChatArtifactsService['getArtifacts'] = () => []
+  @Unsupported
+  setArtifacts: IChatArtifactsService['setArtifacts'] = unsupported
+  @Unsupported
+  migrateArtifacts: IChatArtifactsService['migrateArtifacts'] = unsupported
+  artifacts: IChatArtifactsService['artifacts'] = () => constObservable([])
+}
+
+registerSingleton(IChatArtifactsService, ChatArtifactsService, InstantiationType.Delayed)
+
+class WorkspacePluginSettingsService implements IWorkspacePluginSettingsService {
+  _serviceBrand: undefined
+  extraMarketplaces: IWorkspacePluginSettingsService['extraMarketplaces'] = constObservable([])
+  enabledPlugins: IWorkspacePluginSettingsService['enabledPlugins'] = constObservable(new Map())
+}
+
+registerSingleton(
+  IWorkspacePluginSettingsService,
+  WorkspacePluginSettingsService,
+  InstantiationType.Delayed
+)
+
+class ChatImageCarouselService implements IChatImageCarouselService {
+  _serviceBrand: undefined
+
+  @Unsupported
+  openCarouselAtResource: IChatImageCarouselService['openCarouselAtResource'] = unsupported
+}
+
+registerSingleton(IChatImageCarouselService, ChatImageCarouselService, InstantiationType.Delayed)
+
+class InlineChatHistoryService implements IInlineChatHistoryService {
+  _serviceBrand: undefined
+
+  @Unsupported
+  addToHistory: IInlineChatHistoryService['addToHistory'] = unsupported
+  previousValue: IInlineChatHistoryService['previousValue'] = () => undefined
+  nextValue: IInlineChatHistoryService['nextValue'] = () => undefined
+  isAtEnd: IInlineChatHistoryService['isAtEnd'] = () => true
+  @Unsupported
+  replaceLast: IInlineChatHistoryService['replaceLast'] = unsupported
+  @Unsupported
+  resetCursor: IInlineChatHistoryService['resetCursor'] = unsupported
+}
+
+registerSingleton(IInlineChatHistoryService, InlineChatHistoryService, InstantiationType.Delayed)
+
+class BrowserViewWorkbenchService implements IBrowserViewWorkbenchService {
+  _serviceBrand: undefined
+
+  getOrCreateBrowserViewModel: IBrowserViewWorkbenchService['getOrCreateBrowserViewModel'] =
+    unsupported
+  @Unsupported
+  getBrowserViewModel: IBrowserViewWorkbenchService['getBrowserViewModel'] = unsupported
+  @Unsupported
+  clearGlobalStorage: IBrowserViewWorkbenchService['clearGlobalStorage'] = unsupported
+  @Unsupported
+  clearWorkspaceStorage: IBrowserViewWorkbenchService['clearWorkspaceStorage'] = unsupported
+}
+
+registerSingleton(
+  IBrowserViewWorkbenchService,
+  BrowserViewWorkbenchService,
+  InstantiationType.Delayed
+)
+
+class BrowserViewCDPService implements IBrowserViewCDPService {
+  _serviceBrand: undefined
+
+  @Unsupported
+  createSessionGroup: IBrowserViewCDPService['createSessionGroup'] = unsupported
+  @Unsupported
+  destroySessionGroup: IBrowserViewCDPService['destroySessionGroup'] = unsupported
+  @Unsupported
+  sendCDPMessage: IBrowserViewCDPService['sendCDPMessage'] = unsupported
+  @Unsupported
+  onCDPMessage: IBrowserViewCDPService['onCDPMessage'] = unsupported
+  onDidDestroy = () => Event.None
+}
+
+registerSingleton(IBrowserViewCDPService, BrowserViewCDPService, InstantiationType.Delayed)
+
+class BrowserZoomService implements IBrowserZoomService {
+  _serviceBrand: undefined
+  onDidChangeZoom = Event.None
+  @Unsupported
+  getEffectiveZoomIndex: IBrowserZoomService['getEffectiveZoomIndex'] = unsupported
+  @Unsupported
+  setHostZoomIndex: IBrowserZoomService['setHostZoomIndex'] = unsupported
+  @Unsupported
+  notifyWindowZoomChanged: IBrowserZoomService['notifyWindowZoomChanged'] = unsupported
+}
+
+registerSingleton(IBrowserZoomService, BrowserZoomService, InstantiationType.Delayed)

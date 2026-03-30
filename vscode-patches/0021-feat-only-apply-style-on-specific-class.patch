@@ -4,13 +4,13 @@ Date: Mon, 11 Mar 2024 17:51:04 +0100
 Subject: [PATCH] feat: only apply style on specific class
 
 ---
- src/vs/workbench/browser/media/style.css      | 182 ++++++++----------
+ src/vs/workbench/browser/media/style.css      | 198 ++++++++----------
  src/vs/workbench/browser/style.ts             |  10 +-
  .../browser/auxiliaryWindowService.ts         |  16 ++
- 3 files changed, 106 insertions(+), 102 deletions(-)
+ 3 files changed, 114 insertions(+), 110 deletions(-)
 
 diff --git a/src/vs/workbench/browser/media/style.css b/src/vs/workbench/browser/media/style.css
-index 0d6a2da153b..b08a3d0f3d1 100644
+index 1f6e583f5e0..0b2a6544e7b 100644
 --- a/src/vs/workbench/browser/media/style.css
 +++ b/src/vs/workbench/browser/media/style.css
 @@ -9,50 +9,37 @@
@@ -85,8 +85,35 @@ index 0d6a2da153b..b08a3d0f3d1 100644
  
  	/* Elevation shadows */
  	--vscode-shadow-sm: 0 0 4px rgba(0, 0, 0, 0.08);
-@@ -67,7 +54,7 @@ body {
- 	--vscode-shadow-depth-y: 0 5px 10px -4px rgba(0, 0, 0, 0.04);
+@@ -68,18 +55,18 @@ body {
+ }
+ 
+ /* Disable panel/part shadows when the setting is off (preserves floating modals, notifications, etc.) */
+-.monaco-workbench.no-shadows .part.titlebar,
+-.monaco-workbench.no-shadows .part.activitybar,
+-.monaco-workbench.no-shadows.nosidebar .part.activitybar,
+-.monaco-workbench.no-shadows.activitybar-right .part.activitybar,
+-.monaco-workbench.no-shadows .part.editor .tabs-container > .tab {
++.monaco-workbench-part.no-shadows .part.titlebar,
++.monaco-workbench-part.no-shadows .part.activitybar,
++.monaco-workbench-part.no-shadows.nosidebar .part.activitybar,
++.monaco-workbench-part.no-shadows.activitybar-right .part.activitybar,
++.monaco-workbench-part.no-shadows .part.editor .tabs-container > .tab {
+ 	box-shadow: none;
+ }
+-.monaco-workbench.no-shadows .part.editor .tabs-container > .tab:hover:not(.active),
+-.monaco-workbench.no-shadows .part.editor .tabs-container > .tab.active {
++.monaco-workbench-part.no-shadows .part.editor .tabs-container > .tab:hover:not(.active),
++.monaco-workbench-part.no-shadows .part.editor .tabs-container > .tab.active {
+ 	box-shadow: none;
+ }
+-.monaco-workbench.no-shadows {
++.monaco-workbench-part.no-shadows {
+ 	/* Use zero-offset transparent shadows instead of 'none' because these
+ 	 * variables are interpolated into multi-value box-shadow declarations. */
+ 	--vscode-shadow-active-tab: 0 0 0 0 transparent;
+@@ -88,7 +75,7 @@ body {
+ 	--vscode-shadow-sm: 0 0 0 0 transparent;
  }
  
 -.monaco-workbench.web {
@@ -94,7 +121,7 @@ index 0d6a2da153b..b08a3d0f3d1 100644
  	touch-action: none; /* Disable browser handling of all panning and zooming gestures. Removes 300ms touch delay. */
  	overscroll-behavior: none; /* Prevent bounce effect */
  }
-@@ -85,55 +72,56 @@ body {
+@@ -106,55 +93,56 @@ body {
  	border-radius: 16px; /* macOS Tahoe increased rounded corners size */
  }
  
@@ -165,7 +192,7 @@ index 0d6a2da153b..b08a3d0f3d1 100644
  	/*
  	 * Somehow this is required when tables show in floating windows
  	 * to override the user-agent style which sets a specific color
-@@ -143,48 +131,48 @@ body {
+@@ -164,48 +152,48 @@ body {
  	font-size: inherit;
  }
  
@@ -228,7 +255,7 @@ index 0d6a2da153b..b08a3d0f3d1 100644
  	width: 16px;
  	padding-left: 3px; /* width (16px) - font-size (13px) = padding-left (3px) */
  	padding-right: 3px;
-@@ -204,7 +192,7 @@ body {
+@@ -225,7 +213,7 @@ body {
  
  /* Custom Dropdown (select) Arrows */
  
@@ -237,7 +264,7 @@ index 0d6a2da153b..b08a3d0f3d1 100644
  	font-family: inherit;
  	appearance: none;
  	-webkit-appearance: none;
-@@ -213,11 +201,11 @@ body {
+@@ -234,11 +222,11 @@ body {
  	border: 1px solid;
  }
  
@@ -251,7 +278,7 @@ index 0d6a2da153b..b08a3d0f3d1 100644
  	content: var(--vscode-icon-chevron-down-content);
  	font-family: var(--vscode-icon-chevron-down-font-family);
  	font-size: 16px;
-@@ -234,16 +222,16 @@ body {
+@@ -255,16 +243,16 @@ body {
  
  /* Keyboard Focus Indication Styles */
  
@@ -278,7 +305,7 @@ index 0d6a2da153b..b08a3d0f3d1 100644
  	outline-width: 1px;
  	outline-style: solid;
  	outline-offset: -1px;
-@@ -256,19 +244,19 @@ body {
+@@ -277,19 +265,19 @@ body {
  	background: transparent; /* Search input focus fix when in high contrast */
  }
  
@@ -305,7 +332,7 @@ index 0d6a2da153b..b08a3d0f3d1 100644
  	border-color: transparent; /* outline is a square, but border has a radius, so we avoid this glitch when focused (https://github.com/microsoft/vscode/issues/26045) */
  }
  
-@@ -298,38 +286,38 @@ body {
+@@ -319,38 +307,38 @@ body {
  	color: var(--vscode-list-focusHighlightForeground);
  }
  

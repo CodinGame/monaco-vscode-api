@@ -27,7 +27,7 @@ index 2350040756f..41f5d44d1f2 100644
  @extHostNamedCustomer(MainContext.MainThreadStatusBar)
  export class MainThreadStatusBar extends Disposable implements MainThreadStatusBarShape {
 diff --git a/src/vs/workbench/api/browser/statusBarExtensionPoint.ts b/src/vs/workbench/api/browser/statusBarExtensionPoint.ts
-index 0bdbb98e138..dcd73e5fdbc 100644
+index 75ea60405d5..863152a3169 100644
 --- a/src/vs/workbench/api/browser/statusBarExtensionPoint.ts
 +++ b/src/vs/workbench/api/browser/statusBarExtensionPoint.ts
 @@ -4,172 +4,17 @@
