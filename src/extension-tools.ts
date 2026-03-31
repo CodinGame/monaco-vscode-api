@@ -304,7 +304,7 @@ async function extractResourcesFromExtensionManifest(
   }
 
   // remove duplicates
-  return Array.from(new Set(resources))
+  return Array.from(new Set(resources.map((p) => nodePath.normalize(p))))
 }
 
 async function extractResources(
