@@ -18,7 +18,7 @@ import type { IUserFriendlyViewsContainerDescriptor } from 'vs/workbench/api/bro
 import parseCssUrl from 'css-url-parser'
 import * as mime from 'mime-types'
 import { type FileSystemAdapter, glob } from 'fast-glob'
-import * as path from 'node:path'
+import * as nodePath from 'node:path'
 import type nodeFs from 'node:fs'
 
 export interface ExtensionResource {
@@ -43,7 +43,7 @@ function lookupMime(path: string) {
 
 function getPaths(filePath: string) {
   const paths = [filePath]
-  if (path.extname(filePath) === '.js') {
+  if (nodePath.extname(filePath) === '.js') {
     paths.push(filePath.substring(0, filePath.lastIndexOf('.')))
   }
   return paths
@@ -58,7 +58,7 @@ export function toResource(
     path: resourcePath,
     extensionPaths: getPaths(resourcePath),
     mimeType: lookupMime(resourcePath),
-    size: fs.statSync(path.resolve(cwd, resourcePath)).size
+    size: fs.statSync(nodePath.resolve(cwd, resourcePath)).size
   }
 }
 
@@ -114,25 +114,25 @@ async function extractThemeResources(
   fs: typeof nodeFs,
   cwd: string
 ): Promise<string[]> {
-  const themeContent = await fs.promises.readFile(path.join(cwd, theme.path))
+  const themeContent = await fs.promises.readFile(nodePath.join(cwd, theme.path))
   const themeDocument = parseJson<IconThemeDocument>(theme.path, themeContent.toString('utf8'))
   const paths: string[] = [theme.path]
   if (themeDocument.fonts != null) {
     for (const font of themeDocument.fonts) {
       for (const src of font.src) {
-        paths.push(path.join(path.dirname(theme.path), src.path))
+        paths.push(nodePath.join(nodePath.dirname(theme.path), src.path))
       }
     }
   }
   if (themeDocument.iconDefinitions != null) {
     for (const iconDefinition of Object.values(themeDocument.iconDefinitions)) {
       if (iconDefinition.iconPath != null) {
-        paths.push(path.join(path.dirname(theme.path), iconDefinition.iconPath))
+        paths.push(nodePath.join(nodePath.dirname(theme.path), iconDefinition.iconPath))
       }
     }
   }
   if (themeDocument.include != null) {
-    paths.push(path.join(path.dirname(theme.path), themeDocument.include))
+    paths.push(nodePath.join(nodePath.dirname(theme.path), themeDocument.include))
   }
 
   return paths
@@ -289,11 +289,11 @@ async function extractResourcesFromExtensionManifest(
     cwd,
     onlyFiles: true
   })
-  resources.push(...manifestFiles.map((path) => path))
+  resources.push(...manifestFiles)
   if (manifest.l10n != null) {
     const bundleFiles = await glob('{bundle.l10n.json,bundle.l10n.*.json}', {
       fs: <FileSystemAdapter>fs,
-      cwd: path.join(cwd, manifest.l10n),
+      cwd: nodePath.join(cwd, manifest.l10n),
       onlyFiles: true
     })
     resources.push(...bundleFiles)
@@ -318,9 +318,9 @@ async function extractResources(
   if (resourcePath.endsWith('.css')) {
     const urls = parseCssUrl(content)
     for (const url of urls) {
-      const assetPath = './' + path.join(path.dirname(resourcePath), url)
+      const assetPath = './' + nodePath.join(nodePath.dirname(resourcePath), url)
       try {
-        await fs.promises.access(path.join(cwd, assetPath))
+        await fs.promises.access(nodePath.join(cwd, assetPath))
         resources.push(assetPath)
       } catch {
         // ignore, the file doesn't exist
