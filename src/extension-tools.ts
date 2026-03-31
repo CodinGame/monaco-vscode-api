@@ -106,6 +106,7 @@ interface FontDefinition {
 interface IconThemeDocument {
   iconDefinitions?: { [key: string]: IconDefinition }
   fonts?: FontDefinition[]
+  include?: string
 }
 
 async function extractThemeResources(
@@ -130,6 +131,10 @@ async function extractThemeResources(
       }
     }
   }
+  if (themeDocument.include != null) {
+    paths.push(path.join(path.dirname(theme.path), themeDocument.include))
+  }
+
   return paths
 }
 
