@@ -1,0 +1,36 @@
+From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
+From: =?UTF-8?q?Lo=C3=AFc=20Mangeonjean?= <loic@coderpad.io>
+Date: Mon, 30 Mar 2026 19:29:11 +0200
+Subject: [PATCH] fix: wrong paths
+
+---
+ extensions/theme-defaults/themes/2026-dark.json  | 2 +-
+ extensions/theme-defaults/themes/2026-light.json | 2 +-
+ 2 files changed, 2 insertions(+), 2 deletions(-)
+
+diff --git a/extensions/theme-defaults/themes/2026-dark.json b/extensions/theme-defaults/themes/2026-dark.json
+index 9427640c404..d09a1b8c192 100644
+--- a/extensions/theme-defaults/themes/2026-dark.json
++++ b/extensions/theme-defaults/themes/2026-dark.json
+@@ -1,7 +1,7 @@
+ {
+ 	"$schema": "vscode://schemas/color-theme",
+ 	"name": "2026 Dark",
+-	"include": "../../theme-defaults/themes/dark_modern.json",
++	"include": "./dark_modern.json",
+ 	"type": "dark",
+ 	"colors": {
+ 		"foreground": "#bfbfbf",
+diff --git a/extensions/theme-defaults/themes/2026-light.json b/extensions/theme-defaults/themes/2026-light.json
+index 2beaf9f6840..30ab56c1592 100644
+--- a/extensions/theme-defaults/themes/2026-light.json
++++ b/extensions/theme-defaults/themes/2026-light.json
+@@ -1,7 +1,7 @@
+ {
+ 	"$schema": "vscode://schemas/color-theme",
+ 	"name": "2026 Light",
+-	"include": "../../theme-defaults/themes/light_modern.json",
++	"include": "./light_modern.json",
+ 	"type": "light",
+ 	"colors": {
+ 		"foreground": "#202020",
