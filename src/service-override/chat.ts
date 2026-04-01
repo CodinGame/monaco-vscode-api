@@ -121,6 +121,8 @@ import { IChatImageCarouselService } from 'vs/workbench/contrib/chat/browser/cha
 import { ChatImageCarouselService } from 'vs/workbench/contrib/chat/browser/chatImageCarouselService'
 import { IInlineChatHistoryService } from 'vs/workbench/contrib/inlineChat/browser/inlineChatHistoryService.service'
 import { InlineChatHistoryService } from 'vs/workbench/contrib/inlineChat/browser/inlineChatHistoryService'
+import { NullSandboxHelperService } from 'vs/platform/sandbox/browser/sandboxHelperService'
+import { ISandboxHelperService } from 'vs/platform/sandbox/common/sandboxHelperService.service'
 import 'vs/workbench/contrib/chat/browser/chat.contribution'
 import 'vs/workbench/contrib/terminal/terminal.chat.contribution'
 import 'vs/workbench/contrib/inlineChat/browser/inlineChat.contribution'
@@ -256,6 +258,7 @@ export default function getServiceOverride({
     ),
     [IChatToolOutputStateCache.toString()]: new SyncDescriptor(ChatToolOutputStateCache, [], true),
     [ITerminalSandboxService.toString()]: new SyncDescriptor(TerminalSandboxService, [], true),
+    [ISandboxHelperService.toString()]: new SyncDescriptor(NullSandboxHelperService, [], true),
     [IAICustomizationWorkspaceService.toString()]: new SyncDescriptor(
       AICustomizationWorkspaceService,
       [],
@@ -287,7 +290,7 @@ export default function getServiceOverride({
     ),
     [ICustomizationHarnessService.toString()]: new SyncDescriptor(
       CustomizationHarnessService,
-      [defaultAccount],
+      [],
       true
     ),
     [IChatArtifactsService.toString()]: new SyncDescriptor(ChatArtifactsService, [], true),

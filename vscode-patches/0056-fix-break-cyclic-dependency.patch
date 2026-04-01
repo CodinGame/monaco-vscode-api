@@ -5,11 +5,12 @@ Subject: [PATCH] fix: break cyclic dependency
 
 ---
  .../contrib/chat/browser/newChatContextAttachments.ts |  4 ++--
+ .../chatMissingSandboxDepsConfirmationSubPart.ts      |  2 +-
  .../contrib/tasks/browser/task.contribution.ts        |  3 ++-
  .../contrib/tasks/browser/terminalTaskSystem.ts       |  3 ++-
  src/vs/workbench/contrib/tasks/common/constants.ts    | 11 +++++++++++
  src/vs/workbench/contrib/tasks/common/tasks.ts        |  9 +--------
- 5 files changed, 18 insertions(+), 12 deletions(-)
+ 6 files changed, 19 insertions(+), 13 deletions(-)
  create mode 100644 src/vs/workbench/contrib/tasks/common/constants.ts
 
 diff --git a/src/vs/sessions/contrib/chat/browser/newChatContextAttachments.ts b/src/vs/sessions/contrib/chat/browser/newChatContextAttachments.ts
@@ -27,6 +28,19 @@ index 0c264d25f9a..5cc68b9efa5 100644
  import { CodeDataTransfers, containsDragType, extractEditorsDropData, getPathForFile } from '../../../../platform/dnd/browser/dnd.js';
  import { DataTransfers } from '../../../../base/browser/dnd.js';
  import { getExcludes, ISearchConfiguration, ISearchService, QueryType } from '../../../../workbench/services/search/common/search.js';
+diff --git a/src/vs/workbench/contrib/chat/browser/widget/chatContentParts/toolInvocationParts/chatMissingSandboxDepsConfirmationSubPart.ts b/src/vs/workbench/contrib/chat/browser/widget/chatContentParts/toolInvocationParts/chatMissingSandboxDepsConfirmationSubPart.ts
+index e31d3daf423..aa35bbc601a 100644
+--- a/src/vs/workbench/contrib/chat/browser/widget/chatContentParts/toolInvocationParts/chatMissingSandboxDepsConfirmationSubPart.ts
++++ b/src/vs/workbench/contrib/chat/browser/widget/chatContentParts/toolInvocationParts/chatMissingSandboxDepsConfirmationSubPart.ts
+@@ -12,7 +12,7 @@ import { IKeybindingService } from '../../../../../../../platform/keybinding/com
+ import { IMarkdownRenderer } from '../../../../../../../platform/markdown/browser/markdownRenderer.js';
+ import { IChatToolInvocation, type IChatTerminalToolInvocationData } from '../../../../common/chatService/chatService.js';
+ import { ILanguageModelToolsService } from '../../../../common/tools/languageModelToolsService.js';
+-import { AcceptToolConfirmationActionId, SkipToolConfirmationActionId } from '../../../actions/chatToolActions.js';
++import { AcceptToolConfirmationActionId, SkipToolConfirmationActionId } from '../../../actions/chatConstants.js';
+ import { IChatCodeBlockInfo, IChatWidgetService } from '../../../chat.js';
+ import { IChatContentPartRenderContext } from '../chatContentParts.js';
+ import { AbstractToolConfirmationSubPart } from './abstractToolConfirmationSubPart.js';
 diff --git a/src/vs/workbench/contrib/tasks/browser/task.contribution.ts b/src/vs/workbench/contrib/tasks/browser/task.contribution.ts
 index 4fa7237b82f..03e2d2bb6c9 100644
 --- a/src/vs/workbench/contrib/tasks/browser/task.contribution.ts
@@ -49,7 +63,7 @@ index 4fa7237b82f..03e2d2bb6c9 100644
  const workbenchRegistry = Registry.as<IWorkbenchContributionsRegistry>(WorkbenchExtensions.Workbench);
  workbenchRegistry.registerWorkbenchContribution(RunAutomaticTasks, LifecyclePhase.Eventually);
 diff --git a/src/vs/workbench/contrib/tasks/browser/terminalTaskSystem.ts b/src/vs/workbench/contrib/tasks/browser/terminalTaskSystem.ts
-index 2cf3ac03c1e..fa2bd996c50 100644
+index 348a6988d91..191b84efcb2 100644
 --- a/src/vs/workbench/contrib/tasks/browser/terminalTaskSystem.ts
 +++ b/src/vs/workbench/contrib/tasks/browser/terminalTaskSystem.ts
 @@ -40,7 +40,7 @@ import { TaskTerminalStatus } from './taskTerminalStatus.js';

@@ -119,10 +119,10 @@ index 4cfaf6a58cb..b7f63a0d276 100644
  
  class ExtensionHostProxy implements IExtensionHostProxy {
 diff --git a/src/vs/workbench/api/common/extHost.protocol.ts b/src/vs/workbench/api/common/extHost.protocol.ts
-index d02ae88a0f1..2f7564c5917 100644
+index 83b68a5ec4c..58d53f4f0b7 100644
 --- a/src/vs/workbench/api/common/extHost.protocol.ts
 +++ b/src/vs/workbench/api/common/extHost.protocol.ts
-@@ -1894,6 +1894,7 @@ export interface MainThreadExtensionServiceShape extends IDisposable {
+@@ -1915,6 +1915,7 @@ export interface MainThreadExtensionServiceShape extends IDisposable {
  	$onExtensionRuntimeError(extensionId: ExtensionIdentifier, error: SerializedError): void;
  	$setPerformanceMarks(marks: performance.PerformanceMark[]): Promise<void>;
  	$asBrowserUri(uri: UriComponents): Promise<UriComponents>;

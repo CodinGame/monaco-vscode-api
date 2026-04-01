@@ -8,10 +8,10 @@ Subject: [PATCH] fix: stop expecting a git context
  1 file changed, 5 deletions(-)
 
 diff --git a/build/npm/postinstall.ts b/build/npm/postinstall.ts
-index 0378e4b357c..eb0905bbe9f 100644
+index db659fa78a4..224502570c4 100644
 --- a/build/npm/postinstall.ts
 +++ b/build/npm/postinstall.ts
-@@ -210,8 +210,6 @@ async function runWithConcurrency(tasks: (() => Promise<void>)[], concurrency: n
+@@ -236,8 +236,6 @@ async function runWithConcurrency(tasks: (() => Promise<void>)[], concurrency: n
  async function main() {
  	if (!process.env['VSCODE_FORCE_INSTALL'] && isUpToDate()) {
  		log('.', 'All dependencies up to date, skipping postinstall.');
@@ -20,7 +20,7 @@ index 0378e4b357c..eb0905bbe9f 100644
  		return;
  	}
  
-@@ -283,9 +281,6 @@ async function main() {
+@@ -309,9 +307,6 @@ async function main() {
  	log('.', `Running ${parallelTasks.length} npm installs with concurrency ${concurrency}...`);
  	await runWithConcurrency(parallelTasks, concurrency);
  

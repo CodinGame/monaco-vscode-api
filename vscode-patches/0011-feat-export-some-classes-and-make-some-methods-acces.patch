@@ -13,6 +13,7 @@ Subject: [PATCH] feat: export some classes and make some methods accessible
  .../actions/browser/actionViewItemService.ts       |  2 +-
  .../browser/extensionResourceLoaderService.ts      |  2 +-
  src/vs/platform/files/common/fileService.ts        |  6 +++---
+ .../sandbox/browser/sandboxHelperService.ts        |  2 +-
  .../api/browser/statusBarExtensionPoint.ts         |  2 +-
  src/vs/workbench/browser/layout.ts                 | 10 +++++-----
  src/vs/workbench/browser/workbench.ts              | 14 +++++++-------
@@ -43,7 +44,7 @@ Subject: [PATCH] feat: export some classes and make some methods accessible
  .../terminal/common/embedderTerminalService.ts     |  2 +-
  .../common/remoteUserDataProfiles.ts               |  2 +-
  .../userDataSync/common/userDataSyncUtil.ts        |  2 +-
- 39 files changed, 68 insertions(+), 64 deletions(-)
+ 40 files changed, 69 insertions(+), 65 deletions(-)
 
 diff --git a/src/vs/editor/contrib/editorState/browser/keybindingCancellation.ts b/src/vs/editor/contrib/editorState/browser/keybindingCancellation.ts
 index 94020ce96b9..de1e9af237e 100644
@@ -188,6 +189,19 @@ index 493471fe856..3a098814ba1 100644
  		const { providerExtUri } = this.getExtUri(provider);
  
  		// convert to file stat
+diff --git a/src/vs/platform/sandbox/browser/sandboxHelperService.ts b/src/vs/platform/sandbox/browser/sandboxHelperService.ts
+index 2506ae2e49f..1f2051f50a3 100644
+--- a/src/vs/platform/sandbox/browser/sandboxHelperService.ts
++++ b/src/vs/platform/sandbox/browser/sandboxHelperService.ts
+@@ -6,7 +6,7 @@
+ import { InstantiationType, registerSingleton } from '../../instantiation/common/extensions.js';
+ import { ISandboxDependencyStatus, ISandboxHelperService } from '../common/sandboxHelperService.js';
+ 
+-class NullSandboxHelperService implements ISandboxHelperService {
++export class NullSandboxHelperService implements ISandboxHelperService {
+ 	declare readonly _serviceBrand: undefined;
+ 
+ 	async checkSandboxDependencies(): Promise<ISandboxDependencyStatus> {
 diff --git a/src/vs/workbench/api/browser/statusBarExtensionPoint.ts b/src/vs/workbench/api/browser/statusBarExtensionPoint.ts
 index c8d1765a7ab..91d78dc1be0 100644
 --- a/src/vs/workbench/api/browser/statusBarExtensionPoint.ts
@@ -311,7 +325,7 @@ index 10e2c3edace..91ba0f472a6 100644
  		// Ask each part to restore
  		try {
 diff --git a/src/vs/workbench/contrib/chat/browser/aiCustomization/aiCustomizationWorkspaceService.ts b/src/vs/workbench/contrib/chat/browser/aiCustomization/aiCustomizationWorkspaceService.ts
-index 8a64b0cddba..cb55ec98914 100644
+index a4e399195b0..93d327029c3 100644
 --- a/src/vs/workbench/contrib/chat/browser/aiCustomization/aiCustomizationWorkspaceService.ts
 +++ b/src/vs/workbench/contrib/chat/browser/aiCustomization/aiCustomizationWorkspaceService.ts
 @@ -21,7 +21,7 @@ import {
@@ -324,18 +338,18 @@ index 8a64b0cddba..cb55ec98914 100644
  
  	readonly activeProjectRoot: IObservable<URI | undefined>;
 diff --git a/src/vs/workbench/contrib/chat/browser/aiCustomization/customizationHarnessService.ts b/src/vs/workbench/contrib/chat/browser/aiCustomization/customizationHarnessService.ts
-index 3f03253741d..01557589c81 100644
+index 417546fdca2..69c257220b5 100644
 --- a/src/vs/workbench/contrib/chat/browser/aiCustomization/customizationHarnessService.ts
 +++ b/src/vs/workbench/contrib/chat/browser/aiCustomization/customizationHarnessService.ts
-@@ -26,7 +26,7 @@ import { IChatAgentService } from '../../common/participants/chatAgents.js';
+@@ -23,7 +23,7 @@ import { IPathService } from '../../../../services/path/common/pathService.js';
+  * Core implementation of the customization harness service.
   * Exposes VS Code, CLI, and Claude harnesses for filtering customizations.
-  * CLI and Claude harnesses are only shown when their respective agents are registered.
   */
 -class CustomizationHarnessService extends CustomizationHarnessServiceBase {
 +export class CustomizationHarnessService extends CustomizationHarnessServiceBase {
  	constructor(
  		@IPathService pathService: IPathService,
- 		@IChatAgentService chatAgentService: IChatAgentService,
+ 	) {
 diff --git a/src/vs/workbench/contrib/chat/browser/chatStatus/chatStatusItemService.ts b/src/vs/workbench/contrib/chat/browser/chatStatus/chatStatusItemService.ts
 index b87135ccce6..dae96febb2b 100644
 --- a/src/vs/workbench/contrib/chat/browser/chatStatus/chatStatusItemService.ts

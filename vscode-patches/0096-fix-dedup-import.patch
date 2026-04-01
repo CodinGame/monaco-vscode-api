@@ -8,7 +8,7 @@ Subject: [PATCH] fix: dedup import
  1 file changed, 1 insertion(+), 2 deletions(-)
 
 diff --git a/src/vs/workbench/contrib/browserView/common/browserEditorInput.ts b/src/vs/workbench/contrib/browserView/common/browserEditorInput.ts
-index 6b6251056df..c5f2e338dc4 100644
+index d8e0c816df7..04253a09103 100644
 --- a/src/vs/workbench/contrib/browserView/common/browserEditorInput.ts
 +++ b/src/vs/workbench/contrib/browserView/common/browserEditorInput.ts
 @@ -9,14 +9,13 @@ import { ThemeIcon } from '../../../../base/common/themables.js';

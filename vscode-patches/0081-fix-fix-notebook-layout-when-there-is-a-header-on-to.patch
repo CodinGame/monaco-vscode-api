@@ -22,7 +22,7 @@ index 0b2a6544e7b..a67fdbcfaf3 100644
  	/* Elevation shadows */
  	--vscode-shadow-sm: 0 0 4px rgba(0, 0, 0, 0.08);
 diff --git a/src/vs/workbench/contrib/notebook/browser/notebookEditorWidget.ts b/src/vs/workbench/contrib/notebook/browser/notebookEditorWidget.ts
-index 494fff0e961..42522b793e8 100644
+index 770e8906532..3bdf90c6569 100644
 --- a/src/vs/workbench/contrib/notebook/browser/notebookEditorWidget.ts
 +++ b/src/vs/workbench/contrib/notebook/browser/notebookEditorWidget.ts
 @@ -1960,11 +1960,12 @@ export class NotebookEditorWidget extends Disposable implements INotebookEditorD

@@ -11,7 +11,7 @@ Subject: [PATCH] feat: add terminal.integrated.preserveDrawingBuffer setting
  4 files changed, 9 insertions(+), 1 deletion(-)
 
 diff --git a/src/vs/platform/terminal/common/terminal.ts b/src/vs/platform/terminal/common/terminal.ts
-index af6e52c8e17..0e1db8645d0 100644
+index cae49fe2836..55385e2af0d 100644
 --- a/src/vs/platform/terminal/common/terminal.ts
 +++ b/src/vs/platform/terminal/common/terminal.ts
 @@ -101,6 +101,7 @@ export const enum TerminalSettingId {
@@ -37,7 +37,7 @@ index b043728acf3..b85981af653 100644
  		try {
  			this.raw.loadAddon(this._webglAddon);
 diff --git a/src/vs/workbench/contrib/terminal/common/terminal.ts b/src/vs/workbench/contrib/terminal/common/terminal.ts
-index c5951189a80..99053651bc7 100644
+index f113bb4360b..40babf1028a 100644
 --- a/src/vs/workbench/contrib/terminal/common/terminal.ts
 +++ b/src/vs/workbench/contrib/terminal/common/terminal.ts
 @@ -216,6 +216,7 @@ export interface ITerminalConfiguration {
@@ -49,7 +49,7 @@ index c5951189a80..99053651bc7 100644
  
  export interface ITerminalFont {
 diff --git a/src/vs/workbench/contrib/terminal/common/terminalConfiguration.ts b/src/vs/workbench/contrib/terminal/common/terminalConfiguration.ts
-index be681d6ef06..a52bdd98a41 100644
+index f29bb666064..b2e01dd9f76 100644
 --- a/src/vs/workbench/contrib/terminal/common/terminalConfiguration.ts
 +++ b/src/vs/workbench/contrib/terminal/common/terminalConfiguration.ts
 @@ -569,6 +569,11 @@ const terminalConfiguration: IStringDictionary<IConfigurationPropertySchema> = {

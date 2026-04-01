@@ -8,13 +8,13 @@ Subject: [PATCH] fix: also register the quickinput container
  1 file changed, 5 insertions(+), 1 deletion(-)
 
 diff --git a/src/vs/platform/quickinput/browser/quickInputController.ts b/src/vs/platform/quickinput/browser/quickInputController.ts
-index 162d90de81b..4e8e44947f7 100644
+index 25b00910991..a0ccf39b3e1 100644
 --- a/src/vs/platform/quickinput/browser/quickInputController.ts
 +++ b/src/vs/platform/quickinput/browser/quickInputController.ts
 @@ -39,6 +39,7 @@ import { QuickInputTreeController } from './tree/quickInputTreeController.js';
  import { QuickTree } from './tree/quickTree.js';
  import { AnchorAlignment, AnchorPosition, layout2d } from '../../../base/common/layout.js';
- import { getAnchorRect } from '../../../base/browser/ui/contextview/contextview.js';
+ import { getAnchorRect, IAnchor } from '../../../base/browser/ui/contextview/contextview.js';
 +import { IKeybindingService } from '../../keybinding/common/keybinding.js';
  
  const $ = dom.$;
@@ -29,7 +29,7 @@ index 162d90de81b..4e8e44947f7 100644
  	) {
  		super();
  
-@@ -142,6 +144,8 @@ export class QuickInputController extends Disposable {
+@@ -143,6 +145,8 @@ export class QuickInputController extends Disposable {
  		}
  
  		const container = dom.append(this._container, $('.quick-input-widget.show-file-icons'));

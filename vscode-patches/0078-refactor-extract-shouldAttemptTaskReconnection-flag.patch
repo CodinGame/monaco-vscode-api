@@ -33,7 +33,7 @@ index 808dcdd8486..d7081a6cff8 100644
  			this._tasksReconnected = true;
  			this._storageService.remove(AbstractTaskService.PersistentTasks_Key, StorageScope.WORKSPACE);
 diff --git a/src/vs/workbench/contrib/terminal/browser/terminalService.ts b/src/vs/workbench/contrib/terminal/browser/terminalService.ts
-index 736a2e46ee7..41ab11b4ce0 100644
+index 0d7db801891..bdf1e79cb1a 100644
 --- a/src/vs/workbench/contrib/terminal/browser/terminalService.ts
 +++ b/src/vs/workbench/contrib/terminal/browser/terminalService.ts
 @@ -42,7 +42,7 @@ import { IEditorGroupsService } from '../../../services/editor/common/editorGrou
@@ -45,7 +45,7 @@ index 736a2e46ee7..41ab11b4ce0 100644
  import { IRemoteAgentService } from '../../../services/remote/common/remoteAgentService.js';
  import { XtermTerminal } from './xterm/xtermTerminal.js';
  import { TerminalInstance } from './terminalInstance.js';
-@@ -549,7 +549,7 @@ export class TerminalService extends Disposable implements ITerminalService {
+@@ -543,7 +543,7 @@ export class TerminalService extends Disposable implements ITerminalService {
  		let lastInstance: Promise<ITerminalInstance> | undefined;
  		for (const terminalLayout of terminalLayouts) {
  			const attachPersistentProcess = terminalLayout.terminal!;

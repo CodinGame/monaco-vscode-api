@@ -81,7 +81,7 @@ index 379350a5703..e73de9ee340 100644
  		return { malicious, deprecated, search, autoUpdate };
  	}
 diff --git a/src/vs/workbench/contrib/chat/browser/chatStatus/chatStatusDashboard.ts b/src/vs/workbench/contrib/chat/browser/chatStatus/chatStatusDashboard.ts
-index 5b28e7c8a89..8762d12ccc7 100644
+index 063a9f3031d..baba6ffe860 100644
 --- a/src/vs/workbench/contrib/chat/browser/chatStatus/chatStatusDashboard.ts
 +++ b/src/vs/workbench/contrib/chat/browser/chatStatus/chatStatusDashboard.ts
 @@ -50,7 +50,7 @@ import { ChatViewId } from '../chat.js';
@@ -94,23 +94,23 @@ index 5b28e7c8a89..8762d12ccc7 100644
  interface ISettingsAccessor {
  	readSetting: () => boolean;
 diff --git a/src/vs/workbench/contrib/chat/browser/chatStatus/chatStatusEntry.ts b/src/vs/workbench/contrib/chat/browser/chatStatus/chatStatusEntry.ts
-index 0e1160d71e4..62bf1facfe7 100644
+index 38ce308a1a1..b9300388209 100644
 --- a/src/vs/workbench/contrib/chat/browser/chatStatus/chatStatusEntry.ts
 +++ b/src/vs/workbench/contrib/chat/browser/chatStatus/chatStatusEntry.ts
-@@ -84,7 +84,7 @@ export class ChatStatusBarEntry extends Disposable implements IWorkbenchContribu
+@@ -85,7 +85,7 @@ export class ChatStatusBarEntry extends Disposable implements IWorkbenchContribu
  		this._register(this.editorService.onDidActiveEditorChange(() => this.onDidActiveEditorChange()));
  
  		this._register(this.configurationService.onDidChangeConfiguration(e => {
--			if (e.affectsConfiguration(product.defaultChatAgent?.completionsEnablementSetting)) {
-+			if (e.affectsConfiguration(product.defaultChatAgent!.completionsEnablementSetting)) {
+-			if (e.affectsConfiguration(product.defaultChatAgent?.completionsEnablementSetting) || e.affectsConfiguration(ChatConfiguration.SignInTitleBarEnabled)) {
++			if (e.affectsConfiguration(product.defaultChatAgent!.completionsEnablementSetting) || e.affectsConfiguration(ChatConfiguration.SignInTitleBarEnabled)) {
  				this.update();
  			}
  		}));
 diff --git a/src/vs/workbench/contrib/chat/browser/widget/chatWidget.ts b/src/vs/workbench/contrib/chat/browser/widget/chatWidget.ts
-index 14a26a6a357..9a65b571bbd 100644
+index 3541e271f7f..163f7969b4b 100644
 --- a/src/vs/workbench/contrib/chat/browser/widget/chatWidget.ts
 +++ b/src/vs/workbench/contrib/chat/browser/widget/chatWidget.ts
-@@ -1011,8 +1011,8 @@ export class ChatWidget extends Disposable implements IChatWidget {
+@@ -1007,8 +1007,8 @@ export class ChatWidget extends Disposable implements IChatWidget {
  				const defaultAgent = this.chatAgentService.getDefaultAgent(this.location, this.input.currentModeKind);
  				let additionalMessage: string | IMarkdownString | undefined;
  				if (this.chatEntitlementService.anonymous && !this.chatEntitlementService.sentiment.installed) {
