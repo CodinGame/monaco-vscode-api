@@ -469,6 +469,7 @@ import {
 } from './l10n.js'
 import { unsupported } from './tools.js'
 
+import { ISandboxHelperService } from 'vs/platform/sandbox/common/sandboxHelperService.service.js'
 import {
   IBrowserViewCDPService,
   IBrowserViewWorkbenchService
@@ -3377,8 +3378,6 @@ class ChatService implements IChatService {
   setSessionTitle: IChatService['setSessionTitle'] = unsupported
   @Unsupported
   migrateRequests: IChatService['migrateRequests'] = unsupported
-  registerChatModelChangeListeners: IChatService['registerChatModelChangeListeners'] = () =>
-    Disposable.None
 }
 registerSingleton(IChatService, ChatService, InstantiationType.Delayed)
 class ChatMarkdownAnchorService implements IChatMarkdownAnchorService {
@@ -5442,6 +5441,9 @@ class ChatEditingService implements IChatEditingService {
   createEditingSession: IChatEditingService['createEditingSession'] = unsupported
   @Unsupported
   transferEditingSession: IChatEditingService['createEditingSession'] = unsupported
+  @Unsupported
+  registerEditingSessionProvider: IChatEditingService['registerEditingSessionProvider'] =
+    unsupported
 }
 registerSingleton(IChatEditingService, ChatEditingService, InstantiationType.Delayed)
 class ActionViewItemService implements IActionViewItemService {
@@ -6084,8 +6086,6 @@ class ChatSessionsService implements IChatSessionsService {
   @Unsupported
   getOrCreateChatSession: IChatSessionsService['getOrCreateChatSession'] = unsupported
 
-  hasAnySessionOptions: IChatSessionsService['hasAnySessionOptions'] = () => false
-
   getSessionOption: IChatSessionsService['getSessionOption'] = () => undefined
 
   setSessionOption: IChatSessionsService['setSessionOption'] = () => false
@@ -6103,8 +6103,6 @@ class ChatSessionsService implements IChatSessionsService {
   activateChatSessionItemProvider: IChatSessionsService['activateChatSessionItemProvider'] =
     async () => undefined
   onDidChangeSessionOptions: IChatSessionsService['onDidChangeSessionOptions'] = Event.None
-  getInProgressSessionDescription: IChatSessionsService['getInProgressSessionDescription'] = () =>
-    undefined
 
   onDidChangeOptionGroups: IChatSessionsService['onDidChangeOptionGroups'] = Event.None
 
@@ -6143,6 +6141,15 @@ class ChatSessionsService implements IChatSessionsService {
   forkChatSession: IChatSessionsService['forkChatSession'] = unsupported
 
   getSessionOptions: IChatSessionsService['getSessionOptions'] = () => undefined
+
+  onDidCommitSession: IChatSessionsService['onDidCommitSession'] = Event.None
+  @Unsupported
+  fireSessionCommitted: IChatSessionsService['fireSessionCommitted'] = unsupported
+  onDidChangeCustomizations: IChatSessionsService['onDidChangeCustomizations'] = Event.None
+  registerCustomizationsProvider: IChatSessionsService['registerCustomizationsProvider'] = () =>
+    Disposable.None
+  hasCustomizationsProvider: IChatSessionsService['hasCustomizationsProvider'] = () => false
+  getCustomizations: IChatSessionsService['getCustomizations'] = async () => undefined
 }
 registerSingleton(IChatSessionsService, ChatSessionsService, InstantiationType.Delayed)
 
@@ -6554,6 +6561,14 @@ class TerminalSandboxService implements ITerminalSandboxService {
 
   @Unsupported
   getResolvedNetworkDomains: ITerminalSandboxService['getResolvedNetworkDomains'] = unsupported
+
+  @Unsupported
+  checkForSandboxingPrereqs: ITerminalSandboxService['checkForSandboxingPrereqs'] = unsupported
+  getMissingSandboxDependencies: ITerminalSandboxService['getMissingSandboxDependencies'] =
+    async () => []
+  @Unsupported
+  installMissingSandboxDependencies: ITerminalSandboxService['installMissingSandboxDependencies'] =
+    unsupported
 }
 
 registerSingleton(ITerminalSandboxService, TerminalSandboxService, InstantiationType.Delayed)
@@ -6594,6 +6609,9 @@ class AICustomizationWorkspaceService implements IAICustomizationWorkspaceServic
     unsupported
   getFilteredPromptSlashCommands: IAICustomizationWorkspaceService['getFilteredPromptSlashCommands'] =
     async () => []
+
+  getSkillUIIntegrations: IAICustomizationWorkspaceService['getSkillUIIntegrations'] = () =>
+    new Map()
 }
 
 registerSingleton(
@@ -6626,8 +6644,6 @@ class PluginMarketplaceService implements IPluginMarketplaceService {
   addInstalledPlugin: IPluginMarketplaceService['addInstalledPlugin'] = unsupported
   @Unsupported
   removeInstalledPlugin: IPluginMarketplaceService['removeInstalledPlugin'] = unsupported
-  @Unsupported
-  setInstalledPluginEnabled: IPluginMarketplaceService['setInstalledPluginEnabled'] = unsupported
   @Unsupported
   isMarketplaceTrusted: IPluginMarketplaceService['isMarketplaceTrusted'] = unsupported
   @Unsupported
@@ -6666,6 +6682,10 @@ class AgentPluginRepositoryService implements IAgentPluginRepositoryService {
   cleanupPluginSource: IAgentPluginRepositoryService['cleanupPluginSource'] = unsupported
   @Unsupported
   fetchRepository: IAgentPluginRepositoryService['fetchRepository'] = unsupported
+  @Unsupported
+  get agentPluginsHome(): IAgentPluginRepositoryService['agentPluginsHome'] {
+    return unsupported()
+  }
 }
 
 registerSingleton(
@@ -6867,6 +6887,8 @@ class CustomizationHarnessService implements ICustomizationHarnessService {
   getStorageSourceFilter: ICustomizationHarnessService['getStorageSourceFilter'] = unsupported
   @Unsupported
   getActiveDescriptor: ICustomizationHarnessService['getActiveDescriptor'] = unsupported
+  registerExternalHarness: ICustomizationHarnessService['registerExternalHarness'] = () =>
+    Disposable.None
 }
 
 registerSingleton(
@@ -6877,14 +6899,9 @@ registerSingleton(
 
 class ChatArtifactsService implements IChatArtifactsService {
   _serviceBrand: undefined
-  onDidUpdateArtifacts: IChatArtifactsService['onDidUpdateArtifacts'] = Event.None
 
-  getArtifacts: IChatArtifactsService['getArtifacts'] = () => []
   @Unsupported
-  setArtifacts: IChatArtifactsService['setArtifacts'] = unsupported
-  @Unsupported
-  migrateArtifacts: IChatArtifactsService['migrateArtifacts'] = unsupported
-  artifacts: IChatArtifactsService['artifacts'] = () => constObservable([])
+  getArtifacts: IChatArtifactsService['getArtifacts'] = unsupported
 }
 
 registerSingleton(IChatArtifactsService, ChatArtifactsService, InstantiationType.Delayed)
@@ -6973,3 +6990,11 @@ class BrowserZoomService implements IBrowserZoomService {
 }
 
 registerSingleton(IBrowserZoomService, BrowserZoomService, InstantiationType.Delayed)
+
+class SandboxHelperService implements ISandboxHelperService {
+  _serviceBrand: undefined
+  checkSandboxDependencies: ISandboxHelperService['checkSandboxDependencies'] = async () =>
+    undefined
+}
+
+registerSingleton(ISandboxHelperService, SandboxHelperService, InstantiationType.Delayed)

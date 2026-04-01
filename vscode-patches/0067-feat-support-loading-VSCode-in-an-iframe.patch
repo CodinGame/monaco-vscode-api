@@ -281,10 +281,10 @@ index bdc8f7f689b..6abb8fe88d6 100644
  				if (!mutation.target.textContent) {
  					addSuffix();
 diff --git a/src/vs/base/browser/ui/toolbar/toolbar.ts b/src/vs/base/browser/ui/toolbar/toolbar.ts
-index 21696911bd1..270f54836c9 100644
+index 73e90474f66..39ba82be291 100644
 --- a/src/vs/base/browser/ui/toolbar/toolbar.ts
 +++ b/src/vs/base/browser/ui/toolbar/toolbar.ts
-@@ -12,11 +12,12 @@ import { Codicon } from '../../../common/codicons.js';
+@@ -13,11 +13,12 @@ import { Codicon } from '../../../common/codicons.js';
  import { ThemeIcon } from '../../../common/themables.js';
  import { EventMultiplexer } from '../../../common/event.js';
  import { ResolvedKeybinding } from '../../../common/keybindings.js';
@@ -298,9 +298,9 @@ index 21696911bd1..270f54836c9 100644
  
  const ACTION_MIN_WIDTH = 20; /* 20px codicon */
  const ACTION_PADDING = 4; /* 4px padding */
-@@ -171,11 +172,10 @@ export class ToolBar extends Disposable {
+@@ -177,11 +178,10 @@ export class ToolBar extends Disposable {
  			this.element.classList.toggle('responsive-last', this.options.responsiveBehavior.kind === 'last');
- 			this.element.style.setProperty(ACTION_MIN_WIDTH_VAR, `${this.actionMinWidth - ACTION_PADDING}px`);
+ 			this.element.style.setProperty(ACTION_MIN_WIDTH_VAR, `${this.getConfiguredActionMinWidth()}px`);
  
 -			const observer = new ResizeObserver(() => {
 +			const observer = this._store.add(new DisposableResizeObserver(() => {
@@ -728,7 +728,7 @@ index bff3f2cf1b0..3a62a16bdf2 100644
  			if (timeoutDisposables) {
  				dispose(timeoutDisposables);
 diff --git a/src/vs/workbench/contrib/chat/browser/widget/chatContentParts/chatMarkdownContentPart.ts b/src/vs/workbench/contrib/chat/browser/widget/chatContentParts/chatMarkdownContentPart.ts
-index 0ca080497f5..4460e651f9c 100644
+index 0478a144675..067d384a177 100644
 --- a/src/vs/workbench/contrib/chat/browser/widget/chatContentParts/chatMarkdownContentPart.ts
 +++ b/src/vs/workbench/contrib/chat/browser/widget/chatContentParts/chatMarkdownContentPart.ts
 @@ -15,7 +15,7 @@ import { coalesce } from '../../../../../../base/common/arrays.js';
@@ -748,7 +748,7 @@ index 0ca080497f5..4460e651f9c 100644
  import './media/chatMarkdownPart.css';
  
  const $ = dom.$;
-@@ -352,9 +353,8 @@ export class ChatMarkdownContentPart extends Disposable implements IChatContentP
+@@ -358,9 +359,8 @@ export class ChatMarkdownContentPart extends Disposable implements IChatContentP
  			store.add(markdownDecorationsRenderer.walkTreeAndAnnotateReferenceLinks(markdown, result.element));
  
  			const layoutParticipants = new Lazy(() => {
@@ -760,18 +760,18 @@ index 0ca080497f5..4460e651f9c 100644
  			});
  
 diff --git a/src/vs/workbench/contrib/chat/browser/widget/chatContentParts/chatThinkingContentPart.ts b/src/vs/workbench/contrib/chat/browser/widget/chatContentParts/chatThinkingContentPart.ts
-index 8b780c2a924..9301c33eba7 100644
+index 91d19062db0..f404d535d8a 100644
 --- a/src/vs/workbench/contrib/chat/browser/widget/chatContentParts/chatThinkingContentPart.ts
 +++ b/src/vs/workbench/contrib/chat/browser/widget/chatContentParts/chatThinkingContentPart.ts
-@@ -37,6 +37,7 @@ import { IHoverService } from '../../../../../../platform/hover/browser/hover.js
- import { extractImagesFromToolInvocationOutputDetails } from '../../../common/chatImageExtraction.js';
- import { IChatCollapsibleIODataPart } from './chatToolInputOutputContentPart.js';
+@@ -40,6 +40,7 @@ import { IChatCollapsibleIODataPart } from './chatToolInputOutputContentPart.js'
  import { ChatThinkingExternalResourceWidget } from './chatThinkingExternalResourcesWidget.js';
+ import { LocalChatSessionUri, chatSessionResourceToId } from '../../../common/model/chatUri.js';
+ import { IEditSessionDiffStats } from '../../../common/editing/chatEditingService.js';
 +import { mainWindow } from '../../../../../../base/browser/window.js';
  
  
  function extractTextFromPart(content: IChatThinkingPart): string {
-@@ -465,7 +466,7 @@ export class ChatThinkingContentPart extends ChatCollapsibleContentPart implemen
+@@ -477,7 +478,7 @@ export class ChatThinkingContentPart extends ChatCollapsibleContentPart implemen
  			this._register(this.scrollableElement.onScroll(e => this.handleScroll(e.scrollTop)));
  
  			// check for content changes to update scroll dimensions
@@ -781,10 +781,10 @@ index 8b780c2a924..9301c33eba7 100644
  					this.syncDimensionsAndScheduleScroll();
  				}
 diff --git a/src/vs/workbench/contrib/chat/browser/widget/chatContentParts/toolInvocationParts/chatTerminalToolProgressPart.ts b/src/vs/workbench/contrib/chat/browser/widget/chatContentParts/toolInvocationParts/chatTerminalToolProgressPart.ts
-index da42cf8d77b..865c9b05b64 100644
+index 9edbf1f8a9b..c6f638e4929 100644
 --- a/src/vs/workbench/contrib/chat/browser/widget/chatContentParts/toolInvocationParts/chatTerminalToolProgressPart.ts
 +++ b/src/vs/workbench/contrib/chat/browser/widget/chatContentParts/toolInvocationParts/chatTerminalToolProgressPart.ts
-@@ -1067,9 +1067,8 @@ class ChatTerminalToolOutputSection extends Disposable {
+@@ -1073,9 +1073,8 @@ class ChatTerminalToolOutputSection extends Disposable {
  		this._register(dom.addDisposableListener(this.domNode, dom.EventType.FOCUS_IN, () => this._onDidFocusEmitter.fire()));
  		this._register(dom.addDisposableListener(this.domNode, dom.EventType.FOCUS_OUT, event => this._onDidBlurEmitter.fire(event)));
  
@@ -870,7 +870,7 @@ index 7f92d3f354c..575cc123246 100644
  		this._register(autorun(reader => {
  			/** @description update scroll decoration */
 diff --git a/src/vs/workbench/contrib/performance/browser/perfviewEditor.ts b/src/vs/workbench/contrib/performance/browser/perfviewEditor.ts
-index b56d0efeeb9..cf0c8248890 100644
+index e7202fc4764..7fb7ca7cbdc 100644
 --- a/src/vs/workbench/contrib/performance/browser/perfviewEditor.ts
 +++ b/src/vs/workbench/contrib/performance/browser/perfviewEditor.ts
 @@ -31,6 +31,7 @@ import { Registry } from '../../../../platform/registry/common/platform.js';

@@ -10,7 +10,7 @@ Subject: [PATCH] refactor: only import chat-related stuff from chat
  2 files changed, 1 insertion(+), 1 deletion(-)
 
 diff --git a/src/vs/workbench/contrib/chat/browser/chat.contribution.ts b/src/vs/workbench/contrib/chat/browser/chat.contribution.ts
-index d36f060c06f..169bd20cddd 100644
+index 045810171de..def6b3ce74e 100644
 --- a/src/vs/workbench/contrib/chat/browser/chat.contribution.ts
 +++ b/src/vs/workbench/contrib/chat/browser/chat.contribution.ts
 @@ -177,6 +177,7 @@ import { ChatQueuePickerRendering } from './widget/input/chatQueuePickerActionIt

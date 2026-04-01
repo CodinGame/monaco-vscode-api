@@ -271,7 +271,7 @@ index 6b675d06535..672eeabd7b6 100644
  		this.ctrlKey = e.ctrlKey;
  		this.shiftKey = e.shiftKey;
 diff --git a/src/vs/base/browser/ui/contextview/contextview.ts b/src/vs/base/browser/ui/contextview/contextview.ts
-index b3bfc63cb79..23a028dc6e0 100644
+index 3aa5f3828dc..ce40982b226 100644
 --- a/src/vs/base/browser/ui/contextview/contextview.ts
 +++ b/src/vs/base/browser/ui/contextview/contextview.ts
 @@ -279,7 +279,7 @@ export class ContextView extends Disposable {
@@ -284,7 +284,7 @@ index b3bfc63cb79..23a028dc6e0 100644
  				this.hide();
  			}
 diff --git a/src/vs/base/browser/ui/dialog/dialog.ts b/src/vs/base/browser/ui/dialog/dialog.ts
-index fceb9c852cc..2a4e45c3cf6 100644
+index 3169c8326c3..d6dc567e934 100644
 --- a/src/vs/base/browser/ui/dialog/dialog.ts
 +++ b/src/vs/base/browser/ui/dialog/dialog.ts
 @@ -5,7 +5,7 @@
@@ -305,7 +305,7 @@ index fceb9c852cc..2a4e45c3cf6 100644
  
  		return new Promise<IDialogResult>(resolve => {
  			clearNode(this.buttonsContainer);
-@@ -604,7 +604,7 @@ export class Dialog extends Disposable {
+@@ -609,7 +609,7 @@ export class Dialog extends Disposable {
  			this.modalElement = undefined;
  		}
  
@@ -621,10 +621,10 @@ index c5226cb273f..08f5ace9b37 100644
  			this._configurationService.getValue('accessibility.verbosity.hover') === true && this._accessibilityService.isScreenReaderOptimized(),
  			this._keybindingService.lookupKeybinding('editor.action.accessibleView')?.getAriaLabel() ?? ''
 diff --git a/src/vs/platform/actionWidget/browser/actionList.ts b/src/vs/platform/actionWidget/browser/actionList.ts
-index 5e2c436e15d..81f958a4a0f 100644
+index 8ace9a35339..8fb80a29b9b 100644
 --- a/src/vs/platform/actionWidget/browser/actionList.ts
 +++ b/src/vs/platform/actionWidget/browser/actionList.ts
-@@ -1158,8 +1158,11 @@ export class ActionListWidget<T> extends Disposable {
+@@ -1178,8 +1178,11 @@ export class ActionListWidget<T> extends Disposable {
  	}
  
  	private _getRowElement(index: number): HTMLElement | null {
@@ -832,10 +832,10 @@ index 7796aae8a15..1c304a11a9e 100644
  
  	private createPart(id: string, role: string, classes: string[]): HTMLElement {
 diff --git a/src/vs/workbench/contrib/chat/browser/widget/input/chatInputPart.ts b/src/vs/workbench/contrib/chat/browser/widget/input/chatInputPart.ts
-index 55a40c0a6a2..ff4b5a440d5 100644
+index 77a3a5da12e..eb6a4c12cf9 100644
 --- a/src/vs/workbench/contrib/chat/browser/widget/input/chatInputPart.ts
 +++ b/src/vs/workbench/contrib/chat/browser/widget/input/chatInputPart.ts
-@@ -2648,7 +2648,7 @@ export class ChatInputPart extends Disposable implements IHistoryNavigationWidge
+@@ -2694,7 +2694,7 @@ export class ChatInputPart extends Disposable implements IHistoryNavigationWidge
  			return;
  		}
  
@@ -871,7 +871,7 @@ index ed7dbe07826..91962faa066 100644
  					} else {
  						break;
 diff --git a/src/vs/workbench/contrib/notebook/browser/notebookEditorWidget.ts b/src/vs/workbench/contrib/notebook/browser/notebookEditorWidget.ts
-index 5b21ceec1d3..2419dc30101 100644
+index 4fc4f5aa9f1..816477a090c 100644
 --- a/src/vs/workbench/contrib/notebook/browser/notebookEditorWidget.ts
 +++ b/src/vs/workbench/contrib/notebook/browser/notebookEditorWidget.ts
 @@ -1848,7 +1848,7 @@ export class NotebookEditorWidget extends Disposable implements INotebookEditorD
@@ -1044,10 +1044,10 @@ index 3f491f41b3a..dc864d0f45a 100644
  					preferencesEditor.focusSettings(true);
  				}
 diff --git a/src/vs/workbench/contrib/preferences/browser/settingsEditor2.ts b/src/vs/workbench/contrib/preferences/browser/settingsEditor2.ts
-index 17e5663deb8..d4df1b3d64c 100644
+index 4855acd4a3d..cc7cbc7a50e 100644
 --- a/src/vs/workbench/contrib/preferences/browser/settingsEditor2.ts
 +++ b/src/vs/workbench/contrib/preferences/browser/settingsEditor2.ts
-@@ -1146,7 +1146,7 @@ export class SettingsEditor2 extends EditorPane {
+@@ -1143,7 +1143,7 @@ export class SettingsEditor2 extends EditorPane {
  		}));
  
  		this._register(this.settingsTree.onDidFocus(() => {
@@ -1056,7 +1056,7 @@ index 17e5663deb8..d4df1b3d64c 100644
  			if (classList && classList.contains('monaco-list') && classList.contains('settings-editor-tree')) {
  				this._currentFocusContext = SettingsFocusContext.SettingTree;
  				this.settingRowFocused.set(true);
-@@ -1616,7 +1616,7 @@ export class SettingsEditor2 extends EditorPane {
+@@ -1614,7 +1614,7 @@ export class SettingsEditor2 extends EditorPane {
  
  	private getActiveControlInSettingsTree(): HTMLElement | null {
  		const element = this.settingsTree.getHTMLElement();
@@ -1065,7 +1065,7 @@ index 17e5663deb8..d4df1b3d64c 100644
  		return (activeElement && DOM.isAncestorOfActiveElement(element)) ?
  			<HTMLElement>activeElement :
  			null;
-@@ -1681,7 +1681,7 @@ export class SettingsEditor2 extends EditorPane {
+@@ -1679,7 +1679,7 @@ export class SettingsEditor2 extends EditorPane {
  	}
  
  	private contextViewFocused(): boolean {
@@ -1088,10 +1088,10 @@ index 7a3dd584458..b58e3170ff1 100644
  			const listener = this._register(Event.once(this._terminalService.onDidChangeConnectionState)(() => {
  				// Only focus the terminal if the activeElement has not changed since focus() was called
 diff --git a/src/vs/workbench/contrib/terminal/browser/terminalView.ts b/src/vs/workbench/contrib/terminal/browser/terminalView.ts
-index 01632bee153..5de97fb0d2c 100644
+index 9a745727415..32b87509ab3 100644
 --- a/src/vs/workbench/contrib/terminal/browser/terminalView.ts
 +++ b/src/vs/workbench/contrib/terminal/browser/terminalView.ts
-@@ -342,7 +342,7 @@ export class TerminalViewPane extends ViewPane {
+@@ -335,7 +335,7 @@ export class TerminalViewPane extends ViewPane {
  
  		// If the terminal is waiting to reconnect to remote terminals, then there is no TerminalInstance yet that can
  		// be focused. So wait for connection to finish, then focus.
@@ -1214,10 +1214,10 @@ index 1245acce54c..a2312b0d332 100644
  			return;
  		}
 diff --git a/src/vs/workbench/services/themes/browser/workbenchThemeService.ts b/src/vs/workbench/services/themes/browser/workbenchThemeService.ts
-index 20d45050cfa..efc9a50a6fa 100644
+index 797fc544193..d53c9e903ef 100644
 --- a/src/vs/workbench/services/themes/browser/workbenchThemeService.ts
 +++ b/src/vs/workbench/services/themes/browser/workbenchThemeService.ts
-@@ -866,7 +866,7 @@ class ThemeFileWatcher {
+@@ -874,7 +874,7 @@ class ThemeFileWatcher {
  
  function _applyRules(styleSheetContent: string, rulesClassName: string) {
  	// eslint-disable-next-line no-restricted-syntax
