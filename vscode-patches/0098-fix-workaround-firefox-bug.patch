@@ -1,0 +1,118 @@
+From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
+From: =?UTF-8?q?Lo=C3=AFc=20Mangeonjean?= <loic@coderpad.io>
+Date: Fri, 10 Apr 2026 19:19:44 +0200
+Subject: [PATCH] fix: workaround firefox bug
+
+https://bugzilla.mozilla.org/show_bug.cgi?id=2029029
+---
+ .../src/preview/documentRenderer.ts                           | 4 ++--
+ extensions/media-preview/src/audioPreview.ts                  | 2 +-
+ extensions/media-preview/src/imagePreview/index.ts            | 2 +-
+ extensions/media-preview/src/videoPreview.ts                  | 2 +-
+ extensions/mermaid-chat-features/src/chatOutputRenderer.ts    | 2 +-
+ extensions/mermaid-chat-features/src/editorManager.ts         | 2 +-
+ extensions/simple-browser/src/simpleBrowserView.ts            | 4 ++--
+ 7 files changed, 9 insertions(+), 9 deletions(-)
+
+diff --git a/extensions/markdown-language-features/src/preview/documentRenderer.ts b/extensions/markdown-language-features/src/preview/documentRenderer.ts
+index f96fce9b745..872b737ebb2 100644
+--- a/extensions/markdown-language-features/src/preview/documentRenderer.ts
++++ b/extensions/markdown-language-features/src/preview/documentRenderer.ts
+@@ -186,7 +186,7 @@ export class MdDocumentRenderer {
+ 		}
+ 		const out: string[] = [];
+ 		for (const style of config.styles) {
+-			out.push(`<link rel="stylesheet" class="code-user-style" data-source="${escapeAttribute(style)}" href="${escapeAttribute(this.#fixHref(resourceProvider, resource, style))}" type="text/css" media="screen">`);
++			out.push(`<link rel="stylesheet" class="code-user-style" data-source="${escapeAttribute(style)}" href="${escapeAttribute(this.#fixHref(resourceProvider, resource, style))}" type="text/css" media="screen" crossorigin="anonymous">`);
+ 		}
+ 		return out.join('\n');
+ 	}
+@@ -219,7 +219,7 @@ export class MdDocumentRenderer {
+ 	#getStyles(resourceProvider: WebviewResourceProvider, resource: vscode.Uri, config: MarkdownPreviewConfiguration, imageInfo: readonly ImageInfo[]): string {
+ 		const baseStyles: string[] = [];
+ 		for (const resource of this.#contributionProvider.contributions.previewStyles) {
+-			baseStyles.push(`<link rel="stylesheet" type="text/css" href="${escapeAttribute(resourceProvider.asWebviewUri(resource))}">`);
++			baseStyles.push(`<link rel="stylesheet" type="text/css" href="${escapeAttribute(resourceProvider.asWebviewUri(resource))}" crossorigin="anonymous">`);
+ 		}
+ 
+ 		return `${baseStyles.join('\n')}
+diff --git a/extensions/media-preview/src/audioPreview.ts b/extensions/media-preview/src/audioPreview.ts
+index 282d579b380..e4119b60297 100644
+--- a/extensions/media-preview/src/audioPreview.ts
++++ b/extensions/media-preview/src/audioPreview.ts
+@@ -72,7 +72,7 @@ class AudioPreview extends MediaPreview {
+ 
+ 	<title>Audio Preview</title>
+ 
+-	<link rel="stylesheet" href="${escapeAttribute(this.extensionResource('media', 'audioPreview.css'))}" type="text/css" media="screen" nonce="${nonce}">
++	<link rel="stylesheet" href="${escapeAttribute(this.extensionResource('media', 'audioPreview.css'))}" type="text/css" media="screen" nonce="${nonce}" crossorigin="anonymous">
+ 
+ 	<meta http-equiv="Content-Security-Policy" content="default-src 'none'; img-src data: ${cspSource}; media-src ${cspSource}; script-src 'nonce-${nonce}'; style-src ${cspSource} 'nonce-${nonce}';">
+ 	<meta id="settings" data-settings="${escapeAttribute(JSON.stringify(settings))}">
+diff --git a/extensions/media-preview/src/imagePreview/index.ts b/extensions/media-preview/src/imagePreview/index.ts
+index 6c2c8a73f66..60cdc96f680 100644
+--- a/extensions/media-preview/src/imagePreview/index.ts
++++ b/extensions/media-preview/src/imagePreview/index.ts
+@@ -199,7 +199,7 @@ class ImagePreview extends MediaPreview {
+ 
+ 	<title>Image Preview</title>
+ 
+-	<link rel="stylesheet" href="${escapeAttribute(this.extensionResource('media', 'imagePreview.css'))}" type="text/css" media="screen" nonce="${nonce}">
++	<link rel="stylesheet" href="${escapeAttribute(this.extensionResource('media', 'imagePreview.css'))}" type="text/css" media="screen" nonce="${nonce}" crossorigin="anonymous">
+ 
+ 	<meta http-equiv="Content-Security-Policy" content="default-src 'none'; img-src data: ${cspSource}; connect-src ${cspSource}; script-src 'nonce-${nonce}'; style-src ${cspSource} 'nonce-${nonce}';">
+ 	<meta id="image-preview-settings" data-settings="${escapeAttribute(JSON.stringify(settings))}">
+diff --git a/extensions/media-preview/src/videoPreview.ts b/extensions/media-preview/src/videoPreview.ts
+index 1cb74c58426..796aa49bf2e 100644
+--- a/extensions/media-preview/src/videoPreview.ts
++++ b/extensions/media-preview/src/videoPreview.ts
+@@ -76,7 +76,7 @@ class VideoPreview extends MediaPreview {
+ 
+ 	<title>Video Preview</title>
+ 
+-	<link rel="stylesheet" href="${escapeAttribute(this.extensionResource('media', 'videoPreview.css'))}" type="text/css" media="screen" nonce="${nonce}">
++	<link rel="stylesheet" href="${escapeAttribute(this.extensionResource('media', 'videoPreview.css'))}" type="text/css" media="screen" nonce="${nonce}" crossorigin="anonymous">
+ 
+ 	<meta http-equiv="Content-Security-Policy" content="default-src 'none'; img-src data: ${cspSource}; media-src ${cspSource}; script-src 'nonce-${nonce}'; style-src ${cspSource} 'nonce-${nonce}';">
+ 	<meta id="settings" data-settings="${escapeAttribute(JSON.stringify(settings))}">
+diff --git a/extensions/mermaid-chat-features/src/chatOutputRenderer.ts b/extensions/mermaid-chat-features/src/chatOutputRenderer.ts
+index c6aacbd748e..83ef9189540 100644
+--- a/extensions/mermaid-chat-features/src/chatOutputRenderer.ts
++++ b/extensions/mermaid-chat-features/src/chatOutputRenderer.ts
+@@ -73,7 +73,7 @@ class MermaidChatOutputRenderer implements vscode.ChatOutputRenderer {
+ 				<meta name="viewport" content="width=device-width, initial-scale=1.0">
+ 				<title>Mermaid Diagram</title>
+ 				<meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'nonce-${nonce}'; style-src ${webview.cspSource} 'unsafe-inline'; font-src data:;" />
+-				<link rel="stylesheet" type="text/css" href="${codiconsUri}">
++				<link rel="stylesheet" type="text/css" href="${codiconsUri}" crossorigin="anonymous">
+ 
+ 				<style>
+ 					body {
+diff --git a/extensions/mermaid-chat-features/src/editorManager.ts b/extensions/mermaid-chat-features/src/editorManager.ts
+index 5ee5cec29da..4147709002e 100644
+--- a/extensions/mermaid-chat-features/src/editorManager.ts
++++ b/extensions/mermaid-chat-features/src/editorManager.ts
+@@ -219,7 +219,7 @@ class MermaidPreview extends Disposable {
+ 				<meta name="viewport" content="width=device-width, initial-scale=1.0">
+ 				<title>Mermaid Diagram</title>
+ 				<meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'nonce-${nonce}'; style-src ${this._webviewPanel.webview.cspSource} 'unsafe-inline'; font-src data:;" />
+-				<link rel="stylesheet" type="text/css" href="${codiconsUri}">
++				<link rel="stylesheet" type="text/css" href="${codiconsUri}" crossorigin="anonymous">
+ 				<style>
+ 					html, body {
+ 						margin: 0;
+diff --git a/extensions/simple-browser/src/simpleBrowserView.ts b/extensions/simple-browser/src/simpleBrowserView.ts
+index 56c5aff5c8a..ff123619f56 100644
+--- a/extensions/simple-browser/src/simpleBrowserView.ts
++++ b/extensions/simple-browser/src/simpleBrowserView.ts
+@@ -137,8 +137,8 @@ export class SimpleBrowserView extends Disposable {
+ 			focusLockEnabled: configuration.get<boolean>('focusLockIndicator.enabled', true)
+ 		}))}">
+ 
+-				<link rel="stylesheet" type="text/css" href="${mainCss}">
+-				<link rel="stylesheet" type="text/css" href="${codiconsUri}">
++				<link rel="stylesheet" type="text/css" href="${mainCss}" crossorigin="anonymous">
++				<link rel="stylesheet" type="text/css" href="${codiconsUri}" crossorigin="anonymous">
+ 			</head>
+ 			<body>
+ 				<header class="header">
