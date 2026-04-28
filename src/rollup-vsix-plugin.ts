@@ -3,13 +3,12 @@ import type { Plugin } from 'rollup'
 import * as yauzl from 'yauzl'
 import type { IExtensionManifest } from 'vs/platform/extensions/common/extensions'
 import { type IFs, createFsFromVolume, Volume } from 'memfs'
-import thenby from 'thenby'
+import { firstBy } from 'thenby'
 import type { Readable } from 'node:stream'
 import * as path from 'node:path'
 import type nodeFs from 'node:fs'
 import { getExtensionResources, parseJson } from './extension-tools.js'
 import type { ExtensionFileMetadata } from './extensions.js'
-const { firstBy } = thenby
 
 interface Options {
   include?: FilterPattern
