@@ -13,8 +13,8 @@ jobs:
         with:
           # we actually need "github.event.pull_request.commits + 1" commit
           fetch-depth: 0
-      - name: Volta
-        uses: volta-cli/action@v4
+      - name: mise-en-place
+        uses: jdx/mise-action@v4
       - run: npm ci --ignore-scripts
       - run: npx commitlint --from ${{ github.event.pull_request.head.sha }}~${{ github.event.pull_request.commits }} --to ${{ github.event.pull_request.head.sha }} --verbose
   check:
@@ -22,26 +22,26 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-    - name: Checkout
-      uses: actions/checkout@v6
-    - name: Install build dependencies
-      run: |
-        sudo apt-get update
-        sudo apt-get install libkrb5-dev libxkbfile-dev libx11-6
-    - name: mise-en-place
-      uses: jdx/mise-action@v3
-    - name: Install dependencies
-      run: npm ci
-    - name: Build
-      run: npm run build
-    - name: Release dry run
-      env:
-        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        NPM_TOKEN: ${{ secrets.NPM_TOKEN }}
-      run: npm run release -- --dry-run
-    - name: Install demo dependencies
-      working-directory: ./demo
-      run: npm ci
-    - name: Build demo
-      working-directory: ./demo
-      run: npm run build
+      - name: Checkout
+        uses: actions/checkout@v6
+      - name: Install build dependencies
+        run: |
+          sudo apt-get update
+          sudo apt-get install libkrb5-dev libxkbfile-dev libx11-6
+      - name: mise-en-place
+        uses: jdx/mise-action@v4
+      - name: Install dependencies
+        run: npm ci
+      - name: Build
+        run: npm run build
+      - name: Release dry run
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          NPM_TOKEN: ${{ secrets.NPM_TOKEN }}
+        run: npm run release -- --dry-run
+      - name: Install demo dependencies
+        working-directory: ./demo
+        run: npm ci
+      - name: Build demo
+        working-directory: ./demo
+        run: npm run build

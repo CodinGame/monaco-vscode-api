@@ -2,11 +2,11 @@ name: Release
 
 on: workflow_dispatch
 permissions:
-  contents: write      # to be able to publish a GitHub release
-  issues: write        # to be able to comment on released issues
+  contents: write # to be able to publish a GitHub release
+  issues: write # to be able to comment on released issues
   pull-requests: write # to be able to comment on released pull requests
-  pages: write         # to deploy to Pages
-  id-token: write      # to verify the deployment originates from an appropriate source
+  pages: write # to deploy to Pages
+  id-token: write # to verify the deployment originates from an appropriate source
   deployments: write
   statuses: write
 
@@ -16,41 +16,41 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-    - name: Checkout
-      uses: actions/checkout@v6
-      with:
-        # get all tags for semantic release
-        fetch-depth: 0
-    - name: Install build dependencies
-      run: |
-        sudo apt-get update
-        sudo apt-get install libkrb5-dev libxkbfile-dev libx11-6 pkg-config
-    - name: mise-en-place
-      uses: jdx/mise-action@v3
-    - name: Install dependencies
-      run: npm ci
-    - name: Build
-      run: npm run build
-    - name: Release
-      env:
-        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        NPM_TOKEN: ${{ secrets.NPM_TOKEN }}
-      run: npm run release
-    - name: Install demo dependencies
-      working-directory: ./demo
-      run: npm ci
-    - name: Build demo
-      working-directory: ./demo
-      run: npm run build:netlify
-    - name: Deploy to Netlify
-      uses: nwtgck/actions-netlify@v3.0
-      with:
-        publish-dir: './demo/dist'
-        production-branch: main
-        github-token: ${{ secrets.GITHUB_TOKEN }}
-        deploy-message: ${{ github.event.pull_request.title }}
-        netlify-config-path: ./demo/netlify.toml
-      env:
-        NETLIFY_AUTH_TOKEN: ${{ secrets.NETLIFY_AUTH_TOKEN }}
-        NETLIFY_SITE_ID: ${{ secrets.NETLIFY_SITE_ID }}
-      timeout-minutes: 1
+      - name: Checkout
+        uses: actions/checkout@v6
+        with:
+          # get all tags for semantic release
+          fetch-depth: 0
+      - name: Install build dependencies
+        run: |
+          sudo apt-get update
+          sudo apt-get install libkrb5-dev libxkbfile-dev libx11-6 pkg-config
+      - name: mise-en-place
+        uses: jdx/mise-action@v4
+      - name: Install dependencies
+        run: npm ci
+      - name: Build
+        run: npm run build
+      - name: Release
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          NPM_TOKEN: ${{ secrets.NPM_TOKEN }}
+        run: npm run release
+      - name: Install demo dependencies
+        working-directory: ./demo
+        run: npm ci
+      - name: Build demo
+        working-directory: ./demo
+        run: npm run build:netlify
+      - name: Deploy to Netlify
+        uses: nwtgck/actions-netlify@v3.0
+        with:
+          publish-dir: './demo/dist'
+          production-branch: main
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+          deploy-message: ${{ github.event.pull_request.title }}
+          netlify-config-path: ./demo/netlify.toml
+        env:
+          NETLIFY_AUTH_TOKEN: ${{ secrets.NETLIFY_AUTH_TOKEN }}
+          NETLIFY_SITE_ID: ${{ secrets.NETLIFY_SITE_ID }}
+        timeout-minutes: 1
