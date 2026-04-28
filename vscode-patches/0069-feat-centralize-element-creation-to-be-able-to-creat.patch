@@ -10,6 +10,7 @@ Subject: [PATCH] feat: centralize element creation, to be able to create them
  src/vs/base/browser/domStylesheets.ts         |  4 +-
  src/vs/base/browser/formattedTextRenderer.ts  | 16 +++----
  src/vs/base/browser/markdownRenderer.ts       |  2 +-
+ src/vs/base/browser/overlayLayoutElement.ts   |  6 +--
  src/vs/base/browser/pixelRatio.ts             |  4 +-
  src/vs/base/browser/touch.ts                  |  2 +-
  .../browser/ui/actionbar/actionViewItems.ts   |  6 +--
@@ -107,6 +108,8 @@ Subject: [PATCH] feat: centralize element creation, to be able to create them
  .../accountMenu/browser/updateHoverWidget.ts  | 19 ++++----
  .../agentFeedbackEditorInputContribution.ts   | 10 ++--
  .../browser/agentFeedbackEditorOverlay.ts     |  7 +--
+ .../browser/sessionsPolicyBlocked.ts          |  6 +--
+ .../welcome/browser/sessionsWalkthrough.ts    | 12 ++---
  .../api/browser/mainThreadCodeInsets.ts       |  4 +-
  .../browser/actions/developerActions.ts       |  4 +-
  src/vs/workbench/browser/layout.ts            |  4 +-
@@ -121,8 +124,9 @@ Subject: [PATCH] feat: centralize element creation, to be able to create them
  .../bulkEdit/browser/preview/bulkEditTree.ts  | 10 ++--
  .../browser/callHierarchyPeek.ts              | 10 ++--
  .../browser/callHierarchyTree.ts              |  3 +-
+ .../browser/aiCustomization/mcpListWidget.ts  |  2 +-
+ .../aiCustomization/pluginListWidget.ts       |  2 +-
  .../attachments/chatAttachmentWidgets.ts      |  2 +-
- .../attachments/simpleBrowserEditorOverlay.ts | 14 +++---
  .../browser/chatDebug/chatDebugFlowLayout.ts  | 13 ++---
  .../chatEditingCodeEditorIntegration.ts       |  8 ++--
  .../chatEditing/chatEditingEditorOverlay.ts   | 10 ++--
@@ -169,7 +173,7 @@ Subject: [PATCH] feat: centralize element creation, to be able to create them
  .../notebookDeletedCellDecorator.ts           |  6 +--
  .../browser/diff/notebookDiffEditor.ts        |  4 +-
  .../browser/diff/notebookDiffOverviewRuler.ts |  4 +-
- .../notebook/browser/notebookEditorWidget.ts  | 12 ++---
+ .../notebook/browser/notebookEditorWidget.ts  | 10 ++--
  .../browser/view/cellParts/cellActionView.ts  |  4 +-
  .../view/cellParts/cellDragRenderer.ts        |  2 +-
  .../view/cellParts/codeCellRunToolbar.ts      |  3 +-
@@ -203,7 +207,6 @@ Subject: [PATCH] feat: centralize element creation, to be able to create them
  .../browser/typeHierarchyPeek.ts              | 10 ++--
  .../browser/typeHierarchyTree.ts              |  3 +-
  .../contrib/update/browser/updateTooltip.ts   |  2 +-
- .../contrib/webview/browser/overlayWebview.ts |  4 +-
  .../contrib/webview/browser/webviewElement.ts |  6 +--
  .../webviewPanel/browser/webviewEditor.ts     |  2 +-
  .../browser/agentSessionsWelcome.ts           |  4 +-
@@ -212,7 +215,7 @@ Subject: [PATCH] feat: centralize element creation, to be able to create them
  .../browser/webWorkerExtensionHost.ts         |  2 +-
  .../host/browser/browserHostService.ts        |  6 +--
  .../test/browser/workbenchTestServices.ts     |  4 +-
- 207 files changed, 686 insertions(+), 607 deletions(-)
+ 210 files changed, 690 insertions(+), 611 deletions(-)
 
 diff --git a/src/vs/base/browser/dom.ts b/src/vs/base/browser/dom.ts
 index 6875f575f8b..3c0e801493e 100644
@@ -402,7 +405,7 @@ index 942bf6e8315..a3f602cbb4e 100644
  	fragment.appendChild(textNode);
  	while (node.firstChild) {
 diff --git a/src/vs/base/browser/domStylesheets.ts b/src/vs/base/browser/domStylesheets.ts
-index ac5a68bebe2..66329bc37c1 100644
+index 2ab675b7895..5ada59c00db 100644
 --- a/src/vs/base/browser/domStylesheets.ts
 +++ b/src/vs/base/browser/domStylesheets.ts
 @@ -6,7 +6,7 @@
@@ -485,6 +488,33 @@ index 52f99538b11..6ce50af212a 100644
  	const sanitizerConfig = getDomSanitizerConfig(markdown, options.sanitizerConfig ?? {});
  	domSanitize.safeSetInnerHtml(renderedContent, renderedMarkdown, sanitizerConfig);
  
+diff --git a/src/vs/base/browser/overlayLayoutElement.ts b/src/vs/base/browser/overlayLayoutElement.ts
+index c6e764dda6d..9657604a8dc 100644
+--- a/src/vs/base/browser/overlayLayoutElement.ts
++++ b/src/vs/base/browser/overlayLayoutElement.ts
+@@ -3,7 +3,7 @@
+  *  Licensed under the MIT License. See License.txt in the project root for license information.
+  *--------------------------------------------------------------------------------------------*/
+ 
+-import { IDimension, IDomPosition, setParentFlowTo } from './dom.js';
++import { createElement, IDimension, IDomPosition, setParentFlowTo } from './dom.js';
+ import { IDisposable } from '../common/lifecycle.js';
+ import { Lazy } from '../common/lazy.js';
+ import { generateUuid } from '../common/uuid.js';
+@@ -49,11 +49,11 @@ export class OverlayLayoutElement implements IDisposable {
+ 	private readonly _root: HTMLElement;
+ 
+ 	constructor() {
+-		this.content = document.createElement('div');
++		this.content = createElement('div');
+ 		this.content.style.position = 'absolute';
+ 		this.content.style.overflow = 'hidden';
+ 
+-		this._root = document.createElement('div');
++		this._root = createElement('div');
+ 		this._root.appendChild(this.content);
+ 
+ 		this.reapplyLayoutStyles();
 diff --git a/src/vs/base/browser/pixelRatio.ts b/src/vs/base/browser/pixelRatio.ts
 index 1e11a248aa2..6f28a2d315e 100644
 --- a/src/vs/base/browser/pixelRatio.ts
@@ -752,7 +782,7 @@ index ce40982b226..1656cfcf52f 100644
  				this.shadowRoot.appendChild(style);
  				this.shadowRoot.appendChild(this.view);
 diff --git a/src/vs/base/browser/ui/findinput/findInput.ts b/src/vs/base/browser/ui/findinput/findInput.ts
-index 39eef0473c9..9e243d5f47d 100644
+index 12cedc93b32..68b577c5006 100644
 --- a/src/vs/base/browser/ui/findinput/findInput.ts
 +++ b/src/vs/base/browser/ui/findinput/findInput.ts
 @@ -104,7 +104,7 @@ export class FindInput extends Widget {
@@ -1134,7 +1164,7 @@ index 39ba82be291..4f948f721bf 100644
  		container.appendChild(this.element);
  
 diff --git a/src/vs/base/browser/ui/tree/abstractTree.ts b/src/vs/base/browser/ui/tree/abstractTree.ts
-index 8ed1bed2158..3b7eae968a1 100644
+index 0baaf628497..6223522bc6b 100644
 --- a/src/vs/base/browser/ui/tree/abstractTree.ts
 +++ b/src/vs/base/browser/ui/tree/abstractTree.ts
 @@ -4,7 +4,7 @@
@@ -1146,7 +1176,7 @@ index 8ed1bed2158..3b7eae968a1 100644
  import { createStyleSheet } from '../../domStylesheets.js';
  import { asCssValueWithDefault } from '../../cssValue.js';
  import { DomEmitter } from '../../event.js';
-@@ -1784,7 +1784,7 @@ class StickyScrollWidget<T, TFilterData, TRef> implements IDisposable {
+@@ -1790,7 +1790,7 @@ class StickyScrollWidget<T, TFilterData, TRef> implements IDisposable {
  		const nodeIndex = stickyNode.startIndex;
  
  		// Sticky element container
@@ -1598,7 +1628,7 @@ index c7f48fa8569..24fdaec03f8 100644
  			getDomNode: () => domNode,
  			getPosition: () => {
 diff --git a/src/vs/editor/browser/view.ts b/src/vs/editor/browser/view.ts
-index ef370b22896..150d179b1c9 100644
+index 481d89babcb..26822cc2029 100644
 --- a/src/vs/editor/browser/view.ts
 +++ b/src/vs/editor/browser/view.ts
 @@ -156,7 +156,7 @@ export class View extends ViewEventHandler {
@@ -3210,7 +3240,7 @@ index 2eb75568747..220eb1ce517 100644
  		this._tokenizationSupport = getSafeTokenizationSupport(this._languageService.languageIdCodec, this._model.getLanguageId());
  		this._compute(this._editor.getPosition());
 diff --git a/src/vs/editor/standalone/browser/quickInput/standaloneQuickInputService.ts b/src/vs/editor/standalone/browser/quickInput/standaloneQuickInputService.ts
-index dddb6f8f059..49268f649d0 100644
+index 4aa28793eff..9f11f84e309 100644
 --- a/src/vs/editor/standalone/browser/quickInput/standaloneQuickInputService.ts
 +++ b/src/vs/editor/standalone/browser/quickInput/standaloneQuickInputService.ts
 @@ -19,6 +19,7 @@ import { QuickInputController, IQuickInputControllerHost } from '../../../../pla
@@ -3221,7 +3251,7 @@ index dddb6f8f059..49268f649d0 100644
  
  class EditorScopedQuickInputService extends QuickInputService {
  
-@@ -196,7 +197,7 @@ export class QuickInputEditorWidget implements IOverlayWidget {
+@@ -197,7 +198,7 @@ export class QuickInputEditorWidget implements IOverlayWidget {
  	private domNode: HTMLElement;
  
  	constructor(private codeEditor: ICodeEditor) {
@@ -3231,10 +3261,10 @@ index dddb6f8f059..49268f649d0 100644
  		this.codeEditor.addOverlayWidget(this);
  	}
 diff --git a/src/vs/platform/actionWidget/browser/actionList.ts b/src/vs/platform/actionWidget/browser/actionList.ts
-index 8fb80a29b9b..98c0fff1463 100644
+index fba43fc9070..7fe8925152b 100644
 --- a/src/vs/platform/actionWidget/browser/actionList.ts
 +++ b/src/vs/platform/actionWidget/browser/actionList.ts
-@@ -142,7 +142,7 @@ class HeaderRenderer<T> implements IListRenderer<IActionListItem<T>, IHeaderTemp
+@@ -138,7 +138,7 @@ class HeaderRenderer<T> implements IListRenderer<IActionListItem<T>, IHeaderTemp
  	renderTemplate(container: HTMLElement): IHeaderTemplateData {
  		container.classList.add('group-header');
  
@@ -3243,7 +3273,7 @@ index 8fb80a29b9b..98c0fff1463 100644
  		container.append(text);
  
  		return { container, text };
-@@ -169,7 +169,7 @@ class SeparatorRenderer<T> implements IListRenderer<IActionListItem<T>, ISeparat
+@@ -165,7 +165,7 @@ class SeparatorRenderer<T> implements IListRenderer<IActionListItem<T>, ISeparat
  	renderTemplate(container: HTMLElement): ISeparatorTemplateData {
  		container.classList.add('separator');
  
@@ -3252,7 +3282,7 @@ index 8fb80a29b9b..98c0fff1463 100644
  		container.append(text);
  
  		return { container, text };
-@@ -201,29 +201,29 @@ class ActionItemRenderer<T> implements IListRenderer<IActionListItem<T>, IAction
+@@ -197,29 +197,29 @@ class ActionItemRenderer<T> implements IListRenderer<IActionListItem<T>, IAction
  	renderTemplate(container: HTMLElement): IActionMenuTemplateData {
  		container.classList.add(this.templateId);
  
@@ -3288,7 +3318,7 @@ index 8fb80a29b9b..98c0fff1463 100644
  		submenuIndicator.className = 'action-list-submenu-indicator';
  		container.append(submenuIndicator);
  
-@@ -510,7 +510,7 @@ export class ActionListWidget<T> extends Disposable {
+@@ -505,7 +505,7 @@ export class ActionListWidget<T> extends Disposable {
  		@IInstantiationService private readonly _instantiationService: IInstantiationService,
  	) {
  		super();
@@ -3297,7 +3327,7 @@ index 8fb80a29b9b..98c0fff1463 100644
  		this.domNode.classList.add('actionList');
  		if (this._options?.descriptionBelow) {
  			this.domNode.classList.add('description-below');
-@@ -518,7 +518,7 @@ export class ActionListWidget<T> extends Disposable {
+@@ -513,7 +513,7 @@ export class ActionListWidget<T> extends Disposable {
  		this._actionLineHeight = this._options?.descriptionBelow ? 48 : 24;
  
  		// Create submenu container appended to domNode
@@ -3306,7 +3336,7 @@ index 8fb80a29b9b..98c0fff1463 100644
  		this._submenuContainer.className = 'action-list-submenu-panel action-widget';
  		this._submenuContainer.style.display = 'none';
  		this.domNode.append(this._submenuContainer);
-@@ -602,11 +602,11 @@ export class ActionListWidget<T> extends Disposable {
+@@ -600,11 +600,11 @@ export class ActionListWidget<T> extends Disposable {
  
  		// Create filter input
  		if (this._options?.showFilter) {
@@ -3321,7 +3351,7 @@ index 8fb80a29b9b..98c0fff1463 100644
  			this._filterInput.className = 'action-list-filter-input';
  			this._filterInput.placeholder = this._options?.filterPlaceholder ?? localize('actionList.filter.placeholder', "Search...");
 diff --git a/src/vs/platform/actionWidget/browser/actionWidget.ts b/src/vs/platform/actionWidget/browser/actionWidget.ts
-index cdbc998e353..673589af3bd 100644
+index 567bd2c6045..0285f0e747b 100644
 --- a/src/vs/platform/actionWidget/browser/actionWidget.ts
 +++ b/src/vs/platform/actionWidget/browser/actionWidget.ts
 @@ -117,7 +117,7 @@ export class ActionWidgetService extends Disposable implements IActionWidgetServ
@@ -3341,7 +3371,7 @@ index cdbc998e353..673589af3bd 100644
 +		const menuBlock = dom.createElement('div');
  		const block = element.appendChild(menuBlock);
  		block.classList.add('context-view-block');
- 		renderDisposables.add(dom.addDisposableListener(block, dom.EventType.MOUSE_DOWN, e => e.stopPropagation()));
+ 		renderDisposables.add(dom.addDisposableGenericMouseDownListener(block, e => e.stopPropagation()));
  
  		// Invisible div to block mouse interaction with the menu
 -		const pointerBlockDiv = document.createElement('div');
@@ -3422,7 +3452,7 @@ index 1217633b485..030307e508f 100644
  		}
  
 diff --git a/src/vs/sessions/browser/workbench.ts b/src/vs/sessions/browser/workbench.ts
-index 3ebbfbf7da0..af09165dddb 100644
+index 437671338da..6f32c62af2e 100644
 --- a/src/vs/sessions/browser/workbench.ts
 +++ b/src/vs/sessions/browser/workbench.ts
 @@ -7,7 +7,7 @@ import '../../workbench/browser/style.js';
@@ -3434,7 +3464,7 @@ index 3ebbfbf7da0..af09165dddb 100644
  import { DeferredPromise, RunOnceScheduler } from '../../base/common/async.js';
  import { isFullscreen, onDidChangeFullscreen, isChrome, isFirefox, isSafari } from '../../base/browser/browser.js';
  import { mark } from '../../base/common/performance.js';
-@@ -159,7 +159,7 @@ export class Workbench extends Disposable implements IWorkbenchLayoutService {
+@@ -175,7 +175,7 @@ export class Workbench extends Disposable implements IAgentWorkbenchLayoutServic
  
  	//#region Properties
  
@@ -3443,7 +3473,7 @@ index 3ebbfbf7da0..af09165dddb 100644
  
  	get activeContainer(): HTMLElement {
  		return this.getContainerFromDocument(getActiveDocument());
-@@ -573,7 +573,7 @@ export class Workbench extends Disposable implements IWorkbenchLayoutService {
+@@ -618,7 +618,7 @@ export class Workbench extends Disposable implements IAgentWorkbenchLayoutServic
  	}
  
  	private createPartContainer(id: string, role: string, classes: string[]): HTMLElement {
@@ -3452,17 +3482,17 @@ index 3ebbfbf7da0..af09165dddb 100644
  		part.classList.add('part', ...classes);
  		part.id = id;
  		part.setAttribute('role', role);
-@@ -581,7 +581,7 @@ export class Workbench extends Disposable implements IWorkbenchLayoutService {
+@@ -626,7 +626,7 @@ export class Workbench extends Disposable implements IAgentWorkbenchLayoutServic
  	}
  
- 	private createHiddenEditorPart(): void {
+ 	private createEditorPart(): void {
 -		const editorPartContainer = document.createElement('div');
 +		const editorPartContainer = createElement('div');
  		editorPartContainer.classList.add('part', 'editor');
  		editorPartContainer.id = Parts.EDITOR_PART;
  		editorPartContainer.setAttribute('role', 'main');
 diff --git a/src/vs/sessions/contrib/accountMenu/browser/updateHoverWidget.ts b/src/vs/sessions/contrib/accountMenu/browser/updateHoverWidget.ts
-index fc80636b0a8..7c1a564d1e7 100644
+index ebe155ca5c3..faac9730f14 100644
 --- a/src/vs/sessions/contrib/accountMenu/browser/updateHoverWidget.ts
 +++ b/src/vs/sessions/contrib/accountMenu/browser/updateHoverWidget.ts
 @@ -8,6 +8,7 @@ import { localize } from '../../../../nls.js';
@@ -3473,7 +3503,7 @@ index fc80636b0a8..7c1a564d1e7 100644
  import './media/updateHoverWidget.css';
  
  export class UpdateHoverWidget {
-@@ -38,20 +39,20 @@ export class UpdateHoverWidget {
+@@ -39,20 +40,20 @@ export class UpdateHoverWidget {
  		const targetCommit = update?.version;
  		const progressPercent = this.getUpdateProgressPercent(state);
  
@@ -3498,7 +3528,7 @@ index fc80636b0a8..7c1a564d1e7 100644
  			progressFill.classList.add('sessions-update-hover-progress-fill');
  			progressFill.style.width = `${progressPercent}%`;
  			progressTrack.appendChild(progressFill);
-@@ -59,7 +60,7 @@ export class UpdateHoverWidget {
+@@ -60,7 +61,7 @@ export class UpdateHoverWidget {
  		}
  
  		// Version info grid
@@ -3507,7 +3537,7 @@ index fc80636b0a8..7c1a564d1e7 100644
  		detailsGrid.classList.add('sessions-update-hover-grid');
  
  		const currentDate = this.productService.date ? new Date(this.productService.date) : undefined;
-@@ -75,22 +76,22 @@ export class UpdateHoverWidget {
+@@ -76,22 +77,22 @@ export class UpdateHoverWidget {
  	}
  
  	private appendGridRow(grid: HTMLElement, label: string, version: string, age?: string, commit?: string): void {
@@ -3535,7 +3565,7 @@ index fc80636b0a8..7c1a564d1e7 100644
  		commitEl.textContent = commit ? commit.substring(0, 7) : '';
  		grid.appendChild(commitEl);
 diff --git a/src/vs/sessions/contrib/agentFeedback/browser/agentFeedbackEditorInputContribution.ts b/src/vs/sessions/contrib/agentFeedback/browser/agentFeedbackEditorInputContribution.ts
-index ae5fa614c3d..b0b57e01380 100644
+index 137c9b37585..02bda82f41a 100644
 --- a/src/vs/sessions/contrib/agentFeedback/browser/agentFeedbackEditorInputContribution.ts
 +++ b/src/vs/sessions/contrib/agentFeedback/browser/agentFeedbackEditorInputContribution.ts
 @@ -12,7 +12,7 @@ import { ICodeEditorService } from '../../../../editor/browser/services/codeEdit
@@ -3575,13 +3605,13 @@ index ae5fa614c3d..b0b57e01380 100644
  		this._domNode.appendChild(actionsContainer);
  
 diff --git a/src/vs/sessions/contrib/agentFeedback/browser/agentFeedbackEditorOverlay.ts b/src/vs/sessions/contrib/agentFeedback/browser/agentFeedbackEditorOverlay.ts
-index 28aa27175ff..8697b78c61d 100644
+index f17b124c1f7..b0e9f9c99a3 100644
 --- a/src/vs/sessions/contrib/agentFeedback/browser/agentFeedbackEditorOverlay.ts
 +++ b/src/vs/sessions/contrib/agentFeedback/browser/agentFeedbackEditorOverlay.ts
 @@ -27,6 +27,7 @@ import { IChatEditingService } from '../../../../workbench/contrib/chat/common/e
  import { ICodeReviewService } from '../../codeReview/browser/codeReviewService.js';
  import { getSessionEditorComments, hasAgentFeedbackComments } from './sessionEditorComments.js';
- import { ISessionsManagementService } from '../../sessions/browser/sessionsManagementService.js';
+ import { ISessionsManagementService } from '../../../services/sessions/common/sessionsManagement.js';
 +import { createElement } from '../../../../base/browser/dom.js';
  
  class AgentFeedbackActionViewItem extends ActionViewItem {
@@ -3608,6 +3638,64 @@ index 28aa27175ff..8697b78c61d 100644
  
  	constructor(
  		container: HTMLElement,
+diff --git a/src/vs/sessions/contrib/policyBlocked/browser/sessionsPolicyBlocked.ts b/src/vs/sessions/contrib/policyBlocked/browser/sessionsPolicyBlocked.ts
+index 58b6e4d0e3e..e54c103f8ad 100644
+--- a/src/vs/sessions/contrib/policyBlocked/browser/sessionsPolicyBlocked.ts
++++ b/src/vs/sessions/contrib/policyBlocked/browser/sessionsPolicyBlocked.ts
+@@ -5,7 +5,7 @@
+ 
+ import './media/sessionsPolicyBlocked.css';
+ import { Disposable, toDisposable } from '../../../../base/common/lifecycle.js';
+-import { $, addDisposableGenericMouseDownListener, append, EventType, addDisposableListener, getWindow } from '../../../../base/browser/dom.js';
++import { $, addDisposableGenericMouseDownListener, append, EventType, addDisposableListener, getWindow, createTextNode } from '../../../../base/browser/dom.js';
+ import { localize } from '../../../../nls.js';
+ import { Button } from '../../../../base/browser/ui/button/button.js';
+ import { defaultButtonStyles } from '../../../../platform/theme/browser/defaultStyles.js';
+@@ -65,8 +65,8 @@ export class SessionsPolicyBlockedOverlay extends Disposable {
+ 
+ 		// Description
+ 		const description = append(card, $('p'));
+-		append(description, document.createTextNode(localize('policyBlocked.description', "Your organization has disabled Agents via policy.")));
+-		append(description, document.createTextNode(' '));
++		append(description, createTextNode(localize('policyBlocked.description', "Your organization has disabled Agents via policy.")));
++		append(description, createTextNode(' '));
+ 		const learnMore = append(description, $('a.sessions-policy-blocked-link')) as HTMLAnchorElement;
+ 		learnMore.textContent = localize('policyBlocked.learnMore', "Learn more");
+ 		learnMore.href = 'https://aka.ms/VSCode/Agents/docs';
+diff --git a/src/vs/sessions/contrib/welcome/browser/sessionsWalkthrough.ts b/src/vs/sessions/contrib/welcome/browser/sessionsWalkthrough.ts
+index a551af470e4..9d51bcb90d2 100644
+--- a/src/vs/sessions/contrib/welcome/browser/sessionsWalkthrough.ts
++++ b/src/vs/sessions/contrib/welcome/browser/sessionsWalkthrough.ts
+@@ -6,7 +6,7 @@
+ import './media/sessionsWalkthrough.css';
+ import { disposableTimeout } from '../../../../base/common/async.js';
+ import { Disposable, DisposableStore, MutableDisposable, toDisposable } from '../../../../base/common/lifecycle.js';
+-import { $, addDisposableGenericMouseDownListener, append, EventType, addDisposableListener, getActiveElement, isHTMLElement } from '../../../../base/browser/dom.js';
++import { $, addDisposableGenericMouseDownListener, append, EventType, addDisposableListener, getActiveElement, isHTMLElement, createTextNode } from '../../../../base/browser/dom.js';
+ import { localize } from '../../../../nls.js';
+ import { ICommandService } from '../../../../platform/commands/common/commands.js';
+ import { ILogService } from '../../../../platform/log/common/log.js';
+@@ -430,15 +430,15 @@ export class SessionsWalkthroughOverlay extends Disposable {
+ 		const publicCodeLink = this._appendDisclaimerLink(publicCodeMatchesUrl, localize('walkthrough.disclaimer.publicCode', "public code"));
+ 		const settingsLink = this._appendDisclaimerLink(manageSettingsUrl, localize('walkthrough.disclaimer.settings', "settings"));
+ 
+-		append(disclaimer, document.createTextNode(localize('walkthrough.disclaimer.prefix', "By continuing, you agree to GitHub's ")));
++		append(disclaimer, createTextNode(localize('walkthrough.disclaimer.prefix', "By continuing, you agree to GitHub's ")));
+ 		disclaimer.appendChild(termsLink);
+-		append(disclaimer, document.createTextNode(localize('walkthrough.disclaimer.middle', " and ")));
++		append(disclaimer, createTextNode(localize('walkthrough.disclaimer.middle', " and ")));
+ 		disclaimer.appendChild(privacyLink);
+-		append(disclaimer, document.createTextNode(localize('walkthrough.disclaimer.suffix', ". GitHub Copilot may show ")));
++		append(disclaimer, createTextNode(localize('walkthrough.disclaimer.suffix', ". GitHub Copilot may show ")));
+ 		disclaimer.appendChild(publicCodeLink);
+-		append(disclaimer, document.createTextNode(localize('walkthrough.disclaimer.final', " suggestions and use your data to improve the product. You can change these ")));
++		append(disclaimer, createTextNode(localize('walkthrough.disclaimer.final', " suggestions and use your data to improve the product. You can change these ")));
+ 		disclaimer.appendChild(settingsLink);
+-		append(disclaimer, document.createTextNode(localize('walkthrough.disclaimer.end', " anytime.")));
++		append(disclaimer, createTextNode(localize('walkthrough.disclaimer.end', " anytime.")));
+ 
+ 		return {
+ 			element: disclaimer,
 diff --git a/src/vs/workbench/api/browser/mainThreadCodeInsets.ts b/src/vs/workbench/api/browser/mainThreadCodeInsets.ts
 index ee7e9d98df6..5e622722dc5 100644
 --- a/src/vs/workbench/api/browser/mainThreadCodeInsets.ts
@@ -3631,7 +3719,7 @@ index ee7e9d98df6..5e622722dc5 100644
  		this.afterLineNumber = line;
  		this.afterColumn = 1;
 diff --git a/src/vs/workbench/browser/actions/developerActions.ts b/src/vs/workbench/browser/actions/developerActions.ts
-index ca0140e4fb3..5932fe2e423 100644
+index 955ef1ef0a5..3ae7496206f 100644
 --- a/src/vs/workbench/browser/actions/developerActions.ts
 +++ b/src/vs/workbench/browser/actions/developerActions.ts
 @@ -11,7 +11,7 @@ import { DomEmitter } from '../../../base/browser/event.js';
@@ -3746,7 +3834,7 @@ index 7c01c6202c3..7c566945b94 100644
  				let title = node.title;
  
 diff --git a/src/vs/workbench/browser/parts/titlebar/commandCenterControl.ts b/src/vs/workbench/browser/parts/titlebar/commandCenterControl.ts
-index cdf065ca432..3ba538f6d5b 100644
+index 6521536017e..849782e1b31 100644
 --- a/src/vs/workbench/browser/parts/titlebar/commandCenterControl.ts
 +++ b/src/vs/workbench/browser/parts/titlebar/commandCenterControl.ts
 @@ -3,7 +3,7 @@
@@ -3767,7 +3855,7 @@ index cdf065ca432..3ba538f6d5b 100644
  
  	constructor(
  		windowTitle: WindowTitle,
-@@ -164,14 +164,14 @@ class CommandCenterCenterViewItem extends BaseActionViewItem {
+@@ -176,14 +176,14 @@ class CommandCenterCenterViewItem extends BaseActionViewItem {
  							const action = this.action;
  
  							// icon (search) - hidden in compact mode
@@ -4025,11 +4113,37 @@ index 6f588651cfd..cdd610d640c 100644
  		container.appendChild(icon);
  		const label = new IconLabel(container, { supportHighlights: true });
  		return new CallRenderingTemplate(icon, label);
+diff --git a/src/vs/workbench/contrib/chat/browser/aiCustomization/mcpListWidget.ts b/src/vs/workbench/contrib/chat/browser/aiCustomization/mcpListWidget.ts
+index 33a229e24a2..e4e15c6b861 100644
+--- a/src/vs/workbench/contrib/chat/browser/aiCustomization/mcpListWidget.ts
++++ b/src/vs/workbench/contrib/chat/browser/aiCustomization/mcpListWidget.ts
+@@ -626,7 +626,7 @@ export class McpListWidget extends Disposable {
+ 			if (policyLocked) {
+ 				this.disabledMessage.textContent = localize('mcpAccessDisabledByPolicy', "Access to MCP servers is disabled by your organization. Contact your organization administrator for more information.");
+ 			} else {
+-				this.disabledMessage.appendChild(document.createTextNode(localize('mcpAccessDisabledBySettingPrefix', "MCP servers are disabled in settings. ")));
++				this.disabledMessage.appendChild(DOM.createTextNode(localize('mcpAccessDisabledBySettingPrefix', "MCP servers are disabled in settings. ")));
+ 				const link = DOM.append(this.disabledMessage, $('a.mcp-disabled-settings-link')) as HTMLAnchorElement;
+ 				link.textContent = localize('mcpAccessDisabledSettingLink', "Configure in settings.");
+ 				link.href = '#';
+diff --git a/src/vs/workbench/contrib/chat/browser/aiCustomization/pluginListWidget.ts b/src/vs/workbench/contrib/chat/browser/aiCustomization/pluginListWidget.ts
+index 25b106d85a0..6a54d60c933 100644
+--- a/src/vs/workbench/contrib/chat/browser/aiCustomization/pluginListWidget.ts
++++ b/src/vs/workbench/contrib/chat/browser/aiCustomization/pluginListWidget.ts
+@@ -622,7 +622,7 @@ export class PluginListWidget extends Disposable {
+ 			if (policyLocked) {
+ 				this.disabledMessage.textContent = localize('pluginsDisabledByPolicy', "Plugin integration in chat is disabled by your organization. Contact your organization administrator for more information.");
+ 			} else {
+-				this.disabledMessage.appendChild(document.createTextNode(localize('pluginsDisabledBySettingPrefix', "Plugins are disabled in settings. ")));
++				this.disabledMessage.appendChild(DOM.createTextNode(localize('pluginsDisabledBySettingPrefix', "Plugins are disabled in settings. ")));
+ 				const link = DOM.append(this.disabledMessage, $('a.mcp-disabled-settings-link')) as HTMLAnchorElement;
+ 				link.textContent = localize('pluginsDisabledSettingLink', "Configure in settings.");
+ 				link.href = '#';
 diff --git a/src/vs/workbench/contrib/chat/browser/attachments/chatAttachmentWidgets.ts b/src/vs/workbench/contrib/chat/browser/attachments/chatAttachmentWidgets.ts
-index aabd7fe45ad..dcaa729b7b3 100644
+index 8b0a896ca95..8d6fdd4f2af 100644
 --- a/src/vs/workbench/contrib/chat/browser/attachments/chatAttachmentWidgets.ts
 +++ b/src/vs/workbench/contrib/chat/browser/attachments/chatAttachmentWidgets.ts
-@@ -1065,7 +1065,7 @@ export class ElementChatAttachmentWidget extends AbstractChatAttachmentWidget {
+@@ -1092,7 +1092,7 @@ export class ElementChatAttachmentWidget extends AbstractChatAttachmentWidget {
  					swatch.style.backgroundColor = value;
  					valueContainer.appendChild(swatch);
  				}
@@ -4038,65 +4152,8 @@ index aabd7fe45ad..dcaa729b7b3 100644
  				row.appendChild(valueContainer);
  				table.appendChild(row);
  			}
-diff --git a/src/vs/workbench/contrib/chat/browser/attachments/simpleBrowserEditorOverlay.ts b/src/vs/workbench/contrib/chat/browser/attachments/simpleBrowserEditorOverlay.ts
-index 382fbd87e08..e5bcbfa67f8 100644
---- a/src/vs/workbench/contrib/chat/browser/attachments/simpleBrowserEditorOverlay.ts
-+++ b/src/vs/workbench/contrib/chat/browser/attachments/simpleBrowserEditorOverlay.ts
-@@ -22,7 +22,7 @@ import { IHostService } from '../../../../services/host/browser/host.js';
- import { IChatWidgetService } from '../chat.js';
- import { Button, ButtonWithDropdown } from '../../../../../base/browser/ui/button/button.js';
- import { defaultButtonStyles } from '../../../../../platform/theme/browser/defaultStyles.js';
--import { addDisposableListener } from '../../../../../base/browser/dom.js';
-+import { addDisposableListener, createElement } from '../../../../../base/browser/dom.js';
- import { IConfigurationService } from '../../../../../platform/configuration/common/configuration.js';
- import { cleanupOldImages, createFileForMedia } from '../chatImageUtils.js';
- import { IFileService } from '../../../../../platform/files/common/files.js';
-@@ -83,13 +83,13 @@ class SimpleBrowserOverlayWidget {
- 		this.imagesFolder = joinPath(this.environmentService.workspaceStorageHome, 'vscode-chat-images');
- 		cleanupOldImages(this.fileService, this.logService, this.imagesFolder);
- 
--		this._domNode = document.createElement('div');
-+		this._domNode = createElement('div');
- 		this._domNode.className = 'element-selection-message';
- 
--		const mainContent = document.createElement('div');
-+		const mainContent = createElement('div');
- 		mainContent.className = 'element-selection-main-content';
- 
--		const message = document.createElement('span');
-+		const message = createElement('span');
- 		const startSelectionMessage = localize('elementSelectionMessage', 'Add element to chat');
- 		message.textContent = startSelectionMessage;
- 		mainContent.appendChild(message);
-@@ -160,7 +160,7 @@ class SimpleBrowserOverlayWidget {
- 		nextSelection.element.classList.add('hidden');
- 
- 		// shown if the overlay is collapsed
--		const expandContainer = document.createElement('div');
-+		const expandContainer = createElement('div');
- 		expandContainer.className = 'element-expand-container hidden';
- 		const expandOverlay = this._showStore.add(new Button(expandContainer, { supportIcons: true, title: localize('chat.expandOverlay', "Expand Overlay") }));
- 		expandOverlay.icon = Codicon.layout;
-@@ -365,7 +365,7 @@ class SimpleBrowserOverlayController {
- 
- 	private readonly _store = new DisposableStore();
- 
--	private readonly _domNode = document.createElement('div');
-+	private readonly _domNode = createElement('div');
- 
- 	constructor(
- 		container: HTMLElement,
-@@ -387,7 +387,7 @@ class SimpleBrowserOverlayController {
- 		this._store.add(toDisposable(() => this._domNode.remove()));
- 		this._store.add(widget);
- 
--		const connectingWebviewElement = document.createElement('div');
-+		const connectingWebviewElement = createElement('div');
- 		connectingWebviewElement.className = 'connecting-webview-element';
- 
- 
 diff --git a/src/vs/workbench/contrib/chat/browser/chatDebug/chatDebugFlowLayout.ts b/src/vs/workbench/contrib/chat/browser/chatDebug/chatDebugFlowLayout.ts
-index 403003e62bd..93b5f308020 100644
+index bdb65f2068e..f9db0b1a6d1 100644
 --- a/src/vs/workbench/contrib/chat/browser/chatDebug/chatDebugFlowLayout.ts
 +++ b/src/vs/workbench/contrib/chat/browser/chatDebug/chatDebugFlowLayout.ts
 @@ -3,6 +3,7 @@
@@ -4107,7 +4164,7 @@ index 403003e62bd..93b5f308020 100644
  import { IChatDebugEvent } from '../../common/chatDebugService.js';
  import { FlowLayout, FlowNode, LayoutEdge, LayoutNode, SubgraphRect, FlowChartRenderResult } from './chatDebugFlowGraph.js';
  
-@@ -562,7 +563,7 @@ function centerLayout(layout: { nodes: LayoutNode[]; edges: LayoutEdge[]; subgra
+@@ -565,7 +566,7 @@ function centerLayout(layout: { nodes: LayoutNode[]; edges: LayoutEdge[]; subgra
  const SVG_NS = 'http://www.w3.org/2000/svg';
  
  function svgEl<K extends keyof SVGElementTagNameMap>(tag: K, attrs: Record<string, string | number>): SVGElementTagNameMap[K] {
@@ -4116,7 +4173,7 @@ index 403003e62bd..93b5f308020 100644
  	for (const [k, v] of Object.entries(attrs)) {
  		el.setAttribute(k, String(v));
  	}
-@@ -660,7 +661,7 @@ function renderSubgraphs(svg: SVGElement, subgraphs: readonly SubgraphRect[], fo
+@@ -663,7 +664,7 @@ function renderSubgraphs(svg: SVGElement, subgraphs: readonly SubgraphRect[], fo
  		const sg = subgraphs[sgIdx];
  		const color = SUBGRAPH_COLORS[sg.depth % SUBGRAPH_COLORS.length];
  		const isCollapsed = sg.collapsedChildCount !== undefined;
@@ -4125,7 +4182,7 @@ index 403003e62bd..93b5f308020 100644
  		g.classList.add('chat-debug-flowchart-subgraph');
  
  		const rectAttrs = { x: sg.x, y: sg.y, width: sg.width, height: sg.height, rx: NODE_BORDER_RADIUS, ry: NODE_BORDER_RADIUS };
-@@ -681,7 +682,7 @@ function renderSubgraphs(svg: SVGElement, subgraphs: readonly SubgraphRect[], fo
+@@ -684,7 +685,7 @@ function renderSubgraphs(svg: SVGElement, subgraphs: readonly SubgraphRect[], fo
  		g.appendChild(svgEl('rect', { x: sg.x, y: sg.y, width: GUTTER_WIDTH, height: sg.height, fill: color, opacity: 0.7, 'clip-path': `url(#${clipId})` }));
  
  		// Header group (clickable, keyboard accessible)
@@ -4134,7 +4191,7 @@ index 403003e62bd..93b5f308020 100644
  		headerGroup.setAttribute('data-subgraph-id', sg.nodeId);
  		headerGroup.classList.add('chat-debug-flowchart-subgraph-header');
  		headerGroup.setAttribute('tabindex', '0');
-@@ -789,7 +790,7 @@ function renderNodes(svg: SVGElement, nodes: readonly LayoutNode[], focusableEle
+@@ -792,7 +793,7 @@ function renderNodes(svg: SVGElement, nodes: readonly LayoutNode[], focusableEle
  	const nodeFill = 'var(--vscode-editor-background, var(--vscode-editorWidget-background))';
  
  	for (const node of nodes) {
@@ -4143,7 +4200,7 @@ index 403003e62bd..93b5f308020 100644
  		g.classList.add('chat-debug-flowchart-node');
  		g.setAttribute('data-node-id', node.id);
  		g.setAttribute('tabindex', '0');
-@@ -800,7 +801,7 @@ function renderNodes(svg: SVGElement, nodes: readonly LayoutNode[], focusableEle
+@@ -803,7 +804,7 @@ function renderNodes(svg: SVGElement, nodes: readonly LayoutNode[], focusableEle
  		focusableElements.set(node.id, g as unknown as SVGElement);
  
  		if (node.tooltip) {
@@ -4152,7 +4209,7 @@ index 403003e62bd..93b5f308020 100644
  			title.textContent = node.tooltip;
  			g.appendChild(title);
  		}
-@@ -874,7 +875,7 @@ function renderNodes(svg: SVGElement, nodes: readonly LayoutNode[], focusableEle
+@@ -877,7 +878,7 @@ function renderNodes(svg: SVGElement, nodes: readonly LayoutNode[], focusableEle
  
  function renderMergedToggle(g: Element, node: LayoutNode, color: string, fontFamily: string): void {
  	const toggleX = node.x + node.width - MERGED_TOGGLE_WIDTH;
@@ -4202,7 +4259,7 @@ index 2e43b458f3d..9d305673900 100644
  		this._domNode.style.width = '100%';
  		this._domNode.style.position = 'absolute';
 diff --git a/src/vs/workbench/contrib/chat/browser/chatEditing/chatEditingEditorOverlay.ts b/src/vs/workbench/contrib/chat/browser/chatEditing/chatEditingEditorOverlay.ts
-index 439ee6ac394..2ff15ee06e7 100644
+index f1064adb378..481e9853909 100644
 --- a/src/vs/workbench/contrib/chat/browser/chatEditing/chatEditingEditorOverlay.ts
 +++ b/src/vs/workbench/contrib/chat/browser/chatEditing/chatEditingEditorOverlay.ts
 @@ -12,7 +12,7 @@ import { IChatEditingService, IChatEditingSession, IModifiedFileEntry, ModifiedF
@@ -4214,7 +4271,7 @@ index 439ee6ac394..2ff15ee06e7 100644
  import { assertType } from '../../../../../base/common/types.js';
  import { localize } from '../../../../../nls.js';
  import { AcceptAction, navigationBearingFakeActionId, RejectAction } from './chatEditingEditorActions.js';
-@@ -118,7 +118,7 @@ class ChatEditorOverlayWidget extends Disposable {
+@@ -119,7 +119,7 @@ class ChatEditorOverlayWidget extends Disposable {
  		@IInstantiationService private readonly _instaService: IInstantiationService,
  	) {
  		super();
@@ -4223,7 +4280,7 @@ index 439ee6ac394..2ff15ee06e7 100644
  		this._domNode.classList.add('chat-editor-overlay-widget');
  
  		this._isBusy = derived(r => {
-@@ -127,7 +127,7 @@ class ChatEditorOverlayWidget extends Disposable {
+@@ -128,7 +128,7 @@ class ChatEditorOverlayWidget extends Disposable {
  		});
  
  
@@ -4232,7 +4289,7 @@ index 439ee6ac394..2ff15ee06e7 100644
  		progressNode.classList.add('chat-editor-overlay-progress');
  		append(progressNode, renderIcon(ThemeIcon.modify(Codicon.loading, 'spin')));
  		const textProgress = append(progressNode, $('span.progress-message'));
-@@ -140,7 +140,7 @@ class ChatEditorOverlayWidget extends Disposable {
+@@ -141,7 +141,7 @@ class ChatEditorOverlayWidget extends Disposable {
  			textProgress.innerText = '';
  		}));
  
@@ -4241,7 +4298,7 @@ index 439ee6ac394..2ff15ee06e7 100644
  		this._toolbarNode.classList.add('chat-editor-overlay-toolbar');
  
  	}
-@@ -278,7 +278,7 @@ class ChatEditingOverlayController {
+@@ -279,7 +279,7 @@ class ChatEditingOverlayController {
  
  	private readonly _store = new DisposableStore();
  
@@ -4351,10 +4408,10 @@ index db60c25470c..bca72f33d21 100644
  		commandSpan.innerText = chatSubcommandLeader + cmd.name;
  		this._store.add(this._hoverService.setupDelayedHover(commandSpan, {
 diff --git a/src/vs/workbench/contrib/chat/browser/widget/chatContentParts/chatConfirmationWidget.ts b/src/vs/workbench/contrib/chat/browser/widget/chatContentParts/chatConfirmationWidget.ts
-index bc263ce4408..b8b309467d9 100644
+index 5eaf2de7198..30b25f09e67 100644
 --- a/src/vs/workbench/contrib/chat/browser/widget/chatContentParts/chatConfirmationWidget.ts
 +++ b/src/vs/workbench/contrib/chat/browser/widget/chatContentParts/chatConfirmationWidget.ts
-@@ -89,7 +89,7 @@ export class ChatQueryTitlePart extends Disposable {
+@@ -91,7 +91,7 @@ export class ChatQueryTitlePart extends Disposable {
  			const renderedTitle = this._register(_renderer.render(str, {
  				asyncRenderCallback: () => this._onDidChangeHeight.fire(),
  			}));
@@ -4377,10 +4434,10 @@ index 517fe538dc6..6d6d0aeb793 100644
  		const scrollable = store.add(new DomScrollableElement(tableContainer, { // moves tableContainer into scrollNode
  			vertical: ScrollbarVisibility.Hidden,
 diff --git a/src/vs/workbench/contrib/chat/browser/widget/chatContentParts/chatToolInputOutputContentPart.ts b/src/vs/workbench/contrib/chat/browser/widget/chatContentParts/chatToolInputOutputContentPart.ts
-index 4b1b92693d5..fb61cb88af4 100644
+index cc39f84f44a..fd844421708 100644
 --- a/src/vs/workbench/contrib/chat/browser/widget/chatContentParts/chatToolInputOutputContentPart.ts
 +++ b/src/vs/workbench/contrib/chat/browser/widget/chatContentParts/chatToolInputOutputContentPart.ts
-@@ -120,7 +120,7 @@ export class ChatCollapsibleInputOutputContentPart extends Disposable {
+@@ -116,7 +116,7 @@ export class ChatCollapsibleInputOutputContentPart extends Disposable {
  			subtitle,
  		));
  		renderFileWidgets(titleEl.root, this._instantiationService, this.chatMarkdownAnchorService, this._store);
@@ -4390,10 +4447,10 @@ index 4b1b92693d5..fb61cb88af4 100644
  
  		const btn = this._register(new ButtonWithIcon(elements.root, {}));
 diff --git a/src/vs/workbench/contrib/chat/browser/widget/chatContentParts/toolInvocationParts/chatTerminalToolProgressPart.ts b/src/vs/workbench/contrib/chat/browser/widget/chatContentParts/toolInvocationParts/chatTerminalToolProgressPart.ts
-index c6f638e4929..2f7495c024b 100644
+index a013ea5b8ed..e99e0b5ec8d 100644
 --- a/src/vs/workbench/contrib/chat/browser/widget/chatContentParts/toolInvocationParts/chatTerminalToolProgressPart.ts
 +++ b/src/vs/workbench/contrib/chat/browser/widget/chatContentParts/toolInvocationParts/chatTerminalToolProgressPart.ts
-@@ -1682,19 +1682,19 @@ export class ChatTerminalThinkingCollapsibleWrapper extends ChatCollapsibleConte
+@@ -1661,19 +1661,19 @@ export class ChatTerminalThinkingCollapsibleWrapper extends ChatCollapsibleConte
  				? localize('chat.terminal.ranInSandbox.prefix', "Ran ")
  				: localize('chat.terminal.runningInSandbox.prefix', "Running ");
  			const suffixText = localize('chat.terminal.sandbox.suffix', " in sandbox");
@@ -4419,10 +4476,10 @@ index c6f638e4929..2f7495c024b 100644
  
  		labelElement.appendChild(ranText);
 diff --git a/src/vs/workbench/contrib/chat/browser/widget/chatContentParts/toolInvocationParts/chatToolConfirmationSubPart.ts b/src/vs/workbench/contrib/chat/browser/widget/chatContentParts/toolInvocationParts/chatToolConfirmationSubPart.ts
-index 4deaa492ff3..541beba7b85 100644
+index 4e896893aa3..35f332f5566 100644
 --- a/src/vs/workbench/contrib/chat/browser/widget/chatContentParts/toolInvocationParts/chatToolConfirmationSubPart.ts
 +++ b/src/vs/workbench/contrib/chat/browser/widget/chatContentParts/toolInvocationParts/chatToolConfirmationSubPart.ts
-@@ -180,7 +180,7 @@ export class ToolConfirmationSubPart extends AbstractToolConfirmationSubPart {
+@@ -179,7 +179,7 @@ export class ToolConfirmationSubPart extends AbstractToolConfirmationSubPart {
  
  			if (toolInvocation.toolSpecificData?.kind === 'input' && toolInvocation.toolSpecificData.rawInput && !isEmptyObject(toolInvocation.toolSpecificData.rawInput)) {
  
@@ -4432,10 +4489,10 @@ index 4deaa492ff3..541beba7b85 100644
  				elements.editor.appendChild(titleEl);
  
 diff --git a/src/vs/workbench/contrib/chat/browser/widget/chatContentParts/toolInvocationParts/chatToolInvocationPart.ts b/src/vs/workbench/contrib/chat/browser/widget/chatContentParts/toolInvocationParts/chatToolInvocationPart.ts
-index 00baeb551bf..f394eaa8005 100644
+index 7696a9de55e..60bc2c4423f 100644
 --- a/src/vs/workbench/contrib/chat/browser/widget/chatContentParts/toolInvocationParts/chatToolInvocationPart.ts
 +++ b/src/vs/workbench/contrib/chat/browser/widget/chatContentParts/toolInvocationParts/chatToolInvocationPart.ts
-@@ -103,7 +103,7 @@ export class ChatToolInvocationPart extends Disposable implements IChatContentPa
+@@ -108,7 +108,7 @@ export class ChatToolInvocationPart extends Disposable implements IChatContentPa
  		// when the model changes, or trying to make the model immutable and swap out one content part for a new one based on user actions in the view.
  		// Note that `node.replaceWith` is used to ensure order is preserved when an mpc app is present.
  		const partStore = this._register(new DisposableStore());
@@ -4444,7 +4501,7 @@ index 00baeb551bf..f394eaa8005 100644
  		this.domNode.appendChild(subPartDomNode);
  
  		const render = () => {
-@@ -138,7 +138,7 @@ export class ChatToolInvocationPart extends Disposable implements IChatContentPa
+@@ -143,7 +143,7 @@ export class ChatToolInvocationPart extends Disposable implements IChatContentPa
  				return !!outcome && outcome.type !== ToolConfirmKind.Denied && outcome.type !== ToolConfirmKind.Skipped;
  			});
  
@@ -4510,10 +4567,10 @@ index fa166677003..6564efe8bcf 100644
  		this.updateOverlayStyles(overlay);
  		overlayContainer.appendChild(overlay);
 diff --git a/src/vs/workbench/contrib/chat/browser/widget/chatListRenderer.ts b/src/vs/workbench/contrib/chat/browser/widget/chatListRenderer.ts
-index 742a67eeb14..a6bb3541eb8 100644
+index b9d1f1d95a3..c8f865844ac 100644
 --- a/src/vs/workbench/contrib/chat/browser/widget/chatListRenderer.ts
 +++ b/src/vs/workbench/contrib/chat/browser/widget/chatListRenderer.ts
-@@ -599,7 +599,7 @@ export class ChatListItemRenderer extends Disposable implements ITreeRenderer<Ch
+@@ -606,7 +606,7 @@ export class ChatListItemRenderer extends Disposable implements ITreeRenderer<Ch
  				this.hoverService.hideHover();
  			}
  		}));
@@ -4523,10 +4580,10 @@ index 742a67eeb14..a6bb3541eb8 100644
  		const template: IChatListItemTemplate = { header, avatarContainer, requestHover, username, detail, value, rowContainer, elementDisposables, templateDisposables, contextKeyService, instantiationService: scopedInstantiationService, agentHover, titleToolbar, footerToolbar, footerDetailsContainer, disabledOverlay, checkpointToolbar, checkpointRestoreToolbar, checkpointContainer, checkpointRestoreContainer };
  
 diff --git a/src/vs/workbench/contrib/chat/browser/widget/chatListWidget.ts b/src/vs/workbench/contrib/chat/browser/widget/chatListWidget.ts
-index fc01578b023..6a424f81513 100644
+index 6391bb329b5..48bfc21d6d6 100644
 --- a/src/vs/workbench/contrib/chat/browser/widget/chatListWidget.ts
 +++ b/src/vs/workbench/contrib/chat/browser/widget/chatListWidget.ts
-@@ -289,7 +289,7 @@ export class ChatListWidget extends Disposable {
+@@ -280,7 +280,7 @@ export class ChatListWidget extends Disposable {
  		this._renderStyle = options.renderStyle;
  
  		// Create overflow widgets container
@@ -4536,10 +4593,10 @@ index fc01578b023..6a424f81513 100644
  			overflowWidgetsContainer.classList.add('chat-overflow-widget-container', 'monaco-editor');
  			this._container.append(overflowWidgetsContainer);
 diff --git a/src/vs/workbench/contrib/chat/browser/widget/chatWidget.ts b/src/vs/workbench/contrib/chat/browser/widget/chatWidget.ts
-index 1fddece433b..3541e271f7f 100644
+index 719d50a08e8..45b41f17db2 100644
 --- a/src/vs/workbench/contrib/chat/browser/widget/chatWidget.ts
 +++ b/src/vs/workbench/contrib/chat/browser/widget/chatWidget.ts
-@@ -1484,7 +1484,7 @@ export class ChatWidget extends Disposable implements IChatWidget {
+@@ -1490,7 +1490,7 @@ export class ChatWidget extends Disposable implements IChatWidget {
  
  	private createList(listContainer: HTMLElement, options: IChatListItemRendererOptions): void {
  		// Create a dom element to hold UI from editor widgets embedded in chat messages
@@ -4674,10 +4731,10 @@ index ee1177e1eb3..49c85229a09 100644
  		if (configurationService.getValue<ICommentsConfiguration | undefined>(COMMENTS_SECTION)?.maxHeight !== false) {
  			this._body.classList.add('comment-body-max-height');
 diff --git a/src/vs/workbench/contrib/comments/browser/commentsTreeViewer.ts b/src/vs/workbench/contrib/comments/browser/commentsTreeViewer.ts
-index b5234b61404..f9aeb11fb67 100644
+index 5162553b7fc..d578867335c 100644
 --- a/src/vs/workbench/contrib/comments/browser/commentsTreeViewer.ts
 +++ b/src/vs/workbench/contrib/comments/browser/commentsTreeViewer.ts
-@@ -244,7 +244,7 @@ export class CommentNodeRenderer implements IListRenderer<ITreeNode<CommentNode>
+@@ -245,7 +245,7 @@ export class CommentNodeRenderer implements IListRenderer<ITreeNode<CommentNode>
  	}
  
  	private getRenderedComment(commentBody: IMarkdownString) {
@@ -4686,7 +4743,7 @@ index b5234b61404..f9aeb11fb67 100644
  		// eslint-disable-next-line no-restricted-syntax
  		const images = renderedComment.element.getElementsByTagName('img');
  		for (let i = 0; i < images.length; i++) {
-@@ -256,7 +256,7 @@ export class CommentNodeRenderer implements IListRenderer<ITreeNode<CommentNode>
+@@ -257,7 +257,7 @@ export class CommentNodeRenderer implements IListRenderer<ITreeNode<CommentNode>
  		// eslint-disable-next-line no-restricted-syntax
  		const headings = [...renderedComment.element.getElementsByTagName('h1'), ...renderedComment.element.getElementsByTagName('h2'), ...renderedComment.element.getElementsByTagName('h3'), ...renderedComment.element.getElementsByTagName('h4'), ...renderedComment.element.getElementsByTagName('h5'), ...renderedComment.element.getElementsByTagName('h6')];
  		for (const heading of headings) {
@@ -4973,57 +5030,57 @@ index 2bed6276108..352925e667b 100644
  			if (typeof label === 'string') {
  				em.innerText = label;
 diff --git a/src/vs/workbench/contrib/inlineChat/browser/inlineChatOverlayWidget.ts b/src/vs/workbench/contrib/inlineChat/browser/inlineChatOverlayWidget.ts
-index 3675acc488e..875f5ffb0c6 100644
+index da9692cdf18..a5c008c27c3 100644
 --- a/src/vs/workbench/contrib/inlineChat/browser/inlineChatOverlayWidget.ts
 +++ b/src/vs/workbench/contrib/inlineChat/browser/inlineChatOverlayWidget.ts
-@@ -410,7 +410,7 @@ export class InlineChatInputWidget extends Disposable {
+@@ -425,7 +425,7 @@ export class InlineChatInputWidget extends Disposable {
   */
  export class InlineChatSessionOverlayWidget extends Disposable {
  
--	private readonly _domNode: HTMLElement = document.createElement('div');
-+	private readonly _domNode: HTMLElement = dom.createElement('div');
- 	private readonly _container: HTMLElement;
- 	private readonly _markdownContainer: HTMLElement;
- 	private readonly _markdownMessage: HTMLElement;
-@@ -437,14 +437,14 @@ export class InlineChatSessionOverlayWidget extends Disposable {
+-	readonly #domNode: HTMLElement = document.createElement('div');
++	readonly #domNode: HTMLElement = dom.createElement('div');
+ 	readonly #container: HTMLElement;
+ 	readonly #markdownContainer: HTMLElement;
+ 	readonly #markdownMessage: HTMLElement;
+@@ -459,14 +459,14 @@ export class InlineChatSessionOverlayWidget extends Disposable {
  
- 		this._domNode.classList.add('inline-chat-session-overlay-widget');
+ 		this.#domNode.classList.add('inline-chat-session-overlay-widget');
  
--		this._container = document.createElement('div');
-+		this._container = dom.createElement('div');
- 		this._domNode.appendChild(this._container);
- 		this._container.classList.add('inline-chat-session-overlay-container');
+-		this.#container = document.createElement('div');
++		this.#container = dom.createElement('div');
+ 		this.#domNode.appendChild(this.#container);
+ 		this.#container.classList.add('inline-chat-session-overlay-container');
  
--		this._markdownContainer = document.createElement('div');
-+		this._markdownContainer = dom.createElement('div');
- 		this._markdownContainer.classList.add('markdown-scroll-container');
+-		this.#markdownContainer = document.createElement('div');
++		this.#markdownContainer = dom.createElement('div');
+ 		this.#markdownContainer.classList.add('markdown-scroll-container');
  
--		this._markdownMessage = document.createElement('div');
-+		this._markdownMessage = dom.createElement('div');
- 		this._markdownMessage.classList.add('markdown-message');
- 		this._markdownContainer.appendChild(this._markdownMessage);
- 		this._markdownScrollable = this._store.add(new DomScrollableElement(this._markdownContainer, {
-@@ -454,19 +454,19 @@ export class InlineChatSessionOverlayWidget extends Disposable {
+-		this.#markdownMessage = document.createElement('div');
++		this.#markdownMessage = dom.createElement('div');
+ 		this.#markdownMessage.classList.add('markdown-message');
+ 		this.#markdownContainer.appendChild(this.#markdownMessage);
+ 		this.#markdownScrollable = this._store.add(new DomScrollableElement(this.#markdownContainer, {
+@@ -476,19 +476,19 @@ export class InlineChatSessionOverlayWidget extends Disposable {
  		}));
- 		this._container.appendChild(this._markdownScrollable.getDomNode());
+ 		this.#container.appendChild(this.#markdownScrollable.getDomNode());
  
--		this._contentRow = document.createElement('div');
-+		this._contentRow = dom.createElement('div');
- 		this._contentRow.classList.add('content-row');
- 		this._container.appendChild(this._contentRow);
+-		this.#contentRow = document.createElement('div');
++		this.#contentRow = dom.createElement('div');
+ 		this.#contentRow.classList.add('content-row');
+ 		this.#container.appendChild(this.#contentRow);
  
  		// Create status node with icon and message
--		this._statusNode = document.createElement('div');
-+		this._statusNode = dom.createElement('div');
- 		this._statusNode.classList.add('status');
- 		this._icon = dom.append(this._statusNode, dom.$('span'));
- 		this._message = dom.append(this._statusNode, dom.$('span.message'));
- 		this._contentRow.appendChild(this._statusNode);
+-		this.#statusNode = document.createElement('div');
++		this.#statusNode = dom.createElement('div');
+ 		this.#statusNode.classList.add('status');
+ 		this.#icon = dom.append(this.#statusNode, dom.$('span'));
+ 		this.#message = dom.append(this.#statusNode, dom.$('span.message'));
+ 		this.#contentRow.appendChild(this.#statusNode);
  
  		// Create toolbar node
--		this._toolbarNode = document.createElement('div');
-+		this._toolbarNode = dom.createElement('div');
- 		this._toolbarNode.classList.add('toolbar');
+-		this.#toolbarNode = document.createElement('div');
++		this.#toolbarNode = dom.createElement('div');
+ 		this.#toolbarNode.classList.add('toolbar');
  
  		// Initialize sticky scroll height observable
 diff --git a/src/vs/workbench/contrib/issue/browser/baseIssueReporterService.ts b/src/vs/workbench/contrib/issue/browser/baseIssueReporterService.ts
@@ -5133,7 +5190,7 @@ index b655bb773a8..f82e85f55a6 100644
  			auxiliaryWindow.window.document.body.appendChild(div);
  			safeSetInnerHtml(div, BaseHtml(), {
 diff --git a/src/vs/workbench/contrib/languageStatus/browser/languageStatus.ts b/src/vs/workbench/contrib/languageStatus/browser/languageStatus.ts
-index 3e7063fe231..7636cf1c6f5 100644
+index 0c0c0094538..92c503bda8c 100644
 --- a/src/vs/workbench/contrib/languageStatus/browser/languageStatus.ts
 +++ b/src/vs/workbench/contrib/languageStatus/browser/languageStatus.ts
 @@ -103,7 +103,7 @@ class LanguageStatus {
@@ -5145,7 +5202,7 @@ index 3e7063fe231..7636cf1c6f5 100644
  
  	constructor(
  		@ILanguageStatusService private readonly _languageStatusService: ILanguageStatusService,
-@@ -291,24 +291,24 @@ class LanguageStatus {
+@@ -295,24 +295,24 @@ class LanguageStatus {
  
  	private _renderStatus(container: HTMLElement, status: ILanguageStatus, showSeverity: boolean, isPinned: boolean, store: DisposableStore): HTMLElement {
  
@@ -5174,7 +5231,7 @@ index 3e7063fe231..7636cf1c6f5 100644
  		left.classList.add('left');
  		element.appendChild(left);
  
-@@ -317,7 +317,7 @@ class LanguageStatus {
+@@ -321,7 +321,7 @@ class LanguageStatus {
  
  		this._renderTextPlus(left, status.detail, store);
  
@@ -5253,10 +5310,10 @@ index 6d36ed7ac14..fa708165965 100644
  			heightInPx: height,
  			ordinal: 50000 + 1,
 diff --git a/src/vs/workbench/contrib/notebook/browser/contrib/find/notebookFindReplaceWidget.ts b/src/vs/workbench/contrib/notebook/browser/contrib/find/notebookFindReplaceWidget.ts
-index 1184ba6cdf9..bcb7fd8aad4 100644
+index 4123eb8fc50..32dbbaa9fc1 100644
 --- a/src/vs/workbench/contrib/notebook/browser/contrib/find/notebookFindReplaceWidget.ts
 +++ b/src/vs/workbench/contrib/notebook/browser/contrib/find/notebookFindReplaceWidget.ts
-@@ -355,7 +355,7 @@ export abstract class SimpleFindReplaceWidget extends Widget {
+@@ -361,7 +361,7 @@ export abstract class SimpleFindReplaceWidget extends Widget {
  			this._state.change({ filters: this._filters }, false);
  		}));
  
@@ -5265,7 +5322,7 @@ index 1184ba6cdf9..bcb7fd8aad4 100644
  		this._domNode.classList.add('simple-fr-find-part-wrapper');
  
  		this._register(Event.runAndSubscribe(this._configurationService.onDidChangeConfiguration, e => {
-@@ -397,7 +397,7 @@ export abstract class SimpleFindReplaceWidget extends Widget {
+@@ -403,7 +403,7 @@ export abstract class SimpleFindReplaceWidget extends Widget {
  
  
  
@@ -5274,7 +5331,7 @@ index 1184ba6cdf9..bcb7fd8aad4 100644
  		this._innerFindDomNode.classList.add('simple-fr-find-part');
  
  		this._findInput = this._register(new NotebookFindInput(
-@@ -464,7 +464,7 @@ export abstract class SimpleFindReplaceWidget extends Widget {
+@@ -470,7 +470,7 @@ export abstract class SimpleFindReplaceWidget extends Widget {
  			this._replaceInput.setPreserveCase(this._state.preserveCase);
  		}));
  
@@ -5283,7 +5340,7 @@ index 1184ba6cdf9..bcb7fd8aad4 100644
  		this._matchesCount.className = 'matchesCount';
  		this._updateMatchesCount();
  
-@@ -580,7 +580,7 @@ export abstract class SimpleFindReplaceWidget extends Widget {
+@@ -586,7 +586,7 @@ export abstract class SimpleFindReplaceWidget extends Widget {
  		}));
  
  		// Replace
@@ -5475,18 +5532,9 @@ index f24aabe73b4..87a87564d8c 100644
  		this._overviewViewportDomElement.setPosition('absolute');
  		this._overviewViewportDomElement.setWidth(width);
 diff --git a/src/vs/workbench/contrib/notebook/browser/notebookEditorWidget.ts b/src/vs/workbench/contrib/notebook/browser/notebookEditorWidget.ts
-index 816477a090c..770e8906532 100644
+index edaf511cda2..4bf52df62ef 100644
 --- a/src/vs/workbench/contrib/notebook/browser/notebookEditorWidget.ts
 +++ b/src/vs/workbench/contrib/notebook/browser/notebookEditorWidget.ts
-@@ -331,7 +331,7 @@ export class NotebookEditorWidget extends Disposable implements INotebookEditorD
- 		this.isReplHistory = creationOptions.isReplHistory ?? false;
- 		this._readOnly = creationOptions.isReadOnly ?? false;
- 
--		this._overlayContainer = document.createElement('div');
-+		this._overlayContainer = DOM.createElement('div');
- 		this.scopedContextKeyService = this._register(contextKeyService.createScoped(this._overlayContainer));
- 		this.instantiationService = this._register(instantiationService.createChild(new ServiceCollection([IContextKeyService, this.scopedContextKeyService])));
- 
 @@ -612,30 +612,30 @@ export class NotebookEditorWidget extends Disposable implements INotebookEditorD
  	}
  
@@ -5950,10 +5998,10 @@ index fbd8325319e..0f451889125 100644
  		}
  
 diff --git a/src/vs/workbench/contrib/terminal/browser/terminalInstance.ts b/src/vs/workbench/contrib/terminal/browser/terminalInstance.ts
-index 8bfd2acac5b..9e0fd628400 100644
+index 807fa3ce891..14d0ed59d30 100644
 --- a/src/vs/workbench/contrib/terminal/browser/terminalInstance.ts
 +++ b/src/vs/workbench/contrib/terminal/browser/terminalInstance.ts
-@@ -396,7 +396,7 @@ export class TerminalInstance extends Disposable implements ITerminalInstance {
+@@ -407,7 +407,7 @@ export class TerminalInstance extends Disposable implements ITerminalInstance {
  	) {
  		super();
  
@@ -5962,7 +6010,7 @@ index 8bfd2acac5b..9e0fd628400 100644
  		this._wrapperElement.classList.add('terminal-wrapper');
  
  		this._widgetManager = this._register(instantiationService.createInstance(TerminalWidgetManager));
-@@ -1072,7 +1072,7 @@ export class TerminalInstance extends Disposable implements ITerminalInstance {
+@@ -1084,7 +1084,7 @@ export class TerminalInstance extends Disposable implements ITerminalInstance {
  			throw new Error('A container element needs to be set with `attachToElement` and be part of the DOM before calling `_open`');
  		}
  
@@ -5971,7 +6019,7 @@ index 8bfd2acac5b..9e0fd628400 100644
  		xtermHost.classList.add('terminal-xterm-host');
  		this._wrapperElement.appendChild(xtermHost);
  
-@@ -2504,7 +2504,7 @@ class TerminalInstanceDragAndDropController extends Disposable implements dom.ID
+@@ -2537,7 +2537,7 @@ class TerminalInstanceDragAndDropController extends Disposable implements dom.ID
  		}
  
  		if (!this._dropOverlay) {
@@ -6080,10 +6128,10 @@ index 239cfe8566d..0a26a5813a3 100644
  		canvas.height = bitmap.height;
  		const ctx = canvas.getContext('bitmaprenderer');
 diff --git a/src/vs/workbench/contrib/testing/browser/codeCoverageDecorations.ts b/src/vs/workbench/contrib/testing/browser/codeCoverageDecorations.ts
-index 37fac8335cb..e5d161cd79f 100644
+index 7d4c7ee69c5..a88bbde89dc 100644
 --- a/src/vs/workbench/contrib/testing/browser/codeCoverageDecorations.ts
 +++ b/src/vs/workbench/contrib/testing/browser/codeCoverageDecorations.ts
-@@ -783,7 +783,7 @@ class CoverageToolbarWidget extends Disposable implements IOverlayWidget {
+@@ -794,7 +794,7 @@ class CoverageToolbarWidget extends Disposable implements IOverlayWidget {
  			viewZoneId = accessor.addZone({ // make space for the widget
  				afterLineNumber: 0,
  				afterColumn: 0,
@@ -6106,10 +6154,10 @@ index b60894a7502..7ddd7da7f47 100644
  		this.visibleStore.add(dom.addDisposableListener(link, 'click', onClick));
  		this.visibleStore.add(dom.addDisposableListener(link, 'keydown', e => {
 diff --git a/src/vs/workbench/contrib/testing/browser/testingDecorations.ts b/src/vs/workbench/contrib/testing/browser/testingDecorations.ts
-index 50bd28bca26..83785ed1759 100644
+index c5af75a790a..a52bfa1015d 100644
 --- a/src/vs/workbench/contrib/testing/browser/testingDecorations.ts
 +++ b/src/vs/workbench/contrib/testing/browser/testingDecorations.ts
-@@ -836,7 +836,7 @@ abstract class TitleLensContentWidget {
+@@ -837,7 +837,7 @@ abstract class TitleLensContentWidget {
  			this.viewZoneId = accessor.addZone({
  				afterLineNumber: 0,
  				afterColumn: Constants.MAX_SAFE_SMALL_INTEGER,
@@ -6118,7 +6166,7 @@ index 50bd28bca26..83785ed1759 100644
  				heightInPx: 20,
  			});
  		});
-@@ -1420,13 +1420,13 @@ class TestErrorContentWidget extends Disposable implements IContentWidget {
+@@ -1422,13 +1422,13 @@ class TestErrorContentWidget extends Disposable implements IContentWidget {
  
  		this.node.name.innerText = text || 'Test Failed';
  
@@ -6135,10 +6183,10 @@ index 50bd28bca26..83785ed1759 100644
  		svg.append(leftArrow);
  
 diff --git a/src/vs/workbench/contrib/testing/browser/testingExplorerView.ts b/src/vs/workbench/contrib/testing/browser/testingExplorerView.ts
-index 9257aa6588f..4deff1919c4 100644
+index 20d4dbdb8d2..8da3bc31b8b 100644
 --- a/src/vs/workbench/contrib/testing/browser/testingExplorerView.ts
 +++ b/src/vs/workbench/contrib/testing/browser/testingExplorerView.ts
-@@ -1472,7 +1472,7 @@ class ErrorRenderer implements ITreeRenderer<TestTreeErrorMessage, FuzzyScore, I
+@@ -1476,7 +1476,7 @@ class ErrorRenderer implements ITreeRenderer<TestTreeErrorMessage, FuzzyScore, I
  		if (typeof element.message === 'string') {
  			data.label.innerText = element.message;
  		} else {
@@ -6245,10 +6293,10 @@ index 27c65807797..9477e1406aa 100644
  		const label = new IconLabel(container, { supportHighlights: true });
  		return new TypeRenderingTemplate(icon, label);
 diff --git a/src/vs/workbench/contrib/update/browser/updateTooltip.ts b/src/vs/workbench/contrib/update/browser/updateTooltip.ts
-index 56e15f6a0cf..68fe706ea7c 100644
+index 85e34cca1a3..6b564f4620f 100644
 --- a/src/vs/workbench/contrib/update/browser/updateTooltip.ts
 +++ b/src/vs/workbench/contrib/update/browser/updateTooltip.ts
-@@ -447,7 +447,7 @@ export class UpdateTooltip extends Disposable {
+@@ -409,7 +409,7 @@ export class UpdateTooltip extends Disposable {
  			const iconNode = dom.append(this.messageNode, dom.$('.state-message-icon'));
  			iconNode.classList.add(...ThemeIcon.asClassNameArray(icon));
  		}
@@ -6257,28 +6305,6 @@ index 56e15f6a0cf..68fe706ea7c 100644
  		this.messageNode.style.display = '';
  	}
  
-diff --git a/src/vs/workbench/contrib/webview/browser/overlayWebview.ts b/src/vs/workbench/contrib/webview/browser/overlayWebview.ts
-index 00fc64dbb82..9901f792f99 100644
---- a/src/vs/workbench/contrib/webview/browser/overlayWebview.ts
-+++ b/src/vs/workbench/contrib/webview/browser/overlayWebview.ts
-@@ -3,7 +3,7 @@
-  *  Licensed under the MIT License. See License.txt in the project root for license information.
-  *--------------------------------------------------------------------------------------------*/
- 
--import { Dimension, getWindowById, isHTMLElement } from '../../../../base/browser/dom.js';
-+import { createElement, Dimension, getWindowById, isHTMLElement } from '../../../../base/browser/dom.js';
- import { FastDomNode } from '../../../../base/browser/fastDomNode.js';
- import { IMouseWheelEvent } from '../../../../base/browser/mouseEvent.js';
- import { CodeWindow } from '../../../../base/browser/window.js';
-@@ -102,7 +102,7 @@ export class OverlayWebview extends Disposable implements IOverlayWebview {
- 		}
- 
- 		if (!this._container) {
--			const node = document.createElement('div');
-+			const node = createElement('div');
- 			node.style.position = 'absolute';
- 			node.style.overflow = 'hidden';
- 			this._container = new FastDomNode(node);
 diff --git a/src/vs/workbench/contrib/webview/browser/webviewElement.ts b/src/vs/workbench/contrib/webview/browser/webviewElement.ts
 index 2b19e476462..640e737e169 100644
 --- a/src/vs/workbench/contrib/webview/browser/webviewElement.ts
@@ -6312,10 +6338,10 @@ index 2b19e476462..640e737e169 100644
  		element.className = `webview ${options.customClasses || ''}`;
  		element.sandbox.add('allow-scripts', 'allow-same-origin', 'allow-forms', 'allow-pointer-lock', 'allow-downloads');
 diff --git a/src/vs/workbench/contrib/webviewPanel/browser/webviewEditor.ts b/src/vs/workbench/contrib/webviewPanel/browser/webviewEditor.ts
-index b6bdf6eef73..ef2db076cd3 100644
+index f06d57edf11..17e70023bf5 100644
 --- a/src/vs/workbench/contrib/webviewPanel/browser/webviewEditor.ts
 +++ b/src/vs/workbench/contrib/webviewPanel/browser/webviewEditor.ts
-@@ -82,7 +82,7 @@ export class WebviewEditor extends EditorPane {
+@@ -85,7 +85,7 @@ export class WebviewEditor extends EditorPane {
  	}
  
  	protected createEditor(parent: HTMLElement): void {
@@ -6325,7 +6351,7 @@ index b6bdf6eef73..ef2db076cd3 100644
  		this._element.id = `webview-editor-element-${generateUuid()}`;
  		parent.appendChild(element);
 diff --git a/src/vs/workbench/contrib/welcomeAgentSessions/browser/agentSessionsWelcome.ts b/src/vs/workbench/contrib/welcomeAgentSessions/browser/agentSessionsWelcome.ts
-index 0f10d3f8f27..497a82ba36f 100644
+index 1e787595db7..ba84bbcce3e 100644
 --- a/src/vs/workbench/contrib/welcomeAgentSessions/browser/agentSessionsWelcome.ts
 +++ b/src/vs/workbench/contrib/welcomeAgentSessions/browser/agentSessionsWelcome.ts
 @@ -4,7 +4,7 @@
@@ -6337,7 +6363,7 @@ index 0f10d3f8f27..497a82ba36f 100644
  import { renderIcon } from '../../../../base/browser/ui/iconLabel/iconLabels.js';
  import { DomScrollableElement } from '../../../../base/browser/ui/scrollbar/scrollableElement.js';
  import { Toggle } from '../../../../base/browser/ui/toggle/toggle.js';
-@@ -290,7 +290,7 @@ export class AgentSessionsWelcomePage extends EditorPane {
+@@ -296,7 +296,7 @@ export class AgentSessionsWelcomePage extends EditorPane {
  		for (const entry of entries) {
  			const button = append(container, $('button.agentSessionsWelcome-startEntry'));
  			button.appendChild(renderIcon(entry.icon));
@@ -6440,7 +6466,7 @@ index c59cb859b56..c0e3165ad3e 100644
  		iframe.setAttribute('sandbox', 'allow-scripts allow-same-origin');
  		iframe.setAttribute('allow', 'usb; serial; hid; cross-origin-isolated; local-network-access;');
 diff --git a/src/vs/workbench/services/host/browser/browserHostService.ts b/src/vs/workbench/services/host/browser/browserHostService.ts
-index 1cb50e596b8..57a569423f2 100644
+index 914f1eb51e9..e84e7d086cc 100644
 --- a/src/vs/workbench/services/host/browser/browserHostService.ts
 +++ b/src/vs/workbench/services/host/browser/browserHostService.ts
 @@ -15,7 +15,7 @@ import { whenEditorClosed } from '../../../browser/editor.js';
@@ -6452,7 +6478,7 @@ index 1cb50e596b8..57a569423f2 100644
  import { Disposable, DisposableSet, DisposableStore, toDisposable } from '../../../../base/common/lifecycle.js';
  import { IBrowserWorkbenchEnvironmentService } from '../../environment/browser/environmentService.js';
  import { memoize } from '../../../../base/common/decorators.js';
-@@ -674,7 +674,7 @@ export class BrowserHostService extends Disposable implements IHostService {
+@@ -678,7 +678,7 @@ export class BrowserHostService extends Disposable implements IHostService {
  		const store = new DisposableStore();
  
  		// Create a video element to play the captured screen source
@@ -6461,7 +6487,7 @@ index 1cb50e596b8..57a569423f2 100644
  		store.add(toDisposable(() => video.remove()));
  		let stream: MediaStream | undefined;
  		try {
-@@ -694,7 +694,7 @@ export class BrowserHostService extends Disposable implements IHostService {
+@@ -698,7 +698,7 @@ export class BrowserHostService extends Disposable implements IHostService {
  				new Promise<void>(r => store.add(addDisposableListener(video, 'canplaythrough', () => r())))
  			]);
  
@@ -6471,7 +6497,7 @@ index 1cb50e596b8..57a569423f2 100644
  			canvas.height = video.videoHeight;
  
 diff --git a/src/vs/workbench/test/browser/workbenchTestServices.ts b/src/vs/workbench/test/browser/workbenchTestServices.ts
-index 3762453a62c..7d562c9c3cb 100644
+index 0747566766c..ae424039c7f 100644
 --- a/src/vs/workbench/test/browser/workbenchTestServices.ts
 +++ b/src/vs/workbench/test/browser/workbenchTestServices.ts
 @@ -4,7 +4,7 @@
@@ -6483,7 +6509,7 @@ index 3762453a62c..7d562c9c3cb 100644
  import { Direction, IViewSize } from '../../../base/browser/ui/grid/grid.js';
  import { mainWindow } from '../../../base/browser/window.js';
  import { timeout } from '../../../base/common/async.js';
-@@ -1709,7 +1709,7 @@ export class TestEditorParts extends EditorParts {
+@@ -1711,7 +1711,7 @@ export class TestEditorParts extends EditorParts {
  export async function createEditorParts(instantiationService: IInstantiationService, disposables: DisposableStore): Promise<TestEditorParts> {
  	const parts = instantiationService.createInstance(TestEditorParts);
  	const part = disposables.add(parts).testMainPart;

@@ -10,10 +10,10 @@ Subject: [PATCH] feat: support disabling specific extension from workbench
  2 files changed, 5 insertions(+), 2 deletions(-)
 
 diff --git a/src/vs/workbench/browser/web.api.ts b/src/vs/workbench/browser/web.api.ts
-index dcb9af34371..c999bc5fb0b 100644
+index 0722cab7d7b..727ebf1c5f7 100644
 --- a/src/vs/workbench/browser/web.api.ts
 +++ b/src/vs/workbench/browser/web.api.ts
-@@ -249,7 +249,10 @@ export interface IWorkbenchConstructionOptions {
+@@ -258,7 +258,10 @@ export interface IWorkbenchConstructionOptions {
  	 * Note: This will not install extensions if not installed.
  	 */
  	readonly enabledExtensions?: readonly ExtensionId[];

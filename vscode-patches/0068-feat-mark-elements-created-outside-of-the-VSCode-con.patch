@@ -21,7 +21,7 @@ index 6d419172f5d..6875f575f8b 100644
  	return element;
  }
 diff --git a/src/vs/base/browser/domStylesheets.ts b/src/vs/base/browser/domStylesheets.ts
-index e6434f61cfa..ac5a68bebe2 100644
+index 99969bde5a8..2ab675b7895 100644
 --- a/src/vs/base/browser/domStylesheets.ts
 +++ b/src/vs/base/browser/domStylesheets.ts
 @@ -51,6 +51,7 @@ export function createStyleSheet(container: HTMLElement = mainWindow.document.he

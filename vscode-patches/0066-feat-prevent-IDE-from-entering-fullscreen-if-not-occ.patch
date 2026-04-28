@@ -154,7 +154,7 @@ index a7ba65b8862..2121458ae70 100644
  
  	async open(): Promise<IWorkbench> {
 diff --git a/src/vs/workbench/services/host/browser/browserHostService.ts b/src/vs/workbench/services/host/browser/browserHostService.ts
-index 15c70de40d5..be7c5137c53 100644
+index 8bec9d30a32..db26674d342 100644
 --- a/src/vs/workbench/services/host/browser/browserHostService.ts
 +++ b/src/vs/workbench/services/host/browser/browserHostService.ts
 @@ -227,7 +227,7 @@ export class BrowserHostService extends Disposable implements IHostService {

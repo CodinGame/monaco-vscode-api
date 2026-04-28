@@ -243,10 +243,10 @@ index adede234180..a28bca7bcb8 100644
  	}
  	protected override _createView(viewModel: ViewModel): [View, boolean] {
 diff --git a/src/vs/workbench/contrib/notebook/browser/contrib/multicursor/notebookMulticursor.ts b/src/vs/workbench/contrib/notebook/browser/contrib/multicursor/notebookMulticursor.ts
-index 48532bfcff7..9cfd99f24c7 100644
+index 28a9ee9abdf..57351bd944a 100644
 --- a/src/vs/workbench/contrib/notebook/browser/contrib/multicursor/notebookMulticursor.ts
 +++ b/src/vs/workbench/contrib/notebook/browser/contrib/multicursor/notebookMulticursor.ts
-@@ -839,7 +839,7 @@ export class NotebookMultiCursorController extends Disposable implements INotebo
+@@ -841,7 +841,7 @@ export class NotebookMultiCursorController extends Disposable implements INotebo
  		const cellEditorOptions = new CellEditorOptions(this.notebookEditor.getBaseCellEditorOptions(cell.language), this.notebookEditor.notebookOptions, this.configurationService);
  		const options = cellEditorOptions.getUpdatedValue(cell.internalMetadata, cell.uri);
  		cellEditorOptions.dispose();

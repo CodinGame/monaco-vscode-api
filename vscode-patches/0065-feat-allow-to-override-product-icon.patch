@@ -12,10 +12,10 @@ Subject: [PATCH] feat: allow to override product icon
  5 files changed, 6 insertions(+), 5 deletions(-)
 
 diff --git a/build/lib/stylelint/vscode-known-variables.json b/build/lib/stylelint/vscode-known-variables.json
-index ead57c9b5d2..cd2941ab956 100644
+index 59dfc331f35..f686718b940 100644
 --- a/build/lib/stylelint/vscode-known-variables.json
 +++ b/build/lib/stylelint/vscode-known-variables.json
-@@ -1040,7 +1040,8 @@
+@@ -1054,7 +1054,8 @@
  		"--vscode-inline-chat-affordance-height",
  		"--collapse-from-width",
  		"--slide-from-x",
@@ -39,7 +39,7 @@ index a0de81f24eb..c71af404312 100644
  	padding: 0;
  	margin: 0 6px 0 10px;
 diff --git a/src/vs/workbench/browser/parts/titlebar/media/titlebarpart.css b/src/vs/workbench/browser/parts/titlebar/media/titlebarpart.css
-index 7a255b58d0f..814ba54050e 100644
+index be622a4452e..db25f171868 100644
 --- a/src/vs/workbench/browser/parts/titlebar/media/titlebarpart.css
 +++ b/src/vs/workbench/browser/parts/titlebar/media/titlebarpart.css
 @@ -290,7 +290,7 @@
@@ -52,7 +52,7 @@ index 7a255b58d0f..814ba54050e 100644
  	background-position: center center;
  	background-size: 16px;
 diff --git a/src/vs/workbench/contrib/welcomeGettingStarted/browser/media/gettingStarted.css b/src/vs/workbench/contrib/welcomeGettingStarted/browser/media/gettingStarted.css
-index f72871782c5..1c782733de3 100644
+index c661d88076c..fce2978e49c 100644
 --- a/src/vs/workbench/contrib/welcomeGettingStarted/browser/media/gettingStarted.css
 +++ b/src/vs/workbench/contrib/welcomeGettingStarted/browser/media/gettingStarted.css
 @@ -5,7 +5,7 @@

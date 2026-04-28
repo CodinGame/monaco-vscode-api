@@ -9,12 +9,12 @@ Subject: [PATCH] refactor: split some modules to be able to import them
  .../parts/editor/editor.contribution.ts       |   3 +-
  .../files/browser/fileCommands._save.ts       | 225 ++++++
  .../contrib/files/browser/fileCommands.ts     | 220 +-----
- .../files.contribution._configuration.ts      | 297 ++++++++
+ .../files.contribution._configuration.ts      | 306 ++++++++
  .../browser/files.contribution._editorPane.ts |  93 +++
  .../browser/files.contribution._explorer.ts   | 295 ++++++++
  .../files.contribution._fileEditorFactory.ts  |  24 +
- .../files/browser/files.contribution.ts       | 674 +-----------------
- 9 files changed, 955 insertions(+), 885 deletions(-)
+ .../files/browser/files.contribution.ts       | 683 +-----------------
+ 9 files changed, 964 insertions(+), 894 deletions(-)
  create mode 100644 src/vs/workbench/browser/parts/editor/editor.contribution._autosave.ts
  create mode 100644 src/vs/workbench/contrib/files/browser/fileCommands._save.ts
  create mode 100644 src/vs/workbench/contrib/files/browser/files.contribution._configuration.ts
@@ -38,10 +38,10 @@ index 00000000000..185a77baafb
 +
 +registerWorkbenchContribution2(EditorAutoSave.ID, EditorAutoSave, WorkbenchPhase.BlockRestore);
 diff --git a/src/vs/workbench/browser/parts/editor/editor.contribution.ts b/src/vs/workbench/browser/parts/editor/editor.contribution.ts
-index ffadc12ea96..053f3884b9b 100644
+index 7d24435fc9e..a8b605ecb94 100644
 --- a/src/vs/workbench/browser/parts/editor/editor.contribution.ts
 +++ b/src/vs/workbench/browser/parts/editor/editor.contribution.ts
-@@ -60,7 +60,6 @@ import { KeybindingsRegistry, KeybindingWeight } from '../../../../platform/keyb
+@@ -61,7 +61,6 @@ import { KeybindingsRegistry, KeybindingWeight } from '../../../../platform/keyb
  import { ContextKeyExpr, ContextKeyExpression } from '../../../../platform/contextkey/common/contextkey.js';
  import { isMacintosh } from '../../../../base/common/platform.js';
  import { WorkbenchPhase, registerWorkbenchContribution2 } from '../../../common/contributions.js';
@@ -49,7 +49,7 @@ index ffadc12ea96..053f3884b9b 100644
  import { IQuickAccessRegistry, Extensions as QuickAccessExtensions } from '../../../../platform/quickinput/common/quickAccess.js';
  import { ActiveGroupEditorsByMostRecentlyUsedQuickAccess, AllEditorsByAppearanceQuickAccess, AllEditorsByMostRecentlyUsedQuickAccess } from './editorQuickAccess.js';
  import { FileAccess } from '../../../../base/common/network.js';
-@@ -73,6 +72,7 @@ import { ICommandAction } from '../../../../platform/action/common/action.js';
+@@ -74,6 +73,7 @@ import { ICommandAction } from '../../../../platform/action/common/action.js';
  import { EditorContextKeys } from '../../../../editor/common/editorContextKeys.js';
  import { getFontSnippets } from '../../../../base/browser/fonts.js';
  import { registerEditorFontConfigurations } from '../../../../editor/common/config/editorConfigurationSchema.js';
@@ -57,7 +57,7 @@ index ffadc12ea96..053f3884b9b 100644
  
  //#region Editor Registrations
  
-@@ -129,7 +129,6 @@ Registry.as<IEditorFactoryRegistry>(EditorExtensions.EditorFactory).registerEdit
+@@ -130,7 +130,6 @@ Registry.as<IEditorFactoryRegistry>(EditorExtensions.EditorFactory).registerEdit
  
  //#region Workbench Contributions
  
@@ -567,10 +567,10 @@ index c8fc8aa2dd2..1ea10370c97 100644
  	handler: (accessor, resource: URI | object) => {
 diff --git a/src/vs/workbench/contrib/files/browser/files.contribution._configuration.ts b/src/vs/workbench/contrib/files/browser/files.contribution._configuration.ts
 new file mode 100644
-index 00000000000..e9173033499
+index 00000000000..4062584a264
 --- /dev/null
 +++ b/src/vs/workbench/contrib/files/browser/files.contribution._configuration.ts
-@@ -0,0 +1,297 @@
+@@ -0,0 +1,306 @@
 +/*---------------------------------------------------------------------------------------------
 + *  Copyright (c) Microsoft Corporation. All rights reserved.
 + *  Licensed under the MIT License. See License.txt in the project root for license information.
@@ -762,7 +762,16 @@ index 00000000000..e9173033499
 +			'patternProperties': {
 +				'.*': { 'type': 'boolean' }
 +			},
-+			'default': { '**/.git/objects/**': true, '**/.git/subtree-cache/**': true, '**/.hg/store/**': true },
++			'default': {
++				// Avoiding a '**' pattern here which results in a very complex
++				// RegExp that can slow things down significantly in large workspaces
++				'.git/objects/**': true,
++				'.git/subtree-cache/**': true,
++				'.hg/store/**': true,
++				'*/.git/objects/**': true,
++				'*/.git/subtree-cache/**': true,
++				'*/.hg/store/**': true
++			},
 +			'markdownDescription': nls.localize('watcherExclude', "Configure paths or [glob patterns](https://aka.ms/vscode-glob-patterns) to exclude from file watching. Paths can either be relative to the watched folder or absolute. Glob patterns are matched relative from the watched folder. When you experience the file watcher process consuming a lot of CPU, make sure to exclude large folders that are of less interest (such as build output folders)."),
 +			'scope': ConfigurationScope.RESOURCE
 +		},
@@ -1299,10 +1308,10 @@ index 00000000000..8064ddc028c
 +	}
 +});
 diff --git a/src/vs/workbench/contrib/files/browser/files.contribution.ts b/src/vs/workbench/contrib/files/browser/files.contribution.ts
-index 8f36c834a3a..269fb34cadb 100644
+index c0b8db32da0..269fb34cadb 100644
 --- a/src/vs/workbench/contrib/files/browser/files.contribution.ts
 +++ b/src/vs/workbench/contrib/files/browser/files.contribution.ts
-@@ -3,673 +3,7 @@
+@@ -3,682 +3,7 @@
   *  Licensed under the MIT License. See License.txt in the project root for license information.
   *--------------------------------------------------------------------------------------------*/
  
@@ -1598,7 +1607,16 @@ index 8f36c834a3a..269fb34cadb 100644
 -			'patternProperties': {
 -				'.*': { 'type': 'boolean' }
 -			},
--			'default': { '**/.git/objects/**': true, '**/.git/subtree-cache/**': true, '**/.hg/store/**': true },
+-			'default': {
+-				// Avoiding a '**' pattern here which results in a very complex
+-				// RegExp that can slow things down significantly in large workspaces
+-				'.git/objects/**': true,
+-				'.git/subtree-cache/**': true,
+-				'.hg/store/**': true,
+-				'*/.git/objects/**': true,
+-				'*/.git/subtree-cache/**': true,
+-				'*/.hg/store/**': true
+-			},
 -			'markdownDescription': nls.localize('watcherExclude', "Configure paths or [glob patterns](https://aka.ms/vscode-glob-patterns) to exclude from file watching. Paths can either be relative to the watched folder or absolute. Glob patterns are matched relative from the watched folder. When you experience the file watcher process consuming a lot of CPU, make sure to exclude large folders that are of less interest (such as build output folders)."),
 -			'scope': ConfigurationScope.RESOURCE
 -		},

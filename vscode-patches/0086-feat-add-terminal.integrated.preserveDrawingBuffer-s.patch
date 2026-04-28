@@ -11,10 +11,10 @@ Subject: [PATCH] feat: add terminal.integrated.preserveDrawingBuffer setting
  4 files changed, 9 insertions(+), 1 deletion(-)
 
 diff --git a/src/vs/platform/terminal/common/terminal.ts b/src/vs/platform/terminal/common/terminal.ts
-index cae49fe2836..55385e2af0d 100644
+index b04fd25e049..9ffedf6195f 100644
 --- a/src/vs/platform/terminal/common/terminal.ts
 +++ b/src/vs/platform/terminal/common/terminal.ts
-@@ -101,6 +101,7 @@ export const enum TerminalSettingId {
+@@ -102,6 +102,7 @@ export const enum TerminalSettingId {
  	PersistentSessionReviveProcess = 'terminal.integrated.persistentSessionReviveProcess',
  	HideOnStartup = 'terminal.integrated.hideOnStartup',
  	HideOnLastClosed = 'terminal.integrated.hideOnLastClosed',
@@ -23,10 +23,10 @@ index cae49fe2836..55385e2af0d 100644
  	RescaleOverlappingGlyphs = 'terminal.integrated.rescaleOverlappingGlyphs',
  	PersistentSessionScrollback = 'terminal.integrated.persistentSessionScrollback',
 diff --git a/src/vs/workbench/contrib/terminal/browser/xterm/xtermTerminal.ts b/src/vs/workbench/contrib/terminal/browser/xterm/xtermTerminal.ts
-index b043728acf3..b85981af653 100644
+index 34bae81f28e..27c56b8827e 100644
 --- a/src/vs/workbench/contrib/terminal/browser/xterm/xtermTerminal.ts
 +++ b/src/vs/workbench/contrib/terminal/browser/xterm/xtermTerminal.ts
-@@ -845,7 +845,8 @@ export class XtermTerminal extends Disposable implements IXtermTerminal, IDetach
+@@ -861,7 +861,8 @@ export class XtermTerminal extends Disposable implements IXtermTerminal, IDetach
  
  		const Addon = await this._xtermAddonLoader.importAddon('webgl');
  		this._webglAddon = new Addon({
@@ -37,10 +37,10 @@ index b043728acf3..b85981af653 100644
  		try {
  			this.raw.loadAddon(this._webglAddon);
 diff --git a/src/vs/workbench/contrib/terminal/common/terminal.ts b/src/vs/workbench/contrib/terminal/common/terminal.ts
-index f113bb4360b..40babf1028a 100644
+index 41853cd4687..2aa10569f4a 100644
 --- a/src/vs/workbench/contrib/terminal/common/terminal.ts
 +++ b/src/vs/workbench/contrib/terminal/common/terminal.ts
-@@ -216,6 +216,7 @@ export interface ITerminalConfiguration {
+@@ -225,6 +225,7 @@ export interface ITerminalConfiguration {
  		fallbackLigatures: string[];
  	};
  	hideOnLastClosed: boolean;
@@ -49,10 +49,10 @@ index f113bb4360b..40babf1028a 100644
  
  export interface ITerminalFont {
 diff --git a/src/vs/workbench/contrib/terminal/common/terminalConfiguration.ts b/src/vs/workbench/contrib/terminal/common/terminalConfiguration.ts
-index f29bb666064..b2e01dd9f76 100644
+index 081f82e2f1e..e455f0a59e5 100644
 --- a/src/vs/workbench/contrib/terminal/common/terminalConfiguration.ts
 +++ b/src/vs/workbench/contrib/terminal/common/terminalConfiguration.ts
-@@ -569,6 +569,11 @@ const terminalConfiguration: IStringDictionary<IConfigurationPropertySchema> = {
+@@ -574,6 +574,11 @@ const terminalConfiguration: IStringDictionary<IConfigurationPropertySchema> = {
  		type: 'boolean',
  		default: true
  	},

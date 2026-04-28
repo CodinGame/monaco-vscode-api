@@ -204,7 +204,7 @@ index 8a50d421187..6d419172f5d 100644
  	}
  
 diff --git a/src/vs/base/browser/domStylesheets.ts b/src/vs/base/browser/domStylesheets.ts
-index 3da2ba1f9dd..e6434f61cfa 100644
+index 369b16a0e5a..99969bde5a8 100644
 --- a/src/vs/base/browser/domStylesheets.ts
 +++ b/src/vs/base/browser/domStylesheets.ts
 @@ -6,7 +6,7 @@
@@ -728,28 +728,28 @@ index bff3f2cf1b0..3a62a16bdf2 100644
  			if (timeoutDisposables) {
  				dispose(timeoutDisposables);
 diff --git a/src/vs/workbench/contrib/chat/browser/widget/chatContentParts/chatMarkdownContentPart.ts b/src/vs/workbench/contrib/chat/browser/widget/chatContentParts/chatMarkdownContentPart.ts
-index 0478a144675..067d384a177 100644
+index a0e4141bf70..c3c14930f1f 100644
 --- a/src/vs/workbench/contrib/chat/browser/widget/chatContentParts/chatMarkdownContentPart.ts
 +++ b/src/vs/workbench/contrib/chat/browser/widget/chatContentParts/chatMarkdownContentPart.ts
-@@ -15,7 +15,7 @@ import { coalesce } from '../../../../../../base/common/arrays.js';
- import { findLast } from '../../../../../../base/common/arraysFind.js';
+@@ -16,7 +16,7 @@ import { findLast } from '../../../../../../base/common/arraysFind.js';
  import { Codicon } from '../../../../../../base/common/codicons.js';
+ import { MarkdownString } from '../../../../../../base/common/htmlContent.js';
  import { Lazy } from '../../../../../../base/common/lazy.js';
 -import { Disposable, DisposableStore, dispose, IDisposable, MutableDisposable, toDisposable } from '../../../../../../base/common/lifecycle.js';
 +import { Disposable, DisposableStore, dispose, IDisposable, MutableDisposable } from '../../../../../../base/common/lifecycle.js';
  import { Emitter, Event } from '../../../../../../base/common/event.js';
  import { autorun, autorunSelfDisposable, derived } from '../../../../../../base/common/observable.js';
  import { ScrollbarVisibility } from '../../../../../../base/common/scrollable.js';
-@@ -64,6 +64,7 @@ import { IDisposableReference } from './chatCollections.js';
- import { EditorPool } from './chatContentCodePools.js';
+@@ -61,6 +61,7 @@ import { EditorPool } from './chatContentCodePools.js';
  import { IChatContentPart, IChatContentPartRenderContext } from './chatContentParts.js';
  import { ChatExtensionsContentPart } from './chatExtensionsContentPart.js';
+ import { IncrementalDOMMorpher } from './chatIncrementalRendering/chatIncrementalRendering.js';
 +import { DisposableResizeObserver } from '../../../../../../base/browser/dom.js';
  import './media/chatMarkdownPart.css';
  
  const $ = dom.$;
-@@ -358,9 +359,8 @@ export class ChatMarkdownContentPart extends Disposable implements IChatContentP
- 			store.add(markdownDecorationsRenderer.walkTreeAndAnnotateReferenceLinks(markdown, result.element));
+@@ -344,9 +345,8 @@ export class ChatMarkdownContentPart extends Disposable implements IChatContentP
+ 			store.add(markdownDecorationsRenderer.walkTreeAndAnnotateReferenceLinks(this.markdown, result.element));
  
  			const layoutParticipants = new Lazy(() => {
 -				const observer = new ResizeObserver(() => this.mathLayoutParticipants.forEach(layout => layout()));
@@ -760,7 +760,7 @@ index 0478a144675..067d384a177 100644
  			});
  
 diff --git a/src/vs/workbench/contrib/chat/browser/widget/chatContentParts/chatThinkingContentPart.ts b/src/vs/workbench/contrib/chat/browser/widget/chatContentParts/chatThinkingContentPart.ts
-index 91d19062db0..f404d535d8a 100644
+index 05a004c9272..d639c657a80 100644
 --- a/src/vs/workbench/contrib/chat/browser/widget/chatContentParts/chatThinkingContentPart.ts
 +++ b/src/vs/workbench/contrib/chat/browser/widget/chatContentParts/chatThinkingContentPart.ts
 @@ -40,6 +40,7 @@ import { IChatCollapsibleIODataPart } from './chatToolInputOutputContentPart.js'
@@ -771,20 +771,20 @@ index 91d19062db0..f404d535d8a 100644
  
  
  function extractTextFromPart(content: IChatThinkingPart): string {
-@@ -477,7 +478,7 @@ export class ChatThinkingContentPart extends ChatCollapsibleContentPart implemen
+@@ -490,7 +491,7 @@ export class ChatThinkingContentPart extends ChatCollapsibleContentPart implemen
  			this._register(this.scrollableElement.onScroll(e => this.handleScroll(e.scrollTop)));
  
- 			// check for content changes to update scroll dimensions
+ 			let pendingMutationRefresh: IDisposable | undefined;
 -			const mutationObserver = new MutationObserver(() => {
 +			const mutationObserver = new mainWindow.MutationObserver(() => {
- 				if (!this.streamingCompleted && this.domNode.classList.contains('chat-used-context-collapsed')) {
- 					this.syncDimensionsAndScheduleScroll();
+ 				if (pendingMutationRefresh) {
+ 					return;
  				}
 diff --git a/src/vs/workbench/contrib/chat/browser/widget/chatContentParts/toolInvocationParts/chatTerminalToolProgressPart.ts b/src/vs/workbench/contrib/chat/browser/widget/chatContentParts/toolInvocationParts/chatTerminalToolProgressPart.ts
-index 9edbf1f8a9b..c6f638e4929 100644
+index f44c85432e6..a013ea5b8ed 100644
 --- a/src/vs/workbench/contrib/chat/browser/widget/chatContentParts/toolInvocationParts/chatTerminalToolProgressPart.ts
 +++ b/src/vs/workbench/contrib/chat/browser/widget/chatContentParts/toolInvocationParts/chatTerminalToolProgressPart.ts
-@@ -1073,9 +1073,8 @@ class ChatTerminalToolOutputSection extends Disposable {
+@@ -1222,9 +1222,8 @@ class ChatTerminalToolOutputSection extends Disposable {
  		this._register(dom.addDisposableListener(this.domNode, dom.EventType.FOCUS_IN, () => this._onDidFocusEmitter.fire()));
  		this._register(dom.addDisposableListener(this.domNode, dom.EventType.FOCUS_OUT, event => this._onDidBlurEmitter.fire(event)));
  
@@ -817,7 +817,7 @@ index 7f3deff2eda..d6be9167b3b 100644
  		this._resizeObserver.observe(this.container, {
  			attributes: true,
 diff --git a/src/vs/workbench/contrib/languageStatus/browser/languageStatus.ts b/src/vs/workbench/contrib/languageStatus/browser/languageStatus.ts
-index 386bde3c067..3e7063fe231 100644
+index a10887c3d76..0c0c0094538 100644
 --- a/src/vs/workbench/contrib/languageStatus/browser/languageStatus.ts
 +++ b/src/vs/workbench/contrib/languageStatus/browser/languageStatus.ts
 @@ -33,6 +33,7 @@ import { IEditorGroupsService, IEditorPart } from '../../../services/editor/comm
@@ -912,10 +912,10 @@ index eb0a9ffbc42..b6a71a21ce4 100644
  			try {
  				const url = new URL(item.name);
 diff --git a/src/vs/workbench/contrib/remote/browser/remoteIndicator.ts b/src/vs/workbench/contrib/remote/browser/remoteIndicator.ts
-index 04ee77ccc8d..9caeb1dfb81 100644
+index 65d90cfd184..fe64e68bad4 100644
 --- a/src/vs/workbench/contrib/remote/browser/remoteIndicator.ts
 +++ b/src/vs/workbench/contrib/remote/browser/remoteIndicator.ts
-@@ -300,7 +300,7 @@ export class RemoteStatusIndicator extends Disposable implements IWorkbenchContr
+@@ -301,7 +301,7 @@ export class RemoteStatusIndicator extends Disposable implements IWorkbenchContr
  			this._register(Event.any(
  				this._register(new DomEmitter(mainWindow, 'online')).event,
  				this._register(new DomEmitter(mainWindow, 'offline')).event
@@ -1017,10 +1017,10 @@ index b6895fbf5d8..c59cb859b56 100644
  
  		const protocol: IMessagePassingProtocol = {
 diff --git a/src/vs/workbench/services/host/browser/browserHostService.ts b/src/vs/workbench/services/host/browser/browserHostService.ts
-index be7c5137c53..1cb50e596b8 100644
+index db26674d342..914f1eb51e9 100644
 --- a/src/vs/workbench/services/host/browser/browserHostService.ts
 +++ b/src/vs/workbench/services/host/browser/browserHostService.ts
-@@ -679,7 +679,7 @@ export class BrowserHostService extends Disposable implements IHostService {
+@@ -683,7 +683,7 @@ export class BrowserHostService extends Disposable implements IHostService {
  		let stream: MediaStream | undefined;
  		try {
  			// Create a stream from the screen source (capture screen without audio)
