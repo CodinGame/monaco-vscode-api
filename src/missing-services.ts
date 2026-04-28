@@ -7077,6 +7077,7 @@ registerSingleton(IPluginGitService, PluginGitService, InstantiationType.Delayed
 class AgentNetworkFilterService implements IAgentNetworkFilterService {
   _serviceBrand: undefined
   isUriAllowed: IAgentNetworkFilterService['isUriAllowed'] = () => false
+  @Unsupported
   formatError: IAgentNetworkFilterService['formatError'] = unsupported
   onDidChange: IAgentNetworkFilterService['onDidChange'] = Event.None
 }
@@ -7088,8 +7089,11 @@ class AgentHostTerminalService implements IAgentHostTerminalService {
   profiles: IAgentHostTerminalService['profiles'] = constObservable([])
   getProfileForConnection: IAgentHostTerminalService['getProfileForConnection'] = () => undefined
   registerEntry: IAgentHostTerminalService['registerEntry'] = () => Disposable.None
+  @Unsupported
   createTerminal: IAgentHostTerminalService['createTerminal'] = unsupported
+  @Unsupported
   createTerminalForEntry: IAgentHostTerminalService['createTerminalForEntry'] = unsupported
+  @Unsupported
   reviveTerminal: IAgentHostTerminalService['reviveTerminal'] = unsupported
   setDefaultCwd: IAgentHostTerminalService['setDefaultCwd'] = () => {}
 }
@@ -7101,6 +7105,7 @@ class OnboardingService implements IOnboardingService {
 
   onDidDismiss: IOnboardingService['onDidDismiss'] = Event.None
 
+  @Unsupported
   show: IOnboardingService['show'] = unsupported
 }
 
