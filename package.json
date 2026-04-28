@@ -15,7 +15,7 @@
   },
   "type": "module",
   "scripts": {
-    "build": "npm run clean && npm run lint && npm run compile && npm run compile-rollup-plugins && npm run compile-default-extensions && npm run compile-language-packs && npm run compile-monaco-languages",
+    "build": "npm run clean && npm run lint && npm run check-unsupported-decorator && npm run compile && npm run compile-rollup-plugins && npm run compile-default-extensions && npm run compile-language-packs && npm run compile-monaco-languages",
     "compile": "NODE_OPTIONS=--max_old_space_size=16384 rollup --config rollup/rollup.config.ts --configPlugin 'typescript={tsconfig: `tsconfig.rollup-config.json`}' --vscode-version ${npm_package_config_vscode_version} --vscode-ref ${npm_package_config_vscode_ref} --vscode-commit ${npm_package_config_vscode_commit}",
     "compile-default-extensions": "NODE_OPTIONS=--max_old_space_size=16384 rollup --config rollup/rollup.default-extensions.ts --configPlugin 'typescript={tsconfig: `tsconfig.rollup-config-default-extensions.json`}'",
     "compile-language-packs": "NODE_OPTIONS=--max_old_space_size=16384 rollup --config rollup/rollup.language-packs.ts --configPlugin 'typescript={tsconfig: `tsconfig.rollup-config-language-packs.json`}'",
@@ -26,7 +26,8 @@
     "lint": "eslint '{src/**/*.ts,rollup/*.ts,*.ts}'",
     "update-vscode-dependencies": "tsx scripts/update-vscode-dependencies.ts",
     "release": "tsx release.ts",
-    "reset:repo": "git clean -f -X -d"
+    "reset:repo": "git clean -f -X -d",
+    "check-unsupported-decorator": "tsx scripts/check-unsupported-decorator.ts"
   },
   "config": {
     "vscode": {
@@ -80,6 +81,7 @@
     "rollup-plugin-copy": "^3.5.0",
     "rollup-plugin-dts": "^6.4.1",
     "semantic-release": "25.0.3",
+    "ts-morph": "^28.0.0",
     "tsx": "^4.21.0",
     "type-fest": "^5.5.0",
     "typescript": "^5.9.3",
