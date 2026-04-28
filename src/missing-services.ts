@@ -2066,11 +2066,8 @@ class ExtensionsScannerService implements IExtensionsScannerService {
     return unsupported()
   }
   onDidChangeCache: IExtensionsScannerService['onDidChangeCache'] = Event.None
-  @Unsupported
   scanAllExtensions: IExtensionsScannerService['scanAllExtensions'] = async () => []
-  @Unsupported
   scanSystemExtensions: IExtensionsScannerService['scanSystemExtensions'] = async () => []
-  @Unsupported
   scanUserExtensions: IExtensionsScannerService['scanUserExtensions'] = async () => []
   @Unsupported
   scanExtensionsUnderDevelopment: IExtensionsScannerService['scanExtensionsUnderDevelopment'] =
@@ -2725,7 +2722,6 @@ class TerminalService implements ITerminalService {
   createTerminal: ITerminalService['createTerminal'] = unsupported
   @Unsupported
   getInstanceFromId: ITerminalService['getInstanceFromId'] = unsupported
-  @Unsupported
   getReconnectedTerminals: ITerminalService['getReconnectedTerminals'] = () => undefined
   @Unsupported
   getActiveOrCreateInstance: ITerminalService['getActiveOrCreateInstance'] = unsupported
@@ -4100,7 +4096,6 @@ class AuthenticationService implements IAuthenticationService {
   getProviderIds: IAuthenticationService['getProviderIds'] = () => []
   @Unsupported
   getProvider: IAuthenticationService['getProvider'] = unsupported
-  @Unsupported
   getSessions: IAuthenticationService['getSessions'] = async () => []
   @Unsupported
   createSession: IAuthenticationService['createSession'] = unsupported
@@ -5669,7 +5664,6 @@ class McpRegistry implements IMcpRegistry {
   }
   @Unsupported
   setSavedInput: IMcpRegistry['setSavedInput'] = unsupported
-  @Unsupported
   getServerDefinition: IMcpRegistry['getServerDefinition'] = () =>
     constObservable({
       server: undefined,
@@ -5740,7 +5734,6 @@ class NullDefaultAccountService extends Disposable implements IDefaultAccountSer
   @Unsupported
   getDefaultAccountAuthenticationProvider: IDefaultAccountService['getDefaultAccountAuthenticationProvider'] =
     unsupported
-  @Unsupported
   setDefaultAccountProvider: IDefaultAccountService['setDefaultAccountProvider'] = () => {}
   refresh: IDefaultAccountService['refresh'] = async () => null
   @Unsupported
@@ -6946,6 +6939,7 @@ registerSingleton(IInlineChatHistoryService, InlineChatHistoryService, Instantia
 class BrowserViewWorkbenchService implements IBrowserViewWorkbenchService {
   _serviceBrand: undefined
 
+  @Unsupported
   getOrCreateBrowserViewModel: IBrowserViewWorkbenchService['getOrCreateBrowserViewModel'] =
     unsupported
   @Unsupported
