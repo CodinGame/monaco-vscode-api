@@ -451,7 +451,8 @@ export const commonServices: IEditorOverrideServices = {
         can_signup_for_limited: false,
         copilot_plan: 'enterprise',
         organization_login_list: [],
-        analytics_tracking_id: 'unused'
+        analytics_tracking_id: 'unused',
+        chat_enabled: true
       },
       accountName: 'unused',
       authenticationProvider: {
