@@ -10,10 +10,10 @@ Subject: [PATCH] refactor: split code to be able to import only required part
  3 files changed, 236 insertions(+), 207 deletions(-)
 
 diff --git a/src/vs/platform/extensionManagement/common/extensionsScannerService.ts b/src/vs/platform/extensionManagement/common/extensionsScannerService.ts
-index 37eac451a86..c6d27314835 100644
+index f0d9860b091..4902b531103 100644
 --- a/src/vs/platform/extensionManagement/common/extensionsScannerService.ts
 +++ b/src/vs/platform/extensionManagement/common/extensionsScannerService.ts
-@@ -553,26 +553,172 @@ export class ExtensionScannerInput {
+@@ -578,14 +578,160 @@ export class ExtensionScannerInput {
  	}
  }
  
@@ -175,7 +175,8 @@ index 37eac451a86..c6d27314835 100644
 +class ExtensionsScanner extends ExtensionManifestTranslator {
  
  	private readonly extensionsEnabledWithApiProposalVersion: string[];
- 
+ 	private readonly productQuality: string | undefined;
+@@ -594,12 +740,12 @@ class ExtensionsScanner extends Disposable {
  	constructor(
  		@IExtensionsProfileScannerService protected readonly extensionsProfileScannerService: IExtensionsProfileScannerService,
  		@IUriIdentityService protected readonly uriIdentityService: IUriIdentityService,
@@ -189,9 +190,9 @@ index 37eac451a86..c6d27314835 100644
 -		super();
 +		super(fileService, logService);
  		this.extensionsEnabledWithApiProposalVersion = productService.extensionsEnabledWithApiProposalVersion?.map(id => id.toLowerCase()) ?? [];
- 	}
- 
-@@ -768,144 +914,6 @@ class ExtensionsScanner extends Disposable {
+ 		this.productQuality = productService.quality;
+ 		this.productBuiltInExtensionsEnabledWithAutoUpdates = getProductBuiltInExtensionsEnabledWithAutoUpdates(productService, environmentService);
+@@ -798,144 +944,6 @@ class ExtensionsScanner extends Disposable {
  		}
  		return manifest;
  	}

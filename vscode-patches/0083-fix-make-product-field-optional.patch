@@ -12,13 +12,14 @@ Subject: [PATCH] fix: make product field optional
  .../contrib/chat/browser/widget/chatWidget.ts |  4 ++--
  .../browser/extensionsWorkbenchService.ts     |  2 +-
  .../accounts/browser/defaultAccount.ts        | 17 ++++++++++----
- 8 files changed, 32 insertions(+), 21 deletions(-)
+ .../browser/extensionEnablementService.ts     |  2 +-
+ 9 files changed, 33 insertions(+), 22 deletions(-)
 
 diff --git a/src/vs/base/common/product.ts b/src/vs/base/common/product.ts
-index 126b180fa35..5545e3fa378 100644
+index a352bdd7d61..1b188b19dfd 100644
 --- a/src/vs/base/common/product.ts
 +++ b/src/vs/base/common/product.ts
-@@ -223,7 +223,7 @@ export interface IProductConfiguration {
+@@ -228,7 +228,7 @@ export interface IProductConfiguration {
  	readonly commonlyUsedSettings?: string[];
  	readonly aiGeneratedWorkspaceTrust?: IAiGeneratedWorkspaceTrust;
  
@@ -28,10 +29,10 @@ index 126b180fa35..5545e3fa378 100644
  	readonly chatSessionRecommendations?: IChatSessionRecommendation[];
  	readonly emergencyAlertUrl?: string;
 diff --git a/src/vs/platform/extensionManagement/common/abstractExtensionManagementService.ts b/src/vs/platform/extensionManagement/common/abstractExtensionManagementService.ts
-index 426df59122b..f1a20d14d0e 100644
+index 04763c87d10..02b4ca69fb9 100644
 --- a/src/vs/platform/extensionManagement/common/abstractExtensionManagementService.ts
 +++ b/src/vs/platform/extensionManagement/common/abstractExtensionManagementService.ts
-@@ -948,7 +948,7 @@ export abstract class AbstractExtensionManagementService extends CommontExtensio
+@@ -953,7 +953,7 @@ export abstract class AbstractExtensionManagementService extends CommontExtensio
  		if (checked.indexOf(extension) !== -1) {
  			return [];
  		}
@@ -41,10 +42,10 @@ index 426df59122b..f1a20d14d0e 100644
  		}
  		checked.push(extension);
 diff --git a/src/vs/platform/extensionManagement/common/extensionGalleryService.ts b/src/vs/platform/extensionManagement/common/extensionGalleryService.ts
-index 379350a5703..e73de9ee340 100644
+index 72bfdb17b0f..56d5a9440b6 100644
 --- a/src/vs/platform/extensionManagement/common/extensionGalleryService.ts
 +++ b/src/vs/platform/extensionManagement/common/extensionGalleryService.ts
-@@ -1163,7 +1163,7 @@ export abstract class AbstractExtensionGalleryService implements IExtensionGalle
+@@ -1173,7 +1173,7 @@ export abstract class AbstractExtensionGalleryService implements IExtensionGalle
  			for (let index = 0; index < extensions.length; index++) {
  				const extension = extensions[index];
  				setTelemetry(extension, ((query.pageNumber - 1) * query.pageSize) + index, options.source);
@@ -53,7 +54,7 @@ index 379350a5703..e73de9ee340 100644
  					defaultChatAgentExtension = extension;
  				} else {
  					result.push(extension);
-@@ -1995,15 +1995,17 @@ export abstract class AbstractExtensionGalleryService implements IExtensionGalle
+@@ -2005,15 +2005,17 @@ export abstract class AbstractExtensionGalleryService implements IExtensionGalle
  			}
  		}
  
@@ -81,12 +82,12 @@ index 379350a5703..e73de9ee340 100644
  		return { malicious, deprecated, search, autoUpdate };
  	}
 diff --git a/src/vs/workbench/contrib/chat/browser/chatStatus/chatStatusDashboard.ts b/src/vs/workbench/contrib/chat/browser/chatStatus/chatStatusDashboard.ts
-index 063a9f3031d..baba6ffe860 100644
+index e30045006ea..2d055f587cb 100644
 --- a/src/vs/workbench/contrib/chat/browser/chatStatus/chatStatusDashboard.ts
 +++ b/src/vs/workbench/contrib/chat/browser/chatStatus/chatStatusDashboard.ts
-@@ -50,7 +50,7 @@ import { ChatViewId } from '../chat.js';
+@@ -46,7 +46,7 @@ import { contrastBorder, inputValidationErrorBorder, inputValidationInfoBorder,
+ import { Color } from '../../../../../base/common/color.js';
  import { isCompletionsEnabled } from '../../../../../editor/common/services/completionsEnablement.js';
- import { AgentSessionProviders } from '../agentSessions/agentSessions.js';
  
 -const defaultChat = product.defaultChatAgent;
 +const defaultChat = product.defaultChatAgent!;
@@ -94,7 +95,7 @@ index 063a9f3031d..baba6ffe860 100644
  interface ISettingsAccessor {
  	readSetting: () => boolean;
 diff --git a/src/vs/workbench/contrib/chat/browser/chatStatus/chatStatusEntry.ts b/src/vs/workbench/contrib/chat/browser/chatStatus/chatStatusEntry.ts
-index 38ce308a1a1..b9300388209 100644
+index bbce59557f4..26215efaa16 100644
 --- a/src/vs/workbench/contrib/chat/browser/chatStatus/chatStatusEntry.ts
 +++ b/src/vs/workbench/contrib/chat/browser/chatStatus/chatStatusEntry.ts
 @@ -85,7 +85,7 @@ export class ChatStatusBarEntry extends Disposable implements IWorkbenchContribu
@@ -107,13 +108,13 @@ index 38ce308a1a1..b9300388209 100644
  			}
  		}));
 diff --git a/src/vs/workbench/contrib/chat/browser/widget/chatWidget.ts b/src/vs/workbench/contrib/chat/browser/widget/chatWidget.ts
-index 3541e271f7f..163f7969b4b 100644
+index 45b41f17db2..da2e2a23aa6 100644
 --- a/src/vs/workbench/contrib/chat/browser/widget/chatWidget.ts
 +++ b/src/vs/workbench/contrib/chat/browser/widget/chatWidget.ts
-@@ -1007,8 +1007,8 @@ export class ChatWidget extends Disposable implements IChatWidget {
+@@ -1013,8 +1013,8 @@ export class ChatWidget extends Disposable implements IChatWidget {
  				const defaultAgent = this.chatAgentService.getDefaultAgent(this.location, this.input.currentModeKind);
  				let additionalMessage: string | IMarkdownString | undefined;
- 				if (this.chatEntitlementService.anonymous && !this.chatEntitlementService.sentiment.installed) {
+ 				if (this.chatEntitlementService.anonymous && !this.chatEntitlementService.sentiment.completed) {
 -					const providers = product.defaultChatAgent.provider;
 -					additionalMessage = new MarkdownString(localize({ key: 'settings', comment: ['{Locked="]({2})"}', '{Locked="]({3})"}'] }, "By continuing with {0} Copilot, you agree to {1}'s [Terms]({2}) and [Privacy Statement]({3}).", providers.default.name, providers.default.name, product.defaultChatAgent.termsStatementUrl, product.defaultChatAgent.privacyStatementUrl), { isTrusted: true });
 +					const providers = product.defaultChatAgent!.provider;
@@ -122,10 +123,10 @@ index 3541e271f7f..163f7969b4b 100644
  					additionalMessage = defaultAgent?.metadata.additionalWelcomeMessage;
  				}
 diff --git a/src/vs/workbench/contrib/extensions/browser/extensionsWorkbenchService.ts b/src/vs/workbench/contrib/extensions/browser/extensionsWorkbenchService.ts
-index cc2445e006f..c61c32ec51d 100644
+index 918558ce6e2..2f65adc82b9 100644
 --- a/src/vs/workbench/contrib/extensions/browser/extensionsWorkbenchService.ts
 +++ b/src/vs/workbench/contrib/extensions/browser/extensionsWorkbenchService.ts
-@@ -2752,7 +2752,7 @@ export class ExtensionsWorkbenchService extends Disposable implements IExtension
+@@ -2770,7 +2770,7 @@ export class ExtensionsWorkbenchService extends Disposable implements IExtension
  		}
  
  		const extensionsToUninstall: UninstallExtensionInfo[] = [{ extension: extension.local }];
@@ -135,7 +136,7 @@ index cc2445e006f..c61c32ec51d 100644
  				if (packExtension.local && !extensionsToUninstall.some(e => areSameExtensions(e.extension.identifier, packExtension.identifier))) {
  					extensionsToUninstall.push({ extension: packExtension.local });
 diff --git a/src/vs/workbench/services/accounts/browser/defaultAccount.ts b/src/vs/workbench/services/accounts/browser/defaultAccount.ts
-index 2992998a9c3..8cf41cd5aee 100644
+index 20eb5b46b5c..7cfccc5a260 100644
 --- a/src/vs/workbench/services/accounts/browser/defaultAccount.ts
 +++ b/src/vs/workbench/services/accounts/browser/defaultAccount.ts
 @@ -128,14 +128,16 @@ export class DefaultAccountService extends Disposable implements IDefaultAccount
@@ -168,7 +169,7 @@ index 2992998a9c3..8cf41cd5aee 100644
  		return {
  			...this.defaultAccountConfig.authenticationProvider.default,
  			enterprise: false
-@@ -912,8 +918,11 @@ class DefaultAccountProviderContribution extends Disposable implements IWorkbenc
+@@ -922,8 +928,11 @@ class DefaultAccountProviderContribution extends Disposable implements IWorkbenc
  		@IDefaultAccountService defaultAccountService: IDefaultAccountService,
  	) {
  		super();
@@ -182,3 +183,16 @@ index 2992998a9c3..8cf41cd5aee 100644
  	}
  }
  
+diff --git a/src/vs/workbench/services/extensionManagement/browser/extensionEnablementService.ts b/src/vs/workbench/services/extensionManagement/browser/extensionEnablementService.ts
+index be4e0b92675..30055bd6878 100644
+--- a/src/vs/workbench/services/extensionManagement/browser/extensionEnablementService.ts
++++ b/src/vs/workbench/services/extensionManagement/browser/extensionEnablementService.ts
+@@ -136,7 +136,7 @@ export class ExtensionEnablementService extends Disposable implements IWorkbench
+ 			});
+ 		}
+ 
+-		if (!this.environmentService.isSessionsWindow && !this.environmentService.skipBuiltinExtensions?.some(id => id.toLowerCase() === this._chatExtensionId)) {
++		if (this._chatExtensionId && !this.environmentService.isSessionsWindow && !this.environmentService.skipBuiltinExtensions?.some(id => id.toLowerCase() === this._chatExtensionId)) {
+ 			const builtinChatExtensionEnablementMigrationKey = 'builtinChatExtensionEnablementMigration';
+ 			const builtinChatExtensionEnablementMigration = this.storageService.getBoolean(builtinChatExtensionEnablementMigrationKey, StorageScope.PROFILE) === true;
+ 			if (!builtinChatExtensionEnablementMigration) {

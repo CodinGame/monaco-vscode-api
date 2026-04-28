@@ -4,30 +4,35 @@ Date: Tue, 10 Jun 2025 19:02:16 +0200
 Subject: [PATCH] feat: add a context key to enable further customization
 
 ---
- .../browser/actions/windowActions.ts          | 15 ++++++----
+ .../browser/actions/windowActions.ts          | 15 +++++-----
  src/vs/workbench/browser/contextkeys.ts       | 29 ++++++++++---------
  src/vs/workbench/common/contextkeys.ts        |  2 ++
  .../files/browser/fileActions.contribution.ts |  6 ++--
- 4 files changed, 31 insertions(+), 21 deletions(-)
+ 4 files changed, 29 insertions(+), 23 deletions(-)
 
 diff --git a/src/vs/workbench/browser/actions/windowActions.ts b/src/vs/workbench/browser/actions/windowActions.ts
-index 9e9423f8e4e..8d78e287842 100644
+index 26002cd9e98..8bdcde75a99 100644
 --- a/src/vs/workbench/browser/actions/windowActions.ts
 +++ b/src/vs/workbench/browser/actions/windowActions.ts
 @@ -8,7 +8,7 @@ import { IWindowOpenable } from '../../../platform/window/common/window.js';
  import { IDialogService } from '../../../platform/dialogs/common/dialogs.js';
  import { MenuRegistry, MenuId, Action2, registerAction2 } from '../../../platform/actions/common/actions.js';
  import { KeyChord, KeyCode, KeyMod } from '../../../base/common/keyCodes.js';
--import { IsMainWindowFullscreenContext } from '../../common/contextkeys.js';
-+import { IsMainWindowFullscreenContext, IsSandboxWorkspaceContext } from '../../common/contextkeys.js';
+-import { IsMainWindowFullscreenContext, IsSessionsWindowContext } from '../../common/contextkeys.js';
++import { IsMainWindowFullscreenContext, IsSessionsWindowContext, IsSandboxWorkspaceContext } from '../../common/contextkeys.js';
  import { IsMacNativeContext, IsDevelopmentContext, IsWebContext, IsIOSContext } from '../../../platform/contextkey/common/contextkeys.js';
  import { Categories } from '../../../platform/action/common/actionCommonCategories.js';
  import { KeybindingsRegistry, KeybindingWeight } from '../../../platform/keybinding/common/keybindingsRegistry.js';
-@@ -295,10 +295,12 @@ export class OpenRecentAction extends BaseOpenRecentAction {
- 				primary: KeyMod.CtrlCmd | KeyCode.KeyR,
- 				mac: { primary: KeyMod.WinCtrl | KeyCode.KeyR }
+@@ -290,7 +290,7 @@ export class OpenRecentAction extends BaseOpenRecentAction {
  			},
-+			precondition: IsSandboxWorkspaceContext.toNegated(),
+ 			category: Categories.File,
+ 			f1: true,
+-			precondition: IsSessionsWindowContext.negate(),
++			precondition: ContextKeyExpr.and(IsSessionsWindowContext.negate(), IsSandboxWorkspaceContext.toNegated()),
+ 			keybinding: {
+ 				weight: KeybindingWeight.WorkbenchContrib,
+ 				primary: KeyMod.CtrlCmd | KeyCode.KeyR,
+@@ -299,7 +299,8 @@ export class OpenRecentAction extends BaseOpenRecentAction {
  			menu: {
  				id: MenuId.MenubarRecentMenu,
  				group: 'y_more',
@@ -37,21 +42,25 @@ index 9e9423f8e4e..8d78e287842 100644
  			}
  		});
  	}
-@@ -426,10 +428,12 @@ class NewWindowAction extends Action2 {
- 				primary: isWeb ? (isWindows ? KeyChord(KeyMod.CtrlCmd | KeyCode.KeyK, KeyMod.Shift | KeyCode.KeyN) : KeyMod.CtrlCmd | KeyMod.Alt | KeyMod.Shift | KeyCode.KeyN) : KeyMod.CtrlCmd | KeyMod.Shift | KeyCode.KeyN,
- 				secondary: isWeb ? [KeyMod.CtrlCmd | KeyMod.Shift | KeyCode.KeyN] : undefined
+@@ -422,7 +423,7 @@ class NewWindowAction extends Action2 {
+ 				mnemonicTitle: localize({ key: 'miNewWindow', comment: ['&& denotes a mnemonic'] }, "New &&Window"),
  			},
-+			precondition: IsSandboxWorkspaceContext.toNegated(),
- 			menu: {
+ 			f1: true,
+-			precondition: IsSessionsWindowContext.negate(),
++			precondition: ContextKeyExpr.and(IsSessionsWindowContext.negate(), IsSandboxWorkspaceContext.toNegated()),
+ 			keybinding: {
+ 				weight: KeybindingWeight.WorkbenchContrib,
+ 				primary: isWeb ? (isWindows ? KeyChord(KeyMod.CtrlCmd | KeyCode.KeyK, KeyMod.Shift | KeyCode.KeyN) : KeyMod.CtrlCmd | KeyMod.Alt | KeyMod.Shift | KeyCode.KeyN) : KeyMod.CtrlCmd | KeyMod.Shift | KeyCode.KeyN,
+@@ -432,7 +433,7 @@ class NewWindowAction extends Action2 {
  				id: MenuId.MenubarFileMenu,
  				group: '1_new',
--				order: 3
-+				order: 3,
-+				when: IsSandboxWorkspaceContext.toNegated()
+ 				order: 3,
+-				when: IsSessionsWindowContext.negate()
++				when: ContextKeyExpr.and(IsSessionsWindowContext.negate(), IsSandboxWorkspaceContext.toNegated())
  			}
  		});
  	}
-@@ -509,12 +513,13 @@ MenuRegistry.appendMenuItem(MenuId.MenubarFileMenu, {
+@@ -512,7 +513,7 @@ MenuRegistry.appendMenuItem(MenuId.MenubarFileMenu, {
  		toggled: ContextKeyExpr.notEquals('config.window.confirmBeforeClose', 'never')
  	},
  	order: 1,
@@ -60,12 +69,12 @@ index 9e9423f8e4e..8d78e287842 100644
  });
  
  MenuRegistry.appendMenuItem(MenuId.MenubarFileMenu, {
- 	title: localize({ key: 'miOpenRecent', comment: ['&& denotes a mnemonic'] }, "Open &&Recent"),
+@@ -520,5 +521,5 @@ MenuRegistry.appendMenuItem(MenuId.MenubarFileMenu, {
  	submenu: MenuId.MenubarRecentMenu,
  	group: '2_open',
--	order: 4
-+	order: 4,
-+	when: IsSandboxWorkspaceContext.toNegated()
+ 	order: 4,
+-	when: IsSessionsWindowContext.negate()
++	when: ContextKeyExpr.and(IsSessionsWindowContext.negate(), IsSandboxWorkspaceContext.toNegated())
  });
 diff --git a/src/vs/workbench/browser/contextkeys.ts b/src/vs/workbench/browser/contextkeys.ts
 index 678a225f1df..ac1f028bc30 100644
@@ -121,7 +130,7 @@ index 678a225f1df..ac1f028bc30 100644
  	}
  
 diff --git a/src/vs/workbench/common/contextkeys.ts b/src/vs/workbench/common/contextkeys.ts
-index c0348746b6e..e496a40f886 100644
+index 73e207b85d3..c195236bcd3 100644
 --- a/src/vs/workbench/common/contextkeys.ts
 +++ b/src/vs/workbench/common/contextkeys.ts
 @@ -41,6 +41,8 @@ export const EmbedderIdentifierContext = new RawContextKey<string | undefined>('

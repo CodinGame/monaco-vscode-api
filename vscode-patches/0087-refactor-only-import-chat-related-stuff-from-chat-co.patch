@@ -10,10 +10,10 @@ Subject: [PATCH] refactor: only import chat-related stuff from chat
  2 files changed, 1 insertion(+), 1 deletion(-)
 
 diff --git a/src/vs/workbench/contrib/chat/browser/chat.contribution.ts b/src/vs/workbench/contrib/chat/browser/chat.contribution.ts
-index 045810171de..def6b3ce74e 100644
+index e76d44b8645..d744199b8bf 100644
 --- a/src/vs/workbench/contrib/chat/browser/chat.contribution.ts
 +++ b/src/vs/workbench/contrib/chat/browser/chat.contribution.ts
-@@ -177,6 +177,7 @@ import { ChatQueuePickerRendering } from './widget/input/chatQueuePickerActionIt
+@@ -183,6 +183,7 @@ import { ChatQueuePickerRendering } from './widget/input/chatQueuePickerActionIt
  import { ExploreAgentDefaultModel } from './exploreAgentDefaultModel.js';
  import { PlanAgentDefaultModel } from './planAgentDefaultModel.js';
  import { ChatImageCarouselService, IChatImageCarouselService } from './chatImageCarouselService.js';

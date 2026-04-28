@@ -12,6 +12,7 @@ import type {
   IQuickTree,
   IQuickTreeItem,
   IQuickWidget,
+  QuickInputAlignment,
   QuickPickInput
 } from 'vs/platform/quickinput/common/quickInput'
 import { CancellationToken } from 'vs/base/common/cancellation'
@@ -35,6 +36,7 @@ import 'vs/workbench/contrib/url/browser/url.contribution'
 // required for the workbench.commandPalette.preserveInput config key
 import 'vs/workbench/browser/workbench.contribution'
 import type { ICodeEditor } from 'vs/editor/browser/editorBrowser'
+import type { IObservable } from 'vs/base/common/observableInternal'
 
 let isKeybindingConfigurationVisible = () => {
   return false
@@ -88,6 +90,10 @@ class DelegateQuickInputService implements IQuickInputService {
       StandaloneQuickInputService
     )
     return this.standaloneQuickInputService
+  }
+
+  get alignment(): IObservable<QuickInputAlignment> {
+    return this.activeService.alignment
   }
 
   get currentQuickInput(): IQuickInput | undefined {

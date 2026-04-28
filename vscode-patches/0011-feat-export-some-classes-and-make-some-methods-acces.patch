@@ -17,6 +17,7 @@ Subject: [PATCH] feat: export some classes and make some methods accessible
  .../api/browser/statusBarExtensionPoint.ts         |  2 +-
  src/vs/workbench/browser/layout.ts                 | 10 +++++-----
  src/vs/workbench/browser/workbench.ts              | 14 +++++++-------
+ .../agentHostSessionWorkingDirectoryResolver.ts    |  2 +-
  .../aiCustomizationWorkspaceService.ts             |  2 +-
  .../aiCustomization/customizationHarnessService.ts |  2 +-
  .../browser/chatStatus/chatStatusItemService.ts    |  2 +-
@@ -24,6 +25,7 @@ Subject: [PATCH] feat: export some classes and make some methods accessible
  .../debug/browser/extensionHostDebugService.ts     |  2 +-
  .../browser/renameSymbolTrackerService.ts          |  2 +-
  .../contrib/issue/browser/issueTroubleshoot.ts     |  6 +++---
+ .../agentHost/common/agentHostFileSystemService.ts |  2 +-
  .../dialogs/browser/abstractFileDialogService.ts   |  2 +-
  .../services/dialogs/browser/fileDialogService.ts  |  4 ++--
  .../extensionManagement/browser/extensionBisect.ts |  2 +-
@@ -44,7 +46,7 @@ Subject: [PATCH] feat: export some classes and make some methods accessible
  .../terminal/common/embedderTerminalService.ts     |  2 +-
  .../common/remoteUserDataProfiles.ts               |  2 +-
  .../userDataSync/common/userDataSyncUtil.ts        |  2 +-
- 40 files changed, 69 insertions(+), 65 deletions(-)
+ 42 files changed, 71 insertions(+), 67 deletions(-)
 
 diff --git a/src/vs/editor/contrib/editorState/browser/keybindingCancellation.ts b/src/vs/editor/contrib/editorState/browser/keybindingCancellation.ts
 index 94020ce96b9..de1e9af237e 100644
@@ -134,7 +136,7 @@ index c578441baa9..7b5909d6fac 100644
  export namespace PeekContext {
  	export const inPeekEditor = new RawContextKey<boolean>('inReferenceSearchEditor', true, nls.localize('inReferenceSearchEditor', "Whether the current code editor is embedded inside peek"));
 diff --git a/src/vs/platform/actionWidget/browser/actionWidget.ts b/src/vs/platform/actionWidget/browser/actionWidget.ts
-index 32af92b7733..cdbc998e353 100644
+index 1667d5a604b..567bd2c6045 100644
 --- a/src/vs/platform/actionWidget/browser/actionWidget.ts
 +++ b/src/vs/platform/actionWidget/browser/actionWidget.ts
 @@ -44,7 +44,7 @@ export interface IActionWidgetService {
@@ -324,8 +326,21 @@ index 10e2c3edace..91ba0f472a6 100644
  
  		// Ask each part to restore
  		try {
+diff --git a/src/vs/workbench/contrib/chat/browser/agentSessions/agentHost/agentHostSessionWorkingDirectoryResolver.ts b/src/vs/workbench/contrib/chat/browser/agentSessions/agentHost/agentHostSessionWorkingDirectoryResolver.ts
+index be02d0290f5..c6ff7a00ab8 100644
+--- a/src/vs/workbench/contrib/chat/browser/agentSessions/agentHost/agentHostSessionWorkingDirectoryResolver.ts
++++ b/src/vs/workbench/contrib/chat/browser/agentSessions/agentHost/agentHostSessionWorkingDirectoryResolver.ts
+@@ -16,7 +16,7 @@ export interface IAgentHostSessionWorkingDirectoryResolver {
+ 	resolve(sessionResource: URI): URI | undefined;
+ }
+ 
+-class AgentHostSessionWorkingDirectoryResolver implements IAgentHostSessionWorkingDirectoryResolver {
++export class AgentHostSessionWorkingDirectoryResolver implements IAgentHostSessionWorkingDirectoryResolver {
+ 	declare readonly _serviceBrand: undefined;
+ 
+ 	private readonly _resolvers = new Map<string, (sessionResource: URI) => URI | undefined>();
 diff --git a/src/vs/workbench/contrib/chat/browser/aiCustomization/aiCustomizationWorkspaceService.ts b/src/vs/workbench/contrib/chat/browser/aiCustomization/aiCustomizationWorkspaceService.ts
-index a4e399195b0..93d327029c3 100644
+index 4b0c29c92a8..fd065bcab61 100644
 --- a/src/vs/workbench/contrib/chat/browser/aiCustomization/aiCustomizationWorkspaceService.ts
 +++ b/src/vs/workbench/contrib/chat/browser/aiCustomization/aiCustomizationWorkspaceService.ts
 @@ -21,7 +21,7 @@ import {
@@ -338,18 +353,18 @@ index a4e399195b0..93d327029c3 100644
  
  	readonly activeProjectRoot: IObservable<URI | undefined>;
 diff --git a/src/vs/workbench/contrib/chat/browser/aiCustomization/customizationHarnessService.ts b/src/vs/workbench/contrib/chat/browser/aiCustomization/customizationHarnessService.ts
-index 417546fdca2..69c257220b5 100644
+index 198a8c52c6f..94ee6711395 100644
 --- a/src/vs/workbench/contrib/chat/browser/aiCustomization/customizationHarnessService.ts
 +++ b/src/vs/workbench/contrib/chat/browser/aiCustomization/customizationHarnessService.ts
-@@ -23,7 +23,7 @@ import { IPathService } from '../../../../services/path/common/pathService.js';
-  * Core implementation of the customization harness service.
-  * Exposes VS Code, CLI, and Claude harnesses for filtering customizations.
+@@ -19,7 +19,7 @@ import { BUILTIN_STORAGE } from '../../common/aiCustomizationWorkspaceService.js
+  * Only the Local harness is registered statically. All other harnesses
+  * (e.g. Copilot CLI) are contributed by extensions via the provider API.
   */
 -class CustomizationHarnessService extends CustomizationHarnessServiceBase {
 +export class CustomizationHarnessService extends CustomizationHarnessServiceBase {
- 	constructor(
- 		@IPathService pathService: IPathService,
- 	) {
+ 	constructor() {
+ 		const localExtras = [PromptsStorage.extension, BUILTIN_STORAGE];
+ 		super(
 diff --git a/src/vs/workbench/contrib/chat/browser/chatStatus/chatStatusItemService.ts b/src/vs/workbench/contrib/chat/browser/chatStatus/chatStatusItemService.ts
 index b87135ccce6..dae96febb2b 100644
 --- a/src/vs/workbench/contrib/chat/browser/chatStatus/chatStatusItemService.ts
@@ -439,6 +454,19 @@ index 5b019f38d09..24e9f6cceec 100644
  
  	readonly _serviceBrand: undefined;
  
+diff --git a/src/vs/workbench/services/agentHost/common/agentHostFileSystemService.ts b/src/vs/workbench/services/agentHost/common/agentHostFileSystemService.ts
+index 6f5217141be..574e4de5899 100644
+--- a/src/vs/workbench/services/agentHost/common/agentHostFileSystemService.ts
++++ b/src/vs/workbench/services/agentHost/common/agentHostFileSystemService.ts
+@@ -39,7 +39,7 @@ export interface IAgentHostFileSystemService {
+ 	ensureSyncedCustomizationProvider(): void;
+ }
+ 
+-class AgentHostFileSystemService extends Disposable implements IAgentHostFileSystemService {
++export class AgentHostFileSystemService extends Disposable implements IAgentHostFileSystemService {
+ 	declare readonly _serviceBrand: undefined;
+ 
+ 	private readonly _fsProvider: AgentHostFileSystemProvider;
 diff --git a/src/vs/workbench/services/dialogs/browser/abstractFileDialogService.ts b/src/vs/workbench/services/dialogs/browser/abstractFileDialogService.ts
 index 8786b4ed5f6..dbab19f2050 100644
 --- a/src/vs/workbench/services/dialogs/browser/abstractFileDialogService.ts

@@ -10,7 +10,7 @@
 
 import type { OutputOptions, Plugin, PluginContext } from 'rollup'
 import * as rollup from 'rollup'
-import thenby from 'thenby'
+import { firstBy } from 'thenby'
 import type { PackageJson } from 'type-fest'
 import * as nodePath from 'node:path'
 import { builtinModules } from 'module'
@@ -43,8 +43,6 @@ export interface SubPackageDependency {
   package: SubPackage
   importers: Set<string>
 }
-
-const { firstBy } = thenby
 
 function getInstalledVersion(libName: string) {
   const output = execSync(`npm ls ${libName} --json --depth 1 --long`).toString()

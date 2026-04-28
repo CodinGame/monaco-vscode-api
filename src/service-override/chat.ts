@@ -90,8 +90,10 @@ import { LanguageModelsConfigurationService } from 'vs/workbench/contrib/chat/br
 import { ChatTipService } from 'vs/workbench/contrib/chat/browser/chatTipService'
 import { ChatEditingExplanationModelManager } from 'vs/workbench/contrib/chat/browser/chatEditing/chatEditingExplanationModelManager'
 import { ChatToolOutputStateCache } from 'vs/workbench/contrib/chat/browser/widget/chatContentParts/toolInvocationParts/chatToolOutputStateCache'
-import { ITerminalSandboxService } from 'vs/workbench/contrib/terminalContrib/chatAgentTools/common/terminalSandboxService.service'
-import { TerminalSandboxService } from 'vs/workbench/contrib/terminalContrib/chatAgentTools/common/terminalSandboxService'
+import {
+  ITerminalSandboxService,
+  TerminalSandboxService
+} from 'vs/workbench/contrib/terminalContrib/chatAgentTools/common/terminalSandboxService'
 import { IAICustomizationWorkspaceService } from 'vs/workbench/contrib/chat/common/aiCustomizationWorkspaceService.service'
 import { IAgentPluginService } from 'vs/workbench/contrib/chat/common/plugins/agentPluginService.service'
 import { AgentPluginService } from 'vs/workbench/contrib/chat/common/plugins/agentPluginServiceImpl'
@@ -123,6 +125,18 @@ import { IInlineChatHistoryService } from 'vs/workbench/contrib/inlineChat/brows
 import { InlineChatHistoryService } from 'vs/workbench/contrib/inlineChat/browser/inlineChatHistoryService'
 import { NullSandboxHelperService } from 'vs/platform/sandbox/browser/sandboxHelperService'
 import { ISandboxHelperService } from 'vs/platform/sandbox/common/sandboxHelperService.service'
+import { IPluginGitService } from 'vs/workbench/contrib/chat/common/plugins/pluginGitService.service'
+import { BrowserPluginGitCommandService } from 'vs/workbench/contrib/chat/browser/pluginGitCommandService'
+import { IAgentNetworkFilterService } from 'vs/platform/networkFilter/common/networkFilterService.service'
+import { AgentNetworkFilterService } from 'vs/platform/networkFilter/common/networkFilterService'
+import { IAgentHostFileSystemService } from 'vs/workbench/services/agentHost/common/agentHostFileSystemService.service'
+import { IAgentHostSessionWorkingDirectoryResolver } from 'vs/workbench/contrib/chat/browser/agentSessions/agentHost/agentHostSessionWorkingDirectoryResolver.service'
+import { IAgentHostTerminalService } from 'vs/workbench/contrib/terminal/browser/agentHostTerminalService.service'
+import { AgentHostTerminalService } from 'vs/workbench/contrib/terminal/browser/agentHostTerminalService'
+import { IRemoteAgentHostService } from 'vs/platform/agentHost/common/remoteAgentHostService.service'
+import { RemoteAgentHostService } from 'vs/platform/agentHost/browser/remoteAgentHostServiceImpl'
+import { AgentHostFileSystemService } from 'vs/workbench/services/agentHost/common/agentHostFileSystemService'
+import { AgentHostSessionWorkingDirectoryResolver } from 'vs/workbench/contrib/chat/browser/agentSessions/agentHost/agentHostSessionWorkingDirectoryResolver'
 import 'vs/workbench/contrib/chat/browser/chat.contribution'
 import 'vs/workbench/contrib/terminal/terminal.chat.contribution'
 import 'vs/workbench/contrib/inlineChat/browser/inlineChat.contribution'
@@ -300,7 +314,25 @@ export default function getServiceOverride({
       true
     ),
     [IChatImageCarouselService.toString()]: new SyncDescriptor(ChatImageCarouselService, [], true),
-    [IInlineChatHistoryService.toString()]: new SyncDescriptor(InlineChatHistoryService, [], true)
+    [IInlineChatHistoryService.toString()]: new SyncDescriptor(InlineChatHistoryService, [], true),
+    [IPluginGitService.toString()]: new SyncDescriptor(BrowserPluginGitCommandService, [], true),
+    [IAgentNetworkFilterService.toString()]: new SyncDescriptor(
+      AgentNetworkFilterService,
+      [],
+      true
+    ),
+    [IRemoteAgentHostService.toString()]: new SyncDescriptor(RemoteAgentHostService, [], true),
+    [IAgentHostFileSystemService.toString()]: new SyncDescriptor(
+      AgentHostFileSystemService,
+      [],
+      true
+    ),
+    [IAgentHostSessionWorkingDirectoryResolver.toString()]: new SyncDescriptor(
+      AgentHostSessionWorkingDirectoryResolver,
+      [],
+      true
+    ),
+    [IAgentHostTerminalService.toString()]: new SyncDescriptor(AgentHostTerminalService, [], true)
   }
 }
 

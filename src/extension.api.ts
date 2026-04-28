@@ -377,7 +377,6 @@ const api: typeof vscode = {
   ChatQuestion: extHostTypes.ChatQuestion,
   ChatResponseQuestionCarouselPart: extHostTypes.ChatResponseQuestionCarouselPart,
   McpToolInvocationContentData: extHostTypes.McpToolInvocationContentData,
-  ChatSessionChangedFile2: extHostTypes.ChatSessionChangedFile2,
   ChatResponseHookPart: extHostTypes.ChatResponseHookPart,
   ChatDebugLogLevel: extHostTypes.ChatDebugLogLevel,
   ChatDebugToolCallResult: extHostTypes.ChatDebugToolCallResult,

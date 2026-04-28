@@ -11,7 +11,7 @@ Subject: [PATCH] fix: improve extension contribution types
  4 files changed, 1398 insertions(+), 70 deletions(-)
 
 diff --git a/src/vs/platform/extensions/common/extensions.ts b/src/vs/platform/extensions/common/extensions.ts
-index e1a24c7190b..cf4e3427d44 100644
+index bd90ac80c01..24427248c5b 100644
 --- a/src/vs/platform/extensions/common/extensions.ts
 +++ b/src/vs/platform/extensions/common/extensions.ts
 @@ -3,6 +3,7 @@
@@ -1406,8 +1406,8 @@ index e1a24c7190b..cf4e3427d44 100644
  }
  
  export interface IToolSetContribution {
-@@ -206,32 +1377,112 @@ export interface IChatFileContribution {
- 	readonly when?: string;
+@@ -207,32 +1378,112 @@ export interface IChatFileContribution {
+ 	readonly sessionTypes?: readonly string[];
  }
  
 +export interface ILanguageModelChatProvider {
@@ -1539,7 +1539,7 @@ index e1a24c7190b..cf4e3427d44 100644
  	readonly chatParticipants?: ReadonlyArray<IChatParticipantContribution>;
  	readonly chatPromptFiles?: ReadonlyArray<IChatFileContribution>;
  	readonly chatInstructions?: ReadonlyArray<IChatFileContribution>;
-@@ -241,6 +1492,82 @@ export interface IExtensionContributions {
+@@ -242,6 +1493,82 @@ export interface IExtensionContributions {
  	readonly languageModelTools?: ReadonlyArray<IToolContribution>;
  	readonly languageModelToolSets?: ReadonlyArray<IToolSetContribution>;
  	readonly mcpServerDefinitionProviders?: ReadonlyArray<IMcpCollectionContribution>;

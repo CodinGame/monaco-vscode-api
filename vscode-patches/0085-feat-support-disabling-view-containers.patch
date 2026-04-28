@@ -36,7 +36,7 @@ index bc6003e2f44..276849cac47 100644
  			}
  		}
 diff --git a/src/vs/workbench/common/views.ts b/src/vs/workbench/common/views.ts
-index b439e870035..24ba88e8ede 100644
+index cdd58916539..b2f1ad0bcc6 100644
 --- a/src/vs/workbench/common/views.ts
 +++ b/src/vs/workbench/common/views.ts
 @@ -145,6 +145,8 @@ export interface IViewContainerDescriptor {

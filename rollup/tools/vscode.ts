@@ -2,7 +2,7 @@ import * as rollup from 'rollup'
 import * as babylonParser from 'recast/parsers/babylon.js'
 import * as recast from 'recast'
 import ts from 'typescript'
-import thenby from 'thenby'
+import { firstBy } from 'thenby'
 import * as fs from 'node:fs'
 import * as nodePath from 'node:path'
 import {
@@ -13,8 +13,6 @@ import {
   VSCODE_DIR,
   VSCODE_SRC_DIR
 } from './config.js'
-
-const { firstBy } = thenby
 
 const PURE_ANNO = '#__PURE__'
 const PURE_FUNCTIONS = new Set([

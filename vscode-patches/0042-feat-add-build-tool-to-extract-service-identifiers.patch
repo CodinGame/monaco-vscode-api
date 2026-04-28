@@ -4,16 +4,16 @@ Date: Thu, 25 Apr 2024 19:34:56 +0200
 Subject: [PATCH] feat: add build tool to extract service identifiers
 
 ---
- build/lib/extractServices.ts | 245 +++++++++++++++++++++++++++++++++++
- 1 file changed, 245 insertions(+)
+ build/lib/extractServices.ts | 251 +++++++++++++++++++++++++++++++++++
+ 1 file changed, 251 insertions(+)
  create mode 100644 build/lib/extractServices.ts
 
 diff --git a/build/lib/extractServices.ts b/build/lib/extractServices.ts
 new file mode 100644
-index 00000000000..9870812fd05
+index 00000000000..ba0a903e3ab
 --- /dev/null
 +++ b/build/lib/extractServices.ts
-@@ -0,0 +1,245 @@
+@@ -0,0 +1,251 @@
 +/*---------------------------------------------------------------------------------------------
 + *  Copyright (c) Microsoft Corporation. All rights reserved.
 + *  Licensed under the MIT License. See License.txt in the project root for license information.
@@ -43,6 +43,7 @@ index 00000000000..9870812fd05
 +	'vs/platform/userDataSync/common/userDataSync.service.ts',
 +	'vs/workbench/contrib/chat/common/participants/chatAgents.service.ts',
 +	'vs/workbench/contrib/tasks/common/taskService.ts',
++	'vs/workbench/contrib/terminalContrib/chatAgentTools/browser/tools/runInTerminalTool.ts',
 +	'vs/workbench/workbench.web.main.ts'
 +];
 +
@@ -123,9 +124,10 @@ index 00000000000..9870812fd05
 +	const configPath = ts.findConfigFile(SRC_DIR, ts.sys.fileExists, 'tsconfig.json')!;
 +	const configFile = ts.readConfigFile(configPath, ts.sys.readFile);
 +	const parsedConfig = ts.parseJsonConfigFileContent(configFile.config, ts.sys, path.dirname(configPath));
++	const files = new Set(parsedConfig.fileNames.filter(f => !f.endsWith('.test.ts')));
 +
 +	const servicesHost: ts.LanguageServiceHost = {
-+		getScriptFileNames: () => parsedConfig.fileNames.filter(f => !f.endsWith('.test.ts')),
++		getScriptFileNames: () => Array.from(files),
 +		getScriptVersion: fileName => sourceFileVersion.get(fileName)?.toString() ?? '1',
 +		getScriptSnapshot: fileName => {
 +			if (!fs.existsSync(fileName)) {
@@ -160,7 +162,6 @@ index 00000000000..9870812fd05
 +		}
 +	}
 +
-+	const changedFiles = new Set<string>();
 +	for (const fileName of serviceFiles) {
 +		if (IGNORE.some(ignored => fileName.includes(ignored))) {
 +			continue;
@@ -177,10 +178,15 @@ index 00000000000..9870812fd05
 +		function moveToNewFile(range: ts.TextRange) {
 +			const refactors = service.getApplicableRefactors(fileName, range, preferences, 'invoked', undefined, true);
 +			const moveToFileRefactor = refactors.find(r => r.name === 'Move to file')!;
++			const targetFile = path.resolve(path.dirname(fileName), `${path.basename(fileName, '.ts')}.service.ts`);
 +			const edits = service.getEditsForRefactor(fileName, {
 +			}, range, moveToFileRefactor.name, moveToFileRefactor.actions[0].name, preferences, {
-+				targetFile: path.resolve(path.dirname(fileName), `${path.basename(fileName, '.ts')}.service.ts`),
++				targetFile: targetFile,
 +			})!;
++
++			if (edits.notApplicableReason) {
++				throw new Error(`Refactor not applicable: ${edits.notApplicableReason}`);
++			}
 +
 +			// Workaround for typescript bug: it tends to use `import type` when both types and value are imported
 +			edits.edits.forEach((change) => {
@@ -190,7 +196,7 @@ index 00000000000..9870812fd05
 +			});
 +
 +			applyEdits(edits.edits);
-+			edits.edits.forEach(e => changedFiles.add(e.fileName));
++			files.add(targetFile);
 +		}
 +
 +		console.log(fileName);
@@ -203,7 +209,7 @@ index 00000000000..9870812fd05
 +
 +			let serviceName: string;
 +			const interfaceNode = call.typeArguments?.[(call.expression as ts.Identifier).text === 'refineServiceDecorator' ? 1 : 0];
-+			if (interfaceNode != null) {
++			if (interfaceNode) {
 +				if (!ts.isTypeReferenceNode(interfaceNode) || !ts.isIdentifier(interfaceNode.typeName)) {
 +					throw new Error(`Unable to parse service registration ${call.getText()}`);
 +				}
