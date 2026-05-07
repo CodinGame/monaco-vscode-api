@@ -1,0 +1,53 @@
+From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
+From: =?UTF-8?q?Lo=C3=AFc=20Mangeonjean?= <loic@coderpad.io>
+Date: Thu, 7 May 2026 15:35:50 +0200
+Subject: [PATCH] feat: support configuring worker options
+
+and also use cross-origin compatible worker
+---
+ src/common/workers.ts | 18 ++++++++++++++++--
+ 1 file changed, 16 insertions(+), 2 deletions(-)
+
+diff --git a/src/common/workers.ts b/src/common/workers.ts
+index 94bbc257..8394dd36 100644
+--- a/src/common/workers.ts
++++ b/src/common/workers.ts
+@@ -52,12 +52,25 @@ if (
+ 	});
+ }
+ 
++function getWorkerBootstrapUrl(workerScriptUrl: string, workerOptions: WorkerOptions): string {
++	const blob = new Blob([[
++		`${workerOptions.type === 'module' ? 'await import' : 'importScripts'}(${JSON.stringify(workerScriptUrl)});`,
++
++		`globalThis.postMessage({ type: 'vscode-worker-ready' });`
++	].join('')], { type: 'application/javascript' });
++	return URL.createObjectURL(blob);
++}
++
+ function getWorker(descriptor: { label: string; moduleId: string; createWorker?: () => Worker }): Worker | Promise<Worker> {
+ 	const label = descriptor.label;
+ 	// Option for hosts to overwrite the worker script (used in the standalone editor)
+ 	interface IMonacoEnvironment {
+ 		getWorker?(moduleId: string, label: string): Worker | Promise<Worker>;
+ 		getWorkerUrl?(moduleId: string, label: string): string;
++		/**
++		 * Return the options for web worker scripts.
++		 */
++		getWorkerOptions?(moduleId: string, label: string): WorkerOptions | undefined;
+ 	}
+ 	const monacoEnvironment: IMonacoEnvironment | undefined = (globalThis as any).MonacoEnvironment;
+ 	if (monacoEnvironment) {
+@@ -66,9 +79,10 @@ function getWorker(descriptor: { label: string; moduleId: string; createWorker?:
+ 		}
+ 		if (typeof monacoEnvironment.getWorkerUrl === 'function') {
+ 			const workerUrl = monacoEnvironment.getWorkerUrl('workerMain.js', label);
++			const workerOptions: WorkerOptions = { name: label, type: 'module', ...monacoEnvironment.getWorkerOptions?.("workerMain.js", label) };
+ 			return new Worker(
+-				ttPolicy ? (ttPolicy.createScriptURL(workerUrl) as unknown as string) : workerUrl,
+-				{ name: label, type: 'module' }
++				getWorkerBootstrapUrl(ttPolicy ? (ttPolicy.createScriptURL(workerUrl) as unknown as string) : workerUrl, workerOptions),
++				workerOptions
+ 			);
+ 		}
+ 	}
