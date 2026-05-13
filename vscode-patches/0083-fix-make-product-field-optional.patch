@@ -12,14 +12,13 @@ Subject: [PATCH] fix: make product field optional
  .../contrib/chat/browser/widget/chatWidget.ts |  4 ++--
  .../browser/extensionsWorkbenchService.ts     |  2 +-
  .../accounts/browser/defaultAccount.ts        | 17 ++++++++++----
- .../browser/extensionEnablementService.ts     |  2 +-
- 9 files changed, 33 insertions(+), 22 deletions(-)
+ 8 files changed, 32 insertions(+), 21 deletions(-)
 
 diff --git a/src/vs/base/common/product.ts b/src/vs/base/common/product.ts
-index a352bdd7d61..1b188b19dfd 100644
+index 6b7e90652e1..6b148238084 100644
 --- a/src/vs/base/common/product.ts
 +++ b/src/vs/base/common/product.ts
-@@ -228,7 +228,7 @@ export interface IProductConfiguration {
+@@ -229,7 +229,7 @@ export interface IProductConfiguration {
  	readonly commonlyUsedSettings?: string[];
  	readonly aiGeneratedWorkspaceTrust?: IAiGeneratedWorkspaceTrust;
  
@@ -29,10 +28,10 @@ index a352bdd7d61..1b188b19dfd 100644
  	readonly chatSessionRecommendations?: IChatSessionRecommendation[];
  	readonly emergencyAlertUrl?: string;
 diff --git a/src/vs/platform/extensionManagement/common/abstractExtensionManagementService.ts b/src/vs/platform/extensionManagement/common/abstractExtensionManagementService.ts
-index 04763c87d10..02b4ca69fb9 100644
+index 1089ffb25bc..3f8d8e38dca 100644
 --- a/src/vs/platform/extensionManagement/common/abstractExtensionManagementService.ts
 +++ b/src/vs/platform/extensionManagement/common/abstractExtensionManagementService.ts
-@@ -953,7 +953,7 @@ export abstract class AbstractExtensionManagementService extends CommontExtensio
+@@ -989,7 +989,7 @@ export abstract class AbstractExtensionManagementService extends CommontExtensio
  		if (checked.indexOf(extension) !== -1) {
  			return [];
  		}
@@ -82,11 +81,11 @@ index 72bfdb17b0f..56d5a9440b6 100644
  		return { malicious, deprecated, search, autoUpdate };
  	}
 diff --git a/src/vs/workbench/contrib/chat/browser/chatStatus/chatStatusDashboard.ts b/src/vs/workbench/contrib/chat/browser/chatStatus/chatStatusDashboard.ts
-index e30045006ea..2d055f587cb 100644
+index f842f92db91..c9f972e8b27 100644
 --- a/src/vs/workbench/contrib/chat/browser/chatStatus/chatStatusDashboard.ts
 +++ b/src/vs/workbench/contrib/chat/browser/chatStatus/chatStatusDashboard.ts
-@@ -46,7 +46,7 @@ import { contrastBorder, inputValidationErrorBorder, inputValidationInfoBorder,
- import { Color } from '../../../../../base/common/color.js';
+@@ -46,7 +46,7 @@ import { IChatStatusItemService, ChatStatusEntry } from './chatStatusItemService
+ import product from '../../../../../platform/product/common/product.js';
  import { isCompletionsEnabled } from '../../../../../editor/common/services/completionsEnablement.js';
  
 -const defaultChat = product.defaultChatAgent;
@@ -95,23 +94,23 @@ index e30045006ea..2d055f587cb 100644
  interface ISettingsAccessor {
  	readSetting: () => boolean;
 diff --git a/src/vs/workbench/contrib/chat/browser/chatStatus/chatStatusEntry.ts b/src/vs/workbench/contrib/chat/browser/chatStatus/chatStatusEntry.ts
-index bbce59557f4..26215efaa16 100644
+index d03f2a73f0f..aa52e131008 100644
 --- a/src/vs/workbench/contrib/chat/browser/chatStatus/chatStatusEntry.ts
 +++ b/src/vs/workbench/contrib/chat/browser/chatStatus/chatStatusEntry.ts
-@@ -85,7 +85,7 @@ export class ChatStatusBarEntry extends Disposable implements IWorkbenchContribu
+@@ -127,7 +127,7 @@ export class ChatStatusBarEntry extends Disposable implements IWorkbenchContribu
  		this._register(this.editorService.onDidActiveEditorChange(() => this.onDidActiveEditorChange()));
  
  		this._register(this.configurationService.onDidChangeConfiguration(e => {
--			if (e.affectsConfiguration(product.defaultChatAgent?.completionsEnablementSetting) || e.affectsConfiguration(ChatConfiguration.SignInTitleBarEnabled)) {
-+			if (e.affectsConfiguration(product.defaultChatAgent!.completionsEnablementSetting) || e.affectsConfiguration(ChatConfiguration.SignInTitleBarEnabled)) {
+-			if (e.affectsConfiguration(product.defaultChatAgent?.completionsEnablementSetting) || e.affectsConfiguration(ChatConfiguration.TitleBarSignInEnabled)) {
++			if (e.affectsConfiguration(product.defaultChatAgent!.completionsEnablementSetting) || e.affectsConfiguration(ChatConfiguration.TitleBarSignInEnabled)) {
  				this.update();
  			}
  		}));
 diff --git a/src/vs/workbench/contrib/chat/browser/widget/chatWidget.ts b/src/vs/workbench/contrib/chat/browser/widget/chatWidget.ts
-index 45b41f17db2..da2e2a23aa6 100644
+index 59011923e70..63e5f34005a 100644
 --- a/src/vs/workbench/contrib/chat/browser/widget/chatWidget.ts
 +++ b/src/vs/workbench/contrib/chat/browser/widget/chatWidget.ts
-@@ -1013,8 +1013,8 @@ export class ChatWidget extends Disposable implements IChatWidget {
+@@ -1067,8 +1067,8 @@ export class ChatWidget extends Disposable implements IChatWidget {
  				const defaultAgent = this.chatAgentService.getDefaultAgent(this.location, this.input.currentModeKind);
  				let additionalMessage: string | IMarkdownString | undefined;
  				if (this.chatEntitlementService.anonymous && !this.chatEntitlementService.sentiment.completed) {
@@ -136,10 +135,10 @@ index 918558ce6e2..2f65adc82b9 100644
  				if (packExtension.local && !extensionsToUninstall.some(e => areSameExtensions(e.extension.identifier, packExtension.identifier))) {
  					extensionsToUninstall.push({ extension: packExtension.local });
 diff --git a/src/vs/workbench/services/accounts/browser/defaultAccount.ts b/src/vs/workbench/services/accounts/browser/defaultAccount.ts
-index 20eb5b46b5c..7cfccc5a260 100644
+index 2ed8660ad2c..77bf46e9198 100644
 --- a/src/vs/workbench/services/accounts/browser/defaultAccount.ts
 +++ b/src/vs/workbench/services/accounts/browser/defaultAccount.ts
-@@ -128,14 +128,16 @@ export class DefaultAccountService extends Disposable implements IDefaultAccount
+@@ -129,14 +129,16 @@ export class DefaultAccountService extends Disposable implements IDefaultAccount
  	private readonly _onDidChangeCopilotTokenInfo = this._register(new Emitter<ICopilotTokenInfo | null>());
  	readonly onDidChangeCopilotTokenInfo = this._onDidChangeCopilotTokenInfo.event;
  
@@ -158,7 +157,7 @@ index 20eb5b46b5c..7cfccc5a260 100644
  	}
  
  	async getDefaultAccount(): Promise<IDefaultAccount | null> {
-@@ -147,6 +149,10 @@ export class DefaultAccountService extends Disposable implements IDefaultAccount
+@@ -148,6 +150,10 @@ export class DefaultAccountService extends Disposable implements IDefaultAccount
  		if (this.defaultAccountProvider) {
  			return this.defaultAccountProvider.getDefaultAccountAuthenticationProvider();
  		}
@@ -169,7 +168,7 @@ index 20eb5b46b5c..7cfccc5a260 100644
  		return {
  			...this.defaultAccountConfig.authenticationProvider.default,
  			enterprise: false
-@@ -922,8 +928,11 @@ class DefaultAccountProviderContribution extends Disposable implements IWorkbenc
+@@ -928,8 +934,11 @@ class DefaultAccountProviderContribution extends Disposable implements IWorkbenc
  		@IDefaultAccountService defaultAccountService: IDefaultAccountService,
  	) {
  		super();
@@ -183,16 +182,3 @@ index 20eb5b46b5c..7cfccc5a260 100644
  	}
  }
  
-diff --git a/src/vs/workbench/services/extensionManagement/browser/extensionEnablementService.ts b/src/vs/workbench/services/extensionManagement/browser/extensionEnablementService.ts
-index be4e0b92675..30055bd6878 100644
---- a/src/vs/workbench/services/extensionManagement/browser/extensionEnablementService.ts
-+++ b/src/vs/workbench/services/extensionManagement/browser/extensionEnablementService.ts
-@@ -136,7 +136,7 @@ export class ExtensionEnablementService extends Disposable implements IWorkbench
- 			});
- 		}
- 
--		if (!this.environmentService.isSessionsWindow && !this.environmentService.skipBuiltinExtensions?.some(id => id.toLowerCase() === this._chatExtensionId)) {
-+		if (this._chatExtensionId && !this.environmentService.isSessionsWindow && !this.environmentService.skipBuiltinExtensions?.some(id => id.toLowerCase() === this._chatExtensionId)) {
- 			const builtinChatExtensionEnablementMigrationKey = 'builtinChatExtensionEnablementMigration';
- 			const builtinChatExtensionEnablementMigration = this.storageService.getBoolean(builtinChatExtensionEnablementMigrationKey, StorageScope.PROFILE) === true;
- 			if (!builtinChatExtensionEnablementMigration) {

@@ -8,7 +8,7 @@ Subject: [PATCH] fix: do not hide copilot ui on web mode
  1 file changed, 6 deletions(-)
 
 diff --git a/src/vs/workbench/services/chat/common/chatEntitlementService.ts b/src/vs/workbench/services/chat/common/chatEntitlementService.ts
-index 54a061cec5a..8f2bc4cfa0f 100644
+index 8e7875bdf1b..d99f8b85b96 100644
 --- a/src/vs/workbench/services/chat/common/chatEntitlementService.ts
 +++ b/src/vs/workbench/services/chat/common/chatEntitlementService.ts
 @@ -25,7 +25,6 @@ import { IOpenerService } from '../../../../platform/opener/common/opener.js';
@@ -19,11 +19,11 @@ index 54a061cec5a..8f2bc4cfa0f 100644
  import { ILifecycleService } from '../../lifecycle/common/lifecycle.js';
  import { Mutable } from '../../../../base/common/types.js';
  import { InstantiationType, registerSingleton } from '../../../../platform/instantiation/common/extensions.js';
-@@ -343,11 +342,6 @@ export class ChatEntitlementService extends Disposable implements IChatEntitleme
+@@ -385,11 +384,6 @@ export class ChatEntitlementService extends Disposable implements IChatEntitleme
  		);
  		this.sentimentObs = observableFromEvent(this.onDidChangeSentiment, () => this.sentiment);
  
--		if ((isWeb && !environmentService.remoteAuthority)) {
+-		if ((isWeb && !environmentService.remoteAuthority && !environmentService.isSessionsWindow)) {
 -			ChatEntitlementContextKeys.Setup.hidden.bindTo(this.contextKeyService).set(true); // hide copilot UI on web if unsupported
 -			return;
 -		}

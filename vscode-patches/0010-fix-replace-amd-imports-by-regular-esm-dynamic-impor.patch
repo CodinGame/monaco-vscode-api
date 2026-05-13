@@ -77,7 +77,7 @@ index 3d83476e176..a80f0b9a7f2 100644
  		}
  	}
 diff --git a/src/vs/workbench/contrib/terminal/browser/terminalInstance.ts b/src/vs/workbench/contrib/terminal/browser/terminalInstance.ts
-index 50a4c0f4917..807fa3ce891 100644
+index 588c01f8628..94e168f3521 100644
 --- a/src/vs/workbench/contrib/terminal/browser/terminalInstance.ts
 +++ b/src/vs/workbench/contrib/terminal/browser/terminalInstance.ts
 @@ -79,7 +79,6 @@ import { IHistoryService } from '../../../services/history/common/history.js';
@@ -88,7 +88,7 @@ index 50a4c0f4917..807fa3ce891 100644
  import type { IMarker, Terminal as XTermTerminal, IBufferLine } from '@xterm/xterm';
  import { AccessibilityCommandId } from '../../accessibility/common/accessibilityCommands.js';
  import { terminalStrings } from '../common/terminalStrings.js';
-@@ -786,7 +785,7 @@ export class TerminalInstance extends Disposable implements ITerminalInstance {
+@@ -784,7 +783,7 @@ export class TerminalInstance extends Disposable implements ITerminalInstance {
  			return xtermConstructor;
  		}
  		xtermConstructor = Promises.withAsyncBody<typeof XTermTerminal>(async (resolve) => {
@@ -251,7 +251,7 @@ index 43b68e0e133..54283eea54d 100644
  					data: wasm,
  					print: (str: string) => {
 diff --git a/src/vs/workbench/services/textfile/common/encoding.ts b/src/vs/workbench/services/textfile/common/encoding.ts
-index b119273a6ff..3616bd97404 100644
+index 4e401ed6f98..1849d4f5f97 100644
 --- a/src/vs/workbench/services/textfile/common/encoding.ts
 +++ b/src/vs/workbench/services/textfile/common/encoding.ts
 @@ -5,7 +5,6 @@

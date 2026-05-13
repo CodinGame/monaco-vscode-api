@@ -9,7 +9,7 @@ Subject: [PATCH] feat: add customEditorRestore
  2 files changed, 16 insertions(+), 11 deletions(-)
 
 diff --git a/src/vs/workbench/browser/layout.ts b/src/vs/workbench/browser/layout.ts
-index cad9c7ce4b1..e2cc2b6276b 100644
+index 75889a66bdf..652cf0bb9fc 100644
 --- a/src/vs/workbench/browser/layout.ts
 +++ b/src/vs/workbench/browser/layout.ts
 @@ -21,7 +21,7 @@ import { isTemporaryWorkspace, IWorkspaceContextService, WorkbenchState } from '
@@ -47,7 +47,7 @@ index cad9c7ce4b1..e2cc2b6276b 100644
  	) {
  		super();
  
-@@ -952,7 +952,7 @@ export abstract class Layout extends Disposable implements IWorkbenchLayoutServi
+@@ -957,7 +957,7 @@ export abstract class Layout extends Disposable implements IWorkbenchLayoutServi
  		return this.restored;
  	}
  
@@ -56,7 +56,7 @@ index cad9c7ce4b1..e2cc2b6276b 100644
  
  		// distinguish long running restore operations that
  		// are required for the layout to be ready from those
-@@ -1016,11 +1016,14 @@ export abstract class Layout extends Disposable implements IWorkbenchLayoutServi
+@@ -1021,11 +1021,14 @@ export abstract class Layout extends Disposable implements IWorkbenchLayoutServi
  				}));
  			}
  

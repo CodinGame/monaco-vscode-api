@@ -4,14 +4,14 @@ Date: Wed, 18 Feb 2026 15:29:49 +0100
 Subject: [PATCH] refactor: extract storage creation method
 
 ---
- .../storage/browser/storageService.ts         | 69 ++++++++++++-------
- 1 file changed, 45 insertions(+), 24 deletions(-)
+ .../storage/browser/storageService.ts         | 73 ++++++++++++-------
+ 1 file changed, 47 insertions(+), 26 deletions(-)
 
 diff --git a/src/vs/workbench/services/storage/browser/storageService.ts b/src/vs/workbench/services/storage/browser/storageService.ts
-index db1abe1dec4..0d566e2f71a 100644
+index 7ced4e9cdcb..40d855f1067 100644
 --- a/src/vs/workbench/services/storage/browser/storageService.ts
 +++ b/src/vs/workbench/services/storage/browser/storageService.ts
-@@ -19,28 +19,37 @@ import { isUserDataProfile, IUserDataProfile } from '../../../../platform/userDa
+@@ -19,32 +19,41 @@ import { isUserDataProfile, IUserDataProfile } from '../../../../platform/userDa
  import { IAnyWorkspaceIdentifier } from '../../../../platform/workspace/common/workspace.js';
  import { IUserDataProfileService } from '../../userDataProfile/common/userDataProfile.js';
  
@@ -34,6 +34,9 @@ index db1abe1dec4..0d566e2f71a 100644
 +	private readonly applicationStoragePromise = new DeferredPromise<{ database: IStorageDatabase; storage: IStorage }>();
 +	private readonly applicationStorageDisposables = this._register(new DisposableStore());
  
+ 	private applicationSharedStorage: IStorage | undefined;
+ 	private applicationSharedStorageDatabase: IIndexedDBStorageDatabase | undefined;
+ 
  	private profileStorage: IStorage | undefined;
 -	private profileStorageDatabase: IIndexedDBStorageDatabase | undefined;
 +	private profileStorageDatabase: IStorageDatabase | undefined;
@@ -48,15 +51,17 @@ index db1abe1dec4..0d566e2f71a 100644
  	get hasPendingUpdate(): boolean {
  		return Boolean(
 -			this.applicationStorageDatabase?.hasPendingUpdate ||
+-			this.applicationSharedStorageDatabase?.hasPendingUpdate ||
 -			this.profileStorageDatabase?.hasPendingUpdate ||
 -			this.workspaceStorageDatabase?.hasPendingUpdate
 +			getIIndexedDBStorageDatabase(this.applicationStorageDatabase)?.hasPendingUpdate ||
++			getIIndexedDBStorageDatabase(this.applicationSharedStorageDatabase)?.hasPendingUpdate ||
 +			getIIndexedDBStorageDatabase(this.profileStorageDatabase)?.hasPendingUpdate ||
 +			getIIndexedDBStorageDatabase(this.workspaceStorageDatabase)?.hasPendingUpdate
  		);
  	}
  
-@@ -71,9 +80,7 @@ export class BrowserStorageService extends AbstractStorageService {
+@@ -76,9 +85,7 @@ export class BrowserStorageService extends AbstractStorageService {
  	}
  
  	private async createApplicationStorage(): Promise<void> {
@@ -67,7 +72,7 @@ index db1abe1dec4..0d566e2f71a 100644
  		this.applicationStorage = this._register(new Storage(this.applicationStorageDatabase));
  
  		this._register(this.applicationStorage.onDidChangeStorage(e => this.emitDidChangeValue(StorageScope.APPLICATION, e)));
-@@ -82,7 +89,13 @@ export class BrowserStorageService extends AbstractStorageService {
+@@ -87,7 +94,13 @@ export class BrowserStorageService extends AbstractStorageService {
  
  		this.updateIsNew(this.applicationStorage);
  
@@ -81,8 +86,8 @@ index db1abe1dec4..0d566e2f71a 100644
 +		return disposableStore.add(applicationStorageIndexedDB);
  	}
  
- 	private async createProfileStorage(profile: IUserDataProfile): Promise<void> {
-@@ -100,16 +113,14 @@ export class BrowserStorageService extends AbstractStorageService {
+ 	private async createApplicationSharedStorage(): Promise<void> {
+@@ -118,16 +131,14 @@ export class BrowserStorageService extends AbstractStorageService {
  			// avoid creating the storage library a second time on
  			// the same DB.
  
@@ -102,7 +107,7 @@ index db1abe1dec4..0d566e2f71a 100644
  			this.profileStorage = this.profileStorageDisposables.add(new Storage(this.profileStorageDatabase));
  
  			this.profileStorageDisposables.add(this.profileStorage.onDidChangeStorage(e => this.emitDidChangeValue(StorageScope.PROFILE, e)));
-@@ -120,13 +131,18 @@ export class BrowserStorageService extends AbstractStorageService {
+@@ -138,13 +149,18 @@ export class BrowserStorageService extends AbstractStorageService {
  		}
  	}
  
@@ -123,7 +128,7 @@ index db1abe1dec4..0d566e2f71a 100644
  		this.workspaceStorage = this.workspaceStorageDisposables.add(new Storage(this.workspaceStorageDatabase));
  
  		this.workspaceStorageDisposables.add(this.workspaceStorage.onDidChangeStorage(e => this.emitDidChangeValue(StorageScope.WORKSPACE, e)));
-@@ -136,6 +152,11 @@ export class BrowserStorageService extends AbstractStorageService {
+@@ -154,6 +170,11 @@ export class BrowserStorageService extends AbstractStorageService {
  		this.updateIsNew(this.workspaceStorage);
  	}
  
@@ -135,9 +140,9 @@ index db1abe1dec4..0d566e2f71a 100644
  	private updateIsNew(storage: IStorage): void {
  		const firstOpen = storage.getBoolean(IS_NEW_KEY);
  		if (firstOpen === undefined) {
-@@ -159,11 +180,11 @@ export class BrowserStorageService extends AbstractStorageService {
- 	protected getLogDetails(scope: StorageScope): string | undefined {
- 		switch (scope) {
+@@ -181,11 +202,11 @@ export class BrowserStorageService extends AbstractStorageService {
+ 			case StorageScope.APPLICATION_SHARED:
+ 				return this.applicationSharedStorageDatabase?.name;
  			case StorageScope.APPLICATION:
 -				return this.applicationStorageDatabase?.name;
 +				return getIIndexedDBStorageDatabase(this.applicationStorageDatabase)?.name;
@@ -150,14 +155,16 @@ index db1abe1dec4..0d566e2f71a 100644
  		}
  	}
  
-@@ -251,9 +272,9 @@ export class BrowserStorageService extends AbstractStorageService {
+@@ -274,10 +295,10 @@ export class BrowserStorageService extends AbstractStorageService {
  
  		// Clear databases
  		await Promises.settled([
 -			this.applicationStorageDatabase?.clear() ?? Promise.resolve(),
+-			this.applicationSharedStorageDatabase?.clear() ?? Promise.resolve(),
 -			this.profileStorageDatabase?.clear() ?? Promise.resolve(),
 -			this.workspaceStorageDatabase?.clear() ?? Promise.resolve()
 +			getIIndexedDBStorageDatabase(this.applicationStorageDatabase)?.clear() ?? Promise.resolve(),
++			getIIndexedDBStorageDatabase(this.applicationSharedStorageDatabase)?.clear() ?? Promise.resolve(),
 +			getIIndexedDBStorageDatabase(this.profileStorageDatabase)?.clear() ?? Promise.resolve(),
 +			getIIndexedDBStorageDatabase(this.workspaceStorageDatabase)?.clear() ?? Promise.resolve()
  		]);

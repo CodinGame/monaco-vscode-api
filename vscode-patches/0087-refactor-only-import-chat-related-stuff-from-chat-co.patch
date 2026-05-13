@@ -10,17 +10,17 @@ Subject: [PATCH] refactor: only import chat-related stuff from chat
  2 files changed, 1 insertion(+), 1 deletion(-)
 
 diff --git a/src/vs/workbench/contrib/chat/browser/chat.contribution.ts b/src/vs/workbench/contrib/chat/browser/chat.contribution.ts
-index e76d44b8645..d744199b8bf 100644
+index 08680900ef6..c438feda7d0 100644
 --- a/src/vs/workbench/contrib/chat/browser/chat.contribution.ts
 +++ b/src/vs/workbench/contrib/chat/browser/chat.contribution.ts
-@@ -183,6 +183,7 @@ import { ChatQueuePickerRendering } from './widget/input/chatQueuePickerActionIt
+@@ -192,6 +192,7 @@ import { ChatQueuePickerRendering } from './widget/input/chatQueuePickerActionIt
  import { ExploreAgentDefaultModel } from './exploreAgentDefaultModel.js';
  import { PlanAgentDefaultModel } from './planAgentDefaultModel.js';
  import { ChatImageCarouselService, IChatImageCarouselService } from './chatImageCarouselService.js';
 +import '../../notebook/browser/controller/chat/notebook.chat.contribution.js';
+ import { browserChatToolReferenceNames } from '../../browserView/common/browserChatToolReferenceNames.js';
  
- const toolReferenceNameEnumValues: string[] = [];
- const toolReferenceNameEnumDescriptions: string[] = [];
+ CommandsRegistry.registerCommand('_chat.notifyQuestionCarouselAnswer', (accessor: ServicesAccessor, resolveId: string, answers?: import('../common/chatService/chatService.js').IChatQuestionAnswers) => {
 diff --git a/src/vs/workbench/contrib/notebook/browser/notebook.contribution.ts b/src/vs/workbench/contrib/notebook/browser/notebook.contribution.ts
 index a63b68b7d38..39e0dc54737 100644
 --- a/src/vs/workbench/contrib/notebook/browser/notebook.contribution.ts

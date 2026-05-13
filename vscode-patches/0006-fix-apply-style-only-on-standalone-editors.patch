@@ -195,7 +195,7 @@ index 1d65e13d69c..a47a00a7aff 100644
  	outline-style: solid;
  	outline-offset: -1px;
 diff --git a/src/vs/editor/standalone/browser/standaloneCodeEditor.ts b/src/vs/editor/standalone/browser/standaloneCodeEditor.ts
-index b55bf1c0038..3cfdd097274 100644
+index db742fc9ba8..aead3db9861 100644
 --- a/src/vs/editor/standalone/browser/standaloneCodeEditor.ts
 +++ b/src/vs/editor/standalone/browser/standaloneCodeEditor.ts
 @@ -288,7 +288,7 @@ export class StandaloneCodeEditor extends CodeEditorWidget implements IStandalon
@@ -207,7 +207,7 @@ index b55bf1c0038..3cfdd097274 100644
  
  		if (keybindingService instanceof StandaloneKeybindingService) {
  			this._standaloneKeybindingService = keybindingService;
-@@ -530,7 +530,7 @@ export class StandaloneDiffEditor2 extends DiffEditorWidget implements IStandalo
+@@ -527,7 +527,7 @@ export class StandaloneDiffEditor2 extends DiffEditorWidget implements IStandalo
  		super(
  			domElement,
  			options,

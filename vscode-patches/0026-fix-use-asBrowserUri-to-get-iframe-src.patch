@@ -8,20 +8,21 @@ Subject: [PATCH] fix: use asBrowserUri to get iframe src
  1 file changed, 4 insertions(+), 3 deletions(-)
 
 diff --git a/src/vs/workbench/contrib/webview/browser/webviewElement.ts b/src/vs/workbench/contrib/webview/browser/webviewElement.ts
-index fb88ab7f757..738aad345e8 100644
+index cdc75a68e15..8be0cf34aaf 100644
 --- a/src/vs/workbench/contrib/webview/browser/webviewElement.ts
 +++ b/src/vs/workbench/contrib/webview/browser/webviewElement.ts
-@@ -13,8 +13,8 @@ import { streamToBuffer, VSBufferReadableStream } from '../../../../base/common/
- import { CancellationTokenSource } from '../../../../base/common/cancellation.js';
+@@ -13,9 +13,9 @@ import { CancellationToken, CancellationTokenSource } from '../../../../base/com
  import { Emitter, Event } from '../../../../base/common/event.js';
+ import { Lazy } from '../../../../base/common/lazy.js';
  import { Disposable, IDisposable, toDisposable } from '../../../../base/common/lifecycle.js';
 -import { COI } from '../../../../base/common/network.js';
  import { observableValue } from '../../../../base/common/observable.js';
+ import { listenStream } from '../../../../base/common/stream.js';
 +import { COI, FileAccess } from '../../../../base/common/network.js';
  import { URI } from '../../../../base/common/uri.js';
  import { generateUuid } from '../../../../base/common/uuid.js';
  import { localize } from '../../../../nls.js';
-@@ -451,8 +451,9 @@ export class WebviewElement extends Disposable implements IWebviewElement, Webvi
+@@ -467,8 +467,9 @@ export class WebviewElement extends Disposable implements IWebviewElement, Webvi
  		const queryString = new URLSearchParams(params).toString();
  
  		this.perfMark('init/set-src');

@@ -36,12 +36,12 @@ index bc6003e2f44..276849cac47 100644
  			}
  		}
 diff --git a/src/vs/workbench/common/views.ts b/src/vs/workbench/common/views.ts
-index cdd58916539..b2f1ad0bcc6 100644
+index da698317130..a4440817033 100644
 --- a/src/vs/workbench/common/views.ts
 +++ b/src/vs/workbench/common/views.ts
 @@ -145,6 +145,8 @@ export interface IViewContainerDescriptor {
  	 */
- 	readonly windowVisibility?: WindowVisibility;
+ 	readonly windowEnablement?: WindowEnablement;
  
 +	readonly when?: ContextKeyExpression;
 +

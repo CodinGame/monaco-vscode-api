@@ -5,10 +5,9 @@ Subject: [PATCH] fix: improve extension contribution types
 
 ---
  .../platform/extensions/common/extensions.ts  | 1457 ++++++++++++++++-
- .../services/search/common/queryBuilder.ts    |    8 +-
  .../themes/common/colorExtensionPoint.ts      |    2 +-
  .../tokenClassificationExtensionPoint.ts      |    1 +
- 4 files changed, 1398 insertions(+), 70 deletions(-)
+ 3 files changed, 1394 insertions(+), 66 deletions(-)
 
 diff --git a/src/vs/platform/extensions/common/extensions.ts b/src/vs/platform/extensions/common/extensions.ts
 index bd90ac80c01..24427248c5b 100644
@@ -1622,25 +1621,6 @@ index bd90ac80c01..24427248c5b 100644
  }
  
  export interface IExtensionCapabilities {
-diff --git a/src/vs/workbench/services/search/common/queryBuilder.ts b/src/vs/workbench/services/search/common/queryBuilder.ts
-index e2beb5012b6..c0dacc7dc83 100644
---- a/src/vs/workbench/services/search/common/queryBuilder.ts
-+++ b/src/vs/workbench/services/search/common/queryBuilder.ts
-@@ -615,10 +615,10 @@ export class QueryBuilder {
- 			folderName: includeFolderName ? folderName : undefined,
- 			excludePattern: excludePatternRet,
- 			fileEncoding: folderConfig.files && folderConfig.files.encoding,
--			disregardIgnoreFiles: typeof options.disregardIgnoreFiles === 'boolean' ? options.disregardIgnoreFiles : !folderConfig.search.useIgnoreFiles,
--			disregardGlobalIgnoreFiles: typeof options.disregardGlobalIgnoreFiles === 'boolean' ? options.disregardGlobalIgnoreFiles : !folderConfig.search.useGlobalIgnoreFiles,
--			disregardParentIgnoreFiles: typeof options.disregardParentIgnoreFiles === 'boolean' ? options.disregardParentIgnoreFiles : !folderConfig.search.useParentIgnoreFiles,
--			ignoreSymlinks: typeof options.ignoreSymlinks === 'boolean' ? options.ignoreSymlinks : !folderConfig.search.followSymlinks,
-+			disregardIgnoreFiles: typeof options.disregardIgnoreFiles === 'boolean' ? options.disregardIgnoreFiles : !folderConfig.search?.useIgnoreFiles,
-+			disregardGlobalIgnoreFiles: typeof options.disregardGlobalIgnoreFiles === 'boolean' ? options.disregardGlobalIgnoreFiles : !folderConfig.search?.useGlobalIgnoreFiles,
-+			disregardParentIgnoreFiles: typeof options.disregardParentIgnoreFiles === 'boolean' ? options.disregardParentIgnoreFiles : !folderConfig.search?.useParentIgnoreFiles,
-+			ignoreSymlinks: typeof options.ignoreSymlinks === 'boolean' ? options.ignoreSymlinks : !folderConfig.search?.followSymlinks,
- 			ignoreGlobCase: options.ignoreGlobCase,
- 		};
- 	}
 diff --git a/src/vs/workbench/services/themes/common/colorExtensionPoint.ts b/src/vs/workbench/services/themes/common/colorExtensionPoint.ts
 index 889c61bb08c..b392cc8614f 100644
 --- a/src/vs/workbench/services/themes/common/colorExtensionPoint.ts

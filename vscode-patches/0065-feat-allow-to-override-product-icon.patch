@@ -12,10 +12,10 @@ Subject: [PATCH] feat: allow to override product icon
  5 files changed, 6 insertions(+), 5 deletions(-)
 
 diff --git a/build/lib/stylelint/vscode-known-variables.json b/build/lib/stylelint/vscode-known-variables.json
-index 59dfc331f35..f686718b940 100644
+index 915ec96307a..ba89ba718bc 100644
 --- a/build/lib/stylelint/vscode-known-variables.json
 +++ b/build/lib/stylelint/vscode-known-variables.json
-@@ -1054,7 +1054,8 @@
+@@ -1072,7 +1072,8 @@
  		"--vscode-inline-chat-affordance-height",
  		"--collapse-from-width",
  		"--slide-from-x",
@@ -52,7 +52,7 @@ index be622a4452e..db25f171868 100644
  	background-position: center center;
  	background-size: 16px;
 diff --git a/src/vs/workbench/contrib/welcomeGettingStarted/browser/media/gettingStarted.css b/src/vs/workbench/contrib/welcomeGettingStarted/browser/media/gettingStarted.css
-index c661d88076c..fce2978e49c 100644
+index 71733ede647..a74b5c5ede6 100644
 --- a/src/vs/workbench/contrib/welcomeGettingStarted/browser/media/gettingStarted.css
 +++ b/src/vs/workbench/contrib/welcomeGettingStarted/browser/media/gettingStarted.css
 @@ -5,7 +5,7 @@

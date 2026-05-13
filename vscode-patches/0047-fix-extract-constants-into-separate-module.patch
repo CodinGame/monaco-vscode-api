@@ -17,7 +17,7 @@ so that only the constant is pulled from the root instead of the whole module gr
  create mode 100644 src/vs/workbench/contrib/chat/browser/widget/input/editor/chatDynamicVariablesConstant.ts
 
 diff --git a/src/vs/workbench/api/browser/mainThreadChatAgents2.ts b/src/vs/workbench/api/browser/mainThreadChatAgents2.ts
-index fa577f8d06c..54d229deb92 100644
+index a1efe056b93..fdb522fd410 100644
 --- a/src/vs/workbench/api/browser/mainThreadChatAgents2.ts
 +++ b/src/vs/workbench/api/browser/mainThreadChatAgents2.ts
 @@ -27,8 +27,6 @@ import { ILogService } from '../../../platform/log/common/log.js';
@@ -39,7 +39,7 @@ index fa577f8d06c..54d229deb92 100644
  
  interface AgentData {
  	dispose: () => void;
-@@ -627,7 +628,7 @@ export class MainThreadChatAgents2 extends Disposable implements MainThreadChatA
+@@ -657,7 +658,7 @@ export class MainThreadChatAgents2 extends Disposable implements MainThreadChatA
  						kind: CompletionItemKind.Text,
  						detail: v.detail,
  						documentation: v.documentation,
@@ -133,7 +133,7 @@ index e05b71bd72c..af8fcba33d5 100644
  import { ChatAgentLocation } from '../../chat/common/constants.js';
  
 diff --git a/src/vs/workbench/contrib/search/browser/anythingQuickAccess.ts b/src/vs/workbench/contrib/search/browser/anythingQuickAccess.ts
-index 2acf7dabc09..83b25646b2a 100644
+index 72514432fcf..4d89929fb90 100644
 --- a/src/vs/workbench/contrib/search/browser/anythingQuickAccess.ts
 +++ b/src/vs/workbench/contrib/search/browser/anythingQuickAccess.ts
 @@ -54,7 +54,7 @@ import { Lazy } from '../../../../base/common/lazy.js';

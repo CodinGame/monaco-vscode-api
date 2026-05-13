@@ -121,8 +121,6 @@ import { IWorkspacePluginSettingsService } from 'vs/workbench/contrib/chat/commo
 import { WorkspacePluginSettingsService } from 'vs/workbench/contrib/chat/common/plugins/workspacePluginSettingsService'
 import { IChatImageCarouselService } from 'vs/workbench/contrib/chat/browser/chatImageCarouselService.service'
 import { ChatImageCarouselService } from 'vs/workbench/contrib/chat/browser/chatImageCarouselService'
-import { IInlineChatHistoryService } from 'vs/workbench/contrib/inlineChat/browser/inlineChatHistoryService.service'
-import { InlineChatHistoryService } from 'vs/workbench/contrib/inlineChat/browser/inlineChatHistoryService'
 import { NullSandboxHelperService } from 'vs/platform/sandbox/browser/sandboxHelperService'
 import { ISandboxHelperService } from 'vs/platform/sandbox/common/sandboxHelperService.service'
 import { IPluginGitService } from 'vs/workbench/contrib/chat/common/plugins/pluginGitService.service'
@@ -137,6 +135,18 @@ import { IRemoteAgentHostService } from 'vs/platform/agentHost/common/remoteAgen
 import { RemoteAgentHostService } from 'vs/platform/agentHost/browser/remoteAgentHostServiceImpl'
 import { AgentHostFileSystemService } from 'vs/workbench/services/agentHost/common/agentHostFileSystemService'
 import { AgentHostSessionWorkingDirectoryResolver } from 'vs/workbench/contrib/chat/browser/agentSessions/agentHost/agentHostSessionWorkingDirectoryResolver'
+import { IAgentHostPermissionService } from 'vs/platform/agentHost/common/agentHostPermissionService.service'
+import { IToolResultCompressor } from 'vs/workbench/contrib/chat/common/tools/toolResultCompressor.service'
+import { IChatToolRiskAssessmentService } from 'vs/workbench/contrib/chat/browser/tools/chatToolRiskAssessmentService.service'
+import { IPlanReviewFeedbackService } from 'vs/workbench/contrib/chat/browser/planReviewFeedback/planReviewFeedbackService.service'
+import { IChatInputNotificationService } from 'vs/workbench/contrib/chat/browser/widget/input/chatInputNotificationService.service'
+import { IChatPhoneInputPresenter } from 'vs/workbench/contrib/chat/browser/widget/input/chatPhoneInputPresenter.service'
+import { ChatToolRiskAssessmentService } from 'vs/workbench/contrib/chat/browser/tools/chatToolRiskAssessmentService'
+import { PlanReviewFeedbackService } from 'vs/workbench/contrib/chat/browser/planReviewFeedback/planReviewFeedbackService'
+import { AgentHostPermissionService } from 'vs/workbench/services/agentHost/common/agentHostPermissionService'
+import { ToolResultCompressorService } from 'vs/workbench/contrib/chat/browser/tools/toolResultCompressorService'
+import { ChatInputNotificationService } from 'vs/workbench/contrib/chat/browser/widget/input/chatInputNotificationService'
+import { ChatPhoneInputPresenterService } from 'vs/workbench/contrib/chat/browser/widget/input/chatPhoneInputPresenter'
 import 'vs/workbench/contrib/chat/browser/chat.contribution'
 import 'vs/workbench/contrib/terminal/terminal.chat.contribution'
 import 'vs/workbench/contrib/inlineChat/browser/inlineChat.contribution'
@@ -145,6 +155,7 @@ import 'vs/workbench/contrib/remoteCodingAgents/browser/remoteCodingAgents.contr
 class DefaultAccountService implements IDefaultAccountService {
   declare _serviceBrand: undefined
   constructor(private defaultAccount: IDefaultAccount | null) {}
+  currentDefaultAccount: IDefaultAccountService['currentDefaultAccount'] = null
 
   onDidChangePolicyData: IDefaultAccountService['onDidChangePolicyData'] = Event.None
   policyData: IDefaultAccountService['policyData'] = null
@@ -314,7 +325,6 @@ export default function getServiceOverride({
       true
     ),
     [IChatImageCarouselService.toString()]: new SyncDescriptor(ChatImageCarouselService, [], true),
-    [IInlineChatHistoryService.toString()]: new SyncDescriptor(InlineChatHistoryService, [], true),
     [IPluginGitService.toString()]: new SyncDescriptor(BrowserPluginGitCommandService, [], true),
     [IAgentNetworkFilterService.toString()]: new SyncDescriptor(
       AgentNetworkFilterService,
@@ -332,7 +342,33 @@ export default function getServiceOverride({
       [],
       true
     ),
-    [IAgentHostTerminalService.toString()]: new SyncDescriptor(AgentHostTerminalService, [], true)
+    [IAgentHostTerminalService.toString()]: new SyncDescriptor(AgentHostTerminalService, [], true),
+    [IToolResultCompressor.toString()]: new SyncDescriptor(ToolResultCompressorService, [], true),
+    [IChatToolRiskAssessmentService.toString()]: new SyncDescriptor(
+      ChatToolRiskAssessmentService,
+      [],
+      true
+    ),
+    [IPlanReviewFeedbackService.toString()]: new SyncDescriptor(
+      PlanReviewFeedbackService,
+      [],
+      true
+    ),
+    [IChatInputNotificationService.toString()]: new SyncDescriptor(
+      ChatInputNotificationService,
+      [],
+      true
+    ),
+    [IChatPhoneInputPresenter.toString()]: new SyncDescriptor(
+      ChatPhoneInputPresenterService,
+      [],
+      true
+    ),
+    [IAgentHostPermissionService.toString()]: new SyncDescriptor(
+      AgentHostPermissionService,
+      [],
+      true
+    )
   }
 }
 

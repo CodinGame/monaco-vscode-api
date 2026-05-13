@@ -15,10 +15,10 @@ https://bugzilla.mozilla.org/show_bug.cgi?id=2029029
  7 files changed, 9 insertions(+), 9 deletions(-)
 
 diff --git a/extensions/markdown-language-features/src/preview/documentRenderer.ts b/extensions/markdown-language-features/src/preview/documentRenderer.ts
-index f96fce9b745..872b737ebb2 100644
+index 5e5aeb780fa..b73f73f7418 100644
 --- a/extensions/markdown-language-features/src/preview/documentRenderer.ts
 +++ b/extensions/markdown-language-features/src/preview/documentRenderer.ts
-@@ -186,7 +186,7 @@ export class MdDocumentRenderer {
+@@ -201,7 +201,7 @@ export class MdDocumentRenderer {
  		}
  		const out: string[] = [];
  		for (const style of config.styles) {
@@ -27,7 +27,7 @@ index f96fce9b745..872b737ebb2 100644
  		}
  		return out.join('\n');
  	}
-@@ -219,7 +219,7 @@ export class MdDocumentRenderer {
+@@ -234,7 +234,7 @@ export class MdDocumentRenderer {
  	#getStyles(resourceProvider: WebviewResourceProvider, resource: vscode.Uri, config: MarkdownPreviewConfiguration, imageInfo: readonly ImageInfo[]): string {
  		const baseStyles: string[] = [];
  		for (const resource of this.#contributionProvider.contributions.previewStyles) {
@@ -37,10 +37,10 @@ index f96fce9b745..872b737ebb2 100644
  
  		return `${baseStyles.join('\n')}
 diff --git a/extensions/media-preview/src/audioPreview.ts b/extensions/media-preview/src/audioPreview.ts
-index 282d579b380..e4119b60297 100644
+index 01aaf33af1f..de11ce1a982 100644
 --- a/extensions/media-preview/src/audioPreview.ts
 +++ b/extensions/media-preview/src/audioPreview.ts
-@@ -72,7 +72,7 @@ class AudioPreview extends MediaPreview {
+@@ -74,7 +74,7 @@ class AudioPreview extends MediaPreview {
  
  	<title>Audio Preview</title>
  
@@ -50,7 +50,7 @@ index 282d579b380..e4119b60297 100644
  	<meta http-equiv="Content-Security-Policy" content="default-src 'none'; img-src data: ${cspSource}; media-src ${cspSource}; script-src 'nonce-${nonce}'; style-src ${cspSource} 'nonce-${nonce}';">
  	<meta id="settings" data-settings="${escapeAttribute(JSON.stringify(settings))}">
 diff --git a/extensions/media-preview/src/imagePreview/index.ts b/extensions/media-preview/src/imagePreview/index.ts
-index 6c2c8a73f66..60cdc96f680 100644
+index 79cb70c9fa7..f21070d2ff6 100644
 --- a/extensions/media-preview/src/imagePreview/index.ts
 +++ b/extensions/media-preview/src/imagePreview/index.ts
 @@ -199,7 +199,7 @@ class ImagePreview extends MediaPreview {
@@ -63,10 +63,10 @@ index 6c2c8a73f66..60cdc96f680 100644
  	<meta http-equiv="Content-Security-Policy" content="default-src 'none'; img-src data: ${cspSource}; connect-src ${cspSource}; script-src 'nonce-${nonce}'; style-src ${cspSource} 'nonce-${nonce}';">
  	<meta id="image-preview-settings" data-settings="${escapeAttribute(JSON.stringify(settings))}">
 diff --git a/extensions/media-preview/src/videoPreview.ts b/extensions/media-preview/src/videoPreview.ts
-index 1cb74c58426..796aa49bf2e 100644
+index 2ee1169ffc3..8052539f1e6 100644
 --- a/extensions/media-preview/src/videoPreview.ts
 +++ b/extensions/media-preview/src/videoPreview.ts
-@@ -76,7 +76,7 @@ class VideoPreview extends MediaPreview {
+@@ -78,7 +78,7 @@ class VideoPreview extends MediaPreview {
  
  	<title>Video Preview</title>
  
