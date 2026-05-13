@@ -12,7 +12,7 @@ Subject: [PATCH] feat: prevent IDE from entering fullscreen if not occupying
  4 files changed, 41 insertions(+), 16 deletions(-)
 
 diff --git a/src/vs/base/browser/dom.ts b/src/vs/base/browser/dom.ts
-index 870041f35f2..8a50d421187 100644
+index 6ebc4568a39..cc9e8f332c6 100644
 --- a/src/vs/base/browser/dom.ts
 +++ b/src/vs/base/browser/dom.ts
 @@ -1054,6 +1054,28 @@ export function getActiveElement(_document = getActiveDocument()): Element | nul
@@ -80,7 +80,7 @@ index 870041f35f2..8a50d421187 100644
  			// only guess that we are in fullscreen. It is also possible that
  			// the user has turned off taskbars in the OS and the browser is
 diff --git a/src/vs/workbench/browser/layout.ts b/src/vs/workbench/browser/layout.ts
-index a180f1dfd68..93fde9d609c 100644
+index a06de19bb58..363b503b288 100644
 --- a/src/vs/workbench/browser/layout.ts
 +++ b/src/vs/workbench/browser/layout.ts
 @@ -3,10 +3,15 @@
@@ -130,7 +130,7 @@ index a180f1dfd68..93fde9d609c 100644
  
  //#region Layout Implementation
  
-@@ -1701,7 +1701,8 @@ export abstract class Layout extends Disposable implements IWorkbenchLayoutServi
+@@ -1706,7 +1706,8 @@ export abstract class Layout extends Disposable implements IWorkbenchLayoutServi
  
  	layout(): void {
  		if (!this.disposed) {
@@ -141,7 +141,7 @@ index a180f1dfd68..93fde9d609c 100644
  				this.parent,				// in that case the workbench will span the entire site
  				this.contextService.getWorkbenchState() === WorkbenchState.EMPTY ? DEFAULT_EMPTY_WINDOW_DIMENSIONS : DEFAULT_WORKSPACE_WINDOW_DIMENSIONS // running with fallback to ensure no error is thrown (https://github.com/microsoft/vscode/issues/240242)
 diff --git a/src/vs/workbench/browser/web.main.ts b/src/vs/workbench/browser/web.main.ts
-index a7ba65b8862..2121458ae70 100644
+index 1dfedf4e6ec..60029802d2b 100644
 --- a/src/vs/workbench/browser/web.main.ts
 +++ b/src/vs/workbench/browser/web.main.ts
 @@ -123,7 +123,7 @@ export class BrowserMain extends Disposable {

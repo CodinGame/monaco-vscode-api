@@ -44,7 +44,7 @@ index bb331f99909..33ba53b6988 100644
  		this.extensionPath = path.normalize(originalFSPath(description.extensionLocation));
  		this.packageJSON = description;
 diff --git a/src/vscode-dts/vscode.d.ts b/src/vscode-dts/vscode.d.ts
-index 329826a2894..3014089804c 100644
+index e5cff6649f7..7e92c9cb8e1 100644
 --- a/src/vscode-dts/vscode.d.ts
 +++ b/src/vscode-dts/vscode.d.ts
 @@ -8367,6 +8367,11 @@ declare module 'vscode' {

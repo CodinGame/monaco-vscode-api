@@ -11,7 +11,7 @@ Subject: [PATCH] refactor: extract shouldAttemptTaskReconnection flag
  4 files changed, 10 insertions(+), 4 deletions(-)
 
 diff --git a/src/vs/workbench/contrib/tasks/browser/abstractTaskService.ts b/src/vs/workbench/contrib/tasks/browser/abstractTaskService.ts
-index 808dcdd8486..d7081a6cff8 100644
+index 36209197e92..01d8342874e 100644
 --- a/src/vs/workbench/contrib/tasks/browser/abstractTaskService.ts
 +++ b/src/vs/workbench/contrib/tasks/browser/abstractTaskService.ts
 @@ -79,7 +79,7 @@ import { VirtualWorkspaceContext } from '../../../common/contextkeys.js';

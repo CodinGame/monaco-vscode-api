@@ -4,19 +4,17 @@ Date: Thu, 19 Mar 2026 12:21:16 +0100
 Subject: [PATCH] feat: add AIDisabled policy
 
 ---
- .../contrib/chat/browser/chat.contribution.ts       | 13 ++++++++++++-
- 1 file changed, 12 insertions(+), 1 deletion(-)
+ .../contrib/chat/browser/chat.contribution.ts         | 11 +++++++++++
+ 1 file changed, 11 insertions(+)
 
 diff --git a/src/vs/workbench/contrib/chat/browser/chat.contribution.ts b/src/vs/workbench/contrib/chat/browser/chat.contribution.ts
-index d744199b8bf..fadb83a4bab 100644
+index c438feda7d0..7e7c80ab65f 100644
 --- a/src/vs/workbench/contrib/chat/browser/chat.contribution.ts
 +++ b/src/vs/workbench/contrib/chat/browser/chat.contribution.ts
-@@ -1465,7 +1465,18 @@ configurationRegistry.registerConfiguration({
- 			type: 'boolean',
+@@ -1564,6 +1564,17 @@ configurationRegistry.registerConfiguration({
  			description: nls.localize('chat.disableAIFeatures', "Disable and hide built-in AI features provided by GitHub Copilot, including chat and inline suggestions."),
  			default: false,
--			scope: ConfigurationScope.WINDOW
-+			scope: ConfigurationScope.WINDOW,
+ 			scope: ConfigurationScope.WINDOW,
 +			policy: {
 +				name: 'ChatAIFeaturesDisabled',
 +				category: PolicyCategory.InteractiveSession,
@@ -26,8 +24,8 @@ index d744199b8bf..fadb83a4bab 100644
 +						key: 'chat.disableAIFeatures',
 +						value: nls.localize('chat.disableAIFeatures', "Disable and hide built-in AI features provided by GitHub Copilot, including chat and inline suggestions.",)
 +					}
-+				},
++				}
 +			}
  		},
- 		'chat.allowAnonymousAccess': { // TODO@bpasero remove me eventually
+ 		[ChatConfiguration.TitleBarSignInEnabled]: {
  			type: 'boolean',

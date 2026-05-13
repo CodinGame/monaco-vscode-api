@@ -8,10 +8,10 @@ Subject: [PATCH] feat: allow to switch storage service workspace
  1 file changed, 20 insertions(+), 5 deletions(-)
 
 diff --git a/src/vs/workbench/services/storage/browser/storageService.ts b/src/vs/workbench/services/storage/browser/storageService.ts
-index 309033e3b9a..db1abe1dec4 100644
+index f055925b0c1..7ced4e9cdcb 100644
 --- a/src/vs/workbench/services/storage/browser/storageService.ts
 +++ b/src/vs/workbench/services/storage/browser/storageService.ts
-@@ -34,6 +34,7 @@ export class BrowserStorageService extends AbstractStorageService {
+@@ -37,6 +37,7 @@ export class BrowserStorageService extends AbstractStorageService {
  
  	private workspaceStorage: IStorage | undefined;
  	private workspaceStorageDatabase: IIndexedDBStorageDatabase | undefined;
@@ -19,7 +19,7 @@ index 309033e3b9a..db1abe1dec4 100644
  
  	get hasPendingUpdate(): boolean {
  		return Boolean(
-@@ -44,7 +45,7 @@ export class BrowserStorageService extends AbstractStorageService {
+@@ -48,7 +49,7 @@ export class BrowserStorageService extends AbstractStorageService {
  	}
  
  	constructor(
@@ -28,7 +28,7 @@ index 309033e3b9a..db1abe1dec4 100644
  		private readonly userDataProfileService: IUserDataProfileService,
  		@ILogService private readonly logService: ILogService,
  	) {
-@@ -120,12 +121,15 @@ export class BrowserStorageService extends AbstractStorageService {
+@@ -138,12 +139,15 @@ export class BrowserStorageService extends AbstractStorageService {
  	}
  
  	private async createWorkspaceStorage(): Promise<void> {
@@ -47,7 +47,7 @@ index 309033e3b9a..db1abe1dec4 100644
  
  		await this.workspaceStorage.init();
  
-@@ -185,7 +189,18 @@ export class BrowserStorageService extends AbstractStorageService {
+@@ -207,7 +211,18 @@ export class BrowserStorageService extends AbstractStorageService {
  	}
  
  	protected async switchToWorkspace(toWorkspace: IAnyWorkspaceIdentifier, preserveData: boolean): Promise<void> {

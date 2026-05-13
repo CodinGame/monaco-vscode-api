@@ -1,0 +1,21 @@
+From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
+From: =?UTF-8?q?Lo=C3=AFc=20Mangeonjean?= <loic@coderpad.io>
+Date: Wed, 13 May 2026 12:18:38 +0200
+Subject: [PATCH] fix: remove unused import
+
+---
+ src/vs/platform/agentHost/common/agentService.ts | 1 -
+ 1 file changed, 1 deletion(-)
+
+diff --git a/src/vs/platform/agentHost/common/agentService.ts b/src/vs/platform/agentHost/common/agentService.ts
+index 1a8f5c12a75..68f4a5234e9 100644
+--- a/src/vs/platform/agentHost/common/agentService.ts
++++ b/src/vs/platform/agentHost/common/agentService.ts
+@@ -3,7 +3,6 @@
+  *  Licensed under the MIT License. See License.txt in the project root for license information.
+  *--------------------------------------------------------------------------------------------*/
+ 
+-import type { CancellationToken } from '../../../base/common/cancellation.js';
+ import { Event } from '../../../base/common/event.js';
+ import { IReference } from '../../../base/common/lifecycle.js';
+ import { IAuthorizationProtectedResourceMetadata } from '../../../base/common/oauth.js';

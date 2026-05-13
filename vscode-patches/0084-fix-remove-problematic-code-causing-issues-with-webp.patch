@@ -10,7 +10,7 @@ Subject: [PATCH] fix: remove problematic code causing issues with webpack and
  2 files changed, 1 insertion(+), 6 deletions(-)
 
 diff --git a/src/vs/editor/browser/services/editorWorkerService.ts b/src/vs/editor/browser/services/editorWorkerService.ts
-index d5c878af3b3..c31f2227418 100644
+index ec09cf29853..d7077fd43da 100644
 --- a/src/vs/editor/browser/services/editorWorkerService.ts
 +++ b/src/vs/editor/browser/services/editorWorkerService.ts
 @@ -36,7 +36,6 @@ import { WorkerTextModelSyncClient } from '../../common/services/textModelSync/t

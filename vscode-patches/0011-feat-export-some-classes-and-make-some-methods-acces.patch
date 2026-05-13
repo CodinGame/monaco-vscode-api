@@ -22,6 +22,8 @@ Subject: [PATCH] feat: export some classes and make some methods accessible
  .../aiCustomization/customizationHarnessService.ts |  2 +-
  .../browser/chatStatus/chatStatusItemService.ts    |  2 +-
  .../chatContentParts/chatTextEditContentPart.ts    |  6 +++---
+ .../widget/input/chatInputNotificationService.ts   |  2 +-
+ .../widget/input/chatPhoneInputPresenter.ts        |  2 +-
  .../debug/browser/extensionHostDebugService.ts     |  2 +-
  .../browser/renameSymbolTrackerService.ts          |  2 +-
  .../contrib/issue/browser/issueTroubleshoot.ts     |  6 +++---
@@ -46,7 +48,7 @@ Subject: [PATCH] feat: export some classes and make some methods accessible
  .../terminal/common/embedderTerminalService.ts     |  2 +-
  .../common/remoteUserDataProfiles.ts               |  2 +-
  .../userDataSync/common/userDataSyncUtil.ts        |  2 +-
- 42 files changed, 71 insertions(+), 67 deletions(-)
+ 44 files changed, 73 insertions(+), 69 deletions(-)
 
 diff --git a/src/vs/editor/contrib/editorState/browser/keybindingCancellation.ts b/src/vs/editor/contrib/editorState/browser/keybindingCancellation.ts
 index 94020ce96b9..de1e9af237e 100644
@@ -136,7 +138,7 @@ index c578441baa9..7b5909d6fac 100644
  export namespace PeekContext {
  	export const inPeekEditor = new RawContextKey<boolean>('inReferenceSearchEditor', true, nls.localize('inReferenceSearchEditor', "Whether the current code editor is embedded inside peek"));
 diff --git a/src/vs/platform/actionWidget/browser/actionWidget.ts b/src/vs/platform/actionWidget/browser/actionWidget.ts
-index 1667d5a604b..567bd2c6045 100644
+index cb94356b6ed..e74d964cb41 100644
 --- a/src/vs/platform/actionWidget/browser/actionWidget.ts
 +++ b/src/vs/platform/actionWidget/browser/actionWidget.ts
 @@ -44,7 +44,7 @@ export interface IActionWidgetService {
@@ -218,7 +220,7 @@ index c8d1765a7ab..91d78dc1be0 100644
  	declare readonly _serviceBrand: undefined;
  
 diff --git a/src/vs/workbench/browser/layout.ts b/src/vs/workbench/browser/layout.ts
-index c213b29de93..85b8dc24bf0 100644
+index 3480283a217..b83c25cc4bb 100644
 --- a/src/vs/workbench/browser/layout.ts
 +++ b/src/vs/workbench/browser/layout.ts
 @@ -50,7 +50,7 @@ import { CodeWindow, mainWindow } from '../../base/browser/window.js';
@@ -327,18 +329,18 @@ index 10e2c3edace..91ba0f472a6 100644
  		// Ask each part to restore
  		try {
 diff --git a/src/vs/workbench/contrib/chat/browser/agentSessions/agentHost/agentHostSessionWorkingDirectoryResolver.ts b/src/vs/workbench/contrib/chat/browser/agentSessions/agentHost/agentHostSessionWorkingDirectoryResolver.ts
-index be02d0290f5..c6ff7a00ab8 100644
+index ff0d50662cd..d509ce285ee 100644
 --- a/src/vs/workbench/contrib/chat/browser/agentSessions/agentHost/agentHostSessionWorkingDirectoryResolver.ts
 +++ b/src/vs/workbench/contrib/chat/browser/agentSessions/agentHost/agentHostSessionWorkingDirectoryResolver.ts
-@@ -16,7 +16,7 @@ export interface IAgentHostSessionWorkingDirectoryResolver {
- 	resolve(sessionResource: URI): URI | undefined;
+@@ -17,7 +17,7 @@ export interface IAgentHostSessionWorkingDirectoryResolver {
+ 	isNewSession(sessionResource: URI): boolean;
  }
  
 -class AgentHostSessionWorkingDirectoryResolver implements IAgentHostSessionWorkingDirectoryResolver {
 +export class AgentHostSessionWorkingDirectoryResolver implements IAgentHostSessionWorkingDirectoryResolver {
  	declare readonly _serviceBrand: undefined;
  
- 	private readonly _resolvers = new Map<string, (sessionResource: URI) => URI | undefined>();
+ 	private readonly _resolvers = new Map<string, { readonly resolve: (sessionResource: URI) => URI | undefined; readonly isNewSession?: (sessionResource: URI) => boolean }>();
 diff --git a/src/vs/workbench/contrib/chat/browser/aiCustomization/aiCustomizationWorkspaceService.ts b/src/vs/workbench/contrib/chat/browser/aiCustomization/aiCustomizationWorkspaceService.ts
 index 4b0c29c92a8..fd065bcab61 100644
 --- a/src/vs/workbench/contrib/chat/browser/aiCustomization/aiCustomizationWorkspaceService.ts
@@ -353,20 +355,20 @@ index 4b0c29c92a8..fd065bcab61 100644
  
  	readonly activeProjectRoot: IObservable<URI | undefined>;
 diff --git a/src/vs/workbench/contrib/chat/browser/aiCustomization/customizationHarnessService.ts b/src/vs/workbench/contrib/chat/browser/aiCustomization/customizationHarnessService.ts
-index 198a8c52c6f..94ee6711395 100644
+index 519a41f869a..32bc0830566 100644
 --- a/src/vs/workbench/contrib/chat/browser/aiCustomization/customizationHarnessService.ts
 +++ b/src/vs/workbench/contrib/chat/browser/aiCustomization/customizationHarnessService.ts
-@@ -19,7 +19,7 @@ import { BUILTIN_STORAGE } from '../../common/aiCustomizationWorkspaceService.js
+@@ -19,7 +19,7 @@ import { SessionType } from '../../common/chatSessionsService.js';
   * Only the Local harness is registered statically. All other harnesses
   * (e.g. Copilot CLI) are contributed by extensions via the provider API.
   */
 -class CustomizationHarnessService extends CustomizationHarnessServiceBase {
 +export class CustomizationHarnessService extends CustomizationHarnessServiceBase {
- 	constructor() {
- 		const localExtras = [PromptsStorage.extension, BUILTIN_STORAGE];
- 		super(
+ 	constructor(
+ 		@IPromptsService promptsService: IPromptsService
+ 	) {
 diff --git a/src/vs/workbench/contrib/chat/browser/chatStatus/chatStatusItemService.ts b/src/vs/workbench/contrib/chat/browser/chatStatus/chatStatusItemService.ts
-index b87135ccce6..dae96febb2b 100644
+index bc340b9c69d..61e04d0ea13 100644
 --- a/src/vs/workbench/contrib/chat/browser/chatStatus/chatStatusItemService.ts
 +++ b/src/vs/workbench/contrib/chat/browser/chatStatus/chatStatusItemService.ts
 @@ -32,7 +32,7 @@ export type ChatStatusEntry = {
@@ -400,6 +402,32 @@ index 4305cc54d72..d4d363592a2 100644
  
 -class CodeCompareModelService implements ICodeCompareModelService {
 +export class CodeCompareModelService implements ICodeCompareModelService {
+ 
+ 	declare readonly _serviceBrand: undefined;
+ 
+diff --git a/src/vs/workbench/contrib/chat/browser/widget/input/chatInputNotificationService.ts b/src/vs/workbench/contrib/chat/browser/widget/input/chatInputNotificationService.ts
+index a20b8ef8031..36454ef8d4f 100644
+--- a/src/vs/workbench/contrib/chat/browser/widget/input/chatInputNotificationService.ts
++++ b/src/vs/workbench/contrib/chat/browser/widget/input/chatInputNotificationService.ts
+@@ -70,7 +70,7 @@ export interface IChatInputNotificationService {
+ 	handleMessageSent(): void;
+ }
+ 
+-class ChatInputNotificationService extends Disposable implements IChatInputNotificationService {
++export class ChatInputNotificationService extends Disposable implements IChatInputNotificationService {
+ 	readonly _serviceBrand: undefined;
+ 
+ 	private readonly _notifications = new Map<string, IChatInputNotification>();
+diff --git a/src/vs/workbench/contrib/chat/browser/widget/input/chatPhoneInputPresenter.ts b/src/vs/workbench/contrib/chat/browser/widget/input/chatPhoneInputPresenter.ts
+index ef536ce9eb3..2cb12951538 100644
+--- a/src/vs/workbench/contrib/chat/browser/widget/input/chatPhoneInputPresenter.ts
++++ b/src/vs/workbench/contrib/chat/browser/widget/input/chatPhoneInputPresenter.ts
+@@ -89,7 +89,7 @@ export interface IChatPhoneInputPresenter {
+ 	setImpl(impl: IChatPhonePresenterImpl): IDisposable;
+ }
+ 
+-class ChatPhoneInputPresenterService extends Disposable implements IChatPhoneInputPresenter {
++export class ChatPhoneInputPresenterService extends Disposable implements IChatPhoneInputPresenter {
  
  	declare readonly _serviceBrand: undefined;
  
@@ -599,7 +627,7 @@ index 3d0f306ac45..61da9bc65b5 100644
  		if (this._environmentService.debugExtensionHost && this._environmentService.debugRenderer) {
  			suffixSearchParams.set('debugged', '1');
 diff --git a/src/vs/workbench/services/extensions/common/abstractExtensionService.ts b/src/vs/workbench/services/extensions/common/abstractExtensionService.ts
-index 16ace8d597d..f95cc76cfa0 100644
+index 6a83d64d718..d504ede062b 100644
 --- a/src/vs/workbench/services/extensions/common/abstractExtensionService.ts
 +++ b/src/vs/workbench/services/extensions/common/abstractExtensionService.ts
 @@ -100,9 +100,9 @@ export abstract class AbstractExtensionService extends Disposable implements IEx

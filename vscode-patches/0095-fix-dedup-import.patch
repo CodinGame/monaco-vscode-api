@@ -8,22 +8,22 @@ Subject: [PATCH] fix: dedup import
  1 file changed, 1 insertion(+), 2 deletions(-)
 
 diff --git a/src/vs/workbench/contrib/browserView/common/browserEditorInput.ts b/src/vs/workbench/contrib/browserView/common/browserEditorInput.ts
-index 5ab9c4265f6..3d13dccb80e 100644
+index cddb5de9256..83a49ab1147 100644
 --- a/src/vs/workbench/contrib/browserView/common/browserEditorInput.ts
 +++ b/src/vs/workbench/contrib/browserView/common/browserEditorInput.ts
 @@ -9,14 +9,13 @@ import { ThemeIcon } from '../../../../base/common/themables.js';
  import { URI } from '../../../../base/common/uri.js';
  import { generateUuid } from '../../../../base/common/uuid.js';
  import { BrowserViewUri } from '../../../../platform/browserView/common/browserViewUri.js';
--import { IBrowserEditorViewState } from './browserView.js';
-+import { IBrowserEditorViewState, IBrowserViewModel, IBrowserViewWorkbenchService } from './browserView.js';
+-import { BrowserViewSharingState, IBrowserEditorViewState, IBrowserViewWorkbenchService } from './browserView.js';
++import { BrowserViewSharingState, IBrowserEditorViewState, IBrowserViewModel, IBrowserViewWorkbenchService } from './browserView.js';
  import { EditorInputCapabilities, IEditorSerializer, IUntypedEditorInput, Verbosity } from '../../../common/editor.js';
  import { EditorInput } from '../../../common/editor/editorInput.js';
  import { IThemeService } from '../../../../platform/theme/common/themeService.js';
  import { TAB_ACTIVE_FOREGROUND } from '../../../common/theme.js';
  import { localize } from '../../../../nls.js';
  import { IInstantiationService } from '../../../../platform/instantiation/common/instantiation.js';
--import { IBrowserViewWorkbenchService, IBrowserViewModel } from '../common/browserView.js';
+-import { IBrowserViewModel } from '../common/browserView.js';
  import { hasKey } from '../../../../base/common/types.js';
- import { ILifecycleService, ShutdownReason } from '../../../services/lifecycle/common/lifecycle.js';
  import { ITelemetryService } from '../../../../platform/telemetry/common/telemetry.js';
+ import { logBrowserOpen } from '../../../../platform/browserView/common/browserViewTelemetry.js';

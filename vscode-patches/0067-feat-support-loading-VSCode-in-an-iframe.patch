@@ -6,7 +6,7 @@ Subject: [PATCH] feat: support loading VSCode in an iframe
 ---
  src/vs/base/browser/browser.ts                |  2 +-
  src/vs/base/browser/canIUse.ts                | 12 +++---
- src/vs/base/browser/dom.ts                    | 43 +++++++------------
+ src/vs/base/browser/dom.ts                    | 41 +++++++------------
  src/vs/base/browser/domStylesheets.ts         |  4 +-
  src/vs/base/browser/mouseEvent.ts             |  3 +-
  src/vs/base/browser/touch.ts                  |  2 +-
@@ -27,9 +27,7 @@ Subject: [PATCH] feat: support loading VSCode in an iframe
  .../remote/browser/browserSocketFactory.ts    |  2 +-
  .../workbench/browser/parts/dialogs/dialog.ts |  3 +-
  src/vs/workbench/browser/window.ts            | 25 +++++++----
- .../chatMarkdownContentPart.ts                |  6 +--
  .../chatThinkingContentPart.ts                |  3 +-
- .../chatTerminalToolProgressPart.ts           |  3 +-
  .../comments/browser/commentThreadBody.ts     |  3 +-
  .../languageStatus/browser/languageStatus.ts  |  3 +-
  .../mergeEditor/browser/view/editorGutter.ts  |  9 ++--
@@ -37,7 +35,6 @@ Subject: [PATCH] feat: support loading VSCode in an iframe
  .../performance/browser/startupTimings.ts     |  3 +-
  .../contrib/remote/browser/remoteIndicator.ts |  2 +-
  .../chat/browser/terminalChatWidget.ts        |  5 +--
- .../webviewView/browser/webviewViewPane.ts    | 11 ++---
  .../browser/webWorkerExtensionHost.ts         |  6 +--
  .../host/browser/browserHostService.ts        |  2 +-
  .../keybinding/browser/keybindingService.ts   |  2 +-
@@ -46,7 +43,7 @@ Subject: [PATCH] feat: support loading VSCode in an iframe
  .../request/browser/requestService.ts         |  3 +-
  .../electron-browser/requestService.ts        |  3 +-
  .../services/timer/browser/timerService.ts    |  5 ++-
- 42 files changed, 129 insertions(+), 125 deletions(-)
+ 39 files changed, 120 insertions(+), 112 deletions(-)
 
 diff --git a/src/vs/base/browser/browser.ts b/src/vs/base/browser/browser.ts
 index 9da1be69d7c..08d8860ea36 100644
@@ -100,7 +97,7 @@ index d7c129abb27..a2895879194 100644
 +	pointerEvents: mainWindow.PointerEvent && ('ontouchstart' in mainWindow || mainWindow.navigator.maxTouchPoints > 0)
  };
 diff --git a/src/vs/base/browser/dom.ts b/src/vs/base/browser/dom.ts
-index 8a50d421187..6d419172f5d 100644
+index cc9e8f332c6..d06887a7eb2 100644
 --- a/src/vs/base/browser/dom.ts
 +++ b/src/vs/base/browser/dom.ts
 @@ -1165,7 +1165,7 @@ export const sharedMutationObserver = new class {
@@ -194,15 +191,6 @@ index 8a50d421187..6d419172f5d 100644
  }
  
  export const EventType = {
-@@ -2125,7 +2112,7 @@ export class DisposableResizeObserver extends Disposable {
- 
- 	constructor(callback: ResizeObserverCallback) {
- 		super();
--		this.observer = new ResizeObserver(callback);
-+		this.observer = new mainWindow.ResizeObserver(callback);
- 		this._register(toDisposable(() => this.observer.disconnect()));
- 	}
- 
 diff --git a/src/vs/base/browser/domStylesheets.ts b/src/vs/base/browser/domStylesheets.ts
 index 369b16a0e5a..99969bde5a8 100644
 --- a/src/vs/base/browser/domStylesheets.ts
@@ -226,7 +214,7 @@ index 369b16a0e5a..99969bde5a8 100644
  	}
  }
 diff --git a/src/vs/base/browser/mouseEvent.ts b/src/vs/base/browser/mouseEvent.ts
-index 2f8c99ff327..f061a5f93ef 100644
+index 2873a56e1e4..7be33e11ada 100644
 --- a/src/vs/base/browser/mouseEvent.ts
 +++ b/src/vs/base/browser/mouseEvent.ts
 @@ -6,6 +6,7 @@
@@ -237,7 +225,7 @@ index 2f8c99ff327..f061a5f93ef 100644
  
  export interface IMouseEvent {
  	readonly browserEvent: MouseEvent;
-@@ -145,7 +146,7 @@ export class StandardWheelEvent {
+@@ -139,7 +140,7 @@ export class StandardWheelEvent {
  		if (browser.isChrome) {
  			// Chrome version >= 123 contains the fix to factor devicePixelRatio into the wheel event.
  			// See https://chromium.googlesource.com/chromium/src.git/+/be51b448441ff0c9d1f17e0f25c4bf1ab3f11f61
@@ -281,7 +269,7 @@ index bdc8f7f689b..6abb8fe88d6 100644
  				if (!mutation.target.textContent) {
  					addSuffix();
 diff --git a/src/vs/base/browser/ui/toolbar/toolbar.ts b/src/vs/base/browser/ui/toolbar/toolbar.ts
-index 73e90474f66..39ba82be291 100644
+index 73e90474f66..37f6be0efff 100644
 --- a/src/vs/base/browser/ui/toolbar/toolbar.ts
 +++ b/src/vs/base/browser/ui/toolbar/toolbar.ts
 @@ -13,11 +13,12 @@ import { Codicon } from '../../../common/codicons.js';
@@ -303,7 +291,7 @@ index 73e90474f66..39ba82be291 100644
  			this.element.style.setProperty(ACTION_MIN_WIDTH_VAR, `${this.getConfiguredActionMinWidth()}px`);
  
 -			const observer = new ResizeObserver(() => {
-+			const observer = this._store.add(new DisposableResizeObserver(() => {
++			const observer = this._store.add(new DisposableResizeObserver('Toolbar.actionsUpdate', () => {
  				this.updateActions(this.element.getBoundingClientRect().width);
 -			});
 +			}));
@@ -331,7 +319,7 @@ index ab920e18349..ab318ad411d 100644
  export function isAuxiliaryWindow(obj: Window): obj is CodeWindow {
  	if (obj === mainWindow) {
 diff --git a/src/vs/editor/browser/config/elementSizeObserver.ts b/src/vs/editor/browser/config/elementSizeObserver.ts
-index c1f886e2c35..8c5485350c5 100644
+index c1f886e2c35..c03d20633f2 100644
 --- a/src/vs/editor/browser/config/elementSizeObserver.ts
 +++ b/src/vs/editor/browser/config/elementSizeObserver.ts
 @@ -6,7 +6,7 @@
@@ -369,7 +357,7 @@ index c1f886e2c35..8c5485350c5 100644
  			};
  
 -			this._resizeObserver = new ResizeObserver((entries) => {
-+			this._resizeObserver = this._register(new DisposableResizeObserver((entries) => {
++			this._resizeObserver = this._register(new DisposableResizeObserver('ElementSizeObserver.observerDimensionUpdate', (entries) => {
  				if (entries && entries[0] && entries[0].contentRect) {
  					observedDimension = { width: entries[0].contentRect.width, height: entries[0].contentRect.height };
  				} else {
@@ -436,7 +424,7 @@ index 09e68a80be8..789609790c9 100644
  			device: this._device,
  			format: presentationFormat,
 diff --git a/src/vs/editor/browser/observableCodeEditor.ts b/src/vs/editor/browser/observableCodeEditor.ts
-index 4c415ec53dd..c7f48fa8569 100644
+index 4c415ec53dd..e13fd98d07a 100644
 --- a/src/vs/editor/browser/observableCodeEditor.ts
 +++ b/src/vs/editor/browser/observableCodeEditor.ts
 @@ -16,6 +16,7 @@ import { IModelDeltaDecoration, ITextModel } from '../common/model.js';
@@ -452,7 +440,7 @@ index 4c415ec53dd..c7f48fa8569 100644
  		e => {
  			const container = this.editor.getContainerDomNode();
 -			const resizeObserver = new ResizeObserver(() => {
-+			const resizeObserver = new DisposableResizeObserver(() => {
++			const resizeObserver = new DisposableResizeObserver('ObservableCodeEditor.containerResize', () => {
  				// If we previously saw a 0 width, the editor was likely hidden.
  				// Now that it resized (became visible), flush the cached widths.
  				if (this._sawZeroLineWidth) {
@@ -487,7 +475,7 @@ index 53d6115a495..bf76e9bccb1 100644
  			device: this._device,
  			format: presentationFormat,
 diff --git a/src/vs/editor/browser/widget/diffEditor/utils/editorGutter.ts b/src/vs/editor/browser/widget/diffEditor/utils/editorGutter.ts
-index 152c3d854a8..c0f69ab945d 100644
+index 152c3d854a8..87f28e535b0 100644
 --- a/src/vs/editor/browser/widget/diffEditor/utils/editorGutter.ts
 +++ b/src/vs/editor/browser/widget/diffEditor/utils/editorGutter.ts
 @@ -3,8 +3,8 @@
@@ -506,7 +494,7 @@ index 152c3d854a8..c0f69ab945d 100644
  		);
  
 -		const o = new ResizeObserver(() => {
-+		const o = this._register(new DisposableResizeObserver(() => {
++		const o = this._register(new DisposableResizeObserver('EditorGutter.domNodeSizeChanged', () => {
  			transaction(tx => {
  				/** @description ResizeObserver: size changed */
  				this.domNodeSizeChanged.trigger(tx);
@@ -570,7 +558,7 @@ index a11ab53bb4d..c12d5b3a82f 100644
  
  		return {
 diff --git a/src/vs/editor/contrib/inlineCompletions/browser/view/inlineEdits/utils/utils.ts b/src/vs/editor/contrib/inlineCompletions/browser/view/inlineEdits/utils/utils.ts
-index aa935f23b64..bd0306fd65f 100644
+index 2605a160b42..2f636e8d163 100644
 --- a/src/vs/editor/contrib/inlineCompletions/browser/view/inlineEdits/utils/utils.ts
 +++ b/src/vs/editor/contrib/inlineCompletions/browser/view/inlineEdits/utils/utils.ts
 @@ -3,11 +3,11 @@
@@ -592,7 +580,7 @@ index aa935f23b64..bd0306fd65f 100644
  	const left = observableValue<number>('left', topLeft.left);
  
 -	const resizeObserver = new ResizeObserver(() => {
-+	const resizeObserver = store.add(new DisposableResizeObserver(() => {
++	const resizeObserver = store.add(new DisposableResizeObserver('observeElementPosition', () => {
  		transaction(tx => {
  			const topLeft = getDomNodePagePosition(element);
  			top.set(topLeft.top, tx);
@@ -622,7 +610,7 @@ index 358aa682cda..b41a1f1346b 100644
  
  			const supportedImageTypes = ['image/png', 'image/jpeg', 'image/gif', 'image/tiff', 'image/bmp'];
 diff --git a/src/vs/platform/hover/browser/hoverService.ts b/src/vs/platform/hover/browser/hoverService.ts
-index cfb53e2e686..f23776d2d53 100644
+index 6e0f7b019e7..95da35d46b1 100644
 --- a/src/vs/platform/hover/browser/hoverService.ts
 +++ b/src/vs/platform/hover/browser/hoverService.ts
 @@ -364,7 +364,7 @@ export class HoverService extends Disposable implements IHoverService {
@@ -669,7 +657,7 @@ index d2f18acdb50..170485fffda 100644
  	};
  
 diff --git a/src/vs/workbench/browser/window.ts b/src/vs/workbench/browser/window.ts
-index bff3f2cf1b0..3a62a16bdf2 100644
+index 09cddff2956..e329232bcb6 100644
 --- a/src/vs/workbench/browser/window.ts
 +++ b/src/vs/workbench/browser/window.ts
 @@ -114,13 +114,22 @@ export abstract class BaseWindow extends Disposable {
@@ -716,9 +704,9 @@ index bff3f2cf1b0..3a62a16bdf2 100644
 -					(window as { vscodeOriginalClearTimeout?: typeof window.clearTimeout }).vscodeOriginalClearTimeout?.apply(this, [handle]);
 +					(getOverridenWindow(targetWindow) as { vscodeOriginalClearTimeout?: typeof window.clearTimeout }).vscodeOriginalClearTimeout?.apply(this, [handle]);
  					timeoutDisposables.delete(timeoutDisposable);
- 				});
- 
-@@ -163,7 +172,7 @@ export abstract class BaseWindow extends Disposable {
+ 					// Remove from the window's DisposableStore without re-disposing (we're already inside dispose)
+ 					disposables.deleteAndLeak(timeoutDisposable);
+@@ -165,7 +174,7 @@ export abstract class BaseWindow extends Disposable {
  			return timeoutHandle;
  		};
  
@@ -727,43 +715,11 @@ index bff3f2cf1b0..3a62a16bdf2 100644
  			const timeoutDisposables = typeof timeoutHandle === 'number' ? BaseWindow.TIMEOUT_DISPOSABLES.get(timeoutHandle) : undefined;
  			if (timeoutDisposables) {
  				dispose(timeoutDisposables);
-diff --git a/src/vs/workbench/contrib/chat/browser/widget/chatContentParts/chatMarkdownContentPart.ts b/src/vs/workbench/contrib/chat/browser/widget/chatContentParts/chatMarkdownContentPart.ts
-index a0e4141bf70..c3c14930f1f 100644
---- a/src/vs/workbench/contrib/chat/browser/widget/chatContentParts/chatMarkdownContentPart.ts
-+++ b/src/vs/workbench/contrib/chat/browser/widget/chatContentParts/chatMarkdownContentPart.ts
-@@ -16,7 +16,7 @@ import { findLast } from '../../../../../../base/common/arraysFind.js';
- import { Codicon } from '../../../../../../base/common/codicons.js';
- import { MarkdownString } from '../../../../../../base/common/htmlContent.js';
- import { Lazy } from '../../../../../../base/common/lazy.js';
--import { Disposable, DisposableStore, dispose, IDisposable, MutableDisposable, toDisposable } from '../../../../../../base/common/lifecycle.js';
-+import { Disposable, DisposableStore, dispose, IDisposable, MutableDisposable } from '../../../../../../base/common/lifecycle.js';
- import { Emitter, Event } from '../../../../../../base/common/event.js';
- import { autorun, autorunSelfDisposable, derived } from '../../../../../../base/common/observable.js';
- import { ScrollbarVisibility } from '../../../../../../base/common/scrollable.js';
-@@ -61,6 +61,7 @@ import { EditorPool } from './chatContentCodePools.js';
- import { IChatContentPart, IChatContentPartRenderContext } from './chatContentParts.js';
- import { ChatExtensionsContentPart } from './chatExtensionsContentPart.js';
- import { IncrementalDOMMorpher } from './chatIncrementalRendering/chatIncrementalRendering.js';
-+import { DisposableResizeObserver } from '../../../../../../base/browser/dom.js';
- import './media/chatMarkdownPart.css';
- 
- const $ = dom.$;
-@@ -344,9 +345,8 @@ export class ChatMarkdownContentPart extends Disposable implements IChatContentP
- 			store.add(markdownDecorationsRenderer.walkTreeAndAnnotateReferenceLinks(this.markdown, result.element));
- 
- 			const layoutParticipants = new Lazy(() => {
--				const observer = new ResizeObserver(() => this.mathLayoutParticipants.forEach(layout => layout()));
-+				const observer = store.add(new DisposableResizeObserver(() => this.mathLayoutParticipants.forEach(layout => layout())));
- 				observer.observe(this.domNode);
--				store.add(toDisposable(() => observer.disconnect()));
- 				return this.mathLayoutParticipants;
- 			});
- 
 diff --git a/src/vs/workbench/contrib/chat/browser/widget/chatContentParts/chatThinkingContentPart.ts b/src/vs/workbench/contrib/chat/browser/widget/chatContentParts/chatThinkingContentPart.ts
-index 05a004c9272..d639c657a80 100644
+index 3e102b97ac6..cececb37f39 100644
 --- a/src/vs/workbench/contrib/chat/browser/widget/chatContentParts/chatThinkingContentPart.ts
 +++ b/src/vs/workbench/contrib/chat/browser/widget/chatContentParts/chatThinkingContentPart.ts
-@@ -40,6 +40,7 @@ import { IChatCollapsibleIODataPart } from './chatToolInputOutputContentPart.js'
+@@ -41,6 +41,7 @@ import { IChatCollapsibleIODataPart } from './chatToolInputOutputContentPart.js'
  import { ChatThinkingExternalResourceWidget } from './chatThinkingExternalResourcesWidget.js';
  import { LocalChatSessionUri, chatSessionResourceToId } from '../../../common/model/chatUri.js';
  import { IEditSessionDiffStats } from '../../../common/editing/chatEditingService.js';
@@ -771,7 +727,7 @@ index 05a004c9272..d639c657a80 100644
  
  
  function extractTextFromPart(content: IChatThinkingPart): string {
-@@ -490,7 +491,7 @@ export class ChatThinkingContentPart extends ChatCollapsibleContentPart implemen
+@@ -522,7 +523,7 @@ export class ChatThinkingContentPart extends ChatCollapsibleContentPart implemen
  			this._register(this.scrollableElement.onScroll(e => this.handleScroll(e.scrollTop)));
  
  			let pendingMutationRefresh: IDisposable | undefined;
@@ -780,21 +736,6 @@ index 05a004c9272..d639c657a80 100644
  				if (pendingMutationRefresh) {
  					return;
  				}
-diff --git a/src/vs/workbench/contrib/chat/browser/widget/chatContentParts/toolInvocationParts/chatTerminalToolProgressPart.ts b/src/vs/workbench/contrib/chat/browser/widget/chatContentParts/toolInvocationParts/chatTerminalToolProgressPart.ts
-index f44c85432e6..a013ea5b8ed 100644
---- a/src/vs/workbench/contrib/chat/browser/widget/chatContentParts/toolInvocationParts/chatTerminalToolProgressPart.ts
-+++ b/src/vs/workbench/contrib/chat/browser/widget/chatContentParts/toolInvocationParts/chatTerminalToolProgressPart.ts
-@@ -1222,9 +1222,8 @@ class ChatTerminalToolOutputSection extends Disposable {
- 		this._register(dom.addDisposableListener(this.domNode, dom.EventType.FOCUS_IN, () => this._onDidFocusEmitter.fire()));
- 		this._register(dom.addDisposableListener(this.domNode, dom.EventType.FOCUS_OUT, event => this._onDidBlurEmitter.fire(event)));
- 
--		const resizeObserver = new ResizeObserver(() => this._handleResize());
-+		const resizeObserver = this._register(new dom.DisposableResizeObserver(() => this._handleResize()));
- 		resizeObserver.observe(this.domNode);
--		this._register(toDisposable(() => resizeObserver.disconnect()));
- 
- 		this._applyBackgroundColor();
- 		this._register(this._themeService.onDidColorThemeChange(() => this._applyBackgroundColor()));
 diff --git a/src/vs/workbench/contrib/comments/browser/commentThreadBody.ts b/src/vs/workbench/contrib/comments/browser/commentThreadBody.ts
 index 7f3deff2eda..d6be9167b3b 100644
 --- a/src/vs/workbench/contrib/comments/browser/commentThreadBody.ts
@@ -838,7 +779,7 @@ index a10887c3d76..0c0c0094538 100644
  							this._interactionCounter.increment();
  							observer.disconnect();
 diff --git a/src/vs/workbench/contrib/mergeEditor/browser/view/editorGutter.ts b/src/vs/workbench/contrib/mergeEditor/browser/view/editorGutter.ts
-index 7f92d3f354c..575cc123246 100644
+index 7f92d3f354c..d8209ee8564 100644
 --- a/src/vs/workbench/contrib/mergeEditor/browser/view/editorGutter.ts
 +++ b/src/vs/workbench/contrib/mergeEditor/browser/view/editorGutter.ts
 @@ -3,8 +3,8 @@
@@ -857,7 +798,7 @@ index 7f92d3f354c..575cc123246 100644
  		);
  
 -		const o = new ResizeObserver(() => {
-+		const o = this._register(new DisposableResizeObserver(() => {
++		const o = this._register(new DisposableResizeObserver('EditorGutter.domNodeSizeChange', () => {
  			transaction(tx => {
  				/** @description ResizeObserver: size changed */
  				this.domNodeSizeChanged.trigger(tx);
@@ -925,7 +866,7 @@ index 65d90cfd184..fe64e68bad4 100644
  
  		this._register(this.extensionService.onDidChangeExtensions(async (result) => {
 diff --git a/src/vs/workbench/contrib/terminalContrib/chat/browser/terminalChatWidget.ts b/src/vs/workbench/contrib/terminalContrib/chat/browser/terminalChatWidget.ts
-index be4f138c4ea..d3bfe8dde45 100644
+index 6e6730635d5..782b9382c6d 100644
 --- a/src/vs/workbench/contrib/terminalContrib/chat/browser/terminalChatWidget.ts
 +++ b/src/vs/workbench/contrib/terminalContrib/chat/browser/terminalChatWidget.ts
 @@ -4,7 +4,7 @@
@@ -937,57 +878,17 @@ index be4f138c4ea..d3bfe8dde45 100644
  import { CancelablePromise, createCancelablePromise, DeferredPromise } from '../../../../../base/common/async.js';
  import { CancellationTokenSource } from '../../../../../base/common/cancellation.js';
  import { Emitter, Event } from '../../../../../base/common/event.js';
-@@ -155,9 +155,8 @@ export class TerminalChatWidget extends Disposable {
+@@ -168,9 +168,8 @@ export class TerminalChatWidget extends Disposable {
  			Event.debounce(this._xterm.raw.onCursorMove, () => void 0, MicrotaskDelay),
  		)(() => this._relayout()));
  
 -		const observer = new ResizeObserver(() => this._relayout());
-+		const observer = this._register(new DisposableResizeObserver(() => this._relayout()));
++		const observer = this._register(new DisposableResizeObserver('TerminalChatWidget.terminalElementResize', () => this._relayout()));
  		observer.observe(this._terminalElement);
 -		this._register(toDisposable(() => observer.disconnect()));
  
  		this._resetPlaceholder();
  		this._container.appendChild(this._inlineChatWidget.domNode);
-diff --git a/src/vs/workbench/contrib/webviewView/browser/webviewViewPane.ts b/src/vs/workbench/contrib/webviewView/browser/webviewViewPane.ts
-index efa5a1b2b74..486ea0a9568 100644
---- a/src/vs/workbench/contrib/webviewView/browser/webviewViewPane.ts
-+++ b/src/vs/workbench/contrib/webviewView/browser/webviewViewPane.ts
-@@ -3,7 +3,7 @@
-  *  Licensed under the MIT License. See License.txt in the project root for license information.
-  *--------------------------------------------------------------------------------------------*/
- 
--import { addDisposableListener, Dimension, EventType, findParentWithClass, getWindow } from '../../../../base/browser/dom.js';
-+import { addDisposableListener, Dimension, DisposableResizeObserver, EventType, findParentWithClass, getWindow } from '../../../../base/browser/dom.js';
- import { CancellationTokenSource } from '../../../../base/common/cancellation.js';
- import { Emitter } from '../../../../base/common/event.js';
- import { DisposableStore, IDisposable, MutableDisposable, toDisposable } from '../../../../base/common/lifecycle.js';
-@@ -53,7 +53,7 @@ export class WebviewViewPane extends ViewPane {
- 
- 	private _container?: HTMLElement;
- 	private _rootContainer?: HTMLElement;
--	private _resizeObserver?: ResizeObserver;
-+	private _resizeObserver?: DisposableResizeObserver;
- 
- 	private readonly defaultTitle: string;
- 	private setTitle: string | undefined;
-@@ -131,15 +131,12 @@ export class WebviewViewPane extends ViewPane {
- 		this._rootContainer = undefined;
- 
- 		if (!this._resizeObserver) {
--			this._resizeObserver = new ResizeObserver(() => {
-+			this._resizeObserver = this._register(new DisposableResizeObserver(() => {
- 				setTimeout(() => {
- 					this.layoutWebview();
- 				}, 0);
--			});
--
--			this._register(toDisposable(() => {
--				this._resizeObserver?.disconnect();
- 			}));
-+
- 			this._resizeObserver.observe(container);
- 		}
- 	}
 diff --git a/src/vs/workbench/services/extensions/browser/webWorkerExtensionHost.ts b/src/vs/workbench/services/extensions/browser/webWorkerExtensionHost.ts
 index b6895fbf5d8..c59cb859b56 100644
 --- a/src/vs/workbench/services/extensions/browser/webWorkerExtensionHost.ts

@@ -398,7 +398,9 @@ const api: typeof vscode = {
   ChatDebugEventHookContent: extHostTypes.ChatDebugEventHookContent,
   ChatDebugHookResult: extHostTypes.ChatDebugHookResult,
   TaskRunOn: extHostTypes.TaskRunOn,
-  ChatSessionCustomizationType: extHostTypes.ChatSessionCustomizationType
+  ChatSessionCustomizationType: extHostTypes.ChatSessionCustomizationType,
+  ChatInputNotificationSeverity: extHostTypes.ChatInputNotificationSeverity,
+  ChatResponseInfoPart: extHostTypes.ChatResponseInfoPart
 }
 
 // @ts-expect-error the syntax will be transformed by a typescript transformer in the rollup config

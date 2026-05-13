@@ -42,7 +42,7 @@ index e31d3daf423..aa35bbc601a 100644
  import { IChatContentPartRenderContext } from '../chatContentParts.js';
  import { AbstractToolConfirmationSubPart } from './abstractToolConfirmationSubPart.js';
 diff --git a/src/vs/workbench/contrib/tasks/browser/task.contribution.ts b/src/vs/workbench/contrib/tasks/browser/task.contribution.ts
-index 4fa7237b82f..03e2d2bb6c9 100644
+index 1ad6a06d008..d619311bc2b 100644
 --- a/src/vs/workbench/contrib/tasks/browser/task.contribution.ts
 +++ b/src/vs/workbench/contrib/tasks/browser/task.contribution.ts
 @@ -20,7 +20,7 @@ import { StatusbarAlignment, IStatusbarService, IStatusbarEntryAccessor, IStatus
