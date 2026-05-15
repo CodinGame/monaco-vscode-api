@@ -4,9 +4,41 @@ Date: Mon, 11 Mar 2024 18:21:40 +0100
 Subject: [PATCH] feat: add some parameter to webview iframes
 
 ---
+ src/vs/workbench/contrib/webview/browser/pre/index.html    | 6 ++++--
  src/vs/workbench/contrib/webview/browser/webviewElement.ts | 3 +++
- 1 file changed, 3 insertions(+)
+ 2 files changed, 7 insertions(+), 2 deletions(-)
 
+diff --git a/src/vs/workbench/contrib/webview/browser/pre/index.html b/src/vs/workbench/contrib/webview/browser/pre/index.html
+index 8b9850b3077..db91ed3f9fc 100644
+--- a/src/vs/workbench/contrib/webview/browser/pre/index.html
++++ b/src/vs/workbench/contrib/webview/browser/pre/index.html
+@@ -35,6 +35,8 @@
+ 		const onElectron = searchParams.get('platform') === 'electron';
+ 		const disableServiceWorker = searchParams.has('disableServiceWorker');
+ 		const expectedWorkerVersion = parseInt(searchParams.get('swVersion'));
++		const serviceWorkerUri = searchParams.get('serviceWorkerUri');
++		const fakeHtmlUri = searchParams.get('fakeHtmlUri');
+ 
+ 		/**
+ 		 * @param {string} name
+@@ -252,7 +254,7 @@
+ 				return reject(new Error('Service Workers are not enabled. Webviews will not work. Try disabling private/incognito mode.'));
+ 			}
+ 
+-			const swPath = encodeURI(`service-worker.js?v=${expectedWorkerVersion}&vscode-resource-base-authority=${searchParams.get('vscode-resource-base-authority')}&remoteAuthority=${searchParams.get('remoteAuthority') ?? ''}`);
++			const swPath = encodeURI(`${serviceWorkerUri}?v=${expectedWorkerVersion}&vscode-resource-base-authority=${searchParams.get('vscode-resource-base-authority')}&remoteAuthority=${searchParams.get('remoteAuthority') ?? ''}`);
+ 			navigator.serviceWorker.register(swPath, { type: 'module', updateViaCache: 'none' })
+ 				.then(async registration => {
+ 					if (navigator.serviceWorker.controller) {
+@@ -1038,7 +1040,7 @@
+ 				if (globalThis.crossOriginIsolated) {
+ 					fakeUrlParams.set('vscode-coi', '3'); /*COOP+COEP*/
+ 				}
+-				newFrame.src = `./fake.html?${fakeUrlParams.toString()}`;
++				newFrame.src = `${fakeHtmlUri}?${fakeUrlParams.toString()}`;
+ 
+ 				newFrame.style.cssText = 'display: block; margin: 0; overflow: hidden; position: absolute; width: 100%; height: 100%; visibility: hidden';
+ 				document.body.appendChild(newFrame);
 diff --git a/src/vs/workbench/contrib/webview/browser/webviewElement.ts b/src/vs/workbench/contrib/webview/browser/webviewElement.ts
 index 8be0cf34aaf..d6142df6e9f 100644
 --- a/src/vs/workbench/contrib/webview/browser/webviewElement.ts
