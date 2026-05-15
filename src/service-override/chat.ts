@@ -148,6 +148,7 @@ import { ToolResultCompressorService } from 'vs/workbench/contrib/chat/browser/t
 import { ChatInputNotificationService } from 'vs/workbench/contrib/chat/browser/widget/input/chatInputNotificationService'
 import { ChatPhoneInputPresenterService } from 'vs/workbench/contrib/chat/browser/widget/input/chatPhoneInputPresenter'
 import 'vs/workbench/contrib/chat/browser/chat.contribution'
+import 'vs/workbench/contrib/chat/browser/chat.view.contribution'
 import 'vs/workbench/contrib/terminal/terminal.chat.contribution'
 import 'vs/workbench/contrib/inlineChat/browser/inlineChat.contribution'
 import 'vs/workbench/contrib/remoteCodingAgents/browser/remoteCodingAgents.contribution'

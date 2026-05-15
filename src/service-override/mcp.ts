@@ -35,6 +35,7 @@ import { McpSandboxService } from 'vs/workbench/contrib/mcp/common/mcpSandboxSer
 import { IWorkbenchMcpGatewayService } from 'vs/workbench/contrib/mcp/common/mcpGatewayService.service'
 import { BrowserMcpGatewayService } from 'vs/workbench/contrib/mcp/browser/mcpGatewayService'
 import 'vs/workbench/contrib/mcp/browser/mcp.contribution'
+import 'vs/workbench/contrib/mcp/browser/mcp.view.contribution'
 
 export default function getServiceOverride(): IEditorOverrideServices {
   return {
