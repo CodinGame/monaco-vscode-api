@@ -52,6 +52,7 @@ import '@codingame/monaco-vscode-npm-default-extension'
 import '@codingame/monaco-vscode-media-preview-default-extension'
 import '@codingame/monaco-vscode-ipynb-default-extension'
 import '@codingame/monaco-vscode-simple-browser-default-extension'
+import '@codingame/monaco-vscode-mermaid-markdown-features-default-extension'
 
 const { getApi } = registerExtension(
   {
