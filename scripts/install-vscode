@@ -1,6 +1,8 @@
 #!/bin/bash
 set -e
 
+npm --version
+
 vscodeRef=$(cat package.json | jq -r '.config.vscode.ref')
 monacoRef=$(cat package.json | jq -r '.config.monaco.ref')
 
