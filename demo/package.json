@@ -125,7 +125,7 @@
     "@codingame/monaco-vscode-mcp-service-override": "file:../dist/packages/monaco-vscode-mcp-service-override",
     "@codingame/monaco-vscode-media-preview-default-extension": "file:../dist/packages/monaco-vscode-media-preview-default-extension",
     "@codingame/monaco-vscode-merge-conflict-default-extension": "file:../dist/packages/monaco-vscode-merge-conflict-default-extension",
-    "@codingame/monaco-vscode-mermaid-chat-features-default-extension": "file:../dist/packages/monaco-vscode-mermaid-chat-features-default-extension",
+    "@codingame/monaco-vscode-mermaid-markdown-features-default-extension": "file:../dist/packages/monaco-vscode-mermaid-markdown-features-default-extension",
     "@codingame/monaco-vscode-model-service-override": "file:../dist/packages/monaco-vscode-model-service-override",
     "@codingame/monaco-vscode-monarch-service-override": "file:../dist/packages/monaco-vscode-monarch-service-override",
     "@codingame/monaco-vscode-multi-diff-editor-service-override": "file:../dist/packages/monaco-vscode-multi-diff-editor-service-override",
