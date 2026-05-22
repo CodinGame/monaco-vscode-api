@@ -4,11 +4,11 @@
   "private": true,
   "description": "VSCode public API plugged on the monaco editor",
   "keywords": [],
+  "license": "MIT",
   "author": {
     "name": "CodinGame",
     "url": "http://www.codingame.com"
   },
-  "license": "MIT",
   "repository": {
     "type": "git",
     "url": "git+ssh://git@github.com/CodinGame/monaco-vscode-api.git"
