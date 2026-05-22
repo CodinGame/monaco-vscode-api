@@ -13,11 +13,6 @@ import { fileURLToPath } from 'url'
 import util from 'node:util'
 const __dirname = path.dirname(fileURLToPath(import.meta.url))
 
-const { NPM_TOKEN } = process.env
-if (NPM_TOKEN == null) {
-  throw new Error('env.NPM_TOKEN must be set')
-}
-
 const ALIASES: Record<string, string> = {
   vscode: '@codingame/monaco-vscode-extension-api',
   'monaco-editor': '@codingame/monaco-vscode-editor-api'
@@ -45,16 +40,12 @@ async function publishNpm(version: string, tag: string) {
           }
         }
       }
-      await fs.writeFile(
-        path.resolve(libDir, '.npmrc'),
-        `//registry.npmjs.org/:_authToken=${NPM_TOKEN}\n`
-      )
       await fs.writeFile(packageJsonFile, JSON.stringify(packageJson, null, 2))
 
       $.cwd = libDir
 
       try {
-        await $`npm publish --tag "${tag}" --access public`
+        await $`npm publish --tag "${tag}" --access public --provenance`
       } catch (err) {
         if (
           err instanceof ProcessOutput &&
