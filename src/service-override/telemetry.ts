@@ -6,6 +6,8 @@ import { IDataChannelService } from 'vs/platform/dataChannel/common/dataChannel.
 export type { ITelemetryData, TelemetryLevel } from 'vs/platform/telemetry/common/telemetry'
 import { DataChannelService } from 'vs/workbench/services/dataChannel/browser/dataChannelService'
 import 'vs/workbench/contrib/telemetry/browser/telemetry.contribution'
+import 'vs/workbench/contrib/editTelemetry/browser/editTelemetry.contribution'
+import 'vs/workbench/contrib/bracketPairColorizer2Telemetry/browser/bracketPairColorizer2Telemetry.contribution.js'
 
 export default function getServiceOverride(): IEditorOverrideServices {
   return {
