@@ -31,9 +31,9 @@ jobs:
           mise install -E vscode
           mise install
       - name: Install dependencies
-        run: npm --version && npm ci
+        run: npm ci
       - name: Build
-        run: npm --version && npm run build
+        run: npm run build
       - name: Release
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
