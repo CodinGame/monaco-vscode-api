@@ -38,7 +38,7 @@ index 00000000000..185a77baafb
 +
 +registerWorkbenchContribution2(EditorAutoSave.ID, EditorAutoSave, WorkbenchPhase.BlockRestore);
 diff --git a/src/vs/workbench/browser/parts/editor/editor.contribution.ts b/src/vs/workbench/browser/parts/editor/editor.contribution.ts
-index b302484f378..c41961848a8 100644
+index 55b2e787779..4e42a582a64 100644
 --- a/src/vs/workbench/browser/parts/editor/editor.contribution.ts
 +++ b/src/vs/workbench/browser/parts/editor/editor.contribution.ts
 @@ -61,7 +61,6 @@ import { KeybindingsRegistry, KeybindingWeight } from '../../../../platform/keyb

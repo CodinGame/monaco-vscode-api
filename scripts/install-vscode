@@ -48,7 +48,7 @@ rm -rf `find . -name '*.test.ts' -o -name 'test' -o -name 'electron-main' -o -na
 rm -f bootstrap*.ts *main.ts *cli.ts
 rm -f vs/workbench/workbench.desktop.main.ts
 rm -rf vs/code
-find vs/sessions -type f ! -path "vs/sessions/common/theme.ts" -delete
+find vs/sessions -type f ! \( -path "vs/sessions/common/theme.ts" -o -path "vs/sessions/common/sizes.ts" \) -delete
 cd ..
 
 echo "Extracting service identifiers"

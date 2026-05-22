@@ -621,10 +621,10 @@ index c5226cb273f..08f5ace9b37 100644
  			this._configurationService.getValue('accessibility.verbosity.hover') === true && this._accessibilityService.isScreenReaderOptimized(),
  			this._keybindingService.lookupKeybinding('editor.action.accessibleView')?.getAriaLabel() ?? ''
 diff --git a/src/vs/platform/actionWidget/browser/actionList.ts b/src/vs/platform/actionWidget/browser/actionList.ts
-index 194fff98b04..a4fa9b9ffa3 100644
+index ba28b5f9227..67fe5daa262 100644
 --- a/src/vs/platform/actionWidget/browser/actionList.ts
 +++ b/src/vs/platform/actionWidget/browser/actionList.ts
-@@ -1376,8 +1376,11 @@ export class ActionListWidget<T> extends Disposable {
+@@ -1384,8 +1384,11 @@ export class ActionListWidget<T> extends Disposable {
  	}
  
  	private _getRowElement(index: number): HTMLElement | null {
@@ -832,10 +832,10 @@ index 7796aae8a15..1c304a11a9e 100644
  
  	private createPart(id: string, role: string, classes: string[]): HTMLElement {
 diff --git a/src/vs/workbench/contrib/chat/browser/widget/input/chatInputPart.ts b/src/vs/workbench/contrib/chat/browser/widget/input/chatInputPart.ts
-index 1bb83a8fd50..6eea452c253 100644
+index feadd701bc5..733589db570 100644
 --- a/src/vs/workbench/contrib/chat/browser/widget/input/chatInputPart.ts
 +++ b/src/vs/workbench/contrib/chat/browser/widget/input/chatInputPart.ts
-@@ -2917,7 +2917,7 @@ export class ChatInputPart extends Disposable implements IHistoryNavigationWidge
+@@ -3033,7 +3033,7 @@ export class ChatInputPart extends Disposable implements IHistoryNavigationWidge
  			return;
  		}
  
@@ -1138,7 +1138,7 @@ index d6142df6e9f..0a78c540fe5 100644
  
  			// It is possible for the webview to be contained in another window
 diff --git a/src/vs/workbench/contrib/welcomeGettingStarted/browser/gettingStarted.ts b/src/vs/workbench/contrib/welcomeGettingStarted/browser/gettingStarted.ts
-index 2c969712dec..275ee455c46 100644
+index d38efb60031..4b60d97d082 100644
 --- a/src/vs/workbench/contrib/welcomeGettingStarted/browser/gettingStarted.ts
 +++ b/src/vs/workbench/contrib/welcomeGettingStarted/browser/gettingStarted.ts
 @@ -3,7 +3,7 @@
@@ -1150,7 +1150,7 @@ index 2c969712dec..275ee455c46 100644
  import { renderFormattedText } from '../../../../base/browser/formattedTextRenderer.js';
  import { status } from '../../../../base/browser/ui/aria/aria.js';
  import { StandardKeyboardEvent } from '../../../../base/browser/keyboardEvent.js';
-@@ -1761,7 +1761,7 @@ export class GettingStartedPage extends EditorPane {
+@@ -1762,7 +1762,7 @@ export class GettingStartedPage extends EditorPane {
  	override focus() {
  		super.focus();
  

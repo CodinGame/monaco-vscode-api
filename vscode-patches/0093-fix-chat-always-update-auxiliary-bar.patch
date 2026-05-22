@@ -8,10 +8,10 @@ Subject: [PATCH] fix(chat): always update auxiliary bar
  1 file changed, 1 insertion(+), 3 deletions(-)
 
 diff --git a/src/vs/workbench/contrib/chat/browser/chatSetup/chatSetupContributions.ts b/src/vs/workbench/contrib/chat/browser/chatSetup/chatSetupContributions.ts
-index 2a42a6eadf7..db8a3c9e119 100644
+index 90d39a49125..5034f74e546 100644
 --- a/src/vs/workbench/contrib/chat/browser/chatSetup/chatSetupContributions.ts
 +++ b/src/vs/workbench/contrib/chat/browser/chatSetup/chatSetupContributions.ts
-@@ -758,9 +758,7 @@ export class ChatTeardownContribution extends Disposable implements IWorkbenchCo
+@@ -761,9 +761,7 @@ export class ChatTeardownContribution extends Disposable implements IWorkbenchCo
  		const chatDisabled = this.configurationService.inspect(ChatConfiguration.AIDisabled);
  		if (chatDisabled.value === true) {
  			this.maybeEnableOrDisableExtension(typeof chatDisabled.workspaceValue === 'boolean' ? EnablementState.DisabledWorkspace : EnablementState.DisabledGlobally);

@@ -9,7 +9,7 @@ Subject: [PATCH] cleanup: remove code already done in
  1 file changed, 12 deletions(-)
 
 diff --git a/src/vs/editor/standalone/browser/standaloneServices.ts b/src/vs/editor/standalone/browser/standaloneServices.ts
-index 317e1d509b3..2d86c6f1dcd 100644
+index 5c4e7d68ba4..3723065604f 100644
 --- a/src/vs/editor/standalone/browser/standaloneServices.ts
 +++ b/src/vs/editor/standalone/browser/standaloneServices.ts
 @@ -16,7 +16,6 @@ import * as dom from '../../../base/browser/dom.js';
@@ -28,7 +28,7 @@ index 317e1d509b3..2d86c6f1dcd 100644
  import { WorkspaceEdit } from '../../common/languages.js';
  import { ILanguageService } from '../../common/languages/language.js';
  import { ITextModel, ITextSnapshot } from '../../common/model.js';
-@@ -1260,16 +1258,6 @@ export namespace StandaloneServices {
+@@ -1264,16 +1262,6 @@ export namespace StandaloneServices {
  			}
  		}
  

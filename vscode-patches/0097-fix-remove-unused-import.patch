@@ -8,7 +8,7 @@ Subject: [PATCH] fix: remove unused import
  1 file changed, 1 deletion(-)
 
 diff --git a/src/vs/platform/agentHost/common/agentService.ts b/src/vs/platform/agentHost/common/agentService.ts
-index 1a8f5c12a75..68f4a5234e9 100644
+index 1c1de275a0e..eeb3bda008c 100644
 --- a/src/vs/platform/agentHost/common/agentService.ts
 +++ b/src/vs/platform/agentHost/common/agentService.ts
 @@ -3,7 +3,6 @@

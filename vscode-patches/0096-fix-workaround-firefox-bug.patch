@@ -9,13 +9,13 @@ https://bugzilla.mozilla.org/show_bug.cgi?id=2029029
  extensions/media-preview/src/audioPreview.ts                  | 2 +-
  extensions/media-preview/src/imagePreview/index.ts            | 2 +-
  extensions/media-preview/src/videoPreview.ts                  | 2 +-
- extensions/mermaid-chat-features/src/chatOutputRenderer.ts    | 2 +-
- extensions/mermaid-chat-features/src/editorManager.ts         | 2 +-
+ .../mermaid-markdown-features/src/chatOutputRenderer.ts       | 2 +-
+ extensions/mermaid-markdown-features/src/editorManager.ts     | 2 +-
  extensions/simple-browser/src/simpleBrowserView.ts            | 4 ++--
  7 files changed, 9 insertions(+), 9 deletions(-)
 
 diff --git a/extensions/markdown-language-features/src/preview/documentRenderer.ts b/extensions/markdown-language-features/src/preview/documentRenderer.ts
-index 5e5aeb780fa..b73f73f7418 100644
+index 85407fb81bf..af8c73b7c67 100644
 --- a/extensions/markdown-language-features/src/preview/documentRenderer.ts
 +++ b/extensions/markdown-language-features/src/preview/documentRenderer.ts
 @@ -201,7 +201,7 @@ export class MdDocumentRenderer {
@@ -75,11 +75,11 @@ index 2ee1169ffc3..8052539f1e6 100644
  
  	<meta http-equiv="Content-Security-Policy" content="default-src 'none'; img-src data: ${cspSource}; media-src ${cspSource}; script-src 'nonce-${nonce}'; style-src ${cspSource} 'nonce-${nonce}';">
  	<meta id="settings" data-settings="${escapeAttribute(JSON.stringify(settings))}">
-diff --git a/extensions/mermaid-chat-features/src/chatOutputRenderer.ts b/extensions/mermaid-chat-features/src/chatOutputRenderer.ts
-index c6aacbd748e..83ef9189540 100644
---- a/extensions/mermaid-chat-features/src/chatOutputRenderer.ts
-+++ b/extensions/mermaid-chat-features/src/chatOutputRenderer.ts
-@@ -73,7 +73,7 @@ class MermaidChatOutputRenderer implements vscode.ChatOutputRenderer {
+diff --git a/extensions/mermaid-markdown-features/src/chatOutputRenderer.ts b/extensions/mermaid-markdown-features/src/chatOutputRenderer.ts
+index 48044bd7335..692e8b8f67e 100644
+--- a/extensions/mermaid-markdown-features/src/chatOutputRenderer.ts
++++ b/extensions/mermaid-markdown-features/src/chatOutputRenderer.ts
+@@ -74,7 +74,7 @@ class MermaidChatOutputRenderer implements vscode.ChatOutputRenderer {
  				<meta name="viewport" content="width=device-width, initial-scale=1.0">
  				<title>Mermaid Diagram</title>
  				<meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'nonce-${nonce}'; style-src ${webview.cspSource} 'unsafe-inline'; font-src data:;" />
@@ -88,11 +88,11 @@ index c6aacbd748e..83ef9189540 100644
  
  				<style>
  					body {
-diff --git a/extensions/mermaid-chat-features/src/editorManager.ts b/extensions/mermaid-chat-features/src/editorManager.ts
-index 5ee5cec29da..4147709002e 100644
---- a/extensions/mermaid-chat-features/src/editorManager.ts
-+++ b/extensions/mermaid-chat-features/src/editorManager.ts
-@@ -219,7 +219,7 @@ class MermaidPreview extends Disposable {
+diff --git a/extensions/mermaid-markdown-features/src/editorManager.ts b/extensions/mermaid-markdown-features/src/editorManager.ts
+index afbe21f342c..b4615e65470 100644
+--- a/extensions/mermaid-markdown-features/src/editorManager.ts
++++ b/extensions/mermaid-markdown-features/src/editorManager.ts
+@@ -223,7 +223,7 @@ class MermaidPreview extends Disposable {
  				<meta name="viewport" content="width=device-width, initial-scale=1.0">
  				<title>Mermaid Diagram</title>
  				<meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'nonce-${nonce}'; style-src ${this._webviewPanel.webview.cspSource} 'unsafe-inline'; font-src data:;" />

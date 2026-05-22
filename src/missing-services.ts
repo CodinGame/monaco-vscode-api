@@ -439,7 +439,7 @@ import { IChatStatusItemService } from 'vs/workbench/contrib/chat/browser/chatSt
 import { IChatTipService } from 'vs/workbench/contrib/chat/browser/chatTipService.service.js'
 import { IChatContextService } from 'vs/workbench/contrib/chat/browser/contextContrib/chatContextService.service'
 import { ICodeCompareModelService } from 'vs/workbench/contrib/chat/browser/widget/chatContentParts/chatTextEditContentPart.service'
-import { IChatToolOutputStateCache } from 'vs/workbench/contrib/chat/browser/widget/chatContentParts/toolInvocationParts/chatToolOutputStateCache.service'
+import { IChatOutputPartStateCache } from 'vs/workbench/contrib/chat/browser/widget/chatContentParts/chatOutputPartStateCache.service'
 import { IAICustomizationWorkspaceService } from 'vs/workbench/contrib/chat/common/aiCustomizationWorkspaceService.service'
 import { IChatModeService } from 'vs/workbench/contrib/chat/common/chatModes.service'
 import { ILanguageModelsConfigurationService } from 'vs/workbench/contrib/chat/common/languageModelsConfiguration.service.js'
@@ -514,6 +514,8 @@ import { IOnboardingService } from 'vs/workbench/contrib/welcomeOnboarding/commo
 import { IAgentHostFileSystemService } from 'vs/workbench/services/agentHost/common/agentHostFileSystemService.service'
 import { IPowerService } from 'vs/workbench/services/power/common/powerService.service.js'
 import { FileSystemProviderCapabilities } from './service-override/files.js'
+import { IAgentHostDebugLogsExportService } from 'vs/workbench/contrib/chat/browser/actions/exportAgentHostDebugLogsAction.service'
+import { IAgentHostUntitledProvisionalSessionService } from 'vs/workbench/contrib/chat/browser/agentSessions/agentHost/agentHostUntitledProvisionalSessionService.service'
 
 function Unsupported(target: object, propertyKey: string, descriptor?: PropertyDescriptor) {
   function unsupported() {
@@ -1054,6 +1056,10 @@ class TitleService implements ITitleService {
   onMenubarVisibilityChange: ITitleService['onMenubarVisibilityChange'] = Event.None
   updateProperties: ITitleService['updateProperties'] = (): void => {}
   registerVariables: ITitleService['registerVariables'] = () => {}
+  @Unsupported
+  get windowTitle(): ITitleService['windowTitle'] {
+    return unsupported()
+  }
 }
 registerSingleton(ITitleService, TitleService, InstantiationType.Eager)
 class WorkingCopyFileService implements IWorkingCopyFileService {
@@ -4546,6 +4552,12 @@ class LanguageModelsService implements ILanguageModelsService {
   setModelConfiguration: ILanguageModelsService['setModelConfiguration'] = async () => {}
   getModelConfigurationActions: ILanguageModelsService['getModelConfigurationActions'] = () => []
   configureModel: ILanguageModelsService['configureModel'] = async () => {}
+
+  getPinnedModelIds: ILanguageModelsService['getPinnedModelIds'] = () => []
+  pinModel: ILanguageModelsService['pinModel'] = () => {}
+  unpinModel: ILanguageModelsService['unpinModel'] = () => {}
+  isModelPinned: ILanguageModelsService['isModelPinned'] = () => false
+  onDidChangePinnedModels: ILanguageModelsService['onDidChangePinnedModels'] = Event.None
 }
 registerSingleton(ILanguageModelsService, LanguageModelsService, InstantiationType.Delayed)
 class ChatSlashCommandService implements IChatSlashCommandService {
@@ -5440,6 +5452,7 @@ class NullToolResultCompressor implements IToolResultCompressor {
   _serviceBrand: undefined
   registerFilter: IToolResultCompressor['registerFilter'] = () => {}
   maybeCompress: IToolResultCompressor['maybeCompress'] = () => undefined
+  registerCache: IToolResultCompressor['registerCache'] = () => {}
 }
 
 registerSingleton(IToolResultCompressor, NullToolResultCompressor, InstantiationType.Delayed)
@@ -5641,6 +5654,8 @@ class ChatEntitlementsService implements IChatEntitlementService {
   markAnonymousRateLimited: IChatEntitlementService['markAnonymousRateLimited'] = () => {}
   markSetupCompleted: IChatEntitlementService['markSetupCompleted'] = () => {}
   setForceHidden: IChatEntitlementService['setForceHidden'] = () => {}
+  hasByokModels = false
+  onDidChangeUsageBasedBilling = Event.None
 }
 registerSingleton(IChatEntitlementService, ChatEntitlementsService, InstantiationType.Eager)
 class PromptsService implements IPromptsService {
@@ -5797,6 +5812,7 @@ class NullDefaultAccountService extends Disposable implements IDefaultAccountSer
   copilotTokenInfo: IDefaultAccountService['copilotTokenInfo'] = null
   onDidChangeCopilotTokenInfo: IDefaultAccountService['onDidChangeCopilotTokenInfo'] = Event.None
   signOut: IDefaultAccountService['signOut'] = async () => {}
+  resolveGitHubUrl: IDefaultAccountService['resolveGitHubUrl'] = (path) => path
 }
 registerSingleton(IDefaultAccountService, NullDefaultAccountService, InstantiationType.Delayed)
 class DynamicAuthenticationProviderStorageService implements IDynamicAuthenticationProviderStorageService {
@@ -6096,6 +6112,11 @@ class ChatOutputRendererService implements IChatOutputRendererService {
 
   @Unsupported
   renderOutputPart: IChatOutputRendererService['renderOutputPart'] = unsupported
+
+  hasCodeBlockRenderer = () => false
+
+  @Unsupported
+  renderCodeBlock: IChatOutputRendererService['renderCodeBlock'] = unsupported
 }
 registerSingleton(IChatOutputRendererService, ChatOutputRendererService, InstantiationType.Delayed)
 
@@ -6328,10 +6349,10 @@ class ChatModeService implements IChatModeService {
   _serviceBrand: undefined
 
   @Unsupported
-  getModes: IChatModeService['getModes'] = unsupported
+  getLocalModes: IChatModeService['getLocalModes'] = unsupported
 
   @Unsupported
-  awaitModes: IChatModeService['awaitModes'] = unsupported
+  createModes: IChatModeService['createModes'] = unsupported
 }
 registerSingleton(IChatModeService, ChatModeService, InstantiationType.Delayed)
 
@@ -6641,13 +6662,13 @@ registerSingleton(
   InstantiationType.Delayed
 )
 
-class ChatToolOutputStateCache implements IChatToolOutputStateCache {
+class ChatOutputPartStateCache implements IChatOutputPartStateCache {
   _serviceBrand: undefined
-  get: IChatToolOutputStateCache['get'] = () => undefined
-  set: IChatToolOutputStateCache['set'] = () => {}
+  get: IChatOutputPartStateCache['get'] = () => undefined
+  set: IChatOutputPartStateCache['set'] = () => {}
 }
 
-registerSingleton(IChatToolOutputStateCache, ChatToolOutputStateCache, InstantiationType.Delayed)
+registerSingleton(IChatOutputPartStateCache, ChatOutputPartStateCache, InstantiationType.Delayed)
 
 class TerminalSandboxService implements ITerminalSandboxService {
   _serviceBrand: undefined
@@ -7256,3 +7277,38 @@ class OnboardingService implements IOnboardingService {
 }
 
 registerSingleton(IOnboardingService, OnboardingService, InstantiationType.Delayed)
+
+class AgentHostDebugLogsExportService implements IAgentHostDebugLogsExportService {
+  _serviceBrand: undefined
+
+  @Unsupported
+  save: IAgentHostDebugLogsExportService['save'] = unsupported
+}
+
+registerSingleton(
+  IAgentHostDebugLogsExportService,
+  AgentHostDebugLogsExportService,
+  InstantiationType.Delayed
+)
+
+class AgentHostUntitledProvisionalSessionService implements IAgentHostUntitledProvisionalSessionService {
+  _serviceBrand: undefined
+
+  onDidChange: IAgentHostUntitledProvisionalSessionService['onDidChange'] = Event.None
+  get: IAgentHostUntitledProvisionalSessionService['get'] = () => undefined
+  getOrCreate: IAgentHostUntitledProvisionalSessionService['getOrCreate'] = async () => undefined
+  waitForPending: IAgentHostUntitledProvisionalSessionService['waitForPending'] = async () =>
+    undefined
+  applyConfigChange: IAgentHostUntitledProvisionalSessionService['applyConfigChange'] = async () =>
+    undefined
+  tryRebind: IAgentHostUntitledProvisionalSessionService['tryRebind'] = async () => undefined
+  disposeSession: IAgentHostUntitledProvisionalSessionService['disposeSession'] = async () => {}
+  getResolvedConfig: IAgentHostUntitledProvisionalSessionService['getResolvedConfig'] = () =>
+    undefined
+}
+
+registerSingleton(
+  IAgentHostUntitledProvisionalSessionService,
+  AgentHostUntitledProvisionalSessionService,
+  InstantiationType.Delayed
+)

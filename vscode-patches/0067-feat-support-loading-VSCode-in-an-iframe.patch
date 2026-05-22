@@ -610,7 +610,7 @@ index 358aa682cda..b41a1f1346b 100644
  
  			const supportedImageTypes = ['image/png', 'image/jpeg', 'image/gif', 'image/tiff', 'image/bmp'];
 diff --git a/src/vs/platform/hover/browser/hoverService.ts b/src/vs/platform/hover/browser/hoverService.ts
-index 6e0f7b019e7..95da35d46b1 100644
+index b9931600efd..656dfe7c8dc 100644
 --- a/src/vs/platform/hover/browser/hoverService.ts
 +++ b/src/vs/platform/hover/browser/hoverService.ts
 @@ -364,7 +364,7 @@ export class HoverService extends Disposable implements IHoverService {
@@ -716,7 +716,7 @@ index 09cddff2956..e329232bcb6 100644
  			if (timeoutDisposables) {
  				dispose(timeoutDisposables);
 diff --git a/src/vs/workbench/contrib/chat/browser/widget/chatContentParts/chatThinkingContentPart.ts b/src/vs/workbench/contrib/chat/browser/widget/chatContentParts/chatThinkingContentPart.ts
-index 3e102b97ac6..cececb37f39 100644
+index 876777274d8..d6628d7e67d 100644
 --- a/src/vs/workbench/contrib/chat/browser/widget/chatContentParts/chatThinkingContentPart.ts
 +++ b/src/vs/workbench/contrib/chat/browser/widget/chatContentParts/chatThinkingContentPart.ts
 @@ -41,6 +41,7 @@ import { IChatCollapsibleIODataPart } from './chatToolInputOutputContentPart.js'
@@ -727,7 +727,7 @@ index 3e102b97ac6..cececb37f39 100644
  
  
  function extractTextFromPart(content: IChatThinkingPart): string {
-@@ -522,7 +523,7 @@ export class ChatThinkingContentPart extends ChatCollapsibleContentPart implemen
+@@ -523,7 +524,7 @@ export class ChatThinkingContentPart extends ChatCollapsibleContentPart implemen
  			this._register(this.scrollableElement.onScroll(e => this.handleScroll(e.scrollTop)));
  
  			let pendingMutationRefresh: IDisposable | undefined;

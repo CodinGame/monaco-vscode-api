@@ -49,10 +49,10 @@ index aad6a569f74..680f35e1bcd 100644
  
  export interface ITerminalFont {
 diff --git a/src/vs/workbench/contrib/terminal/common/terminalConfiguration.ts b/src/vs/workbench/contrib/terminal/common/terminalConfiguration.ts
-index fa6607bc845..66106bc74b3 100644
+index 3d3e8f2d0e0..700928cb645 100644
 --- a/src/vs/workbench/contrib/terminal/common/terminalConfiguration.ts
 +++ b/src/vs/workbench/contrib/terminal/common/terminalConfiguration.ts
-@@ -575,6 +575,11 @@ const terminalConfiguration: IStringDictionary<IConfigurationPropertySchema> = {
+@@ -571,6 +571,11 @@ const terminalConfiguration: IStringDictionary<IConfigurationPropertySchema> = {
  		type: 'boolean',
  		default: true
  	},

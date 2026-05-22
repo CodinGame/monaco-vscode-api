@@ -23,7 +23,8 @@ import {
   type EditorInputFactoryObject,
   type RegisteredEditorInfo,
   type RegisteredEditorOptions,
-  RegisteredEditorPriority
+  RegisteredEditorPriority,
+  type RegisteredEditorPriorityInfo
 } from 'vs/workbench/services/editor/common/editorResolverService'
 import { IEditorResolverService } from 'vs/workbench/services/editor/common/editorResolverService.service'
 import { EditorInput, type IEditorCloseHandler } from 'vs/workbench/common/editor/editorInput'
@@ -507,6 +508,7 @@ export {
   DomScrollableElement
 }
 export type {
+  RegisteredEditorPriorityInfo,
   IEditorSerializer,
   CustomViewOption,
   IEditorCloseHandler,

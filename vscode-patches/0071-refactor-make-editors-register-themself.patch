@@ -154,7 +154,7 @@ index aead3db9861..e7b71870d77 100644
  
  		this._configurationService = configurationService;
 diff --git a/src/vs/editor/standalone/browser/standaloneServices.ts b/src/vs/editor/standalone/browser/standaloneServices.ts
-index 2d86c6f1dcd..5b4f88cbd92 100644
+index 3723065604f..40e9c53786e 100644
 --- a/src/vs/editor/standalone/browser/standaloneServices.ts
 +++ b/src/vs/editor/standalone/browser/standaloneServices.ts
 @@ -74,13 +74,11 @@ import { UserInteractionService } from '../../../platform/userInteraction/browse

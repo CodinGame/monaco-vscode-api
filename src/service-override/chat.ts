@@ -83,13 +83,13 @@ import { IAgentTitleBarStatusService } from 'vs/workbench/contrib/chat/browser/a
 import { ILanguageModelsConfigurationService } from 'vs/workbench/contrib/chat/common/languageModelsConfiguration.service'
 import { IChatTipService } from 'vs/workbench/contrib/chat/browser/chatTipService.service'
 import { IChatEditingExplanationModelManager } from 'vs/workbench/contrib/chat/browser/chatEditing/chatEditingExplanationModelManager.service'
-import { IChatToolOutputStateCache } from 'vs/workbench/contrib/chat/browser/widget/chatContentParts/toolInvocationParts/chatToolOutputStateCache.service'
+import { IChatOutputPartStateCache } from 'vs/workbench/contrib/chat/browser/widget/chatContentParts/chatOutputPartStateCache.service'
 import { AgentSessionProjectionService } from 'vs/workbench/contrib/chat/browser/agentSessions/experiments/agentSessionProjectionService'
 import { AgentTitleBarStatusService } from 'vs/workbench/contrib/chat/browser/agentSessions/experiments/agentTitleBarStatusService'
 import { LanguageModelsConfigurationService } from 'vs/workbench/contrib/chat/browser/languageModelsConfigurationService'
 import { ChatTipService } from 'vs/workbench/contrib/chat/browser/chatTipService'
 import { ChatEditingExplanationModelManager } from 'vs/workbench/contrib/chat/browser/chatEditing/chatEditingExplanationModelManager'
-import { ChatToolOutputStateCache } from 'vs/workbench/contrib/chat/browser/widget/chatContentParts/toolInvocationParts/chatToolOutputStateCache'
+import { ChatOutputPartStateCache } from 'vs/workbench/contrib/chat/browser/widget/chatContentParts/chatOutputPartStateCache'
 import {
   ITerminalSandboxService,
   TerminalSandboxService
@@ -147,15 +147,24 @@ import { AgentHostPermissionService } from 'vs/workbench/services/agentHost/comm
 import { ToolResultCompressorService } from 'vs/workbench/contrib/chat/browser/tools/toolResultCompressorService'
 import { ChatInputNotificationService } from 'vs/workbench/contrib/chat/browser/widget/input/chatInputNotificationService'
 import { ChatPhoneInputPresenterService } from 'vs/workbench/contrib/chat/browser/widget/input/chatPhoneInputPresenter'
+import { IAgentHostUntitledProvisionalSessionService } from 'vs/workbench/contrib/chat/browser/agentSessions/agentHost/agentHostUntitledProvisionalSessionService.service'
+import { IAgentHostDebugLogsExportService } from 'vs/workbench/contrib/chat/browser/actions/exportAgentHostDebugLogsAction.service'
+import { AgentHostUntitledProvisionalSessionService } from 'vs/workbench/contrib/chat/browser/agentSessions/agentHost/agentHostUntitledProvisionalSessionService'
+import { BrowserAgentHostDebugLogsExportService } from 'vs/workbench/contrib/chat/browser/actions/exportAgentHostDebugLogsAction'
 import 'vs/workbench/contrib/chat/browser/chat.contribution'
+import 'vs/workbench/contrib/chat/browser/chat.shared.contribution'
 import 'vs/workbench/contrib/chat/browser/chat.view.contribution'
 import 'vs/workbench/contrib/terminal/terminal.chat.contribution'
 import 'vs/workbench/contrib/inlineChat/browser/inlineChat.contribution'
 import 'vs/workbench/contrib/remoteCodingAgents/browser/remoteCodingAgents.contribution'
+import 'vs/workbench/contrib/chat/browser/contextContrib/chatContext.contribution'
+import 'vs/workbench/contrib/imageCarousel/browser/imageCarousel.contribution'
 
 class DefaultAccountService implements IDefaultAccountService {
   declare _serviceBrand: undefined
   constructor(private defaultAccount: IDefaultAccount | null) {}
+
+  resolveGitHubUrl: IDefaultAccountService['resolveGitHubUrl'] = (path) => path
   currentDefaultAccount: IDefaultAccountService['currentDefaultAccount'] = null
 
   onDidChangePolicyData: IDefaultAccountService['onDidChangePolicyData'] = Event.None
@@ -282,7 +291,7 @@ export default function getServiceOverride({
       [],
       true
     ),
-    [IChatToolOutputStateCache.toString()]: new SyncDescriptor(ChatToolOutputStateCache, [], true),
+    [IChatOutputPartStateCache.toString()]: new SyncDescriptor(ChatOutputPartStateCache, [], true),
     [ITerminalSandboxService.toString()]: new SyncDescriptor(TerminalSandboxService, [], true),
     [ISandboxHelperService.toString()]: new SyncDescriptor(NullSandboxHelperService, [], true),
     [IAICustomizationWorkspaceService.toString()]: new SyncDescriptor(
@@ -367,6 +376,16 @@ export default function getServiceOverride({
     ),
     [IAgentHostPermissionService.toString()]: new SyncDescriptor(
       AgentHostPermissionService,
+      [],
+      true
+    ),
+    [IAgentHostUntitledProvisionalSessionService.toString()]: new SyncDescriptor(
+      AgentHostUntitledProvisionalSessionService,
+      [],
+      true
+    ),
+    [IAgentHostDebugLogsExportService.toString()]: new SyncDescriptor(
+      BrowserAgentHostDebugLogsExportService,
       [],
       true
     )

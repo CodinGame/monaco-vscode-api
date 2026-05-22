@@ -10,7 +10,7 @@ Subject: [PATCH] fix: do not hide the sidebar forcefully if the setting
  2 files changed, 8 insertions(+), 2 deletions(-)
 
 diff --git a/src/vs/platform/configuration/common/configuration.ts b/src/vs/platform/configuration/common/configuration.ts
-index e28c4a34a0a..b97be4a69c8 100644
+index 55eaae5451c..ea6ed0b941a 100644
 --- a/src/vs/platform/configuration/common/configuration.ts
 +++ b/src/vs/platform/configuration/common/configuration.ts
 @@ -9,7 +9,9 @@ import { Event } from '../../../base/common/event.js';

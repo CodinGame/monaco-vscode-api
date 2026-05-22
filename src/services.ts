@@ -706,3 +706,6 @@ export { IPluginGitService } from 'vs/workbench/contrib/chat/common/plugins/plug
 export { IAgentHostTerminalService } from 'vs/workbench/contrib/terminal/browser/agentHostTerminalService.service.js'
 export { IOnboardingService } from 'vs/workbench/contrib/welcomeOnboarding/common/onboardingService.service.js'
 export { IAgentHostFileSystemService } from 'vs/workbench/services/agentHost/common/agentHostFileSystemService.service'
+export { IAgentHostUntitledProvisionalSessionService } from 'vs/workbench/contrib/chat/browser/agentSessions/agentHost/agentHostUntitledProvisionalSessionService.service'
+export { IChatOutputPartStateCache } from 'vs/workbench/contrib/chat/browser/widget/chatContentParts/chatOutputPartStateCache.service'
+export { IAgentHostDebugLogsExportService } from 'vs/workbench/contrib/chat/browser/actions/exportAgentHostDebugLogsAction.service'

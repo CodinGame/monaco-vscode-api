@@ -27,7 +27,7 @@ index ec8414ee339..35ac0b396d8 100644
  export const ShellExecutionSupportedContext = new RawContextKey<boolean>('shellExecutionSupported', false, nls.localize('tasks.shellExecutionSupported', "Whether ShellExecution tasks are supported. Consider using in the when clause of a \'taskDefinition\' contribution."));
  export const TaskCommandsRegistered = new RawContextKey<boolean>('taskCommandsRegistered', false, nls.localize('tasks.taskCommandsRegistered', "Whether the task commands have been registered yet"));
 diff --git a/src/vs/workbench/contrib/terminalContrib/chatAgentTools/common/terminalSandboxService.ts b/src/vs/workbench/contrib/terminalContrib/chatAgentTools/common/terminalSandboxService.ts
-index d23cf904aee..261ce8997a1 100644
+index 3fa97e4e391..8695c34315d 100644
 --- a/src/vs/workbench/contrib/terminalContrib/chatAgentTools/common/terminalSandboxService.ts
 +++ b/src/vs/workbench/contrib/terminalContrib/chatAgentTools/common/terminalSandboxService.ts
 @@ -38,7 +38,9 @@ import { ITerminalSandboxService, TerminalSandboxPrerequisiteCheck, type ISandbo

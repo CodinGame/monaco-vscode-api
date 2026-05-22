@@ -12,7 +12,7 @@ Subject: [PATCH] feat: allow to override product icon
  5 files changed, 6 insertions(+), 5 deletions(-)
 
 diff --git a/build/lib/stylelint/vscode-known-variables.json b/build/lib/stylelint/vscode-known-variables.json
-index 915ec96307a..ba89ba718bc 100644
+index af361d22da5..586d70d45f4 100644
 --- a/build/lib/stylelint/vscode-known-variables.json
 +++ b/build/lib/stylelint/vscode-known-variables.json
 @@ -1072,7 +1072,8 @@
@@ -24,7 +24,7 @@ index 915ec96307a..ba89ba718bc 100644
 +		"--product-icon"
  	],
  	"sizes": [
- 		"--vscode-bodyFontSize",
+ 		"--vscode-agents-fontWeight-medium",
 diff --git a/src/vs/workbench/browser/parts/banner/media/bannerpart.css b/src/vs/workbench/browser/parts/banner/media/bannerpart.css
 index a0de81f24eb..c71af404312 100644
 --- a/src/vs/workbench/browser/parts/banner/media/bannerpart.css

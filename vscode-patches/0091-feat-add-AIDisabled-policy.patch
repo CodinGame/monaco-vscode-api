@@ -4,14 +4,14 @@ Date: Thu, 19 Mar 2026 12:21:16 +0100
 Subject: [PATCH] feat: add AIDisabled policy
 
 ---
- .../contrib/chat/browser/chat.contribution.ts         | 11 +++++++++++
+ .../contrib/chat/browser/chat.shared.contribution.ts  | 11 +++++++++++
  1 file changed, 11 insertions(+)
 
-diff --git a/src/vs/workbench/contrib/chat/browser/chat.contribution.ts b/src/vs/workbench/contrib/chat/browser/chat.contribution.ts
-index c438feda7d0..7e7c80ab65f 100644
---- a/src/vs/workbench/contrib/chat/browser/chat.contribution.ts
-+++ b/src/vs/workbench/contrib/chat/browser/chat.contribution.ts
-@@ -1564,6 +1564,17 @@ configurationRegistry.registerConfiguration({
+diff --git a/src/vs/workbench/contrib/chat/browser/chat.shared.contribution.ts b/src/vs/workbench/contrib/chat/browser/chat.shared.contribution.ts
+index 68fdbfdaf9d..da74f927aed 100644
+--- a/src/vs/workbench/contrib/chat/browser/chat.shared.contribution.ts
++++ b/src/vs/workbench/contrib/chat/browser/chat.shared.contribution.ts
+@@ -1616,6 +1616,17 @@ configurationRegistry.registerConfiguration({
  			description: nls.localize('chat.disableAIFeatures', "Disable and hide built-in AI features provided by GitHub Copilot, including chat and inline suggestions."),
  			default: false,
  			scope: ConfigurationScope.WINDOW,
@@ -27,5 +27,5 @@ index c438feda7d0..7e7c80ab65f 100644
 +				}
 +			}
  		},
- 		[ChatConfiguration.TitleBarSignInEnabled]: {
+ 		[ChatConfiguration.OfflineByok]: {
  			type: 'boolean',

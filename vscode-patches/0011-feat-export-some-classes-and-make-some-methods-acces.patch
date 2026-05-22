@@ -368,11 +368,11 @@ index 519a41f869a..32bc0830566 100644
  		@IPromptsService promptsService: IPromptsService
  	) {
 diff --git a/src/vs/workbench/contrib/chat/browser/chatStatus/chatStatusItemService.ts b/src/vs/workbench/contrib/chat/browser/chatStatus/chatStatusItemService.ts
-index bc340b9c69d..61e04d0ea13 100644
+index 54a136fe08a..24d14a1f6ff 100644
 --- a/src/vs/workbench/contrib/chat/browser/chatStatus/chatStatusItemService.ts
 +++ b/src/vs/workbench/contrib/chat/browser/chatStatus/chatStatusItemService.ts
-@@ -32,7 +32,7 @@ export type ChatStatusEntry = {
- 	detail: string | undefined;
+@@ -33,7 +33,7 @@ export type ChatStatusEntry = {
+ 	tooltip: string | undefined;
  };
  
 -class ChatStatusItemService implements IChatStatusItemService {
@@ -445,7 +445,7 @@ index 1e48c939054..1be394d7a9b 100644
  	private static readonly LAST_EXTENSION_DEVELOPMENT_WORKSPACE_KEY = 'debug.lastExtensionDevelopmentWorkspace';
  
 diff --git a/src/vs/workbench/contrib/inlineCompletions/browser/renameSymbolTrackerService.ts b/src/vs/workbench/contrib/inlineCompletions/browser/renameSymbolTrackerService.ts
-index 2ac90546d65..d7d382341f6 100644
+index a6cecf832d3..35d7dea7fc4 100644
 --- a/src/vs/workbench/contrib/inlineCompletions/browser/renameSymbolTrackerService.ts
 +++ b/src/vs/workbench/contrib/inlineCompletions/browser/renameSymbolTrackerService.ts
 @@ -211,7 +211,7 @@ class ModelSymbolRenameTracker extends Disposable {
@@ -483,10 +483,10 @@ index 5b019f38d09..24e9f6cceec 100644
  	readonly _serviceBrand: undefined;
  
 diff --git a/src/vs/workbench/services/agentHost/common/agentHostFileSystemService.ts b/src/vs/workbench/services/agentHost/common/agentHostFileSystemService.ts
-index 6f5217141be..574e4de5899 100644
+index 28ef4e28796..482f83805de 100644
 --- a/src/vs/workbench/services/agentHost/common/agentHostFileSystemService.ts
 +++ b/src/vs/workbench/services/agentHost/common/agentHostFileSystemService.ts
-@@ -39,7 +39,7 @@ export interface IAgentHostFileSystemService {
+@@ -34,7 +34,7 @@ export interface IAgentHostFileSystemService {
  	ensureSyncedCustomizationProvider(): void;
  }
  
