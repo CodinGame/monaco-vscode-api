@@ -128,7 +128,11 @@ registerEditor(
   {
     id: CustomEditorPane.ID,
     label: 'Custom editor pane input',
-    priority: RegisteredEditorPriority.default
+    priority: {
+      diff: RegisteredEditorPriority.default,
+      editor: RegisteredEditorPriority.default,
+      merge: RegisteredEditorPriority.default
+    }
   },
   {
     singlePerResource: true
