@@ -1,3 +1,6 @@
 [tools]
 node = "22.22.1"
 npm = "11.1.0"
+
+[env]
+npm_config_user_agent = "npm/11.1.0 node/v22.22.1 linux x64 workspaces/false"
