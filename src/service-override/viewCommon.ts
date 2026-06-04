@@ -1,5 +1,12 @@
 import type { IEditorOverrideServices } from 'vs/editor/standalone/browser/standaloneServices'
 import { SyncDescriptor } from 'vs/platform/instantiation/common/descriptors'
+import { Registry } from 'vs/platform/registry/common/platform'
+import {
+  Extensions as ViewContainerExtensions,
+  type IViewContainersRegistry,
+  ViewContainerLocation
+} from 'vs/workbench/common/views'
+import { ViewPaneContainer } from 'vs/workbench/browser/parts/views/viewPaneContainer'
 import { IViewDescriptorService } from 'vs/workbench/common/views.service'
 import { ViewDescriptorService } from 'vs/workbench/services/views/browser/viewDescriptorService'
 import { IActivityService } from 'vs/workbench/services/activity/common/activity.service'
@@ -104,7 +111,42 @@ registerServiceInitializePostParticipant(async (accessor) => {
   accessor.get(IHistoryService)
 })
 
+const EXPLORER_VIEW_CONTAINER_ID = 'workbench.view.explorer'
+/**
+ * VS Code's `views` extension-point resolves a contributed view's target as
+ * `container ?? getDefaultViewContainer()`, where getDefaultViewContainer() returns
+ * `viewContainersRegistry.get('workbench.view.explorer')`. In a partial setup that
+ * doesn't include the files explorer, that container is missing and the fallback
+ * throws (it reads `.extensionId` off `undefined`) — uncaught, aborting the ENTIRE
+ * contributes.views pass so every extension's contributed views fail to register.
+ * Register a minimal hidden-when-empty default Sidebar container under that id when
+ * none exists, so the fallback resolves and views degrade gracefully. See #804.
+ */
+function ensureDefaultViewContainer(): void {
+  const registry = Registry.as<IViewContainersRegistry>(
+    ViewContainerExtensions.ViewContainersRegistry
+  )
+  if (registry.get(EXPLORER_VIEW_CONTAINER_ID) != null) {
+    return
+  }
+  registry.registerViewContainer(
+    {
+      id: EXPLORER_VIEW_CONTAINER_ID,
+      title: { value: 'Explorer', original: 'Explorer' },
+      ctorDescriptor: new SyncDescriptor(ViewPaneContainer, [
+        EXPLORER_VIEW_CONTAINER_ID,
+        { mergeViewWithContainerWhenSingleView: true }
+      ]),
+      hideIfEmpty: true,
+      order: 0
+    },
+    ViewContainerLocation.Sidebar,
+    { isDefault: true }
+  )
+}
+
 function getServiceOverride(_webviewIframeAlternateDomains?: string): IEditorOverrideServices {
+  ensureDefaultViewContainer()
   if (_webviewIframeAlternateDomains != null) {
     webviewIframeAlternateDomains = _webviewIframeAlternateDomains
   }
