@@ -1,0 +1,1 @@
+../../../.agents/skills/vscode-service-upgrade/SKILL.md
