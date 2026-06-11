@@ -20,6 +20,9 @@ jobs:
   check:
     name: Check build
     runs-on: ubuntu-latest
+    env:
+      NETLIFY_AUTH_TOKEN: ${{ secrets.NETLIFY_AUTH_TOKEN }}
+      NETLIFY_SITE_ID: ${{ secrets.NETLIFY_SITE_ID }}
 
     steps:
       - name: Checkout
@@ -46,4 +49,18 @@ jobs:
         run: npm ci
       - name: Build demo
         working-directory: ./demo
-        run: npm run build
+        run: npm run build:netlify
+      - name: Deploy demo preview to Netlify
+        if: github.event.pull_request.head.repo.full_name == github.repository && env.NETLIFY_AUTH_TOKEN != '' && env.NETLIFY_SITE_ID != ''
+        uses: nwtgck/actions-netlify@v3.0
+        with:
+          publish-dir: './demo/dist'
+          production-branch: ${{ github.event.repository.default_branch }}
+          production-deploy: false
+          alias: deploy-preview-${{ github.event.pull_request.number }}
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+          deploy-message: PR #${{ github.event.pull_request.number }} - ${{ github.event.pull_request.title }}
+          enable-pull-request-comment: true
+          overwrites-pull-request-comment: true
+          netlify-config-path: ./demo/netlify.toml
+        timeout-minutes: 1
