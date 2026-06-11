@@ -14,7 +14,6 @@
     "noUnusedLocals": true,
     "noUnusedParameters": true,
     "noImplicitReturns": true,
-    "baseUrl": ".",
     "experimentalDecorators": true,
     "noUncheckedIndexedAccess": true,
     "paths": {
