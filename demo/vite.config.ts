@@ -1,5 +1,4 @@
 import { defineConfig } from 'vite'
-import importMetaUrlPlugin from '@codingame/esbuild-import-meta-url-plugin'
 import * as fs from 'fs'
 import path from 'path'
 const pkg = JSON.parse(
@@ -90,11 +89,7 @@ export default defineConfig({
       '@vscode/vscode-languagedetection',
       'marked'
     ],
-    exclude: [],
-    esbuildOptions: {
-      tsconfig: './tsconfig.json',
-      plugins: [importMetaUrlPlugin]
-    }
+    exclude: []
   },
   server: {
     port: 5173,

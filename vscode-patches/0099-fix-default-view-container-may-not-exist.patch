@@ -1,0 +1,31 @@
+From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
+From: =?UTF-8?q?Lo=C3=AFc=20Mangeonjean?= <loic@coderpad.io>
+Date: Fri, 5 Jun 2026 10:04:01 +0200
+Subject: [PATCH] fix: default view container may not exist
+
+---
+ src/vs/workbench/api/browser/viewsExtensionPoint.ts | 8 +++++++-
+ 1 file changed, 7 insertions(+), 1 deletion(-)
+
+diff --git a/src/vs/workbench/api/browser/viewsExtensionPoint.ts b/src/vs/workbench/api/browser/viewsExtensionPoint.ts
+index 833787070f3..ec47bce5a1b 100644
+--- a/src/vs/workbench/api/browser/viewsExtensionPoint.ts
++++ b/src/vs/workbench/api/browser/viewsExtensionPoint.ts
+@@ -462,10 +462,16 @@ class ViewsExtensionHandler implements IWorkbenchContribution {
+ 				}
+ 
+ 				const viewContainer = this.getViewContainer(key);
++				const container = viewContainer || this.getDefaultViewContainer();
++
+ 				if (!viewContainer) {
+ 					collector.warn(localize('ViewContainerDoesnotExist', "View container '{0}' does not exist and all views registered to it will be added to 'Explorer'.", key));
+ 				}
+-				const container = viewContainer || this.getDefaultViewContainer();
++				if (!container) {
++					collector.warn(localize('DefaultViewContainerDoesnotExist', "'Explorer' view container does not exist and all views registered to '{0}' will not be added to the UI.", key));
++					return;
++				}
++
+ 				const viewDescriptors: ICustomViewDescriptor[] = [];
+ 
+ 				for (let index = 0; index < value.length; index++) {
