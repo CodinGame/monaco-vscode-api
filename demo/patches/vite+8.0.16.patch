@@ -1,0 +1,105 @@
+diff --git a/node_modules/vite/dist/node/chunks/logger.js b/node_modules/vite/dist/node/chunks/logger.js
+index bcaf830..8f10b1b 100644
+--- a/node_modules/vite/dist/node/chunks/logger.js
++++ b/node_modules/vite/dist/node/chunks/logger.js
+@@ -195,6 +195,7 @@ const SPECIAL_QUERY_RE = /[?&](?:worker|sharedworker|raw|url)\b/;
+ * Prefix for resolved fs paths, since windows paths may not be valid as URLs.
+ */
+ const FS_PREFIX = `/@fs/`;
++const FS_RAW_PREFIX = `/@fs-raw/`
+ const CLIENT_PUBLIC_PATH = `/@vite/client`;
+ const ENV_PUBLIC_PATH = `/@vite/env`;
+ const VITE_PACKAGE_DIR = resolve(fileURLToPath(new URL("../../../src/node/constants.ts", import.meta.url)), "../../..");
+@@ -354,4 +355,4 @@ function printServerUrls(urls, optionsHost, info) {
+ 	if (urls.network.length === 0 && optionsHost === void 0) info(import_picocolors.default.dim(`  ${import_picocolors.default.green("➜")}  ${import_picocolors.default.bold("Network")}: use `) + import_picocolors.default.bold("--host") + import_picocolors.default.dim(" to expose"));
+ }
+ //#endregion
+-export { OPTIMIZABLE_ENTRY_RE as A, __esmMin as B, ERR_FILE_NOT_FOUND_IN_OPTIMIZED_DEP_DIR as C, JS_TYPES_RE as D, FS_PREFIX as E, defaultAllowedOrigins as F, __require as H, loopbackHosts as I, wildcardHosts as L, SPECIAL_QUERY_RE as M, VERSION as N, KNOWN_ASSET_TYPES as O, VITE_PACKAGE_DIR as P, require_picocolors as R, ENV_PUBLIC_PATH as S, ESBUILD_BASELINE_WIDELY_AVAILABLE_TARGET as T, __toCommonJS as U, __exportAll as V, __toESM as W, DEFAULT_SERVER_CONDITIONS as _, CLIENT_ENTRY as a, DEV_PROD_CONDITION as b, DEFAULT_ASSETS_INLINE_LIMIT as c, DEFAULT_CLIENT_MAIN_FIELDS as d, DEFAULT_CONFIG_FILES as f, DEFAULT_PREVIEW_PORT as g, DEFAULT_EXTERNAL_CONDITIONS as h, CLIENT_DIR as i, ROLLUP_HOOKS as j, METADATA_FILENAME as k, DEFAULT_ASSETS_RE as l, DEFAULT_EXTENSIONS as m, createLogger as n, CLIENT_PUBLIC_PATH as o, DEFAULT_DEV_PORT as p, printServerUrls as r, CSS_LANGS_RE as s, LogLevels as t, DEFAULT_CLIENT_CONDITIONS as u, DEFAULT_SERVER_MAIN_FIELDS as v, ERR_OPTIMIZE_DEPS_PROCESSING_ERROR as w, ENV_ENTRY as x, DEP_VERSION_RE as y, __commonJSMin as z };
++export { OPTIMIZABLE_ENTRY_RE as A, __esmMin as B, ERR_FILE_NOT_FOUND_IN_OPTIMIZED_DEP_DIR as C, JS_TYPES_RE as D, FS_PREFIX as E, FS_RAW_PREFIX, defaultAllowedOrigins as F, __require as H, loopbackHosts as I, wildcardHosts as L, SPECIAL_QUERY_RE as M, VERSION as N, KNOWN_ASSET_TYPES as O, VITE_PACKAGE_DIR as P, require_picocolors as R, ENV_PUBLIC_PATH as S, ESBUILD_BASELINE_WIDELY_AVAILABLE_TARGET as T, __toCommonJS as U, __exportAll as V, __toESM as W, DEFAULT_SERVER_CONDITIONS as _, CLIENT_ENTRY as a, DEV_PROD_CONDITION as b, DEFAULT_ASSETS_INLINE_LIMIT as c, DEFAULT_CLIENT_MAIN_FIELDS as d, DEFAULT_CONFIG_FILES as f, DEFAULT_PREVIEW_PORT as g, DEFAULT_EXTERNAL_CONDITIONS as h, CLIENT_DIR as i, ROLLUP_HOOKS as j, METADATA_FILENAME as k, DEFAULT_ASSETS_RE as l, DEFAULT_EXTENSIONS as m, createLogger as n, CLIENT_PUBLIC_PATH as o, DEFAULT_DEV_PORT as p, printServerUrls as r, CSS_LANGS_RE as s, LogLevels as t, DEFAULT_CLIENT_CONDITIONS as u, DEFAULT_SERVER_MAIN_FIELDS as v, ERR_OPTIMIZE_DEPS_PROCESSING_ERROR as w, ENV_ENTRY as x, DEP_VERSION_RE as y, __commonJSMin as z };
+diff --git a/node_modules/vite/dist/node/chunks/node.js b/node_modules/vite/dist/node/chunks/node.js
+index 668fc3e..449bc9b 100644
+--- a/node_modules/vite/dist/node/chunks/node.js
++++ b/node_modules/vite/dist/node/chunks/node.js
+@@ -1,4 +1,4 @@
+-import { A as OPTIMIZABLE_ENTRY_RE, B as __esmMin, C as ERR_FILE_NOT_FOUND_IN_OPTIMIZED_DEP_DIR, D as JS_TYPES_RE, E as FS_PREFIX, F as defaultAllowedOrigins, H as __require, I as loopbackHosts, L as wildcardHosts, M as SPECIAL_QUERY_RE, N as VERSION, O as KNOWN_ASSET_TYPES, P as VITE_PACKAGE_DIR, R as require_picocolors, S as ENV_PUBLIC_PATH, T as ESBUILD_BASELINE_WIDELY_AVAILABLE_TARGET, U as __toCommonJS, V as __exportAll, W as __toESM, _ as DEFAULT_SERVER_CONDITIONS, a as CLIENT_ENTRY, b as DEV_PROD_CONDITION, c as DEFAULT_ASSETS_INLINE_LIMIT, d as DEFAULT_CLIENT_MAIN_FIELDS, f as DEFAULT_CONFIG_FILES, g as DEFAULT_PREVIEW_PORT, h as DEFAULT_EXTERNAL_CONDITIONS, i as CLIENT_DIR, j as ROLLUP_HOOKS, k as METADATA_FILENAME, l as DEFAULT_ASSETS_RE, m as DEFAULT_EXTENSIONS, n as createLogger, o as CLIENT_PUBLIC_PATH, p as DEFAULT_DEV_PORT, r as printServerUrls, s as CSS_LANGS_RE, t as LogLevels, u as DEFAULT_CLIENT_CONDITIONS, v as DEFAULT_SERVER_MAIN_FIELDS, w as ERR_OPTIMIZE_DEPS_PROCESSING_ERROR, x as ENV_ENTRY, y as DEP_VERSION_RE, z as __commonJSMin } from "./logger.js";
++import { A as OPTIMIZABLE_ENTRY_RE, B as __esmMin, C as ERR_FILE_NOT_FOUND_IN_OPTIMIZED_DEP_DIR, D as JS_TYPES_RE, E as FS_PREFIX, FS_RAW_PREFIX, F as defaultAllowedOrigins, H as __require, I as loopbackHosts, L as wildcardHosts, M as SPECIAL_QUERY_RE, N as VERSION, O as KNOWN_ASSET_TYPES, P as VITE_PACKAGE_DIR, R as require_picocolors, S as ENV_PUBLIC_PATH, T as ESBUILD_BASELINE_WIDELY_AVAILABLE_TARGET, U as __toCommonJS, V as __exportAll, W as __toESM, _ as DEFAULT_SERVER_CONDITIONS, a as CLIENT_ENTRY, b as DEV_PROD_CONDITION, c as DEFAULT_ASSETS_INLINE_LIMIT, d as DEFAULT_CLIENT_MAIN_FIELDS, f as DEFAULT_CONFIG_FILES, g as DEFAULT_PREVIEW_PORT, h as DEFAULT_EXTERNAL_CONDITIONS, i as CLIENT_DIR, j as ROLLUP_HOOKS, k as METADATA_FILENAME, l as DEFAULT_ASSETS_RE, m as DEFAULT_EXTENSIONS, n as createLogger, o as CLIENT_PUBLIC_PATH, p as DEFAULT_DEV_PORT, r as printServerUrls, s as CSS_LANGS_RE, t as LogLevels, u as DEFAULT_CLIENT_CONDITIONS, v as DEFAULT_SERVER_MAIN_FIELDS, w as ERR_OPTIMIZE_DEPS_PROCESSING_ERROR, x as ENV_ENTRY, y as DEP_VERSION_RE, z as __commonJSMin } from "./logger.js";
+ import { builtinModules, createRequire } from "node:module";
+ import { parseAst, parseAstAsync } from "rolldown/parseAst";
+ import { esmExternalRequirePlugin, esmExternalRequirePlugin as esmExternalRequirePlugin$1 } from "rolldown/plugins";
+@@ -19207,12 +19207,12 @@ function assetPlugin(config) {
+ 		}
+ 	};
+ }
+-async function fileToUrl$1(pluginContext, id, asFileUrl = false) {
++async function fileToUrl$1(pluginContext, id, asFileUrl = false, raw = false) {
+ 	const { environment } = pluginContext;
+-	if (!environment.config.isBundled) return fileToDevUrl(environment, id, asFileUrl);
++	if (!environment.config.isBundled) return fileToDevUrl(environment, id, asFileUrl, raw);
+ 	else return fileToBuiltUrl(pluginContext, id);
+ }
+-async function fileToDevUrl(environment, id, asFileUrl = false) {
++async function fileToDevUrl(environment, id, asFileUrl = false, raw) {
+ 	const config = environment.getTopLevelConfig();
+ 	const publicFile = checkPublicFile(id, config);
+ 	if (inlineRE$3.test(id)) {
+@@ -19228,6 +19228,7 @@ async function fileToDevUrl(environment, id, asFileUrl = false) {
+ 	if (asFileUrl) return pathToFileURL(cleanedId).href;
+ 	let rtn;
+ 	if (publicFile) rtn = id;
++	else if (raw) rtn = path.posix.join(FS_RAW_PREFIX, id);
+ 	else if (id.startsWith(withTrailingSlash(config.root))) rtn = "/" + path.posix.relative(config.root, id);
+ 	else rtn = path.posix.join(FS_PREFIX, id);
+ 	return joinUrlSegments(joinUrlSegments(config.server.origin ?? "", config.decodedBase), removeLeadingSlash(rtn));
+@@ -24203,17 +24204,17 @@ function serveStaticMiddleware(server) {
+ 		}
+ 	};
+ }
+-function serveRawFsMiddleware(server) {
++function serveRawFsMiddleware(server, prefix) {
+ 	const serveFromRoot = build_default$1("/", sirvOptions({
+ 		config: server.config,
+ 		getHeaders: () => server.config.server.headers
+ 	}));
+ 	return function viteServeRawFsMiddleware(req, res, next) {
+-		if (req.url.startsWith(FS_PREFIX)) {
++		if (req.url.startsWith(prefix)) {
+ 			const url = new URL(req.url, "http://example.com");
+ 			const pathname = decodeURIIfPossible(url.pathname);
+ 			if (pathname === void 0) return next();
+-			let newPathname = pathname.slice(FS_PREFIX.length);
++			let newPathname = pathname.slice(prefix.length);
+ 			if (isWindows) newPathname = newPathname.replace(/^[A-Z]:/i, "");
+ 			url.pathname = encodeURI(newPathname);
+ 			req.url = url.href.slice(url.origin.length);
+@@ -26455,8 +26456,9 @@ async function _createServer(inlineConfig = {}, options) {
+ 		middlewares.use(triggerLazyBundlingMiddleware(server));
+ 		middlewares.use(memoryFilesMiddleware(server));
+ 	} else {
++		middlewares.use(serveRawFsMiddleware(server, FS_RAW_PREFIX));
+ 		middlewares.use(transformMiddleware(server));
+-		middlewares.use(serveRawFsMiddleware(server));
++		middlewares.use(serveRawFsMiddleware(server, FS_PREFIX));
+ 		middlewares.use(serveStaticMiddleware(server));
+ 	}
+ 	if (config.appType === "spa" || config.appType === "mpa") middlewares.use(htmlFallbackMiddleware(root, config.appType === "spa", server.environments.client));
+@@ -28715,9 +28717,9 @@ function assetImportMetaUrlPlugin(config) {
+ 					if (file) try {
+ 						if (publicDir && isParentDirectory(publicDir, file)) {
+ 							const publicPath = "/" + path.posix.relative(publicDir, file);
+-							builtUrl = await fileToUrl$1(this, publicPath);
++							builtUrl = await fileToUrl$1(this, publicPath, undefined, true);
+ 						} else {
+-							builtUrl = await fileToUrl$1(this, file);
++							builtUrl = await fileToUrl$1(this, file, undefined, true);
+ 							if (tryStatSync(file)?.isFile()) this.addWatchFile(file);
+ 						}
+ 					} catch {}
+@@ -31459,7 +31461,7 @@ function rolldownDepPlugin(environment, qualified, external) {
+ 					const rawUrl = code.slice(urlStart, urlEnd);
+ 					if (rawUrl[0] === "`" && rawUrl.includes("${")) continue;
+ 					const url = rawUrl.slice(1, -1);
+-					if (isDataUrl(url) || isExternalUrl(url) || url.startsWith("/")) continue;
++					if (!url.startsWith('.')) continue;
+ 					if (!s) s = new MagicString(code);
+ 					const absolutePath = path.resolve(path.dirname(id), url);
+ 					const normalizedRelativePath = normalizePath(path.relative(bundleOutputDir, absolutePath));
