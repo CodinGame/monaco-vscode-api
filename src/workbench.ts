@@ -7,7 +7,7 @@ import { isFolderToOpen, isWorkspaceToOpen } from 'vs/platform/window/common/win
 import {
   getSingleFolderWorkspaceIdentifier,
   getWorkspaceIdentifier as getWorkspaceIdentifierFromUri
-} from 'vs/workbench/services/workspaces/browser/workspaces'
+} from 'vs/platform/workspaces/common/workspaceIdentifier'
 import { URI } from 'vs/base/common/uri'
 import { toLocalISOString } from 'vs/base/common/date'
 

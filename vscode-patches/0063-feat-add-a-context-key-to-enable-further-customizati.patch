@@ -126,7 +126,7 @@ index 678a225f1df..ac1f028bc30 100644
  	}
  
 diff --git a/src/vs/workbench/common/contextkeys.ts b/src/vs/workbench/common/contextkeys.ts
-index c650e12823e..08464959f31 100644
+index 51a4a3f2486..0b1ea9824f2 100644
 --- a/src/vs/workbench/common/contextkeys.ts
 +++ b/src/vs/workbench/common/contextkeys.ts
 @@ -40,6 +40,8 @@ export const EmbedderIdentifierContext = new RawContextKey<string | undefined>('

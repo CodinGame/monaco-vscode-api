@@ -8,7 +8,7 @@ Subject: [PATCH] fix: do not hide copilot ui on web mode
  1 file changed, 6 deletions(-)
 
 diff --git a/src/vs/workbench/services/chat/common/chatEntitlementService.ts b/src/vs/workbench/services/chat/common/chatEntitlementService.ts
-index d2db95917fa..00a74d5a55a 100644
+index c98aaea2c9c..bc6d081596b 100644
 --- a/src/vs/workbench/services/chat/common/chatEntitlementService.ts
 +++ b/src/vs/workbench/services/chat/common/chatEntitlementService.ts
 @@ -25,7 +25,6 @@ import { IOpenerService } from '../../../../platform/opener/common/opener.js';
@@ -19,7 +19,7 @@ index d2db95917fa..00a74d5a55a 100644
  import { ILifecycleService } from '../../lifecycle/common/lifecycle.js';
  import { Mutable } from '../../../../base/common/types.js';
  import { InstantiationType, registerSingleton } from '../../../../platform/instantiation/common/extensions.js';
-@@ -403,11 +402,6 @@ export class ChatEntitlementService extends Disposable implements IChatEntitleme
+@@ -410,11 +409,6 @@ export class ChatEntitlementService extends Disposable implements IChatEntitleme
  		);
  		this.sentimentObs = observableFromEvent(this.onDidChangeSentiment, () => this.sentiment);
  

@@ -26,7 +26,7 @@ index ed965aae607..35a2ab17e71 100644
  }
  
 diff --git a/src/vs/workbench/contrib/webview/browser/webviewElement.ts b/src/vs/workbench/contrib/webview/browser/webviewElement.ts
-index 17fa9d1d90b..cdc75a68e15 100644
+index eae70bdf806..c62826ef448 100644
 --- a/src/vs/workbench/contrib/webview/browser/webviewElement.ts
 +++ b/src/vs/workbench/contrib/webview/browser/webviewElement.ts
 @@ -513,11 +513,6 @@ export class WebviewElement extends Disposable implements IWebviewElement, Webvi

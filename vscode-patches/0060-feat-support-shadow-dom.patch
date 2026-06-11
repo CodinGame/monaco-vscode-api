@@ -271,10 +271,10 @@ index 6b675d06535..672eeabd7b6 100644
  		this.ctrlKey = e.ctrlKey;
  		this.shiftKey = e.shiftKey;
 diff --git a/src/vs/base/browser/ui/contextview/contextview.ts b/src/vs/base/browser/ui/contextview/contextview.ts
-index 3aa5f3828dc..ce40982b226 100644
+index 33562d5d605..4de7d7edf3e 100644
 --- a/src/vs/base/browser/ui/contextview/contextview.ts
 +++ b/src/vs/base/browser/ui/contextview/contextview.ts
-@@ -279,7 +279,7 @@ export class ContextView extends Disposable {
+@@ -281,7 +281,7 @@ export class ContextView extends Disposable {
  	private onDOMEvent(e: UIEvent, onCapture: boolean): void {
  		if (this.delegate) {
  			if (this.delegate.onDOMEvent) {
@@ -337,7 +337,7 @@ index 39ce04a13a8..06cdc96e51d 100644
  
  	const dragContainer = getDragImageContainer(container);
 diff --git a/src/vs/base/browser/ui/findinput/findInput.ts b/src/vs/base/browser/ui/findinput/findInput.ts
-index aefd0b69b1e..12cedc93b32 100644
+index db42e9055ec..60261d2b10e 100644
 --- a/src/vs/base/browser/ui/findinput/findInput.ts
 +++ b/src/vs/base/browser/ui/findinput/findInput.ts
 @@ -20,6 +20,7 @@ import * as nls from '../../../../nls.js';
@@ -379,7 +379,7 @@ index a9ae899d424..5ccfd049fbb 100644
  					let newIndex: number = -1;
  					if (event.equals(KeyCode.RightArrow)) {
 diff --git a/src/vs/base/browser/ui/inputbox/inputBox.ts b/src/vs/base/browser/ui/inputbox/inputBox.ts
-index 9b55cd2ec68..bdc8f7f689b 100644
+index d8c041c95ac..85053deefd3 100644
 --- a/src/vs/base/browser/ui/inputbox/inputBox.ts
 +++ b/src/vs/base/browser/ui/inputbox/inputBox.ts
 @@ -174,7 +174,12 @@ export class InputBox extends Widget {
@@ -540,7 +540,7 @@ index 52291332b2a..966cd035029 100644
  						// went outside the editor!
  						this._onMouseLeave(new EditorMouseEvent(e, false, this.viewHelper.viewDomNode));
 diff --git a/src/vs/editor/browser/controller/mouseTarget.ts b/src/vs/editor/browser/controller/mouseTarget.ts
-index 8256f6b487c..6bc03be79e1 100644
+index 98694f0d9f6..2c9e6dabf73 100644
 --- a/src/vs/editor/browser/controller/mouseTarget.ts
 +++ b/src/vs/editor/browser/controller/mouseTarget.ts
 @@ -351,7 +351,7 @@ export class HitTestContext {
@@ -621,10 +621,10 @@ index c5226cb273f..08f5ace9b37 100644
  			this._configurationService.getValue('accessibility.verbosity.hover') === true && this._accessibilityService.isScreenReaderOptimized(),
  			this._keybindingService.lookupKeybinding('editor.action.accessibleView')?.getAriaLabel() ?? ''
 diff --git a/src/vs/platform/actionWidget/browser/actionList.ts b/src/vs/platform/actionWidget/browser/actionList.ts
-index ba28b5f9227..67fe5daa262 100644
+index d137009d1ef..d8909be2aec 100644
 --- a/src/vs/platform/actionWidget/browser/actionList.ts
 +++ b/src/vs/platform/actionWidget/browser/actionList.ts
-@@ -1384,8 +1384,11 @@ export class ActionListWidget<T> extends Disposable {
+@@ -1388,8 +1388,11 @@ export class ActionListWidget<T> extends Disposable {
  	}
  
  	private _getRowElement(index: number): HTMLElement | null {
@@ -743,7 +743,7 @@ index 1ca3e989f57..2d24d79d066 100644
  		if (accessibleViewHint) {
  
 diff --git a/src/vs/workbench/browser/actions/developerActions.ts b/src/vs/workbench/browser/actions/developerActions.ts
-index c0e1300be4a..6cc0014212b 100644
+index cdc59743913..14713c199ce 100644
 --- a/src/vs/workbench/browser/actions/developerActions.ts
 +++ b/src/vs/workbench/browser/actions/developerActions.ts
 @@ -79,7 +79,7 @@ class InspectContextKeysAction extends Action2 {
@@ -765,7 +765,7 @@ index c0e1300be4a..6cc0014212b 100644
  
  			dispose(disposables);
 diff --git a/src/vs/workbench/browser/layout.ts b/src/vs/workbench/browser/layout.ts
-index b83c25cc4bb..a06de19bb58 100644
+index 1f1026f5ad8..6a51d30679d 100644
 --- a/src/vs/workbench/browser/layout.ts
 +++ b/src/vs/workbench/browser/layout.ts
 @@ -47,6 +47,7 @@ import { AuxiliaryBarPart } from './parts/auxiliarybar/auxiliaryBarPart.js';
@@ -832,10 +832,10 @@ index 7796aae8a15..1c304a11a9e 100644
  
  	private createPart(id: string, role: string, classes: string[]): HTMLElement {
 diff --git a/src/vs/workbench/contrib/chat/browser/widget/input/chatInputPart.ts b/src/vs/workbench/contrib/chat/browser/widget/input/chatInputPart.ts
-index feadd701bc5..733589db570 100644
+index 2c67995e535..f11bf0d7a09 100644
 --- a/src/vs/workbench/contrib/chat/browser/widget/input/chatInputPart.ts
 +++ b/src/vs/workbench/contrib/chat/browser/widget/input/chatInputPart.ts
-@@ -3033,7 +3033,7 @@ export class ChatInputPart extends Disposable implements IHistoryNavigationWidge
+@@ -3257,7 +3257,7 @@ export class ChatInputPart extends Disposable implements IHistoryNavigationWidge
  			return;
  		}
  
@@ -1002,7 +1002,7 @@ index c9d5a62989d..4ed8197a376 100644
  		}
  
 diff --git a/src/vs/workbench/contrib/notebook/browser/view/renderers/backLayerWebView.ts b/src/vs/workbench/contrib/notebook/browser/view/renderers/backLayerWebView.ts
-index d3c4ea3f178..ff3d9c4b33a 100644
+index 1de54375c42..53d6713f596 100644
 --- a/src/vs/workbench/contrib/notebook/browser/view/renderers/backLayerWebView.ts
 +++ b/src/vs/workbench/contrib/notebook/browser/view/renderers/backLayerWebView.ts
 @@ -3,7 +3,6 @@
@@ -1101,7 +1101,7 @@ index 9a745727415..32b87509ab3 100644
  			const listener = this._register(Event.once(this._terminalService.onDidChangeConnectionState)(() => {
  				// Only focus the terminal if the activeElement has not changed since focus() was called
 diff --git a/src/vs/workbench/contrib/webview/browser/webviewElement.ts b/src/vs/workbench/contrib/webview/browser/webviewElement.ts
-index d6142df6e9f..0a78c540fe5 100644
+index 9f6018c77f5..e065c4bcc81 100644
 --- a/src/vs/workbench/contrib/webview/browser/webviewElement.ts
 +++ b/src/vs/workbench/contrib/webview/browser/webviewElement.ts
 @@ -4,7 +4,7 @@
@@ -1123,7 +1123,7 @@ index d6142df6e9f..0a78c540fe5 100644
  			// looks like https://github.com/microsoft/vscode/issues/132641
  			// where the focus is actually not in the `<iframe>`
  			return false;
-@@ -941,8 +942,11 @@ export class WebviewElement extends Disposable implements IWebviewElement, Webvi
+@@ -956,8 +957,11 @@ export class WebviewElement extends Disposable implements IWebviewElement, Webvi
  				return;
  			}
  
@@ -1138,7 +1138,7 @@ index d6142df6e9f..0a78c540fe5 100644
  
  			// It is possible for the webview to be contained in another window
 diff --git a/src/vs/workbench/contrib/welcomeGettingStarted/browser/gettingStarted.ts b/src/vs/workbench/contrib/welcomeGettingStarted/browser/gettingStarted.ts
-index d38efb60031..4b60d97d082 100644
+index 0cb22b9cf17..64f8a2c27d7 100644
 --- a/src/vs/workbench/contrib/welcomeGettingStarted/browser/gettingStarted.ts
 +++ b/src/vs/workbench/contrib/welcomeGettingStarted/browser/gettingStarted.ts
 @@ -3,7 +3,7 @@
@@ -1150,7 +1150,7 @@ index d38efb60031..4b60d97d082 100644
  import { renderFormattedText } from '../../../../base/browser/formattedTextRenderer.js';
  import { status } from '../../../../base/browser/ui/aria/aria.js';
  import { StandardKeyboardEvent } from '../../../../base/browser/keyboardEvent.js';
-@@ -1762,7 +1762,7 @@ export class GettingStartedPage extends EditorPane {
+@@ -1758,7 +1758,7 @@ export class GettingStartedPage extends EditorPane {
  	override focus() {
  		super.focus();
  

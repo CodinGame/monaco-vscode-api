@@ -26,10 +26,10 @@ index 0722cab7d7b..727ebf1c5f7 100644
  	 * Additional domains allowed to open from the workbench without the
  	 * link protection popup.
 diff --git a/src/vs/workbench/services/environment/browser/environmentService.ts b/src/vs/workbench/services/environment/browser/environmentService.ts
-index 60a4e55a7b3..f94e4dbd304 100644
+index 6b2968242cf..6fbedd23b53 100644
 --- a/src/vs/workbench/services/environment/browser/environmentService.ts
 +++ b/src/vs/workbench/services/environment/browser/environmentService.ts
-@@ -216,7 +216,7 @@ export class BrowserWorkbenchEnvironmentService implements IBrowserWorkbenchEnvi
+@@ -219,7 +219,7 @@ export class BrowserWorkbenchEnvironmentService implements IBrowserWorkbenchEnvi
  	get enableSmokeTestDriver() { return this.options.developmentOptions?.enableSmokeTestDriver; }
  
  	@memoize

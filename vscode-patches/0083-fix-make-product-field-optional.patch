@@ -15,7 +15,7 @@ Subject: [PATCH] fix: make product field optional
  8 files changed, 32 insertions(+), 21 deletions(-)
 
 diff --git a/src/vs/base/common/product.ts b/src/vs/base/common/product.ts
-index 6627394014b..54f681ce11c 100644
+index 4944cc096fa..3fc41ec5465 100644
 --- a/src/vs/base/common/product.ts
 +++ b/src/vs/base/common/product.ts
 @@ -229,7 +229,7 @@ export interface IProductConfiguration {
@@ -81,7 +81,7 @@ index 72bfdb17b0f..56d5a9440b6 100644
  		return { malicious, deprecated, search, autoUpdate };
  	}
 diff --git a/src/vs/workbench/contrib/chat/browser/chatStatus/chatStatusDashboard.ts b/src/vs/workbench/contrib/chat/browser/chatStatus/chatStatusDashboard.ts
-index 24b1d8122c9..a38a66c9232 100644
+index ad432fc0c33..36dc9702508 100644
 --- a/src/vs/workbench/contrib/chat/browser/chatStatus/chatStatusDashboard.ts
 +++ b/src/vs/workbench/contrib/chat/browser/chatStatus/chatStatusDashboard.ts
 @@ -46,7 +46,7 @@ import { GitHubPaths, IDefaultAccountService } from '../../../../../platform/def
@@ -94,10 +94,10 @@ index 24b1d8122c9..a38a66c9232 100644
  interface ISettingsAccessor {
  	readSetting: () => boolean;
 diff --git a/src/vs/workbench/contrib/chat/browser/chatStatus/chatStatusEntry.ts b/src/vs/workbench/contrib/chat/browser/chatStatus/chatStatusEntry.ts
-index 8550d923cb9..93b4d0b9fc6 100644
+index e930b6b7df7..d11df378994 100644
 --- a/src/vs/workbench/contrib/chat/browser/chatStatus/chatStatusEntry.ts
 +++ b/src/vs/workbench/contrib/chat/browser/chatStatus/chatStatusEntry.ts
-@@ -98,7 +98,7 @@ export class ChatStatusBarEntry extends Disposable implements IWorkbenchContribu
+@@ -118,7 +118,7 @@ export class ChatStatusBarEntry extends Disposable implements IWorkbenchContribu
  		this._register(this.editorService.onDidActiveEditorChange(() => this.onDidActiveEditorChange()));
  
  		this._register(this.configurationService.onDidChangeConfiguration(e => {
@@ -107,10 +107,10 @@ index 8550d923cb9..93b4d0b9fc6 100644
  			}
  		}));
 diff --git a/src/vs/workbench/contrib/chat/browser/widget/chatWidget.ts b/src/vs/workbench/contrib/chat/browser/widget/chatWidget.ts
-index 76273b8a2fe..c64d769b3c9 100644
+index 195e57481c6..2d26f00b061 100644
 --- a/src/vs/workbench/contrib/chat/browser/widget/chatWidget.ts
 +++ b/src/vs/workbench/contrib/chat/browser/widget/chatWidget.ts
-@@ -1069,8 +1069,8 @@ export class ChatWidget extends Disposable implements IChatWidget {
+@@ -1087,8 +1087,8 @@ export class ChatWidget extends Disposable implements IChatWidget {
  				const defaultAgent = this.chatAgentService.getDefaultAgent(this.location, this.input.currentModeKind);
  				let additionalMessage: string | IMarkdownString | undefined;
  				if (this.chatEntitlementService.anonymous && !this.chatEntitlementService.sentiment.completed) {
@@ -122,10 +122,10 @@ index 76273b8a2fe..c64d769b3c9 100644
  					additionalMessage = defaultAgent?.metadata.additionalWelcomeMessage;
  				}
 diff --git a/src/vs/workbench/contrib/extensions/browser/extensionsWorkbenchService.ts b/src/vs/workbench/contrib/extensions/browser/extensionsWorkbenchService.ts
-index 918558ce6e2..2f65adc82b9 100644
+index c392afc7f7e..dc13df8b2af 100644
 --- a/src/vs/workbench/contrib/extensions/browser/extensionsWorkbenchService.ts
 +++ b/src/vs/workbench/contrib/extensions/browser/extensionsWorkbenchService.ts
-@@ -2770,7 +2770,7 @@ export class ExtensionsWorkbenchService extends Disposable implements IExtension
+@@ -2833,7 +2833,7 @@ export class ExtensionsWorkbenchService extends Disposable implements IExtension
  		}
  
  		const extensionsToUninstall: UninstallExtensionInfo[] = [{ extension: extension.local }];
@@ -135,10 +135,10 @@ index 918558ce6e2..2f65adc82b9 100644
  				if (packExtension.local && !extensionsToUninstall.some(e => areSameExtensions(e.extension.identifier, packExtension.identifier))) {
  					extensionsToUninstall.push({ extension: packExtension.local });
 diff --git a/src/vs/workbench/services/accounts/browser/defaultAccount.ts b/src/vs/workbench/services/accounts/browser/defaultAccount.ts
-index 079d7db8fc6..8dc077d8857 100644
+index d65c2fb81b7..15ccf0c0361 100644
 --- a/src/vs/workbench/services/accounts/browser/defaultAccount.ts
 +++ b/src/vs/workbench/services/accounts/browser/defaultAccount.ts
-@@ -129,14 +129,16 @@ export class DefaultAccountService extends Disposable implements IDefaultAccount
+@@ -136,14 +136,16 @@ export class DefaultAccountService extends Disposable implements IDefaultAccount
  	private readonly _onDidChangeCopilotTokenInfo = this._register(new Emitter<ICopilotTokenInfo | null>());
  	readonly onDidChangeCopilotTokenInfo = this._onDidChangeCopilotTokenInfo.event;
  
@@ -157,7 +157,7 @@ index 079d7db8fc6..8dc077d8857 100644
  	}
  
  	async getDefaultAccount(): Promise<IDefaultAccount | null> {
-@@ -148,6 +150,10 @@ export class DefaultAccountService extends Disposable implements IDefaultAccount
+@@ -155,6 +157,10 @@ export class DefaultAccountService extends Disposable implements IDefaultAccount
  		if (this.defaultAccountProvider) {
  			return this.defaultAccountProvider.getDefaultAccountAuthenticationProvider();
  		}
@@ -168,7 +168,7 @@ index 079d7db8fc6..8dc077d8857 100644
  		return {
  			...this.defaultAccountConfig.authenticationProvider.default,
  			enterprise: false
-@@ -951,8 +957,11 @@ class DefaultAccountProviderContribution extends Disposable implements IWorkbenc
+@@ -1125,8 +1131,11 @@ class DefaultAccountProviderContribution extends Disposable implements IWorkbenc
  		@IDefaultAccountService defaultAccountService: IDefaultAccountService,
  	) {
  		super();

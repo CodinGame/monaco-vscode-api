@@ -9,7 +9,7 @@ Subject: [PATCH] feat: add some parameter to webview iframes
  2 files changed, 7 insertions(+), 2 deletions(-)
 
 diff --git a/src/vs/workbench/contrib/webview/browser/pre/index.html b/src/vs/workbench/contrib/webview/browser/pre/index.html
-index 8b9850b3077..db91ed3f9fc 100644
+index 1b722167644..39088a04919 100644
 --- a/src/vs/workbench/contrib/webview/browser/pre/index.html
 +++ b/src/vs/workbench/contrib/webview/browser/pre/index.html
 @@ -35,6 +35,8 @@
@@ -30,7 +30,7 @@ index 8b9850b3077..db91ed3f9fc 100644
  			navigator.serviceWorker.register(swPath, { type: 'module', updateViaCache: 'none' })
  				.then(async registration => {
  					if (navigator.serviceWorker.controller) {
-@@ -1038,7 +1040,7 @@
+@@ -1044,7 +1046,7 @@
  				if (globalThis.crossOriginIsolated) {
  					fakeUrlParams.set('vscode-coi', '3'); /*COOP+COEP*/
  				}
@@ -40,7 +40,7 @@ index 8b9850b3077..db91ed3f9fc 100644
  				newFrame.style.cssText = 'display: block; margin: 0; overflow: hidden; position: absolute; width: 100%; height: 100%; visibility: hidden';
  				document.body.appendChild(newFrame);
 diff --git a/src/vs/workbench/contrib/webview/browser/webviewElement.ts b/src/vs/workbench/contrib/webview/browser/webviewElement.ts
-index 8be0cf34aaf..d6142df6e9f 100644
+index 37558e01484..9f6018c77f5 100644
 --- a/src/vs/workbench/contrib/webview/browser/webviewElement.ts
 +++ b/src/vs/workbench/contrib/webview/browser/webviewElement.ts
 @@ -462,6 +462,9 @@ export class WebviewElement extends Disposable implements IWebviewElement, Webvi

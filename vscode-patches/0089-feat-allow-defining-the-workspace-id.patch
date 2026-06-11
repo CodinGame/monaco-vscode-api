@@ -4,9 +4,9 @@ Date: Wed, 18 Feb 2026 16:48:57 +0100
 Subject: [PATCH] feat: allow defining the workspace id
 
 ---
- src/vs/platform/window/common/window.ts                   | 1 +
- src/vs/workbench/browser/web.main.ts                      | 4 ++--
- .../workbench/services/workspaces/browser/workspaces.ts   | 8 ++++----
+ src/vs/platform/window/common/window.ts                  | 1 +
+ src/vs/platform/workspaces/common/workspaceIdentifier.ts | 8 ++++----
+ src/vs/workbench/browser/web.main.ts                     | 4 ++--
  3 files changed, 7 insertions(+), 6 deletions(-)
 
 diff --git a/src/vs/platform/window/common/window.ts b/src/vs/platform/window/common/window.ts
@@ -21,30 +21,11 @@ index 291648bca96..0093fc74684 100644
  	label?: string;
  }
  
-diff --git a/src/vs/workbench/browser/web.main.ts b/src/vs/workbench/browser/web.main.ts
-index 60029802d2b..019ec6fe534 100644
---- a/src/vs/workbench/browser/web.main.ts
-+++ b/src/vs/workbench/browser/web.main.ts
-@@ -659,12 +659,12 @@ export class BrowserMain extends Disposable {
- 
- 		// Multi-root workspace
- 		if (workspace && isWorkspaceToOpen(workspace)) {
--			return getWorkspaceIdentifier(workspace.workspaceUri);
-+			return getWorkspaceIdentifier(workspace.workspaceUri, workspace.id);
- 		}
- 
- 		// Single-folder workspace
- 		if (workspace && isFolderToOpen(workspace)) {
--			return getSingleFolderWorkspaceIdentifier(workspace.folderUri);
-+			return getSingleFolderWorkspaceIdentifier(workspace.folderUri, workspace.id);
- 		}
- 
- 		// Empty window workspace
-diff --git a/src/vs/workbench/services/workspaces/browser/workspaces.ts b/src/vs/workbench/services/workspaces/browser/workspaces.ts
-index 27fa5abae82..276d5053db6 100644
---- a/src/vs/workbench/services/workspaces/browser/workspaces.ts
-+++ b/src/vs/workbench/services/workspaces/browser/workspaces.ts
-@@ -11,9 +11,9 @@ import { hash } from '../../../../base/common/hash.js';
+diff --git a/src/vs/platform/workspaces/common/workspaceIdentifier.ts b/src/vs/platform/workspaces/common/workspaceIdentifier.ts
+index 95676d86ef3..2c143838b4e 100644
+--- a/src/vs/platform/workspaces/common/workspaceIdentifier.ts
++++ b/src/vs/platform/workspaces/common/workspaceIdentifier.ts
+@@ -11,9 +11,9 @@ import { ISingleFolderWorkspaceIdentifier, IWorkspaceIdentifier } from '../../wo
  // NOTE: DO NOT CHANGE. IDENTIFIERS HAVE TO REMAIN STABLE
  // !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
  
@@ -68,3 +49,22 @@ index 27fa5abae82..276d5053db6 100644
  		uri: folderUri
  	};
  }
+diff --git a/src/vs/workbench/browser/web.main.ts b/src/vs/workbench/browser/web.main.ts
+index 528ca87b263..d646fccc322 100644
+--- a/src/vs/workbench/browser/web.main.ts
++++ b/src/vs/workbench/browser/web.main.ts
+@@ -659,12 +659,12 @@ export class BrowserMain extends Disposable {
+ 
+ 		// Multi-root workspace
+ 		if (workspace && isWorkspaceToOpen(workspace)) {
+-			return getWorkspaceIdentifier(workspace.workspaceUri);
++			return getWorkspaceIdentifier(workspace.workspaceUri, workspace.id);
+ 		}
+ 
+ 		// Single-folder workspace
+ 		if (workspace && isFolderToOpen(workspace)) {
+-			return getSingleFolderWorkspaceIdentifier(workspace.folderUri);
++			return getSingleFolderWorkspaceIdentifier(workspace.folderUri, workspace.id);
+ 		}
+ 
+ 		// Empty window workspace

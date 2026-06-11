@@ -135,7 +135,7 @@ import { IRemoteAgentHostService } from 'vs/platform/agentHost/common/remoteAgen
 import { RemoteAgentHostService } from 'vs/platform/agentHost/browser/remoteAgentHostServiceImpl'
 import { AgentHostFileSystemService } from 'vs/workbench/services/agentHost/common/agentHostFileSystemService'
 import { AgentHostSessionWorkingDirectoryResolver } from 'vs/workbench/contrib/chat/browser/agentSessions/agentHost/agentHostSessionWorkingDirectoryResolver'
-import { IAgentHostPermissionService } from 'vs/platform/agentHost/common/agentHostPermissionService.service'
+import { IAgentHostResourceService } from 'vs/platform/agentHost/common/agentHostResourceService.service'
 import { IToolResultCompressor } from 'vs/workbench/contrib/chat/common/tools/toolResultCompressor.service'
 import { IChatToolRiskAssessmentService } from 'vs/workbench/contrib/chat/browser/tools/chatToolRiskAssessmentService.service'
 import { IPlanReviewFeedbackService } from 'vs/workbench/contrib/chat/browser/planReviewFeedback/planReviewFeedbackService.service'
@@ -143,7 +143,7 @@ import { IChatInputNotificationService } from 'vs/workbench/contrib/chat/browser
 import { IChatPhoneInputPresenter } from 'vs/workbench/contrib/chat/browser/widget/input/chatPhoneInputPresenter.service'
 import { ChatToolRiskAssessmentService } from 'vs/workbench/contrib/chat/browser/tools/chatToolRiskAssessmentService'
 import { PlanReviewFeedbackService } from 'vs/workbench/contrib/chat/browser/planReviewFeedback/planReviewFeedbackService'
-import { AgentHostPermissionService } from 'vs/workbench/services/agentHost/common/agentHostPermissionService'
+import { AgentHostResourceService } from 'vs/workbench/services/agentHost/common/agentHostResourceService'
 import { ToolResultCompressorService } from 'vs/workbench/contrib/chat/browser/tools/toolResultCompressorService'
 import { ChatInputNotificationService } from 'vs/workbench/contrib/chat/browser/widget/input/chatInputNotificationService'
 import { ChatPhoneInputPresenterService } from 'vs/workbench/contrib/chat/browser/widget/input/chatPhoneInputPresenter'
@@ -151,6 +151,14 @@ import { IAgentHostUntitledProvisionalSessionService } from 'vs/workbench/contri
 import { IAgentHostDebugLogsExportService } from 'vs/workbench/contrib/chat/browser/actions/exportAgentHostDebugLogsAction.service'
 import { AgentHostUntitledProvisionalSessionService } from 'vs/workbench/contrib/chat/browser/agentSessions/agentHost/agentHostUntitledProvisionalSessionService'
 import { BrowserAgentHostDebugLogsExportService } from 'vs/workbench/contrib/chat/browser/actions/exportAgentHostDebugLogsAction'
+import { IAgentHostActiveClientService } from 'vs/workbench/contrib/chat/browser/agentSessions/agentHost/agentHostActiveClientService.service'
+import { AgentHostActiveClientService } from 'vs/workbench/contrib/chat/browser/agentSessions/agentHost/agentHostActiveClientService'
+import { IAgentHostCustomizationService } from 'vs/workbench/contrib/chat/browser/agentSessions/agentHost/agentHostCustomizationService.service'
+import { NullAgentHostCustomizationService } from 'vs/workbench/contrib/chat/browser/agentSessions/agentHost/agentHostCustomizationService'
+import { IChatGoalSummaryService } from 'vs/workbench/contrib/chat/browser/chatGoalSummaryService.service'
+import { ChatGoalSummaryService } from 'vs/workbench/contrib/chat/browser/chatGoalSummaryService'
+import { EditorRemoteAgentHostServiceClient } from 'vs/workbench/services/agentHost/browser/editorRemoteAgentHostServiceClient'
+import { IAgentHostService } from 'vs/platform/agentHost/common/agentService.service'
 import 'vs/workbench/contrib/chat/browser/chat.contribution'
 import 'vs/workbench/contrib/chat/browser/chat.shared.contribution'
 import 'vs/workbench/contrib/chat/browser/chat.view.contribution'
@@ -169,6 +177,8 @@ class DefaultAccountService implements IDefaultAccountService {
 
   onDidChangePolicyData: IDefaultAccountService['onDidChangePolicyData'] = Event.None
   policyData: IDefaultAccountService['policyData'] = null
+  managedSettingsFetchStatus: IDefaultAccountService['managedSettingsFetchStatus'] = null
+  managedSettingsFetchedAt: IDefaultAccountService['managedSettingsFetchedAt'] = null
 
   getDefaultAccountAuthenticationProvider: IDefaultAccountService['getDefaultAccountAuthenticationProvider'] =
     () => ({ id: 'default', name: 'Default', enterprise: false })
@@ -353,7 +363,18 @@ export default function getServiceOverride({
       true
     ),
     [IAgentHostTerminalService.toString()]: new SyncDescriptor(AgentHostTerminalService, [], true),
+    [IAgentHostActiveClientService.toString()]: new SyncDescriptor(
+      AgentHostActiveClientService,
+      [],
+      true
+    ),
+    [IAgentHostCustomizationService.toString()]: new SyncDescriptor(
+      NullAgentHostCustomizationService,
+      [],
+      true
+    ),
     [IToolResultCompressor.toString()]: new SyncDescriptor(ToolResultCompressorService, [], true),
+    [IChatGoalSummaryService.toString()]: new SyncDescriptor(ChatGoalSummaryService, [], true),
     [IChatToolRiskAssessmentService.toString()]: new SyncDescriptor(
       ChatToolRiskAssessmentService,
       [],
@@ -374,11 +395,7 @@ export default function getServiceOverride({
       [],
       true
     ),
-    [IAgentHostPermissionService.toString()]: new SyncDescriptor(
-      AgentHostPermissionService,
-      [],
-      true
-    ),
+    [IAgentHostResourceService.toString()]: new SyncDescriptor(AgentHostResourceService, [], true),
     [IAgentHostUntitledProvisionalSessionService.toString()]: new SyncDescriptor(
       AgentHostUntitledProvisionalSessionService,
       [],
@@ -388,7 +405,8 @@ export default function getServiceOverride({
       BrowserAgentHostDebugLogsExportService,
       [],
       true
-    )
+    ),
+    [IAgentHostService.toString()]: new SyncDescriptor(EditorRemoteAgentHostServiceClient, [], true)
   }
 }
 

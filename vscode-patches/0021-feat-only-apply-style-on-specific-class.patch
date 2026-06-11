@@ -10,7 +10,7 @@ Subject: [PATCH] feat: only apply style on specific class
  3 files changed, 114 insertions(+), 110 deletions(-)
 
 diff --git a/src/vs/workbench/browser/media/style.css b/src/vs/workbench/browser/media/style.css
-index 1f6e583f5e0..0b2a6544e7b 100644
+index b04b3c70daf..2837bbd0d96 100644
 --- a/src/vs/workbench/browser/media/style.css
 +++ b/src/vs/workbench/browser/media/style.css
 @@ -9,50 +9,37 @@
@@ -85,7 +85,7 @@ index 1f6e583f5e0..0b2a6544e7b 100644
  
  	/* Elevation shadows */
  	--vscode-shadow-sm: 0 0 4px rgba(0, 0, 0, 0.08);
-@@ -68,18 +55,18 @@ body {
+@@ -67,18 +54,18 @@ body {
  }
  
  /* Disable panel/part shadows when the setting is off (preserves floating modals, notifications, etc.) */
@@ -112,7 +112,7 @@ index 1f6e583f5e0..0b2a6544e7b 100644
  	/* Use zero-offset transparent shadows instead of 'none' because these
  	 * variables are interpolated into multi-value box-shadow declarations. */
  	--vscode-shadow-active-tab: 0 0 0 0 transparent;
-@@ -88,7 +75,7 @@ body {
+@@ -87,7 +74,7 @@ body {
  	--vscode-shadow-sm: 0 0 0 0 transparent;
  }
  
@@ -121,7 +121,7 @@ index 1f6e583f5e0..0b2a6544e7b 100644
  	touch-action: none; /* Disable browser handling of all panning and zooming gestures. Removes 300ms touch delay. */
  	overscroll-behavior: none; /* Prevent bounce effect */
  }
-@@ -106,55 +93,56 @@ body {
+@@ -105,55 +92,56 @@ body {
  	border-radius: 16px; /* macOS Tahoe increased rounded corners size */
  }
  
@@ -192,7 +192,7 @@ index 1f6e583f5e0..0b2a6544e7b 100644
  	/*
  	 * Somehow this is required when tables show in floating windows
  	 * to override the user-agent style which sets a specific color
-@@ -164,48 +152,48 @@ body {
+@@ -163,48 +151,48 @@ body {
  	font-size: inherit;
  }
  
@@ -255,7 +255,7 @@ index 1f6e583f5e0..0b2a6544e7b 100644
  	width: 16px;
  	padding-left: 3px; /* width (16px) - font-size (13px) = padding-left (3px) */
  	padding-right: 3px;
-@@ -225,7 +213,7 @@ body {
+@@ -224,7 +212,7 @@ body {
  
  /* Custom Dropdown (select) Arrows */
  
@@ -264,7 +264,7 @@ index 1f6e583f5e0..0b2a6544e7b 100644
  	font-family: inherit;
  	appearance: none;
  	-webkit-appearance: none;
-@@ -234,11 +222,11 @@ body {
+@@ -233,11 +221,11 @@ body {
  	border: 1px solid;
  }
  
@@ -278,7 +278,7 @@ index 1f6e583f5e0..0b2a6544e7b 100644
  	content: var(--vscode-icon-chevron-down-content);
  	font-family: var(--vscode-icon-chevron-down-font-family);
  	font-size: 16px;
-@@ -255,16 +243,16 @@ body {
+@@ -254,16 +242,16 @@ body {
  
  /* Keyboard Focus Indication Styles */
  
@@ -305,7 +305,7 @@ index 1f6e583f5e0..0b2a6544e7b 100644
  	outline-width: 1px;
  	outline-style: solid;
  	outline-offset: -1px;
-@@ -277,19 +265,19 @@ body {
+@@ -276,19 +264,19 @@ body {
  	background: transparent; /* Search input focus fix when in high contrast */
  }
  
@@ -332,7 +332,7 @@ index 1f6e583f5e0..0b2a6544e7b 100644
  	border-color: transparent; /* outline is a square, but border has a radius, so we avoid this glitch when focused (https://github.com/microsoft/vscode/issues/26045) */
  }
  
-@@ -319,38 +307,38 @@ body {
+@@ -318,38 +306,38 @@ body {
  	color: var(--vscode-list-focusHighlightForeground);
  }
  

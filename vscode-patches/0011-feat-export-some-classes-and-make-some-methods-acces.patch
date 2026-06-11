@@ -194,12 +194,12 @@ index 493471fe856..3a098814ba1 100644
  
  		// convert to file stat
 diff --git a/src/vs/platform/sandbox/browser/sandboxHelperService.ts b/src/vs/platform/sandbox/browser/sandboxHelperService.ts
-index 2506ae2e49f..1f2051f50a3 100644
+index 3ce552fee34..79222e0d134 100644
 --- a/src/vs/platform/sandbox/browser/sandboxHelperService.ts
 +++ b/src/vs/platform/sandbox/browser/sandboxHelperService.ts
 @@ -6,7 +6,7 @@
  import { InstantiationType, registerSingleton } from '../../instantiation/common/extensions.js';
- import { ISandboxDependencyStatus, ISandboxHelperService } from '../common/sandboxHelperService.js';
+ import { ISandboxDependencyStatus, ISandboxHelperService, type IWindowsMxcConfig, IWindowsMxcFilesystemPolicy, type IWindowsMxcPolicyContainment, type IWindowsMxcSandboxPolicy } from '../common/sandboxHelperService.js';
  
 -class NullSandboxHelperService implements ISandboxHelperService {
 +export class NullSandboxHelperService implements ISandboxHelperService {
@@ -220,7 +220,7 @@ index c8d1765a7ab..91d78dc1be0 100644
  	declare readonly _serviceBrand: undefined;
  
 diff --git a/src/vs/workbench/browser/layout.ts b/src/vs/workbench/browser/layout.ts
-index 3480283a217..b83c25cc4bb 100644
+index ea2da133d86..1f1026f5ad8 100644
 --- a/src/vs/workbench/browser/layout.ts
 +++ b/src/vs/workbench/browser/layout.ts
 @@ -50,7 +50,7 @@ import { CodeWindow, mainWindow } from '../../base/browser/window.js';
@@ -355,17 +355,17 @@ index 4b0c29c92a8..fd065bcab61 100644
  
  	readonly activeProjectRoot: IObservable<URI | undefined>;
 diff --git a/src/vs/workbench/contrib/chat/browser/aiCustomization/customizationHarnessService.ts b/src/vs/workbench/contrib/chat/browser/aiCustomization/customizationHarnessService.ts
-index 519a41f869a..32bc0830566 100644
+index 91218d8a9de..95203211afc 100644
 --- a/src/vs/workbench/contrib/chat/browser/aiCustomization/customizationHarnessService.ts
 +++ b/src/vs/workbench/contrib/chat/browser/aiCustomization/customizationHarnessService.ts
-@@ -19,7 +19,7 @@ import { SessionType } from '../../common/chatSessionsService.js';
+@@ -21,7 +21,7 @@ import { URI } from '../../../../../base/common/uri.js';
   * Only the Local harness is registered statically. All other harnesses
   * (e.g. Copilot CLI) are contributed by extensions via the provider API.
   */
 -class CustomizationHarnessService extends CustomizationHarnessServiceBase {
 +export class CustomizationHarnessService extends CustomizationHarnessServiceBase {
  	constructor(
- 		@IPromptsService promptsService: IPromptsService
+ 		@IPromptsService promptsService: IPromptsService,
  	) {
 diff --git a/src/vs/workbench/contrib/chat/browser/chatStatus/chatStatusItemService.ts b/src/vs/workbench/contrib/chat/browser/chatStatus/chatStatusItemService.ts
 index 54a136fe08a..24d14a1f6ff 100644
@@ -406,10 +406,10 @@ index 4305cc54d72..d4d363592a2 100644
  	declare readonly _serviceBrand: undefined;
  
 diff --git a/src/vs/workbench/contrib/chat/browser/widget/input/chatInputNotificationService.ts b/src/vs/workbench/contrib/chat/browser/widget/input/chatInputNotificationService.ts
-index a20b8ef8031..36454ef8d4f 100644
+index 3e29d31feb0..bcde32c9b35 100644
 --- a/src/vs/workbench/contrib/chat/browser/widget/input/chatInputNotificationService.ts
 +++ b/src/vs/workbench/contrib/chat/browser/widget/input/chatInputNotificationService.ts
-@@ -70,7 +70,7 @@ export interface IChatInputNotificationService {
+@@ -82,7 +82,7 @@ export interface IChatInputNotificationService {
  	handleMessageSent(): void;
  }
  
@@ -419,10 +419,10 @@ index a20b8ef8031..36454ef8d4f 100644
  
  	private readonly _notifications = new Map<string, IChatInputNotification>();
 diff --git a/src/vs/workbench/contrib/chat/browser/widget/input/chatPhoneInputPresenter.ts b/src/vs/workbench/contrib/chat/browser/widget/input/chatPhoneInputPresenter.ts
-index ef536ce9eb3..2cb12951538 100644
+index bdfb9ecdc1d..daed3994f25 100644
 --- a/src/vs/workbench/contrib/chat/browser/widget/input/chatPhoneInputPresenter.ts
 +++ b/src/vs/workbench/contrib/chat/browser/widget/input/chatPhoneInputPresenter.ts
-@@ -89,7 +89,7 @@ export interface IChatPhoneInputPresenter {
+@@ -88,7 +88,7 @@ export interface IChatPhoneInputPresenter {
  	setImpl(impl: IChatPhonePresenterImpl): IDisposable;
  }
  
@@ -601,7 +601,7 @@ index b4f6cf16e7b..7222a9b6b89 100644
  			getInitData: async (): Promise<IWebWorkerExtensionHostInitData> => {
  				if (isInitialStart) {
 diff --git a/src/vs/workbench/services/extensions/browser/extensionUrlHandler.ts b/src/vs/workbench/services/extensions/browser/extensionUrlHandler.ts
-index a7b67f152e3..2e8f9e75f51 100644
+index ae304b23861..0b8b5cdc600 100644
 --- a/src/vs/workbench/services/extensions/browser/extensionUrlHandler.ts
 +++ b/src/vs/workbench/services/extensions/browser/extensionUrlHandler.ts
 @@ -112,7 +112,7 @@ export class ExtensionUrlHandlerOverrideRegistry {
@@ -627,7 +627,7 @@ index 3d0f306ac45..61da9bc65b5 100644
  		if (this._environmentService.debugExtensionHost && this._environmentService.debugRenderer) {
  			suffixSearchParams.set('debugged', '1');
 diff --git a/src/vs/workbench/services/extensions/common/abstractExtensionService.ts b/src/vs/workbench/services/extensions/common/abstractExtensionService.ts
-index 6a83d64d718..d504ede062b 100644
+index 514873c2d59..707a6a12108 100644
 --- a/src/vs/workbench/services/extensions/common/abstractExtensionService.ts
 +++ b/src/vs/workbench/services/extensions/common/abstractExtensionService.ts
 @@ -100,9 +100,9 @@ export abstract class AbstractExtensionService extends Disposable implements IEx

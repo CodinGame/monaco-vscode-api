@@ -62,7 +62,8 @@ const ALLOWED_MAIN_DEPENDENCIES = new Set([
   '@vscode/iconv-lite-umd',
   'jschardet',
   'marked',
-  'dompurify'
+  'dompurify',
+  '@vscode/diff'
 ])
 
 const workerGroups: Record<string, string> = {

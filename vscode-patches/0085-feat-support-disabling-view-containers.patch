@@ -11,10 +11,10 @@ Subject: [PATCH] feat: support disabling view containers
  4 files changed, 20 insertions(+), 5 deletions(-)
 
 diff --git a/src/vs/workbench/browser/parts/paneCompositeBar.ts b/src/vs/workbench/browser/parts/paneCompositeBar.ts
-index bc6003e2f44..276849cac47 100644
+index 048de8a0c9f..7e42a73f276 100644
 --- a/src/vs/workbench/browser/parts/paneCompositeBar.ts
 +++ b/src/vs/workbench/browser/parts/paneCompositeBar.ts
-@@ -355,6 +355,7 @@ export class PaneCompositeBar extends Disposable {
+@@ -358,6 +358,7 @@ export class PaneCompositeBar extends Disposable {
  			const disposables = new DisposableStore();
  			disposables.add(viewContainerModel.onDidChangeContainerInfo(() => this.updateCompositeBarActionItem(viewContainer, viewContainerModel)));
  			disposables.add(viewContainerModel.onDidChangeActiveViewDescriptors(() => this.showOrHideViewContainer(viewContainer)));
@@ -22,7 +22,7 @@ index bc6003e2f44..276849cac47 100644
  
  			this.viewContainerDisposables.set(viewContainer.id, disposables);
  		}
-@@ -432,11 +433,7 @@ export class PaneCompositeBar extends Disposable {
+@@ -435,11 +436,7 @@ export class PaneCompositeBar extends Disposable {
  		const viewContainerId = isString(viewContainerOrId) ? viewContainerOrId : viewContainerOrId.id;
  
  		if (viewContainer) {
@@ -36,10 +36,10 @@ index bc6003e2f44..276849cac47 100644
  			}
  		}
 diff --git a/src/vs/workbench/common/views.ts b/src/vs/workbench/common/views.ts
-index da698317130..a4440817033 100644
+index 236e55696b1..5ab46a662c7 100644
 --- a/src/vs/workbench/common/views.ts
 +++ b/src/vs/workbench/common/views.ts
-@@ -145,6 +145,8 @@ export interface IViewContainerDescriptor {
+@@ -143,6 +143,8 @@ export interface IViewContainerDescriptor {
  	 */
  	readonly windowEnablement?: WindowEnablement;
  
@@ -48,7 +48,7 @@ index da698317130..a4440817033 100644
  	requestedIndex?: number;
  }
  
-@@ -374,6 +376,7 @@ export interface IViewContainerModel {
+@@ -372,6 +374,7 @@ export interface IViewContainerModel {
  	readonly onDidAddVisibleViewDescriptors: Event<IAddedViewDescriptorRef[]>;
  	readonly onDidRemoveVisibleViewDescriptors: Event<IViewDescriptorRef[]>;
  	readonly onDidMoveVisibleViewDescriptors: Event<{ from: IViewDescriptorRef; to: IViewDescriptorRef }>;

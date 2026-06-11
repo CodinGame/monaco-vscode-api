@@ -23,7 +23,7 @@ index 589bb0905b6..2b522149776 100644
  	RescaleOverlappingGlyphs = 'terminal.integrated.rescaleOverlappingGlyphs',
  	PersistentSessionScrollback = 'terminal.integrated.persistentSessionScrollback',
 diff --git a/src/vs/workbench/contrib/terminal/browser/xterm/xtermTerminal.ts b/src/vs/workbench/contrib/terminal/browser/xterm/xtermTerminal.ts
-index 34bae81f28e..27c56b8827e 100644
+index d112240adc5..901d865ca7d 100644
 --- a/src/vs/workbench/contrib/terminal/browser/xterm/xtermTerminal.ts
 +++ b/src/vs/workbench/contrib/terminal/browser/xterm/xtermTerminal.ts
 @@ -861,7 +861,8 @@ export class XtermTerminal extends Disposable implements IXtermTerminal, IDetach

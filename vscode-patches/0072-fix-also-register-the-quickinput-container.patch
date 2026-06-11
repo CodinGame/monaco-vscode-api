@@ -8,7 +8,7 @@ Subject: [PATCH] fix: also register the quickinput container
  1 file changed, 5 insertions(+), 1 deletion(-)
 
 diff --git a/src/vs/platform/quickinput/browser/quickInputController.ts b/src/vs/platform/quickinput/browser/quickInputController.ts
-index d4fe41fbde0..4e1cc93b0c1 100644
+index ff35a90d0a7..2013952dc1c 100644
 --- a/src/vs/platform/quickinput/browser/quickInputController.ts
 +++ b/src/vs/platform/quickinput/browser/quickInputController.ts
 @@ -39,6 +39,7 @@ import { QuickInputTreeController } from './tree/quickInputTreeController.js';
