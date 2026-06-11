@@ -98,7 +98,7 @@ export default function importMetaAssets({
       let dynamicURLIndex = -1
       let ms: MagicString | undefined
 
-      await asyncWalk(parsed, {
+      await asyncWalk(parsed as Node, {
         enter: async (_node) => {
           const node = _node as Node
           if (node.type !== 'NewExpression') {
@@ -172,7 +172,7 @@ ${`    default: return new Promise(function(resolve, reject) {
       const magicString = new MagicString(newCode)
       let modifiedCode = false
 
-      await asyncWalk(ast, {
+      await asyncWalk(ast as Node, {
         enter: async (_node) => {
           const node = _node as Node
           if (node.type !== 'NewExpression') {

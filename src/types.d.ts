@@ -1,5 +1,9 @@
 declare const BUILD_ID: string
 
+declare module '*.css' {
+  export {}
+}
+
 declare module 'vs/platform/accessibilitySignal/browser/media/*.mp3' {
   const assets: Record<string, string>
   export default assets

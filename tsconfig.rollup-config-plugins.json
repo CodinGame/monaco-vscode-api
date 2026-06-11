@@ -1,5 +1,5 @@
 {
-	"extends": "./tsconfig.json",
+	"extends": "./tsconfig.rollup-config-base.json",
 	"include": [
 		"./rollup/types.d.ts",
 		"./rollup/rollup.rollup-plugins.config.ts"

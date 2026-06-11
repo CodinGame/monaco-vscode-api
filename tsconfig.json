@@ -1,12 +1,13 @@
 {
   "extends": "@codingame/tsconfig",
   "compilerOptions": {
+    "moduleResolution": "bundler",
     "declaration": false,
     "verbatimModuleSyntax": true,
     "experimentalDecorators": true,
     "resolveJsonModule": true,
     "target": "es2020",
-    "module": "esnext",
+    "module": "es2022",
     "lib": ["es2021", "DOM"],
     "outDir": "dist",
     "rootDir": "./",
