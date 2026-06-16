@@ -122,10 +122,10 @@ index 195e57481c6..2d26f00b061 100644
  					additionalMessage = defaultAgent?.metadata.additionalWelcomeMessage;
  				}
 diff --git a/src/vs/workbench/contrib/extensions/browser/extensionsWorkbenchService.ts b/src/vs/workbench/contrib/extensions/browser/extensionsWorkbenchService.ts
-index c392afc7f7e..dc13df8b2af 100644
+index e5ecaf1a6be..2502b8a9da9 100644
 --- a/src/vs/workbench/contrib/extensions/browser/extensionsWorkbenchService.ts
 +++ b/src/vs/workbench/contrib/extensions/browser/extensionsWorkbenchService.ts
-@@ -2833,7 +2833,7 @@ export class ExtensionsWorkbenchService extends Disposable implements IExtension
+@@ -2872,7 +2872,7 @@ export class ExtensionsWorkbenchService extends Disposable implements IExtension
  		}
  
  		const extensionsToUninstall: UninstallExtensionInfo[] = [{ extension: extension.local }];
@@ -135,7 +135,7 @@ index c392afc7f7e..dc13df8b2af 100644
  				if (packExtension.local && !extensionsToUninstall.some(e => areSameExtensions(e.extension.identifier, packExtension.identifier))) {
  					extensionsToUninstall.push({ extension: packExtension.local });
 diff --git a/src/vs/workbench/services/accounts/browser/defaultAccount.ts b/src/vs/workbench/services/accounts/browser/defaultAccount.ts
-index d65c2fb81b7..15ccf0c0361 100644
+index 8f4e86487df..0c03912111d 100644
 --- a/src/vs/workbench/services/accounts/browser/defaultAccount.ts
 +++ b/src/vs/workbench/services/accounts/browser/defaultAccount.ts
 @@ -136,14 +136,16 @@ export class DefaultAccountService extends Disposable implements IDefaultAccount
@@ -168,7 +168,7 @@ index d65c2fb81b7..15ccf0c0361 100644
  		return {
  			...this.defaultAccountConfig.authenticationProvider.default,
  			enterprise: false
-@@ -1125,8 +1131,11 @@ class DefaultAccountProviderContribution extends Disposable implements IWorkbenc
+@@ -1174,8 +1180,11 @@ class DefaultAccountProviderContribution extends Disposable implements IWorkbenc
  		@IDefaultAccountService defaultAccountService: IDefaultAccountService,
  	) {
  		super();
