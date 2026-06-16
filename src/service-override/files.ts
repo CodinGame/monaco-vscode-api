@@ -583,9 +583,14 @@ class RegisteredFileSystemProvider
           stream.end(undefined)
         }
       } catch (error) {
-        stream.error(
-          createFileSystemProviderError(error as Error, FileSystemProviderErrorCode.Unknown)
-        )
+        if (error instanceof FileSystemProviderError) {
+          stream.error(error)
+        } else {
+          stream.error(
+            createFileSystemProviderError(error as Error, FileSystemProviderErrorCode.Unknown)
+          )
+        }
+
         stream.end()
       }
     })()
@@ -867,6 +872,7 @@ class OverlayFileSystemProvider
         const stream = delegate.readFileStream(resource, opts, token)
         await new Promise<void>((resolve, reject) => {
           let dataReceived = false
+          let errored = false
           listenStream(
             stream,
             {
@@ -875,10 +881,13 @@ class OverlayFileSystemProvider
                 void writableStream.write(data)
               },
               onEnd() {
-                writableStream.end()
-                resolve()
+                if (!errored) {
+                  writableStream.end()
+                  resolve()
+                }
               },
               onError(err) {
+                errored = true
                 if (!dataReceived) {
                   reject(err)
                 } else {
@@ -898,6 +907,7 @@ class OverlayFileSystemProvider
       }
     }, token).catch((err) => {
       writableStream.error(err)
+      writableStream.end()
     })
 
     return writableStream
