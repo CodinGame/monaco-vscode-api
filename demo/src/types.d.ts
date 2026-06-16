@@ -1,3 +1,7 @@
+declare module '*.css' {
+  export {}
+}
+
 declare module '*?url' {
   const url: string
   export default url

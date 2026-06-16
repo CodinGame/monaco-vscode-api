@@ -73,7 +73,7 @@ index 1ff3fb838d9..6400775c42d 100644
 +	}
  }
 diff --git a/src/vs/monaco.d.ts b/src/vs/monaco.d.ts
-index 5b0047e74a3..f89a2cfc847 100644
+index d93410d667a..eb11d18504b 100644
 --- a/src/vs/monaco.d.ts
 +++ b/src/vs/monaco.d.ts
 @@ -24,12 +24,16 @@ declare namespace monaco {
@@ -183,10 +183,10 @@ index b7f9f12ec30..987ef8a666c 100644
  						nls: {
  							messages: getNLSMessages(),
 diff --git a/src/vs/workbench/services/extensions/electron-browser/nativeExtensionService.ts b/src/vs/workbench/services/extensions/electron-browser/nativeExtensionService.ts
-index 2b6104a77d9..a04b23ea698 100644
+index 4340604b3bd..881dc2fc9b0 100644
 --- a/src/vs/workbench/services/extensions/electron-browser/nativeExtensionService.ts
 +++ b/src/vs/workbench/services/extensions/electron-browser/nativeExtensionService.ts
-@@ -548,7 +548,12 @@ class NativeExtensionHostFactory implements IExtensionHostFactory {
+@@ -575,7 +575,12 @@ class NativeExtensionHostFactory implements IExtensionHostFactory {
  			case ExtensionHostKind.LocalWebWorker: {
  				if (this._webWorkerExtHostEnablement !== LocalWebWorkerExtHostEnablement.Disabled) {
  					const startup = this._webWorkerExtHostEnablement === LocalWebWorkerExtHostEnablement.Lazy ? ExtensionHostStartup.LazyAutoStart : ExtensionHostStartup.EagerManualStart;

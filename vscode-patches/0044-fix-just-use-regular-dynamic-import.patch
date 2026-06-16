@@ -8,7 +8,7 @@ Subject: [PATCH] fix: just use regular dynamic import
  1 file changed, 1 insertion(+), 2 deletions(-)
 
 diff --git a/src/vs/workbench/services/keybinding/browser/keyboardLayoutService.ts b/src/vs/workbench/services/keybinding/browser/keyboardLayoutService.ts
-index e5a4de65f0b..e21ea6d5335 100644
+index f155e27685f..91c827ba5a9 100644
 --- a/src/vs/workbench/services/keybinding/browser/keyboardLayoutService.ts
 +++ b/src/vs/workbench/services/keybinding/browser/keyboardLayoutService.ts
 @@ -5,7 +5,6 @@
@@ -19,7 +19,7 @@ index e5a4de65f0b..e21ea6d5335 100644
  import { Disposable } from '../../../../base/common/lifecycle.js';
  import { KeymapInfo, IRawMixedKeyboardMapping, IKeymapInfo } from '../common/keymapInfo.js';
  import { InstantiationType, registerSingleton } from '../../../../platform/instantiation/common/extensions.js';
-@@ -456,7 +455,7 @@ export class BrowserKeyboardMapperFactory extends BrowserKeyboardMapperFactoryBa
+@@ -460,7 +459,7 @@ export class BrowserKeyboardMapperFactory extends BrowserKeyboardMapperFactoryBa
  
  		const platform = isWindows ? 'win' : isMacintosh ? 'darwin' : 'linux';
  

@@ -8,7 +8,7 @@ Subject: [PATCH] fix: remove weird type reference to fix the build
  1 file changed, 2 deletions(-)
 
 diff --git a/src/vs/editor/common/services/editorWorker.ts b/src/vs/editor/common/services/editorWorker.ts
-index 6b0720d60ff..1ce8edd852c 100644
+index fd9efc5b2ce..57faaa801f5 100644
 --- a/src/vs/editor/common/services/editorWorker.ts
 +++ b/src/vs/editor/common/services/editorWorker.ts
 @@ -10,7 +10,6 @@ import { IChange } from '../diff/legacyLinesDiffComputer.js';

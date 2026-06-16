@@ -5,9 +5,9 @@ import commonjs from '@rollup/plugin-commonjs'
 import json from '@rollup/plugin-json'
 import type { PackageJson } from 'type-fest'
 import dts from 'rollup-plugin-dts'
-import * as path from 'path'
-import { fileURLToPath } from 'url'
-import * as fs from 'fs'
+import * as path from 'node:path'
+import { fileURLToPath } from 'node:url'
+import * as fs from 'node:fs'
 
 const pkg = JSON.parse(
   fs.readFileSync(new URL('../package.json', import.meta.url).pathname).toString()

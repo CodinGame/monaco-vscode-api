@@ -4,6 +4,7 @@ Date: Mon, 11 Mar 2024 17:22:31 +0100
 Subject: [PATCH] fix: replace amd imports by regular esm dynamic imports
 
 ---
+ .../common/diff/externalLinesDiffComputer.ts    |  5 +----
  src/vs/platform/telemetry/common/1dsAppender.ts |  9 ++-------
  .../markdown/browser/markedKatexSupport.ts      |  5 ++---
  .../terminal/browser/terminalInstance.ts        |  3 +--
@@ -15,8 +16,31 @@ Subject: [PATCH] fix: replace amd imports by regular esm dynamic imports
  .../browser/textMateTokenizationFeatureImpl.ts  |  6 +++---
  .../services/textfile/common/encoding.ts        |  9 ++++-----
  .../browser/treeSitterLibraryService.ts         |  4 ++--
- 11 files changed, 27 insertions(+), 40 deletions(-)
+ 12 files changed, 28 insertions(+), 44 deletions(-)
 
+diff --git a/src/vs/editor/common/diff/externalLinesDiffComputer.ts b/src/vs/editor/common/diff/externalLinesDiffComputer.ts
+index f97be2154b9..5dbd6eb7572 100644
+--- a/src/vs/editor/common/diff/externalLinesDiffComputer.ts
++++ b/src/vs/editor/common/diff/externalLinesDiffComputer.ts
+@@ -4,7 +4,6 @@
+  *--------------------------------------------------------------------------------------------*/
+ 
+ import type { IDiffComputer as IExternalDiffComputer, createDiffComputer as createExternalDiffComputer } from '@vscode/diff';
+-import { resolveAmdNodeModulePath } from '../../../amdX.js';
+ import { LineRange } from '../core/ranges/lineRange.js';
+ import { OffsetRange } from '../core/ranges/offsetRange.js';
+ import { StringText } from '../core/text/abstractText.js';
+@@ -20,9 +19,7 @@ let externalWasmDiffComputerPromise: Promise<IExternalDiffComputer> | undefined;
+ 
+ function loadExternalModule(): Promise<ExternalDiffModule> {
+ 	if (!externalModulePromise) {
+-		const url = resolveAmdNodeModulePath('@vscode/diff', 'dist/index.js');
+-		// Use a runtime-computed URL to keep bundlers from rewriting the import.
+-		externalModulePromise = import(/* webpackIgnore: true */ /* @vite-ignore */ `${url}`) as Promise<ExternalDiffModule>;
++		externalModulePromise = import('@vscode/diff') as Promise<ExternalDiffModule>;
+ 	}
+ 	return externalModulePromise;
+ }
 diff --git a/src/vs/platform/telemetry/common/1dsAppender.ts b/src/vs/platform/telemetry/common/1dsAppender.ts
 index 0daaabd02b5..316500b563c 100644
 --- a/src/vs/platform/telemetry/common/1dsAppender.ts
@@ -77,7 +101,7 @@ index 3d83476e176..a80f0b9a7f2 100644
  		}
  	}
 diff --git a/src/vs/workbench/contrib/terminal/browser/terminalInstance.ts b/src/vs/workbench/contrib/terminal/browser/terminalInstance.ts
-index e4edd32b8e2..84bc22efacc 100644
+index 8e0a30cea2b..2b0ce2561f1 100644
 --- a/src/vs/workbench/contrib/terminal/browser/terminalInstance.ts
 +++ b/src/vs/workbench/contrib/terminal/browser/terminalInstance.ts
 @@ -79,7 +79,6 @@ import { IHistoryService } from '../../../services/history/common/history.js';

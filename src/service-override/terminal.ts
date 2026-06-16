@@ -52,6 +52,8 @@ import { TerminalCompletionService } from 'vs/workbench/contrib/terminalContrib/
 import { unsupported } from '../tools.js'
 import type { ISerializedCommandDetectionCapability } from 'vs/platform/terminal/common/capabilities/capabilities'
 import { TerminalEditingService } from 'vs/workbench/contrib/terminal/browser/terminalEditingService'
+import { IWindowsMxcTerminalSandboxRuntime } from 'vs/platform/sandbox/common/terminalSandboxMxcRuntime.service'
+import { WindowsMxcTerminalSandboxRuntime } from 'vs/platform/sandbox/common/terminalSandboxMxcRuntime'
 export {
   ITerminalService,
   ITerminalInstanceService
@@ -214,7 +216,12 @@ export default function getServiceOverride(backend?: ITerminalBackend): IEditorO
       [],
       true
     ),
-    [ITerminalEditingService.toString()]: new SyncDescriptor(TerminalEditingService, [], true)
+    [ITerminalEditingService.toString()]: new SyncDescriptor(TerminalEditingService, [], true),
+    [IWindowsMxcTerminalSandboxRuntime.toString()]: new SyncDescriptor(
+      WindowsMxcTerminalSandboxRuntime,
+      [],
+      true
+    )
   }
 }
 

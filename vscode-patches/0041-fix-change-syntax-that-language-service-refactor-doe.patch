@@ -1,14 +1,13 @@
 From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
 From: =?UTF-8?q?Lo=C3=AFc=20Mangeonjean?= <loic@coderpad.io>
-Date: Thu, 25 Apr 2024 19:14:25 +0200
+Date: Wed, 10 Jun 2026 18:48:57 +0200
 Subject: [PATCH] fix: change syntax that language service refactor doesn't
  support well
 
-the re-exports source are removed during "Move to new file" refactor
 ---
- src/vs/workbench/contrib/tasks/common/taskService.ts         | 5 ++++-
- .../chatAgentTools/common/terminalSandboxService.ts          | 4 +++-
- 2 files changed, 7 insertions(+), 2 deletions(-)
+ src/vs/workbench/contrib/tasks/common/taskService.ts      | 5 ++++-
+ .../chatAgentTools/common/terminalSandboxService.ts       | 8 +++++---
+ 2 files changed, 9 insertions(+), 4 deletions(-)
 
 diff --git a/src/vs/workbench/contrib/tasks/common/taskService.ts b/src/vs/workbench/contrib/tasks/common/taskService.ts
 index ec8414ee339..35ac0b396d8 100644
@@ -27,17 +26,28 @@ index ec8414ee339..35ac0b396d8 100644
  export const ShellExecutionSupportedContext = new RawContextKey<boolean>('shellExecutionSupported', false, nls.localize('tasks.shellExecutionSupported', "Whether ShellExecution tasks are supported. Consider using in the when clause of a \'taskDefinition\' contribution."));
  export const TaskCommandsRegistered = new RawContextKey<boolean>('taskCommandsRegistered', false, nls.localize('tasks.taskCommandsRegistered', "Whether the task commands have been registered yet"));
 diff --git a/src/vs/workbench/contrib/terminalContrib/chatAgentTools/common/terminalSandboxService.ts b/src/vs/workbench/contrib/terminalContrib/chatAgentTools/common/terminalSandboxService.ts
-index 3fa97e4e391..8695c34315d 100644
+index dfef15b9945..0f3c4f6a425 100644
 --- a/src/vs/workbench/contrib/terminalContrib/chatAgentTools/common/terminalSandboxService.ts
 +++ b/src/vs/workbench/contrib/terminalContrib/chatAgentTools/common/terminalSandboxService.ts
-@@ -38,7 +38,9 @@ import { ITerminalSandboxService, TerminalSandboxPrerequisiteCheck, type ISandbo
- import { getTerminalSandboxReadAllowListForCommands } from './terminalSandboxReadAllowList.js';
- import { getTerminalSandboxRuntimeConfigurationForCommands } from './terminalSandboxRuntimeConfigurationPerOperation.js';
+@@ -25,7 +25,7 @@ import { SANDBOX_HELPER_CHANNEL_NAME, SandboxHelperChannelClient } from '../../.
+ import { ISandboxDependencyStatus, ISandboxHelperService, type IWindowsMxcConfig, IWindowsMxcFilesystemPolicy, type IWindowsMxcPolicyContainment, type IWindowsMxcSandboxPolicy } from '../../../../../platform/sandbox/common/sandboxHelperService.js';
+ import { ITerminalSandboxEngineHost, ITerminalSandboxRuntimeInfo, TerminalSandboxEngine } from '../../../../../platform/sandbox/common/terminalSandboxEngine.js';
+ import { readSandboxSetting, SANDBOX_SETTING_KEYS } from './sandboxSettingsReader.js';
+-import { ITerminalSandboxService, type ISandboxDependencyInstallOptions, type ISandboxDependencyInstallResult, type ITerminalSandboxCommand, type ITerminalSandboxPrecheckInputs, type ITerminalSandboxPrerequisiteCheckResult, type ITerminalSandboxResolvedNetworkDomains, type ITerminalSandboxWrapResult } from '../../../../../platform/sandbox/common/terminalSandboxService.js';
++import { ISandboxDependencyInstallTerminal, ITerminalSandboxService, TerminalSandboxPrerequisiteCheck, type ISandboxDependencyInstallOptions, type ISandboxDependencyInstallResult, type ITerminalSandboxCommand, type ITerminalSandboxPrecheckInputs, type ITerminalSandboxPrerequisiteCheckResult, type ITerminalSandboxResolvedNetworkDomains, type ITerminalSandboxWrapResult } from '../../../../../platform/sandbox/common/terminalSandboxService.js';
+ import { TerminalCapability } from '../../../../../platform/terminal/common/capabilities/capabilities.js';
+ import { IWorkspaceContextService } from '../../../../../platform/workspace/common/workspace.js';
+ import { ChatModel } from '../../../chat/common/model/chatModel.js';
+@@ -34,8 +34,10 @@ import { ElicitationState, IChatService } from '../../../chat/common/chatService
+ import { IRemoteAgentService } from '../../../../services/remote/common/remoteAgentService.js';
+ import { ILifecycleService, WillShutdownJoinerOrder } from '../../../../services/lifecycle/common/lifecycle.js';
  
 -export { ITerminalSandboxService, TerminalSandboxPrerequisiteCheck } from '../../../../../platform/sandbox/common/terminalSandboxService.js';
+-export type { ISandboxDependencyInstallOptions, ISandboxDependencyInstallResult, ISandboxDependencyInstallTerminal, ITerminalSandboxCommand, ITerminalSandboxPrecheckInputs, ITerminalSandboxPrerequisiteCheckResult, ITerminalSandboxResolvedNetworkDomains, ITerminalSandboxWrapResult } from '../../../../../platform/sandbox/common/terminalSandboxService.js';
 +export {
-+	ITerminalSandboxService, TerminalSandboxPrerequisiteCheck
++	ITerminalSandboxService, TerminalSandboxPrerequisiteCheck,
++	ISandboxDependencyInstallOptions, ISandboxDependencyInstallResult, ISandboxDependencyInstallTerminal, ITerminalSandboxCommand, ITerminalSandboxPrecheckInputs, ITerminalSandboxPrerequisiteCheckResult, ITerminalSandboxResolvedNetworkDomains, ITerminalSandboxWrapResult
 +};
- export type { ISandboxDependencyInstallOptions, ISandboxDependencyInstallResult, ISandboxDependencyInstallTerminal, ITerminalSandboxCommand, ITerminalSandboxPrerequisiteCheckResult, ITerminalSandboxResolvedNetworkDomains, ITerminalSandboxWrapResult } from '../../../../../platform/sandbox/common/terminalSandboxService.js';
  
  /**
+  * Context passed to the password prompt during dependency installation.

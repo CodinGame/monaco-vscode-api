@@ -35,7 +35,7 @@ index 55eaae5451c..ea6ed0b941a 100644
  	/**
  	 * If `true`, do not notifies the error to user by showing the message box. Default is `false`.
 diff --git a/src/vs/workbench/browser/layout.ts b/src/vs/workbench/browser/layout.ts
-index 652cf0bb9fc..96e4de597d4 100644
+index 6ef7b3e0ef0..6c141511d50 100644
 --- a/src/vs/workbench/browser/layout.ts
 +++ b/src/vs/workbench/browser/layout.ts
 @@ -19,7 +19,7 @@ import { PanelPart } from './parts/panel/panelPart.js';
@@ -47,7 +47,7 @@ index 652cf0bb9fc..96e4de597d4 100644
  import { ITitleService } from '../services/title/browser/titleService.js';
  import { ServicesAccessor, IInstantiationService } from '../../platform/instantiation/common/instantiation.js';
  import { StartupKind, ILifecycleService } from '../services/lifecycle/common/lifecycle.js';
-@@ -2963,7 +2963,7 @@ class LayoutStateModel extends Disposable {
+@@ -2964,7 +2964,7 @@ class LayoutStateModel extends Disposable {
  			// Unless auxiliary bar visibility is explicitly configured, make
  			// sure to not force open it in case we know it was empty before.
  			const configuration = this.configurationService.inspect(WorkbenchLayoutSettings.AUXILIARYBAR_DEFAULT_VISIBILITY);

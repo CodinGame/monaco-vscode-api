@@ -16,7 +16,7 @@ import * as nodePath from 'node:path'
 import { builtinModules } from 'module'
 import * as fs from 'node:fs'
 import { execSync } from 'node:child_process'
-import { sanitizeFileName } from '../tools/config'
+import { sanitizeFileName } from '../tools/config.js'
 
 export interface SubPackageModule {
   id: string

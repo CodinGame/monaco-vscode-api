@@ -8,17 +8,17 @@ Subject: [PATCH] feat: add new task that only export editor types
  1 file changed, 4 insertions(+)
 
 diff --git a/build/gulpfile.editor.ts b/build/gulpfile.editor.ts
-index 4322e06aec5..9ca6678964f 100644
+index 2222311669f..4cab298ef33 100644
 --- a/build/gulpfile.editor.ts
 +++ b/build/gulpfile.editor.ts
-@@ -224,6 +224,10 @@ gulp.task('editor-distro',
+@@ -223,6 +223,10 @@ task.task('editor-distro',
  	)
  );
  
-+gulp.task('editor-distro-resources',
++task.task('editor-distro-resources',
 +	task.series(finalEditorResourcesTask)
 +);
 +
- gulp.task('monacodts', task.define('monacodts', () => {
+ task.task('monacodts', task.define('monacodts', () => {
  	const result = monacoapi.execute();
  	fs.writeFileSync(result.filePath, result.content);

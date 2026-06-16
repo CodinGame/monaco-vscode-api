@@ -248,7 +248,7 @@ index 8e857e292df..721cd5fd2d7 100644
  
  	/**
 diff --git a/src/vs/base/browser/ui/inputbox/inputBox.ts b/src/vs/base/browser/ui/inputbox/inputBox.ts
-index bdc8f7f689b..6abb8fe88d6 100644
+index 85053deefd3..0e803e05d6b 100644
 --- a/src/vs/base/browser/ui/inputbox/inputBox.ts
 +++ b/src/vs/base/browser/ui/inputbox/inputBox.ts
 @@ -22,6 +22,7 @@ import { ScrollbarVisibility } from '../../../common/scrollable.js';
@@ -259,7 +259,7 @@ index bdc8f7f689b..6abb8fe88d6 100644
  
  
  const $ = dom.$;
-@@ -703,7 +704,7 @@ export class HistoryInputBox extends InputBox implements IHistoryNavigationWidge
+@@ -707,7 +708,7 @@ export class HistoryInputBox extends InputBox implements IHistoryNavigationWidge
  
  		// Spot the change to the textarea class attribute which occurs when it changes between non-empty and empty,
  		// and add the history suffix to the placeholder if not yet present
@@ -269,7 +269,7 @@ index bdc8f7f689b..6abb8fe88d6 100644
  				if (!mutation.target.textContent) {
  					addSuffix();
 diff --git a/src/vs/base/browser/ui/toolbar/toolbar.ts b/src/vs/base/browser/ui/toolbar/toolbar.ts
-index 73e90474f66..37f6be0efff 100644
+index 733a6affa55..3efd515cd8b 100644
 --- a/src/vs/base/browser/ui/toolbar/toolbar.ts
 +++ b/src/vs/base/browser/ui/toolbar/toolbar.ts
 @@ -13,11 +13,12 @@ import { Codicon } from '../../../common/codicons.js';
@@ -286,16 +286,16 @@ index 73e90474f66..37f6be0efff 100644
  
  const ACTION_MIN_WIDTH = 20; /* 20px codicon */
  const ACTION_PADDING = 4; /* 4px padding */
-@@ -177,11 +178,10 @@ export class ToolBar extends Disposable {
+@@ -179,11 +180,10 @@ export class ToolBar extends Disposable {
  			this.element.classList.toggle('responsive-last', this.options.responsiveBehavior.kind === 'last');
  			this.element.style.setProperty(ACTION_MIN_WIDTH_VAR, `${this.getConfiguredActionMinWidth()}px`);
  
 -			const observer = new ResizeObserver(() => {
 +			const observer = this._store.add(new DisposableResizeObserver('Toolbar.actionsUpdate', () => {
- 				this.updateActions(this.element.getBoundingClientRect().width);
+ 				this.updateActions(this.getAvailableWidth());
 -			});
 +			}));
- 			observer.observe(this.element);
+ 			observer.observe(this.options.responsiveBehavior?.observedElement ?? this.element);
 -			this._store.add(toDisposable(() => observer.disconnect()));
  		}
  	}
@@ -610,7 +610,7 @@ index 358aa682cda..b41a1f1346b 100644
  
  			const supportedImageTypes = ['image/png', 'image/jpeg', 'image/gif', 'image/tiff', 'image/bmp'];
 diff --git a/src/vs/platform/hover/browser/hoverService.ts b/src/vs/platform/hover/browser/hoverService.ts
-index b9931600efd..656dfe7c8dc 100644
+index 8e8fd77c08b..24daa472300 100644
 --- a/src/vs/platform/hover/browser/hoverService.ts
 +++ b/src/vs/platform/hover/browser/hoverService.ts
 @@ -364,7 +364,7 @@ export class HoverService extends Disposable implements IHoverService {
@@ -716,18 +716,18 @@ index 09cddff2956..e329232bcb6 100644
  			if (timeoutDisposables) {
  				dispose(timeoutDisposables);
 diff --git a/src/vs/workbench/contrib/chat/browser/widget/chatContentParts/chatThinkingContentPart.ts b/src/vs/workbench/contrib/chat/browser/widget/chatContentParts/chatThinkingContentPart.ts
-index 876777274d8..d6628d7e67d 100644
+index dc0d1d49f10..4e09eb21eb6 100644
 --- a/src/vs/workbench/contrib/chat/browser/widget/chatContentParts/chatThinkingContentPart.ts
 +++ b/src/vs/workbench/contrib/chat/browser/widget/chatContentParts/chatThinkingContentPart.ts
-@@ -41,6 +41,7 @@ import { IChatCollapsibleIODataPart } from './chatToolInputOutputContentPart.js'
+@@ -42,6 +42,7 @@ import { IChatCollapsibleIODataPart } from './chatToolInputOutputContentPart.js'
  import { ChatThinkingExternalResourceWidget } from './chatThinkingExternalResourcesWidget.js';
  import { LocalChatSessionUri, chatSessionResourceToId } from '../../../common/model/chatUri.js';
  import { IEditSessionDiffStats } from '../../../common/editing/chatEditingService.js';
 +import { mainWindow } from '../../../../../../base/browser/window.js';
  
  
- function extractTextFromPart(content: IChatThinkingPart): string {
-@@ -523,7 +524,7 @@ export class ChatThinkingContentPart extends ChatCollapsibleContentPart implemen
+ // Context key id mirrored from `vs/sessions/common/contextkeys` (`IsPhoneLayoutContext`).
+@@ -572,7 +573,7 @@ export class ChatThinkingContentPart extends ChatCollapsibleContentPart implemen
  			this._register(this.scrollableElement.onScroll(e => this.handleScroll(e.scrollTop)));
  
  			let pendingMutationRefresh: IDisposable | undefined;
@@ -918,7 +918,7 @@ index b6895fbf5d8..c59cb859b56 100644
  
  		const protocol: IMessagePassingProtocol = {
 diff --git a/src/vs/workbench/services/host/browser/browserHostService.ts b/src/vs/workbench/services/host/browser/browserHostService.ts
-index db26674d342..914f1eb51e9 100644
+index 09b7eec669f..28ca04f71f8 100644
 --- a/src/vs/workbench/services/host/browser/browserHostService.ts
 +++ b/src/vs/workbench/services/host/browser/browserHostService.ts
 @@ -683,7 +683,7 @@ export class BrowserHostService extends Disposable implements IHostService {

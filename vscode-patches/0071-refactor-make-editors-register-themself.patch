@@ -154,7 +154,7 @@ index aead3db9861..e7b71870d77 100644
  
  		this._configurationService = configurationService;
 diff --git a/src/vs/editor/standalone/browser/standaloneServices.ts b/src/vs/editor/standalone/browser/standaloneServices.ts
-index 3723065604f..40e9c53786e 100644
+index 7bad06a8c75..e54b66d050b 100644
 --- a/src/vs/editor/standalone/browser/standaloneServices.ts
 +++ b/src/vs/editor/standalone/browser/standaloneServices.ts
 @@ -74,13 +74,11 @@ import { UserInteractionService } from '../../../platform/userInteraction/browse
@@ -171,7 +171,7 @@ index 3723065604f..40e9c53786e 100644
  import { EditOperation, ISingleEditOperation } from '../../common/core/editOperation.js';
  import { IPosition, Position as Pos } from '../../common/core/position.js';
  import { Range } from '../../common/core/range.js';
-@@ -426,66 +424,43 @@ export class StandaloneKeybindingService extends AbstractKeybindingService {
+@@ -427,66 +425,43 @@ export class StandaloneKeybindingService extends AbstractKeybindingService {
  		this._cachedResolver = null;
  		this._dynamicKeybindings = [];
  		this._domNodeListeners = [];

@@ -15,7 +15,7 @@ https://bugzilla.mozilla.org/show_bug.cgi?id=2029029
  7 files changed, 9 insertions(+), 9 deletions(-)
 
 diff --git a/extensions/markdown-language-features/src/preview/documentRenderer.ts b/extensions/markdown-language-features/src/preview/documentRenderer.ts
-index 85407fb81bf..af8c73b7c67 100644
+index e29e37ede74..ad4a21f184a 100644
 --- a/extensions/markdown-language-features/src/preview/documentRenderer.ts
 +++ b/extensions/markdown-language-features/src/preview/documentRenderer.ts
 @@ -201,7 +201,7 @@ export class MdDocumentRenderer {
@@ -76,26 +76,26 @@ index 2ee1169ffc3..8052539f1e6 100644
  	<meta http-equiv="Content-Security-Policy" content="default-src 'none'; img-src data: ${cspSource}; media-src ${cspSource}; script-src 'nonce-${nonce}'; style-src ${cspSource} 'nonce-${nonce}';">
  	<meta id="settings" data-settings="${escapeAttribute(JSON.stringify(settings))}">
 diff --git a/extensions/mermaid-markdown-features/src/chatOutputRenderer.ts b/extensions/mermaid-markdown-features/src/chatOutputRenderer.ts
-index 48044bd7335..692e8b8f67e 100644
+index 829158dcbc7..fc106b840b6 100644
 --- a/extensions/mermaid-markdown-features/src/chatOutputRenderer.ts
 +++ b/extensions/mermaid-markdown-features/src/chatOutputRenderer.ts
-@@ -74,7 +74,7 @@ class MermaidChatOutputRenderer implements vscode.ChatOutputRenderer {
+@@ -75,7 +75,7 @@ class MermaidChatOutputRenderer implements vscode.ChatOutputRenderer {
  				<meta name="viewport" content="width=device-width, initial-scale=1.0">
  				<title>Mermaid Diagram</title>
- 				<meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'nonce-${nonce}'; style-src ${webview.cspSource} 'unsafe-inline'; font-src data:;" />
+ 				<meta http-equiv="Content-Security-Policy" content="default-src 'none'; img-src data:; script-src 'nonce-${nonce}'; style-src ${webview.cspSource} 'unsafe-inline'; font-src data:;" />
 -				<link rel="stylesheet" type="text/css" href="${codiconsUri}">
 +				<link rel="stylesheet" type="text/css" href="${codiconsUri}" crossorigin="anonymous">
  
  				<style>
  					body {
 diff --git a/extensions/mermaid-markdown-features/src/editorManager.ts b/extensions/mermaid-markdown-features/src/editorManager.ts
-index afbe21f342c..b4615e65470 100644
+index 1b6b8b13474..f2421a60984 100644
 --- a/extensions/mermaid-markdown-features/src/editorManager.ts
 +++ b/extensions/mermaid-markdown-features/src/editorManager.ts
-@@ -223,7 +223,7 @@ class MermaidPreview extends Disposable {
+@@ -224,7 +224,7 @@ class MermaidPreview extends Disposable {
  				<meta name="viewport" content="width=device-width, initial-scale=1.0">
  				<title>Mermaid Diagram</title>
- 				<meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'nonce-${nonce}'; style-src ${this._webviewPanel.webview.cspSource} 'unsafe-inline'; font-src data:;" />
+ 				<meta http-equiv="Content-Security-Policy" content="default-src 'none'; img-src data:; script-src 'nonce-${nonce}'; style-src ${this._webviewPanel.webview.cspSource} 'unsafe-inline'; font-src data:;" />
 -				<link rel="stylesheet" type="text/css" href="${codiconsUri}">
 +				<link rel="stylesheet" type="text/css" href="${codiconsUri}" crossorigin="anonymous">
  				<style>

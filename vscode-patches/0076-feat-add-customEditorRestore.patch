@@ -9,7 +9,7 @@ Subject: [PATCH] feat: add customEditorRestore
  2 files changed, 16 insertions(+), 11 deletions(-)
 
 diff --git a/src/vs/workbench/browser/layout.ts b/src/vs/workbench/browser/layout.ts
-index 75889a66bdf..652cf0bb9fc 100644
+index b28157fccdd..6ef7b3e0ef0 100644
 --- a/src/vs/workbench/browser/layout.ts
 +++ b/src/vs/workbench/browser/layout.ts
 @@ -21,7 +21,7 @@ import { isTemporaryWorkspace, IWorkspaceContextService, WorkbenchState } from '

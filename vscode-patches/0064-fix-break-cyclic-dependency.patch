@@ -18,10 +18,10 @@ Subject: [PATCH] fix: break cyclic dependency
  11 files changed, 21 insertions(+), 19 deletions(-)
 
 diff --git a/src/vs/workbench/contrib/chat/browser/accessibility/chatAccessibilityProvider.ts b/src/vs/workbench/contrib/chat/browser/accessibility/chatAccessibilityProvider.ts
-index 5b9b0e488d7..cd3ca7559b1 100644
+index 651fcff0989..6e89fa9b37d 100644
 --- a/src/vs/workbench/contrib/chat/browser/accessibility/chatAccessibilityProvider.ts
 +++ b/src/vs/workbench/contrib/chat/browser/accessibility/chatAccessibilityProvider.ts
-@@ -18,7 +18,7 @@ import { IChatToolInvocation } from '../../common/chatService/chatService.js';
+@@ -19,7 +19,7 @@ import { IChatToolInvocation } from '../../common/chatService/chatService.js';
  import { IChatResponseViewModel, isRequestVM, isResponseVM } from '../../common/model/chatViewModel.js';
  import { isToolResultInputOutputDetails, isToolResultOutputDetails, toolContentToA11yString } from '../../common/tools/languageModelToolsService.js';
  import { CancelChatActionId } from '../actions/chatExecuteActions.js';
@@ -44,7 +44,7 @@ index 6ce67486a58..17e137b5eb0 100644
 +export const SkipToolPostConfirmationActionId = 'workbench.action.chat.skipToolPostExecution';
  
 diff --git a/src/vs/workbench/contrib/chat/browser/actions/chatContext.ts b/src/vs/workbench/contrib/chat/browser/actions/chatContext.ts
-index a36982f973f..9e519fd560f 100644
+index f758e3b155a..405c4eb97c2 100644
 --- a/src/vs/workbench/contrib/chat/browser/actions/chatContext.ts
 +++ b/src/vs/workbench/contrib/chat/browser/actions/chatContext.ts
 @@ -25,7 +25,7 @@ import { IChatRequestToolEntry, IChatRequestToolSetEntry, IChatRequestVariableEn
@@ -55,11 +55,11 @@ index a36982f973f..9e519fd560f 100644
 +import { isImage } from '../widget/input/editor/chatPasteProviders.js';
  import { convertBufferToScreenshotVariable } from '../attachments/chatScreenshotContext.js';
  import { ChatInstructionsPickerPick } from '../promptSyntax/attachInstructionsAction.js';
- import { IChatSessionsService } from '../../common/chatSessionsService.js';
-@@ -33,6 +33,7 @@ import { getAgentSessionProviderIcon, AgentSessionProviders } from '../agentSess
- import { ITerminalService } from '../../../terminal/browser/terminal.js';
+ import { IChatSessionsService, isAgentHostTarget } from '../../common/chatSessionsService.js';
+@@ -34,6 +34,7 @@ import { ITerminalService } from '../../../terminal/browser/terminal.js';
  import { URI } from '../../../../../base/common/uri.js';
  import { ITerminalCommand, TerminalCapability } from '../../../../../platform/terminal/common/capabilities/capabilities.js';
+ import { getChatSessionType } from '../../common/model/chatUri.js';
 +import { imageToHash } from '../chatImageUtils.js';
  
  /**
@@ -104,10 +104,10 @@ index 558fc635277..391b0e86712 100644
  export const IChatAttachmentResolveService = createDecorator<IChatAttachmentResolveService>('IChatAttachmentResolveService');
  
 diff --git a/src/vs/workbench/contrib/chat/browser/chatImageUtils.ts b/src/vs/workbench/contrib/chat/browser/chatImageUtils.ts
-index 62f7c38ec24..49b61a235f7 100644
+index ffb77ed8c91..44a27528ecd 100644
 --- a/src/vs/workbench/contrib/chat/browser/chatImageUtils.ts
 +++ b/src/vs/workbench/contrib/chat/browser/chatImageUtils.ts
-@@ -168,3 +168,10 @@ CommandsRegistry.registerCommand('_chat.resizeImage', async (_accessor, data: Ui
+@@ -273,3 +273,10 @@ CommandsRegistry.registerCommand('_chat.resizeImage', async (_accessor, data: Ui
  	}
  	return resizeImage(data, mimeType);
  });
@@ -132,7 +132,7 @@ index c718be52179..267e2a5b53e 100644
  import { ChatConfirmationWidget, IChatConfirmationButton } from '../chatConfirmationWidget.js';
  import { IChatContentPartRenderContext } from '../chatContentParts.js';
 diff --git a/src/vs/workbench/contrib/chat/browser/widget/chatContentParts/toolInvocationParts/chatTerminalToolConfirmationSubPart.ts b/src/vs/workbench/contrib/chat/browser/widget/chatContentParts/toolInvocationParts/chatTerminalToolConfirmationSubPart.ts
-index 53c8f641159..ad68efc8113 100644
+index 518aa7c2bd3..8d5d657f7c9 100644
 --- a/src/vs/workbench/contrib/chat/browser/widget/chatContentParts/toolInvocationParts/chatTerminalToolConfirmationSubPart.ts
 +++ b/src/vs/workbench/contrib/chat/browser/widget/chatContentParts/toolInvocationParts/chatTerminalToolConfirmationSubPart.ts
 @@ -32,7 +32,7 @@ import { ChatContextKeys } from '../../../../common/actions/chatContextKeys.js';
@@ -171,10 +171,10 @@ index da2b868f353..2aa997b77a8 100644
  import { IChatContentPartRenderContext } from '../chatContentParts.js';
  import { ChatCollapsibleIOPart } from '../chatToolInputOutputContentPart.js';
 diff --git a/src/vs/workbench/contrib/chat/browser/widget/input/editor/chatPasteProviders.ts b/src/vs/workbench/contrib/chat/browser/widget/input/editor/chatPasteProviders.ts
-index be28fc3feed..b7cdc7ac240 100644
+index 450e51de4c2..52ec74a2912 100644
 --- a/src/vs/workbench/contrib/chat/browser/widget/input/editor/chatPasteProviders.ts
 +++ b/src/vs/workbench/contrib/chat/browser/widget/input/editor/chatPasteProviders.ts
-@@ -33,7 +33,7 @@ import { IDynamicVariable } from '../../../../common/attachments/chatVariables.j
+@@ -34,7 +34,7 @@ import { IDynamicVariable } from '../../../../common/attachments/chatVariables.j
  import { IChatWidgetService } from '../../../chat.js';
  import { getDynamicVariablesForWidget } from '../../../attachments/chatVariables.js';
  import { ChatDynamicVariableModel } from '../../../attachments/chatDynamicVariables.js';
@@ -183,7 +183,7 @@ index be28fc3feed..b7cdc7ac240 100644
  
  const COPY_MIME_TYPES = 'application/vnd.code.additional-editor-data';
  
-@@ -163,12 +163,6 @@ async function getImageAttachContext(data: Uint8Array, mimeType: string, token:
+@@ -164,12 +164,6 @@ async function getImageAttachContext(data: Uint8Array, mimeType: string, token:
  	};
  }
  

@@ -63,7 +63,7 @@ index 1ad6a06d008..d619311bc2b 100644
  const workbenchRegistry = Registry.as<IWorkbenchContributionsRegistry>(WorkbenchExtensions.Workbench);
  workbenchRegistry.registerWorkbenchContribution(RunAutomaticTasks, LifecyclePhase.Eventually);
 diff --git a/src/vs/workbench/contrib/tasks/browser/terminalTaskSystem.ts b/src/vs/workbench/contrib/tasks/browser/terminalTaskSystem.ts
-index 348a6988d91..191b84efcb2 100644
+index 178cdf324c1..8af9e906ae1 100644
 --- a/src/vs/workbench/contrib/tasks/browser/terminalTaskSystem.ts
 +++ b/src/vs/workbench/contrib/tasks/browser/terminalTaskSystem.ts
 @@ -40,7 +40,7 @@ import { TaskTerminalStatus } from './taskTerminalStatus.js';

@@ -77,7 +77,11 @@ export interface RegisterExtensionResult {
 export type RegisterRemoteExtensionResult = RegisterExtensionResult
 
 export interface RegisterLocalExtensionResult extends RegisterExtensionResult {
-  registerFileUrl: (path: string, url: string) => IDisposable
+  registerFileUrl: (
+    path: string,
+    url: string,
+    metadataOrMimeType?: string | ExtensionFileMetadata
+  ) => IDisposable
 }
 
 export interface RegisterLocalProcessExtensionResult extends RegisterLocalExtensionResult {

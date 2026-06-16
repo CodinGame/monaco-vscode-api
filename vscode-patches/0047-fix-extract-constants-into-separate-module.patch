@@ -17,7 +17,7 @@ so that only the constant is pulled from the root instead of the whole module gr
  create mode 100644 src/vs/workbench/contrib/chat/browser/widget/input/editor/chatDynamicVariablesConstant.ts
 
 diff --git a/src/vs/workbench/api/browser/mainThreadChatAgents2.ts b/src/vs/workbench/api/browser/mainThreadChatAgents2.ts
-index a1efe056b93..fdb522fd410 100644
+index 240f5190d83..cb5f4955086 100644
 --- a/src/vs/workbench/api/browser/mainThreadChatAgents2.ts
 +++ b/src/vs/workbench/api/browser/mainThreadChatAgents2.ts
 @@ -27,8 +27,6 @@ import { ILogService } from '../../../platform/log/common/log.js';
@@ -30,7 +30,7 @@ index a1efe056b93..fdb522fd410 100644
  import { IAgentSkill, IChatPromptSlashCommand, ICustomAgent, IInstructionFile, IPromptFileContext, IPromptPath, IPromptsService, PromptsStorage } from '../../contrib/chat/common/promptSyntax/service/promptsService.js';
  import { isValidPromptType, PromptsType } from '../../contrib/chat/common/promptSyntax/promptTypes.js';
 @@ -50,6 +48,9 @@ import { ICustomizationHarnessService, ICustomizationItem, ICustomizationItemPro
- import { AICustomizationManagementSection, BUILTIN_STORAGE } from '../../contrib/chat/common/aiCustomizationWorkspaceService.js';
+ import { AICustomizationManagementSection, AICustomizationSources } from '../../contrib/chat/common/aiCustomizationWorkspaceService.js';
  import { IAgentPlugin, IAgentPluginService } from '../../contrib/chat/common/plugins/agentPluginService.js';
  import { IWorkbenchEnvironmentService } from '../../services/environment/common/environmentService.js';
 +import { AgentSessionProviders, getAgentSessionProvider } from '../../contrib/chat/browser/agentSessions/agentSessions.js';
