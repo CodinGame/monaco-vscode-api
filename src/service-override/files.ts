@@ -56,7 +56,7 @@ import { BrowserElevatedFileService } from 'vs/workbench/services/files/browser/
 import { IElevatedFileService } from 'vs/workbench/services/files/common/elevatedFileService.service'
 import * as resources from 'vs/base/common/resources'
 import { VSBuffer } from 'vs/base/common/buffer'
-import { type ReadableStreamEvents, newWriteableStream } from 'vs/base/common/stream'
+import { type ReadableStreamEvents, listenStream, newWriteableStream } from 'vs/base/common/stream'
 import { CancellationToken } from 'vs/base/common/cancellation'
 import { checkServicesNotInitialized, registerServiceInitializePreParticipant } from '../lifecycle'
 import { logsPath } from '../workbench'
@@ -762,8 +762,8 @@ class OverlayFileSystemProvider
     FileSystemProviderCapabilities.FileReadStream |
     FileSystemProviderCapabilities.FileAppend
 
-  private readFromDelegates<T>(
-    caller: (delegate: IFileSystemProviderWithFileReadWriteCapability) => T,
+  private async readFromDelegates<T>(
+    caller: (delegate: IFileSystemProviderWithFileReadWriteCapability) => Promise<T>,
     token?: CancellationToken
   ) {
     if (this.delegates.length === 0) {
@@ -775,7 +775,7 @@ class OverlayFileSystemProvider
         throw new Error('Cancelled')
       }
       try {
-        return caller(delegate)
+        return await caller(delegate)
       } catch (err) {
         errors.push(err)
         if (err instanceof FileSystemProviderError) {
@@ -859,29 +859,48 @@ class OverlayFileSystemProvider
     opts: IFileReadStreamOptions,
     token: CancellationToken
   ): ReadableStreamEvents<Uint8Array> {
-    return this.readFromDelegates<ReadableStreamEvents<Uint8Array>>((delegate) => {
+    const writableStream = newWriteableStream<Uint8Array>(
+      (data) => VSBuffer.concat(data.map((data) => VSBuffer.wrap(data))).buffer
+    )
+    this.readFromDelegates(async (delegate) => {
       if (hasFileReadStreamCapability(delegate)) {
-        return delegate.readFileStream(resource, opts, token)
+        const stream = delegate.readFileStream(resource, opts, token)
+        await new Promise<void>((resolve, reject) => {
+          let dataReceived = false
+          listenStream(
+            stream,
+            {
+              onData(data) {
+                dataReceived = true
+                void writableStream.write(data)
+              },
+              onEnd() {
+                writableStream.end()
+                resolve()
+              },
+              onError(err) {
+                if (!dataReceived) {
+                  reject(err)
+                } else {
+                  writableStream.error(err)
+                }
+              }
+            },
+            token
+          )
+        })
       } else {
-        const writableStream = newWriteableStream<Uint8Array>(
-          (data) => VSBuffer.concat(data.map((data) => VSBuffer.wrap(data))).buffer
-        )
-        ;(async () => {
-          try {
-            let data = await this.readFile(resource)
-            if (typeof opts.position === 'number' || typeof opts.length === 'number') {
-              data = data.slice(opts.position ?? 0, opts.length)
-            }
-
-            writableStream.end(data)
-          } catch (err) {
-            writableStream.error(err as Error)
-          }
-        })()
-
-        return writableStream
+        let data = await this.readFile(resource)
+        if (typeof opts.position === 'number' || typeof opts.length === 'number') {
+          data = data.slice(opts.position ?? 0, opts.length)
+        }
+        return writableStream.end(data)
       }
-    }, token)
+    }, token).catch((err) => {
+      writableStream.error(err)
+    })
+
+    return writableStream
   }
 
   async readdir(resource: URI): Promise<[string, FileType][]> {
