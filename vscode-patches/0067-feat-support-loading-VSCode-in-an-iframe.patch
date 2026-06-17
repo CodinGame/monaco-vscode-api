@@ -24,11 +24,14 @@ Subject: [PATCH] feat: support loading VSCode in an iframe
  .../browser/view/inlineEdits/utils/utils.ts   | 10 ++---
  .../clipboard/browser/clipboardService.ts     |  2 +-
  src/vs/platform/hover/browser/hoverService.ts |  2 +-
+ src/vs/platform/hover/browser/hoverWidget.ts  |  4 +-
  .../remote/browser/browserSocketFactory.ts    |  2 +-
+ .../aquarium/browser/aquariumOverlay.ts       |  6 +--
  .../workbench/browser/parts/dialogs/dialog.ts |  3 +-
  src/vs/workbench/browser/window.ts            | 25 +++++++----
  .../chatThinkingContentPart.ts                |  3 +-
  .../comments/browser/commentThreadBody.ts     |  3 +-
+ .../issue/browser/screenshotAnnotation.ts     |  6 +--
  .../languageStatus/browser/languageStatus.ts  |  3 +-
  .../mergeEditor/browser/view/editorGutter.ts  |  9 ++--
  .../performance/browser/perfviewEditor.ts     |  3 +-
@@ -43,7 +46,7 @@ Subject: [PATCH] feat: support loading VSCode in an iframe
  .../request/browser/requestService.ts         |  3 +-
  .../electron-browser/requestService.ts        |  3 +-
  .../services/timer/browser/timerService.ts    |  5 ++-
- 39 files changed, 120 insertions(+), 112 deletions(-)
+ 42 files changed, 128 insertions(+), 120 deletions(-)
 
 diff --git a/src/vs/base/browser/browser.ts b/src/vs/base/browser/browser.ts
 index 9da1be69d7c..08d8860ea36 100644
@@ -622,6 +625,25 @@ index 8e8fd77c08b..24daa472300 100644
  			const firstTargetElement = 'targetElements' in options.target ? options.target.targetElements[0] : options.target;
  			observer.observe(firstTargetElement);
  			hoverDisposables.add(toDisposable(() => observer.disconnect()));
+diff --git a/src/vs/platform/hover/browser/hoverWidget.ts b/src/vs/platform/hover/browser/hoverWidget.ts
+index 2d24d79d066..19a2eb6511d 100644
+--- a/src/vs/platform/hover/browser/hoverWidget.ts
++++ b/src/vs/platform/hover/browser/hoverWidget.ts
+@@ -189,12 +189,12 @@ export class HoverWidget extends Widget implements IHoverWidget {
+ 			contentsElement.classList.add('html-hover-contents');
+ 
+ 			// Watch for size changes from dynamic HTML content (e.g. collapsible regions).
+-			const resizeObserver = new ResizeObserver(() => {
++			const resizeObserver = new dom.DisposableResizeObserver('HoverWidget', () => {
+ 				this.layout();
+ 				this._onRequestLayout.fire();
+ 			});
+ 			resizeObserver.observe(contentsElement);
+-			this._register(toDisposable(() => resizeObserver.disconnect()));
++			this._register(resizeObserver);
+ 
+ 		} else {
+ 			const markdown = options.content;
 diff --git a/src/vs/platform/remote/browser/browserSocketFactory.ts b/src/vs/platform/remote/browser/browserSocketFactory.ts
 index d558e4eef58..ac207215fa7 100644
 --- a/src/vs/platform/remote/browser/browserSocketFactory.ts
@@ -635,6 +657,37 @@ index d558e4eef58..ac207215fa7 100644
  					// The browser is offline => this is a temporary error which might resolve itself
  					sendErrorNow(new RemoteAuthorityResolverError('Browser is offline', RemoteAuthorityResolverErrorCode.TemporarilyNotAvailable, e));
  				} else {
+diff --git a/src/vs/sessions/contrib/aquarium/browser/aquariumOverlay.ts b/src/vs/sessions/contrib/aquarium/browser/aquariumOverlay.ts
+index 82b0d416cfa..7034bd5218e 100644
+--- a/src/vs/sessions/contrib/aquarium/browser/aquariumOverlay.ts
++++ b/src/vs/sessions/contrib/aquarium/browser/aquariumOverlay.ts
+@@ -3,7 +3,7 @@
+  *  Licensed under the MIT License. See License.txt in the project root for license information.
+  *--------------------------------------------------------------------------------------------*/
+ 
+-import { addDisposableGenericMouseDownListener, addDisposableGenericMouseMoveListener, addDisposableListener, EventType, getWindow, scheduleAtNextAnimationFrame } from '../../../../base/browser/dom.js';
++import { addDisposableGenericMouseDownListener, addDisposableGenericMouseMoveListener, addDisposableListener, DisposableResizeObserver, EventType, getWindow, scheduleAtNextAnimationFrame } from '../../../../base/browser/dom.js';
+ import { createInstantHoverDelegate } from '../../../../base/browser/ui/hover/hoverDelegateFactory.js';
+ import { Codicon } from '../../../../base/common/codicons.js';
+ import { Disposable, DisposableStore, IDisposable, MutableDisposable, toDisposable } from '../../../../base/common/lifecycle.js';
+@@ -408,7 +408,7 @@ function createActiveAquarium(mainContainer: HTMLElement, layoutService: IWorkbe
+ 	const fish: Fish[] = [];
+ 
+ 	updateBounds();
+-	const resizeObserver = new ResizeObserver(() => {
++	const resizeObserver = new DisposableResizeObserver('createActiveAquarium', () => {
+ 		updateBounds();
+ 		for (const f of fish) {
+ 			f.positionX = Math.min(f.positionX, Math.max(0, bounds.width - f.size));
+@@ -416,7 +416,7 @@ function createActiveAquarium(mainContainer: HTMLElement, layoutService: IWorkbe
+ 		}
+ 	});
+ 	resizeObserver.observe(water);
+-	store.add(toDisposable(() => resizeObserver.disconnect()));
++	store.add(resizeObserver);
+ 
+ 	for (let i = 0; i < FISH_COUNT; i++) {
+ 		const size = randomBetween(FISH_MIN_SIZE, FISH_MAX_SIZE);
 diff --git a/src/vs/workbench/browser/parts/dialogs/dialog.ts b/src/vs/workbench/browser/parts/dialogs/dialog.ts
 index d2f18acdb50..170485fffda 100644
 --- a/src/vs/workbench/browser/parts/dialogs/dialog.ts
@@ -757,6 +810,37 @@ index 7f3deff2eda..d6be9167b3b 100644
  
  		this._resizeObserver.observe(this.container, {
  			attributes: true,
+diff --git a/src/vs/workbench/contrib/issue/browser/screenshotAnnotation.ts b/src/vs/workbench/contrib/issue/browser/screenshotAnnotation.ts
+index f7c4e0ce626..4d3b89ad033 100644
+--- a/src/vs/workbench/contrib/issue/browser/screenshotAnnotation.ts
++++ b/src/vs/workbench/contrib/issue/browser/screenshotAnnotation.ts
+@@ -3,7 +3,7 @@
+  *  Licensed under the MIT License. See License.txt in the project root for license information.
+  *--------------------------------------------------------------------------------------------*/
+ 
+-import { $, addDisposableListener, append, EventType, getWindow } from '../../../../base/browser/dom.js';
++import { $, addDisposableListener, append, DisposableResizeObserver, EventType, getWindow } from '../../../../base/browser/dom.js';
+ import { mainWindow } from '../../../../base/browser/window.js';
+ import { Button } from '../../../../base/browser/ui/button/button.js';
+ import { renderIcon } from '../../../../base/browser/ui/iconLabel/iconLabels.js';
+@@ -519,7 +519,7 @@ export class ScreenshotAnnotationEditor {
+ 		}));
+ 
+ 		// Re-fit canvas when container resizes
+-		const resizeObserver = new ResizeObserver(() => {
++		const resizeObserver = new DisposableResizeObserver('ScreenshotAnnotation', () => {
+ 			if (this.imageElement) {
+ 				// On resize, ensure the user's current zoom is still at least the new fit-to-window
+ 				// scale. Without this, growing the window after zooming out could leave the image
+@@ -537,7 +537,7 @@ export class ScreenshotAnnotationEditor {
+ 			}
+ 		});
+ 		resizeObserver.observe(canvasContainer);
+-		this.disposables.add({ dispose: () => resizeObserver.disconnect() });
++		this.disposables.add(resizeObserver);
+ 	}
+ 
+ 	private addToolButton(toolbar: HTMLElement, tool: AnnotationTool, label: string, icon: HTMLSpanElement): void {
 diff --git a/src/vs/workbench/contrib/languageStatus/browser/languageStatus.ts b/src/vs/workbench/contrib/languageStatus/browser/languageStatus.ts
 index a10887c3d76..0c0c0094538 100644
 --- a/src/vs/workbench/contrib/languageStatus/browser/languageStatus.ts
