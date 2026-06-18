@@ -1014,6 +1014,26 @@ class DelegateFileSystemProvider implements IFileSystemProviderWithFileReadWrite
           )
         }
 
+  readFileStream =
+    this.options.delegate.readFileStream != null
+      ? (
+          resource: URI,
+          opts: IFileReadStreamOptions,
+          token: CancellationToken
+        ): ReadableStreamEvents<Uint8Array> => {
+          return this.options.delegate.readFileStream!(
+            this.options.toDelegate(resource),
+            opts,
+            token
+          )
+        }
+      : () => {
+          throw createFileSystemProviderError(
+            'No delegate',
+            FileSystemProviderErrorCode.Unavailable
+          )
+        }
+
   watch(resource: URI, opts: IWatchOptions): IDisposable {
     try {
       return this.options.delegate.watch(this.options.toDelegate(resource), opts)
