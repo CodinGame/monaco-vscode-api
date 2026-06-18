@@ -11,6 +11,7 @@ import {
   RegisteredReadOnlyFile,
   createIndexedDBProviders,
   registerHTMLFileSystemProvider,
+  createHTMLFileSystemProvider,
   registerFileSystemOverlay,
   initFile
 } from '@codingame/monaco-vscode-files-service-override'
@@ -276,6 +277,12 @@ h1 {
   )
 
   registerFileSystemOverlay(1, fileSystemProvider)
+
+  const htmlFileProvider = createHTMLFileSystemProvider()
+  htmlFileProvider.registerDirectoryHandle(
+    await (await navigator.storage.getDirectory()).getDirectoryHandle('workspace', { create: true })
+  )
+  registerFileSystemOverlay(2, htmlFileProvider)
 }
 
 // Workers
