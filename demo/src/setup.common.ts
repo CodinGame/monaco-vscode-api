@@ -52,7 +52,9 @@ import getWorkspaceTrustOverride from '@codingame/monaco-vscode-workspace-trust-
 import getLogServiceOverride from '@codingame/monaco-vscode-log-service-override'
 import getWorkingCopyServiceOverride from '@codingame/monaco-vscode-working-copy-service-override'
 import getTestingServiceOverride from '@codingame/monaco-vscode-testing-service-override'
-import getChatServiceOverride from '@codingame/monaco-vscode-chat-service-override'
+import getChatServiceOverride, {
+  ChatEntitlement
+} from '@codingame/monaco-vscode-chat-service-override'
 import getNotebookServiceOverride from '@codingame/monaco-vscode-notebook-service-override'
 import getWelcomeServiceOverride from '@codingame/monaco-vscode-welcome-service-override'
 import getWalkThroughServiceOverride from '@codingame/monaco-vscode-walkthrough-service-override'
@@ -433,7 +435,21 @@ export const commonServices: IEditorOverrideServices = {
   ...getLanguageDetectionWorkerServiceOverride(),
   ...getStorageServiceOverride({
     fallbackOverride: {
-      'workbench.activity.showAccounts': false
+      'workbench.activity.showAccounts': false,
+      /**
+       * VSCode stores in its storage the chat setup state
+       * We need it to be configured out of the box, with is not supported by VSCode
+       * Except if we set the desired state in its storage directly, then it will work as if the user had set it up already
+       */
+      'chat.setupContext': {
+        entitlement: ChatEntitlement.Enterprise,
+        organisations: undefined,
+        sku: undefined,
+        copilotTrackingId: undefined,
+        registered: true,
+        completed: true,
+        installed: true
+      }
     }
   }),
   ...getRemoteAgentServiceOverride({ scanRemoteExtensions: true }),

@@ -1,0 +1,44 @@
+From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
+From: =?UTF-8?q?Lo=C3=AFc=20Mangeonjean?= <loic@coderpad.io>
+Date: Thu, 18 Jun 2026 14:22:52 +0200
+Subject: [PATCH] fix: remove useless check that prevents ai-assist from being
+ open by default on web mode
+
+---
+ src/vs/workbench/browser/layout.ts | 9 ++-------
+ 1 file changed, 2 insertions(+), 7 deletions(-)
+
+diff --git a/src/vs/workbench/browser/layout.ts b/src/vs/workbench/browser/layout.ts
+index 6c141511d50..c1086090eeb 100644
+--- a/src/vs/workbench/browser/layout.ts
++++ b/src/vs/workbench/browser/layout.ts
+@@ -695,7 +695,7 @@ export abstract class Layout extends Disposable implements IWorkbenchLayoutServi
+ 	private initLayoutState(lifecycleService: ILifecycleService, fileService: IFileService): void {
+ 		this._mainContainerDimension = getClientArea(this.parent, this.contextService.getWorkbenchState() === WorkbenchState.EMPTY ? DEFAULT_EMPTY_WINDOW_DIMENSIONS : DEFAULT_WORKSPACE_WINDOW_DIMENSIONS); // running with fallback to ensure no error is thrown (https://github.com/microsoft/vscode/issues/240242)
+ 
+-		this.stateModel = new LayoutStateModel(this.storageService, this.configurationService, this.contextService, this.environmentService);
++		this.stateModel = new LayoutStateModel(this.storageService, this.configurationService, this.contextService);
+ 		this.stateModel.load({
+ 			mainContainerDimension: this._mainContainerDimension,
+ 			resetLayout: Boolean(this.layoutOptions?.resetLayout)
+@@ -2881,8 +2881,7 @@ class LayoutStateModel extends Disposable {
+ 	constructor(
+ 		private readonly storageService: IStorageService,
+ 		private readonly configurationService: IConfigurationService,
+-		private readonly contextService: IWorkspaceContextService,
+-		private readonly environmentService: IBrowserWorkbenchEnvironmentService,
++		private readonly contextService: IWorkspaceContextService
+ 	) {
+ 		super();
+ 
+@@ -2953,10 +2952,6 @@ class LayoutStateModel extends Disposable {
+ 		LayoutStateKeys.SIDEBAR_HIDDEN.defaultValue = workbenchState === WorkbenchState.EMPTY || auxiliaryBarForceMaximized === true;
+ 		LayoutStateKeys.AUXILIARYBAR_SIZE.defaultValue = auxiliaryBarForceMaximized ? Math.max(300, mainContainerDimension.width / 2) : Math.min(300, mainContainerDimension.width / 4);
+ 		LayoutStateKeys.AUXILIARYBAR_HIDDEN.defaultValue = (() => {
+-			if (isWeb && !this.environmentService.remoteAuthority) {
+-				return true; // not required in web if unsupported
+-			}
+-
+ 			if (auxiliaryBarForceMaximized === true) {
+ 				return false; // forced to be visible
+ 			}
