@@ -18,7 +18,8 @@ import * as monaco from 'monaco-editor'
 import {
   IWorkbenchConstructionOptions,
   LogLevel,
-  IEditorOverrideServices
+  IEditorOverrideServices,
+  IWorkspace
 } from '@codingame/monaco-vscode-api'
 import * as vscode from 'vscode'
 import getModelServiceOverride from '@codingame/monaco-vscode-model-service-override'
@@ -104,12 +105,14 @@ params.delete('resetLayout')
 
 window.history.replaceState({}, document.title, url.href)
 
-export let workspaceFile = monaco.Uri.file('/workspace.code-workspace')
+let workspace: IWorkspace = {
+  workspaceUri: monaco.Uri.file('/workspace.code-workspace')
+}
 
 export const userDataProvider = await createIndexedDBProviders()
 
 if (useHtmlFileSystemProvider) {
-  workspaceFile = monaco.Uri.from({ scheme: 'tmp', path: '/test.code-workspace' })
+  const workspaceFile = monaco.Uri.from({ scheme: 'tmp', path: '/test.code-workspace' })
   await initFile(
     workspaceFile,
     JSON.stringify(
@@ -120,7 +123,9 @@ if (useHtmlFileSystemProvider) {
       2
     )
   )
-
+  workspace = {
+    workspaceUri: workspaceFile
+  }
   registerHTMLFileSystemProvider()
 } else {
   const fileSystemProvider = new RegisteredFileSystemProvider(false)
@@ -235,6 +240,7 @@ h1 {
     )
   )
 
+  const workspaceFile = monaco.Uri.file('/workspace.code-workspace')
   // Use a workspace file to be able to add another folder later (for the "Attach filesystem" button)
   fileSystemProvider.registerFile(
     new RegisteredMemoryFile(
@@ -252,6 +258,9 @@ h1 {
       )
     )
   )
+  workspace = {
+    workspaceUri: workspaceFile
+  }
 
   fileSystemProvider.registerFile(
     new RegisteredMemoryFile(
@@ -336,9 +345,7 @@ export const constructOptions: IWorkbenchConstructionOptions = {
     },
     workspace:
       remotePath == null
-        ? {
-            workspaceUri: workspaceFile
-          }
+        ? workspace
         : {
             folderUri: monaco.Uri.from({
               scheme: 'vscode-remote',
