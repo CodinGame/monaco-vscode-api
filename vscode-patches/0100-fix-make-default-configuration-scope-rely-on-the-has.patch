@@ -1,0 +1,28 @@
+From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
+From: =?UTF-8?q?Lo=C3=AFc=20Mangeonjean?= <loic@coderpad.io>
+Date: Thu, 18 Jun 2026 14:21:14 +0200
+Subject: [PATCH] fix: make default configuration scope rely on the hash of the
+ default configuration
+
+so that if the default configuration changes, it's not completely ignored at first
+---
+ .../services/configuration/browser/configuration.ts         | 6 ++++--
+ 1 file changed, 4 insertions(+), 2 deletions(-)
+
+diff --git a/src/vs/workbench/services/configuration/browser/configuration.ts b/src/vs/workbench/services/configuration/browser/configuration.ts
+index a83c04f4d13..0a9e654bf24 100644
+--- a/src/vs/workbench/services/configuration/browser/configuration.ts
++++ b/src/vs/workbench/services/configuration/browser/configuration.ts
+@@ -45,8 +45,10 @@ export class DefaultConfiguration extends BaseDefaultConfiguration {
+ 	) {
+ 		super(logService);
+ 		this.cacheKey = { type: 'defaults', key: `${cacheScope}-configurationDefaultsOverrides` };
+-		if (environmentService.options?.configurationDefaults) {
+-			this.configurationRegistry.registerDefaultConfigurations([{ overrides: environmentService.options.configurationDefaults as IStringDictionary<IStringDictionary<unknown>> }]);
++		const configurationDefaults = environmentService.options?.configurationDefaults;
++		if (configurationDefaults) {
++			this.configurationRegistry.registerDefaultConfigurations([{ overrides: configurationDefaults as IStringDictionary<IStringDictionary<unknown>> }]);
++			this.cacheKey = { type: 'defaults', key: `${cacheScope}-${hash(configurationDefaults).toString(16)}-configurationDefaultsOverrides` };
+ 		}
+ 	}
+ 
