@@ -41,7 +41,10 @@ import { ILanguageModelIgnoredFilesService } from 'vs/workbench/contrib/chat/com
 import { IChatMarkdownAnchorService } from 'vs/workbench/contrib/chat/browser/widget/chatContentParts/chatMarkdownAnchorService.service'
 import { ChatMarkdownAnchorService } from 'vs/workbench/contrib/chat/browser/widget/chatContentParts/chatMarkdownAnchorService'
 import { ChatEditingService } from 'vs/workbench/contrib/chat/browser/chatEditing/chatEditingServiceImpl'
-import { ChatEntitlementService } from 'vs/workbench/services/chat/common/chatEntitlementService'
+import {
+  ChatEntitlementService,
+  ChatEntitlement
+} from 'vs/workbench/services/chat/common/chatEntitlementService'
 import { PromptsService } from 'vs/workbench/contrib/chat/common/promptSyntax/service/promptsServiceImpl'
 import { IChatEntitlementService } from 'vs/workbench/services/chat/common/chatEntitlementService.service'
 import { IPromptsService } from 'vs/workbench/contrib/chat/common/promptSyntax/service/promptsService.service'
@@ -410,4 +413,4 @@ export default function getServiceOverride({
   }
 }
 
-export type { IDefaultAccount }
+export { type IDefaultAccount, ChatEntitlement }
