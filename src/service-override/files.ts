@@ -1014,6 +1014,26 @@ class DelegateFileSystemProvider implements IFileSystemProviderWithFileReadWrite
           )
         }
 
+  readFileStream =
+    this.options.delegate.readFileStream != null
+      ? (
+          resource: URI,
+          opts: IFileReadStreamOptions,
+          token: CancellationToken
+        ): ReadableStreamEvents<Uint8Array> => {
+          return this.options.delegate.readFileStream!(
+            this.options.toDelegate(resource),
+            opts,
+            token
+          )
+        }
+      : () => {
+          throw createFileSystemProviderError(
+            'No delegate',
+            FileSystemProviderErrorCode.Unavailable
+          )
+        }
+
   watch(resource: URI, opts: IWatchOptions): IDisposable {
     try {
       return this.options.delegate.watch(this.options.toDelegate(resource), opts)
@@ -1283,11 +1303,7 @@ export async function createIndexedDBProviders(): Promise<IndexedDBFileSystemPro
   return userDataProvider
 }
 
-/**
- * Can be used to replace the default filesystem provider by the HTMLFileSystemProvider before the fileService is initialized
- * Should be called "after" createIndexedDBProviders if used
- */
-export function registerHTMLFileSystemProvider(): void {
+export function createHTMLFileSystemProvider(): HTMLFileSystemProvider {
   class LazyLogService implements ILogService {
     _serviceBrand: undefined
     get onDidChangeLogLevel() {
@@ -1330,10 +1346,17 @@ export function registerHTMLFileSystemProvider(): void {
       StandaloneServices.get(ILogService).dispose()
     }
   }
-  registerCustomProvider(
-    Schemas.file,
-    new HTMLFileSystemProvider(indexedDB, handlesStore, new LazyLogService())
-  )
+  return new HTMLFileSystemProvider(indexedDB, handlesStore, new LazyLogService())
+}
+
+/**
+ * Can be used to replace the default filesystem provider by the HTMLFileSystemProvider before the fileService is initialized
+ * Should be called "after" createIndexedDBProviders if used
+ */
+export function registerHTMLFileSystemProvider(): HTMLFileSystemProvider {
+  const provider = createHTMLFileSystemProvider()
+  registerCustomProvider(Schemas.file, provider)
+  return provider
 }
 
 /**
