@@ -33,7 +33,7 @@ index 36209197e92..01d8342874e 100644
  			this._tasksReconnected = true;
  			this._storageService.remove(AbstractTaskService.PersistentTasks_Key, StorageScope.WORKSPACE);
 diff --git a/src/vs/workbench/contrib/terminal/browser/terminalService.ts b/src/vs/workbench/contrib/terminal/browser/terminalService.ts
-index effcc11e410..c3cf2fc53ff 100644
+index c3e617145a8..eb5f3fabc31 100644
 --- a/src/vs/workbench/contrib/terminal/browser/terminalService.ts
 +++ b/src/vs/workbench/contrib/terminal/browser/terminalService.ts
 @@ -42,7 +42,7 @@ import { IEditorGroupsService } from '../../../services/editor/common/editorGrou

@@ -195,7 +195,7 @@ index cc9e8f332c6..d06887a7eb2 100644
  
  export const EventType = {
 diff --git a/src/vs/base/browser/domStylesheets.ts b/src/vs/base/browser/domStylesheets.ts
-index 369b16a0e5a..99969bde5a8 100644
+index f82797cdd26..ac0e5a6cb12 100644
 --- a/src/vs/base/browser/domStylesheets.ts
 +++ b/src/vs/base/browser/domStylesheets.ts
 @@ -6,7 +6,7 @@

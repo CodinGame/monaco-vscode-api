@@ -5,7 +5,7 @@ Subject: [PATCH] feat: support shadow dom
 
 ---
  src/vs/base/browser/dom.ts                    | 61 ++++++++++++++++---
- src/vs/base/browser/domStylesheets.ts         | 21 +++++--
+ src/vs/base/browser/domStylesheets.ts         | 22 ++++---
  src/vs/base/browser/keyboardEvent.ts          | 12 +++-
  .../browser/ui/contextview/contextview.ts     |  2 +-
  src/vs/base/browser/ui/dialog/dialog.ts       |  6 +-
@@ -42,14 +42,16 @@ Subject: [PATCH] feat: support shadow dom
  .../view/renderers/backLayerWebView.ts        |  3 +-
  .../browser/preferences.contribution.ts       |  3 +-
  .../preferences/browser/settingsEditor2.ts    |  6 +-
+ .../terminal/browser/terminalService.ts       |  7 +--
  .../terminal/browser/terminalTabbedView.ts    |  2 +-
  .../contrib/terminal/browser/terminalView.ts  |  2 +-
  .../contrib/webview/browser/webviewElement.ts | 12 ++--
  .../browser/gettingStarted.ts                 |  4 +-
  .../browser/walkThroughPart.ts                |  6 +-
+ .../browser/auxiliaryWindowService.ts         |  6 +-
  .../suggest/browser/simpleSuggestWidget.ts    |  4 +-
- .../themes/browser/workbenchThemeService.ts   |  2 +-
- 45 files changed, 192 insertions(+), 99 deletions(-)
+ .../themes/browser/workbenchThemeService.ts   | 33 +++++++++-
+ 47 files changed, 227 insertions(+), 109 deletions(-)
 
 diff --git a/src/vs/base/browser/dom.ts b/src/vs/base/browser/dom.ts
 index e943bf0a557..6ebc4568a39 100644
@@ -180,13 +182,23 @@ index e943bf0a557..6ebc4568a39 100644
  		parentFocusable?.focus();
  	}
 diff --git a/src/vs/base/browser/domStylesheets.ts b/src/vs/base/browser/domStylesheets.ts
-index 72fa42df1a6..369b16a0e5a 100644
+index 72fa42df1a6..f82797cdd26 100644
 --- a/src/vs/base/browser/domStylesheets.ts
 +++ b/src/vs/base/browser/domStylesheets.ts
-@@ -39,6 +39,14 @@ class WrappedStyleElement extends Disposable {
+@@ -26,7 +26,7 @@ class WrappedStyleElement extends Disposable {
+ 		this._currentCssStyle = cssStyle;
+ 
+ 		if (!this._styleSheet) {
+-			this._styleSheet = createStyleSheet(mainWindow.document.head, s => s.textContent = cssStyle, this._store);
++			this._styleSheet = createStyleSheet(undefined, s => s.textContent = cssStyle, this._store);
+ 		} else {
+ 			this._styleSheet.textContent = cssStyle;
+ 		}
+@@ -39,7 +39,15 @@ class WrappedStyleElement extends Disposable {
  	}
  }
  
+-export function createStyleSheet(container: HTMLElement = mainWindow.document.head, beforeAppend?: (style: HTMLStyleElement) => void, disposableStore?: DisposableStore): HTMLStyleElement {
 +export let shadowRootContainer: ShadowRoot | undefined;
 +export function setContainerElement(container: HTMLElement) {
 +	const root = container.getRootNode();
@@ -195,24 +207,29 @@ index 72fa42df1a6..369b16a0e5a 100644
 +	}
 +}
 +
- export function createStyleSheet(container: HTMLElement = mainWindow.document.head, beforeAppend?: (style: HTMLStyleElement) => void, disposableStore?: DisposableStore): HTMLStyleElement {
++export function createStyleSheet(container: HTMLElement | ShadowRoot = shadowRootContainer ?? mainWindow.document.head, beforeAppend?: (style: HTMLStyleElement) => void, disposableStore?: DisposableStore): HTMLStyleElement {
  	const style = document.createElement('style');
  	style.type = 'text/css';
-@@ -64,7 +72,12 @@ export function createStyleSheet(container: HTMLElement = mainWindow.document.he
+ 	style.media = 'screen';
+@@ -52,7 +60,7 @@ export function createStyleSheet(container: HTMLElement = mainWindow.document.he
+ 
+ 	// With <head> as container, the stylesheet becomes global and is tracked
+ 	// to support auxiliary windows to clone the stylesheet.
+-	if (container === mainWindow.document.head) {
++	if (container === (shadowRootContainer ?? mainWindow.document.head)) {
+ 		const globalStylesheetClones = new Set<HTMLStyleElement>();
+ 		globalStylesheets.set(style, globalStylesheetClones);
+ 		if (disposableStore) {
+@@ -64,7 +72,7 @@ export function createStyleSheet(container: HTMLElement = mainWindow.document.he
  				continue; // main window is already tracked
  			}
  
 -			const cloneDisposable = disposables.add(cloneGlobalStyleSheet(style, globalStylesheetClones, targetWindow));
 +			const cloneDisposable = disposables.add(cloneGlobalStyleSheet(style, globalStylesheetClones, targetWindow.document.head));
-+			disposableStore?.add(cloneDisposable);
-+		}
-+
-+		if (shadowRootContainer !== undefined) {
-+			const cloneDisposable = cloneGlobalStyleSheet(style, globalStylesheetClones, shadowRootContainer);
  			disposableStore?.add(cloneDisposable);
  		}
  	}
-@@ -76,17 +89,17 @@ export function cloneGlobalStylesheets(targetWindow: Window): IDisposable {
+@@ -76,17 +84,17 @@ export function cloneGlobalStylesheets(targetWindow: Window): IDisposable {
  	const disposables = new DisposableStore();
  
  	for (const [globalStylesheet, clonedGlobalStylesheets] of globalStylesheets) {
@@ -1074,6 +1091,45 @@ index c754843a640..ab5ca9b057b 100644
  	}
  
  	private refreshSingleElement(element: SettingsTreeSettingElement): void {
+diff --git a/src/vs/workbench/contrib/terminal/browser/terminalService.ts b/src/vs/workbench/contrib/terminal/browser/terminalService.ts
+index effcc11e410..c3e617145a8 100644
+--- a/src/vs/workbench/contrib/terminal/browser/terminalService.ts
++++ b/src/vs/workbench/contrib/terminal/browser/terminalService.ts
+@@ -53,7 +53,7 @@ import { mark } from '../../../../base/common/performance.js';
+ import { DetachedTerminal } from './detachedTerminal.js';
+ import { ITerminalCapabilityImplMap, TerminalCapability } from '../../../../platform/terminal/common/capabilities/capabilities.js';
+ import { createInstanceCapabilityEventMultiplexer } from './terminalEvents.js';
+-import { isAuxiliaryWindow, mainWindow } from '../../../../base/browser/window.js';
++import { isAuxiliaryWindow } from '../../../../base/browser/window.js';
+ import { GroupIdentifier } from '../../../common/editor.js';
+ import { getActiveWindow } from '../../../../base/browser/dom.js';
+ import { hasKey, isString } from '../../../../base/common/types.js';
+@@ -238,7 +238,7 @@ export class TerminalService extends Disposable implements ITerminalService {
+ 		this._initializePrimaryBackend();
+ 
+ 		// Create async as the class depends on `this`
+-		timeout(0).then(() => this._register(this._instantiationService.createInstance(TerminalEditorStyle, mainWindow.document.head)));
++		timeout(0).then(() => this._register(this._instantiationService.createInstance(TerminalEditorStyle)));
+ 	}
+ 
+ 	async showProfileQuickPick(type: 'setDefault' | 'createInstance', cwd?: string | URI): Promise<ITerminalInstance | undefined> {
+@@ -1395,7 +1395,6 @@ class TerminalEditorStyle extends Themable {
+ 	private _styleElement: HTMLElement;
+ 
+ 	constructor(
+-		container: HTMLElement,
+ 		@ITerminalService private readonly _terminalService: ITerminalService,
+ 		@IThemeService private readonly _themeService: IThemeService,
+ 		@ITerminalProfileService private readonly _terminalProfileService: ITerminalProfileService,
+@@ -1403,7 +1402,7 @@ class TerminalEditorStyle extends Themable {
+ 	) {
+ 		super(_themeService);
+ 		this._registerListeners();
+-		this._styleElement = domStylesheets.createStyleSheet(container);
++		this._styleElement = domStylesheets.createStyleSheet();
+ 		this._register(toDisposable(() => this._styleElement.remove()));
+ 		this.updateStyles();
+ 	}
 diff --git a/src/vs/workbench/contrib/terminal/browser/terminalTabbedView.ts b/src/vs/workbench/contrib/terminal/browser/terminalTabbedView.ts
 index 7a3dd584458..b58e3170ff1 100644
 --- a/src/vs/workbench/contrib/terminal/browser/terminalTabbedView.ts
@@ -1191,6 +1247,37 @@ index c6fb17f8525..8691b2f7a37 100644
  		while (active && active !== this.content) {
  			active = active.parentElement;
  		}
+diff --git a/src/vs/workbench/services/auxiliaryWindow/browser/auxiliaryWindowService.ts b/src/vs/workbench/services/auxiliaryWindow/browser/auxiliaryWindowService.ts
+index 15b221bafb8..0dc8b7ce37a 100644
+--- a/src/vs/workbench/services/auxiliaryWindow/browser/auxiliaryWindowService.ts
++++ b/src/vs/workbench/services/auxiliaryWindow/browser/auxiliaryWindowService.ts
+@@ -469,6 +469,8 @@ export class BrowserAuxiliaryWindowService extends Disposable implements IAuxili
+ 			mapOriginalToClone.set(originalNode, clonedNode);
+ 		}
+ 
++		const container = shadowRootContainer ?? mainWindow.document.head;
++
+ 		// Clone all style elements and stylesheet links from the window to the child window
+ 		// and keep track of <link> elements to settle to signal that styles have loaded
+ 		// Increment pending links right from the beginning to ensure we only settle when
+@@ -476,7 +478,7 @@ export class BrowserAuxiliaryWindowService extends Disposable implements IAuxili
+ 		pendingLinksToSettle++;
+ 		try {
+ 			// eslint-disable-next-line no-restricted-syntax
+-			for (const originalNode of mainWindow.document.head.querySelectorAll('link[rel="stylesheet"], style')) {
++			for (const originalNode of container.querySelectorAll('link[rel="stylesheet"], style')) {
+ 				cloneNode(originalNode);
+ 			}
+ 		} finally {
+@@ -490,7 +492,7 @@ export class BrowserAuxiliaryWindowService extends Disposable implements IAuxili
+ 
+ 		// Listen to new stylesheets as they are being added or removed in the main window
+ 		// and apply to child window (including changes to existing stylesheets elements)
+-		disposables.add(sharedMutationObserver.observe(mainWindow.document.head, disposables, { childList: true, subtree: true })(mutations => {
++		disposables.add(sharedMutationObserver.observe(container, disposables, { childList: true, subtree: true })(mutations => {
+ 			for (const mutation of mutations) {
+ 				if (
+ 					mutation.type !== 'childList' ||						// only interested in added/removed nodes
 diff --git a/src/vs/workbench/services/suggest/browser/simpleSuggestWidget.ts b/src/vs/workbench/services/suggest/browser/simpleSuggestWidget.ts
 index 1245acce54c..a2312b0d332 100644
 --- a/src/vs/workbench/services/suggest/browser/simpleSuggestWidget.ts
@@ -1214,15 +1301,55 @@ index 1245acce54c..a2312b0d332 100644
  			return;
  		}
 diff --git a/src/vs/workbench/services/themes/browser/workbenchThemeService.ts b/src/vs/workbench/services/themes/browser/workbenchThemeService.ts
-index 99405e3d855..07b705e99e7 100644
+index 99405e3d855..2f96d707b62 100644
 --- a/src/vs/workbench/services/themes/browser/workbenchThemeService.ts
 +++ b/src/vs/workbench/services/themes/browser/workbenchThemeService.ts
-@@ -874,7 +874,7 @@ class ThemeFileWatcher {
+@@ -18,7 +18,7 @@ import { Event, Emitter } from '../../../../base/common/event.js';
+ import { registerFileIconThemeSchemas } from '../common/fileIconThemeSchema.js';
+ import { IDisposable, Disposable, DisposableStore } from '../../../../base/common/lifecycle.js';
+ import { FileIconThemeData, FileIconThemeLoader } from './fileIconThemeData.js';
+-import { createStyleSheet } from '../../../../base/browser/domStylesheets.js';
++import { createStyleSheet, shadowRootContainer } from '../../../../base/browser/domStylesheets.js';
+ import { IBrowserWorkbenchEnvironmentService } from '../../environment/browser/environmentService.js';
+ import { IFileService, FileChangeType } from '../../../../platform/files/common/files.js';
+ import { URI } from '../../../../base/common/uri.js';
+@@ -872,9 +872,38 @@ class ThemeFileWatcher {
+ 	}
+ }
  
++const injectedFontFaces = new Set();
++function injectFontFacesInHead(styleSheetContent: string) {
++	const sheet = new mainWindow.CSSStyleSheet();
++	sheet.replaceSync(styleSheetContent);
++	const fontFaces = Array.from(sheet.cssRules)
++		.filter((rule) => rule instanceof mainWindow.CSSFontFaceRule)
++		.map((r) => r.cssText);
++	const missingFontFaces = fontFaces.filter((fontFace) => !injectedFontFaces.has(fontFace));
++
++	if (missingFontFaces.length > 0) {
++		const fontFaceStyleSheet = new mainWindow.CSSStyleSheet();
++		for (const fontFace of missingFontFaces) {
++			fontFaceStyleSheet.insertRule(fontFace);
++		}
++		mainWindow.document.adoptedStyleSheets = [
++			...mainWindow.document.adoptedStyleSheets,
++			fontFaceStyleSheet
++		];
++	}
++}
++
  function _applyRules(styleSheetContent: string, rulesClassName: string) {
++	if (shadowRootContainer) {
++		// Font-faces injected in shadow doms are ignored
++		// They need to be injected in the page head
++		// So we need to extract them and inject it in the head by hands if the container is a shadow dom
++		injectFontFacesInHead(styleSheetContent);
++	}
++
++	const container: HTMLElement | ShadowRoot = shadowRootContainer ?? mainWindow.document.head;
  	// eslint-disable-next-line no-restricted-syntax
 -	const themeStyles = mainWindow.document.head.getElementsByClassName(rulesClassName);
-+	const themeStyles = mainWindow.document.head.querySelectorAll(`.${rulesClassName}`);
++	const themeStyles = container.querySelectorAll(`.${rulesClassName}`);
  	if (themeStyles.length === 0) {
  		const elStyle = createStyleSheet();
  		elStyle.className = rulesClassName;

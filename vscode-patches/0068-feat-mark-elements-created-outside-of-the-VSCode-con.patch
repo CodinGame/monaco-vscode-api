@@ -21,10 +21,10 @@ index d06887a7eb2..25103157ef1 100644
  	return element;
  }
 diff --git a/src/vs/base/browser/domStylesheets.ts b/src/vs/base/browser/domStylesheets.ts
-index 99969bde5a8..2ab675b7895 100644
+index ac0e5a6cb12..69c2ea9408e 100644
 --- a/src/vs/base/browser/domStylesheets.ts
 +++ b/src/vs/base/browser/domStylesheets.ts
-@@ -51,6 +51,7 @@ export function createStyleSheet(container: HTMLElement = mainWindow.document.he
+@@ -51,6 +51,7 @@ export function createStyleSheet(container: HTMLElement | ShadowRoot = shadowRoo
  	const style = document.createElement('style');
  	style.type = 'text/css';
  	style.media = 'screen';

@@ -8,7 +8,7 @@ Subject: [PATCH] feat: support adoptedStyleSheets for aux windows
  1 file changed, 8 insertions(+), 2 deletions(-)
 
 diff --git a/src/vs/workbench/services/auxiliaryWindow/browser/auxiliaryWindowService.ts b/src/vs/workbench/services/auxiliaryWindow/browser/auxiliaryWindowService.ts
-index 15b221bafb8..3adc42984d0 100644
+index 0dc8b7ce37a..6c094a64793 100644
 --- a/src/vs/workbench/services/auxiliaryWindow/browser/auxiliaryWindowService.ts
 +++ b/src/vs/workbench/services/auxiliaryWindow/browser/auxiliaryWindowService.ts
 @@ -5,7 +5,7 @@
