@@ -17,7 +17,7 @@ instead of scanning them in the keybinding service
  9 files changed, 55 insertions(+), 57 deletions(-)
 
 diff --git a/src/vs/editor/browser/widget/codeEditor/codeEditorWidget.ts b/src/vs/editor/browser/widget/codeEditor/codeEditorWidget.ts
-index 7b1a6e93ab9..f5033a7ef5a 100644
+index 8ab4cf789a9..d421d989951 100644
 --- a/src/vs/editor/browser/widget/codeEditor/codeEditorWidget.ts
 +++ b/src/vs/editor/browser/widget/codeEditor/codeEditorWidget.ts
 @@ -65,6 +65,7 @@ import { TextModelEditSource, EditSources } from '../../../common/textModelEditS
