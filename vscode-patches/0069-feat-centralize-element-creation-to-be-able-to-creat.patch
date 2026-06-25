@@ -406,7 +406,7 @@ index 942bf6e8315..a3f602cbb4e 100644
  	fragment.appendChild(textNode);
  	while (node.firstChild) {
 diff --git a/src/vs/base/browser/domStylesheets.ts b/src/vs/base/browser/domStylesheets.ts
-index 2ab675b7895..5ada59c00db 100644
+index 69c2ea9408e..6f8f9d62c25 100644
 --- a/src/vs/base/browser/domStylesheets.ts
 +++ b/src/vs/base/browser/domStylesheets.ts
 @@ -6,7 +6,7 @@
@@ -421,7 +421,7 @@ index 2ab675b7895..5ada59c00db 100644
 @@ -48,7 +48,7 @@ export function setContainerElement(container: HTMLElement) {
  }
  
- export function createStyleSheet(container: HTMLElement = mainWindow.document.head, beforeAppend?: (style: HTMLStyleElement) => void, disposableStore?: DisposableStore): HTMLStyleElement {
+ export function createStyleSheet(container: HTMLElement | ShadowRoot = shadowRootContainer ?? mainWindow.document.head, beforeAppend?: (style: HTMLStyleElement) => void, disposableStore?: DisposableStore): HTMLStyleElement {
 -	const style = document.createElement('style');
 +	const style = createElement('style');
  	style.type = 'text/css';
