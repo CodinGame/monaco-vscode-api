@@ -81,7 +81,7 @@ function registerCommands(options: IWorkbenchConstructionOptions) {
 
   if (Array.isArray(options.commands)) {
     for (const command of options.commands) {
-      CommandsRegistry.registerCommand(command.id, (accessor, ...args) => {
+      CommandsRegistry.registerCommand(command.id, (_accessor, ...args) => {
         // we currently only pass on the arguments but not the accessor
         // to the command to reduce our exposure of internal API.
         return command.handler(...args)
