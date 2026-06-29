@@ -4,15 +4,15 @@ Date: Fri, 2 May 2025 10:13:06 +0200
 Subject: [PATCH] feat: support shadow dom
 
 ---
- src/vs/base/browser/dom.ts                    | 61 ++++++++++++++++---
- src/vs/base/browser/domStylesheets.ts         | 22 ++++---
+ src/vs/base/browser/dom.ts                    | 65 ++++++++++++++++---
+ src/vs/base/browser/domStylesheets.ts         | 22 +++++--
  src/vs/base/browser/keyboardEvent.ts          | 12 +++-
  .../browser/ui/contextview/contextview.ts     |  2 +-
  src/vs/base/browser/ui/dialog/dialog.ts       |  6 +-
  src/vs/base/browser/ui/dnd/dnd.ts             |  4 +-
  src/vs/base/browser/ui/findinput/findInput.ts |  3 +-
  .../base/browser/ui/findinput/replaceInput.ts |  3 +-
- src/vs/base/browser/ui/inputbox/inputBox.ts   |  7 ++-
+ src/vs/base/browser/ui/inputbox/inputBox.ts   |  7 +-
  src/vs/base/browser/ui/sash/sash.css          |  2 +-
  src/vs/base/browser/ui/sash/sash.ts           |  2 +-
  src/vs/base/browser/ui/splitview/paneview.ts  |  6 +-
@@ -32,10 +32,14 @@ Subject: [PATCH] feat: support shadow dom
  src/vs/platform/hover/browser/hoverWidget.ts  |  2 +-
  .../platform/layout/browser/zIndexRegistry.ts |  2 +-
  .../platform/theme/browser/iconsStyleSheet.ts |  2 +-
+ .../agentFeedbackEditorInputContribution.ts   |  6 +-
  .../browser/actions/developerActions.ts       |  4 +-
  src/vs/workbench/browser/layout.ts            |  3 +
  .../browser/parts/editor/editorGroupView.ts   |  4 +-
+ .../browser/parts/editor/modalEditorPart.ts   |  4 +-
  src/vs/workbench/browser/workbench.ts         |  6 +-
+ .../experiments/agentTitleBarStatusWidget.ts  |  4 +-
+ .../planReviewFeedbackEditorContribution.ts   |  6 +-
  .../browser/widget/input/chatInputPart.ts     |  2 +-
  .../files/browser/views/explorerViewer.ts     |  4 +-
  .../notebook/browser/notebookEditorWidget.ts  |  6 +-
@@ -46,19 +50,20 @@ Subject: [PATCH] feat: support shadow dom
  .../view/renderers/backLayerWebView.ts        |  3 +-
  .../browser/preferences.contribution.ts       |  3 +-
  .../preferences/browser/settingsEditor2.ts    |  6 +-
- .../terminal/browser/terminalService.ts       |  7 +--
+ .../terminal/browser/terminalService.ts       |  7 +-
  .../terminal/browser/terminalTabbedView.ts    |  2 +-
  .../contrib/terminal/browser/terminalView.ts  |  2 +-
- .../contrib/webview/browser/webviewElement.ts | 12 ++--
+ .../contrib/webview/browser/webviewElement.ts | 14 ++--
  .../browser/gettingStarted.ts                 |  4 +-
+ .../browser/onboardingVariationA.ts           |  8 +--
  .../browser/walkThroughPart.ts                |  6 +-
  .../browser/auxiliaryWindowService.ts         |  6 +-
  .../suggest/browser/simpleSuggestWidget.ts    |  4 +-
  .../themes/browser/workbenchThemeService.ts   | 33 +++++++++-
- 51 files changed, 235 insertions(+), 117 deletions(-)
+ 56 files changed, 252 insertions(+), 134 deletions(-)
 
 diff --git a/src/vs/base/browser/dom.ts b/src/vs/base/browser/dom.ts
-index e943bf0a557..6ebc4568a39 100644
+index e943bf0a557..7c7bce3ae00 100644
 --- a/src/vs/base/browser/dom.ts
 +++ b/src/vs/base/browser/dom.ts
 @@ -257,6 +257,39 @@ export function addDisposableListener(node: EventTarget, type: string, handler:
@@ -140,7 +145,7 @@ index e943bf0a557..6ebc4568a39 100644
  
  	while (result?.shadowRoot) {
  		result = result.shadowRoot.activeElement;
-@@ -1022,6 +1054,14 @@ export function getActiveElement(): Element | null {
+@@ -1022,13 +1054,21 @@ export function getActiveElement(): Element | null {
  	return result;
  }
  
@@ -155,6 +160,23 @@ index e943bf0a557..6ebc4568a39 100644
  /**
   * Returns true if the focused window active element matches
   * the provided element. Falls back to the main window if no
+  * window has focus.
+  */
+ export function isActiveElement(element: Element): boolean {
+-	return getActiveElement() === element;
++	return getActiveElement(element.ownerDocument) === element;
+ }
+ 
+ /**
+@@ -1036,7 +1076,7 @@ export function isActiveElement(element: Element): boolean {
+  * `ancestor`. Falls back to the main window if no window has focus.
+  */
+ export function isAncestorOfActiveElement(ancestor: Element): boolean {
+-	return isAncestor(getActiveElement(), ancestor);
++	return isAncestor(getActiveElement(ancestor.ownerDocument), ancestor);
+ }
+ 
+ /**
 @@ -1184,6 +1224,11 @@ export function isHTMLDivElement(e: unknown): e is HTMLDivElement {
  	return e instanceof HTMLDivElement || e instanceof getWindow(e as Node).HTMLDivElement;
  }
@@ -838,6 +860,37 @@ index 7215f066d45..f55ed918b03 100644
  
  			return rules.join('\n');
  		}
+diff --git a/src/vs/sessions/contrib/agentFeedback/browser/agentFeedbackEditorInputContribution.ts b/src/vs/sessions/contrib/agentFeedback/browser/agentFeedbackEditorInputContribution.ts
+index 0a2baa9cd08..b3a23939373 100644
+--- a/src/vs/sessions/contrib/agentFeedback/browser/agentFeedbackEditorInputContribution.ts
++++ b/src/vs/sessions/contrib/agentFeedback/browser/agentFeedbackEditorInputContribution.ts
+@@ -11,7 +11,7 @@ import { EditorContributionInstantiation, registerEditorContribution } from '../
+ import { ICodeEditorService } from '../../../../editor/browser/services/codeEditorService.js';
+ import { EditorOption } from '../../../../editor/common/config/editorOptions.js';
+ import { Selection, SelectionDirection } from '../../../../editor/common/core/selection.js';
+-import { addStandardDisposableListener, getWindow, ModifierKeyEmitter } from '../../../../base/browser/dom.js';
++import { addStandardDisposableListener, getActiveElement, getWindow, isActiveElement, ModifierKeyEmitter } from '../../../../base/browser/dom.js';
+ import { KeyCode } from '../../../../base/common/keyCodes.js';
+ import { IAgentFeedbackService } from './agentFeedbackService.js';
+ import { createAgentFeedbackContext } from './agentFeedbackEditorUtils.js';
+@@ -251,7 +251,7 @@ export class AgentFeedbackEditorInputContribution extends Disposable implements
+ 				if (!this._visible) {
+ 					return;
+ 				}
+-				if (this._isWidgetTarget(getWindow(this._editor.getDomNode()!).document.activeElement)) {
++				if (this._isWidgetTarget(getActiveElement(this._editor.getDomNode()!.ownerDocument))) {
+ 					return;
+ 				}
+ 				this._autoHide();
+@@ -432,7 +432,7 @@ export class AgentFeedbackEditorInputContribution extends Disposable implements
+ 				}
+ 
+ 				// If the input is not focused, focus it and let the keystroke go through
+-				if (getWindow(widget.inputElement).document.activeElement !== widget.inputElement) {
++				if (!isActiveElement(widget.inputElement)) {
+ 					widget.inputElement.focus();
+ 				}
+ 			}));
 diff --git a/src/vs/workbench/browser/actions/developerActions.ts b/src/vs/workbench/browser/actions/developerActions.ts
 index cdc59743913..14713c199ce 100644
 --- a/src/vs/workbench/browser/actions/developerActions.ts
@@ -903,6 +956,28 @@ index 7b3e372a077..bef32d191c0 100644
  			return true; // always restore focus if nothing is focused currently
  		}
  
+diff --git a/src/vs/workbench/browser/parts/editor/modalEditorPart.ts b/src/vs/workbench/browser/parts/editor/modalEditorPart.ts
+index 6301ce26e57..0d15376efa3 100644
+--- a/src/vs/workbench/browser/parts/editor/modalEditorPart.ts
++++ b/src/vs/workbench/browser/parts/editor/modalEditorPart.ts
+@@ -4,7 +4,7 @@
+  *--------------------------------------------------------------------------------------------*/
+ 
+ import './media/modalEditorPart.css';
+-import { $, addDisposableListener, append, Dimension, EventHelper, EventType, hide, IDimension, isHTMLElement, setVisibility, show } from '../../../../base/browser/dom.js';
++import { $, addDisposableListener, append, Dimension, EventHelper, EventType, getActiveElement, hide, IDimension, isHTMLElement, setVisibility, show } from '../../../../base/browser/dom.js';
+ import { GlobalPointerMoveMonitor } from '../../../../base/browser/globalPointerMoveMonitor.js';
+ import { StandardKeyboardEvent } from '../../../../base/browser/keyboardEvent.js';
+ import { ActionBar, prepareActions } from '../../../../base/browser/ui/actionbar/actionbar.js';
+@@ -923,7 +923,7 @@ class ModalEditorPartImpl extends EditorPart implements IModalEditorPart {
+ 	}
+ 
+ 	override create(parent: HTMLElement, options?: object): void {
+-		this.previousMainWindowActiveElement = mainWindow.document.activeElement;
++		this.previousMainWindowActiveElement = getActiveElement(mainWindow.document);
+ 
+ 		super.create(parent, options);
+ 	}
 diff --git a/src/vs/workbench/browser/workbench.ts b/src/vs/workbench/browser/workbench.ts
 index 7796aae8a15..1c304a11a9e 100644
 --- a/src/vs/workbench/browser/workbench.ts
@@ -927,6 +1002,59 @@ index 7796aae8a15..1c304a11a9e 100644
  	}
  
  	private createPart(id: string, role: string, classes: string[]): HTMLElement {
+diff --git a/src/vs/workbench/contrib/chat/browser/agentSessions/experiments/agentTitleBarStatusWidget.ts b/src/vs/workbench/contrib/chat/browser/agentSessions/experiments/agentTitleBarStatusWidget.ts
+index 59d9960e78c..96d5fdc92a9 100644
+--- a/src/vs/workbench/contrib/chat/browser/agentSessions/experiments/agentTitleBarStatusWidget.ts
++++ b/src/vs/workbench/contrib/chat/browser/agentSessions/experiments/agentTitleBarStatusWidget.ts
+@@ -4,7 +4,7 @@
+  *--------------------------------------------------------------------------------------------*/
+ 
+ import './media/agenttitlebarstatuswidget.css';
+-import { $, addDisposableListener, EventType, getWindow, isHTMLElement, reset } from '../../../../../../base/browser/dom.js';
++import { $, addDisposableListener, EventType, getActiveElement, isHTMLElement, reset } from '../../../../../../base/browser/dom.js';
+ import { renderIcon } from '../../../../../../base/browser/ui/iconLabel/iconLabels.js';
+ import { Disposable, DisposableStore } from '../../../../../../base/common/lifecycle.js';
+ import { Codicon } from '../../../../../../base/common/codicons.js';
+@@ -295,7 +295,7 @@ export class AgentTitleBarStatusWidget extends BaseActionViewItem {
+ 		if (!this._container) {
+ 			return;
+ 		}
+-		const activeElement = getWindow(this._container).document.activeElement;
++		const activeElement = getActiveElement(this._container.ownerDocument);
+ 		if (isHTMLElement(activeElement) && this._container.contains(activeElement)) {
+ 			activeElement.blur();
+ 		}
+diff --git a/src/vs/workbench/contrib/chat/browser/planReviewFeedback/planReviewFeedbackEditorContribution.ts b/src/vs/workbench/contrib/chat/browser/planReviewFeedback/planReviewFeedbackEditorContribution.ts
+index 7486d45ae40..b3867ac6a12 100644
+--- a/src/vs/workbench/contrib/chat/browser/planReviewFeedback/planReviewFeedbackEditorContribution.ts
++++ b/src/vs/workbench/contrib/chat/browser/planReviewFeedback/planReviewFeedbackEditorContribution.ts
+@@ -14,7 +14,7 @@ import { Range } from '../../../../../editor/common/core/range.js';
+ import { OverviewRulerLane } from '../../../../../editor/common/model.js';
+ import { themeColorFromId } from '../../../../../platform/theme/common/themeService.js';
+ import { overviewRulerInfo } from '../../../../../editor/common/core/editorColorRegistry.js';
+-import { addStandardDisposableListener, getWindow } from '../../../../../base/browser/dom.js';
++import { addStandardDisposableListener, getActiveElement, getWindow, isActiveElement } from '../../../../../base/browser/dom.js';
+ import { KeyCode } from '../../../../../base/common/keyCodes.js';
+ import { localize } from '../../../../../nls.js';
+ import { ActionBar } from '../../../../../base/browser/ui/actionbar/actionbar.js';
+@@ -303,7 +303,7 @@ export class PlanReviewFeedbackEditorContribution extends Disposable implements
+ 				if (!this._visible) {
+ 					return;
+ 				}
+-				if (this._isWidgetTarget(getWindow(this._editor.getDomNode()!).document.activeElement)) {
++				if (this._isWidgetTarget(getActiveElement(this._editor.getDomNode()!.ownerDocument))) {
+ 					return;
+ 				}
+ 				this._hide();
+@@ -452,7 +452,7 @@ export class PlanReviewFeedbackEditorContribution extends Disposable implements
+ 					return;
+ 				}
+ 
+-				if (getWindow(widget.inputElement).document.activeElement !== widget.inputElement) {
++				if (!isActiveElement(widget.inputElement)) {
+ 					widget.inputElement.focus();
+ 				}
+ 			}));
 diff --git a/src/vs/workbench/contrib/chat/browser/widget/input/chatInputPart.ts b/src/vs/workbench/contrib/chat/browser/widget/input/chatInputPart.ts
 index 2c67995e535..f11bf0d7a09 100644
 --- a/src/vs/workbench/contrib/chat/browser/widget/input/chatInputPart.ts
@@ -1236,7 +1364,7 @@ index 9a745727415..32b87509ab3 100644
  			const listener = this._register(Event.once(this._terminalService.onDidChangeConnectionState)(() => {
  				// Only focus the terminal if the activeElement has not changed since focus() was called
 diff --git a/src/vs/workbench/contrib/webview/browser/webviewElement.ts b/src/vs/workbench/contrib/webview/browser/webviewElement.ts
-index 9f6018c77f5..e065c4bcc81 100644
+index 9f6018c77f5..25085c88cde 100644
 --- a/src/vs/workbench/contrib/webview/browser/webviewElement.ts
 +++ b/src/vs/workbench/contrib/webview/browser/webviewElement.ts
 @@ -4,7 +4,7 @@
@@ -1244,7 +1372,7 @@ index 9f6018c77f5..e065c4bcc81 100644
  
  import { isFirefox } from '../../../../base/browser/browser.js';
 -import { addDisposableListener, EventType, getWindow, getWindowById } from '../../../../base/browser/dom.js';
-+import { addDisposableListener, EventType, getActiveElement, getWindow, getWindowById } from '../../../../base/browser/dom.js';
++import { addDisposableListener, EventType, getActiveElement, getWindow, getWindowById, isActiveElement } from '../../../../base/browser/dom.js';
  import { parentOriginHash } from '../../../../base/browser/iframe.js';
  import { IMouseWheelEvent } from '../../../../base/browser/mouseEvent.js';
  import { CodeWindow } from '../../../../base/browser/window.js';
@@ -1253,11 +1381,20 @@ index 9f6018c77f5..e065c4bcc81 100644
  		}
  
 -		if (this.window.document.activeElement && this.window.document.activeElement !== this.element) {
-+		const activeElement = getActiveElement(this.window.document)
++		const activeElement = getActiveElement(this.window.document);
 +		if (activeElement && activeElement !== this.element) {
  			// looks like https://github.com/microsoft/vscode/issues/132641
  			// where the focus is actually not in the `<iframe>`
  			return false;
+@@ -712,7 +713,7 @@ export class WebviewElement extends Disposable implements IWebviewElement, Webvi
+ 	}
+ 
+ 	private isActiveElement(): boolean {
+-		return !!this.element && this.window?.document.activeElement === this.element;
++		return !!this.element && isActiveElement(this.element);
+ 	}
+ 
+ 	private handleKeyEvent(type: 'keydown' | 'keyup', event: KeyEvent) {
 @@ -956,8 +957,11 @@ export class WebviewElement extends Disposable implements IWebviewElement, Webvi
  				return;
  			}
@@ -1265,7 +1402,7 @@ index 9f6018c77f5..e065c4bcc81 100644
 -			if (this.window?.document.activeElement && this.window.document.activeElement !== this.element && this.window.document.activeElement?.tagName !== 'BODY') {
 -				return;
 +			if (this.window) {
-+				const activeElement = getActiveElement(this.window?.document)
++				const activeElement = getActiveElement(this.window?.document);
 +				if (activeElement && activeElement !== this.element && activeElement?.tagName !== 'BODY') {
 +					return;
 +				}
@@ -1294,6 +1431,41 @@ index 0cb22b9cf17..64f8a2c27d7 100644
  
  		let parent = this.container.parentElement;
  		while (parent && parent !== active) {
+diff --git a/src/vs/workbench/contrib/welcomeOnboarding/browser/onboardingVariationA.ts b/src/vs/workbench/contrib/welcomeOnboarding/browser/onboardingVariationA.ts
+index ad276fc2c49..84d56dfff12 100644
+--- a/src/vs/workbench/contrib/welcomeOnboarding/browser/onboardingVariationA.ts
++++ b/src/vs/workbench/contrib/welcomeOnboarding/browser/onboardingVariationA.ts
+@@ -5,7 +5,7 @@
+ 
+ import { Disposable, DisposableStore } from '../../../../base/common/lifecycle.js';
+ import { Emitter, Event } from '../../../../base/common/event.js';
+-import { $, append, addDisposableListener, EventType, clearNode, getActiveWindow } from '../../../../base/browser/dom.js';
++import { $, append, addDisposableListener, EventType, clearNode, getActiveWindow, getActiveElement, isActiveElement } from '../../../../base/browser/dom.js';
+ import { isCancellationError } from '../../../../base/common/errors.js';
+ import { StopWatch } from '../../../../base/common/stopwatch.js';
+ import { URI } from '../../../../base/common/uri.js';
+@@ -172,7 +172,7 @@ export class OnboardingVariationA extends Disposable implements IOnboardingServi
+ 		}
+ 
+ 		this._isShowing = true;
+-		this.previouslyFocusedElement = getActiveWindow().document.activeElement as HTMLElement | undefined;
++		this.previouslyFocusedElement = getActiveElement() as HTMLElement | undefined;
+ 
+ 		const container = this.layoutService.activeContainer;
+ 
+@@ -1268,10 +1268,10 @@ export class OnboardingVariationA extends Disposable implements IOnboardingServi
+ 		const first = allFocusable[0];
+ 		const last = allFocusable[allFocusable.length - 1];
+ 
+-		if (shiftKey && getActiveWindow().document.activeElement === first) {
++		if (shiftKey && isActiveElement(first)) {
+ 			e.preventDefault();
+ 			last.focus();
+-		} else if (!shiftKey && getActiveWindow().document.activeElement === last) {
++		} else if (!shiftKey && isActiveElement(last)) {
+ 			e.preventDefault();
+ 			first.focus();
+ 		}
 diff --git a/src/vs/workbench/contrib/welcomeWalkthrough/browser/walkThroughPart.ts b/src/vs/workbench/contrib/welcomeWalkthrough/browser/walkThroughPart.ts
 index c6fb17f8525..8691b2f7a37 100644
 --- a/src/vs/workbench/contrib/welcomeWalkthrough/browser/walkThroughPart.ts
