@@ -44,16 +44,22 @@ async function publishNpm(version: string, tag: string) {
 
       $.cwd = libDir
 
-      try {
-        await $`npm publish --tag "${tag}" --access public --provenance`
-      } catch (err) {
-        if (
-          err instanceof ProcessOutput &&
-          err.stderr.includes('You cannot publish over the previously published versions')
-        ) {
-          // ignore, it's an internal retry from npm that fails
-        } else {
-          throw err
+      for (let retry = 0; retry < 3; ++retry) {
+        try {
+          await $`npm publish --tag "${tag}" --access public --provenance`
+          break
+        } catch (err) {
+          if (
+            err instanceof ProcessOutput &&
+            err.stderr.includes('You cannot publish over the previously published versions')
+          ) {
+            // ignore, it's an internal retry from npm that fails
+            break
+          } else if (err instanceof ProcessOutput && err.stderr.includes('BadRequestError')) {
+            // retry
+          } else {
+            throw err
+          }
         }
       }
     }
