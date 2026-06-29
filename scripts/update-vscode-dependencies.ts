@@ -5,7 +5,7 @@ import { fileURLToPath } from 'url'
 const __dirname = path.dirname(fileURLToPath(import.meta.url))
 
 const EXCLUDE_VSCODE_DEPENDENCIES =
-  /^(typescript.*|rollup.*|@rollup\/.*|eslint|@vscode\/vscode-languagedetection|@types\/.*|prettier|postcss.*|zx)$/
+  /^(typescript.*|rollup.*|@rollup\/.*|oxlint|@vscode\/vscode-languagedetection|@types\/.*|prettier|postcss.*|zx)$/
 
 function getAbsolutePackageJsonPath(relativePath: string) {
   return path.join(__dirname, relativePath, 'package.json')
