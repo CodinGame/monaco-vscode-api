@@ -12,7 +12,7 @@ Subject: [PATCH] feat: prevent IDE from entering fullscreen if not occupying
  4 files changed, 41 insertions(+), 16 deletions(-)
 
 diff --git a/src/vs/base/browser/dom.ts b/src/vs/base/browser/dom.ts
-index 6ebc4568a39..cc9e8f332c6 100644
+index 7c7bce3ae00..5bb747208c4 100644
 --- a/src/vs/base/browser/dom.ts
 +++ b/src/vs/base/browser/dom.ts
 @@ -1054,6 +1054,28 @@ export function getActiveElement(_document = getActiveDocument()): Element | nul

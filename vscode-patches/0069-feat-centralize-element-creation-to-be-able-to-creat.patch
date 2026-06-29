@@ -219,7 +219,7 @@ Subject: [PATCH] feat: centralize element creation, to be able to create them
  211 files changed, 686 insertions(+), 608 deletions(-)
 
 diff --git a/src/vs/base/browser/dom.ts b/src/vs/base/browser/dom.ts
-index 25103157ef1..303c757dd5a 100644
+index 5ec342e8b9e..337e6e3524c 100644
 --- a/src/vs/base/browser/dom.ts
 +++ b/src/vs/base/browser/dom.ts
 @@ -1205,13 +1205,43 @@ export function createLinkElement(container: HTMLElement = mainWindow.document.h
@@ -3513,15 +3513,15 @@ index c33ec29f7ab..da4312ad06b 100644
  		editorPartContainer.id = Parts.EDITOR_PART;
  		editorPartContainer.setAttribute('role', 'main');
 diff --git a/src/vs/sessions/contrib/agentFeedback/browser/agentFeedbackEditorInputContribution.ts b/src/vs/sessions/contrib/agentFeedback/browser/agentFeedbackEditorInputContribution.ts
-index 0a2baa9cd08..23d7ed83847 100644
+index b3a23939373..084d42fd59b 100644
 --- a/src/vs/sessions/contrib/agentFeedback/browser/agentFeedbackEditorInputContribution.ts
 +++ b/src/vs/sessions/contrib/agentFeedback/browser/agentFeedbackEditorInputContribution.ts
 @@ -11,7 +11,7 @@ import { EditorContributionInstantiation, registerEditorContribution } from '../
  import { ICodeEditorService } from '../../../../editor/browser/services/codeEditorService.js';
  import { EditorOption } from '../../../../editor/common/config/editorOptions.js';
  import { Selection, SelectionDirection } from '../../../../editor/common/core/selection.js';
--import { addStandardDisposableListener, getWindow, ModifierKeyEmitter } from '../../../../base/browser/dom.js';
-+import { addStandardDisposableListener, createElement, getWindow, ModifierKeyEmitter } from '../../../../base/browser/dom.js';
+-import { addStandardDisposableListener, getActiveElement, getWindow, isActiveElement, ModifierKeyEmitter } from '../../../../base/browser/dom.js';
++import { addStandardDisposableListener, createElement, getActiveElement, getWindow, isActiveElement, ModifierKeyEmitter } from '../../../../base/browser/dom.js';
  import { KeyCode } from '../../../../base/common/keyCodes.js';
  import { IAgentFeedbackService } from './agentFeedbackService.js';
  import { createAgentFeedbackContext } from './agentFeedbackEditorUtils.js';
@@ -4347,15 +4347,15 @@ index 44a27528ecd..6ee17ce08fc 100644
  			canvas.height = height;
  			const ctx = canvas.getContext('2d');
 diff --git a/src/vs/workbench/contrib/chat/browser/planReviewFeedback/planReviewFeedbackEditorContribution.ts b/src/vs/workbench/contrib/chat/browser/planReviewFeedback/planReviewFeedbackEditorContribution.ts
-index 7486d45ae40..35cc9eaec66 100644
+index b3867ac6a12..f958707d3e7 100644
 --- a/src/vs/workbench/contrib/chat/browser/planReviewFeedback/planReviewFeedbackEditorContribution.ts
 +++ b/src/vs/workbench/contrib/chat/browser/planReviewFeedback/planReviewFeedbackEditorContribution.ts
 @@ -14,7 +14,7 @@ import { Range } from '../../../../../editor/common/core/range.js';
  import { OverviewRulerLane } from '../../../../../editor/common/model.js';
  import { themeColorFromId } from '../../../../../platform/theme/common/themeService.js';
  import { overviewRulerInfo } from '../../../../../editor/common/core/editorColorRegistry.js';
--import { addStandardDisposableListener, getWindow } from '../../../../../base/browser/dom.js';
-+import { addStandardDisposableListener, createElement, getWindow } from '../../../../../base/browser/dom.js';
+-import { addStandardDisposableListener, getActiveElement, getWindow, isActiveElement } from '../../../../../base/browser/dom.js';
++import { addStandardDisposableListener, createElement, getActiveElement, getWindow, isActiveElement } from '../../../../../base/browser/dom.js';
  import { KeyCode } from '../../../../../base/common/keyCodes.js';
  import { localize } from '../../../../../nls.js';
  import { ActionBar } from '../../../../../base/browser/ui/actionbar/actionbar.js';
@@ -6312,15 +6312,15 @@ index 85e34cca1a3..6b564f4620f 100644
  	}
  
 diff --git a/src/vs/workbench/contrib/webview/browser/webviewElement.ts b/src/vs/workbench/contrib/webview/browser/webviewElement.ts
-index e065c4bcc81..12c44d69198 100644
+index 25085c88cde..314f88e5d0f 100644
 --- a/src/vs/workbench/contrib/webview/browser/webviewElement.ts
 +++ b/src/vs/workbench/contrib/webview/browser/webviewElement.ts
 @@ -4,7 +4,7 @@
   *--------------------------------------------------------------------------------------------*/
  
  import { isFirefox } from '../../../../base/browser/browser.js';
--import { addDisposableListener, EventType, getActiveElement, getWindow, getWindowById } from '../../../../base/browser/dom.js';
-+import { addDisposableListener, createElement, EventType, getActiveElement, getWindow, getWindowById } from '../../../../base/browser/dom.js';
+-import { addDisposableListener, EventType, getActiveElement, getWindow, getWindowById, isActiveElement } from '../../../../base/browser/dom.js';
++import { addDisposableListener, createElement, EventType, getActiveElement, getWindow, getWindowById, isActiveElement } from '../../../../base/browser/dom.js';
  import { parentOriginHash } from '../../../../base/browser/iframe.js';
  import { IMouseWheelEvent } from '../../../../base/browser/mouseEvent.js';
  import { CodeWindow } from '../../../../base/browser/window.js';

@@ -100,7 +100,7 @@ index d7c129abb27..a2895879194 100644
 +	pointerEvents: mainWindow.PointerEvent && ('ontouchstart' in mainWindow || mainWindow.navigator.maxTouchPoints > 0)
  };
 diff --git a/src/vs/base/browser/dom.ts b/src/vs/base/browser/dom.ts
-index cc9e8f332c6..d06887a7eb2 100644
+index 5bb747208c4..56d5f762245 100644
 --- a/src/vs/base/browser/dom.ts
 +++ b/src/vs/base/browser/dom.ts
 @@ -1165,7 +1165,7 @@ export const sharedMutationObserver = new class {
