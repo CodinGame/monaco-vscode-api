@@ -33,8 +33,10 @@ disable-model-invocation: false
 ## Procedure
 0. Run preflight dependency sync first (mandatory).
 - Before any ref analysis or code migration, run:
-  - npm run update-local-dependencies && npm i
+  - npm run update-vscode-dependencies && npm i
 - Do not continue until this command succeeds.
+- Also sync Node runtime config used by this repo:
+  - update `mise.vscode.toml` so `tools.node` matches the Node version from the VSCode `.nvmrc` used for the upgrade source.
 
 1. Resolve refs and scope.
 - Read the new ref from `package.json` at `config.vscode.ref`.
@@ -85,7 +87,9 @@ disable-model-invocation: false
 
 ## Completion Checklist
 - Preflight dependency sync completed successfully:
-  - npm run update-local-dependencies && npm i
+  - npm run update-vscode-dependencies && npm i
+- Node runtime sync completed:
+  - `mise.vscode.toml` `tools.node` matches the Node version from VSCode `.nvmrc`.
 - `src/missing-services.ts` updated before any other service migration work.
 - Every newly added service has both:
   - a fake registration in `src/missing-services.ts`,
