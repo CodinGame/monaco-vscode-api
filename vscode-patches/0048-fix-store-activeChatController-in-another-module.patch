@@ -33,10 +33,10 @@ index 734ac7e62a6..8dc5b8133db 100644
  			const menuActions = menuService.getMenuActions(MENU_TERMINAL_CHAT_WIDGET_STATUS, contextKeyService);
  			for (const action of menuActions) {
 diff --git a/src/vs/workbench/contrib/terminalContrib/chat/browser/terminalChatActions.ts b/src/vs/workbench/contrib/terminalContrib/chat/browser/terminalChatActions.ts
-index 9a378d9ff82..7714ba1ab7d 100644
+index fb1da4e5d6b..97ad344230e 100644
 --- a/src/vs/workbench/contrib/terminalContrib/chat/browser/terminalChatActions.ts
 +++ b/src/vs/workbench/contrib/terminalContrib/chat/browser/terminalChatActions.ts
-@@ -33,6 +33,7 @@ import { ConfigurationTarget } from '../../../../../platform/configuration/commo
+@@ -34,6 +34,7 @@ import { ConfigurationTarget } from '../../../../../platform/configuration/commo
  import { TerminalChatAgentToolsSettingId } from '../../chatAgentTools/common/terminalChatAgentToolsConfiguration.js';
  import { IMarkdownString } from '../../../../../base/common/htmlContent.js';
  import { AbstractInlineChatAction } from '../../../inlineChat/browser/inlineChatActions.js';
@@ -44,7 +44,7 @@ index 9a378d9ff82..7714ba1ab7d 100644
  
  registerActiveXtermAction({
  	id: TerminalChatCommandId.Start,
-@@ -61,7 +62,7 @@ registerActiveXtermAction({
+@@ -62,7 +63,7 @@ registerActiveXtermAction({
  			return;
  		}
  
@@ -53,7 +53,7 @@ index 9a378d9ff82..7714ba1ab7d 100644
  		if (!contr) {
  			return;
  		}
-@@ -111,7 +112,7 @@ registerActiveXtermAction({
+@@ -112,7 +113,7 @@ registerActiveXtermAction({
  		if (isDetachedTerminalInstance(activeInstance)) {
  			return;
  		}
@@ -62,7 +62,7 @@ index 9a378d9ff82..7714ba1ab7d 100644
  		contr?.terminalChatWidget?.clear();
  	}
  });
-@@ -144,7 +145,7 @@ registerActiveXtermAction({
+@@ -145,7 +146,7 @@ registerActiveXtermAction({
  		if (isDetachedTerminalInstance(activeInstance)) {
  			return;
  		}
@@ -71,7 +71,7 @@ index 9a378d9ff82..7714ba1ab7d 100644
  		contr?.terminalChatWidget?.acceptCommand(true);
  	}
  });
-@@ -176,7 +177,7 @@ registerActiveXtermAction({
+@@ -177,7 +178,7 @@ registerActiveXtermAction({
  		if (isDetachedTerminalInstance(activeInstance)) {
  			return;
  		}
@@ -80,7 +80,7 @@ index 9a378d9ff82..7714ba1ab7d 100644
  		contr?.terminalChatWidget?.acceptCommand(true);
  	}
  });
-@@ -210,7 +211,7 @@ registerActiveXtermAction({
+@@ -211,7 +212,7 @@ registerActiveXtermAction({
  		if (isDetachedTerminalInstance(activeInstance)) {
  			return;
  		}
@@ -89,7 +89,7 @@ index 9a378d9ff82..7714ba1ab7d 100644
  		contr?.terminalChatWidget?.acceptCommand(false);
  	}
  });
-@@ -242,7 +243,7 @@ registerActiveXtermAction({
+@@ -243,7 +244,7 @@ registerActiveXtermAction({
  		if (isDetachedTerminalInstance(activeInstance)) {
  			return;
  		}
@@ -98,7 +98,7 @@ index 9a378d9ff82..7714ba1ab7d 100644
  		contr?.terminalChatWidget?.acceptCommand(false);
  	}
  });
-@@ -272,7 +273,7 @@ registerActiveXtermAction({
+@@ -273,7 +274,7 @@ registerActiveXtermAction({
  	run: async (_xterm, _accessor, activeInstance) => {
  		const chatService = _accessor.get(IChatService);
  		const chatWidgetService = _accessor.get(IChatWidgetService);
@@ -107,7 +107,7 @@ index 9a378d9ff82..7714ba1ab7d 100644
  		const model = contr?.terminalChatWidget?.inlineChatWidget.chatWidget.viewModel?.model;
  		if (!model) {
  			return;
-@@ -312,7 +313,7 @@ registerActiveXtermAction({
+@@ -313,7 +314,7 @@ registerActiveXtermAction({
  		if (isDetachedTerminalInstance(activeInstance)) {
  			return;
  		}

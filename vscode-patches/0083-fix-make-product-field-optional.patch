@@ -15,10 +15,10 @@ Subject: [PATCH] fix: make product field optional
  8 files changed, 32 insertions(+), 21 deletions(-)
 
 diff --git a/src/vs/base/common/product.ts b/src/vs/base/common/product.ts
-index 4944cc096fa..3fc41ec5465 100644
+index 5af093a6519..8008d40dbe7 100644
 --- a/src/vs/base/common/product.ts
 +++ b/src/vs/base/common/product.ts
-@@ -229,7 +229,7 @@ export interface IProductConfiguration {
+@@ -249,7 +249,7 @@ export interface IProductConfiguration {
  	readonly commonlyUsedSettings?: string[];
  	readonly aiGeneratedWorkspaceTrust?: IAiGeneratedWorkspaceTrust;
  
@@ -28,10 +28,10 @@ index 4944cc096fa..3fc41ec5465 100644
  	readonly chatSessionRecommendations?: IChatSessionRecommendation[];
  	readonly emergencyAlertUrl?: string;
 diff --git a/src/vs/platform/extensionManagement/common/abstractExtensionManagementService.ts b/src/vs/platform/extensionManagement/common/abstractExtensionManagementService.ts
-index 1089ffb25bc..3f8d8e38dca 100644
+index e506b83187c..bf59b56a4f2 100644
 --- a/src/vs/platform/extensionManagement/common/abstractExtensionManagementService.ts
 +++ b/src/vs/platform/extensionManagement/common/abstractExtensionManagementService.ts
-@@ -989,7 +989,7 @@ export abstract class AbstractExtensionManagementService extends CommontExtensio
+@@ -984,7 +984,7 @@ export abstract class AbstractExtensionManagementService extends CommontExtensio
  		if (checked.indexOf(extension) !== -1) {
  			return [];
  		}
@@ -41,10 +41,10 @@ index 1089ffb25bc..3f8d8e38dca 100644
  		}
  		checked.push(extension);
 diff --git a/src/vs/platform/extensionManagement/common/extensionGalleryService.ts b/src/vs/platform/extensionManagement/common/extensionGalleryService.ts
-index 72bfdb17b0f..56d5a9440b6 100644
+index 668c1b7a09e..e12966d0243 100644
 --- a/src/vs/platform/extensionManagement/common/extensionGalleryService.ts
 +++ b/src/vs/platform/extensionManagement/common/extensionGalleryService.ts
-@@ -1173,7 +1173,7 @@ export abstract class AbstractExtensionGalleryService implements IExtensionGalle
+@@ -1157,7 +1157,7 @@ export abstract class AbstractExtensionGalleryService implements IExtensionGalle
  			for (let index = 0; index < extensions.length; index++) {
  				const extension = extensions[index];
  				setTelemetry(extension, ((query.pageNumber - 1) * query.pageSize) + index, options.source);
@@ -53,7 +53,7 @@ index 72bfdb17b0f..56d5a9440b6 100644
  					defaultChatAgentExtension = extension;
  				} else {
  					result.push(extension);
-@@ -2005,15 +2005,17 @@ export abstract class AbstractExtensionGalleryService implements IExtensionGalle
+@@ -1989,15 +1989,17 @@ export abstract class AbstractExtensionGalleryService implements IExtensionGalle
  			}
  		}
  
@@ -81,7 +81,7 @@ index 72bfdb17b0f..56d5a9440b6 100644
  		return { malicious, deprecated, search, autoUpdate };
  	}
 diff --git a/src/vs/workbench/contrib/chat/browser/chatStatus/chatStatusDashboard.ts b/src/vs/workbench/contrib/chat/browser/chatStatus/chatStatusDashboard.ts
-index ad432fc0c33..36dc9702508 100644
+index c8c88d2ea5a..e84c78ce00c 100644
 --- a/src/vs/workbench/contrib/chat/browser/chatStatus/chatStatusDashboard.ts
 +++ b/src/vs/workbench/contrib/chat/browser/chatStatus/chatStatusDashboard.ts
 @@ -46,7 +46,7 @@ import { GitHubPaths, IDefaultAccountService } from '../../../../../platform/def
@@ -94,10 +94,10 @@ index ad432fc0c33..36dc9702508 100644
  interface ISettingsAccessor {
  	readSetting: () => boolean;
 diff --git a/src/vs/workbench/contrib/chat/browser/chatStatus/chatStatusEntry.ts b/src/vs/workbench/contrib/chat/browser/chatStatus/chatStatusEntry.ts
-index e930b6b7df7..d11df378994 100644
+index acdaff6b95c..11a76e680a4 100644
 --- a/src/vs/workbench/contrib/chat/browser/chatStatus/chatStatusEntry.ts
 +++ b/src/vs/workbench/contrib/chat/browser/chatStatus/chatStatusEntry.ts
-@@ -118,7 +118,7 @@ export class ChatStatusBarEntry extends Disposable implements IWorkbenchContribu
+@@ -195,7 +195,7 @@ export class ChatStatusBarEntry extends Disposable implements IWorkbenchContribu
  		this._register(this.editorService.onDidActiveEditorChange(() => this.onDidActiveEditorChange()));
  
  		this._register(this.configurationService.onDidChangeConfiguration(e => {
@@ -107,10 +107,10 @@ index e930b6b7df7..d11df378994 100644
  			}
  		}));
 diff --git a/src/vs/workbench/contrib/chat/browser/widget/chatWidget.ts b/src/vs/workbench/contrib/chat/browser/widget/chatWidget.ts
-index 195e57481c6..2d26f00b061 100644
+index b087fb43366..843a04f857f 100644
 --- a/src/vs/workbench/contrib/chat/browser/widget/chatWidget.ts
 +++ b/src/vs/workbench/contrib/chat/browser/widget/chatWidget.ts
-@@ -1087,8 +1087,8 @@ export class ChatWidget extends Disposable implements IChatWidget {
+@@ -1115,8 +1115,8 @@ export class ChatWidget extends Disposable implements IChatWidget {
  				const defaultAgent = this.chatAgentService.getDefaultAgent(this.location, this.input.currentModeKind);
  				let additionalMessage: string | IMarkdownString | undefined;
  				if (this.chatEntitlementService.anonymous && !this.chatEntitlementService.sentiment.completed) {
@@ -122,10 +122,10 @@ index 195e57481c6..2d26f00b061 100644
  					additionalMessage = defaultAgent?.metadata.additionalWelcomeMessage;
  				}
 diff --git a/src/vs/workbench/contrib/extensions/browser/extensionsWorkbenchService.ts b/src/vs/workbench/contrib/extensions/browser/extensionsWorkbenchService.ts
-index e5ecaf1a6be..2502b8a9da9 100644
+index 80a883131c7..63d5b8b61e3 100644
 --- a/src/vs/workbench/contrib/extensions/browser/extensionsWorkbenchService.ts
 +++ b/src/vs/workbench/contrib/extensions/browser/extensionsWorkbenchService.ts
-@@ -2872,7 +2872,7 @@ export class ExtensionsWorkbenchService extends Disposable implements IExtension
+@@ -2876,7 +2876,7 @@ export class ExtensionsWorkbenchService extends Disposable implements IExtension
  		}
  
  		const extensionsToUninstall: UninstallExtensionInfo[] = [{ extension: extension.local }];
@@ -135,10 +135,10 @@ index e5ecaf1a6be..2502b8a9da9 100644
  				if (packExtension.local && !extensionsToUninstall.some(e => areSameExtensions(e.extension.identifier, packExtension.identifier))) {
  					extensionsToUninstall.push({ extension: packExtension.local });
 diff --git a/src/vs/workbench/services/accounts/browser/defaultAccount.ts b/src/vs/workbench/services/accounts/browser/defaultAccount.ts
-index 8f4e86487df..0c03912111d 100644
+index b267dcbd4f7..d466dfeb8a4 100644
 --- a/src/vs/workbench/services/accounts/browser/defaultAccount.ts
 +++ b/src/vs/workbench/services/accounts/browser/defaultAccount.ts
-@@ -136,14 +136,16 @@ export class DefaultAccountService extends Disposable implements IDefaultAccount
+@@ -137,14 +137,16 @@ export class DefaultAccountService extends Disposable implements IDefaultAccount
  	private readonly _onDidChangeCopilotTokenInfo = this._register(new Emitter<ICopilotTokenInfo | null>());
  	readonly onDidChangeCopilotTokenInfo = this._onDidChangeCopilotTokenInfo.event;
  
@@ -157,7 +157,7 @@ index 8f4e86487df..0c03912111d 100644
  	}
  
  	async getDefaultAccount(): Promise<IDefaultAccount | null> {
-@@ -155,6 +157,10 @@ export class DefaultAccountService extends Disposable implements IDefaultAccount
+@@ -156,6 +158,10 @@ export class DefaultAccountService extends Disposable implements IDefaultAccount
  		if (this.defaultAccountProvider) {
  			return this.defaultAccountProvider.getDefaultAccountAuthenticationProvider();
  		}
@@ -168,7 +168,7 @@ index 8f4e86487df..0c03912111d 100644
  		return {
  			...this.defaultAccountConfig.authenticationProvider.default,
  			enterprise: false
-@@ -1174,8 +1180,11 @@ class DefaultAccountProviderContribution extends Disposable implements IWorkbenc
+@@ -1175,8 +1181,11 @@ class DefaultAccountProviderContribution extends Disposable implements IWorkbenc
  		@IDefaultAccountService defaultAccountService: IDefaultAccountService,
  	) {
  		super();

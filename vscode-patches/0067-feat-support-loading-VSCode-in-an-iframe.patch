@@ -613,7 +613,7 @@ index 358aa682cda..b41a1f1346b 100644
  
  			const supportedImageTypes = ['image/png', 'image/jpeg', 'image/gif', 'image/tiff', 'image/bmp'];
 diff --git a/src/vs/platform/hover/browser/hoverService.ts b/src/vs/platform/hover/browser/hoverService.ts
-index 8e8fd77c08b..24daa472300 100644
+index eb058d65763..a3872deae44 100644
 --- a/src/vs/platform/hover/browser/hoverService.ts
 +++ b/src/vs/platform/hover/browser/hoverService.ts
 @@ -364,7 +364,7 @@ export class HoverService extends Disposable implements IHoverService {
@@ -658,7 +658,7 @@ index d558e4eef58..ac207215fa7 100644
  					sendErrorNow(new RemoteAuthorityResolverError('Browser is offline', RemoteAuthorityResolverErrorCode.TemporarilyNotAvailable, e));
  				} else {
 diff --git a/src/vs/sessions/contrib/aquarium/browser/aquariumOverlay.ts b/src/vs/sessions/contrib/aquarium/browser/aquariumOverlay.ts
-index 82b0d416cfa..7034bd5218e 100644
+index 8d497ae4ec1..95d1c54c126 100644
 --- a/src/vs/sessions/contrib/aquarium/browser/aquariumOverlay.ts
 +++ b/src/vs/sessions/contrib/aquarium/browser/aquariumOverlay.ts
 @@ -3,7 +3,7 @@
@@ -670,7 +670,7 @@ index 82b0d416cfa..7034bd5218e 100644
  import { createInstantHoverDelegate } from '../../../../base/browser/ui/hover/hoverDelegateFactory.js';
  import { Codicon } from '../../../../base/common/codicons.js';
  import { Disposable, DisposableStore, IDisposable, MutableDisposable, toDisposable } from '../../../../base/common/lifecycle.js';
-@@ -408,7 +408,7 @@ function createActiveAquarium(mainContainer: HTMLElement, layoutService: IWorkbe
+@@ -486,7 +486,7 @@ function createActiveAquarium(mainContainer: HTMLElement, layoutService: IWorkbe
  	const fish: Fish[] = [];
  
  	updateBounds();
@@ -679,7 +679,7 @@ index 82b0d416cfa..7034bd5218e 100644
  		updateBounds();
  		for (const f of fish) {
  			f.positionX = Math.min(f.positionX, Math.max(0, bounds.width - f.size));
-@@ -416,7 +416,7 @@ function createActiveAquarium(mainContainer: HTMLElement, layoutService: IWorkbe
+@@ -494,7 +494,7 @@ function createActiveAquarium(mainContainer: HTMLElement, layoutService: IWorkbe
  		}
  	});
  	resizeObserver.observe(water);
@@ -769,7 +769,7 @@ index 09cddff2956..e329232bcb6 100644
  			if (timeoutDisposables) {
  				dispose(timeoutDisposables);
 diff --git a/src/vs/workbench/contrib/chat/browser/widget/chatContentParts/chatThinkingContentPart.ts b/src/vs/workbench/contrib/chat/browser/widget/chatContentParts/chatThinkingContentPart.ts
-index dc0d1d49f10..4e09eb21eb6 100644
+index bb72e0eb142..4c8df9da656 100644
 --- a/src/vs/workbench/contrib/chat/browser/widget/chatContentParts/chatThinkingContentPart.ts
 +++ b/src/vs/workbench/contrib/chat/browser/widget/chatContentParts/chatThinkingContentPart.ts
 @@ -42,6 +42,7 @@ import { IChatCollapsibleIODataPart } from './chatToolInputOutputContentPart.js'
@@ -780,7 +780,7 @@ index dc0d1d49f10..4e09eb21eb6 100644
  
  
  // Context key id mirrored from `vs/sessions/common/contextkeys` (`IsPhoneLayoutContext`).
-@@ -572,7 +573,7 @@ export class ChatThinkingContentPart extends ChatCollapsibleContentPart implemen
+@@ -601,7 +602,7 @@ export class ChatThinkingContentPart extends ChatCollapsibleContentPart implemen
  			this._register(this.scrollableElement.onScroll(e => this.handleScroll(e.scrollTop)));
  
  			let pendingMutationRefresh: IDisposable | undefined;
@@ -1015,7 +1015,7 @@ index 09b7eec669f..28ca04f71f8 100644
  				video: true
  			});
 diff --git a/src/vs/workbench/services/keybinding/browser/keybindingService.ts b/src/vs/workbench/services/keybinding/browser/keybindingService.ts
-index 481d713f969..9d9997d50de 100644
+index 52af5015e35..69ad80c6003 100644
 --- a/src/vs/workbench/services/keybinding/browser/keybindingService.ts
 +++ b/src/vs/workbench/services/keybinding/browser/keybindingService.ts
 @@ -246,7 +246,7 @@ export class WorkbenchKeybindingService extends AbstractKeybindingService {

@@ -73,7 +73,7 @@ index 9db25c4aec8..aa1e5512eeb 100644
 +	when: IsSandboxWorkspaceContext.toNegated()
  });
 diff --git a/src/vs/workbench/browser/contextkeys.ts b/src/vs/workbench/browser/contextkeys.ts
-index 678a225f1df..ac1f028bc30 100644
+index 02ef9f87808..b81d77931d6 100644
 --- a/src/vs/workbench/browser/contextkeys.ts
 +++ b/src/vs/workbench/browser/contextkeys.ts
 @@ -3,25 +3,25 @@
@@ -115,7 +115,7 @@ index 678a225f1df..ac1f028bc30 100644
  
  export class WorkbenchContextKeysHandler extends Disposable {
  
-@@ -201,6 +201,9 @@ export class WorkbenchContextKeysHandler extends Disposable {
+@@ -202,6 +202,9 @@ export class WorkbenchContextKeysHandler extends Disposable {
  		this.auxiliaryBarMaximizedContext = AuxiliaryBarMaximizedContext.bindTo(this.contextKeyService);
  		this.auxiliaryBarMaximizedContext.set(this.layoutService.isAuxiliaryBarMaximized());
  

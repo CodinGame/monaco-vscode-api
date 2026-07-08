@@ -8,10 +8,10 @@ Subject: [PATCH] feat: add AIDisabled policy
  1 file changed, 11 insertions(+)
 
 diff --git a/src/vs/workbench/contrib/chat/browser/chat.shared.contribution.ts b/src/vs/workbench/contrib/chat/browser/chat.shared.contribution.ts
-index 3ccf6e75ce7..a14f1fadecf 100644
+index 7b3706310ba..a9effd916ad 100644
 --- a/src/vs/workbench/contrib/chat/browser/chat.shared.contribution.ts
 +++ b/src/vs/workbench/contrib/chat/browser/chat.shared.contribution.ts
-@@ -1683,6 +1683,17 @@ configurationRegistry.registerConfiguration({
+@@ -1812,6 +1812,17 @@ configurationRegistry.registerConfiguration({
  			description: nls.localize('chat.disableAIFeatures', "Disable and hide built-in AI features provided by GitHub Copilot, including chat and inline suggestions."),
  			default: false,
  			scope: ConfigurationScope.WINDOW,

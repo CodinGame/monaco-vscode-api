@@ -44,10 +44,10 @@ index 6ce67486a58..17e137b5eb0 100644
 +export const SkipToolPostConfirmationActionId = 'workbench.action.chat.skipToolPostExecution';
  
 diff --git a/src/vs/workbench/contrib/chat/browser/actions/chatContext.ts b/src/vs/workbench/contrib/chat/browser/actions/chatContext.ts
-index f758e3b155a..405c4eb97c2 100644
+index 7c07e24253f..1d4ab35b143 100644
 --- a/src/vs/workbench/contrib/chat/browser/actions/chatContext.ts
 +++ b/src/vs/workbench/contrib/chat/browser/actions/chatContext.ts
-@@ -25,7 +25,7 @@ import { IChatRequestToolEntry, IChatRequestToolSetEntry, IChatRequestVariableEn
+@@ -28,7 +28,7 @@ import { IChatRequestToolEntry, IChatRequestToolSetEntry, IChatRequestVariableEn
  import { isToolSet, ToolDataSource } from '../../common/tools/languageModelToolsService.js';
  import { ChatAgentLocation } from '../../common/constants.js';
  import { IChatWidget } from '../chat.js';
@@ -56,10 +56,10 @@ index f758e3b155a..405c4eb97c2 100644
  import { convertBufferToScreenshotVariable } from '../attachments/chatScreenshotContext.js';
  import { ChatInstructionsPickerPick } from '../promptSyntax/attachInstructionsAction.js';
  import { IChatSessionsService, isAgentHostTarget } from '../../common/chatSessionsService.js';
-@@ -34,6 +34,7 @@ import { ITerminalService } from '../../../terminal/browser/terminal.js';
- import { URI } from '../../../../../base/common/uri.js';
+@@ -38,6 +38,7 @@ import { URI } from '../../../../../base/common/uri.js';
  import { ITerminalCommand, TerminalCapability } from '../../../../../platform/terminal/common/capabilities/capabilities.js';
  import { getChatSessionType } from '../../common/model/chatUri.js';
+ import { buildHostLocalEventsPath } from '../copilotCliEventsUri.js';
 +import { imageToHash } from '../chatImageUtils.js';
  
  /**
@@ -104,10 +104,10 @@ index 558fc635277..391b0e86712 100644
  export const IChatAttachmentResolveService = createDecorator<IChatAttachmentResolveService>('IChatAttachmentResolveService');
  
 diff --git a/src/vs/workbench/contrib/chat/browser/chatImageUtils.ts b/src/vs/workbench/contrib/chat/browser/chatImageUtils.ts
-index ffb77ed8c91..44a27528ecd 100644
+index 581826188b2..bf3c2bffee5 100644
 --- a/src/vs/workbench/contrib/chat/browser/chatImageUtils.ts
 +++ b/src/vs/workbench/contrib/chat/browser/chatImageUtils.ts
-@@ -273,3 +273,10 @@ CommandsRegistry.registerCommand('_chat.resizeImage', async (_accessor, data: Ui
+@@ -270,3 +270,10 @@ CommandsRegistry.registerCommand('_chat.resizeImage', async (_accessor, data: Ui
  	}
  	return resizeImage(data, mimeType);
  });
@@ -132,10 +132,10 @@ index c718be52179..267e2a5b53e 100644
  import { ChatConfirmationWidget, IChatConfirmationButton } from '../chatConfirmationWidget.js';
  import { IChatContentPartRenderContext } from '../chatContentParts.js';
 diff --git a/src/vs/workbench/contrib/chat/browser/widget/chatContentParts/toolInvocationParts/chatTerminalToolConfirmationSubPart.ts b/src/vs/workbench/contrib/chat/browser/widget/chatContentParts/toolInvocationParts/chatTerminalToolConfirmationSubPart.ts
-index 518aa7c2bd3..8d5d657f7c9 100644
+index bdb735dea5d..c9fed2a616d 100644
 --- a/src/vs/workbench/contrib/chat/browser/widget/chatContentParts/toolInvocationParts/chatTerminalToolConfirmationSubPart.ts
 +++ b/src/vs/workbench/contrib/chat/browser/widget/chatContentParts/toolInvocationParts/chatTerminalToolConfirmationSubPart.ts
-@@ -32,7 +32,7 @@ import { ChatContextKeys } from '../../../../common/actions/chatContextKeys.js';
+@@ -31,7 +31,7 @@ import { ChatContextKeys } from '../../../../common/actions/chatContextKeys.js';
  import { migrateLegacyTerminalToolSpecificData } from '../../../../common/chat.js';
  import { IChatToolInvocation, ToolConfirmKind, type IChatTerminalToolInvocationData, type ILegacyChatTerminalToolInvocationData } from '../../../../common/chatService/chatService.js';
  import { ILanguageModelToolsService } from '../../../../common/tools/languageModelToolsService.js';
@@ -145,7 +145,7 @@ index 518aa7c2bd3..8d5d657f7c9 100644
  import { IChatToolRiskAssessmentService } from '../../../tools/chatToolRiskAssessmentService.js';
  import { ChatCustomConfirmationWidget, IChatConfirmationButton } from '../chatConfirmationWidget.js';
 diff --git a/src/vs/workbench/contrib/chat/browser/widget/chatContentParts/toolInvocationParts/chatToolConfirmationSubPart.ts b/src/vs/workbench/contrib/chat/browser/widget/chatContentParts/toolInvocationParts/chatToolConfirmationSubPart.ts
-index 2ada03f7016..4e896893aa3 100644
+index 1cf66bb3a57..81df053130f 100644
 --- a/src/vs/workbench/contrib/chat/browser/widget/chatContentParts/toolInvocationParts/chatToolConfirmationSubPart.ts
 +++ b/src/vs/workbench/contrib/chat/browser/widget/chatContentParts/toolInvocationParts/chatToolConfirmationSubPart.ts
 @@ -23,7 +23,7 @@ import { IMarkerData, IMarkerService, MarkerSeverity } from '../../../../../../.
@@ -155,10 +155,10 @@ index 2ada03f7016..4e896893aa3 100644
 -import { AcceptToolConfirmationActionId, SkipToolConfirmationActionId } from '../../../actions/chatToolActions.js';
 +import { AcceptToolConfirmationActionId, SkipToolConfirmationActionId } from '../../../actions/chatConstants.js';
  import { IChatCodeBlockInfo, IChatWidgetService } from '../../../chat.js';
+ import { IChatToolRiskAssessmentService } from '../../../tools/chatToolRiskAssessmentService.js';
  import { renderFileWidgets } from '../chatInlineAnchorWidget.js';
- import { CodeBlockPart, ICodeBlockRenderOptions } from '../codeBlockPart.js';
 diff --git a/src/vs/workbench/contrib/chat/browser/widget/chatContentParts/toolInvocationParts/chatToolPostExecuteConfirmationPart.ts b/src/vs/workbench/contrib/chat/browser/widget/chatContentParts/toolInvocationParts/chatToolPostExecuteConfirmationPart.ts
-index da2b868f353..2aa997b77a8 100644
+index 654129d0212..872330f3454 100644
 --- a/src/vs/workbench/contrib/chat/browser/widget/chatContentParts/toolInvocationParts/chatToolPostExecuteConfirmationPart.ts
 +++ b/src/vs/workbench/contrib/chat/browser/widget/chatContentParts/toolInvocationParts/chatToolPostExecuteConfirmationPart.ts
 @@ -14,7 +14,7 @@ import { ChatResponseResource } from '../../../../common/model/chatModel.js';
@@ -168,10 +168,10 @@ index da2b868f353..2aa997b77a8 100644
 -import { AcceptToolPostConfirmationActionId, SkipToolPostConfirmationActionId } from '../../../actions/chatToolActions.js';
 +import { AcceptToolPostConfirmationActionId, SkipToolPostConfirmationActionId } from '../../../actions/chatConstants.js';
  import { IChatCodeBlockInfo, IChatWidgetService } from '../../../chat.js';
+ import { IChatToolRiskAssessmentService } from '../../../tools/chatToolRiskAssessmentService.js';
  import { IChatContentPartRenderContext } from '../chatContentParts.js';
- import { ChatCollapsibleIOPart } from '../chatToolInputOutputContentPart.js';
 diff --git a/src/vs/workbench/contrib/chat/browser/widget/input/editor/chatPasteProviders.ts b/src/vs/workbench/contrib/chat/browser/widget/input/editor/chatPasteProviders.ts
-index 450e51de4c2..52ec74a2912 100644
+index 5a470b875b3..f41f0a71553 100644
 --- a/src/vs/workbench/contrib/chat/browser/widget/input/editor/chatPasteProviders.ts
 +++ b/src/vs/workbench/contrib/chat/browser/widget/input/editor/chatPasteProviders.ts
 @@ -34,7 +34,7 @@ import { IDynamicVariable } from '../../../../common/attachments/chatVariables.j

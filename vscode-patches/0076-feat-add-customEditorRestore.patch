@@ -9,7 +9,7 @@ Subject: [PATCH] feat: add customEditorRestore
  2 files changed, 16 insertions(+), 11 deletions(-)
 
 diff --git a/src/vs/workbench/browser/layout.ts b/src/vs/workbench/browser/layout.ts
-index b28157fccdd..6ef7b3e0ef0 100644
+index 02fa222e7f6..69b9ba08eb2 100644
 --- a/src/vs/workbench/browser/layout.ts
 +++ b/src/vs/workbench/browser/layout.ts
 @@ -21,7 +21,7 @@ import { isTemporaryWorkspace, IWorkspaceContextService, WorkbenchState } from '
@@ -38,7 +38,7 @@ index b28157fccdd..6ef7b3e0ef0 100644
  
  //#region Layout Implementation
  
-@@ -302,7 +302,7 @@ export abstract class Layout extends Disposable implements IWorkbenchLayoutServi
+@@ -303,7 +303,7 @@ export abstract class Layout extends Disposable implements IWorkbenchLayoutServi
  
  	constructor(
  		protected readonly parent: HTMLElement,
@@ -47,7 +47,7 @@ index b28157fccdd..6ef7b3e0ef0 100644
  	) {
  		super();
  
-@@ -957,7 +957,7 @@ export abstract class Layout extends Disposable implements IWorkbenchLayoutServi
+@@ -976,7 +976,7 @@ export abstract class Layout extends Disposable implements IWorkbenchLayoutServi
  		return this.restored;
  	}
  
@@ -56,7 +56,7 @@ index b28157fccdd..6ef7b3e0ef0 100644
  
  		// distinguish long running restore operations that
  		// are required for the layout to be ready from those
-@@ -1021,11 +1021,14 @@ export abstract class Layout extends Disposable implements IWorkbenchLayoutServi
+@@ -1040,11 +1040,14 @@ export abstract class Layout extends Disposable implements IWorkbenchLayoutServi
  				}));
  			}
  
