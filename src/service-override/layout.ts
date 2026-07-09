@@ -107,6 +107,10 @@ export class LayoutService extends Disposable implements ILayoutService, IWorkbe
     return false
   }
 
+  isFloatingPanelsEnabled(): boolean {
+    return false
+  }
+
   centerMainEditorLayout(): void {}
 
   private readonly _onDidLayoutContainer = this._register(
@@ -436,8 +440,7 @@ export class LayoutService extends Disposable implements ILayoutService, IWorkbe
     }
 
     const viewContainerModel = this.viewDescriptorService.getViewContainerModel(viewContainer) as
-      | IViewContainerModel
-      | undefined
+      IViewContainerModel | undefined
     if (viewContainerModel == null) {
       return false
     }
@@ -466,8 +469,7 @@ export class LayoutService extends Disposable implements ILayoutService, IWorkbe
       } else if (paneComposite == null && !hidden) {
         // If panel part becomes visible, show last active panel or default panel
         let panelToOpen = this.paneCompositeService.getLastActivePaneCompositeId(location) as
-          | string
-          | undefined
+          string | undefined
 
         // verify that the panel we try to open has views before we default to it
         // otherwise fall back to any view that has views still refs #111463

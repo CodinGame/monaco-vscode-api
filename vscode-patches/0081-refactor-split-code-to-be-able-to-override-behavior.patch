@@ -8,7 +8,7 @@ Subject: [PATCH] refactor: split code to be able to override behavior
  1 file changed, 11 insertions(+), 7 deletions(-)
 
 diff --git a/src/vs/workbench/services/keybinding/browser/keybindingService.ts b/src/vs/workbench/services/keybinding/browser/keybindingService.ts
-index 9d9997d50de..d773a5e530e 100644
+index 69ad80c6003..4594db4c1fa 100644
 --- a/src/vs/workbench/services/keybinding/browser/keybindingService.ts
 +++ b/src/vs/workbench/services/keybinding/browser/keybindingService.ts
 @@ -246,17 +246,11 @@ export class WorkbenchKeybindingService extends AbstractKeybindingService {

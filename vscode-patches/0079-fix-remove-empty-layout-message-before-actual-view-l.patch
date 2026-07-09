@@ -9,10 +9,10 @@ to prevent a flicker when it opens
  1 file changed, 3 insertions(+), 4 deletions(-)
 
 diff --git a/src/vs/workbench/browser/parts/paneCompositePart.ts b/src/vs/workbench/browser/parts/paneCompositePart.ts
-index a35c19c2a06..20223817c11 100644
+index 0f828260077..72f427ef32b 100644
 --- a/src/vs/workbench/browser/parts/paneCompositePart.ts
 +++ b/src/vs/workbench/browser/parts/paneCompositePart.ts
-@@ -217,15 +217,15 @@ export abstract class AbstractPaneCompositePart extends CompositePart<PaneCompos
+@@ -220,15 +220,15 @@ export abstract class AbstractPaneCompositePart extends CompositePart<PaneCompos
  	}
  
  	protected override showComposite(composite: Composite): void {
@@ -30,7 +30,7 @@ index a35c19c2a06..20223817c11 100644
  		return composite;
  	}
  
-@@ -612,8 +612,7 @@ export abstract class AbstractPaneCompositePart extends CompositePart<PaneCompos
+@@ -731,8 +731,7 @@ export abstract class AbstractPaneCompositePart extends CompositePart<PaneCompos
  		}
  	}
  

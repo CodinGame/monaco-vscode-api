@@ -13,7 +13,8 @@
     "check-build": "npm run lint && npm run typecheck",
     "build": "npm run check-build && vite --config vite.config.ts build",
     "build:netlify": "npm run check-build && vite --config vite.netlify.config.ts build",
-    "start:debugServer": "tsx src/debugServer.ts"
+    "start:debugServer": "tsx src/debugServer.ts",
+    "preprepare": "patch-package"
   },
   "devDependencies": {
     "@types/dockerode": "^4.0.1",
@@ -21,9 +22,9 @@
     "@types/node": "^25.9.3",
     "@types/wicg-file-system-access": "^2023.10.7",
     "@types/ws": "^8.18.1",
-    "oxlint": "^1.71.0",
-    "typescript": "~6.0.3",
-    "vite": "~8.1.0",
+    "oxlint": "^1.73.0",
+    "typescript": "~7.0.2",
+    "vite": "~8.1.3",
     "@codingame/monaco-vscode-rollup-extension-directory-plugin": "file:../dist/packages/monaco-vscode-rollup-extension-directory-plugin",
     "@codingame/monaco-vscode-rollup-vsix-plugin": "file:../dist/packages/monaco-vscode-rollup-vsix-plugin"
   },

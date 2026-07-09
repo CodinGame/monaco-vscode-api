@@ -138,10 +138,10 @@ index c578441baa9..7b5909d6fac 100644
  export namespace PeekContext {
  	export const inPeekEditor = new RawContextKey<boolean>('inReferenceSearchEditor', true, nls.localize('inReferenceSearchEditor', "Whether the current code editor is embedded inside peek"));
 diff --git a/src/vs/platform/actionWidget/browser/actionWidget.ts b/src/vs/platform/actionWidget/browser/actionWidget.ts
-index cb94356b6ed..e74d964cb41 100644
+index 6feb8e32953..60eb545232f 100644
 --- a/src/vs/platform/actionWidget/browser/actionWidget.ts
 +++ b/src/vs/platform/actionWidget/browser/actionWidget.ts
-@@ -44,7 +44,7 @@ export interface IActionWidgetService {
+@@ -57,7 +57,7 @@ export interface IActionWidgetService {
  	readonly isVisible: boolean;
  }
  
@@ -194,7 +194,7 @@ index 493471fe856..3a098814ba1 100644
  
  		// convert to file stat
 diff --git a/src/vs/platform/sandbox/browser/sandboxHelperService.ts b/src/vs/platform/sandbox/browser/sandboxHelperService.ts
-index 3ce552fee34..79222e0d134 100644
+index 00394e44052..42a6ea8aec3 100644
 --- a/src/vs/platform/sandbox/browser/sandboxHelperService.ts
 +++ b/src/vs/platform/sandbox/browser/sandboxHelperService.ts
 @@ -6,7 +6,7 @@
@@ -220,7 +220,7 @@ index c8d1765a7ab..91d78dc1be0 100644
  	declare readonly _serviceBrand: undefined;
  
 diff --git a/src/vs/workbench/browser/layout.ts b/src/vs/workbench/browser/layout.ts
-index ea2da133d86..1f1026f5ad8 100644
+index d5da4b4de33..a9e70490c4c 100644
 --- a/src/vs/workbench/browser/layout.ts
 +++ b/src/vs/workbench/browser/layout.ts
 @@ -50,7 +50,7 @@ import { CodeWindow, mainWindow } from '../../base/browser/window.js';
@@ -247,8 +247,8 @@ index ea2da133d86..1f1026f5ad8 100644
  	readonly views: {
  		readonly defaults: string[] | undefined;
  		readonly containerToRestore: {
-@@ -104,11 +104,11 @@ enum LayoutClasses {
- 	NO_SHADOWS = 'no-shadows'
+@@ -105,11 +105,11 @@ enum LayoutClasses {
+ 	FLOATING_PANELS = 'floating-panels'
  }
  
 -interface IPathToOpen extends IPath {
@@ -342,10 +342,10 @@ index ff0d50662cd..d509ce285ee 100644
  
  	private readonly _resolvers = new Map<string, { readonly resolve: (sessionResource: URI) => URI | undefined; readonly isNewSession?: (sessionResource: URI) => boolean }>();
 diff --git a/src/vs/workbench/contrib/chat/browser/aiCustomization/aiCustomizationWorkspaceService.ts b/src/vs/workbench/contrib/chat/browser/aiCustomization/aiCustomizationWorkspaceService.ts
-index 4b0c29c92a8..fd065bcab61 100644
+index 9feebda1005..b609df54709 100644
 --- a/src/vs/workbench/contrib/chat/browser/aiCustomization/aiCustomizationWorkspaceService.ts
 +++ b/src/vs/workbench/contrib/chat/browser/aiCustomization/aiCustomizationWorkspaceService.ts
-@@ -21,7 +21,7 @@ import {
+@@ -20,7 +20,7 @@ import {
  	GENERATE_SKILL_COMMAND_ID,
  } from '../actions/chatActions.js';
  
@@ -355,10 +355,10 @@ index 4b0c29c92a8..fd065bcab61 100644
  
  	readonly activeProjectRoot: IObservable<URI | undefined>;
 diff --git a/src/vs/workbench/contrib/chat/browser/aiCustomization/customizationHarnessService.ts b/src/vs/workbench/contrib/chat/browser/aiCustomization/customizationHarnessService.ts
-index 91218d8a9de..95203211afc 100644
+index acc5af9624e..c3f5af20976 100644
 --- a/src/vs/workbench/contrib/chat/browser/aiCustomization/customizationHarnessService.ts
 +++ b/src/vs/workbench/contrib/chat/browser/aiCustomization/customizationHarnessService.ts
-@@ -21,7 +21,7 @@ import { URI } from '../../../../../base/common/uri.js';
+@@ -20,7 +20,7 @@ import { URI } from '../../../../../base/common/uri.js';
   * Only the Local harness is registered statically. All other harnesses
   * (e.g. Copilot CLI) are contributed by extensions via the provider API.
   */
@@ -406,10 +406,10 @@ index 4305cc54d72..d4d363592a2 100644
  	declare readonly _serviceBrand: undefined;
  
 diff --git a/src/vs/workbench/contrib/chat/browser/widget/input/chatInputNotificationService.ts b/src/vs/workbench/contrib/chat/browser/widget/input/chatInputNotificationService.ts
-index 3e29d31feb0..bcde32c9b35 100644
+index bc4f1c2791b..6047193d22e 100644
 --- a/src/vs/workbench/contrib/chat/browser/widget/input/chatInputNotificationService.ts
 +++ b/src/vs/workbench/contrib/chat/browser/widget/input/chatInputNotificationService.ts
-@@ -82,7 +82,7 @@ export interface IChatInputNotificationService {
+@@ -97,7 +97,7 @@ export interface IChatInputNotificationService {
  	handleMessageSent(): void;
  }
  
@@ -662,7 +662,7 @@ index 514873c2d59..707a6a12108 100644
  		public readonly toAdd: IExtension[],
  		public readonly toRemove: string[] | IExtension[]
 diff --git a/src/vs/workbench/services/keybinding/browser/keybindingService.ts b/src/vs/workbench/services/keybinding/browser/keybindingService.ts
-index 2af5fbeff0a..481d713f969 100644
+index db7a4fdcee3..52af5015e35 100644
 --- a/src/vs/workbench/services/keybinding/browser/keybindingService.ts
 +++ b/src/vs/workbench/services/keybinding/browser/keybindingService.ts
 @@ -434,7 +434,7 @@ export class WorkbenchKeybindingService extends AbstractKeybindingService {

@@ -40,7 +40,7 @@ index 1b722167644..39088a04919 100644
  				newFrame.style.cssText = 'display: block; margin: 0; overflow: hidden; position: absolute; width: 100%; height: 100%; visibility: hidden';
  				document.body.appendChild(newFrame);
 diff --git a/src/vs/workbench/contrib/webview/browser/webviewElement.ts b/src/vs/workbench/contrib/webview/browser/webviewElement.ts
-index 37558e01484..9f6018c77f5 100644
+index c64dffc458c..69e5c9244b2 100644
 --- a/src/vs/workbench/contrib/webview/browser/webviewElement.ts
 +++ b/src/vs/workbench/contrib/webview/browser/webviewElement.ts
 @@ -462,6 +462,9 @@ export class WebviewElement extends Disposable implements IWebviewElement, Webvi

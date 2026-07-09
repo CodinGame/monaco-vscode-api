@@ -10,7 +10,7 @@ Subject: [PATCH] refactor: split code to be able to import only required part
  3 files changed, 236 insertions(+), 207 deletions(-)
 
 diff --git a/src/vs/platform/extensionManagement/common/extensionsScannerService.ts b/src/vs/platform/extensionManagement/common/extensionsScannerService.ts
-index f0d9860b091..4902b531103 100644
+index 7fea8e5dc8c..2c91a53da83 100644
 --- a/src/vs/platform/extensionManagement/common/extensionsScannerService.ts
 +++ b/src/vs/platform/extensionManagement/common/extensionsScannerService.ts
 @@ -578,14 +578,160 @@ export class ExtensionScannerInput {
@@ -174,25 +174,25 @@ index f0d9860b091..4902b531103 100644
 +
 +class ExtensionsScanner extends ExtensionManifestTranslator {
  
- 	private readonly extensionsEnabledWithApiProposalVersion: string[];
  	private readonly productQuality: string | undefined;
-@@ -594,12 +740,12 @@ class ExtensionsScanner extends Disposable {
+ 	private readonly productBuiltInExtensionsEnabledWithAutoUpdates: Set<string>;
+@@ -593,12 +739,12 @@ class ExtensionsScanner extends Disposable {
  	constructor(
  		@IExtensionsProfileScannerService protected readonly extensionsProfileScannerService: IExtensionsProfileScannerService,
  		@IUriIdentityService protected readonly uriIdentityService: IUriIdentityService,
 -		@IFileService protected readonly fileService: IFileService,
 +		@IFileService fileService: IFileService,
  		@IProductService productService: IProductService,
- 		@IEnvironmentService private readonly environmentService: IEnvironmentService,
+ 		@IEnvironmentService environmentService: IEnvironmentService,
 -		@ILogService protected readonly logService: ILogService
 +		@ILogService logService: ILogService
  	) {
 -		super();
 +		super(fileService, logService);
- 		this.extensionsEnabledWithApiProposalVersion = productService.extensionsEnabledWithApiProposalVersion?.map(id => id.toLowerCase()) ?? [];
  		this.productQuality = productService.quality;
  		this.productBuiltInExtensionsEnabledWithAutoUpdates = getProductBuiltInExtensionsEnabledWithAutoUpdates(productService, environmentService);
-@@ -798,144 +944,6 @@ class ExtensionsScanner extends Disposable {
+ 	}
+@@ -795,144 +941,6 @@ class ExtensionsScanner extends Disposable {
  		}
  		return manifest;
  	}

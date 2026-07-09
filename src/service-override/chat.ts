@@ -132,12 +132,16 @@ import { IAgentNetworkFilterService } from 'vs/platform/networkFilter/common/net
 import { AgentNetworkFilterService } from 'vs/platform/networkFilter/common/networkFilterService'
 import { IAgentHostFileSystemService } from 'vs/workbench/services/agentHost/common/agentHostFileSystemService.service'
 import { IAgentHostSessionWorkingDirectoryResolver } from 'vs/workbench/contrib/chat/browser/agentSessions/agentHost/agentHostSessionWorkingDirectoryResolver.service'
+import { IAgentHostNewSessionFolderService } from 'vs/workbench/contrib/chat/browser/agentSessions/agentHost/agentHostNewSessionFolderService.service'
+import { IAgentHostToolSetEnablementService } from 'vs/workbench/contrib/chat/browser/agentSessions/agentHost/agentHostToolSetEnablementService.service'
 import { IAgentHostTerminalService } from 'vs/workbench/contrib/terminal/browser/agentHostTerminalService.service'
 import { AgentHostTerminalService } from 'vs/workbench/contrib/terminal/browser/agentHostTerminalService'
 import { IRemoteAgentHostService } from 'vs/platform/agentHost/common/remoteAgentHostService.service'
 import { RemoteAgentHostService } from 'vs/platform/agentHost/browser/remoteAgentHostServiceImpl'
 import { AgentHostFileSystemService } from 'vs/workbench/services/agentHost/common/agentHostFileSystemService'
 import { AgentHostSessionWorkingDirectoryResolver } from 'vs/workbench/contrib/chat/browser/agentSessions/agentHost/agentHostSessionWorkingDirectoryResolver'
+import { AgentHostNewSessionFolderService } from 'vs/workbench/contrib/chat/browser/agentSessions/agentHost/agentHostNewSessionFolderService'
+import { AgentHostToolSetEnablementService } from 'vs/workbench/contrib/chat/browser/agentSessions/agentHost/agentHostToolSetEnablementService'
 import { IAgentHostResourceService } from 'vs/platform/agentHost/common/agentHostResourceService.service'
 import { IToolResultCompressor } from 'vs/workbench/contrib/chat/common/tools/toolResultCompressor.service'
 import { IChatToolRiskAssessmentService } from 'vs/workbench/contrib/chat/browser/tools/chatToolRiskAssessmentService.service'
@@ -162,6 +166,26 @@ import { IChatGoalSummaryService } from 'vs/workbench/contrib/chat/browser/chatG
 import { ChatGoalSummaryService } from 'vs/workbench/contrib/chat/browser/chatGoalSummaryService'
 import { EditorRemoteAgentHostServiceClient } from 'vs/workbench/services/agentHost/browser/editorRemoteAgentHostServiceClient'
 import { IAgentHostService } from 'vs/platform/agentHost/common/agentService.service'
+import { IAgentHostConnectionsService } from 'vs/platform/agentHost/common/agentHostConnectionsService.service'
+import { AgentHostConnectionsService } from 'vs/platform/agentHost/browser/agentHostConnectionsService'
+import { IChatResponseFileChangesService } from 'vs/workbench/contrib/chat/browser/chatResponseFileChangesService.service'
+import { ChatResponseFileChangesService } from 'vs/workbench/contrib/chat/browser/chatResponseFileChangesService'
+import { IMicCaptureService } from 'vs/workbench/contrib/chat/browser/voiceClient/micCaptureService.service'
+import { MicCaptureService } from 'vs/workbench/contrib/chat/browser/voiceClient/micCaptureService'
+import { ITtsPlaybackService } from 'vs/workbench/contrib/chat/browser/voiceClient/ttsPlaybackService.service'
+import { TtsPlaybackService } from 'vs/workbench/contrib/chat/browser/voiceClient/ttsPlaybackService'
+import { IVoiceClientService } from 'vs/workbench/contrib/chat/common/voiceClient/voiceClientService.service'
+import { VoiceClientService } from 'vs/workbench/contrib/chat/browser/voiceClient/voiceClientService'
+import { IVoiceSessionController } from 'vs/workbench/contrib/chat/browser/voiceClient/voiceSessionController.service'
+import { VoiceSessionController } from 'vs/workbench/contrib/chat/browser/voiceClient/voiceSessionController'
+import { IVoiceToolDispatchService } from 'vs/workbench/contrib/chat/browser/voiceClient/voiceToolDispatchService.service'
+import { VoiceToolDispatchService } from 'vs/workbench/contrib/chat/browser/voiceClient/voiceToolDispatchService'
+import { IVoicePlaybackService } from 'vs/workbench/contrib/chat/common/voicePlaybackService.service'
+import { VoicePlaybackService } from 'vs/workbench/contrib/chat/common/voicePlaybackService'
+import { IVoiceTranscriptStore } from 'vs/workbench/contrib/agentsVoice/common/voiceTranscriptStore.service'
+import { VoiceTranscriptStore } from 'vs/workbench/contrib/agentsVoice/common/voiceTranscriptStore'
+import { IAgentsVoiceWindowService } from 'vs/workbench/contrib/agentsVoice/common/agentsVoice.service'
+import { AgentsVoiceWindowService } from 'vs/workbench/contrib/agentsVoice/browser/agentsVoiceWindowService'
 import 'vs/workbench/contrib/chat/browser/chat.contribution'
 import 'vs/workbench/contrib/chat/browser/chat.shared.contribution'
 import 'vs/workbench/contrib/chat/browser/chat.view.contribution'
@@ -170,6 +194,7 @@ import 'vs/workbench/contrib/inlineChat/browser/inlineChat.contribution'
 import 'vs/workbench/contrib/remoteCodingAgents/browser/remoteCodingAgents.contribution'
 import 'vs/workbench/contrib/chat/browser/contextContrib/chatContext.contribution'
 import 'vs/workbench/contrib/imageCarousel/browser/imageCarousel.contribution'
+import 'vs/workbench/contrib/agentsVoice/browser/agentsVoice.contribution'
 
 class DefaultAccountService implements IDefaultAccountService {
   declare _serviceBrand: undefined
@@ -182,6 +207,7 @@ class DefaultAccountService implements IDefaultAccountService {
   policyData: IDefaultAccountService['policyData'] = null
   managedSettingsFetchStatus: IDefaultAccountService['managedSettingsFetchStatus'] = null
   managedSettingsFetchedAt: IDefaultAccountService['managedSettingsFetchedAt'] = null
+  managedSettingsRawResponse: IDefaultAccountService['managedSettingsRawResponse'] = undefined
 
   getDefaultAccountAuthenticationProvider: IDefaultAccountService['getDefaultAccountAuthenticationProvider'] =
     () => ({ id: 'default', name: 'Default', enterprise: false })
@@ -365,7 +391,30 @@ export default function getServiceOverride({
       [],
       true
     ),
+    [IAgentHostNewSessionFolderService.toString()]: new SyncDescriptor(
+      AgentHostNewSessionFolderService,
+      [],
+      true
+    ),
+    [IAgentHostToolSetEnablementService.toString()]: new SyncDescriptor(
+      AgentHostToolSetEnablementService,
+      [],
+      true
+    ),
     [IAgentHostTerminalService.toString()]: new SyncDescriptor(AgentHostTerminalService, [], true),
+    [IAgentHostConnectionsService.toString()]: new SyncDescriptor(
+      AgentHostConnectionsService,
+      [],
+      true
+    ),
+    [IMicCaptureService.toString()]: new SyncDescriptor(MicCaptureService, [], true),
+    [ITtsPlaybackService.toString()]: new SyncDescriptor(TtsPlaybackService, [], true),
+    [IVoiceClientService.toString()]: new SyncDescriptor(VoiceClientService, [], true),
+    [IVoiceSessionController.toString()]: new SyncDescriptor(VoiceSessionController, [], true),
+    [IVoiceToolDispatchService.toString()]: new SyncDescriptor(VoiceToolDispatchService, [], true),
+    [IVoicePlaybackService.toString()]: new SyncDescriptor(VoicePlaybackService, [], true),
+    [IVoiceTranscriptStore.toString()]: new SyncDescriptor(VoiceTranscriptStore, [], true),
+    [IAgentsVoiceWindowService.toString()]: new SyncDescriptor(AgentsVoiceWindowService, [], true),
     [IAgentHostActiveClientService.toString()]: new SyncDescriptor(
       AgentHostActiveClientService,
       [],
@@ -378,6 +427,11 @@ export default function getServiceOverride({
     ),
     [IToolResultCompressor.toString()]: new SyncDescriptor(ToolResultCompressorService, [], true),
     [IChatGoalSummaryService.toString()]: new SyncDescriptor(ChatGoalSummaryService, [], true),
+    [IChatResponseFileChangesService.toString()]: new SyncDescriptor(
+      ChatResponseFileChangesService,
+      [],
+      true
+    ),
     [IChatToolRiskAssessmentService.toString()]: new SyncDescriptor(
       ChatToolRiskAssessmentService,
       [],

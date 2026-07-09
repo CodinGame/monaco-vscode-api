@@ -426,10 +426,10 @@ index 9250ef3f280..b3cde1a1e14 100644
  	}
  });
 diff --git a/src/vs/workbench/services/auxiliaryWindow/browser/auxiliaryWindowService.ts b/src/vs/workbench/services/auxiliaryWindow/browser/auxiliaryWindowService.ts
-index 53bfb067b4e..6e201931269 100644
+index 0a893f38ff7..b6099cf807a 100644
 --- a/src/vs/workbench/services/auxiliaryWindow/browser/auxiliaryWindowService.ts
 +++ b/src/vs/workbench/services/auxiliaryWindow/browser/auxiliaryWindowService.ts
-@@ -429,6 +429,22 @@ export class BrowserAuxiliaryWindowService extends Disposable implements IAuxili
+@@ -443,6 +443,22 @@ export class BrowserAuxiliaryWindowService extends Disposable implements IAuxili
  	private applyCSS(auxiliaryWindow: CodeWindow, disposables: DisposableStore) {
  		mark('code/auxiliaryWindow/willApplyCSS');
  

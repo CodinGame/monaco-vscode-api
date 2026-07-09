@@ -101,7 +101,7 @@ index 3d83476e176..a80f0b9a7f2 100644
  		}
  	}
 diff --git a/src/vs/workbench/contrib/terminal/browser/terminalInstance.ts b/src/vs/workbench/contrib/terminal/browser/terminalInstance.ts
-index 8e0a30cea2b..2b0ce2561f1 100644
+index 6d6da9cbfbf..7e5f6224115 100644
 --- a/src/vs/workbench/contrib/terminal/browser/terminalInstance.ts
 +++ b/src/vs/workbench/contrib/terminal/browser/terminalInstance.ts
 @@ -79,7 +79,6 @@ import { IHistoryService } from '../../../services/history/common/history.js';
@@ -157,7 +157,7 @@ index 30e6bd1905b..d54aed4b473 100644
  			if (!addon) {
  				throw new Error(`Could not load addon ${name}`);
 diff --git a/src/vs/workbench/services/assignment/common/assignmentService.ts b/src/vs/workbench/services/assignment/common/assignmentService.ts
-index f7594b944a2..128ff1c20df 100644
+index a75afa8aa6b..ca7a59d4a26 100644
 --- a/src/vs/workbench/services/assignment/common/assignmentService.ts
 +++ b/src/vs/workbench/services/assignment/common/assignmentService.ts
 @@ -18,7 +18,6 @@ import { Registry } from '../../../../platform/registry/common/platform.js';
@@ -166,17 +166,17 @@ index f7594b944a2..128ff1c20df 100644
  import { IWorkbenchEnvironmentService } from '../../environment/common/environmentService.js';
 -import { importAMDNodeModule } from '../../../../amdX.js';
  import { timeout } from '../../../../base/common/async.js';
+ import { StopWatch } from '../../../../base/common/stopwatch.js';
  import { CopilotAssignmentFilterProvider } from './assignmentFilters.js';
- import { Disposable, DisposableStore } from '../../../../base/common/lifecycle.js';
-@@ -269,7 +268,7 @@ export class WorkbenchAssignmentService extends Disposable implements IAssignmen
- 		this.tasSetupDisposables.add(extensionsFilterProvider.onDidChangeFilters(() => this.refetchAssignments()));
+@@ -258,7 +257,7 @@ export class WorkbenchAssignmentService extends Disposable implements IAssignmen
  
  		const tasConfig = this.productService.tasConfig!;
--		const tasClient = new (await importAMDNodeModule<typeof import('tas-client')>('tas-client', 'dist/tas-client.min.js')).ExperimentationService({
-+		const tasClient = new (await import('tas-client')).ExperimentationService({
- 			filterProviders: [filterProvider, extensionsFilterProvider],
- 			telemetry: this.telemetry,
- 			storageKey: ASSIGNMENT_STORAGE_KEY,
+ 
+-		const tasClientModule = await importAMDNodeModule<typeof import('tas-client')>('tas-client', 'dist/tas-client.min.js');
++		const tasClientModule = await import('tas-client');
+ 
+ 		// Measure the client-side latency of the first network call to the
+ 		// Treatment Assignment Service. The fetch is triggered by constructing
 diff --git a/src/vs/workbench/services/textMate/browser/backgroundTokenization/textMateWorkerTokenizerController.ts b/src/vs/workbench/services/textMate/browser/backgroundTokenization/textMateWorkerTokenizerController.ts
 index 61fee6de827..6718133f8c2 100644
 --- a/src/vs/workbench/services/textMate/browser/backgroundTokenization/textMateWorkerTokenizerController.ts

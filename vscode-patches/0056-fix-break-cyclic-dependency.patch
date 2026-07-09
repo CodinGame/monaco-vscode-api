@@ -5,7 +5,7 @@ Subject: [PATCH] fix: break cyclic dependency
 
 ---
  .../contrib/chat/browser/newChatContextAttachments.ts |  4 ++--
- .../chatMissingSandboxDepsConfirmationSubPart.ts      |  2 +-
+ .../chatSandboxPrerequisiteConfirmationSubPart.ts     |  2 +-
  .../contrib/tasks/browser/task.contribution.ts        |  3 ++-
  .../contrib/tasks/browser/terminalTaskSystem.ts       |  3 ++-
  src/vs/workbench/contrib/tasks/common/constants.ts    | 11 +++++++++++
@@ -14,12 +14,12 @@ Subject: [PATCH] fix: break cyclic dependency
  create mode 100644 src/vs/workbench/contrib/tasks/common/constants.ts
 
 diff --git a/src/vs/sessions/contrib/chat/browser/newChatContextAttachments.ts b/src/vs/sessions/contrib/chat/browser/newChatContextAttachments.ts
-index 556ec43d2a4..d72a3d920b0 100644
+index 80d9376f8e6..7efe84f4385 100644
 --- a/src/vs/sessions/contrib/chat/browser/newChatContextAttachments.ts
 +++ b/src/vs/sessions/contrib/chat/browser/newChatContextAttachments.ts
 @@ -36,8 +36,8 @@ import { DEFAULT_LABELS_CONTAINER, ResourceLabels } from '../../../../workbench/
  
- import { IChatRequestVariableEntry, OmittedState } from '../../../../workbench/contrib/chat/common/attachments/chatVariableEntries.js';
+ import { IChatRequestVariableEntry, isAgentHostCompletionVariableEntry, OmittedState } from '../../../../workbench/contrib/chat/common/attachments/chatVariableEntries.js';
  import { isLocation } from '../../../../editor/common/languages.js';
 -import { resizeImage } from '../../../../workbench/contrib/chat/browser/chatImageUtils.js';
 -import { imageToHash, isImage } from '../../../../workbench/contrib/chat/browser/widget/input/editor/chatPasteProviders.js';
@@ -28,10 +28,10 @@ index 556ec43d2a4..d72a3d920b0 100644
  import { CodeDataTransfers, containsDragType, extractEditorsDropData, getPathForFile } from '../../../../platform/dnd/browser/dnd.js';
  import { DataTransfers } from '../../../../base/browser/dnd.js';
  import { getExcludes, ISearchConfiguration, ISearchService, QueryType } from '../../../../workbench/services/search/common/search.js';
-diff --git a/src/vs/workbench/contrib/chat/browser/widget/chatContentParts/toolInvocationParts/chatMissingSandboxDepsConfirmationSubPart.ts b/src/vs/workbench/contrib/chat/browser/widget/chatContentParts/toolInvocationParts/chatMissingSandboxDepsConfirmationSubPart.ts
-index e31d3daf423..aa35bbc601a 100644
---- a/src/vs/workbench/contrib/chat/browser/widget/chatContentParts/toolInvocationParts/chatMissingSandboxDepsConfirmationSubPart.ts
-+++ b/src/vs/workbench/contrib/chat/browser/widget/chatContentParts/toolInvocationParts/chatMissingSandboxDepsConfirmationSubPart.ts
+diff --git a/src/vs/workbench/contrib/chat/browser/widget/chatContentParts/toolInvocationParts/chatSandboxPrerequisiteConfirmationSubPart.ts b/src/vs/workbench/contrib/chat/browser/widget/chatContentParts/toolInvocationParts/chatSandboxPrerequisiteConfirmationSubPart.ts
+index 9a9c423df9d..d48fdf2b0a2 100644
+--- a/src/vs/workbench/contrib/chat/browser/widget/chatContentParts/toolInvocationParts/chatSandboxPrerequisiteConfirmationSubPart.ts
++++ b/src/vs/workbench/contrib/chat/browser/widget/chatContentParts/toolInvocationParts/chatSandboxPrerequisiteConfirmationSubPart.ts
 @@ -12,7 +12,7 @@ import { IKeybindingService } from '../../../../../../../platform/keybinding/com
  import { IMarkdownRenderer } from '../../../../../../../platform/markdown/browser/markdownRenderer.js';
  import { IChatToolInvocation, type IChatTerminalToolInvocationData } from '../../../../common/chatService/chatService.js';
@@ -39,8 +39,8 @@ index e31d3daf423..aa35bbc601a 100644
 -import { AcceptToolConfirmationActionId, SkipToolConfirmationActionId } from '../../../actions/chatToolActions.js';
 +import { AcceptToolConfirmationActionId, SkipToolConfirmationActionId } from '../../../actions/chatConstants.js';
  import { IChatCodeBlockInfo, IChatWidgetService } from '../../../chat.js';
+ import { IChatToolRiskAssessmentService } from '../../../tools/chatToolRiskAssessmentService.js';
  import { IChatContentPartRenderContext } from '../chatContentParts.js';
- import { AbstractToolConfirmationSubPart } from './abstractToolConfirmationSubPart.js';
 diff --git a/src/vs/workbench/contrib/tasks/browser/task.contribution.ts b/src/vs/workbench/contrib/tasks/browser/task.contribution.ts
 index 1ad6a06d008..d619311bc2b 100644
 --- a/src/vs/workbench/contrib/tasks/browser/task.contribution.ts

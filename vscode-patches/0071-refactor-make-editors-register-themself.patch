@@ -154,7 +154,7 @@ index aead3db9861..e7b71870d77 100644
  
  		this._configurationService = configurationService;
 diff --git a/src/vs/editor/standalone/browser/standaloneServices.ts b/src/vs/editor/standalone/browser/standaloneServices.ts
-index 7bad06a8c75..e54b66d050b 100644
+index a0e60bb896c..86ffa576df3 100644
 --- a/src/vs/editor/standalone/browser/standaloneServices.ts
 +++ b/src/vs/editor/standalone/browser/standaloneServices.ts
 @@ -74,13 +74,11 @@ import { UserInteractionService } from '../../../platform/userInteraction/browse
@@ -280,10 +280,10 @@ index 19ec19eaf50..7ff2c02e845 100644
  	protected abstract _getResolver(): KeybindingResolver;
  	protected abstract _documentHasFocus(): boolean;
 diff --git a/src/vs/platform/keybinding/common/keybinding.ts b/src/vs/platform/keybinding/common/keybinding.ts
-index 6c4baf3a1de..ec5816f5b7f 100644
+index d4ce2da9b88..58d9b8a7e89 100644
 --- a/src/vs/platform/keybinding/common/keybinding.ts
 +++ b/src/vs/platform/keybinding/common/keybinding.ts
-@@ -47,6 +47,8 @@ export interface IKeybindingService {
+@@ -53,6 +53,8 @@ export interface IKeybindingService {
  
  	readonly onDidUpdateKeybindings: Event<void>;
  
