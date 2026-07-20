@@ -1,0 +1,64 @@
+From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
+From: =?UTF-8?q?Lo=C3=AFc=20Mangeonjean?= <loic@coderpad.io>
+Date: Mon, 20 Jul 2026 11:18:39 +0200
+Subject: [PATCH] fix: remove vscode-infra-specific security checks
+
+---
+ .../worker/webWorkerExtensionHostIframe.html  | 44 +------------------
+ 1 file changed, 1 insertion(+), 43 deletions(-)
+
+diff --git a/src/vs/workbench/services/extensions/worker/webWorkerExtensionHostIframe.html b/src/vs/workbench/services/extensions/worker/webWorkerExtensionHostIframe.html
+index 9fdd21c95b7..bf669f5b547 100644
+--- a/src/vs/workbench/services/extensions/worker/webWorkerExtensionHostIframe.html
++++ b/src/vs/workbench/services/extensions/worker/webWorkerExtensionHostIframe.html
+@@ -18,49 +18,7 @@
+ 	const salt = searchParams.get('salt');
+ 
+ 	(async function () {
+-		const hostnameValidationMarker = 'v--';
+-		const hostname = location.hostname;
+-		if (!hostname.startsWith(hostnameValidationMarker)) {
+-			// Validation not requested by the hosting origin. In this configuration the iframe is
+-			// expected to be same-origin with its parent, so a caller-supplied `parentOrigin` that
+-			// differs from `window.origin` must be rejected. Otherwise an attacker who can trick a
+-			// user into navigating to this static page could supply their own `parentOrigin`, receive
+-			// the bootstrap handshake, and cause the iframe to `import()` attacker-controlled worker
+-			// code inside the authenticated origin.
+-			if (parentOriginParam && parentOriginParam !== window.origin) {
+-				return sendError(new Error(`Refusing to load: 'parentOrigin' does not match window origin and hostname validation is not enabled.`));
+-			}
+-			return start();
+-		}
+-		if (!crypto.subtle) {
+-			// cannot validate, not running in a secure context
+-			return sendError(new Error(`Cannot validate in current context!`));
+-		}
+-
+-		// Here the `parentOriginHash()` function from `src/vs/base/browser/iframe.ts` is inlined
+-		// compute a sha-256 composed of `parentOrigin` and `salt` converted to base 32
+-		/** @type {string} */
+-		let parentOriginHash;
+-		try {
+-			const strData = JSON.stringify({ parentOrigin, salt });
+-			const encoder = new TextEncoder();
+-			const arrData = encoder.encode(strData);
+-			const hash = await crypto.subtle.digest('sha-256', arrData);
+-			const hashArray = Array.from(new Uint8Array(hash));
+-			const hashHex = hashArray.map(b => b.toString(16).padStart(2, '0')).join('');
+-			// sha256 has 256 bits, so we need at most ceil(lg(2^256-1)/lg(32)) = 52 chars to represent it in base 32
+-			parentOriginHash = BigInt(`0x${hashHex}`).toString(32).padStart(52, '0');
+-		} catch (err) {
+-			return sendError(err instanceof Error ? err : new Error(String(err)));
+-		}
+-
+-		const requiredSubdomain = `${hostnameValidationMarker}${parentOriginHash}.`;
+-		if (hostname.substring(0, requiredSubdomain.length) === requiredSubdomain) {
+-			// validation succeeded!
+-			return start();
+-		}
+-
+-		return sendError(new Error(`Expected '${requiredSubdomain}' as subdomain!`));
++		return start();
+ 	})();
+ 
+ 	function sendError(error) {
