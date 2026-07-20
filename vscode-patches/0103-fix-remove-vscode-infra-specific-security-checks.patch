@@ -4,13 +4,22 @@ Date: Mon, 20 Jul 2026 11:18:39 +0200
 Subject: [PATCH] fix: remove vscode-infra-specific security checks
 
 ---
- .../worker/webWorkerExtensionHostIframe.html  | 44 +------------------
- 1 file changed, 1 insertion(+), 43 deletions(-)
+ .../worker/webWorkerExtensionHostIframe.html  | 46 +------------------
+ 1 file changed, 2 insertions(+), 44 deletions(-)
 
 diff --git a/src/vs/workbench/services/extensions/worker/webWorkerExtensionHostIframe.html b/src/vs/workbench/services/extensions/worker/webWorkerExtensionHostIframe.html
-index 9fdd21c95b7..bf669f5b547 100644
+index 9fdd21c95b7..e802def5f30 100644
 --- a/src/vs/workbench/services/extensions/worker/webWorkerExtensionHostIframe.html
 +++ b/src/vs/workbench/services/extensions/worker/webWorkerExtensionHostIframe.html
+@@ -4,7 +4,7 @@
+ 		<meta http-equiv="Content-Security-Policy" content="
+ 			default-src 'none';
+ 			child-src 'self' data: blob:;
+-			script-src 'self' 'unsafe-eval' 'sha256-LfSEPWgJAtrOdr34EHjreixgIIu+NHGT7RYTpV0eCBA=' data: extension-file: https: http://localhost:* blob:;
++			script-src 'self' 'unsafe-eval' 'sha256-2EBQn+AFduI8Wb0riLwbeshEGP4dJlHornyvuFAgYnA=' data: extension-file: https: http://localhost:* blob:;
+ 			connect-src 'self' data: extension-file: https: wss: http://localhost:* http://127.0.0.1:* ws://localhost:* ws://127.0.0.1:*;"/>
+ 	</head>
+ 	<body>
 @@ -18,49 +18,7 @@
  	const salt = searchParams.get('salt');
  
