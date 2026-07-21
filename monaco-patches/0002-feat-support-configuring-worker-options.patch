@@ -1,18 +1,18 @@
 From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
 From: =?UTF-8?q?Lo=C3=AFc=20Mangeonjean?= <loic@coderpad.io>
-Date: Thu, 7 May 2026 15:35:50 +0200
+Date: Mon, 20 Jul 2026 17:31:01 +0200
 Subject: [PATCH] feat: support configuring worker options
 
 and also use cross-origin compatible worker
 ---
- src/common/workers.ts | 18 ++++++++++++++++--
- 1 file changed, 16 insertions(+), 2 deletions(-)
+ src/internal/common/workers.ts | 15 +++++++++++++--
+ 1 file changed, 13 insertions(+), 2 deletions(-)
 
-diff --git a/src/common/workers.ts b/src/common/workers.ts
-index 94bbc257..8394dd36 100644
---- a/src/common/workers.ts
-+++ b/src/common/workers.ts
-@@ -52,12 +52,25 @@ if (
+diff --git a/src/internal/common/workers.ts b/src/internal/common/workers.ts
+index 94bbc257..19df6b15 100644
+--- a/src/internal/common/workers.ts
++++ b/src/internal/common/workers.ts
+@@ -52,12 +52,22 @@ if (
  	});
  }
  
@@ -31,14 +31,11 @@ index 94bbc257..8394dd36 100644
  	interface IMonacoEnvironment {
  		getWorker?(moduleId: string, label: string): Worker | Promise<Worker>;
  		getWorkerUrl?(moduleId: string, label: string): string;
-+		/**
-+		 * Return the options for web worker scripts.
-+		 */
 +		getWorkerOptions?(moduleId: string, label: string): WorkerOptions | undefined;
  	}
  	const monacoEnvironment: IMonacoEnvironment | undefined = (globalThis as any).MonacoEnvironment;
  	if (monacoEnvironment) {
-@@ -66,9 +79,10 @@ function getWorker(descriptor: { label: string; moduleId: string; createWorker?:
+@@ -66,9 +76,10 @@ function getWorker(descriptor: { label: string; moduleId: string; createWorker?:
  		}
  		if (typeof monacoEnvironment.getWorkerUrl === 'function') {
  			const workerUrl = monacoEnvironment.getWorkerUrl('workerMain.js', label);
