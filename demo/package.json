@@ -218,5 +218,10 @@
   },
   "volta": {
     "extends": "../package.json"
+  },
+  "allowScripts": {
+    "cpu-features@0.0.10": true,
+    "protobufjs@7.6.3": true,
+    "ssh2@1.17.0": true
   }
 }
