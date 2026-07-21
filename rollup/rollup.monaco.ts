@@ -61,7 +61,6 @@ const resolver: rollup.Plugin = {
   name: 'resolver',
   resolveId(source, importer) {
     if (source.includes('.worker.js') && importer?.endsWith('workerManager.js')) {
-      console.log({ source, importer })
       return {
         id: path.resolve(path.dirname(importer), source)
       }
@@ -120,7 +119,13 @@ export default rollup.defineConfig([
           )
         ],
         treeshake: {
-          preset: 'smallest'
+          preset: 'smallest',
+          moduleSideEffects(id) {
+            if (id.endsWith('.worker.js')) {
+              return true
+            }
+            return undefined
+          }
         },
         output: {
           minifyInternalExports: false,
