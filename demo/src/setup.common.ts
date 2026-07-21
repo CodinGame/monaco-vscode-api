@@ -408,7 +408,8 @@ export const constructOptions: IWorkbenchConstructionOptions = {
       controlUrl: '',
       nlsBaseUrl: ''
     }
-  }
+  },
+  enabledExtensions: ['codingame.demo-main', 'codingame.demo']
 }
 
 export const envOptions: EnvironmentOverride = {
