@@ -18,7 +18,7 @@ declare module 'vs/editor/editor.api' {
 const originalOnLanguage = languages.onLanguage
 languages.onLanguage = (languageId: string, callback: () => void) =>
   withReadyServices(() => originalOnLanguage(languageId, callback))
-const originalOnLanguageEncountered = languages.onLanguage
+const originalOnLanguageEncountered = languages.onLanguageEncountered
 languages.onLanguageEncountered = (languageId: string, callback: () => void) =>
   withReadyServices(() => originalOnLanguageEncountered(languageId, callback))
 editor.create = createConfiguredEditor as unknown as typeof editor.create

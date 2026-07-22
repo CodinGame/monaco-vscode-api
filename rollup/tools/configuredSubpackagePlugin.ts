@@ -466,6 +466,7 @@ ${code}`
             ...baseManifest,
             exports: {
               '.': './esm/vs/editor/editor.api.js',
+              './editor': './esm/vs/editor/editor.api.js',
               ...Object.fromEntries(
                 [
                   'vs/editor/editor.api',
@@ -480,7 +481,9 @@ ${code}`
                 })
               ),
               './esm/vs/basic-languages/*': './empty.js',
-              './esm/vs/language/*': './empty.js'
+              './esm/vs/language/*': './empty.js',
+              './features/*': './empty.js',
+              './languages/*': './empty.js'
             },
             main: 'esm/vs/editor/editor.api.js',
             module: 'esm/vs/editor/editor.api.js',

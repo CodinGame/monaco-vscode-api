@@ -36,7 +36,8 @@ mkdir -p $output_directory/editor
 cp out/monaco-editor/esm/vs/editor/editor.api.d.ts $output_directory/editor/editor.api.d.ts
 cp -R out/monaco-editor/esm/vs/basic-languages $output_directory/basic-languages
 cp -R out/monaco-editor/esm/vs/language $output_directory/language
-cp -R out/monaco-editor/esm/vs/common $output_directory/common
+cp -R out/monaco-editor/esm/vs/languages $output_directory/languages
+cp -R out/monaco-editor/esm/vs/internal $output_directory/internal
 cp -R out/monaco-editor/package.json $output_directory/package.json
 
 echo $monacoRef > $version_info

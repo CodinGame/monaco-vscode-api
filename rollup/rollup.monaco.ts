@@ -5,8 +5,7 @@ import replace from '@rollup/plugin-replace'
 import glob from 'fast-glob'
 import * as path from 'path'
 import * as fs from 'fs'
-import { fileURLToPath } from 'url'
-import { EDITOR_API_PACKAGE_NAME, sanitizeFileName } from './tools/config'
+import { BASE_DIR, EDITOR_API_PACKAGE_NAME, sanitizeFileName } from './tools/config'
 import { execSync } from 'child_process'
 import carryDtsPlugin from './plugins/rollup-carry-dts-plugin.js'
 
@@ -14,11 +13,8 @@ const pkg = JSON.parse(
   fs.readFileSync(new URL('../package.json', import.meta.url).pathname).toString()
 )
 
-const __dirname = path.dirname(fileURLToPath(import.meta.url))
-
 const EXTENSIONS = ['', '.ts', '.js']
 
-const BASE_DIR = path.resolve(__dirname, '..')
 const MONACO_EDITOR_DIR = path.resolve(BASE_DIR, 'monaco-editor')
 const BASIC_LANGUAGE_DIR = path.resolve(MONACO_EDITOR_DIR, 'basic-languages')
 const LANGUAGE_FEATURE_DIR = path.resolve(MONACO_EDITOR_DIR, 'language')
@@ -65,7 +61,6 @@ const resolver: rollup.Plugin = {
   name: 'resolver',
   resolveId(source, importer) {
     if (source.includes('.worker.js') && importer?.endsWith('workerManager.js')) {
-      console.log({ source, importer })
       return {
         id: path.resolve(path.dirname(importer), source)
       }
@@ -124,7 +119,13 @@ export default rollup.defineConfig([
           )
         ],
         treeshake: {
-          preset: 'smallest'
+          preset: 'smallest',
+          moduleSideEffects(id) {
+            if (id.endsWith('.worker.js')) {
+              return true
+            }
+            return undefined
+          }
         },
         output: {
           minifyInternalExports: false,

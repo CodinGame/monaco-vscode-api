@@ -1,0 +1,42 @@
+From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
+From: =?UTF-8?q?Lo=C3=AFc=20Mangeonjean?= <loic@coderpad.io>
+Date: Tue, 21 Jul 2026 16:41:38 +0200
+Subject: [PATCH] fix: properly wait for worker to be ready
+
+---
+ src/internal/common/workers.ts | 15 ++++++++++++++-
+ 1 file changed, 14 insertions(+), 1 deletion(-)
+
+diff --git a/src/internal/common/workers.ts b/src/internal/common/workers.ts
+index 19df6b15..0f2b73ff 100644
+--- a/src/internal/common/workers.ts
++++ b/src/internal/common/workers.ts
+@@ -52,6 +52,18 @@ if (
+ 	});
+ }
+ 
++function whenESMWorkerReady(worker: Worker): Promise<Worker> {
++	return new Promise<Worker>((resolve, reject) => {
++		worker.onmessage = function (e) {
++			if (e.data.type === 'vscode-worker-ready') {
++				worker.onmessage = null;
++				resolve(worker);
++			}
++		};
++		worker.onerror = reject;
++	});
++}
++
+ function getWorkerBootstrapUrl(workerScriptUrl: string, workerOptions: WorkerOptions): string {
+ 	const blob = new Blob([[
+ 		`${workerOptions.type === 'module' ? 'await import' : 'importScripts'}(${JSON.stringify(workerScriptUrl)});`,
+@@ -109,7 +121,8 @@ export function createWebWorker<T extends object>(
+ 			moduleId: opts.moduleId,
+ 			createWorker: opts.createWorker,
+ 		})
+-	).then((w) => {
++	).then(async (w) => {
++		await whenESMWorkerReady(w)
+ 		w.postMessage('ignore');
+ 		w.postMessage(opts.createData);
+ 		return w;

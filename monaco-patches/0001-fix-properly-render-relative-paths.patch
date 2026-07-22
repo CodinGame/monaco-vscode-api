@@ -8,7 +8,7 @@ Subject: [PATCH] fix: properly render relative paths
  1 file changed, 7 insertions(+)
 
 diff --git a/build/esm/rollup-url-to-module-plugin/index.mjs b/build/esm/rollup-url-to-module-plugin/index.mjs
-index 8a0168bd..cb21f92a 100644
+index 52641abf..7e2ec860 100644
 --- a/build/esm/rollup-url-to-module-plugin/index.mjs
 +++ b/build/esm/rollup-url-to-module-plugin/index.mjs
 @@ -9,6 +9,13 @@
