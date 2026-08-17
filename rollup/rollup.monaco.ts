@@ -16,15 +16,14 @@ const pkg = JSON.parse(
 const EXTENSIONS = ['', '.ts', '.js']
 
 const MONACO_EDITOR_DIR = path.resolve(BASE_DIR, 'monaco-editor')
-const BASIC_LANGUAGE_DIR = path.resolve(MONACO_EDITOR_DIR, 'basic-languages')
-const LANGUAGE_FEATURE_DIR = path.resolve(MONACO_EDITOR_DIR, 'language')
+const LANGUAGES_FEATURE_DIR = path.resolve(MONACO_EDITOR_DIR, 'languages')
 
-const monacoContributions = (
-  await glob('**/monaco.contribution.js', {
-    cwd: LANGUAGE_FEATURE_DIR,
+const monacoLanguageFeatures = (
+  await glob('features/*/register.js', {
+    cwd: LANGUAGES_FEATURE_DIR,
     onlyFiles: true
   })
-).map((fileName) => path.resolve(LANGUAGE_FEATURE_DIR, fileName))
+).map((fileName) => path.resolve(LANGUAGES_FEATURE_DIR, fileName))
 
 function getInstalledVersion(libName: string) {
   const output = execSync(`npm ls ${libName} --json --depth 1 --long`).toString()
@@ -76,7 +75,11 @@ const resolver: rollup.Plugin = {
       }
     }
 
-    if (source.endsWith('editor.api.js') || source.endsWith('editor.api2.js')) {
+    if (
+      source.endsWith('editor.api.js') ||
+      source.endsWith('editor.api2.js') ||
+      source.endsWith('editor.api.d.ts')
+    ) {
       return {
         id: 'monaco-editor',
         external: true
@@ -103,7 +106,7 @@ const resolver: rollup.Plugin = {
 
 export default rollup.defineConfig([
   ...(await Promise.all(
-    monacoContributions.map(async (contributionFile) => {
+    monacoLanguageFeatures.map(async (contributionFile) => {
       const dirname = path.dirname(contributionFile)
       const language = path.basename(dirname)
       return <rollup.RollupOptions>{
@@ -130,6 +133,7 @@ export default rollup.defineConfig([
         output: {
           minifyInternalExports: false,
           preserveModules: true,
+          preserveModulesRoot: MONACO_EDITOR_DIR,
           sanitizeFileName,
           assetFileNames: '[name][extname]',
           format: 'esm',
@@ -154,7 +158,7 @@ export default rollup.defineConfig([
                 return output.type === 'chunk' && output.isEntry
               })
 
-              const main = entryChunkIds.find((m) => m.includes('monaco.contribution'))!
+              const main = entryChunkIds.find((m) => m.includes('register'))!
               const worker = entryChunkIds.find((m) => m.includes('worker'))!
 
               const dependencies = Object.fromEntries(
@@ -186,13 +190,15 @@ export default rollup.defineConfig([
                 description: `monaco-editor ${language} language features bundled to work with ${pkg.name}`,
                 exports: {
                   '.': {
-                    default: './' + main
+                    default: './' + main,
+                    types: './' + main.replace('.js', '.d.ts')
                   },
                   './worker': {
                     default: './' + worker
                   }
                 },
                 main: './' + main,
+                types: './' + main.replace('.js', '.d.ts'),
                 module: './' + main,
                 dependencies: {
                   'monaco-editor': `npm:${EDITOR_API_PACKAGE_NAME}@^${pkg.version}`,
@@ -215,12 +221,11 @@ export default rollup.defineConfig([
     })
   )),
   {
-    input: {
-      index: path.resolve(BASIC_LANGUAGE_DIR, 'monaco.contribution.js')
-    },
+    input: [path.resolve(MONACO_EDITOR_DIR, 'languages/definitions/register.all.js')],
     output: {
       minifyInternalExports: false,
       preserveModules: true,
+      preserveModulesRoot: MONACO_EDITOR_DIR,
       sanitizeFileName,
       assetFileNames: '[name][extname]',
       format: 'esm',
@@ -234,9 +239,18 @@ export default rollup.defineConfig([
         preventAssignment: true
       }),
       resolver,
+      carryDtsPlugin(),
       {
         name: 'loader',
-        generateBundle() {
+        generateBundle(options, bundle) {
+          const allChunkIds = Object.keys(bundle)
+
+          const entryChunkIds: string[] = allChunkIds.filter((chunkId) => {
+            const output = bundle[chunkId]!
+            return output.type === 'chunk' && output.isEntry
+          })
+          const main = entryChunkIds.find((m) => m.includes('register'))!
+
           const dependencies = Object.fromEntries(
             Array.from(this.getModuleIds())
               .map((id) => this.getModuleInfo(id)!)
@@ -264,9 +278,17 @@ export default rollup.defineConfig([
             ),
             private: false,
             description: `monaco-editor default language bundled to work with ${pkg.name}`,
-            main: 'index.js',
-            module: 'index.js',
-            types: 'index.d.ts',
+            exports: {
+              '.': {
+                default: './' + main,
+                types: './' + main.replace('.js', '.d.ts')
+              },
+              './*.js': './*.js',
+              './*': './*.js'
+            },
+            main: './' + main,
+            types: './' + main.replace('.js', '.d.ts'),
+            module: './' + main,
             dependencies: {
               'monaco-editor': `npm:${EDITOR_API_PACKAGE_NAME}@^${pkg.version}`,
               ...dependencies
