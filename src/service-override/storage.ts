@@ -113,6 +113,7 @@ export interface DatabaseFactories {
 class InjectedBrowserStorageService extends BrowserStorageService {
   constructor(
     private fallbackOverride: Record<string, unknown> | undefined,
+    private forcedValues: Record<string, unknown> | undefined,
     private databaseFactories: DatabaseFactories = {},
     @IUserDataProfileService userDataProfileService: IUserDataProfileService,
     @ILogService logService: ILogService,
@@ -124,9 +125,12 @@ class InjectedBrowserStorageService extends BrowserStorageService {
   override get(key: string, scope: StorageScope, fallbackValue: string): string
   override get(key: string, scope: StorageScope): string | undefined
   override get(key: string, scope: StorageScope, fallbackValue?: string): string | undefined {
-    return this.getStorage(scope)?.get(
-      key,
-      (this.fallbackOverride?.[key] as string | undefined) ?? fallbackValue
+    return (
+      (this.forcedValues?.[key] as string | undefined) ??
+      this.getStorage(scope)?.get(
+        key,
+        (this.fallbackOverride?.[key] as string | undefined) ?? fallbackValue
+      )
     )
   }
 
@@ -137,27 +141,36 @@ class InjectedBrowserStorageService extends BrowserStorageService {
     scope: StorageScope,
     fallbackValue?: boolean
   ): boolean | undefined {
-    return this.getStorage(scope)?.getBoolean(
-      key,
-      (this.fallbackOverride?.[key] as boolean | undefined) ?? fallbackValue
+    return (
+      (this.forcedValues?.[key] as boolean | undefined) ??
+      this.getStorage(scope)?.getBoolean(
+        key,
+        (this.fallbackOverride?.[key] as boolean | undefined) ?? fallbackValue
+      )
     )
   }
 
   override getNumber(key: string, scope: StorageScope, fallbackValue: number): number
   override getNumber(key: string, scope: StorageScope): number | undefined
   override getNumber(key: string, scope: StorageScope, fallbackValue?: number): number | undefined {
-    return this.getStorage(scope)?.getNumber(
-      key,
-      (this.fallbackOverride?.[key] as number | undefined) ?? fallbackValue
+    return (
+      (this.forcedValues?.[key] as number | undefined) ??
+      this.getStorage(scope)?.getNumber(
+        key,
+        (this.fallbackOverride?.[key] as number | undefined) ?? fallbackValue
+      )
     )
   }
 
   override getObject(key: string, scope: StorageScope, fallbackValue: object): object
   override getObject(key: string, scope: StorageScope): object | undefined
   override getObject(key: string, scope: StorageScope, fallbackValue?: object): object | undefined {
-    return this.getStorage(scope)?.getObject(
-      key,
-      (this.fallbackOverride?.[key] as object | undefined) ?? fallbackValue
+    return (
+      (this.forcedValues?.[key] as object | undefined) ??
+      this.getStorage(scope)?.getObject(
+        key,
+        (this.fallbackOverride?.[key] as object | undefined) ?? fallbackValue
+      )
     )
   }
 
@@ -199,6 +212,11 @@ interface StorageServiceParameters {
   fallbackOverride?: Record<string, unknown>
 
   /**
+   * Allows to force the value of some keys
+   */
+  forcedValues?: Record<string, unknown>
+
+  /**
    * Allow to override the storage database for a specific scope (application, profile, workspace)
    */
   databaseFactories?: DatabaseFactories
@@ -206,12 +224,13 @@ interface StorageServiceParameters {
 
 export default function getStorageServiceOverride({
   fallbackOverride,
+  forcedValues,
   databaseFactories
 }: StorageServiceParameters = {}): IEditorOverrideServices {
   return {
     [IStorageService.toString()]: new SyncDescriptor(
       InjectedBrowserStorageService,
-      [fallbackOverride, databaseFactories],
+      [fallbackOverride, forcedValues, databaseFactories],
       true
     ),
     [IExtensionStorageService.toString()]: new SyncDescriptor(ExtensionStorageService, [], true)
