@@ -43,7 +43,8 @@ import { ChatMarkdownAnchorService } from 'vs/workbench/contrib/chat/browser/wid
 import { ChatEditingService } from 'vs/workbench/contrib/chat/browser/chatEditing/chatEditingServiceImpl'
 import {
   ChatEntitlementService,
-  ChatEntitlement
+  ChatEntitlement,
+  type IChatEntitlementContextState
 } from 'vs/workbench/services/chat/common/chatEntitlementService'
 import { PromptsService } from 'vs/workbench/contrib/chat/common/promptSyntax/service/promptsServiceImpl'
 import { IChatEntitlementService } from 'vs/workbench/services/chat/common/chatEntitlementService.service'
@@ -467,4 +468,4 @@ export default function getServiceOverride({
   }
 }
 
-export { type IDefaultAccount, ChatEntitlement }
+export { type IDefaultAccount, ChatEntitlement, type IChatEntitlementContextState }
