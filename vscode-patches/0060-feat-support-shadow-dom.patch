@@ -1364,7 +1364,7 @@ index 9a745727415..32b87509ab3 100644
  			const listener = this._register(Event.once(this._terminalService.onDidChangeConnectionState)(() => {
  				// Only focus the terminal if the activeElement has not changed since focus() was called
 diff --git a/src/vs/workbench/contrib/webview/browser/webviewElement.ts b/src/vs/workbench/contrib/webview/browser/webviewElement.ts
-index 69e5c9244b2..40a109760c3 100644
+index 4e7b69bd139..5455eea1f88 100644
 --- a/src/vs/workbench/contrib/webview/browser/webviewElement.ts
 +++ b/src/vs/workbench/contrib/webview/browser/webviewElement.ts
 @@ -4,7 +4,7 @@
@@ -1386,7 +1386,7 @@ index 69e5c9244b2..40a109760c3 100644
  			// looks like https://github.com/microsoft/vscode/issues/132641
  			// where the focus is actually not in the `<iframe>`
  			return false;
-@@ -712,7 +713,7 @@ export class WebviewElement extends Disposable implements IWebviewElement, Webvi
+@@ -705,7 +706,7 @@ export class WebviewElement extends Disposable implements IWebviewElement, Webvi
  	}
  
  	private isActiveElement(): boolean {
@@ -1395,7 +1395,7 @@ index 69e5c9244b2..40a109760c3 100644
  	}
  
  	private handleKeyEvent(type: 'keydown' | 'keyup', event: KeyEvent) {
-@@ -961,8 +962,11 @@ export class WebviewElement extends Disposable implements IWebviewElement, Webvi
+@@ -954,8 +955,11 @@ export class WebviewElement extends Disposable implements IWebviewElement, Webvi
  				return;
  			}
  

@@ -4,11 +4,11 @@ Date: Mon, 11 Mar 2024 18:21:20 +0100
 Subject: [PATCH] fix: use asBrowserUri to get iframe src
 
 ---
- src/vs/workbench/contrib/webview/browser/webviewElement.ts | 7 ++++---
- 1 file changed, 4 insertions(+), 3 deletions(-)
+ .../contrib/webview/browser/webviewElement.ts | 22 +++++--------------
+ 1 file changed, 6 insertions(+), 16 deletions(-)
 
 diff --git a/src/vs/workbench/contrib/webview/browser/webviewElement.ts b/src/vs/workbench/contrib/webview/browser/webviewElement.ts
-index 4e073206a68..c64dffc458c 100644
+index 4e073206a68..d9b32146d27 100644
 --- a/src/vs/workbench/contrib/webview/browser/webviewElement.ts
 +++ b/src/vs/workbench/contrib/webview/browser/webviewElement.ts
 @@ -13,9 +13,9 @@ import { CancellationToken, CancellationTokenSource } from '../../../../base/com
@@ -22,15 +22,37 @@ index 4e073206a68..c64dffc458c 100644
  import { URI } from '../../../../base/common/uri.js';
  import { generateUuid } from '../../../../base/common/uuid.js';
  import { localize } from '../../../../nls.js';
-@@ -467,8 +467,9 @@ export class WebviewElement extends Disposable implements IWebviewElement, Webvi
+@@ -467,8 +467,11 @@ export class WebviewElement extends Disposable implements IWebviewElement, Webvi
  		const queryString = new URLSearchParams(params).toString();
  
  		this.perfMark('init/set-src');
 -		const fileName = 'index.html';
 -		this.element!.setAttribute('src', `${this.webviewContentEndpoint(encodedWebviewOrigin)}/${fileName}?${queryString}`);
 +
-+		const relativeIframeSrc = FileAccess.asBrowserUri(`vs/workbench/contrib/webview/browser/pre/index.html`);
-+		this.element!.setAttribute('src', `${relativeIframeSrc.toString(true)}?${queryString}`);
++		const relativeIframeSrc = FileAccess.asBrowserUri(`vs/workbench/contrib/webview/browser/pre/index.html`)
++			.toString(true)
++			.replace('{{uuid}}', encodedWebviewOrigin);
++		this.element!.setAttribute('src', `${relativeIframeSrc}?${queryString}`);
  	}
  
  	public mountTo(element: HTMLElement, targetWindow: CodeWindow) {
+@@ -563,19 +566,6 @@ export class WebviewElement extends Disposable implements IWebviewElement, Webvi
+ 		}
+ 	}
+ 
+-	protected webviewContentEndpoint(encodedWebviewOrigin: string): string {
+-		const webviewExternalEndpoint = this._environmentService.webviewExternalEndpoint;
+-		if (!webviewExternalEndpoint) {
+-			throw new Error(`'webviewExternalEndpoint' has not been configured. Webviews will not work!`);
+-		}
+-
+-		const endpoint = webviewExternalEndpoint.replace('{{uuid}}', encodedWebviewOrigin);
+-		if (endpoint[endpoint.length - 1] === '/') {
+-			return endpoint.slice(0, endpoint.length - 1);
+-		}
+-		return endpoint;
+-	}
+-
+ 	private doPostMessage(channel: string, data?: any, transferable: Transferable[] = []): boolean {
+ 		if (this.element && this._messagePort) {
+ 			this._messagePort.postMessage({ channel, args: data }, transferable);

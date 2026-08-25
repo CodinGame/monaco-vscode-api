@@ -1,0 +1,55 @@
+From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
+From: =?UTF-8?q?Lo=C3=AFc=20Mangeonjean?= <loic@coderpad.io>
+Date: Tue, 25 Aug 2026 11:32:53 +0200
+Subject: [PATCH] feat: support using a unique subdomain for the extHost iframe
+
+---
+ .../browser/webWorkerExtensionHost.ts         | 25 ++++++++++++-------
+ 1 file changed, 16 insertions(+), 9 deletions(-)
+
+diff --git a/src/vs/workbench/services/extensions/browser/webWorkerExtensionHost.ts b/src/vs/workbench/services/extensions/browser/webWorkerExtensionHost.ts
+index d62f61b75c1..865a01a6b53 100644
+--- a/src/vs/workbench/services/extensions/browser/webWorkerExtensionHost.ts
++++ b/src/vs/workbench/services/extensions/browser/webWorkerExtensionHost.ts
+@@ -97,18 +97,21 @@ export class WebWorkerExtensionHost extends Disposable implements IExtensionHost
+ 			const webEndpointUrlTemplate = this._productService.webEndpointUrlTemplate;
+ 			const commit = this._productService.commit;
+ 			const quality = this._productService.quality;
++
++			// Try to keep the web worker extension host iframe origin stable by storing it in workspace storage
++			const key = 'webWorkerExtensionHostIframeStableOriginUUID';
++			let stableOriginUUID = this._storageService.get(key, StorageScope.WORKSPACE);
++			if (typeof stableOriginUUID === 'undefined') {
++				stableOriginUUID = generateUuid();
++				this._storageService.store(key, stableOriginUUID, StorageScope.WORKSPACE, StorageTarget.MACHINE);
++			}
++			const hash = await parentOriginHash(mainWindow.origin, stableOriginUUID);
++			const uuid = `v--${hash}`; // using `v--` as a marker to require `parentOrigin`/`salt` verification
++
+ 			if (webEndpointUrlTemplate && commit && quality) {
+-				// Try to keep the web worker extension host iframe origin stable by storing it in workspace storage
+-				const key = 'webWorkerExtensionHostIframeStableOriginUUID';
+-				let stableOriginUUID = this._storageService.get(key, StorageScope.WORKSPACE);
+-				if (typeof stableOriginUUID === 'undefined') {
+-					stableOriginUUID = generateUuid();
+-					this._storageService.store(key, stableOriginUUID, StorageScope.WORKSPACE, StorageTarget.MACHINE);
+-				}
+-				const hash = await parentOriginHash(mainWindow.origin, stableOriginUUID);
+ 				const baseUrl = (
+ 					webEndpointUrlTemplate
+-						.replace('{{uuid}}', `v--${hash}`) // using `v--` as a marker to require `parentOrigin`/`salt` verification
++						.replace('{{uuid}}', uuid) // using `v--` as a marker to require `parentOrigin`/`salt` verification
+ 						.replace('{{commit}}', commit)
+ 						.replace('{{quality}}', quality)
+ 				);
+@@ -116,6 +119,10 @@ export class WebWorkerExtensionHost extends Disposable implements IExtensionHost
+ 				const res = new URL(`${baseUrl}/out/${iframeModulePath}${suffix}`);
+ 				res.searchParams.set('salt', stableOriginUUID);
+ 				return res.toString();
++			} else {
++				const relativeExtensionHostIframeSrc = FileAccess.asBrowserUri(iframeModulePath).toString(true);
++
++				return `${relativeExtensionHostIframeSrc.replace('{{uuid}}', uuid)}${suffix}`;
+ 			}
+ 		}
+ 

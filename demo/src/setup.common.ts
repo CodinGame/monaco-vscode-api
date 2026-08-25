@@ -418,11 +418,22 @@ export const envOptions: EnvironmentOverride = {
   userHome: vscode.Uri.file('/')
 }
 
+const alternateDomainPatternUrl = new URL('.', import.meta.url)
+alternateDomainPatternUrl.pathname = ''
+
+// Only localhost supports subdomains, netlify doesn't
+if (alternateDomainPatternUrl.hostname.includes('localhost')) {
+  alternateDomainPatternUrl.hostname = `{{uuid}}.${alternateDomainPatternUrl.hostname}`
+}
+
+export let alternateDomainPattern = alternateDomainPatternUrl.href
+
 export const commonServices: IEditorOverrideServices = {
   ...getAuthenticationServiceOverride(),
   ...getLogServiceOverride(),
   ...getExtensionServiceOverride({
-    enableWorkerExtensionHost: true
+    enableWorkerExtensionHost: true,
+    iframeAlternateDomain: alternateDomainPattern
   }),
   ...getExtensionGalleryServiceOverride({ webOnly: false }),
   ...getModelServiceOverride(),
