@@ -6485,7 +6485,7 @@ index a2230caed6f..ed26b072827 100644
  	}
  
 diff --git a/src/vs/workbench/contrib/webview/browser/webviewElement.ts b/src/vs/workbench/contrib/webview/browser/webviewElement.ts
-index 40a109760c3..d48d3d081de 100644
+index 5455eea1f88..03e5cf3eca5 100644
 --- a/src/vs/workbench/contrib/webview/browser/webviewElement.ts
 +++ b/src/vs/workbench/contrib/webview/browser/webviewElement.ts
 @@ -4,7 +4,7 @@
@@ -6503,7 +6503,7 @@ index 40a109760c3..d48d3d081de 100644
  import { Disposable, IDisposable, toDisposable } from '../../../../base/common/lifecycle.js';
 -import { observableValue } from '../../../../base/common/observable.js';
  import { listenStream } from '../../../../base/common/stream.js';
- import { COI, FileAccess } from '../../../../base/common/network.js';
+ import { AppResourcePath, COI, FileAccess } from '../../../../base/common/network.js';
 +import { observableValue } from '../../../../base/common/observable.js';
  import { URI } from '../../../../base/common/uri.js';
  import { generateUuid } from '../../../../base/common/uuid.js';
