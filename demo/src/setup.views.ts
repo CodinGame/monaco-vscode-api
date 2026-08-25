@@ -22,6 +22,7 @@ import { setUnexpectedErrorHandler } from '@codingame/monaco-vscode-api/monaco'
 import { openNewCodeEditor } from './features/editor'
 import './features/customView.views'
 import {
+  alternateDomainPattern,
   commonServices,
   constructOptions,
   envOptions,
@@ -81,7 +82,7 @@ document.body.append(container)
 await initializeMonacoService(
   {
     ...commonServices,
-    ...getViewsServiceOverride(openNewCodeEditor, undefined),
+    ...getViewsServiceOverride(openNewCodeEditor, alternateDomainPattern),
 
     ...getQuickAccessServiceOverride({
       isKeybindingConfigurationVisible: isEditorPartVisible,

@@ -18,7 +18,8 @@ import {
   envOptions,
   remoteAuthority,
   userDataProvider,
-  disableShadowDom
+  disableShadowDom,
+  alternateDomainPattern
 } from './setup.common'
 
 let container = window.vscodeContainer
@@ -60,7 +61,7 @@ document.body.append(buttons)
 await initializeMonacoService(
   {
     ...commonServices,
-    ...getWorkbenchServiceOverride(),
+    ...getWorkbenchServiceOverride(undefined, alternateDomainPattern),
     ...getQuickAccessServiceOverride({
       isKeybindingConfigurationVisible: () => true,
       shouldUseGlobalPicker: () => true
