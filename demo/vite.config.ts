@@ -21,6 +21,9 @@ export default defineConfig({
       enforce: 'pre',
       async resolveId(source, importer, options) {
         const resolved = (await this.resolve(source, importer, options))!
+        if (resolved == null) {
+          throw new Error(`Unable to resolve: ${source} from ${importer}`)
+        }
         if (
           resolved.id.match(
             /node_modules\/(@codingame\/monaco-vscode|vscode|monaco-editor).*\.css$/
