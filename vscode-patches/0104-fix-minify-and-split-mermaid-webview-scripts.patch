@@ -1,22 +1,23 @@
 From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
 From: =?UTF-8?q?Lo=C3=AFc=20Mangeonjean?= <loic@coderpad.io>
 Date: Mon, 24 Aug 2026 11:53:51 +0200
-Subject: [PATCH] fix: minify mermaid webview
+Subject: [PATCH] fix: minify and split mermaid webview scripts
 
 ---
- extensions/mermaid-markdown-features/esbuild.webview.mts | 2 +-
- 1 file changed, 1 insertion(+), 1 deletion(-)
+ extensions/mermaid-markdown-features/esbuild.webview.mts | 3 ++-
+ 1 file changed, 2 insertions(+), 1 deletion(-)
 
 diff --git a/extensions/mermaid-markdown-features/esbuild.webview.mts b/extensions/mermaid-markdown-features/esbuild.webview.mts
-index 61e543cfb2c..e26838cd053 100644
+index 61e543cfb2c..bf5d71233a4 100644
 --- a/extensions/mermaid-markdown-features/esbuild.webview.mts
 +++ b/extensions/mermaid-markdown-features/esbuild.webview.mts
-@@ -39,7 +39,7 @@ const mermaidMarkdownBuildOptions: Partial<esbuild.BuildOptions> = {
+@@ -39,7 +39,8 @@ const mermaidMarkdownBuildOptions: Partial<esbuild.BuildOptions> = {
  		'.ttf': 'dataurl',
  	},
  	plugins: [cssTextPlugin],
 -	minify: false,
 +	minify: true,
++	splitting: true
  };
  
  await Promise.all([
