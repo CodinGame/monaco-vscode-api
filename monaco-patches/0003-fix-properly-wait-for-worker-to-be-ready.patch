@@ -1,17 +1,17 @@
 From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
 From: =?UTF-8?q?Lo=C3=AFc=20Mangeonjean?= <loic@coderpad.io>
-Date: Tue, 21 Jul 2026 16:41:38 +0200
+Date: Fri, 28 Aug 2026 15:39:51 +0200
 Subject: [PATCH] fix: properly wait for worker to be ready
 
 ---
- src/internal/common/workers.ts | 15 ++++++++++++++-
- 1 file changed, 14 insertions(+), 1 deletion(-)
+ src/internal/common/workers.ts | 21 +++++++++++++++++++--
+ 1 file changed, 19 insertions(+), 2 deletions(-)
 
 diff --git a/src/internal/common/workers.ts b/src/internal/common/workers.ts
-index 19df6b15..0f2b73ff 100644
+index 78f47da8..73393a5d 100644
 --- a/src/internal/common/workers.ts
 +++ b/src/internal/common/workers.ts
-@@ -52,6 +52,18 @@ if (
+@@ -52,14 +52,28 @@ if (
  	});
  }
  
@@ -30,13 +30,29 @@ index 19df6b15..0f2b73ff 100644
  function getWorkerBootstrapUrl(workerScriptUrl: string, workerOptions: WorkerOptions): string {
  	const blob = new Blob([[
  		`${workerOptions.type === 'module' ? 'await import' : 'importScripts'}(${JSON.stringify(workerScriptUrl)});`,
-@@ -109,7 +121,8 @@ export function createWebWorker<T extends object>(
- 			moduleId: opts.moduleId,
- 			createWorker: opts.createWorker,
- 		})
--	).then((w) => {
-+	).then(async (w) => {
-+		await whenESMWorkerReady(w)
- 		w.postMessage('ignore');
- 		w.postMessage(opts.createData);
- 		return w;
++
++		`globalThis.postMessage({ type: 'vscode-worker-ready' });`
+ 	].join('')], { type: 'application/javascript' });
+ 	return URL.createObjectURL(blob);
+ }
+ 
+-function getWorker(descriptor: { label: string; moduleId: string; createWorker?: () => Worker }): Worker | Promise<Worker> {
++async function getWorker(descriptor: { label: string; moduleId: string; createWorker?: () => Worker }): Promise<Worker> {
+ 	const label = descriptor.label;
+ 	// Option for hosts to overwrite the worker script (used in the standalone editor)
+ 	interface IMonacoEnvironment {
+@@ -75,10 +89,13 @@ function getWorker(descriptor: { label: string; moduleId: string; createWorker?:
+ 		if (typeof monacoEnvironment.getWorkerUrl === 'function') {
+ 			const workerUrl = monacoEnvironment.getWorkerUrl('workerMain.js', label);
+ 			const workerOptions: WorkerOptions = { name: label, type: 'module', ...monacoEnvironment.getWorkerOptions?.("workerMain.js", label) };
+-			return new Worker(
++			const worker = new Worker(
+ 				getWorkerBootstrapUrl(ttPolicy ? (ttPolicy.createScriptURL(workerUrl) as unknown as string) : workerUrl, workerOptions),
+ 				workerOptions
+ 			);
++			await whenESMWorkerReady(worker)
++			return worker
++
+ 		}
+ 	}
+ 

@@ -5,22 +5,20 @@ Subject: [PATCH] feat: support configuring worker options
 
 and also use cross-origin compatible worker
 ---
- src/internal/common/workers.ts | 15 +++++++++++++--
- 1 file changed, 13 insertions(+), 2 deletions(-)
+ src/internal/common/workers.ts | 13 +++++++++++--
+ 1 file changed, 11 insertions(+), 2 deletions(-)
 
 diff --git a/src/internal/common/workers.ts b/src/internal/common/workers.ts
-index 94bbc257..19df6b15 100644
+index 94bbc257..78f47da8 100644
 --- a/src/internal/common/workers.ts
 +++ b/src/internal/common/workers.ts
-@@ -52,12 +52,22 @@ if (
+@@ -52,12 +52,20 @@ if (
  	});
  }
  
 +function getWorkerBootstrapUrl(workerScriptUrl: string, workerOptions: WorkerOptions): string {
 +	const blob = new Blob([[
 +		`${workerOptions.type === 'module' ? 'await import' : 'importScripts'}(${JSON.stringify(workerScriptUrl)});`,
-+
-+		`globalThis.postMessage({ type: 'vscode-worker-ready' });`
 +	].join('')], { type: 'application/javascript' });
 +	return URL.createObjectURL(blob);
 +}
@@ -35,7 +33,7 @@ index 94bbc257..19df6b15 100644
  	}
  	const monacoEnvironment: IMonacoEnvironment | undefined = (globalThis as any).MonacoEnvironment;
  	if (monacoEnvironment) {
-@@ -66,9 +76,10 @@ function getWorker(descriptor: { label: string; moduleId: string; createWorker?:
+@@ -66,9 +74,10 @@ function getWorker(descriptor: { label: string; moduleId: string; createWorker?:
  		}
  		if (typeof monacoEnvironment.getWorkerUrl === 'function') {
  			const workerUrl = monacoEnvironment.getWorkerUrl('workerMain.js', label);
