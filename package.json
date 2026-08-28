@@ -78,7 +78,7 @@
     "postcss-url": "^10.1.4",
     "prettier": "^3.9.6",
     "recast": "^0.23.12",
-    "rollup": "^4.63.0",
+    "rollup": "^4.63.1",
     "rollup-plugin-copy": "^3.5.0",
     "rollup-plugin-dts": "^6.5.1",
     "semantic-release": "25.0.9",
