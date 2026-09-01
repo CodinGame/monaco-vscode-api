@@ -2,6 +2,15 @@ import { mainWindow } from 'vs/base/browser/window'
 
 const sheets: CSSStyleSheet[] = []
 
+// Workaround for chrome 152 bug: if a CSS file, containing nested rules, is loaded manually via a CSSStyleSheet, inside an iframe.
+// When the iframe is unmounted, it makes the whole tab crash for some reason with a SIGSEGV error.
+// emptying the CSSStyleSheet before the iframe is unmounted seems to fix the issue.
+mainWindow.addEventListener('beforeunload', () => {
+  sheets.forEach((sheet) => {
+    sheet.replaceSync('')
+  })
+})
+
 export function registerCss(module: { default?: string | CSSStyleSheet } | undefined) {
   const exportedValue = module?.default
 
