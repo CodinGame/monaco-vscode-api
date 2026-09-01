@@ -1,0 +1,110 @@
+From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
+From: =?UTF-8?q?Lo=C3=AFc=20Mangeonjean?= <loic@coderpad.io>
+Date: Tue, 1 Sep 2026 16:38:52 +0200
+Subject: [PATCH] fix: prevent generating invalid iframe urls
+
+---
+ src/vs/base/browser/iframe.ts                 | 22 +++++++++++++++++++
+ .../contrib/webview/browser/webviewElement.ts |  6 ++---
+ .../browser/webWorkerExtensionHost.ts         | 11 +++++-----
+ 3 files changed, 29 insertions(+), 10 deletions(-)
+
+diff --git a/src/vs/base/browser/iframe.ts b/src/vs/base/browser/iframe.ts
+index e8522e03115..58646c34cc0 100644
+--- a/src/vs/base/browser/iframe.ts
++++ b/src/vs/base/browser/iframe.ts
+@@ -3,6 +3,8 @@
+  *  Licensed under the MIT License. See License.txt in the project root for license information.
+  *--------------------------------------------------------------------------------------------*/
+ 
++import { URI } from '../common/uri.js';
++
+ /**
+  * Represents a window in a possible chain of iframes
+  */
+@@ -133,3 +135,23 @@ function sha256AsBase32(bytes: ArrayBuffer): string {
+ 	// sha256 has 256 bits, so we need at most ceil(lg(2^256-1)/lg(32)) = 52 chars to represent it in base 32
+ 	return BigInt(`0x${hexArray}`).toString(32).padStart(52, '0');
+ }
++
++/**
++ * Replaces a URI authority placeholder without exceeding the DNS label length limit.
++ */
++export function replaceUriAuthorityPlaceholder(uri: URI, placeholder: string, replacement: string): URI {
++	const placeholderIndex = uri.authority.indexOf(placeholder);
++	if (placeholderIndex === -1) {
++		return uri;
++	}
++
++	const labelStart = uri.authority.lastIndexOf('.', placeholderIndex) + 1;
++	const labelEnd = uri.authority.indexOf('.', placeholderIndex + placeholder.length);
++	const labelLength = (labelEnd === -1 ? uri.authority.length : labelEnd) - labelStart;
++	const replacementLength = 63 - labelLength + placeholder.length;
++	if (replacementLength < 0) {
++		throw new Error('URI authority label exceeds the DNS length limit');
++	}
++
++	return uri.with({ authority: uri.authority.replace(placeholder, replacement.slice(0, replacementLength)) });
++}
+diff --git a/src/vs/workbench/contrib/webview/browser/webviewElement.ts b/src/vs/workbench/contrib/webview/browser/webviewElement.ts
+index 03e5cf3eca5..eb844667ca9 100644
+--- a/src/vs/workbench/contrib/webview/browser/webviewElement.ts
++++ b/src/vs/workbench/contrib/webview/browser/webviewElement.ts
+@@ -5,7 +5,7 @@
+ 
+ import { isFirefox } from '../../../../base/browser/browser.js';
+ import { addDisposableListener, createElement, EventType, getActiveElement, getWindow, getWindowById, isActiveElement } from '../../../../base/browser/dom.js';
+-import { parentOriginHash } from '../../../../base/browser/iframe.js';
++import { parentOriginHash, replaceUriAuthorityPlaceholder } from '../../../../base/browser/iframe.js';
+ import { IMouseWheelEvent } from '../../../../base/browser/mouseEvent.js';
+ import { CodeWindow } from '../../../../base/browser/window.js';
+ import { promiseWithResolvers, ThrottledDelayer } from '../../../../base/common/async.js';
+@@ -464,9 +464,7 @@ export class WebviewElement extends Disposable implements IWebviewElement, Webvi
+ 		}
+ 
+ 		const asBrowserUri = (uri: AppResourcePath) => {
+-			return FileAccess.asBrowserUri(uri)
+-				.toString(true)
+-				.replace('{{uuid}}', encodedWebviewOrigin);
++			return replaceUriAuthorityPlaceholder(FileAccess.asBrowserUri(uri), '{{uuid}}', encodedWebviewOrigin).toString(true);
+ 		};
+ 
+ 		params.serviceWorkerUri = asBrowserUri('vs/workbench/contrib/webview/browser/pre/service-worker.js');
+diff --git a/src/vs/workbench/services/extensions/browser/webWorkerExtensionHost.ts b/src/vs/workbench/services/extensions/browser/webWorkerExtensionHost.ts
+index 865a01a6b53..0955bfbcad2 100644
+--- a/src/vs/workbench/services/extensions/browser/webWorkerExtensionHost.ts
++++ b/src/vs/workbench/services/extensions/browser/webWorkerExtensionHost.ts
+@@ -4,7 +4,7 @@
+  *--------------------------------------------------------------------------------------------*/
+ 
+ import * as dom from '../../../../base/browser/dom.js';
+-import { parentOriginHash } from '../../../../base/browser/iframe.js';
++import { parentOriginHash, replaceUriAuthorityPlaceholder } from '../../../../base/browser/iframe.js';
+ import { mainWindow } from '../../../../base/browser/window.js';
+ import { Barrier } from '../../../../base/common/async.js';
+ import { VSBuffer } from '../../../../base/common/buffer.js';
+@@ -109,20 +109,19 @@ export class WebWorkerExtensionHost extends Disposable implements IExtensionHost
+ 			const uuid = `v--${hash}`; // using `v--` as a marker to require `parentOrigin`/`salt` verification
+ 
+ 			if (webEndpointUrlTemplate && commit && quality) {
+-				const baseUrl = (
++				const baseUrl = replaceUriAuthorityPlaceholder(URI.parse(
+ 					webEndpointUrlTemplate
+-						.replace('{{uuid}}', uuid) // using `v--` as a marker to require `parentOrigin`/`salt` verification
+ 						.replace('{{commit}}', commit)
+ 						.replace('{{quality}}', quality)
+-				);
++				), '{{uuid}}', uuid).toString(true);
+ 
+ 				const res = new URL(`${baseUrl}/out/${iframeModulePath}${suffix}`);
+ 				res.searchParams.set('salt', stableOriginUUID);
+ 				return res.toString();
+ 			} else {
+-				const relativeExtensionHostIframeSrc = FileAccess.asBrowserUri(iframeModulePath).toString(true);
++				const relativeExtensionHostIframeSrc = replaceUriAuthorityPlaceholder(FileAccess.asBrowserUri(iframeModulePath), '{{uuid}}', uuid).toString(true);
+ 
+-				return `${relativeExtensionHostIframeSrc.replace('{{uuid}}', uuid)}${suffix}`;
++				return `${relativeExtensionHostIframeSrc}${suffix}`;
+ 			}
+ 		}
+ 
