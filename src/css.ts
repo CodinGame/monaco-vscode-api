@@ -5,37 +5,42 @@ const sheets: CSSStyleSheet[] = []
 export function registerCss(module: { default?: string | CSSStyleSheet } | undefined) {
   const exportedValue = module?.default
 
-  let sheet = undefined
+  let sheet: CSSStyleSheet | undefined = undefined
+  let sheetPromise: Promise<CSSStyleSheet> | undefined = undefined
   if (typeof exportedValue === 'string') {
     sheet = new mainWindow.CSSStyleSheet()
-    sheet.replaceSync(exportedValue)
+    sheetPromise = sheet.replace(exportedValue)
   } else if (exportedValue instanceof CSSStyleSheet) {
     // Duplicate the CSSStyleSheet for the mainWindow
     // CSSStyleSheet can't be shared between different windows
     // (mainWindow is different from window when using the sandbox mode)
     sheet = new mainWindow.CSSStyleSheet()
-    sheet.replaceSync(
+    sheetPromise = sheet.replace(
       Array.from(exportedValue.cssRules)
         .map((r) => r.cssText)
         .join('\n')
     )
   }
-  if (sheet != null) {
-    // Font face rules should be added in the root of the page, they are ignored in shadow roots
-    const fontFaces = Array.from(sheet.cssRules)
-      .filter((rule) => rule instanceof mainWindow.CSSFontFaceRule)
-      .map((r) => r.cssText)
+  if (sheetPromise != null) {
+    sheetPromise.then((sheet) => {
+      // Font face rules should be added in the root of the page, they are ignored in shadow roots
+      const fontFaces = Array.from(sheet.cssRules)
+        .filter((rule) => rule instanceof mainWindow.CSSFontFaceRule)
+        .map((r) => r.cssText)
 
-    if (fontFaces.length > 0) {
-      const fontFaceStyleSheet = new mainWindow.CSSStyleSheet()
-      for (const fontFace of fontFaces) {
-        fontFaceStyleSheet.insertRule(fontFace)
+      if (fontFaces.length > 0) {
+        const fontFaceStyleSheet = new mainWindow.CSSStyleSheet()
+        for (const fontFace of fontFaces) {
+          fontFaceStyleSheet.insertRule(fontFace)
+        }
+        mainWindow.document.adoptedStyleSheets = [
+          ...mainWindow.document.adoptedStyleSheets,
+          fontFaceStyleSheet
+        ]
       }
-      mainWindow.document.adoptedStyleSheets = [
-        ...mainWindow.document.adoptedStyleSheets,
-        fontFaceStyleSheet
-      ]
-    }
+    })
+  }
+  if (sheet != null) {
     sheets.push(sheet)
   }
 }
