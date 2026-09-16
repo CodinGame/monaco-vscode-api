@@ -7,8 +7,6 @@ import { WorkingCopyEditorService } from 'vs/workbench/services/workingCopy/comm
 import { IWorkingCopyEditorService } from 'vs/workbench/services/workingCopy/common/workingCopyEditorService.service'
 import { IWorkingCopyHistoryService } from 'vs/workbench/services/workingCopy/common/workingCopyHistory.service'
 import { BrowserWorkingCopyHistoryService } from 'vs/workbench/services/workingCopy/browser/workingCopyHistoryService'
-import { IWorkspaceContextService } from 'vs/platform/workspace/common/workspace.service'
-import { IWorkbenchEnvironmentService } from 'vs/workbench/services/environment/common/environmentService.service'
 import { IFileService } from 'vs/platform/files/common/files.service'
 import { ILogService } from 'vs/platform/log/common/log.service'
 import { WorkingCopyBackupService } from 'vs/workbench/services/workingCopy/common/workingCopyBackupService'
@@ -16,12 +14,7 @@ import { BrowserWorkingCopyBackupService } from 'vs/workbench/services/workingCo
 import getFileServiceOverride from './files'
 
 class MemoryWorkingCopyBackupService extends WorkingCopyBackupService {
-  constructor(
-    @IWorkspaceContextService contextService: IWorkspaceContextService,
-    @IWorkbenchEnvironmentService environmentService: IWorkbenchEnvironmentService,
-    @IFileService fileService: IFileService,
-    @ILogService logService: ILogService
-  ) {
+  constructor(@IFileService fileService: IFileService, @ILogService logService: ILogService) {
     super(undefined, fileService, logService)
   }
 }
