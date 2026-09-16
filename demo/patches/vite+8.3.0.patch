@@ -1,0 +1,92 @@
+diff --git a/node_modules/vite/dist/node/chunks/node.js b/node_modules/vite/dist/node/chunks/node.js
+index 156ecf0..875f8bc 100644
+--- a/node_modules/vite/dist/node/chunks/node.js
++++ b/node_modules/vite/dist/node/chunks/node.js
+@@ -719,6 +719,7 @@ const SPECIAL_QUERY_RE = /[?&](?:worker|sharedworker|raw|url)\b/;
+ * Prefix for resolved fs paths, since windows paths may not be valid as URLs.
+ */
+ const FS_PREFIX = `/@fs/`;
++const FS_RAW_PREFIX = `/@fs-raw/`
+ const CLIENT_PUBLIC_PATH = `/@vite/client`;
+ const ENV_PUBLIC_PATH = `/@vite/env`;
+ const VITE_PACKAGE_DIR = resolve(fileURLToPath(new URL("../../../src/node/constants.ts", import.meta.url)), "../../..");
+@@ -17466,17 +17467,17 @@ function serveStaticMiddleware(server) {
+ 		}
+ 	};
+ }
+-function serveRawFsMiddleware(server) {
++function serveRawFsMiddleware(server, prefix) {
+ 	const serveFromRoot = build_default$1("/", sirvOptions({
+ 		config: server.config,
+ 		getHeaders: () => server.config.server.headers
+ 	}));
+ 	return function viteServeRawFsMiddleware(req, res, next) {
+-		if (req.url.startsWith(FS_PREFIX)) {
++		if (req.url.startsWith(prefix)) {
+ 			const url = new URL(req.url, "http://example.com");
+ 			const pathname = decodeURIIfPossible(url.pathname);
+ 			if (pathname === void 0) return next();
+-			let newPathname = pathname.slice(FS_PREFIX.length);
++			let newPathname = pathname.slice(prefix.length);
+ 			if (isWindows) newPathname = newPathname.replace(/^[A-Z]:/i, "");
+ 			url.pathname = encodeURI(newPathname);
+ 			req.url = url.href.slice(url.origin.length);
+@@ -24534,8 +24535,9 @@ async function _createServer(inlineConfig = {}, options) {
+ 		middlewares.use(triggerLazyBundlingMiddleware(server));
+ 		middlewares.use(memoryFilesMiddleware(server));
+ 	} else {
++		middlewares.use(serveRawFsMiddleware(server, FS_RAW_PREFIX));
+ 		middlewares.use(transformMiddleware(server));
+-		middlewares.use(serveRawFsMiddleware(server));
++		middlewares.use(serveRawFsMiddleware(server, FS_PREFIX));
+ 		middlewares.use(serveStaticMiddleware(server));
+ 	}
+ 	if (config.appType === "spa" || config.appType === "mpa") middlewares.use(htmlFallbackMiddleware(root, config.appType === "spa", server.environments.client));
+@@ -26772,9 +26774,9 @@ function assetImportMetaUrlPlugin(config) {
+ 					if (file) try {
+ 						if (publicDir && isParentDirectory(publicDir, file)) {
+ 							const publicPath = "/" + path.posix.relative(publicDir, file);
+-							builtUrlExpr = await fileToUrl$1(this, publicPath, "js");
++							builtUrlExpr = await fileToUrl$1(this, publicPath, "js", undefined, true);
+ 						} else {
+-							builtUrlExpr = await fileToUrl$1(this, file, "js");
++							builtUrlExpr = await fileToUrl$1(this, file, "js", undefined, true);
+ 							if (tryStatSync(file)?.isFile()) this.addWatchFile(file);
+ 						}
+ 					} catch {}
+@@ -26976,7 +26978,7 @@ function rolldownDepPlugin(environment, qualified, external) {
+ 					const rawUrl = code.slice(urlStart, urlEnd);
+ 					if (rawUrl[0] === "`" && rawUrl.includes("${")) continue;
+ 					const url = rawUrl.slice(1, -1);
+-					if (isDataUrl(url) || isExternalUrl(url) || url.startsWith("/")) continue;
++					if (!url.startsWith('.')) continue;
+ 					if (!s) s = new MagicString(code);
+ 					const absolutePath = path.resolve(path.dirname(id), url);
+ 					const normalizedRelativePath = normalizePath(path.relative(bundleOutputDir, absolutePath));
+@@ -31936,15 +31938,15 @@ function assetPlugin(config) {
+ 		}
+ 	};
+ }
+-async function fileToUrl$1(pluginContext, id, format, asFileUrl = false) {
++async function fileToUrl$1(pluginContext, id, format, asFileUrl = false, raw = false) {
+ 	const { environment } = pluginContext;
+ 	if (!environment.config.isBundled) return formatBuiltAsset({
+ 		type: "string",
+-		value: await fileToDevUrl(environment, id, asFileUrl)
++		value: await fileToDevUrl(environment, id, asFileUrl, raw)
+ 	}, format);
+ 	else return fileToBuiltUrl(pluginContext, id, format, false, void 0, asFileUrl);
+ }
+-async function fileToDevUrl(environment, id, asFileUrl = false) {
++async function fileToDevUrl(environment, id, asFileUrl = false, raw) {
+ 	const config = environment.getTopLevelConfig();
+ 	const publicFile = checkPublicFile(id, config);
+ 	if (inlineRE.test(id)) {
+@@ -31960,6 +31962,7 @@ async function fileToDevUrl(environment, id, asFileUrl = false) {
+ 	if (asFileUrl) return pathToFileURL(cleanedId).href;
+ 	let rtn;
+ 	if (publicFile) rtn = id;
++	else if (raw) rtn = path.posix.join(FS_RAW_PREFIX, id);
+ 	else if (id.startsWith(withTrailingSlash(config.root))) rtn = "/" + path.posix.relative(config.root, id);
+ 	else rtn = path.posix.join(FS_PREFIX, id);
+ 	return joinUrlSegments(joinUrlSegments(config.server.origin ?? "", config.decodedBase), removeLeadingSlash(rtn));
