@@ -93,6 +93,16 @@ import {
   IMcpGalleryService
 } from 'vs/platform/mcp/common/mcpManagement.service'
 import { IMcpResourceScannerService } from 'vs/platform/mcp/common/mcpResourceScannerService.service'
+import {
+  NullFileManagedSettingsService,
+  NullManagedSettingsService,
+  NullNativeManagedSettingsService
+} from 'vs/platform/policy/common/copilotManagedSettings'
+import {
+  IFileManagedSettingsService,
+  IManagedSettingsService,
+  INativeManagedSettingsService
+} from 'vs/platform/policy/common/copilotManagedSettings.service'
 import { NullPolicyService } from 'vs/platform/policy/common/policy'
 import { IPolicyService } from 'vs/platform/policy/common/policy.service'
 import { IProductService } from 'vs/platform/product/common/productService.service'
@@ -411,6 +421,8 @@ import { IWorkingCopyHistoryService } from 'vs/workbench/services/workingCopy/co
 import { IWorkingCopyService } from 'vs/workbench/services/workingCopy/common/workingCopyService.service'
 import { IWorkspaceEditingService } from 'vs/workbench/services/workspaces/common/workspaceEditing.service'
 import { IWorkspaceIdentityService } from 'vs/workbench/services/workspaces/common/workspaceIdentityService.service'
+import { AccountPolicyGateState } from 'vs/workbench/services/policies/common/accountPolicyService'
+import { IAccountPolicyGateService } from 'vs/workbench/services/policies/common/accountPolicyService.service'
 import { IAiSettingsSearchService } from 'vscode/src/vs/workbench/services/aiSettingsSearch/common/aiSettingsSearch.service'
 
 import { Codicon } from 'vs/base/common/codicons'
@@ -422,31 +434,59 @@ import type {
   IScopedContextKeyService
 } from 'vs/platform/contextkey/common/contextkey.js'
 import { NullDataChannelService } from 'vs/platform/dataChannel/common/dataChannel'
-import { IDataChannelService } from 'vs/platform/dataChannel/common/dataChannel.service'
+import {
+  IDataChannelService,
+  ILinkPresentationService
+} from 'vs/platform/dataChannel/common/dataChannel.service'
 import { IDefaultAccountService } from 'vs/platform/defaultAccount/common/defaultAccount.service'
 import { IImageResizeService } from 'vs/platform/imageResize/common/imageResizeService.service'
+import { LocalTranscriptionModelState } from 'vs/platform/localTranscription/common/localTranscription'
+import { ILocalTranscriptionService } from 'vs/platform/localTranscription/common/localTranscription.service'
 import { IMarkdownRendererService } from 'vs/platform/markdown/browser/markdownRenderer.service'
 import { McpGalleryManifestStatus } from 'vs/platform/mcp/common/mcpGalleryManifest'
 import { IMcpGalleryManifestService } from 'vs/platform/mcp/common/mcpGalleryManifest.service'
 import { IMeteredConnectionService } from 'vs/platform/meteredConnection/common/meteredConnection.service.js'
+import { IRemoteTunnelService } from 'vs/platform/remoteTunnel/common/remoteTunnel.service'
+import { IDiffEditorCommandsService } from 'vs/workbench/browser/parts/editor/diffEditorCommandsService.service'
+import { IVoiceModeOnboardingService } from 'vs/workbench/contrib/agentsVoice/browser/voiceModeOnboarding.service'
 import type { IAgentSessionsModel } from 'vs/workbench/contrib/chat/browser/agentSessions/agentSessionsModel'
 import { IAgentSessionsService } from 'vs/workbench/contrib/chat/browser/agentSessions/agentSessionsService.service'
+import { IAgentHostImportConversationStore } from 'vs/workbench/contrib/chat/browser/agentSessions/agentHost/agentHostImportConversationStore.service'
+import { IAgentHostProtectedResourcesService } from 'vs/workbench/contrib/chat/browser/agentSessions/agentHost/agentHostProtectedResourcesService.service'
+import { IAgentHostSessionWorkingDirectorySynchronizer } from 'vs/workbench/contrib/chat/browser/agentSessions/agentHost/agentHostSessionWorkingDirectorySynchronizer.service'
+import { IAgentHostShellInitSynchronizer } from 'vs/workbench/contrib/chat/browser/agentSessions/agentHost/agentHostShellInitSynchronizer.service'
 import { IAgentSessionProjectionService } from 'vs/workbench/contrib/chat/browser/agentSessions/experiments/agentSessionProjectionService.service'
 import { AgentStatusMode } from 'vs/workbench/contrib/chat/browser/agentSessions/experiments/agentTitleBarStatusService.js'
 import { IAgentTitleBarStatusService } from 'vs/workbench/contrib/chat/browser/agentSessions/experiments/agentTitleBarStatusService.service'
+import { ISessionSummaryHoverService } from 'vs/workbench/contrib/chat/browser/agentSessions/sessionSummaryHoverService.service'
+import { IChatPasteTargetService } from 'vs/workbench/contrib/chat/browser/chat.service'
 import { IChatEditingExplanationModelManager } from 'vs/workbench/contrib/chat/browser/chatEditing/chatEditingExplanationModelManager.service'
+import { IChatModelFeedbackSurveyService } from 'vs/workbench/contrib/chat/browser/feedbackSurvey/chatModelFeedbackSurveyService.service'
+import { IChatPetService } from 'vs/workbench/contrib/chat/browser/chatPetService.service'
 import { IChatStatusItemService } from 'vs/workbench/contrib/chat/browser/chatStatus/chatStatusItemService.service'
+import { IChatSubmitRequestHandlerService } from 'vs/workbench/contrib/chat/browser/chatSubmitRequestHandlerService.service'
+import { ChatSpeechToTextState } from 'vs/workbench/contrib/chat/browser/speechToText/chatSpeechToTextService'
+import { IChatSpeechToTextService } from 'vs/workbench/contrib/chat/browser/speechToText/chatSpeechToTextService.service'
+import { IDictationOnboardingService } from 'vs/workbench/contrib/chat/browser/speechToText/dictationOnboarding.service'
+import { IVoiceCodeTranscriptionClient } from 'vs/workbench/contrib/chat/browser/speechToText/voiceCodeTranscriptionClient.service'
 import { IChatTipService } from 'vs/workbench/contrib/chat/browser/chatTipService.service.js'
 import { IChatContextService } from 'vs/workbench/contrib/chat/browser/contextContrib/chatContextService.service'
+import { IVoiceInputModeService } from 'vs/workbench/contrib/chat/browser/voiceInputMode/voiceInputMode.service'
 import { ICodeCompareModelService } from 'vs/workbench/contrib/chat/browser/widget/chatContentParts/chatTextEditContentPart.service'
 import { IChatOutputPartStateCache } from 'vs/workbench/contrib/chat/browser/widget/chatContentParts/chatOutputPartStateCache.service'
+import { IChatPetWidgetService } from 'vs/workbench/contrib/chat/browser/widget/chatPetWidgetService.service'
+import { IChatInputNoticeHubService } from 'vs/workbench/contrib/chat/browser/widget/input/chatInputNoticeHub.service'
 import { IAICustomizationWorkspaceService } from 'vs/workbench/contrib/chat/common/aiCustomizationWorkspaceService.service'
 import { IChatModeService } from 'vs/workbench/contrib/chat/common/chatModes.service'
+import { IChatRequestOriginService } from 'vs/workbench/contrib/chat/common/chatRequestOrigin.service'
+import { IChatSideChatService } from 'vs/workbench/contrib/chat/common/chatSideChatService.service'
 import { ILanguageModelsConfigurationService } from 'vs/workbench/contrib/chat/common/languageModelsConfiguration.service.js'
 import { IAgentPluginRepositoryService } from 'vs/workbench/contrib/chat/common/plugins/agentPluginRepositoryService.service.js'
 import { IAgentPluginService } from 'vs/workbench/contrib/chat/common/plugins/agentPluginService.service.js'
 import { IPluginMarketplaceService } from 'vs/workbench/contrib/chat/common/plugins/pluginMarketplaceService.service.js'
+import { ICustomizationMigrationService } from 'vs/workbench/contrib/chat/common/promptSyntax/service/customizationMigrationService.service'
 import { Target } from 'vs/workbench/contrib/chat/common/promptSyntax/promptTypes.js'
+import { ISessionChatPillVisibilityService } from 'vs/workbench/contrib/chat/common/sessionChatPills.service'
 import { ILanguageModelToolsConfirmationService } from 'vs/workbench/contrib/chat/common/tools/languageModelToolsConfirmationService.service'
 import {
   ToolDataSource,
@@ -456,12 +496,17 @@ import {
 import { IChatLayoutService } from 'vs/workbench/contrib/chat/common/widget/chatLayoutService.service'
 import { IRandomService } from 'vs/workbench/contrib/editTelemetry/browser/randomService.service'
 import { IAiEditTelemetryService } from 'vs/workbench/contrib/editTelemetry/browser/telemetry/aiEditTelemetry/aiEditTelemetryService.service'
+import { IInlineChatSessionResolver } from 'vs/workbench/contrib/inlineChat/browser/inlineChatSessionResolver.service'
 import { LazyCollectionState } from 'vs/workbench/contrib/mcp/common/mcpTypes'
 import { INotebookOutlineEntryFactory } from 'vs/workbench/contrib/notebook/browser/viewModel/notebookOutlineEntryFactory.service'
 import { ISCMRepositorySelectionMode } from 'vs/workbench/contrib/scm/common/scm'
+import { ITerminalChatSessionResolver } from 'vs/workbench/contrib/terminalContrib/chat/browser/terminalChatSessionResolver.service'
 import { ChatEntitlement } from 'vs/workbench/services/chat/common/chatEntitlementService'
+import { IAgentSdkSetupService } from 'vs/workbench/services/agentHost/browser/agentSdkSetupService.service'
+import { ICodexAccountService } from 'vs/workbench/services/agentHost/browser/codexAccountService.service'
 import { IInlineCompletionsUnificationService } from 'vs/workbench/services/inlineCompletions/common/inlineCompletionsUnification.service'
 import { IUserAttentionService } from 'vs/workbench/services/userAttention/common/userAttentionService.service'
+import { IWorkspaceFolderLabelService } from 'vs/workbench/services/workspaces/common/workspaceFolderLabelService.service'
 import {
   getBuiltInExtensionTranslationsUris,
   getExtensionIdProvidingCurrentLocale
@@ -471,6 +516,7 @@ import { unsupported } from './tools.js'
 import { NullAgentHostService } from 'vs/platform/agentHost/browser/nullAgentHostService'
 import { NullSSHRemoteAgentHostService } from 'vs/platform/agentHost/browser/nullSshRemoteAgentHostService'
 import { IAgentHostConnectionsService } from 'vs/platform/agentHost/common/agentHostConnectionsService.service'
+import { IAgentHostEnablementService } from 'vs/platform/agentHost/common/agentHostEnablementService.service'
 import { IAgentHostResourceService } from 'vs/platform/agentHost/common/agentHostResourceService.service'
 import { IAgentHostService } from 'vs/platform/agentHost/common/agentService.service'
 import { NullRemoteAgentHostService } from 'vs/platform/agentHost/common/remoteAgentHostService.js'
@@ -1384,6 +1430,23 @@ class InjectedUserDataProfileService extends UserDataProfileService {
 }
 registerSingleton(IUserDataProfileService, InjectedUserDataProfileService, InstantiationType.Eager)
 registerSingleton(IPolicyService, NullPolicyService, InstantiationType.Eager)
+registerSingleton(IManagedSettingsService, NullManagedSettingsService, InstantiationType.Eager)
+registerSingleton(
+  INativeManagedSettingsService,
+  NullNativeManagedSettingsService,
+  InstantiationType.Eager
+)
+registerSingleton(
+  IFileManagedSettingsService,
+  NullFileManagedSettingsService,
+  InstantiationType.Eager
+)
+class AccountPolicyGateService implements IAccountPolicyGateService {
+  _serviceBrand: undefined
+  gateInfo: IAccountPolicyGateService['gateInfo'] = { state: AccountPolicyGateState.Inactive }
+  onDidChangeGateInfo: IAccountPolicyGateService['onDidChangeGateInfo'] = Event.None
+}
+registerSingleton(IAccountPolicyGateService, AccountPolicyGateService, InstantiationType.Eager)
 class SnippetsService implements ISnippetsService {
   _serviceBrand: undefined
   @Unsupported
@@ -2439,7 +2502,9 @@ class EditorResolverService implements IEditorResolverService {
   @Unsupported
   getAssociationsForResource: IEditorResolverService['getAssociationsForResource'] = unsupported
   @Unsupported
-  updateUserAssociations: IEditorResolverService['updateUserAssociations'] = unsupported
+  getEditorMatches: IEditorResolverService['getEditorMatches'] = unsupported
+  @Unsupported
+  setDefaultEditor: IEditorResolverService['setDefaultEditor'] = unsupported
   onDidChangeEditorRegistrations: IEditorResolverService['onDidChangeEditorRegistrations'] =
     Event.None
   @Unsupported
@@ -2453,6 +2518,8 @@ class EditorResolverService implements IEditorResolverService {
   @Unsupported
   resolveEditor: IEditorResolverService['resolveEditor'] = unsupported
   getEditors: IEditorResolverService['getEditors'] = () => []
+  getBinaryDiffFallbackEditor: IEditorResolverService['getBinaryDiffFallbackEditor'] = () =>
+    undefined
 }
 registerSingleton(IEditorResolverService, EditorResolverService, InstantiationType.Eager)
 class OutputService implements IOutputService {
@@ -3355,6 +3422,8 @@ registerSingleton(
 )
 class ChatService implements IChatService {
   _serviceBrand: undefined
+  registerCustomizationMigrationHintProvider: IChatService['registerCustomizationMigrationHintProvider'] =
+    () => Disposable.None
   @Unsupported
   activateDefaultAgent: IChatService['activateDefaultAgent'] = unsupported
   @Unsupported
@@ -3421,6 +3490,7 @@ class ChatService implements IChatService {
   removePendingRequest: IChatService['removePendingRequest'] = unsupported
   @Unsupported
   setPendingRequests: IChatService['setPendingRequests'] = unsupported
+  syncPendingRequestsFromRemote: IChatService['syncPendingRequestsFromRemote'] = () => {}
   @Unsupported
   processPendingRequests: IChatService['processPendingRequests'] = unsupported
   @Unsupported
@@ -3437,6 +3507,7 @@ class ChatService implements IChatService {
   migrateRequests: IChatService['migrateRequests'] = unsupported
   @Unsupported
   getChatModelReferenceDebugInfo: IChatService['getChatModelReferenceDebugInfo'] = unsupported
+  getPendingRequestSessionTypes: IChatService['getPendingRequestSessionTypes'] = () => []
 }
 registerSingleton(IChatService, ChatService, InstantiationType.Delayed)
 class ChatMarkdownAnchorService implements IChatMarkdownAnchorService {
@@ -3942,8 +4013,13 @@ registerSingleton(ICommentService, CommentService, InstantiationType.Delayed)
 class AgentEditorCommentsBridge implements IAgentEditorCommentsBridge {
   _serviceBrand: undefined
   onDidChangeComments: IAgentEditorCommentsBridge['onDidChangeComments'] = Event.None
+  onDidRevealComment: IAgentEditorCommentsBridge['onDidRevealComment'] = Event.None
+  acceptsComments: IAgentEditorCommentsBridge['acceptsComments'] = () => false
   getComments: IAgentEditorCommentsBridge['getComments'] = () => []
+  getCommentIds: IAgentEditorCommentsBridge['getCommentIds'] = () => []
   addComment: IAgentEditorCommentsBridge['addComment'] = () => {}
+  deleteComment: IAgentEditorCommentsBridge['deleteComment'] = () => {}
+  revealComment: IAgentEditorCommentsBridge['revealComment'] = () => {}
   registerProvider: IAgentEditorCommentsBridge['registerProvider'] = () => Disposable.None
 }
 
@@ -4095,6 +4171,8 @@ class ChatWidgetService implements IChatWidgetService {
   _serviceBrand: undefined
   getWidgetsByLocations: IChatWidgetService['getWidgetsByLocations'] = () => []
   onDidAddWidget: IChatWidgetService['onDidAddWidget'] = Event.None
+  onDidRemoveWidget: IChatWidgetService['onDidRemoveWidget'] = Event.None
+  onDidChangeWidgetVisibility: IChatWidgetService['onDidChangeWidgetVisibility'] = Event.None
   onDidBackgroundSession: IChatWidgetService['onDidBackgroundSession'] = Event.None
   getAllWidgets: IChatWidgetService['getAllWidgets'] = () => []
   lastFocusedWidget: IChatWidgetService['lastFocusedWidget'] = undefined
@@ -4607,6 +4685,7 @@ class LanguageModelsService implements ILanguageModelsService {
   isModelHidden: ILanguageModelsService['isModelHidden'] = () => false
   isGroupHidden: ILanguageModelsService['isGroupHidden'] = () => false
   setModelHidden: ILanguageModelsService['setModelHidden'] = () => {}
+  setModelsHidden: ILanguageModelsService['setModelsHidden'] = () => {}
   setGroupHidden: ILanguageModelsService['setGroupHidden'] = () => {}
   getHiddenModelIds: ILanguageModelsService['getHiddenModelIds'] = () => []
   onDidChangeModelVisibility: ILanguageModelsService['onDidChangeModelVisibility'] = Event.None
@@ -5558,8 +5637,10 @@ class ChatEditingService implements IChatEditingService {
     unsupported
   @Unsupported
   createEditingSession: IChatEditingService['createEditingSession'] = unsupported
+  registerEditReviewSession: IChatEditingService['registerEditReviewSession'] = () =>
+    Disposable.None
   @Unsupported
-  transferEditingSession: IChatEditingService['createEditingSession'] = unsupported
+  transferEditingSession: IChatEditingService['transferEditingSession'] = unsupported
   @Unsupported
   registerEditingSessionProvider: IChatEditingService['registerEditingSessionProvider'] =
     unsupported
@@ -5752,6 +5833,8 @@ class PromptsService implements IPromptsService {
   getCustomAgents: IPromptsService['getCustomAgents'] = async () => []
   listNestedAgentMDs: IPromptsService['listNestedAgentMDs'] = async () => []
   listAgentInstructions: IPromptsService['listAgentInstructions'] = async () => []
+  getVoiceInstructions: IPromptsService['getVoiceInstructions'] = async () => undefined
+  getDictationInstructions: IPromptsService['getDictationInstructions'] = async () => undefined
   getAgentFileURIFromModeFile: IPromptsService['getAgentFileURIFromModeFile'] = () => undefined
   getDisabledPromptFiles: IPromptsService['getDisabledPromptFiles'] = () => new ResourceSet()
   @Unsupported
@@ -5869,6 +5952,16 @@ class NullDefaultAccountService extends Disposable implements IDefaultAccountSer
   managedSettingsFetchStatus: IDefaultAccountService['managedSettingsFetchStatus'] = null
   managedSettingsFetchedAt: IDefaultAccountService['managedSettingsFetchedAt'] = null
   managedSettingsRawResponse: IDefaultAccountService['managedSettingsRawResponse'] = undefined
+  managedSettingsCompatibilityError: IDefaultAccountService['managedSettingsCompatibilityError'] =
+    null
+  onDidChangeManagedSettingsCompatibilityError: IDefaultAccountService['onDidChangeManagedSettingsCompatibilityError'] =
+    Event.None
+  @Unsupported
+  get managedSettingsFreshness(): IDefaultAccountService['managedSettingsFreshness'] {
+    return unsupported()
+  }
+  onDidChangeManagedSettingsFreshness: IDefaultAccountService['onDidChangeManagedSettingsFreshness'] =
+    Event.None
   currentDefaultAccount: IDefaultAccountService['currentDefaultAccount'] = null
   @Unsupported
   getDefaultAccountAuthenticationProvider: IDefaultAccountService['getDefaultAccountAuthenticationProvider'] =
@@ -5963,6 +6056,8 @@ class McpWorkbenchService implements IMcpWorkbenchService {
   _serviceBrand: undefined
   onChange: IMcpWorkbenchService['onChange'] = Event.None
   local: IMcpWorkbenchService['local'] = []
+  whenInitialLocalMcpServersLoaded: IMcpWorkbenchService['whenInitialLocalMcpServersLoaded'] =
+    Promise.resolve()
   queryLocal: IMcpWorkbenchService['queryLocal'] = async () => []
   @Unsupported
   queryGallery: IMcpWorkbenchService['queryGallery'] = unsupported
@@ -5993,6 +6088,8 @@ class McpGalleryService implements IMcpGalleryService {
   getReadme: IMcpGalleryService['getReadme'] = unsupported
 
   getMcpServersFromGallery: IMcpGalleryService['getMcpServersFromGallery'] = async () => []
+  resolveMcpServersFromGallery: IMcpGalleryService['resolveMcpServersFromGallery'] = async () =>
+    new Map()
 
   getMcpServer: IMcpGalleryService['getMcpServer'] = async () => undefined
 }
@@ -6199,6 +6296,7 @@ class ChatSessionsService implements IChatSessionsService {
   _serviceBrand: undefined
   onDidChangeInProgress: IChatSessionsService['onDidChangeInProgress'] = Event.None
   getAllChatSessionContributions: IChatSessionsService['getAllChatSessionContributions'] = () => []
+  getChatSessionHistory: IChatSessionsService['getChatSessionHistory'] = async () => []
 
   getInProgress: IChatSessionsService['getInProgress'] = () => []
 
@@ -6249,6 +6347,10 @@ class ChatSessionsService implements IChatSessionsService {
     () => Disposable.None
   refreshChatSessionItems: IChatSessionsService['refreshChatSessionItems'] = async () => {}
   resolveChatSessionItem: IChatSessionsService['resolveChatSessionItem'] = async () => undefined
+  canSetChatSessionItemArchived: IChatSessionsService['canSetChatSessionItemArchived'] = () => false
+  setChatSessionItemArchived: IChatSessionsService['setChatSessionItemArchived'] = () => {}
+  canSetChatSessionItemRead: IChatSessionsService['canSetChatSessionItemRead'] = () => false
+  setChatSessionItemRead: IChatSessionsService['setChatSessionItemRead'] = () => {}
   provideChatInputCompletions: IChatSessionsService['provideChatInputCompletions'] = async () =>
     undefined
   getChatInputCompletionTriggerCharacters: IChatSessionsService['getChatInputCompletionTriggerCharacters'] =
@@ -6267,6 +6369,7 @@ class ChatSessionsService implements IChatSessionsService {
     undefined
   clearMaterializedSessionResource: IChatSessionsService['clearMaterializedSessionResource'] =
     () => {}
+  updateChatSessionMetadata: IChatSessionsService['updateChatSessionMetadata'] = () => false
 
   registerChatSessionContribution: IChatSessionsService['registerChatSessionContribution'] = () =>
     Disposable.None
@@ -6320,6 +6423,8 @@ class AllowedMcpServersService implements IAllowedMcpServersService {
 
   @Unsupported
   isAllowed: IAllowedMcpServersService['isAllowed'] = unsupported
+  @Unsupported
+  isServerAllowed: IAllowedMcpServersService['isServerAllowed'] = unsupported
 }
 registerSingleton(IAllowedMcpServersService, AllowedMcpServersService, InstantiationType.Delayed)
 
@@ -6343,8 +6448,11 @@ class NullPlanReviewFeedbackService implements IPlanReviewFeedbackService {
   onDidChangeFeedback: IPlanReviewFeedbackService['onDidChangeFeedback'] = Event.None
   onDidChangeNavigation: IPlanReviewFeedbackService['onDidChangeNavigation'] = Event.None
   onDidChangeRegistrations: IPlanReviewFeedbackService['onDidChangeRegistrations'] = Event.None
+  onDidChangePlanReviewScope: IPlanReviewFeedbackService['onDidChangePlanReviewScope'] = Event.None
   registerPlanReview: IPlanReviewFeedbackService['registerPlanReview'] = () => Disposable.None
   isActivePlanReview: IPlanReviewFeedbackService['isActivePlanReview'] = () => false
+  getPlanReview: IPlanReviewFeedbackService['getPlanReview'] = () => undefined
+  notifyFeedbackChanged: IPlanReviewFeedbackService['notifyFeedbackChanged'] = () => {}
   addFeedback: IPlanReviewFeedbackService['addFeedback'] = () => ''
   removeFeedback: IPlanReviewFeedbackService['removeFeedback'] = () => {}
   updateFeedback: IPlanReviewFeedbackService['updateFeedback'] = () => {}
@@ -6356,7 +6464,9 @@ class NullPlanReviewFeedbackService implements IPlanReviewFeedbackService {
     totalCount: 0
   })
   setNavigationAnchor: IPlanReviewFeedbackService['setNavigationAnchor'] = () => {}
-  submitAllFeedback: IPlanReviewFeedbackService['submitAllFeedback'] = () => {}
+  submitAllFeedback: IPlanReviewFeedbackService['submitAllFeedback'] = async () => false
+  submitPlanAction: IPlanReviewFeedbackService['submitPlanAction'] = async () => {}
+  rejectPlan: IPlanReviewFeedbackService['rejectPlan'] = async () => {}
 }
 
 registerSingleton(
@@ -6371,9 +6481,11 @@ class NullChatInputNotificationService implements IChatInputNotificationService 
   onDidDismiss: IChatInputNotificationService['onDidDismiss'] = Event.None
   setNotification: IChatInputNotificationService['setNotification'] = () => {}
   deleteNotification: IChatInputNotificationService['deleteNotification'] = () => {}
+  refresh: IChatInputNotificationService['refresh'] = () => {}
   dismissNotification: IChatInputNotificationService['dismissNotification'] = () => {}
   getActiveNotification: IChatInputNotificationService['getActiveNotification'] = () => undefined
   handleMessageSent: IChatInputNotificationService['handleMessageSent'] = () => {}
+  announceRendered: IChatInputNotificationService['announceRendered'] = () => {}
 }
 
 registerSingleton(
@@ -6559,6 +6671,8 @@ class TerminalChatService implements ITerminalChatService {
     () => []
 
   getToolSessionIdForInstance: ITerminalChatService['getToolSessionIdForInstance'] = () => undefined
+  registerOutputSource: ITerminalChatService['registerOutputSource'] = () => Disposable.None
+  getOutputSource: ITerminalChatService['getOutputSource'] = () => undefined
 
   registerTerminalInstanceWithChatSession: ITerminalChatService['registerTerminalInstanceWithChatSession'] =
     () => {}
@@ -6574,6 +6688,7 @@ class TerminalChatService implements ITerminalChatService {
   hasChatSessionAutoApproval: ITerminalChatService['hasChatSessionAutoApproval'] = () => false
   addSessionAutoApproveRule: ITerminalChatService['addSessionAutoApproveRule'] = () => {}
   getSessionAutoApproveRules: ITerminalChatService['getSessionAutoApproveRules'] = () => ({})
+  getAutoApproveActions: ITerminalChatService['getAutoApproveActions'] = async () => undefined
 
   getChatSessionResourceForInstance: ITerminalChatService['getChatSessionResourceForInstance'] =
     () => undefined
@@ -6819,6 +6934,8 @@ class AICustomizationWorkspaceService implements IAICustomizationWorkspaceServic
 
   activeProjectRoot: IAICustomizationWorkspaceService['activeProjectRoot'] =
     constObservable(undefined)
+  activeProjectLabel: IAICustomizationWorkspaceService['activeProjectLabel'] =
+    constObservable(undefined)
   getActiveProjectRoot: IAICustomizationWorkspaceService['getActiveProjectRoot'] = () => undefined
   managementSections: IAICustomizationWorkspaceService['managementSections'] = []
   isSessionsWindow: IAICustomizationWorkspaceService['isSessionsWindow'] = false
@@ -6858,6 +6975,7 @@ const nullAICustomizationItemSource: IAICustomizationItemSource = {
   onDidAICustomizationItemsChange: Event.None,
   fetchProviderItems: async () => [],
   fetchAICustomizationItems: async () => [],
+  fetchSourceFolders: (async () => []) satisfies IAICustomizationItemSource['fetchSourceFolders'],
   dispose: () => {}
 }
 
@@ -6897,6 +7015,9 @@ class PluginMarketplaceService implements IPluginMarketplaceService {
     undefined
 
   installedPlugins: IPluginMarketplaceService['installedPlugins'] = constObservable([])
+  marketplacesWithUpdates: IPluginMarketplaceService['marketplacesWithUpdates'] = constObservable(
+    new Set()
+  )
   @Unsupported
   addInstalledPlugin: IPluginMarketplaceService['addInstalledPlugin'] = unsupported
   @Unsupported
@@ -6908,7 +7029,8 @@ class PluginMarketplaceService implements IPluginMarketplaceService {
   isStrictMarketplacePolicyActive: IPluginMarketplaceService['isStrictMarketplacePolicyActive'] =
     () => false
 
-  hasUpdatesAvailable: IPluginMarketplaceService['hasUpdatesAvailable'] = constObservable(false)
+  isMarketplaceAutoUpdateEnabled: IPluginMarketplaceService['isMarketplaceAutoUpdateEnabled'] =
+    () => false
   lastFetchedPlugins: IPluginMarketplaceService['lastFetchedPlugins'] = constObservable([])
   recommendedPlugins: IPluginMarketplaceService['recommendedPlugins'] = constObservable(new Set([]))
   clearUpdatesAvailable: IPluginMarketplaceService['clearUpdatesAvailable'] = () => {}
@@ -7030,7 +7152,8 @@ class ChatDebugService implements IChatDebugService {
     Event.None
   addAvailableSessionResources: IChatDebugService['addAvailableSessionResources'] = () => {}
   getAvailableSessionResources: IChatDebugService['getAvailableSessionResources'] = () => []
-  registerAvailableSessionsFetcher: IChatDebugService['registerAvailableSessionsFetcher'] = () => {}
+  registerAvailableSessionsFetcher: IChatDebugService['registerAvailableSessionsFetcher'] = () =>
+    Disposable.None
   getHistoricalSessionTitle: IChatDebugService['getHistoricalSessionTitle'] = () => undefined
 }
 
@@ -7219,6 +7342,8 @@ class BrowserViewWorkbenchService implements IBrowserViewWorkbenchService {
   getPreferredGroup: IBrowserViewWorkbenchService['getPreferredGroup'] = async () => undefined
   registerOpenHandler: IBrowserViewWorkbenchService['registerOpenHandler'] = () => Disposable.None
   @Unsupported
+  createBrowserView: IBrowserViewWorkbenchService['createBrowserView'] = unsupported
+  @Unsupported
   getOrCreateLazy: IBrowserViewWorkbenchService['getOrCreateLazy'] = unsupported
   @Unsupported
   clearGlobalStorage: IBrowserViewWorkbenchService['clearGlobalStorage'] = unsupported
@@ -7352,6 +7477,8 @@ registerSingleton(
 class AgentHostConnectionsService implements IAgentHostConnectionsService {
   _serviceBrand: undefined
   onDidChangeConnections: IAgentHostConnectionsService['onDidChangeConnections'] = Event.None
+  onDidChangeSessionResolution: IAgentHostConnectionsService['onDidChangeSessionResolution'] =
+    Event.None
   connections: IAgentHostConnectionsService['connections'] = []
   @Unsupported
   get ambientConnection(): IAgentHostConnectionsService['ambientConnection'] {
@@ -7360,6 +7487,10 @@ class AgentHostConnectionsService implements IAgentHostConnectionsService {
   getConnectionByAuthority: IAgentHostConnectionsService['getConnectionByAuthority'] = () =>
     undefined
   getConnectionByAddress: IAgentHostConnectionsService['getConnectionByAddress'] = () => undefined
+  registerSessionResolutionPolicy: IAgentHostConnectionsService['registerSessionResolutionPolicy'] =
+    () => Disposable.None
+  resolveSessionResourceIdentity: IAgentHostConnectionsService['resolveSessionResourceIdentity'] =
+    () => undefined
   resolveSessionResource: IAgentHostConnectionsService['resolveSessionResource'] = () => undefined
 }
 
@@ -7376,6 +7507,8 @@ class AgentHostNewSessionFolderService implements IAgentHostNewSessionFolderServ
   setFolder: IAgentHostNewSessionFolderService['setFolder'] = () => {}
   clear: IAgentHostNewSessionFolderService['clear'] = () => {}
   getDefaultFolder: IAgentHostNewSessionFolderService['getDefaultFolder'] = () => undefined
+  resolveNewSessionPrimary: IAgentHostNewSessionFolderService['resolveNewSessionPrimary'] = () =>
+    undefined
 }
 
 registerSingleton(
@@ -7412,6 +7545,8 @@ class PluginGitService implements IPluginGitService {
   @Unsupported
   checkout: IPluginGitService['checkout'] = unsupported
   @Unsupported
+  checkoutCommit: IPluginGitService['checkoutCommit'] = unsupported
+  @Unsupported
   revParse: IPluginGitService['revParse'] = unsupported
   @Unsupported
   fetch: IPluginGitService['fetch'] = unsupported
@@ -7426,6 +7561,7 @@ registerSingleton(IPluginGitService, PluginGitService, InstantiationType.Delayed
 class AgentNetworkFilterService implements IAgentNetworkFilterService {
   _serviceBrand: undefined
   isUriAllowed: IAgentNetworkFilterService['isUriAllowed'] = () => false
+  isEnabled: IAgentNetworkFilterService['isEnabled'] = () => false
   @Unsupported
   formatError: IAgentNetworkFilterService['formatError'] = unsupported
   onDidChange: IAgentNetworkFilterService['onDidChange'] = Event.None
@@ -7448,6 +7584,8 @@ class AgentHostTerminalService implements IAgentHostTerminalService {
   })
   @Unsupported
   reviveTerminal: IAgentHostTerminalService['reviveTerminal'] = unsupported
+  @Unsupported
+  attachOutputTerminal: IAgentHostTerminalService['attachOutputTerminal'] = unsupported
   setDefaultCwd: IAgentHostTerminalService['setDefaultCwd'] = () => {}
 }
 
@@ -7481,6 +7619,11 @@ class AgentHostDebugLogsExportService implements IAgentHostDebugLogsExportServic
   _serviceBrand: undefined
 
   @Unsupported
+  get hostArtifactKind(): IAgentHostDebugLogsExportService['hostArtifactKind'] {
+    return unsupported()
+  }
+  selectDestination: IAgentHostDebugLogsExportService['selectDestination'] = async () => undefined
+  @Unsupported
   save: IAgentHostDebugLogsExportService['save'] = unsupported
 }
 
@@ -7495,6 +7638,16 @@ class AgentHostUntitledProvisionalSessionService implements IAgentHostUntitledPr
 
   onDidChange: IAgentHostUntitledProvisionalSessionService['onDidChange'] = Event.None
   get: IAgentHostUntitledProvisionalSessionService['get'] = () => undefined
+  getProvisionalWorkingDirectories: IAgentHostUntitledProvisionalSessionService['getProvisionalWorkingDirectories'] =
+    () => undefined
+  getInitialSessionConfig: IAgentHostUntitledProvisionalSessionService['getInitialSessionConfig'] =
+    () => undefined
+  getInitialSessionMetadata: IAgentHostUntitledProvisionalSessionService['getInitialSessionMetadata'] =
+    () => undefined
+  setSessionCreationMetadata: IAgentHostUntitledProvisionalSessionService['setSessionCreationMetadata'] =
+    () => {}
+  clearSessionCreationMetadata: IAgentHostUntitledProvisionalSessionService['clearSessionCreationMetadata'] =
+    () => {}
   getOrCreate: IAgentHostUntitledProvisionalSessionService['getOrCreate'] = async () => undefined
   waitForPending: IAgentHostUntitledProvisionalSessionService['waitForPending'] = async () =>
     undefined
@@ -7580,6 +7733,8 @@ class ChatResponseFileChangesService implements IChatResponseFileChangesService 
   _serviceBrand: undefined
   registerProvider: IChatResponseFileChangesService['registerProvider'] = () => Disposable.None
   getChangesForRequest: IChatResponseFileChangesService['getChangesForRequest'] = () => undefined
+  @Unsupported
+  openChangesForRequest: IChatResponseFileChangesService['openChangesForRequest'] = unsupported
 }
 
 registerSingleton(
@@ -7601,6 +7756,7 @@ class MicCaptureService implements IMicCaptureService {
   analyserNode: IMicCaptureService['analyserNode'] = undefined
   pttDown: IMicCaptureService['pttDown'] = async () => {}
   pttUp: IMicCaptureService['pttUp'] = () => {}
+  abortPtt: IMicCaptureService['abortPtt'] = () => {}
   isMuted: IMicCaptureService['isMuted'] = false
   suppressUntil: IMicCaptureService['suppressUntil'] = () => {}
 }
@@ -7635,6 +7791,8 @@ class VoiceClientService implements IVoiceClientService {
   flushSessionContext: IVoiceClientService['flushSessionContext'] = () => {}
   invalidateSessionCache: IVoiceClientService['invalidateSessionCache'] = () => {}
   sendToolResult: IVoiceClientService['sendToolResult'] = () => {}
+  sendNarrationPlaybackComplete: IVoiceClientService['sendNarrationPlaybackComplete'] = () => {}
+  requestNarration: IVoiceClientService['requestNarration'] = () => undefined
   sendSessionStateChange: IVoiceClientService['sendSessionStateChange'] = () => {}
   stopSpeaking: IVoiceClientService['stopSpeaking'] = () => {}
   sendStartSession: IVoiceClientService['sendStartSession'] = () => {}
@@ -7645,13 +7803,21 @@ class VoiceClientService implements IVoiceClientService {
   })
   onTranscription: IVoiceClientService['onTranscription'] = Event.None
   onAudioResponse: IVoiceClientService['onAudioResponse'] = Event.None
+  onBargeIn: IVoiceClientService['onBargeIn'] = Event.None
+  onNarrationAck: IVoiceClientService['onNarrationAck'] = Event.None
+  onNarrationUnblocked: IVoiceClientService['onNarrationUnblocked'] = Event.None
+  onNarrationInterrupted: IVoiceClientService['onNarrationInterrupted'] = Event.None
   onToolCall: IVoiceClientService['onToolCall'] = Event.None
   onSpeechStarted: IVoiceClientService['onSpeechStarted'] = Event.None
   onSessionInit: IVoiceClientService['onSessionInit'] = Event.None
   onError: IVoiceClientService['onError'] = Event.None
   onDidChangeConnectionState: IVoiceClientService['onDidChangeConnectionState'] = Event.None
+  onFatalDisconnect: IVoiceClientService['onFatalDisconnect'] = Event.None
+  onConnectionIssue: IVoiceClientService['onConnectionIssue'] = Event.None
+  onTurnAutoEnded: IVoiceClientService['onTurnAutoEnded'] = Event.None
   isConnected: IVoiceClientService['isConnected'] = false
   isResuming: IVoiceClientService['isResuming'] = false
+  willReconnect: IVoiceClientService['willReconnect'] = false
   currentSessionId: IVoiceClientService['currentSessionId'] = undefined
 }
 
@@ -7665,17 +7831,31 @@ class VoiceSessionController implements IVoiceSessionController {
   isConnected: IVoiceSessionController['isConnected'] = constObservable(false)
   isConnecting: IVoiceSessionController['isConnecting'] = constObservable(false)
   isReconnecting: IVoiceSessionController['isReconnecting'] = constObservable(false)
+  isMuted: IVoiceSessionController['isMuted'] = constObservable(false)
   pendingToolConfirmations: IVoiceSessionController['pendingToolConfirmations'] = constObservable(
     []
   )
   targetSession: IVoiceSessionController['targetSession'] = constObservable(undefined)
+  hasDraftTarget: IVoiceSessionController['hasDraftTarget'] = constObservable(false)
+  getLastSpokenResponseSession: IVoiceSessionController['getLastSpokenResponseSession'] = () =>
+    undefined
   connect: IVoiceSessionController['connect'] = async () => {}
+  setActiveWindow: IVoiceSessionController['setActiveWindow'] = () => {}
   disconnect: IVoiceSessionController['disconnect'] = () => {}
   pttDown: IVoiceSessionController['pttDown'] = () => {}
   pttUp: IVoiceSessionController['pttUp'] = () => {}
+  stopListening: IVoiceSessionController['stopListening'] = () => {}
+  setMuted: IVoiceSessionController['setMuted'] = () => {}
+  setAutoListenHeld: IVoiceSessionController['setAutoListenHeld'] = () => {}
+  discardListening: IVoiceSessionController['discardListening'] = () => {}
+  finishListeningAndSubmitTo: IVoiceSessionController['finishListeningAndSubmitTo'] = () => {}
   markUserCancelled: IVoiceSessionController['markUserCancelled'] = () => {}
   setTargetSession: IVoiceSessionController['setTargetSession'] = () => {}
+  setDraftTarget: IVoiceSessionController['setDraftTarget'] = () => {}
   newSessionAsTarget: IVoiceSessionController['newSessionAsTarget'] = () => {}
+  setActiveSessionShown: IVoiceSessionController['setActiveSessionShown'] = () => {}
+  promoteDraftTarget: IVoiceSessionController['promoteDraftTarget'] = () => {}
+  activateSession: IVoiceSessionController['activateSession'] = () => {}
   submitFeedback: IVoiceSessionController['submitFeedback'] = async () => ({
     ok: false,
     error: 'Unsupported'
@@ -7689,6 +7869,8 @@ class VoiceToolDispatchService implements IVoiceToolDispatchService {
   _serviceBrand: undefined
   setDelegate: IVoiceToolDispatchService['setDelegate'] = () => {}
   dispatchToolCall: IVoiceToolDispatchService['dispatchToolCall'] = async () => ''
+  @Unsupported
+  respondToSession: IVoiceToolDispatchService['respondToSession'] = unsupported
 }
 
 registerSingleton(IVoiceToolDispatchService, VoiceToolDispatchService, InstantiationType.Delayed)
@@ -7697,10 +7879,13 @@ class VoicePlaybackService implements IVoicePlaybackService {
   _serviceBrand: undefined
   speakingSession: IVoicePlaybackService['speakingSession'] = constObservable(undefined)
   lastPlayedVersion: IVoicePlaybackService['lastPlayedVersion'] = constObservable(0)
+  pendingResponseVersion: IVoicePlaybackService['pendingResponseVersion'] = constObservable(0)
   notifyPlaybackStart: IVoicePlaybackService['notifyPlaybackStart'] = () => {}
   notifyPlaybackEnd: IVoicePlaybackService['notifyPlaybackEnd'] = () => {}
   getLastPlayed: IVoicePlaybackService['getLastPlayed'] = () => undefined
   hasLastPlayed: IVoicePlaybackService['hasLastPlayed'] = () => false
+  setPendingResponse: IVoicePlaybackService['setPendingResponse'] = () => {}
+  hasPendingResponse: IVoicePlaybackService['hasPendingResponse'] = () => false
   replay: IVoicePlaybackService['replay'] = async () => {}
   stop: IVoicePlaybackService['stop'] = () => {}
 }
@@ -7730,6 +7915,17 @@ class AgentsVoiceWindowService implements IAgentsVoiceWindowService {
 
 registerSingleton(IAgentsVoiceWindowService, AgentsVoiceWindowService, InstantiationType.Delayed)
 
+class AgentHostEnablementService implements IAgentHostEnablementService {
+  _serviceBrand: undefined
+  enabled: IAgentHostEnablementService['enabled'] = constObservable(false)
+  managedSandboxEnforced: IAgentHostEnablementService['managedSandboxEnforced'] =
+    constObservable(false)
+  managedSandboxAllowsBypass: IAgentHostEnablementService['managedSandboxAllowsBypass'] =
+    constObservable(false)
+}
+
+registerSingleton(IAgentHostEnablementService, AgentHostEnablementService, InstantiationType.Eager)
+
 class AgentHostCustomizationService implements IAgentHostCustomizationService {
   _serviceBrand: undefined
   onDidChangeCustomAgents: IAgentHostCustomizationService['onDidChangeCustomAgents'] = Event.None
@@ -7737,10 +7933,20 @@ class AgentHostCustomizationService implements IAgentHostCustomizationService {
     Event.None
   getCustomAgents: IAgentHostCustomizationService['getCustomAgents'] = () => []
   getCustomizations: IAgentHostCustomizationService['getCustomizations'] = () => []
+  whenCustomizationsReady: IAgentHostCustomizationService['whenCustomizationsReady'] =
+    async () => {}
+  getFolderPickerDecision: IAgentHostCustomizationService['getFolderPickerDecision'] = () =>
+    undefined
   getWorkingDirectory: IAgentHostCustomizationService['getWorkingDirectory'] = () => undefined
+  getWorkingDirectories: IAgentHostCustomizationService['getWorkingDirectories'] = () => []
+  getClientWorkingDirectoryUris: IAgentHostCustomizationService['getClientWorkingDirectoryUris'] =
+    () => []
   getMcpServers: IAgentHostCustomizationService['getMcpServers'] = () => []
   addMcpServer: IAgentHostCustomizationService['addMcpServer'] = () => {}
   authenticateMcpServer: IAgentHostCustomizationService['authenticateMcpServer'] = async () => false
+  setCustomizationEnablement: IAgentHostCustomizationService['setCustomizationEnablement'] =
+    () => {}
+  showMcpServerLog: IAgentHostCustomizationService['showMcpServerLog'] = async () => {}
 }
 
 registerSingleton(
@@ -7752,15 +7958,471 @@ registerSingleton(
 class AgentHostActiveClientService implements IAgentHostActiveClientService {
   _serviceBrand: undefined
   @Unsupported
-  registerForAgent: IAgentHostActiveClientService['registerForAgent'] = unsupported
+  acquireScope: IAgentHostActiveClientService['acquireScope'] = unsupported
+  acquireMcpServerSupportScope: IAgentHostActiveClientService['acquireMcpServerSupportScope'] =
+    () => undefined
   @Unsupported
-  getActiveClient: IAgentHostActiveClientService['getActiveClient'] = unsupported
-  getCustomizations: IAgentHostActiveClientService['getCustomizations'] = () => constObservable([])
-  getClientTools: IAgentHostActiveClientService['getClientTools'] = () => constObservable([])
+  getSyncProvider: IAgentHostActiveClientService['getSyncProvider'] = unsupported
+  getOrigin: IAgentHostActiveClientService['getOrigin'] = () => undefined
+  areScopeRootsEqual: IAgentHostActiveClientService['areScopeRootsEqual'] = () => false
+  isBundledMcpServer: IAgentHostActiveClientService['isBundledMcpServer'] = () => false
 }
 
 registerSingleton(
   IAgentHostActiveClientService,
   AgentHostActiveClientService,
+  InstantiationType.Delayed
+)
+
+class AgentHostImportConversationStore implements IAgentHostImportConversationStore {
+  _serviceBrand: undefined
+  private readonly conversations = new ResourceMap<
+    Exclude<ReturnType<IAgentHostImportConversationStore['take']>, undefined>
+  >()
+
+  set: IAgentHostImportConversationStore['set'] = (resource, conversation) => {
+    this.conversations.set(resource, conversation)
+  }
+  take: IAgentHostImportConversationStore['take'] = (resource) => {
+    const conversation = this.conversations.get(resource)
+    this.conversations.delete(resource)
+    return conversation
+  }
+  rename: IAgentHostImportConversationStore['rename'] = (oldResource, newResource) => {
+    const conversation = this.conversations.get(oldResource)
+    if (conversation != null) {
+      this.conversations.delete(oldResource)
+      this.conversations.set(newResource, conversation)
+    }
+  }
+}
+
+registerSingleton(
+  IAgentHostImportConversationStore,
+  AgentHostImportConversationStore,
+  InstantiationType.Delayed
+)
+
+class AgentHostProtectedResourcesService implements IAgentHostProtectedResourcesService {
+  _serviceBrand: undefined
+  onDidChange: IAgentHostProtectedResourcesService['onDidChange'] = Event.None
+  getProtectedResources: IAgentHostProtectedResourcesService['getProtectedResources'] = () =>
+    undefined
+}
+
+registerSingleton(
+  IAgentHostProtectedResourcesService,
+  AgentHostProtectedResourcesService,
+  InstantiationType.Delayed
+)
+
+class AgentHostSessionWorkingDirectorySynchronizer implements IAgentHostSessionWorkingDirectorySynchronizer {
+  _serviceBrand: undefined
+  register: IAgentHostSessionWorkingDirectorySynchronizer['register'] = () => Disposable.None
+  reconcile: IAgentHostSessionWorkingDirectorySynchronizer['reconcile'] = async () => {}
+}
+
+registerSingleton(
+  IAgentHostSessionWorkingDirectorySynchronizer,
+  AgentHostSessionWorkingDirectorySynchronizer,
+  InstantiationType.Delayed
+)
+
+class AgentHostShellInitSynchronizer implements IAgentHostShellInitSynchronizer {
+  _serviceBrand: undefined
+  register: IAgentHostShellInitSynchronizer['register'] = () => Disposable.None
+  reconcile: IAgentHostShellInitSynchronizer['reconcile'] = () => {}
+}
+
+registerSingleton(
+  IAgentHostShellInitSynchronizer,
+  AgentHostShellInitSynchronizer,
+  InstantiationType.Delayed
+)
+
+class AgentSdkSetupService implements IAgentSdkSetupService {
+  _serviceBrand: undefined
+  setups: IAgentSdkSetupService['setups'] = []
+  onDidChangeSetups: IAgentSdkSetupService['onDidChangeSetups'] = Event.None
+  requestDownload: IAgentSdkSetupService['requestDownload'] = () => {}
+  openSetupDocs: IAgentSdkSetupService['openSetupDocs'] = () => {}
+  requestReload: IAgentSdkSetupService['requestReload'] = () => {}
+  signInToGitHub: IAgentSdkSetupService['signInToGitHub'] = () => {}
+  signIn: IAgentSdkSetupService['signIn'] = () => {}
+  isDownloadPending: IAgentSdkSetupService['isDownloadPending'] = () => false
+  reportSetupState: IAgentSdkSetupService['reportSetupState'] = () => {}
+}
+
+registerSingleton(IAgentSdkSetupService, AgentSdkSetupService, InstantiationType.Delayed)
+
+class CodexAccountService implements ICodexAccountService {
+  _serviceBrand: undefined
+  agent: ICodexAccountService['agent'] = 'codex'
+  @Unsupported
+  get account(): ICodexAccountService['account'] {
+    return unsupported()
+  }
+  onDidChangeAccount: ICodexAccountService['onDidChangeAccount'] = Event.None
+  signIn: ICodexAccountService['signIn'] = () => {}
+  signOut: ICodexAccountService['signOut'] = () => {}
+}
+
+registerSingleton(ICodexAccountService, CodexAccountService, InstantiationType.Delayed)
+
+class ChatInputNoticeHubService implements IChatInputNoticeHubService {
+  _serviceBrand: undefined
+  registerHost: IChatInputNoticeHubService['registerHost'] = () => Disposable.None
+  toggleNoticeFocus: IChatInputNoticeHubService['toggleNoticeFocus'] = () => false
+}
+
+registerSingleton(IChatInputNoticeHubService, ChatInputNoticeHubService, InstantiationType.Delayed)
+
+class ChatModelFeedbackSurveyService implements IChatModelFeedbackSurveyService {
+  _serviceBrand: undefined
+  onDidChangeSurveyState: IChatModelFeedbackSurveyService['onDidChangeSurveyState'] = Event.None
+  onDidChangeConfiguration: IChatModelFeedbackSurveyService['onDidChangeConfiguration'] = Event.None
+  getSurvey: IChatModelFeedbackSurveyService['getSurvey'] = () => undefined
+  toggle: IChatModelFeedbackSurveyService['toggle'] = () => {}
+  notifyModelSwitchedAway: IChatModelFeedbackSurveyService['notifyModelSwitchedAway'] = () => {}
+  answerChoice: IChatModelFeedbackSurveyService['answerChoice'] = () => {}
+  submit: IChatModelFeedbackSurveyService['submit'] = () => {}
+  dismiss: IChatModelFeedbackSurveyService['dismiss'] = () => {}
+  setCommentDraft: IChatModelFeedbackSurveyService['setCommentDraft'] = () => {}
+}
+
+registerSingleton(
+  IChatModelFeedbackSurveyService,
+  ChatModelFeedbackSurveyService,
+  InstantiationType.Delayed
+)
+
+class ChatPasteTargetService implements IChatPasteTargetService {
+  _serviceBrand: undefined
+  private readonly targets = new ResourceMap<
+    Exclude<ReturnType<IChatPasteTargetService['getTarget']>, undefined>
+  >()
+
+  registerTarget: IChatPasteTargetService['registerTarget'] = (inputUri, target) => {
+    this.targets.set(inputUri, target)
+    return {
+      dispose: () => {
+        if (this.targets.get(inputUri) === target) {
+          this.targets.delete(inputUri)
+        }
+      }
+    }
+  }
+  getTarget: IChatPasteTargetService['getTarget'] = (inputUri) => this.targets.get(inputUri)
+}
+
+registerSingleton(IChatPasteTargetService, ChatPasteTargetService, InstantiationType.Delayed)
+
+class ChatPetService implements IChatPetService {
+  _serviceBrand: undefined
+  enabled: IChatPetService['enabled'] = constObservable(false)
+  variant: IChatPetService['variant'] = constObservable('stable')
+  onTheRun: IChatPetService['onTheRun'] = constObservable(false)
+  scale: IChatPetService['scale'] = constObservable(1)
+  unlockedAchievements: IChatPetService['unlockedAchievements'] = constObservable([])
+  unseenAchievements: IChatPetService['unseenAchievements'] = constObservable([])
+  selectedAccessory: IChatPetService['selectedAccessory'] = constObservable(undefined)
+  onDidUnlockAchievement: IChatPetService['onDidUnlockAchievement'] = Event.None
+  horizontalPosition: IChatPetService['horizontalPosition'] = constObservable(undefined)
+  toggle: IChatPetService['toggle'] = () => false
+  setVariant: IChatPetService['setVariant'] = () => {}
+  setOnTheRun: IChatPetService['setOnTheRun'] = () => {}
+  setScale: IChatPetService['setScale'] = () => {}
+  resetScale: IChatPetService['resetScale'] = () => {}
+  unlockAchievement: IChatPetService['unlockAchievement'] = () => false
+  markAchievementSeen: IChatPetService['markAchievementSeen'] = () => false
+  setAccessory: IChatPetService['setAccessory'] = () => {}
+  resetAchievements: IChatPetService['resetAchievements'] = () => {}
+  setHorizontalPosition: IChatPetService['setHorizontalPosition'] = () => {}
+}
+
+registerSingleton(IChatPetService, ChatPetService, InstantiationType.Delayed)
+
+class ChatPetWidgetService implements IChatPetWidgetService {
+  _serviceBrand: undefined
+  @Unsupported
+  register: IChatPetWidgetService['register'] = unsupported
+}
+
+registerSingleton(IChatPetWidgetService, ChatPetWidgetService, InstantiationType.Delayed)
+
+class ChatRequestOriginService implements IChatRequestOriginService {
+  _serviceBrand: undefined
+  registerOpener: IChatRequestOriginService['registerOpener'] = () => Disposable.None
+  open: IChatRequestOriginService['open'] = async () => false
+}
+
+registerSingleton(IChatRequestOriginService, ChatRequestOriginService, InstantiationType.Delayed)
+
+class ChatSideChatService implements IChatSideChatService {
+  _serviceBrand: undefined
+  registerProvider: IChatSideChatService['registerProvider'] = () => Disposable.None
+  canAskInSideChat: IChatSideChatService['canAskInSideChat'] = () => false
+  askInSideChat: IChatSideChatService['askInSideChat'] = async () => {}
+  observeSideChatOrigin: IChatSideChatService['observeSideChatOrigin'] = () =>
+    constObservable(undefined)
+  revealSideChatSource: IChatSideChatService['revealSideChatSource'] = async () => {}
+}
+
+registerSingleton(IChatSideChatService, ChatSideChatService, InstantiationType.Delayed)
+
+class ChatSpeechToTextService implements IChatSpeechToTextService {
+  _serviceBrand: undefined
+  onDidChangeState: IChatSpeechToTextService['onDidChangeState'] = Event.None
+  state: IChatSpeechToTextService['state'] = ChatSpeechToTextState.Idle
+  isBusy: IChatSpeechToTextService['isBusy'] = false
+  currentSurface: IChatSpeechToTextService['currentSurface'] = 'chat'
+  onDidUpdateTranscript: IChatSpeechToTextService['onDidUpdateTranscript'] = Event.None
+  showTranscriptWhileDictating: IChatSpeechToTextService['showTranscriptWhileDictating'] = false
+  analyserNode: IChatSpeechToTextService['analyserNode'] = undefined
+  switchMicrophone: IChatSpeechToTextService['switchMicrophone'] = async () => undefined
+  isConfigured: IChatSpeechToTextService['isConfigured'] = false
+  onDidChangePreparingModel: IChatSpeechToTextService['onDidChangePreparingModel'] = Event.None
+  isPreparingModel: IChatSpeechToTextService['isPreparingModel'] = false
+  onDidChangeDownloadingModel: IChatSpeechToTextService['onDidChangeDownloadingModel'] = Event.None
+  isDownloadingModel: IChatSpeechToTextService['isDownloadingModel'] = false
+  onDidChangeModelDownloadProgress: IChatSpeechToTextService['onDidChangeModelDownloadProgress'] =
+    Event.None
+  modelDownloadProgress: IChatSpeechToTextService['modelDownloadProgress'] = undefined
+  @Unsupported
+  start: IChatSpeechToTextService['start'] = unsupported
+  stopAndTranscribe: IChatSpeechToTextService['stopAndTranscribe'] = async () => undefined
+  cancel: IChatSpeechToTextService['cancel'] = async () => {}
+  currentBackend: IChatSpeechToTextService['currentBackend'] = 'nemo'
+  logDictationAccuracy: IChatSpeechToTextService['logDictationAccuracy'] = () => {}
+}
+
+registerSingleton(IChatSpeechToTextService, ChatSpeechToTextService, InstantiationType.Eager)
+
+class ChatSubmitRequestHandlerService implements IChatSubmitRequestHandlerService {
+  _serviceBrand: undefined
+  register: IChatSubmitRequestHandlerService['register'] = () => Disposable.None
+  tryHandle: IChatSubmitRequestHandlerService['tryHandle'] = async () => false
+}
+
+registerSingleton(
+  IChatSubmitRequestHandlerService,
+  ChatSubmitRequestHandlerService,
+  InstantiationType.Delayed
+)
+
+class CustomizationMigrationService implements ICustomizationMigrationService {
+  _serviceBrand: undefined
+  @Unsupported
+  computeMigration: ICustomizationMigrationService['computeMigration'] = unsupported
+  @Unsupported
+  migrateMcpServers: ICustomizationMigrationService['migrateMcpServers'] = unsupported
+  computeMigrations: ICustomizationMigrationService['computeMigrations'] = async () => []
+  computeMigrationHint: ICustomizationMigrationService['computeMigrationHint'] = async () =>
+    undefined
+}
+
+registerSingleton(
+  ICustomizationMigrationService,
+  CustomizationMigrationService,
+  InstantiationType.Delayed
+)
+
+class DictationOnboardingService implements IDictationOnboardingService {
+  _serviceBrand: undefined
+  isVisible: IDictationOnboardingService['isVisible'] = false
+  registerHost: IDictationOnboardingService['registerHost'] = () => Disposable.None
+  showIfNeeded: IDictationOnboardingService['showIfNeeded'] = () => false
+  show: IDictationOnboardingService['show'] = () => false
+  refreshMicrophones: IDictationOnboardingService['refreshMicrophones'] = () => {}
+  reset: IDictationOnboardingService['reset'] = () => {}
+}
+
+registerSingleton(
+  IDictationOnboardingService,
+  DictationOnboardingService,
+  InstantiationType.Delayed
+)
+
+class DiffEditorCommandsService implements IDiffEditorCommandsService {
+  _serviceBrand: undefined
+  toggleRenderSideBySide: IDiffEditorCommandsService['toggleRenderSideBySide'] = async () => {}
+  setViewMode: IDiffEditorCommandsService['setViewMode'] = async () => {}
+  openActiveDiffSide: IDiffEditorCommandsService['openActiveDiffSide'] = async () => {}
+  navigateInDiffEditor: IDiffEditorCommandsService['navigateInDiffEditor'] = () => {}
+  focusInDiffEditor: IDiffEditorCommandsService['focusInDiffEditor'] = () => {}
+  toggleDiffIgnoreTrimWhitespace: IDiffEditorCommandsService['toggleDiffIgnoreTrimWhitespace'] =
+    async () => {}
+  swapDiffSides: IDiffEditorCommandsService['swapDiffSides'] = async () => {}
+}
+
+registerSingleton(IDiffEditorCommandsService, DiffEditorCommandsService, InstantiationType.Delayed)
+
+class InlineChatSessionResolver implements IInlineChatSessionResolver {
+  _serviceBrand: undefined
+  resolve: IInlineChatSessionResolver['resolve'] = async () => undefined
+}
+
+registerSingleton(IInlineChatSessionResolver, InlineChatSessionResolver, InstantiationType.Delayed)
+
+class LinkPresentationService implements ILinkPresentationService {
+  _serviceBrand: undefined
+  onDidChangeLinkPresentationRules: ILinkPresentationService['onDidChangeLinkPresentationRules'] =
+    Event.None
+  linkPresentationRules: ILinkPresentationService['linkPresentationRules'] = []
+  registerLinkPresentationProvider: ILinkPresentationService['registerLinkPresentationProvider'] =
+    () => Disposable.None
+  registerExtensionLinkPresentationProvider: ILinkPresentationService['registerExtensionLinkPresentationProvider'] =
+    () => Disposable.None
+  getLinkPresentationRule: ILinkPresentationService['getLinkPresentationRule'] = () => undefined
+  createLinkPresentationWatcher: ILinkPresentationService['createLinkPresentationWatcher'] = () =>
+    undefined
+}
+
+registerSingleton(ILinkPresentationService, LinkPresentationService, InstantiationType.Delayed)
+
+class LocalTranscriptionService implements ILocalTranscriptionService {
+  _serviceBrand: undefined
+  isSupported: ILocalTranscriptionService['isSupported'] = false
+  onDidChangeModelStatus: ILocalTranscriptionService['onDidChangeModelStatus'] = Event.None
+  onDidTranscribe: ILocalTranscriptionService['onDidTranscribe'] = Event.None
+  getModelStatus: ILocalTranscriptionService['getModelStatus'] = async () => ({
+    state: LocalTranscriptionModelState.Error,
+    error: 'unsupported'
+  })
+  @Unsupported
+  importModel: ILocalTranscriptionService['importModel'] = unsupported
+  @Unsupported
+  start: ILocalTranscriptionService['start'] = unsupported
+  pushAudio: ILocalTranscriptionService['pushAudio'] = async () => {}
+  stop: ILocalTranscriptionService['stop'] = async () => ''
+  cancel: ILocalTranscriptionService['cancel'] = async () => {}
+}
+
+registerSingleton(ILocalTranscriptionService, LocalTranscriptionService, InstantiationType.Delayed)
+
+class RemoteTunnelService implements IRemoteTunnelService {
+  _serviceBrand: undefined
+  onDidChangeTunnelStatus: IRemoteTunnelService['onDidChangeTunnelStatus'] = Event.None
+  @Unsupported
+  getTunnelStatus: IRemoteTunnelService['getTunnelStatus'] = unsupported
+  @Unsupported
+  getMode: IRemoteTunnelService['getMode'] = unsupported
+  onDidChangeMode: IRemoteTunnelService['onDidChangeMode'] = Event.None
+  onDidTokenFailed: IRemoteTunnelService['onDidTokenFailed'] = Event.None
+  @Unsupported
+  initialize: IRemoteTunnelService['initialize'] = unsupported
+  @Unsupported
+  startTunnel: IRemoteTunnelService['startTunnel'] = unsupported
+  stopTunnel: IRemoteTunnelService['stopTunnel'] = async () => {}
+  getTunnelName: IRemoteTunnelService['getTunnelName'] = async () => undefined
+}
+
+registerSingleton(IRemoteTunnelService, RemoteTunnelService, InstantiationType.Delayed)
+
+class SessionChatPillVisibilityService implements ISessionChatPillVisibilityService {
+  _serviceBrand: undefined
+  pullRequests: ISessionChatPillVisibilityService['pullRequests'] = {
+    showAll: constObservable(false),
+    isVisible: () => false,
+    setShowAll: () => {}
+  }
+  readHiddenKinds: ISessionChatPillVisibilityService['readHiddenKinds'] = () => new Set()
+  isVisible: ISessionChatPillVisibilityService['isVisible'] = () => false
+  hide: ISessionChatPillVisibilityService['hide'] = () => {}
+  toggle: ISessionChatPillVisibilityService['toggle'] = () => {}
+}
+
+registerSingleton(
+  ISessionChatPillVisibilityService,
+  SessionChatPillVisibilityService,
+  InstantiationType.Delayed
+)
+
+class SessionSummaryHoverService implements ISessionSummaryHoverService {
+  _serviceBrand: undefined
+  registerProvider: ISessionSummaryHoverService['registerProvider'] = () => Disposable.None
+  createHoverElement: ISessionSummaryHoverService['createHoverElement'] = async () => undefined
+}
+
+registerSingleton(
+  ISessionSummaryHoverService,
+  SessionSummaryHoverService,
+  InstantiationType.Delayed
+)
+
+class TerminalChatSessionResolver implements ITerminalChatSessionResolver {
+  _serviceBrand: undefined
+  resolve: ITerminalChatSessionResolver['resolve'] = async () => undefined
+}
+
+registerSingleton(
+  ITerminalChatSessionResolver,
+  TerminalChatSessionResolver,
+  InstantiationType.Delayed
+)
+
+class VoiceCodeTranscriptionClient implements IVoiceCodeTranscriptionClient {
+  _serviceBrand: undefined
+  onTranscription: IVoiceCodeTranscriptionClient['onTranscription'] = Event.None
+  onError: IVoiceCodeTranscriptionClient['onError'] = Event.None
+  onDidClose: IVoiceCodeTranscriptionClient['onDidClose'] = Event.None
+  isConnected: IVoiceCodeTranscriptionClient['isConnected'] = false
+  @Unsupported
+  connect: IVoiceCodeTranscriptionClient['connect'] = unsupported
+  startSession: IVoiceCodeTranscriptionClient['startSession'] = async () => {}
+  sendPttStart: IVoiceCodeTranscriptionClient['sendPttStart'] = () => {}
+  sendPttAudioChunk: IVoiceCodeTranscriptionClient['sendPttAudioChunk'] = () => {}
+  sendPttEnd: IVoiceCodeTranscriptionClient['sendPttEnd'] = () => {}
+  disconnect: IVoiceCodeTranscriptionClient['disconnect'] = () => {}
+}
+
+registerSingleton(
+  IVoiceCodeTranscriptionClient,
+  VoiceCodeTranscriptionClient,
+  InstantiationType.Delayed
+)
+
+class VoiceInputModeService implements IVoiceInputModeService {
+  _serviceBrand: undefined
+  selectedMode: IVoiceInputModeService['selectedMode'] = constObservable('voice')
+  voiceAvailable: IVoiceInputModeService['voiceAvailable'] = constObservable(false)
+  dictationAvailable: IVoiceInputModeService['dictationAvailable'] = constObservable(false)
+  handsFree: IVoiceInputModeService['handsFree'] = constObservable(false)
+  simulatedVoiceState: IVoiceInputModeService['simulatedVoiceState'] = constObservable(undefined)
+  simulatedHandsFree: IVoiceInputModeService['simulatedHandsFree'] = constObservable(undefined)
+  simulatedVersion: IVoiceInputModeService['simulatedVersion'] = constObservable(undefined)
+  simulatedHover: IVoiceInputModeService['simulatedHover'] = constObservable(false)
+  setSelectedMode: IVoiceInputModeService['setSelectedMode'] = () => {}
+  setSimulatedVoiceState: IVoiceInputModeService['setSimulatedVoiceState'] = () => {}
+  startVoiceStateWalkthrough: IVoiceInputModeService['startVoiceStateWalkthrough'] = () => {}
+  stepVoiceStateWalkthrough: IVoiceInputModeService['stepVoiceStateWalkthrough'] = () => {}
+  clearSimulation: IVoiceInputModeService['clearSimulation'] = () => {}
+}
+
+registerSingleton(IVoiceInputModeService, VoiceInputModeService, InstantiationType.Delayed)
+
+class VoiceModeOnboardingService implements IVoiceModeOnboardingService {
+  _serviceBrand: undefined
+  isVisible: IVoiceModeOnboardingService['isVisible'] = false
+  registerHost: IVoiceModeOnboardingService['registerHost'] = () => Disposable.None
+  showIfNeeded: IVoiceModeOnboardingService['showIfNeeded'] = () => {}
+  show: IVoiceModeOnboardingService['show'] = () => false
+}
+
+registerSingleton(
+  IVoiceModeOnboardingService,
+  VoiceModeOnboardingService,
+  InstantiationType.Delayed
+)
+
+class WorkspaceFolderLabelService implements IWorkspaceFolderLabelService {
+  _serviceBrand: undefined
+  getWorkspaceFolderLabel: IWorkspaceFolderLabelService['getWorkspaceFolderLabel'] = (folder) =>
+    folder.name
+}
+
+registerSingleton(
+  IWorkspaceFolderLabelService,
+  WorkspaceFolderLabelService,
   InstantiationType.Delayed
 )

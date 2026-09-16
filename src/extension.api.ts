@@ -402,6 +402,7 @@ const api: typeof vscode = {
   ChatSessionCustomizationType: extHostTypes.ChatSessionCustomizationType,
   ChatInputNotificationSeverity: extHostTypes.ChatInputNotificationSeverity,
   ChatResponseInfoPart: extHostTypes.ChatResponseInfoPart,
+  ChatResponseVoiceProgressPart: extHostTypes.ChatResponseVoiceProgressPart,
   ChatResponseAutoModeResolutionPart: extHostTypes.ChatResponseAutoModeResolutionPart
 }
 
