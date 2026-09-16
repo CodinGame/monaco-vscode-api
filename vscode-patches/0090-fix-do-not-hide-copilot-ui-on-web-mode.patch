@@ -8,10 +8,10 @@ Subject: [PATCH] fix: do not hide copilot ui on web mode
  1 file changed, 6 deletions(-)
 
 diff --git a/src/vs/workbench/services/chat/common/chatEntitlementService.ts b/src/vs/workbench/services/chat/common/chatEntitlementService.ts
-index ddf07ba2df7..037efcc6407 100644
+index c84b31cf634..f0e05431f74 100644
 --- a/src/vs/workbench/services/chat/common/chatEntitlementService.ts
 +++ b/src/vs/workbench/services/chat/common/chatEntitlementService.ts
-@@ -25,7 +25,6 @@ import { IOpenerService } from '../../../../platform/opener/common/opener.js';
+@@ -26,7 +26,6 @@ import { IOpenerService } from '../../../../platform/opener/common/opener.js';
  import { URI } from '../../../../base/common/uri.js';
  import Severity from '../../../../base/common/severity.js';
  import { IWorkbenchEnvironmentService } from '../../environment/common/environmentService.js';
@@ -19,7 +19,7 @@ index ddf07ba2df7..037efcc6407 100644
  import { ILifecycleService } from '../../lifecycle/common/lifecycle.js';
  import { Mutable } from '../../../../base/common/types.js';
  import { InstantiationType, registerSingleton } from '../../../../platform/instantiation/common/extensions.js';
-@@ -449,11 +448,6 @@ export class ChatEntitlementService extends Disposable implements IChatEntitleme
+@@ -450,11 +449,6 @@ export class ChatEntitlementService extends Disposable implements IChatEntitleme
  		);
  		this.sentimentObs = observableFromEvent(this.onDidChangeSentiment, () => this.sentiment);
  

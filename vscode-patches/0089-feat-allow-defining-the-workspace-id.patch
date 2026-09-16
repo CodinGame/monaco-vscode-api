@@ -10,10 +10,10 @@ Subject: [PATCH] feat: allow defining the workspace id
  3 files changed, 7 insertions(+), 6 deletions(-)
 
 diff --git a/src/vs/platform/window/common/window.ts b/src/vs/platform/window/common/window.ts
-index 2187c2fb6c9..514b086285e 100644
+index 357bf62d065..187104d974f 100644
 --- a/src/vs/platform/window/common/window.ts
 +++ b/src/vs/platform/window/common/window.ts
-@@ -107,6 +107,7 @@ export interface IOpenEmptyWindowOptions extends IBaseOpenWindowsOptions { }
+@@ -136,6 +136,7 @@ export function isAgentsWindowOpenSource(value: unknown): value is AgentsWindowO
  export type IWindowOpenable = IWorkspaceToOpen | IFolderToOpen | IFileToOpen;
  
  export interface IBaseWindowOpenable {
@@ -50,10 +50,10 @@ index 95676d86ef3..2c143838b4e 100644
  	};
  }
 diff --git a/src/vs/workbench/browser/web.main.ts b/src/vs/workbench/browser/web.main.ts
-index 32d9fadacf6..0de968ef2b6 100644
+index df2d76aa685..855cf9f4a8d 100644
 --- a/src/vs/workbench/browser/web.main.ts
 +++ b/src/vs/workbench/browser/web.main.ts
-@@ -662,12 +662,12 @@ export class BrowserMain extends Disposable {
+@@ -668,12 +668,12 @@ export class BrowserMain extends Disposable {
  
  		// Multi-root workspace
  		if (workspace && isWorkspaceToOpen(workspace)) {

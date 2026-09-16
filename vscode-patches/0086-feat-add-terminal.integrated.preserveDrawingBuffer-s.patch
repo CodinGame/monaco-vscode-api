@@ -11,7 +11,7 @@ Subject: [PATCH] feat: add terminal.integrated.preserveDrawingBuffer setting
  4 files changed, 9 insertions(+), 1 deletion(-)
 
 diff --git a/src/vs/platform/terminal/common/terminal.ts b/src/vs/platform/terminal/common/terminal.ts
-index 589bb0905b6..2b522149776 100644
+index 4a6b0770273..a3e6fa9fce4 100644
 --- a/src/vs/platform/terminal/common/terminal.ts
 +++ b/src/vs/platform/terminal/common/terminal.ts
 @@ -105,6 +105,7 @@ export const enum TerminalSettingId {
@@ -23,15 +23,15 @@ index 589bb0905b6..2b522149776 100644
  	RescaleOverlappingGlyphs = 'terminal.integrated.rescaleOverlappingGlyphs',
  	PersistentSessionScrollback = 'terminal.integrated.persistentSessionScrollback',
 diff --git a/src/vs/workbench/contrib/terminal/browser/xterm/xtermTerminal.ts b/src/vs/workbench/contrib/terminal/browser/xterm/xtermTerminal.ts
-index dc89e65ce98..ebe4228d7e5 100644
+index 2bf7f8bbec1..05331487d2b 100644
 --- a/src/vs/workbench/contrib/terminal/browser/xterm/xtermTerminal.ts
 +++ b/src/vs/workbench/contrib/terminal/browser/xterm/xtermTerminal.ts
-@@ -861,7 +861,8 @@ export class XtermTerminal extends Disposable implements IXtermTerminal, IDetach
+@@ -933,7 +933,8 @@ export class XtermTerminal extends Disposable implements IXtermTerminal, IDetach
+ 		}
  
- 		const Addon = await this._xtermAddonLoader.importAddon('webgl');
  		this._webglAddon = new Addon({
--			customGlyphs: this._terminalConfigurationService.config.customGlyphs
-+			customGlyphs: this._terminalConfigurationService.config.customGlyphs,
+-			customGlyphs
++			customGlyphs,
 +			preserveDrawingBuffer: this._terminalConfigurationService.config.preserveDrawingBuffer
  		});
  		try {
@@ -49,10 +49,10 @@ index f1bcb84e4d7..740fe28c54b 100644
  
  export interface ITerminalFont {
 diff --git a/src/vs/workbench/contrib/terminal/common/terminalConfiguration.ts b/src/vs/workbench/contrib/terminal/common/terminalConfiguration.ts
-index e08464a35e4..6975a2eba43 100644
+index 80c5267d675..527f938e136 100644
 --- a/src/vs/workbench/contrib/terminal/common/terminalConfiguration.ts
 +++ b/src/vs/workbench/contrib/terminal/common/terminalConfiguration.ts
-@@ -572,6 +572,11 @@ const terminalConfiguration: IStringDictionary<IConfigurationPropertySchema> = {
+@@ -571,6 +571,11 @@ const terminalConfiguration: IStringDictionary<IConfigurationPropertySchema> = {
  		type: 'boolean',
  		default: true
  	},

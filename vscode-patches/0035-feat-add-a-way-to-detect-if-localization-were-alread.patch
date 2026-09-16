@@ -8,7 +8,7 @@ Subject: [PATCH] feat: add a way to detect if localization were already used
  1 file changed, 7 insertions(+)
 
 diff --git a/src/vs/nls.ts b/src/vs/nls.ts
-index 51644b01193..77b0e5d3f9b 100644
+index 8383ae24d96..27b483a0f71 100644
 --- a/src/vs/nls.ts
 +++ b/src/vs/nls.ts
 @@ -51,6 +51,12 @@ function _format(message: string, args: (string | number | boolean | undefined |

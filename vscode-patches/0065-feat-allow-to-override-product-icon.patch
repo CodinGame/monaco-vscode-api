@@ -12,19 +12,19 @@ Subject: [PATCH] feat: allow to override product icon
  5 files changed, 6 insertions(+), 5 deletions(-)
 
 diff --git a/build/lib/stylelint/vscode-known-variables.json b/build/lib/stylelint/vscode-known-variables.json
-index 930248b9da5..ce5f2081f73 100644
+index 7746e2caf6d..32af1f049b6 100644
 --- a/build/lib/stylelint/vscode-known-variables.json
 +++ b/build/lib/stylelint/vscode-known-variables.json
-@@ -1089,7 +1089,8 @@
- 		"--vscode-inline-chat-affordance-height",
- 		"--collapse-from-width",
- 		"--slide-from-x",
--		"--slide-from-y"
-+		"--slide-from-y",
+@@ -1249,7 +1249,8 @@
+ 		"--vg-ring-width",
+ 		"--vg-ring-opacity",
+ 		"--vg-corner-alpha",
+-		"--vg-inner-fade"
++		"--vg-inner-fade",
 +		"--product-icon"
  	],
  	"sizes": [
- 		"--vscode-agents-fontSize-body1",
+ 		"--segmented-icon-toggle-cell-radius",
 diff --git a/src/vs/workbench/browser/parts/banner/media/bannerpart.css b/src/vs/workbench/browser/parts/banner/media/bannerpart.css
 index a0de81f24eb..c71af404312 100644
 --- a/src/vs/workbench/browser/parts/banner/media/bannerpart.css
@@ -39,7 +39,7 @@ index a0de81f24eb..c71af404312 100644
  	padding: 0;
  	margin: 0 6px 0 10px;
 diff --git a/src/vs/workbench/browser/parts/titlebar/media/titlebarpart.css b/src/vs/workbench/browser/parts/titlebar/media/titlebarpart.css
-index 5fc3835131b..155b7f1923d 100644
+index 17d771fff89..91f5a5bb1da 100644
 --- a/src/vs/workbench/browser/parts/titlebar/media/titlebarpart.css
 +++ b/src/vs/workbench/browser/parts/titlebar/media/titlebarpart.css
 @@ -290,7 +290,7 @@
@@ -52,7 +52,7 @@ index 5fc3835131b..155b7f1923d 100644
  	background-position: center center;
  	background-size: 16px;
 diff --git a/src/vs/workbench/contrib/welcomeGettingStarted/browser/media/gettingStarted.css b/src/vs/workbench/contrib/welcomeGettingStarted/browser/media/gettingStarted.css
-index 71733ede647..a74b5c5ede6 100644
+index a65e43393be..263d6eb5bac 100644
 --- a/src/vs/workbench/contrib/welcomeGettingStarted/browser/media/gettingStarted.css
 +++ b/src/vs/workbench/contrib/welcomeGettingStarted/browser/media/gettingStarted.css
 @@ -5,7 +5,7 @@

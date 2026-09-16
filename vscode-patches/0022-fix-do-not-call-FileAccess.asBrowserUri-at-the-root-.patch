@@ -10,7 +10,7 @@ to be able to register the file before
  1 file changed, 63 insertions(+), 51 deletions(-)
 
 diff --git a/src/vs/workbench/contrib/extensions/browser/extensionsWorkbenchService.ts b/src/vs/workbench/contrib/extensions/browser/extensionsWorkbenchService.ts
-index a58d77d1291..80a883131c7 100644
+index b60ffca7db1..5c6768b9e7d 100644
 --- a/src/vs/workbench/contrib/extensions/browser/extensionsWorkbenchService.ts
 +++ b/src/vs/workbench/contrib/extensions/browser/extensionsWorkbenchService.ts
 @@ -3,79 +3,91 @@

@@ -9,14 +9,14 @@ Subject: [PATCH] fix: replace amd imports by regular esm dynamic imports
  .../markdown/browser/markedKatexSupport.ts      |  5 ++---
  .../terminal/browser/terminalInstance.ts        |  3 +--
  .../browser/xterm/xtermAddonImporter.ts         | 17 ++++++++---------
- .../assignment/common/assignmentService.ts      |  3 +--
+ .../assignment/common/assignmentService.ts      |  5 +----
  .../textMateWorkerTokenizerController.ts        |  3 +--
  .../worker/textMateTokenizationWorker.worker.ts |  5 ++---
  .../worker/textMateWorkerTokenizer.ts           |  3 +--
  .../browser/textMateTokenizationFeatureImpl.ts  |  6 +++---
  .../services/textfile/common/encoding.ts        |  9 ++++-----
- .../browser/treeSitterLibraryService.ts         |  4 ++--
- 12 files changed, 28 insertions(+), 44 deletions(-)
+ .../browser/treeSitterLibraryService.ts         |  3 +--
+ 12 files changed, 27 insertions(+), 46 deletions(-)
 
 diff --git a/src/vs/editor/common/diff/externalLinesDiffComputer.ts b/src/vs/editor/common/diff/externalLinesDiffComputer.ts
 index f97be2154b9..5dbd6eb7572 100644
@@ -42,7 +42,7 @@ index f97be2154b9..5dbd6eb7572 100644
  	return externalModulePromise;
  }
 diff --git a/src/vs/platform/telemetry/common/1dsAppender.ts b/src/vs/platform/telemetry/common/1dsAppender.ts
-index 0daaabd02b5..316500b563c 100644
+index 9298c26e970..416454bcb5f 100644
 --- a/src/vs/platform/telemetry/common/1dsAppender.ts
 +++ b/src/vs/platform/telemetry/common/1dsAppender.ts
 @@ -5,10 +5,8 @@
@@ -56,8 +56,8 @@ index 0daaabd02b5..316500b563c 100644
  import { ITelemetryAppender, validateTelemetryData } from './telemetryUtils.js';
  
  // Interface type which is a subset of @microsoft/1ds-core-js AppInsightsCore.
-@@ -23,11 +21,8 @@ const endpointUrl = 'https://mobile.events.data.microsoft.com/OneCollector/1.0';
- const endpointHealthUrl = 'https://mobile.events.data.microsoft.com/ping';
+@@ -40,11 +38,8 @@ export function applyEnvelopeDefaults(envelope: ITelemetryItem, isInternalMachin
+ }
  
  async function getClient(instrumentationKey: string, addInternalFlag?: boolean, xhrOverride?: IXHROverride): Promise<IAppInsightsCore> {
 -	// eslint-disable-next-line local/code-amd-node-module
@@ -71,7 +71,7 @@ index 0daaabd02b5..316500b563c 100644
  	const collectorChannelPlugin: PostChannel = new postPlugin.PostChannel();
  	// Configure the app insights core to send to collector++ and disable logging of debug info
 diff --git a/src/vs/workbench/contrib/markdown/browser/markedKatexSupport.ts b/src/vs/workbench/contrib/markdown/browser/markedKatexSupport.ts
-index 3d83476e176..a80f0b9a7f2 100644
+index 7a11288e7e3..46b728a700a 100644
 --- a/src/vs/workbench/contrib/markdown/browser/markedKatexSupport.ts
 +++ b/src/vs/workbench/contrib/markdown/browser/markedKatexSupport.ts
 @@ -3,7 +3,6 @@
@@ -101,7 +101,7 @@ index 3d83476e176..a80f0b9a7f2 100644
  		}
  	}
 diff --git a/src/vs/workbench/contrib/terminal/browser/terminalInstance.ts b/src/vs/workbench/contrib/terminal/browser/terminalInstance.ts
-index 6d6da9cbfbf..7e5f6224115 100644
+index 5e921025518..5605bc30e32 100644
 --- a/src/vs/workbench/contrib/terminal/browser/terminalInstance.ts
 +++ b/src/vs/workbench/contrib/terminal/browser/terminalInstance.ts
 @@ -79,7 +79,6 @@ import { IHistoryService } from '../../../services/history/common/history.js';
@@ -112,7 +112,7 @@ index 6d6da9cbfbf..7e5f6224115 100644
  import type { IMarker, Terminal as XTermTerminal, IBufferLine } from '@xterm/xterm';
  import { AccessibilityCommandId } from '../../accessibility/common/accessibilityCommands.js';
  import { terminalStrings } from '../common/terminalStrings.js';
-@@ -784,7 +783,7 @@ export class TerminalInstance extends Disposable implements ITerminalInstance {
+@@ -792,7 +791,7 @@ export class TerminalInstance extends Disposable implements ITerminalInstance {
  			return xtermConstructor;
  		}
  		xtermConstructor = Promises.withAsyncBody<typeof XTermTerminal>(async (resolve) => {
@@ -157,22 +157,17 @@ index 30e6bd1905b..d54aed4b473 100644
  			if (!addon) {
  				throw new Error(`Could not load addon ${name}`);
 diff --git a/src/vs/workbench/services/assignment/common/assignmentService.ts b/src/vs/workbench/services/assignment/common/assignmentService.ts
-index a75afa8aa6b..ca7a59d4a26 100644
+index cc9ac957964..1767b957a3a 100644
 --- a/src/vs/workbench/services/assignment/common/assignmentService.ts
 +++ b/src/vs/workbench/services/assignment/common/assignmentService.ts
-@@ -18,7 +18,6 @@ import { Registry } from '../../../../platform/registry/common/platform.js';
- import { workbenchConfigurationNodeBase } from '../../../common/configuration.js';
- import { IConfigurationRegistry, Extensions as ConfigurationExtensions, ConfigurationScope } from '../../../../platform/configuration/common/configurationRegistry.js';
- import { IWorkbenchEnvironmentService } from '../../environment/common/environmentService.js';
--import { importAMDNodeModule } from '../../../../amdX.js';
- import { timeout } from '../../../../base/common/async.js';
- import { StopWatch } from '../../../../base/common/stopwatch.js';
- import { CopilotAssignmentFilterProvider } from './assignmentFilters.js';
-@@ -258,7 +257,7 @@ export class WorkbenchAssignmentService extends Disposable implements IAssignmen
+@@ -450,10 +450,7 @@ export class WorkbenchAssignmentService extends Disposable implements IAssignmen
  
  		const tasConfig = this.productService.tasConfig!;
  
--		const tasClientModule = await importAMDNodeModule<typeof import('tas-client')>('tas-client', 'dist/tas-client.min.js');
+-		// tas-client ships as pure ESM; load it via a runtime-resolved URL so bundlers do not
+-		// rewrite the import (mirrors how the editor loads the `@vscode/diff` module).
+-		const tasClientUrl = resolveAmdNodeModulePath('tas-client', 'dist/tas-client.min.js');
+-		const tasClientModule = await import(/* webpackIgnore: true */ /* @vite-ignore */ `${tasClientUrl}`) as typeof import('tas-client');
 +		const tasClientModule = await import('tas-client');
  
  		// Measure the client-side latency of the first network call to the
@@ -243,14 +238,14 @@ index f031be8574d..9eb78239344 100644
  		}
  
 diff --git a/src/vs/workbench/services/textMate/browser/textMateTokenizationFeatureImpl.ts b/src/vs/workbench/services/textMate/browser/textMateTokenizationFeatureImpl.ts
-index 43b68e0e133..54283eea54d 100644
+index fc7f3e7fb31..e69a98cd5a1 100644
 --- a/src/vs/workbench/services/textMate/browser/textMateTokenizationFeatureImpl.ts
 +++ b/src/vs/workbench/services/textMate/browser/textMateTokenizationFeatureImpl.ts
 @@ -3,8 +3,8 @@
   *  Licensed under the MIT License. See License.txt in the project root for license information.
   *--------------------------------------------------------------------------------------------*/
  
--import { canASAR, importAMDNodeModule, resolveAmdNodeModulePath } from '../../../../amdX.js';
+-import { importAMDNodeModule, resolveAmdNodeModulePath } from '../../../../amdX.js';
  import * as domStylesheets from '../../../../base/browser/domStylesheets.js';
 +import { canASAR, resolveAmdNodeModulePath } from '../../../../amdX.js';
  import { equals as equalArray } from '../../../../base/common/arrays.js';
@@ -265,15 +260,15 @@ index 43b68e0e133..54283eea54d 100644
  		const onigLib: Promise<IOnigLib> = Promise.resolve({
  			createOnigScanner: (sources: string[]) => vscodeOniguruma.createOnigScanner(sources),
  			createOnigString: (str: string) => vscodeOniguruma.createOnigString(str)
-@@ -378,7 +378,7 @@ export class TextMateTokenizationFeature extends Disposable implements ITextMate
- 	private _getVSCodeOniguruma(): Promise<typeof import('vscode-oniguruma')> {
+@@ -379,7 +379,7 @@ export class TextMateTokenizationFeature extends Disposable implements ITextMate
  		if (!this._vscodeOniguruma) {
  			this._vscodeOniguruma = (async () => {
--				const [vscodeOniguruma, wasm] = await Promise.all([importAMDNodeModule<typeof import('vscode-oniguruma')>('vscode-oniguruma', 'release/main.js'), this._loadVSCodeOnigurumaWASM()]);
-+				const [vscodeOniguruma, wasm] = await Promise.all([import('vscode-oniguruma'), this._loadVSCodeOnigurumaWASM()]);
- 				await vscodeOniguruma.loadWASM({
- 					data: wasm,
- 					print: (str: string) => {
+ 				try {
+-					const [vscodeOniguruma, wasm] = await Promise.all([importAMDNodeModule<typeof import('vscode-oniguruma')>('vscode-oniguruma', 'release/main.js'), this._loadVSCodeOnigurumaWASM()]);
++					const [vscodeOniguruma, wasm] = await Promise.all([import('vscode-oniguruma'), this._loadVSCodeOnigurumaWASM()]);
+ 					await vscodeOniguruma.loadWASM({
+ 						data: wasm,
+ 						print: (str: string) => {
 diff --git a/src/vs/workbench/services/textfile/common/encoding.ts b/src/vs/workbench/services/textfile/common/encoding.ts
 index 4e401ed6f98..1849d4f5f97 100644
 --- a/src/vs/workbench/services/textfile/common/encoding.ts
@@ -323,19 +318,18 @@ index 4e401ed6f98..1849d4f5f97 100644
  	// ensure to limit buffer for guessing due to https://github.com/aadsm/jschardet/issues/53
  	const limitedBuffer = buffer.slice(0, AUTO_ENCODING_GUESS_MAX_BYTES);
 diff --git a/src/vs/workbench/services/treeSitter/browser/treeSitterLibraryService.ts b/src/vs/workbench/services/treeSitter/browser/treeSitterLibraryService.ts
-index a3a921f7b7c..80102e94947 100644
+index 5805db6a6ef..b1c27db1254 100644
 --- a/src/vs/workbench/services/treeSitter/browser/treeSitterLibraryService.ts
 +++ b/src/vs/workbench/services/treeSitter/browser/treeSitterLibraryService.ts
-@@ -7,7 +7,7 @@
+@@ -7,7 +7,6 @@
  import type { Parser, Language, Query } from '@vscode/tree-sitter-wasm';
  import { IReader, ObservablePromise } from '../../../../base/common/observable.js';
  import { ITreeSitterLibraryService } from '../../../../editor/common/services/treeSitter/treeSitterLibraryService.js';
--import { canASAR, importAMDNodeModule } from '../../../../amdX.js';
-+import { canASAR } from '../../../../amdX.js';
+-import { importAMDNodeModule } from '../../../../amdX.js';
  import { Lazy } from '../../../../base/common/lazy.js';
  import { IConfigurationService } from '../../../../platform/configuration/common/configuration.js';
  import { FileOperationResult, IFileContent, IFileService, toFileOperationResult } from '../../../../platform/files/common/files.js';
-@@ -33,7 +33,7 @@ export class TreeSitterLibraryService extends Disposable implements ITreeSitterL
+@@ -35,7 +34,7 @@ export class TreeSitterLibraryService extends Disposable implements ITreeSitterL
  	isTest: boolean = false;
  
  	private readonly _treeSitterImport = new Lazy(async () => {

@@ -7,14 +7,14 @@ Subject: [PATCH] refactor: split some modules to be able to import them
 ---
  .../editor/editor.contribution._autosave.ts   |   9 +
  .../parts/editor/editor.contribution.ts       |   3 +-
- .../files/browser/fileCommands._save.ts       | 225 ++++++
- .../contrib/files/browser/fileCommands.ts     | 220 +-----
+ .../files/browser/fileCommands._save.ts       | 254 +++++++
+ .../contrib/files/browser/fileCommands.ts     | 295 +-------
  .../files.contribution._configuration.ts      | 307 ++++++++
  .../browser/files.contribution._editorPane.ts |  93 +++
  .../browser/files.contribution._explorer.ts   | 295 ++++++++
  .../files.contribution._fileEditorFactory.ts  |  24 +
  .../files/browser/files.contribution.ts       | 684 +-----------------
- 9 files changed, 965 insertions(+), 895 deletions(-)
+ 9 files changed, 1017 insertions(+), 947 deletions(-)
  create mode 100644 src/vs/workbench/browser/parts/editor/editor.contribution._autosave.ts
  create mode 100644 src/vs/workbench/contrib/files/browser/fileCommands._save.ts
  create mode 100644 src/vs/workbench/contrib/files/browser/files.contribution._configuration.ts
@@ -38,7 +38,7 @@ index 00000000000..185a77baafb
 +
 +registerWorkbenchContribution2(EditorAutoSave.ID, EditorAutoSave, WorkbenchPhase.BlockRestore);
 diff --git a/src/vs/workbench/browser/parts/editor/editor.contribution.ts b/src/vs/workbench/browser/parts/editor/editor.contribution.ts
-index 52e0d7f5e72..3bbb9239ee1 100644
+index 5f4cad341b6..5f3e9a7c684 100644
 --- a/src/vs/workbench/browser/parts/editor/editor.contribution.ts
 +++ b/src/vs/workbench/browser/parts/editor/editor.contribution.ts
 @@ -61,7 +61,6 @@ import { KeybindingsRegistry, KeybindingWeight } from '../../../../platform/keyb
@@ -67,10 +67,10 @@ index 52e0d7f5e72..3bbb9239ee1 100644
  registerWorkbenchContribution2(DynamicEditorConfigurations.ID, DynamicEditorConfigurations, WorkbenchPhase.BlockRestore);
 diff --git a/src/vs/workbench/contrib/files/browser/fileCommands._save.ts b/src/vs/workbench/contrib/files/browser/fileCommands._save.ts
 new file mode 100644
-index 00000000000..91219398705
+index 00000000000..29925ede77c
 --- /dev/null
 +++ b/src/vs/workbench/contrib/files/browser/fileCommands._save.ts
-@@ -0,0 +1,225 @@
+@@ -0,0 +1,254 @@
 +/*---------------------------------------------------------------------------------------------
 + *  Copyright (c) Microsoft Corporation. All rights reserved.
 + *  Licensed under the MIT License. See License.txt in the project root for license information.
@@ -90,7 +90,7 @@ index 00000000000..91219398705
 +import { IListService } from '../../../../platform/list/browser/listService.js';
 +import { INotificationService, Severity } from '../../../../platform/notification/common/notification.js';
 +import { resolveCommandsContext } from '../../../browser/parts/editor/editorCommandsContext.js';
-+import { EditorInputCapabilities, EditorResourceAccessor, EditorsOrder, IEditorCommandsContext, IEditorIdentifier, SaveReason, SideBySideEditor } from '../../../common/editor.js';
++import { EditorInputCapabilities, EditorResourceAccessor, isEditorCommandsContext, EditorsOrder, IEditorCommandsContext, IEditorIdentifier, SaveReason, SideBySideEditor } from '../../../common/editor.js';
 +import { SideBySideEditorInput } from '../../../common/editor/sideBySideEditorInput.js';
 +import { GroupsOrder, IEditorGroup, IEditorGroupsService } from '../../../services/editor/common/editorGroupsService.js';
 +import { IEditorService, ISaveEditorsOptions } from '../../../services/editor/common/editorService.js';
@@ -100,38 +100,67 @@ index 00000000000..91219398705
 +import { isEqual } from '../../../../base/common/resources.js';
 +import { toErrorMessage } from '../../../../base/common/errorMessage.js';
 +
-+async function saveSelectedEditors(accessor: ServicesAccessor, options?: ISaveEditorsOptions): Promise<void> {
++function expandSideBySideEditor({ groupId, editor }: IEditorIdentifier, options?: ISaveEditorsOptions): IEditorIdentifier[] {
++
++	// Special treatment for side by side editors: if the editor
++	// has 2 sides, we consider both, to support saving both sides.
++	// We only allow this when saving, not for "Save As" and not if any
++	// editor is untitled which would bring up a "Save As" dialog too.
++	// In addition, we require the secondary side to be modified to not
++	// trigger a touch operation unexpectedly.
++	//
++	// See also https://github.com/microsoft/vscode/issues/4180
++	// See also https://github.com/microsoft/vscode/issues/106330
++	// See also https://github.com/microsoft/vscode/issues/190210
++	if (
++		editor instanceof SideBySideEditorInput &&
++		!options?.saveAs && !(editor.primary.hasCapability(EditorInputCapabilities.Untitled) || editor.secondary.hasCapability(EditorInputCapabilities.Untitled)) &&
++		editor.secondary.isModified()
++	) {
++		return [{ groupId, editor: editor.primary }, { groupId, editor: editor.secondary }];
++	}
++
++	return [{ groupId, editor }];
++}
++
++function getEditorsFromCommandArgs(accessor: ServicesAccessor, commandArgs: unknown[] | undefined, options?: ISaveEditorsOptions): IEditorIdentifier[] | undefined {
++	if (!commandArgs?.some(arg => isEditorCommandsContext(arg))) {
++		return undefined; // only respect the arguments if they contain an explicit editor context
++	}
++
++	const resolvedContext = resolveCommandsContext(commandArgs, accessor.get(IEditorService), accessor.get(IEditorGroupsService), accessor.get(IListService));
++
++	const editors: IEditorIdentifier[] = [];
++	for (const { group, editors: groupEditors } of resolvedContext.groupedEditors) {
++		for (const editor of groupEditors) {
++			editors.push(...expandSideBySideEditor({ groupId: group.id, editor }, options));
++		}
++	}
++
++	// Note: we return the (possibly empty) result even when the explicit context
++	// no longer resolves to any editor to not fall back to other editors which
++	// would end up saving an editor the command was not invoked for
++	return editors;
++}
++
++async function saveSelectedEditors(accessor: ServicesAccessor, options?: ISaveEditorsOptions, commandArgs?: unknown[]): Promise<void> {
 +	const editorGroupService = accessor.get(IEditorGroupsService);
 +	const codeEditorService = accessor.get(ICodeEditorService);
 +	const textFileService = accessor.get(ITextFileService);
 +
++	// Retrieve the editors from the command arguments if they contain an explicit
++	// editor context (e.g. when invoked from the editor tab context menu) because
++	// the editor the command was triggered for may not be the active editor
++	let editors = getEditorsFromCommandArgs(accessor, commandArgs, options);
++
 +	// Retrieve selected or active editor
-+	let editors = getOpenEditorsViewMultiSelection(accessor);
++	if (!editors) {
++		editors = getOpenEditorsViewMultiSelection(accessor);
++	}
 +	if (!editors) {
 +		const activeGroup = editorGroupService.activeGroup;
 +		if (activeGroup.activeEditor) {
-+			editors = [];
-+
-+			// Special treatment for side by side editors: if the active editor
-+			// has 2 sides, we consider both, to support saving both sides.
-+			// We only allow this when saving, not for "Save As" and not if any
-+			// editor is untitled which would bring up a "Save As" dialog too.
-+			// In addition, we require the secondary side to be modified to not
-+			// trigger a touch operation unexpectedly.
-+			//
-+			// See also https://github.com/microsoft/vscode/issues/4180
-+			// See also https://github.com/microsoft/vscode/issues/106330
-+			// See also https://github.com/microsoft/vscode/issues/190210
-+			if (
-+				activeGroup.activeEditor instanceof SideBySideEditorInput &&
-+				!options?.saveAs && !(activeGroup.activeEditor.primary.hasCapability(EditorInputCapabilities.Untitled) || activeGroup.activeEditor.secondary.hasCapability(EditorInputCapabilities.Untitled)) &&
-+				activeGroup.activeEditor.secondary.isModified()
-+			) {
-+				editors.push({ groupId: activeGroup.id, editor: activeGroup.activeEditor.primary });
-+				editors.push({ groupId: activeGroup.id, editor: activeGroup.activeEditor.secondary });
-+			} else {
-+				editors.push({ groupId: activeGroup.id, editor: activeGroup.activeEditor });
-+			}
++			editors = expandSideBySideEditor({ groupId: activeGroup.id, editor: activeGroup.activeEditor }, options);
 +		}
 +	}
 +
@@ -203,8 +232,8 @@ index 00000000000..91219398705
 +	weight: KeybindingWeight.WorkbenchContrib,
 +	primary: KeyMod.CtrlCmd | KeyCode.KeyS,
 +	id: SAVE_FILE_COMMAND_ID,
-+	handler: accessor => {
-+		return saveSelectedEditors(accessor, { reason: SaveReason.EXPLICIT, force: true /* force save even when non-dirty */ });
++	handler: (accessor, ...args: unknown[]) => {
++		return saveSelectedEditors(accessor, { reason: SaveReason.EXPLICIT, force: true /* force save even when non-dirty */ }, args);
 +	}
 +});
 +
@@ -224,8 +253,8 @@ index 00000000000..91219398705
 +	weight: KeybindingWeight.WorkbenchContrib,
 +	when: undefined,
 +	primary: KeyMod.CtrlCmd | KeyMod.Shift | KeyCode.KeyS,
-+	handler: accessor => {
-+		return saveSelectedEditors(accessor, { reason: SaveReason.EXPLICIT, saveAs: true });
++	handler: (accessor, ...args: unknown[]) => {
++		return saveSelectedEditors(accessor, { reason: SaveReason.EXPLICIT, saveAs: true }, args);
 +	}
 +});
 +
@@ -297,106 +326,160 @@ index 00000000000..91219398705
 +	}
 +});
 diff --git a/src/vs/workbench/contrib/files/browser/fileCommands.ts b/src/vs/workbench/contrib/files/browser/fileCommands.ts
-index c8fc8aa2dd2..1ea10370c97 100644
+index 92a14ca8401..ef1ec406862 100644
 --- a/src/vs/workbench/contrib/files/browser/fileCommands.ts
 +++ b/src/vs/workbench/contrib/files/browser/fileCommands.ts
-@@ -5,8 +5,7 @@
+@@ -3,55 +3,46 @@
+  *  Licensed under the MIT License. See License.txt in the project root for license information.
+  *--------------------------------------------------------------------------------------------*/
  
- import * as nls from '../../../../nls.js';
+-import * as nls from '../../../../nls.js';
++import { KeyChord, KeyCode, KeyMod } from '../../../../base/common/keyCodes.js';
++import { dispose, IDisposable } from '../../../../base/common/lifecycle.js';
++import { Schemas } from '../../../../base/common/network.js';
++import { isWeb, isWindows } from '../../../../base/common/platform.js';
++import { basename, joinPath } from '../../../../base/common/resources.js';
  import { URI } from '../../../../base/common/uri.js';
--import { EditorResourceAccessor, IEditorCommandsContext, SideBySideEditor, IEditorIdentifier, SaveReason, EditorsOrder, EditorInputCapabilities } from '../../../common/editor.js';
+-import { EditorResourceAccessor, IEditorCommandsContext, isEditorCommandsContext, SideBySideEditor, IEditorIdentifier, SaveReason, EditorsOrder, EditorInputCapabilities } from '../../../common/editor.js';
 -import { SideBySideEditorInput } from '../../../common/editor/sideBySideEditorInput.js';
-+import { EditorResourceAccessor, SideBySideEditor } from '../../../common/editor.js';
- import { IWindowOpenable, IOpenWindowOptions, isWorkspaceToOpen, IOpenEmptyWindowOptions } from '../../../../platform/window/common/window.js';
- import { IHostService } from '../../../services/host/browser/host.js';
- import { ServicesAccessor, IInstantiationService } from '../../../../platform/instantiation/common/instantiation.js';
-@@ -14,7 +13,6 @@ import { IWorkspaceContextService, UNTITLED_WORKSPACE_NAME } from '../../../../p
- import { ExplorerFocusCondition, TextFileContentProvider, VIEWLET_ID, ExplorerCompressedFocusContext, ExplorerCompressedFirstFocusContext, ExplorerCompressedLastFocusContext, FilesExplorerFocusCondition, ExplorerFolderContext, VIEW_ID } from '../common/files.js';
- import { ExplorerViewPaneContainer } from './explorerViewlet.js';
+-import { IWindowOpenable, IOpenWindowOptions, isWorkspaceToOpen, IOpenEmptyWindowOptions } from '../../../../platform/window/common/window.js';
+-import { IHostService } from '../../../services/host/browser/host.js';
+-import { ServicesAccessor, IInstantiationService } from '../../../../platform/instantiation/common/instantiation.js';
+-import { IWorkspaceContextService, UNTITLED_WORKSPACE_NAME } from '../../../../platform/workspace/common/workspace.js';
+-import { ExplorerFocusCondition, TextFileContentProvider, VIEWLET_ID, ExplorerCompressedFocusContext, ExplorerCompressedFirstFocusContext, ExplorerCompressedLastFocusContext, FilesExplorerFocusCondition, ExplorerFolderContext, VIEW_ID } from '../common/files.js';
+-import { ExplorerViewPaneContainer } from './explorerViewlet.js';
++import { EditorContextKeys } from '../../../../editor/common/editorContextKeys.js';
++import { ITextModelService } from '../../../../editor/common/services/resolverService.js';
++import * as nls from '../../../../nls.js';
  import { IClipboardService } from '../../../../platform/clipboard/common/clipboardService.js';
 -import { toErrorMessage } from '../../../../base/common/errorMessage.js';
  import { CommandsRegistry, ICommandHandler, ICommandService } from '../../../../platform/commands/common/commands.js';
- import { IContextKey, IContextKeyService, ContextKeyExpr } from '../../../../platform/contextkey/common/contextkey.js';
+-import { IContextKey, IContextKeyService, ContextKeyExpr } from '../../../../platform/contextkey/common/contextkey.js';
++import { IConfigurationService } from '../../../../platform/configuration/common/configuration.js';
++import { ContextKeyExpr, IContextKey, IContextKeyService } from '../../../../platform/contextkey/common/contextkey.js';
++import { IFileDialogService } from '../../../../platform/dialogs/common/dialogs.js';
++import { EditorOpenSource, EditorResolution } from '../../../../platform/editor/common/editor.js';
++import { IEnvironmentService } from '../../../../platform/environment/common/environment.js';
  import { IFileService } from '../../../../platform/files/common/files.js';
-@@ -22,36 +20,29 @@ import { KeybindingsRegistry, KeybindingWeight } from '../../../../platform/keyb
- import { KeyMod, KeyCode, KeyChord } from '../../../../base/common/keyCodes.js';
- import { isWeb, isWindows } from '../../../../base/common/platform.js';
- import { ITextModelService } from '../../../../editor/common/services/resolverService.js';
++import { IInstantiationService, ServicesAccessor } from '../../../../platform/instantiation/common/instantiation.js';
+ import { KeybindingsRegistry, KeybindingWeight } from '../../../../platform/keybinding/common/keybindingsRegistry.js';
+-import { KeyMod, KeyCode, KeyChord } from '../../../../base/common/keyCodes.js';
+-import { isWeb, isWindows } from '../../../../base/common/platform.js';
+-import { ITextModelService } from '../../../../editor/common/services/resolverService.js';
 -import { getResourceForCommand, getMultiSelectedResources, getOpenEditorsViewMultiSelection, IExplorerService } from './files.js';
-+import { getResourceForCommand, getMultiSelectedResources, IExplorerService } from './files.js';
- import { IWorkspaceEditingService } from '../../../services/workspaces/common/workspaceEditing.js';
+-import { IWorkspaceEditingService } from '../../../services/workspaces/common/workspaceEditing.js';
 -import { resolveCommandsContext } from '../../../browser/parts/editor/editorCommandsContext.js';
- import { Schemas } from '../../../../base/common/network.js';
+-import { Schemas } from '../../../../base/common/network.js';
 -import { INotificationService, Severity } from '../../../../platform/notification/common/notification.js';
- import { EditorContextKeys } from '../../../../editor/common/editorContextKeys.js';
+-import { EditorContextKeys } from '../../../../editor/common/editorContextKeys.js';
 -import { IEditorService, SIDE_GROUP, ISaveEditorsOptions } from '../../../services/editor/common/editorService.js';
 -import { IEditorGroupsService, GroupsOrder, IEditorGroup } from '../../../services/editor/common/editorGroupsService.js';
-+import { IEditorService, SIDE_GROUP } from '../../../services/editor/common/editorService.js';
-+import { IEditorGroupsService } from '../../../services/editor/common/editorGroupsService.js';
  import { ILabelService } from '../../../../platform/label/common/label.js';
 -import { basename, joinPath, isEqual } from '../../../../base/common/resources.js';
-+import { basename, joinPath } from '../../../../base/common/resources.js';
- import { IDisposable, dispose } from '../../../../base/common/lifecycle.js';
- import { IEnvironmentService } from '../../../../platform/environment/common/environment.js';
+-import { IDisposable, dispose } from '../../../../base/common/lifecycle.js';
+-import { IEnvironmentService } from '../../../../platform/environment/common/environment.js';
 -import { ICodeEditorService } from '../../../../editor/browser/services/codeEditorService.js';
 -import { EmbeddedCodeEditorWidget } from '../../../../editor/browser/widget/codeEditor/embeddedCodeEditorWidget.js';
 -import { ITextFileService } from '../../../services/textfile/common/textfiles.js';
++import { IListService } from '../../../../platform/list/browser/listService.js';
  import { IUriIdentityService } from '../../../../platform/uriIdentity/common/uriIdentity.js';
 -import { isCancellationError } from '../../../../base/common/errors.js';
 -import { IAction, toAction } from '../../../../base/common/actions.js';
- import { EditorOpenSource, EditorResolution } from '../../../../platform/editor/common/editor.js';
+-import { EditorOpenSource, EditorResolution } from '../../../../platform/editor/common/editor.js';
 -import { hash } from '../../../../base/common/hash.js';
- import { IConfigurationService } from '../../../../platform/configuration/common/configuration.js';
- import { IPaneCompositePartService } from '../../../services/panecomposite/browser/panecomposite.js';
+-import { IConfigurationService } from '../../../../platform/configuration/common/configuration.js';
+-import { IPaneCompositePartService } from '../../../services/panecomposite/browser/panecomposite.js';
++import { IOpenEmptyWindowOptions, IOpenWindowOptions, isWorkspaceToOpen, IWindowOpenable } from '../../../../platform/window/common/window.js';
++import { IWorkspaceContextService, UNTITLED_WORKSPACE_NAME } from '../../../../platform/workspace/common/workspace.js';
++import { RemoveRootFolderAction } from '../../../browser/actions/workspaceActions.js';
++import { EditorResourceAccessor, SideBySideEditor } from '../../../common/editor.js';
  import { ViewContainerLocation } from '../../../common/views.js';
++import { IEditorGroupsService } from '../../../services/editor/common/editorGroupsService.js';
++import { IEditorService, SIDE_GROUP } from '../../../services/editor/common/editorService.js';
++import { IHostService } from '../../../services/host/browser/host.js';
++import { IPaneCompositePartService } from '../../../services/panecomposite/browser/panecomposite.js';
  import { IViewsService } from '../../../services/views/common/viewsService.js';
 -import { OPEN_TO_SIDE_COMMAND_ID, COMPARE_WITH_SAVED_COMMAND_ID, SELECT_FOR_COMPARE_COMMAND_ID, ResourceSelectedForCompareContext, COMPARE_SELECTED_COMMAND_ID, COMPARE_RESOURCE_COMMAND_ID, COPY_PATH_COMMAND_ID, COPY_RELATIVE_PATH_COMMAND_ID, REVEAL_IN_EXPLORER_COMMAND_ID, OPEN_WITH_EXPLORER_COMMAND_ID, SAVE_FILE_COMMAND_ID, SAVE_FILE_WITHOUT_FORMATTING_COMMAND_ID, SAVE_FILE_AS_COMMAND_ID, SAVE_ALL_COMMAND_ID, SAVE_ALL_IN_GROUP_COMMAND_ID, SAVE_FILES_COMMAND_ID, REVERT_FILE_COMMAND_ID, REMOVE_ROOT_FOLDER_COMMAND_ID, PREVIOUS_COMPRESSED_FOLDER, NEXT_COMPRESSED_FOLDER, FIRST_COMPRESSED_FOLDER, LAST_COMPRESSED_FOLDER, NEW_UNTITLED_FILE_COMMAND_ID, NEW_UNTITLED_FILE_LABEL, NEW_FILE_COMMAND_ID } from './fileConstants.js';
-+import { OPEN_TO_SIDE_COMMAND_ID, COMPARE_WITH_SAVED_COMMAND_ID, SELECT_FOR_COMPARE_COMMAND_ID, ResourceSelectedForCompareContext, COMPARE_SELECTED_COMMAND_ID, COMPARE_RESOURCE_COMMAND_ID, COPY_PATH_COMMAND_ID, COPY_RELATIVE_PATH_COMMAND_ID, REVEAL_IN_EXPLORER_COMMAND_ID, OPEN_WITH_EXPLORER_COMMAND_ID, REMOVE_ROOT_FOLDER_COMMAND_ID, PREVIOUS_COMPRESSED_FOLDER, NEXT_COMPRESSED_FOLDER, FIRST_COMPRESSED_FOLDER, LAST_COMPRESSED_FOLDER, NEW_UNTITLED_FILE_COMMAND_ID, NEW_UNTITLED_FILE_LABEL, NEW_FILE_COMMAND_ID } from './fileConstants.js';
- import { IFileDialogService } from '../../../../platform/dialogs/common/dialogs.js';
- import { RemoveRootFolderAction } from '../../../browser/actions/workspaceActions.js';
- import { OpenEditorsView } from './views/openEditorsView.js';
- import { ExplorerView } from './views/explorerView.js';
- import { IListService } from '../../../../platform/list/browser/listService.js';
+-import { IFileDialogService } from '../../../../platform/dialogs/common/dialogs.js';
+-import { RemoveRootFolderAction } from '../../../browser/actions/workspaceActions.js';
+-import { OpenEditorsView } from './views/openEditorsView.js';
++import { IWorkspaceEditingService } from '../../../services/workspaces/common/workspaceEditing.js';
++import { ExplorerCompressedFirstFocusContext, ExplorerCompressedFocusContext, ExplorerCompressedLastFocusContext, ExplorerFocusCondition, ExplorerFolderContext, FilesExplorerFocusCondition, TextFileContentProvider, VIEW_ID, VIEWLET_ID } from '../common/files.js';
++import { ExplorerViewPaneContainer } from './explorerViewlet.js';
 +import './fileCommands._save.js';
++import { COMPARE_RESOURCE_COMMAND_ID, COMPARE_SELECTED_COMMAND_ID, COMPARE_WITH_SAVED_COMMAND_ID, COPY_PATH_COMMAND_ID, COPY_RELATIVE_PATH_COMMAND_ID, FIRST_COMPRESSED_FOLDER, LAST_COMPRESSED_FOLDER, NEW_FILE_COMMAND_ID, NEW_UNTITLED_FILE_COMMAND_ID, NEW_UNTITLED_FILE_LABEL, NEXT_COMPRESSED_FOLDER, OPEN_TO_SIDE_COMMAND_ID, OPEN_WITH_EXPLORER_COMMAND_ID, PREVIOUS_COMPRESSED_FOLDER, REMOVE_ROOT_FOLDER_COMMAND_ID, ResourceSelectedForCompareContext, REVEAL_IN_EXPLORER_COMMAND_ID, SELECT_FOR_COMPARE_COMMAND_ID } from './fileConstants.js';
++import { getMultiSelectedResources, getResourceForCommand, IExplorerService } from './files.js';
+ import { ExplorerView } from './views/explorerView.js';
+-import { IListService } from '../../../../platform/list/browser/listService.js';
++import { OpenEditorsView } from './views/openEditorsView.js';
  
  export const openWindowCommand = (accessor: ServicesAccessor, toOpen: IWindowOpenable[], options?: IOpenWindowOptions) => {
  	if (Array.isArray(toOpen)) {
-@@ -363,203 +354,6 @@ CommandsRegistry.registerCommand({
+@@ -363,232 +354,6 @@ CommandsRegistry.registerCommand({
  
  // Save / Save As / Save All / Revert
  
--async function saveSelectedEditors(accessor: ServicesAccessor, options?: ISaveEditorsOptions): Promise<void> {
+-function expandSideBySideEditor({ groupId, editor }: IEditorIdentifier, options?: ISaveEditorsOptions): IEditorIdentifier[] {
+-
+-	// Special treatment for side by side editors: if the editor
+-	// has 2 sides, we consider both, to support saving both sides.
+-	// We only allow this when saving, not for "Save As" and not if any
+-	// editor is untitled which would bring up a "Save As" dialog too.
+-	// In addition, we require the secondary side to be modified to not
+-	// trigger a touch operation unexpectedly.
+-	//
+-	// See also https://github.com/microsoft/vscode/issues/4180
+-	// See also https://github.com/microsoft/vscode/issues/106330
+-	// See also https://github.com/microsoft/vscode/issues/190210
+-	if (
+-		editor instanceof SideBySideEditorInput &&
+-		!options?.saveAs && !(editor.primary.hasCapability(EditorInputCapabilities.Untitled) || editor.secondary.hasCapability(EditorInputCapabilities.Untitled)) &&
+-		editor.secondary.isModified()
+-	) {
+-		return [{ groupId, editor: editor.primary }, { groupId, editor: editor.secondary }];
+-	}
+-
+-	return [{ groupId, editor }];
+-}
+-
+-function getEditorsFromCommandArgs(accessor: ServicesAccessor, commandArgs: unknown[] | undefined, options?: ISaveEditorsOptions): IEditorIdentifier[] | undefined {
+-	if (!commandArgs?.some(arg => isEditorCommandsContext(arg))) {
+-		return undefined; // only respect the arguments if they contain an explicit editor context
+-	}
+-
+-	const resolvedContext = resolveCommandsContext(commandArgs, accessor.get(IEditorService), accessor.get(IEditorGroupsService), accessor.get(IListService));
+-
+-	const editors: IEditorIdentifier[] = [];
+-	for (const { group, editors: groupEditors } of resolvedContext.groupedEditors) {
+-		for (const editor of groupEditors) {
+-			editors.push(...expandSideBySideEditor({ groupId: group.id, editor }, options));
+-		}
+-	}
+-
+-	// Note: we return the (possibly empty) result even when the explicit context
+-	// no longer resolves to any editor to not fall back to other editors which
+-	// would end up saving an editor the command was not invoked for
+-	return editors;
+-}
+-
+-async function saveSelectedEditors(accessor: ServicesAccessor, options?: ISaveEditorsOptions, commandArgs?: unknown[]): Promise<void> {
 -	const editorGroupService = accessor.get(IEditorGroupsService);
 -	const codeEditorService = accessor.get(ICodeEditorService);
 -	const textFileService = accessor.get(ITextFileService);
 -
+-	// Retrieve the editors from the command arguments if they contain an explicit
+-	// editor context (e.g. when invoked from the editor tab context menu) because
+-	// the editor the command was triggered for may not be the active editor
+-	let editors = getEditorsFromCommandArgs(accessor, commandArgs, options);
+-
 -	// Retrieve selected or active editor
--	let editors = getOpenEditorsViewMultiSelection(accessor);
+-	if (!editors) {
+-		editors = getOpenEditorsViewMultiSelection(accessor);
+-	}
 -	if (!editors) {
 -		const activeGroup = editorGroupService.activeGroup;
 -		if (activeGroup.activeEditor) {
--			editors = [];
--
--			// Special treatment for side by side editors: if the active editor
--			// has 2 sides, we consider both, to support saving both sides.
--			// We only allow this when saving, not for "Save As" and not if any
--			// editor is untitled which would bring up a "Save As" dialog too.
--			// In addition, we require the secondary side to be modified to not
--			// trigger a touch operation unexpectedly.
--			//
--			// See also https://github.com/microsoft/vscode/issues/4180
--			// See also https://github.com/microsoft/vscode/issues/106330
--			// See also https://github.com/microsoft/vscode/issues/190210
--			if (
--				activeGroup.activeEditor instanceof SideBySideEditorInput &&
--				!options?.saveAs && !(activeGroup.activeEditor.primary.hasCapability(EditorInputCapabilities.Untitled) || activeGroup.activeEditor.secondary.hasCapability(EditorInputCapabilities.Untitled)) &&
--				activeGroup.activeEditor.secondary.isModified()
--			) {
--				editors.push({ groupId: activeGroup.id, editor: activeGroup.activeEditor.primary });
--				editors.push({ groupId: activeGroup.id, editor: activeGroup.activeEditor.secondary });
--			} else {
--				editors.push({ groupId: activeGroup.id, editor: activeGroup.activeEditor });
--			}
+-			editors = expandSideBySideEditor({ groupId: activeGroup.id, editor: activeGroup.activeEditor }, options);
 -		}
 -	}
 -
@@ -468,8 +551,8 @@ index c8fc8aa2dd2..1ea10370c97 100644
 -	weight: KeybindingWeight.WorkbenchContrib,
 -	primary: KeyMod.CtrlCmd | KeyCode.KeyS,
 -	id: SAVE_FILE_COMMAND_ID,
--	handler: accessor => {
--		return saveSelectedEditors(accessor, { reason: SaveReason.EXPLICIT, force: true /* force save even when non-dirty */ });
+-	handler: (accessor, ...args: unknown[]) => {
+-		return saveSelectedEditors(accessor, { reason: SaveReason.EXPLICIT, force: true /* force save even when non-dirty */ }, args);
 -	}
 -});
 -
@@ -489,8 +572,8 @@ index c8fc8aa2dd2..1ea10370c97 100644
 -	weight: KeybindingWeight.WorkbenchContrib,
 -	when: undefined,
 -	primary: KeyMod.CtrlCmd | KeyMod.Shift | KeyCode.KeyS,
--	handler: accessor => {
--		return saveSelectedEditors(accessor, { reason: SaveReason.EXPLICIT, saveAs: true });
+-	handler: (accessor, ...args: unknown[]) => {
+-		return saveSelectedEditors(accessor, { reason: SaveReason.EXPLICIT, saveAs: true }, args);
 -	}
 -});
 -

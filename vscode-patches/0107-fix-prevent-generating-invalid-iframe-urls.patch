@@ -47,7 +47,7 @@ index e8522e03115..58646c34cc0 100644
 +	return uri.with({ authority: uri.authority.replace(placeholder, replacement.slice(0, replacementLength)) });
 +}
 diff --git a/src/vs/workbench/contrib/webview/browser/webviewElement.ts b/src/vs/workbench/contrib/webview/browser/webviewElement.ts
-index 03e5cf3eca5..eb844667ca9 100644
+index a9eafeca1ec..05c553be766 100644
 --- a/src/vs/workbench/contrib/webview/browser/webviewElement.ts
 +++ b/src/vs/workbench/contrib/webview/browser/webviewElement.ts
 @@ -5,7 +5,7 @@

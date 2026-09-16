@@ -35,19 +35,19 @@ index 55eaae5451c..ea6ed0b941a 100644
  	/**
  	 * If `true`, do not notifies the error to user by showing the message box. Default is `false`.
 diff --git a/src/vs/workbench/browser/layout.ts b/src/vs/workbench/browser/layout.ts
-index 69b9ba08eb2..b19764ab844 100644
+index 90aaffaeeda..b051709e5d3 100644
 --- a/src/vs/workbench/browser/layout.ts
 +++ b/src/vs/workbench/browser/layout.ts
-@@ -19,7 +19,7 @@ import { PanelPart } from './parts/panel/panelPart.js';
- import { Position, Parts, PartOpensMaximizedOptions, IWorkbenchLayoutService, positionFromString, positionToString, partOpensMaximizedFromString, PanelAlignment, ActivityBarPosition, LayoutSettings, MULTI_WINDOW_PARTS, SINGLE_WINDOW_PARTS, ZenModeSettings, EditorTabsMode, EditorActionsLocation, shouldShowCustomTitleBar, isHorizontal, isMultiWindowPart, IPartVisibilityChangeEvent } from '../services/layout/browser/layoutService.js';
+@@ -20,7 +20,7 @@ import { PanelPart } from './parts/panel/panelPart.js';
+ import { Position, Parts, PartOpensMaximizedOptions, IWorkbenchLayoutService, positionFromString, positionToString, partOpensMaximizedFromString, PanelAlignment, ActivityBarPosition, LayoutSettings, MULTI_WINDOW_PARTS, SINGLE_WINDOW_PARTS, ZenModeSettings, EditorTabsMode, EditorActionsLocation, shouldShowCustomTitleBar, isHorizontal, isMultiWindowPart, IPartVisibilityChangeEvent, isFloatingTopEdgeExposed, ModernUIDensity } from '../services/layout/browser/layoutService.js';
  import { isTemporaryWorkspace, IWorkspaceContextService, WorkbenchState } from '../../platform/workspace/common/workspace.js';
  import { IStorageService, StorageScope, StorageTarget } from '../../platform/storage/common/storage.js';
 -import { IConfigurationChangeEvent, IConfigurationService, isConfigured } from '../../platform/configuration/common/configuration.js';
 +import { IConfigurationChangeEvent, IConfigurationService, isConfigured, isDefaultOverriden } from '../../platform/configuration/common/configuration.js';
+ import { ChatAIDisabledSettingId } from '../../platform/chat/common/chatSettings.js';
  import { ITitleService } from '../services/title/browser/titleService.js';
  import { ServicesAccessor, IInstantiationService } from '../../platform/instantiation/common/instantiation.js';
- import { StartupKind, ILifecycleService } from '../services/lifecycle/common/lifecycle.js';
-@@ -2992,7 +2992,7 @@ class LayoutStateModel extends Disposable {
+@@ -3045,7 +3045,7 @@ class LayoutStateModel extends Disposable {
  			// Unless auxiliary bar visibility is explicitly configured, make
  			// sure to not force open it in case we know it was empty before.
  			const configuration = this.configurationService.inspect(WorkbenchLayoutSettings.AUXILIARYBAR_DEFAULT_VISIBILITY);
