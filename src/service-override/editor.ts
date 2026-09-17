@@ -17,6 +17,8 @@ import {
 import { IEditorGroupsService } from 'vs/workbench/services/editor/common/editorGroupsService.service'
 import { IInstantiationService } from 'vs/platform/instantiation/common/instantiation'
 import { DEFAULT_EDITOR_PART_OPTIONS } from 'vs/workbench/browser/parts/editor/editor'
+import { IDiffEditorCommandsService } from 'vs/workbench/browser/parts/editor/diffEditorCommandsService.service'
+import { DiffEditorCommandsService } from 'vs/workbench/browser/parts/editor/diffEditorCommandsService'
 import { mainWindow } from 'vs/base/browser/window'
 import {
   MonacoDelegateEditorGroupsService,
@@ -181,7 +183,8 @@ export default function getServiceOverride(openEditor: OpenEditor): IEditorOverr
       true
     ),
     [ITextEditorService.toString()]: new SyncDescriptor(TextEditorService, [], false),
-    [IEditorGroupsService.toString()]: new SyncDescriptor(MonacoEditorGroupsService, [openEditor])
+    [IEditorGroupsService.toString()]: new SyncDescriptor(MonacoEditorGroupsService, [openEditor]),
+    [IDiffEditorCommandsService.toString()]: new SyncDescriptor(DiffEditorCommandsService, [], true)
   }
 }
 

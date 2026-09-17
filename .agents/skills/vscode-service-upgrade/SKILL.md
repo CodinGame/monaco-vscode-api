@@ -13,6 +13,7 @@ disable-model-invocation: false
 - New services introduced between two VSCode refs, wired into this library for web builds.
 - Updated `service-override` modules that dispatch real VSCode implementations for newly added services.
 - Updated `src/services.ts` exports for all newly introduced service identifiers.
+- A user-confirmed fixup of the corresponding commit in `../vscode`, followed by a user-performed patch re-export, when a required real VSCode implementation is not exported upstream.
 - Mandatory dual wiring for each added service:
   - a fake implementation in `src/missing-services.ts`,
   - the real implementation in the relevant `src/service-override/*.ts` module.
@@ -65,6 +66,13 @@ disable-model-invocation: false
 - For each newly in-scope service, first add a fake implementation in `src/missing-services.ts` using the same decision rules from Step 2.
 - Then wire the same service into every relevant `service-override` module.
 - In `service-override` modules, use the actual VSCode implementation (not a fake fallback) whenever available and compatible with web scope.
+- If the actual implementation class is not exported by its VSCode module:
+  - never edit `vscode-patches/0011-feat-export-some-classes-and-make-some-methods-acces.patch` by hand,
+  - stop and ask the user to export the class in `../vscode`, fix up the commit corresponding to that patch, and re-export the patch series,
+  - do not continue until the user confirms that the fixup and patch re-export are complete,
+  - then regenerate/reinstall the transformed VSCode sources so the export is available under `./vscode`,
+  - import the class normally and register it with a `SyncDescriptor` in the relevant `service-override` module.
+- Never work around a missing class export with side-effect imports, singleton-registry inspection, descriptor capture, or a duplicate local implementation.
 - Export every newly added service identifier from `src/services.ts`.
 - Do not consider a service migration complete unless both sides are implemented: fake in `missing-services.ts` and real in `service-override`.
 
@@ -84,6 +92,11 @@ disable-model-invocation: false
   - Add when service is registered upstream in web-relevant layers and used by bundled code.
   - Skip when service exists only in non-web layers.
   - Keep override-module coverage checks generic (do not require a fixed hardcoded module list).
+- Missing implementation export:
+  - ask the user to export the class and fix up the corresponding commit in `../vscode`, then re-export the patch series,
+  - never modify the generated patch file manually,
+  - wait for explicit user confirmation before continuing,
+  - do not introduce runtime registration hacks.
 
 ## Completion Checklist
 - Preflight dependency sync completed successfully:
@@ -99,6 +112,9 @@ disable-model-invocation: false
 - Every unsupported member uses both `unsupported` and `@Unsupported`.
 - New upstream services between refs are reviewed and triaged by layer.
 - Relevant `service-override` modules include all newly in-scope services.
+- Every real implementation used by an override is imported directly; any missing upstream export was added by a user-confirmed fixup in `../vscode` and patch re-export.
+- Generated patch files were never edited manually by the agent.
+- No side-effect import or singleton-registry inspection is used to recover a non-exported implementation.
 - Required validation commands pass:
   - `npm run check-unsupported-decorator`
   - `npm run build`

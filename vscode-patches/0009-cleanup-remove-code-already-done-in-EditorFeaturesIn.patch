@@ -9,18 +9,18 @@ Subject: [PATCH] cleanup: remove code already done in
  1 file changed, 12 deletions(-)
 
 diff --git a/src/vs/editor/standalone/browser/standaloneServices.ts b/src/vs/editor/standalone/browser/standaloneServices.ts
-index 10f9707d556..a0e60bb896c 100644
+index acfe3705042..f9e7e8a6d83 100644
 --- a/src/vs/editor/standalone/browser/standaloneServices.ts
 +++ b/src/vs/editor/standalone/browser/standaloneServices.ts
-@@ -16,7 +16,6 @@ import * as dom from '../../../base/browser/dom.js';
- import { StandardKeyboardEvent } from '../../../base/browser/keyboardEvent.js';
+@@ -17,7 +17,6 @@ import { StandardKeyboardEvent } from '../../../base/browser/keyboardEvent.js';
+ import { renderAsPlaintext } from '../../../base/browser/markdownRenderer.js';
  import { mainWindow } from '../../../base/browser/window.js';
  import { IDefaultAccount, IDefaultAccountAuthenticationProvider, IPolicyData } from '../../../base/common/defaultAccount.js';
 -import { onUnexpectedError } from '../../../base/common/errors.js';
  import { Emitter, Event, IValueWithChangeEvent, ValueWithChangeEvent } from '../../../base/common/event.js';
+ import { IMarkdownString } from '../../../base/common/htmlContent.js';
  import { KeyCodeChord, Keybinding, ResolvedKeybinding, decodeKeybinding } from '../../../base/common/keybindings.js';
- import { Disposable, DisposableStore, IDisposable, IReference, ImmortalReference, combinedDisposable, toDisposable } from '../../../base/common/lifecycle.js';
-@@ -85,7 +84,6 @@ import { EditorOption } from '../../common/config/editorOptions.js';
+@@ -87,7 +86,6 @@ import { EditorOption } from '../../common/config/editorOptions.js';
  import { EditOperation, ISingleEditOperation } from '../../common/core/editOperation.js';
  import { IPosition, Position as Pos } from '../../common/core/position.js';
  import { Range } from '../../common/core/range.js';
@@ -28,7 +28,7 @@ index 10f9707d556..a0e60bb896c 100644
  import { WorkspaceEdit } from '../../common/languages.js';
  import { ILanguageService } from '../../common/languages/language.js';
  import { ITextModel, ITextSnapshot } from '../../common/model.js';
-@@ -1268,16 +1266,6 @@ export namespace StandaloneServices {
+@@ -1278,16 +1276,6 @@ export namespace StandaloneServices {
  			}
  		}
  

@@ -17,7 +17,7 @@ so that only the constant is pulled from the root instead of the whole module gr
  create mode 100644 src/vs/workbench/contrib/chat/browser/widget/input/editor/chatDynamicVariablesConstant.ts
 
 diff --git a/src/vs/workbench/api/browser/mainThreadChatAgents2.ts b/src/vs/workbench/api/browser/mainThreadChatAgents2.ts
-index a42e2afdce8..2f3c21aeec8 100644
+index 3eb9222a1c6..2156052b23b 100644
 --- a/src/vs/workbench/api/browser/mainThreadChatAgents2.ts
 +++ b/src/vs/workbench/api/browser/mainThreadChatAgents2.ts
 @@ -27,8 +27,6 @@ import { ILogService } from '../../../platform/log/common/log.js';
@@ -30,7 +30,7 @@ index a42e2afdce8..2f3c21aeec8 100644
  import { IAgentSkill, IChatPromptSlashCommand, ICustomAgent, IInstructionFile, IPromptFileContext, IPromptPath, IPromptsService, PromptsStorage } from '../../contrib/chat/common/promptSyntax/service/promptsService.js';
  import { isValidPromptType, PromptsType } from '../../contrib/chat/common/promptSyntax/promptTypes.js';
 @@ -50,6 +48,9 @@ import { ICustomizationHarnessService, ICustomizationItem, ICustomizationItemPro
- import { AICustomizationManagementSection, AICustomizationSources } from '../../contrib/chat/common/aiCustomizationWorkspaceService.js';
+ import { AICustomizationManagementSection } from '../../contrib/chat/common/aiCustomizationWorkspaceService.js';
  import { IAgentPlugin, IAgentPluginService } from '../../contrib/chat/common/plugins/agentPluginService.js';
  import { IWorkbenchEnvironmentService } from '../../services/environment/common/environmentService.js';
 +import { AgentSessionProviders, getAgentSessionProvider } from '../../contrib/chat/browser/agentSessions/agentSessions.js';
@@ -39,7 +39,7 @@ index a42e2afdce8..2f3c21aeec8 100644
  
  interface AgentData {
  	dispose: () => void;
-@@ -676,7 +677,7 @@ export class MainThreadChatAgents2 extends Disposable implements MainThreadChatA
+@@ -678,7 +679,7 @@ export class MainThreadChatAgents2 extends Disposable implements MainThreadChatA
  						kind: CompletionItemKind.Text,
  						detail: v.detail,
  						documentation: v.documentation,
@@ -65,7 +65,7 @@ index 00000000000..6ce67486a58
 +export const ASK_QUICK_QUESTION_ACTION_ID = 'workbench.action.quickchat.toggle';
 +
 diff --git a/src/vs/workbench/contrib/chat/browser/actions/chatQuickInputActions.ts b/src/vs/workbench/contrib/chat/browser/actions/chatQuickInputActions.ts
-index 21f8bc6191e..8280d72dcef 100644
+index 0adcae8e904..3a836d404c2 100644
 --- a/src/vs/workbench/contrib/chat/browser/actions/chatQuickInputActions.ts
 +++ b/src/vs/workbench/contrib/chat/browser/actions/chatQuickInputActions.ts
 @@ -13,8 +13,9 @@ import { KeybindingWeight } from '../../../../../platform/keybinding/common/keyb
@@ -80,18 +80,18 @@ index 21f8bc6191e..8280d72dcef 100644
  	registerAction2(QuickChatGlobalAction);
  	registerAction2(AskQuickChatAction);
 diff --git a/src/vs/workbench/contrib/chat/browser/attachments/chatDynamicVariables.ts b/src/vs/workbench/contrib/chat/browser/attachments/chatDynamicVariables.ts
-index 1e8d4fe6c22..385f277c79f 100644
+index 78675ef803e..186a6628f81 100644
 --- a/src/vs/workbench/contrib/chat/browser/attachments/chatDynamicVariables.ts
 +++ b/src/vs/workbench/contrib/chat/browser/attachments/chatDynamicVariables.ts
-@@ -17,6 +17,7 @@ import { ILabelService } from '../../../../../platform/label/common/label.js';
- import { IChatRequestVariableValue, IDynamicVariable } from '../../common/attachments/chatVariables.js';
+@@ -21,6 +21,7 @@ import { IChatRequestVariableEntry, isImageVariableEntry } from '../../common/at
+ import { IChatRequestVariableValue, IDynamicVariable, toAttachedContextDynamicVariable } from '../../common/attachments/chatVariables.js';
  import { IChatWidget } from '../chat.js';
  import { IChatWidgetContrib } from '../widget/chatWidget.js';
 +import { addDynamicVariableActionId } from '../widget/input/editor/chatDynamicVariablesConstant.js';
  
  export const dynamicVariableDecorationType = 'chat-dynamic-variable';
  
-@@ -245,7 +246,7 @@ function isAddDynamicVariableContext(context: any): context is IAddDynamicVariab
+@@ -328,7 +329,7 @@ function isAddDynamicVariableContext(context: any): context is IAddDynamicVariab
  }
  
  export class AddDynamicVariableAction extends Action2 {
@@ -133,7 +133,7 @@ index e05b71bd72c..af8fcba33d5 100644
  import { ChatAgentLocation } from '../../chat/common/constants.js';
  
 diff --git a/src/vs/workbench/contrib/search/browser/anythingQuickAccess.ts b/src/vs/workbench/contrib/search/browser/anythingQuickAccess.ts
-index eea4b5e31c1..4b60b798f12 100644
+index 5d1f8ceed63..91bb528bd09 100644
 --- a/src/vs/workbench/contrib/search/browser/anythingQuickAccess.ts
 +++ b/src/vs/workbench/contrib/search/browser/anythingQuickAccess.ts
 @@ -54,7 +54,7 @@ import { Lazy } from '../../../../base/common/lazy.js';

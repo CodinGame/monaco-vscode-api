@@ -4,14 +4,14 @@ Date: Wed, 18 Feb 2026 15:29:49 +0100
 Subject: [PATCH] refactor: extract storage creation method
 
 ---
- .../storage/browser/storageService.ts         | 73 ++++++++++++-------
- 1 file changed, 47 insertions(+), 26 deletions(-)
+ .../storage/browser/storageService.ts         | 77 ++++++++++++-------
+ 1 file changed, 49 insertions(+), 28 deletions(-)
 
 diff --git a/src/vs/workbench/services/storage/browser/storageService.ts b/src/vs/workbench/services/storage/browser/storageService.ts
-index 7ced4e9cdcb..40d855f1067 100644
+index 834f652c1f8..9df93e9de96 100644
 --- a/src/vs/workbench/services/storage/browser/storageService.ts
 +++ b/src/vs/workbench/services/storage/browser/storageService.ts
-@@ -19,32 +19,41 @@ import { isUserDataProfile, IUserDataProfile } from '../../../../platform/userDa
+@@ -19,41 +19,50 @@ import { isUserDataProfile, IUserDataProfile } from '../../../../platform/userDa
  import { IAnyWorkspaceIdentifier } from '../../../../platform/workspace/common/workspace.js';
  import { IUserDataProfileService } from '../../userDataProfile/common/userDataProfile.js';
  
@@ -61,7 +61,18 @@ index 7ced4e9cdcb..40d855f1067 100644
  		);
  	}
  
-@@ -76,9 +85,7 @@ export class BrowserStorageService extends AbstractStorageService {
+ 	async getApplicationStorageValue(key: string): Promise<string | undefined> {
+-		return (await this.applicationStoragePromise.p).indexedDb.getValue(key);
++		return getIIndexedDBStorageDatabase((await this.applicationStoragePromise.p).database)?.getValue(key);
+ 	}
+ 
+ 	async compareAndSwapApplicationStorage(key: string, expectedValue: string | undefined, newValue: string): Promise<{ readonly swapped: boolean; readonly currentValue: string | undefined }> {
+-		return (await this.applicationStoragePromise.p).indexedDb.compareAndSwap(key, expectedValue, newValue);
++		return (getIIndexedDBStorageDatabase((await this.applicationStoragePromise.p).database)?.compareAndSwap(key, expectedValue, newValue) ?? { swapped: false, currentValue: undefined });
+ 	}
+ 
+ 	constructor(
+@@ -84,9 +93,7 @@ export class BrowserStorageService extends AbstractStorageService {
  	}
  
  	private async createApplicationStorage(): Promise<void> {
@@ -72,7 +83,7 @@ index 7ced4e9cdcb..40d855f1067 100644
  		this.applicationStorage = this._register(new Storage(this.applicationStorageDatabase));
  
  		this._register(this.applicationStorage.onDidChangeStorage(e => this.emitDidChangeValue(StorageScope.APPLICATION, e)));
-@@ -87,7 +94,13 @@ export class BrowserStorageService extends AbstractStorageService {
+@@ -95,7 +102,13 @@ export class BrowserStorageService extends AbstractStorageService {
  
  		this.updateIsNew(this.applicationStorage);
  
@@ -87,7 +98,7 @@ index 7ced4e9cdcb..40d855f1067 100644
  	}
  
  	private async createApplicationSharedStorage(): Promise<void> {
-@@ -118,16 +131,14 @@ export class BrowserStorageService extends AbstractStorageService {
+@@ -126,16 +139,14 @@ export class BrowserStorageService extends AbstractStorageService {
  			// avoid creating the storage library a second time on
  			// the same DB.
  
@@ -107,7 +118,7 @@ index 7ced4e9cdcb..40d855f1067 100644
  			this.profileStorage = this.profileStorageDisposables.add(new Storage(this.profileStorageDatabase));
  
  			this.profileStorageDisposables.add(this.profileStorage.onDidChangeStorage(e => this.emitDidChangeValue(StorageScope.PROFILE, e)));
-@@ -138,13 +149,18 @@ export class BrowserStorageService extends AbstractStorageService {
+@@ -146,13 +157,18 @@ export class BrowserStorageService extends AbstractStorageService {
  		}
  	}
  
@@ -128,7 +139,7 @@ index 7ced4e9cdcb..40d855f1067 100644
  		this.workspaceStorage = this.workspaceStorageDisposables.add(new Storage(this.workspaceStorageDatabase));
  
  		this.workspaceStorageDisposables.add(this.workspaceStorage.onDidChangeStorage(e => this.emitDidChangeValue(StorageScope.WORKSPACE, e)));
-@@ -154,6 +170,11 @@ export class BrowserStorageService extends AbstractStorageService {
+@@ -162,6 +178,11 @@ export class BrowserStorageService extends AbstractStorageService {
  		this.updateIsNew(this.workspaceStorage);
  	}
  
@@ -140,7 +151,7 @@ index 7ced4e9cdcb..40d855f1067 100644
  	private updateIsNew(storage: IStorage): void {
  		const firstOpen = storage.getBoolean(IS_NEW_KEY);
  		if (firstOpen === undefined) {
-@@ -181,11 +202,11 @@ export class BrowserStorageService extends AbstractStorageService {
+@@ -189,11 +210,11 @@ export class BrowserStorageService extends AbstractStorageService {
  			case StorageScope.APPLICATION_SHARED:
  				return this.applicationSharedStorageDatabase?.name;
  			case StorageScope.APPLICATION:
@@ -155,7 +166,7 @@ index 7ced4e9cdcb..40d855f1067 100644
  		}
  	}
  
-@@ -274,10 +295,10 @@ export class BrowserStorageService extends AbstractStorageService {
+@@ -282,10 +303,10 @@ export class BrowserStorageService extends AbstractStorageService {
  
  		// Clear databases
  		await Promises.settled([

@@ -116,13 +116,13 @@ index 29d83945711..7b1a6e93ab9 100644
  	 * Contributions to instantiate.
  	 * When provided, only the contributions included will be instantiated.
 diff --git a/src/vs/editor/browser/widget/diffEditor/diffEditorWidget.ts b/src/vs/editor/browser/widget/diffEditor/diffEditorWidget.ts
-index bc5e4b7dcea..f4ea78b3b22 100644
+index 854d67106d8..f51bed1550e 100644
 --- a/src/vs/editor/browser/widget/diffEditor/diffEditorWidget.ts
 +++ b/src/vs/editor/browser/widget/diffEditor/diffEditorWidget.ts
-@@ -52,6 +52,12 @@ import { CSSStyle, ObservableElementSizeObserver, RefCounted, applyStyle, applyV
- export interface IDiffCodeEditorWidgetOptions {
- 	originalEditor?: ICodeEditorWidgetOptions;
+@@ -55,6 +55,12 @@ export interface IDiffCodeEditorWidgetOptions {
  	modifiedEditor?: ICodeEditorWidgetOptions;
+ 	runWithOriginalEditorScrollAnchor?: (anchorLineNumber: number, update: () => void) => void;
+ 	runWithModifiedEditorScrollAnchor?: (anchorLineNumber: number, update: () => void) => void;
 +
 +	/**
 +	 * Is this a standalone editor
@@ -132,7 +132,7 @@ index bc5e4b7dcea..f4ea78b3b22 100644
  }
  
  export class DiffEditorWidget extends DelegatingEditor implements IDiffEditor {
-@@ -184,6 +190,8 @@ export class DiffEditorWidget extends DelegatingEditor implements IDiffEditor {
+@@ -200,6 +206,8 @@ export class DiffEditorWidget extends DelegatingEditor implements IDiffEditor {
  
  		this._contextKeyService.createKey('isInDiffEditor', true);
  
@@ -142,19 +142,19 @@ index bc5e4b7dcea..f4ea78b3b22 100644
  		this._register(toDisposable(() => this.elements.root.remove()));
  
 diff --git a/src/vs/editor/standalone/browser/standalone-tokens.css b/src/vs/editor/standalone/browser/standalone-tokens.css
-index 1d65e13d69c..a47a00a7aff 100644
+index 510791118f0..e6c8b8424b9 100644
 --- a/src/vs/editor/standalone/browser/standalone-tokens.css
 +++ b/src/vs/editor/standalone/browser/standalone-tokens.css
 @@ -5,7 +5,7 @@
  
  
  /* Default standalone editor fonts */
--.monaco-editor {
-+.monaco-editor.standalone {
+-.monaco-editor,
++.monaco-editor.standalone,
+ .monaco-component,
+ .monaco-component.context-view.fixed {
  	font-family: -apple-system, BlinkMacSystemFont, "Segoe WPC", "Segoe UI", "HelveticaNeue-Light", system-ui, "Ubuntu", "Droid Sans", sans-serif;
- 	--monaco-monospace-font: "SF Mono", Monaco, Menlo, Consolas, "Ubuntu Mono", "Liberation Mono", "DejaVu Sans Mono", "Courier New", monospace;
- }
-@@ -14,9 +14,9 @@
+@@ -19,9 +19,9 @@
  	stroke-width: 1.2px;
  }
  
@@ -167,7 +167,7 @@ index 1d65e13d69c..a47a00a7aff 100644
  	stroke-width: 1.2px;
  }
  
-@@ -37,16 +37,16 @@
+@@ -42,16 +42,16 @@
  	clip-path: inset(50%);
  }
  

@@ -12,10 +12,10 @@ Subject: [PATCH] cleanup: remove some checks and warnings
  5 files changed, 1 insertion(+), 32 deletions(-)
 
 diff --git a/src/vs/workbench/contrib/webview/browser/pre/service-worker.js b/src/vs/workbench/contrib/webview/browser/pre/service-worker.js
-index ed965aae607..35a2ab17e71 100644
+index 16616210daf..f9b393e5313 100644
 --- a/src/vs/workbench/contrib/webview/browser/pre/service-worker.js
 +++ b/src/vs/workbench/contrib/webview/browser/pre/service-worker.js
-@@ -533,8 +533,7 @@ async function getOuterIframeClient(webviewId) {
+@@ -687,8 +687,7 @@ async function getOuterIframeClient(webviewId) {
  	const allClients = await sw.clients.matchAll({ includeUncontrolled: true });
  	return allClients.filter(client => {
  		const clientUrl = new URL(client.url);
@@ -26,7 +26,7 @@ index ed965aae607..35a2ab17e71 100644
  }
  
 diff --git a/src/vs/workbench/contrib/webview/browser/webviewElement.ts b/src/vs/workbench/contrib/webview/browser/webviewElement.ts
-index 10538d4cc95..4e073206a68 100644
+index 6f913921863..def1440fd9a 100644
 --- a/src/vs/workbench/contrib/webview/browser/webviewElement.ts
 +++ b/src/vs/workbench/contrib/webview/browser/webviewElement.ts
 @@ -513,11 +513,6 @@ export class WebviewElement extends Disposable implements IWebviewElement, Webvi
@@ -54,10 +54,10 @@ index 10538d4cc95..4e073206a68 100644
  		if (this.element && this._messagePort) {
  			this._messagePort.postMessage({ channel, args: data }, transferable);
 diff --git a/src/vs/workbench/services/auxiliaryWindow/browser/auxiliaryWindowService.ts b/src/vs/workbench/services/auxiliaryWindow/browser/auxiliaryWindowService.ts
-index b6099cf807a..1872d9b598e 100644
+index cd3c3ac8c1b..547adac39c1 100644
 --- a/src/vs/workbench/services/auxiliaryWindow/browser/auxiliaryWindowService.ts
 +++ b/src/vs/workbench/services/auxiliaryWindow/browser/auxiliaryWindowService.ts
-@@ -401,13 +401,6 @@ export class BrowserAuxiliaryWindowService extends Disposable implements IAuxili
+@@ -410,13 +410,6 @@ export class BrowserAuxiliaryWindowService extends Disposable implements IAuxili
  	}
  
  	protected createContainer(auxiliaryWindow: CodeWindow, disposables: DisposableStore, options?: IAuxiliaryWindowOpenOptions): { stylesLoaded: Barrier; container: HTMLElement } {

@@ -1,9 +1,13 @@
 import type { PolicyName } from 'vs/base/common/policy'
+import { PolicyCategory } from 'vs/base/common/policy'
 import type { IEditorOverrideServices } from 'vs/editor/standalone/browser/standaloneServices'
 import { SyncDescriptor } from 'vs/platform/instantiation/common/descriptors'
-import { AbstractPolicyService, type PolicyValue } from 'vs/platform/policy/common/policy'
+import {
+  AbstractPolicyService,
+  PolicyValueSource,
+  type PolicyValue
+} from 'vs/platform/policy/common/policy'
 import { IPolicyService } from 'vs/platform/policy/common/policy.service'
-import { PolicyCategory } from 'vs/base/common/policy'
 class PolicyService extends AbstractPolicyService {
   constructor(defaultPolicies: Map<PolicyName, PolicyValue>) {
     super()
@@ -12,12 +16,12 @@ class PolicyService extends AbstractPolicyService {
     this._onDidChange.fire([])
   }
 
-  public updatePolicy(name: PolicyName, value: PolicyValue | undefined): void {
-    if (value == null) {
-      this.policies.delete(name)
-    } else {
-      this.policies.set(name, value)
-    }
+  public updatePolicy(
+    name: PolicyName,
+    value: PolicyValue | undefined,
+    source?: PolicyValueSource
+  ): void {
+    super.updatePolicyValue(name, value, source)
 
     this._onDidChange.fire([name])
   }
@@ -33,4 +37,4 @@ export default function getServiceOverride(
   }
 }
 
-export type { PolicyName, PolicyValue, PolicyService, PolicyCategory }
+export type { PolicyCategory, PolicyName, PolicyService, PolicyValue }

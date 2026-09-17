@@ -1,0 +1,31 @@
+From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
+From: =?UTF-8?q?Lo=C3=AFc=20Mangeonjean?= <loic@coderpad.io>
+Date: Thu, 3 Sep 2026 14:38:13 +0200
+Subject: [PATCH] fix: prevent floating error promises
+
+---
+ src/vs/workbench/contrib/chat/common/chatModes.ts | 4 +++-
+ 1 file changed, 3 insertions(+), 1 deletion(-)
+
+diff --git a/src/vs/workbench/contrib/chat/common/chatModes.ts b/src/vs/workbench/contrib/chat/common/chatModes.ts
+index 2a9d6d8f339..74265f27d55 100644
+--- a/src/vs/workbench/contrib/chat/common/chatModes.ts
++++ b/src/vs/workbench/contrib/chat/common/chatModes.ts
+@@ -218,7 +218,7 @@ class ChatModes extends Disposable implements IChatModes {
+ 		this._refreshCancellationSource?.cancel();
+ 		this._refreshCancellationSource?.dispose();
+ 		const refreshCancellationSource = this._refreshCancellationSource = new CancellationTokenSource();
+-		return this._refreshThrottler.trigger(async () => {
++		const promise = this._refreshThrottler.trigger(async () => {
+ 			try {
+ 				await this.refreshCustomPromptModes(refreshCancellationSource.token);
+ 			} finally {
+@@ -228,6 +228,8 @@ class ChatModes extends Disposable implements IChatModes {
+ 				refreshCancellationSource.dispose();
+ 			}
+ 		});
++		promise.catch(err => { });
++		return promise;
+ 	}
+ 
+ 	override dispose(): void {

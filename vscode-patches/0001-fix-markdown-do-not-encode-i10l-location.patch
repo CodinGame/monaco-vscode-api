@@ -1,6 +1,6 @@
 From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
 From: =?UTF-8?q?Lo=C3=AFc=20Mangeonjean?= <loic@coderpad.io>
-Date: Fri, 12 Dec 2025 17:13:07 +0100
+Date: Tue, 15 Sep 2026 17:53:25 +0200
 Subject: [PATCH] fix(markdown): do not encode i10l location
 
 ---

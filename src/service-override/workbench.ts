@@ -9,6 +9,8 @@ import { IEditorGroupsService } from 'vs/workbench/services/editor/common/editor
 import { IEditorService } from 'vs/workbench/services/editor/common/editorService.service'
 import { EditorService } from 'vs/workbench/services/editor/browser/editorService'
 import { EditorParts } from 'vs/workbench/browser/parts/editor/editorParts'
+import { IWorkspaceFolderLabelService } from 'vs/workbench/services/workspaces/common/workspaceFolderLabelService.service'
+import { WorkspaceFolderLabelService } from 'vs/workbench/services/workspaces/common/workspaceFolderLabelService'
 import { onUnexpectedError, setUnexpectedErrorHandler } from 'vs/base/common/errors'
 import { BrowserWindow } from 'vs/workbench/browser/window'
 import { detectFullscreen } from 'vs/base/browser/dom'
@@ -84,6 +86,11 @@ function getServiceOverride(
     [IWorkbenchLayoutService.toString()]: new SyncDescriptor(CustomWorkbench, [options], false),
     [IEditorGroupsService.toString()]: new SyncDescriptor(EditorParts, [], false),
     [IEditorService.toString()]: new SyncDescriptor(EditorService, [undefined], false),
+    [IWorkspaceFolderLabelService.toString()]: new SyncDescriptor(
+      WorkspaceFolderLabelService,
+      [],
+      true
+    ),
     ...getTitleBarServiceOverride(),
     ...getStatusBarServiceOverride(),
     ...getBannerServiceOverride()

@@ -11,7 +11,7 @@ Subject: [PATCH] refactor: extract shouldAttemptTaskReconnection flag
  4 files changed, 10 insertions(+), 4 deletions(-)
 
 diff --git a/src/vs/workbench/contrib/tasks/browser/abstractTaskService.ts b/src/vs/workbench/contrib/tasks/browser/abstractTaskService.ts
-index 36209197e92..01d8342874e 100644
+index a3079cd7a81..129e228a126 100644
 --- a/src/vs/workbench/contrib/tasks/browser/abstractTaskService.ts
 +++ b/src/vs/workbench/contrib/tasks/browser/abstractTaskService.ts
 @@ -79,7 +79,7 @@ import { VirtualWorkspaceContext } from '../../../common/contextkeys.js';
@@ -23,7 +23,7 @@ index 36209197e92..01d8342874e 100644
  import { IPaneCompositePartService } from '../../../services/panecomposite/browser/panecomposite.js';
  import { IPathService } from '../../../services/path/common/pathService.js';
  import { IPreferencesService } from '../../../services/preferences/common/preferences.js';
-@@ -483,7 +483,7 @@ export abstract class AbstractTaskService extends Disposable implements ITaskSer
+@@ -487,7 +487,7 @@ export abstract class AbstractTaskService extends Disposable implements ITaskSer
  	}
  
  	private _attemptTaskReconnection(): void {
@@ -33,7 +33,7 @@ index 36209197e92..01d8342874e 100644
  			this._tasksReconnected = true;
  			this._storageService.remove(AbstractTaskService.PersistentTasks_Key, StorageScope.WORKSPACE);
 diff --git a/src/vs/workbench/contrib/terminal/browser/terminalService.ts b/src/vs/workbench/contrib/terminal/browser/terminalService.ts
-index c3e617145a8..eb5f3fabc31 100644
+index 3308abc9559..d90f2924415 100644
 --- a/src/vs/workbench/contrib/terminal/browser/terminalService.ts
 +++ b/src/vs/workbench/contrib/terminal/browser/terminalService.ts
 @@ -42,7 +42,7 @@ import { IEditorGroupsService } from '../../../services/editor/common/editorGrou

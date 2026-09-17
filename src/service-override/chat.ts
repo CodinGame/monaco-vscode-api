@@ -116,6 +116,7 @@ import { ChatResponseResourceFileSystemProvider } from 'vs/workbench/contrib/cha
 import { Event } from 'vs/base/common/event'
 import type { IDefaultAccount } from 'vs/base/common/defaultAccount'
 import { IDefaultAccountService } from 'vs/platform/defaultAccount/common/defaultAccount.service'
+import { MANAGED_SETTINGS_FRESHNESS_NOT_REQUIRED } from 'vs/platform/defaultAccount/common/defaultAccount'
 import { ICustomizationHarnessService } from 'vs/workbench/contrib/chat/common/customizationHarnessService.service'
 import { CustomizationHarnessService } from 'vs/workbench/contrib/chat/browser/aiCustomization/customizationHarnessService'
 import { AICustomizationWorkspaceService } from 'vs/workbench/contrib/chat/browser/aiCustomization/aiCustomizationWorkspaceService'
@@ -165,12 +166,60 @@ import { IAgentHostCustomizationService } from 'vs/workbench/contrib/chat/browse
 import { NullAgentHostCustomizationService } from 'vs/workbench/contrib/chat/browser/agentSessions/agentHost/agentHostCustomizationService'
 import { IChatGoalSummaryService } from 'vs/workbench/contrib/chat/browser/chatGoalSummaryService.service'
 import { ChatGoalSummaryService } from 'vs/workbench/contrib/chat/browser/chatGoalSummaryService'
+import { IAgentHostImportConversationStore } from 'vs/workbench/contrib/chat/browser/agentSessions/agentHost/agentHostImportConversationStore.service'
+import { AgentHostImportConversationStore } from 'vs/workbench/contrib/chat/browser/agentSessions/agentHost/agentHostImportConversationStore'
+import { IAgentHostProtectedResourcesService } from 'vs/workbench/contrib/chat/browser/agentSessions/agentHost/agentHostProtectedResourcesService.service'
+import { AgentHostProtectedResourcesService } from 'vs/workbench/contrib/chat/browser/agentSessions/agentHost/agentHostProtectedResourcesService'
+import { IAgentHostSessionWorkingDirectorySynchronizer } from 'vs/workbench/contrib/chat/browser/agentSessions/agentHost/agentHostSessionWorkingDirectorySynchronizer.service'
+import { AgentHostSessionWorkingDirectorySynchronizer } from 'vs/workbench/contrib/chat/browser/agentSessions/agentHost/agentHostSessionWorkingDirectorySynchronizer'
+import { IAgentHostShellInitSynchronizer } from 'vs/workbench/contrib/chat/browser/agentSessions/agentHost/agentHostShellInitSynchronizer.service'
+import { AgentHostShellInitSynchronizer } from 'vs/workbench/contrib/chat/browser/agentSessions/agentHost/agentHostShellInitSynchronizer'
+import { IAgentSdkSetupService } from 'vs/workbench/services/agentHost/browser/agentSdkSetupService.service'
+import { ICodexAccountService } from 'vs/workbench/services/agentHost/browser/codexAccountService.service'
+import { CodexAccountService } from 'vs/workbench/services/agentHost/browser/codexAccountService'
+import { IChatInputNoticeHubService } from 'vs/workbench/contrib/chat/browser/widget/input/chatInputNoticeHub.service'
+import { IChatModelFeedbackSurveyService } from 'vs/workbench/contrib/chat/browser/feedbackSurvey/chatModelFeedbackSurveyService.service'
+import { ChatModelFeedbackSurveyService } from 'vs/workbench/contrib/chat/browser/feedbackSurvey/chatModelFeedbackSurveyService'
+import { IChatPasteTargetService } from 'vs/workbench/contrib/chat/browser/chat.service'
+import { ChatPasteTargetService } from 'vs/workbench/contrib/chat/browser/attachments/chatPasteTargetService'
+import { IChatPetService } from 'vs/workbench/contrib/chat/browser/chatPetService.service'
+import { ChatPetService } from 'vs/workbench/contrib/chat/browser/chatPetService'
+import { IChatPetWidgetService } from 'vs/workbench/contrib/chat/browser/widget/chatPetWidgetService.service'
+import { ChatPetWidgetService } from 'vs/workbench/contrib/chat/browser/widget/chatPetWidgetService'
+import { IChatRequestOriginService } from 'vs/workbench/contrib/chat/common/chatRequestOrigin.service'
+import { ChatRequestOriginService } from 'vs/workbench/contrib/chat/common/chatRequestOrigin'
+import { IChatSideChatService } from 'vs/workbench/contrib/chat/common/chatSideChatService.service'
+import { ChatSideChatService } from 'vs/workbench/contrib/chat/common/chatSideChatService'
+import { IChatSpeechToTextService } from 'vs/workbench/contrib/chat/browser/speechToText/chatSpeechToTextService.service'
+import { ChatSpeechToTextService } from 'vs/workbench/contrib/chat/browser/speechToText/chatSpeechToTextService'
+import { IChatSubmitRequestHandlerService } from 'vs/workbench/contrib/chat/browser/chatSubmitRequestHandlerService.service'
+import { ChatSubmitRequestHandlerService } from 'vs/workbench/contrib/chat/browser/chatSubmitRequestHandlerService'
+import { ICustomizationMigrationService } from 'vs/workbench/contrib/chat/common/promptSyntax/service/customizationMigrationService.service'
+import { CustomizationMigrationService } from 'vs/workbench/contrib/chat/browser/aiCustomization/customizationMigrationServiceImpl'
+import { IDictationOnboardingService } from 'vs/workbench/contrib/chat/browser/speechToText/dictationOnboarding.service'
+import { DictationOnboardingService } from 'vs/workbench/contrib/chat/browser/speechToText/dictationOnboarding'
+import { IInlineChatSessionResolver } from 'vs/workbench/contrib/inlineChat/browser/inlineChatSessionResolver.service'
+import { InlineChatSessionResolver } from 'vs/workbench/contrib/inlineChat/browser/inlineChatSessionResolver'
+import { ISessionChatPillVisibilityService } from 'vs/workbench/contrib/chat/common/sessionChatPills.service'
+import { SessionChatPillVisibility } from 'vs/workbench/contrib/chat/common/sessionChatPills'
+import { ISessionSummaryHoverService } from 'vs/workbench/contrib/chat/browser/agentSessions/sessionSummaryHoverService.service'
+import { SessionSummaryHoverService } from 'vs/workbench/contrib/chat/browser/agentSessions/sessionSummaryHoverService'
+import { ITerminalChatSessionResolver } from 'vs/workbench/contrib/terminalContrib/chat/browser/terminalChatSessionResolver.service'
+import { TerminalChatSessionResolver } from 'vs/workbench/contrib/terminalContrib/chat/browser/terminalChatSessionResolver'
+import { IVoiceCodeTranscriptionClient } from 'vs/workbench/contrib/chat/browser/speechToText/voiceCodeTranscriptionClient.service'
+import { VoiceCodeTranscriptionClient } from 'vs/workbench/contrib/chat/browser/speechToText/voiceCodeTranscriptionClient'
+import { IVoiceInputModeService } from 'vs/workbench/contrib/chat/browser/voiceInputMode/voiceInputMode.service'
+import { VoiceInputModeService } from 'vs/workbench/contrib/chat/browser/voiceInputMode/voiceInputMode'
+import { IVoiceModeOnboardingService } from 'vs/workbench/contrib/agentsVoice/browser/voiceModeOnboarding.service'
+import { VoiceModeOnboardingService } from 'vs/workbench/contrib/agentsVoice/browser/voiceModeOnboarding'
 import { EditorRemoteAgentHostServiceClient } from 'vs/workbench/services/agentHost/browser/editorRemoteAgentHostServiceClient'
+import { WebAgentHostEnablementService } from 'vs/workbench/services/agentHost/browser/webAgentHostEnablementService'
 import { IAgentHostService } from 'vs/platform/agentHost/common/agentService.service'
 import { IAgentHostConnectionsService } from 'vs/platform/agentHost/common/agentHostConnectionsService.service'
+import { IAgentHostEnablementService } from 'vs/platform/agentHost/common/agentHostEnablementService.service'
 import { AgentHostConnectionsService } from 'vs/platform/agentHost/browser/agentHostConnectionsService'
 import { IChatResponseFileChangesService } from 'vs/workbench/contrib/chat/browser/chatResponseFileChangesService.service'
-import { ChatResponseFileChangesService } from 'vs/workbench/contrib/chat/browser/chatResponseFileChangesService'
+import { EditorChatResponseFileChangesService } from 'vs/workbench/contrib/chat/browser/editorChatResponseFileChangesService'
 import { IMicCaptureService } from 'vs/workbench/contrib/chat/browser/voiceClient/micCaptureService.service'
 import { MicCaptureService } from 'vs/workbench/contrib/chat/browser/voiceClient/micCaptureService'
 import { ITtsPlaybackService } from 'vs/workbench/contrib/chat/browser/voiceClient/ttsPlaybackService.service'
@@ -187,6 +236,11 @@ import { IVoiceTranscriptStore } from 'vs/workbench/contrib/agentsVoice/common/v
 import { VoiceTranscriptStore } from 'vs/workbench/contrib/agentsVoice/common/voiceTranscriptStore'
 import { IAgentsVoiceWindowService } from 'vs/workbench/contrib/agentsVoice/common/agentsVoice.service'
 import { AgentsVoiceWindowService } from 'vs/workbench/contrib/agentsVoice/browser/agentsVoiceWindowService'
+import { ILinkPresentationService } from 'vs/platform/dataChannel/common/dataChannel.service'
+export type { ITelemetryData, TelemetryLevel } from 'vs/platform/telemetry/common/telemetry'
+import { LinkPresentationService } from 'vs/workbench/services/dataChannel/browser/dataChannelService'
+import { AgentSdkSetupService } from 'vs/workbench/services/agentHost/browser/agentSdkSetupService'
+import { ChatInputNoticeHubService } from 'vs/workbench/contrib/chat/browser/widget/input/chatInputNoticeHub'
 import 'vs/workbench/contrib/chat/browser/chat.contribution'
 import 'vs/workbench/contrib/chat/browser/chat.shared.contribution'
 import 'vs/workbench/contrib/chat/browser/chat.view.contribution'
@@ -209,6 +263,14 @@ class DefaultAccountService implements IDefaultAccountService {
   managedSettingsFetchStatus: IDefaultAccountService['managedSettingsFetchStatus'] = null
   managedSettingsFetchedAt: IDefaultAccountService['managedSettingsFetchedAt'] = null
   managedSettingsRawResponse: IDefaultAccountService['managedSettingsRawResponse'] = undefined
+  managedSettingsCompatibilityError: IDefaultAccountService['managedSettingsCompatibilityError'] =
+    null
+  onDidChangeManagedSettingsCompatibilityError: IDefaultAccountService['onDidChangeManagedSettingsCompatibilityError'] =
+    Event.None
+  managedSettingsFreshness: IDefaultAccountService['managedSettingsFreshness'] =
+    MANAGED_SETTINGS_FRESHNESS_NOT_REQUIRED
+  onDidChangeManagedSettingsFreshness: IDefaultAccountService['onDidChangeManagedSettingsFreshness'] =
+    Event.None
 
   getDefaultAccountAuthenticationProvider: IDefaultAccountService['getDefaultAccountAuthenticationProvider'] =
     () => ({ id: 'default', name: 'Default', enterprise: false })
@@ -429,7 +491,7 @@ export default function getServiceOverride({
     [IToolResultCompressor.toString()]: new SyncDescriptor(ToolResultCompressorService, [], true),
     [IChatGoalSummaryService.toString()]: new SyncDescriptor(ChatGoalSummaryService, [], true),
     [IChatResponseFileChangesService.toString()]: new SyncDescriptor(
-      ChatResponseFileChangesService,
+      EditorChatResponseFileChangesService,
       [],
       true
     ),
@@ -464,7 +526,101 @@ export default function getServiceOverride({
       [],
       true
     ),
-    [IAgentHostService.toString()]: new SyncDescriptor(EditorRemoteAgentHostServiceClient, [], true)
+    [IAgentHostImportConversationStore.toString()]: new SyncDescriptor(
+      AgentHostImportConversationStore,
+      [],
+      true
+    ),
+    [IAgentHostProtectedResourcesService.toString()]: new SyncDescriptor(
+      AgentHostProtectedResourcesService,
+      [],
+      true
+    ),
+    [IAgentHostSessionWorkingDirectorySynchronizer.toString()]: new SyncDescriptor(
+      AgentHostSessionWorkingDirectorySynchronizer,
+      [],
+      true
+    ),
+    [IAgentHostShellInitSynchronizer.toString()]: new SyncDescriptor(
+      AgentHostShellInitSynchronizer,
+      [],
+      true
+    ),
+    [IAgentSdkSetupService.toString()]: new SyncDescriptor(AgentSdkSetupService, [], true),
+    [ICodexAccountService.toString()]: new SyncDescriptor(CodexAccountService, [], true),
+    [IChatInputNoticeHubService.toString()]: new SyncDescriptor(
+      ChatInputNoticeHubService,
+      [],
+      true
+    ),
+    [IChatModelFeedbackSurveyService.toString()]: new SyncDescriptor(
+      ChatModelFeedbackSurveyService,
+      [],
+      true
+    ),
+    [IChatPasteTargetService.toString()]: new SyncDescriptor(ChatPasteTargetService, [], true),
+    [IChatPetService.toString()]: new SyncDescriptor(ChatPetService, [], true),
+    [IChatPetWidgetService.toString()]: new SyncDescriptor(ChatPetWidgetService, [], true),
+    [IChatRequestOriginService.toString()]: new SyncDescriptor(ChatRequestOriginService, [], true),
+    [IChatSideChatService.toString()]: new SyncDescriptor(ChatSideChatService, [], true),
+    [IChatSpeechToTextService.toString()]: new SyncDescriptor(ChatSpeechToTextService, [], true),
+    [IChatSubmitRequestHandlerService.toString()]: new SyncDescriptor(
+      ChatSubmitRequestHandlerService,
+      [],
+      true
+    ),
+    [ICustomizationMigrationService.toString()]: new SyncDescriptor(
+      CustomizationMigrationService,
+      [],
+      true
+    ),
+    [IDictationOnboardingService.toString()]: new SyncDescriptor(
+      DictationOnboardingService,
+      [],
+      true
+    ),
+    [IInlineChatSessionResolver.toString()]: new SyncDescriptor(
+      InlineChatSessionResolver,
+      [],
+      true
+    ),
+    [ISessionChatPillVisibilityService.toString()]: new SyncDescriptor(
+      SessionChatPillVisibility,
+      [],
+      true
+    ),
+    [ISessionSummaryHoverService.toString()]: new SyncDescriptor(
+      SessionSummaryHoverService,
+      [],
+      true
+    ),
+    [ITerminalChatSessionResolver.toString()]: new SyncDescriptor(
+      TerminalChatSessionResolver,
+      [],
+      true
+    ),
+    [IVoiceCodeTranscriptionClient.toString()]: new SyncDescriptor(
+      VoiceCodeTranscriptionClient,
+      [],
+      true
+    ),
+    [IVoiceInputModeService.toString()]: new SyncDescriptor(VoiceInputModeService, [], true),
+    [IVoiceModeOnboardingService.toString()]: new SyncDescriptor(
+      VoiceModeOnboardingService,
+      [],
+      true
+    ),
+    [IAgentHostEnablementService.toString()]: new SyncDescriptor(
+      WebAgentHostEnablementService,
+      [],
+      false
+    ),
+    [IAgentHostService.toString()]: new SyncDescriptor(
+      EditorRemoteAgentHostServiceClient,
+      [],
+      true
+    ),
+    [ILinkPresentationService.toString()]: new SyncDescriptor(LinkPresentationService, [], true)
   }
 }
 

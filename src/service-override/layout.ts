@@ -111,6 +111,10 @@ export class LayoutService extends Disposable implements ILayoutService, IWorkbe
     return false
   }
 
+  isModernUICompact(): boolean {
+    return false
+  }
+
   centerMainEditorLayout(): void {}
 
   private readonly _onDidLayoutContainer = this._register(
@@ -491,6 +495,14 @@ export class LayoutService extends Disposable implements ILayoutService, IWorkbe
 
   isVisible(part: Parts): boolean {
     return !this.hiddenParts.has(part)
+  }
+
+  isSecondarySideBarVisible(): boolean {
+    return this.isVisible(Parts.AUXILIARYBAR_PART)
+  }
+
+  toggleSecondarySideBar(): void {
+    this.setPartHidden(this.isSecondarySideBarVisible(), Parts.AUXILIARYBAR_PART)
   }
 
   getSideBarPosition(): Position {

@@ -4,13 +4,13 @@ Date: Mon, 11 Mar 2024 17:38:30 +0100
 Subject: [PATCH] fix: improve extension contribution types
 
 ---
- .../platform/extensions/common/extensions.ts  | 1457 ++++++++++++++++-
+ .../platform/extensions/common/extensions.ts  | 1458 ++++++++++++++++-
  .../themes/common/colorExtensionPoint.ts      |    2 +-
  .../tokenClassificationExtensionPoint.ts      |    1 +
- 3 files changed, 1394 insertions(+), 66 deletions(-)
+ 3 files changed, 1395 insertions(+), 66 deletions(-)
 
 diff --git a/src/vs/platform/extensions/common/extensions.ts b/src/vs/platform/extensions/common/extensions.ts
-index 6a8cc98d148..b974c85ca24 100644
+index ce2e0fea407..eb005177d51 100644
 --- a/src/vs/platform/extensions/common/extensions.ts
 +++ b/src/vs/platform/extensions/common/extensions.ts
 @@ -3,6 +3,7 @@
@@ -21,7 +21,7 @@ index 6a8cc98d148..b974c85ca24 100644
  import Severity from '../../../base/common/severity.js';
  import * as strings from '../../../base/common/strings.js';
  import { URI } from '../../../base/common/uri.js';
-@@ -16,120 +17,548 @@ export const BUILTIN_MANIFEST_CACHE_FILE = 'extensions.builtin.cache';
+@@ -16,24 +17,181 @@ export const BUILTIN_MANIFEST_CACHE_FILE = 'extensions.builtin.cache';
  export const UNDEFINED_PUBLISHER = 'undefined_publisher';
  
  export interface ICommand {
@@ -209,6 +209,10 @@ index 6a8cc98d148..b974c85ca24 100644
 +	 * A schema URL ('http:', 'https:') or relative path to the extension folder ('./').
 +	 */
 +	readonly url: string;
+ }
+ 
+ export interface IJSONValidationRegistry {
+@@ -41,99 +199,370 @@ export interface IJSONValidationRegistry {
  }
  
  export interface IKeyBinding {
@@ -608,7 +612,7 @@ index 6a8cc98d148..b974c85ca24 100644
  }
  
  export interface IStartEntry {
-@@ -141,14 +570,53 @@ export interface IStartEntry {
+@@ -145,14 +574,53 @@ export interface IStartEntry {
  }
  
  export interface INotebookEntry {
@@ -641,11 +645,10 @@ index 6a8cc98d148..b974c85ca24 100644
 +	 * Unique identifier of the notebook output renderer.
 +	 */
  	readonly id: string;
--	readonly displayName: string;
 +	/**
 +	 * Human readable name of the notebook output renderer.
 +	 */
-+	readonly displayName: string;
+ 	readonly displayName: string;
 +	readonly dependencies?: string[];
 +	readonly optionalDependencies?: string[];
 +	/**
@@ -663,7 +666,7 @@ index 6a8cc98d148..b974c85ca24 100644
  }
  
  export interface IDebugVisualizationContribution {
-@@ -157,32 +625,735 @@ export interface IDebugVisualizationContribution {
+@@ -161,32 +629,735 @@ export interface IDebugVisualizationContribution {
  }
  
  export interface ITranslation {
@@ -1405,7 +1408,7 @@ index 6a8cc98d148..b974c85ca24 100644
  }
  
  export interface IToolSetContribution {
-@@ -207,32 +1378,112 @@ export interface IChatFileContribution {
+@@ -211,33 +1382,114 @@ export interface IChatFileContribution {
  	readonly sessionTypes?: readonly string[];
  }
  
@@ -1421,6 +1424,7 @@ index 6a8cc98d148..b974c85ca24 100644
 -	debuggers?: IDebugger[];
 -	grammars?: IGrammar[];
 -	jsonValidation?: IJSONValidation[];
+-	jsonValidationRegistry?: IJSONValidationRegistry[];
 -	keybindings?: IKeyBinding[];
 -	languages?: ILanguage[];
 -	menus?: { [context: string]: IMenu[] };
@@ -1460,6 +1464,8 @@ index 6a8cc98d148..b974c85ca24 100644
 +	 * Contributes json schema configuration.
 +	 */
 +	readonly jsonValidation?: IJSONValidation[];
++
++	readonly jsonValidationRegistry?: IJSONValidationRegistry[];
 +	/**
 +	 * Contributes keybindings.
 +	 */
@@ -1538,7 +1544,7 @@ index 6a8cc98d148..b974c85ca24 100644
  	readonly chatParticipants?: ReadonlyArray<IChatParticipantContribution>;
  	readonly chatPromptFiles?: ReadonlyArray<IChatFileContribution>;
  	readonly chatInstructions?: ReadonlyArray<IChatFileContribution>;
-@@ -242,6 +1493,82 @@ export interface IExtensionContributions {
+@@ -247,6 +1499,82 @@ export interface IExtensionContributions {
  	readonly languageModelTools?: ReadonlyArray<IToolContribution>;
  	readonly languageModelToolSets?: ReadonlyArray<IToolSetContribution>;
  	readonly mcpServerDefinitionProviders?: ReadonlyArray<IMcpCollectionContribution>;

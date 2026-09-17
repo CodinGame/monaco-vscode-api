@@ -10,8 +10,8 @@ Subject: [PATCH] feat: support shadow dom
  .../browser/ui/contextview/contextview.ts     |  2 +-
  src/vs/base/browser/ui/dialog/dialog.ts       |  6 +-
  src/vs/base/browser/ui/dnd/dnd.ts             |  4 +-
- src/vs/base/browser/ui/findinput/findInput.ts |  3 +-
- .../base/browser/ui/findinput/replaceInput.ts |  3 +-
+ .../browser/ui/findinput/findInputToggles.ts  |  2 +-
+ .../base/browser/ui/findinput/replaceInput.ts |  1 -
  src/vs/base/browser/ui/inputbox/inputBox.ts   |  7 +-
  src/vs/base/browser/ui/sash/sash.css          |  2 +-
  src/vs/base/browser/ui/sash/sash.ts           |  2 +-
@@ -26,20 +26,27 @@ Subject: [PATCH] feat: support shadow dom
  .../widget/codeEditor/codeEditorWidget.ts     | 10 +--
  .../hover/browser/contentHoverController.ts   |  3 +-
  .../hover/browser/contentHoverWidget.ts       |  2 +-
- .../actionWidget/browser/actionList.ts        |  5 +-
+ .../actionWidget/browser/actionList.ts        |  4 +-
  .../clipboard/browser/clipboardService.ts     |  4 +-
  .../contextkey/browser/contextKeyService.ts   | 26 ++++----
  src/vs/platform/hover/browser/hoverWidget.ts  |  2 +-
  .../platform/layout/browser/zIndexRegistry.ts |  2 +-
  .../platform/theme/browser/iconsStyleSheet.ts |  2 +-
+ .../browser/userInteractionServiceImpl.ts     |  5 +-
  .../agentFeedbackEditorInputContribution.ts   |  6 +-
  .../browser/actions/developerActions.ts       |  4 +-
  src/vs/workbench/browser/layout.ts            |  3 +
  .../browser/parts/editor/editorGroupView.ts   |  4 +-
  .../browser/parts/editor/modalEditorPart.ts   |  4 +-
  src/vs/workbench/browser/workbench.ts         |  6 +-
+ .../actions/chatAccessibilityActions.ts       |  3 +-
  .../experiments/agentTitleBarStatusWidget.ts  |  4 +-
- .../planReviewFeedbackEditorContribution.ts   |  6 +-
+ .../aiCustomization/customizationCardList.ts  |  2 +-
+ .../aiCustomization/toolsListWidget.ts        |  2 +-
+ .../contrib/chat/browser/chatInputPills.ts    |  4 +-
+ .../promptTimelineGutterRail.ts               |  8 +--
+ .../promptTimeline/promptTimelineRulerRail.ts |  6 +-
+ .../browser/widget/chatFind/chatFindWidget.ts |  2 +-
  .../browser/widget/input/chatInputPart.ts     |  2 +-
  .../files/browser/views/explorerViewer.ts     |  4 +-
  .../notebook/browser/notebookEditorWidget.ts  |  6 +-
@@ -60,10 +67,10 @@ Subject: [PATCH] feat: support shadow dom
  .../browser/auxiliaryWindowService.ts         |  6 +-
  .../suggest/browser/simpleSuggestWidget.ts    |  4 +-
  .../themes/browser/workbenchThemeService.ts   | 33 +++++++++-
- 56 files changed, 252 insertions(+), 134 deletions(-)
+ 63 files changed, 260 insertions(+), 148 deletions(-)
 
 diff --git a/src/vs/base/browser/dom.ts b/src/vs/base/browser/dom.ts
-index e943bf0a557..7c7bce3ae00 100644
+index 6d7ea0fbd8e..e037f9e58db 100644
 --- a/src/vs/base/browser/dom.ts
 +++ b/src/vs/base/browser/dom.ts
 @@ -257,6 +257,39 @@ export function addDisposableListener(node: EventTarget, type: string, handler:
@@ -277,7 +284,7 @@ index 72fa42df1a6..f82797cdd26 100644
  
  	for (const rule of globalStylesheet.sheet?.cssRules ?? []) {
 diff --git a/src/vs/base/browser/keyboardEvent.ts b/src/vs/base/browser/keyboardEvent.ts
-index 6b675d06535..672eeabd7b6 100644
+index b7c24be7290..247270cc7a2 100644
 --- a/src/vs/base/browser/keyboardEvent.ts
 +++ b/src/vs/base/browser/keyboardEvent.ts
 @@ -7,6 +7,7 @@ import * as browser from './browser.js';
@@ -314,10 +321,10 @@ index 6b675d06535..672eeabd7b6 100644
  		this.ctrlKey = e.ctrlKey;
  		this.shiftKey = e.shiftKey;
 diff --git a/src/vs/base/browser/ui/contextview/contextview.ts b/src/vs/base/browser/ui/contextview/contextview.ts
-index 33562d5d605..4de7d7edf3e 100644
+index e8e64545646..c4ddd0cd9f5 100644
 --- a/src/vs/base/browser/ui/contextview/contextview.ts
 +++ b/src/vs/base/browser/ui/contextview/contextview.ts
-@@ -281,7 +281,7 @@ export class ContextView extends Disposable {
+@@ -466,7 +466,7 @@ export class ContextView extends Disposable {
  	private onDOMEvent(e: UIEvent, onCapture: boolean): void {
  		if (this.delegate) {
  			if (this.delegate.onDOMEvent) {
@@ -327,19 +334,19 @@ index 33562d5d605..4de7d7edf3e 100644
  				this.hide();
  			}
 diff --git a/src/vs/base/browser/ui/dialog/dialog.ts b/src/vs/base/browser/ui/dialog/dialog.ts
-index 4417777cb85..57dff896c5d 100644
+index 34d22b5d162..f92f1b65516 100644
 --- a/src/vs/base/browser/ui/dialog/dialog.ts
 +++ b/src/vs/base/browser/ui/dialog/dialog.ts
 @@ -5,7 +5,7 @@
  
  import './dialog.css';
  import { localize } from '../../../../nls.js';
--import { $, addDisposableListener, addStandardDisposableListener, clearNode, EventHelper, EventType, getWindow, hide, isActiveElement, isAncestor, show } from '../../dom.js';
-+import { $, addDisposableListener, addStandardDisposableListener, clearNode, EventHelper, EventType, getActiveElement, getWindow, hide, isActiveElement, isAncestor, show } from '../../dom.js';
+-import { $, addDisposableListener, addStandardDisposableListener, clearNode, EventHelper, EventType, getWindow, hide, isActiveElement, isAncestor, isEditableElement, isHTMLElement, show } from '../../dom.js';
++import { $, addDisposableListener, addStandardDisposableListener, clearNode, EventHelper, EventType, getActiveElement, getWindow, hide, isActiveElement, isAncestor, isEditableElement, isHTMLElement, show } from '../../dom.js';
  import { StandardKeyboardEvent } from '../../keyboardEvent.js';
  import { ActionBar } from '../actionbar/actionbar.js';
  import { ButtonBar, ButtonBarAlignment, ButtonWithDescription, ButtonWithDropdown, IButton, IButtonStyles, IButtonWithDropdownOptions } from '../button/button.js';
-@@ -262,7 +262,7 @@ export class Dialog extends Disposable {
+@@ -283,7 +283,7 @@ export class Dialog extends Disposable {
  	}
  
  	async show(): Promise<IDialogResult> {
@@ -348,7 +355,7 @@ index 4417777cb85..57dff896c5d 100644
  
  		return new Promise<IDialogResult>(resolve => {
  			clearNode(this.buttonsContainer);
-@@ -623,7 +623,7 @@ export class Dialog extends Disposable {
+@@ -654,7 +654,7 @@ export class Dialog extends Disposable {
  			this.modalElement = undefined;
  		}
  
@@ -379,53 +386,36 @@ index 39ce04a13a8..06cdc96e51d 100644
  	};
  
  	const dragContainer = getDragImageContainer(container);
-diff --git a/src/vs/base/browser/ui/findinput/findInput.ts b/src/vs/base/browser/ui/findinput/findInput.ts
-index db42e9055ec..60261d2b10e 100644
---- a/src/vs/base/browser/ui/findinput/findInput.ts
-+++ b/src/vs/base/browser/ui/findinput/findInput.ts
-@@ -20,6 +20,7 @@ import * as nls from '../../../../nls.js';
- import { DisposableStore, MutableDisposable } from '../../../common/lifecycle.js';
- import { IHistory } from '../../../common/history.js';
- import type { IHoverLifecycleOptions } from '../hover/hover.js';
-+import { getActiveElement } from '../../dom.js';
- 
- 
- export interface IFindInputOptions {
-@@ -177,7 +178,7 @@ export class FindInput extends Widget {
- 			this.onkeydown(this.domNode, (event: IKeyboardEvent) => {
- 				if (event.equals(KeyCode.LeftArrow) || event.equals(KeyCode.RightArrow) || event.equals(KeyCode.Escape)) {
- 					const indexes = this.getToggleDomNodes();
--					const index = indexes.indexOf(<HTMLElement>this.domNode.ownerDocument.activeElement);
-+					const index = indexes.indexOf(<HTMLElement>getActiveElement(this.domNode.ownerDocument));
- 					if (index >= 0) {
- 						let newIndex: number = -1;
- 						if (event.equals(KeyCode.RightArrow)) {
+diff --git a/src/vs/base/browser/ui/findinput/findInputToggles.ts b/src/vs/base/browser/ui/findinput/findInputToggles.ts
+index 20a09f9f86a..1b086d01b60 100644
+--- a/src/vs/base/browser/ui/findinput/findInputToggles.ts
++++ b/src/vs/base/browser/ui/findinput/findInputToggles.ts
+@@ -30,7 +30,7 @@ export interface IFindInputToggleOpts {
+ export function navigateToggles(event: IKeyboardEvent, domNode: HTMLElement, getToggleDomNodes: () => HTMLElement[], focusInput: () => void): void {
+ 	if (event.equals(KeyCode.LeftArrow) || event.equals(KeyCode.RightArrow) || event.equals(KeyCode.Escape)) {
+ 		const indexes = getToggleDomNodes();
+-		const index = indexes.indexOf(<HTMLElement>domNode.ownerDocument.activeElement);
++		const index = indexes.indexOf(<HTMLElement>dom.getActiveElement(domNode.ownerDocument));
+ 		if (index >= 0) {
+ 			let newIndex: number = -1;
+ 			if (event.equals(KeyCode.RightArrow)) {
 diff --git a/src/vs/base/browser/ui/findinput/replaceInput.ts b/src/vs/base/browser/ui/findinput/replaceInput.ts
-index a9ae899d424..5ccfd049fbb 100644
+index 955ab926a61..3fac0e45627 100644
 --- a/src/vs/base/browser/ui/findinput/replaceInput.ts
 +++ b/src/vs/base/browser/ui/findinput/replaceInput.ts
-@@ -18,6 +18,7 @@ import './findInput.css';
- import * as nls from '../../../../nls.js';
+@@ -17,7 +17,6 @@ import * as nls from '../../../../nls.js';
  import { IHistory } from '../../../common/history.js';
  import { type IHoverLifecycleOptions } from '../hover/hover.js';
-+import { getActiveElement } from '../../dom.js';
  
- 
+-
  export interface IReplaceInputOptions {
-@@ -145,7 +146,7 @@ export class ReplaceInput extends Widget {
- 		const indexes = [this.preserveCase.domNode];
- 		this.onkeydown(this.domNode, (event: IKeyboardEvent) => {
- 			if (event.equals(KeyCode.LeftArrow) || event.equals(KeyCode.RightArrow) || event.equals(KeyCode.Escape)) {
--				const index = indexes.indexOf(<HTMLElement>this.domNode.ownerDocument.activeElement);
-+				const index = indexes.indexOf(<HTMLElement>getActiveElement(this.domNode.ownerDocument));
- 				if (index >= 0) {
- 					let newIndex: number = -1;
- 					if (event.equals(KeyCode.RightArrow)) {
+ 	readonly placeholder?: string;
+ 	readonly width?: number;
 diff --git a/src/vs/base/browser/ui/inputbox/inputBox.ts b/src/vs/base/browser/ui/inputbox/inputBox.ts
-index d8c041c95ac..85053deefd3 100644
+index 465101843c4..c41c6e7dbf0 100644
 --- a/src/vs/base/browser/ui/inputbox/inputBox.ts
 +++ b/src/vs/base/browser/ui/inputbox/inputBox.ts
-@@ -174,7 +174,12 @@ export class InputBox extends Widget {
+@@ -175,7 +175,12 @@ export class InputBox extends Widget {
  
  			const onSelectionChange = this._register(new DomEmitter(container.ownerDocument, 'selectionchange'));
  			const onAnchoredSelectionChange = Event.filter(onSelectionChange.event, () => {
@@ -453,10 +443,10 @@ index 52419ac7d45..18888b6f07f 100644
  	--vscode-sash-hover-size: 4px;
  }
 diff --git a/src/vs/base/browser/ui/sash/sash.ts b/src/vs/base/browser/ui/sash/sash.ts
-index 6f2fcb52276..0f9594a7d77 100644
+index beb88ed9bc1..e41e0b5d573 100644
 --- a/src/vs/base/browser/ui/sash/sash.ts
 +++ b/src/vs/base/browser/ui/sash/sash.ts
-@@ -512,7 +512,7 @@ export class Sash extends Disposable {
+@@ -536,7 +536,7 @@ export class Sash extends Disposable {
  		}
  
  		// eslint-disable-next-line no-restricted-syntax
@@ -466,19 +456,19 @@ index 6f2fcb52276..0f9594a7d77 100644
  			iframe.classList.add(PointerEventsDisabledCssClass); // disable mouse events on iframes as long as we drag the sash
  		}
 diff --git a/src/vs/base/browser/ui/splitview/paneview.ts b/src/vs/base/browser/ui/splitview/paneview.ts
-index 024b2147986..4c1118b7872 100644
+index 6dc53aeee12..3dfc4299fd3 100644
 --- a/src/vs/base/browser/ui/splitview/paneview.ts
 +++ b/src/vs/base/browser/ui/splitview/paneview.ts
 @@ -5,7 +5,7 @@
  
  import { isFirefox } from '../../browser.js';
  import { DataTransfers } from '../../dnd.js';
--import { $, addDisposableListener, append, clearNode, EventHelper, EventType, getWindow, isHTMLElement, scheduleAtNextAnimationFrame, trackFocus } from '../../dom.js';
-+import { $, addDisposableListener, append, clearNode, EventHelper, EventType, getActiveElement, getWindow, isHTMLElement, scheduleAtNextAnimationFrame, trackFocus } from '../../dom.js';
+-import { $, addDisposableListener, append, clearNode, EventHelper, EventType, getWindow, isHTMLElement, trackFocus } from '../../dom.js';
++import { $, addDisposableListener, append, clearNode, EventHelper, EventType, getActiveElement, getWindow, isHTMLElement, trackFocus } from '../../dom.js';
  import { DomEmitter } from '../../event.js';
  import { StandardKeyboardEvent } from '../../keyboardEvent.js';
  import { Gesture, EventType as TouchEventType } from '../../touch.js';
-@@ -714,7 +714,7 @@ export class PaneView extends Disposable {
+@@ -670,7 +670,7 @@ export class PaneView extends Disposable {
  
  	private focusPrevious(): void {
  		const headers = this.getPaneHeaderElements();
@@ -487,7 +477,7 @@ index 024b2147986..4c1118b7872 100644
  
  		if (index === -1) {
  			return;
-@@ -725,7 +725,7 @@ export class PaneView extends Disposable {
+@@ -681,7 +681,7 @@ export class PaneView extends Disposable {
  
  	private focusNext(): void {
  		const headers = this.getPaneHeaderElements();
@@ -497,7 +487,7 @@ index 024b2147986..4c1118b7872 100644
  		if (index === -1) {
  			return;
 diff --git a/src/vs/base/browser/ui/splitview/splitview.ts b/src/vs/base/browser/ui/splitview/splitview.ts
-index 35f2724c1a8..0da8fa62431 100644
+index 00e413644ed..63fd9d8b0b6 100644
 --- a/src/vs/base/browser/ui/splitview/splitview.ts
 +++ b/src/vs/base/browser/ui/splitview/splitview.ts
 @@ -3,7 +3,7 @@
@@ -679,7 +669,7 @@ index 7b1a6e93ab9..8ab4cf789a9 100644
  	}
  });
 diff --git a/src/vs/editor/contrib/hover/browser/contentHoverController.ts b/src/vs/editor/contrib/hover/browser/contentHoverController.ts
-index afaa209d933..fbef0712283 100644
+index d675e1de629..f9dd54b620f 100644
 --- a/src/vs/editor/contrib/hover/browser/contentHoverController.ts
 +++ b/src/vs/editor/contrib/hover/browser/contentHoverController.ts
 @@ -24,6 +24,7 @@ import { Emitter } from '../../../../base/common/event.js';
@@ -713,16 +703,17 @@ index c5226cb273f..08f5ace9b37 100644
  			this._configurationService.getValue('accessibility.verbosity.hover') === true && this._accessibilityService.isScreenReaderOptimized(),
  			this._keybindingService.lookupKeybinding('editor.action.accessibleView')?.getAriaLabel() ?? ''
 diff --git a/src/vs/platform/actionWidget/browser/actionList.ts b/src/vs/platform/actionWidget/browser/actionList.ts
-index cae571a303e..44b66de4ec7 100644
+index 48567e36406..49cf361f724 100644
 --- a/src/vs/platform/actionWidget/browser/actionList.ts
 +++ b/src/vs/platform/actionWidget/browser/actionList.ts
-@@ -1607,8 +1607,11 @@ export class ActionListWidget<T> extends Disposable {
+@@ -2108,11 +2108,11 @@ export class ActionListWidget<T> extends Disposable {
  	}
  
  	private _getRowElement(index: number): HTMLElement | null {
-+		if (!this.domNode.isConnected) {
-+			return null;
-+		}
+-		if (index < 0) {
++		if (index < 0 || !this.domNode.isConnected) {
+ 			return null;
+ 		}
  		// eslint-disable-next-line no-restricted-syntax
 -		return this.domNode.ownerDocument.getElementById(this._list.getElementID(index));
 +		return (this.domNode.getRootNode() as Document | ShadowRoot).getElementById(this._list.getElementID(index));
@@ -822,10 +813,10 @@ index a865e8a47ca..2e87bc3b47a 100644
  				}
  
 diff --git a/src/vs/platform/hover/browser/hoverWidget.ts b/src/vs/platform/hover/browser/hoverWidget.ts
-index 1ca3e989f57..2d24d79d066 100644
+index eac557f5202..995890ad3ba 100644
 --- a/src/vs/platform/hover/browser/hoverWidget.ts
 +++ b/src/vs/platform/hover/browser/hoverWidget.ts
-@@ -338,7 +338,7 @@ export class HoverWidget extends Widget implements IHoverWidget {
+@@ -340,7 +340,7 @@ export class HoverWidget extends Widget implements IHoverWidget {
  
  	public render(container: HTMLElement): void {
  		container.appendChild(this._hoverContainer);
@@ -860,20 +851,43 @@ index 7215f066d45..f55ed918b03 100644
  
  			return rules.join('\n');
  		}
+diff --git a/src/vs/platform/userInteraction/browser/userInteractionServiceImpl.ts b/src/vs/platform/userInteraction/browser/userInteractionServiceImpl.ts
+index e0431c43297..3becb497383 100644
+--- a/src/vs/platform/userInteraction/browser/userInteractionServiceImpl.ts
++++ b/src/vs/platform/userInteraction/browser/userInteractionServiceImpl.ts
+@@ -3,7 +3,7 @@
+  *  Licensed under the MIT License. See License.txt in the project root for license information.
+  *--------------------------------------------------------------------------------------------*/
+ 
+-import { getWindow, IFocusTracker, ModifierKeyEmitter, trackFocus } from '../../../base/browser/dom.js';
++import { getActiveElement, getWindow, IFocusTracker, ModifierKeyEmitter, trackFocus } from '../../../base/browser/dom.js';
+ import { DisposableStore } from '../../../base/common/lifecycle.js';
+ import { IObservable, IReader, observableFromEvent, observableValue } from '../../../base/common/observable.js';
+ import { InstantiationType, registerSingleton } from '../../instantiation/common/extensions.js';
+@@ -40,8 +40,7 @@ export class UserInteractionService implements IUserInteractionService {
+ 			if (el instanceof Window) {
+ 				return el.document.hasFocus();
+ 			}
+-			const shadowRoot = el.getRootNode() instanceof ShadowRoot ? el.getRootNode() as ShadowRoot : null;
+-			const activeElement = shadowRoot ? shadowRoot.activeElement : el.ownerDocument.activeElement;
++			const activeElement = getActiveElement(el.ownerDocument);
+ 			return el.contains(activeElement);
+ 		};
+ 
 diff --git a/src/vs/sessions/contrib/agentFeedback/browser/agentFeedbackEditorInputContribution.ts b/src/vs/sessions/contrib/agentFeedback/browser/agentFeedbackEditorInputContribution.ts
-index fdaf7d3923f..aac39b1fe29 100644
+index f7b8ece70c2..81d0bcd9dd7 100644
 --- a/src/vs/sessions/contrib/agentFeedback/browser/agentFeedbackEditorInputContribution.ts
 +++ b/src/vs/sessions/contrib/agentFeedback/browser/agentFeedbackEditorInputContribution.ts
-@@ -13,7 +13,7 @@ import { EditorOption } from '../../../../editor/common/config/editorOptions.js'
+@@ -14,7 +14,7 @@ import { EditorOption } from '../../../../editor/common/config/editorOptions.js'
  import { Position } from '../../../../editor/common/core/position.js';
  import { Range } from '../../../../editor/common/core/range.js';
  import { Selection, SelectionDirection } from '../../../../editor/common/core/selection.js';
--import { addStandardDisposableListener, getWindow, isHTMLElement, ModifierKeyEmitter } from '../../../../base/browser/dom.js';
-+import { addStandardDisposableListener, getActiveElement, getWindow, isActiveElement, isHTMLElement, ModifierKeyEmitter } from '../../../../base/browser/dom.js';
+-import { addStandardDisposableListener, getWindow, isHTMLElement } from '../../../../base/browser/dom.js';
++import { addStandardDisposableListener, getActiveElement, getWindow, isActiveElement, isHTMLElement } from '../../../../base/browser/dom.js';
  import { URI } from '../../../../base/common/uri.js';
  import { isEqual } from '../../../../base/common/resources.js';
  import { KeyCode } from '../../../../base/common/keyCodes.js';
-@@ -329,7 +329,7 @@ export class AgentFeedbackEditorInputContribution extends Disposable implements
+@@ -230,7 +230,7 @@ export class AgentFeedbackEditorInputContribution extends Disposable implements
  				if (!this._visible) {
  					return;
  				}
@@ -882,7 +896,7 @@ index fdaf7d3923f..aac39b1fe29 100644
  					return;
  				}
  				this._autoHide();
-@@ -686,7 +686,7 @@ export class AgentFeedbackEditorInputContribution extends Disposable implements
+@@ -581,7 +581,7 @@ export class AgentFeedbackEditorInputContribution extends Disposable implements
  				}
  
  				// If the input is not focused, focus it and let the keystroke go through
@@ -892,10 +906,10 @@ index fdaf7d3923f..aac39b1fe29 100644
  				}
  			}));
 diff --git a/src/vs/workbench/browser/actions/developerActions.ts b/src/vs/workbench/browser/actions/developerActions.ts
-index e9e5399ba81..06b0aebdffd 100644
+index bc62b19db42..0dfae3d0fff 100644
 --- a/src/vs/workbench/browser/actions/developerActions.ts
 +++ b/src/vs/workbench/browser/actions/developerActions.ts
-@@ -85,7 +85,7 @@ class InspectContextKeysAction extends Action2 {
+@@ -97,7 +97,7 @@ class InspectContextKeysAction extends Action2 {
  
  		const onMouseMove = disposables.add(new DomEmitter(activeDocument, 'mousemove', true));
  		disposables.add(onMouseMove.event(e => {
@@ -904,7 +918,7 @@ index e9e5399ba81..06b0aebdffd 100644
  			const position = getDomNodePagePosition(target);
  
  			hoverFeedback.style.top = `${position.top}px`;
-@@ -102,7 +102,7 @@ class InspectContextKeysAction extends Action2 {
+@@ -114,7 +114,7 @@ class InspectContextKeysAction extends Action2 {
  			e.preventDefault();
  			e.stopPropagation();
  
@@ -914,18 +928,18 @@ index e9e5399ba81..06b0aebdffd 100644
  
  			dispose(disposables);
 diff --git a/src/vs/workbench/browser/layout.ts b/src/vs/workbench/browser/layout.ts
-index a9e70490c4c..4406f7e15ee 100644
+index 82bf5fb128d..6f36331ccba 100644
 --- a/src/vs/workbench/browser/layout.ts
 +++ b/src/vs/workbench/browser/layout.ts
-@@ -47,6 +47,7 @@ import { AuxiliaryBarPart } from './parts/auxiliarybar/auxiliaryBarPart.js';
- import { ITelemetryService } from '../../platform/telemetry/common/telemetry.js';
+@@ -51,6 +51,7 @@ import { ITelemetryService } from '../../platform/telemetry/common/telemetry.js'
  import { IAuxiliaryWindowService } from '../services/auxiliaryWindow/browser/auxiliaryWindowService.js';
  import { CodeWindow, mainWindow } from '../../base/browser/window.js';
+ import { localize } from '../../nls.js';
 +import { setContainerElement } from '../../base/browser/domStylesheets.js';
  
  //#region Layout Implementation
  
-@@ -305,6 +306,8 @@ export abstract class Layout extends Disposable implements IWorkbenchLayoutServi
+@@ -320,6 +321,8 @@ export abstract class Layout extends Disposable implements IWorkbenchLayoutServi
  		private readonly layoutOptions?: { resetLayout: boolean }
  	) {
  		super();
@@ -935,7 +949,7 @@ index a9e70490c4c..4406f7e15ee 100644
  
  	protected initLayout(accessor: ServicesAccessor): void {
 diff --git a/src/vs/workbench/browser/parts/editor/editorGroupView.ts b/src/vs/workbench/browser/parts/editor/editorGroupView.ts
-index 3f89436bc07..e026c68b30b 100644
+index d9329ba5bf2..1ddc05208e0 100644
 --- a/src/vs/workbench/browser/parts/editor/editorGroupView.ts
 +++ b/src/vs/workbench/browser/parts/editor/editorGroupView.ts
 @@ -11,7 +11,7 @@ import { EditorInput } from '../../../common/editor/editorInput.js';
@@ -947,7 +961,7 @@ index 3f89436bc07..e026c68b30b 100644
  import { ServiceCollection } from '../../../../platform/instantiation/common/serviceCollection.js';
  import { IContextKeyService } from '../../../../platform/contextkey/common/contextkey.js';
  import { ProgressBar } from '../../../../base/browser/ui/progressbar/progressbar.js';
-@@ -1660,7 +1660,7 @@ export class EditorGroupView extends Themable implements IEditorGroupView {
+@@ -1690,7 +1690,7 @@ export class EditorGroupView extends Themable implements IEditorGroupView {
  
  	private shouldRestoreFocus(target: Element): boolean {
  		const activeElement = getActiveElement();
@@ -957,7 +971,7 @@ index 3f89436bc07..e026c68b30b 100644
  		}
  
 diff --git a/src/vs/workbench/browser/parts/editor/modalEditorPart.ts b/src/vs/workbench/browser/parts/editor/modalEditorPart.ts
-index 522f7967950..169bcffd42e 100644
+index ca467f2902a..5c5eed02d05 100644
 --- a/src/vs/workbench/browser/parts/editor/modalEditorPart.ts
 +++ b/src/vs/workbench/browser/parts/editor/modalEditorPart.ts
 @@ -4,7 +4,7 @@
@@ -969,7 +983,7 @@ index 522f7967950..169bcffd42e 100644
  import { GlobalPointerMoveMonitor } from '../../../../base/browser/globalPointerMoveMonitor.js';
  import { StandardKeyboardEvent } from '../../../../base/browser/keyboardEvent.js';
  import { ActionBar, prepareActions } from '../../../../base/browser/ui/actionbar/actionbar.js';
-@@ -940,7 +940,7 @@ class ModalEditorPartImpl extends EditorPart implements IModalEditorPart {
+@@ -964,7 +964,7 @@ class ModalEditorPartImpl extends EditorPart implements IModalEditorPart {
  	}
  
  	override create(parent: HTMLElement, options?: object): void {
@@ -1002,8 +1016,29 @@ index 7796aae8a15..1c304a11a9e 100644
  	}
  
  	private createPart(id: string, role: string, classes: string[]): HTMLElement {
+diff --git a/src/vs/workbench/contrib/chat/browser/actions/chatAccessibilityActions.ts b/src/vs/workbench/contrib/chat/browser/actions/chatAccessibilityActions.ts
+index fb883b165b0..337e9daed35 100644
+--- a/src/vs/workbench/contrib/chat/browser/actions/chatAccessibilityActions.ts
++++ b/src/vs/workbench/contrib/chat/browser/actions/chatAccessibilityActions.ts
+@@ -18,6 +18,7 @@ import { AccessibleViewProviderId } from '../../../../../platform/accessibility/
+ import { CONTEXT_ACCESSIBILITY_MODE_ENABLED } from '../../../../../platform/accessibility/common/accessibility.js';
+ import { accessibleViewCurrentProviderId, accessibleViewIsShown } from '../../../../contrib/accessibility/browser/accessibilityConfiguration.js';
+ import { CHAT_ACCESSIBLE_VIEW_INCLUDE_THINKING_STORAGE_KEY, isThinkingContentIncludedInAccessibleView } from '../accessibility/chatResponseAccessibleView.js';
++import { getActiveElement } from '../../../../../base/browser/dom.js';
+ 
+ export const ACTION_ID_FOCUS_CHAT_CONFIRMATION = 'workbench.action.chat.focusConfirmation';
+ export const ACTION_ID_TOGGLE_THINKING_CONTENT_ACCESSIBLE_VIEW = 'workbench.action.chat.toggleThinkingContentAccessibleView';
+@@ -75,7 +76,7 @@ class AnnounceChatConfirmationAction extends Action2 {
+ 
+ 		if (firstConfirmationElement) {
+ 			// Toggle: if the confirmation is already focused, move focus back to input
+-			if (firstConfirmationElement.contains(pendingWidget.domNode.ownerDocument.activeElement)) {
++			if (firstConfirmationElement.contains(getActiveElement(pendingWidget.domNode.ownerDocument))) {
+ 				pendingWidget.focusInput();
+ 			} else {
+ 				firstConfirmationElement.scrollIntoView({ block: 'nearest' });
 diff --git a/src/vs/workbench/contrib/chat/browser/agentSessions/experiments/agentTitleBarStatusWidget.ts b/src/vs/workbench/contrib/chat/browser/agentSessions/experiments/agentTitleBarStatusWidget.ts
-index 59d9960e78c..96d5fdc92a9 100644
+index ab077f06947..164d869beca 100644
 --- a/src/vs/workbench/contrib/chat/browser/agentSessions/experiments/agentTitleBarStatusWidget.ts
 +++ b/src/vs/workbench/contrib/chat/browser/agentSessions/experiments/agentTitleBarStatusWidget.ts
 @@ -4,7 +4,7 @@
@@ -1015,7 +1050,7 @@ index 59d9960e78c..96d5fdc92a9 100644
  import { renderIcon } from '../../../../../../base/browser/ui/iconLabel/iconLabels.js';
  import { Disposable, DisposableStore } from '../../../../../../base/common/lifecycle.js';
  import { Codicon } from '../../../../../../base/common/codicons.js';
-@@ -295,7 +295,7 @@ export class AgentTitleBarStatusWidget extends BaseActionViewItem {
+@@ -296,7 +296,7 @@ export class AgentTitleBarStatusWidget extends BaseActionViewItem {
  		if (!this._container) {
  			return;
  		}
@@ -1024,42 +1059,136 @@ index 59d9960e78c..96d5fdc92a9 100644
  		if (isHTMLElement(activeElement) && this._container.contains(activeElement)) {
  			activeElement.blur();
  		}
-diff --git a/src/vs/workbench/contrib/chat/browser/planReviewFeedback/planReviewFeedbackEditorContribution.ts b/src/vs/workbench/contrib/chat/browser/planReviewFeedback/planReviewFeedbackEditorContribution.ts
-index 7486d45ae40..b3867ac6a12 100644
---- a/src/vs/workbench/contrib/chat/browser/planReviewFeedback/planReviewFeedbackEditorContribution.ts
-+++ b/src/vs/workbench/contrib/chat/browser/planReviewFeedback/planReviewFeedbackEditorContribution.ts
-@@ -14,7 +14,7 @@ import { Range } from '../../../../../editor/common/core/range.js';
- import { OverviewRulerLane } from '../../../../../editor/common/model.js';
- import { themeColorFromId } from '../../../../../platform/theme/common/themeService.js';
- import { overviewRulerInfo } from '../../../../../editor/common/core/editorColorRegistry.js';
--import { addStandardDisposableListener, getWindow } from '../../../../../base/browser/dom.js';
-+import { addStandardDisposableListener, getActiveElement, getWindow, isActiveElement } from '../../../../../base/browser/dom.js';
- import { KeyCode } from '../../../../../base/common/keyCodes.js';
- import { localize } from '../../../../../nls.js';
- import { ActionBar } from '../../../../../base/browser/ui/actionbar/actionbar.js';
-@@ -303,7 +303,7 @@ export class PlanReviewFeedbackEditorContribution extends Disposable implements
- 				if (!this._visible) {
- 					return;
- 				}
--				if (this._isWidgetTarget(getWindow(this._editor.getDomNode()!).document.activeElement)) {
-+				if (this._isWidgetTarget(getActiveElement(this._editor.getDomNode()!.ownerDocument))) {
- 					return;
- 				}
- 				this._hide();
-@@ -452,7 +452,7 @@ export class PlanReviewFeedbackEditorContribution extends Disposable implements
- 					return;
- 				}
- 
--				if (getWindow(widget.inputElement).document.activeElement !== widget.inputElement) {
-+				if (!isActiveElement(widget.inputElement)) {
- 					widget.inputElement.focus();
- 				}
+diff --git a/src/vs/workbench/contrib/chat/browser/aiCustomization/customizationCardList.ts b/src/vs/workbench/contrib/chat/browser/aiCustomization/customizationCardList.ts
+index 9350a0c45ba..d78e25d64b5 100644
+--- a/src/vs/workbench/contrib/chat/browser/aiCustomization/customizationCardList.ts
++++ b/src/vs/workbench/contrib/chat/browser/aiCustomization/customizationCardList.ts
+@@ -245,7 +245,7 @@ export class CustomizationCardListController extends Disposable {
  			}));
+ 			this._register(DOM.addDisposableListener(action, 'blur', () => {
+ 				DOM.getWindow(entry.row).queueMicrotask(() => {
+-					if (!entry.row.contains(entry.row.ownerDocument.activeElement)) {
++					if (!entry.row.contains(DOM.getActiveElement(entry.row.ownerDocument))) {
+ 						this.setActionsTabbable(entry, false);
+ 					}
+ 				});
+diff --git a/src/vs/workbench/contrib/chat/browser/aiCustomization/toolsListWidget.ts b/src/vs/workbench/contrib/chat/browser/aiCustomization/toolsListWidget.ts
+index 0e04a609098..bfaa996779d 100644
+--- a/src/vs/workbench/contrib/chat/browser/aiCustomization/toolsListWidget.ts
++++ b/src/vs/workbench/contrib/chat/browser/aiCustomization/toolsListWidget.ts
+@@ -811,7 +811,7 @@ export class ToolsListWidget extends Disposable {
+ 
+ 	private _render(model: readonly IToolSetViewModel[]): void {
+ 		// A live update (search/tool-set change) rebuilds sections; keep keyboard focus if it was in the tree.
+-		const focusedSection = this._sectionLists.find(s => DOM.isAncestor(this._treeContainer.ownerDocument.activeElement, s.container));
++		const focusedSection = this._sectionLists.find(s => DOM.isAncestor(DOM.getActiveElement(this._treeContainer.ownerDocument), s.container));
+ 		const focusedRowId = focusedSection ? this._currentFocusedRowId(focusedSection) : undefined;
+ 		for (const section of this._sectionLists) {
+ 			this._sectionScrollPositions.set(section.label, section.list.scrollTop);
+diff --git a/src/vs/workbench/contrib/chat/browser/chatInputPills.ts b/src/vs/workbench/contrib/chat/browser/chatInputPills.ts
+index ff6681f8f0a..aed59244ac3 100644
+--- a/src/vs/workbench/contrib/chat/browser/chatInputPills.ts
++++ b/src/vs/workbench/contrib/chat/browser/chatInputPills.ts
+@@ -3,7 +3,7 @@
+  *  Licensed under the MIT License. See License.txt in the project root for license information.
+  *--------------------------------------------------------------------------------------------*/
+ 
+-import { addDisposableListener, EventType, getWindow } from '../../../../base/browser/dom.js';
++import { addDisposableListener, EventType, getActiveElement, getWindow } from '../../../../base/browser/dom.js';
+ import { StandardMouseEvent } from '../../../../base/browser/mouseEvent.js';
+ import type { IActionViewItemOptions } from '../../../../base/browser/ui/actionbar/actionViewItems.js';
+ import { Action, Separator, SubmenuAction, toAction, type IAction, type IActionRunner } from '../../../../base/common/actions.js';
+@@ -238,7 +238,7 @@ export class ChatInputPills extends Disposable {
+ 			const anyHidden = kindsWithData.read(reader).size > 0;
+ 			return anyVisible ? 'visible' : anyHidden ? 'empty' : 'hidden';
+ 		}).recomputeInitiallyAndOnChange(this._store, state => {
+-			const activeElement = getWindow(this._row.content).document.activeElement;
++			const activeElement = getActiveElement(this._row.content.ownerDocument);
+ 			const restoreInputFocus = state === 'hidden' && !!activeElement && this._row.content.contains(activeElement);
+ 			const visible = state !== 'hidden';
+ 			this.element.classList.toggle('hidden', !visible);
+diff --git a/src/vs/workbench/contrib/chat/browser/promptTimeline/promptTimelineGutterRail.ts b/src/vs/workbench/contrib/chat/browser/promptTimeline/promptTimelineGutterRail.ts
+index 251f8db155e..a715c92b69e 100644
+--- a/src/vs/workbench/contrib/chat/browser/promptTimeline/promptTimelineGutterRail.ts
++++ b/src/vs/workbench/contrib/chat/browser/promptTimeline/promptTimelineGutterRail.ts
+@@ -3,7 +3,7 @@
+  *  Licensed under the MIT License. See License.txt in the project root for license information.
+  *--------------------------------------------------------------------------------------------*/
+ 
+-import { $, addDisposableListener, append, clearNode, EventType, getWindow } from '../../../../../base/browser/dom.js';
++import { $, addDisposableListener, append, clearNode, EventType, getActiveElement, getWindow } from '../../../../../base/browser/dom.js';
+ import { StandardKeyboardEvent } from '../../../../../base/browser/keyboardEvent.js';
+ import { Gesture, EventType as TouchEventType } from '../../../../../base/browser/touch.js';
+ import { Emitter, Event } from '../../../../../base/common/event.js';
+@@ -405,8 +405,8 @@ export class PromptTimelineGutterRail extends Disposable implements IPromptTimel
+ 			&& ticks.every((t, i) => this._rows[i]?.tick.requestId === t.requestId);
+ 		if (sameStructure) {
+ 			// Note the focused target before any button can disappear underneath it.
+-			const doc = getWindow(this._domNode).document;
+-			const focusedCell = this._isLiveCell(doc.activeElement) ? doc.activeElement : undefined;
++			const activeElement = getActiveElement(this._domNode.ownerDocument);
++			const focusedCell = this._isLiveCell(activeElement) ? activeElement : undefined;
+ 			// Only the stats changed (streaming edits); update them in place so focus/hover are kept.
+ 			for (let i = 0; i < ticks.length; i++) {
+ 				this._renderRow(this._rows[i], ticks[i]);
+@@ -559,7 +559,7 @@ export class PromptTimelineGutterRail extends Disposable implements IPromptTimel
+ 			this._close();
+ 			return;
+ 		}
+-		const activeElement = getWindow(this._domNode).document.activeElement;
++		const activeElement = getActiveElement(this._domNode.ownerDocument);
+ 		const currentIndex = this._rows.findIndex(r => r.jump === activeElement || r.diff === activeElement);
+ 		const currentColumn: RowColumn = this._rows[currentIndex]?.diff === activeElement ? 'diff' : 'jump';
+ 		let nextIndex = currentIndex;
+diff --git a/src/vs/workbench/contrib/chat/browser/promptTimeline/promptTimelineRulerRail.ts b/src/vs/workbench/contrib/chat/browser/promptTimeline/promptTimelineRulerRail.ts
+index a6fb792bb00..83ee0d39b65 100644
+--- a/src/vs/workbench/contrib/chat/browser/promptTimeline/promptTimelineRulerRail.ts
++++ b/src/vs/workbench/contrib/chat/browser/promptTimeline/promptTimelineRulerRail.ts
+@@ -3,7 +3,7 @@
+  *  Licensed under the MIT License. See License.txt in the project root for license information.
+  *--------------------------------------------------------------------------------------------*/
+ 
+-import { $, addDisposableListener, append, clearNode, EventType, getWindow, scheduleAtNextAnimationFrame } from '../../../../../base/browser/dom.js';
++import { $, addDisposableListener, append, clearNode, EventType, getActiveElement, getWindow, scheduleAtNextAnimationFrame } from '../../../../../base/browser/dom.js';
+ import { StandardKeyboardEvent } from '../../../../../base/browser/keyboardEvent.js';
+ import { disposableTimeout } from '../../../../../base/common/async.js';
+ import { Emitter, Event } from '../../../../../base/common/event.js';
+@@ -159,7 +159,7 @@ export class PromptTimelineRulerRail extends Disposable implements IPromptTimeli
+ 			this._collapseFan();
+ 		}));
+ 		this._register(addDisposableListener(this._domNode, EventType.FOCUS_OUT, () => {
+-			if (!this._domNode.contains(getWindow(this._domNode).document.activeElement)) {
++			if (!this._domNode.contains(getActiveElement(this._domNode.ownerDocument))) {
+ 				this._focused = false;
+ 				this._card.scheduleHide();
+ 			}
+@@ -227,7 +227,7 @@ export class PromptTimelineRulerRail extends Disposable implements IPromptTimeli
+ 			return;
+ 		}
+ 		const event = new StandardKeyboardEvent(e);
+-		const currentIndex = this._marks.findIndex(m => m.button === getWindow(this._domNode).document.activeElement);
++		const currentIndex = this._marks.findIndex(m => m.button === getActiveElement(this._domNode.ownerDocument));
+ 		let nextIndex: number;
+ 		switch (event.keyCode) {
+ 			case KeyCode.DownArrow: nextIndex = Math.min(this._marks.length - 1, currentIndex + 1); break;
+diff --git a/src/vs/workbench/contrib/chat/browser/widget/chatFind/chatFindWidget.ts b/src/vs/workbench/contrib/chat/browser/widget/chatFind/chatFindWidget.ts
+index abe776b7a9b..becf6e5aefe 100644
+--- a/src/vs/workbench/contrib/chat/browser/widget/chatFind/chatFindWidget.ts
++++ b/src/vs/workbench/contrib/chat/browser/widget/chatFind/chatFindWidget.ts
+@@ -321,7 +321,7 @@ export class ChatFindWidget extends SimpleFindWidget implements IChatFindControl
+ 
+ 	override show(seedText?: string, focus: boolean = true): void {
+ 		if (shouldCaptureFocusBeforeShow(this.isVisible())) {
+-			this._lastFocusedElement = this._targetWindow.document.activeElement as HTMLElement | undefined;
++			this._lastFocusedElement = dom.getActiveElement(this._targetWindow.document) as HTMLElement | undefined;
+ 		}
+ 		this._findWidgetVisibleKey.set(true);
+ 		// Opening reads the count before the seed text reaches the model, reporting "No results".
 diff --git a/src/vs/workbench/contrib/chat/browser/widget/input/chatInputPart.ts b/src/vs/workbench/contrib/chat/browser/widget/input/chatInputPart.ts
-index 82c264ad240..43d1817aba8 100644
+index 07974a99db6..758cf831317 100644
 --- a/src/vs/workbench/contrib/chat/browser/widget/input/chatInputPart.ts
 +++ b/src/vs/workbench/contrib/chat/browser/widget/input/chatInputPart.ts
-@@ -3816,7 +3816,7 @@ export class ChatInputPart extends Disposable implements IHistoryNavigationWidge
+@@ -4305,7 +4305,7 @@ export class ChatInputPart extends Disposable implements IHistoryNavigationWidge
  			return;
  		}
  
@@ -1069,7 +1198,7 @@ index 82c264ad240..43d1817aba8 100644
  		let newIndex = currentIndex;
  
 diff --git a/src/vs/workbench/contrib/files/browser/views/explorerViewer.ts b/src/vs/workbench/contrib/files/browser/views/explorerViewer.ts
-index ed7dbe07826..91962faa066 100644
+index 8178f4c4edc..c227df80860 100644
 --- a/src/vs/workbench/contrib/files/browser/views/explorerViewer.ts
 +++ b/src/vs/workbench/contrib/files/browser/views/explorerViewer.ts
 @@ -74,6 +74,7 @@ import { IContextKey, IContextKeyService } from '../../../../../platform/context
@@ -1226,7 +1355,7 @@ index c9d5a62989d..4ed8197a376 100644
  		}
  
 diff --git a/src/vs/workbench/contrib/notebook/browser/view/renderers/backLayerWebView.ts b/src/vs/workbench/contrib/notebook/browser/view/renderers/backLayerWebView.ts
-index 1de54375c42..53d6713f596 100644
+index fee8fdc6b46..5982aa1def5 100644
 --- a/src/vs/workbench/contrib/notebook/browser/view/renderers/backLayerWebView.ts
 +++ b/src/vs/workbench/contrib/notebook/browser/view/renderers/backLayerWebView.ts
 @@ -3,7 +3,6 @@
@@ -1237,7 +1366,7 @@ index 1de54375c42..53d6713f596 100644
  import { IMouseWheelEvent } from '../../../../../../base/browser/mouseEvent.js';
  import { CodeWindow } from '../../../../../../base/browser/window.js';
  import { WorkbenchActionExecutedClassification, WorkbenchActionExecutedEvent } from '../../../../../../base/common/actions.js';
-@@ -586,7 +585,7 @@ export class BackLayerWebView<T extends ICommonCellInfo> extends Themable {
+@@ -588,7 +587,7 @@ export class BackLayerWebView<T extends ICommonCellInfo> extends Themable {
  	}
  
  	private _initialize(content: string, targetWindow: CodeWindow): Promise<void> {
@@ -1247,7 +1376,7 @@ index 1de54375c42..53d6713f596 100644
  		}
  
 diff --git a/src/vs/workbench/contrib/preferences/browser/preferences.contribution.ts b/src/vs/workbench/contrib/preferences/browser/preferences.contribution.ts
-index 006b15f7d6e..5ba6bca6683 100644
+index ea5c3474c63..252475994c5 100644
 --- a/src/vs/workbench/contrib/preferences/browser/preferences.contribution.ts
 +++ b/src/vs/workbench/contrib/preferences/browser/preferences.contribution.ts
 @@ -3,6 +3,7 @@
@@ -1258,7 +1387,7 @@ index 006b15f7d6e..5ba6bca6683 100644
  import { KeyChord, KeyCode, KeyMod } from '../../../../base/common/keyCodes.js';
  import { Disposable, DisposableStore, MutableDisposable } from '../../../../base/common/lifecycle.js';
  import { Schemas } from '../../../../base/common/network.js';
-@@ -810,7 +811,7 @@ class PreferencesActionsContribution extends Disposable implements IWorkbenchCon
+@@ -805,7 +806,7 @@ class PreferencesActionsContribution extends Disposable implements IWorkbenchCon
  					return;
  				}
  
@@ -1268,10 +1397,10 @@ index 006b15f7d6e..5ba6bca6683 100644
  					preferencesEditor.focusSettings(true);
  				}
 diff --git a/src/vs/workbench/contrib/preferences/browser/settingsEditor2.ts b/src/vs/workbench/contrib/preferences/browser/settingsEditor2.ts
-index 499f9e6c73f..2164a64ae5f 100644
+index 6dc88cdd94a..0b57200e623 100644
 --- a/src/vs/workbench/contrib/preferences/browser/settingsEditor2.ts
 +++ b/src/vs/workbench/contrib/preferences/browser/settingsEditor2.ts
-@@ -1229,7 +1229,7 @@ export class SettingsEditor2 extends EditorPane {
+@@ -1239,7 +1239,7 @@ export class SettingsEditor2 extends EditorPane {
  		}));
  
  		this._register(this.settingsTree.onDidFocus(() => {
@@ -1280,7 +1409,7 @@ index 499f9e6c73f..2164a64ae5f 100644
  			if (classList && classList.contains('monaco-list') && classList.contains('settings-editor-tree')) {
  				this._currentFocusContext = SettingsFocusContext.SettingTree;
  				this.settingRowFocused.set(true);
-@@ -1703,7 +1703,7 @@ export class SettingsEditor2 extends EditorPane {
+@@ -1713,7 +1713,7 @@ export class SettingsEditor2 extends EditorPane {
  
  	private getActiveControlInSettingsTree(): HTMLElement | null {
  		const element = this.settingsTree.getHTMLElement();
@@ -1289,7 +1418,7 @@ index 499f9e6c73f..2164a64ae5f 100644
  		return (activeElement && DOM.isAncestorOfActiveElement(element)) ?
  			<HTMLElement>activeElement :
  			null;
-@@ -1768,7 +1768,7 @@ export class SettingsEditor2 extends EditorPane {
+@@ -1778,7 +1778,7 @@ export class SettingsEditor2 extends EditorPane {
  	}
  
  	private contextViewFocused(): boolean {
@@ -1299,7 +1428,7 @@ index 499f9e6c73f..2164a64ae5f 100644
  
  	private refreshSingleElement(element: SettingsTreeSettingElement): void {
 diff --git a/src/vs/workbench/contrib/terminal/browser/terminalService.ts b/src/vs/workbench/contrib/terminal/browser/terminalService.ts
-index effcc11e410..c3e617145a8 100644
+index d3884da3795..3308abc9559 100644
 --- a/src/vs/workbench/contrib/terminal/browser/terminalService.ts
 +++ b/src/vs/workbench/contrib/terminal/browser/terminalService.ts
 @@ -53,7 +53,7 @@ import { mark } from '../../../../base/common/performance.js';
@@ -1320,7 +1449,7 @@ index effcc11e410..c3e617145a8 100644
  	}
  
  	async showProfileQuickPick(type: 'setDefault' | 'createInstance', cwd?: string | URI): Promise<ITerminalInstance | undefined> {
-@@ -1395,7 +1395,6 @@ class TerminalEditorStyle extends Themable {
+@@ -1379,7 +1379,6 @@ class TerminalEditorStyle extends Themable {
  	private _styleElement: HTMLElement;
  
  	constructor(
@@ -1328,7 +1457,7 @@ index effcc11e410..c3e617145a8 100644
  		@ITerminalService private readonly _terminalService: ITerminalService,
  		@IThemeService private readonly _themeService: IThemeService,
  		@ITerminalProfileService private readonly _terminalProfileService: ITerminalProfileService,
-@@ -1403,7 +1402,7 @@ class TerminalEditorStyle extends Themable {
+@@ -1387,7 +1386,7 @@ class TerminalEditorStyle extends Themable {
  	) {
  		super(_themeService);
  		this._registerListeners();
@@ -1351,7 +1480,7 @@ index 7a3dd584458..b58e3170ff1 100644
  			const listener = this._register(Event.once(this._terminalService.onDidChangeConnectionState)(() => {
  				// Only focus the terminal if the activeElement has not changed since focus() was called
 diff --git a/src/vs/workbench/contrib/terminal/browser/terminalView.ts b/src/vs/workbench/contrib/terminal/browser/terminalView.ts
-index 9a745727415..32b87509ab3 100644
+index d845f788366..8be436ea715 100644
 --- a/src/vs/workbench/contrib/terminal/browser/terminalView.ts
 +++ b/src/vs/workbench/contrib/terminal/browser/terminalView.ts
 @@ -335,7 +335,7 @@ export class TerminalViewPane extends ViewPane {
@@ -1364,7 +1493,7 @@ index 9a745727415..32b87509ab3 100644
  			const listener = this._register(Event.once(this._terminalService.onDidChangeConnectionState)(() => {
  				// Only focus the terminal if the activeElement has not changed since focus() was called
 diff --git a/src/vs/workbench/contrib/webview/browser/webviewElement.ts b/src/vs/workbench/contrib/webview/browser/webviewElement.ts
-index 4e7b69bd139..5455eea1f88 100644
+index 3210ac5c97b..1f46748d6ff 100644
 --- a/src/vs/workbench/contrib/webview/browser/webviewElement.ts
 +++ b/src/vs/workbench/contrib/webview/browser/webviewElement.ts
 @@ -4,7 +4,7 @@
@@ -1395,7 +1524,7 @@ index 4e7b69bd139..5455eea1f88 100644
  	}
  
  	private handleKeyEvent(type: 'keydown' | 'keyup', event: KeyEvent) {
-@@ -954,8 +955,11 @@ export class WebviewElement extends Disposable implements IWebviewElement, Webvi
+@@ -968,8 +969,11 @@ export class WebviewElement extends Disposable implements IWebviewElement, Webvi
  				return;
  			}
  
@@ -1432,7 +1561,7 @@ index 0cb22b9cf17..64f8a2c27d7 100644
  		let parent = this.container.parentElement;
  		while (parent && parent !== active) {
 diff --git a/src/vs/workbench/contrib/welcomeOnboarding/browser/onboardingVariationA.ts b/src/vs/workbench/contrib/welcomeOnboarding/browser/onboardingVariationA.ts
-index c1fb3e12ab4..eedae948676 100644
+index e60eaee83eb..e4ca0f704e3 100644
 --- a/src/vs/workbench/contrib/welcomeOnboarding/browser/onboardingVariationA.ts
 +++ b/src/vs/workbench/contrib/welcomeOnboarding/browser/onboardingVariationA.ts
 @@ -5,7 +5,7 @@
@@ -1444,7 +1573,7 @@ index c1fb3e12ab4..eedae948676 100644
  import { isCancellationError } from '../../../../base/common/errors.js';
  import { StopWatch } from '../../../../base/common/stopwatch.js';
  import { URI } from '../../../../base/common/uri.js';
-@@ -172,7 +172,7 @@ export class OnboardingVariationA extends Disposable implements IOnboardingServi
+@@ -171,7 +171,7 @@ export class OnboardingVariationA extends Disposable implements IOnboardingServi
  		}
  
  		this._isShowing = true;
@@ -1453,7 +1582,7 @@ index c1fb3e12ab4..eedae948676 100644
  
  		const container = this.layoutService.activeContainer;
  
-@@ -1268,10 +1268,10 @@ export class OnboardingVariationA extends Disposable implements IOnboardingServi
+@@ -1186,10 +1186,10 @@ export class OnboardingVariationA extends Disposable implements IOnboardingServi
  		const first = allFocusable[0];
  		const last = allFocusable[allFocusable.length - 1];
  
@@ -1499,10 +1628,10 @@ index c6fb17f8525..8691b2f7a37 100644
  			active = active.parentElement;
  		}
 diff --git a/src/vs/workbench/services/auxiliaryWindow/browser/auxiliaryWindowService.ts b/src/vs/workbench/services/auxiliaryWindow/browser/auxiliaryWindowService.ts
-index 1872d9b598e..595864311f8 100644
+index 547adac39c1..4b0ab4c50da 100644
 --- a/src/vs/workbench/services/auxiliaryWindow/browser/auxiliaryWindowService.ts
 +++ b/src/vs/workbench/services/auxiliaryWindow/browser/auxiliaryWindowService.ts
-@@ -483,6 +483,8 @@ export class BrowserAuxiliaryWindowService extends Disposable implements IAuxili
+@@ -492,6 +492,8 @@ export class BrowserAuxiliaryWindowService extends Disposable implements IAuxili
  			mapOriginalToClone.set(originalNode, clonedNode);
  		}
  
@@ -1511,7 +1640,7 @@ index 1872d9b598e..595864311f8 100644
  		// Clone all style elements and stylesheet links from the window to the child window
  		// and keep track of <link> elements to settle to signal that styles have loaded
  		// Increment pending links right from the beginning to ensure we only settle when
-@@ -490,7 +492,7 @@ export class BrowserAuxiliaryWindowService extends Disposable implements IAuxili
+@@ -499,7 +501,7 @@ export class BrowserAuxiliaryWindowService extends Disposable implements IAuxili
  		pendingLinksToSettle++;
  		try {
  			// eslint-disable-next-line no-restricted-syntax
@@ -1520,7 +1649,7 @@ index 1872d9b598e..595864311f8 100644
  				cloneNode(originalNode);
  			}
  		} finally {
-@@ -504,7 +506,7 @@ export class BrowserAuxiliaryWindowService extends Disposable implements IAuxili
+@@ -513,7 +515,7 @@ export class BrowserAuxiliaryWindowService extends Disposable implements IAuxili
  
  		// Listen to new stylesheets as they are being added or removed in the main window
  		// and apply to child window (including changes to existing stylesheets elements)
@@ -1552,7 +1681,7 @@ index 1245acce54c..a2312b0d332 100644
  			return;
  		}
 diff --git a/src/vs/workbench/services/themes/browser/workbenchThemeService.ts b/src/vs/workbench/services/themes/browser/workbenchThemeService.ts
-index 44f587aeb63..4ca10df641f 100644
+index 69b32747767..6d4d0c76958 100644
 --- a/src/vs/workbench/services/themes/browser/workbenchThemeService.ts
 +++ b/src/vs/workbench/services/themes/browser/workbenchThemeService.ts
 @@ -18,7 +18,7 @@ import { Event, Emitter } from '../../../../base/common/event.js';
@@ -1564,7 +1693,7 @@ index 44f587aeb63..4ca10df641f 100644
  import { IBrowserWorkbenchEnvironmentService } from '../../environment/browser/environmentService.js';
  import { IFileService, FileChangeType } from '../../../../platform/files/common/files.js';
  import { URI } from '../../../../base/common/uri.js';
-@@ -872,9 +872,38 @@ class ThemeFileWatcher {
+@@ -875,9 +875,38 @@ class ThemeFileWatcher {
  	}
  }
  

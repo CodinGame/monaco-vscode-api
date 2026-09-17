@@ -29,6 +29,8 @@ import { IActiveLanguagePackService } from 'vs/workbench/services/localization/c
 import type { IExtensionDescription } from 'vs/platform/extensions/common/extensions'
 import { ITunnelService } from 'vs/platform/tunnel/common/tunnel.service'
 import { TunnelService } from 'vs/workbench/services/tunnel/browser/tunnelService'
+import { IRemoteTunnelService } from 'vs/platform/remoteTunnel/common/remoteTunnel.service'
+import { BrowserRemoteTunnelService } from 'vs/platform/remoteTunnel/browser/remoteTunnelService'
 import { IWorkbenchExtensionManagementService } from 'vs/workbench/services/extensionManagement/common/extensionManagement.service'
 import getEnvironmentServiceOverride from './environment'
 import { getWorkbenchConstructionOptions } from '../workbench'
@@ -145,6 +147,7 @@ export default function getServiceOverride({
       [scanRemoteExtensions],
       true
     ),
-    [ITunnelService.toString()]: new SyncDescriptor(TunnelService, [], true)
+    [ITunnelService.toString()]: new SyncDescriptor(TunnelService, [], true),
+    [IRemoteTunnelService.toString()]: new SyncDescriptor(BrowserRemoteTunnelService, [], true)
   }
 }

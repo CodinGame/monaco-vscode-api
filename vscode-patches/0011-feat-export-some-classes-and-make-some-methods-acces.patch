@@ -9,7 +9,6 @@ Subject: [PATCH] feat: export some classes and make some methods accessible
  .../contrib/gotoSymbol/browser/symbolNavigation.ts |  2 +-
  .../inlayHints/browser/inlayHintsController.ts     |  2 +-
  src/vs/editor/contrib/peekView/browser/peekView.ts |  6 ++++--
- .../platform/actionWidget/browser/actionWidget.ts  |  2 +-
  .../actions/browser/actionViewItemService.ts       |  2 +-
  .../browser/extensionResourceLoaderService.ts      |  2 +-
  src/vs/platform/files/common/fileService.ts        |  6 +++---
@@ -22,11 +21,13 @@ Subject: [PATCH] feat: export some classes and make some methods accessible
  .../aiCustomization/customizationHarnessService.ts |  2 +-
  .../browser/chatStatus/chatStatusItemService.ts    |  2 +-
  .../chatContentParts/chatTextEditContentPart.ts    |  6 +++---
+ .../browser/widget/input/chatInputNoticeHub.ts     |  2 +-
  .../widget/input/chatInputNotificationService.ts   |  2 +-
  .../widget/input/chatPhoneInputPresenter.ts        |  2 +-
  .../debug/browser/extensionHostDebugService.ts     |  2 +-
  .../browser/renameSymbolTrackerService.ts          |  2 +-
  .../contrib/issue/browser/issueTroubleshoot.ts     |  6 +++---
+ .../agentHost/browser/agentSdkSetupService.ts      |  2 +-
  .../agentHost/common/agentHostFileSystemService.ts |  2 +-
  .../dialogs/browser/abstractFileDialogService.ts   |  2 +-
  .../services/dialogs/browser/fileDialogService.ts  |  4 ++--
@@ -48,7 +49,7 @@ Subject: [PATCH] feat: export some classes and make some methods accessible
  .../terminal/common/embedderTerminalService.ts     |  2 +-
  .../common/remoteUserDataProfiles.ts               |  2 +-
  .../userDataSync/common/userDataSyncUtil.ts        |  2 +-
- 44 files changed, 73 insertions(+), 69 deletions(-)
+ 45 files changed, 74 insertions(+), 70 deletions(-)
 
 diff --git a/src/vs/editor/contrib/editorState/browser/keybindingCancellation.ts b/src/vs/editor/contrib/editorState/browser/keybindingCancellation.ts
 index 94020ce96b9..de1e9af237e 100644
@@ -101,7 +102,7 @@ index c1cd8f14db4..b2673e43eca 100644
  	declare readonly _serviceBrand: undefined;
  
 diff --git a/src/vs/editor/contrib/inlayHints/browser/inlayHintsController.ts b/src/vs/editor/contrib/inlayHints/browser/inlayHintsController.ts
-index 6c1c58c4f8a..4afe1863c28 100644
+index e09a3807fbd..89ce0c705fe 100644
 --- a/src/vs/editor/contrib/inlayHints/browser/inlayHintsController.ts
 +++ b/src/vs/editor/contrib/inlayHints/browser/inlayHintsController.ts
 @@ -40,7 +40,7 @@ import { Position } from '../../../common/core/position.js';
@@ -137,19 +138,6 @@ index c578441baa9..7b5909d6fac 100644
  
  export namespace PeekContext {
  	export const inPeekEditor = new RawContextKey<boolean>('inReferenceSearchEditor', true, nls.localize('inReferenceSearchEditor', "Whether the current code editor is embedded inside peek"));
-diff --git a/src/vs/platform/actionWidget/browser/actionWidget.ts b/src/vs/platform/actionWidget/browser/actionWidget.ts
-index 6feb8e32953..60eb545232f 100644
---- a/src/vs/platform/actionWidget/browser/actionWidget.ts
-+++ b/src/vs/platform/actionWidget/browser/actionWidget.ts
-@@ -57,7 +57,7 @@ export interface IActionWidgetService {
- 	readonly isVisible: boolean;
- }
- 
--class ActionWidgetService extends Disposable implements IActionWidgetService {
-+export class ActionWidgetService extends Disposable implements IActionWidgetService {
- 	declare readonly _serviceBrand: undefined;
- 
- 	get isVisible() {
 diff --git a/src/vs/platform/actions/browser/actionViewItemService.ts b/src/vs/platform/actions/browser/actionViewItemService.ts
 index bc598e830b7..3e598ddbbbf 100644
 --- a/src/vs/platform/actions/browser/actionViewItemService.ts
@@ -177,7 +165,7 @@ index 921674ef18e..00b83a75fcb 100644
  	declare readonly _serviceBrand: undefined;
  
 diff --git a/src/vs/platform/files/common/fileService.ts b/src/vs/platform/files/common/fileService.ts
-index 493471fe856..3a098814ba1 100644
+index 3bdffde3b55..ffb6e5c4b32 100644
 --- a/src/vs/platform/files/common/fileService.ts
 +++ b/src/vs/platform/files/common/fileService.ts
 @@ -243,9 +243,9 @@ export class FileService extends Disposable implements IFileService {
@@ -220,10 +208,10 @@ index c8d1765a7ab..91d78dc1be0 100644
  	declare readonly _serviceBrand: undefined;
  
 diff --git a/src/vs/workbench/browser/layout.ts b/src/vs/workbench/browser/layout.ts
-index d5da4b4de33..a9e70490c4c 100644
+index 75f9238fd75..82bf5fb128d 100644
 --- a/src/vs/workbench/browser/layout.ts
 +++ b/src/vs/workbench/browser/layout.ts
-@@ -50,7 +50,7 @@ import { CodeWindow, mainWindow } from '../../base/browser/window.js';
+@@ -54,7 +54,7 @@ import { localize } from '../../nls.js';
  
  //#region Layout Implementation
  
@@ -232,7 +220,7 @@ index d5da4b4de33..a9e70490c4c 100644
  	activeContainerId: number;
  	mainWindowFullscreen: boolean;
  	readonly maximized: Set<number>;
-@@ -64,12 +64,12 @@ interface ILayoutRuntimeState {
+@@ -68,12 +68,12 @@ interface ILayoutRuntimeState {
  	};
  }
  
@@ -247,8 +235,8 @@ index d5da4b4de33..a9e70490c4c 100644
  	readonly views: {
  		readonly defaults: string[] | undefined;
  		readonly containerToRestore: {
-@@ -105,11 +105,11 @@ enum LayoutClasses {
- 	FLOATING_PANELS = 'floating-panels'
+@@ -120,11 +120,11 @@ enum LayoutClasses {
+ 	MODERN_UI_TABS = 'modern-ui-tabs'
  }
  
 -interface IPathToOpen extends IPath {
@@ -342,7 +330,7 @@ index ff0d50662cd..d509ce285ee 100644
  
  	private readonly _resolvers = new Map<string, { readonly resolve: (sessionResource: URI) => URI | undefined; readonly isNewSession?: (sessionResource: URI) => boolean }>();
 diff --git a/src/vs/workbench/contrib/chat/browser/aiCustomization/aiCustomizationWorkspaceService.ts b/src/vs/workbench/contrib/chat/browser/aiCustomization/aiCustomizationWorkspaceService.ts
-index 9feebda1005..b609df54709 100644
+index 65692071f8d..3cf0f9d4acd 100644
 --- a/src/vs/workbench/contrib/chat/browser/aiCustomization/aiCustomizationWorkspaceService.ts
 +++ b/src/vs/workbench/contrib/chat/browser/aiCustomization/aiCustomizationWorkspaceService.ts
 @@ -20,7 +20,7 @@ import {
@@ -405,12 +393,25 @@ index 4305cc54d72..d4d363592a2 100644
  
  	declare readonly _serviceBrand: undefined;
  
+diff --git a/src/vs/workbench/contrib/chat/browser/widget/input/chatInputNoticeHub.ts b/src/vs/workbench/contrib/chat/browser/widget/input/chatInputNoticeHub.ts
+index fb41599cf75..baa66f6c971 100644
+--- a/src/vs/workbench/contrib/chat/browser/widget/input/chatInputNoticeHub.ts
++++ b/src/vs/workbench/contrib/chat/browser/widget/input/chatInputNoticeHub.ts
+@@ -34,7 +34,7 @@ interface ITrackedHost extends IChatInputSurface {
+  * notice commands resolve their target through here rather than through any one
+  * surface's widget registry.
+  */
+-class ChatInputNoticeHubService extends Disposable implements IChatInputNoticeHubService {
++export class ChatInputNoticeHubService extends Disposable implements IChatInputNoticeHubService {
+ 
+ 	declare readonly _serviceBrand: undefined;
+ 
 diff --git a/src/vs/workbench/contrib/chat/browser/widget/input/chatInputNotificationService.ts b/src/vs/workbench/contrib/chat/browser/widget/input/chatInputNotificationService.ts
-index bc4f1c2791b..6047193d22e 100644
+index 8c40613c276..e658b2c177e 100644
 --- a/src/vs/workbench/contrib/chat/browser/widget/input/chatInputNotificationService.ts
 +++ b/src/vs/workbench/contrib/chat/browser/widget/input/chatInputNotificationService.ts
-@@ -97,7 +97,7 @@ export interface IChatInputNotificationService {
- 	handleMessageSent(): void;
+@@ -234,7 +234,7 @@ export interface IChatInputNotificationService {
+ 	announceRendered(notification: IChatInputNotification | undefined, body?: IChatInputNotificationBody): void;
  }
  
 -class ChatInputNotificationService extends Disposable implements IChatInputNotificationService {
@@ -419,10 +420,10 @@ index bc4f1c2791b..6047193d22e 100644
  
  	private readonly _notifications = new Map<string, IChatInputNotification>();
 diff --git a/src/vs/workbench/contrib/chat/browser/widget/input/chatPhoneInputPresenter.ts b/src/vs/workbench/contrib/chat/browser/widget/input/chatPhoneInputPresenter.ts
-index bdfb9ecdc1d..daed3994f25 100644
+index 895d6763726..2828bac7df3 100644
 --- a/src/vs/workbench/contrib/chat/browser/widget/input/chatPhoneInputPresenter.ts
 +++ b/src/vs/workbench/contrib/chat/browser/widget/input/chatPhoneInputPresenter.ts
-@@ -88,7 +88,7 @@ export interface IChatPhoneInputPresenter {
+@@ -105,7 +105,7 @@ export interface IChatPhoneInputPresenter {
  	setImpl(impl: IChatPhonePresenterImpl): IDisposable;
  }
  
@@ -482,11 +483,24 @@ index 5b019f38d09..24e9f6cceec 100644
  
  	readonly _serviceBrand: undefined;
  
+diff --git a/src/vs/workbench/services/agentHost/browser/agentSdkSetupService.ts b/src/vs/workbench/services/agentHost/browser/agentSdkSetupService.ts
+index c7d29c20952..b2e4014c32f 100644
+--- a/src/vs/workbench/services/agentHost/browser/agentSdkSetupService.ts
++++ b/src/vs/workbench/services/agentHost/browser/agentSdkSetupService.ts
+@@ -93,7 +93,7 @@ export interface IAgentSdkSetupService {
+ 	reportSetupState(agent: string, state: AgentSdkSetupState): void;
+ }
+ 
+-class AgentSdkSetupService extends Disposable implements IAgentSdkSetupService {
++export class AgentSdkSetupService extends Disposable implements IAgentSdkSetupService {
+ 	declare readonly _serviceBrand: undefined;
+ 
+ 	private readonly _onDidChangeSetups = this._register(new Emitter<readonly IAgentSdkSetupInfo[]>());
 diff --git a/src/vs/workbench/services/agentHost/common/agentHostFileSystemService.ts b/src/vs/workbench/services/agentHost/common/agentHostFileSystemService.ts
-index 28ef4e28796..482f83805de 100644
+index e5ac35b1609..9a02f3b1993 100644
 --- a/src/vs/workbench/services/agentHost/common/agentHostFileSystemService.ts
 +++ b/src/vs/workbench/services/agentHost/common/agentHostFileSystemService.ts
-@@ -34,7 +34,7 @@ export interface IAgentHostFileSystemService {
+@@ -35,7 +35,7 @@ export interface IAgentHostFileSystemService {
  	ensureSyncedCustomizationProvider(): void;
  }
  
@@ -601,7 +615,7 @@ index b4f6cf16e7b..7222a9b6b89 100644
  			getInitData: async (): Promise<IWebWorkerExtensionHostInitData> => {
  				if (isInitialStart) {
 diff --git a/src/vs/workbench/services/extensions/browser/extensionUrlHandler.ts b/src/vs/workbench/services/extensions/browser/extensionUrlHandler.ts
-index ae304b23861..0b8b5cdc600 100644
+index ba3bf52ec37..8467afc5426 100644
 --- a/src/vs/workbench/services/extensions/browser/extensionUrlHandler.ts
 +++ b/src/vs/workbench/services/extensions/browser/extensionUrlHandler.ts
 @@ -112,7 +112,7 @@ export class ExtensionUrlHandlerOverrideRegistry {

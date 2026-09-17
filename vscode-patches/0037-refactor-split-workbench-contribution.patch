@@ -107,7 +107,7 @@ index 91d78dc1be0..75ea60405d5 100644
 +
 +registerWorkbenchContribution2(StatusBarItemsExtensionPointWorkbenchContribution.ID, StatusBarItemsExtensionPointWorkbenchContribution, WorkbenchPhase.BlockStartup);
 diff --git a/src/vs/workbench/api/common/jsonValidationExtensionPoint.ts b/src/vs/workbench/api/common/jsonValidationExtensionPoint.ts
-index 24559bee3f8..574f4f8cb44 100644
+index cd7f26af674..4cee2e81535 100644
 --- a/src/vs/workbench/api/common/jsonValidationExtensionPoint.ts
 +++ b/src/vs/workbench/api/common/jsonValidationExtensionPoint.ts
 @@ -13,6 +13,8 @@ import { IExtensionManifest } from '../../../platform/extensions/common/extensio
@@ -119,7 +119,7 @@ index 24559bee3f8..574f4f8cb44 100644
  
  interface IJSONValidationExtensionPoint {
  	fileMatch: string | string[];
-@@ -133,3 +135,16 @@ Registry.as<IExtensionFeaturesRegistry>(Extensions.ExtensionFeaturesRegistry).re
+@@ -189,3 +191,16 @@ Registry.as<IExtensionFeaturesRegistry>(Extensions.ExtensionFeaturesRegistry).re
  	},
  	renderer: new SyncDescriptor(JSONValidationDataRenderer),
  });
@@ -286,7 +286,7 @@ index d78e65afc3f..56bd057fb3e 100644
 +
 +registerWorkbenchContribution2(TokenClassificationExtensionPointWorkbenchContribution.ID, TokenClassificationExtensionPointWorkbenchContribution, WorkbenchPhase.BlockStartup);
 diff --git a/src/vs/workbench/workbench.common.main.ts b/src/vs/workbench/workbench.common.main.ts
-index 176480be5b8..c56960b4c6d 100644
+index d325fcfb949..2d365d0d521 100644
 --- a/src/vs/workbench/workbench.common.main.ts
 +++ b/src/vs/workbench/workbench.common.main.ts
 @@ -44,6 +44,12 @@ import './browser/actions/widgetNavigationCommands.js';

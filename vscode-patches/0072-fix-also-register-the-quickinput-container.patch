@@ -8,18 +8,18 @@ Subject: [PATCH] fix: also register the quickinput container
  1 file changed, 5 insertions(+), 1 deletion(-)
 
 diff --git a/src/vs/platform/quickinput/browser/quickInputController.ts b/src/vs/platform/quickinput/browser/quickInputController.ts
-index 2d3710f5dee..2ee549d617f 100644
+index 0ec221e4bc6..178b864ea3d 100644
 --- a/src/vs/platform/quickinput/browser/quickInputController.ts
 +++ b/src/vs/platform/quickinput/browser/quickInputController.ts
-@@ -39,6 +39,7 @@ import { QuickInputTreeController } from './tree/quickInputTreeController.js';
+@@ -40,6 +40,7 @@ import { QuickInputTreeController } from './tree/quickInputTreeController.js';
  import { QuickTree } from './tree/quickTree.js';
- import { AnchorAlignment, AnchorPosition, layout2d } from '../../../base/common/layout.js';
+ import { AnchorAlignment, AnchorPosition, IRect, layout2d } from '../../../base/common/layout.js';
  import { getAnchorRect, IAnchor } from '../../../base/browser/ui/contextview/contextview.js';
 +import { IKeybindingService } from '../../keybinding/common/keybinding.js';
  
  const $ = dom.$;
  
-@@ -94,7 +95,8 @@ export class QuickInputController extends Disposable {
+@@ -110,7 +111,8 @@ export class QuickInputController extends Disposable {
  		@IInstantiationService private readonly instantiationService: IInstantiationService,
  		@IContextKeyService contextKeyService: IContextKeyService,
  		@IStorageService private readonly storageService: IStorageService,
@@ -29,7 +29,7 @@ index 2d3710f5dee..2ee549d617f 100644
  	) {
  		super();
  
-@@ -146,6 +148,8 @@ export class QuickInputController extends Disposable {
+@@ -162,6 +164,8 @@ export class QuickInputController extends Disposable {
  		}
  
  		const container = dom.append(this._container, $('.quick-input-widget.show-file-icons'));

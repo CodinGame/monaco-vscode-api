@@ -4,30 +4,14 @@ Date: Mon, 10 Mar 2025 12:28:15 +0100
 Subject: [PATCH] fix: break cyclic dependency
 
 ---
- .../contrib/chat/browser/newChatContextAttachments.ts |  4 ++--
  .../chatSandboxPrerequisiteConfirmationSubPart.ts     |  2 +-
  .../contrib/tasks/browser/task.contribution.ts        |  3 ++-
  .../contrib/tasks/browser/terminalTaskSystem.ts       |  3 ++-
  src/vs/workbench/contrib/tasks/common/constants.ts    | 11 +++++++++++
  src/vs/workbench/contrib/tasks/common/tasks.ts        |  9 +--------
- 6 files changed, 19 insertions(+), 13 deletions(-)
+ 5 files changed, 17 insertions(+), 11 deletions(-)
  create mode 100644 src/vs/workbench/contrib/tasks/common/constants.ts
 
-diff --git a/src/vs/sessions/contrib/chat/browser/newChatContextAttachments.ts b/src/vs/sessions/contrib/chat/browser/newChatContextAttachments.ts
-index 80d9376f8e6..7efe84f4385 100644
---- a/src/vs/sessions/contrib/chat/browser/newChatContextAttachments.ts
-+++ b/src/vs/sessions/contrib/chat/browser/newChatContextAttachments.ts
-@@ -36,8 +36,8 @@ import { DEFAULT_LABELS_CONTAINER, ResourceLabels } from '../../../../workbench/
- 
- import { IChatRequestVariableEntry, isAgentHostCompletionVariableEntry, OmittedState } from '../../../../workbench/contrib/chat/common/attachments/chatVariableEntries.js';
- import { isLocation } from '../../../../editor/common/languages.js';
--import { resizeImage } from '../../../../workbench/contrib/chat/browser/chatImageUtils.js';
--import { imageToHash, isImage } from '../../../../workbench/contrib/chat/browser/widget/input/editor/chatPasteProviders.js';
-+import { imageToHash, resizeImage } from '../../../../workbench/contrib/chat/browser/chatImageUtils.js';
-+import { isImage } from '../../../../workbench/contrib/chat/browser/widget/input/editor/chatPasteProviders.js';
- import { CodeDataTransfers, containsDragType, extractEditorsDropData, getPathForFile } from '../../../../platform/dnd/browser/dnd.js';
- import { DataTransfers } from '../../../../base/browser/dnd.js';
- import { getExcludes, ISearchConfiguration, ISearchService, QueryType } from '../../../../workbench/services/search/common/search.js';
 diff --git a/src/vs/workbench/contrib/chat/browser/widget/chatContentParts/toolInvocationParts/chatSandboxPrerequisiteConfirmationSubPart.ts b/src/vs/workbench/contrib/chat/browser/widget/chatContentParts/toolInvocationParts/chatSandboxPrerequisiteConfirmationSubPart.ts
 index 9a9c423df9d..d48fdf2b0a2 100644
 --- a/src/vs/workbench/contrib/chat/browser/widget/chatContentParts/toolInvocationParts/chatSandboxPrerequisiteConfirmationSubPart.ts
@@ -63,7 +47,7 @@ index 1ad6a06d008..d619311bc2b 100644
  const workbenchRegistry = Registry.as<IWorkbenchContributionsRegistry>(WorkbenchExtensions.Workbench);
  workbenchRegistry.registerWorkbenchContribution(RunAutomaticTasks, LifecyclePhase.Eventually);
 diff --git a/src/vs/workbench/contrib/tasks/browser/terminalTaskSystem.ts b/src/vs/workbench/contrib/tasks/browser/terminalTaskSystem.ts
-index 178cdf324c1..8af9e906ae1 100644
+index 935bd5236ad..1df7ab69bed 100644
 --- a/src/vs/workbench/contrib/tasks/browser/terminalTaskSystem.ts
 +++ b/src/vs/workbench/contrib/tasks/browser/terminalTaskSystem.ts
 @@ -40,7 +40,7 @@ import { TaskTerminalStatus } from './taskTerminalStatus.js';
