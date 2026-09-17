@@ -248,6 +248,7 @@ import 'vs/workbench/contrib/terminal/terminal.chat.contribution'
 import 'vs/workbench/contrib/inlineChat/browser/inlineChat.contribution'
 import 'vs/workbench/contrib/remoteCodingAgents/browser/remoteCodingAgents.contribution'
 import 'vs/workbench/contrib/chat/browser/contextContrib/chatContext.contribution'
+import 'vs/workbench/api/browser/extensionHost.chat.contribution'
 import 'vs/workbench/contrib/imageCarousel/browser/imageCarousel.contribution'
 import 'vs/workbench/contrib/agentsVoice/browser/agentsVoice.contribution'
 

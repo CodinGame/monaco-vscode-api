@@ -1,0 +1,127 @@
+From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
+From: Brian Jenkins <brianjenkins94@gmail.com>
+Date: Wed, 17 Sep 2026 00:00:00 +0000
+Subject: [PATCH] refactor: split extension-host contribution per feature
+
+Move the chat / language-model / AI / speech, notebook, and mcp mainThread
+bridges out of the always-on extensionHost.contribution and into per-feature
+files, so they are only registered when the corresponding service override is
+installed. Mirrors the existing per-feature contribution splits (0037, 0073).
+
+---
+diff --git a/src/vs/workbench/api/browser/extensionHost.chat.contribution.ts b/src/vs/workbench/api/browser/extensionHost.chat.contribution.ts
+new file mode 100644
+index 0000000..6404ac8
+--- /dev/null
++++ b/src/vs/workbench/api/browser/extensionHost.chat.contribution.ts
+@@ -0,0 +1,22 @@
++/*---------------------------------------------------------------------------------------------
++ *  Copyright (c) Microsoft Corporation. All rights reserved.
++ *  Licensed under the MIT License. See License.txt in the project root for license information.
++ *--------------------------------------------------------------------------------------------*/
++
++// Chat / language-model / AI / speech mainThread bridges. Split out of extensionHost.contribution
++// so they load only when the chat service override is installed (see src/service-override/chat.ts).
++import './mainThreadLanguageModels.js';
++import './mainThreadChatAgents2.js';
++import './mainThreadChatCodeMapper.js';
++import './mainThreadLanguageModelTools.js';
++import './mainThreadEmbeddings.js';
++import './mainThreadSpeech.js';
++import './mainThreadAiRelatedInformation.js';
++import './mainThreadAiEmbeddingVector.js';
++import './mainThreadAiSettingsSearch.js';
++import './mainThreadChatContext.js';
++import './mainThreadChatDebug.js';
++import './mainThreadChatStatus.js';
++import './mainThreadChatQuota.js';
++import './mainThreadChatInputNotification.js';
++import './mainThreadChatSessions.js';
+diff --git a/src/vs/workbench/api/browser/extensionHost.contribution.ts b/src/vs/workbench/api/browser/extensionHost.contribution.ts
+index d42dedd..3e59ede 100644
+--- a/src/vs/workbench/api/browser/extensionHost.contribution.ts
++++ b/src/vs/workbench/api/browser/extensionHost.contribution.ts
+@@ -14,11 +14,6 @@ import '../../services/themes/browser/cssExtensionPoint.js';
+ import './mainThreadAgentEditorComments.js';
+ import './mainThreadLocalization.js';
+ import './mainThreadBulkEdits.js';
+-import './mainThreadLanguageModels.js';
+-import './mainThreadChatAgents2.js';
+-import './mainThreadChatCodeMapper.js';
+-import './mainThreadLanguageModelTools.js';
+-import './mainThreadEmbeddings.js';
+ import './mainThreadCodeInsets.js';
+ import './mainThreadCLICommands.js';
+ import './mainThreadClipboard.js';
+@@ -52,7 +47,6 @@ import './mainThreadDocumentDiff.js';
+ import './mainThreadQuickOpen.js';
+ import './mainThreadRemoteConnectionData.js';
+ import './mainThreadSaveParticipant.js';
+-import './mainThreadSpeech.js';
+ import './mainThreadEditSessionIdentityParticipant.js';
+ import './mainThreadSCM.js';
+ import './mainThreadSearch.js';
+@@ -71,11 +65,6 @@ import './mainThreadPower.js';
+ import './mainThreadWebviewManager.js';
+ import './mainThreadWorkspace.js';
+ import './mainThreadComments.js';
+-import './mainThreadNotebook.js';
+-import './mainThreadNotebookKernels.js';
+-import './mainThreadNotebookDocumentsAndEditors.js';
+-import './mainThreadNotebookRenderers.js';
+-import './mainThreadNotebookSaveParticipant.js';
+ import './mainThreadInteractive.js';
+ import './mainThreadTask.js';
+ import './mainThreadLabelService.js';
+@@ -86,17 +75,7 @@ import './mainThreadTesting.js';
+ import './mainThreadSecretState.js';
+ import './mainThreadShare.js';
+ import './mainThreadProfileContentHandlers.js';
+-import './mainThreadAiRelatedInformation.js';
+-import './mainThreadAiEmbeddingVector.js';
+-import './mainThreadAiSettingsSearch.js';
+-import './mainThreadMcp.js';
+-import './mainThreadChatContext.js';
+-import './mainThreadChatDebug.js';
+-import './mainThreadChatStatus.js';
+-import './mainThreadChatQuota.js';
+-import './mainThreadChatInputNotification.js';
+ import './mainThreadChatOutputRenderer.js';
+-import './mainThreadChatSessions.js';
+ import './mainThreadDataChannels.js';
+ import './mainThreadMeteredConnection.js';
+ import './mainThreadGitExtensionService.js';
+diff --git a/src/vs/workbench/api/browser/extensionHost.mcp.contribution.ts b/src/vs/workbench/api/browser/extensionHost.mcp.contribution.ts
+new file mode 100644
+index 0000000..fd8a0b0
+--- /dev/null
++++ b/src/vs/workbench/api/browser/extensionHost.mcp.contribution.ts
+@@ -0,0 +1,8 @@
++/*---------------------------------------------------------------------------------------------
++ *  Copyright (c) Microsoft Corporation. All rights reserved.
++ *  Licensed under the MIT License. See License.txt in the project root for license information.
++ *--------------------------------------------------------------------------------------------*/
++
++// MCP mainThread bridge. Split out of extensionHost.contribution so it loads only when the mcp
++// service override is installed (see src/service-override/mcp.ts).
++import './mainThreadMcp.js';
+diff --git a/src/vs/workbench/api/browser/extensionHost.notebook.contribution.ts b/src/vs/workbench/api/browser/extensionHost.notebook.contribution.ts
+new file mode 100644
+index 0000000..265a719
+--- /dev/null
++++ b/src/vs/workbench/api/browser/extensionHost.notebook.contribution.ts
+@@ -0,0 +1,12 @@
++/*---------------------------------------------------------------------------------------------
++ *  Copyright (c) Microsoft Corporation. All rights reserved.
++ *  Licensed under the MIT License. See License.txt in the project root for license information.
++ *--------------------------------------------------------------------------------------------*/
++
++// Notebook mainThread bridges. Split out of extensionHost.contribution so they load only when the
++// notebook service override is installed (see src/service-override/notebook.ts).
++import './mainThreadNotebook.js';
++import './mainThreadNotebookKernels.js';
++import './mainThreadNotebookDocumentsAndEditors.js';
++import './mainThreadNotebookRenderers.js';
++import './mainThreadNotebookSaveParticipant.js';
+-- 
+2.39.0
