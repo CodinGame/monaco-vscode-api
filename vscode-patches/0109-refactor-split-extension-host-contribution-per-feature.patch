@@ -3,18 +3,116 @@ From: Brian Jenkins <brianjenkins94@gmail.com>
 Date: Wed, 17 Sep 2026 00:00:00 +0000
 Subject: [PATCH] refactor: split extension-host contribution per feature
 
-Move the chat / language-model / AI / speech, notebook, and mcp mainThread
-bridges out of the always-on extensionHost.contribution and into per-feature
-files, so they are only registered when the corresponding service override is
-installed. Mirrors the existing per-feature contribution splits (0037, 0073).
+Extract the chat / language-model / AI / speech, notebook, and mcp mainThread
+bridges into per-feature extensionHost.<feature>.contribution files and the rest
+into extensionHost.base.contribution. extensionHost.contribution now imports base
++ every feature module, so its behaviour is unchanged; consumers that want a subset
+(monaco-vscode-api service overrides) import the granular modules instead.
+
+Because the extension host asserts every MainContext proxy is registered
+(mainThreadExtensionService -> ExtensionHostManager.assertRegistered), omitting a
+feature bridge would otherwise throw "Missing proxy instance" at startup. So
+extensionHost.stubs.contribution registers no-op customers for the split-out
+MainContext ids; a real bridge, when its override is installed, registers after the
+stub (each feature module imports the stubs first) and wins the push-ordered
+rpcProtocol.set(). Mirrors the existing per-feature splits (0037, 0073).
 
 ---
+diff --git a/src/vs/workbench/api/browser/extensionHost.base.contribution.ts b/src/vs/workbench/api/browser/extensionHost.base.contribution.ts
+new file mode 100644
+index 0000000..16c35b0
+--- /dev/null
++++ b/src/vs/workbench/api/browser/extensionHost.base.contribution.ts
+@@ -0,0 +1,83 @@
++/*---------------------------------------------------------------------------------------------
++ *  Copyright (c) Microsoft Corporation. All rights reserved.
++ *  Licensed under the MIT License. See License.txt in the project root for license information.
++ *--------------------------------------------------------------------------------------------*/
++// --- other interested parties
++import './extensionHost.stubs.contribution.js';
++import '../common/jsonValidationExtensionPoint.js';
++import '../../services/themes/common/colorExtensionPoint.js';
++import '../../services/themes/common/iconExtensionPoint.js';
++import '../../services/themes/common/tokenClassificationExtensionPoint.js';
++import '../../contrib/codeEditor/common/languageConfigurationExtensionPoint.js';
++import './statusBarExtensionPoint.js';
++import '../../services/themes/browser/cssExtensionPoint.js';
++// --- mainThread participants
++import './mainThreadAgentEditorComments.js';
++import './mainThreadLocalization.js';
++import './mainThreadBulkEdits.js';
++import './mainThreadCodeInsets.js';
++import './mainThreadCLICommands.js';
++import './mainThreadClipboard.js';
++import './mainThreadCommands.js';
++import './mainThreadConfiguration.js';
++import './mainThreadConsole.js';
++import './mainThreadDebugService.js';
++import './mainThreadDecorations.js';
++import './mainThreadDiagnostics.js';
++import './mainThreadDialogs.js';
++import './mainThreadDocumentContentProviders.js';
++import './mainThreadDocuments.js';
++import './mainThreadDocumentsAndEditors.js';
++import './mainThreadEditor.js';
++import './mainThreadEditors.js';
++import './mainThreadEditorTabs.js';
++import './mainThreadErrors.js';
++import './mainThreadExtensionService.js';
++import './mainThreadFileSystem.js';
++import './mainThreadFileSystemEventService.js';
++import './mainThreadLanguageFeatures.js';
++import './mainThreadLanguages.js';
++import './mainThreadLogService.js';
++import './mainThreadMessageService.js';
++import './mainThreadManagedSockets.js';
++import './mainThreadBrowserTunnelProxy.js';
++import './mainThreadOutputService.js';
++import './mainThreadProgress.js';
++import './mainThreadQuickDiff.js';
++import './mainThreadDocumentDiff.js';
++import './mainThreadQuickOpen.js';
++import './mainThreadRemoteConnectionData.js';
++import './mainThreadSaveParticipant.js';
++import './mainThreadEditSessionIdentityParticipant.js';
++import './mainThreadSCM.js';
++import './mainThreadSearch.js';
++import './mainThreadStatusBar.js';
++import './mainThreadStorage.js';
++import './mainThreadTelemetry.js';
++import './mainThreadTerminalService.js';
++import './mainThreadTerminalShellIntegration.js';
++import './mainThreadTheming.js';
++import './mainThreadTreeViews.js';
++import './mainThreadDownloadService.js';
++import './mainThreadUrls.js';
++import './mainThreadUriOpeners.js';
++import './mainThreadWindow.js';
++import './mainThreadPower.js';
++import './mainThreadWebviewManager.js';
++import './mainThreadWorkspace.js';
++import './mainThreadComments.js';
++import './mainThreadInteractive.js';
++import './mainThreadTask.js';
++import './mainThreadLabelService.js';
++import './mainThreadTunnelService.js';
++import './mainThreadAuthentication.js';
++import './mainThreadTimeline.js';
++import './mainThreadTesting.js';
++import './mainThreadSecretState.js';
++import './mainThreadShare.js';
++import './mainThreadProfileContentHandlers.js';
++import './mainThreadChatOutputRenderer.js';
++import './mainThreadDataChannels.js';
++import './mainThreadMeteredConnection.js';
++import './mainThreadGitExtensionService.js';
++import './mainThreadBrowsers.js';
 diff --git a/src/vs/workbench/api/browser/extensionHost.chat.contribution.ts b/src/vs/workbench/api/browser/extensionHost.chat.contribution.ts
 new file mode 100644
-index 0000000..6404ac8
+index 0000000..b50cad3
 --- /dev/null
 +++ b/src/vs/workbench/api/browser/extensionHost.chat.contribution.ts
-@@ -0,0 +1,22 @@
+@@ -0,0 +1,23 @@
 +/*---------------------------------------------------------------------------------------------
 + *  Copyright (c) Microsoft Corporation. All rights reserved.
 + *  Licensed under the MIT License. See License.txt in the project root for license information.
@@ -22,6 +120,7 @@ index 0000000..6404ac8
 +
 +// Chat / language-model / AI / speech mainThread bridges. Split out of extensionHost.contribution
 +// so they load only when the chat service override is installed (see src/service-override/chat.ts).
++import './extensionHost.stubs.contribution.js';
 +import './mainThreadLanguageModels.js';
 +import './mainThreadChatAgents2.js';
 +import './mainThreadChatCodeMapper.js';
@@ -38,45 +137,97 @@ index 0000000..6404ac8
 +import './mainThreadChatInputNotification.js';
 +import './mainThreadChatSessions.js';
 diff --git a/src/vs/workbench/api/browser/extensionHost.contribution.ts b/src/vs/workbench/api/browser/extensionHost.contribution.ts
-index d42dedd..3e59ede 100644
+index d42dedd..31c5572 100644
 --- a/src/vs/workbench/api/browser/extensionHost.contribution.ts
 +++ b/src/vs/workbench/api/browser/extensionHost.contribution.ts
-@@ -14,11 +14,6 @@ import '../../services/themes/browser/cssExtensionPoint.js';
- import './mainThreadAgentEditorComments.js';
- import './mainThreadLocalization.js';
- import './mainThreadBulkEdits.js';
+@@ -2,102 +2,11 @@
+  *  Copyright (c) Microsoft Corporation. All rights reserved.
+  *  Licensed under the MIT License. See License.txt in the project root for license information.
+  *--------------------------------------------------------------------------------------------*/
+-// --- other interested parties
+-import '../common/jsonValidationExtensionPoint.js';
+-import '../../services/themes/common/colorExtensionPoint.js';
+-import '../../services/themes/common/iconExtensionPoint.js';
+-import '../../services/themes/common/tokenClassificationExtensionPoint.js';
+-import '../../contrib/codeEditor/common/languageConfigurationExtensionPoint.js';
+-import './statusBarExtensionPoint.js';
+-import '../../services/themes/browser/cssExtensionPoint.js';
+-// --- mainThread participants
+-import './mainThreadAgentEditorComments.js';
+-import './mainThreadLocalization.js';
+-import './mainThreadBulkEdits.js';
 -import './mainThreadLanguageModels.js';
 -import './mainThreadChatAgents2.js';
 -import './mainThreadChatCodeMapper.js';
 -import './mainThreadLanguageModelTools.js';
 -import './mainThreadEmbeddings.js';
- import './mainThreadCodeInsets.js';
- import './mainThreadCLICommands.js';
- import './mainThreadClipboard.js';
-@@ -52,7 +47,6 @@ import './mainThreadDocumentDiff.js';
- import './mainThreadQuickOpen.js';
- import './mainThreadRemoteConnectionData.js';
- import './mainThreadSaveParticipant.js';
+-import './mainThreadCodeInsets.js';
+-import './mainThreadCLICommands.js';
+-import './mainThreadClipboard.js';
+-import './mainThreadCommands.js';
+-import './mainThreadConfiguration.js';
+-import './mainThreadConsole.js';
+-import './mainThreadDebugService.js';
+-import './mainThreadDecorations.js';
+-import './mainThreadDiagnostics.js';
+-import './mainThreadDialogs.js';
+-import './mainThreadDocumentContentProviders.js';
+-import './mainThreadDocuments.js';
+-import './mainThreadDocumentsAndEditors.js';
+-import './mainThreadEditor.js';
+-import './mainThreadEditors.js';
+-import './mainThreadEditorTabs.js';
+-import './mainThreadErrors.js';
+-import './mainThreadExtensionService.js';
+-import './mainThreadFileSystem.js';
+-import './mainThreadFileSystemEventService.js';
+-import './mainThreadLanguageFeatures.js';
+-import './mainThreadLanguages.js';
+-import './mainThreadLogService.js';
+-import './mainThreadMessageService.js';
+-import './mainThreadManagedSockets.js';
+-import './mainThreadBrowserTunnelProxy.js';
+-import './mainThreadOutputService.js';
+-import './mainThreadProgress.js';
+-import './mainThreadQuickDiff.js';
+-import './mainThreadDocumentDiff.js';
+-import './mainThreadQuickOpen.js';
+-import './mainThreadRemoteConnectionData.js';
+-import './mainThreadSaveParticipant.js';
 -import './mainThreadSpeech.js';
- import './mainThreadEditSessionIdentityParticipant.js';
- import './mainThreadSCM.js';
- import './mainThreadSearch.js';
-@@ -71,11 +65,6 @@ import './mainThreadPower.js';
- import './mainThreadWebviewManager.js';
- import './mainThreadWorkspace.js';
- import './mainThreadComments.js';
+-import './mainThreadEditSessionIdentityParticipant.js';
+-import './mainThreadSCM.js';
+-import './mainThreadSearch.js';
+-import './mainThreadStatusBar.js';
+-import './mainThreadStorage.js';
+-import './mainThreadTelemetry.js';
+-import './mainThreadTerminalService.js';
+-import './mainThreadTerminalShellIntegration.js';
+-import './mainThreadTheming.js';
+-import './mainThreadTreeViews.js';
+-import './mainThreadDownloadService.js';
+-import './mainThreadUrls.js';
+-import './mainThreadUriOpeners.js';
+-import './mainThreadWindow.js';
+-import './mainThreadPower.js';
+-import './mainThreadWebviewManager.js';
+-import './mainThreadWorkspace.js';
+-import './mainThreadComments.js';
 -import './mainThreadNotebook.js';
 -import './mainThreadNotebookKernels.js';
 -import './mainThreadNotebookDocumentsAndEditors.js';
 -import './mainThreadNotebookRenderers.js';
 -import './mainThreadNotebookSaveParticipant.js';
- import './mainThreadInteractive.js';
- import './mainThreadTask.js';
- import './mainThreadLabelService.js';
-@@ -86,17 +75,7 @@ import './mainThreadTesting.js';
- import './mainThreadSecretState.js';
- import './mainThreadShare.js';
- import './mainThreadProfileContentHandlers.js';
+-import './mainThreadInteractive.js';
+-import './mainThreadTask.js';
+-import './mainThreadLabelService.js';
+-import './mainThreadTunnelService.js';
+-import './mainThreadAuthentication.js';
+-import './mainThreadTimeline.js';
+-import './mainThreadTesting.js';
+-import './mainThreadSecretState.js';
+-import './mainThreadShare.js';
+-import './mainThreadProfileContentHandlers.js';
 -import './mainThreadAiRelatedInformation.js';
 -import './mainThreadAiEmbeddingVector.js';
 -import './mainThreadAiSettingsSearch.js';
@@ -86,17 +237,26 @@ index d42dedd..3e59ede 100644
 -import './mainThreadChatStatus.js';
 -import './mainThreadChatQuota.js';
 -import './mainThreadChatInputNotification.js';
- import './mainThreadChatOutputRenderer.js';
+-import './mainThreadChatOutputRenderer.js';
 -import './mainThreadChatSessions.js';
- import './mainThreadDataChannels.js';
- import './mainThreadMeteredConnection.js';
- import './mainThreadGitExtensionService.js';
+-import './mainThreadDataChannels.js';
+-import './mainThreadMeteredConnection.js';
+-import './mainThreadGitExtensionService.js';
+-import './mainThreadBrowsers.js';
++
++// Aggregates the core extension-host contribution and every per-feature contribution, preserving
++// the original behaviour: importing this module registers all mainThread* bridges. Consumers that
++// want only a subset (e.g. monaco-vscode-api service overrides) import the granular modules instead.
++import './extensionHost.base.contribution.js';
++import './extensionHost.chat.contribution.js';
++import './extensionHost.notebook.contribution.js';
++import './extensionHost.mcp.contribution.js';
 diff --git a/src/vs/workbench/api/browser/extensionHost.mcp.contribution.ts b/src/vs/workbench/api/browser/extensionHost.mcp.contribution.ts
 new file mode 100644
-index 0000000..fd8a0b0
+index 0000000..79c51e4
 --- /dev/null
 +++ b/src/vs/workbench/api/browser/extensionHost.mcp.contribution.ts
-@@ -0,0 +1,8 @@
+@@ -0,0 +1,9 @@
 +/*---------------------------------------------------------------------------------------------
 + *  Copyright (c) Microsoft Corporation. All rights reserved.
 + *  Licensed under the MIT License. See License.txt in the project root for license information.
@@ -104,13 +264,14 @@ index 0000000..fd8a0b0
 +
 +// MCP mainThread bridge. Split out of extensionHost.contribution so it loads only when the mcp
 +// service override is installed (see src/service-override/mcp.ts).
++import './extensionHost.stubs.contribution.js';
 +import './mainThreadMcp.js';
 diff --git a/src/vs/workbench/api/browser/extensionHost.notebook.contribution.ts b/src/vs/workbench/api/browser/extensionHost.notebook.contribution.ts
 new file mode 100644
-index 0000000..265a719
+index 0000000..473a6fc
 --- /dev/null
 +++ b/src/vs/workbench/api/browser/extensionHost.notebook.contribution.ts
-@@ -0,0 +1,12 @@
+@@ -0,0 +1,13 @@
 +/*---------------------------------------------------------------------------------------------
 + *  Copyright (c) Microsoft Corporation. All rights reserved.
 + *  Licensed under the MIT License. See License.txt in the project root for license information.
@@ -118,10 +279,62 @@ index 0000000..265a719
 +
 +// Notebook mainThread bridges. Split out of extensionHost.contribution so they load only when the
 +// notebook service override is installed (see src/service-override/notebook.ts).
++import './extensionHost.stubs.contribution.js';
 +import './mainThreadNotebook.js';
 +import './mainThreadNotebookKernels.js';
 +import './mainThreadNotebookDocumentsAndEditors.js';
 +import './mainThreadNotebookRenderers.js';
 +import './mainThreadNotebookSaveParticipant.js';
+diff --git a/src/vs/workbench/api/browser/extensionHost.stubs.contribution.ts b/src/vs/workbench/api/browser/extensionHost.stubs.contribution.ts
+new file mode 100644
+index 0000000..7c4e109
+--- /dev/null
++++ b/src/vs/workbench/api/browser/extensionHost.stubs.contribution.ts
+@@ -0,0 +1,45 @@
++/*---------------------------------------------------------------------------------------------
++ *  Copyright (c) Microsoft Corporation. All rights reserved.
++ *  Licensed under the MIT License. See License.txt in the project root for license information.
++ *--------------------------------------------------------------------------------------------*/
++
++import { extHostNamedCustomer } from '../../services/extensions/common/extHostCustomers.js';
++import { MainContext } from '../common/extHost.protocol.js';
++
++// No-op main-thread customers for the optional feature bridges (chat / language-model / AI / speech,
++// notebook, mcp) that are split out of extensionHost.base.contribution. VS Code's extension host
++// asserts that every MainContext proxy is registered (mainThreadExtensionService ->
++// ExtensionHostManager.assertRegistered), so when a feature's service override is not installed its
++// real bridge is absent and the ext host would throw "Missing proxy instance" at startup. These
++// stubs satisfy that assertion. When an override IS installed its real bridge registers *after* this
++// module (each feature contribution imports this first) and wins the rpcProtocol.set() — the customer
++// registry is push-ordered and the last set() for an id wins — so the stub is inert. The stub's
++// methods are never called: the ext host only invokes a MainThread* actor when an extension uses the
++// corresponding (now-disabled) API.
++class NoopMainThreadCustomer {}
++
++for (const id of [
++    MainContext.MainThreadLanguageModels,
++    MainContext.MainThreadChatAgents2,
++    MainContext.MainThreadCodeMapper,
++    MainContext.MainThreadLanguageModelTools,
++    MainContext.MainThreadEmbeddings,
++    MainContext.MainThreadSpeech,
++    MainContext.MainThreadAiRelatedInformation,
++    MainContext.MainThreadAiEmbeddingVector,
++    MainContext.MainThreadAiSettingsSearch,
++    MainContext.MainThreadChatContext,
++    MainContext.MainThreadChatDebug,
++    MainContext.MainThreadChatStatus,
++    MainContext.MainThreadChatQuota,
++    MainContext.MainThreadChatInputNotification,
++    MainContext.MainThreadChatSessions,
++    MainContext.MainThreadNotebook,
++    MainContext.MainThreadNotebookKernels,
++    MainContext.MainThreadNotebookDocuments,
++    MainContext.MainThreadNotebookEditors,
++    MainContext.MainThreadNotebookRenderers,
++    MainContext.MainThreadMcp
++]) {
++    extHostNamedCustomer(id)(NoopMainThreadCustomer);
++}
 -- 
 2.39.0
