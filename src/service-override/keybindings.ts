@@ -26,12 +26,12 @@ import { Schemas } from 'vs/base/common/network'
 import { URI } from 'vs/base/common/uri'
 import getFileServiceOverride, { initFile } from './files'
 import type { DynamicKeybindingService, KeybindingProvider } from '../monaco'
+import { getService } from '../services'
+import type { IKeyboardEvent } from 'vs/base/browser/keyboardEvent'
 import 'vs/workbench/browser/workbench.contribution'
 import 'vs/workbench/contrib/keybindings/browser/keybindings.contribution'
 import 'vs/workbench/contrib/preferences/browser/keybindingsEditorContribution'
 import 'vs/workbench/contrib/commands/common/commands.contribution'
-import { getService } from '../services'
-import type { IKeyboardEvent } from 'vs/base/browser/keyboardEvent'
 
 // This is the default value, but can be overriden by overriding the Environment or UserDataProfileService service
 const defaultUserKeybindindsFile = URI.from({

@@ -70,8 +70,11 @@ import {
   MonacoEditorService,
   type OpenEditor
 } from './tools/editor'
-import getViewCommonServiceOverride from './viewCommon'
+import getViewCommonServiceOverride from './viewCommon/classic'
 export * from './tools/views'
+import 'vs/workbench/browser/parts/titlebar/menubar.contribution'
+import 'vs/workbench/browser/workbench.zenMode.contribution'
+import 'vs/workbench/contrib/languageStatus/browser/languageStatus.contribution'
 
 function createPart(id: string, role: string, classes: string[]): HTMLElement {
   const part = document.createElement(

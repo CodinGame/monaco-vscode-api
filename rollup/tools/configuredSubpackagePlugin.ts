@@ -83,7 +83,10 @@ export function configuredSubpackagePlugin(): rollup.Plugin {
 
       const getGroupName = (id: string) => {
         if (id.startsWith(serviceOverrideDir)) {
-          const name = changeCase.kebabCase(nodePath.basename(id, '.js'))
+          const relativePath = nodePath.relative(serviceOverrideDir, id)
+          const name = changeCase.kebabCase(
+            nodePath.basename(relativePath.split(nodePath.sep)[0]!, '.js')
+          )
           return `service-override:${name}`
         }
         if (id === nodePath.resolve(options.dir!, 'editor.api.js')) {
@@ -334,10 +337,19 @@ ${code}`
       }
 
       if (groups.size === 1 && groups.values().next().value!.startsWith('service-override:')) {
-        // replace input list by Record to be able to name the entrypoint "index" and the worker entrypoint "worker"
-        const serviceOverrideEntryPoint = (rollupOptions.input as string[]).find((e) =>
+        // replace input list by Record to name the classic entrypoint "index" and preserve secondary entrypoints
+        const serviceOverrideEntryPoints = (rollupOptions.input as string[]).filter((e) =>
           e.includes('/service-override/')
-        )!
+        )
+        const serviceOverrideEntryPoint =
+          serviceOverrideEntryPoints.find((e) => nodePath.basename(e) === 'classic.js') ??
+          serviceOverrideEntryPoints.find(
+            (e) =>
+              nodePath.basename(nodePath.dirname(e)) === 'service-override' && e.endsWith('.js')
+          )!
+        const sessionEntryPoint = serviceOverrideEntryPoints.find(
+          (e) => nodePath.basename(e) === 'session.js'
+        )
         const workerEntryPoint = (rollupOptions.input as string[]).find((e) =>
           e.includes('/workers/')
         )
@@ -345,6 +357,12 @@ ${code}`
         rollupOptions.input = {
           index: serviceOverrideEntryPoint,
           'index.d': serviceOverrideEntryPoint.replace(/\.js$/, '.d.ts'),
+          ...(sessionEntryPoint != null
+            ? {
+                session: sessionEntryPoint,
+                'session.d': sessionEntryPoint.replace(/\.js$/, '.d.ts')
+              }
+            : {}),
           ...(workerEntryPoint != null
             ? {
                 worker: workerEntryPoint
@@ -356,11 +374,22 @@ ${code}`
       return rollupOptions
     },
     getInterPackageImport(path, groupSetName) {
-      if (/service-override\/[a-zA-Z]+\.(js|d\.ts)$/.exec(path) != null) {
-        // reference the package entrypoint
-        return groupSetName.alias ?? groupSetName.name
+      const packageName = groupSetName.alias ?? groupSetName.name
+      const normalizedPath = path.split(nodePath.sep).join('/')
+      const nestedServiceOverride = /^service-override\/[^/]+\/(classic|session)\.(js|d\.ts)$/.exec(
+        normalizedPath
+      )
+      if (nestedServiceOverride?.[1] === 'classic') {
+        return packageName
       }
-      return `${groupSetName.alias ?? groupSetName.name}/${path.replace(/vscode\/src\//, 'vscode/').replace(/\.(js|d\.ts)$/, '')}`
+      if (nestedServiceOverride?.[1] === 'session') {
+        return `${packageName}/session`
+      }
+      if (/^service-override\/[^/]+\.(js|d\.ts)$/.exec(normalizedPath) != null) {
+        // reference the package entrypoint
+        return packageName
+      }
+      return `${packageName}/${normalizedPath.replace(/vscode\/src\//, 'vscode/').replace(/\.(js|d\.ts)$/, '')}`
     },
     getManifest(packageName, groups, entrypoints, manifest, allExternalDependencies) {
       const externalDependencies: SubPackageExternalDependency[] = []
@@ -539,6 +568,14 @@ ${code}`
                   ? {
                       './worker': {
                         default: './worker.js'
+                      }
+                    }
+                  : {}),
+                ...(entrypoints.has('session.js')
+                  ? {
+                      './session': {
+                        types: './session.d.ts',
+                        default: './session.js'
                       }
                     }
                   : {}),

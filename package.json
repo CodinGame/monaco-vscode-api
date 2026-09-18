@@ -83,7 +83,7 @@
     "rollup-plugin-dts": "^6.5.1",
     "semantic-release": "25.0.9",
     "ts-morph": "^28.0.0",
-    "tsx": "^4.23.13",
+    "tsx": "^4.21.0",
     "type-fest": "^5.9.0",
     "typescript": "^6.0.3",
     "vscode-oniguruma": "1.7.0",

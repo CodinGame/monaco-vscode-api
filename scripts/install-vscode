@@ -46,9 +46,8 @@ cd ..
 cd src
 rm -rf `find . -name '*.test.ts' -o -name 'test' -o -name 'electron-main' -o -name 'electron-browser' -o -name 'electron-utility' -o -name 'node'`
 rm -f bootstrap*.ts *main.ts *cli.ts
-rm -f vs/workbench/workbench.desktop.main.ts
+rm -f vs/workbench/workbench.desktop.main.ts vs/sessions/sessions.desktop.main.ts
 rm -rf vs/code
-find vs/sessions -type f ! \( -path "vs/sessions/common/theme.ts" -o -path "vs/sessions/common/sizes.ts" -o -path "vs/sessions/common/layoutConstants.ts" \) -delete
 cd ..
 
 echo "Extracting service identifiers"
@@ -96,6 +95,9 @@ echo "Building vscode..."
 NODE_OPTIONS=--max-old-space-size=8192 npx tsc --declaration --importHelpers --outDir "$output_directory/src" --skipLibCheck --rootDir .
 # Copy files that are already built and assets
 find ./ \( -name '*.js' -o -name '*.d.ts' -o -name '*.ttf' -o -name '*.css' -o -name '*.mp3' -o -name '*.scm' -o -name '*.svg' -o -name '*.png' -o -name '*.html' -o -name '*.sh' -o -name '*.zsh' -o -name '*.ps1' \) -exec rsync -R \{\} "$output_directory/src" \;
+
+# bundle & copy the devTunnelsWebEntry module
+npm run bundle-dev-tunnels-web -- --out $output_directory/src/vs/sessions/contrib/providers/remoteAgentHost/browser
 
 cd ..
 cp package.json product.json $output_directory
