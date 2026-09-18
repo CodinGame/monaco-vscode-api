@@ -10,7 +10,7 @@ import { QuickDiffModelService } from 'vs/workbench/contrib/scm/browser/quickDif
 import { IGitService } from 'vs/workbench/contrib/git/common/gitService.service'
 import { GitService } from 'vs/workbench/contrib/git/browser/gitService'
 import 'vs/workbench/contrib/scm/browser/scm.contribution'
-import 'vs/workbench/contrib/git/browser/git.contributions.js'
+import 'vs/workbench/contrib/scm/browser/quickDiff.contribution'
 
 export default function getServiceOverride(): IEditorOverrideServices {
   return {

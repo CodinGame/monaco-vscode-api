@@ -8,6 +8,8 @@ import {
   type PolicyValue
 } from 'vs/platform/policy/common/policy'
 import { IPolicyService } from 'vs/platform/policy/common/policy.service'
+import 'vs/workbench/services/policies/browser/accountPolicyGate.contribution'
+
 class PolicyService extends AbstractPolicyService {
   constructor(defaultPolicies: Map<PolicyName, PolicyValue>) {
     super()

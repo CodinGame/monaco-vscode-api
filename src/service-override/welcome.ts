@@ -8,6 +8,7 @@ import 'vs/workbench/contrib/onboarding/browser/onboarding.contribution'
 import 'vs/workbench/contrib/welcomeViews/common/viewsWelcome.contribution'
 import 'vs/workbench/contrib/welcomeViews/common/newFile.contribution'
 import 'vs/workbench/contrib/welcomeOnboarding/browser/welcomeOnboarding.contribution'
+import 'vs/workbench/contrib/welcomeAgentSessions/browser/agentSessionsWelcome.contribution'
 
 export default function getServiceOverride(): IEditorOverrideServices {
   return {
