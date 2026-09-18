@@ -251,6 +251,18 @@ import 'vs/workbench/contrib/chat/browser/contextContrib/chatContext.contributio
 import 'vs/workbench/contrib/imageCarousel/browser/imageCarousel.contribution'
 import 'vs/workbench/contrib/agentsVoice/browser/agentsVoice.contribution'
 
+import 'vs/workbench/contrib/chat/browser/agentSessions/agentHost/agentHost.contribution'
+import 'vs/workbench/contrib/chat/browser/agentSessions/agentHost/agentHostSettings.contribution'
+import 'vs/workbench/contrib/chat/browser/agentSessions/agentHost/agentSessionSettings.contribution'
+import 'vs/workbench/contrib/chat/browser/agentSessions/agentHost/openSessionLinkOpener.contribution'
+import 'vs/workbench/contrib/chat/browser/agentSessions/agentSessions.contribution'
+import 'vs/platform/agentHost/common/agentHostStarter.config.contribution'
+import 'vs/workbench/contrib/chat/browser/agentSessions/agentHost/agentHostChatInputPicker.contribution'
+import 'vs/workbench/contrib/chat/browser/agentSessions/experiments/agentSessionsExperiments.contribution'
+import 'vs/workbench/contrib/chat/browser/aiCustomization/aiCustomizationManagement.contribution'
+import 'vs/workbench/contrib/chat/browser/attachments/chatReferenceAttachmentWidget.contribution'
+import 'vs/workbench/contrib/chat/browser/attachments/transcriptContextAttachmentWidget.contribution'
+
 class DefaultAccountService implements IDefaultAccountService {
   declare _serviceBrand: undefined
   constructor(private defaultAccount: IDefaultAccount | null) {}

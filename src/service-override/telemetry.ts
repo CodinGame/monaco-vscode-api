@@ -8,6 +8,7 @@ import { DataChannelService } from 'vs/workbench/services/dataChannel/browser/da
 import 'vs/workbench/contrib/telemetry/browser/telemetry.contribution'
 import 'vs/workbench/contrib/editTelemetry/browser/editTelemetry.contribution'
 import 'vs/workbench/contrib/bracketPairColorizer2Telemetry/browser/bracketPairColorizer2Telemetry.contribution.js'
+import 'vs/workbench/services/policies/browser/policyTelemetry.contribution'
 
 export default function getServiceOverride(): IEditorOverrideServices {
   return {

@@ -11,6 +11,8 @@ import { NotificationsAlerts } from 'vs/workbench/browser/parts/notifications/no
 import { ILayoutService } from 'vs/platform/layout/browser/layoutService.service'
 import { NotificationsStatus } from 'vs/workbench/browser/parts/notifications/notificationsStatus'
 import { onRenderWorkbench } from '../lifecycle'
+import { AccessibleViewRegistry } from 'vs/platform/accessibility/browser/accessibleViewRegistry'
+import { NotificationAccessibleView } from 'vs/workbench/browser/parts/notifications/notificationAccessibleView'
 
 onRenderWorkbench(async (accessor) => {
   const container = accessor.get(ILayoutService).mainContainer
@@ -43,6 +45,9 @@ onRenderWorkbench(async (accessor) => {
     })
     // Register Commands
     registerNotificationCommands(notificationsCenter, notificationsToasts, model)
+
+    // Register notification accessible view
+    AccessibleViewRegistry.register(new NotificationAccessibleView())
 
     notificationsToasts.layout(dom.getClientArea(container))
   })
