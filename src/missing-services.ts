@@ -581,6 +581,7 @@ import { IGitHubUploadService } from 'vs/workbench/contrib/issue/browser/githubU
 import { IChatGoalSummaryService } from 'vs/workbench/contrib/chat/browser/chatGoalSummaryService.service'
 import { IAgentHostCustomizationService } from 'vs/workbench/contrib/chat/browser/agentSessions/agentHost/agentHostCustomizationService.service'
 import { IAgentHostActiveClientService } from 'vs/workbench/contrib/chat/browser/agentSessions/agentHost/agentHostActiveClientService.service'
+import { IGitHubService } from 'vs/platform/github/common/githubService.service.js'
 
 function Unsupported(target: object, propertyKey: string, descriptor?: PropertyDescriptor) {
   function unsupported() {
@@ -8426,3 +8427,37 @@ registerSingleton(
   WorkspaceFolderLabelService,
   InstantiationType.Delayed
 )
+
+class GitHubService implements IGitHubService {
+  _serviceBrand: undefined
+  @Unsupported
+  get endpoint(): IGitHubService['endpoint'] {
+    return unsupported()
+  }
+  @Unsupported
+  get credentials(): IGitHubService['credentials'] {
+    return unsupported()
+  }
+  @Unsupported
+  get transport(): IGitHubService['transport'] {
+    return unsupported()
+  }
+  @Unsupported
+  get capabilities(): IGitHubService['capabilities'] {
+    return unsupported()
+  }
+  @Unsupported
+  get query(): IGitHubService['query'] {
+    return unsupported()
+  }
+  @Unsupported
+  get pullRequests(): IGitHubService['pullRequests'] {
+    return unsupported()
+  }
+  @Unsupported
+  get mutations(): IGitHubService['mutations'] {
+    return unsupported()
+  }
+}
+
+registerSingleton(IGitHubService, GitHubService, InstantiationType.Delayed)
