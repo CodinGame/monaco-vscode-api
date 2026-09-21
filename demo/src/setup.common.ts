@@ -86,6 +86,8 @@ import getMcpServiceOverride from '@codingame/monaco-vscode-mcp-service-override
 import getProcessControllerServiceOverride from '@codingame/monaco-vscode-process-explorer-service-override'
 import getImageResizeServiceOverride from '@codingame/monaco-vscode-image-resize-service-override'
 import getAssignmentServiceOverride from '@codingame/monaco-vscode-assignment-service-override'
+import getGithubServiceOverride from '@codingame/monaco-vscode-github-service-override'
+import getMeteredConnectionServiceOverride from '@codingame/monaco-vscode-metered-connection-service-override'
 import { EnvironmentOverride } from '@codingame/monaco-vscode-api/workbench'
 import { Worker } from './tools/fakeWorker.js'
 import defaultKeybindings from './user/keybindings.json?raw'
@@ -609,5 +611,7 @@ export const commonServices: IEditorOverrideServices = {
   ...getMcpServiceOverride(),
   ...getProcessControllerServiceOverride(),
   ...getImageResizeServiceOverride(),
-  ...getAssignmentServiceOverride()
+  ...getAssignmentServiceOverride(),
+  ...getGithubServiceOverride(),
+  ...getMeteredConnectionServiceOverride()
 }
