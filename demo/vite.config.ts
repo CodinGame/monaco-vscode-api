@@ -61,7 +61,7 @@ export default defineConfig({
               if (pathname.endsWith('.html')) {
                 res.setHeader('Content-Type', 'text/html')
                 res.writeHead(200)
-                res.write(fs.readFileSync(path.join(__dirname, pathname)))
+                res.write(fs.readFileSync(path.join(import.meta.dirname, pathname)))
                 res.end()
               }
             }
@@ -102,7 +102,7 @@ export default defineConfig({
     }
   },
   define: {
-    rootDirectory: JSON.stringify(__dirname)
+    rootDirectory: JSON.stringify(import.meta.dirname)
   },
   resolve: {
     dedupe: ['vscode', ...localDependencies]
