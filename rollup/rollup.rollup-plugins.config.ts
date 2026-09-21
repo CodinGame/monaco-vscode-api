@@ -29,9 +29,9 @@ const config: rollup.RollupOptions[] = [
     output: 'dist/packages/monaco-vscode-rollup-extension-directory-plugin',
     description: `Rollup plugin used to load VSCode extension already extracted inside a directory, designed to be used with ${pkg.name}`
   }
-].flatMap(({ input, output, description }) => [
+].flatMap(({ input, output, description }): rollup.RollupOptions[] => [
   {
-    external: [...Object.keys({ ...pkg.dependencies }), '@rollup/pluginutils'],
+    external: [...Object.keys({ ...pkg.dependencies }), '@rollup/pluginutils', /.*\.css$/],
     output: [
       {
         format: 'esm',
