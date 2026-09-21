@@ -22,6 +22,7 @@ import getEnvironmentServiceOverride from './environment'
 import { logsPath } from '../workbench'
 import { checkServicesNotInitialized } from '../lifecycle'
 import { rendererLogLabel } from '../override/vs/workbench/browser/web.main'
+import 'vs/workbench/contrib/logs/browser/logs.contribution'
 import 'vs/workbench/contrib/logs/common/logs.contribution'
 
 class _FileLoggerService extends FileLoggerService {
