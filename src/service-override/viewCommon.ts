@@ -76,6 +76,7 @@ import 'vs/workbench/browser/actions/windowActions'
 import 'vs/workbench/browser/actions/workspaceActions'
 import 'vs/workbench/browser/actions/workspaceCommands'
 import 'vs/workbench/browser/actions/widgetNavigationCommands'
+import 'vs/workbench/contrib/splash/browser/splash.contribution'
 import './tools/editorAssets.js'
 
 // Import it from here to force the bundler to put it in this service-override package
