@@ -5,10 +5,10 @@ Subject: [PATCH] refactor: move interface in common
 
 instead of making platform import from sessions
 ---
- .../agentHost/common/agentHostMcpServer.ts    | 35 ++++++++++++++++++
- .../common/agentHostSessionsProvider.ts       | 36 +++----------------
+ .../agentHost/common/agentHostMcpServer.ts    | 35 +++++++++++++++++
+ .../common/agentHostSessionsProvider.ts       | 39 ++++---------------
  .../agentHostCustomizationService.ts          |  2 +-
- 3 files changed, 41 insertions(+), 32 deletions(-)
+ 3 files changed, 44 insertions(+), 32 deletions(-)
  create mode 100644 src/vs/platform/agentHost/common/agentHostMcpServer.ts
 
 diff --git a/src/vs/platform/agentHost/common/agentHostMcpServer.ts b/src/vs/platform/agentHost/common/agentHostMcpServer.ts
@@ -53,10 +53,10 @@ index 00000000000..fc744605000
 +}
 +
 diff --git a/src/vs/sessions/common/agentHostSessionsProvider.ts b/src/vs/sessions/common/agentHostSessionsProvider.ts
-index dc9bb9d2da3..90388e74270 100644
+index dc9bb9d2da3..0e5fff47156 100644
 --- a/src/vs/sessions/common/agentHostSessionsProvider.ts
 +++ b/src/vs/sessions/common/agentHostSessionsProvider.ts
-@@ -4,18 +4,18 @@
+@@ -4,18 +4,21 @@
   *--------------------------------------------------------------------------------------------*/
  
  import { Event } from '../../base/common/event.js';
@@ -77,10 +77,13 @@ index dc9bb9d2da3..90388e74270 100644
  import { ISessionAgentRef } from '../services/sessions/common/session.js';
 -import type { AgentMergeSessionOverrides, AgentMergeSessionState } from '../../platform/agentHost/common/agentMerge.js';
 +import { ISessionsProvider } from '../services/sessions/common/sessionsProvider.js';
++export {
++	IAgentHostMcpServer
++};
  
  /**
   * Progress emitted while an agent-host provider is establishing a connection.
-@@ -85,32 +85,6 @@ export interface IAgentHostGroup {
+@@ -85,32 +88,6 @@ export interface IAgentHostGroup {
  	readonly connectable?: boolean;
  }
  

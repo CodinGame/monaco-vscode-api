@@ -4,9 +4,40 @@ Date: Wed, 30 Oct 2024 15:01:33 +0100
 Subject: [PATCH] fix: just use regular dynamic import
 
 ---
- .../services/keybinding/browser/keyboardLayoutService.ts       | 3 +--
- 1 file changed, 1 insertion(+), 2 deletions(-)
+ .../remoteAgentHost/browser/devTunnelsWebLoader.ts       | 9 ++-------
+ .../services/keybinding/browser/keyboardLayoutService.ts | 3 +--
+ 2 files changed, 3 insertions(+), 9 deletions(-)
 
+diff --git a/src/vs/sessions/contrib/providers/remoteAgentHost/browser/devTunnelsWebLoader.ts b/src/vs/sessions/contrib/providers/remoteAgentHost/browser/devTunnelsWebLoader.ts
+index 4a11f016697..4941264d3dc 100644
+--- a/src/vs/sessions/contrib/providers/remoteAgentHost/browser/devTunnelsWebLoader.ts
++++ b/src/vs/sessions/contrib/providers/remoteAgentHost/browser/devTunnelsWebLoader.ts
+@@ -5,12 +5,9 @@
+ 
+ import type { TunnelRelayTunnelClient } from '@microsoft/dev-tunnels-connections';
+ import type { TunnelManagementHttpClient } from '@microsoft/dev-tunnels-management';
+-import { AppResourcePath, FileAccess } from '../../../../../base/common/network.js';
+ import type { ITunnelDescriptor } from '../../../../../platform/agentHost/common/tunnelAgentHostConnector.js';
+ import type { ITunnelDuplexStream } from '../../../../../platform/agentHost/common/tunnelMessageSocket.js';
+ 
+-const devTunnelsWebBundlePath: AppResourcePath = 'vs/sessions/contrib/providers/remoteAgentHost/browser/devTunnelsModule.js';
+-
+ /** The subset of tunnel metadata consumed by the browser management and relay adapters. */
+ export interface IDevTunnelsWebTunnel extends ITunnelDescriptor {
+ 	readonly endpoints?: object;
+@@ -79,10 +76,8 @@ let devTunnelsWeb: Promise<IDevTunnelsWeb> | undefined;
+ /** Loads the browser-compatible Dev Tunnels SDK bundle on first use. */
+ export function loadDevTunnelsWeb(): Promise<IDevTunnelsWeb> {
+ 	devTunnelsWeb ??= (async () => {
+-		// This generated browser-only module is emitted beside its loader.
+-		const devTunnelsWebUrl = FileAccess.asBrowserUri(devTunnelsWebBundlePath).toString(true);
+-		// Keep the URL runtime-resolved so bundlers do not rewrite the import.
+-		const module = await import(/* webpackIgnore: true */ /* @vite-ignore */ `${devTunnelsWebUrl}`) as IDevTunnelsWeb;
++		// @ts-ignore
++		const module = await import('./devTunnelsModule.js') as IDevTunnelsWeb;
+ 		return module;
+ 	})();
+ 	return devTunnelsWeb;
 diff --git a/src/vs/workbench/services/keybinding/browser/keyboardLayoutService.ts b/src/vs/workbench/services/keybinding/browser/keyboardLayoutService.ts
 index f155e27685f..91c827ba5a9 100644
 --- a/src/vs/workbench/services/keybinding/browser/keyboardLayoutService.ts

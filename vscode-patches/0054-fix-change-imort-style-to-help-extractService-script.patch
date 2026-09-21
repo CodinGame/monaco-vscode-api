@@ -5,9 +5,10 @@ Subject: [PATCH] fix: change imort style to help extractService script
 
 ---
  .../browser/peek/referencesWidget.ts          | 16 ++++----
+ .../changes/browser/sessionChangesService.ts  |  2 +-
  .../browser/callHierarchyPeek.ts              | 40 +++++++++----------
  .../browser/typeHierarchyPeek.ts              | 18 ++++-----
- 3 files changed, 37 insertions(+), 37 deletions(-)
+ 4 files changed, 38 insertions(+), 38 deletions(-)
 
 diff --git a/src/vs/editor/contrib/gotoSymbol/browser/peek/referencesWidget.ts b/src/vs/editor/contrib/gotoSymbol/browser/peek/referencesWidget.ts
 index c6b40951477..e119067abd0 100644
@@ -74,6 +75,19 @@ index c6b40951477..e119067abd0 100644
  			},
  			dnd: this._instantiationService.createInstance(ReferencesDragAndDrop)
  		};
+diff --git a/src/vs/sessions/contrib/changes/browser/sessionChangesService.ts b/src/vs/sessions/contrib/changes/browser/sessionChangesService.ts
+index 13470144e0e..f2f71027535 100644
+--- a/src/vs/sessions/contrib/changes/browser/sessionChangesService.ts
++++ b/src/vs/sessions/contrib/changes/browser/sessionChangesService.ts
+@@ -23,7 +23,7 @@ import { SessionChangesEditorInput } from './sessionChangesEditorInput.js';
+ import { ISessionChangesEditorOptions, ISessionChangesService } from '../common/sessionChangesService.js';
+ import { UNCOMMITTED_CHANGES_CHANGESET_ID } from '../../../services/sessions/common/session.js';
+ 
+-export { ISessionChangesService } from '../common/sessionChangesService.js';
++export { ISessionChangesService };
+ export type { ISessionChangesEditorOptions } from '../common/sessionChangesService.js';
+ 
+ const CHANGES_MULTI_DIFF_SOURCE_SCHEME = 'changes-multi-diff-source';
 diff --git a/src/vs/workbench/contrib/callHierarchy/browser/callHierarchyPeek.ts b/src/vs/workbench/contrib/callHierarchy/browser/callHierarchyPeek.ts
 index 75da6466a36..0b6eb76e2cc 100644
 --- a/src/vs/workbench/contrib/callHierarchy/browser/callHierarchyPeek.ts

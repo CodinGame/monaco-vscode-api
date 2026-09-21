@@ -104,9 +104,20 @@ Subject: [PATCH] feat: centralize element creation, to be able to create them
  .../platform/domWidget/browser/domWidget.ts   |  5 +-
  .../imageResize/browser/imageResizeService.ts |  3 +-
  .../markdown/browser/markdownRenderer.ts      |  3 +-
+ .../mobile/contributions/mobileChangesView.ts |  2 +-
+ .../mobile/contributions/mobileDiffView.ts    |  4 +-
+ .../contributions/mobileMultiDiffView.ts      |  4 +-
+ .../parts/mobile/mobileTitlebarPart.ts        |  4 +-
+ .../sessions/browser/parts/sessionHeader.ts   |  4 +-
  src/vs/sessions/browser/workbench.ts          | 12 ++---
  .../browser/agentFeedbackEditorOverlay.ts     |  3 +-
- .../browser/sessionsPolicyBlocked.ts          |  6 +--
+ .../browser/feedbackInputWidget.ts            | 12 ++---
+ .../test/browser/agentsDiffEditor.fixture.ts  |  4 +-
+ .../chat/browser/noAgentHostEmptyState.ts     |  2 +-
+ .../github/browser/githubReferenceList.ts     |  4 +-
+ .../contrib/github/browser/issueHover.ts      |  4 +-
+ .../github/browser/pullRequestHover.ts        |  4 +-
+ .../browser/sessionsPolicyBlocked.ts          | 14 +++---
  .../api/browser/mainThreadCodeInsets.ts       |  4 +-
  .../browser/actions/developerActions.ts       |  4 +-
  src/vs/workbench/browser/layout.ts            |  4 +-
@@ -227,7 +238,7 @@ Subject: [PATCH] feat: centralize element creation, to be able to create them
  .../host/browser/browserHostService.ts        |  6 +--
  .../componentFixtures/chat/renderChatInput.ts |  3 +-
  .../test/browser/workbenchTestServices.ts     |  4 +-
- 222 files changed, 718 insertions(+), 633 deletions(-)
+ 233 files changed, 746 insertions(+), 661 deletions(-)
 
 diff --git a/src/vs/base/browser/dom.ts b/src/vs/base/browser/dom.ts
 index 23e5038aa9c..97ccaf6663e 100644
@@ -3489,8 +3500,109 @@ index 1217633b485..030307e508f 100644
  			};
  		}
  
+diff --git a/src/vs/sessions/browser/parts/mobile/contributions/mobileChangesView.ts b/src/vs/sessions/browser/parts/mobile/contributions/mobileChangesView.ts
+index 0e6b66fc6d4..70bce79f543 100644
+--- a/src/vs/sessions/browser/parts/mobile/contributions/mobileChangesView.ts
++++ b/src/vs/sessions/browser/parts/mobile/contributions/mobileChangesView.ts
+@@ -216,7 +216,7 @@ export class MobileChangesView extends Disposable {
+ 		DOM.append(this.subtitleEl, $('span.mobile-overlay-header-subtitle-files')).textContent = fileWord;
+ 		DOM.append(this.subtitleEl, $('span.mobile-overlay-header-subtitle-sep')).textContent = ' · ';
+ 		DOM.append(this.subtitleEl, $('span.mobile-changes-row-added')).textContent = `+${totalAdded}`;
+-		DOM.append(this.subtitleEl, document.createTextNode(' '));
++		DOM.append(this.subtitleEl, DOM.createTextNode(' '));
+ 		DOM.append(this.subtitleEl, $('span.mobile-changes-row-removed')).textContent = `-${totalRemoved}`;
+ 
+ 		// Build the sibling list once so each row passes the same
+diff --git a/src/vs/sessions/browser/parts/mobile/contributions/mobileDiffView.ts b/src/vs/sessions/browser/parts/mobile/contributions/mobileDiffView.ts
+index d47658c7c90..9279ace3a41 100644
+--- a/src/vs/sessions/browser/parts/mobile/contributions/mobileDiffView.ts
++++ b/src/vs/sessions/browser/parts/mobile/contributions/mobileDiffView.ts
+@@ -304,7 +304,7 @@ export class MobileDiffView extends Disposable {
+ 				DOM.append(this.subtitleEl, $('span.mobile-changes-row-added')).textContent = `+${diff.added}`;
+ 			}
+ 			if (diff.added && diff.removed) {
+-				DOM.append(this.subtitleEl, document.createTextNode(' '));
++				DOM.append(this.subtitleEl, DOM.createTextNode(' '));
+ 			}
+ 			if (diff.removed) {
+ 				DOM.append(this.subtitleEl, $('span.mobile-changes-row-removed')).textContent = `-${diff.removed}`;
+@@ -404,7 +404,7 @@ export class MobileDiffView extends Disposable {
+ 		// kept so both paths share the same container node.
+ 		const colorMap = TokenizationRegistry.getColorMap();
+ 		if (colorMap && hasRealTokens) {
+-			const styleEl = document.createElement('style');
++			const styleEl = DOM.createElement('style');
+ 			styleEl.textContent = generateTokensCSSForColorMap(colorMap);
+ 			container.appendChild(styleEl);
+ 		}
+diff --git a/src/vs/sessions/browser/parts/mobile/contributions/mobileMultiDiffView.ts b/src/vs/sessions/browser/parts/mobile/contributions/mobileMultiDiffView.ts
+index 4810077c0ab..9c0d335734f 100644
+--- a/src/vs/sessions/browser/parts/mobile/contributions/mobileMultiDiffView.ts
++++ b/src/vs/sessions/browser/parts/mobile/contributions/mobileMultiDiffView.ts
+@@ -869,7 +869,7 @@ export class MobileMultiDiffView extends Disposable {
+ 
+ 		const colorMap = TokenizationRegistry.getColorMap();
+ 		if (colorMap && state.renderData.hasRealTokens) {
+-			const styleEl = document.createElement('style');
++			const styleEl = DOM.createElement('style');
+ 			styleEl.textContent = generateTokensCSSForColorMap(colorMap);
+ 			inner.appendChild(styleEl);
+ 		}
+@@ -928,7 +928,7 @@ export class MobileMultiDiffView extends Disposable {
+ 			htmlParts.push(this.renderBodyEntryHtml(index, state.renderData.bodyEntries[index], state.renderData.origLines, state.renderData.modLines));
+ 		}
+ 
+-		const template = document.createElement('template');
++		const template = DOM.createElement('template');
+ 		template.innerHTML = htmlParts.join('');
+ 		const insertedElements = Array.from(template.content.children) as HTMLElement[];
+ 		for (const element of insertedElements) {
+diff --git a/src/vs/sessions/browser/parts/mobile/mobileTitlebarPart.ts b/src/vs/sessions/browser/parts/mobile/mobileTitlebarPart.ts
+index 1bbf6fdfe54..25b36020ca3 100644
+--- a/src/vs/sessions/browser/parts/mobile/mobileTitlebarPart.ts
++++ b/src/vs/sessions/browser/parts/mobile/mobileTitlebarPart.ts
+@@ -5,7 +5,7 @@
+ 
+ import './mobileChatShell.css';
+ import { Disposable, DisposableStore, MutableDisposable, toDisposable } from '../../../../base/common/lifecycle.js';
+-import { $, addDisposableListener, append, EventType } from '../../../../base/browser/dom.js';
++import { $, addDisposableListener, append, createElement, EventType } from '../../../../base/browser/dom.js';
+ import { Emitter, Event } from '../../../../base/common/event.js';
+ import { ThemeIcon } from '../../../../base/common/themables.js';
+ import { Codicon } from '../../../../base/common/codicons.js';
+@@ -116,7 +116,7 @@ export class MobileTitlebarPart extends Disposable {
+ 	) {
+ 		super();
+ 
+-		this.element = document.createElement('div');
++		this.element = createElement('div');
+ 		this.element.className = 'mobile-top-bar';
+ 
+ 		// Register DOM removal before appending so that any exception
+diff --git a/src/vs/sessions/browser/parts/sessionHeader.ts b/src/vs/sessions/browser/parts/sessionHeader.ts
+index 47cd222b00e..56ea77e5114 100644
+--- a/src/vs/sessions/browser/parts/sessionHeader.ts
++++ b/src/vs/sessions/browser/parts/sessionHeader.ts
+@@ -6,7 +6,7 @@
+ import './media/chatCompositeBar.css';
+ import { Disposable, DisposableStore, MutableDisposable } from '../../../base/common/lifecycle.js';
+ import { Emitter, Event } from '../../../base/common/event.js';
+-import { $, addDisposableGenericMouseDownListener, addDisposableListener, addStandardDisposableListener, DisposableResizeObserver, EventType, getWindow, isMouseEvent } from '../../../base/browser/dom.js';
++import { $, addDisposableGenericMouseDownListener, addDisposableListener, addStandardDisposableListener, createElement, DisposableResizeObserver, EventType, getWindow, isMouseEvent } from '../../../base/browser/dom.js';
+ import { StandardMouseEvent } from '../../../base/browser/mouseEvent.js';
+ import { IKeyboardEvent } from '../../../base/browser/keyboardEvent.js';
+ import { KeyCode } from '../../../base/common/keyCodes.js';
+@@ -335,7 +335,7 @@ export class SessionHeader extends Disposable {
+ 		// the user neither sees a blank field nor accidentally commits the fallback.
+ 		const fallbackTitle = getUntitledSessionTitle(session.isQuickChat?.get() ?? false);
+ 
+-		const input = document.createElement('input');
++		const input = createElement('input');
+ 		input.type = 'text';
+ 		input.className = 'chat-composite-bar-session-title-input';
+ 		input.value = initialTitle;
 diff --git a/src/vs/sessions/browser/workbench.ts b/src/vs/sessions/browser/workbench.ts
-index b07fe047914..44a86eb8747 100644
+index 6b73a61171f..550f622ac16 100644
 --- a/src/vs/sessions/browser/workbench.ts
 +++ b/src/vs/sessions/browser/workbench.ts
 @@ -9,7 +9,7 @@ import './media/workbench.css';
@@ -3568,8 +3680,157 @@ index 29c64998764..69b53e8d6c2 100644
  
  	constructor(
  		group: IAgentFeedbackOverlayEditorGroup,
+diff --git a/src/vs/sessions/contrib/agentFeedback/browser/feedbackInputWidget.ts b/src/vs/sessions/contrib/agentFeedback/browser/feedbackInputWidget.ts
+index 30ef37ccf8f..4804ffa3360 100644
+--- a/src/vs/sessions/contrib/agentFeedback/browser/feedbackInputWidget.ts
++++ b/src/vs/sessions/contrib/agentFeedback/browser/feedbackInputWidget.ts
+@@ -5,7 +5,7 @@
+ 
+ import './media/agentFeedbackEditorInput.css';
+ import { IContextMenuProvider } from '../../../../base/browser/contextmenu.js';
+-import { addStandardDisposableListener, ModifierKeyEmitter } from '../../../../base/browser/dom.js';
++import { addStandardDisposableListener, createElement, ModifierKeyEmitter } from '../../../../base/browser/dom.js';
+ import { status as announceStatus } from '../../../../base/browser/ui/aria/aria.js';
+ import { ActionBar } from '../../../../base/browser/ui/actionbar/actionbar.js';
+ import { ActionWithDropdownActionViewItem } from '../../../../base/browser/ui/dropdown/dropdownActionViewItem.js';
+@@ -82,11 +82,11 @@ export class FeedbackInputWidget extends Disposable {
+ 	constructor(private readonly _options: IFeedbackInputWidgetOptions) {
+ 		super();
+ 		this._hasExplicitAriaLabel = _options.ariaLabel !== undefined;
+-		this.domNode = document.createElement('div');
++		this.domNode = createElement('div');
+ 		this.domNode.classList.add('agent-feedback-input-widget');
+ 		this.domNode.style.display = 'none';
+ 
+-		this.inputElement = document.createElement('textarea');
++		this.inputElement = createElement('textarea');
+ 		this.inputElement.rows = 1;
+ 		this.inputElement.placeholder = _options.placeholder;
+ 		this.inputElement.setAttribute('aria-label', _options.ariaLabel ?? _options.placeholder);
+@@ -94,17 +94,17 @@ export class FeedbackInputWidget extends Disposable {
+ 		this.domNode.appendChild(this.inputElement);
+ 
+ 		// Hidden element used to measure text width for auto-growing
+-		this._measureElement = document.createElement('span');
++		this._measureElement = createElement('span');
+ 		this._measureElement.classList.add('agent-feedback-input-measure');
+ 		this.domNode.appendChild(this._measureElement);
+ 
+-		const actionsContainer = document.createElement('div');
++		const actionsContainer = createElement('div');
+ 		actionsContainer.classList.add('agent-feedback-input-actions');
+ 		actionsContainer.style.height = `${FeedbackInputWidget._LINE_HEIGHT}px`;
+ 		this.domNode.appendChild(actionsContainer);
+ 		this._actionsContainer = actionsContainer;
+ 
+-		this._busyIndicator = document.createElement('div');
++		this._busyIndicator = createElement('div');
+ 		this._busyIndicator.classList.add('agent-feedback-input-busy-indicator', ...ThemeIcon.asClassNameArray(Codicon.loading), 'codicon-modifier-spin');
+ 		this._busyIndicator.setAttribute('aria-hidden', 'true');
+ 		this._busyIndicator.style.display = 'none';
+diff --git a/src/vs/sessions/contrib/changes/test/browser/agentsDiffEditor.fixture.ts b/src/vs/sessions/contrib/changes/test/browser/agentsDiffEditor.fixture.ts
+index 647788c946c..5cc1148600f 100644
+--- a/src/vs/sessions/contrib/changes/test/browser/agentsDiffEditor.fixture.ts
++++ b/src/vs/sessions/contrib/changes/test/browser/agentsDiffEditor.fixture.ts
+@@ -6,7 +6,7 @@
+ import '../../browser/media/sessionChangesEditor.css';
+ import '../../../agentFeedback/browser/media/agentFeedbackEditorInput.css';
+ import '../../../../../base/browser/ui/codicons/codiconStyles.js';
+-import { $, Dimension, getWindow } from '../../../../../base/browser/dom.js';
++import { $, createTextNode, Dimension, getWindow } from '../../../../../base/browser/dom.js';
+ import { Codicon } from '../../../../../base/common/codicons.js';
+ import { Event, ValueWithChangeEvent } from '../../../../../base/common/event.js';
+ import { DisposableStore, toDisposable } from '../../../../../base/common/lifecycle.js';
+@@ -340,7 +340,7 @@ function renderDockedDetailPanel(editorPart: HTMLElement): void {
+ 		row.style.display = 'flex';
+ 		row.style.justifyContent = 'space-between';
+ 		row.style.padding = '6px 0';
+-		row.appendChild(document.createTextNode(name));
++		row.appendChild(createTextNode(name));
+ 		const count = row.appendChild($('span'));
+ 		count.textContent = stats;
+ 		count.style.color = 'var(--vscode-descriptionForeground)';
+diff --git a/src/vs/sessions/contrib/chat/browser/noAgentHostEmptyState.ts b/src/vs/sessions/contrib/chat/browser/noAgentHostEmptyState.ts
+index 74efba6ce27..619fa75d80d 100644
+--- a/src/vs/sessions/contrib/chat/browser/noAgentHostEmptyState.ts
++++ b/src/vs/sessions/contrib/chat/browser/noAgentHostEmptyState.ts
+@@ -75,7 +75,7 @@ export class NoAgentHostEmptyState extends Disposable {
+ 			{ renderCodeSegments: true },
+ 			description
+ 		);
+-		description.appendChild(document.createTextNode(' '));
++		description.appendChild(dom.createTextNode(' '));
+ 		const learnMore = dom.append(description, $('a.no-agent-host-link')) as HTMLAnchorElement;
+ 		learnMore.textContent = localize('noAgentHost.learnMore', "Learn more");
+ 		learnMore.href = LEARN_MORE_URL;
+diff --git a/src/vs/sessions/contrib/github/browser/githubReferenceList.ts b/src/vs/sessions/contrib/github/browser/githubReferenceList.ts
+index d44e55dfae9..2d8fa228c80 100644
+--- a/src/vs/sessions/contrib/github/browser/githubReferenceList.ts
++++ b/src/vs/sessions/contrib/github/browser/githubReferenceList.ts
+@@ -5,7 +5,7 @@
+ 
+ import './media/githubReferenceList.css';
+ 
+-import { $, append } from '../../../../base/browser/dom.js';
++import { $, append, createElement } from '../../../../base/browser/dom.js';
+ import { ActionBar } from '../../../../base/browser/ui/actionbar/actionbar.js';
+ import { IAction, toAction } from '../../../../base/common/actions.js';
+ import { Disposable } from '../../../../base/common/lifecycle.js';
+@@ -64,7 +64,7 @@ export class GitHubReferenceList<T extends IGitHubReferenceListEntry> extends Di
+ 
+ 	private _createRow(entry: T): IGitHubReferenceListRow<T> {
+ 		const item = append(this.element, $('.sessions-github-reference-list-item', { role: 'listitem' }));
+-		const button = append(item, document.createElement('button'));
++		const button = append(item, createElement('button'));
+ 		button.className = 'sessions-github-reference-list-entry';
+ 		button.type = 'button';
+ 		const row: IGitHubReferenceListRow<T> = {
+diff --git a/src/vs/sessions/contrib/github/browser/issueHover.ts b/src/vs/sessions/contrib/github/browser/issueHover.ts
+index cd572fceae2..df695edba1e 100644
+--- a/src/vs/sessions/contrib/github/browser/issueHover.ts
++++ b/src/vs/sessions/contrib/github/browser/issueHover.ts
+@@ -5,7 +5,7 @@
+ 
+ import './media/issueHover.css';
+ 
+-import { $, append } from '../../../../base/browser/dom.js';
++import { $, append, createElement } from '../../../../base/browser/dom.js';
+ import { safeIntl } from '../../../../base/common/date.js';
+ import { localize } from '../../../../nls.js';
+ import { IGitHubIssue } from '../common/types.js';
+@@ -25,7 +25,7 @@ export function createIssueHoverElement(data: IIssueHoverData): HTMLElement {
+ 	const hoverElement = $('.sessions-issue-hover');
+ 
+ 	const header = append(hoverElement, $('.sessions-issue-hover-header'));
+-	const repositoryLink = document.createElement('a');
++	const repositoryLink = createElement('a');
+ 	repositoryLink.className = 'sessions-issue-hover-repository';
+ 	append(header, repositoryLink);
+ 	repositoryLink.href = data.repositoryHref;
+diff --git a/src/vs/sessions/contrib/github/browser/pullRequestHover.ts b/src/vs/sessions/contrib/github/browser/pullRequestHover.ts
+index 2b74d06a62d..594fb052be7 100644
+--- a/src/vs/sessions/contrib/github/browser/pullRequestHover.ts
++++ b/src/vs/sessions/contrib/github/browser/pullRequestHover.ts
+@@ -5,7 +5,7 @@
+ 
+ import './media/pullRequestHover.css';
+ 
+-import { $, append } from '../../../../base/browser/dom.js';
++import { $, append, createElement } from '../../../../base/browser/dom.js';
+ import { safeIntl } from '../../../../base/common/date.js';
+ import { localize } from '../../../../nls.js';
+ import { IGitHubPullRequest } from '../common/types.js';
+@@ -25,7 +25,7 @@ export function createPullRequestHoverElement(data: IPullRequestHoverData): HTML
+ 	const hoverElement = $('.sessions-pr-hover');
+ 
+ 	const header = append(hoverElement, $('.sessions-pr-hover-header'));
+-	const repositoryLink = document.createElement('a');
++	const repositoryLink = createElement('a');
+ 	repositoryLink.className = 'sessions-pr-hover-repository';
+ 	append(header, repositoryLink);
+ 	repositoryLink.href = data.repositoryHref;
 diff --git a/src/vs/sessions/contrib/policyBlocked/browser/sessionsPolicyBlocked.ts b/src/vs/sessions/contrib/policyBlocked/browser/sessionsPolicyBlocked.ts
-index baab4566729..3b58486908e 100644
+index baab4566729..10af7de714b 100644
 --- a/src/vs/sessions/contrib/policyBlocked/browser/sessionsPolicyBlocked.ts
 +++ b/src/vs/sessions/contrib/policyBlocked/browser/sessionsPolicyBlocked.ts
 @@ -5,7 +5,7 @@
@@ -3592,6 +3853,31 @@ index baab4566729..3b58486908e 100644
  		const learnMore = append(description, $('a.sessions-policy-blocked-link')) as HTMLAnchorElement;
  		learnMore.textContent = localize('policyBlocked.learnMore', "Learn more");
  		learnMore.href = 'https://aka.ms/VSCode/Agents/docs';
+@@ -132,11 +132,11 @@ export class SessionsPolicyBlockedOverlay extends Disposable {
+ 
+ 		const description = append(card, $('p'));
+ 		if (options.accountName) {
+-			append(description, document.createTextNode(
++			append(description, createTextNode(
+ 				localize('accountGate.descriptionWithAccount', "The account \"{0}\" is not a member of an organization that your administrator allows for Agents.", options.accountName)
+ 			));
+ 		} else {
+-			append(description, document.createTextNode(
++			append(description, createTextNode(
+ 				localize('accountGate.descriptionNoAccount', "Your administrator restricts Agents to members of the organizations below.")
+ 			));
+ 		}
+@@ -155,8 +155,8 @@ export class SessionsPolicyBlockedOverlay extends Disposable {
+ 		}
+ 
+ 		const footer = append(card, $('p.sessions-policy-blocked-footer'));
+-		append(footer, document.createTextNode(localize('accountGate.contactAdmin', "Contact your administrator for more information.")));
+-		append(footer, document.createTextNode(' '));
++		append(footer, createTextNode(localize('accountGate.contactAdmin', "Contact your administrator for more information.")));
++		append(footer, createTextNode(' '));
+ 		const learnMore = append(footer, $('a.sessions-policy-blocked-link')) as HTMLAnchorElement;
+ 		learnMore.textContent = localize('accountGate.learnMore', "Learn more");
+ 		learnMore.href = 'https://code.visualstudio.com/docs/enterprise/overview';
 diff --git a/src/vs/workbench/api/browser/mainThreadCodeInsets.ts b/src/vs/workbench/api/browser/mainThreadCodeInsets.ts
 index ee7e9d98df6..5e622722dc5 100644
 --- a/src/vs/workbench/api/browser/mainThreadCodeInsets.ts
