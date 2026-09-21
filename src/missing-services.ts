@@ -382,6 +382,8 @@ import type {
 import { IOutputService } from 'vs/workbench/services/output/common/output.service'
 import { IPaneCompositePartService } from 'vs/workbench/services/panecomposite/browser/panecomposite.service'
 import { IPathService } from 'vs/workbench/services/path/common/pathService.service'
+import { AccountPolicyGateState } from 'vs/workbench/services/policies/common/accountPolicyService'
+import { IAccountPolicyGateService } from 'vs/workbench/services/policies/common/accountPolicyService.service'
 import { IPreferencesService } from 'vs/workbench/services/preferences/common/preferences.service'
 import { IRemoteAgentService } from 'vs/workbench/services/remote/common/remoteAgentService.service'
 import { PortsEnablement } from 'vs/workbench/services/remote/common/remoteExplorerService'
@@ -421,8 +423,6 @@ import { IWorkingCopyHistoryService } from 'vs/workbench/services/workingCopy/co
 import { IWorkingCopyService } from 'vs/workbench/services/workingCopy/common/workingCopyService.service'
 import { IWorkspaceEditingService } from 'vs/workbench/services/workspaces/common/workspaceEditing.service'
 import { IWorkspaceIdentityService } from 'vs/workbench/services/workspaces/common/workspaceIdentityService.service'
-import { AccountPolicyGateState } from 'vs/workbench/services/policies/common/accountPolicyService'
-import { IAccountPolicyGateService } from 'vs/workbench/services/policies/common/accountPolicyService.service'
 import { IAiSettingsSearchService } from 'vscode/src/vs/workbench/services/aiSettingsSearch/common/aiSettingsSearch.service'
 
 import { Codicon } from 'vs/base/common/codicons'
@@ -449,31 +449,31 @@ import { IMeteredConnectionService } from 'vs/platform/meteredConnection/common/
 import { IRemoteTunnelService } from 'vs/platform/remoteTunnel/common/remoteTunnel.service'
 import { IDiffEditorCommandsService } from 'vs/workbench/browser/parts/editor/diffEditorCommandsService.service'
 import { IVoiceModeOnboardingService } from 'vs/workbench/contrib/agentsVoice/browser/voiceModeOnboarding.service'
-import type { IAgentSessionsModel } from 'vs/workbench/contrib/chat/browser/agentSessions/agentSessionsModel'
-import { IAgentSessionsService } from 'vs/workbench/contrib/chat/browser/agentSessions/agentSessionsService.service'
 import { IAgentHostImportConversationStore } from 'vs/workbench/contrib/chat/browser/agentSessions/agentHost/agentHostImportConversationStore.service'
 import { IAgentHostProtectedResourcesService } from 'vs/workbench/contrib/chat/browser/agentSessions/agentHost/agentHostProtectedResourcesService.service'
 import { IAgentHostSessionWorkingDirectorySynchronizer } from 'vs/workbench/contrib/chat/browser/agentSessions/agentHost/agentHostSessionWorkingDirectorySynchronizer.service'
 import { IAgentHostShellInitSynchronizer } from 'vs/workbench/contrib/chat/browser/agentSessions/agentHost/agentHostShellInitSynchronizer.service'
+import type { IAgentSessionsModel } from 'vs/workbench/contrib/chat/browser/agentSessions/agentSessionsModel'
+import { IAgentSessionsService } from 'vs/workbench/contrib/chat/browser/agentSessions/agentSessionsService.service'
 import { IAgentSessionProjectionService } from 'vs/workbench/contrib/chat/browser/agentSessions/experiments/agentSessionProjectionService.service'
 import { AgentStatusMode } from 'vs/workbench/contrib/chat/browser/agentSessions/experiments/agentTitleBarStatusService.js'
 import { IAgentTitleBarStatusService } from 'vs/workbench/contrib/chat/browser/agentSessions/experiments/agentTitleBarStatusService.service'
 import { ISessionSummaryHoverService } from 'vs/workbench/contrib/chat/browser/agentSessions/sessionSummaryHoverService.service'
 import { IChatPasteTargetService } from 'vs/workbench/contrib/chat/browser/chat.service'
 import { IChatEditingExplanationModelManager } from 'vs/workbench/contrib/chat/browser/chatEditing/chatEditingExplanationModelManager.service'
-import { IChatModelFeedbackSurveyService } from 'vs/workbench/contrib/chat/browser/feedbackSurvey/chatModelFeedbackSurveyService.service'
 import { IChatPetService } from 'vs/workbench/contrib/chat/browser/chatPetService.service'
 import { IChatStatusItemService } from 'vs/workbench/contrib/chat/browser/chatStatus/chatStatusItemService.service'
 import { IChatSubmitRequestHandlerService } from 'vs/workbench/contrib/chat/browser/chatSubmitRequestHandlerService.service'
+import { IChatTipService } from 'vs/workbench/contrib/chat/browser/chatTipService.service.js'
+import { IChatContextService } from 'vs/workbench/contrib/chat/browser/contextContrib/chatContextService.service'
+import { IChatModelFeedbackSurveyService } from 'vs/workbench/contrib/chat/browser/feedbackSurvey/chatModelFeedbackSurveyService.service'
 import { ChatSpeechToTextState } from 'vs/workbench/contrib/chat/browser/speechToText/chatSpeechToTextService'
 import { IChatSpeechToTextService } from 'vs/workbench/contrib/chat/browser/speechToText/chatSpeechToTextService.service'
 import { IDictationOnboardingService } from 'vs/workbench/contrib/chat/browser/speechToText/dictationOnboarding.service'
 import { IVoiceCodeTranscriptionClient } from 'vs/workbench/contrib/chat/browser/speechToText/voiceCodeTranscriptionClient.service'
-import { IChatTipService } from 'vs/workbench/contrib/chat/browser/chatTipService.service.js'
-import { IChatContextService } from 'vs/workbench/contrib/chat/browser/contextContrib/chatContextService.service'
 import { IVoiceInputModeService } from 'vs/workbench/contrib/chat/browser/voiceInputMode/voiceInputMode.service'
-import { ICodeCompareModelService } from 'vs/workbench/contrib/chat/browser/widget/chatContentParts/chatTextEditContentPart.service'
 import { IChatOutputPartStateCache } from 'vs/workbench/contrib/chat/browser/widget/chatContentParts/chatOutputPartStateCache.service'
+import { ICodeCompareModelService } from 'vs/workbench/contrib/chat/browser/widget/chatContentParts/chatTextEditContentPart.service'
 import { IChatPetWidgetService } from 'vs/workbench/contrib/chat/browser/widget/chatPetWidgetService.service'
 import { IChatInputNoticeHubService } from 'vs/workbench/contrib/chat/browser/widget/input/chatInputNoticeHub.service'
 import { IAICustomizationWorkspaceService } from 'vs/workbench/contrib/chat/common/aiCustomizationWorkspaceService.service'
@@ -484,8 +484,8 @@ import { ILanguageModelsConfigurationService } from 'vs/workbench/contrib/chat/c
 import { IAgentPluginRepositoryService } from 'vs/workbench/contrib/chat/common/plugins/agentPluginRepositoryService.service.js'
 import { IAgentPluginService } from 'vs/workbench/contrib/chat/common/plugins/agentPluginService.service.js'
 import { IPluginMarketplaceService } from 'vs/workbench/contrib/chat/common/plugins/pluginMarketplaceService.service.js'
-import { ICustomizationMigrationService } from 'vs/workbench/contrib/chat/common/promptSyntax/service/customizationMigrationService.service'
 import { Target } from 'vs/workbench/contrib/chat/common/promptSyntax/promptTypes.js'
+import { ICustomizationMigrationService } from 'vs/workbench/contrib/chat/common/promptSyntax/service/customizationMigrationService.service'
 import { ISessionChatPillVisibilityService } from 'vs/workbench/contrib/chat/common/sessionChatPills.service'
 import { ILanguageModelToolsConfirmationService } from 'vs/workbench/contrib/chat/common/tools/languageModelToolsConfirmationService.service'
 import {
@@ -501,9 +501,9 @@ import { LazyCollectionState } from 'vs/workbench/contrib/mcp/common/mcpTypes'
 import { INotebookOutlineEntryFactory } from 'vs/workbench/contrib/notebook/browser/viewModel/notebookOutlineEntryFactory.service'
 import { ISCMRepositorySelectionMode } from 'vs/workbench/contrib/scm/common/scm'
 import { ITerminalChatSessionResolver } from 'vs/workbench/contrib/terminalContrib/chat/browser/terminalChatSessionResolver.service'
-import { ChatEntitlement } from 'vs/workbench/services/chat/common/chatEntitlementService'
 import { IAgentSdkSetupService } from 'vs/workbench/services/agentHost/browser/agentSdkSetupService.service'
 import { ICodexAccountService } from 'vs/workbench/services/agentHost/browser/codexAccountService.service'
+import { ChatEntitlement } from 'vs/workbench/services/chat/common/chatEntitlementService'
 import { IInlineCompletionsUnificationService } from 'vs/workbench/services/inlineCompletions/common/inlineCompletionsUnification.service'
 import { IUserAttentionService } from 'vs/workbench/services/userAttention/common/userAttentionService.service'
 import { IWorkspaceFolderLabelService } from 'vs/workbench/services/workspaces/common/workspaceFolderLabelService.service'
@@ -515,33 +515,97 @@ import { Unsupported, unsupported } from './tools.js'
 
 import { NullAgentHostService } from 'vs/platform/agentHost/browser/nullAgentHostService'
 import { NullSSHRemoteAgentHostService } from 'vs/platform/agentHost/browser/nullSshRemoteAgentHostService'
+import { IAgentHostByokLmHandler } from 'vs/platform/agentHost/common/agentHostByokLm.service'
 import { IAgentHostConnectionsService } from 'vs/platform/agentHost/common/agentHostConnectionsService.service'
 import { IAgentHostEnablementService } from 'vs/platform/agentHost/common/agentHostEnablementService.service'
 import { IAgentHostResourceService } from 'vs/platform/agentHost/common/agentHostResourceService.service'
 import { IAgentHostService } from 'vs/platform/agentHost/common/agentService.service'
+import {
+  ICloudSandboxAgentHostService,
+  ICloudSandboxApiService
+} from 'vs/platform/agentHost/common/cloudSandboxAgentHost.service'
+import { IRemoteAgentHostLocationPreferenceService } from 'vs/platform/agentHost/common/remoteAgentHostLocationPreference.service'
 import { NullRemoteAgentHostService } from 'vs/platform/agentHost/common/remoteAgentHostService.js'
 import { IRemoteAgentHostService } from 'vs/platform/agentHost/common/remoteAgentHostService.service'
 import { ISSHRemoteAgentHostService } from 'vs/platform/agentHost/common/sshRemoteAgentHost.service'
+import { ITunnelAgentHostService } from 'vs/platform/agentHost/common/tunnelAgentHost.service'
+import { IGitHubService } from 'vs/platform/github/common/githubService.service.js'
 import { IAgentNetworkFilterService } from 'vs/platform/networkFilter/common/networkFilterService.service.js'
 import { ISandboxHelperService } from 'vs/platform/sandbox/common/sandboxHelperService.service.js'
+import { IWindowsMxcTerminalSandboxRuntime } from 'vs/platform/sandbox/common/terminalSandboxMxcRuntime.service.js'
 import { ITerminalSandboxService } from 'vs/platform/sandbox/common/terminalSandboxService.service.js'
+import { IChatDashboardService } from 'vs/sessions/browser/chatDashboardService.service'
+import { IMobileVisualViewport } from 'vs/sessions/browser/parts/mobile/mobileVisualViewport.service'
+import { ISessionsSetUpService } from 'vs/sessions/browser/sessionsSetUpService.service'
+import { IDevContainerAgentHostService } from 'vs/sessions/common/devContainerAgentHostService.service'
+import { IAgentFeedbackService } from 'vs/sessions/contrib/agentFeedback/browser/agentFeedbackService.service'
+import { IAquariumService } from 'vs/sessions/contrib/aquarium/browser/aquariumOverlay.service'
+import { IAutomationStorageService } from 'vs/sessions/contrib/automations/common/automationStorageService.service'
+import { ChangesViewMode } from 'vs/sessions/contrib/changes/common/changes.js'
+import { IChangesViewService } from 'vs/sessions/contrib/changes/common/changesViewService.service'
+import { ISessionChangesService } from 'vs/sessions/contrib/changes/common/sessionChangesService.service'
+import { ISessionsChatViewStateService } from 'vs/sessions/contrib/chat/browser/chatViewStateService.service'
+import { INewChatVoiceTargetService } from 'vs/sessions/contrib/chat/browser/newChatVoice.service'
+import { INewSessionComposerService } from 'vs/sessions/contrib/chat/browser/newSessionComposerService.service'
+import { ISessionArchiveNudgeService } from 'vs/sessions/contrib/chat/browser/sessionArchiveNudge.service'
+import { ISessionChatPillsDebugService } from 'vs/sessions/contrib/chat/browser/sessionChatInputToolbarDebug.service'
+import { ISessionTaskRunnerRegistry } from 'vs/sessions/contrib/chat/browser/sessionTaskRunner.service'
+import { ISessionsTasksService } from 'vs/sessions/contrib/chat/browser/sessionsTasksService.service'
+import { ICodeReviewService } from 'vs/sessions/contrib/codeReview/browser/codeReviewService.service'
+import { IDiffEditorOptionsService } from 'vs/sessions/contrib/editor/common/diffEditorOptionsService.service'
+import { IGitHubService as IGitHubSessionService } from 'vs/sessions/contrib/github/browser/githubService.service'
+import { IPullRequestIconCache } from 'vs/sessions/contrib/github/browser/pullRequestIconCache.service'
+import { ICloudSandboxTelemetryService } from 'vs/sessions/contrib/providers/remoteAgentHost/browser/cloudSandboxTelemetry.service'
+import { IRemoteAgentHostConnectionCustomizationService } from 'vs/sessions/contrib/providers/remoteAgentHost/browser/remoteAgentHostConnectionCustomization.service'
+import { IAgentHostFilterService } from 'vs/sessions/services/agentHostFilter/common/agentHostFilter.service'
+import { ISessionsChatBackgroundService } from 'vs/sessions/services/chatBackground/browser/chatBackgroundService.service'
+import { IChatViewFactory } from 'vs/sessions/services/chatView/browser/chatViewFactory.service'
+import { ICustomViewGridPartService } from 'vs/sessions/services/customView/browser/customViewGridPartService.service'
+import { ICustomViewService } from 'vs/sessions/services/customView/browser/customViewService.service'
+import { ISessionContext } from 'vs/sessions/services/sessions/browser/sessionContext.service'
+import { ISessionGroupsService } from 'vs/sessions/services/sessions/browser/sessionGroupsService.service'
+import { ISessionOpenTelemetryService } from 'vs/sessions/services/sessions/browser/sessionOpenTelemetryService.service'
+import { ISessionSectionOrderService } from 'vs/sessions/services/sessions/browser/sessionSectionOrderService.service'
+import { ISessionsListModelService } from 'vs/sessions/services/sessions/browser/sessionsListModelService.service'
+import { ISessionsPartService } from 'vs/sessions/services/sessions/browser/sessionsPartService.service'
+import { ISessionsProvidersService } from 'vs/sessions/services/sessions/browser/sessionsProvidersService.service'
+import { ISessionsRecentWorkspacesService } from 'vs/sessions/services/sessions/browser/sessionsRecentWorkspacesService.service'
+import { ISessionsService } from 'vs/sessions/services/sessions/browser/sessionsService.service'
+import { ISessionsWindowUsageService } from 'vs/sessions/services/sessions/browser/sessionsWindowUsageService.service'
+import { ISessionChangesStatsCache } from 'vs/sessions/services/sessions/common/sessionChangesStatsCache.service'
+import { ISessionsManagementService } from 'vs/sessions/services/sessions/common/sessionsManagement.service'
+import { IAgentsVoiceWindowService } from 'vs/workbench/contrib/agentsVoice/common/agentsVoice.service'
+import { IVoiceTranscriptStore } from 'vs/workbench/contrib/agentsVoice/common/voiceTranscriptStore.service'
+import { BrowserEditorInput } from 'vs/workbench/contrib/browserView/common/browserEditorInput'
 import {
   IBrowserViewCDPService,
   IBrowserViewWorkbenchService
 } from 'vs/workbench/contrib/browserView/common/browserView.service.js'
 import { IBrowserZoomService } from 'vs/workbench/contrib/browserView/common/browserZoomService.service.js'
-import { IAgentHostSessionWorkingDirectoryResolver } from 'vs/workbench/contrib/chat/browser/agentSessions/agentHost/agentHostSessionWorkingDirectoryResolver.service'
+import { IAgentHostDebugLogsExportService } from 'vs/workbench/contrib/chat/browser/actions/exportAgentHostDebugLogsAction.service'
+import { IAgentHostActiveClientService } from 'vs/workbench/contrib/chat/browser/agentSessions/agentHost/agentHostActiveClientService.service'
+import { IAgentHostCustomizationService } from 'vs/workbench/contrib/chat/browser/agentSessions/agentHost/agentHostCustomizationService.service'
 import { IAgentHostNewSessionFolderService } from 'vs/workbench/contrib/chat/browser/agentSessions/agentHost/agentHostNewSessionFolderService.service'
+import { IAgentHostSessionWorkingDirectoryResolver } from 'vs/workbench/contrib/chat/browser/agentSessions/agentHost/agentHostSessionWorkingDirectoryResolver.service'
 import { IAgentHostToolSetEnablementService } from 'vs/workbench/contrib/chat/browser/agentSessions/agentHost/agentHostToolSetEnablementService.service'
+import { IAgentHostUntitledProvisionalSessionService } from 'vs/workbench/contrib/chat/browser/agentSessions/agentHost/agentHostUntitledProvisionalSessionService.service'
 import type { IAICustomizationItemSource } from 'vs/workbench/contrib/chat/browser/aiCustomization/aiCustomizationItemSource'
 import { IAICustomizationItemsModel } from 'vs/workbench/contrib/chat/browser/aiCustomization/aiCustomizationItemsModel.service'
 import { IChatAttachmentWidgetRegistry } from 'vs/workbench/contrib/chat/browser/attachments/chatAttachmentWidgetRegistry.service'
+import { IChatGoalSummaryService } from 'vs/workbench/contrib/chat/browser/chatGoalSummaryService.service'
+import { IChatImageCarouselService } from 'vs/workbench/contrib/chat/browser/chatImageCarouselService.service.js'
 import { IChatResponseFileChangesService } from 'vs/workbench/contrib/chat/browser/chatResponseFileChangesService.service'
 import { IPlanReviewFeedbackService } from 'vs/workbench/contrib/chat/browser/planReviewFeedback/planReviewFeedbackService.service'
 import { IChatToolRiskAssessmentService } from 'vs/workbench/contrib/chat/browser/tools/chatToolRiskAssessmentService.service'
+import { IMicCaptureService } from 'vs/workbench/contrib/chat/browser/voiceClient/micCaptureService.service'
+import { ITtsPlaybackService } from 'vs/workbench/contrib/chat/browser/voiceClient/ttsPlaybackService.service'
+import { IVoiceSessionController } from 'vs/workbench/contrib/chat/browser/voiceClient/voiceSessionController.service'
+import { IVoiceToolDispatchService } from 'vs/workbench/contrib/chat/browser/voiceClient/voiceToolDispatchService.service'
 import { IChatInputNotificationService } from 'vs/workbench/contrib/chat/browser/widget/input/chatInputNotificationService.service'
 import { IChatPhoneInputPresenter } from 'vs/workbench/contrib/chat/browser/widget/input/chatPhoneInputPresenter.service'
-import { IChatImageCarouselService } from 'vs/workbench/contrib/chat/browser/chatImageCarouselService.service.js'
+import { IAutomationDialogService } from 'vs/workbench/contrib/chat/common/automations/automationDialogService.service'
+import { IAutomationRunner } from 'vs/workbench/contrib/chat/common/automations/automationRunner.service'
+import { IAutomationService } from 'vs/workbench/contrib/chat/common/automations/automationService.service'
 import { IChatDebugService } from 'vs/workbench/contrib/chat/common/chatDebugService.service.js'
 import type { IHarnessDescriptor } from 'vs/workbench/contrib/chat/common/customizationHarnessService'
 import { ICustomizationHarnessService } from 'vs/workbench/contrib/chat/common/customizationHarnessService.service'
@@ -551,37 +615,25 @@ import { IPluginInstallService } from 'vs/workbench/contrib/chat/common/plugins/
 import { IWorkspacePluginSettingsService } from 'vs/workbench/contrib/chat/common/plugins/workspacePluginSettingsService.service.js'
 import { IChatArtifactsService } from 'vs/workbench/contrib/chat/common/tools/chatArtifactsService.service.js'
 import { IToolResultCompressor } from 'vs/workbench/contrib/chat/common/tools/toolResultCompressor.service'
-import { IChatResponseResourceFileSystemProvider } from 'vs/workbench/contrib/chat/common/widget/chatResponseResourceFileSystemProvider.service.js'
-import { IGitService } from 'vs/workbench/contrib/git/common/gitService.service.js'
-import { BrowserEditorInput } from 'vs/workbench/contrib/browserView/common/browserEditorInput'
-import { IWorkbenchMcpGatewayService } from 'vs/workbench/contrib/mcp/common/mcpGatewayService.service.js'
-import { IMcpSandboxService } from 'vs/workbench/contrib/mcp/common/mcpSandboxService.service.js'
-import { IAgentHostTerminalService } from 'vs/workbench/contrib/terminal/browser/agentHostTerminalService.service.js'
-import { IMicCaptureService } from 'vs/workbench/contrib/chat/browser/voiceClient/micCaptureService.service'
-import { ITtsPlaybackService } from 'vs/workbench/contrib/chat/browser/voiceClient/ttsPlaybackService.service'
-import { IVoiceSessionController } from 'vs/workbench/contrib/chat/browser/voiceClient/voiceSessionController.service'
-import { IVoiceToolDispatchService } from 'vs/workbench/contrib/chat/browser/voiceClient/voiceToolDispatchService.service'
 import { IVoiceClientService } from 'vs/workbench/contrib/chat/common/voiceClient/voiceClientService.service'
 import { IVoicePlaybackService } from 'vs/workbench/contrib/chat/common/voicePlaybackService.service'
-import { IAgentsVoiceWindowService } from 'vs/workbench/contrib/agentsVoice/common/agentsVoice.service'
-import { IVoiceTranscriptStore } from 'vs/workbench/contrib/agentsVoice/common/voiceTranscriptStore.service'
-import { IOnboardingService } from 'vs/workbench/contrib/welcomeOnboarding/common/onboardingService.service.js'
+import { IChatResponseResourceFileSystemProvider } from 'vs/workbench/contrib/chat/common/widget/chatResponseResourceFileSystemProvider.service.js'
+import { IGitService } from 'vs/workbench/contrib/git/common/gitService.service.js'
+import { IGitHubUploadService } from 'vs/workbench/contrib/issue/browser/githubUploadService.service'
+import { RecordingState } from 'vs/workbench/contrib/issue/browser/recordingService'
+import { IRecordingService } from 'vs/workbench/contrib/issue/browser/recordingService.service'
+import { IScreenshotService } from 'vs/workbench/contrib/issue/browser/screenshotService.service'
+import { IMcpDevModeDebugging } from 'vs/workbench/contrib/mcp/common/mcpDevMode.service.js'
+import { IWorkbenchMcpGatewayService } from 'vs/workbench/contrib/mcp/common/mcpGatewayService.service.js'
+import { IMcpSandboxService } from 'vs/workbench/contrib/mcp/common/mcpSandboxService.service.js'
 import { IOnboardingScenarioService } from 'vs/workbench/contrib/onboarding/common/onboardingScenarioService.service'
-import { IAgentHostFileSystemService } from 'vs/workbench/services/agentHost/common/agentHostFileSystemService.service'
+import { ISplashStorageService } from 'vs/workbench/contrib/splash/browser/splash.service'
+import { IAgentHostTerminalService } from 'vs/workbench/contrib/terminal/browser/agentHostTerminalService.service.js'
+import { IOnboardingService } from 'vs/workbench/contrib/welcomeOnboarding/common/onboardingService.service.js'
 import { IAgentEditorCommentsBridge } from 'vs/workbench/services/agentEditorComments/common/agentEditorComments.service'
+import { IAgentHostFileSystemService } from 'vs/workbench/services/agentHost/common/agentHostFileSystemService.service'
 import { IPowerService } from 'vs/workbench/services/power/common/powerService.service.js'
 import { FileSystemProviderCapabilities } from './service-override/files.js'
-import { IAgentHostDebugLogsExportService } from 'vs/workbench/contrib/chat/browser/actions/exportAgentHostDebugLogsAction.service'
-import { IAgentHostUntitledProvisionalSessionService } from 'vs/workbench/contrib/chat/browser/agentSessions/agentHost/agentHostUntitledProvisionalSessionService.service'
-import { IWindowsMxcTerminalSandboxRuntime } from 'vs/platform/sandbox/common/terminalSandboxMxcRuntime.service.js'
-import { IScreenshotService } from 'vs/workbench/contrib/issue/browser/screenshotService.service'
-import { IRecordingService } from 'vs/workbench/contrib/issue/browser/recordingService.service'
-import { RecordingState } from 'vs/workbench/contrib/issue/browser/recordingService'
-import { IGitHubUploadService } from 'vs/workbench/contrib/issue/browser/githubUploadService.service'
-import { IChatGoalSummaryService } from 'vs/workbench/contrib/chat/browser/chatGoalSummaryService.service'
-import { IAgentHostCustomizationService } from 'vs/workbench/contrib/chat/browser/agentSessions/agentHost/agentHostCustomizationService.service'
-import { IAgentHostActiveClientService } from 'vs/workbench/contrib/chat/browser/agentSessions/agentHost/agentHostActiveClientService.service'
-import { IGitHubService } from 'vs/platform/github/common/githubService.service.js'
 
 /**
  * Editor services: all editor service that are not defined in vs/editor/standalone/
@@ -8411,7 +8463,6 @@ registerSingleton(
   WorkspaceFolderLabelService,
   InstantiationType.Delayed
 )
-
 class GitHubService implements IGitHubService {
   _serviceBrand: undefined
   @Unsupported
@@ -8445,3 +8496,853 @@ class GitHubService implements IGitHubService {
 }
 
 registerSingleton(IGitHubService, GitHubService, InstantiationType.Delayed)
+
+class RemoteAgentHostLocationPreferenceService implements IRemoteAgentHostLocationPreferenceService {
+  _serviceBrand: undefined
+  onDidChangePreference: IRemoteAgentHostLocationPreferenceService['onDidChangePreference'] =
+    Event.None
+  getPreference: IRemoteAgentHostLocationPreferenceService['getPreference'] = () => undefined
+  setPreference: IRemoteAgentHostLocationPreferenceService['setPreference'] = () => {}
+}
+
+registerSingleton(
+  IRemoteAgentHostLocationPreferenceService,
+  RemoteAgentHostLocationPreferenceService,
+  InstantiationType.Delayed
+)
+
+class SessionsSetUpService implements ISessionsSetUpService {
+  _serviceBrand: undefined
+  initialSignInDialogShown: ISessionsSetUpService['initialSignInDialogShown'] = false
+  whenWelcomeDone: ISessionsSetUpService['whenWelcomeDone'] = async () => {}
+}
+
+registerSingleton(ISessionsSetUpService, SessionsSetUpService, InstantiationType.Delayed)
+
+class ChatDashboardService implements IChatDashboardService {
+  _serviceBrand: undefined
+  createDashboardElement: IChatDashboardService['createDashboardElement'] = () => undefined
+}
+
+registerSingleton(IChatDashboardService, ChatDashboardService, InstantiationType.Delayed)
+
+class CustomViewGridPartService implements ICustomViewGridPartService {
+  _serviceBrand: undefined
+  setView: ICustomViewGridPartService['setView'] = () => {}
+  focusActiveView: ICustomViewGridPartService['focusActiveView'] = () => {}
+}
+
+registerSingleton(ICustomViewGridPartService, CustomViewGridPartService, InstantiationType.Delayed)
+
+class SessionsPartService implements ISessionsPartService {
+  _serviceBrand: undefined
+  updateVisibleSessions: ISessionsPartService['updateVisibleSessions'] = () => {}
+  setContentVisible: ISessionsPartService['setContentVisible'] = () => {}
+  onDidFocusSession: ISessionsPartService['onDidFocusSession'] = Event.None
+  toggleMaximizeSession: ISessionsPartService['toggleMaximizeSession'] = () => {}
+  onDidToggleMaximizeSession: ISessionsPartService['onDidToggleMaximizeSession'] = Event.None
+  focusSession: ISessionsPartService['focusSession'] = () => {}
+  getSessionView: ISessionsPartService['getSessionView'] = () => undefined
+  getFocusedSessionView: ISessionsPartService['getFocusedSessionView'] = () => undefined
+  @Unsupported
+  getProgressIndicator: ISessionsPartService['getProgressIndicator'] = unsupported
+}
+
+registerSingleton(ISessionsPartService, SessionsPartService, InstantiationType.Delayed)
+
+class MobileVisualViewport implements IMobileVisualViewport {
+  _serviceBrand: undefined
+  keyboardHeight: IMobileVisualViewport['keyboardHeight'] = constObservable(0)
+  isKeyboardVisible: IMobileVisualViewport['isKeyboardVisible'] = constObservable(false)
+}
+
+registerSingleton(IMobileVisualViewport, MobileVisualViewport, InstantiationType.Delayed)
+
+class AgentFeedbackService implements IAgentFeedbackService {
+  _serviceBrand: undefined
+  onDidChangeFeedback: IAgentFeedbackService['onDidChangeFeedback'] = Event.None
+  onDidChangeFeedbackVisibility: IAgentFeedbackService['onDidChangeFeedbackVisibility'] = Event.None
+  onDidChangeNavigation: IAgentFeedbackService['onDidChangeNavigation'] = Event.None
+  onDidRevealSessionComment: IAgentFeedbackService['onDidRevealSessionComment'] = Event.None
+  onDidChangeFeedbackScope: IAgentFeedbackService['onDidChangeFeedbackScope'] = Event.None
+  @Unsupported
+  get activeFeedbackSessionResource(): IAgentFeedbackService['activeFeedbackSessionResource'] {
+    return unsupported()
+  }
+  onDidAddFeedback: IAgentFeedbackService['onDidAddFeedback'] = Event.None
+  onDidConvertFeedback: IAgentFeedbackService['onDidConvertFeedback'] = Event.None
+  onDidAddReply: IAgentFeedbackService['onDidAddReply'] = Event.None
+  onDidSubmitFeedback: IAgentFeedbackService['onDidSubmitFeedback'] = Event.None
+  @Unsupported
+  addFeedback: IAgentFeedbackService['addFeedback'] = unsupported
+  acceptFeedback: IAgentFeedbackService['acceptFeedback'] = () => {}
+  removeFeedback: IAgentFeedbackService['removeFeedback'] = () => {}
+  updateFeedback: IAgentFeedbackService['updateFeedback'] = () => {}
+  updateFeedbackSourcePullRequest: IAgentFeedbackService['updateFeedbackSourcePullRequest'] =
+    () => {}
+  setFeedbackResolved: IAgentFeedbackService['setFeedbackResolved'] = () => {}
+  addReply: IAgentFeedbackService['addReply'] = () => {}
+  getFeedback: IAgentFeedbackService['getFeedback'] = () => []
+  showFeedbackInEditor: IAgentFeedbackService['showFeedbackInEditor'] = () => {}
+  hideFeedbackInEditor: IAgentFeedbackService['hideFeedbackInEditor'] = () => {}
+  getVisibleResolvedFeedbackIds: IAgentFeedbackService['getVisibleResolvedFeedbackIds'] = () =>
+    new Set()
+  hasLoadedFeedback: IAgentFeedbackService['hasLoadedFeedback'] = () => false
+  getSessionForFile: IAgentFeedbackService['getSessionForFile'] = () => undefined
+  getFeedbackSessionResource: IAgentFeedbackService['getFeedbackSessionResource'] = () => undefined
+  registerFeedbackResourceScope: IAgentFeedbackService['registerFeedbackResourceScope'] = () =>
+    Disposable.None
+  getMostRecentSessionForResource: IAgentFeedbackService['getMostRecentSessionForResource'] = () =>
+    undefined
+  revealFeedback: IAgentFeedbackService['revealFeedback'] = async () => {}
+  revealSessionComment: IAgentFeedbackService['revealSessionComment'] = async () => {}
+  getNextFeedback: IAgentFeedbackService['getNextFeedback'] = () => undefined
+  getNextNavigableItem: IAgentFeedbackService['getNextNavigableItem'] = () => undefined
+  setNavigationAnchor: IAgentFeedbackService['setNavigationAnchor'] = () => {}
+  @Unsupported
+  getNavigationBearing: IAgentFeedbackService['getNavigationBearing'] = unsupported
+  clearFeedback: IAgentFeedbackService['clearFeedback'] = () => {}
+  markFeedbackSubmitted: IAgentFeedbackService['markFeedbackSubmitted'] = () => {}
+  submitFeedback: IAgentFeedbackService['submitFeedback'] = async () => false
+  addFeedbackAndSubmit: IAgentFeedbackService['addFeedbackAndSubmit'] = async () => {}
+}
+
+registerSingleton(IAgentFeedbackService, AgentFeedbackService, InstantiationType.Delayed)
+
+class AquariumService implements IAquariumService {
+  _serviceBrand: undefined
+  actionVisible: IAquariumService['actionVisible'] = constObservable(false)
+  @Unsupported
+  mountToggle: IAquariumService['mountToggle'] = unsupported
+  toggleActionVisibility: IAquariumService['toggleActionVisibility'] = () => false
+  simulateStreak: IAquariumService['simulateStreak'] = () => {}
+}
+
+registerSingleton(IAquariumService, AquariumService, InstantiationType.Delayed)
+
+class AutomationStorageService implements IAutomationStorageService {
+  _serviceBrand: undefined
+  read: IAutomationStorageService['read'] = async () => undefined
+  @Unsupported
+  compareAndSwap: IAutomationStorageService['compareAndSwap'] = unsupported
+}
+
+registerSingleton(IAutomationStorageService, AutomationStorageService, InstantiationType.Delayed)
+
+class AutomationService implements IAutomationService {
+  _serviceBrand: undefined
+  canRunAutomation: IAutomationService['canRunAutomation'] = undefined
+  canUpdateAutomation: IAutomationService['canUpdateAutomation'] = undefined
+  canDeleteAutomation: IAutomationService['canDeleteAutomation'] = undefined
+  isSchedulingOwnedByHost: IAutomationService['isSchedulingOwnedByHost'] = undefined
+  startStaleRunRecovery: IAutomationService['startStaleRunRecovery'] = async () => {}
+  stopStaleRunRecovery: IAutomationService['stopStaleRunRecovery'] = () => {}
+  @Unsupported
+  get catalogueState(): IAutomationService['catalogueState'] {
+    return unsupported()
+  }
+  automations: IAutomationService['automations'] = constObservable([])
+  runs: IAutomationService['runs'] = constObservable([])
+  getAutomation: IAutomationService['getAutomation'] = () => undefined
+  runsFor: IAutomationService['runsFor'] = () => constObservable([])
+  @Unsupported
+  createAutomation: IAutomationService['createAutomation'] = unsupported
+  @Unsupported
+  updateAutomation: IAutomationService['updateAutomation'] = unsupported
+  @Unsupported
+  updateAutomationIfUnchanged: IAutomationService['updateAutomationIfUnchanged'] = unsupported
+  deleteAutomation: IAutomationService['deleteAutomation'] = async () => {}
+  @Unsupported
+  recordRunStart: IAutomationService['recordRunStart'] = unsupported
+  updateRun: IAutomationService['updateRun'] = async () => undefined
+  deleteRun: IAutomationService['deleteRun'] = async () => {}
+  getActiveRunFor: IAutomationService['getActiveRunFor'] = () => undefined
+  markStaleRunsFailed: IAutomationService['markStaleRunsFailed'] = async () => {}
+}
+
+registerSingleton(IAutomationService, AutomationService, InstantiationType.Delayed)
+
+class AutomationRunner implements IAutomationRunner {
+  _serviceBrand: undefined
+  @Unsupported
+  runOnce: IAutomationRunner['runOnce'] = unsupported
+}
+
+registerSingleton(IAutomationRunner, AutomationRunner, InstantiationType.Delayed)
+
+class AutomationDialogService implements IAutomationDialogService {
+  _serviceBrand: undefined
+  showAutomationDialog: IAutomationDialogService['showAutomationDialog'] = async () => undefined
+}
+
+registerSingleton(IAutomationDialogService, AutomationDialogService, InstantiationType.Delayed)
+
+class ChangesViewService implements IChangesViewService {
+  _serviceBrand: undefined
+  activeSessionResourceObs: IChangesViewService['activeSessionResourceObs'] =
+    constObservable(undefined)
+  activeSessionTypeObs: IChangesViewService['activeSessionTypeObs'] = constObservable(undefined)
+  activeSessionIsVirtualWorkspaceObs: IChangesViewService['activeSessionIsVirtualWorkspaceObs'] =
+    constObservable(false)
+  activeSessionChangesObs: IChangesViewService['activeSessionChangesObs'] = constObservable([])
+  activeSessionChangesetsObs: IChangesViewService['activeSessionChangesetsObs'] =
+    constObservable(undefined)
+  activeSessionChangesetsLoadingObs: IChangesViewService['activeSessionChangesetsLoadingObs'] =
+    constObservable(false)
+  activeSessionChangesetObs: IChangesViewService['activeSessionChangesetObs'] =
+    constObservable(undefined)
+  activeSessionChangesetLoadingObs: IChangesViewService['activeSessionChangesetLoadingObs'] =
+    constObservable(false)
+  activeSessionChangesetOperationsObs: IChangesViewService['activeSessionChangesetOperationsObs'] =
+    constObservable([])
+  activeSessionHasGitRepositoryObs: IChangesViewService['activeSessionHasGitRepositoryObs'] =
+    constObservable(false)
+  activeSessionReviewCommentCountByFileObs: IChangesViewService['activeSessionReviewCommentCountByFileObs'] =
+    constObservable(new Map())
+  activeSessionAgentFeedbackCountByFileObs: IChangesViewService['activeSessionAgentFeedbackCountByFileObs'] =
+    constObservable(new Map())
+  activeSessionStateObs: IChangesViewService['activeSessionStateObs'] = constObservable(undefined)
+  activeSessionLoadingObs: IChangesViewService['activeSessionLoadingObs'] = constObservable(false)
+  @Unsupported
+  get activeSessionSectionCollapseStateObs(): IChangesViewService['activeSessionSectionCollapseStateObs'] {
+    return unsupported()
+  }
+  setChangesetId: IChangesViewService['setChangesetId'] = () => {}
+  showChangeset: IChangesViewService['showChangeset'] = () => {}
+  viewModeObs = constObservable(ChangesViewMode.List)
+  setViewMode: IChangesViewService['setViewMode'] = () => {}
+  setSectionCollapsed: IChangesViewService['setSectionCollapsed'] = () => {}
+  detailsViewStateTransferObs: IChangesViewService['detailsViewStateTransferObs'] =
+    constObservable(undefined)
+  getDetailsViewState: IChangesViewService['getDetailsViewState'] = () => undefined
+  setDetailsViewState: IChangesViewService['setDetailsViewState'] = () => {}
+  setChangesetFilesReviewState: IChangesViewService['setChangesetFilesReviewState'] = () => {}
+}
+
+registerSingleton(IChangesViewService, ChangesViewService, InstantiationType.Delayed)
+
+class SessionChangesService implements ISessionChangesService {
+  _serviceBrand: undefined
+  activeSessionUncommittedChangesCountObs: ISessionChangesService['activeSessionUncommittedChangesCountObs'] =
+    constObservable(undefined)
+  @Unsupported
+  getChangesEditorResource: ISessionChangesService['getChangesEditorResource'] = unsupported
+  getSessionResource: ISessionChangesService['getSessionResource'] = () => undefined
+  openChangesEditor: ISessionChangesService['openChangesEditor'] = async () => undefined
+}
+
+registerSingleton(ISessionChangesService, SessionChangesService, InstantiationType.Delayed)
+
+class SessionTaskRunnerRegistry implements ISessionTaskRunnerRegistry {
+  _serviceBrand: undefined
+  register: ISessionTaskRunnerRegistry['register'] = () => Disposable.None
+  getRunner: ISessionTaskRunnerRegistry['getRunner'] = () => undefined
+}
+
+registerSingleton(ISessionTaskRunnerRegistry, SessionTaskRunnerRegistry, InstantiationType.Delayed)
+
+class SessionsTasksService implements ISessionsTasksService {
+  _serviceBrand: undefined
+  onDidRunTask: ISessionsTasksService['onDidRunTask'] = Event.None
+  getSessionTasks: ISessionsTasksService['getSessionTasks'] = () => constObservable([])
+  getSessionTasksOnce: ISessionsTasksService['getSessionTasksOnce'] = async () => []
+  getAllTasks: ISessionsTasksService['getAllTasks'] = async () => []
+  getNonSessionTasks: ISessionsTasksService['getNonSessionTasks'] = async () => []
+  addTaskToSessions: ISessionsTasksService['addTaskToSessions'] = async () => {}
+  createAndAddTask: ISessionsTasksService['createAndAddTask'] = async () => undefined
+  updateTask: ISessionsTasksService['updateTask'] = async () => {}
+  removeTask: ISessionsTasksService['removeTask'] = async () => {}
+  runTask: ISessionsTasksService['runTask'] = async () => undefined
+  getPinnedTaskLabel: ISessionsTasksService['getPinnedTaskLabel'] = () => constObservable(undefined)
+  setPinnedTaskLabel: ISessionsTasksService['setPinnedTaskLabel'] = () => {}
+  getBrowserUrl: ISessionsTasksService['getBrowserUrl'] = () => constObservable(undefined)
+  setBrowserUrl: ISessionsTasksService['setBrowserUrl'] = () => {}
+  getPinnedBrowser: ISessionsTasksService['getPinnedBrowser'] = () => constObservable(false)
+  setPinnedBrowser: ISessionsTasksService['setPinnedBrowser'] = () => {}
+}
+
+registerSingleton(ISessionsTasksService, SessionsTasksService, InstantiationType.Delayed)
+
+class ChatViewFactory implements IChatViewFactory {
+  _serviceBrand: undefined
+  @Unsupported
+  createNewChatView: IChatViewFactory['createNewChatView'] = unsupported
+  @Unsupported
+  createChatView: IChatViewFactory['createChatView'] = unsupported
+}
+
+registerSingleton(IChatViewFactory, ChatViewFactory, InstantiationType.Delayed)
+
+class SessionsChatViewStateService implements ISessionsChatViewStateService {
+  _serviceBrand: undefined
+  get: ISessionsChatViewStateService['get'] = () => undefined
+  set: ISessionsChatViewStateService['set'] = () => {}
+}
+
+registerSingleton(
+  ISessionsChatViewStateService,
+  SessionsChatViewStateService,
+  InstantiationType.Delayed
+)
+
+class SessionsChatBackgroundService implements ISessionsChatBackgroundService {
+  _serviceBrand: undefined
+  onDidChangeBackground: ISessionsChatBackgroundService['onDidChangeBackground'] = Event.None
+  getBackground: ISessionsChatBackgroundService['getBackground'] = () => undefined
+  getConfiguredBackgroundImage: ISessionsChatBackgroundService['getConfiguredBackgroundImage'] =
+    () => undefined
+  getRecentBackgroundImages: ISessionsChatBackgroundService['getRecentBackgroundImages'] = () => []
+  @Unsupported
+  getBackgroundImageLayout: ISessionsChatBackgroundService['getBackgroundImageLayout'] = unsupported
+  setBackground: ISessionsChatBackgroundService['setBackground'] = async () => {}
+  clearBackground: ISessionsChatBackgroundService['clearBackground'] = async () => {}
+  setBackgroundImageLayout: ISessionsChatBackgroundService['setBackgroundImageLayout'] =
+    async () => {}
+}
+
+registerSingleton(
+  ISessionsChatBackgroundService,
+  SessionsChatBackgroundService,
+  InstantiationType.Delayed
+)
+
+class SessionArchiveNudgeService implements ISessionArchiveNudgeService {
+  _serviceBrand: undefined
+  isDismissed: ISessionArchiveNudgeService['isDismissed'] = () => false
+  markShown: ISessionArchiveNudgeService['markShown'] = () => {}
+  dismiss: ISessionArchiveNudgeService['dismiss'] = () => {}
+  showArchiveOnboarding: ISessionArchiveNudgeService['showArchiveOnboarding'] = async () => {}
+  archive: ISessionArchiveNudgeService['archive'] = async () => {}
+}
+
+registerSingleton(
+  ISessionArchiveNudgeService,
+  SessionArchiveNudgeService,
+  InstantiationType.Delayed
+)
+
+class NewChatVoiceTargetService implements INewChatVoiceTargetService {
+  _serviceBrand: undefined
+  activeComposer: INewChatVoiceTargetService['activeComposer'] = constObservable(undefined)
+  currentVoiceInputResource: INewChatVoiceTargetService['currentVoiceInputResource'] =
+    constObservable(undefined)
+  registerComposer: INewChatVoiceTargetService['registerComposer'] = () => Disposable.None
+  setActive: INewChatVoiceTargetService['setActive'] = () => {}
+  beginVoiceTransition: INewChatVoiceTargetService['beginVoiceTransition'] = () => Disposable.None
+  consumeVoiceTransition: INewChatVoiceTargetService['consumeVoiceTransition'] = () => false
+}
+
+registerSingleton(INewChatVoiceTargetService, NewChatVoiceTargetService, InstantiationType.Delayed)
+
+class NewSessionComposerService implements INewSessionComposerService {
+  _serviceBrand: undefined
+  activeComposer: INewSessionComposerService['activeComposer'] = constObservable(undefined)
+  workspaceSelection: INewSessionComposerService['workspaceSelection'] = constObservable(undefined)
+  userWorkspaceSelectionVersion: INewSessionComposerService['userWorkspaceSelectionVersion'] =
+    constObservable(0)
+  notifyUserWorkspaceSelection: INewSessionComposerService['notifyUserWorkspaceSelection'] =
+    () => {}
+  userNavigationVersion: INewSessionComposerService['userNavigationVersion'] = constObservable(0)
+  notifyUserNavigation: INewSessionComposerService['notifyUserNavigation'] = () => {}
+  onWillSendRequest: INewSessionComposerService['onWillSendRequest'] = Event.None
+  notifyWillSendRequest: INewSessionComposerService['notifyWillSendRequest'] = () => {}
+  registerComposer: INewSessionComposerService['registerComposer'] = () => Disposable.None
+}
+
+registerSingleton(INewSessionComposerService, NewSessionComposerService, InstantiationType.Delayed)
+
+class SessionChatPillsDebugService implements ISessionChatPillsDebugService {
+  _serviceBrand: undefined
+  register: ISessionChatPillsDebugService['register'] = () => Disposable.None
+  clear: ISessionChatPillsDebugService['clear'] = () => {}
+  showDialog: ISessionChatPillsDebugService['showDialog'] = async () => {}
+}
+
+registerSingleton(
+  ISessionChatPillsDebugService,
+  SessionChatPillsDebugService,
+  InstantiationType.Delayed
+)
+
+class AgentHostByokLmHandler implements IAgentHostByokLmHandler {
+  _serviceBrand: undefined
+  onDidChangeModels: IAgentHostByokLmHandler['onDidChangeModels'] = undefined
+  @Unsupported
+  chat: IAgentHostByokLmHandler['chat'] = unsupported
+  listModels: IAgentHostByokLmHandler['listModels'] = async () => []
+}
+
+registerSingleton(IAgentHostByokLmHandler, AgentHostByokLmHandler, InstantiationType.Delayed)
+
+class CodeReviewService implements ICodeReviewService {
+  _serviceBrand: undefined
+  @Unsupported
+  getPRReviewState: ICodeReviewService['getPRReviewState'] = unsupported
+  resolvePRReviewThread: ICodeReviewService['resolvePRReviewThread'] = async () => {}
+  markPRReviewCommentConverted: ICodeReviewService['markPRReviewCommentConverted'] = () => {}
+  dismissPRReviewComment: ICodeReviewService['dismissPRReviewComment'] = () => {}
+}
+
+registerSingleton(ICodeReviewService, CodeReviewService, InstantiationType.Delayed)
+
+class DiffEditorOptionsService implements IDiffEditorOptionsService {
+  _serviceBrand: undefined
+  @Unsupported
+  get viewMode(): IDiffEditorOptionsService['viewMode'] {
+    return unsupported()
+  }
+  renderSideBySide: IDiffEditorOptionsService['renderSideBySide'] = constObservable(false)
+  @Unsupported
+  get diffEditorWordWrap(): IDiffEditorOptionsService['diffEditorWordWrap'] {
+    return unsupported()
+  }
+  @Unsupported
+  get editorWordWrap(): IDiffEditorOptionsService['editorWordWrap'] {
+    return unsupported()
+  }
+  setViewMode: IDiffEditorOptionsService['setViewMode'] = () => {}
+  toggleRenderSideBySide: IDiffEditorOptionsService['toggleRenderSideBySide'] = () => {}
+  setDiffEditorWordWrap: IDiffEditorOptionsService['setDiffEditorWordWrap'] = async () => {}
+  setEditorWordWrap: IDiffEditorOptionsService['setEditorWordWrap'] = async () => {}
+}
+
+registerSingleton(IDiffEditorOptionsService, DiffEditorOptionsService, InstantiationType.Delayed)
+
+class GitHubSessionService implements IGitHubSessionService {
+  _serviceBrand: undefined
+  enterpriseHost: IGitHubSessionService['enterpriseHost'] = undefined
+  activeSessionPullRequestObs: IGitHubSessionService['activeSessionPullRequestObs'] =
+    constObservable(undefined)
+  activeSessionPullRequestCIObs: IGitHubSessionService['activeSessionPullRequestCIObs'] =
+    constObservable(undefined)
+  activeSessionPullRequestReviewThreadsObs: IGitHubSessionService['activeSessionPullRequestReviewThreadsObs'] =
+    constObservable(undefined)
+  @Unsupported
+  createRepositoryModelReference: IGitHubSessionService['createRepositoryModelReference'] =
+    unsupported
+  @Unsupported
+  createPullRequestModelReference: IGitHubSessionService['createPullRequestModelReference'] =
+    unsupported
+  @Unsupported
+  createPullRequestReviewThreadsModelReference: IGitHubSessionService['createPullRequestReviewThreadsModelReference'] =
+    unsupported
+  @Unsupported
+  createPullRequestCIModelReference: IGitHubSessionService['createPullRequestCIModelReference'] =
+    unsupported
+  @Unsupported
+  createIssueModelReference: IGitHubSessionService['createIssueModelReference'] = unsupported
+  getChangedFiles: IGitHubSessionService['getChangedFiles'] = async () => []
+  @Unsupported
+  getPullRequests: IGitHubSessionService['getPullRequests'] = unsupported
+  getPullRequestsWaitingForReview: IGitHubSessionService['getPullRequestsWaitingForReview'] =
+    async () => []
+  getPullRequestsAssignedToViewer: IGitHubSessionService['getPullRequestsAssignedToViewer'] =
+    async () => []
+  @Unsupported
+  getPullRequestContext: IGitHubSessionService['getPullRequestContext'] = unsupported
+  findPullRequestNumberByHeadBranch: IGitHubSessionService['findPullRequestNumberByHeadBranch'] =
+    async () => undefined
+  getRecentAssignedIssues: IGitHubSessionService['getRecentAssignedIssues'] = async () => []
+  getRecentAuthoredPullRequests: IGitHubSessionService['getRecentAuthoredPullRequests'] =
+    async () => []
+  getPullRequestReviewThreads: IGitHubSessionService['getPullRequestReviewThreads'] = async () => []
+  getIssuesWithLinkedPullRequests: IGitHubSessionService['getIssuesWithLinkedPullRequests'] =
+    async () => new Set()
+}
+
+registerSingleton(IGitHubSessionService, GitHubSessionService, InstantiationType.Delayed)
+
+class PullRequestIconCache implements IPullRequestIconCache {
+  _serviceBrand: undefined
+  get: IPullRequestIconCache['get'] = () => undefined
+  set: IPullRequestIconCache['set'] = () => {}
+}
+
+registerSingleton(IPullRequestIconCache, PullRequestIconCache, InstantiationType.Delayed)
+
+class CloudSandboxTelemetryService implements ICloudSandboxTelemetryService {
+  _serviceBrand: undefined
+  reportRequest: ICloudSandboxTelemetryService['reportRequest'] = () => {}
+  reportCredentialRefreshStopped: ICloudSandboxTelemetryService['reportCredentialRefreshStopped'] =
+    () => {}
+}
+
+registerSingleton(
+  ICloudSandboxTelemetryService,
+  CloudSandboxTelemetryService,
+  InstantiationType.Delayed
+)
+
+class CloudSandboxApiService implements ICloudSandboxApiService {
+  _serviceBrand: undefined
+  @Unsupported
+  connect: ICloudSandboxApiService['connect'] = unsupported
+  @Unsupported
+  reconnect: ICloudSandboxApiService['reconnect'] = unsupported
+  @Unsupported
+  getEnvironment: ICloudSandboxApiService['getEnvironment'] = unsupported
+  @Unsupported
+  listSessions: ICloudSandboxApiService['listSessions'] = unsupported
+  @Unsupported
+  createSession: ICloudSandboxApiService['createSession'] = unsupported
+  getSessionHistory: ICloudSandboxApiService['getSessionHistory'] = async () => undefined
+}
+
+registerSingleton(ICloudSandboxApiService, CloudSandboxApiService, InstantiationType.Delayed)
+
+class CloudSandboxAgentHostService implements ICloudSandboxAgentHostService {
+  _serviceBrand: undefined
+  @Unsupported
+  connect: ICloudSandboxAgentHostService['connect'] = unsupported
+  getSealedGitHubToken: ICloudSandboxAgentHostService['getSealedGitHubToken'] = () => undefined
+}
+
+registerSingleton(
+  ICloudSandboxAgentHostService,
+  CloudSandboxAgentHostService,
+  InstantiationType.Delayed
+)
+
+class DevContainerAgentHostService implements IDevContainerAgentHostService {
+  _serviceBrand: undefined
+  onDidChangeAvailability: IDevContainerAgentHostService['onDidChangeAvailability'] = Event.None
+  registerConnector: IDevContainerAgentHostService['registerConnector'] = () => Disposable.None
+  isAvailable: IDevContainerAgentHostService['isAvailable'] = async () => false
+  @Unsupported
+  connect: IDevContainerAgentHostService['connect'] = unsupported
+  disconnect: IDevContainerAgentHostService['disconnect'] = async () => {}
+}
+
+registerSingleton(
+  IDevContainerAgentHostService,
+  DevContainerAgentHostService,
+  InstantiationType.Delayed
+)
+
+class RemoteAgentHostConnectionCustomizationService implements IRemoteAgentHostConnectionCustomizationService {
+  _serviceBrand: undefined
+  register: IRemoteAgentHostConnectionCustomizationService['register'] = () => Disposable.None
+  get: IRemoteAgentHostConnectionCustomizationService['get'] = () => undefined
+}
+
+registerSingleton(
+  IRemoteAgentHostConnectionCustomizationService,
+  RemoteAgentHostConnectionCustomizationService,
+  InstantiationType.Delayed
+)
+
+class TunnelAgentHostService implements ITunnelAgentHostService {
+  _serviceBrand: undefined
+  onDidChangeTunnels: ITunnelAgentHostService['onDidChangeTunnels'] = Event.None
+  listTunnels: ITunnelAgentHostService['listTunnels'] = async () => []
+  @Unsupported
+  getAutoConnectMode: ITunnelAgentHostService['getAutoConnectMode'] = unsupported
+  connect: ITunnelAgentHostService['connect'] = async () => {}
+  canDeleteTunnels: ITunnelAgentHostService['canDeleteTunnels'] = false
+  deleteTunnel: ITunnelAgentHostService['deleteTunnel'] = async () => {}
+  disconnect: ITunnelAgentHostService['disconnect'] = async () => {}
+  getCachedTunnels: ITunnelAgentHostService['getCachedTunnels'] = () => []
+  cacheTunnel: ITunnelAgentHostService['cacheTunnel'] = () => {}
+  removeCachedTunnel: ITunnelAgentHostService['removeCachedTunnel'] = () => {}
+  isTunnelDismissed: ITunnelAgentHostService['isTunnelDismissed'] = () => false
+  dismissTunnel: ITunnelAgentHostService['dismissTunnel'] = () => {}
+  clearTunnelDismissal: ITunnelAgentHostService['clearTunnelDismissal'] = () => {}
+  isAutoConnectSuppressed: ITunnelAgentHostService['isAutoConnectSuppressed'] = () => false
+  suppressAutoConnect: ITunnelAgentHostService['suppressAutoConnect'] = () => {}
+  clearAutoConnectSuppression: ITunnelAgentHostService['clearAutoConnectSuppression'] = () => {}
+  getAuthProvider: ITunnelAgentHostService['getAuthProvider'] = async () => undefined
+}
+
+registerSingleton(ITunnelAgentHostService, TunnelAgentHostService, InstantiationType.Delayed)
+
+class AgentHostFilterService implements IAgentHostFilterService {
+  _serviceBrand: undefined
+  onDidChange: IAgentHostFilterService['onDidChange'] = Event.None
+  onDidChangeDiscovering: IAgentHostFilterService['onDidChangeDiscovering'] = Event.None
+  selectedHostId: IAgentHostFilterService['selectedHostId'] = undefined
+  selectedHost: IAgentHostFilterService['selectedHost'] = undefined
+  hosts: IAgentHostFilterService['hosts'] = []
+  isDiscovering: IAgentHostFilterService['isDiscovering'] = false
+  setSelectedHostId: IAgentHostFilterService['setSelectedHostId'] = () => {}
+  reconnect: IAgentHostFilterService['reconnect'] = () => {}
+  disconnect: IAgentHostFilterService['disconnect'] = () => {}
+  rediscover: IAgentHostFilterService['rediscover'] = async () => {}
+  registerDiscoveryHandler: IAgentHostFilterService['registerDiscoveryHandler'] = () =>
+    Disposable.None
+  registerHostGroup: IAgentHostFilterService['registerHostGroup'] = () => Disposable.None
+}
+
+registerSingleton(IAgentHostFilterService, AgentHostFilterService, InstantiationType.Delayed)
+
+class CustomViewService implements ICustomViewService {
+  _serviceBrand: undefined
+  activeCustomView: ICustomViewService['activeCustomView'] = constObservable(undefined)
+  registerCustomView: ICustomViewService['registerCustomView'] = () => Disposable.None
+  showCustomView: ICustomViewService['showCustomView'] = () => {}
+  hideCustomView: ICustomViewService['hideCustomView'] = () => {}
+}
+
+registerSingleton(ICustomViewService, CustomViewService, InstantiationType.Delayed)
+
+class SessionContext implements ISessionContext {
+  _serviceBrand: undefined
+  session: ISessionContext['session'] = constObservable(undefined)
+}
+
+registerSingleton(ISessionContext, SessionContext, InstantiationType.Delayed)
+
+class SessionGroupsService implements ISessionGroupsService {
+  _serviceBrand: undefined
+  onDidChange: ISessionGroupsService['onDidChange'] = Event.None
+  getGroups: ISessionGroupsService['getGroups'] = () => []
+  getGroup: ISessionGroupsService['getGroup'] = () => undefined
+  @Unsupported
+  createGroup: ISessionGroupsService['createGroup'] = unsupported
+  renameGroup: ISessionGroupsService['renameGroup'] = () => {}
+  deleteGroup: ISessionGroupsService['deleteGroup'] = () => {}
+  addToGroup: ISessionGroupsService['addToGroup'] = () => {}
+  removeFromGroup: ISessionGroupsService['removeFromGroup'] = () => {}
+  getGroupOfSession: ISessionGroupsService['getGroupOfSession'] = () => undefined
+  getSessionIdsInGroup: ISessionGroupsService['getSessionIdsInGroup'] = () => []
+  setPendingNewSessionGroup: ISessionGroupsService['setPendingNewSessionGroup'] = () => {}
+}
+
+registerSingleton(ISessionGroupsService, SessionGroupsService, InstantiationType.Delayed)
+
+class SessionOpenTelemetryService implements ISessionOpenTelemetryService {
+  _serviceBrand: undefined
+  @Unsupported
+  withOpenRequest: ISessionOpenTelemetryService['withOpenRequest'] = unsupported
+  sessionResolved: ISessionOpenTelemetryService['sessionResolved'] = () => {}
+  sessionActivated: ISessionOpenTelemetryService['sessionActivated'] = () => {}
+  sessionLoaded: ISessionOpenTelemetryService['sessionLoaded'] = () => {}
+  modelBound: ISessionOpenTelemetryService['modelBound'] = () => {}
+  modelUnbound: ISessionOpenTelemetryService['modelUnbound'] = () => {}
+  modelBindFailed: ISessionOpenTelemetryService['modelBindFailed'] = () => {}
+}
+
+registerSingleton(
+  ISessionOpenTelemetryService,
+  SessionOpenTelemetryService,
+  InstantiationType.Delayed
+)
+
+class SessionSectionOrderService implements ISessionSectionOrderService {
+  _serviceBrand: undefined
+  onDidChange: ISessionSectionOrderService['onDidChange'] = Event.None
+  resolveOrder: ISessionSectionOrderService['resolveOrder'] = (defaultOrderedIds) => [
+    ...defaultOrderedIds
+  ]
+  reorder: ISessionSectionOrderService['reorder'] = () => {}
+  isPromoted: ISessionSectionOrderService['isPromoted'] = () => false
+  retain: ISessionSectionOrderService['retain'] = () => {}
+}
+
+registerSingleton(
+  ISessionSectionOrderService,
+  SessionSectionOrderService,
+  InstantiationType.Delayed
+)
+
+class SessionsListModelService implements ISessionsListModelService {
+  _serviceBrand: undefined
+  onDidChange: ISessionsListModelService['onDidChange'] = Event.None
+  pinSession: ISessionsListModelService['pinSession'] = () => {}
+  unpinSession: ISessionsListModelService['unpinSession'] = () => {}
+  unpinSessions: ISessionsListModelService['unpinSessions'] = () => {}
+  isSessionPinned: ISessionsListModelService['isSessionPinned'] = () => false
+  migrateLegacyReadState: ISessionsListModelService['migrateLegacyReadState'] = () => {}
+  getSortKey: ISessionsListModelService['getSortKey'] = () => 0
+  getNaturalSortKey: ISessionsListModelService['getNaturalSortKey'] = () => 0
+  hasSortOverride: ISessionsListModelService['hasSortOverride'] = () => false
+  applySortChanges: ISessionsListModelService['applySortChanges'] = () => {}
+  @Unsupported
+  getStatusIcon: ISessionsListModelService['getStatusIcon'] = unsupported
+}
+
+registerSingleton(ISessionsListModelService, SessionsListModelService, InstantiationType.Delayed)
+
+class SessionsManagementService implements ISessionsManagementService {
+  _serviceBrand: undefined
+  getSessions: ISessionsManagementService['getSessions'] = () => []
+  getInFlightNewSessionRequests: ISessionsManagementService['getInFlightNewSessionRequests'] =
+    () => []
+  getSession: ISessionsManagementService['getSession'] = () => undefined
+  resolveSessionResource: ISessionsManagementService['resolveSessionResource'] = async (resource) =>
+    resource
+  getSessionForChatResource: ISessionsManagementService['getSessionForChatResource'] = () =>
+    undefined
+  getAllSessionTypes: ISessionsManagementService['getAllSessionTypes'] = () => []
+  getAllProviderSessionTypes: ISessionsManagementService['getAllProviderSessionTypes'] = () => []
+  getSessionTypesForFolder: ISessionsManagementService['getSessionTypesForFolder'] = () => []
+  getQuickChatSessionTypes: ISessionsManagementService['getQuickChatSessionTypes'] = () => []
+  isNewSessionTargetAvailable: ISessionsManagementService['isNewSessionTargetAvailable'] = () =>
+    false
+  isQuickChatTargetAvailable: ISessionsManagementService['isQuickChatTargetAvailable'] = () => false
+  resolveWorkspace: ISessionsManagementService['resolveWorkspace'] = () => undefined
+  onDidChangeSessionTypes: ISessionsManagementService['onDidChangeSessionTypes'] = Event.None
+  onDidChangeSessions: ISessionsManagementService['onDidChangeSessions'] = Event.None
+  onDidStartSession: ISessionsManagementService['onDidStartSession'] = Event.None
+  onWillSendRequest: ISessionsManagementService['onWillSendRequest'] = Event.None
+  onDidSendRequest: ISessionsManagementService['onDidSendRequest'] = Event.None
+  onDidArchiveSession: ISessionsManagementService['onDidArchiveSession'] = Event.None
+  onDidUnarchiveSession: ISessionsManagementService['onDidUnarchiveSession'] = Event.None
+  onDidDeleteSession: ISessionsManagementService['onDidDeleteSession'] = Event.None
+  onDidDeleteChat: ISessionsManagementService['onDidDeleteChat'] = Event.None
+  onDidRenameChat: ISessionsManagementService['onDidRenameChat'] = Event.None
+  onDidRenameSession: ISessionsManagementService['onDidRenameSession'] = Event.None
+  onDidReplaceSession: ISessionsManagementService['onDidReplaceSession'] = Event.None
+  onDidDiscardNewSession: ISessionsManagementService['onDidDiscardNewSession'] = Event.None
+  onDidReplaceNewDraftSession: ISessionsManagementService['onDidReplaceNewDraftSession'] =
+    Event.None
+  newSession: ISessionsManagementService['newSession'] = constObservable(undefined)
+  automationSession: ISessionsManagementService['automationSession'] = constObservable(undefined)
+  @Unsupported
+  createAutomationSession: ISessionsManagementService['createAutomationSession'] = unsupported
+  @Unsupported
+  createAutomationQuickChat: ISessionsManagementService['createAutomationQuickChat'] = unsupported
+  discardAutomationSession: ISessionsManagementService['discardAutomationSession'] = () => {}
+  getAutomationSessionConfiguration: ISessionsManagementService['getAutomationSessionConfiguration'] =
+    async () => undefined
+  supportsAutomationSessionConfiguration: ISessionsManagementService['supportsAutomationSessionConfiguration'] =
+    () => false
+  usesCombinedNewSessionConfigPicker: ISessionsManagementService['usesCombinedNewSessionConfigPicker'] =
+    () => false
+  @Unsupported
+  createNewSession: ISessionsManagementService['createNewSession'] = unsupported
+  @Unsupported
+  createQuickChat: ISessionsManagementService['createQuickChat'] = unsupported
+  createNewChatInSession: ISessionsManagementService['createNewChatInSession'] = async () =>
+    undefined
+  @Unsupported
+  forkChatInSession: ISessionsManagementService['forkChatInSession'] = unsupported
+  @Unsupported
+  createSideChatInSession: ISessionsManagementService['createSideChatInSession'] = unsupported
+  discardNewSession: ISessionsManagementService['discardNewSession'] = () => {}
+  sendNewChatRequest: ISessionsManagementService['sendNewChatRequest'] = async () => {}
+  createAndSendNewChatRequest: ISessionsManagementService['createAndSendNewChatRequest'] =
+    async () => undefined
+  createAndSendQuickChatRequest: ISessionsManagementService['createAndSendQuickChatRequest'] =
+    async () => undefined
+  sendRequest: ISessionsManagementService['sendRequest'] = async () => {}
+  cancelCurrentRequest: ISessionsManagementService['cancelCurrentRequest'] = async () => {}
+  archiveSession: ISessionsManagementService['archiveSession'] = async () => {}
+  unarchiveSession: ISessionsManagementService['unarchiveSession'] = async () => {}
+  setSessionReadState: ISessionsManagementService['setSessionReadState'] = async () => {}
+  markRead: ISessionsManagementService['markRead'] = async () => {}
+  markUnread: ISessionsManagementService['markUnread'] = async () => {}
+  markAllRead: ISessionsManagementService['markAllRead'] = async () => {}
+  deleteSession: ISessionsManagementService['deleteSession'] = async () => {}
+  deleteSessions: ISessionsManagementService['deleteSessions'] = async () => {}
+  deleteChat: ISessionsManagementService['deleteChat'] = async () => {}
+  renameChat: ISessionsManagementService['renameChat'] = async () => {}
+  renameSession: ISessionsManagementService['renameSession'] = async () => {}
+  removeSessionArtifact: ISessionsManagementService['removeSessionArtifact'] = async () => {}
+}
+
+registerSingleton(ISessionsManagementService, SessionsManagementService, InstantiationType.Delayed)
+
+class SessionsProvidersService implements ISessionsProvidersService {
+  _serviceBrand: undefined
+  onDidChangeProviders: ISessionsProvidersService['onDidChangeProviders'] = Event.None
+  registerProvider: ISessionsProvidersService['registerProvider'] = () => Disposable.None
+  getProviders: ISessionsProvidersService['getProviders'] = () => []
+  getProvider: ISessionsProvidersService['getProvider'] = () => undefined
+}
+
+registerSingleton(ISessionsProvidersService, SessionsProvidersService, InstantiationType.Delayed)
+
+class SessionsRecentWorkspacesService implements ISessionsRecentWorkspacesService {
+  _serviceBrand: undefined
+  onDidChangeRecentWorkspaces: ISessionsRecentWorkspacesService['onDidChangeRecentWorkspaces'] =
+    Event.None
+  @Unsupported
+  get historyLoadState(): ISessionsRecentWorkspacesService['historyLoadState'] {
+    return unsupported()
+  }
+  getRecentWorkspaces: ISessionsRecentWorkspacesService['getRecentWorkspaces'] = () => []
+  addRecentWorkspace: ISessionsRecentWorkspacesService['addRecentWorkspace'] = () => {}
+  removeRecentWorkspace: ISessionsRecentWorkspacesService['removeRecentWorkspace'] = () => {}
+  clearCheckedWorkspace: ISessionsRecentWorkspacesService['clearCheckedWorkspace'] = () => {}
+  isNoWorkspaceChecked: ISessionsRecentWorkspacesService['isNoWorkspaceChecked'] = () => false
+  checkNoWorkspace: ISessionsRecentWorkspacesService['checkNoWorkspace'] = () => {}
+}
+
+registerSingleton(
+  ISessionsRecentWorkspacesService,
+  SessionsRecentWorkspacesService,
+  InstantiationType.Delayed
+)
+
+class SessionsService implements ISessionsService {
+  _serviceBrand: undefined
+  activeSession: ISessionsService['activeSession'] = constObservable(undefined)
+  visibleSessions: ISessionsService['visibleSessions'] = constObservable([])
+  initialRestoreComplete: ISessionsService['initialRestoreComplete'] = constObservable(false)
+  navigationRequest: ISessionsService['navigationRequest'] = constObservable(undefined)
+  onDidToggleSessionStickiness: ISessionsService['onDidToggleSessionStickiness'] = Event.None
+  @Unsupported
+  getRecentlyOpenedSessions: ISessionsService['getRecentlyOpenedSessions'] = unsupported
+  showSession: ISessionsService['showSession'] = () => {}
+  openSession: ISessionsService['openSession'] = async () => {}
+  openSessionToSide: ISessionsService['openSessionToSide'] = async () => {}
+  openChatToSide: ISessionsService['openChatToSide'] = async () => {}
+  canOpenSession: ISessionsService['canOpenSession'] = async () => false
+  openChat: ISessionsService['openChat'] = async () => {}
+  closeChat: ISessionsService['closeChat'] = async () => {}
+  reopenLastClosedItem: ISessionsService['reopenLastClosedItem'] = async () => {}
+  @Unsupported
+  openNewSession: ISessionsService['openNewSession'] = unsupported
+  openQuickChat: ISessionsService['openQuickChat'] = () => undefined
+  openNewChatInSession: ISessionsService['openNewChatInSession'] = async () => {}
+  unsetNewSession: ISessionsService['unsetNewSession'] = () => {}
+  insertAt: ISessionsService['insertAt'] = () => {}
+  toggleSessionStickiness: ISessionsService['toggleSessionStickiness'] = () => {}
+  closeSession: ISessionsService['closeSession'] = () => {}
+  closeAllSessions: ISessionsService['closeAllSessions'] = () => {}
+  setActive: ISessionsService['setActive'] = () => {}
+  submitNewSessionInput: ISessionsService['submitNewSessionInput'] = async () => false
+  restoreVisibleSessions: ISessionsService['restoreVisibleSessions'] = async () => {}
+  openPreviousSession: ISessionsService['openPreviousSession'] = async () => {}
+  openNextSession: ISessionsService['openNextSession'] = async () => {}
+}
+
+registerSingleton(ISessionsService, SessionsService, InstantiationType.Delayed)
+
+class SessionsWindowUsageService implements ISessionsWindowUsageService {
+  _serviceBrand: undefined
+  hadPriorWindowOpen: ISessionsWindowUsageService['hadPriorWindowOpen'] = false
+  windowOpenCount: ISessionsWindowUsageService['windowOpenCount'] = 0
+}
+
+registerSingleton(
+  ISessionsWindowUsageService,
+  SessionsWindowUsageService,
+  InstantiationType.Delayed
+)
+
+class SessionChangesStatsCache implements ISessionChangesStatsCache {
+  _serviceBrand: undefined
+  get: ISessionChangesStatsCache['get'] = () => undefined
+  set: ISessionChangesStatsCache['set'] = () => {}
+}
+
+registerSingleton(ISessionChangesStatsCache, SessionChangesStatsCache, InstantiationType.Delayed)
+
+class SplashStorageService implements ISplashStorageService {
+  _serviceBrand: undefined
+
+  @Unsupported
+  saveWindowSplash = unsupported
+}
+
+registerSingleton(ISplashStorageService, SplashStorageService, InstantiationType.Delayed)
+
+class McpDevModeDebugging implements IMcpDevModeDebugging {
+  _serviceBrand: undefined
+
+  @Unsupported
+  transform: IMcpDevModeDebugging['transform'] = unsupported
+}
+
+registerSingleton(IMcpDevModeDebugging, McpDevModeDebugging, InstantiationType.Delayed)
