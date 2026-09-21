@@ -350,6 +350,9 @@ ${code}`
         const sessionEntryPoint = serviceOverrideEntryPoints.find(
           (e) => nodePath.basename(e) === 'session.js'
         )
+        const commonEntryPoint = serviceOverrideEntryPoints.find(
+          (e) => nodePath.basename(e) === 'common.js'
+        )
         const workerEntryPoint = (rollupOptions.input as string[]).find((e) =>
           e.includes('/workers/')
         )
@@ -361,6 +364,12 @@ ${code}`
             ? {
                 session: sessionEntryPoint,
                 'session.d': sessionEntryPoint.replace(/\.js$/, '.d.ts')
+              }
+            : {}),
+          ...(commonEntryPoint != null
+            ? {
+                common: commonEntryPoint,
+                'common.d': commonEntryPoint.replace(/\.js$/, '.d.ts')
               }
             : {}),
           ...(workerEntryPoint != null
@@ -376,14 +385,16 @@ ${code}`
     getInterPackageImport(path, groupSetName) {
       const packageName = groupSetName.alias ?? groupSetName.name
       const normalizedPath = path.split(nodePath.sep).join('/')
-      const nestedServiceOverride = /^service-override\/[^/]+\/(classic|session)\.(js|d\.ts)$/.exec(
-        normalizedPath
-      )
+      const nestedServiceOverride =
+        /^service-override\/[^/]+\/(classic|session|common)\.(js|d\.ts)$/.exec(normalizedPath)
       if (nestedServiceOverride?.[1] === 'classic') {
         return packageName
       }
       if (nestedServiceOverride?.[1] === 'session') {
         return `${packageName}/session`
+      }
+      if (nestedServiceOverride?.[1] === 'common') {
+        return `${packageName}/common`
       }
       if (/^service-override\/[^/]+\.(js|d\.ts)$/.exec(normalizedPath) != null) {
         // reference the package entrypoint
@@ -576,6 +587,14 @@ ${code}`
                       './session': {
                         types: './session.d.ts',
                         default: './session.js'
+                      }
+                    }
+                  : {}),
+                ...(entrypoints.has('common.js')
+                  ? {
+                      './common': {
+                        types: './common.d.ts',
+                        default: './common.js'
                       }
                     }
                   : {}),

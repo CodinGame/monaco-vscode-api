@@ -43,7 +43,7 @@ const serviceOverrideEntries = fs
       return [entry.name]
     }
     if (entry.isDirectory()) {
-      return ['classic.ts', 'session.ts']
+      return ['classic.ts', 'session.ts', 'common.ts']
         .map((name) => nodePath.join(entry.name, name))
         .filter((name) => fs.existsSync(nodePath.resolve(serviceOverrideDir, name)))
     }
