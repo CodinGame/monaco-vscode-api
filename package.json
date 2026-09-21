@@ -15,7 +15,7 @@
   },
   "type": "module",
   "scripts": {
-    "build": "npm run clean && npm run lint && npm run check-unsupported-decorator && npm run compile && npm run compile-rollup-plugins && npm run compile-default-extensions && npm run compile-language-packs && npm run compile-monaco-languages",
+    "build": "npm run clean && npm run lint && npm run run-checks && npm run compile && npm run compile-rollup-plugins && npm run compile-default-extensions && npm run compile-language-packs && npm run compile-monaco-languages",
     "compile": "NODE_OPTIONS=--max_old_space_size=16384 rollup --config rollup/rollup.config.ts --configPlugin 'typescript={tsconfig: `tsconfig.rollup-config.json`}' --vscode-version ${npm_package_config_vscode_version} --vscode-ref ${npm_package_config_vscode_ref} --vscode-commit ${npm_package_config_vscode_commit}",
     "compile-default-extensions": "NODE_OPTIONS=--max_old_space_size=16384 rollup --config rollup/rollup.default-extensions.ts --configPlugin 'typescript={tsconfig: `tsconfig.rollup-config-default-extensions.json`}'",
     "compile-language-packs": "NODE_OPTIONS=--max_old_space_size=16384 rollup --config rollup/rollup.language-packs.ts --configPlugin 'typescript={tsconfig: `tsconfig.rollup-config-language-packs.json`}'",
@@ -27,7 +27,10 @@
     "update-vscode-dependencies": "tsx scripts/update-vscode-dependencies.ts",
     "release": "tsx release.ts",
     "reset:repo": "git clean -f -X -d",
-    "check-unsupported-decorator": "tsx scripts/check-unsupported-decorator.ts"
+    "run-checks": "npm run check-unsupported-decorator && npm run check-workbench-contributions && npm run check-sessions-contributions",
+    "check-unsupported-decorator": "tsx scripts/check-unsupported-decorator.ts",
+    "check-workbench-contributions": "tsx scripts/check-workbench-contributions.ts workbench",
+    "check-sessions-contributions": "tsx scripts/check-workbench-contributions.ts sessions"
   },
   "config": {
     "vscode": {
