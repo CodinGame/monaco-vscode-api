@@ -5,9 +5,10 @@ import { IPaneCompositePartService } from 'vs/workbench/services/panecomposite/b
 import { SyncDescriptor } from 'vs/platform/instantiation/common/descriptors'
 import { IDiffEditorCommandsService } from 'vs/workbench/browser/parts/editor/diffEditorCommandsService.service'
 import { DiffEditorCommandsService } from 'vs/workbench/browser/parts/editor/diffEditorCommandsService'
+import getBulkEditServiceOverride from '../bulkEdit/classic.js'
+// Import it from here to force the bundler to put it in this service-override package
+import 'vs/workbench/browser/parts/editor/editorParts'
 import 'vs/workbench/contrib/modernUI/browser/modernUI.contribution'
-import { IEditorService } from 'vs/workbench/services/editor/common/editorService.service'
-import { EditorService } from 'vs/workbench/services/editor/browser/editorService'
 
 export default function getServiceOverride(
   _webviewIframeAlternateDomains?: string
@@ -20,6 +21,6 @@ export default function getServiceOverride(
       [],
       true
     ),
-    [IEditorService.toString()]: new SyncDescriptor(EditorService, [undefined], false)
+    ...getBulkEditServiceOverride()
   }
 }

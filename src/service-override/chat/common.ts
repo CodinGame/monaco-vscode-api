@@ -224,6 +224,9 @@ import { IChatEntitlementService } from 'vs/workbench/services/chat/common/chatE
 import { LinkPresentationService } from 'vs/workbench/services/dataChannel/browser/dataChannelService'
 import { AgentHostByokLmHandler } from 'vs/workbench/contrib/chat/browser/agentSessions/agentHost/agentHostByokLmHandler'
 import { IAgentHostByokLmHandler } from 'vs/platform/agentHost/common/agentHostByokLm.service'
+import { IDefaultAccountService } from 'vs/platform/defaultAccount/common/defaultAccount.service'
+import { Event } from 'vs/base/common/event'
+import { MANAGED_SETTINGS_FRESHNESS_NOT_REQUIRED } from 'vs/platform/defaultAccount/common/defaultAccount'
 import 'vs/platform/agentHost/common/agentHostStarter.config.contribution'
 import 'vs/workbench/contrib/agentsVoice/browser/agentsVoice.contribution'
 import 'vs/workbench/contrib/imageCarousel/browser/imageCarousel.contribution'
@@ -238,8 +241,56 @@ import 'vs/workbench/contrib/chat/browser/attachments/transcriptContextAttachmen
 import 'vs/workbench/api/browser/extensionHost.chat.contribution'
 import 'vs/workbench/contrib/chat/browser/agentSessions/experiments/agentSessionsExperiments.contribution'
 
-export default function getServiceOverride(): IEditorOverrideServices {
+class DefaultAccountService implements IDefaultAccountService {
+  declare _serviceBrand: undefined
+  constructor(private defaultAccount: IDefaultAccount | null) {}
+
+  resolveGitHubUrl: IDefaultAccountService['resolveGitHubUrl'] = (path) => path
+  currentDefaultAccount: IDefaultAccountService['currentDefaultAccount'] = null
+
+  onDidChangePolicyData: IDefaultAccountService['onDidChangePolicyData'] = Event.None
+  policyData: IDefaultAccountService['policyData'] = null
+  managedSettingsFetchStatus: IDefaultAccountService['managedSettingsFetchStatus'] = null
+  managedSettingsFetchedAt: IDefaultAccountService['managedSettingsFetchedAt'] = null
+  managedSettingsRawResponse: IDefaultAccountService['managedSettingsRawResponse'] = undefined
+  managedSettingsCompatibilityError: IDefaultAccountService['managedSettingsCompatibilityError'] =
+    null
+  onDidChangeManagedSettingsCompatibilityError: IDefaultAccountService['onDidChangeManagedSettingsCompatibilityError'] =
+    Event.None
+  managedSettingsFreshness: IDefaultAccountService['managedSettingsFreshness'] =
+    MANAGED_SETTINGS_FRESHNESS_NOT_REQUIRED
+  onDidChangeManagedSettingsFreshness: IDefaultAccountService['onDidChangeManagedSettingsFreshness'] =
+    Event.None
+
+  getDefaultAccountAuthenticationProvider: IDefaultAccountService['getDefaultAccountAuthenticationProvider'] =
+    () => ({ id: 'default', name: 'Default', enterprise: false })
+  setDefaultAccountProvider: IDefaultAccountService['setDefaultAccountProvider'] = () => {}
+  refresh: IDefaultAccountService['refresh'] = async () => null
+  signIn: IDefaultAccountService['signIn'] = async () => null
+
+  readonly onDidChangeDefaultAccount: IDefaultAccountService['onDidChangeDefaultAccount'] =
+    Event.None
+
+  getDefaultAccount: IDefaultAccountService['getDefaultAccount'] = async () => this.defaultAccount
+
+  copilotTokenInfo: IDefaultAccountService['copilotTokenInfo'] = null
+  onDidChangeCopilotTokenInfo: IDefaultAccountService['onDidChangeCopilotTokenInfo'] = Event.None
+  signOut: IDefaultAccountService['signOut'] = async () => {}
+}
+
+export interface ChatServiceOverrideOptions {
+  defaultAccount?: IDefaultAccount
+}
+
+export default function getServiceOverride({
+  defaultAccount
+}: ChatServiceOverrideOptions = {}): IEditorOverrideServices {
   return {
+    [IDefaultAccountService.toString()]: new SyncDescriptor(
+      DefaultAccountService,
+      [defaultAccount],
+      true
+    ),
     [IChatService.toString()]: new SyncDescriptor(ChatService, [], true),
     [IChatWidgetService.toString()]: new SyncDescriptor(ChatWidgetService, [], true),
     [IQuickChatService.toString()]: new SyncDescriptor(QuickChatService, [], true),

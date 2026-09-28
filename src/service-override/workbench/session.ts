@@ -110,12 +110,19 @@ import { IWorkbenchLayoutService } from 'vs/workbench/services/layout/browser/la
 import { IWorkspaceFolderLabelService } from 'vs/workbench/services/workspaces/common/workspaceFolderLabelService.service'
 import { onLayout, onRenderWorkbench } from '../../lifecycle'
 import { getWorkbenchContainer } from '../../workbench'
-import getChatServiceOverride from '../chat/session'
 import getBannerServiceOverride from '../viewBanner'
 import getViewCommonServiceOverride from '../viewCommon/session'
 import getStatusBarServiceOverride from '../viewStatusBar'
 import getCommonServiceOverride from './common'
-export * from '../tools/views'
+import { observableFromPromise } from 'vs/base/common/observable'
+import {
+  Extensions as WorkbenchExtensions,
+  type IWorkbenchContributionsRegistry
+} from 'vs/workbench/common/contributions'
+import { Registry } from 'vs/platform/registry/common/platform'
+import { IEditorGroupsService } from 'vs/workbench/services/editor/common/editorGroupsService.service'
+import { EditorParts } from 'vs/sessions/browser/parts/editorParts'
+export * from './common'
 import 'vs/sessions/browser/parts/menubar.contribution'
 import 'vs/sessions/browser/sessions.web.contribution'
 import 'vs/sessions/contrib/accountMenu/browser/account.contribution'
@@ -171,12 +178,6 @@ class CustomWorkbench extends Workbench {
   }
 
   protected override restore(): void {
-    performance.measure(
-      'perf: workbench create & restore',
-      'code/didLoadWorkbenchMain',
-      'code/didStartWorkbench'
-    )
-
     // Restore parts (open default view containers)
     this.restoreParts()
 
@@ -198,6 +199,12 @@ onRenderWorkbench(async (accessor) => {
   accessor.get(IInstantiationService).createInstance(BrowserWindow)
 })
 
+const initialProvidersSettled = observableFromPromise(
+  Registry.as<IWorkbenchContributionsRegistry>(WorkbenchExtensions.Workbench).whenRestored.then(
+    () => true
+  )
+).map((result) => result.value === true)
+
 export default function getServiceOverride(
   options?: IWorkbenchOptions,
   _webviewIframeAlternateDomains?: string
@@ -206,6 +213,7 @@ export default function getServiceOverride(
     ...getCommonServiceOverride(),
     ...getViewCommonServiceOverride(_webviewIframeAlternateDomains),
 
+    [IEditorGroupsService.toString()]: new SyncDescriptor(EditorParts, [], false),
     [IWorkbenchLayoutService.toString()]: new SyncDescriptor(CustomWorkbench, [options], false),
     [IWorkspaceFolderLabelService.toString()]: new SyncDescriptor(
       SessionsWorkspaceFolderLabelService,
@@ -223,8 +231,6 @@ export default function getServiceOverride(
 
     [IMobileVisualViewport.toString()]: new SyncDescriptor(MobileVisualViewport, [], true),
 
-    ...getChatServiceOverride(),
-
     // Specific services
     [IRemoteAgentHostLocationPreferenceService.toString()]: new SyncDescriptor(
       RemoteAgentHostLocationPreferenceService,
@@ -239,7 +245,11 @@ export default function getServiceOverride(
       [],
       true
     ),
-    [IAutomationService.toString()]: new SyncDescriptor(ProviderAutomationService, [], true),
+    [IAutomationService.toString()]: new SyncDescriptor(
+      ProviderAutomationService,
+      [initialProvidersSettled],
+      true
+    ),
     [IAutomationRunner.toString()]: new SyncDescriptor(AutomationRunner, [], true),
     [IAutomationDialogService.toString()]: new SyncDescriptor(AutomationDialogService, [], true),
     [ISessionChangesService.toString()]: new SyncDescriptor(SessionChangesService, [], true),

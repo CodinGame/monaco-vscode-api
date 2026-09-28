@@ -41,7 +41,6 @@ import { IViewsService } from 'vs/workbench/services/views/common/viewsService.s
 
 import { registerAssets } from '../../assets.js'
 import { registerServiceInitializePostParticipant } from '../../lifecycle.js'
-import getBulkEditServiceOverride from '../bulkEdit/classic.js'
 import { changeUrlDomain } from '../tools/url.js'
 import '../tools/editorAssets.js'
 import 'vs/sessions/common/theme'
@@ -75,10 +74,10 @@ import 'vs/workbench/contrib/webview/browser/webview.contribution'
 import 'vs/workbench/contrib/webviewPanel/browser/webviewPanel.contribution'
 import 'vscode/src/vs/workbench/browser/parts/views/media/views.css'
 
-// Import it from here to force the bundler to put it in this service-override package
-import 'vs/workbench/browser/parts/editor/editorParts'
 import { ISplashStorageService } from 'vs/workbench/contrib/splash/browser/splash.service.js'
 import type { IPartsSplash } from 'vs/platform/theme/common/themeService.js'
+import { IEditorService } from 'vs/workbench/services/editor/common/editorService.service.js'
+import { EditorService } from 'vs/workbench/services/editor/browser/editorService.js'
 
 let webviewIframeAlternateDomains: string | undefined
 registerAssets({
@@ -109,7 +108,6 @@ function getServiceOverride(_webviewIframeAlternateDomains?: string): IEditorOve
   }
 
   return {
-    ...getBulkEditServiceOverride(),
     [IViewsService.toString()]: new SyncDescriptor(ViewsService, [], false),
     [IViewDescriptorService.toString()]: new SyncDescriptor(ViewDescriptorService, [], true),
     [IActivityService.toString()]: new SyncDescriptor(ActivityService, [], true),
@@ -153,7 +151,8 @@ function getServiceOverride(_webviewIframeAlternateDomains?: string): IEditorOve
       },
       [],
       true
-    )
+    ),
+    [IEditorService.toString()]: new SyncDescriptor(EditorService, [undefined], false)
   }
 }
 

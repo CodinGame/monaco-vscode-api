@@ -34,6 +34,9 @@ import { IWorkbenchMcpManagementService } from 'vs/workbench/services/mcp/common
 import { McpSandboxService } from 'vs/workbench/contrib/mcp/common/mcpSandboxService'
 import { IWorkbenchMcpGatewayService } from 'vs/workbench/contrib/mcp/common/mcpGatewayService.service'
 import { BrowserMcpGatewayService } from 'vs/workbench/contrib/mcp/browser/mcpGatewayService'
+import { IMcpDevModeDebugging } from 'vs/workbench/contrib/mcp/common/mcpDevMode.service.js'
+import { McpDevModeDebugging } from 'vs/workbench/contrib/mcp/common/mcpDevMode.js'
+import 'vs/workbench/contrib/mcp/common/mcpDevMode.js'
 import 'vs/workbench/contrib/mcp/browser/mcp.contribution'
 import 'vs/workbench/api/browser/extensionHost.mcp.contribution'
 
@@ -73,6 +76,11 @@ export default function getServiceOverride(): IEditorOverrideServices {
       true
     ),
     [IMcpSandboxService.toString()]: new SyncDescriptor(McpSandboxService, [], true),
-    [IWorkbenchMcpGatewayService.toString()]: new SyncDescriptor(BrowserMcpGatewayService, [], true)
+    [IWorkbenchMcpGatewayService.toString()]: new SyncDescriptor(
+      BrowserMcpGatewayService,
+      [],
+      true
+    ),
+    [IMcpDevModeDebugging.toString()]: new SyncDescriptor(McpDevModeDebugging, [], true)
   }
 }

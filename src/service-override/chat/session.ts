@@ -18,9 +18,11 @@ import { SessionsCustomizationHarnessService } from 'vs/sessions/contrib/chat/br
 import { NullInlineChatSessionService } from 'vs/sessions/contrib/chat/browser/nullInlineChatSessionService'
 import { AgenticPromptsService } from 'vs/sessions/contrib/chat/browser/promptsService'
 import { AgentHostCustomizationService } from 'vs/sessions/services/agentHost/browser/agentHostCustomizationService'
-import getCommonServiceOverride from './common.js'
+import getCommonServiceOverride, { type ChatServiceOverrideOptions } from './common.js'
 import { IChatResponseFileChangesService } from 'vs/workbench/contrib/chat/browser/chatResponseFileChangesService.service.js'
 import { SessionsChatResponseFileChangesService } from 'vs/sessions/contrib/chat/browser/sessionTurnChanges.js'
+import { IChangesViewService } from 'vs/sessions/contrib/changes/common/changesViewService.service.js'
+import { ChangesViewService } from 'vs/sessions/contrib/changes/browser/changesViewService'
 
 import 'vs/sessions/contrib/chat/browser/btwSlashCommand.contribution'
 import 'vs/sessions/contrib/chat/browser/chat.contribution'
@@ -42,9 +44,11 @@ import 'vs/sessions/contrib/providers/remoteAgentHost/browser/webSocketAgentHost
 import 'vs/sessions/contrib/providers/remoteAgentHost/browser/webTunnelAgentHostService.contribution'
 import 'vs/sessions/contrib/providers/remoteAgentHost/browser/wslAgentHost.contribution'
 
-export default function getServiceOverride(): IEditorOverrideServices {
+export default function getServiceOverride({
+  defaultAccount
+}: ChatServiceOverrideOptions = {}): IEditorOverrideServices {
   return {
-    ...getCommonServiceOverride(),
+    ...getCommonServiceOverride({ defaultAccount }),
     [IInlineChatSessionService.toString()]: new SyncDescriptor(
       NullInlineChatSessionService,
       [],
@@ -75,7 +79,8 @@ export default function getServiceOverride(): IEditorOverrideServices {
       SessionsChatResponseFileChangesService,
       [],
       true
-    )
+    ),
+    [IChangesViewService.toString()]: new SyncDescriptor(ChangesViewService, [], true)
   }
 }
 
