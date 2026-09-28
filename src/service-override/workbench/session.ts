@@ -122,6 +122,7 @@ import {
 import { Registry } from 'vs/platform/registry/common/platform'
 import { IEditorGroupsService } from 'vs/workbench/services/editor/common/editorGroupsService.service'
 import { EditorParts } from 'vs/sessions/browser/parts/editorParts'
+import getEnvironmentServiceOverride from '../environment.js'
 export * from './common'
 import 'vs/sessions/browser/parts/menubar.contribution'
 import 'vs/sessions/browser/sessions.web.contribution'
@@ -212,7 +213,9 @@ export default function getServiceOverride(
   return {
     ...getCommonServiceOverride(),
     ...getViewCommonServiceOverride(_webviewIframeAlternateDomains),
-
+    ...getEnvironmentServiceOverride({
+      isSessionsWindow: true
+    }),
     [IEditorGroupsService.toString()]: new SyncDescriptor(EditorParts, [], false),
     [IWorkbenchLayoutService.toString()]: new SyncDescriptor(CustomWorkbench, [options], false),
     [IWorkspaceFolderLabelService.toString()]: new SyncDescriptor(
