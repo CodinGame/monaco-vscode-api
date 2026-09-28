@@ -1,0 +1,383 @@
+From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
+From: Brian Jenkins <brianjenkins94@gmail.com>
+Date: Mon, 28 Sep 2026 00:29:33 -0400
+Subject: [PATCH] refactor: avoid runtime dependencies from core on chat and
+ notebook implementations
+
+Search, terminal decorations, SCM, tasks, getting started and the extension
+host only needed a type, a lazily-used class, a command/tool id or a small
+helper from chat/notebook, but imported them from modules that load the whole
+chat implementation or notebook editor, which made them part of every
+workbench, even without the chat/notebook service overrides.
+
+Co-Authored-By: Claude Opus 5.5 <noreply@anthropic.com>
+---
+ .../api/common/extHostLanguageModelTools.ts   |  3 +-
+ .../api/common/extHostTypeConverters.ts       |  2 +-
+ .../chat/browser/actions/chatConstants.ts     |  1 +
+ .../contrib/chat/common/chatImageBuffer.ts    | 34 +++++++++++++++++++
+ .../chat/common/chatImageExtraction.ts        | 31 ++---------------
+ .../common/tools/builtinTools/editFileTool.ts |  5 +--
+ .../chat/common/tools/builtinTools/toolIds.ts |  9 +++++
+ .../chat/common/tools/builtinTools/tools.ts   |  2 +-
+ .../contrib/scm/browser/scm.contribution.ts   |  2 +-
+ .../workbench/contrib/scm/browser/scmInput.ts |  2 +-
+ .../browser/searchTreeModel/searchResult.ts   |  8 ++---
+ .../contrib/search/browser/searchView.ts      |  9 +++--
+ .../tasks/browser/abstractTaskService.ts      |  2 +-
+ .../terminal/browser/xterm/decorationAddon.ts |  4 ++-
+ .../browser/agentSessionsWelcome.ts           |  4 +--
+ .../browser/agentSessionsWelcomeInput.ts      |  1 +
+ .../browser/gettingStarted.contribution.ts    |  4 +--
+ 17 files changed, 74 insertions(+), 49 deletions(-)
+ create mode 100644 src/vs/workbench/contrib/chat/common/chatImageBuffer.ts
+ create mode 100644 src/vs/workbench/contrib/chat/common/tools/builtinTools/toolIds.ts
+
+diff --git a/src/vs/workbench/api/common/extHostLanguageModelTools.ts b/src/vs/workbench/api/common/extHostLanguageModelTools.ts
+index f34d76c9..782d83e6 100644
+--- a/src/vs/workbench/api/common/extHostLanguageModelTools.ts
++++ b/src/vs/workbench/api/common/extHostLanguageModelTools.ts
+@@ -13,8 +13,7 @@ import { generateUuid } from '../../../base/common/uuid.js';
+ import { IExtensionDescription } from '../../../platform/extensions/common/extensions.js';
+ import { IPreparedToolInvocation, IStreamedToolInvocation, isToolInvocationContext, IToolInvocation, IToolInvocationContext, IToolInvocationPreparationContext, IToolInvocationStreamContext, IToolResult, ToolInvocationPresentation } from '../../contrib/chat/common/tools/languageModelToolsService.js';
+ import { computeCombinationKey } from '../../contrib/chat/common/tools/languageModelToolsConfirmationService.js';
+-import { ExtensionEditToolId, InternalEditToolId } from '../../contrib/chat/common/tools/builtinTools/editFileTool.js';
+-import { InternalFetchWebPageToolId } from '../../contrib/chat/common/tools/builtinTools/tools.js';
++import { ExtensionEditToolId, InternalEditToolId, InternalFetchWebPageToolId } from '../../contrib/chat/common/tools/builtinTools/toolIds.js';
+ import { SearchExtensionsToolId } from '../../contrib/extensions/common/searchExtensionsTool.js';
+ import { checkProposedApiEnabled, isProposedApiEnabled } from '../../services/extensions/common/extensions.js';
+ import { Dto, SerializableObjectWithBuffers } from '../../services/extensions/common/proxyIdentifier.js';
+diff --git a/src/vs/workbench/api/common/extHostTypeConverters.ts b/src/vs/workbench/api/common/extHostTypeConverters.ts
+index b3e6860b..36aa3bf9 100644
+--- a/src/vs/workbench/api/common/extHostTypeConverters.ts
++++ b/src/vs/workbench/api/common/extHostTypeConverters.ts
+@@ -46,7 +46,7 @@ import { IChatRequestModeInstructions } from '../../contrib/chat/common/model/ch
+ import { IChatAgentMarkdownContentWithVulnerability, IChatAutoModeResolutionPart, IChatCodeCitation, IChatCommandButton, IChatConfirmation, IChatContentInlineReference, IChatContentReference, IChatExtensionsContent, IChatExternalToolInvocationUpdate, IChatFollowup, IChatHookPart, IChatMarkdownContent, IChatMoveMessage, IChatMultiDiffDataSerialized, IChatProgressMessage, IChatPullRequestContent, IChatQuestionCarousel, IChatResponseCodeblockUriPart, IChatTaskDto, IChatTaskResult, IChatTerminalToolInvocationData, IChatTextEdit, IChatThinkingPart, IChatToolInvocationSerialized, IChatTreeData, IChatUserActionEvent, IChatVoiceProgressPart, IChatWarningMessage, IChatInfoMessage, IChatWorkspaceEdit } from '../../contrib/chat/common/chatService/chatService.js';
+ import { LocalChatSessionUri } from '../../contrib/chat/common/model/chatUri.js';
+ import { ChatRequestToolReferenceEntry, IChatRequestVariableEntry, isElementVariableEntry, isImageVariableEntry, isPromptFileVariableEntry, isPromptTextVariableEntry } from '../../contrib/chat/common/attachments/chatVariableEntries.js';
+-import { coerceImageBuffer } from '../../contrib/chat/common/chatImageExtraction.js';
++import { coerceImageBuffer } from '../../contrib/chat/common/chatImageBuffer.js';
+ import { ChatSessionStatus, IChatSessionItem } from '../../contrib/chat/common/chatSessionsService.js';
+ import { ChatAgentLocation } from '../../contrib/chat/common/constants.js';
+ import { ChatRequestHooks, resolveEffectiveCommand } from '../../contrib/chat/common/promptSyntax/hookSchema.js';
+diff --git a/src/vs/workbench/contrib/chat/browser/actions/chatConstants.ts b/src/vs/workbench/contrib/chat/browser/actions/chatConstants.ts
+index 17e137b5..71002004 100644
+--- a/src/vs/workbench/contrib/chat/browser/actions/chatConstants.ts
++++ b/src/vs/workbench/contrib/chat/browser/actions/chatConstants.ts
+@@ -6,6 +6,7 @@ import { localize2 } from '../../../../../nls.js';
+ 
+ export const CHAT_CATEGORY = localize2('chat.category', 'Chat');
+ export const CHAT_OPEN_ACTION_ID = 'workbench.action.chat.open';
++export const CHAT_SETUP_SUPPORT_ANONYMOUS_ACTION_ID = 'workbench.action.chat.triggerSetupSupportAnonymousAction';
+ export const ASK_QUICK_QUESTION_ACTION_ID = 'workbench.action.quickchat.toggle';
+ export const AcceptToolConfirmationActionId = 'workbench.action.chat.acceptTool';
+ export const SkipToolConfirmationActionId = 'workbench.action.chat.skipTool';
+diff --git a/src/vs/workbench/contrib/chat/common/chatImageBuffer.ts b/src/vs/workbench/contrib/chat/common/chatImageBuffer.ts
+new file mode 100644
+index 00000000..4d0b845d
+--- /dev/null
++++ b/src/vs/workbench/contrib/chat/common/chatImageBuffer.ts
+@@ -0,0 +1,34 @@
++/*---------------------------------------------------------------------------------------------
++ *  Copyright (c) Microsoft Corporation. All rights reserved.
++ *  Licensed under the MIT License. See License.txt in the project root for license information.
++ *--------------------------------------------------------------------------------------------*/
++
++// Kept in its own dependency-free module so that code outside of chat (e.g. extHostTypeConverters)
++// can use it without loading the chat model
++export function coerceImageBuffer(value: unknown): Uint8Array | undefined {
++	if (value instanceof Uint8Array) {
++		return value;
++	}
++	if (value instanceof ArrayBuffer) {
++		return new Uint8Array(value);
++	}
++	if (!value || typeof value !== 'object' || Array.isArray(value)) {
++		return undefined;
++	}
++
++	const record = value as Record<string, unknown>;
++	const keys = Object.keys(record).sort((a, b) => Number(a) - Number(b));
++	if (keys.length === 0) {
++		return undefined;
++	}
++
++	const result = new Uint8Array(keys.length);
++	for (let index = 0; index < keys.length; index++) {
++		const byte = record[keys[index]];
++		if (keys[index] !== String(index) || typeof byte !== 'number' || !Number.isInteger(byte) || byte < 0 || byte > 255) {
++			return undefined;
++		}
++		result[index] = byte;
++	}
++	return result;
++}
+diff --git a/src/vs/workbench/contrib/chat/common/chatImageExtraction.ts b/src/vs/workbench/contrib/chat/common/chatImageExtraction.ts
+index cc289ef3..d0ae0f2d 100644
+--- a/src/vs/workbench/contrib/chat/common/chatImageExtraction.ts
++++ b/src/vs/workbench/contrib/chat/common/chatImageExtraction.ts
+@@ -14,6 +14,9 @@ import { ChatResponseResource } from './model/chatModel.js';
+ import { IChatContentInlineReference, IChatToolInvocation, IChatToolInvocationSerialized, IToolResultOutputDetailsSerialized } from './chatService/chatService.js';
+ import { isToolResultInputOutputDetails, isToolResultOutputDetails, IToolResultOutputDetails } from './tools/languageModelToolsService.js';
+ import { getExplicitFileOrImageAttachmentSummary, type IChatRequestVariableEntry, isImageVariableEntry } from './attachments/chatVariableEntries.js';
++import { coerceImageBuffer } from './chatImageBuffer.js';
++
++export { coerceImageBuffer };
+ 
+ export interface IChatExtractedImage {
+ 	readonly id: string;
+@@ -188,34 +191,6 @@ async function extractImageFromInlineReference(
+ 	};
+ }
+ 
+-export function coerceImageBuffer(value: unknown): Uint8Array | undefined {
+-	if (value instanceof Uint8Array) {
+-		return value;
+-	}
+-	if (value instanceof ArrayBuffer) {
+-		return new Uint8Array(value);
+-	}
+-	if (!value || typeof value !== 'object' || Array.isArray(value)) {
+-		return undefined;
+-	}
+-
+-	const record = value as Record<string, unknown>;
+-	const keys = Object.keys(record).sort((a, b) => Number(a) - Number(b));
+-	if (keys.length === 0) {
+-		return undefined;
+-	}
+-
+-	const result = new Uint8Array(keys.length);
+-	for (let index = 0; index < keys.length; index++) {
+-		const byte = record[keys[index]];
+-		if (keys[index] !== String(index) || typeof byte !== 'number' || !Number.isInteger(byte) || byte < 0 || byte > 255) {
+-			return undefined;
+-		}
+-		result[index] = byte;
+-	}
+-	return result;
+-}
+-
+ /**
+  * Extract images from a chat request's variable attachments (user-attached images).
+  */
+diff --git a/src/vs/workbench/contrib/chat/common/tools/builtinTools/editFileTool.ts b/src/vs/workbench/contrib/chat/common/tools/builtinTools/editFileTool.ts
+index addfc96f..fc33b652 100644
+--- a/src/vs/workbench/contrib/chat/common/tools/builtinTools/editFileTool.ts
++++ b/src/vs/workbench/contrib/chat/common/tools/builtinTools/editFileTool.ts
+@@ -15,9 +15,10 @@ import { ICodeMapperService } from '../../editing/chatCodeMapperService.js';
+ import { ChatModel } from '../../model/chatModel.js';
+ import { IChatService } from '../../chatService/chatService.js';
+ import { CountTokensCallback, IPreparedToolInvocation, IToolData, IToolImpl, IToolInvocation, IToolInvocationPreparationContext, IToolResult, ToolDataSource, ToolInvocationPresentation, ToolProgress } from '../languageModelToolsService.js';
++import { InternalEditToolId } from './toolIds.js';
++
++export { ExtensionEditToolId, InternalEditToolId } from './toolIds.js';
+ 
+-export const ExtensionEditToolId = 'vscode_editFile';
+-export const InternalEditToolId = 'vscode_editFile_internal';
+ export const EditToolData: IToolData = {
+ 	id: InternalEditToolId,
+ 	displayName: '', // not used
+diff --git a/src/vs/workbench/contrib/chat/common/tools/builtinTools/toolIds.ts b/src/vs/workbench/contrib/chat/common/tools/builtinTools/toolIds.ts
+new file mode 100644
+index 00000000..91daae1f
+--- /dev/null
++++ b/src/vs/workbench/contrib/chat/common/tools/builtinTools/toolIds.ts
+@@ -0,0 +1,9 @@
++/*---------------------------------------------------------------------------------------------
++ *  Copyright (c) Microsoft Corporation. All rights reserved.
++ *  Licensed under the MIT License. See License.txt in the project root for license information.
++ *--------------------------------------------------------------------------------------------*/
++
++// Kept in a dependency-free module so that the extension host can use them without loading the tools
++export const ExtensionEditToolId = 'vscode_editFile';
++export const InternalEditToolId = 'vscode_editFile_internal';
++export const InternalFetchWebPageToolId = 'vscode_fetchWebPage_internal';
+diff --git a/src/vs/workbench/contrib/chat/common/tools/builtinTools/tools.ts b/src/vs/workbench/contrib/chat/common/tools/builtinTools/tools.ts
+index 4a711c40..bec1c893 100644
+--- a/src/vs/workbench/contrib/chat/common/tools/builtinTools/tools.ts
++++ b/src/vs/workbench/contrib/chat/common/tools/builtinTools/tools.ts
+@@ -104,4 +104,4 @@ export class BuiltinToolsContribution extends Disposable implements IWorkbenchCo
+ 	}
+ }
+ 
+-export const InternalFetchWebPageToolId = 'vscode_fetchWebPage_internal';
++export { InternalFetchWebPageToolId } from './toolIds.js';
+diff --git a/src/vs/workbench/contrib/scm/browser/scm.contribution.ts b/src/vs/workbench/contrib/scm/browser/scm.contribution.ts
+index 6ee2a32c..a5cba418 100644
+--- a/src/vs/workbench/contrib/scm/browser/scm.contribution.ts
++++ b/src/vs/workbench/contrib/scm/browser/scm.contribution.ts
+@@ -40,7 +40,7 @@ import { SCMAccessibilityHelp } from './scmAccessibilityHelp.js';
+ import { EditorContextKeys } from '../../../../editor/common/editorContextKeys.js';
+ import { SCMHistoryItemContextContribution } from './scmHistoryChatContext.js';
+ import { ChatContextKeys } from '../../chat/common/actions/chatContextKeys.js';
+-import { CHAT_SETUP_SUPPORT_ANONYMOUS_ACTION_ID } from '../../chat/browser/actions/chatActions.js';
++import { CHAT_SETUP_SUPPORT_ANONYMOUS_ACTION_ID } from '../../chat/browser/actions/chatConstants.js';
+ import { SCMInputContextKeys } from './scmInput.js';
+ import product from '../../../../platform/product/common/product.js';
+ 
+diff --git a/src/vs/workbench/contrib/scm/browser/scmInput.ts b/src/vs/workbench/contrib/scm/browser/scmInput.ts
+index 63642985..66846d74 100644
+--- a/src/vs/workbench/contrib/scm/browser/scmInput.ts
++++ b/src/vs/workbench/contrib/scm/browser/scmInput.ts
+@@ -70,7 +70,7 @@ import { IAccessibilityService } from '../../../../platform/accessibility/common
+ import { AccessibilityCommandId } from '../../accessibility/common/accessibilityCommands.js';
+ import { ChatContextKeys } from '../../chat/common/actions/chatContextKeys.js';
+ import product from '../../../../platform/product/common/product.js';
+-import { CHAT_SETUP_SUPPORT_ANONYMOUS_ACTION_ID } from '../../chat/browser/actions/chatActions.js';
++import { CHAT_SETUP_SUPPORT_ANONYMOUS_ACTION_ID } from '../../chat/browser/actions/chatConstants.js';
+ 
+ export const SCMInputContextKeys = {
+ 	SCMInputHasValidationMessage: new RawContextKey<boolean>('scmInputHasValidationMessage', false),
+diff --git a/src/vs/workbench/contrib/search/browser/searchTreeModel/searchResult.ts b/src/vs/workbench/contrib/search/browser/searchTreeModel/searchResult.ts
+index c55c9aa6..7cba78cd 100644
+--- a/src/vs/workbench/contrib/search/browser/searchTreeModel/searchResult.ts
++++ b/src/vs/workbench/contrib/search/browser/searchTreeModel/searchResult.ts
+@@ -10,7 +10,7 @@ import { ITextModel } from '../../../../../editor/common/model.js';
+ import { IModelService } from '../../../../../editor/common/services/model.js';
+ import { IInstantiationService } from '../../../../../platform/instantiation/common/instantiation.js';
+ import { IProgress, IProgressStep } from '../../../../../platform/progress/common/progress.js';
+-import { NotebookEditorWidget } from '../../../notebook/browser/notebookEditorWidget.js';
++import type { NotebookEditorWidget } from '../../../notebook/browser/notebookEditorWidget.js';
+ import { INotebookEditorService } from '../../../notebook/browser/services/notebookEditorService.js';
+ import { IAITextQuery, IFileMatch, ISearchComplete, ITextQuery, QueryType } from '../../../../services/search/common/search.js';
+ import { arrayContainsElementOrParent, IChangeEvent, ISearchTreeFileMatch, ISearchTreeFolderMatch, IPlainTextSearchHeading, ISearchModel, ISearchResult, isSearchTreeFileMatch, isSearchTreeFolderMatch, isSearchTreeFolderMatchNoRoot, isSearchTreeFolderMatchWithResource, isSearchTreeMatch, isTextSearchHeading, ITextSearchHeading, mergeSearchResultEvents, RenderableMatch, SEARCH_RESULT_PREFIX } from './searchTreeCommon.js';
+@@ -48,9 +48,9 @@ export class SearchResultImpl extends Disposable implements ISearchResult {
+ 		this._register(this.modelService.onModelAdded(model => this.onModelAdded(model)));
+ 
+ 		this._register(this.notebookEditorService.onDidAddNotebookEditor(widget => {
+-			if (widget instanceof NotebookEditorWidget) {
+-				this.onDidAddNotebookEditorWidget(<NotebookEditorWidget>widget);
+-			}
++			// Only NotebookEditorWidget registers itself with the notebook editor service, so a type-only cast is
++			// enough here and avoids a runtime dependency on the whole notebook editor implementation
++			this.onDidAddNotebookEditorWidget(<NotebookEditorWidget>widget);
+ 		}));
+ 
+ 		this._id = SEARCH_RESULT_PREFIX + Date.now().toString();
+diff --git a/src/vs/workbench/contrib/search/browser/searchView.ts b/src/vs/workbench/contrib/search/browser/searchView.ts
+index cd44270e..9f200dd3 100644
+--- a/src/vs/workbench/contrib/search/browser/searchView.ts
++++ b/src/vs/workbench/contrib/search/browser/searchView.ts
+@@ -55,7 +55,8 @@ import { IViewPaneOptions, ViewPane } from '../../../browser/parts/views/viewPan
+ import { IEditorPane } from '../../../common/editor.js';
+ import { Memento } from '../../../common/memento.js';
+ import { IViewDescriptorService } from '../../../common/views.js';
+-import { NotebookEditor } from '../../notebook/browser/notebookEditor.js';
++import type { NotebookEditor } from '../../notebook/browser/notebookEditor.js';
++import { NOTEBOOK_EDITOR_ID } from '../../notebook/common/notebookCommon.js';
+ import { ExcludePatternInputWidget, IncludePatternInputWidget } from './patternInputWidget.js';
+ import { IFindInFilesArgs } from './searchActionsBase.js';
+ import { searchDetailsIcon } from './searchIcons.js';
+@@ -2269,13 +2270,15 @@ export class SearchView extends ViewPane {
+ 			return;
+ 		}
+ 
+-		if (editor instanceof NotebookEditor) {
++		// Checking the editor id rather than using `instanceof` avoids a runtime dependency on the notebook editor
++		if (editor?.getId() === NOTEBOOK_EDITOR_ID) {
++			const notebookEditor = editor as NotebookEditor;
+ 			const elemParent = element.parent() as INotebookFileInstanceMatch;
+ 			if (isSearchTreeMatch(element)) {
+ 				if (isIMatchInNotebook(element)) {
+ 					element.parent().showMatch(element);
+ 				} else {
+-					const editorWidget = editor.getControl();
++					const editorWidget = notebookEditor.getControl();
+ 					if (editorWidget) {
+ 						// Ensure that the editor widget is binded. If if is, then this should return immediately.
+ 						// Otherwise, it will bind the widget.
+diff --git a/src/vs/workbench/contrib/tasks/browser/abstractTaskService.ts b/src/vs/workbench/contrib/tasks/browser/abstractTaskService.ts
+index 129e228a..6c4ba470 100644
+--- a/src/vs/workbench/contrib/tasks/browser/abstractTaskService.ts
++++ b/src/vs/workbench/contrib/tasks/browser/abstractTaskService.ts
+@@ -85,7 +85,7 @@ import { IPathService } from '../../../services/path/common/pathService.js';
+ import { IPreferencesService } from '../../../services/preferences/common/preferences.js';
+ import { IRemoteAgentService } from '../../../services/remote/common/remoteAgentService.js';
+ import { IViewsService } from '../../../services/views/common/viewsService.js';
+-import { CHAT_OPEN_ACTION_ID } from '../../chat/browser/actions/chatActions.js';
++import { CHAT_OPEN_ACTION_ID } from '../../chat/browser/actions/chatConstants.js';
+ import { IChatAgentService } from '../../chat/common/participants/chatAgents.js';
+ import { IChatService } from '../../chat/common/chatService/chatService.js';
+ import { configureTaskIcon, isWorkspaceFolder, ITaskQuickPickEntry, QUICKOPEN_DETAIL_CONFIG, QUICKOPEN_SKIP_CONFIG, TaskQuickPick } from './taskQuickPick.js';
+diff --git a/src/vs/workbench/contrib/terminal/browser/xterm/decorationAddon.ts b/src/vs/workbench/contrib/terminal/browser/xterm/decorationAddon.ts
+index 0294c9fa..a7edf1ca 100644
+--- a/src/vs/workbench/contrib/terminal/browser/xterm/decorationAddon.ts
++++ b/src/vs/workbench/contrib/terminal/browser/xterm/decorationAddon.ts
+@@ -29,7 +29,7 @@ import { MarkdownString } from '../../../../../base/common/htmlContent.js';
+ import { IChatContextPickService } from '../../../chat/browser/attachments/chatContextPickService.js';
+ import { IChatWidgetService } from '../../../chat/browser/chat.js';
+ import { IInstantiationService } from '../../../../../platform/instantiation/common/instantiation.js';
+-import { TerminalContext } from '../../../chat/browser/actions/chatContext.js';
++import type { TerminalContext } from '../../../chat/browser/actions/chatContext.js';
+ import { getTerminalUri, parseTerminalUri } from '../terminalUri.js';
+ import { URI } from '../../../../../base/common/uri.js';
+ import { ChatAgentLocation } from '../../../chat/common/constants.js';
+@@ -547,6 +547,8 @@ export class DecorationAddon extends Disposable implements ITerminalAddon, IDeco
+ 				let terminalContext: TerminalContext | undefined;
+ 				if (this._resource) {
+ 					const parsedUri = parseTerminalUri(this._resource);
++					// Loaded lazily: the chat context implementation is only needed once a command is attached to chat
++					const { TerminalContext } = await import('../../../chat/browser/actions/chatContext.js');
+ 					terminalContext = this._instantiationService.createInstance(TerminalContext, getTerminalUri(parsedUri.workspaceId, parsedUri.instanceId!, undefined, command.id));
+ 				}
+ 
+diff --git a/src/vs/workbench/contrib/welcomeAgentSessions/browser/agentSessionsWelcome.ts b/src/vs/workbench/contrib/welcomeAgentSessions/browser/agentSessionsWelcome.ts
+index e31e406c..3ef69f71 100644
+--- a/src/vs/workbench/contrib/welcomeAgentSessions/browser/agentSessionsWelcome.ts
++++ b/src/vs/workbench/contrib/welcomeAgentSessions/browser/agentSessionsWelcome.ts
+@@ -42,7 +42,7 @@ import { ACTION_ID_NEW_CHAT } from '../../chat/browser/actions/chatActions.js';
+ import { IAgentSessionsService } from '../../chat/browser/agentSessions/agentSessionsService.js';
+ import { AgentSessionProviders, AgentSessionTarget } from '../../chat/browser/agentSessions/agentSessions.js';
+ import { IAgentSession } from '../../chat/browser/agentSessions/agentSessionsModel.js';
+-import { AgentSessionsWelcomeEditorOptions, AgentSessionsWelcomeInput, AgentSessionsWelcomeWorkspaceKind } from './agentSessionsWelcomeInput.js';
++import { AgentSessionsWelcomeEditorOptions, AgentSessionsWelcomeInput, AgentSessionsWelcomeWorkspaceKind, agentSessionsWelcomeCommandId } from './agentSessionsWelcomeInput.js';
+ import { IChatService } from '../../chat/common/chatService/chatService.js';
+ import { IChatModel } from '../../chat/common/model/chatModel.js';
+ import { ChatViewId, IChatWidgetService, ISessionTypePickerDelegate, IWorkspacePickerDelegate, IWorkspacePickerItem } from '../../chat/browser/chat.js';
+@@ -129,7 +129,7 @@ type AgentSessionsWelcomeActionEvent = {
+ export class AgentSessionsWelcomePage extends EditorPane {
+ 
+ 	static readonly ID = 'agentSessionsWelcomePage';
+-	static readonly COMMAND_ID = 'workbench.action.openAgentSessionsWelcome';
++	static readonly COMMAND_ID = agentSessionsWelcomeCommandId;
+ 
+ 	private container!: HTMLElement;
+ 	private contentContainer!: HTMLElement;
+diff --git a/src/vs/workbench/contrib/welcomeAgentSessions/browser/agentSessionsWelcomeInput.ts b/src/vs/workbench/contrib/welcomeAgentSessions/browser/agentSessionsWelcomeInput.ts
+index 4057dedf..de88c08b 100644
+--- a/src/vs/workbench/contrib/welcomeAgentSessions/browser/agentSessionsWelcomeInput.ts
++++ b/src/vs/workbench/contrib/welcomeAgentSessions/browser/agentSessionsWelcomeInput.ts
+@@ -11,6 +11,7 @@ import { IUntypedEditorInput } from '../../../common/editor.js';
+ import { IEditorOptions } from '../../../../platform/editor/common/editor.js';
+ 
+ export const agentSessionsWelcomeInputTypeId = 'workbench.editors.agentSessionsWelcomeInput';
++export const agentSessionsWelcomeCommandId = 'workbench.action.openAgentSessionsWelcome';
+ export type AgentSessionsWelcomeInitiator = 'startup' | 'command';
+ export type AgentSessionsWelcomeWorkspaceKind = 'empty' | 'folder' | 'workspace';
+ 
+diff --git a/src/vs/workbench/contrib/welcomeGettingStarted/browser/gettingStarted.contribution.ts b/src/vs/workbench/contrib/welcomeGettingStarted/browser/gettingStarted.contribution.ts
+index f90937e6..0b9fb3a1 100644
+--- a/src/vs/workbench/contrib/welcomeGettingStarted/browser/gettingStarted.contribution.ts
++++ b/src/vs/workbench/contrib/welcomeGettingStarted/browser/gettingStarted.contribution.ts
+@@ -32,7 +32,7 @@ import { Categories } from '../../../../platform/action/common/actionCommonCateg
+ import { DisposableStore } from '../../../../base/common/lifecycle.js';
+ import { AccessibleViewRegistry } from '../../../../platform/accessibility/browser/accessibleViewRegistry.js';
+ import { GettingStartedAccessibleView } from './gettingStartedAccessibleView.js';
+-import { AgentSessionsWelcomePage } from '../../welcomeAgentSessions/browser/agentSessionsWelcome.js';
++import { agentSessionsWelcomeCommandId } from '../../welcomeAgentSessions/browser/agentSessionsWelcomeInput.js';
+ import { IChatEntitlementService } from '../../../services/chat/common/chatEntitlementService.js';
+ import './gettingStartedService._contribution.js';
+ 
+@@ -72,7 +72,7 @@ registerAction2(class extends Action2 {
+ 
+ 		// If no specific walkthrough is requested and agent sessions welcome is preferred, open that instead
+ 		if (!walkthroughID && !chatEntitlementService.sentiment.hidden && configurationService.getValue<string>('workbench.startupEditor') === 'agentSessionsWelcomePage') {
+-			commandService.executeCommand(AgentSessionsWelcomePage.COMMAND_ID);
++			commandService.executeCommand(agentSessionsWelcomeCommandId);
+ 			return;
+ 		} else {
+ 			if (walkthroughID) {
+-- 
+2.39.5 (Apple Git-154)
+

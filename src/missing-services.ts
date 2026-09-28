@@ -543,7 +543,7 @@ import { IChatInputNotificationService } from 'vs/workbench/contrib/chat/browser
 import { IChatPhoneInputPresenter } from 'vs/workbench/contrib/chat/browser/widget/input/chatPhoneInputPresenter.service'
 import { IChatImageCarouselService } from 'vs/workbench/contrib/chat/browser/chatImageCarouselService.service.js'
 import { IChatDebugService } from 'vs/workbench/contrib/chat/common/chatDebugService.service.js'
-import { createVSCodeHarnessDescriptor } from 'vs/workbench/contrib/chat/common/customizationHarnessService'
+import type { IHarnessDescriptor } from 'vs/workbench/contrib/chat/common/customizationHarnessService'
 import { ICustomizationHarnessService } from 'vs/workbench/contrib/chat/common/customizationHarnessService.service'
 import type { IEnablementModel } from 'vs/workbench/contrib/chat/common/enablement.js'
 import { IPluginGitService } from 'vs/workbench/contrib/chat/common/plugins/pluginGitService.service.js'
@@ -7270,8 +7270,15 @@ class CustomizationHarnessService implements ICustomizationHarnessService {
     URI.parse('chat-session://local/default')
   )
   activeHarness: ICustomizationHarnessService['activeHarness'] = constObservable(SessionType.Local)
-  availableHarnesses: ICustomizationHarnessService['availableHarnesses'] = constObservable([
-    createVSCodeHarnessDescriptor()
+  // Not using `createVSCodeHarnessDescriptor` on purpose: importing it loads most of the chat implementation
+  availableHarnesses: ICustomizationHarnessService['availableHarnesses'] = constObservable<
+    IHarnessDescriptor[]
+  >([
+    {
+      id: SessionType.Local,
+      label: 'Local',
+      icon: Codicon.vm
+    }
   ])
   onDidChangeSlashCommands: ICustomizationHarnessService['onDidChangeSlashCommands'] = Event.None
   onDidChangeCustomAgents: ICustomizationHarnessService['onDidChangeCustomAgents'] = Event.None
