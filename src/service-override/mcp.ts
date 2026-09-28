@@ -36,6 +36,7 @@ import { IWorkbenchMcpGatewayService } from 'vs/workbench/contrib/mcp/common/mcp
 import { BrowserMcpGatewayService } from 'vs/workbench/contrib/mcp/browser/mcpGatewayService'
 import 'vs/workbench/contrib/mcp/browser/mcp.contribution'
 import 'vs/workbench/contrib/mcp/browser/mcp.view.contribution'
+import 'vs/workbench/api/browser/extensionHost.mcp.contribution'
 
 export default function getServiceOverride(): IEditorOverrideServices {
   return {

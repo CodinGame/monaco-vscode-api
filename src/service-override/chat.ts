@@ -262,6 +262,7 @@ import 'vs/workbench/contrib/chat/browser/agentSessions/experiments/agentSession
 import 'vs/workbench/contrib/chat/browser/aiCustomization/aiCustomizationManagement.contribution'
 import 'vs/workbench/contrib/chat/browser/attachments/chatReferenceAttachmentWidget.contribution'
 import 'vs/workbench/contrib/chat/browser/attachments/transcriptContextAttachmentWidget.contribution'
+import 'vs/workbench/api/browser/extensionHost.chat.contribution'
 
 class DefaultAccountService implements IDefaultAccountService {
   declare _serviceBrand: undefined

@@ -40,6 +40,7 @@ import { NotebookOutlineEntryFactory } from 'vs/workbench/contrib/notebook/brows
 import { INotebookOutlineEntryFactory } from 'vs/workbench/contrib/notebook/browser/viewModel/notebookOutlineEntryFactory.service'
 import 'vs/workbench/contrib/replNotebook/browser/repl.contribution'
 import 'vs/workbench/contrib/notebook/browser/notebook.contribution'
+import 'vs/workbench/api/browser/extensionHost.notebook.contribution'
 
 export default function getServiceOverride(): IEditorOverrideServices {
   return {
