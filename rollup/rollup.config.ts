@@ -21,7 +21,6 @@ import vscodeAssetGlobMetaUrl from './plugins/vscode-asset-glob-meta-url-plugin.
 import dynamicImportPolyfillPlugin from './plugins/dynamic-import-polyfill-plugin.js'
 import resolveAssetUrlPlugin from './plugins/resolve-asset-url-plugin.js'
 import featureIsolationCheckPlugin from './plugins/feature-isolation-check-plugin.js'
-import extensionHostBridgesCheckPlugin from './plugins/extension-host-bridges-check-plugin.js'
 import { typeDedupReplaceTransformer } from './tools/typeDedup.js'
 import {
   DIST_DIR_MAIN,
@@ -202,7 +201,6 @@ export default (args: Record<string, string>): rollup.RollupOptions => {
         // ~910KB with VSCode 1.138: mostly dictation, go to symbol in chat, editor tabs and chat context keys
         maxSize: 1000 * 1024
       }),
-      extensionHostBridgesCheckPlugin({ vscodeSrcDir: VSCODE_SRC_DIR }),
       configuredSubpackagePlugin(),
       copy({
         hook: 'writeBundle',
