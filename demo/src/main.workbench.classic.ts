@@ -1,7 +1,7 @@
 import { IEditorService, StandaloneServices, createInstance } from '@codingame/monaco-vscode-api'
 import { clearStorage } from './setup.workbench.classic'
 import { CustomEditorInput } from './features/customView.workbench'
-import './main.common'
+void import('./main.common')
 
 document.querySelector('#customEditorPanel')!.addEventListener('click', async () => {
   const input = await createInstance(CustomEditorInput, undefined)

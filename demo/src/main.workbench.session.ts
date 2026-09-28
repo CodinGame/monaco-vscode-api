@@ -1,5 +1,5 @@
 import { clearStorage } from './setup.workbench.session'
-import './main.common'
+void import('./main.common')
 
 document.querySelector('#clearStorage')!.addEventListener('click', async () => {
   await clearStorage()
