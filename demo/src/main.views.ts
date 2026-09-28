@@ -21,10 +21,6 @@ import defaultConfiguration from './user/configuration.json?raw'
 import defaultKeybindings from './user/keybindings.json?raw'
 import './main.common'
 
-if (remoteAuthority != null) {
-  void import('./features/remoteExtension')
-}
-
 document.querySelector('#customEditorPanel')!.addEventListener('click', async () => {
   const input = await createInstance(CustomEditorInput, undefined)
   let toggle = false
