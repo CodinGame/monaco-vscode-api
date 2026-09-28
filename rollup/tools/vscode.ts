@@ -67,7 +67,8 @@ const SIDE_EFFECT_CONSTRUCTORS = new Set([
   'WindowIdleValue',
   'TimeoutThrottledDomListener',
   'FocusTracker',
-  'DragAndDropObserver'
+  'DragAndDropObserver',
+  'RawContextKey'
 ])
 
 const PURE_OR_TO_REMOVE_FUNCTIONS = new Set([...PURE_FUNCTIONS])
