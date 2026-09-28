@@ -3602,7 +3602,7 @@ index 47cd222b00e..56ea77e5114 100644
  		input.className = 'chat-composite-bar-session-title-input';
  		input.value = initialTitle;
 diff --git a/src/vs/sessions/browser/workbench.ts b/src/vs/sessions/browser/workbench.ts
-index 6b73a61171f..550f622ac16 100644
+index 99be882b639..3ac2263adf5 100644
 --- a/src/vs/sessions/browser/workbench.ts
 +++ b/src/vs/sessions/browser/workbench.ts
 @@ -9,7 +9,7 @@ import './media/workbench.css';
@@ -3614,7 +3614,7 @@ index 6b73a61171f..550f622ac16 100644
  import { DeferredPromise, RunOnceScheduler } from '../../base/common/async.js';
  import { isFullscreen, onDidChangeFullscreen, isChrome, isFirefox, isSafari } from '../../base/browser/browser.js';
  import { mark } from '../../base/common/performance.js';
-@@ -335,7 +335,7 @@ export class Workbench extends Disposable implements IAgentWorkbenchLayoutServic
+@@ -336,7 +336,7 @@ export class Workbench extends Disposable implements IAgentWorkbenchLayoutServic
  
  	//#region Properties
  
@@ -3623,7 +3623,7 @@ index 6b73a61171f..550f622ac16 100644
  
  	get activeContainer(): HTMLElement {
  		return this.getContainerFromDocument(getActiveDocument());
-@@ -1081,7 +1081,7 @@ export class Workbench extends Disposable implements IAgentWorkbenchLayoutServic
+@@ -1084,7 +1084,7 @@ export class Workbench extends Disposable implements IAgentWorkbenchLayoutServic
  	}
  
  	private createPartContainer(id: string, role: string, classes: string[]): HTMLElement {
@@ -3632,7 +3632,7 @@ index 6b73a61171f..550f622ac16 100644
  		part.classList.add('part', ...classes);
  		part.id = id;
  		part.setAttribute('role', role);
-@@ -1089,7 +1089,7 @@ export class Workbench extends Disposable implements IAgentWorkbenchLayoutServic
+@@ -1092,7 +1092,7 @@ export class Workbench extends Disposable implements IAgentWorkbenchLayoutServic
  	}
  
  	private createEditorPart(): void {
@@ -3641,7 +3641,7 @@ index 6b73a61171f..550f622ac16 100644
  		editorPartContainer.classList.add('part', 'editor');
  		editorPartContainer.id = Parts.EDITOR_PART;
  		editorPartContainer.setAttribute('role', 'main');
-@@ -1105,7 +1105,7 @@ export class Workbench extends Disposable implements IAgentWorkbenchLayoutServic
+@@ -1108,7 +1108,7 @@ export class Workbench extends Disposable implements IAgentWorkbenchLayoutServic
  	}
  
  	private createSessionsPart(): void {
@@ -3650,7 +3650,7 @@ index 6b73a61171f..550f622ac16 100644
  		sessionsPartContainer.classList.add('part', 'sessionspart', 'basepanel', 'right', AGENTS_PART_CARD_CLASS);
  		sessionsPartContainer.id = Parts.SESSIONS_PART;
  		sessionsPartContainer.setAttribute('role', 'main');
-@@ -1153,7 +1153,7 @@ export class Workbench extends Disposable implements IAgentWorkbenchLayoutServic
+@@ -1156,7 +1156,7 @@ export class Workbench extends Disposable implements IAgentWorkbenchLayoutServic
  	}
  
  	private createCustomViewGridPart(): void {

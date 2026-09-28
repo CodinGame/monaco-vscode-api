@@ -46,7 +46,6 @@ const PURE_FUNCTIONS = new Set([
   'isEqualTo',
   'SyncDescriptor',
   'getProxy',
-  'map',
   'some',
   'asFileUri',
   'has',

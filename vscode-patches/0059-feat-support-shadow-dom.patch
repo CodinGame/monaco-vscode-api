@@ -33,6 +33,7 @@ Subject: [PATCH] feat: support shadow dom
  .../platform/layout/browser/zIndexRegistry.ts |  2 +-
  .../platform/theme/browser/iconsStyleSheet.ts |  2 +-
  .../browser/userInteractionServiceImpl.ts     |  5 +-
+ src/vs/sessions/browser/workbench.ts          |  3 +
  .../agentFeedbackEditorInputContribution.ts   |  6 +-
  .../browser/actions/developerActions.ts       |  4 +-
  src/vs/workbench/browser/layout.ts            |  3 +
@@ -67,7 +68,7 @@ Subject: [PATCH] feat: support shadow dom
  .../browser/auxiliaryWindowService.ts         |  6 +-
  .../suggest/browser/simpleSuggestWidget.ts    |  4 +-
  .../themes/browser/workbenchThemeService.ts   | 33 +++++++++-
- 63 files changed, 260 insertions(+), 148 deletions(-)
+ 64 files changed, 263 insertions(+), 148 deletions(-)
 
 diff --git a/src/vs/base/browser/dom.ts b/src/vs/base/browser/dom.ts
 index 6d7ea0fbd8e..e037f9e58db 100644
@@ -874,6 +875,27 @@ index e0431c43297..3becb497383 100644
  			return el.contains(activeElement);
  		};
  
+diff --git a/src/vs/sessions/browser/workbench.ts b/src/vs/sessions/browser/workbench.ts
+index 6b73a61171f..99be882b639 100644
+--- a/src/vs/sessions/browser/workbench.ts
++++ b/src/vs/sessions/browser/workbench.ts
+@@ -83,6 +83,7 @@ import { ICustomViewDescriptor } from '../services/customView/browser/customView
+ import { ISessionsSetUpService } from './sessionsSetUpService.js';
+ import { AGENTS_FLOATING_PANEL_GAP } from '../common/layoutConstants.js';
+ import { ITelemetryService } from '../../platform/telemetry/common/telemetry.js';
++import { setContainerElement } from '../../base/browser/domStylesheets.js';
+ 
+ const PHONE_NOTIFICATION_ROW_HEIGHT = 44;
+ 
+@@ -488,6 +489,8 @@ export class Workbench extends Disposable implements IAgentWorkbenchLayoutServic
+ 	) {
+ 		super();
+ 
++		setContainerElement(parent);
++
+ 		// Sessions-scoped mobile viewport tweaks. These are applied here
+ 		// (rather than in the shared workbench.html) so that the regular
+ 		// code-web workbench — which does not handle safe-area insets — is
 diff --git a/src/vs/sessions/contrib/agentFeedback/browser/agentFeedbackEditorInputContribution.ts b/src/vs/sessions/contrib/agentFeedback/browser/agentFeedbackEditorInputContribution.ts
 index f7b8ece70c2..81d0bcd9dd7 100644
 --- a/src/vs/sessions/contrib/agentFeedback/browser/agentFeedbackEditorInputContribution.ts
