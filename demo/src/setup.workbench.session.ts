@@ -1,26 +1,23 @@
 import {
   IStorageService,
-  IWorkbenchLayoutService,
   getService,
   initialize as initializeMonacoService
 } from '@codingame/monaco-vscode-api'
-import getWorkbenchServiceOverride, {
-  Parts
-} from '@codingame/monaco-vscode-workbench-service-override'
+import { registerExtension } from '@codingame/monaco-vscode-api/extensions'
+import { ExtensionHostKind } from '@codingame/monaco-vscode-extensions-service-override'
 import getQuickAccessServiceOverride from '@codingame/monaco-vscode-quickaccess-service-override'
 import { BrowserStorageService } from '@codingame/monaco-vscode-storage-service-override'
-import { ExtensionHostKind } from '@codingame/monaco-vscode-extensions-service-override'
-import { registerExtension } from '@codingame/monaco-vscode-api/extensions'
+import getWorkbenchServiceOverride from '@codingame/monaco-vscode-workbench-service-override/session'
 import './features/customView.workbench'
 import {
+  alternateDomainPattern,
   commonServices,
   constructOptions,
+  disableShadowDom,
   envOptions,
   remoteAuthority,
-  userDataProvider,
-  disableShadowDom,
-  alternateDomainPattern
-} from './setup.common'
+  userDataProvider
+} from './setup.common.session'
 
 let container = window.vscodeContainer
 
@@ -46,13 +43,10 @@ const buttons = document.createElement('div')
 buttons.innerHTML = `
 <button id="toggleHTMLFileSystemProvider">Toggle HTML filesystem provider</button>
 <button id="toggleShadowDom">Toggle Shadow Dom usage</button>
-<button id="customEditorPanel">Open custom editor panel</button>
 <button id="clearStorage">Clear user data</button>
 <button id="resetLayout">Reset layout</button>
-<button id="toggleFullWorkbench">Switch to custom rendering mode</button>
+<button id="toggleFullWorkbench">Switch to full workbench mode</button>
 <br />
-<button id="togglePanel">Toggle Panel</button>
-<button id="toggleAuxiliary">Toggle Secondary Panel</button>
 <button id="toggleSandbox">Switch to sandbox rendering mode</button>
 `
 document.body.append(buttons)
@@ -71,18 +65,6 @@ await initializeMonacoService(
   constructOptions,
   envOptions
 )
-
-const layoutService = await getService(IWorkbenchLayoutService)
-document.querySelector('#togglePanel')!.addEventListener('click', async () => {
-  layoutService.setPartHidden(layoutService.isVisible(Parts.PANEL_PART, window), Parts.PANEL_PART)
-})
-
-document.querySelector('#toggleAuxiliary')!.addEventListener('click', async () => {
-  layoutService.setPartHidden(
-    layoutService.isVisible(Parts.AUXILIARYBAR_PART, window),
-    Parts.AUXILIARYBAR_PART
-  )
-})
 
 document.querySelector('#toggleSandbox')!.addEventListener('click', async () => {
   const url = new URL(window.location.href)

@@ -65,30 +65,33 @@ declare global {
 }
 
 window._VSCODE_PRODUCT_JSON = {
-  defaultChatAgent: {
-    chatExtensionId: 'codingame.aiDemo',
-    extensionId: '',
-    completionsEnablementSetting: 'codingameAICompletionsEnabled',
-    nextEditSuggestionsSetting: 'codingameNextEditSuggestionsEnabled',
-    provider: {
-      default: {
-        id: 'codingame',
-        name: 'Codingame'
-      },
-      apple: {
-        id: 'codingame',
-        name: 'Codingame'
-      },
-      enterprise: {
-        id: 'codingame',
-        name: 'Codingame'
-      },
-      google: {
-        id: 'codingame',
-        name: 'Codingame'
-      }
-    }
-  }
+  defaultChatAgent:
+    mode === 'session'
+      ? undefined
+      : {
+          chatExtensionId: 'codingame.aiDemo',
+          extensionId: '',
+          completionsEnablementSetting: 'codingameAICompletionsEnabled',
+          nextEditSuggestionsSetting: 'codingameNextEditSuggestionsEnabled',
+          provider: {
+            default: {
+              id: 'codingame',
+              name: 'Codingame'
+            },
+            apple: {
+              id: 'codingame',
+              name: 'Codingame'
+            },
+            enterprise: {
+              id: 'codingame',
+              name: 'Codingame'
+            },
+            google: {
+              id: 'codingame',
+              name: 'Codingame'
+            }
+          }
+        }
 }
 ;(async () => {
   if (sandboxed) {
@@ -99,7 +102,9 @@ window._VSCODE_PRODUCT_JSON = {
     window.vscodeWindow = window.vscodeContainer.ownerDocument.defaultView!
   }
   if (mode === 'full-workbench') {
-    await import('./main.workbench')
+    await import('./main.workbench.classic')
+  } else if (mode === 'session') {
+    await import('./main.workbench.session')
   } else {
     await import('./main.views')
   }

@@ -28,7 +28,7 @@ import {
   envOptions,
   remoteAuthority,
   userDataProvider
-} from './setup.common'
+} from './setup.common.classic'
 
 const container = document.createElement('div')
 container.id = 'app'
