@@ -859,6 +859,7 @@ function getServiceOverride(
 export default getServiceOverride
 
 export {
+  MonacoEditorService,
   ActivityService,
   ActivitybarPart,
   GroupOrientation,

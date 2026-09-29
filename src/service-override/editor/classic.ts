@@ -188,4 +188,6 @@ export default function getServiceOverride(openEditor: OpenEditor): IEditorOverr
   }
 }
 
+export { MonacoEditorService }
+
 export type { IEditorOptions, IReference, IResolvedTextEditorModel, OpenEditor }

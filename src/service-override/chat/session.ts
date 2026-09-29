@@ -23,6 +23,7 @@ import { IChatResponseFileChangesService } from 'vs/workbench/contrib/chat/brows
 import { SessionsChatResponseFileChangesService } from 'vs/sessions/contrib/chat/browser/sessionTurnChanges.js'
 import { IChangesViewService } from 'vs/sessions/contrib/changes/common/changesViewService.service.js'
 import { ChangesViewService } from 'vs/sessions/contrib/changes/browser/changesViewService'
+export * from './common.js'
 
 import 'vs/sessions/contrib/chat/browser/btwSlashCommand.contribution'
 import 'vs/sessions/contrib/chat/browser/chat.contribution'

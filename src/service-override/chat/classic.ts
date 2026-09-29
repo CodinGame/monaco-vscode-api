@@ -22,7 +22,7 @@ import {
   type IChatEntitlementContextState
 } from 'vs/workbench/services/chat/common/chatEntitlementService'
 import getCommonServiceOverride, { type ChatServiceOverrideOptions } from './common.js'
-export type { ITelemetryData, TelemetryLevel } from 'vs/platform/telemetry/common/telemetry'
+export * from './common.js'
 import 'vs/workbench/contrib/chat/browser/agentSessions/agentHost/agentHost.contribution'
 import 'vs/workbench/contrib/chat/browser/agentSessions/agentHost/agentHostSettings.contribution'
 import 'vs/workbench/contrib/chat/browser/agentSessions/agentHost/agentSessionSettings.contribution'
