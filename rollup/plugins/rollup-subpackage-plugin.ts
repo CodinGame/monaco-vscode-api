@@ -367,10 +367,13 @@ export default ({
       if (groups.size === 0) {
         continue
       }
-      const groupSetKey = computeGroupListKey(
-        // if the module is referenced from the main package, just ignore the other ones
-        groups
-      )
+      // Keep entry packages together, but split shared packages by their external dependencies.
+      // Otherwise one module depending on e.g. katex moves every module shared by the same groups
+      // into the katex common package.
+      const groupSetKey = JSON.stringify([
+        Array.from(groups).sort(),
+        groups.size === 1 ? [] : Array.from(mainModule.transitiveExternalDependencies).sort()
+      ])
       let groupSet = groupSetMap.get(groupSetKey)
       if (groupSet == null) {
         groupSet = {
@@ -404,15 +407,8 @@ export default ({
     const setEquals = <T>(a: Set<T>, b: Set<T>) => {
       return a.size === b.size && includesAll(a, b)
     }
-    const isIncluded = (a: GroupSet, b: GroupSet) => {
-      return (
-        includesAll(a.groups, b.groups) &&
-        includesAll(a.transitiveExternalDependencies, b.transitiveExternalDependencies)
-      )
-    }
     const areMergeable = (a: GroupSet, b: GroupSet) => {
-      if (setEquals(a.transitiveExternalDependencies, b.transitiveExternalDependencies)) return true
-      return isIncluded(a, b) || isIncluded(b, a)
+      return setEquals(a.transitiveExternalDependencies, b.transitiveExternalDependencies)
     }
     const merge = (a: GroupSet, b: GroupSet): GroupSet => {
       return {
@@ -462,6 +458,21 @@ export default ({
         }
       }
     }
+
+    // Different dependency sets may still map to the same specialized common package. Merge them
+    // only after dependency-compatible modules have been moved to the main package, otherwise a
+    // package such as katex-common also absorbs shared modules that do not depend on katex.
+    const commonPackages = new Map<string, GroupSet>()
+    for (const groupSet of combinationGroupSets) {
+      const packageName = getGroupSetName.call(
+        this,
+        groupSet.groups,
+        groupSet.transitiveExternalDependencies
+      ).name
+      const existing = commonPackages.get(packageName)
+      commonPackages.set(packageName, existing == null ? groupSet : merge(existing, groupSet))
+    }
+    combinationGroupSets = Array.from(commonPackages.values())
 
     const compareGroupSets = firstBy((groupset: GroupSet) => groupset.groups.size).thenBy(
       (groupset: GroupSet) => computeGroupListKey(groupset.groups)
