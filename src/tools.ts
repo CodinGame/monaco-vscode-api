@@ -4,6 +4,33 @@ export function unsupported(): never {
 
 export const noop = (): void => {}
 
+/**
+ * Makes a property, method or getter of a missing implementation throw an explicit error
+ */
+export function Unsupported(target: object, propertyKey: string, descriptor?: PropertyDescriptor) {
+  function unsupported() {
+    throw new Error(
+      `Unsupported: ${target.constructor.name}.${propertyKey} is not supported. You are using a feature without registering the corresponding service override.`
+    )
+  }
+  if (descriptor != null) {
+    if (descriptor.value != null) {
+      descriptor.value = unsupported
+    } else if (descriptor.get != null) {
+      descriptor.get = unsupported
+    }
+  } else {
+    Object.defineProperty(target, propertyKey, {
+      get() {
+        unsupported()
+      },
+      set() {},
+      configurable: true,
+      enumerable: true
+    })
+  }
+}
+
 export function memoized<A extends unknown[], T>(fct: (...args: A) => T): (...args: A) => T {
   let v: T | null = null
   return (...args) => {

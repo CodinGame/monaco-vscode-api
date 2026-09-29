@@ -69,7 +69,8 @@ import {
 } from 'vs/platform/extensionManagement/common/extensionsScannerService.js'
 import * as platform from 'vs/base/common/platform'
 import { getBuiltInExtensionTranslationsUris } from '../l10n.js'
-import 'vs/workbench/api/browser/extensionHost.contribution'
+import 'vs/workbench/api/browser/extensionHost.base.contribution'
+import './tools/missingMainThreadCustomers.js'
 
 export interface WorkerConfig {
   url: string

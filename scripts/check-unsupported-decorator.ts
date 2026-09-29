@@ -1,11 +1,14 @@
 import { Project } from 'ts-morph'
 
 const project = new Project({ tsConfigFilePath: 'tsconfig.json' })
-const sourceFile = project.getSourceFileOrThrow('src/missing-services.ts')
+const sourceFiles = [
+  'src/missing-services.ts',
+  'src/service-override/tools/missingMainThreadCustomers.ts'
+].map((path) => project.getSourceFileOrThrow(path))
 
 const issues: string[] = []
 
-for (const cls of sourceFile.getClasses()) {
+for (const cls of sourceFiles.flatMap((sourceFile) => sourceFile.getClasses())) {
   for (const prop of cls.getProperties()) {
     const initText = prop.getInitializer()?.getText().trim()
     const usesUnsupported = initText === 'unsupported'
