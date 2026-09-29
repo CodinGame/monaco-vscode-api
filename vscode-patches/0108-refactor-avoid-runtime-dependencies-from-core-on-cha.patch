@@ -34,7 +34,7 @@ Co-Authored-By: Claude Opus 5.5 <noreply@anthropic.com>
  create mode 100644 src/vs/workbench/contrib/chat/common/tools/builtinTools/toolIds.ts
 
 diff --git a/src/vs/workbench/api/common/extHostLanguageModelTools.ts b/src/vs/workbench/api/common/extHostLanguageModelTools.ts
-index f34d76c9..782d83e6 100644
+index f34d76c9e8d..782d83e6c17 100644
 --- a/src/vs/workbench/api/common/extHostLanguageModelTools.ts
 +++ b/src/vs/workbench/api/common/extHostLanguageModelTools.ts
 @@ -13,8 +13,7 @@ import { generateUuid } from '../../../base/common/uuid.js';
@@ -48,7 +48,7 @@ index f34d76c9..782d83e6 100644
  import { checkProposedApiEnabled, isProposedApiEnabled } from '../../services/extensions/common/extensions.js';
  import { Dto, SerializableObjectWithBuffers } from '../../services/extensions/common/proxyIdentifier.js';
 diff --git a/src/vs/workbench/api/common/extHostTypeConverters.ts b/src/vs/workbench/api/common/extHostTypeConverters.ts
-index b3e6860b..36aa3bf9 100644
+index b3e6860bac0..36aa3bf91db 100644
 --- a/src/vs/workbench/api/common/extHostTypeConverters.ts
 +++ b/src/vs/workbench/api/common/extHostTypeConverters.ts
 @@ -46,7 +46,7 @@ import { IChatRequestModeInstructions } from '../../contrib/chat/common/model/ch
@@ -61,7 +61,7 @@ index b3e6860b..36aa3bf9 100644
  import { ChatAgentLocation } from '../../contrib/chat/common/constants.js';
  import { ChatRequestHooks, resolveEffectiveCommand } from '../../contrib/chat/common/promptSyntax/hookSchema.js';
 diff --git a/src/vs/workbench/contrib/chat/browser/actions/chatConstants.ts b/src/vs/workbench/contrib/chat/browser/actions/chatConstants.ts
-index 17e137b5..71002004 100644
+index 17e137b5eb0..71002004183 100644
 --- a/src/vs/workbench/contrib/chat/browser/actions/chatConstants.ts
 +++ b/src/vs/workbench/contrib/chat/browser/actions/chatConstants.ts
 @@ -6,6 +6,7 @@ import { localize2 } from '../../../../../nls.js';
@@ -74,7 +74,7 @@ index 17e137b5..71002004 100644
  export const SkipToolConfirmationActionId = 'workbench.action.chat.skipTool';
 diff --git a/src/vs/workbench/contrib/chat/common/chatImageBuffer.ts b/src/vs/workbench/contrib/chat/common/chatImageBuffer.ts
 new file mode 100644
-index 00000000..4d0b845d
+index 00000000000..4d0b845d10d
 --- /dev/null
 +++ b/src/vs/workbench/contrib/chat/common/chatImageBuffer.ts
 @@ -0,0 +1,34 @@
@@ -113,7 +113,7 @@ index 00000000..4d0b845d
 +	return result;
 +}
 diff --git a/src/vs/workbench/contrib/chat/common/chatImageExtraction.ts b/src/vs/workbench/contrib/chat/common/chatImageExtraction.ts
-index cc289ef3..d0ae0f2d 100644
+index cc289ef3688..d0ae0f2d3b9 100644
 --- a/src/vs/workbench/contrib/chat/common/chatImageExtraction.ts
 +++ b/src/vs/workbench/contrib/chat/common/chatImageExtraction.ts
 @@ -14,6 +14,9 @@ import { ChatResponseResource } from './model/chatModel.js';
@@ -162,7 +162,7 @@ index cc289ef3..d0ae0f2d 100644
   * Extract images from a chat request's variable attachments (user-attached images).
   */
 diff --git a/src/vs/workbench/contrib/chat/common/tools/builtinTools/editFileTool.ts b/src/vs/workbench/contrib/chat/common/tools/builtinTools/editFileTool.ts
-index addfc96f..fc33b652 100644
+index addfc96f5d6..fc33b652e51 100644
 --- a/src/vs/workbench/contrib/chat/common/tools/builtinTools/editFileTool.ts
 +++ b/src/vs/workbench/contrib/chat/common/tools/builtinTools/editFileTool.ts
 @@ -15,9 +15,10 @@ import { ICodeMapperService } from '../../editing/chatCodeMapperService.js';
@@ -180,7 +180,7 @@ index addfc96f..fc33b652 100644
  	displayName: '', // not used
 diff --git a/src/vs/workbench/contrib/chat/common/tools/builtinTools/toolIds.ts b/src/vs/workbench/contrib/chat/common/tools/builtinTools/toolIds.ts
 new file mode 100644
-index 00000000..91daae1f
+index 00000000000..91daae1fb40
 --- /dev/null
 +++ b/src/vs/workbench/contrib/chat/common/tools/builtinTools/toolIds.ts
 @@ -0,0 +1,9 @@
@@ -194,7 +194,7 @@ index 00000000..91daae1f
 +export const InternalEditToolId = 'vscode_editFile_internal';
 +export const InternalFetchWebPageToolId = 'vscode_fetchWebPage_internal';
 diff --git a/src/vs/workbench/contrib/chat/common/tools/builtinTools/tools.ts b/src/vs/workbench/contrib/chat/common/tools/builtinTools/tools.ts
-index 4a711c40..bec1c893 100644
+index 4a711c404fa..bec1c893d6e 100644
 --- a/src/vs/workbench/contrib/chat/common/tools/builtinTools/tools.ts
 +++ b/src/vs/workbench/contrib/chat/common/tools/builtinTools/tools.ts
 @@ -104,4 +104,4 @@ export class BuiltinToolsContribution extends Disposable implements IWorkbenchCo
@@ -204,7 +204,7 @@ index 4a711c40..bec1c893 100644
 -export const InternalFetchWebPageToolId = 'vscode_fetchWebPage_internal';
 +export { InternalFetchWebPageToolId } from './toolIds.js';
 diff --git a/src/vs/workbench/contrib/scm/browser/scm.contribution.ts b/src/vs/workbench/contrib/scm/browser/scm.contribution.ts
-index 6ee2a32c..a5cba418 100644
+index 6ee2a32c3a8..a5cba418abd 100644
 --- a/src/vs/workbench/contrib/scm/browser/scm.contribution.ts
 +++ b/src/vs/workbench/contrib/scm/browser/scm.contribution.ts
 @@ -40,7 +40,7 @@ import { SCMAccessibilityHelp } from './scmAccessibilityHelp.js';
@@ -217,7 +217,7 @@ index 6ee2a32c..a5cba418 100644
  import product from '../../../../platform/product/common/product.js';
  
 diff --git a/src/vs/workbench/contrib/scm/browser/scmInput.ts b/src/vs/workbench/contrib/scm/browser/scmInput.ts
-index 63642985..66846d74 100644
+index 63642985fc7..66846d740c1 100644
 --- a/src/vs/workbench/contrib/scm/browser/scmInput.ts
 +++ b/src/vs/workbench/contrib/scm/browser/scmInput.ts
 @@ -70,7 +70,7 @@ import { IAccessibilityService } from '../../../../platform/accessibility/common
@@ -230,7 +230,7 @@ index 63642985..66846d74 100644
  export const SCMInputContextKeys = {
  	SCMInputHasValidationMessage: new RawContextKey<boolean>('scmInputHasValidationMessage', false),
 diff --git a/src/vs/workbench/contrib/search/browser/searchTreeModel/searchResult.ts b/src/vs/workbench/contrib/search/browser/searchTreeModel/searchResult.ts
-index c55c9aa6..7cba78cd 100644
+index c55c9aa68da..7cba78cd0ef 100644
 --- a/src/vs/workbench/contrib/search/browser/searchTreeModel/searchResult.ts
 +++ b/src/vs/workbench/contrib/search/browser/searchTreeModel/searchResult.ts
 @@ -10,7 +10,7 @@ import { ITextModel } from '../../../../../editor/common/model.js';
@@ -256,7 +256,7 @@ index c55c9aa6..7cba78cd 100644
  
  		this._id = SEARCH_RESULT_PREFIX + Date.now().toString();
 diff --git a/src/vs/workbench/contrib/search/browser/searchView.ts b/src/vs/workbench/contrib/search/browser/searchView.ts
-index cd44270e..9f200dd3 100644
+index cd44270eb87..9f200dd318f 100644
 --- a/src/vs/workbench/contrib/search/browser/searchView.ts
 +++ b/src/vs/workbench/contrib/search/browser/searchView.ts
 @@ -55,7 +55,8 @@ import { IViewPaneOptions, ViewPane } from '../../../browser/parts/views/viewPan
@@ -288,7 +288,7 @@ index cd44270e..9f200dd3 100644
  						// Ensure that the editor widget is binded. If if is, then this should return immediately.
  						// Otherwise, it will bind the widget.
 diff --git a/src/vs/workbench/contrib/tasks/browser/abstractTaskService.ts b/src/vs/workbench/contrib/tasks/browser/abstractTaskService.ts
-index 129e228a..6c4ba470 100644
+index 129e228a126..6c4ba470084 100644
 --- a/src/vs/workbench/contrib/tasks/browser/abstractTaskService.ts
 +++ b/src/vs/workbench/contrib/tasks/browser/abstractTaskService.ts
 @@ -85,7 +85,7 @@ import { IPathService } from '../../../services/path/common/pathService.js';
@@ -301,7 +301,7 @@ index 129e228a..6c4ba470 100644
  import { IChatService } from '../../chat/common/chatService/chatService.js';
  import { configureTaskIcon, isWorkspaceFolder, ITaskQuickPickEntry, QUICKOPEN_DETAIL_CONFIG, QUICKOPEN_SKIP_CONFIG, TaskQuickPick } from './taskQuickPick.js';
 diff --git a/src/vs/workbench/contrib/terminal/browser/xterm/decorationAddon.ts b/src/vs/workbench/contrib/terminal/browser/xterm/decorationAddon.ts
-index 0294c9fa..a7edf1ca 100644
+index 0294c9fae45..a7edf1caadc 100644
 --- a/src/vs/workbench/contrib/terminal/browser/xterm/decorationAddon.ts
 +++ b/src/vs/workbench/contrib/terminal/browser/xterm/decorationAddon.ts
 @@ -29,7 +29,7 @@ import { MarkdownString } from '../../../../../base/common/htmlContent.js';
@@ -323,7 +323,7 @@ index 0294c9fa..a7edf1ca 100644
  				}
  
 diff --git a/src/vs/workbench/contrib/welcomeAgentSessions/browser/agentSessionsWelcome.ts b/src/vs/workbench/contrib/welcomeAgentSessions/browser/agentSessionsWelcome.ts
-index e31e406c..3ef69f71 100644
+index e31e406c478..3ef69f71be0 100644
 --- a/src/vs/workbench/contrib/welcomeAgentSessions/browser/agentSessionsWelcome.ts
 +++ b/src/vs/workbench/contrib/welcomeAgentSessions/browser/agentSessionsWelcome.ts
 @@ -42,7 +42,7 @@ import { ACTION_ID_NEW_CHAT } from '../../chat/browser/actions/chatActions.js';
@@ -345,7 +345,7 @@ index e31e406c..3ef69f71 100644
  	private container!: HTMLElement;
  	private contentContainer!: HTMLElement;
 diff --git a/src/vs/workbench/contrib/welcomeAgentSessions/browser/agentSessionsWelcomeInput.ts b/src/vs/workbench/contrib/welcomeAgentSessions/browser/agentSessionsWelcomeInput.ts
-index 4057dedf..de88c08b 100644
+index 4057dedfa68..de88c08b6ee 100644
 --- a/src/vs/workbench/contrib/welcomeAgentSessions/browser/agentSessionsWelcomeInput.ts
 +++ b/src/vs/workbench/contrib/welcomeAgentSessions/browser/agentSessionsWelcomeInput.ts
 @@ -11,6 +11,7 @@ import { IUntypedEditorInput } from '../../../common/editor.js';
@@ -357,7 +357,7 @@ index 4057dedf..de88c08b 100644
  export type AgentSessionsWelcomeWorkspaceKind = 'empty' | 'folder' | 'workspace';
  
 diff --git a/src/vs/workbench/contrib/welcomeGettingStarted/browser/gettingStarted.contribution.ts b/src/vs/workbench/contrib/welcomeGettingStarted/browser/gettingStarted.contribution.ts
-index f90937e6..0b9fb3a1 100644
+index f90937e6a1f..0b9fb3a1e2d 100644
 --- a/src/vs/workbench/contrib/welcomeGettingStarted/browser/gettingStarted.contribution.ts
 +++ b/src/vs/workbench/contrib/welcomeGettingStarted/browser/gettingStarted.contribution.ts
 @@ -32,7 +32,7 @@ import { Categories } from '../../../../platform/action/common/actionCommonCateg
@@ -378,6 +378,3 @@ index f90937e6..0b9fb3a1 100644
  			return;
  		} else {
  			if (walkthroughID) {
--- 
-2.39.5 (Apple Git-154)
-

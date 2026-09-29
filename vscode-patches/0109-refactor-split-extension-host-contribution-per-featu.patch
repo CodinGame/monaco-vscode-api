@@ -22,7 +22,7 @@ Co-Authored-By: Claude Opus 5.5 <noreply@anthropic.com>
 
 diff --git a/src/vs/workbench/api/browser/extensionHost.base.contribution.ts b/src/vs/workbench/api/browser/extensionHost.base.contribution.ts
 new file mode 100644
-index 00000000..bb2c5531
+index 00000000000..bb2c55317cd
 --- /dev/null
 +++ b/src/vs/workbench/api/browser/extensionHost.base.contribution.ts
 @@ -0,0 +1,90 @@
@@ -118,7 +118,7 @@ index 00000000..bb2c5531
 +import './mainThreadBrowsers.js';
 diff --git a/src/vs/workbench/api/browser/extensionHost.chat.contribution.ts b/src/vs/workbench/api/browser/extensionHost.chat.contribution.ts
 new file mode 100644
-index 00000000..c319d415
+index 00000000000..c319d41523d
 --- /dev/null
 +++ b/src/vs/workbench/api/browser/extensionHost.chat.contribution.ts
 @@ -0,0 +1,16 @@
@@ -139,7 +139,7 @@ index 00000000..c319d415
 +import './mainThreadChatInputNotification.js';
 +import './mainThreadChatSessions.js';
 diff --git a/src/vs/workbench/api/browser/extensionHost.contribution.ts b/src/vs/workbench/api/browser/extensionHost.contribution.ts
-index 82aee03d..93e9b81f 100644
+index 82aee03d809..93e9b81f389 100644
 --- a/src/vs/workbench/api/browser/extensionHost.contribution.ts
 +++ b/src/vs/workbench/api/browser/extensionHost.contribution.ts
 @@ -3,104 +3,7 @@
@@ -253,7 +253,7 @@ index 82aee03d..93e9b81f 100644
 +import './extensionHost.mcp.contribution.js';
 diff --git a/src/vs/workbench/api/browser/extensionHost.mcp.contribution.ts b/src/vs/workbench/api/browser/extensionHost.mcp.contribution.ts
 new file mode 100644
-index 00000000..570c524a
+index 00000000000..570c524a2b3
 --- /dev/null
 +++ b/src/vs/workbench/api/browser/extensionHost.mcp.contribution.ts
 @@ -0,0 +1,7 @@
@@ -266,7 +266,7 @@ index 00000000..570c524a
 +import './mainThreadMcp.js';
 diff --git a/src/vs/workbench/api/browser/extensionHost.notebook.contribution.ts b/src/vs/workbench/api/browser/extensionHost.notebook.contribution.ts
 new file mode 100644
-index 00000000..ff2f3cc2
+index 00000000000..ff2f3cc282c
 --- /dev/null
 +++ b/src/vs/workbench/api/browser/extensionHost.notebook.contribution.ts
 @@ -0,0 +1,11 @@
@@ -281,6 +281,3 @@ index 00000000..ff2f3cc2
 +import './mainThreadNotebookDocumentsAndEditors.js';
 +import './mainThreadNotebookRenderers.js';
 +import './mainThreadNotebookSaveParticipant.js';
--- 
-2.39.5 (Apple Git-154)
-
