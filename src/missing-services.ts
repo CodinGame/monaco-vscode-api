@@ -467,7 +467,6 @@ import { IChatSubmitRequestHandlerService } from 'vs/workbench/contrib/chat/brow
 import { IChatTipService } from 'vs/workbench/contrib/chat/browser/chatTipService.service.js'
 import { IChatContextService } from 'vs/workbench/contrib/chat/browser/contextContrib/chatContextService.service'
 import { IChatModelFeedbackSurveyService } from 'vs/workbench/contrib/chat/browser/feedbackSurvey/chatModelFeedbackSurveyService.service'
-import { ChatSpeechToTextState } from 'vs/workbench/contrib/chat/browser/speechToText/chatSpeechToTextService'
 import { IChatSpeechToTextService } from 'vs/workbench/contrib/chat/browser/speechToText/chatSpeechToTextService.service'
 import { IDictationOnboardingService } from 'vs/workbench/contrib/chat/browser/speechToText/dictationOnboarding.service'
 import { IVoiceCodeTranscriptionClient } from 'vs/workbench/contrib/chat/browser/speechToText/voiceCodeTranscriptionClient.service'
@@ -8210,7 +8209,7 @@ registerSingleton(IChatSideChatService, ChatSideChatService, InstantiationType.D
 class ChatSpeechToTextService implements IChatSpeechToTextService {
   _serviceBrand: undefined
   onDidChangeState: IChatSpeechToTextService['onDidChangeState'] = Event.None
-  state: IChatSpeechToTextService['state'] = ChatSpeechToTextState.Idle
+  state: IChatSpeechToTextService['state'] = 'idle' as IChatSpeechToTextService['state']
   isBusy: IChatSpeechToTextService['isBusy'] = false
   currentSurface: IChatSpeechToTextService['currentSurface'] = 'chat'
   onDidUpdateTranscript: IChatSpeechToTextService['onDidUpdateTranscript'] = Event.None
