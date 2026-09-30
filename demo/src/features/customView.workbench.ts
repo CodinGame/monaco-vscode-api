@@ -17,7 +17,7 @@ import {
   SimpleEditorInput,
   RegisteredEditorPriority,
   ConfirmResult
-} from '@codingame/monaco-vscode-workbench-service-override'
+} from '@codingame/monaco-vscode-workbench-service-override/common'
 import * as monaco from 'monaco-editor'
 
 registerCustomView({

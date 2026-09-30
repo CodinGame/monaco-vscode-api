@@ -1,0 +1,61 @@
+From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
+From: =?UTF-8?q?Lo=C3=AFc=20Mangeonjean?= <loic@coderpad.io>
+Date: Wed, 30 Oct 2024 15:01:33 +0100
+Subject: [PATCH] fix: just use regular dynamic import
+
+---
+ .../remoteAgentHost/browser/devTunnelsWebLoader.ts       | 9 ++-------
+ .../services/keybinding/browser/keyboardLayoutService.ts | 3 +--
+ 2 files changed, 3 insertions(+), 9 deletions(-)
+
+diff --git a/src/vs/sessions/contrib/providers/remoteAgentHost/browser/devTunnelsWebLoader.ts b/src/vs/sessions/contrib/providers/remoteAgentHost/browser/devTunnelsWebLoader.ts
+index 4a11f016697..4941264d3dc 100644
+--- a/src/vs/sessions/contrib/providers/remoteAgentHost/browser/devTunnelsWebLoader.ts
++++ b/src/vs/sessions/contrib/providers/remoteAgentHost/browser/devTunnelsWebLoader.ts
+@@ -5,12 +5,9 @@
+ 
+ import type { TunnelRelayTunnelClient } from '@microsoft/dev-tunnels-connections';
+ import type { TunnelManagementHttpClient } from '@microsoft/dev-tunnels-management';
+-import { AppResourcePath, FileAccess } from '../../../../../base/common/network.js';
+ import type { ITunnelDescriptor } from '../../../../../platform/agentHost/common/tunnelAgentHostConnector.js';
+ import type { ITunnelDuplexStream } from '../../../../../platform/agentHost/common/tunnelMessageSocket.js';
+ 
+-const devTunnelsWebBundlePath: AppResourcePath = 'vs/sessions/contrib/providers/remoteAgentHost/browser/devTunnelsModule.js';
+-
+ /** The subset of tunnel metadata consumed by the browser management and relay adapters. */
+ export interface IDevTunnelsWebTunnel extends ITunnelDescriptor {
+ 	readonly endpoints?: object;
+@@ -79,10 +76,8 @@ let devTunnelsWeb: Promise<IDevTunnelsWeb> | undefined;
+ /** Loads the browser-compatible Dev Tunnels SDK bundle on first use. */
+ export function loadDevTunnelsWeb(): Promise<IDevTunnelsWeb> {
+ 	devTunnelsWeb ??= (async () => {
+-		// This generated browser-only module is emitted beside its loader.
+-		const devTunnelsWebUrl = FileAccess.asBrowserUri(devTunnelsWebBundlePath).toString(true);
+-		// Keep the URL runtime-resolved so bundlers do not rewrite the import.
+-		const module = await import(/* webpackIgnore: true */ /* @vite-ignore */ `${devTunnelsWebUrl}`) as IDevTunnelsWeb;
++		// @ts-ignore
++		const module = await import('./devTunnelsModule.js') as IDevTunnelsWeb;
+ 		return module;
+ 	})();
+ 	return devTunnelsWeb;
+diff --git a/src/vs/workbench/services/keybinding/browser/keyboardLayoutService.ts b/src/vs/workbench/services/keybinding/browser/keyboardLayoutService.ts
+index f155e27685f..91c827ba5a9 100644
+--- a/src/vs/workbench/services/keybinding/browser/keyboardLayoutService.ts
++++ b/src/vs/workbench/services/keybinding/browser/keyboardLayoutService.ts
+@@ -5,7 +5,6 @@
+ 
+ import * as nls from '../../../../nls.js';
+ import { Emitter, Event } from '../../../../base/common/event.js';
+-import { AppResourcePath, FileAccess } from '../../../../base/common/network.js';
+ import { Disposable } from '../../../../base/common/lifecycle.js';
+ import { KeymapInfo, IRawMixedKeyboardMapping, IKeymapInfo } from '../common/keymapInfo.js';
+ import { InstantiationType, registerSingleton } from '../../../../platform/instantiation/common/extensions.js';
+@@ -460,7 +459,7 @@ export class BrowserKeyboardMapperFactory extends BrowserKeyboardMapperFactoryBa
+ 
+ 		const platform = isWindows ? 'win' : isMacintosh ? 'darwin' : 'linux';
+ 
+-		import(/* webpackIgnore: true */FileAccess.asBrowserUri(`vs/workbench/services/keybinding/browser/keyboardLayouts/layout.contribution.${platform}.js` satisfies AppResourcePath).path).then((m) => {
++		import(`./keyboardLayouts/layout.contribution.${platform}.js`).then((m) => {
+ 			const keymapInfos: IKeymapInfo[] = m.KeyboardLayoutContribution.INSTANCE.layoutInfos;
+ 			this._keymapInfos.push(...keymapInfos.map(info => (new KeymapInfo(info.layout, info.secondaryLayouts, info.mapping, info.isUserKeyboardLayout))));
+ 			this._mru = this._keymapInfos;

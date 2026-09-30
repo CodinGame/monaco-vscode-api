@@ -1,8 +1,11 @@
 import { mainWindow } from 'vs/base/browser/window'
 
-const sheets: CSSStyleSheet[] = []
+const sheets: { sheet: CSSStyleSheet; order: number }[] = []
 
-export function registerCss(module: { default?: string | CSSStyleSheet } | undefined) {
+export function registerCss(
+  module: { default?: string | CSSStyleSheet } | undefined,
+  order: number = 0
+) {
   const exportedValue = module?.default
 
   let sheet: CSSStyleSheet | undefined = undefined
@@ -41,7 +44,7 @@ export function registerCss(module: { default?: string | CSSStyleSheet } | undef
     })
   }
   if (sheet != null) {
-    sheets.push(sheet)
+    sheets.push({ sheet, order })
   }
 }
 function getInjectElement(target: HTMLElement) {
@@ -60,5 +63,7 @@ export function injectCss(target: HTMLElement) {
     )
   }
 
-  root.adoptedStyleSheets = [...root.adoptedStyleSheets, ...sheets]
+  sheets.sort((a, b) => a.order - b.order)
+
+  root.adoptedStyleSheets = [...root.adoptedStyleSheets, ...sheets.map((s) => s.sheet)]
 }

@@ -17,6 +17,8 @@ export interface WorkbenchEnvironmentServiceOverrides {
   workspaceStorageHome?: URI
   localHistoryHome?: URI
   stateResource?: URI
+  isSessionsWindow?: boolean
+  sessionTitle?: string
 }
 
 class InjectedBrowserWorkbenchEnvironmentService
@@ -54,6 +56,12 @@ class InjectedBrowserWorkbenchEnvironmentService
   }
   override get stateResource() {
     return this.overrides.stateResource ?? super.stateResource
+  }
+  override get isSessionsWindow() {
+    return this.overrides.isSessionsWindow ?? super.isSessionsWindow
+  }
+  override get sessionTitle() {
+    return this.overrides.sessionTitle ?? super.sessionTitle
   }
 }
 

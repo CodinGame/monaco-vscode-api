@@ -17,8 +17,6 @@
     "preprepare": "patch-package"
   },
   "devDependencies": {
-    "@codingame/monaco-vscode-rollup-extension-directory-plugin": "file:../dist/packages/monaco-vscode-rollup-extension-directory-plugin",
-    "@codingame/monaco-vscode-rollup-vsix-plugin": "file:../dist/packages/monaco-vscode-rollup-vsix-plugin",
     "@types/dockerode": "^4.0.1",
     "@types/express": "^5.0.6",
     "@types/node": "^25.9.3",
@@ -26,9 +24,15 @@
     "@types/ws": "^8.18.1",
     "oxlint": "^1.83.0",
     "typescript": "~7.0.2",
-    "vite": "8.3.0"
+    "vite": "8.3.0",
+    "@codingame/monaco-vscode-rollup-extension-directory-plugin": "file:../dist/packages/monaco-vscode-rollup-extension-directory-plugin",
+    "@codingame/monaco-vscode-rollup-vsix-plugin": "file:../dist/packages/monaco-vscode-rollup-vsix-plugin"
   },
   "dependencies": {
+    "ansi-colors": "^4.1.3",
+    "dockerode": "^5.0.1",
+    "express": "^5.2.1",
+    "ws": "^8.21.3",
     "@codingame/monaco-vscode-accessibility-service-override": "file:../dist/packages/monaco-vscode-accessibility-service-override",
     "@codingame/monaco-vscode-ai-service-override": "file:../dist/packages/monaco-vscode-ai-service-override",
     "@codingame/monaco-vscode-all-default-extensions": "file:../dist/packages/monaco-vscode-all-default-extensions",
@@ -57,11 +61,13 @@
     "@codingame/monaco-vscode-docker-default-extension": "file:../dist/packages/monaco-vscode-docker-default-extension",
     "@codingame/monaco-vscode-dotenv-default-extension": "file:../dist/packages/monaco-vscode-dotenv-default-extension",
     "@codingame/monaco-vscode-edit-sessions-service-override": "file:../dist/packages/monaco-vscode-edit-sessions-service-override",
+    "monaco-editor": "file:../dist/packages/monaco-vscode-editor-api",
     "@codingame/monaco-vscode-editor-service-override": "file:../dist/packages/monaco-vscode-editor-service-override",
     "@codingame/monaco-vscode-emmet-default-extension": "file:../dist/packages/monaco-vscode-emmet-default-extension",
     "@codingame/monaco-vscode-emmet-service-override": "file:../dist/packages/monaco-vscode-emmet-service-override",
     "@codingame/monaco-vscode-environment-service-override": "file:../dist/packages/monaco-vscode-environment-service-override",
     "@codingame/monaco-vscode-explorer-service-override": "file:../dist/packages/monaco-vscode-explorer-service-override",
+    "vscode": "file:../dist/packages/monaco-vscode-extension-api",
     "@codingame/monaco-vscode-extension-editing-default-extension": "file:../dist/packages/monaco-vscode-extension-editing-default-extension",
     "@codingame/monaco-vscode-extension-gallery-service-override": "file:../dist/packages/monaco-vscode-extension-gallery-service-override",
     "@codingame/monaco-vscode-extensions-service-override": "file:../dist/packages/monaco-vscode-extensions-service-override",
@@ -69,6 +75,7 @@
     "@codingame/monaco-vscode-fsharp-default-extension": "file:../dist/packages/monaco-vscode-fsharp-default-extension",
     "@codingame/monaco-vscode-git-base-default-extension": "file:../dist/packages/monaco-vscode-git-base-default-extension",
     "@codingame/monaco-vscode-github-authentication-default-extension": "file:../dist/packages/monaco-vscode-github-authentication-default-extension",
+    "@codingame/monaco-vscode-github-service-override": "file:../dist/packages/monaco-vscode-github-service-override",
     "@codingame/monaco-vscode-go-default-extension": "file:../dist/packages/monaco-vscode-go-default-extension",
     "@codingame/monaco-vscode-groovy-default-extension": "file:../dist/packages/monaco-vscode-groovy-default-extension",
     "@codingame/monaco-vscode-handlebars-default-extension": "file:../dist/packages/monaco-vscode-handlebars-default-extension",
@@ -121,6 +128,7 @@
     "@codingame/monaco-vscode-media-preview-default-extension": "file:../dist/packages/monaco-vscode-media-preview-default-extension",
     "@codingame/monaco-vscode-merge-conflict-default-extension": "file:../dist/packages/monaco-vscode-merge-conflict-default-extension",
     "@codingame/monaco-vscode-mermaid-markdown-features-default-extension": "file:../dist/packages/monaco-vscode-mermaid-markdown-features-default-extension",
+    "@codingame/monaco-vscode-metered-connection-service-override": "file:../dist/packages/monaco-vscode-metered-connection-service-override",
     "@codingame/monaco-vscode-model-service-override": "file:../dist/packages/monaco-vscode-model-service-override",
     "@codingame/monaco-vscode-monarch-service-override": "file:../dist/packages/monaco-vscode-monarch-service-override",
     "@codingame/monaco-vscode-multi-diff-editor-service-override": "file:../dist/packages/monaco-vscode-multi-diff-editor-service-override",
@@ -178,6 +186,7 @@
     "@codingame/monaco-vscode-theme-abyss-default-extension": "file:../dist/packages/monaco-vscode-theme-abyss-default-extension",
     "@codingame/monaco-vscode-theme-defaults-default-extension": "file:../dist/packages/monaco-vscode-theme-defaults-default-extension",
     "@codingame/monaco-vscode-theme-kimbie-dark-default-extension": "file:../dist/packages/monaco-vscode-theme-kimbie-dark-default-extension",
+    "@codingame/monaco-vscode-theme-modern-icons-default-extension": "file:../dist/packages/monaco-vscode-theme-modern-icons-default-extension",
     "@codingame/monaco-vscode-theme-monokai-default-extension": "file:../dist/packages/monaco-vscode-theme-monokai-default-extension",
     "@codingame/monaco-vscode-theme-monokai-dimmed-default-extension": "file:../dist/packages/monaco-vscode-theme-monokai-dimmed-default-extension",
     "@codingame/monaco-vscode-theme-quietlight-default-extension": "file:../dist/packages/monaco-vscode-theme-quietlight-default-extension",
@@ -208,13 +217,7 @@
     "@codingame/monaco-vscode-xml-default-extension": "file:../dist/packages/monaco-vscode-xml-default-extension",
     "@codingame/monaco-vscode-xterm-addons-common": "file:../dist/packages/monaco-vscode-xterm-addons-common",
     "@codingame/monaco-vscode-xterm-common": "file:../dist/packages/monaco-vscode-xterm-common",
-    "@codingame/monaco-vscode-yaml-default-extension": "file:../dist/packages/monaco-vscode-yaml-default-extension",
-    "ansi-colors": "^4.1.3",
-    "dockerode": "^5.0.1",
-    "express": "^5.2.1",
-    "monaco-editor": "file:../dist/packages/monaco-vscode-editor-api",
-    "vscode": "file:../dist/packages/monaco-vscode-extension-api",
-    "ws": "^8.21.3"
+    "@codingame/monaco-vscode-yaml-default-extension": "file:../dist/packages/monaco-vscode-yaml-default-extension"
   },
   "volta": {
     "extends": "../package.json"

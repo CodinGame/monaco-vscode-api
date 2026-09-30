@@ -8,7 +8,8 @@ import { ConfigurationTarget } from 'vs/platform/configuration/common/configurat
 import type { IDisposable } from 'vs/base/common/lifecycle'
 import getFileServiceOverride from './files'
 import 'vs/workbench/contrib/themes/browser/themes.contribution'
-import 'vs/workbench/contrib/modernUI/browser/modernUI.contribution'
+import 'vs/sessions/common/theme'
+import 'vs/sessions/common/sizes'
 
 class StandaloneWorkbenchThemeService
   extends WorkbenchThemeService

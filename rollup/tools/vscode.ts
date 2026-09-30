@@ -46,7 +46,6 @@ const PURE_FUNCTIONS = new Set([
   'isEqualTo',
   'SyncDescriptor',
   'getProxy',
-  'map',
   'some',
   'asFileUri',
   'has',
@@ -68,7 +67,8 @@ const SIDE_EFFECT_CONSTRUCTORS = new Set([
   'WindowIdleValue',
   'TimeoutThrottledDomListener',
   'FocusTracker',
-  'DragAndDropObserver'
+  'DragAndDropObserver',
+  'RawContextKey'
 ])
 
 const PURE_OR_TO_REMOVE_FUNCTIONS = new Set([...PURE_FUNCTIONS])
@@ -214,9 +214,15 @@ export default {
     visitImportDeclaration(path) {
       const node = path.node
 
+      const importPath = node.source.value as string
+      const importedId = nodePath.relative(
+        VSCODE_SRC_DIR,
+        nodePath.resolve(nodePath.dirname(id), importPath)
+      )
+
       if (
         (node.specifiers == null || node.specifiers.length === 0) &&
-        (node.source.value as string).endsWith('.css')
+        importPath.endsWith('.css')
       ) {
         const varName = `css${cssImportCounter++}`
         node.specifiers = [
@@ -224,7 +230,10 @@ export default {
         ]
         const injectCall = recast.types.builders.expressionStatement(
           recast.types.builders.callExpression(recast.types.builders.identifier('registerCss'), [
-            recast.types.builders.identifier(varName)
+            recast.types.builders.identifier(varName),
+            // put contrib css files at last
+            // We need it for instance so that vs/workbench/browser/parts/auxiliarybar/media/auxiliaryBarPart.css is before vs/workbench/contrib/chat/browser/widget/media/chat.css
+            recast.types.builders.numericLiteral(importedId.includes('contrib/') ? 1 : 0)
           ])
         )
 

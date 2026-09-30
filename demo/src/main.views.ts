@@ -15,15 +15,11 @@ import {
   defaultUserKeybindindsFile,
   updateUserKeybindings
 } from '@codingame/monaco-vscode-keybindings-service-override'
-import { clearStorage, remoteAuthority } from './setup.views'
+import { clearStorage } from './setup.views'
 import { CustomEditorInput } from './features/customView.views'
 import defaultConfiguration from './user/configuration.json?raw'
 import defaultKeybindings from './user/keybindings.json?raw'
-import './main.common'
-
-if (remoteAuthority != null) {
-  void import('./features/remoteExtension')
-}
+void import('./main.common')
 
 document.querySelector('#customEditorPanel')!.addEventListener('click', async () => {
   const input = await createInstance(CustomEditorInput, undefined)

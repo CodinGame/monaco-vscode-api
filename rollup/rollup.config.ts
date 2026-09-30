@@ -35,6 +35,21 @@ import {
 import { transformImportEqualsTransformerFactory } from './tools/typescript.js'
 import json from '@rollup/plugin-json'
 
+const serviceOverrideDir = nodePath.resolve(SRC_DIR, 'service-override')
+const serviceOverrideEntries = fs
+  .readdirSync(serviceOverrideDir, { withFileTypes: true })
+  .flatMap((entry) => {
+    if (entry.isFile()) {
+      return [entry.name]
+    }
+    if (entry.isDirectory()) {
+      return ['classic.ts', 'session.ts', 'common.ts']
+        .map((name) => nodePath.join(entry.name, name))
+        .filter((name) => fs.existsSync(nodePath.resolve(serviceOverrideDir, name)))
+    }
+    return []
+  })
+
 const input = {
   'extension.api': './src/extension.api.ts',
   'editor.api': './src/editor.api.ts',
@@ -50,14 +65,12 @@ const input = {
   monaco: './src/monaco.ts',
   css: './src/css.ts',
   ...Object.fromEntries(
-    fs
-      .readdirSync(nodePath.resolve(SRC_DIR, 'service-override'), { withFileTypes: true })
-      .filter((f) => f.isFile())
-      .map((f) => f.name)
-      .map((name) => [
-        `service-override/${nodePath.basename(name, '.ts')}`,
+    serviceOverrideEntries.map((name) => {
+      return [
+        `service-override/${name.slice(0, -nodePath.posix.extname(name).length)}`,
         `./src/service-override/${name}`
-      ])
+      ]
+    })
   ),
   ...Object.fromEntries(
     fs
@@ -197,7 +210,7 @@ export default (args: Record<string, string>): rollup.RollupOptions => {
         featureModules: /\/vs\/workbench\/contrib\/(chat|notebook|mcp)\/(?!.*\.service\.js$)/,
         // Service overrides that build on top of those features
         allowedEntries:
-          /\/src\/service-override\/(chat|notebook|mcp|interactive|ai|speech|welcome)\.ts$/,
+          /\/src\/service-override\/(?:(?:chat|notebook|mcp|interactive|ai|speech|welcome)(?:\/(?:common|classic|session))?|(?:viewCommon|workbench)\/session)\.ts$/,
         // ~910KB with VSCode 1.138: mostly dictation, go to symbol in chat, editor tabs and chat context keys
         maxSize: 1000 * 1024
       }),

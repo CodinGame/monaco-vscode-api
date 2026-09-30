@@ -12,6 +12,7 @@ import { AccessibilityService } from 'vs/platform/accessibility/browser/accessib
 import { registerAssets } from '../assets'
 import 'vs/workbench/contrib/accessibility/browser/accessibility.contribution'
 import 'vs/workbench/contrib/codeEditor/browser/accessibility/accessibility'
+import 'vs/workbench/contrib/codeEditor/browser/editorFindAccessibilityHelp'
 import 'vs/workbench/contrib/accessibilitySignals/browser/accessibilitySignal.contribution'
 
 registerAssets(audioAssets)

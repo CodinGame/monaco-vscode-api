@@ -4,52 +4,60 @@ Date: Mon, 11 Mar 2024 17:32:31 +0100
 Subject: [PATCH] feat: export some classes and make some methods accessible
 
 ---
- .../editorState/browser/keybindingCancellation.ts  |  6 ++++--
- .../gotoError/browser/markerNavigationService.ts   |  2 +-
- .../contrib/gotoSymbol/browser/symbolNavigation.ts |  2 +-
- .../inlayHints/browser/inlayHintsController.ts     |  2 +-
- src/vs/editor/contrib/peekView/browser/peekView.ts |  6 ++++--
- .../actions/browser/actionViewItemService.ts       |  2 +-
- .../browser/extensionResourceLoaderService.ts      |  2 +-
- src/vs/platform/files/common/fileService.ts        |  6 +++---
- .../sandbox/browser/sandboxHelperService.ts        |  2 +-
- .../api/browser/statusBarExtensionPoint.ts         |  2 +-
- src/vs/workbench/browser/layout.ts                 | 10 +++++-----
- src/vs/workbench/browser/workbench.ts              | 14 +++++++-------
- .../agentHostSessionWorkingDirectoryResolver.ts    |  2 +-
- .../aiCustomizationWorkspaceService.ts             |  2 +-
- .../aiCustomization/customizationHarnessService.ts |  2 +-
- .../browser/chatStatus/chatStatusItemService.ts    |  2 +-
- .../chatContentParts/chatTextEditContentPart.ts    |  6 +++---
- .../browser/widget/input/chatInputNoticeHub.ts     |  2 +-
- .../widget/input/chatInputNotificationService.ts   |  2 +-
- .../widget/input/chatPhoneInputPresenter.ts        |  2 +-
- .../debug/browser/extensionHostDebugService.ts     |  2 +-
- .../browser/renameSymbolTrackerService.ts          |  2 +-
- .../contrib/issue/browser/issueTroubleshoot.ts     |  6 +++---
- .../agentHost/browser/agentSdkSetupService.ts      |  2 +-
- .../agentHost/common/agentHostFileSystemService.ts |  2 +-
- .../dialogs/browser/abstractFileDialogService.ts   |  2 +-
- .../services/dialogs/browser/fileDialogService.ts  |  4 ++--
- .../extensionManagement/browser/extensionBisect.ts |  2 +-
- .../browser/extensionGalleryManifestService.ts     |  2 +-
- .../common/extensionFeaturesManagemetService.ts    |  2 +-
- .../extensions/browser/extensionService.ts         |  6 +++---
- .../extensions/browser/extensionUrlHandler.ts      |  2 +-
- .../extensions/browser/webWorkerExtensionHost.ts   |  2 +-
- .../extensions/common/abstractExtensionService.ts  | 10 +++++-----
- .../keybinding/browser/keybindingService.ts        |  2 +-
- .../languageStatus/common/languageStatusService.ts |  2 +-
- .../services/localization/browser/localeService.ts |  2 +-
- .../services/log/common/defaultLogLevels.ts        |  2 +-
- .../services/outline/browser/outlineService.ts     |  2 +-
- .../workbench/services/path/browser/pathService.ts |  2 +-
- .../remote/common/remoteExplorerService.ts         |  2 +-
- .../remote/common/remoteExtensionsScanner.ts       |  2 +-
- .../terminal/common/embedderTerminalService.ts     |  2 +-
- .../common/remoteUserDataProfiles.ts               |  2 +-
- .../userDataSync/common/userDataSyncUtil.ts        |  2 +-
- 45 files changed, 74 insertions(+), 70 deletions(-)
+ .../browser/keybindingCancellation.ts          |  6 ++++--
+ .../browser/markerNavigationService.ts         |  2 +-
+ .../gotoSymbol/browser/symbolNavigation.ts     |  2 +-
+ .../inlayHints/browser/inlayHintsController.ts |  2 +-
+ .../contrib/peekView/browser/peekView.ts       |  6 ++++--
+ .../actions/browser/actionViewItemService.ts   |  2 +-
+ .../browser/extensionResourceLoaderService.ts  |  2 +-
+ src/vs/platform/files/common/fileService.ts    |  6 +++---
+ .../sandbox/browser/sandboxHelperService.ts    |  2 +-
+ src/vs/sessions/browser/workbench.ts           | 18 +++++++++---------
+ .../browser/account.contribution.ts            |  2 +-
+ .../nullAgentFeedbackService.contribution.ts   |  2 +-
+ .../browser/nullInlineChatSessionService.ts    |  2 +-
+ .../browser/sessionChatInputToolbarDebug.ts    |  2 +-
+ .../webTunnelAgentHostService.contribution.ts  |  2 +-
+ .../sessions/browser/sessionContext.ts         |  2 +-
+ .../browser/sessionsProvidersService.ts        |  2 +-
+ .../api/browser/statusBarExtensionPoint.ts     |  2 +-
+ src/vs/workbench/browser/layout.ts             | 10 +++++-----
+ src/vs/workbench/browser/workbench.ts          | 14 +++++++-------
+ ...agentHostSessionWorkingDirectoryResolver.ts |  2 +-
+ .../aiCustomizationWorkspaceService.ts         |  2 +-
+ .../customizationHarnessService.ts             |  2 +-
+ .../chatStatus/chatStatusItemService.ts        |  2 +-
+ .../chatTextEditContentPart.ts                 |  6 +++---
+ .../browser/widget/input/chatInputNoticeHub.ts |  2 +-
+ .../input/chatInputNotificationService.ts      |  2 +-
+ .../widget/input/chatPhoneInputPresenter.ts    |  2 +-
+ .../debug/browser/extensionHostDebugService.ts |  2 +-
+ .../browser/renameSymbolTrackerService.ts      |  2 +-
+ .../contrib/issue/browser/issueTroubleshoot.ts |  6 +++---
+ .../agentHost/browser/agentSdkSetupService.ts  |  2 +-
+ .../common/agentHostFileSystemService.ts       |  2 +-
+ .../browser/abstractFileDialogService.ts       |  2 +-
+ .../dialogs/browser/fileDialogService.ts       |  4 ++--
+ .../browser/extensionBisect.ts                 |  2 +-
+ .../browser/extensionGalleryManifestService.ts |  2 +-
+ .../extensionFeaturesManagemetService.ts       |  2 +-
+ .../extensions/browser/extensionService.ts     |  6 +++---
+ .../extensions/browser/extensionUrlHandler.ts  |  2 +-
+ .../browser/webWorkerExtensionHost.ts          |  2 +-
+ .../common/abstractExtensionService.ts         | 10 +++++-----
+ .../keybinding/browser/keybindingService.ts    |  2 +-
+ .../common/languageStatusService.ts            |  2 +-
+ .../localization/browser/localeService.ts      |  2 +-
+ .../services/log/common/defaultLogLevels.ts    |  2 +-
+ .../services/outline/browser/outlineService.ts |  2 +-
+ .../services/path/browser/pathService.ts       |  2 +-
+ .../remote/common/remoteExplorerService.ts     |  2 +-
+ .../remote/common/remoteExtensionsScanner.ts   |  2 +-
+ .../terminal/common/embedderTerminalService.ts |  2 +-
+ .../common/remoteUserDataProfiles.ts           |  2 +-
+ .../userDataSync/common/userDataSyncUtil.ts    |  2 +-
+ 53 files changed, 90 insertions(+), 86 deletions(-)
 
 diff --git a/src/vs/editor/contrib/editorState/browser/keybindingCancellation.ts b/src/vs/editor/contrib/editorState/browser/keybindingCancellation.ts
 index 94020ce96b9..de1e9af237e 100644
@@ -194,6 +202,182 @@ index 00394e44052..42a6ea8aec3 100644
  	declare readonly _serviceBrand: undefined;
  
  	async checkSandboxDependencies(): Promise<ISandboxDependencyStatus> {
+diff --git a/src/vs/sessions/browser/workbench.ts b/src/vs/sessions/browser/workbench.ts
+index b07fe047914..6b73a61171f 100644
+--- a/src/vs/sessions/browser/workbench.ts
++++ b/src/vs/sessions/browser/workbench.ts
+@@ -471,7 +471,7 @@ export class Workbench extends Disposable implements IAgentWorkbenchLayoutServic
+ 	private editorService!: IEditorService;
+ 	private paneCompositeService!: IPaneCompositePartService;
+ 	private viewDescriptorService!: IViewDescriptorService;
+-	private sessionsService!: ISessionsService;
++	protected sessionsService!: ISessionsService;
+ 	private sessionsPartService!: ISessionsPartService;
+ 	private customViewService!: ICustomViewService;
+ 	private customViewGridPartService!: ICustomViewGridPartService;
+@@ -484,7 +484,7 @@ export class Workbench extends Disposable implements IAgentWorkbenchLayoutServic
+ 		protected readonly parent: HTMLElement,
+ 		private readonly options: IWorkbenchOptions | undefined,
+ 		private readonly serviceCollection: ServiceCollection,
+-		private readonly logService: ILogService
++		protected readonly logService: ILogService
+ 	) {
+ 		super();
+ 
+@@ -516,7 +516,7 @@ export class Workbench extends Disposable implements IAgentWorkbenchLayoutServic
+ 
+ 	//#region Error Handling
+ 
+-	private registerErrorHandler(logService: ILogService): void {
++	protected registerErrorHandler(logService: ILogService): void {
+ 		// Increase stack trace limit for better errors stacks
+ 		if (!isFirefox) {
+ 			Error.stackTraceLimit = 100;
+@@ -538,7 +538,7 @@ export class Workbench extends Disposable implements IAgentWorkbenchLayoutServic
+ 	}
+ 
+ 	private previousUnexpectedError: { message: string | undefined; time: number } = { message: undefined, time: 0 };
+-	private handleUnexpectedError(error: unknown, logService: ILogService): void {
++	protected handleUnexpectedError(error: unknown, logService: ILogService): void {
+ 		const message = toErrorMessage(error, true);
+ 		if (!message) {
+ 			return;
+@@ -670,7 +670,7 @@ export class Workbench extends Disposable implements IAgentWorkbenchLayoutServic
+ 		});
+ 	}
+ 
+-	private initServices(serviceCollection: ServiceCollection): IInstantiationService {
++	protected initServices(serviceCollection: ServiceCollection): IInstantiationService {
+ 		// Layout Service
+ 		serviceCollection.set(IAgentWorkbenchLayoutService, this);
+ 
+@@ -1036,7 +1036,7 @@ export class Workbench extends Disposable implements IAgentWorkbenchLayoutServic
+ 		}
+ 	}
+ 
+-	private createNotificationsHandlers(
++	protected createNotificationsHandlers(
+ 		instantiationService: IInstantiationService,
+ 		notificationService: NotificationService
+ 	): void {
+@@ -1073,7 +1073,7 @@ export class Workbench extends Disposable implements IAgentWorkbenchLayoutServic
+ 		});
+ 	}
+ 
+-	private registerNotificationRowHeight(): void {
++	protected registerNotificationRowHeight(): void {
+ 		this._register(autorun(reader => {
+ 			setNotificationRowHeight(this.layoutPolicy.isPhoneLayout.read(reader) ? PHONE_NOTIFICATION_ROW_HEIGHT : COMPACT_NOTIFICATION_ROW_HEIGHT);
+ 		}));
+@@ -1165,7 +1165,7 @@ export class Workbench extends Disposable implements IAgentWorkbenchLayoutServic
+ 		this.mainContainer.appendChild(customViewGridPartContainer);
+ 	}
+ 
+-	private restore(lifecycleService: ILifecycleService): void {
++	protected restore(lifecycleService: ILifecycleService): void {
+ 		// Update perf marks
+ 		mark('code/didStartWorkbench');
+ 		performance.measure('perf: workbench create & restore', 'code/didLoadWorkbenchMain', 'code/didStartWorkbench');
+@@ -1191,7 +1191,7 @@ export class Workbench extends Disposable implements IAgentWorkbenchLayoutServic
+ 		eventuallyPhaseScheduler.schedule();
+ 	}
+ 
+-	private restoreParts(): void {
++	protected restoreParts(): void {
+ 		// Open default view containers for each visible part
+ 		const partsToRestore: { location: ViewContainerLocation; visible: boolean }[] = [
+ 			{ location: ViewContainerLocation.Sidebar, visible: this.partVisibility.sidebar },
+diff --git a/src/vs/sessions/contrib/accountMenu/browser/account.contribution.ts b/src/vs/sessions/contrib/accountMenu/browser/account.contribution.ts
+index 41e9af727ea..301da3430ed 100644
+--- a/src/vs/sessions/contrib/accountMenu/browser/account.contribution.ts
++++ b/src/vs/sessions/contrib/accountMenu/browser/account.contribution.ts
+@@ -1048,7 +1048,7 @@ registerWorkbenchContribution2(AccountWidgetContribution.ID, AccountWidgetContri
+ 
+ // --- Chat Dashboard Service (real implementation for mobile account sheet) --- //
+ 
+-class ChatDashboardServiceImpl implements IChatDashboardService {
++export class ChatDashboardServiceImpl implements IChatDashboardService {
+ 	readonly _serviceBrand: undefined;
+ 
+ 	constructor(
+diff --git a/src/vs/sessions/contrib/agentFeedback/browser/nullAgentFeedbackService.contribution.ts b/src/vs/sessions/contrib/agentFeedback/browser/nullAgentFeedbackService.contribution.ts
+index 23f2cbb0f24..f6852c3edc9 100644
+--- a/src/vs/sessions/contrib/agentFeedback/browser/nullAgentFeedbackService.contribution.ts
++++ b/src/vs/sessions/contrib/agentFeedback/browser/nullAgentFeedbackService.contribution.ts
+@@ -20,7 +20,7 @@ import { IFeedbackPullRequest } from '../../../../platform/agentHost/common/meta
+  * is not wired up. The changes view model still depends on the service
+  * being registered, so we expose a service that reports no feedback.
+  */
+-class NullAgentFeedbackService extends Disposable implements IAgentFeedbackService {
++export class NullAgentFeedbackService extends Disposable implements IAgentFeedbackService {
+ 
+ 	declare readonly _serviceBrand: undefined;
+ 
+diff --git a/src/vs/sessions/contrib/chat/browser/nullInlineChatSessionService.ts b/src/vs/sessions/contrib/chat/browser/nullInlineChatSessionService.ts
+index 6f8b31a16eb..3858274d402 100644
+--- a/src/vs/sessions/contrib/chat/browser/nullInlineChatSessionService.ts
++++ b/src/vs/sessions/contrib/chat/browser/nullInlineChatSessionService.ts
+@@ -10,7 +10,7 @@ import { IActiveCodeEditor, ICodeEditor } from '../../../../editor/browser/edito
+ import { InstantiationType, registerSingleton } from '../../../../platform/instantiation/common/extensions.js';
+ import { IInlineChatSession, IInlineChatSessionService } from '../../../../workbench/contrib/inlineChat/browser/inlineChatSessionService.js';
+ 
+-class NullInlineChatSessionService implements IInlineChatSessionService {
++export class NullInlineChatSessionService implements IInlineChatSessionService {
+ 	declare _serviceBrand: undefined;
+ 
+ 	readonly onWillStartSession: Event<IActiveCodeEditor> = Event.None;
+diff --git a/src/vs/sessions/contrib/chat/browser/sessionChatInputToolbarDebug.ts b/src/vs/sessions/contrib/chat/browser/sessionChatInputToolbarDebug.ts
+index 86cdb731232..7037624242e 100644
+--- a/src/vs/sessions/contrib/chat/browser/sessionChatInputToolbarDebug.ts
++++ b/src/vs/sessions/contrib/chat/browser/sessionChatInputToolbarDebug.ts
+@@ -80,7 +80,7 @@ export function isNonNegativeIntegerInput(raw: string): boolean {
+ 	return Number.isInteger(parsed) && parsed >= 0;
+ }
+ 
+-class SessionChatPillsDebugService extends Disposable implements ISessionChatPillsDebugService {
++export class SessionChatPillsDebugService extends Disposable implements ISessionChatPillsDebugService {
+ 
+ 	declare readonly _serviceBrand: undefined;
+ 
+diff --git a/src/vs/sessions/contrib/providers/remoteAgentHost/browser/webTunnelAgentHostService.contribution.ts b/src/vs/sessions/contrib/providers/remoteAgentHost/browser/webTunnelAgentHostService.contribution.ts
+index 6db0669ae06..b81b2df791e 100644
+--- a/src/vs/sessions/contrib/providers/remoteAgentHost/browser/webTunnelAgentHostService.contribution.ts
++++ b/src/vs/sessions/contrib/providers/remoteAgentHost/browser/webTunnelAgentHostService.contribution.ts
+@@ -23,7 +23,7 @@ import { WebTunnelAgentHostService } from './webTunnelAgentHostService.js';
+ /**
+  * Selects the embedder proxy when provided and otherwise connects directly from the browser.
+  */
+-class BrowserTunnelAgentHostServiceSelector extends Disposable implements ITunnelAgentHostService {
++export class BrowserTunnelAgentHostServiceSelector extends Disposable implements ITunnelAgentHostService {
+ 	declare readonly _serviceBrand: undefined;
+ 
+ 	private readonly _delegate: ITunnelAgentHostService;
+diff --git a/src/vs/sessions/services/sessions/browser/sessionContext.ts b/src/vs/sessions/services/sessions/browser/sessionContext.ts
+index 762a1979eb3..0445c805938 100644
+--- a/src/vs/sessions/services/sessions/browser/sessionContext.ts
++++ b/src/vs/sessions/services/sessions/browser/sessionContext.ts
+@@ -52,7 +52,7 @@ export class SessionContext implements ISessionContext {
+  * Global fallback used outside a scoped surface. Reports the window's active
+  * session.
+  */
+-class ActiveSessionContext implements ISessionContext {
++export class ActiveSessionContext implements ISessionContext {
+ 
+ 	declare readonly _serviceBrand: undefined;
+ 
+diff --git a/src/vs/sessions/services/sessions/browser/sessionsProvidersService.ts b/src/vs/sessions/services/sessions/browser/sessionsProvidersService.ts
+index bde3770661b..d1f01d8d1d2 100644
+--- a/src/vs/sessions/services/sessions/browser/sessionsProvidersService.ts
++++ b/src/vs/sessions/services/sessions/browser/sessionsProvidersService.ts
+@@ -30,7 +30,7 @@ export interface ISessionsProvidersService {
+ 	getProvider<T extends ISessionsProvider>(providerId: string): T | undefined;
+ }
+ 
+-class SessionsProvidersService extends Disposable implements ISessionsProvidersService {
++export class SessionsProvidersService extends Disposable implements ISessionsProvidersService {
+ 	declare readonly _serviceBrand: undefined;
+ 
+ 	private readonly _providers = new Map<string, ISessionsProvider>();
 diff --git a/src/vs/workbench/api/browser/statusBarExtensionPoint.ts b/src/vs/workbench/api/browser/statusBarExtensionPoint.ts
 index c8d1765a7ab..91d78dc1be0 100644
 --- a/src/vs/workbench/api/browser/statusBarExtensionPoint.ts
