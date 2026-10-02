@@ -6,10 +6,11 @@ Subject: [PATCH] feat: prevent IDE from entering fullscreen if not occupying
 
 ---
  src/vs/base/browser/dom.ts                    | 34 ++++++++++++++++---
+ src/vs/sessions/browser/workbench.ts          |  5 +--
  src/vs/workbench/browser/layout.ts            | 19 ++++++-----
  src/vs/workbench/browser/web.main.ts          |  2 +-
  .../host/browser/browserHostService.ts        |  2 +-
- 4 files changed, 41 insertions(+), 16 deletions(-)
+ 5 files changed, 44 insertions(+), 18 deletions(-)
 
 diff --git a/src/vs/base/browser/dom.ts b/src/vs/base/browser/dom.ts
 index e037f9e58db..d0664127b9d 100644
@@ -79,6 +80,30 @@ index e037f9e58db..d0664127b9d 100644
  			// if the height of the browser matches the screen height, we can
  			// only guess that we are in fullscreen. It is also possible that
  			// the user has turned off taskbars in the OS and the browser is
+diff --git a/src/vs/sessions/browser/workbench.ts b/src/vs/sessions/browser/workbench.ts
+index 99be882b639..d543d9b6530 100644
+--- a/src/vs/sessions/browser/workbench.ts
++++ b/src/vs/sessions/browser/workbench.ts
+@@ -9,7 +9,7 @@ import './media/workbench.css';
+ import './media/phoneLayout.css';
+ import { Disposable, DisposableStore, IDisposable, toDisposable } from '../../base/common/lifecycle.js';
+ import { Emitter, Event, setGlobalLeakWarningThreshold } from '../../base/common/event.js';
+-import { addDisposableGenericMouseDownListener, addDisposableListener, EventType, getActiveDocument, getActiveElement, getClientArea, getWindow, getWindowId, getWindows, IDimension, isAncestorUsingFlowTo, size, Dimension, runWhenWindowIdle } from '../../base/browser/dom.js';
++import { addDisposableGenericMouseDownListener, addDisposableListener, EventType, getActiveDocument, getActiveElement, getClientArea, getWindow, getWindowId, getWindows, IDimension, isAncestorUsingFlowTo, size, Dimension, runWhenWindowIdle, getFullscreenElement } from '../../base/browser/dom.js';
+ import { DeferredPromise, RunOnceScheduler } from '../../base/common/async.js';
+ import { isFullscreen, onDidChangeFullscreen, isChrome, isFirefox, isSafari } from '../../base/browser/browser.js';
+ import { mark } from '../../base/common/performance.js';
+@@ -1820,8 +1820,9 @@ export class Workbench extends Disposable implements IAgentWorkbenchLayoutServic
+ 	private _previousViewportClass: string | undefined;
+ 
+ 	layout(): void {
++		const fullscreenElement = getFullscreenElement(mainWindow.document);
+ 		const layoutViewportDimension = getClientArea(
+-			this.mainWindowFullscreen ? mainWindow.document.body : this.parent
++			this.mainWindowFullscreen && this.mainContainer === fullscreenElement ? mainWindow.document.body : this.parent
+ 		);
+ 
+ 		// Update viewport classification and toggle mobile CSS classes
 diff --git a/src/vs/workbench/browser/layout.ts b/src/vs/workbench/browser/layout.ts
 index 6f36331ccba..99c2d537ec9 100644
 --- a/src/vs/workbench/browser/layout.ts
