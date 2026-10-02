@@ -633,6 +633,7 @@ import { IAgentEditorCommentsBridge } from 'vs/workbench/services/agentEditorCom
 import { IAgentHostFileSystemService } from 'vs/workbench/services/agentHost/common/agentHostFileSystemService.service'
 import { IPowerService } from 'vs/workbench/services/power/common/powerService.service.js'
 import { FileSystemProviderCapabilities } from './service-override/files.js'
+import { IWSLRemoteAgentHostService } from 'vs/platform/agentHost/common/wslRemoteAgentHost.service.js'
 
 /**
  * Editor services: all editor service that are not defined in vs/editor/standalone/
@@ -9345,3 +9346,22 @@ class McpDevModeDebugging implements IMcpDevModeDebugging {
 }
 
 registerSingleton(IMcpDevModeDebugging, McpDevModeDebugging, InstantiationType.Delayed)
+
+class WSLRemoteAgentHostService implements IWSLRemoteAgentHostService {
+  _serviceBrand: undefined
+
+  onDidChangeConnections: IWSLRemoteAgentHostService['onDidChangeConnections'] = Event.None
+  onDidReportConnectProgress: IWSLRemoteAgentHostService['onDidReportConnectProgress'] = Event.None
+  connections: IWSLRemoteAgentHostService['connections'] = []
+  isWSLAvailable: IWSLRemoteAgentHostService['isWSLAvailable'] = async () => false
+  listDistros: IWSLRemoteAgentHostService['listDistros'] = async () => []
+  listRunningDistros: IWSLRemoteAgentHostService['listRunningDistros'] = async () => []
+  @Unsupported
+  connect: IWSLRemoteAgentHostService['connect'] = unsupported
+  disconnect: IWSLRemoteAgentHostService['disconnect'] = async () => {}
+  @Unsupported
+  reconnect: IWSLRemoteAgentHostService['reconnect'] = unsupported
+  getCachedDistros: IWSLRemoteAgentHostService['getCachedDistros'] = () => []
+}
+
+registerSingleton(IWSLRemoteAgentHostService, WSLRemoteAgentHostService, InstantiationType.Delayed)

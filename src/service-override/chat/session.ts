@@ -23,6 +23,8 @@ import { IChatResponseFileChangesService } from 'vs/workbench/contrib/chat/brows
 import { SessionsChatResponseFileChangesService } from 'vs/sessions/contrib/chat/browser/sessionTurnChanges.js'
 import { IChangesViewService } from 'vs/sessions/contrib/changes/common/changesViewService.service.js'
 import { ChangesViewService } from 'vs/sessions/contrib/changes/browser/changesViewService'
+import { NullWSLRemoteAgentHostService } from 'vs/platform/agentHost/browser/nullWslRemoteAgentHostService'
+import { IWSLRemoteAgentHostService } from 'vs/platform/agentHost/common/wslRemoteAgentHost.service.js'
 export * from './common.js'
 
 import 'vs/sessions/contrib/chat/browser/btwSlashCommand.contribution'
@@ -81,7 +83,12 @@ export default function getServiceOverride({
       [],
       true
     ),
-    [IChangesViewService.toString()]: new SyncDescriptor(ChangesViewService, [], true)
+    [IChangesViewService.toString()]: new SyncDescriptor(ChangesViewService, [], true),
+    [IWSLRemoteAgentHostService.toString()]: new SyncDescriptor(
+      NullWSLRemoteAgentHostService,
+      [],
+      true
+    )
   }
 }
 
