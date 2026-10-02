@@ -81,7 +81,7 @@ index e037f9e58db..d0664127b9d 100644
  			// only guess that we are in fullscreen. It is also possible that
  			// the user has turned off taskbars in the OS and the browser is
 diff --git a/src/vs/sessions/browser/workbench.ts b/src/vs/sessions/browser/workbench.ts
-index 99be882b639..d543d9b6530 100644
+index a88bf87d7ea..6840917d841 100644
 --- a/src/vs/sessions/browser/workbench.ts
 +++ b/src/vs/sessions/browser/workbench.ts
 @@ -9,7 +9,7 @@ import './media/workbench.css';
@@ -93,7 +93,7 @@ index 99be882b639..d543d9b6530 100644
  import { DeferredPromise, RunOnceScheduler } from '../../base/common/async.js';
  import { isFullscreen, onDidChangeFullscreen, isChrome, isFirefox, isSafari } from '../../base/browser/browser.js';
  import { mark } from '../../base/common/performance.js';
-@@ -1820,8 +1820,9 @@ export class Workbench extends Disposable implements IAgentWorkbenchLayoutServic
+@@ -1802,8 +1802,9 @@ export class Workbench extends Disposable implements IAgentWorkbenchLayoutServic
  	private _previousViewportClass: string | undefined;
  
  	layout(): void {

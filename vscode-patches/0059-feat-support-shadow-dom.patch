@@ -876,10 +876,10 @@ index e0431c43297..3becb497383 100644
  		};
  
 diff --git a/src/vs/sessions/browser/workbench.ts b/src/vs/sessions/browser/workbench.ts
-index 6b73a61171f..99be882b639 100644
+index c44d98008fb..a88bf87d7ea 100644
 --- a/src/vs/sessions/browser/workbench.ts
 +++ b/src/vs/sessions/browser/workbench.ts
-@@ -83,6 +83,7 @@ import { ICustomViewDescriptor } from '../services/customView/browser/customView
+@@ -77,6 +77,7 @@ import { ICustomViewDescriptor } from '../services/customView/browser/customView
  import { ISessionsSetUpService } from './sessionsSetUpService.js';
  import { AGENTS_FLOATING_PANEL_GAP } from '../common/layoutConstants.js';
  import { ITelemetryService } from '../../platform/telemetry/common/telemetry.js';
@@ -887,7 +887,7 @@ index 6b73a61171f..99be882b639 100644
  
  const PHONE_NOTIFICATION_ROW_HEIGHT = 44;
  
-@@ -488,6 +489,8 @@ export class Workbench extends Disposable implements IAgentWorkbenchLayoutServic
+@@ -482,6 +483,8 @@ export class Workbench extends Disposable implements IAgentWorkbenchLayoutServic
  	) {
  		super();
  

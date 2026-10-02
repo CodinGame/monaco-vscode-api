@@ -4,9 +4,63 @@ Date: Mon, 11 Mar 2024 18:26:35 +0100
 Subject: [PATCH] cleanup: remove code that we will run ourselves
 
 ---
+ src/vs/sessions/browser/workbench.ts  | 20 +-------------------
  src/vs/workbench/browser/workbench.ts | 20 --------------------
- 1 file changed, 20 deletions(-)
+ 2 files changed, 1 insertion(+), 39 deletions(-)
 
+diff --git a/src/vs/sessions/browser/workbench.ts b/src/vs/sessions/browser/workbench.ts
+index 6b73a61171f..c44d98008fb 100644
+--- a/src/vs/sessions/browser/workbench.ts
++++ b/src/vs/sessions/browser/workbench.ts
+@@ -38,18 +38,12 @@ import { IHostService } from '../../workbench/services/host/browser/host.js';
+ import { IDialogService } from '../../platform/dialogs/common/dialogs.js';
+ import { INotificationService } from '../../platform/notification/common/notification.js';
+ import { NotificationService } from '../../workbench/services/notification/common/notificationService.js';
+-import { IHoverService, WorkbenchHoverDelegate } from '../../platform/hover/browser/hover.js';
+-import { setHoverDelegateFactory } from '../../base/browser/ui/hover/hoverDelegateFactory.js';
+-import { setBaseLayerHoverDelegate } from '../../base/browser/ui/hover/hoverDelegate2.js';
+-import { Registry } from '../../platform/registry/common/platform.js';
+-import { IWorkbenchContributionsRegistry, Extensions as WorkbenchExtensions } from '../../workbench/common/contributions.js';
+-import { IEditorFactoryRegistry, EditorExtensions, IEditorWillOpenEvent } from '../../workbench/common/editor.js';
++import { IEditorWillOpenEvent } from '../../workbench/common/editor.js';
+ import { alert, setARIAContainer } from '../../base/browser/ui/aria/aria.js';
+ import { localize } from '../../nls.js';
+ import { FontMeasurements } from '../../editor/browser/config/fontMeasurements.js';
+ import { createBareFontInfoFromRawSettings } from '../../editor/common/config/fontInfoFromSettings.js';
+ import { toErrorMessage } from '../../base/common/errorMessage.js';
+-import { WorkbenchContextKeysHandler } from '../../workbench/browser/contextkeys.js';
+ import { PixelRatio } from '../../base/browser/pixelRatio.js';
+ import { AccessibilityProgressSignalScheduler } from '../../platform/accessibilitySignal/browser/progressAccessibilitySignalScheduler.js';
+ import { setProgressAccessibilitySignalScheduler } from '../../base/browser/ui/progressbar/progressAccessibilitySignal.js';
+@@ -573,7 +567,6 @@ export class Workbench extends Disposable implements IAgentWorkbenchLayoutServic
+ 				const storageService = accessor.get(IStorageService);
+ 				const configurationService = accessor.get(IConfigurationService);
+ 				const hostService = accessor.get(IHostService);
+-				const hoverService = accessor.get(IHoverService);
+ 				const dialogService = accessor.get(IDialogService);
+ 				const notificationService = accessor.get(INotificationService) as NotificationService;
+ 				const markdownRendererService = accessor.get(IMarkdownRendererService);
+@@ -587,20 +580,9 @@ export class Workbench extends Disposable implements IAgentWorkbenchLayoutServic
+ 				// Set code block renderer for markdown rendering
+ 				markdownRendererService.setDefaultCodeBlockRenderer(instantiationService.createInstance(EditorMarkdownCodeBlockRenderer));
+ 
+-				// Default Hover Delegate must be registered before creating any workbench/layout components
+-				setHoverDelegateFactory((placement, enableInstantHover) => instantiationService.createInstance(WorkbenchHoverDelegate, placement, { instantHover: enableInstantHover }, {}));
+-				setBaseLayerHoverDelegate(hoverService);
+-
+ 				// Layout
+ 				this.initLayout(accessor);
+ 
+-				// Registries - this creates and registers all parts
+-				Registry.as<IWorkbenchContributionsRegistry>(WorkbenchExtensions.Workbench).start(accessor);
+-				Registry.as<IEditorFactoryRegistry>(EditorExtensions.EditorFactory).start(accessor);
+-
+-				// Context Keys
+-				this._register(instantiationService.createInstance(WorkbenchContextKeysHandler));
+-
+ 				// Editor Maximized Context Key
+ 				const editorMaximizedContext = EditorMaximizedContext.bindTo(accessor.get(IContextKeyService));
+ 				this._register(this.onDidChangeEditorMaximized(() => {
 diff --git a/src/vs/workbench/browser/workbench.ts b/src/vs/workbench/browser/workbench.ts
 index 91ba0f472a6..7796aae8a15 100644
 --- a/src/vs/workbench/browser/workbench.ts
