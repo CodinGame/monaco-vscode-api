@@ -94,7 +94,7 @@ index 08ab3d70e4c..ee12abaf4b4 100644
  	ConfigurationTarget.WORKSPACE_FOLDER,
  	ConfigurationTarget.WORKSPACE,
 diff --git a/src/vs/workbench/contrib/chat/browser/chatStatus/chatStatusEntry.ts b/src/vs/workbench/contrib/chat/browser/chatStatus/chatStatusEntry.ts
-index e8a7cefacbf..f24047147a2 100644
+index e8a7cefacbf..995c0b946bf 100644
 --- a/src/vs/workbench/contrib/chat/browser/chatStatus/chatStatusEntry.ts
 +++ b/src/vs/workbench/contrib/chat/browser/chatStatus/chatStatusEntry.ts
 @@ -196,7 +196,7 @@ export class ChatStatusBarEntry extends Disposable implements IWorkbenchContribu
@@ -102,7 +102,7 @@ index e8a7cefacbf..f24047147a2 100644
  
  		this._register(this.configurationService.onDidChangeConfiguration(e => {
 -			if (e.affectsConfiguration(product.defaultChatAgent?.completionsEnablementSetting) || e.affectsConfiguration(ChatConfiguration.TitleBarSignInEnabled)) {
-+			if (e.affectsConfiguration(product.defaultChatAgent!.completionsEnablementSetting) || e.affectsConfiguration(ChatConfiguration.TitleBarSignInEnabled)) {
++			if ((product.defaultChatAgent && e.affectsConfiguration(product.defaultChatAgent.completionsEnablementSetting)) || e.affectsConfiguration(ChatConfiguration.TitleBarSignInEnabled)) {
  				this.update();
  			}
  		}));
