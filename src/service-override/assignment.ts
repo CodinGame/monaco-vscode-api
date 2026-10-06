@@ -4,6 +4,7 @@ import { IConfigurationService } from 'vs/platform/configuration/common/configur
 import { IEnvironmentService } from 'vs/platform/environment/common/environment.service'
 import { SyncDescriptor } from 'vs/platform/instantiation/common/descriptors'
 import { IWorkbenchAssignmentService } from 'vs/workbench/services/assignment/common/assignmentService.service'
+import 'vs/workbench/services/assignment/common/assignmentService'
 
 export interface Treatments {
   'extensions.gallery.useResourceApi'?: 'unpkg' | 'marketplace'

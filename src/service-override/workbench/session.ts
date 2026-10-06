@@ -150,6 +150,17 @@ import 'vs/sessions/contrib/sessions/browser/customizationsToolbar.contribution'
 import 'vs/sessions/contrib/sessions/browser/sessions.contribution'
 import 'vs/sessions/contrib/sessions/browser/sessionsTelemetry.contribution'
 import 'vs/sessions/contrib/workspace/browser/workspace.contribution'
+import 'vs/sessions/browser/layoutActions'
+import 'vs/sessions/contrib/codeReview/browser/codeReview.contributions'
+import 'vs/sessions/contrib/providers/agentHost/browser/agentHostForkActions'
+import 'vs/sessions/contrib/providers/agentHost/browser/agentHostSessionConfigPicker'
+import 'vs/sessions/contrib/providers/agentHost/browser/agentMergeActions'
+import 'vs/sessions/contrib/providers/agentHost/browser/exportDebugLogsAction'
+import 'vs/sessions/contrib/providers/agentHost/browser/mobile/mobileChatInputConfigPicker'
+import 'vs/sessions/contrib/terminal/browser/sessionsTerminalContribution'
+import 'vs/sessions/contrib/applyCommitsToParentRepo/browser/applyChangesToParentRepo'
+import 'vs/sessions/contrib/providers/agentHost/browser/agentHostSessionBranchActions'
+import 'vs/workbench/browser/parts/sidebar/sidebarActions'
 
 class CustomWorkbench extends Workbench {
   constructor(
