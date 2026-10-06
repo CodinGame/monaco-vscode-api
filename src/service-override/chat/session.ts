@@ -40,12 +40,14 @@ import 'vs/sessions/contrib/providers/copilotChatSessions/browser/copilotChatSes
 import 'vs/sessions/contrib/providers/copilotChatSessions/browser/mobilePermissionPicker.contribution'
 import 'vs/sessions/contrib/providers/remoteAgentHost/browser/cloudSandboxAgentHost.contribution'
 import 'vs/sessions/contrib/providers/remoteAgentHost/browser/hostFilter.contribution'
-import 'vs/sessions/contrib/providers/remoteAgentHost/browser/remoteAgentHost.contribution'
 import 'vs/sessions/contrib/providers/remoteAgentHost/browser/remoteAgentHostTerminal.contribution'
 import 'vs/sessions/contrib/providers/remoteAgentHost/browser/tunnelAgentHost.contribution'
 import 'vs/sessions/contrib/providers/remoteAgentHost/browser/webSocketAgentHost.contribution'
 import 'vs/sessions/contrib/providers/remoteAgentHost/browser/webTunnelAgentHostService.contribution'
 import 'vs/sessions/contrib/providers/remoteAgentHost/browser/wslAgentHost.contribution'
+
+// should ALWAYS be after webSocketAgentHost.contribution
+import 'vs/sessions/contrib/providers/remoteAgentHost/browser/remoteAgentHost.contribution'
 
 export default function getServiceOverride({
   defaultAccount
