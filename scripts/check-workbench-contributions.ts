@@ -6,8 +6,12 @@ import ts from 'typescript'
 const repositoryRoot = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..')
 const sourceRoot = path.join(repositoryRoot, 'src')
 const vscodeSourceRoot = path.join(repositoryRoot, 'vscode/src')
-const contributionFilePattern = /\.contribution\.[cm]?[jt]sx?$/
 const sourceFilePattern = 'src/**/*.{ts,tsx,js,jsx,mjs,cjs}'
+
+const ignoredContributions = new Set([
+  'vs/platform/actionWidget/browser/actionWidget',
+  'vs/workbench/services/extensionManagement/browser/extensionBisect'
+])
 
 const checks = {
   workbench: {
@@ -69,7 +73,7 @@ function getImportedModules(filePath: string): ImportedModule[] {
     sourceText,
     ts.ScriptTarget.Latest,
     false,
-    filePath.endsWith('x') ? ts.ScriptKind.TSX : ts.ScriptKind.TS
+    ts.ScriptKind.TS
   )
   const importedModules: ImportedModule[] = []
 
@@ -94,7 +98,7 @@ function getImportedModules(filePath: string): ImportedModule[] {
   return importedModules
 }
 
-function containsNoContributionSideEffects(filePath: string): boolean {
+function containsContributionSideEffects(filePath: string): boolean {
   const sourceText = ts.sys.readFile(filePath)
   if (sourceText == null) {
     throw new Error(`Unable to read ${path.relative(repositoryRoot, filePath)}`)
@@ -105,24 +109,29 @@ function containsNoContributionSideEffects(filePath: string): boolean {
     sourceText,
     ts.ScriptTarget.Latest,
     false,
-    filePath.endsWith('x') ? ts.ScriptKind.TSX : ts.ScriptKind.TS
+    ts.ScriptKind.TS
   )
 
-  return sourceFile.statements.every((statement) => {
-    if (
-      ts.isImportDeclaration(statement) ||
-      ts.isImportEqualsDeclaration(statement) ||
-      ts.isClassDeclaration(statement)
-    ) {
-      return true
-    }
-
+  return sourceFile.statements.some((statement) => {
     if (!ts.isExpressionStatement(statement) || !ts.isCallExpression(statement.expression)) {
       return false
     }
 
     const calledExpression = statement.expression.expression
-    return ts.isIdentifier(calledExpression) && calledExpression.text === 'registerSingleton'
+    const methodName = ts.isIdentifier(calledExpression)
+      ? calledExpression.text
+      : ts.isPropertyAccessExpression(calledExpression)
+        ? calledExpression.name.text
+        : undefined
+
+    return (
+      methodName === 'registerConfiguration' ||
+      methodName === 'registerContribution' ||
+      methodName === 'registerContribution2' ||
+      methodName === 'registerAction' ||
+      methodName === 'registerAction2' ||
+      methodName === 'registerExtensionPoint'
+    )
   })
 }
 
@@ -161,9 +170,7 @@ function analyzeImportGraph(entryPoints: string[], excludedFiles = new Set<strin
     }
     visited.add(filePath)
 
-    const isContributionFile =
-      isInside(vscodeSourceRoot, filePath) && contributionFilePattern.test(filePath)
-    if (isContributionFile && !containsNoContributionSideEffects(filePath)) {
+    if (isInside(vscodeSourceRoot, filePath) && containsContributionSideEffects(filePath)) {
       contributionCandidates.add(filePath)
     }
 
@@ -173,13 +180,6 @@ function analyzeImportGraph(entryPoints: string[], excludedFiles = new Set<strin
         resolvedFile != null &&
         (isInside(sourceRoot, resolvedFile) || isInside(vscodeSourceRoot, resolvedFile))
       ) {
-        if (
-          isContributionFile &&
-          importedModule.sideEffectOnly &&
-          isInside(vscodeSourceRoot, resolvedFile)
-        ) {
-          contributionCandidates.add(resolvedFile)
-        }
         pending.push(resolvedFile)
       }
     }
@@ -215,9 +215,11 @@ const entryPointContributions = getContributions(entryPointGraph, contributionCa
 const sourceContributions = getContributions(sourceGraph, contributionCandidates)
 const onlyInEntryPoint = [...entryPointContributions]
   .filter((contribution) => !sourceContributions.has(contribution))
+  .filter((contribution) => !ignoredContributions.has(contribution))
   .sort()
 const onlyInSource = [...sourceContributions]
   .filter((contribution) => !entryPointContributions.has(contribution))
+  .filter((contribution) => !ignoredContributions.has(contribution))
   .sort()
 
 if (onlyInEntryPoint.length > 0) {
