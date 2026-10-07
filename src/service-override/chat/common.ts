@@ -242,7 +242,7 @@ import 'vs/workbench/contrib/chat/browser/attachments/transcriptContextAttachmen
 import 'vs/workbench/api/browser/extensionHost.chat.contribution'
 import 'vs/workbench/contrib/chat/browser/agentSessions/experiments/agentSessionsExperiments.contribution'
 
-import petAssets from 'vs/workbench/contrib/chat/browser/widget/media/chatPet/*.png'
+import petAssets from 'vs/workbench/contrib/chat/browser/widget/media/chatPet/**/*.png'
 
 registerAssets(petAssets)
 
