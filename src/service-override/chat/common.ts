@@ -227,6 +227,7 @@ import { IAgentHostByokLmHandler } from 'vs/platform/agentHost/common/agentHostB
 import { IDefaultAccountService } from 'vs/platform/defaultAccount/common/defaultAccount.service'
 import { Event } from 'vs/base/common/event'
 import { MANAGED_SETTINGS_FRESHNESS_NOT_REQUIRED } from 'vs/platform/defaultAccount/common/defaultAccount'
+import { registerAssets } from '../../assets'
 import 'vs/platform/agentHost/common/agentHostStarter.config.contribution'
 import 'vs/workbench/contrib/agentsVoice/browser/agentsVoice.contribution'
 import 'vs/workbench/contrib/imageCarousel/browser/imageCarousel.contribution'
@@ -240,6 +241,10 @@ import 'vs/workbench/contrib/chat/browser/attachments/chatReferenceAttachmentWid
 import 'vs/workbench/contrib/chat/browser/attachments/transcriptContextAttachmentWidget.contribution'
 import 'vs/workbench/api/browser/extensionHost.chat.contribution'
 import 'vs/workbench/contrib/chat/browser/agentSessions/experiments/agentSessionsExperiments.contribution'
+
+import petAssets from 'vs/workbench/contrib/chat/browser/widget/media/chatPet/*.png'
+
+registerAssets(petAssets)
 
 class DefaultAccountService implements IDefaultAccountService {
   declare _serviceBrand: undefined

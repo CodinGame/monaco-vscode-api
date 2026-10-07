@@ -24,12 +24,12 @@ declare module 'vs/workbench/browser/parts/editor/media/*.png' {
   export default assets
 }
 
-declare module 'vs/workbench/contrib/welcomeGettingStarted/common/media/*.svg' {
+declare module '*.svg' {
   const assets: Record<string, string>
   export default assets
 }
 
-declare module 'vs/workbench/contrib/welcomeGettingStarted/common/media/*.png' {
+declare module '*.png' {
   const assets: Record<string, string>
   export default assets
 }
