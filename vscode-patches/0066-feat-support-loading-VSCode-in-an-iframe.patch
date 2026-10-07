@@ -658,7 +658,7 @@ index d558e4eef58..ac207215fa7 100644
  					sendErrorNow(new RemoteAuthorityResolverError('Browser is offline', RemoteAuthorityResolverErrorCode.TemporarilyNotAvailable, e));
  				} else {
 diff --git a/src/vs/sessions/contrib/aquarium/browser/aquariumOverlay.ts b/src/vs/sessions/contrib/aquarium/browser/aquariumOverlay.ts
-index 08c7fe457f2..de3325c9fd5 100644
+index 08d31f54bc9..0ec4cd2c93f 100644
 --- a/src/vs/sessions/contrib/aquarium/browser/aquariumOverlay.ts
 +++ b/src/vs/sessions/contrib/aquarium/browser/aquariumOverlay.ts
 @@ -3,7 +3,7 @@

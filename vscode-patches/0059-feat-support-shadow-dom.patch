@@ -35,6 +35,8 @@ Subject: [PATCH] feat: support shadow dom
  .../browser/userInteractionServiceImpl.ts     |  5 +-
  src/vs/sessions/browser/workbench.ts          |  3 +
  .../agentFeedbackEditorInputContribution.ts   |  6 +-
+ .../aquarium/browser/aquariumOverlay.ts       |  2 +-
+ .../sessions/contrib/aquarium/browser/fish.ts | 17 ++---
  .../browser/actions/developerActions.ts       |  4 +-
  src/vs/workbench/browser/layout.ts            |  3 +
  .../browser/parts/editor/editorGroupView.ts   |  4 +-
@@ -68,7 +70,7 @@ Subject: [PATCH] feat: support shadow dom
  .../browser/auxiliaryWindowService.ts         |  6 +-
  .../suggest/browser/simpleSuggestWidget.ts    |  4 +-
  .../themes/browser/workbenchThemeService.ts   | 33 +++++++++-
- 64 files changed, 263 insertions(+), 148 deletions(-)
+ 66 files changed, 273 insertions(+), 157 deletions(-)
 
 diff --git a/src/vs/base/browser/dom.ts b/src/vs/base/browser/dom.ts
 index 6d7ea0fbd8e..e037f9e58db 100644
@@ -927,6 +929,75 @@ index f7b8ece70c2..81d0bcd9dd7 100644
  					widget.inputElement.focus();
  				}
  			}));
+diff --git a/src/vs/sessions/contrib/aquarium/browser/aquariumOverlay.ts b/src/vs/sessions/contrib/aquarium/browser/aquariumOverlay.ts
+index 08c7fe457f2..08d31f54bc9 100644
+--- a/src/vs/sessions/contrib/aquarium/browser/aquariumOverlay.ts
++++ b/src/vs/sessions/contrib/aquarium/browser/aquariumOverlay.ts
+@@ -561,7 +561,7 @@ function createActiveAquarium(mainContainer: HTMLElement, layoutService: IWorkbe
+ 			positionY: randomBetween(0, Math.max(1, bounds.height - size)),
+ 			velocityX: Math.cos(angle) * speed,
+ 			velocityY: Math.sin(angle) * speed,
+-		}, targetWindow.document);
++		}, mainContainer);
+ 		fish.push(f);
+ 	}
+ 	// Spawn in two batches: first half synchronous (single layout pass via
+diff --git a/src/vs/sessions/contrib/aquarium/browser/fish.ts b/src/vs/sessions/contrib/aquarium/browser/fish.ts
+index 74b4b5c6989..8bdaee12d10 100644
+--- a/src/vs/sessions/contrib/aquarium/browser/fish.ts
++++ b/src/vs/sessions/contrib/aquarium/browser/fish.ts
+@@ -91,7 +91,7 @@ export class Fish {
+ 	 */
+ 	private facing = 1;
+ 
+-	constructor(opts: IFishOptions, targetDocument: Document) {
++	constructor(opts: IFishOptions, mainContainer: HTMLElement) {
+ 		this.positionX = opts.positionX;
+ 		this.positionY = opts.positionY;
+ 		this.velocityX = opts.velocityX;
+@@ -107,7 +107,7 @@ export class Fish {
+ 		// Inner element receives the directional flip so the body strip animations
+ 		// (driven by --agents-aquarium-strip-index) are unaffected by direction changes.
+ 		this.innerElement = $<HTMLDivElement>('.agents-aquarium-fish-inner');
+-		this.innerElement.appendChild(buildFishSvg(targetDocument));
++		this.innerElement.appendChild(buildFishSvg(mainContainer));
+ 		this.element.appendChild(this.innerElement);
+ 
+ 		this.applyTransform();
+@@ -196,8 +196,8 @@ const sharedDefsByDocument = new WeakMap<Document, SVGSVGElement>();
+ 
+ const SHARED_LOGO_SYMBOL_ID = 'agents-aquarium-fish-logo';
+ 
+-function ensureSharedDefs(targetDocument: Document): void {
+-	if (sharedDefsByDocument.has(targetDocument)) {
++function ensureSharedDefs(mainContainer: HTMLElement): void {
++	if (sharedDefsByDocument.has(mainContainer.ownerDocument)) {
+ 		return;
+ 	}
+ 	const stripWidth = (BODY_X_END - BODY_X_START) / NUM_BODY_STRIPS;
+@@ -232,8 +232,9 @@ function ensureSharedDefs(targetDocument: Document): void {
+ 		defs.appendChild(clip);
+ 	}
+ 	container.appendChild(defs);
+-	targetDocument.body.appendChild(container);
+-	sharedDefsByDocument.set(targetDocument, container);
++
++	mainContainer.appendChild(container);
++	sharedDefsByDocument.set(mainContainer.ownerDocument, container);
+ }
+ 
+ function createVSCodeLogoSymbol(): SVGSymbolElement {
+@@ -262,8 +263,8 @@ function createVSCodeLogoSymbol(): SVGSymbolElement {
+  * The strip clipPath defs and the logo symbol are shared across all fish via
+  * {@link ensureSharedDefs}.
+  */
+-function buildFishSvg(targetDocument: Document): SVGSVGElement {
+-	ensureSharedDefs(targetDocument);
++function buildFishSvg(mainContainer: HTMLElement): SVGSVGElement {
++	ensureSharedDefs(mainContainer);
+ 
+ 	const svg = $.SVG<SVGSVGElement>('svg');
+ 	svg.setAttribute('xmlns', 'http://www.w3.org/2000/svg');
 diff --git a/src/vs/workbench/browser/actions/developerActions.ts b/src/vs/workbench/browser/actions/developerActions.ts
 index bc62b19db42..0dfae3d0fff 100644
 --- a/src/vs/workbench/browser/actions/developerActions.ts
