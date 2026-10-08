@@ -26,6 +26,7 @@ Subject: [PATCH] feat: support loading VSCode in an iframe
  src/vs/platform/hover/browser/hoverService.ts |  2 +-
  src/vs/platform/hover/browser/hoverWidget.ts  |  4 +-
  .../remote/browser/browserSocketFactory.ts    |  2 +-
+ .../sessions/browser/parts/customViewNode.ts  |  8 ++--
  .../aquarium/browser/aquariumOverlay.ts       |  6 +--
  .../workbench/browser/parts/dialogs/dialog.ts |  3 +-
  src/vs/workbench/browser/window.ts            | 25 +++++++----
@@ -46,7 +47,7 @@ Subject: [PATCH] feat: support loading VSCode in an iframe
  .../request/browser/requestService.ts         |  3 +-
  .../electron-browser/requestService.ts        |  3 +-
  .../services/timer/browser/timerService.ts    |  5 ++-
- 42 files changed, 128 insertions(+), 120 deletions(-)
+ 43 files changed, 132 insertions(+), 124 deletions(-)
 
 diff --git a/src/vs/base/browser/browser.ts b/src/vs/base/browser/browser.ts
 index 5bd7c5b7295..0df205b48b5 100644
@@ -657,6 +658,32 @@ index d558e4eef58..ac207215fa7 100644
  					// The browser is offline => this is a temporary error which might resolve itself
  					sendErrorNow(new RemoteAuthorityResolverError('Browser is offline', RemoteAuthorityResolverErrorCode.TemporarilyNotAvailable, e));
  				} else {
+diff --git a/src/vs/sessions/browser/parts/customViewNode.ts b/src/vs/sessions/browser/parts/customViewNode.ts
+index 9be844e12b1..a6eacdd82ee 100644
+--- a/src/vs/sessions/browser/parts/customViewNode.ts
++++ b/src/vs/sessions/browser/parts/customViewNode.ts
+@@ -4,7 +4,7 @@
+  *--------------------------------------------------------------------------------------------*/
+ 
+ import './media/customViewGridPart.css';
+-import { $, addDisposableListener, EventType, getWindow, isAncestorOfActiveElement, scheduleAtNextAnimationFrame } from '../../../base/browser/dom.js';
++import { $, addDisposableListener, DisposableResizeObserver, EventType, getWindow, isAncestorOfActiveElement, scheduleAtNextAnimationFrame } from '../../../base/browser/dom.js';
+ import { DomScrollableElement } from '../../../base/browser/ui/scrollbar/scrollableElement.js';
+ import { Disposable, MutableDisposable, toDisposable } from '../../../base/common/lifecycle.js';
+ import { autorun } from '../../../base/common/observable.js';
+@@ -113,9 +113,9 @@ export class CustomViewNode extends Disposable {
+ 		this._view.render(this._contentEl);
+ 
+ 		// The content grows and shrinks as the view loads, so keep the scrollbar in sync with it.
+-		const resizeObserver = new ResizeObserver(() => this._scrollable.scanDomNode());
+-		resizeObserver.observe(this._contentEl);
+-		this._register(toDisposable(() => resizeObserver.disconnect()));
++
++		const observer = this._register(new DisposableResizeObserver('CustomViewNode', () => this._scrollable.scanDomNode()));
++		this._register(observer.observe(this._contentEl));
+ 
+ 		this._register(autorun(reader => {
+ 			const title = this._view.title.read(reader);
 diff --git a/src/vs/sessions/contrib/aquarium/browser/aquariumOverlay.ts b/src/vs/sessions/contrib/aquarium/browser/aquariumOverlay.ts
 index 08d31f54bc9..0ec4cd2c93f 100644
 --- a/src/vs/sessions/contrib/aquarium/browser/aquariumOverlay.ts
