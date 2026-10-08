@@ -1,0 +1,23 @@
+From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
+From: =?UTF-8?q?Lo=C3=AFc=20Mangeonjean?= <loic@coderpad.io>
+Date: Thu, 8 Oct 2026 09:47:31 +0200
+Subject: [PATCH] fix: prevent modal window from overflowing workbench
+ container
+
+---
+ src/vs/workbench/browser/parts/editor/media/modalEditorPart.css | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+
+diff --git a/src/vs/workbench/browser/parts/editor/media/modalEditorPart.css b/src/vs/workbench/browser/parts/editor/media/modalEditorPart.css
+index b838cbed36a..f7e97d70d62 100644
+--- a/src/vs/workbench/browser/parts/editor/media/modalEditorPart.css
++++ b/src/vs/workbench/browser/parts/editor/media/modalEditorPart.css
+@@ -5,7 +5,7 @@
+ 
+ /** Modal Background Block */
+ .monaco-modal-editor-block {
+-	position: fixed;
++	position: absolute;
+ 	width: 100%;
+ 	height: 100%;
+ 	top: 0;
