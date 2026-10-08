@@ -1,0 +1,101 @@
+From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
+From: =?UTF-8?q?Lo=C3=AFc=20Mangeonjean?= <loic@coderpad.io>
+Date: Thu, 8 Oct 2026 13:10:23 +0200
+Subject: [PATCH] fix: make configurationDefault always override default
+ configuration
+
+event in agents window
+---
+ .../common/configurationRegistry.ts           | 25 +++++++++++++++----
+ 1 file changed, 20 insertions(+), 5 deletions(-)
+
+diff --git a/src/vs/platform/configuration/common/configurationRegistry.ts b/src/vs/platform/configuration/common/configurationRegistry.ts
+index ed1315b68f1..5a7c1638a15 100644
+--- a/src/vs/platform/configuration/common/configurationRegistry.ts
++++ b/src/vs/platform/configuration/common/configurationRegistry.ts
+@@ -377,6 +377,7 @@ export type IRegisteredConfigurationPropertySchema = IConfigurationPropertySchem
+ 		extensionInfo?: IExtensionInfo;
+ 	};
+ 	defaultDefaultValue?: unknown;
++	agentsWindowDefaultDefaultValue?: unknown;
+ 	source?: ConfigurationDefaultSource; // Source of the Property
+ 	defaultValueSource?: ConfigurationDefaultValueSource; // Source of the Default Value
+ };
+@@ -407,7 +408,7 @@ const contributionRegistry = Registry.as<IJSONContributionRegistry>(JSONExtensio
+ class ConfigurationRegistry extends Disposable implements IConfigurationRegistry {
+ 
+ 	private readonly registeredConfigurationDefaults: IConfigurationDefaults[] = [];
+-	private readonly configurationDefaultsOverrides: Map<string, { configurationDefaultOverrides: IConfigurationDefaultOverride[]; configurationDefaultOverrideValue?: IConfigurationDefaultOverrideValue }>;
++	private readonly configurationDefaultsOverrides: Map<string, { configurationDefaultOverrides: IConfigurationDefaultOverride[]; configurationDefaultOverrideValue?: IConfigurationDefaultOverrideValue; agentsWindowDefaultOverrideValue?: IConfigurationDefaultOverrideValue }>;
+ 	private readonly defaultLanguageConfigurationOverridesNode: IConfigurationNode;
+ 	private readonly configurationContributors: IConfigurationNode[];
+ 	private readonly configurationProperties: IStringDictionary<IRegisteredConfigurationPropertySchema>;
+@@ -532,6 +533,7 @@ class ConfigurationRegistry extends Disposable implements IConfigurationRegistry
+ 					}
+ 
+ 					configurationDefaultOverridesForKey.configurationDefaultOverrideValue = newDefaultOverride;
++					configurationDefaultOverridesForKey.agentsWindowDefaultOverrideValue = this.mergeDefaultConfigurationsForConfigurationProperty(key, value, source, configurationDefaultOverridesForKey.agentsWindowDefaultOverrideValue, true);
+ 					const property = this.configurationProperties[key];
+ 					if (property) {
+ 						this.updatePropertyDefaultValue(key, property);
+@@ -593,10 +595,13 @@ class ConfigurationRegistry extends Disposable implements IConfigurationRegistry
+ 					}
+ 				} else {
+ 					let configurationDefaultOverrideValue: IConfigurationDefaultOverrideValue | undefined;
++					let agentsWindowDefaultOverrideValue: IConfigurationDefaultOverrideValue | undefined;
+ 					for (const configurationDefaultOverride of configurationDefaultOverridesForKey.configurationDefaultOverrides) {
+ 						configurationDefaultOverrideValue = this.mergeDefaultConfigurationsForConfigurationProperty(key, configurationDefaultOverride.value, configurationDefaultOverride.source, configurationDefaultOverrideValue);
++						agentsWindowDefaultOverrideValue = this.mergeDefaultConfigurationsForConfigurationProperty(key, configurationDefaultOverride.value, configurationDefaultOverride.source, agentsWindowDefaultOverrideValue, true);
+ 					}
+ 					configurationDefaultOverridesForKey.configurationDefaultOverrideValue = configurationDefaultOverrideValue;
++					configurationDefaultOverridesForKey.agentsWindowDefaultOverrideValue = agentsWindowDefaultOverrideValue;
+ 					const property = this.configurationProperties[key];
+ 					if (property) {
+ 						this.updatePropertyDefaultValue(key, property);
+@@ -670,9 +675,10 @@ class ConfigurationRegistry extends Disposable implements IConfigurationRegistry
+ 		return { value: defaultValue, source };
+ 	}
+ 
+-	private mergeDefaultConfigurationsForConfigurationProperty(propertyKey: string, value: unknown, valuesSource: ConfigurationDefaultSource | undefined, existingDefaultOverride: IConfigurationDefaultOverrideValue | undefined): IConfigurationDefaultOverrideValue | undefined {
++	private mergeDefaultConfigurationsForConfigurationProperty(propertyKey: string, value: unknown, valuesSource: ConfigurationDefaultSource | undefined, existingDefaultOverride: IConfigurationDefaultOverrideValue | undefined, agentsWindow: boolean = false): IConfigurationDefaultOverrideValue | undefined {
+ 		const property = this.configurationProperties[propertyKey];
+-		const existingDefaultValue = existingDefaultOverride?.value ?? property?.defaultDefaultValue;
++		const originalDefaultValue = agentsWindow ? property?.agentsWindowDefaultDefaultValue : property?.defaultDefaultValue;
++		const existingDefaultValue = existingDefaultOverride?.value ?? originalDefaultValue;
+ 		let source: ConfigurationDefaultValueSource | undefined = valuesSource;
+ 
+ 		const isObjectSetting = types.isObject(value) &&
+@@ -821,7 +827,8 @@ class ConfigurationRegistry extends Disposable implements IConfigurationRegistry
+ 				property.source = extensionInfo;
+ 
+ 				// update default value
+-				property.defaultDefaultValue = properties[key].default;
++				property.defaultDefaultValue = property.default;
++				property.agentsWindowDefaultDefaultValue = property.agentsWindow?.default;
+ 				this.updatePropertyDefaultValue(key, property);
+ 
+ 				// update scope
+@@ -1055,7 +1062,8 @@ class ConfigurationRegistry extends Disposable implements IConfigurationRegistry
+ 	}
+ 
+ 	private updatePropertyDefaultValue(key: string, property: IRegisteredConfigurationPropertySchema): void {
+-		const configurationdefaultOverride = this.configurationDefaultsOverrides.get(key)?.configurationDefaultOverrideValue;
++		const overrides = this.configurationDefaultsOverrides.get(key);
++		const configurationdefaultOverride = overrides?.configurationDefaultOverrideValue;
+ 		let defaultValue = undefined;
+ 		let defaultSource = undefined;
+ 		if (configurationdefaultOverride
+@@ -1073,6 +1081,13 @@ class ConfigurationRegistry extends Disposable implements IConfigurationRegistry
+ 		}
+ 		property.default = defaultValue;
+ 		property.defaultValueSource = defaultSource;
++
++		if (property.agentsWindow) {
++			const agentsWindowOverride = overrides?.agentsWindowDefaultOverrideValue;
++			property.agentsWindow.default = agentsWindowOverride && (!property.disallowConfigurationDefault || !agentsWindowOverride.source) && !types.isUndefined(agentsWindowOverride.value)
++				? agentsWindowOverride.value
++				: property.agentsWindowDefaultDefaultValue;
++		}
+ 	}
+ }
+ 
