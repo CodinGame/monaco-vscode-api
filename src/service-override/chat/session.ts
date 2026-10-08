@@ -49,6 +49,20 @@ import 'vs/sessions/contrib/providers/remoteAgentHost/browser/wslAgentHost.contr
 // should ALWAYS be after webSocketAgentHost.contribution
 import 'vs/sessions/contrib/providers/remoteAgentHost/browser/remoteAgentHost.contribution'
 
+import skillAssets from 'vs/sessions/skills/**/SKILL.md'
+import { FileAccess } from 'vs/base/common/network'
+import { registerCustomProvider, RegisteredFileSystemProvider, RegisteredUriFile } from '../files'
+import { URI } from 'vs/base/common/uri'
+
+FileAccess.registerAppResourcePathUrl('vs/sessions/skills', 'skills:/vs/sessions/skills')
+const skillFileSystemProvider = new RegisteredFileSystemProvider(true)
+for (const [assetPath, assetUrl] of Object.entries(skillAssets)) {
+  skillFileSystemProvider.registerFile(
+    new RegisteredUriFile(URI.from({ scheme: 'skills', path: assetPath }), assetUrl)
+  )
+}
+registerCustomProvider('skills', skillFileSystemProvider)
+
 export default function getServiceOverride({
   defaultAccount
 }: ChatServiceOverrideOptions = {}): IEditorOverrideServices {

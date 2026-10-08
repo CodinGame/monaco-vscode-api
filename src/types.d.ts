@@ -33,3 +33,8 @@ declare module '*.png' {
   const assets: Record<string, string>
   export default assets
 }
+
+declare module '*.md' {
+  const assets: Record<string, string>
+  export default assets
+}
