@@ -1,0 +1,23 @@
+From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
+From: =?UTF-8?q?Lo=C3=AFc=20Mangeonjean?= <loic@coderpad.io>
+Date: Fri, 9 Oct 2026 19:34:27 +0200
+Subject: [PATCH] fix: fix webview asset loading for agent host remote assets
+
+which root contains a query param
+---
+ src/vs/workbench/contrib/webview/browser/resourceLoading.ts | 2 ++
+ 1 file changed, 2 insertions(+)
+
+diff --git a/src/vs/workbench/contrib/webview/browser/resourceLoading.ts b/src/vs/workbench/contrib/webview/browser/resourceLoading.ts
+index 7354dac1e79..f006dd60616 100644
+--- a/src/vs/workbench/contrib/webview/browser/resourceLoading.ts
++++ b/src/vs/workbench/contrib/webview/browser/resourceLoading.ts
+@@ -116,6 +116,8 @@ export function getResourceToLoad(
+ }
+ 
+ function containsResource(root: URI, resource: URI, uriIdentityService: IUriIdentityService): boolean {
++	root = root.with({ query: null });
++	resource = resource.with({ query: null });
+ 	// Normalize backslashes for non-file schemes that may target Windows remotes.
+ 	if (root.scheme !== Schemas.file) {
+ 		const normalizedPath = resource.path.replace(/\\/g, '/');
