@@ -1,0 +1,34 @@
+From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
+From: =?UTF-8?q?Lo=C3=AFc=20Mangeonjean?= <loic@coderpad.io>
+Date: Fri, 9 Oct 2026 10:46:55 +0200
+Subject: [PATCH] fix: do not require signin in web
+
+---
+ src/vs/sessions/browser/sessionsAuthGate.ts | 5 ++---
+ 1 file changed, 2 insertions(+), 3 deletions(-)
+
+diff --git a/src/vs/sessions/browser/sessionsAuthGate.ts b/src/vs/sessions/browser/sessionsAuthGate.ts
+index ca553b8d88f..4712edb7328 100644
+--- a/src/vs/sessions/browser/sessionsAuthGate.ts
++++ b/src/vs/sessions/browser/sessionsAuthGate.ts
+@@ -5,7 +5,6 @@
+ 
+ import { Event } from '../../base/common/event.js';
+ import { IObservable, observableFromEvent } from '../../base/common/observable.js';
+-import { isWeb } from '../../base/common/platform.js';
+ import { AgentHostAllowSignedOutWhenUsableSettingId } from '../../platform/agentHost/common/agentService.js';
+ import type { IConfigurationService } from '../../platform/configuration/common/configuration.js';
+ import { SessionTypeAuthRequirement } from '../services/sessions/common/session.js';
+@@ -36,10 +35,10 @@ import { SessionTypeAuthRequirement } from '../services/sessions/common/session.
+ 
+ /**
+  * Whether the `chat.agentHost.allowSignedOutWhenUsable` experimentation opt-in
+- * is enabled in a desktop window. Web always requires sign-in.
++ * is enabled in a desktop window.
+  */
+ export function isAllowSignedOutWhenUsableEnabled(configurationService: IConfigurationService): boolean {
+-	return !isWeb && configurationService.getValue<boolean>(AgentHostAllowSignedOutWhenUsableSettingId) === true;
++	return configurationService.getValue<boolean>(AgentHostAllowSignedOutWhenUsableSettingId) === true;
+ }
+ 
+ /**
