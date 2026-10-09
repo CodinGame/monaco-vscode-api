@@ -5,23 +5,23 @@ Subject: [PATCH] feat: support loading VSCode in an iframe
 
 ---
  src/vs/base/browser/browser.ts                |  2 +-
- src/vs/base/browser/canIUse.ts                | 12 +++---
- src/vs/base/browser/dom.ts                    | 41 +++++++------------
+ src/vs/base/browser/canIUse.ts                | 12 ++---
+ src/vs/base/browser/dom.ts                    | 47 +++++++------------
  src/vs/base/browser/domStylesheets.ts         |  4 +-
  src/vs/base/browser/mouseEvent.ts             |  3 +-
  src/vs/base/browser/touch.ts                  |  2 +-
  src/vs/base/browser/ui/inputbox/inputBox.ts   |  3 +-
  src/vs/base/browser/ui/toolbar/toolbar.ts     |  8 ++--
  src/vs/base/browser/window.ts                 |  6 ++-
- .../browser/config/elementSizeObserver.ts     | 15 +++----
- src/vs/editor/browser/gpu/gpuDisposable.ts    |  5 ++-
+ .../browser/config/elementSizeObserver.ts     | 15 ++----
+ src/vs/editor/browser/gpu/gpuDisposable.ts    |  5 +-
  .../editor/browser/gpu/rectangleRenderer.ts   |  3 +-
- src/vs/editor/browser/observableCodeEditor.ts |  5 ++-
+ src/vs/editor/browser/observableCodeEditor.ts |  5 +-
  .../viewParts/viewLinesGpu/viewLinesGpu.ts    |  3 +-
  .../widget/diffEditor/utils/editorGutter.ts   |  9 ++--
  .../contrib/clipboard/browser/clipboard.ts    |  3 +-
- .../inlineEditsViews/debugVisualization.ts    |  5 ++-
- .../browser/view/inlineEdits/utils/utils.ts   | 10 ++---
+ .../inlineEditsViews/debugVisualization.ts    |  5 +-
+ .../browser/view/inlineEdits/utils/utils.ts   | 10 ++--
  .../clipboard/browser/clipboardService.ts     |  2 +-
  src/vs/platform/hover/browser/hoverService.ts |  2 +-
  src/vs/platform/hover/browser/hoverWidget.ts  |  4 +-
@@ -29,7 +29,7 @@ Subject: [PATCH] feat: support loading VSCode in an iframe
  .../sessions/browser/parts/customViewNode.ts  |  8 ++--
  .../aquarium/browser/aquariumOverlay.ts       |  6 +--
  .../workbench/browser/parts/dialogs/dialog.ts |  3 +-
- src/vs/workbench/browser/window.ts            | 25 +++++++----
+ src/vs/workbench/browser/window.ts            | 25 ++++++----
  .../chatThinkingContentPart.ts                |  3 +-
  .../comments/browser/commentThreadBody.ts     |  3 +-
  .../issue/browser/screenshotAnnotation.ts     |  6 +--
@@ -38,16 +38,16 @@ Subject: [PATCH] feat: support loading VSCode in an iframe
  .../performance/browser/perfviewEditor.ts     |  3 +-
  .../performance/browser/startupTimings.ts     |  3 +-
  .../contrib/remote/browser/remoteIndicator.ts |  2 +-
- .../chat/browser/terminalChatWidget.ts        |  5 +--
+ .../chat/browser/terminalChatWidget.ts        |  5 +-
  .../browser/webWorkerExtensionHost.ts         |  6 +--
  .../host/browser/browserHostService.ts        |  2 +-
  .../keybinding/browser/keybindingService.ts   |  2 +-
  .../lifecycle/browser/lifecycleService.ts     |  2 +-
- .../localization/browser/localeService.ts     |  5 ++-
+ .../localization/browser/localeService.ts     |  5 +-
  .../request/browser/requestService.ts         |  3 +-
  .../electron-browser/requestService.ts        |  3 +-
- .../services/timer/browser/timerService.ts    |  5 ++-
- 43 files changed, 132 insertions(+), 124 deletions(-)
+ .../services/timer/browser/timerService.ts    |  5 +-
+ 43 files changed, 135 insertions(+), 127 deletions(-)
 
 diff --git a/src/vs/base/browser/browser.ts b/src/vs/base/browser/browser.ts
 index 5bd7c5b7295..0df205b48b5 100644
@@ -101,7 +101,7 @@ index d7c129abb27..a2895879194 100644
 +	pointerEvents: mainWindow.PointerEvent && ('ontouchstart' in mainWindow || mainWindow.navigator.maxTouchPoints > 0)
  };
 diff --git a/src/vs/base/browser/dom.ts b/src/vs/base/browser/dom.ts
-index d0664127b9d..4f7dbfbfaf2 100644
+index d0664127b9d..4bc4f227d59 100644
 --- a/src/vs/base/browser/dom.ts
 +++ b/src/vs/base/browser/dom.ts
 @@ -1165,7 +1165,7 @@ export const sharedMutationObserver = new class {
@@ -195,6 +195,24 @@ index d0664127b9d..4f7dbfbfaf2 100644
  }
  
  export const EventType = {
+@@ -3041,7 +3028,7 @@ type ElementAttributeKeys<T> = Partial<{
+  * container.appendChild(observer);
+  * ```
+  */
+-export class ConnectionObserverElement extends HTMLElement {
++export class ConnectionObserverElement extends mainWindow.HTMLElement {
+ 	public onDidConnect?: () => void;
+ 	public onDidDisconnect?: () => void;
+ 
+@@ -3054,6 +3041,6 @@ export class ConnectionObserverElement extends HTMLElement {
+ 	}
+ }
+ 
+-if (!customElements.get('connection-observer')) {
+-	customElements.define('connection-observer', ConnectionObserverElement);
++if (!mainWindow.customElements.get('connection-observer')) {
++	mainWindow.customElements.define('connection-observer', ConnectionObserverElement);
+ }
 diff --git a/src/vs/base/browser/domStylesheets.ts b/src/vs/base/browser/domStylesheets.ts
 index f82797cdd26..ac0e5a6cb12 100644
 --- a/src/vs/base/browser/domStylesheets.ts
