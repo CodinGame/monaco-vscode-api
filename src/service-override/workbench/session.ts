@@ -1,7 +1,7 @@
 import { setFullscreen } from 'vs/base/browser/browser'
 import { detectFullscreen } from 'vs/base/browser/dom'
 import { mainWindow } from 'vs/base/browser/window'
-import { setUnexpectedErrorHandler } from 'vs/base/common/errors'
+import { onUnexpectedError, setUnexpectedErrorHandler } from 'vs/base/common/errors'
 import type { IEditorOverrideServices } from 'vs/editor/standalone/browser/standaloneServices'
 import { RemoteAgentHostLocationPreferenceService } from 'vs/platform/agentHost/browser/remoteAgentHostLocationPreferenceService'
 import { IAgentHostByokLmHandler } from 'vs/platform/agentHost/common/agentHostByokLm.service.js'
@@ -12,7 +12,10 @@ import {
 import { IRemoteAgentHostLocationPreferenceService } from 'vs/platform/agentHost/common/remoteAgentHostLocationPreference.service.js'
 import { ITunnelAgentHostService } from 'vs/platform/agentHost/common/tunnelAgentHost.service'
 import { SyncDescriptor } from 'vs/platform/instantiation/common/descriptors'
-import { IInstantiationService } from 'vs/platform/instantiation/common/instantiation'
+import {
+  IInstantiationService,
+  type ServicesAccessor
+} from 'vs/platform/instantiation/common/instantiation'
 import { ServiceCollection } from 'vs/platform/instantiation/common/serviceCollection'
 import { ILogService } from 'vs/platform/log/common/log.service'
 import { IChatDashboardService } from 'vs/sessions/browser/chatDashboardService.service.js'
@@ -189,9 +192,13 @@ class CustomWorkbench extends Workbench {
     return this._instantiationService
   }
 
-  protected override restore(): void {
+  protected override restore(accessor: ServicesAccessor): void {
     // Restore parts (open default view containers)
-    this.restoreParts()
+    try {
+      this.restoreParts(accessor)
+    } catch (error) {
+      onUnexpectedError(error)
+    }
 
     // Restore the sessions that were visible in the grid.
     void this.sessionsService.restoreVisibleSessions().catch((e) => {

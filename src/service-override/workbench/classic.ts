@@ -4,7 +4,10 @@ import { mainWindow } from 'vs/base/browser/window'
 import { onUnexpectedError, setUnexpectedErrorHandler } from 'vs/base/common/errors'
 import type { IEditorOverrideServices } from 'vs/editor/standalone/browser/standaloneServices'
 import { SyncDescriptor } from 'vs/platform/instantiation/common/descriptors'
-import { IInstantiationService } from 'vs/platform/instantiation/common/instantiation'
+import {
+  IInstantiationService,
+  type ServicesAccessor
+} from 'vs/platform/instantiation/common/instantiation'
 import { ServiceCollection } from 'vs/platform/instantiation/common/serviceCollection'
 import { ILogService } from 'vs/platform/log/common/log.service'
 import { BrowserWindow } from 'vs/workbench/browser/window'
@@ -50,9 +53,9 @@ class CustomWorkbench extends Workbench {
     return this.instantiationService
   }
 
-  override restore(instantiationService: IInstantiationService): void {
+  override restore(accessor: ServicesAccessor): void {
     try {
-      this.restoreParts(instantiationService)
+      this.restoreParts(accessor)
     } catch (error) {
       onUnexpectedError(error)
     }

@@ -425,7 +425,7 @@ export default function getServiceOverride({
     [IAgentHostFileSystemService.toString()]: new SyncDescriptor(
       AgentHostFileSystemService,
       [],
-      true
+      false // create the service asap because it registers the 'vscode-agent-host' fileService provider
     ),
     [IAgentHostSessionWorkingDirectoryResolver.toString()]: new SyncDescriptor(
       AgentHostSessionWorkingDirectoryResolver,
