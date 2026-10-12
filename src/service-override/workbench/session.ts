@@ -126,6 +126,8 @@ import { Registry } from 'vs/platform/registry/common/platform'
 import { IEditorGroupsService } from 'vs/workbench/services/editor/common/editorGroupsService.service'
 import { EditorParts } from 'vs/sessions/browser/parts/editorParts'
 import getEnvironmentServiceOverride from '../environment.js'
+import { agentHostUri } from 'vs/platform/agentHost/common/agentHostFileSystemProvider'
+import { agentHostAuthority } from 'vs/platform/agentHost/common/agentHostUri'
 export * from './common'
 import 'vs/sessions/browser/parts/menubar.contribution'
 import 'vs/sessions/browser/sessions.web.contribution'
@@ -382,3 +384,5 @@ export default function getServiceOverride(
     [ISessionChangesStatsCache.toString()]: new SyncDescriptor(SessionChangesStatsCache, [], true)
   }
 }
+
+export { agentHostUri, agentHostAuthority }
