@@ -26,6 +26,7 @@ import { SessionsParts } from 'vs/sessions/browser/parts/sessionsParts'
 import { SessionsSetUpService } from 'vs/sessions/browser/sessionsSetUpService'
 import { ISessionsSetUpService } from 'vs/sessions/browser/sessionsSetUpService.service'
 import { Workbench, type IWorkbenchOptions } from 'vs/sessions/browser/workbench'
+import { SinglePaneWorkbench } from 'vs/sessions/browser/singlePaneWorkbench'
 import { IDevContainerAgentHostService } from 'vs/sessions/common/devContainerAgentHostService.service'
 import { ChatDashboardServiceImpl } from 'vs/sessions/contrib/accountMenu/browser/account.contribution'
 import { IAgentFeedbackService } from 'vs/sessions/contrib/agentFeedback/browser/agentFeedbackService.service.js'
@@ -128,6 +129,7 @@ import { EditorParts } from 'vs/sessions/browser/parts/editorParts'
 import getEnvironmentServiceOverride from '../environment.js'
 import { agentHostUri } from 'vs/platform/agentHost/common/agentHostFileSystemProvider'
 import { agentHostAuthority } from 'vs/platform/agentHost/common/agentHostUri'
+import { DOCK_DETAIL_PANEL_SETTING } from 'vs/sessions/common/sessionConfig'
 export * from './common'
 import 'vs/sessions/browser/parts/menubar.contribution'
 import 'vs/sessions/browser/sessions.web.contribution'
@@ -166,50 +168,67 @@ import 'vs/sessions/contrib/terminal/browser/sessionsTerminalContribution'
 import 'vs/sessions/contrib/applyCommitsToParentRepo/browser/applyChangesToParentRepo'
 import 'vs/sessions/contrib/providers/agentHost/browser/agentHostSessionBranchActions'
 import 'vs/workbench/browser/parts/sidebar/sidebarActions'
+import { IConfigurationService } from 'vs/platform/configuration/common/configuration.service'
 
-class CustomWorkbench extends Workbench {
-  constructor(
-    options: IWorkbenchOptions | undefined,
-    @ILogService logService: ILogService,
-    @IInstantiationService private _instantiationService: IInstantiationService
-  ) {
-    super(getWorkbenchContainer(), options, new ServiceCollection(), logService)
+function createCustomWorkbench(BaseWorkbench: typeof Workbench) {
+  class CustomWorkbench extends BaseWorkbench {
+    constructor(
+      options: IWorkbenchOptions | undefined,
+      @ILogService logService: ILogService,
+      @IInstantiationService private _instantiationService: IInstantiationService,
+      @IConfigurationService _configurationService: IConfigurationService
+    ) {
+      super(getWorkbenchContainer(), options, new ServiceCollection(), logService)
 
-    this.mainContainer.classList.add('monaco-workbench-part')
-  }
-
-  protected override registerErrorHandler(logService: ILogService): void {
-    // prevent intercepting global error events
-    setUnexpectedErrorHandler((error) => this.handleUnexpectedError(error, logService))
-  }
-
-  protected override createNotificationsHandlers() {
-    this.registerNotificationRowHeight()
-
-    // nothing, it's done in the notification service override
-    // Register with Layout
-  }
-
-  protected override initServices(): IInstantiationService {
-    return this._instantiationService
-  }
-
-  protected override restore(accessor: ServicesAccessor): void {
-    // Restore parts (open default view containers)
-    try {
-      this.restoreParts(accessor)
-    } catch (error) {
-      onUnexpectedError(error)
+      this.mainContainer.classList.add('monaco-workbench-part')
     }
 
-    // Restore the sessions that were visible in the grid.
-    void this.sessionsService.restoreVisibleSessions().catch((e) => {
-      this.logService.error('[Workbench] restoreVisibleSessions failed', e)
-    })
+    protected override registerErrorHandler(logService: ILogService): void {
+      // prevent intercepting global error events
+      setUnexpectedErrorHandler((error) => this.handleUnexpectedError(error, logService))
+    }
 
-    // prevent managing lifecycle service phase as it's already done in lifecycle.ts
+    protected override createNotificationsHandlers() {
+      this.registerNotificationRowHeight()
+
+      // nothing, it's done in the notification service override
+      // Register with Layout
+    }
+
+    protected override initServices(): IInstantiationService {
+      return this._instantiationService
+    }
+
+    protected override restore(accessor: ServicesAccessor): void {
+      // Restore parts (open default view containers)
+      try {
+        this.restoreParts(accessor)
+      } catch (error) {
+        onUnexpectedError(error)
+      }
+
+      // Restore the sessions that were visible in the grid.
+      void this.sessionsService.restoreVisibleSessions().catch((e) => {
+        this.logService.error('[Workbench] restoreVisibleSessions failed', e)
+      })
+
+      // prevent managing lifecycle service phase as it's already done in lifecycle.ts
+    }
   }
+
+  return CustomWorkbench
 }
+
+const CustomSinglePaneWorkbench = createCustomWorkbench(SinglePaneWorkbench)
+const CustomWorkbench = new Proxy(createCustomWorkbench(Workbench), {
+  construct(target, args: ConstructorParameters<typeof CustomSinglePaneWorkbench>) {
+    const configurationService = args[3]
+    const WorkbenchClass = configurationService.getValue<boolean>(DOCK_DETAIL_PANEL_SETTING)
+      ? CustomSinglePaneWorkbench
+      : target
+    return Reflect.construct(WorkbenchClass, args)
+  }
+})
 
 onLayout(async (accessor) => {
   ;(accessor.get(IWorkbenchLayoutService) as Workbench).startup()
