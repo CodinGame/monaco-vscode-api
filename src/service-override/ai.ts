@@ -1,7 +1,5 @@
 import { type IEditorOverrideServices } from 'vs/editor/standalone/browser/standaloneServices'
 import { SyncDescriptor } from 'vs/platform/instantiation/common/descriptors'
-import { AICustomizationItemsModel } from 'vs/workbench/contrib/chat/browser/aiCustomization/aiCustomizationItemsModel'
-import { IAICustomizationItemsModel } from 'vs/workbench/contrib/chat/browser/aiCustomization/aiCustomizationItemsModel.service'
 import { IAiEmbeddingVectorService } from 'vs/workbench/services/aiEmbeddingVector/common/aiEmbeddingVectorService.service'
 import { IAiRelatedInformationService } from 'vs/workbench/services/aiRelatedInformation/common/aiRelatedInformation.service'
 import { AiRelatedInformationService } from 'vs/workbench/services/aiRelatedInformation/common/aiRelatedInformationService'
@@ -20,7 +18,6 @@ export default function getServiceOverride(): IEditorOverrideServices {
       [],
       true
     ),
-    [IAiSettingsSearchService.toString()]: new SyncDescriptor(AiSettingsSearchService, [], true),
-    [IAICustomizationItemsModel.toString()]: new SyncDescriptor(AICustomizationItemsModel, [], true)
+    [IAiSettingsSearchService.toString()]: new SyncDescriptor(AiSettingsSearchService, [], true)
   }
 }

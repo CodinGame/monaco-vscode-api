@@ -227,6 +227,8 @@ import { IAgentHostByokLmHandler } from 'vs/platform/agentHost/common/agentHostB
 import { IDefaultAccountService } from 'vs/platform/defaultAccount/common/defaultAccount.service'
 import { Event } from 'vs/base/common/event'
 import { MANAGED_SETTINGS_FRESHNESS_NOT_REQUIRED } from 'vs/platform/defaultAccount/common/defaultAccount'
+import { IAICustomizationItemsModel } from 'vs/workbench/contrib/chat/browser/aiCustomization/aiCustomizationItemsModel.service'
+import { AICustomizationItemsModel } from 'vs/workbench/contrib/chat/browser/aiCustomization/aiCustomizationItemsModel'
 import { registerAssets } from '../../assets'
 import 'vs/platform/agentHost/common/agentHostStarter.config.contribution'
 import 'vs/workbench/contrib/agentsVoice/browser/agentsVoice.contribution'
@@ -588,7 +590,8 @@ export default function getServiceOverride({
       true
     ),
     [ILinkPresentationService.toString()]: new SyncDescriptor(LinkPresentationService, [], true),
-    [IAgentHostByokLmHandler.toString()]: new SyncDescriptor(AgentHostByokLmHandler, [], true)
+    [IAgentHostByokLmHandler.toString()]: new SyncDescriptor(AgentHostByokLmHandler, [], true),
+    [IAICustomizationItemsModel.toString()]: new SyncDescriptor(AICustomizationItemsModel, [], true)
   }
 }
 
