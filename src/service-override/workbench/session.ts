@@ -12,10 +12,7 @@ import {
 import { IRemoteAgentHostLocationPreferenceService } from 'vs/platform/agentHost/common/remoteAgentHostLocationPreference.service.js'
 import { ITunnelAgentHostService } from 'vs/platform/agentHost/common/tunnelAgentHost.service'
 import { SyncDescriptor } from 'vs/platform/instantiation/common/descriptors'
-import {
-  IInstantiationService,
-  type ServicesAccessor
-} from 'vs/platform/instantiation/common/instantiation'
+import { IInstantiationService } from 'vs/platform/instantiation/common/instantiation'
 import { ServiceCollection } from 'vs/platform/instantiation/common/serviceCollection'
 import { ILogService } from 'vs/platform/log/common/log.service'
 import { IChatDashboardService } from 'vs/sessions/browser/chatDashboardService.service.js'
@@ -169,6 +166,7 @@ import 'vs/sessions/contrib/applyCommitsToParentRepo/browser/applyChangesToParen
 import 'vs/sessions/contrib/providers/agentHost/browser/agentHostSessionBranchActions'
 import 'vs/workbench/browser/parts/sidebar/sidebarActions'
 import { IConfigurationService } from 'vs/platform/configuration/common/configuration.service'
+import type { ILifecycleService } from 'vs/workbench/services/lifecycle/common/lifecycle.service'
 
 function createCustomWorkbench(BaseWorkbench: typeof Workbench) {
   class CustomWorkbench extends BaseWorkbench {
@@ -199,10 +197,10 @@ function createCustomWorkbench(BaseWorkbench: typeof Workbench) {
       return this._instantiationService
     }
 
-    protected override restore(accessor: ServicesAccessor): void {
+    protected override restore(lifecycleService: ILifecycleService): void {
       // Restore parts (open default view containers)
       try {
-        this.restoreParts(accessor)
+        this.restoreParts()
       } catch (error) {
         onUnexpectedError(error)
       }
