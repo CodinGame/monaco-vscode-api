@@ -4,10 +4,11 @@ Date: Wed, 18 Feb 2026 16:48:57 +0100
 Subject: [PATCH] feat: allow defining the workspace id
 
 ---
- src/vs/platform/window/common/window.ts                  | 1 +
- src/vs/platform/workspaces/common/workspaceIdentifier.ts | 8 ++++----
- src/vs/workbench/browser/web.main.ts                     | 4 ++--
- 3 files changed, 7 insertions(+), 6 deletions(-)
+ src/vs/platform/window/common/window.ts                   | 1 +
+ src/vs/platform/workspaces/common/workspaceIdentifier.ts  | 8 ++++----
+ .../services/workspace/browser/workspaceContextService.ts | 2 +-
+ src/vs/workbench/browser/web.main.ts                      | 4 ++--
+ 4 files changed, 8 insertions(+), 7 deletions(-)
 
 diff --git a/src/vs/platform/window/common/window.ts b/src/vs/platform/window/common/window.ts
 index 357bf62d065..187104d974f 100644
@@ -49,6 +50,19 @@ index 95676d86ef3..2c143838b4e 100644
  		uri: folderUri
  	};
  }
+diff --git a/src/vs/sessions/services/workspace/browser/workspaceContextService.ts b/src/vs/sessions/services/workspace/browser/workspaceContextService.ts
+index e2ef5e37a5d..896f65347d3 100644
+--- a/src/vs/sessions/services/workspace/browser/workspaceContextService.ts
++++ b/src/vs/sessions/services/workspace/browser/workspaceContextService.ts
+@@ -158,7 +158,7 @@ export class SessionsWorkspaceContextService extends Disposable implements IWork
+ 		await Promise.allSettled(joinPromises);
+ 
+ 		// Update workspace
+-		const workspaceIdentifier = getWorkspaceIdentifier(this.workspace.configuration!);
++		const workspaceIdentifier = getWorkspaceIdentifier(this.workspace.configuration!, this.workspace.id);
+ 		const workspace = new Workspace(workspaceIdentifier.id, newFolders, false, workspaceIdentifier.configPath, uri => this.uriIdentityService.extUri.ignorePathCasing(uri), this.workspace.name);
+ 		this.workspace.update(workspace);
+ 
 diff --git a/src/vs/workbench/browser/web.main.ts b/src/vs/workbench/browser/web.main.ts
 index df2d76aa685..855cf9f4a8d 100644
 --- a/src/vs/workbench/browser/web.main.ts
