@@ -127,6 +127,8 @@ import getEnvironmentServiceOverride from '../environment.js'
 import { agentHostUri } from 'vs/platform/agentHost/common/agentHostFileSystemProvider'
 import { agentHostAuthority } from 'vs/platform/agentHost/common/agentHostUri'
 import { DOCK_DETAIL_PANEL_SETTING } from 'vs/sessions/common/sessionConfig'
+import { IConfigurationService } from 'vs/platform/configuration/common/configuration.service'
+import type { ILifecycleService } from 'vs/workbench/services/lifecycle/common/lifecycle.service'
 export * from './common'
 import 'vs/sessions/browser/parts/menubar.contribution'
 import 'vs/sessions/browser/sessions.web.contribution'
@@ -165,8 +167,6 @@ import 'vs/sessions/contrib/terminal/browser/sessionsTerminalContribution'
 import 'vs/sessions/contrib/applyCommitsToParentRepo/browser/applyChangesToParentRepo'
 import 'vs/sessions/contrib/providers/agentHost/browser/agentHostSessionBranchActions'
 import 'vs/workbench/browser/parts/sidebar/sidebarActions'
-import { IConfigurationService } from 'vs/platform/configuration/common/configuration.service'
-import type { ILifecycleService } from 'vs/workbench/services/lifecycle/common/lifecycle.service'
 
 function createCustomWorkbench(BaseWorkbench: typeof Workbench) {
   class CustomWorkbench extends BaseWorkbench {
