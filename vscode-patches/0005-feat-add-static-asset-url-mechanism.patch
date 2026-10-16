@@ -25,7 +25,7 @@ index 639d85a0476..4e2e8c76194 100644
  		"vs/workbench/contrib/notebook/browser/view/renderers/webviewPreloads.ts",
  		"vs/workbench/services/keybinding/test/node/keyboardMapperTestUtils.ts"
 diff --git a/src/vs/base/common/network.ts b/src/vs/base/common/network.ts
-index 871560d2ab0..9e1cf3d53e5 100644
+index 5163aaae56c..fe3ffd720cd 100644
 --- a/src/vs/base/common/network.ts
 +++ b/src/vs/base/common/network.ts
 @@ -8,6 +8,8 @@ import * as platform from './platform.js';
@@ -37,7 +37,7 @@ index 871560d2ab0..9e1cf3d53e5 100644
  
  export namespace Schemas {
  
-@@ -285,6 +287,31 @@ export const VSCODE_AUTHORITY = 'vscode-app';
+@@ -290,6 +292,31 @@ export const VSCODE_AUTHORITY = 'vscode-app';
  class FileAccessImpl {
  
  	private static readonly FALLBACK_AUTHORITY = VSCODE_AUTHORITY;
@@ -69,7 +69,7 @@ index 871560d2ab0..9e1cf3d53e5 100644
  
  	/**
  	 * Returns a URI to use in contexts where the browser is responsible
-@@ -332,7 +359,7 @@ class FileAccessImpl {
+@@ -337,7 +364,7 @@ class FileAccessImpl {
  			});
  		}
  
@@ -78,7 +78,7 @@ index 871560d2ab0..9e1cf3d53e5 100644
  	}
  
  	/**
-@@ -383,7 +410,20 @@ class FileAccessImpl {
+@@ -388,7 +415,20 @@ class FileAccessImpl {
  			return URI.file(modulePath);
  		}
  
@@ -119,10 +119,10 @@ index 4cfaf6a58cb..b7f63a0d276 100644
  
  class ExtensionHostProxy implements IExtensionHostProxy {
 diff --git a/src/vs/workbench/api/common/extHost.protocol.ts b/src/vs/workbench/api/common/extHost.protocol.ts
-index f0ccbf43169..3d2a9d4e41e 100644
+index cb8fb1da647..ce8b6a1f84e 100644
 --- a/src/vs/workbench/api/common/extHost.protocol.ts
 +++ b/src/vs/workbench/api/common/extHost.protocol.ts
-@@ -2063,6 +2063,7 @@ export interface MainThreadExtensionServiceShape extends IDisposable {
+@@ -2079,6 +2079,7 @@ export interface MainThreadExtensionServiceShape extends IDisposable {
  	$onExtensionRuntimeError(extensionId: ExtensionIdentifier, error: SerializedError): void;
  	$setPerformanceMarks(marks: performance.PerformanceMark[]): Promise<void>;
  	$asBrowserUri(uri: UriComponents): Promise<UriComponents>;
@@ -131,7 +131,7 @@ index f0ccbf43169..3d2a9d4e41e 100644
  
  export interface SCMProviderFeatures {
 diff --git a/src/vs/workbench/api/common/extensionHostMain.ts b/src/vs/workbench/api/common/extensionHostMain.ts
-index 26408fdbe5f..2d9c02c9a1d 100644
+index 0883e52b7f1..289782cb314 100644
 --- a/src/vs/workbench/api/common/extensionHostMain.ts
 +++ b/src/vs/workbench/api/common/extensionHostMain.ts
 @@ -215,6 +215,11 @@ export class ExtensionHostMain {

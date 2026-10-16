@@ -4,60 +4,59 @@ Date: Mon, 11 Mar 2024 17:32:31 +0100
 Subject: [PATCH] feat: export some classes and make some methods accessible
 
 ---
- .../browser/keybindingCancellation.ts          |  6 ++++--
- .../browser/markerNavigationService.ts         |  2 +-
- .../gotoSymbol/browser/symbolNavigation.ts     |  2 +-
- .../inlayHints/browser/inlayHintsController.ts |  2 +-
- .../contrib/peekView/browser/peekView.ts       |  6 ++++--
- .../actions/browser/actionViewItemService.ts   |  2 +-
- .../browser/extensionResourceLoaderService.ts  |  2 +-
- src/vs/platform/files/common/fileService.ts    |  6 +++---
- .../sandbox/browser/sandboxHelperService.ts    |  2 +-
- src/vs/sessions/browser/workbench.ts           | 18 +++++++++---------
- .../browser/account.contribution.ts            |  2 +-
- .../nullAgentFeedbackService.contribution.ts   |  2 +-
- .../browser/nullInlineChatSessionService.ts    |  2 +-
- .../browser/sessionChatInputToolbarDebug.ts    |  2 +-
- .../webTunnelAgentHostService.contribution.ts  |  2 +-
- .../sessions/browser/sessionContext.ts         |  2 +-
- .../browser/sessionsProvidersService.ts        |  2 +-
- .../api/browser/statusBarExtensionPoint.ts     |  2 +-
- src/vs/workbench/browser/layout.ts             | 10 +++++-----
- src/vs/workbench/browser/workbench.ts          | 14 +++++++-------
- ...agentHostSessionWorkingDirectoryResolver.ts |  2 +-
- .../aiCustomizationWorkspaceService.ts         |  2 +-
- .../customizationHarnessService.ts             |  2 +-
- .../chatStatus/chatStatusItemService.ts        |  2 +-
- .../chatTextEditContentPart.ts                 |  6 +++---
- .../browser/widget/input/chatInputNoticeHub.ts |  2 +-
- .../input/chatInputNotificationService.ts      |  2 +-
- .../widget/input/chatPhoneInputPresenter.ts    |  2 +-
- .../debug/browser/extensionHostDebugService.ts |  2 +-
- .../browser/renameSymbolTrackerService.ts      |  2 +-
- .../contrib/issue/browser/issueTroubleshoot.ts |  6 +++---
- .../agentHost/browser/agentSdkSetupService.ts  |  2 +-
- .../common/agentHostFileSystemService.ts       |  2 +-
- .../browser/abstractFileDialogService.ts       |  2 +-
- .../dialogs/browser/fileDialogService.ts       |  4 ++--
- .../browser/extensionBisect.ts                 |  2 +-
- .../browser/extensionGalleryManifestService.ts |  2 +-
- .../extensionFeaturesManagemetService.ts       |  2 +-
- .../extensions/browser/extensionService.ts     |  6 +++---
- .../extensions/browser/extensionUrlHandler.ts  |  2 +-
- .../browser/webWorkerExtensionHost.ts          |  2 +-
- .../common/abstractExtensionService.ts         | 10 +++++-----
- .../keybinding/browser/keybindingService.ts    |  2 +-
- .../common/languageStatusService.ts            |  2 +-
- .../localization/browser/localeService.ts      |  2 +-
- .../services/log/common/defaultLogLevels.ts    |  2 +-
- .../services/outline/browser/outlineService.ts |  2 +-
- .../services/path/browser/pathService.ts       |  2 +-
- .../remote/common/remoteExplorerService.ts     |  2 +-
- .../remote/common/remoteExtensionsScanner.ts   |  2 +-
- .../terminal/common/embedderTerminalService.ts |  2 +-
- .../common/remoteUserDataProfiles.ts           |  2 +-
- .../userDataSync/common/userDataSyncUtil.ts    |  2 +-
- 53 files changed, 90 insertions(+), 86 deletions(-)
+ .../browser/keybindingCancellation.ts           |  6 ++++--
+ .../browser/markerNavigationService.ts          |  2 +-
+ .../gotoSymbol/browser/symbolNavigation.ts      |  2 +-
+ .../inlayHints/browser/inlayHintsController.ts  |  2 +-
+ .../editor/contrib/peekView/browser/peekView.ts |  6 ++++--
+ .../actions/browser/actionViewItemService.ts    |  2 +-
+ .../browser/extensionResourceLoaderService.ts   |  2 +-
+ src/vs/platform/files/common/fileService.ts     |  6 +++---
+ .../sandbox/browser/sandboxHelperService.ts     |  2 +-
+ src/vs/sessions/browser/workbench.ts            | 17 +++++++++--------
+ .../accountMenu/browser/account.contribution.ts |  2 +-
+ .../nullAgentFeedbackService.contribution.ts    |  2 +-
+ .../browser/nullInlineChatSessionService.ts     |  2 +-
+ .../browser/sessionChatInputToolbarDebug.ts     |  2 +-
+ .../webTunnelAgentHostService.contribution.ts   |  2 +-
+ .../services/sessions/browser/sessionContext.ts |  2 +-
+ .../browser/sessionsProvidersService.ts         |  2 +-
+ .../api/browser/statusBarExtensionPoint.ts      |  2 +-
+ src/vs/workbench/browser/layout.ts              | 10 +++++-----
+ src/vs/workbench/browser/workbench.ts           | 13 +++++++------
+ .../agentHostSessionWorkingDirectoryResolver.ts |  2 +-
+ .../aiCustomizationWorkspaceService.ts          |  2 +-
+ .../customizationHarnessService.ts              |  2 +-
+ .../browser/chatStatus/chatStatusItemService.ts |  2 +-
+ .../chatContentParts/chatTextEditContentPart.ts |  6 +++---
+ .../browser/widget/input/chatInputNoticeHub.ts  |  2 +-
+ .../input/chatInputNotificationService.ts       |  2 +-
+ .../widget/input/chatPhoneInputPresenter.ts     |  2 +-
+ .../debug/browser/extensionHostDebugService.ts  |  2 +-
+ .../browser/renameSymbolTrackerService.ts       |  2 +-
+ .../contrib/issue/browser/issueTroubleshoot.ts  |  6 +++---
+ .../agentHost/browser/agentSdkSetupService.ts   |  2 +-
+ .../common/agentHostFileSystemService.ts        |  2 +-
+ .../dialogs/browser/fileDialogService.ts        |  4 ++--
+ .../browser/extensionBisect.ts                  |  2 +-
+ .../browser/extensionGalleryManifestService.ts  |  2 +-
+ .../common/extensionFeaturesManagemetService.ts |  2 +-
+ .../extensions/browser/extensionService.ts      |  6 +++---
+ .../extensions/browser/extensionUrlHandler.ts   |  2 +-
+ .../browser/webWorkerExtensionHost.ts           |  2 +-
+ .../common/abstractExtensionService.ts          | 10 +++++-----
+ .../keybinding/browser/keybindingService.ts     |  2 +-
+ .../common/languageStatusService.ts             |  2 +-
+ .../localization/browser/localeService.ts       |  2 +-
+ .../services/log/common/defaultLogLevels.ts     |  2 +-
+ .../services/outline/browser/outlineService.ts  |  2 +-
+ .../services/path/browser/pathService.ts        |  2 +-
+ .../remote/common/remoteExplorerService.ts      |  2 +-
+ .../remote/common/remoteExtensionsScanner.ts    |  2 +-
+ .../terminal/common/embedderTerminalService.ts  |  2 +-
+ .../common/remoteUserDataProfiles.ts            |  2 +-
+ .../userDataSync/common/userDataSyncUtil.ts     |  2 +-
+ 52 files changed, 89 insertions(+), 83 deletions(-)
 
 diff --git a/src/vs/editor/contrib/editorState/browser/keybindingCancellation.ts b/src/vs/editor/contrib/editorState/browser/keybindingCancellation.ts
 index 94020ce96b9..de1e9af237e 100644
@@ -173,7 +172,7 @@ index 921674ef18e..00b83a75fcb 100644
  	declare readonly _serviceBrand: undefined;
  
 diff --git a/src/vs/platform/files/common/fileService.ts b/src/vs/platform/files/common/fileService.ts
-index 3bdffde3b55..ffb6e5c4b32 100644
+index de06acb9bab..b3a80157aa2 100644
 --- a/src/vs/platform/files/common/fileService.ts
 +++ b/src/vs/platform/files/common/fileService.ts
 @@ -243,9 +243,9 @@ export class FileService extends Disposable implements IFileService {
@@ -190,12 +189,12 @@ index 3bdffde3b55..ffb6e5c4b32 100644
  
  		// convert to file stat
 diff --git a/src/vs/platform/sandbox/browser/sandboxHelperService.ts b/src/vs/platform/sandbox/browser/sandboxHelperService.ts
-index 00394e44052..42a6ea8aec3 100644
+index 791c3a5a979..0fecb2ad8a6 100644
 --- a/src/vs/platform/sandbox/browser/sandboxHelperService.ts
 +++ b/src/vs/platform/sandbox/browser/sandboxHelperService.ts
 @@ -6,7 +6,7 @@
  import { InstantiationType, registerSingleton } from '../../instantiation/common/extensions.js';
- import { ISandboxDependencyStatus, ISandboxHelperService, type IWindowsMxcConfig, IWindowsMxcFilesystemPolicy, type IWindowsMxcPolicyContainment, type IWindowsMxcSandboxPolicy } from '../common/sandboxHelperService.js';
+ import { ISandboxDependencyStatus, ISandboxHelperService } from '../common/sandboxHelperService.js';
  
 -class NullSandboxHelperService implements ISandboxHelperService {
 +export class NullSandboxHelperService implements ISandboxHelperService {
@@ -203,10 +202,10 @@ index 00394e44052..42a6ea8aec3 100644
  
  	async checkSandboxDependencies(): Promise<ISandboxDependencyStatus> {
 diff --git a/src/vs/sessions/browser/workbench.ts b/src/vs/sessions/browser/workbench.ts
-index b07fe047914..6b73a61171f 100644
+index 538acd34e5a..7c3540770a8 100644
 --- a/src/vs/sessions/browser/workbench.ts
 +++ b/src/vs/sessions/browser/workbench.ts
-@@ -471,7 +471,7 @@ export class Workbench extends Disposable implements IAgentWorkbenchLayoutServic
+@@ -486,7 +486,7 @@ export abstract class Workbench extends Disposable implements IAgentWorkbenchLay
  	private editorService!: IEditorService;
  	private paneCompositeService!: IPaneCompositePartService;
  	private viewDescriptorService!: IViewDescriptorService;
@@ -215,7 +214,7 @@ index b07fe047914..6b73a61171f 100644
  	private sessionsPartService!: ISessionsPartService;
  	private customViewService!: ICustomViewService;
  	private customViewGridPartService!: ICustomViewGridPartService;
-@@ -484,7 +484,7 @@ export class Workbench extends Disposable implements IAgentWorkbenchLayoutServic
+@@ -499,7 +499,7 @@ export abstract class Workbench extends Disposable implements IAgentWorkbenchLay
  		protected readonly parent: HTMLElement,
  		private readonly options: IWorkbenchOptions | undefined,
  		private readonly serviceCollection: ServiceCollection,
@@ -224,7 +223,7 @@ index b07fe047914..6b73a61171f 100644
  	) {
  		super();
  
-@@ -516,7 +516,7 @@ export class Workbench extends Disposable implements IAgentWorkbenchLayoutServic
+@@ -531,7 +531,7 @@ export abstract class Workbench extends Disposable implements IAgentWorkbenchLay
  
  	//#region Error Handling
  
@@ -233,16 +232,15 @@ index b07fe047914..6b73a61171f 100644
  		// Increase stack trace limit for better errors stacks
  		if (!isFirefox) {
  			Error.stackTraceLimit = 100;
-@@ -538,7 +538,7 @@ export class Workbench extends Disposable implements IAgentWorkbenchLayoutServic
+@@ -552,6 +552,7 @@ export abstract class Workbench extends Disposable implements IAgentWorkbenchLay
+ 		setUnexpectedErrorHandler(createUnexpectedErrorHandler(logService));
  	}
  
- 	private previousUnexpectedError: { message: string | undefined; time: number } = { message: undefined, time: 0 };
--	private handleUnexpectedError(error: unknown, logService: ILogService): void {
-+	protected handleUnexpectedError(error: unknown, logService: ILogService): void {
- 		const message = toErrorMessage(error, true);
- 		if (!message) {
- 			return;
-@@ -670,7 +670,7 @@ export class Workbench extends Disposable implements IAgentWorkbenchLayoutServic
++
+ 	//#endregion
+ 
+ 	//#region Startup
+@@ -667,7 +668,7 @@ export abstract class Workbench extends Disposable implements IAgentWorkbenchLay
  		});
  	}
  
@@ -251,7 +249,7 @@ index b07fe047914..6b73a61171f 100644
  		// Layout Service
  		serviceCollection.set(IAgentWorkbenchLayoutService, this);
  
-@@ -1036,7 +1036,7 @@ export class Workbench extends Disposable implements IAgentWorkbenchLayoutServic
+@@ -1049,7 +1050,7 @@ export abstract class Workbench extends Disposable implements IAgentWorkbenchLay
  		}
  	}
  
@@ -260,7 +258,7 @@ index b07fe047914..6b73a61171f 100644
  		instantiationService: IInstantiationService,
  		notificationService: NotificationService
  	): void {
-@@ -1073,7 +1073,7 @@ export class Workbench extends Disposable implements IAgentWorkbenchLayoutServic
+@@ -1086,7 +1087,7 @@ export abstract class Workbench extends Disposable implements IAgentWorkbenchLay
  		});
  	}
  
@@ -269,7 +267,7 @@ index b07fe047914..6b73a61171f 100644
  		this._register(autorun(reader => {
  			setNotificationRowHeight(this.layoutPolicy.isPhoneLayout.read(reader) ? PHONE_NOTIFICATION_ROW_HEIGHT : COMPACT_NOTIFICATION_ROW_HEIGHT);
  		}));
-@@ -1165,7 +1165,7 @@ export class Workbench extends Disposable implements IAgentWorkbenchLayoutServic
+@@ -1178,7 +1179,7 @@ export abstract class Workbench extends Disposable implements IAgentWorkbenchLay
  		this.mainContainer.appendChild(customViewGridPartContainer);
  	}
  
@@ -278,7 +276,7 @@ index b07fe047914..6b73a61171f 100644
  		// Update perf marks
  		mark('code/didStartWorkbench');
  		performance.measure('perf: workbench create & restore', 'code/didLoadWorkbenchMain', 'code/didStartWorkbench');
-@@ -1191,7 +1191,7 @@ export class Workbench extends Disposable implements IAgentWorkbenchLayoutServic
+@@ -1204,7 +1205,7 @@ export abstract class Workbench extends Disposable implements IAgentWorkbenchLay
  		eventuallyPhaseScheduler.schedule();
  	}
  
@@ -288,10 +286,10 @@ index b07fe047914..6b73a61171f 100644
  		const partsToRestore: { location: ViewContainerLocation; visible: boolean }[] = [
  			{ location: ViewContainerLocation.Sidebar, visible: this.partVisibility.sidebar },
 diff --git a/src/vs/sessions/contrib/accountMenu/browser/account.contribution.ts b/src/vs/sessions/contrib/accountMenu/browser/account.contribution.ts
-index 41e9af727ea..301da3430ed 100644
+index cc22ba085c7..59a47041ff6 100644
 --- a/src/vs/sessions/contrib/accountMenu/browser/account.contribution.ts
 +++ b/src/vs/sessions/contrib/accountMenu/browser/account.contribution.ts
-@@ -1048,7 +1048,7 @@ registerWorkbenchContribution2(AccountWidgetContribution.ID, AccountWidgetContri
+@@ -1041,7 +1041,7 @@ registerWorkbenchContribution2(AccountWidgetContribution.ID, AccountWidgetContri
  
  // --- Chat Dashboard Service (real implementation for mobile account sheet) --- //
  
@@ -301,7 +299,7 @@ index 41e9af727ea..301da3430ed 100644
  
  	constructor(
 diff --git a/src/vs/sessions/contrib/agentFeedback/browser/nullAgentFeedbackService.contribution.ts b/src/vs/sessions/contrib/agentFeedback/browser/nullAgentFeedbackService.contribution.ts
-index 23f2cbb0f24..f6852c3edc9 100644
+index c8f1c85cde1..9da65bc0540 100644
 --- a/src/vs/sessions/contrib/agentFeedback/browser/nullAgentFeedbackService.contribution.ts
 +++ b/src/vs/sessions/contrib/agentFeedback/browser/nullAgentFeedbackService.contribution.ts
 @@ -20,7 +20,7 @@ import { IFeedbackPullRequest } from '../../../../platform/agentHost/common/meta
@@ -340,10 +338,10 @@ index 86cdb731232..7037624242e 100644
  	declare readonly _serviceBrand: undefined;
  
 diff --git a/src/vs/sessions/contrib/providers/remoteAgentHost/browser/webTunnelAgentHostService.contribution.ts b/src/vs/sessions/contrib/providers/remoteAgentHost/browser/webTunnelAgentHostService.contribution.ts
-index 6db0669ae06..b81b2df791e 100644
+index 346567f940d..a2fe7acbcc2 100644
 --- a/src/vs/sessions/contrib/providers/remoteAgentHost/browser/webTunnelAgentHostService.contribution.ts
 +++ b/src/vs/sessions/contrib/providers/remoteAgentHost/browser/webTunnelAgentHostService.contribution.ts
-@@ -23,7 +23,7 @@ import { WebTunnelAgentHostService } from './webTunnelAgentHostService.js';
+@@ -24,7 +24,7 @@ import { WebTunnelAgentHostService } from './webTunnelAgentHostService.js';
  /**
   * Selects the embedder proxy when provided and otherwise connects directly from the browser.
   */
@@ -434,10 +432,10 @@ index 75f9238fd75..82bf5fb128d 100644
  	readonly filesToDiff?: IPathToOpen[];
  	readonly filesToMerge?: IPathToOpen[];
 diff --git a/src/vs/workbench/browser/workbench.ts b/src/vs/workbench/browser/workbench.ts
-index 10e2c3edace..91ba0f472a6 100644
+index 190ce6f55af..c344a32641c 100644
 --- a/src/vs/workbench/browser/workbench.ts
 +++ b/src/vs/workbench/browser/workbench.ts
-@@ -86,7 +86,7 @@ export class Workbench extends Layout {
+@@ -85,7 +85,7 @@ export class Workbench extends Layout {
  		this.registerErrorHandler(logService);
  	}
  
@@ -446,16 +444,15 @@ index 10e2c3edace..91ba0f472a6 100644
  
  		// Increase stack trace limit for better errors stacks
  		if (!isFirefox) {
-@@ -110,7 +110,7 @@ export class Workbench extends Layout {
+@@ -108,6 +108,7 @@ export class Workbench extends Layout {
+ 		setUnexpectedErrorHandler(createUnexpectedErrorHandler(logService));
  	}
  
- 	private previousUnexpectedError: { message: string | undefined; time: number } = { message: undefined, time: 0 };
--	private handleUnexpectedError(error: unknown, logService: ILogService): void {
-+	protected handleUnexpectedError(error: unknown, logService: ILogService): void {
- 		const message = toErrorMessage(error, true);
- 		if (!message) {
- 			return;
-@@ -189,7 +189,7 @@ export class Workbench extends Layout {
++
+ 	startup(): IInstantiationService {
+ 		try {
+ 
+@@ -169,7 +170,7 @@ export class Workbench extends Layout {
  		}
  	}
  
@@ -464,7 +461,7 @@ index 10e2c3edace..91ba0f472a6 100644
  
  		// Layout Service
  		serviceCollection.set(IWorkbenchLayoutService, this);
-@@ -228,7 +228,7 @@ export class Workbench extends Layout {
+@@ -208,7 +209,7 @@ export class Workbench extends Layout {
  		return instantiationService;
  	}
  
@@ -473,7 +470,7 @@ index 10e2c3edace..91ba0f472a6 100644
  
  		// Configuration changes
  		this._register(configurationService.onDidChangeConfiguration(e => this.updateFontAliasing(e, configurationService)));
-@@ -317,7 +317,7 @@ export class Workbench extends Layout {
+@@ -297,7 +298,7 @@ export class Workbench extends Layout {
  		}
  	}
  
@@ -482,7 +479,7 @@ index 10e2c3edace..91ba0f472a6 100644
  
  		// ARIA & Signals
  		setARIAContainer(this.mainContainer);
-@@ -379,7 +379,7 @@ export class Workbench extends Layout {
+@@ -359,7 +360,7 @@ export class Workbench extends Layout {
  		return part;
  	}
  
@@ -491,7 +488,7 @@ index 10e2c3edace..91ba0f472a6 100644
  
  		// Instantiate Notification components
  		const notificationsCenter = this._register(instantiationService.createInstance(NotificationsCenter, this.mainContainer, notificationService.model));
-@@ -409,7 +409,7 @@ export class Workbench extends Layout {
+@@ -389,7 +390,7 @@ export class Workbench extends Layout {
  		});
  	}
  
@@ -514,7 +511,7 @@ index ff0d50662cd..d509ce285ee 100644
  
  	private readonly _resolvers = new Map<string, { readonly resolve: (sessionResource: URI) => URI | undefined; readonly isNewSession?: (sessionResource: URI) => boolean }>();
 diff --git a/src/vs/workbench/contrib/chat/browser/aiCustomization/aiCustomizationWorkspaceService.ts b/src/vs/workbench/contrib/chat/browser/aiCustomization/aiCustomizationWorkspaceService.ts
-index 65692071f8d..3cf0f9d4acd 100644
+index f496567e687..9edecaad9bd 100644
 --- a/src/vs/workbench/contrib/chat/browser/aiCustomization/aiCustomizationWorkspaceService.ts
 +++ b/src/vs/workbench/contrib/chat/browser/aiCustomization/aiCustomizationWorkspaceService.ts
 @@ -20,7 +20,7 @@ import {
@@ -591,10 +588,10 @@ index fb41599cf75..baa66f6c971 100644
  	declare readonly _serviceBrand: undefined;
  
 diff --git a/src/vs/workbench/contrib/chat/browser/widget/input/chatInputNotificationService.ts b/src/vs/workbench/contrib/chat/browser/widget/input/chatInputNotificationService.ts
-index 8c40613c276..e658b2c177e 100644
+index a9f857b754a..cb4c942e780 100644
 --- a/src/vs/workbench/contrib/chat/browser/widget/input/chatInputNotificationService.ts
 +++ b/src/vs/workbench/contrib/chat/browser/widget/input/chatInputNotificationService.ts
-@@ -234,7 +234,7 @@ export interface IChatInputNotificationService {
+@@ -257,7 +257,7 @@ export interface IChatInputNotificationService {
  	announceRendered(notification: IChatInputNotification | undefined, body?: IChatInputNotificationBody): void;
  }
  
@@ -681,10 +678,10 @@ index c7d29c20952..b2e4014c32f 100644
  
  	private readonly _onDidChangeSetups = this._register(new Emitter<readonly IAgentSdkSetupInfo[]>());
 diff --git a/src/vs/workbench/services/agentHost/common/agentHostFileSystemService.ts b/src/vs/workbench/services/agentHost/common/agentHostFileSystemService.ts
-index e5ac35b1609..9a02f3b1993 100644
+index 6b4d5f726d2..d32b8f4d3e0 100644
 --- a/src/vs/workbench/services/agentHost/common/agentHostFileSystemService.ts
 +++ b/src/vs/workbench/services/agentHost/common/agentHostFileSystemService.ts
-@@ -35,7 +35,7 @@ export interface IAgentHostFileSystemService {
+@@ -37,7 +37,7 @@ export interface IAgentHostFileSystemService {
  	ensureSyncedCustomizationProvider(): void;
  }
  
@@ -693,24 +690,11 @@ index e5ac35b1609..9a02f3b1993 100644
  	declare readonly _serviceBrand: undefined;
  
  	private readonly _fsProvider: AgentHostFileSystemProvider;
-diff --git a/src/vs/workbench/services/dialogs/browser/abstractFileDialogService.ts b/src/vs/workbench/services/dialogs/browser/abstractFileDialogService.ts
-index 8786b4ed5f6..dbab19f2050 100644
---- a/src/vs/workbench/services/dialogs/browser/abstractFileDialogService.ts
-+++ b/src/vs/workbench/services/dialogs/browser/abstractFileDialogService.ts
-@@ -55,7 +55,7 @@ export abstract class AbstractFileDialogService implements IFileDialogService {
- 		@ICommandService protected readonly commandService: ICommandService,
- 		@IEditorService protected readonly editorService: IEditorService,
- 		@ICodeEditorService protected readonly codeEditorService: ICodeEditorService,
--		@ILogService private readonly logService: ILogService,
-+		@ILogService protected readonly logService: ILogService,
- 		@IRemoteAgentService private readonly remoteAgentService: IRemoteAgentService
- 	) { }
- 
 diff --git a/src/vs/workbench/services/dialogs/browser/fileDialogService.ts b/src/vs/workbench/services/dialogs/browser/fileDialogService.ts
-index f75fa27784e..4a2b5717b16 100644
+index 4a519ac328d..1365bb7757f 100644
 --- a/src/vs/workbench/services/dialogs/browser/fileDialogService.ts
 +++ b/src/vs/workbench/services/dialogs/browser/fileDialogService.ts
-@@ -24,7 +24,7 @@ import { EmbeddedCodeEditorWidget } from '../../../../editor/browser/widget/code
+@@ -25,7 +25,7 @@ import { getErrorMessage } from '../../../../base/common/errors.js';
  export class FileDialogService extends AbstractFileDialogService implements IFileDialogService {
  
  	@memoize
@@ -719,7 +703,7 @@ index f75fa27784e..4a2b5717b16 100644
  		return this.fileService.getProvider(Schemas.file) as HTMLFileSystemProvider;
  	}
  
-@@ -271,7 +271,7 @@ export class FileDialogService extends AbstractFileDialogService implements IFil
+@@ -287,7 +287,7 @@ export class FileDialogService extends AbstractFileDialogService implements IFil
  		return undefined;
  	}
  
@@ -825,10 +809,10 @@ index 3d0f306ac45..61da9bc65b5 100644
  		if (this._environmentService.debugExtensionHost && this._environmentService.debugRenderer) {
  			suffixSearchParams.set('debugged', '1');
 diff --git a/src/vs/workbench/services/extensions/common/abstractExtensionService.ts b/src/vs/workbench/services/extensions/common/abstractExtensionService.ts
-index 514873c2d59..707a6a12108 100644
+index 13b6d66d012..be91a15bb0d 100644
 --- a/src/vs/workbench/services/extensions/common/abstractExtensionService.ts
 +++ b/src/vs/workbench/services/extensions/common/abstractExtensionService.ts
-@@ -100,9 +100,9 @@ export abstract class AbstractExtensionService extends Disposable implements IEx
+@@ -101,9 +101,9 @@ export abstract class AbstractExtensionService extends Disposable implements IEx
  
  	constructor(
  		options: { hasLocalProcess: boolean; allowRemoteExtensionsInLocalWebWorker: boolean },
@@ -841,7 +825,7 @@ index 514873c2d59..707a6a12108 100644
  		@IInstantiationService protected readonly _instantiationService: IInstantiationService,
  		@INotificationService protected readonly _notificationService: INotificationService,
  		@IWorkbenchEnvironmentService protected readonly _environmentService: IWorkbenchEnvironmentService,
-@@ -240,7 +240,7 @@ export abstract class AbstractExtensionService extends Disposable implements IEx
+@@ -241,7 +241,7 @@ export abstract class AbstractExtensionService extends Disposable implements IEx
  
  	//#region deltaExtensions
  
@@ -850,7 +834,7 @@ index 514873c2d59..707a6a12108 100644
  		this._deltaExtensionsQueue.push(item);
  		if (this._inHandleDeltaExtensions) {
  			// Let the current item finish, the new one will be picked up
-@@ -1419,7 +1419,7 @@ export interface IExtensionHostFactory {
+@@ -1423,7 +1423,7 @@ export interface IExtensionHostFactory {
  	createExtensionHost(runningLocations: ExtensionRunningLocationTracker, runningLocation: ExtensionRunningLocation, isInitialStart: boolean): IExtensionHost | null;
  }
  
@@ -912,7 +896,7 @@ index e306ff3af41..55be335f30e 100644
  	_serviceBrand: undefined;
  
 diff --git a/src/vs/workbench/services/outline/browser/outlineService.ts b/src/vs/workbench/services/outline/browser/outlineService.ts
-index e9077d5f226..fc31a3fab94 100644
+index a231df6aff0..e5c9d904a9d 100644
 --- a/src/vs/workbench/services/outline/browser/outlineService.ts
 +++ b/src/vs/workbench/services/outline/browser/outlineService.ts
 @@ -11,7 +11,7 @@ import { IEditorPane } from '../../../common/editor.js';

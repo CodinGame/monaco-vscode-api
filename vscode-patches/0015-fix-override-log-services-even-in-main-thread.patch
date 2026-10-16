@@ -9,7 +9,7 @@ Subject: [PATCH] fix: override log services even in main thread
  2 files changed, 6 insertions(+), 4 deletions(-)
 
 diff --git a/src/vs/workbench/api/common/extensionHostMain.ts b/src/vs/workbench/api/common/extensionHostMain.ts
-index 7f37bac543b..bf3689abb6b 100644
+index 97b9f8655f7..ec5e161b539 100644
 --- a/src/vs/workbench/api/common/extensionHostMain.ts
 +++ b/src/vs/workbench/api/common/extensionHostMain.ts
 @@ -12,7 +12,7 @@ import { MainContext, MainThreadConsoleShape } from './extHost.protocol.js';

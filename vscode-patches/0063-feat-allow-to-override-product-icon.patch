@@ -1,0 +1,79 @@
+From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
+From: =?UTF-8?q?Lo=C3=AFc=20Mangeonjean?= <loic@coderpad.io>
+Date: Mon, 23 Jun 2025 18:27:34 +0200
+Subject: [PATCH] feat: allow to override product icon
+
+---
+ build/lib/stylelint/vscode-known-variables.json                | 3 ++-
+ src/vs/workbench/browser/parts/banner/media/bannerpart.css     | 2 +-
+ src/vs/workbench/browser/parts/titlebar/media/titlebarpart.css | 2 +-
+ .../welcomeGettingStarted/browser/media/gettingStarted.css     | 2 +-
+ .../welcomeWalkthrough/browser/media/walkThroughPart.css       | 2 +-
+ 5 files changed, 6 insertions(+), 5 deletions(-)
+
+diff --git a/build/lib/stylelint/vscode-known-variables.json b/build/lib/stylelint/vscode-known-variables.json
+index db5045d1504..d2a04e5f0ad 100644
+--- a/build/lib/stylelint/vscode-known-variables.json
++++ b/build/lib/stylelint/vscode-known-variables.json
+@@ -1339,7 +1339,8 @@
+ 		"--vg-ring-width",
+ 		"--vg-ring-opacity",
+ 		"--vg-corner-alpha",
+-		"--vg-inner-fade"
++		"--vg-inner-fade",
++		"--product-icon"
+ 	],
+ 	"sizes": [
+ 		"--segmented-icon-toggle-cell-radius",
+diff --git a/src/vs/workbench/browser/parts/banner/media/bannerpart.css b/src/vs/workbench/browser/parts/banner/media/bannerpart.css
+index 51360f70c71..a1721cf0f25 100644
+--- a/src/vs/workbench/browser/parts/banner/media/bannerpart.css
++++ b/src/vs/workbench/browser/parts/banner/media/bannerpart.css
+@@ -30,7 +30,7 @@
+ 	background-repeat: no-repeat;
+ 	background-position: center center;
+ 	background-size: 16px;
+-	background-image: url('../../../../browser/media/code-icon.svg');
++	background-image: var(--product-icon, url('../../../../browser/media/code-icon.svg'));
+ 	width: 16px;
+ 	padding: 0;
+ 	margin: 0 6px 0 10px;
+diff --git a/src/vs/workbench/browser/parts/titlebar/media/titlebarpart.css b/src/vs/workbench/browser/parts/titlebar/media/titlebarpart.css
+index 68961abf8b2..ffdee8e85ea 100644
+--- a/src/vs/workbench/browser/parts/titlebar/media/titlebarpart.css
++++ b/src/vs/workbench/browser/parts/titlebar/media/titlebarpart.css
+@@ -294,7 +294,7 @@
+ }
+ 
+ .monaco-workbench .part.titlebar > .titlebar-container > .titlebar-left > .window-appicon:not(.codicon) {
+-	background-image: url('../../../media/code-icon.svg');
++	background-image: var(--product-icon, url('../../../media/code-icon.svg'));
+ 	background-repeat: no-repeat;
+ 	background-position: center center;
+ 	background-size: 16px;
+diff --git a/src/vs/workbench/contrib/welcomeGettingStarted/browser/media/gettingStarted.css b/src/vs/workbench/contrib/welcomeGettingStarted/browser/media/gettingStarted.css
+index a65e43393be..263d6eb5bac 100644
+--- a/src/vs/workbench/contrib/welcomeGettingStarted/browser/media/gettingStarted.css
++++ b/src/vs/workbench/contrib/welcomeGettingStarted/browser/media/gettingStarted.css
+@@ -5,7 +5,7 @@
+ 
+ .file-icons-enabled .show-file-icons .vscode_getting_started_page-name-file-icon.file-icon::before {
+ 	content: ' ';
+-	background-image: url('../../../../browser/media/code-icon.svg');
++	background-image: var(--product-icon, url('../../../../browser/media/code-icon.svg'));
+ }
+ 
+ .monaco-workbench .part.editor > .content .gettingStartedContainer {
+diff --git a/src/vs/workbench/contrib/welcomeWalkthrough/browser/media/walkThroughPart.css b/src/vs/workbench/contrib/welcomeWalkthrough/browser/media/walkThroughPart.css
+index 997ed6e2df2..df00b43ad11 100644
+--- a/src/vs/workbench/contrib/welcomeWalkthrough/browser/media/walkThroughPart.css
++++ b/src/vs/workbench/contrib/welcomeWalkthrough/browser/media/walkThroughPart.css
+@@ -113,7 +113,7 @@
+ 
+ .file-icons-enabled .show-file-icons .vs_code_editor_walkthrough\.md-name-file-icon.md-ext-file-icon.ext-file-icon.markdown-lang-file-icon.file-icon::before {
+ 	content: ' ';
+-	background-image: url('../../../../browser/media/code-icon.svg');
++	background-image: var(--product-icon, url('../../../../browser/media/code-icon.svg'));
+ }
+ 
+ .monaco-workbench .part.editor > .content .walkThroughContent .mac-only,

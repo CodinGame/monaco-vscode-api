@@ -1,0 +1,66 @@
+From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
+From: =?UTF-8?q?Lo=C3=AFc=20Mangeonjean?= <loic@coderpad.io>
+Date: Thu, 29 Jan 2026 15:04:25 +0100
+Subject: [PATCH] feat: add terminal.integrated.preserveDrawingBuffer setting
+
+---
+ src/vs/platform/terminal/common/terminal.ts                  | 1 +
+ .../contrib/terminal/browser/xterm/xtermTerminal.ts          | 3 ++-
+ src/vs/workbench/contrib/terminal/common/terminal.ts         | 1 +
+ .../contrib/terminal/common/terminalConfiguration.ts         | 5 +++++
+ 4 files changed, 9 insertions(+), 1 deletion(-)
+
+diff --git a/src/vs/platform/terminal/common/terminal.ts b/src/vs/platform/terminal/common/terminal.ts
+index bd50c3e74c4..3d613d52ca2 100644
+--- a/src/vs/platform/terminal/common/terminal.ts
++++ b/src/vs/platform/terminal/common/terminal.ts
+@@ -106,6 +106,7 @@ export const enum TerminalSettingId {
+ 	PersistentSessionReviveProcess = 'terminal.integrated.persistentSessionReviveProcess',
+ 	HideOnStartup = 'terminal.integrated.hideOnStartup',
+ 	HideOnLastClosed = 'terminal.integrated.hideOnLastClosed',
++	PreserveDrawingBuffer = 'terminal.integrated.preserveDrawingBuffer',
+ 	CustomGlyphs = 'terminal.integrated.customGlyphs',
+ 	RescaleOverlappingGlyphs = 'terminal.integrated.rescaleOverlappingGlyphs',
+ 	PersistentSessionScrollback = 'terminal.integrated.persistentSessionScrollback',
+diff --git a/src/vs/workbench/contrib/terminal/browser/xterm/xtermTerminal.ts b/src/vs/workbench/contrib/terminal/browser/xterm/xtermTerminal.ts
+index df53f3450a0..172fef513a2 100644
+--- a/src/vs/workbench/contrib/terminal/browser/xterm/xtermTerminal.ts
++++ b/src/vs/workbench/contrib/terminal/browser/xterm/xtermTerminal.ts
+@@ -950,7 +950,8 @@ export class XtermTerminal extends Disposable implements IXtermTerminal, IDetach
+ 		}
+ 
+ 		this._webglAddon = new Addon({
+-			customGlyphs
++			customGlyphs,
++			preserveDrawingBuffer: this._terminalConfigurationService.config.preserveDrawingBuffer
+ 		});
+ 		try {
+ 			this.raw.loadAddon(this._webglAddon);
+diff --git a/src/vs/workbench/contrib/terminal/common/terminal.ts b/src/vs/workbench/contrib/terminal/common/terminal.ts
+index 0532a06259c..50b0f71eb72 100644
+--- a/src/vs/workbench/contrib/terminal/common/terminal.ts
++++ b/src/vs/workbench/contrib/terminal/common/terminal.ts
+@@ -221,6 +221,7 @@ export interface ITerminalConfiguration {
+ 		fallbackLigatures: string[];
+ 	};
+ 	hideOnLastClosed: boolean;
++	preserveDrawingBuffer: boolean;
+ }
+ 
+ export interface ITerminalFont {
+diff --git a/src/vs/workbench/contrib/terminal/common/terminalConfiguration.ts b/src/vs/workbench/contrib/terminal/common/terminalConfiguration.ts
+index 566efc7c680..d48dcf84bdc 100644
+--- a/src/vs/workbench/contrib/terminal/common/terminalConfiguration.ts
++++ b/src/vs/workbench/contrib/terminal/common/terminalConfiguration.ts
+@@ -584,6 +584,11 @@ export const terminalConfiguration: IStringDictionary<IConfigurationPropertySche
+ 		type: 'boolean',
+ 		default: true
+ 	},
++	[TerminalSettingId.PreserveDrawingBuffer]: {
++		description: localize('terminal.integrated.preserveDrawingBuffer', "Whether to enable the preserveDrawingBuffer flag when creating the WebGL context."),
++		type: 'boolean',
++		default: false
++	},
+ 	[TerminalSettingId.CustomGlyphs]: {
+ 		markdownDescription: localize('terminal.integrated.customGlyphs', "Whether to draw custom glyphs instead of using the font for the following unicode ranges:\n\n{0}\n\nThis will typically result in better rendering with continuous lines, even when line height and letter spacing is used. This feature only works when {1} is enabled.", [
+ 			'- Box Drawing (U+2500-U+257F)',
