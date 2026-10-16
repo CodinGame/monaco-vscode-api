@@ -1,6 +1,6 @@
 ---
 name: vscode-service-upgrade
-description: 'Upgrade monaco-vscode-api internal VS Code services after a VSCode version bump. Use when missing-services.ts breaks due to service interface changes, when new registerSingleton services must be added, and when service-override modules must be updated for web/common/browser only.'
+description: 'Upgrade all monaco-vscode-api internal VS Code services after a VSCode version bump, including session services. Use when missing-services.ts breaks due to service interface changes, when new registerSingleton services must be added, and when web/common/browser service-override modules must be updated.'
 argument-hint: 'Target VSCode ref or upgrade context (optional)'
 user-invocable: true
 disable-model-invocation: false
@@ -28,8 +28,9 @@ disable-model-invocation: false
 - Repository root is the current working directory.
 - Upstream VSCode source is located at `../vscode`.
 - Built/transformed VSCode sources exist under `./vscode` where service identifiers were split into `*.service.js` next to original modules.
-- Only web, common, and browser services are in scope.
-- Services from electron, electron-browser, and session code paths are out of scope.
+- All existing service integrations must be updated, including session services and their fake implementations, overrides, and exports.
+- New services in web, common, and browser layers are in scope, including those under `vs/sessions`. A session path is not a reason to exclude a service.
+- New services available only in electron, electron-browser, electron-sandbox, node, or other non-web layers are out of scope.
 
 ## Procedure
 0. Run preflight dependency sync first (mandatory).
@@ -42,10 +43,10 @@ disable-model-invocation: false
 1. Resolve refs and scope.
 - Read the new ref from `package.json` at `config.vscode.ref`.
 - Determine previous ref from git history of `package.json` (for example: `git log -p -- package.json`, then extract prior `config.vscode.ref`).
-- Confirm target scope: include only `common` and `browser` services.
+- Include all existing integrations and all newly added web-compatible services in `common` and `browser`, including `vs/sessions`.
 
 2. Update missing-services first.
-- Open `src/missing-services.ts` and align each fake service implementation with current interface signatures.
+- Open `src/missing-services.ts` and align every fake service implementation with current interface signatures, including session services. Update moved imports and remove registrations for identifiers removed upstream.
 - For methods and fields that are straightforward: implement a minimal functional behavior.
 - For methods and fields that are too complex or not meaningful in this runtime:
   - use `unsupported` implementation,
@@ -58,13 +59,14 @@ disable-model-invocation: false
 - Preferred command pattern:
   - `git diff <oldRef> <newRef> -G'registerSingleton\('`
 - Filter findings:
-  - keep services defined in `common` or `browser`,
-  - ignore entries from `electron`, `session`, `electron-browser`, and similar non-web layers.
+  - keep services defined in `common` or `browser`, including session services,
+  - ignore entries available only in `electron`, `electron-browser`, `electron-sandbox`, `node`, and similar non-web layers,
+  - distinguish moved registrations from genuinely new services and update existing wiring for moves.
 
 4. Add new services to this library.
 - Introduce missing service identifiers/imports based on transformed modules in `./vscode` (`module.js` and sibling `module.service.js`).
 - For each newly in-scope service, first add a fake implementation in `src/missing-services.ts` using the same decision rules from Step 2.
-- Then wire the same service into every relevant `service-override` module.
+- Then wire the same service into every relevant `service-override` module, including session overrides. Update existing overrides and public exports for moved or removed services.
 - In `service-override` modules, use the actual VSCode implementation (not a fake fallback) whenever available and compatible with web scope.
 - If the actual implementation class is not exported by its VSCode module:
   - never edit `vscode-patches/0011-feat-export-some-classes-and-make-some-methods-acces.patch` by hand,
@@ -87,7 +89,7 @@ disable-model-invocation: false
 - Implement vs unsupported:
   - Implement if behavior is deterministic, low-risk, and feasible in browser runtime.
   - This skill uses a pragmatic default: do a minimal implementation for simple web-safe behavior, and reserve `unsupported` for complex or runtime-incompatible behavior.
-  - Mark unsupported if behavior depends on desktop/session-only capabilities or heavy runtime coupling.
+  - Mark unsupported if behavior depends on desktop-only capabilities or heavy runtime coupling. Session services follow the same implement-versus-unsupported rules as other services.
 - Add service override vs skip:
   - Add when service is registered upstream in web-relevant layers and used by bundled code.
   - Skip when service exists only in non-web layers.
@@ -110,8 +112,9 @@ disable-model-invocation: false
 - Every newly added service identifier is exported from `src/services.ts`.
 - Every new/changed member follows interface-member typing convention.
 - Every unsupported member uses both `unsupported` and `@Unsupported`.
-- New upstream services between refs are reviewed and triaged by layer.
-- Relevant `service-override` modules include all newly in-scope services.
+- New upstream services between refs are reviewed and triaged by runtime layer, not excluded for belonging to sessions.
+- Existing service integrations, including session services, are aligned with current interfaces and module paths.
+- Relevant `service-override` modules include all newly in-scope services, including session services.
 - Every real implementation used by an override is imported directly; any missing upstream export was added by a user-confirmed fixup in `../vscode` and patch re-export.
 - Generated patch files were never edited manually by the agent.
 - No side-effect import or singleton-registry inspection is used to recover a non-exported implementation.
