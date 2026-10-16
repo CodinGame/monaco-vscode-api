@@ -1,0 +1,56 @@
+From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
+From: =?UTF-8?q?Lo=C3=AFc=20Mangeonjean?= <loic@coderpad.io>
+Date: Mon, 11 Mar 2024 18:21:20 +0100
+Subject: [PATCH] fix: use asBrowserUri to get iframe src
+
+---
+ .../contrib/webview/browser/webviewElement.ts | 22 +++++--------------
+ 1 file changed, 6 insertions(+), 16 deletions(-)
+
+diff --git a/src/vs/workbench/contrib/webview/browser/webviewElement.ts b/src/vs/workbench/contrib/webview/browser/webviewElement.ts
+index 751414483e0..7aadee709ce 100644
+--- a/src/vs/workbench/contrib/webview/browser/webviewElement.ts
++++ b/src/vs/workbench/contrib/webview/browser/webviewElement.ts
+@@ -13,7 +13,7 @@ import { CancellationTokenSource } from '../../../../base/common/cancellation.js
+ import { Emitter, Event } from '../../../../base/common/event.js';
+ import { Lazy } from '../../../../base/common/lazy.js';
+ import { Disposable, DisposableStore, IDisposable, MutableDisposable, toDisposable } from '../../../../base/common/lifecycle.js';
+-import { COI, Schemas } from '../../../../base/common/network.js';
++import { COI, Schemas, FileAccess } from '../../../../base/common/network.js';
+ import { observableValue } from '../../../../base/common/observable.js';
+ import { isEqualAuthority } from '../../../../base/common/resources.js';
+ import { listenStream } from '../../../../base/common/stream.js';
+@@ -473,8 +473,11 @@ export class WebviewElement extends Disposable implements IWebviewElement, Webvi
+ 		const queryString = new URLSearchParams(params).toString();
+ 
+ 		this.perfMark('init/set-src');
+-		const fileName = 'index.html';
+-		this.element!.setAttribute('src', `${this.webviewContentEndpoint(encodedWebviewOrigin)}/${fileName}?${queryString}`);
++
++		const relativeIframeSrc = FileAccess.asBrowserUri(`vs/workbench/contrib/webview/browser/pre/index.html`)
++			.toString(true)
++			.replace('{{uuid}}', encodedWebviewOrigin);
++		this.element!.setAttribute('src', `${relativeIframeSrc}?${queryString}`);
+ 	}
+ 
+ 	public mountTo(element: HTMLElement, targetWindow: CodeWindow) {
+@@ -591,19 +594,6 @@ export class WebviewElement extends Disposable implements IWebviewElement, Webvi
+ 		}
+ 	}
+ 
+-	protected webviewContentEndpoint(encodedWebviewOrigin: string): string {
+-		const webviewExternalEndpoint = this._environmentService.webviewExternalEndpoint;
+-		if (!webviewExternalEndpoint) {
+-			throw new Error(`'webviewExternalEndpoint' has not been configured. Webviews will not work!`);
+-		}
+-
+-		const endpoint = webviewExternalEndpoint.replace('{{uuid}}', encodedWebviewOrigin);
+-		if (endpoint[endpoint.length - 1] === '/') {
+-			return endpoint.slice(0, endpoint.length - 1);
+-		}
+-		return endpoint;
+-	}
+-
+ 	private doPostMessage(channel: string, data?: any, transferable: Transferable[] = []): boolean {
+ 		if (this.element && this._messagePort) {
+ 			this._messagePort.postMessage({ channel, args: data }, transferable);

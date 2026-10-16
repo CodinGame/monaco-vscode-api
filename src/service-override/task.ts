@@ -29,7 +29,7 @@ import { INotificationService } from 'vs/platform/notification/common/notificati
 import { IContextKeyService } from 'vs/platform/contextkey/common/contextkey.service'
 import { IWorkbenchEnvironmentService } from 'vs/workbench/services/environment/common/environmentService.service'
 import { ITerminalProfileResolverService } from 'vs/workbench/contrib/terminal/common/terminal.service'
-import { IPathService } from 'vs/workbench/services/path/common/pathService.service'
+import { IPathService } from 'vs/platform/path/common/pathService.service'
 import { ITextModelService } from 'vs/editor/common/services/resolverService.service'
 import { IPreferencesService } from 'vs/workbench/services/preferences/common/preferences.service'
 import { IChatAgentService } from 'vs/workbench/contrib/chat/common/participants/chatAgents.service'

@@ -76,6 +76,12 @@ class DelegateQuickInputService implements IQuickInputService {
     return this.activeService.toggleHover()
   }
 
+  withQuickInputAnchor: IQuickInputService['withQuickInputAnchor'] = (
+    anchor,
+    anchorPosition,
+    operation
+  ) => this.activeService.withQuickInputAnchor(anchor, anchorPosition, operation)
+
   private get activeService(): IQuickInputService {
     const activeCodeEditor = StandaloneServices.get(ICodeEditorService).getFocusedCodeEditor()
 

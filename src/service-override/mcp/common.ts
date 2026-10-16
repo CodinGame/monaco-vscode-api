@@ -11,6 +11,8 @@ import { McpResourceScannerService } from 'vs/platform/mcp/common/mcpResourceSca
 import { IMcpResourceScannerService } from 'vs/platform/mcp/common/mcpResourceScannerService.service'
 import { McpElicitationService } from 'vs/workbench/contrib/mcp/browser/mcpElicitationService'
 import { McpWorkbenchService } from 'vs/workbench/contrib/mcp/browser/mcpWorkbenchService'
+import { McpCopilotGlobalConfigurationService } from 'vs/workbench/contrib/mcp/common/mcpCopilotGlobalConfigurationService'
+import { IMcpCopilotGlobalConfigurationService } from 'vs/workbench/contrib/mcp/common/mcpCopilotGlobalConfigurationService.service'
 import { McpRegistry } from 'vs/workbench/contrib/mcp/common/mcpRegistry'
 import { IMcpRegistry } from 'vs/workbench/contrib/mcp/common/mcpRegistryTypes.service'
 import { McpSamplingService } from 'vs/workbench/contrib/mcp/common/mcpSamplingService'
@@ -31,6 +33,8 @@ import { IAuthenticationMcpUsageService } from 'vs/workbench/services/authentica
 import { WorkbenchMcpGalleryManifestService } from 'vs/workbench/services/mcp/browser/mcpGalleryManifestService'
 import { WorkbenchMcpManagementService } from 'vs/workbench/services/mcp/browser/mcpWorkbenchManagementService'
 import { IWorkbenchMcpManagementService } from 'vs/workbench/services/mcp/common/mcpWorkbenchManagementService.service'
+import { McpWorkspaceInstallTargetService } from 'vs/workbench/services/mcp/common/mcpWorkspaceInstallTargetService'
+import { IMcpWorkspaceInstallTargetService } from 'vs/workbench/services/mcp/common/mcpWorkspaceInstallTargetService.service'
 import { McpSandboxService } from 'vs/workbench/contrib/mcp/common/mcpSandboxService'
 import { IWorkbenchMcpGatewayService } from 'vs/workbench/contrib/mcp/common/mcpGatewayService.service'
 import { BrowserMcpGatewayService } from 'vs/workbench/contrib/mcp/browser/mcpGatewayService'
@@ -44,6 +48,16 @@ export default function getServiceOverride(): IEditorOverrideServices {
   return {
     [IMcpResourceScannerService.toString()]: new SyncDescriptor(
       McpResourceScannerService,
+      [],
+      true
+    ),
+    [IMcpCopilotGlobalConfigurationService.toString()]: new SyncDescriptor(
+      McpCopilotGlobalConfigurationService,
+      [],
+      true
+    ),
+    [IMcpWorkspaceInstallTargetService.toString()]: new SyncDescriptor(
+      McpWorkspaceInstallTargetService,
       [],
       true
     ),

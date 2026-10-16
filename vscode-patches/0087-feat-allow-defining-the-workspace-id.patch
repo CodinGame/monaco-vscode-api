@@ -1,0 +1,84 @@
+From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
+From: =?UTF-8?q?Lo=C3=AFc=20Mangeonjean?= <loic@coderpad.io>
+Date: Wed, 18 Feb 2026 16:48:57 +0100
+Subject: [PATCH] feat: allow defining the workspace id
+
+---
+ src/vs/platform/window/common/window.ts                   | 1 +
+ src/vs/platform/workspaces/common/workspaceIdentifier.ts  | 8 ++++----
+ .../services/workspace/browser/workspaceContextService.ts | 2 +-
+ src/vs/workbench/browser/web.main.ts                      | 4 ++--
+ 4 files changed, 8 insertions(+), 7 deletions(-)
+
+diff --git a/src/vs/platform/window/common/window.ts b/src/vs/platform/window/common/window.ts
+index 7e31cd31c3a..ab81a541ad9 100644
+--- a/src/vs/platform/window/common/window.ts
++++ b/src/vs/platform/window/common/window.ts
+@@ -189,6 +189,7 @@ export function isAgentsWindowOpenSource(value: unknown): value is AgentsWindowO
+ export type IWindowOpenable = IWorkspaceToOpen | IFolderToOpen | IFileToOpen;
+ 
+ export interface IBaseWindowOpenable {
++	id?: string;
+ 	label?: string;
+ }
+ 
+diff --git a/src/vs/platform/workspaces/common/workspaceIdentifier.ts b/src/vs/platform/workspaces/common/workspaceIdentifier.ts
+index 95676d86ef3..2c143838b4e 100644
+--- a/src/vs/platform/workspaces/common/workspaceIdentifier.ts
++++ b/src/vs/platform/workspaces/common/workspaceIdentifier.ts
+@@ -11,9 +11,9 @@ import { ISingleFolderWorkspaceIdentifier, IWorkspaceIdentifier } from '../../wo
+ // NOTE: DO NOT CHANGE. IDENTIFIERS HAVE TO REMAIN STABLE
+ // !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+ 
+-export function getWorkspaceIdentifier(workspaceUri: URI): IWorkspaceIdentifier {
++export function getWorkspaceIdentifier(workspaceUri: URI, id?: string): IWorkspaceIdentifier {
+ 	return {
+-		id: getWorkspaceId(workspaceUri),
++		id: id ?? getWorkspaceId(workspaceUri),
+ 		configPath: workspaceUri
+ 	};
+ }
+@@ -22,9 +22,9 @@ export function getWorkspaceIdentifier(workspaceUri: URI): IWorkspaceIdentifier
+ // NOTE: DO NOT CHANGE. IDENTIFIERS HAVE TO REMAIN STABLE
+ // !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+ 
+-export function getSingleFolderWorkspaceIdentifier(folderUri: URI): ISingleFolderWorkspaceIdentifier {
++export function getSingleFolderWorkspaceIdentifier(folderUri: URI, id?: string): ISingleFolderWorkspaceIdentifier {
+ 	return {
+-		id: getWorkspaceId(folderUri),
++		id: id ?? getWorkspaceId(folderUri),
+ 		uri: folderUri
+ 	};
+ }
+diff --git a/src/vs/sessions/services/workspace/browser/workspaceContextService.ts b/src/vs/sessions/services/workspace/browser/workspaceContextService.ts
+index e2ef5e37a5d..896f65347d3 100644
+--- a/src/vs/sessions/services/workspace/browser/workspaceContextService.ts
++++ b/src/vs/sessions/services/workspace/browser/workspaceContextService.ts
+@@ -158,7 +158,7 @@ export class SessionsWorkspaceContextService extends Disposable implements IWork
+ 		await Promise.allSettled(joinPromises);
+ 
+ 		// Update workspace
+-		const workspaceIdentifier = getWorkspaceIdentifier(this.workspace.configuration!);
++		const workspaceIdentifier = getWorkspaceIdentifier(this.workspace.configuration!, this.workspace.id);
+ 		const workspace = new Workspace(workspaceIdentifier.id, newFolders, false, workspaceIdentifier.configPath, uri => this.uriIdentityService.extUri.ignorePathCasing(uri), this.workspace.name);
+ 		this.workspace.update(workspace);
+ 
+diff --git a/src/vs/workbench/browser/web.main.ts b/src/vs/workbench/browser/web.main.ts
+index df2d76aa685..855cf9f4a8d 100644
+--- a/src/vs/workbench/browser/web.main.ts
++++ b/src/vs/workbench/browser/web.main.ts
+@@ -668,12 +668,12 @@ export class BrowserMain extends Disposable {
+ 
+ 		// Multi-root workspace
+ 		if (workspace && isWorkspaceToOpen(workspace)) {
+-			return getWorkspaceIdentifier(workspace.workspaceUri);
++			return getWorkspaceIdentifier(workspace.workspaceUri, workspace.id);
+ 		}
+ 
+ 		// Single-folder workspace
+ 		if (workspace && isFolderToOpen(workspace)) {
+-			return getSingleFolderWorkspaceIdentifier(workspace.folderUri);
++			return getSingleFolderWorkspaceIdentifier(workspace.folderUri, workspace.id);
+ 		}
+ 
+ 		// Empty window workspace

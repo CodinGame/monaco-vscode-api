@@ -7,6 +7,7 @@ import { SyncDescriptor } from 'vs/platform/instantiation/common/descriptors'
 import { IInstantiationService } from 'vs/platform/instantiation/common/instantiation'
 import { ServiceCollection } from 'vs/platform/instantiation/common/serviceCollection'
 import { ILogService } from 'vs/platform/log/common/log.service'
+import { createUnexpectedErrorHandler } from 'vs/platform/log/common/log'
 import { BrowserWindow } from 'vs/workbench/browser/window'
 import { type IWorkbenchOptions, Workbench } from 'vs/workbench/browser/workbench'
 import { IWorkbenchLayoutService } from 'vs/workbench/services/layout/browser/layoutService.service'
@@ -39,7 +40,7 @@ class CustomWorkbench extends Workbench {
 
   protected override registerErrorHandler(logService: ILogService): void {
     // prevent intercepting global error events
-    setUnexpectedErrorHandler((error) => this.handleUnexpectedError(error, logService))
+    setUnexpectedErrorHandler(createUnexpectedErrorHandler(logService))
   }
 
   override createNotificationsHandlers() {

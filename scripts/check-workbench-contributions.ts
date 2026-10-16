@@ -130,7 +130,9 @@ function containsContributionSideEffects(filePath: string): boolean {
       methodName === 'registerContribution2' ||
       methodName === 'registerAction' ||
       methodName === 'registerAction2' ||
-      methodName === 'registerExtensionPoint'
+      methodName === 'registerExtensionPoint' ||
+      methodName === 'registerWorkbenchContribution' ||
+      methodName === 'registerWorkbenchContribution2'
     )
   })
 }

@@ -1,0 +1,184 @@
+From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
+From: =?UTF-8?q?Lo=C3=AFc=20Mangeonjean?= <loic@coderpad.io>
+Date: Mon, 15 Dec 2025 11:02:29 +0100
+Subject: [PATCH] fix: make product field optional
+
+---
+ src/vs/base/common/product.ts                 |  2 +-
+ .../abstractExtensionManagementService.ts     |  2 +-
+ .../common/extensionGalleryService.ts         | 22 ++++++++++---------
+ .../browser/chatStatus/chatStatusDashboard.ts |  2 +-
+ .../browser/chatStatus/chatStatusEntry.ts     |  2 +-
+ .../contrib/chat/browser/widget/chatWidget.ts |  4 ++--
+ .../browser/extensionsWorkbenchService.ts     |  2 +-
+ .../accounts/browser/defaultAccount.ts        | 17 ++++++++++----
+ 8 files changed, 32 insertions(+), 21 deletions(-)
+
+diff --git a/src/vs/base/common/product.ts b/src/vs/base/common/product.ts
+index 0767bb78c5a..93727682edd 100644
+--- a/src/vs/base/common/product.ts
++++ b/src/vs/base/common/product.ts
+@@ -273,7 +273,7 @@ export interface IProductConfiguration {
+ 	readonly commonlyUsedSettings?: string[];
+ 	readonly aiGeneratedWorkspaceTrust?: IAiGeneratedWorkspaceTrust;
+ 
+-	readonly defaultChatAgent: IDefaultChatAgent;
++	readonly defaultChatAgent?: IDefaultChatAgent;
+ 	readonly chatParticipantRegistry?: string;
+ 	readonly chatSessionRecommendations?: IChatSessionRecommendation[];
+ 	readonly emergencyAlertUrl?: string;
+diff --git a/src/vs/platform/extensionManagement/common/abstractExtensionManagementService.ts b/src/vs/platform/extensionManagement/common/abstractExtensionManagementService.ts
+index e506b83187c..bf59b56a4f2 100644
+--- a/src/vs/platform/extensionManagement/common/abstractExtensionManagementService.ts
++++ b/src/vs/platform/extensionManagement/common/abstractExtensionManagementService.ts
+@@ -984,7 +984,7 @@ export abstract class AbstractExtensionManagementService extends CommontExtensio
+ 		if (checked.indexOf(extension) !== -1) {
+ 			return [];
+ 		}
+-		if (areSameExtensions(extension.identifier, { id: this.productService.defaultChatAgent.extensionId })) {
++		if (this.productService.defaultChatAgent && areSameExtensions(extension.identifier, { id: this.productService.defaultChatAgent.extensionId })) {
+ 			return [];
+ 		}
+ 		checked.push(extension);
+diff --git a/src/vs/platform/extensionManagement/common/extensionGalleryService.ts b/src/vs/platform/extensionManagement/common/extensionGalleryService.ts
+index d119a6afda5..7a72ee53333 100644
+--- a/src/vs/platform/extensionManagement/common/extensionGalleryService.ts
++++ b/src/vs/platform/extensionManagement/common/extensionGalleryService.ts
+@@ -1161,7 +1161,7 @@ export abstract class AbstractExtensionGalleryService implements IExtensionGalle
+ 			for (let index = 0; index < extensions.length; index++) {
+ 				const extension = extensions[index];
+ 				setTelemetry(extension, ((query.pageNumber - 1) * query.pageSize) + index, options.source);
+-				if (areSameExtensions(extension.identifier, { id: this.productService.defaultChatAgent.extensionId, })) {
++				if (this.productService.defaultChatAgent && areSameExtensions(extension.identifier, { id: this.productService.defaultChatAgent.extensionId, })) {
+ 					defaultChatAgentExtension = extension;
+ 				} else {
+ 					result.push(extension);
+@@ -1977,15 +1977,17 @@ export abstract class AbstractExtensionGalleryService implements IExtensionGalle
+ 			}
+ 		}
+ 
+-		deprecated[this.productService.defaultChatAgent.extensionId.toLowerCase()] = {
+-			disallowInstall: true,
+-			extension: {
+-				id: this.productService.defaultChatAgent.chatExtensionId,
+-				displayName: 'GitHub Copilot Chat',
+-				autoMigrate: { storage: false, donotDisable: true },
+-				preRelease: this.productService.quality !== 'stable'
+-			}
+-		};
++		if (this.productService.defaultChatAgent) {
++			deprecated[this.productService.defaultChatAgent.extensionId.toLowerCase()] = {
++				disallowInstall: true,
++				extension: {
++					id: this.productService.defaultChatAgent.chatExtensionId,
++					displayName: 'GitHub Copilot Chat',
++					autoMigrate: { storage: false, donotDisable: true },
++					preRelease: this.productService.quality !== 'stable'
++				}
++			};
++		}
+ 
+ 		return { malicious, deprecated, search, autoUpdate };
+ 	}
+diff --git a/src/vs/workbench/contrib/chat/browser/chatStatus/chatStatusDashboard.ts b/src/vs/workbench/contrib/chat/browser/chatStatus/chatStatusDashboard.ts
+index ebe916fe9b6..a39f653e59d 100644
+--- a/src/vs/workbench/contrib/chat/browser/chatStatus/chatStatusDashboard.ts
++++ b/src/vs/workbench/contrib/chat/browser/chatStatus/chatStatusDashboard.ts
+@@ -48,7 +48,7 @@ import { GitHubPaths, IDefaultAccountService } from '../../../../../platform/def
+ import product from '../../../../../platform/product/common/product.js';
+ import { isCompletionsEnabled } from '../../../../../editor/common/services/completionsEnablement.js';
+ 
+-const defaultChat = product.defaultChatAgent;
++const defaultChat = product.defaultChatAgent!;
+ const completionsConfigurationTargets = [
+ 	ConfigurationTarget.WORKSPACE_FOLDER,
+ 	ConfigurationTarget.WORKSPACE,
+diff --git a/src/vs/workbench/contrib/chat/browser/chatStatus/chatStatusEntry.ts b/src/vs/workbench/contrib/chat/browser/chatStatus/chatStatusEntry.ts
+index 4c547b3e523..1ec500512de 100644
+--- a/src/vs/workbench/contrib/chat/browser/chatStatus/chatStatusEntry.ts
++++ b/src/vs/workbench/contrib/chat/browser/chatStatus/chatStatusEntry.ts
+@@ -220,7 +220,7 @@ export class ChatStatusBarEntry extends Disposable implements IWorkbenchContribu
+ 		this._register(this.editorService.onDidActiveEditorChange(() => this.onDidActiveEditorChange()));
+ 
+ 		this._register(this.configurationService.onDidChangeConfiguration(e => {
+-			if (e.affectsConfiguration(product.defaultChatAgent?.completionsEnablementSetting) || e.affectsConfiguration(ChatConfiguration.TitleBarSignInEnabled)) {
++			if ((product.defaultChatAgent && e.affectsConfiguration(product.defaultChatAgent.completionsEnablementSetting)) || e.affectsConfiguration(ChatConfiguration.TitleBarSignInEnabled)) {
+ 				this.update();
+ 			}
+ 		}));
+diff --git a/src/vs/workbench/contrib/chat/browser/widget/chatWidget.ts b/src/vs/workbench/contrib/chat/browser/widget/chatWidget.ts
+index 1b96e5b18ce..d3bd0f74587 100644
+--- a/src/vs/workbench/contrib/chat/browser/widget/chatWidget.ts
++++ b/src/vs/workbench/contrib/chat/browser/widget/chatWidget.ts
+@@ -1658,8 +1658,8 @@ export class ChatWidget extends Disposable implements IChatWidget {
+ 				const defaultAgent = this.chatAgentService.getDefaultAgent(this.location, this.input.currentModeKind);
+ 				let additionalMessage: string | IMarkdownString | undefined;
+ 				if (this.chatEntitlementService.anonymous && !this.chatEntitlementService.sentiment.completed) {
+-					const providers = product.defaultChatAgent.provider;
+-					additionalMessage = new MarkdownString(localize({ key: 'settings', comment: ['{Locked="]({2})"}', '{Locked="]({3})"}'] }, "By continuing with {0} Copilot, you agree to {1}'s [Terms]({2}) and [Privacy Statement]({3}).", providers.default.name, providers.default.name, product.defaultChatAgent.termsStatementUrl, product.defaultChatAgent.privacyStatementUrl), { isTrusted: true });
++					const providers = product.defaultChatAgent!.provider;
++					additionalMessage = new MarkdownString(localize({ key: 'settings', comment: ['{Locked="]({2})"}', '{Locked="]({3})"}'] }, "By continuing with {0} Copilot, you agree to {1}'s [Terms]({2}) and [Privacy Statement]({3}).", providers.default.name, providers.default.name, product.defaultChatAgent!.termsStatementUrl, product.defaultChatAgent!.privacyStatementUrl), { isTrusted: true });
+ 				} else {
+ 					additionalMessage = defaultAgent?.metadata.additionalWelcomeMessage;
+ 				}
+diff --git a/src/vs/workbench/contrib/extensions/browser/extensionsWorkbenchService.ts b/src/vs/workbench/contrib/extensions/browser/extensionsWorkbenchService.ts
+index 7d9de121739..dcce59cafde 100644
+--- a/src/vs/workbench/contrib/extensions/browser/extensionsWorkbenchService.ts
++++ b/src/vs/workbench/contrib/extensions/browser/extensionsWorkbenchService.ts
+@@ -2851,7 +2851,7 @@ export class ExtensionsWorkbenchService extends Disposable implements IExtension
+ 		}
+ 
+ 		const extensionsToUninstall: UninstallExtensionInfo[] = [{ extension: extension.local }];
+-		if (!areSameExtensions(extension.identifier, { id: this.productService.defaultChatAgent.extensionId })) {
++		if (!this.productService.defaultChatAgent || !areSameExtensions(extension.identifier, { id: this.productService.defaultChatAgent.extensionId })) {
+ 			for (const packExtension of this.getAllPackedExtensions(extension, this.local)) {
+ 				if (packExtension.local && !extensionsToUninstall.some(e => areSameExtensions(e.extension.identifier, packExtension.identifier))) {
+ 					extensionsToUninstall.push({ extension: packExtension.local });
+diff --git a/src/vs/workbench/services/accounts/browser/defaultAccount.ts b/src/vs/workbench/services/accounts/browser/defaultAccount.ts
+index b505994a112..e3cd5453cff 100644
+--- a/src/vs/workbench/services/accounts/browser/defaultAccount.ts
++++ b/src/vs/workbench/services/accounts/browser/defaultAccount.ts
+@@ -148,14 +148,16 @@ export class DefaultAccountService extends Disposable implements IDefaultAccount
+ 	private readonly _onDidChangeManagedSettingsFreshness = this._register(new Emitter<IManagedSettingsFreshness>());
+ 	readonly onDidChangeManagedSettingsFreshness = this._onDidChangeManagedSettingsFreshness.event;
+ 
+-	private readonly defaultAccountConfig: IDefaultAccountConfig;
++	private readonly defaultAccountConfig?: IDefaultAccountConfig;
+ 	private defaultAccountProvider: IDefaultAccountProvider | null = null;
+ 
+ 	constructor(
+ 		@IProductService productService: IProductService,
+ 	) {
+ 		super();
+-		this.defaultAccountConfig = toDefaultAccountConfig(productService.defaultChatAgent);
++		if (productService.defaultChatAgent) {
++			this.defaultAccountConfig = toDefaultAccountConfig(productService.defaultChatAgent);
++		}
+ 	}
+ 
+ 	async getDefaultAccount(): Promise<IDefaultAccount | null> {
+@@ -167,6 +169,10 @@ export class DefaultAccountService extends Disposable implements IDefaultAccount
+ 		if (this.defaultAccountProvider) {
+ 			return this.defaultAccountProvider.getDefaultAccountAuthenticationProvider();
+ 		}
++
++		if (!this.defaultAccountConfig) {
++			throw new Error('Not default account configured');
++		}
+ 		return {
+ 			...this.defaultAccountConfig.authenticationProvider.default,
+ 			enterprise: false
+@@ -1645,8 +1651,11 @@ class DefaultAccountProviderContribution extends Disposable implements IWorkbenc
+ 		@IDefaultAccountService defaultAccountService: IDefaultAccountService,
+ 	) {
+ 		super();
+-		const defaultAccountProvider = this._register(instantiationService.createInstance(DefaultAccountProvider, toDefaultAccountConfig(productService.defaultChatAgent)));
+-		defaultAccountService.setDefaultAccountProvider(defaultAccountProvider);
++
++		if (productService.defaultChatAgent) {
++			const defaultAccountProvider = this._register(instantiationService.createInstance(DefaultAccountProvider, toDefaultAccountConfig(productService.defaultChatAgent)));
++			defaultAccountService.setDefaultAccountProvider(defaultAccountProvider);
++		}
+ 	}
+ }
+ 

@@ -1,0 +1,125 @@
+From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
+From: =?UTF-8?q?Lo=C3=AFc=20Mangeonjean?= <loic@coderpad.io>
+Date: Mon, 11 Mar 2024 18:26:35 +0100
+Subject: [PATCH] cleanup: remove code that we will run ourselves
+
+---
+ src/vs/sessions/browser/workbench.ts  | 20 +-------------------
+ src/vs/workbench/browser/workbench.ts | 20 --------------------
+ 2 files changed, 1 insertion(+), 39 deletions(-)
+
+diff --git a/src/vs/sessions/browser/workbench.ts b/src/vs/sessions/browser/workbench.ts
+index 7c3540770a8..a12b203144e 100644
+--- a/src/vs/sessions/browser/workbench.ts
++++ b/src/vs/sessions/browser/workbench.ts
+@@ -38,17 +38,11 @@ import { IHostService } from '../../workbench/services/host/browser/host.js';
+ import { IDialogService } from '../../platform/dialogs/common/dialogs.js';
+ import { INotificationService } from '../../platform/notification/common/notification.js';
+ import { NotificationService } from '../../workbench/services/notification/common/notificationService.js';
+-import { IHoverService, WorkbenchHoverDelegate } from '../../platform/hover/browser/hover.js';
+-import { setHoverDelegateFactory } from '../../base/browser/ui/hover/hoverDelegateFactory.js';
+-import { setBaseLayerHoverDelegate } from '../../base/browser/ui/hover/hoverDelegate2.js';
+-import { Registry } from '../../platform/registry/common/platform.js';
+-import { IWorkbenchContributionsRegistry, Extensions as WorkbenchExtensions } from '../../workbench/common/contributions.js';
+-import { IEditorFactoryRegistry, EditorExtensions, IEditorWillOpenEvent } from '../../workbench/common/editor.js';
++import { IEditorWillOpenEvent } from '../../workbench/common/editor.js';
+ import { alert, setARIAContainer } from '../../base/browser/ui/aria/aria.js';
+ import { localize } from '../../nls.js';
+ import { FontMeasurements } from '../../editor/browser/config/fontMeasurements.js';
+ import { createBareFontInfoFromRawSettings } from '../../editor/common/config/fontInfoFromSettings.js';
+-import { WorkbenchContextKeysHandler } from '../../workbench/browser/contextkeys.js';
+ import { PixelRatio } from '../../base/browser/pixelRatio.js';
+ import { AccessibilityProgressSignalScheduler } from '../../platform/accessibilitySignal/browser/progressAccessibilitySignalScheduler.js';
+ import { setProgressAccessibilitySignalScheduler } from '../../base/browser/ui/progressbar/progressAccessibilitySignal.js';
+@@ -571,7 +565,6 @@ export abstract class Workbench extends Disposable implements IAgentWorkbenchLay
+ 				const configurationService = accessor.get(IConfigurationService);
+ 				this.chatLayoutPresentation = this._register(new ChatLayoutPresentation(configurationService, this.agentWorkbenchLayout === AgentWorkbenchLayout.Desktop, this.layoutPolicy.isPhoneLayout));
+ 				const hostService = accessor.get(IHostService);
+-				const hoverService = accessor.get(IHoverService);
+ 				const dialogService = accessor.get(IDialogService);
+ 				const notificationService = accessor.get(INotificationService) as NotificationService;
+ 				const markdownRendererService = accessor.get(IMarkdownRendererService);
+@@ -585,20 +578,9 @@ export abstract class Workbench extends Disposable implements IAgentWorkbenchLay
+ 				// Set code block renderer for markdown rendering
+ 				markdownRendererService.setDefaultCodeBlockRenderer(instantiationService.createInstance(EditorMarkdownCodeBlockRenderer));
+ 
+-				// Default Hover Delegate must be registered before creating any workbench/layout components
+-				setHoverDelegateFactory((placement, enableInstantHover) => instantiationService.createInstance(WorkbenchHoverDelegate, placement, { instantHover: enableInstantHover }, {}));
+-				setBaseLayerHoverDelegate(hoverService);
+-
+ 				// Layout
+ 				this.initLayout(accessor);
+ 
+-				// Registries - this creates and registers all parts
+-				Registry.as<IWorkbenchContributionsRegistry>(WorkbenchExtensions.Workbench).start(accessor);
+-				Registry.as<IEditorFactoryRegistry>(EditorExtensions.EditorFactory).start(accessor);
+-
+-				// Context Keys
+-				this._register(instantiationService.createInstance(WorkbenchContextKeysHandler));
+-
+ 				// Editor Maximized Context Key
+ 				const editorMaximizedContext = EditorMaximizedContext.bindTo(accessor.get(IContextKeyService));
+ 				this._register(this.onDidChangeEditorMaximized(() => {
+diff --git a/src/vs/workbench/browser/workbench.ts b/src/vs/workbench/browser/workbench.ts
+index c344a32641c..c06ccfd92b7 100644
+--- a/src/vs/workbench/browser/workbench.ts
++++ b/src/vs/workbench/browser/workbench.ts
+@@ -10,10 +10,7 @@ import { RunOnceScheduler, timeout } from '../../base/common/async.js';
+ import { isFirefox, isSafari, isChrome } from '../../base/browser/browser.js';
+ import { mark } from '../../base/common/performance.js';
+ import { onUnexpectedError, setUnexpectedErrorHandler } from '../../base/common/errors.js';
+-import { Registry } from '../../platform/registry/common/platform.js';
+ import { isWindows, isLinux, isWeb, isNative, isMacintosh } from '../../base/common/platform.js';
+-import { IWorkbenchContributionsRegistry, Extensions as WorkbenchExtensions } from '../common/contributions.js';
+-import { IEditorFactoryRegistry, EditorExtensions } from '../common/editor.js';
+ import { getSingletonServiceDescriptors } from '../../platform/instantiation/common/extensions.js';
+ import { Position, Parts, IWorkbenchLayoutService, positionToString } from '../services/layout/browser/layoutService.js';
+ import { IStorageService, WillSaveStateReason, StorageScope, StorageTarget } from '../../platform/storage/common/storage.js';
+@@ -32,7 +29,6 @@ import { setARIAContainer } from '../../base/browser/ui/aria/aria.js';
+ import { FontMeasurements } from '../../editor/browser/config/fontMeasurements.js';
+ import { createBareFontInfoFromRawSettings } from '../../editor/common/config/fontInfoFromSettings.js';
+ import { createUnexpectedErrorHandler, ILogService } from '../../platform/log/common/log.js';
+-import { WorkbenchContextKeysHandler } from './contextkeys.js';
+ import { coalesce } from '../../base/common/arrays.js';
+ import { InstantiationService } from '../../platform/instantiation/common/instantiationService.js';
+ import { Layout } from './layout.js';
+@@ -40,9 +36,6 @@ import { IHostService } from '../services/host/browser/host.js';
+ import { IDialogService } from '../../platform/dialogs/common/dialogs.js';
+ import { mainWindow } from '../../base/browser/window.js';
+ import { PixelRatio } from '../../base/browser/pixelRatio.js';
+-import { IHoverService, WorkbenchHoverDelegate } from '../../platform/hover/browser/hover.js';
+-import { setHoverDelegateFactory } from '../../base/browser/ui/hover/hoverDelegateFactory.js';
+-import { setBaseLayerHoverDelegate } from '../../base/browser/ui/hover/hoverDelegate2.js';
+ import { AccessibilityProgressSignalScheduler } from '../../platform/accessibilitySignal/browser/progressAccessibilitySignalScheduler.js';
+ import { setProgressAccessibilitySignalScheduler } from '../../base/browser/ui/progressbar/progressAccessibilitySignal.js';
+ import { AccessibleViewRegistry } from '../../platform/accessibility/browser/accessibleViewRegistry.js';
+@@ -123,7 +116,6 @@ export class Workbench extends Layout {
+ 				const storageService = accessor.get(IStorageService);
+ 				const configurationService = accessor.get(IConfigurationService);
+ 				const hostService = accessor.get(IHostService);
+-				const hoverService = accessor.get(IHoverService);
+ 				const dialogService = accessor.get(IDialogService);
+ 				const notificationService = accessor.get(INotificationService) as NotificationService;
+ 				const markdownRendererService = accessor.get(IMarkdownRendererService);
+@@ -131,21 +123,9 @@ export class Workbench extends Layout {
+ 				// Set code block renderer for markdown rendering
+ 				markdownRendererService.setDefaultCodeBlockRenderer(instantiationService.createInstance(EditorMarkdownCodeBlockRenderer));
+ 
+-				// Default Hover Delegate must be registered before creating any workbench/layout components
+-				// as these possibly will use the default hover delegate
+-				setHoverDelegateFactory((placement, enableInstantHover) => instantiationService.createInstance(WorkbenchHoverDelegate, placement, { instantHover: enableInstantHover }, {}));
+-				setBaseLayerHoverDelegate(hoverService);
+-
+ 				// Layout
+ 				this.initLayout(accessor);
+ 
+-				// Registries
+-				Registry.as<IWorkbenchContributionsRegistry>(WorkbenchExtensions.Workbench).start(accessor);
+-				Registry.as<IEditorFactoryRegistry>(EditorExtensions.EditorFactory).start(accessor);
+-
+-				// Context Keys
+-				this._register(instantiationService.createInstance(WorkbenchContextKeysHandler));
+-
+ 				// Register Listeners
+ 				this.registerListeners(lifecycleService, storageService, configurationService, hostService, dialogService);
+ 

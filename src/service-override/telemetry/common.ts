@@ -7,6 +7,7 @@ export type { ITelemetryData, TelemetryLevel } from 'vs/platform/telemetry/commo
 import { DataChannelService } from 'vs/workbench/services/dataChannel/browser/dataChannelService'
 import 'vs/workbench/contrib/telemetry/browser/telemetry.contribution'
 import 'vs/workbench/contrib/editTelemetry/browser/editTelemetry.contribution'
+import 'vs/workbench/services/policies/browser/policyTelemetry.contribution'
 
 export default function getServiceOverride(): IEditorOverrideServices {
   return {

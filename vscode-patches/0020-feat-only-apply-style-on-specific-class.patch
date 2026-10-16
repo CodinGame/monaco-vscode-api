@@ -10,7 +10,7 @@ Subject: [PATCH] feat: only apply style on specific class
  3 files changed, 114 insertions(+), 110 deletions(-)
 
 diff --git a/src/vs/workbench/browser/media/style.css b/src/vs/workbench/browser/media/style.css
-index b04b3c70daf..2837bbd0d96 100644
+index c6bd172ac07..6a7686daac2 100644
 --- a/src/vs/workbench/browser/media/style.css
 +++ b/src/vs/workbench/browser/media/style.css
 @@ -9,50 +9,37 @@
@@ -121,8 +121,8 @@ index b04b3c70daf..2837bbd0d96 100644
  	touch-action: none; /* Disable browser handling of all panning and zooming gestures. Removes 300ms touch delay. */
  	overscroll-behavior: none; /* Prevent bounce effect */
  }
-@@ -105,55 +92,56 @@ body {
- 	border-radius: 16px; /* macOS Tahoe increased rounded corners size */
+@@ -111,55 +98,56 @@ body {
+ 	border-radius: var(--window-corner-radius);
  }
  
 -.monaco-workbench img {
@@ -192,7 +192,7 @@ index b04b3c70daf..2837bbd0d96 100644
  	/*
  	 * Somehow this is required when tables show in floating windows
  	 * to override the user-agent style which sets a specific color
-@@ -163,48 +151,48 @@ body {
+@@ -169,48 +157,48 @@ body {
  	font-size: inherit;
  }
  
@@ -255,7 +255,7 @@ index b04b3c70daf..2837bbd0d96 100644
  	width: 16px;
  	padding-left: 3px; /* width (16px) - font-size (13px) = padding-left (3px) */
  	padding-right: 3px;
-@@ -224,7 +212,7 @@ body {
+@@ -230,7 +218,7 @@ body {
  
  /* Custom Dropdown (select) Arrows */
  
@@ -264,7 +264,7 @@ index b04b3c70daf..2837bbd0d96 100644
  	font-family: inherit;
  	appearance: none;
  	-webkit-appearance: none;
-@@ -233,11 +221,11 @@ body {
+@@ -239,11 +227,11 @@ body {
  	border: 1px solid;
  }
  
@@ -278,7 +278,7 @@ index b04b3c70daf..2837bbd0d96 100644
  	content: var(--vscode-icon-chevron-down-content);
  	font-family: var(--vscode-icon-chevron-down-font-family);
  	font-size: 16px;
-@@ -254,16 +242,16 @@ body {
+@@ -260,16 +248,16 @@ body {
  
  /* Keyboard Focus Indication Styles */
  
@@ -305,7 +305,7 @@ index b04b3c70daf..2837bbd0d96 100644
  	outline-width: 1px;
  	outline-style: solid;
  	outline-offset: -1px;
-@@ -276,19 +264,19 @@ body {
+@@ -282,19 +270,19 @@ body {
  	background: transparent; /* Search input focus fix when in high contrast */
  }
  
@@ -332,7 +332,7 @@ index b04b3c70daf..2837bbd0d96 100644
  	border-color: transparent; /* outline is a square, but border has a radius, so we avoid this glitch when focused (https://github.com/microsoft/vscode/issues/26045) */
  }
  
-@@ -318,38 +306,38 @@ body {
+@@ -324,38 +312,38 @@ body {
  	color: var(--vscode-list-focusHighlightForeground);
  }
  
