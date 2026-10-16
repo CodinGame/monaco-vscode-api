@@ -35,6 +35,15 @@ class AssignmentService implements IWorkbenchAssignmentService {
 
   addTelemetryAssignmentFilter = () => {}
 
+  getTreatmentWithAssignment: IWorkbenchAssignmentService['getTreatmentWithAssignment'] = async <
+    T extends string | number | boolean
+  >(
+    name: string
+  ) => ({
+    value: await this.getTreatment<T>(name),
+    hasAssignment: Promise.resolve(this.experimentsEnabled && this.treatments[name] !== undefined)
+  })
+
   async getCurrentExperiments(): Promise<string[] | undefined> {
     if (!this.experimentsEnabled) {
       return undefined

@@ -15,7 +15,7 @@ import { ICanonicalUriService } from 'vs/platform/workspace/common/canonicalUri.
 import { IUserActivityService } from 'vs/workbench/services/userActivity/common/userActivityService.service'
 import { IDownloadService } from 'vs/platform/download/common/download.service'
 import { DownloadService } from 'vs/platform/download/common/downloadService'
-import { IPathService } from 'vs/workbench/services/path/common/pathService.service'
+import { IPathService } from 'vs/platform/path/common/pathService.service'
 import { IWorkingCopyFileService } from 'vs/workbench/services/workingCopy/common/workingCopyFileService.service'
 import { IRemoteAgentService } from 'vs/workbench/services/remote/common/remoteAgentService.service'
 import { IWorkbenchEnvironmentService } from 'vs/workbench/services/environment/common/environmentService.service'

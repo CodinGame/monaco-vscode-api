@@ -1,20 +1,17 @@
 import { setFullscreen } from 'vs/base/browser/browser'
-import { detectFullscreen } from 'vs/base/browser/dom'
+import { detectFullscreen, getClientArea } from 'vs/base/browser/dom'
 import { mainWindow } from 'vs/base/browser/window'
 import { onUnexpectedError, setUnexpectedErrorHandler } from 'vs/base/common/errors'
 import type { IEditorOverrideServices } from 'vs/editor/standalone/browser/standaloneServices'
 import { RemoteAgentHostLocationPreferenceService } from 'vs/platform/agentHost/browser/remoteAgentHostLocationPreferenceService'
 import { IAgentHostByokLmHandler } from 'vs/platform/agentHost/common/agentHostByokLm.service.js'
-import {
-  ICloudSandboxAgentHostService,
-  ICloudSandboxApiService
-} from 'vs/platform/agentHost/common/cloudSandboxAgentHost.service'
 import { IRemoteAgentHostLocationPreferenceService } from 'vs/platform/agentHost/common/remoteAgentHostLocationPreference.service.js'
 import { ITunnelAgentHostService } from 'vs/platform/agentHost/common/tunnelAgentHost.service'
 import { SyncDescriptor } from 'vs/platform/instantiation/common/descriptors'
 import { IInstantiationService } from 'vs/platform/instantiation/common/instantiation'
 import { ServiceCollection } from 'vs/platform/instantiation/common/serviceCollection'
 import { ILogService } from 'vs/platform/log/common/log.service'
+import { createUnexpectedErrorHandler } from 'vs/platform/log/common/log'
 import { IChatDashboardService } from 'vs/sessions/browser/chatDashboardService.service.js'
 import { CustomViewGridParts } from 'vs/sessions/browser/parts/customViewGridParts'
 import { MobileVisualViewport } from 'vs/sessions/browser/parts/mobile/mobileVisualViewport'
@@ -22,8 +19,14 @@ import { IMobileVisualViewport } from 'vs/sessions/browser/parts/mobile/mobileVi
 import { SessionsParts } from 'vs/sessions/browser/parts/sessionsParts'
 import { SessionsSetUpService } from 'vs/sessions/browser/sessionsSetUpService'
 import { ISessionsSetUpService } from 'vs/sessions/browser/sessionsSetUpService.service'
-import { Workbench, type IWorkbenchOptions } from 'vs/sessions/browser/workbench'
-import { SinglePaneWorkbench } from 'vs/sessions/browser/singlePaneWorkbench'
+import {
+  AgentWorkbenchLayout,
+  type IWorkbenchOptions,
+  type Workbench
+} from 'vs/sessions/browser/workbench'
+import { DesktopWorkbench } from 'vs/sessions/browser/desktopWorkbench'
+import { MobileWorkbench } from 'vs/sessions/browser/mobileWorkbench'
+import { getSessionsWorkbenchLayout } from 'vs/sessions/browser/workbenchFactory'
 import { IDevContainerAgentHostService } from 'vs/sessions/common/devContainerAgentHostService.service'
 import { ChatDashboardServiceImpl } from 'vs/sessions/contrib/accountMenu/browser/account.contribution'
 import { IAgentFeedbackService } from 'vs/sessions/contrib/agentFeedback/browser/agentFeedbackService.service.js'
@@ -32,9 +35,7 @@ import { AquariumService } from 'vs/sessions/contrib/aquarium/browser/aquariumOv
 import { IAquariumService } from 'vs/sessions/contrib/aquarium/browser/aquariumOverlay.service.js'
 import { AutomationDialogService } from 'vs/sessions/contrib/automations/browser/automationDialogService'
 import { AutomationRunner } from 'vs/sessions/contrib/automations/browser/automationRunner'
-import { BrowserAutomationStorageService } from 'vs/sessions/contrib/automations/browser/automationStorageService'
 import { ProviderAutomationService } from 'vs/sessions/contrib/automations/browser/providerAutomationService'
-import { IAutomationStorageService } from 'vs/sessions/contrib/automations/common/automationStorageService.service.js'
 import { SessionChangesService } from 'vs/sessions/contrib/changes/browser/sessionChangesService.js'
 import { ISessionChangesService } from 'vs/sessions/contrib/changes/common/sessionChangesService.service.js'
 import { ChatViewFactory } from 'vs/sessions/contrib/chat/browser/chatView'
@@ -61,14 +62,20 @@ import { GitHubService } from 'vs/sessions/contrib/github/browser/githubService'
 import { IGitHubService } from 'vs/sessions/contrib/github/browser/githubService.service'
 import { PullRequestIconCache } from 'vs/sessions/contrib/github/browser/pullRequestIconCache'
 import { IPullRequestIconCache } from 'vs/sessions/contrib/github/browser/pullRequestIconCache.service'
-import { CloudSandboxAgentHostService } from 'vs/sessions/contrib/providers/remoteAgentHost/browser/cloudSandboxAgentHostService'
-import { CloudSandboxApiService } from 'vs/sessions/contrib/providers/remoteAgentHost/browser/cloudSandboxApiService'
-import { CloudSandboxTelemetryService } from 'vs/sessions/contrib/providers/remoteAgentHost/browser/cloudSandboxTelemetry'
-import { ICloudSandboxTelemetryService } from 'vs/sessions/contrib/providers/remoteAgentHost/browser/cloudSandboxTelemetry.service'
+import { SessionEditorWorkingSetService } from 'vs/sessions/contrib/layout/common/sessionEditorWorkingSet'
+import { ISessionEditorWorkingSetService } from 'vs/sessions/contrib/layout/common/sessionEditorWorkingSet.service'
+import { IConnectionDiagnosticsService } from 'vs/sessions/contrib/providers/remoteAgentHost/browser/connectionDiagnostics.service'
+import { ConnectionDiagnosticsService } from 'vs/sessions/contrib/providers/remoteAgentHost/browser/connectionDiagnosticsService'
 import { DevContainerAgentHostService } from 'vs/sessions/contrib/providers/remoteAgentHost/browser/devContainerAgentHostService'
-import { RemoteAgentHostConnectionCustomizationService } from 'vs/sessions/contrib/providers/remoteAgentHost/browser/remoteAgentHostConnectionCustomization'
-import { IRemoteAgentHostConnectionCustomizationService } from 'vs/sessions/contrib/providers/remoteAgentHost/browser/remoteAgentHostConnectionCustomization.service'
 import { BrowserTunnelAgentHostServiceSelector } from 'vs/sessions/contrib/providers/remoteAgentHost/browser/webTunnelAgentHostService.contribution'
+import { RemoteSessionChatService } from 'vs/sessions/contrib/remoteSessions/browser/remoteSessionChatService'
+import { IRemoteSessionChatService } from 'vs/sessions/contrib/remoteSessions/browser/remoteSessionChatService.service'
+import { RemoteSessionService } from 'vs/sessions/contrib/remoteSessions/browser/remoteSessionService'
+import { IRemoteSessionService } from 'vs/sessions/contrib/remoteSessions/common/remoteSessions.service'
+import { SessionComparisonViewService } from 'vs/sessions/contrib/sessionComparison/browser/sessionComparisonViewService'
+import { ISessionComparisonViewService } from 'vs/sessions/contrib/sessionComparison/browser/sessionComparisonViewService.service'
+import { SessionWorktreeCleanupService } from 'vs/sessions/contrib/sessionInputBanners/browser/sessionWorktreeCleanupService'
+import { ISessionWorktreeCleanupService } from 'vs/sessions/contrib/sessionInputBanners/browser/sessionWorktreeCleanupService.service'
 import { AgentHostFilterService } from 'vs/sessions/services/agentHostFilter/browser/agentHostFilterService'
 import { IAgentHostFilterService } from 'vs/sessions/services/agentHostFilter/common/agentHostFilter.service'
 import { SessionsChatBackgroundService } from 'vs/sessions/services/chatBackground/browser/chatBackgroundService'
@@ -77,6 +84,7 @@ import { IChatViewFactory } from 'vs/sessions/services/chatView/browser/chatView
 import { ICustomViewGridPartService } from 'vs/sessions/services/customView/browser/customViewGridPartService.service'
 import { CustomViewService } from 'vs/sessions/services/customView/browser/customViewService'
 import { ICustomViewService } from 'vs/sessions/services/customView/browser/customViewService.service'
+import { SessionComparisonService } from 'vs/sessions/services/sessions/browser/sessionComparisonService'
 import { ActiveSessionContext } from 'vs/sessions/services/sessions/browser/sessionContext'
 import { ISessionContext } from 'vs/sessions/services/sessions/browser/sessionContext.service'
 import { SessionGroupsService } from 'vs/sessions/services/sessions/browser/sessionGroupsService'
@@ -99,6 +107,7 @@ import { SessionsWindowUsageService } from 'vs/sessions/services/sessions/browse
 import { ISessionsWindowUsageService } from 'vs/sessions/services/sessions/browser/sessionsWindowUsageService.service.js'
 import { SessionChangesStatsCache } from 'vs/sessions/services/sessions/common/sessionChangesStatsCache'
 import { ISessionChangesStatsCache } from 'vs/sessions/services/sessions/common/sessionChangesStatsCache.service.js'
+import { ISessionComparisonService } from 'vs/sessions/services/sessions/common/sessionComparison.service'
 import { ISessionsManagementService } from 'vs/sessions/services/sessions/common/sessionsManagement.service'
 import { SessionsWorkspaceFolderLabelService } from 'vs/sessions/services/workspaceFolderLabel/browser/workspaceFolderLabelService'
 import { BrowserWindow } from 'vs/workbench/browser/window'
@@ -126,8 +135,6 @@ import { EditorParts } from 'vs/sessions/browser/parts/editorParts'
 import getEnvironmentServiceOverride from '../environment.js'
 import { agentHostUri } from 'vs/platform/agentHost/common/agentHostFileSystemProvider'
 import { agentHostAuthority } from 'vs/platform/agentHost/common/agentHostUri'
-import { DOCK_DETAIL_PANEL_SETTING } from 'vs/sessions/common/sessionConfig'
-import { IConfigurationService } from 'vs/platform/configuration/common/configuration.service'
 import type { ILifecycleService } from 'vs/workbench/services/lifecycle/common/lifecycle.service'
 export * from './common'
 import 'vs/sessions/browser/parts/menubar.contribution'
@@ -148,6 +155,9 @@ import 'vs/sessions/contrib/files/browser/files.contribution'
 import 'vs/sessions/contrib/layout/browser/sessions.layout.contribution'
 import 'vs/sessions/contrib/onboardingTours/browser/onboardingTours.contribution'
 import 'vs/sessions/contrib/policyBlocked/browser/policyBlocked.contribution'
+import 'vs/sessions/contrib/providers/remoteAgentHost/browser/connectionDiagnostics.contribution'
+import 'vs/sessions/contrib/remoteSessions/browser/remoteSessions.contribution'
+import 'vs/sessions/contrib/sessionComparison/browser/sessionComparison.contribution'
 import 'vs/workbench/contrib/search/browser/search.common.contribution'
 import 'vs/sessions/contrib/search/browser/search.contribution'
 import 'vs/workbench/contrib/search/browser/searchQuickAccess.contribution'
@@ -168,13 +178,12 @@ import 'vs/sessions/contrib/applyCommitsToParentRepo/browser/applyChangesToParen
 import 'vs/sessions/contrib/providers/agentHost/browser/agentHostSessionBranchActions'
 import 'vs/workbench/browser/parts/sidebar/sidebarActions'
 
-function createCustomWorkbench(BaseWorkbench: typeof Workbench) {
+function createCustomWorkbench(BaseWorkbench: typeof MobileWorkbench) {
   class CustomWorkbench extends BaseWorkbench {
     constructor(
       options: IWorkbenchOptions | undefined,
       @ILogService logService: ILogService,
-      @IInstantiationService private _instantiationService: IInstantiationService,
-      @IConfigurationService _configurationService: IConfigurationService
+      @IInstantiationService private _instantiationService: IInstantiationService
     ) {
       super(getWorkbenchContainer(), options, new ServiceCollection(), logService)
 
@@ -183,7 +192,7 @@ function createCustomWorkbench(BaseWorkbench: typeof Workbench) {
 
     protected override registerErrorHandler(logService: ILogService): void {
       // prevent intercepting global error events
-      setUnexpectedErrorHandler((error) => this.handleUnexpectedError(error, logService))
+      setUnexpectedErrorHandler(createUnexpectedErrorHandler(logService))
     }
 
     protected override createNotificationsHandlers() {
@@ -217,13 +226,11 @@ function createCustomWorkbench(BaseWorkbench: typeof Workbench) {
   return CustomWorkbench
 }
 
-const CustomSinglePaneWorkbench = createCustomWorkbench(SinglePaneWorkbench)
-const CustomWorkbench = new Proxy(createCustomWorkbench(Workbench), {
-  construct(target, args: ConstructorParameters<typeof CustomSinglePaneWorkbench>) {
-    const configurationService = args[3]
-    const WorkbenchClass = configurationService.getValue<boolean>(DOCK_DETAIL_PANEL_SETTING)
-      ? CustomSinglePaneWorkbench
-      : target
+const CustomMobileWorkbench = createCustomWorkbench(MobileWorkbench)
+const CustomWorkbench = new Proxy(createCustomWorkbench(DesktopWorkbench), {
+  construct(target, args: ConstructorParameters<typeof CustomMobileWorkbench>) {
+    const layout = getSessionsWorkbenchLayout(getClientArea(mainWindow.document.body).width)
+    const WorkbenchClass = layout === AgentWorkbenchLayout.Mobile ? CustomMobileWorkbench : target
     return Reflect.construct(WorkbenchClass, args)
   }
 })
@@ -280,11 +287,6 @@ export default function getServiceOverride(
     [IChatDashboardService.toString()]: new SyncDescriptor(ChatDashboardServiceImpl, [], true),
     [IAgentFeedbackService.toString()]: new SyncDescriptor(NullAgentFeedbackService, [], true),
     [IAquariumService.toString()]: new SyncDescriptor(AquariumService, [], true),
-    [IAutomationStorageService.toString()]: new SyncDescriptor(
-      BrowserAutomationStorageService,
-      [],
-      true
-    ),
     [IAutomationService.toString()]: new SyncDescriptor(
       ProviderAutomationService,
       [initialProvidersSettled],
@@ -340,14 +342,13 @@ export default function getServiceOverride(
     [IDiffEditorOptionsService.toString()]: new SyncDescriptor(DiffEditorOptionsService, [], true),
     [IGitHubService.toString()]: new SyncDescriptor(GitHubService, [], true),
     [IPullRequestIconCache.toString()]: new SyncDescriptor(PullRequestIconCache, [], true),
-    [ICloudSandboxTelemetryService.toString()]: new SyncDescriptor(
-      CloudSandboxTelemetryService,
+    [ISessionEditorWorkingSetService.toString()]: new SyncDescriptor(
+      SessionEditorWorkingSetService,
       [],
       true
     ),
-    [ICloudSandboxApiService.toString()]: new SyncDescriptor(CloudSandboxApiService, [], true),
-    [ICloudSandboxAgentHostService.toString()]: new SyncDescriptor(
-      CloudSandboxAgentHostService,
+    [IConnectionDiagnosticsService.toString()]: new SyncDescriptor(
+      ConnectionDiagnosticsService,
       [],
       true
     ),
@@ -356,18 +357,26 @@ export default function getServiceOverride(
       [],
       true
     ),
-    [IRemoteAgentHostConnectionCustomizationService.toString()]: new SyncDescriptor(
-      RemoteAgentHostConnectionCustomizationService,
-      [],
-      true
-    ),
     [ITunnelAgentHostService.toString()]: new SyncDescriptor(
       BrowserTunnelAgentHostServiceSelector,
       [],
       true
     ),
+    [IRemoteSessionService.toString()]: new SyncDescriptor(RemoteSessionService, [], true),
+    [IRemoteSessionChatService.toString()]: new SyncDescriptor(RemoteSessionChatService, [], true),
+    [ISessionComparisonViewService.toString()]: new SyncDescriptor(
+      SessionComparisonViewService,
+      [],
+      true
+    ),
+    [ISessionWorktreeCleanupService.toString()]: new SyncDescriptor(
+      SessionWorktreeCleanupService,
+      [],
+      true
+    ),
     [IAgentHostFilterService.toString()]: new SyncDescriptor(AgentHostFilterService, [], true),
     [ICustomViewService.toString()]: new SyncDescriptor(CustomViewService, [], true),
+    [ISessionComparisonService.toString()]: new SyncDescriptor(SessionComparisonService, [], true),
     [ISessionContext.toString()]: new SyncDescriptor(ActiveSessionContext, [], true),
     [ISessionGroupsService.toString()]: new SyncDescriptor(SessionGroupsService, [], true),
     [ISessionOpenTelemetryService.toString()]: new SyncDescriptor(
