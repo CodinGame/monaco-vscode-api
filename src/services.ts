@@ -107,7 +107,7 @@ export async function initialize(
 ): Promise<void> {
   checkServicesNotInitialized()
 
-  injectCss(container)
+  await injectCss(container)
   registerCommands(configuration)
   initializeWorkbench(container, configuration, env)
 
