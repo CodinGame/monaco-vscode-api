@@ -211,8 +211,8 @@ export default (args: Record<string, string>): rollup.RollupOptions => {
         // Service overrides that build on top of those features
         allowedEntries:
           /\/src\/service-override\/(?:(?:chat|notebook|mcp|interactive|ai|speech|welcome)(?:\/(?:common|classic|session))?|(?:viewCommon|workbench)\/session)\.ts$/,
-        // ~910KB with VSCode 1.138: mostly dictation, go to symbol in chat, editor tabs and chat context keys
-        maxSize: 1000 * 1024
+        // ~1011KB with VSCode 1.142: mostly dictation, go to symbol in chat, editor tabs and chat context keys
+        maxSize: 1100 * 1024
       }),
       configuredSubpackagePlugin(),
       copy({
