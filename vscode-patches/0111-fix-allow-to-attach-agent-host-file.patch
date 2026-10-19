@@ -1,0 +1,30 @@
+From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
+From: =?UTF-8?q?Lo=C3=AFc=20Mangeonjean?= <loic@coderpad.io>
+Date: Mon, 19 Oct 2026 15:56:51 +0200
+Subject: [PATCH] fix: allow to attach agent host file
+
+---
+ src/vs/sessions/contrib/editor/browser/editor.contribution.ts | 3 ++-
+ 1 file changed, 2 insertions(+), 1 deletion(-)
+
+diff --git a/src/vs/sessions/contrib/editor/browser/editor.contribution.ts b/src/vs/sessions/contrib/editor/browser/editor.contribution.ts
+index 11f0749da23..0771bf8506f 100644
+--- a/src/vs/sessions/contrib/editor/browser/editor.contribution.ts
++++ b/src/vs/sessions/contrib/editor/browser/editor.contribution.ts
+@@ -47,6 +47,7 @@ import { ISessionsService } from '../../../services/sessions/browser/sessionsSer
+ import { ISessionsPartService } from '../../../services/sessions/browser/sessionsPartService.js';
+ import { SessionsCategories } from '../../../common/categories.js';
+ import { IChangesViewService } from '../../changes/common/changesViewService.js';
++import { AGENT_HOST_SCHEME } from '../../../../platform/agentHost/common/agentHostUri.js';
+ 
+ const terminalPanelHiddenForMaximizedEditor = new WeakSet<IAgentWorkbenchLayoutService>();
+ 
+@@ -406,7 +407,7 @@ class AddFileAsContextAction extends Action2 {
+ 		const resources = resolvedContext.groupedEditors
+ 			.flatMap(groupedEditor => groupedEditor.editors)
+ 			.map(editor => EditorResourceAccessor.getCanonicalUri(editor, { supportSideBySide: SideBySideEditor.PRIMARY }))
+-			.filter((uri): uri is URI => uri !== undefined && [Schemas.file, Schemas.vscodeRemote, Schemas.untitled].includes(uri.scheme));
++			.filter((uri): uri is URI => uri !== undefined && [Schemas.file, Schemas.vscodeRemote, Schemas.untitled, AGENT_HOST_SCHEME].includes(uri.scheme));
+ 		if (resources.length === 0) {
+ 			return;
+ 		}
