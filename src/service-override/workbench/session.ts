@@ -135,7 +135,7 @@ import { EditorParts } from 'vs/sessions/browser/parts/editorParts'
 import getEnvironmentServiceOverride from '../environment.js'
 import { agentHostUri } from 'vs/platform/agentHost/common/agentHostFileSystemProvider'
 import { agentHostAuthority } from 'vs/platform/agentHost/common/agentHostUri'
-import type { ILifecycleService } from 'vs/workbench/services/lifecycle/common/lifecycle.service'
+import { ILifecycleService } from 'vs/workbench/services/lifecycle/common/lifecycle.service'
 export * from './common'
 import 'vs/sessions/browser/parts/menubar.contribution'
 import 'vs/sessions/browser/sessions.web.contribution'
@@ -177,6 +177,7 @@ import 'vs/sessions/contrib/terminal/browser/sessionsTerminalContribution'
 import 'vs/sessions/contrib/applyCommitsToParentRepo/browser/applyChangesToParentRepo'
 import 'vs/sessions/contrib/providers/agentHost/browser/agentHostSessionBranchActions'
 import 'vs/workbench/browser/parts/sidebar/sidebarActions'
+import { LifecyclePhase } from 'vs/workbench/services/lifecycle/common/lifecycle'
 
 function createCustomWorkbench(BaseWorkbench: typeof MobileWorkbench) {
   class CustomWorkbench extends BaseWorkbench {
@@ -203,23 +204,12 @@ function createCustomWorkbench(BaseWorkbench: typeof MobileWorkbench) {
     }
 
     protected override initServices(): IInstantiationService {
-      return this._instantiationService
-    }
-
-    protected override restore(lifecycleService: ILifecycleService): void {
-      // Restore parts (open default view containers)
-      try {
-        this.restoreParts()
-      } catch (error) {
-        onUnexpectedError(error)
-      }
-
-      // Restore the sessions that were visible in the grid.
-      void this.sessionsService.restoreVisibleSessions().catch((e) => {
-        this.logService.error('[Workbench] restoreVisibleSessions failed', e)
+      this._instantiationService.invokeFunction((accessor) => {
+        const lifecycleService = accessor.get(ILifecycleService)
+        lifecycleService.phase = LifecyclePhase.Ready
       })
 
-      // prevent managing lifecycle service phase as it's already done in lifecycle.ts
+      return this._instantiationService
     }
   }
 

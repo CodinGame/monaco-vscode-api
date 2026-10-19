@@ -52,30 +52,43 @@ export function registerServiceInitializePostParticipant(
   serviceInitializePostParticipants.push(participant)
 }
 
+let workbenchHooksDisabled = false
+// When not using the workbench service overrides, we need to initialize some parts by hands
+export function disableWorkbenchHooks() {
+  workbenchHooksDisabled = true
+}
+
 export async function startup(instantiationService: IInstantiationService): Promise<void> {
   await instantiationService.invokeFunction(async (accessor) => {
     await Promise.all(serviceInitializePreParticipants.map((participant) => participant(accessor)))
   })
 
   await instantiationService.invokeFunction(async (accessor) => {
-    setHoverDelegateFactory((placement, enableInstantHover) =>
-      instantiationService.createInstance(
-        WorkbenchHoverDelegate,
-        placement,
-        { instantHover: enableInstantHover },
-        {}
+    if (!workbenchHooksDisabled) {
+      setHoverDelegateFactory((placement, enableInstantHover) =>
+        instantiationService.createInstance(
+          WorkbenchHoverDelegate,
+          placement,
+          { instantHover: enableInstantHover },
+          {}
+        )
       )
-    )
-    setBaseLayerHoverDelegate(accessor.get(IHoverService))
+      setBaseLayerHoverDelegate(accessor.get(IHoverService))
+    }
 
     const lifecycleService = accessor.get(ILifecycleService)
-    Registry.as<IWorkbenchContributionsRegistry>(WorkbenchExtensions.Workbench).start(accessor)
-    Registry.as<IEditorFactoryRegistry>(EditorExtensions.EditorFactory).start(accessor)
+
+    if (!workbenchHooksDisabled) {
+      Registry.as<IWorkbenchContributionsRegistry>(WorkbenchExtensions.Workbench).start(accessor)
+      Registry.as<IEditorFactoryRegistry>(EditorExtensions.EditorFactory).start(accessor)
+    }
 
     await Promise.all(serviceInitializeParticipants.map((participant) => participant(accessor)))
 
-    // Signal to lifecycle that services are set
-    lifecycleService.phase = LifecyclePhase.Ready
+    if (!workbenchHooksDisabled) {
+      // Signal to lifecycle that services are set
+      lifecycleService.phase = LifecyclePhase.Ready
+    }
   })
 
   await instantiationService.invokeFunction(async (accessor) => {
@@ -88,28 +101,32 @@ export async function startup(instantiationService: IInstantiationService): Prom
   void instantiationService.invokeFunction(async (accessor) => {
     const lifecycleService = accessor.get(ILifecycleService)
 
-    onRenderWorkbench((accessor) => {
-      accessor.get(IInstantiationService).createInstance(WorkbenchContextKeysHandler)
-    })
+    if (!workbenchHooksDisabled) {
+      onRenderWorkbench((accessor) => {
+        accessor.get(IInstantiationService).createInstance(WorkbenchContextKeysHandler)
+      })
+    }
 
     layoutEmitter.fire(accessor)
     renderWorkbenchEmitter.fire(accessor)
 
     await Promise.race([accessor.get(IWorkbenchLayoutService).whenRestored, timeout(2000)])
 
-    lifecycleService.phase = LifecyclePhase.Restored
+    if (!workbenchHooksDisabled) {
+      lifecycleService.phase = LifecyclePhase.Restored
 
-    // Set lifecycle phase to `Eventually` after a short delay and when idle (min 2.5sec, max 5sec)
-    const eventuallyPhaseScheduler = new RunOnceScheduler(() => {
-      _runWhenIdle(
-        window,
-        () => {
-          lifecycleService.phase = LifecyclePhase.Eventually
-        },
-        2500
-      )
-    }, 2500)
-    eventuallyPhaseScheduler.schedule()
+      // Set lifecycle phase to `Eventually` after a short delay and when idle (min 2.5sec, max 5sec)
+      const eventuallyPhaseScheduler = new RunOnceScheduler(() => {
+        _runWhenIdle(
+          window,
+          () => {
+            lifecycleService.phase = LifecyclePhase.Eventually
+          },
+          2500
+        )
+      }, 2500)
+      eventuallyPhaseScheduler.schedule()
+    }
   })
 }
 

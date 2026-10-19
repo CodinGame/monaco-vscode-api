@@ -26,6 +26,8 @@ export * from './common'
 import 'vs/workbench/browser/parts/titlebar/menubar.contribution'
 import 'vs/workbench/browser/workbench.zenMode.contribution'
 import 'vs/workbench/contrib/languageStatus/browser/languageStatus.contribution'
+import { LifecyclePhase } from 'vs/workbench/services/lifecycle/common/lifecycle'
+import { ILifecycleService } from 'vs/workbench/services/lifecycle/common/lifecycle.service'
 
 class CustomWorkbench extends Workbench {
   constructor(
@@ -48,17 +50,12 @@ class CustomWorkbench extends Workbench {
   }
 
   protected override initServices(): IInstantiationService {
+    this.instantiationService.invokeFunction((accessor) => {
+      const lifecycleService = accessor.get(ILifecycleService)
+      lifecycleService.phase = LifecyclePhase.Ready
+    })
+
     return this.instantiationService
-  }
-
-  override restore(instantiationService: IInstantiationService): void {
-    try {
-      this.restoreParts(instantiationService)
-    } catch (error) {
-      onUnexpectedError(error)
-    }
-
-    // prevent managing lifecycle service phase as it's already done in lifecycle.ts
   }
 }
 
