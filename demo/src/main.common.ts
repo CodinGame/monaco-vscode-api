@@ -50,6 +50,7 @@ import '@codingame/monaco-vscode-media-preview-default-extension'
 import '@codingame/monaco-vscode-ipynb-default-extension'
 import '@codingame/monaco-vscode-simple-browser-default-extension'
 import '@codingame/monaco-vscode-mermaid-markdown-features-default-extension'
+import '@codingame/monaco-vscode-log-default-extension'
 
 document.querySelector('#toggleFullWorkbench')!.addEventListener('click', async () => {
   const url = new URL(window.location.href)
