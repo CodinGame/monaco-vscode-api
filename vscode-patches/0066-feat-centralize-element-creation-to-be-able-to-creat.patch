@@ -3604,7 +3604,7 @@ index 374c5ef501e..efd6117e7c4 100644
  		input.className = 'chat-composite-bar-session-title-input';
  		input.value = initialTitle;
 diff --git a/src/vs/sessions/browser/workbench.ts b/src/vs/sessions/browser/workbench.ts
-index 560061c6652..f0802fb9fd8 100644
+index b2bc5a0479f..a46a2628359 100644
 --- a/src/vs/sessions/browser/workbench.ts
 +++ b/src/vs/sessions/browser/workbench.ts
 @@ -9,7 +9,7 @@ import './media/workbench.css';
@@ -3616,7 +3616,7 @@ index 560061c6652..f0802fb9fd8 100644
  import { DeferredPromise, RunOnceScheduler } from '../../base/common/async.js';
  import { isFullscreen, onDidChangeFullscreen, isChrome, isFirefox, isSafari } from '../../base/browser/browser.js';
  import { mark } from '../../base/common/performance.js';
-@@ -341,7 +341,7 @@ export abstract class Workbench extends Disposable implements IAgentWorkbenchLay
+@@ -347,7 +347,7 @@ export abstract class Workbench extends Disposable implements IAgentWorkbenchLay
  
  	//#region Properties
  
@@ -3625,7 +3625,7 @@ index 560061c6652..f0802fb9fd8 100644
  
  	get activeContainer(): HTMLElement {
  		return this.getContainerFromDocument(getActiveDocument());
-@@ -1080,7 +1080,7 @@ export abstract class Workbench extends Disposable implements IAgentWorkbenchLay
+@@ -1098,7 +1098,7 @@ export abstract class Workbench extends Disposable implements IAgentWorkbenchLay
  	}
  
  	private createPartContainer(id: string, role: string, classes: string[]): HTMLElement {
@@ -3634,7 +3634,7 @@ index 560061c6652..f0802fb9fd8 100644
  		part.classList.add('part', ...classes);
  		part.id = id;
  		part.setAttribute('role', role);
-@@ -1088,7 +1088,7 @@ export abstract class Workbench extends Disposable implements IAgentWorkbenchLay
+@@ -1106,7 +1106,7 @@ export abstract class Workbench extends Disposable implements IAgentWorkbenchLay
  	}
  
  	private createEditorPart(): void {
@@ -3643,7 +3643,7 @@ index 560061c6652..f0802fb9fd8 100644
  		editorPartContainer.classList.add('part', 'editor');
  		editorPartContainer.id = Parts.EDITOR_PART;
  		editorPartContainer.setAttribute('role', 'main');
-@@ -1104,7 +1104,7 @@ export abstract class Workbench extends Disposable implements IAgentWorkbenchLay
+@@ -1122,7 +1122,7 @@ export abstract class Workbench extends Disposable implements IAgentWorkbenchLay
  	}
  
  	private createSessionsPart(): void {
@@ -3652,7 +3652,7 @@ index 560061c6652..f0802fb9fd8 100644
  		sessionsPartContainer.classList.add('part', 'sessionspart', 'basepanel', 'right', AGENTS_PART_CARD_CLASS);
  		sessionsPartContainer.id = Parts.SESSIONS_PART;
  		sessionsPartContainer.setAttribute('role', 'main');
-@@ -1152,7 +1152,7 @@ export abstract class Workbench extends Disposable implements IAgentWorkbenchLay
+@@ -1170,7 +1170,7 @@ export abstract class Workbench extends Disposable implements IAgentWorkbenchLay
  	}
  
  	private createCustomViewGridPart(): void {
@@ -4052,7 +4052,7 @@ index bf917583d16..5d354020411 100644
  		for (const child of result) {
  			if (DOM.isHTMLElement(child)) {
 diff --git a/src/vs/workbench/browser/workbench.ts b/src/vs/workbench/browser/workbench.ts
-index 0cd2d7d54ec..c7285c5dc0a 100644
+index 97291659332..044fde0ae9e 100644
 --- a/src/vs/workbench/browser/workbench.ts
 +++ b/src/vs/workbench/browser/workbench.ts
 @@ -4,7 +4,7 @@
@@ -4064,7 +4064,7 @@ index 0cd2d7d54ec..c7285c5dc0a 100644
  import { Event, Emitter, setGlobalLeakWarningThreshold } from '../../base/common/event.js';
  import { RunOnceScheduler, timeout } from '../../base/common/async.js';
  import { isFirefox, isSafari, isChrome } from '../../base/browser/browser.js';
-@@ -329,7 +329,7 @@ export class Workbench extends Layout {
+@@ -349,7 +349,7 @@ export class Workbench extends Layout {
  	}
  
  	private createPart(id: string, role: string, classes: string[]): HTMLElement {

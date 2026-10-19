@@ -952,10 +952,10 @@ index ae168e0cddf..7b973c486f3 100644
  			this._groups = this._groups.filter(g => g !== group);
  			if (this._activeGroup === group) {
 diff --git a/src/vs/sessions/browser/workbench.ts b/src/vs/sessions/browser/workbench.ts
-index a12b203144e..cc141a3f45a 100644
+index 7c3540770a8..f1b7b27054c 100644
 --- a/src/vs/sessions/browser/workbench.ts
 +++ b/src/vs/sessions/browser/workbench.ts
-@@ -77,6 +77,7 @@ import { ICustomViewDescriptor } from '../services/customView/browser/customView
+@@ -83,6 +83,7 @@ import { ICustomViewDescriptor } from '../services/customView/browser/customView
  import { ISessionsSetUpService } from './sessionsSetUpService.js';
  import { AGENTS_FLOATING_PANEL_GAP } from '../common/layoutConstants.js';
  import { ITelemetryService } from '../../platform/telemetry/common/telemetry.js';
@@ -963,7 +963,7 @@ index a12b203144e..cc141a3f45a 100644
  
  const PHONE_NOTIFICATION_ROW_HEIGHT = 44;
  const SESSIONS_SIDE_PANE_DIVIDER_CLASS = 'sessions-side-pane-divider';
-@@ -497,6 +498,8 @@ export abstract class Workbench extends Disposable implements IAgentWorkbenchLay
+@@ -503,6 +504,8 @@ export abstract class Workbench extends Disposable implements IAgentWorkbenchLay
  	) {
  		super();
  
@@ -1217,10 +1217,10 @@ index 871b888baa1..cb8af37dd4f 100644
  		super.create(parent, options);
  	}
 diff --git a/src/vs/workbench/browser/workbench.ts b/src/vs/workbench/browser/workbench.ts
-index c06ccfd92b7..0cd2d7d54ec 100644
+index c344a32641c..97291659332 100644
 --- a/src/vs/workbench/browser/workbench.ts
 +++ b/src/vs/workbench/browser/workbench.ts
-@@ -76,6 +76,9 @@ export class Workbench extends Layout {
+@@ -83,6 +83,9 @@ export class Workbench extends Layout {
  		mark('code/willStartWorkbench');
  
  		this.registerErrorHandler(logService);
@@ -1230,7 +1230,7 @@ index c06ccfd92b7..0cd2d7d54ec 100644
  	}
  
  	protected registerErrorHandler(logService: ILogService): void {
-@@ -323,9 +326,6 @@ export class Workbench extends Layout {
+@@ -343,9 +346,6 @@ export class Workbench extends Layout {
  
  		// Notification Handlers
  		this.createNotificationsHandlers(instantiationService, notificationService);

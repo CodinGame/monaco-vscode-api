@@ -74,10 +74,10 @@ index f4b184d7e18..90aaffaeeda 100644
  				]).finally(() => {
  					// the `code/didRestoreEditors` perf mark is specifically
 diff --git a/src/vs/workbench/browser/workbench.ts b/src/vs/workbench/browser/workbench.ts
-index c7285c5dc0a..e4c6cabb0a1 100644
+index 044fde0ae9e..8a089c948f9 100644
 --- a/src/vs/workbench/browser/workbench.ts
 +++ b/src/vs/workbench/browser/workbench.ts
-@@ -15,7 +15,7 @@ import { getSingletonServiceDescriptors } from '../../platform/instantiation/com
+@@ -18,7 +18,7 @@ import { getSingletonServiceDescriptors } from '../../platform/instantiation/com
  import { Position, Parts, IWorkbenchLayoutService, positionToString } from '../services/layout/browser/layoutService.js';
  import { IStorageService, WillSaveStateReason, StorageScope, StorageTarget } from '../../platform/storage/common/storage.js';
  import { IConfigurationChangeEvent, IConfigurationService } from '../../platform/configuration/common/configuration.js';
@@ -86,7 +86,7 @@ index c7285c5dc0a..e4c6cabb0a1 100644
  import { ServiceCollection } from '../../platform/instantiation/common/serviceCollection.js';
  import { LifecyclePhase, ILifecycleService, WillShutdownEvent } from '../services/lifecycle/common/lifecycle.js';
  import { INotificationService } from '../../platform/notification/common/notification.js';
-@@ -54,6 +54,8 @@ export interface IWorkbenchOptions {
+@@ -61,6 +61,8 @@ export interface IWorkbenchOptions {
  	 * Whether to reset the workbench parts layout on startup.
  	 */
  	resetLayout?: boolean;
@@ -95,7 +95,7 @@ index c7285c5dc0a..e4c6cabb0a1 100644
  }
  
  export class Workbench extends Layout {
-@@ -70,7 +72,7 @@ export class Workbench extends Layout {
+@@ -77,7 +79,7 @@ export class Workbench extends Layout {
  		private readonly serviceCollection: ServiceCollection,
  		logService: ILogService
  	) {
@@ -104,7 +104,7 @@ index c7285c5dc0a..e4c6cabb0a1 100644
  
  		// Perf: measure workbench startup time
  		mark('code/willStartWorkbench');
-@@ -142,7 +144,7 @@ export class Workbench extends Layout {
+@@ -162,7 +164,7 @@ export class Workbench extends Layout {
  				this.layout();
  
  				// Restore
@@ -113,7 +113,7 @@ index c7285c5dc0a..e4c6cabb0a1 100644
  			});
  
  			return instantiationService;
-@@ -370,11 +372,11 @@ export class Workbench extends Layout {
+@@ -390,11 +392,11 @@ export class Workbench extends Layout {
  		});
  	}
  
