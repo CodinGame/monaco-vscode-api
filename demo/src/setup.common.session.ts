@@ -23,6 +23,31 @@ import getTestingServiceOverride from '@codingame/monaco-vscode-testing-service-
 import getTimelineServiceOverride from '@codingame/monaco-vscode-timeline-service-override/session'
 import getGithubServiceOverride from '@codingame/monaco-vscode-github-service-override/session'
 import getTitleBarServiceOverride from '@codingame/monaco-vscode-view-title-bar-service-override/session'
+import {
+  registerCustomProvider,
+  RegisteredFileSystemProvider,
+  RegisteredMemoryFile
+} from '@codingame/monaco-vscode-files-service-override'
+
+const workspaceUri = vscode.Uri.from({
+  scheme: 'session-workspace',
+  path: '/agent-sessions.code-workspace'
+})
+
+const provider = new RegisteredFileSystemProvider(true)
+registerCustomProvider('session-workspace', provider)
+provider.registerFile(
+  new RegisteredMemoryFile(
+    workspaceUri,
+    JSON.stringify(
+      {
+        folders: []
+      },
+      null,
+      '\t'
+    )
+  )
+)
 
 export const constructOptions: IWorkbenchConstructionOptions = {
   ...commonConstructOptions,
@@ -44,10 +69,7 @@ export const constructOptions: IWorkbenchConstructionOptions = {
     },
     workspace: {
       id: 'session-workspace',
-      workspaceUri: vscode.Uri.from({
-        path: '/User/agent-sessions.code-workspace',
-        scheme: 'vscode-userdata'
-      })
+      workspaceUri
     }
   }
 }
