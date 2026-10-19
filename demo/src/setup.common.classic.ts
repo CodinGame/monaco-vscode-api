@@ -222,6 +222,9 @@ h1 {
 
 export const constructOptions = {
   ..._constructOptions,
+  welcomeBanner: {
+    message: 'Welcome in monaco-vscode-api demo'
+  },
   workspaceProvider: {
     trusted: true,
     async open() {

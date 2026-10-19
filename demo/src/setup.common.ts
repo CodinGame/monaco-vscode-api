@@ -138,9 +138,6 @@ export const constructOptions: IWorkbenchConstructionOptions = {
   configurationDefaults: {
     'window.title': 'Monaco-Vscode-Api${separator}${dirty}${activeEditorShort}'
   },
-  welcomeBanner: {
-    message: 'Welcome in monaco-vscode-api demo'
-  },
   productConfiguration: {
     nameShort: 'monaco-vscode-api',
     nameLong: 'monaco-vscode-api',
