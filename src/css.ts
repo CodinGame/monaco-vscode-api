@@ -2,6 +2,15 @@ import { mainWindow } from 'vs/base/browser/window'
 
 const sheets: { sheet: CSSStyleSheet; order: number }[] = []
 
+// On Firefox, a constructed sheet stays "still-loading" until its replace() promise settles, and
+// reading its cssRules throws an InvalidAccessError. Browser extensions proxying adoptedStyleSheets
+// (e.g. Dark Reader) read cssRules from the setter, so sheets are only adopted once all are loaded.
+// The font face sheets are built synchronously with insertRule, so they don't need to wait.
+const sheetPromises: Promise<CSSStyleSheet>[] = []
+function whenSheetsLoaded(): Promise<unknown> {
+  return Promise.allSettled(sheetPromises)
+}
+
 export function registerCss(
   module: { default?: string | CSSStyleSheet } | undefined,
   order: number = 0
@@ -25,6 +34,7 @@ export function registerCss(
     )
   }
   if (sheetPromise != null) {
+    sheetPromises.push(sheetPromise)
     sheetPromise.then((sheet) => {
       // Font face rules should be added in the root of the page, they are ignored in shadow roots
       const fontFaces = Array.from(sheet.cssRules)
@@ -55,13 +65,15 @@ function getInjectElement(target: HTMLElement) {
 
   return target.ownerDocument
 }
-export function injectCss(target: HTMLElement) {
+export async function injectCss(target: HTMLElement): Promise<void> {
   const root = getInjectElement(target)
   if (root instanceof mainWindow.ShadowRoot && sheets.length === 0) {
     console.error(
       "@codingame/monaco-vscode-api was loaded inside a shadow dom, but it's unable to load the css into it because the bundler configuration wasn't applied properly: imported css files should export their content as default"
     )
   }
+
+  await whenSheetsLoaded()
 
   sheets.sort((a, b) => a.order - b.order)
 
