@@ -5,6 +5,7 @@ const sheets: { sheet: CSSStyleSheet; order: number }[] = []
 // On Firefox, a constructed sheet stays "still-loading" until its replace() promise settles, and
 // reading its cssRules throws an InvalidAccessError. Browser extensions proxying adoptedStyleSheets
 // (e.g. Dark Reader) read cssRules from the setter, so sheets are only adopted once all are loaded.
+// The font face sheets are built synchronously with insertRule, so they don't need to wait.
 const sheetPromises: Promise<CSSStyleSheet>[] = []
 function whenSheetsLoaded(): Promise<unknown> {
   return Promise.allSettled(sheetPromises)
@@ -45,12 +46,10 @@ export function registerCss(
         for (const fontFace of fontFaces) {
           fontFaceStyleSheet.insertRule(fontFace)
         }
-        void whenSheetsLoaded().then(() => {
-          mainWindow.document.adoptedStyleSheets = [
-            ...mainWindow.document.adoptedStyleSheets,
-            fontFaceStyleSheet
-          ]
-        })
+        mainWindow.document.adoptedStyleSheets = [
+          ...mainWindow.document.adoptedStyleSheets,
+          fontFaceStyleSheet
+        ]
       }
     })
   }
