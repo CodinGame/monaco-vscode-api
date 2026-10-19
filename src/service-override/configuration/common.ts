@@ -31,6 +31,10 @@ import type {
   IWorkspaceFolderCreationData
 } from 'vs/platform/workspaces/common/workspaces'
 import { IWorkspacesService } from 'vs/platform/workspaces/common/workspaces.service'
+import { ExperimentalSettingsService } from 'vs/workbench/services/configuration/common/experimentalSettings'
+import { IExperimentalSettingsService } from 'vs/workbench/services/configuration/common/experimentalSettings.service'
+import { ManagedSettingsPresentationService } from 'vs/workbench/services/configuration/common/managedSettingsPresentation'
+import { IManagedSettingsPresentationService } from 'vs/workbench/services/configuration/common/managedSettingsPresentation.service'
 import { ConfigurationResolverService } from 'vs/workbench/services/configurationResolver/browser/configurationResolverService'
 import { IConfigurationResolverService } from 'vs/workbench/services/configurationResolver/common/configurationResolver.service'
 import { TextResourcePropertiesService } from 'vs/workbench/services/textresourceProperties/common/textResourcePropertiesService'
@@ -99,6 +103,16 @@ const configurationRegistry = Registry.as<IConfigurationRegistry>(
 export default function getServiceOverride(): IEditorOverrideServices {
   return {
     ...getFileServiceOverride(),
+    [IExperimentalSettingsService.toString()]: new SyncDescriptor(
+      ExperimentalSettingsService,
+      [],
+      true
+    ),
+    [IManagedSettingsPresentationService.toString()]: new SyncDescriptor(
+      ManagedSettingsPresentationService,
+      [],
+      true
+    ),
     [ITextResourceConfigurationService.toString()]: new SyncDescriptor(
       TextResourceConfigurationService,
       [],

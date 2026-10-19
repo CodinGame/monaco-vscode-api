@@ -310,6 +310,7 @@ const api: typeof vscode = {
   ChatRequestNotebookData: extHostTypes.ChatRequestNotebookData,
   ChatResponseMovePart: extHostTypes.ChatResponseMovePart,
   LanguageModelChatMessageRole: extHostTypes.LanguageModelChatMessageRole,
+  LanguageModelChatApiType: extHostTypes.LanguageModelChatApiType,
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   LanguageModelChatMessage: <any>extHostTypes.LanguageModelChatMessage,
   LanguageModelError: extHostTypes.LanguageModelError,

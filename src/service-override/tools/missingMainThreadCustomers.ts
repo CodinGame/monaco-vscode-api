@@ -238,6 +238,8 @@ class MissingMainThreadNotebookRenderers implements MainThreadNotebookRenderersS
 }
 
 class MissingMainThreadMcp implements MainThreadMcpShape {
+  @Unsupported
+  $checkMcpServerAllowed: MainThreadMcpShape['$checkMcpServerAllowed'] = unsupported
   $onDidChangeState: MainThreadMcpShape['$onDidChangeState'] = noop
   $onDidPublishLog: MainThreadMcpShape['$onDidPublishLog'] = noop
   $onDidReceiveMessage: MainThreadMcpShape['$onDidReceiveMessage'] = noop

@@ -10,7 +10,7 @@ Subject: [PATCH] fix: improve extension contribution types
  3 files changed, 1395 insertions(+), 66 deletions(-)
 
 diff --git a/src/vs/platform/extensions/common/extensions.ts b/src/vs/platform/extensions/common/extensions.ts
-index ce2e0fea407..eb005177d51 100644
+index 69fd5d2b6c4..1759b776705 100644
 --- a/src/vs/platform/extensions/common/extensions.ts
 +++ b/src/vs/platform/extensions/common/extensions.ts
 @@ -3,6 +3,7 @@
@@ -21,8 +21,8 @@ index ce2e0fea407..eb005177d51 100644
  import Severity from '../../../base/common/severity.js';
  import * as strings from '../../../base/common/strings.js';
  import { URI } from '../../../base/common/uri.js';
-@@ -16,24 +17,181 @@ export const BUILTIN_MANIFEST_CACHE_FILE = 'extensions.builtin.cache';
- export const UNDEFINED_PUBLISHER = 'undefined_publisher';
+@@ -53,24 +54,181 @@ export function isManifestCacheFileName(name: string, type: ExtensionType, ignor
+ }
  
  export interface ICommand {
 -	command: string;
@@ -212,7 +212,7 @@ index ce2e0fea407..eb005177d51 100644
  }
  
  export interface IJSONValidationRegistry {
-@@ -41,99 +199,370 @@ export interface IJSONValidationRegistry {
+@@ -78,99 +236,370 @@ export interface IJSONValidationRegistry {
  }
  
  export interface IKeyBinding {
@@ -612,7 +612,7 @@ index ce2e0fea407..eb005177d51 100644
  }
  
  export interface IStartEntry {
-@@ -145,14 +574,53 @@ export interface IStartEntry {
+@@ -182,14 +611,53 @@ export interface IStartEntry {
  }
  
  export interface INotebookEntry {
@@ -666,7 +666,7 @@ index ce2e0fea407..eb005177d51 100644
  }
  
  export interface IDebugVisualizationContribution {
-@@ -161,32 +629,735 @@ export interface IDebugVisualizationContribution {
+@@ -198,32 +666,735 @@ export interface IDebugVisualizationContribution {
  }
  
  export interface ITranslation {
@@ -1408,7 +1408,7 @@ index ce2e0fea407..eb005177d51 100644
  }
  
  export interface IToolSetContribution {
-@@ -211,33 +1382,114 @@ export interface IChatFileContribution {
+@@ -248,33 +1419,114 @@ export interface IChatFileContribution {
  	readonly sessionTypes?: readonly string[];
  }
  
@@ -1544,7 +1544,7 @@ index ce2e0fea407..eb005177d51 100644
  	readonly chatParticipants?: ReadonlyArray<IChatParticipantContribution>;
  	readonly chatPromptFiles?: ReadonlyArray<IChatFileContribution>;
  	readonly chatInstructions?: ReadonlyArray<IChatFileContribution>;
-@@ -247,6 +1499,82 @@ export interface IExtensionContributions {
+@@ -284,6 +1536,82 @@ export interface IExtensionContributions {
  	readonly languageModelTools?: ReadonlyArray<IToolContribution>;
  	readonly languageModelToolSets?: ReadonlyArray<IToolSetContribution>;
  	readonly mcpServerDefinitionProviders?: ReadonlyArray<IMcpCollectionContribution>;

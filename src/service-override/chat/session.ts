@@ -17,6 +17,8 @@ import { SessionsAICustomizationWorkspaceService } from 'vs/sessions/contrib/cha
 import { SessionsCustomizationHarnessService } from 'vs/sessions/contrib/chat/browser/customizationHarnessService'
 import { NullInlineChatSessionService } from 'vs/sessions/contrib/chat/browser/nullInlineChatSessionService'
 import { AgenticPromptsService } from 'vs/sessions/contrib/chat/browser/promptsService'
+import { AICustomizationMcpServerCountService } from 'vs/sessions/contrib/sessions/browser/customizationMcpServerCount'
+import { IAICustomizationMcpServerCountService } from 'vs/sessions/contrib/sessions/browser/customizationMcpServerCount.service'
 import { AgentHostCustomizationService } from 'vs/sessions/services/agentHost/browser/agentHostCustomizationService'
 import getCommonServiceOverride, { type ChatServiceOverrideOptions } from './common.js'
 import { IChatResponseFileChangesService } from 'vs/workbench/contrib/chat/browser/chatResponseFileChangesService.service.js'
@@ -36,8 +38,9 @@ import 'vs/sessions/contrib/chat/browser/sideChatProvider.contribution'
 import 'vs/sessions/contrib/chat/browser/voiceBridge.contribution'
 import 'vs/sessions/contrib/providers/agentHost/browser/agentHostSettings.contribution'
 import 'vs/sessions/contrib/providers/agentHost/browser/agentSessionSettings.contribution'
+import 'vs/sessions/contrib/providers/agentHost/browser/mobile/mobileChatPhoneInputPresenter'
+import 'vs/sessions/contrib/providers/agentHost/browser/openSubagentChat'
 import 'vs/sessions/contrib/providers/copilotChatSessions/browser/copilotChatSessions.contribution'
-import 'vs/sessions/contrib/providers/copilotChatSessions/browser/mobilePermissionPicker.contribution'
 import 'vs/sessions/contrib/providers/remoteAgentHost/browser/cloudSandboxAgentHost.contribution'
 import 'vs/sessions/contrib/providers/remoteAgentHost/browser/hostFilter.contribution'
 import 'vs/sessions/contrib/providers/remoteAgentHost/browser/remoteAgentHostTerminal.contribution'
@@ -91,6 +94,11 @@ export default function getServiceOverride({
     ),
     [IAgentHostCustomizationService.toString()]: new SyncDescriptor(
       AgentHostCustomizationService,
+      [],
+      true
+    ),
+    [IAICustomizationMcpServerCountService.toString()]: new SyncDescriptor(
+      AICustomizationMcpServerCountService,
       [],
       true
     ),

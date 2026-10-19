@@ -1,0 +1,32 @@
+From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
+From: =?UTF-8?q?Lo=C3=AFc=20Mangeonjean?= <loic@coderpad.io>
+Date: Mon, 9 Mar 2026 15:25:24 +0100
+Subject: [PATCH] fix: stop expecting a git context
+
+---
+ build/npm/postinstall.ts | 5 -----
+ 1 file changed, 5 deletions(-)
+
+diff --git a/build/npm/postinstall.ts b/build/npm/postinstall.ts
+index 6405a015318..3509f81b432 100644
+--- a/build/npm/postinstall.ts
++++ b/build/npm/postinstall.ts
+@@ -245,8 +245,6 @@ async function main() {
+ 	if (!process.env['VSCODE_FORCE_INSTALL'] && isUpToDate()) {
+ 		finishCloudSandbox();
+ 		log('.', 'All dependencies up to date, skipping postinstall.');
+-		child_process.execSync('git config pull.rebase merges');
+-		child_process.execSync('git config blame.ignoreRevsFile .git-blame-ignore-revs');
+ 		return;
+ 	}
+ 
+@@ -318,9 +316,6 @@ async function main() {
+ 	log('.', `Running ${parallelTasks.length} npm installs with concurrency ${concurrency}...`);
+ 	await runWithConcurrency(parallelTasks, concurrency);
+ 
+-	child_process.execSync('git config pull.rebase merges');
+-	child_process.execSync('git config blame.ignoreRevsFile .git-blame-ignore-revs');
+-
+ 	finishCloudSandbox();
+ 
+ 	fs.writeFileSync(stateFile, JSON.stringify(_state));

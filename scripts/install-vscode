@@ -45,7 +45,7 @@ cd ..
 # Remove useless files
 cd src
 rm -rf `find . -name '*.test.ts' -o -name 'test' -o -name 'electron-main' -o -name 'electron-browser' -o -name 'electron-utility' -o -name 'node'`
-rm -f bootstrap*.ts *main.ts *cli.ts
+rm -f bootstrap*.ts *main.ts *cli.ts mainImpl.ts
 rm -f vs/workbench/workbench.desktop.main.ts vs/sessions/sessions.desktop.main.ts
 rm -rf vs/code
 cd ..

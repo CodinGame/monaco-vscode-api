@@ -9,12 +9,12 @@ Subject: [PATCH] refactor: split some modules to be able to import them
  .../parts/editor/editor.contribution.ts       |   3 +-
  .../files/browser/fileCommands._save.ts       | 254 +++++++
  .../contrib/files/browser/fileCommands.ts     | 295 +-------
- .../files.contribution._configuration.ts      | 307 ++++++++
+ .../files.contribution._configuration.ts      | 306 ++++++++
  .../browser/files.contribution._editorPane.ts |  93 +++
  .../browser/files.contribution._explorer.ts   | 295 ++++++++
  .../files.contribution._fileEditorFactory.ts  |  24 +
  .../files/browser/files.contribution.ts       | 684 +-----------------
- 9 files changed, 1017 insertions(+), 947 deletions(-)
+ 9 files changed, 1016 insertions(+), 947 deletions(-)
  create mode 100644 src/vs/workbench/browser/parts/editor/editor.contribution._autosave.ts
  create mode 100644 src/vs/workbench/contrib/files/browser/fileCommands._save.ts
  create mode 100644 src/vs/workbench/contrib/files/browser/files.contribution._configuration.ts
@@ -326,7 +326,7 @@ index 00000000000..29925ede77c
 +	}
 +});
 diff --git a/src/vs/workbench/contrib/files/browser/fileCommands.ts b/src/vs/workbench/contrib/files/browser/fileCommands.ts
-index 92a14ca8401..ef1ec406862 100644
+index 45ada1981b3..93adf81ef89 100644
 --- a/src/vs/workbench/contrib/files/browser/fileCommands.ts
 +++ b/src/vs/workbench/contrib/files/browser/fileCommands.ts
 @@ -3,55 +3,46 @@
@@ -346,7 +346,7 @@ index 92a14ca8401..ef1ec406862 100644
 -import { IHostService } from '../../../services/host/browser/host.js';
 -import { ServicesAccessor, IInstantiationService } from '../../../../platform/instantiation/common/instantiation.js';
 -import { IWorkspaceContextService, UNTITLED_WORKSPACE_NAME } from '../../../../platform/workspace/common/workspace.js';
--import { ExplorerFocusCondition, TextFileContentProvider, VIEWLET_ID, ExplorerCompressedFocusContext, ExplorerCompressedFirstFocusContext, ExplorerCompressedLastFocusContext, FilesExplorerFocusCondition, ExplorerFolderContext, VIEW_ID } from '../common/files.js';
+-import { ExplorerFocusCondition, TextFileContentProvider, VIEWLET_ID, ExplorerCompressedFocusContext, ExplorerCompressedFirstFocusContext, ExplorerCompressedLastFocusContext, FilesExplorerFocusCondition, ExplorerFolderContext } from '../common/files.js';
 -import { ExplorerViewPaneContainer } from './explorerViewlet.js';
 +import { EditorContextKeys } from '../../../../editor/common/editorContextKeys.js';
 +import { ITextModelService } from '../../../../editor/common/services/resolverService.js';
@@ -404,7 +404,7 @@ index 92a14ca8401..ef1ec406862 100644
 -import { RemoveRootFolderAction } from '../../../browser/actions/workspaceActions.js';
 -import { OpenEditorsView } from './views/openEditorsView.js';
 +import { IWorkspaceEditingService } from '../../../services/workspaces/common/workspaceEditing.js';
-+import { ExplorerCompressedFirstFocusContext, ExplorerCompressedFocusContext, ExplorerCompressedLastFocusContext, ExplorerFocusCondition, ExplorerFolderContext, FilesExplorerFocusCondition, TextFileContentProvider, VIEW_ID, VIEWLET_ID } from '../common/files.js';
++import { ExplorerCompressedFirstFocusContext, ExplorerCompressedFocusContext, ExplorerCompressedLastFocusContext, ExplorerFocusCondition, ExplorerFolderContext, FilesExplorerFocusCondition, TextFileContentProvider, VIEWLET_ID } from '../common/files.js';
 +import { ExplorerViewPaneContainer } from './explorerViewlet.js';
 +import './fileCommands._save.js';
 +import { COMPARE_RESOURCE_COMMAND_ID, COMPARE_SELECTED_COMMAND_ID, COMPARE_WITH_SAVED_COMMAND_ID, COPY_PATH_COMMAND_ID, COPY_RELATIVE_PATH_COMMAND_ID, FIRST_COMPRESSED_FOLDER, LAST_COMPRESSED_FOLDER, NEW_FILE_COMMAND_ID, NEW_UNTITLED_FILE_COMMAND_ID, NEW_UNTITLED_FILE_LABEL, NEXT_COMPRESSED_FOLDER, OPEN_TO_SIDE_COMMAND_ID, OPEN_WITH_EXPLORER_COMMAND_ID, PREVIOUS_COMPRESSED_FOLDER, REMOVE_ROOT_FOLDER_COMMAND_ID, ResourceSelectedForCompareContext, REVEAL_IN_EXPLORER_COMMAND_ID, SELECT_FOR_COMPARE_COMMAND_ID } from './fileConstants.js';
@@ -415,7 +415,7 @@ index 92a14ca8401..ef1ec406862 100644
  
  export const openWindowCommand = (accessor: ServicesAccessor, toOpen: IWindowOpenable[], options?: IOpenWindowOptions) => {
  	if (Array.isArray(toOpen)) {
-@@ -363,232 +354,6 @@ CommandsRegistry.registerCommand({
+@@ -366,232 +357,6 @@ CommandsRegistry.registerCommand({
  
  // Save / Save As / Save All / Revert
  
@@ -650,10 +650,10 @@ index 92a14ca8401..ef1ec406862 100644
  	handler: (accessor, resource: URI | object) => {
 diff --git a/src/vs/workbench/contrib/files/browser/files.contribution._configuration.ts b/src/vs/workbench/contrib/files/browser/files.contribution._configuration.ts
 new file mode 100644
-index 00000000000..e3d8ede8f3c
+index 00000000000..783efc32fe5
 --- /dev/null
 +++ b/src/vs/workbench/contrib/files/browser/files.contribution._configuration.ts
-@@ -0,0 +1,307 @@
+@@ -0,0 +1,306 @@
 +/*---------------------------------------------------------------------------------------------
 + *  Copyright (c) Microsoft Corporation. All rights reserved.
 + *  Licensed under the MIT License. See License.txt in the project root for license information.
@@ -704,7 +704,7 @@ index 00000000000..e3d8ede8f3c
 +			'type': 'object',
 +			'markdownDescription': nls.localize('exclude', "Configure [glob patterns](https://aka.ms/vscode-glob-patterns) for excluding files and folders. For example, the File Explorer decides which files and folders to show or hide based on this setting. Refer to the `#search.exclude#` setting to define search-specific excludes. Refer to the `#explorer.excludeGitIgnore#` setting for ignoring files based on your `.gitignore`."),
 +			'default': {
-+				...{ '**/.git': true, '**/.svn': true, '**/.hg': true, '**/.DS_Store': true, '**/Thumbs.db': true },
++				...{ '**/.git': true, '**/.svn': true, '**/.hg': true, '**/.jj': true, '**/.DS_Store': true, '**/Thumbs.db': true },
 +				...(isWeb ? { '**/*.crswap': true /* filter out swap files used for local file access */ } : undefined)
 +			},
 +			'scope': ConfigurationScope.RESOURCE,
@@ -760,8 +760,7 @@ index 00000000000..e3d8ede8f3c
 +				'enumDescriptions': Object.keys(GUESSABLE_ENCODINGS).map(key => GUESSABLE_ENCODINGS[key].labelLong)
 +			},
 +			'default': [],
-+			'markdownDescription': nls.localize('candidateGuessEncodings', "List of character set encodings that the editor should attempt to guess in the order they are listed. In case it cannot be determined, {0} is respected", '`#files.encoding#`'),
-+			'scope': ConfigurationScope.LANGUAGE_OVERRIDABLE
++			'markdownDescription': nls.localize('candidateGuessEncodings', "List of character set encodings that the editor should attempt to guess. If guessing fails for non-UTF-8 content, a legacy encoding is used only if it is the only lossless match among the candidates. If no encoding can be determined, {0} is respected.", '`#files.encoding#`'),			'scope': ConfigurationScope.LANGUAGE_OVERRIDABLE
 +		},
 +		'files.eol': {
 +			'type': 'string',
@@ -1392,7 +1391,7 @@ index 00000000000..8064ddc028c
 +	}
 +});
 diff --git a/src/vs/workbench/contrib/files/browser/files.contribution.ts b/src/vs/workbench/contrib/files/browser/files.contribution.ts
-index 574c2d8e5d4..269fb34cadb 100644
+index 0223932a73f..269fb34cadb 100644
 --- a/src/vs/workbench/contrib/files/browser/files.contribution.ts
 +++ b/src/vs/workbench/contrib/files/browser/files.contribution.ts
 @@ -3,683 +3,7 @@
@@ -1550,7 +1549,7 @@ index 574c2d8e5d4..269fb34cadb 100644
 -			'type': 'object',
 -			'markdownDescription': nls.localize('exclude', "Configure [glob patterns](https://aka.ms/vscode-glob-patterns) for excluding files and folders. For example, the File Explorer decides which files and folders to show or hide based on this setting. Refer to the `#search.exclude#` setting to define search-specific excludes. Refer to the `#explorer.excludeGitIgnore#` setting for ignoring files based on your `.gitignore`."),
 -			'default': {
--				...{ '**/.git': true, '**/.svn': true, '**/.hg': true, '**/.DS_Store': true, '**/Thumbs.db': true },
+-				...{ '**/.git': true, '**/.svn': true, '**/.hg': true, '**/.jj': true, '**/.DS_Store': true, '**/Thumbs.db': true },
 -				...(isWeb ? { '**/*.crswap': true /* filter out swap files used for local file access */ } : undefined)
 -			},
 -			'scope': ConfigurationScope.RESOURCE,
@@ -1606,7 +1605,7 @@ index 574c2d8e5d4..269fb34cadb 100644
 -				'enumDescriptions': Object.keys(GUESSABLE_ENCODINGS).map(key => GUESSABLE_ENCODINGS[key].labelLong)
 -			},
 -			'default': [],
--			'markdownDescription': nls.localize('candidateGuessEncodings', "List of character set encodings that the editor should attempt to guess in the order they are listed. In case it cannot be determined, {0} is respected", '`#files.encoding#`'),
+-			'markdownDescription': nls.localize('candidateGuessEncodings', "List of character set encodings that the editor should attempt to guess. If guessing fails for non-UTF-8 content, a legacy encoding is used only if it is the only lossless match among the candidates. If no encoding can be determined, {0} is respected.", '`#files.encoding#`'),
 -			'scope': ConfigurationScope.LANGUAGE_OVERRIDABLE
 -		},
 -		'files.eol': {
