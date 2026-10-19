@@ -51,6 +51,8 @@ import { CommandsRegistry } from 'vs/platform/commands/common/commands'
 import { asArray } from 'vs/base/common/arrays'
 import { MenuId, MenuRegistry } from 'vs/platform/actions/common/actions'
 import { Menu, type IWorkbenchConstructionOptions } from 'vs/workbench/browser/web.api'
+import { mark } from 'vs/base/common/performance'
+
 declare global {
   interface Window {
     monacoVscodeApiBuildId?: string
@@ -107,6 +109,7 @@ export async function initialize(
 ): Promise<void> {
   checkServicesNotInitialized()
 
+  mark('code/didLoadWorkbenchMain')
   await injectCss(container)
   registerCommands(configuration)
   initializeWorkbench(container, configuration, env)
