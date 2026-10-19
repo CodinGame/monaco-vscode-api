@@ -91,16 +91,10 @@ export async function startup(instantiationService: IInstantiationService): Prom
     }
   })
 
-  await instantiationService.invokeFunction(async (accessor) => {
-    await Promise.all(serviceInitializePostParticipants.map((participant) => participant(accessor)))
-  })
-
   serviceInitializedBarrier.open()
   serviceInitializedEmitter.fire()
 
-  void instantiationService.invokeFunction(async (accessor) => {
-    const lifecycleService = accessor.get(ILifecycleService)
-
+  await instantiationService.invokeFunction(async (accessor) => {
     if (!workbenchHooksDisabled) {
       onRenderWorkbench((accessor) => {
         accessor.get(IInstantiationService).createInstance(WorkbenchContextKeysHandler)
@@ -109,7 +103,13 @@ export async function startup(instantiationService: IInstantiationService): Prom
 
     layoutEmitter.fire(accessor)
     renderWorkbenchEmitter.fire(accessor)
+  })
+  await instantiationService.invokeFunction(async (accessor) => {
+    await Promise.all(serviceInitializePostParticipants.map((participant) => participant(accessor)))
+  })
 
+  await instantiationService.invokeFunction(async (accessor) => {
+    const lifecycleService = accessor.get(ILifecycleService)
     await Promise.race([accessor.get(IWorkbenchLayoutService).whenRestored, timeout(2000)])
 
     if (!workbenchHooksDisabled) {
