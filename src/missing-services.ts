@@ -530,7 +530,6 @@ import { NullRemoteAgentHostService } from 'vs/platform/agentHost/common/remoteA
 import { IRemoteAgentHostService } from 'vs/platform/agentHost/common/remoteAgentHostService.service'
 import { ISSHRemoteAgentHostService } from 'vs/platform/agentHost/common/sshRemoteAgentHost.service'
 import { ITunnelAgentHostService } from 'vs/platform/agentHost/common/tunnelAgentHost.service'
-import { IGitHubService } from 'vs/platform/github/common/githubService.service.js'
 import { IAgentNetworkFilterService } from 'vs/platform/networkFilter/common/networkFilterService.service.js'
 import { ISandboxHelperService } from 'vs/platform/sandbox/common/sandboxHelperService.service.js'
 import { ITerminalSandboxService } from 'vs/platform/sandbox/common/terminalSandboxService.service.js'
@@ -8521,17 +8520,23 @@ registerSingleton(
   WorkspaceFolderLabelService,
   InstantiationType.Delayed
 )
-class GitHubService implements IGitHubService {
+
+class WorkbenchGitHubService implements IWorkbenchGitHubService {
   _serviceBrand: undefined
   @Unsupported
-  acquireClient: IGitHubService['acquireClient'] = unsupported
+  acquireClient: IWorkbenchGitHubService['acquireClient'] = unsupported
   @Unsupported
-  acquireAnonymousClient: IGitHubService['acquireAnonymousClient'] = unsupported
+  acquireAnonymousClient: IWorkbenchGitHubService['acquireAnonymousClient'] = unsupported
   @Unsupported
-  acquireBootstrapClient: IGitHubService['acquireBootstrapClient'] = unsupported
+  acquireBootstrapClient: IWorkbenchGitHubService['acquireBootstrapClient'] = unsupported
+  onDidChangeDefaultClient: IWorkbenchGitHubService['onDidChangeDefaultClient'] = Event.None
+  @Unsupported
+  acquireDefaultAccountClient: IWorkbenchGitHubService['acquireDefaultAccountClient'] = unsupported
+  @Unsupported
+  acquireSessionClient: IWorkbenchGitHubService['acquireSessionClient'] = unsupported
 }
 
-registerSingleton(IGitHubService, GitHubService, InstantiationType.Delayed)
+registerSingleton(IWorkbenchGitHubService, WorkbenchGitHubService, InstantiationType.Delayed)
 
 class RemoteAgentHostLocationPreferenceService implements IRemoteAgentHostLocationPreferenceService {
   _serviceBrand: undefined
@@ -10024,23 +10029,6 @@ registerSingleton(
   ManagedSettingsPresentationService,
   InstantiationType.Delayed
 )
-
-class WorkbenchGitHubService implements IWorkbenchGitHubService {
-  _serviceBrand: IWorkbenchGitHubService['_serviceBrand']
-  onDidChangeDefaultClient: IWorkbenchGitHubService['onDidChangeDefaultClient'] = Event.None
-  @Unsupported
-  acquireClient: IWorkbenchGitHubService['acquireClient'] = unsupported
-  @Unsupported
-  acquireAnonymousClient: IWorkbenchGitHubService['acquireAnonymousClient'] = unsupported
-  @Unsupported
-  acquireBootstrapClient: IWorkbenchGitHubService['acquireBootstrapClient'] = unsupported
-  @Unsupported
-  acquireDefaultAccountClient: IWorkbenchGitHubService['acquireDefaultAccountClient'] = unsupported
-  @Unsupported
-  acquireSessionClient: IWorkbenchGitHubService['acquireSessionClient'] = unsupported
-}
-
-registerSingleton(IWorkbenchGitHubService, WorkbenchGitHubService, InstantiationType.Delayed)
 
 class ManagedSettingsUpdateService implements IManagedSettingsUpdateService {
   _serviceBrand: IManagedSettingsUpdateService['_serviceBrand']
