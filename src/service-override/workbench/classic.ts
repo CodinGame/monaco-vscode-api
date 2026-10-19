@@ -1,7 +1,7 @@
 import { setFullscreen } from 'vs/base/browser/browser'
 import { detectFullscreen } from 'vs/base/browser/dom'
 import { mainWindow } from 'vs/base/browser/window'
-import { onUnexpectedError, setUnexpectedErrorHandler } from 'vs/base/common/errors'
+import { setUnexpectedErrorHandler } from 'vs/base/common/errors'
 import type { IEditorOverrideServices } from 'vs/editor/standalone/browser/standaloneServices'
 import { SyncDescriptor } from 'vs/platform/instantiation/common/descriptors'
 import { IInstantiationService } from 'vs/platform/instantiation/common/instantiation'

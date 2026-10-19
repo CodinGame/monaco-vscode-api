@@ -1,7 +1,7 @@
 import { setFullscreen } from 'vs/base/browser/browser'
 import { detectFullscreen, getClientArea } from 'vs/base/browser/dom'
 import { mainWindow } from 'vs/base/browser/window'
-import { onUnexpectedError, setUnexpectedErrorHandler } from 'vs/base/common/errors'
+import { setUnexpectedErrorHandler } from 'vs/base/common/errors'
 import type { IEditorOverrideServices } from 'vs/editor/standalone/browser/standaloneServices'
 import { RemoteAgentHostLocationPreferenceService } from 'vs/platform/agentHost/browser/remoteAgentHostLocationPreferenceService'
 import { IAgentHostByokLmHandler } from 'vs/platform/agentHost/common/agentHostByokLm.service.js'
