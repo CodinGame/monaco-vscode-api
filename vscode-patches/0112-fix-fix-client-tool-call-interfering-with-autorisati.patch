@@ -1,0 +1,46 @@
+From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
+From: =?UTF-8?q?Lo=C3=AFc=20Mangeonjean?= <loic@coderpad.io>
+Date: Wed, 21 Oct 2026 19:29:30 +0200
+Subject: [PATCH] fix: fix client tool call interfering with autorisation
+ request
+
+---
+ .../agentHost/agentHostSessionHandler.ts           | 14 ++++++++++----
+ 1 file changed, 10 insertions(+), 4 deletions(-)
+
+diff --git a/src/vs/workbench/contrib/chat/browser/agentSessions/agentHost/agentHostSessionHandler.ts b/src/vs/workbench/contrib/chat/browser/agentSessions/agentHost/agentHostSessionHandler.ts
+index ba430a644bb..f208c5352f1 100644
+--- a/src/vs/workbench/contrib/chat/browser/agentSessions/agentHost/agentHostSessionHandler.ts
++++ b/src/vs/workbench/contrib/chat/browser/agentSessions/agentHost/agentHostSessionHandler.ts
+@@ -2776,9 +2776,9 @@ export class AgentHostSessionHandler extends Disposable implements IChatSessionC
+ 		);
+ 
+ 		const startedClientToolCalls = new Set<string>();
+-		const clientToolExecutions = new Map<string, { readonly source: CancellationTokenSource; readonly retain: IDisposable; activeAttempts: number }>();
+-		const releaseClientToolExecution = (key: string, execution: { readonly source: CancellationTokenSource; readonly retain: IDisposable; activeAttempts: number }) => {
+-			if (clientToolExecutions.get(key) !== execution) {
++		const clientToolExecutions = new Map<string, { readonly source: CancellationTokenSource; readonly retain: IDisposable; activeAttempts: number; ownerCount: number }>();
++		const releaseClientToolExecution = (key: string, execution: { readonly source: CancellationTokenSource; readonly retain: IDisposable; activeAttempts: number; ownerCount: number }) => {
++			if (execution.ownerCount > 0 || clientToolExecutions.get(key) !== execution) {
+ 				return;
+ 			}
+ 			clientToolExecutions.delete(key);
+@@ -2814,11 +2814,17 @@ export class AgentHostSessionHandler extends Disposable implements IChatSessionC
+ 			{
+ 				let execution = clientToolExecutions.get(key);
+ 				if (!execution) {
+-					execution = { source: new CancellationTokenSource(), retain: this._retainToolCall(key), activeAttempts: 0 };
++					execution = { source: new CancellationTokenSource(), retain: this._retainToolCall(key), ownerCount: 0, activeAttempts: 0 };
+ 					clientToolExecutions.set(key, execution);
+ 				}
++				execution.ownerCount++;
+ 				const targetsConfirmation = initial.toolCall.status === ToolCallStatus.PendingConfirmation;
+ 				requestLifecycle.value = toDisposable(() => {
++					execution.ownerCount--;
++					if (execution.ownerCount > 0) {
++						return;
++					}
++
+ 					const state = this._clientToolInvocations.get(key)?.state.get();
+ 					const targetsState = state?.type === IChatToolInvocation.StateKind.Streaming
+ 						|| state?.type === (targetsConfirmation
