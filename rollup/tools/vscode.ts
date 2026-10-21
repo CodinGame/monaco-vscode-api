@@ -49,7 +49,8 @@ const PURE_FUNCTIONS = new Set([
   'some',
   'asFileUri',
   'has',
-  'negate'
+  'negate',
+  'indexOf'
 ])
 
 const EXTENSIONS = ['', '.ts', '.js']
