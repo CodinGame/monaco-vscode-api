@@ -1,0 +1,85 @@
+From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
+From: =?UTF-8?q?Lo=C3=AFc=20Mangeonjean?= <loic@coderpad.io>
+Date: Thu, 22 Oct 2026 15:23:01 +0200
+Subject: [PATCH] fix: default to remote platform if exists instead of local
+ one
+
+---
+ .../tasks/browser/abstractTaskService.ts        |  6 +++---
+ .../contrib/tasks/browser/terminalTaskSystem.ts | 17 ++++++++++++++++-
+ 2 files changed, 19 insertions(+), 4 deletions(-)
+
+diff --git a/src/vs/workbench/contrib/tasks/browser/abstractTaskService.ts b/src/vs/workbench/contrib/tasks/browser/abstractTaskService.ts
+index 6c4ba470084..66139ae8132 100644
+--- a/src/vs/workbench/contrib/tasks/browser/abstractTaskService.ts
++++ b/src/vs/workbench/contrib/tasks/browser/abstractTaskService.ts
+@@ -294,7 +294,7 @@ export abstract class AbstractTaskService extends Disposable implements ITaskSer
+ 		@ILogService private readonly _logService: ILogService,
+ 		@IThemeService private readonly _themeService: IThemeService,
+ 		@ILifecycleService private readonly _lifecycleService: ILifecycleService,
+-		@IRemoteAgentService remoteAgentService: IRemoteAgentService,
++		@IRemoteAgentService private readonly _remoteAgentService: IRemoteAgentService,
+ 		@IInstantiationService private readonly _instantiationService: IInstantiationService,
+ 		@IChatService private readonly _chatService: IChatService,
+ 		@IChatAgentService private readonly _chatAgentService: IChatAgentService,
+@@ -364,7 +364,7 @@ export abstract class AbstractTaskService extends Disposable implements ITaskSer
+ 		this._tasksAvailableState = TasksAvailableContext.bindTo(_contextKeyService);
+ 		this._onDidStateChange = this._register(new Emitter());
+ 		this._registerCommands().then(() => TaskCommandsRegistered.bindTo(this._contextKeyService).set(true));
+-		ServerlessWebContext.bindTo(this._contextKeyService).set(Platform.isWeb && !remoteAgentService.getConnection()?.remoteAuthority);
++		ServerlessWebContext.bindTo(this._contextKeyService).set(Platform.isWeb && !this._remoteAgentService.getConnection()?.remoteAuthority);
+ 		this._configurationResolverService.contributeVariable('defaultBuildTask', async (): Promise<string | undefined> => {
+ 			// delay provider activation, we might find a single default build task in the tasks.json file
+ 			let tasks = await this._getTasksForGroup(TaskGroup.Build, true);
+@@ -2261,7 +2261,7 @@ export abstract class AbstractTaskService extends Disposable implements ITaskSer
+ 		return new TerminalTaskSystem(
+ 			this._terminalService, this._terminalGroupService, this._outputService, this._paneCompositeService, this._viewsService, this._markerService,
+ 			this._modelService, this._configurationResolverService,
+-			this._contextService, this._environmentService,
++			this._contextService, this._environmentService, this._remoteAgentService,
+ 			AbstractTaskService.OutputChannelId, this._fileService, this._terminalProfileResolverService,
+ 			this._pathService, this._viewDescriptorService, this._logService, this._notificationService,
+ 			this._contextKeyService, this._instantiationService,
+diff --git a/src/vs/workbench/contrib/tasks/browser/terminalTaskSystem.ts b/src/vs/workbench/contrib/tasks/browser/terminalTaskSystem.ts
+index 1df7ab69bed..5f06b581181 100644
+--- a/src/vs/workbench/contrib/tasks/browser/terminalTaskSystem.ts
++++ b/src/vs/workbench/contrib/tasks/browser/terminalTaskSystem.ts
+@@ -50,6 +50,7 @@ import { IWorkbenchEnvironmentService } from '../../../services/environment/comm
+ import { IOutputService } from '../../../services/output/common/output.js';
+ import { IPaneCompositePartService } from '../../../services/panecomposite/browser/panecomposite.js';
+ import { IPathService } from '../../../services/path/common/pathService.js';
++import { IRemoteAgentService } from '../../../services/remote/common/remoteAgentService.js';
+ import { RerunForActiveTerminalCommandId, rerunTaskIcon } from '../common/constants.js';
+ import { IContextKey, IContextKeyService } from '../../../../platform/contextkey/common/contextkey.js';
+ import { TaskProblemMonitor } from './taskProblemMonitor.js';
+@@ -213,6 +214,7 @@ export class TerminalTaskSystem extends Disposable implements ITaskSystem {
+ 		private _configurationResolverService: IConfigurationResolverService,
+ 		private _contextService: IWorkspaceContextService,
+ 		private _environmentService: IWorkbenchEnvironmentService,
++		private _remoteAgentService: IRemoteAgentService,
+ 		private _outputChannelId: string,
+ 		private _fileService: IFileService,
+ 		private _terminalProfileResolverService: ITerminalProfileResolverService,
+@@ -1517,8 +1519,21 @@ export class TerminalTaskSystem extends Disposable implements ITaskSystem {
+ 		}
+ 	}
+ 
++	private async getDefaultPlatform() {
++		const remoteEnvironment = await this._remoteAgentService.getEnvironment();
++		if (remoteEnvironment) {
++			switch (remoteEnvironment.os) {
++				case Platform.OperatingSystem.Windows: return Platform.Platform.Windows;
++				case Platform.OperatingSystem.Macintosh: return Platform.Platform.Mac;
++				case Platform.OperatingSystem.Linux: return Platform.Platform.Linux;
++			}
++		} else {
++			return Platform.platform;
++		}
++	}
++
+ 	private async _createTerminal(task: CustomTask | ContributedTask, resolver: VariableResolver, workspaceFolder: IWorkspaceFolder | undefined): Promise<[ITerminalInstance | undefined, TaskError | undefined]> {
+-		const platform = resolver.taskSystemInfo ? resolver.taskSystemInfo.platform : Platform.platform;
++		const platform = resolver.taskSystemInfo ? resolver.taskSystemInfo.platform : await this.getDefaultPlatform();
+ 		const options = await this._resolveOptions(resolver, task.command.options);
+ 		const presentationOptions = task.command.presentation;
+ 
