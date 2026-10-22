@@ -1,0 +1,22 @@
+From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
+From: =?UTF-8?q?Lo=C3=AFc=20Mangeonjean?= <loic@coderpad.io>
+Date: Thu, 22 Oct 2026 18:22:12 +0200
+Subject: [PATCH] fix: do not override terminal profile while reattaching
+
+---
+ .../contrib/terminal/browser/terminalProfileService.ts          | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+
+diff --git a/src/vs/workbench/contrib/terminal/browser/terminalProfileService.ts b/src/vs/workbench/contrib/terminal/browser/terminalProfileService.ts
+index c098f31da78..1f7ce9cadae 100644
+--- a/src/vs/workbench/contrib/terminal/browser/terminalProfileService.ts
++++ b/src/vs/workbench/contrib/terminal/browser/terminalProfileService.ts
+@@ -285,7 +285,7 @@ export class TerminalProfileService extends Disposable implements ITerminalProfi
+ 	async getContributedDefaultProfile(shellLaunchConfig: IShellLaunchConfig): Promise<IExtensionTerminalProfile | undefined> {
+ 		// prevents recursion with the MainThreadTerminalService call to create terminal
+ 		// and defers to the provided launch config when an executable is provided
+-		if (shellLaunchConfig && !shellLaunchConfig.extHostTerminalId && !hasKey(shellLaunchConfig, { executable: true })) {
++		if (shellLaunchConfig && !shellLaunchConfig.extHostTerminalId && !shellLaunchConfig.attachPersistentProcess && !hasKey(shellLaunchConfig, { executable: true })) {
+ 			// Programmatic override takes priority over configuration
+ 			if (this._defaultProfileOverride) {
+ 				const overridden = this.contributedProfiles.find(

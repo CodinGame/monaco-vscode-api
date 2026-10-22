@@ -1,0 +1,85 @@
+From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
+From: =?UTF-8?q?Lo=C3=AFc=20Mangeonjean?= <loic@coderpad.io>
+Date: Thu, 22 Oct 2026 18:25:01 +0200
+Subject: [PATCH] feat: make session terminal contribution ignore non-agentHost
+ terminals
+
+---
+ .../browser/sessionsTerminalContribution.ts   | 22 ++++++++++++++-----
+ 1 file changed, 17 insertions(+), 5 deletions(-)
+
+diff --git a/src/vs/sessions/contrib/terminal/browser/sessionsTerminalContribution.ts b/src/vs/sessions/contrib/terminal/browser/sessionsTerminalContribution.ts
+index 669f631d4d6..81ca0ebdbfc 100644
+--- a/src/vs/sessions/contrib/terminal/browser/sessionsTerminalContribution.ts
++++ b/src/vs/sessions/contrib/terminal/browser/sessionsTerminalContribution.ts
+@@ -240,8 +240,8 @@ export class SessionsTerminalContribution extends Disposable implements IWorkben
+ 		// belong to the current active session. These arrive asynchronously
+ 		// during reconnection and would otherwise flash in the foreground.
+ 		this._register(this._terminalService.onDidCreateInstance(instance => {
+-			// Skip hidden tool terminals — managed by the chat tool lifecycle
+-			if (instance.shellLaunchConfig.hideFromUser) {
++			// Skip hidden tool terminals and standalone terminals.
++			if (instance.shellLaunchConfig.hideFromUser || this._shouldIgnoreTerminal(instance)) {
+ 				return;
+ 			}
+ 			if (instance.shellLaunchConfig.attachPersistentProcess && this._activeKey) {
+@@ -503,8 +503,8 @@ export class SessionsTerminalContribution extends Disposable implements IWorkben
+ 	private async _findTerminalsForKey(key: string, options?: { excludeTracked?: boolean }): Promise<ITerminalInstance[]> {
+ 		const result: ITerminalInstance[] = [];
+ 		for (const instance of this._terminalService.instances) {
+-			// Skip hidden tool terminals — managed by the chat tool lifecycle
+-			if (instance.shellLaunchConfig.hideFromUser) {
++			// Skip hidden tool terminals — managed by the chat tool lifecycle — and standalone terminals.
++			if (instance.shellLaunchConfig.hideFromUser || this._shouldIgnoreTerminal(instance)) {
+ 				continue;
+ 			}
+ 			if (options?.excludeTracked && (this._isTerminalTracked(instance.instanceId) || this._standaloneTerminalIds.has(instance.instanceId))) {
+@@ -532,6 +532,9 @@ export class SessionsTerminalContribution extends Disposable implements IWorkben
+ 			this._sessionTerminals.set(sessionId, terminalIds);
+ 		}
+ 		for (const instance of instances) {
++			if (this._shouldIgnoreTerminal(instance)) {
++				continue;
++			}
+ 			terminalIds.add(instance.instanceId);
+ 			if (scope) {
+ 				this._trackedTerminalScopes.set(instance.instanceId, scope);
+@@ -665,6 +668,11 @@ export class SessionsTerminalContribution extends Disposable implements IWorkben
+ 		return currentInstance;
+ 	}
+ 
++	private _shouldIgnoreTerminal(instance: ITerminalInstance): boolean {
++		// Agent host terminals always have a customPtyImplementation
++		return !instance.shellLaunchConfig.customPtyImplementation;
++	}
++
+ 	/**
+ 	 * Shows background terminals that belong to the active session and hides
+ 	 * foreground terminals that belong to other sessions. When the active
+@@ -672,6 +680,9 @@ export class SessionsTerminalContribution extends Disposable implements IWorkben
+ 	 * for compatibility with restored terminals from previous sessions.
+ 	 */
+ 	private async _terminalMatchesScope(instance: ITerminalInstance, key: string, agentHostAddress: string | undefined): Promise<boolean> {
++		if (this._shouldIgnoreTerminal(instance)) {
++			return false;
++		}
+ 		const trackedScope = this._trackedTerminalScopes.get(instance.instanceId);
+ 		if (trackedScope) {
+ 			return trackedScope.key === key && trackedScope.agentHostAddress === agentHostAddress;
+@@ -701,7 +712,7 @@ export class SessionsTerminalContribution extends Disposable implements IWorkben
+ 
+ 		for (const instance of [...this._terminalService.instances]) {
+ 			// Skip hidden tool terminals — managed by the chat tool lifecycle
+-			if (instance.shellLaunchConfig.hideFromUser || this._standaloneTerminalIds.has(instance.instanceId)) {
++			if (instance.shellLaunchConfig.hideFromUser || this._standaloneTerminalIds.has(instance.instanceId) || this._shouldIgnoreTerminal(instance)) {
+ 				continue;
+ 			}
+ 			const currentInstance = this._getAvailableTerminal(instance, 'update terminal visibility');
+@@ -863,6 +874,7 @@ export class SessionsTerminalContribution extends Disposable implements IWorkben
+ 		const result: ITerminalInstance[] = [];
+ 		for (const instance of this._terminalService.instances) {
+ 			if (!instance.shellLaunchConfig.attachPersistentProcess
++				|| this._shouldIgnoreTerminal(instance)
+ 				|| instance.shellLaunchConfig.hideFromUser
+ 				|| this._isTerminalTracked(instance.instanceId)
+ 				|| this._standaloneTerminalIds.has(instance.instanceId)) {
