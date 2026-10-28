@@ -5,36 +5,36 @@ Subject: [PATCH] feat: support loading VSCode in an iframe
 
 ---
  src/vs/base/browser/browser.ts                |  2 +-
- src/vs/base/browser/canIUse.ts                | 12 ++--
- src/vs/base/browser/dom.ts                    | 71 +++++++++----------
+ src/vs/base/browser/canIUse.ts                | 12 +--
+ src/vs/base/browser/dom.ts                    | 74 +++++++++----------
  src/vs/base/browser/domStylesheets.ts         |  4 +-
  src/vs/base/browser/mouseEvent.ts             |  3 +-
  src/vs/base/browser/touch.ts                  |  2 +-
  src/vs/base/browser/ui/inputbox/inputBox.ts   |  3 +-
- src/vs/base/browser/ui/toolbar/toolbar.ts     |  8 +--
+ src/vs/base/browser/ui/toolbar/toolbar.ts     |  8 +-
  src/vs/base/browser/window.ts                 |  6 +-
  .../browser/config/elementSizeObserver.ts     | 15 ++--
  src/vs/editor/browser/gpu/gpuDisposable.ts    |  5 +-
  .../editor/browser/gpu/rectangleRenderer.ts   |  3 +-
  src/vs/editor/browser/observableCodeEditor.ts |  5 +-
  .../viewParts/viewLinesGpu/viewLinesGpu.ts    |  3 +-
- .../widget/diffEditor/utils/editorGutter.ts   |  9 ++-
+ .../widget/diffEditor/utils/editorGutter.ts   |  9 +--
  .../contrib/clipboard/browser/clipboard.ts    |  3 +-
  .../inlineEditsViews/debugVisualization.ts    |  5 +-
- .../browser/view/inlineEdits/utils/utils.ts   | 10 ++-
+ .../browser/view/inlineEdits/utils/utils.ts   | 10 +--
  .../clipboard/browser/clipboardService.ts     |  2 +-
  src/vs/platform/hover/browser/hoverService.ts |  2 +-
  src/vs/platform/hover/browser/hoverWidget.ts  |  4 +-
  .../remote/browser/browserSocketFactory.ts    |  2 +-
- .../sessions/browser/parts/customViewNode.ts  |  8 +--
+ .../sessions/browser/parts/customViewNode.ts  |  8 +-
  .../aquarium/browser/aquariumOverlay.ts       |  6 +-
  .../workbench/browser/parts/dialogs/dialog.ts |  3 +-
- src/vs/workbench/browser/window.ts            | 25 ++++---
+ src/vs/workbench/browser/window.ts            | 25 +++++--
  .../chatThinkingContentPart.ts                |  3 +-
  .../comments/browser/commentThreadBody.ts     |  3 +-
  .../issue/browser/screenshotAnnotation.ts     |  6 +-
  .../languageStatus/browser/languageStatus.ts  |  3 +-
- .../mergeEditor/browser/view/editorGutter.ts  |  9 ++-
+ .../mergeEditor/browser/view/editorGutter.ts  |  9 +--
  .../performance/browser/perfviewEditor.ts     |  3 +-
  .../performance/browser/startupTimings.ts     |  3 +-
  .../contrib/remote/browser/remoteIndicator.ts |  2 +-
@@ -47,7 +47,7 @@ Subject: [PATCH] feat: support loading VSCode in an iframe
  .../request/browser/requestService.ts         |  3 +-
  .../electron-browser/requestService.ts        |  3 +-
  .../services/timer/browser/timerService.ts    |  5 +-
- 43 files changed, 152 insertions(+), 134 deletions(-)
+ 43 files changed, 155 insertions(+), 134 deletions(-)
 
 diff --git a/src/vs/base/browser/browser.ts b/src/vs/base/browser/browser.ts
 index 5bd7c5b7295..0df205b48b5 100644
@@ -101,7 +101,7 @@ index d7c129abb27..a2895879194 100644
 +	pointerEvents: mainWindow.PointerEvent && ('ontouchstart' in mainWindow || mainWindow.navigator.maxTouchPoints > 0)
  };
 diff --git a/src/vs/base/browser/dom.ts b/src/vs/base/browser/dom.ts
-index e98a6f1a774..5fd7ee31b15 100644
+index e98a6f1a774..898f8b8d5ad 100644
 --- a/src/vs/base/browser/dom.ts
 +++ b/src/vs/base/browser/dom.ts
 @@ -1182,7 +1182,7 @@ export const sharedMutationObserver = new class {
@@ -195,7 +195,7 @@ index e98a6f1a774..5fd7ee31b15 100644
  }
  
  export const EventType = {
-@@ -3075,19 +3062,29 @@ type ElementAttributeKeys<T> = Partial<{
+@@ -3075,19 +3062,32 @@ type ElementAttributeKeys<T> = Partial<{
   * container.appendChild(observer);
   * ```
   */
@@ -213,6 +213,9 @@ index e98a6f1a774..5fd7ee31b15 100644
 +function registerCustomElement() {
 +	if (!customElements.get('connection-observer')) {
 +		class ConnectionObserverElement extends HTMLElement {
++			public onDidConnect?: () => void;
++			public onDidDisconnect?: () => void;
++
 +			connectedCallback() {
 +				this.onDidConnect?.();
 +			}
