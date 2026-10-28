@@ -50,7 +50,7 @@
     "@babel/preset-env": "^7.29.7",
     "@babel/preset-typescript": "^7.29.7",
     "@codingame/commitlint-config-codingame": "^1.2.1",
-    "@codingame/semantic-release-config-github": "^2.2.2",
+    "@codingame/semantic-release-config-github": "^2.2.3",
     "@codingame/tsconfig": "^1.2.3",
     "@commitlint/cli": "^21.2.4",
     "@rollup/plugin-commonjs": "^29.0.3",
