@@ -5,27 +5,28 @@ Subject: [PATCH] fix: fix client tool call interfering with autorisation
  request
 
 ---
- .../agentHost/agentHostSessionHandler.ts           | 14 ++++++++++----
- 1 file changed, 10 insertions(+), 4 deletions(-)
+ .../agentHost/agentHostSessionHandler.ts      | 45 ++++++++++++-------
+ 1 file changed, 28 insertions(+), 17 deletions(-)
 
 diff --git a/src/vs/workbench/contrib/chat/browser/agentSessions/agentHost/agentHostSessionHandler.ts b/src/vs/workbench/contrib/chat/browser/agentSessions/agentHost/agentHostSessionHandler.ts
-index ba430a644bb..f208c5352f1 100644
+index ba430a644bb..7e9c535aad5 100644
 --- a/src/vs/workbench/contrib/chat/browser/agentSessions/agentHost/agentHostSessionHandler.ts
 +++ b/src/vs/workbench/contrib/chat/browser/agentSessions/agentHost/agentHostSessionHandler.ts
-@@ -2776,9 +2776,9 @@ export class AgentHostSessionHandler extends Disposable implements IChatSessionC
+@@ -2776,9 +2776,10 @@ export class AgentHostSessionHandler extends Disposable implements IChatSessionC
  		);
  
  		const startedClientToolCalls = new Set<string>();
 -		const clientToolExecutions = new Map<string, { readonly source: CancellationTokenSource; readonly retain: IDisposable; activeAttempts: number }>();
 -		const releaseClientToolExecution = (key: string, execution: { readonly source: CancellationTokenSource; readonly retain: IDisposable; activeAttempts: number }) => {
 -			if (clientToolExecutions.get(key) !== execution) {
++		const pendingExecutionDisposals = store.add(new DisposableMap<string>());
 +		const clientToolExecutions = new Map<string, { readonly source: CancellationTokenSource; readonly retain: IDisposable; activeAttempts: number; ownerCount: number }>();
 +		const releaseClientToolExecution = (key: string, execution: { readonly source: CancellationTokenSource; readonly retain: IDisposable; activeAttempts: number; ownerCount: number }) => {
-+			if (execution.ownerCount > 0 || clientToolExecutions.get(key) !== execution) {
++			if (execution.ownerCount > 0 || pendingExecutionDisposals.has(key) || clientToolExecutions.get(key) !== execution) {
  				return;
  			}
  			clientToolExecutions.delete(key);
-@@ -2814,11 +2814,17 @@ export class AgentHostSessionHandler extends Disposable implements IChatSessionC
+@@ -2814,25 +2815,35 @@ export class AgentHostSessionHandler extends Disposable implements IChatSessionC
  			{
  				let execution = clientToolExecutions.get(key);
  				if (!execution) {
@@ -33,14 +34,45 @@ index ba430a644bb..f208c5352f1 100644
 +					execution = { source: new CancellationTokenSource(), retain: this._retainToolCall(key), ownerCount: 0, activeAttempts: 0 };
  					clientToolExecutions.set(key, execution);
  				}
++				pendingExecutionDisposals.deleteAndDispose(key);
 +				execution.ownerCount++;
  				const targetsConfirmation = initial.toolCall.status === ToolCallStatus.PendingConfirmation;
  				requestLifecycle.value = toDisposable(() => {
+-					const state = this._clientToolInvocations.get(key)?.state.get();
+-					const targetsState = state?.type === IChatToolInvocation.StateKind.Streaming
+-						|| state?.type === (targetsConfirmation
+-							? IChatToolInvocation.StateKind.WaitingForConfirmation
+-							: IChatToolInvocation.StateKind.Executing)
+-						|| (execution.activeAttempts > 0
+-							&& (state?.type === IChatToolInvocation.StateKind.Cancelled
+-								|| state?.type === IChatToolInvocation.StateKind.Completed));
+-					if (targetsState) {
+-						execution.source.cancel();
+-					}
+-					if (!targetsConfirmation || state?.type !== IChatToolInvocation.StateKind.Executing) {
+-						releaseClientToolExecution(key, execution);
 +					execution.ownerCount--;
-+					if (execution.ownerCount > 0) {
++					if (execution.ownerCount > 0 || store.isDisposed) {
 +						return;
-+					}
+ 					}
 +
- 					const state = this._clientToolInvocations.get(key)?.state.get();
- 					const targetsState = state?.type === IChatToolInvocation.StateKind.Streaming
- 						|| state?.type === (targetsConfirmation
++					pendingExecutionDisposals.set(key, disposableTimeout(() => {
++						pendingExecutionDisposals.deleteAndDispose(key);
++						const state = this._clientToolInvocations.get(key)?.state.get();
++						const targetsState = state?.type === IChatToolInvocation.StateKind.Streaming
++							|| state?.type === (targetsConfirmation
++								? IChatToolInvocation.StateKind.WaitingForConfirmation
++								: IChatToolInvocation.StateKind.Executing)
++							|| (execution.activeAttempts > 0
++								&& (state?.type === IChatToolInvocation.StateKind.Cancelled
++									|| state?.type === IChatToolInvocation.StateKind.Completed));
++						if (targetsState) {
++							execution.source.cancel();
++						}
++						if (!targetsConfirmation || state?.type !== IChatToolInvocation.StateKind.Executing) {
++							releaseClientToolExecution(key, execution);
++						}
++					}, 1000));
+ 				});
+ 				let generation = 0;
+ 				let observedRequest: ClientToolExecutionRequest | undefined;
