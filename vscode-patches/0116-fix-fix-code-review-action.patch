@@ -1,0 +1,25 @@
+From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
+From: =?UTF-8?q?Lo=C3=AFc=20Mangeonjean?= <loic@coderpad.io>
+Date: Thu, 29 Oct 2026 11:11:48 +0100
+Subject: [PATCH] fix: fix code-review action
+
+---
+ .../contrib/codeReview/browser/codeReview.contributions.ts   | 5 ++++-
+ 1 file changed, 4 insertions(+), 1 deletion(-)
+
+diff --git a/src/vs/sessions/contrib/codeReview/browser/codeReview.contributions.ts b/src/vs/sessions/contrib/codeReview/browser/codeReview.contributions.ts
+index d52e75916cd..ea53f6ffe83 100644
+--- a/src/vs/sessions/contrib/codeReview/browser/codeReview.contributions.ts
++++ b/src/vs/sessions/contrib/codeReview/browser/codeReview.contributions.ts
+@@ -82,7 +82,10 @@ class RunSessionCodeReviewAction extends Action2 {
+ 		}
+ 
+ 		if (session.capabilities.get().supportsMultipleChats) {
+-			await sessionManagementService.sendNewChatRequest(session, { query: CODE_REVIEW_QUERY });
++			const chat = await sessionManagementService.createNewChatInSession(session);
++			if (chat) {
++				await sessionManagementService.sendRequest(session, chat, { query: CODE_REVIEW_QUERY });
++			}
+ 		} else {
+ 			chatWidgetService.getWidgetBySessionResource(session.resource)?.acceptInput(CODE_REVIEW_QUERY);
+ 		}
