@@ -210,7 +210,7 @@ export default (args: Record<string, string>): rollup.RollupOptions => {
         featureModules: /\/vs\/workbench\/contrib\/(chat|notebook|mcp)\/(?!.*\.service\.js$)/,
         // Service overrides that build on top of those features
         allowedEntries:
-          /\/src\/service-override\/(?:(?:chat|notebook|mcp|interactive|ai|speech|welcome)(?:\/(?:common|classic|session))?|(?:viewCommon|workbench)\/session)\.ts$/,
+          /\/src\/service-override\/(?:(?:chat|chat-cloud|voice|notebook|mcp|interactive|ai|speech|welcome)(?:\/(?:common|classic|session))?|(?:viewCommon|workbench)\/session)\.ts$/,
         // ~1011KB with VSCode 1.142: mostly dictation, go to symbol in chat, editor tabs and chat context keys
         maxSize: 1100 * 1024
       }),

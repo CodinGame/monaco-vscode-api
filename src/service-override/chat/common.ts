@@ -5,14 +5,6 @@ import { IAgentHostConnectionsService } from 'vs/platform/agentHost/common/agent
 import { IAgentHostEnablementService } from 'vs/platform/agentHost/common/agentHostEnablementService.service'
 import { IAgentHostResourceService } from 'vs/platform/agentHost/common/agentHostResourceService.service'
 import { IAgentHostService } from 'vs/platform/agentHost/common/agentService.service'
-import {
-  ICloudSandboxAgentHostService,
-  ICloudSandboxApiService
-} from 'vs/platform/agentHost/common/cloudSandboxAgentHost.service'
-import {
-  IMissionControlEnvironmentService,
-  IMissionControlSharingService
-} from 'vs/platform/agentHost/common/missionControlEnvironment.service'
 import { CopilotConnectorsRequestService } from 'vs/platform/copilotConnectors/common/copilotConnectorsRequestService'
 import { ICopilotConnectorsRequestService } from 'vs/platform/copilotConnectors/common/copilotConnectorsRequestService.service'
 import { ICustomizationMarketplaceService } from 'vs/platform/customizationMarketplace/common/customizationMarketplaceService.service'
@@ -23,10 +15,6 @@ import { AgentNetworkFilterService } from 'vs/platform/networkFilter/common/netw
 import { IAgentNetworkFilterService } from 'vs/platform/networkFilter/common/networkFilterService.service'
 import { NullSandboxHelperService } from 'vs/platform/sandbox/browser/sandboxHelperService'
 import { ISandboxHelperService } from 'vs/platform/sandbox/common/sandboxHelperService.service'
-import { VoiceModeOnboardingService } from 'vs/workbench/contrib/agentsVoice/browser/voiceModeOnboarding'
-import { IVoiceModeOnboardingService } from 'vs/workbench/contrib/agentsVoice/browser/voiceModeOnboarding.service'
-import { VoiceTranscriptStore } from 'vs/workbench/contrib/agentsVoice/common/voiceTranscriptStore'
-import { IVoiceTranscriptStore } from 'vs/workbench/contrib/agentsVoice/common/voiceTranscriptStore.service'
 import { ChatAccessibilityService } from 'vs/workbench/contrib/chat/browser/accessibility/chatAccessibilityService'
 import { BrowserAgentHostDebugLogsExportService } from 'vs/workbench/contrib/chat/browser/actions/exportAgentHostDebugLogsAction'
 import { IAgentHostDebugLogsExportService } from 'vs/workbench/contrib/chat/browser/actions/exportAgentHostDebugLogsAction.service'
@@ -98,8 +86,6 @@ import { ChatPetService } from 'vs/workbench/contrib/chat/browser/chatPetService
 import { IChatPetService } from 'vs/workbench/contrib/chat/browser/chatPetService.service'
 import { IChatResponseFileChangesService } from 'vs/workbench/contrib/chat/browser/chatResponseFileChangesService.service'
 import { ChatSessionsService } from 'vs/workbench/contrib/chat/browser/chatSessions/chatSessions.contribution'
-import { ChatMicrosoftSignInProbeService } from 'vs/workbench/contrib/chat/browser/chatSetup/chatSetupMicrosoftProbe'
-import { IChatMicrosoftSignInProbeService } from 'vs/workbench/contrib/chat/browser/chatSetup/chatSetupMicrosoftProbe.service'
 import { ChatStatusItemService } from 'vs/workbench/contrib/chat/browser/chatStatus/chatStatusItemService'
 import { IChatStatusItemService } from 'vs/workbench/contrib/chat/browser/chatStatus/chatStatusItemService.service'
 import { ChatSubmitRequestHandlerService } from 'vs/workbench/contrib/chat/browser/chatSubmitRequestHandlerService'
@@ -121,40 +107,17 @@ import { PlanReviewFeedbackService } from 'vs/workbench/contrib/chat/browser/pla
 import { IPlanReviewFeedbackService } from 'vs/workbench/contrib/chat/browser/planReviewFeedback/planReviewFeedbackService.service'
 import { BrowserPluginGitCommandService } from 'vs/workbench/contrib/chat/browser/pluginGitCommandService'
 import { PluginInstallService } from 'vs/workbench/contrib/chat/browser/pluginInstallService'
-import { CloudSandboxAgentHostService } from 'vs/workbench/contrib/chat/browser/remoteAgentHost/cloudSandboxAgentHostService'
-import { CloudSandboxApiService } from 'vs/workbench/contrib/chat/browser/remoteAgentHost/cloudSandboxApiService'
-import { CloudSandboxModelCatalogService } from 'vs/workbench/contrib/chat/browser/remoteAgentHost/cloudSandboxModels'
-import { ICloudSandboxModelCatalogService } from 'vs/workbench/contrib/chat/browser/remoteAgentHost/cloudSandboxModels.service'
-import { CloudSandboxTelemetryService } from 'vs/workbench/contrib/chat/browser/remoteAgentHost/cloudSandboxTelemetry'
-import { ICloudSandboxTelemetryService } from 'vs/workbench/contrib/chat/browser/remoteAgentHost/cloudSandboxTelemetry.service'
-import { MissionControlEnvironmentService } from 'vs/workbench/contrib/chat/browser/remoteAgentHost/missionControlEnvironmentService'
-import { MissionControlSharingService } from 'vs/workbench/contrib/chat/browser/remoteAgentHost/missionControlSharingService'
 import { RemoteAgentHostAuthenticationService } from 'vs/workbench/contrib/chat/browser/remoteAgentHost/remoteAgentHostAuthentication'
 import { IRemoteAgentHostAuthenticationService } from 'vs/workbench/contrib/chat/browser/remoteAgentHost/remoteAgentHostAuthentication.service'
 import { RemoteAgentHostConnectionCustomizationService } from 'vs/workbench/contrib/chat/browser/remoteAgentHost/remoteAgentHostConnectionCustomization'
 import { IRemoteAgentHostConnectionCustomizationService } from 'vs/workbench/contrib/chat/browser/remoteAgentHost/remoteAgentHostConnectionCustomization.service'
-import { ChatSpeechToTextService } from 'vs/workbench/contrib/chat/browser/speechToText/chatSpeechToTextService'
-import { IChatSpeechToTextService } from 'vs/workbench/contrib/chat/browser/speechToText/chatSpeechToTextService.service'
 import { DictationOnboardingService } from 'vs/workbench/contrib/chat/browser/speechToText/dictationOnboarding'
 import { IDictationOnboardingService } from 'vs/workbench/contrib/chat/browser/speechToText/dictationOnboarding.service'
-import { VoiceCodeTranscriptionClient } from 'vs/workbench/contrib/chat/browser/speechToText/voiceCodeTranscriptionClient'
-import { IVoiceCodeTranscriptionClient } from 'vs/workbench/contrib/chat/browser/speechToText/voiceCodeTranscriptionClient.service'
 import { ChatToolRiskAssessmentService } from 'vs/workbench/contrib/chat/browser/tools/chatToolRiskAssessmentService'
 import { IChatToolRiskAssessmentService } from 'vs/workbench/contrib/chat/browser/tools/chatToolRiskAssessmentService.service'
 import { LanguageModelToolsConfirmationService } from 'vs/workbench/contrib/chat/browser/tools/languageModelToolsConfirmationService'
 import { LanguageModelToolsService } from 'vs/workbench/contrib/chat/browser/tools/languageModelToolsService'
 import { ToolResultCompressorService } from 'vs/workbench/contrib/chat/browser/tools/toolResultCompressorService'
-import { MicCaptureService } from 'vs/workbench/contrib/chat/browser/voiceClient/micCaptureService'
-import { IMicCaptureService } from 'vs/workbench/contrib/chat/browser/voiceClient/micCaptureService.service'
-import { TtsPlaybackService } from 'vs/workbench/contrib/chat/browser/voiceClient/ttsPlaybackService'
-import { ITtsPlaybackService } from 'vs/workbench/contrib/chat/browser/voiceClient/ttsPlaybackService.service'
-import { VoiceClientService } from 'vs/workbench/contrib/chat/browser/voiceClient/voiceClientService'
-import { VoiceSessionController } from 'vs/workbench/contrib/chat/browser/voiceClient/voiceSessionController'
-import { IVoiceSessionController } from 'vs/workbench/contrib/chat/browser/voiceClient/voiceSessionController.service'
-import { VoiceToolDispatchService } from 'vs/workbench/contrib/chat/browser/voiceClient/voiceToolDispatchService'
-import { IVoiceToolDispatchService } from 'vs/workbench/contrib/chat/browser/voiceClient/voiceToolDispatchService.service'
-import { VoiceInputModeService } from 'vs/workbench/contrib/chat/browser/voiceInputMode/voiceInputMode'
-import { IVoiceInputModeService } from 'vs/workbench/contrib/chat/browser/voiceInputMode/voiceInputMode.service'
 import { ChatMarkdownAnchorService } from 'vs/workbench/contrib/chat/browser/widget/chatContentParts/chatMarkdownAnchorService'
 import { IChatMarkdownAnchorService } from 'vs/workbench/contrib/chat/browser/widget/chatContentParts/chatMarkdownAnchorService.service'
 import { ChatOutputPartStateCache } from 'vs/workbench/contrib/chat/browser/widget/chatContentParts/chatOutputPartStateCache'
@@ -230,9 +193,6 @@ import { IChatTodoListService } from 'vs/workbench/contrib/chat/common/tools/cha
 import { ILanguageModelToolsConfirmationService } from 'vs/workbench/contrib/chat/common/tools/languageModelToolsConfirmationService.service'
 import { ILanguageModelToolsService } from 'vs/workbench/contrib/chat/common/tools/languageModelToolsService.service'
 import { IToolResultCompressor } from 'vs/workbench/contrib/chat/common/tools/toolResultCompressor.service'
-import { IVoiceClientService } from 'vs/workbench/contrib/chat/common/voiceClient/voiceClientService.service'
-import { VoicePlaybackService } from 'vs/workbench/contrib/chat/common/voicePlaybackService'
-import { IVoicePlaybackService } from 'vs/workbench/contrib/chat/common/voicePlaybackService.service'
 import { IChatLayoutService } from 'vs/workbench/contrib/chat/common/widget/chatLayoutService.service'
 import { ChatResponseResourceFileSystemProvider } from 'vs/workbench/contrib/chat/common/widget/chatResponseResourceFileSystemProvider'
 import { IChatResponseResourceFileSystemProvider } from 'vs/workbench/contrib/chat/common/widget/chatResponseResourceFileSystemProvider.service'
@@ -279,7 +239,6 @@ import { IAICustomizationItemsModel } from 'vs/workbench/contrib/chat/browser/ai
 import { AICustomizationItemsModel } from 'vs/workbench/contrib/chat/browser/aiCustomization/aiCustomizationItemsModel'
 import { registerAssets } from '../../assets'
 import 'vs/platform/agentHost/common/agentHostStarter.config.contribution'
-import 'vs/workbench/contrib/agentsVoice/browser/agentsVoice.contribution'
 import 'vs/workbench/contrib/imageCarousel/browser/imageCarousel.contribution'
 import 'vs/workbench/contrib/remoteCodingAgents/browser/remoteCodingAgents.contribution'
 import 'vs/workbench/contrib/terminal/terminal.chat.contribution'
@@ -500,13 +459,6 @@ export default function getServiceOverride({
       [],
       true
     ),
-    [IMicCaptureService.toString()]: new SyncDescriptor(MicCaptureService, [], true),
-    [ITtsPlaybackService.toString()]: new SyncDescriptor(TtsPlaybackService, [], true),
-    [IVoiceClientService.toString()]: new SyncDescriptor(VoiceClientService, [], true),
-    [IVoiceSessionController.toString()]: new SyncDescriptor(VoiceSessionController, [], true),
-    [IVoiceToolDispatchService.toString()]: new SyncDescriptor(VoiceToolDispatchService, [], true),
-    [IVoicePlaybackService.toString()]: new SyncDescriptor(VoicePlaybackService, [], true),
-    [IVoiceTranscriptStore.toString()]: new SyncDescriptor(VoiceTranscriptStore, [], true),
     [IAgentHostActiveClientService.toString()]: new SyncDescriptor(
       AgentHostActiveClientService,
       [],
@@ -587,7 +539,6 @@ export default function getServiceOverride({
     [IChatPetWidgetService.toString()]: new SyncDescriptor(ChatPetWidgetService, [], true),
     [IChatRequestOriginService.toString()]: new SyncDescriptor(ChatRequestOriginService, [], true),
     [IChatSideChatService.toString()]: new SyncDescriptor(ChatSideChatService, [], true),
-    [IChatSpeechToTextService.toString()]: new SyncDescriptor(ChatSpeechToTextService, [], true),
     [IChatSubmitRequestHandlerService.toString()]: new SyncDescriptor(
       ChatSubmitRequestHandlerService,
       [],
@@ -618,17 +569,6 @@ export default function getServiceOverride({
       [],
       true
     ),
-    [IVoiceCodeTranscriptionClient.toString()]: new SyncDescriptor(
-      VoiceCodeTranscriptionClient,
-      [],
-      true
-    ),
-    [IVoiceInputModeService.toString()]: new SyncDescriptor(VoiceInputModeService, [], true),
-    [IVoiceModeOnboardingService.toString()]: new SyncDescriptor(
-      VoiceModeOnboardingService,
-      [],
-      true
-    ),
     [IAgentHostEnablementService.toString()]: new SyncDescriptor(
       WebAgentHostEnablementService,
       [],
@@ -641,7 +581,11 @@ export default function getServiceOverride({
     ),
     [ILinkPresentationService.toString()]: new SyncDescriptor(LinkPresentationService, [], true),
     [IAgentHostByokLmHandler.toString()]: new SyncDescriptor(AgentHostByokLmHandler, [], true),
-    [IAICustomizationItemsModel.toString()]: new SyncDescriptor(AICustomizationItemsModel, [], true),
+    [IAICustomizationItemsModel.toString()]: new SyncDescriptor(
+      AICustomizationItemsModel,
+      [],
+      true
+    ),
     [IPlatformCustomizationMarketplaceService.toString()]: new SyncDescriptor(
       PlatformCustomizationMarketplaceWorkbenchService,
       [],
@@ -688,39 +632,8 @@ export default function getServiceOverride({
       [],
       true
     ),
-    [IChatMicrosoftSignInProbeService.toString()]: new SyncDescriptor(
-      ChatMicrosoftSignInProbeService,
-      [],
-      true
-    ),
     [IChatUserInteractionOTelService.toString()]: new SyncDescriptor(
       ChatUserInteractionOTelService,
-      [],
-      true
-    ),
-    [ICloudSandboxTelemetryService.toString()]: new SyncDescriptor(
-      CloudSandboxTelemetryService,
-      [],
-      true
-    ),
-    [ICloudSandboxApiService.toString()]: new SyncDescriptor(CloudSandboxApiService, [], true),
-    [ICloudSandboxModelCatalogService.toString()]: new SyncDescriptor(
-      CloudSandboxModelCatalogService,
-      [],
-      true
-    ),
-    [ICloudSandboxAgentHostService.toString()]: new SyncDescriptor(
-      CloudSandboxAgentHostService,
-      [],
-      true
-    ),
-    [IMissionControlEnvironmentService.toString()]: new SyncDescriptor(
-      MissionControlEnvironmentService,
-      [],
-      true
-    ),
-    [IMissionControlSharingService.toString()]: new SyncDescriptor(
-      MissionControlSharingService,
       [],
       true
     ),

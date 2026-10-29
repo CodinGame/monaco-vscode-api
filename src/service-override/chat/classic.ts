@@ -3,8 +3,6 @@ import { type IEditorOverrideServices } from 'vs/editor/standalone/browser/stand
 import { EditorWindowRemoteAgentHostService } from 'vs/platform/agentHost/browser/remoteAgentHostServiceImpl'
 import { IRemoteAgentHostService } from 'vs/platform/agentHost/common/remoteAgentHostService.service'
 import { SyncDescriptor } from 'vs/platform/instantiation/common/descriptors'
-import { AgentsVoiceWindowService } from 'vs/workbench/contrib/agentsVoice/browser/agentsVoiceWindowService'
-import { IAgentsVoiceWindowService } from 'vs/workbench/contrib/agentsVoice/common/agentsVoice.service'
 import { NullAgentHostCustomizationService } from 'vs/workbench/contrib/chat/browser/agentSessions/agentHost/agentHostCustomizationService'
 import { IAgentHostCustomizationService } from 'vs/workbench/contrib/chat/browser/agentSessions/agentHost/agentHostCustomizationService.service'
 import { AICustomizationWorkspaceService } from 'vs/workbench/contrib/chat/browser/aiCustomization/aiCustomizationWorkspaceService'
@@ -58,7 +56,6 @@ export default function getServiceOverride({
       [],
       true
     ),
-    [IAgentsVoiceWindowService.toString()]: new SyncDescriptor(AgentsVoiceWindowService, [], true),
     [IAgentHostCustomizationService.toString()]: new SyncDescriptor(
       NullAgentHostCustomizationService,
       [],
