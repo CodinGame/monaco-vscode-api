@@ -50,10 +50,7 @@ async function publishNpm(version: string, tag: string) {
           await $`npm publish --tag "${tag}" --access public --provenance`
           break
         } catch (err) {
-          if (
-            err instanceof ProcessOutput &&
-            err.stderr.includes('You cannot publish over the previously published versions')
-          ) {
+          if (err instanceof ProcessOutput && err.stderr.toLowerCase().includes('E409')) {
             // ignore, it's an internal retry from npm that fails
             break
           } else if (attempt < maxAttempts) {
