@@ -9049,10 +9049,8 @@ class CloudSandboxApiService implements ICloudSandboxApiService {
   _serviceBrand: undefined
   onDidChangeAccount: ICloudSandboxApiService['onDidChangeAccount'] = Event.None
   getAccountKey: ICloudSandboxApiService['getAccountKey'] = async () => undefined
-  @Unsupported
-  listModels: ICloudSandboxApiService['listModels'] = unsupported
-  @Unsupported
-  listEnvironments: ICloudSandboxApiService['listEnvironments'] = unsupported
+  listModels: ICloudSandboxApiService['listModels'] = async () => ({ models: [] })
+  listEnvironments: ICloudSandboxApiService['listEnvironments'] = async () => []
   getCachedEnvironments: ICloudSandboxApiService['getCachedEnvironments'] = () => undefined
   @Unsupported
   deleteTask: ICloudSandboxApiService['deleteTask'] = unsupported
