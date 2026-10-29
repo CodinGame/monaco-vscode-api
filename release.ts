@@ -2,7 +2,7 @@
  * This script was inspired by https://dev.to/antongolub/you-don-t-need-semantic-release-sometimes-3k6k
  */
 import semanticRelease, { type Options as SemanticReleaseOptions } from 'semantic-release'
-import { $, ProcessOutput } from 'zx'
+import { $, ProcessOutput, sleep } from 'zx'
 import yargs, { type Options } from 'yargs'
 import semanticReleaseConfig from '@codingame/semantic-release-config-github'
 import type { PackageJson } from 'type-fest'
@@ -44,7 +44,8 @@ async function publishNpm(version: string, tag: string) {
 
       $.cwd = libDir
 
-      for (let retry = 0; retry < 3; ++retry) {
+      const maxAttempts = 5
+      for (let attempt = 1; ; ++attempt) {
         try {
           await $`npm publish --tag "${tag}" --access public --provenance`
           break
@@ -55,8 +56,11 @@ async function publishNpm(version: string, tag: string) {
           ) {
             // ignore, it's an internal retry from npm that fails
             break
-          } else if (err instanceof ProcessOutput && err.stderr.includes('BadRequestError')) {
-            // retry
+          } else if (attempt < maxAttempts) {
+            console.warn(
+              `Publish of ${packageJson.name} failed, retrying (${attempt}/${maxAttempts})`
+            )
+            await sleep(attempt * 5000)
           } else {
             throw err
           }
