@@ -1,7 +1,7 @@
 import type { IEditorOverrideServices } from 'vs/editor/standalone/browser/standaloneServices'
 import { SyncDescriptor } from 'vs/platform/instantiation/common/descriptors'
 import { ITitleService } from 'vs/workbench/services/title/browser/titleService.service'
-import { registerServiceInitializePostParticipant } from '../../lifecycle'
+import { registerServiceInitializeParticipant } from '../../lifecycle'
 import { TitleService } from 'vs/sessions/browser/parts/titlebarPart'
 
 export default function getServiceOverride(): IEditorOverrideServices {
@@ -10,6 +10,6 @@ export default function getServiceOverride(): IEditorOverrideServices {
   }
 }
 
-registerServiceInitializePostParticipant(async (accessor) => {
+registerServiceInitializeParticipant(async (accessor) => {
   accessor.get(ITitleService)
 })
