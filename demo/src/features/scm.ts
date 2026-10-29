@@ -1,6 +1,6 @@
 import type { Uri } from 'vscode'
 import { ExtensionHostKind, registerExtension } from '@codingame/monaco-vscode-api/extensions'
-import { remoteAuthority } from '../setup.common'
+import { remoteAuthority } from '../setup.params.js'
 
 if (remoteAuthority == null) {
   const { getApi } = registerExtension(
