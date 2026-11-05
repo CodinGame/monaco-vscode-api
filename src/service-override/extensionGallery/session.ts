@@ -3,7 +3,6 @@ import { IExtensionRecommendationNotificationService } from 'vs/platform/extensi
 import { SyncDescriptor } from 'vs/platform/instantiation/common/descriptors'
 
 import getCommonServiceOverride, { type ExtensionGalleryOptions } from './common.js'
-import 'vs/sessions/contrib/extensions/browser/extensions.contribution'
 import { NullExtensionRecommendationNotificationService } from 'vs/sessions/services/extensionRecommendations/common/extensionRecommendationNotificationService.js'
 
 export default function getServiceOverride({

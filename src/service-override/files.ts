@@ -59,7 +59,9 @@ import { VSBuffer } from 'vs/base/common/buffer'
 import { type ReadableStreamEvents, listenStream, newWriteableStream } from 'vs/base/common/stream'
 import { CancellationToken } from 'vs/base/common/cancellation'
 import { checkServicesNotInitialized, registerServiceInitializePreParticipant } from '../lifecycle'
-import { logsPath } from '../workbench'
+import { getWorkbenchConstructionOptions, logsPath } from '../workbench'
+import { BrowserResourceService } from 'vs/platform/files/browser/browserResourceService'
+import { IBrowserResourceService } from 'vs/platform/files/common/browserResourceService.service'
 import 'vs/workbench/contrib/files/browser/files.contribution._configuration.js'
 
 interface _RegisteredNode {
@@ -1203,6 +1205,23 @@ class FileServiceOverride extends FileService {
   static $di$dependencies = []
 }
 
+class InjectedBrowserResourceService extends BrowserResourceService {
+  constructor(@IFileService fileService: IFileService) {
+    const resourceProvider = getWorkbenchConstructionOptions().remoteResourceProvider
+    super(
+      resourceProvider != null
+        ? (resourceId, resource) =>
+            URI.parse(document.location.href).with({
+              path: resourceProvider.path,
+              query: new URLSearchParams({ resourceId }).toString(),
+              fragment: resource.fragment
+            })
+        : undefined,
+      fileService
+    )
+  }
+}
+
 // Set the logger of the fileLogger after the log service is ready.
 // This is to avoid cyclic dependency
 const fileLogger = new BufferLogger()
@@ -1221,7 +1240,12 @@ export default function getServiceOverride(
       [],
       true
     ),
-    [IElevatedFileService.toString()]: new SyncDescriptor(BrowserElevatedFileService, [], true)
+    [IElevatedFileService.toString()]: new SyncDescriptor(BrowserElevatedFileService, [], true),
+    [IBrowserResourceService.toString()]: new SyncDescriptor(
+      InjectedBrowserResourceService,
+      [],
+      true
+    )
   }
 }
 

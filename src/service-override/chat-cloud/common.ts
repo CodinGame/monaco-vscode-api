@@ -7,9 +7,11 @@ import { MissionControlEnvironmentService } from 'vs/workbench/contrib/chat/brow
 import { MissionControlSharingService } from 'vs/workbench/contrib/chat/browser/remoteAgentHost/missionControlSharingService'
 import {
   ICloudSandboxAgentHostService,
-  ICloudSandboxApiService
+  ICloudSandboxApiService,
+  ICloudSandboxDraftPreparationService
 } from 'vs/platform/agentHost/common/cloudSandboxAgentHost.service'
 import {
+  IMissionControlAvailabilityService,
   IMissionControlEnvironmentService,
   IMissionControlSharingService
 } from 'vs/platform/agentHost/common/missionControlEnvironment.service'
@@ -17,6 +19,8 @@ import { ChatMicrosoftSignInProbeService } from 'vs/workbench/contrib/chat/brows
 import { IChatMicrosoftSignInProbeService } from 'vs/workbench/contrib/chat/browser/chatSetup/chatSetupMicrosoftProbe.service'
 import { CloudSandboxTelemetryService } from 'vs/workbench/contrib/chat/browser/remoteAgentHost/cloudSandboxTelemetry'
 import { ICloudSandboxTelemetryService } from 'vs/workbench/contrib/chat/browser/remoteAgentHost/cloudSandboxTelemetry.service'
+import { CloudSandboxDraftPreparationService } from 'vs/workbench/contrib/chat/browser/remoteAgentHost/cloudSandboxDraftPreparationService'
+import { MissionControlAvailabilityService } from 'vs/workbench/contrib/chat/browser/remoteAgentHost/missionControlAvailabilityService'
 import { SyncDescriptor } from 'vs/platform/instantiation/common/descriptors'
 
 export default function getServiceOverride(): IEditorOverrideServices {
@@ -49,6 +53,16 @@ export default function getServiceOverride(): IEditorOverrideServices {
     ),
     [IChatMicrosoftSignInProbeService.toString()]: new SyncDescriptor(
       ChatMicrosoftSignInProbeService,
+      [],
+      true
+    ),
+    [ICloudSandboxDraftPreparationService.toString()]: new SyncDescriptor(
+      CloudSandboxDraftPreparationService,
+      [],
+      true
+    ),
+    [IMissionControlAvailabilityService.toString()]: new SyncDescriptor(
+      MissionControlAvailabilityService,
       [],
       true
     )

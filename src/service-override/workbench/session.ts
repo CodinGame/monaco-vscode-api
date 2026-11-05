@@ -136,6 +136,20 @@ import getEnvironmentServiceOverride from '../environment.js'
 import { agentHostUri } from 'vs/platform/agentHost/common/agentHostFileSystemProvider'
 import { agentHostAuthority } from 'vs/platform/agentHost/common/agentHostUri'
 import { ILifecycleService } from 'vs/workbench/services/lifecycle/common/lifecycle.service'
+import { GetStartedChecklistService } from 'vs/sessions/contrib/getStarted/browser/getStartedChecklistService'
+import { UnsupportedInboxCanvasHostService } from 'vs/sessions/contrib/inboxOne/browser/inboxCanvasHost'
+import { InboxNotificationsService } from 'vs/sessions/contrib/inboxOne/browser/inboxNotificationsService'
+import { PinnedCanvasService } from 'vs/sessions/contrib/canvases/browser/pinnedCanvasService'
+import { SessionActivityBarActivityService } from 'vs/sessions/services/activity/common/sessionActivityBarActivityService'
+import { WindowCanvasService } from 'vs/sessions/services/canvas/browser/windowCanvasService'
+import { WorktreeSuggestionService } from 'vs/sessions/contrib/worktreeSuggestion/browser/worktreeSuggestionService'
+import { IGetStartedChecklistService } from 'vs/sessions/contrib/getStarted/browser/getStartedChecklistService.service'
+import { IInboxCanvasHostService } from 'vs/sessions/contrib/inboxOne/browser/inboxCanvasHost.service'
+import { IInboxNotificationsService } from 'vs/sessions/contrib/inboxOne/common/inboxNotificationsService.service'
+import { IPinnedCanvasService } from 'vs/sessions/contrib/canvases/browser/pinnedCanvases.service'
+import { ISessionActivityBarActivityService } from 'vs/sessions/services/activity/common/sessionActivityBarActivityService.service'
+import { IWindowCanvasService } from 'vs/sessions/services/canvas/browser/windowCanvasService.service'
+import { IWorktreeSuggestionService } from 'vs/sessions/contrib/worktreeSuggestion/browser/worktreeSuggestionService.service'
 export * from './common'
 import 'vs/sessions/browser/parts/menubar.contribution'
 import 'vs/sessions/browser/sessions.web.contribution'
@@ -144,6 +158,7 @@ import 'vs/sessions/contrib/aiCustomizationTreeView/browser/aiCustomizationTreeV
 import 'vs/sessions/contrib/aquarium/browser/aquarium.contribution'
 import 'vs/sessions/contrib/automations/browser/automations.contribution'
 import 'vs/sessions/contrib/browserView/browser/sessionBrowserView.contribution'
+import 'vs/sessions/contrib/canvases/browser/windowCanvases.contribution'
 import 'vs/sessions/contrib/changes/browser/changes.contribution'
 import 'vs/sessions/contrib/chatDebug/browser/chatDebug.contribution'
 import 'vs/sessions/contrib/customViewTest/browser/customViewTest.contribution'
@@ -151,6 +166,8 @@ import 'vs/sessions/contrib/editor/browser/diffEditor.sessions.contribution'
 import 'vs/sessions/contrib/editor/browser/editor.contribution'
 import 'vs/sessions/contrib/editor/browser/emptyFileEditor.contribution'
 import 'vs/sessions/contrib/fileTreeView/browser/fileTreeView.contribution'
+import 'vs/sessions/contrib/getStarted/browser/getStarted.contribution'
+import 'vs/sessions/contrib/inboxOne/browser/inboxOne.contribution'
 import 'vs/sessions/contrib/files/browser/files.contribution'
 import 'vs/sessions/contrib/layout/browser/sessions.layout.contribution'
 import 'vs/sessions/contrib/onboardingTours/browser/onboardingTours.contribution'
@@ -166,6 +183,7 @@ import 'vs/sessions/contrib/sessions/browser/customizationsToolbar.contribution'
 import 'vs/sessions/contrib/sessions/browser/sessions.contribution'
 import 'vs/sessions/contrib/sessions/browser/sessionsTelemetry.contribution'
 import 'vs/sessions/contrib/workspace/browser/workspace.contribution'
+import 'vs/sessions/contrib/worktreeSuggestion/browser/worktreeSuggestion.contribution'
 import 'vs/sessions/browser/layoutActions'
 import 'vs/sessions/contrib/codeReview/browser/codeReview.contributions'
 import 'vs/sessions/contrib/providers/agentHost/browser/agentHostForkActions'
@@ -397,7 +415,30 @@ export default function getServiceOverride(
       [],
       true
     ),
-    [ISessionChangesStatsCache.toString()]: new SyncDescriptor(SessionChangesStatsCache, [], true)
+    [ISessionChangesStatsCache.toString()]: new SyncDescriptor(SessionChangesStatsCache, [], true),
+    [IGetStartedChecklistService.toString()]: new SyncDescriptor(
+      GetStartedChecklistService,
+      [],
+      true
+    ),
+    [IInboxCanvasHostService.toString()]: new SyncDescriptor(
+      UnsupportedInboxCanvasHostService,
+      [],
+      true
+    ),
+    [IInboxNotificationsService.toString()]: new SyncDescriptor(
+      InboxNotificationsService,
+      [],
+      true
+    ),
+    [IPinnedCanvasService.toString()]: new SyncDescriptor(PinnedCanvasService, [], true),
+    [ISessionActivityBarActivityService.toString()]: new SyncDescriptor(
+      SessionActivityBarActivityService,
+      [],
+      true
+    ),
+    [IWindowCanvasService.toString()]: new SyncDescriptor(WindowCanvasService, [], true),
+    [IWorktreeSuggestionService.toString()]: new SyncDescriptor(WorktreeSuggestionService, [], true)
   }
 }
 

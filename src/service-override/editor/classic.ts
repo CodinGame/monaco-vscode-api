@@ -35,6 +35,7 @@ class EmptyEditorPart implements IEditorPart {
   onWillDispose = Event.None
   hasMaximizedGroup = () => false
   windowId = mainWindow.vscodeWindowId
+  onDidFocus = Event.None
   onDidLayout = Event.None
   onDidScroll = Event.None
   get contentDimension(): never {
