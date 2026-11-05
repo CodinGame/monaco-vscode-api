@@ -6,13 +6,10 @@ Subject: [PATCH] fix: workaround firefox bug
 https://bugzilla.mozilla.org/show_bug.cgi?id=2029029
 ---
  .../src/preview/documentRenderer.ts                           | 4 ++--
- extensions/media-preview/src/audioPreview.ts                  | 2 +-
- extensions/media-preview/src/imagePreview/index.ts            | 2 +-
- extensions/media-preview/src/videoPreview.ts                  | 2 +-
  .../mermaid-markdown-features/src/chatOutputRenderer.ts       | 2 +-
  extensions/mermaid-markdown-features/src/editorManager.ts     | 2 +-
  extensions/simple-browser/src/simpleBrowserView.ts            | 4 ++--
- 7 files changed, 9 insertions(+), 9 deletions(-)
+ 4 files changed, 6 insertions(+), 6 deletions(-)
 
 diff --git a/extensions/markdown-language-features/src/preview/documentRenderer.ts b/extensions/markdown-language-features/src/preview/documentRenderer.ts
 index e29e37ede74..ad4a21f184a 100644
@@ -36,45 +33,6 @@ index e29e37ede74..ad4a21f184a 100644
  		}
  
  		return `${baseStyles.join('\n')}
-diff --git a/extensions/media-preview/src/audioPreview.ts b/extensions/media-preview/src/audioPreview.ts
-index 01aaf33af1f..de11ce1a982 100644
---- a/extensions/media-preview/src/audioPreview.ts
-+++ b/extensions/media-preview/src/audioPreview.ts
-@@ -74,7 +74,7 @@ class AudioPreview extends MediaPreview {
- 
- 	<title>Audio Preview</title>
- 
--	<link rel="stylesheet" href="${escapeAttribute(this.extensionResource('media', 'audioPreview.css'))}" type="text/css" media="screen" nonce="${nonce}">
-+	<link rel="stylesheet" href="${escapeAttribute(this.extensionResource('media', 'audioPreview.css'))}" type="text/css" media="screen" nonce="${nonce}" crossorigin="anonymous">
- 
- 	<meta http-equiv="Content-Security-Policy" content="default-src 'none'; img-src data: ${cspSource}; media-src ${cspSource}; script-src 'nonce-${nonce}'; style-src ${cspSource} 'nonce-${nonce}';">
- 	<meta id="settings" data-settings="${escapeAttribute(JSON.stringify(settings))}">
-diff --git a/extensions/media-preview/src/imagePreview/index.ts b/extensions/media-preview/src/imagePreview/index.ts
-index 79cb70c9fa7..f21070d2ff6 100644
---- a/extensions/media-preview/src/imagePreview/index.ts
-+++ b/extensions/media-preview/src/imagePreview/index.ts
-@@ -199,7 +199,7 @@ class ImagePreview extends MediaPreview {
- 
- 	<title>Image Preview</title>
- 
--	<link rel="stylesheet" href="${escapeAttribute(this.extensionResource('media', 'imagePreview.css'))}" type="text/css" media="screen" nonce="${nonce}">
-+	<link rel="stylesheet" href="${escapeAttribute(this.extensionResource('media', 'imagePreview.css'))}" type="text/css" media="screen" nonce="${nonce}" crossorigin="anonymous">
- 
- 	<meta http-equiv="Content-Security-Policy" content="default-src 'none'; img-src data: ${cspSource}; connect-src ${cspSource}; script-src 'nonce-${nonce}'; style-src ${cspSource} 'nonce-${nonce}';">
- 	<meta id="image-preview-settings" data-settings="${escapeAttribute(JSON.stringify(settings))}">
-diff --git a/extensions/media-preview/src/videoPreview.ts b/extensions/media-preview/src/videoPreview.ts
-index 2ee1169ffc3..8052539f1e6 100644
---- a/extensions/media-preview/src/videoPreview.ts
-+++ b/extensions/media-preview/src/videoPreview.ts
-@@ -78,7 +78,7 @@ class VideoPreview extends MediaPreview {
- 
- 	<title>Video Preview</title>
- 
--	<link rel="stylesheet" href="${escapeAttribute(this.extensionResource('media', 'videoPreview.css'))}" type="text/css" media="screen" nonce="${nonce}">
-+	<link rel="stylesheet" href="${escapeAttribute(this.extensionResource('media', 'videoPreview.css'))}" type="text/css" media="screen" nonce="${nonce}" crossorigin="anonymous">
- 
- 	<meta http-equiv="Content-Security-Policy" content="default-src 'none'; img-src data: ${cspSource}; media-src ${cspSource}; script-src 'nonce-${nonce}'; style-src ${cspSource} 'nonce-${nonce}';">
- 	<meta id="settings" data-settings="${escapeAttribute(JSON.stringify(settings))}">
 diff --git a/extensions/mermaid-markdown-features/src/chatOutputRenderer.ts b/extensions/mermaid-markdown-features/src/chatOutputRenderer.ts
 index 829158dcbc7..fc106b840b6 100644
 --- a/extensions/mermaid-markdown-features/src/chatOutputRenderer.ts

@@ -8,7 +8,7 @@ Subject: [PATCH] fix: also register the quickinput container
  1 file changed, 5 insertions(+), 1 deletion(-)
 
 diff --git a/src/vs/platform/quickinput/browser/quickInputController.ts b/src/vs/platform/quickinput/browser/quickInputController.ts
-index cb673cd1b8e..91ef6c0cb27 100644
+index e6b5994aa5f..2698e0fc351 100644
 --- a/src/vs/platform/quickinput/browser/quickInputController.ts
 +++ b/src/vs/platform/quickinput/browser/quickInputController.ts
 @@ -40,6 +40,7 @@ import { QuickInputTreeController } from './tree/quickInputTreeController.js';
@@ -19,7 +19,7 @@ index cb673cd1b8e..91ef6c0cb27 100644
  
  const $ = dom.$;
  
-@@ -112,7 +113,8 @@ export class QuickInputController extends Disposable {
+@@ -114,7 +115,8 @@ export class QuickInputController extends Disposable {
  		@IInstantiationService private readonly instantiationService: IInstantiationService,
  		@IContextKeyService contextKeyService: IContextKeyService,
  		@IStorageService private readonly storageService: IStorageService,
@@ -29,7 +29,7 @@ index cb673cd1b8e..91ef6c0cb27 100644
  	) {
  		super();
  
-@@ -164,6 +166,8 @@ export class QuickInputController extends Disposable {
+@@ -166,6 +168,8 @@ export class QuickInputController extends Disposable {
  		}
  
  		const container = dom.append(this._container, $('.quick-input-widget.show-file-icons'));
@@ -37,4 +37,4 @@ index cb673cd1b8e..91ef6c0cb27 100644
 +
  		container.tabIndex = -1;
  		container.style.display = 'none';
- 
+ 		this._register(dom.addDisposableListener(container, 'animationend', (e: AnimationEvent) => {

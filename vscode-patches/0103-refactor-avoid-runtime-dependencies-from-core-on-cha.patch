@@ -113,21 +113,21 @@ index 00000000000..4d0b845d10d
 +	return result;
 +}
 diff --git a/src/vs/workbench/contrib/chat/common/chatImageExtraction.ts b/src/vs/workbench/contrib/chat/common/chatImageExtraction.ts
-index 796a76dd26a..a64b03bde49 100644
+index e115a2ad07b..ed49ab6b3e6 100644
 --- a/src/vs/workbench/contrib/chat/common/chatImageExtraction.ts
 +++ b/src/vs/workbench/contrib/chat/common/chatImageExtraction.ts
-@@ -17,6 +17,9 @@ import { ChatResponseResource, getAttachableImageExtension, IResponse } from './
- import { IChatContentInlineReference, IChatToolInvocation, IChatToolInvocationSerialized, IToolResultOutputDetailsSerialized, ToolConfirmKind } from './chatService/chatService.js';
+@@ -22,6 +22,9 @@ import { IChatContentInlineReference, IChatMarkdownContent, IChatToolInvocation,
  import { isToolResultInputOutputDetails, isToolResultOutputDetails, IToolResultInputOutputDetails, IToolResultOutputDetails, ToolInputOutputBase } from './tools/languageModelToolsService.js';
  import { getExplicitFileOrImageAttachmentSummary, type IChatRequestVariableEntry, isImageVariableEntry } from './attachments/chatVariableEntries.js';
+ import { annotateSpecialMarkdownContent, contentRefUrl } from './widget/annotations.js';
 +import { coerceImageBuffer } from './chatImageBuffer.js';
 +
 +export { coerceImageBuffer };
  
  export interface IChatExtractedImage {
  	readonly id: string;
-@@ -254,34 +257,6 @@ async function extractImageFromInlineReference(
- 	};
+@@ -337,34 +340,6 @@ async function extractImagesFromMarkdown(responseId: string, part: IChatMarkdown
+ 	return images;
  }
  
 -export function coerceImageBuffer(value: unknown): Uint8Array | undefined {
@@ -288,7 +288,7 @@ index cd44270eb87..9f200dd318f 100644
  						// Ensure that the editor widget is binded. If if is, then this should return immediately.
  						// Otherwise, it will bind the widget.
 diff --git a/src/vs/workbench/contrib/tasks/browser/abstractTaskService.ts b/src/vs/workbench/contrib/tasks/browser/abstractTaskService.ts
-index 129e228a126..6c4ba470084 100644
+index fe75a38a2e4..b9609763842 100644
 --- a/src/vs/workbench/contrib/tasks/browser/abstractTaskService.ts
 +++ b/src/vs/workbench/contrib/tasks/browser/abstractTaskService.ts
 @@ -85,7 +85,7 @@ import { IPathService } from '../../../services/path/common/pathService.js';
@@ -357,7 +357,7 @@ index 4057dedfa68..de88c08b6ee 100644
  export type AgentSessionsWelcomeWorkspaceKind = 'empty' | 'folder' | 'workspace';
  
 diff --git a/src/vs/workbench/contrib/welcomeGettingStarted/browser/gettingStarted.contribution.ts b/src/vs/workbench/contrib/welcomeGettingStarted/browser/gettingStarted.contribution.ts
-index f90937e6a1f..0b9fb3a1e2d 100644
+index 3b7104cd51e..11d58b3d12f 100644
 --- a/src/vs/workbench/contrib/welcomeGettingStarted/browser/gettingStarted.contribution.ts
 +++ b/src/vs/workbench/contrib/welcomeGettingStarted/browser/gettingStarted.contribution.ts
 @@ -32,7 +32,7 @@ import { Categories } from '../../../../platform/action/common/actionCommonCateg

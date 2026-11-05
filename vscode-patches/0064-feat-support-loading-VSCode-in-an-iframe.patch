@@ -316,15 +316,15 @@ index 0b934de88a1..8128a21bc36 100644
  				if (!mutation.target.textContent) {
  					addSuffix();
 diff --git a/src/vs/base/browser/ui/toolbar/toolbar.ts b/src/vs/base/browser/ui/toolbar/toolbar.ts
-index 58c388b62c0..99727c1d3a0 100644
+index 94a7a488cca..6f8cfa98fb5 100644
 --- a/src/vs/base/browser/ui/toolbar/toolbar.ts
 +++ b/src/vs/base/browser/ui/toolbar/toolbar.ts
 @@ -14,11 +14,12 @@ import { Codicon } from '../../../common/codicons.js';
  import { ThemeIcon } from '../../../common/themables.js';
  import { EventMultiplexer } from '../../../common/event.js';
  import { ResolvedKeybinding } from '../../../common/keybindings.js';
--import { Disposable, DisposableStore, toDisposable } from '../../../common/lifecycle.js';
-+import { Disposable, DisposableStore } from '../../../common/lifecycle.js';
+-import { Disposable, DisposableMap, toDisposable } from '../../../common/lifecycle.js';
++import { Disposable, DisposableMap } from '../../../common/lifecycle.js';
  import './toolbar.css';
  import * as nls from '../../../../nls.js';
  import { IHoverDelegate } from '../hover/hoverDelegate.js';
@@ -333,7 +333,7 @@ index 58c388b62c0..99727c1d3a0 100644
  
  const ACTION_MIN_WIDTH = 20; /* 20px codicon */
  const ACTION_PADDING = 4; /* 4px padding */
-@@ -196,11 +197,10 @@ export class ToolBar extends Disposable {
+@@ -203,11 +204,10 @@ export class ToolBar extends Disposable {
  			this.element.classList.toggle('responsive-last', this.options.responsiveBehavior.kind === 'last');
  			this.element.style.setProperty(ACTION_MIN_WIDTH_VAR, `${this.getConfiguredActionMinWidth()}px`);
  
@@ -644,7 +644,7 @@ index 2605a160b42..2f636e8d163 100644
  		top,
  		left
 diff --git a/src/vs/platform/clipboard/browser/clipboardService.ts b/src/vs/platform/clipboard/browser/clipboardService.ts
-index ca2bd23547d..e650520051e 100644
+index c8992de274d..316111086c8 100644
 --- a/src/vs/platform/clipboard/browser/clipboardService.ts
 +++ b/src/vs/platform/clipboard/browser/clipboardService.ts
 @@ -52,7 +52,7 @@ export class BrowserClipboardService extends Disposable implements IClipboardSer
@@ -657,10 +657,10 @@ index ca2bd23547d..e650520051e 100644
  
  			const supportedImageTypes = ['image/png', 'image/jpeg', 'image/gif', 'image/tiff', 'image/bmp'];
 diff --git a/src/vs/platform/hover/browser/hoverService.ts b/src/vs/platform/hover/browser/hoverService.ts
-index 03ccda509b1..6e5007aeb65 100644
+index bee6e954389..696ca93ce1f 100644
 --- a/src/vs/platform/hover/browser/hoverService.ts
 +++ b/src/vs/platform/hover/browser/hoverService.ts
-@@ -364,7 +364,7 @@ export class HoverService extends Disposable implements IHoverService {
+@@ -368,7 +368,7 @@ export class HoverService extends Disposable implements IHoverService {
  		}
  
  		if ('IntersectionObserver' in mainWindow) {
@@ -670,10 +670,10 @@ index 03ccda509b1..6e5007aeb65 100644
  			observer.observe(firstTargetElement);
  			hoverDisposables.add(toDisposable(() => observer.disconnect()));
 diff --git a/src/vs/platform/hover/browser/hoverWidget.ts b/src/vs/platform/hover/browser/hoverWidget.ts
-index 1a46357efeb..bb6e53e5878 100644
+index c82c96b2cc9..f50a03807e0 100644
 --- a/src/vs/platform/hover/browser/hoverWidget.ts
 +++ b/src/vs/platform/hover/browser/hoverWidget.ts
-@@ -191,12 +191,12 @@ export class HoverWidget extends Widget implements IHoverWidget {
+@@ -200,12 +200,12 @@ export class HoverWidget extends Widget implements IHoverWidget {
  			contentsElement.classList.add('html-hover-contents');
  
  			// Watch for size changes from dynamic HTML content (e.g. collapsible regions).
@@ -780,10 +780,10 @@ index d45f6d770d0..28aa33e559d 100644
  	};
  
 diff --git a/src/vs/workbench/browser/window.ts b/src/vs/workbench/browser/window.ts
-index f800087fc17..dd5499e9b50 100644
+index a3bd460cd18..2178d9631ab 100644
 --- a/src/vs/workbench/browser/window.ts
 +++ b/src/vs/workbench/browser/window.ts
-@@ -127,13 +127,22 @@ export abstract class BaseWindow extends Disposable {
+@@ -136,13 +136,22 @@ export abstract class BaseWindow extends Disposable {
  		// to throttle timeouts in minimized windows, so with this we can ensure the
  		// timeout is scheduled without being throttled (unless all windows are minimized).
  
@@ -811,7 +811,7 @@ index f800087fc17..dd5499e9b50 100644
  			if (dom.getWindowsCount() === 1 || typeof handler === 'string' || timeout === 0 /* immediates are never throttled */) {
  				return originalSetTimeout.apply(this, [handler, timeout, ...args]);
  			}
-@@ -156,7 +165,7 @@ export abstract class BaseWindow extends Disposable {
+@@ -165,7 +174,7 @@ export abstract class BaseWindow extends Disposable {
  				// this can happen for timeouts on unfocused windows
  				let didClear = false;
  
@@ -820,7 +820,7 @@ index f800087fc17..dd5499e9b50 100644
  					if (didClear) {
  						return;
  					}
-@@ -165,7 +174,7 @@ export abstract class BaseWindow extends Disposable {
+@@ -174,7 +183,7 @@ export abstract class BaseWindow extends Disposable {
  
  				const timeoutDisposable = toDisposable(() => {
  					didClear = true;
@@ -829,7 +829,7 @@ index f800087fc17..dd5499e9b50 100644
  					timeoutDisposables.delete(timeoutDisposable);
  					// Remove from the window's DisposableStore without re-disposing (we're already inside dispose)
  					disposables.deleteAndLeak(timeoutDisposable);
-@@ -178,7 +187,7 @@ export abstract class BaseWindow extends Disposable {
+@@ -187,7 +196,7 @@ export abstract class BaseWindow extends Disposable {
  			return timeoutHandle;
  		};
  
@@ -839,18 +839,18 @@ index f800087fc17..dd5499e9b50 100644
  			if (timeoutDisposables) {
  				dispose(timeoutDisposables);
 diff --git a/src/vs/workbench/contrib/chat/browser/widget/chatContentParts/chatThinkingContentPart.ts b/src/vs/workbench/contrib/chat/browser/widget/chatContentParts/chatThinkingContentPart.ts
-index da0f6f3246e..8f073fa3357 100644
+index a3922ef17f1..34a8a9adb50 100644
 --- a/src/vs/workbench/contrib/chat/browser/widget/chatContentParts/chatThinkingContentPart.ts
 +++ b/src/vs/workbench/contrib/chat/browser/widget/chatContentParts/chatThinkingContentPart.ts
-@@ -50,6 +50,7 @@ import { getToolInvocationIcon, hasToolInvocationError } from './toolInvocationP
- import { URI } from '../../../../../../base/common/uri.js';
- import { IUriIdentityService } from '../../../../../../platform/uriIdentity/common/uriIdentity.js';
+@@ -49,6 +49,7 @@ import { IUriIdentityService } from '../../../../../../platform/uriIdentity/comm
  import { getToolGroupSummary } from './chatToolGroupSummary.js';
+ import { ChatActivityLabelTransition } from './chatActivityLabelTransition.js';
+ import { formatElapsedTime } from '../../../common/chatProgressFormatting.js';
 +import { mainWindow } from '../../../../../../base/browser/window.js';
  
  
  // Context key id mirrored from `vs/sessions/common/contextkeys` (`IsPhoneLayoutContext`).
-@@ -728,7 +729,7 @@ export class ChatThinkingContentPart extends ChatThinkingStyleContentPart implem
+@@ -938,7 +939,7 @@ export class ChatThinkingContentPart extends ChatThinkingStyleContentPart implem
  			this._register(this.scrollableElement.onScroll(e => this.handleScroll(e.scrollTop)));
  
  			let pendingMutationRefresh: IDisposable | undefined;
@@ -1072,10 +1072,10 @@ index b6895fbf5d8..c59cb859b56 100644
  
  		const protocol: IMessagePassingProtocol = {
 diff --git a/src/vs/workbench/services/host/browser/browserHostService.ts b/src/vs/workbench/services/host/browser/browserHostService.ts
-index 09b7eec669f..28ca04f71f8 100644
+index 594c61d43b0..6b77c8fc01f 100644
 --- a/src/vs/workbench/services/host/browser/browserHostService.ts
 +++ b/src/vs/workbench/services/host/browser/browserHostService.ts
-@@ -683,7 +683,7 @@ export class BrowserHostService extends Disposable implements IHostService {
+@@ -685,7 +685,7 @@ export class BrowserHostService extends Disposable implements IHostService {
  		let stream: MediaStream | undefined;
  		try {
  			// Create a stream from the screen source (capture screen without audio)

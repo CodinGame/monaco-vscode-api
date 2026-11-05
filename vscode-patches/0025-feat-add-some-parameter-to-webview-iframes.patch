@@ -9,15 +9,15 @@ Subject: [PATCH] feat: add some parameter to webview iframes
  2 files changed, 16 insertions(+), 7 deletions(-)
 
 diff --git a/src/vs/workbench/contrib/webview/browser/pre/index.html b/src/vs/workbench/contrib/webview/browser/pre/index.html
-index 2bec59d827a..4808a5d8c4c 100644
+index 0b840cb731b..ef8e3730e12 100644
 --- a/src/vs/workbench/contrib/webview/browser/pre/index.html
 +++ b/src/vs/workbench/contrib/webview/browser/pre/index.html
 @@ -5,7 +5,7 @@
  	<meta charset="UTF-8">
  
  	<meta http-equiv="Content-Security-Policy"
--		content="default-src 'none'; script-src 'sha256-sn80KfA+MU1XygyWiC6Pi0aLZubC6RmEK+O6llFPkGg=' 'self'; frame-src 'self'; style-src 'unsafe-inline';">
-+		content="default-src 'none'; script-src 'sha256-CnYEXC2AhH9lToJme1pbhPZ6UoZOhVtxxdC1CDCYyHc=' 'self'; frame-src 'self'; style-src 'unsafe-inline';">
+-		content="default-src 'none'; script-src 'sha256-29YeDbmHnhN2BgMJKVq7vDCMiuya6rpEctI6SkJFfJc=' 'self'; frame-src 'self'; style-src 'unsafe-inline';">
++		content="default-src 'none'; script-src 'sha256-70wR9Vh67plqEIvpIBaL+MLOyMy5j7gbt43dhxOTz9w=' 'self'; frame-src 'self'; style-src 'unsafe-inline';">
  
  	<!-- Disable pinch zooming -->
  	<meta name="viewport"
@@ -30,7 +30,7 @@ index 2bec59d827a..4808a5d8c4c 100644
  
  		/**
  		 * @param {string} name
-@@ -265,7 +267,7 @@
+@@ -271,7 +273,7 @@
  				return reject(new Error('Service Workers are not enabled. Webviews will not work. Try disabling private/incognito mode.'));
  			}
  
@@ -39,7 +39,7 @@ index 2bec59d827a..4808a5d8c4c 100644
  			navigator.serviceWorker.register(swPath, { type: 'module', updateViaCache: 'none' })
  				.then(async registration => {
  					if (navigator.serviceWorker.controller) {
-@@ -1054,7 +1056,7 @@
+@@ -1098,7 +1100,7 @@
  				if (globalThis.crossOriginIsolated) {
  					fakeUrlParams.set('vscode-coi', '3'); /*COOP+COEP*/
  				}
@@ -49,7 +49,7 @@ index 2bec59d827a..4808a5d8c4c 100644
  				newFrame.style.cssText = 'display: block; margin: 0; overflow: hidden; position: absolute; width: 100%; height: 100%; visibility: hidden';
  				document.body.appendChild(newFrame);
 diff --git a/src/vs/workbench/contrib/webview/browser/webviewElement.ts b/src/vs/workbench/contrib/webview/browser/webviewElement.ts
-index 7aadee709ce..373a6ec5986 100644
+index 7568684dadf..4473f67da8a 100644
 --- a/src/vs/workbench/contrib/webview/browser/webviewElement.ts
 +++ b/src/vs/workbench/contrib/webview/browser/webviewElement.ts
 @@ -13,7 +13,7 @@ import { CancellationTokenSource } from '../../../../base/common/cancellation.js
@@ -61,7 +61,7 @@ index 7aadee709ce..373a6ec5986 100644
  import { observableValue } from '../../../../base/common/observable.js';
  import { isEqualAuthority } from '../../../../base/common/resources.js';
  import { listenStream } from '../../../../base/common/stream.js';
-@@ -468,15 +468,22 @@ export class WebviewElement extends Disposable implements IWebviewElement, Webvi
+@@ -472,15 +472,22 @@ export class WebviewElement extends Disposable implements IWebviewElement, Webvi
  			params.purpose = options.purpose;
  		}
  

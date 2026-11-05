@@ -5,12 +5,12 @@ Subject: [PATCH] feat: add static asset url mechanism
 
 ---
  src/tsec.exemptions.json                      |   1 +
- src/vs/base/common/network.ts                 |  44 +++-
+ src/vs/base/common/network.ts                 |  43 +++-
  .../api/browser/mainThreadExtensionService.ts |   7 +
  .../workbench/api/common/extHost.protocol.ts  |   1 +
  .../workbench/api/common/extensionHostMain.ts |   5 +
  .../api/worker/extensionHostWorker.ts         | 222 +++++++++++++-----
- 6 files changed, 219 insertions(+), 61 deletions(-)
+ 6 files changed, 218 insertions(+), 61 deletions(-)
 
 diff --git a/src/tsec.exemptions.json b/src/tsec.exemptions.json
 index 639d85a0476..4e2e8c76194 100644
@@ -25,22 +25,21 @@ index 639d85a0476..4e2e8c76194 100644
  		"vs/workbench/contrib/notebook/browser/view/renderers/webviewPreloads.ts",
  		"vs/workbench/services/keybinding/test/node/keyboardMapperTestUtils.ts"
 diff --git a/src/vs/base/common/network.ts b/src/vs/base/common/network.ts
-index 5163aaae56c..fe3ffd720cd 100644
+index feddd7314cb..298bc8ee5ae 100644
 --- a/src/vs/base/common/network.ts
 +++ b/src/vs/base/common/network.ts
-@@ -8,6 +8,8 @@ import * as platform from './platform.js';
- import { equalsIgnoreCase, startsWithIgnoreCase } from './strings.js';
+@@ -9,6 +9,7 @@ import { equalsIgnoreCase, startsWithIgnoreCase } from './strings.js';
  import { URI } from './uri.js';
  import * as paths from './path.js';
-+import { IDisposable, toDisposable } from './lifecycle.js';
+ import { IDisposable, IReference, toDisposable } from './lifecycle.js';
 +import { ResourceMap } from './map.js';
  
  export namespace Schemas {
  
-@@ -290,6 +292,31 @@ export const VSCODE_AUTHORITY = 'vscode-app';
- class FileAccessImpl {
+@@ -303,6 +304,17 @@ class FileAccessImpl {
  
  	private static readonly FALLBACK_AUTHORITY = VSCODE_AUTHORITY;
+ 	private readonly browserUriProviders = new Map<string, BrowserUriProvider>();
 +	private staticBrowserUris = new ResourceMap<URI>();
 +	private appResourcePathUrls = new Map<string, string | (() => string)>();
 +	private appResourceUrlMapper: ((moduleId: string) => string | undefined)[] = [];
@@ -52,7 +51,13 @@ index 5163aaae56c..fe3ffd720cd 100644
 +	public registerAppResourceLoader(loader: (moduleId: string) => string | undefined): void {
 +		this.appResourceUrlMapper.push(loader);
 +	}
-+
+ 
+ 	/** Registers a browser-resource transport for a filesystem scheme. */
+ 	registerBrowserUriProvider(scheme: string, provider: BrowserUriProvider): IDisposable {
+@@ -318,6 +330,20 @@ class FileAccessImpl {
+ 		return this.browserUriProviders.get(uri.scheme)?.resolve(uri);
+ 	}
+ 
 +	private toUrl(moduleId: string): string {
 +		let url = this.appResourcePathUrls.get(moduleId);
 +		if (typeof url === 'function') {
@@ -66,10 +71,11 @@ index 5163aaae56c..fe3ffd720cd 100644
 +		}
 +		return new URL(url ?? moduleId, globalThis.location?.href ?? import.meta.url).toString();
 +	}
- 
++
  	/**
  	 * Returns a URI to use in contexts where the browser is responsible
-@@ -337,7 +364,7 @@ class FileAccessImpl {
+ 	 * for loading (e.g. fetch()) or when used within the DOM.
+@@ -368,7 +394,7 @@ class FileAccessImpl {
  			});
  		}
  
@@ -78,7 +84,7 @@ index 5163aaae56c..fe3ffd720cd 100644
  	}
  
  	/**
-@@ -388,7 +415,20 @@ class FileAccessImpl {
+@@ -419,7 +445,20 @@ class FileAccessImpl {
  			return URI.file(modulePath);
  		}
  
@@ -119,10 +125,10 @@ index 4cfaf6a58cb..b7f63a0d276 100644
  
  class ExtensionHostProxy implements IExtensionHostProxy {
 diff --git a/src/vs/workbench/api/common/extHost.protocol.ts b/src/vs/workbench/api/common/extHost.protocol.ts
-index cb8fb1da647..ce8b6a1f84e 100644
+index df9c42fe0d6..9c36c5f7aea 100644
 --- a/src/vs/workbench/api/common/extHost.protocol.ts
 +++ b/src/vs/workbench/api/common/extHost.protocol.ts
-@@ -2079,6 +2079,7 @@ export interface MainThreadExtensionServiceShape extends IDisposable {
+@@ -2099,6 +2099,7 @@ export interface MainThreadExtensionServiceShape extends IDisposable {
  	$onExtensionRuntimeError(extensionId: ExtensionIdentifier, error: SerializedError): void;
  	$setPerformanceMarks(marks: performance.PerformanceMark[]): Promise<void>;
  	$asBrowserUri(uri: UriComponents): Promise<UriComponents>;

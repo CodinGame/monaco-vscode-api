@@ -47,7 +47,7 @@ index e8522e03115..58646c34cc0 100644
 +	return uri.with({ authority: uri.authority.replace(placeholder, replacement.slice(0, replacementLength)) });
 +}
 diff --git a/src/vs/workbench/contrib/webview/browser/webviewElement.ts b/src/vs/workbench/contrib/webview/browser/webviewElement.ts
-index 3c9ddcf28cd..3b2f83b10ef 100644
+index 2697c0d9827..33d623abaa4 100644
 --- a/src/vs/workbench/contrib/webview/browser/webviewElement.ts
 +++ b/src/vs/workbench/contrib/webview/browser/webviewElement.ts
 @@ -5,7 +5,7 @@
@@ -59,7 +59,7 @@ index 3c9ddcf28cd..3b2f83b10ef 100644
  import { IMouseWheelEvent } from '../../../../base/browser/mouseEvent.js';
  import { CodeWindow } from '../../../../base/browser/window.js';
  import { promiseWithResolvers, ThrottledDelayer } from '../../../../base/common/async.js';
-@@ -470,9 +470,7 @@ export class WebviewElement extends Disposable implements IWebviewElement, Webvi
+@@ -474,9 +474,7 @@ export class WebviewElement extends Disposable implements IWebviewElement, Webvi
  		}
  
  		const asBrowserUri = (uri: AppResourcePath) => {

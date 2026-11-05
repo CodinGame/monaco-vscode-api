@@ -133,13 +133,13 @@ index e05b71bd72c..af8fcba33d5 100644
  import { ChatAgentLocation } from '../../chat/common/constants.js';
  
 diff --git a/src/vs/workbench/contrib/search/browser/anythingQuickAccess.ts b/src/vs/workbench/contrib/search/browser/anythingQuickAccess.ts
-index 5d1f8ceed63..91bb528bd09 100644
+index 82d7aeabb9e..b5b59f5bea6 100644
 --- a/src/vs/workbench/contrib/search/browser/anythingQuickAccess.ts
 +++ b/src/vs/workbench/contrib/search/browser/anythingQuickAccess.ts
-@@ -54,7 +54,7 @@ import { Lazy } from '../../../../base/common/lazy.js';
- import { IKeybindingService } from '../../../../platform/keybinding/common/keybinding.js';
- import { IContextKeyService } from '../../../../platform/contextkey/common/contextkey.js';
- import { Registry } from '../../../../platform/registry/common/platform.js';
+@@ -57,7 +57,7 @@ import { Registry } from '../../../../platform/registry/common/platform.js';
+ import { KeyCode, KeyMod } from '../../../../base/common/keyCodes.js';
+ import { decodeKeybinding } from '../../../../base/common/keybindings.js';
+ import { OS } from '../../../../base/common/platform.js';
 -import { ASK_QUICK_QUESTION_ACTION_ID } from '../../chat/browser/actions/chatQuickInputActions.js';
 +import { ASK_QUICK_QUESTION_ACTION_ID } from '../../chat/browser/actions/chatConstants.js';
  import { IChatWidgetService, IQuickChatService } from '../../chat/browser/chat.js';

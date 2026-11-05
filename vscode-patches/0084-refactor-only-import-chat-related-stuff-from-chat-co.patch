@@ -10,10 +10,10 @@ Subject: [PATCH] refactor: only import chat-related stuff from chat
  2 files changed, 1 insertion(+), 1 deletion(-)
 
 diff --git a/src/vs/workbench/contrib/chat/browser/chat.shared.contribution.ts b/src/vs/workbench/contrib/chat/browser/chat.shared.contribution.ts
-index 4c35090081b..1d6ed0a7b88 100644
+index ccb897cfa4d..e79b1c49570 100644
 --- a/src/vs/workbench/contrib/chat/browser/chat.shared.contribution.ts
 +++ b/src/vs/workbench/contrib/chat/browser/chat.shared.contribution.ts
-@@ -271,6 +271,7 @@ import './widget/input/editor/chatInputEditorHover.js';
+@@ -286,6 +286,7 @@ import './widget/input/editor/chatInputEditorHover.js';
  import { ChatPasteProvidersFeature } from './widget/input/editor/chatPasteProviders.js';
  import { QuickChatService } from './widgetHosts/chatQuick.js';
  import { IRepositoryPickerOptions, PICK_REPOSITORY_COMMAND_ID, RepositoryPicker } from './agentSessions/repositoryPicker.js';

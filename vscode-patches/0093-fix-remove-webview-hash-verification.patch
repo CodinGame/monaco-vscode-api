@@ -8,19 +8,19 @@ Subject: [PATCH] fix: remove webview hash verification
  1 file changed, 2 insertions(+), 30 deletions(-)
 
 diff --git a/src/vs/workbench/contrib/webview/browser/pre/index.html b/src/vs/workbench/contrib/webview/browser/pre/index.html
-index 4808a5d8c4c..b898d545683 100644
+index ef8e3730e12..4a951ca5e54 100644
 --- a/src/vs/workbench/contrib/webview/browser/pre/index.html
 +++ b/src/vs/workbench/contrib/webview/browser/pre/index.html
 @@ -5,7 +5,7 @@
  	<meta charset="UTF-8">
  
  	<meta http-equiv="Content-Security-Policy"
--		content="default-src 'none'; script-src 'sha256-CnYEXC2AhH9lToJme1pbhPZ6UoZOhVtxxdC1CDCYyHc=' 'self'; frame-src 'self'; style-src 'unsafe-inline';">
-+		content="default-src 'none'; script-src 'sha256-1g6hBvbt7UqpDmg2hT2WbKW8U1MEyvrTVWOFLc1ejRM=' 'self'; frame-src 'self'; style-src 'unsafe-inline';">
+-		content="default-src 'none'; script-src 'sha256-70wR9Vh67plqEIvpIBaL+MLOyMy5j7gbt43dhxOTz9w=' 'self'; frame-src 'self'; style-src 'unsafe-inline';">
++		content="default-src 'none'; script-src 'sha256-lsEIaBk833/V223Vw/Yx9FNZeSCiQRMtzMmidPmCYSQ=' 'self'; frame-src 'self'; style-src 'unsafe-inline';">
  
  	<!-- Disable pinch zooming -->
  	<meta name="viewport"
-@@ -345,35 +345,7 @@
+@@ -351,35 +351,7 @@
  
  				const parentOrigin = searchParams.get('parentOrigin');
  

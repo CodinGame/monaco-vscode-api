@@ -8,7 +8,7 @@ Subject: [PATCH] refactor: split class in 2
  1 file changed, 79 insertions(+), 19 deletions(-)
 
 diff --git a/src/vs/workbench/services/extensions/browser/extensionService.ts b/src/vs/workbench/services/extensions/browser/extensionService.ts
-index 7222a9b6b89..58429f40954 100644
+index e53a8bc3ccf..e420a6c114f 100644
 --- a/src/vs/workbench/services/extensions/browser/extensionService.ts
 +++ b/src/vs/workbench/services/extensions/browser/extensionService.ts
 @@ -44,8 +44,11 @@ import { IUserDataProfileService } from '../../userDataProfile/common/userDataPr
@@ -64,7 +64,7 @@ index 7222a9b6b89..58429f40954 100644
  		@ILogService private readonly _logService: ILogService,
  	) { }
  
-@@ -357,4 +349,72 @@ export class BrowserExtensionHostKindPicker implements IExtensionHostKindPicker
+@@ -358,4 +350,72 @@ export class BrowserExtensionHostKindPicker implements IExtensionHostKindPicker
  	}
  }
  

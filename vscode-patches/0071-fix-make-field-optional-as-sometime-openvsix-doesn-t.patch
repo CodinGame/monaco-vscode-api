@@ -9,7 +9,7 @@ Subject: [PATCH] fix: make field optional, as sometime openvsix doesn't
  1 file changed, 3 insertions(+), 3 deletions(-)
 
 diff --git a/src/vs/platform/extensionManagement/common/extensionGalleryService.ts b/src/vs/platform/extensionManagement/common/extensionGalleryService.ts
-index b00f8d12879..d119a6afda5 100644
+index 41b763a2b46..cd6f7fccf35 100644
 --- a/src/vs/platform/extensionManagement/common/extensionGalleryService.ts
 +++ b/src/vs/platform/extensionManagement/common/extensionGalleryService.ts
 @@ -53,7 +53,7 @@ export interface IRawGalleryExtensionVersion {
@@ -20,8 +20,8 @@ index b00f8d12879..d119a6afda5 100644
 +	readonly files?: IRawGalleryExtensionFile[];
  	properties?: IRawGalleryExtensionProperty[];
  	readonly targetPlatform?: string;
- }
-@@ -300,7 +300,7 @@ function getStatistic(statistics: IRawGalleryExtensionStatistics[], name: string
+ 	readonly flags?: string;
+@@ -315,7 +315,7 @@ function getStatistic(statistics: IRawGalleryExtensionStatistics[], name: string
  
  function getCoreTranslationAssets(version: IRawGalleryExtensionVersion): [string, IGalleryExtensionAsset][] {
  	const coreTranslationAssetPrefix = 'Microsoft.VisualStudio.Code.Translation.';
@@ -30,7 +30,7 @@ index b00f8d12879..d119a6afda5 100644
  	return result.reduce<[string, IGalleryExtensionAsset][]>((result, file) => {
  		const asset = getVersionAsset(version, file.assetType);
  		if (asset) {
-@@ -330,7 +330,7 @@ function getDownloadAsset(version: IRawGalleryExtensionVersion): IGalleryExtensi
+@@ -345,7 +345,7 @@ function getDownloadAsset(version: IRawGalleryExtensionVersion): IGalleryExtensi
  }
  
  function getVersionAsset(version: IRawGalleryExtensionVersion, type: string): IGalleryExtensionAsset | null {

@@ -8,7 +8,7 @@ Subject: [PATCH] fix: allow to attach agent host file
  1 file changed, 2 insertions(+), 1 deletion(-)
 
 diff --git a/src/vs/sessions/contrib/editor/browser/editor.contribution.ts b/src/vs/sessions/contrib/editor/browser/editor.contribution.ts
-index 11f0749da23..0771bf8506f 100644
+index 75288c2d25f..99f70e1264b 100644
 --- a/src/vs/sessions/contrib/editor/browser/editor.contribution.ts
 +++ b/src/vs/sessions/contrib/editor/browser/editor.contribution.ts
 @@ -47,6 +47,7 @@ import { ISessionsService } from '../../../services/sessions/browser/sessionsSer
@@ -19,7 +19,7 @@ index 11f0749da23..0771bf8506f 100644
  
  const terminalPanelHiddenForMaximizedEditor = new WeakSet<IAgentWorkbenchLayoutService>();
  
-@@ -406,7 +407,7 @@ class AddFileAsContextAction extends Action2 {
+@@ -408,7 +409,7 @@ class AddFileAsContextAction extends Action2 {
  		const resources = resolvedContext.groupedEditors
  			.flatMap(groupedEditor => groupedEditor.editors)
  			.map(editor => EditorResourceAccessor.getCanonicalUri(editor, { supportSideBySide: SideBySideEditor.PRIMARY }))

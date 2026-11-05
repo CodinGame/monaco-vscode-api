@@ -9,10 +9,10 @@ Subject: [PATCH] feat: make session terminal contribution ignore non-agentHost
  1 file changed, 17 insertions(+), 5 deletions(-)
 
 diff --git a/src/vs/sessions/contrib/terminal/browser/sessionsTerminalContribution.ts b/src/vs/sessions/contrib/terminal/browser/sessionsTerminalContribution.ts
-index 669f631d4d6..81ca0ebdbfc 100644
+index ada40be5e75..d5b05dc5534 100644
 --- a/src/vs/sessions/contrib/terminal/browser/sessionsTerminalContribution.ts
 +++ b/src/vs/sessions/contrib/terminal/browser/sessionsTerminalContribution.ts
-@@ -240,8 +240,8 @@ export class SessionsTerminalContribution extends Disposable implements IWorkben
+@@ -238,8 +238,8 @@ export class SessionsTerminalContribution extends Disposable implements IWorkben
  		// belong to the current active session. These arrive asynchronously
  		// during reconnection and would otherwise flash in the foreground.
  		this._register(this._terminalService.onDidCreateInstance(instance => {
@@ -23,7 +23,7 @@ index 669f631d4d6..81ca0ebdbfc 100644
  				return;
  			}
  			if (instance.shellLaunchConfig.attachPersistentProcess && this._activeKey) {
-@@ -503,8 +503,8 @@ export class SessionsTerminalContribution extends Disposable implements IWorkben
+@@ -524,8 +524,8 @@ export class SessionsTerminalContribution extends Disposable implements IWorkben
  	private async _findTerminalsForKey(key: string, options?: { excludeTracked?: boolean }): Promise<ITerminalInstance[]> {
  		const result: ITerminalInstance[] = [];
  		for (const instance of this._terminalService.instances) {
@@ -34,7 +34,7 @@ index 669f631d4d6..81ca0ebdbfc 100644
  				continue;
  			}
  			if (options?.excludeTracked && (this._isTerminalTracked(instance.instanceId) || this._standaloneTerminalIds.has(instance.instanceId))) {
-@@ -532,6 +532,9 @@ export class SessionsTerminalContribution extends Disposable implements IWorkben
+@@ -553,6 +553,9 @@ export class SessionsTerminalContribution extends Disposable implements IWorkben
  			this._sessionTerminals.set(sessionId, terminalIds);
  		}
  		for (const instance of instances) {
@@ -44,7 +44,7 @@ index 669f631d4d6..81ca0ebdbfc 100644
  			terminalIds.add(instance.instanceId);
  			if (scope) {
  				this._trackedTerminalScopes.set(instance.instanceId, scope);
-@@ -665,6 +668,11 @@ export class SessionsTerminalContribution extends Disposable implements IWorkben
+@@ -686,6 +689,11 @@ export class SessionsTerminalContribution extends Disposable implements IWorkben
  		return currentInstance;
  	}
  
@@ -56,7 +56,7 @@ index 669f631d4d6..81ca0ebdbfc 100644
  	/**
  	 * Shows background terminals that belong to the active session and hides
  	 * foreground terminals that belong to other sessions. When the active
-@@ -672,6 +680,9 @@ export class SessionsTerminalContribution extends Disposable implements IWorkben
+@@ -693,6 +701,9 @@ export class SessionsTerminalContribution extends Disposable implements IWorkben
  	 * for compatibility with restored terminals from previous sessions.
  	 */
  	private async _terminalMatchesScope(instance: ITerminalInstance, key: string, agentHostAddress: string | undefined): Promise<boolean> {
@@ -66,7 +66,7 @@ index 669f631d4d6..81ca0ebdbfc 100644
  		const trackedScope = this._trackedTerminalScopes.get(instance.instanceId);
  		if (trackedScope) {
  			return trackedScope.key === key && trackedScope.agentHostAddress === agentHostAddress;
-@@ -701,7 +712,7 @@ export class SessionsTerminalContribution extends Disposable implements IWorkben
+@@ -722,7 +733,7 @@ export class SessionsTerminalContribution extends Disposable implements IWorkben
  
  		for (const instance of [...this._terminalService.instances]) {
  			// Skip hidden tool terminals — managed by the chat tool lifecycle
@@ -75,7 +75,7 @@ index 669f631d4d6..81ca0ebdbfc 100644
  				continue;
  			}
  			const currentInstance = this._getAvailableTerminal(instance, 'update terminal visibility');
-@@ -863,6 +874,7 @@ export class SessionsTerminalContribution extends Disposable implements IWorkben
+@@ -884,6 +895,7 @@ export class SessionsTerminalContribution extends Disposable implements IWorkben
  		const result: ITerminalInstance[] = [];
  		for (const instance of this._terminalService.instances) {
  			if (!instance.shellLaunchConfig.attachPersistentProcess

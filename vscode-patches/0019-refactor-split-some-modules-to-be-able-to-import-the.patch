@@ -8,13 +8,13 @@ Subject: [PATCH] refactor: split some modules to be able to import them
  .../editor/editor.contribution._autosave.ts   |   9 +
  .../parts/editor/editor.contribution.ts       |   3 +-
  .../files/browser/fileCommands._save.ts       | 254 +++++++
- .../contrib/files/browser/fileCommands.ts     | 295 +-------
- .../files.contribution._configuration.ts      | 306 ++++++++
+ .../contrib/files/browser/fileCommands.ts     | 297 +-------
+ .../files.contribution._configuration.ts      | 313 ++++++++
  .../browser/files.contribution._editorPane.ts |  93 +++
  .../browser/files.contribution._explorer.ts   | 295 ++++++++
  .../files.contribution._fileEditorFactory.ts  |  24 +
- .../files/browser/files.contribution.ts       | 684 +-----------------
- 9 files changed, 1016 insertions(+), 947 deletions(-)
+ .../files/browser/files.contribution.ts       | 691 +-----------------
+ 9 files changed, 1024 insertions(+), 955 deletions(-)
  create mode 100644 src/vs/workbench/browser/parts/editor/editor.contribution._autosave.ts
  create mode 100644 src/vs/workbench/contrib/files/browser/fileCommands._save.ts
  create mode 100644 src/vs/workbench/contrib/files/browser/files.contribution._configuration.ts
@@ -326,10 +326,10 @@ index 00000000000..29925ede77c
 +	}
 +});
 diff --git a/src/vs/workbench/contrib/files/browser/fileCommands.ts b/src/vs/workbench/contrib/files/browser/fileCommands.ts
-index 45ada1981b3..93adf81ef89 100644
+index d124ce22ef1..6abb34e8884 100644
 --- a/src/vs/workbench/contrib/files/browser/fileCommands.ts
 +++ b/src/vs/workbench/contrib/files/browser/fileCommands.ts
-@@ -3,55 +3,46 @@
+@@ -3,56 +3,47 @@
   *  Licensed under the MIT License. See License.txt in the project root for license information.
   *--------------------------------------------------------------------------------------------*/
  
@@ -358,7 +358,7 @@ index 45ada1981b3..93adf81ef89 100644
 +import { IConfigurationService } from '../../../../platform/configuration/common/configuration.js';
 +import { ContextKeyExpr, IContextKey, IContextKeyService } from '../../../../platform/contextkey/common/contextkey.js';
 +import { IFileDialogService } from '../../../../platform/dialogs/common/dialogs.js';
-+import { EditorOpenSource, EditorResolution } from '../../../../platform/editor/common/editor.js';
++import { EditorOpenSource } from '../../../../platform/editor/common/editor.js';
 +import { IEnvironmentService } from '../../../../platform/environment/common/environment.js';
  import { IFileService } from '../../../../platform/files/common/files.js';
 +import { IInstantiationService, ServicesAccessor } from '../../../../platform/instantiation/common/instantiation.js';
@@ -373,6 +373,7 @@ index 45ada1981b3..93adf81ef89 100644
 -import { INotificationService, Severity } from '../../../../platform/notification/common/notification.js';
 -import { EditorContextKeys } from '../../../../editor/common/editorContextKeys.js';
 -import { IEditorService, SIDE_GROUP, ISaveEditorsOptions } from '../../../services/editor/common/editorService.js';
+-import { OpenWithEditorPicker } from '../../../services/editor/browser/openWithEditorPicker.js';
 -import { IEditorGroupsService, GroupsOrder, IEditorGroup } from '../../../services/editor/common/editorGroupsService.js';
  import { ILabelService } from '../../../../platform/label/common/label.js';
 -import { basename, joinPath, isEqual } from '../../../../base/common/resources.js';
@@ -385,7 +386,7 @@ index 45ada1981b3..93adf81ef89 100644
  import { IUriIdentityService } from '../../../../platform/uriIdentity/common/uriIdentity.js';
 -import { isCancellationError } from '../../../../base/common/errors.js';
 -import { IAction, toAction } from '../../../../base/common/actions.js';
--import { EditorOpenSource, EditorResolution } from '../../../../platform/editor/common/editor.js';
+-import { EditorOpenSource } from '../../../../platform/editor/common/editor.js';
 -import { hash } from '../../../../base/common/hash.js';
 -import { IConfigurationService } from '../../../../platform/configuration/common/configuration.js';
 -import { IPaneCompositePartService } from '../../../services/panecomposite/browser/panecomposite.js';
@@ -394,6 +395,7 @@ index 45ada1981b3..93adf81ef89 100644
 +import { RemoveRootFolderAction } from '../../../browser/actions/workspaceActions.js';
 +import { EditorResourceAccessor, SideBySideEditor } from '../../../common/editor.js';
  import { ViewContainerLocation } from '../../../common/views.js';
++import { OpenWithEditorPicker } from '../../../services/editor/browser/openWithEditorPicker.js';
 +import { IEditorGroupsService } from '../../../services/editor/common/editorGroupsService.js';
 +import { IEditorService, SIDE_GROUP } from '../../../services/editor/common/editorService.js';
 +import { IHostService } from '../../../services/host/browser/host.js';
@@ -415,7 +417,7 @@ index 45ada1981b3..93adf81ef89 100644
  
  export const openWindowCommand = (accessor: ServicesAccessor, toOpen: IWindowOpenable[], options?: IOpenWindowOptions) => {
  	if (Array.isArray(toOpen)) {
-@@ -366,232 +357,6 @@ CommandsRegistry.registerCommand({
+@@ -371,232 +362,6 @@ CommandsRegistry.registerCommand({
  
  // Save / Save As / Save All / Revert
  
@@ -650,10 +652,10 @@ index 45ada1981b3..93adf81ef89 100644
  	handler: (accessor, resource: URI | object) => {
 diff --git a/src/vs/workbench/contrib/files/browser/files.contribution._configuration.ts b/src/vs/workbench/contrib/files/browser/files.contribution._configuration.ts
 new file mode 100644
-index 00000000000..783efc32fe5
+index 00000000000..ce067c8e346
 --- /dev/null
 +++ b/src/vs/workbench/contrib/files/browser/files.contribution._configuration.ts
-@@ -0,0 +1,306 @@
+@@ -0,0 +1,313 @@
 +/*---------------------------------------------------------------------------------------------
 + *  Copyright (c) Microsoft Corporation. All rights reserved.
 + *  Licensed under the MIT License. See License.txt in the project root for license information.
@@ -662,6 +664,7 @@ index 00000000000..783efc32fe5
 +import { isNative, isWeb } from '../../../../base/common/platform.js';
 +import { editorConfigurationBaseNode } from '../../../../editor/common/config/editorConfigurationSchema.js';
 +import * as nls from '../../../../nls.js';
++import { EXCLUDE_EXCEPTION_KEY_PATTERN } from '../../../../base/common/glob.js';
 +import { Extensions as ConfigurationExtensions, ConfigurationScope, IConfigurationPropertySchema, IConfigurationRegistry } from '../../../../platform/configuration/common/configurationRegistry.js';
 +import { AutoSaveConfiguration, FILES_ASSOCIATIONS_CONFIG, FILES_EXCLUDE_CONFIG, FILES_READONLY_EXCLUDE_CONFIG, FILES_READONLY_FROM_PERMISSIONS_CONFIG, FILES_READONLY_INCLUDE_CONFIG, HotExitConfiguration } from '../../../../platform/files/common/files.js';
 +import { Registry } from '../../../../platform/registry/common/platform.js';
@@ -702,12 +705,18 @@ index 00000000000..783efc32fe5
 +	'properties': {
 +		[FILES_EXCLUDE_CONFIG]: {
 +			'type': 'object',
-+			'markdownDescription': nls.localize('exclude', "Configure [glob patterns](https://aka.ms/vscode-glob-patterns) for excluding files and folders. For example, the File Explorer decides which files and folders to show or hide based on this setting. Refer to the `#search.exclude#` setting to define search-specific excludes. Refer to the `#explorer.excludeGitIgnore#` setting for ignoring files based on your `.gitignore`."),
++			'markdownDescription': nls.localize('exclude', "Configure [glob patterns](https://aka.ms/vscode-glob-patterns) for excluding files and folders. For example, the File Explorer decides which files and folders to show or hide based on this setting. Prefix a pattern with `!` to show matching files and folders even if another pattern excludes them, for example `\"!node_modules/@types\": true`. Refer to the `#search.exclude#` setting to define search-specific excludes. Refer to the `#explorer.excludeGitIgnore#` setting for ignoring files based on your `.gitignore`."),
 +			'default': {
 +				...{ '**/.git': true, '**/.svn': true, '**/.hg': true, '**/.jj': true, '**/.DS_Store': true, '**/Thumbs.db': true },
 +				...(isWeb ? { '**/*.crswap': true /* filter out swap files used for local file access */ } : undefined)
 +			},
 +			'scope': ConfigurationScope.RESOURCE,
++			'patternProperties': {
++				[EXCLUDE_EXCEPTION_KEY_PATTERN]: {
++					'type': 'boolean',
++					'description': nls.localize('files.exclude.exception', "An exception: files and folders that match the glob pattern after the `!`, and everything inside them, are not excluded even if another pattern excludes them. Version control folders such as `.git` stay excluded unless the pattern names them. Set to true or false to enable or disable the exception."),
++				}
++			},
 +			'additionalProperties': {
 +				'anyOf': [
 +					{
@@ -1391,15 +1400,16 @@ index 00000000000..8064ddc028c
 +	}
 +});
 diff --git a/src/vs/workbench/contrib/files/browser/files.contribution.ts b/src/vs/workbench/contrib/files/browser/files.contribution.ts
-index 0223932a73f..269fb34cadb 100644
+index 2059d492658..269fb34cadb 100644
 --- a/src/vs/workbench/contrib/files/browser/files.contribution.ts
 +++ b/src/vs/workbench/contrib/files/browser/files.contribution.ts
-@@ -3,683 +3,7 @@
+@@ -3,690 +3,7 @@
   *  Licensed under the MIT License. See License.txt in the project root for license information.
   *--------------------------------------------------------------------------------------------*/
  
 -import * as nls from '../../../../nls.js';
 -import { sep } from '../../../../base/common/path.js';
+-import { EXCLUDE_EXCEPTION_KEY_PATTERN } from '../../../../base/common/glob.js';
 -import { Registry } from '../../../../platform/registry/common/platform.js';
 -import { IConfigurationRegistry, Extensions as ConfigurationExtensions, ConfigurationScope, IConfigurationPropertySchema } from '../../../../platform/configuration/common/configurationRegistry.js';
 -import { IWorkbenchContribution, WorkbenchPhase, registerWorkbenchContribution2 } from '../../../common/contributions.js';
@@ -1547,12 +1557,18 @@ index 0223932a73f..269fb34cadb 100644
 -	'properties': {
 -		[FILES_EXCLUDE_CONFIG]: {
 -			'type': 'object',
--			'markdownDescription': nls.localize('exclude', "Configure [glob patterns](https://aka.ms/vscode-glob-patterns) for excluding files and folders. For example, the File Explorer decides which files and folders to show or hide based on this setting. Refer to the `#search.exclude#` setting to define search-specific excludes. Refer to the `#explorer.excludeGitIgnore#` setting for ignoring files based on your `.gitignore`."),
+-			'markdownDescription': nls.localize('exclude', "Configure [glob patterns](https://aka.ms/vscode-glob-patterns) for excluding files and folders. For example, the File Explorer decides which files and folders to show or hide based on this setting. Prefix a pattern with `!` to show matching files and folders even if another pattern excludes them, for example `\"!node_modules/@types\": true`. Refer to the `#search.exclude#` setting to define search-specific excludes. Refer to the `#explorer.excludeGitIgnore#` setting for ignoring files based on your `.gitignore`."),
 -			'default': {
 -				...{ '**/.git': true, '**/.svn': true, '**/.hg': true, '**/.jj': true, '**/.DS_Store': true, '**/Thumbs.db': true },
 -				...(isWeb ? { '**/*.crswap': true /* filter out swap files used for local file access */ } : undefined)
 -			},
 -			'scope': ConfigurationScope.RESOURCE,
+-			'patternProperties': {
+-				[EXCLUDE_EXCEPTION_KEY_PATTERN]: {
+-					'type': 'boolean',
+-					'description': nls.localize('files.exclude.exception', "An exception: files and folders that match the glob pattern after the `!`, and everything inside them, are not excluded even if another pattern excludes them. Version control folders such as `.git` stay excluded unless the pattern names them. Set to true or false to enable or disable the exception."),
+-				}
+-			},
 -			'additionalProperties': {
 -				'anyOf': [
 -					{

@@ -8,7 +8,7 @@ Subject: [PATCH] fix: fix dependency injection
  1 file changed, 3 insertions(+), 1 deletion(-)
 
 diff --git a/src/vs/platform/instantiation/common/instantiationService.ts b/src/vs/platform/instantiation/common/instantiationService.ts
-index dd21805b88d..296ada9b6a7 100644
+index 4a74583aaa8..2f2e59cf470 100644
 --- a/src/vs/platform/instantiation/common/instantiationService.ts
 +++ b/src/vs/platform/instantiation/common/instantiationService.ts
 @@ -245,8 +245,10 @@ export class InstantiationService implements IInstantiationService {

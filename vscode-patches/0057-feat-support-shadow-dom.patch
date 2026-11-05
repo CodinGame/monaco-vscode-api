@@ -41,15 +41,18 @@ Subject: [PATCH] feat: support shadow dom
  .../agentFeedbackEditorWidgetContribution.ts  |  4 +-
  .../aquarium/browser/aquariumOverlay.ts       |  2 +-
  .../sessions/contrib/aquarium/browser/fish.ts | 17 ++---
+ .../automations/browser/automationDialog.ts   |  2 +-
  .../chat/browser/externalSessionBanner.ts     |  2 +-
  .../browser/actions/developerActions.ts       |  4 +-
  src/vs/workbench/browser/layout.ts            |  3 +
  .../browser/parts/banner/bannerPart.ts        |  4 +-
  .../browser/parts/editor/editorGroupView.ts   |  4 +-
- .../browser/parts/editor/modalEditorPart.ts   |  4 +-
+ .../browser/parts/editor/modalEditorPart.ts   |  6 +-
+ .../browser/parts/views/inlineEditInputBox.ts |  2 +-
  src/vs/workbench/browser/workbench.ts         |  6 +-
  .../widgets/browserUrlBarWidget.ts            | 10 +--
  .../actions/chatAccessibilityActions.ts       |  3 +-
+ .../agentHost/computerUseSetupDialog.ts       |  6 +-
  .../experiments/agentTitleBarStatusWidget.ts  |  4 +-
  .../aiCustomization/customizationCardList.ts  |  2 +-
  .../contrib/chat/browser/chatInputPills.ts    |  4 +-
@@ -58,15 +61,15 @@ Subject: [PATCH] feat: support shadow dom
  .../viewsWelcome/chatUpdateRequiredView.ts    |  4 +-
  .../browser/widget/chatFind/chatFindWidget.ts |  2 +-
  .../browser/widget/input/chatInputPart.ts     |  2 +-
- .../files/browser/views/explorerViewer.ts     |  4 +-
+ .../issue/browser/issueReporterOverlay.ts     |  8 +--
  .../notebook/browser/notebookEditorWidget.ts  |  6 +-
  .../browser/view/cellParts/cellStatusPart.ts  |  5 +-
  .../browser/view/cellParts/codeCell.ts        |  6 +-
  .../browser/view/cellParts/markupCell.ts      |  6 +-
- .../notebook/browser/view/notebookCellList.ts |  5 +-
+ .../notebook/browser/view/notebookCellList.ts |  3 +-
  .../view/renderers/backLayerWebView.ts        |  3 +-
  .../browser/preferences.contribution.ts       |  3 +-
- .../preferences/browser/settingsEditor2.ts    |  6 +-
+ .../preferences/browser/settingsEditor2.ts    |  4 +-
  .../terminal/browser/terminalService.ts       |  7 +-
  .../terminal/browser/terminalTabbedView.ts    |  2 +-
  .../contrib/terminal/browser/terminalView.ts  |  2 +-
@@ -78,7 +81,7 @@ Subject: [PATCH] feat: support shadow dom
  .../browser/auxiliaryWindowService.ts         |  6 +-
  .../suggest/browser/simpleSuggestWidget.ts    |  4 +-
  .../themes/browser/workbenchThemeService.ts   | 33 +++++++++-
- 74 files changed, 292 insertions(+), 176 deletions(-)
+ 77 files changed, 297 insertions(+), 183 deletions(-)
 
 diff --git a/src/vs/base/browser/dom.ts b/src/vs/base/browser/dom.ts
 index d3bca6ebdb5..8f9b672a207 100644
@@ -332,10 +335,10 @@ index b7c24be7290..247270cc7a2 100644
  		this.ctrlKey = e.ctrlKey;
  		this.shiftKey = e.shiftKey;
 diff --git a/src/vs/base/browser/ui/contextview/contextview.ts b/src/vs/base/browser/ui/contextview/contextview.ts
-index 35aef1d3d28..4bf8207b8f0 100644
+index c35563ef3a1..27d0b145ac7 100644
 --- a/src/vs/base/browser/ui/contextview/contextview.ts
 +++ b/src/vs/base/browser/ui/contextview/contextview.ts
-@@ -479,7 +479,7 @@ export class ContextView extends Disposable {
+@@ -728,7 +728,7 @@ export class ContextView extends Disposable {
  	private onDOMEvent(e: UIEvent, onCapture: boolean): void {
  		if (this.delegate) {
  			if (this.delegate.onDOMEvent) {
@@ -345,7 +348,7 @@ index 35aef1d3d28..4bf8207b8f0 100644
  				this.hide();
  			}
 diff --git a/src/vs/base/browser/ui/dialog/dialog.ts b/src/vs/base/browser/ui/dialog/dialog.ts
-index 34d22b5d162..f92f1b65516 100644
+index ca6524df4cf..5413ec552b2 100644
 --- a/src/vs/base/browser/ui/dialog/dialog.ts
 +++ b/src/vs/base/browser/ui/dialog/dialog.ts
 @@ -5,7 +5,7 @@
@@ -357,7 +360,7 @@ index 34d22b5d162..f92f1b65516 100644
  import { StandardKeyboardEvent } from '../../keyboardEvent.js';
  import { ActionBar } from '../actionbar/actionbar.js';
  import { ButtonBar, ButtonBarAlignment, ButtonWithDescription, ButtonWithDropdown, IButton, IButtonStyles, IButtonWithDropdownOptions } from '../button/button.js';
-@@ -283,7 +283,7 @@ export class Dialog extends Disposable {
+@@ -289,7 +289,7 @@ export class Dialog extends Disposable {
  	}
  
  	async show(): Promise<IDialogResult> {
@@ -366,7 +369,7 @@ index 34d22b5d162..f92f1b65516 100644
  
  		return new Promise<IDialogResult>(resolve => {
  			clearNode(this.buttonsContainer);
-@@ -654,7 +654,7 @@ export class Dialog extends Disposable {
+@@ -668,7 +668,7 @@ export class Dialog extends Disposable {
  			this.modalElement = undefined;
  		}
  
@@ -498,7 +501,7 @@ index 6dc53aeee12..3dfc4299fd3 100644
  		if (index === -1) {
  			return;
 diff --git a/src/vs/base/browser/ui/splitview/splitview.ts b/src/vs/base/browser/ui/splitview/splitview.ts
-index 00e413644ed..63fd9d8b0b6 100644
+index 044a3b63ca4..1edf76d285d 100644
 --- a/src/vs/base/browser/ui/splitview/splitview.ts
 +++ b/src/vs/base/browser/ui/splitview/splitview.ts
 @@ -3,7 +3,7 @@
@@ -510,7 +513,7 @@ index 00e413644ed..63fd9d8b0b6 100644
  import { DomEmitter } from '../../event.js';
  import { ISashEvent as IBaseSashEvent, Orientation, Sash, SashState } from '../sash/sash.js';
  import { SmoothScrollableElement } from '../scrollbar/scrollableElement.js';
-@@ -892,8 +892,8 @@ export class SplitView<TLayoutContext = undefined, TView extends IView<TLayoutCo
+@@ -904,8 +904,8 @@ export class SplitView<TLayoutContext = undefined, TView extends IView<TLayoutCo
  
  		// This way, we can press Alt while we resize a sash, macOS style!
  		const disposable = combinedDisposable(
@@ -702,7 +705,7 @@ index 74a1fcc9b21..4e070298ec1 100644
  	}
  });
 diff --git a/src/vs/editor/contrib/hover/browser/contentHoverController.ts b/src/vs/editor/contrib/hover/browser/contentHoverController.ts
-index d675e1de629..f9dd54b620f 100644
+index 13e32e3ed5e..37d74234e99 100644
 --- a/src/vs/editor/contrib/hover/browser/contentHoverController.ts
 +++ b/src/vs/editor/contrib/hover/browser/contentHoverController.ts
 @@ -24,6 +24,7 @@ import { Emitter } from '../../../../base/common/event.js';
@@ -736,10 +739,10 @@ index c5226cb273f..08f5ace9b37 100644
  			this._configurationService.getValue('accessibility.verbosity.hover') === true && this._accessibilityService.isScreenReaderOptimized(),
  			this._keybindingService.lookupKeybinding('editor.action.accessibleView')?.getAriaLabel() ?? ''
 diff --git a/src/vs/platform/actionWidget/browser/actionList.ts b/src/vs/platform/actionWidget/browser/actionList.ts
-index 18b94da4932..ff62ee83f1d 100644
+index 2917da2ccfa..5f62a4081c1 100644
 --- a/src/vs/platform/actionWidget/browser/actionList.ts
 +++ b/src/vs/platform/actionWidget/browser/actionList.ts
-@@ -2562,11 +2562,11 @@ export class ActionListWidget<T> extends Disposable {
+@@ -2675,11 +2675,11 @@ export class ActionListWidget<T> extends Disposable {
  	}
  
  	private _getRowElement(index: number): HTMLElement | null {
@@ -754,7 +757,7 @@ index 18b94da4932..ff62ee83f1d 100644
  
  	private _getTabThroughPanelControls(element: IActionListItem<T>, row: HTMLElement): { readonly toolbar: ActionBar | undefined; readonly panelControls: readonly HTMLElement[] } {
 diff --git a/src/vs/platform/clipboard/browser/clipboardService.ts b/src/vs/platform/clipboard/browser/clipboardService.ts
-index ee048c9fd61..ca2bd23547d 100644
+index 987b5d8c05d..c8992de274d 100644
 --- a/src/vs/platform/clipboard/browser/clipboardService.ts
 +++ b/src/vs/platform/clipboard/browser/clipboardService.ts
 @@ -4,7 +4,7 @@
@@ -766,7 +769,7 @@ index ee048c9fd61..ca2bd23547d 100644
  import { mainWindow } from '../../../base/browser/window.js';
  import { DeferredPromise } from '../../../base/common/async.js';
  import { Event } from '../../../base/common/event.js';
-@@ -163,7 +163,7 @@ export class BrowserClipboardService extends Disposable implements IClipboardSer
+@@ -174,7 +174,7 @@ export class BrowserClipboardService extends Disposable implements IClipboardSer
  	private fallbackWriteText(text: string): void {
  		this.logService.trace('BrowserClipboardService#fallbackWriteText');
  		const activeDocument = getActiveDocument();
@@ -846,10 +849,10 @@ index e8b7dc2910b..96627666b89 100644
  				}
  
 diff --git a/src/vs/platform/hover/browser/hoverWidget.ts b/src/vs/platform/hover/browser/hoverWidget.ts
-index 200968abf15..1a46357efeb 100644
+index 02ac85ba78e..c82c96b2cc9 100644
 --- a/src/vs/platform/hover/browser/hoverWidget.ts
 +++ b/src/vs/platform/hover/browser/hoverWidget.ts
-@@ -340,7 +340,7 @@ export class HoverWidget extends Widget implements IHoverWidget {
+@@ -349,7 +349,7 @@ export class HoverWidget extends Widget implements IHoverWidget {
  
  	public render(container: HTMLElement): void {
  		container.appendChild(this._hoverContainer);
@@ -908,19 +911,19 @@ index e0431c43297..3becb497383 100644
  		};
  
 diff --git a/src/vs/sessions/browser/parts/chatCompositeBar.ts b/src/vs/sessions/browser/parts/chatCompositeBar.ts
-index e66ca629a83..c093a1cfccb 100644
+index 8900798758b..31a631efd91 100644
 --- a/src/vs/sessions/browser/parts/chatCompositeBar.ts
 +++ b/src/vs/sessions/browser/parts/chatCompositeBar.ts
-@@ -7,7 +7,7 @@ import './media/chatCompositeBar.css';
- import { Disposable, DisposableStore, MutableDisposable } from '../../../base/common/lifecycle.js';
+@@ -8,7 +8,7 @@ import { Disposable, DisposableStore, MutableDisposable } from '../../../base/co
  import { URI } from '../../../base/common/uri.js';
+ import { isEqual } from '../../../base/common/resources.js';
  import { Emitter, Event } from '../../../base/common/event.js';
 -import { $, addDisposableGenericMouseDownListener, addDisposableGenericMouseUpListener, addDisposableListener, addStandardDisposableListener, DisposableResizeObserver, EventHelper, EventType, getWindow, isHTMLElement, reset } from '../../../base/browser/dom.js';
 +import { $, addDisposableGenericMouseDownListener, addDisposableGenericMouseUpListener, addDisposableListener, addStandardDisposableListener, DisposableResizeObserver, EventHelper, EventType, getWindow, isActiveElement, isHTMLElement, reset } from '../../../base/browser/dom.js';
  import { applyDragImage } from '../../../base/browser/ui/dnd/dnd.js';
  import { ScrollableElement } from '../../../base/browser/ui/scrollbar/scrollableElement.js';
  import { ScrollbarVisibility } from '../../../base/common/scrollable.js';
-@@ -651,7 +651,7 @@ export class ChatCompositeBar extends Disposable {
+@@ -737,7 +737,7 @@ export class ChatCompositeBar extends Disposable {
  	}
  
  	startFocusedTabEditing(): boolean {
@@ -930,7 +933,7 @@ index e66ca629a83..c093a1cfccb 100644
  			return false;
  		}
 diff --git a/src/vs/sessions/browser/parts/chatGroupsView.ts b/src/vs/sessions/browser/parts/chatGroupsView.ts
-index ae168e0cddf..7b973c486f3 100644
+index 1adba55ee67..4daa8616de5 100644
 --- a/src/vs/sessions/browser/parts/chatGroupsView.ts
 +++ b/src/vs/sessions/browser/parts/chatGroupsView.ts
 @@ -4,7 +4,7 @@
@@ -942,7 +945,7 @@ index ae168e0cddf..7b973c486f3 100644
  import { Color } from '../../../base/common/color.js';
  import { onUnexpectedError } from '../../../base/common/errors.js';
  import { DisposableMap, DisposableStore, MutableDisposable, toDisposable } from '../../../base/common/lifecycle.js';
-@@ -829,7 +829,7 @@ export class ChatGroupsView extends Themable {
+@@ -877,7 +877,7 @@ export class ChatGroupsView extends Themable {
  			if (this._groups.length <= 1) {
  				break;
  			}
@@ -952,7 +955,7 @@ index ae168e0cddf..7b973c486f3 100644
  			this._groups = this._groups.filter(g => g !== group);
  			if (this._activeGroup === group) {
 diff --git a/src/vs/sessions/browser/workbench.ts b/src/vs/sessions/browser/workbench.ts
-index 7c3540770a8..f1b7b27054c 100644
+index 37176808f1e..1484f409042 100644
 --- a/src/vs/sessions/browser/workbench.ts
 +++ b/src/vs/sessions/browser/workbench.ts
 @@ -83,6 +83,7 @@ import { ICustomViewDescriptor } from '../services/customView/browser/customView
@@ -973,7 +976,7 @@ index 7c3540770a8..f1b7b27054c 100644
  		// (rather than in the shared workbench.html) so that the regular
  		// code-web workbench — which does not handle safe-area insets — is
 diff --git a/src/vs/sessions/contrib/agentFeedback/browser/agentFeedbackEditorInputContribution.ts b/src/vs/sessions/contrib/agentFeedback/browser/agentFeedbackEditorInputContribution.ts
-index 51d757b5e1a..95a271229b9 100644
+index 6e8f83a9b9b..40f382a1cf7 100644
 --- a/src/vs/sessions/contrib/agentFeedback/browser/agentFeedbackEditorInputContribution.ts
 +++ b/src/vs/sessions/contrib/agentFeedback/browser/agentFeedbackEditorInputContribution.ts
 @@ -17,7 +17,7 @@ import { EditorOption } from '../../../../editor/common/config/editorOptions.js'
@@ -985,7 +988,7 @@ index 51d757b5e1a..95a271229b9 100644
  import { IAnchor } from '../../../../base/browser/ui/contextview/contextview.js';
  import { URI } from '../../../../base/common/uri.js';
  import { isEqual } from '../../../../base/common/resources.js';
-@@ -262,7 +262,7 @@ export class AgentFeedbackEditorInputContribution extends Disposable implements
+@@ -265,7 +265,7 @@ export class AgentFeedbackEditorInputContribution extends Disposable implements
  				if (this._store.isDisposed || !this._visible) {
  					return;
  				}
@@ -994,7 +997,7 @@ index 51d757b5e1a..95a271229b9 100644
  					return;
  				}
  				this._autoHide();
-@@ -724,7 +724,7 @@ export class AgentFeedbackEditorInputContribution extends Disposable implements
+@@ -727,7 +727,7 @@ export class AgentFeedbackEditorInputContribution extends Disposable implements
  				}
  
  				// If the input is not focused, focus it and let the keystroke go through
@@ -1004,7 +1007,7 @@ index 51d757b5e1a..95a271229b9 100644
  				}
  			}));
 diff --git a/src/vs/sessions/contrib/agentFeedback/browser/agentFeedbackEditorWidgetContribution.ts b/src/vs/sessions/contrib/agentFeedback/browser/agentFeedbackEditorWidgetContribution.ts
-index b5829bd903a..94ab580f0fd 100644
+index c42c2740015..790468c2f48 100644
 --- a/src/vs/sessions/contrib/agentFeedback/browser/agentFeedbackEditorWidgetContribution.ts
 +++ b/src/vs/sessions/contrib/agentFeedback/browser/agentFeedbackEditorWidgetContribution.ts
 @@ -3,7 +3,7 @@
@@ -1016,7 +1019,7 @@ index b5829bd903a..94ab580f0fd 100644
  import { Event } from '../../../../base/common/event.js';
  import { Disposable, DisposableStore } from '../../../../base/common/lifecycle.js';
  import { autorun, observableSignalFromEvent } from '../../../../base/common/observable.js';
-@@ -282,7 +282,7 @@ export class AgentFeedbackEditorWidgetContribution extends Disposable implements
+@@ -281,7 +281,7 @@ export class AgentFeedbackEditorWidgetContribution extends Disposable implements
  		if (this._widgets.length === 0) {
  			return;
  		}
@@ -1094,8 +1097,21 @@ index 74b4b5c6989..8bdaee12d10 100644
  
  	const svg = $.SVG<SVGSVGElement>('svg');
  	svg.setAttribute('xmlns', 'http://www.w3.org/2000/svg');
+diff --git a/src/vs/sessions/contrib/automations/browser/automationDialog.ts b/src/vs/sessions/contrib/automations/browser/automationDialog.ts
+index 709157eb135..c360e54ca0b 100644
+--- a/src/vs/sessions/contrib/automations/browser/automationDialog.ts
++++ b/src/vs/sessions/contrib/automations/browser/automationDialog.ts
+@@ -198,7 +198,7 @@ export function registerAutomationDialogKeyboardNavigation(
+ 		if (focusableElements.length === 0) {
+ 			return;
+ 		}
+-		const activeElement = targetWindow.document.activeElement;
++		const activeElement = DOM.getActiveElement(targetWindow.document);
+ 		let focusedIndex = focusableElements.findIndex(element => element === activeElement);
+ 		if (focusedIndex < 0) {
+ 			focusedIndex = focusableElements.findIndex(element => !!activeElement && element.contains(activeElement));
 diff --git a/src/vs/sessions/contrib/chat/browser/externalSessionBanner.ts b/src/vs/sessions/contrib/chat/browser/externalSessionBanner.ts
-index e8b8e552fa4..b6c016dd923 100644
+index bb1071f2d73..7c36f4259e6 100644
 --- a/src/vs/sessions/contrib/chat/browser/externalSessionBanner.ts
 +++ b/src/vs/sessions/contrib/chat/browser/externalSessionBanner.ts
 @@ -313,7 +313,7 @@ export class ExternalSessionBanner extends Disposable {
@@ -1173,7 +1189,7 @@ index 76f36231872..c8883613fda 100644
  		clearNode(this.element);
  		this.item = item;
 diff --git a/src/vs/workbench/browser/parts/editor/editorGroupView.ts b/src/vs/workbench/browser/parts/editor/editorGroupView.ts
-index 57087fd2e20..2d0257edb6d 100644
+index 0239aa1dd4b..62b7b5c2802 100644
 --- a/src/vs/workbench/browser/parts/editor/editorGroupView.ts
 +++ b/src/vs/workbench/browser/parts/editor/editorGroupView.ts
 @@ -11,7 +11,7 @@ import { EditorInput } from '../../../common/editor/editorInput.js';
@@ -1185,7 +1201,7 @@ index 57087fd2e20..2d0257edb6d 100644
  import { ServiceCollection } from '../../../../platform/instantiation/common/serviceCollection.js';
  import { IContextKeyService } from '../../../../platform/contextkey/common/contextkey.js';
  import { ProgressBar } from '../../../../base/browser/ui/progressbar/progressbar.js';
-@@ -1690,7 +1690,7 @@ export class EditorGroupView extends Themable implements IEditorGroupView {
+@@ -1705,7 +1705,7 @@ export class EditorGroupView extends Themable implements IEditorGroupView {
  
  	private shouldRestoreFocus(target: Element): boolean {
  		const activeElement = getActiveElement();
@@ -1195,19 +1211,28 @@ index 57087fd2e20..2d0257edb6d 100644
  		}
  
 diff --git a/src/vs/workbench/browser/parts/editor/modalEditorPart.ts b/src/vs/workbench/browser/parts/editor/modalEditorPart.ts
-index 871b888baa1..cb8af37dd4f 100644
+index a0807c9cb50..bceccad9311 100644
 --- a/src/vs/workbench/browser/parts/editor/modalEditorPart.ts
 +++ b/src/vs/workbench/browser/parts/editor/modalEditorPart.ts
 @@ -4,7 +4,7 @@
   *--------------------------------------------------------------------------------------------*/
  
  import './media/modalEditorPart.css';
--import { $, addDisposableListener, append, Dimension, EventHelper, EventType, hide, IDimension, isHTMLElement, setVisibility, show } from '../../../../base/browser/dom.js';
-+import { $, addDisposableListener, append, Dimension, EventHelper, EventType, getActiveElement, hide, IDimension, isHTMLElement, setVisibility, show } from '../../../../base/browser/dom.js';
+-import { $, addDisposableListener, append, Dimension, EventHelper, EventType, getWindow, hide, IDimension, isHTMLElement, setVisibility, show } from '../../../../base/browser/dom.js';
++import { $, addDisposableListener, append, Dimension, EventHelper, EventType, getActiveElement, getWindow, hide, IDimension, isHTMLElement, setVisibility, show } from '../../../../base/browser/dom.js';
  import { GlobalPointerMoveMonitor } from '../../../../base/browser/globalPointerMoveMonitor.js';
  import { StandardKeyboardEvent } from '../../../../base/browser/keyboardEvent.js';
  import { ActionBar, prepareActions } from '../../../../base/browser/ui/actionbar/actionbar.js';
-@@ -964,7 +964,7 @@ class ModalEditorPartImpl extends EditorPart implements IModalEditorPart {
+@@ -347,7 +347,7 @@ export class ModalEditorPart {
+ 			const tabbableElements = getModalTabbableElements(modalElement);
+ 			const target = isBackwardTab ? tabbableElements.at(-1) : tabbableElements[0];
+ 			const boundary = isBackwardTab ? tabbableElements[0] : tabbableElements.at(-1);
+-			if (!target || mainWindow.document.activeElement !== boundary) {
++			if (!target || getActiveElement(mainWindow.document) !== boundary) {
+ 				return;
+ 			}
+ 
+@@ -1024,7 +1024,7 @@ class ModalEditorPartImpl extends EditorPart implements IModalEditorPart {
  	}
  
  	override create(parent: HTMLElement, options?: object): void {
@@ -1216,6 +1241,19 @@ index 871b888baa1..cb8af37dd4f 100644
  
  		super.create(parent, options);
  	}
+diff --git a/src/vs/workbench/browser/parts/views/inlineEditInputBox.ts b/src/vs/workbench/browser/parts/views/inlineEditInputBox.ts
+index bd299f24b0a..d0560ce3b9c 100644
+--- a/src/vs/workbench/browser/parts/views/inlineEditInputBox.ts
++++ b/src/vs/workbench/browser/parts/views/inlineEditInputBox.ts
+@@ -116,7 +116,7 @@ export class InlineEditInputBox extends Disposable {
+ 				if (isContextViewFocused(ownerDocument)) {
+ 					// Keep editing while a context menu of the input box is open
+ 					await Event.toPromise(this._contextMenuService.onDidHideContextMenu, this._store);
+-				} else if (ownerDocument.activeElement === inputBox.inputElement) {
++				} else if (DOM.getActiveElement(ownerDocument) === inputBox.inputElement) {
+ 					if (ownerDocument.hasFocus()) {
+ 						return;
+ 					}
 diff --git a/src/vs/workbench/browser/workbench.ts b/src/vs/workbench/browser/workbench.ts
 index c344a32641c..97291659332 100644
 --- a/src/vs/workbench/browser/workbench.ts
@@ -1290,10 +1328,10 @@ index 780eed233a9..b3e75ef972d 100644
  				selectionAtHide = {
  					start: active.selectionStart,
 diff --git a/src/vs/workbench/contrib/chat/browser/actions/chatAccessibilityActions.ts b/src/vs/workbench/contrib/chat/browser/actions/chatAccessibilityActions.ts
-index fb883b165b0..337e9daed35 100644
+index b3a4dacda31..e2f207a7c66 100644
 --- a/src/vs/workbench/contrib/chat/browser/actions/chatAccessibilityActions.ts
 +++ b/src/vs/workbench/contrib/chat/browser/actions/chatAccessibilityActions.ts
-@@ -18,6 +18,7 @@ import { AccessibleViewProviderId } from '../../../../../platform/accessibility/
+@@ -19,6 +19,7 @@ import { AccessibleViewProviderId } from '../../../../../platform/accessibility/
  import { CONTEXT_ACCESSIBILITY_MODE_ENABLED } from '../../../../../platform/accessibility/common/accessibility.js';
  import { accessibleViewCurrentProviderId, accessibleViewIsShown } from '../../../../contrib/accessibility/browser/accessibilityConfiguration.js';
  import { CHAT_ACCESSIBLE_VIEW_INCLUDE_THINKING_STORAGE_KEY, isThinkingContentIncludedInAccessibleView } from '../accessibility/chatResponseAccessibleView.js';
@@ -1301,7 +1339,7 @@ index fb883b165b0..337e9daed35 100644
  
  export const ACTION_ID_FOCUS_CHAT_CONFIRMATION = 'workbench.action.chat.focusConfirmation';
  export const ACTION_ID_TOGGLE_THINKING_CONTENT_ACCESSIBLE_VIEW = 'workbench.action.chat.toggleThinkingContentAccessibleView';
-@@ -75,7 +76,7 @@ class AnnounceChatConfirmationAction extends Action2 {
+@@ -86,7 +87,7 @@ class AnnounceChatConfirmationAction extends Action2 {
  
  		if (firstConfirmationElement) {
  			// Toggle: if the confirmation is already focused, move focus back to input
@@ -1310,8 +1348,39 @@ index fb883b165b0..337e9daed35 100644
  				pendingWidget.focusInput();
  			} else {
  				firstConfirmationElement.scrollIntoView({ block: 'nearest' });
+diff --git a/src/vs/workbench/contrib/chat/browser/agentSessions/agentHost/computerUseSetupDialog.ts b/src/vs/workbench/contrib/chat/browser/agentSessions/agentHost/computerUseSetupDialog.ts
+index b5f3a499b8f..9fb8a3dba5d 100644
+--- a/src/vs/workbench/contrib/chat/browser/agentSessions/agentHost/computerUseSetupDialog.ts
++++ b/src/vs/workbench/contrib/chat/browser/agentSessions/agentHost/computerUseSetupDialog.ts
+@@ -4,7 +4,7 @@
+  *--------------------------------------------------------------------------------------------*/
+ 
+ import './media/computerUseSetup.css';
+-import { $, addDisposableListener, append, EventType, getWindow, isAncestor } from '../../../../../../base/browser/dom.js';
++import { $, addDisposableListener, append, EventType, getActiveElement, getWindow, isAncestor } from '../../../../../../base/browser/dom.js';
+ import { ActionBar } from '../../../../../../base/browser/ui/actionbar/actionbar.js';
+ import { alert, status } from '../../../../../../base/browser/ui/aria/aria.js';
+ import { Button } from '../../../../../../base/browser/ui/button/button.js';
+@@ -253,7 +253,7 @@ export class ComputerUseSetupPanel extends Disposable {
+ 		}
+ 		const previous = this._view;
+ 		const modal = this._getModal();
+-		const hadFocus = isAncestor(this.element.ownerDocument.activeElement, modal);
++		const hadFocus = isAncestor(getActiveElement(this.element.ownerDocument), modal);
+ 		this._view = view;
+ 
+ 		const icon = status?.helperApp?.icon;
+@@ -295,7 +295,7 @@ export class ComputerUseSetupPanel extends Disposable {
+ 			this._helperApp.remove();
+ 		}
+ 
+-		if (hadFocus && (current !== getCurrentPermission(previous) || !isAncestor(this.element.ownerDocument.activeElement, modal))) {
++		if (hadFocus && (current !== getCurrentPermission(previous) || !isAncestor(getActiveElement(this.element.ownerDocument), modal))) {
+ 			(this._getCurrentAllow() ?? modal).focus();
+ 		}
+ 
 diff --git a/src/vs/workbench/contrib/chat/browser/agentSessions/experiments/agentTitleBarStatusWidget.ts b/src/vs/workbench/contrib/chat/browser/agentSessions/experiments/agentTitleBarStatusWidget.ts
-index add387cf748..30fa2645a3c 100644
+index 87da3369106..2a9decc9789 100644
 --- a/src/vs/workbench/contrib/chat/browser/agentSessions/experiments/agentTitleBarStatusWidget.ts
 +++ b/src/vs/workbench/contrib/chat/browser/agentSessions/experiments/agentTitleBarStatusWidget.ts
 @@ -4,7 +4,7 @@
@@ -1333,10 +1402,10 @@ index add387cf748..30fa2645a3c 100644
  			activeElement.blur();
  		}
 diff --git a/src/vs/workbench/contrib/chat/browser/aiCustomization/customizationCardList.ts b/src/vs/workbench/contrib/chat/browser/aiCustomization/customizationCardList.ts
-index e40bf2bdada..d24e447445b 100644
+index d9f2861468d..ea32d5f9249 100644
 --- a/src/vs/workbench/contrib/chat/browser/aiCustomization/customizationCardList.ts
 +++ b/src/vs/workbench/contrib/chat/browser/aiCustomization/customizationCardList.ts
-@@ -256,7 +256,7 @@ export class CustomizationCardListController extends Disposable {
+@@ -277,7 +277,7 @@ export class CustomizationCardListController extends Disposable {
  			}));
  			this._register(DOM.addDisposableListener(action, DOM.EventType.FOCUS_OUT, () => {
  				DOM.getWindow(entry.row).queueMicrotask(() => {
@@ -1346,21 +1415,21 @@ index e40bf2bdada..d24e447445b 100644
  					}
  				});
 diff --git a/src/vs/workbench/contrib/chat/browser/chatInputPills.ts b/src/vs/workbench/contrib/chat/browser/chatInputPills.ts
-index 86a2318ba6e..fe43159d669 100644
+index 0dbea06845a..bb56e91ece1 100644
 --- a/src/vs/workbench/contrib/chat/browser/chatInputPills.ts
 +++ b/src/vs/workbench/contrib/chat/browser/chatInputPills.ts
-@@ -3,7 +3,7 @@
-  *  Licensed under the MIT License. See License.txt in the project root for license information.
+@@ -4,7 +4,7 @@
   *--------------------------------------------------------------------------------------------*/
  
+ import { status } from '../../../../base/browser/ui/aria/aria.js';
 -import { addDisposableListener, EventType, getWindow } from '../../../../base/browser/dom.js';
 +import { addDisposableListener, EventType, getActiveElement, getWindow } from '../../../../base/browser/dom.js';
  import { StandardMouseEvent } from '../../../../base/browser/mouseEvent.js';
  import type { IActionViewItemOptions } from '../../../../base/browser/ui/actionbar/actionViewItems.js';
  import { Action, Separator, SubmenuAction, toAction, type IAction, type IActionRunner } from '../../../../base/common/actions.js';
-@@ -253,7 +253,7 @@ export class ChatInputPills extends Disposable {
- 			const anyHidden = kindsWithData.read(reader).size > 0;
- 			return anyVisible ? 'visible' : anyHidden ? 'empty' : 'hidden';
+@@ -494,7 +494,7 @@ export class ChatInputPills extends Disposable {
+ 			const anyRestorable = [...kindsWithData.read(reader)].some(kind => this._visibility.isVisible(kind, reader) || !isSessionChatPillHiddenByDefault(kind));
+ 			return anyVisible ? 'visible' : anyRestorable ? 'empty' : 'hidden';
  		}).recomputeInitiallyAndOnChange(this._store, state => {
 -			const activeElement = getWindow(this._row.content).document.activeElement;
 +			const activeElement = getActiveElement(this._row.content.ownerDocument);
@@ -1368,7 +1437,7 @@ index 86a2318ba6e..fe43159d669 100644
  			const visible = state !== 'hidden';
  			this.element.classList.toggle('hidden', !visible);
 diff --git a/src/vs/workbench/contrib/chat/browser/promptTimeline/promptTimelineGutterRail.ts b/src/vs/workbench/contrib/chat/browser/promptTimeline/promptTimelineGutterRail.ts
-index 251f8db155e..a715c92b69e 100644
+index 8d821da0a84..bb5eeef55b5 100644
 --- a/src/vs/workbench/contrib/chat/browser/promptTimeline/promptTimelineGutterRail.ts
 +++ b/src/vs/workbench/contrib/chat/browser/promptTimeline/promptTimelineGutterRail.ts
 @@ -3,7 +3,7 @@
@@ -1390,8 +1459,8 @@ index 251f8db155e..a715c92b69e 100644
 +			const focusedCell = this._isLiveCell(activeElement) ? activeElement : undefined;
  			// Only the stats changed (streaming edits); update them in place so focus/hover are kept.
  			for (let i = 0; i < ticks.length; i++) {
- 				this._renderRow(this._rows[i], ticks[i]);
-@@ -559,7 +559,7 @@ export class PromptTimelineGutterRail extends Disposable implements IPromptTimel
+ 				if (!promptTickEquals(this._rows[i].tick, ticks[i])) {
+@@ -561,7 +561,7 @@ export class PromptTimelineGutterRail extends Disposable implements IPromptTimel
  			this._close();
  			return;
  		}
@@ -1401,7 +1470,7 @@ index 251f8db155e..a715c92b69e 100644
  		const currentColumn: RowColumn = this._rows[currentIndex]?.diff === activeElement ? 'diff' : 'jump';
  		let nextIndex = currentIndex;
 diff --git a/src/vs/workbench/contrib/chat/browser/promptTimeline/promptTimelineRulerRail.ts b/src/vs/workbench/contrib/chat/browser/promptTimeline/promptTimelineRulerRail.ts
-index a6fb792bb00..83ee0d39b65 100644
+index daa06865114..ae8d3769427 100644
 --- a/src/vs/workbench/contrib/chat/browser/promptTimeline/promptTimelineRulerRail.ts
 +++ b/src/vs/workbench/contrib/chat/browser/promptTimeline/promptTimelineRulerRail.ts
 @@ -3,7 +3,7 @@
@@ -1422,7 +1491,7 @@ index a6fb792bb00..83ee0d39b65 100644
  				this._focused = false;
  				this._card.scheduleHide();
  			}
-@@ -227,7 +227,7 @@ export class PromptTimelineRulerRail extends Disposable implements IPromptTimeli
+@@ -229,7 +229,7 @@ export class PromptTimelineRulerRail extends Disposable implements IPromptTimeli
  			return;
  		}
  		const event = new StandardKeyboardEvent(e);
@@ -1467,10 +1536,10 @@ index abe776b7a9b..becf6e5aefe 100644
  		this._findWidgetVisibleKey.set(true);
  		// Opening reads the count before the seed text reaches the model, reporting "No results".
 diff --git a/src/vs/workbench/contrib/chat/browser/widget/input/chatInputPart.ts b/src/vs/workbench/contrib/chat/browser/widget/input/chatInputPart.ts
-index 2c5eacd41bf..67264b27f72 100644
+index b9ac0b83813..2570d73948b 100644
 --- a/src/vs/workbench/contrib/chat/browser/widget/input/chatInputPart.ts
 +++ b/src/vs/workbench/contrib/chat/browser/widget/input/chatInputPart.ts
-@@ -4537,7 +4537,7 @@ export class ChatInputPart extends Disposable implements IHistoryNavigationWidge
+@@ -4958,7 +4958,7 @@ export class ChatInputPart extends Disposable implements IHistoryNavigationWidge
  			return;
  		}
  
@@ -1479,37 +1548,51 @@ index 2c5eacd41bf..67264b27f72 100644
  		const currentIndex = attachments.findIndex(attachment => attachment === activeElement);
  		let newIndex = currentIndex;
  
-diff --git a/src/vs/workbench/contrib/files/browser/views/explorerViewer.ts b/src/vs/workbench/contrib/files/browser/views/explorerViewer.ts
-index 8178f4c4edc..c227df80860 100644
---- a/src/vs/workbench/contrib/files/browser/views/explorerViewer.ts
-+++ b/src/vs/workbench/contrib/files/browser/views/explorerViewer.ts
-@@ -74,6 +74,7 @@ import { IContextKey, IContextKeyService } from '../../../../../platform/context
- import { CountBadge } from '../../../../../base/browser/ui/countBadge/countBadge.js';
- import { listFilterMatchHighlight, listFilterMatchHighlightBorder } from '../../../../../platform/theme/common/colorRegistry.js';
- import { asCssVariable } from '../../../../../platform/theme/common/colorUtils.js';
-+import { getActiveElement } from '../../../../../base/browser/dom.js';
- 
- export class ExplorerDelegate implements IListVirtualDelegate<ExplorerItem> {
- 
-@@ -1146,11 +1147,12 @@ export class FilesRenderer implements ICompressibleTreeRenderer<ExplorerItem, Fu
- 					await timeout(0);
- 
- 					const ownerDocument = inputBox.inputElement.ownerDocument;
-+					const activeElement = getActiveElement(ownerDocument);
- 					if (!ownerDocument.hasFocus()) {
- 						break;
- 					} if (DOM.isActiveElement(inputBox.inputElement)) {
- 						return;
--					} else if (DOM.isHTMLElement(ownerDocument.activeElement) && DOM.hasParentWithClass(ownerDocument.activeElement, 'context-view')) {
-+					} else if (DOM.isHTMLElement(activeElement) && DOM.hasParentWithClass(activeElement, 'context-view')) {
- 						await Event.toPromise(this.contextMenuService.onDidHideContextMenu);
- 					} else {
- 						break;
+diff --git a/src/vs/workbench/contrib/issue/browser/issueReporterOverlay.ts b/src/vs/workbench/contrib/issue/browser/issueReporterOverlay.ts
+index 44356a9a224..13573a312d4 100644
+--- a/src/vs/workbench/contrib/issue/browser/issueReporterOverlay.ts
++++ b/src/vs/workbench/contrib/issue/browser/issueReporterOverlay.ts
+@@ -7,7 +7,7 @@ import { KeybindingLabel } from '../../../../base/browser/ui/keybindingLabel/key
+ import { ResolvedKeybinding } from '../../../../base/common/keybindings.js';
+ import { OS } from '../../../../base/common/platform.js';
+ import './media/issueReporterOverlay.css';
+-import { $, addDisposableListener, append, disposableWindowInterval, EventType, getWindow, isHTMLElement } from '../../../../base/browser/dom.js';
++import { $, addDisposableListener, append, disposableWindowInterval, EventType, getActiveElement, getDocument, getWindow, isHTMLElement } from '../../../../base/browser/dom.js';
+ import { StandardKeyboardEvent } from '../../../../base/browser/keyboardEvent.js';
+ import { status } from '../../../../base/browser/ui/aria/aria.js';
+ import { Button } from '../../../../base/browser/ui/button/button.js';
+@@ -838,7 +838,7 @@ export class IssueReporterOverlay {
+ 	private insertDescriptionText(text: string, atEnd = false): void {
+ 		const input = this.descriptionInput;
+ 		const targetWindow = getWindow(input);
+-		const activeElement = targetWindow.document.activeElement;
++		const activeElement = getActiveElement(targetWindow.document);
+ 		const { selectionStart, selectionEnd, selectionDirection } = input;
+ 		this.descriptionContainer.hidden = false;
+ 		if (atEnd) {
+@@ -848,7 +848,7 @@ export class IssueReporterOverlay {
+ 		if (!atEnd || targetWindow.document.hasFocus()) {
+ 			input.focus({ preventScroll: true });
+ 		}
+-		if (targetWindow.document.activeElement !== input || !targetWindow.document.execCommand('insertText', false, text)) {
++		if (getActiveElement(targetWindow.document) !== input || !targetWindow.document.execCommand('insertText', false, text)) {
+ 			input.setRangeText(text, input.selectionStart, input.selectionEnd, 'end');
+ 			input.dispatchEvent(new InputEvent('input', { bubbles: true }));
+ 		}
+@@ -1304,7 +1304,7 @@ export class IssueReporterOverlay {
+ 		if (!diagContainer || this.disposed) {
+ 			return;
+ 		}
+-		const activeElement = getWindow(diagContainer).document.activeElement;
++		const activeElement = getActiveElement(getDocument(diagContainer));
+ 		let focusedControl: { option: DiagnosticOption; control: 'include' | 'details' } | undefined;
+ 		for (const [option, controls] of this.diagnosticControls) {
+ 			if (activeElement === controls.include || activeElement === controls.details) {
 diff --git a/src/vs/workbench/contrib/notebook/browser/notebookEditorWidget.ts b/src/vs/workbench/contrib/notebook/browser/notebookEditorWidget.ts
-index 6b8d6b22968..8005b67e5fd 100644
+index 400bc1ed5cf..14679a0e6b0 100644
 --- a/src/vs/workbench/contrib/notebook/browser/notebookEditorWidget.ts
 +++ b/src/vs/workbench/contrib/notebook/browser/notebookEditorWidget.ts
-@@ -1840,7 +1840,7 @@ export class NotebookEditorWidget extends Disposable implements INotebookEditorD
+@@ -1850,7 +1850,7 @@ export class NotebookEditorWidget extends Disposable implements INotebookEditorD
  				const element = this.viewModel.cellAt(focusRange.start);
  				if (element) {
  					const itemDOM = this._list.domElementOfElement(element);
@@ -1518,7 +1601,7 @@ index 6b8d6b22968..8005b67e5fd 100644
  
  					state.editorFocused = editorFocused;
  					state.focus = focusRange.start;
-@@ -2434,8 +2434,8 @@ export class NotebookEditorWidget extends Disposable implements INotebookEditorD
+@@ -2450,8 +2450,8 @@ export class NotebookEditorWidget extends Disposable implements INotebookEditorD
  		} else {
  			// focus container
  			const itemDOM = this._list.domElementOfElement(cell);
@@ -1555,7 +1638,7 @@ index a23d2f8b28e..3f9739cf607 100644
  				}
  			}));
 diff --git a/src/vs/workbench/contrib/notebook/browser/view/cellParts/codeCell.ts b/src/vs/workbench/contrib/notebook/browser/view/cellParts/codeCell.ts
-index e828b4061fb..5f853cee926 100644
+index 5f68866684f..c9998a93ceb 100644
 --- a/src/vs/workbench/contrib/notebook/browser/view/cellParts/codeCell.ts
 +++ b/src/vs/workbench/contrib/notebook/browser/view/cellParts/codeCell.ts
 @@ -34,7 +34,7 @@ import { CellEditorOptions } from './cellEditorOptions.js';
@@ -1567,7 +1650,7 @@ index e828b4061fb..5f853cee926 100644
  
  export class CodeCell extends Disposable {
  	private _outputContainerRenderer: CellOutputContainer;
-@@ -234,7 +234,7 @@ export class CodeCell extends Disposable {
+@@ -235,7 +235,7 @@ export class CodeCell extends Disposable {
  					if (
  						this.notebookEditor.getActiveCell() === this.viewCell &&
  						this.viewCell.focusMode === CellFocusMode.Editor &&
@@ -1576,7 +1659,7 @@ index e828b4061fb..5f853cee926 100644
  					{
  						this.templateData.editor.focus();
  					}
-@@ -500,7 +500,7 @@ export class CodeCell extends Disposable {
+@@ -501,7 +501,7 @@ export class CodeCell extends Disposable {
  		// the document active element is inside the notebook editor or the document body (cell editor being disposed previously)
  		return this.notebookEditor.getActiveCell() === this.viewCell
  			&& this.viewCell.focusMode === CellFocusMode.Editor
@@ -1586,11 +1669,11 @@ index e828b4061fb..5f853cee926 100644
  
  	private updateEditorForFocusModeChange(sync: boolean) {
 diff --git a/src/vs/workbench/contrib/notebook/browser/view/cellParts/markupCell.ts b/src/vs/workbench/contrib/notebook/browser/view/cellParts/markupCell.ts
-index c1b90d72e8a..c3f41ccb0c0 100644
+index 467eeb83f4a..ef1815cc4f5 100644
 --- a/src/vs/workbench/contrib/notebook/browser/view/cellParts/markupCell.ts
 +++ b/src/vs/workbench/contrib/notebook/browser/view/cellParts/markupCell.ts
-@@ -226,7 +226,7 @@ export class MarkupCell extends Disposable {
- 		this._isDisposed = true;
+@@ -229,7 +229,7 @@ export class MarkupCell extends Disposable {
+ 		this.editorOverflowWidgets?.setVisible(false);
  
  		// move focus back to the cell list otherwise the focus goes to body
 -		if (this.notebookEditor.getActiveCell() === this.viewCell && this.viewCell.focusMode === CellFocusMode.Editor && (this.notebookEditor.hasEditorFocus() || this.notebookEditor.getDomNode().ownerDocument.activeElement === this.notebookEditor.getDomNode().ownerDocument.body)) {
@@ -1598,7 +1681,7 @@ index c1b90d72e8a..c3f41ccb0c0 100644
  			this.notebookEditor.focusContainer();
  		}
  
-@@ -417,7 +417,7 @@ export class MarkupCell extends Disposable {
+@@ -423,7 +423,7 @@ export class MarkupCell extends Disposable {
  
  	private focusEditorIfNeeded() {
  		if (this.viewCell.focusMode === CellFocusMode.Editor &&
@@ -1607,7 +1690,7 @@ index c1b90d72e8a..c3f41ccb0c0 100644
  		) { // Don't steal focus from other workbench parts, but if body has focus, we can take it
  			if (!this.editor) {
  				return;
-@@ -522,7 +522,7 @@ export class MarkupCell extends Disposable {
+@@ -528,7 +528,7 @@ export class MarkupCell extends Disposable {
  			// this is for a special case:
  			// users click the status bar empty space, which we will then focus the editor
  			// so we don't want to update the focus state too eagerly
@@ -1617,10 +1700,10 @@ index c1b90d72e8a..c3f41ccb0c0 100644
  			} else {
  				updateFocusMode();
 diff --git a/src/vs/workbench/contrib/notebook/browser/view/notebookCellList.ts b/src/vs/workbench/contrib/notebook/browser/view/notebookCellList.ts
-index c9d5a62989d..4ed8197a376 100644
+index 1641ec9b62b..855fa6e7a06 100644
 --- a/src/vs/workbench/contrib/notebook/browser/view/notebookCellList.ts
 +++ b/src/vs/workbench/contrib/notebook/browser/view/notebookCellList.ts
-@@ -1294,12 +1294,13 @@ export class NotebookCellList extends WorkbenchList<CellViewModel> implements ID
+@@ -1295,7 +1295,8 @@ export class NotebookCellList extends WorkbenchList<CellViewModel> implements ID
  		const focused = this.getFocusedElements()[0];
  		const focusedDomElement = focused && this.domElementOfElement(focused);
  
@@ -1630,12 +1713,6 @@ index c9d5a62989d..4ed8197a376 100644
  			// for example, when focus goes into monaco editor, if we refocus the list view, the editor will lose focus.
  			return;
  		}
- 
--		if (!isMacintosh && this.view.domNode.ownerDocument.activeElement && !!DOM.findParentWithClass(<HTMLElement>this.view.domNode.ownerDocument.activeElement, 'context-view')) {
-+		if (!isMacintosh && activeElement && !!DOM.findParentWithClass(<HTMLElement>activeElement, 'context-view')) {
- 			return;
- 		}
- 
 diff --git a/src/vs/workbench/contrib/notebook/browser/view/renderers/backLayerWebView.ts b/src/vs/workbench/contrib/notebook/browser/view/renderers/backLayerWebView.ts
 index fee8fdc6b46..5982aa1def5 100644
 --- a/src/vs/workbench/contrib/notebook/browser/view/renderers/backLayerWebView.ts
@@ -1679,10 +1756,10 @@ index ea5c3474c63..252475994c5 100644
  					preferencesEditor.focusSettings(true);
  				}
 diff --git a/src/vs/workbench/contrib/preferences/browser/settingsEditor2.ts b/src/vs/workbench/contrib/preferences/browser/settingsEditor2.ts
-index 9637a6922b6..5f38c5f7910 100644
+index d9c338df77c..d10e64c022a 100644
 --- a/src/vs/workbench/contrib/preferences/browser/settingsEditor2.ts
 +++ b/src/vs/workbench/contrib/preferences/browser/settingsEditor2.ts
-@@ -1260,7 +1260,7 @@ export class SettingsEditor2 extends EditorPane {
+@@ -1262,7 +1262,7 @@ export class SettingsEditor2 extends EditorPane {
  		}));
  
  		this._register(this.settingsTree.onDidFocus(() => {
@@ -1691,7 +1768,7 @@ index 9637a6922b6..5f38c5f7910 100644
  			if (classList && classList.contains('monaco-list') && classList.contains('settings-editor-tree')) {
  				this._currentFocusContext = SettingsFocusContext.SettingTree;
  				this.settingRowFocused.set(true);
-@@ -1734,7 +1734,7 @@ export class SettingsEditor2 extends EditorPane {
+@@ -1736,7 +1736,7 @@ export class SettingsEditor2 extends EditorPane {
  
  	private getActiveControlInSettingsTree(): HTMLElement | null {
  		const element = this.settingsTree.getHTMLElement();
@@ -1700,15 +1777,6 @@ index 9637a6922b6..5f38c5f7910 100644
  		return (activeElement && DOM.isAncestorOfActiveElement(element)) ?
  			<HTMLElement>activeElement :
  			null;
-@@ -1808,7 +1808,7 @@ export class SettingsEditor2 extends EditorPane {
- 	}
- 
- 	private contextViewFocused(): boolean {
--		return !!DOM.findParentWithClass(<HTMLElement>this.rootElement.ownerDocument.activeElement, 'context-view');
-+		return !!DOM.findParentWithClass(<HTMLElement>DOM.getActiveElement(this.rootElement.ownerDocument), 'context-view');
- 	}
- 
- 	private refreshSingleElement(element: SettingsTreeSettingElement): void {
 diff --git a/src/vs/workbench/contrib/terminal/browser/terminalService.ts b/src/vs/workbench/contrib/terminal/browser/terminalService.ts
 index 83b8946afd0..57379131036 100644
 --- a/src/vs/workbench/contrib/terminal/browser/terminalService.ts
@@ -1797,7 +1865,7 @@ index ef6f6ffe30b..d7df8859c58 100644
  	link.textContent = state.label;
  	link.setAttribute('aria-label', state.ariaLabel);
 diff --git a/src/vs/workbench/contrib/webview/browser/webviewElement.ts b/src/vs/workbench/contrib/webview/browser/webviewElement.ts
-index 373a6ec5986..52c90c3dbd4 100644
+index 4473f67da8a..1957f5d755f 100644
 --- a/src/vs/workbench/contrib/webview/browser/webviewElement.ts
 +++ b/src/vs/workbench/contrib/webview/browser/webviewElement.ts
 @@ -4,7 +4,7 @@
@@ -1819,7 +1887,7 @@ index 373a6ec5986..52c90c3dbd4 100644
  			// looks like https://github.com/microsoft/vscode/issues/132641
  			// where the focus is actually not in the `<iframe>`
  			return false;
-@@ -737,7 +738,7 @@ export class WebviewElement extends Disposable implements IWebviewElement, Webvi
+@@ -741,7 +742,7 @@ export class WebviewElement extends Disposable implements IWebviewElement, Webvi
  	}
  
  	private isActiveElement(): boolean {
@@ -1828,7 +1896,7 @@ index 373a6ec5986..52c90c3dbd4 100644
  	}
  
  	private handleKeyEvent(type: 'keydown' | 'keyup', event: KeyEvent) {
-@@ -1016,8 +1017,11 @@ export class WebviewElement extends Disposable implements IWebviewElement, Webvi
+@@ -1020,8 +1021,11 @@ export class WebviewElement extends Disposable implements IWebviewElement, Webvi
  				return;
  			}
  
@@ -1843,7 +1911,7 @@ index 373a6ec5986..52c90c3dbd4 100644
  
  			// It is possible for the webview to be contained in another window
 diff --git a/src/vs/workbench/contrib/welcomeGettingStarted/browser/gettingStarted.ts b/src/vs/workbench/contrib/welcomeGettingStarted/browser/gettingStarted.ts
-index 322ec1ab4f6..49a679d4ea8 100644
+index 105ad03c1d4..03277d391a3 100644
 --- a/src/vs/workbench/contrib/welcomeGettingStarted/browser/gettingStarted.ts
 +++ b/src/vs/workbench/contrib/welcomeGettingStarted/browser/gettingStarted.ts
 @@ -3,7 +3,7 @@
@@ -1855,7 +1923,7 @@ index 322ec1ab4f6..49a679d4ea8 100644
  import { renderFormattedText } from '../../../../base/browser/formattedTextRenderer.js';
  import { status } from '../../../../base/browser/ui/aria/aria.js';
  import { StandardKeyboardEvent } from '../../../../base/browser/keyboardEvent.js';
-@@ -1761,7 +1761,7 @@ export class GettingStartedPage extends EditorPane {
+@@ -1817,7 +1817,7 @@ export class GettingStartedPage extends EditorPane {
  	override focus() {
  		super.focus();
  
@@ -1865,7 +1933,7 @@ index 322ec1ab4f6..49a679d4ea8 100644
  		let parent = this.container.parentElement;
  		while (parent && parent !== active) {
 diff --git a/src/vs/workbench/contrib/welcomeOnboarding/browser/onboardingVariationA.ts b/src/vs/workbench/contrib/welcomeOnboarding/browser/onboardingVariationA.ts
-index ff993368801..13305a71840 100644
+index 8bf729db780..300be36096a 100644
 --- a/src/vs/workbench/contrib/welcomeOnboarding/browser/onboardingVariationA.ts
 +++ b/src/vs/workbench/contrib/welcomeOnboarding/browser/onboardingVariationA.ts
 @@ -5,7 +5,7 @@

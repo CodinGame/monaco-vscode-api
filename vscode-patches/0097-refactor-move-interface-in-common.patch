@@ -5,18 +5,18 @@ Subject: [PATCH] refactor: move interface in common
 
 instead of making platform import from sessions
 ---
- .../agentHost/common/agentHostMcpServer.ts    | 71 ++++++++++++++++++
- .../common/agentHostSessionsProvider.ts       | 72 ++-----------------
+ .../agentHost/common/agentHostMcpServer.ts    | 76 +++++++++++++++++++
+ .../common/agentHostSessionsProvider.ts       | 76 ++-----------------
  .../agentHostCustomizationService.ts          |  2 +-
- 3 files changed, 79 insertions(+), 66 deletions(-)
+ 3 files changed, 83 insertions(+), 71 deletions(-)
  create mode 100644 src/vs/platform/agentHost/common/agentHostMcpServer.ts
 
 diff --git a/src/vs/platform/agentHost/common/agentHostMcpServer.ts b/src/vs/platform/agentHost/common/agentHostMcpServer.ts
 new file mode 100644
-index 00000000000..cfd15586756
+index 00000000000..32cea6e4aee
 --- /dev/null
 +++ b/src/vs/platform/agentHost/common/agentHostMcpServer.ts
-@@ -0,0 +1,71 @@
+@@ -0,0 +1,76 @@
 +/*---------------------------------------------------------------------------------------------
 + *  Copyright (c) Microsoft Corporation. All rights reserved.
 + *  Licensed under the MIT License. See License.txt in the project root for license information.
@@ -39,6 +39,11 @@ index 00000000000..cfd15586756
 +	readonly name: string;
 +	/** Optional Connector catalog name for presentation only. */
 +	readonly displayName?: string;
++	/**
++	 * Canonical Copilot Connector that owns this server. Connector-owned servers authenticate with the
++	 * session's GitHub credential, so they are authorized through Copilot Connectors, not an MCP token.
++	 */
++	readonly connectorName?: string;
 +	readonly source?: McpServerSource;
 +	/**
 +	 * Plugin the host reports as the source of this server's configuration. Unlike
@@ -89,18 +94,13 @@ index 00000000000..cfd15586756
 +	setEnabled(enabled: boolean): void;
 +}
 diff --git a/src/vs/sessions/common/agentHostSessionsProvider.ts b/src/vs/sessions/common/agentHostSessionsProvider.ts
-index f6fbf714915..9db2a7e0fe9 100644
+index 38888808d0c..f5733daa7c6 100644
 --- a/src/vs/sessions/common/agentHostSessionsProvider.ts
 +++ b/src/vs/sessions/common/agentHostSessionsProvider.ts
-@@ -5,21 +5,22 @@
- 
- import { CancellationToken } from '../../base/common/cancellation.js';
- import { Event } from '../../base/common/event.js';
--import { IObservable } from '../../base/common/observable.js';
- import { equals } from '../../base/common/objects.js';
-+import { IObservable } from '../../base/common/observable.js';
+@@ -10,17 +10,18 @@ import { equals } from '../../base/common/objects.js';
  import { ThemeIcon } from '../../base/common/themables.js';
  import { URI } from '../../base/common/uri.js';
+ import { localize } from '../../nls.js';
 +import { IAgentHostMcpServer } from '../../platform/agentHost/common/agentHostMcpServer.js';
 +import type { AgentMergeSessionOverrides, AgentMergeSessionState } from '../../platform/agentHost/common/agentMerge.js';
  import { AuthenticateParams, AuthenticateResult, IAgentConnection } from '../../platform/agentHost/common/agentService.js';
@@ -121,7 +121,7 @@ index f6fbf714915..9db2a7e0fe9 100644
  
  /**
   * Progress emitted while an agent-host provider is establishing a connection.
-@@ -98,65 +99,6 @@ export type AgentHostMcpTool = {
+@@ -105,71 +106,6 @@ export type AgentHostMcpTool = {
  	readonly description?: string;
  };
  
@@ -135,6 +135,11 @@ index f6fbf714915..9db2a7e0fe9 100644
 -	readonly name: string;
 -	/** Optional Connector catalog name for presentation only. */
 -	readonly displayName?: string;
+-	/**
+-	 * Canonical Copilot Connector that owns this server. Connector-owned servers authenticate with the
+-	 * session's GitHub credential, so they are authorized through Copilot Connectors, not an MCP token.
+-	 */
+-	readonly connectorName?: string;
 -	readonly source?: McpServerSource;
 -	/**
 -	 * Plugin the host reports as the source of this server's configuration. Unlike
@@ -184,19 +189,20 @@ index f6fbf714915..9db2a7e0fe9 100644
 -	listTools?(): Promise<readonly AgentHostMcpTool[]>;
 -	setEnabled(enabled: boolean): void;
 -}
- 
+-
  /**
   * Extended sessions provider for agent host providers (local and remote).
+  * Adds remote connection properties and dynamic session configuration.
 diff --git a/src/vs/workbench/contrib/chat/browser/agentSessions/agentHost/agentHostCustomizationService.ts b/src/vs/workbench/contrib/chat/browser/agentSessions/agentHost/agentHostCustomizationService.ts
-index 578a965968f..40d6b8b54b5 100644
+index d5638f7a263..49845bd72bf 100644
 --- a/src/vs/workbench/contrib/chat/browser/agentSessions/agentHost/agentHostCustomizationService.ts
 +++ b/src/vs/workbench/contrib/chat/browser/agentSessions/agentHost/agentHostCustomizationService.ts
-@@ -31,7 +31,7 @@ import { IChatService } from '../../../common/chatService/chatService.js';
+@@ -41,7 +41,7 @@ import type { IAgentFileToolInventoryEntry } from '../../../common/customization
  import { isUntitledChatSession } from '../../../common/model/chatUri.js';
  import { IAgentHostUntitledProvisionalSessionService } from './agentHostUntitledProvisionalSessionService.js';
  import { IAgentHostActiveClientService } from './agentHostActiveClientService.js';
 -import { IAgentHostMcpServer } from '../../../../../../sessions/common/agentHostSessionsProvider.js';
 +import { IAgentHostMcpServer } from '../../../../../../platform/agentHost/common/agentHostMcpServer.js';
- import { resolveMcpServerAuthentication, agentHostMcpServerId, autoAuthenticateMcpServer } from './agentHostAuth.js';
+ import { resolveMcpServerAuthentication, agentHostMcpServerId, autoAuthenticateMcpServer, authenticateCopilotConnectorCredential, type IAgentHostAuthenticateRequest } from './agentHostAuth.js';
  import { IOutputService } from '../../../../../services/output/common/output.js';
  import { IMcpService } from '../../../../../contrib/mcp/common/mcpTypes.js';

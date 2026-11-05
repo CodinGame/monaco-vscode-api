@@ -11,10 +11,10 @@ Subject: [PATCH] feat: add terminal.integrated.preserveDrawingBuffer setting
  4 files changed, 9 insertions(+), 1 deletion(-)
 
 diff --git a/src/vs/platform/terminal/common/terminal.ts b/src/vs/platform/terminal/common/terminal.ts
-index bd50c3e74c4..3d613d52ca2 100644
+index b9f571ef515..8072fd8b1f5 100644
 --- a/src/vs/platform/terminal/common/terminal.ts
 +++ b/src/vs/platform/terminal/common/terminal.ts
-@@ -106,6 +106,7 @@ export const enum TerminalSettingId {
+@@ -108,6 +108,7 @@ export const enum TerminalSettingId {
  	PersistentSessionReviveProcess = 'terminal.integrated.persistentSessionReviveProcess',
  	HideOnStartup = 'terminal.integrated.hideOnStartup',
  	HideOnLastClosed = 'terminal.integrated.hideOnLastClosed',
@@ -37,10 +37,10 @@ index df53f3450a0..172fef513a2 100644
  		try {
  			this.raw.loadAddon(this._webglAddon);
 diff --git a/src/vs/workbench/contrib/terminal/common/terminal.ts b/src/vs/workbench/contrib/terminal/common/terminal.ts
-index 0532a06259c..50b0f71eb72 100644
+index 6a428ec6c19..df9a1164a07 100644
 --- a/src/vs/workbench/contrib/terminal/common/terminal.ts
 +++ b/src/vs/workbench/contrib/terminal/common/terminal.ts
-@@ -221,6 +221,7 @@ export interface ITerminalConfiguration {
+@@ -222,6 +222,7 @@ export interface ITerminalConfiguration {
  		fallbackLigatures: string[];
  	};
  	hideOnLastClosed: boolean;
@@ -49,10 +49,10 @@ index 0532a06259c..50b0f71eb72 100644
  
  export interface ITerminalFont {
 diff --git a/src/vs/workbench/contrib/terminal/common/terminalConfiguration.ts b/src/vs/workbench/contrib/terminal/common/terminalConfiguration.ts
-index 566efc7c680..d48dcf84bdc 100644
+index 30c31a740da..4bd9f7d7e83 100644
 --- a/src/vs/workbench/contrib/terminal/common/terminalConfiguration.ts
 +++ b/src/vs/workbench/contrib/terminal/common/terminalConfiguration.ts
-@@ -584,6 +584,11 @@ export const terminalConfiguration: IStringDictionary<IConfigurationPropertySche
+@@ -594,6 +594,11 @@ export const terminalConfiguration: IStringDictionary<IConfigurationPropertySche
  		type: 'boolean',
  		default: true
  	},

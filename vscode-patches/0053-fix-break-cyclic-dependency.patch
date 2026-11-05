@@ -4,33 +4,14 @@ Date: Mon, 10 Mar 2025 12:28:15 +0100
 Subject: [PATCH] fix: break cyclic dependency
 
 ---
- .../contrib/chat/browser/newChatContextAttachments.ts |  2 +-
  .../chatSandboxPrerequisiteConfirmationSubPart.ts     |  2 +-
  .../contrib/tasks/browser/task.contribution.ts        |  3 ++-
  .../contrib/tasks/browser/terminalTaskSystem.ts       |  3 ++-
  src/vs/workbench/contrib/tasks/common/constants.ts    | 11 +++++++++++
  src/vs/workbench/contrib/tasks/common/tasks.ts        |  9 +--------
- 6 files changed, 18 insertions(+), 12 deletions(-)
+ 5 files changed, 17 insertions(+), 11 deletions(-)
  create mode 100644 src/vs/workbench/contrib/tasks/common/constants.ts
 
-diff --git a/src/vs/sessions/contrib/chat/browser/newChatContextAttachments.ts b/src/vs/sessions/contrib/chat/browser/newChatContextAttachments.ts
-index 4174d6a0db4..3c943c2ce1d 100644
---- a/src/vs/sessions/contrib/chat/browser/newChatContextAttachments.ts
-+++ b/src/vs/sessions/contrib/chat/browser/newChatContextAttachments.ts
-@@ -40,12 +40,12 @@ import { IChatRequestVariableEntry, isAgentHostCompletionVariableEntry, isPasted
- import { isLocation } from '../../../../editor/common/languages.js';
- import { resizeImage } from '../../../../workbench/contrib/chat/browser/chatImageUtils.js';
- import { openPastedTextArtifact } from '../../../../workbench/contrib/chat/browser/attachments/chatAttachmentWidgets.js';
--import { createChatImageHoverContent } from '../../../../workbench/browser/chatImagePreview.js';
- import { imageToHash, isImage } from '../../../../workbench/contrib/chat/browser/widget/input/editor/chatPasteProviders.js';
- import { getExcludes, ISearchConfiguration, ISearchService, QueryType } from '../../../../workbench/services/search/common/search.js';
- import { createFileIconThemableTreeContainerScope } from '../../../../workbench/contrib/files/browser/views/explorerView.js';
- import { ADDITIONAL_REPOSITORY_CONTEXT_ID_PREFIX } from '../common/newChatContextIds.js';
- import type { IWorkspacePickerContextAction } from './sessionWorkspacePicker.js';
-+import { createChatImageHoverContent } from '../../../../workbench/browser/chatImagePreview.js';
- 
- /**
-  * The attachment surface of the composer, as seen by its input plumbing
 diff --git a/src/vs/workbench/contrib/chat/browser/widget/chatContentParts/toolInvocationParts/chatSandboxPrerequisiteConfirmationSubPart.ts b/src/vs/workbench/contrib/chat/browser/widget/chatContentParts/toolInvocationParts/chatSandboxPrerequisiteConfirmationSubPart.ts
 index 9a9c423df9d..d48fdf2b0a2 100644
 --- a/src/vs/workbench/contrib/chat/browser/widget/chatContentParts/toolInvocationParts/chatSandboxPrerequisiteConfirmationSubPart.ts
@@ -66,7 +47,7 @@ index 1ad6a06d008..d619311bc2b 100644
  const workbenchRegistry = Registry.as<IWorkbenchContributionsRegistry>(WorkbenchExtensions.Workbench);
  workbenchRegistry.registerWorkbenchContribution(RunAutomaticTasks, LifecyclePhase.Eventually);
 diff --git a/src/vs/workbench/contrib/tasks/browser/terminalTaskSystem.ts b/src/vs/workbench/contrib/tasks/browser/terminalTaskSystem.ts
-index 935bd5236ad..1df7ab69bed 100644
+index 0437a6aba9e..5d7a771a9e0 100644
 --- a/src/vs/workbench/contrib/tasks/browser/terminalTaskSystem.ts
 +++ b/src/vs/workbench/contrib/tasks/browser/terminalTaskSystem.ts
 @@ -40,7 +40,7 @@ import { TaskTerminalStatus } from './taskTerminalStatus.js';
@@ -104,7 +85,7 @@ index 00000000000..7c92cd1b017
 +export const RerunForActiveTerminalCommandId = 'workbench.action.tasks.rerunForActiveTerminal';
 +export const RerunAllRunningTasksCommandId = 'workbench.action.tasks.rerunAllRunningTasks';
 diff --git a/src/vs/workbench/contrib/tasks/common/tasks.ts b/src/vs/workbench/contrib/tasks/common/tasks.ts
-index 9b7f35b6347..175af37ebab 100644
+index 994f6017de4..626e9f39bec 100644
 --- a/src/vs/workbench/contrib/tasks/common/tasks.ts
 +++ b/src/vs/workbench/contrib/tasks/common/tasks.ts
 @@ -17,10 +17,7 @@ import { TaskDefinitionRegistry } from './taskDefinitionRegistry.js';
@@ -119,7 +100,7 @@ index 9b7f35b6347..175af37ebab 100644
  
  export const USER_TASKS_GROUP_KEY = 'settings';
  
-@@ -1436,7 +1433,3 @@ export namespace TaskDefinition {
+@@ -1442,7 +1439,3 @@ export namespace TaskDefinition {
  		return KeyedTaskIdentifier.create(literal);
  	}
  }

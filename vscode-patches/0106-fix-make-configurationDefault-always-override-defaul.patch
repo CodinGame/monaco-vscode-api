@@ -10,10 +10,10 @@ event in agents window
  1 file changed, 20 insertions(+), 5 deletions(-)
 
 diff --git a/src/vs/platform/configuration/common/configurationRegistry.ts b/src/vs/platform/configuration/common/configurationRegistry.ts
-index 159b47ac3ef..5c148380b7f 100644
+index ee4c9ffd7d0..4b41bdc3e2f 100644
 --- a/src/vs/platform/configuration/common/configurationRegistry.ts
 +++ b/src/vs/platform/configuration/common/configurationRegistry.ts
-@@ -406,6 +406,7 @@ export type IRegisteredConfigurationPropertySchema = IConfigurationPropertySchem
+@@ -409,6 +409,7 @@ export type IRegisteredConfigurationPropertySchema = IConfigurationPropertySchem
  		extensionInfo?: IExtensionInfo;
  	};
  	defaultDefaultValue?: unknown;
@@ -21,7 +21,7 @@ index 159b47ac3ef..5c148380b7f 100644
  	source?: ConfigurationDefaultSource; // Source of the Property
  	defaultValueSource?: ConfigurationDefaultValueSource; // Source of the Default Value
  };
-@@ -436,7 +437,7 @@ const contributionRegistry = Registry.as<IJSONContributionRegistry>(JSONExtensio
+@@ -439,7 +440,7 @@ const contributionRegistry = Registry.as<IJSONContributionRegistry>(JSONExtensio
  class ConfigurationRegistry extends Disposable implements IConfigurationRegistry {
  
  	private readonly registeredConfigurationDefaults: IConfigurationDefaults[] = [];
@@ -30,7 +30,7 @@ index 159b47ac3ef..5c148380b7f 100644
  	private readonly defaultLanguageConfigurationOverridesNode: IConfigurationNode;
  	private readonly configurationContributors: IConfigurationNode[];
  	private readonly configurationProperties: IStringDictionary<IRegisteredConfigurationPropertySchema>;
-@@ -561,6 +562,7 @@ class ConfigurationRegistry extends Disposable implements IConfigurationRegistry
+@@ -564,6 +565,7 @@ class ConfigurationRegistry extends Disposable implements IConfigurationRegistry
  					}
  
  					configurationDefaultOverridesForKey.configurationDefaultOverrideValue = newDefaultOverride;
@@ -38,7 +38,7 @@ index 159b47ac3ef..5c148380b7f 100644
  					const excludedProperty = this.excludedConfigurationProperties[key];
  					const property = this.configurationProperties[key] ?? (excludedProperty?.experiment ? excludedProperty : undefined);
  					if (property) {
-@@ -625,10 +627,13 @@ class ConfigurationRegistry extends Disposable implements IConfigurationRegistry
+@@ -628,10 +630,13 @@ class ConfigurationRegistry extends Disposable implements IConfigurationRegistry
  					}
  				} else {
  					let configurationDefaultOverrideValue: IConfigurationDefaultOverrideValue | undefined;
@@ -52,7 +52,7 @@ index 159b47ac3ef..5c148380b7f 100644
  					const excludedProperty = this.excludedConfigurationProperties[key];
  					const property = this.configurationProperties[key] ?? (excludedProperty?.experiment ? excludedProperty : undefined);
  					if (property) {
-@@ -705,10 +710,11 @@ class ConfigurationRegistry extends Disposable implements IConfigurationRegistry
+@@ -708,10 +713,11 @@ class ConfigurationRegistry extends Disposable implements IConfigurationRegistry
  		return { value: defaultValue, source };
  	}
  
@@ -66,7 +66,7 @@ index 159b47ac3ef..5c148380b7f 100644
  		let source: ConfigurationDefaultValueSource | undefined = valuesSource;
  
  		const isObjectSetting = types.isObject(value) &&
-@@ -860,7 +866,8 @@ class ConfigurationRegistry extends Disposable implements IConfigurationRegistry
+@@ -863,7 +869,8 @@ class ConfigurationRegistry extends Disposable implements IConfigurationRegistry
  				property.source = extensionInfo;
  
  				// update default value
@@ -76,7 +76,7 @@ index 159b47ac3ef..5c148380b7f 100644
  				this.updatePropertyDefaultValue(key, property);
  
  				// update scope
-@@ -1092,7 +1099,8 @@ class ConfigurationRegistry extends Disposable implements IConfigurationRegistry
+@@ -1095,7 +1102,8 @@ class ConfigurationRegistry extends Disposable implements IConfigurationRegistry
  	}
  
  	private updatePropertyDefaultValue(key: string, property: IRegisteredConfigurationPropertySchema): void {
@@ -86,7 +86,7 @@ index 159b47ac3ef..5c148380b7f 100644
  		let defaultValue = undefined;
  		let defaultSource = undefined;
  		if (configurationdefaultOverride
-@@ -1110,6 +1118,13 @@ class ConfigurationRegistry extends Disposable implements IConfigurationRegistry
+@@ -1113,6 +1121,13 @@ class ConfigurationRegistry extends Disposable implements IConfigurationRegistry
  		}
  		property.default = defaultValue;
  		property.defaultValueSource = defaultSource;

@@ -4,10 +4,34 @@ Date: Wed, 30 Oct 2024 15:01:33 +0100
 Subject: [PATCH] fix: just use regular dynamic import
 
 ---
+ .../agentHost/browser/agentHostCredentialSealing.ts      | 5 ++---
  .../remoteAgentHost/browser/devTunnelsWebLoader.ts       | 9 ++-------
  .../services/keybinding/browser/keyboardLayoutService.ts | 3 +--
- 2 files changed, 3 insertions(+), 9 deletions(-)
+ 3 files changed, 5 insertions(+), 12 deletions(-)
 
+diff --git a/src/vs/platform/agentHost/browser/agentHostCredentialSealing.ts b/src/vs/platform/agentHost/browser/agentHostCredentialSealing.ts
+index 8c55559ff95..e242b2b6a21 100644
+--- a/src/vs/platform/agentHost/browser/agentHostCredentialSealing.ts
++++ b/src/vs/platform/agentHost/browser/agentHostCredentialSealing.ts
+@@ -3,7 +3,6 @@
+  *  Licensed under the MIT License. See License.txt in the project root for license information.
+  *--------------------------------------------------------------------------------------------*/
+ 
+-import { FileAccess } from '../../../base/common/network.js';
+ import { sealAgentHostCredential as sealCredential } from '../common/agentHostCredentialSealing.js';
+ import type { IMissionControlCredentialSealingRequest } from '../common/agentService.js';
+ 
+@@ -13,8 +12,8 @@ type AgentHostCryptoModule = Pick<typeof import('@hpke/core'), 'CipherSuite' | '
+ 
+ /** Encrypts locally without depending on an ambient Agent Host or a native IPC bridge. */
+ export async function sealAgentHostCredential(request: IMissionControlCredentialSealingRequest): Promise<string> {
+-	const url = FileAccess.asBrowserUri('vs/platform/agentHost/browser/agentHostCryptoModule.js').toString(true);
+-	const implementation = await import(/* webpackIgnore: true */ /* @vite-ignore */ `${url}`) as AgentHostCryptoModule;
++	// @ts-ignore
++	const implementation = await import('./agentHostCryptoModule.js') as AgentHostCryptoModule;
+ 	await implementation.sodium.ready;
+ 	return sealCredential(request, implementation.sodium, async () => new implementation.CipherSuite({
+ 		kem: new implementation.DhkemX25519HkdfSha256(),
 diff --git a/src/vs/sessions/contrib/providers/remoteAgentHost/browser/devTunnelsWebLoader.ts b/src/vs/sessions/contrib/providers/remoteAgentHost/browser/devTunnelsWebLoader.ts
 index 663f2d3898a..37ba63dbb3a 100644
 --- a/src/vs/sessions/contrib/providers/remoteAgentHost/browser/devTunnelsWebLoader.ts

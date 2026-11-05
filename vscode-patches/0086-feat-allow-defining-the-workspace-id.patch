@@ -64,10 +64,10 @@ index e2ef5e37a5d..896f65347d3 100644
  		this.workspace.update(workspace);
  
 diff --git a/src/vs/workbench/browser/web.main.ts b/src/vs/workbench/browser/web.main.ts
-index df2d76aa685..855cf9f4a8d 100644
+index 3321ec37c39..850d10726e6 100644
 --- a/src/vs/workbench/browser/web.main.ts
 +++ b/src/vs/workbench/browser/web.main.ts
-@@ -668,12 +668,12 @@ export class BrowserMain extends Disposable {
+@@ -677,12 +677,12 @@ export class BrowserMain extends Disposable {
  
  		// Multi-root workspace
  		if (workspace && isWorkspaceToOpen(workspace)) {

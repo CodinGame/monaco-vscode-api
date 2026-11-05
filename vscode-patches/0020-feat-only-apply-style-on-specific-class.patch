@@ -4,13 +4,13 @@ Date: Mon, 11 Mar 2024 17:51:04 +0100
 Subject: [PATCH] feat: only apply style on specific class
 
 ---
- src/vs/workbench/browser/media/style.css      | 198 ++++++++----------
+ src/vs/workbench/browser/media/style.css      | 200 ++++++++----------
  src/vs/workbench/browser/style.ts             |  10 +-
  .../browser/auxiliaryWindowService.ts         |  16 ++
- 3 files changed, 114 insertions(+), 110 deletions(-)
+ 3 files changed, 115 insertions(+), 111 deletions(-)
 
 diff --git a/src/vs/workbench/browser/media/style.css b/src/vs/workbench/browser/media/style.css
-index c6bd172ac07..6a7686daac2 100644
+index f5c96cddc89..12f37c033d9 100644
 --- a/src/vs/workbench/browser/media/style.css
 +++ b/src/vs/workbench/browser/media/style.css
 @@ -9,50 +9,37 @@
@@ -85,7 +85,7 @@ index c6bd172ac07..6a7686daac2 100644
  
  	/* Elevation shadows */
  	--vscode-shadow-sm: 0 0 4px rgba(0, 0, 0, 0.08);
-@@ -67,18 +54,18 @@ body {
+@@ -73,18 +60,18 @@ body {
  }
  
  /* Disable panel/part shadows when the setting is off (preserves floating modals, notifications, etc.) */
@@ -112,7 +112,7 @@ index c6bd172ac07..6a7686daac2 100644
  	/* Use zero-offset transparent shadows instead of 'none' because these
  	 * variables are interpolated into multi-value box-shadow declarations. */
  	--vscode-shadow-active-tab: 0 0 0 0 transparent;
-@@ -87,7 +74,7 @@ body {
+@@ -93,7 +80,7 @@ body {
  	--vscode-shadow-sm: 0 0 0 0 transparent;
  }
  
@@ -121,7 +121,7 @@ index c6bd172ac07..6a7686daac2 100644
  	touch-action: none; /* Disable browser handling of all panning and zooming gestures. Removes 300ms touch delay. */
  	overscroll-behavior: none; /* Prevent bounce effect */
  }
-@@ -111,55 +98,56 @@ body {
+@@ -117,55 +104,56 @@ body {
  	border-radius: var(--window-corner-radius);
  }
  
@@ -192,7 +192,7 @@ index c6bd172ac07..6a7686daac2 100644
  	/*
  	 * Somehow this is required when tables show in floating windows
  	 * to override the user-agent style which sets a specific color
-@@ -169,48 +157,48 @@ body {
+@@ -175,48 +163,48 @@ body {
  	font-size: inherit;
  }
  
@@ -255,7 +255,7 @@ index c6bd172ac07..6a7686daac2 100644
  	width: 16px;
  	padding-left: 3px; /* width (16px) - font-size (13px) = padding-left (3px) */
  	padding-right: 3px;
-@@ -230,7 +218,7 @@ body {
+@@ -236,7 +224,7 @@ body {
  
  /* Custom Dropdown (select) Arrows */
  
@@ -264,7 +264,7 @@ index c6bd172ac07..6a7686daac2 100644
  	font-family: inherit;
  	appearance: none;
  	-webkit-appearance: none;
-@@ -239,11 +227,11 @@ body {
+@@ -245,11 +233,11 @@ body {
  	border: 1px solid;
  }
  
@@ -278,10 +278,11 @@ index c6bd172ac07..6a7686daac2 100644
  	content: var(--vscode-icon-chevron-down-content);
  	font-family: var(--vscode-icon-chevron-down-font-family);
  	font-size: 16px;
-@@ -260,16 +248,16 @@ body {
+@@ -266,17 +254,17 @@ body {
  
  /* Keyboard Focus Indication Styles */
  
+-.monaco-workbench a:focus-visible,
 -.monaco-workbench [tabindex="0"]:focus,
 -.monaco-workbench [tabindex="-1"]:focus,
 -.monaco-workbench .synthetic-focus,
@@ -292,6 +293,7 @@ index c6bd172ac07..6a7686daac2 100644
 -.monaco-workbench textarea:focus,
 -.monaco-workbench input[type="search"]:focus,
 -.monaco-workbench input[type="checkbox"]:focus {
++.monaco-workbench-part a:focus-visible,
 +.monaco-workbench-part [tabindex="0"]:focus,
 +.monaco-workbench-part [tabindex="-1"]:focus,
 +.monaco-workbench-part .synthetic-focus,
@@ -305,7 +307,7 @@ index c6bd172ac07..6a7686daac2 100644
  	outline-width: 1px;
  	outline-style: solid;
  	outline-offset: -1px;
-@@ -282,19 +270,19 @@ body {
+@@ -289,19 +277,19 @@ body {
  	background: transparent; /* Search input focus fix when in high contrast */
  }
  
@@ -332,7 +334,7 @@ index c6bd172ac07..6a7686daac2 100644
  	border-color: transparent; /* outline is a square, but border has a radius, so we avoid this glitch when focused (https://github.com/microsoft/vscode/issues/26045) */
  }
  
-@@ -324,38 +312,38 @@ body {
+@@ -331,38 +319,38 @@ body {
  	color: var(--vscode-list-focusHighlightForeground);
  }
  
