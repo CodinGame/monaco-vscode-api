@@ -34,9 +34,9 @@
   },
   "config": {
     "vscode": {
-      "version": "1.142.0",
-      "ref": "1.142.0",
-      "commit": "d956e8a6ac5d904486557eea07e1d6bd62a4d36f"
+      "version": "1.145.0",
+      "ref": "1.145.0",
+      "commit": "a717861c07586a53d83b80d742cd3f59b20a6273"
     },
     "monaco": {
       "ref": "v0.57.0",
@@ -65,7 +65,7 @@
     "@types/vscode-semver": "npm:@types/semver@=5.5.0",
     "@types/yargs": "^17.0.35",
     "@types/yauzl": "^3.4.0",
-    "@vscode/codicons": "^0.0.46-44",
+    "@vscode/codicons": "^0.0.46-49",
     "@vscode/tree-sitter-wasm": "^0.3.1",
     "acorn": "^8.19.0",
     "chalk": "^6.0.1",
@@ -127,7 +127,7 @@
     "marked": "~14.0.0",
     "memfs": "^4.80.0",
     "mime-types": "^3.0.2",
-    "node-pty": "^1.2.0-beta.15",
+    "node-pty": "^1.2.0-beta.18",
     "tas-client": "0.4.6",
     "thenby": "^1.4.1",
     "vscode-css-languageservice": "6.2.14",
