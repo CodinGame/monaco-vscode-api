@@ -142,6 +142,26 @@ export default (args: Record<string, string>): rollup.RollupOptions => {
         include: ['**/vscode-semver/**/*', '**/vscode-oniguruma/**/*', '**/vscode-textmate/**/*']
       }),
       resolveAssetUrlPlugin(),
+      {
+        // The prebuilt agent host crypto module only uses node `crypto` as a fallback when Web
+        // Crypto is unavailable, it's unreachable in browsers
+        name: 'stub-node-crypto',
+        resolveId(source, importer) {
+          if (
+            (source === 'crypto' || source === 'node:crypto') &&
+            importer?.endsWith('/agentHostCryptoModule.js')
+          ) {
+            return '\0node-crypto-stub'
+          }
+          return undefined
+        },
+        load(id) {
+          if (id === '\0node-crypto-stub') {
+            return 'export default {}'
+          }
+          return undefined
+        }
+      },
       nodeResolve({
         extensions: EXTENSIONS
       }),
