@@ -2,6 +2,7 @@ import type { IDisposable } from 'vs/base/common/lifecycle'
 import {
   MainContext,
   type MainThreadChatAgentsShape2,
+  type MainThreadChatArtifactIntegrationsShape,
   type MainThreadChatContextShape,
   type MainThreadChatDebugShape,
   type MainThreadChatInputNotificationShape,
@@ -81,6 +82,23 @@ class MissingMainThreadChatAgents2 implements MainThreadChatAgentsShape2 {
   $provideSlashCommands: MainThreadChatAgentsShape2['$provideSlashCommands'] = async () => []
   $provideHooks: MainThreadChatAgentsShape2['$provideHooks'] = async () => []
   $providePlugins: MainThreadChatAgentsShape2['$providePlugins'] = async () => []
+  dispose(): void {}
+}
+
+class MissingMainThreadChatArtifactIntegrations implements MainThreadChatArtifactIntegrationsShape {
+  $registerProvider: MainThreadChatArtifactIntegrationsShape['$registerProvider'] = noop
+  $unregisterProvider: MainThreadChatArtifactIntegrationsShape['$unregisterProvider'] = noop
+  $onDidChangeProvider: MainThreadChatArtifactIntegrationsShape['$onDidChangeProvider'] = noop
+  $onDidChangeIntegration: MainThreadChatArtifactIntegrationsShape['$onDidChangeIntegration'] = noop
+  $onDidChangeDetails: MainThreadChatArtifactIntegrationsShape['$onDidChangeDetails'] = noop
+  @Unsupported
+  $runAutomation: MainThreadChatArtifactIntegrationsShape['$runAutomation'] = unsupported
+  @Unsupported
+  $writeAutomationState: MainThreadChatArtifactIntegrationsShape['$writeAutomationState'] =
+    unsupported
+  $reconcileAutomationRun: MainThreadChatArtifactIntegrationsShape['$reconcileAutomationRun'] =
+    async () => {}
+  $disableAutomation: MainThreadChatArtifactIntegrationsShape['$disableAutomation'] = async () => {}
   dispose(): void {}
 }
 
@@ -259,6 +277,7 @@ class MissingMainThreadMcp implements MainThreadMcpShape {
 const missingMainThreadCustomers: [ProxyIdentifier<unknown>, new () => IDisposable][] = [
   [MainContext.MainThreadLanguageModels, MissingMainThreadLanguageModels],
   [MainContext.MainThreadChatAgents2, MissingMainThreadChatAgents2],
+  [MainContext.MainThreadChatArtifactIntegrations, MissingMainThreadChatArtifactIntegrations],
   [MainContext.MainThreadCodeMapper, MissingMainThreadCodeMapper],
   [MainContext.MainThreadLanguageModelTools, MissingMainThreadLanguageModelTools],
   [MainContext.MainThreadChatContext, MissingMainThreadChatContext],
