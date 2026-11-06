@@ -19,7 +19,7 @@ Subject: [PATCH] fix: replace amd imports by regular esm dynamic imports
  12 files changed, 28 insertions(+), 47 deletions(-)
 
 diff --git a/src/vs/editor/common/diff/externalLinesDiffComputer.ts b/src/vs/editor/common/diff/externalLinesDiffComputer.ts
-index f97be2154b9..5dbd6eb7572 100644
+index dca13af8f46..969b6b2704e 100644
 --- a/src/vs/editor/common/diff/externalLinesDiffComputer.ts
 +++ b/src/vs/editor/common/diff/externalLinesDiffComputer.ts
 @@ -4,7 +4,6 @@
@@ -30,7 +30,7 @@ index f97be2154b9..5dbd6eb7572 100644
  import { LineRange } from '../core/ranges/lineRange.js';
  import { OffsetRange } from '../core/ranges/offsetRange.js';
  import { StringText } from '../core/text/abstractText.js';
-@@ -20,9 +19,7 @@ let externalWasmDiffComputerPromise: Promise<IExternalDiffComputer> | undefined;
+@@ -18,9 +17,7 @@ let externalModulePromise: Promise<ExternalDiffModule> | undefined;
  
  function loadExternalModule(): Promise<ExternalDiffModule> {
  	if (!externalModulePromise) {
@@ -101,7 +101,7 @@ index 7a11288e7e3..46b728a700a 100644
  		}
  	}
 diff --git a/src/vs/workbench/contrib/terminal/browser/terminalInstance.ts b/src/vs/workbench/contrib/terminal/browser/terminalInstance.ts
-index 4c79ff0e300..09003d7a566 100644
+index ad94642c396..9df611919c5 100644
 --- a/src/vs/workbench/contrib/terminal/browser/terminalInstance.ts
 +++ b/src/vs/workbench/contrib/terminal/browser/terminalInstance.ts
 @@ -79,7 +79,6 @@ import { IHistoryService } from '../../../services/history/common/history.js';
@@ -112,7 +112,7 @@ index 4c79ff0e300..09003d7a566 100644
  import type { IMarker, Terminal as XTermTerminal, IBufferLine } from '@xterm/xterm';
  import { AccessibilityCommandId } from '../../accessibility/common/accessibilityCommands.js';
  import { terminalStrings } from '../common/terminalStrings.js';
-@@ -799,7 +798,7 @@ export class TerminalInstance extends Disposable implements ITerminalInstance {
+@@ -809,7 +808,7 @@ export class TerminalInstance extends Disposable implements ITerminalInstance {
  			return xtermConstructor;
  		}
  		xtermConstructor = Promises.withAsyncBody<typeof XTermTerminal>(async (resolve) => {

@@ -16,7 +16,7 @@ Subject: [PATCH] refactor: split workbench contribution
  9 files changed, 115 insertions(+), 30 deletions(-)
 
 diff --git a/src/vs/workbench/api/browser/extensionHost.contribution.ts b/src/vs/workbench/api/browser/extensionHost.contribution.ts
-index 72e7f300878..82aee03d809 100644
+index 45784d23b07..fd9989e9876 100644
 --- a/src/vs/workbench/api/browser/extensionHost.contribution.ts
 +++ b/src/vs/workbench/api/browser/extensionHost.contribution.ts
 @@ -3,17 +3,15 @@
@@ -44,7 +44,7 @@ index 72e7f300878..82aee03d809 100644
  
  // --- mainThread participants
  import './mainThreadAgentEditorComments.js';
-@@ -106,23 +104,3 @@ import './mainThreadDataChannels.js';
+@@ -108,23 +106,3 @@ import './mainThreadDataChannels.js';
  import './mainThreadMeteredConnection.js';
  import './mainThreadGitExtensionService.js';
  import './mainThreadBrowsers.js';
@@ -137,7 +137,7 @@ index cd7f26af674..4cee2e81535 100644
 +
 +registerWorkbenchContribution2(JSONValidationExtensionPointWorkbenchContribution.ID, JSONValidationExtensionPointWorkbenchContribution, WorkbenchPhase.BlockStartup);
 diff --git a/src/vs/workbench/contrib/codeEditor/common/languageConfigurationExtensionPoint.ts b/src/vs/workbench/contrib/codeEditor/common/languageConfigurationExtensionPoint.ts
-index a91f1a28aae..1c3f67223a9 100644
+index 6f520d764ef..83016fb0104 100644
 --- a/src/vs/workbench/contrib/codeEditor/common/languageConfigurationExtensionPoint.ts
 +++ b/src/vs/workbench/contrib/codeEditor/common/languageConfigurationExtensionPoint.ts
 @@ -18,6 +18,8 @@ import { getParseErrorMessage } from '../../../../base/common/jsonErrorMessages.
@@ -149,7 +149,7 @@ index a91f1a28aae..1c3f67223a9 100644
  
  interface IRegExp {
  	pattern: string;
-@@ -886,3 +888,16 @@ const schema: IJSONSchema = {
+@@ -916,3 +918,16 @@ const schema: IJSONSchema = {
  };
  const schemaRegistry = Registry.as<IJSONContributionRegistry>(Extensions.JSONContribution);
  schemaRegistry.registerSchema(schemaId, schema);
@@ -286,7 +286,7 @@ index d78e65afc3f..56bd057fb3e 100644
 +
 +registerWorkbenchContribution2(TokenClassificationExtensionPointWorkbenchContribution.ID, TokenClassificationExtensionPointWorkbenchContribution, WorkbenchPhase.BlockStartup);
 diff --git a/src/vs/workbench/workbench.common.main.ts b/src/vs/workbench/workbench.common.main.ts
-index 6bf90e92367..10e823c46c4 100644
+index 8de8a781d04..6784808cf24 100644
 --- a/src/vs/workbench/workbench.common.main.ts
 +++ b/src/vs/workbench/workbench.common.main.ts
 @@ -39,6 +39,12 @@ import './browser/actions/widgetNavigationCommands.js';

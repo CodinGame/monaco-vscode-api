@@ -8,10 +8,10 @@ Subject: [PATCH] fix: remove weird type reference to fix the build
  1 file changed, 2 deletions(-)
 
 diff --git a/src/vs/editor/common/services/editorWorker.ts b/src/vs/editor/common/services/editorWorker.ts
-index fd9efc5b2ce..57faaa801f5 100644
+index 6f0f5512915..4746c4ed071 100644
 --- a/src/vs/editor/common/services/editorWorker.ts
 +++ b/src/vs/editor/common/services/editorWorker.ts
-@@ -10,7 +10,6 @@ import { IChange } from '../diff/legacyLinesDiffComputer.js';
+@@ -11,7 +11,6 @@ import { IChange } from '../diff/legacyLinesDiffComputer.js';
  import { IColorInformation, IInplaceReplaceSupportResult, TextEdit } from '../languages.js';
  import { UnicodeHighlighterOptions } from './unicodeTextModelHighlighter.js';
  import { createDecorator } from '../../../platform/instantiation/common/instantiation.js';
@@ -19,11 +19,11 @@ index fd9efc5b2ce..57faaa801f5 100644
  import { SectionHeader, FindSectionHeaderOptions } from './findSectionHeaders.js';
  import { StringEdit } from '../core/edits/stringEdit.js';
  
-@@ -24,7 +23,6 @@ export interface IEditorWorkerService {
- 	canComputeUnicodeHighlights(uri: URI): boolean;
+@@ -32,7 +31,6 @@ export interface IEditorWorkerService {
  	computedUnicodeHighlights(uri: URI, options: UnicodeHighlighterOptions, range?: IRange): Promise<IUnicodeHighlightsResult>;
  
--	/** Implementation in {@link EditorWorker.computeDiff} */
- 	computeDiff(original: URI, modified: URI, options: IDocumentDiffProviderOptions, algorithm: DiffAlgorithmName): Promise<IDocumentDiff | null>;
- 
- 	canComputeDirtyDiff(original: URI, modified: URI): boolean;
+ 	/**
+-	 * Implementation in {@link EditorWorker.computeDiff}.
+ 	 * If `verify` is set, the worker also checks that the diff reproduces the modified text, see {@link IDocumentDiff.validity}.
+ 	 * This is linear in the document size, so it should only be requested for a sample of diffs.
+ 	 */

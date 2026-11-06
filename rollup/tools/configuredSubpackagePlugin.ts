@@ -76,7 +76,10 @@ const workerGroups: Record<string, string> = {
 
 export function configuredSubpackagePlugin(): rollup.Plugin {
   return subpackagePlugin({
-    ignoreDependencies: ['trusted-types' /** only the types are used */],
+    ignoreDependencies: [
+      'trusted-types' /** only the types are used */,
+      'libsodium-wrappers' /** only the types are used, it's bundled in agentHostCryptoModule */
+    ],
     getEntryGroups(entrypoints, options) {
       const serviceOverrideDir = nodePath.resolve(options.dir!, 'service-override')
       const workersDir = nodePath.resolve(options.dir!, 'workers')

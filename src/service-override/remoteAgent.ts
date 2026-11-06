@@ -12,6 +12,7 @@ import { RemoteFileSystemProviderClient } from 'vs/workbench/services/remote/com
 import { BrowserWorkbenchEnvironmentService } from 'vs/workbench/services/environment/browser/environmentService'
 import { IBrowserWorkbenchEnvironmentService } from 'vs/workbench/services/environment/browser/environmentService.service'
 import { IFileService } from 'vs/platform/files/common/files.service'
+import { IBrowserResourceService } from 'vs/platform/files/common/browserResourceService.service'
 import { ILogService } from 'vs/platform/log/common/log.service'
 import { RemoteExplorerService } from 'vs/workbench/services/remote/common/remoteExplorerService'
 import { IRemoteExplorerService } from 'vs/workbench/services/remote/common/remoteExplorerService.service'
@@ -57,13 +58,18 @@ class InjectedRemoteAuthorityResolverService extends RemoteAuthorityResolverServ
     @IEnvironmentService environmentService: BrowserWorkbenchEnvironmentService,
     @IProductService productService: IProductService,
     @ILogService logService: ILogService,
-    @IFileService fileService: IFileService
+    @IFileService fileService: IFileService,
+    @IBrowserResourceService browserResourceService: IBrowserResourceService
   ) {
     const configuration = getWorkbenchConstructionOptions()
     const connectionToken = environmentService.options.connectionToken
     const remoteResourceLoader =
       configuration.remoteResourceProvider != null
-        ? new BrowserRemoteResourceLoader(fileService, configuration.remoteResourceProvider)
+        ? new BrowserRemoteResourceLoader(
+            configuration.remoteResourceProvider,
+            fileService,
+            browserResourceService
+          )
         : undefined
     const resourceUriProvider =
       configuration.resourceUriProvider ?? remoteResourceLoader?.getResourceUriProvider()

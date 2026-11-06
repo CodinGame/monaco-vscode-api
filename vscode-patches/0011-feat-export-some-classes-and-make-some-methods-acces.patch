@@ -20,13 +20,11 @@ Subject: [PATCH] feat: export some classes and make some methods accessible
  .../browser/sessionChatInputToolbarDebug.ts     |  2 +-
  .../webTunnelAgentHostService.contribution.ts   |  2 +-
  .../services/sessions/browser/sessionContext.ts |  2 +-
- .../browser/sessionsProvidersService.ts         |  2 +-
  .../api/browser/statusBarExtensionPoint.ts      |  2 +-
  src/vs/workbench/browser/layout.ts              | 10 +++++-----
  src/vs/workbench/browser/workbench.ts           | 13 +++++++------
  .../agentHostSessionWorkingDirectoryResolver.ts |  2 +-
  .../aiCustomizationWorkspaceService.ts          |  2 +-
- .../customizationHarnessService.ts              |  2 +-
  .../browser/chatStatus/chatStatusItemService.ts |  2 +-
  .../chatContentParts/chatTextEditContentPart.ts |  6 +++---
  .../browser/widget/input/chatInputNoticeHub.ts  |  2 +-
@@ -56,7 +54,7 @@ Subject: [PATCH] feat: export some classes and make some methods accessible
  .../terminal/common/embedderTerminalService.ts  |  2 +-
  .../common/remoteUserDataProfiles.ts            |  2 +-
  .../userDataSync/common/userDataSyncUtil.ts     |  2 +-
- 52 files changed, 89 insertions(+), 83 deletions(-)
+ 50 files changed, 87 insertions(+), 81 deletions(-)
 
 diff --git a/src/vs/editor/contrib/editorState/browser/keybindingCancellation.ts b/src/vs/editor/contrib/editorState/browser/keybindingCancellation.ts
 index 94020ce96b9..de1e9af237e 100644
@@ -159,7 +157,7 @@ index bc598e830b7..3e598ddbbbf 100644
  	declare _serviceBrand: undefined;
  
 diff --git a/src/vs/platform/extensionResourceLoader/browser/extensionResourceLoaderService.ts b/src/vs/platform/extensionResourceLoader/browser/extensionResourceLoaderService.ts
-index 921674ef18e..00b83a75fcb 100644
+index 05358567d8a..f4239f0e021 100644
 --- a/src/vs/platform/extensionResourceLoader/browser/extensionResourceLoaderService.ts
 +++ b/src/vs/platform/extensionResourceLoader/browser/extensionResourceLoaderService.ts
 @@ -15,7 +15,7 @@ import { IConfigurationService } from '../../configuration/common/configuration.
@@ -202,7 +200,7 @@ index 791c3a5a979..0fecb2ad8a6 100644
  
  	async checkSandboxDependencies(): Promise<ISandboxDependencyStatus> {
 diff --git a/src/vs/sessions/browser/workbench.ts b/src/vs/sessions/browser/workbench.ts
-index 538acd34e5a..7c3540770a8 100644
+index 9c7dceffcfb..37176808f1e 100644
 --- a/src/vs/sessions/browser/workbench.ts
 +++ b/src/vs/sessions/browser/workbench.ts
 @@ -486,7 +486,7 @@ export abstract class Workbench extends Disposable implements IAgentWorkbenchLay
@@ -286,10 +284,10 @@ index 538acd34e5a..7c3540770a8 100644
  		const partsToRestore: { location: ViewContainerLocation; visible: boolean }[] = [
  			{ location: ViewContainerLocation.Sidebar, visible: this.partVisibility.sidebar },
 diff --git a/src/vs/sessions/contrib/accountMenu/browser/account.contribution.ts b/src/vs/sessions/contrib/accountMenu/browser/account.contribution.ts
-index cc22ba085c7..59a47041ff6 100644
+index 58ecbbcb6f0..d180d7bddf8 100644
 --- a/src/vs/sessions/contrib/accountMenu/browser/account.contribution.ts
 +++ b/src/vs/sessions/contrib/accountMenu/browser/account.contribution.ts
-@@ -1041,7 +1041,7 @@ registerWorkbenchContribution2(AccountWidgetContribution.ID, AccountWidgetContri
+@@ -1030,7 +1030,7 @@ registerWorkbenchContribution2(AccountWidgetContribution.ID, AccountWidgetContri
  
  // --- Chat Dashboard Service (real implementation for mobile account sheet) --- //
  
@@ -351,7 +349,7 @@ index 346567f940d..a2fe7acbcc2 100644
  
  	private readonly _delegate: ITunnelAgentHostService;
 diff --git a/src/vs/sessions/services/sessions/browser/sessionContext.ts b/src/vs/sessions/services/sessions/browser/sessionContext.ts
-index 762a1979eb3..0445c805938 100644
+index cbcfe6920e2..11a256973af 100644
 --- a/src/vs/sessions/services/sessions/browser/sessionContext.ts
 +++ b/src/vs/sessions/services/sessions/browser/sessionContext.ts
 @@ -52,7 +52,7 @@ export class SessionContext implements ISessionContext {
@@ -363,19 +361,6 @@ index 762a1979eb3..0445c805938 100644
  
  	declare readonly _serviceBrand: undefined;
  
-diff --git a/src/vs/sessions/services/sessions/browser/sessionsProvidersService.ts b/src/vs/sessions/services/sessions/browser/sessionsProvidersService.ts
-index bde3770661b..d1f01d8d1d2 100644
---- a/src/vs/sessions/services/sessions/browser/sessionsProvidersService.ts
-+++ b/src/vs/sessions/services/sessions/browser/sessionsProvidersService.ts
-@@ -30,7 +30,7 @@ export interface ISessionsProvidersService {
- 	getProvider<T extends ISessionsProvider>(providerId: string): T | undefined;
- }
- 
--class SessionsProvidersService extends Disposable implements ISessionsProvidersService {
-+export class SessionsProvidersService extends Disposable implements ISessionsProvidersService {
- 	declare readonly _serviceBrand: undefined;
- 
- 	private readonly _providers = new Map<string, ISessionsProvider>();
 diff --git a/src/vs/workbench/api/browser/statusBarExtensionPoint.ts b/src/vs/workbench/api/browser/statusBarExtensionPoint.ts
 index c8d1765a7ab..91d78dc1be0 100644
 --- a/src/vs/workbench/api/browser/statusBarExtensionPoint.ts
@@ -498,10 +483,10 @@ index 190ce6f55af..c344a32641c 100644
  		// Ask each part to restore
  		try {
 diff --git a/src/vs/workbench/contrib/chat/browser/agentSessions/agentHost/agentHostSessionWorkingDirectoryResolver.ts b/src/vs/workbench/contrib/chat/browser/agentSessions/agentHost/agentHostSessionWorkingDirectoryResolver.ts
-index ff0d50662cd..d509ce285ee 100644
+index f14ecd7660c..bcd74c316ab 100644
 --- a/src/vs/workbench/contrib/chat/browser/agentSessions/agentHost/agentHostSessionWorkingDirectoryResolver.ts
 +++ b/src/vs/workbench/contrib/chat/browser/agentSessions/agentHost/agentHostSessionWorkingDirectoryResolver.ts
-@@ -17,7 +17,7 @@ export interface IAgentHostSessionWorkingDirectoryResolver {
+@@ -27,7 +27,7 @@ export interface IAgentHostSessionWorkingDirectoryResolver {
  	isNewSession(sessionResource: URI): boolean;
  }
  
@@ -509,9 +494,9 @@ index ff0d50662cd..d509ce285ee 100644
 +export class AgentHostSessionWorkingDirectoryResolver implements IAgentHostSessionWorkingDirectoryResolver {
  	declare readonly _serviceBrand: undefined;
  
- 	private readonly _resolvers = new Map<string, { readonly resolve: (sessionResource: URI) => URI | undefined; readonly isNewSession?: (sessionResource: URI) => boolean }>();
+ 	private readonly _resolvers = new Map<string, { readonly resolve: (sessionResource: URI) => RequestedWorkingDirectory; readonly isNewSession?: (sessionResource: URI) => boolean }>();
 diff --git a/src/vs/workbench/contrib/chat/browser/aiCustomization/aiCustomizationWorkspaceService.ts b/src/vs/workbench/contrib/chat/browser/aiCustomization/aiCustomizationWorkspaceService.ts
-index f496567e687..9edecaad9bd 100644
+index 686deb21cc8..0c2046e6618 100644
 --- a/src/vs/workbench/contrib/chat/browser/aiCustomization/aiCustomizationWorkspaceService.ts
 +++ b/src/vs/workbench/contrib/chat/browser/aiCustomization/aiCustomizationWorkspaceService.ts
 @@ -20,7 +20,7 @@ import {
@@ -523,19 +508,6 @@ index f496567e687..9edecaad9bd 100644
  	declare readonly _serviceBrand: undefined;
  
  	readonly activeProjectRoot: IObservable<URI | undefined>;
-diff --git a/src/vs/workbench/contrib/chat/browser/aiCustomization/customizationHarnessService.ts b/src/vs/workbench/contrib/chat/browser/aiCustomization/customizationHarnessService.ts
-index acc5af9624e..c3f5af20976 100644
---- a/src/vs/workbench/contrib/chat/browser/aiCustomization/customizationHarnessService.ts
-+++ b/src/vs/workbench/contrib/chat/browser/aiCustomization/customizationHarnessService.ts
-@@ -20,7 +20,7 @@ import { URI } from '../../../../../base/common/uri.js';
-  * Only the Local harness is registered statically. All other harnesses
-  * (e.g. Copilot CLI) are contributed by extensions via the provider API.
-  */
--class CustomizationHarnessService extends CustomizationHarnessServiceBase {
-+export class CustomizationHarnessService extends CustomizationHarnessServiceBase {
- 	constructor(
- 		@IPromptsService promptsService: IPromptsService,
- 	) {
 diff --git a/src/vs/workbench/contrib/chat/browser/chatStatus/chatStatusItemService.ts b/src/vs/workbench/contrib/chat/browser/chatStatus/chatStatusItemService.ts
 index 54a136fe08a..24d14a1f6ff 100644
 --- a/src/vs/workbench/contrib/chat/browser/chatStatus/chatStatusItemService.ts
@@ -588,10 +560,10 @@ index fb41599cf75..baa66f6c971 100644
  	declare readonly _serviceBrand: undefined;
  
 diff --git a/src/vs/workbench/contrib/chat/browser/widget/input/chatInputNotificationService.ts b/src/vs/workbench/contrib/chat/browser/widget/input/chatInputNotificationService.ts
-index a9f857b754a..cb4c942e780 100644
+index 6af6dfaa534..22f5126977f 100644
 --- a/src/vs/workbench/contrib/chat/browser/widget/input/chatInputNotificationService.ts
 +++ b/src/vs/workbench/contrib/chat/browser/widget/input/chatInputNotificationService.ts
-@@ -257,7 +257,7 @@ export interface IChatInputNotificationService {
+@@ -294,7 +294,7 @@ export interface IChatInputNotificationService {
  	announceRendered(notification: IChatInputNotification | undefined, body?: IChatInputNotificationBody): void;
  }
  
@@ -678,10 +650,10 @@ index c7d29c20952..b2e4014c32f 100644
  
  	private readonly _onDidChangeSetups = this._register(new Emitter<readonly IAgentSdkSetupInfo[]>());
 diff --git a/src/vs/workbench/services/agentHost/common/agentHostFileSystemService.ts b/src/vs/workbench/services/agentHost/common/agentHostFileSystemService.ts
-index 6b4d5f726d2..d32b8f4d3e0 100644
+index d995fffc530..f0fa97f9ff7 100644
 --- a/src/vs/workbench/services/agentHost/common/agentHostFileSystemService.ts
 +++ b/src/vs/workbench/services/agentHost/common/agentHostFileSystemService.ts
-@@ -37,7 +37,7 @@ export interface IAgentHostFileSystemService {
+@@ -38,7 +38,7 @@ export interface IAgentHostFileSystemService {
  	ensureSyncedCustomizationProvider(): void;
  }
  
@@ -691,7 +663,7 @@ index 6b4d5f726d2..d32b8f4d3e0 100644
  
  	private readonly _fsProvider: AgentHostFileSystemProvider;
 diff --git a/src/vs/workbench/services/dialogs/browser/fileDialogService.ts b/src/vs/workbench/services/dialogs/browser/fileDialogService.ts
-index 4a519ac328d..1365bb7757f 100644
+index 1d7cc22ff13..aa9090a4906 100644
 --- a/src/vs/workbench/services/dialogs/browser/fileDialogService.ts
 +++ b/src/vs/workbench/services/dialogs/browser/fileDialogService.ts
 @@ -25,7 +25,7 @@ import { getErrorMessage } from '../../../../base/common/errors.js';
@@ -703,7 +675,7 @@ index 4a519ac328d..1365bb7757f 100644
  		return this.fileService.getProvider(Schemas.file) as HTMLFileSystemProvider;
  	}
  
-@@ -287,7 +287,7 @@ export class FileDialogService extends AbstractFileDialogService implements IFil
+@@ -293,7 +293,7 @@ export class FileDialogService extends AbstractFileDialogService implements IFil
  		return undefined;
  	}
  
@@ -752,7 +724,7 @@ index 172241857f4..50e16a749d1 100644
  
  	private readonly _onDidChangeEnablement = this._register(new Emitter<{ extension: ExtensionIdentifier; featureId: string; enabled: boolean }>());
 diff --git a/src/vs/workbench/services/extensions/browser/extensionService.ts b/src/vs/workbench/services/extensions/browser/extensionService.ts
-index b4f6cf16e7b..7222a9b6b89 100644
+index 531e1adffd6..e53a8bc3ccf 100644
 --- a/src/vs/workbench/services/extensions/browser/extensionService.ts
 +++ b/src/vs/workbench/services/extensions/browser/extensionService.ts
 @@ -124,7 +124,7 @@ export class ExtensionService extends AbstractExtensionService implements IExten
@@ -809,7 +781,7 @@ index 3d0f306ac45..61da9bc65b5 100644
  		if (this._environmentService.debugExtensionHost && this._environmentService.debugRenderer) {
  			suffixSearchParams.set('debugged', '1');
 diff --git a/src/vs/workbench/services/extensions/common/abstractExtensionService.ts b/src/vs/workbench/services/extensions/common/abstractExtensionService.ts
-index 13b6d66d012..be91a15bb0d 100644
+index 30f356d7967..97f8f81e395 100644
 --- a/src/vs/workbench/services/extensions/common/abstractExtensionService.ts
 +++ b/src/vs/workbench/services/extensions/common/abstractExtensionService.ts
 @@ -101,9 +101,9 @@ export abstract class AbstractExtensionService extends Disposable implements IEx

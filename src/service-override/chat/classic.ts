@@ -19,6 +19,8 @@ import {
   ChatEntitlement,
   type IChatEntitlementContextState
 } from 'vs/workbench/services/chat/common/chatEntitlementService'
+import { EditorAgentHostPolicyContinuationPresenter } from 'vs/workbench/contrib/chat/browser/agentSessions/agentHost/agentHostPolicyContinuationEditor'
+import { IAgentHostPolicyContinuationPresenter } from 'vs/workbench/contrib/chat/browser/agentSessions/agentHost/agentHostPolicyContinuation.service'
 import getCommonServiceOverride, { type ChatServiceOverrideOptions } from './common.js'
 export * from './common.js'
 import 'vs/workbench/contrib/chat/browser/agentSessions/agentHost/agentHost.contribution'
@@ -27,6 +29,7 @@ import 'vs/workbench/contrib/chat/browser/agentSessions/agentHost/agentSessionSe
 import 'vs/workbench/contrib/chat/browser/agentSessions/agentHost/openSessionLinkOpener.contribution'
 import 'vs/workbench/contrib/chat/browser/chat.contribution'
 import 'vs/workbench/contrib/chat/browser/chat.view.contribution'
+import 'vs/workbench/contrib/chat/browser/onboarding/chatInputSpotlightTour'
 import 'vs/workbench/contrib/inlineChat/browser/inlineChat.contribution'
 
 export default function getServiceOverride({
@@ -61,7 +64,16 @@ export default function getServiceOverride({
       [],
       true
     ),
-    [IInlineChatSessionResolver.toString()]: new SyncDescriptor(InlineChatSessionResolver, [], true)
+    [IInlineChatSessionResolver.toString()]: new SyncDescriptor(
+      InlineChatSessionResolver,
+      [],
+      true
+    ),
+    [IAgentHostPolicyContinuationPresenter.toString()]: new SyncDescriptor(
+      EditorAgentHostPolicyContinuationPresenter,
+      [],
+      true
+    )
   }
 }
 

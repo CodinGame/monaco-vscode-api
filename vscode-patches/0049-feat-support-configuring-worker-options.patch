@@ -73,7 +73,7 @@ index 1ff3fb838d9..6400775c42d 100644
 +	}
  }
 diff --git a/src/vs/monaco.d.ts b/src/vs/monaco.d.ts
-index 21f267b1596..3176518f7e8 100644
+index 525e69ca2c1..b8d4463e1b4 100644
 --- a/src/vs/monaco.d.ts
 +++ b/src/vs/monaco.d.ts
 @@ -24,12 +24,16 @@ declare namespace monaco {
@@ -158,7 +158,7 @@ index b60b03f8606..1eb4f9f3492 100644
  
  		`globalThis.postMessage({ type: 'vscode-worker-ready' });`,
 diff --git a/src/vs/workbench/services/extensions/browser/extensionService.ts b/src/vs/workbench/services/extensions/browser/extensionService.ts
-index 58429f40954..742bedab023 100644
+index e420a6c114f..4aacc58b91f 100644
 --- a/src/vs/workbench/services/extensions/browser/extensionService.ts
 +++ b/src/vs/workbench/services/extensions/browser/extensionService.ts
 @@ -240,7 +240,12 @@ export class BrowserExtensionHostFactory implements IExtensionHostFactory {
@@ -188,7 +188,7 @@ index b7f9f12ec30..987ef8a666c 100644
  						nls: {
  							messages: getNLSMessages(),
 diff --git a/src/vs/workbench/services/extensions/electron-browser/nativeExtensionService.ts b/src/vs/workbench/services/extensions/electron-browser/nativeExtensionService.ts
-index 615f2e59bb2..2d3d4754fbe 100644
+index dcd36612cc6..8b7f6e4d348 100644
 --- a/src/vs/workbench/services/extensions/electron-browser/nativeExtensionService.ts
 +++ b/src/vs/workbench/services/extensions/electron-browser/nativeExtensionService.ts
 @@ -578,7 +578,12 @@ class NativeExtensionHostFactory implements IExtensionHostFactory {

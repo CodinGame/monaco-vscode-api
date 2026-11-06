@@ -10,19 +10,19 @@ Subject: [PATCH] fix: mark process supported as soon as there is a registered
  2 files changed, 33 insertions(+), 11 deletions(-)
 
 diff --git a/src/vs/platform/terminal/common/terminal.ts b/src/vs/platform/terminal/common/terminal.ts
-index 7503771ae8a..bd50c3e74c4 100644
+index 68840d0b7fa..b9f571ef515 100644
 --- a/src/vs/platform/terminal/common/terminal.ts
 +++ b/src/vs/platform/terminal/common/terminal.ts
-@@ -3,7 +3,7 @@
-  *  Licensed under the MIT License. See License.txt in the project root for license information.
+@@ -4,7 +4,7 @@
   *--------------------------------------------------------------------------------------------*/
  
+ import { VSBuffer } from '../../../base/common/buffer.js';
 -import { Event } from '../../../base/common/event.js';
 +import { Emitter, Event } from '../../../base/common/event.js';
  import { IProcessEnvironment, OperatingSystem } from '../../../base/common/platform.js';
  import { URI, UriComponents } from '../../../base/common/uri.js';
  import { createDecorator } from '../../instantiation/common/instantiation.js';
-@@ -1208,12 +1208,27 @@ export const TerminalExtensions = {
+@@ -1227,12 +1227,27 @@ export const TerminalExtensions = {
  	Backend: 'workbench.contributions.terminal.processBackend'
  };
  
@@ -50,7 +50,7 @@ index 7503771ae8a..bd50c3e74c4 100644
  	/**
  	 * Registers a terminal backend for a remote authority.
  	 */
-@@ -1230,21 +1245,20 @@ class TerminalBackendRegistry implements ITerminalBackendRegistry {
+@@ -1249,21 +1264,20 @@ class TerminalBackendRegistry implements ITerminalBackendRegistry {
  
  	get backends(): ReadonlyMap<string, ITerminalBackend> { return this._backends; }
  

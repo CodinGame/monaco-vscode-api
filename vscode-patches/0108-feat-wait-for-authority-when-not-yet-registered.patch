@@ -8,7 +8,7 @@ Subject: [PATCH] feat: wait for authority when not yet registered
  1 file changed, 29 insertions(+), 1 deletion(-)
 
 diff --git a/src/vs/platform/agentHost/common/agentHostFileSystemProvider.ts b/src/vs/platform/agentHost/common/agentHostFileSystemProvider.ts
-index 1e98321af23..a0fafe2668e 100644
+index b2f71125168..034c5dcf8b0 100644
 --- a/src/vs/platform/agentHost/common/agentHostFileSystemProvider.ts
 +++ b/src/vs/platform/agentHost/common/agentHostFileSystemProvider.ts
 @@ -214,6 +214,7 @@ export abstract class AHPFileSystemProvider extends Disposable implements IFileS

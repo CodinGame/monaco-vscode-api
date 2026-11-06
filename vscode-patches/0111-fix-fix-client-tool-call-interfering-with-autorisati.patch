@@ -9,10 +9,10 @@ Subject: [PATCH] fix: fix client tool call interfering with autorisation
  1 file changed, 28 insertions(+), 17 deletions(-)
 
 diff --git a/src/vs/workbench/contrib/chat/browser/agentSessions/agentHost/agentHostSessionHandler.ts b/src/vs/workbench/contrib/chat/browser/agentSessions/agentHost/agentHostSessionHandler.ts
-index ba430a644bb..7e9c535aad5 100644
+index c57918172c2..10b2e7e103b 100644
 --- a/src/vs/workbench/contrib/chat/browser/agentSessions/agentHost/agentHostSessionHandler.ts
 +++ b/src/vs/workbench/contrib/chat/browser/agentSessions/agentHost/agentHostSessionHandler.ts
-@@ -2776,9 +2776,10 @@ export class AgentHostSessionHandler extends Disposable implements IChatSessionC
+@@ -3097,9 +3097,10 @@ export class AgentHostSessionHandler extends Disposable implements IChatSessionC
  		);
  
  		const startedClientToolCalls = new Set<string>();
@@ -26,7 +26,7 @@ index ba430a644bb..7e9c535aad5 100644
  				return;
  			}
  			clientToolExecutions.delete(key);
-@@ -2814,25 +2815,35 @@ export class AgentHostSessionHandler extends Disposable implements IChatSessionC
+@@ -3135,25 +3136,35 @@ export class AgentHostSessionHandler extends Disposable implements IChatSessionC
  			{
  				let execution = clientToolExecutions.get(key);
  				if (!execution) {

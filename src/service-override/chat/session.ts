@@ -20,6 +20,10 @@ import { AgenticPromptsService } from 'vs/sessions/contrib/chat/browser/promptsS
 import { AICustomizationMcpServerCountService } from 'vs/sessions/contrib/sessions/browser/customizationMcpServerCount'
 import { IAICustomizationMcpServerCountService } from 'vs/sessions/contrib/sessions/browser/customizationMcpServerCount.service'
 import { AgentHostCustomizationService } from 'vs/sessions/services/agentHost/browser/agentHostCustomizationService'
+import { SessionsAgentHostPolicyContinuationPresenter } from 'vs/sessions/contrib/providers/agentHost/browser/agentHostPolicyContinuationPresenter'
+import { IAgentHostPolicyContinuationPresenter } from 'vs/workbench/contrib/chat/browser/agentSessions/agentHost/agentHostPolicyContinuation.service'
+import { AgentsWindowExtensionSuggestionsService } from 'vs/sessions/contrib/extensions/browser/agentsWindowExtensionSuggestions'
+import { IAgentsWindowExtensionSuggestionsService } from 'vs/sessions/contrib/extensions/browser/agentsWindowExtensionSuggestions.service'
 import getCommonServiceOverride, { type ChatServiceOverrideOptions } from './common.js'
 import { IChatResponseFileChangesService } from 'vs/workbench/contrib/chat/browser/chatResponseFileChangesService.service.js'
 import { SessionsChatResponseFileChangesService } from 'vs/sessions/contrib/chat/browser/sessionTurnChanges.js'
@@ -29,11 +33,12 @@ import { NullWSLRemoteAgentHostService } from 'vs/platform/agentHost/browser/nul
 import { IWSLRemoteAgentHostService } from 'vs/platform/agentHost/common/wslRemoteAgentHost.service.js'
 export * from './common.js'
 
-import 'vs/sessions/contrib/chat/browser/btwSlashCommand.contribution'
 import 'vs/sessions/contrib/chat/browser/chat.contribution'
 import 'vs/sessions/contrib/chat/browser/customizationsDebugLog.contribution'
 import 'vs/sessions/contrib/chat/browser/openSessionLinkOpener.contribution'
 import 'vs/sessions/contrib/chat/browser/requestOriginProvider.contribution'
+import 'vs/sessions/contrib/chat/browser/sharedChatInputComposer.contribution'
+import 'vs/sessions/contrib/extensions/browser/extensions.contribution'
 import 'vs/sessions/contrib/chat/browser/sideChatProvider.contribution'
 import 'vs/sessions/contrib/providers/agentHost/browser/agentHostSettings.contribution'
 import 'vs/sessions/contrib/providers/agentHost/browser/agentSessionSettings.contribution'
@@ -107,6 +112,16 @@ export default function getServiceOverride({
     [IChangesViewService.toString()]: new SyncDescriptor(ChangesViewService, [], true),
     [IWSLRemoteAgentHostService.toString()]: new SyncDescriptor(
       NullWSLRemoteAgentHostService,
+      [],
+      true
+    ),
+    [IAgentHostPolicyContinuationPresenter.toString()]: new SyncDescriptor(
+      SessionsAgentHostPolicyContinuationPresenter,
+      [],
+      true
+    ),
+    [IAgentsWindowExtensionSuggestionsService.toString()]: new SyncDescriptor(
+      AgentsWindowExtensionSuggestionsService,
       [],
       true
     )

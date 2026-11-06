@@ -6,6 +6,7 @@
 /// <reference path="../vscode/src/vscode-dts/vscode.d.ts" />
 
 import * as extHostTypes from 'vs/workbench/api/common/extHostTypes'
+import * as extHostGitHub from 'vs/workbench/api/common/extHostGitHub'
 import * as errors from 'vs/base/common/errors'
 import * as files from 'vs/platform/files/common/files'
 import type * as vscode from 'vscode'
@@ -63,6 +64,7 @@ const api: typeof vscode = {
   chat: createProxy('chat'),
   speech: createProxy('speech'),
   lm: createProxy('lm'),
+  github: createProxy('github'),
 
   // types
   Breakpoint: extHostTypes.Breakpoint,
@@ -139,6 +141,7 @@ const api: typeof vscode = {
   FoldingRange: extHostTypes.FoldingRange,
   FoldingRangeKind: extHostTypes.FoldingRangeKind,
   FunctionBreakpoint: extHostTypes.FunctionBreakpoint,
+  GitHubError: extHostGitHub.GitHubError,
   InlineCompletionItem: extHostTypes.InlineSuggestion,
   InlineCompletionList: extHostTypes.InlineSuggestionList,
   Hover: extHostTypes.Hover,
@@ -228,6 +231,7 @@ const api: typeof vscode = {
   SourceControlInputBoxValidationType: extHostTypes.SourceControlInputBoxValidationType,
   ExtensionRuntime: extHostTypes.ExtensionRuntime,
   TimelineItem: extHostTypes.TimelineItem,
+  TimelineTriggerKind: extHostTypes.TimelineTriggerKind,
   NotebookRange: extHostTypes.NotebookRange,
   NotebookCellKind: extHostTypes.NotebookCellKind,
   NotebookCellData: extHostTypes.NotebookCellData,

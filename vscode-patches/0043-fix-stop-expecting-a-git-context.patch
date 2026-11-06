@@ -8,10 +8,10 @@ Subject: [PATCH] fix: stop expecting a git context
  1 file changed, 5 deletions(-)
 
 diff --git a/build/npm/postinstall.ts b/build/npm/postinstall.ts
-index 6405a015318..3509f81b432 100644
+index 08f74c92bf2..a30238c7d20 100644
 --- a/build/npm/postinstall.ts
 +++ b/build/npm/postinstall.ts
-@@ -245,8 +245,6 @@ async function main() {
+@@ -241,8 +241,6 @@ async function main() {
  	if (!process.env['VSCODE_FORCE_INSTALL'] && isUpToDate()) {
  		finishCloudSandbox();
  		log('.', 'All dependencies up to date, skipping postinstall.');
@@ -20,7 +20,7 @@ index 6405a015318..3509f81b432 100644
  		return;
  	}
  
-@@ -318,9 +316,6 @@ async function main() {
+@@ -314,9 +312,6 @@ async function main() {
  	log('.', `Running ${parallelTasks.length} npm installs with concurrency ${concurrency}...`);
  	await runWithConcurrency(parallelTasks, concurrency);
  

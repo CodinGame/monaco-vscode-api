@@ -8,10 +8,10 @@ Subject: [PATCH] feat: add a way to detect if localization were already used
  1 file changed, 7 insertions(+)
 
 diff --git a/src/vs/nls.ts b/src/vs/nls.ts
-index 8383ae24d96..27b483a0f71 100644
+index 67be26a0114..519e972adff 100644
 --- a/src/vs/nls.ts
 +++ b/src/vs/nls.ts
-@@ -51,6 +51,12 @@ function _format(message: string, args: (string | number | boolean | undefined |
+@@ -52,6 +52,12 @@ function _format(message: string, args: (string | number | boolean | undefined |
  	return result;
  }
  
@@ -24,7 +24,7 @@ index 8383ae24d96..27b483a0f71 100644
  /**
   * Marks a string to be localized. Returns the localized string.
   *
-@@ -95,6 +101,7 @@ export function localize(data: ILocalizeInfo | string /* | number when built */,
+@@ -96,6 +102,7 @@ export function localize(data: ILocalizeInfo | string /* | number when built */,
   * depending on the target context.
   */
  function lookupMessage(index: number, fallback: string | null): string {

@@ -5,10 +5,39 @@ Subject: [PATCH] fix: change syntax that language service refactor doesn't
  support well
 
 ---
+ .../platform/files/browser/browserResourceService.ts   |  2 +-
+ .../chat/common/plugins/agentPluginEnablement.ts       |  2 +-
  src/vs/workbench/contrib/tasks/common/taskService.ts   |  5 ++++-
  .../chatAgentTools/common/terminalSandboxService.ts    | 10 +++++++---
- 2 files changed, 11 insertions(+), 4 deletions(-)
+ .../services/environment/common/copilotHomeService.ts  |  2 +-
+ 5 files changed, 14 insertions(+), 7 deletions(-)
 
+diff --git a/src/vs/platform/files/browser/browserResourceService.ts b/src/vs/platform/files/browser/browserResourceService.ts
+index c956ae3a83a..9d2aafe0229 100644
+--- a/src/vs/platform/files/browser/browserResourceService.ts
++++ b/src/vs/platform/files/browser/browserResourceService.ts
+@@ -13,7 +13,7 @@ import { URI } from '../../../base/common/uri.js';
+ import { generateUuid } from '../../../base/common/uuid.js';
+ import { IBrowserResourceService } from '../common/browserResourceService.js';
+ import { IFileService } from '../common/files.js';
+-export { IBrowserResourceService } from '../common/browserResourceService.js';
++export { IBrowserResourceService };
+ 
+ interface IObjectUrlEntry {
+ 	readonly value: Promise<URI>;
+diff --git a/src/vs/workbench/contrib/chat/common/plugins/agentPluginEnablement.ts b/src/vs/workbench/contrib/chat/common/plugins/agentPluginEnablement.ts
+index e0c5dbc07a9..e7cb7648f38 100644
+--- a/src/vs/workbench/contrib/chat/common/plugins/agentPluginEnablement.ts
++++ b/src/vs/workbench/contrib/chat/common/plugins/agentPluginEnablement.ts
+@@ -14,7 +14,7 @@ import { type IMarketplaceReference } from './marketplaceReference.js';
+ import { CollisionEnablementModel, ContributionEnablementState, EnablementModel, IEnablementModel, isContributionEnabled } from '../enablement.js';
+ import { AGENT_PLUGIN_ENABLEMENT_IDENTITIES_STORAGE_KEY, AGENT_PLUGIN_ENABLEMENT_STORAGE_KEY, migrateCustomizationEnablementToApplicationStorage } from '../customizationEnablementStorage.js';
+ 
+-export { IAgentPluginEnablementService } from './agentPluginService.js';
++export { IAgentPluginEnablementService };
+ 
+ export class AgentPluginEnablementService extends EnablementModel implements IAgentPluginEnablementService {
+ 	declare readonly _serviceBrand: undefined;
 diff --git a/src/vs/workbench/contrib/tasks/common/taskService.ts b/src/vs/workbench/contrib/tasks/common/taskService.ts
 index ec8414ee339..35ac0b396d8 100644
 --- a/src/vs/workbench/contrib/tasks/common/taskService.ts
@@ -53,3 +82,16 @@ index a6fcc6e4ae3..72428e1ed99 100644
  
  /**
   * Context passed to the password prompt during dependency installation.
+diff --git a/src/vs/workbench/services/environment/common/copilotHomeService.ts b/src/vs/workbench/services/environment/common/copilotHomeService.ts
+index e77f9854ba3..800689f6cb9 100644
+--- a/src/vs/workbench/services/environment/common/copilotHomeService.ts
++++ b/src/vs/workbench/services/environment/common/copilotHomeService.ts
+@@ -10,7 +10,7 @@ import { getCopilotHomePath, ICopilotHomeService } from '../../../../platform/en
+ import { registerSingleton, InstantiationType } from '../../../../platform/instantiation/common/extensions.js';
+ import { IPathService } from '../../../../platform/path/common/pathService.js';
+ 
+-export { ICopilotHomeService } from '../../../../platform/environment/common/copilotHome.js';
++export { ICopilotHomeService };
+ 
+ export class WorkbenchCopilotHomeService implements ICopilotHomeService {
+ 	declare readonly _serviceBrand: undefined;

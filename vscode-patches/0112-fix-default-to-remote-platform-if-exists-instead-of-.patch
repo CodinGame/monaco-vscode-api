@@ -10,7 +10,7 @@ Subject: [PATCH] fix: default to remote platform if exists instead of local
  2 files changed, 19 insertions(+), 4 deletions(-)
 
 diff --git a/src/vs/workbench/contrib/tasks/browser/abstractTaskService.ts b/src/vs/workbench/contrib/tasks/browser/abstractTaskService.ts
-index 6c4ba470084..66139ae8132 100644
+index b9609763842..f3ee9321a43 100644
 --- a/src/vs/workbench/contrib/tasks/browser/abstractTaskService.ts
 +++ b/src/vs/workbench/contrib/tasks/browser/abstractTaskService.ts
 @@ -294,7 +294,7 @@ export abstract class AbstractTaskService extends Disposable implements ITaskSer
@@ -41,7 +41,7 @@ index 6c4ba470084..66139ae8132 100644
  			this._pathService, this._viewDescriptorService, this._logService, this._notificationService,
  			this._contextKeyService, this._instantiationService,
 diff --git a/src/vs/workbench/contrib/tasks/browser/terminalTaskSystem.ts b/src/vs/workbench/contrib/tasks/browser/terminalTaskSystem.ts
-index 1df7ab69bed..5f06b581181 100644
+index 5d7a771a9e0..9aff0349675 100644
 --- a/src/vs/workbench/contrib/tasks/browser/terminalTaskSystem.ts
 +++ b/src/vs/workbench/contrib/tasks/browser/terminalTaskSystem.ts
 @@ -50,6 +50,7 @@ import { IWorkbenchEnvironmentService } from '../../../services/environment/comm
@@ -60,7 +60,7 @@ index 1df7ab69bed..5f06b581181 100644
  		private _outputChannelId: string,
  		private _fileService: IFileService,
  		private _terminalProfileResolverService: ITerminalProfileResolverService,
-@@ -1517,8 +1519,21 @@ export class TerminalTaskSystem extends Disposable implements ITaskSystem {
+@@ -1525,8 +1527,21 @@ export class TerminalTaskSystem extends Disposable implements ITaskSystem {
  		}
  	}
  

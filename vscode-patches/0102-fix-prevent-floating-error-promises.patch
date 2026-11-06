@@ -8,10 +8,10 @@ Subject: [PATCH] fix: prevent floating error promises
  1 file changed, 3 insertions(+), 1 deletion(-)
 
 diff --git a/src/vs/workbench/contrib/chat/common/chatModes.ts b/src/vs/workbench/contrib/chat/common/chatModes.ts
-index 8d814ff64e8..f1a67a3a85c 100644
+index 527bbcff45b..d71e9c1789c 100644
 --- a/src/vs/workbench/contrib/chat/common/chatModes.ts
 +++ b/src/vs/workbench/contrib/chat/common/chatModes.ts
-@@ -218,7 +218,7 @@ class ChatModes extends Disposable implements IChatModes {
+@@ -219,7 +219,7 @@ class ChatModes extends Disposable implements IChatModes {
  		this._refreshCancellationSource?.cancel();
  		this._refreshCancellationSource?.dispose();
  		const refreshCancellationSource = this._refreshCancellationSource = new CancellationTokenSource();
@@ -20,7 +20,7 @@ index 8d814ff64e8..f1a67a3a85c 100644
  			try {
  				await this.refreshCustomPromptModes(refreshCancellationSource.token);
  			} finally {
-@@ -228,6 +228,8 @@ class ChatModes extends Disposable implements IChatModes {
+@@ -229,6 +229,8 @@ class ChatModes extends Disposable implements IChatModes {
  				refreshCancellationSource.dispose();
  			}
  		});

@@ -5,8 +5,6 @@ import { IAgentHostConnectionsService } from 'vs/platform/agentHost/common/agent
 import { IAgentHostEnablementService } from 'vs/platform/agentHost/common/agentHostEnablementService.service'
 import { IAgentHostResourceService } from 'vs/platform/agentHost/common/agentHostResourceService.service'
 import { IAgentHostService } from 'vs/platform/agentHost/common/agentService.service'
-import { CopilotConnectorsRequestService } from 'vs/platform/copilotConnectors/common/copilotConnectorsRequestService'
-import { ICopilotConnectorsRequestService } from 'vs/platform/copilotConnectors/common/copilotConnectorsRequestService.service'
 import { ICustomizationMarketplaceService } from 'vs/platform/customizationMarketplace/common/customizationMarketplaceService.service'
 import { IPlatformCustomizationMarketplaceService } from 'vs/platform/customizationMarketplace/common/platformCustomizationMarketplaceService.service'
 import { ILinkPresentationService } from 'vs/platform/dataChannel/common/dataChannel.service'
@@ -171,7 +169,7 @@ import {
 import { ChatSlashCommandService } from 'vs/workbench/contrib/chat/common/participants/chatSlashCommands'
 import { IChatSlashCommandService } from 'vs/workbench/contrib/chat/common/participants/chatSlashCommands.service'
 import { AgentPluginEnablementService } from 'vs/workbench/contrib/chat/common/plugins/agentPluginEnablement'
-import { IAgentPluginEnablementService } from 'vs/workbench/contrib/chat/common/plugins/agentPluginEnablement.service'
+import { IAgentPluginEnablementService } from 'vs/workbench/contrib/chat/common/plugins/agentPluginService.service'
 import { IAgentPluginRepositoryService } from 'vs/workbench/contrib/chat/common/plugins/agentPluginRepositoryService.service'
 import { IAgentPluginService } from 'vs/workbench/contrib/chat/common/plugins/agentPluginService.service'
 import { AgentPluginService } from 'vs/workbench/contrib/chat/common/plugins/agentPluginServiceImpl'
@@ -237,6 +235,32 @@ import { Event } from 'vs/base/common/event'
 import { MANAGED_SETTINGS_FRESHNESS_NOT_REQUIRED } from 'vs/platform/defaultAccount/common/defaultAccount'
 import { IAICustomizationItemsModel } from 'vs/workbench/contrib/chat/browser/aiCustomization/aiCustomizationItemsModel.service'
 import { AICustomizationItemsModel } from 'vs/workbench/contrib/chat/browser/aiCustomization/aiCustomizationItemsModel'
+import { RemoteAgentHostAuthenticationResolver } from 'vs/workbench/contrib/chat/browser/remoteAgentHost/remoteAgentHostAuthenticationResolver'
+import { AgentHostMcpAppToolsService } from 'vs/workbench/contrib/chat/browser/agentSessions/agentHost/agentHostMcpAppToolsService'
+import { AgentHostMcpOAuthMetadataService } from 'vs/platform/agentHost/common/agentHostMcpOAuthMetadataService'
+import { AgentHostPolicyContinuationService } from 'vs/workbench/contrib/chat/browser/agentSessions/agentHost/agentHostPolicyContinuation'
+import { ArtifactIntegrationRegistry } from 'vs/platform/artifactIntegrations/common/artifactIntegrationRegistry'
+import { ChatOpenDiagnosticsService } from 'vs/workbench/contrib/chat/common/chatOpenDiagnosticsService'
+import { ChatSessionReviewPreferencesService } from 'vs/workbench/contrib/chat/common/editing/chatSessionReviewPreferences'
+import { ChatThinkingTitleService } from 'vs/workbench/contrib/chat/common/chatThinkingTitleService'
+import { ChatUtilityModelService } from 'vs/workbench/contrib/chat/common/chatUtilityModelService'
+import { ComputerUseSetupService } from 'vs/workbench/contrib/chat/browser/agentSessions/agentHost/computerUseSetup'
+import { CopilotExtensionsService } from 'vs/workbench/contrib/chat/browser/aiCustomization/copilotExtensionsService'
+import { WorkbenchCopilotHomeService } from 'vs/workbench/services/environment/common/copilotHomeService'
+import { LocalModelService } from 'vs/workbench/services/agentHost/browser/localModelService'
+import { IAgentHostAdvertisedAuthenticationResolver } from 'vs/platform/agentHost/common/agentHostAdvertisedAuthentication.service'
+import { IAgentHostMcpAppToolsService } from 'vs/workbench/contrib/chat/browser/agentSessions/agentHost/agentHostMcpAppToolsService.service'
+import { IAgentHostMcpOAuthMetadataService } from 'vs/platform/agentHost/common/agentHostMcpOAuthMetadataService.service'
+import { IAgentHostPolicyContinuationService } from 'vs/workbench/contrib/chat/browser/agentSessions/agentHost/agentHostPolicyContinuation.service'
+import { IArtifactIntegrationRegistry } from 'vs/platform/artifactIntegrations/common/artifactIntegrationRegistry.service'
+import { IChatOpenDiagnosticsService } from 'vs/workbench/contrib/chat/common/chatOpenDiagnosticsService.service'
+import { IChatSessionReviewPreferencesService } from 'vs/workbench/contrib/chat/common/editing/chatSessionReviewPreferences.service'
+import { IChatThinkingTitleService } from 'vs/workbench/contrib/chat/common/chatThinkingTitleService.service'
+import { IChatUtilityModelService } from 'vs/workbench/contrib/chat/common/chatUtilityModelService.service'
+import { IComputerUseSetupService } from 'vs/workbench/contrib/chat/browser/agentSessions/agentHost/computerUseSetup.service'
+import { ICopilotExtensionsService } from 'vs/workbench/contrib/chat/browser/aiCustomization/copilotExtensionsService.service'
+import { ICopilotHomeService } from 'vs/platform/environment/common/copilotHome.service'
+import { ILocalModelService } from 'vs/workbench/services/agentHost/common/localModelService.service'
 import { registerAssets } from '../../assets'
 import 'vs/platform/agentHost/common/agentHostStarter.config.contribution'
 import 'vs/workbench/contrib/imageCarousel/browser/imageCarousel.contribution'
@@ -597,11 +621,6 @@ export default function getServiceOverride({
       true
     ),
     [ICopilotConnectorsService.toString()]: new SyncDescriptor(CopilotConnectorsService, [], true),
-    [ICopilotConnectorsRequestService.toString()]: new SyncDescriptor(
-      CopilotConnectorsRequestService,
-      [],
-      true
-    ),
     [ICustomizationMarketplaceInstallService.toString()]: new SyncDescriptor(
       CustomizationMarketplaceInstallService,
       [],
@@ -647,7 +666,48 @@ export default function getServiceOverride({
       [],
       true
     ),
-    [ICodexContinuationService.toString()]: new SyncDescriptor(CodexContinuationService, [], true)
+    [ICodexContinuationService.toString()]: new SyncDescriptor(CodexContinuationService, [], true),
+    [IAgentHostAdvertisedAuthenticationResolver.toString()]: new SyncDescriptor(
+      RemoteAgentHostAuthenticationResolver,
+      [],
+      true
+    ),
+    [IAgentHostMcpAppToolsService.toString()]: new SyncDescriptor(
+      AgentHostMcpAppToolsService,
+      [],
+      true
+    ),
+    [IAgentHostMcpOAuthMetadataService.toString()]: new SyncDescriptor(
+      AgentHostMcpOAuthMetadataService,
+      [],
+      true
+    ),
+    [IAgentHostPolicyContinuationService.toString()]: new SyncDescriptor(
+      AgentHostPolicyContinuationService,
+      [],
+      true
+    ),
+    [IArtifactIntegrationRegistry.toString()]: new SyncDescriptor(
+      ArtifactIntegrationRegistry,
+      [],
+      true
+    ),
+    [IChatOpenDiagnosticsService.toString()]: new SyncDescriptor(
+      ChatOpenDiagnosticsService,
+      [],
+      true
+    ),
+    [IChatSessionReviewPreferencesService.toString()]: new SyncDescriptor(
+      ChatSessionReviewPreferencesService,
+      [],
+      true
+    ),
+    [IChatThinkingTitleService.toString()]: new SyncDescriptor(ChatThinkingTitleService, [], true),
+    [IChatUtilityModelService.toString()]: new SyncDescriptor(ChatUtilityModelService, [], true),
+    [IComputerUseSetupService.toString()]: new SyncDescriptor(ComputerUseSetupService, [], true),
+    [ICopilotExtensionsService.toString()]: new SyncDescriptor(CopilotExtensionsService, [], true),
+    [ICopilotHomeService.toString()]: new SyncDescriptor(WorkbenchCopilotHomeService, [], true),
+    [ILocalModelService.toString()]: new SyncDescriptor(LocalModelService, [], true)
   }
 }
 

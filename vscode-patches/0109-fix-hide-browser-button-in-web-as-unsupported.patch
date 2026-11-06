@@ -4,22 +4,22 @@ Date: Thu, 15 Oct 2026 10:29:09 +0200
 Subject: [PATCH] fix: hide browser button in web as unsupported
 
 ---
- .../sessions/contrib/editor/browser/addTabActions.ts | 12 +++++++++---
- 1 file changed, 9 insertions(+), 3 deletions(-)
+ .../contrib/editor/browser/addTabActions.ts        | 14 ++++++++++----
+ 1 file changed, 10 insertions(+), 4 deletions(-)
 
 diff --git a/src/vs/sessions/contrib/editor/browser/addTabActions.ts b/src/vs/sessions/contrib/editor/browser/addTabActions.ts
-index 169f15aa3c7..9f30028aa52 100644
+index 874c72489d6..e68f72dda9e 100644
 --- a/src/vs/sessions/contrib/editor/browser/addTabActions.ts
 +++ b/src/vs/sessions/contrib/editor/browser/addTabActions.ts
-@@ -10,6 +10,7 @@ import { KeyCode, KeyMod } from '../../../../base/common/keyCodes.js';
- import { localize2 } from '../../../../nls.js';
- import { Action2 } from '../../../../platform/actions/common/actions.js';
+@@ -13,6 +13,7 @@ import { Action2, MenuRegistry } from '../../../../platform/actions/common/actio
+ import { BrowserViewCommandId } from '../../../../platform/browserView/common/browserView.js';
+ import { ICommandService } from '../../../../platform/commands/common/commands.js';
  import { ContextKeyExpr } from '../../../../platform/contextkey/common/contextkey.js';
 +import { IsWebContext } from '../../../../platform/contextkey/common/contextkeys.js';
  import { IInstantiationService, ServicesAccessor } from '../../../../platform/instantiation/common/instantiation.js';
  import { KeybindingWeight } from '../../../../platform/keybinding/common/keybindingsRegistry.js';
- import { IBrowserViewWorkbenchService } from '../../../../workbench/contrib/browserView/common/browserView.js';
-@@ -49,6 +50,11 @@ const filesTabActionWhen = ContextKeyExpr.and(
+ import { BrowserEditorInput } from '../../../../workbench/contrib/browserView/common/browserEditorInput.js';
+@@ -56,6 +57,11 @@ const filesTabActionWhen = ContextKeyExpr.and(
  	addTabActionWhen,
  	DesktopFilesTabAvailableContext);
  
@@ -31,7 +31,7 @@ index 169f15aa3c7..9f30028aa52 100644
  const searchTabActionWhen = ContextKeyExpr.and(
  	addTabActionWhen,
  	IsQuickChatSessionContext.negate());
-@@ -102,17 +108,17 @@ export class NewBrowserTabAction extends Action2 {
+@@ -132,22 +138,22 @@ export class NewBrowserTabAction extends Action2 {
  			category: SessionsCategories.Sessions,
  			icon: Codicon.globe,
  			f1: true,
@@ -43,12 +43,18 @@ index 169f15aa3c7..9f30028aa52 100644
 +				when: browserTabActionWhen,
  				primary: KeyMod.CtrlCmd | KeyMod.Shift | KeyCode.KeyB,
  			},
- 			menu: {
+ 			menu: [{
  				id: Menus.SessionsEditorTabsBarAddTab,
  				group: 'navigation',
  				order: 2,
 -				when: addTabLayoutWhen
 +				when: ContextKeyExpr.and(addTabLayoutWhen, IsWebContext.toNegated())
- 			}
+ 			}, {
+ 				id: Menus.SessionsEmptyEditorGroupAddTab,
+ 				group: 'navigation',
+ 				order: 2,
+-				when: addTabLayoutWhen
++				when: ContextKeyExpr.and(addTabLayoutWhen, IsWebContext.toNegated())
+ 			}]
  		});
  	}

@@ -142,6 +142,26 @@ export default (args: Record<string, string>): rollup.RollupOptions => {
         include: ['**/vscode-semver/**/*', '**/vscode-oniguruma/**/*', '**/vscode-textmate/**/*']
       }),
       resolveAssetUrlPlugin(),
+      {
+        // The prebuilt agent host crypto module only uses node `crypto` as a fallback when Web
+        // Crypto is unavailable, it's unreachable in browsers
+        name: 'stub-node-crypto',
+        resolveId(source, importer) {
+          if (
+            (source === 'crypto' || source === 'node:crypto') &&
+            importer?.endsWith('/agentHostCryptoModule.js')
+          ) {
+            return '\0node-crypto-stub'
+          }
+          return undefined
+        },
+        load(id) {
+          if (id === '\0node-crypto-stub') {
+            return 'export default {}'
+          }
+          return undefined
+        }
+      },
       nodeResolve({
         extensions: EXTENSIONS
       }),
@@ -211,8 +231,8 @@ export default (args: Record<string, string>): rollup.RollupOptions => {
         // Service overrides that build on top of those features
         allowedEntries:
           /\/src\/service-override\/(?:(?:chat|chat-cloud|voice|notebook|mcp|interactive|ai|speech|welcome)(?:\/(?:common|classic|session))?|(?:viewCommon|workbench)\/session)\.ts$/,
-        // ~1011KB with VSCode 1.142: mostly dictation, go to symbol in chat, editor tabs and chat context keys
-        maxSize: 1100 * 1024
+        // ~1109KB with VSCode 1.145: mostly dictation, go to symbol in chat, editor tabs and chat context keys
+        maxSize: 1200 * 1024
       }),
       configuredSubpackagePlugin(),
       copy({

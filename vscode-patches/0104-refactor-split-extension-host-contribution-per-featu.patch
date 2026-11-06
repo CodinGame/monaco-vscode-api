@@ -9,12 +9,12 @@ extensionHost.base.contribution, so they can be loaded only when needed.
 
 Co-Authored-By: Claude Opus 5.5 <noreply@anthropic.com>
 ---
- .../extensionHost.base.contribution.ts        |  90 +++++++++++++++
- .../extensionHost.chat.contribution.ts        |  16 +++
- .../api/browser/extensionHost.contribution.ts | 105 +-----------------
+ .../extensionHost.base.contribution.ts        |  91 +++++++++++++++
+ .../extensionHost.chat.contribution.ts        |  17 +++
+ .../api/browser/extensionHost.contribution.ts | 107 +-----------------
  .../browser/extensionHost.mcp.contribution.ts |   7 ++
  .../extensionHost.notebook.contribution.ts    |  11 ++
- 5 files changed, 128 insertions(+), 101 deletions(-)
+ 5 files changed, 130 insertions(+), 103 deletions(-)
  create mode 100644 src/vs/workbench/api/browser/extensionHost.base.contribution.ts
  create mode 100644 src/vs/workbench/api/browser/extensionHost.chat.contribution.ts
  create mode 100644 src/vs/workbench/api/browser/extensionHost.mcp.contribution.ts
@@ -22,10 +22,10 @@ Co-Authored-By: Claude Opus 5.5 <noreply@anthropic.com>
 
 diff --git a/src/vs/workbench/api/browser/extensionHost.base.contribution.ts b/src/vs/workbench/api/browser/extensionHost.base.contribution.ts
 new file mode 100644
-index 00000000000..bb2c55317cd
+index 00000000000..fa0c78039f9
 --- /dev/null
 +++ b/src/vs/workbench/api/browser/extensionHost.base.contribution.ts
-@@ -0,0 +1,90 @@
+@@ -0,0 +1,91 @@
 +/*---------------------------------------------------------------------------------------------
 + *  Copyright (c) Microsoft Corporation. All rights reserved.
 + *  Licensed under the MIT License. See License.txt in the project root for license information.
@@ -94,6 +94,7 @@ index 00000000000..bb2c55317cd
 +import './mainThreadUrls.js';
 +import './mainThreadUriOpeners.js';
 +import './mainThreadWindow.js';
++import './mainThreadGitHub.js';
 +import './mainThreadPower.js';
 +import './mainThreadWebviewManager.js';
 +import './mainThreadWorkspace.js';
@@ -118,10 +119,10 @@ index 00000000000..bb2c55317cd
 +import './mainThreadBrowsers.js';
 diff --git a/src/vs/workbench/api/browser/extensionHost.chat.contribution.ts b/src/vs/workbench/api/browser/extensionHost.chat.contribution.ts
 new file mode 100644
-index 00000000000..c319d41523d
+index 00000000000..aba083534fc
 --- /dev/null
 +++ b/src/vs/workbench/api/browser/extensionHost.chat.contribution.ts
-@@ -0,0 +1,16 @@
+@@ -0,0 +1,17 @@
 +/*---------------------------------------------------------------------------------------------
 + *  Copyright (c) Microsoft Corporation. All rights reserved.
 + *  Licensed under the MIT License. See License.txt in the project root for license information.
@@ -130,6 +131,7 @@ index 00000000000..c319d41523d
 +// Chat and language model mainThread participants, split out of extensionHost.contribution so they can be loaded separately
 +import './mainThreadLanguageModels.js';
 +import './mainThreadChatAgents2.js';
++import './mainThreadChatArtifactIntegrations.js';
 +import './mainThreadChatCodeMapper.js';
 +import './mainThreadLanguageModelTools.js';
 +import './mainThreadChatContext.js';
@@ -139,10 +141,10 @@ index 00000000000..c319d41523d
 +import './mainThreadChatInputNotification.js';
 +import './mainThreadChatSessions.js';
 diff --git a/src/vs/workbench/api/browser/extensionHost.contribution.ts b/src/vs/workbench/api/browser/extensionHost.contribution.ts
-index 82aee03d809..93e9b81f389 100644
+index fd9989e9876..93e9b81f389 100644
 --- a/src/vs/workbench/api/browser/extensionHost.contribution.ts
 +++ b/src/vs/workbench/api/browser/extensionHost.contribution.ts
-@@ -3,104 +3,7 @@
+@@ -3,106 +3,7 @@
   *  Licensed under the MIT License. See License.txt in the project root for license information.
   *--------------------------------------------------------------------------------------------*/
  
@@ -162,6 +164,7 @@ index 82aee03d809..93e9b81f389 100644
 -import './mainThreadBulkEdits.js';
 -import './mainThreadLanguageModels.js';
 -import './mainThreadChatAgents2.js';
+-import './mainThreadChatArtifactIntegrations.js';
 -import './mainThreadChatCodeMapper.js';
 -import './mainThreadLanguageModelTools.js';
 -import './mainThreadEmbeddings.js';
@@ -214,6 +217,7 @@ index 82aee03d809..93e9b81f389 100644
 -import './mainThreadUriOpeners.js';
 -import './mainThreadWindow.js';
 -import './mainThreadPower.js';
+-import './mainThreadGitHub.js';
 -import './mainThreadWebviewManager.js';
 -import './mainThreadWorkspace.js';
 -import './mainThreadComments.js';
