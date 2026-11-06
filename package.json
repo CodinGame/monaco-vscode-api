@@ -27,10 +27,11 @@
     "update-vscode-dependencies": "tsx scripts/update-vscode-dependencies.ts",
     "release": "tsx release.ts",
     "reset:repo": "git clean -f -X -d",
-    "run-checks": "npm run check-unsupported-decorator && npm run check-workbench-contributions && npm run check-sessions-contributions",
+    "run-checks": "npm run check-unsupported-decorator && npm run check-workbench-contributions && npm run check-sessions-contributions && npm run check-missing-main-thread-customers",
     "check-unsupported-decorator": "tsx scripts/check-unsupported-decorator.ts",
     "check-workbench-contributions": "tsx scripts/check-workbench-contributions.ts workbench",
-    "check-sessions-contributions": "tsx scripts/check-workbench-contributions.ts sessions"
+    "check-sessions-contributions": "tsx scripts/check-workbench-contributions.ts sessions",
+    "check-missing-main-thread-customers": "tsx scripts/check-missing-main-thread-customers.ts"
   },
   "config": {
     "vscode": {
