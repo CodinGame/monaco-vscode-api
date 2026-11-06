@@ -8,6 +8,10 @@ declare module 'vs/platform/accessibilitySignal/browser/media/*.mp3' {
   const assets: Record<string, string>
   export default assets
 }
+declare module 'vs/workbench/contrib/agentsVoice/browser/media/*.mp3' {
+  const assets: Record<string, string>
+  export default assets
+}
 
 declare module '@vscode/tree-sitter-wasm/wasm/tree-sitter-*.wasm' {
   const assets: Record<string, string>

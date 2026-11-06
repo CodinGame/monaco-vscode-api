@@ -23,6 +23,9 @@ import { IVoiceClientService } from 'vs/workbench/contrib/chat/common/voiceClien
 import { VoicePlaybackService } from 'vs/workbench/contrib/chat/common/voicePlaybackService'
 import { IVoicePlaybackService } from 'vs/workbench/contrib/chat/common/voicePlaybackService.service'
 import 'vs/workbench/contrib/agentsVoice/browser/agentsVoice.contribution'
+import audioAssets from 'vs/workbench/contrib/agentsVoice/browser/media/*.mp3'
+import { registerAssets } from '../../assets'
+registerAssets(audioAssets)
 
 export default function getServiceOverride(): IEditorOverrideServices {
   return {

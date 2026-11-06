@@ -52,18 +52,14 @@ import { IRemoteUserDataProfilesService } from 'vs/workbench/services/userDataPr
 import { registerAssets } from '../../assets.js'
 import { isLocaleAvailable } from '../../l10n.js'
 import { unsupported } from '../../tools.js'
-
-// plugin-import-meta-asset only allows relative paths
-registerAssets({
-  'vs/workbench/contrib/extensions/browser/media/theme-icon.png': new URL(
-    '../../../vscode/src/vs/workbench/contrib/extensions/browser/media/theme-icon.png',
-    import.meta.url
-  ).href,
-  'vs/workbench/contrib/extensions/browser/media/language-icon.svg': new URL(
-    '../../../vscode/src/vs/workbench/contrib/extensions/browser/media/theme-icon.png',
-    import.meta.url
-  ).href
-})
+import assets1 from 'vs/workbench/contrib/extensions/browser/media/*.svg'
+import assets2 from 'vs/workbench/contrib/extensions/browser/media/*.png'
+import assets3 from 'vs/workbench/services/extensionManagement/common/media/*.svg'
+import assets4 from 'vs/workbench/services/extensionManagement/common/media/*.png'
+registerAssets(assets1)
+registerAssets(assets2)
+registerAssets(assets3)
+registerAssets(assets4)
 
 class CustomExtensionGalleryManifestService extends WebExtensionGalleryManifestService {
   constructor(
