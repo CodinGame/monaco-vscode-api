@@ -1,0 +1,43 @@
+From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
+From: =?UTF-8?q?Lo=C3=AFc=20Mangeonjean?= <loic@coderpad.io>
+Date: Mon, 9 Nov 2026 12:56:42 +0100
+Subject: [PATCH] fix: make sure context is resumed
+
+---
+ .../contrib/agentsVoice/browser/voiceModeOnboarding.ts   | 9 +++++++++
+ 1 file changed, 9 insertions(+)
+
+diff --git a/src/vs/workbench/contrib/agentsVoice/browser/voiceModeOnboarding.ts b/src/vs/workbench/contrib/agentsVoice/browser/voiceModeOnboarding.ts
+index 26fb4d2715b..3aa09713675 100644
+--- a/src/vs/workbench/contrib/agentsVoice/browser/voiceModeOnboarding.ts
++++ b/src/vs/workbench/contrib/agentsVoice/browser/voiceModeOnboarding.ts
+@@ -542,6 +542,7 @@ class VoiceSamplePlayer extends Disposable {
+ 	/** Reused across previews: a media element source can only be created once
+ 	 * per element, so the element, context and analyser are all long-lived. */
+ 	private audio: HTMLAudioElement | undefined;
++	private audioContext: AudioContext | undefined;
+ 	private analyser: AnalyserNode | undefined;
+ 	private levels: Uint8Array<ArrayBuffer> | undefined;
+ 
+@@ -592,6 +593,13 @@ class VoiceSamplePlayer extends Disposable {
+ 			this.playback.value = store;
+ 
+ 			this.setPlayingVoice(playingVoice);
++			// The context starts suspended when the target window had no user
++			// activation at creation time; once createMediaElementSource ran, a
++			// suspended context swallows the element's output silently. Resuming
++			// here keeps the call inside the user gesture that triggered play().
++			this.audioContext?.resume().catch(error => {
++				this.logService.trace(`[voice] Voice Mode onboarding audio context resume failed: ${error}`);
++			});
+ 			audio.play().catch(error => {
+ 				this.logService.trace(`[voice] Voice Mode onboarding preview failed: ${error}`);
+ 				this.stop();
+@@ -627,6 +635,7 @@ class VoiceSamplePlayer extends Disposable {
+ 
+ 		try {
+ 			const context = new targetWindow.AudioContext();
++			this.audioContext = context;
+ 			this._register(toDisposable(() => void context.close().catch(() => { /* already closing */ })));
+ 			const analyser = context.createAnalyser();
+ 			analyser.fftSize = 256;
