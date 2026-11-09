@@ -1,0 +1,34 @@
+From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
+From: =?UTF-8?q?Lo=C3=AFc=20Mangeonjean?= <loic@coderpad.io>
+Date: Mon, 9 Nov 2026 13:05:32 +0100
+Subject: [PATCH] fix: voiceAvailable should be true even using BYOK
+
+---
+ .../contrib/chat/browser/voiceInputMode/voiceInputMode.ts  | 7 ++-----
+ 1 file changed, 2 insertions(+), 5 deletions(-)
+
+diff --git a/src/vs/workbench/contrib/chat/browser/voiceInputMode/voiceInputMode.ts b/src/vs/workbench/contrib/chat/browser/voiceInputMode/voiceInputMode.ts
+index d2d148d305d..ab6d6f4546a 100644
+--- a/src/vs/workbench/contrib/chat/browser/voiceInputMode/voiceInputMode.ts
++++ b/src/vs/workbench/contrib/chat/browser/voiceInputMode/voiceInputMode.ts
+@@ -12,8 +12,7 @@ import { IContextKey, IContextKeyService, RawContextKey } from '../../../../../p
+ import { InstantiationType, registerSingleton } from '../../../../../platform/instantiation/common/extensions.js';
+ import { createDecorator } from '../../../../../platform/instantiation/common/instantiation.js';
+ import { IStorageService, StorageScope, StorageTarget } from '../../../../../platform/storage/common/storage.js';
+-import { AgentsVoiceSettingId, AGENTS_VOICE_ENTITLED } from '../../../agentsVoice/common/agentsVoice.js';
+-import { ChatContextKeys } from '../../common/actions/chatContextKeys.js';
++import { AgentsVoiceSettingId, AGENTS_VOICE_ENABLED } from '../../../agentsVoice/common/agentsVoice.js';
+ import { DictationSettingId, IChatSpeechToTextService } from '../speechToText/chatSpeechToTextService.js';
+ 
+ /**
+@@ -140,9 +139,7 @@ export class VoiceInputModeService extends Disposable implements IVoiceInputMode
+ 
+ 		this.voiceAvailable = observableFromEvent(this,
+ 			Event.any(configurationService.onDidChangeConfiguration, contextKeyService.onDidChangeContext),
+-			() => configurationService.getValue<boolean>('agents.voice.enabled') === true
+-				&& ChatContextKeys.enabled.getValue(contextKeyService) === true
+-				&& AGENTS_VOICE_ENTITLED.evaluate({ getValue: key => contextKeyService.getContextKeyValue(key) })
++			() => AGENTS_VOICE_ENABLED.evaluate({ getValue: key => contextKeyService.getContextKeyValue(key) })
+ 				&& configurationService.getValue<boolean>(AgentsVoiceSettingId.ShowButton) !== false);
+ 
+ 		// The dictation segment drives built-in on-device dictation
