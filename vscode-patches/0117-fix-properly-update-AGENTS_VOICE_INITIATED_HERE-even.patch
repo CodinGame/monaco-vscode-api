@@ -1,0 +1,221 @@
+From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
+From: =?UTF-8?q?Lo=C3=AFc=20Mangeonjean?= <loic@coderpad.io>
+Date: Mon, 9 Nov 2026 13:19:51 +0100
+Subject: [PATCH] fix: properly update AGENTS_VOICE_INITIATED_HERE even for new
+ sessions
+
+---
+ .../sessions/contrib/chat/browser/chatView.ts | 24 ++-----------------
+ .../browser/agentsVoice.contribution.ts       |  3 +--
+ .../contrib/agentsVoice/common/agentsVoice.ts |  6 +++++
+ src/vs/workbench/contrib/chat/browser/chat.ts |  2 ++
+ .../contrib/chat/browser/widget/chatWidget.ts |  1 +
+ .../browser/widget/input/chatInputPart.ts     | 13 ++++++++++
+ .../chat/test/browser/voiceInputMode.test.ts  | 16 +++++++++++--
+ 7 files changed, 39 insertions(+), 26 deletions(-)
+
+diff --git a/src/vs/sessions/contrib/chat/browser/chatView.ts b/src/vs/sessions/contrib/chat/browser/chatView.ts
+index 44faef5ef5e..ec0c2656ffb 100644
+--- a/src/vs/sessions/contrib/chat/browser/chatView.ts
++++ b/src/vs/sessions/contrib/chat/browser/chatView.ts
+@@ -19,7 +19,7 @@ import { isEqual } from '../../../../base/common/resources.js';
+ import { URI } from '../../../../base/common/uri.js';
+ import { localize } from '../../../../nls.js';
+ import { IConfigurationService } from '../../../../platform/configuration/common/configuration.js';
+-import { IContextKey, IContextKeyService } from '../../../../platform/contextkey/common/contextkey.js';
++import { IContextKeyService } from '../../../../platform/contextkey/common/contextkey.js';
+ import { IInstantiationService } from '../../../../platform/instantiation/common/instantiation.js';
+ import { IKeybindingService } from '../../../../platform/keybinding/common/keybinding.js';
+ import { scrollbarShadow } from '../../../../platform/theme/common/colorRegistry.js';
+@@ -396,12 +396,6 @@ export class ChatView extends AbstractChatView {
+ 	private _chatItemHorizontalPadding: number;
+ 	private readonly _inputOnly: boolean;
+ 
+-	/**
+-	 * Per-view mirror of `agentsVoiceInitiatedHere`, scoped above the chat widget.
+-	 * Keeps post-connect voice controls anchored to the active session view.
+-	 */
+-	private readonly _voiceInitiatedHereKey: IContextKey<boolean>;
+-
+ 	constructor(
+ 		options: IChatViewOptions = {},
+ 		@IInstantiationService private readonly instantiationService: IInstantiationService,
+@@ -447,9 +441,6 @@ export class ChatView extends AbstractChatView {
+ 			new ServiceCollection([IContextKeyService, scopedContextKeyService])
+ 		));
+ 
+-		// Matches `AGENTS_VOICE_INITIATED_HERE` in agentsVoice.contribution.ts.
+-		this._voiceInitiatedHereKey = scopedContextKeyService.createKey<boolean>('agentsVoiceInitiatedHere', false);
+-
+ 		this._widget = this._register(scopedInstantiationService.createInstance(
+ 			ChatWidget,
+ 			ChatAgentLocation.Chat,
+@@ -486,6 +477,7 @@ export class ChatView extends AbstractChatView {
+ 				renderSecondaryToolbar: shouldRenderRunningSessionSecondaryToolbar(initiallyUsesExperimentalComposerLayout),
+ 				inputEditorMinLines: 2,
+ 				isSessionsWindow: true,
++				isActiveView: this._isActiveObs,
+ 				transcriptTabIndex: -1,
+ 				enableFind: true,
+ 				persistentContentHeight: SESSION_CHAT_INPUT_TOOLBAR_HEIGHT,
+@@ -627,18 +619,6 @@ export class ChatView extends AbstractChatView {
+ 
+ 		// Voice transcript overlay + input glow.
+ 		this._setupVoiceOverlay();
+-
+-		// Anchor post-connect voice controls to this active voice view.
+-		this._register(autorun(reader => {
+-			const active = this._isActiveObs.read(reader);
+-			const voiceActive = this.voiceSessionController.isConnected.read(reader)
+-				|| this.voiceSessionController.isConnecting.read(reader);
+-			const target = this.voiceSessionController.targetSession.read(reader);
+-			const hasDraftTarget = this.voiceSessionController.hasDraftTarget.read(reader);
+-			const current = this._currentChatResourceObs.read(reader);
+-			const ownsVoice = !hasDraftTarget && (!target || (!!current && isEqual(target, current)));
+-			this._voiceInitiatedHereKey.set(active && voiceActive && ownsVoice);
+-		}));
+ 	}
+ 
+ 	private _setupTranscriptPreparationProgress(chatModel: IObservable<IChatModel | undefined>): void {
+diff --git a/src/vs/workbench/contrib/agentsVoice/browser/agentsVoice.contribution.ts b/src/vs/workbench/contrib/agentsVoice/browser/agentsVoice.contribution.ts
+index da20c4ec9a8..57ec650cd74 100644
+--- a/src/vs/workbench/contrib/agentsVoice/browser/agentsVoice.contribution.ts
++++ b/src/vs/workbench/contrib/agentsVoice/browser/agentsVoice.contribution.ts
+@@ -36,7 +36,7 @@ import { IWorkbenchContribution, WorkbenchPhase, registerWorkbenchContribution2
+ import { ConfigurationKeyValuePairs, IConfigurationMigrationRegistry, Extensions as WorkbenchConfigurationExtensions } from '../../../common/configuration.js';
+ import { IStorageService, StorageScope, StorageTarget } from '../../../../platform/storage/common/storage.js';
+ 
+-import { AgentsVoiceSettingId, AgentsVoiceStorageKeys, AGENTS_VOICE_CONNECTED, AGENTS_VOICE_CONNECTING, AGENTS_VOICE_ENABLED, AGENTS_VOICE_ENTITLED, AGENTS_VOICE_LISTENING, AGENTS_VOICE_MUTED, AGENTS_VOICE_RECONNECTING, AGENTS_VOICE_TOGGLE_MUTE_COMMAND_ID, getAgentsVoicePolicyValue } from '../common/agentsVoice.js';
++import { AgentsVoiceSettingId, AgentsVoiceStorageKeys, AGENTS_VOICE_CONNECTED, AGENTS_VOICE_CONNECTING, AGENTS_VOICE_ENABLED, AGENTS_VOICE_ENTITLED, AGENTS_VOICE_INITIATED_HERE, AGENTS_VOICE_LISTENING, AGENTS_VOICE_MUTED, AGENTS_VOICE_RECONNECTING, AGENTS_VOICE_TOGGLE_MUTE_COMMAND_ID, getAgentsVoicePolicyValue } from '../common/agentsVoice.js';
+ import { IConfigurationService } from '../../../../platform/configuration/common/configuration.js';
+ import { IChatEntitlementService } from '../../../services/chat/common/chatEntitlementService.js';
+ import { ITelemetryService } from '../../../../platform/telemetry/common/telemetry.js';
+@@ -62,7 +62,6 @@ import { IChatExecuteActionContext } from '../../chat/browser/actions/chatExecut
+ // --- Context Keys ---
+ 
+ export const AGENTS_VOICE_WIDGET_FOCUSED = new RawContextKey<boolean>('agentsVoiceWidgetFocused', false);
+-const AGENTS_VOICE_INITIATED_HERE = ContextKeyExpr.equals('agentsVoiceInitiatedHere', true);
+ const VOICE_ACTIVE_ON_SURFACE = ContextKeyExpr.or(IsSessionsWindowContext.negate(), AGENTS_VOICE_INITIATED_HERE)!;
+ 
+ // --- Context Key Binding ---
+diff --git a/src/vs/workbench/contrib/agentsVoice/common/agentsVoice.ts b/src/vs/workbench/contrib/agentsVoice/common/agentsVoice.ts
+index 658c870e430..842345d54f2 100644
+--- a/src/vs/workbench/contrib/agentsVoice/common/agentsVoice.ts
++++ b/src/vs/workbench/contrib/agentsVoice/common/agentsVoice.ts
+@@ -22,6 +22,12 @@ export const AGENTS_VOICE_RECONNECTING = new RawContextKey<boolean>('agentsVoice
+ export const AGENTS_VOICE_LISTENING = new RawContextKey<boolean>('agentsVoiceListening', false);
+ export const AGENTS_VOICE_MUTED = new RawContextKey<boolean>('agentsVoiceMuted', false);
+ export const AGENTS_VOICE_TOGGLE_MUTE_COMMAND_ID = 'agentsVoice.toggleMute';
++/**
++ * True on the Agents window chat input that owns the active Voice Mode session, so
++ * post-connect voice controls (connecting indicator, Escape to disconnect) stay
++ * anchored to that input.
++ */
++export const AGENTS_VOICE_INITIATED_HERE = new RawContextKey<boolean>('agentsVoiceInitiatedHere', false);
+ /**
+  * True when the current Copilot entitlement permits Voice Mode. This is a single
+  * key set imperatively from `IChatEntitlementService` (see
+diff --git a/src/vs/workbench/contrib/chat/browser/chat.ts b/src/vs/workbench/contrib/chat/browser/chat.ts
+index 09c9d86d70d..f32e0d2d80b 100644
+--- a/src/vs/workbench/contrib/chat/browser/chat.ts
++++ b/src/vs/workbench/contrib/chat/browser/chat.ts
+@@ -416,6 +416,8 @@ export interface IChatWidgetViewOptions {
+ 	 * has not created yet. Without it, such a session belongs to no chat input.
+ 	 */
+ 	ownsDraftVoiceSession?: IObservable<boolean>;
++	/** Whether this widget's view is the active one when several are shown side by side. Defaults to true. */
++	isActiveView?: IObservable<boolean>;
+ 	/**
+ 	 * Submitting that a host sending through {@link submitHandler} takes part in;
+ 	 * see {@link IChatInputHostSubmit}. The host, not the widget's chat model,
+diff --git a/src/vs/workbench/contrib/chat/browser/widget/chatWidget.ts b/src/vs/workbench/contrib/chat/browser/widget/chatWidget.ts
+index f9056c7932a..65897b32c6e 100644
+--- a/src/vs/workbench/contrib/chat/browser/widget/chatWidget.ts
++++ b/src/vs/workbench/contrib/chat/browser/widget/chatWidget.ts
+@@ -2820,6 +2820,7 @@ export class ChatWidget extends Disposable implements IChatWidget {
+ 			hostModelSelection: this.viewOptions.hostModelSelection,
+ 			deferredNotificationsEnabled: this.viewOptions.deferredNotificationsEnabled,
+ 			ownsDraftVoiceSession: this.viewOptions.ownsDraftVoiceSession,
++			isActiveView: this.viewOptions.isActiveView,
+ 			hostSubmit: this.viewOptions.hostSubmit,
+ 		};
+ 
+diff --git a/src/vs/workbench/contrib/chat/browser/widget/input/chatInputPart.ts b/src/vs/workbench/contrib/chat/browser/widget/input/chatInputPart.ts
+index 2570d73948b..b46723dd7ca 100644
+--- a/src/vs/workbench/contrib/chat/browser/widget/input/chatInputPart.ts
++++ b/src/vs/workbench/contrib/chat/browser/widget/input/chatInputPart.ts
+@@ -131,6 +131,7 @@ import { IDictationOnboardingService } from '../../speechToText/dictationOnboard
+ import { isDictationActiveForEditor, notifyDictationSubmitted, onDidChangeDictationEditor } from '../../speechToText/dictationSession.js';
+ import { VoiceModeActionViewItem } from '../../voiceClient/voiceModeActionViewItem.js';
+ import { isVoiceSessionActiveForInput, IVoiceSessionController } from '../../voiceClient/voiceSessionController.js';
++import { AGENTS_VOICE_INITIATED_HERE } from '../../../../agentsVoice/common/agentsVoice.js';
+ import { AgentSessionProviders, AgentSessionTarget, getAgentSessionProvider } from '../../agentSessions/agentSessions.js';
+ import { getAgentSessionPullRequestContextValue } from '../../agentSessions/agentSessionsModel.js';
+ import { IAgentSessionsService } from '../../agentSessions/agentSessionsService.js';
+@@ -322,6 +323,8 @@ export interface IChatInputPartOptions {
+ 	deferredNotificationsEnabled?: IObservable<boolean>;
+ 	/** Whether this input owns a Voice Mode session that targets a draft. Defaults to never. */
+ 	ownsDraftVoiceSession?: IObservable<boolean>;
++	/** Whether this input's view is the active one when several are shown side by side. Defaults to true. */
++	isActiveView?: IObservable<boolean>;
+ 	/** Whether this input is a transient surface (inline, terminal, or quick chat). */
+ 	isTransientChat?: boolean;
+ 	widgetViewKindTag: string;
+@@ -4031,6 +4034,16 @@ export class ChatInputPart extends Disposable implements IHistoryNavigationWidge
+ 			const resource = voiceSessionResource.read(reader);
+ 			return isVoiceSessionActiveForInput(isVoiceInputActive.read(reader), target, hasDraftTarget, resource, this.options.ownsDraftVoiceSession?.read(reader));
+ 		});
++		if (this.options.isSessionsWindow) {
++			// Anchor the Agents window's post-connect voice controls to the input that owns Voice Mode.
++			const voiceInitiatedHereKey = AGENTS_VOICE_INITIATED_HERE.bindTo(this.contextKeyService);
++			this._register(autorun(reader => {
++				const voiceActive = this.voiceSessionController.isConnected.read(reader)
++					|| this.voiceSessionController.isConnecting.read(reader);
++				const isActiveView = this.options.isActiveView?.read(reader) ?? true;
++				voiceInitiatedHereKey.set(voiceActive && isActiveView && isVoiceSessionActive.read(reader));
++			}));
++		}
+ 
+ 		const inputPickerCompactStates = new Map<string, ISettableObservable<boolean>>();
+ 		const inputPickerMinimalStates = new Map<string, ISettableObservable<boolean>>();
+diff --git a/src/vs/workbench/contrib/chat/test/browser/voiceInputMode.test.ts b/src/vs/workbench/contrib/chat/test/browser/voiceInputMode.test.ts
+index b556d130006..8f9cd624c83 100644
+--- a/src/vs/workbench/contrib/chat/test/browser/voiceInputMode.test.ts
++++ b/src/vs/workbench/contrib/chat/test/browser/voiceInputMode.test.ts
+@@ -47,7 +47,7 @@ suite('VoiceInputModeService', () => {
+ 		} as IChatSpeechToTextService;
+ 	}
+ 
+-	function createService(options: { voiceEnabled?: boolean; voiceButtonShown?: boolean; dictationConfigured?: boolean; dictationButtonShown?: boolean } = {}) {
++	function createService(options: { voiceEnabled?: boolean; voiceButtonShown?: boolean; dictationConfigured?: boolean; dictationButtonShown?: boolean; entitled?: boolean; byokVoiceModel?: string } = {}) {
+ 		const storageService = store.add(new TestStorageService());
+ 		const configurationService = new TestConfigurationService();
+ 		configurationService.setUserConfiguration('agents.voice.enabled', options.voiceEnabled ?? false);
+@@ -55,7 +55,10 @@ suite('VoiceInputModeService', () => {
+ 		configurationService.setUserConfiguration('dictation.showButton', options.dictationButtonShown ?? true);
+ 		const contextKeyService = new MockContextKeyService();
+ 		ChatContextKeys.enabled.bindTo(contextKeyService).set(true);
+-		AGENTS_VOICE_ENTITLED.bindTo(contextKeyService).set(true);
++		AGENTS_VOICE_ENTITLED.bindTo(contextKeyService).set(options.entitled ?? true);
++		// The mock does not resolve `config.*` keys from configuration, so mirror them.
++		contextKeyService.createKey('config.agents.voice.enabled', options.voiceEnabled ?? false);
++		contextKeyService.createKey('config.agents.voice.useBYOKVoiceModel', options.byokVoiceModel ?? '');
+ 		const dictationService = createDictationService(options.dictationConfigured ?? false);
+ 		const service = store.add(new VoiceInputModeService(storageService, configurationService, contextKeyService, dictationService));
+ 		return { service, contextKeyService };
+@@ -85,6 +88,15 @@ suite('VoiceInputModeService', () => {
+ 		);
+ 	});
+ 
++	test('makes voice available with a BYOK voice model when not entitled', () => {
++		const { service: byok } = createService({ voiceEnabled: true, entitled: false, byokVoiceModel: 'gpt-realtime' });
++		const { service: neither } = createService({ voiceEnabled: true, entitled: false });
++		assert.deepStrictEqual(
++			{ byok: byok.voiceAvailable.get(), neither: neither.voiceAvailable.get() },
++			{ byok: true, neither: false }
++		);
++	});
++
+ 	test('excludes hidden controls from mode availability', () => {
+ 		const { service } = createService({
+ 			voiceEnabled: true,
