@@ -286,7 +286,7 @@ class DefaultAccountService implements IDefaultAccountService {
   constructor(private defaultAccount: IDefaultAccount | null) {}
 
   resolveGitHubUrl: IDefaultAccountService['resolveGitHubUrl'] = (path) => path
-  currentDefaultAccount: IDefaultAccountService['currentDefaultAccount'] = null
+  currentDefaultAccount: IDefaultAccountService['currentDefaultAccount'] = this.defaultAccount
 
   onDidChangePolicyData: IDefaultAccountService['onDidChangePolicyData'] = Event.None
   policyData: IDefaultAccountService['policyData'] = null
