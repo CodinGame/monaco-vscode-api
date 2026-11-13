@@ -1,0 +1,29 @@
+diff --git a/src/vs/workbench/contrib/webview/common/webview.ts b/src/vs/workbench/contrib/webview/common/webview.ts
+index 6740d6b..0736ecd 100644
+--- a/src/vs/workbench/contrib/webview/common/webview.ts
++++ b/src/vs/workbench/contrib/webview/common/webview.ts
+@@ -4,7 +4,7 @@
+  *--------------------------------------------------------------------------------------------*/
+ 
+ import { CharCode } from '../../../../base/common/charCode.js';
+-import { Schemas } from '../../../../base/common/network.js';
++import { FileAccess, Schemas } from '../../../../base/common/network.js';
+ import { URI } from '../../../../base/common/uri.js';
+ 
+ export interface WebviewRemoteInfo {
+@@ -58,6 +58,15 @@ export function asWebviewUri(resource: URI, remoteInfo?: WebviewRemoteInfo): URI
+ 		});
+ 	}
+ 
++	try {
++		const browserUri = FileAccess.uriToBrowserUri(resource);
++		if (browserUri && browserUri.scheme !== resource.scheme) {
++			return browserUri;
++		}
++	} catch {
++		// fallback to vscode-cdn.net authority encoding
++	}
++
+ 	return URI.from({
+ 		scheme: Schemas.https,
+ 		authority: `${resource.scheme}+${encodeAuthority(resource.authority)}.${webviewRootResourceAuthority}`,
