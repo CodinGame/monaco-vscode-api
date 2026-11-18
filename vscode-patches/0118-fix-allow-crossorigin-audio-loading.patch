@@ -1,0 +1,34 @@
+From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
+From: =?UTF-8?q?Lo=C3=AFc=20Mangeonjean?= <loic@coderpad.io>
+Date: Wed, 18 Nov 2026 11:16:09 +0100
+Subject: [PATCH] fix: allow crossorigin audio loading
+
+---
+ .../accessibilitySignal/browser/accessibilitySignalService.ts    | 1 +
+ .../workbench/contrib/agentsVoice/browser/voiceModeOnboarding.ts | 1 +
+ 2 files changed, 2 insertions(+)
+
+diff --git a/src/vs/platform/accessibilitySignal/browser/accessibilitySignalService.ts b/src/vs/platform/accessibilitySignal/browser/accessibilitySignalService.ts
+index 51b5647bb90..235699f6cff 100644
+--- a/src/vs/platform/accessibilitySignal/browser/accessibilitySignalService.ts
++++ b/src/vs/platform/accessibilitySignal/browser/accessibilitySignalService.ts
+@@ -290,6 +290,7 @@ async function playAudio(url: string, volume: number): Promise<HTMLAudioElement>
+ function doPlayAudio(url: string, volume: number, disposables: DisposableStore): Promise<HTMLAudioElement> {
+ 	return new Promise<HTMLAudioElement>((resolve, reject) => {
+ 		const audio = new Audio(url);
++		audio.crossOrigin = 'anonymous';
+ 		audio.volume = volume;
+ 		disposables.add(addDisposableListener(audio, 'ended', () => {
+ 			resolve(audio);
+diff --git a/src/vs/workbench/contrib/agentsVoice/browser/voiceModeOnboarding.ts b/src/vs/workbench/contrib/agentsVoice/browser/voiceModeOnboarding.ts
+index 3aa09713675..8d983a89972 100644
+--- a/src/vs/workbench/contrib/agentsVoice/browser/voiceModeOnboarding.ts
++++ b/src/vs/workbench/contrib/agentsVoice/browser/voiceModeOnboarding.ts
+@@ -622,6 +622,7 @@ class VoiceSamplePlayer extends Disposable {
+ 
+ 		const targetWindow = dom.getWindow(this.element);
+ 		const audio = this.audioFactory?.() ?? new targetWindow.Audio();
++		audio.crossOrigin = 'anonymous';
+ 		this.audio = audio;
+ 		this._register(toDisposable(() => {
+ 			audio.pause();
