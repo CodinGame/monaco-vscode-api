@@ -5,13 +5,18 @@ import { SessionsDiffEditorCommandsService } from 'vs/sessions/contrib/editor/br
 import { IDiffEditorCommandsService } from 'vs/workbench/browser/parts/editor/diffEditorCommandsService.service'
 import { IPaneCompositePartService } from 'vs/workbench/services/panecomposite/browser/panecomposite.service'
 import getBulkEditServiceOverride from '../bulkEdit/session.js'
-import getCommonServiceOverride from './common'
+import getCommonServiceOverride, {
+  type ViewCommonServiceOverrideOptions,
+  type WebviewBrowserUriMode
+} from './common'
+
+export type { ViewCommonServiceOverrideOptions, WebviewBrowserUriMode }
 
 export default function getServiceOverride(
-  _webviewIframeAlternateDomains?: string
+  options?: ViewCommonServiceOverrideOptions
 ): IEditorOverrideServices {
   return {
-    ...getCommonServiceOverride(_webviewIframeAlternateDomains),
+    ...getCommonServiceOverride(options),
     [IPaneCompositePartService.toString()]: new SyncDescriptor(
       AgenticPaneCompositePartService,
       [],

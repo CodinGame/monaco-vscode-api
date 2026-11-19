@@ -82,7 +82,10 @@ document.body.append(container)
 await initializeMonacoService(
   {
     ...commonServices,
-    ...getViewsServiceOverride(openNewCodeEditor, alternateDomainPattern),
+    ...getViewsServiceOverride({
+      openEditorFallback: openNewCodeEditor,
+      webviewIframeAlternateDomains: alternateDomainPattern
+    }),
 
     ...getQuickAccessServiceOverride({
       isKeybindingConfigurationVisible: isEditorPartVisible,

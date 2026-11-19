@@ -70,7 +70,10 @@ import {
   MonacoEditorService,
   type OpenEditor
 } from '../tools/editor'
-import getViewCommonServiceOverride from '../viewCommon/classic'
+import getViewCommonServiceOverride, {
+  type ViewCommonServiceOverrideOptions,
+  type WebviewBrowserUriMode
+} from '../viewCommon/classic'
 export * from '../tools/views'
 import 'vs/workbench/browser/parts/titlebar/menubar.contribution'
 import 'vs/workbench/browser/workbench.zenMode.contribution'
@@ -799,43 +802,18 @@ onRenderWorkbench(async (accessor) => {
   await Promises.settled(layoutRestoredPromises)
 })
 
-function getServiceOverride(
-  openEditorFallback?: OpenEditor,
-  _webviewIframeAlternateDomains?: string
-): IEditorOverrideServices
-/**
- * @deprecated Provide restoreEditors with the initializationState.editor.restoreEditors params
- */
-function getServiceOverride(
-  openEditorFallback?: OpenEditor,
-  _webviewIframeAlternateDomains?: string,
-  restoreEditors?: boolean
-): IEditorOverrideServices
-function getServiceOverride(
-  openEditorFallback?: OpenEditor,
-  _webviewIframeAlternateDomains?: string,
+export interface ViewsServiceOverrideOptions extends ViewCommonServiceOverrideOptions {
+  openEditorFallback?: OpenEditor
   initializationState?: InitializationStateTransformer
-): IEditorOverrideServices
-function getServiceOverride(
-  openEditorFallback?: OpenEditor,
-  _webviewIframeAlternateDomains?: string,
-  initializationStateOrRestoreEditors?: boolean | InitializationStateTransformer
-): IEditorOverrideServices {
-  if (initializationStateOrRestoreEditors != null) {
-    transformInitializationState =
-      typeof initializationStateOrRestoreEditors === 'boolean'
-        ? (state: ILayoutInitializationState) => ({
-            ...state,
-            editor: {
-              ...state.editor,
-              restoreEditors: initializationStateOrRestoreEditors
-            }
-          })
-        : initializationStateOrRestoreEditors
+}
+
+function getServiceOverride(options?: ViewsServiceOverrideOptions): IEditorOverrideServices {
+  if (options?.initializationState != null) {
+    transformInitializationState = options.initializationState
   }
 
   return {
-    ...getViewCommonServiceOverride(_webviewIframeAlternateDomains),
+    ...getViewCommonServiceOverride(options),
     ...getQuickAccessOverride({
       isKeybindingConfigurationVisible: isEditorPartVisible,
       shouldUseGlobalPicker: isEditorPartVisible
@@ -845,16 +823,18 @@ function getServiceOverride(
     }),
     [IEditorGroupsService.toString()]: new SyncDescriptor(
       MonacoEditorParts,
-      [openEditorFallback],
+      [options?.openEditorFallback],
       false
     ),
     [IEditorService.toString()]: new SyncDescriptor(
       MonacoEditorService,
-      [openEditorFallback, isEditorPartVisible],
+      [options?.openEditorFallback, isEditorPartVisible],
       false
     )
   }
 }
+
+export type { ViewCommonServiceOverrideOptions, WebviewBrowserUriMode }
 
 export default getServiceOverride
 

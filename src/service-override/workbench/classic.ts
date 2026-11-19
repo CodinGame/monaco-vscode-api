@@ -16,7 +16,10 @@ import { IWorkspaceFolderLabelService } from 'vs/workbench/services/workspaces/c
 import { onLayout, onRenderWorkbench } from '../../lifecycle'
 import { getWorkbenchContainer } from '../../workbench'
 import getBannerServiceOverride from '../viewBanner'
-import getViewCommonServiceOverride from '../viewCommon/classic'
+import getViewCommonServiceOverride, {
+  type ViewCommonServiceOverrideOptions,
+  type WebviewBrowserUriMode
+} from '../viewCommon/classic'
 import getStatusBarServiceOverride from '../viewStatusBar'
 import getTitleBarServiceOverride from '../viewTitleBar/classic'
 import { EditorParts } from 'vs/workbench/browser/parts/editor/editorParts'
@@ -70,11 +73,11 @@ onRenderWorkbench(async (accessor) => {
 
 function getServiceOverride(
   options?: IWorkbenchOptions,
-  _webviewIframeAlternateDomains?: string
+  webviewOptions?: ViewCommonServiceOverrideOptions
 ): IEditorOverrideServices {
   return {
     ...getCommonServiceOverride(),
-    ...getViewCommonServiceOverride(_webviewIframeAlternateDomains),
+    ...getViewCommonServiceOverride(webviewOptions),
     [IWorkbenchLayoutService.toString()]: new SyncDescriptor(CustomWorkbench, [options], false),
     [IEditorGroupsService.toString()]: new SyncDescriptor(EditorParts, [], false),
     [IWorkspaceFolderLabelService.toString()]: new SyncDescriptor(
@@ -87,5 +90,7 @@ function getServiceOverride(
     ...getBannerServiceOverride()
   }
 }
+
+export type { ViewCommonServiceOverrideOptions, WebviewBrowserUriMode }
 
 export default getServiceOverride
