@@ -61,7 +61,9 @@ document.body.append(buttons)
 await initializeMonacoService(
   {
     ...commonServices,
-    ...getWorkbenchServiceOverride(undefined, alternateDomainPattern),
+    ...getWorkbenchServiceOverride(undefined, {
+      webviewIframeAlternateDomains: alternateDomainPattern
+    }),
     ...getQuickAccessServiceOverride({
       isKeybindingConfigurationVisible: () => true,
       shouldUseGlobalPicker: () => true

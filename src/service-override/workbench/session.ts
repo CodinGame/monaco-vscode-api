@@ -121,7 +121,10 @@ import { IWorkspaceFolderLabelService } from 'vs/workbench/services/workspaces/c
 import { onLayout, onRenderWorkbench } from '../../lifecycle'
 import { getWorkbenchContainer } from '../../workbench'
 import getBannerServiceOverride from '../viewBanner'
-import getViewCommonServiceOverride from '../viewCommon/session'
+import getViewCommonServiceOverride, {
+  type ViewCommonServiceOverrideOptions,
+  type WebviewBrowserUriMode
+} from '../viewCommon/session'
 import getStatusBarServiceOverride from '../viewStatusBar'
 import getCommonServiceOverride from './common'
 import { observableFromPromise } from 'vs/base/common/observable'
@@ -258,13 +261,15 @@ const initialProvidersSettled = observableFromPromise(
   )
 ).map((result) => result.value === true)
 
+export type { ViewCommonServiceOverrideOptions, WebviewBrowserUriMode }
+
 export default function getServiceOverride(
   options?: IWorkbenchOptions,
-  _webviewIframeAlternateDomains?: string
+  webviewOptions?: ViewCommonServiceOverrideOptions
 ): IEditorOverrideServices {
   return {
     ...getCommonServiceOverride(),
-    ...getViewCommonServiceOverride(_webviewIframeAlternateDomains),
+    ...getViewCommonServiceOverride(webviewOptions),
     ...getEnvironmentServiceOverride({
       isSessionsWindow: true
     }),

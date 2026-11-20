@@ -1,5 +1,8 @@
 import type { IEditorOverrideServices } from 'vs/editor/standalone/browser/standaloneServices'
-import getCommonServiceOverride from './common'
+import getCommonServiceOverride, {
+  type ViewCommonServiceOverrideOptions,
+  type WebviewBrowserUriMode
+} from './common'
 import { PaneCompositePartService } from 'vs/workbench/browser/parts/paneCompositePartService'
 import { IPaneCompositePartService } from 'vs/workbench/services/panecomposite/browser/panecomposite.service'
 import { SyncDescriptor } from 'vs/platform/instantiation/common/descriptors'
@@ -10,11 +13,13 @@ import getBulkEditServiceOverride from '../bulkEdit/classic.js'
 import 'vs/workbench/browser/parts/editor/editorParts'
 import 'vs/workbench/contrib/modernUI/browser/modernUI.contribution'
 
+export type { ViewCommonServiceOverrideOptions, WebviewBrowserUriMode }
+
 export default function getServiceOverride(
-  _webviewIframeAlternateDomains?: string
+  options?: ViewCommonServiceOverrideOptions
 ): IEditorOverrideServices {
   return {
-    ...getCommonServiceOverride(_webviewIframeAlternateDomains),
+    ...getCommonServiceOverride(options),
     [IPaneCompositePartService.toString()]: new SyncDescriptor(PaneCompositePartService, [], true),
     [IDiffEditorCommandsService.toString()]: new SyncDescriptor(
       DiffEditorCommandsService,

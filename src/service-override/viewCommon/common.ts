@@ -79,6 +79,15 @@ import { ISplashStorageService } from 'vs/workbench/contrib/splash/browser/splas
 import type { IPartsSplash } from 'vs/platform/theme/common/themeService.js'
 import { IEditorService } from 'vs/workbench/services/editor/common/editorService.service.js'
 import { EditorService } from 'vs/workbench/services/editor/browser/editorService.js'
+import {
+  setWebviewBrowserUriMode,
+  type WebviewBrowserUriMode
+} from 'vs/workbench/contrib/webview/common/webview'
+
+export interface ViewCommonServiceOverrideOptions {
+  webviewIframeAlternateDomains?: string
+  webviewBrowserUriMode?: WebviewBrowserUriMode
+}
 
 let webviewIframeAlternateDomains: string | undefined
 registerAssets({
@@ -103,9 +112,14 @@ registerServiceInitializePostParticipant(async (accessor) => {
   accessor.get(IHistoryService)
 })
 
-function getServiceOverride(_webviewIframeAlternateDomains?: string): IEditorOverrideServices {
-  if (_webviewIframeAlternateDomains != null) {
-    webviewIframeAlternateDomains = _webviewIframeAlternateDomains
+function getServiceOverride(
+  options?: ViewCommonServiceOverrideOptions
+): IEditorOverrideServices {
+  if (options?.webviewIframeAlternateDomains != null) {
+    webviewIframeAlternateDomains = options.webviewIframeAlternateDomains
+  }
+  if (options?.webviewBrowserUriMode != null) {
+    setWebviewBrowserUriMode(options.webviewBrowserUriMode)
   }
 
   return {
@@ -156,5 +170,7 @@ function getServiceOverride(_webviewIframeAlternateDomains?: string): IEditorOve
     [IEditorService.toString()]: new SyncDescriptor(EditorService, [undefined], false)
   }
 }
+
+export type { WebviewBrowserUriMode }
 
 export default getServiceOverride
