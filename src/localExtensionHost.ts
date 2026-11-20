@@ -59,7 +59,7 @@ import { IDefaultLogLevelsService } from 'vs/workbench/services/log/common/defau
 
 const apiFactoryDeferred = new DeferredPromise<ApiFactory>()
 
-class LocalExtHostExtensionService extends ExtHostExtensionService {
+export class LocalExtHostExtensionService extends ExtHostExtensionService {
   private _defaultApiImpl?: typeof vscode
 
   private readonly _extApiImpl = new ExtensionIdentifierMap<typeof vscode>()

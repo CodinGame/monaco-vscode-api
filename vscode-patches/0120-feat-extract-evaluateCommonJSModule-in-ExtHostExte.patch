@@ -1,0 +1,81 @@
+diff --git a/src/vs/workbench/api/worker/extHostExtensionService.ts b/src/vs/workbench/api/worker/extHostExtensionService.ts
+--- a/src/vs/workbench/api/worker/extHostExtensionService.ts
++++ b/src/vs/workbench/api/worker/extHostExtensionService.ts
+@@ -56,17 +56,20 @@
+ 		return extensionDescription.browser;
+ 	}
+ 
+-	protected async _loadCommonJSModule<T extends object | undefined>(extension: IExtensionDescription | null, module: URI, activationTimesBuilder: ExtensionActivationTimesBuilder): Promise<T> {
+-		module = module.with({ path: ensureSuffix(module.path, '.js') });
++	protected async _evaluateCommonJSModule(
++		browserUri: URI,
++		_module: { exports: unknown },
++		_exports: object,
++		_require: (request: string) => unknown,
++		module: URI,
++		extension: IExtensionDescription | null,
++		activationTimesBuilder: ExtensionActivationTimesBuilder
++	): Promise<void> {
+ 		const extensionId = extension?.identifier.value;
+ 		if (extensionId) {
+ 			performance.mark(`code/extHost/willFetchExtensionCode/${extensionId}`);
+ 		}
+ 
+-		// First resolve the extension entry point URI to something we can load using `fetch`
+-		// This needs to be done on the main thread due to a potential `resourceUriProvider` (workbench api)
+-		// which is only available in the main thread
+-		const browserUri = URI.revive(await this._mainThreadExtensionsProxy.$asBrowserUri(module));
+ 		const response = await fetch(browserUri.toString(true));
+ 		if (extensionId) {
+ 			performance.mark(`code/extHost/didFetchExtensionCode/${extensionId}`);
+@@ -96,6 +99,28 @@
+ 			throw err;
+ 		}
+ 
++		try {
++			activationTimesBuilder.codeLoadingStart();
++			if (extensionId) {
++				performance.mark(`code/extHost/willLoadExtensionCode/${extensionId}`);
++			}
++			initFn(_module, _exports, _require);
++		} finally {
++			if (extensionId) {
++				performance.mark(`code/extHost/didLoadExtensionCode/${extensionId}`);
++			}
++			activationTimesBuilder.codeLoadingStop();
++		}
++	}
++
++	protected async _loadCommonJSModule<T extends object | undefined>(extension: IExtensionDescription | null, module: URI, activationTimesBuilder: ExtensionActivationTimesBuilder): Promise<T> {
++		module = module.with({ path: ensureSuffix(module.path, '.js') });
++
++		// First resolve the extension entry point URI to something we can load using `fetch`
++		// This needs to be done on the main thread due to a potential `resourceUriProvider` (workbench api)
++		// which is only available in the main thread
++		const browserUri = URI.revive(await this._mainThreadExtensionsProxy.$asBrowserUri(module));
++
+ 		if (extension) {
+ 			await this._extHostLocalizationService.initializeLocalizedMessages(extension);
+ 		}
+@@ -111,19 +136,8 @@
+ 			return result;
+ 		};
+ 
+-		try {
+-			activationTimesBuilder.codeLoadingStart();
+-			if (extensionId) {
+-				performance.mark(`code/extHost/willLoadExtensionCode/${extensionId}`);
+-			}
+-			initFn(_module, _exports, _require);
+-			return <T>(_module.exports !== _exports ? _module.exports : _exports);
+-		} finally {
+-			if (extensionId) {
+-				performance.mark(`code/extHost/didLoadExtensionCode/${extensionId}`);
+-			}
+-			activationTimesBuilder.codeLoadingStop();
+-		}
++		await this._evaluateCommonJSModule(browserUri, _module, _exports, _require, module, extension, activationTimesBuilder);
++		return <T>(_module.exports !== _exports ? _module.exports : _exports);
+ 	}
+ 
+ 	protected override _loadESMModule<T>(extension: IExtensionDescription | null, module: URI, activationTimesBuilder: ExtensionActivationTimesBuilder): Promise<T> {
