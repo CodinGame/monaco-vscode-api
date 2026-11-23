@@ -17,7 +17,7 @@ jobs:
 
     steps:
       - name: Checkout
-        uses: actions/checkout@v7
+        uses: actions/checkout@v7.0.1
         with:
           # get all tags for semantic release
           fetch-depth: 0
@@ -50,7 +50,7 @@ jobs:
         working-directory: ./demo
         run: npm run build:netlify
       - name: Deploy to Netlify
-        uses: nwtgck/actions-netlify@v3.0
+        uses: nwtgck/actions-netlify@v3.0.0
         with:
           publish-dir: './demo/dist'
           production-branch: main
