@@ -4,6 +4,9 @@ on:
     branches:
       - main
 
+permissions:
+  contents: read
+
 jobs:
   lint-commits:
     name: Lint commits
@@ -20,6 +23,11 @@ jobs:
   check:
     name: Check build
     runs-on: ubuntu-latest
+    permissions:
+      contents: write # the Netlify preview step comments on the commit
+      pull-requests: write # and on the pull request
+      deployments: write # it creates the preview deployment
+      statuses: write # and sets the Netlify commit status
     env:
       NETLIFY_AUTH_TOKEN: ${{ secrets.NETLIFY_AUTH_TOKEN }}
       NETLIFY_SITE_ID: ${{ secrets.NETLIFY_SITE_ID }}
