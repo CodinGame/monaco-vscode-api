@@ -31,7 +31,11 @@ jobs:
         run: |
           sudo apt-get update
           sudo apt-get install libkrb5-dev libxkbfile-dev libx11-6
-          curl https://mise.run | sh
+          # mise installer from the v2026.11.12 release, checked before it runs.
+          # To update mise, change the version and the checksum of that release's install.sh.
+          curl -fsSL -o "$RUNNER_TEMP/mise-install.sh" https://github.com/jdx/mise/releases/download/v2026.11.12/install.sh
+          echo "4a0508efdaf9d2e58a0c0b2fe5b4c87af6da2976d1b5abb5f3feb9a1c1874ebf  $RUNNER_TEMP/mise-install.sh" | sha256sum -c -
+          MISE_VERSION=v2026.11.12 sh "$RUNNER_TEMP/mise-install.sh"
           echo "$HOME/.local/share/mise/bin" >> $GITHUB_PATH
           echo "$HOME/.local/share/mise/shims" >> $GITHUB_PATH
           mise install -E vscode
