@@ -21,6 +21,7 @@ jobs:
         with:
           # get all tags for semantic release
           fetch-depth: 0
+          persist-credentials: false
       - name: Install build dependencies
         run: |
           sudo apt-get update

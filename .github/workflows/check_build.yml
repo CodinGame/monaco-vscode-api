@@ -16,6 +16,7 @@ jobs:
         with:
           # we actually need "github.event.pull_request.commits + 1" commit
           fetch-depth: 0
+          persist-credentials: false
       - name: mise-en-place
         uses: jdx/mise-action@v4
       - run: npm ci --ignore-scripts
@@ -35,6 +36,8 @@ jobs:
     steps:
       - name: Checkout
         uses: actions/checkout@v7
+        with:
+          persist-credentials: false
       - name: Install build dependencies
         run: |
           sudo apt-get update
