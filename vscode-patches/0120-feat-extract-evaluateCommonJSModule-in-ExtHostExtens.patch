@@ -1,7 +1,18 @@
+From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
+From: Nicolas Dos Santos <nicolas.dossantos@accor.com>
+Date: Fri, 20 Nov 2026 18:50:17 +0100
+Subject: [PATCH] feat: extract evaluateCommonJSModule in
+ ExtHostExtensionService
+
+---
+ .../api/worker/extHostExtensionService.ts     | 52 ++++++++++++-------
+ 1 file changed, 33 insertions(+), 19 deletions(-)
+
 diff --git a/src/vs/workbench/api/worker/extHostExtensionService.ts b/src/vs/workbench/api/worker/extHostExtensionService.ts
+index 224dd1a27b3..a2ba6c41d19 100644
 --- a/src/vs/workbench/api/worker/extHostExtensionService.ts
 +++ b/src/vs/workbench/api/worker/extHostExtensionService.ts
-@@ -56,17 +56,20 @@
+@@ -60,17 +60,20 @@ export class ExtHostExtensionService extends AbstractExtHostExtensionService {
  		return extensionDescription.browser;
  	}
  
@@ -28,7 +39,7 @@ diff --git a/src/vs/workbench/api/worker/extHostExtensionService.ts b/src/vs/wor
  		const response = await fetch(browserUri.toString(true));
  		if (extensionId) {
  			performance.mark(`code/extHost/didFetchExtensionCode/${extensionId}`);
-@@ -96,6 +99,28 @@
+@@ -100,6 +103,28 @@ export class ExtHostExtensionService extends AbstractExtHostExtensionService {
  			throw err;
  		}
  
@@ -57,7 +68,7 @@ diff --git a/src/vs/workbench/api/worker/extHostExtensionService.ts b/src/vs/wor
  		if (extension) {
  			await this._extHostLocalizationService.initializeLocalizedMessages(extension);
  		}
-@@ -111,19 +136,8 @@
+@@ -115,19 +140,8 @@ export class ExtHostExtensionService extends AbstractExtHostExtensionService {
  			return result;
  		};
  

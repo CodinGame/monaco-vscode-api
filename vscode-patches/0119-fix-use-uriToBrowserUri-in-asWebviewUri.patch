@@ -1,5 +1,14 @@
+From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
+From: Nicolas Dos Santos <nicolas.dossantos@accor.com>
+Date: Thu, 19 Nov 2026 09:15:34 +0100
+Subject: [PATCH] fix: use uriToBrowserUri in asWebviewUri
+
+---
+ .../contrib/webview/common/webview.ts         | 20 ++++++++++++++++++-
+ 1 file changed, 19 insertions(+), 1 deletion(-)
+
 diff --git a/src/vs/workbench/contrib/webview/common/webview.ts b/src/vs/workbench/contrib/webview/common/webview.ts
-index 6740d6b..0736ecd 100644
+index 6740d6b6d72..78f0ba954e9 100644
 --- a/src/vs/workbench/contrib/webview/common/webview.ts
 +++ b/src/vs/workbench/contrib/webview/common/webview.ts
 @@ -4,7 +4,7 @@
@@ -11,8 +20,7 @@ index 6740d6b..0736ecd 100644
  import { URI } from '../../../../base/common/uri.js';
  
  export interface WebviewRemoteInfo {
-@@ -11,6 +11,14 @@ export interface WebviewRemoteInfo {
- 	readonly isRemote: boolean;
+@@ -12,6 +12,14 @@ export interface WebviewRemoteInfo {
  	readonly authority: string | undefined;
  }
  
@@ -26,6 +34,7 @@ index 6740d6b..0736ecd 100644
 +
  /** Reports webview activity without generating pointer input. */
  export const webviewMouseActivityEvent = 'vscode-webview-mouse-activity';
+ 
 @@ -58,6 +66,16 @@ export function asWebviewUri(resource: URI, remoteInfo?: WebviewRemoteInfo): URI
  		});
  	}
