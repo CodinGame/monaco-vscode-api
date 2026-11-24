@@ -1,0 +1,129 @@
+From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
+From: =?UTF-8?q?Lo=C3=AFc=20Mangeonjean?= <loic@coderpad.io>
+Date: Tue, 24 Nov 2026 16:59:53 +0100
+Subject: [PATCH] fix: report paste and drop edits with their own edit source
+
+Paste and drop edits are applied as snippets through the bulk edit
+service, which dropped the `reason` option, so text model listeners
+saw them as plain 'snippet' edits.
+
+- forward `reason` to `SnippetController2.apply` in bulk text edits
+- pass a `cursor({ kind: 'paste' })` reason when applying paste edits
+- add a `drop` edit source and use it for drop edits
+- let `PostEditWidgetManager` take the edit reason to use when
+  switching between paste/drop options
+---
+ src/vs/editor/common/textModelEditSource.ts                 | 1 +
+ .../contrib/dropOrPasteInto/browser/copyPasteController.ts  | 6 ++++--
+ .../dropOrPasteInto/browser/dropIntoEditorController.ts     | 4 +++-
+ .../contrib/dropOrPasteInto/browser/postEditWidget.ts       | 4 +++-
+ src/vs/workbench/contrib/bulkEdit/browser/bulkTextEdits.ts  | 2 +-
+ 5 files changed, 12 insertions(+), 5 deletions(-)
+
+diff --git a/src/vs/editor/common/textModelEditSource.ts b/src/vs/editor/common/textModelEditSource.ts
+index e3ebdd30762..5c3214aa47b 100644
+--- a/src/vs/editor/common/textModelEditSource.ts
++++ b/src/vs/editor/common/textModelEditSource.ts
+@@ -214,6 +214,7 @@ export const EditSources = {
+ 	eolChange: () => createEditSource({ source: 'eolChange' } as const),
+ 	applyEdits: () => createEditSource({ source: 'applyEdits' } as const),
+ 	snippet: () => createEditSource({ source: 'snippet' } as const),
++	drop: () => createEditSource({ source: 'drop' } as const),
+ 	suggest: (data: { providerId: ProviderId | undefined }) => createEditSource({ source: 'suggest', ...toProperties(data.providerId) } as const),
+ 
+ 	codeAction: (data: { kind: string | undefined; providerId: ProviderId | undefined }) => createEditSource({ source: 'codeAction', $kind: data.kind, ...toProperties(data.providerId) } as const)
+diff --git a/src/vs/editor/contrib/dropOrPasteInto/browser/copyPasteController.ts b/src/vs/editor/contrib/dropOrPasteInto/browser/copyPasteController.ts
+index 515445a9c28..529791f6026 100644
+--- a/src/vs/editor/contrib/dropOrPasteInto/browser/copyPasteController.ts
++++ b/src/vs/editor/contrib/dropOrPasteInto/browser/copyPasteController.ts
+@@ -28,6 +28,7 @@ import { ICodeEditor, PastePayload } from '../../../browser/editorBrowser.js';
+ import { IBulkEditService } from '../../../browser/services/bulkEditService.js';
+ import { EditorOption } from '../../../common/config/editorOptions.js';
+ import { Selection } from '../../../common/core/selection.js';
++import { EditSources } from '../../../common/textModelEditSource.js';
+ import { Handler, IEditorContribution } from '../../../common/editorCommon.js';
+ import { DocumentPasteContext, DocumentPasteEdit, DocumentPasteEditProvider, DocumentPasteTriggerKind } from '../../../common/languages.js';
+ import { ITextModel } from '../../../common/model.js';
+@@ -130,7 +131,8 @@ export class CopyPasteController extends Disposable implements IEditorContributi
+ 
+ 		this._postPasteWidgetManager = this._register(instantiationService.createInstance(PostEditWidgetManager, 'pasteIntoEditor', editor, pasteWidgetVisibleCtx,
+ 			{ id: changePasteTypeCommandId, label: localize('postPasteWidgetTitle', "Show paste options...") },
+-			() => CopyPasteController._configureDefaultAction ? [CopyPasteController._configureDefaultAction] : []
++			() => CopyPasteController._configureDefaultAction ? [CopyPasteController._configureDefaultAction] : [],
++			EditSources.cursor({ kind: 'paste', detailedSource: 'pasteEdit' })
+ 		));
+ 	}
+ 
+@@ -508,7 +510,7 @@ export class CopyPasteController extends Disposable implements IEditorContributi
+ 				}
+ 
+ 				const combinedWorkspaceEdit = createCombinedWorkspaceEdit(model.uri, selections, pickedEdit);
+-				await this._bulkEditService.apply(combinedWorkspaceEdit, { editor: this._editor });
++				await this._bulkEditService.apply(combinedWorkspaceEdit, { editor: this._editor, reason: EditSources.cursor({ kind: 'paste', detailedSource: 'pasteEdit' }) });
+ 			} finally {
+ 				disposables.dispose();
+ 				if (this._currentPasteOperation === p) {
+diff --git a/src/vs/editor/contrib/dropOrPasteInto/browser/dropIntoEditorController.ts b/src/vs/editor/contrib/dropOrPasteInto/browser/dropIntoEditorController.ts
+index 2a3cd0bef7d..d8f67794179 100644
+--- a/src/vs/editor/contrib/dropOrPasteInto/browser/dropIntoEditorController.ts
++++ b/src/vs/editor/contrib/dropOrPasteInto/browser/dropIntoEditorController.ts
+@@ -21,6 +21,7 @@ import { ICodeEditor } from '../../../browser/editorBrowser.js';
+ import { EditorOption } from '../../../common/config/editorOptions.js';
+ import { IPosition } from '../../../common/core/position.js';
+ import { Range } from '../../../common/core/range.js';
++import { EditSources } from '../../../common/textModelEditSource.js';
+ import { IEditorContribution } from '../../../common/editorCommon.js';
+ import { DocumentDropEdit, DocumentDropEditProvider } from '../../../common/languages.js';
+ import { ITextModel } from '../../../common/model.js';
+@@ -77,7 +78,8 @@ export class DropIntoEditorController extends Disposable implements IEditorContr
+ 		this._dropProgressManager = this._register(instantiationService.createInstance(InlineProgressManager, 'dropIntoEditor', editor));
+ 		this._postDropWidgetManager = this._register(instantiationService.createInstance(PostEditWidgetManager, 'dropIntoEditor', editor, dropWidgetVisibleCtx,
+ 			{ id: changeDropTypeCommandId, label: localize('postDropWidgetTitle', "Show drop options...") },
+-			() => DropIntoEditorController._configureDefaultAction ? [DropIntoEditorController._configureDefaultAction] : []));
++			() => DropIntoEditorController._configureDefaultAction ? [DropIntoEditorController._configureDefaultAction] : [],
++			EditSources.drop()));
+ 
+ 		this._register(editor.onDropIntoEditor(e => this.onDropIntoEditor(editor, e.position, e.event)));
+ 	}
+diff --git a/src/vs/editor/contrib/dropOrPasteInto/browser/postEditWidget.ts b/src/vs/editor/contrib/dropOrPasteInto/browser/postEditWidget.ts
+index 0e09fd57b8f..16d80cebcf3 100644
+--- a/src/vs/editor/contrib/dropOrPasteInto/browser/postEditWidget.ts
++++ b/src/vs/editor/contrib/dropOrPasteInto/browser/postEditWidget.ts
+@@ -28,6 +28,7 @@ import { DocumentDropEdit, DocumentPasteEdit } from '../../../common/languages.j
+ import { TrackedRangeStickiness } from '../../../common/model.js';
+ import { CodeEditorStateFlag, EditorStateCancellationTokenSource } from '../../editorState/browser/editorState.js';
+ import { createCombinedWorkspaceEdit } from './edit.js';
++import { TextModelEditSource } from '../../../common/textModelEditSource.js';
+ import { PasteEditSession } from './pasteEditSession.js';
+ import './postEditWidget.css';
+ 
+@@ -163,6 +164,7 @@ export class PostEditWidgetManager<T extends DocumentPasteEdit | DocumentDropEdi
+ 		private readonly _visibleContext: RawContextKey<boolean>,
+ 		private readonly _showCommand: ShowCommand,
+ 		private readonly _getAdditionalActions: () => readonly IAction[],
++		private readonly _editReason: TextModelEditSource,
+ 		@IInstantiationService private readonly _instantiationService: IInstantiationService,
+ 		@IBulkEditService private readonly _bulkEditService: IBulkEditService,
+ 		@INotificationService private readonly _notificationService: INotificationService,
+@@ -239,7 +241,7 @@ export class PostEditWidgetManager<T extends DocumentPasteEdit | DocumentDropEdi
+ 		let editResult: IBulkEditResult;
+ 		let editRange: Range | null;
+ 		try {
+-			editResult = await this._bulkEditService.apply(combinedWorkspaceEdit, { editor: this._editor, token });
++			editResult = await this._bulkEditService.apply(combinedWorkspaceEdit, { editor: this._editor, reason: this._editReason, token });
+ 			editRange = model.getDecorationRange(editTrackingDecoration[0]);
+ 		} catch (e) {
+ 			return handleError(e, localize('applyError', "Error applying edit '{0}':\n{1}", edit.title, toErrorMessage(e)));
+diff --git a/src/vs/workbench/contrib/bulkEdit/browser/bulkTextEdits.ts b/src/vs/workbench/contrib/bulkEdit/browser/bulkTextEdits.ts
+index 7813739c162..44e4cb02d71 100644
+--- a/src/vs/workbench/contrib/bulkEdit/browser/bulkTextEdits.ts
++++ b/src/vs/workbench/contrib/bulkEdit/browser/bulkTextEdits.ts
+@@ -158,7 +158,7 @@ class EditorEditTask extends ModelEditTask {
+ 						});
+ 					}
+ 				}
+-				snippetCtrl.apply(snippetEdits, { undoStopBefore: false, undoStopAfter: false });
++				snippetCtrl.apply(snippetEdits, { undoStopBefore: false, undoStopAfter: false, reason });
+ 
+ 			} else {
+ 				// normal edit
