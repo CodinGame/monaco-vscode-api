@@ -4,34 +4,49 @@ on:
     branches:
       - main
 
+permissions:
+  contents: read
+
 jobs:
   lint-commits:
     name: Lint commits
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v7
+      - uses: actions/checkout@v7.0.1
         with:
           # we actually need "github.event.pull_request.commits + 1" commit
           fetch-depth: 0
+          persist-credentials: false
       - name: mise-en-place
-        uses: jdx/mise-action@v4
+        uses: jdx/mise-action@v4.3.0
       - run: npm ci --ignore-scripts
       - run: npx commitlint --from ${{ github.event.pull_request.head.sha }}~${{ github.event.pull_request.commits }} --to ${{ github.event.pull_request.head.sha }} --verbose
   check:
     name: Check build
     runs-on: ubuntu-latest
+    permissions:
+      contents: write # the Netlify preview step comments on the commit
+      pull-requests: write # and on the pull request
+      deployments: write # it creates the preview deployment
+      statuses: write # and sets the Netlify commit status
     env:
       NETLIFY_AUTH_TOKEN: ${{ secrets.NETLIFY_AUTH_TOKEN }}
       NETLIFY_SITE_ID: ${{ secrets.NETLIFY_SITE_ID }}
 
     steps:
       - name: Checkout
-        uses: actions/checkout@v7
+        uses: actions/checkout@v7.0.1
+        with:
+          persist-credentials: false
       - name: Install build dependencies
         run: |
           sudo apt-get update
           sudo apt-get install libkrb5-dev libxkbfile-dev libx11-6
-          curl https://mise.run | sh
+          # mise installer from the v2026.11.12 release, checked before it runs.
+          # To update mise, change the version and the checksum of that release's install.sh.
+          curl -fsSL -o "$RUNNER_TEMP/mise-install.sh" https://github.com/jdx/mise/releases/download/v2026.11.12/install.sh
+          echo "4a0508efdaf9d2e58a0c0b2fe5b4c87af6da2976d1b5abb5f3feb9a1c1874ebf  $RUNNER_TEMP/mise-install.sh" | sha256sum -c -
+          MISE_VERSION=v2026.11.12 sh "$RUNNER_TEMP/mise-install.sh"
           echo "$HOME/.local/share/mise/bin" >> $GITHUB_PATH
           echo "$HOME/.local/share/mise/shims" >> $GITHUB_PATH
           mise install -E vscode
@@ -52,7 +67,7 @@ jobs:
         run: npm run build:netlify
       - name: Deploy demo preview to Netlify
         if: github.event.pull_request.head.repo.full_name == github.repository && env.NETLIFY_AUTH_TOKEN != '' && env.NETLIFY_SITE_ID != ''
-        uses: nwtgck/actions-netlify@v4.0
+        uses: nwtgck/actions-netlify@v4.0.0
         with:
           publish-dir: './demo/dist'
           production-branch: ${{ github.event.repository.default_branch }}
